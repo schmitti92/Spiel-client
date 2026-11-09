@@ -23,9 +23,9 @@ test('HTML assets are complete, unique, and loaded in the intended order', () =>
   assert.match(html,/id="banker-call"/);
   assert.match(html,/id="cent-reward"/);
   assert.match(html,/deal-game-state-change/);
-  assert.match(html,/DealFinalDualWheel\\?\\.reset/);
-  assert.match(html,/dual\\.activate\\(reward/);
-  assert.match(html,/setTimeout\\(nextWheel/);
+  assert.ok(html.includes('DealFinalDualWheel?.reset(reward)'));
+  assert.ok(html.includes('dual.activate(reward'));
+  assert.ok(html.includes('setTimeout(nextWheel'));
 });
 test('all referenced local CSS and JS assets exist', () => {
   for (const path of [...css, ...js]) assert.ok(existsSync(resolve(root, path)), path);
