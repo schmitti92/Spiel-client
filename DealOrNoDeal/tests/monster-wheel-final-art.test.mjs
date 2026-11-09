@@ -5,10 +5,11 @@ import {Script} from 'node:vm';
 
 const read=name=>readFileSync(new URL('../'+name,import.meta.url));
 const js=read('js/monster-wheel.js').toString('utf8');
-const demo=read('js/monster-wheel-demo.js').toString('utf8');
 const css=read('css/monster-wheel.css').toString('utf8');
 const html=read('weihnachten.html').toString('utf8');
 const asset='Weihnachtsevent2/Weihnachtsbilder/file_0000000077288210bd94623e0d40c452.png';
+// Expected clockwise labels from the approved 25-sector illustration.
+const approvedArtSlots=Object.freeze(["cash-random-1","lucky-1-1","giftzwerg","single-1-1","joker-5","cash-random-2","double-5","gold-5","lucky-3","joker-1-1","cash-random-3","lucky-10","premium-3","single-1-2","cash-2m","cash-random-4","lucky-1-2","gold-4","joker-1-2","lucky-5","cash-random-5","single-1-3","cash-10m","joker-1-3","lucky-1-3"]);
 
 function simulator(){
  const disc={clientWidth:440,offsetWidth:440,style:{setProperty(){}} ,
@@ -25,8 +26,8 @@ function simulator(){
   matchMedia:()=>({matches:true}),
   console,Math};
  new Script(js,{filename:'monster-wheel.js'}).runInNewContext(ctx);
- new Script(demo,{filename:'monster-wheel-demo.js'}).runInNewContext(ctx);
- return {visual:ctx.window.ChristmasMonsterVisuals,catalog:ctx.window.ChristmasMonsterDemo.catalog,disc};
+ const catalog=approvedArtSlots.map(id=>({id,label:id,short:id,kind:'cash',icon:'✦'}));
+ return {visual:ctx.window.ChristmasMonsterVisuals,catalog,disc};
 }
 test('uploaded transparent PNG is exactly the final 25-field wheel image',()=>{
  const png=read(asset);
@@ -40,13 +41,16 @@ test('uploaded transparent PNG is exactly the final 25-field wheel image',()=>{
  assert.match(css,/\.monster-disc\.is-baked-art \.monster-wheel-segment\{display:none!important\}/);
  assert.match(css,/\.monster-disc\.is-baked-art ~ \.monster-wheel-center\{display:none!important\}/);
  assert.match(html,/monster-wheel\.js\?v=20261109-full-photo-v1/);
- assert.match(html,/monster-wheel\.css\?v=20261109-full-photo-v1/);
+ assert.match(html,/monster-wheel\.css\?v=20261109-no-test-v1/);
+ assert.doesNotMatch(html,/monster-wheel-demo\.js|monster-test-open|monster-spin-test|monster-test-label/);
+ assert.match(html,/request\('POST','monster\/spin'/);
 });
 test('all 25 authored reward sectors clockwise are identical to the backend-provided 25-slot catalog',()=>{
  const {visual,catalog,disc}=simulator();
  assert.equal(catalog.length,25);
  assert.equal(visual.matchesArtwork(catalog),true);
- assert.equal(Array.from(visual.artworkSlots).join('|'),Array.from(catalog,s=>s.id).join('|'));
+ assert.equal(Array.from(visual.artworkSlots).join('|'),approvedArtSlots.join('|'));
+ assert.equal(Array.from(catalog,s=>s.id).join('|'),approvedArtSlots.join('|'));
  assert.equal(catalog[0].id,'cash-random-1');
  assert.equal(catalog[12].id,'premium-3');
  assert.equal(catalog[22].id,'cash-10m');
