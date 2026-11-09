@@ -1,0 +1,281 @@
+/* WEIHNACHTSEVENT 2 · Winterstudio Deluxe
+ * Phase 1: tablet/desktop readability, large 70-picture milestone cards,
+ * proven existing Christmas imagery, no change to purchases or server state.
+ * This file loads AFTER the shared Christmas event hub CSS.
+ */
+:root{--v2-ice:#9ceaff;--v2-gold:#ffe29a;--v2-edge:#d8ab59}
+html{min-height:100%;height:auto}
+body.christmas-event-ice{
+  display:block!important;min-height:100dvh!important;height:auto!important;
+  overflow-x:hidden!important;overflow-y:auto!important;
+  background:#061526 linear-gradient(175deg,#0613216b,#061427a0 52%,#061121cb),
+    url('./Weihnachtsbilder/originalgrafik-07.webp') center top/cover fixed!important;
+}
+body.christmas-event-ice #ice-online-panel{
+  width:100%;max-width:1670px;min-height:0!important;margin:0 auto;
+  padding:12px clamp(10px,1.2vw,20px) 38px!important;
+  overflow:visible!important;flex:none!important;
+}
+body.christmas-event-ice .v44-app{
+  max-width:1600px;overflow:visible;filter:drop-shadow(0 5px 15px #03091760);
+}
+body.christmas-event-ice .v44-head{
+  position:relative;min-height:78px!important;padding:10px clamp(12px,2vw,28px)!important;
+  margin:0 0 13px!important;border:2px solid #ffd98e;border-radius:17px;
+  background:
+    linear-gradient(90deg,#2b0a1cde,#822834bd 38%,#67212abf 64%,#290b1cde),
+    url('./Weihnachtsbilder/originalgrafik-08.webp') center/cover!important;
+  box-shadow:inset 0 2px 0 #fff1cb8c,inset 0 -12px 28px #1a0613,0 6px 30px #000a,0 0 16px #ffc66340;
+}
+body.christmas-event-ice .v44-heading h1{
+  color:#ffebb4;font-size:clamp(24px,2.25vw,39px)!important;letter-spacing:.012em;
+  line-height:1.08;text-shadow:0 2px 2px #3a0a09,0 0 16px #f1aa5780;
+}
+body.christmas-event-ice .v44-heading p{font:750 clamp(11px,.95vw,15px)/1.35 system-ui,sans-serif!important;display:block!important;color:#fff4e0;margin:4px 0!important}
+body.christmas-event-ice .v44-chapter-plaque{
+  background:linear-gradient(140deg,#731424,#360617);
+  border:1px solid #ffe0a7;box-shadow:0 0 0 2px #aa6c3b40,0 0 12px #ffc87a55;
+  border-radius:999px;font-size:clamp(11px,.88vw,15px);
+}
+body.christmas-event-ice .v44-head .v44-plaque:last-child{
+  border:1px solid #eac376;background:linear-gradient(135deg,#382219,#6c371c);
+  color:#ffedb8;font-size:clamp(12px,1vw,17px);
+}
+body.christmas-event-ice .v44-layout{
+  grid-template-columns:minmax(210px,1fr) minmax(400px,2.52fr) minmax(230px,1.09fr)!important;
+  align-items:stretch;gap:12px!important;
+}
+body.christmas-event-ice .v44-panel{
+  border-radius:17px;box-shadow:0 8px 25px #0009,0 0 0 1px #fff1cc22,inset 0 0 20px #25071480;
+}
+body.christmas-event-ice .v44-layout>.v44-panel{padding:clamp(8px,1vw,15px)!important}
+body.christmas-event-ice .v44-panel>h2{
+  margin:0 0 12px!important;padding:6px 5px 9px!important;
+  font:800 clamp(17px,1.55vw,25px)/1.2 Georgia,serif!important;
+  color:#ffe6ad!important;
+  text-shadow:0 2px 5px #250914,0 0 10px #ffd17b55;
+}
+body.christmas-event-ice .v44-gallery-panel{background:#4a1825}
+body.christmas-event-ice .v44-gallery{gap:7px}
+body.christmas-event-ice .v44-gallery .v44-thumb{
+  aspect-ratio:1.35;min-height:49px;border:2px solid #e6b868;
+  border-radius:9px;box-shadow:0 2px 9px #0008,inset 0 0 8px #cfa85d30;
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+body.christmas-event-ice .v44-gallery .v44-thumb:hover{
+  transform:translateY(-2px);border-color:#fff1b6;box-shadow:0 0 18px #f9c76b77;
+}
+body.christmas-event-ice .v44-thumb.locked{
+  background:radial-gradient(circle at 50% 15%,#493049,#15172a 85%);
+}
+body.christmas-event-ice .v44-thumb>span{
+  padding:3px 6px;border-radius:7px 0 0 0;background:#06182de8;
+  color:#fff0be;font:900 clamp(10px,.8vw,13px) system-ui,sans-serif;
+}
+body.christmas-event-ice .v44-gallery-nav{gap:8px;margin:13px 0 10px;font-size:clamp(12px,.94vw,14px);font-weight:800}
+body.christmas-event-ice .v44-gallery-all{
+  min-height:42px!important;margin:10px 0!important;
+  padding:9px 11px!important;font:900 clamp(12px,1vw,15px) system-ui,sans-serif!important;
+  border:1px solid #fff0b4;box-shadow:0 0 13px #f3c26460;
+}
+body.christmas-event-ice .v44-gallery-stats{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:11px;
+}
+body.christmas-event-ice .v44-gallery-stat{
+  padding:10px 5px;border:1px solid #e2b96c80;border-radius:11px;
+  background:linear-gradient(135deg,#1b253dbf,#512432a8);
+  text-align:center;font:750 clamp(11px,.8vw,13px)/1.3 system-ui,sans-serif;
+}
+body.christmas-event-ice .v44-gallery-stat strong{
+  display:block;margin-bottom:4px;color:#ffe6aa;font:900 clamp(16px,1.35vw,22px)/1 Georgia,serif;
+}
+body.christmas-event-ice .v44-board-panel{background:#47192a}
+body.christmas-event-ice .v44-board{
+  display:block;width:100%!important;max-width:100%!important;
+  height:auto!important;aspect-ratio:16/9!important;
+  border:4px ridge #f8dc9b;border-radius:13px;overflow:hidden;
+  background:#1b4268;box-shadow:0 0 0 2px #9dddf03d,0 0 27px #66caff90,inset 0 0 15px #0008;
+}
+body.christmas-event-ice .v44-board .ice-tiles{gap:4px;padding:5px}
+body.christmas-event-ice .v44-board .ice-tiles button{
+  border-radius:8px;border:1px solid #d1f6ff;
+  box-shadow:inset 0 0 5px #fff9,0 1px 6px #4ac4f97a;
+}
+body.christmas-event-ice .v44-ice-meter{margin-bottom:9px}
+body.christmas-event-ice .v44-instruction{
+  margin:12px 0 3px!important;font:750 clamp(12px,.95vw,16px)/1.4 system-ui,sans-serif;
+  color:#d6f2ff;text-shadow:0 2px 5px #00162e;
+}
+body.christmas-event-ice .v44-hammers{gap:12px}
+body.christmas-event-ice .v44-hammer{
+  display:grid;grid-template-columns:minmax(65px,32%) 1fr!important;
+  gap:9px;align-items:center;min-height:103px!important;
+  padding:9px!important;border:2px solid #d2a253;border-radius:13px;
+  box-shadow:inset 0 1px 0 #fff2,0 4px 12px #0007;
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+body.christmas-event-ice .v44-hammer:not(:disabled):hover{
+  transform:translateY(-2px);border-color:#ffe1a2;box-shadow:0 0 20px #ffcc6b70;
+}
+body.christmas-event-ice .v44-hammer.selected{
+  border-color:#ffeba6;box-shadow:0 0 0 2px #ffe5a499,0 0 25px #ffc96b99,inset 0 0 17px #f6d07825;
+}
+body.christmas-event-ice .v44-hammer-art{max-height:82px!important;width:100%;object-fit:contain}
+body.christmas-event-ice .v44-hammer strong{font:900 clamp(14px,1.02vw,17px)/1.18 system-ui,sans-serif}
+body.christmas-event-ice .v44-hammer small{font:700 clamp(11px,.86vw,13px) system-ui,sans-serif;color:#d4e7f5;margin:5px 0!important}
+body.christmas-event-ice .v44-hammer b{
+  padding:7px 5px!important;border:1px solid #fff2ad;border-radius:7px;
+  font:900 clamp(11px,.91vw,15px) system-ui,sans-serif;
+  box-shadow:0 0 10px #ffc65b37;
+}
+body.christmas-event-ice .v44-progress{
+  position:relative;overflow:hidden;margin-top:16px!important;
+  padding:16px clamp(12px,1.3vw,22px) 18px!important;
+  background:
+    linear-gradient(145deg,#38102ae8,#6c1739eb 46%,#351126ed),
+    url('./Weihnachtsbilder/originalgrafik-08.webp') center/cover!important;
+  border:3px solid #e8bd68;border-radius:19px;
+  box-shadow:inset 0 1px 0 #fff4,0 8px 25px #0009,0 0 16px #dba85f4d;
+}
+body.christmas-event-ice .v44-progress>h2{
+  font-size:clamp(22px,2vw,32px)!important;margin-bottom:10px!important
+}
+body.christmas-event-ice .v44-progress-intro{
+  display:grid;grid-template-columns:minmax(0,1.35fr) minmax(180px,1fr);
+  gap:8px 18px;align-items:center;
+  padding:10px 15px 13px;margin-bottom:16px;
+  border:1px solid #e1b65eaa;border-radius:12px;
+  background:linear-gradient(100deg,#170e25d9,#43232caa);
+}
+body.christmas-event-ice .v44-progress-copy{
+  display:grid;gap:5px;justify-content:start;
+  font:750 clamp(13px,1.02vw,16px)/1.32 system-ui,sans-serif;
+}
+body.christmas-event-ice .v44-progress-copy strong{
+  color:#ffe8a7;font:900 clamp(16px,1.37vw,22px) Georgia,serif;
+}
+body.christmas-event-ice .v44-progress-count{
+  justify-self:end;text-align:right;
+  color:#ffedbb;font:800 clamp(13px,1.06vw,18px) system-ui,sans-serif;
+}
+body.christmas-event-ice .v44-progress-meter{
+  grid-column:1/-1;height:17px;border:2px solid #d6b66f;border-radius:999px;
+  overflow:hidden;background:#160f23;box-shadow:inset 0 2px 7px #000a;
+}
+body.christmas-event-ice .v44-progress-meter>i{
+  display:block;height:100%;border-radius:999px;
+  background:linear-gradient(90deg,#64acc6,#b5ecff 35%,#ffd678 80%,#fff1ad);
+  box-shadow:0 0 15px #f5d47baa;transition:width .4s ease;
+}
+body.christmas-event-ice .v44-rewards{
+  display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:12px;
+}
+body.christmas-event-ice .v44-reward{
+  position:relative;isolation:isolate;display:flex;flex-direction:column;align-items:center;
+  justify-content:space-between;gap:5px;min-width:0;min-height:169px;
+  padding:10px 7px 12px!important;border:2px solid #ad805d;border-radius:13px;
+  background:linear-gradient(165deg,#182942,#211b36 63%,#3f2232);
+  box-shadow:inset 0 1px 0 #fff3,0 5px 14px #0008;text-align:center;
+  transition:border-color .2s,transform .2s,box-shadow .2s;
+}
+body.christmas-event-ice .v44-reward .v44-reward-top{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:4px;
+}
+body.christmas-event-ice .v44-reward .v44-reward-step{
+  font:850 clamp(9px,.77vw,12px) system-ui,sans-serif;letter-spacing:.05em;
+  color:#d9bb90;
+}
+body.christmas-event-ice .v44-reward .v44-reward-number{
+  padding:4px 7px;border-radius:8px;background:#a4763461;
+  color:#ffe6ae;font:950 clamp(15px,1.25vw,23px) system-ui,sans-serif;
+  white-space:nowrap;
+}
+body.christmas-event-ice .v44-reward .v44-reward-number small{font-size:.62em;opacity:.8}
+body.christmas-event-ice .v44-reward .v44-reward-art{
+  display:grid;place-items:center;min-height:61px;width:100%;flex:1;
+  background:none!important;
+}
+body.christmas-event-ice .v44-reward .v44-reward-art img{
+  display:block;width:min(100%,95px);height:67px;object-fit:contain;
+  filter:drop-shadow(0 4px 7px #000a);transition:transform .3s ease;
+}
+body.christmas-event-ice .v44-reward .v44-reward-title{
+  font:900 clamp(12px,.94vw,16px)/1.18 Georgia,serif!important;color:#ffe5a9;
+  overflow-wrap:break-word;
+}
+body.christmas-event-ice .v44-reward .v44-reward-status{
+  font:750 clamp(10px,.8vw,12px)/1.2 system-ui,sans-serif;color:#d9e7ef;
+}
+body.christmas-event-ice .v44-reward.done{
+  border-color:#e7cf89;background:linear-gradient(160deg,#193b3a,#28533f 70%,#2e3528);
+  box-shadow:inset 0 1px 0 #fff4,0 0 14px #6cd9a25c;
+}
+body.christmas-event-ice .v44-reward.done .v44-reward-status{color:#c7ffe0}
+body.christmas-event-ice .v44-reward.current{
+  border-color:#fff0a1;background:linear-gradient(155deg,#563225,#643332 57%,#573020);
+  box-shadow:0 0 0 2px #ffe5a755,0 0 23px #ffc45f88,inset 0 1px 0 #fff7;
+}
+body.christmas-event-ice .v44-reward.current .v44-reward-number{
+  color:#3d220d;background:linear-gradient(#fff0c4,#e3aa3d);
+}
+body.christmas-event-ice .v44-reward.current .v44-reward-art img{transform:scale(1.07)}
+body.christmas-event-ice .v44-reward.current:after{
+  content:'✨ NÄCHSTES ZIEL';position:absolute;top:-11px;left:50%;
+  transform:translateX(-50%);white-space:nowrap;
+  padding:3px 10px;border:1px solid #fff2bd;border-radius:999px;
+  background:linear-gradient(115deg,#fff0bc,#df9e37);
+  color:#432508;font:950 10px system-ui,sans-serif;
+  box-shadow:0 1px 10px #ffdd7a88;z-index:2;
+}
+body.christmas-event-ice .v44-actions{margin-top:15px;gap:12px}
+body.christmas-event-ice .v44-actions button{
+  min-height:42px!important;padding:9px 15px!important;
+  font-size:clamp(12px,.95vw,15px)!important;
+}
+body.christmas-event-ice .v44-actions #ice-reset{
+  background:linear-gradient(145deg,#2d1d30,#692d3b)!important;color:#ffe3ad!important;
+  border-color:#d9a766!important;
+}
+body.christmas-event-ice .v44-note{
+  font:700 12px/1.5 system-ui,sans-serif!important;opacity:.95;
+  padding:9px 12px;margin:11px auto!important;max-width:1250px;
+  text-align:center;color:#e6d7c1;background:#091827a8;border-radius:9px
+}
+@media(min-width:901px) and (max-width:1320px){
+  body.christmas-event-ice .v44-layout{
+    grid-template-columns:minmax(160px,.95fr) minmax(360px,2.6fr) minmax(180px,1fr)!important;gap:7px!important
+  }
+  body.christmas-event-ice .v44-hammer{min-height:95px!important}
+  body.christmas-event-ice .v44-rewards{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:900px){
+  body.christmas-event-ice .v44-head{flex-wrap:wrap;justify-content:center;gap:7px}
+  body.christmas-event-ice .v44-heading{order:-1;flex-basis:100%}
+  body.christmas-event-ice .v44-layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:9px!important}
+  body.christmas-event-ice .v44-board-panel{grid-column:1/-1;grid-row:1}
+  body.christmas-event-ice .v44-gallery-panel{grid-column:1;grid-row:2}
+  body.christmas-event-ice .v44-hammer-panel{grid-column:2;grid-row:2}
+  body.christmas-event-ice .v44-rewards{grid-template-columns:repeat(4,minmax(0,1fr))}
+  body.christmas-event-ice .v44-hammer{min-height:87px!important}
+}
+@media(max-width:600px){
+  body.christmas-event-ice #ice-online-panel{padding:8px 6px 25px!important}
+  body.christmas-event-ice .v44-layout{grid-template-columns:1fr!important}
+  body.christmas-event-ice .v44-board-panel{grid-column:1;grid-row:1}
+  body.christmas-event-ice .v44-gallery-panel{grid-column:1;grid-row:2}
+  body.christmas-event-ice .v44-hammer-panel{grid-column:1;grid-row:3}
+  body.christmas-event-ice .v44-hammers{grid-template-columns:1fr;gap:8px}
+  body.christmas-event-ice .v44-gallery .v44-thumb{aspect-ratio:1.6}
+  body.christmas-event-ice .v44-rewards{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  body.christmas-event-ice .v44-reward{min-height:150px}
+  body.christmas-event-ice .v44-progress-intro{grid-template-columns:1fr}
+  body.christmas-event-ice .v44-progress-count{justify-self:start;text-align:left}
+  body.christmas-event-ice .v44-progress-meter{grid-column:1}
+}
+@media(prefers-reduced-motion:reduce){
+  body.christmas-event-ice .v44-gallery .v44-thumb,
+  body.christmas-event-ice .v44-hammer,
+  body.christmas-event-ice .v44-reward,
+  body.christmas-event-ice .v44-progress-meter>i,
+  body.christmas-event-ice .v44-reward .v44-reward-art img{transition:none!important}
+}
