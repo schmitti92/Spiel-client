@@ -28,11 +28,13 @@ const bankerBonusHammerTypes={
  double:{name:'Doppelhammer',image:'hammer-doppel.webp',icon:'🔨🔨'},
  lucky:{name:'Glückshammer',image:'hammer-glueck.webp',icon:'🌟🔨'}
 };
-const bankerBonusPackTypes={
- small:{name:'Kleines Weihnachtspaket',icon:'🎁',theme:'small'},
- large:{name:'Großes Weihnachtspaket',icon:'🎁',theme:'large'},
- premium:{name:'Premium-Weihnachtspaket',icon:'🎁',theme:'premium'}
-};
+// The Banker deliberately uses the same three-pack artwork as the Christmas shop.
+// Its real green/red/gold package motifs are positioned by banker-stage.css.
+const bankerBonusPackTypes=Object.freeze({
+ small:{name:'Kleines Weihnachtspaket',theme:'small'},
+ large:{name:'Großes Weihnachtspaket',theme:'large'},
+ premium:{name:'Premium-Weihnachtspaket',theme:'premium'}
+});
 function bankerBonusCloseReveal(){
  clearTimeout(bankerBonusRevealTimer);bankerBonusRevealTimer=null;bankerBonusRevealUntil=0;bankerBonusClearStages();
  const reveal=$('banker-bonus-reveal');if(reveal)reveal.hidden=true;
@@ -62,7 +64,8 @@ function bankerBonusShowReveal(h,key){
  }
  if(pack){
   const item=document.createElement('div');item.className='banker-bonus-reveal-item pack '+pack.theme;
-  const art=document.createElement('div');art.className='banker-bonus-pack-art';art.textContent=pack.icon;
+  const art=document.createElement('div');art.className='banker-bonus-pack-art';
+  art.setAttribute('role','img');art.setAttribute('aria-label',pack.name);
   const name=document.createElement('strong');name.textContent=pack.name;
   const label=document.createElement('small');label.textContent='🎄 KARTENPACK-ANGEBOT';
   item.append(art,name,label);items.append(item);
@@ -129,7 +132,12 @@ function updateBankerCall(){
  if(bonus){
   bonus.hidden=!h.bonusPack;
   bonus.dataset.pack=h.bonusPack||'';
-  if(h.bonusPack)bankerSetText('banker-christmas-bonus-name',({small:'Kleines Weihnachtspaket',large:'Großes Weihnachtspaket',premium:'Premium-Weihnachtspaket'})[h.bonusPack]||'Weihnachtspaket');
+  if(h.bonusPack){
+   const pack=bankerBonusPackTypes[h.bonusPack];
+   bankerSetText('banker-christmas-bonus-name',pack?.name||'Weihnachtspaket');
+   const preview=$('banker-christmas-bonus-art');
+   if(preview)preview.setAttribute('aria-label',pack?.name||'Weihnachtspaket');
+  }
  }
  const hammerBonus=$('banker-hammer-bonus');
  if(hammerBonus){
