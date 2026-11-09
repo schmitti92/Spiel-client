@@ -1,0 +1,49 @@
+/* Monster Wheel · 21 physical stops · 8-second deterministic reveal.
+   State and prize ownership are always server-side. */
+.monster-trade .monster-spin-open{border-radius:12px;margin-left:8px;padding:12px 15px;font:900 15px system-ui;cursor:pointer;color:#fce6bf;border:1px solid #e5bf78;background:linear-gradient(150deg,#6d387b,#251538)}
+.monster-trade .monster-spin-open:disabled{opacity:.45;cursor:not-allowed}
+.monster-trade .monster-spin-open.has-tickets{box-shadow:0 0 25px #d586ff99;background:linear-gradient(145deg,#9b58cb,#64247f);color:#fff}
+#monster-wheel-overlay[hidden],#monster-wheel-prize[hidden],#monster-wheel-card-action[hidden]{display:none!important}
+#monster-wheel-overlay{position:fixed;z-index:11000;inset:0;overflow-y:auto;padding:18px 12px;background:radial-gradient(ellipse at 50% 16%,rgba(116,28,145,.37),transparent 65%),rgba(2,5,19,.96);backdrop-filter:blur(12px);color:#ffe9b1}
+.monster-stage{position:relative;margin:auto;max-width:1100px;min-height:min(96dvh,840px);border:3px solid #edcb7f;border-radius:32px;background:radial-gradient(ellipse at 50% -10%,rgba(185,103,231,.25),transparent 50%),linear-gradient(155deg,#22102f,#061b2c 48%,#291830);box-shadow:0 0 100px #dd9bff49,0 20px 60px #000c;overflow:hidden;padding:18px clamp(12px,3vw,35px) 28px;text-align:center}
+.monster-stage:before{content:"✦  ✧  ✦  ✧  ✦  ✧  ✦";display:block;position:absolute;inset:0;pointer-events:none;opacity:.13;font-size:clamp(25px,4vw,42px);word-spacing:8vw;line-height:5;transform:rotate(-9deg)}
+.monster-stage>*{position:relative;z-index:1}
+.monster-stage-eyebrow{font-size:clamp(10px,1.5vw,14px);font-weight:950;letter-spacing:.18em;color:#ebc88d;margin:4px 0}
+.monster-stage h2{font:900 clamp(28px,4.3vw,55px) Georgia,serif;margin:0;color:#ffe4a4;letter-spacing:.025em;text-shadow:0 3px #4a1a64,0 0 30px #b276cf}
+.monster-stage p{margin:5px 0 8px;color:#ddd4ea}
+.monster-close{position:absolute;z-index:6;right:15px;top:12px;border:1px solid #eec784;border-radius:11px;background:#251b39;color:#ffedc7;cursor:pointer;padding:8px 13px;font-size:18px}
+.monster-spin-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(250px,.9fr);gap:clamp(12px,2.4vw,30px);align-items:center;margin:10px 0}
+.monster-wheel-assembly{width:min(100%,550px);aspect-ratio:1;position:relative;margin:auto;display:grid;place-items:center;filter:drop-shadow(0 15px 22px #0008)}
+.monster-wheel-assembly:before{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,#e6cdff 0%,#c982fc 48%,#c886ff80 59%,transparent 70%);filter:blur(25px);opacity:.57;animation:monsterGlow 2s alternate infinite ease-in-out}
+.monster-disc{position:relative;width:90%;aspect-ratio:1;border-radius:50%;border:clamp(8px,1.4vw,16px) solid #f5c775;box-shadow:inset 0 0 0 3px #fff4c5,inset 0 0 38px #0008,0 0 0 6px #724375,0 0 27px #f6d87d96;will-change:transform;transform:rotate(0deg);transition:none}
+.monster-disc:before{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;box-shadow:inset 0 0 0 2px #fff4d0aa;z-index:2}
+.monster-wheel-segment{position:absolute;left:50%;top:50%;margin:-17px 0 0 -17px;display:grid;place-items:center;width:34px;height:34px;font-size:clamp(14px,2vw,24px);line-height:1;filter:drop-shadow(1px 2px 2px #000b);text-shadow:0 2px 5px #000a;pointer-events:none}
+.monster-wheel-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;width:28%;aspect-ratio:1;display:grid;place-items:center;z-index:3;border:8px double #fbe5a2;background:radial-gradient(circle at 28% 21%,#ab54c3,#47204e 55%,#1b152c);box-shadow:0 8px 25px #000b,0 0 22px #fff2acbb;font-size:clamp(30px,4.4vw,57px)}
+.monster-pointer{position:absolute;z-index:4;top:-4px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:20px solid transparent;border-right:20px solid transparent;border-top:49px solid #fff2bd;filter:drop-shadow(0 5px 2px #31193a)}
+.monster-pointer:before{content:"";position:absolute;top:-48px;left:-8px;width:16px;height:18px;border-radius:50%;background:#f4a748}
+.monster-light{position:absolute;width:11px;height:11px;border-radius:50%;background:#fff2ba;box-shadow:0 0 20px 4px #f4da83;top:5%;left:14%;animation:monsterGlow 1s ease-in-out infinite alternate}
+.monster-light:nth-child(2){top:68%;left:0%;animation-delay:.4s}.monster-light:nth-child(3){top:83%;left:87%;animation-delay:.8s}
+.monster-wheel-side{min-width:0;text-align:left}
+.monster-side-title{font-size:clamp(17px,2vw,24px);color:#ffe0aa;font-weight:900;margin:0 0 12px}
+.monster-prize-list{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:380px;overflow-y:auto;padding:3px;scrollbar-width:thin}
+.monster-prize-list span{font-size:clamp(10px,1.04vw,12px);color:#f2e8dc;background:#13263a;padding:7px 8px;border:1px solid #be8a9b77;border-radius:9px;line-height:1.3}
+.monster-prize-list span.won{border-color:#fff1b0;background:#6b3267;box-shadow:0 0 12px #c98df7}
+.monster-tickets-caption{margin-top:10px;color:#ffdd98;font-weight:800}
+.monster-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin:10px auto}
+.monster-primary,.monster-secondary{border:2px solid #fff1b6;border-radius:15px;padding:13px 22px;min-height:48px;cursor:pointer;font:950 clamp(14px,2vw,19px) system-ui;box-shadow:0 6px 20px #0008}
+.monster-primary{color:#27142d;background:linear-gradient(145deg,#fff0bb,#f1b647,#c88a3b)}
+.monster-secondary{color:#ffe7c1;background:linear-gradient(145deg,#502768,#211533)}
+.monster-primary:disabled{filter:grayscale(1);opacity:.5;cursor:not-allowed}
+.monster-stage.is-spinning .monster-pointer{animation:monsterPointerTick .12s infinite alternate}
+.monster-stage.is-spinning .monster-wheel-assembly:before{animation-duration:.4s}
+#monster-wheel-prize{max-width:740px;margin:14px auto;padding:16px;border:2px solid #f6dd96;border-radius:20px;background:radial-gradient(circle at 50% -50%,#9d6bc17c,transparent 90%),#14213b;box-shadow:0 0 30px #f6d58b62;animation:monsterReveal .8s ease-out both}
+#monster-wheel-prize strong{display:block;font:900 clamp(23px,3.4vw,42px) Georgia,serif;color:#ffe7aa}
+#monster-wheel-prize small{color:#d4dff0}
+.monster-wheel-result-icon{font-size:clamp(36px,6vw,70px);filter:drop-shadow(0 0 12px #f8c576)}
+.monster-wheel-avatar{display:block;width:min(155px,40%);height:auto;aspect-ratio:1;margin:10px auto;border-radius:18px;border:3px solid #f6da8e;box-shadow:0 0 25px #bc66dc}
+@keyframes monsterGlow{from{opacity:.5;filter:brightness(.7)}to{opacity:1;filter:brightness(1.3)}}
+@keyframes monsterPointerTick{to{transform:translateX(-50%) rotate(8deg)}}
+@keyframes monsterReveal{0%{opacity:0;transform:scale(.76) translateY(35px)}70%{transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
+@media(max-width:770px){.monster-spin-layout{grid-template-columns:1fr}.monster-wheel-assembly{width:min(100%,380px)}.monster-prize-list{grid-template-columns:repeat(3,minmax(0,1fr));max-height:140px}.monster-wheel-segment{width:28px;height:28px;margin:-14px 0 0 -14px}.monster-stage{border-radius:19px;padding:18px 10px 20px}.monster-stage h2{font-size:clamp(26px,6vw,38px)}}
+@media(max-width:480px){.monster-wheel-assembly{width:min(100%,300px)}.monster-prize-list{grid-template-columns:1fr 1fr}.monster-wheel-center{border-width:4px}.monster-pointer{border-left-width:14px;border-right-width:14px;border-top-width:36px}.monster-stage-eyebrow{max-width:90%}}
+@media(prefers-reduced-motion:reduce){.monster-stage .monster-light,.monster-wheel-assembly:before,.monster-stage.is-spinning .monster-pointer,#monster-wheel-prize{animation:none}}
