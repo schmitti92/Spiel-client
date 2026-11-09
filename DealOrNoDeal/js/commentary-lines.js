@@ -216,3 +216,130 @@ studioCommentLines[14].large.push('Moin oder watt! Dat war ein Rückwärtssalto 
 (studioCommentLines[14].noDeal||(studioCommentLines[14].noDeal=[])).push(...["Moin oder watt! No Deal, wir springen weiter.","Junge, für dat Angebot bleib ich doch nich stehen.","Full Send! Dat Risiko gehört hier doch dazu.","Jo, ich will sehen, wat die nächsten Koffer bringen.","Nee, Banker. Versuch's später nochmal mit 'ner richtigen Zahl.","Moin, wir haben noch Sprungkraft. Weiter geht's!","Dat war mir zu wenig. Da is noch Luft nach oben.","Junge, wer jetzt schon aufgibt, hat die Landung nich verdient.","No Deal. Ich guck mir die Sache noch 'n bisschen an.","Jo, jetzt aber bitte nich die Million aufmachen."]);
 (studioCommentLines[14].streakGood||(studioCommentLines[14].streakGood=[])).push(...["Moin, drei kleine Beträge hintereinander! Dat is 'ne saubere Serie.","Junge, dat läuft wie 'ne Parkour-Line ohne Fehltritt.","Jo, der Banker kriegt langsam schwitzige Hände.","Watt für 'ne Glückssträhne! Bloß nich übermütig werden.","Dat war jetzt mehrfach richtig gut. Ich sag: Stabil!"]);
 (studioCommentLines[14].streakBad||(studioCommentLines[14].streakBad=[])).push(...["Moin oder watt, dat is jetzt aber 'ne Serie von Bauchplatschern.","Junge, einer muss hier mal die Bremse finden.","Jo, die Kofferwahl hat heute wohl Urlaub.","Dat läuft ja wie 'ne Parkour-Line mit verbundenen Augen.","Watt für 'n Pech. Jetzt bitte endlich 'ne kleine Zahl."]);
+
+
+/* Monster-Wheel exclusive: original grumpy Giftzwerg dialogue. */
+studioCommentLines[15]={
+  "name": "Muffiger Giftzwerg",
+  "image": "giftzwerg.svg",
+  "oneCent": [
+    "Pah! Ein Cent weg. Nicht mal mein verschimmeltes Geschenk ist so billig.",
+    "Na schön, das Kupfer ist raus. Endlich einmal kein Unfug.",
+    "Ein Cent! Ich hätte mehr verloren, wenn ich geniest hätte.",
+    "Hmpf. Der Cent ist verschwunden. Der Rest darf gern bleiben.",
+    "Was für ein Wunder: eine Entscheidung ohne Katastrophe.",
+    "Ein Cent weniger. Selbst mein Giftkessel würde darüber lachen.",
+    "Ach, ein Winzling. Den hätte ich aus Versehen weggeatmet.",
+    "Kleinster Betrag weg. Jetzt bloß keine gute Laune vortäuschen."
+  ],
+  "small": [
+    "Hmpf, kleiner Betrag. Das war ja beinahe erträglich.",
+    "So soll es sein: Kleingeld raus, dicke Beute drin.",
+    "Nicht schlecht. Aber ich bleibe vorsichtshalber schlecht gelaunt.",
+    "Das war ein vernünftiger Griff. Widerlich, ich muss loben.",
+    "Der Banker bekommt davon bestimmt Ausschlag. Köstlich.",
+    "Na, wenigstens ist dieser Koffer kein finanzielles Gift.",
+    "So wenig Verlust? Das ist geradezu unverschämt gut.",
+    "Pah! Noch ein kleiner Betrag. Langsam wird das verdächtig."
+  ],
+  "neutral": [
+    "Hm. Nicht gut, nicht grausam. Langweiliger als kalter Pilztee.",
+    "Das ist ein mittelgroßer Ärger. Meine Spezialität.",
+    "Pff. Der Koffer stinkt nach Durchschnitt.",
+    "Diese Zahl liegt mir schwer im Magen. Genau wie mein Frühstück.",
+    "Nicht jubeln! Aber zum Heulen reicht es auch noch nicht.",
+    "Ein bisschen Verlust, ein bisschen Hoffnung. Widerlich ausgewogen.",
+    "Na, das Ergebnis hat immerhin keinen Fluch verdient.",
+    "Hmpf. Ich hätte mir mehr Drama gewünscht."
+  ],
+  "large": [
+    "AUA! So eine Summe öffnet man doch nicht freiwillig!",
+    "Wer war das? Ich notiere den Namen in mein Fluchbuch.",
+    "Das tat weh. Selbst mein Giftkessel kocht vor Empörung.",
+    "Pah! Da freut sich nur der Banker. Und der ist schon schlimm genug.",
+    "Riesiger Betrag raus! Jetzt wird es unangenehm.",
+    "Das war kein Koffer, das war eine Falle mit Goldrand.",
+    "Ich habe schlechte Laune bestellt, aber doch nicht so viel!",
+    "Noch so ein Verlust und ich verwandle die Tafel in Schimmel."
+  ],
+  "millionLost": [
+    "EINE MILLION?! Jetzt habe ich endgültig schlechte Laune!",
+    "Die Million ist weg! Ich brauche drei Tage allein im Giftsumpf.",
+    "Mögen hundert faule Pilze auf diesen Koffer regnen!",
+    "Eine Million verloren. Der Banker lacht bis zum Nordpol.",
+    "Die Million! Rührt mich nicht an, ich werde bissig.",
+    "Wer öffnet freiwillig so einen Koffer? Das ist ja ein Fluch!",
+    "Selbst mein schlechtestes Geschenk wäre mehr wert gewesen!",
+    "Eine Million weniger. Ich brauche sofort meinen Wutkessel."
+  ],
+  "bankerVeryGood": [
+    "Pah! Das ist ja tatsächlich ein ausgezeichnetes Angebot.",
+    "So viel Geld? Der Banker muss einen giftigen Pilz erwischt haben.",
+    "Ich mag diesen Banker nicht. Aber diese Zahl schon.",
+    "Hmpf, bei dem Angebot kribbelt sogar meine Geldbörse.",
+    "Wenn du das ablehnst, flucht mein ganzes Zwergenvolk.",
+    "Das Angebot riecht überraschend gut. Unheimlich."
+  ],
+  "bankerGood": [
+    "Das Angebot ist ordentlich. Aber ich traue dem Telefon nicht.",
+    "Hm, das könnte man nehmen. Was für ein fürchterliches Kompliment.",
+    "Pah. Nicht übel für jemanden in einem schicken Büro.",
+    "Eine brauchbare Summe. Ich muss meine Meinung überdenken.",
+    "Ich würde darüber nachgrummeln, bevor ich Nein sage.",
+    "Das ist zumindest mehr als drei Säcke verdorbener Lebkuchen."
+  ],
+  "bankerBad": [
+    "Was? Für diesen Kleckerbetrag soll jemand aufgeben?",
+    "Der Banker versucht uns wohl mit Schimmelgeld abzuspeisen.",
+    "So ein Angebot gehört in den Kompost.",
+    "Unverschämtheit! Meine alten Socken sind mehr wert.",
+    "Nicht mal für einen neuen Giftkessel reicht das.",
+    "Pah, der Banker spart ja sogar beim schlechten Witz."
+  ],
+  "bankerVeryBad": [
+    "DAS nennt er ein Angebot?! Ich verfluche seine Rechenmaschine!",
+    "Für diesen Betrag schleiche ich nicht mal aus meiner Höhle.",
+    "Der Banker soll seine Münzen selber polieren.",
+    "Hmpf! Ich habe bessere Summen im Abfluss gefunden.",
+    "So billig komme ich euch nicht davon, ihr Festtagsnarren!",
+    "Finger weg von diesem Deal. Das ist Betrug am Weihnachtsmuffel!"
+  ],
+  "finalCases": [
+    "Jetzt wird es ernst. Mein Giftkessel ist vor Spannung übergekocht.",
+    "Letzte Koffer! Wer jetzt zittert, darf bei mir Pilze sortieren.",
+    "Hmpf. Das Finale macht mir fast gute Laune. Widerlich.",
+    "Ein letzter Griff zwischen Reichtum und meinem ewigen Spott.",
+    "Nicht blinzeln! Selbst meine Sporen halten den Atem an.",
+    "Das letzte Geschenk ist meist das mit dem fiesesten Fluch."
+  ],
+  "deal": [
+    "Deal! Her mit dem Geld. Ich brauche neue Schimmelpilze.",
+    "Ich nehme das Angebot. Freut euch bloß nicht zu früh.",
+    "Unterschrieben. Aber ich grummle trotzdem weiter.",
+    "Das sichere Geld ist mir lieber als Überraschungen aus dem Sumpf.",
+    "Der Banker darf seinen Handel behalten. Ich nehme die Münzen.",
+    "Jetzt habe ich genug. Mein Giftkessel ruft."
+  ],
+  "noDeal": [
+    "NO DEAL! Mit mir handelt man nicht so leicht.",
+    "Pah, viel zu wenig! Weiter geht die Plünderung.",
+    "Ich öffne lieber weitere Koffer, als diesem Banker zu vertrauen.",
+    "Nicht mal meine zerbeulte Mütze würde ich dafür hergeben!",
+    "Noch mehr Risiko? Vorzüglich. Darauf habe ich gewartet.",
+    "Der Banker soll nachbessern. Und zwar ordentlich!"
+  ],
+  "streakGood": [
+    "Drei kleine Beträge? Selbst mein mieses Herz hüpft.",
+    "Eine Glückssträhne! Lasst bloß keinen Sonnenschein herein.",
+    "Der Banker schwitzt. Ich rieche es bis in meinen Sumpf.",
+    "Zu viele gute Koffer. Das ist ja fast ungesund.",
+    "Ich könnte lächeln. Lieber nicht, sonst erschrecken alle."
+  ],
+  "streakBad": [
+    "Hmpf, jetzt reicht es mit den teuren Koffern!",
+    "Noch ein großer Betrag weg. Das ist ja ein ganzer Fluch.",
+    "Das läuft so schlecht, dass meine Pilze freiwillig welken.",
+    "Drei Mal Pech? Da hat jemand meinen Zauberkessel umgerührt.",
+    "Ich kündige der Glücksfee. Sofort."
+  ]
+};
