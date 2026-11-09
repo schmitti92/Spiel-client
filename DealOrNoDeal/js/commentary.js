@@ -268,6 +268,21 @@ function studioCommentObserve(game){
    studioCommentQueue({name:itemPersona.name,image:itemPersona.image,line,category},priority);
    // Rare two-character exchanges: Jan answers only a comment actually spoken
    // by another participant in this match. No extra server reads or writes.
+   if(speakerAvatar===14&&typeof studioReplyLines!=='undefined'){
+    const seed=Math.abs(Number(item.case)||0)+opened.length;
+    if(seed%7===0){
+     const topic=studioReplyTopic(category,amount);
+     const participants=(Array.isArray(game.players)?game.players:[])
+      .filter(p=>Number(p.avatar)!==14&&studioPersona(p));
+     if(participants.length){
+      const responder=studioPersona(participants[seed%participants.length]);
+      const candidates=studioReplyLines[topic]?.[responder.avatar]||studioHolidayReplies?.[topic]?.[responder.avatar];
+      if(Array.isArray(candidates)&&candidates.length){
+       studioCommentQueue({name:responder.name,image:responder.image,line:candidates[seed%candidates.length],category,dialogue:true},0);
+      }
+     }
+    }
+   }
    if(speakerAvatar!==14 && typeof studioJanReplyLines!=='undefined'){
     const janPlayer=(Array.isArray(game.players)?game.players:[]).find(p=>Number(p.avatar)===14&&String(p.id)!==String(item.playerId));
     const jan=studioPersona(janPlayer);
