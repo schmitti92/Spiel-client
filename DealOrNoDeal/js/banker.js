@@ -194,7 +194,7 @@ $('banker-bonus-reveal-skip')?.addEventListener('click',bankerBonusCloseReveal);
 $('banker-call-deal').addEventListener('click',()=>action('decide',{deal:true}));
 $('banker-call-no-deal').addEventListener('click',()=>action('decide',{deal:false}));
 let lastVoteRevealKey='';let voteRevealTimer=null;let finalDealRevealUntil=0;
-function closeVoteReveal(){if(g?.phase==='final'&&Date.now()<finalDealRevealUntil)return;if(voteRevealTimer!==null){clearTimeout(voteRevealTimer);voteRevealTimer=null}if(lastVoteRevealKey)sessionStorage.setItem(lastVoteRevealKey,'seen');$('vote-reveal').hidden=true;finalDealRevealUntil=0;if(g?.phase==='final')startFinaleCinema()}
+function closeVoteReveal(){if(g?.phase==='final'&&dealServerNow()<finalDealRevealUntil)return;if(voteRevealTimer!==null){clearTimeout(voteRevealTimer);voteRevealTimer=null}if(lastVoteRevealKey)sessionStorage.setItem(lastVoteRevealKey,'seen');$('vote-reveal').hidden=true;finalDealRevealUntil=0;if(g?.phase==='final')startFinaleCinema()}
 function revealVotesAfterAll(){
  if(!g||!g.history?.length)return;
  const h=g.history.at(-1);
@@ -225,9 +225,9 @@ function revealVotesAfterAll(){
  $('vote-reveal').hidden=false;
  if(voteRevealTimer!==null)clearTimeout(voteRevealTimer);
  const isFinalDeal=g.phase==='final';
- finalDealRevealUntil=isFinalDeal?Date.now()+3000:0;
+ finalDealRevealUntil=isFinalDeal?Number(g.finalStartedAt)+3000:0;
  $('vote-reveal-close').hidden=isFinalDeal;
- voteRevealTimer=setTimeout(()=>{finalDealRevealUntil=0;closeVoteReveal()},isFinalDeal?3000:5500);
+ voteRevealTimer=setTimeout(()=>{finalDealRevealUntil=0;closeVoteReveal()},isFinalDeal?Math.max(0,finalDealRevealUntil-dealServerNow()):5500);
 }
 $('vote-reveal-close').addEventListener('click',closeVoteReveal);
 
