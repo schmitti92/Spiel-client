@@ -13,7 +13,8 @@
  const packs=Object.freeze({
   small:{label:'Kleines Weihnachtspaket',caption:'DIE WEIHNACHTSWERKSTATT'},
   large:{label:'Großes Weihnachtspaket',caption:'DIE FESTLICHE SCHATZKAMMER'},
-  premium:{label:'Premium-Weihnachtspaket',caption:'DIE GOLDENE WEIHNACHTSWELT'}
+  premium:{label:'Premium-Weihnachtspaket',caption:'DIE GOLDENE WEIHNACHTSWELT'},
+  platinum:{label:'Platin-Kartenpaket',caption:'DAS EXKLUSIVE PLATIN-FINALE'}
  });
  const byId=id=>document.getElementById(id);
  const reduced=()=>Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches||window.ChristmasSpectacle?.minimal?.());
