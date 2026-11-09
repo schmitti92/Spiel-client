@@ -14,6 +14,24 @@
   {at:28,id:'royal-north-gallery',icon:'👑',name:'Königliche Galerie'},
   {at:30,id:'north-pole-legend',icon:'🏆',name:'Nordpol-Legende'}
  ]);
+
+ const CLASSIC_BOARD_MILESTONES=Object.freeze([
+  Object.freeze([
+   {at:2,id:'rudolph',icon:'🦌',name:'Rudolf'},
+   {at:4,id:'winter-lobby',icon:'❄️',name:'Winterlobby'},
+   {at:6,id:'christmas-studio',icon:'🎄',name:'Weihnachtsstudio'},
+   {at:8,id:'gift-cases',icon:'🎁',name:'Geschenke statt Koffer'},
+   {at:10,id:'snowman-profile-avatar',icon:'⛄',name:'Schneemann'}
+  ]),
+  Object.freeze([
+   {at:12,id:'santa-profile-avatar',icon:'🎅',name:'Weihnachtsmann-Profilbild'},
+   {at:14,id:'lobby-snowfall',icon:'❄️',name:'Schneefall-Lobby'},
+   {at:16,id:'christmas-profile-banner',icon:'🏘️',name:'Profilbanner'},
+   {at:18,id:'santa',icon:'🎅',name:'Weihnachtsmann'},
+   {at:20,id:'christmas-champion',icon:'🏆',name:'Weihnachts-Champion'}
+  ])
+ ]);
+ const BOARD_KEYS=Object.freeze(['first','second']);
  const cardId=i=>'christmas-'+String(65+i).padStart(2,'0');
  function snapshot(cards={},progress={}){
   const owned=Array.from({length:16},(_,i)=>Number(cards?.[cardId(i)]||0)>0);
@@ -26,12 +44,31 @@
     const have=positions.filter(i=>owned[i]).length;
     return {index,positions,have,missing:positions.filter(i=>!owned[i]).map(i=>65+i),complete:have===4};
    }),
-   milestones:MILESTONES.map(m=>({...m,unlocked:received.has(m.id)}))
+   milestones:MILESTONES.map(m=>({...m,unlocked:received.has(m.id)})),
+   classicMilestones:CLASSIC_BOARD_MILESTONES.map(board=>board.map(m=>({...m,unlocked:received.has(m.id)})))
   };
  }
  const label=i=>i<4?'Reihe '+(i+1):i<8?'Spalte '+(i-3):i===8?'Diagonale ↘':'Diagonale ↙';
  const short=i=>i<4?'R'+(i+1):i<8?'S'+(i-3):i===8?'↘':'↙';
- let mounted=false,selection=null,last=snapshot(),buttons=[],cells=[],milestoneNodes=[];
+ let mounted=false,selection=null,last=snapshot(),buttons=[],cells=[],milestoneNodes=[],classicMilestoneNodes=[[],[]];
+ function createMilestoneChip(reward,root){
+  const chip=document.createElement('div');chip.className='north-milestone';chip.dataset.milestone=reward.id;
+  const icon=document.createElement('span');icon.className='north-milestone-icon';icon.textContent=reward.icon;
+  const detail=document.createElement('span');detail.className='north-milestone-detail';
+  const title=document.createElement('strong');title.textContent=reward.at+' Bingos';
+  const name=document.createElement('small');name.textContent=reward.name;
+  detail.append(title,name);
+  const lock=document.createElement('span');lock.className='north-milestone-status';lock.textContent='🔒';
+  chip.append(icon,detail,lock);root.append(chip);
+  return chip;
+ }
+ function updateMilestoneChip(chip,reward){
+  if(!chip)return;
+  chip.classList.toggle('unlocked',reward.unlocked);
+  chip.querySelector('.north-milestone-status').textContent=reward.unlocked?'✅':'🔒';
+  chip.setAttribute('aria-label',reward.name+': '+(reward.unlocked?'freigeschaltet':'noch gesperrt, ab '+reward.at+' Gesamt-Bingos'));
+ }
+
  function mount(){
   if(mounted)return true;
   const root=document.getElementById('album-grid-third');
@@ -54,16 +91,10 @@
    (i<4?rows:i<8?cols:diags).append(button);
    return button;
   });
-  milestoneNodes=MILESTONES.map(reward=>{
-   const chip=document.createElement('div');chip.className='north-milestone';chip.dataset.milestone=reward.id;
-   const icon=document.createElement('span');icon.className='north-milestone-icon';icon.textContent=reward.icon;
-   const detail=document.createElement('span');detail.className='north-milestone-detail';
-   const title=document.createElement('strong');title.textContent=reward.at+' Bingos';
-   const name=document.createElement('small');name.textContent=reward.name;
-   detail.append(title,name);
-   const lock=document.createElement('span');lock.className='north-milestone-status';lock.textContent='🔒';
-   chip.append(icon,detail,lock);rewardRoot.append(chip);
-   return chip;
+  milestoneNodes=MILESTONES.map(reward=>createMilestoneChip(reward,rewardRoot));
+  CLASSIC_BOARD_MILESTONES.forEach((milestones,boardIndex)=>{
+   const earlyRoot=document.getElementById('album-bingo-milestones-'+BOARD_KEYS[boardIndex]);
+   classicMilestoneNodes[boardIndex]=earlyRoot?milestones.map(reward=>createMilestoneChip(reward,earlyRoot)):[];
   });
   cells=Array.from(root.querySelectorAll('[data-card]'));
   mounted=true;return true;
@@ -104,12 +135,23 @@
   const done=last.lines.filter(x=>x.complete).length;
   const count=document.getElementById('north-bingo-completed');
   if(count)count.textContent=done+' von 10 Linien fertig';
-  milestoneNodes.forEach((chip,i)=>{
-   const reward=last.milestones[i];
-   chip.classList.toggle('unlocked',reward.unlocked);
-   chip.querySelector('.north-milestone-status').textContent=reward.unlocked?'✅':'🔒';
-   chip.setAttribute('aria-label',reward.name+': '+(reward.unlocked?'freigeschaltet':'noch gesperrt, ab '+reward.at+' Bingos'));
+  milestoneNodes.forEach((chip,i)=>updateMilestoneChip(chip,last.milestones[i]));
+  classicMilestoneNodes.forEach((nodes,boardIndex)=>{
+   const milestones=last.classicMilestones[boardIndex];
+   nodes.forEach((chip,i)=>updateMilestoneChip(chip,milestones[i]));
+   const nextClassic=milestones.find(reward=>!reward.unlocked);
+   const nextText=document.getElementById('album-bingo-next-'+BOARD_KEYS[boardIndex]);
+   if(nextText)nextText.textContent=nextClassic
+    ?'🎁 Nächste Belohnung: '+nextClassic.icon+' '+nextClassic.name+' · noch '+Math.max(0,nextClassic.at-last.totalBingos)+' Gesamt-Bingo(s)'
+    :'🏆 Alle fünf Belohnungen freigeschaltet!';
   });
+  const firstBonus=document.getElementById('album-bingo-first-bonus');
+  if(firstBonus){
+   const bonusUnlocked=Array.isArray(data?.progress?.rewards)&&data.progress.rewards.includes('collector-frame');
+   firstBonus.classList.toggle('unlocked',bonusUnlocked);
+   firstBonus.querySelector('.classic-bingo-bonus-status').textContent=bonusUnlocked?'✅':'🔒';
+   firstBonus.setAttribute('aria-label','Exklusiver Sammlerrahmen: '+(bonusUnlocked?'freigeschaltet':'noch gesperrt, ab 10 Gesamt-Bingos'));
+  }
   const next=last.milestones.find(x=>!x.unlocked);
   const nextText=document.getElementById('north-bingo-next');
   if(nextText)nextText.textContent=next
@@ -118,5 +160,5 @@
   applyFocus();
  }
  function reset(){selection=null;render({cards:{},progress:{totalBingos:0,rewards:[]}})}
- global.NorthPoleBingo=Object.freeze({snapshot,render,reset,LINES,MILESTONES});
+ global.NorthPoleBingo=Object.freeze({snapshot,render,reset,LINES,MILESTONES,CLASSIC_BOARD_MILESTONES});
 })(window);
