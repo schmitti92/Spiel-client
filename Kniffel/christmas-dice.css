@@ -1,0 +1,29 @@
+/* Isolated 20-picture Christmas dice reward. Does not change layout or scores.
+   Keep as LAST stylesheet: Kniffel's woodland and online themes have !important rules. */
+#christmas-dice-toggle{white-space:nowrap;cursor:pointer;border:1px solid #f7db95;border-radius:11px;
+ padding:8px 12px;color:#fff3cf;background:linear-gradient(125deg,#8b1d29,#195839);
+ box-shadow:0 3px 11px #0006;font:800 12px system-ui,sans-serif}
+#christmas-dice-toggle[aria-pressed="false"]{background:linear-gradient(120deg,#343c42,#25483b);opacity:.88}
+#christmas-dice-toggle[hidden]{display:none!important}
+#christmas-dice-toggle:focus-visible{outline:3px solid #ffdf86;outline-offset:2px}
+.tabletop .tray button.die.christmas-die,
+.tabletop .tray button.die.christmas-die.held{
+ background:transparent!important;border:2px solid transparent!important;
+ border-radius:18%!important;box-shadow:none!important;
+ overflow:visible!important;filter:drop-shadow(0 4px 5px #080e19aa)!important
+}
+.tabletop .tray button.die.christmas-die::before,
+.tabletop .tray button.die.christmas-die::after{display:none!important}
+.tabletop .tray button.die.christmas-die .pips{display:none!important}
+.tabletop .tray button.die.christmas-die img.christmas-die-art{
+ display:block!important;position:absolute;top:-10%;left:-10%;width:120%;height:120%;
+ max-width:none;max-height:none;object-fit:contain;pointer-events:none;z-index:2;
+ user-select:none;-webkit-user-drag:none
+}
+.tabletop .tray button.die.christmas-die.held{
+ filter:drop-shadow(0 0 9px #ffda70) drop-shadow(0 5px 5px #080d17bb)!important
+}
+.tabletop .tray button.die.christmas-die:focus-visible{
+ outline:3px solid #fff19d!important;outline-offset:3px!important
+}
+@media(max-width:650px){#christmas-dice-toggle{padding:7px 9px;font-size:11px}}
