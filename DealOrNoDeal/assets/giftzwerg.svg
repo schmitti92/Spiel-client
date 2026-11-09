@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="t d">
+<title id="t">Der muffige Giftzwerg</title><desc id="d">Griesgrämiger grüner Weihnachtsgiftzwerg mit spitzer violetter Mütze, giftgrünen Nebelschwaden und verfaultem Geschenk.</desc>
+<defs>
+ <radialGradient id="bg" cx=".5" cy=".25" r=".88"><stop stop-color="#3b6856"/><stop offset=".47" stop-color="#18283d"/><stop offset="1" stop-color="#090b19"/></radialGradient>
+ <linearGradient id="hat" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#b87ac9"/><stop offset=".45" stop-color="#592470"/><stop offset="1" stop-color="#211332"/></linearGradient>
+ <linearGradient id="skin" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#a4c55d"/><stop offset=".42" stop-color="#577a42"/><stop offset="1" stop-color="#264e37"/></linearGradient>
+ <linearGradient id="coat" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#80617b"/><stop offset=".48" stop-color="#492c52"/><stop offset="1" stop-color="#191d2c"/></linearGradient>
+ <radialGradient id="glow"><stop stop-color="#bdf864" stop-opacity=".85"/><stop offset="1" stop-color="#6dd655" stop-opacity="0"/></radialGradient>
+ <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="12"/></filter>
+ <filter id="halo" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter>
+ <pattern id="dots" width="18" height="18" patternUnits="userSpaceOnUse"><circle cx="4" cy="5" r="1.2" fill="#d8f5aa" opacity=".25"/></pattern>
+</defs>
+<rect width="512" height="512" rx="32" fill="url(#bg)"/>
+<circle cx="248" cy="249" r="195" fill="url(#glow)" opacity=".39"/>
+<g fill="none" stroke="#a9fa6a" stroke-width="7" opacity=".45" stroke-linecap="round" filter="url(#halo)">
+ <path d="M68 396C13 351 116 317 63 261C11 219 75 159 49 112"/>
+ <path d="M453 421c52-70-51-106 1-164 52-62-18-89 0-143"/>
+ <path d="M114 453C41 403 130 351 99 307"/>
+ <path d="M402 438c-53-39 36-81 4-127"/>
+</g>
+<g opacity=".7" fill="#b7f785"><circle cx="75" cy="312" r="7"/><circle cx="438" cy="184" r="5"/><circle cx="109" cy="145" r="4"/><circle cx="425" cy="377" r="8"/><circle cx="343" cy="107" r="3"/></g>
+<ellipse cx="257" cy="500" rx="173" ry="30" fill="#04050b" opacity=".65" filter="url(#shadow)"/>
+<!-- Body, greatcoat, shoulders, buttons -->
+<path d="M101 503c-6-86 16-160 75-190l70 27 91-33c65 26 91 94 88 196z" fill="url(#coat)" stroke="#130e21" stroke-width="12"/>
+<path d="M182 328l76 74 80-81-37 181h-82z" fill="#352a3b"/>
+<path d="M189 331l68 73-46 46-69-77zM322 328l-65 75 48 45 70-83z" fill="#74556e" stroke="#2d1935" stroke-width="5"/>
+<path d="M229 409h54l-9 93h-40z" fill="#233933"/>
+<circle cx="270" cy="450" r="8" fill="#e7c274"/><circle cx="267" cy="479" r="8" fill="#e7c274"/>
+<!-- Ears -->
+<path d="M156 251c-35-29-59-5-49 32 10 36 48 48 63 24zM348 250c37-34 69-10 59 30-9 32-40 50-64 32z" fill="#5b8a4b" stroke="#213e35" stroke-width="8"/>
+<path d="M132 276q9-20 28 17M374 295q15-25 22-14" fill="none" stroke="#9abe72" stroke-width="6" stroke-linecap="round"/>
+<!-- Beard and head -->
+<path d="M177 277c-11 89 19 125 77 134 59-4 96-47 84-136z" fill="#c2c19c" stroke="#3e5144" stroke-width="8"/>
+<path d="M191 294c-6 48 10 82 42 96m79-97c5 54-11 75-40 94" fill="none" stroke="#708578" stroke-width="6"/>
+<path d="M160 194c0-81 44-113 100-109 71 4 104 53 98 119l-8 96q-26 74-93 75-75-5-94-80z" fill="url(#skin)" stroke="#203d2d" stroke-width="9"/>
+<path d="M166 244q-15 40 13 82M343 249q15 30-7 78" fill="none" stroke="#b4c875" stroke-width="6" opacity=".5"/>
+<!-- Angry brows and eyes -->
+<path d="M184 237q35-27 62-9M269 228q37-19 62 14" fill="none" stroke="#243628" stroke-width="18" stroke-linecap="round"/>
+<path d="M193 259q23-11 43 0M280 257q21-9 41 4" fill="none" stroke="#15221f" stroke-width="8" stroke-linecap="round"/>
+<ellipse cx="220" cy="257" rx="8" ry="13" fill="#fad7a1"/><ellipse cx="294" cy="258" rx="8" ry="13" fill="#fad7a1"/>
+<circle cx="220" cy="259" r="5" fill="#191c1c"/><circle cx="294" cy="260" r="5" fill="#191c1c"/>
+<!-- Nose and frown -->
+<path d="M260 234q-20 40-10 51c13 14 36 14 44 0q-1-12-14-13" fill="#8da45b" stroke="#3e5837" stroke-width="6"/>
+<path d="M217 336q41-23 78-4" fill="none" stroke="#243529" stroke-width="11" stroke-linecap="round"/>
+<path d="M211 349q40-19 80-5" fill="none" stroke="#6d704f" stroke-width="5"/>
+<path d="M187 305l-15 18m159-16 13 18" stroke="#3f6840" stroke-width="6" stroke-linecap="round"/>
+<!-- Pointed floppy poisoned Christmas cap -->
+<path d="M150 217q-5-52 51-90Q238 90 291 24q18 80 69 118l17 73q-101 31-227 2z" fill="url(#hat)" stroke="#201330" stroke-width="11"/>
+<path d="M230 115Q294 59 289 29q21 94 64 119" fill="none" stroke="#b990d4" stroke-width="7" opacity=".75"/>
+<path d="M150 213q110-33 227 0" fill="none" stroke="#d8c195" stroke-width="29" stroke-linecap="round"/>
+<path d="M154 214q112-21 218-1" fill="none" stroke="#725978" stroke-width="7" stroke-linecap="round"/>
+<circle cx="289" cy="27" r="23" fill="#c8ed68" stroke="#4d693d" stroke-width="7"/>
+<path d="M291 1v13m-14 10 13 6" stroke="#f4f6bd" stroke-width="5" stroke-linecap="round"/>
+<!-- Small cursed gift -->
+<g transform="translate(357 374) rotate(13)">
+ <rect x="-44" y="-12" width="100" height="89" rx="11" fill="#385d43" stroke="#b8d981" stroke-width="7"/>
+ <path d="M1-11v91m-46-50h98" stroke="#a96ac4" stroke-width="14"/>
+ <path d="M4-9c-42-2-42-44-12-39 20 4 15 30 12 39zm-1 0c40-3 37-45 10-39C-2-45 0-20 3-9z" fill="#ce83d6" stroke="#4c285b" stroke-width="4"/>
+ <path d="M-22 15q18-19 39 0" stroke="#c9f4a0" stroke-width="5" fill="none"/>
+</g>
+<rect x="15" y="15" width="482" height="482" rx="24" fill="none" stroke="#d5b56d" stroke-width="7"/>
+<rect x="24" y="24" width="464" height="464" rx="18" fill="url(#dots)" opacity=".38"/>
+</svg>
