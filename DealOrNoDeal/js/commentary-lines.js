@@ -89,3 +89,18 @@ studioCommentLines[13].bankerVeryGood.push(...["Das Angebot ist so gut, dass sog
 studioCommentLines[13].bankerGood.push(...["Ein ordentliches Angebot. Mein Schneebauch bleibt optimistisch.","Das ist ein Winterangebot mit warmer Aussicht.","Da würde ich meine Karottennase kurz zum Nachdenken benutzen."]);
 studioCommentLines[13].bankerBad.push(...["Das Angebot ist kälter als mein linker Astarm.","Der Banker sollte noch ein paar Schneeflocken drauflegen.","Dafür taue ich garantiert nicht auf."]);
 studioCommentLines[13].bankerVeryBad.push(...["Das ist kein Angebot, das ist ein gefrorener Krümel!","Bei dieser Zahl friert mir selbst das Lächeln fest.","Der Banker hat sein Portemonnaie wohl im Eisblock vergessen."]);
+
+
+/* Jan Schlappen: original dry, northern-style banter. */
+studioCommentLines[14]={
+ name:'Jan Schlappen',image:'jan-schlappen.svg',
+ oneCent:["Moin oder wat! Ein Cent? Dat is doch mal ein Anfang!","Ein Cent ist weg. Jo, so kann dat weitergehen.","Mensch, ein Cent. Dafür mach ich doch keinen Aufstand!","Dat war mal ein sauberer Griff ins Kleingeld.","Moin! Die großen Scheine liegen noch schön drin."],
+ small:["Jo, Kleinkram weg. Läuft bei uns!","Da sach ich mal: kannste so machen!","Moin oder wat, dat war doch ordentlich!","Für den Betrag würd ich nicht mal die Schuhe zubinden.","Kleine Zahl, große Laune. Weiter so!","Na siehste, geht doch!"],
+ neutral:["Joah, mittlere Nummer. Da muss man erstmal gucken.","Moin, dat is weder Fisch noch Fleisch.","Nicht schlecht, aber Jubeln würd ich noch nicht.","Na, da ist noch Luft nach oben, ne?","Dat ist jetzt kein Grund, den Kaffee stehenzulassen."],
+ large:["Oha, dat tat jetzt aber weh!","Moin oder wat, wer hat denn den großen Koffer aufgemacht?","Da vergeht mir glatt das Grinsen!","Junge, Junge. Das war ein ordentlicher Brocken.","Na klasse, den hätten wir besser zugelassen."],
+ millionLost:["Eine Million weg?! Dat kannste doch keinem erzählen!","Moin oder wat! Die Million war doch gerade noch da!","Junge, da muss ich erstmal einen Kaffee drauf trinken.","Eine Million! Da wird selbst mir kurz still.","Jo, dat war jetzt richtig teuer."],
+ bankerVeryGood:["Moin! Für dat Angebot würd ich glatt unterschreiben.","Der Banker hat wohl gute Laune, oder wat?","Jo, da kann man schon schwach werden."],
+ bankerGood:["Kannste überlegen. Ist ja nicht ganz ohne.","Moin, der Banker gibt sich Mühe.","Dat klingt erstmal ganz ordentlich."],
+ bankerBad:["Nee, für den Betrag steh ich nicht auf.","Moin oder wat, will der Banker uns veräppeln?","Da muss er noch was drauflegen, ne?"],
+ bankerVeryBad:["Dat ist doch kein Angebot, dat ist ein Witz!","Junge, der Banker hat wohl sein Portemonnaie vergessen.","Moin! Sag ihm, er soll nochmal rechnen."]
+};
