@@ -614,3 +614,23 @@
  object-fit:contain;
  background-color:#243a55;
 }
+
+/* A real card image that is still loading must be retryable, never silently
+   skipped as if the artwork were missing from a confirmed pack. */
+#reveal-overlay #reveal-image-retry{
+ display:block;width:min(100%,310px);margin:8px auto 5px;
+ padding:9px 12px;border:2px solid #f3d090;border-radius:11px;
+ color:#fff0cb;background:linear-gradient(145deg,#71415b,#283351);
+ box-shadow:0 3px 13px #0008;
+ font:850 clamp(12px,1.5vw,15px)/1.25 system-ui,sans-serif;
+ cursor:pointer;
+}
+#reveal-overlay #reveal-image-retry[hidden]{display:none!important}
+#reveal-overlay #reveal-image-retry:focus-visible{outline:3px solid #fff4bd;outline-offset:2px}
+#reveal-overlay #reveal-image-retry:disabled{opacity:.67;cursor:progress}
+#reveal-overlay .reveal-card img.card-art-unavailable,
+#reveal-overlay .reveal-summary-item img.card-art-unavailable{
+ border:2px solid #f0ce87;
+ background:radial-gradient(circle,#304460,#132139);
+ object-fit:contain;
+}
