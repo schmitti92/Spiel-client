@@ -235,7 +235,18 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
    </article>
    <article class="album-collection-panel north-pole" data-set="third" aria-labelledby="album-set-third-title">
     <header class="album-collection-head"><div><span class="album-collection-kicker">🌌 NORDPOL-KOLLEKTION · TAFEL 3</span><h3 id="album-set-third-title">Geheimnisse des Nordpols</h3><p>16 geheimnisvolle Motive · 10 neue Bingo-Linien · 5 exklusive Belohnungen</p></div><div class="album-collection-stats"><span id="album-set-third-progress">0 / 16 Karten</span><span id="album-set-third-bingo">0 / 10 Bingos</span></div></header>
-    <div class="cards album-card-grid" id="album-grid-third" aria-label="Sammeltafel 3 mit 16 geheimen Nordpolkarten"></div>
+    <div class="north-bingo-dashboard" id="north-bingo-dashboard">
+     <div class="north-bingo-status"><span>✦ BINGO-KOMPASS · 4 REIHEN · 4 SPALTEN · 2 DIAGONALEN</span><strong id="north-bingo-completed">0 von 10 Linien fertig</strong></div>
+     <div class="north-grid-layout">
+      <div class="cards album-card-grid" id="album-grid-third" aria-label="Sammeltafel 3 mit 16 geheimen Nordpolkarten"></div>
+      <div class="north-bingo-rows" id="north-bingo-rows" role="group" aria-label="Bingo-Fortschritt der vier Reihen"></div>
+      <div class="north-bingo-columns" id="north-bingo-columns" role="group" aria-label="Bingo-Fortschritt der vier Spalten"></div>
+     </div>
+     <div class="north-bingo-diagonals" id="north-bingo-diagonals" role="group" aria-label="Bingo-Fortschritt der beiden Diagonalen"></div>
+     <p class="north-bingo-hint" id="north-bingo-hint" role="status" aria-live="polite">✨ Tippe eine Reihe, Spalte oder Diagonale an, um fehlende Kartennummern zu markieren.</p>
+     <div class="north-bingo-milestones" id="north-bingo-milestones" aria-label="Fünf freischaltbare Nordpol-Belohnungen"></div>
+     <p class="north-bingo-next" id="north-bingo-next">🎁 Deine nächste Nordpol-Belohnung wird geladen …</p>
+    </div>
    </article>
   </div>
   <p class="album-guide-note">✨ Gesammelte Karten erscheinen farbig. Tippe eine entdeckte Karte an, um ihr Bild groß anzusehen. 🔒 Fehlende Motive bleiben verborgen. Deine bisherigen Bingo-Belohnungen findest du im Tab „Spielinformation & Gewinner“.</p>
@@ -361,7 +372,7 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
   <button id="christmas-show-transition-skip" type="button">Übergang überspringen ›</button>
  </div>
 </section>
-</main><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script><script src="./js/christmas-show-director.js?v=20261109-show-v1"></script><script src="./js/hammer-bingo-cinematics.js?v=20261109-victory-v3"></script><script src="./js/christmas-pack-cinema.js?v=20261109-packs-v1"></script><script>
+</main><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script><script src="./js/christmas-show-director.js?v=20261109-show-v1"></script><script src="./js/hammer-bingo-cinematics.js?v=20261109-victory-v3"></script><script src="./js/christmas-pack-cinema.js?v=20261109-packs-v1"></script><script src="./js/north-pole-bingo.js?v=20261109-compass-v1"></script><script>
 const cards=[["01_winterdorf","Winterdorf"],["02_lebkuchenhaus","Lebkuchenhaus"],["03_weihnachtsmann","Weihnachtsmann"],["04_rentier","Rentier"],["05_weihnachtsbaum","Weihnachtsbaum"],["06_weihnachtszug","Weihnachtszug"],["07_schneekugel","Schneekugel"],["08_wichtelwerkstatt","Wichtelwerkstatt"],["09_polarlichter","Polarlichter"],["10_eisschloss","Eisschloss"],["11_rentierschlitten","Rentierschlitten"],["12_weihnachtslaterne","Weihnachtslaterne"],["13_weihnachtsengel","Weihnachtsengel"],["14_adventskerzen","Adventskerzen"],["15_schneemannfamilie","Schneemannfamilie"],["16_weihnachtskrippe","Weihnachtskrippe"]];
 cards.push(...[["Weihnachtskarte_17_Schneemann","Schneemann"],["Weihnachtskarte_18_Weihnachtsengel","Weihnachtsengel"],["Weihnachtskarte_19_Rentier","Rentier im Schnee"],["Weihnachtskarte_20_Weihnachtsbaum","Weihnachtsbaum im Glanz"],["Weihnachtskarte_21_Lebkuchenmann","Lebkuchenmann"],["Weihnachtskarte_22_Weihnachtskranz","Weihnachtskranz"],["Weihnachtskarte_23_Schlitten","Schlittenfahrt"],["Weihnachtskarte_24_Stern_von_Bethlehem","Stern von Bethlehem"],["Weihnachtskarte_25_Elfenhilfe","Elfenhilfe"],["Weihnachtskarte_26_Weihnachtspinguin","Weihnachtspinguin"],["Weihnachtskarte_27_Polarbaer","Polarbär"],["Weihnachtskarte_28_Weihnachtsglocken","Weihnachtsglocken"],["Weihnachtskarte_29_Kerzenschein","Kerzenschein"],["Weihnachtskarte_30_Winterdorf","Winterdorf im Schnee"],["Weihnachtskarte_31_Geschenkstapel","Geschenkstapel"],["Weihnachtskarte_32_Schneeflocke","Schneeflocke"]]);
 cards.push(...[
@@ -381,7 +392,7 @@ const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.
 async function request(method,path,body){const state=window.SpielOnline?.state?.(),user=state?.status==='online'?state.user:null;if(!user?.getIdToken)throw Error('Bitte mit Online-Profil anmelden.');const token=await user.getIdToken();const response=await fetch(base+'/api/deal-or-no-deal/christmas/'+path,{method,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,cache:'no-store'});const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'SERVER_ERROR');return data}
 const euros=n=>(n/100).toLocaleString('de-DE',{style:'currency',currency:'EUR',maximumFractionDigits:0});
 let current=null,busy=false;const notice=document.getElementById('pack-notice');
-function render(data){current=data;renderHammerCollection(data);renderDuplicateExchange(data);
+function render(data){current=data;renderHammerCollection(data);renderDuplicateExchange(data);window.NorthPoleBingo?.render(data);
  const classicCount=Math.max(0,Math.min(48,Number(data?.progress?.collected)||0));
  const classicBingos=Math.max(0,Math.min(30,Number(data?.progress?.totalBingos)||0));
  const setCounts=[0,0,0];
@@ -520,6 +531,7 @@ let loadSequence=0,loadInFlight=null,loadInFlightUid=null,visibleUid=null;
 function authState(){return window.SpielOnline?.state?.()||{status:'initializing'}}
 function clearAlbumIdentity(){
  current=null;visibleUid=null;
+ window.NorthPoleBingo?.reset();
  // Never leave another player's cards or unlocked cosmetics visible after logout.
  document.querySelectorAll('[data-card]').forEach((el,i)=>{
   el.classList.remove('owned','bingo-complete');el.removeAttribute('role');
