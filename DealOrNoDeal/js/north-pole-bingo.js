@@ -39,7 +39,7 @@
   return {
    owned,
    count:owned.filter(Boolean).length,
-   totalBingos:Math.max(0,Math.min(30,Math.trunc(Number(progress?.totalBingos)||0))),
+   totalBingos:Math.max(0,Math.min(40,Math.trunc(Number(progress?.totalBingos)||0))),
    lines:LINES.map((positions,index)=>{
     const have=positions.filter(i=>owned[i]).length;
     return {index,positions,have,missing:positions.filter(i=>!owned[i]).map(i=>65+i),complete:have===4};
@@ -158,7 +158,91 @@
    ?'🎁 Nächste Nordpol-Belohnung: '+next.icon+' '+next.name+' · '+Math.max(0,next.at-last.totalBingos)+' weitere Bingos'
    :'🏆 Alle fünf Nordpol-Belohnungen freigeschaltet!';
   applyFocus();
+  renderFourth(data);
  }
- function reset(){selection=null;render({cards:{},progress:{totalBingos:0,rewards:[]}})}
- global.NorthPoleBingo=Object.freeze({snapshot,render,reset,LINES,MILESTONES,CLASSIC_BOARD_MILESTONES});
+
+ // Same ten interactive Bingo lines as the North Pole board, using only the
+ // existing server-verified Christmas profile state. No extra network reads.
+ const fourthCardId=i=>'christmas-'+String(81+i);
+ function fourthSnapshot(cards={}){
+  const owned=Array.from({length:16},(_,i)=>Number(cards?.[fourthCardId(i)]||0)>0);
+  return {
+   owned,
+   count:owned.filter(Boolean).length,
+   lines:LINES.map((positions,index)=>{
+    const have=positions.filter(i=>owned[i]).length;
+    return {index,positions,have,missing:positions.filter(i=>!owned[i]).map(i=>81+i),complete:have===4};
+   })
+  };
+ }
+ let fourthMounted=false,fourthSelection=null,fourthLast=fourthSnapshot(),fourthButtons=[],fourthCells=[];
+ function mountFourth(){
+  if(fourthMounted)return true;
+  const root=document.getElementById('album-grid-fourth');
+  const rows=document.getElementById('fourth-bingo-rows');
+  const cols=document.getElementById('fourth-bingo-columns');
+  const diags=document.getElementById('fourth-bingo-diagonals');
+  if(!root||!rows||!cols||!diags)return false;
+  fourthButtons=LINES.map((positions,i)=>{
+   const button=document.createElement('button');
+   button.type='button';button.className='north-bingo-chip';button.dataset.line=String(i);
+   button.setAttribute('aria-pressed','false');
+   const kind=document.createElement('span');kind.className='north-chip-kind';kind.textContent=short(i);
+   const amount=document.createElement('strong');amount.className='north-chip-count';amount.textContent='0/4';
+   button.append(kind,amount);
+   button.addEventListener('click',()=>{
+    fourthSelection=fourthSelection===i?null:i;
+    focusFourth();
+   });
+   (i<4?rows:i<8?cols:diags).append(button);
+   return button;
+  });
+  fourthCells=Array.from(root.querySelectorAll('[data-card]'));
+  fourthMounted=true;return true;
+ }
+ function focusFourth(){
+  if(!fourthMounted)return;
+  const line=fourthSelection===null?null:fourthLast.lines[fourthSelection];
+  fourthCells.forEach((cell,index)=>{
+   const chosen=!!line?.positions.includes(index);
+   cell.classList.toggle('north-line-focus',chosen);
+   cell.classList.toggle('north-line-missing',chosen&&!fourthLast.owned[index]);
+  });
+  fourthButtons.forEach((button,i)=>{
+   const selected=i===fourthSelection;
+   button.classList.toggle('selected',selected);
+   button.setAttribute('aria-pressed',String(selected));
+  });
+  const hint=document.getElementById('fourth-bingo-hint');
+  if(!hint)return;
+  if(!line){hint.textContent='✨ Tippe eine Reihe, Spalte oder Diagonale an, um die fehlenden Kartennummern zu markieren.';return}
+  hint.textContent=line.complete
+   ?'🏆 '+label(line.index)+' ist vollständig – Bingo!'
+   :'🔍 '+label(line.index)+': '+line.have+'/4 Karten · Es fehlen die Nummern '+line.missing.join(', ')+'.';
+ }
+ function renderFourth(data={}){
+  if(!mountFourth())return;
+  fourthLast=fourthSnapshot(data?.cards||{});
+  fourthButtons.forEach((button,i)=>{
+   const line=fourthLast.lines[i];
+   button.querySelector('strong').textContent=line.complete?'✓ 4/4':line.have+'/4';
+   button.classList.toggle('complete',line.complete);
+   button.classList.toggle('almost',line.have===3);
+   button.setAttribute('aria-label',label(i)+': '+line.have+' von 4 Karten; '+(line.complete?'Bingo!':line.missing.length+' fehlen.'));
+   button.title=line.complete
+    ?label(i)+' · Bingo abgeschlossen'
+    :label(i)+' · Fehlende Kartennummern: '+line.missing.join(', ');
+  });
+  const done=Number(data?.progress?.fourthBingos);
+  const completed=Number.isInteger(done)&&done>=0&&done<=10?done:fourthLast.lines.filter(x=>x.complete).length;
+  const count=document.getElementById('fourth-bingo-completed');
+  if(count)count.textContent=completed+' von 10 Linien fertig';
+  const note=document.getElementById('fourth-bingo-next');
+  if(note)note.textContent=completed===10
+   ?'🏆 Alle zehn Weihnachtschaos-Bingos geschafft! Die neuen Belohnungen werden separat festgelegt.'
+   :'🎁 Noch '+(10-completed)+' Bingo-Linie(n) bis zur vollständigen vierten Tafel · Die Belohnungen für 32–40 Gesamt-Bingos folgen.';
+  focusFourth();
+ }
+ function reset(){selection=null;fourthSelection=null;render({cards:{},progress:{totalBingos:0,rewards:[]}})}
+ global.NorthPoleBingo=Object.freeze({snapshot,render,reset,LINES,MILESTONES,CLASSIC_BOARD_MILESTONES,fourthSnapshot});
 })(window);

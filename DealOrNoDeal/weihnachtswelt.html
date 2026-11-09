@@ -99,9 +99,9 @@ button,a{font:inherit}
 <section class="hub-body" aria-label="Beide Weihnachtsevents">
 <article class="hub-card cards">
 <div class="hub-art"><img class="santa" src="./assets/weihnachts_event/file_0000000075e081f49cb62fd4b11daae2.png" alt="Weihnachtsmann und Rudolf" loading="eager"><span class="star-gift" aria-hidden="true">🎁✨</span><span class="hub-chapter">KAPITEL 1</span></div>
-<div class="hub-content"><h2>🎄 Die Weihnachtskollektion</h2><p>48 Sammelkarten entdecken, Geschenkpakete öffnen und mit Bingo-Reihen exklusive Extras freischalten.</p>
-<div class="hub-stats"><div class="hub-stat"><small>Gesammelte Karten</small><strong id="hub-collected">– / 48</strong></div><div class="hub-stat"><small>Erreichte Bingos</small><strong id="hub-bingos">– / 30</strong></div></div>
-<div class="hub-meter" role="progressbar" aria-label="Fortschritt Sammelkarten" aria-valuemin="0" aria-valuemax="48" aria-valuenow="0" id="hub-album-meter"><i></i></div>
+<div class="hub-content"><h2>🎄 Die Weihnachtskollektion</h2><p>64 Sammelkarten entdecken, Geschenkpakete öffnen und mit Bingo-Reihen exklusive Extras freischalten.</p>
+<div class="hub-stats"><div class="hub-stat"><small>Gesammelte Karten</small><strong id="hub-collected">– / 64</strong></div><div class="hub-stat"><small>Erreichte Bingos</small><strong id="hub-bingos">– / 40</strong></div></div>
+<div class="hub-meter" role="progressbar" aria-label="Fortschritt Sammelkarten" aria-valuemin="0" aria-valuemax="64" aria-valuenow="0" id="hub-album-meter"><i></i></div>
 <div class="hub-actions"><a class="hub-launch" id="hub-enter-album" href="./weihnachten.html?view=album">🃏 Sammlung entdecken</a><span class="hub-note">🎁 Pakete &amp; 🏆 Bingo im selben Kapitel</span></div></div></article>
 <article class="hub-card ice">
 <div class="hub-art"><img class="ice-tile" src="./Weihnachtsevent2/Weihnachtsbilder/originalgrafik-06.webp" alt="Magisches Eisfeld" loading="eager"><img class="hammer" src="./Weihnachtsevent2/Weihnachtsbilder/hammer-glueck.webp" alt="Goldener Glückshammer" loading="eager"><span class="hub-chapter">KAPITEL 2</span></div>
@@ -135,9 +135,9 @@ const clamp=(n,max)=>Math.max(0,Math.min(max,Number(n)||0));
 function show(kind,values){
  if(!values)return;
  if(kind==='album'){
-  const collected=clamp(values.collected,48),bingos=clamp(values.bingos,30);
-  $('hub-collected').textContent=collected+' / 48';$('hub-bingos').textContent=bingos+' / 30';
-  const meter=$('hub-album-meter');meter.setAttribute('aria-valuenow',String(collected));meter.querySelector('i').style.width=(collected/48*100)+'%';
+  const collected=clamp(values.collected,64),bingos=clamp(values.bingos,40);
+  $('hub-collected').textContent=collected+' / 64';$('hub-bingos').textContent=bingos+' / 40';
+  const meter=$('hub-album-meter');meter.setAttribute('aria-valuenow',String(collected));meter.querySelector('i').style.width=(collected/64*100)+'%';
  }else{
   const completed=clamp(values.completed,70);
   $('hub-completed').textContent=completed+' / 70';$('hub-milestones').textContent=Math.floor(completed/10)+' / 7';
