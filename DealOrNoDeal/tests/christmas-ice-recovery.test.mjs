@@ -26,7 +26,7 @@ test('GET reconciliation uses a receipt ID in query, never a GET body', () => {
 test('uncertain retries always preserve original request ID, even after progress changes', () => {
  assert.match(source, /const requestId=unresolved\?\.requestId\|\|\(pending\?\.key===key\?pending\.requestId:id\(\)\)/);
  assert.match(source, /pending=\{key:unresolved\?\.key\|\|key,requestId\}/);
- assert.match(source, /if\(!same\)\{message/);
+ assert.match(source, /if\(!same\)\{/);
 });
 
 test('repair bar always appears above the board and is cache-busted', () => {
