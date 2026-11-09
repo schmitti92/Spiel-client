@@ -77,7 +77,7 @@ function updateBankerCall(){
  const quality=$('banker-offer-quality');
  if(quality){
   const removed=new Set((g.openedAmounts||[]).map(entry=>entry.amount));
-  const remaining=values.filter(amount=>!removed.has(amount));
+  const remaining=values.slice(0,[26,27,28].includes(g.caseCount)?g.caseCount:27).filter(amount=>!removed.has(amount));
   const average=remaining.length?remaining.reduce((sum,amount)=>sum+amount,0)/remaining.length:0;
   const ratio=average>0?h.offer/average*100:0;
   const strength=Math.max(0,Math.min(100,Math.round(ratio/2)));
