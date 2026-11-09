@@ -177,7 +177,7 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
 #hammer-claim-status.is-jackpot{border:2px solid #ffe189;background:linear-gradient(120deg,#56331b,#3a244f);color:#fff0b8;font-weight:900;box-shadow:0 0 24px #ffcc6b5a;animation:hammer-jackpot-glow 1.5s ease-in-out 2 alternate}
 @keyframes hammer-jackpot-glow{to{box-shadow:0 0 38px #ffdb83cc}}
 @media(prefers-reduced-motion:reduce){#hammer-claim-status.is-jackpot{animation:none!important}}
-</style><link rel="stylesheet" href="./css/christmas-event-hub.css?v=20261109-album-deluxe-v1"><link rel="stylesheet" href="./css/christmas-hammer-premium.css?v=20261109-premium-v1"><link rel="stylesheet" href="./css/hammer-bingo-cinematics.css?v=20261109-victory-v2"><link rel="stylesheet" href="./css/christmas-pack-cinema.css?v=20261109-packs-v1"></head><body class="christmas-event-main"><main>
+</style><link rel="stylesheet" href="./css/christmas-event-hub.css?v=20261109-album-deluxe-v1"><link rel="stylesheet" href="./css/christmas-hammer-premium.css?v=20261109-premium-v1"><link rel="stylesheet" href="./css/hammer-bingo-cinematics.css?v=20261109-victory-v2"><link rel="stylesheet" href="./css/christmas-pack-cinema.css?v=20261109-packs-v1"><link rel="stylesheet" href="./css/christmas-show-director.css?v=20261109-show-v1"></head><body class="christmas-event-main"><main>
 <header class="event-hub-top" aria-label="Weihnachtszauber – gemeinsame Event-Navigation"><a class="event-hub-brand" id="event-world-link" href="./weihnachtswelt.html" title="Zur gemeinsamen Weihnachtswelt" aria-label="Weihnachtswelt – Übersicht öffnen"><span class="event-hub-brand-symbol" aria-hidden="true">🎄</span><span>Weihnachtszauber <small>↗ Zur Event-Übersicht</small></span></a><div class="event-hub-tools"><a class="event-hub-tool" id="event-game-link" href="./game.html">🎮 Zum Spiel</a><a class="back" id="lobby" href="./lobby.html">↩ Zur Spiellobby</a><button type="button" id="event-refresh" class="back" title="Aktuelle Eventseite neu laden">↻ Aktualisieren</button><button type="button" id="event-fullscreen" class="back" aria-pressed="false">⛶ Vollbild</button><button type="button" id="event-main-guide" class="event-hub-tool">📖 Anleitung</button></div></header>
 <nav class="event-tabs event-hub-nav" aria-label="Weihnachtsbereiche"><button type="button" data-view="album" aria-selected="true" aria-current="page">🃏 Sammlung</button><button type="button" data-view="hammer" aria-selected="false">🔨 Hammer-Bingo</button><button type="button" data-view="packs" aria-selected="false">🎁 Pakete</button><button type="button" data-view="bingo" aria-selected="false">🏆 Spielinformation &amp; Gewinner</button><a class="event2-tab" href="./Weihnachtsevent2/index.html">❄️ Weihnachtsevent 2</a></nav>
 <header class="hero"><img class="hero-characters" src="./assets/weihnachts_event/file_0000000075e081f49cb62fd4b11daae2.png" alt="Weihnachtsmann und Rudolf begrüßen die Besucher" loading="eager"><div class="hero-content"><div class="ornament">🎄 ✨ 🎁</div><div class="eyebrow event-chapter">KAPITEL 1 · DIE WEIHNACHTSKOLLEKTION</div><h1>Weihnachtszauber</h1><p class="event-hero-subtitle">64 Sammelkarten · 4 Sammelfelder · Gemeinsame Weihnachtswelt</p></div></header><div class="event-layout"><section id="event-album" aria-label="Die klassische Weihnachtskartensammlung">
@@ -306,11 +306,22 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
    <button type="button" id="reveal-close" hidden>Schließen ✓</button>
   </div>
   <div id="reveal-summary" class="reveal-summary" hidden></div>
+  <p id="reveal-next-act" class="pack-cinema-next-act" hidden role="status"></p>
   <p id="reveal-bingo-awards" role="status" aria-live="polite"></p>
   <p id="pack-cinema-note" role="status">✓ Der Paketkauf wurde bereits vom Server bestätigt.</p>
  </div>
 </div>
-</main><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script src="./js/hammer-bingo-cinematics.js?v=20261109-victory-v2"></script><script src="./js/christmas-pack-cinema.js?v=20261109-packs-v1"></script><script>
+<section id="christmas-show-transition" hidden aria-hidden="true" role="status" aria-live="polite" aria-labelledby="christmas-show-transition-title">
+ <div class="xmas-director-card">
+  <div class="xmas-director-emblem" aria-hidden="true">🏆</div>
+  <span class="xmas-director-eyebrow">✦ DIE GROSSE WEIHNACHTS-SIEGESSHOW ✦</span>
+  <h2 id="christmas-show-transition-title">🏆 DAS BINGO-FINALE RUFT!</h2>
+  <p id="christmas-show-transition-copy">Die Paketkarten sind enthüllt. Jetzt folgen die bestätigten Gewinne.</p>
+  <div class="xmas-director-progress" aria-hidden="true"><span></span></div>
+  <button id="christmas-show-transition-skip" type="button">Übergang überspringen ›</button>
+ </div>
+</section>
+</main><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script src="./js/christmas-show-director.js?v=20261109-show-v1"></script><script src="./js/hammer-bingo-cinematics.js?v=20261109-victory-v2"></script><script src="./js/christmas-pack-cinema.js?v=20261109-packs-v1"></script><script>
 const cards=[["01_winterdorf","Winterdorf"],["02_lebkuchenhaus","Lebkuchenhaus"],["03_weihnachtsmann","Weihnachtsmann"],["04_rentier","Rentier"],["05_weihnachtsbaum","Weihnachtsbaum"],["06_weihnachtszug","Weihnachtszug"],["07_schneekugel","Schneekugel"],["08_wichtelwerkstatt","Wichtelwerkstatt"],["09_polarlichter","Polarlichter"],["10_eisschloss","Eisschloss"],["11_rentierschlitten","Rentierschlitten"],["12_weihnachtslaterne","Weihnachtslaterne"],["13_weihnachtsengel","Weihnachtsengel"],["14_adventskerzen","Adventskerzen"],["15_schneemannfamilie","Schneemannfamilie"],["16_weihnachtskrippe","Weihnachtskrippe"]];
 cards.push(...[["Weihnachtskarte_17_Schneemann","Schneemann"],["Weihnachtskarte_18_Weihnachtsengel","Weihnachtsengel"],["Weihnachtskarte_19_Rentier","Rentier im Schnee"],["Weihnachtskarte_20_Weihnachtsbaum","Weihnachtsbaum im Glanz"],["Weihnachtskarte_21_Lebkuchenmann","Lebkuchenmann"],["Weihnachtskarte_22_Weihnachtskranz","Weihnachtskranz"],["Weihnachtskarte_23_Schlitten","Schlittenfahrt"],["Weihnachtskarte_24_Stern_von_Bethlehem","Stern von Bethlehem"],["Weihnachtskarte_25_Elfenhilfe","Elfenhilfe"],["Weihnachtskarte_26_Weihnachtspinguin","Weihnachtspinguin"],["Weihnachtskarte_27_Polarbaer","Polarbär"],["Weihnachtskarte_28_Weihnachtsglocken","Weihnachtsglocken"],["Weihnachtskarte_29_Kerzenschein","Kerzenschein"],["Weihnachtskarte_30_Winterdorf","Winterdorf im Schnee"],["Weihnachtskarte_31_Geschenkstapel","Geschenkstapel"],["Weihnachtskarte_32_Schneeflocke","Schneeflocke"]]);
 const rarity=i=>i%16>=12?["legendary","Legendär"]:i%16>=8?["epic","Episch"]:i%16>=4?["rare","Selten"]:["","Gewöhnlich"];
@@ -363,6 +374,7 @@ async function maybeClaimHammerBingos(data){
  hammerClaimRunning=true;
  const el=document.getElementById('hammer-claim-status');
  if(el)el.textContent='🎁 Fertige Bingo-Reihen gefunden – Hammergewinne werden sicher gutgeschrieben …';
+ window.ChristmasShowDirector?.claimStarted();
  try{
   const result=await request('POST','hammer/claim');
   if(current&&result.hammerProgress)render({...current,cards:result.cards||current.cards,progress:result.progress||current.progress,hammerProgress:result.hammerProgress});
@@ -388,7 +400,7 @@ async function maybeClaimHammerBingos(data){
   }else if(el)el.textContent='✅ Alle bisher gewonnenen Bingo-Hammer wurden bereits gutgeschrieben.';
  }catch(error){
   if(el)el.textContent='⚠️ Bingo-Gutschrift noch nicht bestätigt: '+String(error.message||error)+' · Mit „Vorrat aktualisieren“ erneut prüfen.';
- }finally{hammerClaimRunning=false}
+ }finally{hammerClaimRunning=false;window.ChristmasShowDirector?.claimSettled()}
 }
 // Classic 32-card picture viewer: never reveal artwork of a locked card.
 const albumDialog=document.getElementById('album-card-dialog');
@@ -581,6 +593,7 @@ const bingoLines=[...[0,1,2,3].map(r=>[0,1,2,3].map(c=>r*4+c)),...[0,1,2,3].map(
 let revealState=null,revealMotionToken=0,revealMotionBusy=false;
 const overlay=document.getElementById('reveal-overlay'),next=document.getElementById('reveal-next'),skip=document.getElementById('reveal-skip'),close=document.getElementById('reveal-close');
 function openReveal(revealed,mode='real',pack='small'){
+ const present=()=>{
  revealMotionToken++;revealMotionBusy=false;lastHammerAwardSummary='';
  document.getElementById('reveal-bingo-awards').textContent='';
  document.getElementById('hammer-claim-status').classList.remove('is-jackpot');
@@ -597,6 +610,11 @@ function openReveal(revealed,mode='real',pack='small'){
  if(window.ChristmasPackCinema)window.ChristmasPackCinema.open(array,mode,pack);
  else{overlay.dataset.stage='ready';overlay.dataset.mode=mode;}
  next.focus();
+ };
+ // If a Bingo finale is playing, the director queues this already paid-for
+ // package reveal and presents it when the current scene has ended.
+ if(window.ChristmasShowDirector)window.ChristmasShowDirector.presentPack(present,mode);
+ else present();
 }
 function finishReveal(){
  const state=revealState;if(!state)return;
@@ -629,6 +647,7 @@ function finishReveal(){
  next.hidden=true;skip.hidden=true;close.hidden=false;
  if(window.ChristmasPackCinema)window.ChristmasPackCinema.summarise(state.cards,state.mode);
  else overlay.dataset.stage='summary';
+ window.ChristmasShowDirector?.summaryReady();
  close.focus();
 }
 async function revealNext(){
@@ -667,6 +686,8 @@ close.addEventListener('click',()=>{
  revealMotionToken++;revealMotionBusy=false;next.disabled=false;
  overlay.hidden=true;document.body.style.overflow='';
  revealState=null;window.ChristmasPackCinema?.close();
+ // Release the stage before notifying Bingo: the bridge owns the handoff.
+ window.ChristmasShowDirector?.packClosed();
  document.dispatchEvent(new Event('christmas-pack-reveal-closed'));
 });
 document.getElementById('pack-cinema-preview').addEventListener('click',()=>{
