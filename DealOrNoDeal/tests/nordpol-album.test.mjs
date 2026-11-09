@@ -91,16 +91,21 @@ test('all 16 uploaded JPEG photos are wired to stable card IDs 65–80',()=>{
  assert.match(html,/Weihnachtsevent2\/Weihnachtsbilder/);
  assert.match(css,/object-fit:contain!important/);
 });
-test('third classic board and updated counters are wired without exposing locked card art',()=>{
+test('third and fourth classic boards and updated counters keep locked card art hidden',()=>{
  assert.match(html,/id="album-grid-third"/);
+ assert.match(html,/id="album-grid-fourth"/);
+ assert.match(html,/id="fourth-bingo-rows"/);
+ assert.match(html,/id="fourth-bingo-columns"/);
+ assert.match(html,/id="fourth-bingo-diagonals"/);
  assert.match(html,/id="album-set-third-bingo"/);
- assert.match(html,/id="album-owned-total">0 \/ 48/);
- assert.match(html,/id="album-bingo-total">0 \/ 30/);
+ assert.match(html,/id="album-set-fourth-bingo"/);
+ assert.match(html,/id="album-owned-total">0 \/ 64/);
+ assert.match(html,/id="album-bingo-total">0 \/ 40/);
  assert.match(html,/classicCardNumber=i=>i<32\?i\+1:i\+33/);
  assert.match(html,/if\(img\.getAttribute\('src'\)!==picture\)img\.src=picture/);
  assert.match(html,/card-back-winter\.svg/);
- assert.match(hub,/id="hub-collected">– \/ 48/);
- assert.match(hub,/id="hub-bingos">– \/ 30/);
+ assert.match(hub,/id="hub-collected">– \/ 64/);
+ assert.match(hub,/id="hub-bingos">– \/ 40/);
 });
 test('five new rewards use authoritative server unlock data',()=>{
  for(const reward of ['frost-card-frame','aurora-lobby','north-star-dust','royal-north-gallery','north-pole-legend'])
@@ -134,4 +139,46 @@ test('first two classic boards show five server-authoritative Bingo rewards each
  assert.match(html,/id="album-bingo-first-bonus"/);
  assert.match(css,/\.classic-bingo-rewards/);
  assert.match(html,/north-pole-bingo\.js\?v=20261109-compass-v2/);
+});
+
+test('new fourth board uses all 16 uploaded funny Christmas JPEG images 18 through 33',()=>{
+ const names=["Oma backt Plätzchen","Nikolaus und das freche Rentier","Rentiere verschenken ein Auto","Weihnachtsmann und Schneemann","Schneemobil voller Geschenke","Lustiger Weihnachts-Elch","Weihnachtskalorien zählen nicht","Überraschung vom Weihnachtsmann","Opa und die Geschenke","Plätzchenbacken mit Hund","Gemütliches Weihnachtszimmer","Weihnachtsmann im Lichterglanz","Cool bleiben, es ist Weihnachten","Weihnachtswichtel im Geschenkerausch","Schneemann auf dem Sofa","Weihnachtsmann im Büro"];
+ for(let i=0;i<16;i++){
+  const file='images-'+(i+18)+'.jpeg';
+  const path=resolve(root,'Weihnachtsevent2/Weihnachtsbilder',file);
+  assert.ok(existsSync(path),'Missing card art '+(i+81)+': '+file);
+  const photo=readFileSync(path);
+  assert.ok(photo.length>1000);
+  assert.deepEqual([...photo.subarray(0,3)],[255,216,255]);
+  assert.ok(html.includes('["'+file+'","'+names[i]+'"]'),'Unwired card '+(i+81));
+ }
+ assert.match(html,/n>=65&&n<=96/);
+ assert.match(html,/index>=64&&index<96/);
+ assert.match(html,/Math\.floor\(i\/16\)/);
+ assert.match(html,/for\(let i=0;i<64;i\+\+\)/);
+ assert.match(hub,/clamp\(values\.collected,64\),bingos=clamp\(values\.bingos,40\)/);
+ assert.match(css,/merry-fourth/);
+});
+
+test('fourth bingo compass shows ten distinct lines without adding server reads or payouts',()=>{
+ const api={};
+ const source=readFileSync(resolve(root,'js/north-pole-bingo.js'),'utf8');
+ runInNewContext(source,{window:api});
+ const engine=api.NorthPoleBingo;
+ const cards=Object.fromEntries([81,82,83].map(n=>['christmas-'+n,1]));
+ let snap=engine.fourthSnapshot(cards);
+ assert.equal(snap.count,3);
+ assert.equal(snap.lines[0].have,3);
+ assert.deepEqual([...snap.lines[0].missing],[84]);
+ cards['christmas-84']=1;
+ snap=engine.fourthSnapshot(cards);
+ assert.equal(snap.lines[0].complete,true);
+ assert.equal(snap.lines.filter(x=>x.complete).length,1);
+ for(let n=85;n<=96;n++)cards['christmas-'+n]=1;
+ snap=engine.fourthSnapshot(cards);
+ assert.equal(snap.count,16);
+ assert.equal(snap.lines.filter(x=>x.complete).length,10);
+ assert.match(source,/Math\.min\(40,Math\.trunc/);
+ assert.doesNotMatch(source,/fetch\(|setInterval\(|setTimeout\(/);
+ assert.match(html,/Belohnung folgt/);
 });
