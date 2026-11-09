@@ -148,6 +148,26 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
 @keyframes xmas-new-badge-in{from{opacity:0;transform:translateX(-50%) translateY(16px) scale(.35)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
 @keyframes xmas-new-card-pulse{to{box-shadow:0 0 0 5px #ffec9e99,0 0 78px #ffcf70,0 0 125px #ffba4169}}
 @media(prefers-reduced-motion:reduce){.reveal-new-badge,.reveal-card.is-new{animation:none!important}}
+
+/* Hammer-Bingo reward labels aligned with the matching 4x4 row and column. */
+.hammer-prize-matrix{display:grid;grid-template-columns:minmax(0,1fr) clamp(68px,6vw,95px);grid-template-rows:auto auto auto;gap:7px;margin:12px 0}
+.hammer-prize-matrix .hammer-board-preview{grid-column:1;grid-row:1;margin:0;align-self:stretch}
+.hammer-rewards-rows{grid-column:2;grid-row:1;display:grid;grid-template-rows:repeat(4,minmax(0,1fr));gap:7px;min-height:0}
+.hammer-rewards-columns{grid-column:1;grid-row:2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.hammer-rewards-diagonals{grid-column:1/-1;grid-row:3;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.hammer-line-prize{min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;padding:5px 2px;border:1px solid #658a9e96;border-radius:9px;background:linear-gradient(145deg,#203446,#13283b);text-align:center;color:#d9e8f1;transition:background .2s,box-shadow .2s,border-color .2s}
+.hammer-line-prize .kind{font:700 clamp(8px,.8vw,11px)/1.12 system-ui,sans-serif;color:#c2d0db}
+.hammer-line-prize strong{font:900 clamp(11px,1.15vw,16px)/1.15 system-ui,sans-serif;color:#f4e2ae;overflow-wrap:normal;white-space:normal}
+.hammer-line-prize .state{font:700 clamp(8px,.65vw,10px)/1.1 system-ui,sans-serif;opacity:.72}
+.hammer-line-prize.done{border-color:#f1d18b;background:linear-gradient(145deg,#594624,#274437);box-shadow:0 0 14px #dbb55b55}
+.hammer-line-prize.done .state{color:#b6ffdc;opacity:1}
+.hammer-line-prize.pending{border-color:#ffc344;background:#51401d;box-shadow:0 0 16px #f5b94270}
+.hammer-line-prize.pending .state{color:#ffeaa0;opacity:1}
+.hammer-board.legend .hammer-line-prize{border-color:#aa8db288;background:linear-gradient(145deg,#2e2b49,#192b41)}
+.hammer-board.legend .hammer-line-prize.done{border-color:#f1d18b;background:linear-gradient(145deg,#594624,#30324b)}
+.hammer-board.legend .hammer-line-prize.pending{border-color:#ffc344;background:#51401d}
+#hammer-claim-status{color:#f3dda3;font-size:13px;line-height:1.4;padding:8px 11px;border:1px solid #c7aa6d58;border-radius:10px;background:#26374299;margin:8px 0 14px}
+@media(max-width:720px){.hammer-prize-matrix{grid-template-columns:minmax(0,1fr) 61px;gap:4px}.hammer-rewards-rows,.hammer-rewards-columns,.hammer-rewards-diagonals{gap:4px}.hammer-line-prize{border-radius:6px;padding:3px 1px}.hammer-line-prize strong{font-size:11px}.hammer-line-prize .kind{font-size:8px}.hammer-line-prize .state{font-size:8px}}
 </style><link rel="stylesheet" href="./css/christmas-event-hub.css?v=20261109-hammer-nav-v4"></head><body class="christmas-event-main"><main>
 <header class="event-hub-top" aria-label="Weihnachtszauber – gemeinsame Event-Navigation"><a class="event-hub-brand" id="event-world-link" href="./weihnachtswelt.html" title="Zur gemeinsamen Weihnachtswelt" aria-label="Weihnachtswelt – Übersicht öffnen"><span class="event-hub-brand-symbol" aria-hidden="true">🎄</span><span>Weihnachtszauber <small>↗ Zur Event-Übersicht</small></span></a><div class="event-hub-tools"><a class="event-hub-tool" id="event-game-link" href="./game.html">🎮 Zum Spiel</a><a class="back" id="lobby" href="./lobby.html">↩ Zur Spiellobby</a><button type="button" id="event-fullscreen" class="back" aria-pressed="false">⛶ Vollbild</button><button type="button" id="event-main-guide" class="event-hub-tool">📖 Anleitung</button></div></header>
 <nav class="event-tabs event-hub-nav" aria-label="Weihnachtsbereiche"><button type="button" data-view="album" aria-selected="true" aria-current="page">🃏 Sammlung</button><button type="button" data-view="hammer" aria-selected="false">🔨 Hammer-Bingo</button><button type="button" data-view="packs" aria-selected="false">🎁 Pakete</button><button type="button" data-view="bingo" aria-selected="false">🏆 Spielinformation &amp; Gewinner</button><a class="event2-tab" href="./Weihnachtsevent2/index.html">❄️ Weihnachtsevent 2</a></nav>
@@ -155,7 +175,7 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
 <section id="bingo"><div class="section-title"><h2>🏆 Spielinformation und Gewinner</h2><span>Weihnachtsalbum · Bingo-Belohnungen</span></div><div class="christmas-instructions" aria-labelledby="christmas-howto"><h3 id="christmas-howto">🎄 So funktioniert das Weihnachts-Event</h3><p>Öffne Weihnachtspakete mit deinem Spielgeld und sammle die 32 verschiedenen Weihnachtskarten. Jede Karte zählt für dein persönliches Sammelalbum.</p><p>Vervollständige eine Reihe, Spalte oder Diagonale im 4 × 4-Kartenfeld, um ein <strong>Bingo</strong> zu erzielen. Pro 4 × 4-Feld sind <strong>10 Bingos</strong> möglich, insgesamt also <strong>20 Bingos</strong>. Vollständige Reihen werden mit einem goldenen BINGO-Siegel gekennzeichnet. Nach jeweils zwei Bingos wird eine neue Belohnung freigeschaltet.</p><p>Nach den ersten fünf Belohnungen erhältst du auch den exklusiven Sammlerrahmen als Bonus. Bereits erhaltene Karten bleiben gesammelt; doppelte Karten bringen keine zusätzlichen Bingos.</p></div><div class="section-title"><h2>🎁 Freischaltbare Belohnungen</h2><span>Alle 2 Bingos eine Belohnung</span></div><div class="reward-grid" id="reward-grid"></div><p class="note">Belohnungen werden erst nach der serverseitigen Bingo-Prüfung freigeschaltet. Freischaltungen werden aus deinem Sammelfortschritt berechnet.</p></section></div>
 <section id="event-hammers" aria-labelledby="hammer-heading">
  <div class="hammer-hero"><span>🔨 WEIHNACHTSWERKSTATT · SAMMELCHALLENGES</span><h2 id="hammer-heading">Hammer-Bingo</h2><p class="hammer-art-status" id="hammer-art-status">32 von 32 neuen Karten im Sammelpool ✓</p>
- <p>Die beiden zusätzlichen 4×4-Sammelfelder sind jetzt in den Weihnachtspacks enthalten! Hier sammelst du 16 gewöhnliche Karten und 16 weitere mit gemischten Seltenheitsgraden. Die stärkeren Hammergewinne und Jackpots werden separat freigeschaltet.</p>
+ <p>Die beiden zusätzlichen 4×4-Sammelfelder sind jetzt in den Weihnachtspacks enthalten! Hier sammelst du 16 gewöhnliche Karten und 16 weitere mit gemischten Seltenheitsgraden. Jede fertige Reihe, Spalte oder Diagonale bringt direkt Hammer: Im gemischten Feld gibt es genau das Doppelte. Die Jackpots und der wiederholbare Sammeldurchgang folgen separat.</p>
  <p>Nach dem vollständigen Sammeln eines Feldes soll dessen Jackpot einmalig vergeben werden. Anschließend startet nur dieses Feld einen neuen Sammeldurchgang. Bereits bestehende Weihnachtsfreischaltungen bleiben erhalten.</p></div>
  <div class="hammer-stock-head"><h3>🔨 Dein Hammer-Vorrat</h3><button class="hammer-refresh" id="hammer-refresh" type="button">↻ Vorrat aktualisieren</button></div>
  <div class="hammer-stock" aria-label="Verfügbare Hammer aus Weihnachtsevent 2">
@@ -163,14 +183,24 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
   <div class="hammer-stock-card"><span class="icon">🔨🔨</span><strong id="hammer-double">–</strong><small>Doppel-Hammer</small></div>
   <div class="hammer-stock-card"><span class="icon">✨🔨</span><strong id="hammer-lucky">–</strong><small>Glückshammer</small></div>
  </div>
- <p id="hammer-stock-status" role="status">Öffne den Hammer-Tab, um deinen aktuellen Vorrat abzurufen.</p>
+ <p id="hammer-stock-status" role="status">Öffne den Hammer-Tab, um deinen aktuellen Vorrat abzurufen.</p><p id="hammer-claim-status" role="status" aria-live="polite">🏆 Neue Bingo-Gewinne werden automatisch überprüft und einmalig gutgeschrieben.</p>
  <div class="hammer-boards" aria-label="Vorschau der zusätzlichen Bingo-Felder">
-  <article class="hammer-board"><span class="hammer-type">Feld 3 · gewöhnlich · Vorschau</span><h3>🎄 Weihnachtswerkstatt</h3><p>16 gewöhnliche Sammelbilder, 10 Bingo-Linien und kleinere Hammerpreise, die sich regelmäßig erspielen lassen.</p><p id="hammer-common-progress" class="hammer-board-progress">0 / 16 gesammelt · 0 / 10 Bingos</p><div class="hammer-board-preview" id="hammer-board-common" aria-label="16 gewöhnliche Karten, noch nicht erspielbar"></div><div class="hammer-jackpot"><strong>🎁 Kleiner Hammer-Jackpot</strong>Nach allen 16 Karten: Jackpot auszahlen und nur dieses Feld neu starten.</div><span class="hammer-inactive">Neue Karten sammelbar · Hammer-Belohnungen und Jackpot noch nicht aktiviert</span></article>
-  <article class="hammer-board legend"><span class="hammer-type">Feld 4 · gemischte Seltenheiten · Vorschau</span><h3>👑 Legendäre Winterwelt</h3><p>16 Sammelbilder mit vier Seltenheitsgraden, wertvolleren Bingo-Gewinnen und einem deutlich größeren Jackpot.</p><p id="hammer-mixed-progress" class="hammer-board-progress">0 / 16 gesammelt · 0 / 10 Bingos</p><div class="hammer-board-preview" id="hammer-board-mixed" aria-label="16 gemischte Karten, noch nicht erspielbar"></div><div class="hammer-jackpot"><strong>💎 Großer Hammer-Jackpot</strong>Nach allen 16 Karten: seltenen Jackpot auszahlen und nur dieses Feld neu starten.</div><span class="hammer-inactive">Neue Karten sammelbar · Hammer-Belohnungen und Jackpot noch nicht aktiviert</span></article>
+  <article class="hammer-board"><span class="hammer-type">Feld 3 · gewöhnliche Karten · leichte Gewinne</span><h3>🎄 Weihnachtswerkstatt</h3><p>16 gewöhnliche Sammelbilder, 10 Bingo-Linien und kleinere Hammerpreise, die sich regelmäßig erspielen lassen.</p><p id="hammer-common-progress" class="hammer-board-progress">0 / 16 gesammelt · 0 / 10 Bingos</p><div class="hammer-prize-matrix" aria-label="Sammelfeld mit den Preisen rechts für Reihen und darunter für Spalten und Diagonalen">
+ <div class="hammer-board-preview" id="hammer-board-common" aria-label="16 gewöhnliche Karten, mit Bingo-Hammergewinnen"></div>
+ <div class="hammer-rewards-rows" id="hammer-common-rows" aria-label="Reihen-Belohnungen rechts"></div>
+ <div class="hammer-rewards-columns" id="hammer-common-columns" aria-label="Spalten-Belohnungen unten"></div>
+ <div class="hammer-rewards-diagonals" id="hammer-common-diagonals" aria-label="Diagonal-Belohnungen unten"></div>
+ </div><div class="hammer-jackpot"><strong>🎁 Kleiner Hammer-Jackpot</strong>Nach allen 16 Karten: Jackpot auszahlen und nur dieses Feld neu starten.</div><span class="hammer-inactive">🔨 Bingo-Hammer werden einmalig gutgeschrieben · Jackpot und Feld-Neustart folgen separat</span></article>
+  <article class="hammer-board legend"><span class="hammer-type">Feld 4 · gemischte Seltenheiten · 2× Gewinne</span><h3>👑 Legendäre Winterwelt</h3><p>16 Sammelbilder mit vier Seltenheitsgraden, wertvolleren Bingo-Gewinnen und einem deutlich größeren Jackpot.</p><p id="hammer-mixed-progress" class="hammer-board-progress">0 / 16 gesammelt · 0 / 10 Bingos</p><div class="hammer-prize-matrix" aria-label="Sammelfeld mit den Preisen rechts für Reihen und darunter für Spalten und Diagonalen">
+ <div class="hammer-board-preview" id="hammer-board-mixed" aria-label="16 gemischte Karten, mit Bingo-Hammergewinnen"></div>
+ <div class="hammer-rewards-rows" id="hammer-mixed-rows" aria-label="Reihen-Belohnungen rechts"></div>
+ <div class="hammer-rewards-columns" id="hammer-mixed-columns" aria-label="Spalten-Belohnungen unten"></div>
+ <div class="hammer-rewards-diagonals" id="hammer-mixed-diagonals" aria-label="Diagonal-Belohnungen unten"></div>
+ </div><div class="hammer-jackpot"><strong>💎 Großer Hammer-Jackpot</strong>Nach allen 16 Karten: seltenen Jackpot auszahlen und nur dieses Feld neu starten.</div><span class="hammer-inactive">🔨 Bingo-Hammer werden einmalig gutgeschrieben · Jackpot und Feld-Neustart folgen separat</span></article>
  </div>
- <p class="note">Neue Karten aus Weihnachtspacks werden hier gesammelt und angezeigt. Hammer-Bingo-Auszahlungen und Jackpot-Resets sind noch nicht aktiviert. Dein Hammer-Vorrat stammt aus Event 2.</p>
+ <p class="note">🎉 Die zehn Hammer-Bingos pro Feld zahlen automatisch und nur einmal aus. Rechts stehen die Preise für Reihen; unter den Karten stehen Spalten und Diagonalen. Jackpot und Zurücksetzen eines vollständig gefüllten Feldes sind noch nicht aktiviert.</p>
  <p class="note"><a href="./Weihnachtsevent2/index.html" style="color:#ffe1a0;font-weight:800">❄️ Zum Weihnachtsevent 2 – Hammer einsetzen</a></p>
-</section><section id="event-packs"><div class="section-title"><h2>🎁 Weihnachtspakete</h2><span id="event-balance">Profil wird verbunden …</span></div><p id="event-progress" class="note">Online-Sammlung wird geladen …</p><p id="pack-notice" class="note" role="status"></p><div class="connection-actions"><button type="button" id="retry-connection">↻ Verbindung erneut prüfen</button><span id="connection-details" aria-live="polite"></span></div><div class="packs"><article class="pack"><div class="pack-art pack-green" role="img" aria-label="Grünes Weihnachtspaket"></div><h3>Kleines Weihnachtspaket</h3><p>3 zufällige Weihnachtskarten.</p><div class="pack-chances" aria-label="Wahrscheinlichkeiten je Karte"><strong>🎲 3 normale Ziehungen</strong><span>⚪ 65 % · 🔵 29 % · 🟣 5 % · 🟡 1 %</span></div><button data-pack="small" disabled>Wird geladen …</button></article><article class="pack"><div class="pack-art pack-red" role="img" aria-label="Rotes Weihnachtspaket"></div><h3>Großes Weihnachtspaket</h3><p>7 Karten · eine Ziehung garantiert mindestens selten.</p><div class="pack-chances" aria-label="Wahrscheinlichkeiten je Karte"><strong>🎲 6 normale Ziehungen</strong><span>⚪ 55 % · 🔵 32 % · 🟣 10 % · 🟡 3 %</span><strong>✨ 1 garantierte Ziehung</strong><span>🔵 Selten 71,11 % · 🟣 Episch 22,22 % · 🟡 Legendär 6,67 %</span></div><button data-pack="large" disabled>Wird geladen …</button></article><article class="pack"><div class="pack-art pack-gold" role="img" aria-label="Goldenes Premium-Weihnachtspaket"></div><h3>Premium-Weihnachtspaket</h3><p>12 Karten · zwei Ziehungen garantiert mindestens episch.</p><div class="pack-chances" aria-label="Wahrscheinlichkeiten je Karte"><strong>🎲 10 normale Ziehungen</strong><span>⚪ 40 % · 🔵 35 % · 🟣 17 % · 🟡 8 %</span><strong>✨ 2 garantierte Ziehungen</strong><span>🟣 Episch 68 % · 🟡 Legendär 32 %</span></div><button data-pack="premium" disabled>Wird geladen …</button></article></div><p class="note">🎄 Neu: Alle drei Weihnachtspacks enthalten jetzt auch die 32 Hammer-Bingo-Karten (Nr. 33–64). Die angezeigten Seltenheits-Chancen bleiben unverändert. Karten werden dauerhaft im Online-Profil gespeichert. 🔨 Hammer-Bingo-Belohnungen und Jackpot-Resets sind noch nicht aktiv.</p></section>
+</section><section id="event-packs"><div class="section-title"><h2>🎁 Weihnachtspakete</h2><span id="event-balance">Profil wird verbunden …</span></div><p id="event-progress" class="note">Online-Sammlung wird geladen …</p><p id="pack-notice" class="note" role="status"></p><div class="connection-actions"><button type="button" id="retry-connection">↻ Verbindung erneut prüfen</button><span id="connection-details" aria-live="polite"></span></div><div class="packs"><article class="pack"><div class="pack-art pack-green" role="img" aria-label="Grünes Weihnachtspaket"></div><h3>Kleines Weihnachtspaket</h3><p>3 zufällige Weihnachtskarten.</p><div class="pack-chances" aria-label="Wahrscheinlichkeiten je Karte"><strong>🎲 3 normale Ziehungen</strong><span>⚪ 65 % · 🔵 29 % · 🟣 5 % · 🟡 1 %</span></div><button data-pack="small" disabled>Wird geladen …</button></article><article class="pack"><div class="pack-art pack-red" role="img" aria-label="Rotes Weihnachtspaket"></div><h3>Großes Weihnachtspaket</h3><p>7 Karten · eine Ziehung garantiert mindestens selten.</p><div class="pack-chances" aria-label="Wahrscheinlichkeiten je Karte"><strong>🎲 6 normale Ziehungen</strong><span>⚪ 55 % · 🔵 32 % · 🟣 10 % · 🟡 3 %</span><strong>✨ 1 garantierte Ziehung</strong><span>🔵 Selten 71,11 % · 🟣 Episch 22,22 % · 🟡 Legendär 6,67 %</span></div><button data-pack="large" disabled>Wird geladen …</button></article><article class="pack"><div class="pack-art pack-gold" role="img" aria-label="Goldenes Premium-Weihnachtspaket"></div><h3>Premium-Weihnachtspaket</h3><p>12 Karten · zwei Ziehungen garantiert mindestens episch.</p><div class="pack-chances" aria-label="Wahrscheinlichkeiten je Karte"><strong>🎲 10 normale Ziehungen</strong><span>⚪ 40 % · 🔵 35 % · 🟣 17 % · 🟡 8 %</span><strong>✨ 2 garantierte Ziehungen</strong><span>🟣 Episch 68 % · 🟡 Legendär 32 %</span></div><button data-pack="premium" disabled>Wird geladen …</button></article></div><p class="note">🎄 Neu: Alle drei Weihnachtspacks enthalten jetzt auch die 32 Hammer-Bingo-Karten (Nr. 33–64). Die angezeigten Seltenheits-Chancen bleiben unverändert. Karten werden dauerhaft im Online-Profil gespeichert. 🔨 Hammer-Bingo-Belohnungen werden automatisch gutgeschrieben. Jackpot und Zurücksetzen folgen später.</p></section>
 <div class="reveal-overlay" id="reveal-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="reveal-title"><div class="reveal-panel"><div class="reveal-sparks" aria-hidden="true">✦ ✨ ❄ ✦ ✨ ❄</div><h2 id="reveal-title">🎁 Dein Weihnachtspaket!</h2><div class="reveal-present" id="reveal-present" aria-hidden="true">🎁</div><p id="reveal-counter" aria-live="polite"></p><div class="reveal-card" id="reveal-card" hidden><span class="reveal-new-badge" id="reveal-new-badge" hidden>✨ NEU ENTDECKT! ✨</span><img id="reveal-image" alt=""><strong id="reveal-name"></strong><span id="reveal-rarity"></span></div><div class="reveal-actions"><button type="button" id="reveal-next">Geschenk öffnen ✨</button><button type="button" id="reveal-skip">Alle anzeigen</button><button type="button" id="reveal-close" hidden>Schließen ✓</button></div><div id="reveal-summary" class="reveal-summary" hidden></div></div></div>
 </main><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script>
 const cards=[["01_winterdorf","Winterdorf"],["02_lebkuchenhaus","Lebkuchenhaus"],["03_weihnachtsmann","Weihnachtsmann"],["04_rentier","Rentier"],["05_weihnachtsbaum","Weihnachtsbaum"],["06_weihnachtszug","Weihnachtszug"],["07_schneekugel","Schneekugel"],["08_wichtelwerkstatt","Wichtelwerkstatt"],["09_polarlichter","Polarlichter"],["10_eisschloss","Eisschloss"],["11_rentierschlitten","Rentierschlitten"],["12_weihnachtslaterne","Weihnachtslaterne"],["13_weihnachtsengel","Weihnachtsengel"],["14_adventskerzen","Adventskerzen"],["15_schneemannfamilie","Schneemannfamilie"],["16_weihnachtskrippe","Weihnachtskrippe"]];
@@ -259,6 +289,34 @@ function renderHammerCardPreviews(){
 renderHammerCardPreviews();
 /* Reuse the Christmas album GET response; no new network reads. */
 const hammerLines=[...Array.from({length:4},(_,r)=>[0,1,2,3].map(c=>4*r+c)),...Array.from({length:4},(_,c)=>[0,1,2,3].map(r=>4*r+c)),[0,5,10,15],[3,6,9,12]];
+// Mirrors the read-only server reward catalog; the server decides payouts.
+const hammerPrizeBase=[
+ {single:1},{single:1},{single:1},{single:2},
+ {single:1},{single:2},{double:1},{double:1},
+ {double:1},{lucky:1}
+];
+function formatHammerPrize(prize){
+ const symbols={single:'🔨',double:'🔨🔨',lucky:'✨🔨'};
+ return Object.entries(prize).map(([type,n])=>symbols[type]+' ×'+n).join(' + ');
+}
+function makeHammerPrize(board,index){
+ const el=document.createElement('div');el.className='hammer-line-prize';
+ const names=index<4?'Reihe '+(index+1):index<8?'Spalte '+(index-3):'Diagonale '+(index-7);
+ const prize=Object.fromEntries(Object.entries(hammerPrizeBase[index]).map(([key,n])=>[key,n*(board===1?2:1)]));
+ el.dataset.line=String(index);
+ el.title=names+' – '+formatHammerPrize(prize);
+ const name=document.createElement('span');name.className='kind';name.textContent=index<4?'R'+(index+1):index<8?'S'+(index-3):index===8?'↘ Diagonale':'↙ Diagonale';
+ const amount=document.createElement('strong');amount.textContent=formatHammerPrize(prize);
+ const state=document.createElement('small');state.className='state';state.textContent='🔒 Offen';
+ el.append(name,amount,state);
+ return el;
+}
+for(const [index,key] of [[0,'common'],[1,'mixed']]){
+ for(const [part,start,end] of [['rows',0,4],['columns',4,8],['diagonals',8,10]]){
+  const el=document.getElementById('hammer-'+key+'-'+part);
+  if(el)for(let i=start;i<end;i++)el.append(makeHammerPrize(index,i));
+ }
+}
 function renderHammerCollection(data){
  const amounts=data?.cards||{};
  for(let board=0;board<2;board++){
@@ -267,6 +325,8 @@ function renderHammerCollection(data){
   if(!root)continue;
   const owned=Array.from({length:16},(_,i)=>Number(amounts['christmas-'+String(base+i).padStart(2,'0')]||0)>0);
   const bingos=hammerLines.filter(line=>line.every(index=>owned[index])).length;
+  const progress=data?.hammerProgress?.boards?.[board];
+  const claimedLines=Array.isArray(progress?.claimedLines)?progress.claimedLines:[];
   root.querySelectorAll('.hammer-photo-card').forEach((card,i)=>{
    const count=Number(amounts['christmas-'+String(base+i).padStart(2,'0')]||0);
    const entry=hammerBingoArtwork[board*16+i];
@@ -280,6 +340,16 @@ function renderHammerCollection(data){
   });
   const status=document.getElementById(board?'hammer-mixed-progress':'hammer-common-progress');
   if(status)status.textContent=owned.filter(Boolean).length+' / 16 gesammelt · '+bingos+' / 10 Bingos';
+  const key=board?'mixed':'common';
+  for(const part of ['rows','columns','diagonals'])
+   document.querySelectorAll('#hammer-'+key+'-'+part+' .hammer-line-prize').forEach(el=>{
+    const line=Number(el.dataset.line),done=hammerLines[line].every(i=>owned[i]);
+    const claimed=claimedLines.includes(line);
+    el.classList.toggle('done',done&&claimed);
+    el.classList.toggle('pending',done&&!claimed);
+    const state=el.querySelector('.state');
+    if(state)state.textContent=claimed?'✅ Erhalten':done?'🎁 Bereit':'🔒 Offen';
+   });
  }
 }
 function christmasCardImage(card){
