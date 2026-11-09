@@ -50,3 +50,15 @@ test('Christmas reward probes skip acknowledged events',()=>{
  assert.match(html,/pendingReward\('cent'/);
  assert.match(html,/pendingReward\('banker'/);
 });
+
+
+test('Banker bonus reveals credited cards directly and preserves the final wheel',()=>{
+ assert.match(html,/const isFinal=kind==='final',directBankerPack=kind==='banker'/);
+ assert.match(html,/if\(directBankerPack\)\{finalWheelStarted=true;showCards\(\);\}/);
+ assert.match(html,/wheelStage\.hidden=directBankerPack/);
+ assert.match(html,/if\(!directBankerPack\)setTimeout/);
+ assert.match(html,/if\(isFinal&&reward\.uid===uid\)setTimeout/);
+ assert.match(html,/activeWheelKind!=='banker'/);
+ assert.match(html,/addEventListener\('deal-banker-reveal-finished'/);
+ assert.match(banker,/dispatchEvent\(new Event\('deal-banker-reveal-finished'\)\)/);
+});
