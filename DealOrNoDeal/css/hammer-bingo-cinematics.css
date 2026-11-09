@@ -358,3 +358,18 @@ body[data-view=hammer] .hammer-line-prize.is-cinema-lit{
   .hammer-cinema-ray{stroke-dashoffset:0!important}
   .hammer-cinema__particle-field{display:none!important}
 }
+
+/* Explicit play-only demo scene: visually unmistakable from a genuine payout. */
+body[data-view=hammer] #hammer-cinema-preview{
+  background:linear-gradient(120deg,#644d2a,#214855);
+  border-color:#f5cd86;color:#fff2cc;
+}
+.hammer-cinema[data-preview=true] .hammer-cinema__tag{
+  display:inline-block;margin:8px auto 5px;padding:6px 13px;
+  background:#173b5de0;border:1px solid #9ac4ed;
+  border-radius:999px;color:#d4eaff;letter-spacing:.11em;
+}
+.hammer-cinema[data-preview=true] .hammer-cinema__confirmation{
+  background:rgba(52,72,101,.68);color:#e3efff;border-color:#9ab8ed;
+}
+.hammer-cinema[data-preview=true] .hammer-cinema__footer span{color:#bcd9f4}
