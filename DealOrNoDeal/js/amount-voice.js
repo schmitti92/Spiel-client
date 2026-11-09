@@ -9,8 +9,8 @@
  try{enabled=localStorage.getItem(key)==='true'}catch{}
  // Browser voice labels differ by platform. Prefer explicitly male German voices.
  // Never pretend a male voice is installed when the device provides none.
- const maleNames=/\\b(male|mann|männlich|masculine|markus|stefan|stefan|thomas|daniel|florian|klaus|hans|martin|christoph|conrad|ralf|ralph|benjamin|bernd|andreas|peter|jan|jonas|moritz|max|tim|thorsten|oliver|rolf|georg|wolfgang)\\b/i;
- const femaleNames=/\\b(female|frau|weiblich|feminine|anna|petra|helena|hedda|katja|vicki|viktoria|sandra|sabine|marlene|monika|maria|amelie|lea|lara|lena|siri)\\b/i;
+ const maleNames=/\b(male|mann|männlich|masculine|markus|stefan|stefan|thomas|daniel|florian|klaus|hans|martin|christoph|conrad|ralf|ralph|benjamin|bernd|andreas|peter|jan|jonas|moritz|max|tim|thorsten|oliver|rolf|georg|wolfgang)\b/i;
+ const femaleNames=/\b(female|frau|weiblich|feminine|anna|petra|helena|hedda|katja|vicki|viktoria|sandra|sabine|marlene|monika|maria|amelie|lea|lara|lena|siri)\b/i;
  function selectVoice(){
   if(!supported)return null;
   const german=speechSynthesis.getVoices().filter(v=>String(v.lang||'').toLowerCase().startsWith('de'));
