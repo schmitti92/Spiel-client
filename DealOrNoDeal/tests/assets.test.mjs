@@ -398,3 +398,20 @@ test('Christmas collection and ice-event use one shared navigation and preserve 
  assert.match(ice,/url\.searchParams\.set\('room',room\)/);
  assert.match(css,/\.event-hub-top\{/);
 });
+
+
+test('Autoplay is independently enabled for Vanessa and moin without changing manual banker decisions',()=>{
+ const script=readFileSync(resolve(root,'js/moin-autoplay.js'),'utf8');
+ const game=readFileSync(resolve(root,'game.html'),'utf8');
+ assert.match(script,/\['moin','deal-moin-autoplay-open-v1'\]/);
+ assert.match(script,/\['vanessa','deal-vanessa-autoplay-open-v1'\]/);
+ assert.match(script,/\.trim\(\)\.toLocaleLowerCase\('de-DE'\)/);
+ assert.match(script,/activeStorageKey=nextKey/);
+ assert.match(script,/localStorage\.getItem\(nextKey\)/);
+ assert.match(script,/localStorage\.setItem\(activeStorageKey,String\(enabled\)\)/);
+ assert.match(script,/g\.phase!=='open'/);
+ assert.match(script,/turn\(\)!==myId\(\)/);
+ assert.match(script,/await action\('open',\{case:selected\}\)/);
+ assert.doesNotMatch(script,/action\('decide'/);
+ assert.match(game,/moin-autoplay\.js\?v=20261109-vanessa-enabled-v1/);
+});
