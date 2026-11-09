@@ -9,7 +9,7 @@
   phase:'idle',packMode:null,claimPending:false,earned:0,
   deferredPacks:[],bridgeTimer:null,bridgeDeadline:null,bridgeSerial:0,focusBeforeBridge:null
  };
- const reduced=()=>Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+ const reduced=()=>Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches||window.ChristmasSpectacle?.minimal?.());
  const isRealPack=()=>state.packMode==='real';
  const isPackVisible=()=>id('reveal-overlay')?.hidden===false;
  const isBingoVisible=()=>id('hammer-cinema')?.hidden===false;

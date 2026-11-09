@@ -70,7 +70,7 @@
     closeRemaining:0,closeStartedAt:0,sound:false,
     soundContext:null, focusBefore:null
   };
-  const reduced=()=>!!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+  const reduced=()=>!!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches||!!window.ChristmasSpectacle?.minimal?.();
   const packOpen=()=>!byId('reveal-overlay')?.hidden;
   const canShow=()=>!document.hidden&&!packOpen();
 
@@ -190,9 +190,10 @@
   function drawParticles(){
     const root=byId('hammer-cinema-particles');if(!root)return;
     root.replaceChildren();
-    if(reduced())return;
+    const particleLimit=window.ChristmasSpectacle?.particleLimit?.(28)??(reduced()?0:28);
+    if(!particleLimit)return;
     const colors=['#ffe29d','#ffffff','#9bd9ed','#e3aeff','#ffc877'];
-    for(let i=0;i<28;i++){
+    for(let i=0;i<particleLimit;i++){
       const item=document.createElement('i');
       item.style.setProperty('--x',(7+(i*41)%87)+'%');
       item.style.setProperty('--y',(9+(i*29)%83)+'%');

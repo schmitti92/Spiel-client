@@ -16,7 +16,7 @@
   premium:{label:'Premium-Weihnachtspaket',caption:'DIE GOLDENE WEIHNACHTSWELT'}
  });
  const byId=id=>document.getElementById(id);
- const reduced=()=>Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+ const reduced=()=>Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches||window.ChristmasSpectacle?.minimal?.());
  const getRarity=card=>rarities[String(card?.rarity||'').toLowerCase()]||rarities.common;
  let enabledSound=false, audioContext=null, triggerElement=null;
  const safeCount=cards=>Array.isArray(cards)?cards.length:0;
@@ -68,9 +68,10 @@
  function makeParticles(){
   const root=byId('pack-cinema-particles');if(!root)return;
   root.replaceChildren();
-  if(reduced())return;
+  const particleLimit=window.ChristmasSpectacle?.particleLimit?.(27)??(reduced()?0:27);
+  if(!particleLimit)return;
   const colors=['#ffe8aa','#b8dfff','#d5b2ff','#ffbd83','#fff','#b4f3dc'];
-  for(let i=0;i<27;i++){
+  for(let i=0;i<particleLimit;i++){
    const particle=document.createElement('i');
    particle.style.setProperty('--x',(5+i*41%91)+'%');
    particle.style.setProperty('--y',(9+i*29%82)+'%');

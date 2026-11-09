@@ -1,0 +1,272 @@
+/* CHRISTMAS SPECTACLE V2 – cinematic design layer, pure decoration.
+   No new image downloads beyond previously bundled event assets.
+   Every continuous motion respects user quality, tab visibility and reduced motion. */
+:root{--xmas-foil:rgba(255,225,147,.8);--xmas-ice:rgba(160,217,255,.78)}
+#christmas-effects-toggle{
+ appearance:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+ min-height:38px;padding:7px 13px;border:1px solid #d7b779;border-radius:10px;
+ color:#fff0c7;background:linear-gradient(140deg,#614828,#1b4454);
+ box-shadow:inset 0 1px rgba(255,255,255,.35),0 4px 15px #0006;
+ font:800 clamp(11px,.9vw,14px)/1.2 system-ui,sans-serif;white-space:nowrap;
+}
+#christmas-effects-toggle:hover{filter:brightness(1.12)}
+#christmas-effects-toggle:focus-visible{outline:3px solid #ffe9aa;outline-offset:3px}
+#christmas-effects-toggle[data-level=off]{border-color:#889da6;color:#d9e5e7;background:#223442}
+#christmas-effects-toggle[data-level=soft]{border-color:#a3cccb;color:#e1f8f4;background:#234e53}
+#christmas-effects-toggle[data-level=full]{border-color:#f5cf78;color:#ffebad}
+@media(max-width:680px){#christmas-effects-toggle{min-height:35px;padding:6px 8px;font-size:11px}}
+
+/* Three-dimensional atmosphere with no extra raster request, layout shifts or canvas. */
+.hammer-cinema__halo{
+ position:absolute;z-index:-1;inset:-17%;pointer-events:none;
+ background:radial-gradient(ellipse at 50% 50%,#ffe0a72d,transparent 58%),
+  conic-gradient(from 30deg,transparent 0deg 20deg,#eace6e2b 33deg,transparent 45deg 82deg,#b4d9ff2c 92deg,transparent 105deg 170deg,#f9d07a27 183deg,transparent 208deg);
+ border-radius:50%;transform-origin:center;
+ animation:xmas-v2-halo-turn 34s linear infinite;
+}
+.hammer-cinema[data-world=winter] .hammer-cinema__halo{
+ background:radial-gradient(ellipse at 50% 50%,#b0b0ff3e,transparent 61%),
+ conic-gradient(from 25deg,transparent,#a1bbff3e 35deg,transparent 65deg,#dcc7ff31 115deg,transparent 148deg,#a0e8e637 200deg,transparent 240deg);
+}
+.hammer-cinema__stage{perspective:1200px}
+.hammer-cinema__stage .hammer-cinema__head{position:relative;isolation:isolate}
+.hammer-cinema__stage .hammer-cinema__head::before,
+.hammer-cinema__stage .hammer-cinema__head::after{
+ content:"";position:absolute;z-index:-1;top:15%;width:clamp(35px,8vw,105px);
+ aspect-ratio:1;pointer-events:none;opacity:.7;
+ background:radial-gradient(circle,#fff4c8bd 0 3%,#ffe5aa55 4% 8%,transparent 65%);
+ filter:drop-shadow(0 0 8px #ffefb6);
+ animation:xmas-v2-twinkle 3.8s ease-in-out infinite alternate;
+}
+.hammer-cinema__stage .hammer-cinema__head::before{left:1%}
+.hammer-cinema__stage .hammer-cinema__head::after{right:1%;animation-delay:1.1s}
+.hammer-cinema[data-world=winter] .hammer-cinema__head::before,
+.hammer-cinema[data-world=winter] .hammer-cinema__head::after{
+ background:radial-gradient(circle,#f0eeffbd 0 3%,#a2d5ff60 5% 11%,transparent 66%);
+}
+.hammer-cinema__award-crest{
+ display:block;position:relative;width:max-content;max-width:100%;margin:4px auto 1px;
+ color:#fff0b7;font:900 clamp(11px,1.05vw,15px)/1.3 Georgia,serif;letter-spacing:.24em;
+ text-shadow:0 0 13px #ffe5a4b3;
+}
+.hammer-cinema[data-world=winter] .hammer-cinema__award-crest{color:#e7e5ff;text-shadow:0 0 16px #9aafffdc}
+.hammer-cinema[data-kind=jackpot] .hammer-cinema__award-crest{font-size:clamp(13px,1.7vw,21px)}
+.hammer-cinema__jackpot-crown{display:none}
+.hammer-cinema[data-kind=jackpot] .hammer-cinema__jackpot-crown{display:block}
+.hammer-cinema__jackpot-crown{
+ position:relative;margin:0 auto 4px;width:clamp(68px,9vw,110px);height:clamp(36px,5vw,57px);
+ text-align:center;line-height:1;pointer-events:none;
+ color:#ffedb9;font:900 clamp(37px,5vw,67px)/1 Georgia,serif;
+ text-shadow:0 3px 10px #0008,0 0 30px #ffc65fa8;
+ filter:drop-shadow(0 0 16px #f9d16f99);
+}
+.hammer-cinema__jackpot-crown::before{
+ content:"";position:absolute;z-index:-1;inset:-38%;border-radius:50%;
+ background:radial-gradient(circle,#ffe9b94b,transparent 71%);
+ transform:scale(1);
+ animation:xmas-v2-crown-aura 2.4s ease-in-out infinite alternate;
+}
+.hammer-cinema.is-playing[data-kind=jackpot] .hammer-cinema__jackpot-crown{
+ animation:xmas-v2-crown-in 1.1s .12s cubic-bezier(.17,1.5,.25,1) both;
+}
+.hammer-cinema.is-playing .hammer-cinema__showcase{
+ transform-origin:50% 38%;
+ animation:xmas-v2-camera-dolly 1.5s .1s cubic-bezier(.16,1,.22,1) both;
+}
+.hammer-cinema.is-playing[data-kind=jackpot] .hammer-cinema__showcase{
+ animation:xmas-v2-camera-jackpot 1.75s .18s cubic-bezier(.16,1,.22,1) both;
+}
+.hammer-cinema.is-playing .hammer-cinema__board{
+ animation:xmas-v2-board-entrance 1.15s .1s ease-out both;
+}
+.hammer-cinema.is-playing .hammer-cinema__reward{
+ animation:xmas-v2-prizes-entrance 1.2s .25s cubic-bezier(.18,1.2,.25,1) both;
+}
+.hammer-cinema__reward::after{
+ content:"";position:absolute;inset:8px;z-index:1;border-radius:12px;
+ pointer-events:none;opacity:.6;
+ background:linear-gradient(115deg,transparent 28%,#fff0c72a 46%,transparent 61%);
+ background-size:250% 100%;background-position:-110% 0;
+ animation:xmas-v2-foil-sweep 5.6s 1.4s ease-in-out infinite;
+}
+.hammer-cinema[data-world=winter] .hammer-cinema__reward::after{
+ background-image:linear-gradient(115deg,transparent 28%,#c9c9ff42 46%,transparent 61%);
+}
+.hammer-cinema[data-kind=jackpot] .hammer-cinema__stage::after{
+ content:"✦ ✧ ★ ✧ ✦";font-size:clamp(17px,3vw,31px);letter-spacing:clamp(6px,2vw,20px);
+ top:8px;left:0;right:0;text-align:center;color:#fff1b6;
+ animation:xmas-v2-twinkle 2.4s ease-in-out infinite alternate;
+}
+.hammer-cinema[data-kind=jackpot] .hammer-cinema__prizes{
+ padding-block:9px;transform-style:preserve-3d;
+}
+.hammer-cinema[data-kind=jackpot] .hammer-cinema-prize img{
+ animation:xmas-v2-prize-float 3.4s ease-in-out infinite alternate;
+}
+.hammer-cinema[data-kind=jackpot] .hammer-cinema-prize:nth-child(2) img{animation-delay:1s}
+.hammer-cinema[data-kind=jackpot] .hammer-cinema-prize:nth-child(3) img{animation-delay:1.8s}
+
+/* Pack theater: the winning card enters as a real collector's exhibit. */
+#reveal-overlay .pack-cinema-theater{
+ transform-style:preserve-3d;isolation:isolate;
+}
+#reveal-overlay .pack-cinema-theater .pack-cinema-orbit{
+ position:absolute;z-index:0;left:50%;top:48%;
+ width:min(340px,86%);aspect-ratio:1;transform:translate(-50%,-50%) rotate(-15deg);
+ border:2px solid rgba(255,230,177,.48);border-radius:50%;
+ box-shadow:0 0 32px #ffe4ba49,inset 0 0 26px #ffebbc28;
+ pointer-events:none;
+ animation:xmas-v2-orbit 13s linear infinite;
+}
+#reveal-overlay .pack-cinema-orbit::before,
+#reveal-overlay .pack-cinema-orbit::after{
+ content:"";position:absolute;inset:13%;border:1px solid rgba(255,248,215,.35);
+ border-radius:50%;transform:rotateX(58deg);
+}
+#reveal-overlay .pack-cinema-orbit::after{inset:24%;border-color:rgba(190,220,255,.49);transform:rotateY(65deg)}
+#reveal-overlay[data-stage=summary] .pack-cinema-orbit{display:none}
+#reveal-overlay[data-rarity=legendary][data-stage=card] .pack-cinema-orbit{
+ border:3px solid #ffe498a6;box-shadow:0 0 58px #ffd5769b,inset 0 0 40px #ffd58574;
+ animation-duration:6s;
+}
+#reveal-overlay[data-rarity=epic][data-stage=card] .pack-cinema-orbit{
+ border-color:#d7a1ffb3;box-shadow:0 0 48px #c999ffb8;
+}
+#reveal-overlay[data-rarity=rare][data-stage=card] .pack-cinema-orbit{
+ border-color:#ade9ffba;box-shadow:0 0 37px #86d8ff8a;
+}
+#reveal-overlay[data-stage=card] .reveal-card{
+ backface-visibility:hidden;transform-style:preserve-3d;
+}
+#reveal-overlay[data-stage=card] .reveal-card img{
+ position:relative;box-shadow:0 4px 15px #000b,0 0 0 1px #ffe2ae75;
+}
+#reveal-overlay[data-stage=card] .reveal-card::after{
+ content:"";position:absolute;z-index:2;inset:10px;border-radius:10px;
+ pointer-events:none;background:linear-gradient(115deg,
+ transparent 20%,rgba(255,255,255,.03) 29%,rgba(255,245,192,.45) 48%,transparent 61%);
+ background-size:280% 100%;background-position:-115% 0;
+ animation:xmas-v2-foil-sweep 4.8s 1.1s ease-in-out infinite;
+}
+#reveal-overlay[data-stage=card][data-rarity=legendary] .reveal-card::before{
+ content:"✦ ✧ ✦ ✧ ✦";position:absolute;z-index:6;top:50%;left:-80px;right:-80px;
+ color:#fff1b5;font:900 clamp(18px,3vw,28px)/1 Georgia,serif;
+ letter-spacing:clamp(6px,1.5vw,16px);text-shadow:0 0 18px #ffe19d;
+ pointer-events:none;animation:xmas-v2-legendary-stars 2.6s ease-in-out infinite alternate;
+}
+#reveal-overlay[data-stage=card][data-rarity=epic] .reveal-card::after{
+ background-image:linear-gradient(115deg,transparent 25%,#ddb8ff81 49%,transparent 66%);
+}
+#reveal-overlay[data-stage=card][data-rarity=rare] .reveal-card::after{
+ background-image:linear-gradient(115deg,transparent 25%,#c3eeff7a 49%,transparent 66%);
+}
+#reveal-overlay[data-stage=summary] .reveal-summary-item.legendary{
+ position:relative;isolation:isolate;
+}
+#reveal-overlay[data-stage=summary] .reveal-summary-item.legendary::after{
+ content:"";position:absolute;inset:1px;z-index:3;pointer-events:none;
+ border:1px solid rgba(255,236,165,.87);border-radius:10px;
+ box-shadow:0 0 15px rgba(255,213,109,.6);
+ animation:xmas-v2-twinkle 2.7s ease-in-out infinite alternate;
+}
+
+/* Animate only transformed/opacity layers; don't continuously animate size/layout. */
+@keyframes xmas-v2-halo-turn{to{transform:rotate(360deg)}}
+@keyframes xmas-v2-twinkle{from{opacity:.33}to{opacity:1}}
+@keyframes xmas-v2-crown-aura{to{transform:scale(1.25);opacity:.68}}
+@keyframes xmas-v2-crown-in{
+ from{opacity:0;transform:translateY(-40px) rotateY(45deg) scale(.3)}
+ 70%{opacity:1;transform:translateY(6px) rotateY(-7deg) scale(1.12)}
+ to{opacity:1;transform:none}
+}
+@keyframes xmas-v2-camera-dolly{
+ from{opacity:0;transform:translate3d(0,21px,0) scale(.91) rotateX(8deg)}
+ 75%{opacity:1;transform:translate3d(0,-3px,0) scale(1.02) rotateX(-1deg)}
+ to{opacity:1;transform:none}
+}
+@keyframes xmas-v2-camera-jackpot{
+ from{opacity:0;transform:translate3d(0,47px,0) scale(.72) rotateX(15deg)}
+ 66%{opacity:1;transform:translate3d(0,-8px,0) scale(1.055) rotateX(-2deg)}
+ to{opacity:1;transform:none}
+}
+@keyframes xmas-v2-board-entrance{
+ from{opacity:.3;transform:translate3d(-24px,0,0) rotateY(-12deg)}
+ to{opacity:1;transform:none}
+}
+@keyframes xmas-v2-prizes-entrance{
+ from{opacity:0;transform:translate3d(26px,0,0) rotateY(10deg)}
+ to{opacity:1;transform:none}
+}
+@keyframes xmas-v2-foil-sweep{
+ 0%,10%{background-position:-110% 0;opacity:0}
+ 25%{opacity:.65}
+ 45%,100%{background-position:200% 0;opacity:0}
+}
+@keyframes xmas-v2-prize-float{to{transform:translate3d(0,-8px,0) rotate(2deg)}}
+@keyframes xmas-v2-orbit{from{transform:translate(-50%,-50%) rotate(-15deg)}to{transform:translate(-50%,-50%) rotate(345deg)}}
+@keyframes xmas-v2-legendary-stars{
+ from{opacity:.24;transform:translateY(16px) scale(.92)}
+ to{opacity:.94;transform:translateY(-18px) scale(1.04)}
+}
+
+/* Soft quality keeps the luxurious static look while eliminating expensive
+   continuous blurs, rays and orbits on slower mobile devices. */
+body[data-xmas-effects=soft] :is(.hammer-cinema__halo,.pack-cinema-orbit){
+ animation:none!important;opacity:.38!important;
+}
+body[data-xmas-effects=soft] :is(
+ .hammer-cinema__stage .hammer-cinema__head::before,
+ .hammer-cinema__stage .hammer-cinema__head::after,
+ .hammer-cinema__reward::after,
+ .hammer-cinema__jackpot-crown::before,
+ .hammer-cinema-prize img,
+ #reveal-overlay .reveal-card::after,
+ #reveal-overlay .reveal-card::before,
+ #reveal-overlay .reveal-summary-item.legendary::after
+){animation:none!important}
+body[data-xmas-effects=soft] .hammer-cinema__particle-field i:nth-child(n+9),
+body[data-xmas-effects=soft] .pack-cinema-particles i:nth-child(n+9){display:none!important}
+
+/* Off is deliberately distinct from prefers-reduced-motion: it removes all
+   decorative animation, but NOT cards, prizes or the final authoritative amounts. */
+body[data-xmas-effects=off] :is(
+ .hammer-cinema__halo,.pack-cinema-orbit,
+ .hammer-cinema__particle-field,.pack-cinema-particles
+){display:none!important}
+body[data-xmas-effects=off] :is(
+ .hammer-cinema *,.hammer-cinema *::before,.hammer-cinema *::after,
+ #reveal-overlay *,#reveal-overlay *::before,#reveal-overlay *::after,
+ #christmas-show-transition *,#christmas-show-transition *::before,
+ .hammer-cinema__stage::before,.hammer-cinema__stage::after,
+ #reveal-overlay::before,#reveal-overlay::after
+){animation:none!important;transition:none!important}
+body[data-xmas-effects=off] .hammer-cinema-ray{stroke-dashoffset:0!important}
+body[data-xmas-effects=off] .reveal-card{
+ transform:translate(-50%,-50%)!important;opacity:1!important;
+}
+body[data-xmas-effects=off] .hammer-cinema-prize{opacity:1!important;transform:none!important}
+
+/* Backgrounded tabs pause CSS animations as well as JS-managed timers. */
+body.xmas-cinema-paused :is(
+ .hammer-cinema *,#reveal-overlay *,#christmas-show-transition *,
+ .hammer-cinema__halo,.pack-cinema-orbit
+){animation-play-state:paused!important}
+@media(max-width:700px){
+ .hammer-cinema.is-playing .hammer-cinema__showcase,
+ .hammer-cinema.is-playing[data-kind=jackpot] .hammer-cinema__showcase{
+ animation-name:xmas-v2-camera-dolly;animation-duration:.9s;
+ }
+ #reveal-overlay .pack-cinema-theater .pack-cinema-orbit{width:min(265px,93%)}
+ #reveal-overlay[data-stage=card][data-rarity=legendary] .reveal-card::before{
+ left:-27px;right:-27px;letter-spacing:4px;font-size:15px;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ .hammer-cinema__halo,.pack-cinema-orbit{display:none!important}
+ .hammer-cinema__showcase,.hammer-cinema__board,.hammer-cinema__reward,
+ .hammer-cinema__jackpot-crown,#reveal-overlay .reveal-card,
+ #reveal-overlay .reveal-card::after,#reveal-overlay .reveal-card::before{
+ animation:none!important;transition:none!important;
+ }
+ .hammer-cinema__particle-field,.pack-cinema-particles{display:none!important}
+}
