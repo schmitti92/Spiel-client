@@ -425,8 +425,10 @@
   try{
    const token=await u.getIdToken(),headers={Authorization:'Bearer '+token};
    const endpoints=[];
-   if(g.phase==='final'&&pendingReward('final',g.id)&&document.getElementById('finale-cinema')?.hidden&&!finishTiedFinal()&&!sessionStorage.getItem('final-wheel-complete:'+g.id))endpoints.push('/christmas-final-reward');
+   // Show already-awarded banker packs before the separate winner-wheel prize,
+   // including when the last accepted deal has just ended the match.
    if((g.history||[]).some(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true&&pendingReward('banker',g.id+'_'+h.round+'_'+d.id))))endpoints.push('/christmas-banker-rewards');
+   if(g.phase==='final'&&pendingReward('final',g.id)&&document.getElementById('finale-cinema')?.hidden&&!finishTiedFinal()&&!sessionStorage.getItem('final-wheel-complete:'+g.id))endpoints.push('/christmas-final-reward');
    if((g.events||[]).some(e=>e.type==='opened'&&e.amount===1&&pendingReward('cent',g.id+'_'+e.eventId)))endpoints.push('/christmas-cent-reward');
    for(const endpoint of endpoints){
     const response=await fetch(api(endpoint),{headers,cache:'no-store'});
