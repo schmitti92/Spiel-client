@@ -293,3 +293,53 @@ body.christmas-event-ice .v44-note{
   body.christmas-event-ice .v44-progress-meter>i,
   body.christmas-event-ice .v44-reward .v44-reward-art img{transition:none!important}
 }
+
+
+/* Numbered milestone treasure images — large, uncropped and visually tiered. */
+body.christmas-event-ice .v44-reward{
+ min-height:235px!important;padding:12px 9px 15px!important;
+ border-color:#d6a75e;overflow:visible;
+ background:radial-gradient(ellipse at 50% 38%,#8e6a356e,transparent 78%),
+ linear-gradient(145deg,#44202c,#231b38 58%,#1a233b);
+}
+body.christmas-event-ice .v44-reward .v44-reward-art{
+ min-height:117px;flex:1;margin:4px 0;
+ filter:drop-shadow(0 4px 10px #0009);
+}
+body.christmas-event-ice .v44-reward .v44-reward-art img{
+ width:min(100%,155px)!important;height:116px!important;
+ max-width:100%;object-fit:contain;object-position:center;
+ filter:drop-shadow(0 3px 7px #000a);
+}
+body.christmas-event-ice .v44-reward.current .v44-reward-art img{
+ transform:scale(1.065);filter:drop-shadow(0 0 14px #ffe28b99);
+}
+body.christmas-event-ice .v44-reward.done .v44-reward-art img{
+ filter:drop-shadow(0 0 10px #b0ffc77e);
+}
+body.christmas-event-ice .v44-reward[data-milestone="40"]{
+ background:radial-gradient(ellipse at 50% 40%,#7daee14a,transparent 72%),
+ linear-gradient(145deg,#282e57,#1a243e 70%,#162231);
+}
+body.christmas-event-ice .v44-reward[data-milestone="60"]{
+ background:radial-gradient(ellipse at 50% 38%,#86b3e266,transparent 72%),
+ linear-gradient(145deg,#2d2761,#1a2a49 70%,#141e31);
+}
+body.christmas-event-ice .v44-reward[data-milestone="70"]{
+ border-color:#ffe0a4;box-shadow:0 0 0 1px #ffe6ac5c,0 0 20px #ebb9595c,inset 0 1px 0 #fff3;
+ background:radial-gradient(ellipse at 50% 35%,#ddaf6266,transparent 78%),
+ linear-gradient(140deg,#6a2e22,#50303c 59%,#232e47);
+}
+body.christmas-event-ice .v44-reward .v44-reward-title{
+ min-height:30px;display:grid;place-items:center;font-size:clamp(13px,1vw,17px)!important;
+}
+body.christmas-event-ice .v44-reward .v44-reward-status{
+ display:block;min-height:30px;font-size:clamp(10px,.83vw,13px)!important;
+}
+@media(max-width:900px){
+ body.christmas-event-ice .v44-reward{min-height:228px!important}
+ body.christmas-event-ice .v44-reward .v44-reward-art img{height:114px!important}
+}
+@media(max-width:600px){
+ body.christmas-event-ice .v44-reward{min-height:222px!important}
+}
