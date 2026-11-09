@@ -25,7 +25,7 @@
    ?state.earned===1?'🏆 Deine bestätigte Bingo-Siegesshow wartet nach dem Paket auf dich!'
      :'🏆 '+state.earned+' bestätigte Bingo-Gewinne warten nach dem Paket auf dich!'
    :checking?'⏳ Hammer-Bingos werden im Hintergrund serverseitig geprüft.'
-     :'🎁 '+waiting+' weiteres'+(waiting===1?' Paket wartet':' Pakete warten')+' auf die Enthüllung.';
+     :waiting===1?'🎁 Ein weiteres Paket wartet auf die Enthüllung.':'🎁 '+waiting+' weitere Pakete warten auf die Enthüllung.';
   if(id('reveal-summary')?.hidden===false){
    button.textContent=ready?'🏆 Weiter zur Siegesshow':
     checking?'🎬 Weiter · Gewinnprüfung läuft':
