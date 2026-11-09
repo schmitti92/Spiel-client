@@ -319,7 +319,7 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
 @media(max-width:600px){.v44-image-viewer-stage img{max-width:calc(100% - 74px);max-height:70dvh}.v44-image-viewer-stage>button{padding:7px}.v44-image-viewer{padding:8px}}
 </style>
 <link rel="stylesheet" href="../css/christmas-event-hub.css?v=20261109-goldstudio-v2"><script src="../../profile-config.js"></script><script src="../../profile-auth.js"></script></head><body class="christmas-event-ice">
-<header class="event-hub-top" aria-label="Weihnachtszauber – gemeinsame Event-Navigation"><span class="event-hub-brand"><span class="event-hub-brand-symbol" aria-hidden="true">🎄</span><span>Weihnachtszauber <small>DEAL OR NO DEAL · EVENT-WELT</small></span></span><div class="event-hub-tools"><a class="event-hub-tool" id="event-game-link" href="../game.html">🎮 Zum Spiel</a><a class="event-hub-tool" id="event-lobby-link" href="../lobby.html">↩ Zur Spiellobby</a><button type="button" id="event2-fullscreen" class="event-hub-tool" aria-pressed="false">⛶ Vollbild</button><a href="#" id="event-guide-open" class="event-hub-tool event-guide-open">📖 Anleitung</a></div></header>
+<header class="event-hub-top" aria-label="Weihnachtszauber – gemeinsame Event-Navigation"><a class="event-hub-brand" id="event-world-link" href="../weihnachtswelt.html" title="Zur gemeinsamen Weihnachtswelt" aria-label="Weihnachtswelt – Übersicht öffnen"><span class="event-hub-brand-symbol" aria-hidden="true">🎄</span><span>Weihnachtszauber <small>↗ Zur Event-Übersicht</small></span></a><div class="event-hub-tools"><a class="event-hub-tool" id="event-game-link" href="../game.html">🎮 Zum Spiel</a><a class="event-hub-tool" id="event-lobby-link" href="../lobby.html">↩ Zur Spiellobby</a><button type="button" id="event2-fullscreen" class="event-hub-tool" aria-pressed="false">⛶ Vollbild</button><a href="#" id="event-guide-open" class="event-hub-tool event-guide-open">📖 Anleitung</a></div></header>
 <nav class="event-tabs event-hub-nav" aria-label="Weihnachtsbereiche">
 <a href="../weihnachten.html?view=album">🃏 Sammlung</a>
 <a href="../weihnachten.html?view=packs">🎁 Pakete</a>
@@ -336,6 +336,7 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
   sessionStorage.setItem('deal-active-room',room);
   document.getElementById('event-game-link').href='../game.html?room='+encodeURIComponent(room);
   document.getElementById('event-lobby-link').href='../lobby.html?room='+encodeURIComponent(room);
+  document.getElementById('event-world-link').href='../weihnachtswelt.html?room='+encodeURIComponent(room);
   document.querySelectorAll('nav a[href^="../weihnachten.html"]').forEach(a=>{
    const url=new URL(a.href);
    url.searchParams.set('room',room);
