@@ -10,36 +10,86 @@ const lobby=readFileSync(resolve(root,'lobby.html'),'utf8');
 const hub=readFileSync(resolve(root,'weihnachtswelt.html'),'utf8');
 const css=readFileSync(resolve(root,'css/christmas-north-pole.css'),'utf8');
 const art=[
- "65_polarstern.svg",
- "66_eisbaerenhoehle.svg",
- "67_frostfuchs.svg",
- "68_nordwind_kompass.svg",
- "69_kristallgrotte.svg",
- "70_geheime_wichteltuer.svg",
- "71_sternenschlitten.svg",
- "72_schneeeule.svg",
- "73_aurora_bruecke.svg",
- "74_diamant_schneeflocke.svg",
- "75_uhrwerk_weihnacht.svg",
- "76_mitternachtszug.svg",
- "77_krone_nordpol.svg",
- "78_palast_polarlichter.svg",
- "79_goldenes_weihnachtsherz.svg",
- "80_letzte_sternschnuppe.svg"
+  [
+    "images.jpeg",
+    "Funkelnder Weihnachtsbaum"
+  ],
+  [
+    "images-1.jpeg",
+    "Schlitten im Mondschein"
+  ],
+  [
+    "images-2.jpeg",
+    "Weihnachtsmann mit Geschenken"
+  ],
+  [
+    "images-3.jpeg",
+    "Glitzernde Weihnachtskugeln"
+  ],
+  [
+    "images-4.jpeg",
+    "Kakao am Winterfenster"
+  ],
+  [
+    "images-5.jpeg",
+    "Kleiner Weihnachtsfreund"
+  ],
+  [
+    "images-6.jpeg",
+    "Leuchtendes Winterdorf"
+  ],
+  [
+    "images-7.jpeg",
+    "Süße Nikolausstiefel"
+  ],
+  [
+    "images-8.jpeg",
+    "Wichtel im Zauberwald"
+  ],
+  [
+    "images-9.jpeg",
+    "Familie in der Schneekugel"
+  ],
+  [
+    "images-10.jpeg",
+    "Winterfee"
+  ],
+  [
+    "images-11.jpeg",
+    "Verzauberter Tannenwald"
+  ],
+  [
+    "images-12.jpeg",
+    "Goldener Weihnachtsbaum"
+  ],
+  [
+    "images-13.jpeg",
+    "Weihnachtsmanns Schneekugel"
+  ],
+  [
+    "images-14.jpeg",
+    "Schneemann im Wohnzimmer"
+  ],
+  [
+    "images-15.jpeg",
+    "Wichtel auf Zuckerstange"
+  ]
 ];
-
-test('all sixteen independent Nordpol card illustrations exist and map to IDs 65–80',()=>{
+const assetFolder=resolve(root,'Weihnachtsevent2/Weihnachtsbilder');
+test('all 16 uploaded JPEG photos are wired to stable card IDs 65–80',()=>{
  assert.equal(art.length,16);
- assert.equal(new Set(art).size,16);
- for(const [index,name] of art.entries()){
-  const file=resolve(root,'assets/weihnachts_event',name);
-  assert.ok(existsSync(file),'Missing artwork: '+name);
-  const svg=readFileSync(file,'utf8');
-  assert.match(svg,/^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
-  assert.ok(svg.includes('viewBox="0 0 640 640"'),'Card aspect missing: '+name);
-  assert.ok(svg.includes('NORDPOL ✦ '+(65+index)),'Card number mismatch: '+name);
-  assert.ok(html.includes('"'+name+'"'),'Card image not wired into album: '+name);
+ assert.equal(new Set(art.map(([file])=>file)).size,16);
+ for(const [i,[file,name]] of art.entries()){
+  const path=resolve(assetFolder,file);
+  assert.ok(existsSync(path),'Missing photo for card '+(65+i)+': '+file);
+  const bytes=readFileSync(path);
+  assert.ok(bytes.length>1024,'JPEG too small: '+file);
+  assert.deepEqual([...bytes.subarray(0,3)],[255,216,255],'Invalid JPEG: '+file);
+  assert.ok(html.includes('["'+file+'","'+name+'"]'),'Incorrect card '+(65+i));
  }
+ assert.match(html,/file\.endsWith\('\.jpeg'\)/);
+ assert.match(html,/Weihnachtsevent2\/Weihnachtsbilder/);
+ assert.match(css,/object-fit:contain!important/);
 });
 test('third classic board and updated counters are wired without exposing locked card art',()=>{
  assert.match(html,/id="album-grid-third"/);
