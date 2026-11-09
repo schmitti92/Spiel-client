@@ -1,3 +1,4 @@
+'use strict';
 /* Christmas card artwork loader · presentation only.
  * Warm up the next images before the card zoom begins. Some uploaded cards
  * are multi-megabyte PNGs, which can take longer than a 1.8s reveal.
