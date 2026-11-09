@@ -238,7 +238,7 @@ async function run(type,extra={}){
    const title=gift?(gift.kind==='money'?'💰 Geldgewinn':gift.kind==='joker'?'🔐 Kofferblick-Joker':'🔨 Gratis-Hammer'):'⭐ Bild abgeschlossen';
    const detail=gift?(gift.kind==='money'?money(gift.amount):gift.kind==='joker'?'1 Kofferblick-Joker':({single:'Einfacher Hammer',double:'Doppelhammer',lucky:'Glückshammer'}[gift.hammer]||'Hammer')+' erhalten'):'Bereits erhaltene Belohnungen werden nicht erneut gutgeschrieben.';
    celebration={number:Number(state.completed||oldCompleted+1),title,detail,kind:gift?.kind||'other',hammer:gift?.hammer||null,amount:gift?.amount||0,stage:'gift'};
-  }else if(type==='next'||type==='reset'){clearTimeout(wheelTimer);celebration=null;}
+  }else if(type==='next'||type==='reset'){clearTimeout(wheelTimer);clearTimeout(celebrationDelayTimer);celebrationDelayTimer=null;confirmedHit=null;celebration=null;}
   forgetPending();
   if(data.result?.gift){const gift=data.result.gift;message('🎁 '+(gift.kind==='joker'?'Kofferblick-Joker gewonnen!':gift.kind==='money'?money(gift.amount)+' gewonnen!':'Gratis-Hammer gewonnen: '+gift.hammer))}
   else if(data.result?.found)message('🌟 Stern gefunden! Dieses Bild wurde bereits bei einem früheren Durchlauf belohnt.');
