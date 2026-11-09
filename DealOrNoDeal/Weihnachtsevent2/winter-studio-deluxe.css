@@ -550,3 +550,18 @@ body.christmas-event-ice #ice-next-board{
 }
 body.christmas-event-ice #ice-next-board:focus-visible{outline:3px solid #fff;outline-offset:3px}
 body.christmas-event-ice #ice-next-board:disabled{opacity:.62;cursor:wait}
+
+/* Keep the hammer impact visible while slow server roundtrips are pending. */
+body.christmas-event-ice .v44-board .ice-tiles button.ice-strike-wait{
+ outline:3px solid #ffe499;outline-offset:-3px;
+ filter:brightness(1.4) drop-shadow(0 0 13px #e2fbff);
+ box-shadow:inset 0 0 25px #fffaca,0 0 17px #ffda81;
+ animation:ice-strike-await 1.15s ease-in-out infinite alternate;
+}
+@keyframes ice-strike-await{
+ from{filter:brightness(1.1) drop-shadow(0 0 4px #fff0b4)}
+ to{filter:brightness(1.55) drop-shadow(0 0 15px #ffe99d)}
+}
+@media(prefers-reduced-motion:reduce){
+ body.christmas-event-ice .v44-board .ice-tiles button.ice-strike-wait{animation:none}
+}
