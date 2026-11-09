@@ -79,6 +79,19 @@ function pollDelay(){if(!g)return 5000;if(g.phase==='final'||g.phase==='done')re
 // The server remains authoritative. WebSocket is an optional push channel;
 // HTTP remains available during reconnects and for older backend deployments.
 let dealSocket=null,dealSocketReady=false,dealSocketRetry=0,dealSocketLastMessage=0,dealSocketConnecting=false,lastHttpSafetySync=0;
+// The server's clock determines shared cinematic timings, not each device's clock.
+let dealClockOffsetMs=0,dealClockSynced=false;
+function dealServerNow(){return Date.now()+dealClockOffsetMs}
+function syncDealClock(message){
+ const receivedAt=Date.now(),serverNow=Number(message?.serverNow),sentAt=Number(message?.clientSentAt);
+ if(!Number.isSafeInteger(serverNow))return;
+ const rttValid=message.type==='pong'&&Number.isSafeInteger(sentAt)&&sentAt>0&&sentAt<=receivedAt&&receivedAt-sentAt<10000;
+ // The first subscription is a coarse sample. Heartbeat round-trips refine it.
+ if(dealClockSynced&&!rttValid)return;
+ const estimate=serverNow-(rttValid?(sentAt+receivedAt)/2:receivedAt);
+ dealClockOffsetMs=dealClockSynced?Math.round(dealClockOffsetMs*.25+estimate*.75):Math.round(estimate);
+ dealClockSynced=true;
+}
 let lastSocketHeartbeat=0;
 let reconnectTimer=null;
 function scheduleDealReconnect(){
@@ -101,11 +114,19 @@ async function connectDealSocket(){
   if(!user())return;
   const ws=new WebSocket(base.replace(/^http/,'ws')+'/deal-or-no-deal');
   dealSocket=ws;dealSocketReady=false;dealSocketConnecting=false;
-  ws.onopen=()=>{if(dealSocket!==ws){ws.close();return}dealSocketRetry=0;ws.send(JSON.stringify({type:'subscribe',code,token}))};
+  ws.onopen=()=>{if(dealSocket!==ws){ws.close();return}dealSocketRetry=0;ws.send(JSON.stringify({type:'subscribe',code,token,clientSentAt:Date.now()}))};
   ws.onmessage=event=>{
    if(dealSocket!==ws)return;
    let msg;try{msg=JSON.parse(event.data)}catch{return}
-   if(msg.type==='deal-subscribed'||msg.type==='pong'){if(msg.type==='deal-subscribed')dealSocketReady=true;dealSocketLastMessage=Date.now()}
+   if(msg.type==='deal-subscribed'||msg.type==='pong'){
+   syncDealClock(msg);
+   if(msg.type==='deal-subscribed'){
+    dealSocketReady=true;
+    // A short round trip is more accurate than the initial authenticated handshake.
+    try{ws.send(JSON.stringify({type:'ping',clientSentAt:Date.now()}));lastSocketHeartbeat=Date.now()}catch{}
+   }
+   dealSocketLastMessage=Date.now();
+  }
    if(msg.type==='deal-state'&&dealSocketReady){dealSocketLastMessage=Date.now();applyDealState(msg.game)}
    if(msg.type==='deal-error'){dealSocketReady=false;console.warn('Deal stream:',msg.error)}
   };
@@ -117,10 +138,11 @@ function dealSocketHealthy(){return dealSocketReady&&dealSocket?.readyState===We
 async function pollLoop(){
  if(!document.hidden){
   if(!dealSocket||dealSocket.readyState===WebSocket.CLOSED)connectDealSocket();
-  if(dealSocketHealthy()&&Date.now()-lastSocketHeartbeat>=24000){try{dealSocket.send(JSON.stringify({type:'ping',revision:Number.isSafeInteger(Number(g?.revision))&&g?Number(g.revision):undefined}));lastSocketHeartbeat=Date.now()}catch{}}
+  if(dealSocketHealthy()&&Date.now()-lastSocketHeartbeat>=24000){try{dealSocket.send(JSON.stringify({type:'ping',clientSentAt:Date.now()}));lastSocketHeartbeat=Date.now()}catch{}}
   if(dealSocket?.readyState===WebSocket.OPEN&&!dealSocketHealthy()&&dealSocketLastMessage&&Date.now()-dealSocketLastMessage>45000)dealSocket.close();
-  // Safety sync catches missed broadcasts if clients reach different Render instances.
-  if(!dealSocketHealthy()||Date.now()-lastHttpSafetySync>=60000)await poll();
+  // HTTP reconciliation remains essential when the action and socket hit different Render instances.
+  // Clock-only heartbeats avoid a Firestore read on every connected player's ping.
+  if(!dealSocketHealthy()||Date.now()-lastHttpSafetySync>=30000)await poll();
  }
  const delay=dealSocketHealthy()?8000:Math.max(pollDelay(),Math.min(15000,1000*2**dealSocketRetry));
  setTimeout(pollLoop,delay);
