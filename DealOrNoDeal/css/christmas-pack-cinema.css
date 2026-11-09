@@ -411,6 +411,23 @@
  font:800 10px/1.2 system-ui,sans-serif;
  color:#ffe9b7;margin:5px 0 0;text-align:center;
 }
+
+#event-packs .pack-cinema-preview-row{
+ display:flex;justify-content:center;align-items:center;
+ margin:6px 0 17px;
+}
+#reveal-overlay #reveal-summary .reveal-summary-item.rare{
+ border-color:#86d6ff;background:linear-gradient(145deg,#234e6e,#163a52);
+ box-shadow:0 0 13px #8bd4ff69;
+}
+#reveal-overlay #reveal-summary .reveal-summary-item.epic{
+ border-color:#d6a6ff;background:linear-gradient(145deg,#503669,#21365b);
+ box-shadow:0 0 16px #b887ff80;
+}
+#reveal-overlay #reveal-summary .reveal-summary-item.legendary{
+ border:2px solid #ffe7a0;background:linear-gradient(135deg,#6e5027,#312745);
+ box-shadow:0 0 0 2px #ffe4ae5c,0 0 21px #ffd06ba3;
+}
 #reveal-overlay #reveal-summary .reveal-summary-item.is-new{
  border-color:#ffe787;box-shadow:0 0 0 1px #ffe1a9,0 0 15px #f2bf657a;
 }
