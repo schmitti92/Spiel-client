@@ -51,7 +51,7 @@ test('UI shows progress and dynamically uses 25 or 30 ice blocks',()=>{
  assert.match(js,/openedTiles\/tileCount\*100/);
  assert.match(js,/Zerstöre alle '\+tileCount\+' Eisblöcke/);
  assert.match(js,/Wähle einen Hammer und finde den versteckten Stern/);
- assert.match(js,/25 Eisfelder: Finde den versteckten Stern! Er öffnet das ganze Bild sofort/);
+ assert.match(js,/\+tileCount\+' Eisfelder: Finde den versteckten Stern! Er öffnet das ganze Bild sofort/);
  assert.match(js,/state\.opened\.includes\(i\)/);
  assert.match(js,/aria-label="Eisfeld '\+\(i\+1\)\+' von '\+tileCount/);
 });
