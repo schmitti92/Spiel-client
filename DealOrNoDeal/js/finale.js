@@ -132,11 +132,13 @@ function startFinaleCinema(){
  const spotlightResult=$('finale-spotlight-result');
  const spotlightProgress=$('finale-spotlight-progress');
  const spotlightStatus=$('finale-spotlight-status');
+ const ceremonyProgress=$('finale-ceremony-progress');
+ if(ceremonyProgress)ceremonyProgress.textContent='✦ '+ascending.length+' PERSÖNLICHE KOFFER · 1 GEWINNER-ENTSCHEIDUNG ✦';
  spotlight.hidden=true;
  spotlight.dataset.state='closed';
  const introAt=reduced?150:1600;
- const slotLength=reduced?1450:3100;
- const openAfter=reduced?180:1050;
+ const slotLength=reduced?1450:3800;
+ const openAfter=reduced?180:1450;
  const championAt=introAt+ascending.length*slotLength+(reduced?120:480);
  const finaleFinishAt=championAt+(reduced?1700:3500);
  const openedCase=new Set();
@@ -161,11 +163,12 @@ function startFinaleCinema(){
   spotlight.classList.add('finale-spotlight-arrival');
   spotlightName.textContent=p?.name||'Spieler';
   spotlightProgress.textContent='PERSÖNLICHER KOFFER · '+(index+1)+' / '+ascending.length;
+  if(ceremonyProgress)ceremonyProgress.textContent='✦ ENTHÜLLUNG '+(index+1)+' VON '+ascending.length+' ✦';
   spotlightNumber.textContent='KOFFER '+(f.case+1);
   spotlightAvatar.src=x.card.querySelector('.finale-player-avatar')?.src||'';
   spotlightAvatar.alt='Spielfigur von '+(p?.name||'Spieler');
   spotlightValue.textContent=opened?eur(f.amount):'';
-  spotlightStatus.textContent=opened?'DER KOFFER IST GEÖFFNET':'Dieser Koffer wurde zu Spielbeginn gewählt';
+  spotlightStatus.textContent=opened?'DER KOFFER IST GEÖFFNET':'🔒 DIE SCHLÖSSER SIND NOCH VERRIEGELT';
   spotlightResult.textContent=opened
    ? (p?.deal!=null?'Kofferinhalt: '+eur(f.amount)+' · DEAL angenommen: '+eur(f.payout):'Kofferinhalt und Gewinn: '+eur(f.amount))
    :'Der Geldbetrag bleibt bis zum Öffnen geheim.';
@@ -174,7 +177,7 @@ function startFinaleCinema(){
   grid.classList.remove('finale-suspense');
   $('finale-title').textContent='Der persönliche Koffer von '+(p?.name||'Spieler');
   $('finale-tension').textContent=opened?'✨ KOFFER '+(f.case+1)+' ENTHÜLLT':'🧳 KOFFER '+(f.case+1)+' – WAS STECKT DRIN?';
-  $('finale-caption').textContent=opened?'Das Geheimnis des anfangs ausgewählten Koffers ist gelüftet.':'Der ausgewählte Koffer wird jetzt geöffnet …';
+  $('finale-caption').textContent=opened?'Der echte Kofferinhalt ist jetzt enthüllt.':'Gleich öffnen sich die Schlösser des ausgewählten Koffers …';
   if(opened)showMiniCase(entry);
  }
  function openLargeCase(entry){
@@ -182,7 +185,7 @@ function startFinaleCinema(){
   // First insert the actual server value, then animate the golden lid away.
   spotlightValue.textContent=eur(entry.f.amount);
   spotlight.dataset.state='open';
-  spotlightStatus.textContent='DER KOFFER IST GEÖFFNET';
+  spotlightStatus.textContent='✨ DIE SCHLÖSSER SIND OFFEN – DER BETRAG ERSCHEINT';
   spotlightResult.textContent=entry.p?.deal!=null
    ? 'Kofferinhalt: '+eur(entry.f.amount)+' · DEAL angenommen: '+eur(entry.f.payout)
    : 'Kofferinhalt und Gewinn: '+eur(entry.f.amount);
@@ -190,7 +193,8 @@ function startFinaleCinema(){
   $('finale-caption').textContent=entry.p?.deal!=null
    ? 'Der Kofferwert ist sichtbar – der angenommene Deal bleibt der Gewinn.'
    : 'Der Kofferwert ist der tatsächliche Gewinn.';
-  showMiniCase(entry);
+  // Let the large case finish opening before the small result card gives away the amount.
+  finaleLater(()=>showMiniCase(entry),reduced?0:1150);
  }
  if(!reduced&&finaleElapsed<introAt){
   grid.classList.add('finale-suspense');
@@ -212,6 +216,7 @@ function startFinaleCinema(){
  function revealChampion(){
   if($('finale-cinema').hidden)return;
   spotlight.hidden=true;
+  if(ceremonyProgress)ceremonyProgress.textContent='🏆 DIE TATSÄCHLICHE AUSZAHLUNG ENTSCHEIDET 🏆';
   grid.classList.add('champion-phase');
   grid.querySelectorAll('.finale-player').forEach(c=>c.classList.remove('on-stage'));
   $('finale-tension').textContent='🏆 DIE ENTSCHEIDUNG IST GEFALLEN 🏆';
