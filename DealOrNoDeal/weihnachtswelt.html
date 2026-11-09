@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#071629">
 <title>Weihnachtswelt · Deal or No Deal</title>
-<link rel="stylesheet" href="./css/christmas-event-hub.css?v=20261109-event-world-v3">
+<link rel="stylesheet" href="./css/christmas-event-hub.css?v=20261109-nested-nav-v1">
 <link rel="stylesheet" href="./css/christmas-spectacle-v2.css?v=20261109-spectacle-v2">
-<link rel="stylesheet" href="./css/christmas-universe-premium.css?v=20261109-universe-v1">
+<link rel="stylesheet" href="./css/christmas-universe-premium.css?v=20261109-nested-nav-v1">
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
 <style>
@@ -88,9 +88,7 @@ button,a{font:inherit}
 </header>
 <nav class="event-tabs event-hub-nav" aria-label="Weihnachtsbereiche">
 <a id="hub-cards-tab" href="./weihnachten.html?view=album">🃏 Sammlung</a>
-<a id="hub-hammer-tab" href="./weihnachten.html?view=hammer">🔨 Hammer-Bingo</a>
 <a id="hub-packs-tab" href="./weihnachten.html?view=packs">🎁 Pakete</a>
-<a id="hub-info-tab" href="./weihnachten.html?view=bingo">🏆 Spielinformation &amp; Gewinner</a>
 <a class="event2-tab" id="hub-ice-tab" href="./Weihnachtsevent2/index.html">❄️ Weihnachtsevent 2</a>
 </nav>
 <section class="hub-intro" aria-labelledby="hub-title">
@@ -120,7 +118,7 @@ const query=new URLSearchParams(location.search),provided=query.get('room'),save
 const room=ROOM.test(provided||'')?provided:ROOM.test(saved||'')?saved:null;
 if(room){
  sessionStorage.setItem('deal-active-room',room);
- for(const id of ['hub-game','hub-lobby','hub-cards-tab','hub-hammer-tab','hub-packs-tab','hub-info-tab','hub-ice-tab','hub-enter-album','hub-enter-ice','hub-shortcut-packs','hub-shortcut-hammer','hub-shortcut-ice']){
+ for(const id of ['hub-game','hub-lobby','hub-cards-tab','hub-packs-tab','hub-ice-tab','hub-enter-album','hub-enter-ice','hub-shortcut-packs','hub-shortcut-hammer','hub-shortcut-ice']){
   const a=$(id),url=new URL(a.href);url.searchParams.set('room',room);a.href=url.href;
  }
 }
