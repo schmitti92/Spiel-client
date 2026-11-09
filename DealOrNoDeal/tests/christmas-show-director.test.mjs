@@ -103,6 +103,21 @@ test('confirmed award is held through the package and its own transition, then B
  assert.equal(h.director.canStartBingo(),true);
 });
 
+test('next act stays hidden during individual card reveals and appears only in the finale',()=>{
+ const h=harness();
+ h.elements['reveal-summary'].hidden=true;
+ assert.equal(showPack(h),true);
+ h.director.claimStarted();
+ h.director.awardQueued(1);
+ h.director.claimSettled();
+ assert.equal(h.elements['reveal-next-act'].hidden,true);
+ h.elements['reveal-summary'].hidden=false;
+ h.director.summaryReady();
+ assert.equal(h.elements['reveal-next-act'].hidden,false);
+ assert.match(h.elements['reveal-next-act'].textContent,/Bingo-Siegesshow/);
+ assert.match(h.elements['reveal-close'].textContent,/Weiter zur Siegesshow/);
+});
+
 test('a gift can close during a slow server claim; pending reward still plays',()=>{
  const h=harness();
  showPack(h);h.director.claimStarted();
