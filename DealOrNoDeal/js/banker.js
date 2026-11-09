@@ -42,6 +42,17 @@ function updateBankerCall(){
   bonus.hidden=!h.bonusPack;
   if(h.bonusPack)bankerSetText('banker-christmas-bonus-name',({small:'Kleines Weihnachtspaket',large:'Großes Weihnachtspaket',premium:'Premium-Weihnachtspaket'})[h.bonusPack]||'Weihnachtspaket');
  }
+ const hammerBonus=$('banker-hammer-bonus');
+ if(hammerBonus){
+  const hammerTypes={single:{icon:'❄️🔨',name:'Einfacher Hammer'},double:{icon:'🔨🔨',name:'Doppelhammer'},lucky:{icon:'🌟🔨',name:'Glückshammer'}};
+  const hammer=hammerTypes[h.bonusHammer];
+  hammerBonus.hidden=!hammer;
+  if(hammer){
+   hammerBonus.dataset.hammer=h.bonusHammer;
+   bankerSetText('banker-hammer-bonus-icon',hammer.icon);
+   bankerSetText('banker-hammer-bonus-name',hammer.name);
+  }else delete hammerBonus.dataset.hammer;
+ }
 
  const remainingCases=(g.caseCount||26)-(g.openedAmounts?.length||0);
  const finalChoice=remainingCases<=3;
@@ -101,7 +112,17 @@ function revealVotesAfterAll(){
   const item=document.createElement('div');item.className='deal-accepted-person';
   const name=document.createElement('div');name.className='deal-accepted-name';name.textContent=(player?.name||'Ein Spieler')+' hat den Deal angenommen!';
   const amount=document.createElement('strong');amount.className='deal-accepted-amount';amount.textContent=eur(h.offer);
-  item.append(name,amount);list.append(item);
+  item.append(name,amount);
+  const extras=[];
+  if(h.bonusPack)extras.push('🎁 '+({small:'Normales Kartenpaket',large:'Gold-Kartenpaket',premium:'Premium-Kartenpaket'})[h.bonusPack]);
+  if(h.bonusHammer)extras.push('🔨 '+({single:'Einfacher Hammer',double:'Doppelhammer',lucky:'Glückshammer'})[h.bonusHammer]);
+  if(extras.length){
+   const bonus=document.createElement('div');
+   bonus.className='deal-accepted-extras';
+   bonus.textContent='Zusätzlich gewonnen: '+extras.join(' + ');
+   item.append(bonus);
+  }
+  list.append(item);
  }
  $('vote-reveal').hidden=false;
  if(voteRevealTimer!==null)clearTimeout(voteRevealTimer);
