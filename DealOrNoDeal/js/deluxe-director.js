@@ -3,7 +3,7 @@
 (()=>{
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const hud=document.createElement('aside');hud.id='deluxe-director';hud.setAttribute('aria-label','Live-Regie');
- hud.innerHTML='<div class="deluxe-live"><span class="deluxe-dot"></span> GOLDSTUDIO <b>LIVE</b></div><div class="deluxe-info"><span id="deluxe-phase">DIE SHOW BEGINNT</span><strong id="deluxe-count">26 KOFFER</strong></div><div class="deluxe-risk"><span id="deluxe-risk-label">DIE SPANNUNG STEIGT</span><div class="deluxe-risk-track"><i id="deluxe-risk-fill"></i></div></div><button id="deluxe-sound" type="button" aria-pressed="false" title="Dezente Showklänge ein- oder ausschalten">♪ TON AUS</button>';
+ hud.innerHTML='<div class="deluxe-live"><span class="deluxe-dot"></span> GOLDSTUDIO <b>LIVE</b></div><div class="deluxe-info"><span id="deluxe-phase">DIE SHOW BEGINNT</span><strong id="deluxe-count">26–29 KOFFER</strong></div><div class="deluxe-risk"><span id="deluxe-risk-label">DIE SPANNUNG STEIGT</span><div class="deluxe-risk-track"><i id="deluxe-risk-fill"></i></div></div><button id="deluxe-sound" type="button" aria-pressed="false" title="Dezente Showklänge ein- oder ausschalten">♪ TON AUS</button>';
  document.body.append(hud);
  const phase=$id=>document.getElementById($id);
  let ctx=null,sound=false,lastKey='',lastPhase='',lastOpened=-1,lastOffer='';
@@ -15,7 +15,8 @@
  function tick(){
   const game=typeof g!=='undefined'?g:null;
   const opened=game?.openedAmounts?.length||0;
-  const remaining=Math.max(0,26-opened);
+  const caseCount=Number(game?.caseCount)||27;
+  const remaining=Math.max(0,caseCount-opened);
   const phaseName=game?.phase||'waiting';
   const labels={waiting:'WILLKOMMEN IM GOLDSTUDIO',select:'DEIN GLÜCKSKOFFER',open:'JETZT WIRD ES SPANNEND',reveal:'DER KOFFER ÖFFNET SICH',decision:'DER BANKER RUFT AN',final:'DAS GROSSE FINALE',finished:'DIE SHOW IST BEENDET'};
   const key=String(game?.id||'')+':'+String(game?.revision||'')+':'+phaseName;
@@ -23,10 +24,10 @@
   lastKey=key;
   phase('deluxe-phase').textContent=labels[phaseName]||'GOLDSTUDIO LIVE';
   phase('deluxe-count').textContent=remaining+' KOFFER ÜBRIG';
-  phase('deluxe-risk-fill').style.width=Math.round(opened/26*100)+'%';
-  const intensity=opened>=23?'FINALE · HÖCHSTE SPANNUNG':opened>=18?'HOCHSPANNUNG':opened>=10?'JETZT WIRD ES ERNST':'DIE SPANNUNG STEIGT';
+  phase('deluxe-risk-fill').style.width=Math.round(opened/caseCount*100)+'%';
+  const intensity=opened>=Math.max(0,caseCount-3)?'FINALE · HÖCHSTE SPANNUNG':opened>=Math.max(0,caseCount-8)?'HOCHSPANNUNG':opened>=10?'JETZT WIRD ES ERNST':'DIE SPANNUNG STEIGT';
   phase('deluxe-risk-label').textContent=intensity;
-  document.body.classList.toggle('deluxe-climax',opened>=23);
+  document.body.classList.toggle('deluxe-climax',opened>=Math.max(0,caseCount-3));
   document.body.classList.toggle('deluxe-decision',phaseName==='decision');
   if(game&&lastPhase&&phaseName!==lastPhase){
    if(phaseName==='decision'){

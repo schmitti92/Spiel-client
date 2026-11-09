@@ -51,8 +51,8 @@ function harness(count=28){
  return {elements,requests,game,storage,element};
 }
 
-test('client Joker UI works for 26, 27, 28 case matches and includes final case',async()=>{
- for(const count of [26,27,28]){
+test('client Joker UI works for 26, 27, 28, 29 case matches and includes final case',async()=>{
+ for(const count of [26,27,28,29]){
   const ui=harness(count);
   const launch=Array.from(ui.elements.values()).find(x=>x.id==='peek-launch');
   assert.ok(launch);
@@ -76,24 +76,24 @@ test('client Joker UI works for 26, 27, 28 case matches and includes final case'
  }
 });
 
-test('client code uses match case count rather than old fixed 26 cap',()=>{
+test('client code supports last case through 29 rather than old fixed cap',()=>{
  assert.doesNotMatch(js,/for\(let i=0;i<26;i\+\+\)/);
  assert.doesNotMatch(js,/p\.case<26&&/);
  assert.match(js,/for\(let i=0;i<caseCount\(\);i\+\+\)/);
  assert.match(js,/p\.case<caseCount\(\)&&/);
  assert.match(js,/errorMessage\(e\.message\)/);
- assert.match(html,/peek-joker\.js\?v=20261109-28case-fix-v1/);
+ assert.match(html,/peek-joker\.js\?v=20261109-29cases-10m/);
 });
 
-test('closed own case is shown and 28th case cannot be used after it opens',async()=>{
- const ui=harness(28);
+test('closed own case is shown and 29th case cannot be used after it opens',async()=>{
+ const ui=harness(29);
  await Array.from(ui.elements.values()).find(x=>x.id==='peek-launch').handlers.click();
  assert.equal(ui.element('peek-cases').children.at(-1).classList!=null,true);
- ui.game.opened.push(27);
+ ui.game.opened.push(28);
  // Trigger selection list refresh via the existing event listener in production;
  // reconstruct a fresh dialog to ensure the invalid case is disabled by state.
- const next=harness(28);
- next.game.opened.push(27);
+ const next=harness(29);
+ next.game.opened.push(28);
  await Array.from(next.elements.values()).find(x=>x.id==='peek-launch').handlers.click();
  assert.equal(next.element('peek-cases').children.at(-1).disabled,true);
 });
