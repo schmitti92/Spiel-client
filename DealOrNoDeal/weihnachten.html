@@ -188,7 +188,7 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
   <p>Die beiden zusätzlichen 4×4-Sammelfelder sind jetzt in den Weihnachtspacks enthalten! Hier sammelst du 16 gewöhnliche Karten und 16 weitere mit gemischten Seltenheitsgraden. Jede fertige Reihe, Spalte oder Diagonale bringt direkt Hammer: Im gemischten Feld gibt es genau das Doppelte. Nach allen 16 Karten erhältst du zusätzlich den Feld-Jackpot und kannst dieselben 16 Karten neu sammeln.</p>
   <p>Wenn alle 16 Karten eines Feldes gesammelt sind, wird sein Jackpot automatisch gutgeschrieben. Danach setzt sich nur dieses Feld zurück, und du kannst seine Bingos und den Jackpot erneut gewinnen. Die alten Weihnachtsfreischaltungen bleiben bestehen.</p>
  </div></details></div>
- <div class="hammer-stock-head"><h3>🔨 Dein Hammer-Vorrat</h3><div class="hammer-cinema-toolbar"><button class="hammer-refresh" id="hammer-refresh" type="button">↻ Vorrat aktualisieren</button><button type="button" id="hammer-cinema-replay" disabled title="Siegesshow nach einem echten Gewinn erneut ansehen">🎬 Siegesshow</button><button type="button" id="hammer-cinema-sound" aria-pressed="false" title="Siegesshow-Ton einschalten">🔇 Ton aus</button></div></div>
+ <div class="hammer-stock-head"><h3>🔨 Dein Hammer-Vorrat</h3><div class="hammer-cinema-toolbar"><button class="hammer-refresh" id="hammer-refresh" type="button">↻ Vorrat aktualisieren</button><button type="button" id="hammer-cinema-preview" title="Zwei kostenlose Demo-Szenen ohne Gutschrift">✨ Vorschau</button><button type="button" id="hammer-cinema-replay" disabled title="Siegesshow nach einem echten Gewinn erneut ansehen">🎬 Siegesshow</button><button type="button" id="hammer-cinema-sound" aria-pressed="false" title="Siegesshow-Ton einschalten">🔇 Ton aus</button></div></div>
  <div class="hammer-stock" aria-label="Verfügbare Hammer aus Weihnachtsevent 2">
   <div class="hammer-stock-card"><span class="icon">🔨</span><strong id="hammer-single">–</strong><small>Einfach-Hammer</small></div>
   <div class="hammer-stock-card"><span class="icon">🔨🔨</span><strong id="hammer-double">–</strong><small>Doppel-Hammer</small></div>
@@ -236,7 +236,7 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
   </div>
   <div class="hammer-cinema__footer">
    <button id="hammer-cinema-next" class="hammer-cinema__next" type="button">Schließen ✓</button>
-   <span>Die Gewinne sind sicher gespeichert · Diese Szene vergibt keine weiteren Hammer</span>
+   <span id="hammer-cinema-footer-note">Die Gewinne sind sicher gespeichert · Diese Szene vergibt keine weiteren Hammer</span>
   </div>
  </article>
 </div>
@@ -462,6 +462,7 @@ async function loadHammerStock(){
  finally{hammerStockBusy=false;button.disabled=false}
 }
 document.getElementById('hammer-refresh').addEventListener('click',()=>{loadHammerStock();if(current)void maybeClaimHammerBingos(current)});
+document.getElementById('hammer-cinema-preview').addEventListener('click',()=>window.HammerBingoCinematics?.preview(hammerBingoArtwork.map(([filename])=>filename)));
 if(document.body.dataset.view==='hammer')loadHammerStock();
 
 const bingoLines=[...[0,1,2,3].map(r=>[0,1,2,3].map(c=>r*4+c)),...[0,1,2,3].map(c=>[0,1,2,3].map(r=>r*4+c)),[0,5,10,15],[3,6,9,12]];
