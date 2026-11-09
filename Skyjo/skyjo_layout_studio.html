@@ -38,4 +38,5 @@ $('import').onclick=()=>$('file').click();
 $('file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const v=JSON.parse(await f.text());if(!Array.isArray(v.blocks))throw Error('Keine Layout-Blöcke vorhanden');snapshot();blocks=normalize(v.blocks);if(['16:9','16:10','4:3'].includes(v.ratio))$('ratio').value=v.ratio;if([2,3,4].includes(v.players))$('players').value=v.players;draw();$('message').textContent='Layout importiert.'}catch(err){$('message').textContent='Import fehlgeschlagen: '+err.message}e.target.value=''};
 window.addEventListener('resize',()=>requestAnimationFrame(draw));draw();
 })();
-</script></body></html>
+</script><script src="../site-global-controls.js?v=20261109-global-1"></script>
+</body></html>

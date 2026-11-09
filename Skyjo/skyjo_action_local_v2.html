@@ -126,4 +126,5 @@ async function toggleFullscreen(){try{if(document.fullscreenElement){await docum
 fsButton.addEventListener("click",toggleFullscreen);
 document.addEventListener("fullscreenchange",()=>{fsButton.textContent=document.fullscreenElement?"⛶ Vollbild verlassen":"⛶ Vollbild";fit()});
 document.getElementById("demo-next").addEventListener("click",()=>{demoOffset=(demoOffset+3)%demoValues.length;render(zones)});addEventListener("resize",fit);render(initial);fit();
-</script></body></html>
+</script><script src="../site-global-controls.js?v=20261109-global-1"></script>
+</body></html>
