@@ -9,7 +9,7 @@
  const btn=document.createElement('button');
  btn.type='button';btn.id='deal-amount-voice';btn.title='Aufgedeckte Geldbeträge vorlesen';
  btn.setAttribute('aria-label','Sprachausgabe für aufgedeckte Geldbeträge');
- btn.style.cssText='position:fixed;right:12px;bottom:12px;z-index:900;min-width:46px;padding:9px 12px;border:1px solid #e4bd73;border-radius:12px;background:#172d3eea;color:#ffe6ae;font-weight:800;font-size:13px;cursor:pointer;box-shadow:0 3px 12px #0008';
+ btn.className='studio-tool';btn.style.cssText='white-space:nowrap;min-width:40px;cursor:pointer';
  const update=()=>{btn.textContent=enabled?'🔊 Zahlen an':'🔇 Zahlen aus';btn.setAttribute('aria-pressed',String(enabled));};
  update();
  if(!supported){btn.disabled=true;btn.textContent='🔇 Sprache nicht verfügbar';btn.title='Dein Browser unterstützt keine Sprachausgabe'}
@@ -20,7 +20,7 @@
   if(!enabled){clearTimeout(timer);speechSynthesis.cancel()}
   update();
  });
- document.body.append(btn);
+ (document.querySelector('.studio-header-controls')||document.body).append(btn);
  window.announceOpenedAmount=(cents)=>{
   if(!enabled||!supported||document.hidden)return;
   const amount=Math.round(Number(cents||0))/100;
