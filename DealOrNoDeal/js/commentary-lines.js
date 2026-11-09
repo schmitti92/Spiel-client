@@ -91,16 +91,98 @@ studioCommentLines[13].bankerBad.push(...["Das Angebot ist kälter als mein link
 studioCommentLines[13].bankerVeryBad.push(...["Das ist kein Angebot, das ist ein gefrorener Krümel!","Bei dieser Zahl friert mir selbst das Lächeln fest.","Der Banker hat sein Portemonnaie wohl im Eisblock vergessen."]);
 
 
-/* Jan Schlappen: original dry, northern-style banter. */
+/* Jan Schlappen: eigenständige, norddeutsch-trockene Originaldialoge für Koffer und Banker. */
 studioCommentLines[14]={
- name:'Jan Schlappen',image:'jan-schlappen.svg',
- oneCent:["Moin oder wat! Ein Cent? Dat is doch mal ein Anfang!","Ein Cent ist weg. Jo, so kann dat weitergehen.","Mensch, ein Cent. Dafür mach ich doch keinen Aufstand!","Dat war mal ein sauberer Griff ins Kleingeld.","Moin! Die großen Scheine liegen noch schön drin."],
- small:["Jo, Kleinkram weg. Läuft bei uns!","Da sach ich mal: kannste so machen!","Moin oder wat, dat war doch ordentlich!","Für den Betrag würd ich nicht mal die Schuhe zubinden.","Kleine Zahl, große Laune. Weiter so!","Na siehste, geht doch!"],
- neutral:["Joah, mittlere Nummer. Da muss man erstmal gucken.","Moin, dat is weder Fisch noch Fleisch.","Nicht schlecht, aber Jubeln würd ich noch nicht.","Na, da ist noch Luft nach oben, ne?","Dat ist jetzt kein Grund, den Kaffee stehenzulassen."],
- large:["Oha, dat tat jetzt aber weh!","Moin oder wat, wer hat denn den großen Koffer aufgemacht?","Da vergeht mir glatt das Grinsen!","Junge, Junge. Das war ein ordentlicher Brocken.","Na klasse, den hätten wir besser zugelassen."],
- millionLost:["Eine Million weg?! Dat kannste doch keinem erzählen!","Moin oder wat! Die Million war doch gerade noch da!","Junge, da muss ich erstmal einen Kaffee drauf trinken.","Eine Million! Da wird selbst mir kurz still.","Jo, dat war jetzt richtig teuer."],
- bankerVeryGood:["Moin! Für dat Angebot würd ich glatt unterschreiben.","Der Banker hat wohl gute Laune, oder wat?","Jo, da kann man schon schwach werden."],
- bankerGood:["Kannste überlegen. Ist ja nicht ganz ohne.","Moin, der Banker gibt sich Mühe.","Dat klingt erstmal ganz ordentlich."],
- bankerBad:["Nee, für den Betrag steh ich nicht auf.","Moin oder wat, will der Banker uns veräppeln?","Da muss er noch was drauflegen, ne?"],
- bankerVeryBad:["Dat ist doch kein Angebot, dat ist ein Witz!","Junge, der Banker hat wohl sein Portemonnaie vergessen.","Moin! Sag ihm, er soll nochmal rechnen."]
+ "name": "Jan Schlappen",
+ "image": "jan-schlappen.svg",
+ "oneCent": [
+  "Moin oder wat! Ein Cent? Dafür kriegste ja nich mal 'ne Tüte Luft.",
+  "Ein Cent weg. Herrlich! Da kannste den Banker gleich mal winken lassen.",
+  "Junge, für den Cent hätt ich nich mal den Koffer angefasst.",
+  "Ein Cent! So, nu sind wir doch schon fast Millionäre, ne?",
+  "Jo, Kleingeld entsorgt. Dat nenn ich mal 'ne vernünftige Mülltrennung.",
+  "Moin! Dat war der günstigste Schreck seit Langem.",
+  "Ein Cent. Da kannste noch nich mal 'nen Kaugummi von kaufen.",
+  "Jo, der kleinste Betrag is wech. Da geht mir doch glatt die Sonne auf."
+ ],
+ "small": [
+  "Na siehste! So muss dat. Kleinen Kram raus und die dicken Dinger drinlassen.",
+  "Moin oder wat! Dat war doch 'n sauberer Griff.",
+  "Jo, den Betrag kannste verschmerzen. Is ja nich mein Geld. Noch nich.",
+  "Dat war so wenig, dafür mach ich nich mal die Kaffeemaschine an.",
+  "Junge, ich sach dir: Wenn dat so weitergeht, wird dat noch richtig gemütlich.",
+  "Da kannste mal 'n Haken dran machen. Schön klein, schön wech.",
+  "Na, wenigstens einer hier hat 'n glückliches Händchen.",
+  "Moin! Dat is 'n Koffer, den würd ich freiwillig zum Altglas bringen.",
+  "So, und jetzt bloß nich übermütig werden, ne?",
+  "Jo, da klatsch ich sogar. Aber nur einmal, sonst wird dat zu feierlich."
+ ],
+ "neutral": [
+  "Joah. Dat is jetzt so 'ne Zahl, da weißte auch nich, ob du lachen sollst.",
+  "Moin, ich sach mal: Hätte schlimmer kommen können. Aber auch besser.",
+  "Na, dat war 'n mittelprächtiger Griff ins Portemonnaie.",
+  "Junge, dat is weder 'n Grund zum Feiern noch zum Auswandern.",
+  "Da guckste erstmal blöd. Und dann spielste weiter, ne?",
+  "Jo, den Betrag muss man erstmal sacken lassen. Kaffee?",
+  "Dat war jetzt so mittel. Wie lauwarmer Filterkaffee.",
+  "Moin oder wat, dat macht die Sache auch nich einfacher.",
+  "Da kannste lange drüber schnacken. Der Koffer is nu offen.",
+  "Nu bleib mal locker. Die richtig dicken Dinger sind vielleicht noch drin."
+ ],
+ "large": [
+  "Ach du dickes Ei! Den hättste mal schön zugelassen.",
+  "Moin oder wat! Wer hat denn da mit verbundenen Augen geklickt?",
+  "Junge, Junge, dat war 'n Griff direkt ins Klo.",
+  "Da wird selbst mein Kaffee bitter. Und der is schon stark.",
+  "Na prima. Dat Geld winkt uns jetzt von ganz weit weg.",
+  "Jo, und ich dachte, schlimmer kann's nich werden. War wohl nix.",
+  "Dat tut weh. Richtig. Da brauchste auch nich schönreden.",
+  "Mensch, den Koffer hätt ich lieber als Türstopper behalten.",
+  "Da lacht der Banker sich doch die Bügel aus der Hose.",
+  "Moin. Einmal tief durchatmen und bloß nich noch so'n Ding öffnen."
+ ],
+ "millionLost": [
+  "MOIN ODER WAT?! EINE MILLION?! Junge, dat is doch nich dein Ernst!",
+  "Eine Million wech! Da kannste auch gleich die ganze Sendung abschalten.",
+  "Jo, prima. Den teuersten Koffer haben wir jetzt wenigstens gefunden.",
+  "Mensch, für die Million hättste dir 'n ganzes Haus mit Kaffeemaschine kaufen können.",
+  "Da fällt mir sogar das Moin im Hals stecken.",
+  "Eine Million! Und der Banker sitzt da und grinst sich einen, ne?",
+  "Junge, Junge. Dat war kein Koffer, dat war 'ne finanzielle Vollbremsung.",
+  "So, ich geh erstmal Kaffee holen. Dat muss ich verarbeiten.",
+  "Moin oder wat, dat war der teuerste Klick des Tages.",
+  "Eine Million weniger auf der Tafel. Da wird mir ganz anders, sach ich dir."
+ ],
+ "bankerVeryGood": [
+  "Moin! Na, der Banker kann ja doch vernünftig rechnen.",
+  "Junge, bei dem Angebot würd ich erstmal die Hände stillhalten.",
+  "Jo, dat is 'ne Ansage. Da kannste nich einfach drüberweggucken.",
+  "Moin oder wat! Hat der Banker heute Geburtstag oder warum is der so großzügig?",
+  "Na, dat würd ich mir aber zweimal überlegen, bevor ich Nein sage.",
+  "So 'n Angebot kriegste nich jeden Dienstag, ne?"
+ ],
+ "bankerGood": [
+  "Jo, dat kannste machen. Musste aber nich.",
+  "Moin, der Banker hat wohl 'n halbwegs guten Tag.",
+  "Na, dat is doch mal 'ne Zahl, über die man schnacken kann.",
+  "Junge, da musste jetzt mal den Kopf einschalten, nich nur den Daumen.",
+  "Dat is kein schlechtes Angebot. Aber ich würd nochmal auf die Tafel schielen.",
+  "Joah, könnte passen. Ich würd trotzdem erstmal 'nen Kaffee drüber trinken."
+ ],
+ "bankerBad": [
+  "Moin oder wat! Dat soll 'n Angebot sein?",
+  "Nee, du. Dafür geb ich doch meinen Koffer nich her.",
+  "Der Banker soll mal die Brille putzen und neu rechnen.",
+  "Jo, dat is aber 'n bisschen dünn auf der Brust.",
+  "Junge, da kannste auch gleich 'nen Einkaufsbon anbieten.",
+  "Na, der hat wohl Angst um seine eigene Kohle, ne?"
+ ],
+ "bankerVeryBad": [
+  "Moin oder wat! Will der Banker uns auf den Arm nehmen?",
+  "Dat is kein Angebot. Dat is 'ne Frechheit mit Schleifchen.",
+  "Junge, Junge. Da würd ich nich mal ans Telefon gehen.",
+  "Der Banker hat wohl sein Portemonnaie mit 'nem Teebeutel verwechselt.",
+  "Für dat Geld kriegste ja nich mal 'nen vernünftigen Urlaub.",
+  "Nee. Einfach nee. Da brauchste gar nich weiterzureden."
+ ]
 };
