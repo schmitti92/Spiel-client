@@ -107,14 +107,15 @@ test('third and fourth classic boards and updated counters keep locked card art 
  assert.match(hub,/id="hub-collected">– \/ 64/);
  assert.match(hub,/id="hub-bingos">– \/ 40/);
 });
-test('five new rewards use authoritative server unlock data',()=>{
- for(const reward of ['frost-card-frame','aurora-lobby','north-star-dust','royal-north-gallery','north-pole-legend'])
+test('five Nordpol prize milestones use server entitlement and claim status',()=>{
+ for(const reward of ['north-premium-2','north-gold-hammers-2','north-jokers-2','north-platinum-combo','north-monster-spin-1'])
   assert.ok(html.includes("'"+reward+"'"),'Missing reward '+reward);
- assert.match(lobby,/data\.progress\.rewards\.includes\('aurora-lobby'\)/);
- assert.match(lobby,/data\.progress\.rewards\.includes\('north-pole-legend'\)/);
- assert.match(css,/north-aurora-active/);
- assert.ok(existsSync(resolve(root,'assets/weihnachts_event/nordpol_aurora_lobby.svg')));
+ assert.match(html,/maybeClaimNorthPoleBingos/);
+ assert.match(html,/north-pole\/claim/);
+ assert.match(html,/northPolePending/);
+ assert.match(html,/north-pole-bingo\.js\?v=20261109-north-prizes-v1/);
 });
+
 
 test('first two classic boards show five server-authoritative Bingo rewards each',()=>{
  const api={};
@@ -138,7 +139,7 @@ test('first two classic boards show five server-authoritative Bingo rewards each
  }
  assert.match(html,/id="album-bingo-first-bonus"/);
  assert.match(css,/\.classic-bingo-rewards/);
- assert.match(html,/north-pole-bingo\.js\?v=20261109-compass-v3/);
+ assert.match(html,/north-pole-bingo\.js\?v=20261109-north-prizes-v1/);
 });
 
 test('new fourth board uses all 16 uploaded funny Christmas JPEG images 18 through 33',()=>{
