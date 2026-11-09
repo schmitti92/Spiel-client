@@ -165,3 +165,47 @@ body.christmas-event-main[data-view="album"] #event-album .north-pole .card.nort
  object-position:center;
  background:radial-gradient(circle at center,#19364a,#081b2d 85%);
 }
+
+/* Vierte Tafel – froehliche Weihnachtswelt mit gold-roter Glasoptik.
+   Der vorhandene Nordpol-Bingo-Kompass wird ohne neue Polling-Logik wiederverwendet. */
+#event-album .album-collection-panel.north-pole.merry-fourth{
+ border-color:#ffd28b!important;
+ background:radial-gradient(ellipse at 20% 0%,#9c4c3f80,#141d35e9 72%)!important;
+ box-shadow:0 0 28px #ffd07835,inset 0 1px #fff4bd55!important;
+}
+#event-album .merry-fourth::before{content:"✦  🎄  ✦";color:#ffdd9a8c;letter-spacing:10px}
+#event-album .merry-fourth .album-collection-head h3{
+ color:#ffebbd!important;text-shadow:0 0 14px #f5c37b97!important;
+}
+#event-album .merry-fourth .card{border-color:#f2c178!important}
+#event-album .merry-fourth .card.owned{border-color:#ffedb0!important}
+body.christmas-event-main[data-view="album"] #event-album #album-grid-fourth{
+ grid-area:board;align-self:stretch;
+}
+#event-album .merry-fourth .north-bingo-status{
+ background:linear-gradient(105deg,#563b32cc,#183d49a6)!important;
+ border-color:#ebc58b70!important;
+}
+#event-album .merry-fourth .north-bingo-status span{color:#ffe3ae}
+#event-album .merry-fourth .north-bingo-chip{
+ border-color:#d0a16caa;
+ background:linear-gradient(145deg,#3c2b37e8,#192638e8);
+}
+#event-album .merry-fourth .north-bingo-chip.complete{
+ border-color:#fff0b3;background:linear-gradient(145deg,#906326,#42483b);
+}
+#event-album .merry-fourth .north-bingo-hint{border-color:#efc5858c}
+#event-album .merry-fourth .future-milestone{
+ filter:none;border-style:dashed;border-color:#dabf908a;
+ background:linear-gradient(145deg,#372c3acb,#202e42e4);
+}
+#event-album .merry-fourth .future-milestone .north-milestone-status{opacity:.8}
+#event-album .merry-fourth .north-bingo-next{
+ border-color:#f6d194a8;background:linear-gradient(105deg,#53392dc9,#223544e9);
+}
+body.christmas-event-main[data-view="album"] #event-album .merry-fourth .card.north-line-focus{
+ outline-color:#ffdd94!important;box-shadow:0 0 16px #ffdf80a6!important;
+}
+body.christmas-event-main[data-view="album"] #event-album .merry-fourth .card.north-line-missing{
+ outline-color:#fff3cc!important;
+}
