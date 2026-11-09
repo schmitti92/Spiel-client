@@ -22,17 +22,31 @@ async function request(type,body){
  }finally{clearTimeout(timeout)}
 }
 const id=()=>crypto.randomUUID();
+const ICE_PENDING_KEY='christmasIcePending';
+const ICE_PENDING_DURABLE_KEY='christmasIcePendingV2';
+function validPending(item){
+ return item?.uid===user()?.uid&&/^[A-Za-z0-9_-]{12,90}$/.test(item.requestId||'')&&
+  ['start','strike','next','reset'].includes(item.type)&&typeof item.key==='string'&&
+  item.extra&&typeof item.extra==='object';
+}
 function readPending(){
+ // Session storage preserves old clients; local storage additionally survives
+ // tab closure and navigation from the Christmas-event hub.
+ try{const item=JSON.parse(sessionStorage.getItem(ICE_PENDING_KEY)||'null');if(validPending(item))return item}catch{}
  try{
-  const item=JSON.parse(sessionStorage.getItem('christmasIcePending')||'null');
-  return item?.uid===user()?.uid&&/^[A-Za-z0-9_-]{12,90}$/.test(item.requestId||'')&&
-   ['start','strike','next','reset'].includes(item.type)&&typeof item.key==='string'&&
-   item.extra&&typeof item.extra==='object'?item:null;
- }catch{return null}
+  const item=JSON.parse(localStorage.getItem(ICE_PENDING_DURABLE_KEY)||'null');
+  if(validPending(item)&&Number.isFinite(item.savedAt)&&Date.now()-item.savedAt<48*60*60*1000)return item;
+ }catch{}
+ return null;
+}
+function rememberPending(item){
+ try{sessionStorage.setItem(ICE_PENDING_KEY,JSON.stringify(item))}catch{}
+ try{localStorage.setItem(ICE_PENDING_DURABLE_KEY,JSON.stringify({...item,savedAt:Date.now()}))}catch{}
 }
 function forgetPending(){
  pending=null;
- try{sessionStorage.removeItem('christmasIcePending')}catch{}
+ try{sessionStorage.removeItem(ICE_PENDING_KEY)}catch{}
+ try{localStorage.removeItem(ICE_PENDING_DURABLE_KEY)}catch{}
 }
 let galleryPage=0,showAllGallery=false,largeGalleryImage=null,impactTimer=null,celebration=null,wheelTimer=null;
 function recoveredGift(){
@@ -54,7 +68,7 @@ function render(){
    }));
   }catch(_){}
  }
- if(!state){root.innerHTML='<p>Dein Online-Spielstand ist noch nicht gestartet.</p><button id="ice-start">❄️ Online-Spiel starten</button>';root.querySelector('#ice-start').onclick=()=>run('start');return}
+ if(!state){root.innerHTML='<p>Dein Online-Spielstand ist noch nicht gestartet.</p><button id="ice-start">❄️ Online-Spiel starten</button><button id="ice-check">🔄 Spielstand prüfen</button>';root.querySelector('#ice-start').onclick=()=>run('start');root.querySelector('#ice-check').onclick=()=>load();return}
  const finished=!!state.finished,done=state.completed>=70,number=Math.min(70,state.completed+1);
  const photo=n=>'./Weihnachtsbilder/'+encodeURIComponent(names[(n-1)%names.length]);
  const chosen=window.iceHammer||'single';
@@ -95,7 +109,7 @@ function render(){
    +'<div class="v44-reward-art"><img src="./Weihnachtsbilder/'+art+'" alt="Weihnachts-Schatztruhe für Meilenstein '+n+'" loading="lazy" decoding="async" width="160" height="160" onerror="this.onerror=null;this.src=\'./Weihnachtsbilder/originalgrafik-15.webp\'"></div>'
    +'<strong class="v44-reward-title">'+title+'</strong><small class="v44-reward-status">'+stateText+'</small></article>';
  }).join('');
- root.innerHTML='<div class="v44-app"><header class="v44-head"><div class="v44-plaque v44-chapter-plaque">❄️ KAPITEL 2 · BILDERZAUBER</div><div class="v44-heading"><h1>Die magischen Weihnachtsbilder</h1><p>70 Bilder · Eisfelder freilegen · Meilenstein-Belohnungen</p></div><div class="v44-plaque">💰 '+money(state.balance)+'</div></header>'+
+ root.innerHTML='<div class="v44-app"><div class="v44-recovery-bar" role="group" aria-label="Sichere Spielstand-Reparatur"><span>'+(readPending()?'⚠️ Letzte Aktion noch offen':'🔐 Spielstand wird online gesichert')+'</span><button id="ice-recover" type="button">'+(readPending()?'🔄 Letzte Aktion abschließen':'🔄 Spielstand prüfen')+'</button></div><header class="v44-head"><div class="v44-plaque v44-chapter-plaque">❄️ KAPITEL 2 · BILDERZAUBER</div><div class="v44-heading"><h1>Die magischen Weihnachtsbilder</h1><p>70 Bilder · Eisfelder freilegen · Meilenstein-Belohnungen</p></div><div class="v44-plaque">💰 '+money(state.balance)+'</div></header>'+
  '<div class="v44-layout"><section class="v44-panel v44-gallery-panel"><h2>🖼️ Bildergalerie</h2><div class="v44-gallery">'+thumbs+'</div><div class="v44-gallery-nav"><button id="v44-prev" '+(galleryPage===0?'disabled':'')+'>❮</button><span>Bilder '+first+'–'+Math.min(first+5,70)+'</span><button id="v44-nextpage" '+(first+5>=70?'disabled':'')+'>❯</button></div><button id="v44-gallery-all" class="v44-gallery-all">🖼️ Alle 70 Bilder ansehen</button><div class="v44-gallery-stats"><div class="v44-gallery-stat"><strong>🖼️ '+state.completed+'/70</strong>Bilder geschafft</div><div class="v44-gallery-stat"><strong>🔐 '+state.peekJokers+'</strong>Kofferblick-Joker</div></div></section>'+
  '<section class="v44-panel v44-board-panel"><h2>❄️ Bild '+number+' von 70</h2><div class="v44-ice-meter" aria-label="'+state.opened.length+' von 20 Eisfeldern geöffnet"><span>🧊 '+state.opened.length+'/20 Eisfelder</span><div><i style="width:'+(Math.min(20,state.opened.length)*5)+'%"></i></div></div><div class="ice-board v44-board"><img alt="Weihnachtsbild '+number+'" src="'+photo(number)+'"><div class="ice-tiles">'+Array.from({length:20},(_,i)=>'<button data-tile="'+i+'" '+(busy||finished||done||state.opened.includes(i)?'disabled':'')+' class="'+(state.opened.includes(i)||finished||done?'gone':'')+'" aria-label="Eisfeld '+(i+1)+'">❄</button>').join('')+'</div></div><p class="v44-instruction">🔨 Wähle einen Hammer und tippe auf ein Eisfeld.</p></section>'+
  '<section class="v44-panel v44-hammer-panel"><h2>🔨 Wähle deinen Hammer</h2><div class="v44-hammers">'+['single','double','lucky'].map(k=>'<button class="v44-hammer '+(chosen===k?'selected':'')+'" data-hammer="'+k+'"><span class="v44-hammer-icon"><img class="v44-hammer-art" src="./Weihnachtsbilder/'+hammerArt[k]+'" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="v44-hammer-fallback" hidden>'+emojis[k]+'</span></span><span><strong>'+labels[k]+'</strong><small>'+({single:'1 Eisfeld',double:'2 Eisfelder',lucky:'3–6 Eisfelder'}[k])+'</small><b>'+price(k)+'</b></span></button>').join('')+'</div></section></div>'+
@@ -143,11 +157,8 @@ function render(){
  root.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>{if(busy||b.disabled)return;const hammer=window.iceHammer||'single';if((state.freeHammers?.[hammer]||0)<1&&Number(state.balance||0)<costs[hammer]){message('⚠️ Nicht genügend Eventguthaben für '+labels[hammer]+'. Wähle einen verfügbaren Hammer.');return}const board=root.querySelector('.v44-board');if(board){const impact=document.createElement('div');impact.className='v44-impact';impact.setAttribute('aria-hidden','true');const a=b.getBoundingClientRect(),p=board.getBoundingClientRect();impact.style.left=(a.left+a.width/2-p.left)+'px';impact.style.top=(a.top+a.height/2-p.top)+'px';impact.innerHTML='<span class="v44-impact-hammer">'+({single:'🔨',double:'⚒️',lucky:'✨'}[hammer]||'🔨')+'</span>'+Array.from({length:9},(_,i)=>'<i style="--a:'+(i*40)+'deg;--d:'+(34+i%3*14)+'px"></i>').join('');board.appendChild(impact);clearTimeout(impactTimer);impactTimer=setTimeout(()=>impact.remove(),750)}b.classList.add('cracking');run('strike',{index:Number(b.dataset.tile),hammer});});
  const next=root.querySelector('#ice-next');if(next)next.onclick=()=>run('next');
  root.querySelector('#ice-reset').onclick=()=>{if(confirm('Das Weihnachtsevent wirklich von Bild 1 neu beginnen? Bereits erhaltene Joker und gewonnene Hammer bleiben erhalten; frühere Bildgewinne werden nicht erneut ausgezahlt.'))run('reset')};
- const stored=readPending();
- if(stored){
-  const b=document.createElement('button');b.id='ice-recover';b.textContent='🔄 Letzte Aktion sicher wiederholen';root.querySelector('.v44-actions').appendChild(b);
-  b.onclick=()=>{pending={key:stored.key,requestId:stored.requestId};run(stored.type,stored.extra||{})};
- }
+ const repair=root.querySelector('#ice-recover');
+ if(repair)repair.onclick=()=>load();
 }
 async function run(type,extra={}){
  if(busy)return;
@@ -163,7 +174,7 @@ async function run(type,extra={}){
  // Reusing the original request ID is essential even when completed has changed.
  const requestId=unresolved?.requestId||(pending?.key===key?pending.requestId:id());
  pending={key:unresolved?.key||key,requestId};
- try{sessionStorage.setItem('christmasIcePending',JSON.stringify({uid:user()?.uid,key:pending.key,requestId,extra,type}))}catch{}
+ rememberPending({uid:user()?.uid,key:pending.key,requestId,extra,type});
  try{
   const data=await request('POST',{type,requestId,...extra});
   const wasFinished=!!state?.finished,oldCompleted=Number(state?.completed||0);
@@ -184,27 +195,41 @@ async function run(type,extra={}){
  finally{busy=false;render()}
 }
 async function load(){
- if(busy)return;busy=true;message('⏳ Online-Spielstand laden …');
+ if(busy)return;
+ busy=true;message('⏳ Spielstand wird geprüft …');
+ let shouldRecover=false;
  try{
   const stored=readPending();
   const data=await request('GET',stored?{pendingId:stored.requestId}:undefined);
   state=data.state;
-  // An uncertain write can already exist on the server. Never replay it
-  // with a fresh request ID after a page reload.
+  // An uncertain POST is always retried using its ORIGINAL request ID.
+  // A successful receipt proves the debit already happened, so do not replay.
   const confirmed=!!stored&&data.pendingAction?.applied===true;
   if(confirmed)forgetPending();
+  shouldRecover=!!stored&&!confirmed&&!!state;
   if(state&&!state.goldenHammerGift2026){
-   const bonus=await request('POST',{type:'welcome',requestId:id()});
-   state=bonus.state;
-   if(bonus.result?.granted)message('🎁 Einmaliges Geschenk: 3 goldene Glückshammer wurden gutgeschrieben!');
-   else message('✅ Online-Modus verbunden.');
-  }else message('✅ Online-Modus verbunden.');
-  if(confirmed)message('✅ Letzte Aktion war bereits gespeichert. Du kannst weiterspielen.');
-  else if(stored)message('🔄 Letzte Aktion noch offen. Bitte „Letzte Aktion sicher wiederholen“ wählen.');
-  recoveredGift();render()
+   try{
+    const bonus=await request('POST',{type:'welcome',requestId:id()});
+    state=bonus.state;
+    if(bonus.result?.granted)message('🎁 Einmaliges Geschenk: 3 goldene Glückshammer wurden gutgeschrieben!');
+   }catch(error){message('⚠️ Willkommensgeschenk konnte noch nicht geprüft werden: '+error.message)}
+  }
+  if(confirmed)message('✅ Vorheriger Hammerschlag bestätigt. Du kannst wieder spielen.');
+  else if(shouldRecover)message('🔄 Offene Aktion wird automatisch sicher wiederholt …');
+  else message('✅ Online-Spielstand aktuell. Hammerauswahl ist freigegeben.');
+  recoveredGift();render();
+ }catch(e){
+  shouldRecover=false;
+  message('⚠️ '+e.message);
+  root.innerHTML='<button id="ice-retry">🔄 Verbindung erneut prüfen</button>';
+  root.querySelector('#ice-retry').onclick=load;
+ }finally{busy=false}
+ // A missing receipt means the client must retry ONCE with the same ID.
+ // Rejections release the lock; network timeouts keep the visible repair button.
+ if(shouldRecover){
+  const old=readPending();
+  if(old)await run(old.type,old.extra||{});
  }
- catch(e){message('⚠️ '+e.message);root.innerHTML='<button id="ice-retry">Erneut verbinden</button>';root.querySelector('#ice-retry').onclick=load}
- finally{busy=false}
 }
 document.addEventListener('keydown',e=>{if(!showAllGallery)return;if(e.key==='Escape'){if(largeGalleryImage)largeGalleryImage=null;else showAllGallery=false;render()}else if(largeGalleryImage&&e.key==='ArrowLeft'){largeGalleryImage=Math.max(1,largeGalleryImage-1);render()}else if(largeGalleryImage&&e.key==='ArrowRight'){largeGalleryImage=Math.min(state?.completed||1,largeGalleryImage+1);render()}});
 window.iceHammer='single';
