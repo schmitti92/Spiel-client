@@ -435,7 +435,7 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
    <img class="monster-wheel-avatar" id="monster-wheel-result-avatar" src="./assets/giftzwerg.svg" alt="Muffiger Giftzwerg" hidden>
   </div>
  </section>
-</div><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script><script src="./js/christmas-show-director.js?v=20261109-show-v1"></script><script src="./js/hammer-bingo-cinematics.js?v=20261109-victory-v3"></script><script src="./js/christmas-pack-cinema.js?v=20261109-sequential-v2"></script><script src="./js/christmas-card-image-loader.js?v=20261109-cards-preload-v1"></script><script src="./js/north-pole-bingo.js?v=20261109-north-prizes-v1"></script><script src="./js/monster-wheel.js?v=20261109-full-photo-v1"></script><script>
+</div><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script><script src="./js/christmas-show-director.js?v=20261109-show-v1"></script><script src="./js/hammer-bingo-cinematics.js?v=20261109-victory-v3"></script><script src="./js/christmas-pack-cinema.js?v=20261109-platinum-v1"></script><script src="./js/christmas-card-image-loader.js?v=20261109-cards-preload-v1"></script><script src="./js/north-pole-bingo.js?v=20261109-north-prizes-v1"></script><script src="./js/monster-wheel.js?v=20261109-full-photo-v1"></script><script>
 const cards=[["01_winterdorf","Winterdorf"],["02_lebkuchenhaus","Lebkuchenhaus"],["03_weihnachtsmann","Weihnachtsmann"],["04_rentier","Rentier"],["05_weihnachtsbaum","Weihnachtsbaum"],["06_weihnachtszug","Weihnachtszug"],["07_schneekugel","Schneekugel"],["08_wichtelwerkstatt","Wichtelwerkstatt"],["09_polarlichter","Polarlichter"],["10_eisschloss","Eisschloss"],["11_rentierschlitten","Rentierschlitten"],["12_weihnachtslaterne","Weihnachtslaterne"],["13_weihnachtsengel","Weihnachtsengel"],["14_adventskerzen","Adventskerzen"],["15_schneemannfamilie","Schneemannfamilie"],["16_weihnachtskrippe","Weihnachtskrippe"]];
 cards.push(...[["Weihnachtskarte_17_Schneemann","Schneemann"],["Weihnachtskarte_18_Weihnachtsengel","Weihnachtsengel"],["Weihnachtskarte_19_Rentier","Rentier im Schnee"],["Weihnachtskarte_20_Weihnachtsbaum","Weihnachtsbaum im Glanz"],["Weihnachtskarte_21_Lebkuchenmann","Lebkuchenmann"],["Weihnachtskarte_22_Weihnachtskranz","Weihnachtskranz"],["Weihnachtskarte_23_Schlitten","Schlittenfahrt"],["Weihnachtskarte_24_Stern_von_Bethlehem","Stern von Bethlehem"],["Weihnachtskarte_25_Elfenhilfe","Elfenhilfe"],["Weihnachtskarte_26_Weihnachtspinguin","Weihnachtspinguin"],["Weihnachtskarte_27_Polarbaer","Polarbär"],["Weihnachtskarte_28_Weihnachtsglocken","Weihnachtsglocken"],["Weihnachtskarte_29_Kerzenschein","Kerzenschein"],["Weihnachtskarte_30_Winterdorf","Winterdorf im Schnee"],["Weihnachtskarte_31_Geschenkstapel","Geschenkstapel"],["Weihnachtskarte_32_Schneeflocke","Schneeflocke"]]);
 // Hochgeladene Fotos; bewährte Karten-IDs 65–80 und Sammelfortschritt bleiben unverändert.
@@ -671,6 +671,7 @@ async function maybeClaimNorthPoleBingos(data){
  if(northPoleClaimBusy||!Array.isArray(data?.northPolePending)||!data.northPolePending.length)return;
  if(authState()?.status!=='online'||!authState()?.user?.getIdToken)return;
  const expectedUid=authState().user.uid;
+ let followUp=null;
  northPoleClaimBusy=true;
  try{
   const result=await request('POST','north-pole/claim',{});
@@ -682,11 +683,16 @@ async function maybeClaimNorthPoleBingos(data){
    const latest=await request('GET','me');
    if(authState()?.user?.uid!==expectedUid)return;
    render(latest);void maybeClaimHammerBingos(latest);
-   // New cards can complete a further line. The next refresh can claim it.
+   // Newly awarded cards may complete an additional line on the same board.
+   followUp=latest;
   }
  }catch(error){
   notice.textContent='⚠️ Bingo-Gutschrift wird beim nächsten Laden erneut geprüft: '+String(error?.message||error);
- }finally{northPoleClaimBusy=false}
+ }finally{
+  northPoleClaimBusy=false;
+  if(followUp?.northPolePending?.length&&authState()?.user?.uid===expectedUid)
+   void maybeClaimNorthPoleBingos(followUp);
+ }
 }
 function load(){
  const state=authState(),uid=String(state?.user?.uid||'');
