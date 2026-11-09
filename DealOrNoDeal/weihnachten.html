@@ -196,9 +196,19 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
 .reveal-summary-duplicate{position:absolute;right:5px;top:5px;border-radius:6px;padding:2px 5px;color:#23142d;background:#d5bcff;font-size:10px;font-weight:900}
 @media(max-width:640px){.monster-trade{grid-template-columns:1fr;text-align:center}.monster-wheel-preview{width:115px}.monster-trade-stats{justify-content:center}}
 @media(prefers-reduced-motion:reduce){.monster-trade-meter span{transition:none}}
-</style><link rel="stylesheet" href="./css/christmas-north-pole.css?v=20261109-vierte-tafel-v1"><link rel="stylesheet" href="./css/christmas-event-hub.css?v=20261109-album-deluxe-v1"><link rel="stylesheet" href="./css/christmas-hammer-premium.css?v=20261109-premium-v1"><link rel="stylesheet" href="./css/hammer-bingo-cinematics.css?v=20261109-victory-v3"><link rel="stylesheet" href="./css/christmas-pack-cinema.css?v=20261109-images-ready-v1"><link rel="stylesheet" href="./css/christmas-show-director.css?v=20261109-show-v1"><link rel="stylesheet" href="./css/christmas-spectacle-v2.css?v=20261109-spectacle-v2"><link rel="stylesheet" href="./css/monster-wheel.css?v=20261109-no-test-v1"><link rel="stylesheet" href="./css/christmas-universe-premium.css?v=20261109-universe-v1"></head><body class="christmas-event-main"><main>
+</style><link rel="stylesheet" href="./css/christmas-north-pole.css?v=20261109-vierte-tafel-v1"><link rel="stylesheet" href="./css/christmas-event-hub.css?v=20261109-nested-nav-v1"><link rel="stylesheet" href="./css/christmas-hammer-premium.css?v=20261109-premium-v1"><link rel="stylesheet" href="./css/hammer-bingo-cinematics.css?v=20261109-victory-v3"><link rel="stylesheet" href="./css/christmas-pack-cinema.css?v=20261109-images-ready-v1"><link rel="stylesheet" href="./css/christmas-show-director.css?v=20261109-show-v1"><link rel="stylesheet" href="./css/christmas-spectacle-v2.css?v=20261109-spectacle-v2"><link rel="stylesheet" href="./css/monster-wheel.css?v=20261109-no-test-v1"><link rel="stylesheet" href="./css/christmas-universe-premium.css?v=20261109-nested-nav-v1"></head><body class="christmas-event-main"><main>
 <header class="event-hub-top" aria-label="Weihnachtszauber – gemeinsame Event-Navigation"><a class="event-hub-brand" id="event-world-link" href="./weihnachtswelt.html" title="Zur gemeinsamen Weihnachtswelt" aria-label="Weihnachtswelt – Übersicht öffnen"><span class="event-hub-brand-symbol" aria-hidden="true">🎄</span><span>Weihnachtszauber <small>↗ Zur Event-Übersicht</small></span></a><div class="event-hub-tools"><button type="button" id="christmas-effects-toggle" data-level="full" title="Grafikeffekte ändern">✨ Effekte: Legendär</button><a class="event-hub-tool" id="event-game-link" href="./game.html">🎮 Zum Spiel</a><a class="back" id="lobby" href="./lobby.html">↩ Zur Spiellobby</a><button type="button" id="event-refresh" class="back" title="Aktuelle Eventseite neu laden">↻ Aktualisieren</button><button type="button" id="event-fullscreen" class="back" aria-pressed="false">⛶ Vollbild</button><button type="button" id="event-main-guide" class="event-hub-tool">📖 Anleitung</button></div></header>
-<nav class="event-tabs event-hub-nav" aria-label="Weihnachtsbereiche"><button type="button" data-view="album" aria-selected="true" aria-current="page">🃏 Sammlung</button><button type="button" data-view="hammer" aria-selected="false">🔨 Hammer-Bingo</button><button type="button" data-view="packs" aria-selected="false">🎁 Pakete</button><button type="button" data-view="bingo" aria-selected="false">🏆 Spielinformation &amp; Gewinner</button><a class="event2-tab" href="./Weihnachtsevent2/index.html">❄️ Weihnachtsevent 2</a></nav>
+<nav class="event-tabs event-hub-nav" aria-label="Weihnachtsbereiche">
+ <button type="button" data-main-view="collection" aria-selected="true" aria-current="page" aria-controls="event-collection-nav">🃏 Sammlung</button>
+ <button type="button" data-main-view="packs" aria-selected="false" aria-controls="event-packs">🎁 Pakete</button>
+ <a class="event2-tab" href="./Weihnachtsevent2/index.html">❄️ Weihnachtsevent 2</a>
+</nav>
+<nav id="event-collection-nav" class="event-collection-nav" aria-label="Sammlung – Bereiche" role="tablist">
+ <button type="button" role="tab" data-view="album" aria-controls="event-album" aria-selected="true">🃏 Sammelalbum</button>
+ <button type="button" role="tab" data-view="hammer" aria-controls="event-hammers" aria-selected="false">🔨 Hammer-Bingo</button>
+ <button type="button" role="tab" data-view="monster" aria-controls="event-monster" aria-selected="false">🎰 Monster-Glücksrad</button>
+ <button type="button" role="tab" data-view="bingo" aria-controls="bingo" aria-selected="false">🏆 Spielinfo &amp; Gewinner</button>
+</nav>
 <header class="hero"><img class="hero-characters" src="./assets/weihnachts_event/file_0000000075e081f49cb62fd4b11daae2.png" alt="Weihnachtsmann und Rudolf begrüßen die Besucher" loading="eager"><div class="hero-content"><div class="ornament">🎄 ✨ 🎁</div><div class="eyebrow event-chapter">KAPITEL 1 · DIE WEIHNACHTSKOLLEKTION</div><h1>Weihnachtszauber</h1><span id="north-pole-legend-trophy" class="north-pole-trophy" hidden>👑 NORDPOL-LEGENDE · 30 BINGOS</span><p class="event-hero-subtitle">96 Sammelkarten · 6 Sammelfelder · Gemeinsame Weihnachtswelt</p></div></header><div class="event-layout"><section id="event-album" aria-label="Die klassische Weihnachtskartensammlung">
   <div class="section-title"><h2>✨ Die Weihnachtskollektion</h2><span>64 klassische Karten · 4 Sammeltafeln · 40 Bingos</span></div>
   <div class="album-overview" aria-label="Dein klassischer Sammelfortschritt">
@@ -208,22 +218,6 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
    <button type="button" class="album-to-packs" data-open-view="packs">🎁 Kartenpacks öffnen</button>
    <div class="album-overview-progress" role="progressbar" id="album-total-meter" aria-label="Gesammelte klassische Weihnachtskarten" aria-valuemin="0" aria-valuemax="64" aria-valuenow="0"><span id="album-total-meter-fill"></span></div>
   </div>
-  <section class="monster-trade" id="monster-trade" aria-labelledby="monster-trade-title">
-   <div class="monster-wheel-preview" aria-hidden="true"><span>🎰</span></div>
-   <div>
-    <span class="monster-trade-kicker">✦ DER DUPLIKATEN-TRESOR ✦</span>
-    <h3 id="monster-trade-title">🎟️ Das Monster-Glücksrad</h3>
-    <p>Jede Karte, die du bereits besitzt, wird beim nächsten Ziehen zur doppelten Karte. Tausche <strong>100 Duplikate</strong> gegen <strong>einen Monster-Drehgutschein</strong>. Ein spektakuläres Monster-Rad mit 25 Gewinnfeldern und 8 Sekunden Drehzeit wartet auf dich!</p>
-    <div class="monster-trade-stats">
-     <span>🃏 <strong id="monster-duplicate-count">0</strong> Duplikate</span>
-     <span>🎟️ <strong id="monster-ticket-count">0</strong> Monster-Drehs gesichert</span>
-    </div>
-    <div class="monster-trade-meter" role="progressbar" id="monster-duplicate-progress" aria-label="Duplikate für den nächsten Monster-Dreh" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="monster-duplicate-meter-fill"></span></div>
-    <button type="button" id="monster-exchange-btn" disabled>🔒 100 Duplikate sammeln</button><button type="button" id="monster-spin-open" class="monster-spin-open">🎰 Monster-Rad ansehen</button>
-    <span id="monster-exchange-message" role="status" aria-live="polite"></span>
-    <small>Deine erste Kopie jedes Motivs bleibt erhalten. Auch Duplikate aus abgeschlossenen Hammer-Bingo-Feldern gehen nicht verloren. Dein Drehgutschein bleibt im Online-Profil gespeichert. Die Gewinne werden vor der 8-Sekunden-Animation sicher auf dem Server ausgelost und gebucht.</small>
-   </div>
-  </section>
   <div class="album-collections" id="cards">
    <article class="album-collection-panel" data-set="first" aria-labelledby="album-set-first-title">
     <header class="album-collection-head"><div><span class="album-collection-kicker">🎄 KLASSISCHE SAMMLUNG · TAFEL 1</span><h3 id="album-set-first-title">Weihnachtszauber</h3><p>Die ersten 16 Motive · Gewöhnlich bis legendär</p></div><div class="album-collection-stats"><span id="album-set-first-progress">0 / 16 Karten</span><span id="album-set-first-bingo">0 / 10 Bingos</span></div></header>
@@ -289,6 +283,29 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
    <p id="album-card-dialog-details"></p>
   </dialog>
  </section>
+<section id="event-monster" aria-labelledby="monster-chapter-title">
+ <div class="monster-chapter-head">
+  <span>🎰 SAMMLUNG · DEIN EIGENES GLÜCKSRAD-KAPITEL</span>
+  <h2 id="monster-chapter-title">Das Monster-Glücksrad</h2>
+  <p>Duplikate eintauschen, Drehgutscheine sammeln und die große Gewinnshow starten – alles an einem Ort.</p>
+ </div>
+  <section class="monster-trade" id="monster-trade" aria-labelledby="monster-trade-title">
+   <div class="monster-wheel-preview" aria-hidden="true"><span>🎰</span></div>
+   <div>
+    <span class="monster-trade-kicker">✦ DER DUPLIKATEN-TRESOR ✦</span>
+    <h3 id="monster-trade-title">🎟️ Das Monster-Glücksrad</h3>
+    <p>Jede Karte, die du bereits besitzt, wird beim nächsten Ziehen zur doppelten Karte. Tausche <strong>100 Duplikate</strong> gegen <strong>einen Monster-Drehgutschein</strong>. Ein spektakuläres Monster-Rad mit 25 Gewinnfeldern und 8 Sekunden Drehzeit wartet auf dich!</p>
+    <div class="monster-trade-stats">
+     <span>🃏 <strong id="monster-duplicate-count">0</strong> Duplikate</span>
+     <span>🎟️ <strong id="monster-ticket-count">0</strong> Monster-Drehs gesichert</span>
+    </div>
+    <div class="monster-trade-meter" role="progressbar" id="monster-duplicate-progress" aria-label="Duplikate für den nächsten Monster-Dreh" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="monster-duplicate-meter-fill"></span></div>
+    <button type="button" id="monster-exchange-btn" disabled>🔒 100 Duplikate sammeln</button><button type="button" id="monster-spin-open" class="monster-spin-open">🎰 Monster-Rad ansehen</button>
+    <span id="monster-exchange-message" role="status" aria-live="polite"></span>
+    <small>Deine erste Kopie jedes Motivs bleibt erhalten. Auch Duplikate aus abgeschlossenen Hammer-Bingo-Feldern gehen nicht verloren. Dein Drehgutschein bleibt im Online-Profil gespeichert. Die Gewinne werden vor der 8-Sekunden-Animation sicher auf dem Server ausgelost und gebucht.</small>
+   </div>
+  </section>
+</section>
 <section id="bingo"><div class="section-title"><h2>🏆 Spielinformation und Gewinner</h2><span>Weihnachtsalbum · Bingo-Belohnungen</span></div><div class="christmas-instructions" aria-labelledby="christmas-howto"><h3 id="christmas-howto">🎄 So funktioniert das Weihnachts-Event</h3><p>Öffne Weihnachtspakete mit deinem Spielgeld und sammle die 64 klassischen Weihnachtskarten. Jede Karte zählt für dein persönliches Sammelalbum.</p><p>Vervollständige eine Reihe, Spalte oder Diagonale im 4 × 4-Kartenfeld, um ein <strong>Bingo</strong> zu erzielen. Pro 4 × 4-Feld sind <strong>10 Bingos</strong> möglich, insgesamt also <strong>40 Bingos</strong> auf vier klassischen Tafeln. Vollständige Reihen werden mit einem goldenen BINGO-Siegel gekennzeichnet. Die bisherigen Belohnungen werden bis 30 Gesamt-Bingos nach jeweils zwei Bingos freigeschaltet. Die Preise für 32 bis 40 Bingos werden separat ergänzt.</p><p>Nach den ersten fünf Belohnungen erhältst du auch den exklusiven Sammlerrahmen als Bonus. Bereits erhaltene Karten bleiben gesammelt; doppelte Karten bringen keine zusätzlichen Bingos.</p></div><div class="section-title"><h2>🎁 Freischaltbare Belohnungen</h2><span>Bisherige Belohnungen · 2 bis 30 Bingos</span></div><div class="reward-grid" id="reward-grid"></div><p class="note">Belohnungen werden erst nach der serverseitigen Bingo-Prüfung freigeschaltet. Freischaltungen werden aus deinem Sammelfortschritt berechnet.</p></section></div>
 <section id="event-hammers" aria-labelledby="hammer-heading">
  <div class="hammer-hero"><span>🔨 WEIHNACHTSWERKSTATT · SAMMELCHALLENGES</span><h2 id="hammer-heading">Hammer-Bingo</h2><p class="hammer-lead">Zwei magische Sammelwelten, 20 mögliche Bingos und kostbare Hammer-Belohnungen. Finde Karten, vervollständige Linien und knacke die Jackpots!</p><p class="hammer-art-status" id="hammer-art-status">32 von 32 neuen Karten im Sammelpool ✓</p>
@@ -618,7 +635,7 @@ root.addEventListener('keydown',event=>{
  }
 });
 document.querySelectorAll('[data-open-view]').forEach(button=>button.addEventListener('click',()=>{
- document.querySelector('.event-tabs button[data-view="'+button.dataset.openView+'"]')?.click();
+ setChristmasView(button.dataset.openView);
 }));
 // Only one GET for one signed-in account can run at a time.
 // Auth changes invalidate stale in-flight responses before the DOM is touched.
@@ -886,7 +903,51 @@ monsterSpinStart.addEventListener('click',async()=>{
 
 window.addEventListener('spielonline-change',load);window.addEventListener('load',()=>{void load();setTimeout(()=>{if(!current&&authState().status!=='offline')void load()},1800);setTimeout(()=>{if(!current&&authState().status!=='offline')void load()},5500)});
 
-document.getElementById('retry-connection').addEventListener('click',load);document.body.dataset.view=['album','hammer','packs','bingo'].includes(new URLSearchParams(location.search).get('view'))?new URLSearchParams(location.search).get('view'):'album';document.querySelectorAll('.event-tabs button[data-view]').forEach(b=>{const active=b.dataset.view===document.body.dataset.view;b.setAttribute('aria-selected',String(active));if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});document.querySelectorAll('.event-tabs button[data-view]').forEach(button=>button.addEventListener('click',()=>{document.body.dataset.view=button.dataset.view;document.querySelectorAll('.event-tabs button[data-view]').forEach(b=>{const active=b===button;b.setAttribute('aria-selected',String(active));if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});const url=new URL(location.href);url.searchParams.set('view',button.dataset.view);history.replaceState(history.state,'',url);if(button.dataset.view==='hammer'){loadHammerStock();if(current)void maybeClaimHammerBingos(current)}window.scrollTo({top:0,behavior:'smooth'})}));
+document.getElementById('retry-connection').addEventListener('click',load);
+// Navigation is local UI state only: no Firebase reads, room reconnects or new requests.
+const collectionViews=new Set(['album','hammer','monster','bingo']);
+const validChristmasViews=new Set([...collectionViews,'packs']);
+const requestedChristmasView=new URLSearchParams(location.search).get('view');
+let lastCollectionView=collectionViews.has(requestedChristmasView)?requestedChristmasView:'album';
+function setChristmasView(view,{updateUrl=true,scroll=true}={}){
+ if(!validChristmasViews.has(view))view='album';
+ const isCollection=collectionViews.has(view);
+ if(isCollection)lastCollectionView=view;
+ document.body.dataset.view=view;
+ const childNav=document.getElementById('event-collection-nav');
+ childNav.hidden=!isCollection;
+ document.querySelectorAll('#event-collection-nav button[data-view]').forEach(button=>{
+  const active=isCollection&&button.dataset.view===view;
+  button.setAttribute('aria-selected',String(active));
+  button.tabIndex=active?0:-1;
+ });
+ document.querySelectorAll('.event-hub-nav button[data-main-view]').forEach(button=>{
+  const active=(button.dataset.mainView==='collection')===isCollection;
+  button.setAttribute('aria-selected',String(active));
+  if(active)button.setAttribute('aria-current','page');
+  else button.removeAttribute('aria-current');
+ });
+ if(view==='hammer'){loadHammerStock();if(current)void maybeClaimHammerBingos(current)}
+ if(updateUrl){const url=new URL(location.href);url.searchParams.set('view',view);history.replaceState(history.state,'',url)}
+ if(scroll)window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('#event-collection-nav button[data-view]').forEach(button=>
+ button.addEventListener('click',()=>setChristmasView(button.dataset.view))
+);
+document.querySelectorAll('.event-hub-nav button[data-main-view]').forEach(button=>
+ button.addEventListener('click',()=>setChristmasView(button.dataset.mainView==='packs'?'packs':lastCollectionView))
+);
+document.getElementById('event-collection-nav').addEventListener('keydown',event=>{
+ const tabs=[...document.querySelectorAll('#event-collection-nav button[data-view]')];
+ const active=tabs.indexOf(document.activeElement);
+ if(active<0||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+ event.preventDefault();
+ const next=event.key==='Home'?0:event.key==='End'?tabs.length-1:
+ (active+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
+ tabs[next].focus();
+ setChristmasView(tabs[next].dataset.view,{scroll:false});
+});
+setChristmasView(validChristmasViews.has(requestedChristmasView)?requestedChristmasView:'album',{updateUrl:false,scroll:false});
 
 /* Fixed slot catalog from the three GitHub image uploads on 2026-11-09.
    Slots 33–48: all common. Slots 49–64: mixed by column (common/rare/epic/legendary).
@@ -1203,7 +1264,7 @@ document.addEventListener('keydown',event=>{
   else if(!overlay.contains(document.activeElement)){event.preventDefault();first.focus()}
  }
 });
-document.getElementById('event-main-guide').addEventListener('click',()=>document.querySelector('.event-tabs button[data-view="bingo"]')?.click());document.getElementById('event-refresh').addEventListener('click',()=>location.reload());
+document.getElementById('event-main-guide').addEventListener('click',()=>setChristmasView('bingo'));document.getElementById('event-refresh').addEventListener('click',()=>location.reload());
 const fullscreenButton=document.getElementById('event-fullscreen');function syncFullscreen(){const active=!!document.fullscreenElement;fullscreenButton.textContent=active?'⛶ Vollbild beenden':'⛶ Vollbild';fullscreenButton.setAttribute('aria-pressed',String(active))}fullscreenButton.addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else throw Error('Vollbild wird von diesem Browser nicht unterstützt.')}catch(e){fullscreenButton.textContent='⚠ Vollbild nicht verfügbar';fullscreenButton.title=e.message}});document.addEventListener('fullscreenchange',syncFullscreen);syncFullscreen();
 const roomParam=new URLSearchParams(location.search).get("room");const roomPattern=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i;const room=roomPattern.test(roomParam||"")?roomParam:roomPattern.test(sessionStorage.getItem("deal-active-room")||"")?sessionStorage.getItem("deal-active-room"):null;if(room){sessionStorage.setItem("deal-active-room",room);document.getElementById("lobby").href="./lobby.html?room="+encodeURIComponent(room);document.getElementById("event-game-link").href="./game.html?room="+encodeURIComponent(room);document.getElementById("event-world-link").href="./weihnachtswelt.html?room="+encodeURIComponent(room);const event2=document.querySelector(".event2-tab");if(event2)event2.href="./Weihnachtsevent2/index.html?room="+encodeURIComponent(room)}
 </script><script src="../site-global-controls.js?v=20261109-global-1"></script>
