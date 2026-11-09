@@ -1049,14 +1049,19 @@ document.getElementById('hammer-cinema-preview').addEventListener('click',()=>wi
 if(document.body.dataset.view==='hammer')loadHammerStock();
 
 const bingoLines=[...[0,1,2,3].map(r=>[0,1,2,3].map(c=>r*4+c)),...[0,1,2,3].map(c=>[0,1,2,3].map(r=>r*4+c)),[0,5,10,15],[3,6,9,12]];
-let revealState=null,revealMotionToken=0,revealMotionBusy=false;
+let revealState=null,revealMotionToken=0,revealMotionBusy=false,revealAutoTimer=null;
+function stopRevealAuto(){if(revealAutoTimer!==null){clearTimeout(revealAutoTimer);revealAutoTimer=null}}
+function revealCardHoldMs(card){
+ return ({common:1800,rare:2200,epic:2900,legendary:3900})[String(card?.rarity||'common').toLowerCase()]||1800;
+}
 const overlay=document.getElementById('reveal-overlay'),next=document.getElementById('reveal-next'),skip=document.getElementById('reveal-skip'),close=document.getElementById('reveal-close');
 function openReveal(revealed,mode='real',pack='small'){
  const present=()=>{
- revealMotionToken++;revealMotionBusy=false;lastHammerAwardSummary='';
+ stopRevealAuto();revealMotionToken++;revealMotionBusy=false;lastHammerAwardSummary='';
  document.getElementById('reveal-bingo-awards').textContent='';
  document.getElementById('hammer-claim-status').classList.remove('is-jackpot');
- const array=Array.isArray(revealed)?revealed:[];
+ const array=window.ChristmasPackCinema?.orderCards?.(revealed)
+  ||(Array.isArray(revealed)?[...revealed]:[]);
  revealState={cards:array,index:-1,mode,pack};
  overlay.hidden=false;document.body.style.overflow='hidden';
  document.getElementById('reveal-present').classList.remove('opened');
@@ -1078,7 +1083,7 @@ function openReveal(revealed,mode='real',pack='small'){
 function finishReveal(){
  const state=revealState;if(!state)return;
  // Cancel pending gift-opening delays before building the finished summary.
- revealMotionToken++;revealMotionBusy=false;next.disabled=false;
+ stopRevealAuto();revealMotionToken++;revealMotionBusy=false;next.disabled=false;
  document.getElementById('reveal-card').hidden=true;
  document.getElementById('reveal-present').hidden=true;
  const summary=document.getElementById('reveal-summary');
@@ -1114,6 +1119,7 @@ function finishReveal(){
 }
 async function revealNext(){
  if(!revealState||revealMotionBusy)return;
+ stopRevealAuto();
  const state=revealState;
  const index=state.index+1;
  if(index>=state.cards.length){finishReveal();return}
@@ -1141,11 +1147,20 @@ async function revealNext(){
  next.textContent=index===state.cards.length-1?'Alle Karten anzeigen':'Nächste Karte →';
  next.disabled=false;revealMotionBusy=false;
  window.ChristmasPackCinema?.showCard(card,index,state.cards.length);
+ // After each card flips up LARGE, hold it for a few seconds, then turn
+ // the next one automatically. Rare prizes linger for the finale.
+ // Skip, Close and manual Next cancel this timer without touching winnings.
+ revealAutoTimer=setTimeout(()=>{
+  revealAutoTimer=null;
+  if(token===revealMotionToken&&revealState===state&&!overlay.hidden&&!revealMotionBusy){
+   void revealNext();
+  }
+ },revealCardHoldMs(card));
 }
 next.addEventListener('click',()=>{void revealNext()});
 skip.addEventListener('click',finishReveal);
 close.addEventListener('click',()=>{
- revealMotionToken++;revealMotionBusy=false;next.disabled=false;
+ stopRevealAuto();revealMotionToken++;revealMotionBusy=false;next.disabled=false;
  overlay.hidden=true;document.body.style.overflow='';
  revealState=null;window.ChristmasPackCinema?.close();
  // Release the stage before notifying Bingo: the bridge owns the handoff.
