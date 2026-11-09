@@ -1,0 +1,110 @@
+/* Shared Christmas event navigation — both event pages use exactly this file. */
+:root{--event-gold:#f4cf81;--event-blue:#9cdff4;--event-ink:#081a2d}
+.event-hub-top{
+ position:relative;z-index:31;
+ display:flex!important;justify-content:space-between;align-items:center;
+ gap:9px!important;flex-wrap:wrap;
+ margin:0!important;padding:6px clamp(8px,1vw,15px)!important;
+ border:1px solid #c69a5f80;border-radius:13px;
+ background:linear-gradient(100deg,#091a30ed,#1b2e47ed 64%,#101b2ded)!important;
+ box-shadow:inset 0 1px #ffe5a12a,0 5px 15px #0006;
+}
+.event-hub-brand{
+ display:flex;align-items:center;gap:8px;min-width:0;
+ color:#ffe3a3!important;font:850 clamp(14px,1.45vw,22px)/1.2 system-ui,sans-serif;
+ letter-spacing:.045em;text-shadow:0 1px 7px #000,0 0 13px #efb85c4c;
+}
+.event-hub-brand small{
+ color:#b8dae6;font-size:clamp(10px,.8vw,12px);
+ font-weight:650;letter-spacing:.02em;
+}
+.event-hub-tools{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+.event-hub-top .event-hub-tool,
+.event-hub-top .event-hub-tools .back{
+ display:inline-flex;justify-content:center;align-items:center;
+ min-height:34px;padding:6px 12px!important;border:1px solid #d2a965a6!important;
+ border-radius:10px!important;background:linear-gradient(#193248,#0e2038)!important;
+ font:750 clamp(11px,.88vw,14px)/1.15 system-ui,sans-serif!important;
+ color:#ffebbf!important;text-decoration:none!important;white-space:nowrap;
+ box-shadow:inset 0 1px #ffe9a82a;cursor:pointer;
+}
+.event-hub-top .event-hub-tool:hover,
+.event-hub-top .event-hub-tools .back:hover,
+.event-hub-top .event-hub-tool:focus-visible,
+.event-hub-top .event-hub-tools .back:focus-visible{
+ background:linear-gradient(#27516d,#16324c)!important;border-color:#ffe4a9!important;
+}
+.event-hub-nav.event-tabs,
+nav.event-hub-nav{
+ position:sticky!important;top:0;z-index:35;
+ display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ align-items:stretch;gap:clamp(4px,.7vw,10px)!important;
+ width:100%;margin:7px 0 10px!important;padding:7px!important;
+ border:1px solid #e2b96e!important;border-radius:14px!important;
+ background:linear-gradient(105deg,#092039f5,#1a2a46f6 54%,#09182ef5)!important;
+ box-shadow:0 6px 20px #0008,inset 0 1px #ffdf993b;
+ backdrop-filter:blur(12px);
+}
+.event-hub-nav.event-tabs > :is(a,button),
+nav.event-hub-nav > :is(a,button){
+ box-sizing:border-box!important;display:flex!important;align-items:center!important;
+ justify-content:center!important;gap:5px;text-align:center;
+ width:100%;min-width:0;min-height:43px!important;
+ padding:6px clamp(4px,.85vw,12px)!important;
+ border:1px solid #8d846e!important;border-radius:10px!important;
+ background:linear-gradient(#1b3b54,#10263c)!important;
+ color:#fce8c3!important;text-decoration:none!important;
+ font:800 clamp(11px,1vw,15px)/1.2 system-ui,sans-serif!important;
+ cursor:pointer;white-space:normal;
+ box-shadow:inset 0 1px #ffffff1c;
+}
+.event-hub-nav.event-tabs > :is(a,button):hover,
+nav.event-hub-nav > :is(a,button):hover{
+ border-color:#f4d899!important;background:linear-gradient(#27526e,#14364e)!important;
+}
+.event-hub-nav.event-tabs > :is(a,button)[aria-selected="true"],
+.event-hub-nav.event-tabs > :is(a,button)[aria-current="page"],
+nav.event-hub-nav > :is(a,button)[aria-current="page"]{
+ border-color:#ffe7a8!important;
+ background:linear-gradient(135deg,#ffe7af,#e3b969 48%,#bd8739)!important;
+ color:#29190d!important;
+ box-shadow:inset 0 1px #fff6d6,0 0 14px #f8c9703e!important;
+}
+.event-hub-nav.event-tabs > :is(a,button).event2-tab[aria-current="page"],
+nav.event-hub-nav > :is(a,button).event2-tab[aria-current="page"]{
+ border-color:#ade5f6!important;
+ background:linear-gradient(125deg,#245e80,#2b9aba)!important;
+ color:#fff!important;box-shadow:inset 0 1px #c6f8ff77,0 0 17px #59daf944!important;
+}
+.event-hub-nav :is(a,button):focus-visible,
+.event-hub-top :is(a,button):focus-visible{
+ outline:2px solid white!important;outline-offset:2px!important;
+}
+/* Maintain a visible Christmas welcome without pushing the tabs off screen. */
+body.christmas-event-main .hero{
+ min-height:clamp(148px,19dvh,212px)!important;max-height:235px;
+ margin:4px 0 8px!important;padding:8px 12px!important;
+}
+body.christmas-event-main .hero-content{padding:8px 12px!important}
+body.christmas-event-main .hero-content h1{
+ font-size:clamp(28px,4vw,56px)!important;margin:4px 0!important;
+}
+body.christmas-event-main .hero-content .ornament{font-size:clamp(15px,2vw,26px)!important}
+@media(max-width:650px){
+ .event-hub-top{flex-wrap:nowrap}
+ .event-hub-brand{font-size:13px}
+ .event-hub-brand small{display:none}
+ .event-hub-top .event-hub-tool,.event-hub-top .event-hub-tools .back{
+  padding:5px 7px!important;font-size:10px!important;min-height:32px;
+ }
+ .event-hub-nav.event-tabs,nav.event-hub-nav{gap:4px!important;padding:5px!important}
+ .event-hub-nav.event-tabs > :is(a,button),nav.event-hub-nav > :is(a,button){
+  font-size:clamp(9px,2.35vw,12px)!important;padding:5px 2px!important;min-height:42px!important
+ }
+ body.christmas-event-main .hero{min-height:155px!important;max-height:175px}
+ body.christmas-event-main .hero-content h1{font-size:clamp(26px,6vw,40px)!important}
+}
+@media(max-width:380px){
+ .event-hub-top{align-items:flex-start;flex-wrap:wrap}
+ .event-hub-tools{width:100%;justify-content:flex-start}
+}
