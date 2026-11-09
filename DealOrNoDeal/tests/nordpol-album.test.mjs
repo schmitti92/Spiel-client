@@ -2,6 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
 import {resolve} from 'node:path';
+import {runInNewContext} from 'node:vm';
 
 const root=resolve('DealOrNoDeal');
 const html=readFileSync(resolve(root,'weihnachten.html'),'utf8');
@@ -58,4 +59,29 @@ test('five new rewards use authoritative server unlock data',()=>{
  assert.match(lobby,/data\.progress\.rewards\.includes\('north-pole-legend'\)/);
  assert.match(css,/north-aurora-active/);
  assert.ok(existsSync(resolve(root,'assets/weihnachts_event/nordpol_aurora_lobby.svg')));
+});
+
+test('first two classic boards show five server-authoritative Bingo rewards each',()=>{
+ const api={};
+ runInNewContext(readFileSync(resolve(root,'js/north-pole-bingo.js'),'utf8'),{window:api});
+ const engine=api.NorthPoleBingo;
+ assert.ok(engine);
+ assert.deepEqual([...engine.CLASSIC_BOARD_MILESTONES[0]].map(x=>x.at),[2,4,6,8,10]);
+ assert.deepEqual([...engine.CLASSIC_BOARD_MILESTONES[1]].map(x=>x.at),[12,14,16,18,20]);
+ assert.deepEqual([...engine.CLASSIC_BOARD_MILESTONES[0]].map(x=>x.id),
+  ['rudolph','winter-lobby','christmas-studio','gift-cases','snowman-profile-avatar']);
+ assert.deepEqual([...engine.CLASSIC_BOARD_MILESTONES[1]].map(x=>x.id),
+  ['santa-profile-avatar','lobby-snowfall','christmas-profile-banner','santa','christmas-champion']);
+ const state=engine.snapshot({}, {totalBingos:8,rewards:['rudolph','winter-lobby','christmas-studio','gift-cases']});
+ assert.equal(state.classicMilestones[0][0].unlocked,true);
+ assert.equal(state.classicMilestones[0][4].unlocked,false);
+ assert.equal(state.classicMilestones[1][0].unlocked,false);
+ assert.equal(state.totalBingos,8);
+ for(const key of ['first','second']){
+  assert.match(html,new RegExp('id="album-bingo-milestones-'+key+'"'));
+  assert.match(html,new RegExp('id="album-bingo-next-'+key+'"'));
+ }
+ assert.match(html,/id="album-bingo-first-bonus"/);
+ assert.match(css,/\.classic-bingo-rewards/);
+ assert.match(html,/north-pole-bingo\.js\?v=20261109-compass-v2/);
 });
