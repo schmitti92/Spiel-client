@@ -55,3 +55,25 @@ test('the existing album includes the compass controls and resets them on logout
  assert.ok(html.includes('NorthPoleBingo?.render(data)'), 'should render using the same GET response');
  assert.ok(html.includes('NorthPoleBingo?.reset()'), 'should reset whenever account identity is cleared');
 });
+
+test('milestone 22 stays pending while already claimed Premium vouchers are being backfilled',()=>{
+ const progress={
+  totalBingos:22,rewards:['north-premium-2'],
+  northPoleClaimed:['north-premium-2'],northPolePending:['north-premium-2']
+ };
+ const before=snapshot(own(65,66,67,68),progress);
+ assert.equal(before.milestones[0].unlocked,true);
+ assert.equal(before.milestones[0].claimed,false,'claimed timestamp alone is not proof of saved voucher');
+ const after=snapshot(own(65,66,67,68),{...progress,northPolePending:[]});
+ assert.equal(after.milestones[0].claimed,true);
+ assert.equal(after.milestones[1].claimed,false);
+});
+
+test('third board displays visible claim and retry status after a server-confirmed milestone',()=>{
+ const html=readFileSync('DealOrNoDeal/weihnachten.html','utf8');
+ assert.match(html,/id="north-bingo-claim-status" role="status"/);
+ assert.match(html,/claimMessage\('⏳ Erreichte Nordpol-Bingo-Belohnungen/);
+ assert.match(html,/claimMessage\('✅ '\+result\.claimed/);
+ assert.match(html,/claimMessage\('⚠️ Bingo-Gutschrift noch nicht bestätigt/);
+ assert.match(html,/north-pole-bingo\.js\?v=20261110-premium-vouchers-v2/);
+});
