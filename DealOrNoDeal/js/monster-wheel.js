@@ -4,12 +4,24 @@
 (()=>{
  let catalog=[],currentDegrees=0,rotating=false;
  const $=id=>document.getElementById(id);
- const palette=['#933e9b','#225e93','#b63c67','#b18336','#268273','#7643b2','#c65f30'];
+ const palette=['#9b30bd','#1364b8','#ee5f3a','#ab2672','#18a89e','#cc7829','#424fcd'];
+ const colorFor=(slot,i)=>{
+  if(slot.featured==='character')return '#3cba58';
+  if(slot.featured==='premium')return '#c52e80';
+  if(slot.featured==='goldpack')return '#e4a12c';
+  if(slot.id==='cash-10m')return '#ffd052';
+  if(slot.kind==='randomCash')return '#6c37c5';
+  return palette[i%palette.length];
+ };
  function paint(){
   const disc=$('monster-wheel-disc'),list=$('monster-prize-list');
   if(!disc||!list||!catalog.length)return;
   const step=360/catalog.length;
-  const colors=catalog.map((_,i)=>palette[i%palette.length]+' '+(i*step).toFixed(4)+'deg '+((i+1)*step).toFixed(4)+'deg');
+  // Both wedge colors and divider lines follow the exact server catalog order.
+  const colors=catalog.flatMap((slot,i)=>{
+   const start=(i*step).toFixed(4),edge=((i+1)*step-.55).toFixed(4),end=((i+1)*step).toFixed(4);
+   return [colorFor(slot,i)+' '+start+'deg '+edge+'deg','#ffe8ab '+edge+'deg '+end+'deg'];
+  });
   disc.style.background='conic-gradient('+colors.join(',')+')';
   disc.replaceChildren();
   list.replaceChildren();
@@ -18,13 +30,16 @@
    const slot=catalog[i],deg=(i+.5)*step;
    const mark=document.createElement('span');
    mark.className='monster-wheel-segment';
+   mark.dataset.featured=slot.featured||'';
+   mark.dataset.monsterKind=slot.kind;
    mark.textContent=slot.icon||'✦';
    mark.title=slot.label;
    mark.style.transform='rotate('+deg+'deg) translateY(-'+radius+'px) rotate(-'+deg+'deg)';
    disc.append(mark);
    const row=document.createElement('span');
    row.dataset.monsterSlot=String(i);
-   row.textContent=(slot.icon||'✦')+' '+slot.label;
+   row.dataset.featured=slot.featured||'';
+   row.textContent=(slot.featured?'✦ ':'')+(slot.icon||'✦')+' '+slot.label;
    list.append(row);
   }
  }
