@@ -1,0 +1,262 @@
+/* GOLDSTUDIO FINALE — cinematic personal-case opening V2
+ * Presentation only. Prize figures and winner ranking come exclusively from server state.
+ */
+#finale-cinema .finale-stage{
+ width:min(1140px,98vw)!important;
+ background:radial-gradient(ellipse at 50% -10%,#775b3290,transparent 46%),linear-gradient(160deg,#0e1c35,#050d1c 75%)!important;
+ border:2px solid #eec77f!important;
+ box-shadow:0 0 0 2px #f6d58d24,0 0 70px #d6a5534f,0 23px 90px #000e!important;
+}
+#finale-cinema .finale-ceremony-progress{
+ position:relative;width:max-content;max-width:100%;
+ margin:8px auto 12px;padding:7px 22px;
+ border:1px solid #f1d7a66b;border-radius:100px;
+ background:linear-gradient(90deg,#171e34,#493b30,#171e34);
+ box-shadow:inset 0 1px #fff5,0 4px 14px #0007;
+ color:#f9e9ba;font:900 clamp(11px,1.15vw,15px)/1.15 system-ui,sans-serif;
+ letter-spacing:.12em;text-align:center;
+}
+#finale-cinema .finale-spotlight{
+ height:clamp(255px,47dvh,450px);
+ grid-template-columns:minmax(190px,.68fr) minmax(0,1.7fr);
+ border:2px solid #f2d38e;
+ background:linear-gradient(105deg,#091932ed,#142846ed 44%,#0b1731ef)!important;
+ box-shadow:inset 0 0 0 1px #fff0bd3f,0 0 0 4px #f7dca118,0 20px 42px #000c,0 0 32px #eeb76745;
+}
+#finale-cinema .finale-spotlight-person{
+ border:1px solid #f2cf8670;background:linear-gradient(155deg,#203c54dd,#091324ee);
+ box-shadow:inset 0 0 18px #f9d1711a,0 8px 19px #0007;
+}
+#finale-cinema .finale-spotlight-avatar{
+ width:clamp(60px,8vw,100px);height:clamp(60px,8vw,100px);
+ border:3px solid #ffe6a9;box-shadow:0 0 0 4px #98713a,0 0 25px #ffc96c93;
+}
+#finale-cinema .finale-vault-scene{
+ perspective:1050px;overflow:visible;isolation:isolate;
+ background:radial-gradient(ellipse at 50% 78%,#f6bd4324,transparent 62%);
+}
+#finale-cinema .finale-stage-light{
+ position:absolute;z-index:-1;top:-36%;width:30%;height:115%;
+ transform-origin:50% 0;pointer-events:none;opacity:.6;
+ background:linear-gradient(#fff4c65c,#f7bc3f26 24%,transparent 93%);
+ filter:blur(18px);clip-path:polygon(46% 0,54% 0,100% 100%,0 100%);
+}
+#finale-cinema .finale-stage-light-left{left:5%;transform:rotate(-24deg);animation:finale-stage-light-sweep 6s ease-in-out infinite alternate}
+#finale-cinema .finale-stage-light-right{right:5%;transform:rotate(24deg);animation:finale-stage-light-sweep 6s ease-in-out -3s infinite alternate-reverse}
+#finale-cinema .finale-vault{
+ width:min(97%,560px);max-height:84%;aspect-ratio:1.78;
+ transform:translate3d(0,0,0);
+ filter:drop-shadow(0 18px 15px #000c);
+}
+#finale-cinema .finale-vault-handle{
+ left:37%;top:-16%;width:26%;height:27%;border:clamp(7px,1vw,13px) solid #cf993e;
+ border-bottom:0;border-radius:24px 24px 0 0;z-index:0;
+ box-shadow:inset 0 0 0 2px #fff0b18a,0 0 12px #e2b35c8b,0 5px 0 #56361b;
+}
+#finale-cinema .finale-vault-base{
+ top:25%;height:73%;left:1.5%;width:97%;
+ border:clamp(6px,.76vw,11px) ridge #e4b66b;border-radius:18px 18px 22px 22px;
+ background:radial-gradient(ellipse at 50% 34%,#c18a3f,#45301e 64%,#110f12 100%);
+ box-shadow:inset 0 0 0 3px #fff0a573,inset 0 0 30px #2c100bd9,0 7px 12px #000c;
+}
+#finale-cinema .finale-vault-base:after{
+ content:"";position:absolute;inset:11%;border:2px solid #ffe09a75;
+ border-radius:12px;box-shadow:0 0 12px #f5bd6c35;pointer-events:none;
+}
+#finale-cinema .finale-vault-inner-caption{
+ position:absolute;left:5%;right:5%;top:12%;z-index:1;
+ color:#fff1bd;font:900 clamp(8px,1.2vw,13px)/1 system-ui,sans-serif;
+ text-shadow:0 1px 6px #25120e;letter-spacing:.17em;
+ opacity:0;transform:translateY(9px);transition:opacity .35s .55s,transform .35s .55s;
+}
+#finale-cinema .finale-vault-value{
+ max-width:94%;padding:0 3px;
+ white-space:normal;overflow-wrap:anywhere;
+ font:1000 clamp(18px,3.25vw,47px)/1.08 system-ui,sans-serif;
+ letter-spacing:-.045em;
+ opacity:0;filter:blur(12px);transform:translateY(14px) scale(.8);
+ text-shadow:0 3px #4f270d,0 0 19px #ffd468,0 0 42px #ffcd6480;
+ transition:opacity .38s 1.07s,filter .48s 1.03s,transform .65s 1.02s;
+}
+#finale-cinema .finale-vault-lid{
+ top:15%;left:1%;width:98%;height:77%;z-index:4;
+ border:clamp(6px,.85vw,12px) ridge #ffe1a1;
+ border-radius:18px;
+ background:
+ linear-gradient(0deg,#633d16 0%,transparent 15%,transparent 85%,#fff4c3ad 100%),
+ linear-gradient(122deg,#c49049 0%,#f5dda0 18%,#a56b2b 40%,#ffe6a9 55%,#a56b2c 80%,#efcf89 100%);
+ box-shadow:inset 0 0 0 3px #593814,inset 0 0 0 8px #fff1b251,
+ inset 0 0 18px #fff4c180,0 8px 19px #100c0ee0;
+ transform-origin:50% 6%;
+ backface-visibility:visible;
+ transform:perspective(1200px) rotateX(0deg);
+ transition:transform 1.2s cubic-bezier(.17,.82,.29,1),opacity .85s .65s,filter .6s ease;
+}
+#finale-cinema .finale-vault-lid:before,
+#finale-cinema .finale-vault-lid:after{
+ width:clamp(8px,1.1vw,14px);height:26%;top:38%;
+ border:2px solid #715124;border-radius:7px;
+ background:linear-gradient(90deg,#734712,#fff4c0,#af762e,#f3d28d);
+ box-shadow:0 0 4px #fff2b18c;
+}
+#finale-cinema .finale-vault-metal-rail{
+ position:absolute;inset:14% 8%;border:2px solid #ffefc29c;border-radius:12px;
+ background:linear-gradient(135deg,#fff4c524,transparent 30%,#fff7dc18 70%,transparent);
+ box-shadow:inset 0 0 0 3px #5d371a47;
+}
+#finale-cinema .finale-vault-emblem{
+ position:absolute;top:21%;left:20%;width:60%;text-align:center;
+ font:900 clamp(9px,1.2vw,15px)/1.2 Georgia,serif;letter-spacing:.16em;
+ color:#472607;text-shadow:0 1px 1px #fff6d7cf;
+}
+#finale-cinema #finale-spotlight-case-number{
+ z-index:2;position:relative;align-self:center;
+ padding:clamp(5px,.9vw,14px) clamp(12px,1.9vw,25px);
+ font:1000 clamp(23px,3.8vw,51px)/1 system-ui,sans-serif;
+ letter-spacing:.02em;
+ background:linear-gradient(155deg,#ffefbb,#c9953d);
+ border:3px solid #865b26;box-shadow:0 0 0 2px #fdf3bf95,0 4px 14px #4326109c;
+}
+#finale-cinema .finale-vault-clasps{
+ position:absolute;inset:auto 12% 5%;height:16%;
+ display:flex;align-items:stretch;justify-content:space-between;
+}
+#finale-cinema .finale-vault-clasps i{
+ display:block;width:17%;border:2px solid #51330f;border-radius:4px;
+ background:linear-gradient(90deg,#5c3713,#fee8a6 35%,#b47d28 65%,#5c3915);
+ box-shadow:0 3px 2px #201004b8,inset 0 1px 3px #fff6d8a5;
+}
+#finale-cinema .finale-vault-unlock-glow{
+ position:absolute;z-index:5;left:48%;top:45%;width:4%;height:8%;
+ border-radius:50%;pointer-events:none;opacity:0;
+ background:#fffbe6;filter:blur(4px);
+ box-shadow:0 0 30px 18px #fff5a8,0 0 80px 40px #e2b548;
+}
+#finale-cinema .finale-spotlight[data-state="open"] .finale-vault-lid{
+ transform:perspective(1200px) rotateX(-120deg) translateY(-2%);
+ opacity:.22;filter:brightness(1.6);
+}
+#finale-cinema .finale-spotlight[data-state="open"] .finale-vault-inner-caption{
+ opacity:1;transform:translateY(0);
+}
+#finale-cinema .finale-spotlight[data-state="open"] .finale-vault-rays{
+ opacity:1;transform:scale(1.1);
+ background:repeating-conic-gradient(from 20deg,#fff6ae50 0deg 8deg,transparent 8deg 22deg),
+ radial-gradient(circle,#ffe58ce8,transparent 65%);
+}
+#finale-cinema .finale-spotlight[data-state="open"] .finale-vault-value{
+ opacity:1;filter:blur(0);transform:translateY(0) scale(1);
+}
+#finale-cinema .finale-spotlight[data-state="open"] .finale-vault-unlock-glow{
+ animation:finale-golden-unlock .8s cubic-bezier(.13,1,.2,1) both;
+}
+#finale-cinema .finale-stage-flash{
+ position:absolute;inset:-50%;z-index:7;pointer-events:none;opacity:0;
+ background:radial-gradient(circle,#fff6bf91,#ffbc3f20 12%,transparent 44%);
+}
+#finale-cinema .finale-stage-stars{
+ position:absolute;inset:12% 0 auto;z-index:7;pointer-events:none;opacity:0;
+ text-align:center;font:900 clamp(18px,4vw,42px)/1 Georgia,serif;
+ color:#fff8ce;letter-spacing:1.4em;text-shadow:0 0 15px #ffec9b,0 0 32px #fff8cc;
+}
+#finale-cinema .finale-spotlight[data-state="open"] .finale-stage-flash{
+ animation:finale-flare .95s ease-out both;
+}
+#finale-cinema .finale-spotlight[data-state="open"] .finale-stage-stars{
+ animation:finale-stars .92s cubic-bezier(.12,1,.2,1) .28s both;
+}
+#finale-cinema .finale-vault-podium{
+ left:9%;right:9%;bottom:0;height:12%;z-index:0;
+ border:3px solid #ffe3a1;
+ background:radial-gradient(ellipse at 50% 35%,#ffcc7364,#251e15c7 70%);
+ box-shadow:0 0 34px #ffc65b77,0 10px 17px #000e;
+}
+#finale-cinema .finale-spotlight-result{
+ background:linear-gradient(95deg,#081c34,#304769a6,#081c34);
+ border:1px solid #ffe19a99;border-radius:12px;
+ box-shadow:inset 0 1px #fff5,0 4px 15px #0007;
+ color:#fff2c8;font:850 clamp(12px,1.22vw,17px)/1.2 system-ui,sans-serif;
+}
+#finale-cinema .finale-spotlight[data-state="closed"] .finale-spotlight-status{
+ color:#d8ebff;
+ animation:finale-pulse .95s ease-in-out infinite alternate;
+}
+#finale-cinema .finale-cases .finale-player{
+ border:1px solid #d6b474ae;border-radius:13px;
+ background:linear-gradient(145deg,#1c2d48,#081426)!important;
+ box-shadow:inset 0 1px #ffd18835,0 7px 18px #0009;
+ padding:10px 9px;
+}
+#finale-cinema .finale-cases .finale-player .finale-briefcase{
+ border:2px solid #e6bf79;border-radius:7px;
+ background:linear-gradient(135deg,#ffe3a7,#ad742d 65%,#e4bb70);
+ box-shadow:inset 0 2px #fff5d4,0 3px 8px #000b;
+}
+#finale-cinema .finale-cases .finale-player.revealed{
+ border-color:#f5d69a;box-shadow:0 0 12px #fbd98145,0 5px 20px #000a;
+}
+#finale-cinema .finale-cases .finale-player.on-stage{
+ box-shadow:0 0 0 2px #ffecb4,0 0 23px #ffdb857c,0 10px 22px #000c;
+}
+#finale-cinema .finale-cases .finale-player.winner{
+ border:2px solid #ffe9a4;
+ background:linear-gradient(145deg,#765322,#291e18)!important;
+ box-shadow:0 0 0 2px #ffd87d85,0 0 28px #ffd97bb6,0 10px 24px #000c;
+}
+@keyframes finale-pulse{from{opacity:.75;filter:brightness(.9)}to{opacity:1;filter:brightness(1.4)}}
+@keyframes finale-golden-unlock{
+ 0%{opacity:0;transform:scale(.2)}
+ 20%{opacity:1;transform:scale(1.1)}
+ 100%{opacity:0;transform:scale(3.7)}
+}
+@keyframes finale-flare{
+ 0%{opacity:0;transform:scale(.2)}
+ 18%{opacity:.92;transform:scale(.7)}
+ 100%{opacity:0;transform:scale(2)}
+}
+@keyframes finale-stars{
+ 0%{opacity:0;transform:translateY(22px) scale(.7)}
+ 40%{opacity:1;transform:translateY(-10px) scale(1.15)}
+ 100%{opacity:0;transform:translateY(-31px) scale(1.3)}
+}
+@keyframes finale-stage-light-sweep{
+ from{opacity:.3;filter:blur(22px)}to{opacity:.75;filter:blur(14px)}
+}
+@media(max-width:760px){
+ #finale-cinema .finale-spotlight{
+  grid-template-columns:1fr;grid-template-rows:auto minmax(200px,1fr) auto;
+  grid-template-areas:"player" "case" "result";height:auto;min-height:380px;
+  gap:7px;padding:9px;
+ }
+ #finale-cinema .finale-spotlight-person{flex-direction:row;align-items:center;text-align:left;padding:8px 12px}
+ #finale-cinema .finale-spotlight-avatar{width:52px;height:52px}
+ #finale-cinema .finale-vault-scene{min-height:205px}
+ #finale-cinema .finale-vault{width:min(82%,390px)}
+ #finale-cinema .finale-vault-value{font-size:clamp(20px,5.4vw,43px)}
+ #finale-cinema .finale-vault-emblem{font-size:clamp(8px,2.2vw,12px)}
+ #finale-cinema .finale-ceremony-progress{padding:5px 13px;font-size:10px}
+}
+@media(orientation:landscape) and (max-height:570px){
+ #finale-cinema .finale-spotlight{
+  grid-template-columns:minmax(145px,.68fr) minmax(0,1.7fr);
+  grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"player case" "result result";
+  height:clamp(180px,43dvh,270px);min-height:0;
+ }
+ #finale-cinema .finale-spotlight-person{flex-direction:column;text-align:center;padding:4px}
+ #finale-cinema .finale-spotlight-avatar{width:39px;height:39px}
+ #finale-cinema .finale-vault-scene{min-height:130px}
+ #finale-cinema .finale-vault-value{font-size:clamp(17px,3.2vw,34px)}
+ #finale-cinema .finale-ceremony-progress{margin:3px auto 7px}
+ #finale-cinema .finale-vault-inner-caption{font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ #finale-cinema .finale-stage-light,
+ #finale-cinema .finale-spotlight-status,
+ #finale-cinema .finale-stage-flash,
+ #finale-cinema .finale-stage-stars,
+ #finale-cinema .finale-vault-unlock-glow{animation:none!important}
+ #finale-cinema .finale-vault-lid,
+ #finale-cinema .finale-vault-rays,
+ #finale-cinema .finale-vault-value,
+ #finale-cinema .finale-vault-inner-caption{transition:none!important}
+}
