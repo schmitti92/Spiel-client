@@ -60,12 +60,12 @@ test('uploaded transparent 3D wheel is the actual preview and spinner gold-and-c
  assert.equal(png.readUInt32BE(20),1254);
  assert.equal(png[25],6,'wheel artwork must retain transparent RGBA pixels');
  const css=load('css/monster-wheel.css');
- assert.match(css,/file_00000000be5481f6a8972866f23598ee\\.png/);
+ assert.match(css,/file_00000000be5481f6a8972866f23598ee\.png/);
  assert.match(css,/monster-wheel-preview/);
  assert.match(css,/monster-wheel-center/);
- assert.match(css,/mask-image:radial-gradient\\(circle closest-side/);
- assert.match(js,/mark\\.dataset\\.monsterSlot/);
- assert.match(js,/slot\\.short/);
+ assert.match(css,/mask-image:radial-gradient\(circle closest-side/);
+ assert.match(js,/mark\.dataset\.monsterSlot/);
+ assert.match(js,/slot\.short/);
  assert.match(html,/uploaded-skin-v1/);
 });
 
