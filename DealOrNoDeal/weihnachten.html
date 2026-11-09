@@ -257,7 +257,11 @@ function render(data){current=data;renderHammerCollection(data);
  for(let i=0;i<32;i++)if(Number(data?.cards?.['christmas-'+String(i+1).padStart(2,'0')]||0)>0)setCounts[i<16?0:1]++;
  document.getElementById('album-owned-total').textContent=classicCount+' / 32';
  document.getElementById('album-bingo-total').textContent=classicBingos+' / 20';
- document.getElementById('album-next-reward').textContent=data?.progress?.nextReward?'Weitere Bingo-Belohnung':'Alle klassischen Belohnungen freigeschaltet';
+ const classicRewardIds=['rudolph','winter-lobby','christmas-studio','gift-cases','snowman-profile-avatar','collector-frame','santa-profile-avatar','lobby-snowfall','christmas-profile-banner','santa','christmas-champion'];
+ const nextClassicReward=classicRewardIds.indexOf(data?.progress?.nextReward);
+ document.getElementById('album-next-reward').textContent=data?.progress?.nextReward
+  ?(rewards[nextClassicReward]?.[1]||'Weitere Bingo-Belohnung')
+  :'Alle klassischen Belohnungen freigeschaltet';
  document.getElementById('album-total-meter').setAttribute('aria-valuenow',String(classicCount));
  document.getElementById('album-total-meter-fill').style.width=(classicCount/32*100)+'%';
  for(let set=0;set<2;set++){
