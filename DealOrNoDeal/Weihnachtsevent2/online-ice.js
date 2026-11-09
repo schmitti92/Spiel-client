@@ -48,7 +48,7 @@ function forgetPending(){
  try{sessionStorage.removeItem(ICE_PENDING_KEY)}catch{}
  try{localStorage.removeItem(ICE_PENDING_DURABLE_KEY)}catch{}
 }
-let galleryPage=0,showAllGallery=false,largeGalleryImage=null,impactTimer=null,celebration=null,wheelTimer=null;
+let galleryPage=0,showAllGallery=false,largeGalleryImage=null,confirmedHit=null,celebrationDelayTimer=null,celebration=null,wheelTimer=null;
 function recoveredGift(){
  if(!state?.finished||state.completed>=70||celebration)return;
  const gift=(state.prizes||[]).find(g=>g.number===state.completed);
@@ -69,7 +69,7 @@ function render(){
   }catch(_){}
  }
  if(!state){root.innerHTML='<p>Dein Online-Spielstand ist noch nicht gestartet.</p><button id="ice-start">❄️ Online-Spiel starten</button><button id="ice-check">🔄 Spielstand prüfen</button>';root.querySelector('#ice-start').onclick=()=>run('start');root.querySelector('#ice-check').onclick=()=>load();return}
- const finished=!!state.finished,done=state.completed>=70,number=Math.min(70,state.completed+1);
+ const finished=!!state.finished,done=state.completed>=70,number=Math.min(70,state.completed+(finished?0:1));
  // Tile difficulty is authoritative from the server; fall back to the known
  // milestone only for old cached responses, never infer it from local storage.
  const tileCount=Number(state.tilesRequired||state.tileCount)==25?25
@@ -123,7 +123,7 @@ function render(){
  '<section class="v44-panel v44-board-panel"><h2>❄️ Bild '+number+' von 70</h2><div class="v44-ice-meter" aria-label="'+openedTiles+' von '+tileCount+' Eisfeldern geöffnet"><span>🧊 '+openedTiles+'/'+tileCount+' Eisfelder</span><div><i style="width:'+(openedTiles/tileCount*100)+'%"></i></div></div><div class="ice-board v44-board"><img alt="Weihnachtsbild '+number+'" src="'+photo(number)+'"><div class="ice-tiles'+(fullClearPhase?' ice-tiles-25':'')+'">'+Array.from({length:tileCount},(_,i)=>'<button data-tile="'+i+'" '+(busy||finished||done||state.opened.includes(i)?'disabled':'')+' class="'+(state.opened.includes(i)||finished||done?'gone':'')+'" aria-label="Eisfeld '+(i+1)+' von '+tileCount+'">❄</button>').join('')+'</div></div><p class="v44-instruction">'+(fullClearPhase?'🧊 Ab 10 Weihnachtsbildern: Alle 25 Eisblöcke zerstören, um das nächste Bild freizulegen.':'🔨 Wähle einen Hammer und finde den versteckten Stern!')+'</p></section>'+
  '<section class="v44-panel v44-hammer-panel"><h2>🔨 Wähle deinen Hammer</h2><div class="v44-hammers">'+['single','double','lucky'].map(k=>'<button class="v44-hammer '+(chosen===k?'selected':'')+'" data-hammer="'+k+'" aria-pressed="'+(chosen===k?'true':'false')+'"><span class="v44-hammer-icon"><img class="v44-hammer-art" src="./Weihnachtsbilder/'+hammerArt[k]+'" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="v44-hammer-fallback" hidden>'+emojis[k]+'</span></span><span><strong>'+labels[k]+'</strong><small>'+({single:'1 Eisfeld',double:'2 Eisfelder',lucky:'3–6 Eisfelder'}[k])+'</small><b>'+price(k)+'</b></span></button>').join('')+'</div></section></div>'+
  '<div class="v44-panel v44-progress"><h2>🎁 Meilensteine & Fortschritt</h2>'+progressIntro+'<div class="v44-rewards">'+milestones+'</div><div class="v44-actions">'+(finished&&!done?'<button id="ice-next">➡️ Nächstes Weihnachtsbild</button>':'')+(done?'<button id="v44-finale-open" class="v44-finale-button">🏆 Großes Weihnachtsfinale ansehen</button>':'')+'</div></div>'+
- (celebration?'<div class="v44-celebration" role="dialog" aria-modal="true" aria-label="Weihnachtsstern und Geschenk"><div class="v44-celebration-card '+(celebration.stage==='milestone'?'v44-celebration-milestone':'')+'"><div class="v44-celebration-sparkles">✦ ❄ ✧ ⭐ ✧ ❄ ✦</div><div class="v44-celebration-star">🌟</div><h2>'+(celebration.stage==='milestone'?'🎁 Dein Weihnachts-Meilenstein!':'Weihnachtsstern gefunden!')+'</h2><p>🎄 Bild '+celebration.number+' von 70 abgeschlossen</p>'+(celebration.stage==='milestone'?
+ (celebration&&!celebrationDelayTimer?'<div class="v44-celebration" role="dialog" aria-modal="true" aria-label="Weihnachtsstern und Geschenk"><div class="v44-celebration-card '+(celebration.stage==='milestone'?'v44-celebration-milestone':'')+'"><div class="v44-celebration-sparkles">✦ ❄ ✧ ⭐ ✧ ❄ ✦</div><div class="v44-celebration-star">🌟</div><h2>'+(celebration.stage==='milestone'?'🎁 Dein Weihnachts-Meilenstein!':'Weihnachtsstern gefunden!')+'</h2><p>🎄 Bild '+celebration.number+' von 70 abgeschlossen</p>'+(celebration.stage==='milestone'?
  '<div class="v44-milestone-unlock" data-milestone="'+celebration.number+'">'
  +'<div class="v44-milestone-kicker">✦ MEILENSTEIN ERREICHT ✦</div>'
  +'<div class="v44-milestone-treasure"><span class="v44-milestone-rays" aria-hidden="true"></span><img src="'+milestoneImage(celebration.number)+'" alt="Weihnachts-Schatztruhe für Meilenstein '+celebration.number+'" width="350" height="350" decoding="async"></div>'
@@ -178,7 +178,21 @@ function render(){
  root.querySelector('#v44-nextpage').onclick=()=>{galleryPage=Math.min(11,galleryPage+1);render()};
  root.querySelectorAll('[data-preview]').forEach(b=>b.onclick=()=>{const n=Number(b.dataset.preview);if(n<=state.completed){showAllGallery=true;largeGalleryImage=n;render();return}if(n===number){message('❄️ Das aktuelle Bild wird erst nach dem Sternfund vollständig enthüllt.');return}message(n<=state.completed?'🖼️ Bild '+n+' wurde bereits abgeschlossen. Dein aktuelles Bild bleibt '+number+'.':'🔒 Bild '+n+' wird erst später freigeschaltet.')});
  root.querySelectorAll('[data-hammer]').forEach(b=>b.onclick=()=>{window.iceHammer=b.dataset.hammer;render()});
- root.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>{if(busy||b.disabled)return;const hammer=window.iceHammer||'single';if((state.freeHammers?.[hammer]||0)<1&&Number(state.balance||0)<costs[hammer]){message('⚠️ Nicht genügend Eventguthaben für '+labels[hammer]+'. Wähle einen verfügbaren Hammer.');return}const board=root.querySelector('.v44-board');if(board){const impact=document.createElement('div');impact.className='v44-impact';impact.setAttribute('aria-hidden','true');const a=b.getBoundingClientRect(),p=board.getBoundingClientRect();impact.style.left=(a.left+a.width/2-p.left)+'px';impact.style.top=(a.top+a.height/2-p.top)+'px';impact.innerHTML='<span class="v44-impact-hammer">'+({single:'🔨',double:'⚒️',lucky:'✨'}[hammer]||'🔨')+'</span>'+Array.from({length:9},(_,i)=>'<i style="--a:'+(i*40)+'deg;--d:'+(34+i%3*14)+'px"></i>').join('');board.appendChild(impact);clearTimeout(impactTimer);impactTimer=setTimeout(()=>impact.remove(),750)}b.classList.add('cracking');run('strike',{index:Number(b.dataset.tile),hammer});});
+ root.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>{
+  if(busy||b.disabled)return;
+  const hammer=window.iceHammer||'single';
+  if((state.freeHammers?.[hammer]||0)<1&&Number(state.balance||0)<costs[hammer]){
+   message('⚠️ Nicht genügend Eventguthaben für '+labels[hammer]+'. Wähle einen verfügbaren Hammer.');
+   return;
+  }
+  // Visual wind-up only: never reveal ice until the existing POST confirms targets.
+  if(!readPending())window.ChristmasIceHammerFX?.cue(b,hammer);
+  run('strike',{index:Number(b.dataset.tile),hammer});
+ });
+ if(confirmedHit){
+  const effect=confirmedHit;confirmedHit=null;
+  window.ChristmasIceHammerFX?.confirmed(root.querySelector('.v44-board'),effect);
+ }
  const next=root.querySelector('#ice-next');if(next)next.onclick=()=>run('next');
  const repair=root.querySelector('#ice-recover');
  if(repair)repair.onclick=()=>load();
@@ -199,9 +213,25 @@ async function run(type,extra={}){
  pending={key:unresolved?.key||key,requestId};
  rememberPending({uid:user()?.uid,key:pending.key,requestId,extra,type});
  try{
+  const beforeOpened=type==='strike'?new Set(state?.opened||[]):null;
   const data=await request('POST',{type,requestId,...extra});
   const wasFinished=!!state?.finished,oldCompleted=Number(state?.completed||0);
   state=data.state;pending=null;
+  // Server response remains authoritative: replayed or rejected requests
+  // never invent ice shatters, payments or prizes.
+  if(type==='strike'&&!data.result?.replayed){
+   const targets=Array.isArray(data.result?.targets)?data.result.targets:[];
+   const nowOpened=new Set(Array.isArray(state?.opened)?state.opened:[]);
+   const newlyOpened=[...new Set(targets)]
+    .filter(i=>Number.isInteger(i)&&i>=0&&nowOpened.has(i)&&!beforeOpened.has(i));
+   if(newlyOpened.length){
+    confirmedHit={hammer:extra.hammer,targets:newlyOpened,anchor:extra.index,finished:!!state.finished};
+    if(state.finished&&!wasFinished){
+     clearTimeout(celebrationDelayTimer);
+     celebrationDelayTimer=setTimeout(()=>{celebrationDelayTimer=null;render()},950);
+    }
+   }
+  }
   if(type==='start'&&!state.goldenHammerGift2026){try{const bonus=await request('POST',{type:'welcome',requestId:id()});state=bonus.state;message('🎁 Willkommensgeschenk: 3 goldene Glückshammer!')}catch{}}
   if(type==='strike'&&state.finished&&!wasFinished){
    const gift=data.result?.gift;
@@ -213,8 +243,7 @@ async function run(type,extra={}){
   if(data.result?.gift){const gift=data.result.gift;message('🎁 '+(gift.kind==='joker'?'Kofferblick-Joker gewonnen!':gift.kind==='money'?money(gift.amount)+' gewonnen!':'Gratis-Hammer gewonnen: '+gift.hammer))}
   else if(data.result?.found)message('🌟 Stern gefunden! Dieses Bild wurde bereits bei einem früheren Durchlauf belohnt.');
   else message('✅ Fortschritt serverseitig gespeichert.');
-  render();
- }catch(e){if(e.confirmedRejection){forgetPending();message('⚠️ '+e.message+' – die Aktion wurde vom Server abgelehnt. Du kannst wieder einen Hammer auswählen.')}else{message('⚠️ '+e.message+' – Verbindung unklar. Bitte dieselbe Aktion sicher wiederholen.')}render()}
+ }catch(e){if(e.confirmedRejection){forgetPending();message('⚠️ '+e.message+' – die Aktion wurde vom Server abgelehnt. Du kannst wieder einen Hammer auswählen.')}else{message('⚠️ '+e.message+' – Verbindung unklar. Bitte dieselbe Aktion sicher wiederholen.')}}
  finally{busy=false;render()}
 }
 async function load(){
