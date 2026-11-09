@@ -119,7 +119,7 @@
   byId('reveal-present')?.classList.add('opened');
   // The short delay is purely cosmetic. Skip/Close can always cancel it from
   // the parent script. No account state is mutated during this Promise.
-  return new Promise(resolve=>setTimeout(resolve,reduced()?50:620));
+  return new Promise(resolve=>setTimeout(resolve,reduced()?50:850));
  }
  function showCard(card,index,total){
   const root=byId('reveal-overlay');if(!root)return;
