@@ -1,0 +1,262 @@
+/* WEIHNACHTSUNIVERSUM · ein gemeinsames Studio für Portal, Sammlung & Eis-Event.
+ * Visuelle Ebene, ohne API-, Firebase- oder Spiellogik. Alle Grafiken aus dem Repo.
+ * Cross-document transitions are progressive enhancement: links stay native. */
+@view-transition{navigation:auto}
+::view-transition-old(root){animation:xmas-world-leave .24s ease-in both}
+::view-transition-new(root){animation:xmas-world-arrive .36s cubic-bezier(.17,.74,.24,1) both}
+@keyframes xmas-world-leave{
+ from{opacity:1;filter:brightness(1);transform:scale(1)}
+ to{opacity:0;filter:brightness(.7);transform:scale(.985)}
+}
+@keyframes xmas-world-arrive{
+ from{opacity:0;filter:brightness(.72);transform:scale(1.017)}
+ to{opacity:1;filter:brightness(1);transform:scale(1)}
+}
+:root{
+ --xmas-universe-gold:#f4d18d;
+ --xmas-universe-ice:#b3e4f4;
+ --xmas-universe-glow:rgba(248,200,105,.43);
+ --xmas-universe-panel:#102b42;
+ --xmas-universe-ink:#071729;
+}
+body:is(.christmas-event-main,.christmas-event-ice,.christmas-event-world){
+ --xmas-chapter-glow:#f6cc7a;
+ color:#fff0d8;
+}
+body.christmas-event-ice{--xmas-chapter-glow:#b0e6ff}
+body.christmas-event-world{--xmas-chapter-glow:#ffe1a3}
+
+/* Consistent five-stop route. On small phones the fifth button receives
+ * its own row; no tiny font and no horizontal scrolling. */
+body:is(.christmas-event-world,.christmas-event-ice)
+ nav.event-hub-nav.event-tabs{
+ grid-template-columns:repeat(5,minmax(0,1fr))!important;
+ gap:clamp(4px,.6vw,8px)!important;
+ padding:6px!important;
+ margin:6px 0 9px!important;
+}
+body:is(.christmas-event-world,.christmas-event-ice,.christmas-event-main)
+ nav.event-hub-nav.event-tabs{
+ border-color:#e8c584!important;
+ background:
+ radial-gradient(ellipse at 50% -100%,#f4d3912c,transparent 78%),
+ linear-gradient(110deg,#0a2139f8,#192c46f8 55%,#0a1c33f8)!important;
+ box-shadow:inset 0 1px #fff0cb44,0 6px 18px #0007,0 0 16px #e6ba5d24!important;
+}
+body:is(.christmas-event-world,.christmas-event-ice,.christmas-event-main)
+ nav.event-hub-nav.event-tabs > :is(a,button){
+ position:relative;isolation:isolate;overflow:hidden;
+ transition:filter .2s ease,transform .22s ease,box-shadow .22s ease!important;
+}
+body:is(.christmas-event-world,.christmas-event-ice,.christmas-event-main)
+ nav.event-hub-nav.event-tabs > :is(a,button)::after{
+ content:"";position:absolute;inset:auto 17% 0;height:2px;
+ background:linear-gradient(90deg,transparent,#ffeca9 50%,transparent);
+ opacity:.36;pointer-events:none;
+}
+body:is(.christmas-event-world,.christmas-event-ice,.christmas-event-main)
+ nav.event-hub-nav.event-tabs > :is(a,button):hover{
+ filter:brightness(1.13);
+ transform:translateY(-1px);
+}
+body:is(.christmas-event-world,.christmas-event-ice,.christmas-event-main)
+ nav.event-hub-nav.event-tabs > :is(a,button)[aria-current=page],
+body.christmas-event-main nav.event-hub-nav.event-tabs > button[aria-selected=true]{
+ box-shadow:inset 0 1px #fffbd2,0 0 17px #f5c96c67!important;
+}
+body:is(.christmas-event-world,.christmas-event-ice,.christmas-event-main)
+ nav.event-hub-nav.event-tabs > :is(a,button):focus-visible{
+ outline:3px solid #fff2bc!important;outline-offset:2px!important;
+}
+
+/* Shared control console: same gilded button proportions on every page. */
+body:is(.christmas-event-world,.christmas-event-ice,.christmas-event-main)
+ .event-hub-top{
+ position:relative;
+ border-color:#e9c27f!important;
+ background:linear-gradient(105deg,#0b1e34fa,#182d46fa 59%,#1b243af8)!important;
+ box-shadow:inset 0 1px #ffe4a478,0 5px 17px #0008,0 0 20px #ffc2642d!important;
+}
+body:is(.christmas-event-world,.christmas-event-ice,.christmas-event-main)
+ .event-hub-top::after{
+ content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+ border-radius:inherit;opacity:.5;
+ background:linear-gradient(108deg,transparent 16%,#e9bc7129 43%,transparent 69%);
+ background-size:230% 100%;
+ animation:xmas-universe-console-light 9s ease-in-out infinite;
+}
+body:is(.christmas-event-world,.christmas-event-ice,.christmas-event-main)
+ .event-hub-brand-symbol{
+ filter:drop-shadow(0 0 8px #f6d17d88);
+}
+body:is(.christmas-event-world,.christmas-event-ice,.christmas-event-main)
+ #christmas-effects-toggle{
+ min-height:34px;padding:6px 10px;font-size:clamp(10px,.86vw,13px);
+ white-space:normal;text-align:center;
+}
+body:is(.christmas-event-world,.christmas-event-ice)
+ #christmas-effects-toggle{
+ border:1px solid #e4c380;color:#ffebbc;
+ background:linear-gradient(145deg,#56402c,#163f54);
+ box-shadow:inset 0 1px #fff3,0 2px 9px #0006;
+ border-radius:10px;cursor:pointer;font-weight:850;
+}
+body:is(.christmas-event-world,.christmas-event-ice)
+ #christmas-effects-toggle[data-level=off]{border-color:#91a6ad;background:#223a49;color:#deebec}
+body:is(.christmas-event-world,.christmas-event-ice)
+ #christmas-effects-toggle[data-level=soft]{border-color:#a8d2c7;background:#245456;color:#e2f8f2}
+body:is(.christmas-event-world,.christmas-event-ice)
+ #christmas-effects-toggle:focus-visible{outline:3px solid #ffedaa;outline-offset:2px}
+
+/* A high-end broadcast glow that respects the original unique event themes. */
+body.christmas-event-world .hub-intro,
+body.christmas-event-main .hero,
+body.christmas-event-ice .v44-head{
+ position:relative;isolation:isolate;
+}
+body.christmas-event-world .hub-intro{
+ border-color:#f4d397;
+ background:radial-gradient(ellipse at 50% -40%,#f7dc914d,transparent 68%),
+ linear-gradient(115deg,#381c36e8,#14354aef 52%,#301833e9);
+ box-shadow:0 12px 35px #000b,inset 0 0 0 2px #ffe6a42a,0 0 27px #ffcd8763;
+}
+body.christmas-event-world .hub-intro::before,
+body.christmas-event-world .hub-intro::after{animation:xmas-universe-glitter 5.7s ease-in-out infinite alternate}
+body.christmas-event-world .hub-intro::after{animation-delay:2.5s}
+body.christmas-event-world .hub-intro h1{filter:drop-shadow(0 0 12px #f4c98177)}
+body.christmas-event-world .hub-card{
+ transition:transform .24s ease,box-shadow .24s ease,border-color .24s ease;
+}
+body.christmas-event-world .hub-card:hover,
+body.christmas-event-world .hub-card:focus-within{
+ transform:translateY(-3px);
+ box-shadow:inset 0 0 0 2px #fff1bf31,0 15px 40px #000c,0 0 25px #fbc76f46;
+}
+body.christmas-event-world .hub-card.ice:hover,
+body.christmas-event-world .hub-card.ice:focus-within{
+ box-shadow:inset 0 0 0 2px #eefcff32,0 14px 39px #000c,0 0 26px #a4e6ff7d;
+}
+body.christmas-event-world .hub-art::after{
+ content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+ background:linear-gradient(110deg,transparent 30%,#fff9d519 50%,transparent 69%);
+ background-size:240% 100%;background-position:-95% 0;
+ animation:xmas-universe-art-shimmer 8s 1.5s ease-in-out infinite;
+}
+body.christmas-event-world .hub-art img{z-index:1}
+body.christmas-event-world .hub-art .hub-chapter{z-index:3}
+body.christmas-event-world .hub-art .star-gift{
+ animation:xmas-universe-gift-glow 3.8s ease-in-out infinite alternate;
+}
+body.christmas-event-world .hub-art .hammer{
+ animation:xmas-universe-hammer-float 4s ease-in-out infinite alternate;
+}
+body.christmas-event-main .hero::after{
+ content:"";position:absolute;z-index:-1;inset:5% 14%;border-radius:50%;
+ background:radial-gradient(ellipse at 50% 40%,#f9d68d1d,transparent 72%);
+ pointer-events:none;
+}
+body.christmas-event-main .hero h1{text-shadow:0 5px 20px #0008,0 0 21px #f8d68b61}
+body.christmas-event-ice .v44-head{
+ box-shadow:inset 0 1px #fff4,0 6px 16px #0007,0 0 17px #a5e3fa45!important;
+}
+
+/* Direct, prominent entry into the new Hammer chapter, without replacing
+ * the two existing world cards or their profile progress summaries. */
+.hub-world-shortcuts{
+ display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;
+ margin:11px auto 0;
+}
+.hub-world-shortcuts a{
+ display:inline-flex;align-items:center;justify-content:center;
+ min-height:35px;padding:7px 13px;border:1px solid #f3d29ba6;
+ border-radius:999px;background:linear-gradient(135deg,#14354ee8,#3b3444e8);
+ box-shadow:inset 0 1px #fff4,0 3px 9px #0005;
+ color:#ffecc5;text-decoration:none;font:800 clamp(11px,.84vw,13px)/1.2 system-ui,sans-serif;
+ transition:transform .2s ease,background .2s ease;
+}
+.hub-world-shortcuts a:hover{transform:translateY(-2px);background:linear-gradient(125deg,#2a586c,#58412e)}
+.hub-world-shortcuts a:focus-visible{outline:2px solid #fff0c9;outline-offset:3px}
+.hub-world-shortcuts a.hub-world-highlight{
+ border-color:#cdeeff;background:linear-gradient(130deg,#25536a,#244262);
+ color:#e7f9ff;
+}
+
+/* The small ice chapter ribbon is informative, not an extra scroll block.
+ * The playable board retains the entire remaining flex height. */
+.xmas-universe-ice-ribbon{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:10px;flex:none;padding:5px clamp(9px,1vw,15px);
+ min-height:30px;margin:0 5px 3px;
+ border:1px solid #c7e1ea85;border-radius:9px;
+ color:#def3ff;background:linear-gradient(95deg,#173b54f0,#222d4cf0 60%,#392b40e8);
+ font:800 clamp(10px,.9vw,13px)/1.2 system-ui,sans-serif;
+ box-shadow:inset 0 1px #ffffff24,0 4px 10px #0005;
+}
+.xmas-universe-ice-ribbon strong{font-family:Georgia,serif;color:#fff0be}
+.xmas-universe-ice-ribbon span:last-child{font-size:clamp(9px,.75vw,11px);color:#cceaf4}
+@keyframes xmas-universe-console-light{
+ 0%,14%{background-position:140% 0;opacity:0}
+ 35%{opacity:.65}
+ 63%,100%{background-position:-150% 0;opacity:0}
+}
+@keyframes xmas-universe-glitter{from{opacity:.3}to{opacity:1}}
+@keyframes xmas-universe-art-shimmer{
+ 0%,25%{background-position:-95% 0;opacity:0}
+ 39%{opacity:1}
+ 62%,100%{background-position:170% 0;opacity:0}
+}
+@keyframes xmas-universe-gift-glow{
+ to{transform:rotate(-7deg) translateY(-4px);filter:drop-shadow(0 0 20px #ffe7a0)}
+}
+@keyframes xmas-universe-hammer-float{to{transform:translateY(-7px) rotate(2deg)}}
+
+/* Tablet and phone layouts stay usable, even with the fifth nav item. */
+@media(max-width:760px){
+ body:is(.christmas-event-world,.christmas-event-ice)
+ nav.event-hub-nav.event-tabs{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:5px!important;
+ }
+ body:is(.christmas-event-world,.christmas-event-ice)
+ nav.event-hub-nav.event-tabs > .event2-tab{grid-column:1/-1!important}
+ .hub-world-shortcuts{gap:6px;margin-top:8px}
+ .hub-world-shortcuts a{padding:7px 9px;min-height:32px}
+ .xmas-universe-ice-ribbon{padding:4px 7px;min-height:28px}
+ .xmas-universe-ice-ribbon span:last-child{display:none}
+}
+@media(max-height:680px) and (min-width:761px){
+ body.christmas-event-ice nav.event-hub-nav.event-tabs{
+  padding:4px!important;margin:4px 0 5px!important;
+ }
+ body.christmas-event-ice nav.event-hub-nav.event-tabs > :is(a,button){
+  min-height:35px!important;padding:4px 6px!important;
+ }
+ .xmas-universe-ice-ribbon{min-height:24px;padding:3px 9px}
+ body.christmas-event-world .hub-world-shortcuts{margin-top:5px}
+}
+body[data-xmas-effects=soft] .event-hub-top::after,
+body[data-xmas-effects=soft] .hub-art::after,
+body[data-xmas-effects=soft] .hub-intro::before,
+body[data-xmas-effects=soft] .hub-intro::after,
+body[data-xmas-effects=soft] .hub-art .star-gift,
+body[data-xmas-effects=soft] .hub-art .hammer{
+ animation:none!important;
+}
+body[data-xmas-effects=off] :is(.event-hub-top::after,.hub-art::after){display:none!important}
+body[data-xmas-effects=off] .hub-intro::before,
+body[data-xmas-effects=off] .hub-intro::after,
+body[data-xmas-effects=off] .hub-art .star-gift,
+body[data-xmas-effects=off] .hub-art .hammer{animation:none!important}
+body.xmas-cinema-paused :is(.event-hub-top::after,.hub-art::after,.hub-art .star-gift,.hub-art .hammer){animation-play-state:paused!important}
+@media(prefers-reduced-motion:reduce){
+ @view-transition{navigation:none}
+ ::view-transition-old(root),::view-transition-new(root){animation:none!important}
+ body:is(.christmas-event-world,.christmas-event-ice,.christmas-event-main) *,
+ body:is(.christmas-event-world,.christmas-event-ice,.christmas-event-main) *::before,
+ body:is(.christmas-event-world,.christmas-event-ice,.christmas-event-main) *::after{
+  scroll-behavior:auto!important;
+ }
+ .event-hub-top::after,.hub-art::after,.hub-intro::before,.hub-intro::after,
+ .hub-art .star-gift,.hub-art .hammer{animation:none!important}
+ body.christmas-event-world .hub-card{transition:none!important}
+}
