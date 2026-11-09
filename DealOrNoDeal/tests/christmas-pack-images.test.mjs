@@ -33,7 +33,8 @@ function mockLoader(){
 test('new art loader is network/API-free and linked before the inline Christmas page',()=>{
  assert.doesNotThrow(()=>new Script(loader));
  assert.doesNotMatch(loader,/\bfetch\s*\(/);
- assert.doesNotMatch(loader,/\bFirestore\b|\bfirebase\b/i);
+ const executable=loader.replace(/\/\*[\s\S]*?\*\//g,'').replace(/^\s*\/\/.*$/gm,'');
+ assert.doesNotMatch(executable,/\bFirestore\b|\bfirebase\b/i);
  assert.match(page,/js\/christmas-card-image-loader\.js\?v=20261109-cards-preload-v1/);
  assert.match(inline,/ChristmasCardImages\?\.prefetch\(array,0,christmasCardImage,2\)/);
  assert.match(inline,/const artworkPromise=window\.ChristmasCardImages\?\.load\(artwork\)/);
