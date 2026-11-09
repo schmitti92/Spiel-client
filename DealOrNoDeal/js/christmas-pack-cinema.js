@@ -18,6 +18,16 @@
  const byId=id=>document.getElementById(id);
  const reduced=()=>Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches||window.ChristmasSpectacle?.minimal?.());
  const getRarity=card=>rarities[String(card?.rarity||'').toLowerCase()]||rarities.common;
+ // Only change the SHOW order. Never modify the server-awarded card array.
+ // Stable within each tier: ordinary → rare → epic → legendary finale.
+ const orderCards=cards=>{
+  if(!Array.isArray(cards))return [];
+  const rank=Object.freeze({common:0,rare:1,epic:2,legendary:3});
+  return cards.map((card,index)=>({card,index}))
+   .sort((a,b)=>(rank[String(a.card?.rarity||'').toLowerCase()]??0)
+                   -(rank[String(b.card?.rarity||'').toLowerCase()]??0)||a.index-b.index)
+   .map(({card})=>card);
+ };
  let enabledSound=false, audioContext=null, triggerElement=null;
  const safeCount=cards=>Array.isArray(cards)?cards.length:0;
  const safeMode=mode=>mode==='demo'?'demo':'real';
@@ -93,8 +103,8 @@
   setText('pack-cinema-kicker',mode==='demo'?'✨ DEMO · KEINE GUTSCHRIFT':pack.caption);
   setText('reveal-title',mode==='demo'?'🎬 Magische Paket-Vorschau':'🎁 '+pack.label);
   setText('pack-cinema-subtitle',mode==='demo'
-   ?'Eine kostenlose Vorschau der Animation – dein Konto bleibt unverändert.'
-   :'Ein magisches Geschenk mit '+safeCount(cards)+' geheimnisvollen Karten wartet auf dich.');
+   ?'Eine kostenlose Vorschau – alle Karten werden einzeln groß enthüllt. Keine Gutschrift.'
+   :'Ein magisches Geschenk mit '+safeCount(cards)+' Karten. Episch und legendär kommen zum Schluss!');
   setText('pack-cinema-rarity-title','');
   setText('pack-cinema-summary-stats','');
   setText('pack-cinema-note',mode==='demo'
@@ -171,5 +181,5 @@
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
  else init();
- window.ChristmasPackCinema=Object.freeze({open,startCard,showCard,summarise,close});
+ window.ChristmasPackCinema=Object.freeze({open,startCard,showCard,summarise,close,orderCards});
 })();
