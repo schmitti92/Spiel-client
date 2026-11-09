@@ -65,6 +65,20 @@ test('every Christmas page provides three main destinations and collection sub-t
  assert.match(nav(collection),/event2-tab/);
 });
 
+test('three main Christmas tabs fill the width consistently in all chapters',()=>{
+ const hubCss=readFileSync(resolve(root,'css/christmas-event-hub.css'),'utf8');
+ for(const page of [portal,collection,ice]){
+  assert.match(page,/christmas-event-hub\.css\?v=20261109-unified-tabs-v2/);
+  assert.equal(count(nav(page),/<(?:a|button)\b/g),3);
+ }
+ assert.match(hubCss,/nav\.event-hub-nav\.event-tabs\{[\s\S]*?grid-template-columns:repeat\(3,minmax\(0,1fr\)\)!important/);
+ assert.doesNotMatch(hubCss,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)!important/);
+ assert.match(hubCss,/body\.christmas-event-ice nav\.event-hub-nav\.event-tabs > \.event2-tab\[aria-current="page"\]/);
+ assert.match(hubCss,/\.event-collection-nav\[hidden\]/);
+ assert.match(collection,/id="event-collection-nav"/);
+ assert.doesNotMatch(ice,/id="event-collection-nav"/);
+});
+
 test('world portal has direct pack, hammer and ice launch links, including room forwarding',()=>{
  for(const key of [
   'hub-cards-tab','hub-packs-tab','hub-ice-tab','hub-shortcut-packs','hub-shortcut-hammer','hub-shortcut-ice'
