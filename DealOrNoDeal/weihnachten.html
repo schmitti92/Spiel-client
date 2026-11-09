@@ -248,7 +248,7 @@ async function maybeClaimHammerBingos(data){
  if(el)el.textContent='🎁 Fertige Bingo-Reihen gefunden – Hammergewinne werden sicher gutgeschrieben …';
  try{
   const result=await request('POST','hammer/claim');
-  if(current&&result.hammerProgress)render({...current,cards:result.cards||current.cards,hammerProgress:result.hammerProgress});
+  if(current&&result.hammerProgress)render({...current,cards:result.cards||current.cards,progress:result.progress||current.progress,hammerProgress:result.hammerProgress});
   const jackpotCount=result.jackpots?.length||0;
   if((result.awarded?.length||0)>0||jackpotCount>0){
    lastHammerAwardSummary=hammerAwardSummary(result.totals);
