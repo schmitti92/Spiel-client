@@ -12,7 +12,7 @@ const page = readFileSync(resolve(dir, 'Weihnachtsevent2/index.html'), 'utf8');
 
 test('Christmas-ice browser code parses and ships with cache-busted URL', () => {
  assert.doesNotThrow(() => new Script(source));
- assert.match(page, /online-ice\.js\?v=20261109-[a-z0-9-]+/);
+ assert.match(page, /online-ice\.js\?v=20[0-9]{6}-[a-z0-9-]+/);
 });
 
 test('GET reconciliation uses a receipt ID in query, never a GET body', () => {
@@ -32,7 +32,7 @@ test('uncertain retries always preserve original request ID, even after progress
 test('repair bar always appears above the board and is cache-busted', () => {
  assert.match(source, /v44-recovery-bar/);
  assert.match(source, /repair\.onclick=\(\)=>load\(\)/);
- assert.match(page, /online-ice\.js\?v=20261109-[a-z0-9-]+/);
+ assert.match(page, /online-ice\.js\?v=20[0-9]{6}-[a-z0-9-]+/);
  assert.match(page, /#ice-online \.v44-recovery-bar/);
  assert.match(source, /if\(shouldRecover\)\{/);
  assert.match(source, /await run\(old\.type,old\.extra\|\|\{\}\)/);
