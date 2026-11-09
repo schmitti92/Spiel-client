@@ -111,7 +111,14 @@ function startFinaleCinema(){
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  // All clients use the same server-issued finale timestamp. A late joiner
  // catches up rather than replaying the entire sequence several seconds late.
- const finaleElapsed=!replayFinaleLocally&&Number.isFinite(g.finalStartedAt)?Math.max(0,Date.now()-g.finalStartedAt):0;
+ // A final accepted DEAL gets its own three-second announcement before the
+ // personal-case ceremony. Subtract it from the shared timeline so the first
+ // large suitcase is never skipped when that vote announcement finishes.
+ const finalBallot=g.history?.at(-1);
+ const dealAnnouncementMs=finalBallot?.decisions?.some(d=>d.deal===true)?3000:0;
+ const finaleEpoch=Number(g.finalStartedAt)+dealAnnouncementMs;
+ const finaleElapsed=!replayFinaleLocally&&Number.isFinite(g.finalStartedAt)
+  ?Math.max(0,Date.now()-finaleEpoch):0;
  const at=ms=>Math.max(0,ms-finaleElapsed);
 
  // Every participant's case is shown as a large, animated suitcase.
