@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#071629">
+<title>Weihnachtswelt · Deal or No Deal</title>
+<link rel="stylesheet" href="./css/christmas-event-hub.css?v=20261109-goldstudio-v2">
+<script src="../profile-config.js"></script>
+<script src="../profile-auth.js"></script>
+<style>
+*{box-sizing:border-box}
+html{min-height:100%;background:#071629}
+body{margin:0;min-height:100dvh;padding:clamp(8px,1vw,17px);background:
+ radial-gradient(ellipse at 50% -10%,#3460817d,transparent 64%),
+ linear-gradient(180deg,#06132dd9,#09101ce8 85%),
+ url("./assets/weihnachts_event/file_00000000a9f481f4a900f341475e2e6d.png") center/cover fixed;
+ color:#fff1d5;font:15px system-ui,sans-serif}
+button,a{font:inherit}
+.hub-wrap{width:min(1510px,100%);margin:0 auto}
+.event-hub-top{margin-bottom:7px!important}
+.event-hub-brand{text-decoration:none!important}
+.hub-intro{position:relative;isolation:isolate;overflow:hidden;display:flex;min-height:clamp(116px,19dvh,200px);
+ align-items:center;justify-content:center;border:2px solid #e8bd74;border-radius:19px;margin:9px 0 11px;
+ background:radial-gradient(ellipse at 50% 110%,#d89b4c45,transparent 70%),linear-gradient(100deg,#3c122ca9,#112645ee 47%,#321326a9);
+ box-shadow:0 12px 35px #000b,inset 0 0 0 2px #fff0bd2b,0 0 18px #ffc25d3b}
+.hub-intro::before,.hub-intro::after{content:"✦ ❄ ✦";position:absolute;color:#f7db9959;font-size:clamp(24px,4vw,62px);top:15%;letter-spacing:1vw;pointer-events:none}
+.hub-intro::before{left:2%}.hub-intro::after{right:2%}
+.hub-intro h1{margin:1px 0 5px;color:#ffe4a5;font:900 clamp(30px,4.2vw,66px)/1.06 Georgia,serif;text-align:center;
+ text-shadow:0 4px 5px #261209,0 0 21px #ffc66f6b}
+.hub-intro p{margin:0;text-align:center;color:#d9edf6;font-size:clamp(12px,1.2vw,17px)}
+.hub-intro .eyebrow{font-weight:900;font-size:clamp(10px,.85vw,13px);color:#eac58a;letter-spacing:.22em;text-align:center}
+.hub-intro-copy{position:relative;z-index:1;padding:14px}
+.hub-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(10px,1.2vw,19px)}
+.hub-card{position:relative;overflow:hidden;min-width:0;border:2px solid #e4bc76;border-radius:21px;
+ background:linear-gradient(160deg,#101f36e8,#061529f8);box-shadow:inset 0 0 0 2px #ffe6a622,0 10px 30px #000b;
+ display:flex;flex-direction:column;isolation:isolate}
+.hub-card.ice{border-color:#a7deed;box-shadow:inset 0 0 0 2px #e4faff31,0 10px 30px #000b,0 0 17px #5ad3fb30}
+.hub-art{height:clamp(130px,23dvh,220px);position:relative;isolation:isolate;overflow:hidden;background:#172b46}
+.hub-card.cards .hub-art{background:
+ radial-gradient(ellipse at 76% 15%,#ffdc8166,transparent 48%),
+ linear-gradient(105deg,#3a1825e0,#183c50ed),url("./assets/weihnachts_event/file_00000000a9f481f4a900f341475e2e6d.png") center/cover}
+.hub-card.ice .hub-art{background:radial-gradient(ellipse at 60% 32%,#7cbef16e,transparent 60%),linear-gradient(135deg,#071c40,#264f69 60%,#351325)}
+.hub-art img{position:absolute;object-fit:contain;filter:drop-shadow(0 6px 10px #0007);pointer-events:none}
+.hub-art .santa{height:107%;max-width:55%;left:1%;bottom:-9%;object-position:bottom}
+.hub-art .star-gift{position:absolute;left:53%;top:31%;font-size:clamp(37px,6vw,100px);filter:drop-shadow(0 0 12px #ffce7d);transform:rotate(-12deg)}
+.hub-art .ice-tile{height:88%;max-width:55%;left:2%;top:6%;filter:drop-shadow(0 6px 18px #79e2ff)}
+.hub-art .hammer{height:84%;max-width:46%;right:5%;top:9%;filter:drop-shadow(0 0 15px #ffe495)}
+.hub-chapter{position:absolute;top:11px;right:12px;z-index:2;padding:6px 10px;border:1px solid #f9d78b;border-radius:9px;
+ color:#fff2c5;font-weight:900;font-size:clamp(11px,.9vw,14px);background:#10283acb;backdrop-filter:blur(6px)}
+.hub-card.ice .hub-chapter{border-color:#b7e5f4}
+.hub-content{padding:clamp(12px,1.25vw,19px);display:flex;flex:1;flex-direction:column;gap:8px}
+.hub-content h2{margin:0;color:#ffe0a0;font:900 clamp(22px,2.35vw,35px)/1.1 Georgia,serif;text-shadow:0 2px #290f12,0 0 15px #eebd6855}
+.hub-content p{margin:0;line-height:1.35;color:#d8e9ee;font-size:clamp(12px,1vw,15px)}
+.hub-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.hub-stat{border:1px solid #b89a6eab;border-radius:11px;padding:8px 10px;background:linear-gradient(#162b45ee,#0a1a32f3)}
+.hub-stat small{display:block;color:#c3dce9;font-size:clamp(10px,.86vw,13px);margin-bottom:3px}
+.hub-stat strong{display:block;color:#ffe6a8;font-size:clamp(18px,1.9vw,28px);font-variant-numeric:tabular-nums}
+.hub-meter{height:9px;overflow:hidden;border-radius:10px;background:#0b1b34;border:1px solid #c6a46d88}
+.hub-meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#a45d2b,#ffe6a6);transition:width .45s ease-out}
+.ice .hub-meter i{background:linear-gradient(90deg,#1672ad,#b7f2ff)}
+.hub-actions{margin-top:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding-top:2px}
+.hub-launch{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:9px 17px;
+ border:1.5px solid #ffe4a6;border-radius:11px;text-decoration:none;color:#2c1807;font-weight:950;
+ background:linear-gradient(135deg,#fff1bc,#dcab59 55%,#bb7d29);box-shadow:inset 0 1px #fff7dc,0 3px 9px #0009}
+.ice .hub-launch{background:linear-gradient(135deg,#d4f6ff,#65b4d7 55%,#3386af);color:#102338;border-color:#c2f3ff}
+.hub-launch:hover,.hub-launch:focus-visible{filter:brightness(1.1);outline-offset:3px}
+.hub-note{font-size:12px;color:#bdd6df}
+.hub-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+ margin-top:10px;padding:9px 14px;border:1px solid #d4ab65a3;border-radius:13px;background:#0a2036dc}
+.hub-footer .status{color:#e6d7b4;font-size:clamp(11px,.9vw,14px)}
+.hub-footer .status[role=status]{min-height:18px}
+.hub-refresh{padding:7px 12px;min-height:33px;border:1px solid #f0d496;border-radius:9px;
+ color:#ffe6b0;background:#24364c;cursor:pointer;font-weight:800}
+.hub-refresh:disabled{opacity:.55;cursor:progress}
+@media(max-width:800px){.hub-body{grid-template-columns:1fr}.hub-card{min-height:auto}.hub-art{height:150px}}
+@media(max-height:740px) and (min-width:801px){.hub-intro{min-height:100px}.hub-art{height:clamp(100px,17dvh,140px)}.hub-content{gap:5px}.hub-stat{padding:5px 8px}.hub-footer{margin-top:6px;padding:6px 11px}}
+@media(prefers-reduced-motion:reduce){.hub-meter i{transition:none}}
+</style>
+</head>
+<body>
+<main class="hub-wrap">
+<header class="event-hub-top">
+<a class="event-hub-brand" href="./weihnachtswelt.html" aria-current="page" aria-label="Weihnachtswelt – Übersicht"><span class="event-hub-brand-symbol" aria-hidden="true">🎄</span><span>Weihnachtszauber <small>DEAL OR NO DEAL · EVENT-WELT</small></span></a>
+<div class="event-hub-tools"><a class="event-hub-tool" id="hub-game" href="./game.html">🎮 Zum Spiel</a><a class="event-hub-tool" id="hub-lobby" href="./lobby.html">↩ Zur Spiellobby</a><button type="button" class="event-hub-tool" id="hub-fullscreen" aria-pressed="false">⛶ Vollbild</button></div>
+</header>
+<nav class="event-tabs event-hub-nav" aria-label="Weihnachtsbereiche">
+<a id="hub-cards-tab" href="./weihnachten.html?view=album">🃏 Sammlung</a>
+<a id="hub-packs-tab" href="./weihnachten.html?view=packs">🎁 Pakete</a>
+<a id="hub-info-tab" href="./weihnachten.html?view=bingo">🏆 Spielinformation &amp; Gewinner</a>
+<a class="event2-tab" id="hub-ice-tab" href="./Weihnachtsevent2/index.html">❄️ Weihnachtsevent 2</a>
+</nav>
+<section class="hub-intro" aria-labelledby="hub-title">
+<div class="hub-intro-copy"><p class="eyebrow">ZWEI KAPITEL · EINE WEIHNACHTSWELT</p><h1 id="hub-title">✨ Weihnachtszauber ✨</h1><p>Wähle dein Event – deine Fortschritte und Belohnungen gehören zu deinem Spielerprofil.</p></div>
+</section>
+<section class="hub-body" aria-label="Beide Weihnachtsevents">
+<article class="hub-card cards">
+<div class="hub-art"><img class="santa" src="./assets/weihnachts_event/file_0000000075e081f49cb62fd4b11daae2.png" alt="Weihnachtsmann und Rudolf" loading="eager"><span class="star-gift" aria-hidden="true">🎁✨</span><span class="hub-chapter">KAPITEL 1</span></div>
+<div class="hub-content"><h2>🎄 Die Weihnachtskollektion</h2><p>32 Sammelkarten entdecken, Geschenkpakete öffnen und mit Bingo-Reihen exklusive Extras freischalten.</p>
+<div class="hub-stats"><div class="hub-stat"><small>Gesammelte Karten</small><strong id="hub-collected">– / 32</strong></div><div class="hub-stat"><small>Erreichte Bingos</small><strong id="hub-bingos">– / 20</strong></div></div>
+<div class="hub-meter" role="progressbar" aria-label="Fortschritt Sammelkarten" aria-valuemin="0" aria-valuemax="32" aria-valuenow="0" id="hub-album-meter"><i></i></div>
+<div class="hub-actions"><a class="hub-launch" id="hub-enter-album" href="./weihnachten.html?view=album">🃏 Sammlung entdecken</a><span class="hub-note">🎁 Pakete &amp; 🏆 Bingo im selben Kapitel</span></div></div></article>
+<article class="hub-card ice">
+<div class="hub-art"><img class="ice-tile" src="./Weihnachtsevent2/Weihnachtsbilder/originalgrafik-06.webp" alt="Magisches Eisfeld" loading="eager"><img class="hammer" src="./Weihnachtsevent2/Weihnachtsbilder/hammer-glueck.webp" alt="Goldener Glückshammer" loading="eager"><span class="hub-chapter">KAPITEL 2</span></div>
+<div class="hub-content"><h2>❄️ Die magischen Weihnachtsbilder</h2><p>70 Bilder Schritt für Schritt vom Eis befreien. Hammer einsetzen und die Meilenstein-Kisten freischalten.</p>
+<div class="hub-stats"><div class="hub-stat"><small>Abgeschlossene Bilder</small><strong id="hub-completed">– / 70</strong></div><div class="hub-stat"><small>Meilenstein-Kisten</small><strong id="hub-milestones">– / 7</strong></div></div>
+<div class="hub-meter" role="progressbar" aria-label="Fortschritt Weihnachtsbilder" aria-valuemin="0" aria-valuemax="70" aria-valuenow="0" id="hub-ice-meter"><i></i></div>
+<div class="hub-actions"><a class="hub-launch" id="hub-enter-ice" href="./Weihnachtsevent2/index.html">❄️ Bilderzauber spielen</a><span class="hub-note">🔨 Einfach-, Doppel- &amp; Glückshammer</span></div></div></article>
+</section>
+<footer class="hub-footer"><span id="hub-status" class="status" role="status" aria-live="polite">⏳ Spielerprofil wird geprüft …</span><button type="button" id="hub-refresh" class="hub-refresh" disabled>↻ Fortschritt aktualisieren</button></footer>
+</main>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id),ROOM=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i;
+const query=new URLSearchParams(location.search),provided=query.get('room'),saved=sessionStorage.getItem('deal-active-room');
+const room=ROOM.test(provided||'')?provided:ROOM.test(saved||'')?saved:null;
+if(room){
+ sessionStorage.setItem('deal-active-room',room);
+ for(const id of ['hub-game','hub-lobby','hub-cards-tab','hub-packs-tab','hub-info-tab','hub-ice-tab','hub-enter-album','hub-enter-ice']){
+  const a=$(id),url=new URL(a.href);url.searchParams.set('room',room);a.href=url.href;
+ }
+}
+const full=$('hub-fullscreen');
+function syncFullscreen(){const yes=!!document.fullscreenElement;full.setAttribute('aria-pressed',String(yes));full.textContent=yes?'⛶ Vollbild beenden':'⛶ Vollbild'}
+full.onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch(e){$('hub-status').textContent='⚠️ Vollbild nicht verfügbar: '+(e.message||'Browser blockiert')}};document.addEventListener('fullscreenchange',syncFullscreen);
+const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
+const cacheKey=(kind,uid)=>'christmas-hub-v1-'+kind+'-'+uid;
+const getCache=(kind,uid)=>{try{const d=JSON.parse(sessionStorage.getItem(cacheKey(kind,uid))||'null');return d&&Date.now()-d.at<180000?d:null}catch{return null}};
+const storeCache=(kind,uid,values)=>{try{sessionStorage.setItem(cacheKey(kind,uid),JSON.stringify({at:Date.now(),values}))}catch{}};
+const clamp=(n,max)=>Math.max(0,Math.min(max,Number(n)||0));
+function show(kind,values){
+ if(!values)return;
+ if(kind==='album'){
+  const collected=clamp(values.collected,32),bingos=clamp(values.bingos,20);
+  $('hub-collected').textContent=collected+' / 32';$('hub-bingos').textContent=bingos+' / 20';
+  const meter=$('hub-album-meter');meter.setAttribute('aria-valuenow',String(collected));meter.querySelector('i').style.width=(collected/32*100)+'%';
+ }else{
+  const completed=clamp(values.completed,70);
+  $('hub-completed').textContent=completed+' / 70';$('hub-milestones').textContent=Math.floor(completed/10)+' / 7';
+  const meter=$('hub-ice-meter');meter.setAttribute('aria-valuenow',String(completed));meter.querySelector('i').style.width=(completed/70*100)+'%';
+ }
+}
+async function read(url,token){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),14000);
+ try{
+  const response=await fetch(api+url,{method:'GET',headers:{Authorization:'Bearer '+token},signal:controller.signal,cache:'no-store'});
+  if(!response.ok)throw Error('HTTP '+response.status);
+  const data=await response.json();if(!data.ok)throw Error(data.error||'SERVER_ERROR');return data;
+ }finally{clearTimeout(timer)}
+}
+let loading=false,loadedUid=null;
+async function refresh(force=false){
+ const auth=window.SpielOnline?.state?.(),user=auth?.status==='online'?auth.user:null;
+ const status=$('hub-status'),button=$('hub-refresh');
+ if(!user?.getIdToken){
+  if(auth?.status==='guest'||auth?.status==='unconfigured'||auth?.status==='error'){
+   status.textContent='🔐 Bitte mit deinem Spielerprofil anmelden, um die Fortschritte zu sehen.';
+   button.disabled=false;button.textContent='🔐 Spielerprofil öffnen';
+   button.onclick=()=>window.SpielOnline?.openLogin?.();
+  }else status.textContent='⏳ Spielerprofil wird geladen …';
+  return;
+ }
+ if(loading)return;
+ const uid=user.uid;
+ if(!force&&loadedUid===uid)return;
+ loadedUid=uid;
+ button.disabled=true;button.textContent='⏳ Aktualisieren …';
+ const cached=['album','ice'].map(kind=>({kind,data:getCache(kind,uid)}));
+ for(const {kind,data} of cached)if(data)show(kind,data.values);
+ const stale=force?['album','ice']:cached.filter(x=>!x.data).map(x=>x.kind);
+ if(!stale.length){status.textContent='✅ Dein Fortschritt ist geladen (kurzzeitig zwischengespeichert).';button.disabled=false;button.textContent='↻ Fortschritt aktualisieren';button.onclick=()=>refresh(true);return}
+ loading=true;status.textContent='🔄 Fortschritte beider Events werden einmalig geladen …';
+ try{
+  const token=await user.getIdToken();
+  const results=await Promise.allSettled(stale.map(async kind=>{
+   const data=await read(kind==='album'?'/api/deal-or-no-deal/christmas/me':'/api/christmas-ice/me',token);
+   const values=kind==='album'
+    ? {collected:data.progress?.collected??0,bingos:data.progress?.totalBingos??0}
+    : {completed:data.state?.completed??0};
+   // A missing ice state means the event has not been started; this is a genuine zero.
+   storeCache(kind,uid,values);show(kind,values);
+  }));
+  const failed=results.filter(x=>x.status==='rejected').length;
+  status.textContent=failed?'⚠️ '+failed+' von '+stale.length+' Fortschrittsanzeigen sind momentan nicht erreichbar.':'✅ Beide Fortschritte synchronisiert. Keine automatische Dauerabfrage.';
+ }catch(e){status.textContent='⚠️ Profil-Verbindung: '+(e.message||'Bitte erneut prüfen')}
+ finally{loading=false;button.disabled=false;button.textContent='↻ Fortschritt aktualisieren';button.onclick=()=>refresh(true)}
+}
+$('hub-refresh').onclick=()=>refresh(true);
+window.addEventListener('spielonline-change',()=>refresh(false));
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>refresh(false));else refresh(false);
+})();
+</script>
+</body></html>
