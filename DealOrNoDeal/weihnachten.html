@@ -524,6 +524,7 @@ function clearAlbumIdentity(){
  document.querySelectorAll('[data-card]').forEach((el,i)=>{
   el.classList.remove('owned','bingo-complete');el.removeAttribute('role');
   el.removeAttribute('tabindex');el.removeAttribute('aria-haspopup');el.removeAttribute('title');
+  el.setAttribute('aria-label','Gesperrte Karte '+classicCardNumber(i));
   const img=el.querySelector('img');
   if(img){img.src='./assets/weihnachts_event/card-back-winter.svg';img.alt='Noch nicht gesammelte Weihnachtskarte';img.classList.add('uncollected-art')}
   const title=el.querySelector('strong'),sub=el.querySelector('small');
