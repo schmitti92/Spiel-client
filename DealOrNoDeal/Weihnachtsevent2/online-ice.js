@@ -65,6 +65,18 @@ function render(){
  const price=k=>(state.freeHammers?.[k]||0)>0?'Gewonnen ('+state.freeHammers[k]+')':money(costs[k]);
  const first=galleryPage*6+1;
  const thumbs=Array.from({length:6},(_,i)=>first+i).filter(n=>n<=70).map(n=>'<button class="v44-thumb '+(n>state.completed+1?'locked':'')+'" data-preview="'+n+'" title="Bild '+n+'">'+(n<=state.completed?'<img loading="lazy" src="'+photo(n)+'" alt="Bild '+n+'">':n===number?'❄️':'🔒')+'<span>'+n+'</span></button>').join('');
+ // Fixed asset IDs are verified from the GitHub upload and the numbers
+ // printed on the original generated images. Milestone 40 may be uploaded
+ // later; its image automatically falls back to the existing chest asset.
+ const milestoneIllustrations={
+  10:'file_000000009fd8821091325d0ec9e0df96.png',
+  20:'file_000000001d048210aa9786488fa7ba80.png',
+  30:'file_0000000084dc8210b4c45821586b3190.png',
+  40:'file_00000000857882108b0bc8eab4ef7920.png',
+  50:'file_000000009c908210bf0c6fba6a2b5d49.png',
+  60:'file_000000007eec8211a47e82be8eefa98d.png',
+  70:'file_00000000134c82109685ad9abdc7d1f4.png'
+ };
  const nextMilestone=state.completed>=70?70:Math.ceil((state.completed+1)/10)*10;
  const remainingMilestone=Math.max(0,nextMilestone-state.completed);
  const progressIntro='<div class="v44-progress-intro">'
@@ -77,10 +89,10 @@ function render(){
   const first=n===10,final=n===70;
   const title=first?(unlocked?'Jan Schlappen':'Geheime Belohnung'):final?'Weihnachtsfinale':'Geheime Schatztruhe';
   const stateText=unlocked?'✅ Meilenstein erreicht':current?'🎁 Noch '+(n-state.completed)+' Bild'+(n-state.completed===1?'':'er'):'🔒 Noch gesperrt';
-  const art=unlocked?'originalgrafik-16.webp':current?'originalgrafik-17.webp':'originalgrafik-15.webp';
-  return '<article class="v44-reward '+(unlocked?'done':current?'current':'locked')+'" aria-label="Meilenstein bei '+n+' von 70 Bildern: '+stateText+'">'
+  const art=milestoneIllustrations[n];
+  return '<article class="v44-reward '+(unlocked?'done':current?'current':'locked')+'" data-milestone="'+n+'" aria-label="Meilenstein bei '+n+' von 70 Bildern: '+stateText+'">'
    +'<div class="v44-reward-top"><div class="v44-reward-step">MEILENSTEIN</div><strong class="v44-reward-number">'+n+'<small>/70</small></strong></div>'
-   +'<div class="v44-reward-art"><img src="./Weihnachtsbilder/'+art+'" alt="" loading="lazy"></div>'
+   +'<div class="v44-reward-art"><img src="./Weihnachtsbilder/'+art+'" alt="Weihnachts-Schatztruhe für Meilenstein '+n+'" loading="lazy" decoding="async" width="160" height="160" onerror="this.onerror=null;this.src=\'./Weihnachtsbilder/originalgrafik-15.webp\'"></div>'
    +'<strong class="v44-reward-title">'+title+'</strong><small class="v44-reward-status">'+stateText+'</small></article>';
  }).join('');
  root.innerHTML='<div class="v44-app"><header class="v44-head"><div class="v44-plaque v44-chapter-plaque">❄️ KAPITEL 2 · BILDERZAUBER</div><div class="v44-heading"><h1>Die magischen Weihnachtsbilder</h1><p>70 Bilder · Eisfelder freilegen · Meilenstein-Belohnungen</p></div><div class="v44-plaque">💰 '+money(state.balance)+'</div></header>'+
