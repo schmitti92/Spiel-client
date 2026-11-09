@@ -108,3 +108,242 @@ body.christmas-event-main .hero-content .ornament{font-size:clamp(15px,2vw,26px)
  .event-hub-top{align-items:flex-start;flex-wrap:wrap}
  .event-hub-tools{width:100%;justify-content:flex-start}
 }
+
+/* V2 · One Christmas universe: consistent chapter headers, gold surfaces and controls. */
+:root{--event-hub-gold:#f7d38e;--event-hub-glow:#f9c66a;--event-hub-red:#7f2435;--event-hub-panel:#101f37;--event-hub-line:#d7a864}
+body.christmas-event-main main{padding-top:8px!important}
+body.christmas-event-ice{background-color:#071a2d;color:#fff1d3}
+.event-hub-top{
+ isolation:isolate;overflow:hidden;
+ border:1.5px solid #e5bb74!important;
+ background:
+  radial-gradient(ellipse at 22% -120%,#f9c66a42,transparent 55%),
+  linear-gradient(110deg,#0b1830f8,#172b44fc 48%,#22162ded)!important;
+ box-shadow:inset 0 0 0 1px #ffe4ab20,inset 0 1px 0 #ffe0a665,
+  0 7px 20px #0007,0 0 22px #edbb5340!important;
+}
+.event-hub-top:before{
+ content:"";position:absolute;inset:0 8% auto;height:2px;z-index:-1;
+ background:linear-gradient(90deg,transparent,#fff1b5 23%,#fbb753 50%,#fff1b5 78%,transparent);
+ opacity:.8;pointer-events:none;
+}
+.event-hub-brand{
+ font-family:Georgia,'Times New Roman',serif!important;
+ font-size:clamp(16px,1.5vw,23px)!important;
+ letter-spacing:.025em!important;
+}
+.event-hub-brand>span:last-child{display:flex;flex-direction:column;gap:2px;line-height:1.1;white-space:nowrap}
+.event-hub-brand small{
+ display:block!important;color:#bfe4ee!important;
+ font:750 clamp(9px,.67vw,11px)/1.2 system-ui,sans-serif;
+ letter-spacing:.12em;
+}
+.event-hub-brand-symbol{
+ display:grid;place-items:center;flex:none;
+ width:clamp(30px,3vw,42px);height:clamp(30px,3vw,42px);
+ border-radius:11px;border:1px solid #fbd98f9c;
+ background:linear-gradient(145deg,#5b1832,#992c3f 52%,#321329);
+ box-shadow:inset 0 1px #fff7d24a,0 0 13px #ffbf6c59;
+ font-family:system-ui,sans-serif;font-size:clamp(18px,1.8vw,25px);
+}
+.event-hub-nav.event-tabs,nav.event-hub-nav{
+ border-color:#e9bd71!important;
+ box-shadow:0 8px 22px #0008,inset 0 0 0 1px #ffe6af29,0 0 15px #e6b15b30!important;
+}
+.event-hub-nav.event-tabs:before,nav.event-hub-nav:before{
+ content:"";position:absolute;inset:0 auto 0 0;width:4px;border-radius:10px;
+ background:linear-gradient(transparent,#ffdfa4,transparent);pointer-events:none;
+}
+.event-hub-nav.event-tabs > :is(a,button),nav.event-hub-nav > :is(a,button){
+ position:relative;transition:background .16s,border-color .16s,transform .16s;
+ text-shadow:0 1px 2px #0009;
+}
+.event-hub-nav.event-tabs > :is(a,button)[aria-current="page"],
+.event-hub-nav.event-tabs > :is(a,button)[aria-selected="true"],
+nav.event-hub-nav > :is(a,button)[aria-current="page"]{text-shadow:none}
+.event-hub-nav.event-tabs > :is(a,button):not([aria-current="page"]):not([aria-selected="true"]):hover,
+nav.event-hub-nav > :is(a,button):not([aria-current="page"]):hover{
+ transform:translateY(-1px);
+}
+.event-hub-top .event-hub-tools :is(a,button){
+ transition:background .18s,box-shadow .18s,transform .18s;
+}
+.event-hub-top .event-hub-tools :is(a,button):hover{
+ transform:translateY(-1px);box-shadow:inset 0 1px #ffffff44,0 0 12px #ffdb8366;
+}
+.event-hub-top #event-game-link{
+ background:linear-gradient(140deg,#d3a95b,#ffe4a0 40%,#b47a34)!important;
+ color:#301c08!important;border-color:#ffe4b1!important;
+ text-shadow:none;box-shadow:inset 0 1px #fff7e2,0 0 11px #ebb45a44;
+}
+.event-hub-top #event-game-link:hover{
+ background:linear-gradient(130deg,#ffeebd,#cf9a4c)!important;
+}
+.event-hub-top #event-main-guide,
+.event-hub-top #event-guide-open{
+ background:linear-gradient(135deg,#82482a,#dba65d)!important;
+ color:#fff2d4!important;border-color:#ffe0a1!important;
+}
+.event-hub-top .event-hub-tools :is(a,button)[aria-pressed="true"]{
+ border-color:#b3eafd!important;background:linear-gradient(#23516f,#184360)!important;
+}
+/* Main collection: reduce the visual jump between the home banner and picture stage. */
+body.christmas-event-main .hero{
+ isolation:isolate;position:relative;
+ overflow:hidden!important;border:2px solid #eac17e!important;
+ border-radius:20px!important;
+ background:
+  radial-gradient(ellipse at 77% 48%,#38577988,transparent 56%),
+  linear-gradient(120deg,#321426a8,#0b2d45bc)!important;
+ box-shadow:inset 0 0 0 2px #fff3c51e,0 10px 28px #000a,0 0 18px #efbc5b35!important;
+}
+body.christmas-event-main .hero:after{
+ content:"";position:absolute;inset:4px;pointer-events:none;border-radius:15px;
+ border:1px solid #f6e2b23d;box-shadow:inset 0 0 17px #eab85c14;
+}
+body.christmas-event-main .hero-content{position:relative;z-index:1}
+body.christmas-event-main .hero .event-chapter{
+ display:block;color:#bde9f1!important;letter-spacing:.14em!important;
+ font:900 clamp(10px,.83vw,13px)/1.2 system-ui,sans-serif!important;
+ text-shadow:0 2px 7px #000c!important;
+}
+body.christmas-event-main .event-hero-subtitle{
+ max-width:100%;margin:6px auto 0!important;
+ color:#ffebbe!important;font-size:clamp(11px,.95vw,15px);
+ font-weight:750;text-shadow:0 2px 9px #000b;
+}
+body.christmas-event-main #event-album>.section-title,
+body.christmas-event-main #bingo>.section-title,
+body.christmas-event-main #event-packs>.section-title{
+ position:relative;display:flex;align-items:center;gap:8px;
+ margin:6px 0 10px!important;padding:8px clamp(11px,1.2vw,18px)!important;
+ border:1px solid #dbb66c9c!important;border-radius:13px;
+ background:linear-gradient(100deg,#381623ce,#1c324add 55%,#151e34e5)!important;
+ box-shadow:inset 0 1px #fff2d33a,0 4px 14px #0006!important;
+}
+body.christmas-event-main .section-title h2,
+body.christmas-event-ice .v44-panel>h2{
+ color:#ffe3a8!important;font-family:Georgia,'Times New Roman',serif;
+ font-size:clamp(18px,1.6vw,26px);font-weight:900;
+ text-shadow:0 2px 3px #28100a,0 0 14px #ffbd6c6b!important;
+}
+body.christmas-event-main .section-title span{
+ color:#d9e7ed;font-size:clamp(11px,.92vw,14px);
+ font-weight:700;text-shadow:0 2px 6px #000b;
+}
+body.christmas-event-main #event-album .card{
+ border-color:#efc982b8!important;
+ box-shadow:inset 0 1px #ffe7a533,0 8px 22px #0007,0 0 10px #f7c77718!important;
+}
+body.christmas-event-main #event-packs .pack{
+ border:1.5px solid #e5be7faf!important;
+ box-shadow:inset 0 1px #fff3d824,0 12px 24px #0008!important;
+}
+body.christmas-event-main #bingo .reward{
+ border-color:#d7b06f!important;box-shadow:inset 0 1px #ffedb333,0 6px 16px #0006!important;
+}
+body.christmas-event-main :is(.pack button,.cta){
+ box-shadow:inset 0 1px #fff8da7a,0 3px 9px #0007!important;
+}
+/* Event 2: keep the intricate offline V44 artwork and its compact geometry. */
+body.christmas-event-ice #ice-online-panel{
+ padding:clamp(3px,.55vw,8px) clamp(6px,.75vw,12px)!important;
+ background:transparent;scrollbar-color:#d5aa65 #07192d;
+}
+body.christmas-event-ice .v44-head{
+ border-color:#f3d58e!important;
+ box-shadow:inset 0 0 0 1px #ffe9c358,0 4px 15px #000a,0 0 17px #edb75755!important;
+ margin-bottom:clamp(4px,.55vw,8px)!important;
+}
+body.christmas-event-ice .v44-heading h1{
+ font-family:Georgia,'Times New Roman',serif!important;
+ color:#ffe4a0!important;text-shadow:0 2px 3px #3f0c12,0 0 17px #ffcc704f!important;
+}
+body.christmas-event-ice .v44-heading p{
+ font-family:system-ui,sans-serif!important;font-weight:750;
+ color:#ffeac0!important;letter-spacing:.015em;
+}
+body.christmas-event-ice .v44-chapter-plaque{
+ font-family:Georgia,'Times New Roman',serif!important;
+ font-size:clamp(10px,.94vw,15px)!important;
+ color:#ffeec6!important;text-shadow:0 2px 3px #29090b;
+ white-space:nowrap;
+}
+body.christmas-event-ice .v44-head .v44-plaque:last-child{
+ color:#ffe2a1!important;
+ border-color:#f5cf82!important;
+ background:linear-gradient(105deg,#3c0e24,#6b2032 55%,#310d23)!important;
+ box-shadow:inset 0 0 10px #0007,0 0 9px #ecc36e66!important;
+}
+body.christmas-event-ice .v44-panel>h2{
+ padding:3px 5px 4px!important;margin:0 0 5px!important;
+ font-size:clamp(14px,1.3vw,20px)!important;line-height:1.2;
+}
+body.christmas-event-ice .v44-panel>h2:after{
+ content:"";display:block;width:min(65%,230px);height:1px;margin:3px auto 0;
+ background:linear-gradient(90deg,transparent,#ffe29d,transparent);
+}
+body.christmas-event-ice .v44-progress{
+ box-shadow:inset 0 0 0 1px #fff1b529,0 7px 17px #0009,0 0 14px #e8b95b44!important;
+}
+body.christmas-event-ice .v44-reward{
+ border-color:#d6ad67!important;
+ box-shadow:inset 0 1px #ffe2a13b,0 2px 7px #0007!important;
+}
+body.christmas-event-ice .v44-reward.done{
+ border-color:#fff0aa!important;
+ box-shadow:0 0 12px #ffd87f88,inset 0 1px #fff5b277!important;
+}
+body.christmas-event-ice .v44-reward.current{
+ border-color:#ffe6aa!important;
+ box-shadow:0 0 14px #ffe09d99,inset 0 0 13px #ffe4a830!important;
+}
+body.christmas-event-ice :is(.v44-gallery-all,.v44-finale-button,.v44-gallery-nav button,.v44-actions button){
+ border-color:#ffe4a4!important;
+ box-shadow:inset 0 1px #fff8d878,0 3px 9px #0008!important;
+}
+body.christmas-event-ice :is(.v44-gallery-all,.v44-finale-button,.v44-gallery-nav button,.v44-actions button):not(:disabled):hover{
+ filter:brightness(1.09);box-shadow:inset 0 1px #fff8d8,0 0 12px #ffde845b!important;
+}
+body.christmas-event-ice .v44-note{
+ color:#e4d5b6!important;text-shadow:0 2px 5px #000a;
+}
+/* Respect the no-scroll landscape tablet target and the existing board ratios. */
+@media(min-width:900px) and (max-height:850px){
+ .event-hub-top{min-height:37px;padding:3px 9px!important}
+ .event-hub-brand-symbol{width:31px;height:31px;font-size:18px}
+ .event-hub-brand{font-size:16px!important}
+ .event-hub-brand small{font-size:9px!important}
+ .event-hub-nav.event-tabs,nav.event-hub-nav{margin:4px 0 6px!important;padding:4px!important}
+ .event-hub-nav.event-tabs > :is(a,button),nav.event-hub-nav > :is(a,button){
+  min-height:37px!important;padding:4px 6px!important;font-size:12px!important;
+ }
+ body.christmas-event-ice #ice-online-panel{padding-top:2px!important}
+ body.christmas-event-ice .v44-panel>h2{padding:1px 4px 2px!important;margin:0 0 3px!important}
+ body.christmas-event-ice .v44-panel>h2:after{margin-top:1px}
+ body.christmas-event-ice .v44-head{margin-bottom:3px!important}
+}
+@media(max-width:760px){
+ .event-hub-brand{font-size:13px!important}
+ .event-hub-brand small{font-size:8px!important;letter-spacing:.045em}
+ .event-hub-brand-symbol{width:28px;height:28px;font-size:17px}
+ body.christmas-event-main .hero{min-height:135px!important}
+ body.christmas-event-main .event-hero-subtitle{font-size:10px}
+ body.christmas-event-main .section-title{flex-wrap:wrap!important}
+}
+@media(max-width:480px){
+ .event-hub-top{flex-wrap:wrap!important}
+ .event-hub-tools{width:100%;justify-content:space-between;gap:3px!important}
+ .event-hub-top .event-hub-tools :is(a,button){
+  font-size:10px!important;padding:5px 6px!important;white-space:normal;
+ }
+ .event-hub-brand>span:last-child{white-space:normal}
+ .event-hub-brand small{display:block!important}
+ .event-hub-nav.event-tabs > :is(a,button),nav.event-hub-nav > :is(a,button){
+  padding:4px 2px!important;font-size:9px!important
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ .event-hub-nav.event-tabs > :is(a,button),nav.event-hub-nav > :is(a,button),
+ .event-hub-top .event-hub-tools :is(a,button){transition:none!important;transform:none!important}
+}
