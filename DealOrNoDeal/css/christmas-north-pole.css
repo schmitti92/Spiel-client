@@ -158,3 +158,10 @@ body.christmas-event-main[data-view="album"] #event-album .north-pole .card.nort
  #event-album .classic-bingo-rewards-title{padding:5px 6px}
  #event-album .classic-bingo-bonus{padding:5px 4px;gap:4px}
 }
+
+/* Neue Weihnachtsfotos in Nordpol-Tafel 3: Hoch-/Querformate ohne Abschneiden. */
+#event-album .album-collection-panel.north-pole .card img{
+ object-fit:contain!important;
+ object-position:center;
+ background:radial-gradient(circle at center,#19364a,#081b2d 85%);
+}
