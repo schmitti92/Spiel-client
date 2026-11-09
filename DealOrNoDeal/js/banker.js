@@ -51,6 +51,14 @@ function updateBankerCall(){
    hammerBonus.dataset.hammer=h.bonusHammer;
    bankerSetText('banker-hammer-bonus-icon',hammer.icon);
    bankerSetText('banker-hammer-bonus-name',hammer.name);
+   const art=$('banker-hammer-bonus-art'),fallback=$('banker-hammer-bonus-icon');
+   if(art&&fallback){
+    const files={single:'hammer-einfach.webp',double:'hammer-doppel.webp',lucky:'hammer-glueck.webp'};
+    const src='./Weihnachtsevent2/Weihnachtsbilder/'+files[h.bonusHammer];
+    art.onerror=()=>{art.hidden=true;fallback.hidden=false};
+    art.onload=()=>{art.hidden=false;fallback.hidden=true};
+    if(!art.src.endsWith('/'+files[h.bonusHammer])){art.hidden=true;fallback.hidden=false;art.src=src}
+   }
   }else delete hammerBonus.dataset.hammer;
  }
 
