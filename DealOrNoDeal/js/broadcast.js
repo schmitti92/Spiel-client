@@ -10,7 +10,7 @@
   strap.className = 'broadcast-strap';
   strap.innerHTML =
     '<div class="broadcast-identity"><span class="broadcast-emblem">✦</span><span>GOLDSTUDIO <small>PRIMETIME</small></span></div>' +
-    '<div class="broadcast-ticker" id="broadcast-ticker">26–28 Koffer. Eine große Entscheidung.</div>' +
+    '<div class="broadcast-ticker" id="broadcast-ticker">26–29 Koffer. Eine große Entscheidung.</div>' +
     '<span class="broadcast-stakes" id="broadcast-stakes">● LIVE</span>' +
     '<div class="broadcast-odds" id="broadcast-odds" aria-label="Wahrscheinlichkeit beim nächsten Koffer">' +
     '<span id="broadcast-odds-title">NÄCHSTER KOFFER</span><strong id="broadcast-odds-value">–</strong>' +
@@ -77,7 +77,7 @@
     if (!moneyBoard || !moneyList || !moneyCount) return;
     const removed = new Set(openedAmounts.map(entry => entry.amount));
     let remainingCount = 0;
-    const activeCount=[26,27,28].includes(g?.caseCount)?g.caseCount:27;
+    const activeCount=[26,27,28,29].includes(g?.caseCount)?g.caseCount:27;
     const activeValues=new Set(values.slice(0,activeCount));
     for (const [amount, cell] of moneyCells) {
       cell.hidden=!activeValues.has(amount);
@@ -87,6 +87,7 @@
       cell.setAttribute('aria-label', currency(amount) + (isGone ? ', ausgeschieden' : ', noch im Spiel'));
       if (!isGone) remainingCount++;
     }
+    moneyList.style.setProperty('--deal-money-rows',String(Math.ceil(activeCount/2)));
     moneyCount.textContent = remainingCount + ' von ' + activeCount + ' Beträgen noch im Spiel';
   }
   let previousKey = '', previousPhase = '', previousGameId = '';
@@ -101,7 +102,7 @@
     previousKey = stateKey;
     updateMoneyBoard(openedAmounts);
     const opened = new Set(openedAmounts.map(item => item.amount));
-    const scale = typeof values === 'undefined' ? [] : values.slice(0,[26,27,28].includes(game?.caseCount)?game.caseCount:27);
+    const scale = typeof values === 'undefined' ? [] : values.slice(0,[26,27,28,29].includes(game?.caseCount)?game.caseCount:27);
     const remaining = scale.filter(value => !opened.has(value));
     const count = remaining.length;
     const largest = count ? Math.max(...remaining) : 0;
