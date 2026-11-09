@@ -29,40 +29,40 @@
   if(shown===game.id||document.getElementById('ice-hammer-bonus')||sessionStorage.getItem('ice-hammer-wheel-seen:'+game.id)==='yes')return;
   shown=game.id;
   const overlay=document.createElement('div');overlay.id='ice-hammer-bonus';
-  overlay.innerHTML='<div class="ice-hammer-card"><h2>🔨 DAS GROSSE SIEGER-HAMMERRAD</h2><p>Das Kartenpaket ist eingesammelt. Jetzt wird der Hammerbonus für alle ausgelost!</p><div class="ice-hammer-wheel"><div class="ice-hammer-disc" role="img" aria-label="Hammer-Glücksrad mit 12 Feldern: 5 einfache Hammer, 5 Doppelhammer, 2 Glückshammer"></div><div class="ice-hammer-pointer" aria-hidden="true">▼</div></div><p class="ice-hammer-message" role="status">🎡 Bereit für die gemeinsame Auslosung</p><button class="ice-hammer-spin">🎡 Hammerrad starten</button><button class="ice-hammer-close" hidden>✓ Ergebnis schließen</button></div>';
+  overlay.innerHTML='<div class="ice-hammer-card"><h2>🔨 DAS GROSSE SIEGER-HAMMERRAD</h2><p>Das Kartenpaket ist eingesammelt. Nur der Sieger dreht und erhält den Hammer – alle anderen Spieler schauen live zu.</p><div class="ice-hammer-wheel"><div class="ice-hammer-disc" role="img" aria-label="Hammer-Glücksrad mit 12 Feldern: 5 einfache Hammer, 5 Doppelhammer, 2 Glückshammer"></div><div class="ice-hammer-pointer" aria-hidden="true">▼</div></div><p class="ice-hammer-message" role="status">🎡 Der Sieger entscheidet, wann das Hammerrad startet</p><button class="ice-hammer-spin">🎡 Jetzt meinen Hammer auslosen</button><button class="ice-hammer-close" hidden>✓ Ergebnis schließen</button></div>';
   document.body.append(overlay);
   const disc=overlay.querySelector('.ice-hammer-disc'),spin=overlay.querySelector('.ice-hammer-spin'),status=overlay.querySelector('.ice-hammer-message'),close=overlay.querySelector('.ice-hammer-close');
   const labels={single:'🔨 Einfach-Hammer',double:'🔨 Doppel-Hammer',lucky:'✨ Glückshammer'};
-  // The pointer is fixed above the rotating image. Each wedge is 30 degrees.\n  const angles={single:30,double:60,lucky:0};
+  // Fixed pointer at 12 o'clock: sector centers in the current 12-field image.
+  const angles={single:30,double:60,lucky:0};
   let revealed=false;
   const reveal=award=>{
-   if(!award||award.gameId!==game.id||revealed)return;
+   if(!award||award.gameId!==game.id||revealed||!Object.hasOwn(labels,award.hammer))return;
    revealed=true;busy=false;spin.hidden=true;
    const elapsed=Math.max(0,Date.now()-award.startedAt);
    const duration=Math.max(100,4300-elapsed);
    disc.style.transition='transform '+duration+'ms cubic-bezier(.12,.8,.12,1)';
    disc.style.transform='rotate('+(2160-angles[award.hammer])+'deg)';
-   status.textContent='🎡 Das Hammerrad dreht sich für alle …';
+   status.textContent=winner===u.uid?'🎡 Du drehst – die anderen Spieler schauen live zu …':'🎡 Der Sieger dreht – du schaust live zu …';
    clearTimeout(spinTimer);
    spinTimer=setTimeout(()=>{status.textContent='🎉 Gewonnen: '+labels[award.hammer]+'! '+(winner===u.uid?'Dein Hammer wurde gutgeschrieben.':'Der Sieger erhält diesen Hammer im Weihnachtsevent.');close.hidden=false},duration+100);
   };
   const onGameChange=()=>{const latest=match();if(latest?.id===game.id)reveal(latest.christmasHammerWheel)};
   window.addEventListener('deal-game-state-change',onGameChange);
-  if(winner!==u.uid){spin.hidden=true;status.textContent='⏳ Der Sieger dreht das Hammerrad. Alle schauen gemeinsam zu …'}
+  if(winner!==u.uid){spin.hidden=true;status.textContent='⏳ Warte auf den Sieger – nur er kann das Hammerrad drehen.'}
   else if(game.christmasHammerWheel){spin.hidden=true}
   if(game.christmasHammerWheel)reveal(game.christmasHammerWheel);
   spin.onclick=async()=>{
-   if(busy)return;busy=true;spin.disabled=true;status.textContent='⏳ Gewinnerbonus wird serverseitig geprüft …';
+   if(busy||revealed||winner!==u.uid)return;busy=true;spin.disabled=true;status.textContent='⏳ Dein Hammer wird serverseitig ausgelost …';
    try{
     const token=await u.getIdToken();
     const response=await fetch(base+'/api/christmas-ice/final-hammer',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({code:room(),gameId:game.id}),cache:'no-store'});
     const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'SERVER_ERROR');
-    reveal({gameId:game.id,hammer:data.hammer,startedAt:Date.now()});
+    const synchronized=match()?.christmasHammerWheel;
+    reveal(synchronized?.gameId===game.id?synchronized:{gameId:game.id,hammer:data.hammer,startedAt:Date.now()});
    }catch(e){status.textContent='⚠️ '+e.message+' – bitte erneut versuchen.';spin.disabled=false;busy=false}
   };
-  // The winner's click is optional: start automatically so an idle device
-  // cannot leave all spectators stuck at the wheel.
-  if(winner===u.uid&&!game.christmasHammerWheel)setTimeout(()=>{if(overlay.isConnected&&!revealed&&!busy)spin.click()},1800);
+  // Explicit user interaction is required: only the winner can trigger the spin.
   close.onclick=()=>{window.removeEventListener('deal-game-state-change',onGameChange);clearTimeout(spinTimer);sessionStorage.setItem('ice-hammer-wheel-seen:'+game.id,'yes');overlay.remove();busy=false};
  }
  function scheduleShow(){
