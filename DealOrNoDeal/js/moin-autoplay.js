@@ -1,22 +1,37 @@
 'use strict';
-/* Client-only optional auto-open for the logged-in participant named "moin".
-   No autonomous decisions, personal case selection, or extra Firestore reads. */
+/* Optional local auto-open for the named participants moin and Vanessa.
+   Never decides on banker deals or personal cases; no additional database reads.
+   Settings are isolated so enabling one player never enables another player. */
 (()=>{
- const label='moin',storageKey='deal-moin-autoplay-open-v1';
+ const storageKeys=new Map([
+  ['moin','deal-moin-autoplay-open-v1'],
+  ['vanessa','deal-vanessa-autoplay-open-v1']
+ ]);
  let enabled=false,timer=null,scheduledKey='',lastAttemptKey='',stoppedForError=false;
- try{enabled=localStorage.getItem(storageKey)==='true'}catch{}
+ let activeStorageKey=null;
  const button=document.createElement('button');
- button.type='button';button.id='moin-autoplay-toggle';button.className='studio-tool';
+ button.type='button';button.id='player-autoplay-toggle';button.className='studio-tool';
  button.setAttribute('aria-label','Automatisches Kofferöffnen ein- oder ausschalten');
  const mine=()=>typeof g!=='undefined'&&g?.players?.find(p=>p.id===myId());
- const allowed=()=>mine()?.name?.trim().toLocaleLowerCase('de-DE')===label;
+ function cancel(){clearTimeout(timer);timer=null;scheduledKey=''}
+ function syncPlayer(){
+  const name=mine()?.name?.trim().toLocaleLowerCase('de-DE')||'';
+  const nextKey=storageKeys.get(name)||null;
+  if(nextKey!==activeStorageKey){
+   cancel();
+   activeStorageKey=nextKey;
+   enabled=false;stoppedForError=false;lastAttemptKey='';
+   if(nextKey){try{enabled=localStorage.getItem(nextKey)==='true'}catch{}}
+  }
+  return !!activeStorageKey;
+ }
+ const allowed=()=>syncPlayer();
  const update=()=>{
   const visible=allowed();button.hidden=!visible;
   button.textContent=enabled?'⏸ Autoplay AN':'▶ Autoplay AUS';
   button.title=enabled?'Automatisches Kofferöffnen ausschalten':'Automatisches Kofferöffnen einschalten';
   button.setAttribute('aria-pressed',String(enabled));
  };
- function cancel(){clearTimeout(timer);timer=null;scheduledKey=''}
  function schedule(){
   update();
   if(!enabled||!allowed()||document.hidden||busy||stoppedForError||!g||g.phase!=='open'||turn()!==myId()){cancel();return}
@@ -34,13 +49,13 @@
    lastAttemptKey=key;
    const selected=freeCases[Math.floor(Math.random()*freeCases.length)];
    await action('open',{case:selected});
-   if(lastError){stoppedForError=true;enabled=false;try{localStorage.setItem(storageKey,'false')}catch{};update()}
+   if(lastError){stoppedForError=true;enabled=false;try{if(activeStorageKey)localStorage.setItem(activeStorageKey,'false')}catch{};update()}
   },1400);
  }
  button.addEventListener('click',()=>{
   if(!allowed())return;
   enabled=!enabled;stoppedForError=false;
-  try{localStorage.setItem(storageKey,String(enabled))}catch{}
+  try{if(activeStorageKey)localStorage.setItem(activeStorageKey,String(enabled))}catch{}
   if(!enabled)cancel();
   schedule();
  });
