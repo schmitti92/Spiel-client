@@ -33,7 +33,7 @@ function finaleBonusesComplete(game){
  const key='final:'+game.id,spunAt=Number(game.christmasWheelSpins?.[key]||0);
  const hammer=game.christmasHammerWheel;
  return Boolean(spunAt&&game.christmasWheelClosed?.[key]&&hammer?.gameId===game.id
-  &&Number.isFinite(hammer.startedAt)&&Date.now()-hammer.startedAt>=4300);
+  &&Number.isFinite(hammer.startedAt)&&dealServerNow()-hammer.startedAt>=4300);
 }
 let finaleControlTimer=null;
 function updateFinaleStartControl(){
@@ -50,7 +50,7 @@ function updateFinaleStartControl(){
   messages.dataset.bonusNotice='yes';
  }
  clearTimeout(finaleControlTimer);
- const waitMs=Number(g.christmasHammerWheel?.startedAt||0)+4400-Date.now();
+ const waitMs=Number(g.christmasHammerWheel?.startedAt||0)+4400-dealServerNow();
  if(!ready&&waitMs>0&&waitMs<5000)finaleControlTimer=setTimeout(updateFinaleStartControl,waitMs);
 }
 window.addEventListener('deal-game-state-change',updateFinaleStartControl);
@@ -85,10 +85,10 @@ $('final-lobby').href='lobby.html?room='+encodeURIComponent(code||'');
 let finaleRecoveryTimer=null;
 function startFinaleCinema(){
  // The final accepted banker offer must be announced for three seconds first.
- if(!$('vote-reveal').hidden||Date.now()<finalDealRevealUntil){
+ if(!$('vote-reveal').hidden||dealServerNow()<finalDealRevealUntil){
   // A lost banker close timer must never block the final reveal indefinitely.
-  const wait=Math.max(100,Math.min(3500,finalDealRevealUntil-Date.now()+100));
-  if(!finaleRecoveryTimer)finaleRecoveryTimer=setTimeout(()=>{finaleRecoveryTimer=null;if(g?.phase==='final'){if(Date.now()>=finalDealRevealUntil&&!$('vote-reveal').hidden)closeVoteReveal();startFinaleCinema()}},wait);
+  const wait=Math.max(100,Math.min(3500,finalDealRevealUntil-dealServerNow()+100));
+  if(!finaleRecoveryTimer)finaleRecoveryTimer=setTimeout(()=>{finaleRecoveryTimer=null;if(g?.phase==='final'){if(dealServerNow()>=finalDealRevealUntil&&!$('vote-reveal').hidden)closeVoteReveal();startFinaleCinema()}},wait);
   return;
  }
  if(!g||g.phase!=='final'||!Array.isArray(g.finalValues)||!g.finalValues.length){if(!$('finale-cinema').hidden){cancelFinaleTimers();$('finale-cinema').hidden=true}return}
@@ -118,7 +118,7 @@ function startFinaleCinema(){
  const dealAnnouncementMs=finalBallot?.decisions?.some(d=>d.deal===true)?3000:0;
  const finaleEpoch=Number(g.finalStartedAt)+dealAnnouncementMs;
  const finaleElapsed=!replayFinaleLocally&&Number.isFinite(g.finalStartedAt)
-  ?Math.max(0,Date.now()-finaleEpoch):0;
+  ?Math.max(0,dealServerNow()-finaleEpoch):0;
  const at=ms=>Math.max(0,ms-finaleElapsed);
 
  // Every participant's case is shown as a large, animated suitcase.
