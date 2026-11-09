@@ -162,7 +162,7 @@
 #cent-reward .cent-wheel-wrap{overflow:visible}
 #cent-reward .cent-wheel-pointer{z-index:5;top:-21px;filter:drop-shadow(0 3px 5px #251309)}
 </style>
-<div id="cent-wheel-stage" class="cent-wheel-stage" hidden><div class="cent-wheel-heading">✨ Das Weihnachts-Glücksrad entscheidet ✨</div><div class="cent-wheel-wrap"><div class="cent-wheel-pointer">▼</div><div id="cent-wheel" class="cent-wheel" role="img" aria-label="Weihnachts-Glücksrad mit vier Normal-, fünf Gold- und einem Premium-Feld"></div></div><div class="cent-pack-legend"><span>🎁 <strong>Normal</strong><small>40 %</small></span><span>🥇 <strong>Gold</strong><small>50 %</small></span><span>💎 <strong>Premium</strong><small>10 %</small></span></div><button id="cent-wheel-spin" class="cent-wheel-spin" type="button">🎡 JETZT DREHEN</button><div id="cent-wheel-status" class="cent-wheel-status" aria-live="polite">Bereit? Drücke auf „Jetzt drehen“!</div></div><div id="cent-reveal-stage" class="cent-reveal-stage" hidden><div class="cent-reward-pack" id="cent-reward-icon">🎁</div><div class="cent-reward-name" id="cent-reward-name">Dein Geschenk wird enthüllt …</div>
+<div id="cent-wheel-stage" class="cent-wheel-stage" hidden><div class="cent-wheel-heading">✨ Das große Sieger-Doppelglücksrad ✨</div><div class="final-dual-wheels"><div class="final-dual-pack"><div class="final-dual-label">1 · 🎁 KARTENPAKET</div><div class="cent-wheel-wrap"><div class="cent-wheel-pointer">▼</div><div id="cent-wheel" class="cent-wheel" role="img" aria-label="Weihnachts-Glücksrad mit vier Normal-, fünf Gold- und einem Premium-Feld"></div></div><div class="cent-pack-legend"><span>🎁 <strong>Normal</strong><small>40 %</small></span><span>🥇 <strong>Gold</strong><small>50 %</small></span><span>💎 <strong>Premium</strong><small>10 %</small></span></div><button id="cent-wheel-spin" class="cent-wheel-spin" type="button">🎡 JETZT DREHEN</button><div id="cent-wheel-status" class="cent-wheel-status" aria-live="polite">Bereit? Drücke auf „Jetzt drehen“!</div></div><div id="final-dual-hammer" class="final-dual-hammer" hidden><div class="final-dual-label">2 · 🔨 HAMMER</div><div class="final-dual-hammer-wrap"><div id="final-dual-hammer-disc" class="final-dual-hammer-disc"></div><div class="final-dual-pointer">▼</div></div><p id="final-dual-hammer-status">🔒 Wird nach dem Kartenpaket automatisch gedreht</p></div></div></div><div id="cent-reveal-stage" class="cent-reveal-stage" hidden><div class="cent-reward-pack" id="cent-reward-icon">🎁</div><div class="cent-reward-name" id="cent-reward-name">Dein Geschenk wird enthüllt …</div>
 <div id="cent-reward-cards" class="cent-reward-cards"></div><div id="cent-special-overlay" class="cent-special-overlay" hidden><span id="cent-special-new" class="cent-special-new" hidden>✨ NEU ENTDECKT! ✨</span><div class="cent-special-burst">✦ ✧ ✦</div><div id="cent-special-tier" class="cent-special-tier"></div><div class="cent-special-frame"><img id="cent-special-art" alt="Besondere gezogene Weihnachtskarte"></div><div id="cent-special-name" class="cent-special-name"></div><div id="cent-special-owner" class="cent-special-owner"></div></div></div><p id="cent-reward-credit">Die Karten sind bereits sicher gespeichert.</p>
 <button id="cent-reward-close" type="button">🎁 Weiter zum Spiel</button></div></div>
 <script>
@@ -180,7 +180,7 @@
  const packNames={small:'Normales Kartenpaket',large:'Gold-Kartenpaket',premium:'Premium-Kartenpaket'};
  const spinButton=document.getElementById('cent-wheel-spin');let pendingSpin=null,activeWheelReward=null,activeWheelKind=null,finalWheelStarted=false;
  function openReward(reward,kind,uid){
-  const isFinal=kind==='final';activeWheelReward=reward;activeWheelKind=kind;finalWheelStarted=false;
+  const isFinal=kind==='final';box.classList.toggle('final-dual-active',isFinal);document.getElementById('final-dual-hammer').hidden=!isFinal;activeWheelReward=reward;activeWheelKind=kind;finalWheelStarted=false;
   sequence++;const current=sequence;
   box.dataset.reward=reward.id;box.dataset.stage='wheel';box.hidden=false;close.disabled=true;close.hidden=reward.uid!==uid;
   // A missed socket event or disconnected winner must never trap spectators.
@@ -193,7 +193,7 @@
   wheelStage.hidden=false;revealStage.hidden=true;spinButton.hidden=false;spinButton.disabled=false;wheelStatus.textContent='🎡 Bereit? Drücke auf „Jetzt drehen“!';
   if(reward.uid!==uid){spinButton.hidden=true;wheelStatus.textContent='🎡 '+owner+' darf drehen. Alle schauen gemeinsam zu …'}
   // Winner's missing click must not permanently block the whole room.
-  if(isFinal&&reward.uid===uid)setTimeout(()=>{if(sequence===current&&!box.hidden&&!finalWheelStarted&&!spinButton.disabled)startWheel()},12000);
+  if(isFinal&&reward.uid===uid)setTimeout(()=>{if(sequence===current&&!box.hidden&&!finalWheelStarted&&!spinButton.disabled)startWheel()},2200);
   wheel.style.transition='none';wheel.style.transform='rotate(0deg)';
   const pack=String(reward.packId||'small').toLowerCase();
   // The uploaded artwork has gold at 0°, normal at 36° and premium at 180°.
@@ -486,5 +486,5 @@ video.addEventListener('ended',()=>{video.pause()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){video.pause();stopLoop()}else syncBankerVideo()});
 syncBankerVideo();
 })();
-</script><script src="./js/peek-joker.js?v=20261108a"></script><script src="./js/final-hammer-wheel.js?v=20261109-winner-controls-v2"></script><script src="../site-global-controls.js?v=20261109-global-1"></script>
+</script><script src="./js/peek-joker.js?v=20261108a"></script><script src="./js/final-hammer-wheel.js?v=20261109-dual-auto-v1"></script><script src="../site-global-controls.js?v=20261109-global-1"></script>
 </body></html>
