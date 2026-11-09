@@ -392,7 +392,8 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
    </div>
    <div class="reveal-card" id="reveal-card" hidden>
     <span class="reveal-new-badge" id="reveal-new-badge" hidden>✨ NEU ENTDECKT! ✨</span>
-    <img id="reveal-image" alt="">
+    <img id="reveal-image" alt="" loading="eager" decoding="async" fetchpriority="high">
+    <button type="button" id="reveal-image-retry" class="reveal-image-retry" hidden>🔄 Dieses Kartenbild erneut laden</button>
     <strong id="reveal-name"></strong>
     <span id="reveal-rarity"></span>
    </div>
@@ -458,7 +459,7 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
   </div>
   <div class="monster-show-confetti" id="monster-show-confetti" aria-hidden="true" hidden></div>
  </section>
-</div><script src="../profile-config.js'></script><script src="../profile-auth.js"></script><script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script><script src="./js/christmas-show-director.js?v=20261109-show-v1"></script><script src="./js/hammer-bingo-cinematics.js?v=20261109-victory-v3"></script><script src="./js/christmas-pack-cinema.js?v=20261109-platinum-v1"></script><script src="./js/christmas-card-image-loader.js?v=20261109-cards-preload-v1"></script><script src="./js/north-pole-bingo.js?v=20261109-north-prizes-v1"></script><script src="./js/monster-wheel.js?v=20261109-full-photo-v1"></script><script src="./js/monster-wheel-show.js?v=20261109-monster-show-v1"></script><script>
+</div><script src="../profile-config.js'></script><script src="../profile-auth.js"></script><script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script><script src="./js/christmas-show-director.js?v=20261109-show-v1"></script><script src="./js/hammer-bingo-cinematics.js?v=20261109-victory-v3"></script><script src="./js/christmas-pack-cinema.js?v=20261109-platinum-v1"></script><script src="./js/christmas-card-image-loader.js?v=20261109-cards-retry-v2"></script><script src="./js/north-pole-bingo.js?v=20261109-north-prizes-v1"></script><script src="./js/monster-wheel.js?v=20261109-full-photo-v1"></script><script src="./js/monster-wheel-show.js?v=20261109-monster-show-v1"></script><script>
 const cards=[["01_winterdorf","Winterdorf"],["02_lebkuchenhaus","Lebkuchenhaus"],["03_weihnachtsmann","Weihnachtsmann"],["04_rentier","Rentier"],["05_weihnachtsbaum","Weihnachtsbaum"],["06_weihnachtszug","Weihnachtszug"],["07_schneekugel","Schneekugel"],["08_wichtelwerkstatt","Wichtelwerkstatt"],["09_polarlichter","Polarlichter"],["10_eisschloss","Eisschloss"],["11_rentierschlitten","Rentierschlitten"],["12_weihnachtslaterne","Weihnachtslaterne"],["13_weihnachtsengel","Weihnachtsengel"],["14_adventskerzen","Adventskerzen"],["15_schneemannfamilie","Schneemannfamilie"],["16_weihnachtskrippe","Weihnachtskrippe"]];
 cards.push(...[["Weihnachtskarte_17_Schneemann","Schneemann"],["Weihnachtskarte_18_Weihnachtsengel","Weihnachtsengel"],["Weihnachtskarte_19_Rentier","Rentier im Schnee"],["Weihnachtskarte_20_Weihnachtsbaum","Weihnachtsbaum im Glanz"],["Weihnachtskarte_21_Lebkuchenmann","Lebkuchenmann"],["Weihnachtskarte_22_Weihnachtskranz","Weihnachtskranz"],["Weihnachtskarte_23_Schlitten","Schlittenfahrt"],["Weihnachtskarte_24_Stern_von_Bethlehem","Stern von Bethlehem"],["Weihnachtskarte_25_Elfenhilfe","Elfenhilfe"],["Weihnachtskarte_26_Weihnachtspinguin","Weihnachtspinguin"],["Weihnachtskarte_27_Polarbaer","Polarbär"],["Weihnachtskarte_28_Weihnachtsglocken","Weihnachtsglocken"],["Weihnachtskarte_29_Kerzenschein","Kerzenschein"],["Weihnachtskarte_30_Winterdorf","Winterdorf im Schnee"],["Weihnachtskarte_31_Geschenkstapel","Geschenkstapel"],["Weihnachtskarte_32_Schneeflocke","Schneeflocke"]]);
 // Hochgeladene Fotos; bewährte Karten-IDs 65–80 und Sammelfortschritt bleiben unverändert.
@@ -1160,9 +1161,12 @@ function finishReveal(){
   const tile=document.createElement('div');tile.className='reveal-summary-item'+(card.isNew===true?' is-new':'');
   if(['common','rare','epic','legendary'].includes(card.rarity))tile.classList.add(card.rarity);
   tile.style.setProperty('--idx',String(i));
-  const img=document.createElement('img');img.src=christmasCardImage(card);
+  const img=document.createElement('img');
+  const artwork=christmasCardImage(card);
   img.alt=card.name||'Weihnachtskarte';img.title=card.name||'Weihnachtskarte';img.loading='lazy';img.decoding='async';
   window.ChristmasCardImages?.guard(img);
+  if(window.ChristmasCardImages?.show)window.ChristmasCardImages.show(img,artwork);
+  else img.src=artwork;
   tile.append(img);
   if(card.isNew===true){
    const badge=document.createElement('span');badge.className='reveal-summary-new';
@@ -1205,6 +1209,7 @@ async function revealNext(){
  el.hidden=true;
  document.getElementById('reveal-present').hidden=false;
  document.getElementById('reveal-new-badge').hidden=card.isNew!==true;
+ document.getElementById('reveal-image-retry').hidden=true;
  document.getElementById('reveal-counter').textContent='🎁 Karte '+(index+1)+' von '+state.cards.length+' wird geöffnet …';
  try{await window.ChristmasPackCinema?.startCard(card,index,state.cards.length)}catch(_){}
  if(token!==revealMotionToken||revealState!==state)return;
@@ -1221,7 +1226,10 @@ async function revealNext(){
  bigImage.title=artResult.ok?(card.name||'Weihnachtskarte'):'Motiv konnte nicht geladen werden: '+(card.name||'Weihnachtskarte');
  bigImage.classList.toggle('card-art-unavailable',!artResult.ok);
  window.ChristmasCardImages?.guard(bigImage);
- bigImage.src=artResult.src;
+ if(window.ChristmasCardImages?.show)window.ChristmasCardImages.show(bigImage,artResult.src);
+ else bigImage.src=artResult.src;
+ bigImage.dataset.cardArtwork=artwork;
+ document.getElementById('reveal-image-retry').hidden=artResult.ok;
  document.getElementById('reveal-name').textContent=card.name||'Weihnachtskarte';
  document.getElementById('reveal-rarity').textContent=
   ({common:'Gewöhnlich',rare:'💎 Selten',epic:'✨ Episch',legendary:'🌟 Legendär'})[card.rarity]||'Gewöhnlich';
@@ -1234,15 +1242,42 @@ async function revealNext(){
  next.disabled=false;revealMotionBusy=false;
  window.ChristmasPackCinema?.showCard(card,index,state.cards.length);
  // After each card flips up LARGE, hold it for a few seconds, then turn
- // the next one automatically. Rare prizes linger for the finale.
+ // the next one automatically. A temporarily missing image must not auto-skip
+ // before the player can retry. Rare prizes linger for the finale.
  // Skip, Close and manual Next cancel this timer without touching winnings.
- revealAutoTimer=setTimeout(()=>{
+ if(artResult.ok)revealAutoTimer=setTimeout(()=>{
   revealAutoTimer=null;
   if(token===revealMotionToken&&revealState===state&&!overlay.hidden&&!revealMotionBusy){
    void revealNext();
   }
  },revealCardHoldMs(card));
 }
+document.getElementById('reveal-image-retry').addEventListener('click',async()=>{
+ const state=revealState,index=state?.index;
+ const card=state?.cards?.[index];
+ if(!card||index<0||revealMotionBusy)return;
+ const token=revealMotionToken,button=document.getElementById('reveal-image-retry');
+ const img=document.getElementById('reveal-image');
+ const artwork=christmasCardImage(card);
+ button.disabled=true;button.textContent='⏳ Kartenbild wird erneut geladen …';
+ document.getElementById('reveal-counter').textContent='🖼️ Bild '+(index+1)+' wird erneut geladen …';
+ let result={ok:false};
+ try{result=await window.ChristmasCardImages?.retry(img,artwork)||result}catch(_){}
+ if(token!==revealMotionToken||revealState!==state||state.index!==index)return;
+ button.disabled=false;button.textContent='🔄 Dieses Kartenbild erneut laden';
+ button.hidden=!!result.ok;
+ img.classList.toggle('card-art-unavailable',!result.ok);
+ document.getElementById('reveal-counter').textContent=result.ok
+  ?'✅ Karte '+(index+1)+' von '+state.cards.length+' jetzt vollständig geladen!'
+  :'⚠️ Kartenbild noch nicht verfügbar. Erneut laden oder nächste Karte wählen.';
+ if(result.ok){
+  stopRevealAuto();
+  revealAutoTimer=setTimeout(()=>{
+   revealAutoTimer=null;
+   if(token===revealMotionToken&&revealState===state&&!overlay.hidden&&!revealMotionBusy)void revealNext();
+  },revealCardHoldMs(card));
+ }
+});
 next.addEventListener('click',()=>{void revealNext()});
 skip.addEventListener('click',finishReveal);
 close.addEventListener('click',()=>{
