@@ -10,7 +10,7 @@ const js=readFileSync(resolve(root,'js/hammer-bingo-cinematics.js'),'utf8');
 const css=readFileSync(resolve(root,'css/hammer-bingo-cinematics.css'),'utf8');
 const html=readFileSync(resolve(root,'weihnachten.html'),'utf8');
 // The controller does not initialize elements in this VM; its scene planner is pure.
-const ctx=vm.createContext({window:{},document:{readyState:'loading',addEventListener(){}}});
+const ctx=vm.createContext({window:{},document:{readyState:'loading',hidden:false,addEventListener(){},getElementById(id){return id==='reveal-overlay'?{hidden:true}:null}}});
 vm.runInContext(js,ctx,{filename:'hammer-bingo-cinematics.js',timeout:1500});
 const plan=ctx.window.HammerBingoCinematics.plan;
 const artwork=Array.from({length:32},(_,i)=>'card_'+i+'.png');
@@ -84,6 +84,18 @@ test('no locked card art leaks into cards without confirmed ownership',()=>{
  const s=scenes[0];assert.equal(s.owned['christmas-33'],true);
  assert.equal(s.owned['christmas-34'],false);
  assert.equal(s.art.length,32);
+});
+
+test('local demo can start without server calls, inventory mutations or real awards',()=>{
+ assert.equal(typeof ctx.window.HammerBingoCinematics.preview,'function');
+ assert.equal(ctx.window.HammerBingoCinematics.preview(artwork),true);
+ // A queued two-scene demo is intentionally not replayed from an account receipt.
+ assert.match(js,/function preview\(artwork=\[\]\)/);
+ assert.match(js,/preview:true/);
+ assert.match(js,/scene\.preview\?'🎬 Vorschau: keine Hammer gutgeschrieben'/);
+ assert.match(html,/id="hammer-cinema-preview"/);
+ assert.match(html,/HammerBingoCinematics\?\.preview/);
+ assert.match(html,/id="hammer-cinema-footer-note"/);
 });
 
 test('HTML wiring retains server claim, pack-reveal and screen controls',()=>{
