@@ -1,0 +1,35 @@
+name: Optimize Christmas Card Artwork
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DealOrNoDeal/tools/optimize_christmas_card_art.py'
+      - '.github/workflows/optimize-christmas-card-art.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install image converter
+        run: python -m pip install --disable-pip-version-check Pillow
+      - name: Generate compact images
+        run: python DealOrNoDeal/tools/optimize_christmas_card_art.py
+      - name: Publish optimized art
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add DealOrNoDeal/Weihnachtsevent2/Weihnachtsbilder/card-*.webp
+          if git diff --cached --quiet; then
+            echo "Optimized artwork already up to date."
+          else
+            git commit -m "Optimize 32 Christmas card reveal assets for faster pack opening"
+            git push origin HEAD:main
+          fi
