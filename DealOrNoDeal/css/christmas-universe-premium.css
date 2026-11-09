@@ -248,7 +248,10 @@ body[data-xmas-effects=off] .hub-intro::before,
 body[data-xmas-effects=off] .hub-intro::after,
 body[data-xmas-effects=off] .hub-art .star-gift,
 body[data-xmas-effects=off] .hub-art .hammer{animation:none!important}
-body.xmas-cinema-paused :is(.event-hub-top::after,.hub-art::after,.hub-art .star-gift,.hub-art .hammer){animation-play-state:paused!important}
+body.xmas-cinema-paused .event-hub-top::after,
+body.xmas-cinema-paused .hub-art::after,
+body.xmas-cinema-paused .hub-art .star-gift,
+body.xmas-cinema-paused .hub-art .hammer{animation-play-state:paused!important}
 @media(prefers-reduced-motion:reduce){
  @view-transition{navigation:none}
  ::view-transition-old(root),::view-transition-new(root){animation:none!important}
