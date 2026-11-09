@@ -51,16 +51,61 @@
 /* Golden cinematic rim follows the wheel itself, while the pointer remains separate.
    The decoration is a transparent SVG asset: no baked-in win segments or text. */
 .monster-disc{background-blend-mode:soft-light;isolation:isolate;border-color:#eab95a;box-shadow:inset 0 0 0 2px #fff2c0,inset 0 0 45px #1a042bc9,0 0 0 6px #6e307f,0 0 42px #fbc473a8}
-.monster-disc:after{content:"";pointer-events:none;position:absolute;z-index:5;inset:-9%;background:url("../assets/monster-wheel-gold-frame.svg") center/contain no-repeat;filter:drop-shadow(0 0 9px #ffd681a9)}
+.monster-disc:after{content:"";pointer-events:none;position:absolute;z-index:5;inset:-9%;background:url("../Weihnachtsevent2/Weihnachtsbilder/file_00000000be5481f6a8972866f23598ee.png") center/contain no-repeat,url("../assets/monster-wheel-gold-frame.svg") center/contain no-repeat;filter:drop-shadow(0 0 9px #ffd681a9);-webkit-mask-image:radial-gradient(circle,transparent 0 82%,#000 87% 100%);mask-image:radial-gradient(circle,transparent 0 82%,#000 87% 100%)}
 .monster-disc .monster-wheel-segment{z-index:4}
-.monster-wheel-segment[data-featured]{font-size:clamp(19px,2.7vw,34px)!important;filter:drop-shadow(0 0 6px #f8ecb7) drop-shadow(0 0 7px #c6e8ed);text-shadow:0 0 12px #fff9d8;animation:monsterFeatured 2.8s ease-in-out infinite alternate}
+.monster-wheel-segment[data-featured]:not([data-featured=""]){font-size:clamp(19px,2.7vw,34px)!important;filter:drop-shadow(0 0 6px #f8ecb7) drop-shadow(0 0 7px #c6e8ed);text-shadow:0 0 12px #fff9d8;animation:monsterFeatured 2.8s ease-in-out infinite alternate}
 .monster-wheel-segment[data-featured="character"]{filter:drop-shadow(0 0 12px #83fa6c)}
 .monster-wheel-segment[data-featured="premium"]{filter:drop-shadow(0 0 10px #ff74c4)}
 .monster-wheel-segment[data-featured="goldpack"]{filter:drop-shadow(0 0 10px #ffda55)}
-.monster-prize-list span[data-featured]{font-weight:950;border:2px solid #fae6a5;background:linear-gradient(115deg,#704365,#a66e2b);color:#fff2d5;box-shadow:0 0 15px #f8d27e44}
+.monster-prize-list span[data-featured]:not([data-featured=""]){font-weight:950;border:2px solid #fae6a5;background:linear-gradient(115deg,#704365,#a66e2b);color:#fff2d5;box-shadow:0 0 15px #f8d27e44}
 .monster-prize-list span[data-featured="character"]{border-color:#a3fa82;background:linear-gradient(115deg,#245b3c,#3e2460);box-shadow:0 0 14px #aaf96966}
 .monster-prize-list span[data-featured="premium"]{border-color:#ffadc9;background:linear-gradient(115deg,#702659,#502e83);box-shadow:0 0 14px #ff8bc766}
 .monster-prize-list span[data-featured="goldpack"]{border-color:#fce0a5;background:linear-gradient(115deg,#77511e,#654098);box-shadow:0 0 14px #ffdc8b88}
 .monster-prize-list span[data-featured].won{box-shadow:0 0 0 2px #fff4bd,0 0 27px #fff0aaff}
 @keyframes monsterFeatured{from{opacity:.82}to{opacity:1}}
-@media(prefers-reduced-motion:reduce){.monster-wheel-segment[data-featured]{animation:none}}
+@media(prefers-reduced-motion:reduce){.monster-wheel-segment[data-featured]:not([data-featured=""]){animation:none}}
+
+
+/* Actual user-uploaded 3D wheel artwork from GitHub, kept as one canonical asset.
+   The source illustration contains fewer than 25 accurately labelled sectors;
+   therefore it is used whole in the album preview and precisely clipped to its
+   ornamental gold rim + central crown for the authoritative 25-stop wheel. */
+.monster-trade .monster-wheel-preview{
+ width:min(100%,210px);aspect-ratio:1;border:none;border-radius:0;
+ background:url("../Weihnachtsevent2/Weihnachtsbilder/file_00000000be5481f6a8972866f23598ee.png") center/contain no-repeat;
+ box-shadow:none;filter:drop-shadow(0 5px 12px #f1c57c7e);
+}
+.monster-wheel-preview span{display:none!important}
+.monster-wheel-center{
+ width:32%;border:0;
+ background:url("../Weihnachtsevent2/Weihnachtsbilder/file_00000000be5481f6a8972866f23598ee.png") center/335% no-repeat,#4c205e;
+ box-shadow:0 0 0 4px #f1ca65,0 2px 14px 6px #0008,0 0 23px #ffc871a3;
+ color:transparent;font-size:0;
+}
+.monster-disc .monster-wheel-segment{
+ z-index:4;width:54px;height:70px;margin:-35px 0 0 -27px;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+ text-align:center;white-space:normal;line-height:1.1;overflow:visible;
+}
+.monster-wheel-icon{display:block;font-size:clamp(19px,2.6vw,28px);line-height:1;filter:drop-shadow(0 2px 4px #0008)}
+.monster-wheel-short{
+ display:block;font:900 clamp(7px,.87vw,10px)/1.08 system-ui,sans-serif;
+ color:#fff7d1;text-shadow:0 1px 2px #02021d,0 0 5px #000,1px 1px 1px #000,-1px -1px 1px #000;
+ max-width:54px;overflow-wrap:break-word;
+}
+.monster-wheel-segment[data-featured]:not([data-featured=""]) .monster-wheel-short{
+ color:#fff4b2;text-shadow:0 2px 4px #24031f,0 0 8px #ffffbd;
+}
+.monster-wheel-segment.won .monster-wheel-icon{filter:drop-shadow(0 0 13px #ffe197) brightness(1.5)}
+.monster-wheel-segment.won .monster-wheel-short{color:#fff}
+@media(max-width:770px){
+ .monster-trade .monster-wheel-preview{width:min(100%,150px)}
+ .monster-disc .monster-wheel-segment{width:38px;height:49px;margin:-24.5px 0 0 -19px}
+ .monster-wheel-icon{font-size:20px}
+ .monster-wheel-short{font-size:7px;max-width:39px}
+}
+@media(max-width:480px){
+ .monster-disc .monster-wheel-segment{width:30px;height:35px;margin:-17.5px 0 0 -15px}
+ .monster-wheel-icon{font-size:19px}
+ .monster-wheel-short{display:none}
+}
