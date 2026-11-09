@@ -57,19 +57,19 @@ async function boot(state){
  for(let i=0;i<12;i++)await new Promise(resolve=>setTimeout(resolve,0));
  return {root,buttons,get requests(){return requests}};
 }
-test('picture 15 stays behind 25 ice tiles until the server confirms completion',async()=>{
+test('picture 15 has 25 ice tiles and awaits the confirmed star reveal',async()=>{
  const play=await boot(mockState(14,false));
  assert.equal(play.requests,1);
  assert.match(play.root.innerHTML,/Bild 15 von 70/);
- assert.match(play.root.innerHTML,/Ab Bild 15 gibt es keinen Stern mehr/);
+ assert.match(play.root.innerHTML,/25 Eisfelder: Finde den versteckten Stern/);
  assert.doesNotMatch(play.root.innerHTML,/id="v44-big-reveal-continue"/);
  assert.doesNotMatch(play.root.innerHTML,/class="v44-big-reveal"/);
 });
-test('confirmed picture 15 shows the photo first, then the saved prize, without another call',async()=>{
+test('confirmed picture 15 star reveals the whole photo before the saved prize',async()=>{
  const play=await boot(mockState(15,true));
  assert.equal(play.requests,1);
  assert.match(play.root.innerHTML,/class="v44-big-reveal"/);
- assert.match(play.root.innerHTML,/Alle Eisblöcke entfernt!/);
+ assert.match(play.root.innerHTML,/🌟 Bild freigelegt!/);
  assert.match(play.root.innerHTML,/Weihnachtsbilder\/.*jpg/);
  assert.match(play.root.innerHTML,/id="v44-big-reveal-continue"/);
  assert.doesNotMatch(play.root.innerHTML,/id="v44-gift-open"/);
