@@ -35,6 +35,23 @@ test('Monster wheel is present in collection with all required interaction nodes
  assert.match(html,/monsterSpinRequestId/);
 });
 
+test('25-field art, mixed-color prize presentation and four highlighted rewards',()=>{
+ assert.match(html,/25 spektakuläre Gewinnfelder/);
+ assert.match(html,/Alle 25 Felder sind gleich groß/);
+ assert.match(js,/slot\.featured/);
+ assert.match(js,/slot\.kind/);
+ assert.match(js,/colorFor/);
+ const css=load('css/monster-wheel.css');
+ const art=load('assets/monster-wheel-gold-frame.svg');
+ assert.match(css,/monster-wheel-gold-frame\.svg/);
+ assert.match(css,/data-featured="character"/);
+ assert.match(css,/data-featured="premium"/);
+ assert.match(css,/data-featured="goldpack"/);
+ assert.match(art,/<svg/);
+ assert.match(art,/Goldrahmen/);
+ assert.doesNotMatch(art,/<text/);
+});
+
 test('Giftzwerg avatar is wired to game portrait, lobby gate and commentary',()=>{
  assert.match(lobby,/Muffiger Giftzwerg/);
  assert.match(lobby,/giftzwergUnlocked/);
