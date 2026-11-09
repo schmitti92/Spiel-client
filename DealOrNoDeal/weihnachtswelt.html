@@ -33,10 +33,13 @@ button,a{font:inherit}
 .hub-intro p{margin:0;text-align:center;color:#d9edf6;font-size:clamp(12px,1.2vw,17px)}
 .hub-intro .eyebrow{font-weight:900;font-size:clamp(10px,.85vw,13px);color:#eac58a;letter-spacing:.22em;text-align:center}
 .hub-intro-copy{position:relative;z-index:1;padding:14px}
-.hub-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(10px,1.2vw,19px)}
+.hub-body{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,1.2vw,19px)}
 .hub-card{position:relative;overflow:hidden;min-width:0;border:2px solid #e4bc76;border-radius:21px;
  background:linear-gradient(160deg,#101f36e8,#061529f8);box-shadow:inset 0 0 0 2px #ffe6a622,0 10px 30px #000b;
  display:flex;flex-direction:column;isolation:isolate}
+.hub-card.hats{border-color:#f8df9c;box-shadow:inset 0 0 0 2px #ffe5b52c,0 10px 30px #000b,0 0 22px #fbd47536}
+.hub-card.hats .hub-art{display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#d1a25c77,transparent 65%),linear-gradient(140deg,#521b38,#30204f 65%,#132841)}
+.hub-card.hats .hats-art{font-size:clamp(52px,8vw,105px);filter:drop-shadow(0 9px 15px #000a);letter-spacing:clamp(1px,1vw,10px)}
 .hub-card.ice{border-color:#a7deed;box-shadow:inset 0 0 0 2px #e4faff31,0 10px 30px #000b,0 0 17px #5ad3fb30}
 .hub-art{height:clamp(130px,23dvh,220px);position:relative;isolation:isolate;overflow:hidden;background:#172b46}
 .hub-card.cards .hub-art{background:
@@ -75,7 +78,7 @@ button,a{font:inherit}
 .hub-refresh{padding:7px 12px;min-height:33px;border:1px solid #f0d496;border-radius:9px;
  color:#ffe6b0;background:#24364c;cursor:pointer;font-weight:800}
 .hub-refresh:disabled{opacity:.55;cursor:progress}
-@media(max-width:800px){.hub-body{grid-template-columns:1fr}.hub-card{min-height:auto}.hub-art{height:150px}}
+@media(max-width:1150px){.hub-body{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:800px){.hub-body{grid-template-columns:1fr}.hub-card{min-height:auto}.hub-art{height:150px}}
 @media(max-height:740px) and (min-width:801px){.hub-intro{min-height:100px}.hub-art{height:clamp(100px,17dvh,140px)}.hub-content{gap:5px}.hub-stat{padding:5px 8px}.hub-footer{margin-top:6px;padding:6px 11px}}
 @media(prefers-reduced-motion:reduce){.hub-meter i{transition:none}}
 </style>
@@ -90,9 +93,10 @@ button,a{font:inherit}
 <a id="hub-cards-tab" href="./weihnachten.html?view=album">🃏 Sammlung</a>
 <a id="hub-packs-tab" href="./weihnachten.html?view=packs">🎁 Pakete</a>
 <a class="event2-tab" id="hub-ice-tab" href="./Weihnachtsevent2/index.html">❄️ Weihnachtsevent 2</a>
+<a id="hub-hats-tab" href="./weihnachtsmuetzen.html">🎩 Mützen-Jackpot</a>
 </nav>
 <section class="hub-intro" aria-labelledby="hub-title">
-<div class="hub-intro-copy"><p class="eyebrow">ZWEI KAPITEL · EINE WEIHNACHTSWELT</p><h1 id="hub-title">✨ Weihnachtszauber ✨</h1><p>Wähle dein Event – deine Fortschritte und Belohnungen gehören zu deinem Spielerprofil.</p><div class="hub-world-shortcuts" aria-label="Direkt zu den Weihnachts-Highlights"><a id="hub-shortcut-packs" href="./weihnachten.html?view=packs">🎁 Weihnachtspakete</a><a id="hub-shortcut-hammer" class="hub-world-highlight" href="./weihnachten.html?view=hammer">🔨 Hammer-Bingo</a><a id="hub-shortcut-ice" href="./Weihnachtsevent2/index.html">❄️ Eisabenteuer</a></div></div>
+<div class="hub-intro-copy"><p class="eyebrow">DREI KAPITEL · EINE WEIHNACHTSWELT</p><h1 id="hub-title">✨ Weihnachtszauber ✨</h1><p>Wähle dein Event – deine Fortschritte und Belohnungen gehören zu deinem Spielerprofil.</p><div class="hub-world-shortcuts" aria-label="Direkt zu den Weihnachts-Highlights"><a id="hub-shortcut-packs" href="./weihnachten.html?view=packs">🎁 Weihnachtspakete</a><a id="hub-shortcut-hammer" class="hub-world-highlight" href="./weihnachten.html?view=hammer">🔨 Hammer-Bingo</a><a id="hub-shortcut-ice" href="./Weihnachtsevent2/index.html">❄️ Eisabenteuer</a><a id="hub-shortcut-hats" href="./weihnachtsmuetzen.html">🎩 Mützen-Jackpot</a></div></div>
 </section>
 <section class="hub-body" aria-label="Beide Weihnachtsevents">
 <article class="hub-card cards">
@@ -107,6 +111,13 @@ button,a{font:inherit}
 <div class="hub-stats"><div class="hub-stat"><small>Abgeschlossene Bilder</small><strong id="hub-completed">– / 70</strong></div><div class="hub-stat"><small>Meilenstein-Kisten</small><strong id="hub-milestones">– / 7</strong></div></div>
 <div class="hub-meter" role="progressbar" aria-label="Fortschritt Weihnachtsbilder" aria-valuemin="0" aria-valuemax="70" aria-valuenow="0" id="hub-ice-meter"><i></i></div>
 <div class="hub-actions"><a class="hub-launch" id="hub-enter-ice" href="./Weihnachtsevent2/index.html">❄️ Bilderzauber spielen</a><span class="hub-note">🔨 Einfach-, Doppel- &amp; Glückshammer</span></div></div></article>
+<article class="hub-card hats">
+<div class="hub-art"><div class="hats-art" aria-hidden="true">🎅 🎁 💣</div><span class="hub-chapter">KAPITEL 3</span></div>
+<div class="hub-content">
+<h2>🎩 Weihnachtsmützen-Jackpot</h2>
+<p>10 Räume. Drei Mützen, eine Bombe. Sammle Kartenpakete, Hammer, Joker und Spielgeld. Superglück ist in jedem Raum möglich!</p>
+<div class="hub-stats"><div class="hub-stat"><small>🛡️ Checkpoints</small><strong>3 &amp; 7</strong></div><div class="hub-stat"><small>💰 Höchstbetrag</small><strong>5 Mio. €</strong></div></div>
+<div class="hub-actions"><a class="hub-launch" id="hub-enter-hats" href="./weihnachtsmuetzen.html">🎩 Jackpot spielen</a><span class="hub-note">Jederzeit Gewinne sichern und aussteigen</span></div></div></article>
 </section>
 <footer class="hub-footer"><span id="hub-status" class="status" role="status" aria-live="polite">⏳ Spielerprofil wird geprüft …</span><button type="button" id="hub-refresh" class="hub-refresh" disabled>↻ Fortschritt aktualisieren</button></footer>
 </main>
@@ -118,7 +129,7 @@ const query=new URLSearchParams(location.search),provided=query.get('room'),save
 const room=ROOM.test(provided||'')?provided:ROOM.test(saved||'')?saved:null;
 if(room){
  sessionStorage.setItem('deal-active-room',room);
- for(const id of ['hub-game','hub-lobby','hub-cards-tab','hub-packs-tab','hub-ice-tab','hub-enter-album','hub-enter-ice','hub-shortcut-packs','hub-shortcut-hammer','hub-shortcut-ice']){
+ for(const id of ['hub-game','hub-lobby','hub-cards-tab','hub-packs-tab','hub-ice-tab','hub-hats-tab','hub-enter-hats','hub-shortcut-hats','hub-enter-album','hub-enter-ice','hub-shortcut-packs','hub-shortcut-hammer','hub-shortcut-ice']){
   const a=$(id),url=new URL(a.href);url.searchParams.set('room',room);a.href=url.href;
  }
 }
