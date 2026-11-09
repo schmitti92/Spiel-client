@@ -14,12 +14,12 @@
  const isPackVisible=()=>id('reveal-overlay')?.hidden===false;
  const isBingoVisible=()=>id('hammer-cinema')?.hidden===false;
  function showCue(){
-  const tip=id('pack-cinema-next-act'),button=id('reveal-close');
+  const tip=id('reveal-next-act'),button=id('reveal-close');
   if(!tip||!button||!isRealPack()||!isPackVisible())return;
   const ready=state.earned>0;
   const checking=state.claimPending;
   const visible=ready||checking;
-  tip.hidden=!visible;
+  tip.hidden=!(visible&&id('reveal-summary')?.hidden===false);
   tip.textContent=ready
    ?'🏆 '+state.earned+' bestätigte'+(state.earned===1?' Siegesshow':' Siegesshows')+' wartet'+(state.earned===1?'':'n')+' nach dem Paket auf dich!'
    :'⏳ Hammer-Bingos werden im Hintergrund serverseitig geprüft.';
