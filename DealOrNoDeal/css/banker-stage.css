@@ -595,3 +595,74 @@
 @media(max-height:730px){#banker-call .banker-secret-seal{width:min(112px,17dvh);height:min(112px,17dvh)}#banker-call .banker-secret-lock{font-size:36px}#banker-call .banker-bonus-reveal-card{gap:5px}#banker-call .banker-bonus-reveal-intro{font-size:12px}}
 @media(max-height:560px){#banker-call .banker-secret-seal{width:70px;height:70px}#banker-call .banker-secret-lock{font-size:25px}#banker-call .banker-secret-caption{font-size:6px}#banker-call .banker-bonus-show-lights{display:none}}
 @media(prefers-reduced-motion:reduce){#banker-call .banker-secret-orbit,#banker-call .banker-secret-lock,#banker-call .banker-bonus-countdown span,#banker-call .banker-bonus-reveal[data-stage="reward"] .banker-bonus-reveal-item{animation:none!important}}
+
+
+/* BANKER REAL PACK ART V1
+   Same 3-in-1 sprite used by weihnachten.html #event-packs .pack-art:
+   left = small/green, center = large/red, right = premium/gold.
+   Presentation only; pack allocation and rewards remain server-authoritative. */
+#banker-call .banker-bonus-pack-art,
+#banker-call .banker-pack-mini-art{
+ --banker-pack-x:0%;
+ display:block;
+ flex:none;
+ position:relative;
+ overflow:hidden;
+ background-color:#102136;
+ background-image:url('../assets/weihnachts_event/file_00000000bd0c8210bf6f3733cc5c807d.png');
+ background-repeat:no-repeat;
+ background-size:300% auto;
+ background-position:var(--banker-pack-x) top;
+ border:1px solid #e1c37b88;
+ border-radius:12px;
+ box-shadow:inset 0 1px #fff3,0 6px 16px #0008;
+}
+#banker-call .banker-bonus-reveal-item.pack.small .banker-bonus-pack-art,
+#banker-call #banker-christmas-bonus[data-pack="small"] .banker-pack-mini-art{--banker-pack-x:0%}
+#banker-call .banker-bonus-reveal-item.pack.large .banker-bonus-pack-art,
+#banker-call #banker-christmas-bonus[data-pack="large"] .banker-pack-mini-art{--banker-pack-x:50%}
+#banker-call .banker-bonus-reveal-item.pack.premium .banker-bonus-pack-art,
+#banker-call #banker-christmas-bonus[data-pack="premium"] .banker-pack-mini-art{--banker-pack-x:100%}
+#banker-call .banker-bonus-reveal-item.pack .banker-bonus-pack-art{
+ width:clamp(110px,14vw,190px);
+ height:clamp(125px,17vw,205px);
+ max-width:100%;
+ background-color:transparent;
+ border:0;
+ border-radius:9px;
+ box-shadow:none;
+ filter:drop-shadow(0 9px 12px #0008) drop-shadow(0 0 14px #ffe2a660);
+ mask-image:linear-gradient(to bottom,#000 0%,#000 80%,transparent 100%);
+ -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 80%,transparent 100%);
+}
+#banker-call .banker-bonus-reveal-item.pack.small{border-color:#9be3bd;background:linear-gradient(145deg,#114e48,#102336)}
+#banker-call .banker-bonus-reveal-item.pack.large{border-color:#f4b0ae;background:linear-gradient(145deg,#753044,#221b39)}
+#banker-call .banker-bonus-reveal-item.pack.premium{border-color:#fff0b4;background:linear-gradient(145deg,#86601c,#302414)}
+#banker-call .banker-christmas-bonus:not([hidden]) .banker-pack-mini-art{
+ width:clamp(36px,4.3vw,53px);
+ height:clamp(40px,4.6vw,58px);
+ border-radius:7px;
+ box-shadow:0 3px 11px #0007,0 0 9px #fbd48833;
+}
+#banker-call .banker-christmas-bonus .banker-pack-bonus-copy{
+ min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;
+}
+#banker-call .banker-christmas-bonus .banker-pack-bonus-copy strong{
+ display:block;color:#fff3cc;font-size:clamp(12px,1.1vw,16px);line-height:1.1;
+}
+#banker-call .banker-christmas-bonus .banker-pack-bonus-copy small{
+ display:block;color:#ffe5aa;font-size:clamp(9px,.75vw,11px);letter-spacing:.035em;
+}
+#banker-call .banker-offer-details > .banker-christmas-bonus:not([hidden]){
+ min-height:52px!important;padding:4px 8px!important;justify-content:center!important;gap:10px!important;
+}
+@media(max-width:650px),(max-height:650px){
+ #banker-call .banker-bonus-reveal-item.pack .banker-bonus-pack-art{
+  width:clamp(85px,20vw,135px);height:clamp(95px,25vw,146px);
+ }
+ #banker-call .banker-offer-details > .banker-christmas-bonus:not([hidden]){min-height:44px!important;padding:3px 7px!important}
+ #banker-call .banker-christmas-bonus:not([hidden]) .banker-pack-mini-art{width:34px;height:38px}
+}
+@media(prefers-reduced-motion:reduce){
+ #banker-call .banker-bonus-reveal-item.pack .banker-bonus-pack-art{animation:none!important}
+}
