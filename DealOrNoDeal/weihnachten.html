@@ -435,7 +435,7 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
    <img class="monster-wheel-avatar" id="monster-wheel-result-avatar" src="./assets/giftzwerg.svg" alt="Muffiger Giftzwerg" hidden>
   </div>
  </section>
-</div><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script><script src="./js/christmas-show-director.js?v=20261109-show-v1"></script><script src="./js/hammer-bingo-cinematics.js?v=20261109-victory-v3"></script><script src="./js/christmas-pack-cinema.js?v=20261109-sequential-v2"></script><script src="./js/christmas-card-image-loader.js?v=20261109-cards-preload-v1"></script><script src="./js/north-pole-bingo.js?v=20261109-compass-v3"></script><script src="./js/monster-wheel.js?v=20261109-full-photo-v1"></script><script>
+</div><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script><script src="./js/christmas-show-director.js?v=20261109-show-v1"></script><script src="./js/hammer-bingo-cinematics.js?v=20261109-victory-v3"></script><script src="./js/christmas-pack-cinema.js?v=20261109-sequential-v2"></script><script src="./js/christmas-card-image-loader.js?v=20261109-cards-preload-v1"></script><script src="./js/north-pole-bingo.js?v=20261109-north-prizes-v1"></script><script src="./js/monster-wheel.js?v=20261109-full-photo-v1"></script><script>
 const cards=[["01_winterdorf","Winterdorf"],["02_lebkuchenhaus","Lebkuchenhaus"],["03_weihnachtsmann","Weihnachtsmann"],["04_rentier","Rentier"],["05_weihnachtsbaum","Weihnachtsbaum"],["06_weihnachtszug","Weihnachtszug"],["07_schneekugel","Schneekugel"],["08_wichtelwerkstatt","Wichtelwerkstatt"],["09_polarlichter","Polarlichter"],["10_eisschloss","Eisschloss"],["11_rentierschlitten","Rentierschlitten"],["12_weihnachtslaterne","Weihnachtslaterne"],["13_weihnachtsengel","Weihnachtsengel"],["14_adventskerzen","Adventskerzen"],["15_schneemannfamilie","Schneemannfamilie"],["16_weihnachtskrippe","Weihnachtskrippe"]];
 cards.push(...[["Weihnachtskarte_17_Schneemann","Schneemann"],["Weihnachtskarte_18_Weihnachtsengel","Weihnachtsengel"],["Weihnachtskarte_19_Rentier","Rentier im Schnee"],["Weihnachtskarte_20_Weihnachtsbaum","Weihnachtsbaum im Glanz"],["Weihnachtskarte_21_Lebkuchenmann","Lebkuchenmann"],["Weihnachtskarte_22_Weihnachtskranz","Weihnachtskranz"],["Weihnachtskarte_23_Schlitten","Schlittenfahrt"],["Weihnachtskarte_24_Stern_von_Bethlehem","Stern von Bethlehem"],["Weihnachtskarte_25_Elfenhilfe","Elfenhilfe"],["Weihnachtskarte_26_Weihnachtspinguin","Weihnachtspinguin"],["Weihnachtskarte_27_Polarbaer","Polarbär"],["Weihnachtskarte_28_Weihnachtsglocken","Weihnachtsglocken"],["Weihnachtskarte_29_Kerzenschein","Kerzenschein"],["Weihnachtskarte_30_Winterdorf","Winterdorf im Schnee"],["Weihnachtskarte_31_Geschenkstapel","Geschenkstapel"],["Weihnachtskarte_32_Schneeflocke","Schneeflocke"]]);
 // Hochgeladene Fotos; bewährte Karten-IDs 65–80 und Sammelfortschritt bleiben unverändert.
@@ -481,7 +481,7 @@ const classicCardNumber=i=>i<32?i+1:i+33;
 const albumIndexForId=id=>{const n=Number(String(id).replace(/^christmas-/,''));return n>=1&&n<=32?n-1:n>=65&&n<=96?n-33:-1};
 const rarity=i=>i%16>=12?["legendary","Legendär"]:i%16>=8?["epic","Episch"]:i%16>=4?["rare","Selten"]:["","Gewöhnlich"];
 const root=document.getElementById("cards");const albumGrids=[document.getElementById("album-grid-first"),document.getElementById("album-grid-second"),document.getElementById("album-grid-third"),document.getElementById("album-grid-fourth")];cards.forEach(([file,name],i)=>{const [cls,label]=rarity(i);const el=document.createElement("article");el.className="card "+cls;const img=document.createElement("img");img.src="./assets/weihnachts_event/card-back-winter.svg";img.dataset.art=albumAsset(file);img.alt="Noch nicht gesammelte Weihnachtskarte";img.className="uncollected-art";img.loading=i<4?"eager":"lazy";const rarityBadge=document.createElement("span");rarityBadge.className="album-rarity-tag "+(cls||"common");rarityBadge.textContent=cls==="legendary"?"🌟 Legendär":cls==="epic"?"✨ Episch":cls==="rare"?"💎 Selten":"Gewöhnlich";rarityBadge.setAttribute("aria-label","Seltenheitsgrad: "+label);el.append(rarityBadge);const meta=document.createElement("div");meta.className="meta";const title=document.createElement("strong");title.textContent=String(i+1).padStart(2,"0")+" · ???";const sub=document.createElement("small");sub.textContent="🔒 Noch nicht entdeckt";meta.append(title,sub);el.dataset.card="christmas-"+String(classicCardNumber(i)).padStart(2,"0");el.append(img,meta);albumGrids[Math.floor(i/16)].append(el)});
-const rewards=[["🦌","Rudolf","2 Bingos · Neuer Charakter"],["❄️","Winterlobby","4 Bingos · Lobby-Hintergrund"],["🎄","Weihnachtsstudio","6 Bingos · Spielhintergrund"],["🎁","Geschenke statt Koffer","8 Bingos · Spielobjekte"],["⛄","Schneemann","10 Bingos · Neuer Charakter und Profilbild"],["👑","Exklusiver Sammlerrahmen","Bonus: nach allen fünf klassischen Belohnungen"],["🎅","Weihnachtsmann-Profilbild","12 Bingos · Profilbild im Spielerkonto"],["❄️","Schneefall in der Lobby","14 Bingos · Animierter Schneeeffekt"],["🏘️","Weihnachtliches Profilbanner","16 Bingos · Profilbanner im Spielerkonto"],["🎅","Weihnachtsmann","18 Bingos · Neuer Charakter"],["🏆","Weihnachts-Champion","20 Bingos · Exklusive Trophäe im Spielerprofil"],["🧊","Frostkartenrahmen","22 Bingos · Eisblauer Premium-Rahmen für gesammelte Karten"],["🌌","Nordlicht-Lobby","24 Bingos · Neuer wählbarer Lobby-Hintergrund"],["✨","Nordstern-Funkeln","26 Bingos · Animierte Funkel-Effekte im Album"],["👑","Königliche Nordpol-Galerie","28 Bingos · Exklusives Gold- und Aurora-Design"],["🏆","Nordpol-Legende","30 Bingos · Legendäre Trophäe in der Spielerlobby"]];const rewardsRoot=document.getElementById('reward-grid');rewards.forEach(([emoji,title,desc],i)=>{const row=document.createElement('div');row.className='reward';const emblem=document.createElement('span');emblem.className='emblem';emblem.textContent=emoji;const details=document.createElement('div');const name=document.createElement('strong');name.textContent=(i<5?(i+1)+'. Freischaltung · ':i===5?'Bonus · ':i+'. Freischaltung · ')+title;const sub=document.createElement('small');sub.textContent=desc;details.append(name,sub);const lock=document.createElement('span');lock.className='lock';lock.textContent='🔒';lock.setAttribute('aria-label','Noch nicht freigeschaltet');row.append(emblem,details,lock);rewardsRoot.append(row)});
+const rewards=[["🦌","Rudolf","2 Bingos · Neuer Charakter"],["❄️","Winterlobby","4 Bingos · Lobby-Hintergrund"],["🎄","Weihnachtsstudio","6 Bingos · Spielhintergrund"],["🎁","Geschenke statt Koffer","8 Bingos · Spielobjekte"],["⛄","Schneemann","10 Bingos · Neuer Charakter und Profilbild"],["👑","Exklusiver Sammlerrahmen","Bonus: nach allen fünf klassischen Belohnungen"],["🎅","Weihnachtsmann-Profilbild","12 Bingos · Profilbild im Spielerkonto"],["❄️","Schneefall in der Lobby","14 Bingos · Animierter Schneeeffekt"],["🏘️","Weihnachtliches Profilbanner","16 Bingos · Profilbanner im Spielerkonto"],["🎅","Weihnachtsmann","18 Bingos · Neuer Charakter"],["🏆","Weihnachts-Champion","20 Bingos · Exklusive Trophäe im Spielerprofil"],["💎","2 Premium-Kartenpakete","22 Bingos · 24 Weihnachtskarten"],["🔨","2 goldene Hämmer","24 Bingos · 2 Goldhämmer für die Eisblöcke"],["🃏","2 Kofferblick-Joker","26 Bingos · 2 Joker für Deal or No Deal"],["🏆","Platinpaket + Goldhammer + Joker","28 Bingos · 1 Platin-Kartenpaket, 1 goldener Hammer, 1 Joker"],["🎡","1 Monsterdrehung","30 Bingos · 1 Ticket für das Monster-Glücksrad"]];const rewardsRoot=document.getElementById('reward-grid');rewards.forEach(([emoji,title,desc],i)=>{const row=document.createElement('div');row.className='reward';const emblem=document.createElement('span');emblem.className='emblem';emblem.textContent=emoji;const details=document.createElement('div');const name=document.createElement('strong');name.textContent=(i<5?(i+1)+'. Freischaltung · ':i===5?'Bonus · ':i+'. Freischaltung · ')+title;const sub=document.createElement('small');sub.textContent=desc;details.append(name,sub);const lock=document.createElement('span');lock.className='lock';lock.textContent='🔒';lock.setAttribute('aria-label','Noch nicht freigeschaltet');row.append(emblem,details,lock);rewardsRoot.append(row)});
 
 const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 async function request(method,path,body){const state=window.SpielOnline?.state?.(),user=state?.status==='online'?state.user:null;if(!user?.getIdToken)throw Error('Bitte mit Online-Profil anmelden.');const token=await user.getIdToken();const response=await fetch(base+'/api/deal-or-no-deal/christmas/'+path,{method,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,cache:'no-store'});const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'SERVER_ERROR');return data}
@@ -494,7 +494,7 @@ function render(data){current=data;renderHammerCollection(data);renderDuplicateE
  for(let i=0;i<64;i++)if(Number(data?.cards?.['christmas-'+String(classicCardNumber(i)).padStart(2,'0')]||0)>0)setCounts[Math.floor(i/16)]++;
  document.getElementById('album-owned-total').textContent=classicCount+' / 64';
  document.getElementById('album-bingo-total').textContent=classicBingos+' / 40';
- const classicRewardIds=['rudolph','winter-lobby','christmas-studio','gift-cases','snowman-profile-avatar','collector-frame','santa-profile-avatar','lobby-snowfall','christmas-profile-banner','santa','christmas-champion','frost-card-frame','aurora-lobby','north-star-dust','royal-north-gallery','north-pole-legend'];
+ const classicRewardIds=['rudolph','winter-lobby','christmas-studio','gift-cases','snowman-profile-avatar','collector-frame','santa-profile-avatar','lobby-snowfall','christmas-profile-banner','santa','christmas-champion','north-premium-2','north-gold-hammers-2','north-jokers-2','north-platinum-combo','north-monster-spin-1'];
  const nextClassicReward=classicRewardIds.indexOf(data?.progress?.nextReward);
  document.getElementById('album-next-reward').textContent=data?.progress?.nextReward
   ?(rewards[nextClassicReward]?.[1]||'Weitere Bingo-Belohnung')
@@ -664,6 +664,30 @@ function setOfflineState(message){
  notice.textContent=message;
  document.querySelectorAll('[data-pack]').forEach(b=>{b.disabled=true;b.textContent='Anmeldung erforderlich'});
 }
+// All five Nordpol milestones are settled atomically on the server; the
+// player sends no claimed reward ID, amount or Bingo count. Re-entry is safe.
+let northPoleClaimBusy=false;
+async function maybeClaimNorthPoleBingos(data){
+ if(northPoleClaimBusy||!Array.isArray(data?.northPolePending)||!data.northPolePending.length)return;
+ if(authState()?.status!=='online'||!authState()?.user?.getIdToken)return;
+ const expectedUid=authState().user.uid;
+ northPoleClaimBusy=true;
+ try{
+  const result=await request('POST','north-pole/claim',{});
+  if(authState()?.user?.uid!==expectedUid)return;
+  if(result.claimed?.length){
+   // Display every already-credited packet with the existing cinematic queue.
+   for(const pack of result.packs||[])openReveal(pack.revealed||[],'real',pack.packId);
+   notice.textContent='🏆 Bingo-Belohnung: '+result.claimed.map(m=>m.name).join(' · ')+' gutgeschrieben!';
+   const latest=await request('GET','me');
+   if(authState()?.user?.uid!==expectedUid)return;
+   render(latest);void maybeClaimHammerBingos(latest);
+   // New cards can complete a further line. The next refresh can claim it.
+  }
+ }catch(error){
+  notice.textContent='⚠️ Bingo-Gutschrift wird beim nächsten Laden erneut geprüft: '+String(error?.message||error);
+ }finally{northPoleClaimBusy=false}
+}
 function load(){
  const state=authState(),uid=String(state?.user?.uid||'');
  if(state.status!=='online'||!uid||!state.user?.getIdToken){
@@ -690,6 +714,7 @@ function load(){
    visibleUid=uid;
    render(data);
    void maybeClaimHammerBingos(data);
+   void maybeClaimNorthPoleBingos(data);
    notice.textContent='Wähle ein Weihnachtspaket.';
    document.getElementById('connection-details').textContent='🟢 Mit dem Weihnachtskonto verbunden.';
   }catch(e){
@@ -709,7 +734,7 @@ function load(){
 function pendingKey(pack){const uid=authState().user?.uid||'guest';return 'deal-christmas-pending-'+uid+'-'+pack}
 function getPurchaseId(pack){const key=pendingKey(pack);let id;try{id=sessionStorage.getItem(key)}catch{}if(!id){id='xmas_'+Date.now()+'_'+Math.random().toString(36).slice(2,14);try{sessionStorage.setItem(key,id)}catch{}}return id}
 function clearPurchaseId(pack){try{sessionStorage.removeItem(pendingKey(pack))}catch{}}
-document.querySelectorAll('[data-pack]').forEach(b=>b.addEventListener('click',async()=>{if(busy)return;const pack=b.dataset.pack;busy=true;if(current)render(current);notice.textContent='🎁 Paket wird geöffnet …';try{const result=await request('POST','open',{packId:pack,requestId:getPurchaseId(pack)});clearPurchaseId(pack);notice.textContent='✨ Paket erfolgreich geöffnet!';const revealed=result.revealed.map(c=>({...c}));openReveal(revealed,'real',pack);try{const latest=await request('GET','me');render(latest);void maybeClaimHammerBingos(latest)}catch{notice.textContent='✨ Kauf erfolgreich. Kontostand wird beim nächsten Laden aktualisiert.'}}catch(e){if(!['Failed to fetch','AbortError','SERVER_ERROR'].includes(e.message))clearPurchaseId(pack);notice.textContent='⚠️ '+(e.message==='INSUFFICIENT_FUNDS'?'Nicht genug Spielgeld.':e.message)+' · Bei Verbindungsproblemen erneut versuchen.'}finally{busy=false;if(current)render(current)}}));
+document.querySelectorAll('[data-pack]').forEach(b=>b.addEventListener('click',async()=>{if(busy)return;const pack=b.dataset.pack;busy=true;if(current)render(current);notice.textContent='🎁 Paket wird geöffnet …';try{const result=await request('POST','open',{packId:pack,requestId:getPurchaseId(pack)});clearPurchaseId(pack);notice.textContent='✨ Paket erfolgreich geöffnet!';const revealed=result.revealed.map(c=>({...c}));openReveal(revealed,'real',pack);try{const latest=await request('GET','me');render(latest);void maybeClaimHammerBingos(latest);void maybeClaimNorthPoleBingos(latest)}catch{notice.textContent='✨ Kauf erfolgreich. Kontostand wird beim nächsten Laden aktualisiert.'}}catch(e){if(!['Failed to fetch','AbortError','SERVER_ERROR'].includes(e.message))clearPurchaseId(pack);notice.textContent='⚠️ '+(e.message==='INSUFFICIENT_FUNDS'?'Nicht genug Spielgeld.':e.message)+' · Bei Verbindungsproblemen erneut versuchen.'}finally{busy=false;if(current)render(current)}}));
 function renderDuplicateExchange(data){
  const stock=data?.duplicates||{};
  const available=Number(stock.available)||0,tickets=Number(stock.tickets)||0;
@@ -844,7 +869,7 @@ monsterSpinStart.addEventListener('click',async()=>{
   monsterShowPrize(spin);
   // Exactly one GET after a confirmed win: refresh accounts and potential Bingo rewards.
   try{
-   const latest=await request('GET','me');render(latest);void maybeClaimHammerBingos(latest);
+   const latest=await request('GET','me');render(latest);void maybeClaimHammerBingos(latest);void maybeClaimNorthPoleBingos(latest);
   }catch(_){monsterStatus.textContent='✅ Gewinn gutgeschrieben. Bei Bedarf die Seite aktualisieren.'}
  }catch(error){
   if(!committed&&!['Failed to fetch','AbortError','SERVER_ERROR'].includes(error.message))clearMonsterSpinRequestId();
