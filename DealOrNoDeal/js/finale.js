@@ -25,6 +25,7 @@ function replayFinaleSequence(){
  startFinaleCinema();
 }
 window.addEventListener('deal-replay-finale-sequence',replayFinaleSequence);
+$('finale-watch-again').addEventListener('click',replayFinaleSequence);
 // Ordinary restarts must wait for both shared award stages (ties need no winner wheel).
 function finaleBonusesComplete(game){
  if(!game||game.phase!=='final')return false;
