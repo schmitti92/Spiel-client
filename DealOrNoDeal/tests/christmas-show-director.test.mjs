@@ -105,8 +105,9 @@ test('confirmed award is held through the package and its own transition, then B
 
 test('next act stays hidden during individual card reveals and appears only in the finale',()=>{
  const h=harness();
- h.elements['reveal-summary'].hidden=true;
  assert.equal(showPack(h),true);
+ // The pack presenter initializes its summary; mark it hidden until the last card.
+ h.elements['reveal-summary'].hidden=true;
  h.director.claimStarted();
  h.director.awardQueued(1);
  h.director.claimSettled();
