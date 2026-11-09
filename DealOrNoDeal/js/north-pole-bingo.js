@@ -8,11 +8,11 @@
   [0,5,10,15],[3,6,9,12]
  ]);
  const MILESTONES=Object.freeze([
-  {at:22,id:'frost-card-frame',icon:'🧊',name:'Frostrahmen'},
-  {at:24,id:'aurora-lobby',icon:'🌌',name:'Nordlicht-Lobby'},
-  {at:26,id:'north-star-dust',icon:'✨',name:'Nordstern-Funkeln'},
-  {at:28,id:'royal-north-gallery',icon:'👑',name:'Königliche Galerie'},
-  {at:30,id:'north-pole-legend',icon:'🏆',name:'Nordpol-Legende'}
+  {at:22,id:'north-premium-2',icon:'💎',name:'2 Premium-Kartenpakete'},
+  {at:24,id:'north-gold-hammers-2',icon:'🔨',name:'2 goldene Hämmer'},
+  {at:26,id:'north-jokers-2',icon:'🃏',name:'2 Kofferblick-Joker'},
+  {at:28,id:'north-platinum-combo',icon:'🏆',name:'1 Joker + 1 Goldhammer + 1 Platinpaket'},
+  {at:30,id:'north-monster-spin-1',icon:'🎡',name:'1 Monsterdrehung'}
  ]);
 
  const CLASSIC_BOARD_MILESTONES=Object.freeze([
@@ -36,6 +36,7 @@
  function snapshot(cards={},progress={}){
   const owned=Array.from({length:16},(_,i)=>Number(cards?.[cardId(i)]||0)>0);
   const received=new Set(Array.isArray(progress?.rewards)?progress.rewards:[]);
+  const paid=new Set(Array.isArray(progress?.northPoleClaimed)?progress.northPoleClaimed:[]);
   return {
    owned,
    count:owned.filter(Boolean).length,
@@ -44,7 +45,7 @@
     const have=positions.filter(i=>owned[i]).length;
     return {index,positions,have,missing:positions.filter(i=>!owned[i]).map(i=>65+i),complete:have===4};
    }),
-   milestones:MILESTONES.map(m=>({...m,unlocked:received.has(m.id)})),
+   milestones:MILESTONES.map(m=>({...m,unlocked:received.has(m.id),claimed:paid.has(m.id)})),
    classicMilestones:CLASSIC_BOARD_MILESTONES.map(board=>board.map(m=>({...m,unlocked:received.has(m.id)})))
   };
  }
@@ -65,8 +66,8 @@
  function updateMilestoneChip(chip,reward){
   if(!chip)return;
   chip.classList.toggle('unlocked',reward.unlocked);
-  chip.querySelector('.north-milestone-status').textContent=reward.unlocked?'✅':'🔒';
-  chip.setAttribute('aria-label',reward.name+': '+(reward.unlocked?'freigeschaltet':'noch gesperrt, ab '+reward.at+' Gesamt-Bingos'));
+  chip.querySelector('.north-milestone-status').textContent=reward.claimed?'✅':reward.unlocked?'🎁':'🔒';
+  chip.setAttribute('aria-label',reward.name+': '+(reward.claimed?'gutgeschrieben':reward.unlocked?'Freigeschaltet, Gutschrift läuft':'noch gesperrt, ab '+reward.at+' Gesamt-Bingos'));
  }
 
  function mount(){
@@ -121,7 +122,7 @@
  }
  function render(data={}){
   if(!mount())return;
-  last=snapshot(data?.cards||{},data?.progress||{});
+  last=snapshot(data?.cards||{},{...(data?.progress||{}),northPoleClaimed:data?.northPoleClaimed||[]});
   buttons.forEach((button,i)=>{
    const line=last.lines[i];
    button.querySelector('strong').textContent=line.complete?'✓ 4/4':line.have+'/4';
