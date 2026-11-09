@@ -1,0 +1,117 @@
+/* Weihnachts-Show: freigelegtes Bild vor dem bereits serverseitig vergebenen Preis.
+   Visual only: no Firestore, no server requests, no interaction with uncleared tiles. */
+body.christmas-event-ice .v44-big-reveal{
+ position:fixed;inset:0;z-index:10040;padding:clamp(10px,2vw,22px);
+ display:grid;place-items:center;overflow-y:auto;
+ background:radial-gradient(ellipse at 52% 30%,#284c6be0,#081222f5 76%);
+ backdrop-filter:blur(8px);
+}
+body.christmas-event-ice .v44-big-reveal-card{
+ --gold:#ffdf99;--ice:#bcf2ff;position:relative;isolation:isolate;overflow:hidden;
+ width:min(760px,96vw);max-height:min(96dvh,1000px);
+ display:flex;flex-direction:column;align-items:center;
+ padding:clamp(13px,2.3vw,25px);
+ color:#fff6db;text-align:center;overflow-y:auto;
+ border:3px solid #edc87c;border-radius:clamp(17px,2.6vw,26px);
+ background:radial-gradient(ellipse at 50% 5%,#497297 0%,transparent 50%),linear-gradient(155deg,#152b47,#0c2035 65%,#203c56);
+ box-shadow:0 0 0 1px #fff2be70,0 0 68px #8ddbff66,0 18px 70px #030a17,
+ inset 0 0 34px #b4dffe1f;
+ animation:v44-grand-enter .72s cubic-bezier(.19,1,.25,1) both;
+}
+body.christmas-event-ice .v44-big-reveal-card:before{
+ content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+ background:repeating-conic-gradient(from 0deg at 50% 25%,#ffe8a209 0deg 12deg,transparent 12deg 24deg);
+ animation:v44-grand-rotate 36s linear infinite;
+}
+body.christmas-event-ice .v44-big-reveal-card:after{
+ content:'❄';position:absolute;right:12px;top:6px;font-size:clamp(48px,10vw,84px);
+ color:#f9f5dc16;pointer-events:none;
+}
+body.christmas-event-ice .v44-big-reveal-kicker,
+body.christmas-event-ice .v44-big-reveal-number,
+body.christmas-event-ice .v44-big-reveal-card h2,
+body.christmas-event-ice .v44-big-reveal-card p,
+body.christmas-event-ice .v44-big-reveal-card button{
+ position:relative;z-index:2;
+}
+body.christmas-event-ice .v44-big-reveal-kicker{
+ color:#ffdc9f;font:800 clamp(9px,1.4vw,12px)/1.25 system-ui,sans-serif;
+ letter-spacing:.16em;margin:4px 0 8px;
+}
+body.christmas-event-ice .v44-big-reveal-card h2{
+ margin:0;color:#ffdf9a;font:900 clamp(24px,3.4vw,39px)/1.12 Georgia,serif;
+ text-shadow:0 3px 12px #060e1e,0 0 24px #f8c36270;
+}
+body.christmas-event-ice .v44-big-reveal-number{
+ margin:8px 0 13px;font:850 clamp(12px,1.6vw,17px)/1.35 system-ui,sans-serif;
+ color:#d1f4ff;
+}
+body.christmas-event-ice .v44-big-reveal-frame{
+ position:relative;z-index:2;width:min(100%,580px);min-height:100px;
+ padding:clamp(5px,1.1vw,11px);border:3px ridge #ffe19b;
+ border-radius:17px;background:linear-gradient(130deg,#ffffef,#a7d6eb 15%,#cb9b50 90%,#fff6ca);
+ box-shadow:0 0 0 3px #5f87a3,0 12px 30px #000b,0 0 35px #ffda8060;
+ animation:v44-grand-picture .95s cubic-bezier(.13,1,.2,1) .18s both;
+}
+body.christmas-event-ice .v44-big-reveal-frame img{
+ display:block;width:100%;max-height:min(53dvh,465px);aspect-ratio:auto;
+ object-fit:contain;border-radius:10px;background:#0b2334;box-shadow:inset 0 0 14px #0006;
+}
+body.christmas-event-ice .v44-big-reveal-sparkle{
+ position:absolute;inset:auto 12px 6px;z-index:2;
+ font:900 clamp(16px,3vw,27px)/1 Georgia,serif;color:#fff5cd;
+ text-shadow:0 0 12px #ffcf7a,0 0 22px #72d7ff;
+ letter-spacing:clamp(6px,3vw,18px);pointer-events:none;
+ animation:v44-grand-shimmer 1.7s ease-in-out infinite alternate;
+}
+body.christmas-event-ice .v44-big-reveal-card p{
+ margin:12px 0 13px;max-width:570px;color:#deeff7;
+ font:600 clamp(11px,1.25vw,14px)/1.4 system-ui,sans-serif;
+}
+body.christmas-event-ice #v44-big-reveal-continue{
+ display:block;min-height:46px;min-width:min(100%,260px);
+ border-radius:12px;border:2px solid #fff0bb;
+ padding:10px 19px;color:#311b07;
+ background:linear-gradient(150deg,#fff4c5,#f1cc76 55%,#bd802e);
+ box-shadow:0 4px 15px #0009,0 0 17px #ffca696e;
+ font:900 clamp(13px,1.6vw,17px) system-ui,sans-serif;cursor:pointer;
+ transition:transform .17s ease,filter .17s ease;
+}
+body.christmas-event-ice #v44-big-reveal-continue:hover{filter:brightness(1.1);transform:translateY(-2px)}
+body.christmas-event-ice #v44-big-reveal-continue:focus-visible{outline:3px solid #fff;outline-offset:3px}
+body.christmas-event-ice .v44-big-reveal-snow{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+body.christmas-event-ice .v44-big-reveal-snow i{
+ position:absolute;top:-20px;left:calc((var(--n)*17% + 11%) - 95% * (var(--n)/12));
+ font-size:clamp(13px,2.1vw,21px);width:16px;height:16px;
+ animation:v44-grand-snow calc(3.8s + (var(--n)*.29s)) linear infinite;
+ animation-delay:calc(var(--n)*-.44s);opacity:.7;
+}
+body.christmas-event-ice .v44-big-reveal-snow i:after{content:'❄';color:#e9f7ff;text-shadow:0 0 9px #addfff}
+@keyframes v44-grand-enter{
+ from{opacity:0;transform:scale(.84) translateY(25px);filter:blur(3px)}
+ to{opacity:1;transform:scale(1) translateY(0);filter:blur(0)}
+}
+@keyframes v44-grand-picture{
+ from{opacity:0;transform:translateY(27px) scale(.79) rotate(-2deg)}
+ to{opacity:1;transform:translateY(0) scale(1) rotate(0deg)}
+}
+@keyframes v44-grand-shimmer{from{opacity:.45;filter:brightness(.9)}to{opacity:1;filter:brightness(1.4)}}
+@keyframes v44-grand-rotate{to{transform:rotate(360deg)}}
+@keyframes v44-grand-snow{from{opacity:0;transform:translateY(-10px) rotate(0)}
+ 15%{opacity:.85}85%{opacity:.72}to{opacity:0;transform:translateY(min(90dvh,700px)) rotate(270deg)}}
+@media(max-width:650px){
+ body.christmas-event-ice .v44-big-reveal-card{padding:11px}
+ body.christmas-event-ice .v44-big-reveal-frame img{max-height:47dvh}
+ body.christmas-event-ice .v44-big-reveal-kicker{letter-spacing:.07em}
+ body.christmas-event-ice .v44-big-reveal-card p{margin:9px 0}
+}
+@media(prefers-reduced-motion:reduce){
+ body.christmas-event-ice .v44-big-reveal-card,
+ body.christmas-event-ice .v44-big-reveal-frame,
+ body.christmas-event-ice .v44-big-reveal-snow i,
+ body.christmas-event-ice .v44-big-reveal-sparkle,
+ body.christmas-event-ice .v44-big-reveal-card:before{
+ animation:none!important;transition:none!important;
+ }
+ body.christmas-event-ice .v44-big-reveal-snow{display:none}
+}
