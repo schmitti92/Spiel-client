@@ -136,6 +136,6 @@ test('UI displays only the private opponent list and uses dynamic 29-case capaci
  assert.match(js,/OWN_CASE_FORBIDDEN/);
  assert.match(js,/NO_OTHER_PLAYER_CASES/);
  assert.match(js,/peek-results-grid/);
- assert.match(html,/peek-joker\.js\?v=20261109-29cases-10m/);
+ assert.match(html,/peek-joker\.js\?v=20261110-opponents-all-v1/);
  assert.doesNotMatch(js,/eur\(data\.amount\)/);
 });
