@@ -242,7 +242,8 @@ body[data-xmas-effects=soft] .hub-art .star-gift,
 body[data-xmas-effects=soft] .hub-art .hammer{
  animation:none!important;
 }
-body[data-xmas-effects=off] :is(.event-hub-top::after,.hub-art::after){display:none!important}
+body[data-xmas-effects=off] .event-hub-top::after,
+body[data-xmas-effects=off] .hub-art::after{display:none!important}
 body[data-xmas-effects=off] .hub-intro::before,
 body[data-xmas-effects=off] .hub-intro::after,
 body[data-xmas-effects=off] .hub-art .star-gift,
