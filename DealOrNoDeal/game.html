@@ -181,6 +181,7 @@
  const spinButton=document.getElementById('cent-wheel-spin');let pendingSpin=null,activeWheelReward=null,activeWheelKind=null,finalWheelStarted=false;
  function openReward(reward,kind,uid){
   const isFinal=kind==='final';box.classList.toggle('final-dual-active',isFinal);document.getElementById('final-dual-hammer').hidden=!isFinal;activeWheelReward=reward;activeWheelKind=kind;finalWheelStarted=false;
+  if(isFinal)window.DealFinalDualWheel?.reset(reward);
   sequence++;const current=sequence;
   box.dataset.reward=reward.id;box.dataset.stage='wheel';box.hidden=false;close.disabled=true;close.hidden=reward.uid!==uid;
   // A missed socket event or disconnected winner must never trap spectators.
@@ -278,19 +279,45 @@
   pendingSpin=(startedAt)=>{
    if(sequence!==current||box.hidden||finalWheelStarted)return;
    finalWheelStarted=true;
-   spinButton.disabled=true;spinButton.hidden=true;wheelStatus.textContent='🎡 Das Rad dreht sich …';
-   if(reduced){wheelStatus.textContent='🎉 '+(reward.packName||packNames[pack]);showCards();return}
-   // Align to the server start time; a late spectator catches up automatically.
+   spinButton.disabled=true;spinButton.hidden=true;
+   wheelStatus.textContent='🎡 Das Kartenrad dreht sich – das Hammerrad folgt automatisch …';
+   // All viewers derive the ceremony timeline from the server timestamp.
    const elapsed=Math.max(0,Date.now()+serverClockOffset-(startedAt||Date.now()+serverClockOffset));
-   const duration=Math.max(150,6800-elapsed);
-   if(elapsed>=7800){wheel.style.transition='none';wheel.style.transform='rotate('+angle+'deg)';showCards();return}
-   requestAnimationFrame(()=>requestAnimationFrame(()=>{
+   const revealAfter=7800;
+   const nextWheel=()=>{
     if(sequence!==current||box.hidden)return;
-    wheel.style.transition='transform '+duration+'ms cubic-bezier(.12,.82,.12,1)';
-    wheel.style.transform='rotate('+angle+'deg)';
-   }));
-   setTimeout(()=>{if(sequence!==current||box.hidden)return;wheelStatus.textContent='🎉 GEWONNEN: '+(reward.packName||packNames[pack]||'Weihnachtspaket')+'!';box.dataset.stage='result';},Math.max(0,6800-elapsed));
-   setTimeout(()=>{if(sequence===current&&!box.hidden)showCards()},Math.max(0,7800-elapsed));
+    if(!isFinal){showCards();return}
+    wheelStatus.textContent='🎁 GEWONNEN: '+(reward.packName||packNames[pack])+' · 🔨 Jetzt folgt das Hammerrad!';
+    const dual=window.DealFinalDualWheel;
+    if(!dual){
+     wheelStatus.textContent='⚠️ Hammerrad konnte nicht geladen werden. Bitte Seite aktualisieren.';
+     return;
+    }
+    dual.activate(reward,()=>{
+     if(sequence===current&&!box.hidden){
+      wheelStatus.textContent='🎉 Beide Auslosungen abgeschlossen!';
+      showCards();
+     }
+    },serverClockOffset);
+   };
+   if(elapsed>=revealAfter){
+    wheel.style.transition='none';wheel.style.transform='rotate('+angle+'deg)';
+    nextWheel();return;
+   }
+   if(reduced){
+    wheel.style.transition='none';wheel.style.transform='rotate('+angle+'deg)';
+   }else{
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+     if(sequence!==current||box.hidden)return;
+     wheel.style.transition='transform '+Math.max(150,6800-elapsed)+'ms cubic-bezier(.12,.82,.12,1)';
+     wheel.style.transform='rotate('+angle+'deg)';
+    }));
+   }
+   setTimeout(()=>{if(sequence===current&&!box.hidden){
+    wheelStatus.textContent='🎁 GEWONNEN: '+(reward.packName||packNames[pack])+'!';
+    box.dataset.stage='result';
+   }},Math.max(0,6800-elapsed));
+   setTimeout(nextWheel,Math.max(0,revealAfter-elapsed));
   };
 
  }
@@ -340,8 +367,8 @@
   const completedFinal=activeWheelKind==='final'&&finalWheelStarted&&activeWheelReward?.gameId;
   if(completedFinal)sessionStorage.setItem('final-wheel-complete:'+completedFinal,'yes');
   document.getElementById('cent-special-overlay').hidden=true;
-  sequence++;pendingSpin=null;activeWheelReward=null;activeWheelKind=null;finalWheelStarted=false;box.hidden=!completedFinal;box.dataset.reward='';delete box.dataset.stage;
-  if(completedFinal){window.__dealFinalWheelHandoff=completedFinal;window.dispatchEvent(new Event('deal-final-wheel-complete'));window.__dealFinalWheelHandoff=null;}
+  sequence++;pendingSpin=null;activeWheelReward=null;activeWheelKind=null;finalWheelStarted=false;box.hidden=true;box.classList.remove('final-dual-active');box.dataset.reward='';delete box.dataset.stage;
+  if(completedFinal)window.dispatchEvent(new Event('deal-final-wheel-complete'));
   lastRewardProbeKey='';checkRewards();
  }
  async function continueReward(){
@@ -487,5 +514,5 @@ video.addEventListener('ended',()=>{video.pause()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){video.pause();stopLoop()}else syncBankerVideo()});
 syncBankerVideo();
 })();
-</script><script src="./js/peek-joker.js?v=20261108a"></script><script src="./js/final-hammer-wheel.js?v=20261109-one-window-v2"></script><script src="../site-global-controls.js?v=20261109-global-1"></script>
+</script><script src="./js/peek-joker.js?v=20261108a"></script><link rel="stylesheet" href="./css/final-dual-wheel.css?v=20261109-double-stage-v1"><script src="./js/final-hammer-wheel.js?v=20261109-double-stage-v1"></script><script src="../site-global-controls.js?v=20261109-global-1"></script>
 </body></html>
