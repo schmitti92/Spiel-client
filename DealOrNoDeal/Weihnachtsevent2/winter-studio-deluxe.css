@@ -539,3 +539,14 @@ body.christmas-event-ice .v44-celebration-milestone:has([data-milestone="70"]){
  body.christmas-event-ice .v44-milestone-rays,
  body.christmas-event-ice .v44-milestone-treasure img{animation:none!important}
 }
+
+/* A completed picture must not look like a broken hammer controller. */
+body.christmas-event-ice #ice-next-board{
+ display:block;width:min(100%,570px);min-height:49px;
+ padding:11px 15px;margin:12px auto 4px;border:2px solid #fff0ac;
+ border-radius:12px;background:linear-gradient(145deg,#fff1bc,#e2a746 69%,#ae6f2c);
+ color:#321c08;font:900 clamp(13px,1.35vw,17px)/1.25 system-ui,sans-serif;
+ box-shadow:0 0 17px #ffcc6494,0 6px 19px #0008;cursor:pointer;
+}
+body.christmas-event-ice #ice-next-board:focus-visible{outline:3px solid #fff;outline-offset:3px}
+body.christmas-event-ice #ice-next-board:disabled{opacity:.62;cursor:wait}
