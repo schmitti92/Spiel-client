@@ -200,7 +200,17 @@ function render(){
  root.querySelector('#v44-prev').onclick=()=>{galleryPage=Math.max(0,galleryPage-1);render()};
  root.querySelector('#v44-nextpage').onclick=()=>{galleryPage=Math.min(11,galleryPage+1);render()};
  root.querySelectorAll('[data-preview]').forEach(b=>b.onclick=()=>{const n=Number(b.dataset.preview);if(n<=state.completed){showAllGallery=true;largeGalleryImage=n;render();return}if(n===number){message(number>=23?'🧊 Ab Bild 23 wird das Bild erst enthüllt, wenn alle '+tileCount+' Eisfelder entfernt wurden.':'❄️ Das aktuelle Bild wird erst nach dem Sternfund vollständig enthüllt.');return}message(n<=state.completed?'🖼️ Bild '+n+' wurde bereits abgeschlossen. Dein aktuelles Bild bleibt '+number+'.':'🔒 Bild '+n+' wird erst später freigeschaltet.')});
- root.querySelectorAll('[data-hammer]').forEach(b=>b.onclick=()=>{window.iceHammer=b.dataset.hammer;render()});
+ // Hammer selection is presentation-only: retain the ice board, decoded
+ // images and ongoing effects instead of rebuilding the entire event DOM.
+ root.querySelectorAll('[data-hammer]').forEach(b=>b.onclick=()=>{
+  if(busy)return;
+  window.iceHammer=b.dataset.hammer;
+  root.querySelectorAll('[data-hammer]').forEach(choice=>{
+   const selected=choice.dataset.hammer===window.iceHammer;
+   choice.classList.toggle('selected',selected);
+   choice.setAttribute('aria-pressed',String(selected));
+  });
+ });
  root.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>{
   if(busy||b.disabled)return;
   const hammer=window.iceHammer||'single';
