@@ -12,8 +12,8 @@ const mockState=(completed,finished)=>({
  freeHammers:{single:0,double:0,lucky:0},
  peekJokers:1,goldenHammerGift2026:true
 });
-async function boot(state){
- const buttons=new Map();
+async function boot(state,{onPost=null}={}){
+ const buttons=new Map(),tiles=new Map(),postActions=[];
  const status={textContent:'',hidden:false};
  let requests=0;
  const root={
@@ -26,7 +26,16 @@ async function boot(state){
    if(!buttons.has(id))buttons.set(id,{disabled:false,textContent:'',onclick:null});
    return buttons.get(id);
   },
-  querySelectorAll(){return[]}
+  querySelectorAll(selector){
+   if(selector!=='[data-tile]')return [];
+   const matches=[...this.innerHTML.matchAll(/<button data-tile="(\\d+)"([^>]*)>/g)];
+   tiles.clear();
+   return matches.map(match=>{
+    const tile={dataset:{tile:match[1]},disabled:/\\bdisabled\\b/.test(match[2]),onclick:null};
+    tiles.set(Number(match[1]),tile);
+    return tile;
+   });
+  }
  };
  const user={uid:'test-player',getIdToken:async()=>'mock-token'};
  const context={
@@ -44,8 +53,12 @@ async function boot(state){
   sessionStorage:{getItem:()=>null,setItem(){},removeItem(){}},
   fetch:async(_url,request)=>{
    requests++;
-   assert.equal(request.method,'GET','only the initial existing state is loaded');
-   return {ok:true,json:async()=>({ok:true,started:true,state})};
+   if(request.method==='GET')return {ok:true,json:async()=>({ok:true,started:true,state})};
+   assert.equal(request.method,'POST');
+   const body=JSON.parse(request.body);
+   postActions.push(body);
+   assert.ok(onPost,'no unexpected POST requests');
+   return {ok:true,json:async()=>onPost(body)};
   },
   crypto:{randomUUID:()=> 'test-action-id-0001'},
   AbortController,
@@ -55,7 +68,7 @@ async function boot(state){
  runInNewContext(source,context);
  // The existing boot sequence fetches once, then renders on resolution.
  for(let i=0;i<12;i++)await new Promise(resolve=>setTimeout(resolve,0));
- return {root,buttons,get requests(){return requests}};
+ return {root,buttons,tiles,postActions,get requests(){return requests}};
 }
 test('picture 15 has 25 ice tiles and awaits the confirmed star reveal',async()=>{
  const play=await boot(mockState(14,false));
@@ -86,4 +99,28 @@ test('picture 70 completion is also recovered with a large image',async()=>{
  assert.match(play.root.innerHTML,/Bild 70 von 70 abgeschlossen/);
  assert.match(play.root.innerHTML,/Alle Eisblöcke entfernt!/);
  assert.equal(play.requests,1);
+});
+
+test('newly loaded Christmas ice fields are clickable and submit a strike to the server',async()=>{
+ const start=mockState(14,false);
+ // Two unopened fields. This tests an actual click rather than just searching the HTML.
+ start.opened=Array.from({length:23},(_,i)=>i);
+ const next={...start,opened:[...start.opened,23]};
+ const play=await boot(start,{onPost:body=>{
+  assert.equal(body.type,'strike');
+  assert.equal(body.index,23);
+  assert.equal(body.hammer,'single');
+  assert.equal(body.expectedPicture,15);
+  return {ok:true,state:next,result:{targets:[23],found:false,gift:null,completed:14}};
+ }});
+ assert.equal(play.requests,1,'initial load only uses one GET');
+ const tile=play.tiles.get(23);
+ assert.ok(tile,'unopened field must exist');
+ assert.equal(tile.disabled,false,'field must be active as soon as GET finishes');
+ assert.equal(typeof tile.onclick,'function','click listener must be attached');
+ tile.onclick();
+ for(let i=0;i<10;i++)await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(play.postActions.length,1,'click must send exactly one authorized strike');
+ assert.equal(play.requests,2,'one GET and one POST, no extra reads');
+ assert.match(play.root.innerHTML,/24\/25 Eisfelder/);
 });
