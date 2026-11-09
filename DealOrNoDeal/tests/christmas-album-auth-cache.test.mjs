@@ -51,6 +51,20 @@ function fixture(){
  return {ctx,cards,rewards,requests,renders,element,setState:next=>{state=next}};
 }
 
+
+test('Christmas album loads a valid profile configuration and auth before the gallery',()=>{
+ const config='<script src="../profile-config.js"></script>';
+ const auth='<script src="../profile-auth.js"></script>';
+ assert.ok(page.includes(config),'Firebase config must have a correctly quoted src');
+ assert.ok(page.includes(auth),'profile-auth script must load after config');
+ assert.equal(page.split(config).length-1,1,'config must not be duplicated');
+ assert.equal(page.split(auth).length-1,1,'profile-auth must not be duplicated');
+ assert.ok(page.indexOf(config)<page.indexOf(auth));
+ assert.ok(page.indexOf(auth)<page.indexOf('const cards=['));
+ assert.doesNotMatch(page,/src="[^"]+\.js'\s*>/,'stray quote invalidates the browser script tag');
+ assert.match(page,/window\.addEventListener\('spielonline-change',load\)/);
+});
+
 test('concurrent requests for the same profile share one Firestore-backed GET',async()=>{
  const fx=fixture();
  const first=fx.ctx.load(),second=fx.ctx.load();
