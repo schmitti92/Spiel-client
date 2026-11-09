@@ -37,6 +37,9 @@
   const owned=Array.from({length:16},(_,i)=>Number(cards?.[cardId(i)]||0)>0);
   const received=new Set(Array.isArray(progress?.rewards)?progress.rewards:[]);
   const paid=new Set(Array.isArray(progress?.northPoleClaimed)?progress.northPoleClaimed:[]);
+  // A legacy Bingo-22 claim may be recorded before its Premium vouchers were
+  // issued. Keep the prize pending until the server confirms the backfill.
+  const pending=new Set(Array.isArray(progress?.northPolePending)?progress.northPolePending:[]);
   return {
    owned,
    count:owned.filter(Boolean).length,
@@ -45,7 +48,7 @@
     const have=positions.filter(i=>owned[i]).length;
     return {index,positions,have,missing:positions.filter(i=>!owned[i]).map(i=>65+i),complete:have===4};
    }),
-   milestones:MILESTONES.map(m=>({...m,unlocked:received.has(m.id),claimed:paid.has(m.id)})),
+   milestones:MILESTONES.map(m=>({...m,unlocked:received.has(m.id),claimed:paid.has(m.id)&&!pending.has(m.id)})),
    classicMilestones:CLASSIC_BOARD_MILESTONES.map(board=>board.map(m=>({...m,unlocked:received.has(m.id)})))
   };
  }
@@ -122,7 +125,7 @@
  }
  function render(data={}){
   if(!mount())return;
-  last=snapshot(data?.cards||{},{...(data?.progress||{}),northPoleClaimed:data?.northPoleClaimed||[]});
+  last=snapshot(data?.cards||{},{...(data?.progress||{}),northPoleClaimed:data?.northPoleClaimed||[],northPolePending:data?.northPolePending||[]});
   buttons.forEach((button,i)=>{
    const line=last.lines[i];
    button.querySelector('strong').textContent=line.complete?'✓ 4/4':line.have+'/4';
