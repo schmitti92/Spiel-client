@@ -322,7 +322,7 @@
    'images-33.jpeg'
   ];
   const gameCardArt=card=>{
-   const match=/^christmas-(\\d{2})$/.exec(String(card?.id||''));
+   const match=/^christmas-(\d{2})$/.exec(String(card?.id||''));
    const index=match?Number(match[1])-1:-1;
    if(index<0||index>=christmasArt.length)return null;
    return (index<32?'assets/weihnachts_event/':'Weihnachtsevent2/Weihnachtsbilder/')+christmasArt[index];
