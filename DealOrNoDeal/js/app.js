@@ -53,9 +53,10 @@ $('actions').replaceChildren();$('final-extra-actions')?.replaceChildren();if(g.
  const replay=button('🎬 Finale komplett wiederholen',()=>window.dispatchEvent(new Event('deal-replay-finale-sequence')));
  replay.disabled=false;extraActions.append(replay);
  const finish=button('✅ Zur Lobby ohne weiteren Bonus',()=>{
-  if(!confirm('Die aktuelle Runde mit dem bereits ermittelten Gewinner beenden und zur Lobby zurückkehren? Das Glücksrad wird übersprungen. Die gespeicherten Ergebnisse bleiben unverändert.'))return;
+  if(!confirm('Zur Lobby zurückkehren? Noch offene Karten- und Hammerauslosungen bleiben ausstehend und können bei einer Rückkehr zur Partie fortgesetzt werden.'))return;
+  // Leaving the room is not proof that the shared card and hammer awards finished.
+  // Do not poison the completion flag: players must still be able to resume a pending wheel.
   sessionStorage.setItem('finale-watched:'+String(g.id)+':finale','yes');
-  sessionStorage.setItem('final-wheel-complete:'+g.id,'yes');
   location.assign('lobby.html?room='+encodeURIComponent(code||''));
  });
  finish.disabled=false;extraActions.append(finish);
