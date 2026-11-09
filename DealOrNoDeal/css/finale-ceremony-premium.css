@@ -260,3 +260,13 @@
  #finale-cinema .finale-vault-value,
  #finale-cinema .finale-vault-inner-caption{transition:none!important}
 }
+
+/* Replay the local ceremony without replaying server actions or winner credits. */
+#final-show .finale-watch-again{
+ border:2px solid #d4be82;
+ background:linear-gradient(135deg,#233851,#0d1d30);
+ color:#fff0c4;font-weight:850;
+ box-shadow:0 3px 14px #0007;
+}
+#final-show .finale-watch-again:hover{filter:brightness(1.15)}
+#final-show .finale-watch-again:focus-visible{outline:3px solid #ffe19b;outline-offset:3px}
