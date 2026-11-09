@@ -94,7 +94,7 @@ studioCommentLines[13].bankerVeryBad.push(...["Das ist kein Angebot, das ist ein
 /* Jan Schlappen: eigenständige, norddeutsch-trockene Originaldialoge für Koffer und Banker. */
 studioCommentLines[14]={
  "name": "Jan Schlappen",
- "image": "jan-schlappen.svg",
+ "image": "jan-schlappen.webp",
  "oneCent": [
   "Moin oder wat! Ein Cent? Dafür kriegste ja nich mal 'ne Tüte Luft.",
   "Ein Cent weg. Herrlich! Da kannste den Banker gleich mal winken lassen.",
