@@ -31,3 +31,95 @@ body.north-aurora-active .hero,body.north-aurora-active .grid>.panel{box-shadow:
 #north-pole-lobby-trophy:not([hidden]){display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border:1px solid #ffea9e;border-radius:30px;background:#192c45dd;color:#ffeba0;font-size:clamp(10px,.95vw,15px);font-weight:900;box-shadow:0 0 15px #ffda8055}
 #north-pole-lobby-trophy[hidden]{display:none!important}
 @media(prefers-reduced-motion:reduce){body.has-north-star-dust #event-album .card.owned::before{animation:none!important}}
+
+/* Nordpol-Bingo-Kompass: statuses sit beside the correct four rows, directly below
+   their four columns, and then below for both diagonals. Zero server requests. */
+body.christmas-event-main[data-view="album"] #event-album .north-bingo-dashboard{
+ position:relative;display:grid;gap:10px;min-width:0;
+ padding:clamp(7px,.8vw,11px);border:1px solid #a0efff63;border-radius:14px;
+ background:radial-gradient(ellipse at 40% 0%,#58d8e01c,transparent 68%),#04162792;
+}
+body.christmas-event-main[data-view="album"] #event-album .north-bingo-status{
+ display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+ gap:7px;padding:6px 8px;border-radius:9px;background:#08293eaa;
+ border:1px solid #6bc5d44c;
+}
+#event-album .north-bingo-status span{font:800 clamp(9px,.77vw,11px)/1.3 system-ui;color:#a3eee9;letter-spacing:.04em}
+#event-album .north-bingo-status strong{font:900 clamp(10px,.9vw,13px)/1.2 system-ui;color:#ffe5ac}
+body.christmas-event-main[data-view="album"] #event-album .north-grid-layout{
+ display:grid!important;grid-template-columns:minmax(0,1fr) clamp(43px,6vw,65px);
+ grid-template-rows:auto auto;grid-template-areas:"board rows" "columns .";
+ gap:clamp(4px,.6vw,8px);align-items:stretch;min-width:0;
+}
+body.christmas-event-main[data-view="album"] #event-album #album-grid-third{grid-area:board;align-self:stretch}
+#event-album .north-bingo-rows{
+ grid-area:rows;display:grid;grid-template-rows:repeat(4,minmax(0,1fr));
+ gap:clamp(4px,.6vw,8px);min-height:0;
+}
+#event-album .north-bingo-columns{
+ grid-area:columns;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:clamp(4px,.6vw,8px);
+}
+#event-album .north-bingo-diagonals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#event-album .north-bingo-chip{
+ appearance:none;min-width:0;min-height:34px;
+ display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px;
+ padding:4px 2px;cursor:pointer;text-align:center;
+ border:1px solid #75bdcb91;border-radius:9px;color:#d0eef8;
+ background:linear-gradient(145deg,#123549e8,#0a2239ed);
+ box-shadow:inset 0 1px #ffffff17;
+ font-family:system-ui,sans-serif;transition:background .18s,border-color .18s,box-shadow .18s;
+}
+#event-album .north-bingo-chip .north-chip-kind{font:800 clamp(9px,.75vw,12px)/1.1 system-ui}
+#event-album .north-bingo-chip .north-chip-count{font:900 clamp(11px,1vw,16px)/1.2 system-ui;color:#fff0c4}
+#event-album .north-bingo-chip.almost{border-color:#ffd282;background:linear-gradient(145deg,#654c22,#2c2934)}
+#event-album .north-bingo-chip.complete{color:#fff3c7;border-color:#ffe18e;background:linear-gradient(145deg,#94712b,#3d4239);box-shadow:0 0 14px #f5cf5e55,inset 0 1px #fff6bf5a}
+#event-album .north-bingo-chip.selected{outline:2px solid #f5faff;outline-offset:1px;box-shadow:0 0 18px #85ffed8e}
+#event-album .north-bingo-chip:focus-visible{outline:2px solid white;outline-offset:3px}
+body.christmas-event-main[data-view="album"] #event-album .north-pole .card.north-line-focus{outline:3px solid #a2f6e3;outline-offset:-3px;z-index:2;box-shadow:0 0 14px #86f8e6ad!important}
+body.christmas-event-main[data-view="album"] #event-album .north-pole .card.north-line-missing{outline-color:#ffe39d;box-shadow:0 0 16px #ffdf7e9c!important}
+#event-album .north-bingo-hint{
+ margin:0;min-height:30px;padding:7px 10px;border-radius:9px;
+ background:#051d30b8;border:1px solid #8bd9dd65;color:#d5f4f4;
+ font:650 clamp(10px,.8vw,12px)/1.4 system-ui;
+}
+#event-album .north-bingo-milestones{
+ display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;
+}
+#event-album .north-milestone{
+ min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:4px;padding:9px 4px;border:1px solid #54788c8e;border-radius:10px;
+ background:linear-gradient(145deg,#182e43d9,#0b1a30ed);color:#c3cbd1;
+ text-align:center;filter:saturate(.58);
+}
+#event-album .north-milestone.unlocked{
+ filter:none;border-color:#f4d990;background:linear-gradient(145deg,#5d482aeb,#1d4c56e8);
+ box-shadow:0 0 14px #f4d36e3c;
+}
+#event-album .north-milestone-icon{font-size:clamp(17px,2vw,26px);line-height:1}
+#event-album .north-milestone-detail{min-width:0;display:flex;flex-direction:column;gap:3px}
+#event-album .north-milestone-detail strong{font:900 clamp(9px,.8vw,12px)/1.1 system-ui;color:#ffe9b7}
+#event-album .north-milestone-detail small{font:650 clamp(9px,.72vw,11px)/1.15 system-ui;overflow-wrap:anywhere;color:#d4e6e6}
+#event-album .north-milestone-status{font-size:15px}
+#event-album .north-bingo-next{
+ margin:0;padding:9px 12px;text-align:center;border:1px solid #e5ce82a3;
+ border-radius:10px;background:linear-gradient(100deg,#233c4bca,#423021c9);
+ color:#fff1c4;font:900 clamp(11px,.9vw,14px)/1.3 system-ui;
+}
+@media(max-width:480px){
+ body.christmas-event-main[data-view="album"] #event-album .north-bingo-dashboard{gap:6px;padding:5px;border-radius:10px}
+ body.christmas-event-main[data-view="album"] #event-album .north-grid-layout{grid-template-columns:minmax(0,1fr) 40px;gap:4px}
+ #event-album .north-bingo-rows,#event-album .north-bingo-columns{gap:4px}
+ #event-album .north-bingo-chip{border-radius:5px;min-height:24px;padding:2px 0;gap:1px}
+ #event-album .north-bingo-chip .north-chip-kind{font-size:9px}
+ #event-album .north-bingo-chip .north-chip-count{font-size:10px}
+ #event-album .north-bingo-milestones{gap:3px}
+ #event-album .north-milestone{padding:5px 1px;gap:2px;border-radius:6px}
+ #event-album .north-milestone-detail strong{font-size:8px}
+ #event-album .north-milestone-detail small{font-size:8px}
+ #event-album .north-milestone-icon{font-size:15px}
+ #event-album .north-milestone-status{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){
+ #event-album .north-bingo-chip{transition:none!important}
+}
