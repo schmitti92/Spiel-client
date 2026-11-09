@@ -51,9 +51,10 @@
 }
 .hammer-cinema[data-world=winter] .hammer-cinema__award-crest{color:#e7e5ff;text-shadow:0 0 16px #9aafffdc}
 .hammer-cinema[data-kind=jackpot] .hammer-cinema__award-crest{font-size:clamp(13px,1.7vw,21px)}
-.hammer-cinema__jackpot-crown[hidden]{display:none!important}
+.hammer-cinema__jackpot-crown{display:none}
+.hammer-cinema[data-kind=jackpot] .hammer-cinema__jackpot-crown{display:block}
 .hammer-cinema__jackpot-crown{
- display:block;position:relative;margin:0 auto 4px;width:clamp(68px,9vw,110px);height:clamp(36px,5vw,57px);
+ position:relative;margin:0 auto 4px;width:clamp(68px,9vw,110px);height:clamp(36px,5vw,57px);
  text-align:center;line-height:1;pointer-events:none;
  color:#ffedb9;font:900 clamp(37px,5vw,67px)/1 Georgia,serif;
  text-shadow:0 3px 10px #0008,0 0 30px #ffc65fa8;
