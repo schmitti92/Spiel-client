@@ -57,6 +57,8 @@ function updateBankerCall(){
  const h=g.history.at(-1);
  const offerKey=String(g.id)+'-'+String(h.round)+'-'+String(h.offer);
  if(bankerEntranceKey!==offerKey){
+  // Remove any previous bonus scene before preparing the next offer.
+  bankerBonusCloseReveal();
   bankerEntranceKey=offerKey;
   // Keep the last revealed briefcase and its amount on screen before the banker arrives.
   bankerEntranceUntil=Date.now()+3000;
