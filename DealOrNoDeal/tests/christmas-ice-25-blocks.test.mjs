@@ -7,11 +7,13 @@ const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const js=read('Weihnachtsevent2/online-ice.js');
 const html=read('Weihnachtsevent2/index.html');
 
-test('browser event scripts parse and 5x5 grid is enabled for 25 blocks',()=>{
+test('browser supports 25 and 30-tile grids with 5x5 and 6x5 layouts',()=>{
  assert.doesNotThrow(()=>new Script(js));
  assert.match(html,/ice-tiles\.ice-tiles-25\{grid-template-columns:repeat\(5,minmax\(0,1fr\)\);grid-template-rows:repeat\(5,minmax\(0,1fr\)\)/);
- assert.match(html,/online-ice\.js\?v=20261109-star-16-v1/);
+ assert.match(html,/online-ice\.js\?v=20261109-30-tiles-v1/);
  assert.match(js,/ice-tiles-25/);
+ assert.match(html,/ice-tiles\.ice-tiles-30\{grid-template-columns:repeat\(6,minmax\(0,1fr\)\);grid-template-rows:repeat\(5,minmax\(0,1fr\)\)/);
+ assert.match(js,/ice-tiles-30/);
  assert.match(js,/Array\.from\(\{length:tileCount\}/);
  assert.doesNotMatch(js,/Array\.from\(\{length:20\}/);
 });
@@ -32,12 +34,22 @@ test('client uses server-authoritative tile count and old states fall back to mi
  assert.equal(x.tileCount,20,'tenth-picture finished state still shows original board');
  x=stage({completed:12,maxRewarded:12,finished:false,opened:Array.from({length:25},(_,i)=>i),tilesRequired:25});
  assert.equal(x.openedTiles,25);
+ x=stage({completed:20,maxRewarded:20,finished:true,opened:[0,24],tilesRequired:25});
+ assert.equal(x.tileCount,25,'completed picture 20 remains on its old grid');
+ x=stage({completed:20,maxRewarded:20,finished:false,opened:[0,27],tilesRequired:30});
+ assert.deepEqual(JSON.parse(JSON.stringify(x)),{tileCount:30,openedTiles:2,fullClearPhase:true,number:21});
+ x=stage({completed:20,maxRewarded:20,finished:false,opened:[0,27],tileCount:25});
+ assert.equal(x.tileCount,30,'old picture 21 cache must upgrade to 30');
+ x=stage({completed:21,maxRewarded:21,finished:false,opened:[0,29],tilesRequired:30});
+ assert.equal(x.openedTiles,2);
+ x=stage({completed:0,maxRewarded:20,finished:false,opened:[],tileCount:30});
+ assert.equal(x.tileCount,30,'reset preserves unlocked difficulty');
 });
 
-test('UI shows accurate 25-block progress and explicit clearing instruction',()=>{
+test('UI shows progress and dynamically uses 25 or 30 ice blocks',()=>{
  assert.ok(js.includes("openedTiles+' von '+tileCount+' Eisfeldern geöffnet"));
  assert.match(js,/openedTiles\/tileCount\*100/);
- assert.match(js,/Zerstöre alle 25 Eisblöcke/);
+ assert.match(js,/Zerstöre alle '\+tileCount\+' Eisblöcke/);
  assert.match(js,/Wähle einen Hammer und finde den versteckten Stern/);
  assert.match(js,/25 Eisfelder: Finde den versteckten Stern! Er öffnet das ganze Bild sofort/);
  assert.match(js,/state\.opened\.includes\(i\)/);
@@ -67,17 +79,17 @@ test('cinematic hammer shatters follow server-confirmed targets only',()=>{
 });
 
 test('stars reveal pictures through 16; full clearing starts from image 17',()=>{
- assert.match(js,/number>=17\?'🧊 Ab Bild 17 gibt es keinen Stern mehr:/);
+ assert.match(js,/number>=17\?'🧊 Kein Stern mehr:/);
  assert.match(js,/celebration\.number>=17\?'Alle Eisblöcke entfernt!'/);
  assert.match(js,/celebration\.number>=17\?'🧊':'🌟'/);
  assert.match(js,/Number\(state\.completed\)>=17\?'🧊 Alle Eisblöcke entfernt!/);
- assert.match(html,/online-ice\.js\?v=20261109-star-16-v1/);
+ assert.match(html,/online-ice\.js\?v=20261109-30-tiles-v1/);
 });
 
 test('every server-confirmed completed picture uses full-screen reveal before reward',()=>{
  const css=read('Weihnachtsevent2/image-reveal-grand.css');
  assert.match(html,/image-reveal-grand\.css\?v=20261109-grand-reveal-v1/);
- assert.match(html,/online-ice\.js\?v=20261109-star-16-v1/);
+ assert.match(html,/online-ice\.js\?v=20261109-30-tiles-v1/);
  assert.match(js,/celebration\?\.stage==='image'&&!celebrationDelayTimer&&state\.finished&&Number\(state\.completed\)>=celebration\.number/);
  assert.match(js,/photo\(celebration\.number\)/);
  assert.match(js,/id="v44-big-reveal-continue"/);
@@ -86,7 +98,7 @@ test('every server-confirmed completed picture uses full-screen reveal before re
  assert.match(js,/if\(type==='strike'&&state\.finished&&!wasFinished\)/);
  assert.match(js,/celebrationDelayTimer=setTimeout\(\(\)=>\{celebrationDelayTimer=null;render\(\)\},950\)/);
  assert.match(js,/if\(!celebration\|\|celebration\.stage!=='image'\|\|!state\?\.finished\|\|state\.completed<celebration\.number\)return/);
- assert.match(js,/if\(n===number\)\{message\(number>=17\?'🧊 Ab Bild 17 wird das Bild erst enthüllt, wenn alle 25 Eisfelder entfernt wurden\./);
+ assert.match(js,/if\(n===number\)\{message\(number>=17\?'🧊 Ab Bild 17 wird das Bild erst enthüllt, wenn alle '\+tileCount\+' Eisfelder entfernt wurden\./);
  for(const c of ['v44-big-reveal-frame','v44-big-reveal-snow','v44-big-reveal-card'])assert.ok(css.includes(c));
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
  assert.doesNotMatch(css,/fetch\(|Firebase|api\/christmas-ice/i);
