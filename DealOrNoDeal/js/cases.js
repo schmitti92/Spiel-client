@@ -9,11 +9,11 @@ function directorReveal(){
   if(stage&&target){const a=stage.getBoundingClientRect(),b=target.getBoundingClientRect();if(a.width&&a.height){stage.style.setProperty('--camera-x',((b.left+b.width/2-a.left)/a.width*100).toFixed(2)+'%');stage.style.setProperty('--camera-y',((b.top+b.height/2-a.top)/a.height*100).toFixed(2)+'%')}}
  }
  const gameKey=String(g.id);const amounts=g.openedAmounts||[];
- if(directorLastGame!==gameKey){resetAvatarReaction();avatarReactionGame=gameKey;resetCaseCamera();clearTimeout(prizeFlashTimer);clearTimeout(prizeFlashDelay);$('prize-flash').classList.remove('active');$('prize-flash').setAttribute('aria-hidden','true');directorLastGame=gameKey;directorSeenOpened=new Set(amounts.map(x=>x.case));return}
+ if(directorLastGame!==gameKey){if(directorLastGame)window.stopOpenedAmountAnnouncement?.();resetAvatarReaction();avatarReactionGame=gameKey;resetCaseCamera();clearTimeout(prizeFlashTimer);clearTimeout(prizeFlashDelay);$('prize-flash').classList.remove('active');$('prize-flash').setAttribute('aria-hidden','true');directorLastGame=gameKey;directorSeenOpened=new Set(amounts.map(x=>x.case));return}
  const newlyOpened=amounts.filter(x=>!directorSeenOpened.has(x.case));
  for(const item of amounts)directorSeenOpened.add(item.case);
  if(!newlyOpened.length||g.phase==='final')return;
- const item=newlyOpened.at(-1);if(typeof announceOpenedAmount==='function')announceOpenedAmount(item.amount);directorLatestAmount=item.amount;directorLatestUntil=Date.now()+1800;
+ const item=newlyOpened.at(-1);if(typeof announceOpenedAmount==='function')announceOpenedAmount(item.amount,{caseNumber:item.case+1,gameId:g.id});directorLatestAmount=item.amount;directorLatestUntil=Date.now()+1800;
  const prizeScale=Array.isArray(values)&&values.length?values:[];
  const sortedScale=[...prizeScale].sort((a,b)=>a-b);
  const highThreshold=sortedScale[Math.floor(sortedScale.length*.8)]??Infinity;
