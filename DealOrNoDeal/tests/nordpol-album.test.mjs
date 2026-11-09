@@ -138,7 +138,7 @@ test('first two classic boards show five server-authoritative Bingo rewards each
  }
  assert.match(html,/id="album-bingo-first-bonus"/);
  assert.match(css,/\.classic-bingo-rewards/);
- assert.match(html,/north-pole-bingo\.js\?v=20261109-compass-v2/);
+ assert.match(html,/north-pole-bingo\.js\?v=20261109-compass-v3/);
 });
 
 test('new fourth board uses all 16 uploaded funny Christmas JPEG images 18 through 33',()=>{
