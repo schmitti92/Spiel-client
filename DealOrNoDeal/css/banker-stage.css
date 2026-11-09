@@ -565,3 +565,33 @@
 @keyframes banker-offer-final-pulse{to{box-shadow:inset 0 0 28px #ffe6a13b,0 0 32px #ffdf7b8c;transform:scale(1.025)}}
 @media(max-width:650px){#banker-call .banker-bonus-reveal-card{gap:7px;padding:12px 10px}#banker-call .banker-bonus-reveal-head{font-size:clamp(22px,6vw,31px)}#banker-call .banker-bonus-reveal-item strong{font-size:13px}#banker-call .banker-bonus-reveal-item{padding:8px 5px}#banker-call .banker-bonus-reveal-offer{padding:8px 5px}}
 @media(prefers-reduced-motion:reduce){#banker-call .banker-bonus-reveal-card:before,#banker-call .banker-bonus-show-lights span,#banker-call .banker-bonus-reveal-item.pack .banker-bonus-pack-art,#banker-call .banker-bonus-reveal[data-stage="deal"] .banker-bonus-reveal-offer{animation:none!important}#banker-call .banker-bonus-reveal-items,#banker-call .banker-bonus-reveal-offer{transition:none!important}}
+
+/* V10 — The Banker's Secret: mystery vault, cinematic reveal and golden finale. */
+#banker-call .banker-bonus-reveal-card{background:radial-gradient(ellipse at 50% 0%,#304b6e 0%,#0a1a33 53%,#030915 100%);border-color:#e9c780}
+#banker-call .banker-bonus-reveal-card:after{content:'';position:absolute;inset:7px;border:1px solid #f4d68d50;border-radius:20px;pointer-events:none;z-index:4}
+#banker-call .banker-bonus-reveal-top{color:#e6c782;letter-spacing:.2em;text-shadow:0 0 14px #d3a44d}
+#banker-call .banker-secret-seal{position:relative;width:min(180px,26dvh);height:min(180px,26dvh);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;border-radius:50%;border:3px double #e9c578;box-shadow:inset 0 0 35px #a97a3c66,0 0 25px #f0c87777;background:radial-gradient(circle,#374765 0%,#14263d 62%,#080f1c 100%);transition:opacity .65s,transform .8s,max-height .7s,margin .7s,padding .7s;overflow:hidden}
+#banker-call .banker-secret-orbit{position:absolute;inset:6px;border:1px dashed #e9c578a8;border-radius:50%;display:flex;justify-content:space-around;align-items:center;color:#ffe9a5;animation:banker-secret-spin 7s linear infinite}
+#banker-call .banker-secret-lock{font-size:clamp(42px,8dvh,74px);filter:drop-shadow(0 0 12px #ffdb8d);animation:banker-lock-pulse 1.3s ease-in-out infinite alternate}
+#banker-call .banker-secret-caption{font-size:clamp(8px,1.2vw,11px);font-weight:950;letter-spacing:.15em;color:#ffe4a0}
+#banker-call .banker-bonus-chapter{font-size:clamp(10px,1.35vw,15px);font-weight:950;letter-spacing:.09em;color:#fff0b5;min-height:1.4em;text-shadow:0 0 16px #f5be58}
+#banker-call .banker-bonus-reveal[data-stage="intro"] .banker-bonus-reveal-head,#banker-call .banker-bonus-reveal[data-stage="spotlight"] .banker-bonus-reveal-head{opacity:0;transform:translateY(12px);filter:blur(7px)}
+#banker-call .banker-bonus-reveal-head{transition:opacity .65s,transform .65s,filter .65s}
+#banker-call .banker-bonus-reveal[data-stage="intro"] .banker-bonus-reveal-items,#banker-call .banker-bonus-reveal[data-stage="spotlight"] .banker-bonus-reveal-items{visibility:hidden}
+#banker-call .banker-bonus-reveal[data-stage="intro"] .banker-bonus-reveal-caption,#banker-call .banker-bonus-reveal[data-stage="spotlight"] .banker-bonus-reveal-caption{opacity:0}
+#banker-call .banker-bonus-reveal-caption{transition:opacity .5s}
+#banker-call .banker-bonus-reveal[data-stage="reward"] .banker-secret-seal,#banker-call .banker-bonus-reveal[data-stage="deal"] .banker-secret-seal{opacity:0;transform:scale(1.8) rotate(20deg);max-height:0;height:0;margin:0;border:0;padding:0}
+#banker-call .banker-bonus-reveal[data-stage="intro"] .banker-bonus-reveal-offer,#banker-call .banker-bonus-reveal[data-stage="spotlight"] .banker-bonus-reveal-offer,#banker-call .banker-bonus-reveal[data-stage="reward"] .banker-bonus-reveal-offer{opacity:0;visibility:hidden}
+#banker-call .banker-bonus-reveal[data-stage="deal"] .banker-bonus-reveal-offer{visibility:visible;opacity:1}
+#banker-call .banker-bonus-reveal[data-stage="reward"] .banker-bonus-reveal-item{animation:banker-mystery-prize-in .9s cubic-bezier(.12,.9,.3,1.12) both}
+#banker-call .banker-bonus-reveal[data-stage="reward"] .banker-bonus-reveal-item:nth-child(2){animation-delay:.22s}
+#banker-call .banker-bonus-countdown{width:100%;height:4px;border-radius:99px;background:#e1c18033;overflow:hidden}
+#banker-call .banker-bonus-countdown span{display:block;width:100%;height:100%;background:linear-gradient(90deg,#b7832c,#fff5be,#d8a843);transform-origin:left;animation:banker-mystery-progress var(--banker-bonus-duration,6200ms) linear forwards}
+#banker-call #banker-bonus-reveal-skip{position:relative;z-index:5;font-size:clamp(11px,1vw,13px);padding:7px 15px;opacity:.92}
+@keyframes banker-secret-spin{to{transform:rotate(360deg)}}
+@keyframes banker-lock-pulse{to{transform:scale(1.09);filter:drop-shadow(0 0 25px #ffe39f)}}
+@keyframes banker-mystery-prize-in{from{opacity:0;transform:scale(.35) rotate(-12deg);filter:blur(15px)}70%{opacity:1;transform:scale(1.12) rotate(3deg);filter:blur(0)}to{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes banker-mystery-progress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media(max-height:730px){#banker-call .banker-secret-seal{width:min(112px,17dvh);height:min(112px,17dvh)}#banker-call .banker-secret-lock{font-size:36px}#banker-call .banker-bonus-reveal-card{gap:5px}#banker-call .banker-bonus-reveal-intro{font-size:12px}}
+@media(max-height:560px){#banker-call .banker-secret-seal{width:70px;height:70px}#banker-call .banker-secret-lock{font-size:25px}#banker-call .banker-secret-caption{font-size:6px}#banker-call .banker-bonus-show-lights{display:none}}
+@media(prefers-reduced-motion:reduce){#banker-call .banker-secret-orbit,#banker-call .banker-secret-lock,#banker-call .banker-bonus-countdown span,#banker-call .banker-bonus-reveal[data-stage="reward"] .banker-bonus-reveal-item{animation:none!important}}
