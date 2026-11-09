@@ -134,3 +134,37 @@
 #monster-test-label[hidden]{display:none!important}
 #monster-wheel-prize:has(#monster-test-label:not([hidden])){border-color:#77e9ce;box-shadow:0 0 24px #47dbc159}
 @media(max-width:480px){.monster-trade .monster-test-open{width:100%;margin:8px 0 0}.monster-test-button{width:100%}}
+
+/* New final 25-sector hand-labelled wheel. The original transparent PNG is the
+   ENTIRE spinning disc (including crown, gold, text and reward illustrations).
+   Never add extra segment captions or an old artwork overlay on this image.
+   Keep the fixed external pointer independent of the rotating element. */
+.monster-trade .monster-wheel-preview{
+ background-image:url("../Weihnachtsevent2/Weihnachtsbilder/file_0000000077288210bd94623e0d40c452.png");
+}
+.monster-disc.is-baked-art{
+ width:100%;
+ border:0;
+ border-radius:50%;
+ background-image:url("../Weihnachtsevent2/Weihnachtsbilder/file_0000000077288210bd94623e0d40c452.png"),var(--monster-fallback-gradient)!important;
+ background-size:contain,cover;
+ background-position:center,center;
+ background-repeat:no-repeat,no-repeat;
+ background-blend-mode:normal;
+ box-shadow:none;
+ filter:drop-shadow(0 0 15px #f1c56a66) drop-shadow(0 11px 19px #0009);
+ backface-visibility:hidden;
+ transform-origin:center;
+ overflow:visible;
+}
+.monster-disc.is-baked-art::before,
+.monster-disc.is-baked-art::after{display:none!important}
+.monster-disc.is-baked-art .monster-wheel-segment{display:none!important}
+.monster-disc.is-baked-art ~ .monster-wheel-center{display:none!important}
+.monster-wheel-assembly:has(.monster-disc.is-baked-art) .monster-pointer{
+ top:0;
+ filter:drop-shadow(0 3px 5px #1a0b25);
+}
+.monster-wheel-assembly:has(.monster-disc.is-baked-art) .monster-pointer:before{
+ box-shadow:0 0 9px 3px #ffe8a388;
+}
