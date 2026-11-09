@@ -288,3 +288,199 @@ main{padding-top:clamp(5px,1vw,12px)!important}
 }
 #final-show #final-replay[disabled]{opacity:.66;cursor:not-allowed;filter:saturate(.7)}
 #final-show .finale-replay-status{max-width:900px;margin:6px auto;color:#ffdc9b;font-weight:700}
+
+/* Large chosen-case reveal — Goldstudio V1. All amounts come from the final game state. */
+#finale-cinema .finale-spotlight[hidden]{display:none!important}
+#finale-cinema .finale-spotlight{
+ box-sizing:border-box;position:relative;isolation:isolate;
+ display:grid;grid-template-columns:minmax(190px,.75fr) minmax(0,1.55fr);
+ grid-template-rows:minmax(0,1fr) auto;
+ grid-template-areas:"player case" "result result";
+ align-items:center;gap:clamp(8px,1.2vw,16px);
+ width:min(100%,950px);height:clamp(240px,45dvh,430px);
+ margin:8px auto 10px;padding:clamp(12px,1.4vw,20px);
+ border:2px solid #f4d78e;border-radius:21px;
+ background:linear-gradient(118deg,#102647ed,#0a1a36eb 48%,#152f50de);
+ box-shadow:inset 0 0 0 1px #fff0b432,0 0 25px #f6ba5e55,0 16px 30px #0009;
+ overflow:hidden;
+}
+#finale-cinema .finale-spotlight:before{
+ content:"";position:absolute;inset:-70% -40%;z-index:-1;pointer-events:none;
+ background:conic-gradient(from 120deg at 55% 55%,transparent,#e4b85e18,transparent,#7dcaff11,transparent);
+ animation:finale-vault-aura 14s linear infinite;
+}
+#finale-cinema .finale-spotlight-arrival{animation:finale-spotlight-enter .46s cubic-bezier(.2,1,.25,1) both}
+#finale-cinema .finale-spotlight-person{
+ grid-area:player;min-width:0;align-self:center;display:flex;flex-direction:column;
+ align-items:center;gap:clamp(6px,1vw,12px);text-align:center;
+ padding:14px 7px;border:1px solid #e8bc6855;border-radius:16px;
+ background:linear-gradient(#08192ea6,#121d31bc);
+}
+#finale-cinema .finale-spotlight-avatar{
+ display:block;width:clamp(58px,7vw,96px);height:clamp(58px,7vw,96px);
+ border:2px solid #ffe09c;border-radius:15px;object-fit:cover;
+ background:#233143;box-shadow:0 0 17px #ecb95c8a;
+}
+#finale-cinema .finale-spotlight-person>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+#finale-cinema #finale-spotlight-progress{
+ color:#ffe09c;font-size:clamp(10px,.95vw,13px);letter-spacing:.04em;font-weight:850;
+}
+#finale-cinema #finale-spotlight-name{
+ color:#fff1c2;font-size:clamp(19px,2vw,29px);line-height:1.13;
+ text-shadow:0 2px 10px #000;overflow-wrap:anywhere;
+}
+#finale-cinema #finale-spotlight-status{
+ color:#d7e8ff;font-size:clamp(11px,1vw,14px);line-height:1.22;
+}
+#finale-cinema .finale-vault-scene{
+ grid-area:case;position:relative;display:grid;place-items:center;min-width:0;
+ height:100%;perspective:950px;
+}
+#finale-cinema .finale-vault{
+ --vault-gold:#ffdf8f;
+ position:relative;z-index:1;aspect-ratio:1.77;
+ width:min(95%,530px);max-height:88%;transform-style:preserve-3d;
+ filter:drop-shadow(0 14px 13px #0009);
+}
+#finale-cinema .finale-vault-handle{
+ position:absolute;left:38%;top:-13%;width:24%;height:25%;z-index:0;
+ border:clamp(6px,.8vw,11px) solid #e7b44e;
+ border-bottom:0;border-radius:22px 22px 4px 4px;
+ background:linear-gradient(90deg,#653d13,#e8bc6c,#78501c);
+ box-shadow:inset 0 0 0 2px #fff2a74a,0 0 9px #ffe17b7b;
+}
+#finale-cinema .finale-vault-base{
+ position:absolute;left:2%;top:29%;width:96%;height:66%;
+ display:grid;place-items:center;overflow:hidden;
+ border:clamp(5px,.65vw,9px) solid #e9ae46;border-radius:15px 15px 25px 25px;
+ background:radial-gradient(ellipse at 50% 10%,#895421,#28130d 75%);
+ box-shadow:inset 0 0 0 3px #fff3b26b,inset 0 -16px 35px #170907,0 6px 6px #100c12;
+}
+#finale-cinema .finale-vault-base:before{
+ content:"";position:absolute;inset:4px;border:1px solid #e9c36d82;border-radius:9px;pointer-events:none;
+}
+#finale-cinema .finale-vault-rays{
+ position:absolute;inset:-40%;opacity:0;pointer-events:none;
+ background:repeating-conic-gradient(from 20deg,#fffcb844 0deg 9deg,transparent 9deg 24deg),radial-gradient(circle,#ffe986d5,transparent 61%);
+ filter:blur(10px);transform:scale(.3);
+ transition:opacity .85s,transform 1.1s;
+}
+#finale-cinema .finale-vault-value{
+ z-index:2;position:relative;display:block;max-width:95%;
+ opacity:0;transform:scale(.65) translateY(9px);
+ font-size:clamp(24px,4vw,59px);font-weight:1000;
+ color:#fff7cb;text-shadow:0 4px 4px #3e1905,0 0 13px #ffd769;
+ white-space:nowrap;letter-spacing:-.035em;
+ transition:opacity .55s .55s,transform .9s .5s;
+}
+#finale-cinema .finale-vault-lid{
+ position:absolute;left:1%;top:19%;width:98%;height:74%;z-index:3;
+ display:grid;place-items:center;
+ border:clamp(5px,.75vw,11px) solid #ffdd91;border-radius:22px 22px 14px 14px;
+ transform-origin:50% 96%;backface-visibility:visible;
+ background:linear-gradient(125deg,#f9dfa0 0%,#ad702b 14%,#dfb567 38%,#fff0bb 52%,#b87c32 76%,#f4d692);
+ box-shadow:inset 0 0 0 3px #5e3611,inset 0 0 0 8px #ffe7ad73,0 7px 18px #120b10b9;
+ transition:transform 1.18s cubic-bezier(.18,.7,.28,1),opacity .85s .4s;
+}
+#finale-cinema .finale-vault-lid:before,#finale-cinema .finale-vault-lid:after{
+ content:"";position:absolute;top:45%;width:3.5%;height:22%;
+ background:linear-gradient(90deg,#70501c,#ffe09b,#745122);
+ border:1px solid #774b15;border-radius:4px;
+}
+#finale-cinema .finale-vault-lid:before{left:5%}
+#finale-cinema .finale-vault-lid:after{right:5%}
+#finale-cinema #finale-spotlight-case-number{
+ display:block;padding:clamp(6px,.9vw,14px) clamp(14px,2vw,28px);
+ border:2px solid #8c581f;border-radius:11px;
+ color:#2d1c0b;background:linear-gradient(#ffeabb,#c79645);
+ box-shadow:0 3px 9px #5c341a7a,inset 0 2px 3px #fff7db;
+ font-size:clamp(22px,3.2vw,45px);font-weight:1000;
+ text-shadow:0 1px #fff3c7;
+ transition:opacity .25s;
+}
+#finale-cinema .finale-spotlight[data-state="open"] .finale-vault-lid{
+ transform:translateY(-35%) rotateX(152deg);
+ opacity:.67;
+}
+#finale-cinema .finale-spotlight[data-state="open"] #finale-spotlight-case-number{opacity:0}
+#finale-cinema .finale-spotlight[data-state="open"] .finale-vault-rays{
+ opacity:1;transform:scale(1.1);
+}
+#finale-cinema .finale-spotlight[data-state="open"] .finale-vault-value{
+ opacity:1;transform:scale(1) translateY(0);
+}
+#finale-cinema .finale-vault-podium{
+ position:absolute;left:12%;right:12%;bottom:1%;height:13%;
+ border:3px solid #ffda86;border-radius:50%;
+ background:linear-gradient(#ffda713f,#291f0c);
+ box-shadow:0 0 25px #e4b052a8,0 8px 17px #000;
+}
+#finale-cinema .finale-spotlight-result{
+ grid-area:result;align-self:center;justify-self:stretch;
+ min-width:0;margin:0;padding:clamp(5px,.75vw,10px) 12px;
+ border:1px solid #e8c78769;border-radius:10px;
+ background:#071a37ba;color:#ffe5aa;
+ font-size:clamp(12px,1.3vw,18px);font-weight:900;line-height:1.2;
+ text-align:center;
+}
+#finale-cinema .finale-cases{
+ display:flex;justify-content:center;align-items:stretch;flex-wrap:wrap;
+ gap:clamp(5px,.8vw,11px);margin:8px auto;
+}
+#finale-cinema .finale-cases .finale-player{
+ box-sizing:border-box;position:relative;flex:0 1 auto;width:clamp(125px,17vw,210px);
+ padding:8px;border-radius:11px;
+ background:linear-gradient(#213b57,#0a162b)!important;
+ border:1px solid #cdb0748a;box-shadow:0 3px 12px #0009;
+ transition:box-shadow .35s,transform .35s,opacity .35s;
+}
+#finale-cinema .finale-cases .finale-player.on-stage{
+ border-color:#ffdd80;transform:translateY(-3px);
+ box-shadow:0 0 0 2px #fff0a7,0 0 16px #ffd56b9c;
+}
+#finale-cinema .finale-cases .finale-player-avatar{
+ width:clamp(25px,3vw,39px);height:clamp(25px,3vw,39px);
+ object-fit:cover;border-radius:9px;border:1px solid #cda66a;
+}
+#finale-cinema .finale-cases .finale-player-name{font-size:clamp(11px,1vw,14px);font-weight:900}
+#finale-cinema .finale-cases .finale-briefcase{
+ position:relative;margin:4px auto 0;min-height:29px;border-radius:7px;
+ border:1px solid #e2b667;background:linear-gradient(#d7b26e,#8e632e);
+ color:#2d1909;font-size:clamp(11px,.93vw,14px);font-weight:900;
+}
+#finale-cinema .finale-cases .finale-briefcase-front,
+#finale-cinema .finale-cases .finale-briefcase-back{
+ display:grid;place-items:center;min-height:29px;padding:1px 4px;
+}
+#finale-cinema .finale-cases .finale-player:not(.revealed) .finale-briefcase-back{display:none!important}
+#finale-cinema .finale-cases .finale-player.revealed .finale-briefcase-front{display:none!important}
+#finale-cinema .finale-cases .finale-player-note{font-size:clamp(10px,.9vw,12px);margin:4px 0 0;color:#f7e3af;line-height:1.1}
+#finale-cinema .finale-cases.champion-phase .finale-player.winner{
+ transform:translateY(-4px) scale(1.025);box-shadow:0 0 0 2px #fff3ab,0 0 19px #ffd468;
+}
+@keyframes finale-spotlight-enter{from{opacity:.45;transform:translateY(12px) scale(.975)}to{opacity:1;transform:none}}
+@keyframes finale-vault-aura{to{transform:rotate(360deg)}}
+@media(max-width:760px){
+ #finale-cinema .finale-spotlight{height:auto;min-height:345px;grid-template-columns:1fr;grid-template-rows:auto minmax(175px,1fr) auto;grid-template-areas:"player" "case" "result";padding:10px;gap:8px}
+ #finale-cinema .finale-spotlight-person{flex-direction:row;justify-content:center;text-align:left;padding:6px 10px}
+ #finale-cinema .finale-spotlight-avatar{width:46px;height:46px}
+ #finale-cinema .finale-vault-scene{min-height:170px}
+ #finale-cinema .finale-vault{width:min(78%,340px)}
+ #finale-cinema .finale-cases .finale-player{width:clamp(96px,42vw,180px)}
+}
+@media(orientation:landscape) and (max-height:570px){
+ #finale-cinema .finale-spotlight{height:clamp(165px,42dvh,260px);padding:6px;gap:4px}
+ #finale-cinema .finale-spotlight-avatar{width:38px;height:38px}
+ #finale-cinema .finale-spotlight-person{padding:6px}
+ #finale-cinema .finale-spotlight-result{padding:4px 9px;font-size:11px}
+ #finale-cinema .finale-stage{padding:9px!important}
+ #finale-cinema .finale-cases .finale-player{padding:4px}
+ #finale-cinema #finale-title{font-size:clamp(19px,3.4vw,29px)}
+}
+@media(prefers-reduced-motion:reduce){
+ #finale-cinema .finale-vault-lid,
+ #finale-cinema .finale-vault-value,
+ #finale-cinema .finale-vault-rays{transition:none!important;animation:none!important}
+ #finale-cinema .finale-spotlight-arrival,
+ #finale-cinema .finale-spotlight:before{animation:none!important}
+}
