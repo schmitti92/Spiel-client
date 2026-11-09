@@ -312,7 +312,9 @@ async function load(){
   if(confirmed)message('✅ Vorheriger Hammerschlag bestätigt. Du kannst wieder spielen.');
   else if(shouldRecover)message('🔄 Offene Aktion wird automatisch sicher wiederholt …');
   else message('✅ Online-Spielstand aktuell. Hammerauswahl ist freigegeben.');
-  recoveredGift();render();
+  // Release the load lock before painting, otherwise all closed ice tiles
+  // remain disabled until a separate re-render (previously hammer selection).
+  recoveredGift();busy=false;render();
  }catch(e){
   shouldRecover=false;
   message('⚠️ '+e.message);
