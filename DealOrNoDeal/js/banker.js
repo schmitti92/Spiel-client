@@ -6,9 +6,54 @@ function bankerPhrase(h){
 }
 function bankerSetText(id,value){const el=$(id);if(el.textContent!==value)el.textContent=value}
 let bankerEntranceKey='',bankerEntranceUntil=0,bankerEntranceTimer=null;
+let bankerBonusRevealKey='',bankerBonusRevealTimer=null,bankerBonusRevealUntil=0;
+const bankerBonusHammerTypes={
+ single:{name:'Einfacher Hammer',image:'hammer-einfach.webp',icon:'❄️🔨'},
+ double:{name:'Doppelhammer',image:'hammer-doppel.webp',icon:'🔨🔨'},
+ lucky:{name:'Glückshammer',image:'hammer-glueck.webp',icon:'🌟🔨'}
+};
+const bankerBonusPackTypes={
+ small:{name:'Kleines Weihnachtspaket',icon:'🎁',theme:'small'},
+ large:{name:'Großes Weihnachtspaket',icon:'🎁',theme:'large'},
+ premium:{name:'Premium-Weihnachtspaket',icon:'🎁',theme:'premium'}
+};
+function bankerBonusCloseReveal(){
+ clearTimeout(bankerBonusRevealTimer);bankerBonusRevealTimer=null;bankerBonusRevealUntil=0;
+ const reveal=$('banker-bonus-reveal');if(reveal)reveal.hidden=true;
+ const details=document.querySelector('#banker-call .banker-offer-details');if(details)details.classList.remove('bonus-revealing');
+}
+function bankerBonusShowReveal(h,key){
+ const reveal=$('banker-bonus-reveal'),items=$('banker-bonus-reveal-items'),details=document.querySelector('#banker-call .banker-offer-details');
+ if(!reveal||!items)return;
+ const hammer=bankerBonusHammerTypes[h.bonusHammer],pack=bankerBonusPackTypes[h.bonusPack];
+ if(!hammer&&!pack){bankerBonusCloseReveal();return}
+ // DOM nodes are built from server-defined enum values, never untrusted HTML.
+ items.replaceChildren();
+ if(hammer){
+  const item=document.createElement('div');item.className='banker-bonus-reveal-item hammer';
+  const art=document.createElement('img');art.alt='';art.src='./Weihnachtsevent2/Weihnachtsbilder/'+hammer.image;
+  art.onerror=()=>{art.replaceWith(document.createTextNode(hammer.icon))};
+  const name=document.createElement('strong');name.textContent=hammer.name;
+  const label=document.createElement('small');label.textContent='🔨 HAMMER-ANGEBOT';
+  item.append(art,name,label);items.append(item);
+ }
+ if(pack){
+  const item=document.createElement('div');item.className='banker-bonus-reveal-item pack '+pack.theme;
+  const art=document.createElement('div');art.className='banker-bonus-pack-art';art.textContent=pack.icon;
+  const name=document.createElement('strong');name.textContent=pack.name;
+  const label=document.createElement('small');label.textContent='🎄 KARTENPACK-ANGEBOT';
+  item.append(art,name,label);items.append(item);
+ }
+ bankerSetText('banker-bonus-reveal-head',hammer&&pack?'DOPPELTER BONUS!':hammer?'HAMMER-ANGEBOT!':'KARTENPACK-ANGEBOT!');
+ reveal.hidden=false;if(details)details.classList.add('bonus-revealing');
+ bankerBonusRevealUntil=Date.now()+2900;
+ clearTimeout(bankerBonusRevealTimer);
+ bankerBonusRevealTimer=setTimeout(()=>{if(bankerBonusRevealKey===key)bankerBonusCloseReveal()},2900);
+}
+
 function updateBankerCall(){
  const call=$('banker-call');
- if(!g||g.phase!=='decision'||!g.history?.length){bankerEntranceKey='';bankerEntranceUntil=0;clearTimeout(bankerEntranceTimer);call.hidden=true;call.classList.remove('call-entering');call.removeAttribute('data-offer-key');return}
+ if(!g||g.phase!=='decision'||!g.history?.length){bankerBonusRevealKey='';bankerBonusCloseReveal();bankerEntranceKey='';bankerEntranceUntil=0;clearTimeout(bankerEntranceTimer);call.hidden=true;call.classList.remove('call-entering');call.removeAttribute('data-offer-key');return}
  const h=g.history.at(-1);
  const offerKey=String(g.id)+'-'+String(h.round)+'-'+String(h.offer);
  if(bankerEntranceKey!==offerKey){
@@ -21,6 +66,12 @@ function updateBankerCall(){
  const waitingForReveal=Date.now()<bankerEntranceUntil;
  if(call.dataset.offerKey!==offerKey){setAvatarReaction('thinking',2400);call.dataset.offerKey=offerKey;call.classList.remove('call-entering')}
  call.hidden=waitingForReveal;
+ // One cinematic presentation per offer, after the normal banker entrance.
+ if(!waitingForReveal && bankerBonusRevealKey!==offerKey){
+  bankerBonusRevealKey=offerKey;
+  bankerBonusShowReveal(h,offerKey);
+ }
+
  const quality=$('banker-offer-quality');
  if(quality){
   const removed=new Set((g.openedAmounts||[]).map(entry=>entry.amount));
@@ -40,11 +91,12 @@ function updateBankerCall(){
  const bonus=$('banker-christmas-bonus');
  if(bonus){
   bonus.hidden=!h.bonusPack;
+  bonus.dataset.pack=h.bonusPack||'';
   if(h.bonusPack)bankerSetText('banker-christmas-bonus-name',({small:'Kleines Weihnachtspaket',large:'Großes Weihnachtspaket',premium:'Premium-Weihnachtspaket'})[h.bonusPack]||'Weihnachtspaket');
  }
  const hammerBonus=$('banker-hammer-bonus');
  if(hammerBonus){
-  const hammerTypes={single:{icon:'❄️🔨',name:'Einfacher Hammer'},double:{icon:'🔨🔨',name:'Doppelhammer'},lucky:{icon:'🌟🔨',name:'Glückshammer'}};
+  const hammerTypes=bankerBonusHammerTypes;
   const hammer=hammerTypes[h.bonusHammer];
   hammerBonus.hidden=!hammer;
   if(hammer){
@@ -101,6 +153,7 @@ function updateBankerCall(){
 $('banker-call').addEventListener('animationend',event=>{
  if(event.target.classList.contains('banker-call-card'))$('banker-call').classList.remove('call-entering');
 });
+$('banker-bonus-reveal-skip')?.addEventListener('click',bankerBonusCloseReveal);
 $('banker-call-deal').addEventListener('click',()=>action('decide',{deal:true}));
 $('banker-call-no-deal').addEventListener('click',()=>action('decide',{deal:false}));
 let lastVoteRevealKey='';let voteRevealTimer=null;let finalDealRevealUntil=0;
