@@ -258,3 +258,33 @@ main{padding-top:clamp(5px,1vw,12px)!important}
 @keyframes finale-winner-arrival{from{opacity:0;transform:scale(.75) translateY(30px)}to{opacity:1;transform:scale(1) translateY(0)}}
 @media(max-width:680px){#finale-cinema .finale-stage{padding:15px!important}#finale-cinema .finale-player.winner{transform:translateY(-5px) scale(1.01)}.finale-cinema-actions,.finale-replay-actions{gap:7px}.finale-replay-button{width:100%}}
 @media(prefers-reduced-motion:reduce){#finale-cinema .finale-stage:before,#finale-cinema .finale-champion{animation:none!important}}
+
+/* Finale recovery V1: keep the award ceremony prominent; put emergency actions
+   behind an accessible disclosure instead of showing three competing button rows. */
+#final-show .finale-recovery-details{
+ box-sizing:border-box;width:min(96%,900px);margin:clamp(8px,1vw,15px) auto 0;
+ border:1px solid #bd935b77;border-radius:12px;
+ background:linear-gradient(90deg,#0b1b33d9,#16263ed9);
+ color:#e8d3ac;text-align:left;overflow:hidden;
+}
+#final-show .finale-recovery-details summary{
+ cursor:pointer;padding:10px 15px;font-size:clamp(12px,1vw,15px);
+ font-weight:750;letter-spacing:.015em;list-style-position:inside;
+}
+#final-show .finale-recovery-details summary:hover,
+#final-show .finale-recovery-details summary:focus-visible{background:#eeb96816;color:#fff1cc}
+#final-show .finale-recovery-details[open]{border-color:#e6bc76a8}
+#final-show .finale-extra-actions{
+ display:flex;flex-wrap:wrap;justify-content:center;gap:8px;
+ padding:10px 12px 4px;
+}
+#final-show .finale-extra-actions button{
+ font-size:clamp(11px,.95vw,14px);padding:9px 12px;max-width:100%;
+}
+#final-show #final-recover{
+ display:block;max-width:100%;margin:9px auto 12px;padding:9px 13px;
+ font-size:clamp(11px,.9vw,14px)!important;
+ background:#49332d!important;color:#ffe1b1!important;border:1px solid #bb8d56!important;
+}
+#final-show #final-replay[disabled]{opacity:.66;cursor:not-allowed;filter:saturate(.7)}
+#final-show .finale-replay-status{max-width:900px;margin:6px auto;color:#ffdc9b;font-weight:700}
