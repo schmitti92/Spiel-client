@@ -248,3 +248,13 @@ header small{font-size:clamp(8px,.72vw,12px)!important;letter-spacing:.17em!impo
 .case.opened .case-shell{border-color:#bd945e!important}
 .player.turn{position:relative}
 .player.turn:before{content:"LIVE";position:absolute;right:9px;top:7px;color:#ffe9b2;font-size:9px;letter-spacing:.12em;font-weight:900;text-shadow:0 0 8px #e4b454}
+/* 29-case jackpot mode. Reset the former 26-case centered last row so
+   cases 25–29 occupy the fifth row rather than forcing an extra sixth row. */
+.cases[data-case-count="29"] .case:nth-child(25),
+.cases[data-case-count="29"] .case:nth-child(26){grid-column:auto!important}
+.money span.ten-million-prize:not(.gone){
+ color:#fff6b3!important;border:2px solid #ffe394!important;
+ background:linear-gradient(120deg,#a66a17,#e7b83e,#754010)!important;
+ box-shadow:0 0 17px #ffd45b74,inset 0 1px #fffae0!important;
+ text-shadow:0 1px 3px #4f2f06,0 0 7px #fff3b6;
+}
