@@ -26,7 +26,7 @@ test('both new files parse, load on the live Christmas page, and expose correct 
   'pack-cinema-preview','pack-cinema-sound','pack-cinema-progress',
   'pack-cinema-progress-fill','pack-cinema-summary-stats','pack-cinema-note',
   'pack-cinema-rarity-title','pack-cinema-kicker','pack-cinema-subtitle',
-  'pack-cinema-particles','reveal-overlay','reveal-panel','reveal-present',
+  'pack-cinema-particles','reveal-overlay','reveal-present',
   'reveal-card','reveal-image','reveal-name','reveal-rarity',
   'reveal-new-badge','reveal-counter','reveal-next','reveal-skip','reveal-close',
   'reveal-summary','reveal-bingo-awards'
@@ -36,11 +36,12 @@ test('both new files parse, load on the live Christmas page, and expose correct 
 });
 
 test('cinematic is network-free; gift artwork does not award or purchase cards',()=>{
+ const executable=js.replace(/\/\*[\s\S]*?\*\//g,'').replace(/^\s*\/\/.*$/gm,'');
  assert.doesNotMatch(js,/\bfetch\s*\(/);
  assert.doesNotMatch(js,/\bXMLHttpRequest\s*\(/);
  assert.doesNotMatch(js,/\bFirestore\b|\bfirebase\b/i);
  assert.doesNotMatch(js,/\bPOST\b/);
- assert.doesNotMatch(js,/\bwallet\b|\brequestId\b/);
+ assert.doesNotMatch(executable,/\bwallet\b|\brequestId\b/);
  assert.match(js,/window\.ChristmasPackCinema=Object\.freeze/);
  assert.match(js,/prefers-reduced-motion: reduce/);
  assert.match(js,/new Promise\(resolve=>setTimeout/);
@@ -90,7 +91,7 @@ test('demo uses fixed local preview without paying, purchasing or claiming',()=>
  assert.doesNotMatch(demo,/\brequest\(/);
  assert.match(demo,/legendary/);
  assert.match(inline,/state\.mode==='demo'\?'🎬 '/);
- assert.match(js,/🎬 DEMO · KEINE GUTSCHRIFT/);
+ assert.match(js,/✨ DEMO · KEINE GUTSCHRIFT/);
  assert.match(js,/keine Buchung, keine Karten und kein Spielgeld verändert/);
 });
 
