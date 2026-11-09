@@ -204,14 +204,15 @@
   function paint(scene){
     const overlay=byId('hammer-cinema');if(!overlay)return;
     overlay.hidden=false;overlay.setAttribute('aria-hidden','false');
-    overlay.dataset.world=scene.world;overlay.dataset.kind=scene.kind;
+    overlay.dataset.world=scene.world;overlay.dataset.kind=scene.kind;overlay.dataset.preview=scene.preview?'true':'false';
     byId('hammer-cinema-world').textContent=(scene.world==='winter'?'👑 ':'🎄 ')+scene.worldName+' · Durchgang '+scene.cycle;
     byId('hammer-cinema-title').textContent=scene.title;
     byId('hammer-cinema-subtitle').textContent=scene.subtitle;
-    byId('hammer-cinema-tag').textContent=scene.kind==='jackpot'?'✦ DER GROSSE SAMMLER-JACKPOT ✦':'✦ WEIHNACHTS-BINGO ✦';
+    byId('hammer-cinema-tag').textContent=scene.preview?'✦ VORSCHAU · KEINE GUTSCHRIFT ✦':scene.kind==='jackpot'?'✦ DER GROSSE SAMMLER-JACKPOT ✦':'✦ WEIHNACHTS-BINGO ✦';
     byId('hammer-cinema-prize-title').textContent=scene.kind==='jackpot'
       ?'🎁 Jackpot + Bingo-Belohnungen':'🎁 Deine gewonnenen Hammer';
-    byId('hammer-cinema-confirmation').textContent='✓ Bereits deinem Hammer-Konto gutgeschrieben';
+    byId('hammer-cinema-confirmation').textContent=scene.preview?'🎬 Vorschau: keine Hammer gutgeschrieben':'✓ Bereits deinem Hammer-Konto gutgeschrieben';
+    byId('hammer-cinema-footer-note').textContent=scene.preview?'Reine Demo-Animation · Keine Verbindung zum Spielkonto':'Die Gewinne sind sicher gespeichert · Diese Szene vergibt keine weiteren Hammer';
     byId('hammer-cinema-next').textContent=state.queue.length?'Nächsten Gewinn ansehen ›':'Schließen ✓';
     byId('hammer-cinema-close').title='Siegesshow überspringen';
     drawTiles(scene);drawPrizes(scene);drawParticles();pulseBoard(scene);
@@ -252,6 +253,28 @@
     state.queue.push(...fresh);startNext();
     return fresh.length;
   }
+  /** Free local preview: no server call and no account / wallet changes. */
+  function preview(artwork=[]){
+    if(state.active||state.queue.length||packOpen())return false;
+    const preClaimCards={};
+    for(const number of [33,34,35,36,...Array.from({length:16},(_,i)=>49+i)]){
+      preClaimCards['christmas-'+String(number)]=1;
+    }
+    const doubleUp=prize=>Object.fromEntries(Object.entries(prize).map(([kind,count])=>[kind,count*2]));
+    const catalog=[{single:1},{single:1},{single:1},{single:2},{single:1},
+      {single:2},{double:1},{double:1},{double:1},{lucky:1}];
+    const previewScenes=plan({
+      preClaimCards,artwork,
+      hammerProgress:{boards:[{board:3,cycle:1},{board:4,cycle:2}]},
+      awarded:[{board:3,line:0,hammers:{single:1}},...catalog.map((amounts,line)=>({
+        board:4,line,hammers:doubleUp(amounts)
+      }))],
+      jackpots:[{board:4,cycle:1,hammers:{double:10,lucky:3}}]
+    });
+    if(!previewScenes.length)return false;
+    state.queue.push(...previewScenes.map(scene=>({...scene,preview:true,id:'demo-'+scene.id})));
+    startNext();return true;
+  }
   function replay(){
     if(state.active||state.queue.length||!state.last.length)return false;
     state.queue.push(...state.last);
@@ -280,5 +303,5 @@
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
   else init();
-  window.HammerBingoCinematics=Object.freeze({celebrate,plan,replay,resume});
+  window.HammerBingoCinematics=Object.freeze({celebrate,plan,replay,resume,preview});
 })();
