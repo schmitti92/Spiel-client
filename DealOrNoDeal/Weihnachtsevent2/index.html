@@ -317,13 +317,14 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
 .v44-image-viewer-stage>button{flex-shrink:0}
 .v44-image-viewer p{margin:0;font-size:12px}
 @media(max-width:600px){.v44-image-viewer-stage img{max-width:calc(100% - 74px);max-height:70dvh}.v44-image-viewer-stage>button{padding:7px}.v44-image-viewer{padding:8px}}
-</style><script src="../../profile-config.js"></script><script src="../../profile-auth.js"></script></head><body>
-<nav aria-label="Weihnachtsevent Navigation">
+</style>
+<link rel="stylesheet" href="../css/christmas-event-hub.css?v=20261109-hub-v1"><script src="../../profile-config.js"></script><script src="../../profile-auth.js"></script></head><body>
+<header class="event-hub-top" aria-label="Weihnachtszauber – gemeinsame Event-Navigation"><span class="event-hub-brand">🎄 Weihnachtszauber <small>2 Events · ein Spiel</small></span><div class="event-hub-tools"><a class="event-hub-tool" id="event-game-link" href="../game.html">🎮 Zum Spiel</a><a class="event-hub-tool" id="event-lobby-link" href="../lobby.html">↩ Zur Spiellobby</a><a href="#" id="event-guide-open" class="event-hub-tool event-guide-open">📖 Anleitung</a></div></header>
+<nav class="event-tabs event-hub-nav" aria-label="Weihnachtsbereiche">
 <a href="../weihnachten.html?view=album">🃏 Sammlung</a>
 <a href="../weihnachten.html?view=packs">🎁 Pakete</a>
-<a href="../weihnachten.html?view=bingo">🏆 Spielinformation</a>
-<a href="./index.html" aria-current="page">❄️ Weihnachtsevent 2</a>
-<a href="../game.html">↩️ Zum Spiel</a><a href="#" id="event-guide-open" class="event-guide-open">📖 Spielanleitung</a>
+<a href="../weihnachten.html?view=bingo">🏆 Spielinformation &amp; Gewinner</a>
+<a href="./index.html" class="event2-tab" aria-current="page">❄️ Weihnachtsevent 2</a>
 </nav>
 <script>
 (function(){
@@ -333,7 +334,8 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
  const room=valid.test(param||'')?param:valid.test(saved||'')?saved:null;
  if(room){
   sessionStorage.setItem('deal-active-room',room);
-  document.querySelector('nav a[href="../game.html"]').href='../game.html?room='+encodeURIComponent(room);
+  document.getElementById('event-game-link').href='../game.html?room='+encodeURIComponent(room);
+  document.getElementById('event-lobby-link').href='../lobby.html?room='+encodeURIComponent(room);
   document.querySelectorAll('nav a[href^="../weihnachten.html"]').forEach(a=>{
    const url=new URL(a.href);
    url.searchParams.set('room',room);
