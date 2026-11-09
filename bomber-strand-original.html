@@ -288,4 +288,5 @@ const uiMenu=$('uiMenu');const headerOptions=document.querySelector('header>div:
 uiMenu.addEventListener('click',()=>{const open=headerOptions.classList.toggle('menuOpen');uiMenu.setAttribute('aria-expanded',String(open))});
 headerOptions.addEventListener('click',e=>{if(e.target.closest('button')&&e.target.id!=='soundToggle'){headerOptions.classList.remove('menuOpen');uiMenu.setAttribute('aria-expanded','false')}});
 $('touchBomb').addEventListener('pointerdown',e=>{e.preventDefault();if(players[0])plant(players[0])});$('restart').onclick=reset;$('play').onclick=reset;reset();playing=false;$('overlay').hidden=false;requestAnimationFrame(frame);
-</script></body></html>
+</script><script src="site-global-controls.js?v=20261109-global-1"></script>
+</body></html>
