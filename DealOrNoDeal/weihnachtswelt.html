@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#071629">
 <title>Weihnachtswelt · Deal or No Deal</title>
 <link rel="stylesheet" href="./css/christmas-event-hub.css?v=20261109-event-world-v3">
+<link rel="stylesheet" href="./css/christmas-spectacle-v2.css?v=20261109-spectacle-v2">
+<link rel="stylesheet" href="./css/christmas-universe-premium.css?v=20261109-universe-v1">
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
 <style>
@@ -78,27 +80,28 @@ button,a{font:inherit}
 @media(prefers-reduced-motion:reduce){.hub-meter i{transition:none}}
 </style>
 </head>
-<body>
+<body class="christmas-event-world">
 <main class="hub-wrap">
 <header class="event-hub-top">
 <a class="event-hub-brand" href="./weihnachtswelt.html" aria-current="page" aria-label="Weihnachtswelt – Übersicht"><span class="event-hub-brand-symbol" aria-hidden="true">🎄</span><span>Weihnachtszauber <small>DEAL OR NO DEAL · EVENT-WELT</small></span></a>
-<div class="event-hub-tools"><a class="event-hub-tool" id="hub-game" href="./game.html">🎮 Zum Spiel</a><a class="event-hub-tool" id="hub-lobby" href="./lobby.html">↩ Zur Spiellobby</a><button type="button" class="event-hub-tool" id="hub-fullscreen" aria-pressed="false">⛶ Vollbild</button></div>
+<div class="event-hub-tools"><button type="button" id="christmas-effects-toggle" data-level="full" title="Weihnachtseffekte wählen">✨ Effekte: Legendär</button><a class="event-hub-tool" id="hub-game" href="./game.html">🎮 Zum Spiel</a><a class="event-hub-tool" id="hub-lobby" href="./lobby.html">↩ Zur Spiellobby</a><button type="button" class="event-hub-tool" id="hub-fullscreen" aria-pressed="false">⛶ Vollbild</button></div>
 </header>
 <nav class="event-tabs event-hub-nav" aria-label="Weihnachtsbereiche">
 <a id="hub-cards-tab" href="./weihnachten.html?view=album">🃏 Sammlung</a>
+<a id="hub-hammer-tab" href="./weihnachten.html?view=hammer">🔨 Hammer-Bingo</a>
 <a id="hub-packs-tab" href="./weihnachten.html?view=packs">🎁 Pakete</a>
 <a id="hub-info-tab" href="./weihnachten.html?view=bingo">🏆 Spielinformation &amp; Gewinner</a>
 <a class="event2-tab" id="hub-ice-tab" href="./Weihnachtsevent2/index.html">❄️ Weihnachtsevent 2</a>
 </nav>
 <section class="hub-intro" aria-labelledby="hub-title">
-<div class="hub-intro-copy"><p class="eyebrow">ZWEI KAPITEL · EINE WEIHNACHTSWELT</p><h1 id="hub-title">✨ Weihnachtszauber ✨</h1><p>Wähle dein Event – deine Fortschritte und Belohnungen gehören zu deinem Spielerprofil.</p></div>
+<div class="hub-intro-copy"><p class="eyebrow">ZWEI KAPITEL · EINE WEIHNACHTSWELT</p><h1 id="hub-title">✨ Weihnachtszauber ✨</h1><p>Wähle dein Event – deine Fortschritte und Belohnungen gehören zu deinem Spielerprofil.</p><div class="hub-world-shortcuts" aria-label="Direkt zu den Weihnachts-Highlights"><a id="hub-shortcut-packs" href="./weihnachten.html?view=packs">🎁 Weihnachtspakete</a><a id="hub-shortcut-hammer" class="hub-world-highlight" href="./weihnachten.html?view=hammer">🔨 Hammer-Bingo</a><a id="hub-shortcut-ice" href="./Weihnachtsevent2/index.html">❄️ Eisabenteuer</a></div></div>
 </section>
 <section class="hub-body" aria-label="Beide Weihnachtsevents">
 <article class="hub-card cards">
 <div class="hub-art"><img class="santa" src="./assets/weihnachts_event/file_0000000075e081f49cb62fd4b11daae2.png" alt="Weihnachtsmann und Rudolf" loading="eager"><span class="star-gift" aria-hidden="true">🎁✨</span><span class="hub-chapter">KAPITEL 1</span></div>
-<div class="hub-content"><h2>🎄 Die Weihnachtskollektion</h2><p>48 klassische Sammelkarten entdecken, Geschenkpakete öffnen und mit Bingo-Reihen exklusive Extras freischalten.</p>
-<div class="hub-stats"><div class="hub-stat"><small>Gesammelte Karten</small><strong id="hub-collected">– / 48</strong></div><div class="hub-stat"><small>Erreichte Bingos</small><strong id="hub-bingos">– / 30</strong></div></div>
-<div class="hub-meter" role="progressbar" aria-label="Fortschritt Sammelkarten" aria-valuemin="0" aria-valuemax="48" aria-valuenow="0" id="hub-album-meter"><i></i></div>
+<div class="hub-content"><h2>🎄 Die Weihnachtskollektion</h2><p>32 Sammelkarten entdecken, Geschenkpakete öffnen und mit Bingo-Reihen exklusive Extras freischalten.</p>
+<div class="hub-stats"><div class="hub-stat"><small>Gesammelte Karten</small><strong id="hub-collected">– / 32</strong></div><div class="hub-stat"><small>Erreichte Bingos</small><strong id="hub-bingos">– / 20</strong></div></div>
+<div class="hub-meter" role="progressbar" aria-label="Fortschritt Sammelkarten" aria-valuemin="0" aria-valuemax="32" aria-valuenow="0" id="hub-album-meter"><i></i></div>
 <div class="hub-actions"><a class="hub-launch" id="hub-enter-album" href="./weihnachten.html?view=album">🃏 Sammlung entdecken</a><span class="hub-note">🎁 Pakete &amp; 🏆 Bingo im selben Kapitel</span></div></div></article>
 <article class="hub-card ice">
 <div class="hub-art"><img class="ice-tile" src="./Weihnachtsevent2/Weihnachtsbilder/originalgrafik-06.webp" alt="Magisches Eisfeld" loading="eager"><img class="hammer" src="./Weihnachtsevent2/Weihnachtsbilder/hammer-glueck.webp" alt="Goldener Glückshammer" loading="eager"><span class="hub-chapter">KAPITEL 2</span></div>
@@ -117,7 +120,7 @@ const query=new URLSearchParams(location.search),provided=query.get('room'),save
 const room=ROOM.test(provided||'')?provided:ROOM.test(saved||'')?saved:null;
 if(room){
  sessionStorage.setItem('deal-active-room',room);
- for(const id of ['hub-game','hub-lobby','hub-cards-tab','hub-packs-tab','hub-info-tab','hub-ice-tab','hub-enter-album','hub-enter-ice']){
+ for(const id of ['hub-game','hub-lobby','hub-cards-tab','hub-hammer-tab','hub-packs-tab','hub-info-tab','hub-ice-tab','hub-enter-album','hub-enter-ice','hub-shortcut-packs','hub-shortcut-hammer','hub-shortcut-ice']){
   const a=$(id),url=new URL(a.href);url.searchParams.set('room',room);a.href=url.href;
  }
 }
@@ -132,9 +135,9 @@ const clamp=(n,max)=>Math.max(0,Math.min(max,Number(n)||0));
 function show(kind,values){
  if(!values)return;
  if(kind==='album'){
-  const collected=clamp(values.collected,48),bingos=clamp(values.bingos,30);
-  $('hub-collected').textContent=collected+' / 48';$('hub-bingos').textContent=bingos+' / 30';
-  const meter=$('hub-album-meter');meter.setAttribute('aria-valuenow',String(collected));meter.querySelector('i').style.width=(collected/48*100)+'%';
+  const collected=clamp(values.collected,32),bingos=clamp(values.bingos,20);
+  $('hub-collected').textContent=collected+' / 32';$('hub-bingos').textContent=bingos+' / 20';
+  const meter=$('hub-album-meter');meter.setAttribute('aria-valuenow',String(collected));meter.querySelector('i').style.width=(collected/32*100)+'%';
  }else{
   const completed=clamp(values.completed,70);
   $('hub-completed').textContent=completed+' / 70';$('hub-milestones').textContent=Math.floor(completed/10)+' / 7';
@@ -191,5 +194,6 @@ window.addEventListener('spielonline-change',()=>refresh(false));
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>refresh(false));else refresh(false);
 })();
 </script>
+<script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script>
 <script src="../site-global-controls.js?v=20261109-global-1"></script>
 </body></html>
