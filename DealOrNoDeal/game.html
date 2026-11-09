@@ -180,19 +180,19 @@
  const packNames={small:'Normales Kartenpaket',large:'Gold-Kartenpaket',premium:'Premium-Kartenpaket'};
  const spinButton=document.getElementById('cent-wheel-spin');let pendingSpin=null,activeWheelReward=null,activeWheelKind=null,finalWheelStarted=false;
  function openReward(reward,kind,uid){
-  const isFinal=kind==='final';box.classList.toggle('final-dual-active',isFinal);document.getElementById('final-dual-hammer').hidden=!isFinal;activeWheelReward=reward;activeWheelKind=kind;finalWheelStarted=false;
+  const isFinal=kind==='final',directBankerPack=kind==='banker';box.classList.toggle('final-dual-active',isFinal);document.getElementById('final-dual-hammer').hidden=!isFinal;activeWheelReward=reward;activeWheelKind=kind;finalWheelStarted=false;
   if(isFinal)window.DealFinalDualWheel?.reset(reward);
   sequence++;const current=sequence;
-  box.dataset.reward=reward.id;box.dataset.stage='wheel';box.hidden=false;close.disabled=true;close.hidden=reward.uid!==uid;
+  box.dataset.reward=reward.id;box.dataset.stage=directBankerPack?'reveal':'wheel';box.hidden=false;close.disabled=true;close.hidden=reward.uid!==uid;
   // A missed socket event or disconnected winner must never trap spectators.
-  setTimeout(()=>{if(sequence===current&&!box.hidden&&!finalWheelStarted){wheelStatus.textContent='⏳ Warte auf den gemeinsamen Drehstart. Verbindung wird automatisch geprüft …';checkWheelStart();}},12000);
+  if(!directBankerPack)setTimeout(()=>{if(sequence===current&&!box.hidden&&!finalWheelStarted){wheelStatus.textContent='⏳ Warte auf den gemeinsamen Drehstart. Verbindung wird automatisch geprüft …';checkWheelStart();}},12000);
   const owner=reward.playerName||'Spieler';
   title.textContent='🎄 '+owner+' gewinnt ein Weihnachtspaket!';
   subtitle.textContent=(isFinal?'🏆 Siegerbonus der Runde':kind==='banker'?'Banker-Deal angenommen':'1-Cent-Koffer geöffnet')+' · Alle Spieler schauen live zu';
   credit.textContent=reward.uid===uid?'Deine Karten wurden deinem Weihnachtsalbum gutgeschrieben.':'Die Karten wurden dem Weihnachtsalbum von '+owner+' gutgeschrieben.';
   name.textContent='';icon.textContent='🎁';cards.replaceChildren();document.getElementById('cent-special-overlay').hidden=true;
-  wheelStage.hidden=false;revealStage.hidden=true;spinButton.hidden=false;spinButton.disabled=false;wheelStatus.textContent='🎡 Bereit? Drücke auf „Jetzt drehen“!';
-  if(reward.uid!==uid){spinButton.hidden=true;wheelStatus.textContent='🎡 '+owner+' darf drehen. Alle schauen gemeinsam zu …'}
+  wheelStage.hidden=directBankerPack;revealStage.hidden=true;spinButton.hidden=directBankerPack;spinButton.disabled=directBankerPack;wheelStatus.textContent=directBankerPack?'🎁 Banker-Paket wird direkt geöffnet …':'🎡 Bereit? Drücke auf „Jetzt drehen“!';
+  if(reward.uid!==uid&&!directBankerPack){spinButton.hidden=true;wheelStatus.textContent='🎡 '+owner+' darf drehen. Alle schauen gemeinsam zu …'}
   // Winner's missing click must not permanently block the whole room.
   if(isFinal&&reward.uid===uid)setTimeout(()=>{if(sequence===current&&!box.hidden&&!finalWheelStarted&&!spinButton.disabled)startWheel()},2200);
   wheel.style.transition='none';wheel.style.transform='rotate(0deg)';
@@ -319,6 +319,9 @@
    }},Math.max(0,6800-elapsed));
    setTimeout(nextWheel,Math.max(0,revealAfter-elapsed));
   };
+  // Banker bonuses have an already selected pack and credited cards. Never
+  // start or poll a wheel; open the shared reveal immediately for all clients.
+  if(directBankerPack){finalWheelStarted=true;showCards();}
 
  }
 
@@ -372,7 +375,7 @@
   lastRewardProbeKey='';checkRewards();
  }
  async function continueReward(){
-  if(!activeWheelReward||activeWheelReward.uid!==user()?.uid||close.disabled||!finalWheelStarted)return;
+  if(!activeWheelReward||activeWheelReward.uid!==user()?.uid||close.disabled||(!finalWheelStarted&&activeWheelKind!=='banker'))return;
   close.disabled=true;close.textContent='⏳ Für alle wird fortgesetzt …';
   try{
    const token=await user().getIdToken();
@@ -408,6 +411,9 @@
   if(checking)return 'busy';
   if(!box.hidden)return 'open';
   if(typeof g==='undefined'||!g?.id||!room()||!rewardMayExist())return 'not-ready';
+  // Let the deal announcement and the final case ceremony finish first.
+  // Their completion events trigger an immediate retry with no wheel delay.
+  if(document.getElementById('vote-reveal')?.hidden===false||document.getElementById('finale-cinema')?.hidden===false)return 'ceremony-busy';
   const u=user();if(!u?.getIdToken)return 'not-signed-in';
   // A new reward event is checked immediately; unchanged rewards retry at most
   // every 30 seconds, rather than reading Firestore on every case reveal.
@@ -465,6 +471,7 @@
   if(result==='opened'){if(status)status.textContent='🎁 Siegerbonus gefunden – Glücksrad wird geöffnet.';return}
   if(status)status.textContent=result==='no-reward'?'⚠️ Der Server meldet noch kein verfügbares Siegerpaket. Bitte prüfe, ob die Siegerehrung abgeschlossen ist.':result==='busy'?'⏳ Die Bonusprüfung läuft bereits.':result==='open'?'🎡 Das Glücksrad-Fenster ist bereits geöffnet.':'⚠️ Bonusprüfung: '+result;
  });
+ window.addEventListener('deal-banker-reveal-finished',()=>{lastRewardProbeKey='';void checkRewards(true)});
  window.addEventListener('deal-finale-finished',()=>{
   if(finishTiedFinal())return;
   // The final reward may be committed just after the game-state broadcast.
