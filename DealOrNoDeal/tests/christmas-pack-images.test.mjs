@@ -129,3 +129,20 @@ test('heavy artwork has extended load time and explicit retry for pack reveals',
  assert.match(inline,/ChristmasCardImages\.show\(img,artwork\)/);
  assert.match(css,/#reveal-overlay #reveal-image-retry/);
 });
+
+test('all 32 heavy Hammer-Bingo cards have compact, real WebP art for the pack show',()=>{
+ let total=0;
+ for(let number=33;number<=64;number++){
+  const name='card-'+String(number).padStart(2,'0')+'.webp';
+  const file=resolve(base,'Weihnachtsevent2/Weihnachtsbilder',name);
+  assert.ok(existsSync(file),'missing compact card '+number);
+  const bytes=readFileSync(file);
+  assert.equal(bytes.toString('ascii',0,4),'RIFF','WebP envelope '+number);
+  assert.equal(bytes.toString('ascii',8,12),'WEBP','WebP format '+number);
+  assert.ok(bytes.length<400000,'card '+number+' should be mobile-friendly, not multi-MB PNG');
+  total+=bytes.length;
+ }
+ assert.ok(total<7000000,'32 card images should use <7 MB together');
+ assert.match(inline,/card-'\+String\(index\+1\)\.padStart\(2,'0'\)\+'\.webp'/);
+ assert.match(page,/christmas-pack-cinema\.css\?v=20261109-card-art-webp-v2/);
+});
