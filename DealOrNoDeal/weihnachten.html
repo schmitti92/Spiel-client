@@ -514,12 +514,90 @@ root.addEventListener('keydown',event=>{
 document.querySelectorAll('[data-open-view]').forEach(button=>button.addEventListener('click',()=>{
  document.querySelector('.event-tabs button[data-view="'+button.dataset.openView+'"]')?.click();
 }));
-let loadSequence=0;
+// Only one GET for one signed-in account can run at a time.
+// Auth changes invalidate stale in-flight responses before the DOM is touched.
+let loadSequence=0,loadInFlight=null,loadInFlightUid=null,visibleUid=null;
 function authState(){return window.SpielOnline?.state?.()||{status:'initializing'}}
-function setOfflineState(message){current=null;renderDuplicateExchange({});document.getElementById('event-balance').textContent='🪙 Konto nicht verbunden';document.getElementById('event-progress').textContent='0 / 16 Karten · 0 / 10 Bingos (Online-Daten noch nicht geladen)';notice.textContent=message;document.querySelectorAll('[data-pack]').forEach(b=>{b.disabled=true;b.textContent='Anmeldung erforderlich'})}
-async function load(){const seq=++loadSequence;const state=authState();if(state.status!=='online'||!state.user?.getIdToken){if(['initializing','loading'].includes(state.status)){document.getElementById('event-balance').textContent='⏳ Profil wird verbunden …';document.getElementById('event-progress').textContent='Online-Sammlung wird geladen …';notice.textContent='Bitte warten, dein Profil wird geladen.';return}setOfflineState('Zum Kauf bitte mit deinem Online-Profil anmelden. Bitte melde dich an, um deine Sammlung zu sehen.');return}
-document.getElementById('event-balance').textContent='⏳ Kontostand wird geladen …';notice.textContent='Verbinde mit dem Weihnachtsshop …';
-try{const data=await request('GET','me');if(seq!==loadSequence)return;render(data);void maybeClaimHammerBingos(data);notice.textContent='Wähle ein Weihnachtspaket.';document.getElementById('connection-details').textContent='🟢 Mit dem Weihnachtskonto verbunden.'}catch(e){if(seq!==loadSequence)return;notice.textContent='⚠️ '+(e.message==='Failed to fetch'?'Verbindung zur API fehlgeschlagen (Netzwerk, CORS oder Server).':e.message);document.getElementById('connection-details').textContent='Server: '+new URL(base).host+' · '+new Date().toLocaleTimeString('de-DE');document.getElementById('event-balance').textContent='⚠️ Kontostand nicht verfügbar';document.getElementById('event-progress').textContent='Sammlung momentan nicht verfügbar';document.querySelectorAll('[data-pack]').forEach(b=>b.disabled=true)}}
+function clearAlbumIdentity(){
+ current=null;visibleUid=null;
+ // Never leave another player's cards or unlocked cosmetics visible after logout.
+ document.querySelectorAll('[data-card]').forEach((el,i)=>{
+  el.classList.remove('owned','bingo-complete');el.removeAttribute('role');
+  el.removeAttribute('tabindex');el.removeAttribute('aria-haspopup');el.removeAttribute('title');
+  el.setAttribute('aria-label','Gesperrte Karte '+classicCardNumber(i));
+  const img=el.querySelector('img');
+  if(img){img.src='./assets/weihnachts_event/card-back-winter.svg';img.alt='Noch nicht gesammelte Weihnachtskarte';img.classList.add('uncollected-art')}
+  const title=el.querySelector('strong'),sub=el.querySelector('small');
+  if(title)title.textContent=String(classicCardNumber(i)).padStart(2,'0')+' · ???';
+  if(sub)sub.textContent='🔒 Noch nicht entdeckt';
+ });
+ for(const set of ['first','second','third']){
+  document.getElementById('album-set-'+set+'-progress').textContent='0 / 16 Karten';
+  document.getElementById('album-set-'+set+'-bingo').textContent='0 / 10 Bingos';
+ }
+ document.getElementById('album-owned-total').textContent='0 / 48';
+ document.getElementById('album-bingo-total').textContent='0 / 30';
+ document.getElementById('album-next-reward').textContent='Anmeldung erforderlich';
+ document.getElementById('album-total-meter').setAttribute('aria-valuenow','0');
+ document.getElementById('album-total-meter-fill').style.width='0%';
+ rewardsRoot.querySelectorAll('.reward').forEach(el=>{
+  el.classList.remove('unlocked');el.querySelector('.lock').textContent='🔒'
+ });
+ document.body.classList.remove('has-frost-card-frame','has-north-star-dust','has-royal-north-gallery');
+ document.getElementById('north-pole-legend-trophy').hidden=true;
+ renderHammerCollection({});
+ renderDuplicateExchange({});
+ const reveal=document.getElementById('reveal-overlay');
+ if(reveal&&!reveal.hidden){reveal.hidden=true;reveal.setAttribute('aria-hidden','true')}
+}
+function setOfflineState(message){
+ clearAlbumIdentity();
+ document.getElementById('event-balance').textContent='🪙 Konto nicht verbunden';
+ document.getElementById('event-progress').textContent='0 / 48 Karten · 0 / 30 Bingos (Anmeldung erforderlich)';
+ notice.textContent=message;
+ document.querySelectorAll('[data-pack]').forEach(b=>{b.disabled=true;b.textContent='Anmeldung erforderlich'});
+}
+function load(){
+ const state=authState(),uid=String(state?.user?.uid||'');
+ if(state.status!=='online'||!uid||!state.user?.getIdToken){
+  // Invalidate old responses; showing old ownership under another identity is unsafe.
+  ++loadSequence;
+  loadInFlight=null;loadInFlightUid=null;
+  clearAlbumIdentity();
+  if(['initializing','loading'].includes(state.status)){
+   document.getElementById('event-balance').textContent='⏳ Profil wird verbunden …';
+   document.getElementById('event-progress').textContent='Online-Sammlung wird geladen …';
+   notice.textContent='Bitte warten, dein Profil wird geladen.';
+  }else setOfflineState('Zum Kauf bitte mit deinem Online-Profil anmelden. Bitte melde dich an, um deine Sammlung zu sehen.');
+  return Promise.resolve();
+ }
+ if(visibleUid&&visibleUid!==uid)clearAlbumIdentity();
+ if(loadInFlight&&loadInFlightUid===uid)return loadInFlight;
+ const seq=++loadSequence;
+ document.getElementById('event-balance').textContent='⏳ Kontostand wird geladen …';
+ notice.textContent='Verbinde mit dem Weihnachtsshop …';
+ const running=(async()=>{
+  try{
+   const data=await request('GET','me');
+   if(seq!==loadSequence||authState()?.user?.uid!==uid)return;
+   visibleUid=uid;
+   render(data);
+   void maybeClaimHammerBingos(data);
+   notice.textContent='Wähle ein Weihnachtspaket.';
+   document.getElementById('connection-details').textContent='🟢 Mit dem Weihnachtskonto verbunden.';
+  }catch(e){
+   if(seq!==loadSequence||authState()?.user?.uid!==uid)return;
+   notice.textContent='⚠️ '+(e.message==='Failed to fetch'?'Verbindung zur API fehlgeschlagen (Netzwerk, CORS oder Server).':e.message);
+   document.getElementById('connection-details').textContent='Server: '+new URL(base).host+' · '+new Date().toLocaleTimeString('de-DE');
+   document.getElementById('event-balance').textContent='⚠️ Kontostand nicht verfügbar';
+   document.getElementById('event-progress').textContent='Sammlung momentan nicht verfügbar';
+   document.querySelectorAll('[data-pack]').forEach(b=>b.disabled=true);
+  }
+ })();
+ loadInFlightUid=uid;loadInFlight=running;
+ void running.finally(()=>{if(loadInFlight===running){loadInFlight=null;loadInFlightUid=null}});
+ return running;
+}
 // A retry reuses the original purchase ID so a lost response cannot charge twice.
 function pendingKey(pack){const uid=authState().user?.uid||'guest';return 'deal-christmas-pending-'+uid+'-'+pack}
 function getPurchaseId(pack){const key=pendingKey(pack);let id;try{id=sessionStorage.getItem(key)}catch{}if(!id){id='xmas_'+Date.now()+'_'+Math.random().toString(36).slice(2,14);try{sessionStorage.setItem(key,id)}catch{}}return id}
@@ -563,7 +641,7 @@ document.getElementById('monster-exchange-btn').addEventListener('click',async()
   message.textContent='⚠️ '+(e.message==='INSUFFICIENT_DUPLICATES'?'Noch keine 100 Duplikate verfügbar.':e.message)+' · Bei Verbindungsproblemen erneut versuchen.';
  }finally{busy=false;if(current)render(current)}
 });
-window.addEventListener('spielonline-change',load);window.addEventListener('load',()=>{load();setTimeout(load,1800);setTimeout(load,5500)});
+window.addEventListener('spielonline-change',load);window.addEventListener('load',()=>{void load();setTimeout(()=>{if(!current&&authState().status!=='offline')void load()},1800);setTimeout(()=>{if(!current&&authState().status!=='offline')void load()},5500)});
 
 document.getElementById('retry-connection').addEventListener('click',load);document.body.dataset.view=['album','hammer','packs','bingo'].includes(new URLSearchParams(location.search).get('view'))?new URLSearchParams(location.search).get('view'):'album';document.querySelectorAll('.event-tabs button[data-view]').forEach(b=>{const active=b.dataset.view===document.body.dataset.view;b.setAttribute('aria-selected',String(active));if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});document.querySelectorAll('.event-tabs button[data-view]').forEach(button=>button.addEventListener('click',()=>{document.body.dataset.view=button.dataset.view;document.querySelectorAll('.event-tabs button[data-view]').forEach(b=>{const active=b===button;b.setAttribute('aria-selected',String(active));if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});const url=new URL(location.href);url.searchParams.set('view',button.dataset.view);history.replaceState(history.state,'',url);if(button.dataset.view==='hammer'){loadHammerStock();if(current)void maybeClaimHammerBingos(current)}window.scrollTo({top:0,behavior:'smooth'})}));
 
