@@ -63,7 +63,7 @@ test('all existing reward lines and authoritative claim route remain intact', ()
   const prizes = segment('const hammerPrizeBase=[', 'function formatHammerPrize(prize)');
   assert.equal((prizes.match(/\{[^{}]*\}/g) || []).length, 10, '4 rows + 4 cols + 2 diagonals');
   assert.match(html, /request\('POST','hammer\/claim'\)/);
-  assert.match(html, /data\.hammerProgress/);
+  assert.match(html, /data\?\.hammerProgress/);
   for (const field of ['common', 'mixed']) {
     for (const section of ['board', 'rows', 'columns', 'diagonals', 'progress', 'cycles']) {
       const id = section === 'board' ? `hammer-board-${field}` : `hammer-${field}-${section}`;
