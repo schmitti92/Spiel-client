@@ -14,4 +14,5 @@ $('rematch').onclick=async()=>{const button=$('rematch');button.disabled=true;bu
 $('understood').onclick=async()=>{ack=true;$('understood').disabled=true;try{await req('/merk-matrix/understood',{matchId});await refresh();}catch(e){ack=false;$('error').textContent=e.message;}};
 setInterval(()=>{if(!room?.match?.merkMatrix)return;const s=room.match.merkMatrix;const end=phase==='countdown'?s.startAt:phase==='memorize'?s.answerAt:phase==='answer'?s.answerEndAt:phase==='reveal'?s.nextAt:null;if(end!==null)$('timer').textContent=Math.max(0,Math.ceil((end-serverNow())/1000))+' s';if(end!==null&&serverNow()>=end&&Date.now()-lastTick>900&&matchId){lastTick=Date.now();req('/merk-matrix/tick',{matchId}).then(data=>{if(data?.match?.id===matchId){room=data;render(data.match.merkMatrix);}else void refresh();}).catch(()=>{});}},180);
 window.addEventListener('spielonline-change',()=>{if(onlineUser()?.getIdToken)void refresh();});setInterval(refresh,2500);refresh();
-</script></body></html>
+</script><script src="../site-global-controls.js?v=20261109-global-1"></script>
+</body></html>

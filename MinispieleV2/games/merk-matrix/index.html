@@ -102,4 +102,5 @@ function finishReveal(){if(state.phase!=='input'&&state.phase!=='suspense')retur
 $('players').addEventListener('click',e=>{const c=e.target.closest('.cell');if(!c||state.phase!=='input')return;const field=c.closest('.playerGrid');if(field?.dataset.player!=='human')return;const p=state.players[0];if(!p.active||p.submitted)return;const i=Number(c.dataset.index);if(p.picks.includes(i))p.picks=p.picks.filter(x=>x!==i);else p.picks.push(i);c.classList.toggle('pick');});
 $('done').addEventListener('click',()=>{if(state.phase!=='input')return;const human=state.players[0];if(!human.active||human.submitted)return;submitPlayer(human,human.picks,Math.min(10,(performance.now()-phaseStart)/1000))});$('start').addEventListener('click',start);$('next').addEventListener('click',()=>{if(state.phase==='reveal'&&!state.result.finished&&state.round<3){state.round++;startRound()}});
 state.players=[makePlayer('human','Spieler 1',false),makePlayer('bot1','Bot 1',true),makePlayer('bot2','Bot 2',true),makePlayer('bot3','Bot 3',true)];render();
-</script></body></html>
+</script><script src="../../../site-global-controls.js?v=20261109-global-1"></script>
+</body></html>

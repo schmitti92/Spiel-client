@@ -20,4 +20,5 @@ const ranking=selected==='total'?data.ranking:(()=>{const r=data.rounds[selected
 for(const entry of ranking){const tr=document.createElement('tr');tr.className=entry.rank===1?'first':entry.rank===2?'second':entry.rank===3?'third':'';const p=players.find(p=>p.id===entry.playerId);const cells=[(entry.rank===1?'🥇':entry.rank===2?'🥈':entry.rank===3?'🥉':'🎖️')+' '+safe(p?.name??p?.id),...(selected==='total'?data.rounds.map(r=>r.find(x=>x.playerId===entry.playerId).score):[data.rounds[selected].find(x=>x.playerId===entry.playerId).score]),data.totals.find(x=>x.playerId===entry.playerId).score];for(const [i,value] of cells.entries()){const td=document.createElement('td');td.textContent=safe(value);if(selected==='total'&&i>0&&i<cells.length-1)td.className='muted';tr.append(td)}body.append(tr)}
 }
 render();document.getElementById('replay').onclick=()=>{selected=0;render()};const room=params.get('room');if(room&&/^\d{3}$/.test(room))document.getElementById('back').href='./lobby.html?room='+encodeURIComponent(room);
-</script></body></html>
+</script><script src="../site-global-controls.js?v=20261109-global-1"></script>
+</body></html>

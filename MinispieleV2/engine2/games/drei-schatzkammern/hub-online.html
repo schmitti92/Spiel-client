@@ -67,4 +67,5 @@ async function load(){if(loading||busy||!code||!user())return;loading=true;try{s
 $('lobby').innerHTML='<a href="../../../lobby.html?room='+encodeURIComponent(code)+'">← Zur gemeinsamen Lobby</a>';
 show('lobby',true);show('roomPanel',false);
 setInterval(load,1500);setInterval(()=>{if(snapshot&&!loading)render()},120);load();
-</script></body></html>
+</script><script src="../../../../site-global-controls.js?v=20261109-global-1"></script>
+</body></html>
