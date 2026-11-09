@@ -321,12 +321,12 @@
   };
   // Banker bonuses have an already selected pack and credited cards. Never
   // start or poll a wheel; open the shared reveal immediately for all clients.
-  if(directBankerPack){finalWheelStarted=true;showCards();}
+  if(directBankerPack)showCards();
 
  }
 
  async function startWheel(){
-  if(!pendingSpin||!activeWheelReward||spinButton.disabled||activeWheelReward.uid!==user()?.uid)return;
+  if(activeWheelKind==='banker'||!pendingSpin||!activeWheelReward||spinButton.disabled||activeWheelReward.uid!==user()?.uid)return;
   spinButton.disabled=true;wheelStatus.textContent='🎡 Starte das Glücksrad für alle …';
   try{
    const token=await user().getIdToken();
@@ -340,7 +340,7 @@
  }
  spinButton.addEventListener('click',startWheel);
  function syncWheel(){
-  if(!activeWheelReward||finalWheelStarted||typeof g==='undefined'||g?.id!==activeWheelReward.gameId||!pendingSpin)return;
+  if(activeWheelKind==='banker'||!activeWheelReward||finalWheelStarted||typeof g==='undefined'||g?.id!==activeWheelReward.gameId||!pendingSpin)return;
   const startedAt=g.christmasWheelSpins?.[activeWheelKind+':'+activeWheelReward.id];
   if(startedAt)pendingSpin(startedAt);
  }
@@ -349,7 +349,7 @@
  // Only poll while a wheel is actually waiting; stop as soon as the spin begins.
  let wheelStatusChecking=false;
  async function checkWheelStart(){
-  if(wheelStatusChecking||!activeWheelReward||finalWheelStarted||box.hidden||!room())return;
+  if(activeWheelKind==='banker'||wheelStatusChecking||!activeWheelReward||finalWheelStarted||box.hidden||!room())return;
   const u=user();if(!u?.getIdToken)return;
   wheelStatusChecking=true;
   try{
