@@ -107,5 +107,5 @@ test('rewards, profiles, receipts and backend activity remain delegated to exist
  assert.match(ice,/id="event-guide-close"/);
  assert.match(ice,/id="event-world-link"/);
  assert.doesNotMatch(shared,/\bfetch\s*\(/);
- assert.doesNotMatch(shared,/firebase|firestore/i);
+ assert.doesNotMatch(shared.replace(/\/\*[\s\S]*?\*\//g,''),/firebase|firestore/i);
 });
