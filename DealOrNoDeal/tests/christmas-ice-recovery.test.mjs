@@ -29,20 +29,33 @@ test('uncertain retries always preserve original request ID, even after progress
  assert.match(source, /if\(!same\)\{message/);
 });
 
-test('pending action belongs to the signed-in profile and is validated', () => {
- const fragment = source.slice(source.indexOf('function readPending(){'), source.indexOf('function forgetPending(){'));
- assert.ok(fragment.startsWith('function readPending(){'));
+test('repair bar always appears above the board and is cache-busted', () => {
+ assert.match(source, /v44-recovery-bar/);
+ assert.match(source, /repair\.onclick=\(\)=>load\(\)/);
+ assert.match(page, /online-ice\.js\?v=20261109-auto-recovery-top-v4/);
+ assert.match(page, /#ice-online \.v44-recovery-bar/);
+ assert.match(source, /if\(shouldRecover\)\{/);
+ assert.match(source, /await run\(old\.type,old\.extra\|\|\{\}\)/);
+});
+
+test('pending action persists across browser tabs, but belongs only to the signed-in profile', () => {
+ const fragment = source.slice(source.indexOf('const ICE_PENDING_KEY='), source.indexOf('let galleryPage='));
+ assert.ok(fragment.startsWith('const ICE_PENDING_KEY='));
  const current = { uid: 'user-david' };
- let stored = JSON.stringify({ uid: 'user-david', type: 'strike', key:'strike:0:3:double',
-  requestId:'ice-existing-request-123',extra:{index:3,hammer:'double'} });
+ let session = '';
+ let durable = '';
  const context = {
-  sessionStorage: { getItem: () => stored },
-  user: () => current
+  sessionStorage: { getItem: () => session, setItem:(k,v)=>{session=v}, removeItem:()=>{session=''} },
+  localStorage: { getItem: () => durable, setItem:(k,v)=>{durable=v}, removeItem:()=>{durable=''} },
+  user: () => current,
  };
- assert.equal(runInNewContext(fragment + '\nreadPending()?.requestId', context), 'ice-existing-request-123');
- current.uid = 'another-player';
- assert.equal(runInNewContext(fragment + '\nreadPending()', context), null);
- current.uid = 'user-david';
- stored = JSON.stringify({uid:'user-david',type:'strike',key:'bad',requestId:'!',extra:{}});
- assert.equal(runInNewContext(fragment + '\nreadPending()', context), null);
+ const action={uid:'user-david',type:'strike',key:'strike:0:3:double',requestId:'ice-existing-request-123',extra:{index:3,hammer:'double'}};
+ assert.equal(runInNewContext(fragment + '\nrememberPending(' + JSON.stringify(action) + '); readPending()?.requestId', context), action.requestId);
+ session='';
+ assert.equal(runInNewContext(fragment + '\nreadPending()?.requestId', context), action.requestId, 'durable fallback must survive tab closure');
+ current.uid='other-player';
+ assert.equal(runInNewContext(fragment + '\nreadPending()', context), null, 'do not leak one player pending action to another');
+ current.uid='user-david';
+ durable=JSON.stringify({...action,requestId:'!',savedAt:Date.now()});
+ assert.equal(runInNewContext(fragment + '\nreadPending()', context), null, 'invalid IDs must never be replayed');
 });
