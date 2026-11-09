@@ -343,3 +343,199 @@ body.christmas-event-ice .v44-reward .v44-reward-status{
 @media(max-width:600px){
  body.christmas-event-ice .v44-reward{min-height:222px!important}
 }
+
+
+/* ============================================================
+   Winterstudio Grand Finale | milestone gallery & chest reveal
+   ------------------------------------------------------------
+   The first 4 cards fill row one. The last 3 are larger and
+   centered across row two. On phones, keep two readable columns.
+   ============================================================ */
+body.christmas-event-ice .v44-progress{
+ overflow:visible!important;
+}
+body.christmas-event-ice .v44-rewards{
+ display:grid!important;
+ grid-template-columns:repeat(12,minmax(0,1fr))!important;
+ gap:clamp(11px,1.2vw,19px)!important;
+ padding:9px 5px 5px;
+}
+body.christmas-event-ice .v44-rewards>.v44-reward{
+ grid-column:span 3!important;
+ min-height:270px!important;
+ padding:13px 10px 16px!important;
+}
+body.christmas-event-ice .v44-rewards>.v44-reward:nth-child(n+5){
+ grid-column:span 4!important;
+ min-height:282px!important;
+}
+body.christmas-event-ice .v44-rewards>.v44-reward .v44-reward-art{
+ min-height:148px!important;
+ margin:5px auto 8px!important;
+}
+body.christmas-event-ice .v44-rewards>.v44-reward .v44-reward-art img{
+ height:145px!important;width:min(100%,195px)!important;
+ object-fit:contain!important;
+}
+body.christmas-event-ice .v44-rewards>.v44-reward:nth-child(n+5) .v44-reward-art img{
+ height:158px!important;width:min(100%,235px)!important;
+}
+body.christmas-event-ice .v44-rewards>.v44-reward .v44-reward-title{
+ font-size:clamp(15px,1.12vw,19px)!important;
+}
+body.christmas-event-ice .v44-rewards>.v44-reward .v44-reward-status{
+ min-height:32px!important;display:flex!important;align-items:center;
+ justify-content:center;text-align:center;
+}
+body.christmas-event-ice .v44-rewards>.v44-reward.done{
+ border-color:#ade9c0;box-shadow:inset 0 1px 0 #eaffdf67,0 0 18px #51dba462;
+}
+body.christmas-event-ice .v44-rewards>.v44-reward.current{
+ border-color:#ffebbd;box-shadow:0 0 0 2px #ffe4a448,0 0 28px #ffd17ba0,inset 0 0 22px #f9cb5342;
+}
+body.christmas-event-ice .v44-rewards>.v44-reward.current .v44-reward-art img{
+ filter:drop-shadow(0 0 19px #ffcf7cb8);
+}
+body.christmas-event-ice .v44-rewards>.v44-reward[data-milestone="70"]{
+ border-width:3px;
+}
+body.christmas-event-ice .v44-rewards>.v44-reward[data-milestone="70"] .v44-reward-title{
+ color:#fff0b8!important;font-weight:900!important;
+}
+/* Show the next gallery picture clearly, while preserving locked pictures. */
+body.christmas-event-ice .v44-thumb.current-preview{
+ border-color:#ffe7a5!important;box-shadow:0 0 0 2px #ffc85d80,0 0 18px #f3c771a3!important;
+ background:linear-gradient(135deg,#6d3c42,#314969)!important;
+}
+body.christmas-event-ice .v44-thumb.current-preview::after{
+ content:'JETZT';position:absolute;right:3px;top:3px;
+ background:#ffe19a;color:#422818;padding:2px 4px;border-radius:4px;
+ font:900 9px system-ui,sans-serif;pointer-events:none;
+}
+body.christmas-event-ice .v44-board{
+ box-shadow:0 0 0 3px #f7d99e6b,0 0 27px #79daffb8,
+            0 11px 32px #000b,inset 0 0 20px #efffff6e!important;
+}
+body.christmas-event-ice .v44-board::after{
+ content:'❄  ✧  ❄  ✦  ❄  ✧  ❄';position:absolute;bottom:1px;left:0;right:0;
+ pointer-events:none;text-align:center;z-index:2;
+ color:#efffffba;font-size:12px;letter-spacing:clamp(3px,1vw,12px);
+ text-shadow:0 0 8px #e2faff;opacity:.75;
+}
+/* The current hammer should look selected from across a tablet. */
+body.christmas-event-ice .v44-hammer.selected{
+ outline:3px solid #ffe4a8!important;outline-offset:2px;
+ box-shadow:0 0 0 3px #593418aa,0 0 22px #ffca78bb,inset 0 0 17px #f6d07840!important;
+}
+body.christmas-event-ice .v44-hammer.selected .v44-hammer-art{
+ filter:drop-shadow(0 0 13px #ffe5a2bb);
+}
+/* Large, cinematic, screen-friendly reveal for the 10..70 chests. */
+body.christmas-event-ice .v44-celebration-milestone{
+ width:min(770px,94vw)!important;
+ padding:clamp(12px,1.9vw,25px) clamp(14px,2.3vw,32px) 20px!important;
+ border:4px ridge #ffdf96!important;
+ background:
+  radial-gradient(circle at 50% 33%,#bd71365b,transparent 61%),
+  linear-gradient(145deg,#5d1024,#82283a 49%,#29102f)!important;
+ box-shadow:0 0 0 2px #ffe9a344,0 0 100px #f8c266a8,inset 0 0 33px #390b18!important;
+ isolation:isolate;
+}
+body.christmas-event-ice .v44-celebration-milestone .v44-celebration-star{
+ font-size:clamp(35px,4.2vw,64px)!important;line-height:1.05!important;
+}
+body.christmas-event-ice .v44-celebration-milestone h2{
+ margin:0 0 3px!important;font-size:clamp(21px,2.7vw,33px)!important;
+}
+body.christmas-event-ice .v44-celebration-milestone>p{
+ margin:4px 0!important;font-weight:750;
+}
+body.christmas-event-ice .v44-milestone-unlock{
+ position:relative;display:flex;flex-direction:column;align-items:center;
+ justify-content:center;gap:8px;padding:9px 12px 13px;
+ text-align:center;z-index:1;
+}
+body.christmas-event-ice .v44-milestone-kicker{
+ color:#ffeba7;font:900 clamp(12px,1.1vw,17px)/1.2 system-ui,sans-serif;
+ letter-spacing:.14em;text-shadow:0 0 12px #ffe7a1;
+}
+body.christmas-event-ice .v44-milestone-treasure{
+ position:relative;display:grid;place-items:center;
+ width:min(380px,100%);height:clamp(196px,34dvh,319px);
+}
+body.christmas-event-ice .v44-milestone-treasure::before{
+ content:'';position:absolute;inset:11% 5%;z-index:0;
+ border-radius:50%;background:radial-gradient(circle,#fff1af98 0%,#ffc46766 33%,transparent 70%);
+ filter:blur(5px);
+ animation:v44-grand-aura 2.1s ease-in-out infinite alternate;
+}
+body.christmas-event-ice .v44-milestone-rays{
+ position:absolute;inset:0;border-radius:50%;z-index:0;
+ background:repeating-conic-gradient(from 0deg,#f5eab730 0deg 8deg,transparent 8deg 20deg);
+ mask-image:radial-gradient(ellipse,#0000 28%,#0009 42%,transparent 75%);
+ animation:v44-grand-rays 20s linear infinite;
+}
+body.christmas-event-ice .v44-milestone-treasure img{
+ position:relative;z-index:2;display:block;
+ width:min(100%,330px);height:100%;object-fit:contain;
+ filter:drop-shadow(0 10px 13px #000b) drop-shadow(0 0 18px #ffd27ba3);
+ animation:v44-grand-chest .75s cubic-bezier(.17,1.35,.3,1) both;
+}
+body.christmas-event-ice .v44-milestone-title{
+ color:#ffedbb;font:900 clamp(22px,2.8vw,37px)/1.12 Georgia,serif;
+ text-shadow:0 0 17px #f8c85eaa;
+}
+body.christmas-event-ice .v44-milestone-message{
+ max-width:630px;margin:5px 0!important;
+ font:750 clamp(13px,1.08vw,17px)/1.45 system-ui,sans-serif;
+ color:#fff5e2;
+}
+body.christmas-event-ice .v44-milestone-seal{
+ border:1px solid #ffe9ab;border-radius:999px;padding:6px 16px;
+ color:#43210b;background:linear-gradient(120deg,#fff3c4,#e9b151);
+ font:900 12px system-ui,sans-serif;letter-spacing:.09em;
+ box-shadow:0 0 22px #fbd77981;
+}
+body.christmas-event-ice .v44-celebration-milestone #v44-celebration-close{
+ display:inline-block;width:min(420px,100%);min-height:46px;
+ margin-top:6px;font:900 clamp(14px,1.3vw,18px) Georgia,serif;
+ box-shadow:0 0 18px #f8cd6a96;
+}
+body.christmas-event-ice .v44-celebration-milestone:has([data-milestone="70"]){
+ box-shadow:0 0 0 3px #fff1b47a,0 0 95px #ffe4a2a6,inset 0 0 45px #c8a15366!important;
+}
+@keyframes v44-grand-chest{
+ from{opacity:.1;transform:translateY(42px) scale(.53) rotate(-7deg)}
+ to{opacity:1;transform:translateY(0) scale(1) rotate(0)}
+}
+@keyframes v44-grand-rays{to{transform:rotate(360deg)}}
+@keyframes v44-grand-aura{to{opacity:.58;transform:scale(1.11)}}
+@media(max-width:720px){
+ body.christmas-event-ice .v44-rewards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+ body.christmas-event-ice .v44-rewards>.v44-reward,
+ body.christmas-event-ice .v44-rewards>.v44-reward:nth-child(n+5){
+   grid-column:auto!important;min-height:222px!important;padding:10px 7px!important;
+ }
+ body.christmas-event-ice .v44-rewards>.v44-reward:last-child{
+   grid-column:1/-1!important;width:min(300px,100%);justify-self:center;
+ }
+ body.christmas-event-ice .v44-rewards>.v44-reward .v44-reward-art{min-height:110px!important}
+ body.christmas-event-ice .v44-rewards>.v44-reward .v44-reward-art img,
+ body.christmas-event-ice .v44-rewards>.v44-reward:nth-child(n+5) .v44-reward-art img{
+   height:112px!important;
+ }
+ body.christmas-event-ice .v44-milestone-treasure{height:clamp(172px,28dvh,245px)}
+ body.christmas-event-ice .v44-milestone-treasure img{width:min(100%,245px)}
+ body.christmas-event-ice .v44-milestone-unlock{gap:5px;padding:4px}
+ body.christmas-event-ice .v44-celebration-milestone .v44-celebration-sparkles{font-size:14px;letter-spacing:5px}
+}
+@media(max-height:650px){
+ body.christmas-event-ice .v44-milestone-treasure{height:clamp(140px,27dvh,205px)}
+ body.christmas-event-ice .v44-celebration-milestone .v44-celebration-star{font-size:38px!important}
+ body.christmas-event-ice .v44-milestone-message{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.christmas-event-ice .v44-milestone-treasure::before,
+ body.christmas-event-ice .v44-milestone-rays,
+ body.christmas-event-ice .v44-milestone-treasure img{animation:none!important}
+}
