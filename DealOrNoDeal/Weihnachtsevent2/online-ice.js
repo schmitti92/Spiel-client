@@ -108,9 +108,9 @@ function render(){
   +'</span></div><div class="v44-progress-count">'+state.completed+' / 70 Bilder abgeschlossen</div>'
   +'<div class="v44-progress-meter" role="progressbar" aria-label="Fortschritt der Weihnachtsbilder" aria-valuemin="0" aria-valuemax="70" aria-valuenow="'+state.completed+'"><i style="width:'+(state.completed/70*100)+'%"></i></div></div>';
  const milestones=Array.from({length:7},(_,i)=>(i+1)*10).map(n=>{
-  const unlocked=state.completed>=n,current=!unlocked&&n===nextMilestone;
+  const unlocked=(n===20?Math.max(Number(state.completed)||0,Number(state.maxRewarded)||0):Number(state.completed)||0)>=n,current=!unlocked&&n===nextMilestone;
   const first=n===10,final=n===70;
-  const title=first?(unlocked?'Jan Schlappen':'Geheime Belohnung'):final?'Weihnachtsfinale':'Geheime Schatztruhe';
+  const title=first?(unlocked?'Jan Schlappen':'Geheime Belohnung'):n===20?(unlocked?'🎲 Weihnachtswürfel für Kniffel':'Geheime Belohnung'):final?'Weihnachtsfinale':'Geheime Schatztruhe';
   const stateText=unlocked?'✅ Meilenstein erreicht':current?'🎁 Noch '+(n-state.completed)+' Bild'+(n-state.completed===1?'':'er'):'🔒 Noch gesperrt';
   const art=milestoneIllustrations[n];
   return '<article class="v44-reward '+(unlocked?'done':current?'current':'locked')+'" data-milestone="'+n+'" aria-label="Meilenstein bei '+n+' von 70 Bildern: '+stateText+'">'
@@ -130,6 +130,7 @@ function render(){
  +'<strong class="v44-milestone-title">'+celebration.number+' von 70 Weihnachtsbildern!</strong>'
  +'<p class="v44-milestone-message">'+(celebration.number===10
   ?'🎭 Jan Schlappen freigeschaltet! Du kannst ihn jetzt in der Deal-or-No-Deal-Lobby auswählen. Die Freischaltung bleibt nach einem Spiel-Reset erhalten.'
+  :celebration.number===20?'🎲 Weihnachtswürfel freigeschaltet! Deine sechs roten Würfel mit goldenen Augen sind ab jetzt in Kniffel (lokal und online) verfügbar. Melde dich mit demselben Profil an und schalte das Design nach Wunsch an oder aus. Die Freischaltung bleibt nach einem Reset bestehen.'
   :'🎄 Meilenstein geschafft! Deine reguläre Bildbelohnung ist online gespeichert. Für diesen Meilenstein gibt es derzeit keine zusätzliche Freischaltung.')+'</p>'
  +'<span class="v44-milestone-seal">🎖️ WEIHNACHTS-ERFOLG</span></div>'
  +'<button id="v44-celebration-close">'+(state.completed>=70?'🏆 Abschluss ansehen':'➡️ Nächstes Weihnachtsbild')+'</button>'
