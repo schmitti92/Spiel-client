@@ -10,10 +10,27 @@
  document.body.append(dialog);
  const el=id=>document.getElementById(id);
  let selected=null,balance=0,loading=false,receipt=null,recoveringPending=false;
+ const caseCount=()=>[26,27,28].includes(Number(g?.caseCount))?Number(g.caseCount):26;
+ const errorMessage=error=>({
+  INVALID_REQUEST:'Ungültige Kofferauswahl. Bitte das Spiel aktualisieren.',
+  INVALID_CASE:'Dieser Koffer existiert in der aktuellen Partie nicht.',
+  GAME_INVALID:'Die Partie konnte nicht geprüft werden. Bitte Serveraktualisierung abwarten.',
+  GAME_NOT_FOUND:'Die Partie wurde nicht gefunden. Bitte erneut zur Lobby wechseln.',
+  NOT_IN_ROOM:'Du bist nicht mehr in diesem Spielraum.',
+  NOT_PARTICIPANT:'Du bist kein aktiver Teilnehmer dieser Partie.',
+  NOT_ACTIVE_PLAYER:'Du hast bereits einen Deal angenommen oder spielst nicht mehr aktiv.',
+  JOKER_NOT_AVAILABLE:'Der Kofferblick ist in dieser Spielphase nicht verfügbar.',
+  CASE_NOT_CLOSED:'Dieser Koffer wurde bereits geöffnet oder wird gerade enthüllt.',
+  NO_JOKERS:'Du hast momentan keinen verfügbaren Kofferblick-Joker.',
+  REQUEST_REUSED:'Dieser Jokerauftrag wurde bereits für einen anderen Koffer verwendet.',
+  STORAGE_UNAVAILABLE:'Der Server kann die Joker derzeit nicht prüfen.',
+  AUTH_FAILED:'Anmeldung abgelaufen. Bitte erneut anmelden.'
+ })[error]||error;
+
  const pendingKey=()=>['deal-peek-pending-v1',code,myId(),g?.id].join(':');
  const savePending=()=>{try{sessionStorage.setItem(pendingKey(),JSON.stringify({case:selected,requestId:receipt}))}catch{}};
  const clearPending=()=>{try{sessionStorage.removeItem(pendingKey())}catch{}};
- const restorePending=()=>{try{const p=JSON.parse(sessionStorage.getItem(pendingKey())||'null');if(p&&Number.isInteger(p.case)&&p.case>=0&&p.case<26&&/^[a-zA-Z0-9_-]{12,90}$/.test(p.requestId)){selected=p.case;receipt=p.requestId;return true}}catch{}return false};
+ const restorePending=()=>{try{const p=JSON.parse(sessionStorage.getItem(pendingKey())||'null');if(p&&Number.isInteger(p.case)&&p.case>=0&&p.case<caseCount()&&/^[a-zA-Z0-9_-]{12,90}$/.test(p.requestId)){selected=p.case;receipt=p.requestId;return true}}catch{}return false};
  const active=()=>typeof g!=='undefined'&&g&&['open','reveal','decision'].includes(g.phase)&&g.players?.some(p=>p.id===myId()&&p.deal===null);
  const api=async(method,path,body)=>{
   const u=user();if(!u)throw Error('Bitte anmelden');
@@ -27,7 +44,7 @@
   const root=el('peek-cases');root.replaceChildren();
   if(!active())return;
   const own=g.players.find(p=>p.id===myId())?.case;
-  for(let i=0;i<26;i++){
+  for(let i=0;i<caseCount();i++){
    const b=document.createElement('button');b.type='button';b.textContent=String(i+1);b.classList.toggle('own',own===i);
    b.title='Koffer '+(i+1)+(own===i?' (dein Koffer)':'');
    b.disabled=loading||balance<1||g.opened.includes(i)||g.pending?.case===i||selected!==null&&selected!==i;
@@ -56,7 +73,11 @@
    el('peek-note').textContent='Nur auf deinem Gerät sichtbar. Der Koffer bleibt verschlossen.';
    el('peek-confirm').hidden=true;
    clearPending();recoveringPending=false;selected=null;receipt=null;
-  }catch(e){el('peek-result').textContent='';el('peek-error').textContent='Kofferblick fehlgeschlagen: '+e.message+'. Erneut versuchen ist möglich.'}
+   }catch(e){
+   el('peek-result').textContent='';
+   el('peek-error').textContent='Kofferblick fehlgeschlagen: '+errorMessage(e.message)+
+    '. Bei Verbindungsproblemen dieselbe Anfrage erneut versuchen.';
+  }
   finally{loading=false;draw()}
  }
  launch.addEventListener('click',open);el('peek-close').addEventListener('click',close);
