@@ -26,7 +26,7 @@ body.has-royal-north-gallery #event-album .album-collection-panel.north-pole{
 }
 body.has-royal-north-gallery #event-album .north-pole .card.owned{border-color:#fff1b4!important;box-shadow:0 0 24px #fff0a3ab!important}
 @keyframes north-star-dust{0%,100%{opacity:.45;transform:translateY(-5px)}50%{opacity:1;transform:translateY(5px)}}
-body.north-aurora-active{background:linear-gradient(180deg,#03132183,#06192a75),url('./assets/weihnachts_event/nordpol_aurora_lobby.svg') center/cover fixed!important}
+body.north-aurora-active{background:linear-gradient(180deg,#03132183,#06192a75),url('../assets/weihnachts_event/nordpol_aurora_lobby.svg') center/cover fixed!important}
 body.north-aurora-active .hero,body.north-aurora-active .grid>.panel{box-shadow:0 0 28px #4ee4bd43,inset 0 1px #8cf7dc68!important}
 #north-pole-lobby-trophy:not([hidden]){display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border:1px solid #ffea9e;border-radius:30px;background:#192c45dd;color:#ffeba0;font-size:clamp(10px,.95vw,15px);font-weight:900;box-shadow:0 0 15px #ffda8055}
 #north-pole-lobby-trophy[hidden]{display:none!important}
