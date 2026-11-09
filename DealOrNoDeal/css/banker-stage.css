@@ -539,3 +539,29 @@
   background:#061629f5!important;
  }
 }
+
+/* V9: cinematic staged banker surprise — presentation only, no award mutation. */
+#banker-call .banker-bonus-reveal-card{position:relative;isolation:isolate;overflow:hidden;width:min(650px,96vw);background:radial-gradient(ellipse at 50% -10%,#45688d,#152d50 52%,#060e22 100%);border:2px solid #ffe8a0;box-shadow:0 0 0 5px #9b742b55,0 0 95px #ffd15a5c,0 24px 70px #000e}
+#banker-call .banker-bonus-reveal-card:before{content:'';position:absolute;inset:-75%;z-index:-1;background:conic-gradient(from 0deg,transparent 0 15%,#f9cf5c22 19%,transparent 24% 42%,#e4b35a1c 49%,transparent 54%);animation:banker-spotlight-rotate 8s linear infinite;pointer-events:none}
+#banker-call .banker-bonus-show-lights{display:flex;justify-content:space-around;width:100%;color:#ffe4a2;font-size:clamp(17px,3vw,30px);text-shadow:0 0 14px #ffcc52}
+#banker-call .banker-bonus-show-lights span{animation:banker-star-pulse 1.2s ease-in-out infinite alternate}
+#banker-call .banker-bonus-show-lights span:nth-child(2n){animation-delay:.5s}
+#banker-call .banker-bonus-reveal-intro{font-size:clamp(12px,1.5vw,18px);font-weight:750;color:#dceaff;max-width:500px}
+#banker-call .banker-bonus-reveal-offer{width:100%;padding:10px 12px;border:1px solid #ffdf88;border-radius:12px;background:linear-gradient(100deg,#2c2039,#785321,#30203b);color:#fff2b9;font-size:clamp(15px,2vw,23px);font-weight:1000;letter-spacing:.025em;box-shadow:inset 0 0 25px #ffdf7826,0 0 20px #ffcb5b3b}
+#banker-call .banker-bonus-reveal[data-stage="intro"] .banker-bonus-reveal-items{opacity:0;transform:scale(.76);filter:blur(9px)}
+#banker-call .banker-bonus-reveal[data-stage="intro"] .banker-bonus-reveal-offer{opacity:0}
+#banker-call .banker-bonus-reveal[data-stage="spotlight"] .banker-bonus-reveal-items{opacity:.28;transform:scale(.9);filter:blur(5px)}
+#banker-call .banker-bonus-reveal[data-stage="spotlight"] .banker-bonus-reveal-offer{opacity:0}
+#banker-call .banker-bonus-reveal-items{transition:opacity .6s,transform .7s,filter .7s}
+#banker-call .banker-bonus-reveal-offer{transition:opacity .6s,transform .6s}
+#banker-call .banker-bonus-reveal[data-stage="reward"] .banker-bonus-reveal-item,#banker-call .banker-bonus-reveal[data-stage="deal"] .banker-bonus-reveal-item{box-shadow:inset 0 2px 0 #fff5,0 0 28px #f8c45e77,0 12px 25px #0008}
+#banker-call .banker-bonus-reveal[data-stage="deal"] .banker-bonus-reveal-offer{animation:banker-offer-final-pulse 1.15s ease-in-out infinite alternate}
+#banker-call .banker-bonus-reveal-item img{filter:drop-shadow(0 8px 12px #0009) drop-shadow(0 0 16px #ffe08c70)}
+#banker-call .banker-bonus-reveal-item.pack .banker-bonus-pack-art{animation:banker-gift-float 2.2s ease-in-out infinite alternate}
+#banker-call .banker-bonus-reveal[data-bonus-type="double"] .banker-bonus-reveal-head{background:linear-gradient(90deg,#fff2b4,#ffca55,#fff6da);background-clip:text;-webkit-background-clip:text;color:transparent}
+@keyframes banker-spotlight-rotate{to{transform:rotate(360deg)}}
+@keyframes banker-star-pulse{to{opacity:.4;transform:scale(.65)}}
+@keyframes banker-gift-float{to{transform:translateY(-8px) rotate(3deg)}}
+@keyframes banker-offer-final-pulse{to{box-shadow:inset 0 0 28px #ffe6a13b,0 0 32px #ffdf7b8c;transform:scale(1.025)}}
+@media(max-width:650px){#banker-call .banker-bonus-reveal-card{gap:7px;padding:12px 10px}#banker-call .banker-bonus-reveal-head{font-size:clamp(22px,6vw,31px)}#banker-call .banker-bonus-reveal-item strong{font-size:13px}#banker-call .banker-bonus-reveal-item{padding:8px 5px}#banker-call .banker-bonus-reveal-offer{padding:8px 5px}}
+@media(prefers-reduced-motion:reduce){#banker-call .banker-bonus-reveal-card:before,#banker-call .banker-bonus-show-lights span,#banker-call .banker-bonus-reveal-item.pack .banker-bonus-pack-art,#banker-call .banker-bonus-reveal[data-stage="deal"] .banker-bonus-reveal-offer{animation:none!important}#banker-call .banker-bonus-reveal-items,#banker-call .banker-bonus-reveal-offer{transition:none!important}}
