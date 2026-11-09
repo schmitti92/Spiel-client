@@ -21,7 +21,8 @@
   const visible=ready||checking;
   tip.hidden=!(visible&&id('reveal-summary')?.hidden===false);
   tip.textContent=ready
-   ?'🏆 '+state.earned+' bestätigte'+(state.earned===1?' Siegesshow':' Siegesshows')+' wartet'+(state.earned===1?'':'n')+' nach dem Paket auf dich!'
+   ?state.earned===1?'🏆 Deine bestätigte Bingo-Siegesshow wartet nach dem Paket auf dich!'
+     :'🏆 '+state.earned+' bestätigte Bingo-Gewinne warten nach dem Paket auf dich!'
    :'⏳ Hammer-Bingos werden im Hintergrund serverseitig geprüft.';
   if(id('reveal-summary')?.hidden===false){
    button.textContent=ready?'🏆 Weiter zur Siegesshow':checking?'🎬 Weiter · Gewinnprüfung läuft':'Schließen ✓';
