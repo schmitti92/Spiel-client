@@ -319,7 +319,7 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
 @media(max-width:600px){.v44-image-viewer-stage img{max-width:calc(100% - 74px);max-height:70dvh}.v44-image-viewer-stage>button{padding:7px}.v44-image-viewer{padding:8px}}
 </style>
 <link rel="stylesheet" href="../css/christmas-event-hub.css?v=20261109-hub-v1"><script src="../../profile-config.js"></script><script src="../../profile-auth.js"></script></head><body>
-<header class="event-hub-top" aria-label="Weihnachtszauber – gemeinsame Event-Navigation"><span class="event-hub-brand">🎄 Weihnachtszauber <small>2 Events · ein Spiel</small></span><div class="event-hub-tools"><a class="event-hub-tool" id="event-game-link" href="../game.html">🎮 Zum Spiel</a><a class="event-hub-tool" id="event-lobby-link" href="../lobby.html">↩ Zur Spiellobby</a><a href="#" id="event-guide-open" class="event-hub-tool event-guide-open">📖 Anleitung</a></div></header>
+<header class="event-hub-top" aria-label="Weihnachtszauber – gemeinsame Event-Navigation"><span class="event-hub-brand"><span class="event-hub-brand-symbol" aria-hidden="true">🎄</span><span>Weihnachtszauber <small>DEAL OR NO DEAL · EVENT-WELT</small></span></span><div class="event-hub-tools"><a class="event-hub-tool" id="event-game-link" href="../game.html">🎮 Zum Spiel</a><a class="event-hub-tool" id="event-lobby-link" href="../lobby.html">↩ Zur Spiellobby</a><button type="button" id="event2-fullscreen" class="event-hub-tool" aria-pressed="false">⛶ Vollbild</button><a href="#" id="event-guide-open" class="event-hub-tool event-guide-open">📖 Anleitung</a></div></header>
 <nav class="event-tabs event-hub-nav" aria-label="Weihnachtsbereiche">
 <a href="../weihnachten.html?view=album">🃏 Sammlung</a>
 <a href="../weihnachten.html?view=packs">🎁 Pakete</a>
@@ -342,6 +342,20 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
    a.href=url.href;
   });
  }
+ const fullscreen=document.getElementById('event2-fullscreen');
+ function syncFullscreen(){
+  const active=!!document.fullscreenElement;
+  fullscreen.textContent=active?'⛶ Vollbild beenden':'⛶ Vollbild';
+  fullscreen.setAttribute('aria-pressed',String(active));
+ }
+ fullscreen.addEventListener('click',async()=>{
+  try{
+   if(document.fullscreenElement)await document.exitFullscreen();
+   else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();
+   else throw Error('Vollbild nicht verfügbar');
+  }catch(e){fullscreen.title=e.message||'Vollbild nicht verfügbar';fullscreen.textContent='⚠ Vollbild nicht verfügbar'}
+ });
+ document.addEventListener('fullscreenchange',syncFullscreen);syncFullscreen();
 })();
 </script>
 
