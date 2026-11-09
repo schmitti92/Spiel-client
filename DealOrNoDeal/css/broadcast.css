@@ -303,3 +303,34 @@ body:has(#banker-call:not([hidden])) .layout>.panel.case-stage:before{
  #banker-call .final-choice-option strong{font-size:clamp(20px,2.6vw,38px)!important}
  #banker-call .banker-call-actions{margin:0!important}
 }
+
+/* V10 · Winter banker broadcast — visual-only redesign, preserves all live DOM and voting. */
+#banker-call.banker-call{background:radial-gradient(ellipse at 50% 30%,#153458,#030a19 80%)!important}
+#banker-call .banker-call-card{
+ border:2px solid #f7d38c!important;border-radius:25px!important;
+ background:linear-gradient(135deg,#07142cf7,#0a1c36f8 55%,#081126fa)!important;
+ box-shadow:inset 0 0 0 2px #fff3bc23,inset 0 0 30px #d8a54b1c,0 0 0 5px #ae732a24,0 20px 70px #000d,0 0 36px #ffcc7745!important;
+}
+#banker-call .banker-call-eyebrow:first-child{color:#ffe5a3!important;text-shadow:0 0 14px #ffae44;letter-spacing:.19em!important;font-size:clamp(10px,1.15vw,16px)!important}
+#banker-call .banker-money-board,#banker-call .banker-call-portrait,#banker-call .banker-offer-details{
+ border:2px solid #dba65b!important;border-radius:20px!important;
+ background-color:#07172df2!important;
+ box-shadow:inset 0 0 0 1px #ffe6a82c,inset 0 0 20px #daa84a14,0 0 18px #ffcb7738!important;
+}
+#banker-call .banker-money-board{background:linear-gradient(155deg,#091b33,#061022)!important}
+#banker-call .banker-money-board h3{color:#ffe6a7!important;text-shadow:0 0 12px #ffbb53a0!important;letter-spacing:.04em}
+#banker-call .banker-money-value:not(.gone):not(.removed){background:linear-gradient(180deg,#f2c978,#b57a2b 55%,#8c5b23)!important;border:1px solid #f6d58b!important;color:#fff9e8!important;text-shadow:0 1px 3px #44220c!important;box-shadow:inset 0 1px 1px #fff9b28a,0 2px 4px #0008!important}
+#banker-call .banker-money-value.gone,#banker-call .banker-money-value.removed{background:#07111e!important;color:#88909e!important;box-shadow:inset 0 0 0 1px #8f8d8c4d!important}
+#banker-call .banker-call-portrait{overflow:hidden!important;border-color:#ffd18b!important;box-shadow:0 0 0 2px #b66a3a5c,0 0 23px #ffb34b65!important}
+#banker-call .banker-offer-video{object-fit:contain!important}
+#banker-call .banker-director-caption{background:linear-gradient(90deg,#07152deb,#1a263ded,#07152deb)!important;color:#fff1ca!important;border:1px solid #e8b66d99!important;box-shadow:0 0 15px #0009!important;text-shadow:0 2px 3px #000}
+#banker-call .banker-offer-details{background:linear-gradient(165deg,#0b2340,#08162c 65%,#0a1b32)!important;padding:clamp(8px,1.15vw,18px)!important}
+#banker-call #banker-call-title{color:#ffe7af!important;text-shadow:0 2px 6px #000,0 0 12px #e8ad5477!important}
+#banker-call .banker-call-amount{border:2px solid #ffdc8e!important;border-radius:16px!important;background:linear-gradient(115deg,#6b100d,#a72c15 42%,#67120f)!important;color:#ffe9a4!important;text-shadow:0 3px 4px #3a0807,0 0 15px #ffb45a!important;box-shadow:inset 0 0 17px #ffc46a55,0 0 18px #f6a04d70!important;font-variant-numeric:tabular-nums}
+#banker-call .banker-christmas-bonus:not([hidden]){border:2px solid #ffd47b!important;background:linear-gradient(90deg,#263f34,#21553a)!important;box-shadow:0 0 13px #6bff9c44!important;color:#fff1bb!important}
+#banker-call .banker-offer-quality,#banker-call .broadcast-offer-math,#banker-call .banker-vote-progress{border-color:#c6a76e88!important;border-radius:13px!important;box-shadow:inset 0 0 12px #2d74a71c!important}
+#banker-call #banker-call-deal,#banker-call #banker-call-no-deal{border:2px solid #ffdb8b!important;border-radius:16px!important;box-shadow:inset 0 2px 2px #ffffff80,0 4px 0 #3b2514,0 0 15px #ffcd6a55!important;text-shadow:0 2px 4px #0009!important;font-weight:1000!important}
+#banker-call #banker-call-deal{background:linear-gradient(#27b75c,#078c3c 55%,#075b2b)!important;color:#fff!important}
+#banker-call #banker-call-no-deal{background:linear-gradient(#f45145,#c51b20 55%,#8b1116)!important;color:#fff!important}
+#banker-call #banker-call-deal:focus-visible,#banker-call #banker-call-no-deal:focus-visible{outline:3px solid white!important;outline-offset:3px}
+@media(max-width:760px),(max-height:540px){#banker-call .banker-call-card{border-radius:13px!important}#banker-call .banker-money-board,#banker-call .banker-call-portrait,#banker-call .banker-offer-details{border-radius:11px!important}#banker-call .banker-offer-details{padding:7px!important}}
