@@ -561,6 +561,7 @@ function load(){
  if(state.status!=='online'||!uid||!state.user?.getIdToken){
   // Invalidate old responses; showing old ownership under another identity is unsafe.
   ++loadSequence;
+  loadInFlight=null;loadInFlightUid=null;
   clearAlbumIdentity();
   if(['initializing','loading'].includes(state.status)){
    document.getElementById('event-balance').textContent='⏳ Profil wird verbunden …';
