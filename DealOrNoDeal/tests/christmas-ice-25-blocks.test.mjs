@@ -10,7 +10,7 @@ const html=read('Weihnachtsevent2/index.html');
 test('browser event scripts parse and 5x5 grid is enabled for 25 blocks',()=>{
  assert.doesNotThrow(()=>new Script(js));
  assert.match(html,/ice-tiles\.ice-tiles-25\{grid-template-columns:repeat\(5,minmax\(0,1fr\)\);grid-template-rows:repeat\(5,minmax\(0,1fr\)\)/);
- assert.match(html,/online-ice\.js\?v=20261109-hammer-show-v1/);
+ assert.match(html,/online-ice\.js\?v=20261109-no-star-after14-v1/);
  assert.match(js,/ice-tiles-25/);
  assert.match(js,/Array\.from\(\{length:tileCount\}/);
  assert.doesNotMatch(js,/Array\.from\(\{length:20\}/);
@@ -63,4 +63,12 @@ test('cinematic hammer shatters follow server-confirmed targets only',()=>{
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
  assert.match(css,/icefx-shatter/);
  assert.match(css,/icefx-lucky/);
+});
+
+test('from image 15, UI explains complete clearing without a hidden star',()=>{
+ assert.match(js,/number>=15\?'🧊 Ab Bild 15 gibt es keinen Stern mehr:/);
+ assert.match(js,/celebration\.number>=15\?'Alle Eisblöcke entfernt!'/);
+ assert.match(js,/celebration\.number>=15\?'🧊':'🌟'/);
+ assert.match(js,/Number\(state\.completed\)>=15\?'🧊 Alle Eisblöcke entfernt!/);
+ assert.match(html,/online-ice\.js\?v=20261109-no-star-after14-v1/);
 });
