@@ -84,6 +84,14 @@ function studioCommentPick(avatar,category,seed){
  const key=avatar+':'+category;
  const previous=studioCommentary.lastLine.get(key);
  let index=Math.abs(Number(seed)||0)%choices.length;
+ if(avatar===14){
+  // Deterministic distribution across the whole catalogue, including lines
+  // beyond the 26 briefcase numbers. All clients choose the same line.
+  const keySeed=String(studioCommentary.gameId||'')+':'+String(seed)+':'+category;
+  let hash=2166136261;
+  for(let i=0;i<keySeed.length;i++){hash=Math.imul(hash^keySeed.charCodeAt(i),16777619)}
+  index=(hash>>>0)%choices.length;
+ }
  if(choices[index]===previous)index=(index+1)%choices.length;
  const line=choices[index];studioCommentary.lastLine.set(key,line);
  return line;
@@ -225,7 +233,18 @@ function studioCommentObserve(game){
    if(!line)line=studioCommentPick(1,category,Number(item.case)+opened.length);
 
   }else{
-   line=studioCommentPick(speakerAvatar,category,Number(item.case)+opened.length);
+   let chosenCategory=category;
+   if(speakerAvatar===14&&!oneCentCase&&!millionCase){
+    const currentIndex=opened.findIndex(x=>x.case===item.case);
+    const remaining=Array.isArray(game.values)?game.values.length-currentIndex-1:99;
+    if(remaining>0&&remaining<=3)chosenCategory='finalCases';
+    else if(currentIndex>=2){
+     const previous=opened.slice(currentIndex-2,currentIndex+1).map(x=>studioCaseReaction(Number(x.amount)));
+     if(previous.every(v=>v==='good'))chosenCategory='streakGood';
+     else if(previous.every(v=>v==='bad'))chosenCategory='streakBad';
+    }
+   }
+   line=studioCommentPick(speakerAvatar,chosenCategory,Number(item.case)+opened.length);
   }
   if(oneCentCase){
    // The one-cent case always gets a celebratory one-cent line, never a generic streak remark.
