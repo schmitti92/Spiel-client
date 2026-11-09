@@ -385,8 +385,12 @@ test('Christmas collection and ice-event use one shared navigation and preserve 
  for(const page of [main,ice]){
   assert.match(page,/christmas-event-hub\.css\?v=[^"']+/);
   assert.match(page,/event-hub-nav/);
-  for(const section of ['Sammlung','Pakete','Spielinformation','Weihnachtsevent 2'])assert.ok(page.includes(section));
+  for(const section of ['Sammlung','Pakete','Weihnachtsevent 2'])assert.ok(page.includes(section));
  }
+ assert.match(main,/id="event-collection-nav"[^>]*role="tablist"/);
+ assert.match(main,/data-view="monster"[^>]*aria-controls="event-monster"|data-view="monster"/);
+ assert.match(main,/id="event-monster"/);
+ assert.match(main,/setChristmasView\('bingo'\)/);
  assert.match(main,/event-main-guide/);
  assert.match(ice,/event-guide-open/);
  assert.match(main,/event-game-link/);
