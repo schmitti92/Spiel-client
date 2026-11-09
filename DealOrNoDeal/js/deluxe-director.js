@@ -3,7 +3,7 @@
 (()=>{
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const hud=document.createElement('aside');hud.id='deluxe-director';hud.setAttribute('aria-label','Live-Regie');
- hud.innerHTML='<div class="deluxe-live"><span class="deluxe-dot"></span> GOLDSTUDIO <b>LIVE</b></div><div class="deluxe-info"><span id="deluxe-phase">DIE SHOW BEGINNT</span><strong id="deluxe-count">26 KOFFER</strong></div><div class="deluxe-risk"><span id="deluxe-risk-label">DIE SPANNUNG STEIGT</span><div class="deluxe-risk-track"><i id="deluxe-risk-fill"></i></div></div><button id="deluxe-sound" type="button" aria-pressed="false" title="Dezente Showklänge ein- oder ausschalten">♪ TON AUS</button>';
+ hud.innerHTML='<div class="deluxe-live"><span class="deluxe-dot"></span> GOLDSTUDIO <b>LIVE</b></div><div class="deluxe-info"><span id="deluxe-phase">DIE SHOW BEGINNT</span><strong id="deluxe-count">26–29 KOFFER</strong></div><div class="deluxe-risk"><span id="deluxe-risk-label">DIE SPANNUNG STEIGT</span><div class="deluxe-risk-track"><i id="deluxe-risk-fill"></i></div></div><button id="deluxe-sound" type="button" aria-pressed="false" title="Dezente Showklänge ein- oder ausschalten">♪ TON AUS</button>';
  document.body.append(hud);
  const phase=$id=>document.getElementById($id);
  let ctx=null,sound=false,lastKey='',lastPhase='',lastOpened=-1,lastOffer='';
