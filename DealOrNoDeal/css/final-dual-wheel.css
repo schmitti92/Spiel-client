@@ -1,0 +1,157 @@
+/* GOLDSTUDIO · ONE-WINDOW CHRISTMAS GRAND FINALE
+   Reuses the two uploaded wheel images; no CSS-drawn replacement wheels. */
+#cent-reward.final-dual-active{
+ background:
+  radial-gradient(ellipse at 50% 17%,rgba(255,214,106,.17),transparent 45%),
+  linear-gradient(160deg,rgba(2,12,28,.82),rgba(15,7,28,.91)),
+  url("../assets/weihnachts_event/weihnachtsstudio.png") center/cover no-repeat;
+ backdrop-filter:blur(7px);
+}
+#cent-reward.final-dual-active::before{
+ content:"";position:absolute;inset:0;pointer-events:none;
+ background:
+  radial-gradient(circle at 11% 13%,#fff3b6b0 0 2px,transparent 4px),
+  radial-gradient(circle at 86% 23%,#fff7c0a8 0 2px,transparent 5px),
+  radial-gradient(circle at 62% 83%,#ffdc9d75 0 2px,transparent 4px);
+ background-size:170px 190px,240px 210px,285px 260px;
+ animation:dual-stars 10s ease-in-out infinite alternate;
+}
+#cent-reward.final-dual-active .cent-reward-card{
+ position:relative;isolation:isolate;
+ width:min(1170px,98vw);max-height:96dvh;overflow-y:auto;
+ padding:clamp(10px,1.6vw,22px);
+ border:3px solid #f8dd9b;border-radius:27px;
+ background:
+  linear-gradient(180deg,rgba(14,19,38,.72),rgba(5,12,28,.97)),
+  url("../assets/weihnachts_event/weihnachtsstudio.png") center/cover no-repeat;
+ box-shadow:0 0 0 5px #ad7c3652,0 18px 70px #000e,0 0 76px #d29e5180;
+}
+#cent-reward.final-dual-active .cent-reward-card::before{
+ content:"✦   WEIHNACHTEN IM GOLDSTUDIO   ✦";
+ display:block;margin:-3px auto 9px;width:max-content;max-width:95%;
+ padding:5px 22px;border-radius:0 0 16px 16px;
+ font:900 clamp(10px,1.3vw,14px)/1.2 system-ui,sans-serif;
+ letter-spacing:.15em;color:#593006;
+ background:linear-gradient(90deg,#ac742e,#ffe6a1 30%,#fff6d4 50%,#e2b264 75%,#a56d23);
+ box-shadow:0 3px 18px #f8c56155;
+}
+#cent-reward.final-dual-active #cent-reward-title{
+ color:#ffeab5;text-shadow:0 3px 15px #110911,0 0 30px #ebb8539a;
+ font-size:clamp(21px,3vw,38px);letter-spacing:.025em;margin:0 0 5px;
+}
+#cent-reward.final-dual-active #cent-reward-subtitle{
+ color:#fff4d6;font-size:clamp(12px,1.35vw,17px);margin:0 0 10px;
+}
+#cent-reward.final-dual-active .cent-wheel-stage{
+ position:relative;display:block;width:100%;margin:5px 0 12px;
+ padding:clamp(8px,1.35vw,16px);overflow:hidden;
+ border:1px solid #fbdc9c77;border-radius:23px;
+ background:linear-gradient(120deg,#301528c9,#092f44dc 52%,#321a30bf);
+ box-shadow:inset 0 0 38px #0009,0 8px 28px #0008;
+}
+#cent-reward.final-dual-active .cent-wheel-stage::before{
+ content:"";position:absolute;inset:0;pointer-events:none;
+ background:linear-gradient(110deg,transparent 9%,#ffe7a514 13%,transparent 17%,transparent 83%,#ffe7a51f 88%,transparent 92%);
+}
+#cent-reward.final-dual-active .cent-wheel-heading{
+ position:relative;z-index:1;color:#fff3d0;
+ font-size:clamp(16px,2.25vw,26px);margin:0 0 9px;
+ text-shadow:0 3px 17px #ffca5985;
+}
+#cent-reward.final-dual-active .final-dual-wheels{
+ position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+ gap:clamp(8px,1.5vw,22px);align-items:stretch;
+}
+#cent-reward.final-dual-active .final-dual-pack,
+#cent-reward.final-dual-active .final-dual-hammer{
+ position:relative;min-width:0;display:flex;flex-direction:column;align-items:center;
+ padding:clamp(8px,1.5vw,16px);border:2px solid #eaca81a6;
+ border-radius:22px;background:linear-gradient(160deg,#122d45e8,#08152de8);
+ box-shadow:inset 0 0 18px #fce6ac15,0 8px 30px #0007;
+}
+#cent-reward.final-dual-active .final-dual-pack::before,
+#cent-reward.final-dual-active .final-dual-hammer::before{
+ content:"";position:absolute;top:-2px;left:18%;right:18%;height:3px;
+ background:linear-gradient(90deg,transparent,#ffecac,transparent);
+ box-shadow:0 0 17px #ffdb79;
+}
+#cent-reward.final-dual-active .final-dual-label{
+ display:block;margin:0 0 8px;color:#ffe7aa;
+ font:950 clamp(12px,1.75vw,21px)/1.2 system-ui,sans-serif;
+ letter-spacing:.045em;text-shadow:0 2px 12px #ebbb5290;
+}
+#cent-reward.final-dual-active .cent-wheel-wrap,
+#cent-reward.final-dual-active .final-dual-hammer-wrap{
+ position:relative;width:min(35vw,40dvh,375px)!important;
+ height:auto;aspect-ratio:1;max-width:100%;flex:none;margin:3px auto 9px;
+ filter:drop-shadow(0 0 18px #ffcd698d);
+}
+#cent-reward.final-dual-active .final-dual-hammer-disc{
+ width:100%;height:100%;background:url("../Weihnachtsevent2/Weihnachtsbilder/file_00000000b9c48210b20aab8553d17e0a.png") center/contain no-repeat;
+ transform:rotate(0deg);will-change:transform;
+}
+#cent-reward.final-dual-active .final-dual-pointer{
+ position:absolute;z-index:8;top:-14px;left:50%;transform:translateX(-50%);
+ color:#fff5c8;font-size:clamp(21px,3vw,35px);line-height:1;
+ filter:drop-shadow(0 3px 4px #200f03) drop-shadow(0 0 7px #ffbc44);
+}
+#cent-reward.final-dual-active .cent-wheel-pointer{
+ z-index:8;top:-14px;color:#fff5c8;
+}
+#cent-reward.final-dual-active .cent-pack-legend{
+ display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:1px auto 9px;
+}
+#cent-reward.final-dual-active .cent-pack-legend span{
+ padding:5px 8px;gap:4px;font-size:clamp(10px,1vw,13px);border-radius:9px;
+ background:#071528d9;
+}
+#cent-reward.final-dual-active .cent-pack-legend small{font-size:inherit;color:#ffe8af}
+#cent-reward.final-dual-active .cent-wheel-spin{
+ margin:auto auto 8px;min-height:42px;padding:9px 20px;
+ border:2px solid #fff4ba;border-radius:14px;
+ font:950 clamp(14px,1.75vw,21px)/1.15 system-ui,sans-serif;
+ background:linear-gradient(145deg,#ffedb3,#f3b43f 65%,#ac6d18);
+ box-shadow:0 0 24px #ffcd7e80;color:#422709;
+}
+#cent-reward.final-dual-active .cent-wheel-status,
+#cent-reward.final-dual-active #final-dual-hammer-status{
+ width:100%;margin:auto 0 0;min-height:2.65em;display:grid;place-items:center;
+ padding:7px 8px;border:1px solid #caa76c6b;border-radius:11px;
+ color:#fff0c3;background:#030e21b3;
+ font-size:clamp(11px,1.25vw,16px);font-weight:850;line-height:1.35;
+}
+#cent-reward.final-dual-active .final-dual-hammer[data-phase="spinning"]{
+ border-color:#fff0a9;box-shadow:0 0 28px #ffdb8a89,inset 0 0 18px #fce6ac20;
+}
+#cent-reward.final-dual-active .final-dual-hammer[data-phase="finished"]{
+ border-color:#93deb8;box-shadow:0 0 23px #5eedbc60;
+}
+#cent-reward.final-dual-active .final-dual-hammer[data-phase="waiting"] .final-dual-hammer-disc{filter:grayscale(.6) brightness(.67)}
+#cent-reward.final-dual-active .final-dual-retry{
+ margin:8px 0 0;padding:8px 12px;border:1px solid #ffe0a0;border-radius:11px;
+ background:linear-gradient(#ffebb5,#d5a347);color:#342308;font:800 13px system-ui,sans-serif;
+}
+#cent-reward.final-dual-active .final-dual-retry[hidden]{display:none!important}
+@keyframes dual-stars{from{opacity:.35;transform:translateY(0)}to{opacity:.8;transform:translateY(-13px)}}
+@media(max-width:650px){
+ #cent-reward.final-dual-active{padding:5px}
+ #cent-reward.final-dual-active .cent-reward-card{width:100%;padding:7px;border-radius:17px;border-width:2px}
+ #cent-reward.final-dual-active .cent-reward-card::before{letter-spacing:.065em;padding:4px 8px}
+ #cent-reward.final-dual-active .cent-wheel-stage{padding:7px;border-radius:12px}
+ #cent-reward.final-dual-active .final-dual-wheels{gap:6px}
+ #cent-reward.final-dual-active .final-dual-pack,#cent-reward.final-dual-active .final-dual-hammer{padding:6px 4px;border-radius:12px;border-width:1px}
+ #cent-reward.final-dual-active .cent-wheel-wrap,#cent-reward.final-dual-active .final-dual-hammer-wrap{width:min(41vw,31dvh,220px)!important;margin:7px auto}
+ #cent-reward.final-dual-active .final-dual-label{font-size:11px;letter-spacing:0}
+ #cent-reward.final-dual-active .cent-pack-legend{gap:3px}
+ #cent-reward.final-dual-active .cent-pack-legend span{padding:3px 4px;font-size:9px}
+ #cent-reward.final-dual-active .cent-wheel-status,#cent-reward.final-dual-active #final-dual-hammer-status{font-size:10px;min-height:4.2em;padding:4px}
+ #cent-reward.final-dual-active .cent-wheel-spin{padding:6px 9px;font-size:12px;min-height:32px}
+}
+@media(max-height:640px){
+ #cent-reward.final-dual-active .cent-wheel-wrap,#cent-reward.final-dual-active .final-dual-hammer-wrap{width:min(32vw,30dvh,230px)!important}
+ #cent-reward.final-dual-active .final-dual-pack,#cent-reward.final-dual-active .final-dual-hammer{padding-block:6px}
+}
+@media(prefers-reduced-motion:reduce){
+ #cent-reward.final-dual-active::before{animation:none}
+ #cent-reward.final-dual-active .final-dual-hammer-disc{transition:none!important}
+}
