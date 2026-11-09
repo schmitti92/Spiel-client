@@ -103,6 +103,6 @@
   highlight(-1);
  }
  window.ChristmasMonsterVisuals={setCatalog,spin,reset,highlight,isSpinning:()=>rotating,
-  matchesArtwork,targetAngle,artworkSlots};
+  matchesArtwork,targetAngle:index=>targetAngle(index,catalog),artworkSlots};
  window.addEventListener('resize',()=>{if(!rotating&&catalog.length)paint()},{passive:true});
 })();
