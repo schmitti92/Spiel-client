@@ -438,3 +438,13 @@
 }
 #banker-call .banker-hammer-bonus-icon .banker-hammer-bonus-art[hidden],
 #banker-call .banker-hammer-bonus-icon #banker-hammer-bonus-icon[hidden]{display:none!important}
+
+/* Rare simultaneous pack+hammer offers retain visible action buttons on tablets. */
+@media(min-width:901px) and (max-height:850px){
+ #banker-call .banker-offer-details:has(.banker-hammer-bonus:not([hidden])):has(.banker-christmas-bonus:not([hidden])) > .banker-call-quote{
+  display:none!important;
+ }
+ #banker-call .banker-offer-details:has(.banker-hammer-bonus:not([hidden])) .banker-vote-progress{
+  padding:3px 6px!important;
+ }
+}
