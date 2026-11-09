@@ -831,6 +831,7 @@ function monsterOpen(){
  const slots=current?.monsterWheel?.slots;
  if(!Array.isArray(slots)||slots.length!==25){document.getElementById('monster-exchange-message').textContent='⚠️ Monster-Rad-Daten sind noch nicht verfügbar.';return}
  monsterOverlay.hidden=false;
+ window.ChristmasMonsterShow?.reset();
  document.body.style.overflow='hidden';
  window.ChristmasMonsterVisuals?.setCatalog(slots);
  if(!monsterSpinBusy)window.ChristmasMonsterVisuals?.reset();
@@ -843,6 +844,7 @@ function monsterOpen(){
 function monsterClose(){
  if(monsterSpinBusy)return;
  monsterOverlay.hidden=true;
+ window.ChristmasMonsterShow?.reset();
  document.body.style.overflow='';
  document.getElementById('monster-spin-open')?.focus();
 }
@@ -870,6 +872,7 @@ function monsterShowPrize(spin){
  cardButton.hidden=!monsterSpinRewardCards;
  result.hidden=false;
  monsterStatus.textContent='🎉 GLÜCKWUNSCH! Gewinn sicher gutgeschrieben.';
+ window.ChristmasMonsterShow?.winner(prize);
 }
 document.getElementById('monster-spin-open').addEventListener('click',()=>monsterOpen());
 monsterSpinClose.addEventListener('click',monsterClose);
@@ -884,6 +887,7 @@ document.getElementById('monster-wheel-card-action').addEventListener('click',()
 monsterSpinStart.addEventListener('click',async()=>{
  if(monsterSpinBusy||monsterTickets()<1)return;
  monsterSpinBusy=true;monsterControls();
+ window.ChristmasMonsterShow?.awaiting();
  document.getElementById('monster-wheel-prize').hidden=true;
  document.getElementById('monster-wheel-card-action').hidden=true;
  monsterStatus.textContent='✦ Der Tresor öffnet sich … dein Gewinn wird sicher ausgelost!';
@@ -893,14 +897,21 @@ monsterSpinStart.addEventListener('click',async()=>{
   committed=true;clearMonsterSpinRequestId();
   const spin=result.spin;
   if(!spin?.prize||!Number.isInteger(spin.prize.index))throw Error('INVALID_MONSTER_RESULT');
-  monsterStatus.textContent='🎰 Acht Sekunden Monster-Show! Das Glück entscheidet …';
-  await window.ChristmasMonsterVisuals.spin(spin.prize.index,result.durationMs||8000);
+  // Countdown begins only after the server has safely committed the ticket.
+  // We never expose the winning stop until its eight-second wheel animation ends.
+  monsterStatus.textContent='🎬 Licht an! Der Monster-Countdown startet …';
+  await window.ChristmasMonsterShow?.countdown();
+  const duration=result.durationMs||8000;
+  window.ChristmasMonsterShow?.spinning(duration);
+  monsterStatus.textContent='🎡 Acht Sekunden Monster-Show! Das Rad dreht …';
+  await window.ChristmasMonsterVisuals.spin(spin.prize.index,duration);
   monsterShowPrize(spin);
   // Exactly one GET after a confirmed win: refresh accounts and potential Bingo rewards.
   try{
    const latest=await request('GET','me');render(latest);void maybeClaimHammerBingos(latest);void maybeClaimNorthPoleBingos(latest);
   }catch(_){monsterStatus.textContent='✅ Gewinn gutgeschrieben. Bei Bedarf die Seite aktualisieren.'}
  }catch(error){
+  window.ChristmasMonsterShow?.error();
   if(!committed&&!['Failed to fetch','AbortError','SERVER_ERROR'].includes(error.message))clearMonsterSpinRequestId();
   monsterStatus.textContent='⚠️ '+(error.message==='NO_MONSTER_TICKETS'?'Kein Monster-Drehgutschein vorhanden.':error.message)+
    (committed?' · Dein Gewinn ist schon gespeichert. Bitte die Seite neu laden.':' · Bei Verbindungsfehlern erneut drehen: ein bestehender Serverbeleg verhindert eine Doppelbuchung.');
