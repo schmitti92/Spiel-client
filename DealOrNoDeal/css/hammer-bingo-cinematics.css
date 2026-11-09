@@ -54,12 +54,13 @@ body[data-view=hammer] .hammer-line-prize.is-cinema-lit{
   68%,100%{transform:translateX(160%) skewX(-16deg)}
 }
 
-/* Fixed victory overlay: pointer events only on the card.
-   No body scroll lock, no page read, and no blocking of server claims. */
+/* Fixed victory overlay intercepts background clicks while a scene is shown.
+   Reward claims still happen asynchronously in the existing client. */
+body.hammer-cinema-active{overflow:hidden!important}
 .hammer-cinema[hidden]{display:none!important}
 .hammer-cinema{
   position:fixed;inset:0;z-index:10040;display:grid;place-items:center;
-  padding:clamp(10px,2.4vw,28px);pointer-events:none;isolation:isolate;
+  padding:clamp(10px,2.4vw,28px);pointer-events:auto;isolation:isolate;
   --hm-ice:#92dfff;--hm-gold:#f7ce7c;--hm-amethyst:#c4a6ff;
 }
 .hammer-cinema::before{
