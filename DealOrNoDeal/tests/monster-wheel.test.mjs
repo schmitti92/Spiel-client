@@ -52,6 +52,23 @@ test('25-field art, mixed-color prize presentation and four highlighted rewards'
  assert.doesNotMatch(art,/<text/);
 });
 
+test('uploaded transparent 3D wheel is the actual preview and spinner gold-and-crown skin',()=>{
+ const imagePath='../Weihnachtsevent2/Weihnachtsbilder/file_00000000be5481f6a8972866f23598ee.png';
+ const png=readFileSync(new URL(imagePath,import.meta.url));
+ assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+ assert.equal(png.readUInt32BE(16),1254);
+ assert.equal(png.readUInt32BE(20),1254);
+ assert.equal(png[25],6,'wheel artwork must retain transparent RGBA pixels');
+ const css=load('css/monster-wheel.css');
+ assert.match(css,/file_00000000be5481f6a8972866f23598ee\\.png/);
+ assert.match(css,/monster-wheel-preview/);
+ assert.match(css,/monster-wheel-center/);
+ assert.match(css,/mask-image:radial-gradient\\(circle closest-side/);
+ assert.match(js,/mark\\.dataset\\.monsterSlot/);
+ assert.match(js,/slot\\.short/);
+ assert.match(html,/uploaded-skin-v1/);
+});
+
 test('Giftzwerg avatar is wired to game portrait, lobby gate and commentary',()=>{
  assert.match(lobby,/Muffiger Giftzwerg/);
  assert.match(lobby,/giftzwergUnlocked/);
