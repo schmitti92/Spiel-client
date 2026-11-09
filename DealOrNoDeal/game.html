@@ -271,6 +271,7 @@
    setTimeout(()=>{if(sequence===current&&!box.hidden){
     close.disabled=reward.uid!==user()?.uid;close.hidden=reward.uid!==user()?.uid;
     close.textContent='🎉 Für alle Spieler fortfahren';
+    if(isFinal&&reward.uid===user()?.uid)setTimeout(()=>{if(sequence===current&&!box.hidden&&!close.disabled&&finalWheelStarted)continueReward()},1800);
     if(reward.uid!==user()?.uid)wheelStatus.textContent='⏳ Warte, bis '+owner+' die Karten bestätigt …';
    }},revealDuration);
   };
