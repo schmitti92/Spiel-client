@@ -164,6 +164,56 @@ test('gift waits if Bingo is already visible; deferred gift opens once after Bin
  finishPack(h);assert.equal(h.director.canStartBingo(),true);
 });
 
+test('three confirmed package openings remain in purchase order during a Bingo show',()=>{
+ const h=harness(),seen=[];
+ assert.equal(h.director.bingoStarted(),true);
+ h.elements['hammer-cinema'].hidden=false;
+ for(const name of ['first','second','third']){
+  assert.equal(h.director.presentPack(()=>{
+   seen.push(name);
+   h.elements['reveal-overlay'].hidden=false;
+   h.elements['reveal-summary'].hidden=false;
+  },'real'),false);
+ }
+ assert.deepEqual(seen,[]);
+ h.elements['hammer-cinema'].hidden=true;
+ h.director.bingoEnded();
+ assert.deepEqual(seen,['first']);
+ finishPack(h);
+ assert.deepEqual(seen,['first','second']);
+ finishPack(h);
+ assert.deepEqual(seen,['first','second','third']);
+ finishPack(h);
+ assert.equal(h.director.canStartBingo(),true);
+ assert.equal(h.counts.resumed,1);
+});
+
+test('the active gift keeps its place while later confirmed gifts queue and show their count',()=>{
+ const h=harness(),seen=[];
+ assert.equal(h.director.presentPack(()=>{
+  seen.push('active');
+  h.elements['reveal-overlay'].hidden=false;
+  h.elements['reveal-summary'].hidden=false;
+ },'real'),true);
+ for(const name of ['queued-1','queued-2']){
+  assert.equal(h.director.presentPack(()=>{
+   seen.push(name);
+   h.elements['reveal-overlay'].hidden=false;
+   h.elements['reveal-summary'].hidden=false;
+  },'real'),false);
+ }
+ h.director.summaryReady();
+ assert.match(h.elements['reveal-next-act'].textContent,/2 weitere Pakete/);
+ assert.match(h.elements['reveal-close'].textContent,/Nächstes Paket öffnen/);
+ assert.deepEqual(seen,['active']);
+ finishPack(h);
+ assert.deepEqual(seen,['active','queued-1']);
+ finishPack(h);
+ assert.deepEqual(seen,['active','queued-1','queued-2']);
+ finishPack(h);
+ assert.equal(h.director.canStartBingo(),true);
+});
+
 test('skip button and reduced-motion mode release cleanly without timer duplication',()=>{
  const h=harness({reduced:true});
  showPack(h);h.director.awardQueued(1);finishPack(h);
