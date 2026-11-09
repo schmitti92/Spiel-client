@@ -608,6 +608,7 @@ function finishReveal(){
  summary.replaceChildren();
  state.cards.forEach((card,i)=>{
   const tile=document.createElement('div');tile.className='reveal-summary-item'+(card.isNew===true?' is-new':'');
+  if(['common','rare','epic','legendary'].includes(card.rarity))tile.classList.add(card.rarity);
   tile.style.setProperty('--idx',String(i));
   const img=document.createElement('img');img.src=christmasCardImage(card);
   img.alt=card.name||'Weihnachtskarte';img.title=card.name||'Weihnachtskarte';img.loading='lazy';img.decoding='async';
