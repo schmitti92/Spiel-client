@@ -35,7 +35,7 @@ test('new art loader is network/API-free and linked before the inline Christmas 
  assert.doesNotMatch(loader,/\bfetch\s*\(/);
  const executable=loader.replace(/\/\*[\s\S]*?\*\//g,'').replace(/^\s*\/\/.*$/gm,'');
  assert.doesNotMatch(executable,/\bFirestore\b|\bfirebase\b/i);
- assert.match(page,/js\/christmas-card-image-loader\.js\?v=20261109-cards-preload-v1/);
+ assert.match(page,/js\/christmas-card-image-loader\.js\?v=20261109-cards-retry-v2/);
  assert.match(inline,/ChristmasCardImages\?\.prefetch\(array,0,christmasCardImage,2\)/);
  assert.match(inline,/const artworkPromise=window\.ChristmasCardImages\?\.load\(artwork\)/);
  assert.match(inline,/await artworkPromise/);
@@ -76,13 +76,15 @@ test('failed artwork shows a winter card rather than blank and can be retried la
  void api.load('./temporarily-missing.png');
  assert.equal(requests.length,2,'network errors must not permanently poison cache');
  const image={
-  _src:'./temporarily-missing.png',title:'',
-  classList:{items:new Set(),add(x){this.items.add(x)}},
+  _src:'./temporarily-missing.png',title:'',dataset:{},
+  classList:{items:new Set(),add(x){this.items.add(x)},remove(x){this.items.delete(x)}},
   getAttribute(){return this._src},
   set src(v){this._src=v},
   get src(){return this._src}
  };
  api.guard(image);image.onerror();
+ assert.match(image.src,/temporarily-missing\.png\?art_retry=1$/);
+ image.onerror();
  assert.equal(image.src,api.FALLBACK);
  assert.match(image.title,/nicht geladen/);
  assert.ok(image.classList.items.has('card-art-unavailable'));
@@ -112,4 +114,18 @@ test('image resolution is still cancel-safe if the user skips before a slow imag
   'must recheck cancellation after image decode as well as gift intro');
  assert.match(source,/artResult=await artworkPromise/);
  assert.match(source,/ChristmasCardImages\?\.prefetch\(state\.cards,index\+1,christmasCardImage,2\)/);
+});
+
+test('heavy artwork has extended load time and explicit retry for pack reveals',()=>{
+ const {api,requests,timeouts}=mockLoader();
+ void api.load('./heavy-hammer-card.png');
+ assert.equal(requests.length,1);
+ assert.ok([...timeouts.values()].some(t=>t.ms===45000),'allow 45 seconds for slow cards');
+ assert.ok(![...timeouts.values()].some(t=>t.ms===15000),'no premature fallback');
+ assert.match(page,/id="reveal-image-retry"/);
+ assert.match(inline,/ChristmasCardImages\?\.retry\(img,artwork\)/);
+ assert.match(inline,/if\(artResult\.ok\)revealAutoTimer=setTimeout/);
+ assert.match(inline,/bigImage\.dataset\.cardArtwork=artwork/);
+ assert.match(inline,/ChristmasCardImages\.show\(img,artwork\)/);
+ assert.match(css,/#reveal-overlay #reveal-image-retry/);
 });
