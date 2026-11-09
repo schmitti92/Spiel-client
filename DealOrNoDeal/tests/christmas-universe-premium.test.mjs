@@ -73,6 +73,17 @@ test('world portal has direct pack, hammer and ice launch links, including room 
  assert.match(collection,/sessionStorage\.setItem\("deal-active-room",room\)/);
 });
 
+test('portal counters match the expanded 48-card / 30-Bingo Nordpol collection',()=>{
+ assert.match(portal,/id="hub-collected">– \/ 48/);
+ assert.match(portal,/id="hub-bingos">– \/ 30/);
+ assert.match(portal,/id="hub-album-meter"[^>]*>/);
+ assert.match(portal,/const collected=clamp\(values\.collected,48\),bingos=clamp\(values\.bingos,30\)/);
+ assert.match(portal,/meter\.querySelector\('i'\)\.style\.width=\(collected\/48\*100\)/);
+ assert.match(collection,/id="album-grid-third"/);
+ assert.match(collection,/id="album-owned-total">0 \/ 48/);
+ assert.match(collection,/id="album-bingo-total">0 \/ 30/);
+});
+
 test('transitions are native and progressive, with a no-motion fallback',()=>{
  assert.match(shared,/@view-transition\{navigation:auto\}/);
  assert.match(shared,/::view-transition-old\(root\)/);
