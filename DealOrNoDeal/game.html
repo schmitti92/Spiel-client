@@ -397,6 +397,15 @@
  window.addEventListener('deal-final-wheel-retry',async()=>{
   const status=document.getElementById('status');
   if(typeof g==='undefined'||g?.phase!=='final'){if(status)status.textContent='⚠️ Finale ist auf diesem Gerät noch nicht synchronisiert.';return}
+  // When the card pack was already confirmed, retry the next hammer stage
+  // from the existing socket state instead of requesting the card reward again.
+  if(g.christmasWheelClosed?.['final:'+g.id]){
+   if(status)status.textContent=g.christmasHammerWheel?.gameId===g.id
+    ?'🔨 Der Hammer wurde bereits ausgelost. Ergebnis wird synchronisiert …'
+    :'🔨 Das Kartenpaket ist bestätigt. Hammerrad wird geöffnet …';
+   window.dispatchEvent(new Event('deal-final-wheel-complete'));
+   return;
+  }
   if(status)status.textContent='🎡 Siegerbonus wird jetzt direkt beim Server geprüft …';
   lastRewardProbeKey='';lastRewardProbeAt=0;
   const result=await checkRewards(true);
