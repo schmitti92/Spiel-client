@@ -340,8 +340,8 @@
   const completedFinal=activeWheelKind==='final'&&finalWheelStarted&&activeWheelReward?.gameId;
   if(completedFinal)sessionStorage.setItem('final-wheel-complete:'+completedFinal,'yes');
   document.getElementById('cent-special-overlay').hidden=true;
-  sequence++;pendingSpin=null;activeWheelReward=null;activeWheelKind=null;finalWheelStarted=false;box.hidden=true;box.dataset.reward='';delete box.dataset.stage;
-  if(completedFinal)window.dispatchEvent(new Event('deal-final-wheel-complete'));
+  sequence++;pendingSpin=null;activeWheelReward=null;activeWheelKind=null;finalWheelStarted=false;box.hidden=!completedFinal;box.dataset.reward='';delete box.dataset.stage;
+  if(completedFinal){window.__dealFinalWheelHandoff=completedFinal;window.dispatchEvent(new Event('deal-final-wheel-complete'));window.__dealFinalWheelHandoff=null;}
   lastRewardProbeKey='';checkRewards();
  }
  async function continueReward(){
@@ -487,5 +487,5 @@ video.addEventListener('ended',()=>{video.pause()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){video.pause();stopLoop()}else syncBankerVideo()});
 syncBankerVideo();
 })();
-</script><script src="./js/peek-joker.js?v=20261108a"></script><script src="./js/final-hammer-wheel.js?v=20261109-dual-auto-v1"></script><script src="../site-global-controls.js?v=20261109-global-1"></script>
+</script><script src="./js/peek-joker.js?v=20261108a"></script><script src="./js/final-hammer-wheel.js?v=20261109-one-window-v2"></script><script src="../site-global-controls.js?v=20261109-global-1"></script>
 </body></html>
