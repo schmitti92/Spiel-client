@@ -352,3 +352,21 @@ body.christmas-event-ice .v44-note{
 a.event-hub-brand{text-decoration:none!important;cursor:pointer}
 a.event-hub-brand:hover,a.event-hub-brand:focus-visible{color:#fff3c8!important;text-shadow:0 1px 8px #000,0 0 17px #ffcc7b!important}
 a.event-hub-brand:focus-visible{outline:2px solid #fff1c6;outline-offset:4px;border-radius:8px}
+
+/* Hammer-Bingo navigation: all five chapters fit on one tablet row.
+   Scope to the collection page; the ice-event navigation remains unchanged. */
+body.christmas-event-main nav.event-hub-nav.event-tabs{
+ grid-template-columns:repeat(5,minmax(0,1fr))!important;
+}
+body.christmas-event-main nav.event-hub-nav.event-tabs > :is(a,button){
+ min-width:0;font-size:clamp(10px,.92vw,14px)!important;
+ line-height:1.15;
+}
+@media(max-width:760px){
+ body.christmas-event-main nav.event-hub-nav.event-tabs{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+ body.christmas-event-main nav.event-hub-nav.event-tabs > .event2-tab{
+  grid-column:1/-1!important;
+ }
+}
