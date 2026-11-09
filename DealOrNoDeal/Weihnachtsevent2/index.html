@@ -63,9 +63,11 @@ nav a:focus-visible{outline:2px solid #fff}
 .v44-board{width:100%;max-width:none;aspect-ratio:16/9;margin:0;border:4px ridge #b78d49;box-shadow:inset 0 0 28px #000,0 0 18px #72baf344}
 .v44-board img{object-fit:cover}
 .v44-board .ice-tiles{gap:2px;padding:2px}
-/* After ten unlocked pictures the next excavation is a complete 5×5 board. */
+/* Pictures 11–20: five by five; from picture 21: six columns by five rows. */
 .v44-board .ice-tiles.ice-tiles-25{grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr))}
 .v44-board .ice-tiles.ice-tiles-25 button{font-size:clamp(15px,2.4vw,31px);min-width:0;min-height:0}
+.v44-board .ice-tiles.ice-tiles-30{grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr))}
+.v44-board .ice-tiles.ice-tiles-30 button{font-size:clamp(12px,2vw,26px);min-width:0;min-height:0;border-radius:5px}
 
 .v44-board .ice-tiles button{border:2px solid #9fe5ff;border-radius:7px;background:linear-gradient(125deg,#b4e9ff 0%,#51a9e4 20%,#287fc5 48%,#65bce9 70%,#d3f6ff 100%);box-shadow:inset 0 0 0 2px #d4faff9c,inset 0 0 22px #083e87,0 0 6px #70d7ff;color:#e2faff;font-size:clamp(18px,3vw,40px)}
 .v44-board .ice-tiles button.gone{opacity:0;visibility:hidden!important;pointer-events:none}
@@ -407,5 +409,5 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>openGuide(false));else openGuide(false);
 })();
 </script>
-<script src="../js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script><script src="./hammer-ice-spectacle.js?v=20261109-hammer-show-v1"></script><script src="./online-ice.js?v=20261109-star-16-v1"></script><script src="../../site-global-controls.js?v=20261109-global-1"></script>
+<script src="../js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script><script src="./hammer-ice-spectacle.js?v=20261109-hammer-show-v1"></script><script src="./online-ice.js?v=20261109-30-tiles-v1"></script><script src="../../site-global-controls.js?v=20261109-global-1"></script>
 </body></html>
