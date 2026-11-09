@@ -594,7 +594,8 @@ function openReveal(revealed,mode='real',pack='small'){
  document.getElementById('reveal-counter').textContent=array.length+' Karten warten auf dich';
  next.hidden=false;next.disabled=false;next.textContent='🎁 Geschenk öffnen';
  skip.hidden=false;skip.disabled=false;close.hidden=true;
- window.ChristmasPackCinema?.open(array,mode,pack);
+ if(window.ChristmasPackCinema)window.ChristmasPackCinema.open(array,mode,pack);
+ else{overlay.dataset.stage='ready';overlay.dataset.mode=mode;}
  next.focus();
 }
 function finishReveal(){
@@ -625,7 +626,8 @@ function finishReveal(){
   state.mode==='demo'?'🎬 '+state.cards.length+' Demo-Karten gezeigt · Keine Gutschrift':
   '✨ '+state.cards.length+' Karten enthüllt!'+(newly?' 🌟 '+newly+' neu entdeckt!':'');
  next.hidden=true;skip.hidden=true;close.hidden=false;
- window.ChristmasPackCinema?.summarise(state.cards,state.mode);
+ if(window.ChristmasPackCinema)window.ChristmasPackCinema.summarise(state.cards,state.mode);
+ else overlay.dataset.stage='summary';
  close.focus();
 }
 async function revealNext(){
@@ -653,6 +655,7 @@ async function revealNext(){
  document.getElementById('reveal-counter').textContent='Karte '+(index+1)+' von '+state.cards.length+
   (card.isNew===true?' · 🌟 NEU im Sammelalbum!':'');
  el.hidden=false;
+ if(!window.ChristmasPackCinema){overlay.dataset.stage='card';document.getElementById('reveal-present').hidden=true;}
  next.textContent=index===state.cards.length-1?'Alle Karten anzeigen':'Nächste Karte →';
  next.disabled=false;revealMotionBusy=false;
  window.ChristmasPackCinema?.showCard(card,index,state.cards.length);
@@ -675,10 +678,22 @@ document.getElementById('pack-cinema-preview').addEventListener('click',()=>{
  openReveal(demo,'demo','premium');
 });
 document.addEventListener('keydown',event=>{
- if(event.key==='Escape'&&!overlay.hidden){
+ if(overlay.hidden)return;
+ if(event.key==='Escape'){
   event.preventDefault();
   if(revealState&&overlay.dataset.stage!=='summary')finishReveal();
   else close.click();
+  return;
+ }
+ // Keep keyboard focus inside the modal without hiding Skip or Sound controls.
+ if(event.key==='Tab'){
+  const focusable=[...overlay.querySelectorAll('button:not([hidden]):not([disabled])')]
+   .filter(element=>element.getClientRects().length>0);
+  if(!focusable.length)return;
+  const first=focusable[0],last=focusable[focusable.length-1];
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
+  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
+  else if(!overlay.contains(document.activeElement)){event.preventDefault();first.focus()}
  }
 });
 document.getElementById('event-main-guide').addEventListener('click',()=>document.querySelector('.event-tabs button[data-view="bingo"]')?.click());document.getElementById('event-refresh').addEventListener('click',()=>location.reload());
