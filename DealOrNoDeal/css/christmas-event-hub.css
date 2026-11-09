@@ -438,7 +438,7 @@ body.christmas-event-main[data-view="album"] .event-hero-subtitle{
  margin:3px auto 0!important;font-size:clamp(10px,1vw,13px)!important;
 }
 body.christmas-event-main nav.event-hub-nav.event-tabs{
- grid-template-columns:repeat(5,minmax(0,1fr))!important;
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;
  gap:6px!important;margin:5px 0 8px!important;padding:5px!important;
 }
 body.christmas-event-main nav.event-hub-nav.event-tabs > :is(button,a){
@@ -645,7 +645,7 @@ body.christmas-event-main[data-view="album"] #event-album .album-guide-note{
 }
 @media(max-width:760px){
  body.christmas-event-main nav.event-hub-nav.event-tabs{
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
  }
  body.christmas-event-main[data-view="album"] .hero{min-height:122px!important;max-height:145px!important}
  body.christmas-event-main[data-view="album"] .hero .hero-characters{opacity:.6!important;width:46%!important}
@@ -682,4 +682,49 @@ body.christmas-event-main[data-view="album"] #event-album .album-guide-note{
  body.christmas-event-main[data-view="album"] #event-album .album-overview-progress span{
   transition:none!important;
  }
+}
+
+/* 2026-11-09 · Consistent, full-width Christmas navigation on every chapter.
+   Keep the collection sub-tabs separate, and do not affect the ice-game board. */
+body:is(.christmas-event-main,.christmas-event-ice,.christmas-event-world)
+ nav.event-hub-nav.event-tabs{
+ display:grid!important;
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ grid-auto-columns:auto!important;
+ width:100%!important;
+ box-sizing:border-box!important;
+ column-gap:clamp(5px,.75vw,10px)!important;
+}
+body:is(.christmas-event-main,.christmas-event-ice,.christmas-event-world)
+ nav.event-hub-nav.event-tabs > :is(a,button){
+ width:100%!important;min-width:0!important;
+ min-height:clamp(38px,4.5vh,48px)!important;
+}
+body:is(.christmas-event-main,.christmas-event-ice,.christmas-event-world)
+ nav.event-hub-nav.event-tabs > .event2-tab{grid-column:auto!important}
+/* One unmistakable active tab: gold across both Christmas chapters. */
+body:is(.christmas-event-main,.christmas-event-ice,.christmas-event-world)
+ nav.event-hub-nav.event-tabs > :is(a,button)[aria-current="page"],
+body.christmas-event-main nav.event-hub-nav.event-tabs > button[aria-selected="true"],
+body.christmas-event-ice nav.event-hub-nav.event-tabs > .event2-tab[aria-current="page"]{
+ border-color:#ffecb4!important;
+ background:linear-gradient(135deg,#fff0be,#e7bd74 50%,#bd8544)!important;
+ color:#30200b!important;
+ text-shadow:none!important;
+ box-shadow:inset 0 1px #fff9da,0 0 16px #f8cc6a65!important;
+}
+@media(max-width:760px){
+ body:is(.christmas-event-main,.christmas-event-ice,.christmas-event-world)
+  nav.event-hub-nav.event-tabs{
+   grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+ body:is(.christmas-event-main,.christmas-event-ice,.christmas-event-world)
+  nav.event-hub-nav.event-tabs > :is(a,button){
+   padding:5px clamp(2px,.75vw,7px)!important;
+   font-size:clamp(9px,2.25vw,12px)!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+ body:is(.christmas-event-main,.christmas-event-ice,.christmas-event-world)
+ nav.event-hub-nav.event-tabs > :is(a,button){transition:none!important}
 }
