@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 330" role="img" aria-label="Verdeckte Sammelkarte – Weihnachtswerkstatt">
+<defs>
+<linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#163d36"/><stop offset=".53" stop-color="#11282f"/><stop offset="1" stop-color="#382517"/></linearGradient>
+<radialGradient id="halo"><stop stop-color="#f6c76e" stop-opacity=".28"/><stop offset="1" stop-color="#f6c76e" stop-opacity="0"/></radialGradient>
+<pattern id="stars" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M18 11v14M11 18h14M13 13l10 10m0-10L13 23" stroke="#dfbe76" stroke-opacity=".10" stroke-width=".9"/></pattern>
+<linearGradient id="rim" x1="0" x2="1"><stop stop-color="#825e2d"/><stop offset=".5" stop-color="#f7db93"/><stop offset="1" stop-color="#805529"/></linearGradient>
+</defs>
+<rect width="260" height="330" rx="17" fill="url(#bg)"/>
+<rect x="7" y="7" width="246" height="316" rx="13" fill="url(#stars)" stroke="url(#rim)" stroke-width="2"/>
+<rect x="15" y="15" width="230" height="300" rx="10" fill="none" stroke="#f1dca7" stroke-opacity=".32" stroke-width="1"/>
+<circle cx="130" cy="164" r="112" fill="url(#halo)"/>
+<g fill="none" stroke="#e8c983" stroke-width="2.5" stroke-linecap="round" opacity=".88">
+<path d="M130 83v162M49 164h162M73 107l114 114m0-114L73 221"/>
+<path d="m130 93-11 13m11-13 11 13m-11 129-11-13m11 13 11-13M59 164l12-11m-12 11 12 11m130-11-12-11m12 11-12 11"/>
+<path d="m82 116 3 16m-3-16 16 3m79-3-3 16m3-16-16 3m16 93-16-3m16 3-3-16m-92 16 16-3m-16 3 3-16"/>
+</g>
+<circle cx="130" cy="164" r="54" fill="#143c36" stroke="#ebc982" stroke-width="2.5"/>
+<circle cx="130" cy="164" r="46" fill="none" stroke="#f6e0a9" stroke-opacity=".36"/>
+<path d="M130 127l9 24 26 1-20 15 7 25-22-15-22 15 7-25-20-15 26-1z" fill="#e4bd69" opacity=".9"/>
+<path d="M45 31h23m-12-11v22M192 299h23m-12-11v22" stroke="#e8cc92" stroke-width="2" stroke-linecap="round"/>
+<g fill="#f7dfa2"><circle cx="31" cy="164" r="2"/><circle cx="229" cy="164" r="2"/><circle cx="130" cy="36" r="3"/><circle cx="130" cy="294" r="3"/></g>
+</svg>

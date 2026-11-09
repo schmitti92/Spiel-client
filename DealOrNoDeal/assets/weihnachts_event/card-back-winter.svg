@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 330" role="img" aria-label="Verdeckte Sammelkarte – Legendäre Winterwelt">
+<defs>
+<linearGradient id="bg" x1=".15" x2=".85" y1="0" y2="1"><stop stop-color="#243b73"/><stop offset=".52" stop-color="#151c40"/><stop offset="1" stop-color="#38224c"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#c3adff" stop-opacity=".46"/><stop offset=".6" stop-color="#81c7e5" stop-opacity=".15"/><stop offset="1" stop-color="#81c7e5" stop-opacity="0"/></radialGradient>
+<linearGradient id="rim" x1="0" x2="1"><stop stop-color="#647eb5"/><stop offset=".5" stop-color="#ece8ff"/><stop offset="1" stop-color="#b29aeb"/></linearGradient>
+<pattern id="frost" width="42" height="42" patternUnits="userSpaceOnUse"><path d="M0 0l42 42M42 0L0 42" stroke="#a6c8ff" stroke-opacity=".11" stroke-width=".9"/></pattern>
+</defs>
+<rect width="260" height="330" rx="17" fill="url(#bg)"/>
+<rect x="7" y="7" width="246" height="316" rx="12" fill="url(#frost)" stroke="url(#rim)" stroke-width="2.5"/>
+<rect x="15" y="15" width="230" height="300" rx="9" fill="none" stroke="#f4d9ff" stroke-opacity=".29" stroke-width="1"/>
+<circle cx="130" cy="160" r="110" fill="url(#glow)"/>
+<g stroke="url(#rim)" fill="none" stroke-width="2.6" stroke-linejoin="round">
+<path d="M130 65l19 37 40 7-27 31 7 42-39 20-39-20 7-42-27-31 40-7z"/>
+<path d="M130 88v148M56 162h148M78 110l104 104m0-104L78 214"/>
+<path d="m130 88-13 17m13-17 13 17m-13 131-13-17m13 17 13-17M56 162l15-12m-15 12 15 12m133-12-15-12m15 12-15 12"/>
+</g>
+<path d="M130 121l21 36-21 50-21-50z" fill="#a7d9ff" fill-opacity=".68" stroke="#d8e6ff" stroke-width="2"/>
+<path d="M130 121v86l-21-50z" fill="#baa0ff" fill-opacity=".78"/>
+<g fill="#e8d5ff"><path d="M37 40l4 10 10 4-10 4-4 10-4-10-10-4 10-4z"/><path d="M220 264l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/><circle cx="201" cy="45" r="3"/><circle cx="59" cy="287" r="3"/></g>
+</svg>

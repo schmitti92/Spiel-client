@@ -1,0 +1,336 @@
+/* Weihnachtszauber Premium / Hammer-Bingo – isolated visual layer.
+   All payouts, indexes, DOM ids and online API calls stay in weihnachten.html. */
+body[data-view="hammer"]{--hw-gold:#f0ca79;--hw-light:#f9eac6;--hw-frost:#a2d8f0;--hw-forest:#173c34;}
+body[data-view="hammer"] #event-hammers{position:relative;isolation:isolate;margin-top:8px;padding-bottom:12px;}
+body[data-view="hammer"] #event-hammers *{box-sizing:border-box;}
+body[data-view="hammer"] #event-hammers .hammer-hero{
+ position:relative;isolation:isolate;overflow:hidden;min-height:178px;
+ padding:clamp(19px,3vw,40px) clamp(18px,3vw,42px);
+ border:1px solid #f5d58b;border-radius:23px;
+ background:linear-gradient(90deg,rgba(21,34,33,.97),rgba(21,47,46,.91) 43%,rgba(9,29,44,.39) 100%),
+ url("../assets/weihnachts_event/08_wichtelwerkstatt.png") right 38%/cover no-repeat!important;
+ box-shadow:0 15px 38px #0008,inset 0 1px #ffe6ab67,inset 0 0 48px #c79c4230;
+}
+body[data-view="hammer"] .hammer-hero::before{
+ content:"";position:absolute;inset:9px;z-index:-1;border:1px solid #f2dcaa4d;
+ border-radius:17px;pointer-events:none;
+}
+body[data-view="hammer"] .hammer-hero::after{
+ content:"✦    ✧    ✦";position:absolute;right:6%;top:12%;
+ color:#ffe29c92;text-shadow:0 0 14px #ffe4a9;letter-spacing:19px;pointer-events:none;
+}
+body[data-view="hammer"] .hammer-hero > span:first-child{
+ display:block;color:#b8e7d6;font:800 clamp(10px,1vw,13px)/1.4 system-ui,sans-serif;
+ letter-spacing:.16em;text-transform:uppercase;
+}
+body[data-view="hammer"] .hammer-hero h2{
+ font:900 clamp(33px,4.1vw,60px)/1.05 Georgia,serif!important;
+ letter-spacing:.01em;color:#fff0c5!important;margin:8px 0 11px!important;
+ text-shadow:0 4px 18px #000b,0 0 25px #efc87d4f;
+}
+body[data-view="hammer"] .hammer-hero .hammer-lead{
+ max-width:630px;margin:4px 0!important;color:#f0e7d2;font-size:clamp(12px,1.1vw,16px);
+ line-height:1.5;text-shadow:0 2px 9px #000;
+}
+body[data-view="hammer"] .hammer-hero .hammer-art-status{
+ position:relative;z-index:1;margin:5px 0 8px;padding:5px 12px;
+ color:#dcf6df!important;background:rgba(11,65,51,.66);border-color:#a6d7ac7a;
+}
+body[data-view="hammer"] .hammer-guide{
+ max-width:min(720px,100%);margin:9px 0 0;color:#e9eadf;
+ border:1px solid #f6d38f6b;border-radius:11px;background:rgba(4,20,27,.44);
+ font-size:clamp(12px,1.1vw,14px);backdrop-filter:blur(3px);
+}
+body[data-view="hammer"] .hammer-guide summary{
+ cursor:pointer;padding:8px 13px;color:#ffe1a0;font-weight:800;
+}
+body[data-view="hammer"] .hammer-guide .hammer-guide-copy{padding:0 13px 10px;line-height:1.55;}
+body[data-view="hammer"] .hammer-guide .hammer-guide-copy p{max-width:95%;margin:7px 0;}
+body[data-view="hammer"] .hammer-guide summary:focus-visible{outline:2px solid #fff2b7;outline-offset:-2px;}
+/* Hammer inventory: original WebP images instead of plain emoji boxes. */
+body[data-view="hammer"] .hammer-stock-head{margin:13px 0 8px;align-items:center;}
+body[data-view="hammer"] .hammer-stock-head h3{font:800 clamp(17px,1.5vw,23px) Georgia,serif;color:#ffe9b4;}
+body[data-view="hammer"] .hammer-refresh{
+ min-height:38px;padding:7px 13px;border-color:#d3b77c;
+ color:#ffebc4;background:linear-gradient(140deg,#274457,#132c3d);
+ box-shadow:inset 0 1px #fff5,0 3px 10px #0006;
+}
+body[data-view="hammer"] .hammer-refresh:focus-visible{outline:2px solid #fff1b2;outline-offset:3px;}
+body[data-view="hammer"] .hammer-stock{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(7px,1.2vw,15px);}
+body[data-view="hammer"] .hammer-stock-card{
+ display:grid;grid-template-columns:clamp(52px,5.5vw,76px) minmax(0,1fr);
+ grid-template-rows:auto auto;align-items:center;column-gap:clamp(7px,1.1vw,17px);
+ text-align:left;min-height:96px;padding:12px clamp(9px,1.4vw,19px);
+ border:1px solid #d8c39195;border-radius:16px;
+ background:radial-gradient(circle at 19% 45%,#b18a4935,transparent 52%),
+ linear-gradient(115deg,rgba(21,56,60,.96),rgba(11,29,46,.94));
+ box-shadow:inset 0 1px #ffeabb4e,0 8px 22px #0007;
+}
+body[data-view="hammer"] .hammer-stock-card:nth-child(2){background:radial-gradient(circle at 22% 42%,#77c6ed32,transparent 55%),linear-gradient(115deg,#1b3d54f5,#121f3afa);}
+body[data-view="hammer"] .hammer-stock-card:nth-child(3){background:radial-gradient(circle at 20% 42%,#df9dff3f,transparent 60%),linear-gradient(115deg,#36254ef4,#142b43fa);}
+body[data-view="hammer"] .hammer-stock-card .icon{
+ grid-row:1/3;grid-column:1;display:block;width:100%;height:76px;font-size:0!important;
+ background:transparent center/contain no-repeat;
+ filter:drop-shadow(0 3px 9px #0009) drop-shadow(0 0 13px #e7c17e4e);
+}
+body[data-view="hammer"] .hammer-stock-card:nth-child(1) .icon{background-image:url("../Weihnachtsevent2/Weihnachtsbilder/hammer-einfach.webp")}
+body[data-view="hammer"] .hammer-stock-card:nth-child(2) .icon{background-image:url("../Weihnachtsevent2/Weihnachtsbilder/hammer-doppel.webp")}
+body[data-view="hammer"] .hammer-stock-card:nth-child(3) .icon{background-image:url("../Weihnachtsevent2/Weihnachtsbilder/hammer-glueck.webp")}
+body[data-view="hammer"] .hammer-stock-card strong{
+ grid-column:2;grid-row:1;align-self:end;color:#ffe19d;
+ font:900 clamp(27px,3vw,39px)/1.03 Georgia,serif;
+ text-shadow:0 0 17px #e8bd6c6b;overflow-wrap:anywhere;
+}
+body[data-view="hammer"] .hammer-stock-card small{
+ grid-column:2;grid-row:2;align-self:start;margin-top:3px;
+ font:700 clamp(10px,1vw,14px)/1.2 system-ui,sans-serif;color:#e9edf2;
+}
+body[data-view="hammer"] #hammer-stock-status{
+ display:inline-block;margin:9px 3px 7px;min-height:0;font-size:11px;color:#c8e1e5;
+}
+body[data-view="hammer"] #hammer-claim-status{margin:5px 0 13px;font-size:clamp(11px,1vw,13px);}
+/* Two genuinely different premium worlds. */
+body[data-view="hammer"] .hammer-boards{grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(12px,1.6vw,24px);align-items:start;}
+body[data-view="hammer"] .hammer-board{
+ position:relative;isolation:isolate;overflow:hidden;min-width:0;padding:clamp(12px,1.4vw,23px);
+ border:1.5px solid #d5b875;border-radius:22px;
+ background:linear-gradient(160deg,#183d39ec 0%,#102b34ec 38%,#0a1e2df5 100%);
+ box-shadow:0 18px 38px #0008,inset 0 1px #ffedbd40;
+}
+body[data-view="hammer"] .hammer-board.legend{
+ border-color:#bda8ee;
+ background:linear-gradient(155deg,#30254eef 0%,#1b2748ef 35%,#0b1b37f7 100%);
+ box-shadow:0 18px 38px #0008,inset 0 1px #e4daff55,0 0 27px #9472d61b;
+}
+body[data-view="hammer"] .hammer-board::before{
+ content:"";position:absolute;z-index:-1;top:0;right:0;width:56%;height:230px;
+ background:url("../assets/weihnachts_event/08_wichtelwerkstatt.png") center/cover no-repeat;
+ opacity:.43;mask-image:linear-gradient(90deg,transparent 0%,#000 58%),linear-gradient(0deg,transparent 0%,#000 40%);
+ mask-composite:intersect;pointer-events:none;
+}
+body[data-view="hammer"] .hammer-board.legend::before{
+ background-image:url("../assets/weihnachts_event/10_eisschloss.png");opacity:.52;
+}
+body[data-view="hammer"] .hammer-board::after{
+ content:"";position:absolute;z-index:-1;inset:8px;border:1px solid #f3dca532;
+ border-radius:16px;pointer-events:none;
+}
+body[data-view="hammer"] .hammer-board.legend::after{border-color:#cbbfff3a;}
+body[data-view="hammer"] .hammer-board .hammer-type{
+ display:inline-flex;align-items:center;gap:7px;margin:0 0 6px;
+ padding:5px 10px;border:1px solid #edc9877f;border-radius:999px;
+ background:#2e493bc5;color:#ffeba9!important;
+ font:900 clamp(9px,.9vw,12px)/1.2 system-ui,sans-serif;
+ letter-spacing:.05em;max-width:100%;
+}
+body[data-view="hammer"] .hammer-board.legend .hammer-type{
+ border-color:#ccadf09c;background:#342c64c9;color:#ead8ff!important;
+}
+body[data-view="hammer"] .hammer-board h3{
+ max-width:80%;font:900 clamp(20px,2.1vw,30px)/1.16 Georgia,serif;
+ color:#fff0bd!important;margin:6px 0 7px!important;
+ text-shadow:0 4px 15px #0009;
+}
+body[data-view="hammer"] .hammer-board.legend h3{color:#f5e0ff!important;}
+body[data-view="hammer"] .hammer-board > p:not(.hammer-board-progress){
+ max-width:82%;min-height:0;margin:5px 0 8px;line-height:1.45;
+ color:#e7e4d9;font-size:clamp(11px,1vw,14px);
+}
+body[data-view="hammer"] .hammer-board .hammer-board-progress{
+ position:relative;display:block;width:max-content;max-width:100%;
+ margin:10px 0 13px;padding:7px 13px 10px;overflow:hidden;
+ border:1px solid #e3cb8a85;border-radius:9px;
+ color:#fff2c6;background:#132c37d9;font-size:clamp(10px,1vw,13px);
+ white-space:normal;
+}
+body[data-view="hammer"] .hammer-board .hammer-board-progress::after{
+ content:"";position:absolute;bottom:0;left:0;height:4px;width:var(--hammer-progress,0%);
+ border-radius:2px;background:linear-gradient(90deg,#559d81,#d6bf73,#fff1a7);
+ transition:width .3s ease;
+}
+body[data-view="hammer"] .hammer-board.legend .hammer-board-progress::after{background:linear-gradient(90deg,#60c7e6,#bc9ded,#ffdf98);}
+/* Critical invariant: row rewards remain horizontally aligned with the matching row,
+   and column rewards always sit directly below their four-card column. */
+body[data-view="hammer"] .hammer-prize-matrix{
+ display:grid;grid-template-columns:minmax(0,1fr) clamp(70px,6.6vw,98px);
+ grid-template-rows:auto auto auto;gap:clamp(5px,.65vw,9px);margin:12px 0 14px;
+}
+body[data-view="hammer"] .hammer-board-preview{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:clamp(4px,.52vw,8px);margin:0!important;min-width:0;
+}
+body[data-view="hammer"] .hammer-photo-card{
+ position:relative;min-width:0;aspect-ratio:4/5;overflow:hidden;border-radius:12px;
+ border:1.5px solid #d5bc80;
+ box-shadow:inset 0 1px #fff4,0 4px 10px #0007;
+ transition:border-color .25s,box-shadow .25s,transform .25s;
+}
+body[data-view="hammer"] .hammer-photo-card:not(.owned){
+ background:#183a35 url("../assets/weihnachts_event/card-back-workshop.svg") center/cover no-repeat!important;
+}
+body[data-view="hammer"] .hammer-board.legend .hammer-photo-card:not(.owned){
+ background:#191f43 url("../assets/weihnachts_event/card-back-winter.svg") center/cover no-repeat!important;
+ border-color:#a7a5dc;
+}
+body[data-view="hammer"] .hammer-photo-card:not(.owned) img{display:none!important;}
+body[data-view="hammer"] .hammer-photo-card.owned{
+ background:#122b32;border-color:#ffe7a2;box-shadow:0 4px 13px #0008,0 0 13px #ffd47330;
+}
+body[data-view="hammer"] .hammer-photo-card.owned img{
+ display:block;width:100%;height:100%;object-fit:cover;
+ filter:none!important;transform:none!important;
+}
+body[data-view="hammer"] .hammer-photo-card .hammer-photo-number{
+ z-index:2;top:5px;left:5px;padding:3px 6px;border:1px solid #f4dba046;
+ border-radius:6px;background:#0c1b26ce;color:#fff1c8;font-size:clamp(9px,.8vw,12px);
+}
+body[data-view="hammer"] .hammer-photo-card .hammer-photo-lock{
+ z-index:2;right:5px;top:5px;display:grid;place-items:center;
+ min-width:22px;min-height:22px;border-radius:7px;
+ background:#061d2ebd;font-size:clamp(12px,1vw,18px);
+}
+body[data-view="hammer"] .hammer-photo-card .hammer-photo-label{
+ z-index:2;min-height:24px;bottom:0;left:0;right:0;padding:20px 5px 7px;
+ background:linear-gradient(transparent,rgba(3,13,21,.9) 48%);
+ color:#ffebbe;font-weight:750;font-size:clamp(8px,.76vw,11px);
+ line-height:1.16;overflow-wrap:anywhere;
+}
+body[data-view="hammer"] .hammer-photo-card:not(.owned) .hammer-photo-label{
+ color:#e9ddbf;background:linear-gradient(transparent,rgba(5,18,25,.8) 40%);
+}
+body[data-view="hammer"] .hammer-photo-card.bingo-complete{
+ border-color:#ffe79e!important;box-shadow:0 0 0 2px #f7d16e,0 0 17px #f5c56889!important;
+}
+body[data-view="hammer"] .hammer-photo-card.owned:hover{
+ transform:translateY(-2px);box-shadow:0 9px 21px #0009,0 0 16px #ebd18a5b;
+}
+/* Align reward rows to grid rows; keep reward numbers legible on landscape tablets. */
+body[data-view="hammer"] .hammer-rewards-rows{
+ grid-column:2;grid-row:1;display:grid;grid-template-rows:repeat(4,minmax(0,1fr));
+ gap:clamp(4px,.52vw,8px);min-height:0;
+}
+body[data-view="hammer"] .hammer-rewards-columns{
+ grid-column:1;grid-row:2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:clamp(4px,.52vw,8px);
+}
+body[data-view="hammer"] .hammer-rewards-diagonals{
+ grid-column:1/-1;grid-row:3;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:clamp(5px,.6vw,9px);
+}
+body[data-view="hammer"] .hammer-line-prize{
+ position:relative;min-width:0;display:flex;flex-direction:column;align-items:center;
+ justify-content:center;gap:4px;min-height:55px;padding:6px 3px;
+ border:1px solid #d4b7767d;border-radius:10px;
+ background:linear-gradient(155deg,#264c4c,#183440);
+ box-shadow:inset 0 1px #ffffff17;text-align:center;
+}
+body[data-view="hammer"] .hammer-board.legend .hammer-line-prize{
+ border-color:#b7a1dd8d;background:linear-gradient(155deg,#3d315c,#222f50);
+}
+body[data-view="hammer"] .hammer-line-prize .kind{
+ color:#e5e4d4;font-size:clamp(8px,.74vw,11px);font-weight:900;
+}
+body[data-view="hammer"] .hammer-line-prize strong{
+ font-size:clamp(12px,1vw,16px);font-weight:900;line-height:1.12;
+ color:#ffe8af;overflow-wrap:anywhere;
+}
+body[data-view="hammer"] .hammer-line-prize .state{
+ color:#e2dfce;opacity:.83;font-size:clamp(8px,.7vw,10px);line-height:1.1;
+}
+body[data-view="hammer"] .hammer-line-prize.pending{
+ border-color:#ffcc58!important;background:linear-gradient(145deg,#69501e,#3e421e)!important;
+ box-shadow:0 0 20px #ffce5360,inset 0 0 10px #ffe9a02c;
+}
+body[data-view="hammer"] .hammer-line-prize.done{
+ border-color:#c7e3a4!important;background:linear-gradient(140deg,#315d47,#4d492a)!important;
+ box-shadow:inset 0 0 12px #aaffac20,0 0 12px #6df3b33b;
+}
+body[data-view="hammer"] .hammer-line-prize.done .state{color:#c2ffe0;opacity:1;}
+body[data-view="hammer"] .hammer-line-prize.pending .state{color:#fff2b4;opacity:1;}
+body[data-view="hammer"] .hammer-rewards-diagonals .hammer-line-prize{min-height:61px;}
+/* Prize showcase: illustrated gold present, warm on workshop and aurora on winter. */
+body[data-view="hammer"] .hammer-jackpot{
+ position:relative;isolation:isolate;overflow:hidden;min-height:128px;
+ display:flex;flex-direction:column;justify-content:center;gap:5px;
+ padding:16px 98px 16px 17px;border:1px solid #e4bf6d;
+ border-radius:14px;background:linear-gradient(110deg,#59401df0,#2b342ce9);
+ box-shadow:inset 0 1px #ffe6a958,0 7px 20px #0005;
+}
+body[data-view="hammer"] .hammer-board.legend .hammer-jackpot{
+ background:linear-gradient(110deg,#51345ef0,#2d3454ed);
+ border-color:#ebc58c;
+}
+body[data-view="hammer"] .hammer-jackpot::after{
+ content:"";position:absolute;z-index:-1;right:-7px;top:0;bottom:0;width:113px;
+ background:url("../assets/weihnachts_event/geschenk_gold.png") center/contain no-repeat;
+ filter:drop-shadow(0 0 17px #ffdf85a5);
+ pointer-events:none;
+}
+body[data-view="hammer"] .hammer-jackpot > strong{margin:0;color:#ffe8b6;font:900 clamp(15px,1.4vw,20px)/1.22 Georgia,serif;}
+body[data-view="hammer"] .hammer-jackpot .hammer-jackpot-prize{
+ display:block;padding:0;border:0;background:none!important;box-shadow:none;
+ color:#fff0b3;font:900 clamp(15px,1.55vw,23px)/1.2 system-ui,sans-serif;
+ text-shadow:0 2px 10px #0008;
+}
+body[data-view="hammer"] .hammer-jackpot > span:not(.hammer-jackpot-prize){
+ color:#eee6d8;font-size:clamp(10px,.9vw,12px);line-height:1.4;
+}
+body[data-view="hammer"] .hammer-jackpot small{color:#d7ebd5;font-size:11px;}
+body[data-view="hammer"] .hammer-board .hammer-inactive{
+ margin:10px 4px 2px;color:#e7d6a9;font-size:clamp(10px,.86vw,12px);
+ line-height:1.35;
+}
+body[data-view="hammer"] #event-hammers > p.note{
+ max-width:1150px;margin:12px auto 0;color:#e3eadf;font-size:clamp(11px,1vw,14px);
+ line-height:1.45;text-align:center;
+}
+body[data-view="hammer"] #event-hammers > p.note a{
+ display:inline-flex;min-height:38px;align-items:center;justify-content:center;
+ padding:7px 16px;border:1px solid #f2d489;border-radius:999px;
+ background:linear-gradient(120deg,#354965cc,#2c4862b8);
+ text-decoration:none!important;box-shadow:inset 0 1px #fff5;
+}
+body[data-view="hammer"] #event-hammers > p.note a:hover{background:#386685;}
+body[data-view="hammer"] #event-hammers > p.note a:focus-visible{outline:2px solid white;outline-offset:3px;}
+/* Responsive: 4×4 grids stay intact. Never scroll sideways for a bingo card. */
+@media(max-width:1070px){
+ body[data-view="hammer"] .hammer-boards{grid-template-columns:1fr;gap:18px;max-width:820px;margin-inline:auto;}
+ body[data-view="hammer"] .hammer-board h3{max-width:80%;}
+ body[data-view="hammer"] .hammer-prize-matrix{grid-template-columns:minmax(0,1fr) clamp(80px,11vw,110px);}
+ body[data-view="hammer"] .hammer-line-prize strong{font-size:clamp(13px,1.6vw,18px);}
+}
+@media(max-width:650px){
+ body[data-view="hammer"] .hammer-hero{min-height:150px;padding:17px 14px!important;background-position:74% center!important;}
+ body[data-view="hammer"] .hammer-hero h2{font-size:clamp(29px,8vw,41px)!important;}
+ body[data-view="hammer"] .hammer-hero::after{display:none;}
+ body[data-view="hammer"] .hammer-stock{gap:6px;}
+ body[data-view="hammer"] .hammer-stock-card{
+  display:flex;flex-direction:column;justify-content:center;text-align:center;
+  min-height:104px;padding:8px 4px;border-radius:12px;
+ }
+ body[data-view="hammer"] .hammer-stock-card .icon{height:39px;width:55px;flex:0 0 auto;}
+ body[data-view="hammer"] .hammer-stock-card strong{font-size:26px;align-self:center;}
+ body[data-view="hammer"] .hammer-stock-card small{font-size:9px;align-self:center;overflow-wrap:anywhere;}
+ body[data-view="hammer"] .hammer-board{padding:10px;border-radius:17px;}
+ body[data-view="hammer"] .hammer-board h3{font-size:21px;max-width:95%;}
+ body[data-view="hammer"] .hammer-board > p:not(.hammer-board-progress){max-width:97%;font-size:11px;}
+ body[data-view="hammer"] .hammer-prize-matrix{grid-template-columns:minmax(0,1fr) 66px;gap:4px;}
+ body[data-view="hammer"] .hammer-board-preview,
+ body[data-view="hammer"] .hammer-rewards-rows,
+ body[data-view="hammer"] .hammer-rewards-columns{gap:3px;}
+ body[data-view="hammer"] .hammer-photo-card{border-radius:7px;border-width:1px;}
+ body[data-view="hammer"] .hammer-photo-card .hammer-photo-number{top:2px;left:2px;padding:2px 3px;font-size:9px;}
+ body[data-view="hammer"] .hammer-photo-card .hammer-photo-lock{top:2px;right:2px;min-width:16px;min-height:16px;font-size:11px;}
+ body[data-view="hammer"] .hammer-photo-card .hammer-photo-label{font-size:8px;padding:12px 2px 3px;min-height:20px;}
+ body[data-view="hammer"] .hammer-line-prize{padding:3px 1px;border-radius:7px;min-height:45px;gap:3px;}
+ body[data-view="hammer"] .hammer-line-prize strong{font-size:11px;line-height:1.05;}
+ body[data-view="hammer"] .hammer-line-prize .kind{font-size:8px;}
+ body[data-view="hammer"] .hammer-line-prize .state{font-size:8px;}
+ body[data-view="hammer"] .hammer-jackpot{min-height:118px;padding:12px 74px 12px 12px;}
+ body[data-view="hammer"] .hammer-jackpot::after{width:84px;right:-8px;}
+ body[data-view="hammer"] .hammer-jackpot .hammer-jackpot-prize{font-size:14px;}
+}
+@media(prefers-reduced-motion:reduce){
+ body[data-view="hammer"] .hammer-photo-card,
+ body[data-view="hammer"] .hammer-board-progress::after{transition:none!important;}
+}
