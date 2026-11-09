@@ -10,7 +10,7 @@ const html=read('Weihnachtsevent2/index.html');
 test('browser event scripts parse and 5x5 grid is enabled for 25 blocks',()=>{
  assert.doesNotThrow(()=>new Script(js));
  assert.match(html,/ice-tiles\.ice-tiles-25\{grid-template-columns:repeat\(5,minmax\(0,1fr\)\);grid-template-rows:repeat\(5,minmax\(0,1fr\)\)/);
- assert.match(html,/online-ice\.js\?v=20261109-ice25-v1/);
+ assert.match(html,/online-ice\.js\?v=20261109-hammer-show-v1/);
  assert.match(js,/ice-tiles-25/);
  assert.match(js,/Array\.from\(\{length:tileCount\}/);
  assert.doesNotMatch(js,/Array\.from\(\{length:20\}/);
@@ -41,4 +41,26 @@ test('UI shows accurate 25-block progress and explicit clearing instruction',()=
  assert.match(js,/Wähle einen Hammer und finde den versteckten Stern/);
  assert.match(js,/state\.opened\.includes\(i\)/);
  assert.match(js,/aria-label="Eisfeld '\+\(i\+1\)\+' von '\+tileCount/);
+});
+
+test('cinematic hammer shatters follow server-confirmed targets only',()=>{
+ const fx=read('Weihnachtsevent2/hammer-ice-spectacle.js');
+ const css=read('Weihnachtsevent2/hammer-ice-spectacle.css');
+ assert.doesNotThrow(()=>new Script(fx));
+ assert.match(html,/hammer-ice-spectacle\.css\?v=20261109-hammer-show-v1/);
+ assert.match(html,/hammer-ice-spectacle\.js\?v=20261109-hammer-show-v1/);
+ assert.ok(html.indexOf('hammer-ice-spectacle.js')<html.indexOf('online-ice.js'));
+ for(const kind of ['single','double','lucky'])assert.ok(fx.includes(kind+':'));
+ assert.match(js,/const targets=Array\.isArray\(data\.result\?\.targets\)/);
+ assert.match(js,/!data\.result\?\.replayed/);
+ assert.match(js,/nowOpened\.has\(i\)&&!beforeOpened\.has\(i\)/);
+ assert.match(js,/window\.ChristmasIceHammerFX\?\.confirmed/);
+ assert.match(js,/celebration&&!celebrationDelayTimer/);
+ assert.match(js,/celebrationDelayTimer=setTimeout/);
+ assert.match(js,/number=Math\.min\(70,state\.completed\+\(finished\?0:1\)\)/);
+ assert.doesNotMatch(fx,/\b(?:fetch|XMLHttpRequest|WebSocket|firebase|request)\s*\(/i);
+ assert.doesNotMatch(fx,/localStorage|sessionStorage|balance\s*=/i);
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+ assert.match(css,/icefx-shatter/);
+ assert.match(css,/icefx-lucky/);
 });
