@@ -1,0 +1,74 @@
+/* Hammer-Spektakel 2026 — composited, visual-only overlays on server-confirmed ice tiles. */
+body.christmas-event-ice .v44-board{position:relative;isolation:isolate}
+body.christmas-event-ice .icefx-layer{
+ position:absolute;inset:0;z-index:25;overflow:hidden;pointer-events:none;
+ --icefx-glow:#a5edff;--icefx-bright:#dcfbff;--icefx-halo:#74ceff;
+}
+body.christmas-event-ice .icefx-double{--icefx-glow:#e4b2ff;--icefx-bright:#fff2ff;--icefx-halo:#ac66f8}
+body.christmas-event-ice .icefx-lucky{--icefx-glow:#ffdf7f;--icefx-bright:#fff9d9;--icefx-halo:#ffd04e}
+body.christmas-event-ice .icefx-aim,
+body.christmas-event-ice .icefx-burst{
+ position:absolute;transform:translate(-50%,-50%);border-radius:50%;
+ border:2px solid var(--icefx-glow);box-shadow:0 0 17px 5px var(--icefx-halo),inset 0 0 17px var(--icefx-halo);
+}
+body.christmas-event-ice .icefx-aim{width:24px;height:24px;animation:icefx-aim .5s ease-out both}
+body.christmas-event-ice .icefx-burst{width:25px;height:25px;animation:icefx-burst .6s ease-out both}
+body.christmas-event-ice .icefx-burst:before,
+body.christmas-event-ice .icefx-burst:after{
+ content:'';position:absolute;inset:-18px;border-radius:50%;border:2px dotted var(--icefx-glow);
+ animation:icefx-ring .7s ease-out both;
+}
+body.christmas-event-ice .icefx-burst:after{inset:-37px;animation-delay:.09s}
+body.christmas-event-ice .icefx-swing{
+ position:absolute;width:clamp(49px,8vw,84px);height:clamp(49px,8vw,84px);
+ transform:translate(-52%,-85%) rotate(-34deg);transform-origin:58% 87%;
+ animation:icefx-swing .6s cubic-bezier(.23,.8,.24,1) both;filter:drop-shadow(0 1px 8px var(--icefx-glow))
+}
+body.christmas-event-ice .icefx-hammer-image{width:100%;height:100%;object-fit:contain;display:block}
+body.christmas-event-ice .icefx-cell{position:absolute;overflow:visible;pointer-events:none}
+body.christmas-event-ice .icefx-piece{
+ position:absolute;inset:0;
+ background:#096db7 url('./Weihnachtsbilder/originalgrafik-06.webp') center/100% 100% no-repeat;
+ border:1px solid #d5fbff;filter:drop-shadow(0 0 5px var(--icefx-glow));
+ animation:icefx-shatter .68s cubic-bezier(.12,.6,.38,1) both;
+ animation-delay:calc(var(--sequence)*43ms);
+}
+body.christmas-event-ice .icefx-piece-0{clip-path:polygon(0 0,57% 0,30% 51%,0 75%)}
+body.christmas-event-ice .icefx-piece-1{clip-path:polygon(57% 0,100% 0,100% 57%,30% 51%)}
+body.christmas-event-ice .icefx-piece-2{clip-path:polygon(0 75%,30% 51%,55% 100%,0 100%)}
+body.christmas-event-ice .icefx-piece-3{clip-path:polygon(30% 51%,100% 57%,100% 100%,55% 100%)}
+body.christmas-event-ice .icefx-fracture{
+ position:absolute;inset:0;opacity:.95;pointer-events:none;
+ background:linear-gradient(130deg,transparent 36%,#f6ffff 37%,#c1f7ff 39%,transparent 40%),
+ linear-gradient(48deg,transparent 50%,var(--icefx-bright) 52%,transparent 54%);
+ animation:icefx-fracture .46s ease-out both;
+ animation-delay:calc(var(--sequence)*43ms);
+}
+body.christmas-event-ice .icefx-spark{
+ position:absolute;width:7px;height:13px;
+ clip-path:polygon(45% 0,100% 24%,59% 100%,0 65%);
+ background:linear-gradient(145deg,#fff,var(--icefx-glow),#459cda);
+ box-shadow:0 0 8px var(--icefx-glow);
+ animation:icefx-spark .73s ease-out both;
+}
+body.christmas-event-ice .icefx-caption{
+ position:absolute;z-index:2;transform:translate(-50%,-50%);
+ width:max-content;max-width:min(95%,350px);
+ padding:6px 13px;border-radius:100px;border:2px solid var(--icefx-glow);
+ color:#102237;background:linear-gradient(120deg,var(--icefx-bright),var(--icefx-glow));
+ font:900 clamp(11px,1.2vw,17px)/1.12 system-ui,sans-serif;text-align:center;
+ text-shadow:0 1px #fff8;box-shadow:0 3px 16px #0009,0 0 15px var(--icefx-halo);
+ animation:icefx-caption .88s cubic-bezier(.2,.8,.25,1) both;
+}
+@keyframes icefx-aim{0%{opacity:0;scale:.3}35%{opacity:1;scale:1.7}100%{opacity:0;scale:2.3}}
+@keyframes icefx-burst{0%{opacity:0;scale:.4}20%{opacity:1;scale:2.4}100%{opacity:0;scale:5}}
+@keyframes icefx-ring{0%{opacity:1;scale:.3}100%{opacity:0;scale:2}}
+@keyframes icefx-swing{0%{opacity:0;transform:translate(26px,-145%) rotate(-72deg) scale(1.1)}30%{opacity:1}53%{transform:translate(-52%,-85%) rotate(14deg) scale(1.02)}78%{opacity:1}100%{opacity:0;transform:translate(-60%,-115%) rotate(-22deg) scale(.92)}}
+@keyframes icefx-shatter{0%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}25%{opacity:1;filter:brightness(2.5)}100%{opacity:0;transform:translate(var(--drift-x),var(--drift-y)) rotate(var(--drift-r)) scale(.8)}}
+@keyframes icefx-fracture{0%{opacity:0;filter:brightness(1)}25%{opacity:1;filter:brightness(3)}100%{opacity:0;filter:brightness(2)}}
+@keyframes icefx-spark{0%{opacity:0;transform:rotate(var(--angle)) translateX(0) scale(.4)}17%{opacity:1}100%{opacity:0;transform:rotate(var(--angle)) translateX(var(--distance)) scale(.65)}}
+@keyframes icefx-caption{0%{opacity:0;transform:translate(-50%,-35%) scale(.7)}22%{opacity:1;transform:translate(-50%,-65%) scale(1.1)}68%{opacity:1;transform:translate(-50%,-80%) scale(1)}100%{opacity:0;transform:translate(-50%,-95%) scale(.93)}}
+@media(prefers-reduced-motion:reduce){
+ body.christmas-event-ice .icefx-layer :is(.icefx-aim,.icefx-burst,.icefx-swing,.icefx-cell,.icefx-spark){display:none!important}
+ body.christmas-event-ice .icefx-caption{animation:none!important;opacity:1}
+}
