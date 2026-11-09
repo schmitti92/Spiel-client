@@ -196,7 +196,7 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
 .reveal-summary-duplicate{position:absolute;right:5px;top:5px;border-radius:6px;padding:2px 5px;color:#23142d;background:#d5bcff;font-size:10px;font-weight:900}
 @media(max-width:640px){.monster-trade{grid-template-columns:1fr;text-align:center}.monster-wheel-preview{width:115px}.monster-trade-stats{justify-content:center}}
 @media(prefers-reduced-motion:reduce){.monster-trade-meter span{transition:none}}
-</style><link rel="stylesheet" href="./css/christmas-north-pole.css?v=20261109-vierte-tafel-v1"><link rel="stylesheet" href="./css/christmas-event-hub.css?v=20261109-album-deluxe-v1"><link rel="stylesheet" href="./css/christmas-hammer-premium.css?v=20261109-premium-v1"><link rel="stylesheet" href="./css/hammer-bingo-cinematics.css?v=20261109-victory-v3"><link rel="stylesheet" href="./css/christmas-pack-cinema.css?v=20261109-packs-v1"><link rel="stylesheet" href="./css/christmas-show-director.css?v=20261109-show-v1"><link rel="stylesheet" href="./css/christmas-spectacle-v2.css?v=20261109-spectacle-v2"><link rel="stylesheet" href="./css/monster-wheel.css?v=20261109-uploaded-skin-v1"><link rel="stylesheet" href="./css/christmas-universe-premium.css?v=20261109-universe-v1"></head><body class="christmas-event-main"><main>
+</style><link rel="stylesheet" href="./css/christmas-north-pole.css?v=20261109-vierte-tafel-v1"><link rel="stylesheet" href="./css/christmas-event-hub.css?v=20261109-album-deluxe-v1"><link rel="stylesheet" href="./css/christmas-hammer-premium.css?v=20261109-premium-v1"><link rel="stylesheet" href="./css/hammer-bingo-cinematics.css?v=20261109-victory-v3"><link rel="stylesheet" href="./css/christmas-pack-cinema.css?v=20261109-packs-v1"><link rel="stylesheet" href="./css/christmas-show-director.css?v=20261109-show-v1"><link rel="stylesheet" href="./css/christmas-spectacle-v2.css?v=20261109-spectacle-v2"><link rel="stylesheet" href="./css/monster-wheel.css?v=20261109-testspin-v1"><link rel="stylesheet" href="./css/christmas-universe-premium.css?v=20261109-universe-v1"></head><body class="christmas-event-main"><main>
 <header class="event-hub-top" aria-label="Weihnachtszauber – gemeinsame Event-Navigation"><a class="event-hub-brand" id="event-world-link" href="./weihnachtswelt.html" title="Zur gemeinsamen Weihnachtswelt" aria-label="Weihnachtswelt – Übersicht öffnen"><span class="event-hub-brand-symbol" aria-hidden="true">🎄</span><span>Weihnachtszauber <small>↗ Zur Event-Übersicht</small></span></a><div class="event-hub-tools"><button type="button" id="christmas-effects-toggle" data-level="full" title="Grafikeffekte ändern">✨ Effekte: Legendär</button><a class="event-hub-tool" id="event-game-link" href="./game.html">🎮 Zum Spiel</a><a class="back" id="lobby" href="./lobby.html">↩ Zur Spiellobby</a><button type="button" id="event-refresh" class="back" title="Aktuelle Eventseite neu laden">↻ Aktualisieren</button><button type="button" id="event-fullscreen" class="back" aria-pressed="false">⛶ Vollbild</button><button type="button" id="event-main-guide" class="event-hub-tool">📖 Anleitung</button></div></header>
 <nav class="event-tabs event-hub-nav" aria-label="Weihnachtsbereiche"><button type="button" data-view="album" aria-selected="true" aria-current="page">🃏 Sammlung</button><button type="button" data-view="hammer" aria-selected="false">🔨 Hammer-Bingo</button><button type="button" data-view="packs" aria-selected="false">🎁 Pakete</button><button type="button" data-view="bingo" aria-selected="false">🏆 Spielinformation &amp; Gewinner</button><a class="event2-tab" href="./Weihnachtsevent2/index.html">❄️ Weihnachtsevent 2</a></nav>
 <header class="hero"><img class="hero-characters" src="./assets/weihnachts_event/file_0000000075e081f49cb62fd4b11daae2.png" alt="Weihnachtsmann und Rudolf begrüßen die Besucher" loading="eager"><div class="hero-content"><div class="ornament">🎄 ✨ 🎁</div><div class="eyebrow event-chapter">KAPITEL 1 · DIE WEIHNACHTSKOLLEKTION</div><h1>Weihnachtszauber</h1><span id="north-pole-legend-trophy" class="north-pole-trophy" hidden>👑 NORDPOL-LEGENDE · 30 BINGOS</span><p class="event-hero-subtitle">96 Sammelkarten · 6 Sammelfelder · Gemeinsame Weihnachtswelt</p></div></header><div class="event-layout"><section id="event-album" aria-label="Die klassische Weihnachtskartensammlung">
@@ -219,7 +219,7 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
      <span>🎟️ <strong id="monster-ticket-count">0</strong> Monster-Drehs gesichert</span>
     </div>
     <div class="monster-trade-meter" role="progressbar" id="monster-duplicate-progress" aria-label="Duplikate für den nächsten Monster-Dreh" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="monster-duplicate-meter-fill"></span></div>
-    <button type="button" id="monster-exchange-btn" disabled>🔒 100 Duplikate sammeln</button><button type="button" id="monster-spin-open" class="monster-spin-open">🎰 Monster-Rad ansehen</button>
+    <button type="button" id="monster-exchange-btn" disabled>🔒 100 Duplikate sammeln</button><button type="button" id="monster-spin-open" class="monster-spin-open">🎰 Monster-Rad ansehen</button><button type="button" id="monster-test-open" class="monster-test-open">🧪 Kostenloser Testdreh</button>
     <span id="monster-exchange-message" role="status" aria-live="polite"></span>
     <small>Deine erste Kopie jedes Motivs bleibt erhalten. Auch Duplikate aus abgeschlossenen Hammer-Bingo-Feldern gehen nicht verloren. Dein Drehgutschein bleibt im Online-Profil gespeichert. Die Gewinne werden vor der 8-Sekunden-Animation sicher auf dem Server ausgelost und gebucht.</small>
    </div>
@@ -425,16 +425,17 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
     <small>Alle 25 Felder sind gleich groß. Die fünf Zufallsfelder sind über das Rad verteilt. Der Giftzwerg wird nur beim ersten Gewinn freigeschaltet. Goldpakete entsprechen den großen Weihnachtspaketen; Joker sind Kofferblick-Joker.</small>
    </aside>
   </div>
-  <div class="monster-actions"><button class="monster-primary" id="monster-spin-start" type="button" disabled>🎰 MONSTER-RAD DREHEN</button><button class="monster-secondary" id="monster-wheel-card-action" type="button" hidden>🃏 Gewonnene Karten zeigen</button></div>
+  <div class="monster-actions"><button class="monster-primary" id="monster-spin-start" type="button" disabled>🎰 MONSTER-RAD DREHEN</button><button class="monster-test-button" id="monster-spin-test" type="button">🧪 TESTDREH STARTEN</button><button class="monster-secondary" id="monster-wheel-card-action" type="button" hidden>🃏 Gewonnene Karten zeigen</button></div>
   <div id="monster-wheel-status" role="status" aria-live="polite">Sammle 100 Duplikate für einen Drehgutschein.</div>
   <div id="monster-wheel-prize" hidden aria-live="polite">
+   <div id="monster-test-label" class="monster-test-label" hidden>🧪 TESTMODUS · KEINE GUTSCHRIFT · KEIN GUTSCHEINVERBRAUCH</div>
    <div class="monster-wheel-result-icon" id="monster-wheel-result-icon">🏆</div>
    <strong id="monster-wheel-result-name"></strong>
    <small id="monster-wheel-result-details"></small>
    <img class="monster-wheel-avatar" id="monster-wheel-result-avatar" src="./assets/giftzwerg.svg" alt="Muffiger Giftzwerg" hidden>
   </div>
  </section>
-</div><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script><script src="./js/christmas-show-director.js?v=20261109-show-v1"></script><script src="./js/hammer-bingo-cinematics.js?v=20261109-victory-v3"></script><script src="./js/christmas-pack-cinema.js?v=20261109-packs-v1"></script><script src="./js/north-pole-bingo.js?v=20261109-compass-v3"></script><script src="./js/monster-wheel.js?v=20261109-uploaded-skin-v1"></script><script>
+</div><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script><script src="./js/christmas-show-director.js?v=20261109-show-v1"></script><script src="./js/hammer-bingo-cinematics.js?v=20261109-victory-v3"></script><script src="./js/christmas-pack-cinema.js?v=20261109-packs-v1"></script><script src="./js/north-pole-bingo.js?v=20261109-compass-v3"></script><script src="./js/monster-wheel.js?v=20261109-uploaded-skin-v1"></script><script src="./js/monster-wheel-demo.js?v=20261109-dryrun-v1"></script><script>
 const cards=[["01_winterdorf","Winterdorf"],["02_lebkuchenhaus","Lebkuchenhaus"],["03_weihnachtsmann","Weihnachtsmann"],["04_rentier","Rentier"],["05_weihnachtsbaum","Weihnachtsbaum"],["06_weihnachtszug","Weihnachtszug"],["07_schneekugel","Schneekugel"],["08_wichtelwerkstatt","Wichtelwerkstatt"],["09_polarlichter","Polarlichter"],["10_eisschloss","Eisschloss"],["11_rentierschlitten","Rentierschlitten"],["12_weihnachtslaterne","Weihnachtslaterne"],["13_weihnachtsengel","Weihnachtsengel"],["14_adventskerzen","Adventskerzen"],["15_schneemannfamilie","Schneemannfamilie"],["16_weihnachtskrippe","Weihnachtskrippe"]];
 cards.push(...[["Weihnachtskarte_17_Schneemann","Schneemann"],["Weihnachtskarte_18_Weihnachtsengel","Weihnachtsengel"],["Weihnachtskarte_19_Rentier","Rentier im Schnee"],["Weihnachtskarte_20_Weihnachtsbaum","Weihnachtsbaum im Glanz"],["Weihnachtskarte_21_Lebkuchenmann","Lebkuchenmann"],["Weihnachtskarte_22_Weihnachtskranz","Weihnachtskranz"],["Weihnachtskarte_23_Schlitten","Schlittenfahrt"],["Weihnachtskarte_24_Stern_von_Bethlehem","Stern von Bethlehem"],["Weihnachtskarte_25_Elfenhilfe","Elfenhilfe"],["Weihnachtskarte_26_Weihnachtspinguin","Weihnachtspinguin"],["Weihnachtskarte_27_Polarbaer","Polarbär"],["Weihnachtskarte_28_Weihnachtsglocken","Weihnachtsglocken"],["Weihnachtskarte_29_Kerzenschein","Kerzenschein"],["Weihnachtskarte_30_Winterdorf","Winterdorf im Schnee"],["Weihnachtskarte_31_Geschenkstapel","Geschenkstapel"],["Weihnachtskarte_32_Schneeflocke","Schneeflocke"]]);
 // Hochgeladene Fotos; bewährte Karten-IDs 65–80 und Sammelfortschritt bleiben unverändert.
@@ -752,6 +753,7 @@ document.getElementById('monster-exchange-btn').addEventListener('click',async()
 let monsterSpinBusy=false,monsterSpinRewardCards=null,monsterSpinPackId=null;
 const monsterOverlay=document.getElementById('monster-wheel-overlay');
 const monsterSpinStart=document.getElementById('monster-spin-start');
+const monsterSpinTest=document.getElementById('monster-spin-test');
 const monsterSpinClose=document.getElementById('monster-wheel-close');
 const monsterStatus=document.getElementById('monster-wheel-status');
 function monsterSpinPendingKey(){return 'deal-monster-spin-pending-'+(authState().user?.uid||'guest')}
@@ -764,25 +766,34 @@ function monsterSpinRequestId(){
 }
 function clearMonsterSpinRequestId(){try{sessionStorage.removeItem(monsterSpinPendingKey())}catch(_){}}
 function monsterTickets(){return Math.max(0,Number(current?.duplicates?.tickets||0))}
+function monsterAvailableSlots(){
+ const live=current?.monsterWheel?.slots;
+ return Array.isArray(live)&&live.length===25?live:(window.ChristmasMonsterDemo?.catalog||[]);
+}
 function monsterFormat(amount){return (amount/100).toLocaleString('de-DE',{style:'currency',currency:'EUR',maximumFractionDigits:0})}
 function monsterControls(){
  const tickets=monsterTickets();
  document.getElementById('monster-modal-tickets').textContent=tickets.toLocaleString('de-DE');
- monsterSpinStart.disabled=monsterSpinBusy||!tickets;
+ monsterSpinStart.disabled=monsterSpinBusy||!tickets||!current?.monsterWheel?.slots?.length;
  monsterSpinStart.textContent=monsterSpinBusy?'🎰 Das Monster-Rad dreht …':'🎰 MONSTER-RAD DREHEN';
+ monsterSpinTest.disabled=monsterSpinBusy||!monsterAvailableSlots().length;
+ monsterSpinTest.textContent=monsterSpinBusy?'🎰 Das Rad dreht …':'🧪 TESTDREH STARTEN';
+ document.getElementById('monster-test-open').disabled=monsterSpinBusy;
  monsterSpinClose.disabled=monsterSpinBusy;
 }
-function monsterOpen(){
- if(!current?.monsterWheel?.slots?.length){document.getElementById('monster-exchange-message').textContent='⚠️ Monster-Rad-Daten sind noch nicht verfügbar.';return}
+function monsterOpen(focusTest=false){
+ const slots=monsterAvailableSlots();
+ if(!slots.length){document.getElementById('monster-exchange-message').textContent='⚠️ Monster-Rad-Daten sind noch nicht verfügbar.';return}
  monsterOverlay.hidden=false;
  document.body.style.overflow='hidden';
- window.ChristmasMonsterVisuals?.setCatalog(current.monsterWheel.slots);
+ window.ChristmasMonsterVisuals?.setCatalog(slots);
  if(!monsterSpinBusy)window.ChristmasMonsterVisuals?.reset();
  document.getElementById('monster-wheel-prize').hidden=true;
  document.getElementById('monster-wheel-card-action').hidden=true;
+ document.getElementById('monster-test-label').hidden=true;
  monsterSpinRewardCards=null;monsterSpinPackId=null;
- monsterStatus.textContent=monsterTickets()?'🎟️ Dein Monster-Dreh ist bereit. Gewinne werden sicher ausgelost.':'🎟️ Tausche 100 Duplikate gegen einen Drehgutschein.';
- monsterControls();monsterSpinStart.focus();
+ monsterStatus.textContent=monsterTickets()?'🎟️ Dein Monster-Dreh ist bereit. Alternativ kannst du kostenlos testen.':'🧪 Kostenloser Testdreh verfügbar – ohne Anmeldung, Gutschein oder Gutschrift.';
+ monsterControls();(focusTest?monsterSpinTest:monsterSpinStart).focus();
 }
 function monsterClose(){
  if(monsterSpinBusy)return;
@@ -790,8 +801,9 @@ function monsterClose(){
  document.body.style.overflow='';
  document.getElementById('monster-spin-open')?.focus();
 }
-function monsterShowPrize(spin){
+function monsterShowPrize(spin,{test=false}={}){
  const prize=spin?.prize||{};
+ const isTest=test===true;
  const result=document.getElementById('monster-wheel-prize');
  const icon=document.getElementById('monster-wheel-result-icon');
  const title=document.getElementById('monster-wheel-result-name');
@@ -800,21 +812,29 @@ function monsterShowPrize(spin){
  const cardButton=document.getElementById('monster-wheel-card-action');
  icon.textContent=prize.icon||'🏆';
  title.textContent=(prize.kind==='cash'||prize.kind==='randomCash')
-   ?monsterFormat(prize.amountCents||0)+' gewonnen!':(prize.label||'Monster-Gewinn!');
- details.textContent=prize.kind==='pack'
+   ?monsterFormat(prize.amountCents||0)+(isTest?' – Testgewinn':' gewonnen!')
+   :(prize.label||'Monster-Gewinn!')+(isTest?' – Testgewinn':'');
+ document.getElementById('monster-test-label').hidden=!isTest;
+ details.textContent=isTest
+  ?prize.kind==='pack'?'Nur Vorschau: '+prize.quantity+' Weihnachtspakete würden vergeben. Keine Karten werden gezogen oder gespeichert.'
+   :prize.kind==='hammer'?'Nur Vorschau: Diese Hammer würden vergeben. Dein Vorrat bleibt unverändert.'
+   :prize.kind==='joker'?'Nur Vorschau: Diese Joker würden vergeben. Dein Vorrat bleibt unverändert.'
+   :prize.kind==='avatar'?'Nur Vorschau: Der Giftzwerg würde freigeschaltet. Deine Charaktere bleiben unverändert.'
+   :'Nur Vorschau: Kein Geld wird deinem Konto gutgeschrieben.'
+  :prize.kind==='pack'
   ?prize.quantity+' Weihnachtspakete mit insgesamt '+(spin.revealed?.length||0)+' Karten wurden deinem Album gutgeschrieben.'
   :prize.kind==='hammer'?'Deine Hammer wurden dem Weihnachtsevent-2-Vorrat gutgeschrieben.'
   :prize.kind==='joker'?'Deine Kofferblick-Joker wurden deinem Profil gutgeschrieben.'
   :prize.kind==='avatar'?'Der Muffige Giftzwerg ist jetzt in der Spiellobby freigeschaltet! Seine frechen Kommentare warten im nächsten Spiel.'
   :'Das Spielgeld wurde deinem Goldstudio-Konto gutgeschrieben.';
  avatar.hidden=prize.kind!=='avatar';
- monsterSpinRewardCards=Array.isArray(spin.revealed)&&spin.revealed.length?spin.revealed:null;
- monsterSpinPackId=spin.packId||null;
- cardButton.hidden=!monsterSpinRewardCards;
+ monsterSpinRewardCards=!isTest&&Array.isArray(spin.revealed)&&spin.revealed.length?spin.revealed:null;
+ monsterSpinPackId=!isTest?spin.packId||null:null;
+ cardButton.hidden=isTest||!monsterSpinRewardCards;
  result.hidden=false;
- monsterStatus.textContent='🎉 GLÜCKWUNSCH! Gewinn sicher gutgeschrieben.';
+ monsterStatus.textContent=isTest?'🧪 TEST BEENDET · Gewinnfenster erfolgreich geöffnet. Nichts gutgeschrieben.':'🎉 GLÜCKWUNSCH! Gewinn sicher gutgeschrieben.';
 }
-document.getElementById('monster-spin-open').addEventListener('click',monsterOpen);
+document.getElementById('monster-spin-open').addEventListener('click',()=>monsterOpen());
 monsterSpinClose.addEventListener('click',monsterClose);
 monsterOverlay.addEventListener('click',event=>{if(event.target===monsterOverlay)monsterClose()});
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!monsterOverlay.hidden)monsterClose()});
@@ -823,6 +843,32 @@ document.getElementById('monster-wheel-card-action').addEventListener('click',()
  const cards=monsterSpinRewardCards,pack=monsterSpinPackId||'large';
  monsterClose();
  openReveal(cards,'real',pack);
+});
+async function runMonsterTest(){
+ if(monsterSpinBusy||monsterOverlay.hidden)return;
+ const slots=monsterAvailableSlots();
+ if(slots.length!==25)return;
+ // Important: no request(), POST, requestId, Firestore, wallet or ticket mutation.
+ // This is a local animation/reveal of a temporary simulated prize only.
+ monsterSpinBusy=true;monsterControls();
+ document.getElementById('monster-wheel-prize').hidden=true;
+ document.getElementById('monster-test-label').hidden=true;
+ document.getElementById('monster-wheel-card-action').hidden=true;
+ monsterStatus.textContent='🧪 TESTMODUS · Das Rad dreht acht Sekunden – nichts wird gutgeschrieben.';
+ try{
+  const preview=window.ChristmasMonsterDemo.draw(slots);
+  await window.ChristmasMonsterVisuals.spin(preview.prize.index,8000);
+  monsterShowPrize(preview,{test:true});
+ }catch(error){
+  monsterStatus.textContent='⚠️ Testdreh fehlgeschlagen: '+(error.message||'Unbekannter Fehler');
+ }finally{
+  monsterSpinBusy=false;monsterControls();
+ }
+}
+monsterSpinTest.addEventListener('click',()=>{void runMonsterTest()});
+document.getElementById('monster-test-open').addEventListener('click',()=>{
+ monsterOpen(true);
+ void runMonsterTest();
 });
 monsterSpinStart.addEventListener('click',async()=>{
  if(monsterSpinBusy||monsterTickets()<1)return;
