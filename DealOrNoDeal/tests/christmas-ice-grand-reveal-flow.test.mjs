@@ -28,10 +28,10 @@ async function boot(state,{onPost=null}={}){
   },
   querySelectorAll(selector){
    if(selector!=='[data-tile]')return [];
-   const matches=[...this.innerHTML.matchAll(/<button data-tile="(\\d+)"([^>]*)>/g)];
+   const matches=[...this.innerHTML.matchAll(/<button data-tile="(\d+)"([^>]*)>/g)];
    tiles.clear();
    return matches.map(match=>{
-    const tile={dataset:{tile:match[1]},disabled:/\\bdisabled\\b/.test(match[2]),onclick:null};
+    const tile={dataset:{tile:match[1]},disabled:/\bdisabled\b/.test(match[2]),onclick:null};
     tiles.set(Number(match[1]),tile);
     return tile;
    });
