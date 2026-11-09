@@ -11,7 +11,7 @@ const html = readFileSync(resolve(root, 'game.html'), 'utf8');
 const css = [...html.matchAll(/<link\s+rel="stylesheet"\s+href="(\.\/css\/[^"]+)"/g)].map(m => m[1].split('?')[0]);
 const js = [...html.matchAll(/<script\s+src="(\.\/js\/[^"]+)"\s*><\/script>/g)].map(m => m[1].split('?')[0]);
 const expectedCss = ['foundation', 'studio', 'cases', 'banker', 'avatars', 'effects', 'deluxe-director', 'broadcast', 'christmas-studio', 'christmas-gifts', 'commentary', 'banker-stage'].map(n => './css/' + n + '.css');
-const expectedJs = ['core', 'cases', 'banker', 'finale', 'scenes', 'avatars', 'commentary-lines', 'commentary-replies', 'commentary', 'app', 'deluxe-director', 'broadcast', 'christmas-themes'].map(n => './js/' + n + '.js');
+const expectedJs = ['core', 'cases', 'banker', 'finale', 'scenes', 'avatars', 'commentary-lines', 'commentary-replies', 'commentary', 'app', 'deluxe-director', 'broadcast', 'christmas-themes', 'peek-joker', 'final-hammer-wheel'].map(n => './js/' + n + '.js');
 
 test('HTML assets are complete, unique, and loaded in the intended order', () => {
   assert.deepEqual(css, expectedCss);
@@ -172,7 +172,8 @@ test('opened-case reactions use the correct euro-cent boundaries', async () => {
  assert.equal(classify(100000000),'bad');
  const commentary=readFileSync(resolve(root,'js/commentary.js'),'utf8');
  assert.ok(!commentary.includes('previous.good!==good'));
- assert.match(commentary,/amount\/100\)\.toLocaleString/);
+ assert.match(commentary,/if\(amount<10000\)return 'good'/);
+ assert.match(commentary,/if\(amount>2000000\)return 'bad'/);
  const lines=readFileSync(resolve(root,'js/commentary-lines.js'),'utf8');
  for(const avatar of [2,3,4,5,7])assert.ok(lines.includes(avatar+':{name:'));
  assert.match(lines,/neutral:/);
@@ -252,7 +253,7 @@ test('situational dialogue triggers without overriding one-cent or million event
  assert.ok(logic.indexOf("category==='millionLost'")<logic.indexOf('story.bad>=2'));
 });
 
-test('all six characters can reply contextually without dialogue loops', async () => {
+test('reply catalogues retain six characters while only the active player may speak', async () => {
  const vm=await import('node:vm');
  const ctx=vm.createContext({});
  vm.runInContext(readFileSync(resolve(root,'js/commentary-replies.js'),'utf8')+'\n;globalThis.replies=studioReplyLines',ctx);
@@ -266,14 +267,16 @@ test('all six characters can reply contextually without dialogue loops', async (
   }
  }
  const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
- assert.match(logic,/state\.lastEvent%6!==0/);
- assert.match(logic,/filter\(id=>id!==speakerAvatar\)/);
- assert.match(logic,/studioCommentMaybeReply\(speakerAvatar,category,amount,line\)/);
+ assert.match(logic,/function studioCommentMaybeReply\(\)\{return;\}/);
+ assert.match(logic,/studioPersona\(studioActor\(game,item\)\)/);
+
+
+
  const html=readFileSync(resolve(root,'game.html'),'utf8');
  assert.ok(html.indexOf('commentary-replies.js')<html.indexOf('./js/commentary.js'));
 });
 
-test('rare three-person disputes have unique speakers and finite closure', async () => {
+test('archived dispute dialogues remain finite while live cross-player dialogue is disabled', async () => {
  const vm=await import('node:vm');
  const ctx=vm.createContext({});
  vm.runInContext(readFileSync(resolve(root,'js/commentary-replies.js'),'utf8')+'\n;globalThis.objections=studioDisputeLines;globalThis.closers=studioDisputeClosers',ctx);
@@ -282,12 +285,14 @@ test('rare three-person disputes have unique speakers and finite closure', async
   assert.ok(ctx.closers[id].length>=2);
  }
  const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
- assert.match(logic,/state\.lastEvent%12===0/);
- assert.match(logic,/ids\.filter\(id=>id!==responder\)/);
- assert.match(logic,/studioContextDisputes\[topic\]/);
+ assert.match(logic,/function studioCommentMaybeReply\(\)\{return;\}/);
+ assert.match(logic,/studioPersona\(studioActor\(game,item\)\)/);
+
+
+
 });
 
-test('contextual disagreements are fact-consistent across all eight topics', async () => {
+test('archived contextual disagreement texts retain valid categories', async () => {
  const vm=await import('node:vm');
  const ctx=vm.createContext({});
  vm.runInContext(readFileSync(resolve(root,'js/commentary-replies.js'),'utf8')+'\n;globalThis.scenes=studioContextDisputes',ctx);
@@ -298,13 +303,15 @@ test('contextual disagreements are fact-consistent across all eight topics', asy
   assert.ok(scene.objections.every(line=>typeof line==='string'&&line.length>20));
  }
  const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
+ assert.match(logic,/function studioCommentMaybeReply\(\)\{return;\}/);
+ assert.match(logic,/studioPersona\(studioActor\(game,item\)\)/);
  assert.match(logic,/function studioReplyTopic\(category,amount\)/);
- assert.match(logic,/state\.lastEvent%12===0/);
- assert.match(logic,/ids\.filter\(id=>id!==responder\)/);
- assert.match(logic,/studioContextDisputes\[topic\]/);
+
+
+
 });
 
-test('cast disputes respond to the actual previous line instead of arbitrary objections', async () => {
+test('tone analysis remains available while automatic cast disputes are disabled', async () => {
  const vm=await import('node:vm');
  const ctx=vm.createContext({});
  vm.runInContext(readFileSync(resolve(root,'js/commentary-replies.js'),'utf8')+'\n;globalThis.tones=studioToneDisputes',ctx);
@@ -315,10 +322,12 @@ test('cast disputes respond to the actual previous line instead of arbitrary obj
   }
  }
  const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
+ assert.match(logic,/function studioCommentMaybeReply\(\)\{return;\}/);
+ assert.match(logic,/studioPersona\(studioActor\(game,item\)\)/);
  assert.match(logic,/function studioCommentTone\(line\)/);
- assert.match(logic,/tone!=='measured'/);
- assert.match(logic,/studioToneDisputes\[topic\]\?\.\[tone\]/);
- assert.match(logic,/studioCommentMaybeReply\(speakerAvatar,category,amount,line\)/);
+
+
+
 });
 
 test('rapid case openings cancel stale banter but retain every case reaction', async () => {
@@ -343,7 +352,7 @@ test('rapid case openings cancel stale banter but retain every case reaction', a
  assert.equal(document.getElementById('studio-commentary-line').textContent,'Second case');
 });
 
-test('sarcasm stays rare and covers all six commentators in every game situation', async () => {
+test('sarcasm catalogue stays intact while cross-player sarcasm is disabled', async () => {
  const vm=await import('node:vm');
  const ctx=vm.createContext({});
  vm.runInContext(readFileSync(resolve(root,'js/commentary-replies.js'),'utf8')+'\n;globalThis.sarcasm=studioSarcasmLines',ctx);
@@ -355,6 +364,26 @@ test('sarcasm stays rare and covers all six commentators in every game situation
   }
  }
  const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
+ assert.match(logic,/function studioCommentMaybeReply\(\)\{return;\}/);
+ assert.match(logic,/studioPersona\(studioActor\(game,item\)\)/);
  assert.match(logic,/turn%3===2/);
- assert.match(logic,/studioSarcasmLines\[topic\]\?\.\[responder\]/);
+
+});
+
+
+test('Christmas collection and ice-event use one shared navigation and preserve room links',()=>{
+ const main=readFileSync(resolve(root,'weihnachten.html'),'utf8');
+ const ice=readFileSync(resolve(root,'Weihnachtsevent2','index.html'),'utf8');
+ const css=readFileSync(resolve(root,'css','christmas-event-hub.css'),'utf8');
+ for(const page of [main,ice]){
+  assert.match(page,/christmas-event-hub\.css\?v=20261109-goldstudio-v2/);
+  assert.match(page,/event-hub-nav/);
+  for(const section of ['Sammlung','Pakete','Spielinformation','Weihnachtsevent 2'])assert.ok(page.includes(section));
+ }
+ assert.match(main,/event-main-guide/);
+ assert.match(ice,/event-guide-open/);
+ assert.match(main,/event-game-link/);
+ assert.match(ice,/event-game-link/);
+ assert.match(ice,/url\.searchParams\.set\('room',room\)/);
+ assert.match(css,/\.event-hub-top\{/);
 });

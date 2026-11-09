@@ -16,8 +16,9 @@ test('Deal stream and HTTP updates reject stale revisions',()=>{
 });
 test('Deal stream retains HTTP fallback and reward checks are event driven',()=>{
  assert.match(app,/if\(!dealSocketHealthy\(\)\|\|Date\.now\(\)-lastHttpSafetySync>=60000\)await poll\(\)/);
- assert.match(html,/addEventListener\('deal-game-state-change',checkRewards\)/);
- assert.match(html,/setInterval\(checkRewards,30000\)/);
+ assert.match(html,/addEventListener\('deal-game-state-change',\(\)=>\{syncSharedClose\(\);syncWheel\(\);checkRewards\(\);checkWheelStart\(\)\}\)/);
+ assert.match(html,/if\(rewardMayExist\(\)&&box.hidden\)checkRewards\(\)/);
+ assert.match(html,/setInterval\(\(\)=>\{if\(!document.hidden\)\{syncSharedClose\(\);if\(rewardMayExist\(\)&&box.hidden\)checkRewards\(\)\}\},10000\)/);
  assert.doesNotMatch(html,/setInterval\(checkRewards,1700\)/);
 });
 
