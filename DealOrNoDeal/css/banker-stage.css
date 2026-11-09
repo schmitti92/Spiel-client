@@ -237,3 +237,107 @@
 @media(max-width:900px),(max-height:540px){
  #banker-call .banker-offer-details{overflow:visible!important}
 }
+
+
+/* Banker Stage V5 — visual refinement based on the tablet screenshot.
+   This stylesheet loads LAST. Keep the stable three-column layout and live controls. */
+#banker-call.banker-call{
+ background:
+  radial-gradient(ellipse 75% 65% at 50% 8%,#28436e 0%,transparent 68%),
+  radial-gradient(ellipse 35% 55% at 0% 80%,#75491c30,transparent 75%),
+  radial-gradient(ellipse 35% 55% at 100% 80%,#75491c30,transparent 75%),
+  #061328!important;
+}
+#banker-call .banker-call-card{
+ border:2px solid #f6d48a!important;
+ background:linear-gradient(140deg,#06132af8,#122945f9 48%,#090e23fa)!important;
+ box-shadow:inset 0 0 0 2px #ffe29b33,inset 0 0 30px #f7bc4d1a,0 0 0 3px #b2773266,0 0 35px #ffbd5750,0 18px 44px #000b!important;
+}
+#banker-call .banker-call-eyebrow:first-child{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ gap:12px!important;font-size:clamp(10px,1.15vw,15px)!important;
+ color:#ffe1a0!important;text-shadow:0 1px 5px #000,0 0 13px #eebc6a!important;
+}
+#banker-call .banker-call-eyebrow:first-child::before{
+ content:"DEAL OR NO DEAL";display:block;white-space:nowrap;
+ font-size:clamp(17px,2vw,31px);font-weight:1000;letter-spacing:.07em;
+ color:#ffdc8a;text-shadow:0 2px 2px #30190b,0 0 13px #ffab48;
+}
+#banker-call .banker-money-board{
+ border:2px solid #d9a85f!important;border-radius:17px!important;
+ background:linear-gradient(150deg,#0a203b,#061124 80%)!important;
+ box-shadow:inset 0 0 0 1px #ffe6a522,0 0 18px #eeb25e40!important;
+}
+#banker-call .banker-money-board h3{color:#ffdf9c!important;text-shadow:0 0 9px #d8904588!important}
+#banker-call .banker-money-list{
+ grid-template-rows:repeat(14,minmax(0,1fr))!important;
+}
+#banker-call .banker-money-list .banker-money-value[data-status="live"]{
+ background:linear-gradient(#e6bd6b,#ac742d 60%,#7e4c1f)!important;
+ border:1px solid #ebc67d!important;color:#fff5d9!important;
+ box-shadow:inset 0 1px 1px #fff7c66b,0 1px 4px #0007!important;
+ text-shadow:0 1px 3px #26150b!important;
+}
+#banker-call .banker-money-list .banker-money-value[data-status="gone"]{
+ background:#071324!important;color:#778295!important;border:1px solid #344356!important;
+ box-shadow:inset 0 0 0 1px #ffffff09!important;
+ text-decoration:line-through!important;opacity:.74!important;
+}
+#banker-call .banker-call-portrait{
+ border:2px solid #ffcf82!important;border-radius:17px!important;
+ background:#090f20!important;box-shadow:0 0 0 2px #9d512e90,0 0 22px #e6a45670!important;
+}
+#banker-call .banker-call-portrait .banker-offer-video{
+ object-fit:cover!important;object-position:center center!important;
+ background:#0b1321!important;
+}
+/* The video uses a widescreen source but the portrait is tall: cover removes the
+   enormous letterbox bars while keeping the Banker centered. */
+#banker-call .banker-offer-details{
+ border:2px solid #d9a85f!important;border-radius:17px!important;
+ background:linear-gradient(155deg,#0b2440,#07132a 75%)!important;
+ box-shadow:inset 0 0 0 1px #ffe3aa22,0 0 19px #b7834240!important;
+}
+#banker-call .banker-offer-details #banker-call-title{
+ color:#ffe4a2!important;text-shadow:0 2px 5px #000,0 0 13px #e7b76155!important;
+}
+#banker-call .banker-offer-details .banker-call-amount{
+ background:linear-gradient(105deg,#681611,#a32915 47%,#65120e)!important;
+ border:2px solid #ffde8d!important;border-radius:15px!important;
+ color:#fff0af!important;
+ text-shadow:0 3px 5px #330b08,0 0 14px #ffae4d88!important;
+ box-shadow:inset 0 0 18px #ffc86a3b,0 0 19px #f9ad5360!important;
+}
+#banker-call .banker-offer-details .banker-christmas-bonus:not([hidden]){
+ border:2px solid #ffda86!important;
+ background:linear-gradient(90deg,#163a2b,#286742,#163a2b)!important;
+ box-shadow:0 0 14px #a5ff8544!important;
+}
+/* One offer gauge is enough. The broadcast gauge already shows the 0–200% ratio;
+   preserve the second gauge for the special final decision where math is absent. */
+#banker-call .banker-offer-details:has(.broadcast-offer-math:not([hidden])) > .banker-offer-quality{
+ display:none!important;
+}
+#banker-call .banker-offer-details .banker-call-actions button{
+ border:2px solid #ffda91!important;border-radius:15px!important;
+ box-shadow:inset 0 2px 3px #fff8c388,0 3px 0 #321d10,0 0 15px #f4bc5b55!important;
+ color:#fff!important;text-shadow:0 2px 3px #0009!important;
+}
+#banker-call .banker-offer-details #banker-call-deal{background:linear-gradient(#32bd60,#0e9a47 58%,#09612c)!important}
+#banker-call .banker-offer-details #banker-call-no-deal{background:linear-gradient(#f65e4d,#d52222 58%,#8a1115)!important}
+#banker-call .banker-offer-details .banker-call-actions button:focus-visible{
+ outline:3px solid #fff!important;outline-offset:3px!important;
+}
+/* Keep the original tablet compact mode and all 27 money entries readable. */
+@media(min-width:901px) and (max-height:850px){
+ #banker-call .banker-call-card{row-gap:5px!important}
+ #banker-call .banker-money-board{padding:8px!important;gap:5px!important}
+ #banker-call .banker-money-list{gap:3px!important}
+ #banker-call .banker-offer-details{gap:clamp(3px,.4dvh,6px)!important}
+ #banker-call .banker-offer-details .banker-call-amount{padding:clamp(6px,.6vw,10px)!important}
+}
+@media(max-width:900px),(max-height:540px){
+ #banker-call .banker-call-eyebrow:first-child{flex-wrap:wrap!important;justify-content:center!important}
+ #banker-call .banker-money-list{grid-template-rows:auto!important}
+ #banker-call .banker-call-portrait .banker-offer-video{object-fit:cover!important}
+}
