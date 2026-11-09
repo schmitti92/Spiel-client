@@ -1252,6 +1252,7 @@ async function revealNext(){
   }
  },revealCardHoldMs(card));
 }
+next.addEventListener('click',()=>{void revealNext()});
 document.getElementById('reveal-image-retry').addEventListener('click',async()=>{
  const state=revealState,index=state?.index;
  const card=state?.cards?.[index];
@@ -1278,7 +1279,7 @@ document.getElementById('reveal-image-retry').addEventListener('click',async()=>
   },revealCardHoldMs(card));
  }
 });
-next.addEventListener('click',()=>{void revealNext()});
+
 skip.addEventListener('click',finishReveal);
 close.addEventListener('click',()=>{
  stopRevealAuto();revealMotionToken++;revealMotionBusy=false;next.disabled=false;
