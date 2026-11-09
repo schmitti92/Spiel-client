@@ -51,7 +51,7 @@
 /* Golden cinematic rim follows the wheel itself, while the pointer remains separate.
    The decoration is a transparent SVG asset: no baked-in win segments or text. */
 .monster-disc{background-blend-mode:soft-light;isolation:isolate;border-color:#eab95a;box-shadow:inset 0 0 0 2px #fff2c0,inset 0 0 45px #1a042bc9,0 0 0 6px #6e307f,0 0 42px #fbc473a8}
-.monster-disc:after{content:"";pointer-events:none;position:absolute;z-index:5;inset:-9%;background:url("../Weihnachtsevent2/Weihnachtsbilder/file_00000000be5481f6a8972866f23598ee.png") center/contain no-repeat,url("../assets/monster-wheel-gold-frame.svg") center/contain no-repeat;filter:drop-shadow(0 0 9px #ffd681a9);-webkit-mask-image:radial-gradient(circle,transparent 0 82%,#000 87% 100%);mask-image:radial-gradient(circle,transparent 0 82%,#000 87% 100%)}
+.monster-disc:after{content:"";pointer-events:none;position:absolute;z-index:5;inset:-9%;background:url("../Weihnachtsevent2/Weihnachtsbilder/file_00000000be5481f6a8972866f23598ee.png") center/contain no-repeat,url("../assets/monster-wheel-gold-frame.svg") center/contain no-repeat;filter:drop-shadow(0 0 9px #ffd681a9);-webkit-mask-image:radial-gradient(circle closest-side at center,transparent 0 82%,#000 87% 100%);mask-image:radial-gradient(circle closest-side at center,transparent 0 82%,#000 87% 100%)}
 .monster-disc .monster-wheel-segment{z-index:4}
 .monster-wheel-segment[data-featured]:not([data-featured=""]){font-size:clamp(19px,2.7vw,34px)!important;filter:drop-shadow(0 0 6px #f8ecb7) drop-shadow(0 0 7px #c6e8ed);text-shadow:0 0 12px #fff9d8;animation:monsterFeatured 2.8s ease-in-out infinite alternate}
 .monster-wheel-segment[data-featured="character"]{filter:drop-shadow(0 0 12px #83fa6c)}
