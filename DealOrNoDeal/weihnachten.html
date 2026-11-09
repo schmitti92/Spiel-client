@@ -435,7 +435,7 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
    <img class="monster-wheel-avatar" id="monster-wheel-result-avatar" src="./assets/giftzwerg.svg" alt="Muffiger Giftzwerg" hidden>
   </div>
  </section>
-</div><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script><script src="./js/christmas-show-director.js?v=20261109-show-v1"></script><script src="./js/hammer-bingo-cinematics.js?v=20261109-victory-v3"></script><script src="./js/christmas-pack-cinema.js?v=20261109-sequential-v2"></script><script src="./js/north-pole-bingo.js?v=20261109-compass-v3"></script><script src="./js/monster-wheel.js?v=20261109-full-photo-v1"></script><script>
+</div><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script><script src="./js/christmas-show-director.js?v=20261109-show-v1"></script><script src="./js/hammer-bingo-cinematics.js?v=20261109-victory-v3"></script><script src="./js/christmas-pack-cinema.js?v=20261109-sequential-v2"></script><script src="./js/christmas-card-image-loader.js?v=20261109-cards-preload-v1"></script><script src="./js/north-pole-bingo.js?v=20261109-compass-v3"></script><script src="./js/monster-wheel.js?v=20261109-full-photo-v1"></script><script>
 const cards=[["01_winterdorf","Winterdorf"],["02_lebkuchenhaus","Lebkuchenhaus"],["03_weihnachtsmann","Weihnachtsmann"],["04_rentier","Rentier"],["05_weihnachtsbaum","Weihnachtsbaum"],["06_weihnachtszug","Weihnachtszug"],["07_schneekugel","Schneekugel"],["08_wichtelwerkstatt","Wichtelwerkstatt"],["09_polarlichter","Polarlichter"],["10_eisschloss","Eisschloss"],["11_rentierschlitten","Rentierschlitten"],["12_weihnachtslaterne","Weihnachtslaterne"],["13_weihnachtsengel","Weihnachtsengel"],["14_adventskerzen","Adventskerzen"],["15_schneemannfamilie","Schneemannfamilie"],["16_weihnachtskrippe","Weihnachtskrippe"]];
 cards.push(...[["Weihnachtskarte_17_Schneemann","Schneemann"],["Weihnachtskarte_18_Weihnachtsengel","Weihnachtsengel"],["Weihnachtskarte_19_Rentier","Rentier im Schnee"],["Weihnachtskarte_20_Weihnachtsbaum","Weihnachtsbaum im Glanz"],["Weihnachtskarte_21_Lebkuchenmann","Lebkuchenmann"],["Weihnachtskarte_22_Weihnachtskranz","Weihnachtskranz"],["Weihnachtskarte_23_Schlitten","Schlittenfahrt"],["Weihnachtskarte_24_Stern_von_Bethlehem","Stern von Bethlehem"],["Weihnachtskarte_25_Elfenhilfe","Elfenhilfe"],["Weihnachtskarte_26_Weihnachtspinguin","Weihnachtspinguin"],["Weihnachtskarte_27_Polarbaer","Polarbär"],["Weihnachtskarte_28_Weihnachtsglocken","Weihnachtsglocken"],["Weihnachtskarte_29_Kerzenschein","Kerzenschein"],["Weihnachtskarte_30_Winterdorf","Winterdorf im Schnee"],["Weihnachtskarte_31_Geschenkstapel","Geschenkstapel"],["Weihnachtskarte_32_Schneeflocke","Schneeflocke"]]);
 // Hochgeladene Fotos; bewährte Karten-IDs 65–80 und Sammelfortschritt bleiben unverändert.
@@ -1020,6 +1020,8 @@ function openReveal(revealed,mode='real',pack='small'){
  const array=window.ChristmasPackCinema?.orderCards?.(revealed)
   ||(Array.isArray(revealed)?[...revealed]:[]);
  revealState={cards:array,index:-1,mode,pack};
+ // Prefetch the first two awarded cards while the gift opening plays.
+ window.ChristmasCardImages?.prefetch(array,0,christmasCardImage,2);
  overlay.hidden=false;document.body.style.overflow='hidden';
  document.getElementById('reveal-present').classList.remove('opened');
  document.getElementById('reveal-present').hidden=false;
@@ -1051,6 +1053,7 @@ function finishReveal(){
   tile.style.setProperty('--idx',String(i));
   const img=document.createElement('img');img.src=christmasCardImage(card);
   img.alt=card.name||'Weihnachtskarte';img.title=card.name||'Weihnachtskarte';img.loading='lazy';img.decoding='async';
+  window.ChristmasCardImages?.guard(img);
   tile.append(img);
   if(card.isNew===true){
    const badge=document.createElement('span');badge.className='reveal-summary-new';
@@ -1083,6 +1086,11 @@ async function revealNext(){
  state.index=index;
  const card=state.cards[index];
  const token=++revealMotionToken;
+ const artwork=christmasCardImage(card);
+ // Start/preuse image loading BEFORE the 3D opening. The two following images
+ // are prefetched now so large PNGs are not blank in the 1.8–3.9s spotlight.
+ const artworkPromise=window.ChristmasCardImages?.load(artwork);
+ window.ChristmasCardImages?.prefetch(state.cards,index+1,christmasCardImage,2);
  revealMotionBusy=true;next.disabled=true;
  const el=document.getElementById('reveal-card');
  el.hidden=true;
@@ -1091,14 +1099,26 @@ async function revealNext(){
  document.getElementById('reveal-counter').textContent='🎁 Karte '+(index+1)+' von '+state.cards.length+' wird geöffnet …';
  try{await window.ChristmasPackCinema?.startCard(card,index,state.cards.length)}catch(_){}
  if(token!==revealMotionToken||revealState!==state)return;
+ let artResult={src:artwork,ok:true};
+ if(artworkPromise){
+  // Keep the gift-opening animation visible until the artwork is decoded.
+  document.getElementById('reveal-counter').textContent='🖼️ Karte '+(index+1)+' von '+state.cards.length+' wird geladen …';
+  try{artResult=await artworkPromise}catch(_){artResult={src:'./assets/weihnachts_event/card-back-winter.svg',ok:false}}
+  if(token!==revealMotionToken||revealState!==state)return;
+ }
  el.className='reveal-card '+(card.rarity||'common')+(card.isNew===true?' is-new':'');
- document.getElementById('reveal-image').src=christmasCardImage(card);
- document.getElementById('reveal-image').alt=card.name||'Weihnachtskarte';
+ const bigImage=document.getElementById('reveal-image');
+ bigImage.alt=card.name||'Weihnachtskarte';
+ bigImage.title=artResult.ok?(card.name||'Weihnachtskarte'):'Motiv konnte nicht geladen werden: '+(card.name||'Weihnachtskarte');
+ bigImage.classList.toggle('card-art-unavailable',!artResult.ok);
+ window.ChristmasCardImages?.guard(bigImage);
+ bigImage.src=artResult.src;
  document.getElementById('reveal-name').textContent=card.name||'Weihnachtskarte';
  document.getElementById('reveal-rarity').textContent=
   ({common:'Gewöhnlich',rare:'💎 Selten',epic:'✨ Episch',legendary:'🌟 Legendär'})[card.rarity]||'Gewöhnlich';
  document.getElementById('reveal-counter').textContent='Karte '+(index+1)+' von '+state.cards.length+
-  (card.isNew===true?' · 🌟 NEU im Sammelalbum!':card.isNew===false&&state.mode==='real'?' · 🔁 Doppelte Karte!':'');
+  (card.isNew===true?' · 🌟 NEU im Sammelalbum!':card.isNew===false&&state.mode==='real'?' · 🔁 Doppelte Karte!':'')
+  +(artResult.ok?'':' · ⚠️ Bild vorübergehend nicht geladen');
  el.hidden=false;
  if(!window.ChristmasPackCinema){overlay.dataset.stage='card';document.getElementById('reveal-present').hidden=true;}
  next.textContent=index===state.cards.length-1?'Alle Karten anzeigen':'Nächste Karte →';
