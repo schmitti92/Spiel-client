@@ -99,7 +99,7 @@ function render(){
   70:'file_00000000134c82109685ad9abdc7d1f4.png'
  };
  // Presentation-only image path. A completed milestone never credits any new reward.
- const milestoneImage=n=>'./Weihnachtsbilder/'+(milestoneIllustrations[n]||'originalgrafik-15.webp');
+ const milestoneImage=n=>n===20&&Math.max(Number(state.completed)||0,Number(state.maxRewarded)||0)>=20?'../../Kniffel/Bilder/weihnachtswuerfel-5.png':'./Weihnachtsbilder/'+(milestoneIllustrations[n]||'originalgrafik-15.webp');
  const nextMilestone=state.completed>=70?70:Math.ceil((state.completed+1)/10)*10;
  const remainingMilestone=Math.max(0,nextMilestone-state.completed);
  const progressIntro='<div class="v44-progress-intro">'
@@ -112,10 +112,10 @@ function render(){
   const first=n===10,final=n===70;
   const title=first?(unlocked?'Jan Schlappen':'Geheime Belohnung'):n===20?(unlocked?'🎲 Weihnachtswürfel für Kniffel':'Geheime Belohnung'):final?'Weihnachtsfinale':'Geheime Schatztruhe';
   const stateText=unlocked?'✅ Meilenstein erreicht':current?'🎁 Noch '+(n-state.completed)+' Bild'+(n-state.completed===1?'':'er'):'🔒 Noch gesperrt';
-  const art=milestoneIllustrations[n];
+  const art=n===20&&unlocked?milestoneImage(n):'./Weihnachtsbilder/'+milestoneIllustrations[n];
   return '<article class="v44-reward '+(unlocked?'done':current?'current':'locked')+'" data-milestone="'+n+'" aria-label="Meilenstein bei '+n+' von 70 Bildern: '+stateText+'">'
    +'<div class="v44-reward-top"><div class="v44-reward-step">MEILENSTEIN</div><strong class="v44-reward-number">'+n+'<small>/70</small></strong></div>'
-   +'<div class="v44-reward-art"><img src="./Weihnachtsbilder/'+art+'" alt="Weihnachts-Schatztruhe für Meilenstein '+n+'" loading="lazy" decoding="async" width="160" height="160" onerror="this.onerror=null;this.src=\'./Weihnachtsbilder/originalgrafik-15.webp\'"></div>'
+   +'<div class="v44-reward-art"><img src="'+art+'" alt="'+(n===20&&unlocked?'Weihnachtswürfel für Kniffel':'Weihnachts-Schatztruhe für Meilenstein '+n)+'" loading="lazy" decoding="async" width="160" height="160" onerror="this.onerror=null;this.src=\'./Weihnachtsbilder/originalgrafik-15.webp\'"></div>'
    +'<strong class="v44-reward-title">'+title+'</strong><small class="v44-reward-status">'+stateText+'</small></article>';
  }).join('');
  root.innerHTML='<div class="v44-app"><div class="v44-recovery-bar" role="group" aria-label="Sichere Spielstand-Reparatur"><span>'+(readPending()?'⚠️ Letzte Aktion noch offen':'🔐 Spielstand wird online gesichert')+'</span><button id="ice-recover" type="button">'+(readPending()?'🔄 Letzte Aktion abschließen':'🔄 Spielstand prüfen')+'</button></div><header class="v44-head"><div class="v44-plaque v44-chapter-plaque">❄️ KAPITEL 2 · BILDERZAUBER</div><div class="v44-heading"><h1>Die magischen Weihnachtsbilder</h1><p>70 Bilder · Eisfelder freilegen · Meilenstein-Belohnungen</p></div><div class="v44-plaque">💰 '+money(state.balance)+'</div></header>'+
