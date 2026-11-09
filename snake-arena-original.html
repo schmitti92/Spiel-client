@@ -297,4 +297,5 @@ function updateFullscreenLabel(){fullscreenBtn.textContent=document.fullscreenEl
 fullscreenBtn.addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else $('status').textContent='Vollbild wird von diesem Browser nicht unterstützt';}catch{$('status').textContent='Vollbild konnte nicht aktiviert werden'}});
 document.addEventListener('fullscreenchange',updateFullscreenLabel);
 $('closeResults').addEventListener('click',()=>{$('results').hidden=true});init();
-</script></body></html>
+</script><script src="site-global-controls.js?v=20261109-global-1"></script>
+</body></html>
