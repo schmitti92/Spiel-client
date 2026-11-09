@@ -72,4 +72,5 @@ function switchAlbum(christmas){$('gold-album').hidden=christmas;$('christmas-al
 $('tab-gold').onclick=()=>switchAlbum(false);$('tab-christmas').onclick=()=>switchAlbum(true);
 const eventRoom=new URLSearchParams(location.search).get('room');if(eventRoom&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(eventRoom))$('christmas-event-link').href='./weihnachten.html?room='+encodeURIComponent(eventRoom);
 if(location.hash==='#weihnachten')switchAlbum(true);window.addEventListener('spielonline-change',()=>{if(!$('christmas-album').hidden)loadChristmasAlbum()});
-</script></body></html>
+</script><script src="../site-global-controls.js?v=20261109-global-1"></script>
+</body></html>
