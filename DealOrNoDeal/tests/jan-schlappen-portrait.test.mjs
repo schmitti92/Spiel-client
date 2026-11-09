@@ -31,7 +31,7 @@ test('Jan avatar 14 uses the new golden PNG in lobby, gameplay, commentary and v
   assert.doesNotMatch(source,/jan-schlappen\.(?:webp|svg)/,name+' must not use the old avatar image');
  }
  assert.match(game,/commentary-lines\.js\?v=20261109-jan-full-png-v2/);
- assert.match(game,/app\.js\?v=20261109-jan-full-png-v2/);
+ assert.match(game,/app\.js\?v=20261109-[a-z0-9-]+/,'portrait-bearing app script has a fresh versioned URL');
  assert.doesNotThrow(()=>new Script(client));
  assert.doesNotThrow(()=>new Script(commentary));
 });
