@@ -20,7 +20,7 @@ test('all three pages load identical premium universe styling after existing the
  assert.match(ice,/css\/christmas-event-hub\.css[^"']*"/);
  assert.match(collection,/css\/christmas-event-hub\.css[^"']*"/);
  for(const html of [portal,collection,ice]){
-  assert.match(html,/christmas-universe-premium\.css\?v=20261109-universe-v1/);
+  assert.match(html,/christmas-universe-premium\.css\?v=20261109-nested-nav-v1/);
   assert.equal(count(html,/id="christmas-effects-toggle"/g),1);
   assert.ok(html.indexOf('christmas-universe-premium.css')>html.indexOf('christmas-event-hub.css'));
  }
@@ -39,28 +39,35 @@ test('common visual performance control shares the exact local preference across
  assert.doesNotMatch(spectacle,/\bfetch\s*\(|\bXMLHttpRequest\s*\(/);
 });
 
-test('every Christmas page provides five coherent navigation destinations',()=>{
+test('every Christmas page provides three main destinations and collection sub-tabs',()=>{
  const destinations=[
   /weihnachten\.html\?view=album/,
-  /weihnachten\.html\?view=hammer/,
   /weihnachten\.html\?view=packs/,
-  /weihnachten\.html\?view=bingo/,
   /Weihnachtsevent2\/index\.html/
  ];
  for(const re of destinations)assert.match(nav(portal),re);
- for(const re of destinations.slice(0,4))assert.match(nav(ice),re);
+ for(const re of destinations.slice(0,2))assert.match(nav(ice),re);
  assert.match(nav(ice),/href="\.\/index\.html" class="event2-tab" aria-current="page"/);
- assert.equal(count(nav(portal),/<a\b/g),5);
- assert.equal(count(nav(ice),/<a\b/g),5);
- assert.equal(count(nav(collection),/<button\b/g),4);
+ assert.equal(count(nav(portal),/<a\b/g),3);
+ assert.equal(count(nav(ice),/<a\b/g),3);
+ assert.equal(count(nav(collection),/<button\b/g),2);
  assert.equal(count(nav(collection),/<a\b/g),1);
- assert.match(nav(collection),/data-view="hammer"/);
+ assert.match(nav(collection),/data-main-view="collection"/);
+ assert.match(nav(collection),/data-main-view="packs"/);
+ const subnav=collection.match(/<nav id="event-collection-nav"[\s\S]*?<\/nav>/)?.[0]||'';
+ assert.equal(count(subnav,/<button\b/g),4);
+ for(const view of ['album','hammer','monster','bingo'])assert.ok(subnav.includes('data-view="'+view+'"'));
+ assert.match(subnav,/role="tablist"/);
+ assert.match(collection,/id="event-monster"/);
+ assert.match(collection,/id="monster-exchange-btn"/);
+ assert.match(collection,/const collectionViews=new Set\(\['album','hammer','monster','bingo'\]\)/);
+ assert.match(collection,/history\.replaceState\(history\.state,'',url\)/);
  assert.match(nav(collection),/event2-tab/);
 });
 
 test('world portal has direct pack, hammer and ice launch links, including room forwarding',()=>{
  for(const key of [
-  'hub-hammer-tab','hub-shortcut-packs','hub-shortcut-hammer','hub-shortcut-ice'
+  'hub-cards-tab','hub-packs-tab','hub-ice-tab','hub-shortcut-packs','hub-shortcut-hammer','hub-shortcut-ice'
  ]){
   assert.equal(count(portal,new RegExp('id="'+key+'"','g')),1,key);
   assert.match(portal,new RegExp("'"+key+"'"));
@@ -99,10 +106,10 @@ test('transitions are native and progressive, with a no-motion fallback',()=>{
 });
 
 test('navigation responsive, ice board remains visible and controls stay accessible',()=>{
- assert.match(shared,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)!important/);
+ assert.match(shared,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)!important/);
  assert.match(shared,/@media\(max-width:760px\)/);
- assert.match(shared,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important/);
- assert.match(shared,/\.event2-tab\{grid-column:1\/-1!important\}/);
+ assert.doesNotMatch(shared,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)!important/);
+ assert.match(shared,/\.event2-tab\{grid-column:auto!important\}/);
  assert.match(shared,/focus-visible/);
  assert.match(ice,/id="ice-online-panel"/);
  assert.match(ice,/id="event2-fullscreen"/);
