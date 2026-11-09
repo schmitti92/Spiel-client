@@ -448,3 +448,80 @@
   padding:3px 6px!important;
  }
 }
+
+/* V8: Banker's exclusive hammer/card-pack reveal, then compact reward chips. */
+#banker-call .banker-offer-details > .banker-bonus-reveal[hidden]{display:none!important}
+#banker-call .banker-offer-details > .banker-bonus-reveal:not([hidden]){
+ position:fixed!important;inset:0!important;z-index:90!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ padding:clamp(12px,2vw,32px)!important;
+ background:radial-gradient(ellipse at 65% 45%,#061629de,#020916ed 75%)!important;
+ backdrop-filter:blur(5px)!important;
+ margin:0!important;overflow:auto!important;
+}
+#banker-call .banker-bonus-reveal-card{
+ width:min(580px,94vw);max-height:94dvh;overflow:auto;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:clamp(8px,1.5dvh,18px);padding:clamp(14px,2vw,28px);
+ border:3px solid #ffdc84;border-radius:26px;
+ background:radial-gradient(ellipse at 50% 5%,#31537a,#132746 55%,#07162e);
+ box-shadow:0 0 0 6px #a17c3940,0 0 80px #f8c66065,0 25px 70px #000e;
+ text-align:center;animation:banker-bonus-stage-in .55s cubic-bezier(.17,.9,.25,1.1) both;
+}
+#banker-call .banker-bonus-reveal-top{font-size:clamp(10px,1vw,14px);letter-spacing:.16em;font-weight:900;color:#ffe4a5}
+#banker-call .banker-bonus-reveal-head{font-size:clamp(24px,3.4vw,40px);font-weight:1000;line-height:1.05;color:#fff1bf;text-shadow:0 0 22px #ffb537a8}
+#banker-call .banker-bonus-reveal-items{width:100%;display:flex;align-items:stretch;justify-content:center;gap:12px}
+#banker-call .banker-bonus-reveal-item{
+ flex:1 1 0;min-width:0;max-width:250px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+ padding:clamp(10px,1.5vw,18px);border:2px solid #e5bf76;border-radius:18px;
+ background:linear-gradient(145deg,#244b73,#122b4d);box-shadow:inset 0 2px 0 #fff3,0 12px 25px #0006;
+ animation:banker-bonus-pop .6s .15s both;
+}
+#banker-call .banker-bonus-reveal-item.pack{background:linear-gradient(145deg,#713324,#34204c)}
+#banker-call .banker-bonus-reveal-item.pack.premium{background:linear-gradient(145deg,#9d6a18,#49300e);border-color:#fff0a4}
+#banker-call .banker-bonus-reveal-item img{
+ width:clamp(95px,13vw,170px);height:clamp(95px,13vw,170px);max-width:100%;
+ object-fit:contain;filter:drop-shadow(0 8px 13px #0008);
+}
+#banker-call .banker-bonus-pack-art{
+ width:clamp(95px,13vw,170px);height:clamp(95px,13vw,170px);
+ display:grid;place-items:center;font-size:clamp(64px,8vw,110px);
+ filter:drop-shadow(0 8px 13px #0008);
+}
+#banker-call .banker-bonus-reveal-item strong{font-size:clamp(15px,1.6vw,23px);line-height:1.15;color:#fff3d0}
+#banker-call .banker-bonus-reveal-item small{font-size:clamp(9px,.9vw,12px);letter-spacing:.06em;font-weight:900;color:#ffe4a1}
+#banker-call .banker-bonus-reveal-caption{font-size:clamp(12px,1.1vw,16px);color:#fff0c9;font-weight:800}
+#banker-call #banker-bonus-reveal-skip{
+ border:1px solid #f9db8e;border-radius:12px;padding:10px 22px;
+ background:linear-gradient(#ffe4a2,#c28a2e);color:#1b1720;font-size:15px;font-weight:950;cursor:pointer;
+}
+#banker-call .banker-offer-details > .banker-hammer-bonus:not([hidden]),
+#banker-call .banker-offer-details > .banker-christmas-bonus:not([hidden]){
+ flex-shrink:0!important;order:0!important;
+}
+#banker-call .banker-offer-details > .banker-christmas-bonus:not([hidden]){
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ gap:6px!important;min-height:36px!important;
+ padding:6px 10px!important;
+ border:2px solid #f6cf77!important;border-radius:11px!important;
+ background:linear-gradient(100deg,#43244f,#714123)!important;
+ box-shadow:0 0 15px #e6aa5e42!important;color:#fff0bb!important;
+ font-size:clamp(12px,1.05vw,17px)!important;font-weight:950!important;
+}
+#banker-call .banker-hammer-bonus:not([hidden]){animation:banker-bonus-chip-in .5s ease both}
+#banker-call .banker-christmas-bonus:not([hidden]){animation:banker-bonus-chip-in .5s ease both}
+#banker-call .banker-offer-details.bonus-revealing > .banker-hammer-bonus,
+#banker-call .banker-offer-details.bonus-revealing > .banker-christmas-bonus{visibility:hidden!important}
+@keyframes banker-bonus-stage-in{from{opacity:0;transform:scale(.72) translateY(25px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes banker-bonus-pop{from{opacity:0;transform:translateY(25px) scale(1.24)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes banker-bonus-chip-in{from{opacity:.4;transform:scale(1.12)}to{opacity:1;transform:scale(1)}}
+@media(max-height:650px){
+ #banker-call .banker-bonus-reveal-card{gap:6px;padding:10px 14px}
+ #banker-call .banker-bonus-reveal-item{padding:8px}
+ #banker-call .banker-bonus-reveal-item img,#banker-call .banker-bonus-pack-art{width:80px;height:80px}
+ #banker-call .banker-bonus-pack-art{font-size:60px}
+}
+@media(prefers-reduced-motion:reduce){
+ #banker-call .banker-bonus-reveal-card,#banker-call .banker-bonus-reveal-item,
+ #banker-call .banker-hammer-bonus,#banker-call .banker-christmas-bonus{animation:none!important}
+}
