@@ -7,6 +7,19 @@ function bankerPhrase(h){
 function bankerSetText(id,value){const el=$(id);if(el.textContent!==value)el.textContent=value}
 let bankerEntranceKey='',bankerEntranceUntil=0,bankerEntranceTimer=null;
 let bankerBonusRevealKey='',bankerBonusRevealTimer=null,bankerBonusRevealUntil=0;
+let bankerBonusStageTimers=[];
+function bankerBonusClearStages(){for(const timer of bankerBonusStageTimers)clearTimeout(timer);bankerBonusStageTimers=[]}
+function bankerBonusAnnounce(text){
+ try{
+  if(localStorage.getItem('dealAmountVoiceEnabled')!=='true'||!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window))return;
+  const voice=new SpeechSynthesisUtterance(text);voice.lang='de-DE';voice.rate=.92;voice.pitch=.82;voice.volume=.95;
+  const german=speechSynthesis.getVoices().filter(v=>String(v.lang).toLowerCase().startsWith('de'));
+  const male=german.find(v=>/male|mann|markus|stefan|thomas|daniel|florian|klaus|hans|martin|christoph|conrad|bernd/i.test(v.name));
+  if(male||german[0])voice.voice=male||german[0];
+  speechSynthesis.speak(voice);
+ }catch{}
+}
+
 const bankerBonusHammerTypes={
  single:{name:'Einfacher Hammer',image:'hammer-einfach.webp',icon:'❄️🔨'},
  double:{name:'Doppelhammer',image:'hammer-doppel.webp',icon:'🔨🔨'},
@@ -18,7 +31,7 @@ const bankerBonusPackTypes={
  premium:{name:'Premium-Weihnachtspaket',icon:'🎁',theme:'premium'}
 };
 function bankerBonusCloseReveal(){
- clearTimeout(bankerBonusRevealTimer);bankerBonusRevealTimer=null;bankerBonusRevealUntil=0;
+ clearTimeout(bankerBonusRevealTimer);bankerBonusRevealTimer=null;bankerBonusRevealUntil=0;bankerBonusClearStages();
  const reveal=$('banker-bonus-reveal');if(reveal)reveal.hidden=true;
  const details=document.querySelector('#banker-call .banker-offer-details');if(details)details.classList.remove('bonus-revealing');
 }
@@ -29,6 +42,10 @@ function bankerBonusShowReveal(h,key){
  if(!hammer&&!pack){bankerBonusCloseReveal();return}
  // DOM nodes are built from server-defined enum values, never untrusted HTML.
  items.replaceChildren();
+ reveal.dataset.bonusType=hammer&&pack?'double':hammer?'hammer':'pack';
+ reveal.dataset.stage='intro';
+ bankerSetText('banker-bonus-reveal-intro',hammer&&pack?'Der Banker legt gleich ZWEI Überraschungen obendrauf!':hammer?'Der Banker hat noch ein besonderes Werkzeug für dich!':'Der Banker hat ein exklusives Kartenpaket für dich!');
+ bankerSetText('banker-bonus-reveal-offer','💰 '+eur(h.offer)+' + EXTRABONUS');
  if(hammer){
   const item=document.createElement('div');item.className='banker-bonus-reveal-item hammer';
   const art=document.createElement('img');art.alt='';art.src='./Weihnachtsevent2/Weihnachtsbilder/'+hammer.image;
@@ -46,9 +63,18 @@ function bankerBonusShowReveal(h,key){
  }
  bankerSetText('banker-bonus-reveal-head',hammer&&pack?'DOPPELTER BONUS!':hammer?'HAMMER-ANGEBOT!':'KARTENPACK-ANGEBOT!');
  reveal.hidden=false;if(details)details.classList.add('bonus-revealing');
- bankerBonusRevealUntil=Date.now()+2900;
- clearTimeout(bankerBonusRevealTimer);
- bankerBonusRevealTimer=setTimeout(()=>{if(bankerBonusRevealKey===key)bankerBonusCloseReveal()},2900);
+ const duration=hammer&&pack?6400:5200;
+ bankerBonusRevealUntil=Date.now()+duration;
+ clearTimeout(bankerBonusRevealTimer);bankerBonusClearStages();
+ const stage=(delay,name,spoken)=>bankerBonusStageTimers.push(setTimeout(()=>{
+  if(bankerBonusRevealKey!==key||reveal.hidden||g?.phase!=='decision')return;
+  reveal.dataset.stage=name;
+  if(spoken)bankerBonusAnnounce(spoken);
+ },delay));
+ stage(650,'spotlight',hammer&&pack?'Achtung! Der Banker erhöht sein Angebot mit gleich zwei exklusiven Extras!':hammer?'Achtung! Der Banker legt einen Hammer als Extra oben drauf!':'Achtung! Der Banker spendiert zusätzlich ein Kartenpaket!');
+ stage(1650,'reward',hammer&&pack?hammer.name+' und '+pack.name+'. Zusätzlich zum Geldangebot!':hammer?hammer.name+'. Zusätzlich zum Geldangebot!':pack.name+'. Zusätzlich zum Geldangebot!');
+ stage(duration-1500,'deal',null);
+ bankerBonusRevealTimer=setTimeout(()=>{if(bankerBonusRevealKey===key)bankerBonusCloseReveal()},duration);
 }
 
 function updateBankerCall(){
