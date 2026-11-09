@@ -347,3 +347,8 @@ body.christmas-event-ice .v44-note{
  .event-hub-nav.event-tabs > :is(a,button),nav.event-hub-nav > :is(a,button),
  .event-hub-top .event-hub-tools :is(a,button){transition:none!important;transform:none!important}
 }
+
+/* Event World V3: the title is a usable navigation link on all pages. */
+a.event-hub-brand{text-decoration:none!important;cursor:pointer}
+a.event-hub-brand:hover,a.event-hub-brand:focus-visible{color:#fff3c8!important;text-shadow:0 1px 8px #000,0 0 17px #ffcc7b!important}
+a.event-hub-brand:focus-visible{outline:2px solid #fff1c6;outline-offset:4px;border-radius:8px}
