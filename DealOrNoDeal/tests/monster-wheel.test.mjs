@@ -66,7 +66,7 @@ test('uploaded transparent 3D wheel is the actual preview and spinner gold-and-c
  assert.match(css,/mask-image:radial-gradient\(circle closest-side/);
  assert.match(js,/mark\.dataset\.monsterSlot/);
  assert.match(js,/slot\.short/);
- assert.match(html,/uploaded-skin-v1/);
+ assert.match(html,/full-photo-v1/);
 });
 
 test('Giftzwerg avatar is wired to game portrait, lobby gate and commentary',()=>{
