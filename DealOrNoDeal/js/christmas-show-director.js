@@ -7,7 +7,7 @@
  const id=name=>document.getElementById(name);
  const state={
   phase:'idle',packMode:null,claimPending:false,earned:0,
-  deferredPack:null,bridgeTimer:null,bridgeDeadline:null,bridgeSerial:0,focusBeforeBridge:null
+  deferredPacks:[],bridgeTimer:null,bridgeDeadline:null,bridgeSerial:0,focusBeforeBridge:null
  };
  const reduced=()=>Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
  const isRealPack=()=>state.packMode==='real';
@@ -18,14 +18,18 @@
   if(!tip||!button||!isRealPack()||!isPackVisible())return;
   const ready=state.earned>0;
   const checking=state.claimPending;
-  const visible=ready||checking;
+  const waiting=state.deferredPacks.length;
+  const visible=ready||checking||waiting>0;
   tip.hidden=!(visible&&id('reveal-summary')?.hidden===false);
   tip.textContent=ready
    ?state.earned===1?'🏆 Deine bestätigte Bingo-Siegesshow wartet nach dem Paket auf dich!'
      :'🏆 '+state.earned+' bestätigte Bingo-Gewinne warten nach dem Paket auf dich!'
-   :'⏳ Hammer-Bingos werden im Hintergrund serverseitig geprüft.';
+   :checking?'⏳ Hammer-Bingos werden im Hintergrund serverseitig geprüft.'
+     :waiting===1?'🎁 Ein weiteres Paket wartet auf die Enthüllung.':'🎁 '+waiting+' weitere Pakete warten auf die Enthüllung.';
   if(id('reveal-summary')?.hidden===false){
-   button.textContent=ready?'🏆 Weiter zur Siegesshow':checking?'🎬 Weiter · Gewinnprüfung läuft':'Schließen ✓';
+   button.textContent=ready?'🏆 Weiter zur Siegesshow':
+    checking?'🎬 Weiter · Gewinnprüfung läuft':
+    waiting>0?'🎁 Nächstes Paket öffnen':'Schließen ✓';
   }
  }
  function clearBridge(){
@@ -39,8 +43,8 @@
   if(overlay){overlay.hidden=true;overlay.setAttribute('aria-hidden','true');}
  }
  function playQueuedPack(){
-  if(state.phase!=='idle'||!state.deferredPack)return false;
-  const deferred=state.deferredPack;state.deferredPack=null;
+  if(state.phase!=='idle'||!state.deferredPacks.length)return false;
+  const deferred=state.deferredPacks.shift();
   state.packMode=deferred.mode;state.phase='pack';
   state.claimPending=false; // a claim may already have settled before the deferred reveal.
   state.earned=deferred.earned||0;
@@ -95,13 +99,14 @@
  function presentPack(present,mode='real'){
   if(typeof present!=='function')return false;
   const normalized=mode==='demo'?'demo':'real';
-  if(state.phase==='bingo'||state.phase==='transition'||isBingoVisible()){
-   // A purchase is already confirmed; preserve its reveal until the current
-   // show is finished. Never put another window on top of Bingo.
-   state.deferredPack={present,mode:normalized,earned:0};
+  if(state.phase!=='idle'||isPackVisible()||isBingoVisible()||state.deferredPacks.length){
+   // Never discard a paid-for packet: preserve every pending reveal in FIFO
+   // order, even if two successful responses arrive during a Bingo scene.
+   state.deferredPacks.push({present,mode:normalized,earned:0});
+   if(state.phase==='idle'&&!isPackVisible()&&!isBingoVisible())playQueuedPack();
+   else showCue();
    return false;
   }
-  if(state.phase==='pack'||isPackVisible())return false;
   state.phase='pack';state.packMode=normalized;
   state.claimPending=false;state.earned=0;
   present();
@@ -124,7 +129,12 @@
  function awardQueued(count=0){
   const amount=Math.max(0,Math.floor(Number(count)||0));
   if(!amount)return;
-  if(state.deferredPack)state.deferredPack.earned+=amount;
+  // Awards during Bingo can belong to a pending confirmed package.
+  // Keep that queue's visual cue; the credited reward itself is managed
+  // solely by the Bingo controller and cannot be duplicated here.
+  if(!isRealPack()&&state.deferredPacks.length){
+   state.deferredPacks[state.deferredPacks.length-1].earned+=amount;
+  }
   if((state.phase==='pack'||state.phase==='transition')&&isRealPack()){
    state.earned+=amount;
    if(state.phase==='pack')showCue();
