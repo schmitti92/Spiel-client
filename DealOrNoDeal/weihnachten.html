@@ -927,7 +927,7 @@ function setChristmasView(view,{updateUrl=true,scroll=true}={}){
   if(active)button.setAttribute('aria-current','page');
   else button.removeAttribute('aria-current');
  });
- if(view==='hammer'){loadHammerStock();if(current)void maybeClaimHammerBingos(current)}
+ if(view==='hammer'&&updateUrl){loadHammerStock();if(current)void maybeClaimHammerBingos(current)}
  if(updateUrl){const url=new URL(location.href);url.searchParams.set('view',view);history.replaceState(history.state,'',url)}
  if(scroll)window.scrollTo({top:0,behavior:'smooth'});
 }
