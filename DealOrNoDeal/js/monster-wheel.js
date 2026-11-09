@@ -4,6 +4,19 @@
 (()=>{
  let catalog=[],currentDegrees=0,rotating=false,lastWinningIndex=-1;
  const $=id=>document.getElementById(id);
+ // The uploaded wheel has exactly these 25 sectors clockwise from 12 o'clock.
+ // The center of the FIRST sector is exactly at 12, NOT half a wedge right.
+ // Fall back to live-drawn segments if the backend catalogue order changes.
+ const artworkSlots=Object.freeze(["cash-random-1","lucky-1-1","giftzwerg","single-1-1","joker-5","cash-random-2","double-5","gold-5","lucky-3","joker-1-1","cash-random-3","lucky-10","premium-3","single-1-2","cash-2m","cash-random-4","lucky-1-2","gold-4","joker-1-2","lucky-5","cash-random-5","single-1-3","cash-10m","joker-1-3","lucky-1-3"]);
+ const matchesArtwork=slots=>Array.isArray(slots)&&slots.length===artworkSlots.length&&
+  slots.every((slot,index)=>slot?.id===artworkSlots[index]);
+ const targetAngle=(index,slots)=>{
+  if(!Number.isInteger(index)||!Array.isArray(slots)||index<0||index>=slots.length)throw Error('INVALID_WHEEL_POSITION');
+  const step=360/slots.length;
+  // Baked art: slot 0 is centered at 12 o'clock; dynamic CSS: 0 is 0°..step.
+  const offset=matchesArtwork(slots)?0:0.5;
+  return (360-((index+offset)*step)%360)%360;
+ };
  const palette=['#9b30bd','#1364b8','#ee5f3a','#ab2672','#18a89e','#cc7829','#424fcd'];
  const colorFor=(slot,i)=>{
   if(slot.featured==='character')return '#3cba58';
@@ -22,7 +35,8 @@
    const start=(i*step).toFixed(4),edge=((i+1)*step-.55).toFixed(4),end=((i+1)*step).toFixed(4);
    return [colorFor(slot,i)+' '+start+'deg '+edge+'deg','#ffe8ab '+edge+'deg '+end+'deg'];
   });
-  disc.style.background='conic-gradient('+colors.join(',')+')';
+  disc.style.setProperty('--monster-fallback-gradient','conic-gradient('+colors.join(',')+')');
+  disc.classList.toggle('is-baked-art',matchesArtwork(catalog));
   disc.replaceChildren();
   list.replaceChildren();
   const radius=(disc.clientWidth||350)*.378;
@@ -60,8 +74,7 @@
   if(!Number.isInteger(index)||index<0||index>=catalog.length)throw Error('INVALID_WHEEL_POSITION');
   const disc=$('monster-wheel-disc'),stage=$('monster-stage');
   if(!disc)throw Error('WHEEL_UNAVAILABLE');
-  const step=360/catalog.length;
-  const target=(360-((index+.5)*step)%360)%360;
+  const target=targetAngle(index,catalog);
   const from=((currentDegrees%360)+360)%360;
   const forward=(target-from+360)%360;
   currentDegrees+=360*7+forward;
@@ -89,6 +102,7 @@
   currentDegrees=0;
   highlight(-1);
  }
- window.ChristmasMonsterVisuals={setCatalog,spin,reset,highlight,isSpinning:()=>rotating};
+ window.ChristmasMonsterVisuals={setCatalog,spin,reset,highlight,isSpinning:()=>rotating,
+  matchesArtwork,targetAngle,artworkSlots};
  window.addEventListener('resize',()=>{if(!rotating&&catalog.length)paint()},{passive:true});
 })();
