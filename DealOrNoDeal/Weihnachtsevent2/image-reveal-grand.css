@@ -81,12 +81,23 @@ body.christmas-event-ice #v44-big-reveal-continue:hover{filter:brightness(1.1);t
 body.christmas-event-ice #v44-big-reveal-continue:focus-visible{outline:3px solid #fff;outline-offset:3px}
 body.christmas-event-ice .v44-big-reveal-snow{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
 body.christmas-event-ice .v44-big-reveal-snow i{
- position:absolute;top:-20px;left:calc((var(--n)*17% + 11%) - 95% * (var(--n)/12));
+ position:absolute;top:-20px;left:6%;
  font-size:clamp(13px,2.1vw,21px);width:16px;height:16px;
- animation:v44-grand-snow calc(3.8s + (var(--n)*.29s)) linear infinite;
- animation-delay:calc(var(--n)*-.44s);opacity:.7;
+ animation:v44-grand-snow 4.8s linear infinite;opacity:.7;
 }
 body.christmas-event-ice .v44-big-reveal-snow i:after{content:'❄';color:#e9f7ff;text-shadow:0 0 9px #addfff}
+body.christmas-event-ice .v44-big-reveal-snow i:nth-child(1){left:6%;animation-delay:0.00s;animation-duration:4.2s}
+body.christmas-event-ice .v44-big-reveal-snow i:nth-child(2){left:13.7%;animation-delay:-0.43s;animation-duration:4.7s}
+body.christmas-event-ice .v44-big-reveal-snow i:nth-child(3){left:21.4%;animation-delay:-0.86s;animation-duration:5.2s}
+body.christmas-event-ice .v44-big-reveal-snow i:nth-child(4){left:29.1%;animation-delay:-1.29s;animation-duration:5.7s}
+body.christmas-event-ice .v44-big-reveal-snow i:nth-child(5){left:36.8%;animation-delay:-1.72s;animation-duration:4.2s}
+body.christmas-event-ice .v44-big-reveal-snow i:nth-child(6){left:44.5%;animation-delay:-2.15s;animation-duration:4.7s}
+body.christmas-event-ice .v44-big-reveal-snow i:nth-child(7){left:52.2%;animation-delay:-2.58s;animation-duration:5.2s}
+body.christmas-event-ice .v44-big-reveal-snow i:nth-child(8){left:59.9%;animation-delay:-3.01s;animation-duration:5.7s}
+body.christmas-event-ice .v44-big-reveal-snow i:nth-child(9){left:67.6%;animation-delay:-3.44s;animation-duration:4.2s}
+body.christmas-event-ice .v44-big-reveal-snow i:nth-child(10){left:75.3%;animation-delay:-3.87s;animation-duration:4.7s}
+body.christmas-event-ice .v44-big-reveal-snow i:nth-child(11){left:83%;animation-delay:-4.30s;animation-duration:5.2s}
+body.christmas-event-ice .v44-big-reveal-snow i:nth-child(12){left:90.7%;animation-delay:-4.73s;animation-duration:5.7s}
 @keyframes v44-grand-enter{
  from{opacity:0;transform:scale(.84) translateY(25px);filter:blur(3px)}
  to{opacity:1;transform:scale(1) translateY(0);filter:blur(0)}
