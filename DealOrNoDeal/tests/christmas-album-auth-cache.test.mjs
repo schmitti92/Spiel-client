@@ -23,7 +23,7 @@ const el=()=>({
 });
 function fixture(){
  let state={status:'online',user:{uid:'player-one',getIdToken:async()=>''}};
- const cards=Array.from({length:48},()=>{const root=el();root.children={img:el(),strong:el(),small:el()};return root});
+ const cards=Array.from({length:64},()=>{const root=el();root.children={img:el(),strong:el(),small:el()};return root});
  const rewards=Array.from({length:16},()=>{const root=el();root.children={'.lock':el()};return root});
  const ids=new Map();
  const element=id=>{if(!ids.has(id))ids.set(id,el());return ids.get(id)};
@@ -68,6 +68,9 @@ test('sign-out hides old cards, hammer previews, rewards and legend status',asyn
  fx.requests[0]({cards:{},progress:{collected:0,totalBingos:0}});
  await first;
  const card=fx.cards[32];
+ const fourth=fx.cards[48];
+ fourth.classList.add('owned','bingo-complete');
+ fourth.children.strong.textContent='Geheime Weihnachtschaos-Karte';
  card.classList.add('owned','bingo-complete');
  card.children.img.src='private.svg';
  card.children.strong.textContent='Geheimer Titel';
@@ -79,13 +82,15 @@ test('sign-out hides old cards, hammer previews, rewards and legend status',asyn
  await fx.ctx.load();
  assert.equal(fx.ctx.current,null);
  assert.equal(card.classList.contains('owned'),false);
+ assert.equal(fourth.classList.contains('owned'),false);
+ assert.equal(fourth.children.strong.textContent,'81 · ???');
  assert.equal(card.children.img.src,'./assets/weihnachts_event/card-back-winter.svg');
  assert.equal(card.children.strong.textContent,'65 · ???');
  assert.equal(card.attributes['aria-label'],'Gesperrte Karte 65');
  assert.equal(fx.rewards[12].children['.lock'].textContent,'🔒');
  assert.equal(fx.element('north-pole-legend-trophy').hidden,true);
- assert.equal(fx.element('album-owned-total').textContent,'0 / 48');
- assert.equal(fx.element('album-bingo-total').textContent,'0 / 30');
+ assert.equal(fx.element('album-owned-total').textContent,'0 / 64');
+ assert.equal(fx.element('album-bingo-total').textContent,'0 / 40');
 });
 
 test('late response from a signed-out account is ignored after new profile logs in',async()=>{
