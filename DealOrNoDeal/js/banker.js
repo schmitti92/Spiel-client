@@ -8,6 +8,7 @@ function bankerSetText(id,value){const el=$(id);if(el.textContent!==value)el.tex
 let bankerEntranceKey='',bankerEntranceUntil=0,bankerEntranceTimer=null;
 let bankerBonusRevealKey='',bankerBonusRevealTimer=null,bankerBonusRevealUntil=0;
 let bankerBonusStageTimers=[];
+let bankerBonusVoice=null;
 function bankerBonusClearStages(){for(const timer of bankerBonusStageTimers)clearTimeout(timer);bankerBonusStageTimers=[]}
 function bankerBonusAnnounce(text){
  try{
@@ -16,6 +17,8 @@ function bankerBonusAnnounce(text){
   const german=speechSynthesis.getVoices().filter(v=>String(v.lang).toLowerCase().startsWith('de'));
   const male=german.find(v=>/male|mann|markus|stefan|thomas|daniel|florian|klaus|hans|martin|christoph|conrad|bernd/i.test(v.name));
   if(male||german[0])voice.voice=male||german[0];
+  if(bankerBonusVoice&&speechSynthesis.speaking){try{speechSynthesis.cancel()}catch{}}
+  bankerBonusVoice=voice;voice.onend=()=>{if(bankerBonusVoice===voice)bankerBonusVoice=null};
   speechSynthesis.speak(voice);
  }catch{}
 }
@@ -34,6 +37,7 @@ function bankerBonusCloseReveal(){
  clearTimeout(bankerBonusRevealTimer);bankerBonusRevealTimer=null;bankerBonusRevealUntil=0;bankerBonusClearStages();
  const reveal=$('banker-bonus-reveal');if(reveal)reveal.hidden=true;
  const details=document.querySelector('#banker-call .banker-offer-details');if(details)details.classList.remove('bonus-revealing');
+ if(bankerBonusVoice){try{speechSynthesis.cancel()}catch{}bankerBonusVoice=null}
 }
 function bankerBonusShowReveal(h,key){
  const reveal=$('banker-bonus-reveal'),items=$('banker-bonus-reveal-items'),details=document.querySelector('#banker-call .banker-offer-details');
@@ -44,6 +48,8 @@ function bankerBonusShowReveal(h,key){
  items.replaceChildren();
  reveal.dataset.bonusType=hammer&&pack?'double':hammer?'hammer':'pack';
  reveal.dataset.stage='intro';
+ reveal.style.setProperty('--banker-bonus-duration',(h.bonusHammer&&h.bonusPack?7200:6200)+'ms');
+ bankerSetText('banker-bonus-chapter','🔐 VERSCHLÜSSELTE NACHRICHT EINGEGANGEN');
  bankerSetText('banker-bonus-reveal-intro',hammer&&pack?'Der Banker legt gleich ZWEI Überraschungen obendrauf!':hammer?'Der Banker hat noch ein besonderes Werkzeug für dich!':'Der Banker hat ein exklusives Kartenpaket für dich!');
  bankerSetText('banker-bonus-reveal-offer','💰 '+eur(h.offer)+' + EXTRABONUS');
  if(hammer){
@@ -63,7 +69,7 @@ function bankerBonusShowReveal(h,key){
  }
  bankerSetText('banker-bonus-reveal-head',hammer&&pack?'DOPPELTER BONUS!':hammer?'HAMMER-ANGEBOT!':'KARTENPACK-ANGEBOT!');
  reveal.hidden=false;if(details)details.classList.add('bonus-revealing');
- const duration=hammer&&pack?6400:5200;
+ const duration=hammer&&pack?7200:6200;
  bankerBonusRevealUntil=Date.now()+duration;
  clearTimeout(bankerBonusRevealTimer);bankerBonusClearStages();
  const stage=(delay,name,spoken)=>bankerBonusStageTimers.push(setTimeout(()=>{
@@ -71,9 +77,12 @@ function bankerBonusShowReveal(h,key){
   reveal.dataset.stage=name;
   if(spoken)bankerBonusAnnounce(spoken);
  },delay));
- stage(650,'spotlight',hammer&&pack?'Achtung! Der Banker erhöht sein Angebot mit gleich zwei exklusiven Extras!':hammer?'Achtung! Der Banker legt einen Hammer als Extra oben drauf!':'Achtung! Der Banker spendiert zusätzlich ein Kartenpaket!');
- stage(1650,'reward',hammer&&pack?hammer.name+' und '+pack.name+'. Zusätzlich zum Geldangebot!':hammer?hammer.name+'. Zusätzlich zum Geldangebot!':pack.name+'. Zusätzlich zum Geldangebot!');
- stage(duration-1500,'deal',null);
+ stage(850,'spotlight',null);
+ bankerBonusStageTimers.push(setTimeout(()=>{if(bankerBonusRevealKey===key&&!reveal.hidden)bankerSetText('banker-bonus-chapter','🔓 DIE BANK GIBT IHR GEHEIMNIS PREIS …')},1050));
+ stage(2350,'reward',hammer&&pack?'Eine sensationelle Überraschung. Gleich zwei Extras vom Banker!':hammer?'Der Banker hat einen geheimen Hammer für dich!':'Der Banker hat ein geheimes Kartenpaket für dich!');
+ bankerBonusStageTimers.push(setTimeout(()=>{if(bankerBonusRevealKey===key&&!reveal.hidden)bankerSetText('banker-bonus-chapter',hammer&&pack?'✨ ZWEI EXKLUSIVE EXTRAS ENTHÜLLT':hammer?'🔨 EXKLUSIVER HAMMER ENTHÜLLT':'🎁 EXKLUSIVES KARTENPAKET ENTHÜLLT')},2450));
+ stage(duration-1800,'deal',null);
+ bankerBonusStageTimers.push(setTimeout(()=>{if(bankerBonusRevealKey===key&&!reveal.hidden)bankerSetText('banker-bonus-chapter','💰 JETZT LIEGT DAS GESAMTANGEBOT AUF DEM TISCH')},duration-1800));
  bankerBonusRevealTimer=setTimeout(()=>{if(bankerBonusRevealKey===key)bankerBonusCloseReveal()},duration);
 }
 
