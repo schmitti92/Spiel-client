@@ -206,6 +206,8 @@ async function load(){
   // A successful receipt proves the debit already happened, so do not replay.
   const confirmed=!!stored&&data.pendingAction?.applied===true;
   if(confirmed)forgetPending();
+  // If there is no progress document, an old strike cannot block a new game.
+  if(stored&&!state)forgetPending();
   shouldRecover=!!stored&&!confirmed&&!!state;
   if(state&&!state.goldenHammerGift2026){
    try{
