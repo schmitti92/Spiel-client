@@ -50,12 +50,13 @@ function forgetPending(){
 }
 let galleryPage=0,showAllGallery=false,largeGalleryImage=null,confirmedHit=null,celebrationDelayTimer=null,celebration=null,wheelTimer=null;
 function recoveredGift(){
+ // Rebuild only the presentation from already confirmed state after a reload.
+ // Never draw another reward or re-run an action; image 70 is also recoverable.
  if(!state?.finished||celebration)return;
  const gift=(state.prizes||[]).find(g=>g.number===state.completed);
- if(!gift)return;
- const title=gift.kind==='money'?'💰 Geldgewinn':gift.kind==='joker'?'🔐 Kofferblick-Joker':'🔨 Gratis-Hammer';
- const detail=gift.kind==='money'?money(gift.amount):gift.kind==='joker'?'1 Kofferblick-Joker':({single:'Einfacher Hammer',double:'Doppelhammer',lucky:'Glückshammer'}[gift.hammer]||'Hammer')+' erhalten';
- celebration={number:state.completed,title,detail,kind:gift.kind,hammer:gift.hammer||null,amount:gift.amount||0,stage:'image'};
+ const title=!gift?'🎄 Bild abgeschlossen':gift.kind==='money'?'💰 Geldgewinn':gift.kind==='joker'?'🔐 Kofferblick-Joker':'🔨 Gratis-Hammer';
+ const detail=!gift?'Bereits erhaltene Belohnungen werden nicht erneut gutgeschrieben.':gift.kind==='money'?money(gift.amount):gift.kind==='joker'?'1 Kofferblick-Joker':({single:'Einfacher Hammer',double:'Doppelhammer',lucky:'Glückshammer'}[gift.hammer]||'Hammer')+' erhalten';
+ celebration={number:state.completed,title,detail,kind:gift?.kind||'other',hammer:gift?.hammer||null,amount:gift?.amount||0,stage:'image'};
 }
 
 function render(){
