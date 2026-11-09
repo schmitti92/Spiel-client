@@ -1,0 +1,118 @@
+/* Christmas Show Director – coordinated transition between gift opening and Bingo.
+ * No animation influences rewards, purchases or Firestore state. */
+#christmas-show-transition[hidden]{display:none!important}
+#christmas-show-transition{
+ position:fixed;inset:0;z-index:10080;
+ display:grid;place-items:center;padding:clamp(10px,3vw,24px);
+ isolation:isolate;overflow:hidden;
+ background:radial-gradient(ellipse at center,rgba(22,40,59,.92),rgba(1,10,24,.96)),
+  url("../assets/weihnachts_event/10_eisschloss.png") center/cover;
+ backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+}
+#christmas-show-transition::before{
+ content:"";position:absolute;inset:-35%;pointer-events:none;
+ background:repeating-conic-gradient(from 12deg at 50% 50%,
+  transparent 0deg 10deg,rgba(255,227,158,.14) 11deg 18deg,transparent 19deg 28deg);
+ animation:xmas-director-beams 12s linear infinite;
+}
+#christmas-show-transition::after{
+ content:"✦       ✧         ✦        ✧";position:absolute;top:7%;
+ left:0;right:0;text-align:center;pointer-events:none;
+ letter-spacing:clamp(10px,3vw,30px);font:clamp(20px,4vw,45px) Georgia,serif;
+ color:#ffe2b6a8;text-shadow:0 0 20px #ffda8b;
+ animation:xmas-director-sparkle 1.7s ease-in-out infinite alternate;
+}
+#christmas-show-transition .xmas-director-card{
+ position:relative;isolation:isolate;display:grid;justify-items:center;
+ gap:clamp(9px,1.8vw,20px);text-align:center;
+ width:min(690px,100%);padding:clamp(21px,4vw,52px) clamp(17px,3vw,37px);
+ border:2px solid #f3db9a;border-radius:26px;
+ background:linear-gradient(145deg,#163c45f7,#141b39fc 58%,#402b41f8);
+ box-shadow:0 0 0 8px #ffe3a33d,0 0 55px #ffd07899,0 26px 100px #000c,
+ inset 0 1px #fff7c4a2;
+ animation:xmas-director-enter .65s cubic-bezier(.17,1.3,.25,1) both;
+}
+#christmas-show-transition .xmas-director-card::before{
+ content:"";position:absolute;inset:8px;border:1px solid #e7d6ac52;
+ border-radius:19px;pointer-events:none;z-index:-1;
+}
+#christmas-show-transition .xmas-director-emblem{
+ display:grid;place-items:center;width:clamp(65px,9vw,108px);aspect-ratio:1;
+ border-radius:50%;border:2px solid #fff1c0;
+ background:radial-gradient(circle at 36% 27%,#fff9dd,#eec77a 50%,#95662e 97%);
+ box-shadow:0 0 0 8px #f5d88e35,0 0 36px #ffd37fa8;
+ font-size:clamp(36px,5vw,60px);animation:xmas-director-gift .95s ease-in-out infinite alternate;
+}
+#christmas-show-transition .xmas-director-eyebrow{
+ color:#c3e9e5;font:900 clamp(10px,1vw,14px)/1.3 system-ui,sans-serif;
+ letter-spacing:.2em;
+}
+#christmas-show-transition #christmas-show-transition-title{
+ margin:0;font:900 clamp(28px,4vw,56px)/1.09 Georgia,serif;
+ color:#ffe9b5;text-shadow:0 3px 17px #000a,0 0 26px #ffc56b91;
+}
+#christmas-show-transition #christmas-show-transition-copy{
+ margin:0;max-width:525px;color:#edf2ef;
+ font:700 clamp(12px,1.4vw,17px)/1.55 system-ui,sans-serif;
+}
+#christmas-show-transition .xmas-director-progress{
+ width:min(380px,85%);height:9px;border:1px solid #f7dfad9b;
+ border-radius:999px;background:#0c2339;overflow:hidden;
+ box-shadow:inset 0 2px 8px #000a;
+}
+#christmas-show-transition .xmas-director-progress span{
+ display:block;height:100%;width:28%;
+ background:linear-gradient(90deg,#79cfc0,#ffefa5,#f4bc61);
+ border-radius:inherit;box-shadow:0 0 19px #ffde87;
+ animation:xmas-director-loading 1.6s ease-in-out infinite alternate;
+}
+#christmas-show-transition #christmas-show-transition-skip{
+ cursor:pointer;min-height:42px;padding:9px 20px;
+ border:1px solid #e6d09b;border-radius:999px;
+ color:#ffefcb;background:linear-gradient(135deg,#31536a,#192e42);
+ font:850 clamp(12px,1vw,15px)/1.2 system-ui,sans-serif;
+ box-shadow:inset 0 1px #fff5,0 4px 14px #0005;
+}
+#christmas-show-transition #christmas-show-transition-skip:hover{filter:brightness(1.15)}
+#christmas-show-transition #christmas-show-transition-skip:focus-visible{
+ outline:3px solid #fff1b6;outline-offset:3px;
+}
+#christmas-show-transition[data-wins=true] .xmas-director-emblem{
+ background:radial-gradient(circle at 36% 27%,#fffdeb,#ffcf72 56%,#986322);
+ box-shadow:0 0 0 8px #f5d88e45,0 0 54px #ffd37fd4;
+}
+#reveal-overlay .pack-cinema-next-act[hidden]{display:none!important}
+#reveal-overlay .pack-cinema-next-act{
+ display:block;margin:10px auto;padding:9px 16px;width:max-content;max-width:100%;
+ border:1px solid #f9db92;border-radius:13px;
+ color:#fff1bc;background:linear-gradient(115deg,#65471f,#3b4c45);
+ box-shadow:inset 0 1px #fff5,0 0 20px #ffd4795f;
+ font:850 clamp(11px,1vw,14px)/1.3 system-ui,sans-serif;text-align:center;
+ animation:xmas-director-cue 1.6s ease-in-out infinite alternate;
+}
+#reveal-overlay .pack-cinema-next-act:not([hidden]) + #reveal-bingo-awards:not(:empty){
+ margin-top:4px;
+}
+@keyframes xmas-director-beams{to{transform:rotate(360deg)}}
+@keyframes xmas-director-sparkle{to{opacity:.3;filter:brightness(1.4)}}
+@keyframes xmas-director-enter{
+ from{opacity:0;transform:translateY(28px) scale(.88)}
+ to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes xmas-director-gift{to{transform:translateY(-5px) scale(1.05)}}
+@keyframes xmas-director-loading{
+ from{transform:translateX(-20%);width:23%}
+ to{transform:translateX(215%);width:38%}
+}
+@keyframes xmas-director-cue{to{box-shadow:0 0 26px #ffd57eb5,inset 0 1px #fff8}}
+@media(max-width:600px){
+ #christmas-show-transition .xmas-director-card{border-radius:16px}
+ #christmas-show-transition .xmas-director-eyebrow{letter-spacing:.08em}
+ #christmas-show-transition #christmas-show-transition-copy{font-size:13px}
+ #reveal-overlay .pack-cinema-next-act{white-space:normal;line-height:1.4}
+}
+@media(prefers-reduced-motion:reduce){
+ #christmas-show-transition *,#christmas-show-transition::before,
+ #christmas-show-transition::after,
+ #reveal-overlay .pack-cinema-next-act{animation:none!important;transition:none!important}
+}

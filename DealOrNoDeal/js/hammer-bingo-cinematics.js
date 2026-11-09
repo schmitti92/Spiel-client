@@ -233,13 +233,19 @@
     if(overlay){overlay.hidden=true;overlay.setAttribute('aria-hidden','true');overlay.classList.remove('is-playing');}
     if(state.focusBefore?.isConnected){try{state.focusBefore.focus({preventScroll:true})}catch(_){}}
     state.focusBefore=null;
+    // Only open a deferred gift AFTER the old scene and its focus are released.
+    window.ChristmasShowDirector?.bingoEnded();
     // Deliberate tiny beat between prizes; claim logic never waits for this.
     setTimeout(startNext,170);
   }
   function startNext(){
     if(state.active||!state.queue.length||!canShow())return;
+    const director=window.ChristmasShowDirector;
+    if(director&&!director.bingoStarted())return;
     const scene=state.queue.shift();
-    if(!byId('hammer-cinema'))return;
+    if(!byId('hammer-cinema')){
+      director?.bingoEnded();return;
+    }
     state.active=scene;paint(scene);
     state.closeTimer=setTimeout(finish,reduced()?2100:scene.kind==='jackpot'?7100:5400);
   }
@@ -250,7 +256,10 @@
     for(const scene of fresh)state.seen.add(scene.id);
     if(!fresh.length)return 0;
     state.last=fresh;setReplayUI();
-    state.queue.push(...fresh);startNext();
+    state.queue.push(...fresh);
+    // Only confirmed awards are forwarded to the visual director.
+    window.ChristmasShowDirector?.awardQueued(fresh.length);
+    startNext();
     return fresh.length;
   }
   /** Free local preview: no server call and no account / wallet changes. */
