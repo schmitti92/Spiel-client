@@ -26,11 +26,10 @@ body:is(.christmas-event-main,.christmas-event-ice,.christmas-event-world){
 body.christmas-event-ice{--xmas-chapter-glow:#b0e6ff}
 body.christmas-event-world{--xmas-chapter-glow:#ffe1a3}
 
-/* Consistent five-stop route. On small phones the fifth button receives
- * its own row; no tiny font and no horizontal scrolling. */
+/* Unified three-stop main route; collection chapters live in a second row on the album page. */
 body:is(.christmas-event-world,.christmas-event-ice)
  nav.event-hub-nav.event-tabs{
- grid-template-columns:repeat(5,minmax(0,1fr))!important;
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;
  gap:clamp(4px,.6vw,8px)!important;
  padding:6px!important;
  margin:6px 0 9px!important;
@@ -210,15 +209,15 @@ body.christmas-event-ice .v44-head{
 }
 @keyframes xmas-universe-hammer-float{to{transform:translateY(-7px) rotate(2deg)}}
 
-/* Tablet and phone layouts stay usable, even with the fifth nav item. */
+/* Tablet and phone layouts: three main categories remain on a single row. */
 @media(max-width:760px){
  body:is(.christmas-event-world,.christmas-event-ice)
  nav.event-hub-nav.event-tabs{
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
   gap:5px!important;
  }
  body:is(.christmas-event-world,.christmas-event-ice)
- nav.event-hub-nav.event-tabs > .event2-tab{grid-column:1/-1!important}
+ nav.event-hub-nav.event-tabs > .event2-tab{grid-column:auto!important}
  .hub-world-shortcuts{gap:6px;margin-top:8px}
  .hub-world-shortcuts a{padding:7px 9px;min-height:32px}
  .xmas-universe-ice-ribbon{padding:4px 7px;min-height:28px}
