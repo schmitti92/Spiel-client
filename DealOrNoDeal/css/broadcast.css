@@ -178,7 +178,7 @@ body:not(.broadcast-modal-active) #deluxe-director{z-index:22}
 #banker-call .banker-money-board{grid-column:1;grid-row:2/11;align-self:stretch;min-width:0;display:flex;flex-direction:column;gap:7px;padding:clamp(9px,1.2vw,17px);border:2px solid #dfb76d;border-radius:15px;background:linear-gradient(160deg,#0e2848e8,#06172eea);box-shadow:inset 0 1px #fff1bb40,0 8px 26px #0009;text-align:center}
 #banker-call .banker-money-board h3{font-size:clamp(13px,1.2vw,19px);letter-spacing:.08em;color:#ffe4a2;margin:0}
 #banker-call #banker-money-count{font-size:clamp(10px,.95vw,13px);color:#f4e6c9;margin:0}
-#banker-call .banker-money-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(13,minmax(0,1fr));gap:clamp(2px,.32vw,5px);flex:1;min-height:0}
+#banker-call .banker-money-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(var(--deal-money-rows,13),minmax(0,1fr));gap:clamp(2px,.32vw,5px);flex:1;min-height:0}
 #banker-call .banker-money-value{display:flex;align-items:center;justify-content:center;min-width:0;padding:2px 1px;border:1px solid #f1d18a7c;border-radius:5px;background:linear-gradient(100deg,#6a4c25,#c69b50 45%,#715021);color:#fff3d2;font-size:clamp(9px,.8vw,12px);font-weight:850;font-variant-numeric:tabular-nums;white-space:nowrap;transition:opacity .35s,filter .35s,background .35s}
 #banker-call .banker-money-value[data-status="gone"]{background:#122238;color:#8793a2;border-color:#59677c6e;text-decoration:line-through;text-decoration-thickness:2px;opacity:.55;filter:saturate(.2)}
 #banker-call .banker-money-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:5px 9px;font-size:clamp(9px,.75vw,11px);color:#e2d7c5}
@@ -337,3 +337,10 @@ body:has(#banker-call:not([hidden])) .layout>.panel.case-stage:before{
 
 /* The banker board only displays prize tiers belonging to the selected 26/27/28-case game. */
 #banker-call .banker-money-value[hidden]{display:none!important}
+
+/* Gold-highlight the new €10m value on the live banker board. */
+#banker-call .banker-money-value[data-amount="1000000000"]:not([data-status="gone"]){
+ background:linear-gradient(105deg,#a46b1f,#ffe088,#86551e)!important;
+ border-color:#fff3aa!important;color:#fffbea!important;
+ box-shadow:0 0 11px #ffcb5b87!important;
+}
