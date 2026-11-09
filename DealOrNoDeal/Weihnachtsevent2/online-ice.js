@@ -214,18 +214,28 @@ function render(){
  });
  root.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>{
   if(busy||b.disabled)return;
-  const hammer=window.iceHammer||'single';
-  if((state.freeHammers?.[hammer]||0)<1&&Number(state.balance||0)<costs[hammer]){
-   message('⚠️ Nicht genügend Eventguthaben für '+labels[hammer]+'. Wähle einen verfügbaren Hammer.');
+  // An old pending hit must be reconciled BEFORE the balance check: its
+  // debit can have already happened, and the visible client balance may be
+  // stale. This is a GET receipt check, never a second paid strike.
+  if(readPending()){
+   message('🔄 Letzten Hammerschlag sicher abgleichen … Danach erneut auf ein Eisfeld tippen.');
+   void load();
    return;
   }
-  // Visual wind-up only: never reveal ice until the existing POST confirms targets.
-  if(!readPending())window.ChristmasIceHammerFX?.cue(b,hammer);
-  run('strike',{index:Number(b.dataset.tile),hammer});
+  const hammer=window.iceHammer||'single';
+  if((state.freeHammers?.[hammer]||0)<1&&Number(state.balance||0)<costs[hammer]){
+   message('⚠️ '+labels[hammer]+' kostet '+money(costs[hammer])+'. Guthaben: '+money(state.balance)+'. Wähle einen Gratis-Hammer oder sammle Eventguthaben.');
+   return;
+  }
+  // Visual cues are optional: a faulty graphics module may not block a
+  // server-authorized ice hit. Only the server decides which tiles open.
+  try{window.ChristmasIceHammerFX?.cue(b,hammer)}catch(error){console.warn('[Ice] Animation nicht verfügbar',error)}
+  void run('strike',{index:Number(b.dataset.tile),hammer});
  });
  if(confirmedHit){
   const effect=confirmedHit;confirmedHit=null;
-  window.ChristmasIceHammerFX?.confirmed(root.querySelector('.v44-board'),effect);
+  try{window.ChristmasIceHammerFX?.confirmed(root.querySelector('.v44-board'),effect)}
+  catch(error){console.warn('[Ice] Treffer-Animation nicht verfügbar',error)}
  }
  const next=root.querySelector('#ice-next');if(next)next.onclick=()=>run('next');
  const repair=root.querySelector('#ice-recover');
@@ -237,7 +247,13 @@ async function run(type,extra={}){
  const unresolved=readPending();
  if(unresolved){
   const same=unresolved.type===type&&JSON.stringify(unresolved.extra||{})===JSON.stringify(extra);
-  if(!same){message('⚠️ Zuerst „Letzte Aktion sicher wiederholen“ wählen. Wir gleichen den alten Hammerschlag ab, damit nichts doppelt berechnet wird.');render();return}
+  if(!same){
+   message('🔄 Alte Aktion erkannt. Der Spielstand wird automatisch sicher abgeglichen …');
+   await load();
+   if(readPending())message('⚠️ Alte Aktion noch ungeklärt. Bitte „Spielstand prüfen“ verwenden.');
+   else message('✅ Alte Aktion abgeglichen. Jetzt erneut auf das gewünschte Eisfeld tippen.');
+   return;
+  }
   pending={key:unresolved.key,requestId:unresolved.requestId};
  }
  busy=true;message('⏳ Aktion wird gespeichert …');
@@ -299,9 +315,20 @@ async function load(){
   // A successful receipt proves the debit already happened, so do not replay.
   const confirmed=!!stored&&data.pendingAction?.applied===true;
   if(confirmed)forgetPending();
+  // A receipt may have rotated out of the bounded lastActions history.
+  // A strike whose target is already open, or whose picture is already past,
+  // cannot be charged again. Clear that stale local lock safely.
+  const oldStrike=stored?.type==='strike';
+  const oldIndex=stored?.extra?.index;
+  const pictureNow=Number(state?.completed||0)+1;
+  const oldPicture=stored?.expectedPicture;
+  const staleStrike=!!oldStrike&&!!state&&!confirmed&&
+   ((Number.isInteger(oldIndex)&&Array.isArray(state.opened)&&state.opened.includes(oldIndex))||
+    (Number.isInteger(oldPicture)&&(oldPicture!==pictureNow||state.finished)));
+  if(staleStrike)forgetPending();
   // If there is no progress document, an old strike cannot block a new game.
   if(stored&&!state)forgetPending();
-  shouldRecover=!!stored&&!confirmed&&!!state;
+  shouldRecover=!!stored&&!confirmed&&!staleStrike&&!!state;
   if(state&&!state.goldenHammerGift2026){
    try{
     const bonus=await request('POST',{type:'welcome',requestId:id()});
@@ -309,7 +336,7 @@ async function load(){
     if(bonus.result?.granted)message('🎁 Einmaliges Geschenk: 3 goldene Glückshammer wurden gutgeschrieben!');
    }catch(error){message('⚠️ Willkommensgeschenk konnte noch nicht geprüft werden: '+error.message)}
   }
-  if(confirmed)message('✅ Vorheriger Hammerschlag bestätigt. Du kannst wieder spielen.');
+  if(confirmed||staleStrike)message('✅ Vorheriger Hammerschlag abgeglichen. Du kannst wieder Eis aufbrechen.');
   else if(shouldRecover)message('🔄 Offene Aktion wird automatisch sicher wiederholt …');
   else message('✅ Online-Spielstand aktuell. Hammerauswahl ist freigegeben.');
   // Release the load lock before painting, otherwise all closed ice tiles
