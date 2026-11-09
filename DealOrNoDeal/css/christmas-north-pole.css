@@ -123,3 +123,38 @@ body.christmas-event-main[data-view="album"] #event-album .north-pole .card.nort
 @media(prefers-reduced-motion:reduce){
  #event-album .north-bingo-chip{transition:none!important}
 }
+
+/* Tafel 1 und 2: dieselbe Fuenf-Meilenstein-Anzeige wie im Nordpol-Kapitel.
+   Rein visuell: verwendet ausschliesslich die ohnehin geladene Album-Antwort. */
+#event-album .classic-bingo-rewards{
+ display:grid;gap:9px;margin-top:10px;padding:clamp(7px,.8vw,11px);
+ border:1px solid #a0efff63;border-radius:14px;
+ background:radial-gradient(ellipse at 40% 0%,#58d8e01c,transparent 68%),#04162792;
+}
+#event-album .classic-bingo-rewards-title{
+ display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;
+ gap:5px;padding:7px 9px;border:1px solid #6bc5d44c;
+ border-radius:9px;background:#08293eaa;
+}
+#event-album .classic-bingo-rewards-title strong{
+ color:#a3eee9;font:850 clamp(9px,.8vw,12px)/1.3 system-ui;letter-spacing:.04em;
+}
+#event-album .classic-bingo-rewards-title small{
+ color:#f4dcab;font:700 clamp(9px,.7vw,11px)/1.25 system-ui;
+}
+#event-album .classic-bingo-bonus{
+ display:flex;align-items:center;justify-content:center;gap:8px;
+ padding:6px 9px;border:1px dashed #a9bdd17a;border-radius:9px;
+ color:#e0e8e5;background:#071e30bc;text-align:center;
+ font:750 clamp(9px,.8vw,12px)/1.3 system-ui;
+}
+#event-album .classic-bingo-bonus.unlocked{
+ border-style:solid;border-color:#e9d18b;
+ color:#fff0bb;background:#56462177;
+}
+#event-album .classic-bingo-bonus-status{font-size:14px}
+@media(max-width:480px){
+ #event-album .classic-bingo-rewards{gap:6px;padding:5px;border-radius:10px}
+ #event-album .classic-bingo-rewards-title{padding:5px 6px}
+ #event-album .classic-bingo-bonus{padding:5px 4px;gap:4px}
+}
