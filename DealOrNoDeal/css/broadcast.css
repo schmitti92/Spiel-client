@@ -334,3 +334,6 @@ body:has(#banker-call:not([hidden])) .layout>.panel.case-stage:before{
 #banker-call #banker-call-no-deal{background:linear-gradient(#f45145,#c51b20 55%,#8b1116)!important;color:#fff!important}
 #banker-call #banker-call-deal:focus-visible,#banker-call #banker-call-no-deal:focus-visible{outline:3px solid white!important;outline-offset:3px}
 @media(max-width:760px),(max-height:540px){#banker-call .banker-call-card{border-radius:13px!important}#banker-call .banker-money-board,#banker-call .banker-call-portrait,#banker-call .banker-offer-details{border-radius:11px!important}#banker-call .banker-offer-details{padding:7px!important}}
+
+/* The banker board only displays prize tiers belonging to the selected 26/27/28-case game. */
+#banker-call .banker-money-value[hidden]{display:none!important}
