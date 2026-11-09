@@ -81,13 +81,58 @@ body[data-view=hammer] .event-layout,body[data-view=hammer] #event-packs{display
 .hammer-jackpot strong{display:block;color:#ffe3a0;font-size:15px;margin-bottom:3px}
 .hammer-board .hammer-inactive{display:block;margin:10px 0 0;font-size:12px;color:#f6d78f}
 @media(max-width:620px){.hammer-boards{grid-template-columns:1fr}.hammer-board p{min-height:0}.hammer-stock{gap:6px}.hammer-stock-card{padding:9px 4px}}
+
+/* Hammer-Bingo photo preview uses lazy image decoding to reduce tablet load. */
+body[data-view=hammer] .hero{display:none!important}
+body[data-view=hammer] #event-hammers{margin-top:8px}
+.hammer-art-status{display:inline-block;padding:6px 12px;border:1px solid #92c9ac80;border-radius:10px;color:#bff5d5!important;background:#13412e80;font-weight:750;font-size:13px}
+.hammer-board-preview{align-items:stretch}
+.hammer-board-preview .hammer-photo-card{
+ position:relative;display:block;aspect-ratio:4 / 5;overflow:hidden;
+ border:1px solid #698c9e80;border-radius:10px;background:#10253b;
+ min-width:0;min-height:0;font-family:system-ui,sans-serif;text-align:left
+}
+.hammer-board-preview .hammer-photo-card img{
+ display:block;width:100%;height:100%;object-fit:cover;
+ filter:brightness(.78) saturate(.88);transition:filter .18s ease,transform .18s ease
+}
+.hammer-board-preview .hammer-photo-card:hover img{filter:brightness(1);transform:scale(1.06)}
+.hammer-board-preview .hammer-photo-card .hammer-photo-number{
+ position:absolute;left:5px;top:5px;padding:2px 5px;border-radius:5px;
+ background:#071521ce;color:#ffe7ae;font:800 11px system-ui,sans-serif
+}
+.hammer-board-preview .hammer-photo-card .hammer-photo-label{
+ position:absolute;bottom:0;left:0;right:0;
+ background:linear-gradient(transparent,#08141bef 30%);padding:15px 4px 5px;
+ color:#fff0ce;font:750 clamp(8px,.79vw,11px)/1.15 system-ui,sans-serif;
+ overflow-wrap:break-word;min-height:28px
+}
+.hammer-board-preview .hammer-photo-card .hammer-photo-lock{
+ position:absolute;right:4px;top:3px;font:14px system-ui,sans-serif;
+ filter:drop-shadow(0 1px 2px #000a)
+}
+.hammer-board-preview .hammer-photo-card.missing{
+ display:flex;align-items:center;justify-content:center;
+ flex-direction:column;gap:7px;background:#0e2632;border-style:dashed
+}
+.hammer-board-preview .hammer-photo-card.missing .missing-icon{
+ font:30px system-ui,sans-serif;color:#c2cdcf
+}
+.hammer-board-preview .hammer-photo-card.missing .hammer-photo-label{
+ text-align:center;background:linear-gradient(transparent,#132a38);color:#ddd2ae
+}
+.hammer-board-preview .hammer-photo-card[data-rarity=rare]{border-color:#7bb8e0}
+.hammer-board-preview .hammer-photo-card[data-rarity=epic]{border-color:#bf86ea}
+.hammer-board-preview .hammer-photo-card[data-rarity=legendary]{border-color:#f0c771}
+.hammer-board-preview .hammer-photo-card[data-rarity=legendary] .hammer-photo-number{background:#75531fdc}
+@media(max-width:680px){.hammer-board-preview{gap:4px!important}.hammer-board-preview .hammer-photo-card{border-radius:7px}.hammer-board-preview .hammer-photo-card .hammer-photo-label{font-size:8px}}
 </style><link rel="stylesheet" href="./css/christmas-event-hub.css?v=20261109-hammer-nav-v4"></head><body class="christmas-event-main"><main>
 <header class="event-hub-top" aria-label="Weihnachtszauber – gemeinsame Event-Navigation"><a class="event-hub-brand" id="event-world-link" href="./weihnachtswelt.html" title="Zur gemeinsamen Weihnachtswelt" aria-label="Weihnachtswelt – Übersicht öffnen"><span class="event-hub-brand-symbol" aria-hidden="true">🎄</span><span>Weihnachtszauber <small>↗ Zur Event-Übersicht</small></span></a><div class="event-hub-tools"><a class="event-hub-tool" id="event-game-link" href="./game.html">🎮 Zum Spiel</a><a class="back" id="lobby" href="./lobby.html">↩ Zur Spiellobby</a><button type="button" id="event-fullscreen" class="back" aria-pressed="false">⛶ Vollbild</button><button type="button" id="event-main-guide" class="event-hub-tool">📖 Anleitung</button></div></header>
 <nav class="event-tabs event-hub-nav" aria-label="Weihnachtsbereiche"><button type="button" data-view="album" aria-selected="true" aria-current="page">🃏 Sammlung</button><button type="button" data-view="hammer" aria-selected="false">🔨 Hammer-Bingo</button><button type="button" data-view="packs" aria-selected="false">🎁 Pakete</button><button type="button" data-view="bingo" aria-selected="false">🏆 Spielinformation &amp; Gewinner</button><a class="event2-tab" href="./Weihnachtsevent2/index.html">❄️ Weihnachtsevent 2</a></nav>
 <header class="hero"><img class="hero-characters" src="./assets/weihnachts_event/file_0000000075e081f49cb62fd4b11daae2.png" alt="Weihnachtsmann und Rudolf begrüßen die Besucher" loading="eager"><div class="hero-content"><div class="ornament">🎄 ✨ 🎁</div><div class="eyebrow event-chapter">KAPITEL 1 · DIE WEIHNACHTSKOLLEKTION</div><h1>Weihnachtszauber</h1><p class="event-hero-subtitle">32 Sammelkarten · Bingo-Belohnungen · Gemeinsame Weihnachtswelt</p></div></header><div class="event-layout"><section id="event-album"><div class="section-title"><h2>✨ Die Weihnachtskollektion</h2><span>32 exklusive Motive · 2 Kollektionen</span></div><div class="cards" id="cards"></div></section>
 <section id="bingo"><div class="section-title"><h2>🏆 Spielinformation und Gewinner</h2><span>Weihnachtsalbum · Bingo-Belohnungen</span></div><div class="christmas-instructions" aria-labelledby="christmas-howto"><h3 id="christmas-howto">🎄 So funktioniert das Weihnachts-Event</h3><p>Öffne Weihnachtspakete mit deinem Spielgeld und sammle die 32 verschiedenen Weihnachtskarten. Jede Karte zählt für dein persönliches Sammelalbum.</p><p>Vervollständige eine Reihe, Spalte oder Diagonale im 4 × 4-Kartenfeld, um ein <strong>Bingo</strong> zu erzielen. Pro 4 × 4-Feld sind <strong>10 Bingos</strong> möglich, insgesamt also <strong>20 Bingos</strong>. Vollständige Reihen werden mit einem goldenen BINGO-Siegel gekennzeichnet. Nach jeweils zwei Bingos wird eine neue Belohnung freigeschaltet.</p><p>Nach den ersten fünf Belohnungen erhältst du auch den exklusiven Sammlerrahmen als Bonus. Bereits erhaltene Karten bleiben gesammelt; doppelte Karten bringen keine zusätzlichen Bingos.</p></div><div class="section-title"><h2>🎁 Freischaltbare Belohnungen</h2><span>Alle 2 Bingos eine Belohnung</span></div><div class="reward-grid" id="reward-grid"></div><p class="note">Belohnungen werden erst nach der serverseitigen Bingo-Prüfung freigeschaltet. Freischaltungen werden aus deinem Sammelfortschritt berechnet.</p></section></div>
 <section id="event-hammers" aria-labelledby="hammer-heading">
- <div class="hammer-hero"><span>🔨 WEIHNACHTSWERKSTATT · SAMMELCHALLENGES</span><h2 id="hammer-heading">Hammer-Bingo</h2>
+ <div class="hammer-hero"><span>🔨 WEIHNACHTSWERKSTATT · SAMMELCHALLENGES</span><h2 id="hammer-heading">Hammer-Bingo</h2><p class="hammer-art-status" id="hammer-art-status">23 von 32 Motiven auf GitHub eingebunden · 9 Bilder fehlen noch</p>
  <p>Ein eigener Bereich für die geplanten zwei zusätzlichen 4×4-Sammelfelder: gewöhnliche Karten bringen kleinere Hammerbelohnungen. Gemischte Seltenheitsgrade bieten stärkere Preise und einen größeren Jackpot.</p>
  <p>Nach dem vollständigen Sammeln eines Feldes soll dessen Jackpot einmalig vergeben werden. Anschließend startet nur dieses Feld einen neuen Sammeldurchgang. Bereits bestehende Weihnachtsfreischaltungen bleiben erhalten.</p></div>
  <div class="hammer-stock-head"><h3>🔨 Dein Hammer-Vorrat</h3><button class="hammer-refresh" id="hammer-refresh" type="button">↻ Vorrat aktualisieren</button></div>
@@ -98,8 +143,8 @@ body[data-view=hammer] .event-layout,body[data-view=hammer] #event-packs{display
  </div>
  <p id="hammer-stock-status" role="status">Öffne den Hammer-Tab, um deinen aktuellen Vorrat abzurufen.</p>
  <div class="hammer-boards" aria-label="Vorschau der zusätzlichen Bingo-Felder">
-  <article class="hammer-board"><span class="hammer-type">Feld 3 · gewöhnlich · Vorschau</span><h3>🎄 Weihnachtswerkstatt</h3><p>16 gewöhnliche Sammelbilder, 10 Bingo-Linien und kleinere Hammerpreise, die sich regelmäßig erspielen lassen.</p><div class="hammer-board-preview" aria-hidden="true"><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span></div><div class="hammer-jackpot"><strong>🎁 Kleiner Hammer-Jackpot</strong>Nach allen 16 Karten: Jackpot auszahlen und nur dieses Feld neu starten.</div><span class="hammer-inactive">Vorschau · neue Karten und Jackpot-Vergabe noch nicht freigeschaltet</span></article>
-  <article class="hammer-board legend"><span class="hammer-type">Feld 4 · gemischte Seltenheiten · Vorschau</span><h3>👑 Legendäre Winterwelt</h3><p>16 Sammelbilder mit vier Seltenheitsgraden, wertvolleren Bingo-Gewinnen und einem deutlich größeren Jackpot.</p><div class="hammer-board-preview" aria-hidden="true"><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span><span>🔒</span></div><div class="hammer-jackpot"><strong>💎 Großer Hammer-Jackpot</strong>Nach allen 16 Karten: seltenen Jackpot auszahlen und nur dieses Feld neu starten.</div><span class="hammer-inactive">Vorschau · neue Karten und Jackpot-Vergabe noch nicht freigeschaltet</span></article>
+  <article class="hammer-board"><span class="hammer-type">Feld 3 · gewöhnlich · Vorschau</span><h3>🎄 Weihnachtswerkstatt</h3><p>16 gewöhnliche Sammelbilder, 10 Bingo-Linien und kleinere Hammerpreise, die sich regelmäßig erspielen lassen.</p><div class="hammer-board-preview" id="hammer-board-common" aria-label="16 gewöhnliche Karten, noch nicht erspielbar"></div><div class="hammer-jackpot"><strong>🎁 Kleiner Hammer-Jackpot</strong>Nach allen 16 Karten: Jackpot auszahlen und nur dieses Feld neu starten.</div><span class="hammer-inactive">Vorschau · neue Karten und Jackpot-Vergabe noch nicht freigeschaltet</span></article>
+  <article class="hammer-board legend"><span class="hammer-type">Feld 4 · gemischte Seltenheiten · Vorschau</span><h3>👑 Legendäre Winterwelt</h3><p>16 Sammelbilder mit vier Seltenheitsgraden, wertvolleren Bingo-Gewinnen und einem deutlich größeren Jackpot.</p><div class="hammer-board-preview" id="hammer-board-mixed" aria-label="16 gemischte Karten, noch nicht erspielbar"></div><div class="hammer-jackpot"><strong>💎 Großer Hammer-Jackpot</strong>Nach allen 16 Karten: seltenen Jackpot auszahlen und nur dieses Feld neu starten.</div><span class="hammer-inactive">Vorschau · neue Karten und Jackpot-Vergabe noch nicht freigeschaltet</span></article>
  </div>
  <p class="note">Die Vorschau vergibt noch keine Bingo- oder Jackpot-Gewinne. Dein echter Hammer-Vorrat wird direkt aus dem bestehenden Event-2-Profil gelesen.</p>
  <p class="note"><a href="./Weihnachtsevent2/index.html" style="color:#ffe1a0;font-weight:800">❄️ Zum Weihnachtsevent 2 – Hammer einsetzen</a></p>
@@ -140,6 +185,56 @@ document.querySelectorAll('[data-pack]').forEach(b=>b.addEventListener('click',a
 window.addEventListener('spielonline-change',load);window.addEventListener('load',()=>{load();setTimeout(load,1800);setTimeout(load,5500)});
 
 document.getElementById('retry-connection').addEventListener('click',load);document.body.dataset.view=['album','hammer','packs','bingo'].includes(new URLSearchParams(location.search).get('view'))?new URLSearchParams(location.search).get('view'):'album';document.querySelectorAll('.event-tabs button[data-view]').forEach(b=>{const active=b.dataset.view===document.body.dataset.view;b.setAttribute('aria-selected',String(active));if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});document.querySelectorAll('.event-tabs button[data-view]').forEach(button=>button.addEventListener('click',()=>{document.body.dataset.view=button.dataset.view;document.querySelectorAll('.event-tabs button[data-view]').forEach(b=>{const active=b===button;b.setAttribute('aria-selected',String(active));if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});const url=new URL(location.href);url.searchParams.set('view',button.dataset.view);history.replaceState(history.state,'',url);if(button.dataset.view==='hammer')loadHammerStock();window.scrollTo({top:0,behavior:'smooth'})}));
+
+/* Fixed slot catalog from the three GitHub image uploads on 2026-11-09.
+   Slots 33–48: all common. Slots 49–64: mixed by column (common/rare/epic/legendary).
+   Missing images are reserved only; no collection claims/rewards are triggered here. */
+const hammerBingoArtwork=[["file_00000000d2cc8210a791404b9588b1ee.png","Winterwanderung zur Berghütte"],["file_00000000e08882109c6df9b7d8560555.png","Plätzchenbacken mit Opa"],["file_0000000085f88210b7b19314a03badb4.png","Weihnachtsmarkt zu zweit"],["file_000000008720821084aae80559d20334.png","Punsch am Weihnachtsmarkt"],["file_000000005d70821095df6b2545f459dc.png","Gemeinsam den Baum schmücken"],["file_000000001d5882109b1acd125472f7a4.png","Geschenke liebevoll einpacken"],["file_000000002d6482109a28f30ba8edd954.png","Winterlicher Marktspaziergang"],["file_0000000035a08210bef4bfa5d940cfa1.png","Plätzchen mit den Großeltern"],["file_000000007d1482109c1cf88ba6c9fab1.png","Der Stern auf dem Weihnachtsbaum"],["file_000000009bac8210a6733baded61345e.png","Bescherung unterm Weihnachtsbaum"],["file_00000000bab48210b371633551cabbfb.png","Winterdorf bei Sonnenuntergang"],["file_0000000039848210aeafc0614dd7b779.png","Winterhütte im Abendlicht"],["file_000000008c9882108f9c6220bbb191c2.png","Festlicher Waldweg"],["file_000000009be482109ad73db8fef61318.png","Verschneiter Waldpfad"],["file_00000000fca482108d3fc04660f96508.png","Berghütte im Sonnenlicht"],["file_00000000543882109c56afd9df767f7c.png","Weihnachtsmarkt im Winterdorf"],["file_000000001f9882109c4b7b67bc5cb8bf.png","Weihnachtsleuchtturm am Meer"],["file_000000007d8c8210afdc93ce55189678.png","Wintersee im Abendrot"],["file_000000006ad08210b4cd9aaa0219b45c.png","Eislaufen am Wintersee"],["file_000000006c188210ba850422a5128299.png","Weihnachtszug durch die Berge"],["file_0000000026a08210a77d189897d00b25.png","Verschneite Brücke am Bach"],["file_000000008adc8210a482c727f95c0150.png","Weihnachtsdorf im Bergtal"],["file_00000000d5b48210a434202c059330de.png","Weihnachtsmarkt im Schneetreiben"]];
+function renderHammerCardPreviews(){
+ const path='./Weihnachtsevent2/Weihnachtsbilder/';
+ let loaded=0;
+ for(let board=0;board<2;board++){
+  const root=document.getElementById(board===0?'hammer-board-common':'hammer-board-mixed');
+  if(!root)return;
+  const fragment=document.createDocumentFragment();
+  for(let col=0;col<16;col++){
+   const idx=board*16+col;
+   const entry=hammerBingoArtwork[idx];
+   const rarity=board===0?'common':['common','rare','epic','legendary'][col%4];
+   const card=document.createElement('div');
+   card.className='hammer-photo-card'+(!entry?' missing':'');
+   card.dataset.rarity=rarity;
+   card.title=entry?entry[1]+' · '+({common:'Gewöhnlich',rare:'Selten',epic:'Episch',legendary:'Legendär'})[rarity]+' · Vorschau, noch nicht erspielbar':'Motiv noch nicht hochgeladen';
+   if(entry){
+    loaded++;
+    const img=document.createElement('img');
+    img.src=path+encodeURIComponent(entry[0]);
+    img.alt=entry[1];img.loading='lazy';img.decoding='async';
+    img.addEventListener('error',()=>{
+      img.remove();card.classList.add('missing');
+      if(!card.querySelector('.missing-icon')){const icon=document.createElement('span');icon.className='missing-icon';icon.textContent='🖼️';card.insertBefore(icon,card.firstChild)}
+      card.title='Bilddatei konnte nicht geladen werden: '+entry[0];
+    });
+    card.append(img);
+   }else{
+    const icon=document.createElement('span');icon.className='missing-icon';
+    icon.textContent='🖼️';card.append(icon);
+   }
+   const number=document.createElement('span');number.className='hammer-photo-number';
+   number.textContent=String(idx+33);
+   const lock=document.createElement('span');lock.className='hammer-photo-lock';
+   lock.textContent=entry?'🔒':'';
+   const label=document.createElement('span');label.className='hammer-photo-label';
+   label.textContent=entry?entry[1]:'Bild noch offen';
+   card.append(number,lock,label);
+   fragment.append(card);
+  }
+  root.replaceChildren(fragment);
+ }
+ const status=document.getElementById('hammer-art-status');
+ if(status)status.textContent=loaded+' von 32 Motiven eingebunden · '+(32-loaded)+' Bildplätze noch offen';
+}
+renderHammerCardPreviews();
 let hammerStockBusy=false;
 async function loadHammerStock(){
  if(hammerStockBusy)return;
