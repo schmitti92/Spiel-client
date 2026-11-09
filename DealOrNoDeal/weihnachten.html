@@ -789,7 +789,8 @@ document.querySelectorAll('[data-pack]').forEach(b=>b.addEventListener('click',a
   // Confirmed server result drives the voucher count even if the GET fails.
   if(current)render({...current,...result});
   notice.textContent=result.usedFreePack?'🎁 Kostenloses Bingo-Paket geöffnet – kein Spielgeld abgebucht!':'✨ Paket erfolgreich geöffnet!';
-  openReveal(result.revealed.map(c=>({...c})),'real',pack);
+  const revealed=result.revealed.map(c=>({...c}));
+  openReveal(revealed,'real',pack);
   try{
    const latest=await request('GET','me');
    render(latest);void maybeClaimHammerBingos(latest);void maybeClaimNorthPoleBingos(latest);
