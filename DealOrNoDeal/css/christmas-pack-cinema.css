@@ -602,3 +602,15 @@
  #reveal-overlay[data-stage=card] .reveal-card img{max-height:170px}
  #reveal-overlay[data-stage=card] .reveal-card strong{font-size:12px}
 }
+
+/* Avoid an empty spotlight on slow mobile image downloads. Each card is
+   decoded before reveal; show the winter card back if an asset really fails. */
+#reveal-overlay #reveal-image,
+#reveal-overlay .reveal-summary-item img{
+ background:#243a55 url("../assets/weihnachts_event/card-back-winter.svg") center/contain no-repeat;
+ min-height:1px;
+}
+#reveal-overlay #reveal-image.card-art-unavailable{
+ object-fit:contain;
+ background-color:#243a55;
+}
