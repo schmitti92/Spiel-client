@@ -17,21 +17,29 @@
   const game=match(),u=user(),winner=winnerId(game);if(!winner||!u?.uid)return;
   const started=Number(game.christmasWheelSpins?.['final:'+game.id]||0);
   if(!started)return;
-  // Never cover the pack animation. If a tab was reloaded, the server timestamp
-  // still lets us recover the hammer ceremony without sessionStorage.
-  // The winner explicitly releases the card reveal for every player.
-  // Never start the hammer wheel merely because a local timer elapsed.
+  // The same reward dialog remains the only ceremony window for both wheels.
   if(!game.christmasWheelClosed?.['final:'+game.id])return;
-  if(Date.now()-started<12500)return;
-  const packOverlay=document.getElementById('cent-reward');
+  const box=document.getElementById('cent-reward');
   const finaleOverlay=document.getElementById('finale-cinema');
-  if(packOverlay&&!packOverlay.hidden||finaleOverlay&&!finaleOverlay.hidden)return;
-  if(shown===game.id||document.getElementById('ice-hammer-bonus')||sessionStorage.getItem('ice-hammer-wheel-seen:'+game.id)==='yes')return;
+  if(!box||finaleOverlay&&!finaleOverlay.hidden)return;
+  if(shown===game.id||sessionStorage.getItem('ice-hammer-wheel-seen:'+game.id)==='yes')return;
   shown=game.id;
-  const overlay=document.createElement('div');overlay.id='ice-hammer-bonus';
-  overlay.innerHTML='<div class="ice-hammer-card"><h2>🏆 DAS GROSSE SIEGER-DOPPELGLÜCKSRAD</h2><p>Beide Räder gehören zur selben Siegerehrung · Alle Spieler schauen live zu.</p><div class="ice-dual-wheels"><section class="ice-dual-pack"><h3>1 · 🎁 KARTENPAKET</h3><div class="ice-dual-pack-wheel" role="img" aria-label="Kartenpaket-Glücksrad, bereits gedreht"></div><p>✓ Kartenpaket ausgelost</p></section><section class="ice-dual-hammer"><h3>2 · 🔨 HAMMER</h3><div class="ice-hammer-wheel"><div class="ice-hammer-disc" role="img" aria-label="Hammer-Glücksrad mit 12 Feldern: 5 einfache Hammer, 5 Doppelhammer, 2 Glückshammer"></div><div class="ice-hammer-pointer" aria-hidden="true">▼</div></div><p class="ice-hammer-message" role="status">⏳ Das Hammerrad startet automatisch …</p></section></div><button class="ice-hammer-spin" hidden>🎡 Hammerauslosung erneut versuchen</button><button class="ice-hammer-close" hidden>✓ Ergebnis schließen</button></div>';
-  document.body.append(overlay);
-  const disc=overlay.querySelector('.ice-hammer-disc'),spin=overlay.querySelector('.ice-hammer-spin'),status=overlay.querySelector('.ice-hammer-message'),close=overlay.querySelector('.ice-hammer-close');
+  box.hidden=false;box.classList.add('final-dual-active','final-hammer-running');
+  box.dataset.stage='wheel';
+  document.getElementById('cent-wheel-stage').hidden=false;
+  document.getElementById('cent-reveal-stage').hidden=true;
+  document.getElementById('cent-wheel-spin').hidden=true;
+  document.getElementById('cent-reward-close').hidden=true;
+  document.getElementById('final-dual-hammer').hidden=false;
+  document.getElementById('cent-reward-title').textContent='🏆 Das große Sieger-Doppelglücksrad';
+  document.getElementById('cent-reward-subtitle').textContent='🎁 Kartenpaket ausgelost · 🔨 Jetzt dreht das Hammerrad – live für alle';
+  document.getElementById('cent-wheel-status').textContent='✓ Das Kartenpaket wurde bereits ausgelost';
+  const disc=document.getElementById('final-dual-hammer-disc');
+  const status=document.getElementById('final-dual-hammer-status');
+  const close=document.getElementById('cent-reward-close');
+  const spin=document.createElement('button');
+  spin.className='final-hammer-retry';spin.textContent='🔄 Hammerauslosung erneut versuchen';spin.hidden=true;
+  document.getElementById('final-dual-hammer').append(spin);
   const labels={single:'🔨 Einfach-Hammer',double:'🔨 Doppel-Hammer',lucky:'✨ Glückshammer'};
   // Fixed pointer at 12 o'clock: sector centers in the current 12-field image.
   const angles={single:30,double:60,lucky:0};
@@ -49,7 +57,7 @@
   };
   const onGameChange=()=>{const latest=match();if(latest?.id===game.id)reveal(latest.christmasHammerWheel)};
   window.addEventListener('deal-game-state-change',onGameChange);
-  if(winner!==u.uid){spin.hidden=true;status.textContent='⏳ Der Sieger startet das Hammerrad automatisch – du schaust live zu.'}
+  if(winner!==u.uid){spin.hidden=true;status.textContent='⏳ Das Hammerrad wird beim Sieger automatisch gestartet – du schaust live zu.'}
   else if(game.christmasHammerWheel){spin.hidden=true}
   if(game.christmasHammerWheel)reveal(game.christmasHammerWheel);
   spin.onclick=async()=>{
@@ -63,15 +71,15 @@
    }catch(e){status.textContent='⚠️ '+e.message+' – der Sieger kann erneut versuchen.';spin.hidden=winner!==u.uid;spin.disabled=false;busy=false}
   };
   // Only the authenticated winner may request a spin; the server draws the award once.
-  if(winner===u.uid&&!game.christmasHammerWheel)setTimeout(()=>{if(overlay.isConnected&&!busy&&!revealed)spin.click()},1400);
-  close.onclick=()=>{window.removeEventListener('deal-game-state-change',onGameChange);clearTimeout(spinTimer);sessionStorage.setItem('ice-hammer-wheel-seen:'+game.id,'yes');overlay.remove();busy=false};
+  if(winner===u.uid&&!game.christmasHammerWheel)setTimeout(()=>{if(box.isConnected&&!box.hidden&&!busy&&!revealed)spin.click()},1400);
+  close.onclick=()=>{window.removeEventListener('deal-game-state-change',onGameChange);clearTimeout(spinTimer);sessionStorage.setItem('ice-hammer-wheel-seen:'+game.id,'yes');box.hidden=true;box.classList.remove('final-hammer-running','final-dual-active');spin.remove();busy=false};
  }
  function scheduleShow(){
   const game=match();if(!winnerId(game))return;
   const started=Number(game.christmasWheelSpins?.['final:'+game.id]||0);
   if(!started)return;
   if(!game.christmasWheelClosed?.['final:'+game.id])return;
-  const delay=Math.max(0,12500-(Date.now()-started));
+  const delay=0;
   clearTimeout(window.__iceHammerShowTimer);
   window.__iceHammerShowTimer=setTimeout(show,delay+250);
  }
