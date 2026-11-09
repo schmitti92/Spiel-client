@@ -31,6 +31,15 @@ function recoveredGift(){
 }
 
 function render(){
+ if(state){
+  // Reuse the progress this page already has for the shared event overview.
+  try{
+   const uid=user()?.uid;
+   if(uid)sessionStorage.setItem('christmas-hub-v1-ice-'+uid,JSON.stringify({
+    at:Date.now(),values:{completed:Math.max(0,Math.min(70,Number(state.completed)||0))}
+   }));
+  }catch(_){}
+ }
  if(!state){root.innerHTML='<p>Dein Online-Spielstand ist noch nicht gestartet.</p><button id="ice-start">❄️ Online-Spiel starten</button>';root.querySelector('#ice-start').onclick=()=>run('start');return}
  const finished=!!state.finished,done=state.completed>=70,number=Math.min(70,state.completed+1);
  const photo=n=>'./Weihnachtsbilder/'+encodeURIComponent(names[(n-1)%names.length]);
