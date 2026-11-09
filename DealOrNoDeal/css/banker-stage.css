@@ -525,3 +525,17 @@
  #banker-call .banker-bonus-reveal-card,#banker-call .banker-bonus-reveal-item,
  #banker-call .banker-hammer-bonus,#banker-call .banker-christmas-bonus{animation:none!important}
 }
+
+/* Keep the money board unobscured during the bonus announcement. */
+@media(min-width:901px){
+ #banker-call .banker-offer-details > .banker-bonus-reveal:not([hidden]){
+  left:clamp(230px,24vw,400px)!important;right:0!important;top:0!important;bottom:0!important;
+  background:radial-gradient(ellipse at center,#061629eb,#020916ed)!important;
+ }
+}
+@media(max-width:900px){
+ #banker-call .banker-offer-details > .banker-bonus-reveal:not([hidden]){
+  inset:10% 2% 4% 2%!important;
+  background:#061629f5!important;
+ }
+}
