@@ -66,7 +66,8 @@
   }
 
   const state={
-    queue:[], seen:new Set(), last:[], active:null, closeTimer:null, sound:false,
+    queue:[], seen:new Set(), last:[], active:null, closeTimer:null,
+    closeRemaining:0,closeStartedAt:0,sound:false,
     soundContext:null, focusBefore:null
   };
   const reduced=()=>!!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
@@ -204,6 +205,7 @@
   function paint(scene){
     const overlay=byId('hammer-cinema');if(!overlay)return;
     overlay.hidden=false;overlay.setAttribute('aria-hidden','false');
+    document.body.classList.add('hammer-cinema-active');
     overlay.dataset.world=scene.world;overlay.dataset.kind=scene.kind;overlay.dataset.preview=scene.preview?'true':'false';
     byId('hammer-cinema-world').textContent=(scene.world==='winter'?'👑 ':'🎄 ')+scene.worldName+' · Durchgang '+scene.cycle;
     byId('hammer-cinema-title').textContent=scene.title;
@@ -227,7 +229,9 @@
   function finish(){
     if(!state.active)return;
     clearTimeout(state.closeTimer);state.closeTimer=null;
+    state.closeRemaining=0;state.closeStartedAt=0;
     state.active=null;
+    document.body.classList.remove('hammer-cinema-active');
     restoreBoard();
     const overlay=byId('hammer-cinema');
     if(overlay){overlay.hidden=true;overlay.setAttribute('aria-hidden','true');overlay.classList.remove('is-playing');}
@@ -247,7 +251,29 @@
       director?.bingoEnded();return;
     }
     state.active=scene;paint(scene);
-    state.closeTimer=setTimeout(finish,reduced()?2100:scene.kind==='jackpot'?7100:5400);
+    armClose(reduced()?2100:scene.kind==='jackpot'?7100:5400);
+  }
+  function armClose(duration){
+    if(!state.active)return;
+    clearTimeout(state.closeTimer);
+    state.closeTimer=null;
+    state.closeRemaining=Math.max(0,Math.floor(duration));
+    state.closeStartedAt=Date.now();
+    if(!document.hidden)state.closeTimer=setTimeout(finish,state.closeRemaining);
+  }
+  function visibilityChanged(){
+    if(document.hidden){
+      if(state.active&&state.closeTimer!==null){
+        clearTimeout(state.closeTimer);
+        state.closeTimer=null;
+        // Do not silently consume the celebration while the user is away.
+        state.closeRemaining=Math.max(1200,state.closeRemaining-(Date.now()-state.closeStartedAt));
+      }
+      return;
+    }
+    if(state.active){
+      if(state.closeTimer===null)armClose(Math.max(1200,state.closeRemaining));
+    }else startNext();
   }
   function celebrate(payload){
     const scenes=plan(payload);
@@ -303,10 +329,21 @@
         }catch(_){}
       }
     });
-    document.addEventListener('visibilitychange',resume);
+    document.addEventListener('visibilitychange',visibilityChanged);
     document.addEventListener('christmas-pack-reveal-closed',resume);
     document.addEventListener('keydown',event=>{
-      if(event.key==='Escape'&&state.active&&!packOpen()){event.preventDefault();finish()}
+      if(!state.active||packOpen())return;
+      if(event.key==='Escape'){event.preventDefault();finish();return;}
+      if(event.key!=='Tab')return;
+      const overlay=byId('hammer-cinema');
+      if(!overlay)return;
+      const focusable=[...overlay.querySelectorAll('button:not([hidden]):not([disabled])')]
+        .filter(element=>element.getClientRects().length>0);
+      if(!focusable.length)return;
+      const first=focusable[0],last=focusable[focusable.length-1];
+      if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+      else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+      else if(!overlay.contains(document.activeElement)){event.preventDefault();first.focus();}
     });
     setSoundUI();setReplayUI();
   }
