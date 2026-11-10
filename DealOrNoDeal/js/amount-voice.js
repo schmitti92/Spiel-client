@@ -44,6 +44,14 @@
   if(cents>10000)return 'small';
   return 'tiny';
  }
+ // The host speaks ONLY for the lowest and highest cash prize of the
+ // currently selected 26–29-case mode. Nothing about the hidden shuffle
+ // or the remaining unopened cases is needed.
+ const topPrizeByCases=Object.freeze({26:100000000,27:300000000,28:500000000,29:1000000000});
+ function shouldComment(cents,meta={}){
+  const count=Number(meta.caseCount);
+  return cents===1||topPrizeByCases[count]===cents;
+ }
  function formatAmount(cents){
   if(cents===1)return 'Ein Cent';
   const euros=Math.floor(cents/100),cent=cents%100;
@@ -73,8 +81,8 @@
  }
  const btn=document.createElement('button');
  btn.type='button';btn.id='deal-amount-voice';
- btn.title='Originale, freche Moderatorsprüche zu jedem aufgedeckten Geldbetrag vorlesen';
- btn.setAttribute('aria-label','Audio-Moderator mit Geldbeträgen und lustigen Kommentaren ein- oder ausschalten');
+ btn.title='Audio-Kommentator nur für 1 Cent und den höchsten Betrag dieser Partie';
+ btn.setAttribute('aria-label','Audio-Moderator für 1 Cent und den Höchstbetrag ein- oder ausschalten');
  btn.className='studio-tool';btn.style.cssText='white-space:nowrap;min-width:42px;cursor:pointer';
  const update=()=>{
   btn.textContent=!supported?'🔇 Moderator nicht verfügbar':enabled?'🎙️ Moderator AN':'🔇 Moderator AUS';
@@ -104,7 +112,7 @@
    selectVoice();
    synth.resume?.();
    // Start speech within the user's gesture, which unlocks audio on many devices.
-   const hello=new window.SpeechSynthesisUtterance('Goldstudio Moderator eingeschaltet. Ich kommentiere jetzt jeden geöffneten Koffer!');
+   const hello=new window.SpeechSynthesisUtterance('Goldstudio Moderator eingeschaltet. Ich kommentiere nur den kleinsten und den größten Geldbetrag!');
    hello.lang='de-DE';hello.rate=.96;hello.pitch=.86;hello.volume=1;
    if(preferredVoice)hello.voice=preferredVoice;
    try{synth.speak(hello)}catch{}
@@ -113,7 +121,7 @@
  function announce(cents,meta={}){
   if(!enabled||!supported||document.hidden)return;
   const amount=Math.round(Number(cents));
-  if(!Number.isSafeInteger(amount)||amount<0)return;
+  if(!Number.isSafeInteger(amount)||amount<0||!shouldComment(amount,meta))return;
   const words=formatAmount(amount),line=selectLine(amount,meta);
   const text=words+'. '+(line||'Der nächste Koffer wartet schon!');
   stop();
@@ -135,6 +143,6 @@
  window.announceOpenedAmount=announce;
  window.stopOpenedAmountAnnouncement=stop;
  // Pure helpers are also used by regression tests, never for hidden case values.
- window.DealModeratorAudio=Object.freeze({classify,formatAmount,selectLine,categories});
+ window.DealModeratorAudio=Object.freeze({classify,formatAmount,selectLine,shouldComment,topPrizeByCases,categories});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stop()});
 })();
