@@ -80,7 +80,7 @@ test('all 26–29-case modes highlight own and other players and disable non-per
   tiles[count-1].onclick();
   const confirm=ui.element('peek-confirm');
   assert.equal(confirm.hidden,false);
-  assert.match(confirm.textContent,/1 Joker für alle 2 Mitspieler-Koffer/);
+  assert.match(confirm.textContent,/1 Joker einsetzen · alle 2 gegnerischen Koffer ansehen/);
   await confirm.handlers.click();
   const post=ui.requests.find(x=>x.options.method==='POST');
   assert.ok(post,'private peek request should be made once');
@@ -143,11 +143,11 @@ test('own selection offers individual reveal; ordinary unassigned cases cannot b
  assert.equal(ui.requests.filter(r=>r.options.method==='POST').length,1);
 });
 test('invalid requests keep Joker pending for safe retry',async()=>{
- const ui=harness(29,{postError:'OWN_CASE_FORBIDDEN'});
+ const ui=harness(29,{postError:'NOT_OPPONENT_CASE'});
  await launch(ui).handlers.click();
  ui.element('peek-cases').children[28].onclick();
  await ui.element('peek-confirm').handlers.click();
- assert.match(ui.element('peek-error').textContent,/Deinen eigenen persönlichen Koffer/);
+ assert.match(ui.element('peek-error').textContent,/Bitte einen der persönlichen Koffer deiner Mitspieler auswählen/);
  assert.equal(ui.element('peek-result').textContent,'');
  assert.equal(ui.storage.size,1,'retry receipt remains in session');
 });
