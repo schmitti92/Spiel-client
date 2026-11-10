@@ -158,14 +158,14 @@ test('Phase 3 winter map renders twenty connected rooms with correct special cel
  assert.match(css,/prefers-reduced-motion:reduce/);
  assert.match(script,/\$\('journey-progress-fill'\)\.style\.width=\(completedRooms\/limit\*100\)\+'%'/);
  assert.match(script,/\$\('journey-progress'\)\.setAttribute\('aria-valuenow',String\(completedRooms\)\)/);
- assert.match(script,/\$\('journey-legend'\)\.hidden=!!s&&s\.rulesVersion!==5/);
+ assert.match(script,/\$\('journey-legend'\)\.hidden=!!s&&s\.rulesVersion<5/);
  const fn=script.match(/function renderTiers\(active,checkpoint,cleared\)\{[\s\S]*?\n\}\n(?=function hatButton)/)?.[0];
  assert.ok(fn,'individual tile renderer is available');
  const stageRoot={attributes:{},children:[],replaceChildren(){this.children=[];},appendChild(el){this.children.push(el);},setAttribute(k,v){this.attributes[k]=v;}};
  const document={createElement(name){return {tag:name,className:'',dataset:{},attributes:{},children:[],
   setAttribute(key,value){this.attributes[key]=value;},
   append(...els){this.children.push(...els);},appendChild(el){this.children.push(el);}};}};
- const state={maxRoom:20,checkpoints:[5,10,15,20],rulesVersion:5};
+ const state={maxRoom:20,checkpoints:[5,10,15,20],rulesVersion:6};
  const ctx={state,document,$:id=>{assert.equal(id,'tiers');return stageRoot;}};
  assert.doesNotThrow(()=>new Script(fn+'renderTiers(15,10,14);').runInNewContext(ctx));
  const tiles=stageRoot.children;
@@ -220,4 +220,15 @@ test('Phase 3.2 uses winding 1→10↘11→20 rooms without touching payouts or 
  assert.match(css,/\.tier\.bonus-cell\.checkpoint-cell/);
  assert.match(css,/@media\(max-width:720px\)/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+});
+
+test('new balanced v6 previews never duplicate older oversized jackpot rewards',()=>{
+ assert.match(script,/const demoBalancedOdds=\[0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,9,10,12\]/);
+ assert.match(script,/function demoBalancedPrize\(room\)/);
+ assert.match(script,/const count=superLuck\?/);
+ assert.match(script,/rulesVersion:run\.rulesVersion===6\?6:run\.rulesVersion===5\?5:1/);
+ assert.match(script,/run=\{version:1,rulesVersion:6,id:/);
+ assert.match(script,/const isBonus=\(state\?\.rulesVersion>=5\|\|!state\)/);
+ assert.match(script,/\$\('journey-legend'\)\.hidden=!!s&&s\.rulesVersion<5/);
+ assert.ok(script.includes("if(version===6){"),'old preview fallback must stay separate');
 });
