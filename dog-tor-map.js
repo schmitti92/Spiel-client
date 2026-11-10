@@ -50,8 +50,7 @@
   }catch{return false;}
  };
  const clearPending=uid=>{try{localStorage.removeItem(pendingKey(uid));}catch{}};
- const roomSuffix=room&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(room)?
-  '?room='+encodeURIComponent(room):'';
+
  function setTeamStatus(message){$('team-status').textContent=message;}
  async function request(method,route,body,uid){
   const state=auth();
@@ -239,6 +238,8 @@
 
  const params=new URLSearchParams(location.search);
  const room=params.get('room');
+ const roomSuffix=room&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(room)?
+  '?room='+encodeURIComponent(room):'';
  if(room&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(room)){
   const q='?room='+encodeURIComponent(room);
   for(const [id,url] of [['back-event','./dog-expedition.html'],['back-forge','./dog-forge.html']]){
