@@ -3,13 +3,20 @@
    ONE utterance: no overlapping voices, no extra requests and zero Firebase
    writes. Only already-revealed public case amounts are announced. */
 (()=>{
- const key='dealAmountVoiceEnabled';
+ const caseKey='dealCaseVoiceEnabled';
+ const storyKey='dealStoryVoiceEnabled';
+ const legacyKey='dealAmountVoiceEnabled';
  const synth=window.speechSynthesis;
  const supported=!!synth&&typeof window.SpeechSynthesisUtterance==='function'&&typeof synth.speak==='function';
- let enabled=false,preferredVoice=null,speechSequence=0,hideTimer=null;
- let currentUtterance=null,queuedStory=null,scheduledStory=null,speechGuard=null;
+ let caseEnabled=false,storyEnabled=false,preferredVoice=null,speechSequence=0,hideTimer=null;
+ let currentUtterance=null,currentKind=null,queuedStory=null,scheduledStory=null,speechGuard=null;
+ let queuedCases=[];
  const lastPicked=new Map();
- try{enabled=localStorage.getItem(key)==='true'}catch{}
+ try{
+  const legacy=localStorage.getItem(legacyKey);
+  caseEnabled=(localStorage.getItem(caseKey)??legacy)==='true';
+  storyEnabled=(localStorage.getItem(storyKey)??legacy)==='true';
+ }catch{}
  const maleNames=/\b(male|mann|männlich|masculine|markus|stefan|thomas|daniel|florian|klaus|hans|martin|christoph|conrad|ralf|ralph|benjamin|bernd|andreas|peter|jan|jonas|moritz|max|tim|thorsten|oliver|rolf|georg|wolfgang)\b/i;
  const femaleNames=/\b(female|frau|weiblich|feminine|anna|petra|helena|hedda|katja|vicki|viktoria|sandra|sabine|marlene|monika|maria|amelie|lea|lara|lena|siri)\b/i;
  function selectVoice(){
@@ -80,23 +87,31 @@
   lastPicked.set(category,index);
   return lines[index];
  }
- const btn=document.createElement('button');
- btn.type='button';btn.id='deal-amount-voice';
- btn.title='Audio-Moderator: erzählt die Spielgeschichte und kommentiert 1 Cent und den höchsten Betrag';
- btn.setAttribute('aria-label','Audio-Moderator mit Spielgeschichten sowie Kommentaren zu 1 Cent und dem Höchstbetrag ein- oder ausschalten');
- btn.className='studio-tool';btn.style.cssText='white-space:nowrap;min-width:42px;cursor:pointer';
- const update=()=>{
-  btn.textContent=!supported?'🔇 Moderator nicht verfügbar':enabled?'🎙️ Moderator AN':'🔇 Moderator AUS';
-  btn.setAttribute('aria-pressed',String(enabled&&supported));
- };
+ const controls=document.querySelector('.studio-header-controls')||document.body;
+ function control(id,aria,title){
+  const button=document.createElement('button');
+  button.type='button';button.id=id;button.className='studio-tool';
+  button.style.cssText='white-space:nowrap;min-width:42px;cursor:pointer';
+  button.title=title;button.setAttribute('aria-label',aria);
+  if(!supported){button.disabled=true;button.title='Browser unterstützt keine deutsche Sprachausgabe'}
+  controls.append(button);return button;
+ }
+ const btn=control('deal-amount-voice','Kofferbeträge vorlesen ein- oder ausschalten',
+  'Liest jeden geöffneten Koffer vor; Witze nur bei 1 Cent und dem Höchstbetrag');
+ const storyBtn=control('deal-story-voice','Moderationsgeschichte ein- oder ausschalten',
+  'Erzählt die eigene, ereignisabhängige Geschichte der Partie');
+ function update(){
+  btn.textContent=!supported?'🔇 Koffer':'🧳 Koffer '+(caseEnabled?'AN':'AUS');
+  btn.setAttribute('aria-pressed',String(caseEnabled&&supported));
+  storyBtn.textContent=!supported?'🔇 Story':'📖 Story '+(storyEnabled?'AN':'AUS');
+  storyBtn.setAttribute('aria-pressed',String(storyEnabled&&supported));
+ }
  update();
- if(!supported){btn.disabled=true;btn.title='Browser unterstützt keine deutsche Sprachausgabe'}
- (document.querySelector('.studio-header-controls')||document.body).append(btn);
+ // Audio-only show: the text caption remains hidden even while speaking.
  const caption=document.createElement('div');
- caption.id='deal-moderator-caption';
- caption.setAttribute('role','status');caption.setAttribute('aria-live','polite');
- caption.hidden=true;
- caption.style.cssText='position:fixed;z-index:45;left:50%;bottom:15px;transform:translateX(-50%);width:max-content;max-width:min(92vw,850px);box-sizing:border-box;padding:12px 18px;border:2px solid #f8cd77;border-radius:16px;background:linear-gradient(130deg,rgba(9,24,42,.97),rgba(55,31,18,.97));color:#fff2cf;font:800 clamp(13px,1.5vw,19px)/1.4 system-ui,sans-serif;text-align:center;text-shadow:0 2px 5px #000;box-shadow:0 7px 26px #000b,0 0 22px #dcb25b66;pointer-events:none';
+ caption.id='deal-moderator-caption';caption.hidden=true;
+ caption.setAttribute('aria-live','off');
+ caption.style.cssText='display:none!important';
  document.body.append(caption);
  function broadcastIdle(){
   // Invite a waiting chapter to retry without polling Firestore or the server.
@@ -108,16 +123,26 @@
  function finish(token){
   if(token!==speechSequence)return;
   clearTimeout(speechGuard);speechGuard=null;
-  currentUtterance=null;
+  currentUtterance=null;currentKind=null;
+  if(queuedCases.length&&caseEnabled&&!document.hidden){
+   const nextCase=queuedCases.shift();
+   // Do not let an interrupted chapter vanish behind the case announcements.
+   const story=queuedStory;queuedStory=null;
+   if(story)discardStory(story);
+   hideTimer=setTimeout(()=>{
+    if(token===speechSequence&&caseEnabled&&!document.hidden)announce(nextCase.amount,nextCase.meta,true);
+   },300);
+   return;
+  }
   const next=queuedStory;queuedStory=null;
-  if(next&&enabled&&!document.hidden){
+  if(next&&storyEnabled&&!document.hidden){
    // A promised chapter is kept in scheduledStory until it actually begins.
    // If a priority 1-cent / jackpot announcement intervenes, stop() can
    // discard it and unlock the story engine to retry later.
    scheduledStory=next;
    function continueStory(tries=0){
     if(scheduledStory!==next)return;
-    if(token!==speechSequence||!enabled||document.hidden){
+    if(token!==speechSequence||!storyEnabled||document.hidden{
      scheduledStory=null;discardStory(next);return;
     }
     if(currentUtterance||synth.speaking){
@@ -142,18 +167,19 @@
    finish(token);
   },Math.min(75000,Math.max(25000,length*140)));
  }
- function stop(){
+ function stop(keepCaseQueue=false){
   ++speechSequence;
   clearTimeout(hideTimer);hideTimer=null;
   clearTimeout(speechGuard);speechGuard=null;
-  currentUtterance=null;
+  currentUtterance=null;currentKind=null;
+  if(!keepCaseQueue)queuedCases=[];
   const pending=[queuedStory,scheduledStory];queuedStory=null;scheduledStory=null;
   for(const entry of pending)discardStory(entry);
   caption.hidden=true;
   if(supported)synth.cancel();
  }
  function playStory(entry){
-  if(!enabled||!supported||document.hidden||!entry?.text)return false;
+  if(!storyEnabled||!supported||document.hidden||!entry?.text)return false;
   if(currentUtterance){
    if(queuedStory)return false;
    queuedStory=entry;return true;
@@ -164,11 +190,10 @@
   const token=speechSequence;
   const text=String(entry.text).slice(0,900);
   caption.textContent='🎭 '+String(entry.title||'Die Geschichte')+' · Kapitel '+Number(entry.chapter||1)+' · '+text;
-  caption.hidden=false;
   const voice=new window.SpeechSynthesisUtterance(text);
   voice.lang='de-DE';voice.rate=.96;voice.pitch=.84;voice.volume=1;
   const chosen=selectVoice();if(chosen)voice.voice=chosen;
-  currentUtterance=voice;
+  currentUtterance=voice;currentKind='story';
   voice.onend=()=>finish(token);voice.onerror=()=>finish(token);
   guardSpeech(token,text.length);
   try{synth.speak(voice)}catch{finish(token);return false}
@@ -176,55 +201,74 @@
   return true;
  }
  function speakStory(text,meta={}){
-  if(!enabled||!supported||document.hidden||typeof text!=='string'||!text)return false;
+  if(!storyEnabled||!supported||document.hidden||typeof text!=='string'||!text)return false;
   return playStory({text,title:meta.title,chapter:meta.chapter,
    onStart:meta.onStart,onDiscard:meta.onDiscard});
  }
  btn.addEventListener('click',()=>{
   if(!supported)return;
-  enabled=!enabled;
-  try{localStorage.setItem(key,String(enabled))}catch{}
-  stop();update();
-  if(enabled){
-   selectVoice();
+  caseEnabled=!caseEnabled;
+  try{localStorage.setItem(caseKey,String(caseEnabled))}catch{}
+  if(!caseEnabled){
+   queuedCases=[];
+   if(currentKind==='case')stop();
+  }else synth.resume?.();
+  update();
+ });
+ storyBtn.addEventListener('click',()=>{
+  if(!supported)return;
+  storyEnabled=!storyEnabled;
+  try{localStorage.setItem(storyKey,String(storyEnabled))}catch{}
+  if(!storyEnabled){
+   if(currentKind==='story')stop();
+   else{
+    const pending=[queuedStory,scheduledStory];queuedStory=null;scheduledStory=null;
+    if(pending[1]){clearTimeout(hideTimer);hideTimer=null}
+    for(const entry of pending)discardStory(entry);
+   }
+  }else{
    synth.resume?.();
-   // A user gesture unlocks mobile audio. The first story follows this greeting.
-   const hello=new window.SpeechSynthesisUtterance('Goldstudio Moderator eingeschaltet! Jede Partie erzählt jetzt ihre eigene Geschichte. Bei den Koffern kommentiere ich weiterhin nur den kleinsten und den größten Geldbetrag!');
-   hello.lang='de-DE';hello.rate=.96;hello.pitch=.86;hello.volume=1;
-   if(preferredVoice)hello.voice=preferredVoice;
-   currentUtterance=hello;
-   const token=speechSequence;
-   hello.onend=()=>finish(token);hello.onerror=()=>finish(token);
-   guardSpeech(token,hello.text.length);
-   try{synth.speak(hello)}catch{finish(token)}
    window.DealModeratorStory?.onEnabled?.();
   }
+  update();
  });
- function announce(cents,meta={}){
-  if(!enabled||!supported||document.hidden)return;
+ function announce(cents,meta={},fromQueue=false){
+  if(!caseEnabled||!supported||document.hidden)return;
   const amount=Math.round(Number(cents));
-  if(!Number.isSafeInteger(amount)||amount<0||!shouldComment(amount,meta))return;
-  const words=formatAmount(amount),line=selectLine(amount,meta);
-  const text=words+'. '+(line||'Der nächste Koffer wartet schon!');
-  stop();
+  if(!Number.isSafeInteger(amount)||amount<0)return;
+  const exceptional=shouldComment(amount,meta);
+  // Most case values are read aloud without jokes. Queue them while an
+  // existing chapter/announcement is speaking rather than interrupting it.
+  if(!exceptional&&currentUtterance){
+   queuedCases.push({amount,meta});
+   if(queuedCases.length>12)queuedCases.shift();
+   return;
+  }
+  const words=formatAmount(amount),line=exceptional?selectLine(amount,meta):null;
+  const number=Number(meta.caseNumber);
+  const prefix=Number.isInteger(number)&&number>0?'Koffer '+number+'. ':'';
+  const text=prefix+words+'.'+(line?' '+line:'');
+  // A one-cent/top-prize reveal takes priority over an ongoing chapter.
+  // A chapter discarded here remains eligible for a future retry.
+  stop(fromQueue);
   const event=speechSequence;
-  caption.textContent='🎙️ MODERATOR · '+text;
-  caption.hidden=false;
+  caption.textContent='🎙️ KOFFER · '+text;
   const speech=new window.SpeechSynthesisUtterance(text);
   speech.lang='de-DE';
-  speech.rate=amount>=100000000?.87:.98;
-  speech.pitch=amount>=100000000?.72:.88;
+  speech.rate=exceptional&&amount>=100000000?.87:.98;
+  speech.pitch=exceptional&&amount>=100000000?.72:.88;
   speech.volume=1;
   const voice=selectVoice();if(voice)speech.voice=voice;
-  currentUtterance=speech;
+  currentUtterance=speech;currentKind='case';
   speech.onend=()=>finish(event);speech.onerror=()=>finish(event);
-  // Some Android TTS engines omit onend; the watchdog also drains stories.
   guardSpeech(event,text.length);
   try{synth.speak(speech)}catch{finish(event)}
  }
  window.announceOpenedAmount=announce;
  window.stopOpenedAmountAnnouncement=stop;
  // Pure helpers are also used by regression tests, never for hidden case values.
- window.DealModeratorAudio=Object.freeze({classify,formatAmount,selectLine,shouldComment,topPrizeByCases,categories,speakStory,isEnabled:()=>enabled&&supported});
+ window.DealModeratorAudio=Object.freeze({classify,formatAmount,selectLine,shouldComment,topPrizeByCases,categories,
+  speakStory,isStoryEnabled:()=>storyEnabled&&supported,isCaseEnabled:()=>caseEnabled&&supported,
+  isEnabled:()=>storyEnabled&&supported});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stop()});
 })();
