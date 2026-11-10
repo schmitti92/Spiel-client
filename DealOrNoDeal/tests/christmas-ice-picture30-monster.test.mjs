@@ -46,7 +46,7 @@ test('reward claiming has a manual recovery path and never invents win outcomes'
 
 test('large victory card is styled and cached JS requests updated code',()=>{
  assert.match(html,/picture30-monster-reward\.css\?v=20261110-triple-spin-v1/);
- assert.match(html,/online-ice\.js\?v=20261110-star-50-100-v1/);
+ assert.match(html,/online-ice\.js\?v=20261110-autoplay40-v1/);
  assert.match(css,/\.v44-reward\[data-milestone="30"\]/);
  assert.match(css,/\.v44-milestone-unlock\[data-milestone="30"\]/);
  assert.match(css,/\.v44-picture30-wheel-link/);
