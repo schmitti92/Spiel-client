@@ -79,9 +79,10 @@
   }
   const mine=members.find(m=>m.uid===account);
   const pendingOp=account?pending(account):null;
+  const cooldownExpired=state==='cooldown'&&cooling()===0;
   const canReady=logged&&view?.isMember&&view?.eligible&&
-   members.length===3&&!mine?.ready&&
-   (state==='waiting'||(state==='cooldown'&&cooling()===0));
+   members.length===3&&
+   ((state==='waiting'&&!mine?.ready)||cooldownExpired);
   const ready=$('ready-button');
   ready.hidden=state==='fighting'||state==='victory';
   ready.disabled=!canReady||working||!!pendingOp;
