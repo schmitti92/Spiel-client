@@ -141,3 +141,48 @@ test('Phase 2 Nordpol hero has a real SVG illustration, compact hierarchy and th
  assert.match(scene,/id="roof"/);
  assert.doesNotMatch(scene,/<script|<foreignObject|onload=|<image\b|http[s]?:\/\/(?!www\.w3\.org)/i);
 });
+
+test('Phase 3 winter map renders twenty connected rooms with correct special cells',()=>{
+ const css=readFileSync(resolve(root,'css/christmas-hats-winter-path-v9.css'),'utf8');
+ assert.match(html,/christmas-hats-winter-path-v9\.css\?v=20261110-phase3-wintertrail-v1/);
+ assert.match(html,/class="journey-map"/);
+ for(const id of ['journey-progress','journey-progress-fill','journey-progress-caption','journey-legend']){
+  assert.equal([...html.matchAll(new RegExp('id="'+id+'"','g'))].length,1,id);
+ }
+ assert.match(css,/\.journey-map \.tier\.bonus-cell:not\(\.on\)/);
+ assert.match(css,/\.journey-map \.tier\.checkpoint-cell:not\(\.on\)/);
+ assert.match(css,/\.journey-map \.tier\.finale-cell/);
+ assert.match(css,/\.journey-map \.tier\.bonus-cell\.checkpoint-cell:not\(\.on\)/);
+ assert.match(css,/\.journey-map \.tier:not\(:nth-child\(10n\)\)::after/);
+ assert.match(css,/@media\(max-width:720px\)/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+ assert.match(script,/\$\('journey-progress-fill'\)\.style\.width=\(completedRooms\/limit\*100\)\+'%'/);
+ assert.match(script,/\$\('journey-progress'\)\.setAttribute\('aria-valuenow',String\(completedRooms\)\)/);
+ assert.match(script,/\$\('journey-legend'\)\.hidden=!!s&&s\.rulesVersion!==5/);
+ const fn=script.match(/function renderTiers\(active,checkpoint,cleared\)\{[\s\S]*?\n\}\n(?=function hatButton)/)?.[0];
+ assert.ok(fn,'individual tile renderer is available');
+ const root={children:[],replaceChildren(){this.children=[];},appendChild(el){this.children.push(el);}};
+ const document={createElement(name){return {tag:name,className:'',dataset:{},attributes:{},children:[],
+  setAttribute(key,value){this.attributes[key]=value;},
+  append(...els){this.children.push(...els);}};}};
+ const state={maxRoom:20,checkpoints:[5,10,15,20],rulesVersion:5};
+ const ctx={state,document,$:id=>{assert.equal(id,'tiers');return root;}};
+ assert.doesNotThrow(()=>new Script(fn+'renderTiers(15,10,14);').runInNewContext(ctx));
+ const tiles=root.children;
+ assert.equal(tiles.length,20);
+ assert.deepEqual(tiles.filter(x=>x.className.includes('bonus-cell')).map(x=>Number(x.dataset.room)),[3,6,9,12,15,18]);
+ assert.deepEqual(tiles.filter(x=>x.className.includes('checkpoint-cell')).map(x=>Number(x.dataset.room)),[5,10,15]);
+ const fifteen=tiles[14];
+ assert.equal(fifteen.dataset.kind,'bonus-checkpoint');
+ assert.equal(fifteen.children[0].textContent,'🛡️');
+ assert.equal(fifteen.children[2].textContent,'🎁');
+ assert.equal(fifteen.attributes['aria-current'],'step');
+ const finale=tiles[19];
+ assert.equal(finale.dataset.kind,'finale');
+ assert.match(finale.className,/finale-cell/);
+ assert.doesNotMatch(finale.className,/checkpoint-cell/);
+ assert.equal(finale.children[0].textContent,'👑');
+ assert.match(finale.attributes['aria-label'],/Nordpol-Finale/);
+ assert.match(tiles[2].attributes['aria-label'],/alle drei Mützen bombenfrei/);
+ assert.match(tiles[9].attributes['aria-label'],/Gewinne bis hier gesichert/);
+});
