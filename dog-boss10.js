@@ -61,7 +61,7 @@
    state==='fighting'?'⚔️ Kampf läuft':
    state==='victory'?'🏆 Boss besiegt':
    state==='cooldown'?'💀 Kampfpause':'Verbindung prüfen';
-  $('.arena')?.setAttribute('data-phase',state);
+  $('arena')?.setAttribute('data-phase',state);
   const members=view?.members||[];
   $('ready-count').textContent=members.filter(x=>x.ready).length+' / 3 bereit';
   const area=$('heroes');area.replaceChildren();
