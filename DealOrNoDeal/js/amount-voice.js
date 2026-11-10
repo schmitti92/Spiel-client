@@ -89,21 +89,25 @@
  }
  const controls=document.querySelector('.studio-header-controls')||document.body;
  function control(id,aria,title){
-  const button=document.createElement('button');
-  button.type='button';button.id=id;button.className='studio-tool';
-  button.style.cssText='white-space:nowrap;min-width:42px;cursor:pointer';
+  // The button exists in the HTML from first paint. Reuse it rather than
+  // creating a duplicate that might be offscreen or appended to <body>.
+  const button=document.getElementById?.(id)||document.createElement('button');
+  button.type='button';button.id=id;
+  button.className='studio-tool studio-audio-toggle';
   button.title=title;button.setAttribute('aria-label',aria);
-  if(!supported){button.disabled=true;button.title='Browser unterstützt keine deutsche Sprachausgabe'}
-  controls.append(button);return button;
+  button.disabled=!supported;
+  if(!supported)button.title='Browser unterstützt keine deutsche Sprachausgabe';
+  if(!button.isConnected)controls.append(button);
+  return button;
  }
  const btn=control('deal-amount-voice','Kofferbeträge vorlesen ein- oder ausschalten',
   'Liest jeden geöffneten Koffer vor; Witze nur bei 1 Cent und dem Höchstbetrag');
- const storyBtn=control('deal-story-voice','Moderationsgeschichte ein- oder ausschalten',
-  'Erzählt die eigene, ereignisabhängige Geschichte der Partie');
+ const storyBtn=control('deal-story-voice','Audio-Moderator für die Spielgeschichte umschalten',
+  'Moderator erzählt die ereignisabhängige Geschichte der Partie');
  function update(){
-  btn.textContent=!supported?'🔇 Koffer':'🧳 Koffer '+(caseEnabled?'AN':'AUS');
+  btn.textContent=!supported?'🔇 Koffer':'🔊 Koffer '+(caseEnabled?'AN':'AUS');
   btn.setAttribute('aria-pressed',String(caseEnabled&&supported));
-  storyBtn.textContent=!supported?'🔇 Story':'📖 Story '+(storyEnabled?'AN':'AUS');
+  storyBtn.textContent=!supported?'🔇 Moderator':'🎙️ Moderator '+(storyEnabled?'AN':'AUS');
   storyBtn.setAttribute('aria-pressed',String(storyEnabled&&supported));
  }
  update();
@@ -205,6 +209,19 @@
   return playStory({text,title:meta.title,chapter:meta.chapter,
    onStart:meta.onStart,onDiscard:meta.onDiscard});
  }
+ // Speak a short confirmation within the tap gesture. Mobile browsers may
+ // otherwise block the FIRST delayed story after audio was enabled.
+ function confirmVoice(kind,message){
+  if(!supported||currentUtterance||synth.speaking)return;
+  const voice=new window.SpeechSynthesisUtterance(message);
+  voice.lang='de-DE';voice.rate=.98;voice.pitch=.9;voice.volume=1;
+  const selected=selectVoice();if(selected)voice.voice=selected;
+  const token=speechSequence;
+  currentUtterance=voice;currentKind=kind;
+  voice.onend=()=>finish(token);voice.onerror=()=>finish(token);
+  guardSpeech(token,message.length);
+  try{synth.speak(voice)}catch{finish(token)}
+ }
  btn.addEventListener('click',()=>{
   if(!supported)return;
   caseEnabled=!caseEnabled;
@@ -212,7 +229,10 @@
   if(!caseEnabled){
    queuedCases=[];
    if(currentKind==='case')stop();
-  }else synth.resume?.();
+  }else{
+   synth.resume?.();
+   confirmVoice('case','Kofferansagen eingeschaltet.');
+  }
   update();
  });
  storyBtn.addEventListener('click',()=>{
@@ -228,6 +248,7 @@
    }
   }else{
    synth.resume?.();
+   confirmVoice('story','Moderator eingeschaltet. Unsere Geschichte geht weiter.');
    window.DealModeratorStory?.onEnabled?.();
   }
   update();
