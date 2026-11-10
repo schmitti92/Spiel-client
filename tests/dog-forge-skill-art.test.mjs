@@ -39,8 +39,8 @@ test('Forge UI maps every server-recognized skill to an illustration',()=>{
 });
 test('Forge UI styles and HTML load the current skill artwork release',()=>{
  const html=read('dog-forge.html'),css=read('dog-forge.css');
- assert.ok(html.includes('dog-forge-ui.js?v=20261110-forge-d1'));
- assert.ok(html.includes('dog-forge.css?v=20261110-forge-d1'));
+ assert.ok(html.includes('dog-forge-ui.js?v=20261110-forge-d2'));
+ assert.ok(html.includes('dog-forge.css?v=20261110-forge-d2'));
  for(const selector of ['.skill-display','.skill-visual.compact','.item-choice.skill-entry',
   '.result-art .skill-illustration'])assert.ok(css.includes(selector),'missing selector '+selector);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
@@ -123,7 +123,7 @@ test('C2 milestone awards are display-only and include a future max-skill badge'
 
 test('C3 ambience module is isolated from authoritative forge state',()=>{
  const ui=read('dog-forge-ui.js'),fx=read('dog-forge-fx.js'),html=read('dog-forge.html');
- assert.ok(html.includes('dog-forge-fx.js?v=20261110-forge-d1'));
+ assert.ok(html.includes('dog-forge-fx.js?v=20261110-forge-d2'));
  assert.ok(html.includes('id="forge-sound-toggle"'));
  assert.ok(html.includes('data-forge-background=""'));
  assert.ok(fx.includes("const SOUND_KEY='dog:forge:sound:v1'"));
@@ -254,4 +254,101 @@ test('D1 scene reacts safely to desktop/mobile and missing images',()=>{
  assert.match(vars.get('--forge-custom-wall'),/forge-workshop-mobile\.webp/);
  // No hidden data store or game network interaction occurs during this switch.
  assert.equal(typeof listeners.visibilitychange,'function');
+});
+
+test('D2 uses a dedicated skippable smithing stage without new network actions',()=>{
+ const html=read('dog-forge.html'),ui=read('dog-forge-ui.js'),
+  script=read('dog-forge-ceremony.js'),css=read('dog-forge.css');
+ assert.ok(html.includes('dog-forge-ceremony.js?v=20261110-forge-d2'));
+ for(const id of ['forge-ceremony','forge-ceremony-art','forge-ceremony-title',
+  'forge-ceremony-status','forge-ceremony-caption','forge-ceremony-skip']){
+  assert.ok(html.includes('id="'+id+'"'),id);
+ }
+ for(const selector of ['.ceremony-hammer','.ceremony-weapon','.ceremony-sparks i',
+  '.forge-ceremony[data-phase="failure"]',
+  '.forge-ceremony[data-phase="legendary"]',
+  '@media(prefers-reduced-motion:reduce)'])assert.ok(css.includes(selector),selector);
+ assert.equal(script.includes('fetch('),false);
+ assert.equal(script.includes('XMLHttpRequest'),false);
+ assert.equal(script.includes('localStorage'),false);
+ assert.ok(ui.includes("if(!retry&&op.action==='upgrade')"));
+ assert.ok(ui.includes('window.DogForgeCeremony.start({item,level:levelFor(item.id)})'));
+ assert.ok(ui.includes('await window.DogForgeCeremony?.finish?.(response.result)'));
+ assert.ok(ui.indexOf("request('POST',op.action")<ui.indexOf('DogForgeCeremony?.finish?.(response.result)'));
+ assert.ok(ui.includes('window.DogForgeCeremony?.abort?.()'));
+ assert.doesNotThrow(()=>new Script(script,{filename:'dog-forge-ceremony.js'}));
+});
+function ceremonyHarness({reduced=false}={}){
+ const source=read('dog-forge-ceremony.js'),callbacks={},events={},timers=new Map();
+ let nextTimer=0,closed=0;
+ const plainElement=()=>({textContent:'',className:'',src:'',alt:'',
+  decoding:'',loading:'',isConnected:true,addEventListener(){},
+  replaceWith(){}});
+ const art={children:[],replaceChildren(){this.children=[];},append(child){this.children.push(child);}};
+ const dialog={open:false,dataset:{},style:{setProperty(){}},
+  classList:{toggle(){}},addEventListener(type,cb){events[type]=cb;},
+  showModal(){this.open=true;},
+  close(){this.open=false;closed++;if(events.close)events.close();}
+ };
+ const skip={addEventListener(type,cb){callbacks[type]=cb;}};
+ const titles={'forge-ceremony-title':plainElement(),
+  'forge-ceremony-status':plainElement(),'forge-ceremony-caption':plainElement()};
+ const doc={
+  hidden:false,
+  getElementById(id){return {
+   'forge-ceremony':dialog,'forge-ceremony-art':art,
+   'forge-ceremony-skip':skip,...titles
+  }[id]||null;},
+  createElement(){return plainElement();},
+  addEventListener(type,cb){events['document:'+type]=cb;}
+ };
+ const win={
+  matchMedia:()=>({matches:reduced}),
+  setTimeout(fn,ms){const id=++nextTimer;timers.set(id,{fn,ms});return id;},
+  clearTimeout(id){timers.delete(id);}
+ };
+ runInNewContext(source,{document:doc,window:win});
+ return {api:win.DogForgeCeremony,dialog,art,skip,timers,titles,events,
+  get closed(){return closed;},
+  flush(){for(const [id,task] of [...timers]){timers.delete(id);task.fn();}}
+ };
+}
+test('D2 does not announce victory before authoritative upgrade result',async()=>{
+ const h=ceremonyHarness();
+ h.api.start({item:{id:'weapon',group:'equipment',name:'Waffe'},level:5});
+ assert.equal(h.dialog.open,true);
+ assert.equal(h.dialog.dataset.phase,'smithing');
+ assert.match(h.art.children[0].src,/weapon-1\.svg$/);
+ assert.match(h.titles['forge-ceremony-status'].textContent,/Server/);
+ assert.equal(h.timers.size,0,'before server response there is no result timer');
+ const done=h.api.finish({type:'upgrade',itemId:'weapon',oldLevel:5,newLevel:6,success:true});
+ assert.equal(h.dialog.dataset.phase,'legendary');
+ assert.match(h.art.children[0].src,/weapon-2\.svg$/);
+ assert.equal(h.timers.size,1);
+ h.flush();await done;
+ assert.equal(h.dialog.open,false);
+});
+test('D2 failure smoke, skip and hidden tab cannot duplicate a transaction',async()=>{
+ const h=ceremonyHarness();
+ h.api.start({item:{id:'armor',group:'equipment',name:'Rüstung'},level:8});
+ const done=h.api.finish({type:'upgrade',itemId:'armor',oldLevel:8,newLevel:8,success:false});
+ assert.equal(h.dialog.dataset.phase,'failure');
+ assert.match(h.art.children[0].src,/armor-2\.svg$/);
+ h.skip && h.skip.addEventListener; // skip event is registered in harness callbacks
+ h.events['document:visibilitychange']();
+ assert.equal(h.dialog.open,true,'still visible when tab is not marked hidden');
+ h.skip.addEventListener && h.skip;
+ // A click at any time only skips the animation, never triggers another request.
+ h.api.abort();await done;
+ assert.equal(h.dialog.open,false);
+ h.api.start({item:{id:'armor',group:'equipment',name:'Rüstung'},level:8});
+ h.api.abort();
+ assert.equal(h.timers.size,0);
+});
+test('D2 reduced-motion viewers do not get a mandatory animation',async()=>{
+ const h=ceremonyHarness({reduced:true});
+ h.api.start({item:{id:'weapon',group:'equipment',name:'Waffe'},level:1});
+ assert.equal(h.dialog.open,false);
+ await h.api.finish({type:'upgrade',success:true,oldLevel:1,newLevel:2});
+ assert.equal(h.timers.size,0);
 });
