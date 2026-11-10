@@ -1,0 +1,228 @@
+/* Phase 3: connected Christmas adventure path · visual only.
+   All actual outcomes, 20-room max and checkpoints are server supplied. */
+.journey-map{
+ position:relative;isolation:isolate;overflow:hidden;
+ margin:12px 0 17px;padding:clamp(12px,1.65vw,19px);
+ border:2px solid #efc77c;border-radius:23px;
+ background:
+  radial-gradient(ellipse 46% 70% at 5% 5%,#317f8d38,transparent),
+  radial-gradient(ellipse 43% 80% at 96% 88%,#94713a33,transparent),
+  linear-gradient(140deg,#0a2137fa,#101e37fa 50%,#1c223bea);
+ box-shadow:inset 0 0 0 3px #fff4cd12,inset 0 3px 18px #99e8fc16,0 12px 29px #0009,0 0 25px #d8a95825;
+}
+.journey-map::before{
+ content:"✦   ·   ❄   ✧       ✦    ·    ❄        ✧    ✦";
+ position:absolute;inset:0;pointer-events:none;
+ color:#a6eced17;font-size:clamp(19px,3vw,36px);letter-spacing:2.2vw;line-height:2.2;
+ overflow:hidden;z-index:-1;
+}
+.journey-map .journey-header{
+ margin:1px 0 7px;gap:9px;
+}
+.journey-map .journey-heading{
+ font:900 clamp(13px,1.55vw,20px) Georgia,serif;
+ color:#ffe4a8;letter-spacing:.035em;text-transform:none;text-shadow:0 2px 9px #0009;
+}
+.journey-map .journey-current{
+ padding:6px 12px;border-radius:99px;border:1px solid #ffde9db0;
+ color:#ffe7aa;background:#432a32b9;font-weight:900;font-size:clamp(11px,1.15vw,15px);
+ white-space:normal;
+}
+.journey-progress{
+ display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:9px;
+ margin:5px 0 12px;
+}
+.journey-progress-track{
+ height:10px;border:1px solid #e7c58d83;border-radius:100px;
+ overflow:hidden;background:#07172adf;box-shadow:inset 0 2px 5px #0008,0 0 12px #c6a46f26;
+}
+.journey-progress-fill{
+ display:block;height:100%;width:0;
+ background:linear-gradient(90deg,#0a978b,#63e8c4 65%,#ffe09a);
+ border-radius:inherit;box-shadow:0 0 15px #57ecd1a8;
+ transition:width .45s ease;
+}
+.journey-progress-caption{
+ color:#c9eadb;font-weight:850;font-size:clamp(10px,1vw,13px);
+ font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.journey-map .tiers{
+ --path-gap:clamp(4px,.85vw,12px);
+ display:grid;grid-template-columns:repeat(10,minmax(0,1fr));
+ gap:var(--path-gap);row-gap:15px;
+ position:relative;isolation:isolate;overflow:visible;
+ margin:0 0 12px;padding:14px 10px;
+ border:1px solid #d8bb876e;border-radius:17px;
+ background:
+  linear-gradient(0deg,#7ad6ee0a 49%,#d5e6f008 51%),
+  radial-gradient(ellipse at 55% 22%,#3d567c40,transparent 65%),
+  linear-gradient(165deg,#0e2843e6,#101a34eb);
+ box-shadow:inset 0 3px 18px #050f24c4,0 6px 14px #0007;
+}
+.journey-map .tiers::before{display:none!important}
+.journey-map .tier{
+ min-width:0;min-height:0;height:clamp(53px,6.1vw,75px);
+ padding:5px 2px 4px;position:relative;isolation:isolate;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+ border:2px solid #9ab7bc9a;border-radius:12px;
+ background:linear-gradient(150deg,#2a4357,#14253d 56%,#0b1c34);
+ color:#e1ecf3;
+ box-shadow:inset 0 2px #eeffff39,inset 0 -4px #0004,0 4px 9px #0009;
+ z-index:1;transform:none;
+ font-family:Georgia,serif;font-weight:900;
+ font-size:clamp(14px,1.9vw,23px);
+ text-shadow:0 2px 6px #0009;
+}
+.journey-map .tier::before{
+ content:"";position:absolute;top:-2px;left:4px;right:4px;height:7px;
+ border-radius:7px 7px 50% 40%;
+ background:linear-gradient(180deg,#faffff,#c8eafd 75%,#7fbed9);
+ box-shadow:0 1px 5px #f5ffff79;pointer-events:none;
+}
+.journey-map .tier:not(:nth-child(10n))::after{
+ content:"";position:absolute;left:calc(100% + 2px);
+ top:calc(50% - 2px);width:var(--path-gap);height:4px;
+ border-radius:99px;
+ background:linear-gradient(90deg,#c1ecdb,#e9c784);
+ box-shadow:0 0 7px #e6d59a8a;pointer-events:none;z-index:-1;
+}
+.journey-map .tier.done:not(:nth-child(10n))::after{
+ background:linear-gradient(90deg,#70f9cb,#e8efb2);box-shadow:0 0 8px #7fffd597;
+}
+.journey-map .tier .stage-step-icon{
+ font-size:clamp(12px,1.7vw,23px);line-height:1.05;
+ filter:drop-shadow(0 2px 4px #0009);
+}
+.journey-map .tier .stage-step-number{
+ font-size:clamp(15px,2vw,26px);
+ font-variant-numeric:tabular-nums;line-height:1;
+}
+.journey-map .tier.on{
+ transform:translateY(-3px) scale(1.045);
+ border:2px solid #fffbdb;
+ color:#2b1a20;
+ background:linear-gradient(140deg,#fff5c5,#f1c377 53%,#ce8e43);
+ box-shadow:0 0 0 3px #ffda8a42,0 0 27px #ffc76cbe,0 7px 13px #000b,inset 0 2px #ffffeabc;
+ z-index:3;text-shadow:0 1px #fff6bc79;
+ animation:currentRoomHalo 2.3s ease-in-out infinite;
+}
+.journey-map .tier.done{
+ border-color:#8af6c3;color:#d4ffec;
+ background:linear-gradient(145deg,#17746c,#134653 77%);
+ box-shadow:inset 0 1px #d8ffdb6b,0 0 11px #45f1ac59;
+}
+.journey-map .tier.cleared{
+ border-color:#79bfe1;color:#dbf7ff;
+ background:linear-gradient(145deg,#276377,#1e374f);
+}
+.journey-map .tier.bonus-cell:not(.on){
+ border-color:#7cf3c2;color:#c6ffea;
+ background:linear-gradient(145deg,#127a63,#15514f 64%,#0b3145);
+ box-shadow:0 0 0 1px #69fad65c,0 0 18px #39eab36b,inset 0 2px #c5ffe057;
+}
+.journey-map .tier.checkpoint-cell:not(.on){
+ border:2px solid #ffe3a3;
+ color:#fff0c4;
+ background:linear-gradient(155deg,#7c4d29,#5d3f31 53%,#322c3a);
+ box-shadow:inset 0 2px #fff0b974,0 0 17px #ffd16e72,0 5px 10px #0008;
+}
+.journey-map .tier.bonus-cell.checkpoint-cell:not(.on){
+ border-color:#ffe6ac;
+ background:linear-gradient(130deg,#1b7c6c,#87642e 56%,#49382d);
+ box-shadow:0 0 17px #a4f7c77d,0 0 16px #f3c66a5e,inset 0 2px #f8fff0a9;
+}
+.journey-map .tier .stage-extra-mark{
+ position:absolute;right:-6px;top:-9px;z-index:4;
+ width:23px;height:23px;border-radius:50%;
+ display:grid;place-items:center;font-size:12px;
+ border:1px solid #b6ffde;background:#0a654ae8;
+ box-shadow:0 0 13px #63ffd7a1;
+}
+.journey-map .tier.finale-cell{
+ border:2px solid #ffdc88;
+ color:#fff2b3;
+ background:radial-gradient(circle at 52% 20%,#c84d3a,#792d34 54%,#421e36);
+ box-shadow:inset 0 2px #fff0b65e,0 0 19px #ffb65fa3,0 5px 12px #0008;
+}
+.journey-map .tier.finale-cell .stage-step-icon{
+ font-size:clamp(17px,2.4vw,30px);
+ filter:drop-shadow(0 0 10px #ffd47f);
+}
+.journey-map .tier.finale-cell.on{
+ color:#fff3c5;
+ border-color:#fff5bc;
+ background:radial-gradient(circle at 50% 20%,#efb659,#9f4537 57%,#511e35);
+ box-shadow:0 0 0 3px #ffd57b6e,0 0 32px #ffd06ebc,0 7px 13px #000b;
+}
+.journey-map .journey-zones{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+ margin:0;gap:8px;
+}
+.journey-map .journey-zones span{
+ min-width:0;white-space:normal;overflow-wrap:break-word;
+ display:grid;place-items:center;
+ min-height:37px;padding:6px 9px;
+ border:1px solid #a1b8b058;border-radius:10px;
+ background:#112c43ad;
+ color:#c9deeb;
+ font-weight:800;font-size:clamp(10px,1vw,13px);line-height:1.2;
+}
+.journey-map .journey-zones span.active{
+ color:#fff1b6;border-color:#fbd188;
+ background:linear-gradient(120deg,#4c3634,#263b47);
+ box-shadow:inset 0 1px #fff2d155,0 0 16px #f8bd6547;
+}
+.journey-legend{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:9px;margin-top:11px;
+}
+.journey-legend>span{
+ display:flex;align-items:center;justify-content:center;gap:6px;
+ padding:9px 8px;min-height:41px;
+ border:1px solid #e2d1a768;border-radius:11px;
+ background:#091d35c7;text-align:center;
+ font-size:clamp(10px,1vw,13px);line-height:1.35;color:#ddf1f1;
+ white-space:normal;flex-wrap:wrap;
+}
+.journey-legend>span>span{font-size:clamp(16px,1.9vw,23px)}
+.journey-legend-bonus{border-color:#60e9bd8c!important}
+.journey-legend-save{border-color:#ffd7839e!important}
+.journey-legend-final{border-color:#f6af849e!important}
+.journey-legend strong{color:#fff1c0}
+@keyframes currentRoomHalo{
+ 0%,100%{filter:drop-shadow(0 0 3px #ffd97966)}
+ 50%{filter:drop-shadow(0 0 10px #ffed9bb5)}
+}
+@media(max-width:720px){
+ .journey-map{padding:10px 7px;border-radius:15px;margin-top:10px}
+ .journey-map .journey-header{gap:6px;padding:0 5px;margin:2px 0 8px}
+ .journey-map .journey-heading{font-size:12px}
+ .journey-map .journey-current{font-size:10px;padding:5px 8px}
+ .journey-progress{gap:6px;margin:6px 5px 8px}
+ .journey-progress-track{height:8px}
+ .journey-progress-caption{font-size:10px}
+ .journey-map .tiers{--path-gap:3px;gap:3px;row-gap:9px;padding:10px 5px;border-radius:11px}
+ .journey-map .tier{height:clamp(42px,10.8vw,53px);border-radius:7px;padding:4px 0 2px;font-size:12px}
+ .journey-map .tier .stage-step-icon{font-size:clamp(9px,2.7vw,13px)}
+ .journey-map .tier .stage-step-number{font-size:clamp(11px,3.5vw,17px)}
+ .journey-map .tier::before{height:5px;left:2px;right:2px}
+ .journey-map .tier:not(:nth-child(10n))::after{height:3px;top:calc(50% - 1px)}
+ .journey-map .tier .stage-extra-mark{width:14px;height:14px;top:-6px;right:-4px;font-size:8px}
+ .journey-map .journey-zones{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+ .journey-map .journey-zones span{padding:5px 4px;min-height:30px;font-size:10px}
+ .journey-legend{gap:4px;margin-top:7px}
+ .journey-legend>span{font-size:9px;padding:6px 3px;gap:2px;min-height:48px}
+ .journey-legend>span>span{font-size:15px}
+}
+@media(max-width:370px){
+ .journey-map .tiers{--path-gap:2px;gap:2px;padding:9px 3px}
+ .journey-map .tier{height:41px;border-width:1px!important}
+ .journey-map .tier .stage-step-number{font-size:12px}
+ .journey-map .tier .stage-step-icon{font-size:9px}
+ .journey-map .journey-heading{font-size:11px}
+ .journey-legend>span{font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .journey-map .tier.on{animation:none;transform:none}
+ .journey-progress-fill{transition:none}
+}
