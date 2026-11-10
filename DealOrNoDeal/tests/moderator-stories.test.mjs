@@ -14,7 +14,7 @@ function setup({store=new Map(),enabled=true}={}){
  const root={
   addEventListener:(name,cb)=>listeners.set(name,cb),
   DealModeratorAudio:{
-   isEnabled:()=>enabled,
+   isStoryEnabled:()=>enabled,
    speakStory:(line,meta)=>{
     if(!canSpeak)return false;
     spoken.push({line,meta});meta.onStart?.();return true;
