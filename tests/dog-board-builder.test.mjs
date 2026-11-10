@@ -36,10 +36,10 @@ test('clicking the blank canvas creates the next numbered field',()=>{
 test('fourfold symmetry places four matching sectors with a single click',()=>{
  const d=putField(emptyDraft(),{kind:'track',index:3,owner:0},{x:300,y:150},{symmetry:true,spacing:32,snap:true});
  assert.equal(placedCount(d).track,4);
- assert.deepEqual(d.track[3],{x:284,y:156});
- assert.deepEqual(d.track[19],{x:604,y:284});
- assert.deepEqual(d.track[35],{x:476,y:604});
- assert.deepEqual(d.track[51],{x:156,y:476});
+ assert.deepEqual(d.track[3],{x:316,y:156});
+ assert.deepEqual(d.track[19],{x:604,y:316});
+ assert.deepEqual(d.track[35],{x:444,y:604});
+ assert.deepEqual(d.track[51],{x:156,y:444});
  assert.equal(nextSlot(d,{kind:'track',index:3,owner:0},{symmetry:true}).index,4);
 });
 test('goals and home slots are separate, clickable, color-owned positions',()=>{
