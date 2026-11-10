@@ -137,7 +137,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
 <main>
 <nav>
  <div class="tools"><a class="back" id="back" href="./weihnachtswelt.html">❮ Weihnachtswelt</a><a class="back" id="hats-collection" href="./weihnachten.html?view=hats">🎟️ Gutscheine</a><a class="back" id="lobby" href="./lobby.html">🎮 Lobby</a></div>
- <div class="tools"><button id="sound" type="button" aria-label="Spielklänge ein- oder ausschalten" aria-pressed="false">🔇 Ton aus</button><button id="refresh" type="button">↻ Aktualisieren</button><button id="full" type="button">⛶ Vollbild</button></div>
+ <div class="tools"><button id="preview-super" type="button" hidden title="Nur Chris-Testmodus: Beispiel-Show ohne echte Gewinne">🎬 Superglück testen</button><button id="sound" type="button" aria-label="Spielklänge ein- oder ausschalten" aria-pressed="false">🔇 Ton aus</button><button id="refresh" type="button">↻ Aktualisieren</button><button id="full" type="button">⛶ Vollbild</button></div>
 </nav>
 <header class="hero">
  <div class="eyebrow">DEAL OR NO DEAL · WEIHNACHTSSHOW</div>
@@ -223,7 +223,7 @@ const $=id=>document.getElementById(id),API=String(window.SPIELPORTAL_CONFIG?.ap
 const names=['','Weihnachtsstube I','Weihnachtsstube II','Erster Tresor','Schatzsaal I','Schatzsaal II','Goldkammer','Jackpot-Pforte','Königsschatz','Nordpol-Tresor','Legendäres Finale'];
 const emojis={pack:'🎁',hammer:'🔨',joker:'🃏',cash:'💰'};
 let state=null,vouchers=null,userId='',busy=false,reveal=null,pendingRequest=null,revealTimer=null,selectedHat=null,revealPhase=null,suspenseTimer=null,cinemaTimer=null,otherHatTimer=null,showBeforeState=null,fastReveal=false;
-let soundOn=false,audioContext=null;
+let soundOn=false,audioContext=null,cinemaPreview=false;
 try{soundOn=localStorage.getItem('deal-hats-sound-v3')==='on'}catch{}
 function paintSound(){
  $('sound').textContent=soundOn?'🔊 Ton an':'🔇 Ton aus';
@@ -326,8 +326,8 @@ function openCinema(event){
  $('cinema-eyebrow').textContent=superLuck?'✦ ✦ ✦ DER NORDPOL-JACKPOT IST GEKNACKT ✦ ✦ ✦':
   checkpoint?'🛡️ SCHUTZSCHILD AKTIVIERT':'✨ DER WEIHNACHTSZAUBER PRÄSENTIERT ✨';
  title.textContent=superLuck?'🌟 LEGENDÄRES SUPERGLÜCK!':checkpoint?'🛡️ CHECKPOINT GESICHERT!':'👑 SUPERGESCHENK!';
- $('cinema-subtitle').textContent=superLuck
-  ?'Die seltene Jackpot-Show! Deine tatsächlich gewonnenen Schätze werden nacheinander enthüllt.'
+ $('cinema-subtitle').textContent=cinemaPreview?'🧪 REINE VORSCHAU: Diese Beispielgewinne werden NICHT gutgeschrieben.':
+  superLuck?'Die seltene Jackpot-Show! Deine tatsächlich gewonnenen Schätze werden nacheinander enthüllt.'
   :checkpoint?'Deine Gewinne sind bis zu diesem Checkpoint geschützt. Auch eine spätere Bombe kann sie nicht mehr nehmen.'
   :'Ein besonders wertvoller Schatz aus der Weihnachtskammer!';
  const quantity=items.reduce((n,item)=>n+Number(item.quantity||1),0);
@@ -356,7 +356,7 @@ function openCinema(event){
  stage.hidden=false;
 }
 function closeCinema(){
- const stage=$('cinema');stage.hidden=true;
+ const stage=$('cinema');stage.hidden=true;cinemaPreview=false;
  stage.classList.remove('super-show','checkpoint-show','show-all');
 }
 function clearShowTimers(){
@@ -516,6 +516,7 @@ function render(){
  const showNewGame=settledVisible&&hasVouchers;
  $('hats-voucher-indicator').textContent=DEMO?'🧪 Unbegrenzte Testpartien':reveal?'🎟️ Gutschein eingelöst · Enthüllung läuft':s?.status==='playing'?'🎟️ Gutschein eingelöst · Partie aktiv':
   '🎟️ '+(vouchers?.total===undefined?'–':vouchers.total)+' '+(vouchers?.total===1?'Spielgutschein':'Spielgutscheine');
+ $('preview-super').hidden=!isChrisDemo();
  $('start').hidden=!!s;
  $('start').disabled=busy||!!pendingRequest||!hasVouchers;
  $('cash').hidden=!s||finished;
@@ -820,7 +821,18 @@ paintSound();
 $('cinema-skip').onclick=()=>{
  $('cinema').classList.add('show-all');$('cinema-skip').hidden=true;
 };
-$('cinema-close').onclick=finishReveal;
+$('preview-super').onclick=()=>{
+ if(!isChrisDemo()||busy||reveal||pendingRequest||!$('cinema').hidden)return;
+ cinemaPreview=true;
+ openCinema({type:'super',superLuck:true,room:1,items:[
+  {kind:'pack',packId:'small',quantity:2,label:'2× Normalpaket'},
+  {kind:'pack',packId:'platinum',quantity:1,label:'Platinpaket'},
+  {kind:'hammer',hammer:'lucky',quantity:2,label:'2× Goldener Hammer'},
+  {kind:'joker',quantity:1,label:'Kofferblick-Joker'},
+  {kind:'cash',amountCents:500000000,quantity:1,label:'5.000.000 € Spielgeld'}
+ ]});
+};
+$('cinema-close').onclick=()=>{if(cinemaPreview)closeCinema();else finishReveal();};
 function fastForwardReveal(){
  if(!reveal)return;
  if(revealPhase==='shown'){finishReveal();return;}
