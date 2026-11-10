@@ -5,18 +5,32 @@ on:
       - dog-tor-map.html
       - dog-tor-map.css
       - dog-tor-map.js
+      - dog-boss10.html
+      - dog-boss10.css
+      - dog-boss10.js
+      - dog-ascension.html
+      - dog-ascension.css
+      - dog-ascension.js
       - dog-expedition.html
       - dog-materials-ui.js
       - tests/dog-tor-map.test.mjs
+      - tests/dog-first-loop-ui.test.mjs
       - .github/workflows/dog-tor-map-check.yml
   pull_request:
     paths:
       - dog-tor-map.html
       - dog-tor-map.css
       - dog-tor-map.js
+      - dog-boss10.html
+      - dog-boss10.css
+      - dog-boss10.js
+      - dog-ascension.html
+      - dog-ascension.css
+      - dog-ascension.js
       - dog-expedition.html
       - dog-materials-ui.js
       - tests/dog-tor-map.test.mjs
+      - tests/dog-first-loop-ui.test.mjs
       - .github/workflows/dog-tor-map-check.yml
 
 jobs:
@@ -29,6 +43,9 @@ jobs:
         with:
           node-version: '22'
       - name: Check JavaScript syntax
-        run: node --check dog-tor-map.js
+        run: |
+          node --check dog-tor-map.js
+          node --check dog-boss10.js
+          node --check dog-ascension.js
       - name: Test map structure and safe DOG unlock placeholder
-        run: node --test tests/dog-tor-map.test.mjs
+        run: node --test tests/dog-tor-map.test.mjs tests/dog-first-loop-ui.test.mjs
