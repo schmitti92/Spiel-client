@@ -63,7 +63,7 @@ async function boot(initial,{fxThrows=false}={}){
  return {root,storage,tiles,calls,status,get state(){return backend}};
 }
 const saved={
- completed:14,maxRewarded:14,finished:false,tileCount:25,tilesRequired:25,
+ completed:14,maxRewarded:14,finished:false,tileCount:50,tilesRequired:50,
  opened:Array.from({length:23},(_,i)=>i),
  freeHammers:{single:1,double:0,lucky:0},balance:0,
  prizes:[],goldenHammerGift2026:true,peekJokers:0
@@ -89,7 +89,7 @@ test('an old unresolved action is reconciled on ice click even with zero balance
  assert.equal(app.calls.filter(c=>c.method==='POST').length,1,'subsequent click makes one strike');
  assert.equal(app.state.freeHammers.single,0,'one free hammer is consumed');
  assert.equal(app.state.opened.length,24);
- assert.match(app.root.innerHTML,/24\/25 Eisfelder/);
+ assert.match(app.root.innerHTML,/24\/50 Eisfelder/);
 });
 test('hammer visual exceptions never prevent server strike or confirmed ice progress',async()=>{
  const app=await boot(saved,{fxThrows:true});
@@ -98,5 +98,5 @@ test('hammer visual exceptions never prevent server strike or confirmed ice prog
  for(let i=0;i<8;i++)await delay();
  assert.equal(app.calls.filter(c=>c.method==='POST').length,1);
  assert.equal(app.state.opened.length,24);
- assert.match(app.root.innerHTML,/24\/25 Eisfelder/);
+ assert.match(app.root.innerHTML,/24\/50 Eisfelder/);
 });
