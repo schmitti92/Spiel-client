@@ -279,6 +279,8 @@ function clickExisting(s){
 board.addEventListener('pointerdown',event=>{
   if(event.pointerType==='mouse'&&event.button!==0)return;
   const pos=canvasXY(event);if(!pos)return;
+  // Discard an abandoned drag when a fresh touch starts (mobile pointercancel may be lost).
+  if(pointer)pointer=null;
   const existing=targetSelection(event);
   event.preventDefault();
   lastHandledPointer=Date.now();
