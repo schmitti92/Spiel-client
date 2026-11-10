@@ -55,12 +55,15 @@ test('every Christmas page provides three main destinations and collection sub-t
  assert.match(nav(collection),/data-main-view="collection"/);
  assert.match(nav(collection),/data-main-view="packs"/);
  const subnav=collection.match(/<nav id="event-collection-nav"[\s\S]*?<\/nav>/)?.[0]||'';
- assert.equal(count(subnav,/<button\b/g),4);
- for(const view of ['album','hammer','monster','bingo'])assert.ok(subnav.includes('data-view="'+view+'"'));
+ assert.equal(count(subnav,/<button\b/g),5);
+ for(const view of ['album','hammer','monster','hats','bingo'])assert.ok(subnav.includes('data-view="'+view+'"'));
  assert.match(subnav,/role="tablist"/);
  assert.match(collection,/id="event-monster"/);
+ assert.match(collection,/id="event-hats"/);
+ assert.match(collection,/id="hats-voucher-number"/);
+ assert.match(collection,/data-view="hats"/);
  assert.match(collection,/id="monster-exchange-btn"/);
- assert.match(collection,/const collectionViews=new Set\(\['album','hammer','monster','bingo'\]\)/);
+ assert.match(collection,/const collectionViews=new Set\(\['album','hammer','monster','hats','bingo'\]\)/);
  assert.match(collection,/history\.replaceState\(history\.state,'',url\)/);
  assert.match(nav(collection),/event2-tab/);
 });
