@@ -85,7 +85,7 @@ test('picture 30 renders 100 ice tiles in a 10×10 board and keeps unbroken tile
  const play=await boot(mockState(29,false));
  assert.equal(play.requests,1);
  assert.match(play.root.innerHTML,/Bild 30 von 70/);
- assert.match(play.root.innerHTML,/99\\/100 Eisfelder/);
+ assert.match(play.root.innerHTML,/99\/100 Eisfelder/);
  assert.match(play.root.innerHTML,/ice-tiles-100/);
  assert.equal(play.tiles.size,100);
  assert.equal(play.tiles.get(99).disabled,false);
