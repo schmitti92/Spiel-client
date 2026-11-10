@@ -6,10 +6,10 @@
  <meta name="theme-color" content="#13131e">
  <meta name="description" content="Die 100 Tore: Gemeinsam gegen den Aschewächter kämpfen. Nach einer Teamniederlage gilt eine serverseitige Kampfpause von zehn Minuten.">
  <title>🔥 Tor 1 · Bossarena · Die 100 Tore</title>
- <link rel="stylesheet" href="./dog-boss.css?v=20261110-boss-v1">
+ <link rel="stylesheet" href="./dog-boss.css?v=20261110-boss-v2">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
- <script src="./dog-boss-ui.js?v=20261110-boss-v1" defer></script>
+ <script src="./dog-boss-ui.js?v=20261110-boss-v2" defer></script>
 </head>
 <body>
  <main class="arena-layout">
@@ -40,7 +40,20 @@
    <div class="boss-healthbar" role="progressbar" aria-label="Lebenspunkte des Aschewächters" aria-valuemin="0" aria-valuemax="6000" aria-valuenow="6000" id="boss-hp-track">
     <span id="boss-hp-fill"></span>
    </div>
-   <div class="boss-art-stage">
+   <div class="boss-phase-status" id="boss-phase-status" data-phase="1" aria-label="Aktuelle Bossphase">
+    <div class="boss-phase-top">
+     <span id="boss-phase-label">PHASE 1 VON 3</span>
+     <strong id="boss-phase-name">Der erwachte Wächter</strong>
+    </div>
+    <div class="boss-phase-ruler" role="img" aria-label="Phasenwechsel bei 50 und 25 Prozent Bossleben">
+     <span class="boss-phase-one">100 – 51 %</span>
+     <span class="boss-phase-two">50 – 26 %</span>
+     <span class="boss-phase-three">25 – 0 %</span>
+    </div>
+    <p id="boss-telegraph" class="boss-telegraph" aria-live="polite">⚔️ Der Aschewächter beobachtet die Gruppe.</p>
+    <p id="boss-tactical-tip" class="boss-tactical-tip">🛡️ Vor einer Flammenexplosion lohnt sich „Verteidigen“.</p>
+   </div>
+   <div class="boss-art-stage" id="boss-art-stage" data-phase="1">
     <div class="boss-stage-backdrop"></div>
     <div class="boss-stage-magma"></div>
     <div class="boss-falling-embers" aria-hidden="true">
