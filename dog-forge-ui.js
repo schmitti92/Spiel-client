@@ -6,6 +6,7 @@
  if(/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(room)){
   const back='./dog-expedition.html?room='+encodeURIComponent(room);
   $('forge-back').href=back;$('forge-materials').href=back;
+  if($('forge-boss'))$('forge-boss').href='./dog-boss.html?room='+encodeURIComponent(room);
  }
  const MATERIALS=[
   {group:'attack',label:'⚔️ Angriff',values:[
