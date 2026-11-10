@@ -113,7 +113,7 @@ test('five Nordpol prize milestones use server entitlement and claim status',()=
  assert.match(html,/maybeClaimNorthPoleBingos/);
  assert.match(html,/north-pole\/claim/);
  assert.match(html,/northPolePending/);
- assert.match(html,/north-pole-bingo\.js\?v=20261110-premium-vouchers-v2/);
+ assert.match(html,/north-pole-bingo\.js\?v=20261110-bingo40-v1/);
 });
 
 
@@ -139,7 +139,7 @@ test('first two classic boards show five server-authoritative Bingo rewards each
  }
  assert.match(html,/id="album-bingo-first-bonus"/);
  assert.match(css,/\.classic-bingo-rewards/);
- assert.match(html,/north-pole-bingo\.js\?v=20261110-premium-vouchers-v2/);
+ assert.match(html,/north-pole-bingo\.js\?v=20261110-bingo40-v1/);
 });
 
 test('new fourth board uses all 16 uploaded funny Christmas JPEG images 18 through 33',()=>{
@@ -181,5 +181,5 @@ test('fourth bingo compass shows ten distinct lines without adding server reads 
  assert.equal(snap.lines.filter(x=>x.complete).length,10);
  assert.match(source,/Math\.min\(40,Math\.trunc/);
  assert.doesNotMatch(source,/fetch\(|setInterval\(|setTimeout\(/);
- assert.match(html,/Belohnung folgt/);
+ assert.match(html,/id="fourth-bingo-milestones"/);
 });
