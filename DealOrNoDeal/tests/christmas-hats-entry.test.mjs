@@ -54,6 +54,7 @@ test('Real game cannot start another run without a server-confirmed voucher',()=
  assert.match(game,/id="hats-locked"/);
  assert.match(game,/id="hats-voucher-indicator"/);
  assert.match(game,/hats-collection/);
- assert.match(styles,/body\[data-view="hats"\] #event-hats/);
+ assert.match(styles,/body\.christmas-event-main\[data-view="hats"\] #event-hats/);
+ assert.match(styles,/body\.christmas-event-main\[data-view="hats"\] \.event-layout\{display:block/);
  assert.match(styles,/\.event-collection-nav\{grid-template-columns:repeat\(5/);
 });
