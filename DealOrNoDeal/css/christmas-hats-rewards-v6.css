@@ -190,3 +190,7 @@
  .cinema-prize.reward-card,.cinema-prize.reward-card:after{animation:none!important;opacity:1!important;transform:none!important;filter:none!important}
  .reward-card:hover .reward-image{transform:none}
 }
+
+/* Chris-only visual test shortcut: never spends or grants a voucher. */
+#preview-super:not([hidden]){background:linear-gradient(125deg,#fff2bf,#e4b35a 65%,#a97236);border-color:#fff0c9;color:#37221b;font-weight:950;box-shadow:0 0 15px #ffcf7796,inset 0 1px #fff8db;}
+#preview-super:not([hidden]):hover{background:linear-gradient(125deg,#fff9de,#f6cb7b);box-shadow:0 0 26px #ffdb9eb1;}
