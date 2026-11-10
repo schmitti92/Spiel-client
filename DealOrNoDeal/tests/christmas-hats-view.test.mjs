@@ -161,14 +161,14 @@ test('Phase 3 winter map renders twenty connected rooms with correct special cel
  assert.match(script,/\$\('journey-legend'\)\.hidden=!!s&&s\.rulesVersion!==5/);
  const fn=script.match(/function renderTiers\(active,checkpoint,cleared\)\{[\s\S]*?\n\}\n(?=function hatButton)/)?.[0];
  assert.ok(fn,'individual tile renderer is available');
- const root={children:[],replaceChildren(){this.children=[];},appendChild(el){this.children.push(el);}};
+ const stageRoot={children:[],replaceChildren(){this.children=[];},appendChild(el){this.children.push(el);}};
  const document={createElement(name){return {tag:name,className:'',dataset:{},attributes:{},children:[],
   setAttribute(key,value){this.attributes[key]=value;},
   append(...els){this.children.push(...els);}};}};
  const state={maxRoom:20,checkpoints:[5,10,15,20],rulesVersion:5};
- const ctx={state,document,$:id=>{assert.equal(id,'tiers');return root;}};
+ const ctx={state,document,$:id=>{assert.equal(id,'tiers');return stageRoot;}};
  assert.doesNotThrow(()=>new Script(fn+'renderTiers(15,10,14);').runInNewContext(ctx));
- const tiles=root.children;
+ const tiles=stageRoot.children;
  assert.equal(tiles.length,20);
  assert.deepEqual(tiles.filter(x=>x.className.includes('bonus-cell')).map(x=>Number(x.dataset.room)),[3,6,9,12,15,18]);
  assert.deepEqual(tiles.filter(x=>x.className.includes('checkpoint-cell')).map(x=>Number(x.dataset.room)),[5,10,15]);
