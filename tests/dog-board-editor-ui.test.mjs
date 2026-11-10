@@ -7,7 +7,7 @@ import {
 import {
   EDITOR_DRAFT_KEY,clone,emptyDraft,fromCrossPreset,fromLayout,placedCount,
   fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
-  guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS
+  guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun
 } from '../DOG/editor-model.js';
 
 function openBuilder(){
@@ -45,13 +45,13 @@ function openBuilder(){
     'BOARD_LAYOUT_ID','currentBoardLayout','saveBoardLayout','validateBoardLayout',
     'EDITOR_DRAFT_KEY','clone','emptyDraft','fromCrossPreset','fromLayout','placedCount',
     'fieldOf','selectedValid','snapXY','putField','eraseField','nextSlot','inspectDraft','asGameLayout',
-    'guidedPoint','directedPoint','previousTrackField','measureStepDistances','EIGHT_DIRECTIONS'
+    'guidedPoint','directedPoint','previousTrackField','measureStepDistances','EIGHT_DIRECTIONS','alignTrackRun'
   ];
   const imports=[
     BOARD_LAYOUT_ID,currentBoardLayout,saveBoardLayout,validateBoardLayout,
     EDITOR_DRAFT_KEY,clone,emptyDraft,fromCrossPreset,fromLayout,placedCount,
     fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
-  guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS
+  guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun
   ];
   let source=readFileSync(new URL('../DOG/editor-builder.js',import.meta.url),'utf8');
   source=source.replace(/^import\s*\{[\s\S]*?\}\s*from '\.\/[^']+';\s*/gm,'');
@@ -162,4 +162,38 @@ test('player-selected equal spacing is independent after choosing a separate gui
  const d=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
  const distance=Math.hypot(d.track[1].x-d.track[0].x,d.track[1].y-d.track[0].y);
  assert.ok(Math.abs(distance-36)<.15);
+});
+
+
+test('re-align selected existing DOG segment and undo it in one operation',()=>{
+ const ui=openBuilder();
+ ui.touch(115,205);ui.dir(1,0);ui.dir(1,0);ui.dir(1,0);
+ const before=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ assert.equal(placedCount(before).track,4);
+ ui.touch(before.track[0].x,before.track[0].y,{dataset:{kind:'track',index:'0',owner:'0'}});
+ ui.get('align-count').value='3';
+ ui.get('align-direction').value='1,1';
+ ui.trigger('align-run');
+ const after=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ assert.equal(placedCount(after).track,4);
+ assert.deepEqual(after.track[0],before.track[0]);
+ assert.equal(ui.get('field-index').value,'3');
+ for(let i=0;i<3;i++){
+   const distance=Math.hypot(after.track[i+1].x-after.track[i].x,after.track[i+1].y-after.track[i].y);
+   assert.ok(Math.abs(distance-32)<.15,'Re-aligned segment '+i);
+ }
+ assert.match(ui.get('feedback').textContent,/Felder 1 bis 3/);
+ ui.trigger('undo');
+ assert.deepEqual(JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY)),before);
+});
+test('batch alignment does not change the draft if the run would leave the board',()=>{
+ const ui=openBuilder();
+ ui.touch(699,699);
+ ui.get('align-count').value='3';
+ ui.get('align-direction').value='1,1';
+ const before=ui.storage.get(EDITOR_DRAFT_KEY);
+ ui.touch(699,699,{dataset:{kind:'track',index:'0',owner:'0'}});
+ ui.trigger('align-run');
+ assert.equal(ui.storage.get(EDITOR_DRAFT_KEY),before);
+ assert.match(ui.get('feedback').textContent,/außerhalb|unverändert/);
 });
