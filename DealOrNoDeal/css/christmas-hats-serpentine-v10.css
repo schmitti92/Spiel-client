@@ -1,0 +1,134 @@
+/* Christmas Hats · Phase 3.2: a continuous winding winter adventure path.
+ * Pure presentation: the server remains authoritative for safe rooms, rewards,
+ * checkpoints, odds and room count. Legacy 10-room matches stay linear.
+ */
+.journey-map .tiers[data-layout="serpentine"]{
+ --turn-gap:15px;
+ row-gap:var(--turn-gap);
+ background:
+  radial-gradient(ellipse at 4% 14%,#4ae9c521,transparent 45%),
+  radial-gradient(ellipse at 93% 93%,#f9d98a26,transparent 45%),
+  linear-gradient(165deg,#0b2b44ed,#0b1934f3 57%,#14203ae9);
+}
+.journey-map .tiers[data-layout="serpentine"]::before{
+ display:block!important;
+ content:"";position:absolute;inset:8px 4px;
+ top:8px;left:4px;right:4px;bottom:8px;width:auto;height:auto;
+ border:0;opacity:1;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#58dfc3b3,#e5d49ae8) center 27%/93% 4px no-repeat,
+  linear-gradient(270deg,#f1d289e8,#69f9c5b8) center 73%/93% 4px no-repeat,
+  linear-gradient(180deg,#ebdb9f,#a2ffff) 96.5% center/4px 47% no-repeat;
+ filter:drop-shadow(0 0 5px #ffe2a488);
+}
+.journey-map .tiers[data-layout="serpentine"]::after{
+ content:"↘";position:absolute;right:0;top:45%;
+ font-size:clamp(12px,1.5vw,23px);line-height:1;
+ font-weight:900;color:#ffe5aa;text-shadow:0 0 9px #ffd782;
+ pointer-events:none;z-index:2;
+}
+.journey-map .tiers[data-layout="serpentine"]>.tier:nth-child(11){grid-row:2;grid-column:10}
+.journey-map .tiers[data-layout="serpentine"]>.tier:nth-child(12){grid-row:2;grid-column:9}
+.journey-map .tiers[data-layout="serpentine"]>.tier:nth-child(13){grid-row:2;grid-column:8}
+.journey-map .tiers[data-layout="serpentine"]>.tier:nth-child(14){grid-row:2;grid-column:7}
+.journey-map .tiers[data-layout="serpentine"]>.tier:nth-child(15){grid-row:2;grid-column:6}
+.journey-map .tiers[data-layout="serpentine"]>.tier:nth-child(16){grid-row:2;grid-column:5}
+.journey-map .tiers[data-layout="serpentine"]>.tier:nth-child(17){grid-row:2;grid-column:4}
+.journey-map .tiers[data-layout="serpentine"]>.tier:nth-child(18){grid-row:2;grid-column:3}
+.journey-map .tiers[data-layout="serpentine"]>.tier:nth-child(19){grid-row:2;grid-column:2}
+.journey-map .tiers[data-layout="serpentine"]>.tier:nth-child(20){grid-row:2;grid-column:1}
+/* Legacy ten-room sessions are an unbroken single-row progress display. */
+.journey-map .tiers[data-layout="linear"]{grid-template-columns:repeat(10,minmax(0,1fr))}
+.journey-map .tiers[data-layout="serpentine"]>.tier:nth-child(n+11):not(:last-child)::after{
+ left:auto;right:calc(100% + 2px);
+ background:linear-gradient(270deg,#76f5d4,#eddfaf);
+ box-shadow:0 0 9px #fce9a579;
+}
+.journey-map .tiers[data-layout="serpentine"]>.tier:nth-child(10)::after{
+ content:"";position:absolute;top:48%;left:calc(100% - 3px);right:auto;
+ width:calc(var(--path-gap) / 2 + 7px);
+ height:calc(100% + var(--turn-gap) - 2px);
+ border:3px solid #f4d598;border-left:0;border-radius:0 12px 12px 0;
+ background:none;opacity:.85;
+ box-shadow:3px 0 10px #ffe7a17a;
+ pointer-events:none;z-index:-1;
+}
+.journey-map .tiers[data-layout="serpentine"]>.tier:last-child::after{display:none}
+/* Distinctive frost-bound miniature rooms, with highlighted current tile. */
+.journey-map .tier{
+ overflow:visible;transition:box-shadow .23s ease,filter .23s ease;
+}
+.journey-map .tier .stage-step-icon{flex:0 0 auto;line-height:1}
+.journey-map .tier .stage-step-number{flex:0 0 auto}
+.journey-map .tier .stage-step-label{
+ display:block;
+ max-width:calc(100% - 2px);
+ padding:1px 3px;margin-top:2px;
+ border:1px solid #ffffff37;border-radius:5px;
+ background:#071b2aa8;color:#edf7ff;
+ font:900 clamp(7px,.63vw,10px)/1.1 system-ui,-apple-system,"Segoe UI",sans-serif;
+ letter-spacing:.035em;white-space:nowrap;
+ text-shadow:0 1px 3px #000b;
+}
+.journey-map .tier.bonus-cell .stage-step-label{
+ border-color:#83ffcb;color:#d9fff0;background:#135746ed;
+}
+.journey-map .tier.checkpoint-cell .stage-step-label{
+ border-color:#ffe4a1;color:#ffedbc;background:#513b2fe8;
+}
+.journey-map .tier.bonus-cell.checkpoint-cell .stage-step-label{
+ font-size:clamp(6px,.59vw,9px);
+ background:linear-gradient(95deg,#146354e6,#7e5629e6);
+}
+.journey-map .tier.finale-cell{
+ border-width:3px;
+ background:radial-gradient(circle at 50% 24%,#ffca695c,transparent 55%),
+  linear-gradient(165deg,#a04a36,#642939 55%,#381b3b);
+ box-shadow:inset 0 2px #fff4cf8c,0 0 21px #fac672aa,0 6px 14px #000b;
+}
+.journey-map .tier.finale-cell .stage-step-label{background:#63342aeb;color:#fff5d0;border-color:#ffd89a}
+.journey-map .tier.finale-cell::before{
+ background:linear-gradient(180deg,#fff7e7,#ffdf9f 65%,#ecb360);
+ box-shadow:0 0 10px #ffcc8dbc;
+}
+.journey-map .tier.bonus-cell:not(.on){filter:drop-shadow(0 0 4px #49ddb84a)}
+.journey-map .tier.checkpoint-cell:not(.on){filter:drop-shadow(0 0 5px #ecca7c65)}
+.journey-map .tier.on{
+ z-index:5;transform:translateY(-4px) scale(1.09);
+ border:2px solid #fff8cb;
+ color:#382322;
+ background:linear-gradient(150deg,#fff5c4,#e8c37a 53%,#ae793d);
+ box-shadow:0 0 0 3px #ffe4a45b,0 0 25px #ffe0a1cb,0 7px 16px #0009,inset 0 2px #fffef5bd;
+ animation:currentRoomHalo 2.3s ease-in-out infinite;
+}
+.journey-map .tier.on .stage-step-label{background:#453523;color:#fff3d2;border-color:#fff3c3}
+.journey-map .tier.finale-cell.on{
+ color:#fff9e3;border-color:#fff5cd;
+ background:radial-gradient(circle at 48% 20%,#ffd27f,#a64c35 53%,#511e35);
+ box-shadow:0 0 0 4px #ffd8906a,0 0 34px #ffd471d8,0 9px 18px #000b;
+}
+.journey-map .tier.finale-cell.on .stage-step-label{background:#4a2733;color:#fff5cd}
+/* On compact devices, keep numbers and their visual symbols large enough. */
+@media(max-width:940px){
+ .journey-map .tier .stage-step-label{display:none}
+ .journey-map .tier .stage-extra-mark{z-index:7}
+}
+@media(max-width:720px){
+ .journey-map .tiers[data-layout="serpentine"]{--turn-gap:11px;row-gap:var(--turn-gap)}
+ .journey-map .tiers[data-layout="serpentine"]::before{
+  background:
+   linear-gradient(90deg,#4ae8c4b4,#f4e2a4e8) center 28%/93% 3px no-repeat,
+   linear-gradient(270deg,#ffe1a8e8,#78f9d2c1) center 71%/93% 3px no-repeat,
+   linear-gradient(180deg,#fff4d1,#91effa) 96.5% center/3px 44% no-repeat;
+ }
+ .journey-map .tiers[data-layout="serpentine"]::after{font-size:12px;right:0;top:45%}
+ .journey-map .tiers[data-layout="serpentine"]>.tier:nth-child(10)::after{
+  width:calc(var(--path-gap) / 2 + 3px);border-width:2px;border-radius:0 7px 7px 0;
+ }
+ .journey-map .tier.on{transform:translateY(-2px) scale(1.055)}
+ .journey-map .tier.finale-cell{border-width:2px}
+}
+@media(prefers-reduced-motion:reduce){
+ .journey-map .tier.on{animation:none;transform:none}
+ .journey-map .tier{transition:none}
+}
