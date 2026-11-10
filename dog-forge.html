@@ -6,10 +6,10 @@
 <meta name="theme-color" content="#0c1019">
 <meta name="description" content="Die Schmiede der 100 Tore: Rüstung, Waffen, Fähigkeiten und Rohstofftausch.">
 <title>⚒️ Schmiede der Helden · Die 100 Tore</title>
-<link rel="stylesheet" href="./dog-forge.css?v=20261110-skills-b2">
+<link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-c1">
 <script src="./profile-config.js"></script>
 <script src="./profile-auth.js"></script>
-<script src="./dog-forge-ui.js?v=20261110-skills-b2" defer></script>
+<script src="./dog-forge-ui.js?v=20261110-forge-c1" defer></script>
 <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 </head>
 <body>
@@ -69,6 +69,12 @@
     <div class="furnace-floor"></div>
     <div class="furnace-label">✦ AUS FEUER WIRD STÄRKE ✦</div>
    </div>
+   <div class="forge-list-toolbar" id="forge-list-toolbar">
+    <span id="forge-list-summary" aria-live="polite">Verbesserungen laden …</span>
+    <button type="button" class="ready-filter" id="forge-ready-filter" aria-pressed="false" title="Nur aktuell bezahlbare Verbesserungen zeigen">
+      <span>✦ Nur möglich</span><b id="forge-ready-count">0</b>
+    </button>
+   </div>
    <div class="equipment-list" id="forge-item-list">
     <div class="list-placeholder">Deine Ausrüstung wird geladen …</div>
    </div>
@@ -105,6 +111,24 @@
   <h2 id="forge-result-heading">Geschmiedet!</h2>
   <p id="forge-result-text">Dein Fortschritt wurde gespeichert.</p>
   <button type="button" id="forge-result-ok" class="forge-action">Zur Schmiede</button>
+ </div>
+</dialog>
+
+<dialog id="forge-confirm" class="forge-confirm" aria-labelledby="forge-confirm-title" aria-describedby="forge-confirm-warning">
+ <div class="confirm-shell">
+  <button type="button" id="forge-confirm-x" class="result-x" aria-label="Schmiedevorgang abbrechen">✕</button>
+  <div class="eyebrow">✦ AUFTRAG BESTÄTIGEN</div>
+  <div id="forge-confirm-art" class="confirm-art" aria-hidden="true">⚒️</div>
+  <h2 id="forge-confirm-title">Verbesserung</h2>
+  <div class="confirm-step" id="forge-confirm-step">Stufe 1 ➜ 2</div>
+  <div class="confirm-heading">Rohstoffkosten</div>
+  <div id="forge-confirm-cost" class="cost-list confirm-cost"></div>
+  <div class="confirm-chance"><span>Erfolgschance</span><strong id="forge-confirm-chance">100 %</strong></div>
+  <p id="forge-confirm-warning" class="confirm-warning">Die Rohstoffe werden beim Auftrag verbraucht.</p>
+  <div class="confirm-actions">
+   <button type="button" id="forge-confirm-cancel" class="confirm-cancel">Abbrechen</button>
+   <button type="button" id="forge-confirm-submit" class="forge-action">⚒️ Jetzt verbessern</button>
+  </div>
  </div>
 </dialog>
 </body>
