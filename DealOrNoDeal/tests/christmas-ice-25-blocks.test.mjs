@@ -95,7 +95,7 @@ test('every server-confirmed completed picture uses full-screen reveal before re
  assert.match(js,/photo\(celebration\.number\)/);
  assert.match(js,/id="v44-big-reveal-continue"/);
  assert.match(js,/celebration\.stage='gift';render\(\)/);
- assert.match(js,/celebration=\{number:Number\(state\.completed\|\|oldCompleted\+1\),title,detail,kind:gift\?\.kind\|\|'other',hammer:gift\?\.hammer\|\|null,amount:gift\?\.amount\|\|0,stage:'image'\}/);
+ assert.match(js,/celebration=\{number:Number\(state\.completed\|\|oldCompleted\+1\),title,detail,kind:gift\?\.kind\|\|'other',hammer:gift\?\.hammer\|\|null,amount:gift\?\.amount\|\|0,hatsVoucher:gift\?\.hatsVoucher===1,stage:'image'\}/);
  assert.match(js,/if\(type==='strike'&&state\.finished&&!wasFinished\)/);
  assert.match(js,/celebrationDelayTimer=setTimeout\(\(\)=>\{celebrationDelayTimer=null;render\(\)\},950\)/);
  assert.match(js,/if\(!celebration\|\|celebration\.stage!=='image'\|\|!state\?\.finished\|\|state\.completed<celebration\.number\)return/);
