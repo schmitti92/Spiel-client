@@ -153,6 +153,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
  <div id="actions" class="actions">
   <button id="start" class="action" type="button">✨ Jackpot starten</button>
   <button id="cash" class="action cash" type="button" hidden>💰 Alle Gewinne kassieren</button>
+  <button id="continue" class="action secondary" type="button" hidden>⏭️ Direkt weiterspielen</button>
   <button id="again" class="action" type="button" hidden>🎩 Neues Spiel</button>
   <button id="retry" class="action secondary" type="button" hidden>↻ Letzte Aktion sicher wiederholen</button>
  </div>
@@ -226,6 +227,12 @@ function openCinema(event){
  $('cinema').hidden=false;
 }
 function closeCinema(){ $('cinema').hidden=true; }
+function finishReveal(){
+ if(revealTimer){clearTimeout(revealTimer);revealTimer=null;}
+ closeCinema();reveal=null;render();
+ if(state?.status==='playing')setStatus('🎩 Weiter versuchen oder deine Gewinne kassieren?',false,true);
+ else if(state?.status==='finished')setStatus('✅ Spiel beendet – gesicherte Gewinne wurden ausgezahlt.',false,true);
+}
 function renderTiers(active,checkpoint,cleared){
  const root=$('tiers');root.replaceChildren();
  for(let i=1;i<=10;i++){
@@ -280,6 +287,8 @@ function render(){
  $('start').disabled=busy||!!pendingRequest;
  $('cash').hidden=!s||finished;
  $('cash').disabled=busy||!!reveal||!!pendingRequest;
+ $('continue').hidden=!reveal;
+ $('continue').disabled=busy;
  $('again').hidden=!finished;
  $('again').disabled=busy||!!pendingRequest;
  $('retry').hidden=!pendingRequest||busy;
@@ -328,6 +337,8 @@ async function refresh(){
   const url='/api/christmas-hats/me'+(waiting?'?pendingId='+encodeURIComponent(waiting.requestId):'');
   const data=await call(url);
   if(uid()!==user.uid)return;
+  if(revealTimer){clearTimeout(revealTimer);revealTimer=null;}
+  closeCinema();
   state=data.state;reveal=null;
   let notice='✅ Spielstand vom Server geladen. Keine dauerhafte Abfrage.';
   if(waiting&&data.pendingAction?.applied){
@@ -364,14 +375,15 @@ async function submit(payload){
    setStatus(reveal?.type==='bomb'?'💥 Bombe! Deine Checkpoint-Gewinne bleiben geschützt.':reveal?.superLuck?'🌟 SUPERGLÜCK! Schau dir deine seltenen Geschenke an!':'🎁 Ein sicherer Treffer! Deine Belohnung ist vorgemerkt.',false,reveal?.type!=='bomb');
    if(revealTimer)clearTimeout(revealTimer);
    if(reveal?.type!=='bomb')setTimeout(()=>{if(reveal===data.result)openCinema(reveal)},700);
-   revealTimer=setTimeout(()=>{closeCinema();reveal=null;render();if(state?.status==='playing')setStatus('🎩 Weiter versuchen oder deine Gewinne kassieren?',false,true)},5200);
+   revealTimer=setTimeout(finishReveal,5200);
   }else{
    reveal=null;render();setStatus(type==='cash'?'✅ Deine Gewinne wurden serverseitig gutgeschrieben.':'✨ Neues Spiel gestartet!',false,true);
   }
  }catch(e){setStatus('⚠️ '+describeError(e)+' – Bitte dieselbe Aktion sicher wiederholen.',true);}
  finally{busy=false;selectedHat=null;render();}
 }
-$('cinema-close').onclick=closeCinema;
+$('cinema-close').onclick=finishReveal;
+$('continue').onclick=finishReveal;
 $('cash-cancel').onclick=()=>$('cash-dialog').close();
 $('cash-confirm').onclick=()=>{
  $('cash-dialog').close();
