@@ -1,10 +1,9 @@
 /* Weihnachtsmützen-Jackpot: entry in the same collection tab group as Monster-Wheel */
 #event-hats{display:none;max-width:1180px;margin:14px auto 30px}
-body[data-view="hats"] .event-layout,
-body[data-view="hats"] #event-packs,
-body[data-view="hats"] #event-hammers,
-body[data-view="hats"] .hero{display:none!important}
-body[data-view="hats"] #event-hats{display:block!important}
+body.christmas-event-main[data-view="hats"] .event-layout{display:block!important;background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;backdrop-filter:none!important}
+body.christmas-event-main[data-view="hats"] .event-layout > :is(#event-album,#event-monster,#bingo),
+body.christmas-event-main[data-view="hats"] :is(#event-packs,#event-hammers,.hero){display:none!important}
+body.christmas-event-main[data-view="hats"] #event-hats{display:block!important}
 body[data-view="hats"] #event-collection-nav [data-view="hats"]{border-color:#ffdf92;box-shadow:0 0 18px #f6bd5e45}
 .hats-entry{position:relative;isolation:isolate;overflow:hidden;border-radius:24px;border:2px solid #f7d28b;padding:clamp(16px,3vw,33px);background:
 radial-gradient(ellipse 70% 58% at 50% 6%,#b7724a66,transparent),
