@@ -141,7 +141,10 @@ function drawBoard(){
     push('<polyline points="'+hps+'" fill="none" stroke="'+c+'" stroke-opacity=".15" stroke-width="37" stroke-linecap="round" stroke-linejoin="round"/>');
     push('<polyline points="'+gps+'" fill="none" stroke="'+c+'" stroke-opacity=".66" stroke-width="2.5" stroke-linecap="round"/>');
     push('<polyline points="'+hps+'" fill="none" stroke="'+c+'" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/>');
-    push('<path d="M '+coord(start)+' L '+coord(goal[0])+'" stroke="'+c+'" stroke-width="2.5" stroke-dasharray="5 6" opacity=".65"/>');
+    // Hausausgang und Zieleinlauf haben unterschiedliche Rollen im DOG-Rundweg.
+    const goalEntry=boardPoint((seat*16+63)%64);
+    push('<path d="M '+coord(goalEntry)+' L '+coord(goal[0])+'" stroke="'+c+'" stroke-width="2.8" stroke-dasharray="6 4" opacity=".76"/>');
+    push('<path d="M '+coord(start)+' L '+coord(home[0])+'" stroke="'+c+'" stroke-width="2.1" stroke-dasharray="3 7" opacity=".62"/>');
     for(let j=0;j<4;j++){
       const p=home[j];
       push('<circle cx="'+p.x+'" cy="'+p.y+'" r="16.7" fill="#041629" stroke="'+c+'" stroke-opacity=".7" stroke-width="2.4"/>');
