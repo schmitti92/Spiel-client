@@ -134,7 +134,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
 <main>
 <nav>
  <div class="tools"><a class="back" id="back" href="./weihnachtswelt.html">❮ Weihnachtswelt</a><a class="back" id="lobby" href="./lobby.html">🎮 Lobby</a></div>
- <div class="tools"><button id="refresh" type="button">↻ Aktualisieren</button><button id="full" type="button">⛶ Vollbild</button></div>
+ <div class="tools"><button id="sound" type="button" aria-label="Spielklänge ein- oder ausschalten" aria-pressed="false">🔇 Ton aus</button><button id="refresh" type="button">↻ Aktualisieren</button><button id="full" type="button">⛶ Vollbild</button></div>
 </nav>
 <header class="hero">
  <div class="eyebrow">DEAL OR NO DEAL · WEIHNACHTSSHOW</div>
@@ -207,6 +207,34 @@ const $=id=>document.getElementById(id),API=String(window.SPIELPORTAL_CONFIG?.ap
 const names=['','Weihnachtsstube I','Weihnachtsstube II','Erster Tresor','Schatzsaal I','Schatzsaal II','Goldkammer','Jackpot-Pforte','Königsschatz','Nordpol-Tresor','Legendäres Finale'];
 const emojis={pack:'🎁',hammer:'🔨',joker:'🃏',cash:'💰'};
 let state=null,userId='',busy=false,reveal=null,pendingRequest=null,revealTimer=null,selectedHat=null,revealPhase=null,suspenseTimer=null,cinemaTimer=null;
+let soundOn=false,audioContext=null;
+try{soundOn=localStorage.getItem('deal-hats-sound-v3')==='on'}catch{}
+function paintSound(){
+ $('sound').textContent=soundOn?'🔊 Ton an':'🔇 Ton aus';
+ $('sound').setAttribute('aria-pressed',String(soundOn));
+}
+function soundCue(kind){
+ if(!soundOn)return;
+ try{
+  const Audio=window.AudioContext||window.webkitAudioContext;
+  if(!Audio)return;
+  const ctx=audioContext||(audioContext=new Audio());
+  if(ctx.state==='suspended')ctx.resume().catch(()=>{});
+  const notes=kind==='bomb'?[[230,0,.35],[105,.16,.52]]:
+   kind==='checkpoint'?[[392,0,.16],[494,.2,.16],[587,.4,.25],[784,.65,.5]]:
+   kind==='super'?[[523,0,.16],[659,.16,.17],[784,.33,.2],[1047,.56,.56]]:
+   kind==='win'?[[494,0,.14],[659,.14,.31]]:[[330,0,.14],[260,.16,.19]];
+  for(const [f,t,d] of notes){
+   const osc=ctx.createOscillator(),gain=ctx.createGain(),start=ctx.currentTime+t;
+   osc.type=kind==='bomb'?'sawtooth':'sine';osc.frequency.setValueAtTime(f,start);
+   if(kind==='bomb')osc.frequency.exponentialRampToValueAtTime(Math.max(60,f*.45),start+d);
+   gain.gain.setValueAtTime(.0001,start);
+   gain.gain.exponentialRampToValueAtTime(kind==='bomb'?.035:.028,start+.025);
+   gain.gain.exponentialRampToValueAtTime(.0001,start+d);
+   osc.connect(gain);gain.connect(ctx.destination);osc.start(start);osc.stop(start+d+.02);
+  }
+ }catch{}
+}
 const back=$('back'),lobby=$('lobby'),params=new URLSearchParams(location.search),DEMO=params.get('demo')==='1',room=params.get('room')||sessionStorage.getItem('deal-active-room');
 if(room&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(room)){sessionStorage.setItem('deal-active-room',room);const u=new URL(back.href);u.searchParams.set('room',room);back.href=u.href;const ul=new URL(lobby.href);ul.searchParams.set('room',room);lobby.href=ul.href;}
 function authUser(){const s=window.SpielOnline?.state?.();return s?.status==='online'?s.user:null;}
@@ -613,7 +641,7 @@ async function action(type,index){
  if(busy||reveal||pendingRequest)return;
  const payload={type,requestId:requestId()};
  if(type!=='start')payload.runId=state?.id;
- if(type==='pick')payload.index=index;
+ if(type==='pick'){payload.index=index;soundCue('select');}
  await submit(payload);
 }
 async function submit(payload){
@@ -633,6 +661,7 @@ async function submit(payload){
    suspenseTimer=setTimeout(()=>{
     if(reveal!==event)return;
     revealPhase='shown';render();
+    soundCue(event.type==='bomb'?'bomb':[3,7].includes(event.room)?'checkpoint':event.superLuck?'super':'win');
     cinemaTimer=setTimeout(()=>{if(reveal===event&&event.type!=='bomb')openCinema(event)},650);
     revealTimer=setTimeout(finishReveal,5600);
    },window.matchMedia('(prefers-reduced-motion: reduce)').matches?120:1050);
@@ -650,6 +679,11 @@ async function submit(payload){
 $('choice-next').onclick=closeChoice;
 $('choice-cash').onclick=()=>{closeChoice();askCash()};
 $('choice-dialog').addEventListener('cancel',()=>{});
+$('sound').onclick=()=>{
+ soundOn=!soundOn;try{localStorage.setItem('deal-hats-sound-v3',soundOn?'on':'off')}catch{}
+ paintSound();if(soundOn)soundCue('win');
+};
+paintSound();
 $('cinema-close').onclick=finishReveal;
 $('continue').onclick=finishReveal;
 $('cash-cancel').onclick=()=>$('cash-dialog').close();
