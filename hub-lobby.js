@@ -4,16 +4,17 @@
 const el=id=>document.getElementById(id);
 const config=window.SPIELPORTAL_CONFIG||{};
 const API=String(config.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge'};
+const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge',dog:'DOG Klassisch'};
 let code=null,room=null,operation=false,poll=null,accountUid=null,pollErrors=0;
 let playMode=new URL(location.href).searchParams.get('view')==='local'?'local':'online';
 let choosingGame=false,displayGame=null;
-const GAME_ICON={barikade:'🎲',skyjo:'🃏',kreuz:'🎯',business:'💼',partychallenge:'🏆'};
+const GAME_ICON={barikade:'🎲',skyjo:'🃏',kreuz:'🎯',business:'💼',partychallenge:'🏆',dog:'🐾'};
 const GAME_DESCRIPTIONS={
  barikade:'Das Brettspiel mit Barikaden, Action-Regeln und optionalem Bossmodus.',
  skyjo:'Karten, Joker und spannende Runden. Der Host legt die Regeln fest.',
  kreuz:'Würfeln, Farben ankreuzen und gemeinsam Punkte sammeln.',
  business:'Unternehmen, Aktien und Branchen – mit 10, 20 oder 30 Runden.',
+ dog:'Das klassische Team-Brettspiel mit Karten, Startfeldern, Jokern und Partnern.',
  partychallenge:'Neun Online-Minispiele in einem Raum – inklusive Preisjäger.'
 };
 function setPlayMode(next){
@@ -106,11 +107,17 @@ function enterBusiness(){
  const q=new URLSearchParams({hub:room.code,match:m.id,gameCode:m.gameCode});
  location.assign('Business/business_online.html?'+q.toString());
 }
+function enterDog(){
+ if(room?.phase!=='playing'||room.match?.game!=='dog'||!room.match.participating)return;
+ const q=new URLSearchParams({room:room.code,match:room.match.id});
+ location.assign('DOG/index.html?'+q.toString());
+}
 function enterCurrentMatch(){
  if(room?.match?.game==='barikade')return enterBarikade();
  if(room?.match?.game==='kreuz')return enterKreuz();
  if(room?.match?.game==='skyjo')return enterSkyjo();
  if(room?.match?.game==='business')return enterBusiness();
+ if(room?.match?.game==='dog')return enterDog();
  if(room?.match?.game==='partychallenge')return;
  throw Error('GAME_NOT_CONNECTED');
 }
@@ -1113,7 +1120,7 @@ function render(){
  const playing=room.players.filter(p=>p.participating);
  const readyCount=playing.filter(p=>p.ready).length;
  const percent=playing.length?Math.round(readyCount/playing.length*100):0;
- el('ready-counter').textContent=room.phase==='playing'?'Partie läuft':room.game==='skyjo'&&playing.length!==3?'🌲 SKYJO Wald benötigt genau 3 Spieler ('+playing.length+'/3)':playing.length<2?'Mindestens 2 Spieler benötigt':room.allReady?'Alle bereit!':'Warten auf Bereitmeldungen';
+ el('ready-counter').textContent=room.phase==='playing'?'Partie läuft':room.game==='skyjo'&&playing.length!==3?'🌲 SKYJO Wald benötigt genau 3 Spieler ('+playing.length+'/3)':playing.length<2&&room.game!=='dog'?'Mindestens 2 Spieler benötigt':room.allReady?'Alle bereit!':'Warten auf Bereitmeldungen';
  el('ready-fraction').textContent=readyCount+' / '+playing.length;
  el('ready-progress-fill').style.width=percent+'%';
  el('ready-progressbar').setAttribute('aria-valuenow',String(percent));
