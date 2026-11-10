@@ -44,7 +44,7 @@ font-size:clamp(16px,2.1vw,22px);color:#301c13!important;font-weight:950;text-de
 .hats-entry-refresh{padding:10px 15px;color:#fbe5bf;background:#1b3040;border:1px solid #f9d49b8c;border-radius:10px;cursor:pointer;font-weight:800}
 .hats-entry-refresh:disabled{opacity:.5;cursor:wait}
 .hats-coming{display:flex;align-items:center;gap:8px;padding:12px 14px;border:1px solid #f9d89b66;border-radius:11px;background:#112b37ac;color:#cfe7df;font-size:13px;line-height:1.4}
-.hats-rules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:16px}
+.hats-rules{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:16px}
 .hats-rule{border:1px solid #d8ba8b70;border-radius:12px;padding:12px;background:#131f35c2;text-align:center;color:#e7d8c2;font-size:12px;line-height:1.4}
 .hats-rule strong{display:block;color:#ffe3aa;font-size:16px;margin-bottom:4px}
 @media(max-width:760px){
