@@ -73,7 +73,7 @@ test('voice and original moderator lines parse and are loaded in the correct ord
  const announcer=page.indexOf('./js/amount-voice.js?');
  const cases=page.indexOf('./js/cases.js?');
  assert.ok(lines>0&&announcer>lines&&cases>announcer);
- assert.match(caseScript,/announceOpenedAmount\(item\.amount,\{caseNumber:item\.case\+1,gameId:g\.id\}\)/);
+ assert.match(caseScript,/announceOpenedAmount\(item\.amount,\{caseNumber:item\.case\+1,gameId:g\.id,caseCount:g\.caseCount\}\)/);
  assert.match(caseScript,/if\(directorLastGame\)window\.stopOpenedAmountAnnouncement\?\.\(\)/);
 });
 
@@ -115,13 +115,13 @@ test('moderator never speaks without enabled voice, then announces actual amount
  const fx=harness();
  assert.equal(fx.button.textContent,'🔇 Moderator AUS');
  assert.equal(fx.button.attributes['aria-pressed'],'false');
- fx.announce(1000000000,{caseNumber:29,gameId:'game-1'});
+ fx.announce(1000000000,{caseNumber:29,gameId:'game-1',caseCount:29});
  assert.equal(fx.spoken.length,0);
  fx.toggle();
  assert.equal(fx.storage.get('dealAmountVoiceEnabled'),'true');
  assert.equal(fx.button.textContent,'🎙️ Moderator AN');
  assert.equal(fx.spoken.length,1,'first tap unlocks browser TTS through a short introduction');
- fx.announce(1000000000,{caseNumber:29,gameId:'game-1'});
+ fx.announce(1000000000,{caseNumber:29,gameId:'game-1',caseCount:29});
  assert.equal(fx.spoken.length,2);
  assert.match(fx.spoken.at(-1).text,/10 Millionen Euro\./);
  assert.ok(fx.spoken.at(-1).text.length>90,'amount plus real joke, not number alone');
@@ -134,8 +134,8 @@ test('moderator never speaks without enabled voice, then announces actual amount
 
 test('each later reveal replaces the previous speech and does not leak into other rounds',()=>{
  const fx=harness({stored:true});
- fx.announce(100000000,{gameId:'a',caseNumber:1});
- fx.announce(1,{gameId:'a',caseNumber:2});
+ fx.announce(100000000,{gameId:'a',caseNumber:1,caseCount:26});
+ fx.announce(1,{gameId:'a',caseNumber:2,caseCount:26});
  assert.equal(fx.spoken.length,2,'one utterance per revealed case');
  assert.match(fx.spoken[1].text,/^Ein Cent\./);
  assert.ok(fx.cancelled.length>=2,'stop previous voice before next reveal');
@@ -157,4 +157,58 @@ test('unsupported browsers safely disable moderator without affecting game state
  assert.equal(fx.button.textContent,'🔇 Moderator nicht verfügbar');
  assert.doesNotThrow(()=>fx.announce(1000000000,{caseNumber:3}));
  assert.equal(fx.spoken.length,0);
+});
+
+test('moderator speaks only 1 cent and the highest prize for each of 26, 27, 28 and 29 cases',()=>{
+ const topByCount={26:100000000,27:300000000,28:500000000,29:1000000000};
+ const intermediate=[100,500,50000,1000000,5000000,20000000,75000000,
+  100000000,300000000,500000000,1000000000];
+ for(const [countText,top] of Object.entries(topByCount)){
+  const count=Number(countText);
+  const fx=harness({stored:true});
+  const api=fx.window.DealModeratorAudio;
+  const meta={gameId:'game-'+count,caseNumber:4,caseCount:count};
+  assert.equal(api.shouldComment(1,meta),true);
+  assert.equal(api.shouldComment(top,meta),true);
+  assert.equal(api.shouldComment(100,meta),false);
+  for(const amount of intermediate.filter(v=>v!==top)){
+   assert.equal(api.shouldComment(amount,meta),false,
+    count+' cases should ignore '+amount+' cents');
+   fx.announce(amount,meta);
+  }
+  assert.equal(fx.spoken.length,0,'normal values must remain fully silent for '+count+' cases');
+  assert.equal(fx.caption.hidden,true);
+  fx.announce(1,meta);
+  assert.equal(fx.spoken.length,1);
+  assert.match(fx.spoken[0].text,/^Ein Cent\./);
+  fx.announce(top,{...meta,caseNumber:7});
+  assert.equal(fx.spoken.length,2);
+  assert.match(fx.spoken[1].text,new RegExp(api.formatAmount(top)));
+  const shown=fx.caption.textContent,oldCancels=fx.cancelled.length;
+  fx.announce(2000000,meta);
+  assert.equal(fx.spoken.length,2,'a midrange reveal must not create speech');
+  assert.equal(fx.caption.textContent,shown,'no extra caption for ordinary amounts');
+  assert.equal(fx.cancelled.length,oldCancels,'non-extremes must not interrupt jackpot joke');
+ }
+});
+
+test('a million in a 29-case game is not the maximum and must not be narrated',()=>{
+ const fx=harness({stored:true});
+ fx.announce(100000000,{gameId:'29-cases',caseNumber:8,caseCount:29});
+ fx.announce(300000000,{gameId:'29-cases',caseNumber:9,caseCount:29});
+ fx.announce(500000000,{gameId:'29-cases',caseNumber:10,caseCount:29});
+ assert.equal(fx.spoken.length,0);
+ fx.announce(1000000000,{gameId:'29-cases',caseNumber:11,caseCount:29});
+ assert.equal(fx.spoken.length,1);
+ assert.match(fx.spoken[0].text,/10 Millionen Euro/);
+});
+
+test('voice toggle clearly says it only comments the minimum and maximum',()=>{
+ const fx=harness();
+ fx.toggle();
+ assert.equal(fx.spoken.length,1);
+ assert.match(fx.spoken[0].text,/nur den kleinsten und den größten Geldbetrag/);
+ assert.match(fx.button.title,/1 Cent und den höchsten Betrag/);
+ assert.match(page,/amount-voice\.js\?v=20261110-extreme-prizes-v2/);
+ assert.match(page,/cases\.js\?v=20261110-extreme-prizes-v2/);
 });
