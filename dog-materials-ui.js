@@ -14,6 +14,12 @@
   for(const id of ['map-launch','map-waypoint']){
    const link=$(id);if(link)link.href='./dog-tor-map.html?room='+encodeURIComponent(room);
   }
+  for(const id of ['boss10-launch','boss10-waypoint']){
+   const link=$(id);if(link)link.href='./dog-boss10.html?room='+encodeURIComponent(room);
+  }
+  for(const id of ['ascension-launch','ascension-waypoint']){
+   const link=$(id);if(link)link.href='./dog-ascension.html?room='+encodeURIComponent(room);
+  }
  }
  const fmt=n=>Math.max(0,Number(n)||0).toLocaleString('de-DE');
  const TIER=Object.freeze({
