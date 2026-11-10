@@ -22,7 +22,7 @@
  }
  function clearRetry(){if(retryTimer!==null){clearTimeout(retryTimer);retryTimer=null}}
  function retryIn(ms){
-  if(retryTimer!==null||!root.DealModeratorAudio?.isEnabled?.()||document.hidden)return;
+  if(retryTimer!==null||!root.DealModeratorAudio?.isStoryEnabled?.()||document.hidden)return;
   retryTimer=setTimeout(()=>{retryTimer=null;if(currentGame)observe(currentGame)},Math.max(250,ms));
  }
  function stageReady(stage,game){
@@ -63,7 +63,7 @@
    currentId=game.id;clearRetry();queuedStage=null;restore(game.id);
   }
   currentGame=game;
-  if(document.hidden||!root.DealModeratorAudio?.isEnabled?.()||!root.DealModeratorStories)return;
+  if(document.hidden||!root.DealModeratorAudio?.isStoryEnabled?.()||!root.DealModeratorStories)return;
   if(queuedStage!==null)return;
   if(game.phase==='final'||game.phase==='done'){
    if(played.has('final')||!stageReady('final',game))return;
