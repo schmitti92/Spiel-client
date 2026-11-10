@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {TRACK_POINTS,GOAL_POINTS,HOME_POINTS,START_INDICES,BOARD_LAYOUT_ID,assertBoardLayout,trackPoint,goalPoint,homePoint,isStartField} from '../DOG/board-layout.js';
+import {TRACK_POINTS,GOAL_POINTS,HOME_POINTS,START_INDICES,BOARD_LAYOUT_ID,assertBoardLayout,trackPoint,goalPoint,homePoint,isStartField,makeDefaultLayout,currentBoardLayout,validateBoardLayout,setBoardLayout,saveBoardLayout,loadSavedBoardLayout,resetBoardLayout,CUSTOM_BOARD_KEY} from '../DOG/board-layout.js';
 
 test('classic DOG board has sixty-four unique track holes and exactly four start fields',()=>{
-  assert.equal(BOARD_LAYOUT_ID,'classic-corner-board-v2');
+  assert.equal(BOARD_LAYOUT_ID,'dog-classic-cross-v3');
   assert.equal(assertBoardLayout(),true);
   assert.equal(TRACK_POINTS.length,64);
   assert.deepEqual(START_INDICES,[0,16,32,48]);
@@ -32,4 +32,40 @@ test('every private goal and reserve hole is separate from main circuit',()=>{
   const inner=[...GOAL_POINTS.flat(),...HOME_POINTS.flat()];
   assert.equal(new Set(inner.map(p=>p.x+','+p.y)).size,32);
   for(const p of inner)assert.equal(outer.has(p.x+','+p.y),false);
+});
+
+test('DOG cross course is actually four-armed and not the old rectangular perimeter',()=>{
+ const starts=START_INDICES.map(i=>trackPoint(i));
+ assert.deepEqual(starts,[{x:95,y:380},{x:380,y:95},{x:665,y:380},{x:380,y:665}]);
+ const inner=TRACK_POINTS.filter(p=>p.x>270&&p.x<490&&p.y>270&&p.y<490);
+ assert.ok(inner.length>=8,'Track is expected to run into the inner star arms');
+});
+test('DOG editor rejects overlapping fields and ruptured path sections',()=>{
+ const original=makeDefaultLayout();
+ const collision=structuredClone(original);
+ collision.track[1]={...collision.track[0]};
+ assert.ok(validateBoardLayout(collision).some(s=>s.includes('überlappen')));
+ const rupture=structuredClone(original);
+ rupture.track[2]={x:600,y:300};
+ assert.ok(validateBoardLayout(rupture).some(s=>s.includes('Abstand im Laufweg')));
+ assert.deepEqual(validateBoardLayout(original),[]);
+});
+test('DOG editor saves, reloads and resets only local geometry',()=>{
+ const data=new Map();
+ const storage={
+  getItem:key=>data.get(key)||null,
+  setItem:(key,value)=>data.set(key,value),
+  removeItem:key=>data.delete(key)
+ };
+ const layout=makeDefaultLayout();
+ layout.track[1]={x:127,y:384};
+ assert.deepEqual(validateBoardLayout(layout),[]);
+ saveBoardLayout(layout,storage);
+ assert.equal(JSON.parse(data.get(CUSTOM_BOARD_KEY)).track[1].y,384);
+ setBoardLayout(makeDefaultLayout());
+ assert.equal(loadSavedBoardLayout(storage),true);
+ assert.equal(trackPoint(1).y,384);
+ resetBoardLayout(storage);
+ assert.equal(trackPoint(1).y,380);
+ assert.equal(data.has(CUSTOM_BOARD_KEY),false);
 });
