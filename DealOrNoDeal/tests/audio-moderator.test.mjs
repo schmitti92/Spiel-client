@@ -4,283 +4,195 @@ import {readFileSync} from 'node:fs';
 import {Script,runInNewContext} from 'node:vm';
 
 const read=file=>readFileSync(new URL('../'+file,import.meta.url),'utf8');
-const catalogue=read('js/moderator-lines.js');
-const voiceScript=read('js/amount-voice.js');
-const caseScript=read('js/cases.js');
-const page=read('game.html');
-
-function harness({stored=false,support=true}={}){
- const spoken=[],cancelled=[],listeners=new Map(),elements=new Map(),storage=new Map();
- if(stored)storage.set('dealAmountVoiceEnabled','true');
- const makeElement=tag=>({
-  tagName:tag,hidden:false,disabled:false,textContent:'',style:{cssText:''},attributes:{},listeners:new Map(),
-  setAttribute(name,value){this.attributes[name]=String(value)},
-  addEventListener(name,callback){this.listeners.set(name,callback)},
-  append(){},
- });
- const header=makeElement('nav'),body=makeElement('body');
- const document={
-  hidden:false,body,
-  createElement:tag=>{
-   const el=makeElement(tag);
-   if(tag==='button')elements.set('button',el);
-   if(tag==='div')elements.set('caption',el);
-   return el;
-  },
-  querySelector:()=>header,
-  addEventListener:(name,callback)=>listeners.set(name,callback)
- };
- const voices=[
-  {lang:'de-DE',name:'Anna (female)'},
-  {lang:'de-DE',name:'Markus (male)'}
- ];
- const synth={
-  getVoices:()=>voices,
-  addEventListener:()=>{},
-  cancel:()=>cancelled.push('cancel'),
-  resume:()=>{},
-  speak:utterance=>spoken.push(utterance)
- };
- class SpeechSynthesisUtterance{
-  constructor(text){this.text=text;this.voice=null;this.pitch=1;this.rate=1;this.volume=1;this.lang=''}
- }
- const window={
-  ...(support?{speechSynthesis:synth,SpeechSynthesisUtterance}:{}),
-  DealModeratorLines:null
- };
- const timers=new Map();let nextTimer=0;
- const context={
-  window,document,
-  localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)},
-  setTimeout:(fn,delay)=>{timers.set(++nextTimer,{fn,delay});return nextTimer},
-  clearTimeout:id=>timers.delete(id)
- };
- runInNewContext(catalogue,context);
- runInNewContext(voiceScript,context);
- return{
-  window,document,spoken,cancelled,storage,listeners,elements,
-  button:elements.get('button'),caption:elements.get('caption'),
-  toggle:()=>elements.get('button').listeners.get('click')(),
+const catalogue=read('js/moderator-lines.js'),script=read('js/amount-voice.js');
+const game=read('game.html'),caseScript=read('js/cases.js'),banker=read('js/banker.js');
+function harness({legacy=false,cases=null,stories=null,supported=true}={}){
+ const storage=new Map(),spoken=[],cancelled=[],timers=new Map(),elements=[],listeners=new Map();
+ if(legacy)storage.set('dealAmountVoiceEnabled','true');
+ if(cases!==null)storage.set('dealCaseVoiceEnabled',String(cases));
+ if(stories!==null)storage.set('dealStoryVoiceEnabled',String(stories));
+ let timerId=0;
+ const node=tag=>({tag,textContent:'',hidden:false,disabled:false,style:{},attributes:{},
+  handlers:new Map(),setAttribute(k,v){this.attributes[k]=String(v)},
+  addEventListener(k,v){this.handlers.set(k,v)},append(){},title:'',id:''});
+ const document={hidden:false,body:{append:el=>elements.push(el)},
+  createElement:tag=>{const el=node(tag);elements.push(el);return el},
+  querySelector:()=>({append(){}}),
+  addEventListener:(name,callback)=>listeners.set(name,callback)};
+ const voices=[{lang:'de-DE',name:'Anna female'},{lang:'de-DE',name:'Markus male'}];
+ const synth={speaking:false,getVoices:()=>voices,addEventListener:()=>{},
+  speak:utterance=>spoken.push(utterance),cancel:()=>cancelled.push(true),resume:()=>{}};
+ class SpeechSynthesisUtterance{constructor(text){this.text=text}}
+ const window={...(supported?{speechSynthesis:synth,SpeechSynthesisUtterance}:{}),
+  DealModeratorLines:null,dispatchEvent:()=>{},DealModeratorStory:{onEnabled:()=>{}}};
+ const context={window,document,localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v)},
+  setTimeout:(fn,delay)=>{const id=++timerId;timers.set(id,{fn,delay});return id},
+  clearTimeout:id=>timers.delete(id)};
+ runInNewContext(catalogue,context);runInNewContext(script,context);
+ const buttons=()=>({case:elements.find(el=>el.id==='deal-amount-voice'),
+  story:elements.find(el=>el.id==='deal-story-voice')});
+ const click=kind=>{const el=buttons()[kind];el.handlers.get('click')()};
+ return {window,document,synth,storage,spoken,cancelled,timers,buttons,click,
+  caption:elements.find(el=>el.id==='deal-moderator-caption'),
   announce:(cents,meta={})=>window.announceOpenedAmount(cents,meta),
-  timers
- };
+  speakStory:(text,meta={})=>window.DealModeratorAudio.speakStory(text,meta),
+  fireTimer:delay=>{const pair=[...timers.entries()].find(([id,t])=>t.delay===delay);
+   assert.ok(pair,'no timer with delay '+delay);timers.delete(pair[0]);pair[1].fn()},
+  listener:name=>listeners.get(name)};
 }
 
-test('voice and original moderator lines parse and are loaded in the correct order',()=>{
+test('both switches are visible, independently accessible and audio subtitles are permanently hidden',()=>{
+ const fx=harness(),btn=fx.buttons();
+ assert.match(game,/deal\/or\/no\/deal|DEAL OR NO DEAL/i);
+ assert.equal(btn.case.textContent,'🧳 Koffer AUS');
+ assert.equal(btn.story.textContent,'📖 Story AUS');
+ assert.equal(btn.case.attributes['aria-pressed'],'false');
+ assert.equal(btn.story.attributes['aria-pressed'],'false');
+ assert.equal(fx.caption.hidden,true);
+ assert.match(fx.caption.style.cssText,/display:none/);
+ assert.match(fx.caption.attributes['aria-live'],/off/);
+ assert.doesNotThrow(()=>new Script(script));
  assert.doesNotThrow(()=>new Script(catalogue));
- assert.doesNotThrow(()=>new Script(voiceScript));
- const lines=page.indexOf('./js/moderator-lines.js?');
- const announcer=page.indexOf('./js/amount-voice.js?');
- const cases=page.indexOf('./js/cases.js?');
- assert.ok(lines>0&&announcer>lines&&cases>announcer);
- assert.match(caseScript,/announceOpenedAmount\(item\.amount,\{caseNumber:item\.case\+1,gameId:g\.id,caseCount:g\.caseCount\}\)/);
- assert.match(caseScript,/if\(directorLastGame\)window\.stopOpenedAmountAnnouncement\?\.\(\)/);
+ assert.match(game,/amount-voice\.js\?v=20261110-split-audio-v4/);
+ assert.match(caseScript,/announceOpenedAmount\(item\.amount/);
 });
-
-test('126 original jokes cover ten value classes with punchlines for the 10m case',()=>{
- const fx=harness();
- const lines=fx.window.DealModeratorLines;
- assert.equal(Object.keys(lines).length,10);
- assert.equal(Object.values(lines).reduce((n,pool)=>n+pool.length,0),126);
- for(const pool of Object.values(lines)){
-  assert.ok(pool.length>=8);
-  assert.equal(new Set(pool).size,pool.length,'no duplicate jokes within category');
-  assert.ok(pool.every(phrase=>phrase.length>=30),'no placeholder jokes');
+test('previously enabled combined voice is migrated to both independent switches',()=>{
+ const fx=harness({legacy:true});
+ assert.equal(fx.buttons().case.textContent,'🧳 Koffer AN');
+ assert.equal(fx.buttons().story.textContent,'📖 Story AN');
+ fx.click('case');
+ assert.equal(fx.storage.get('dealCaseVoiceEnabled'),'false');
+ assert.equal(fx.window.DealModeratorAudio.isCaseEnabled(),false);
+ assert.equal(fx.window.DealModeratorAudio.isStoryEnabled(),true);
+ assert.equal(fx.storage.get('dealAmountVoiceEnabled'),'true','do not overwrite historical preference');
+ fx.click('story');
+ assert.equal(fx.storage.get('dealStoryVoiceEnabled'),'false');
+});
+test('Koffer-only reads every opened amount, but gives a funny comment only on the two extremes',()=>{
+ const fx=harness({cases:true,stories:false});
+ const base={caseCount:29,gameId:'solo-1'};
+ for(const [amount,number]of [[100,2],[50000,3],[100000000,4],[300000000,5]]){
+  fx.announce(amount,{...base,caseNumber:number});
+  fx.spoken.at(-1)?.onend?.();
  }
- assert.equal(lines.tenMillion.length,16);
-});
-
-test('one cent is excellent, small amounts are relief, and exact millions get unique dramatic jokes',()=>{
- const fx=harness(),api=fx.window.DealModeratorAudio;
- const amounts=[
-  [1,'oneCent','Ein Cent'],
-  [100,'tiny','Ein Euro'],
-  [100000,'small','1.000 Euro'],
-  [5000000,'medium','50.000 Euro'],
-  [50000000,'large','500.000 Euro'],
-  [100000000,'million','Eine Million Euro'],
-  [300000000,'threeMillion','3 Millionen Euro'],
-  [500000000,'fiveMillion','5 Millionen Euro'],
-  [1000000000,'tenMillion','10 Millionen Euro']
- ];
- for(const [cents,category,formatted]of amounts){
-  assert.equal(api.classify(cents),category,String(cents));
-  assert.equal(api.formatAmount(cents),formatted,String(cents));
-  const joke=api.selectLine(cents,{gameId:'my-match',caseNumber:2});
-  assert.ok(fx.window.DealModeratorLines[category].includes(joke),'wrong classification for '+formatted);
+ // Advance the queued announcements as they finish.
+ while([...fx.timers.values()].some(t=>t.delay===300)){
+  fx.fireTimer(300);
+  fx.spoken.at(-1).onend();
  }
-});
-
-test('moderator never speaks without enabled voice, then announces actual amount and joke exactly once',()=>{
- const fx=harness();
- assert.equal(fx.button.textContent,'🔇 Moderator AUS');
- assert.equal(fx.button.attributes['aria-pressed'],'false');
- fx.announce(1000000000,{caseNumber:29,gameId:'game-1',caseCount:29});
- assert.equal(fx.spoken.length,0);
- fx.toggle();
- assert.equal(fx.storage.get('dealAmountVoiceEnabled'),'true');
- assert.equal(fx.button.textContent,'🎙️ Moderator AN');
- assert.equal(fx.spoken.length,1,'first tap unlocks browser TTS through a short introduction');
- fx.announce(1000000000,{caseNumber:29,gameId:'game-1',caseCount:29});
- assert.equal(fx.spoken.length,2);
- assert.match(fx.spoken.at(-1).text,/10 Millionen Euro\./);
- assert.ok(fx.spoken.at(-1).text.length>90,'amount plus real joke, not number alone');
- assert.equal(fx.spoken.at(-1).voice.name,'Markus (male)','prefer German male voice when available');
+ assert.equal(fx.spoken.length,4,'all four ordinary case amounts must be spoken');
+ assert.match(fx.spoken[0].text,/Koffer 2\. Ein Euro\./);
+ assert.match(fx.spoken[1].text,/Koffer 3\. 500 Euro\./);
+ assert.match(fx.spoken[2].text,/Koffer 4\. Eine Million Euro\./);
+ assert.ok(fx.spoken.slice(0,4).every(x=>x.text.length<60),'no jokes for ordinary amounts');
+ fx.announce(1,{...base,caseNumber:8});
+ assert.match(fx.spoken.at(-1).text,/Ein Cent/);
+ assert.ok(fx.spoken.at(-1).text.length>90,'lowest value gets the special joke');
+ fx.announce(1000000000,{...base,caseNumber:29});
+ assert.match(fx.spoken.at(-1).text,/10 Millionen Euro/);
+ assert.ok(fx.spoken.at(-1).text.length>90,'highest value gets the special joke');
+ assert.equal(fx.caption.hidden,true,'no narration text appears');
+ assert.equal(fx.spoken.at(-1).voice.name,'Markus male');
  assert.equal(fx.spoken.at(-1).lang,'de-DE');
- assert.equal(fx.caption.hidden,false);
- assert.match(fx.caption.textContent,/MODERATOR/);
- assert.equal(fx.spoken.at(-1).pitch,.72);
+ assert.equal(fx.synth.speaking,false);
+ assert.equal(fx.speakStory('Eine Geschichte',{title:'Test',chapter:1}),false);
 });
-
-test('each later reveal replaces the previous speech and does not leak into other rounds',()=>{
- const fx=harness({stored:true});
- fx.announce(100000000,{gameId:'a',caseNumber:1,caseCount:26});
- fx.announce(1,{gameId:'a',caseNumber:2,caseCount:26});
- assert.equal(fx.spoken.length,2,'one utterance per revealed case');
- assert.match(fx.spoken[1].text,/^Ein Cent\./);
- assert.ok(fx.cancelled.length>=2,'stop previous voice before next reveal');
- fx.document.hidden=true;
- fx.announce(300000000,{gameId:'a',caseNumber:3});
- assert.equal(fx.spoken.length,2,'hidden tab must never speak');
- fx.listeners.get('visibilitychange')();
+test('Story-only tells chapters and never speaks a case amount, even for ten million',()=>{
+ const fx=harness({cases:false,stories:true});
+ const spoken=fx.speakStory('Herbert und sein Gartenzwerg erleben ein Wunder.',{title:'Herbert',chapter:1});
+ assert.equal(spoken,true);
+ assert.match(fx.spoken[0].text,/Gartenzwerg/);
+ fx.announce(1,{caseCount:29,caseNumber:1});
+ fx.announce(1000000000,{caseCount:29,caseNumber:29});
+ fx.announce(100,{caseCount:29,caseNumber:2});
+ assert.equal(fx.spoken.length,1);
  assert.equal(fx.caption.hidden,true);
- fx.document.hidden=false;
- fx.toggle();
- assert.equal(fx.button.attributes['aria-pressed'],'false');
- fx.announce(500000000,{gameId:'a',caseNumber:4});
- assert.equal(fx.spoken.length,2,'audio off disables narration');
+ fx.click('case');
+ assert.equal(fx.window.DealModeratorAudio.isStoryEnabled(),true);
+ assert.equal(fx.window.DealModeratorAudio.isCaseEnabled(),true);
 });
-
-test('unsupported browsers safely disable moderator without affecting game state',()=>{
- const fx=harness({support:false});
- assert.equal(fx.button.disabled,true);
- assert.equal(fx.button.textContent,'🔇 Moderator nicht verfügbar');
- assert.doesNotThrow(()=>fx.announce(1000000000,{caseNumber:3}));
- assert.equal(fx.spoken.length,0);
+test('turning case narration off does not interrupt a story; story OFF does not interrupt case speech',()=>{
+ const a=harness({cases:true,stories:true});
+ assert.equal(a.speakStory('Eine ausführliche eigenständige Geschichte.',{title:'A',chapter:1}),true);
+ const cancels=a.cancelled.length;
+ a.click('case');assert.equal(a.cancelled.length,cancels);
+ assert.equal(a.window.DealModeratorAudio.isStoryEnabled(),true);
+ const b=harness({cases:true,stories:true});
+ b.announce(100,{caseCount:29,caseNumber:2});
+ const current=b.spoken[0],old=b.cancelled.length;
+ b.click('story');
+ assert.equal(b.cancelled.length,old,'turning off Story must leave case voice playing');
+ assert.equal(b.window.DealModeratorAudio.isCaseEnabled(),true);
+ assert.equal(b.window.DealModeratorAudio.isStoryEnabled(),false);
+ assert.equal(b.spoken[0],current);
 });
-
-test('moderator speaks only 1 cent and the highest prize for each of 26, 27, 28 and 29 cases',()=>{
- const topByCount={26:100000000,27:300000000,28:500000000,29:1000000000};
- const intermediate=[100,500,50000,1000000,5000000,20000000,75000000,
-  100000000,300000000,500000000,1000000000];
- for(const [countText,top] of Object.entries(topByCount)){
-  const count=Number(countText);
-  const fx=harness({stored:true});
-  const api=fx.window.DealModeratorAudio;
-  const meta={gameId:'game-'+count,caseNumber:4,caseCount:count};
-  assert.equal(api.shouldComment(1,meta),true);
-  assert.equal(api.shouldComment(top,meta),true);
-  assert.equal(api.shouldComment(100,meta),false);
-  for(const amount of intermediate.filter(v=>v!==top)){
-   assert.equal(api.shouldComment(amount,meta),false,
-    count+' cases should ignore '+amount+' cents');
-   fx.announce(amount,meta);
-  }
-  assert.equal(fx.spoken.length,0,'normal values must remain fully silent for '+count+' cases');
-  assert.equal(fx.caption.hidden,true);
-  fx.announce(1,meta);
-  assert.equal(fx.spoken.length,1);
-  assert.match(fx.spoken[0].text,/^Ein Cent\./);
-  fx.announce(top,{...meta,caseNumber:7});
-  assert.equal(fx.spoken.length,2);
-  assert.match(fx.spoken[1].text,new RegExp(api.formatAmount(top)));
-  const shown=fx.caption.textContent,oldCancels=fx.cancelled.length;
-  fx.announce(2000000,meta);
-  assert.equal(fx.spoken.length,2,'a midrange reveal must not create speech');
-  assert.equal(fx.caption.textContent,shown,'no extra caption for ordinary amounts');
-  assert.equal(fx.cancelled.length,oldCancels,'non-extremes must not interrupt jackpot joke');
- }
-});
-
-test('a million in a 29-case game is not the maximum and must not be narrated',()=>{
- const fx=harness({stored:true});
- fx.announce(100000000,{gameId:'29-cases',caseNumber:8,caseCount:29});
- fx.announce(300000000,{gameId:'29-cases',caseNumber:9,caseCount:29});
- fx.announce(500000000,{gameId:'29-cases',caseNumber:10,caseCount:29});
- assert.equal(fx.spoken.length,0);
- fx.announce(1000000000,{gameId:'29-cases',caseNumber:11,caseCount:29});
+test('case announcements queue behind stories rather than cutting off the story',()=>{
+ const fx=harness({cases:true,stories:true});
+ let started=0;
+ fx.speakStory('Professor Blubb untersucht die Koffer.',{onStart:()=>started++});
+ fx.announce(100,{caseCount:29,caseNumber:2});
+ fx.announce(500,{caseCount:29,caseNumber:3});
  assert.equal(fx.spoken.length,1);
- assert.match(fx.spoken[0].text,/10 Millionen Euro/);
-});
-
-test('voice toggle clearly says it only comments the minimum and maximum',()=>{
- const fx=harness();
- fx.toggle();
- assert.equal(fx.spoken.length,1);
- assert.match(fx.spoken[0].text,/nur den kleinsten und den größten Geldbetrag/);
- assert.match(fx.button.title,/1 Cent und den höchsten Betrag/);
- assert.match(page,/amount-voice\.js\?v=20261110-match-stories-v3/);
- assert.match(page,/cases\.js\?v=20261110-extreme-prizes-v2/);
-});
-
-test('a 1-cent announcement finishes before its queued story and ordinary values never interrupt it',()=>{
- const fx=harness({stored:true});
- const audio=fx.window.DealModeratorAudio;
- fx.announce(1,{caseCount:29,caseNumber:8,gameId:'test-voice-queue'});
- assert.equal(fx.spoken.length,1);
- assert.equal(audio.speakStory('Dies ist ein langes Kapitel mit einem besonders lustigen Ende.',{
-  title:'Der Gartenzwerg',chapter:3
- }),true,'story is accepted while extreme value speech is active');
- assert.equal(audio.speakStory('Eine zweite Rede, die erst später drankommen darf.',{
-  title:'Zweites Kapitel',chapter:4
- }),false,'two story chapters may not overlap or pile up in a speech backlog');
- fx.announce(10000000,{caseCount:29,caseNumber:9,gameId:'test-voice-queue'});
- assert.equal(fx.spoken.length,1,'non-extreme case stays silent and does not cancel the queued story');
+ assert.equal(started,1);
  fx.spoken[0].onend();
- const continuation=[...fx.timers.values()].find(item=>item.delay===800);
- assert.ok(continuation,'story is delayed briefly after previous utterance ends');
- continuation.fn();
+ fx.fireTimer(300);
  assert.equal(fx.spoken.length,2);
- assert.match(fx.spoken[1].text,/Dies ist ein langes Kapitel/);
- assert.match(fx.caption.textContent,/Der Gartenzwerg · Kapitel 3/);
- assert.equal(fx.spoken[1].lang,'de-DE');
-});
-
-test('switching off the moderator cancels a queued story and never narrates muted chapters',()=>{
- const fx=harness({stored:true});
- fx.announce(1000000000,{caseCount:29,gameId:'test-silence'});
- assert.equal(fx.window.DealModeratorAudio.speakStory('Eine Geschichte',{title:'Stille',chapter:1}),true);
- fx.toggle();
- assert.equal(fx.button.textContent,'🔇 Moderator AUS');
- assert.equal(fx.window.DealModeratorAudio.speakStory('Mehr Geschichte',{title:'Stille',chapter:2}),false);
+ assert.match(fx.spoken[1].text,/Koffer 2/);
+ fx.spoken[1].onend();
+ fx.fireTimer(300);
+ assert.equal(fx.spoken.length,3);
+ assert.match(fx.spoken[2].text,/Koffer 3/);
  assert.equal(fx.caption.hidden,true);
- assert.equal(fx.spoken.length,1);
 });
-
-test('priority jackpot speech safely discards a story waiting after the previous utterance',()=>{
- const fx=harness({stored:true});
- const audio=fx.window.DealModeratorAudio;
- const previous={caseCount:29,caseNumber:3,gameId:'t1'};
- fx.announce(1,previous);
- let discarded=0,started=0;
- assert.equal(audio.speakStory('Die Geschichte von Herbert geht weiter.',{
-  title:'Herbert',chapter:2,onStart:()=>started++,onDiscard:()=>discarded++
- }),true,'story can wait behind the cent commentary');
- assert.equal(fx.spoken.length,1);
- fx.spoken[0].onend();
- assert.ok([...fx.timers.values()].some(t=>t.delay===800),'story start is scheduled after the cent');
- // Before that timer fires, the ten-million-case is opened.
- fx.announce(1000000000,{...previous,caseNumber:7});
- assert.equal(discarded,1,'deferred chapter must notify the story engine to retry');
- assert.equal(started,0,'interrupted chapter must not be marked as played');
- assert.equal(fx.spoken.length,2,'only the cent and jackpot were spoken');
+test('exceptional case overrides a story without leaking confidential values',()=>{
+ const fx=harness({cases:true,stories:true});
+ fx.speakStory('Onkel Erwin erzählt vom verlorenen Schatz.',{title:'Erwin',chapter:2});
+ fx.announce(1000000000,{caseCount:29,caseNumber:29});
+ assert.equal(fx.spoken.length,2);
  assert.match(fx.spoken[1].text,/10 Millionen Euro/);
- assert.equal([...fx.timers.values()].some(t=>t.delay===800),false,'stale start timer is cleared');
+ assert.ok(fx.cancelled.length>=2);
+ assert.equal(fx.caption.hidden,true);
 });
-
-test('a waiting story starts normally after the first amount commentary finishes',()=>{
- const fx=harness({stored:true}),audio=fx.window.DealModeratorAudio;
+test('queued story chapters can resume after case narration but are discarded safely when priorities collide',()=>{
+ const fx=harness({cases:true,stories:true});
+ fx.announce(1,{caseCount:29,caseNumber:7});
  let started=0,discarded=0;
- fx.announce(1,{caseCount:29,gameId:'t2',caseNumber:1});
- assert.equal(audio.speakStory('Und jetzt erfahren wir, was aus Herbert geworden ist.',{
-  title:'Herberts Gartenzwerg',chapter:2,onStart:()=>started++,onDiscard:()=>discarded++
+ assert.equal(fx.speakStory('Herbert und Günther halten ihre zweite Rede.',{
+  onStart:()=>started++,onDiscard:()=>discarded++
  }),true);
  fx.spoken[0].onend();
- const start=[...fx.timers.values()].find(t=>t.delay===800);
- assert.ok(start);
- start.fn();
+ assert.ok([...fx.timers.values()].some(t=>t.delay===800));
+ fx.announce(1000000000,{caseCount:29,caseNumber:8});
+ assert.equal(discarded,1);
+ assert.equal(started,0);
  assert.equal(fx.spoken.length,2);
- assert.match(fx.spoken[1].text,/Herbert geworden/);
- assert.equal(started,1);
- assert.equal(discarded,0);
+ const later=harness({cases:true,stories:true});
+ later.announce(1,{caseCount:29,caseNumber:7});
+ let begun=0;
+ later.speakStory('Die nächste Geschichte fängt jetzt endlich an.',{onStart:()=>begun++});
+ later.spoken[0].onend();later.fireTimer(800);
+ assert.equal(begun,1);
+ assert.match(later.spoken.at(-1).text,/nächste Geschichte/);
+});
+test('each 26–29 case mode only gets a JOKE for 1 cent and its actual jackpot',()=>{
+ const fx=harness({cases:true,stories:false}),api=fx.window.DealModeratorAudio;
+ for(const [caseCount,top]of [[26,100000000],[27,300000000],[28,500000000],[29,1000000000]]){
+  assert.equal(api.shouldComment(1,{caseCount}),true);
+  assert.equal(api.shouldComment(top,{caseCount}),true);
+  for(const other of [100,500,2000000,1000000000].filter(n=>n!==top))
+   assert.equal(api.shouldComment(other,{caseCount}),false);
+ }
+ assert.equal(api.formatAmount(1000000000),'10 Millionen Euro');
+ assert.ok(Object.values(fx.window.DealModeratorLines).reduce((n,p)=>n+p.length,0)>=126);
+});
+test('unsupported browsers disable both independent switches',()=>{
+ const fx=harness({supported:false});
+ assert.equal(fx.buttons().case.disabled,true);
+ assert.equal(fx.buttons().story.disabled,true);
+ assert.doesNotThrow(()=>fx.announce(1,{caseCount:29}));
+ assert.equal(fx.speakStory('Hallo!'),false);
+});
+test('banker special-bonus audio honors the Story switch, not the Koffer switch',()=>{
+ assert.match(banker,/DealModeratorAudio\?\.isStoryEnabled\?\.\(\)/);
+ assert.doesNotMatch(banker,/localStorage\.getItem\('dealAmountVoiceEnabled'\)/);
 });
