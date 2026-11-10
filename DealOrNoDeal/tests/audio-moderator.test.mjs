@@ -209,7 +209,7 @@ test('voice toggle clearly says it only comments the minimum and maximum',()=>{
  assert.equal(fx.spoken.length,1);
  assert.match(fx.spoken[0].text,/nur den kleinsten und den größten Geldbetrag/);
  assert.match(fx.button.title,/1 Cent und den höchsten Betrag/);
- assert.match(page,/amount-voice\.js\?v=20261110-match-stories-v1/);
+ assert.match(page,/amount-voice\.js\?v=20261110-match-stories-v2/);
  assert.match(page,/cases\.js\?v=20261110-extreme-prizes-v2/);
 });
 
