@@ -15,7 +15,7 @@ test('all six correctly named Christmas dice images are uploaded',()=>{
 });
 test('local and online Kniffel load the same cosmetic dice switch and stylesheet',()=>{
  for(const html of [local,online]){
-  assert.match(html,/id="christmas-dice-toggle"[^>]*hidden/);
+  assert.doesNotMatch(html,/id="christmas-dice-toggle"[^>]*hidden/);
   assert.match(html,/christmas-dice\.css\?v=/);
   assert.match(html,/christmas-dice\.js\?v=/);
   assert.match(html,/profile-config\.js/);
@@ -29,10 +29,12 @@ test('local and online Kniffel load the same cosmetic dice switch and stylesheet
 test('dice skin is authorized by server progress and only modifies image presentation',()=>{
  assert.doesNotThrow(()=>new Function(skin));
  assert.match(skin,/api\/christmas-ice\/unlocks/);
- assert.match(skin,/unlocked=result\.kniffelChristmasDice===true/);
+ assert.match(skin,/unlocked=result\.unlocked/);
+ assert.match(skin,/result\.kniffelChristmasDice/);
+ assert.match(skin,/api\/christmas-ice\/me/);
  assert.match(skin,/if\(!die\|\|!enabled/);
- assert.match(skin,/picture\.onerror=/);
- assert.match(skin,/picture\.onload=/);
+ assert.match(skin,/art\.onerror=/);
+ assert.match(skin,/art\.onload=/);
  assert.match(skin,/localStorage\.setItem\(key\(uid\)/);
  assert.match(skin,/christmas-die-art/);
  assert.match(theme,/button\.die\.christmas-die/);
