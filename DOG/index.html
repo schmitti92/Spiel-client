@@ -18,6 +18,7 @@ main{width:min(1640px,calc(100% - 34px));margin:22px auto 48px}
 .board-card{padding:clamp(9px,2vw,20px);border-radius:24px;background:linear-gradient(145deg,#193b46,#0c1e2f);border:1px solid #e4c6924a;box-shadow:0 20px 60px #0005,inset 0 1px #ffffff17;position:relative}
 .board-svg{display:block;width:100%;height:auto;max-height:min(74vh,800px);margin:auto;touch-action:manipulation}
 .board-svg .can-pick{cursor:pointer}.board-svg .can-pick circle:first-of-type{filter:drop-shadow(0 0 9px #fff9)}
+.board-editor-link{display:inline-flex;align-items:center;gap:5px;border-radius:22px;padding:7px 12px;text-decoration:none;color:#ffe3ad;font-weight:800;font-size:12px;border:1px solid #dcb77c6e;background:#c6954323}.board-editor-link:hover{background:#dfb3653e}
 .teams{margin-top:13px;display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;font-size:12px;color:#bad0dc}.team-chip{display:inline-flex;align-items:center;gap:7px;background:#04182780;border:1px solid #aec9d32b;padding:7px 10px;border-radius:30px}.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
 .right{display:grid;gap:15px}.panel{border:1px solid var(--line);border-radius:20px;background:linear-gradient(150deg,#152b3eec,#0e1d2dea);padding:19px;box-shadow:0 15px 40px #0002}.panel h3{margin:0 0 12px;font-size:16px}.panel h3 small{display:inline-block;color:var(--gold);font-size:11px;margin-left:6px}
 .meta{display:flex;gap:9px;justify-content:space-between;align-items:center;padding:10px 12px;background:#040f1c88;border-radius:12px;margin-bottom:13px}.meta b{color:#ffe4b8}.meta span{font-size:12px;color:#b9c9d2}.turn{font-size:20px;font-weight:850;letter-spacing:-.5px;margin:7px 0 15px}
@@ -43,6 +44,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
   <div class="brand"><div class="mark">🐾</div><div><h1>DOG</h1><p>Das klassische Team-Brettspiel</p></div></div>
   <div class="top-actions">
     <a class="top-btn" id="back-link" href="../spielauswahl-lokal.html">← Zur Spiele-Lobby</a>
+    <a class="top-btn" href="editor.html" data-dog-editor>🛠 Spielfeldstudio</a>
     <button class="top-btn" id="rules-button" type="button">📖 Regeln</button>
     <button class="top-btn" id="new-game" type="button">↻ Neues Spiel</button>
   </div>
@@ -59,6 +61,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
        <span class="team-chip"><span class="dot" style="background:#e65f58"></span><span class="dot" style="background:#5ac68d"></span>Team Rot / Grün</span>
        <span style="color:#8b9ead">gegen</span>
        <span class="team-chip"><span class="dot" style="background:#4c9bfa"></span><span class="dot" style="background:#e8b84e"></span>Team Blau / Gelb</span>
+       <a href="editor.html" data-dog-editor class="board-editor-link">✎ Brett bearbeiten</a>
      </div>
    </section>
    <aside class="right">
