@@ -13,7 +13,7 @@ test('50 and 100 ice fields use correct grids and cache-busted client',()=>{
  assert.match(html,/ice-tiles\.ice-tiles-100\{grid-template-columns:repeat\(10,minmax\(0,1fr\)\);grid-template-rows:repeat\(10,minmax\(0,1fr\)\)/);
  assert.match(js,/ice-tiles-50/);assert.match(js,/ice-tiles-100/);
  assert.match(js,/Array\.from\(\{length:tileCount\}/);
- assert.match(html,/online-ice\.js\?v=20261110-star-50-100-v1/);
+ assert.match(html,/online-ice\.js\?v=20261110-autoplay40-v1/);
 });
 
 test('pictures 1–29 use 50 and 30–70 use 100 including old saves',()=>{
@@ -72,7 +72,7 @@ test('hidden star is present for every picture including 23–70',()=>{
 test('every server-confirmed completed picture uses full-screen reveal before reward',()=>{
  const css=read('Weihnachtsevent2/image-reveal-grand.css');
  assert.match(html,/image-reveal-grand\.css\?v=20261109-grand-reveal-v1/);
- assert.match(html,/online-ice\.js\?v=20261110-star-50-100-v1/);
+ assert.match(html,/online-ice\.js\?v=20261110-autoplay40-v1/);
  assert.match(js,/celebration\?\.stage==='image'&&!celebrationDelayTimer&&state\.finished&&Number\(state\.completed\)>=celebration\.number/);
  assert.match(js,/photo\(celebration\.number\)/);
  assert.match(js,/id="v44-big-reveal-continue"/);
