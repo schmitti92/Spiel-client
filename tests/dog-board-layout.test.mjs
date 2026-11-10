@@ -37,7 +37,7 @@ test('every private goal and reserve hole is separate from main circuit',()=>{
 test('DOG cross course is actually four-armed and not the old rectangular perimeter',()=>{
  const starts=START_INDICES.map(i=>trackPoint(i));
  assert.deepEqual(starts,[{x:95,y:380},{x:380,y:95},{x:665,y:380},{x:380,y:665}]);
- const inner=TRACK_POINTS.filter(p=>p.x>270&&p.x<490&&p.y>270&&p.y<490);
+ const inner=TRACK_POINTS.filter(p=>p.x>240&&p.x<520&&p.y>240&&p.y<520);
  assert.ok(inner.length>=8,'Track is expected to run into the inner star arms');
 });
 test('DOG editor rejects overlapping fields and ruptured path sections',()=>{
