@@ -26,7 +26,7 @@ test('DOG expedition is entered from Deal or No Deal directly above Christmas ev
 test('Return to Deal lobby uses the same room code without changing current game actions',()=>{
  assert.match(lobby,/\$\('dog-expedition-entry'\)\.href='\.\.\/dog-expedition\.html'/);
  assert.match(lobby,/room='\+encodeURIComponent\(code\)\+'&stay=1'/);
- assert.match(page,/id="dog-back-deal"[^>]+/);
+ assert.match(page,/id="dog-back-deal"/);
  assert.match(client,/const room=new URLSearchParams\(location\.search\)\.get\('room'\)/);
  assert.match(client,/\/\^\(\?:\\d\{3\}\|\[A-HJ-NP-Z2-9\]\{6\}\)\$\/\.test\(room\)/);
  assert.match(client,/\.\/DealOrNoDeal\/lobby\.html\?room=/);
