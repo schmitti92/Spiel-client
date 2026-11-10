@@ -32,6 +32,7 @@ h1{font-size:clamp(28px,4.6vw,55px);line-height:1.06;margin:7px 0 9px;font-weigh
 .tier{flex:1;text-align:center;border:1px solid #e9c88b73;padding:8px 2px;border-radius:10px;font-size:clamp(10px,1.8vw,13px);background:#0b143bb3;font-weight:800}
 .tier.on{border-color:#ffdf8a;box-shadow:0 0 24px #fac16355;background:#58334df2}
 .tier.done{background:#173d3ab8;color:#bdf8d0}
+.game:has(.stage-banner.jackpot){border-color:#f9cf71;box-shadow:0 13px 52px #000a,inset 0 0 32px #facb4b30,0 0 32px #f2bc4490}
 .game{position:relative;border:2px solid #e0b979;border-radius:24px;overflow:hidden;
  background:radial-gradient(ellipse at 50% 15%,#b3686b66,transparent 45%),linear-gradient(180deg,#291c44 0%,#1d1a37 57%,#152b37 100%);
  box-shadow:0 16px 44px #0009,inset 0 0 0 4px #ffecb215,0 0 36px #f2bd6630;padding:clamp(12px,2.5vw,27px)}
@@ -59,6 +60,11 @@ h1{font-size:clamp(28px,4.6vw,55px);line-height:1.06;margin:7px 0 9px;font-weigh
 @keyframes pop{0%{transform:scale(.15);opacity:0}70%{transform:scale(1.25)}100%{transform:scale(1);opacity:1}}
 .hat.shown.bomb{background:radial-gradient(#c6332c99,#32152e);border-color:#ff6e65;animation:blast .48s ease-out}
 @keyframes blast{20%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}90%{transform:rotate(-1deg)}}
+.hat.selected{border-color:#fff7c0!important;box-shadow:0 0 0 3px #f6d0797a,0 0 55px #ffdd7890,inset 0 0 25px #f8d17c2e!important}
+.hat.selected .num{color:#fff8b7;font-size:13px}
+.hat.selected .num:after{content:" · DEINE WAHL";color:#affce7}
+.hat.selecting{animation:choosing .55s ease-in-out infinite alternate}
+@keyframes choosing{to{transform:translateY(-14px) scale(1.035);box-shadow:0 0 42px #fff7b191}}
 .hat.shown.super{background:radial-gradient(#c4983388,#2e2148);border-color:#ffdb78;box-shadow:0 0 40px #efb94b80,inset 0 0 25px #f8d6811a}
 .hatName{font-size:clamp(11px,1.7vw,15px);font-weight:900;text-align:center;line-height:1.3}
 .hatDetail{font-size:clamp(9px,1.2vw,11px);text-align:center;color:#ffe7b0;line-height:1.2;max-width:95%}
@@ -67,6 +73,26 @@ h1{font-size:clamp(28px,4.6vw,55px);line-height:1.06;margin:7px 0 9px;font-weigh
 .action{min-height:48px;border:1px solid #ffe4a0;border-radius:12px;padding:11px 22px;background:linear-gradient(145deg,#fff3c8,#daa859 65%,#bd7b2f);color:#2d1721;font-weight:950;box-shadow:0 6px 16px #0006}
 .action.secondary{background:#221d37;color:#ffe9b4}
 .action.cash{background:linear-gradient(125deg,#baffd5,#4dbb84 70%,#2c895c);color:#10341f;border-color:#b1ffd5}
+
+.stage-banner{position:relative;margin:12px auto 4px;max-width:900px;padding:11px 16px;border:1px solid #8fd5bd86;border-radius:13px;background:linear-gradient(100deg,#163a3cbf,#142d50ce);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;box-shadow:inset 0 1px #d4f8ff24}
+.stage-banner.jackpot{border-color:#ffdf82;background:linear-gradient(100deg,#70432bd9,#302356e3);box-shadow:0 0 30px #ffcf6555}
+.stage-banner .stage-name{font:900 clamp(13px,1.6vw,20px) Georgia,serif;color:#fff2bd}
+.stage-banner .stage-hint{font-size:12px;color:#cfebdf}
+.loot-overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0}
+.loot-counter{min-width:0;text-align:center;border:1px solid #f0d29265;border-radius:12px;background:#101a31b3;padding:11px 5px}
+.loot-counter small{display:block;color:#bfcbc9;font-size:clamp(10px,1.2vw,12px);margin-bottom:4px}
+.loot-counter strong{color:#ffe1aa;font-size:clamp(15px,2vw,24px);font-variant-numeric:tabular-nums}
+.loot-counter.secure strong{color:#b6fdd7}
+.loot-counter.risk strong{color:#ffcf7d}
+.progress-line{display:flex;flex-wrap:wrap;align-items:center;gap:8px;justify-content:center;font-size:12px;color:#e6d9ce;margin:9px 0}
+.progress-line strong{color:#ffe1a9}
+.last-result{margin:10px auto 0;text-align:center;border:1px dashed #f6ce9380;border-radius:10px;padding:8px 10px;font-size:12px;background:#2c2644a8}
+.last-result[hidden]{display:none!important}
+.cash-dialog{width:min(94vw,460px);max-height:86dvh;overflow:auto;border:2px solid #ffdea3;border-radius:20px;background:linear-gradient(135deg,#47304b,#1c2140);color:#fff1d2;box-shadow:0 0 70px #ffcb7980;padding:25px;text-align:center}
+.cash-dialog::backdrop{background:#060512c9;backdrop-filter:blur(6px)}
+.cash-dialog h2{font-size:28px;font-family:Georgia,serif;color:#ffdc93}
+.cash-dialog p{line-height:1.5}
+.cash-dialog .actions{margin-top:20px}
 .instructions{text-align:center;font-size:13px;color:#d8c8b8;margin:10px}
 .inventory{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:15px}
 .panel{padding:14px;border:1px solid #e0b97974;border-radius:15px;background:#120f27c9;min-height:118px}
@@ -95,14 +121,14 @@ h1{font-size:clamp(28px,4.6vw,55px);line-height:1.06;margin:7px 0 9px;font-weigh
 .ending p{margin:5px 0 11px}
 footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
 [hidden]{display:none!important}
-@media(max-width:620px){.inventory{grid-template-columns:1fr}.hat{min-height:150px;padding:4px}.hatDetail{font-size:10px}.hatName{font-size:11px}.santa-hat{width:85px;height:80px}.game{padding:12px}.tiers{margin-bottom:10px}.hats{margin-top:12px}.hero{padding:12px 5px}}
+@media(max-width:620px){.loot-overview{gap:5px}.loot-counter{padding:8px 3px}.stage-banner{padding:9px}.inventory{grid-template-columns:1fr}.hat{min-height:150px;padding:4px}.hatDetail{font-size:10px}.hatName{font-size:11px}.santa-hat{width:85px;height:80px}.game{padding:12px}.tiers{margin-bottom:10px}.hats{margin-top:12px}.hero{padding:12px 5px}}
 @media(prefers-reduced-motion:reduce){*,*:before{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <main>
 <nav>
- <a class="back" id="back" href="./weihnachtswelt.html">❮ Weihnachtswelt</a>
+ <div class="tools"><a class="back" id="back" href="./weihnachtswelt.html">❮ Weihnachtswelt</a><a class="back" id="lobby" href="./lobby.html">🎮 Lobby</a></div>
  <div class="tools"><button id="refresh" type="button">↻ Aktualisieren</button><button id="full" type="button">⛶ Vollbild</button></div>
 </nav>
 <header class="hero">
@@ -114,7 +140,15 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
 <section class="game" aria-label="Weihnachtsmützen-Spiel">
  <div class="topline"><div id="roomTitle" class="roomTitle">🎅 Weihnachtsmützen</div><div id="checkpoint" class="checkpoint">🛡️ Noch kein Checkpoint</div></div>
  <p id="subtitle" class="subtitle">Unter einer Mütze lauert eine Bombe, zwei enthalten Geschenke.</p>
+ <div id="stage-banner" class="stage-banner"><span class="stage-name" id="stage-name">🎁 Weihnachtsstube</span><span class="stage-hint" id="stage-hint">Drei Mützen. Ein Risiko.</span></div>
  <div id="hats" class="hats" aria-label="Drei Weihnachtsmützen"></div>
+ <div class="loot-overview" aria-label="Gewinnübersicht">
+  <div class="loot-counter secure"><small>🛡️ Sicher</small><strong id="safe-count">0</strong></div>
+  <div class="loot-counter risk"><small>🎒 Im Risiko</small><strong id="risk-count">0</strong></div>
+  <div class="loot-counter"><small>💰 Spielgeld im Gewinn</small><strong id="cash-total">0 €</strong></div>
+ </div>
+ <div class="progress-line"><span>🎩 Sichere Mütze: <strong>2 von 3</strong></span><span id="next-checkpoint">· Nächster Checkpoint: Raum 3</span></div>
+ <div id="last-result" class="last-result" hidden></div>
  <div id="ending" class="ending" hidden></div>
  <div id="actions" class="actions">
   <button id="start" class="action" type="button">✨ Jackpot starten</button>
@@ -129,6 +163,12 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
  </div>
  <div id="status" class="status" role="status" aria-live="polite">Verbinde dich mit deinem Spielerprofil …</div>
 </section>
+<dialog id="cash-dialog" class="cash-dialog" aria-labelledby="cash-dialog-title">
+ <h2 id="cash-dialog-title">💰 Deine Gewinne sichern?</h2>
+ <p>Du steigst aus dem Weihnachtsmützen-Jackpot aus. Alle bislang erhaltenen Geschenke werden deinem Spielerprofil gutgeschrieben.</p>
+ <div id="cash-preview" class="prizes" style="justify-content:center"></div>
+ <div class="actions"><button type="button" id="cash-confirm" class="action cash">✅ Jetzt kassieren</button><button type="button" id="cash-cancel" class="action secondary">↩ Weiterspielen</button></div>
+</dialog>
 <div id="cinema" class="cinema" hidden role="dialog" aria-modal="true" aria-label="Besonderer Weihnachtsgewinn">
  <div class="confetti" id="confetti" aria-hidden="true"></div>
  <div class="cinema-panel">
@@ -146,9 +186,9 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
 const $=id=>document.getElementById(id),API=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const names=['','Weihnachtsstube I','Weihnachtsstube II','Erster Tresor','Schatzsaal I','Schatzsaal II','Goldkammer','Jackpot-Pforte','Königsschatz','Nordpol-Tresor','Legendäres Finale'];
 const emojis={pack:'🎁',hammer:'🔨',joker:'🃏',cash:'💰'};
-let state=null,userId='',busy=false,reveal=null,pendingRequest=null,revealTimer=null;
-const back=$('back'),params=new URLSearchParams(location.search),room=params.get('room')||sessionStorage.getItem('deal-active-room');
-if(room&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(room)){sessionStorage.setItem('deal-active-room',room);const u=new URL(back.href);u.searchParams.set('room',room);back.href=u.href;}
+let state=null,userId='',busy=false,reveal=null,pendingRequest=null,revealTimer=null,selectedHat=null;
+const back=$('back'),lobby=$('lobby'),params=new URLSearchParams(location.search),room=params.get('room')||sessionStorage.getItem('deal-active-room');
+if(room&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(room)){sessionStorage.setItem('deal-active-room',room);const u=new URL(back.href);u.searchParams.set('room',room);back.href=u.href;const ul=new URL(lobby.href);ul.searchParams.set('room',room);lobby.href=ul.href;}
 function authUser(){const s=window.SpielOnline?.state?.();return s?.status==='online'?s.user:null;}
 const uid=()=>authUser()?.uid||'';
 function setStatus(msg,bad=false,good=false){const el=$('status');el.textContent=msg;el.className='status'+(bad?' bad':good?' good':'');}
