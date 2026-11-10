@@ -51,7 +51,10 @@ function harness(count=28,{playerCount=3,balance=2,postError=null}={}){
   fetch:async(url,options)=>{
    requests.push({url,options});
    const inventory=url.endsWith('/peek/me');
-   const result=inventory?{ok:true,balance}:{ok:true,case:JSON.parse(options.body).case,cases:privateResults,balance:balance-1};
+   const chosen=inventory?null:JSON.parse(options.body).case;
+   const own=chosen===0;
+   const cases=own?[{id:myUid,name:'Ich',case:0,amount:100000000}]:privateResults;
+   const result=inventory?{ok:true,balance}:{ok:true,case:chosen,mode:own?'own':'opponents',cases,balance:balance-1};
    if(postError&&!inventory)return {ok:false,json:async()=>({ok:false,error:postError})};
    return {ok:true,json:async()=>result};
   }
@@ -61,14 +64,14 @@ function harness(count=28,{playerCount=3,balance=2,postError=null}={}){
 }
 const launch=ui=>Array.from(ui.elements.values()).find(x=>x.id==='peek-launch');
 
-test('all 26–29-case modes highlight other players and disable own/non-personal cases',async()=>{
+test('all 26–29-case modes highlight own and other players and disable non-personal cases',async()=>{
  for(const count of [26,27,28,29]){
   const ui=harness(count,{playerCount:3});
   assert.equal(launch(ui).hidden,false);
   await launch(ui).handlers.click();
   const tiles=ui.element('peek-cases').children;
   assert.equal(tiles.length,count);
-  assert.equal(tiles[0].disabled,true,'own case must be inaccessible');
+  assert.equal(tiles[0].disabled,false,'own personal case must be selectable');
   assert.ok(tiles[0].classList.classes.has('own'));
   assert.equal(tiles[2].disabled,true,'unassigned cases must be inaccessible');
   assert.equal(tiles[5].disabled,false,'David personal case must be selectable');
@@ -106,18 +109,38 @@ test('all other players appear at once for 2, 3 and 4 participants for one Joker
   assert.equal(ui.element('peek-balance').textContent,'Verfügbare Joker: 0');
  }
 });
-test('a solo player cannot open the Joker to peek own selected case',()=>{
- const ui=harness(29,{playerCount:1});
- assert.equal(launch(ui).hidden,true);
+test('solo players can open the Joker to reveal their own case only',async()=>{
+ const ui=harness(29,{playerCount:1,balance:1});
+ assert.equal(launch(ui).hidden,false);
+ await launch(ui).handlers.click();
+ const buttons=ui.element('peek-cases').children;
+ assert.equal(buttons[0].disabled,false);
+ assert.equal(buttons[5].disabled,true);
+ buttons[0].onclick();
+ assert.match(ui.element('peek-confirm').textContent,/meinen Koffer ansehen/);
+ await ui.element('peek-confirm').handlers.click();
+ const post=ui.requests.find(x=>x.options.method==='POST');
+ assert.equal(JSON.parse(post.options.body).case,0);
+ const items=ui.element('peek-result').children[1].children;
+ assert.equal(items.length,1);
+ assert.equal(items[0].children[0].textContent,'Ich');
+ assert.equal(ui.element('peek-balance').textContent,'Verfügbare Joker: 0');
+ assert.deepEqual(ui.game.opened,[]);
 });
-test('client cannot select their own case nor ordinary unassigned cases',async()=>{
+test('own selection offers individual reveal; ordinary unassigned cases cannot be selected',async()=>{
  const ui=harness(29,{playerCount:4});
  await launch(ui).handlers.click();
  const buttons=ui.element('peek-cases').children;
- buttons[0].onclick();
  buttons[2].onclick();
- assert.equal(ui.element('peek-confirm').hidden,true);
- assert.equal(ui.requests.filter(r=>r.options.method==='POST').length,0);
+ assert.equal(ui.element('peek-confirm').hidden,true,'empty cases cannot reveal');
+ buttons[0].onclick();
+ assert.match(ui.element('peek-confirm').textContent,/meinen Koffer ansehen/);
+ assert.equal(ui.requests.filter(r=>r.options.method==='POST').length,0,'selection alone spends nothing');
+ await ui.element('peek-confirm').handlers.click();
+ const cards=ui.element('peek-result').children[1].children;
+ assert.equal(cards.length,1);
+ assert.equal(cards[0].children[0].textContent,'Ich');
+ assert.equal(ui.requests.filter(r=>r.options.method==='POST').length,1);
 });
 test('invalid requests keep Joker pending for safe retry',async()=>{
  const ui=harness(29,{postError:'OWN_CASE_FORBIDDEN'});
@@ -133,9 +156,40 @@ test('UI displays only the private opponent list and uses dynamic 29-case capaci
  assert.match(js,/caseCount\(\)/);
  assert.match(js,/showPrivateResults\(data\)/);
  assert.match(js,/p\.id!==myId\(\)/);
- assert.match(js,/OWN_CASE_FORBIDDEN/);
+ assert.match(js,/mode=data\?\.mode==='own'/);
  assert.match(js,/NO_OTHER_PLAYER_CASES/);
  assert.match(js,/peek-results-grid/);
- assert.match(html,/peek-joker\.js\?v=20261110-opponents-all-v1/);
+ assert.match(html,/peek-joker\.js\?v=20261110-dual-own-opponents-v2/);
  assert.doesNotMatch(js,/eur\(data\.amount\)/);
+});
+
+test('one personal case reveal never shows opponents, while opponent selection shows every rival for one Joker',async()=>{
+ const uiOwn=harness(29,{playerCount:4,balance:1});
+ await launch(uiOwn).handlers.click();
+ uiOwn.element('peek-cases').children[0].onclick();
+ await uiOwn.element('peek-confirm').handlers.click();
+ const ownCards=uiOwn.element('peek-result').children[1].children;
+ assert.deepEqual(ownCards.map(c=>c.children[0].textContent),['Ich']);
+ assert.match(uiOwn.element('peek-result').children[0].textContent,/Dein persönlicher Koffer/);
+ assert.match(uiOwn.element('peek-note').textContent,/Koffer der Mitspieler bleiben geheim/);
+ assert.equal(uiOwn.requests.filter(x=>x.options.method==='POST').length,1);
+ const uiOther=harness(29,{playerCount:4,balance:1});
+ await launch(uiOther).handlers.click();
+ uiOther.element('peek-cases').children[5].onclick();
+ await uiOther.element('peek-confirm').handlers.click();
+ const otherCards=uiOther.element('peek-result').children[1].children;
+ assert.deepEqual(otherCards.map(c=>c.children[0].textContent),['Vanessa','David','Moin']);
+ assert.match(uiOther.element('peek-note').textContent,/eigener Koffer bleibt geheim/);
+ assert.equal(uiOther.requests.filter(x=>x.options.method==='POST').length,1);
+});
+
+test('client preserves pending own-case receipt for safe retry when network fails',async()=>{
+ const ui=harness(29,{playerCount:2,balance:1,postError:'STORAGE_UNAVAILABLE'});
+ await launch(ui).handlers.click();
+ ui.element('peek-cases').children[0].onclick();
+ await ui.element('peek-confirm').handlers.click();
+ assert.equal(ui.storage.size,1);
+ const value=[...ui.storage.values()][0];
+ assert.equal(JSON.parse(value).case,0);
+ assert.equal(JSON.parse(value).requestId,'peek-request-1234567890');
 });
