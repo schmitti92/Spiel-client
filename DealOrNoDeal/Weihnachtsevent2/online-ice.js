@@ -174,6 +174,7 @@ function render(){
  +'<div class="v44-milestone-kicker">✦ MEILENSTEIN ERREICHT ✦</div>'
  +'<div class="v44-milestone-treasure"><span class="v44-milestone-rays" aria-hidden="true"></span><img src="'+milestoneImage(celebration.number)+'" alt="Weihnachts-Schatztruhe für Meilenstein '+celebration.number+'" width="350" height="350" decoding="async"></div>'
  +'<strong class="v44-milestone-title">'+celebration.number+' von 70 Weihnachtsbildern!</strong>'
+ +(celebration.number===30?'<div class="v44-picture30-triple" aria-label="Drei Monster-Rad-Drehungen"><span style="--i:0">🎰</span><span style="--i:1">🎰</span><span style="--i:2">🎰</span></div>':'')
  +'<p class="v44-milestone-message">'+(celebration.number===10
   ?'🎭 Jan Schlappen freigeschaltet! Du kannst ihn jetzt in der Deal-or-No-Deal-Lobby auswählen. Die Freischaltung bleibt nach einem Spiel-Reset erhalten.'
   :celebration.number===20?'🎲 Weihnachtswürfel freigeschaltet! Deine sechs roten Würfel mit goldenen Augen sind ab jetzt in Kniffel (lokal und online) verfügbar. Melde dich mit demselben Profil an und schalte das Design nach Wunsch an oder aus. Die Freischaltung bleibt nach einem Reset bestehen.'
