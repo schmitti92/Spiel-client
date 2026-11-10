@@ -43,7 +43,7 @@ test('Random prize and money decisions are never client-controlled',()=>{
 });
 
 
-test('V3 stage presents ten checkpoint rooms and professional show controls',()=>{
+test('V7 stage presents 20 rooms, fast reveals and accessible optional cinematic controls',()=>{
  const css=readFileSync(resolve(root,'css/christmas-hats-show-v3.css'),'utf8');
  assert.match(html,/christmas-hats-show-v3\.css/);
  for(const id of ['choice-dialog','choice-next','choice-cash','choice-secured','choice-risked',
@@ -59,7 +59,13 @@ test('V3 stage presents ten checkpoint rooms and professional show controls',()=
  assert.match(script,/function clearShowTimers\(\)/);
  assert.match(script,/revealPhase='suspense'/);
  assert.match(script,/revealPhase='shown'/);
- assert.match(script,/revealTimer=setTimeout\(finishReveal,reduced\?3000:event\.superLuck\?12800:\[3,7\]\.includes\(event\.room\)\?10100:7600\)/);
+ assert.match(script,/revealTimer=setTimeout\(finishReveal,fastMode\?1050:reduced\?3000:event\.superLuck\?12800:/);
+ assert.match(script,/if\(!fastMode\)cinemaTimer=setTimeout/);
+ assert.match(script,/if\(outcome\?\.type!=='bomb'&&!fastMode\)showChoice\(\)/);
+ assert.match(script,/const demoBombOdds=\[10,12,0,14,16,0,18,20,0,22,24,0,26,28,0,30,31,0,32,33\]/);
+ assert.match(html,/id="bomb-chance"/);
+ assert.match(html,/id="mode"/);
+ assert.match(html,/20 –/);
  assert.match(script,/showChoice\(\)/);
  assert.match(script,/function finishReveal\(\)/);
  assert.match(script,/closeChoice\(\)/);
