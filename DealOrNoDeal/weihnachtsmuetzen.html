@@ -134,6 +134,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
 <link rel="stylesheet" href="./css/christmas-hats-rewards-v6.css?v=20261110-rewards-v6">
 <link rel="stylesheet" href="./css/christmas-hats-quick20-v7.css?v=20261110-phase1-onetap-v2">
 <link rel="stylesheet" href="./css/christmas-hats-northpole-hero-v8.css?v=20261110-nordpol-phase2-v2">
+<link rel="stylesheet" href="./css/christmas-hats-winter-path-v9.css?v=20261110-phase3-wintertrail-v1">
 </head>
 <body>
 <main>
@@ -180,7 +181,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
   <span data-stage-label="jackpot">💎 Eispalast · 10–15</span>
   <span data-stage-label="final">👑 Nordpol-Finale · 16–20</span>
  </div>
- <div class="journey-legend" aria-label="Bedeutung der besonderen Räume">
+ <div id="journey-legend" class="journey-legend" aria-label="Bedeutung der besonderen Räume">
   <span class="journey-legend-bonus"><span aria-hidden="true">🎁</span> <strong>Bombenfrei</strong> · 3, 6, 9, 12, 15, 18</span>
   <span class="journey-legend-save"><span aria-hidden="true">🛡️</span> <strong>Gewinne gesichert</strong> · 5, 10, 15</span>
   <span class="journey-legend-final"><span aria-hidden="true">👑</span> <strong>Finale</strong> · Raum 20</span>
@@ -509,6 +510,7 @@ function render(){
  $('journey-progress').setAttribute('aria-valuenow',String(completedRooms));
  $('journey-progress-fill').style.width=(completedRooms/limit*100)+'%';
  $('journey-progress-caption').textContent=completedRooms+' von '+limit+' Räumen geschafft';
+ $('journey-legend').hidden=!!s&&s.rulesVersion!==5;
  const banner=$('stage-banner'),zone=roomNumber<=3?'easy':roomNumber<=9?'medium':roomNumber<=15?'jackpot':'final';
  $('hats-stage').dataset.zone=zone;
  $('journey-current').textContent='🎩 Raum '+roomNumber+' / '+limit+((s?.checkpoints||[3,7]).includes(roomNumber)?' · 🛡️ Checkpoint':roomNumber===limit?' · 👑 Finale':'');
