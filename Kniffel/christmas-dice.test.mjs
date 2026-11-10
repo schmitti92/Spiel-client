@@ -41,7 +41,7 @@ function harness({loggedIn=true,response={ok:true,kniffelChristmasDice:false},ui
  };
  const context={window,document,fetch,localStorage:{getItem:k=>ls.get(k)||null,setItem:(k,v)=>ls.set(k,v)},Date:{now:()=>now},console:{warn:()=>{}}};
  runInNewContext(js,context);
- const flush=async()=>{await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve()};
+ const flush=async()=>{await new Promise(resolve=>setImmediate(resolve));await Promise.resolve()};
  return{
   window,button,status,dice,calls,ls,documentListeners,listeners,
   refresh:async(force=true)=>{await window.KniffelChristmasDice.refresh(force);await flush()},
