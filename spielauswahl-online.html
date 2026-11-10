@@ -411,6 +411,19 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 @media(max-width:600px){.deal-card .deal-image-card-button{padding:10px}.deal-card .deal-entry-caption{padding:9px 12px;font-size:13px}}
 @media(prefers-reduced-motion:reduce){.deal-card .deal-art,.deal-card .deal-entry-caption{transition:none}}
 </style>
+<style>
+  .game.dog-online-card{background:radial-gradient(ellipse at 70% 24%,#d5a86685,transparent 35%),linear-gradient(125deg,#0e2837,#152536 75%)!important;border:2px solid #d9b676!important;position:relative;overflow:hidden;display:flex!important;align-items:center;justify-content:center;aspect-ratio:1.15!important;min-height:210px!important;padding:10px!important}
+  .game.dog-online-card::before{background:none!important}
+  .game.dog-online-card::after{background:linear-gradient(155deg,#0002,#0006)!important;display:block!important}
+  .dog-online-card .dog-hero{display:flex;flex-direction:column;align-items:center;gap:6px;z-index:2;pointer-events:none;text-align:center}
+  .dog-online-card .dog-paw{font-size:28px;filter:drop-shadow(0 0 12px #e1b16a55)}
+  .dog-online-card strong{font-weight:1000;letter-spacing:.13em;color:#ffe4b0;font-size:clamp(32px,4vw,54px);text-shadow:0 4px 10px #0007}
+  .dog-online-card span{font-size:clamp(13px,1.2vw,18px);color:#fff2d4;font-weight:800}
+  .dog-online-card small{font-size:12px;color:#d3dee6;font-weight:650}
+  .dog-online-card .actions{position:absolute!important;inset:0!important;margin:0!important;padding:0!important;z-index:8!important}
+  .dog-online-card .image-card-button{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;background:transparent!important;border:0!important;cursor:pointer}
+  @media(max-width:760px){.game.dog-online-card{aspect-ratio:1.2!important}}
+  </style>
 </head>
 <body>
   <main class="container">
@@ -464,6 +477,7 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
         <img class="kniffel-art" src="Assets/game-backgrounds/kniffel-kachel.webp" alt="Kniffel" loading="lazy">
         <div class="actions"><button type="button" class="btn purple online-game-button image-card-button" aria-label="Kniffel online auswählen" data-select-game="kniffel"><span class="visually-hidden">Kniffel auswählen</span></button></div>
       </article>
+      <article class="game dog-online-card"><div class="dog-hero"><div class="dog-paw">🐾</div><strong>DOG</strong><span>Das klassische Team-Brettspiel</span><small>Mit Freunden online oder Bots</small></div><div class="actions"><button type="button" class="btn gold online-game-button image-card-button" aria-label="DOG klassisch im Raum auswählen" data-select-game="dog"><span class="visually-hidden">DOG auswählen</span></button></div></article>
       <article class="game deal-card">
         <img class="deal-art" src="DealOrNoDeal/assets/file_0000000001f4821084eb39e6d210088e.png?v=20261110" alt="" loading="lazy" decoding="async">
         <div class="actions"><a class="btn gold deal-image-card-button" id="deal-online-entry" href="DealOrNoDeal/lobby.html" aria-label="Deal or No Deal – Goldstudio-Lobby öffnen"><span class="deal-entry-caption">Goldstudio-Lobby öffnen ›</span></a></div>
