@@ -1,0 +1,97 @@
+/* THE 100 GATES · material-chest launch UI, standalone from Christmas. */
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#e8ebf5;background:#070b16;
+ --panel:#151c30;--gold:#ffdb88;--muted:#acbbd2;--line:#d7b4736b;--green:#6fedb8}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;overflow-x:hidden;
+ background:radial-gradient(ellipse 56% 39% at 49% -10%,#a0734660,transparent 92%),
+ radial-gradient(ellipse 48% 53% at -18% 55%,#22476355,transparent),
+ radial-gradient(ellipse 42% 55% at 113% 65%,#46296070,transparent),
+ linear-gradient(160deg,#141525,#060b18 56%,#0c1121);color:#e8ebf5}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.5;
+ background:repeating-linear-gradient(100deg,transparent 0 65px,#dbeeff0b 67px,transparent 70px 164px);
+ mask-image:linear-gradient(180deg,black,transparent 85%)}
+a{color:inherit}button{font:inherit;cursor:pointer}button:disabled{opacity:.48;cursor:not-allowed}
+button:focus-visible,a:focus-visible{outline:3px solid #bceef7;outline-offset:4px}
+[hidden]{display:none!important}
+.layout{width:min(1140px,calc(100% - 26px));margin:0 auto;padding:14px 0 35px}
+nav{display:flex;justify-content:space-between;gap:9px;align-items:center;flex-wrap:wrap}
+nav a,nav button{display:inline-flex;align-items:center;gap:7px;min-height:40px;border-radius:11px;
+ background:#172239df;border:1px solid #d6b57b8a;padding:8px 13px;text-decoration:none;color:#fff0cc;font-size:13px;font-weight:800}
+nav a:hover,nav button:hover{background:#2f3146}
+.hero{padding:32px 11px 24px;text-align:center}
+.kicker{font-size:12px;letter-spacing:.3em;font-weight:950;color:#d6b884;text-transform:uppercase}
+.hero h1{font:900 clamp(38px,7vw,76px)/1.09 Georgia,serif;margin:10px auto 7px;letter-spacing:.02em;
+ color:#ffe6a8;text-shadow:0 3px 0 #633e36,0 0 35px #f4ba69a1,0 0 95px #b56a4279}
+.hero p{font-size:clamp(13px,1.4vw,17px);color:#c8d4e5;max-width:790px;margin:9px auto;line-height:1.55}
+.chapter{margin:0 auto 15px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.chapter span{font-size:11px;font-weight:850;border:1px solid #aebed958;border-radius:999px;
+ padding:6px 12px;background:#142438e3;color:#e1dfd4}
+.chapter .focus{background:#57432f;color:#ffe1ab;border-color:#edc480}
+.notice{display:flex;gap:13px;align-items:flex-start;padding:14px 17px;background:#283049bb;
+ border:1px solid #bba97380;border-radius:14px;color:#f8e8c8;font-size:13px;line-height:1.5;margin-bottom:15px}
+.notice b{color:#fff2bb}
+.columns{display:grid;grid-template-columns:minmax(0,1.07fr) minmax(0,.93fr);gap:15px}
+.panel{background:linear-gradient(142deg,#25243adf,#111d31ed);border:1px solid #bd9c6d9c;border-radius:21px;
+ padding:clamp(14px,2.3vw,25px);box-shadow:inset 0 1px #fff8cd23,0 13px 31px #0009;min-width:0}
+.panel h2{font:850 clamp(19px,2.1vw,27px) Georgia,serif;color:#ffe9b8;margin:0 0 11px}
+.muted{color:#b7c6d8;font-size:13px;line-height:1.5}
+.status{color:#f6eccb;font-size:13px;min-height:25px;line-height:1.45}
+.status.danger{color:#ffa7a7}.status.good{color:#b6ffd8}
+.chest-zone{text-align:center;position:relative;isolation:isolate;overflow:hidden;border:1px solid #ebcd8680;
+ border-radius:20px;background:radial-gradient(ellipse 65% 55% at 50% 45%,#f6d18434,transparent 80%),
+ linear-gradient(145deg,#3b3041,#15162c 74%);padding:13px 12px 19px;margin:15px auto 12px;max-width:530px}
+.chest-zone:before{content:"";position:absolute;inset:-18%;z-index:-1;opacity:.4;
+ background:repeating-conic-gradient(from 10deg at 50% 53%,#efd18b19 0 7deg,transparent 7deg 18deg)}
+.chest-art{height:clamp(135px,20vw,201px);width:100%;position:relative;display:flex;align-items:center;justify-content:center;
+ font-size:clamp(92px,14vw,151px);filter:drop-shadow(0 15px 13px #000d) drop-shadow(0 0 30px #ffd27369);
+ transform-origin:50% 74%}
+.chest-art:after{content:"";position:absolute;bottom:7px;left:25%;right:25%;height:13px;
+ border-radius:50%;background:#ffe19e40;filter:blur(8px);z-index:-1}
+.chest-art.has-box{animation:chest-hover 3.3s ease-in-out infinite}
+.chest-art.opening{animation:chest-open .9s cubic-bezier(.19,.8,.35,1)}
+@keyframes chest-hover{50%{transform:translateY(-8px) rotate(1deg)}}
+@keyframes chest-open{0%,100%{transform:none}25%{transform:translateY(-15px) scale(1.12)}48%{transform:rotate(-6deg) scale(.98)}70%{transform:rotate(5deg) scale(1.09)}}
+.chest-number{font:900 clamp(24px,3.5vw,41px) Georgia,serif;color:#fff1c7}
+.chest-note{font-size:13px;color:#ddd1b9;margin:7px 0}
+.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:15px}
+.button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:48px;
+ border-radius:12px;font-weight:900;padding:11px 21px;border:1px solid #fff0bc;
+ background:linear-gradient(125deg,#fff2c0,#e5b46a,#ac7438);color:#231b28;
+ box-shadow:inset 0 1px #fff9dbad,0 7px 14px #0008}
+.button:hover:not(:disabled){filter:brightness(1.07);transform:translateY(-1px)}
+.button.secondary{border-color:#9bc7db;background:linear-gradient(135deg,#2b4660,#172c42);
+ color:#e4f5ff;box-shadow:inset 0 1px #d3ebed2b,0 4px 9px #0008}
+.drop{max-width:530px;margin:12px auto 0;padding:14px 12px;border-radius:15px;border:2px solid #ffe7b1;
+ background:radial-gradient(ellipse at top,#c18a4775,transparent 82%),#152b38;text-align:center;
+ box-shadow:0 0 24px #ffe3a342;animation:drop-in .53s cubic-bezier(.2,1.1,.3,1)}
+.drop h3{font:900 24px Georgia,serif;color:#fff1bd;margin:4px 0 6px}
+.drop-contents{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.drop-pill{border:1px solid #f0d3999c;border-radius:11px;padding:8px 12px;background:#151c31d9;color:#f4edda;font-weight:850}
+@keyframes drop-in{from{opacity:0;transform:translateY(20px) scale(.93)}to{opacity:1;transform:none}}
+.resources{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.resource{border:1px solid #748eaa6e;border-radius:14px;background:#0f2035ba;padding:14px 7px;text-align:center}
+.resource .emoji{font-size:clamp(25px,3.7vw,39px);display:block;filter:drop-shadow(0 3px 5px #000a)}
+.resource strong{display:block;font-size:clamp(23px,3vw,35px);line-height:1.2;color:#fff0be;margin-top:6px;font-variant-numeric:tabular-nums}
+.resource small{font-weight:750;color:#d6e1ee;font-size:clamp(10px,1.2vw,13px)}
+.resource.rune{border-color:#ddb87475;background:radial-gradient(ellipse at top,#84573545,transparent 80%),#15203a}
+.rule-table{width:100%;border-collapse:collapse;margin:15px 0 4px;font-size:13px}
+.rule-table th,.rule-table td{border-bottom:1px solid #d5c09245;padding:9px 7px;text-align:left}
+.rule-table td:last-child,.rule-table th:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.rule-table th{color:#e7c88e;font-size:12px;letter-spacing:.07em;text-transform:uppercase}
+.history{display:grid;gap:7px;margin:14px 0 2px;padding:0;list-style:none}
+.history li{border:1px solid #718cab61;border-radius:11px;padding:10px;
+ background:#122033bb;display:flex;flex-wrap:wrap;justify-content:space-between;gap:7px;
+ font-size:12px}
+.history strong{color:#ffeab1}
+.waypoint{margin-top:15px}
+.waypoint .steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:15px 0}
+.waypoint .step{border:1px solid #7b92aa61;background:#131f33;padding:12px 7px;border-radius:12px;
+ text-align:center;font-size:11px;color:#d3d8e3;line-height:1.4;font-weight:700}
+.waypoint .step b{display:block;color:#f8d99c;font-size:22px;margin-bottom:5px}
+.waypoint .step.current{border-color:#f1c581;background:#4b382f}
+.foot{color:#a7b6cf;text-align:center;font-size:12px;margin:24px auto 6px;line-height:1.55}
+@media(max-width:750px){.columns{grid-template-columns:1fr}.layout{width:min(680px,calc(100% - 16px))}
+ .hero{padding:22px 2px}.chest-art{height:160px}.panel{border-radius:15px}.notice{padding:11px 12px}}
+@media(max-width:390px){.resources{gap:4px}.resource{padding:10px 4px}.resource small{font-size:10px}.button{width:100%}
+ .waypoint .steps{grid-template-columns:repeat(2,1fr)}.kicker{letter-spacing:.14em}}
+@media(prefers-reduced-motion:reduce){.chest-art.has-box,.chest-art.opening,.drop{animation:none!important}
+ .button:hover{transform:none}}
