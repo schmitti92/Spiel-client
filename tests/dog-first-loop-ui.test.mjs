@@ -16,7 +16,7 @@ test('Tor 10 has a dedicated 30s ready room for exactly three players',()=>{
   assert.ok(arenaJs.includes(action),'missing '+action);
  assert.ok(arenaJs.includes('30000'));
  assert.ok(arenaJs.includes('cooldownExpired'));
- assert.ok(arenaJs.includes('pendingKey'));
+ assert.ok(arenaJs.includes('dog:boss10:pending:'));
  assert.ok(arenaJs.includes('setInterval'));
  assert.ok(!arenaJs.includes("localStorage.setItem('dog-unlocked'"));
 });
@@ -24,7 +24,7 @@ test('Tor 10 has a dedicated 30s ready room for exactly three players',()=>{
 test('Boss 10 opens from the map while old training boss remains separate',()=>{
  assert.ok(mapJs.includes('dog-boss10.html'));
  assert.ok(!mapJs.includes('Bestehende Boss-Testarena öffnen'));
- assert.ok(arena.includes('Tor 9 geschafft'));
+ assert.ok(arena.includes('6–9 geschafft haben'));
  for(const id of ['boss10-launch','ascension-launch'])assert.ok(event.includes('id="'+id+'"'));
  assert.ok(nav.includes('boss10-launch'));
  assert.ok(nav.includes('ascension-waypoint'));
