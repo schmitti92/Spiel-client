@@ -271,6 +271,18 @@ function draw(){
         if(a&&b)out.push('<path d="M '+pair(a)+' L '+pair(b)+'" fill="none" stroke="'+color[seat]+'" stroke-opacity=".48" stroke-width="4" pointer-events="none"/>');
       }
     }
+    // Visual connections distinguish the actual 64-step circuit from the
+    // off-track house reserve (dotted) and the separate finish lane (solid).
+    for(let seat=0;seat<4;seat++){
+      const ref=referencePoints(draft,seat);
+      const goal=draft.goals[seat][0],house=draft.homes[seat][0];
+      if(ref.goalEntry&&goal){
+        out.push('<path d="M '+pair(ref.goalEntry)+' L '+pair(goal)+'" fill="none" stroke="'+color[seat]+'" stroke-width="3" stroke-opacity=".95" stroke-dasharray="7 3" pointer-events="none"/>');
+      }
+      if(ref.exit&&house){
+        out.push('<path d="M '+pair(house)+' L '+pair(ref.exit)+'" fill="none" stroke="'+color[seat]+'" stroke-width="2.6" stroke-opacity=".67" stroke-dasharray="3 6" pointer-events="none"/>');
+      }
+    }
   }
   out.push('<rect x="303" y="311" width="154" height="138" rx="30" fill="#061b2f" fill-opacity=".62" stroke="#b39a6c" stroke-opacity=".43" stroke-width="2" pointer-events="none"/>');
   out.push(svgText(380,372,'DOG','#f7dfae',40));
@@ -293,6 +305,31 @@ function draw(){
   for(let i=0;i<64;i++)if(draft.track[i])fieldMarkup(draft.track[i],'track',i,Math.floor(i/16));
   for(const kind of ['goals','homes'])for(let seat=0;seat<4;seat++)
     for(let i=0;i<4;i++)if(draft[kind][seat][i])fieldMarkup(draft[kind][seat][i],kind,i,seat);
+  // Mark open circuit ends and provide a ghost preview of grouped placement.
+  if(settings.path){
+    const connection=getTrackConnections(draft);
+    const ends=new Set();
+    for(const edge of connection.missing){
+      if(edge.hasFrom)ends.add(edge.from);
+      if(edge.hasTo)ends.add(edge.to);
+    }
+    for(const i of ends){
+      const p=draft.track[i];
+      if(p)out.push('<circle cx="'+p.x+'" cy="'+p.y+'" r="23" fill="none" stroke="#f7d48a" stroke-width="2" stroke-dasharray="4 3" pointer-events="none"/>');
+    }
+    const gap=straightGaps(draft).find(g=>g.from===connectionFocus);
+    if(gap){
+      const a=draft.track[gap.from],b=draft.track[gap.to];
+      out.push('<path d="M '+pair(a)+' L '+pair(b)+'" stroke="#ffe3b1" stroke-width="3" stroke-dasharray="6 7" stroke-opacity=".85" pointer-events="none"/>');
+    }
+  }
+  if(assistantPreview){
+    const c=color[assistantPreview.seat];
+    assistantPreview.points.forEach((p,i)=>{
+      out.push('<circle cx="'+p.x+'" cy="'+p.y+'" r="17.5" fill="'+c+'" fill-opacity=".3" stroke="#fff0bd" stroke-width="3" stroke-dasharray="5 3" pointer-events="none"/>');
+      out.push(svgText(p.x,p.y+4,i+1,'#fff1cd',12));
+    });
+  }
   // Eight equal-radius destinations around the previous track field.
   if(settings.guide&&selected.kind==='track'&&tool==='place'){
     const origin=previousTrackField(draft,selected);
