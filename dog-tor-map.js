@@ -135,10 +135,12 @@
   if(group){
    if(gate===10){
     boss.hidden=false;
-    boss.href='./dog-boss.html'+roomSuffix;
-    boss.textContent='🔥 Bestehende Boss-Testarena öffnen';
-    boss.setAttribute('aria-label','Bestehende Boss-Testarena öffnen. Sie ist technisch noch Tor 1.');
-    notice.textContent='⚠️ Die bestehende Arena ist noch ein Tor-1-Testboss. Die echte Tor-10-Arena wird separat an den gemeinsamen Fortschritt angeschlossen.';
+    boss.href='./dog-boss10.html'+roomSuffix;
+    boss.textContent='🐉 Gemeinsam Boss 10 starten';
+    boss.setAttribute('aria-label','Die echte gemeinsame Tor-10-Bossarena betreten');
+    notice.textContent=(mapState?.sharedBosses||[]).includes(10)?
+     '🏆 Euer gemeinsamer Sieg über Boss 10 ist gespeichert. Die nächste Schmiedestufe ist freigeschaltet.':
+     '🐉 Alle drei Spieler treffen sich in der Bossarena. Jeder muss Tor 9 geschafft haben und auf Bereit klicken.';
    }else{
     boss.hidden=true;
     notice.textContent='🔒 Dieser Gruppenboss ist noch nicht implementiert. Sein Start wird hier freigeschaltet, sobald der Server den Kampf unterstützt.';
