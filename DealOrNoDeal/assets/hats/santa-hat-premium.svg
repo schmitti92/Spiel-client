@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="300" viewBox="0 0 320 300" role="img" aria-label="Rote Samt-Weihnachtsmütze mit weißem Fell">
+<defs>
+ <linearGradient id="velvet" x1="0" x2="1" y1="0.2" y2="1"><stop stop-color="#73081d"/><stop offset=".23" stop-color="#c21937"/><stop offset=".52" stop-color="#ff3a4b"/><stop offset=".73" stop-color="#bb0d27"/><stop offset="1" stop-color="#580916"/></linearGradient>
+ <linearGradient id="shine" x1="0" x2="1"><stop stop-color="#ffb29d" stop-opacity=".7"/><stop offset=".24" stop-color="#fff1db" stop-opacity=".12"/><stop offset="1" stop-color="#ff8290" stop-opacity="0"/></linearGradient>
+ <linearGradient id="fur" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fffefa"/><stop offset=".42" stop-color="#f7f6fa"/><stop offset=".84" stop-color="#cfdae9"/><stop offset="1" stop-color="#99afcb"/></linearGradient>
+ <radialGradient id="pom"><stop stop-color="#fff" offset="0"/><stop stop-color="#fffdf9" offset=".58"/><stop stop-color="#e0e8f4" offset=".86"/><stop stop-color="#a9bfd9" offset="1"/></radialGradient>
+ <filter id="shadow" x="-40%" y="-40%" width="180%" height="200%"><feGaussianBlur stdDeviation="8"/></filter>
+ <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.5"/></filter>
+ <clipPath id="cap"><path d="M73 209 C91 149 126 76 174 51 C204 31 228 57 243 94 C251 114 261 124 278 127 C278 156 265 176 246 166 C221 153 220 123 214 101 C204 141 219 179 244 213 Q161 241 73 209 Z"/></clipPath>
+</defs>
+<ellipse cx="159" cy="263" rx="94" ry="16" fill="#080c1d" opacity=".48" filter="url(#shadow)"/>
+<path d="M73 209 C91 149 126 76 174 51 C204 31 228 57 243 94 C251 114 261 124 278 127 C278 156 265 176 246 166 C221 153 220 123 214 101 C204 141 219 179 244 213 Q161 241 73 209 Z" fill="url(#velvet)" stroke="#660e22" stroke-width="3.7" stroke-linejoin="round"/>
+<g clip-path="url(#cap)">
+ <path d="M112 210 C134 131 170 83 185 54 C165 106 158 157 173 224 Z" fill="url(#shine)" opacity=".8"/>
+ <path d="M214 59 C235 89 224 139 247 165" fill="none" stroke="#ffb0b1" stroke-width="5" opacity=".2"/>
+ <path d="M101 205 C134 196 195 208 241 211" fill="none" stroke="#420518" stroke-width="16" opacity=".18"/>
+ <g fill="#ffd4a0" opacity=".42">
+  <path d="M145 142l2.5 7 7 2.5-7 2.5-2.5 7-2.5-7-7-2.5 7-2.5z"/>
+  <path d="M177 105l2 5.5 5.5 2-5.5 2-2 5.5-2-5.5-5.5-2 5.5-2z"/>
+  <path d="M205 177l1.7 5 5 1.7-5 1.7-1.7 5-1.7-5-5-1.7 5-1.7z"/>
+ </g>
+</g>
+<path d="M67 216 C111 198 190 199 250 213 C265 220 265 246 250 249 C196 263 123 260 68 249 C53 246 51 226 67 216Z" fill="#031023" opacity=".36" transform="translate(1 7)" filter="url(#shadow)"/>
+<path d="M67 212 C108 197 194 199 252 213 C269 221 266 242 249 249 C194 261 123 258 68 249 C52 245 49 224 67 212Z" fill="url(#fur)" stroke="#e3eaf5" stroke-width="2.8"/>
+<path d="M69 215 C119 204 197 207 251 220" fill="none" stroke="#fff" opacity=".8" stroke-width="5" stroke-linecap="round"/>
+<path d="M69 243 C119 254 201 253 252 243" fill="none" stroke="#a8bcd2" opacity=".52" stroke-width="3.2" stroke-linecap="round"/>
+<g opacity=".55" stroke="#fff" stroke-width="2" fill="none">
+ <path d="M85 222q-9 11 2 19M102 218q-8 12 4 21M125 218q-7 11 4 22M156 216q-8 12 1 25M186 217q-10 11 1 23M218 219q-8 12 2 22M241 222q-7 10-1 15"/>
+</g>
+<circle cx="270" cy="153" r="29" fill="#091123" opacity=".34" filter="url(#shadow)"/>
+<circle cx="267" cy="146" r="28" fill="url(#pom)" stroke="#f6f9ff" stroke-width="2"/>
+<g fill="#fff" opacity=".82"><circle cx="250" cy="135" r="7"/><circle cx="274" cy="127" r="7"/><circle cx="282" cy="146" r="8"/><circle cx="261" cy="162" r="6"/><circle cx="277" cy="162" r="5"/></g>
+<circle cx="258" cy="136" r="9" fill="#fff" opacity=".43" filter="url(#glow)"/>
+<path d="M75 207q36-112 94-155" fill="none" stroke="#ffb7aa" stroke-linecap="round" stroke-width="4" opacity=".22"/>
+</svg>
