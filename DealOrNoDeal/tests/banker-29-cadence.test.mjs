@@ -41,7 +41,7 @@ test('countdown is purely local and shown in money-summary with no network or Fi
  const code=app.slice(start,end);
  assert.doesNotMatch(code,/fetch\(|request\(|setTimeout|setInterval|Firestore|Firebase/);
  assert.match(app,/ausgeschieden'\+next29BankerCountdown\(g\)/);
- assert.match(html,/app\.js\?v=20261110-soft-gold-no-turn-label-v2/);
+ assert.match(html,/app\.js\?v=20261110-random-bankers-30cases-v1/);
  assert.doesNotThrow(()=>new Script(app));
 });
 
