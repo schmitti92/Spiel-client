@@ -34,17 +34,20 @@ test('All four premium illustrations exist and have safe, self-contained SVG sou
  }
 });
 
-test('Journey shows ten distinct stages, stronger checkpoints and three stage locations',()=>{
+test('Journey shows 20 stages, safe bonus rooms, checkpoints and four distinct worlds',()=>{
  assert.match(page,/id="journey-current"/);
  assert.match(page,/id="tiers" role="group"/);
  assert.match(page,/data-stage-label="easy"/);
  assert.match(page,/data-stage-label="medium"/);
  assert.match(page,/data-stage-label="jackpot"/);
+ assert.match(page,/data-stage-label="final"/);
+ assert.match(page,/christmas-hats-quick20-v7\.css/);
  assert.match(page,/id="hats-stage" class="game" data-zone="easy"/);
- assert.match(inline,/i===3\|\|i===7/);
- assert.match(inline,/i===10\?'👑'/);
+ assert.match(inline,/const isCheckpoint=\(state\?\.checkpoints\|\|\[3,7\]\)\.includes\(i\)/);
+ assert.match(inline,/const isBonus=state\?\.rulesVersion===5&&i%3===0&&i<20/);
+ assert.match(inline,/i===\(state\?\.maxRoom\|\|10\)\?'👑'/);
  assert.match(inline,/\$\('hats-stage'\)\.dataset\.zone=zone/);
- assert.match(inline,/roomNumber<=3\?'easy':roomNumber<=6\?'medium':'jackpot'/);
+ assert.match(inline,/roomNumber<=3\?'easy':roomNumber<=9\?'medium':roomNumber<=15\?'jackpot':'final'/);
 });
 
 test('Hats remain equally concealed and stage graphic never determines server prizes',()=>{
