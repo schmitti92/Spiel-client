@@ -941,7 +941,7 @@ function monsterShowPrize(spin){
   :prize.kind==='avatar'?'Der Muffige Giftzwerg ist jetzt in der Spiellobby freigeschaltet! Seine frechen Kommentare warten im nächsten Spiel.'
   :'Das Spielgeld wurde deinem Goldstudio-Konto gutgeschrieben.';
  avatar.hidden=prize.kind!=='avatar';
- monsterSpinRewardCards=Array.isArray(spin.revealed)&&spin.revealed.length?spin.revealed:null;
+ monsterSpinRewardCards=Array.isArray(spin.revealed)&&spin.revealed.some(card=>card?.isNew===true)?spin.revealed:null;
  monsterSpinPackId=spin.packId||null;
  cardButton.hidden=!monsterSpinRewardCards;
  result.hidden=false;
@@ -1201,12 +1201,16 @@ function revealCardHoldMs(card){
 }
 const overlay=document.getElementById('reveal-overlay'),next=document.getElementById('reveal-next'),skip=document.getElementById('reveal-skip'),close=document.getElementById('reveal-close');
 function openReveal(revealed,mode='real',pack='small'){
+ // The receipt already credited ALL cards. Only genuinely new discoveries
+ // deserve a visible ceremony; an all-duplicate pack runs silently.
+ if(mode!=='demo'&&!(Array.isArray(revealed)&&revealed.some(card=>card?.isNew===true)))return false;
  const present=()=>{
  stopRevealAuto();revealMotionToken++;revealMotionBusy=false;lastHammerAwardSummary='';
  document.getElementById('reveal-bingo-awards').textContent='';
  document.getElementById('hammer-claim-status').classList.remove('is-jackpot');
- const array=window.ChristmasPackCinema?.orderCards?.(revealed)
+ const sorted=window.ChristmasPackCinema?.orderCards?.(revealed)
   ||(Array.isArray(revealed)?[...revealed]:[]);
+ const array=mode==='demo'?sorted:sorted.filter(card=>card?.isNew===true);
  revealState={cards:array,index:-1,mode,pack};
  // Prefetch the first two awarded cards while the gift opening plays.
  window.ChristmasCardImages?.prefetch(array,0,christmasCardImage,2);
@@ -1261,7 +1265,7 @@ function finishReveal(){
  const newly=state.cards.filter(card=>card.isNew===true).length;
  document.getElementById('reveal-counter').textContent=
   state.mode==='demo'?'🎬 '+state.cards.length+' Demo-Karten gezeigt · Keine Gutschrift':
-  '✨ '+state.cards.length+' Karten enthüllt!'+(newly?' 🌟 '+newly+' neu entdeckt!':'');
+  '🌟 '+newly+' neue '+(newly===1?'Karte':'Karten')+' entdeckt und enthüllt!';
  next.hidden=true;skip.hidden=true;close.hidden=false;
  if(window.ChristmasPackCinema)window.ChristmasPackCinema.summarise(state.cards,state.mode);
  else overlay.dataset.stage='summary';
