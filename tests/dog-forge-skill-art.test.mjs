@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Script} from 'node:vm';
+import {Script,runInNewContext} from 'node:vm';
 import {readFileSync,existsSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {resolve,dirname} from 'node:path';
@@ -183,4 +183,75 @@ test('D1 workshop scene setting is client-only and independent of forge progress
  assert.ok(!fx.includes('XMLHttpRequest'));
  assert.doesNotThrow(()=>new Script(fx,{filename:'dog-forge-fx.js'}));
  assert.doesNotThrow(()=>new Script(ui,{filename:'dog-forge-ui.js'}));
+});
+
+test('D1 scene reacts safely to desktop/mobile and missing images',()=>{
+ const fx=read('dog-forge-fx.js');
+ const loadedImages=[],listeners={},mediaListeners=[];
+ const classes=new Set(),vars=new Map(),memory=new Map();
+ const body={
+  dataset:{
+   forgeBackground:'',
+   forgeBackgroundDesktop:'./dog-forge-art/forge-workshop-desktop.webp',
+   forgeBackgroundMobile:'./dog-forge-art/forge-workshop-mobile.webp'
+  },
+  classList:{
+   add(name){classes.add(name);},
+   remove(name){classes.delete(name);},
+   contains(name){return classes.has(name);},
+   toggle(name,on){if(on)classes.add(name);else classes.delete(name);}
+  },
+  style:{setProperty:(key,val)=>vars.set(key,val),removeProperty:key=>vars.delete(key)}
+ };
+ const makeButton=()=>({
+  setAttribute(){},
+  addEventListener(type,handler){this.listeners[type]=handler;},
+  listeners:{},textContent:'',disabled:false
+ });
+ const sound=makeButton(),scene=makeButton();
+ const workspace={classList:{contains:()=>false},style:{removeProperty(){},setProperty(){}},dataset:{}};
+ const dialog={open:false,classList:{contains:()=>false},querySelector(){return null}};
+ const media={matches:false,addEventListener(type,handler){if(type==='change')mediaListeners.push(handler);}};
+ const document={
+  body,hidden:false,
+  getElementById(id){return {
+   'forge-workspace':workspace,'forge-result':dialog,
+   'forge-sound-toggle':sound,'forge-scene-toggle':scene
+  }[id]||null;},
+  addEventListener(type,handler){listeners[type]=handler;}
+ };
+ class DummyObserver{observe(){}}
+ class FakeImage{
+  constructor(){loadedImages.push(this);}
+  set src(value){this.path=value;}
+ }
+ runInNewContext(fx,{
+  document,MutationObserver:DummyObserver,Image:FakeImage,
+  window:{matchMedia:()=>media},localStorage:{
+   getItem:key=>memory.get(key)||null,
+   setItem:(key,val)=>memory.set(key,val)
+  }
+ });
+ assert.equal(loadedImages.length,1);
+ assert.match(loadedImages[0].path,/forge-workshop-desktop\.webp$/);
+ assert.equal(classes.has('forge-has-custom-wall'),false);
+ loadedImages[0].onerror();
+ assert.equal(classes.has('forge-has-custom-wall'),false,'fallback after 404');
+ scene.listeners.click();
+ assert.equal(classes.has('forge-scene-off'),true);
+ assert.equal(loadedImages.length,1,'scene off does not download more images');
+ scene.listeners.click();
+ assert.equal(classes.has('forge-scene-off'),false);
+ assert.equal(memory.get('dog:forge:scene:v1'),'on');
+ assert.equal(loadedImages.length,2);
+ loadedImages[1].onload();
+ assert.equal(classes.has('forge-has-custom-wall'),true);
+ assert.match(vars.get('--forge-custom-wall'),/forge-workshop-desktop\.webp/);
+ media.matches=true;mediaListeners[0]();
+ assert.equal(loadedImages.length,3);
+ assert.match(loadedImages[2].path,/forge-workshop-mobile\.webp$/);
+ loadedImages[2].onload();
+ assert.match(vars.get('--forge-custom-wall'),/forge-workshop-mobile\.webp/);
+ // No hidden data store or game network interaction occurs during this switch.
+ assert.equal(typeof listeners.visibilitychange,'function');
 });
