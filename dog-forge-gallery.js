@@ -172,6 +172,11 @@
  }
  function render(payload){
   const next=payload?.uid&&payload?.hero?payload:null;
+  // Frequent busy/selection redraws reuse the same authoritative hero object.
+  // Avoid recreating gallery images and unlock cards for unchanged state.
+  if(!next&&!state)return;
+  if(next&&state&&next.uid===state.uid&&next.hero===state.hero&&
+     next.rank===state.rank&&next.player===state.player)return;
   if(next?.uid!==state?.uid)prefs=next?readPrefs(next.uid):{title:'auto',frame:'auto'};
   state=next;
   paint();
