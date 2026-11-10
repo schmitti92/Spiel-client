@@ -379,7 +379,12 @@ async function submit(payload){
   }else{
    reveal=null;render();setStatus(type==='cash'?'✅ Deine Gewinne wurden serverseitig gutgeschrieben.':'✨ Neues Spiel gestartet!',false,true);
   }
- }catch(e){setStatus('⚠️ '+describeError(e)+' – Bitte dieselbe Aktion sicher wiederholen.',true);}
+ }catch(e){
+  const hardErrors=new Set(['TEST_ACCESS_DENIED','LOGIN_REQUIRED','AUTH_FAILED','INVALID_ACTION','INVALID_HAT','REQUEST_ID_CONFLICT','START_REQUIRED','SESSION_CHANGED']);
+  const permanent=hardErrors.has(e?.message);
+  if(permanent)savePending(null);
+  setStatus('⚠️ '+describeError(e)+(permanent?' – Bitte Spielstand aktualisieren.':' – Bitte dieselbe Aktion sicher wiederholen.'),true);
+ }
  finally{busy=false;selectedHat=null;render();}
 }
 $('cinema-close').onclick=finishReveal;
