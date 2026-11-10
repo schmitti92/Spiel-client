@@ -688,6 +688,7 @@ const demoNames={small:'Normales Weihnachtspaket',large:'Goldpaket',premium:'Pre
 const demoRand=n=>Math.floor(Math.random()*n);
 const demoPick=a=>a[demoRand(a.length)];
 const demoOdds=[2,2,2,5,5,5,10,10,15,15,16,16,17,17,18,18,19,19,20,22];
+const demoBalancedOdds=[0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,9,10,12];
 const demoBombOdds=[10,12,0,14,16,0,18,20,0,22,24,0,26,28,0,30,31,0,32,33];
 const demoCheckpoints=[5,10,15,20];
 const demoStoreKey=()=> 'christmas-hats-chris-preview-v1-'+uid();
@@ -697,6 +698,31 @@ function demoItem(kind,variant,quantity){
  if(kind==='joker')return {kind,quantity,label:quantity+' Kofferblick-Joker'};
  return kind==='pack'?{kind,packId:variant,quantity,label:quantity+'× '+demoNames[variant]}
   :{kind,hammer:variant,quantity,label:quantity+'× '+demoNames[variant]};
+}
+const demoBalancedPools=[
+ [['pack','small'],['pack','small'],['pack','small'],['hammer','single']],
+ [['pack','large'],['pack','large'],['pack','large'],['hammer','double'],['hammer','double'],['cash',null]],
+ [['pack','large'],['pack','large'],['hammer','double'],['hammer','double'],['pack','premium'],['cash',null],['cash',null],['joker',null]],
+ [['pack','large'],['pack','premium'],['pack','premium'],['hammer','double'],['hammer','double'],['hammer','lucky'],['cash',null],['cash',null],['joker',null]],
+ [['pack','premium'],['pack','premium'],['pack','premium'],['pack','platinum'],['hammer','double'],['hammer','lucky'],['cash',null],['cash',null],['cash',null],['joker',null]]
+];
+const demoBalancedCash=[[],[10000,20000,30000,50000],[30000,50000,75000,100000,150000],[60000,100000,150000,200000,300000],[150000,200000,300000,400000,600000,800000,1000000]];
+function demoBalancedPrize(room){
+ const stage=room<=3?0:room<=6?1:room<=10?2:room<=15?3:4;
+ const superLuck=demoRand(100)<demoBalancedOdds[room-1];
+ const count=superLuck?(room>=16&&demoRand(100)<20?3:2):room<=6?1:demoRand(100)<(room<=10?18:room<=15?28:38)?2:1;
+ const items=[],used=new Set();
+ for(let tries=0;items.length<count&&tries<40;tries++){
+  const [kind,variant]=demoPick(demoBalancedPools[stage]),key=kind+':'+variant;
+  if(used.has(key))continue;
+  used.add(key);
+  items.push(kind==='cash'?demoMoney(demoPick(demoBalancedCash[stage])):demoItem(kind,variant,1));
+ }
+ if(superLuck&&room===20&&demoRand(1000)===0){
+  const i=items.findIndex(item=>item.kind==='cash');
+  if(i>=0)items[i]=demoMoney(5000000);else items[0]=demoMoney(5000000);
+ }
+ return {superLuck,items};
 }
 function demoPrize(room){
  const superLuck=demoRand(100)<demoOdds[room-1];
