@@ -16,6 +16,7 @@ function catalog(){
  let calls=0;
  const context={
   reward:{revealed:[]},
+  newCards:[{id:'christmas-01',isNew:true}],
   window:{ChristmasCardImages:{prefetch(){calls++}}}
  };
  const mapped=runInNewContext(fragment+'\n({christmasArt,gameCardArt})',context);
@@ -42,7 +43,7 @@ test('multiplayer pack display resolves every card from christmas-01 through chr
 });
 test('banker bonus and finale share reliable cards without icon-only broken image fallback',()=>{
  assert.match(html,/christmas-card-image-loader\.js\?v=20261109-cards-retry-v2/);
- assert.match(fragment,/ChristmasCardImages\?\.prefetch\(reward\.revealed\|\|\[\],0,gameCardArt/);
+ assert.match(fragment,/if\(newCards\.length\)window\.ChristmasCardImages\?\.prefetch\(newCards,0,gameCardArt/);
  assert.match(html,/window\.ChristmasCardImages\?\.guard\(picture\)/);
  assert.match(html,/window\.ChristmasCardImages\.show\(picture,url\)/);
  assert.match(html,/window\.ChristmasCardImages\?\.guard\(specialArt\)/);
