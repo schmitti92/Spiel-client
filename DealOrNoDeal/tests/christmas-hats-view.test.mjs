@@ -99,7 +99,9 @@ test('Phase 1 quick entry is immediately visible above the progression map when 
 });
 
 test('Phase 1 advances from verified start into playable hats and preserves protections',()=>{
- assert.match(script,/if\(autoStartRequested&&\(!state\|\|state\.status==='finished'\)&&!pendingRequest/);
+ assert.ok(script.includes("if(loaded&&autoStartRequested&&!pendingRequest&&authUser()?.uid===user.uid)"));
+ assert.ok(script.includes("if(state?.status==='playing')goToHats()"));
+ assert.ok(script.includes("else if((!state||state.status==='finished')&&(DEMO||Number(vouchers?.total||0)>0))void action('start')"));
  assert.match(script,/if\(payload\.type==='start'&&state\?\.status==='playing'&&!pendingRequest&&uid\(\)===requestUser\)/);
  assert.match(script,/target\?\.scrollIntoView\?\.\(\{behavior:reduced\?'instant':'smooth',block:'start'\}\)/);
  assert.ok(script.includes("if(type==='start'&&!DEMO&&!(vouchers?.total>0)&&state?.status!=='playing')return;"));
