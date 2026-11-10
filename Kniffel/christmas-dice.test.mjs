@@ -53,7 +53,7 @@ function harness({loggedIn=true,response={ok:true,kniffelChristmasDice:false},ui
 
 test('the six uploaded Christmas dice exist as real image files and both modes load the assets',()=>{
  for(let i=1;i<=6;i++)assert.ok(existsSync(new URL('./Bilder/weihnachtswuerfel-'+i+'.png',import.meta.url)));
- for(const page of ['./index.html','./online.html']){
+ for(const page of ['./index.html','./online.html','./lobby.html']){
   const html=read(page);
   assert.match(html,/id="christmas-dice-toggle"/);
   assert.match(html,/id="christmas-dice-status"/);
@@ -158,4 +158,30 @@ test('account change resets the old owner skin and verifies the new profile sepa
  assert.equal(f.window.KniffelChristmasDice.isEnabled(),false);
  assert.equal(f.button.classList.contains('dice-locked'),true);
  assert.match(f.calls[1].opts.headers.Authorization,/player2-token/);
+});
+
+test('Kniffel online lobby provides a pre-game choice with six uploaded dice previews',()=>{
+ const lobby=read('./lobby.html');
+ assert.match(lobby,/<h2>Spiel vorbereiten<\/h2>/);
+ assert.equal((lobby.match(/id="christmas-dice-toggle"/g)||[]).length,1);
+ assert.equal((lobby.match(/id="christmas-dice-status"/g)||[]).length,1);
+ assert.match(lobby,/christmas-dice.js\?v=20261110-20bilder-fix2/);
+ assert.match(lobby,/christmas-dice.css\?v=20261110-20bilder-fix2/);
+ const names=Array.from(lobby.matchAll(/src="\.\/Bilder\/weihnachtswuerfel-(\d)\.png"/g),m=>Number(m[1]));
+ assert.deepEqual(names,[1,2,3,4,5,6]);
+ assert.match(lobby,/Dein exklusives Design aus Weihnachtsevent 2/);
+ assert.ok(lobby.indexOf('id="christmas-dice-toggle"')<lobby.indexOf('<h2>Spiel vorbereiten</h2>'),'choice should appear before match setup');
+ assert.ok(lobby.indexOf('christmas-dice.js?v=20261110-20bilder-fix2')<lobby.indexOf('lobby.js?v=17'),'unlock before lobby startup');
+ assert.match(css,/\.christmas-dice-lobby #christmas-dice-toggle/);
+});
+
+test('lobby and game modes share one account-scoped stored dice design, never a room-wide setting',async()=>{
+ const f=harness({response:{ok:true,kniffelChristmasDice:true},uid:'chris'});
+ await f.refresh();
+ assert.equal(f.window.KniffelChristmasDice.isEnabled(),true);
+ await f.click();
+ assert.equal(f.ls.get('kniffel:christmas-dice:chris'),'off');
+ assert.equal(f.window.KniffelChristmasDice.isEnabled(),false);
+ assert.equal(f.calls.length,1,'switching lobby dice skin makes no extra server request');
+ assert.doesNotMatch(js,/\/api\/hub\/rooms/,'the dice skin is not written into shared room state');
 });
