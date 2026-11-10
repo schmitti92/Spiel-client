@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640" role="img" aria-labelledby="title desc">
+<title id="title">Sieger-Glücksrad: sieben Goldfelder und drei Premiumfelder</title>
+<desc id="desc">Gold hat eine Wahrscheinlichkeit von 70 Prozent und Premium von 30 Prozent. Keine normalen Kartenpakete.</desc>
+<defs>
+ <radialGradient id="gold1" cx=".4" cy=".22" r=".9"><stop stop-color="#ffe5a0"/><stop offset=".4" stop-color="#dfa323"/><stop offset="1" stop-color="#8c5411"/></radialGradient>
+ <radialGradient id="gold2" cx=".3" cy=".3" r="1"><stop stop-color="#ffefba"/><stop offset=".48" stop-color="#d59519"/><stop offset="1" stop-color="#a66c16"/></radialGradient>
+ <radialGradient id="violet1" cx=".35" cy=".2" r=".95"><stop stop-color="#cfa8ff"/><stop offset=".46" stop-color="#8241ba"/><stop offset="1" stop-color="#39115a"/></radialGradient>
+ <radialGradient id="violet2" cx=".35" cy=".2" r=".95"><stop stop-color="#ddc6ff"/><stop offset=".46" stop-color="#6c26a6"/><stop offset="1" stop-color="#300e51"/></radialGradient>
+ <radialGradient id="center" cx=".35" cy=".2"><stop stop-color="#fff2bd"/><stop offset="1" stop-color="#bf852b"/></radialGradient>
+</defs>
+<circle cx="320" cy="320" r="316" fill="#1b1730" stroke="#fff1c3" stroke-width="6"/>
+<circle cx="320" cy="320" r="306" fill="#b58626" stroke="#ffe6a1" stroke-width="7"/>
+<path d="M 320 320 L 320.00 30.00 A 290 290 0 0 1 490.46 85.39 Z" fill="url(#gold1)" stroke="#ffedba" stroke-width="2.5"/>
+ <g transform="rotate(18 385.51 118.38)"><text x="385.51" y="126.38" text-anchor="middle" font-family="system-ui,Arial,sans-serif" font-size="26" font-weight="900" fill="#fff8df" stroke="#39211e" stroke-opacity=".6" stroke-width="3" paint-order="stroke">GOLD</text></g>
+<path d="M 320 320 L 490.46 85.39 A 290 290 0 0 1 595.81 230.39 Z" fill="url(#gold2)" stroke="#ffedba" stroke-width="2.5"/>
+ <g transform="rotate(54 491.51 195.39)"><text x="491.51" y="203.39" text-anchor="middle" font-family="system-ui,Arial,sans-serif" font-size="26" font-weight="900" fill="#fff8df" stroke="#39211e" stroke-opacity=".6" stroke-width="3" paint-order="stroke">GOLD</text></g>
+<path d="M 320 320 L 595.81 230.39 A 290 290 0 0 1 595.81 409.61 Z" fill="url(#gold1)" stroke="#ffedba" stroke-width="2.5"/>
+ <g transform="rotate(90 532.00 320.00)"><text x="532.00" y="328.00" text-anchor="middle" font-family="system-ui,Arial,sans-serif" font-size="26" font-weight="900" fill="#fff8df" stroke="#39211e" stroke-opacity=".6" stroke-width="3" paint-order="stroke">GOLD</text></g>
+<path d="M 320 320 L 595.81 409.61 A 290 290 0 0 1 490.46 554.61 Z" fill="url(#gold2)" stroke="#ffedba" stroke-width="2.5"/>
+ <g transform="rotate(-54 491.51 444.61)"><text x="491.51" y="452.61" text-anchor="middle" font-family="system-ui,Arial,sans-serif" font-size="26" font-weight="900" fill="#fff8df" stroke="#39211e" stroke-opacity=".6" stroke-width="3" paint-order="stroke">GOLD</text></g>
+<path d="M 320 320 L 490.46 554.61 A 290 290 0 0 1 320.00 610.00 Z" fill="url(#gold1)" stroke="#ffedba" stroke-width="2.5"/>
+ <g transform="rotate(-18 385.51 521.62)"><text x="385.51" y="529.62" text-anchor="middle" font-family="system-ui,Arial,sans-serif" font-size="26" font-weight="900" fill="#fff8df" stroke="#39211e" stroke-opacity=".6" stroke-width="3" paint-order="stroke">GOLD</text></g>
+<path d="M 320 320 L 320.00 610.00 A 290 290 0 0 1 149.54 554.61 Z" fill="url(#gold2)" stroke="#ffedba" stroke-width="2.5"/>
+ <g transform="rotate(18 254.49 521.62)"><text x="254.49" y="529.62" text-anchor="middle" font-family="system-ui,Arial,sans-serif" font-size="26" font-weight="900" fill="#fff8df" stroke="#39211e" stroke-opacity=".6" stroke-width="3" paint-order="stroke">GOLD</text></g>
+<path d="M 320 320 L 149.54 554.61 A 290 290 0 0 1 44.19 409.61 Z" fill="url(#gold1)" stroke="#ffedba" stroke-width="2.5"/>
+ <g transform="rotate(54 148.49 444.61)"><text x="148.49" y="452.61" text-anchor="middle" font-family="system-ui,Arial,sans-serif" font-size="26" font-weight="900" fill="#fff8df" stroke="#39211e" stroke-opacity=".6" stroke-width="3" paint-order="stroke">GOLD</text></g>
+<path d="M 320 320 L 44.19 409.61 A 290 290 0 0 1 44.19 230.39 Z" fill="url(#violet1)" stroke="#ffedba" stroke-width="2.5"/>
+ <g transform="rotate(270 108.00 320.00)"><text x="108.00" y="328.00" text-anchor="middle" font-family="system-ui,Arial,sans-serif" font-size="19" font-weight="900" fill="#fff8df" stroke="#39211e" stroke-opacity=".6" stroke-width="3" paint-order="stroke">PREMIUM</text></g>
+<path d="M 320 320 L 44.19 230.39 A 290 290 0 0 1 149.54 85.39 Z" fill="url(#violet2)" stroke="#ffedba" stroke-width="2.5"/>
+ <g transform="rotate(306 148.49 195.39)"><text x="148.49" y="203.39" text-anchor="middle" font-family="system-ui,Arial,sans-serif" font-size="19" font-weight="900" fill="#fff8df" stroke="#39211e" stroke-opacity=".6" stroke-width="3" paint-order="stroke">PREMIUM</text></g>
+<path d="M 320 320 L 149.54 85.39 A 290 290 0 0 1 320.00 30.00 Z" fill="url(#violet1)" stroke="#ffedba" stroke-width="2.5"/>
+ <g transform="rotate(342 254.49 118.38)"><text x="254.49" y="126.38" text-anchor="middle" font-family="system-ui,Arial,sans-serif" font-size="19" font-weight="900" fill="#fff8df" stroke="#39211e" stroke-opacity=".6" stroke-width="3" paint-order="stroke">PREMIUM</text></g>
+<circle cx="320" cy="320" r="295" fill="none" stroke="#fff3c7" stroke-width="8"/>
+<circle cx="320.00" cy="21.00" r="4.6" fill="#ffe29a"/><circle cx="412.40" cy="35.63" r="3.8" fill="#fff6d9"/><circle cx="495.75" cy="78.10" r="4.6" fill="#ffe29a"/><circle cx="561.90" cy="144.25" r="3.8" fill="#fff6d9"/><circle cx="604.37" cy="227.60" r="4.6" fill="#ffe29a"/><circle cx="619.00" cy="320.00" r="3.8" fill="#fff6d9"/><circle cx="604.37" cy="412.40" r="4.6" fill="#ffe29a"/><circle cx="561.90" cy="495.75" r="3.8" fill="#fff6d9"/><circle cx="495.75" cy="561.90" r="4.6" fill="#ffe29a"/><circle cx="412.40" cy="604.37" r="3.8" fill="#fff6d9"/><circle cx="320.00" cy="619.00" r="4.6" fill="#ffe29a"/><circle cx="227.60" cy="604.37" r="3.8" fill="#fff6d9"/><circle cx="144.25" cy="561.90" r="4.6" fill="#ffe29a"/><circle cx="78.10" cy="495.75" r="3.8" fill="#fff6d9"/><circle cx="35.63" cy="412.40" r="4.6" fill="#ffe29a"/><circle cx="21.00" cy="320.00" r="3.8" fill="#fff6d9"/><circle cx="35.63" cy="227.60" r="4.6" fill="#ffe29a"/><circle cx="78.10" cy="144.25" r="3.8" fill="#fff6d9"/><circle cx="144.25" cy="78.10" r="4.6" fill="#ffe29a"/><circle cx="227.60" cy="35.63" r="3.8" fill="#fff6d9"/>
+<circle cx="320" cy="320" r="68" fill="#452a34" stroke="#fff2c2" stroke-width="8"/>
+<circle cx="320" cy="320" r="58" fill="url(#center)" stroke="#bd7e2b" stroke-width="4"/>
+<text x="320" y="318" text-anchor="middle" font-family="system-ui,Arial,sans-serif" font-size="22" font-weight="900" fill="#60321c">BONUS</text>
+<text x="320" y="343" text-anchor="middle" font-family="system-ui,Arial,sans-serif" font-size="14" font-weight="900" fill="#60321c">RAD</text>
+</svg>
