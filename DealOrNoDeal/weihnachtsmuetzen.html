@@ -78,6 +78,18 @@ h1{font-size:clamp(28px,4.6vw,55px);line-height:1.06;margin:7px 0 9px;font-weigh
 .status{margin:13px auto 0;padding:10px;border-radius:10px;text-align:center;color:#f1debb;font-size:13px;min-height:36px;background:#12162dc9}
 .status.bad{color:#ffaaa7}
 .status.good{color:#bbf5d7}
+.cinema{position:fixed;inset:0;z-index:80;background:#0c061ce8;backdrop-filter:blur(11px);display:grid;place-items:center;padding:18px;overflow:hidden}
+.cinema-panel{position:relative;max-width:680px;width:100%;border:3px solid #ffe59c;padding:clamp(20px,4vw,38px);border-radius:26px;text-align:center;background:radial-gradient(ellipse at 50% 10%,#b36c4b99,transparent 60%),linear-gradient(140deg,#4c264e,#201437 65%,#141d3b);box-shadow:0 0 0 7px #ffda8c15,0 0 80px #e9b74c83,0 18px 80px #000b;animation:cinemaIn .8s cubic-bezier(.15,1.4,.3,1)}
+@keyframes cinemaIn{from{transform:scale(.65) rotate(-4deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.cinema-eyebrow{letter-spacing:.25em;color:#ffe1a8;font-size:12px;font-weight:950}
+.cinema-title{font:950 clamp(27px,5.2vw,51px) Georgia,serif;margin:12px auto;color:#ffeba8;text-shadow:0 0 30px #ffc56b}
+.cinema-prizes{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:20px 0 26px}
+.cinema-prize{min-height:94px;display:grid;align-content:center;justify-items:center;gap:7px;border:1px solid #ffe2a6b6;border-radius:14px;padding:12px 9px;background:linear-gradient(#fff5d624,#cd98411b);box-shadow:0 5px 16px #0005;animation:giftIn .7s both;animation-delay:calc(var(--i)*.32s)}
+.cinema-prize .prize-icon{font-size:35px}.cinema-prize .prize-label{font-size:13px;line-height:1.3;font-weight:850}
+@keyframes giftIn{from{transform:translateY(50px) scale(.6);opacity:0;filter:blur(6px)}to{transform:translateY(0) scale(1);opacity:1;filter:blur(0)}}
+.confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.confetti span{position:absolute;top:-18%;width:8px;height:18px;border-radius:2px;background:var(--color);transform:rotate(30deg);animation:confettiDrop var(--duration) linear infinite;animation-delay:var(--delay)}
+@keyframes confettiDrop{0%{transform:translateY(-15dvh) rotate(0)}100%{transform:translateY(115dvh) rotate(780deg)}}
 .ending{margin:16px auto;padding:19px;border:2px solid #f5c974;border-radius:15px;text-align:center;background:radial-gradient(#bd7c3866,#261c3f)}
 .ending h2{margin:0 0 6px;color:#ffe0a2;font-size:clamp(23px,3.5vw,37px)}
 .ending p{margin:5px 0 11px}
@@ -117,6 +129,15 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
  </div>
  <div id="status" class="status" role="status" aria-live="polite">Verbinde dich mit deinem Spielerprofil …</div>
 </section>
+<div id="cinema" class="cinema" hidden role="dialog" aria-modal="true" aria-label="Besonderer Weihnachtsgewinn">
+ <div class="confetti" id="confetti" aria-hidden="true"></div>
+ <div class="cinema-panel">
+  <div class="cinema-eyebrow">✨ DER WEIHNACHTSZAUBER PRÄSENTIERT ✨</div>
+  <h2 class="cinema-title" id="cinema-title">👑 SUPERGLÜCK!</h2>
+  <div id="cinema-prizes" class="cinema-prizes"></div>
+  <button id="cinema-close" type="button" class="action">🎁 Gewinne ansehen</button>
+ </div>
+</div>
 <footer>🎁 Normale Gewinne in Räumen 1–3 · Gold und starke Gewinne in 4–6 · Jackpot ab Raum 7 · Superglück überall möglich</footer>
 </main>
 <script>
@@ -145,6 +166,26 @@ function formatItems(groups,element,empty){
   const v=document.createElement('span');v.className='prize';v.textContent=(emojis[item.kind]||'✨')+' '+(item.kind==='cash'?item.label:item.quantity+'× '+String(item.label||'').replace(/^\d+×?\s*/,'').replace(/^\d+\s*/,''));element.appendChild(v);
  }
 }
+function openCinema(event){
+ if(!event||event.type==='bomb'||(!event.superLuck&&event.type!=='super'))return;
+ const title=$('cinema-title'),list=$('cinema-prizes');
+ title.textContent=event.superLuck?'🌟 LEGENDÄRES SUPERGLÜCK!':'👑 SUPERGESCHENK!';
+ list.replaceChildren();
+ for(const [i,item] of (event.items||[]).entries()){
+  const card=document.createElement('div');card.className='cinema-prize';card.style.setProperty('--i',String(i));
+  const symbol=document.createElement('span');symbol.className='prize-icon';symbol.textContent=emojis[item.kind]||'🎁';
+  const label=document.createElement('span');label.className='prize-label';label.textContent=item.label;
+  card.append(symbol,label);list.appendChild(card);
+ }
+ const bits=$('confetti');bits.replaceChildren();
+ const colors=['#f9d779','#fff','#f68b80','#8ce7d6','#daa6fa'];
+ for(let i=0;i<30;i++){
+  const bit=document.createElement('span');bit.style.left=(i*83%99)+'%';
+  bit.style.setProperty('--delay',(-i*.17)+'s');bit.style.setProperty('--duration',(3+(i%5)*.45)+'s');bit.style.setProperty('--color',colors[i%colors.length]);bits.appendChild(bit);
+ }
+ $('cinema').hidden=false;
+}
+function closeCinema(){ $('cinema').hidden=true; }
 function renderTiers(active,checkpoint){
  const root=$('tiers');root.replaceChildren();
  for(let i=1;i<=10;i++){
@@ -249,13 +290,15 @@ async function submit(payload){
    render();
    setStatus(reveal?.type==='bomb'?'💥 Bombe! Deine Checkpoint-Gewinne bleiben geschützt.':reveal?.superLuck?'🌟 SUPERGLÜCK! Schau dir deine seltenen Geschenke an!':'🎁 Ein sicherer Treffer! Deine Belohnung ist vorgemerkt.',false,reveal?.type!=='bomb');
    if(revealTimer)clearTimeout(revealTimer);
-   revealTimer=setTimeout(()=>{reveal=null;render();if(state?.status==='playing')setStatus('🎩 Weiter versuchen oder deine Gewinne kassieren?',false,true)},4200);
+   if(reveal?.type!=='bomb')setTimeout(()=>{if(reveal===data.result)openCinema(reveal)},700);
+   revealTimer=setTimeout(()=>{closeCinema();reveal=null;render();if(state?.status==='playing')setStatus('🎩 Weiter versuchen oder deine Gewinne kassieren?',false,true)},5200);
   }else{
    reveal=null;render();setStatus(type==='cash'?'✅ Deine Gewinne wurden serverseitig gutgeschrieben.':'✨ Neues Spiel gestartet!',false,true);
   }
  }catch(e){setStatus('⚠️ '+describeError(e)+' – Bitte dieselbe Aktion sicher wiederholen.',true);}
  finally{busy=false;render();}
 }
+$('cinema-close').onclick=closeCinema;
 $('start').onclick=()=>action('start');
 $('again').onclick=()=>action('start');
 $('cash').onclick=()=>action('cash');
