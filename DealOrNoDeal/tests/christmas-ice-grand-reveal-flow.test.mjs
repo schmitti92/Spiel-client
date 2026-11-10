@@ -7,6 +7,7 @@ const source=readFileSync(new URL('../Weihnachtsevent2/online-ice.js',import.met
 
 const mockState=(completed,finished)=>({
  completed,maxRewarded:completed,balance:1000000000,finished,
+ picture30MonsterSpinsClaimed:completed>=30, // image 70 fixture had already received the milestone
  tilesRequired:25,tileCount:25,opened:finished?Array.from({length:25},(_,i)=>i):Array.from({length:24},(_,i)=>i),
  prizes:finished?[{number:completed,kind:'joker',peekJokers:1}]:[],
  freeHammers:{single:0,double:0,lucky:0},
