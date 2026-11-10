@@ -6,12 +6,14 @@ on:
       - 'DOG/**'
       - 'tests/dog-board-layout.test.mjs'
       - 'tests/dog-board-builder.test.mjs'
+      - 'tests/dog-board-editor-ui.test.mjs'
       - '.github/workflows/dog-board-check.yml'
   pull_request:
     paths:
       - 'DOG/**'
       - 'tests/dog-board-layout.test.mjs'
       - 'tests/dog-board-builder.test.mjs'
+      - 'tests/dog-board-editor-ui.test.mjs'
   workflow_dispatch:
 jobs:
   geometry:
@@ -26,4 +28,4 @@ jobs:
       - run: node --check DOG/editor-builder.js
       - run: node --check DOG/editor-model.js
       - run: node --check DOG/board-layout.js
-      - run: node --test tests/dog-board-layout.test.mjs tests/dog-board-builder.test.mjs
+      - run: node --test tests/dog-board-layout.test.mjs tests/dog-board-builder.test.mjs tests/dog-board-editor-ui.test.mjs
