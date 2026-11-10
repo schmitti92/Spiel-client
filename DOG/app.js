@@ -175,7 +175,7 @@ function renderHand(){
   if(game.phase==='seven'){
     available=legalActions(game,seat);
     hand.innerHTML='<div class="hand-veil">Wähle eine Figur und wie viele Schritte sie laufen soll. Alle 7 Schritte müssen verwendet werden.</div>';
-    const cancel=document.createElement('button');cancel.className='secondary move-button';cancel.textContent='↶ Sieben zurücknehmen';cancel.addEventListener('click',()=>{game=cancelSeven(game,seat);selectedCard=null;save();render();});actions.appendChild(cancel);
+    if(!online){const cancel=document.createElement('button');cancel.className='secondary move-button';cancel.textContent='↶ Sieben zurücknehmen';cancel.addEventListener('click',()=>{game=cancelSeven(game,seat);selectedCard=null;save();render();});actions.appendChild(cancel);}
   }else{
     const cards=game.hands[seat];
     const exchange=game.phase==='exchange';
