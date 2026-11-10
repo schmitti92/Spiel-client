@@ -136,9 +136,9 @@ test('Boss 10 opens its own three-player arena while later bosses remain unavail
 test('Map places server-confirmed positions of three heroes at the exact gate',async()=>{
  const serverMap={
   members:[
-   {uid:'hero-a',name:'Christoph',currentGate:14,isMe:true,lastAttemptAt:0},
-   {uid:'hero-b',name:'David',currentGate:9,isMe:false,lastAttemptAt:0},
-   {uid:'hero-c',name:'Vanessa',currentGate:14,isMe:false,lastAttemptAt:0}
+   {uid:'hero-a',name:'Christoph',currentGate:14,highestGate:35,isMe:true,lastAttemptAt:0},
+   {uid:'hero-b',name:'David',currentGate:9,highestGate:9,isMe:false,lastAttemptAt:0},
+   {uid:'hero-c',name:'Vanessa',currentGate:14,highestGate:25,isMe:false,lastAttemptAt:0}
   ],
   memberCount:3,isMember:true,canJoin:false,
   progress:{currentGate:14,normals:[1,2,3,4,6,7,8,9,11,12,13],
@@ -153,6 +153,9 @@ test('Map places server-confirmed positions of three heroes at the exact gate',a
  assert.deepEqual(at14.children.map(c=>c.textContent),['C','V']);
  assert.deepEqual(at9.children.map(c=>c.textContent),['D']);
  assert.equal(byId('team-members').children.length,3);
+ const firstInfo=byId('team-members').children[0].children[1].children;
+ assert.ok(firstInfo.some(c=>c.textContent.includes('Aktuell: Tor 14')));
+ assert.ok(firstInfo.some(c=>c.textContent.includes('Höchstes erreichtes Tor: 35')));
  assert.equal(byId('team-join').hidden,true);
  gates[13].click();
  assert.equal(byId('gate-battle-button').disabled,false,'previous normal tor 13 was cleared');
