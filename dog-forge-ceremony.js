@@ -103,6 +103,8 @@
   });
  }
  skipButton.addEventListener('click',skip);
+ // Background tabs must never leave a pending visual timer blocking the result.
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)skip();});
  dialog.addEventListener('cancel',event=>{event.preventDefault();skip();});
  dialog.addEventListener('close',()=>{if(active&&!skipped)skip();});
  window.DogForgeCeremony=Object.freeze({start,finish,abort});
