@@ -191,3 +191,16 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;z-i
 @media(max-width:420px){.exchange-target{max-width:82px;font-size:10px}.exchange-row{gap:4px;padding:8px 6px}
  .exchange-row button{padding:10px 6px}}
 @media(prefers-reduced-motion:reduce){.forge-workspace.forging .forge-anvil{animation:none}}
+
+/* Compact, glanceable before/after level preview. */
+.upgrade-preview{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+ padding:11px 12px;border:1px solid #b7a16c78;border-radius:13px;margin-top:12px;
+ background:linear-gradient(110deg,#182c3d,#2e2933)}
+.preview-value{display:grid;gap:2px;min-width:84px}
+.preview-value small{font-size:9px;font-weight:850;letter-spacing:.15em;color:#a9b9cc}
+.preview-value strong{font-size:15px;color:#e4e8ee}
+.preview-value.next strong{color:#ffda90}
+.preview-arrow{font-size:22px;color:#e4b773}
+.preview-bonus{width:100%;border-top:1px solid #b5a17c3c;padding-top:7px;font-size:10px;
+ color:#c5d1e1;text-align:center}
+@media(max-width:420px){.upgrade-preview{padding:9px}.preview-value{min-width:65px}.preview-value strong{font-size:13px}}
