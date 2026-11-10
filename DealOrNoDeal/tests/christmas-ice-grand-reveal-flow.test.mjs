@@ -5,14 +5,16 @@ import {runInNewContext} from 'node:vm';
 
 const source=readFileSync(new URL('../Weihnachtsevent2/online-ice.js',import.meta.url),'utf8');
 
-const mockState=(completed,finished)=>({
+const mockState=(completed,finished)=>{
+ const picture=completed+(finished?0:1),tileCount=picture>=30?100:50;
+ return {
  completed,maxRewarded:completed,balance:1000000000,finished,
  picture30MonsterSpinsClaimed:completed>=30, // image 70 fixture had already received the milestone
- tilesRequired:25,tileCount:25,opened:finished?Array.from({length:25},(_,i)=>i):Array.from({length:24},(_,i)=>i),
+ tilesRequired:tileCount,tileCount,opened:finished?Array.from({length:tileCount},(_,i)=>i):Array.from({length:tileCount-1},(_,i)=>i),
  prizes:finished?[{number:completed,kind:'joker',peekJokers:1}]:[],
  freeHammers:{single:0,double:0,lucky:0},
  peekJokers:1,goldenHammerGift2026:true
-});
+};}
 async function boot(state,{onPost=null}={}){
  const buttons=new Map(),tiles=new Map(),postActions=[];
  const status={textContent:'',hidden:false};
@@ -71,11 +73,11 @@ async function boot(state,{onPost=null}={}){
  for(let i=0;i<12;i++)await new Promise(resolve=>setTimeout(resolve,0));
  return {root,buttons,tiles,postActions,get requests(){return requests}};
 }
-test('picture 15 has 25 ice tiles and awaits the confirmed star reveal',async()=>{
+test('picture 15 has 50 ice tiles and awaits the confirmed star reveal',async()=>{
  const play=await boot(mockState(14,false));
  assert.equal(play.requests,1);
  assert.match(play.root.innerHTML,/Bild 15 von 70/);
- assert.match(play.root.innerHTML,/25 Eisfelder: Finde den versteckten Stern/);
+ assert.match(play.root.innerHTML,/50 Eisfelder: Finde den versteckten Stern/);
  assert.doesNotMatch(play.root.innerHTML,/id="v44-big-reveal-continue"/);
  assert.doesNotMatch(play.root.innerHTML,/class="v44-big-reveal"/);
 });
@@ -98,7 +100,7 @@ test('picture 70 completion is also recovered with a large image',async()=>{
  const play=await boot(mockState(70,true));
  assert.match(play.root.innerHTML,/class="v44-big-reveal"/);
  assert.match(play.root.innerHTML,/Bild 70 von 70 abgeschlossen/);
- assert.match(play.root.innerHTML,/Alle Eisblöcke entfernt!/);
+ assert.match(play.root.innerHTML,/🌟 Bild freigelegt!/);
  assert.equal(play.requests,1);
 });
 
@@ -123,5 +125,5 @@ test('newly loaded Christmas ice fields are clickable and submit a strike to the
  for(let i=0;i<10;i++)await new Promise(resolve=>setTimeout(resolve,0));
  assert.equal(play.postActions.length,1,'click must send exactly one authorized strike');
  assert.equal(play.requests,2,'one GET and one POST, no extra reads');
- assert.match(play.root.innerHTML,/24\/25 Eisfelder/);
+ assert.match(play.root.innerHTML,/24\/50 Eisfelder/);
 });
