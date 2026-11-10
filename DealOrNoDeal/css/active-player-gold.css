@@ -1,0 +1,112 @@
+/* Deal or No Deal — gold focus for the authoritative active turn.
+   The shared game state determines whose card is gold, never local selection. */
+#players .player.turn {
+  position:relative;
+  isolation:isolate;
+  z-index:5;
+  color:#3a2305!important;
+  border:3px solid #fff6c0!important;
+  background:
+    linear-gradient(115deg,transparent 24%,#fffce59c 40%,transparent 55%) 0 0/240% 100%,
+    linear-gradient(140deg,#fff5bc 0%,#ffe18a 16%,#edb431 37%,#bf800e 56%,#f3c954 78%,#fff1ad 100%)!important;
+  box-shadow:
+    0 0 0 2px #d6a026,
+    0 0 0 5px #fff4ab8c,
+    0 0 32px #ffcf42dd,
+    0 0 63px #ffa9276b,
+    inset 0 0 22px #fffbea8c,
+    0 15px 26px #0009!important;
+  transform:translateY(-6px) scale(1.045)!important;
+  transform-origin:center bottom;
+  animation:gold-player-glow 2.6s ease-in-out infinite alternate!important;
+}
+#players .player.turn::before {
+  background:radial-gradient(ellipse at 50% 0%,#fffed466,transparent 75%)!important;
+  pointer-events:none;
+}
+#players .player.turn::after{
+  top:0!important;
+  bottom:auto!important;
+  left:7%!important;
+  right:7%!important;
+  height:5px!important;
+  border-radius:0 0 50% 50%!important;
+  background:linear-gradient(90deg,transparent,#fffce1 45%,#ffe18a 55%,transparent)!important;
+  box-shadow:0 0 18px #fff7b0!important;
+  opacity:1!important;
+}
+#players .player.turn .candidate-avatar{
+  border:4px solid #fff2ad!important;
+  background-color:#40290a!important;
+  box-shadow:0 0 0 2px #a66b0c,0 0 27px #ffde6ecf,0 9px 18px #4d2b0d99!important;
+}
+#players .player.turn .candidate-name{
+  color:#352004!important;
+  font-weight:1000!important;
+  text-shadow:0 1px 0 #fff6d8!important;
+}
+#players .player.turn .candidate-badge{
+  display:inline-flex!important;
+  align-items:center;
+  justify-content:center;
+  padding:6px 10px!important;
+  border:2px solid #ffedaa!important;
+  border-radius:999px!important;
+  background:linear-gradient(135deg,#573006,#8b540d,#4d2705)!important;
+  color:#fff5c2!important;
+  font-size:clamp(10px,1.15vw,14px)!important;
+  font-weight:1000!important;
+  letter-spacing:.035em;
+  text-shadow:0 1px 1px #170b02;
+  box-shadow:0 0 14px #fff1b977,inset 0 1px #fff8bb7a;
+}
+#players .player.turn .candidate-badge::before{
+  background:#fff4bc!important;
+  box-shadow:0 0 10px 3px #ffe187!important;
+}
+#players .player.turn .candidate-status{
+  color:#4b2a06!important;
+  font-weight:850!important;
+}
+#players .player.turn .personalcase{
+  background:linear-gradient(125deg,#432607,#815011)!important;
+  color:#fff3bc!important;
+  border:1px solid #fff7c6!important;
+  box-shadow:0 2px 13px #552b0d6b,inset 0 1px #ffefb266!important;
+}
+@keyframes gold-player-glow{
+  from { filter:brightness(1); }
+  to   { filter:brightness(1.11); }
+}
+
+/* A matching gold status above the case grid keeps the turn obvious even
+   when player portraits are further down the page on mobile. */
+#turn-spotlight[hidden]{display:none!important}
+#turn-spotlight{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:5px 12px;
+  margin:4px auto 5px;
+  width:min(100%,630px);
+  padding:9px 16px;
+  border:3px solid #fff3b7;
+  border-radius:14px;
+  background:linear-gradient(110deg,#fff0ab 0%,#efbc46 25%,#bb7b12 50%,#f8d974 80%,#fff4b8 100%);
+  box-shadow:0 0 0 2px #b67b17,0 0 23px #eab72c8c,inset 0 1px #fff9da;
+  color:#342007;
+  font:1000 clamp(13px,1.6vw,20px)/1.25 system-ui,sans-serif;
+  text-align:center;
+}
+#turn-spotlight .turn-spotlight-label{font-size:clamp(12px,1.2vw,17px);letter-spacing:.025em}
+#turn-spotlight #turn-spotlight-player{font-size:clamp(14px,1.8vw,22px);overflow-wrap:anywhere;text-shadow:0 1px #fff6cc}
+#turn-spotlight #turn-spotlight-action{font-size:clamp(10px,1vw,13px);letter-spacing:.06em;color:#563707}
+@media(max-width:700px){
+  #players .player.turn{transform:translateY(-3px) scale(1.015)!important}
+  #turn-spotlight{padding:7px 9px;gap:3px 7px;border-width:2px}
+  #players .player.turn .candidate-badge{padding:4px 6px!important;font-size:10px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #players .player.turn{animation:none!important;transform:none!important;filter:none!important}
+}
