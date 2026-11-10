@@ -27,8 +27,8 @@
   try{
    const value=JSON.parse(localStorage.getItem(pendingKey(account))||'null');
    if(!value||!receiptPattern.test(value.id)||
-      !['join','act','restart'].includes(value.command))return null;
-   if(value.command==='act'&&!['attack','power','guard','special'].includes(value.move))return null;
+      !['join','act','restart','reaction-start'].includes(value.command))return null;
+   if(value.command==='act'&&!['attack','power','guard','special','reaction'].includes(value.move))return null;
    return value;
   }catch{return null;}
  }
@@ -44,7 +44,8 @@
   'boss-'+globalThis.crypto.randomUUID():
   'boss-'+Date.now()+'-'+Math.random().toString(36).slice(2,15);
  let uid=null,view=null,busy=false,session=0,lastLoadedAt=0,loadedFor=null,
-  loading=null,loadingUid=null,notice='',noticeType='',serverOffset=0;
+  loading=null,loadingUid=null,notice='',noticeType='',serverOffset=0,
+  reactionVisible=false,reactionTicket=null;
  function status(message,type=''){
   notice=message;noticeType=type;
   $('boss-status').textContent=message;
@@ -74,6 +75,45 @@
  }
  const viewer=()=>auth()?.user?.uid===uid;
  const canSend=()=>!!uid&&viewer()&&!!view&&!busy&&!pending(uid);
+ const serverNow=()=>Date.now()+serverOffset;
+ function closeReaction(message){
+  reactionVisible=false;reactionTicket=null;
+  $('boss-reaction-challenge').hidden=true;
+  if(message)status(message);
+ }
+ function reactionTick(){
+  if(!reactionVisible||!reactionTicket)return;
+  if(document.hidden||!viewer()||!view||
+     !['ready','fighting'].includes(view.phase)||
+     reactionTicket.turn!==view.bossTurn||
+     reactionTicket.attempt!==view.attempt){
+   closeReaction();return;
+  }
+  const now=serverNow(),remaining=reactionTicket.expiresAt-now;
+  const duration=Math.max(1,reactionTicket.expiresAt-reactionTicket.startAt);
+  const fraction=Math.max(0,Math.min(1,(now-reactionTicket.startAt)/duration));
+  $('boss-reaction-pointer').style.left=(fraction*100).toFixed(1)+'%';
+  $('boss-reaction-time').textContent=(Math.max(0,remaining)/1000).toFixed(1).replace('.',',')+' s';
+  $('boss-reaction-message').textContent=Math.abs(now-reactionTicket.targetAt)<400?
+   '✨ GOLDENE TREFFERZONE – JETZT!':
+   'Beobachte den Balken und drücke im goldenen Bereich.';
+  const over=remaining<=0;
+  $('boss-reaction-hit').disabled=over||busy;
+  if(over){
+   closeReaction('⏱️ Reaktionsfenster vorbei. Du kannst normal angreifen.');
+   render();
+  }
+ }
+ function openReaction(ticket){
+  if(!ticket||!Number.isSafeInteger(ticket.startAt)||
+     !Number.isSafeInteger(ticket.targetAt)||!Number.isSafeInteger(ticket.expiresAt)||
+     ticket.expiresAt<=serverNow()||
+     ticket.turn!==view?.bossTurn||ticket.attempt!==view?.attempt)return;
+  reactionTicket=ticket;reactionVisible=true;
+  $('boss-reaction-challenge').hidden=false;
+  reactionTick();
+  render();
+ }
  function renderTeam(){
   const area=$('boss-team');area.replaceChildren();
   const members=view?.members||[];
@@ -176,8 +216,14 @@
   const player=joined?view.heroes?.[uid]:null;
   const allowed=canSend()&&joined&&(view.phase==='ready'||view.phase==='fighting')&&player?.hp>0;
   for(const button of document.querySelectorAll('[data-move]')){
-   button.disabled=!allowed;
+   button.disabled=!allowed||reactionVisible;
   }
+  const ticket=view?.reactionChallenge;
+  const ticketValid=ticket&&ticket.turn===view?.bossTurn&&ticket.attempt===view?.attempt;
+  $('boss-reaction-start').disabled=!allowed||reactionVisible||
+   (!!ticketValid&&serverNow()>=ticket.expiresAt);
+  $('boss-reaction-start').textContent=ticketValid?'⚡ Reaktion fortsetzen':'⚡ Reaktion starten';
+  $('boss-reaction-hit').disabled=busy||!reactionVisible;
   $('boss-pending-wrap').hidden=!loggedIn||!pending(uid);
   $('boss-retry').disabled=!loggedIn||busy||!pending(uid);
   $('boss-refresh').disabled=busy;
@@ -195,6 +241,9 @@
   }
  }
  function apply(data){
+  if(reactionVisible&&(data?.reactionChallenge?.turn!==reactionTicket?.turn||
+      data?.reactionChallenge?.attempt!==reactionTicket?.attempt||
+      !['ready','fighting'].includes(data.phase)))closeReaction();
   view=data;lastLoadedAt=Date.now();
   serverOffset=Number(data.serverNow||Date.now())-Date.now();
   notice='';noticeType='';$('boss-status').className='boss-status';
@@ -224,6 +273,7 @@
   return work;
  }
  const definitive=new Set(['INVALID_BOSS_MOVE','INVALID_BOSS_COMMAND',
+  'BOSS_REACTION_NOT_READY',
   'BOSS_STATE_STALE',
   'NOT_BOSS_MEMBER','BOSS_TEAM_FULL','BOSS_COOLDOWN_ACTIVE','BOSS_ALREADY_WON',
   'BOSS_HERO_DOWN','BOSS_NO_RESTART','BOSS_RECEIPT_CONFLICT','INVALID_REQUEST_ID']);
@@ -259,12 +309,18 @@
      ...(op.expectedTurn===undefined?{}:{expectedTurn:op.expectedTurn})}:{})},account);
    if(uid!==account||epoch!==session||!viewer())throw Error('ACCOUNT_CHANGED');
    clearPending(account);apply(payload);
+   if(op.command==='reaction-start'&&payload.reactionChallenge)
+    openReaction(payload.reactionChallenge);
    if(!payload.replayed)effect(payload.result);
    status(payload.replayed?'✓ Eure letzte Aktion wurde sicher wiederhergestellt.':
     payload.result?.defeated?'💀 Das Team ist gefallen. Zehn Minuten Kampfpause!':
     payload.result?.victory?'🏆 Der Aschewächter wurde besiegt!':
     op.command==='restart'?'⚔️ Versuch '+payload.attempt+': Der gleiche Boss startet wieder mit vollen LP.':
     op.command==='join'?'🛡️ Du bist der Heldengruppe beigetreten!':
+    op.command==='reaction-start'?'⚡ Das Reaktionsfenster läuft – triff die goldene Zone!':
+    payload.result?.reactionGrade?
+     '⚡ Reaktion '+payload.result.reactionGrade+'! +'+
+     payload.result.reactionBonusPct+' % · '+num(payload.result.damage)+' Schaden.':
     payload.result?.chargedAttack?'🔥 Flammenexplosion! '+
      num(payload.result.retaliation)+' LP Gegenschaden – '+num(payload.result.damage)+' Schaden am Boss.':
     payload.result?.phaseChanged?'🔥 Bossphase '+payload.result.bossPhase+' beginnt! '+
@@ -292,6 +348,23 @@
  for(const button of document.querySelectorAll('[data-move]')){
   button.addEventListener('click',()=>void command('act',button.dataset.move));
  }
+ $('boss-reaction-start').addEventListener('click',()=>{
+  if(!canSend()||reactionVisible||!view?.isMember||
+     !['ready','fighting'].includes(view.phase)||!view.heroes?.[uid]?.hp)return;
+  const ticket=view.reactionChallenge;
+  if(ticket&&ticket.turn===view.bossTurn&&ticket.attempt===view.attempt){
+   openReaction(ticket);
+  }else void command('reaction-start');
+ });
+ $('boss-reaction-hit').addEventListener('click',()=>{
+  if(!reactionVisible||!reactionTicket||!canSend())return;
+  if(serverNow()>reactionTicket.expiresAt){closeReaction('⏱️ Zeit vorbei.');render();return;}
+  closeReaction();void command('act','reaction');
+ });
+ $('boss-reaction-dismiss').addEventListener('click',()=>{
+  closeReaction('⚡ Reaktionsversuch abgebrochen. Du kannst normal angreifen.');
+  render();
+ });
  $('boss-join').addEventListener('click',()=>void command('join'));
  $('boss-restart').addEventListener('click',()=>void command('restart'));
  $('boss-retry').addEventListener('click',()=>{
@@ -301,14 +374,17 @@
  window.addEventListener('spielonline-change',()=>{
   const account=auth()?.user?.uid||null;
   if(account!==uid){
-   ++session;uid=account;view=null;notice='';
+   closeReaction();++session;uid=account;view=null;notice='';
    if(busy){render();return;}
   }
   void reload();
  });
  document.addEventListener('visibilitychange',()=>{
+  if(document.hidden&&reactionVisible){closeReaction();render();}
   if(!document.hidden&&!busy)void reload();
  });
+ // Local timing animation has no network calls; server scores the actual tap.
+ setInterval(reactionTick,50);
  // Countdown changes every second locally; no Firebase reads are triggered.
  setInterval(renderClock,1000);
  // At most one remote refresh per minute while the arena remains visible.
