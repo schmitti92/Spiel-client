@@ -132,6 +132,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
 <link rel="stylesheet" href="./css/christmas-hats-premium-v4.css?v=20261110-stage-v4">
 <link rel="stylesheet" href="./css/christmas-hats-reveal-v5.css?v=20261110-reveal-v5">
 <link rel="stylesheet" href="./css/christmas-hats-rewards-v6.css?v=20261110-rewards-v6">
+<link rel="stylesheet" href="./css/christmas-hats-quick20-v7.css?v=20261110-safe3-check5-v1">
 </head>
 <body>
 <main>
@@ -403,13 +404,14 @@ function renderTiers(active,checkpoint,cleared){
  const root=$('tiers');root.replaceChildren();
  for(let i=1;i<=(state?.maxRoom||10);i++){
   const isCheckpoint=(state?.checkpoints||[3,7]).includes(i);
+  const isBonus=state?.rulesVersion===5&&i%3===0&&i<20;
   const d=document.createElement('div');
-  d.className='tier'+(i===active?' on':'')+(i<=checkpoint?' done':'')+(i>checkpoint&&i<=cleared?' cleared':'')+(isCheckpoint?' checkpoint-cell':'');
+  d.className='tier'+(i===active?' on':'')+(i<=checkpoint?' done':'')+(i>checkpoint&&i<=cleared?' cleared':'')+(isCheckpoint?' checkpoint-cell':'')+(isBonus?' bonus-cell':'');
   d.setAttribute('role','img');
-  d.setAttribute('aria-label','Raum '+i+(isCheckpoint?' – Checkpoint':'')+(i===active?' – aktueller Raum':'')+(i<=checkpoint?' – geschützt':''));
+  d.setAttribute('aria-label','Raum '+i+(isCheckpoint?' – Checkpoint':'')+(isBonus?' – garantiert bombenfrei':'')+(i===active?' – aktueller Raum':'')+(i<=checkpoint?' – geschützt':''));
   if(i===active)d.setAttribute('aria-current','step');
   const symbol=document.createElement('span');symbol.className='stage-step-icon';symbol.setAttribute('aria-hidden','true');
-  symbol.textContent=isCheckpoint?'🛡️':i===(state?.maxRoom||10)?'👑':i>=10?'💎':i>=4?'✦':'❄';
+  symbol.textContent=isCheckpoint?'🛡️':isBonus?'🎁':i===(state?.maxRoom||10)?'👑':i>=10?'💎':i>=4?'✦':'❄';
   const number=document.createElement('span');number.className='stage-step-number';number.textContent=String(i);
   d.append(symbol,number);root.appendChild(d);
  }
