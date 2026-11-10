@@ -63,7 +63,7 @@ export function validateGroupPlacement(draft,kind,seat,candidates,minDistance=23
 export function buildGoalLane(draft,seat,{dx=0,dy=1,spacing=28,first=null}={}){
   const s=properSeat(seat),gap=properSpacing(spacing),dir=vector(dx,dy);
   const entrance=draft.track[GOAL_ENTRY_INDICES[s]];
-  if(!entrance && !first)throw Error('Setze zuerst das Einlauffeld '+GOAL_ENTRY_INDICES[s]+' oder positioniere Zielfeld 1 manuell.');
+  if(!entrance && !first && !draft.goals[s][0])throw Error('Setze zuerst das Einlauffeld '+GOAL_ENTRY_INDICES[s]+' oder positioniere Zielfeld 1 manuell.');
   // If goal #1 already exists and first is omitted, keep its location fixed.
   // Otherwise place it one field spacing away from the preceding track square.
   const firstPoint=first||draft.goals[s][0]||point(entrance.x+dir.x*gap,entrance.y+dir.y*gap);
@@ -73,24 +73,27 @@ export function buildGoalLane(draft,seat,{dx=0,dy=1,spacing=28,first=null}={}){
   return next;
 }
 export function buildHomeGroup(draft,seat,{
-  layout='square',dx=0,dy=1,spacing=28,distance=94,center=null
+  layout='square',dx=0,dy=1,spacing=28,distance=94,center=null,first=null
 }={}){
   const s=properSeat(seat),gap=properSpacing(spacing),dir=vector(dx,dy);
   if(!HOUSE_LAYOUTS.includes(layout))throw Error('Unbekannte Startplatz-Anordnung.');
   if(!Number.isFinite(distance)||distance<30||distance>250)throw Error('Haus-Abstand muss zwischen 30 und 250 liegen.');
   const start=draft.track[EXIT_INDICES[s]];
-  if(!start&&!center)throw Error('Setze zuerst das farbige Ausstiegsfeld '+EXIT_INDICES[s]+' oder wähle die Mitte des Hauses.');
-  const middle=center||point(start.x+dir.x*distance,start.y+dir.y*distance);
+  if(!start&&!center&&!first&&!draft.homes[s][0])throw Error('Setze zuerst das farbige Ausstiegsfeld '+EXIT_INDICES[s]+' oder platziere Startplatz 1 manuell.');
+  const middle=center||(start?point(start.x+dir.x*distance,start.y+dir.y*distance):null);
   const offset=[-1.5,-.5,.5,1.5];
+  const firstPoint=first||draft.homes[s][0];
+  const origin=firstPoint||(layout==='square'?point(middle.x-gap*.5,middle.y-gap*.5):
+    layout==='row'?point(middle.x-gap*1.5,middle.y):point(middle.x,middle.y-gap*1.5));
   const row=layout==='square'?
-    [[-.5,-.5],[.5,-.5],[-.5,.5],[.5,.5]].map(([ox,oy])=>point(middle.x+ox*gap,middle.y+oy*gap)):
-    offset.map(k=>layout==='row'?point(middle.x+k*gap,middle.y):point(middle.x,middle.y+k*gap));
+    [[0,0],[1,0],[0,1],[1,1]].map(([ox,oy])=>point(origin.x+ox*gap,origin.y+oy*gap)):
+    [0,1,2,3].map(k=>layout==='row'?point(origin.x+k*gap,origin.y):point(origin.x,origin.y+k*gap));
   validateGroupPlacement(draft,'homes',s,row);
   const next=clone(draft);next.homes[s]=row;
   return next;
 }
 export function getTrackConnections(draft,{min=20,max=75}={}){
-  const links=[],missing=[],broken=[],segments=[];
+  const links=[],missing=[],broken=[];let segments=[];
   for(let i=0;i<64;i++){
     const j=(i+1)%64,a=draft.track[i],b=draft.track[j];
     if(!a||!b){missing.push({from:i,to:j,hasFrom:!!a,hasTo:!!b});continue;}
