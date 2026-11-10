@@ -45,6 +45,15 @@ test('Forge loads quotes and sends authenticated, receipt-safe upgrades',()=>{
  assert.ok(forgeJs.includes('getIdToken'));
 });
 
+test('Reconnection reconciles lost ready/react/finish replies against server state',()=>{
+ assert.ok(arenaJs.includes('function acknowledgePending(uid,state)'));
+ assert.ok(arenaJs.includes("request.command==='ready'"));
+ assert.ok(arenaJs.includes("request.command==='react'"));
+ assert.ok(arenaJs.includes("request.command==='finish'"));
+ assert.ok(arenaJs.includes('acknowledgePending(uid,data)'));
+ assert.ok(arenaJs.includes('DOG_BOSS10_NOT_RUNNING'));
+});
+
 test('The client cannot locally grant boss victories or consume inventory',()=>{
  assert.ok(!arenaJs.includes('sharedBosses.push('));
  assert.ok(!arenaJs.includes('dogUnlocked=true'));
