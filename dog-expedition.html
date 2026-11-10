@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090e1d">
+<meta name="description" content="Die 100 Tore: DOG-Freischaltung vorbereiten, Materialienkisten aus verifizierten Partien öffnen und Rohstoffe sammeln.">
+<title>⚔️ Die 100 Tore · Materialienkisten · SPIELEPORTAL</title>
+<link rel="stylesheet" href="./dog-materials.css?v=20261110-materials-v1">
+<script src="./profile-config.js"></script>
+<script src="./profile-auth.js"></script>
+</head>
+<body>
+<main class="layout">
+<nav aria-label="Navigation">
+ <a href="./index.html">⌂ Spieleportal</a>
+ <a href="./hub-lobby.html">🎮 Zur gemeinsamen Lobby</a>
+ <button type="button" id="refresh" title="Inventar aktualisieren">↻ Inventar aktualisieren</button>
+</nav>
+<header class="hero">
+ <div class="kicker">⚔️ Drei Helden · ein Ziel · hundert Tore</div>
+ <h1>Die 100 Tore</h1>
+ <p>Besiegt gemeinsam die Wächter und befreit eines Tages das legendäre Spiel <strong>DOG</strong>. Schon jetzt könnt ihr Materialien für die spätere Waffenschmiede sammeln.</p>
+ <div class="chapter" aria-label="Projektfortschritt">
+  <span class="focus">📦 Materialienkisten: aktiv</span>
+  <span>⚒️ Schmiede: in Entwicklung</span>
+  <span>👹 100 Bosse: in Entwicklung</span>
+  <span>🐺 DOG: nach Raum 100</span>
+ </div>
+</header>
+<div class="notice" role="note"><span aria-hidden="true">🛡️</span><span><b>Die Rohstoffsammlung ist die erste Ausbaustufe.</b> Aktuell gibt es Kisten nach serverseitig verifizierten Online-Partien von <b>Barikade und KreuzKunter</b>. Weitere Spiele werden schrittweise angeschlossen. Der Bosskampf und die Waffenschmiede sind noch nicht spielbar – deine Rohstoffe bleiben bis dahin gespeichert.</span></div>
+<div class="columns">
+ <section class="panel" aria-labelledby="crates-title">
+  <h2 id="crates-title">📦 Deine Materialienkisten</h2>
+  <p class="muted" id="account">🔒 Anmeldung wird geprüft …</p>
+  <div class="chest-zone">
+   <div class="chest-art" id="chest-art" role="img" aria-label="Geschlossene Schatztruhe">📦</div>
+   <div class="chest-number" id="chest-count" aria-live="polite">–</div>
+   <div class="chest-note" id="chest-description">Ungeöffnete Kisten in deinem Spielerprofil</div>
+   <div class="actions">
+    <button id="open-chest" type="button" class="button" disabled>✨ Kiste öffnen</button>
+   </div>
+  </div>
+  <p id="status" class="status" role="status" aria-live="polite">Synchronisiere mit dem sicheren Spielerserver …</p>
+  <div class="drop" id="reward" hidden aria-live="polite" aria-label="Inhalt deiner geöffneten Materialienkiste">
+   <h3>🎉 Kiste geöffnet!</h3>
+   <p class="muted" id="reward-title">Dein Fund</p>
+   <div id="reward-items" class="drop-contents"></div>
+  </div>
+  <h2 style="margin-top:22px">🎒 Dein Rohstofflager</h2>
+  <div class="resources">
+   <div class="resource"><span class="emoji" aria-hidden="true">🪨</span><strong id="iron">–</strong><small>Eisenerz</small></div>
+   <div class="resource"><span class="emoji" aria-hidden="true">💎</span><strong id="crystal">–</strong><small>Kristalle</small></div>
+   <div class="resource rune"><span class="emoji" aria-hidden="true">✨</span><strong id="rune">–</strong><small>Runensteine</small></div>
+  </div>
+  <p class="muted" id="earned" style="margin-top:14px">Gesammelte Kisten: – · Geöffnete Kisten: –</p>
+  <h2 style="margin-top:23px">🗃️ Letzte Funde</h2>
+  <ul id="history" class="history"><li>Nach deiner ersten geöffneten Kiste erscheinen hier deine Funde.</li></ul>
+ </section>
+ <aside class="panel" aria-labelledby="rules-title">
+  <h2 id="rules-title">🎲 Kisten und Seltenheiten</h2>
+  <p class="muted">Nach jeder berechtigten abgeschlossenen Online-Partie erhält jeder teilnehmende Spieler <b>eine eigene Kiste</b>. Darin liegen insgesamt ein bis fünf Rohstoffe.</p>
+  <table class="rule-table" aria-label="Chance auf unterschiedliche Rohstoffmengen">
+   <thead><tr><th>Rohstoffe je Kiste</th><th>Wahrscheinlichkeit</th></tr></thead>
+   <tbody><tr><td>1 Rohstoff</td><td>35 %</td></tr><tr><td>2 Rohstoffe</td><td>30 %</td></tr><tr><td>3 Rohstoffe</td><td>20 %</td></tr><tr><td>4 Rohstoffe</td><td>10 %</td></tr><tr><td>5 Rohstoffe</td><td>5 %</td></tr></tbody>
+  </table>
+  <p class="muted">Durchschnitt: <strong>2,2 Rohstoffe</strong> pro Kiste. Innerhalb einer Kiste sind <b>Eisenerz</b> häufig (72 %), <b>Kristalle</b> selten (23 %) und <b>Runensteine</b> sehr selten (5 %). Jede Einheit wird einzeln ausgewürfelt.</p>
+  <div class="waypoint" aria-labelledby="waypoint-title">
+   <h2 id="waypoint-title" style="margin-top:22px">🚪 Euer Weg zu DOG</h2>
+   <div class="steps">
+    <div class="step current"><b>📦</b>1. Kisten sammeln</div>
+    <div class="step"><b>⚒️</b>2. Waffen verbessern</div>
+    <div class="step"><b>👹</b>3. Bosse bezwingen</div>
+    <div class="step"><b>🐺</b>4. DOG befreien</div>
+   </div>
+   <p class="muted">Später gibt es einen gemeinsamen Kampf mit drei Helden, persönliche Waffenstufen und 100 Räume. DOG wird erst beim besiegten Boss von Raum 100 freigeschaltet, sofern das Spiel dann veröffentlicht ist.</p>
+  </div>
+  <p class="muted" style="margin-top:15px"><b>Fair und sicher:</b> Kisten entstehen nur aus vom Server bestätigten Spielabschlüssen. Abgebrochene Partien, Gäste und wiederholte Ergebnisanfragen erzeugen keine neuen Kisten.</p>
+ </aside>
+</div>
+<footer class="foot">DOG-Expedition · Phase 1: Rohstofflager. Das Sammeln beginnt bereits jetzt; der Boss-Modus und die Schmiede folgen als eigene Entwicklungsschritte.</footer>
+</main>
+<script src="./dog-materials-ui.js?v=20261110-materials-v1" defer></script>
+<script src="./site-global-controls.js?v=20261109-global-1"></script>
+</body>
+</html>
