@@ -2,6 +2,12 @@
 (()=>{'use strict';
  const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
  const $=id=>document.getElementById(id);
+ // Preserve the originating Deal-or-No-Deal multiplayer room when leaving
+ // and returning from the expedition. Opening a chest never changes this room.
+ const room=new URLSearchParams(location.search).get('room')||'';
+ if(/^(?:\\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(room)){
+  $('dog-back-deal').href='./DealOrNoDeal/lobby.html?room='+encodeURIComponent(room)+'&stay=1';
+ }
  const fmt=n=>Math.max(0,Number(n)||0).toLocaleString('de-DE');
  const ITEM=Object.freeze({
   iron:{icon:'🪨',name:'Eisenerz'},
