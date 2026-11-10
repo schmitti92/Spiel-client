@@ -6,18 +6,21 @@
 <meta name="theme-color" content="#0c1019">
 <meta name="description" content="Die Schmiede der 100 Tore: Rüstung, Waffen, Fähigkeiten und Rohstofftausch.">
 <title>⚒️ Schmiede der Helden · Die 100 Tore</title>
-<link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-c3">
+<link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-d1">
 <script src="./profile-config.js"></script>
 <script src="./profile-auth.js"></script>
 <script src="./dog-forge-ui.js?v=20261110-forge-c3" defer></script>
-<script src="./dog-forge-fx.js?v=20261110-forge-c3" defer></script>
+<script src="./dog-forge-fx.js?v=20261110-forge-d1" defer></script>
 <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 </head>
-<body data-forge-background="">
+<body data-forge-background=""
+      data-forge-background-desktop="./dog-forge-art/forge-workshop-desktop.webp"
+      data-forge-background-mobile="./dog-forge-art/forge-workshop-mobile.webp">
 <div class="forge-canvas">
  <nav class="top-nav" aria-label="Navigation">
   <a class="nav-back" href="./dog-expedition.html" id="forge-back">← Die 100 Tore</a>
   <a class="nav-link" href="./dog-expedition.html" id="forge-materials">📦 Rohstoffkisten</a>
+  <button type="button" id="forge-scene-toggle" class="nav-sound" aria-pressed="true" aria-label="Schmiedehintergrund ausblenden" title="Fantasy-Werkstatt ein- oder ausblenden">🏰 Werkstatt an</button>
   <button type="button" id="forge-sound-toggle" class="nav-sound" aria-pressed="false" aria-label="Schmiedegeräusche einschalten" title="Optionale Schmiedegeräusche">🔇 Ton aus</button>
   <button type="button" id="forge-refresh" class="nav-reload">↻ Aktualisieren</button>
  </nav>
