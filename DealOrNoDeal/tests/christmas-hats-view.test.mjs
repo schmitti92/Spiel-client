@@ -65,7 +65,8 @@ test('V7 stage presents 20 rooms, fast reveals and accessible optional cinematic
  assert.match(script,/const demoBombOdds=\[10,12,0,14,16,0,18,20,0,22,24,0,26,28,0,30,31,0,32,33\]/);
  assert.match(html,/id="bomb-chance"/);
  assert.match(html,/id="mode"/);
- assert.match(html,/20 –/);
+ assert.match(html,/🎩 Raum 1 von 20/);
+ assert.match(script,/const limit=s\?\.maxRoom\|\|20/);
  assert.match(script,/showChoice\(\)/);
  assert.match(script,/function finishReveal\(\)/);
  assert.match(script,/closeChoice\(\)/);
