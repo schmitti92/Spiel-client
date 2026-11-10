@@ -134,7 +134,9 @@
   ++speechSequence;
   clearTimeout(hideTimer);hideTimer=null;
   clearTimeout(speechGuard);speechGuard=null;
-  currentUtterance=null;queuedStory=null;
+  currentUtterance=null;
+  const discarded=queuedStory;queuedStory=null;
+  if(discarded){try{discarded.onDiscard?.()}catch{}}
   caption.hidden=true;
   if(supported)synth.cancel();
  }
@@ -158,11 +160,13 @@
   voice.onend=()=>finish(token);voice.onerror=()=>finish(token);
   guardSpeech(token,text.length);
   try{synth.speak(voice)}catch{finish(token);return false}
+  try{entry.onStart?.()}catch{}
   return true;
  }
  function speakStory(text,meta={}){
   if(!enabled||!supported||document.hidden||typeof text!=='string'||!text)return false;
-  return playStory({text,title:meta.title,chapter:meta.chapter});
+  return playStory({text,title:meta.title,chapter:meta.chapter,
+   onStart:meta.onStart,onDiscard:meta.onDiscard});
  }
  btn.addEventListener('click',()=>{
   if(!supported)return;
