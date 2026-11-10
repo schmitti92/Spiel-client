@@ -66,7 +66,8 @@ test('Real game cannot start another run without a server-confirmed voucher',()=
 test('One-click launcher starts either a fresh or an already-finished ticket run',()=>{
  assert.match(script,/setLink\(true,'🎩 Direkt spielen · 1 Klick',true\)/);
  assert.match(script,/autostart=1/);
- assert.match(game,/\(!state\|\|state\.status==='finished'\)/);
+ assert.ok(game.includes("else if((!state||state.status==='finished')&&(DEMO||Number(vouchers?.total||0)>0))void action('start');"));
+ assert.ok(game.includes("if(state?.status==='playing')goToHats()"),'active run resumes with no extra voucher');
  assert.match(game,/!pendingRequest&&Number\(vouchers\?\.total\|\|0\)>0/);
  assert.match(game,/authUser\(\)\?\.uid===user\.uid/);
  assert.match(game,/void action\('start'\)/);
