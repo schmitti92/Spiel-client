@@ -159,7 +159,7 @@ test('UI displays only the private opponent list and uses dynamic 29-case capaci
  assert.match(js,/mode=data\?\.mode==='own'/);
  assert.match(js,/NO_OTHER_PLAYER_CASES/);
  assert.match(js,/peek-results-grid/);
- assert.match(html,/peek-joker\.js\?v=20261110-dual-own-opponents-v2/);
+ assert.match(html,/peek-joker\.js\?v=20261110-30cases-50m-v1/);
  assert.doesNotMatch(js,/eur\(data\.amount\)/);
 });
 
