@@ -39,8 +39,8 @@ test('Forge UI maps every server-recognized skill to an illustration',()=>{
 });
 test('Forge UI styles and HTML load the current skill artwork release',()=>{
  const html=read('dog-forge.html'),css=read('dog-forge.css');
- assert.ok(html.includes('dog-forge-ui.js?v=20261110-forge-c3'));
- assert.ok(html.includes('dog-forge.css?v=20261110-forge-c3'));
+ assert.ok(html.includes('dog-forge-ui.js?v=20261110-forge-d1'));
+ assert.ok(html.includes('dog-forge.css?v=20261110-forge-d1'));
  for(const selector of ['.skill-display','.skill-visual.compact','.item-choice.skill-entry',
   '.result-art .skill-illustration'])assert.ok(css.includes(selector),'missing selector '+selector);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
@@ -123,7 +123,7 @@ test('C2 milestone awards are display-only and include a future max-skill badge'
 
 test('C3 ambience module is isolated from authoritative forge state',()=>{
  const ui=read('dog-forge-ui.js'),fx=read('dog-forge-fx.js'),html=read('dog-forge.html');
- assert.ok(html.includes('dog-forge-fx.js?v=20261110-forge-c3'));
+ assert.ok(html.includes('dog-forge-fx.js?v=20261110-forge-d1'));
  assert.ok(html.includes('id="forge-sound-toggle"'));
  assert.ok(html.includes('data-forge-background=""'));
  assert.ok(fx.includes("const SOUND_KEY='dog:forge:sound:v1'"));
@@ -150,4 +150,37 @@ test('C3 background art hook is optional, safe and keeps fallback',()=>{
  for(const marker of ['class="furnace-flames"','class="furnace-embers"','class="forge-impact"'])
   assert.ok(html.includes(marker));
  assert.equal(css.split('{').length,css.split('}').length);
+});
+
+test('D1 establishes both workshop image slots and a local vector fallback',()=>{
+ const html=read('dog-forge.html');
+ const fx=read('dog-forge-fx.js');
+ const css=read('dog-forge.css');
+ const fallback=read('dog-forge-art/forge-workshop-fallback.svg');
+ assert.match(html,/data-forge-background-desktop="\.\/dog-forge-art\/forge-workshop-desktop\.webp"/);
+ assert.match(html,/data-forge-background-mobile="\.\/dog-forge-art\/forge-workshop-mobile\.webp"/);
+ assert.match(html,/id="forge-scene-toggle"/);
+ assert.ok(css.includes('forge-workshop-fallback.svg'));
+ assert.ok(css.includes('body.forge-scene-off:before'));
+ assert.ok(css.includes('body.forge-has-custom-wall:before'));
+ assert.ok(fx.includes('dataset.forgeBackgroundDesktop'));
+ assert.ok(fx.includes('dataset.forgeBackgroundMobile'));
+ assert.ok(fx.includes("window.matchMedia?.('(max-width: 720px)')"));
+ assert.ok(fx.includes('image.onerror=()=>'));
+ assert.ok(fx.includes('media?.addEventListener?.(\'change\',setBackdrop)'));
+ assert.ok(fallback.startsWith('<svg'));
+ assert.ok(fallback.endsWith('</svg>'));
+ assert.ok(!fallback.includes('<script'));
+});
+test('D1 workshop scene setting is client-only and independent of forge progress',()=>{
+ const fx=read('dog-forge-fx.js'),ui=read('dog-forge-ui.js');
+ assert.ok(fx.includes("const SCENE_KEY='dog:forge:scene:v1'"));
+ assert.ok(fx.includes("localStorage.setItem(SCENE_KEY,sceneEnabled?'on':'off')"));
+ assert.ok(fx.includes("document.body.classList.toggle('forge-scene-off',!sceneEnabled)"));
+ assert.ok(fx.includes('version!==generation'),'ignore stale image callbacks');
+ assert.ok(fx.includes('if(!sceneEnabled)'), 'no image fetching when scene is disabled');
+ assert.ok(!fx.includes('fetch('));
+ assert.ok(!fx.includes('XMLHttpRequest'));
+ assert.doesNotThrow(()=>new Script(fx,{filename:'dog-forge-fx.js'}));
+ assert.doesNotThrow(()=>new Script(ui,{filename:'dog-forge-ui.js'}));
 });
