@@ -7,53 +7,37 @@ const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const js=read('Weihnachtsevent2/online-ice.js');
 const html=read('Weihnachtsevent2/index.html');
 
-test('browser supports 25 and 30-tile grids with 5x5 and 6x5 layouts',()=>{
+test('50 and 100 ice fields use correct grids and cache-busted client',()=>{
  assert.doesNotThrow(()=>new Script(js));
- assert.match(html,/ice-tiles\.ice-tiles-25\{grid-template-columns:repeat\(5,minmax\(0,1fr\)\);grid-template-rows:repeat\(5,minmax\(0,1fr\)\)/);
- assert.match(html,/online-ice\.js\?v=20261110-joker-hats-voucher-v1/);
- assert.match(js,/ice-tiles-25/);
- assert.match(html,/ice-tiles\.ice-tiles-30\{grid-template-columns:repeat\(6,minmax\(0,1fr\)\);grid-template-rows:repeat\(5,minmax\(0,1fr\)\)/);
- assert.match(js,/ice-tiles-30/);
+ assert.match(html,/ice-tiles\.ice-tiles-50\{grid-template-columns:repeat\(10,minmax\(0,1fr\)\);grid-template-rows:repeat\(5,minmax\(0,1fr\)\)/);
+ assert.match(html,/ice-tiles\.ice-tiles-100\{grid-template-columns:repeat\(10,minmax\(0,1fr\)\);grid-template-rows:repeat\(10,minmax\(0,1fr\)\)/);
+ assert.match(js,/ice-tiles-50/);assert.match(js,/ice-tiles-100/);
  assert.match(js,/Array\.from\(\{length:tileCount\}/);
- assert.doesNotMatch(js,/Array\.from\(\{length:20\}/);
+ assert.match(html,/online-ice\.js\?v=20261110-star-50-100-v1/);
 });
 
-test('client uses server-authoritative tile count and old states fall back to milestone',()=>{
+test('pictures 1–29 use 50 and 30–70 use 100 including old saves',()=>{
  const start=js.indexOf(' const finished=!!state.finished,done=state.completed>=70');
  const end=js.indexOf(' const photo=n=>',start);
  assert.ok(start>0&&end>start);
- const code=js.slice(start,end)+'\n({tileCount,openedTiles,fullClearPhase,number})';
+ const code=js.slice(start,end)+'\n({tileCount,openedTiles,number})';
  const stage=state=>runInNewContext(code,{state});
- let x=stage({completed:9,maxRewarded:9,finished:false,opened:[0,1],tilesRequired:20});
- assert.deepEqual(JSON.parse(JSON.stringify(x)),{tileCount:20,openedTiles:2,fullClearPhase:false,number:10});
- x=stage({completed:10,maxRewarded:10,finished:false,opened:[0,3,24],tilesRequired:25});
- assert.deepEqual(JSON.parse(JSON.stringify(x)),{tileCount:25,openedTiles:3,fullClearPhase:true,number:11});
- x=stage({completed:10,maxRewarded:10,finished:false,opened:[]});
- assert.equal(x.tileCount,25,'old cached response must not keep 20 slots forever');
- x=stage({completed:10,finished:true,opened:Array.from({length:20},(_,i)=>i),tileCount:20});
- assert.equal(x.tileCount,20,'tenth-picture finished state still shows original board');
- x=stage({completed:12,maxRewarded:12,finished:false,opened:Array.from({length:25},(_,i)=>i),tilesRequired:25});
- assert.equal(x.openedTiles,25);
- x=stage({completed:20,maxRewarded:20,finished:true,opened:[0,24],tilesRequired:25});
- assert.equal(x.tileCount,25,'completed picture 20 remains on its old grid');
- x=stage({completed:20,maxRewarded:20,finished:false,opened:[0,27],tilesRequired:30});
- assert.deepEqual(JSON.parse(JSON.stringify(x)),{tileCount:30,openedTiles:2,fullClearPhase:true,number:21});
- x=stage({completed:20,maxRewarded:20,finished:false,opened:[0,27],tileCount:25});
- assert.equal(x.tileCount,30,'old picture 21 cache must upgrade to 30');
- x=stage({completed:21,maxRewarded:21,finished:false,opened:[0,29],tilesRequired:30});
- assert.equal(x.openedTiles,2);
- x=stage({completed:0,maxRewarded:20,finished:false,opened:[],tileCount:30});
- assert.equal(x.tileCount,30,'reset preserves unlocked difficulty');
+ for(const [completed,finished,tileCount] of [[0,false,50],[22,false,50],[28,false,50],[29,true,50],[29,false,100],[30,false,100],[70,true,100]]){
+  const state={completed,maxRewarded:completed,finished,opened:[0,1],tileCount:30,tilesRequired:30};
+  const actual=stage(state);
+  assert.equal(actual.tileCount,tileCount,'completed '+completed+', finished '+finished);
+  assert.equal(actual.openedTiles,2);
+ }
+ assert.equal(stage({completed:0,maxRewarded:40,finished:false,opened:[],tileCount:100}).tileCount,50,'reset to first picture');
 });
 
-test('UI shows progress and dynamically uses 25 or 30 ice blocks',()=>{
+test('UI shows dynamic ice progress and the star on every image',()=>{
  assert.ok(js.includes("openedTiles+' von '+tileCount+' Eisfeldern geöffnet"));
  assert.match(js,/openedTiles\/tileCount\*100/);
- assert.match(js,/Zerstöre alle '\+tileCount\+' Eisblöcke/);
- assert.match(js,/Wähle einen Hammer und finde den versteckten Stern/);
  assert.match(js,/\+tileCount\+' Eisfelder: Finde den versteckten Stern! Er öffnet das ganze Bild sofort/);
  assert.match(js,/state\.opened\.includes\(i\)/);
  assert.match(js,/aria-label="Eisfeld '\+\(i\+1\)\+' von '\+tileCount/);
+ assert.doesNotMatch(js,/Kein Stern mehr|Ab Bild 23/);
 });
 
 test('cinematic hammer shatters follow server-confirmed targets only',()=>{
@@ -78,19 +62,17 @@ test('cinematic hammer shatters follow server-confirmed targets only',()=>{
  assert.match(css,/icefx-lucky/);
 });
 
-test('stars reveal pictures through 22; full clearing starts at image 23',()=>{
- assert.match(js,/number>=23\?'🧊 Kein Stern mehr:/);
- assert.match(js,/number>=23\?'🧊 Ab Bild 23 wird das Bild erst enthüllt/);
- assert.match(js,/celebration\.number>=23\?'Alle Eisblöcke entfernt!'/);
- assert.match(js,/celebration\.number>=23\?'🧊':'🌟'/);
- assert.match(js,/Number\(state\.completed\)>=23\?'🧊 Alle Eisblöcke entfernt!/);
- assert.match(html,/online-ice\.js\?v=20261110-joker-hats-voucher-v1/);
+test('hidden star is present for every picture including 23–70',()=>{
+ assert.doesNotMatch(js,/number>=23|celebration\.number>=23|Number\(state\.completed\)>=23/);
+ assert.match(js,/Weihnachtsstern gefunden!/);
+ assert.match(js,/🌟 Bild freigelegt!/);
+ assert.match(js,/nach dem Sternfund vollständig enthüllt/);
 });
 
 test('every server-confirmed completed picture uses full-screen reveal before reward',()=>{
  const css=read('Weihnachtsevent2/image-reveal-grand.css');
  assert.match(html,/image-reveal-grand\.css\?v=20261109-grand-reveal-v1/);
- assert.match(html,/online-ice\.js\?v=20261110-joker-hats-voucher-v1/);
+ assert.match(html,/online-ice\.js\?v=20261110-star-50-100-v1/);
  assert.match(js,/celebration\?\.stage==='image'&&!celebrationDelayTimer&&state\.finished&&Number\(state\.completed\)>=celebration\.number/);
  assert.match(js,/photo\(celebration\.number\)/);
  assert.match(js,/id="v44-big-reveal-continue"/);
@@ -99,7 +81,7 @@ test('every server-confirmed completed picture uses full-screen reveal before re
  assert.match(js,/if\(type==='strike'&&state\.finished&&!wasFinished\)/);
  assert.match(js,/celebrationDelayTimer=setTimeout\(\(\)=>\{celebrationDelayTimer=null;render\(\)\},950\)/);
  assert.match(js,/if\(!celebration\|\|celebration\.stage!=='image'\|\|!state\?\.finished\|\|state\.completed<celebration\.number\)return/);
- assert.match(js,/if\(n===number\)\{message\(number>=23\?'🧊 Ab Bild 23 wird das Bild erst enthüllt, wenn alle '\+tileCount\+' Eisfelder entfernt wurden\./);
+ assert.match(js,/nach dem Sternfund vollständig enthüllt/);
  for(const c of ['v44-big-reveal-frame','v44-big-reveal-snow','v44-big-reveal-card'])assert.ok(css.includes(c));
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
  assert.doesNotMatch(css,/fetch\(|Firebase|api\/christmas-ice/i);
