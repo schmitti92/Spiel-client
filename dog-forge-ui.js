@@ -22,6 +22,21 @@
   id,{id,icon,name,index,group:g.group}
  ])));
  const tabLabels={equipment:'⚔️ Ausrüstung',attack:'💥 Angriff',defense:'🛡️ Abwehr',exchange:'💎 Tausch'};
+ // Independent look-and-feel tokens: extending a skill requires one entry and one SVG.
+ // Attack = warm tones, defense = restorative/cool tones. No combat data lives here.
+ const SKILL_ART=Object.freeze({
+  destruction:{accent:'#ef4e64',glow:'#ef4e6460'},
+  precision:{accent:'#f1c463',glow:'#f1c46350'},
+  double_strike:{accent:'#ff994d',glow:'#ff994d5e'},
+  attack_power:{accent:'#e75864',glow:'#e7586456'},
+  critical:{accent:'#f9c65a',glow:'#f9c65a60'},
+  regeneration:{accent:'#4ed59c',glow:'#4ed59c55'},
+  blocking:{accent:'#699fe5',glow:'#699fe555'},
+  evasion:{accent:'#5dd6dc',glow:'#5dd6dc50'},
+  resilience:{accent:'#9baed0',glow:'#9baed050'},
+  vitality:{accent:'#ef7d9d',glow:'#ef7d9d52'},
+  last_stand:{accent:'#c38cff',glow:'#c38cff60'}
+ });
  const STAGES=Object.freeze([
   {limit:5,title:'Geschmiedet',weapon:'Schmiedeklinge',armor:'Lederpanzer'},
   {limit:10,title:'Verstärkt',weapon:'Stahlklinge',armor:'Stahlpanzer'},
@@ -53,6 +68,24 @@
   },{once:true});
   root.append(img);
   if(!compact)root.append(node('span','gear-stage-label',config[id]+' · Stufe '+level));
+  return root;
+ }
+ function skillVisual(item,compact=false){
+  const theme=SKILL_ART[item?.id];
+  const root=node('span','skill-visual'+(compact?' compact':''));
+  root.style.setProperty('--skill-accent',theme?.accent||'#d8b778');
+  root.style.setProperty('--skill-glow',theme?.glow||'#d8b77840');
+  if(theme){
+   const img=node('img','skill-illustration');
+   img.src='./dog-forge-art/skill-'+item.id+'.svg';
+   img.alt=item.name+' – Fähigkeitssymbol';
+   img.loading=compact?'lazy':'eager';img.decoding='async';
+   img.addEventListener('error',()=>{
+    img.hidden=true;
+    root.append(node('span','skill-fallback',item.icon||'✨'));
+   },{once:true});
+   root.append(img);
+  }else root.append(node('span','skill-fallback',item?.icon||'✨'));
   return root;
  }
  const auth=()=>{
@@ -157,10 +190,16 @@
   for(const item of items){
    const button=node('button','item-choice'+(selected===item.id?' selected':''));
    button.type='button';button.setAttribute('aria-pressed',String(selected===item.id));
-   button.classList.toggle('gear-entry',item.group==='equipment');
-   if(item.group==='equipment')button.dataset.stage=String(stageFor(levelFor(item.id)));
-   const icon=item.group==='equipment'?gearVisual(item.id,levelFor(item.id),true):
-    node('span','item-icon',item.icon);
+   const isEquipment=item.group==='equipment';
+   button.classList.toggle('gear-entry',isEquipment);
+   button.classList.toggle('skill-entry',!isEquipment);
+   if(isEquipment)button.dataset.stage=String(stageFor(levelFor(item.id)));
+   else{
+    const theme=SKILL_ART[item.id];
+    button.style.setProperty('--skill-accent',theme?.accent||'#d8b778');
+    button.style.setProperty('--skill-glow',theme?.glow||'#d8b77840');
+   }
+   const icon=isEquipment?gearVisual(item.id,levelFor(item.id),true):skillVisual(item,true);
    const info=node('span','item-info');
    info.append(node('strong',null,item.name),node('small',null,'Stufe '+levelFor(item.id)+' / '+item.maxLevel));
    const track=node('div','item-bar'),fill=node('span');
@@ -187,10 +226,24 @@
   const head=node('div','upgrade-top');
   head.append(node('span','eyebrow','VERBESSERUNG'),node('span','forge-tag',tabLabels[tab]||'⚒️ SCHMIEDE'));
   root.append(head);
+  const panel=root.closest('.upgrade-panel');
   if(item.group==='equipment'){
+   panel?.style.removeProperty('--skill-accent');
+   panel?.style.removeProperty('--skill-glow');
    const scene=node('div','gear-display gear-scene-'+stageFor(level));
    scene.append(gearVisual(item.id,level));root.append(scene);
-  }else root.append(node('div','upgrade-symbol skill-symbol',item.icon));
+  }else{
+   const theme=SKILL_ART[item.id];
+   if(panel){
+    panel.style.setProperty('--skill-accent',theme?.accent||'#d8b778');
+    panel.style.setProperty('--skill-glow',theme?.glow||'#d8b77840');
+   }
+   const scene=node('div','skill-display');
+   scene.append(skillVisual(item));
+   const groupLabel=node('span','skill-group-label',
+     item.group==='attack'?'⚔️ ANGRIFFSFÄHIGKEIT':'🛡️ VERTEIDIGUNGSFÄHIGKEIT');
+   scene.append(groupLabel);root.append(scene);
+  }
   root.append(node('h2',null,item.name),node('p','upgrade-summary',item.summary));
   const line=node('div','level-line'),left=node('span','left','AUSBAUSTUFE'),right=node('strong','value',String(level));
   right.append(node('span',null,' / '+item.maxLevel));line.append(left,right);root.append(line);
@@ -292,7 +345,7 @@
    const item=itemFor(result.itemId),equip=item?.group==='equipment',success=!!result.success;
    kind=success?(equip?'equipment-success':'skill-success'):'failure';
    if(equip)art.append(gearVisual(result.itemId,result.newLevel));
-   else art.append(node('span','skill-result-emblem',success?item?.icon||'✨':'🌑'));
+   else art.append(skillVisual(item));
    const before=stageFor(result.oldLevel),after=stageFor(result.newLevel);
    emoji=success?'✦':'✕';
    heading=success?(equip?'Erfolgreich geschmiedet!':'Fähigkeit verbessert!'):'Schmieden fehlgeschlagen';
@@ -307,6 +360,14 @@
    achievement='ROHSTOFFTAUSCH';
   }
   dialog.className='forge-result result-'+kind;
+  const resultTheme=result?.type==='upgrade'?SKILL_ART[result.itemId]:null;
+  if(resultTheme){
+   dialog.style.setProperty('--skill-accent',resultTheme.accent);
+   dialog.style.setProperty('--skill-glow',resultTheme.glow);
+  }else{
+   dialog.style.removeProperty('--skill-accent');
+   dialog.style.removeProperty('--skill-glow');
+  }
   $('forge-result-icon').textContent=emoji;
   $('forge-result-heading').textContent=heading;
   $('forge-result-text').textContent=subtitle;
