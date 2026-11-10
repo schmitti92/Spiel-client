@@ -54,7 +54,10 @@ h1{font-size:clamp(28px,4.6vw,55px);line-height:1.06;margin:7px 0 9px;font-weigh
 .santa-hat:after{content:"";position:absolute;bottom:8%;left:4%;width:90%;height:23%;border-radius:35px;background:linear-gradient(180deg,#fffefa,#ccd8ee);box-shadow:0 4px 10px #0005}
 .pom{position:absolute;left:38%;top:5%;width:21%;aspect-ratio:1;background:white;border-radius:50%;box-shadow:0 0 12px #fff,0 3px 5px #aaa;z-index:1}
 @keyframes float{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-7px) rotate(4deg)}}
-.hat.shown .santa-hat{animation:flip .55s ease-out forwards}
+.hat.shown .santa-hat{position:absolute;inset:25px auto auto calc(50% - clamp(42px,6vw,73px));z-index:4;animation:flip .68s ease-out forwards;pointer-events:none}
+.hat.shown:not(.selected){animation:otherHat .7s .7s both}
+.hat.shown .revealEmoji{animation:pop .7s .4s both}
+@keyframes otherHat{from{opacity:0;transform:translateY(30px) scale(.88)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes flip{to{transform:translateY(-55px) rotate(35deg) scale(.4);opacity:0}}
 .revealEmoji{font-size:clamp(42px,7vw,85px);line-height:1;animation:pop .7s ease-out}
 @keyframes pop{0%{transform:scale(.15);opacity:0}70%{transform:scale(1.25)}100%{transform:scale(1);opacity:1}}
@@ -245,8 +248,8 @@ function hatButton(index,old){
  const hat=document.createElement('button');hat.type='button';hat.className='hat'+(index===(reveal?.index??selectedHat)?' selected':'')+(selectedHat===index&&busy?' selecting':'')+(old?' shown '+(old.type==='bomb'?'bomb':old.type==='super'?'super':'gift'):'');
  hat.disabled=!state||state.status!=='playing'||busy||!!reveal||!!pendingRequest;
  const n=document.createElement('span');n.className='num';n.textContent='MÜTZE '+(index+1);hat.appendChild(n);
+ const shape=document.createElement('div');shape.className='santa-hat';const pom=document.createElement('span');pom.className='pom';shape.appendChild(pom);hat.appendChild(shape);
  if(!old){
-  const shape=document.createElement('div');shape.className='santa-hat';const pom=document.createElement('span');pom.className='pom';shape.appendChild(pom);hat.appendChild(shape);
   const label=document.createElement('span');label.className='hatName';label.textContent='Aufdecken';hat.appendChild(label);
   hat.addEventListener('click',()=>action('pick',index));
  }else{
