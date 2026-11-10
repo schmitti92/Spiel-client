@@ -47,8 +47,7 @@
   $('gate-detail-future').textContent=gate===100?
    '🔒 DOG ist noch verschlossen. Es wird erst nach einem nachgewiesenen Sieg über den letzten gemeinsamen Boss freigeschaltet.':
    '🛠️ Dies ist eine Kartenvorschau. Der persönliche Fortschritt und die Kämpfe werden in einem weiteren Entwicklungsschritt mit dem Server verbunden.';
-  details.hidden=false;
-  details.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'});
+  if(!details.open)details.showModal();
  }
  function drawPaths(){
   for(const {grid,nodes,svg} of pathList){
@@ -123,5 +122,6 @@
  }else window.addEventListener('resize',drawPaths);
  window.requestAnimationFrame(drawPaths);
  window.addEventListener('load',drawPaths,{once:true});
- $('gate-detail-close').addEventListener('click',()=>{details.hidden=true;for(const selected of document.querySelectorAll('.gate[aria-pressed="true"]'))selected.setAttribute('aria-pressed','false');});
+ $('gate-detail-close').addEventListener('click',()=>details.close());
+ details.addEventListener('close',()=>{for(const selected of document.querySelectorAll('.gate[aria-pressed="true"]'))selected.setAttribute('aria-pressed','false');});
 })();
