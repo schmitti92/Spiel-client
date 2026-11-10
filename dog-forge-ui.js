@@ -168,13 +168,32 @@
   const grid=node('div','cost-list');
   for(const [id,amount] of Object.entries(quote.cost||{}))grid.append(costTile(id,amount));
   root.append(costHead,grid);
+  // A short visual preview; boss combat coefficients remain adjustable.
+  const preview=node('div','upgrade-preview');
+  const current=node('div','preview-value');
+  current.append(node('small',null,'JETZT'),node('strong',null,'Stufe '+level));
+  const arrow=node('span','preview-arrow','➜');
+  const future=node('div','preview-value next');
+  future.append(node('small',null,'DANACH'),node('strong',null,'Stufe '+quote.nextLevel));
+  preview.append(current,arrow,future);
+  if(['attack_power','vitality','resilience'].includes(item.id)){
+   preview.append(node('span','preview-bonus','+1 % Grundwert je Stufe · vorläufig'));
+  }
+  root.append(preview);
   const rate=node('div','forge-ready'),label=node('span',null,'Erfolgschance');
   const chance=node('b',null,quote.successChance+' %');
   if(!quote.affordable){label.textContent='Rohstoffe fehlen';label.className='not-ready';}
   rate.append(label,chance);root.append(rate);
   const button=node('button','forge-action','⚒️ '+(item.group==='equipment'?'Schmieden':'Verbessern')+' · Stufe '+quote.nextLevel);
   button.type='button';button.disabled=!usable()||!quote.affordable;
-  button.addEventListener('click',()=>void action('upgrade',{itemId:item.id,expectedLevel:quote.level}));
+  button.addEventListener('click',()=>{
+   const costs=Object.entries(quote.cost||{}).map(([id,amount])=>amount+' × '+(material[id]?.name||id)).join(' · ');
+   const risk=item.group==='equipment'&&quote.successChance<100?
+    '\\n⚠️ Bei einem Fehlschlag sind die Rohstoffe weg, die Stufe bleibt erhalten.':'';
+   if(window.confirm(item.name+' auf Stufe '+quote.nextLevel+' verbessern?\\n'+costs+
+    '\\nErfolgschance: '+quote.successChance+' %'+risk))
+    void action('upgrade',{itemId:item.id,expectedLevel:quote.level});
+  });
   root.append(button);
   root.append(node('p','upgrade-foot',item.group==='equipment'?'Fehlschlag: Rohstoffe verbraucht, Stufe bleibt.':'Fähigkeitsstufen gelingen garantiert.'));
  }
