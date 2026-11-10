@@ -8,6 +8,9 @@
   for(const id of ['forge-launch','forge-from-storage']){
    const link=$(id);if(link)link.href='./dog-forge.html?room='+encodeURIComponent(room);
   }
+  for(const id of ['boss-launch','boss-from-storage']){
+   const link=$(id);if(link)link.href='./dog-boss.html?room='+encodeURIComponent(room);
+  }
  }
  const fmt=n=>Math.max(0,Number(n)||0).toLocaleString('de-DE');
  const TIER=Object.freeze({
