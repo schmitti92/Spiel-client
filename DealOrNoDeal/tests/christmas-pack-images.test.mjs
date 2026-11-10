@@ -144,5 +144,5 @@ test('all 32 heavy Hammer-Bingo cards have compact, real WebP art for the pack s
  }
  assert.ok(total<7000000,'32 card images should use <7 MB together');
  assert.match(inline,/card-'\+String\(index\+1\)\.padStart\(2,'0'\)\+'\.webp'/);
- assert.match(page,/christmas-pack-cinema\.css\?v=20261109-card-art-webp-v2/);
+ assert.match(page,/christmas-pack-cinema\.css\?v=20261110-new-only-zoom-v1/);
 });
