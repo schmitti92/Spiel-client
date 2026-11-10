@@ -85,6 +85,7 @@ function harness(options={}){
   if(postMode==='blocked')return new Promise((_,reject)=>req.signal.addEventListener('abort',()=>reject(Error('AbortError'))));
   if(postMode==='delayed')return new Promise(resolve=>{pendingResolve=payload=>resolve({ok:true,json:async()=>payload})});
   if(postMode==='error')return {ok:false,json:async()=>({error:'BOSS_COOLDOWN_ACTIVE'})};
+  if(postMode==='stale')return {ok:false,json:async()=>({error:'BOSS_STATE_STALE'})};
   const payload=route==='join'?{...server,isMember:true,members:[{uid:'A',name:'Helden A'}],
     result:{type:'join'},replayed:false}:route==='restart'?
     {...server,phase:'ready',bossHp:6000,cooldownUntil:0,attempt:server.attempt+1,
@@ -251,4 +252,32 @@ test('Boss phase UI is responsive and accessible when animations are reduced',()
  assert.ok(source.includes("view?.bossCharged&&view?.phase==='fighting'"));
  assert.ok(source.includes('bossPhase=Math.min(3'));
  assert.ok(source.includes("payload.result?.chargedAttack"));
+});
+
+test('Multiplayer attacks send the observed boss turn in their replayable receipt',async()=>{
+ const now=1_800_000_000_000;
+ const h=harness({now,view:{...basic({now,phase:'fighting'}),bossTurn:7}});
+ await spin();h.click(h.moveButtons[0]);await spin();
+ assert.equal(h.posts().length,1);
+ const payload=JSON.parse(h.posts()[0].req.body);
+ assert.equal(payload.expectedTurn,7);
+ const saved=JSON.parse(h.storage.get('dog:boss:pending:A')||'null');
+ assert.equal(saved,null,'completed request clears pending turn receipt');
+});
+test('Stale multiplayer hit is rejected locally and the next phase warning is fetched',async()=>{
+ const now=1_800_000_000_000;
+ const h=harness({now,view:{...basic({now,phase:'fighting'}),bossTurn:0}});
+ await spin();
+ h.setServer({...basic({now,phase:'fighting'}),bossTurn:1,bossHp:2700,
+  bossPhase:2,bossCharged:true,bossPhaseName:'Die Glut erwacht',
+  bossTelegraph:'⚠️ Flammenexplosion: Der nächste Held sollte verteidigen!'});
+ h.mode('stale');h.click(h.moveButtons[0]);await spin();
+ assert.equal(h.posts().length,1);
+ assert.equal(JSON.parse(h.posts()[0].req.body).expectedTurn,0);
+ assert.equal(h.storage.has('dog:boss:pending:A'),false);
+ assert.equal(h.get().length,2,'re-fetch the new warning once after a stale hit');
+ assert.equal(h.el('boss-phase-label').textContent,'PHASE 2 VON 3');
+ assert.equal(h.el('boss-telegraph').classList.contains('is-warning'),true);
+ h.mode('normal');h.click(h.moveButtons[2]);await spin();
+ assert.equal(JSON.parse(h.posts()[1].req.body).expectedTurn,1);
 });
