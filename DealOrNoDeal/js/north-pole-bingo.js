@@ -15,6 +15,13 @@
   {at:30,id:'north-monster-spin-1',icon:'🎡',name:'1 Monsterdrehung'}
  ]);
 
+ const FOURTH_MILESTONES=Object.freeze([
+  {at:32,id:'fourth-monster-spin-1',icon:'🎰',name:'1 Monster-Glücksrad-Drehung'},
+  {at:34,id:'fourth-jokers-2',icon:'🃏',name:'2 Kofferblick-Joker'},
+  {at:36,id:'fourth-hats-voucher-1',icon:'🎩',name:'1 Weihnachtsmützen-Spielgutschein'},
+  {at:38,id:'fourth-gold-hammers-3',icon:'🔨',name:'3 goldene Hammer'},
+  {at:40,id:'fourth-grand-combo',icon:'👑',name:'3 goldene Hammer + 3 Joker + 2 Weihnachtsmützen-Spielgutscheine'}
+ ]);
  const CLASSIC_BOARD_MILESTONES=Object.freeze([
   Object.freeze([
    {at:2,id:'rudolph',icon:'🦌',name:'Rudolf'},
@@ -179,14 +186,16 @@
    })
   };
  }
- let fourthMounted=false,fourthSelection=null,fourthLast=fourthSnapshot(),fourthButtons=[],fourthCells=[];
+ let fourthMounted=false,fourthSelection=null,fourthLast=fourthSnapshot(),fourthButtons=[],fourthCells=[],fourthMilestoneNodes=[];
  function mountFourth(){
   if(fourthMounted)return true;
   const root=document.getElementById('album-grid-fourth');
   const rows=document.getElementById('fourth-bingo-rows');
   const cols=document.getElementById('fourth-bingo-columns');
   const diags=document.getElementById('fourth-bingo-diagonals');
-  if(!root||!rows||!cols||!diags)return false;
+  const rewardRoot=document.getElementById('fourth-bingo-milestones');
+  if(!root||!rows||!cols||!diags||!rewardRoot)return false;
+  fourthMilestoneNodes=FOURTH_MILESTONES.map(m=>createMilestoneChip(m,rewardRoot));
   fourthButtons=LINES.map((positions,i)=>{
    const button=document.createElement('button');
    button.type='button';button.className='north-bingo-chip';button.dataset.line=String(i);
@@ -241,12 +250,23 @@
   const completed=Number.isInteger(done)&&done>=0&&done<=10?done:fourthLast.lines.filter(x=>x.complete).length;
   const count=document.getElementById('fourth-bingo-completed');
   if(count)count.textContent=completed+' von 10 Linien fertig';
+  const received=new Set(Array.isArray(data?.progress?.rewards)?data.progress.rewards:[]);
+  const claimed=new Set(Array.isArray(data?.northPoleClaimed)?data.northPoleClaimed:[]);
+  const pending=new Set(Array.isArray(data?.northPolePending)?data.northPolePending:[]);
+  const total=Number(data?.progress?.totalBingos)||0;
+  const milestones=FOURTH_MILESTONES.map(m=>({
+   ...m,unlocked:received.has(m.id),claimed:claimed.has(m.id)&&!pending.has(m.id)
+  }));
+  fourthMilestoneNodes.forEach((chip,i)=>updateMilestoneChip(chip,milestones[i]));
+  const next=milestones.find(m=>!m.claimed);
   const note=document.getElementById('fourth-bingo-next');
-  if(note)note.textContent=completed===10
-   ?'🏆 Alle zehn Weihnachtschaos-Bingos geschafft! Die neuen Belohnungen werden separat festgelegt.'
-   :'🎁 Noch '+(10-completed)+' Bingo-Linie(n) bis zur vollständigen vierten Tafel · Die Belohnungen für 32–40 Gesamt-Bingos folgen.';
+  if(note)note.textContent=next
+   ?next.unlocked
+    ?'🎁 '+next.icon+' '+next.name+' freigeschaltet · Die Gutschrift wird geprüft.'
+    :'🎁 Nächster Gewinn: '+next.icon+' '+next.name+' bei '+next.at+' Gesamt-Bingos · noch '+Math.max(0,next.at-total)+' Bingo(s)'
+   :'👑 BINGO 40 GESCHAFFT! Alle fünf neuen Belohnungen wurden gutgeschrieben.';
   focusFourth();
  }
  function reset(){selection=null;fourthSelection=null;render({cards:{},progress:{totalBingos:0,rewards:[]}})}
- global.NorthPoleBingo=Object.freeze({snapshot,render,reset,LINES,MILESTONES,CLASSIC_BOARD_MILESTONES,fourthSnapshot});
+ global.NorthPoleBingo=Object.freeze({snapshot,render,reset,LINES,MILESTONES,CLASSIC_BOARD_MILESTONES,FOURTH_MILESTONES,fourthSnapshot});
 })(window);
