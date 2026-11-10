@@ -203,6 +203,7 @@
   return work;
  }
  const definitive=new Set(['INVALID_BOSS_MOVE','INVALID_BOSS_COMMAND',
+  'BOSS_STATE_STALE',
   'NOT_BOSS_MEMBER','BOSS_TEAM_FULL','BOSS_COOLDOWN_ACTIVE','BOSS_ALREADY_WON',
   'BOSS_HERO_DOWN','BOSS_NO_RESTART','BOSS_RECEIPT_CONFLICT','INVALID_REQUEST_ID']);
  function effect(result){
@@ -222,7 +223,8 @@
   if(prior&&!retry){status('⚠️ Zuerst die offene Aktion sicher wiederholen.','bad');return;}
   if(!prior&&retry)return;
   if(!prior&&!view)return;
-  const op=prior||{id:newId(),command:type,...(type==='act'?{move}:{})};
+  const op=prior||{id:newId(),command:type,...(type==='act'?
+   {move,expectedTurn:Number.isSafeInteger(view?.bossTurn)?view.bossTurn:0}:{})};
   if(!prior&&!savePending(account,op)){
    status('⚠️ Die Auftragskennung konnte nicht gespeichert werden. Keine Kampfaktion gesendet.','bad');
    return;
@@ -231,7 +233,8 @@
   status('⚔️ Der Server berechnet die gemeinsame Kampfaktion …');
   try{
    const payload=await request('POST',op.command,
-    {requestId:op.id,...(op.command==='act'?{move:op.move}:{})},account);
+    {requestId:op.id,...(op.command==='act'?{move:op.move,
+     ...(op.expectedTurn===undefined?{}:{expectedTurn:op.expectedTurn})}:{})},account);
    if(uid!==account||epoch!==session||!viewer())throw Error('ACCOUNT_CHANGED');
    clearPending(account);apply(payload);
    if(!payload.replayed)effect(payload.result);
@@ -249,7 +252,9 @@
    if(uid!==account||epoch!==session)return;
    if(definitive.has(e.message)){
     clearPending(account);
-    status('↻ Der Bosszustand hat sich geändert ('+e.message+'). Lade den aktuellen Stand.','bad');
+    status(e.message==='BOSS_STATE_STALE'?
+     '⚠️ Ein anderer Held hat angegriffen. Lade die neue Bosswarnung, bevor du handelst.':
+     '↻ Der Bosszustand hat sich geändert ('+e.message+'). Lade den aktuellen Stand.','bad');
     void reload(true);
    }else status('⚠️ Die Antwort ist nicht sicher bestätigt. Bitte „Letzte Aktion sicher wiederholen“ verwenden.','bad');
   }finally{
