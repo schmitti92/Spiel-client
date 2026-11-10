@@ -30,11 +30,11 @@ test('Voucher landing page shows an accessible one-time ticket and locks later e
  assert.match(page,/einen kostenlosen Gutschein/);
  assert.match(page,/Weitere Spielgutscheine werden später/);
  assert.match(script,/aria-disabled/);
- assert.match(script,/data\.state\?\.status==='playing'/);
+ assert.match(script,/data\?\.state\?\.status==='playing'/);
  assert.match(script,/vouchers\.total/);
  assert.match(script,/vouchers\.free/);
  assert.match(script,/Fortsetzen verbraucht keinen weiteren Gutschein/);
- assert.match(script,/Spielgutschein ist aufgebraucht/);
+ assert.match(script,/Gutschein ist aufgebraucht/);
 });
 
 test('Voucher display is read-only, authenticated and does not poll',()=>{
