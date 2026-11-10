@@ -133,7 +133,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
 <body>
 <main>
 <nav>
- <div class="tools"><a class="back" id="back" href="./weihnachtswelt.html">❮ Weihnachtswelt</a><a class="back" id="lobby" href="./lobby.html">🎮 Lobby</a></div>
+ <div class="tools"><a class="back" id="back" href="./weihnachtswelt.html">❮ Weihnachtswelt</a><a class="back" id="hats-collection" href="./weihnachten.html?view=hats">🎟️ Gutscheine</a><a class="back" id="lobby" href="./lobby.html">🎮 Lobby</a></div>
  <div class="tools"><button id="sound" type="button" aria-label="Spielklänge ein- oder ausschalten" aria-pressed="false">🔇 Ton aus</button><button id="refresh" type="button">↻ Aktualisieren</button><button id="full" type="button">⛶ Vollbild</button></div>
 </nav>
 <header class="hero">
@@ -144,7 +144,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
 </header>
 <div class="tiers" id="tiers" aria-label="Die zehn Spielräume"></div>
 <section class="game" aria-label="Weihnachtsmützen-Spiel">
- <div class="topline"><div id="roomTitle" class="roomTitle">🎅 Weihnachtsmützen</div><div id="checkpoint" class="checkpoint">🛡️ Noch kein Checkpoint</div></div>
+ <div class="topline"><div id="roomTitle" class="roomTitle">🎅 Weihnachtsmützen</div><div id="checkpoint" class="checkpoint">🛡️ Noch kein Checkpoint</div><div id="hats-voucher-indicator" class="checkpoint" aria-live="polite">🎟️ Gutschein wird geprüft …</div></div>
  <p id="subtitle" class="subtitle">Unter einer Mütze lauert eine Bombe, zwei enthalten Geschenke.</p>
  <div id="stage-banner" class="stage-banner"><span class="stage-name" id="stage-name">🎁 Weihnachtsstube</span><span class="stage-hint" id="stage-hint">Drei Mützen. Ein Risiko.</span></div>
  <div id="stage-announcer" class="stage-announcer" aria-live="polite"><span class="announcer-icon" aria-hidden="true">🎙️</span><span id="announcer-text">Willkommen zur großen Weihnachts-Jackpot-Show!</span></div>
@@ -161,9 +161,10 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
   <button id="start" class="action" type="button">✨ Jackpot starten</button>
   <button id="cash" class="action cash" type="button" hidden>💰 Alle Gewinne kassieren</button>
   <button id="continue" class="action secondary" type="button" hidden>⏭️ Direkt weiterspielen</button>
-  <button id="again" class="action" type="button" hidden>🎩 Neues Spiel</button>
+  <button id="again" class="action" type="button" hidden>🎩 Neuen Gutschein einsetzen</button>
   <button id="retry" class="action secondary" type="button" hidden>↻ Letzte Aktion sicher wiederholen</button>
  </div>
+ <p id="hats-locked" class="instructions" hidden>🔒 Dein kostenloser Gutschein wurde bereits eingesetzt. Weitere Spielgutscheine kannst du später im Weihnachts-Event freischalten. <a href="./weihnachten.html?view=hats" id="hats-voucher-back">Zur Gutscheinübersicht</a></p>
  <p class="instructions">Nach jedem sicheren Raum darfst du freiwillig aufhören. Checkpoints: nach Raum 3 und 7.</p>
  <div class="inventory">
   <div class="panel"><h3>🛡️ Bereits gesichert</h3><div id="secured" class="prizes"><span class="empty">Noch keine Belohnungen gesichert.</span></div></div>
@@ -206,7 +207,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
 const $=id=>document.getElementById(id),API=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const names=['','Weihnachtsstube I','Weihnachtsstube II','Erster Tresor','Schatzsaal I','Schatzsaal II','Goldkammer','Jackpot-Pforte','Königsschatz','Nordpol-Tresor','Legendäres Finale'];
 const emojis={pack:'🎁',hammer:'🔨',joker:'🃏',cash:'💰'};
-let state=null,userId='',busy=false,reveal=null,pendingRequest=null,revealTimer=null,selectedHat=null,revealPhase=null,suspenseTimer=null,cinemaTimer=null;
+let state=null,vouchers=null,userId='',busy=false,reveal=null,pendingRequest=null,revealTimer=null,selectedHat=null,revealPhase=null,suspenseTimer=null,cinemaTimer=null;
 let soundOn=false,audioContext=null;
 try{soundOn=localStorage.getItem('deal-hats-sound-v3')==='on'}catch{}
 function paintSound(){
@@ -236,7 +237,7 @@ function soundCue(kind){
  }catch{}
 }
 const back=$('back'),lobby=$('lobby'),params=new URLSearchParams(location.search),DEMO=params.get('demo')==='1',room=params.get('room')||sessionStorage.getItem('deal-active-room');
-if(room&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(room)){sessionStorage.setItem('deal-active-room',room);const u=new URL(back.href);u.searchParams.set('room',room);back.href=u.href;const ul=new URL(lobby.href);ul.searchParams.set('room',room);lobby.href=ul.href;}
+if(room&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(room)){sessionStorage.setItem('deal-active-room',room);const u=new URL(back.href);u.searchParams.set('room',room);back.href=u.href;const ul=new URL(lobby.href);ul.searchParams.set('room',room);lobby.href=ul.href;for(const id of ['hats-collection','hats-voucher-back']){const el=$(id),u=new URL(el.href);u.searchParams.set('room',room);el.href=u.href;}}
 function authUser(){const s=window.SpielOnline?.state?.();return s?.status==='online'?s.user:null;}
 const uid=()=>authUser()?.uid||'';
 const isChrisDemo=()=>DEMO&&!!uid()&&String(window.SpielOnline?.state?.()?.profile?.name||'').trim().toLocaleLowerCase('de-DE')==='chris';
@@ -396,14 +397,19 @@ function render(){
   'Noch ist alles offen. Such dir eine Mütze aus – aber vertraue niemals einem Weihnachtsmann!';
  $('story-speech').textContent=voice;
  $('hats').hidden=!s||finished&&!reveal;
+ const hasVouchers=DEMO||Number(vouchers?.total||0)>0;
+ const showNewGame=finished&&hasVouchers;
+ $('hats-voucher-indicator').textContent=DEMO?'🧪 Unbegrenzte Testpartien':s?.status==='playing'?'🎟️ Gutschein eingelöst · Partie aktiv':
+  '🎟️ '+(vouchers?.total===undefined?'–':vouchers.total)+' '+(vouchers?.total===1?'Spielgutschein':'Spielgutscheine');
  $('start').hidden=!!s;
- $('start').disabled=busy||!!pendingRequest;
+ $('start').disabled=busy||!!pendingRequest||!hasVouchers;
  $('cash').hidden=!s||finished;
  $('cash').disabled=busy||!!reveal||!!pendingRequest;
  $('continue').hidden=!reveal||revealPhase!=='shown';
  $('continue').disabled=busy;
- $('again').hidden=!finished;
- $('again').disabled=busy||!!pendingRequest;
+ $('again').hidden=!showNewGame;
+ $('again').disabled=busy||!!pendingRequest||!hasVouchers;
+ $('hats-locked').hidden=!!DEMO||!finished||hasVouchers;
  $('retry').hidden=!pendingRequest||busy;
  formatItems(s?.secured,$('secured'),'Noch keine gesicherten Gewinne.');
  formatItems(s?.pending,$('pending'),'Noch keine ungesicherten Gewinne.');
@@ -605,16 +611,16 @@ async function call(path,method='GET',payload=null){
   return data;
  }finally{clearTimeout(timeout);}
 }
-const errors={LOGIN_REQUIRED:'Bitte neu anmelden.',STORAGE_UNAVAILABLE:'Der Server kann gerade nicht auf das Spielerprofil zugreifen.',START_REQUIRED:'Bitte zuerst ein neues Spiel starten.',SESSION_CHANGED:'Der Spielstand hat sich geändert. Bitte aktualisieren.',REQUEST_ID_CONFLICT:'Diese Anfrage gehört zu einer anderen Aktion. Bitte aktualisieren.',TEST_ACCESS_DENIED:'Dieser Testzugang ist ausschließlich für Chris freigeschaltet.',INVALID_ACTION:'Ungültige Aktion.',INVALID_HAT:'Ungültige Mütze.'};
+const errors={LOGIN_REQUIRED:'Bitte neu anmelden.',STORAGE_UNAVAILABLE:'Der Server kann gerade nicht auf das Spielerprofil zugreifen.',START_REQUIRED:'Bitte zuerst ein neues Spiel starten.',SESSION_CHANGED:'Der Spielstand hat sich geändert. Bitte aktualisieren.',NO_HATS_VOUCHERS:'Dein kostenloser Spielgutschein ist bereits verbraucht. Weitere Freischaltungen folgen später.',REQUEST_ID_CONFLICT:'Diese Anfrage gehört zu einer anderen Aktion. Bitte aktualisieren.',TEST_ACCESS_DENIED:'Dieser Testzugang ist ausschließlich für Chris freigeschaltet.',INVALID_ACTION:'Ungültige Aktion.',INVALID_HAT:'Ungültige Mütze.'};
 function describeError(error){return errors[error.message]||String(error.message||'Serverfehler');}
 async function refresh(){
  if(busy)return;
  const user=authUser();
  if(!user?.uid||DEMO&&!isChrisDemo()){
-  state=null;userId='';recoverPending();render();
+  state=null;vouchers=null;userId='';recoverPending();render();
   setStatus(DEMO?'🔐 Diese Vorschau ist nur für das angemeldete Profil Chris gedacht.':'🔐 Für echte Gewinne bitte mit dem Spielerprofil anmelden.',true);return;
  }
- if(userId!==user.uid){state=null;userId=user.uid;recoverPending();}
+ if(userId!==user.uid){state=null;vouchers=null;userId=user.uid;recoverPending();}
  busy=true;render();setStatus(DEMO?'🧪 Dein lokaler Test-Spielstand wird geladen …':'⏳ Server-Spielstand wird geladen …');
  try{
   const waiting=pendingRequest;
@@ -622,7 +628,7 @@ async function refresh(){
   const data=await call(url);
   if(uid()!==user.uid)return;
   clearShowTimers();closeCinema();closeChoice();
-  state=data.state;reveal=null;revealPhase=null;selectedHat=null;
+  state=data.state;vouchers=DEMO?{total:999,free:0,bonus:999}:data.vouchers||null;reveal=null;revealPhase=null;selectedHat=null;
   let notice=DEMO?'🧪 Vorschau bereit – keine echten Gewinne oder Gutschriften.':'✅ Spielstand vom Server geladen. Keine dauerhafte Abfrage.';
   if(waiting&&data.pendingAction?.applied){
    savePending(null);
@@ -639,6 +645,7 @@ async function refresh(){
 }
 async function action(type,index){
  if(busy||reveal||pendingRequest)return;
+ if(type==='start'&&!DEMO&&!(vouchers?.total>0)&&state?.status!=='playing')return;
  const payload={type,requestId:requestId()};
  if(type!=='start')payload.runId=state?.id;
  if(type==='pick'){payload.index=index;soundCue('select');}
@@ -650,7 +657,7 @@ async function submit(payload){
  try{
   const data=await call('/api/christmas-hats/action','POST',payload);
   if(uid()!==requestUser)return;
-  state=data.state;savePending(null);
+  state=data.state;vouchers=DEMO?{total:999,free:0,bonus:999}:data.vouchers||vouchers;savePending(null);
   if(payload.type==='pick'&&data.outdated){reveal=null;revealPhase=null;render();setStatus('✅ Alte Aktion bereits bestätigt. Aktueller Spielstand synchronisiert.',false,true);}
   else if(payload.type==='pick'){
    reveal=data.result;revealPhase='suspense';
@@ -669,7 +676,7 @@ async function submit(payload){
    clearShowTimers();closeCinema();reveal=null;revealPhase=null;render();setStatus(type==='cash'?(DEMO?'🧪 Probeauszahlung abgeschlossen. Keine echten Gegenstände oder Spielgelder gutgeschrieben.':'✅ Deine Gewinne wurden serverseitig gutgeschrieben.'):(DEMO?'🧪 Neue Testpartie gestartet!':'✨ Neues Spiel gestartet!'),false,true);
   }
  }catch(e){
-  const hardErrors=new Set(['TEST_ACCESS_DENIED','LOGIN_REQUIRED','AUTH_FAILED','INVALID_ACTION','INVALID_HAT','REQUEST_ID_CONFLICT','START_REQUIRED','SESSION_CHANGED']);
+  const hardErrors=new Set(['TEST_ACCESS_DENIED','LOGIN_REQUIRED','AUTH_FAILED','INVALID_ACTION','INVALID_HAT','REQUEST_ID_CONFLICT','START_REQUIRED','SESSION_CHANGED','NO_HATS_VOUCHERS']);
   const permanent=hardErrors.has(e?.message);
   if(permanent)savePending(null);
   setStatus('⚠️ '+describeError(e)+(permanent?' – Bitte Spielstand aktualisieren.':' – Bitte dieselbe Aktion sicher wiederholen.'),true);
