@@ -46,6 +46,21 @@ test('Deal heartbeats carry clock samples but no revision-triggered Firestore fe
  assert.match(app,/syncDealClock\(msg\)/);
 });
 
+test('Briefcase opens from a single server clock on all devices and keeps ack recovery safe',()=>{
+ const caseCss=readFileSync(new URL('../css/cases.css',import.meta.url),'utf8');
+ const gameHtml=readFileSync(new URL('../game.html',import.meta.url),'utf8');
+ assert.match(app,/g\.pending\.startedAt-dealServerNow\(\)/);
+ assert.match(app,/--case-reveal-delay/);
+ assert.match(app,/g\.pending\.startedAt\+2150-dealServerNow\(\)/);
+ assert.match(app,/const recoveryRevealId=g\.pending\.eventId/);
+ assert.match(app,/g\.pending\?\.eventId===recoveryRevealId/);
+ assert.match(caseCss,/Shared-clock case reveal V1/);
+ assert.match(caseCss,/animation-delay:var\(--case-reveal-delay,0ms\)!important/);
+ assert.match(caseCss,/animation-duration:2\.1s!important/);
+ assert.match(gameHtml,/css\/cases\.css\?v=20261111-synced-briefcase-v1/);
+ assert.match(gameHtml,/js\/app\.js\?v=20261111-synced-briefcase-v1/);
+});
+
 test('Finale and final banker reveal use shared server time',()=>{
  assert.match(finale,/dealServerNow\(\)-finaleEpoch/);
  assert.match(finale,/dealServerNow\(\)-hammer\.startedAt/);
