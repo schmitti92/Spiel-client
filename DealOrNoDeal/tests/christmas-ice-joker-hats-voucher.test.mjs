@@ -29,7 +29,7 @@ test('recovered gift displays the voucher from persistent authoritative prize hi
 });
 test('Joker coupon reward art and refreshed client script are served on the same page',()=>{
  assert.match(html,/joker-hats-voucher\.css\?v=20261110-joker-voucher-v1/);
- assert.match(html,/online-ice\.js\?v=20261110-autoplay40-v1/);
+ assert.match(html,/online-ice\.js\?v=20261110-david-profile-recovery-v2/);
  assert.match(css,/\.v44-hats-voucher-gift/);
  assert.match(css,/\.v44-hats-voucher-link/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
