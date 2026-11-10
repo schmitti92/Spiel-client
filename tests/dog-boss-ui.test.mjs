@@ -284,3 +284,62 @@ test('Stale multiplayer hit is rejected locally and the next phase warning is fe
  h.mode('normal');h.click(h.moveButtons[2]);await spin();
  assert.equal(JSON.parse(h.posts()[1].req.body).expectedTurn,1);
 });
+
+test('Loss window shows exact server-calculated reason and concrete forge improvements',async()=>{
+ const now=1_800_000_000_000;
+ const report={category:'attack',title:'⚔️ Eure Angriffskraft reicht noch nicht',
+  summary:'Ihr habt 1.200 von 6.000 Boss-LP abgezogen (20 %). 4.800 LP blieben übrig.',
+  recommendation:'Verbessert vor allem Waffen, Angriffskraft und Zerstörung in der Schmiede.',
+  bossDamage:1200,bossRemaining:4800,bossProgressPct:20,teamActions:6,
+  averageDamage:200,estimatedMoreActions:24};
+ const h=harness({now,view:{...basic({now,phase:'cooldown'}),
+  bossHp:4800,defeatAnalysis:report}});
+ await spin();
+ assert.equal(h.el('boss-defeat-analysis').hidden,false);
+ assert.equal(h.el('boss-defeat-analysis').dataset.reason,'attack');
+ assert.match(h.el('boss-analysis-title').textContent,/Angriffskraft/);
+ assert.match(h.el('boss-analysis-summary').textContent,/1.200 von 6.000/);
+ assert.equal(h.el('boss-analysis-fill').style.width,'20%');
+ assert.equal(h.el('boss-analysis-track').attributes['aria-valuenow'],'20');
+ assert.match(h.el('boss-analysis-metrics').textContent,/24 weitere Aktionen/);
+ assert.match(h.el('boss-analysis-advice').textContent,/Waffen/);
+ assert.equal(h.get().length,1,'report reuses existing battle data, no extra request');
+});
+test('Defense diagnosis survives page refresh and disappears after retry',async()=>{
+ const now=1_800_000_000_000;
+ const report={category:'defense',title:'🛡️ Eure Abwehr muss länger durchhalten',
+  summary:'Ihr habt 5.700 von 6.000 Boss-LP abgezogen (95 %). 300 LP blieben übrig.',
+  recommendation:'Verbessert Rüstung, Vitalität und Widerstandskraft.',
+  bossProgressPct:95,teamActions:10,averageDamage:570,estimatedMoreActions:1};
+ const h=harness({now,view:{...basic({now,phase:'cooldown'}),
+  bossHp:300,defeatAnalysis:report}});
+ await spin();
+ assert.equal(h.el('boss-defeat-analysis').dataset.reason,'defense');
+ assert.match(h.el('boss-analysis-advice').textContent,/Rüstung/);
+ h.click('boss-refresh');await spin();
+ assert.equal(h.el('boss-analysis-fill').style.width,'95%');
+ assert.equal(h.el('boss-defeat-analysis').hidden,false);
+ h.advance(600001);h.intervals.get(1000)();
+ h.click('boss-restart');await spin();
+ assert.equal(h.el('boss-defeat-panel').hidden,true);
+ assert.equal(h.el('boss-defeat-analysis').hidden,true);
+});
+test('Old defeats without a recorded diagnosis do not display guessed advice',async()=>{
+ const now=1_800_000_000_000;
+ const h=harness({now,view:basic({now,phase:'cooldown'})});
+ await spin();
+ assert.equal(h.el('boss-defeat-analysis').hidden,true);
+ assert.equal(h.el('boss-defeat-panel').hidden,false);
+});
+test('Analysis panel remains accessible and compact on small screens',()=>{
+ const html=read('dog-boss.html'),css=read('dog-boss.css');
+ for(const id of ['boss-defeat-analysis','boss-analysis-title','boss-analysis-summary',
+  'boss-analysis-track','boss-analysis-fill','boss-analysis-metrics','boss-analysis-advice']){
+  assert.ok(html.includes('id="'+id+'"'),id);
+ }
+ assert.ok(html.includes('aria-label="Auswertung des verlorenen Bosskampfs"'));
+ assert.ok(css.includes('.boss-defeat-analysis[data-reason="defense"]'));
+ assert.ok(css.includes('overflow-y:auto'));
+ assert.ok(css.includes('@media(max-width:560px)'));
+ assert.ok(source.includes("defeat?view.defeatAnalysis:null"));
+});
