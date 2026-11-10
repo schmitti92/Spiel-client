@@ -6,10 +6,10 @@
 <meta name="theme-color" content="#0c1019">
 <meta name="description" content="Die Schmiede der 100 Tore: Rüstung, Waffen, Fähigkeiten und Rohstofftausch.">
 <title>⚒️ Schmiede der Helden · Die 100 Tore</title>
-<link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-v2">
+<link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-looks-v1">
 <script src="./profile-config.js"></script>
 <script src="./profile-auth.js"></script>
-<script src="./dog-forge-ui.js?v=20261110-forge-v2" defer></script>
+<script src="./dog-forge-ui.js?v=20261110-forge-looks-v1" defer></script>
 <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 </head>
 <body>
@@ -27,13 +27,14 @@
  </header>
 
  <section class="forge-banner" aria-label="Persönlicher Fortschritt">
-  <div class="character-emblem" aria-hidden="true">
+  <div class="character-emblem gear-stage-1" id="hero-emblem" aria-hidden="true">
    <div class="character-orbit"></div>
-   <div class="character-silhouette">🛡️</div>
+   <div class="character-silhouette"><img id="hero-emblem-art" src="./dog-forge-art/armor-1.svg" alt="" width="76" height="76"></div>
   </div>
   <div class="banner-player">
    <span class="eyebrow">PERSÖNLICHER HELD</span>
    <h2 id="forge-player">Wird geladen …</h2>
+   <span class="hero-rank" id="forge-rank">✦ Neuling</span>
    <span id="forge-player-note">Deine Fortschritte bleiben gespeichert.</span>
   </div>
   <div class="hero-metrics">
@@ -93,8 +94,14 @@
 <dialog id="forge-result" class="forge-result" aria-labelledby="forge-result-heading">
  <div class="result-plate">
   <button id="forge-result-x" type="button" class="result-x" aria-label="Schließen">✕</button>
+  <div class="result-effects" aria-hidden="true">
+   <span class="result-spark star-one">✦</span><span class="result-spark star-two">✧</span>
+   <span class="result-spark star-three">✦</span><span class="result-spark star-four">✧</span>
+  </div>
   <div class="result-ornament" aria-hidden="true">✧ ✦ ✧</div>
   <div class="result-icon" id="forge-result-icon">⚒️</div>
+  <div class="result-art" id="forge-result-art" aria-hidden="true"></div>
+  <span class="result-achievement" id="forge-result-achievement"></span>
   <h2 id="forge-result-heading">Geschmiedet!</h2>
   <p id="forge-result-text">Dein Fortschritt wurde gespeichert.</p>
   <button type="button" id="forge-result-ok" class="forge-action">Zur Schmiede</button>
