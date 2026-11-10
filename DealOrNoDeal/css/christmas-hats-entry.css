@@ -1,0 +1,56 @@
+/* Weihnachtsmützen-Jackpot: entry in the same collection tab group as Monster-Wheel */
+#event-hats{display:none;max-width:1180px;margin:14px auto 30px}
+body[data-view="hats"] .event-layout,
+body[data-view="hats"] #event-packs,
+body[data-view="hats"] #event-hammers,
+body[data-view="hats"] .hero{display:none!important}
+body[data-view="hats"] #event-hats{display:block!important}
+body[data-view="hats"] #event-collection-nav [data-view="hats"]{border-color:#ffdf92;box-shadow:0 0 18px #f6bd5e45}
+.hats-entry{position:relative;isolation:isolate;overflow:hidden;border-radius:24px;border:2px solid #f7d28b;padding:clamp(16px,3vw,33px);background:
+radial-gradient(ellipse 70% 58% at 50% 6%,#b7724a66,transparent),
+radial-gradient(ellipse 30% 80% at 3% 50%,#40636b4d,transparent),
+linear-gradient(140deg,#371c43,#151e34 63%,#22223b);
+box-shadow:0 18px 44px #0009,inset 0 0 0 3px #ffefb615,0 0 26px #f0bb543d}
+.hats-entry:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.28;
+background:radial-gradient(ellipse 9% 36% at 25% 0%,#ffefc088,transparent),radial-gradient(ellipse 9% 36% at 75% 0%,#ffefc088,transparent)}
+.hats-entry-head{text-align:center;max-width:850px;margin:auto}
+.hats-entry-kicker{color:#f7d388;font-size:12px;font-weight:950;letter-spacing:.18em}
+.hats-entry h2{font:950 clamp(28px,4.1vw,49px) Georgia,serif;color:#ffe3a3;margin:8px 0 9px;text-shadow:0 3px #32162b,0 0 32px #ffce6570}
+.hats-entry-head p{color:#f1dcca;line-height:1.55;margin:6px 0}
+.hats-stage-preview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(7px,2vw,21px);margin:22px auto;max-width:950px}
+.hats-stage-preview .hat-trophy{position:relative;text-align:center;border:1px solid #e0b66b;border-bottom:5px solid #a97a4b;border-radius:16px;min-height:clamp(110px,15vw,178px);
+display:flex;justify-content:center;align-items:center;flex-direction:column;gap:7px;
+background:radial-gradient(ellipse at 50% 30%,#ffdd9b44,transparent 66%),linear-gradient(140deg,#442b4b,#1a1b34);
+box-shadow:0 11px 23px #0006,inset 0 1px #fff8d33d}
+.hats-stage-preview .hat-trophy:nth-child(2){transform:translateY(-5px);border-color:#ffda83;box-shadow:0 0 25px #ffce6466,0 11px 25px #0009}
+.hats-stage-preview .trophy-icon{font-size:clamp(48px,9vw,100px);filter:drop-shadow(0 8px 7px #0009);line-height:1;animation:hats-hover 3s ease-in-out infinite}
+.hats-stage-preview .hat-trophy:nth-child(2) .trophy-icon{animation-delay:-1s}
+.hats-stage-preview .hat-trophy:nth-child(3) .trophy-icon{animation-delay:-2s}
+.hats-stage-preview small{font-size:clamp(10px,1.3vw,14px);font-weight:900;color:#ffe3ab}
+@keyframes hats-hover{50%{transform:translateY(-8px) rotate(5deg)}}
+.hats-ticket-wrap{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;align-items:stretch}
+.hats-ticket{position:relative;min-width:0;border-radius:19px;border:2px dashed #f7d588;padding:clamp(16px,2.2vw,24px);background:linear-gradient(140deg,#4c3154,#272342 55%,#19424b);box-shadow:0 6px 18px #0006,inset 0 0 0 5px #ffd67d0c}
+.hats-ticket:before{content:"✦ ✦ ✦";position:absolute;top:14px;right:18px;color:#ffd88880;letter-spacing:.2em}
+.hats-ticket-label{font-size:12px;letter-spacing:.12em;color:#fbd188;font-weight:900}
+.hats-ticket-count{display:flex;align-items:baseline;gap:9px;margin:9px 0}
+.hats-ticket-count strong{color:#ffebb8;font-size:clamp(36px,6vw,68px);line-height:1}
+.hats-ticket-count span{color:#eacda9;font-size:15px;font-weight:800}
+.hats-ticket p{color:#e8dfd0;font-size:13px;line-height:1.5;margin:0}
+.hats-ticket-state{margin-top:11px;border-radius:9px;padding:9px 11px;background:#151e37bb;color:#e5f8da;font-size:12px;font-weight:800;min-height:34px}
+.hats-entry-actions{display:flex;flex-direction:column;justify-content:center;gap:12px}
+.hats-entry-launch{display:flex;justify-content:center;align-items:center;min-height:69px;padding:13px 19px;border:1px solid #ffe1a6;border-radius:14px;background:linear-gradient(125deg,#fff0c1,#f4c060 52%,#bc772f);
+font-size:clamp(16px,2.1vw,22px);color:#301c13!important;font-weight:950;text-decoration:none!important;box-shadow:0 8px 22px #0007,0 0 21px #dfb65b65;transition:transform .15s,box-shadow .15s}
+.hats-entry-launch:not([aria-disabled="true"]):hover{transform:translateY(-3px);box-shadow:0 12px 27px #0007,0 0 30px #eecb71a8}
+.hats-entry-launch[aria-disabled="true"]{pointer-events:none;opacity:.55;filter:grayscale(.55);cursor:not-allowed}
+.hats-entry-refresh{padding:10px 15px;color:#fbe5bf;background:#1b3040;border:1px solid #f9d49b8c;border-radius:10px;cursor:pointer;font-weight:800}
+.hats-entry-refresh:disabled{opacity:.5;cursor:wait}
+.hats-coming{display:flex;align-items:center;gap:8px;padding:12px 14px;border:1px solid #f9d89b66;border-radius:11px;background:#112b37ac;color:#cfe7df;font-size:13px;line-height:1.4}
+.hats-rules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:16px}
+.hats-rule{border:1px solid #d8ba8b70;border-radius:12px;padding:12px;background:#131f35c2;text-align:center;color:#e7d8c2;font-size:12px;line-height:1.4}
+.hats-rule strong{display:block;color:#ffe3aa;font-size:16px;margin-bottom:4px}
+@media(max-width:760px){
+.hats-ticket-wrap{grid-template-columns:1fr}.hats-rules{grid-template-columns:1fr}
+.hats-entry{padding:14px}.hats-stage-preview{margin:14px auto}
+.hats-stage-preview .hat-trophy{min-height:110px}
+}
+@media(prefers-reduced-motion:reduce){.hats-stage-preview .trophy-icon{animation:none}}
