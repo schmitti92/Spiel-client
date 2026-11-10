@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="260" viewBox="0 0 260 260" aria-hidden="true">
+<defs>
+ <radialGradient id="halo" cx=".5" cy=".5" r=".54"><stop stop-color="#ffe4a7" stop-opacity=".7"/><stop offset=".75" stop-color="#e9b756" stop-opacity=".11"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fffbd7"/><stop offset=".28" stop-color="#f5d089"/><stop offset=".65" stop-color="#a77536"/><stop offset="1" stop-color="#ffedb6"/></linearGradient>
+ <linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffd7a1"/><stop offset=".28" stop-color="#ab663e"/><stop offset=".65" stop-color="#613b31"/><stop offset="1" stop-color="#cc905d"/></linearGradient>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<circle cx="130" cy="125" r="114" fill="url(#halo)"/>
+<ellipse cx="129" cy="235" rx="82" ry="14" fill="#010717" opacity=".6" filter="url(#shadow)"/>
+<g transform="rotate(-35 131 133)">
+ <path d="M112 111h36v114c0 10-8 15-18 15s-18-5-18-15z" fill="url(#wood)" stroke="#dfb27c" stroke-width="4"/>
+ <path d="M120 128v90M137 128v90" stroke="#f5c695" stroke-width="3" opacity=".55"/>
+ <path d="M61 60q3-18 19-19h102q17 1 18 19v48q-2 17-18 18H80q-16-1-19-18Z" fill="url(#gold)" stroke="#fff1c7" stroke-width="6"/>
+ <path d="M82 53h96v62H82Z" fill="#b57c39" opacity=".25"/>
+ <path d="M70 70h121M70 108h121" stroke="#fff5d1" stroke-width="4" opacity=".7"/>
+ <path d="M97 78l8 16 25-9 27 9 8-16-3 24-31 8-30-9Z" fill="#9e623a" opacity=".72"/>
+ <path d="M117 70l13-12 13 12-13 13Z" fill="#8de3f2" stroke="#f8ffff" stroke-width="3"/>
+</g>
+<g fill="#fff0be"><path d="M48 60l5 12 12 5-12 5-5 12-5-12-12-5 12-5z"/><path d="M210 42l5 12 12 5-12 5-5 12-5-12-12-5 12-5z"/><circle cx="45" cy="180" r="3"/><circle cx="222" cy="188" r="4"/></g>
+</svg>
