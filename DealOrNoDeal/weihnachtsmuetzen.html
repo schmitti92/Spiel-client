@@ -137,24 +137,25 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
 <main>
 <nav>
  <div class="tools"><a class="back" id="back" href="./weihnachtswelt.html">❮ Weihnachtswelt</a><a class="back" id="hats-collection" href="./weihnachten.html?view=hats">🎟️ Gutscheine</a><a class="back" id="lobby" href="./lobby.html">🎮 Lobby</a></div>
- <div class="tools"><button id="preview-super" type="button" hidden title="Nur Chris-Testmodus: Beispiel-Show ohne echte Gewinne">🎬 Superglück testen</button><button id="sound" type="button" aria-label="Spielklänge ein- oder ausschalten" aria-pressed="false">🔇 Ton aus</button><button id="refresh" type="button">↻ Aktualisieren</button><button id="full" type="button">⛶ Vollbild</button></div>
+ <div class="tools"><button id="preview-super" type="button" hidden title="Nur Chris-Testmodus: Beispiel-Show ohne echte Gewinne">🎬 Superglück testen</button><button id="mode" type="button" aria-label="Schnellspiel oder ausführliche Show wählen" aria-pressed="true">⚡ Schnellspiel an</button><button id="sound" type="button" aria-label="Spielklänge ein- oder ausschalten" aria-pressed="false">🔇 Ton aus</button><button id="refresh" type="button">↻ Aktualisieren</button><button id="full" type="button">⛶ Vollbild</button></div>
 </nav>
 <header class="hero">
  <div class="eyebrow">DEAL OR NO DEAL · WEIHNACHTSSHOW</div>
  <h1>🎩 Weihnachtsmützen-Jackpot</h1>
- <p>Zehn Räume. Drei Mützen. Eine Bombe. Wie weit traust du dich?</p>
+ <p>Zwanzig Räume. Drei Mützen. Je weiter du kommst, desto größer die Schätze – und das Risiko.</p>
  <p class="demo-badge" id="demo-badge" hidden>🧪 Chris-Testmodus · Alle Gewinne sind eine Vorschau und werden NICHT dem Spielkonto gutgeschrieben.</p>
 </header>
-<div class="journey-header"><span class="journey-heading">✦ Deine Reise durch die zehn Schatzräume</span><span class="journey-current" id="journey-current">🎩 Raum 1 von 10</span></div>
+<div class="journey-header"><span class="journey-heading">✦ Deine Reise durch die zwanzig Schatzräume</span><span class="journey-current" id="journey-current">🎩 Raum 1 von 20</span></div>
 <div class="tiers" id="tiers" role="group" aria-label="Die zehn Spielräume und ihre Checkpoints"></div>
 <div class="journey-zones" aria-label="Drei Abschnitte der Schatzreise">
  <span data-stage-label="easy" class="active">🧸 Weihnachtswerkstatt · 1–3</span>
- <span data-stage-label="medium">🔑 Goldschatzkammer · 4–6</span>
- <span data-stage-label="jackpot">👑 Eispalast · 7–10</span>
+ <span data-stage-label="medium">🔑 Goldkammern · 4–9</span>
+ <span data-stage-label="jackpot">💎 Eispalast · 10–15</span>
+ <span data-stage-label="final">👑 Nordpol-Finale · 16–20</span>
 </div>
 <section id="hats-stage" class="game" data-zone="easy" aria-label="Weihnachtsmützen-Spiel">
  <div class="topline"><div id="roomTitle" class="roomTitle">🎅 Weihnachtsmützen</div><div id="checkpoint" class="checkpoint">🛡️ Noch kein Checkpoint</div><div id="hats-voucher-indicator" class="checkpoint" aria-live="polite">🎟️ Gutschein wird geprüft …</div></div>
- <p id="subtitle" class="subtitle">Unter einer Mütze lauert eine Bombe, zwei enthalten Geschenke.</p>
+ <p id="subtitle" class="subtitle">Mindestens zwei Mützen enthalten Geschenke. Manchmal sind sogar alle drei sicher!</p>
  <div id="stage-banner" class="stage-banner"><span class="stage-name" id="stage-name">🎁 Weihnachtsstube</span><span class="stage-hint" id="stage-hint">Drei Mützen. Ein Risiko.</span></div>
  <div id="stage-announcer" class="stage-announcer" aria-live="polite"><span class="announcer-icon" aria-hidden="true">🎙️</span><span id="announcer-text">Willkommen zur großen Weihnachts-Jackpot-Show!</span></div>
  <div id="hats" class="hats" aria-label="Drei Weihnachtsmützen"></div>
@@ -164,7 +165,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
   <div class="loot-counter risk"><small>🎒 Im Risiko</small><strong id="risk-count">0</strong></div>
   <div class="loot-counter"><small>💰 Spielgeld im Gewinn</small><strong id="cash-total">0 €</strong></div>
  </div>
- <div class="progress-line"><span>🎩 Sichere Mütze: <strong>2 von 3</strong></span><span id="next-checkpoint">· Nächster Checkpoint: Raum 3</span></div>
+ <div class="progress-line"><span>🎁 Mindestens <strong>2 von 3</strong> sicher</span><span>💣 Bombenchance: <strong id="bomb-chance">10 %</strong></span><span id="next-checkpoint">· Nächster Checkpoint: Raum 3</span></div>
  <div id="last-result" class="last-result" hidden></div>
  <div id="ending" class="ending" hidden></div>
  <div id="actions" class="actions">
@@ -175,7 +176,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
   <button id="retry" class="action secondary" type="button" hidden>↻ Letzte Aktion sicher wiederholen</button>
  </div>
  <p id="hats-locked" class="instructions" hidden>🔒 Dein kostenloser Gutschein wurde bereits eingesetzt. Weitere Spielgutscheine kannst du später im Weihnachts-Event freischalten. <a href="./weihnachten.html?view=hats" id="hats-voucher-back">Zur Gutscheinübersicht</a></p>
- <p class="instructions">Nach jedem sicheren Raum darfst du freiwillig aufhören. Checkpoints: nach Raum 3 und 7.</p>
+ <p class="instructions">Ein Tipp auf eine Mütze genügt. Du kannst jederzeit kassieren. Gesichert wird nach Raum 3, 5, 7, 9, 12, 15 und 18.</p>
  <div class="inventory">
   <div class="panel"><h3>🛡️ Bereits gesichert</h3><div id="secured" class="prizes"><span class="empty">Noch keine Belohnungen gesichert.</span></div></div>
   <div class="panel"><h3>🎒 Noch auf dem Spiel</h3><div id="pending" class="prizes"><span class="empty">Hier erscheinen deine neuen Gewinne.</span></div></div>
@@ -220,10 +221,13 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id),API=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-const names=['','Weihnachtsstube I','Weihnachtsstube II','Erster Tresor','Schatzsaal I','Schatzsaal II','Goldkammer','Jackpot-Pforte','Königsschatz','Nordpol-Tresor','Legendäres Finale'];
+const names=['','Weihnachtsstube I','Weihnachtsstube II','Erster Tresor','Schatzsaal I','Schatzsaal II','Goldkammer','Jackpot-Pforte','Königsschatz','Nordpol-Tresor','Die erste Krone',
+ 'Polarlicht','Sternenhalle','Silbertor','Kristalltresor','Frostpalast','Glitzertresor','Zauberkammer','Schneekrone','Königlicher Schatz','Das große Nordpol-Finale'];
 const emojis={pack:'🎁',hammer:'🔨',joker:'🃏',cash:'💰'};
 let state=null,vouchers=null,userId='',busy=false,reveal=null,pendingRequest=null,revealTimer=null,selectedHat=null,revealPhase=null,suspenseTimer=null,cinemaTimer=null,otherHatTimer=null,showBeforeState=null,fastReveal=false;
 let soundOn=false,audioContext=null,cinemaPreview=false;
+let fastMode=true,autoStartRequested=params.get('autostart')==='1';
+try{fastMode=localStorage.getItem('deal-hats-show-mode')!=='cinema'}catch{}
 try{soundOn=localStorage.getItem('deal-hats-sound-v3')==='on'}catch{}
 function paintSound(){
  $('sound').textContent=soundOn?'🔊 Ton an':'🔇 Ton aus';
