@@ -6,7 +6,7 @@ import {runInNewContext} from 'node:vm';
 const source=readFileSync(new URL('../Weihnachtsevent2/online-ice.js',import.meta.url),'utf8');
 
 const mockState=(completed,finished)=>{
- const picture=completed+(finished?0:1),tileCount=picture>=30?100:50;
+ const picture=completed+(finished?0:1),tileCount=picture>=40?150:picture>=30?100:50;
  return {
  completed,maxRewarded:completed,balance:1000000000,finished,
  picture30MonsterSpinsClaimed:completed>=30, // image 70 fixture had already received the milestone
@@ -90,6 +90,24 @@ test('picture 30 renders 100 ice tiles in a 10×10 board and keeps unbroken tile
  assert.equal(play.tiles.size,100);
  assert.equal(play.tiles.get(99).disabled,false);
  assert.equal(typeof play.tiles.get(99).onclick,'function');
+});
+
+test('picture 40 displays 150 independently clickable ice tiles and correct progress',async()=>{
+ const play=await boot(mockState(39,false));
+ assert.equal(play.requests,1,'render must not cause extra reads');
+ assert.match(play.root.innerHTML,/Bild 40 von 70/);
+ assert.match(play.root.innerHTML,/149\/150 Eisfelder/);
+ assert.match(play.root.innerHTML,/ice-tiles-150/);
+ assert.match(play.root.innerHTML,/ice-board-150/);
+ assert.equal(play.tiles.size,150);
+ assert.equal(play.tiles.get(149).disabled,false);
+ assert.equal(typeof play.tiles.get(149).onclick,'function');
+});
+test('picture 39 still has the 100-tile board',async()=>{
+ const play=await boot(mockState(38,false));
+ assert.equal(play.tiles.size,100);
+ assert.match(play.root.innerHTML,/Bild 39 von 70/);
+ assert.match(play.root.innerHTML,/ice-tiles-100/);
 });
 
 test('confirmed picture 15 star reveals the whole photo before the saved prize',async()=>{
