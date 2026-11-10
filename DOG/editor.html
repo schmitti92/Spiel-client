@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071624">
+<title>DOG-Spielfeldstudio · Eigene Laufwege gestalten</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;--bg:#06121e;--panel:#102637;--panel2:#142e42;--text:#f2f6fa;--muted:#a8bdcc;--border:#375467;--gold:#ffdb9c}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text)}
+body{background:radial-gradient(ellipse 48% 42% at 22% 6%,#193b52 0%,transparent 80%),radial-gradient(ellipse 50% 40% at 96% 75%,#162b43 0%,transparent 70%),var(--bg)}
+button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #ffda8a;outline-offset:2px}
+header{padding:15px clamp(14px,2.5vw,40px);border-bottom:1px solid #91adc52b;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#091725cc}
+.brand{display:flex;align-items:center;gap:11px}.brand-mark{width:47px;height:47px;display:grid;place-items:center;font-size:26px;background:linear-gradient(145deg,#f0d6a1,#bc8848);color:#061b27;border-radius:15px}.brand h1{font-size:clamp(17px,2vw,24px);letter-spacing:.4px;margin:0}.brand small{color:#b9cbd7;display:block;font-size:12px;margin-top:3px}
+.header-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:#17384f;color:#f3f7fb;border:1px solid #6487a177;padding:10px 13px;border-radius:11px;font-weight:800;font-size:13px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:41px}
+.btn:hover{background:#24495f}.btn.primary{background:linear-gradient(135deg,#f1d196,#be914c);border-color:#f6dca3;color:#122333;box-shadow:0 3px 15px #efca7444}.btn.danger{color:#ffd7d3;border-color:#d987826b;background:#78343434}
+.btn:disabled{cursor:not-allowed;opacity:.42}.btn.slim{min-height:36px;padding:7px 11px}
+main{width:min(1610px,calc(100% - 28px));margin:18px auto 32px}
+.intro{margin:0 0 14px;color:#bfd2df;font-size:13px;line-height:1.55}
+.workspace{display:grid;grid-template-columns:minmax(0,1.17fr) minmax(320px,.64fr);gap:17px;align-items:start}
+.canvas-shell{padding:clamp(10px,2vw,18px);border:1px solid #d4b47960;border-radius:22px;background:linear-gradient(145deg,#163d50,#091d2d);box-shadow:0 18px 60px #0006}
+.canvas-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:3px 4px 13px}
+.canvas-head strong{color:var(--gold);font-size:13px}.canvas-head span{color:#b6cbd8;font-size:12px}
+.board{display:block;width:100%;height:auto;max-height:min(78vh,860px);margin:auto;background:#071b33;border-radius:17px;box-shadow:inset 0 0 0 2px #ecd3a655;touch-action:none;user-select:none;-webkit-user-select:none}
+.board [data-kind]{cursor:grab;touch-action:none}.board .dragging [data-kind]{cursor:grabbing}.board .editor-point{transition:filter .12s}.board [data-kind]:hover .editor-point{filter:drop-shadow(0 0 7px #ffe0a688)}
+.canvas-bottom{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:10px;font-size:12px;color:#c0d3df}
+.helper{color:#afd1ec}.legend{display:flex;gap:11px;align-items:center;flex-wrap:wrap}.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;vertical-align:middle;margin-right:4px}
+.settings{display:flex;flex-direction:column;gap:12px}.panel{background:linear-gradient(155deg,#152d40,#0d2030);border:1px solid #6486a53d;padding:16px;border-radius:18px}
+.panel h2{font-size:15px;margin:0 0 12px;color:#f9e2b5}.panel p{font-size:12px;line-height:1.55;color:#bfd0db;margin:8px 0}
+.mode-switch{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.mode-switch button{border:1px solid #476b86;background:#0c2436;color:#c7d9e5;font-size:12px;font-weight:800;padding:11px 5px;border-radius:10px}
+.mode-switch button.active{background:#eac382;color:#152534;border-color:#f5d69f}
+.checkbox-row{display:flex;gap:10px;align-items:center;margin:11px 0;font-size:13px;color:#d5e0ea}
+.checkbox-row input{accent-color:#f0c37f;width:17px;height:17px}
+.field-info{border:1px solid #5c83a363;padding:12px;border-radius:12px;background:#071c2b}
+.field-info strong{display:block;font-size:14px;color:#ffe1ab}.field-info p{margin:5px 0 0}
+.coord-inputs{display:flex;gap:8px;margin-top:10px}
+.coord-inputs label{flex:1;color:#bad1df;font-size:12px}
+.coord-inputs input{display:block;margin-top:4px;width:100%;min-width:0;background:#081a29;border:1px solid #4a7795;border-radius:9px;padding:8px;color:white}
+.direction{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;width:165px;margin:10px auto 0}.direction button{min-height:31px;background:#234258;color:#f9f0d7;border:1px solid #4e7796;border-radius:8px;font-weight:900}.direction .empty{visibility:hidden}
+.status{font-size:12px;line-height:1.5;min-height:40px;padding:10px;border-radius:11px;background:#0b273c;color:#c0d7e4;border:1px solid #47647e66}.status.error{background:#562d3160;border-color:#ea747477;color:#ffd2d0}.status.success{background:#25534557;border-color:#65c29775;color:#d7ffeb}
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.action-grid .btn{min-width:0}
+.file-label{display:inline-flex}.file-label input{display:none}
+.file-label.btn{cursor:pointer}
+input[type="range"]{width:100%;accent-color:#f0bd77}
+input[type="file"]{max-width:100%}
+.upload-hint{font-size:11px!important;color:#9fb4c2!important}
+.examples{font-size:12px;color:#bbcee0;padding:9px 11px;border-left:3px solid #e8b96d;background:#0e293b;border-radius:0 8px 8px 0}
+@media(max-width:1060px){.workspace{grid-template-columns:1fr}.settings{display:grid;grid-template-columns:1fr 1fr;align-items:start}.settings .panel:last-child{grid-column:1/-1}.board{max-height:730px}}
+@media(max-width:670px){main{width:calc(100% - 16px);margin:12px auto}.settings{display:flex}.canvas-shell{border-radius:14px;padding:8px}.canvas-head{padding:5px 4px 9px}.board{max-height:none}.panel{padding:12px}.header-actions .btn{font-size:11px;padding:8px 9px}.brand small{font-size:10px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand"><span class="brand-mark">🐾</span><div><h1>DOG-Spielfeldstudio</h1><small>Dein Brett. Dein Laufweg. Originalnahe Kreuzform.</small></div></div>
+ <div class="header-actions">
+  <a class="btn" href="index.html" id="back-game">← Zurück zum Spiel</a>
+  <button class="btn primary" type="button" id="save-layout">✓ Brett übernehmen</button>
+ </div>
+</header>
+<main>
+ <p class="intro">Ziehe die Felder mit dem Finger oder der Maus an die richtige Position. Die Zahlen zeigen die Zugreihenfolge – <strong>0 → 1 → … → 63 → 0</strong>. Startfelder sind fest an 0, 16, 32 und 48 gekoppelt. Verschoben wird nur die Grafik, nicht die Spielregel.</p>
+ <div class="workspace">
+  <section class="canvas-shell" aria-label="Bearbeitbares DOG-Spielfeld">
+    <div class="canvas-head"><strong>✦ SPIELFELD / LIVE-VORSCHAU</strong><span id="field-count">64 Lauffelder · 16 Zielplätze · 16 Startplätze</span></div>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 760" class="board" id="editor-board" aria-label="DOG-Kreuzspielbrett mit verschiebbaren Lauffeldern"></svg>
+    <div class="canvas-bottom"><div class="legend">
+      <span><i style="background:#eef5fa"></i>Laufweg</span>
+      <span><i style="background:#f2bf6a"></i>Startfeld</span>
+      <span><i style="background:#66b8e8"></i>Ziel/Start</span>
+      </div><span class="helper" id="live-walk">Laufweg: Feld 0 → 1 → 2 → …</span></div>
+  </section>
+  <aside class="settings">
+   <section class="panel">
+     <h2>1. Bereich auswählen</h2>
+     <div class="mode-switch" id="mode-switch">
+       <button type="button" class="active" data-mode="track" aria-pressed="true">⚪ Laufweg</button>
+       <button type="button" data-mode="goals" aria-pressed="false">🎯 Ziel</button>
+       <button type="button" data-mode="homes" aria-pressed="false">🏠 Start</button>
+     </div>
+     <label class="checkbox-row"><input type="checkbox" id="symmetry" checked> Alle vier Seiten symmetrisch bewegen</label>
+     <label class="checkbox-row"><input type="checkbox" id="show-numbers" checked> Feldnummern und Zugrichtung anzeigen</label>
+     <label class="checkbox-row"><input type="checkbox" id="show-grid"> Raster als Ausrichtungshilfe</label>
+     <div class="action-grid">
+       <button class="btn slim" type="button" id="undo" title="Letzte Änderung rückgängig machen">↶ Rückgängig</button>
+       <button class="btn slim" type="button" id="redo" title="Rückgängig gemachte Änderung wiederholen">↷ Wiederholen</button>
+       <button class="btn slim" type="button" id="walk-start">▶ Laufweg prüfen</button>
+       <button class="btn slim" type="button" id="walk-stop">■ Stopp</button>
+     </div>
+   </section>
+   <section class="panel">
+     <h2>2. Genau positionieren</h2>
+     <div class="field-info"><strong id="selected-label">Lauffeld 0 · ROT START</strong><p id="selected-detail">Feld antippen und verschieben. Mit Symmetrie passen sich alle vier Seiten an.</p></div>
+     <div class="coord-inputs">
+      <label>X-Position<input type="number" id="coord-x" min="26" max="734" step="1"></label>
+      <label>Y-Position<input type="number" id="coord-y" min="26" max="734" step="1"></label>
+     </div>
+     <div class="direction" aria-label="Ausgewähltes Feld verschieben">
+      <span class="empty"></span><button type="button" data-nudge="0,-1">↑</button><span class="empty"></span>
+      <button type="button" data-nudge="-1,0">←</button><button type="button" data-nudge="0,0">•</button><button type="button" data-nudge="1,0">→</button>
+      <span class="empty"></span><button type="button" data-nudge="0,1">↓</button><span class="empty"></span>
+     </div>
+     <p class="upload-hint">Pfeile verschieben um 3 Einheiten, mit gedrückter Umschalttaste um 12.</p>
+   </section>
+   <section class="panel">
+     <h2>3. Mit Vorlage arbeiten</h2>
+     <p>Du kannst ein eigenes Foto deines DOG-Bretts einblenden und die Felder darüber verschieben. Das Foto bleibt nur auf deinem Gerät.</p>
+     <label for="reference-upload" class="btn file-label">🖼️ Brettfoto einblenden</label>
+     <input id="reference-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+     <label for="photo-opacity" class="checkbox-row">Foto-Sichtbarkeit: <strong id="opacity-label">45 %</strong></label>
+     <input id="photo-opacity" type="range" min="0" max="100" value="45">
+     <div class="action-grid" style="margin-top:10px">
+      <button type="button" class="btn slim" id="remove-photo">Foto ausblenden</button>
+      <button type="button" class="btn slim" id="use-default">↺ Kreuz-Vorlage</button>
+     </div>
+   </section>
+   <section class="panel">
+     <h2>4. Speichern & exportieren</h2>
+     <p>„Brett übernehmen“ speichert die Koordinaten im Browser. DOG verwendet sie beim nächsten Öffnen automatisch – lokal und online auf deinem Gerät.</p>
+     <div class="action-grid">
+      <button class="btn primary" type="button" id="save-secondary">✓ Im Spiel verwenden</button>
+      <button class="btn" type="button" id="download-json">⬇ Layout als JSON</button>
+      <button class="btn" type="button" id="download-svg">⬇ Brett als SVG</button>
+      <label for="import-layout" class="btn file-label">⬆ JSON importieren</label>
+      <input id="import-layout" type="file" accept=".json,application/json" hidden>
+      <button class="btn danger" type="button" id="clear-saved">Gespeichertes Brett löschen</button>
+     </div>
+     <p class="examples">💡 Der JSON-Export macht den Spielplan später auch für Events und weitere Varianten wiederverwendbar. Importierte Layouts verändern keine Karten, Regeln oder laufenden Partien.</p>
+     <div role="status" aria-live="polite" id="editor-status" class="status">Bereit. Wähle ein Feld, um es zu verschieben.</div>
+   </section>
+  </aside>
+ </div>
+</main>
+<script type="module" src="./editor.js"></script>
+</body>
+</html>
