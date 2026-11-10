@@ -523,39 +523,86 @@
   root.append(button);
   root.append(node('p','upgrade-foot',item.group==='equipment'?'Fehlschlag: Rohstoffe verbraucht, Stufe bleibt.':'Fähigkeitsstufen gelingen garantiert.'));
  }
+ function closeExchangeConfirm(){
+  const dialog=$('forge-exchange-confirm');
+  if(dialog.open)dialog.close();
+  exchangeConfirmData=null;
+ }
+ function openExchangeConfirm(resourceId,count){
+  if(!usable()||!Number.isSafeInteger(count)||count<1||count>100)return;
+  const info=material[resourceId],group=MATERIALS.find(g=>g.group===info?.group);
+  const idx=group?.values.findIndex(x=>x[0]===resourceId)??-1;
+  if(idx<0||idx>=4)return;
+  const target=group.values[idx+1];
+  if(have(resourceId)<count*10||have(target[0])+count>1000000)return;
+  exchangeConfirmData={resourceId,count};
+  $('forge-exchange-confirm-title').textContent=count+' × '+target[2]+' erhalten';
+  $('forge-exchange-confirm-description').textContent=
+   'Du tauschst '+money(count*10)+' × '+info.name+' gegen '+money(count)+' × '+target[2]+'.';
+  $('forge-exchange-confirm-preview').textContent=
+   'Danach: '+money(have(resourceId)-count*10)+' × '+info.name+
+   ' · '+money(have(target[0])+count)+' × '+target[2];
+  const dialog=$('forge-exchange-confirm');
+  if(!dialog.open)dialog.showModal();
+ }
  function renderExchange(){
   const root=$('upgrade-content');root.replaceChildren();
-  const head=node('div','upgrade-top');head.append(node('span','eyebrow','ALCHEMISTENWERKSTATT'),node('span','forge-tag','10 : 1'));
+  const head=node('div','upgrade-top');
+  head.append(node('span','eyebrow','ALCHEMISTENWERKSTATT'),node('span','forge-tag','10 : 1'));
   root.append(head,node('div','upgrade-symbol','💎'));
-  const h=node('h2',null,'Rohstofftausch'),desc=node('p','upgrade-summary','10 gleiche Rohstoffe → 1 höherwertiger');
-  root.append(h,desc);
+  root.append(node('h2',null,'Rohstofftausch'),
+   node('p','upgrade-summary','10 gleiche Rohstoffe → 1 höherwertiger · bis zu 100 Tausche pro Auftrag'));
   const tabs=node('div','exchange-groups');
   for(const group of MATERIALS){
-   const button=node('button',tradeGroup===group.group?'active':'',group.label);
-   button.type='button';button.disabled=!view;
-   button.addEventListener('click',()=>{tradeGroup=group.group;render();});
-   tabs.append(button);
+   const btn=node('button',tradeGroup===group.group?'active':'',group.label);
+   btn.type='button';btn.disabled=!view;
+   btn.addEventListener('click',()=>{tradeGroup=group.group;render();});
+   tabs.append(btn);
   }
   root.append(tabs);
-  const selectedGroup=MATERIALS.find(g=>g.group===tradeGroup)||MATERIALS[2];
+  const group=MATERIALS.find(g=>g.group===tradeGroup)||MATERIALS[2];
   const list=node('div','exchange-list');
   for(let i=0;i<4;i++){
-   const from=selectedGroup.values[i],to=selectedGroup.values[i+1],amount=have(from[0]);
-   const row=node('div','exchange-row');
+   const from=group.values[i],to=group.values[i+1],stock=have(from[0]);
+   const maxBatch=Math.min(100,Math.floor(stock/10),1000000-have(to[0]));
+   const row=node('div','exchange-row multi-exchange-row');
    row.append(node('span','exchange-icon',from[1]));
-   const left=node('span','exchange-mat',from[2]);
-   left.append(node('small',null,'Vorrat: '+money(amount)));
-   row.append(left,node('span','exchange-arrow','→'));
-   const target=node('span','exchange-target',to[1]+' '+to[2]);
-   row.append(target);
-   const button=node('button',null,'10 : 1');
-   button.type='button';button.disabled=!usable()||amount<10;
-   button.title='10 × '+from[2]+' gegen 1 × '+to[2];
-   button.addEventListener('click',()=>void action('exchange',{resourceId:from[0]}));
-   row.append(button);list.append(row);
+   const label=node('span','exchange-mat',from[2]);
+   label.append(node('small',null,'Vorrat: '+money(stock)));
+   row.append(label,node('span','exchange-arrow','→'),
+    node('span','exchange-target',to[1]+' '+to[2]));
+   const controls=node('div','exchange-controls');
+   const select=node('select','exchange-quantity');
+   select.setAttribute('aria-label','Anzahl Tausche: '+from[2]);
+   const qty=[...new Set([1,5,10,25,maxBatch])]
+    .filter(n=>n>=1&&n<=maxBatch).sort((a,b)=>a-b);
+   for(const n of qty){
+    const opt=node('option',null,n===maxBatch&&n>1?'Maximal: '+n+' ×':n+' ×');
+    opt.value=String(n);select.append(opt);
+   }
+   select.disabled=!usable()||maxBatch<1;
+   const preview=node('small','exchange-quantity-preview');
+   const button=node('button','exchange-submit','Tauschen');
+   button.type='button';button.disabled=!usable()||maxBatch<1;
+   const update=()=>{
+    const count=Number(select.value)||1;
+    preview.textContent=money(count*10)+' abgeben → '+money(count)+' erhalten';
+    button.textContent=count===1?'1 × tauschen':count+' × tauschen';
+   };
+   select.addEventListener('change',update);
+   if(qty.length){select.value='1';update();}
+   else preview.textContent='Zu wenig Materialien';
+   button.addEventListener('click',()=>{
+    const count=Number(select.value);
+    if(!usable()||!Number.isSafeInteger(count)||count<1||count>maxBatch)return;
+    if(count===1)void action('exchange',{resourceId:from[0]});
+    else openExchangeConfirm(from[0],count);
+   });
+   controls.append(select,preview,button);row.append(controls);list.append(row);
   }
   root.append(list);
-  root.append(node('p','upgrade-foot','Nur innerhalb derselben Kategorie.'));
+  root.append(node('p','upgrade-foot',
+   'Jeder Mehrfachtausch wird einmalig in einer sicheren Servertransaktion verarbeitet.'));
  }
  function render(){
   const all=view?.items?.filter(x=>x.group===tab)||[];
@@ -602,7 +649,8 @@
   }else if(result.type==='exchange'){
    const from=material[result.from],to=material[result.to];
    art.append(node('span','skill-result-emblem','💎'));
-   subtitle='10 × '+(from?.name||result.from)+' → 1 × '+(to?.name||result.to);
+   subtitle=money(result.spent||10)+' × '+(from?.name||result.from)+
+    ' → '+money(result.received||1)+' × '+(to?.name||result.to);
    achievement='ROHSTOFFTAUSCH';
   }
   dialog.className='forge-result result-'+kind;
@@ -715,6 +763,22 @@
   $('forge-workspace')?.scrollIntoView?.({block:'start',behavior:'smooth'});
  });
  $('forge-goal-clear').addEventListener('click',()=>setGoal(goalId));
+ $('forge-exchange-confirm-x').addEventListener('click',closeExchangeConfirm);
+ $('forge-exchange-confirm-cancel').addEventListener('click',closeExchangeConfirm);
+ $('forge-exchange-confirm').addEventListener('close',()=>{exchangeConfirmData=null;});
+ $('forge-exchange-confirm-submit').addEventListener('click',()=>{
+  const req=exchangeConfirmData;
+  if(!req||!usable())return;
+  const group=MATERIALS.find(g=>g.values.some(x=>x[0]===req.resourceId));
+  const idx=group?.values.findIndex(x=>x[0]===req.resourceId)??-1;
+  const to=idx>=0&&idx<4?group.values[idx+1][0]:null;
+  if(!to||have(req.resourceId)<req.count*10||have(to)+req.count>1000000){
+   closeExchangeConfirm();status('↻ Rohstoffbestand geändert. Bitte neu prüfen.','bad');
+   void reload();return;
+  }
+  closeExchangeConfirm();
+  void action('exchange',{resourceId:req.resourceId,count:req.count});
+ });
  $('forge-ready-filter').addEventListener('click',()=>{
   if(!view||busy)return;
   readyOnly=!readyOnly;render();
