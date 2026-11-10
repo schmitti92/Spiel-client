@@ -134,11 +134,11 @@ function render(){
   +'</span></div><div class="v44-progress-count">'+state.completed+' / 70 Bilder abgeschlossen</div>'
   +'<div class="v44-progress-meter" role="progressbar" aria-label="Fortschritt der Weihnachtsbilder" aria-valuemin="0" aria-valuemax="70" aria-valuenow="'+state.completed+'"><i style="width:'+(state.completed/70*100)+'%"></i></div></div>';
  const milestones=Array.from({length:7},(_,i)=>(i+1)*10).map(n=>{
-  const unlocked=(n===20||n===30?Math.max(Number(state.completed)||0,Number(state.maxRewarded)||0):Number(state.completed)||0)>=n,current=!unlocked&&n===nextMilestone;
+  const unlocked=([20,30,40].includes(n)?Math.max(Number(state.completed)||0,Number(state.maxRewarded)||0):Number(state.completed)||0)>=n,current=!unlocked&&n===nextMilestone;
   const first=n===10,final=n===70;
   const title=first?(unlocked?'Jan Schlappen':'Geheime Belohnung'):
    n===20?(unlocked?'🎲 Weihnachtswürfel für Kniffel':'Geheime Belohnung'):
-   n===30?'🎰 3 Monster-Rad-Drehungen':final?'Weihnachtsfinale':'Geheime Schatztruhe';
+   n===30?'🎰 3 Monster-Rad-Drehungen':n===40?'▶ Autoplay für alle':final?'Weihnachtsfinale':'Geheime Schatztruhe';
   const stateText=n===30&&unlocked?(state.picture30MonsterSpinsClaimed?'✅ 3 Drehungen gutgeschrieben':'⏳ 3 Drehungen werden geprüft'):
    unlocked?'✅ Meilenstein erreicht':current?'🎁 Noch '+(n-state.completed)+' Bild'+(n-state.completed===1?'':'er'):'🔒 Noch gesperrt';
   const art=n===20&&unlocked?milestoneImage(n):'./Weihnachtsbilder/'+milestoneIllustrations[n];
@@ -172,7 +172,7 @@ function render(){
   ?'🎭 Jan Schlappen freigeschaltet! Du kannst ihn jetzt in der Deal-or-No-Deal-Lobby auswählen. Die Freischaltung bleibt nach einem Spiel-Reset erhalten.'
   :celebration.number===20?'🎲 Weihnachtswürfel freigeschaltet! Deine sechs roten Würfel mit goldenen Augen sind ab jetzt in Kniffel (lokal und online) verfügbar. Melde dich mit demselben Profil an und schalte das Design nach Wunsch an oder aus. Die Freischaltung bleibt nach einem Reset bestehen.'
   :celebration.number===30?(state.picture30MonsterSpinsClaimed?'🎰 MEGA-BELOHNUNG! Drei Monster-Glücksrad-Drehungen wurden deinem Spielerprofil gutgeschrieben – zusätzlich zu deiner normalen Bildbelohnung!':'🎰 MEGA-BELOHNUNG! Drei Monster-Glücksrad-Drehungen werden sicher auf deinem Spielerprofil geprüft. Sollte das nicht klappen, nutze die erneute Gutscheinprüfung unter den Meilensteinen.')
-  :'🎄 Meilenstein geschafft! Deine reguläre Bildbelohnung ist online gespeichert. Für diesen Meilenstein gibt es derzeit keine zusätzliche Freischaltung.')+'</p>'
+  :celebration.number===40?'▶ Autoplay freigeschaltet! Ab sofort kannst du im Deal-or-No-Deal-Studio Koffer auf deinem eigenen Zug automatisch öffnen lassen. Bankerangebote und dein persönlicher Koffer bleiben manuell. Freischaltung für dein Spielerprofil dauerhaft gespeichert.':'🎄 Meilenstein geschafft! Deine reguläre Bildbelohnung ist online gespeichert. Für diesen Meilenstein gibt es derzeit keine zusätzliche Freischaltung.')+'</p>'
  +(celebration.number===30&&state.picture30MonsterSpinsClaimed?'<a class="v44-picture30-wheel-link" href="../weihnachten.html?view=monster">🎰 Mit deinen 3 Drehungen zum Monster-Glücksrad</a>':'')
  +'<span class="v44-milestone-seal">🎖️ WEIHNACHTS-ERFOLG</span></div>'
  +'<button id="v44-celebration-close">'+(state.completed>=70?'🏆 Abschluss ansehen':'➡️ Nächstes Weihnachtsbild')+'</button>'
