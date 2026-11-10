@@ -6,11 +6,12 @@
 <meta name="theme-color" content="#0c1019">
 <meta name="description" content="Die Schmiede der 100 Tore: Rüstung, Waffen, Fähigkeiten und Rohstofftausch.">
 <title>⚒️ Schmiede der Helden · Die 100 Tore</title>
-<link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-d1">
+<link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-d2">
 <script src="./profile-config.js"></script>
 <script src="./profile-auth.js"></script>
-<script src="./dog-forge-ui.js?v=20261110-forge-d1" defer></script>
-<script src="./dog-forge-fx.js?v=20261110-forge-d1" defer></script>
+<script src="./dog-forge-ui.js?v=20261110-forge-d2" defer></script>
+<script src="./dog-forge-fx.js?v=20261110-forge-d2" defer></script>
+<script src="./dog-forge-ceremony.js?v=20261110-forge-d2" defer></script>
 <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 </head>
 <body data-forge-background=""
@@ -157,6 +158,36 @@
   <div class="confirm-actions">
    <button type="button" id="forge-confirm-cancel" class="confirm-cancel">Abbrechen</button>
    <button type="button" id="forge-confirm-submit" class="forge-action">⚒️ Jetzt verbessern</button>
+  </div>
+ </div>
+</dialog>
+
+<!-- Purely visual. This never spends resources or initiates any network request. -->
+<dialog id="forge-ceremony" class="forge-ceremony" aria-labelledby="forge-ceremony-title" aria-describedby="forge-ceremony-status">
+ <div class="ceremony-shell">
+  <div class="ceremony-heading">✦ DIE MAGISCHE SCHMIEDE ✦</div>
+  <h2 id="forge-ceremony-title">Der Amboss ruft</h2>
+  <p id="forge-ceremony-status" class="ceremony-status" aria-live="polite">Dein Werkstück wird geschmiedet …</p>
+  <div class="ceremony-stage" aria-hidden="true">
+   <div class="ceremony-glow"></div>
+   <div class="ceremony-ring"></div>
+   <div class="ceremony-smoke"><i></i><i></i><i></i></div>
+   <div class="ceremony-hammer"><span class="hammer-head"></span><span class="hammer-handle"></span></div>
+   <div class="ceremony-weapon" id="forge-ceremony-art"><span>⚔️</span></div>
+   <div class="ceremony-anvil">
+    <div class="anvil-top"></div>
+    <div class="anvil-body"></div>
+    <div class="anvil-base"></div>
+   </div>
+   <div class="ceremony-sparks">
+    <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+   </div>
+   <div class="ceremony-reveal">✦</div>
+  </div>
+  <div id="forge-ceremony-caption" class="ceremony-caption">Das Feuer brennt – der Hammer fällt.</div>
+  <div class="ceremony-bottom">
+   <span class="ceremony-hint">Deine Rohstoffe werden nur serverseitig verarbeitet.</span>
+   <button type="button" id="forge-ceremony-skip" class="ceremony-skip">Animation überspringen <span aria-hidden="true">»</span></button>
   </div>
  </div>
 </dialog>
