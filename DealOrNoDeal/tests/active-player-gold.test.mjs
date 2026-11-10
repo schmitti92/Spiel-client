@@ -10,7 +10,7 @@ const app=read('js/app.js');
 
 test('Goldstudio loads fresh subtle turn styling and keeps the turn above the cases',()=>{
  assert.match(html,/active-player-gold\.css\?v=20261110-soft-gold-no-turn-label-v2/);
- assert.match(html,/app\.js\?v=20261111-socket-smooth-v1/);
+ assert.match(html,/app\.js\?v=20261111-synced-briefcase-v1/);
  assert.match(html,/id="turn-spotlight"/);
  assert.match(html,/id="turn-spotlight-player"/);
  assert.match(html,/id="turn-spotlight-action"/);
