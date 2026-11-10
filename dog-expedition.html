@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#090e1d">
 <meta name="description" content="Die 100 Tore: DOG-Freischaltung vorbereiten, Materialienkisten aus abgeschlossenen Deal-or-No-Deal-Partien öffnen und Rohstoffe sammeln.">
 <title>⚔️ Die 100 Tore · Materialienkisten · SPIELEPORTAL</title>
-<link rel="stylesheet" href="./dog-materials.css?v=20261110-materials-v1">
+<link rel="stylesheet" href="./dog-materials.css?v=20261110-materials-v3">
 <script src="./profile-config.js"></script>
 <script src="./profile-auth.js"></script>
 </head>
@@ -28,43 +28,88 @@
   <span>🐺 DOG: nach Raum 100</span>
  </div>
 </header>
-<div class="notice" role="note"><span aria-hidden="true">🛡️</span><span><b>Die Rohstoffsammlung ist die erste Ausbaustufe.</b> Für jede serverseitig abgeschlossene Online-Partie von <b>Deal or No Deal</b> erhält jeder beteiligte Spieler genau eine Materialienkiste. Andere Spiele geben keine Rohstoffkisten. Der Bosskampf und die Waffenschmiede sind noch nicht spielbar – deine Rohstoffe bleiben bis dahin gespeichert.</span></div>
+<div class="notice" role="note"><span aria-hidden="true">🛡️</span><span><b>Die Rohstoffsammlung ist die erste Ausbaustufe.</b> Für jede serverseitig abgeschlossene Online-Partie von <b>Deal or No Deal</b> erhält jeder beteiligte Spieler <b>eine zufällige kleine, mittlere oder große Rohstoffkiste</b>. Andere Spiele geben keine Rohstoffkisten. Der Bosskampf und die Waffenschmiede sind noch nicht spielbar – deine Rohstoffe bleiben bis dahin gespeichert.</span></div>
 <div class="columns">
  <section class="panel" aria-labelledby="crates-title">
   <h2 id="crates-title">📦 Deine Materialienkisten</h2>
   <p class="muted" id="account">🔒 Anmeldung wird geprüft …</p>
   <div class="chest-zone">
-   <div class="chest-art" id="chest-art" role="img" aria-label="Geschlossene Schatztruhe">📦</div>
+   <div class="chest-art" id="chest-art" role="img" aria-label="Rohstoffkisten">🧰</div>
    <div class="chest-number" id="chest-count" aria-live="polite">–</div>
    <div class="chest-note" id="chest-description">Ungeöffnete Kisten in deinem Spielerprofil</div>
-   <div class="actions">
-    <button id="open-chest" type="button" class="button" disabled>✨ Kiste öffnen</button>
+   <div class="crate-grid" aria-label="Kistensorten öffnen">
+    <button id="open-small" class="crate-choice tier-small" type="button" disabled>
+     <span class="crate-emoji" aria-hidden="true">📦</span>
+     <strong>Kleine Kiste</strong>
+     <span>5–10 Rohstoffe</span>
+     <small>60 % Kistenchance</small>
+     <span class="crate-owned">Vorhanden: <b id="small-count">–</b></span>
+    </button>
+    <button id="open-medium" class="crate-choice tier-medium" type="button" disabled>
+     <span class="crate-emoji" aria-hidden="true">💎</span>
+     <strong>Mittlere Kiste</strong>
+     <span>10–20 Rohstoffe</span>
+     <small>30 % Kistenchance</small>
+     <span class="crate-owned">Vorhanden: <b id="medium-count">–</b></span>
+    </button>
+    <button id="open-large" class="crate-choice tier-large" type="button" disabled>
+     <span class="crate-emoji" aria-hidden="true">🐉</span>
+     <strong>Große Kiste</strong>
+     <span>20–40 Rohstoffe</span>
+     <small>10 % Kistenchance</small>
+     <span class="crate-owned">Vorhanden: <b id="large-count">–</b></span>
+    </button>
+   </div>
+   <div id="legacy-crates" class="legacy-crates" hidden>
+    <span>🎁 Bisher gesammelte Kisten: <b id="legacy-count">0</b></span>
+    <button id="open-legacy" class="button secondary" type="button">Bestandskiste öffnen</button>
+   </div>
+   <div id="retry-wrap" class="actions" hidden>
+    <button id="retry-pending" class="button secondary" type="button">↻ Kistenöffnung sicher wiederholen</button>
    </div>
   </div>
   <p id="status" class="status" role="status" aria-live="polite">Synchronisiere mit dem sicheren Spielerserver …</p>
-  <div class="drop" id="reward" hidden aria-live="polite" aria-label="Inhalt deiner geöffneten Materialienkiste">
-   <h3>🎉 Kiste geöffnet!</h3>
-   <p class="muted" id="reward-title">Dein Fund</p>
-   <div id="reward-items" class="drop-contents"></div>
-  </div>
+  <dialog id="reward-dialog" class="reward-dialog" aria-labelledby="reward-title">
+   <div class="reward-shell">
+    <button type="button" id="close-reward" class="reward-close" aria-label="Belohnungsfenster schließen">✕</button>
+    <div class="reward-kicker">✦ DOG-EXPEDITION ✦</div>
+    <h2>🎉 Rohstoffkiste geöffnet!</h2>
+    <p id="reward-title" class="reward-subtitle">Alle Rohstoffe wurden gutgeschrieben.</p>
+    <div id="reward-highlight" class="reward-highlight" hidden></div>
+    <div id="reward-items" class="reward-categories"></div>
+    <p class="reward-saved">✓ Alle Funde sind sicher in deinem persönlichen Rohstofflager gespeichert.</p>
+    <button type="button" id="close-reward-bottom" class="button">Schließen &amp; weitersammeln</button>
+   </div>
+  </dialog>
   <h2 style="margin-top:22px">🎒 Dein Rohstofflager</h2>
-  <div class="resources">
-   <div class="resource"><span class="emoji" aria-hidden="true">🪨</span><strong id="iron">–</strong><small>Eisenerz</small></div>
-   <div class="resource"><span class="emoji" aria-hidden="true">💎</span><strong id="crystal">–</strong><small>Kristalle</small></div>
-   <div class="resource rune"><span class="emoji" aria-hidden="true">✨</span><strong id="rune">–</strong><small>Runensteine</small></div>
-  </div>
+  <div id="resource-groups" class="inventory-groups" aria-label="Deine 15 Rohstoffe"></div>
   <p class="muted" id="earned" style="margin-top:14px">Gesammelte Kisten: – · Geöffnete Kisten: –</p>
   <h2 style="margin-top:23px">🗃️ Letzte Funde</h2>
   <ul id="history" class="history"><li>Nach deiner ersten geöffneten Kiste erscheinen hier deine Funde.</li></ul>
  </section>
  <aside class="panel" aria-labelledby="rules-title">
   <h2 id="rules-title">🎲 Kisten und Seltenheiten</h2>
-  <p class="muted">Nach jeder erfolgreich abgeschlossenen Online-Partie von <b>Deal or No Deal</b> erhält jeder teilnehmende Spieler <b>eine eigene Kiste</b>. Darin liegen insgesamt ein bis fünf Rohstoffe.</p>
-  <table class="rule-table" aria-label="Chance auf unterschiedliche Rohstoffmengen">
-   <thead><tr><th>Rohstoffe je Kiste</th><th>Wahrscheinlichkeit</th></tr></thead>
-   <tbody><tr><td>1 Rohstoff</td><td>35 %</td></tr><tr><td>2 Rohstoffe</td><td>30 %</td></tr><tr><td>3 Rohstoffe</td><td>20 %</td></tr><tr><td>4 Rohstoffe</td><td>10 %</td></tr><tr><td>5 Rohstoffe</td><td>5 %</td></tr></tbody>
+  <p class="muted">Nach jeder abgeschlossenen Online-Partie von <b>Deal or No Deal</b> bekommt jeder Spieler eine zufällige Kiste. Die Kistengröße wird beim Gewinn festgelegt. Beim Öffnen erscheinen alle Rohstoffe <b>sofort zusammen</b> im Belohnungsfenster.</p>
+  <table class="rule-table" aria-label="Wahrscheinlichkeit der Kistengrößen">
+   <thead><tr><th>Kiste</th><th>Inhalt</th><th>Chance</th></tr></thead>
+   <tbody>
+    <tr><td>📦 Klein</td><td>5–10</td><td>60 %</td></tr>
+    <tr><td>💎 Mittel</td><td>10–20</td><td>30 %</td></tr>
+    <tr><td>🐉 Groß</td><td>20–40</td><td>10 %</td></tr>
+   </tbody>
   </table>
-  <p class="muted">Durchschnitt: <strong>2,2 Rohstoffe</strong> pro Kiste. Innerhalb einer Kiste sind <b>Eisenerz</b> häufig (72 %), <b>Kristalle</b> selten (23 %) und <b>Runensteine</b> sehr selten (5 %). Jede Einheit wird einzeln ausgewürfelt.</p>
+  <p class="muted">Durchschnitt: <strong>12 Rohstoffe</strong> je Kiste. Jeder Rohstoff gehört mit gleicher Chance zu Angriff, Verteidigung oder Ausrüstung. Innerhalb der Kategorie hängt die Seltenheit von der Kistengröße ab.</p>
+  <table class="rule-table rarity-table" aria-label="Chance je Seltenheit und Kistengröße">
+   <thead><tr><th>Seltenheit</th><th>Klein</th><th>Mittel</th><th>Groß</th></tr></thead>
+   <tbody>
+    <tr><td>Gewöhnlich</td><td>60 %</td><td>45 %</td><td>30 %</td></tr>
+    <tr><td class="rarity-uncommon">Ungewöhnlich</td><td>28 %</td><td>32 %</td><td>35 %</td></tr>
+    <tr><td class="rarity-rare">Selten</td><td>10 %</td><td>17 %</td><td>23 %</td></tr>
+    <tr><td class="rarity-epic">Episch</td><td>1,8 %</td><td>5 %</td><td>9 %</td></tr>
+    <tr><td class="rarity-legendary">Legendär</td><td>0,2 %</td><td>1 %</td><td>3 %</td></tr>
+   </tbody>
+  </table>
+  <p class="muted">Deine 15 Rohstoffe sind auf drei Kategorien verteilt: <b>Angriffsfähigkeiten</b>, <b>Verteidigungsfähigkeiten</b> und <b>Waffen &amp; Rüstung</b>. Besonders seltene Funde werden lila oder goldfarben hervorgehoben.</p>
   <div class="waypoint" aria-labelledby="waypoint-title">
    <h2 id="waypoint-title" style="margin-top:22px">🚪 Euer Weg zu DOG</h2>
    <div class="steps">
@@ -80,7 +125,7 @@
 </div>
 <footer class="foot">DOG-Expedition · Phase 1: Rohstofflager. Das Sammeln beginnt bereits jetzt; der Boss-Modus und die Schmiede folgen als eigene Entwicklungsschritte.</footer>
 </main>
-<script src="./dog-materials-ui.js?v=20261110-materials-v2" defer></script>
+<script src="./dog-materials-ui.js?v=20261110-materials-v3" defer></script>
 <script src="./site-global-controls.js?v=20261109-global-1"></script>
 </body>
 </html>
