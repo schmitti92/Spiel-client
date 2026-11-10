@@ -59,7 +59,7 @@ test('case 30 works with the Joker and the whole jackpot asset bundle refreshes'
   assert.ok(html.includes('./js/'+name+'.js?v=20261110-30cases-50m-v1'),name+' cache bust');
  }
  assert.ok(html.includes('./js/banker.js?v=20261110-special-bonuses-v1'),'banker bonus cache bust');
- assert.ok(html.includes('./js/app.js?v=20261110-soft-gold-no-turn-label-v2'),'gold turn client cache bust');
+ assert.ok(html.includes('./js/app.js?v=20261110-random-bankers-30cases-v1'),'gold turn client cache bust');
  for(const name of ['cases','broadcast']){
   assert.ok(html.includes('./css/'+name+'.css?v=20261110-30cases-50m-v1'),name+' CSS cache bust');
  }
