@@ -315,7 +315,7 @@ async function call(path,method='GET',payload=null){
   return data;
  }finally{clearTimeout(timeout);}
 }
-const errors={LOGIN_REQUIRED:'Bitte neu anmelden.',STORAGE_UNAVAILABLE:'Der Server kann gerade nicht auf das Spielerprofil zugreifen.',START_REQUIRED:'Bitte zuerst ein neues Spiel starten.',SESSION_CHANGED:'Der Spielstand hat sich geändert. Bitte aktualisieren.',INVALID_ACTION:'Ungültige Aktion.',INVALID_HAT:'Ungültige Mütze.'};
+const errors={LOGIN_REQUIRED:'Bitte neu anmelden.',STORAGE_UNAVAILABLE:'Der Server kann gerade nicht auf das Spielerprofil zugreifen.',START_REQUIRED:'Bitte zuerst ein neues Spiel starten.',SESSION_CHANGED:'Der Spielstand hat sich geändert. Bitte aktualisieren.',REQUEST_ID_CONFLICT:'Diese Anfrage gehört zu einer anderen Aktion. Bitte aktualisieren.',TEST_ACCESS_DENIED:'Dieser Testzugang ist ausschließlich für Chris freigeschaltet.',INVALID_ACTION:'Ungültige Aktion.',INVALID_HAT:'Ungültige Mütze.'};
 function describeError(error){return errors[error.message]||String(error.message||'Serverfehler');}
 async function refresh(){
  if(busy)return;
@@ -323,8 +323,23 @@ async function refresh(){
  if(!user?.uid){state=null;userId='';recoverPending();render();setStatus('🔐 Für echte Gewinne bitte mit dem Spielerprofil anmelden.',true);return;}
  if(userId!==user.uid){state=null;userId=user.uid;recoverPending();}
  busy=true;render();setStatus('⏳ Server-Spielstand wird geladen …');
- try{const data=await call('/api/christmas-hats/me');state=data.state;reveal=null;render();
-  setStatus(pendingRequest?'⚠️ Eine Aktion ist unbestätigt. Sicher wiederholen oder aktualisieren.':'✅ Spielstand vom Server geladen. Keine dauerhafte Abfrage.',false,!pendingRequest);
+ try{
+  const waiting=pendingRequest;
+  const url='/api/christmas-hats/me'+(waiting?'?pendingId='+encodeURIComponent(waiting.requestId):'');
+  const data=await call(url);
+  if(uid()!==user.uid)return;
+  state=data.state;reveal=null;
+  let notice='✅ Spielstand vom Server geladen. Keine dauerhafte Abfrage.';
+  if(waiting&&data.pendingAction?.applied){
+   savePending(null);
+   notice='✅ Deine letzte Aktion war bereits gespeichert. Keine doppelte Gutschrift.';
+  }else if(waiting&&waiting.runId&&state?.id!==waiting.runId){
+   savePending(null);
+   notice='♻️ Der Server hat einen anderen Durchlauf. Alte Anfrage verworfen.';
+  }else if(waiting){
+   notice='⚠️ Letzte Aktion noch nicht bestätigt. Bitte sicher wiederholen.';
+  }
+  render();setStatus(notice,!!pendingRequest,!pendingRequest);
  }catch(e){setStatus('⚠️ '+describeError(e),true);}
  finally{busy=false;render();}
 }
