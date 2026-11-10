@@ -174,7 +174,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
 </section>
 <dialog id="cash-dialog" class="cash-dialog" aria-labelledby="cash-dialog-title">
  <h2 id="cash-dialog-title">💰 Deine Gewinne sichern?</h2>
- <p>Du steigst aus dem Weihnachtsmützen-Jackpot aus. Alle bislang erhaltenen Geschenke werden deinem Spielerprofil gutgeschrieben.</p>
+ <p id="cash-description">Du steigst aus dem Weihnachtsmützen-Jackpot aus. Alle bislang erhaltenen Geschenke werden deinem Spielerprofil gutgeschrieben.</p>
  <div id="cash-preview" class="prizes" style="justify-content:center"></div>
  <div class="actions"><button type="button" id="cash-confirm" class="action cash">✅ Jetzt kassieren</button><button type="button" id="cash-cancel" class="action secondary">↩ Weiterspielen</button></div>
 </dialog>
@@ -390,9 +390,46 @@ function render(){
   const count=awarded.reduce((n,g)=>n+(g.items||[]).length,0);
   p.textContent=(DEMO?'Nur Vorschau, nicht gutgeschrieben: ':'Ausgezahlt: ')+count+' Gewinnpositionen. '+(lost.length?'Verlorene Räume seit dem letzten Checkpoint: '+lost.map(g=>g.room).join(', ')+'.':'');
   ending.append(title,p);
-  const prizes=document.createElement('div');prizes.className='prizes';prizes.style.justifyContent='center';formatItems(awarded,prizes,'Keine Belohnung gewonnen.');
-  ending.append(prizes);
+  renderFinalShow(awarded,ending,reason,lost);
   if(s.summary?.platinumOpenedImmediately){const note=document.createElement('p');note.textContent='💎 Platinpakete wurden direkt geöffnet und dem Weihnachtsalbum gutgeschrieben.';ending.append(note);}
+ }
+}
+
+function renderFinalShow(rewards,container,reason,lost){
+ const items=rewards.flatMap(g=>g.items||[]),get=kind=>items.filter(i=>i.kind===kind);
+ const cash=get('cash').reduce((n,i)=>n+Number(i.amountCents||0),0);
+ const qty=list=>list.reduce((n,i)=>n+Number(i.quantity||1),0);
+ const kicker=document.createElement('div');kicker.className='final-kicker';
+ kicker.textContent=reason==='completed'?'✦ NORDPOL-LEGENDENFINALE ✦':reason==='bomb'?'✦ DEINE GESICHERTE BEUTE ✦':'✦ AUSSTIEG MIT GEWINN ✦';
+ container.prepend(kicker);
+ const stats=document.createElement('div');stats.className='final-stats';
+ const entries=[['💰',(cash/100).toLocaleString('de-DE')+' €','Spielgeld'],['🎁',qty(get('pack')),'Pakete'],['🔨',qty(get('hammer')),'Hammer'],['🃏',qty(get('joker')),'Joker']];
+ for(const [icon,value,label] of entries){
+  const card=document.createElement('div');card.className='final-stat';
+  const strong=document.createElement('strong');strong.textContent=icon+' '+value;
+  const small=document.createElement('small');small.textContent=label;
+  card.append(strong,small);stats.append(card);
+ }
+ container.append(stats);
+ const groups=document.createElement('div');groups.className='trophy-groups';
+ for(const [name,kind] of [['🎁 Kartenschätze','pack'],['🔨 Hammer-Tresor','hammer'],['🃏 Joker-Bonus','joker'],['💰 Spielgeld-Tresor','cash']]){
+  const found=get(kind);if(!found.length)continue;
+  const panel=document.createElement('section');panel.className='trophy-group';
+  const heading=document.createElement('strong');heading.textContent=name;
+  const content=document.createElement('div');content.className='prizes';
+  if(kind==='cash'){
+   const chip=document.createElement('span');chip.className='prize';chip.textContent='💰 '+(cash/100).toLocaleString('de-DE')+' € insgesamt';content.append(chip);
+  }else formatItems([{items:found}],content,'Keine');
+  panel.append(heading,content);groups.append(panel);
+ }
+ if(groups.childElementCount)container.append(groups);
+ else{const note=document.createElement('p');note.className='trophy-headline';note.textContent='Noch keine Beute gesichert – die nächste Runde wartet!';container.append(note);}
+ if(reason==='completed'){
+  const praise=document.createElement('p');praise.className='trophy-headline';
+  praise.textContent='👑 Alle zehn Räume überstanden. Die Nordpol-Schatzkammer gehört dir!';container.append(praise);
+ }else if(reason==='bomb'&&lost.length){
+  const warning=document.createElement('p');warning.className='trophy-headline';
+  warning.textContent='💣 Verloren seit dem Checkpoint: '+lost.reduce((n,g)=>n+qty(g.items||[]),0)+' Gegenstände.';container.append(warning);
  }
 }
 function requestId(){return 'hat_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,12);}
@@ -623,6 +660,7 @@ $('cash-confirm').onclick=()=>{
 function askCash(){
  if(busy||reveal||pendingRequest||state?.status!=='playing')return;
  const dialog=$('cash-dialog');
+ $('cash-description').textContent=DEMO?'Testmodus: Deine Gewinne werden nur als Vorschau angezeigt und NICHT auf dein echtes Spielkonto gebucht.':'Du steigst aus. Alle gesammelten Gewinne werden deinem Spielerprofil gutgeschrieben.';
  formatItems([...(state.secured||[]),...(state.pending||[])],$('cash-preview'),'Noch keine Gewinne gesammelt.');
  if(dialog.showModal)dialog.showModal();
  else if(window.confirm('Alle bisherigen Gewinne kassieren und die Runde beenden?'))action('cash');
