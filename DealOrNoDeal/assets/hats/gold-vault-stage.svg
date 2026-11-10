@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="850" viewBox="0 0 1600 850" preserveAspectRatio="xMidYMid slice">
+<defs>
+ <linearGradient id="bg" x2=".2" y2="1"><stop stop-color="#141329"/><stop offset=".5" stop-color="#2d2141"/><stop offset="1" stop-color="#100e23"/></linearGradient>
+ <linearGradient id="pillar" x2="1" y2="0"><stop stop-color="#392441"/><stop offset=".24" stop-color="#7f5269"/><stop offset=".48" stop-color="#d29c69"/><stop offset=".67" stop-color="#5e3954"/><stop offset="1" stop-color="#261c36"/></linearGradient>
+ <linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff1b5"/><stop offset=".26" stop-color="#eac67e"/><stop offset=".65" stop-color="#91643e"/><stop offset="1" stop-color="#ffe4a0"/></linearGradient>
+ <radialGradient id="light"><stop stop-color="#ffc875" stop-opacity=".6"/><stop offset=".7" stop-color="#b38b4d" stop-opacity=".08"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+ <pattern id="floor" width="148" height="170" patternUnits="userSpaceOnUse"><path d="M0 0H148V170H0Z" fill="none" stroke="#dda65f" opacity=".17" stroke-width="3"/><path d="M0 0L148 170M148 0L0 170" stroke="#f3bb72" opacity=".065"/></pattern>
+ <filter id="soft"><feGaussianBlur stdDeviation="12"/></filter>
+</defs>
+<rect width="1600" height="850" fill="url(#bg)"/>
+<ellipse cx="800" cy="350" rx="720" ry="425" fill="#dba960" opacity=".12" filter="url(#soft)"/>
+<path d="M124 650V242Q800-268 1476 242V650" fill="none" stroke="#8a634f" stroke-width="85" opacity=".42"/>
+<path d="M157 652V258Q800-196 1443 258V652" fill="none" stroke="url(#gold)" stroke-width="16"/>
+<path d="M224 620V320Q800-73 1376 320V620" fill="none" stroke="#e8bc7a" stroke-width="8" opacity=".7"/>
+<path d="M290 638V371Q800 20 1310 371V638" fill="#16192d" stroke="#8a674c" stroke-width="6" opacity=".75"/>
+<circle cx="800" cy="348" r="202" fill="#3b293b" stroke="#f5d087" stroke-width="20" opacity=".55"/>
+<circle cx="800" cy="348" r="145" fill="none" stroke="#cea76f" stroke-width="14" opacity=".4"/>
+<circle cx="800" cy="348" r="78" fill="none" stroke="#f8dfa0" stroke-width="14" opacity=".28"/>
+<path d="M600 347h400M800 148v401" stroke="#f7cd82" stroke-width="10" opacity=".38"/>
+<g>
+ <rect x="31" y="155" width="183" height="565" rx="20" fill="url(#pillar)" stroke="url(#gold)" stroke-width="11"/>
+ <rect x="1386" y="155" width="183" height="565" rx="20" fill="url(#pillar)" stroke="url(#gold)" stroke-width="11"/>
+ <rect x="13" y="139" width="221" height="44" rx="8" fill="url(#gold)"/>
+ <rect x="1367" y="139" width="221" height="44" rx="8" fill="url(#gold)"/>
+ <rect x="19" y="695" width="211" height="56" rx="6" fill="url(#gold)" opacity=".78"/>
+ <rect x="1371" y="695" width="211" height="56" rx="6" fill="url(#gold)" opacity=".78"/>
+</g>
+<g stroke="#ffd893" stroke-width="6" opacity=".45"><path d="M61 211v445M107 205v463M153 211v451M1451 211v451M1497 205v463M1543 211v445"/></g>
+<g opacity=".8">
+ <path d="M237 280h87v287h-87zM1276 280h87v287h-87z" fill="#291b35" stroke="#edc77c" stroke-width="6"/>
+ <path d="M252 310h57v45h-57zM1291 310h57v45h-57z" fill="#dfaa5d" opacity=".65"/>
+ <path d="M251 375h56v50h-56zM1291 375h56v50h-56z" fill="#dfaa5d" opacity=".58"/>
+</g>
+<g fill="url(#light)"><circle cx="292" cy="258" r="188"/><circle cx="1303" cy="258" r="188"/><circle cx="795" cy="189" r="256"/></g>
+<g fill="#ffe7ad" opacity=".75"><path d="M494 222l8 24 24 8-24 8-8 24-8-24-24-8 24-8zM1113 240l6 19 19 6-19 6-6 19-6-19-19-6 19-6z"/><circle cx="621" cy="157" r="4"/><circle cx="992" cy="139" r="4"/><circle cx="921" cy="230" r="2.5"/></g>
+<path d="M0 631Q800 554 1600 631V850H0Z" fill="#241b37" stroke="#b38b5e" stroke-width="7"/>
+<path d="M0 631Q800 554 1600 631V850H0Z" fill="url(#floor)"/>
+<ellipse cx="800" cy="690" rx="690" ry="150" fill="#ffd27d" opacity=".09"/>
+<g fill="url(#gold)" stroke="#ffe6a7" stroke-width="4" opacity=".7">
+ <path d="M120 635h150l30 45H95zM1320 635h150l36 45h-215z"/>
+ <rect x="149" y="581" width="112" height="58" rx="6"/>
+ <rect x="1333" y="581" width="114" height="58" rx="6"/>
+</g>
+<g opacity=".65" fill="#f9cf71"><circle cx="180" cy="578" r="12"/><circle cx="210" cy="578" r="12"/><circle cx="1383" cy="578" r="12"/><circle cx="1415" cy="578" r="12"/></g>
+</svg>
