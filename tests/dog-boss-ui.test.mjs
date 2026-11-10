@@ -271,7 +271,10 @@ test('Stale multiplayer hit is rejected locally and the next phase warning is fe
  h.setServer({...basic({now,phase:'fighting'}),bossTurn:1,bossHp:2700,
   bossPhase:2,bossCharged:true,bossPhaseName:'Die Glut erwacht',
   bossTelegraph:'⚠️ Flammenexplosion: Der nächste Held sollte verteidigen!'});
- h.mode('stale');h.click(h.moveButtons[0]);await spin();
+ h.mode('stale');h.click(h.moveButtons[0]);
+ for(let n=0;n<8;n++){await spin();
+  if(h.el('boss-phase-label').textContent==='PHASE 2 VON 3')break;
+ }
  assert.equal(h.posts().length,1);
  assert.equal(JSON.parse(h.posts()[0].req.body).expectedTurn,0);
  assert.equal(h.storage.has('dog:boss:pending:A'),false);
