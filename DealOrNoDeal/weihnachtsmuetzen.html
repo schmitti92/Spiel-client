@@ -193,7 +193,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
  <div class="confetti" id="confetti" aria-hidden="true"></div>
  <div class="cinema-panel">
   <div class="cinema-eyebrow">✨ DER WEIHNACHTSZAUBER PRÄSENTIERT ✨</div>
-  <h2 class="cinema-title" id="cinema-title">👑 SUPERGLÜCK!</h2>
+  <h2 class="cinema-title" id="cinema-title">👑 SUPERGLÜCK!</h2><p id="cinema-subtitle" class="cinema-subtitle"></p>
   <div id="cinema-prizes" class="cinema-prizes"></div>
   <button id="cinema-close" type="button" class="action">🎁 Gewinne ansehen</button>
  </div>
@@ -231,13 +231,23 @@ function formatItems(groups,element,empty){
 function openCinema(event){
  if(!event||event.type==='bomb'||(!event.superLuck&&event.type!=='super'&&![3,7].includes(event.room)))return;
  const title=$('cinema-title'),list=$('cinema-prizes');
- title.textContent=event.superLuck?'🌟 LEGENDÄRES SUPERGLÜCK!':[3,7].includes(event.room)?'🛡️ CHECKPOINT GESICHERT!':'👑 SUPERGESCHENK!';
+ const checkpoint=[3,7].includes(event.room);
+ title.textContent=checkpoint?'🛡️ CHECKPOINT GESICHERT!':event.superLuck?'🌟 LEGENDÄRES SUPERGLÜCK!':'👑 SUPERGESCHENK!';
+ $('cinema-subtitle').textContent=checkpoint
+  ?'Alle Belohnungen bis Raum '+event.room+' sind jetzt geschützt. Auch eine spätere Bombe nimmt sie dir nicht mehr!'
+  :event.superLuck?'Bis zu fünf verschiedene Belohnungsarten auf einmal!':'Ein wertvoller Fund auf deinem Weg zum Nordpol-Jackpot.';
  list.replaceChildren();
  for(const [i,item] of (event.items||[]).entries()){
   const card=document.createElement('div');card.className='cinema-prize';card.style.setProperty('--i',String(i));
   const symbol=document.createElement('span');symbol.className='prize-icon';symbol.textContent=emojis[item.kind]||'🎁';
   const label=document.createElement('span');label.className='prize-label';label.textContent=item.label;
   card.append(symbol,label);list.appendChild(card);
+ }
+ if(checkpoint){
+  const info=document.createElement('div');info.className='checkpoint-bonus';
+  const secured=(state?.secured||[]).filter(g=>event.room===3?g.room<=3:g.room>=4&&g.room<=7).flatMap(g=>g.items||[]);
+  info.textContent='🛡️ '+prizeQuantity(secured)+' Gegenstände dieser Etappe dauerhaft gesichert!';
+  list.prepend(info);
  }
  const bits=$('confetti');bits.replaceChildren();
  const colors=['#f9d779','#fff','#f68b80','#8ce7d6','#daa6fa'];
@@ -330,6 +340,9 @@ function render(){
  const latest=s?.lastReveal,previous=$('last-result');
  previous.hidden=!latest||!!reveal;
  if(latest&&!reveal)previous.textContent='Zuletzt in Raum '+latest.room+': '+(latest.type==='bomb'?'💥 Bombe':latest.superLuck?'🌟 Superglück':latest.type==='super'?'👑 Supergeschenk':'🎁 Geschenk')+((latest.room===3||latest.room===7)&&latest.type!=='bomb'?' · 🛡️ Checkpoint gesichert!':'');
+ document.body.classList.toggle('show-bomb',revealPhase==='shown'&&reveal?.type==='bomb');
+ document.querySelector('.loot-counter.secure').classList.toggle('checkpoint-pulse',
+  revealPhase==='shown'&&reveal?.type!=='bomb'&&[3,7].includes(reveal?.room));
  const hats=$('hats');hats.replaceChildren();
  hats.classList.toggle('stage-suspense',revealPhase==='suspense');
  for(let i=0;i<3;i++)hats.appendChild(hatButton(i,revealPhase==='shown'?reveal?.hats?.[i]:null));
