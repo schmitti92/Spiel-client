@@ -18,8 +18,8 @@ function roomHref(){
  const match=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i;
  return './weihnachtsmuetzen.html'+(match.test(room||'')?'?room='+encodeURIComponent(room):'');
 }
-function setLink(enabled,title){
- launch.href=roomHref();launch.textContent=title;
+function setLink(enabled,title,autoStart=false){
+ const href=roomHref();launch.href=href+(autoStart?(href.includes('?')?'&':'?')+'autostart=1':'');launch.textContent=title;
  launch.setAttribute('aria-disabled',String(!enabled));
  launch.tabIndex=enabled?0:-1;
 }
@@ -41,12 +41,12 @@ function showVoucher(data){
  number.textContent=String(remaining);
  label.textContent=remaining===1?'Gutschein verfügbar':'Gutscheine verfügbar';
  if(playing){
-  const room=Math.max(1,Math.min(10,Number(data.state.room)||1));
-  status.textContent='✅ Partie läuft · Raum '+room+' / 10 · Fortsetzen verbraucht keinen weiteren Gutschein.';
+  const room=Math.max(1,Math.min(data.state.maxRoom||20,Number(data.state.room)||1));
+  status.textContent='✅ Partie läuft · Raum '+room+' / '+(data.state.maxRoom||20)+' · Fortsetzen verbraucht keinen weiteren Gutschein.';
   setLink(true,'🎩 Deine Partie in Raum '+room+' fortsetzen');
  }else if(remaining>0){
   status.textContent=vouchers.free>0?'🎁 Dein kostenloses Startticket wartet auf dich!':'🎟️ Du hast einen freigeschalteten Spielgutschein.';
-  setLink(true,'🎁 Kostenloses Spiel öffnen');
+  setLink(true,'🎩 Direkt spielen · 1 Klick',true);
  }else{
   status.textContent=used?'🔒 Der kostenlose Gutschein ist aufgebraucht. Weitere Gutscheine werden später freigeschaltet.':'🔒 Zurzeit ist kein Spielgutschein verfügbar.';
   setLink(false,'🔒 Weitere Spiele noch gesperrt');
