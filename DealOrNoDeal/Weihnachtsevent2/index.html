@@ -63,14 +63,18 @@ nav a:focus-visible{outline:2px solid #fff}
 .v44-board{width:100%;max-width:none;aspect-ratio:16/9;margin:0;border:4px ridge #b78d49;box-shadow:inset 0 0 28px #000,0 0 18px #72baf344}
 .v44-board img{object-fit:cover}
 .v44-board .ice-tiles{gap:2px;padding:2px}
-/* Pictures 1–29: 10×5 tiles; pictures 30–70: 10×10 tiles. */
+/* Pictures 1–29: 10×5, 30–39: 10×10, 40–70: 15×10 ice tiles. */
 .v44-board .ice-tiles.ice-tiles-50{grid-template-columns:repeat(10,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr));gap:1px}
 .v44-board .ice-tiles.ice-tiles-50 button{font-size:clamp(10px,1.5vw,20px);min-width:0;min-height:0;padding:0;border-width:1px;border-radius:3px}
 .v44-board .ice-tiles.ice-tiles-100{grid-template-columns:repeat(10,minmax(0,1fr));grid-template-rows:repeat(10,minmax(0,1fr));gap:1px}
 .v44-board .ice-tiles.ice-tiles-100 button{font-size:clamp(8px,1.15vw,16px);min-width:0;min-height:0;padding:0;border-width:1px;border-radius:2px;touch-action:manipulation}
+.v44-board .ice-tiles.ice-tiles-150{grid-template-columns:repeat(15,minmax(0,1fr));grid-template-rows:repeat(10,minmax(0,1fr));gap:1px;padding:1px}
+.v44-board .ice-tiles.ice-tiles-150 button{font-size:clamp(7px,.85vw,14px);min-width:0;min-height:0;padding:0;border-width:1px;border-radius:2px;touch-action:manipulation}
 @media(max-width:620px){
  .v44-board.ice-board-100{height:auto;aspect-ratio:1/1}
  .v44-board .ice-tiles.ice-tiles-100{gap:1px;padding:1px}
+ .v44-board.ice-board-150{height:auto;aspect-ratio:3/2}
+ .v44-board .ice-tiles.ice-tiles-150{gap:1px;padding:1px}
 }
 
 .v44-board .ice-tiles button{border:2px solid #9fe5ff;border-radius:7px;background:linear-gradient(125deg,#b4e9ff 0%,#51a9e4 20%,#287fc5 48%,#65bce9 70%,#d3f6ff 100%);box-shadow:inset 0 0 0 2px #d4faff9c,inset 0 0 22px #083e87,0 0 6px #70d7ff;color:#e2faff;font-size:clamp(18px,3vw,40px)}
@@ -419,6 +423,6 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>openGuide(false));else openGuide(false);
 })();
 </script>
-<script src="../js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script><script src="./hammer-ice-spectacle.js?v=20261109-hammer-show-v1"></script><script src="./online-ice.js?v=20261110-david-profile-recovery-v2"></script><script src="../../site-global-controls.js?v=20261109-global-1"></script>
+<script src="../js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script><script src="./hammer-ice-spectacle.js?v=20261109-hammer-show-v1"></script><script src="./online-ice.js?v=20261110-picture40-150-tiles-v1"></script><script src="../../site-global-controls.js?v=20261109-global-1"></script>
 <script defer src="../js/christoph-surprise.js?v=20261110-gift-v1"></script>
 </body></html>
