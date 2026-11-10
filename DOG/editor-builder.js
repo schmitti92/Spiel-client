@@ -128,9 +128,10 @@ function updateControls(){
     ['show-path','path'],['symmetry','symmetry'],['auto-next','auto']
   ])$(id).checked=settings[key];
   const point=currentPosition();
-  $('coord-x').disabled=!point;$('coord-y').disabled=!point;
-  $('coord-x').value=point?String(toRound(point.x)):'';
-  $('coord-y').value=point?String(toRound(point.y)):'';
+  // Coordinate entry must also work before the first field exists.
+  $('coord-x').disabled=false;$('coord-y').disabled=false;
+  $('coord-x').value=point?String(toRound(point.x)):'380';
+  $('coord-y').value=point?String(toRound(point.y)):'380';
   $('selected-info').innerHTML='<b>'+selectedName()+'</b>'+(point?'Position X: '+point.x+' · Y: '+point.y:'Noch nicht gesetzt. Klicke auf eine freie Stelle, um dieses Feld anzulegen.');
   $('undo').disabled=historyAt===0;
   $('redo').disabled=historyAt===history.length-1;
@@ -156,7 +157,7 @@ function renderProgress(){
   $('validation').className='status '+(check.errors.length?'error':check.ready?'success':'warn');
   $('board-subtitle').textContent=check.ready?'Das Brett kann übernommen werden.':tool==='place'?'Nächster Klick: '+selectedName():tool==='erase'?'Tippe auf ein Feld, um es zu entfernen.':'Ziehe ein Feld an die richtige Rasterposition.';
   if(walkTimer===null)$('board-hint').textContent=tool==='place'
-    ?'Tippe in die freie Fläche, um '+selectedName()+' zu platzieren. Bereits gesetzte Felder lassen sich verschieben.'
+    ?'Tippe auf die freie Fläche, um '+selectedName()+' zu setzen. Zum Ersetzen ein Feld antippen und danach auf einen neuen freien Platz tippen.'
     :tool==='move'?'Tippe auf ein vorhandenes Feld und ziehe es an die neue Position.':'Tippe auf ein Feld, um es zu entfernen.';
   updateControls();
 }
@@ -241,66 +242,105 @@ function canvasXY(event){
   svgPoint.x=event.clientX;svgPoint.y=event.clientY;
   return svgPoint.matrixTransform(matrix.inverse());
 }
+// Immediate pointer-down placement is deliberate: on touch devices some browsers
+// cancel or retarget pointer-up if the SVG has been redrawn during a gesture.
+// A single finger tap now creates the field without depending on pointer-up.
+let lastHandledPointer=0;
+function commitPlacement(pos){
+  if(tool!=='place')return;
+  try{
+    const hadField=Boolean(currentPosition());
+    const next=putField(draft,selected,pos,{
+      symmetry:settings.symmetry,spacing:settings.spacing,snap:settings.snap
+    });
+    draft=next;
+    const changed=recordChange();
+    if(changed&&!hadField)maybeNext();
+    render();
+    if(changed)announce(
+      hadField?'✓ Bereits gesetztes Feld wurde an der neuen Position ersetzt.':
+        '✓ Feld erfolgreich gesetzt. Nächstes Feld: '+selectedName()+'.','success'
+    );
+    else announce('Dieses Feld liegt bereits an dieser Stelle. Wähle eine andere Position.','warn');
+  }catch(error){
+    announce('⚠️ Feld konnte nicht gesetzt werden: '+(error?.message||error),'error');
+  }
+}
+function targetSelection(event){
+  const hit=event.target?.closest?.('[data-kind]');
+  if(!hit)return null;
+  const s={kind:hit.dataset.kind,index:Number(hit.dataset.index),owner:Number(hit.dataset.owner)};
+  return selectedValid(s)?s:null;
+}
+function clickExisting(s){
+  setSelection(s);
+  if(tool==='place')announce('✏️ '+selectedName()+' ausgewählt. Tippe jetzt auf eine freie Stelle, um dieses Feld zu ersetzen – oder ziehe es direkt.','success');
+}
 board.addEventListener('pointerdown',event=>{
-  if(event.button!==0)return;
-  const hit=event.target.closest('[data-kind]');
-  const pos=canvasXY(event);
-  if(!pos)return;
+  if(event.pointerType==='mouse'&&event.button!==0)return;
+  const pos=canvasXY(event);if(!pos)return;
+  const existing=targetSelection(event);
   event.preventDefault();
-  const prior=clone(draft);
-  if(hit){
-    const s={kind:hit.dataset.kind,index:Number(hit.dataset.index),owner:Number(hit.dataset.owner)};
-    if(!selectedValid(s))return;
-    setSelection(s);
+  lastHandledPointer=Date.now();
+  if(existing){
+    clickExisting(existing);
     if(tool==='erase'){
       updateDraft(eraseField(draft,selected,{symmetry:settings.symmetry}));
-      announce('Feld gelöscht. Die Spielfelder bleiben im Entwurf weiterhin einzeln bearbeitbar.');return;
+      announce('✓ Feld gelöscht. Tippe auf eine freie Stelle, um es neu zu platzieren.','success');
+      return;
     }
-    pointer={id:event.pointerId,kind:'existing',initial:pos,draft:prior,moved:false};
-  }else{
-    if(tool!=='place'){announce(tool==='move'?'Zum Verschieben ein vorhandenes Spielfeld anfassen.':'Zum Löschen auf ein vorhandenes Spielfeld tippen.');return;}
-    pointer={id:event.pointerId,kind:'blank',initial:pos,draft:prior,moved:false};
-  }
-  board.setPointerCapture(event.pointerId);
+    pointer={id:event.pointerId,kind:'existing',initial:pos,draft:clone(draft),moved:false};
+    try{board.setPointerCapture(event.pointerId);}catch(_){} // no capture support on some tablets
+  }else if(tool==='place'){
+    // Placing on pointerdown also makes short taps reliable on Android tablets.
+    commitPlacement(pos);
+  }else announce(tool==='move'?
+    'Zum Verschieben ein vorhandenes Spielfeld anfassen.':
+    'Zum Löschen ein vorhandenes Spielfeld antippen.');
 });
 board.addEventListener('pointermove',event=>{
  const p=canvasXY(event);if(!p)return;
  if(!pointer){
-   if(tool!=='place')return;
+   if(tool!=='place'||event.pointerType==='touch')return;
    const proposed=snapXY(p,settings.spacing,settings.snap);
    if(!hover||hover.x!==proposed.x||hover.y!==proposed.y){hover=proposed;draw();}
    return;
  }
  if(pointer.id!==event.pointerId)return;
  event.preventDefault();
- if(pointer.kind==='existing'){
-   if(Math.hypot(p.x-pointer.initial.x,p.y-pointer.initial.y)>4)pointer.moved=true;
-   if(pointer.moved){
+ if(Math.hypot(p.x-pointer.initial.x,p.y-pointer.initial.y)>4)pointer.moved=true;
+ if(pointer.moved){
+   try{
      draft=putField(pointer.draft,selected,p,{symmetry:settings.symmetry,spacing:settings.spacing,snap:settings.snap});
      draw();
-   }
+   }catch(err){announce('⚠️ Feld konnte nicht bewegt werden: '+err.message,'error');}
  }
 });
 board.addEventListener('pointerleave',()=>{if(!pointer&&hover){hover=null;draw();}});
 function pointerFinish(event,canceled=false){
  if(!pointer||pointer.id!==event.pointerId)return;
- const old=pointer;
+ const prior=pointer;
  pointer=null;
- if(canceled){draft=old.draft;render();return;}
- if(old.kind==='blank'){
-   const pos=canvasXY(event)||old.initial;
-   draft=putField(draft,selected,pos,{symmetry:settings.symmetry,spacing:settings.spacing,snap:settings.snap});
-   const changed=recordChange();
-   if(changed)maybeNext();
+ if(canceled){draft=prior.draft;render();return;}
+ if(prior.moved){
+   recordChange();
    render();
-   announce('✓ Spielfeld gesetzt. '+selectedName()+' ist als Nächstes ausgewählt.','success');
- }else if(old.kind==='existing'&&old.moved){
-   recordChange();render();
    announce('↔ Feld verschoben. Raster: '+(settings.snap?'aktiv':'frei')+'.','success');
  }else render();
 }
 board.addEventListener('pointerup',event=>pointerFinish(event,false));
 board.addEventListener('pointercancel',event=>pointerFinish(event,true));
+// Fallback for synthetic clicks, keyboard click events and browsers that do not
+// expose Pointer Events. The normal pointerdown path is always processed once.
+board.addEventListener('click',event=>{
+  if(Date.now()-lastHandledPointer<750)return;
+  const selectedField=targetSelection(event);
+  if(selectedField){clickExisting(selectedField);return;}
+  if(tool==='place'){
+    const p=canvasXY(event);
+    if(p)commitPlacement(p);
+  }
+});
 document.querySelectorAll('[data-tool]').forEach(button=>button.addEventListener('click',()=>{
  tool=button.dataset.tool;render();announce(tool==='place'?'✚ Klicke auf eine freie Fläche, um das ausgewählte Feld zu setzen.':tool==='move'?'↔ Ziehe ein vorhandenes Feld an die gewünschte Position.':'⌫ Tippe auf ein Feld, um es zu löschen.');
 }));
@@ -329,6 +369,17 @@ function changeSetting(id,key,parser=el=>el.checked){
 }
 changeSetting('grid-size','spacing',el=>Number(el.value));
 for(const [id,key]of [['snap','snap'],['show-grid','grid'],['show-numbers','numbers'],['show-path','path'],['symmetry','symmetry'],['auto-next','auto']])changeSetting(id,key);
+$('place-coordinates').addEventListener('click',()=>{
+ const x=Number($('coord-x').value),y=Number($('coord-y').value);
+ if(!Number.isFinite(x)||!Number.isFinite(y)||x<26||x>734||y<26||y>734){
+   announce('Bitte für X und Y jeweils eine Koordinate zwischen 26 und 734 eingeben.','warn');
+   return;
+ }
+ if(tool!=='place'){
+   tool='place'; // The manual button is always an explicit set / replace action.
+ }
+ commitPlacement({x,y});
+});
 function updateCoord(part){
  const point=currentPosition();if(!point)return;
  const value=Number($(part==='x'?'coord-x':'coord-y').value);
