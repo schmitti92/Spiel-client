@@ -1,4 +1,5 @@
 import {createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction,COLORS} from './engine.js';
+import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js';
 
 const $=id=>document.getElementById(id);
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -92,59 +93,127 @@ function activeSeat(){
   if(game.phase==='exchange')return isHumanExchange();
   return game.current;
 }
-function boardPoint(index){
-  const unit=580/16;
-  if(index<16)return {x:90+index*unit,y:90};
-  if(index<32)return {x:670,y:90+(index-16)*unit};
-  if(index<48)return {x:670-(index-32)*unit,y:670};
-  return {x:90,y:670-(index-48)*unit};
-}
-function goalPoint(owner,idx){
-  const t=202+idx*42;
-  return [{x:t,y:t},{x:760-t,y:t},{x:760-t,y:760-t},{x:t,y:760-t}][owner];
-}
-function homePoint(owner,index){
-  const c=[[235,140],[525,140],[525,620],[235,620]][owner];
-  return {x:c[0]+(index%2?22:-22),y:c[1]+(index>1?22:-22)};
-}
+const boardPoint=trackPoint;
+const coord=p=>p.x.toFixed(2)+','+p.y.toFixed(2);
 function piecePoint(piece){
   if(piece.place==='track')return boardPoint(piece.pos);
   if(piece.place==='goal')return goalPoint(piece.owner,piece.pos);
   return homePoint(piece.owner,piece.id%4);
 }
-function escapeAttr(s){return escape(s);}
 function drawBoard(){
-  let html='<defs><linearGradient id="table" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#254456"/><stop offset=".5" stop-color="#132c3f"/><stop offset="1" stop-color="#132235"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="7"/></filter></defs>';
-  html+='<rect x="9" y="9" width="742" height="742" rx="35" fill="url(#table)" stroke="#a68a5a" stroke-width="12"/>';
-  html+='<rect x="32" y="32" width="696" height="696" rx="22" fill="none" stroke="#ffffff" stroke-opacity=".12" stroke-width="3"/>';
+  if(!game)return;
+  const board=[];
+  const push=part=>board.push(part);
+  const safeColor=seat=>COLORS[seat]||COLORS[0];
+  push('<title>DOG Klassisch – 64 Lauffelder, 4 geschützte Startfelder und 4 Zielbahnen</title>');
+  push('<defs>'+
+    '<linearGradient id="dog-wood" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5f422c"/><stop offset=".22" stop-color="#cca471"/><stop offset=".44" stop-color="#6e4930"/><stop offset=".7" stop-color="#a5774e"/><stop offset="1" stop-color="#4c3223"/></linearGradient>'+
+    '<radialGradient id="dog-blue" cx=".42" cy=".34" r=".88"><stop stop-color="#194e83"/><stop offset=".56" stop-color="#123963"/><stop offset="1" stop-color="#061c35"/></radialGradient>'+
+    '<linearGradient id="dog-hole" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff"/><stop offset=".52" stop-color="#ecf1f4"/><stop offset="1" stop-color="#b6c4d0"/></linearGradient>'+
+    '<linearGradient id="dog-center" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#133c62"/><stop offset="1" stop-color="#071d37"/></linearGradient>'+
+    '<filter id="dog-pawn-shadow" x="-60%" y="-60%" width="220%" height="220%"><feDropShadow dx="0" dy="3" stdDeviation="2.8" flood-color="#000" flood-opacity=".65"/></filter>'+
+    '<filter id="dog-halo" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4"/></filter>'+
+    '<pattern id="dog-speckle" x="0" y="0" width="31" height="43" patternUnits="userSpaceOnUse"><circle cx="5" cy="11" r=".8" fill="#ffffff" opacity=".09"/><circle cx="22" cy="34" r=".65" fill="#ffffff" opacity=".12"/><circle cx="16" cy="6" r=".55" fill="#06172f" opacity=".38"/></pattern>'
+  );
   for(let seat=0;seat<4;seat++){
-    const color=COLORS[seat];
-    const start=boardPoint(seat*16),goal=goalPoint(seat,3);
-    html+='<path d="M '+start.x+' '+start.y+' L '+goal.x+' '+goal.y+'" stroke="'+color+'" stroke-opacity=".25" stroke-width="25" stroke-linecap="round"/>';
-    for(let g=0;g<4;g++){
-      const p=goalPoint(seat,g);
-      html+='<circle cx="'+p.x+'" cy="'+p.y+'" r="18.5" fill="'+color+'" fill-opacity=".18" stroke="'+color+'" stroke-opacity=".75" stroke-width="2.5"/>';
-    }
+    const c=safeColor(seat);
+    push('<linearGradient id="dog-pawn-'+seat+'" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff" stop-opacity=".68"/><stop offset=".3" stop-color="'+c+'"/><stop offset=".83" stop-color="'+c+'"/><stop offset="1" stop-color="#172431" stop-opacity=".9"/></linearGradient>');
+  }
+  push('</defs>');
+  push('<rect x="8" y="8" width="744" height="744" rx="44" fill="url(#dog-wood)" stroke="#2c1b13" stroke-width="7"/>');
+  push('<rect x="27" y="27" width="706" height="706" rx="30" fill="#051323" stroke="#ead4a4" stroke-opacity=".66" stroke-width="2"/>');
+  push('<rect x="35" y="35" width="690" height="690" rx="25" fill="url(#dog-blue)"/>');
+  push('<rect x="35" y="35" width="690" height="690" rx="25" fill="url(#dog-speckle)"/>');
+  push('<rect x="41" y="41" width="678" height="678" rx="20" fill="none" stroke="#7ca9cb" stroke-opacity=".27" stroke-width="1.5"/>');
+  // The course makes a single uninterrupted 64-step circuit. Start indices are
+  // 0/16/32/48; the correct corner is independent of future cosmetic themes.
+  const path=TRACK_POINTS.map((p,i)=>(i===0?'M ':'L ')+coord(p)).join(' ')+' Z';
+  push('<path d="'+path+'" fill="none" stroke="#03152a" stroke-width="32" stroke-linejoin="round" stroke-linecap="round" opacity=".52"/>');
+  push('<path d="'+path+'" fill="none" stroke="#4b85a9" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity=".55"/>');
+  // Matching original DOG field layout: a colored start and a parallel 4-field
+  // entrance to each player's own goal; the four home slots are not track cells.
+  for(let seat=0;seat<4;seat++){
+    const c=safeColor(seat),start=boardPoint(seat*16);
+    const home=HOME_POINTS[seat],goals=GOAL_POINTS[seat];
+    const angle=seat*90;
+    push('<g transform="rotate('+angle+' 380 380)">');
+    push('<rect x="160" y="139" width="46" height="148" rx="23" fill="#030e21" fill-opacity=".55" stroke="'+c+'" stroke-width="3" stroke-opacity=".67"/>');
+    push('<rect x="225" y="139" width="46" height="148" rx="23" fill="#06172c" fill-opacity=".63" stroke="'+c+'" stroke-width="3" stroke-opacity=".48"/>');
+    push('<text x="183" y="307" text-anchor="middle" font-size="11" font-weight="850" letter-spacing="1" fill="'+c+'">ZIEL</text>');
+    push('<text x="248" y="307" text-anchor="middle" font-size="11" font-weight="850" letter-spacing="1" fill="'+c+'">START</text>');
+    push('<path d="M 183 151 Q 164 144 145 122" stroke="'+c+'" stroke-width="3" stroke-dasharray="5 5" fill="none" opacity=".75"/>');
+    // Four untouched reserve holes in the home area.
     for(let j=0;j<4;j++){
-      const p=homePoint(seat,j);
-      html+='<circle cx="'+p.x+'" cy="'+p.y+'" r="18" fill="#05151e" fill-opacity=".55" stroke="'+color+'" stroke-opacity=".6" stroke-width="2"/>';
+      const p={x:247,y:164+32*j};
+      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="16.8" fill="#051628" stroke="'+c+'" stroke-width="2.2" stroke-opacity=".62"/>');
+      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="12.8" fill="#122f4b" opacity=".8"/>');
+    }
+    // The goal entries are physically distinct from the uninterrupted ring.
+    for(let j=0;j<4;j++){
+      const p={x:182,y:164+32*j};
+      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="17.4" fill="'+c+'" fill-opacity=".21" stroke="'+c+'" stroke-width="2.7"/>');
+      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="11.5" fill="#ffffff" fill-opacity=".25"/>');
+    }
+    push('</g>');
+  }
+  // A warm little center crest. Original brand artwork is intentionally not
+  // copied so future DOG modes and events can use the same geometric layout.
+  push('<rect x="289" y="289" width="182" height="182" rx="28" fill="url(#dog-center)" stroke="#cfac75" stroke-opacity=".63" stroke-width="3"/>');
+  push('<rect x="299" y="299" width="162" height="162" rx="20" fill="none" stroke="#b4d0e6" stroke-opacity=".21" stroke-width="1"/>');
+  push('<path d="M 330 339 Q 380 315 430 339 M 330 422 Q 380 448 430 422" stroke="#c6a472" stroke-width="2" fill="none" opacity=".67"/>');
+  push('<text x="380" y="377" text-anchor="middle" fill="#f8e1b5" font-size="47" font-weight="1000" letter-spacing="2">DOG</text>');
+  push('<text x="380" y="402" text-anchor="middle" fill="#91bad1" font-size="12" font-weight="800" letter-spacing="3">KLASSISCH</text>');
+  // Carved white holes, exactly sixty unprotected plus four tinted starts.
+  for(let i=0;i<64;i++){
+    const {x,y}=boardPoint(i),start=isStartField(i),seat=i/16|0;
+    const c=safeColor(seat);
+    push('<circle cx="'+x+'" cy="'+(y+2.1)+'" r="18.7" fill="#020f22" opacity=".75"/>');
+    push('<circle cx="'+x+'" cy="'+y+'" r="'+(start?18.2:16.5)+'" fill="'+(start?c:'url(#dog-hole)')+'" stroke="'+(start?'#f5e1b7':'#143c58')+'" stroke-width="'+(start?3.5:2)+'"/>');
+    push('<circle cx="'+(x-4)+'" cy="'+(y-5)+'" r="'+(start?5.5:4.4)+'" fill="#ffffff" opacity="'+(start?'.30':'.62')+'"/>');
+    if(start){
+      push('<circle cx="'+x+'" cy="'+y+'" r="10.4" fill="#07172b" fill-opacity=".18"/>');
+      push('<path d="M '+(x-4)+' '+(y-7)+' L '+(x+5)+' '+y+' L '+(x-4)+' '+(y+7)+' Z" fill="#ffffff" opacity=".88"/>');
     }
   }
-  for(let i=0;i<64;i++){
-    const {x,y}=boardPoint(i),start=i%16===0,seat=Math.floor(i/16);
-    html+='<circle cx="'+x+'" cy="'+y+'" r="'+(start?19:15.8)+'" fill="'+(start?COLORS[seat]:'#e0e9ed')+'" fill-opacity="'+(start?'.81':'.90')+'" stroke="'+(start?'#ffffff':'#82a1ae')+'" stroke-width="'+(start?3:1.4)+'"/>';
-    if(start)html+='<text x="'+x+'" y="'+(y+5)+'" text-anchor="middle" font-size="12" fill="#07131e" font-weight="900">S</text>';
+  // Legal landing rings show the actual result of the selected card.
+  const targets=new Set(available.flatMap(m=>[m.pieceId,m.targetId].filter(Number.isInteger)));
+  const landings=new Map();
+  for(const m of available){
+    let p=null;
+    if(m.type==='start'){
+      const owner=game.pieces[m.pieceId]?.owner;
+      if(Number.isInteger(owner))p=boardPoint(owner*16);
+    }else if(m.type==='move'||m.type==='seven-step'){
+      const target=String(m.to||'').split(':');
+      const n=Number(target[1]),owner=game.pieces[m.pieceId]?.owner;
+      if(target[0]==='track'&&Number.isInteger(n)&&n>=0&&n<64)p=boardPoint(n);
+      if(target[0]==='goal'&&Number.isInteger(owner)&&Number.isInteger(n)&&n>=0&&n<4)p=goalPoint(owner,n);
+    }else if(m.type==='swap'){
+      const other=game.pieces[m.targetId];
+      if(other)p=piecePoint(other);
+    }
+    if(p)landings.set(coord(p),p);
   }
-  html+='<circle cx="380" cy="380" r="51" fill="#081a29" stroke="#d0ab62" stroke-width="3"/><text x="380" y="386" text-anchor="middle" fill="#f6e2af" font-size="30" font-weight="900" letter-spacing="2">DOG</text>';
-  const actions=available;
-  const targets=new Set(actions.flatMap(m=>[m.pieceId,m.targetId].filter(x=>Number.isInteger(x))));
-  for(const p of game.pieces){
-    const pt=piecePoint(p),hi=targets.has(p.id),color=COLORS[p.owner];
-    if(hi)html+='<circle cx="'+pt.x+'" cy="'+pt.y+'" r="28" fill="'+color+'" fill-opacity=".30" filter="url(#glow)"/>';
-    html+='<g class="'+(hi?'can-pick':'')+'" data-piece="'+p.id+'"><circle cx="'+pt.x+'" cy="'+(pt.y+2)+'" r="17.5" fill="#00151c" fill-opacity=".75"/><circle cx="'+pt.x+'" cy="'+pt.y+'" r="15" fill="'+color+'" stroke="'+(hi?'#ffffff':'#172a30')+'" stroke-width="'+(hi?4:2)+'"/><circle cx="'+(pt.x-4)+'" cy="'+(pt.y-5)+'" r="4" fill="#ffffff" fill-opacity=".48"/><text x="'+pt.x+'" y="'+(pt.y+5)+'" text-anchor="middle" fill="#061821" font-size="14" font-weight="900">'+(p.id%4+1)+'</text></g>';
+  for(const p of landings.values()){
+    push('<circle class="dog-landing-hint" cx="'+p.x+'" cy="'+p.y+'" r="22.8" fill="#ffe1a1" fill-opacity=".20" stroke="#ffe5ad" stroke-width="3" stroke-dasharray="5 5" pointer-events="none"/>');
   }
-  $('board').innerHTML=html;
+  // Pawns on top, always staying attached to their logical position.
+  for(const piece of game.pieces){
+    const p=piecePoint(piece),color=safeColor(piece.owner),hi=targets.has(piece.id);
+    if(!p)continue;
+    if(hi)push('<circle class="dog-move-halo" cx="'+p.x+'" cy="'+p.y+'" r="28" fill="'+color+'" fill-opacity=".5" filter="url(#dog-halo)" pointer-events="none"/>');
+    push('<g data-piece="'+piece.id+'" class="dog-pawn '+(hi?'can-pick':'')+'" aria-label="Figur '+(piece.id%4+1)+' '+(game.players[piece.owner]?.name||'')+'">');
+    push('<ellipse cx="'+p.x+'" cy="'+(p.y+10)+'" rx="14.6" ry="6.8" fill="#020b15" opacity=".63"/>');
+    push('<path d="M '+(p.x-10)+' '+(p.y+5)+' Q '+(p.x-11)+' '+(p.y-3)+' '+(p.x-5)+' '+(p.y-7)+' Q '+p.x+' '+(p.y-13)+' '+(p.x+5)+' '+(p.y-7)+' Q '+(p.x+11)+' '+(p.y-3)+' '+(p.x+10)+' '+(p.y+5)+' Q '+p.x+' '+(p.y+14)+' '+(p.x-10)+' '+(p.y+5)+' Z" fill="url(#dog-pawn-'+piece.owner+')" stroke="'+(hi?'#ffffff':'#061b2c')+'" stroke-width="'+(hi?'3':'1.5')+'" filter="url(#dog-pawn-shadow)"/>');
+    push('<circle cx="'+p.x+'" cy="'+(p.y-7)+'" r="9.1" fill="url(#dog-pawn-'+piece.owner+')" stroke="#ffffff" stroke-opacity=".42" stroke-width="1.4"/>');
+    push('<circle cx="'+(p.x-2.8)+'" cy="'+(p.y-10.8)+'" r="2.3" fill="#fff" opacity=".68"/>');
+    // Transparent large target for touch and keyboard focus via the move buttons.
+    push('<circle cx="'+p.x+'" cy="'+p.y+'" r="22" fill="transparent"/>');
+    push('</g>');
+  }
+  $('board').innerHTML=board.join('');
 }
+
 function actionLabel(m){
   const figure=m.pieceId!==undefined?'Figur '+((m.pieceId%4)+1):'';
   if(m.type==='start')return '🚀 '+figure+' starten';
