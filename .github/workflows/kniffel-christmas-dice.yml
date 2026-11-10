@@ -1,0 +1,30 @@
+name: Kniffel Weihnachtswürfel checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Kniffel/**'
+      - '.github/workflows/kniffel-christmas-dice.yml'
+  pull_request:
+    paths:
+      - 'Kniffel/**'
+      - '.github/workflows/kniffel-christmas-dice.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  christmas-dice:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Kniffel browser scripts
+        run: |
+          node --check Kniffel/christmas-dice.js
+          node --check Kniffel/game.js
+          node --check Kniffel/online.js
+      - name: Check Christmas dice unlock and Kniffel rules
+        run: node --test Kniffel/christmas-dice.test.mjs Kniffel/rules.test.mjs
