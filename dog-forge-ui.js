@@ -67,7 +67,62 @@
   if(textValue!==undefined)el.textContent=String(textValue);
   return el;
  };
- let uid=null,view=null,busy=false,tab='equipment',selected='weapon',tradeGroup='equipment',loadSerial=0,readyOnly=false,confirmData=null;
+ let uid=null,view=null,busy=false,tab='equipment',selected='weapon',tradeGroup='equipment',loadSerial=0,readyOnly=false,confirmData=null,exchangeConfirmData=null,goalId=null;
+ const goalKey=account=>'dog:forge:goal:'+account;
+ const loadGoal=account=>{
+  try{const id=localStorage.getItem(goalKey(account));
+   return id&&/^[a-z_]{2,35}$/.test(id)?id:null;
+  }catch{return null;}
+ };
+ function setGoal(id){
+  if(!uid||!view||busy)return;
+  goalId=itemFor(id)?(goalId===id?null:id):null;
+  try{if(goalId)localStorage.setItem(goalKey(uid),goalId);
+   else localStorage.removeItem(goalKey(uid));}catch{}
+  render();
+ }
+ function exchangeHints(quote){
+  const suggestions=[];
+  for(const [id,cost] of Object.entries(quote?.cost||{})){
+   const missing=Math.max(0,cost-have(id));
+   if(!missing)continue;
+   const group=MATERIALS.find(g=>g.values.some(entry=>entry[0]===id));
+   const idx=group?.values.findIndex(entry=>entry[0]===id)??-1;
+   if(idx<1)continue;
+   const source=group.values[idx-1][0],reserve=quote.cost[source]||0;
+   const spare=Math.max(0,have(source)-reserve);
+   const possible=Math.min(100,Math.floor(spare/10),1000000-have(id));
+   if(possible>0)suggestions.push({id,source,missing,possible,group:group.group});
+  }
+  return suggestions;
+ }
+ function renderGoal(){
+  const box=$('forge-goal-banner'),item=itemFor(goalId);
+  if(!uid||!item||!view){box.hidden=true;return;}
+  box.hidden=false;
+  const level=levelFor(item.id),quote=quoteFor(item.id);
+  const icon=$('forge-goal-visual');icon.replaceChildren();
+  icon.append(item.group==='equipment'?gearVisual(item.id,level,true):skillVisual(item,true));
+  $('forge-goal-title').textContent=item.name+' · Stufe '+level+' / '+item.maxLevel;
+  let percent=0;
+  if(quote?.maxed){
+   percent=100;
+   $('forge-goal-desc').textContent='🏆 Maximale Stufe erreicht – neues Ziel auswählen.';
+  }else if(quote){
+   const cost=Object.entries(quote.cost||{});
+   const needed=cost.reduce((n,[,v])=>n+v,0);
+   const owned=cost.reduce((n,[id,v])=>n+Math.min(v,have(id)),0);
+   percent=needed?Math.round(100*owned/needed):0;
+   const missing=cost.filter(([id,v])=>have(id)<v)
+    .map(([id,v])=>money(v-have(id))+' × '+(material[id]?.name||id));
+   $('forge-goal-desc').textContent=missing.length?'Fehlt noch: '+missing.join(' · '):
+    '✓ Alle Rohstoffe für die nächste Verbesserung vorhanden!';
+  }else $('forge-goal-desc').textContent='Verbesserung wird geladen …';
+  $('forge-goal-progress').style.width=percent+'%';
+  $('forge-goal-open').disabled=busy;
+  $('forge-goal-clear').disabled=busy;
+ }
+
  // One graphic asset for each equipment appearance tier (independent of balance).
  function gearVisual(id,level,compact=false){
   const stage=stageFor(level),config=STAGES[stage-1];
@@ -292,6 +347,7 @@
    const icon=isEquipment?gearVisual(item.id,levelFor(item.id),true):skillVisual(item,true);
    const info=node('span','item-info');
    info.append(node('strong',null,item.name),node('small',null,'Stufe '+levelFor(item.id)+' / '+item.maxLevel));
+   if(goalId===item.id)info.append(node('small','goal-mark','🎯 Mein Schmiedeziel'));
    const q=quoteFor(item.id);
    if(q){
     const stateText=q.maxed?'✦ Maximal':q.affordable?'✓ Bereit':'Rohstoffe fehlen';
@@ -355,6 +411,12 @@
   const head=node('div','upgrade-top');
   head.append(node('span','eyebrow','VERBESSERUNG'),node('span','forge-tag',tabLabels[tab]||'⚒️ SCHMIEDE'));
   root.append(head);
+  const goalButton=node('button','forge-goal-pin'+(goalId===item.id?' active':''),
+   goalId===item.id?'🎯 Ziel gesetzt · entfernen':'☆ Als Schmiedeziel merken');
+  goalButton.type='button';goalButton.disabled=!uid||!view||busy;
+  goalButton.setAttribute('aria-pressed',String(goalId===item.id));
+  goalButton.addEventListener('click',()=>setGoal(item.id));
+  root.append(goalButton);
   const panel=root.closest('.upgrade-panel');
   if(item.group==='equipment'){
    panel?.style.removeProperty('--skill-accent');
@@ -421,6 +483,24 @@
    '🎯 Noch '+missing.map(m=>money(m.needed)+' × '+(material[m.id]?.name||m.id)).join(' · '):
    '✓ Alle Rohstoffe vorhanden';
   root.append(hint);
+  const hints=exchangeHints(quote);
+  if(hints.length){
+   const panel=node('div','smart-exchange-hint');
+   panel.append(node('strong',null,'💎 Tauschmöglichkeiten mit vorhandenem Material'));
+   for(const suggestion of hints){
+    const count=Math.min(suggestion.missing,suggestion.possible);
+    const line=node('div','smart-exchange-row');
+    line.append(node('span',null,
+     money(count)+' × '+(material[suggestion.id]?.name||suggestion.id)+
+     ' aus '+money(count*10)+' × '+(material[suggestion.source]?.name||suggestion.source)+
+     (suggestion.possible<suggestion.missing?' · nur teilweise ausreichend':'')));
+    const jump=node('button',null,'Zum Tausch');
+    jump.type='button';jump.disabled=!view||busy;
+    jump.addEventListener('click',()=>{tab='exchange';tradeGroup=suggestion.group;render();});
+    line.append(jump);panel.append(line);
+   }
+   root.append(panel);
+  }
   // A short visual preview; boss combat coefficients remain adjustable.
   const preview=node('div','upgrade-preview');
   const current=node('div','preview-value');
@@ -500,7 +580,7 @@
   $('forge-retry-wrap').hidden=!pending(uid);
   $('forge-retry').disabled=!uid||busy;
   $('forge-refresh').disabled=busy;
-  header();renderList();tab==='exchange'?renderExchange():renderUpgrade();renderChronicle();renderStock();
+  header();renderList();tab==='exchange'?renderExchange():renderUpgrade();renderGoal();renderChronicle();renderStock();
  }
  const closeModal=()=>{const dialog=$('forge-result');if(dialog.open)dialog.close();};
  function resultDialog(result){
@@ -543,12 +623,12 @@
  async function reload(){
   const state=auth(),requestIndex=++loadSerial;
   if(!state){
-   uid=null;view=null;closeConfirm();closeModal();
+   uid=null;view=null;goalId=null;closeConfirm();closeExchangeConfirm();closeModal();
    status('Bitte melde dich mit deinem Online-Profil an, um die Schmiede zu nutzen.','bad');
    $('forge-player').textContent='Nicht angemeldet';render();return;
   }
   const account=state.user.uid;
-  if(uid!==account){uid=account;view=null;closeConfirm();closeModal();}
+  if(uid!==account){uid=account;view=null;goalId=loadGoal(account);closeConfirm();closeExchangeConfirm();closeModal();}
   status('⚒️ Heldenwerte werden geladen …');
   render();
   try{
@@ -628,6 +708,13 @@
    render();
   });
  }
+ $('forge-goal-open').addEventListener('click',()=>{
+  const item=itemFor(goalId);
+  if(!item||busy)return;
+  tab=item.group;selected=item.id;readyOnly=false;render();
+  $('forge-workspace')?.scrollIntoView?.({block:'start',behavior:'smooth'});
+ });
+ $('forge-goal-clear').addEventListener('click',()=>setGoal(goalId));
  $('forge-ready-filter').addEventListener('click',()=>{
   if(!view||busy)return;
   readyOnly=!readyOnly;render();
