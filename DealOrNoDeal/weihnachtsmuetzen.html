@@ -320,9 +320,9 @@ function formatItems(groups,element,empty){
  for(const item of counts.values())element.appendChild(createRewardCard(item,{compact:true}));
 }
 function openCinema(event){
- if(!event||event.type==='bomb'||(!event.superLuck&&event.type!=='super'&&![3,7].includes(event.room)))return;
+ if(!event||event.type==='bomb'||(!event.superLuck&&event.type!=='super'&&!(state?.checkpoints||[3,7]).includes(event.room)))return;
  const stage=$('cinema'),title=$('cinema-title'),list=$('cinema-prizes');
- const checkpoint=[3,7].includes(event.room),superLuck=!!event.superLuck;
+ const checkpoint=(state?.checkpoints||[3,7]).includes(event.room),superLuck=!!event.superLuck;
  const items=Array.isArray(event.items)?event.items:[];
  stage.classList.remove('show-all');
  stage.classList.toggle('super-show',superLuck);
@@ -341,7 +341,8 @@ function openCinema(event){
  for(let i=0;i<items.length;i++)list.appendChild(createRewardCard(items[i],{cinematic:true,index:i,total:items.length}));
  if(checkpoint){
   const info=document.createElement('div');info.className='checkpoint-bonus';
-  const secured=(state?.secured||[]).filter(g=>event.room===3?g.room<=3:g.room>=4&&g.room<=7).flatMap(g=>g.items||[]);
+  const allCheckpoints=state?.checkpoints||[3,7],previous=allCheckpoints.filter(c=>c<event.room).at(-1)||0;
+  const secured=(state?.secured||[]).filter(g=>g.room>previous&&g.room<=event.room).flatMap(g=>g.items||[]);
   info.textContent='🛡️ '+prizeQuantity(secured)+' Gegenstände dieser Etappe dauerhaft gesichert!';
   list.prepend(info);
  }
@@ -798,14 +799,14 @@ async function submit(payload){
     otherHatTimer=setTimeout(()=>{
      if(reveal!==event)return;
      revealPhase='shown';showBeforeState=null;render();
-     soundCue(event.type==='bomb'?'bomb':[3,7].includes(event.room)?'checkpoint':event.superLuck?'super':'win');
+     soundCue(event.type==='bomb'?'bomb':(state?.checkpoints||[3,7]).includes(event.room)?'checkpoint':event.superLuck?'super':'win');
      setStatus(event.type==='bomb'?'💥 BOMBE! Deine gesicherten Checkpoint-Gewinne bleiben erhalten.':
       event.superLuck?'🌟 SUPERGLÜCK! Legendäre Gewinne entdeckt.':'🎁 Sicherer Treffer! Deine Belohnungen sind vorgemerkt.',
       event.type==='bomb',event.type!=='bomb');
-     cinemaTimer=setTimeout(()=>{if(reveal===event&&event.type!=='bomb')openCinema(event)},reduced?250:2250);
-     revealTimer=setTimeout(finishReveal,reduced?3000:event.superLuck?12800:[3,7].includes(event.room)?10100:7600);
-    },reduced?200:1560);
-   },reduced?180:1150);
+     if(!fastMode)cinemaTimer=setTimeout(()=>{if(reveal===event&&event.type!=='bomb')openCinema(event)},reduced?250:2250);
+     revealTimer=setTimeout(finishReveal,fastMode?1050:reduced?3000:event.superLuck?12800:(state?.checkpoints||[3,7]).includes(event.room)?10100:7600);
+    },fastMode?300:reduced?200:1560);
+   },fastMode?170:reduced?180:1150);
   }else{
    clearShowTimers();closeCinema();showBeforeState=null;fastReveal=false;reveal=null;revealPhase=null;render();setStatus(type==='cash'?(DEMO?'🧪 Probeauszahlung abgeschlossen. Keine echten Gegenstände oder Spielgelder gutgeschrieben.':'✅ Deine Gewinne wurden serverseitig gutgeschrieben.'):(DEMO?'🧪 Neue Testpartie gestartet!':'✨ Neues Spiel gestartet!'),false,true);
   }
@@ -820,6 +821,15 @@ async function submit(payload){
 $('choice-next').onclick=closeChoice;
 $('choice-cash').onclick=()=>{closeChoice();askCash()};
 $('choice-dialog').addEventListener('cancel',()=>{});
+$('mode').onclick=()=>{
+ fastMode=!fastMode;
+ try{localStorage.setItem('deal-hats-show-mode',fastMode?'fast':'cinema')}catch{}
+ $('mode').textContent=fastMode?'⚡ Schnellspiel an':'🎬 Kinomodus an';
+ $('mode').setAttribute('aria-pressed',String(fastMode));
+ if(fastMode)closeChoice();
+};
+$('mode').textContent=fastMode?'⚡ Schnellspiel an':'🎬 Kinomodus an';
+$('mode').setAttribute('aria-pressed',String(fastMode));
 $('sound').onclick=()=>{
  soundOn=!soundOn;try{localStorage.setItem('deal-hats-sound-v3',soundOn?'on':'off')}catch{}
  paintSound();if(soundOn)soundCue('win');
