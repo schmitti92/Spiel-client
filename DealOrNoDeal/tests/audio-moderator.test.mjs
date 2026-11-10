@@ -80,7 +80,7 @@ test('previously enabled combined voice is migrated to both independent switches
  fx.click('story');
  assert.equal(fx.storage.get('dealStoryVoiceEnabled'),'false');
 });
-test('Koffer-only reads every opened amount, but gives a funny comment only on the two extremes',()=>{
+test('Koffer-only reads exclusively the opened amount without numbers of cases or jokes',()=>{
  const fx=harness({cases:true,stories:false});
  const base={caseCount:29,gameId:'solo-1'};
  for(const [amount,number]of [[100,2],[50000,3],[100000000,4],[300000000,5]]){
@@ -93,16 +93,14 @@ test('Koffer-only reads every opened amount, but gives a funny comment only on t
   fx.spoken.at(-1).onend();
  }
  assert.equal(fx.spoken.length,4,'all four ordinary case amounts must be spoken');
- assert.match(fx.spoken[0].text,/Koffer 2\. Ein Euro\./);
- assert.match(fx.spoken[1].text,/Koffer 3\. Fünfhundert Euro\./);
- assert.match(fx.spoken[2].text,/Koffer 4\. Eine Million Euro\./);
+ assert.equal(fx.spoken[0].text,'Ein Euro.');
+ assert.equal(fx.spoken[1].text,'Fünfhundert Euro.');
+ assert.equal(fx.spoken[2].text,'Eine Million Euro.');
  assert.ok(fx.spoken.slice(0,4).every(x=>x.text.length<60),'no jokes for ordinary amounts');
  fx.announce(1,{...base,caseNumber:8});
- assert.match(fx.spoken.at(-1).text,/Ein Cent/);
- assert.ok(fx.spoken.at(-1).text.length>90,'lowest value gets the special joke');
+ assert.equal(fx.spoken.at(-1).text,'Ein Cent.');
  fx.announce(1000000000,{...base,caseNumber:29});
- assert.match(fx.spoken.at(-1).text,/Zehn Millionen Euro/);
- assert.ok(fx.spoken.at(-1).text.length>90,'highest value gets the special joke');
+ assert.equal(fx.spoken.at(-1).text,'Zehn Millionen Euro.');
  assert.equal(fx.caption.hidden,true,'no narration text appears');
  assert.equal(fx.spoken.at(-1).voice.name,'Markus male');
  assert.equal(fx.spoken.at(-1).lang,'de-DE');
@@ -149,11 +147,11 @@ test('case announcements queue behind stories rather than cutting off the story'
  fx.spoken[0].onend();
  fx.fireTimer(300);
  assert.equal(fx.spoken.length,2);
- assert.match(fx.spoken[1].text,/Koffer 2/);
+ assert.equal(fx.spoken[1].text,'Ein Euro.');
  fx.spoken[1].onend();
  fx.fireTimer(300);
  assert.equal(fx.spoken.length,3);
- assert.match(fx.spoken[2].text,/Koffer 3/);
+ assert.equal(fx.spoken[2].text,'Fünf Euro.');
  assert.equal(fx.caption.hidden,true);
 });
 test('exceptional case overrides a story without leaking confidential values',()=>{
@@ -186,7 +184,7 @@ test('queued story chapters can resume after case narration but are discarded sa
  assert.equal(begun,1);
  assert.match(later.spoken.at(-1).text,/nächste Geschichte/);
 });
-test('each 26–29 case mode only gets a JOKE for 1 cent and its actual jackpot',()=>{
+test('all case modes identify top prize for priority scheduling but keep speech to money only',()=>{
  const fx=harness({cases:true,stories:false}),api=fx.window.DealModeratorAudio;
  for(const [caseCount,top]of [[26,100000000],[27,300000000],[28,500000000],[29,1000000000]]){
   assert.equal(api.shouldComment(1,{caseCount}),true);
@@ -278,7 +276,7 @@ test('opened-case currency is spoken as complete German words, never digit by di
  }
  const meta={gameId:'spoken-test',caseNumber:3,caseCount:29};
  fx.announce(10000,meta);
- assert.match(fx.spoken.at(-1).text,/Koffer 3\. Einhundert Euro\./);
+ assert.equal(fx.spoken.at(-1).text,'Einhundert Euro.');
  assert.doesNotMatch(fx.spoken.at(-1).text,/100[,.]00/);
  assert.equal(fx.window.DealModeratorAudio.formatAmount(10000),'100 Euro',
   'visible currency formatting stays unchanged');
@@ -289,4 +287,18 @@ test('spoken currency conversion is separate from the evolving match story',()=>
  const original='Herbert sagt: 100 Euro liegen in der Schublade.';
  assert.equal(fx.speakStory(original,{title:'Herbert',chapter:1}),true);
  assert.equal(fx.spoken.at(-1).text,original,'story content is not rewritten');
+});
+
+test('even cent and jackpot announcements contain only the cash value, no case ID or funny line',()=>{
+ const fx=harness({cases:true,stories:false});
+ for(const [value,expected] of [
+  [1,'Ein Cent.'],
+  [10000,'Einhundert Euro.'],
+  [100000000,'Eine Million Euro.'],
+  [1000000000,'Zehn Millionen Euro.']
+ ]){
+  fx.announce(value,{caseNumber:29,gameId:'single-amount',caseCount:29});
+  assert.equal(fx.spoken.at(-1).text,expected);
+  assert.doesNotMatch(fx.spoken.at(-1).text,/Koffer|Moderator|Banker/);
+ }
 });
