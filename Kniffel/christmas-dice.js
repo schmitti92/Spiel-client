@@ -8,7 +8,7 @@
  const status=document.getElementById('christmas-dice-status');
  const base=String(global.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
  let uid='',verifiedUid='',unlocked=false,enabled=false,inFlight=null,sequence=0;
- let loading=false,failed=false,lastCheckAt=0;
+ let loading=false,failed=false,lastCheckAt=0,confirmedPictures=null;
  const account=()=>{
   const state=global.SpielOnline?.state?.();
   return state?.status==='online'&&state.user?.uid&&typeof state.user.getIdToken==='function'?state.user:null;
@@ -32,6 +32,8 @@
   else if(loading)message='⏳ Dein Weihnachtsevent-Fortschritt wird geprüft …';
   else if(!account())message='🔐 Mit dem Profil aus dem Weihnachtsevent anmelden, um die Würfel freizuschalten.';
   else if(failed)message='⚠️ Freischaltung konnte nicht geprüft werden. Tippe auf „Weihnachtswürfel prüfen“.';
+  else if(Number.isInteger(confirmedPictures))
+   message='🔒 Weihnachtsfortschritt laut Server: '+confirmedPictures+'/20 Bilder. Wenn dein Weihnachtsevent schon Bild 20 als abgeschlossen zeigt, tippe hier zum erneuten Abgleich.';
   else message='🔒 Belohnung ab 20 abgeschlossenen Bildern im Weihnachtsevent 2. Zum Aktualisieren antippen.';
   button.title=message;
   if(status)status.textContent=message;
@@ -59,34 +61,44 @@
  }
  function reset(){
   sequence++;uid='';verifiedUid='';unlocked=false;enabled=false;
-  loading=false;failed=false;lastCheckAt=0;
+  loading=false;failed=false;lastCheckAt=0;confirmedPictures=null;
   updateRendered();paint();
  }
  async function verifiedReward(user){
   const token=await user.getIdToken();
   const headers={Authorization:'Bearer '+token};
-  let response=await fetch(base+'/api/christmas-ice/unlocks',{headers,cache:'no-store'});
-  if(response.status===404){
-   // Older Render revisions may lack the small /unlocks endpoint. In that
-   // case use the EXISTING authenticated /me progress, never guess or bypass.
-   response=await fetch(base+'/api/christmas-ice/me',{headers,cache:'no-store'});
+  // The Christmas-event's authenticated progress document is the source of
+  // truth. It stores maxRewarded across resets; never use browser-side counts.
+  async function progress(){
+   const response=await fetch(base+'/api/christmas-ice/me',{headers,cache:'no-store'});
    if(!response.ok)throw Error('CHRISTMAS_PROGRESS_'+response.status);
    const result=await response.json();
    if(!result.ok)throw Error(result.error||'CHRISTMAS_PROGRESS_UNAVAILABLE');
    const state=result.state;
-   return Math.max(Number(state?.completed)||0,Number(state?.maxRewarded)||0)>=20;
+   return Math.max(0,Number(state?.completed)||0,Number(state?.maxRewarded)||0);
+  }
+  const response=await fetch(base+'/api/christmas-ice/unlocks',{headers,cache:'no-store'});
+  if(response.status===404){
+   // Older Render revisions may lack /unlocks; use confirmed ice progress.
+   const pictures=await progress();
+   return {unlocked:pictures>=20,pictures};
   }
   if(!response.ok)throw Error('CHRISTMAS_UNLOCK_'+response.status);
   const result=await response.json();
   if(!result.ok||typeof result.kniffelChristmasDice!=='boolean')throw Error('CHRISTMAS_UNLOCK_INVALID');
-  return result.kniffelChristmasDice;
+  if(result.kniffelChristmasDice)return {unlocked:true,pictures:null};
+  // Some server revisions can report an outdated unlock flag. A second,
+  // read-only check uses the SAME server progress as the Christmas event.
+  // Never grant a cosmetic skin from localStorage or a client claim.
+  const pictures=await progress();
+  return {unlocked:pictures>=20,pictures};
  }
  async function refresh(force=false){
   const user=account();
   if(!user){if(uid||unlocked||loading)reset();else paint();return}
   if(uid!==user.uid){
    sequence++;uid=user.uid;verifiedUid='';unlocked=false;enabled=false;
-   failed=false;loading=false;updateRendered();
+   failed=false;loading=false;confirmedPictures=null;updateRendered();
   }
   if(!force&&verifiedUid===uid){paint();return}
   if(inFlight?.uid===uid)return inFlight.promise;
@@ -94,9 +106,10 @@
   loading=true;failed=false;paint();
   const promise=(async()=>{
    try{
-    const earned=await verifiedReward(user);
+    const result=await verifiedReward(user);
     if(requestId!==sequence||account()?.uid!==personUid)return;
-    verifiedUid=personUid;unlocked=earned;failed=false;
+    verifiedUid=personUid;unlocked=result.unlocked;failed=false;
+    confirmedPictures=result.pictures;
     let stored=null;
     try{stored=localStorage.getItem(key(personUid))}catch{}
     enabled=unlocked&&stored!=='off';
