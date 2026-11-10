@@ -17,7 +17,7 @@ function setup({store=new Map(),enabled=true}={}){
    isEnabled:()=>enabled,
    speakStory:(line,meta)=>{
     if(!canSpeak)return false;
-    spoken.push({line,meta});return true;
+    spoken.push({line,meta});meta.onStart?.();return true;
    }
   }
  };
@@ -189,4 +189,28 @@ test('existing 1-cent / top-prize voice-only rule stays intact alongside longer 
  assert.match(voice,/window\.DealModeratorAudio=Object\.freeze\(/);
  assert.doesNotMatch(engine,/announceOpenedAmount\(/,
   'story engine must not narrate ordinary case amounts');
+});
+
+test('story chapters persist only after actual speech begins; discarded queued narration is recoverable',()=>{
+ const fx=setup(),g=match();
+ // Model an audio channel that accepted a chapter but has not begun speaking.
+ const oldSpeak=fx.root.DealModeratorAudio.speakStory;
+ let pending=null;
+ fx.root.DealModeratorAudio.speakStory=(line,meta)=>{
+  pending={line,meta};return true;
+ };
+ fx.observe(g);
+ assert.ok(pending);
+ assert.equal(fx.spoken.length,0);
+ assert.equal(fx.store.has('deal-moderator-story-v1:'+g.id),false,
+  'queued story must not be marked read before audio actually starts');
+ fx.observe(g);
+ assert.equal(fx.store.has('deal-moderator-story-v1:'+g.id),false);
+ pending.meta.onDiscard();
+ fx.root.DealModeratorAudio.speakStory=oldSpeak;
+ fx.advance(18000);
+ fx.observe(g);
+ assert.equal(fx.spoken.length,1);
+ const saved=JSON.parse(fx.store.get('deal-moderator-story-v1:'+g.id));
+ assert.deepEqual(saved.played,['intro']);
 });
