@@ -182,7 +182,7 @@ test('a new game always starts a new deterministic story, even when old match ha
 });
 
 test('existing 1-cent / top-prize voice-only rule stays intact alongside longer stories',()=>{
- assert.match(voice,/!shouldComment\(amount,meta\)/);
+ assert.match(voice,/const exceptional=shouldComment\(amount,meta\)/);
  assert.match(voice,/function speakStory\(text,meta=\{\}\)/);
  assert.match(voice,/if\(currentUtterance\)/);
  assert.match(voice,/queuedStory=entry/);
