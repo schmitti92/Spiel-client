@@ -7,7 +7,7 @@
  const synth=window.speechSynthesis;
  const supported=!!synth&&typeof window.SpeechSynthesisUtterance==='function'&&typeof synth.speak==='function';
  let enabled=false,preferredVoice=null,speechSequence=0,hideTimer=null;
- let currentUtterance=null,queuedStory=null,speechGuard=null;
+ let currentUtterance=null,queuedStory=null,scheduledStory=null,speechGuard=null;
  const lastPicked=new Map();
  try{enabled=localStorage.getItem(key)==='true'}catch{}
  const maleNames=/\b(male|mann|männlich|masculine|markus|stefan|thomas|daniel|florian|klaus|hans|martin|christoph|conrad|ralf|ralph|benjamin|bernd|andreas|peter|jan|jonas|moritz|max|tim|thorsten|oliver|rolf|georg|wolfgang)\b/i;
@@ -102,22 +102,34 @@
   // Invite a waiting chapter to retry without polling Firestore or the server.
   try{window.dispatchEvent?.(new Event('deal-moderator-idle'))}catch{}
  }
+ function discardStory(entry){
+  try{entry?.onDiscard?.()}catch{}
+ }
  function finish(token){
   if(token!==speechSequence)return;
   clearTimeout(speechGuard);speechGuard=null;
   currentUtterance=null;
   const next=queuedStory;queuedStory=null;
   if(next&&enabled&&!document.hidden){
-   // Keep the accepted chapter if a Banker clip or the browser's audio engine
-   // is briefly busy when the previous utterance ends.
+   // A promised chapter is kept in scheduledStory until it actually begins.
+   // If a priority 1-cent / jackpot announcement intervenes, stop() can
+   // discard it and unlock the story engine to retry later.
+   scheduledStory=next;
    function continueStory(tries=0){
-    if(token!==speechSequence||!enabled||document.hidden)return;
-    if(playStory(next))return;
-    if(tries<14)hideTimer=setTimeout(()=>continueStory(tries+1),900);
-    else broadcastIdle();
+    if(scheduledStory!==next)return;
+    if(token!==speechSequence||!enabled||document.hidden){
+     scheduledStory=null;discardStory(next);return;
+    }
+    if(currentUtterance||synth.speaking){
+     if(tries<14){hideTimer=setTimeout(()=>continueStory(tries+1),900);return}
+     scheduledStory=null;discardStory(next);broadcastIdle();return;
+    }
+    scheduledStory=null;
+    if(!playStory(next)){discardStory(next);broadcastIdle()}
    }
    hideTimer=setTimeout(()=>continueStory(),800);
   }else{
+   if(next)discardStory(next);
    hideTimer=setTimeout(()=>{if(token===speechSequence)caption.hidden=true},1000);
    broadcastIdle();
   }
@@ -135,8 +147,8 @@
   clearTimeout(hideTimer);hideTimer=null;
   clearTimeout(speechGuard);speechGuard=null;
   currentUtterance=null;
-  const discarded=queuedStory;queuedStory=null;
-  if(discarded){try{discarded.onDiscard?.()}catch{}}
+  const pending=[queuedStory,scheduledStory];queuedStory=null;scheduledStory=null;
+  for(const entry of pending)discardStory(entry);
   caption.hidden=true;
   if(supported)synth.cancel();
  }
