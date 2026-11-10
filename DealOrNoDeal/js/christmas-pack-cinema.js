@@ -100,12 +100,13 @@
   root.dataset.mode=safeMode(mode);
   root.dataset.stage='ready';
   root.dataset.rarity='common';
+  root.dataset.newCard='false';
   root.classList.remove('is-legendary-reveal','is-epic-reveal');
   setText('pack-cinema-kicker',mode==='demo'?'✨ DEMO · KEINE GUTSCHRIFT':pack.caption);
   setText('reveal-title',mode==='demo'?'🎬 Magische Paket-Vorschau':'🎁 '+pack.label);
   setText('pack-cinema-subtitle',mode==='demo'
-   ?'Eine kostenlose Vorschau – alle Karten werden einzeln groß enthüllt. Keine Gutschrift.'
-   :'Ein magisches Geschenk mit '+safeCount(cards)+' Karten. Episch und legendär kommen zum Schluss!');
+   ?'Eine kostenlose Vorschau – neue Karten werden groß enthüllt. Keine Gutschrift.'
+   :'Ein magisches Geschenk mit '+safeCount(cards)+' Karten. Nur neu entdeckte Motive erhalten die große Enthüllung!');
   setText('pack-cinema-rarity-title','');
   setText('pack-cinema-summary-stats','');
   setText('pack-cinema-note',mode==='demo'
@@ -124,6 +125,7 @@
   const label=getRarity(card).name;
   root.dataset.stage='opening';
   root.dataset.rarity=rarities[rarity]?rarity:'common';
+  root.dataset.newCard='false';
   root.classList.remove('is-legendary-reveal','is-epic-reveal');
   setText('pack-cinema-rarity-title','✦ MAGISCHE ENTHÜLLUNG ✦');
   setText('pack-cinema-subtitle','Die Karte '+(index+1)+' von '+total+' wird enthüllt …');
@@ -137,22 +139,24 @@
   const root=byId('reveal-overlay');if(!root)return;
   const rarity=String(card?.rarity||'common').toLowerCase();
   const tier=rarities[rarity]?rarity:'common';
+  const isNew=card?.isNew===true;
   root.dataset.stage='card';root.dataset.rarity=tier;
-  root.classList.toggle('is-legendary-reveal',tier==='legendary');
-  root.classList.toggle('is-epic-reveal',tier==='epic');
+  root.dataset.newCard=String(isNew);
+  root.classList.toggle('is-legendary-reveal',isNew&&tier==='legendary');
+  root.classList.toggle('is-epic-reveal',isNew&&tier==='epic');
   setText('pack-cinema-kicker',
    root.dataset.mode==='demo'?'✨ DEMO · KEINE GUTSCHRIFT':packs[root.dataset.pack]?.caption||packs.small.caption);
   setText('pack-cinema-rarity-title',rarities[tier].label);
-  setText('reveal-title',tier==='legendary'?'🌟 LEGENDÄR!':tier==='epic'?'✨ EPISCH!':'🎁 Karte entdeckt!');
-  setText('pack-cinema-subtitle',card?.isNew===true
+  setText('reveal-title',!isNew?'🎁 Karte aufgedeckt!':tier==='legendary'?'🌟 LEGENDÄR!':tier==='epic'?'✨ EPISCH!':'🌟 Neue Karte entdeckt!');
+  setText('pack-cinema-subtitle',isNew
    ?'✨ NEU! Diese Karte war bisher noch nicht in deiner Sammlung.'
-   :'Ein neues Motiv aus deinem Weihnachtspaket ist enthüllt.');
+   :'🔁 Diese Karte hast du bereits gesammelt.');
   updateProgress(index+1,total);
-  animateSound(tier==='legendary');
+  animateSound(isNew&&tier==='legendary');
  }
  function summarise(cards,mode='real'){
   const root=byId('reveal-overlay');if(!root)return;
-  root.dataset.stage='summary';root.dataset.rarity='common';
+  root.dataset.stage='summary';root.dataset.rarity='common';root.dataset.newCard='false';
   root.classList.remove('is-legendary-reveal','is-epic-reveal');
   const count=safeCount(cards);
   const newCount=cards.filter(card=>card?.isNew===true).length;
@@ -170,7 +174,7 @@
    :'✓ Paketkauf bestätigt. Deine Karten wurden dem Online-Profil gutgeschrieben.');
   updateProgress(count,count);
  }
- function close(){const root=byId('reveal-overlay');if(root){root.dataset.stage='closed';root.classList.remove('is-legendary-reveal','is-epic-reveal');}
+ function close(){const root=byId('reveal-overlay');if(root){root.dataset.stage='closed';root.dataset.newCard='false';root.classList.remove('is-legendary-reveal','is-epic-reveal');}
   restoreFocus();
  }
  function init(){
