@@ -10,7 +10,7 @@ const html=read('Weihnachtsevent2/index.html');
 test('browser supports 25 and 30-tile grids with 5x5 and 6x5 layouts',()=>{
  assert.doesNotThrow(()=>new Script(js));
  assert.match(html,/ice-tiles\.ice-tiles-25\{grid-template-columns:repeat\(5,minmax\(0,1fr\)\);grid-template-rows:repeat\(5,minmax\(0,1fr\)\)/);
- assert.match(html,/online-ice\.js\?v=20261110-hammer-working-v6/);
+ assert.match(html,/online-ice\.js\?v=20261110-picture30-triple-spin-v1/);
  assert.match(js,/ice-tiles-25/);
  assert.match(html,/ice-tiles\.ice-tiles-30\{grid-template-columns:repeat\(6,minmax\(0,1fr\)\);grid-template-rows:repeat\(5,minmax\(0,1fr\)\)/);
  assert.match(js,/ice-tiles-30/);
@@ -84,13 +84,13 @@ test('stars reveal pictures through 22; full clearing starts at image 23',()=>{
  assert.match(js,/celebration\.number>=23\?'Alle Eisblöcke entfernt!'/);
  assert.match(js,/celebration\.number>=23\?'🧊':'🌟'/);
  assert.match(js,/Number\(state\.completed\)>=23\?'🧊 Alle Eisblöcke entfernt!/);
- assert.match(html,/online-ice\.js\?v=20261110-hammer-working-v6/);
+ assert.match(html,/online-ice\.js\?v=20261110-picture30-triple-spin-v1/);
 });
 
 test('every server-confirmed completed picture uses full-screen reveal before reward',()=>{
  const css=read('Weihnachtsevent2/image-reveal-grand.css');
  assert.match(html,/image-reveal-grand\.css\?v=20261109-grand-reveal-v1/);
- assert.match(html,/online-ice\.js\?v=20261110-hammer-working-v6/);
+ assert.match(html,/online-ice\.js\?v=20261110-picture30-triple-spin-v1/);
  assert.match(js,/celebration\?\.stage==='image'&&!celebrationDelayTimer&&state\.finished&&Number\(state\.completed\)>=celebration\.number/);
  assert.match(js,/photo\(celebration\.number\)/);
  assert.match(js,/id="v44-big-reveal-continue"/);
