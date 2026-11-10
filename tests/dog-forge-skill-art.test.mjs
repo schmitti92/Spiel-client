@@ -39,8 +39,8 @@ test('Forge UI maps every server-recognized skill to an illustration',()=>{
 });
 test('Forge UI styles and HTML load the current skill artwork release',()=>{
  const html=read('dog-forge.html'),css=read('dog-forge.css');
- assert.ok(html.includes('dog-forge-ui.js?v=20261110-forge-d3'));
- assert.ok(html.includes('dog-forge.css?v=20261110-forge-d3'));
+ assert.ok(html.includes('dog-forge-ui.js?v=20261110-forge-d4'));
+ assert.ok(html.includes('dog-forge.css?v=20261110-forge-d4'));
  for(const selector of ['.skill-display','.skill-visual.compact','.item-choice.skill-entry',
   '.result-art .skill-illustration'])assert.ok(css.includes(selector),'missing selector '+selector);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
@@ -400,4 +400,119 @@ test('D3 batch trade confirms real quantities and retains pending receipt safety
  assert.ok(css.includes('.exchange-controls'));
  assert.doesNotThrow(()=>new Script(ui,{filename:'dog-forge-ui.js'}));
  assert.equal(css.split('{').length,css.split('}').length);
+});
+
+test('D4 hero gallery is linked, accessible and presents genuine equipment and milestone info',()=>{
+ const html=read('dog-forge.html'),ui=read('dog-forge-ui.js'),
+  gallery=read('dog-forge-gallery.js'),css=read('dog-forge.css');
+ assert.ok(html.includes('dog-forge-gallery.js?v=20261110-forge-d4'));
+ for(const id of ['forge-gallery','forge-gallery-title','forge-gallery-open','forge-display-title',
+  'forge-gallery-portrait','forge-gallery-gear','forge-gallery-titles','forge-gallery-frames',
+  'forge-gallery-rewards','forge-gallery-milestone-count','forge-result-gallery','forge-result-new-unlock'])
+  assert.ok(html.includes('id="'+id+'"'),id+' gallery node');
+ assert.ok(ui.includes('function renderGallery()'));
+ assert.ok(ui.includes('renderChronicle();renderStock();renderGallery();'));
+ assert.ok(ui.includes('gallery.render(hero&&uid?'));
+ assert.ok(ui.includes("id:m.key+'-'+m.goal"));
+ assert.ok(ui.includes("window.addEventListener('dog-forge-gallery-ready'"));
+ assert.ok(gallery.includes('PREF_PREFIX+uid'));
+ assert.equal(gallery.includes('fetch('),false);
+ assert.equal(gallery.includes('XMLHttpRequest'),false);
+ assert.ok(css.includes('.gallery-hero-portrait.forge-frame-dragon'));
+ assert.ok(css.includes('.character-emblem.forge-frame-astral'));
+ assert.ok(css.includes('@media(prefers-reduced-motion:reduce)'));
+ assert.doesNotThrow(()=>new Script(gallery,{filename:'dog-forge-gallery.js'}));
+ assert.doesNotThrow(()=>new Script(ui,{filename:'dog-forge-ui.js'}));
+});
+test('D4 milestone unlock notice never duplicates a replayed transaction',()=>{
+ const ui=read('dog-forge-ui.js');
+ assert.ok(ui.includes('!response.replayed&&beforeHero&&view?.hero'));
+ assert.ok(ui.includes('milestoneValue(m,beforeHero)<m.goal'));
+ assert.ok(ui.includes('milestoneValue(m,view.hero)>=m.goal'));
+ assert.ok(ui.includes('resultDialog(response.result,unlocked)'));
+ assert.ok(ui.includes("window.DogForgeGallery?.open?.()"));
+});
+function galleryTestHarness(){
+ const nodes=new Map(),store=new Map(),events=[];
+ function el(id=''){
+  const classes=new Set(),handlers={};
+  return {id,children:[],handlers,disabled:false,hidden:false,open:false,src:'',
+   textContent:'',title:'',value:'',dataset:{},style:{width:''},attrs:{},
+   classList:{
+    add(v){classes.add(v)},remove(v){classes.delete(v)},
+    contains(v){return classes.has(v)}
+   },
+   setAttribute(k,v){this.attrs[k]=v;},
+   addEventListener(k,fn){handlers[k]=fn;},
+   append(...items){this.children.push(...items);},
+   replaceChildren(...items){this.children=[...items];},
+   replaceWith(){},
+   showModal(){this.open=true;},close(){this.open=false;}
+  };
+ }
+ for(const id of ['forge-gallery','forge-gallery-open','forge-gallery-close',
+  'forge-gallery-done','forge-display-title','hero-emblem','forge-gallery-portrait',
+  'forge-gallery-current-title','forge-gallery-name','forge-gallery-rank',
+  'forge-gallery-milestone-count','forge-gallery-success-count',
+  'forge-gallery-gear','forge-gallery-titles','forge-gallery-frames','forge-gallery-rewards']){
+  nodes.set(id,el(id));
+ }
+ const doc={getElementById:id=>nodes.get(id)||null,createElement:tag=>el(tag)};
+ const win={dispatchEvent:event=>events.push(event.type)};
+ const source=read('dog-forge-gallery.js');
+ runInNewContext(source,{document:doc,window:win,localStorage:{
+  getItem:key=>store.get(key)||null,
+  setItem:(key,value)=>store.set(key,value)
+ },Event:class{constructor(type){this.type=type}}});
+ return {api:win.DogForgeGallery,nodes,store,events};
+}
+function galleryPayload(uid,achieved=[]){
+ const keys=[
+  ['successes',1,'Erster Funke'],['successes',10,'Lehrschmied'],
+  ['successes',50,'Meisterhand'],['exchanges',10,'Alchemistenpfad'],
+  ['weapon',6,'Stahl erwacht'],['weapon',11,'Runenschmied'],
+  ['weapon',20,'Drachenschmied'],['armor',20,'Wächterrüstung'],
+  ['maxSkill',50,'Vollendete Kunst']
+ ];
+ const achievements=new Set(achieved);
+ return {uid,player:'Testheld',rank:'Neuling',items:[],
+  hero:{levels:{weapon:6,armor:1},successes:10},
+  milestones:keys.map(([key,goal,title])=>({id:key+'-'+goal,key,goal,title,
+   current:achievements.has(key+'-'+goal)?goal:0,
+   icon:'🏆',unlocked:achievements.has(key+'-'+goal)}))};
+}
+test('D4 locked titles cannot be activated, and selected cosmetics stay account-scoped',()=>{
+ const t=galleryTestHarness();
+ assert.ok(t.events.includes('dog-forge-gallery-ready'));
+ t.api.render(galleryPayload('hero-one',['successes-1','successes-10']));
+ const open=t.nodes.get('forge-gallery-open');
+ assert.equal(open.disabled,false);
+ open.handlers.click();
+ assert.equal(t.nodes.get('forge-gallery').open,true);
+ const titles=t.nodes.get('forge-gallery-titles').children;
+ const locked=titles.find(x=>x.children.some(y=>y.textContent==='Legendärer Drachenschmied'));
+ assert.equal(locked.disabled,true);
+ const first=titles.find(x=>x.children.some(y=>y.textContent==='Lehrschmied der 100 Tore'));
+ assert.equal(first.disabled,false);
+ first.handlers.click();
+ const stored=JSON.parse(t.store.get('dog:forge:gallery:v1:hero-one'));
+ assert.equal(stored.title,'apprentice');
+ assert.match(t.nodes.get('forge-display-title').textContent,/Lehrschmied der 100 Tore/);
+ t.api.render(galleryPayload('hero-two',[]));
+ assert.equal(t.nodes.get('forge-gallery').open,true);
+ assert.match(t.nodes.get('forge-display-title').textContent,/Schmiedelehrling/);
+ assert.equal(t.store.get('dog:forge:gallery:v1:hero-two'),undefined);
+ t.api.render(null);
+ assert.equal(open.disabled,true);
+ assert.equal(t.nodes.get('forge-gallery').open,false);
+});
+test('D4 automatic frame upgrades to highest earned cosmetic without server writes',()=>{
+ const t=galleryTestHarness();
+ t.api.render(galleryPayload('auto-test',['successes-1']));
+ assert.equal(t.nodes.get('hero-emblem').classList.contains('forge-frame-ember'),true);
+ t.api.render(galleryPayload('auto-test',['successes-1','weapon-11','weapon-20']));
+ assert.equal(t.nodes.get('hero-emblem').classList.contains('forge-frame-dragon'),true);
+ t.api.render(galleryPayload('auto-test',['successes-1','weapon-11','weapon-20','maxSkill-50']));
+ assert.equal(t.nodes.get('hero-emblem').classList.contains('forge-frame-astral'),true);
+ assert.equal(t.store.size,0,'auto awards must not save or alter hero state');
 });
