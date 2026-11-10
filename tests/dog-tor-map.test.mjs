@@ -162,3 +162,43 @@ test('Map places server-confirmed positions of three heroes at the exact gate',a
  gates[14].click();
  assert.equal(byId('gate-battle-button').disabled,true,'tor 14 not yet cleared, mini boss 15 not yet eligible');
 });
+
+test('Map permits miniboss 15 before Boss 10, but blocks gate 16 until team victory',async()=>{
+ const map={
+  members:[{uid:'hero-a',name:'Hero A',currentGate:15,highestGate:15,isMe:true}],
+  memberCount:1,isMember:true,canJoin:true,sharedBosses:[],
+  progress:{currentGate:15,highestGate:15,normals:[1,2,3,4,6,7,8,9,11,12,13,14],
+   minis:[],miniRewards:[],lastAttemptAt:0}
+ };
+ const {gates,byId}=page('?room=123',map);
+ await new Promise(resolve=>setImmediate(resolve));
+ gates[14].click(); // mini-boss 15
+ assert.equal(byId('gate-battle-button').disabled,false);
+ assert.match(byId('gate-fight-status').textContent,/Bereit/);
+ gates[15].click(); // gate 16
+ assert.equal(byId('gate-battle-button').disabled,true);
+ assert.match(byId('gate-fight-status').textContent,/Boss 10/);
+ assert.match(byId('gate-fight-status').textContent,/Tor 15/);
+ map.sharedBosses=[10];
+ // Fresh page simulates the newly confirmed team progress.
+ const unlocked=page('?room=123',map);
+ await new Promise(resolve=>setImmediate(resolve));
+ unlocked.gates[15].click();
+ assert.equal(unlocked.byId('gate-battle-button').disabled,false);
+});
+
+test('Map repeats the same five-gate buffer for Boss 20 and Tor 25/26',async()=>{
+ const model={
+  members:[{uid:'hero-a',name:'Hero A',currentGate:25,highestGate:25,isMe:true}],
+  memberCount:1,isMember:true,canJoin:false,sharedBosses:[10],
+  progress:{currentGate:25,highestGate:25,normals:[1,2,3,4,6,7,8,9,11,12,13,14,
+   16,17,18,19,21,22,23,24],minis:[],miniRewards:[],lastAttemptAt:0}
+ };
+ const {gates,byId}=page('?room=123',model);
+ await new Promise(resolve=>setImmediate(resolve));
+ gates[24].click();
+ assert.equal(byId('gate-battle-button').disabled,false);
+ gates[25].click();
+ assert.equal(byId('gate-battle-button').disabled,true);
+ assert.match(byId('gate-fight-status').textContent,/Boss 20/);
+});
