@@ -86,6 +86,20 @@ input[type="range"]{width:100%;accent-color:#efc47d}
 .status span{display:block;margin:3px 0}
 #finish-button{width:100%;margin-top:10px;min-height:44px}
 .foot{text-align:center;color:#8da9b9;font-size:11px;padding:15px}
+
+.equal-spacing-panel{background:linear-gradient(145deg,#21485a,#0d293b);border:1px solid #d7b5758f;border-radius:13px;padding:12px;margin:12px 0 10px}
+.equal-heading{display:flex;align-items:center;gap:8px;font-weight:900;color:#ffe1a7;font-size:14px}
+.equal-heading input{width:18px;height:18px;accent-color:#f3c079}
+.equal-row{display:flex;gap:10px;align-items:center;justify-content:space-between;margin:10px 0}
+.equal-row label{font-size:12px;font-weight:750;color:#d3e4ee}
+.equal-row select{width:140px;flex:none}
+.direction-pad{display:grid;grid-template-columns:repeat(3,42px);gap:5px;justify-content:center;margin:11px auto 8px}
+.direction-pad button{width:42px;height:42px;border:1px solid #a4c3d87a;border-radius:10px;background:#0b2435;color:#ffe5b8;font-size:23px;font-weight:900;touch-action:manipulation}
+.direction-pad button:hover:not(:disabled){background:#315774}
+.direction-pad button.center{color:#ffeac3;font-size:19px;background:#66513560;border-color:#e6ba727a;cursor:default}
+.direction-pad button:active:not(:disabled){transform:scale(.94)}
+#gap-report{font-size:12px;color:#d1e4e9;border-top:1px solid #a7c3cd33;margin-top:9px;padding-top:9px}
+.equal-tip{font-size:11px!important;color:#d6e6ee!important;margin:7px 0!important;line-height:1.5!important}
 @media(max-width:1070px){.workspace{grid-template-columns:1fr}.work-side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.work-side .card:first-child{grid-column:1/-1}.board{max-height:700px}}
 @media(max-width:650px){header{padding:10px}.brand-mark{width:40px;height:40px}.brand p{font-size:10px}.top-actions .btn{font-size:11px;padding:7px 9px}main{width:calc(100% - 14px)}.workspace{gap:10px}.work-side{display:flex;gap:10px}.card{padding:12px}.board-panel{padding:6px;border-radius:13px}.board{min-height:0;max-height:none}.board-toolbar{gap:5px}.tool-switch button{padding:7px 8px}.intro{font-size:12px}.action-grid .btn{font-size:11px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
@@ -157,6 +171,29 @@ input[type="range"]{width:100%;accent-color:#efc47d}
        <option value="48">Sehr groß · 48</option>
       </select>
     </div>
+    <div class="equal-spacing-panel">
+      <label class="equal-heading"><input id="equal-spacing" type="checkbox" checked> 📐 Gleicher Abstand – auch diagonal</label>
+      <div class="equal-row"><label for="step-size">Abstand zwischen Feldmitten</label>
+        <select id="step-size" class="editor-select">
+          <option value="28">28 Einheiten</option><option value="32" selected>32 Einheiten</option>
+          <option value="36">36 Einheiten</option><option value="40">40 Einheiten</option>
+          <option value="48">48 Einheiten</option>
+        </select>
+      </div>
+      <p class="equal-tip">Ab Feld 1 wird der nächste Kreis im gewählten Abstand zum vorherigen Feld platziert. Tippe ungefähr in die Richtung oder nutze die acht Pfeile. Gerade und diagonal sind damit gleich weit voneinander entfernt.</p>
+      <div class="direction-pad" role="group" aria-label="Nächstes Spielfeld mit exakt gleichem Abstand setzen">
+        <button type="button" data-path-dir="-1,-1" title="Links oben – 45 Grad" aria-label="Diagonal nach links oben">↖</button>
+        <button type="button" data-path-dir="0,-1" title="Nach oben" aria-label="Gerade nach oben">↑</button>
+        <button type="button" data-path-dir="1,-1" title="Rechts oben – 45 Grad" aria-label="Diagonal nach rechts oben">↗</button>
+        <button type="button" data-path-dir="-1,0" title="Nach links" aria-label="Gerade nach links">←</button>
+        <button type="button" class="center" disabled aria-label="8 Richtungen">✥</button>
+        <button type="button" data-path-dir="1,0" title="Nach rechts" aria-label="Gerade nach rechts">→</button>
+        <button type="button" data-path-dir="-1,1" title="Links unten – 45 Grad" aria-label="Diagonal nach links unten">↙</button>
+        <button type="button" data-path-dir="0,1" title="Nach unten" aria-label="Gerade nach unten">↓</button>
+        <button type="button" data-path-dir="1,1" title="Rechts unten – 45 Grad" aria-label="Diagonal nach rechts unten">↘</button>
+      </div>
+      <div id="gap-report" role="status">Setze zuerst Feld 0. Danach helfen dir die Pfeile beim gleichmäßigen Weiterbauen.</div>
+    </div>
     <div class="checks">
       <label><input id="snap" type="checkbox" checked> Magnetisch am Raster einrasten</label>
       <label><input id="show-grid" type="checkbox" checked> Rasterlinien anzeigen</label>
@@ -173,7 +210,7 @@ input[type="range"]{width:100%;accent-color:#efc47d}
       <button type="button" data-nudge="-1,0">←</button><button type="button" data-nudge="0,0" title="Unverändert">•</button><button type="button" data-nudge="1,0">→</button>
       <span class="none"></span><button type="button" data-nudge="0,1">↓</button><span class="none"></span>
     </div>
-    <div class="tip">💡 Die Rasterlinien laufen durch die Mitte des Brettes. Mit „Einrasten“ liegen Spielfelder automatisch exakt in derselben Zeile oder Spalte. Falls ein Fingertipp nicht erkannt wird, kannst du das ausgewählte Feld auch über den neuen X-/Y-Button setzen. Für genaue Korrekturen das Einrasten kurz ausschalten.</div>
+    <div class="tip">💡 Die Rasterlinien laufen durch die Brettmitte. Mit „Einrasten“ liegen Felder exakt auf dem Quadrat-Raster. Für gleich große Abstände zwischen geraden <strong>und</strong> diagonalen Feldern nutze oben „Gleicher Abstand“ – diese Abstandshilfe hat beim Laufweg Vorrang vor dem Quadrat-Raster. Falls ein Fingertipp nicht erkannt wird, kannst du das ausgewählte Feld auch über den neuen X-/Y-Button setzen. Für genaue Korrekturen das Einrasten kurz ausschalten.</div>
    </section>
    <section class="card">
      <h2>3 · Vorlage oder frei gestalten</h2>
@@ -203,7 +240,7 @@ input[type="range"]{width:100%;accent-color:#efc47d}
    </section>
   </aside>
  </div>
- <div class="foot">DOG-Spielfeldstudio · Baukasten-Version 2 · Raster, Koordinaten und Zugreihenfolge unabhängig von der Spiel-Engine</div>
+ <div class="foot">DOG-Spielfeldstudio · Baukasten-Version 3 · Raster, Koordinaten und Zugreihenfolge unabhängig von der Spiel-Engine</div>
 </main>
 <script type="module" src="./editor-builder.js?v=3"></script>
 </body>
