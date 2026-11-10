@@ -155,7 +155,7 @@ function renderTiers(active,checkpoint){
 }
 function hatButton(index,old){
  const hat=document.createElement('button');hat.type='button';hat.className='hat'+(old?' shown '+(old.type==='bomb'?'bomb':old.type==='super'?'super':'gift'):'');
- hat.disabled=!state||state.status!=='playing'||busy||!!reveal;
+ hat.disabled=!state||state.status!=='playing'||busy||!!reveal||!!pendingRequest;
  const n=document.createElement('span');n.className='num';n.textContent='MÜTZE '+(index+1);hat.appendChild(n);
  if(!old){
   const shape=document.createElement('div');shape.className='santa-hat';const pom=document.createElement('span');pom.className='pom';shape.appendChild(pom);hat.appendChild(shape);
@@ -180,10 +180,11 @@ function render(){
  for(let i=0;i<3;i++)hats.appendChild(hatButton(i,reveal?.hats?.[i]));
  $('hats').hidden=!s||finished&&!reveal;
  $('start').hidden=!!s;
+ $('start').disabled=busy||!!pendingRequest;
  $('cash').hidden=!s||finished;
- $('cash').disabled=busy||!!reveal;
+ $('cash').disabled=busy||!!reveal||!!pendingRequest;
  $('again').hidden=!finished;
- $('again').disabled=busy;
+ $('again').disabled=busy||!!pendingRequest;
  $('retry').hidden=!pendingRequest||busy;
  formatItems(s?.secured,$('secured'),'Noch keine gesicherten Gewinne.');
  formatItems(s?.pending,$('pending'),'Noch keine ungesicherten Gewinne.');
@@ -231,7 +232,7 @@ async function refresh(){
  finally{busy=false;render();}
 }
 async function action(type,index){
- if(busy||reveal)return;
+ if(busy||reveal||pendingRequest)return;
  const payload={type,requestId:requestId()};
  if(type!=='start')payload.runId=state?.id;
  if(type==='pick')payload.index=index;
