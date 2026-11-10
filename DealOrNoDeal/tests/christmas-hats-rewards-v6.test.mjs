@@ -20,7 +20,8 @@ test('New reward CSS follows cinematic reveal and Superglück can skip the anima
  assert.match(inline,/stage\.classList\.toggle\('checkpoint-show',checkpoint\)/);
  assert.match(inline,/list\.appendChild\(createRewardCard\(items\[i\],\{cinematic:true,index:i,total:items\.length\}\)\)/);
  assert.match(inline,/\$\('cinema-skip'\)\.onclick=/);
- assert.match(inline,/revealTimer=setTimeout\(finishReveal,reduced\?3000:event\.superLuck\?12800:/);
+ assert.match(inline,/revealTimer=setTimeout\(finishReveal,fastMode\?1050:reduced\?3000:event\.superLuck\?12800:/);
+ assert.match(inline,/if\(!fastMode\)cinemaTimer=setTimeout/);
  assert.doesNotThrow(()=>new Script(inline,{filename:'weihnachtsmuetzen.html'}));
 });
 
