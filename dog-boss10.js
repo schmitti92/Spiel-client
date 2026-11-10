@@ -27,6 +27,21 @@
   }catch{return false;}
  }
  function clear(uid){try{localStorage.removeItem(key(uid))}catch{}}
+ // If a request succeeded but its response was lost, the GET state can
+ // confirm that it already happened. Clear only when the server's phase
+ // or this hero's readiness/reaction definitively confirms the action.
+ function acknowledgePending(uid,state){
+  const request=pending(uid);if(!request)return false;
+  const mine=state?.members?.find(m=>m.uid===uid);
+  const settled=state?.phase==='victory'||state?.phase==='cooldown';
+  const confirmed=request.command==='ready'?
+   !!mine?.ready||settled:
+   request.command==='react'?!!mine?.reacted||settled||state?.phase==='waiting':
+   request.command==='finish'&&settled;
+  if(confirmed){clear(uid);return true;}
+  return false;
+ }
+
  function message(str){$('status').textContent=str;}
  async function request(method,route,body,uid){
   const me=auth();if(!me||me.user.uid!==uid)throw Error('LOGIN_REQUIRED');
@@ -120,8 +135,10 @@
   const task=request('GET','',null,uid).then(data=>{
    if(auth()?.user?.uid!==uid)return;
    view=data;serverOffset=Number(data.serverNow||Date.now())-Date.now();lastLoad=Date.now();
+   const restored=acknowledgePending(uid,data);
    render();
-   if(!pending(uid)){
+   if(restored)message('✅ Die zuvor offene Bossaktion wurde mit dem Serverstand abgeglichen.');
+   else if(!pending(uid)){
     message(data.phase==='waiting'?data.members.length<3?'🛡️ Es fehlen noch Teammitglieder.':
      data.eligible?'✅ Bereit? Warte auf die anderen Helden.':'🔒 Erst das normale Tor 9 abschließen.':
      data.phase==='fighting'?'⚔️ Der Bosskampf läuft. Nutze deine Reaktion!':
@@ -162,6 +179,11 @@
     clear(uid);
    message('⚠️ Der Auftrag wurde nicht bestätigt: '+e.message+
     '. Bei einer unbekannten Verbindungslage kannst du ihn sicher wiederholen.');
+   // Another player may have already reconciled the result after the
+   // 30-second deadline. Fetch the official outcome rather than showing
+   // an obsolete local request forever.
+   if(['DOG_BOSS10_NOT_RUNNING','DOG_BOSS10_ALREADY_WON'].includes(e.message))
+    void reload(true);
   }finally{working=false;render();}
  }
  $('ready-button').addEventListener('click',()=>void command('ready'));
