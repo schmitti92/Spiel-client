@@ -178,3 +178,16 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;z-i
  .forge-tab{font-size:10px}.forge-tab span{display:block}.cost-list{gap:5px}}
 @media(prefers-reduced-motion:reduce){.character-orbit,.fire-glow,.spark{animation:none!important}
  .forge-action:hover{transform:none}}
+
+/* Tactile smithing and clearer trade rows */
+.exchange-target{min-width:0;max-width:112px;color:#ffdd9f;font-size:11px;
+ font-weight:850;overflow-wrap:anywhere}
+.forge-workspace.forging .forge-anvil{animation:hammer-strike .45s ease-in-out infinite}
+.forge-workspace.forging .fire-glow{filter:blur(23px);opacity:1}
+.forge-workspace.forging .spark{animation-duration:.65s;font-size:25px}
+.forge-workspace.forging .furnace{border-color:#f9c076;box-shadow:0 0 25px #ef9c4b6e,inset 0 0 50px #f6a34f32}
+@keyframes hammer-strike{0%{transform:translateY(-18px) rotate(-6deg)}
+ 48%{transform:translateY(10px) rotate(5deg)}100%{transform:translateY(-18px) rotate(-6deg)}}
+@media(max-width:420px){.exchange-target{max-width:82px;font-size:10px}.exchange-row{gap:4px;padding:8px 6px}
+ .exchange-row button{padding:10px 6px}}
+@media(prefers-reduced-motion:reduce){.forge-workspace.forging .forge-anvil{animation:none}}
