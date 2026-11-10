@@ -3,8 +3,20 @@
  const workspace=document.getElementById('forge-workspace');
  const dialog=document.getElementById('forge-result');
  const button=document.getElementById('forge-sound-toggle');
+ const sceneButton=document.getElementById('forge-scene-toggle');
  if(!workspace||!dialog||!button)return;
  const SOUND_KEY='dog:forge:sound:v1';
+ const SCENE_KEY='dog:forge:scene:v1';
+ let sceneEnabled=true;
+ try{sceneEnabled=localStorage.getItem(SCENE_KEY)!=='off';}catch{}
+ document.body.classList.toggle('forge-scene-off',!sceneEnabled);
+ function updateSceneButton(){
+  if(!sceneButton)return;
+  sceneButton.textContent=sceneEnabled?'🏰 Werkstatt an':'🏰 Werkstatt aus';
+  sceneButton.setAttribute('aria-pressed',String(sceneEnabled));
+  sceneButton.setAttribute('aria-label',sceneEnabled?
+   'Schmiedehintergrund ausblenden':'Schmiedehintergrund anzeigen');
+ }
  const AUDIO_AVAILABLE=!!(window.AudioContext||window.webkitAudioContext);
  let soundEnabled=false,audioContext=null,wasForging=false,wasResultOpen=false;
  try{soundEnabled=localStorage.getItem(SOUND_KEY)==='on'&&AUDIO_AVAILABLE;}catch{}
@@ -117,17 +129,55 @@
  }
  const resultObserver=new MutationObserver(onResult);
  resultObserver.observe(dialog,{attributes:true,attributeFilter:['class','open']});
- // Optional original image: upload to dog-forge-art/ and set body data-forge-background.
- // If omitted, the CSS-painted workshop remains the safe, network-free fallback.
+ // Automatically use the two prepared responsive images as soon as they are
+ // uploaded. Until then, CSS provides a complete local SVG forge backdrop.
  function optionalBackground(){
-  const path=document.body.dataset.forgeBackground||'';
-  if(!/^\.\/dog-forge-art\/[a-zA-Z0-9_-]+\.(?:webp|png|jpe?g)$/.test(path))return;
-  const image=new Image();
-  image.onload=()=>{
-   document.body.style.setProperty('--forge-custom-wall','url("'+path+'")');
-   document.body.classList.add('forge-has-custom-wall');
-  };
-  image.src=path;
+  const desktop=document.body.dataset.forgeBackgroundDesktop||
+    document.body.dataset.forgeBackground||'';
+  const mobile=document.body.dataset.forgeBackgroundMobile||desktop;
+  const isValid=path=>/^\.\/dog-forge-art\/[a-zA-Z0-9_-]+\.(?:webp|png|jpe?g)$/.test(path);
+  const media=window.matchMedia?.('(max-width: 720px)');
+  let generation=0,lastSource='';
+  function setBackdrop(){
+   const path=media?.matches?mobile:desktop;
+   if(!sceneEnabled){
+    generation++;
+    document.body.classList.remove('forge-has-custom-wall');
+    return;
+   }
+   if(!isValid(path)){
+    generation++;
+    document.body.classList.remove('forge-has-custom-wall');
+    document.body.style.removeProperty('--forge-custom-wall');
+    return;
+   }
+   if(path===lastSource&&document.body.classList.contains('forge-has-custom-wall'))return;
+   const version=++generation;
+   const image=new Image();
+   image.onload=()=>{
+    if(version!==generation||!sceneEnabled)return;
+    lastSource=path;
+    document.body.style.setProperty('--forge-custom-wall','url("'+path+'")');
+    document.body.classList.add('forge-has-custom-wall');
+   };
+   image.onerror=()=>{
+    if(version!==generation)return;
+    lastSource='';
+    document.body.style.removeProperty('--forge-custom-wall');
+    document.body.classList.remove('forge-has-custom-wall');
+   };
+   image.src=path;
+  }
+  media?.addEventListener?.('change',setBackdrop);
+  if(sceneButton)sceneButton.addEventListener('click',()=>{
+   sceneEnabled=!sceneEnabled;
+   try{localStorage.setItem(SCENE_KEY,sceneEnabled?'on':'off');}catch{}
+   document.body.classList.toggle('forge-scene-off',!sceneEnabled);
+   updateSceneButton();
+   setBackdrop();
+  });
+  updateSceneButton();
+  setBackdrop();
  }
  document.addEventListener('visibilitychange',()=>{
   document.body.classList.toggle('forge-hidden',document.hidden);
