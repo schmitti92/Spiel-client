@@ -99,6 +99,13 @@ input[type="range"]{width:100%;accent-color:#efc47d}
 .direction-pad button.center{color:#ffeac3;font-size:19px;background:#66513560;border-color:#e6ba727a;cursor:default}
 .direction-pad button:active:not(:disabled){transform:scale(.94)}
 #gap-report{font-size:12px;color:#d1e4e9;border-top:1px solid #a7c3cd33;margin-top:9px;padding-top:9px}
+.run-fix{margin-top:12px;padding-top:11px;border-top:1px solid #d8c29555}
+.run-fix h3{font-size:13px;color:#ffe1af;margin:1px 0 8px}
+.run-fix p{font-size:11px!important;line-height:1.5!important}
+.run-fix-fields{display:flex;gap:9px;align-items:end;margin:10px 0}
+.run-fix-fields label{font-size:11px;color:#d4e4ee;flex:1;min-width:0}
+.run-fix-fields select{width:100%;background:#081f2d;color:#f3e4c8;padding:9px 8px;border:1px solid #83a5b873;border-radius:9px;display:block;margin-top:5px}
+#align-run{width:100%;font-size:12px;min-height:40px}
 .equal-tip{font-size:11px!important;color:#d6e6ee!important;margin:7px 0!important;line-height:1.5!important}
 @media(max-width:1070px){.workspace{grid-template-columns:1fr}.work-side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.work-side .card:first-child{grid-column:1/-1}.board{max-height:700px}}
 @media(max-width:650px){header{padding:10px}.brand-mark{width:40px;height:40px}.brand p{font-size:10px}.top-actions .btn{font-size:11px;padding:7px 9px}main{width:calc(100% - 14px)}.workspace{gap:10px}.work-side{display:flex;gap:10px}.card{padding:12px}.board-panel{padding:6px;border-radius:13px}.board{min-height:0;max-height:none}.board-toolbar{gap:5px}.tool-switch button{padding:7px 8px}.intro{font-size:12px}.action-grid .btn{font-size:11px}}
@@ -193,6 +200,38 @@ input[type="range"]{width:100%;accent-color:#efc47d}
         <button type="button" data-path-dir="1,1" title="Rechts unten – 45 Grad" aria-label="Diagonal nach rechts unten">↘</button>
       </div>
       <div id="gap-report" role="status">Setze zuerst Feld 0. Danach helfen dir die Pfeile beim gleichmäßigen Weiterbauen.</div>
+      <div class="run-fix">
+        <h3>🛠 Bereits gesetzte Gerade oder Diagonale korrigieren</h3>
+        <p>Wähle im Brett ein Ausgangsfeld (z. B. 20). Richte die nächsten Felder mit gleichem Mittelpunktabstand aus – bestehende Positionen werden ersetzt. Alle anderen Felder bleiben unverändert.</p>
+        <div class="run-fix-fields">
+          <label>Folgende Felder
+            <select id="align-count" aria-label="Anzahl der folgenden Felder">
+              <option value="1">1 Feld</option>
+              <option value="2">2 Felder</option>
+              <option value="3" selected>3 Felder</option>
+              <option value="4">4 Felder</option>
+              <option value="5">5 Felder</option>
+              <option value="6">6 Felder</option>
+              <option value="7">7 Felder</option>
+              <option value="8">8 Felder</option>
+            </select>
+          </label>
+          <label>Richtung
+            <select id="align-direction" aria-label="Richtung des Abschnitts">
+              <option value="-1,-1">↖ Links oben</option>
+              <option value="0,-1">↑ Oben</option>
+              <option value="1,-1">↗ Rechts oben</option>
+              <option value="-1,0">← Links</option>
+              <option value="1,0" selected>→ Rechts</option>
+              <option value="-1,1">↙ Links unten</option>
+              <option value="0,1">↓ Unten</option>
+              <option value="1,1">↘ Rechts unten</option>
+            </select>
+          </label>
+        </div>
+        <button id="align-run" class="btn primary" type="button">📏 Abschnitt gleichmäßig ausrichten</button>
+        <p>Der ausgewählte Startkreis bleibt an seiner Position. Bei Überschneidungen wird nichts geändert. Mit „Rückgängig“ kannst du die Korrektur zurücknehmen.</p>
+      </div>
     </div>
     <div class="checks">
       <label><input id="snap" type="checkbox" checked> Magnetisch am Raster einrasten</label>
@@ -240,7 +279,7 @@ input[type="range"]{width:100%;accent-color:#efc47d}
    </section>
   </aside>
  </div>
- <div class="foot">DOG-Spielfeldstudio · Baukasten-Version 3 · Raster, Koordinaten und Zugreihenfolge unabhängig von der Spiel-Engine</div>
+ <div class="foot">DOG-Spielfeldstudio · Baukasten-Version 4 · Raster, Koordinaten und Zugreihenfolge unabhängig von der Spiel-Engine</div>
 </main>
 <script type="module" src="./editor-builder.js?v=4"></script>
 </body>
