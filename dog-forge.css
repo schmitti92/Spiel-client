@@ -639,3 +639,150 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;z-i
  .evolution-teaser .gear-visual.compact{width:64px;height:64px;flex-basis:64px}
  .evolution-teaser .gear-visual.compact .gear-illustration{width:62px;height:62px}
 }
+
+
+/* Phase C3 · Atmospheric workshop backdrop.
+   An uploaded image can replace the painted background via data-forge-background. */
+body:before{
+ background:
+  radial-gradient(ellipse 30% 24% at 49% -2%,#ffce8455,transparent 100%),
+  radial-gradient(ellipse 48% 42% at -17% 62%,#8a3f2e75,transparent 100%),
+  radial-gradient(ellipse 42% 45% at 117% 72%,#213d627c,transparent 100%),
+  repeating-linear-gradient(0deg,transparent 0 72px,#c1975840 73px,#47372b20 75px,transparent 77px 143px),
+  repeating-linear-gradient(90deg,transparent 0 135px,#93734e1a 136px,transparent 138px 260px),
+  linear-gradient(145deg,#231f2a,#080f19 52%,#142232);
+}
+body.forge-has-custom-wall:before{
+ background-image:linear-gradient(90deg,#070d18d9,#09111db3 48%,#07101adb),var(--forge-custom-wall);
+ background-size:cover,cover;background-position:center,center;
+}
+.forge-header{filter:drop-shadow(0 0 10px #d4922933)}
+.forge-header:before,.forge-header:after{content:"✦";position:absolute;top:30%;font-size:14px;color:#ebae6a8e;
+ text-shadow:0 0 14px #ed945e;pointer-events:none}
+.forge-header:before{left:10%}.forge-header:after{right:10%}
+.forge-banner,.workshop-panel,.upgrade-panel,.forge-chronicle,.stock-panel{
+ backdrop-filter:blur(5px);
+}
+.furnace{background:
+ radial-gradient(ellipse 40% 75% at 50% 95%,#ff8e2880,transparent 88%),
+ radial-gradient(ellipse 63% 95% at 52% 65%,#7c472699,transparent 85%),
+ linear-gradient(155deg,#2b2a35,#0a1120 83%);
+ border-color:#e6aa6d8e;box-shadow:inset 0 0 34px #05030dcc,0 0 12px #db8f4833}
+.furnace:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.48;
+ background:repeating-linear-gradient(0deg,transparent 0 22px,#c3a07c31 23px,#38261d66 25px,transparent 27px 52px),
+ repeating-linear-gradient(90deg,transparent 0 62px,#8f6f4c38 63px,transparent 65px 126px)}
+.furnace:after{content:"";position:absolute;inset:5px;pointer-events:none;border:1px solid #dbb98b31;
+ border-radius:12px;box-shadow:inset 0 0 28px #0009;z-index:7}
+.furnace-arches{z-index:1;border-color:#725440;box-shadow:
+ inset 0 0 24px #f9ad5675,0 0 23px #ef9b5557,0 0 4px 5px #271b18a6}
+.fire-glow{z-index:1;mix-blend-mode:screen}
+.furnace-fire{z-index:3;opacity:.77;animation:forge-flame-breathe 2.2s ease-in-out infinite alternate}
+.furnace-flames{position:absolute;z-index:2;left:50%;bottom:17px;width:116px;height:145px;
+ transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 0 12px #ff9937)}
+.furnace-flames i{display:block;position:absolute;bottom:12px;left:50%;width:48px;height:118px;
+ transform-origin:50% 100%;border-radius:48% 52% 51% 49%;
+ background:linear-gradient(to top,#ff7a2c,#faab50 48%,#fff1b4 83%,transparent 99%);
+ opacity:.76;clip-path:polygon(47% 0%,80% 29%,100% 72%,78% 100%,22% 100%,0 68%,22% 37%);
+ animation:forge-flame-dance 2.2s ease-in-out infinite alternate;
+}
+.furnace-flames i:nth-child(1){left:6px;height:100px;width:44px;animation-delay:-1.1s;filter:blur(1px)}
+.furnace-flames i:nth-child(2){left:32px;height:132px;width:50px;animation-delay:-.6s;opacity:.92}
+.furnace-flames i:nth-child(3){left:65px;height:104px;width:40px;animation-delay:-1.7s;opacity:.65}
+.furnace-flames i:nth-child(4){left:44px;height:75px;width:25px;animation-delay:-.4s;opacity:.9;
+ background:linear-gradient(to top,#ffbc65,#fff0ad 65%,transparent)}
+.forge-anvil{z-index:4;transition:filter .16s ease}
+.furnace-floor{z-index:4}
+.furnace-label{z-index:5}
+.spark{z-index:5}
+.furnace-embers{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden}
+.furnace-embers i{position:absolute;display:block;bottom:12%;height:4px;width:4px;border-radius:50%;
+ background:#ffda90;box-shadow:0 0 5px 2px #ff9c4e6e,0 0 12px #ffae5d98;
+ opacity:0;animation:forge-ember-drift 5.1s linear infinite}
+.furnace-embers i:nth-child(1){left:24%;animation-delay:-.5s;animation-duration:4.3s}
+.furnace-embers i:nth-child(2){left:36%;animation-delay:-2.9s;animation-duration:5.7s}
+.furnace-embers i:nth-child(3){left:48%;animation-delay:-1.2s;animation-duration:3.9s}
+.furnace-embers i:nth-child(4){left:57%;animation-delay:-3.3s;animation-duration:5s}
+.furnace-embers i:nth-child(5){left:68%;animation-delay:-1.6s;animation-duration:4.8s}
+.furnace-embers i:nth-child(6){left:43%;animation-delay:-4.1s;animation-duration:5.6s}
+.furnace-embers i:nth-child(7){left:76%;animation-delay:-2.1s;animation-duration:4.4s}
+.furnace-embers i:nth-child(8){left:30%;animation-delay:-4.7s;animation-duration:5.2s}
+.forge-impact{position:absolute;inset:0;pointer-events:none;z-index:6;display:grid;place-items:center}
+.forge-impact span{position:absolute;left:50%;top:52%;width:20px;height:20px;border-radius:50%;
+ border:2px solid #fff5c3;box-shadow:0 0 26px #ffbb6a88;
+ opacity:0;transform:translate(-50%,-50%) scale(.2)}
+.forge-workspace.forging .forge-impact span{animation:forge-impact-pulse 1.15s ease-out infinite}
+.forge-workspace.forging .forge-impact span:nth-child(2){animation-delay:.22s}
+.forge-workspace.forging .forge-impact span:nth-child(3){animation-delay:.44s}
+.forge-workspace.forging[data-craft-kind="skill"] .forge-impact span{
+ border-color:var(--craft-accent,#c4a0ff);box-shadow:0 0 23px var(--craft-glow,#a888ec66)}
+.forge-workspace.forging .furnace-flames{filter:drop-shadow(0 0 23px #ffbf55)}
+.forge-workspace.forging .furnace-embers i{animation-duration:1.6s}
+.forge-workspace.forging .forge-anvil{filter:drop-shadow(0 0 24px #ffd484) drop-shadow(0 10px 2px #110d0b)}
+.forge-workspace.forging[data-craft-kind="skill"] .forge-anvil{
+ filter:drop-shadow(0 0 22px var(--craft-accent,#c5a4ff))}
+.forge-workspace.forging[data-craft-kind="exchange"] .forge-impact span{border-color:#8adff5;box-shadow:0 0 24px #65ceea77}
+@keyframes forge-flame-breathe{to{transform:scale(1.04) translateY(-2px);filter:drop-shadow(0 0 32px #ffbd69)}}
+@keyframes forge-flame-dance{0%{transform:translateX(-12%) skewX(-9deg) scaleY(.86)}
+ 50%{transform:translateX(4%) skewX(5deg) scaleY(1.12)}
+ 100%{transform:translateX(-8%) skewX(-3deg) scaleY(.98)}}
+@keyframes forge-ember-drift{0%{opacity:0;transform:translate3d(0,8px,0) scale(.6)}
+ 14%{opacity:1}68%{opacity:.85}
+ 100%{opacity:0;transform:translate3d(18px,-165px,0) scale(.2)}}
+@keyframes forge-impact-pulse{0%{opacity:.9;transform:translate(-50%,-50%) scale(.1)}
+ 80%{opacity:.2}100%{opacity:0;transform:translate(-50%,-50%) scale(7.6)}}
+/* C3 · Short, contextual success reveal, failure smoke, and legendary gold bloom. */
+.result-impact{position:absolute;left:50%;top:39%;width:60%;aspect-ratio:1;border-radius:50%;
+ transform:translate(-50%,-50%) scale(.2);opacity:0;pointer-events:none;z-index:-1;
+ background:radial-gradient(circle,#fff0b8,transparent 65%)}
+.forge-result.result-equipment-success .result-impact{
+ background:radial-gradient(circle,#ffe7b6d9 0,#dba95a77 32%,transparent 70%);
+ animation:forge-result-bloom .8s ease-out both}
+.forge-result.result-skill-success .result-impact{
+ background:radial-gradient(circle,var(--skill-accent,#d5b2ff) 0,var(--skill-glow,#a889dd66) 42%,transparent 72%);
+ animation:forge-result-bloom .75s ease-out both}
+.forge-result.result-failure .result-impact{
+ background:radial-gradient(circle,#775b6388 0,#31232e77 47%,transparent 75%);
+ animation:forge-result-ash .75s ease-out both}
+.forge-result.result-new-look .result-plate h2{color:#ffebba;text-shadow:0 0 17px #eeb65680}
+.forge-result.result-new-look .result-spark{font-size:34px;animation-duration:2.7s}
+.forge-result.result-legendary{border-color:#fff2b8;box-shadow:0 20px 80px #000d,0 0 62px #f6c879c0}
+.forge-result.result-legendary .result-plate{
+ background:radial-gradient(ellipse 72% 62% at 50% 33%,#ffe3a758,transparent 70%),#251d27}
+.forge-result.result-legendary .result-impact{
+ background:radial-gradient(circle,#fff8e8ef 0,#f5bb6aa3 37%,transparent 73%);
+ animation:forge-result-bloom 1.12s ease-out both}
+.forge-result.result-legendary .result-ornament{color:#fff2b5}
+@keyframes forge-result-bloom{
+ 0%{opacity:0;transform:translate(-50%,-50%) scale(.15)}
+ 36%{opacity:.86;transform:translate(-50%,-50%) scale(1.2)}
+ 100%{opacity:0;transform:translate(-50%,-50%) scale(1.75)}
+}
+@keyframes forge-result-ash{
+ 0%{opacity:.68;transform:translate(-50%,-50%) scale(.5)}
+ 100%{opacity:0;transform:translate(-50%,-30%) scale(1.5)}
+}
+.top-nav .nav-sound{display:inline-flex;align-items:center;justify-content:center;gap:4px;
+ border:1px solid #b99f7b91;background:#182439b5;color:#f2d6a7;
+ min-height:40px;padding:10px 13px;border-radius:11px;font-size:12px;font-weight:850}
+.top-nav .nav-sound[aria-pressed="true"]{border-color:#8de7a7;background:#1d4030;color:#d5ffe0}
+.top-nav .nav-sound:hover:not(:disabled){background:#3b4d57}
+@media(max-width:780px){
+ .furnace-embers i:nth-child(n+6){display:none}
+ .forge-header:before{left:3%}.forge-header:after{right:3%}
+}
+@media(max-width:420px){
+ .top-nav .nav-sound{padding:8px 9px;font-size:11px;min-height:38px}
+ .furnace-flames{transform:translateX(-50%) scale(.82);transform-origin:center bottom}
+ .forge-header:before,.forge-header:after{display:none}
+ .forge-result.result-legendary{box-shadow:0 15px 45px #000d,0 0 28px #f7c6756b}
+}
+body.forge-hidden .furnace-embers i,
+body.forge-hidden .furnace-flames i,body.forge-hidden .furnace-fire,
+body.forge-hidden .spark,body.forge-hidden .fire-glow{animation-play-state:paused!important}
+@media(prefers-reduced-motion:reduce){
+ .furnace-embers i,.furnace-flames i,.furnace-fire,
+ .forge-workspace.forging .forge-impact span,
+ .forge-result .result-impact{animation:none!important}
+ .furnace-embers i{opacity:0}
+ .furnace-flames i{opacity:.55}
+}
