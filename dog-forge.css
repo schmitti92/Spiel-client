@@ -452,3 +452,96 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;z-i
  .skill-display:before,.skill-display:after,.skill-display .skill-illustration,
  .forge-workspace.forging .skill-display .skill-illustration{animation:none!important}
 }
+
+
+/* C1 · Quick decisions: how many upgrades are possible right now? */
+.forge-list-toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;
+ padding:11px 3px 10px;margin:0 0 1px;border-top:1px solid #d3b47733}
+.forge-list-toolbar>span{color:#c3cfe0;font-size:11px;font-weight:750}
+.ready-filter{display:inline-flex;gap:7px;align-items:center;justify-content:center;min-height:38px;
+ border:1px solid #b3966c9e;border-radius:11px;background:#14253ad9;color:#f5d49e;
+ font-size:11px;font-weight:900;padding:6px 10px;white-space:nowrap;
+ transition:background .15s,border-color .15s,box-shadow .15s}
+.ready-filter b{display:inline-grid;place-items:center;min-width:22px;height:22px;
+ background:#334b4e;border:1px solid #73ac9588;border-radius:99px;color:#b5ffd6;
+ font-size:11px;font-variant-numeric:tabular-nums}
+.ready-filter:hover:not(:disabled){background:#2f3e4c}
+.ready-filter.active{color:#171f21;background:linear-gradient(130deg,#c9f5d5,#87bf9b);
+ border-color:#d5ffe1;box-shadow:0 0 16px #79e4a346}
+.ready-filter.active b{background:#1d6e50;color:#eaffef;border-color:#296c54}
+.show-all-forge{display:block;grid-column:1/-1;margin:0 auto 10px;padding:9px 15px;
+ border:1px solid #e0c38b;color:#ffe7b8;border-radius:10px;background:#2d3b4e;
+ font-size:12px;font-weight:900}
+.item-ready-tag{display:inline-flex;align-items:center;align-self:flex-start;margin-top:5px;
+ padding:3px 7px;border-radius:99px;border:1px solid #b5c0c54b;color:#a4aebb;
+ background:#132235;font-size:9px;font-weight:900;letter-spacing:.01em}
+.item-ready-tag.ready-tag{color:#a9ffcf;border-color:#59cc9e78;background:#1844366e}
+.item-ready-tag.maxed-tag{color:#ffdb91;border-color:#d9a9578a;background:#4738207e}
+.item-ready-tag.missing-tag{color:#c4c9d5}
+.cost-progress{display:block;width:100%;height:6px;overflow:hidden;border-radius:8px;
+ background:#060f1e;border:1px solid #667b9180;margin-top:7px}
+.cost-progress-fill{display:block;height:100%;width:0;border-radius:8px;
+ background:linear-gradient(90deg,#e09962,#ffcf83);transition:width .2s ease}
+.cost-progress.complete .cost-progress-fill{
+ background:linear-gradient(90deg,#57b58a,#aaf4c6)}
+.material-hint{display:flex;gap:7px;align-items:center;justify-content:center;text-align:center;
+ border-radius:10px;padding:10px 12px;margin-top:9px;
+ font-size:11px;font-weight:850;line-height:1.45}
+.material-hint.ready{border:1px solid #5acb9670;background:#17473968;color:#afffcb}
+.material-hint.missing{border:1px solid #b2856780;background:#4a33296b;color:#ffd7ab}
+
+/* C1 · In-world confirmation replaces native browser confirm(). */
+.forge-confirm{color:#fff0d9;background:#11192a;border:2px solid #e5bb7e;
+ border-radius:20px;width:min(445px,calc(100% - 24px));
+ max-height:calc(100dvh - 24px);padding:0;overflow:auto;
+ box-shadow:0 18px 76px #000e,0 0 34px #e8a75a4d}
+.forge-confirm::backdrop{background:#030710d9;backdrop-filter:blur(6px)}
+.confirm-shell{position:relative;isolation:isolate;text-align:center;overflow:hidden;
+ padding:23px clamp(13px,3vw,25px) 20px;
+ background:radial-gradient(ellipse 63% 46% at 50% 15%,#e4a55d3a,transparent 95%),
+ linear-gradient(148deg,#2a283b,#151e30 70%,#101b27)}
+.confirm-shell:before{content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;
+ background:repeating-linear-gradient(135deg,transparent 0 43px,#ffdc9d09 44px,transparent 45px 94px)}
+.confirm-shell>.eyebrow{display:block;padding:0 42px;font-size:10px;color:#f3cc91}
+.confirm-art{display:flex;justify-content:center;align-items:center;margin:10px auto 2px;
+ width:96px;height:96px;border-radius:50%;
+ background:radial-gradient(circle,#f0b66c41 0,#1b2535 69%,transparent 74%);
+ box-shadow:0 0 17px #eab86a4d}
+.confirm-art .gear-visual.compact,.confirm-art .skill-visual.compact{
+ width:90px;height:90px;flex:0 0 90px;background:transparent;border:none}
+.confirm-art .gear-visual.compact .gear-illustration,
+.confirm-art .skill-visual.compact .skill-illustration{width:90px;height:90px}
+.confirm-art .gear-fallback,.confirm-art .skill-fallback{font-size:50px}
+.confirm-shell h2{font:900 27px/1.16 Georgia,serif;color:#ffe5b6;margin:5px 0 7px}
+.confirm-step{color:#f4d6a3;letter-spacing:.11em;font-size:12px;font-weight:900;
+ border:1px solid #cb9f6566;border-radius:99px;padding:7px 12px;display:inline-block;
+ background:#2c2835a8}
+.confirm-heading{font-size:12px;font-weight:850;color:#e2cfb1;
+ text-align:left;margin:17px 0 8px}
+.confirm-cost{margin:0;grid-template-columns:repeat(2,minmax(0,1fr))}
+.confirm-cost .cost-item{padding:9px;min-width:0}
+.confirm-chance{display:flex;align-items:center;justify-content:space-between;
+ margin-top:11px;border-top:1px solid #c8a87950;padding:13px 4px 2px;
+ font-size:12px;color:#ddc9aa}
+.confirm-chance strong{color:#ffe2a1;font-weight:950;font-size:17px}
+.confirm-warning{margin:13px 0;font-size:11px;line-height:1.45;color:#adffcc}
+.confirm-warning.risky{color:#ffd5a0;padding:9px 11px;background:#4c2f3070;
+ border:1px solid #c4877266;border-radius:9px}
+.confirm-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);
+ gap:10px;align-items:stretch}
+.confirm-actions .forge-action{font-size:13px;margin:0;min-height:50px;padding:11px 9px}
+.confirm-cancel{border:1px solid #8c9babaa;background:#243346;color:#e2ebef;
+ padding:10px;border-radius:12px;font-size:12px;font-weight:900;min-height:50px}
+.confirm-cancel:hover{background:#34475d}
+@media(max-width:420px){
+ .forge-list-toolbar{gap:4px}
+ .forge-list-toolbar>span{font-size:10px}
+ .ready-filter{font-size:10px;gap:5px;padding:5px 7px}
+ .item-ready-tag{font-size:8px;padding:2px 5px}
+ .confirm-shell{padding:17px 12px}
+ .confirm-shell h2{font-size:23px}
+ .confirm-actions{gap:7px}
+ .confirm-cost{gap:6px}
+ .confirm-actions .forge-action{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){.cost-progress-fill,.ready-filter{transition:none!important}}
