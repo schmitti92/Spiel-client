@@ -1,0 +1,205 @@
+*{box-sizing:border-box}
+:root{color-scheme:dark;--ink:#f7e8d0;--muted:#b8bdc8;--gold:#f2cc89;--line:#c49a675a;
+ font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100dvh;color:var(--ink);background:#0b101c;
+ background-image:
+  radial-gradient(ellipse 58% 30% at 50% 13%,#bb633641,transparent 95%),
+  radial-gradient(ellipse 53% 43% at 0% 53%,#632c2340,transparent 94%),
+  radial-gradient(ellipse 44% 48% at 100% 53%,#66403235,transparent 96%),
+  linear-gradient(175deg,#1c1825,#090e1a 56%,#131929)}
+body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.24;
+ background:url("./dog-forge-art/forge-workshop-fallback.svg") center 42%/cover no-repeat;
+ filter:grayscale(.7) hue-rotate(-20deg)}
+button,a{font:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.47;cursor:not-allowed;filter:saturate(.58)}
+button:focus-visible,a:focus-visible{outline:3px solid #f7d79b;outline-offset:3px}
+[hidden]{display:none!important}
+.arena-layout{width:min(1080px,calc(100% - 28px));margin:auto;padding-bottom:42px}
+.boss-nav{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:13px 0 3px}
+.boss-nav>a,.boss-nav>button{border:1px solid #bca1799c;color:#ffe0aa;
+ background:#20283ae0;box-shadow:inset 0 1px #fff1d819;padding:10px 14px;
+ text-decoration:none;border-radius:10px;min-height:42px;font-size:12px;font-weight:900}
+.boss-nav a:hover,.boss-nav button:hover{background:#364155}
+.boss-nav>button{margin-left:auto}
+.boss-head{text-align:center;margin:15px auto 22px;padding:18px 14px 10px;
+ background:radial-gradient(ellipse 80% 90% at 50% 47%,#0e1625b8,transparent)}
+.boss-eyebrow{font-size:10px;letter-spacing:.16em;color:#e6ba7c;font-weight:950}
+.boss-head h1{font:900 clamp(32px,6vw,55px) Georgia,serif;color:#ffe2aa;
+ margin:8px 0;text-shadow:0 3px 10px #000c,0 0 26px #db7d528f}
+.boss-head p{color:#e8d5bd;font-size:13px;margin:3px 0 12px}
+.boss-head p strong{color:#ffcd92}
+.boss-gate-progress{height:7px;border-radius:99px;background:#283443;
+ margin:0 auto 6px;max-width:280px;overflow:hidden;border:1px solid #907552}
+.boss-gate-progress span{display:block;height:100%;background:linear-gradient(90deg,#8d4434,#ffd68f)}
+.boss-head small{font-size:10px;color:#a8b3c3}
+.boss-battle,.boss-team-section,.boss-action-section,.boss-chronicle{
+ background:linear-gradient(150deg,#262738ee,#0e1929f2 69%);
+ border:1px solid #d7ae736c;border-radius:19px;padding:clamp(13px,2.3vw,20px);
+ box-shadow:0 14px 37px #0009,inset 0 1px #ffefcf1b;margin-top:13px;
+}
+.boss-battle{border-color:#f0ad7a98}
+.boss-titleline{display:flex;justify-content:space-between;align-items:center;gap:9px}
+.boss-stage-label{font-size:10px;letter-spacing:.15em;color:#efaf72;font-weight:950}
+.boss-titleline h2{font:900 clamp(22px,3vw,29px) Georgia,serif;color:#ffdda5;margin:5px 0 16px}
+.boss-attempt{background:#1c293d;color:#d3caad;border:1px solid #9c7b60;
+ padding:9px 12px;border-radius:9px;font-size:11px;white-space:nowrap}
+.boss-attempt b{color:#ffdfa2}
+.boss-healthline{display:flex;justify-content:space-between;gap:10px;
+ margin-bottom:8px;font-size:12px;font-weight:900}
+.boss-healthline>strong{color:#f4b6a4;letter-spacing:.06em}
+.boss-hp-text{font-variant-numeric:tabular-nums;color:#ffe4c9}
+.boss-healthbar{height:20px;border-radius:99px;overflow:hidden;border:2px solid #b57c67;
+ background:#301f2b;box-shadow:0 2px 15px #0009,inset 0 0 12px #06070a}
+.boss-healthbar>span{display:block;height:100%;width:100%;
+ background:linear-gradient(90deg,#8c263c,#d3483c 60%,#f68e54);
+ border-radius:99px;box-shadow:0 0 17px #f35e4a8c;transition:width .48s ease}
+.boss-art-stage{position:relative;margin-top:14px;min-height:385px;height:clamp(360px,43vw,485px);
+ border-radius:16px;overflow:hidden;isolation:isolate;background:
+ radial-gradient(ellipse 38% 44% at 50% 56%,#f27d3a49,transparent 98%),
+ linear-gradient(180deg,#1c1624,#201a27 60%,#0c1723);
+ border:1px solid #df9f6875;box-shadow:inset 0 0 45px #000c,0 0 22px #e9994238}
+.boss-stage-backdrop{position:absolute;inset:0;opacity:.52;
+ background:url("./dog-forge-art/forge-workshop-fallback.svg") center 54%/cover no-repeat;
+ filter:brightness(.56) saturate(1.3)}
+.boss-stage-magma{position:absolute;left:8%;right:8%;bottom:9%;height:36%;
+ border-radius:50%;background:radial-gradient(ellipse,#eb8a3d7a,transparent 72%);
+ filter:blur(21px);animation:boss-heat 3.2s ease-in-out infinite alternate}
+.boss-monster{position:absolute;display:block;z-index:2;top:0;left:50%;
+ width:min(95%,490px);height:calc(100% - 35px);object-fit:contain;
+ transform:translateX(-50%);filter:drop-shadow(0 0 24px #f58d47a3) drop-shadow(0 12px 5px #060a10);
+ animation:boss-breathe 3.5s ease-in-out infinite alternate}
+.boss-monster-hit{animation:boss-hit .5s ease-out,boss-breathe 3.5s ease-in-out .5s infinite alternate}
+.boss-monster-down{filter:grayscale(.8) brightness(.45);animation:none;opacity:.55}
+.boss-art-caption{position:absolute;z-index:3;bottom:0;left:0;right:0;
+ padding:10px;text-align:center;color:#f4cda5;font-size:12px;font-weight:800;
+ background:linear-gradient(90deg,#0d1423da,#352333ca,#0d1423da)}
+.boss-hit-number{position:absolute;z-index:4;top:32%;left:50%;
+ transform:translate(-50%,-50%);font:950 48px Georgia,serif;
+ color:#fff0b5;text-shadow:0 2px 5px #260d19,0 0 23px #ffb968;
+ pointer-events:none;opacity:0}
+.boss-hit-animate{animation:boss-damage 1.2s ease-out forwards}
+.boss-falling-embers{position:absolute;inset:0;pointer-events:none;z-index:3;overflow:hidden}
+.boss-falling-embers i{position:absolute;bottom:12%;height:4px;width:4px;border-radius:50%;
+ background:#ffe5a3;box-shadow:0 0 8px #ffb45a;
+ opacity:0;animation:boss-spark 5s linear infinite}
+.boss-falling-embers i:nth-child(1){left:18%;animation-delay:-.8s}
+.boss-falling-embers i:nth-child(2){left:27%;animation-delay:-2.2s}
+.boss-falling-embers i:nth-child(3){left:39%;animation-delay:-3.1s}
+.boss-falling-embers i:nth-child(4){left:48%;animation-delay:-4s}
+.boss-falling-embers i:nth-child(5){left:58%;animation-delay:-1.9s}
+.boss-falling-embers i:nth-child(6){left:67%;animation-delay:-3.7s}
+.boss-falling-embers i:nth-child(7){left:76%;animation-delay:-.4s}
+.boss-falling-embers i:nth-child(8){left:86%;animation-delay:-2.7s}
+.boss-defeat-panel{position:absolute;inset:0;z-index:9;display:flex;
+ flex-direction:column;align-items:center;justify-content:center;text-align:center;
+ padding:clamp(15px,4vw,30px);gap:9px;color:#fbe2d4;
+ background:linear-gradient(180deg,#090e18ee,#201924f4 58%,#0a101ded)}
+.boss-defeat-icon{font-size:48px;filter:drop-shadow(0 0 17px #e78965)}
+.boss-defeat-panel h3{font:950 clamp(25px,5vw,34px) Georgia,serif;color:#ffb6a5;
+ margin:0;text-shadow:0 0 17px #c65c4b8c}
+.boss-defeat-panel p{font-size:13px;color:#e2c6bb;line-height:1.55;max-width:490px;margin:0}
+.boss-countdown{font:950 clamp(39px,7vw,58px) Georgia,serif;color:#ffb59c;
+ font-variant-numeric:tabular-nums;text-shadow:0 0 27px #d26c5d9e}
+#boss-cooldown-note{font-size:11px;color:#c7cbd2;max-width:450px;line-height:1.5}
+.boss-defeat-panel a,.boss-defeat-panel button{border-radius:10px;
+ background:linear-gradient(110deg,#c38b56,#ffdf9e);padding:12px 16px;
+ border:1px solid #ffe3ac;color:#271b25;font-weight:950;text-decoration:none;
+ font-size:12px;min-height:42px}
+.boss-defeat-panel a:hover,.boss-defeat-panel button:hover:not(:disabled){filter:brightness(1.12)}
+.boss-defeat-panel.victory h3{color:#c9f4bf}
+.boss-section-heading{display:flex;justify-content:space-between;align-items:center;gap:9px}
+.boss-section-heading h2,.boss-chronicle h2{font:900 20px Georgia,serif;color:#ffdfaa;margin:0 0 12px}
+.boss-section-heading span{font-size:12px;color:#d6c7b4}
+.boss-team{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.boss-hero-card,.boss-empty-slot{min-width:0;display:flex;gap:10px;align-items:center;
+ background:#17263acf;border:1px solid #a7906a72;border-radius:13px;padding:12px}
+.boss-hero-card.is-me{border-color:#d9bb82;box-shadow:0 0 12px #e5b46b3c}
+.boss-hero-card.is-down{border-color:#a75b62;opacity:.75}
+.boss-empty-slot{justify-content:center;border-style:dashed;color:#aebbc9;
+ min-height:87px;font-size:12px;text-align:center}
+.boss-hero-icon{font-size:29px;flex:0 0 34px}
+.boss-hero-info{min-width:0;flex:1;display:grid;gap:5px}
+.boss-hero-info strong{font-size:12px;color:#f6dfb6;overflow-wrap:anywhere}
+.boss-hero-info small{font-size:10px;color:#bfc9d6}
+.boss-hero-bar{width:100%;height:7px;border-radius:99px;overflow:hidden;background:#4a3036}
+.boss-hero-bar>span{display:block;height:100%;background:linear-gradient(90deg,#8bcd8b,#5caa7b);
+ border-radius:99px;transition:width .2s}
+.boss-hero-card.is-down .boss-hero-bar>span{background:#bd676c}
+.boss-membership{display:flex;justify-content:space-between;align-items:center;
+ gap:14px;margin-top:13px;flex-wrap:wrap}
+.boss-membership button,.boss-pending-wrap button{background:#38394d;border:1px solid #dec28e;
+ color:#ffebc2;border-radius:10px;font-size:12px;font-weight:900;padding:11px 14px}
+.boss-membership button:hover,.boss-pending-wrap button:hover{background:#58516a}
+#boss-member-info{color:#c2c9d4;font-size:12px;line-height:1.45}
+.boss-status{padding:12px 13px;border:1px solid #617d9fa1;background:#172b41b8;
+ border-radius:11px;font-size:12px;color:#e2d5c1;line-height:1.5;margin:0 0 13px}
+.boss-status.good{border-color:#7bbf9f;color:#baf1cb}
+.boss-status.bad{border-color:#b97e7b;color:#f5b7b5}
+.boss-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.boss-actions button{display:flex;flex-direction:column;align-items:center;gap:5px;
+ border:1px solid #bc9a6e9b;border-radius:13px;padding:13px 7px;min-height:103px;
+ color:#ffe7bd;background:linear-gradient(140deg,#2a3a4c,#1d2639);
+ box-shadow:inset 0 1px #ffe7bb29;touch-action:manipulation}
+.boss-actions button:hover:not(:disabled){background:linear-gradient(140deg,#635038,#303b52);
+ border-color:#f7d294}
+.boss-move-icon{font-size:29px;filter:drop-shadow(0 0 11px #f3b66b5a)}
+.boss-actions strong{font-size:12px}
+.boss-actions small{font-size:10px;color:#c0beca;text-align:center}
+.boss-pending-wrap{margin-top:13px;padding:12px;border:1px solid #d79a7e;
+ border-radius:11px;background:#53363265;display:grid;gap:9px}
+.boss-pending-wrap p{font-size:12px;line-height:1.5;margin:0}
+.boss-rule-note{font-size:11px;line-height:1.65;color:#d3c8bb;
+ padding:12px 11px;margin:13px 0 0;border-radius:11px;background:#302f3985}
+.boss-chronicle ul{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.boss-chronicle li{border:1px solid #9a8b7065;background:#132035b9;
+ border-radius:9px;padding:10px 13px;color:#cfc9c3;font-size:12px;line-height:1.5}
+.boss-footer{text-align:center;color:#a6b2bd;font-size:11px;margin:20px}
+@keyframes boss-heat{to{transform:scale(1.2);opacity:.85}}
+@keyframes boss-breathe{to{transform:translateX(-50%) translateY(-5px) scale(1.018)}}
+@keyframes boss-hit{0%,100%{transform:translateX(-50%)}
+ 35%{transform:translateX(calc(-50% + 10px)) scale(.97);filter:brightness(1.85) drop-shadow(0 0 30px #ffc770)}
+ 60%{transform:translateX(calc(-50% - 8px))}}
+@keyframes boss-damage{0%{opacity:0;transform:translate(-50%,-30%) scale(.5)}
+ 15%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}
+ 100%{opacity:0;transform:translate(-50%,-120%) scale(.9)}}
+@keyframes boss-spark{0%{transform:translate(0,9px);opacity:0}
+ 17%{opacity:.93}80%{opacity:.5}100%{transform:translate(19px,-270px);opacity:0}}
+@media(max-width:800px){
+ .boss-team{grid-template-columns:1fr}
+ .boss-hero-card,.boss-empty-slot{min-height:70px}
+ .boss-art-stage{min-height:335px}
+}
+@media(max-width:580px){
+ .arena-layout{width:min(100% - 16px,1100px)}
+ .boss-battle,.boss-team-section,.boss-action-section,.boss-chronicle{padding:11px}
+ .boss-head{padding:11px 8px}
+ .boss-head h1{font-size:32px}
+ .boss-art-stage{height:380px;min-height:0}
+ .boss-monster{width:100%;height:calc(100% - 30px)}
+ .boss-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .boss-actions button{min-height:91px;padding:9px 6px}
+ .boss-nav a,.boss-nav button{padding:8px 10px;font-size:11px;min-height:38px}
+ .boss-attempt{font-size:10px;padding:7px}
+ .boss-healthline{font-size:10px}
+ .boss-defeat-panel{gap:7px;padding:11px 12px}
+ .boss-defeat-panel p{font-size:11px}
+ .boss-defeat-icon{font-size:37px}
+ .boss-defeat-panel h3{font-size:25px}
+ .boss-countdown{font-size:38px}
+}
+@media(max-width:370px){
+ .boss-art-stage{height:360px}
+ .boss-nav>button{margin-left:0}
+ .boss-defeat-panel a,.boss-defeat-panel button{padding:8px 11px;min-height:38px}
+}
+@media(max-width:700px) and (pointer:coarse){
+ body:before{background-attachment:scroll}
+ .boss-falling-embers i:nth-child(n+5){display:none}
+ .boss-stage-backdrop{filter:brightness(.48)}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+ .boss-falling-embers{display:none}
+}
