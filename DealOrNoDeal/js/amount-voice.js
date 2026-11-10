@@ -82,8 +82,8 @@
  }
  const btn=document.createElement('button');
  btn.type='button';btn.id='deal-amount-voice';
- btn.title='Audio-Kommentator nur für 1 Cent und den höchsten Betrag dieser Partie';
- btn.setAttribute('aria-label','Audio-Moderator für 1 Cent und den Höchstbetrag ein- oder ausschalten');
+ btn.title='Audio-Moderator: erzählt die Spielgeschichte und kommentiert 1 Cent und den höchsten Betrag';
+ btn.setAttribute('aria-label','Audio-Moderator mit Spielgeschichten sowie Kommentaren zu 1 Cent und dem Höchstbetrag ein- oder ausschalten');
  btn.className='studio-tool';btn.style.cssText='white-space:nowrap;min-width:42px;cursor:pointer';
  const update=()=>{
   btn.textContent=!supported?'🔇 Moderator nicht verfügbar':enabled?'🎙️ Moderator AN':'🔇 Moderator AUS';
@@ -108,8 +108,15 @@
   currentUtterance=null;
   const next=queuedStory;queuedStory=null;
   if(next&&enabled&&!document.hidden){
-   // Leave a small breath between the extreme-value line and the story chapter.
-   hideTimer=setTimeout(()=>{if(token===speechSequence)playStory(next)},800);
+   // Keep the accepted chapter if a Banker clip or the browser's audio engine
+   // is briefly busy when the previous utterance ends.
+   function continueStory(tries=0){
+    if(token!==speechSequence||!enabled||document.hidden)return;
+    if(playStory(next))return;
+    if(tries<14)hideTimer=setTimeout(()=>continueStory(tries+1),900);
+    else broadcastIdle();
+   }
+   hideTimer=setTimeout(()=>continueStory(),800);
   }else{
    hideTimer=setTimeout(()=>{if(token===speechSequence)caption.hidden=true},1000);
    broadcastIdle();
