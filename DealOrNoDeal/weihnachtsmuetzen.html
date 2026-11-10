@@ -770,6 +770,10 @@ async function call(path,method='GET',payload=null){
 }
 const errors={LOGIN_REQUIRED:'Bitte neu anmelden.',STORAGE_UNAVAILABLE:'Der Server kann gerade nicht auf das Spielerprofil zugreifen.',START_REQUIRED:'Bitte zuerst ein neues Spiel starten.',SESSION_CHANGED:'Der Spielstand hat sich geändert. Bitte aktualisieren.',NO_HATS_VOUCHERS:'Dein kostenloser Spielgutschein ist bereits verbraucht. Weitere Freischaltungen folgen später.',REQUEST_ID_CONFLICT:'Diese Anfrage gehört zu einer anderen Aktion. Bitte aktualisieren.',TEST_ACCESS_DENIED:'Dieser Testzugang ist ausschließlich für Chris freigeschaltet.',INVALID_ACTION:'Ungültige Aktion.',INVALID_HAT:'Ungültige Mütze.'};
 function describeError(error){return errors[error.message]||String(error.message||'Serverfehler');}
+function goToHats(){
+ const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+ $('hats-stage')?.scrollIntoView?.({behavior:reduced?'instant':'smooth',block:'start'});
+}
 async function refresh(){
  if(busy)return;
  const user=authUser();
@@ -779,6 +783,7 @@ async function refresh(){
  }
  if(userId!==user.uid){state=null;vouchers=null;userId=user.uid;recoverPending();}
  busy=true;render();setStatus(DEMO?'🧪 Dein lokaler Test-Spielstand wird geladen …':'⏳ Server-Spielstand wird geladen …');
+ let loaded=false;
  try{
   const waiting=pendingRequest;
   const url='/api/christmas-hats/me'+(waiting?'?pendingId='+encodeURIComponent(waiting.requestId):'');
@@ -796,14 +801,16 @@ async function refresh(){
   }else if(waiting){
    notice='⚠️ Letzte Aktion noch nicht bestätigt. Bitte sicher wiederholen.';
   }
-  render();setStatus(notice,!!pendingRequest,!pendingRequest);
+  loaded=true;render();setStatus(notice,!!pendingRequest,!pendingRequest);
  }catch(e){setStatus('⚠️ '+describeError(e),true);}
  finally{
   busy=false;render();
-  if(autoStartRequested&&(!state||state.status==='finished')&&!pendingRequest&&Number(vouchers?.total||0)>0&&authUser()?.uid===user.uid){
+  if(loaded&&autoStartRequested&&!pendingRequest&&authUser()?.uid===user.uid){
+   // Consume the entry link after a successful, account-matched server read.
    autoStartRequested=false;
    try{const url=new URL(location.href);url.searchParams.delete('autostart');history.replaceState(history.state,'',url.pathname+url.search+url.hash)}catch{}
-   void action('start');
+   if(state?.status==='playing')goToHats(); // Resume without using a voucher.
+   else if((!state||state.status==='finished')&&(DEMO||Number(vouchers?.total||0)>0))void action('start');
   }
  }
 }
@@ -858,9 +865,7 @@ async function submit(payload){
   busy=false;selectedHat=null;render();
   if(payload.type==='start'&&state?.status==='playing'&&!pendingRequest&&uid()===requestUser){
    // Move straight to the three playable hats after the server confirms the ticket.
-   const target=$('hats-stage');
-   const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-   target?.scrollIntoView?.({behavior:reduced?'instant':'smooth',block:'start'});
+   goToHats();
   }
  }
 }
