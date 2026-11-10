@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Rüstung 5: Legendär"><defs>
+<linearGradient id="metal" x1="0%" y1="0%" x2="100%" y2="0%"><stop stop-color="#8a3a37"/><stop offset=".28" stop-color="#e3a746"/><stop offset=".56" stop-color="#fffbd5"/><stop offset=".84" stop-color="#e3a746"/><stop offset="1" stop-color="#8a3a37"/></linearGradient>
+<linearGradient id="edge" x1="0%" y1="0%" x2="100%" y2="100%"><stop stop-color="#fffbd5"/><stop offset=".5" stop-color="#ffe17d"/><stop offset="1" stop-color="#8a3a37"/></linearGradient>
+<linearGradient id="grip" x1="0%" y1="0%" x2="100%" y2="100%"><stop stop-color="#261c24"/><stop offset=".5" stop-color="#695048"/><stop offset="1" stop-color="#100f1c"/></linearGradient>
+<radialGradient id="halo"><stop stop-color="#ffb74f" stop-opacity="0.36"/><stop offset="1" stop-color="#ffb74f" stop-opacity="0"/></radialGradient>
+<filter id="shadow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur in="SourceAlpha" stdDeviation="5"/><feOffset dy="7"/><feComponentTransfer><feFuncA type="linear" slope=".65"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="glow" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<ellipse cx="128" cy="130" rx="112" ry="110" fill="url(#halo)"/><g filter="url(#shadow)">
+ <path d="M95 72 Q72 105 57 192 L87 216 L128 219 L169 216 L199 192 Q184 105 161 72Z" fill="#8a3a37" stroke="#ffe17d" stroke-width="2" opacity=".65"/>
+ <path d="M87 66 Q128 79 169 66 L190 109 L175 132 L169 192 Q128 219 87 192 L81 132 L66 109Z" fill="url(#metal)" stroke="#8a3a37" stroke-width="4" stroke-linejoin="round"/>
+ <path d="M87 66 L69 69 Q47 73 35 113 L67 135 L86 118 L101 85Z" fill="url(#edge)" stroke="#ffe17d" stroke-width="3"/>
+ <path d="M169 66 L187 69 Q209 73 221 113 L189 135 L170 118 L155 85Z" fill="url(#edge)" stroke="#ffe17d" stroke-width="3"/>
+ <path d="M49 110 Q60 99 78 104 M207 110 Q196 99 178 104" stroke="#fffbd5" fill="none" stroke-width="3" opacity=".75"/>
+ <path d="M94 83 L128 95 L162 83 L166 136 L148 159 L128 166 L108 159 L90 136Z" fill="url(#edge)" stroke="#8a3a37" stroke-width="3"/>
+ <path d="M128 95 L128 161" stroke="#fffbd5" stroke-width="3" opacity=".7"/>
+ <path d="M89 164 Q128 176 167 164 L168 189 Q128 210 88 189Z" fill="url(#metal)" stroke="#ffe17d" stroke-width="3"/>
+ <path d="M93 179L163 179" stroke="#fffbd5" stroke-width="2" opacity=".65"/>
+ <path d="M93 189L108 218L125 213L128 204L131 213L148 218L163 189" fill="url(#metal)" stroke="#ffe17d" stroke-width="3"/>
+ <path d="M67 82L51 112L72 121L84 101M189 82L205 112L184 121L172 101" fill="none" stroke="#ffe17d" stroke-width="5"/>
+ <path d="M109 117 L128 106 L147 117 L128 146Z" fill="#8a3a37" stroke="#ffe17d" stroke-width="3"/>
+ <path d="M128 111L138 125L128 141L118 125Z" fill="#ffe17d" filter="url(#glow)"/>
+ <path d="M99 96L107 104L100 123M157 96L149 104L156 123" fill="none" stroke="#ffe17d" stroke-width="3" opacity=".85"/>
+ <path d="M50 94L37 86L50 122M206 94L219 86L206 122" stroke="#ffe17d" stroke-width="4" fill="none"/>
+ <path d="M95 171L105 179L95 188M161 171L151 179L161 188" stroke="#ffe17d" stroke-width="2.5" fill="none" filter="url(#glow)"/>
+ <path d="M49 74L27 65L37 100L50 110M207 74L229 65L219 100L206 110" fill="#ffe17d" stroke="#fffbd5" stroke-width="2"/>
+ <path d="M90 76L128 89L166 76" stroke="#ffe17d" stroke-width="4" fill="none"/>
+ <path d="M78 153L62 163L85 177M178 153L194 163L171 177" fill="#ffe17d" stroke="#fffbd5" stroke-width="2"/>
+ <path d="M97 68L128 79L159 68" stroke="#fffbd5" stroke-width="3" fill="none"/>
+ <path d="M108 62L128 78L148 62" stroke="#ffe17d" stroke-width="4" fill="none"/>
+ </g>
+ <circle cx="128" cy="122" r="45" stroke="#ffe17d" stroke-opacity=".35" fill="none" stroke-dasharray="2 10"/>
+ <path d="M 49 36 L 49.84 41.16 L 55 42 L 49.84 42.84 L 49 48 L 48.16 42.84 L 43 42 L 48.16 41.16 Z" fill="#fffbd5"/><path d="M 207 41 L 207.84 46.16 L 213 47 L 207.84 47.84 L 207 53 L 206.16 47.84 L 201 47 L 206.16 46.16 Z" fill="#fffbd5"/></svg>
