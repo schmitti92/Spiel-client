@@ -20,7 +20,7 @@
  const $=id=>document.getElementById(id);
  const worldRoot=$('worlds'),details=$('details'),pathList=[];
  const gateButtons=new Map();
- let mapState=null,selectedGate=null,working=false,mapRequestEpoch=0;
+ let mapState=null,selectedGate=null,working=false,mapRequestEpoch=0,lastFight=null;
  const API=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
  const $node=(tag,klass,text)=>{
   const el=document.createElement(tag);
@@ -122,6 +122,40 @@
   updateMarkers();
   updateGateActions();
  }
+ const CHEST_NAMES={wood:'Holzkiste',iron:'Eisenkiste',silver:'Silberkiste',
+  gold:'Goldkiste',legendary:'Legendäre Truhe'};
+ const PACK_NAMES={small:'Kleines Weihnachtskartenpaket',large:'Großes Weihnachtskartenpaket',
+  premium:'Premium-Weihnachtskartenpaket'};
+ const HAMMER_NAMES={single:'Einzelhammer',double:'Doppelhammer',lucky:'Goldener Hammer'};
+ function displayMiniReward(reward,gate){
+  const panel=$('gate-mini-reward');
+  panel.hidden=true;
+  if(!reward?.granted)return;
+  const title=$('gate-mini-reward-title'),detail=$('gate-mini-reward-details');
+  const link=$('gate-mini-reward-link');
+  link.hidden=true;
+  if(reward.kind==='chest'){
+   title.textContent='📦 '+(CHEST_NAMES[reward.tier]||'Rohstoffkiste');
+   detail.textContent='Eine Kiste mit '+Number(reward.count)+' Rohstoffen wurde dir gutgeschrieben. Du kannst sie im Rohstofflager öffnen.';
+   link.href='./dog-expedition.html'+roomSuffix;link.hidden=false;
+  }else if(reward.kind==='coins'){
+   title.textContent='💰 '+Number(reward.amount).toLocaleString('de-DE')+' €';
+   detail.textContent='Die Geldprämie ist auf deinem Deal-or-No-Deal-Konto angekommen.';
+  }else if(reward.kind==='cards'){
+   title.textContent='🎴 '+(PACK_NAMES[reward.packId]||'Kartenpaket-Gutschein');
+   detail.textContent='Ein kostenloses Kartenpaket ist im Weihnachtsevent zur Einlösung bereit.';
+  }else if(reward.kind==='hammer'){
+   title.textContent='🔨 '+(HAMMER_NAMES[reward.hammer]||'Hammer');
+   detail.textContent='Der Hammer ist deinem Eisblock-Inventar gutgeschrieben.';
+  }else if(reward.kind==='joker'){
+   title.textContent='🃏 Ein Koffer-Joker';
+   detail.textContent='Der Joker ist deinem Joker-Inventar gutgeschrieben.';
+  }else{
+   title.textContent='🎁 Belohnung gespeichert';
+   detail.textContent='Deine einmalige Mini-Boss-Belohnung wurde vom Server bestätigt.';
+  }
+  panel.hidden=false;
+ }
  function previousNormal(gate){
   for(let i=gate-1;i>=1;i--)if(i%5!==0)return i;
   return null;
@@ -164,6 +198,7 @@
    !ready?'🔒 Um Tor '+gate+' zu kämpfen, musst du zuerst das normale Tor '+
     prereq+' besiegen. Mini-Bosse und Gruppenbosse blockieren die normalen Tore nicht.':
    '⚔️ Bereit. Das Kampfergebnis wird vom Server berechnet und gespeichert.';
+  if(lastFight?.gate===gate)notice.textContent=lastFight.message;
  }
  async function reloadMap(){
   const account=auth()?.user?.uid;
@@ -212,6 +247,8 @@
    $('gate-fight-status').textContent='⚠️ Die Aktionskennung konnte nicht gesichert werden. Kampf nicht gestartet.';
    return;
   }
+  lastFight=null;
+  $('gate-mini-reward').hidden=true;
   working=true;updateGateActions();
   $('gate-fight-status').textContent='⚔️ Der Server berechnet deinen Kampf bei Tor '+gate+' …';
   try{
@@ -221,12 +258,17 @@
    mapState=result.map;
    renderMembers();
    const fight=result.result;
-   $('gate-fight-status').textContent=fight.win?
-    '🏆 Tor '+gate+' geschafft! Dein Sieg ist gespeichert.'+
-     (fight.type==='mini'?' Deine Mini-Boss-Belohnung wird im nächsten Ausbauschritt angebunden.':''):
+   let status=fight.win?
+    '🏆 Tor '+gate+' geschafft! Dein Sieg ist gespeichert.':
     '💀 Tor '+gate+' verloren. '+(fight.combat?.feedback?.message||
       'Verbessere deine Ausrüstung und versuche es erneut.');
-   if(result.replayed)$('gate-fight-status').textContent+=' (Sicher wiederhergestellt)';
+   if(fight.type==='mini'&&fight.win){
+    displayMiniReward(fight.miniReward,gate);
+    if(fight.miniReward?.granted)status+=' 🎁 Deine einmalige Belohnung wurde gutgeschrieben!';
+   }
+   if(result.replayed)status+=' (Sicher wiederhergestellt)';
+   lastFight={gate,message:status};
+   $('gate-fight-status').textContent=status;
    setTeamStatus('✅ Dein gespeichertes Tor wurde aktualisiert.');
   }catch(e){
    // Preserve the request ID after an unknown network/server error.
@@ -264,13 +306,15 @@
   for(const selected of document.querySelectorAll('.gate[aria-pressed="true"]'))selected.setAttribute('aria-pressed','false');
   button?.setAttribute('aria-pressed','true');
   selectedGate=gate;
+  lastFight=null;
+  $('gate-mini-reward').hidden=true;
   const kind=gate%10===0?'Gruppenboss':gate%10===5?'Mini-Boss':'Persönlicher Kampf';
   $('gate-detail-kicker').textContent='TOR '+gate+' VON 100 · '+kind.toUpperCase();
   $('gate-detail-title').textContent=titleFor(gate);
   $('gate-detail-summary').textContent=summaryFor(gate);
   $('gate-detail-future').textContent=gate===100?
    '🔒 DOG ist noch verschlossen. Es wird erst nach einem nachgewiesenen Sieg über den letzten gemeinsamen Boss freigeschaltet.':
-   '🛠️ Dies ist eine Kartenvorschau. Der persönliche Fortschritt und die Kämpfe werden in einem weiteren Entwicklungsschritt mit dem Server verbunden.';
+   '⚔️ Kämpfe und Mini-Boss-Belohnungen werden vom Server berechnet und einmalig gespeichert.';
   updateGateActions();
   if(!details.open)details.showModal();
  }
