@@ -258,3 +258,13 @@ header small{font-size:clamp(8px,.72vw,12px)!important;letter-spacing:.17em!impo
  box-shadow:0 0 17px #ffd45b74,inset 0 1px #fffae0!important;
  text-shadow:0 1px 3px #4f2f06,0 0 7px #fff3b6;
 }
+
+/* 30th suitcase — keep five orderly rows of six and spotlight the €50m jackpot. */
+.cases[data-case-count="30"] .case:nth-child(25),
+.cases[data-case-count="30"] .case:nth-child(26){grid-column:auto!important}
+.money span.fifty-million-prize:not(.gone){
+ color:#fff9df!important;border:2px solid #ffe79f!important;
+ background:linear-gradient(110deg,#5f2d8a,#dcab57 50%,#7d3b79)!important;
+ box-shadow:0 0 21px #efbb7296,inset 0 1px #fff6cb!important;
+ text-shadow:0 1px 3px #250d37,0 0 9px #fff0bf;
+}
