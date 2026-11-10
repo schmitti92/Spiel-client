@@ -18,7 +18,7 @@
  function pending(uid){
   try{const value=JSON.parse(localStorage.getItem(key(uid))||'null');
    return value&&/^[A-Za-z0-9_-]{12,90}$/.test(value.id)&&
-    ['ready','react','finish'].includes(value.command)?value:null;
+    ['ready','start','react','finish'].includes(value.command)?value:null;
   }catch{return null;}
  }
  function save(uid,data){
@@ -36,6 +36,8 @@
   const settled=state?.phase==='victory'||state?.phase==='cooldown';
   const confirmed=request.command==='ready'?
    !!mine?.ready||settled:
+   request.command==='start'?
+    (state?.phase==='fighting'&&state?.roster?.some(m=>m.uid===uid))||settled:
    request.command==='react'?!!mine?.reacted||settled||state?.phase==='waiting':
    request.command==='finish'&&settled;
   if(confirmed){clear(uid);return true;}
@@ -78,7 +80,9 @@
    state==='cooldown'?'💀 Kampfpause':'Verbindung prüfen';
   $('arena')?.setAttribute('data-phase',state);
   const members=view?.members||[];
-  $('ready-count').textContent=members.filter(x=>x.ready).length+' / 3 bereit';
+  $('ready-count').textContent=members.filter(x=>x.ready).length+' / 3 bereit · '+
+   (state==='fighting'?(view?.participantCount||view?.roster?.length||0)+' kämpfen':
+    'zu dritt empfohlen');
   const area=$('heroes');area.replaceChildren();
   for(let i=0;i<3;i++){
    const m=members[i];
@@ -96,26 +100,33 @@
   const pendingOp=account?pending(account):null;
   const cooldownExpired=state==='cooldown'&&cooling()===0;
   const canReady=logged&&view?.isMember&&view?.eligible&&
-   members.length===3&&
    ((state==='waiting'&&!mine?.ready)||cooldownExpired);
   const ready=$('ready-button');
   ready.hidden=state==='fighting'||state==='victory';
   ready.disabled=!canReady||working||!!pendingOp;
   ready.textContent=state==='cooldown'&&cooling()===0?
    '⚔️ Neuen Versuch vorbereiten':'✅ Ich bin bereit';
+  const start=$('start-button');
+  start.hidden=state!=='waiting'||!mine?.ready;
+  start.disabled=working||!!pendingOp||!logged||!view?.canStart;
+  start.textContent='⚔️ Mit '+members.filter(m=>m.ready).length+
+   ' Helden starten';
   const reaction=$('react-button');
   reaction.hidden=state!=='fighting';
-  reaction.disabled=!logged||working||!!pendingOp||!!mine?.reacted||remaining()<=0;
+  reaction.disabled=!logged||working||!!pendingOp||!!mine?.reacted||remaining()<=0||
+   !view?.roster?.some(m=>m.uid===account);
   reaction.textContent=mine?.reacted?'⚡ Reaktion gezählt':'⚡ Reaktion! Angriff verstärken';
   $('retry-button').hidden=!pendingOp;
   $('retry-button').disabled=working;
   const time=state==='fighting'?remaining():state==='cooldown'?cooling():30000;
   $('timer').textContent=formatTime(time);
   $('timer-fill').style.width=(state==='fighting'?Math.min(100,time/30000*100):state==='victory'?0:100)+'%';
-  $('boss-hp').textContent=view?Number(view.bossHp||0).toLocaleString('de-DE')+' LP':'– LP';
+  const bossLeft=view?.result&&state==='victory'||state==='cooldown'?
+   view?.result?.hpRemaining:view?.bossHp;
+  $('boss-hp').textContent=view?Number(bossLeft||0).toLocaleString('de-DE')+' LP':'– LP';
   const text=$('battle-message');
-  text.textContent=state==='waiting'?'Der Aschewächter erwartet die drei Bereitschaftssignale.':
-   state==='fighting'?'🔥 Die drei Helden kämpfen! Reagiert innerhalb von 30 Sekunden.':
+  text.textContent=state==='waiting'?'Bereit machen und mit 1, 2 oder 3 Helden starten. Zu dritt sind eure Chancen am größten.':
+   state==='fighting'?'🔥 '+(view?.roster?.length||0)+' Helden greifen an! Reagiert innerhalb von 30 Sekunden.':
    state==='victory'?'🏆 Der Aschewächter ist besiegt. Die Schmiede ist aufgestiegen!':
    state==='cooldown'?'💀 Der Wächter hat das Team zurückgedrängt. Bereitet euch auf den nächsten Versuch vor.':
    'Verbindung zur Bossarena wird hergestellt …';
@@ -123,8 +134,11 @@
   outcome.hidden=!['victory','cooldown'].includes(state);
   outcome.className='outcome'+(state==='cooldown'?' loss':'');
   outcome.textContent=state==='victory'?
-   '🏆 Tor 10 gemeinsam geschafft! Für alle drei Spieler ist Schmiede-Level 2 freigeschaltet. Geht in die Aufstiegsschmiede und verbessert eure Ausrüstung.':
-   state==='cooldown'?'💀 Leider verloren. Eure Ausrüstung bleibt erhalten. Die gemeinsame Kampfpause endet in '+formatTime(cooling())+'.':'';
+   '🏆 Boss besiegt! '+Number(view?.result?.damage||0).toLocaleString('de-DE')+
+    ' Schaden verursacht. Schmiede-Level 2 ist für eure Gruppe freigeschaltet.':
+   state==='cooldown'?'💀 Boss überlebt! '+Number(view?.result?.damage||0).toLocaleString('de-DE')+
+    ' Schaden von '+(view?.bossHp||0).toLocaleString('de-DE')+
+    ' nötigen LP. Die gemeinsame Kampfpause endet in '+formatTime(cooling())+'.':'';
  }
  async function reload(force=false){
   const uid=auth()?.user?.uid;
@@ -139,8 +153,10 @@
    render();
    if(restored)message('✅ Die zuvor offene Bossaktion wurde mit dem Serverstand abgeglichen.');
    else if(!pending(uid)){
-    message(data.phase==='waiting'?data.members.length<3?'🛡️ Es fehlen noch Teammitglieder.':
-     data.eligible?'✅ Bereit? Warte auf die anderen Helden.':'🔒 Erst das normale Tor 9 abschließen.':
+    message(data.phase==='waiting'?
+     !data.eligible?'🔒 Erst das normale Tor 9 abschließen.':
+     data.canStart?'⚔️ Du kannst starten oder auf weitere Helden warten. Zu dritt gewinnt ihr am ehesten.':
+     '✅ Klicke auf Bereit, damit du am Kampf teilnehmen kannst.':
      data.phase==='fighting'?'⚔️ Der Bosskampf läuft. Nutze deine Reaktion!':
      data.phase==='victory'?'🏆 Der Sieg wurde serverseitig bestätigt.':'⚒️ Verbessert eure Ausrüstung für den nächsten Versuch.');
    }
@@ -168,7 +184,9 @@
    clear(uid);view=data.view;serverOffset=Number(data.view.serverNow||Date.now())-Date.now();
    render();
    message(req.command==='ready'?
-    (view.phase==='fighting'?'⚔️ Alle bereit – 30-Sekunden-Kampf gestartet.':'✅ Bereitschaft gespeichert. Warte auf die beiden anderen Spieler.'):
+    (view.phase==='fighting'?'⚔️ Drei Helden bereit – 30-Sekunden-Kampf gestartet.':
+     '✅ Bereitschaft gespeichert. Du kannst starten oder auf weitere Helden warten.'):
+    req.command==='start'?'⚔️ Der Kampf mit '+view.roster.length+' Helden hat begonnen.':
     req.command==='react'?'⚡ Reaktionsbonus für das Team gespeichert.':
     data.result?.win?'🏆 Boss 10 besiegt. Schmiedestufe freigeschaltet!':
     '💀 Der Bosskampf ist entschieden. Eine erneute Herausforderung folgt nach der Kampfpause.');
@@ -187,6 +205,7 @@
   }finally{working=false;render();}
  }
  $('ready-button').addEventListener('click',()=>void command('ready'));
+ $('start-button').addEventListener('click',()=>void command('start'));
  $('react-button').addEventListener('click',()=>void command('react'));
  $('retry-button').addEventListener('click',()=>void command(null,true));
  $('refresh').addEventListener('click',()=>void reload(true));
