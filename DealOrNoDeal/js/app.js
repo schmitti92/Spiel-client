@@ -109,6 +109,10 @@ function pollDelay(){if(!g)return 5000;if(g.phase==='final'||g.phase==='done')re
 // The server remains authoritative. WebSocket is an optional push channel;
 // HTTP remains available during reconnects and for older backend deployments.
 let dealSocket=null,dealSocketReady=false,dealSocketRetry=0,dealSocketLastMessage=0,dealSocketConnecting=false,lastHttpSafetySync=0;
+let dealSocketLastAuth=0,dealSocketReauthPending=false,dealSocketReauthSentAt=0;
+// Refresh a signed-in session before the server's 120-second hard timeout.
+// This does not close the socket or reload the room while players are playing.
+const DEAL_SOCKET_REAUTH_AFTER_MS=75000,DEAL_SOCKET_REAUTH_TIMEOUT_MS=15000;
 // The server's clock determines shared cinematic timings, not each device's clock.
 let dealClockOffsetMs=0,dealClockSynced=false;
 function dealServerNow(){return Date.now()+dealClockOffsetMs}
@@ -144,37 +148,61 @@ async function connectDealSocket(){
   if(!user())return;
   const ws=new WebSocket(base.replace(/^http/,'ws')+'/deal-or-no-deal');
   dealSocket=ws;dealSocketReady=false;dealSocketConnecting=false;
-  ws.onopen=()=>{if(dealSocket!==ws){ws.close();return}dealSocketRetry=0;ws.send(JSON.stringify({type:'subscribe',code,token,clientSentAt:Date.now()}))};
+  ws.onopen=()=>{if(dealSocket!==ws){ws.close();return}dealSocketRetry=0;dealSocketLastAuth=0;dealSocketReauthPending=false;dealSocketReauthSentAt=0;ws.send(JSON.stringify({type:'subscribe',code,token,clientSentAt:Date.now()}))};
   ws.onmessage=event=>{
    if(dealSocket!==ws)return;
    let msg;try{msg=JSON.parse(event.data)}catch{return}
-   if(msg.type==='deal-subscribed'||msg.type==='pong'){
+   if(msg.type==='deal-subscribed'||msg.type==='deal-reauthenticated'||msg.type==='pong'){
    syncDealClock(msg);
    if(msg.type==='deal-subscribed'){
     dealSocketReady=true;
+    dealSocketLastAuth=Date.now();
+    dealSocketReauthPending=false;dealSocketReauthSentAt=0;
     // A short round trip is more accurate than the initial authenticated handshake.
     try{ws.send(JSON.stringify({type:'ping',clientSentAt:Date.now()}));lastSocketHeartbeat=Date.now()}catch{}
+   }
+   if(msg.type==='deal-reauthenticated'){
+    dealSocketLastAuth=Date.now();
+    dealSocketReauthPending=false;dealSocketReauthSentAt=0;
    }
    dealSocketLastMessage=Date.now();
   }
    if(msg.type==='deal-state'&&dealSocketReady){dealSocketLastMessage=Date.now();applyDealState(msg.game)}
    if(msg.type==='deal-error'){dealSocketReady=false;console.warn('Deal stream:',msg.error)}
   };
-  ws.onclose=()=>{if(dealSocket===ws){dealSocket=null;dealSocketReady=false;dealSocketRetry=Math.min(dealSocketRetry+1,6);scheduleDealReconnect()}};
+  ws.onclose=()=>{if(dealSocket===ws){dealSocket=null;dealSocketReady=false;dealSocketLastAuth=0;dealSocketReauthPending=false;dealSocketReauthSentAt=0;dealSocketRetry=Math.min(dealSocketRetry+1,6);scheduleDealReconnect()}};
   ws.onerror=()=>{if(dealSocket===ws)dealSocketReady=false};
  }catch(e){console.warn('Deal stream reconnect:',e);dealSocketRetry=Math.min(dealSocketRetry+1,6);scheduleDealReconnect()}finally{dealSocketConnecting=false}
 }
 function dealSocketHealthy(){return dealSocketReady&&dealSocket?.readyState===WebSocket.OPEN&&Date.now()-dealSocketLastMessage<45000}
+async function refreshDealSocketAuth(){
+ if(!dealSocketHealthy()||dealSocketReauthPending||!dealSocketLastAuth||Date.now()-dealSocketLastAuth<DEAL_SOCKET_REAUTH_AFTER_MS)return;
+ const ws=dealSocket,u=user();if(!u)return;
+ dealSocketReauthPending=true;
+ try{
+  const token=await u.getIdToken();
+  if(ws!==dealSocket||ws.readyState!==WebSocket.OPEN){dealSocketReauthPending=false;return}
+  dealSocketReauthSentAt=Date.now();
+  ws.send(JSON.stringify({type:'reauth',token}));
+ }catch(error){
+  dealSocketReauthPending=false;
+  console.warn('Deal session refresh:',error);
+  if(ws===dealSocket&&ws.readyState===WebSocket.OPEN)ws.close();
+ }
+}
 async function pollLoop(){
  if(!document.hidden){
   if(!dealSocket||dealSocket.readyState===WebSocket.CLOSED)connectDealSocket();
   if(dealSocketHealthy()&&Date.now()-lastSocketHeartbeat>=24000){try{dealSocket.send(JSON.stringify({type:'ping',clientSentAt:Date.now()}));lastSocketHeartbeat=Date.now()}catch{}}
+  if(dealSocketReauthPending&&dealSocketReauthSentAt&&Date.now()-dealSocketReauthSentAt>DEAL_SOCKET_REAUTH_TIMEOUT_MS){
+   if(dealSocket?.readyState===WebSocket.OPEN)dealSocket.close();
+  }else if(dealSocketHealthy())refreshDealSocketAuth();
   if(dealSocket?.readyState===WebSocket.OPEN&&!dealSocketHealthy()&&dealSocketLastMessage&&Date.now()-dealSocketLastMessage>45000)dealSocket.close();
   // HTTP reconciliation remains essential when the action and socket hit different Render instances.
   // Clock-only heartbeats avoid a Firestore read on every connected player's ping.
-  if(!dealSocketHealthy()||Date.now()-lastHttpSafetySync>=30000)await poll();
+  if(!dealSocketHealthy()||Date.now()-lastHttpSafetySync>=60000)await poll();
  }
- const delay=dealSocketHealthy()?8000:Math.max(pollDelay(),Math.min(15000,1000*2**dealSocketRetry));
+ const delay=dealSocketHealthy()?4000:Math.max(pollDelay(),Math.min(8000,1000*2**dealSocketRetry));
  setTimeout(pollLoop,delay);
 }
 $('studio-refresh').addEventListener('click',()=>window.location.reload());
