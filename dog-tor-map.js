@@ -187,16 +187,23 @@
   const done=(gate%10===5?me?.minis:me?.normals)||[];
   const prereq=previousNormal(gate);
   const ready=prereq===null||me?.normals?.includes(prereq);
+  // A hero may explore five gates past the previous shared boss:
+  // up to Tor 15 before Boss 10, Tor 25 before Boss 20, etc.
+  const requiredBoss=gate>=16?Math.floor((gate-6)/10)*10:0;
+  const bossReady=requiredBoss===0||!!mapState?.sharedBosses?.includes(requiredBoss);
   const member=!!mapState?.isMember;
-  button.disabled=working||!!pending||!member||!ready||done.includes(gate);
+  button.disabled=working||!!pending||!member||!ready||!bossReady||done.includes(gate);
   button.textContent=gate%10===5?'👹 Mini-Boss herausfordern':'⚔️ Persönlichen Kampf starten';
   notice.textContent=pending?'⚠️ Ein früherer Kampf bei Tor '+pending.gate+
    ' muss zuerst sicher wiederholt werden.':
    done.includes(gate)?'✅ Dieses Tor hast du bereits besiegt.':
    !auth()?'🔒 Melde dich mit deinem Online-Spielerprofil an, um Kämpfe zu starten.':
    !member?'🛡️ Tritt oben zuerst der Dreier-Expedition bei.':
+   !bossReady?'🔒 Tor '+gate+' wird erst nach eurem gemeinsamen Sieg über Boss '+
+    requiredBoss+' freigeschaltet. Bis Tor '+(requiredBoss+5)+
+    ' könnt ihr euch ohne diesen Sieg vorwagen.':
    !ready?'🔒 Um Tor '+gate+' zu kämpfen, musst du zuerst das normale Tor '+
-    prereq+' besiegen. Mini-Bosse und Gruppenbosse blockieren die normalen Tore nicht.':
+    prereq+' besiegen. Mini-Bosse sind optional.':
    '⚔️ Bereit. Das Kampfergebnis wird vom Server berechnet und gespeichert.';
   if(lastFight?.gate===gate)notice.textContent=lastFight.message;
  }
