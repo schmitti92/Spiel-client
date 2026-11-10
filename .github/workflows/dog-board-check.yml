@@ -1,0 +1,24 @@
+name: DOG classic board checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/**'
+      - 'tests/dog-board-layout.test.mjs'
+      - '.github/workflows/dog-board-check.yml'
+  pull_request:
+    paths:
+      - 'DOG/**'
+      - 'tests/dog-board-layout.test.mjs'
+  workflow_dispatch:
+jobs:
+  geometry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/app.js
+      - run: node --check DOG/board-layout.js
+      - run: node --test tests/dog-board-layout.test.mjs
