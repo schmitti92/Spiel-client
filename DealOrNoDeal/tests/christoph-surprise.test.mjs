@@ -68,8 +68,8 @@ test('greeting JavaScript is valid and installed on every game and Christmas pag
  assert.match(read('Weihnachtsevent2/index.html'),/\.\.\/js\/christoph-surprise\.js\?v=20261110-gift-v1/);
  assert.match(css,/#christoph-surprise\[hidden\]/);
  assert.match(css,/#christoph-surprise-thanks/);
- assert.match(source,/2× Monster-Rad-Drehungen/);
- assert.match(source,/2× Weihnachtsmützen-Jackpot-Gutscheine/);
+ assert.match(source,/<strong>2×<\/strong><span>Monster-Rad-Drehungen<\/span>/);
+ assert.match(source,/<strong>2×<\/strong><span>Weihnachtsmützen-Jackpot-Gutscheine<\/span>/);
  assert.match(source,/ich euch sehr gerne habe/);
 });
 
