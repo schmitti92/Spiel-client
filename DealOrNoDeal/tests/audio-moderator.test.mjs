@@ -65,7 +65,7 @@ test('both switches are visible, independently accessible and audio subtitles ar
  assert.match(fx.caption.attributes['aria-live'],/off/);
  assert.doesNotThrow(()=>new Script(script));
  assert.doesNotThrow(()=>new Script(catalogue));
- assert.match(game,/amount-voice\.js\?v=20261110-amount-only-v7/);
+ assert.match(game,/amount-voice\.js\?v=20261110-30cases-50m-v1/);
  assert.match(caseScript,/announceOpenedAmount\(item\.amount/);
 });
 test('previously enabled combined voice is migrated to both independent switches',()=>{
