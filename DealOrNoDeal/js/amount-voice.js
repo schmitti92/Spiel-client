@@ -7,6 +7,7 @@
  const synth=window.speechSynthesis;
  const supported=!!synth&&typeof window.SpeechSynthesisUtterance==='function'&&typeof synth.speak==='function';
  let enabled=false,preferredVoice=null,speechSequence=0,hideTimer=null;
+ let currentUtterance=null,queuedStory=null,speechGuard=null;
  const lastPicked=new Map();
  try{enabled=localStorage.getItem(key)==='true'}catch{}
  const maleNames=/\b(male|mann|männlich|masculine|markus|stefan|thomas|daniel|florian|klaus|hans|martin|christoph|conrad|ralf|ralph|benjamin|bernd|andreas|peter|jan|jonas|moritz|max|tim|thorsten|oliver|rolf|georg|wolfgang)\b/i;
@@ -97,11 +98,64 @@
  caption.hidden=true;
  caption.style.cssText='position:fixed;z-index:45;left:50%;bottom:15px;transform:translateX(-50%);width:max-content;max-width:min(92vw,850px);box-sizing:border-box;padding:12px 18px;border:2px solid #f8cd77;border-radius:16px;background:linear-gradient(130deg,rgba(9,24,42,.97),rgba(55,31,18,.97));color:#fff2cf;font:800 clamp(13px,1.5vw,19px)/1.4 system-ui,sans-serif;text-align:center;text-shadow:0 2px 5px #000;box-shadow:0 7px 26px #000b,0 0 22px #dcb25b66;pointer-events:none';
  document.body.append(caption);
+ function broadcastIdle(){
+  // Invite a waiting chapter to retry without polling Firestore or the server.
+  try{window.dispatchEvent?.(new Event('deal-moderator-idle'))}catch{}
+ }
+ function finish(token){
+  if(token!==speechSequence)return;
+  clearTimeout(speechGuard);speechGuard=null;
+  currentUtterance=null;
+  const next=queuedStory;queuedStory=null;
+  if(next&&enabled&&!document.hidden){
+   // Leave a small breath between the extreme-value line and the story chapter.
+   hideTimer=setTimeout(()=>{if(token===speechSequence)playStory(next)},800);
+  }else{
+   hideTimer=setTimeout(()=>{if(token===speechSequence)caption.hidden=true},1000);
+   broadcastIdle();
+  }
+ }
+ function guardSpeech(token,length){
+  clearTimeout(speechGuard);
+  speechGuard=setTimeout(()=>{
+   if(token!==speechSequence||!currentUtterance)return;
+   try{synth.cancel()}catch{}
+   finish(token);
+  },Math.min(75000,Math.max(25000,length*140)));
+ }
  function stop(){
   ++speechSequence;
   clearTimeout(hideTimer);hideTimer=null;
+  clearTimeout(speechGuard);speechGuard=null;
+  currentUtterance=null;queuedStory=null;
   caption.hidden=true;
   if(supported)synth.cancel();
+ }
+ function playStory(entry){
+  if(!enabled||!supported||document.hidden||!entry?.text)return false;
+  if(currentUtterance){
+   if(queuedStory)return false;
+   queuedStory=entry;return true;
+  }
+  // Respect unrelated studio voices (e.g. the Banker's special bonus speech).
+  if(synth.speaking)return false;
+  stop();
+  const token=speechSequence;
+  const text=String(entry.text).slice(0,900);
+  caption.textContent='🎭 '+String(entry.title||'Die Geschichte')+' · Kapitel '+Number(entry.chapter||1)+' · '+text;
+  caption.hidden=false;
+  const voice=new window.SpeechSynthesisUtterance(text);
+  voice.lang='de-DE';voice.rate=.96;voice.pitch=.84;voice.volume=1;
+  const chosen=selectVoice();if(chosen)voice.voice=chosen;
+  currentUtterance=voice;
+  voice.onend=()=>finish(token);voice.onerror=()=>finish(token);
+  guardSpeech(token,text.length);
+  try{synth.speak(voice)}catch{finish(token);return false}
+  return true;
+ }
+ function speakStory(text,meta={}){
+  if(!enabled||!supported||document.hidden||typeof text!=='string'||!text)return false;
+  return playStory({text,title:meta.title,chapter:meta.chapter});
  }
  btn.addEventListener('click',()=>{
   if(!supported)return;
@@ -111,11 +165,16 @@
   if(enabled){
    selectVoice();
    synth.resume?.();
-   // Start speech within the user's gesture, which unlocks audio on many devices.
-   const hello=new window.SpeechSynthesisUtterance('Goldstudio Moderator eingeschaltet. Ich kommentiere nur den kleinsten und den größten Geldbetrag!');
+   // A user gesture unlocks mobile audio. The first story follows this greeting.
+   const hello=new window.SpeechSynthesisUtterance('Goldstudio Moderator eingeschaltet! Jede Partie erzählt jetzt ihre eigene Geschichte. Bei den Koffern kommentiere ich weiterhin nur den kleinsten und den größten Geldbetrag!');
    hello.lang='de-DE';hello.rate=.96;hello.pitch=.86;hello.volume=1;
    if(preferredVoice)hello.voice=preferredVoice;
-   try{synth.speak(hello)}catch{}
+   currentUtterance=hello;
+   const token=speechSequence;
+   hello.onend=()=>finish(token);hello.onerror=()=>finish(token);
+   guardSpeech(token,hello.text.length);
+   try{synth.speak(hello)}catch{finish(token)}
+   window.DealModeratorStory?.onEnabled?.();
   }
  });
  function announce(cents,meta={}){
@@ -134,15 +193,15 @@
   speech.pitch=amount>=100000000?.72:.88;
   speech.volume=1;
   const voice=selectVoice();if(voice)speech.voice=voice;
-  const hide=()=>{if(event!==speechSequence)return;clearTimeout(hideTimer);hideTimer=setTimeout(()=>{if(event===speechSequence)caption.hidden=true},1400)};
-  speech.onend=hide;speech.onerror=hide;
-  // Some Android TTS engines never raise onend; clear stale subtitles anyway.
-  hideTimer=setTimeout(()=>{if(event===speechSequence)caption.hidden=true},18000);
-  try{synth.speak(speech)}catch{hide()}
+  currentUtterance=speech;
+  speech.onend=()=>finish(event);speech.onerror=()=>finish(event);
+  // Some Android TTS engines omit onend; the watchdog also drains stories.
+  guardSpeech(event,text.length);
+  try{synth.speak(speech)}catch{finish(event)}
  }
  window.announceOpenedAmount=announce;
  window.stopOpenedAmountAnnouncement=stop;
  // Pure helpers are also used by regression tests, never for hidden case values.
- window.DealModeratorAudio=Object.freeze({classify,formatAmount,selectLine,shouldComment,topPrizeByCases,categories});
+ window.DealModeratorAudio=Object.freeze({classify,formatAmount,selectLine,shouldComment,topPrizeByCases,categories,speakStory,isEnabled:()=>enabled&&supported});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stop()});
 })();
