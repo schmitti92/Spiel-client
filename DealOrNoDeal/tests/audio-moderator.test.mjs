@@ -246,3 +246,41 @@ test('switching off the moderator cancels a queued story and never narrates mute
  assert.equal(fx.caption.hidden,true);
  assert.equal(fx.spoken.length,1);
 });
+
+test('priority jackpot speech safely discards a story waiting after the previous utterance',()=>{
+ const fx=harness({stored:true});
+ const audio=fx.window.DealModeratorAudio;
+ const previous={caseCount:29,caseNumber:3,gameId:'t1'};
+ fx.announce(1,previous);
+ let discarded=0,started=0;
+ assert.equal(audio.speakStory('Die Geschichte von Herbert geht weiter.',{
+  title:'Herbert',chapter:2,onStart:()=>started++,onDiscard:()=>discarded++
+ }),true,'story can wait behind the cent commentary');
+ assert.equal(fx.spoken.length,1);
+ fx.spoken[0].onend();
+ assert.ok([...fx.timers.values()].some(t=>t.delay===800),'story start is scheduled after the cent');
+ // Before that timer fires, the ten-million-case is opened.
+ fx.announce(1000000000,{...previous,caseNumber:7});
+ assert.equal(discarded,1,'deferred chapter must notify the story engine to retry');
+ assert.equal(started,0,'interrupted chapter must not be marked as played');
+ assert.equal(fx.spoken.length,2,'only the cent and jackpot were spoken');
+ assert.match(fx.spoken[1].text,/10 Millionen Euro/);
+ assert.equal([...fx.timers.values()].some(t=>t.delay===800),false,'stale start timer is cleared');
+});
+
+test('a waiting story starts normally after the first amount commentary finishes',()=>{
+ const fx=harness({stored:true}),audio=fx.window.DealModeratorAudio;
+ let started=0,discarded=0;
+ fx.announce(1,{caseCount:29,gameId:'t2',caseNumber:1});
+ assert.equal(audio.speakStory('Und jetzt erfahren wir, was aus Herbert geworden ist.',{
+  title:'Herberts Gartenzwerg',chapter:2,onStart:()=>started++,onDiscard:()=>discarded++
+ }),true);
+ fx.spoken[0].onend();
+ const start=[...fx.timers.values()].find(t=>t.delay===800);
+ assert.ok(start);
+ start.fn();
+ assert.equal(fx.spoken.length,2);
+ assert.match(fx.spoken[1].text,/Herbert geworden/);
+ assert.equal(started,1);
+ assert.equal(discarded,0);
+});
