@@ -169,7 +169,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
  </div>
 </section>
 <section class="journey-map" aria-label="Dein Fortschritt durch die zwanzig Schatzräume">
- <div class="journey-header"><span class="journey-heading">✦ Deine Reise durch die zwanzig Schatzräume</span><span class="journey-current" id="journey-current">🎩 Raum 1 von 20</span></div>
+ <div class="journey-header"><span class="journey-heading" id="journey-heading">✦ Deine Reise durch die zwanzig Schatzräume</span><span class="journey-current" id="journey-current">🎩 Raum 1 von 20</span></div>
  <div class="journey-progress">
   <div id="journey-progress" class="journey-progress-track" role="progressbar" aria-label="Abgeschlossene Räume" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0"><span id="journey-progress-fill" class="journey-progress-fill"></span></div>
   <span id="journey-progress-caption" class="journey-progress-caption">0 von 20 Räumen geschafft</span>
@@ -435,11 +435,11 @@ function finishReveal(){
 }
 function renderTiers(active,checkpoint,cleared){
  const root=$('tiers');root.replaceChildren();
- const limit=state?.maxRoom||10,roomsProtected=state?.checkpoints||[3,7];
+ const limit=state?.maxRoom||20,roomsProtected=state?.checkpoints||[5,10,15,20];
  for(let i=1;i<=limit;i++){
   const isFinal=i===limit;
   const isCheckpoint=roomsProtected.includes(i)&&!isFinal;
-  const isBonus=state?.rulesVersion===5&&i%3===0&&i<20;
+  const isBonus=(state?.rulesVersion===5||!state)&&i%3===0&&i<20;
   const protectedRoom=i<=checkpoint,completed=i>checkpoint&&i<=cleared;
   const d=document.createElement('div');
   const type=isFinal?'finale':isBonus&&isCheckpoint?'bonus-checkpoint':isCheckpoint?'checkpoint':isBonus?'bonus':'normal';
@@ -510,11 +510,17 @@ function render(){
  $('journey-progress').setAttribute('aria-valuenow',String(completedRooms));
  $('journey-progress-fill').style.width=(completedRooms/limit*100)+'%';
  $('journey-progress-caption').textContent=completedRooms+' von '+limit+' Räumen geschafft';
+ $('journey-heading').textContent='✦ Deine Reise durch die '+(limit===10?'zehn':'zwanzig')+' Schatzräume';
  $('journey-legend').hidden=!!s&&s.rulesVersion!==5;
- const banner=$('stage-banner'),zone=roomNumber<=3?'easy':roomNumber<=9?'medium':roomNumber<=15?'jackpot':'final';
+ const banner=$('stage-banner'),zone=limit===10?(roomNumber<=3?'easy':roomNumber<=6?'medium':'jackpot'):(roomNumber<=3?'easy':roomNumber<=9?'medium':roomNumber<=15?'jackpot':'final');
  $('hats-stage').dataset.zone=zone;
  $('journey-current').textContent='🎩 Raum '+roomNumber+' / '+limit+((s?.checkpoints||[3,7]).includes(roomNumber)?' · 🛡️ Checkpoint':roomNumber===limit?' · 👑 Finale':'');
- document.querySelectorAll('[data-stage-label]').forEach(el=>el.classList.toggle('active',el.dataset.stageLabel===zone));
+ document.querySelectorAll('[data-stage-label]').forEach(el=>{
+  el.classList.toggle('active',el.dataset.stageLabel===zone);
+  el.hidden=limit===10&&el.dataset.stageLabel==='final';
+  if(el.dataset.stageLabel==='medium')el.textContent=limit===10?'🔑 Goldkammern · 4–6':'🔑 Goldkammern · 4–9';
+  if(el.dataset.stageLabel==='jackpot')el.textContent=limit===10?'👑 Eispalast-Finale · 7–10':'💎 Eispalast · 10–15';
+ });
  banner.classList.toggle('jackpot',zone==='jackpot'||zone==='final');
  $('stage-name').textContent=zone==='easy'?'🧸 DIE WEIHNACHTSWERKSTATT':zone==='medium'?'🔑 DIE GOLDENE SCHATZKAMMER':zone==='jackpot'?'💎 DER LEGENDÄRE EISPALAST':'👑 DAS NORDPOL-FINALE';
  $('stage-hint').textContent=zone==='easy'?'Einfache Hammer & Kartenpakete':zone==='medium'?'Gold, Joker & seltene Millionengewinne':zone==='jackpot'?'Große Schätze · stärkere Supergewinne':'Legendäre Beute · 20 Räume';
