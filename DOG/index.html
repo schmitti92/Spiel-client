@@ -42,7 +42,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 <header class="topbar">
   <div class="brand"><div class="mark">🐾</div><div><h1>DOG</h1><p>Das klassische Team-Brettspiel</p></div></div>
   <div class="top-actions">
-    <a class="top-btn" href="../spielauswahl-lokal.html">← Zur Spiele-Lobby</a>
+    <a class="top-btn" id="back-link" href="../spielauswahl-lokal.html">← Zur Spiele-Lobby</a>
     <button class="top-btn" id="rules-button" type="button">📖 Regeln</button>
     <button class="top-btn" id="new-game" type="button">↻ Neues Spiel</button>
   </div>
@@ -100,6 +100,8 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
   <p><b>Testversion:</b> Das Spiel funktioniert hier zunächst lokal mit Bots oder mehreren Menschen an einem Gerät. Online-Räume, Veranstaltungen und Erweiterungen folgen separat.</p>
   <button class="rule-close" id="rules-close">Verstanden</button>
 </dialog>
+<script src="../profile-config.js"></script>
+<script src="../profile-auth.js"></script>
 <script type="module" src="./app.js"></script>
 </body>
 </html>
