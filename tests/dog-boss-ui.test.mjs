@@ -396,7 +396,7 @@ test('Reaction timing challenge can be resumed without extra writes but cancels 
  h.click('boss-reaction-start');
  assert.equal(h.posts().length,1,'same server-issued challenge is reused');
  assert.equal(h.el('boss-reaction-challenge').hidden,false);
- h.doc.hidden=true;h.emit('visibilitychange');
+ h.context.document.hidden=true;h.emit('visibilitychange');
  assert.equal(h.el('boss-reaction-challenge').hidden,true);
  assert.equal(h.posts().length,1);
 });
