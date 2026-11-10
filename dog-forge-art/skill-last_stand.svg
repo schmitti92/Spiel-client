@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Letzter Widerstand"><defs>
+<radialGradient id="field" cx="50%" cy="44%" r="75%"><stop stop-color="#6d3992" stop-opacity=".95"/><stop offset=".63" stop-color="#151b2c" stop-opacity=".98"/><stop offset="1" stop-color="#090e1d" stop-opacity=".94"/></radialGradient>
+<linearGradient id="ring" x1="10%" y1="0%" x2="90%" y2="100%"><stop stop-color="#f8e3b1"/><stop offset=".22" stop-color="#675967"/><stop offset=".5" stop-color="#c38cff"/><stop offset=".76" stop-color="#423a52"/><stop offset="1" stop-color="#f2ddb6"/></linearGradient>
+<linearGradient id="blade" x1="10%" y1="10%" x2="90%" y2="100%"><stop stop-color="#ffe39f"/><stop offset=".37" stop-color="#c38cff"/><stop offset=".78" stop-color="#6d3992"/><stop offset="1" stop-color="#171527"/></linearGradient>
+<linearGradient id="trim" x1="0%" y1="0%" x2="100%" y2="100%"><stop stop-color="#ffe39f"/><stop offset=".4" stop-color="#c38cff"/><stop offset=".65" stop-color="#f6deb1"/><stop offset="1" stop-color="#6d3992"/></linearGradient>
+<radialGradient id="aura"><stop stop-color="#c38cff" stop-opacity=".45"/><stop offset=".65" stop-color="#c38cff" stop-opacity=".10"/><stop offset="1" stop-color="#c38cff" stop-opacity="0"/></radialGradient>
+<filter id="flare" x="-75%" y="-75%" width="250%" height="250%"><feGaussianBlur stdDeviation="1.7" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="shadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#02030b" flood-opacity=".9"/></filter>
+</defs><circle cx="128" cy="130" r="122" fill="url(#aura)"/>
+<circle cx="128" cy="130" r="109" fill="#101827" fill-opacity=".93" stroke="url(#ring)" stroke-width="8"/>
+<circle cx="128" cy="130" r="100" fill="url(#field)" stroke="#c38cff" stroke-opacity=".62" stroke-width="2"/>
+<circle cx="128" cy="130" r="91" fill="none" stroke="#ffe39f" stroke-opacity=".2" stroke-width="1.5" stroke-dasharray="3 8"/>
+<g fill="#ffe39f" opacity=".9"><circle cx="128" cy="26" r="3"/><circle cx="128" cy="234" r="3"/><circle cx="24" cy="130" r="3"/><circle cx="232" cy="130" r="3"/></g>
+<g filter="url(#shadow)"><path d="M128 49Q143 74 135 98Q157 90 156 70Q194 109 172 145Q192 137 195 118Q211 164 175 192Q150 212 128 215Q105 212 80 192Q45 164 60 118Q65 136 83 145Q64 108 101 70Q99 91 121 98Q111 74 128 49Z" fill="url(#blade)" stroke="#ffe6a7" stroke-width="5" stroke-linejoin="round" filter="url(#flare)"/><path d="M127 111Q151 119 153 145L144 164L128 177L112 164L103 145Q104 121 127 111Z" fill="#41265a" stroke="#ffe6c1" stroke-width="5"/><path d="M111 135L127 144L144 135M127 145V167" stroke="#f4b76a" stroke-width="5" fill="none"/><path d="M106 119Q82 115 75 96Q105 111 122 100M150 119Q173 115 181 96Q153 111 134 100" fill="none" stroke="#ffe1a7" stroke-width="7" stroke-linecap="round"/><path d="M128 69L126 98" stroke="#fffbd1" stroke-width="6" stroke-linecap="round"/></g>
+<path d="M48 78L59 72 M196 188L205 176" stroke="#c38cff" stroke-width="2" opacity=".55"/>
+</svg>
