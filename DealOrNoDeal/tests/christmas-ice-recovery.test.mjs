@@ -34,7 +34,7 @@ test('repair bar always appears above the board and is cache-busted', () => {
  assert.match(source, /repair\.onclick=\(\)=>load\(\)/);
  assert.match(page, /online-ice\.js\?v=20[0-9]{6}-[a-z0-9-]+/);
  assert.match(page, /#ice-online \.v44-recovery-bar/);
- assert.match(source, /if\(shouldRecover\)\{/);
+ assert.match(source, /if\(shouldRecover&&user\(\)\?\.uid===requestedUid&&authEpoch===requestedEpoch\)\{/);
  assert.match(source, /await run\(old\.type,old\.extra\|\|\{\}\)/);
 });
 
