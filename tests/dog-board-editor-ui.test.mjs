@@ -9,6 +9,7 @@ import {
   fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
   guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun
 } from '../DOG/editor-model.js';
+import {referencePoints,buildGoalLane,buildHomeGroup,getTrackConnections,straightGaps,connectStraightGap,SEAT_LABELS} from '../DOG/board-assistants.js';
 
 function openBuilder(){
   const events=new Map(),elements=new Map(),storage=new Map();
@@ -45,13 +46,15 @@ function openBuilder(){
     'BOARD_LAYOUT_ID','currentBoardLayout','saveBoardLayout','validateBoardLayout',
     'EDITOR_DRAFT_KEY','clone','emptyDraft','fromCrossPreset','fromLayout','placedCount',
     'fieldOf','selectedValid','snapXY','putField','eraseField','nextSlot','inspectDraft','asGameLayout',
-    'guidedPoint','directedPoint','previousTrackField','measureStepDistances','EIGHT_DIRECTIONS','alignTrackRun'
+    'guidedPoint','directedPoint','previousTrackField','measureStepDistances','EIGHT_DIRECTIONS','alignTrackRun',
+    'referencePoints','buildGoalLane','buildHomeGroup','getTrackConnections','straightGaps','connectStraightGap','SEAT_LABELS'
   ];
   const imports=[
     BOARD_LAYOUT_ID,currentBoardLayout,saveBoardLayout,validateBoardLayout,
     EDITOR_DRAFT_KEY,clone,emptyDraft,fromCrossPreset,fromLayout,placedCount,
     fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
-  guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun
+  guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun,
+    referencePoints,buildGoalLane,buildHomeGroup,getTrackConnections,straightGaps,connectStraightGap,SEAT_LABELS
   ];
   let source=readFileSync(new URL('../DOG/editor-builder.js',import.meta.url),'utf8');
   source=source.replace(/^import\s*\{[\s\S]*?\}\s*from '\.\/[^']+';\s*/gm,'');
@@ -196,4 +199,69 @@ test('batch alignment does not change the draft if the run would leave the board
  ui.trigger('align-run');
  assert.equal(ui.storage.get(EDITOR_DRAFT_KEY),before);
  assert.match(ui.get('feedback').textContent,/außerhalb|unverändert/);
+});
+
+test('DOG assistant selects house exit without losing existing positions',()=>{
+ const ui=openBuilder();
+ ui.get('assist-seat').value='2';
+ ui.trigger('assist-seat','change');
+ ui.trigger('choose-exit');
+ assert.equal(ui.get('field-index').value,'32');
+ assert.match(ui.get('assist-reference').innerHTML,/Ausstieg Feld 32/);
+ ui.touch(380,160);
+ const d=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ assert.ok(d.track[32]);
+ assert.equal(d.track[0],null);
+});
+test('DOG assistant previews goal lane without persisting, then generates four equally spaced goals',()=>{
+ const ui=openBuilder();
+ // Set the goal-entry circuit square 63 (preceding red start).
+ ui.get('field-index').value='63';ui.trigger('field-index','input');
+ ui.touch(115,310);
+ const before=ui.storage.get(EDITOR_DRAFT_KEY);
+ ui.trigger('preview-goals');
+ assert.equal(ui.storage.get(EDITOR_DRAFT_KEY),before);
+ assert.match(ui.board.innerHTML,/stroke="#fff0bd"/);
+ ui.trigger('build-goals');
+ const d=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ assert.equal(placedCount(d).goals,4);
+ for(let i=1;i<4;i++){
+  const dist=Math.hypot(d.goals[0][i].x-d.goals[0][i-1].x,d.goals[0][i].y-d.goals[0][i-1].y);
+  assert.ok(Math.abs(dist-28)<.15);
+ }
+});
+test('DOG assistant groups four house slots and preserves existing circuit',()=>{
+ const ui=openBuilder();
+ ui.touch(115,205);
+ const initial=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ ui.get('assist-home-dir').value='1,0';
+ ui.get('assist-home-layout').value='square';
+ ui.get('assist-home-distance').value='100';
+ ui.trigger('build-homes');
+ const updated=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ assert.equal(placedCount(updated).homes,4);
+ assert.deepEqual(updated.track,initial.track);
+ assert.equal(updated.homes[0][1].x-updated.homes[0][0].x,28);
+ assert.equal(updated.homes[0][2].y-updated.homes[0][0].y,28);
+ ui.trigger('undo');
+ assert.deepEqual(JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY)),initial);
+});
+test('DOG track connector fills only safe straight gaps, preserving both endpoints',()=>{
+ const ui=openBuilder();
+ ui.touch(115,115); // #0 snapped to 124,124.
+ ui.get('field-index').value='3';ui.trigger('field-index','input');
+ ui.touch(220,115); // #3 at 220,124, 96 apart -> two 32 gaps.
+ const start=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ assert.equal(placedCount(start).track,2);
+ ui.get('gap-select').value='0';
+ ui.trigger('check-connections');
+ assert.match(ui.get('track-summary').textContent,/Nachbarschaften verbunden/);
+ ui.trigger('fill-track-gap');
+ const finished=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ assert.equal(placedCount(finished).track,4);
+ assert.deepEqual(finished.track[0],start.track[0]);
+ assert.deepEqual(finished.track[3],start.track[3]);
+ assert.equal(finished.track[1].x,156);
+ assert.equal(finished.track[2].x,188);
+ assert.match(ui.get('feedback').textContent,/gleichmäßig verbunden/);
 });
