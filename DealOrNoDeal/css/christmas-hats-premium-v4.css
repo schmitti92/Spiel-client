@@ -1,0 +1,310 @@
+/* CHRISTMAS HATS | Premium Stage V4
+   This file intentionally overrides the legacy and V3 visual layer.
+   All prize logic, receipts, vouchers and authentication remain untouched. */
+:root{
+ --hats-gold:#ffe2a0;--hats-gold-deep:#9d713c;--hats-ivory:#fff6de;
+ --hats-border:#edcb86;--hats-panel:#14192de8;--hats-frost:#b7faff;
+}
+body{
+ background:
+ radial-gradient(ellipse 55% 26% at 50% -4%,#ad4f5870,transparent 80%),
+ radial-gradient(ellipse 45% 54% at 2% 66%,#165d6359,transparent 82%),
+ radial-gradient(ellipse 45% 58% at 98% 67%,#4b295f8a,transparent 82%),
+ #0d1124;
+}
+body:before{opacity:.44;animation-duration:48s}
+main{max-width:1460px;padding:8px clamp(9px,2vw,26px) 28px}
+nav{position:relative;z-index:3;gap:8px}
+nav .back,nav button{
+ border:1px solid #ffe0a571;
+ border-radius:10px;
+ background:linear-gradient(150deg,#2e304c,#131a31);
+ color:#fff3d9;
+ min-height:38px;
+ box-shadow:inset 0 1px #ffe8ac23,0 4px 8px #0005;
+}
+nav .back:hover,nav button:hover{border-color:#ffe4ab;background:linear-gradient(150deg,#4e3a54,#202341)}
+nav .tools{flex-wrap:wrap}
+.hero{padding:12px 10px 8px}
+.hero .eyebrow{font-size:clamp(9px,1vw,12px);letter-spacing:.27em;color:#fff0b9}
+.hero h1{
+ font-family:Georgia,"Times New Roman",serif;
+ letter-spacing:.015em;
+ font-size:clamp(28px,4.4vw,58px);
+ color:#fff1be;
+ text-shadow:0 3px 0 #643e38,0 0 21px #ffcf7f64,0 0 48px #f7b6593d;
+}
+.hero p{font-size:clamp(12px,1.13vw,16px)}
+.journey-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:5px;margin:11px 2px 8px}
+.journey-heading{font-weight:900;color:#e8d3a9;font-size:clamp(12px,1vw,15px);letter-spacing:.08em;text-transform:uppercase}
+.journey-current{display:inline-flex;gap:7px;align-items:center;font-weight:900;color:#fff2c0;font-size:clamp(12px,1.1vw,15px)}
+.tiers{
+ display:grid;grid-template-columns:repeat(10,minmax(0,1fr));
+ align-items:stretch;gap:clamp(3px,.7vw,11px);margin:0 0 7px;
+ padding:8px 6px;border:1px solid #b3946370;border-radius:16px;
+ background:linear-gradient(110deg,#0d1a2edc,#241c39ea 48%,#0e1b34e8);
+ box-shadow:inset 0 1px #ffe6a426,0 5px 14px #0007;
+}
+.tiers:before{top:50%;left:5%;right:5%;background:linear-gradient(90deg,#5daf98,#b5bb93,#f9c476);height:3px;z-index:0;opacity:.54}
+.tier{
+ z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+ height:clamp(42px,5.8vw,70px);min-height:0;padding:4px 1px;
+ border-radius:11px;border:1px solid #947b5d;
+ background:linear-gradient(145deg,#33314a,#171d33);
+ font-weight:900;font-size:clamp(12px,1.5vw,20px);color:#ded4c0;
+ box-shadow:inset 0 1px #f8e3b42d,0 4px 7px #0006;
+}
+.tier .stage-step-icon{font-size:clamp(11px,1.3vw,19px);line-height:1.15;filter:drop-shadow(0 2px 3px #0008)}
+.tier .stage-step-number{font-variant-numeric:tabular-nums;line-height:1.15}
+.tier.on{
+ transform:translateY(-3px) scale(1.055);
+ background:linear-gradient(145deg,#fff2c2,#d5a054 70%,#8d5d35);
+ border:2px solid #fff0ba;
+ color:#301b2b;
+ box-shadow:0 0 26px #ffcd80a6,0 5px 12px #0008,inset 0 2px #ffffffad;
+}
+.tier.done{background:linear-gradient(150deg,#247c72,#133e50);color:#d6ffde;border-color:#7becbb}
+.tier.cleared{background:linear-gradient(150deg,#275b6e,#1c364e);color:#d5f5fa}
+.tier.checkpoint-cell:not(.on){border-color:#e9d098;box-shadow:inset 0 0 11px #e4ca6648}
+.journey-zones{display:grid;grid-template-columns:3fr 3fr 4fr;gap:8px;margin:0 3px 13px}
+.journey-zones span{
+ text-align:center;border-bottom:2px solid #ffffff24;
+ padding:2px 4px 6px;font-weight:800;
+ font-size:clamp(9px,1vw,13px);color:#cfbfab;white-space:nowrap;
+}
+.journey-zones .active{
+ color:#ffe8aa;border-color:#f2c879;text-shadow:0 0 14px #f3ba718a;
+}
+.game{
+ isolation:isolate;position:relative;overflow:hidden;
+ border:2px solid #cda16d;border-radius:26px;
+ background-position:center top;background-size:cover;
+ box-shadow:0 19px 48px #000c,inset 0 0 0 5px #fae7b213,0 0 26px #dcb07629;
+ transition:border-color .4s,box-shadow .4s;
+}
+.game[data-zone="easy"]{
+ --scene-spot:#ffbe78;
+ background-image:linear-gradient(180deg,#180e26aa,#1e12236b 46%,#101528c9 100%),url("../assets/hats/workshop-stage.svg");
+ border-color:#e1b276;
+}
+.game[data-zone="medium"]{
+ --scene-spot:#ffdc94;
+ background-image:linear-gradient(180deg,#140e24b7,#20143571 43%,#0e1128cc 100%),url("../assets/hats/gold-vault-stage.svg");
+ border-color:#e2c68e;
+}
+.game[data-zone="jackpot"]{
+ --scene-spot:#a1effb;
+ background-image:linear-gradient(180deg,#0a182c89,#131b39a1 47%,#0b1229cf 100%),url("../assets/hats/ice-palace-stage.svg");
+ border-color:#a0ecf0;
+ box-shadow:0 16px 48px #000c,inset 0 0 0 4px #b7f5ff1c,0 0 36px #7deaff48;
+}
+.game[data-zone="jackpot"]:has(.stage-banner.jackpot){
+ border-color:#a8edff;
+ box-shadow:0 16px 48px #000c,inset 0 0 0 5px #9deeff25,0 0 40px #7bedfd54;
+}
+.game:before{
+ content:"";position:absolute;inset:0;width:100%;height:100%;left:0;top:0;
+ background:
+  radial-gradient(ellipse 28% 44% at 17% 22%,#ffe7b531,transparent 84%),
+  radial-gradient(ellipse 28% 44% at 83% 22%,#ffe7b52e,transparent 84%),
+  linear-gradient(180deg,#100e2070 0%,transparent 40%,#060e2066 100%);
+ filter:none;border-radius:inherit;pointer-events:none;z-index:0;
+}
+.game > *{position:relative;z-index:1}
+.topline{
+ display:grid;grid-template-columns:minmax(220px,1fr) auto auto;
+ align-items:center;gap:9px;padding:8px 11px;
+ border-radius:14px;
+ border:1px solid #f4cf937a;
+ background:linear-gradient(100deg,#14182ce8,#3a253cbf 54%,#121e31e8);
+ box-shadow:inset 0 1px #ffe9b431,0 8px 20px #0006;
+}
+.roomTitle{
+ font-family:Georgia,serif;font-size:clamp(20px,2.8vw,34px);
+ color:#ffecc0;text-shadow:0 2px #291426,0 0 14px #ffca7580;
+}
+.checkpoint{
+ border:1px solid #f2d5a67c;color:#fff0be;background:#162c3ecb;
+ border-radius:10px;padding:9px 12px;font-size:clamp(10px,1vw,13px);white-space:nowrap;
+}
+#checkpoint{border-color:#8be9c27e;color:#d3ffe7}
+.subtitle{color:#fff1d4;margin:9px 0 6px;font-size:clamp(12px,1.1vw,15px);text-shadow:0 1px 3px #000}
+.stage-banner{
+ margin:9px 0 8px;max-width:none;padding:10px 15px;
+ border:1px solid #f7d79b87;border-radius:12px;
+ background:linear-gradient(100deg,#101b2bdb,#3e2d45cc 52%,#131c2fe6);
+ box-shadow:0 3px 14px #0007,inset 0 1px #fff4bc27;
+}
+.stage-banner.jackpot{background:linear-gradient(100deg,#112c43ed,#294565b9,#101e36ed);border-color:#a5ecf4}
+.stage-banner .stage-name{
+ font-family:Georgia,serif;letter-spacing:.08em;
+ font-size:clamp(13px,1.8vw,23px);color:#fff0bf;text-shadow:0 2px 9px #000;
+}
+.stage-banner .stage-hint{font-size:clamp(11px,1vw,14px);color:#d5e5da}
+.stage-announcer{
+ max-width:none;margin:5px 0 9px;padding:7px 13px;min-height:35px;
+ background:linear-gradient(90deg,#141a2ddf,#592c3fc6 52%,#151b2bdc);
+ border:1px solid #e3bc8284;box-shadow:inset 0 1px #fff4b51e,0 3px 10px #0006;
+}
+.game[data-zone="jackpot"] .stage-announcer{background:linear-gradient(90deg,#111d34ea,#27506bd2 50%,#111b31ea);border-color:#a5eaf0a8}
+.hats{
+ max-width:1120px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:clamp(6px,2.1vw,27px);margin:17px auto 18px;
+ align-items:stretch;position:relative;
+}
+.hat{
+ position:relative;min-height:clamp(248px,23vw,323px);padding:18px 10px 57px;
+ border:2px solid #deb97c;border-radius:18px 18px 26px 26px;
+ background:
+ radial-gradient(ellipse 55% 44% at 50% 30%,#fff3c82b,transparent 78%),
+ linear-gradient(158deg,#332241ef,#101629e8 90%);
+ box-shadow:inset 0 1px #fff7d36b,0 10px 0 #2c2137,0 17px 26px #000a;
+ isolation:isolate;overflow:visible;
+ transition:transform .24s ease,box-shadow .24s ease,border-color .24s ease;
+}
+.hat:before{
+ content:"";position:absolute;top:-17px;left:7%;right:7%;height:72%;
+ z-index:-1;opacity:.53;pointer-events:none;
+ background:linear-gradient(180deg,#fff6d158,transparent 85%);
+ clip-path:polygon(36% 0%,64% 0%,100% 100%,0 100%);
+ filter:blur(2px);
+}
+.hat:after{
+ content:"";position:absolute;bottom:10px;left:9%;right:9%;height:43px;
+ border:2px solid #f8dc9f;border-radius:50%;
+ background:linear-gradient(180deg,#fbe6a1 0%,#d7a352 25%,#886039 52%,#403047 90%);
+ box-shadow:0 5px 0 #5b3d3a,0 11px 12px #000a,0 0 19px #ffda8b6e,inset 0 3px #fff9c280;
+ z-index:-1;pointer-events:none;
+}
+.hat .num{
+ top:12px;left:12px;
+ font-size:clamp(10px,1vw,13px);color:#ffe6a7;
+ background:linear-gradient(90deg,#090f1ea8,#19213a78);
+ padding:5px 8px;border:1px solid #f9d28a4d;border-radius:7px;
+}
+.hat .santa-hat{
+ display:block;position:relative;flex:0 0 auto;
+ width:clamp(126px,16vw,226px);
+ height:clamp(140px,18vw,250px);
+ background:url("../assets/hats/santa-hat-premium.svg") center / contain no-repeat;
+ filter:drop-shadow(0 8px 7px #03040ca0) drop-shadow(0 0 15px #ffd9ae2c);
+ animation:premium-hover 3.7s ease-in-out infinite;
+ transform-origin:center bottom;transition:filter .25s;
+}
+.hat:nth-child(2) .santa-hat{animation-delay:-1.2s}
+.hat:nth-child(3) .santa-hat{animation-delay:-2.4s}
+.santa-hat:before,.santa-hat:after,.santa-hat .pom{display:none!important}
+@keyframes premium-hover{0%,100%{transform:translateY(2px) rotate(-1deg)}50%{transform:translateY(-7px) rotate(2deg)}}
+.hat .hatName{
+ position:absolute;bottom:48px;left:3%;right:3%;
+ display:block;color:#ffecc1;text-shadow:0 2px 7px #000;
+ font-family:Georgia,serif;font-size:clamp(12px,1.3vw,17px);
+ letter-spacing:.06em;line-height:1.25;
+}
+.hat:hover:not(:disabled){
+ transform:translateY(-8px) scale(1.016);
+ border-color:#fff1bd;
+ box-shadow:inset 0 1px #fff8d9b0,0 16px 0 #30223b,0 24px 33px #000b,0 0 34px #f8d4888c;
+}
+.hat:focus-visible{outline:3px solid #d1ffff;outline-offset:4px}
+.hat.selected{border-color:#fff3bc!important;background:linear-gradient(158deg,#594362f2,#1e1e3bef)}
+.hats.stage-suspense .hat:not(.selected){opacity:.47;filter:brightness(.66)}
+.hats.stage-suspense .hat.selected{animation:chosen-pulse .65s alternate infinite}
+.hat.suspense .santa-hat{animation:show-suspense .28s infinite alternate}
+.hat.shown .santa-hat{
+ position:absolute;top:16px;left:50%;inset:auto auto auto 50%;
+ width:clamp(126px,16vw,226px);height:clamp(140px,18vw,250px);
+ animation:premium-hat-lift .72s cubic-bezier(.2,.6,.3,1) forwards;
+}
+@keyframes premium-hat-lift{
+ 0%{opacity:1;transform:translate(-50%,0) scale(1) rotate(0deg)}
+ 54%{opacity:1;transform:translate(-50%,-31px) scale(1.03) rotate(-7deg)}
+ 100%{opacity:0;transform:translate(-50%,-108px) scale(.84) rotate(-13deg)}
+}
+.hat.shown .revealEmoji{position:relative;font-size:clamp(42px,5.1vw,72px);z-index:2;animation:pop .65s .35s both}
+.hat.shown .hatName{position:relative;bottom:auto;left:auto;right:auto;z-index:3}
+.hat.shown .hatDetail{position:relative;z-index:3;font-size:clamp(10px,.9vw,13px);line-height:1.35;margin-bottom:17px;max-width:95%;color:#fff0cb}
+.hat.shown.bomb{border-color:#ff9181;background:radial-gradient(#a1304790,#1d1931);box-shadow:0 0 40px #f35d69a1,0 15px 20px #0009}
+.hat.shown.super{border-color:#ffecb4;background:radial-gradient(#ffd17373,#27203e);box-shadow:0 0 34px #ffdb74a8,0 15px 20px #0009}
+.loot-overview{max-width:1090px;margin:8px auto;gap:10px}
+.loot-counter{
+ padding:14px 8px;border:1px solid #ffe4ae7a;border-radius:14px;
+ background:linear-gradient(150deg,#111c2cec,#24223be8);
+ box-shadow:inset 0 2px #e9d6a629,0 5px 13px #0007;
+}
+.loot-counter.secure{border-color:#8aefc7ab}
+.loot-counter.risk{border-color:#f8ac80ab}
+.loot-counter small{font-weight:850;letter-spacing:.045em;color:#e0d3c9}
+.loot-counter strong{font-size:clamp(20px,2.55vw,34px)}
+.inventory{max-width:1090px;margin:12px auto 0}
+.panel{border:1px solid #ffdc9e69;border-radius:16px;background:#101a31e5;box-shadow:inset 0 1px #e7d6a122,0 7px 17px #0005}
+.panel h3{font-family:Georgia,serif;font-size:clamp(14px,1.3vw,18px)}
+.story-voice{max-width:1090px;margin:12px auto 0;border-color:#d8be91a2;box-shadow:0 6px 14px #0006;background:linear-gradient(110deg,#101a2df2,#35253ef2)}
+.status{max-width:1090px}
+.action{border-radius:12px;box-shadow:0 6px 17px #0008,inset 0 1px #fff5cd8e}
+.game[data-zone="jackpot"] .stage-banner .stage-name{color:#d7faff}
+@media(max-width:950px){
+ .topline{grid-template-columns:1fr auto;gap:8px}
+ .roomTitle{grid-column:1/-1}
+ .hat{min-height:240px;padding:18px 6px 51px}
+ .hat .santa-hat{width:clamp(110px,18vw,178px);height:clamp(130px,21vw,199px)}
+ .hat.shown .santa-hat{width:clamp(110px,18vw,178px);height:clamp(130px,21vw,199px)}
+}
+@media(max-width:620px){
+ main{padding:8px 8px 22px}
+ nav .tools{gap:4px}
+ nav .back,nav button{padding:7px 8px;font-size:12px;min-height:32px}
+ .journey-heading{font-size:11px}
+ .journey-current{font-size:11px}
+ .tiers{gap:3px;padding:5px 3px;border-radius:10px}
+ .tier{height:43px;border-radius:7px;font-size:12px}
+ .tier .stage-step-icon{font-size:11px}
+ .tier.on{transform:translateY(-2px) scale(1.025)}
+ .journey-zones{gap:3px;margin-bottom:9px}
+ .journey-zones span{font-size:9px;padding:1px 2px 5px;overflow:hidden;text-overflow:ellipsis}
+ .game{padding:9px;border-radius:16px}
+ .topline{padding:9px;gap:6px}
+ .roomTitle{font-size:21px}
+ .checkpoint{font-size:10px;padding:6px 7px}
+ .subtitle{font-size:12px}
+ .stage-banner{padding:8px 10px;gap:3px}
+ .stage-banner .stage-name{font-size:14px}
+ .stage-announcer{padding:7px 8px;font-size:12px}
+ .hats{gap:5px;margin:8px auto 11px}
+ .hat{min-height:190px;padding:21px 2px 39px;border-radius:12px;border-width:1px}
+ .hat .num{top:6px;left:4px;font-size:9px;padding:4px 3px;border-radius:5px}
+ .hat .santa-hat,.hat.shown .santa-hat{width:clamp(80px,24vw,122px);height:clamp(91px,28vw,135px)}
+ .hat .hatName{bottom:31px;font-size:11px;letter-spacing:0}
+ .hat:after{height:23px;bottom:7px;left:6%;right:6%}
+ .hat:before{height:72%}
+ .hat.shown{min-height:210px;padding:14px 2px 38px}
+ .hat.shown .hatName{font-size:11px}
+ .hat.shown .hatDetail{font-size:9px;margin-bottom:10px}
+ .hat.shown .revealEmoji{font-size:44px}
+ .hat.shown .santa-hat{top:10px}
+ .loot-counter{padding:10px 3px}
+ .loot-counter small{font-size:10px}
+ .loot-counter strong{font-size:17px}
+ .inventory{gap:8px}
+ .panel{padding:10px}
+ .story-voice{margin-top:9px}
+}
+@media(min-width:900px) and (orientation:landscape) and (max-height:790px){
+ .hero{padding:3px 8px}.hero h1{font-size:29px;margin:4px 0}
+ .tiers{padding:3px 6px;margin:0 0 4px}.tier{height:36px}
+ .journey-zones{margin:0 0 6px}
+ .game{padding:12px 18px}
+ .hat{min-height:180px;padding:8px 8px 40px}
+ .hat .santa-hat{width:115px;height:124px}
+ .hat.shown .santa-hat{width:115px;height:124px}
+ .hat .hatName{bottom:35px}
+ .hat:after{height:27px;bottom:5px}
+ .hats{margin:6px auto 9px}
+ .loot-counter{padding:7px}
+ .stage-banner{padding:6px 12px}
+ .stage-announcer{margin:4px 0;padding:5px}
+}
+@media(prefers-reduced-motion:reduce){
+ .hat .santa-hat,.hat.shown .santa-hat,.hat.suspense .santa-hat{animation:none!important}
+ .hat:hover:not(:disabled){transform:none}
+}
