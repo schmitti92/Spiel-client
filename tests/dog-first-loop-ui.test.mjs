@@ -69,6 +69,21 @@ test('Mini-boss rewards are displayed only from an awarded server result',()=>{
  assert.ok(!mapJs.includes('miniReward={'));
 });
 
+test('Boss 10 lets one or two ready heroes start without waiting for all three',()=>{
+ assert.ok(arena.includes('id="start-button"'));
+ assert.ok(arena.includes('Allein ist der Sieg ausgeschlossen'));
+ assert.ok(arena.includes('zu zweit ist er nur mit maximalen Werten'));
+ assert.ok(arenaJs.includes("command('start')"));
+ assert.ok(arenaJs.includes("request.command==='start'"));
+ assert.ok(arenaJs.includes('const canReady='));
+ assert.ok(!arenaJs.includes("members.length===3&&"),
+  'ready should not require all three members');
+ assert.ok(arenaJs.includes("view?.roster?.some(m=>m.uid===account)"),
+  'late spectators cannot react on behalf of participants');
+ assert.ok(arenaJs.includes('view?.result?.hpRemaining'),
+  'actual remaining boss health is shown after the fight');
+});
+
 test('The client cannot locally grant boss victories or consume inventory',()=>{
  assert.ok(!arenaJs.includes('sharedBosses.push('));
  assert.ok(!arenaJs.includes('dogUnlocked=true'));
