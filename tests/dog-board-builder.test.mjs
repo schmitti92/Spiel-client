@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
  EDITOR_DRAFT_KEY,emptyDraft,fromCrossPreset,fromLayout,placedCount,fieldOf,
- snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS
+ snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun
 } from '../DOG/editor-model.js';
 import {makeDefaultLayout,currentBoardLayout,resetBoardLayout} from '../DOG/board-layout.js';
 
@@ -138,4 +138,52 @@ test('guide falls back to square grid for the first field and does not place out
  const next={kind:'track',index:1,owner:0};
  assert.equal(directedPoint(d,next,1,0,{step:32}),null);
  assert.throws(()=>directedPoint(d,next,1,2,{step:32}),/8 Richtungen/);
+});
+
+
+test('existing DOG straight and diagonal segments can be re-aligned without touching other fields',()=>{
+ const d=emptyDraft();
+ d.track[20]={x:300,y:300};
+ d.track[21]={x:327,y:300};d.track[22]={x:357,y:300};d.track[23]={x:387,y:300};
+ d.track[24]={x:440,y:440};
+ const before=structuredClone(d);
+ const next=alignTrackRun(d,{kind:'track',index:20,owner:1},{dx:1,dy:1,count:3,step:32});
+ assert.deepEqual(next.track[20],{x:300,y:300});
+ assert.deepEqual(next.track[24],{x:440,y:440});
+ assert.deepEqual(d,before,'batch alignment must not mutate the original draft, for Undo support');
+ for(let index=20;index<23;index++){
+   const a=next.track[index],b=next.track[index+1];
+   assert.ok(Math.abs(Math.hypot(a.x-b.x,a.y-b.y)-32)<=.15,'Equal diagonal spacing '+index);
+ }
+ assert.equal(placedCount(next).track,5);
+});
+test('DOG batch alignment of a full horizontal row yields precisely constant 28-unit steps',()=>{
+ let d=emptyDraft();d.track[8]={x:200,y:400};
+ d=alignTrackRun(d,{kind:'track',index:8,owner:0},{dx:1,dy:0,count:6,step:28});
+ for(let index=9;index<=14;index++)assert.deepEqual(d.track[index],{x:200+(index-8)*28,y:400});
+ assert.equal(placedCount(d).track,7);
+});
+test('DOG batch alignment supports fourfold symmetry when all mirrored anchors exist',()=>{
+ const d=emptyDraft();
+ d.track[3]={x:250,y:150};d.track[19]={x:610,y:250};
+ d.track[35]={x:510,y:610};d.track[51]={x:150,y:510};
+ const next=alignTrackRun(d,{kind:'track',index:3,owner:0},{dx:1,dy:0,count:2,step:32,symmetry:true});
+ assert.deepEqual(next.track[4],{x:282,y:150});
+ assert.deepEqual(next.track[5],{x:314,y:150});
+ assert.deepEqual(next.track[20],{x:610,y:282});
+ assert.deepEqual(next.track[21],{x:610,y:314});
+ assert.deepEqual(next.track[36],{x:478,y:610});
+ assert.deepEqual(next.track[37],{x:446,y:610});
+ assert.deepEqual(next.track[52],{x:150,y:478});
+ assert.deepEqual(next.track[53],{x:150,y:446});
+});
+test('DOG batch alignment refuses collision, out-of-bounds, or crossing sector seams',()=>{
+ let d=emptyDraft();d.track[20]={x:300,y:300};d.track[24]={x:332,y:300};
+ assert.throws(()=>alignTrackRun(d,{kind:'track',index:20},{dx:1,dy:0,count:1,step:32}),/überlappen/);
+ d.track[20]={x:722,y:300};d.track[24]=null;
+ assert.throws(()=>alignTrackRun(d,{kind:'track',index:20},{dx:1,dy:0,count:1,step:32}),/außerhalb/);
+ d.track[62]={x:300,y:300};
+ assert.throws(()=>alignTrackRun(d,{kind:'track',index:62},{dx:1,dy:0,count:2,step:32}),/Feld 63/);
+ d.track[15]={x:200,y:200};
+ assert.throws(()=>alignTrackRun(d,{kind:'track',index:15},{dx:1,dy:0,count:2,step:32,symmetry:true}),/Farbwechsel/);
 });
