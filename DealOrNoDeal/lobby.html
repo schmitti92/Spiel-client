@@ -644,7 +644,19 @@ async function claimChrisBonus(event){
   await checkChrisBonus();
  }finally{chrisBonusBusy=false;paintBalances()}
 }
-function paintBalances(){const target=$('wallet-grid');target.replaceChildren();const players=room?.players?.filter(p=>!p.testBot&&!p.bot).slice(0,4)||[];if(!players.length){const d=document.createElement('div');d.className='wallet-loading';d.textContent='Spieler erscheinen, sobald der Raum verbunden ist.';target.append(d);return}for(const p of players){const data=balances?.find(b=>b.id===p.uid);const card=document.createElement('article');card.className='wallet-card'+(p.me?' mine':'');card.tabIndex=0;card.setAttribute('role','link');card.title='Shop & Sammelalbum öffnen';card.onclick=()=>location.assign($('shop-entry').href);card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();card.click()}};const head=document.createElement('div');head.className='wallet-identity';const img=document.createElement('img');img.src=avatarPortraitPath(p.me?selectedAvatar:(roomAvatars[p.uid]||1));img.alt='';img.onerror=()=>{img.onerror=null;img.src='./assets/avatar-1.svg'};const name=document.createElement('div');name.className='wallet-name';name.textContent=(p.host?'👑 ':'')+p.name;head.append(img,name);const amount=document.createElement('div');amount.className='wallet-value';amount.textContent=data?euros(data.balance):'—';const stats=document.createElement('div');stats.className='wallet-stats';stats.textContent=data?data.games+' Partien · '+data.wins+' Siege':'Kontostand wird geladen';card.append(head,amount,stats);
+// A live room heartbeat may call render() even when the wallet has not changed.
+// Rebuilding all cards on each heartbeat reloads portraits and causes visible
+// layout jank. Only touch the wallet DOM when its actual inputs change.
+let lastWalletRenderKey='';
+function paintBalances(){const target=$('wallet-grid');const players=room?.players?.filter(p=>!p.testBot&&!p.bot).slice(0,4)||[];
+const walletKey=JSON.stringify([
+ players.map(p=>[p.uid,p.name,!!p.host,!!p.me,roomAvatars[p.uid]||0]),
+ (balances||[]).map(b=>[b.id,b.balance,b.games,b.wins]),
+ selectedAvatar,chrisBonusEligible,chrisBonusBusy,user()?.uid||null
+]);
+if(walletKey===lastWalletRenderKey&&target.childElementCount>0)return;
+lastWalletRenderKey=walletKey;
+target.replaceChildren();if(!players.length){const d=document.createElement('div');d.className='wallet-loading';d.textContent='Spieler erscheinen, sobald der Raum verbunden ist.';target.append(d);return}for(const p of players){const data=balances?.find(b=>b.id===p.uid);const card=document.createElement('article');card.className='wallet-card'+(p.me?' mine':'');card.tabIndex=0;card.setAttribute('role','link');card.title='Shop & Sammelalbum öffnen';card.onclick=()=>location.assign($('shop-entry').href);card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();card.click()}};const head=document.createElement('div');head.className='wallet-identity';const img=document.createElement('img');img.src=avatarPortraitPath(p.me?selectedAvatar:(roomAvatars[p.uid]||1));img.alt='';img.onerror=()=>{img.onerror=null;img.src='./assets/avatar-1.svg'};const name=document.createElement('div');name.className='wallet-name';name.textContent=(p.host?'👑 ':'')+p.name;head.append(img,name);const amount=document.createElement('div');amount.className='wallet-value';amount.textContent=data?euros(data.balance):'—';const stats=document.createElement('div');stats.className='wallet-stats';stats.textContent=data?data.games+' Partien · '+data.wins+' Siege':'Kontostand wird geladen';card.append(head,amount,stats);
  if(p.uid===user()?.uid&&chrisBonusEligible){
   const claim=document.createElement('button');claim.type='button';claim.className='chris-bonus-claim';
   claim.textContent=chrisBonusBusy?'⏳ Gutschrift läuft …':'🎁 100 Millionen gutschreiben';
