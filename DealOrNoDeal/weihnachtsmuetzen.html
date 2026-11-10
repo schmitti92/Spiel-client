@@ -250,7 +250,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
   </div>
  </div>
 </div>
-<footer>🎁 Normale Gewinne in Räumen 1–3 · Gold und starke Gewinne in 4–6 · Jackpot ab Raum 7 · Superglück überall möglich</footer>
+<footer>🎁 1–3: kleine Geschenke · 4–6: Goldpakete und kleinere Gewinne · 7–15: gelegentlich besondere Belohnungen · 16–20: seltene Hauptgewinne · Superglück wird langsam wahrscheinlicher</footer>
 </main>
 <script>
 (()=>{
@@ -533,7 +533,9 @@ function render(){
  });
  banner.classList.toggle('jackpot',zone==='jackpot'||zone==='final');
  $('stage-name').textContent=zone==='easy'?'🧸 DIE WEIHNACHTSWERKSTATT':zone==='medium'?'🔑 DIE GOLDENE SCHATZKAMMER':zone==='jackpot'?'💎 DER LEGENDÄRE EISPALAST':'👑 DAS NORDPOL-FINALE';
- $('stage-hint').textContent=zone==='easy'?'Einfache Hammer & Kartenpakete':zone==='medium'?'Gold, Joker & seltene Millionengewinne':zone==='jackpot'?'Große Schätze · stärkere Supergewinne':'Legendäre Beute · 20 Räume';
+ $('stage-hint').textContent=s?.rulesVersion===6||!s
+   ?(zone==='easy'?'Ein kleines Geschenk pro Mütze':zone==='medium'?'Goldpakete, Hammer und erste Sondergewinne':zone==='jackpot'?'Premium-Geschenke und seltene Joker':'Nur hier: besonders seltene große Gewinne')
+   :(zone==='easy'?'Einfache Hammer & Kartenpakete':zone==='medium'?'Gold, Joker & seltene Millionengewinne':zone==='jackpot'?'Große Schätze · stärkere Supergewinne':'Legendäre Beute · 20 Räume');
  const safe=(presented?.secured||[]).flatMap(g=>g.items||[]),risk=(presented?.pending||[]).flatMap(g=>g.items||[]);
  const positions=items=>items.reduce((acc,it)=>acc+(it.quantity||1),0);
  const money=[...safe,...risk].filter(it=>it.kind==='cash').reduce((acc,it)=>acc+(Number(it.amountCents)||0),0);
