@@ -44,7 +44,7 @@ test('Journey shows 20 stages, safe bonus rooms, checkpoints and four distinct w
  assert.match(page,/christmas-hats-quick20-v7\.css/);
  assert.match(page,/id="hats-stage" class="game" data-zone="easy"/);
  assert.match(inline,/const isCheckpoint=roomsProtected\.includes\(i\)&&!isFinal/);
- assert.match(inline,/const isBonus=\(state\?\.rulesVersion===5\|\|!state\)&&i%3===0&&i<20/);
+ assert.match(inline,/const isBonus=\(state\?\.rulesVersion>=5\|\|!state\)&&i%3===0&&i<20/);
  assert.match(inline,/symbol\.textContent=isFinal\?'👑'/);
  assert.match(inline,/\$\('hats-stage'\)\.dataset\.zone=zone/);
  assert.match(inline,/roomNumber<=3\?'easy':roomNumber<=9\?'medium':roomNumber<=15\?'jackpot':'final'/);
