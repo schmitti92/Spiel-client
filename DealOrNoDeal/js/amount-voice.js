@@ -142,7 +142,7 @@
    scheduledStory=next;
    function continueStory(tries=0){
     if(scheduledStory!==next)return;
-    if(token!==speechSequence||!storyEnabled||document.hidden{
+    if(token!==speechSequence||!storyEnabled||document.hidden){
      scheduledStory=null;discardStory(next);return;
     }
     if(currentUtterance||synth.speaking){
