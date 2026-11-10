@@ -259,8 +259,9 @@
   if(!state||busy||!inventory)return;
   const uid=state.user.uid;
   const pending=getPending(uid);
-  if(!pending&&(!tier||!((Object.hasOwn(TIER,tier)&&(
-   EXPEDITION_TIERS.includes(tier)?expeditionCounts()[tier]:chestCounts()[tier]))>0)))return;
+  const available=tier?(EXPEDITION_TIERS.includes(tier)?
+   expeditionCounts()[tier]:chestCounts()[tier]):0;
+  if(!pending&&(!tier||!Object.hasOwn(TIER,tier)||!(available>0)))return;
   const id=pending?.id||newId(),requestTier=pending?.tier??tier;
   if(!pending&&!storePending(uid,id,requestTier)){
    message('⚠️ Die Kistenöffnung konnte nicht sicher gespeichert werden. Bitte Speicherfunktion des Browsers prüfen.','danger');
