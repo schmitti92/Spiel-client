@@ -27,3 +27,26 @@
  outline:3px solid #fff19d!important;outline-offset:3px!important
 }
 @media(max-width:650px){#christmas-dice-toggle{padding:7px 9px;font-size:11px}}
+
+/* Freischaltstatus is visible even when profile auth or Render is still loading. */
+.header-actions{flex-wrap:wrap}
+#christmas-dice-toggle{flex:0 0 auto}
+#christmas-dice-toggle.dice-locked{
+ background:linear-gradient(120deg,#334046,#3c3529);border-color:#b1a899;
+ color:#f4dfc1;box-shadow:none
+}
+#christmas-dice-toggle.dice-unlocked[aria-pressed="true"]{
+ background:linear-gradient(125deg,#a52232,#12643c);
+ box-shadow:0 0 0 2px #ffd68055,0 3px 12px #0006
+}
+#christmas-dice-toggle[aria-busy="true"]{cursor:progress;opacity:.8}
+#christmas-dice-status{
+ display:inline-block;flex:1 1 170px;max-width:350px;
+ font:650 11px/1.25 system-ui,sans-serif;
+ color:#fff2ca;text-shadow:0 1px 3px #000c;
+ overflow-wrap:anywhere;
+}
+@media(max-width:740px){
+ #christmas-dice-toggle{font-size:11px!important;min-height:34px}
+ #christmas-dice-status{flex:1 1 100%;max-width:none;font-size:10px}
+}
