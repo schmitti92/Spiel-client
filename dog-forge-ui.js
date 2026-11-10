@@ -67,7 +67,7 @@
   if(textValue!==undefined)el.textContent=String(textValue);
   return el;
  };
- let uid=null,view=null,busy=false,tab='equipment',selected='weapon',tradeGroup='equipment',loadSerial=0,readyOnly=false,confirmData=null,exchangeConfirmData=null,goalId=null;
+ let uid=null,view=null,busy=false,tab='equipment',selected='weapon',tradeGroup='equipment',loadSerial=0,readyOnly=false,confirmData=null,exchangeConfirmData=null,goalId=null,sessionEpoch=0,lastLoadedAt=0,loadingUid=null,loadingPromise=null;
  const goalKey=account=>'dog:forge:goal:'+account;
  const loadGoal=account=>{
   try{const id=localStorage.getItem(goalKey(account));
@@ -171,7 +171,15 @@
   }catch{}
   return null;
  }
- const savePending=(account,data)=>{try{localStorage.setItem(pendingKey(account),JSON.stringify(data));}catch{}};
+ // Fail closed: an unsafe unrecorded POST could spend resources without a
+ // replayable request ID if localStorage is disabled or full.
+ const savePending=(account,data)=>{
+  try{
+   const serialized=JSON.stringify(data),key=pendingKey(account);
+   localStorage.setItem(key,serialized);
+   return localStorage.getItem(key)===serialized;
+  }catch{return false;}
+ };
  const clearPending=account=>{try{localStorage.removeItem(pendingKey(account));}catch{}};
  const newId=()=>{
   const uuid=globalThis.crypto?.randomUUID?.();
@@ -185,22 +193,30 @@
   const state=auth();
   if(!state||state.user.uid!==account)throw Error('LOGIN_REQUIRED');
   const token=await state.user.getIdToken();
-  const response=await fetch(API+'/api/dog/forge/'+route,{
-   method,cache:'no-store',
-   headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
-   body:data?JSON.stringify(data):undefined
-  });
-  const payload=await response.json().catch(()=>({error:'DOG_FORGE_UNAVAILABLE'}));
-  if(!response.ok||payload.ok!==true)throw Error(payload.error||'DOG_FORGE_UNAVAILABLE');
-  if(auth()?.user?.uid!==account)throw Error('ACCOUNT_CHANGED');
-  return payload;
+  const controller=typeof AbortController==='function'?new AbortController():null;
+  const timer=controller?setTimeout(()=>controller.abort(),20000):null;
+  try{
+   const response=await fetch(API+'/api/dog/forge/'+route,{
+    method,cache:'no-store',
+    headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+    body:data?JSON.stringify(data):undefined,
+    ...(controller?{signal:controller.signal}:{})
+   });
+   const payload=await response.json().catch(()=>({error:'DOG_FORGE_UNAVAILABLE'}));
+   if(!response.ok||payload.ok!==true)throw Error(payload.error||'DOG_FORGE_UNAVAILABLE');
+   if(auth()?.user?.uid!==account)throw Error('ACCOUNT_CHANGED');
+   return payload;
+  }catch(error){
+   if(controller?.signal.aborted)throw Error('FORGE_REQUEST_TIMEOUT');
+   throw error;
+  }finally{if(timer!==null)clearTimeout(timer);}
  }
  const levelFor=id=>view?.hero?.levels?.[id]??(id==='weapon'||id==='armor'?1:0);
  const quoteFor=id=>view?.quotes?.find(q=>q.itemId===id);
  const canUpgradeItem=id=>{const q=quoteFor(id);return !!q&&!q.maxed&&q.affordable;};
  const have=id=>view?.inventory?.resources?.[id]||0;
  const itemFor=id=>view?.items?.find(x=>x.id===id);
- const usable=()=>!!uid&&!!view&&!busy&&!pending(uid);
+ const usable=()=>!!uid&&auth()?.user?.uid===uid&&!!view&&!busy&&!pending(uid);
  function header(){
   const state=auth();
   $('forge-player').textContent=state?.profile?.name||state?.user?.displayName||'Nicht angemeldet';
@@ -638,8 +654,9 @@
    button.classList.toggle('active',isActive);
    button.setAttribute('aria-selected',String(isActive));
   }
-  $('forge-retry-wrap').hidden=!pending(uid);
-  $('forge-retry').disabled=!uid||busy;
+  const currentAccount=auth()?.user?.uid===uid;
+  $('forge-retry-wrap').hidden=!currentAccount||!pending(uid);
+  $('forge-retry').disabled=!currentAccount||!uid||busy;
   $('forge-refresh').disabled=busy;
   header();renderList();tab==='exchange'?renderExchange():renderUpgrade();renderGoal();renderChronicle();renderStock();renderGallery();
  }
@@ -689,39 +706,56 @@
   }else reward.textContent='';
   if(!dialog.open)dialog.showModal();
  }
- async function reload(){
+ // One in-flight GET per account. Auth switches still start a new account load.
+ function reload(){
+  const account=auth()?.user?.uid||null;
+  if(account&&loadingUid===account&&loadingPromise)return loadingPromise;
+  const work=loadNow();
+  loadingUid=account;loadingPromise=work;
+  void work.finally(()=>{if(loadingPromise===work){loadingUid=null;loadingPromise=null;}});
+  return work;
+ }
+ async function loadNow(){
   const state=auth(),requestIndex=++loadSerial;
   if(!state){
-   uid=null;view=null;goalId=null;closeConfirm();closeExchangeConfirm();closeModal();
+   uid=null;view=null;goalId=null;lastLoadedAt=0;
+   closeConfirm();closeExchangeConfirm();closeModal();
    status('Bitte melde dich mit deinem Online-Profil an, um die Schmiede zu nutzen.','bad');
    $('forge-player').textContent='Nicht angemeldet';render();return;
   }
   const account=state.user.uid;
-  if(uid!==account){uid=account;view=null;goalId=loadGoal(account);closeConfirm();closeExchangeConfirm();closeModal();}
+  if(uid!==account){
+   uid=account;view=null;lastLoadedAt=0;goalId=loadGoal(account);
+   closeConfirm();closeExchangeConfirm();closeModal();
+  }
   status('⚒️ Heldenwerte werden geladen …');
   render();
   try{
    const payload=await request('GET','me',null,account);
    if(uid!==account||requestIndex!==loadSerial)return;
-   view=payload;
+   view=payload;lastLoadedAt=Date.now();
    status(pending(account)?'⚠️ Noch nicht bestätigte Aktion – bitte sicher wiederholen.':
     '✦ Bereit. Wähle eine Verbesserung oder tausche Rohstoffe.',
     pending(account)?'bad':'good');
   }catch(e){
    if(uid!==account||requestIndex!==loadSerial)return;
-   view=null;
+   view=null;lastLoadedAt=0;
    status('⚠️ Schmiede konnte nicht geladen werden. Prüfe die Serververbindung und aktualisiere.','bad');
   }
   render();
  }
  async function action(type,data,retry=false){
   if(busy||!uid||!view)return;
-  const account=uid;
+  const account=uid,startEpoch=sessionEpoch;
+  if(auth()?.user?.uid!==account){void reload();return;}
   const old=pending(account);
   if(old&&!retry){status('Bitte zuerst die offene Aktion sicher wiederholen.','bad');return;}
   if(retry&&!old)return;
   const op=old||{id:newId(),action:type,payload:data};
-  if(!old)savePending(account,op);
+  if(!old&&!savePending(account,op)){
+   status('⚠️ Der Browser konnte die Auftragskennung nicht speichern. Kein Material wurde verbraucht. Bitte Speicherzugriff prüfen.','bad');
+   return;
+  }
   busy=true;++loadSerial;render();
   $('forge-workspace').classList.add('forging');
   status('⚒️ Die Schmiede verarbeitet deinen Auftrag …');
@@ -739,9 +773,10 @@
   }
   try{
    const response=await request('POST',op.action,{requestId:op.id,...op.payload},account);
-   if(uid!==account)return;
+   if(uid!==account||sessionEpoch!==startEpoch||auth()?.user?.uid!==account)
+    throw Error('ACCOUNT_CHANGED');
    const beforeHero=view?.hero||null;
-   clearPending(account);view=response;
+   clearPending(account);view=response;lastLoadedAt=Date.now();
    // Announce only newly completed milestones for this confirmed action.
    // Receipts recovered after reconnect never celebrate a second time.
    const unlocked=!response.replayed&&beforeHero&&view?.hero?
@@ -759,7 +794,8 @@
    if(uid!==account)return;
    const error=e.message;
    if(['STALE_FORGE_LEVEL','DOG_MATERIALS_MISSING','FORGE_MAX_LEVEL','INVALID_FORGE_ITEM',
-    'INVALID_EXCHANGE_RESOURCE','INVALID_FORGE_REQUEST'].includes(error)){
+    'INVALID_EXCHANGE_RESOURCE','INVALID_EXCHANGE_COUNT','DOG_MATERIALS_LIMIT',
+    'INVALID_FORGE_REQUEST'].includes(error)){
     clearPending(account);
     // Only definitive server rejections are safe to discard; ambiguous network
     // responses keep their request ID and require explicit replay.
@@ -772,7 +808,12 @@
    }
   }finally{
    try{window.DogForgeCeremony?.abort?.();}catch{}
-   busy=false;$('forge-workspace').classList.remove('forging');render();
+   busy=false;$('forge-workspace').classList.remove('forging');
+   if(sessionEpoch!==startEpoch||auth()?.user?.uid!==account){
+    view=null;lastLoadedAt=0;goalId=null;
+    closeConfirm();closeExchangeConfirm();closeModal();
+    render();void reload();
+   }else render();
   }
  }
  for(const button of document.querySelectorAll('.forge-tab')){
@@ -835,7 +876,30 @@
   window.DogForgeGallery?.open?.();
  });
  window.addEventListener('dog-forge-gallery-ready',()=>renderGallery());
- window.addEventListener('spielonline-change',()=>{if(!busy)void reload();});
- document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!busy)void reload();});
+ // Reduce Firestore reads on repetitive auth notifications and quick tab returns.
+ function refreshIfStale(){
+  const account=auth()?.user?.uid||null;
+  if(account!==uid||!view||Date.now()-lastLoadedAt>45000)void reload();
+  else{header();renderGallery();}
+ }
+ function onAuthChanged(){
+  const account=auth()?.user?.uid||null;
+  if(busy){
+   if(account!==uid){
+    sessionEpoch++;
+    view=null;goalId=null;lastLoadedAt=0;
+    closeConfirm();closeExchangeConfirm();closeModal();
+    try{window.DogForgeCeremony?.abort?.();}catch{}
+    render();
+    status('↻ Spielerprofil gewechselt. Der alte Auftrag bleibt für dieses Profil sicher wiederholbar.','bad');
+   }
+   return;
+  }
+  refreshIfStale();
+ }
+ window.addEventListener('spielonline-change',onAuthChanged);
+ document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&!busy)refreshIfStale();
+ });
  render();void reload();
 })();
