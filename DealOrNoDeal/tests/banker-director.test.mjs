@@ -47,5 +47,5 @@ test('Banker uses the actual three Christmas shop pack artworks in offer and rev
  assert.match(js,/preview\.setAttribute\('aria-label',pack\?\.name/);
  assert.doesNotMatch(js,/art\.textContent=pack\.icon/);
  assert.match(html,/banker-stage\.css\?v=20261109-banker-real-packs-v1/);
- assert.match(html,/banker\.js\?v=20261110-split-audio-v2/);
+ assert.match(html,/banker\.js\?v=20261110-30cases-50m-v1/);
 });
