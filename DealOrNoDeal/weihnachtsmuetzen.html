@@ -606,7 +606,9 @@ const demoNames={small:'Normales Weihnachtspaket',large:'Goldpaket',premium:'Pre
  single:'Einfacher Hammer',double:'Doppelhammer',lucky:'Goldener Hammer'};
 const demoRand=n=>Math.floor(Math.random()*n);
 const demoPick=a=>a[demoRand(a.length)];
-const demoOdds=[2,2,2,5,5,5,10,10,15,15];
+const demoOdds=[2,2,2,5,5,5,10,10,15,15,16,16,17,17,18,18,19,19,20,22];
+const demoBombOdds=[10,12,0,14,16,0,18,20,0,22,24,0,26,28,0,30,31,0,32,33];
+const demoCheckpoints=[5,10,15,20];
 const demoStoreKey=()=> 'christmas-hats-chris-preview-v1-'+uid();
 const demoMoney=amount=>({kind:'cash',amountCents:amount*100,quantity:1,label:amount.toLocaleString('de-DE')+' € Spielgeld'});
 function demoItem(kind,variant,quantity){
@@ -625,7 +627,7 @@ function demoPrize(room){
  };
  const pool=superLuck?[['pack','small'],['pack','large'],['pack','premium'],['pack','platinum'],['hammer','double'],['hammer','lucky'],['joker',null],['cash',null]]
   :normalPools[tier];
- const count=superLuck?3+demoRand(3):room<=3?1+demoRand(2):room<=6?1+demoRand(3):1+demoRand(4);
+ const count=superLuck?3+demoRand(3):room<=3?1+demoRand(2):room<=6?1+demoRand(3):room<=10?1+demoRand(4):2+demoRand(4);
  const used=new Set(),items=[];
  for(let attempt=0;items.length<count&&attempt<80;attempt++){
   const [kind,variant]=demoPick(pool),key=kind+':'+variant;
@@ -641,7 +643,7 @@ function demoScore(g){
  const weights={small:200000,large:500000,premium:1000000,platinum:2500000,single:300000,double:500000,lucky:1000000};
  return (g.items||[]).reduce((n,i)=>n+(i.kind==='cash'?i.amountCents/100:i.kind==='joker'?1000000*i.quantity:weights[i.packId||i.hammer]*i.quantity),0);
 }
-function demoLayout(room){
+function demoLayout(room,version=5){
  let a=demoPrize(room),b=demoPrize(room);
  for(let i=0;i<14&&demoScore(a)===demoScore(b);i++)b=demoPrize(room);
  if(demoScore(a)===demoScore(b)){
@@ -649,7 +651,8 @@ function demoLayout(room){
   b={superLuck:false,items:[demoItem('pack',room<=3?'small':room<=6?'premium':'platinum',3),demoItem('hammer',room<=3?'single':room<=6?'double':'lucky',3)]};
  }
  const normal=demoScore(a)<demoScore(b)?a:b,better=normal===a?b:a;
- const hats=[{type:'bomb',items:[]},{type:'gift',...normal},{type:'super',...better}];
+ const containsBomb=version===1||demoRand(100)<3*demoBombOdds[room-1];
+ const hats=[containsBomb?{type:'bomb',items:[]}:{type:'gift',...normal},{type:'gift',...normal},{type:'super',...better}];
  for(let i=hats.length-1;i>0;i--){
   const j=demoRand(i+1);[hats[i],hats[j]]=[hats[j],hats[i]];
  }
@@ -658,7 +661,9 @@ function demoLayout(room){
 function demoView(run){
  if(!run)return null;
  const {id,status,room,checkpoint,secured,pending,lastReveal,summary,updatedAt}=run;
- return {id,status,room,checkpoint,secured,pending,lastReveal,summary,updatedAt};
+ return {id,status,room,checkpoint,secured,pending,lastReveal,summary,updatedAt,
+  rulesVersion:run.rulesVersion===5?5:1,maxRoom:run.rulesVersion===5?20:10,
+  checkpoints:run.rulesVersion===5?demoCheckpoints:[3,7],bombOdds:status==='playing'?(run.rulesVersion===5?demoBombOdds[room-1]:33):null};
 }
 function demoRead(){
  try{const saved=JSON.parse(sessionStorage.getItem(demoStoreKey())||'null');return saved?.version===1?saved:null;}
@@ -693,7 +698,7 @@ function demoRequest(path,method='GET',payload=null){
  if(prior)return {ok:true,state:demoView(run),result:prior.result,replayed:true,outdated:prior.id!==run.lastActionId};
  if(type==='start'){
   if(run?.status==='playing')return {ok:true,state:demoView(run),result:{resumed:true},replayed:true};
-  run={version:1,id:'demo-'+Date.now().toString(36)+'-'+demoRand(9999999),status:'playing',room:1,
+  run={version:1,rulesVersion:5,id:'demo-'+Date.now().toString(36)+'-'+demoRand(9999999),status:'playing',room:1,
    layout:demoLayout(1),secured:[],pending:[],lastReveal:null,checkpoint:0,summary:null,updatedAt:Date.now(),
    receipts:[],lastActionId:requestId};
   const result={started:true};run.receipts.push({id:requestId,result});
@@ -710,9 +715,9 @@ function demoRequest(path,method='GET',payload=null){
   if(selection.type==='bomb')demoFinish(run,'bomb',run.secured,run.pending);
   else{
    run.pending.push({room:r,items:selection.items,superLuck:!!selection.superLuck,hatType:selection.type});
-   if(r===3||r===7){run.secured.push(...run.pending);run.pending=[];run.checkpoint=r;}
-   if(r===10){demoFinish(run,'completed',[...run.secured,...run.pending],[]);}
-   else{run.room++;run.layout=demoLayout(run.room);}
+   if((run.rulesVersion===5?demoCheckpoints:[3,7]).includes(r)){run.secured.push(...run.pending);run.pending=[];run.checkpoint=r;}
+   if(r===(run.rulesVersion===5?20:10)){demoFinish(run,'completed',[...run.secured,...run.pending],[]);}
+   else{run.room++;run.layout=demoLayout(run.room,run.rulesVersion===5?5:1);}
   }
  }else{
   result={cashed:true};demoFinish(run,'cash',[...run.secured,...run.pending],[]);
