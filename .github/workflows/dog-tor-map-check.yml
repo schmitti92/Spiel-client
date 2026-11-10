@@ -1,0 +1,34 @@
+name: DOG 100-Tore Karte
+on:
+  push:
+    paths:
+      - dog-tor-map.html
+      - dog-tor-map.css
+      - dog-tor-map.js
+      - dog-expedition.html
+      - dog-materials-ui.js
+      - tests/dog-tor-map.test.mjs
+      - .github/workflows/dog-tor-map-check.yml
+  pull_request:
+    paths:
+      - dog-tor-map.html
+      - dog-tor-map.css
+      - dog-tor-map.js
+      - dog-expedition.html
+      - dog-materials-ui.js
+      - tests/dog-tor-map.test.mjs
+      - .github/workflows/dog-tor-map-check.yml
+
+jobs:
+  dog-map:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: node --check dog-tor-map.js
+      - name: Test map structure and safe DOG unlock placeholder
+        run: node --test tests/dog-tor-map.test.mjs
