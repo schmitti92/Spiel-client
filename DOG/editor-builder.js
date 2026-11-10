@@ -514,6 +514,102 @@ $('align-run').addEventListener('click',()=>{
   }
 });
 
+
+function assistanceBuild(kind,preview=false){
+ const seat=assistantSeat;
+ try{
+   let updated;
+   if(kind==='goals'){
+     const [dx,dy]=String($('assist-goal-dir').value||'1,0').split(',').map(Number);
+     updated=buildGoalLane(draft,seat,{dx,dy,spacing:Number($('assist-goal-spacing').value)||28});
+   }else{
+     const [dx,dy]=String($('assist-home-dir').value||'0,1').split(',').map(Number);
+     updated=buildHomeGroup(draft,seat,{
+       layout:$('assist-home-layout').value||'square',
+       dx,dy,spacing:Number($('assist-home-spacing').value)||28,
+       distance:Number($('assist-home-distance').value)||100
+     });
+   }
+   if(preview){
+     assistantPreview={kind,seat,points:updated[kind][seat]};
+     draw();
+     announce('👁 Vorschau für '+SEAT_LABELS[seat]+' eingeblendet. Erst „4 Felder setzen“ übernimmt die Gruppe.','success');
+   }else{
+     assistantPreview=null;
+     updateDraft(updated);
+     setSelection({kind,index:3,owner:seat});
+     announce('✓ Vier '+(kind==='goals'?'Zielfelder':'Startplätze')+' für '+SEAT_LABELS[seat]+
+       ' präzise gesetzt. Einzelne Positionen kannst du weiterhin antippen und korrigieren.','success');
+   }
+ }catch(err){
+   assistantPreview=null;draw();
+   announce('⚠️ Keine Änderung: '+(err?.message||err),'warn');
+ }
+}
+$('assist-seat').addEventListener('change',event=>{
+ const seat=Number(event.target.value);
+ if(!Number.isInteger(seat)||seat<0||seat>3)return;
+ assistantSeat=seat;assistantPreview=null;render();
+ announce('📍 '+SEAT_LABELS[seat]+': Ausstieg Feld '+(seat*16)+
+   ', Zieleinlauf über Feld '+((seat*16+63)%64)+'.');
+});
+$('choose-exit').addEventListener('click',()=>{
+ selected={kind:'track',index:assistantSeat*16,owner:assistantSeat};
+ mode='track';tool='place';assistantPreview=null;render();
+ announce('📍 '+SEAT_LABELS[assistantSeat]+': Ausstieg auf Feld '+selected.index+
+   ' ausgewählt. Tippe zum Setzen oder Verschieben auf das Brett.','success');
+});
+$('choose-goal-first').addEventListener('click',()=>{
+ selected={kind:'goals',index:0,owner:assistantSeat};
+ mode='goals';tool='place';assistantPreview=null;render();
+ announce('🎯 Zielfeld 1 '+SEAT_LABELS[assistantSeat]+
+  ' gewählt. Setze es genau an die gewünschte Stelle; danach erzeugt der Assistent die übrigen drei.','success');
+});
+$('choose-home-first').addEventListener('click',()=>{
+ selected={kind:'homes',index:0,owner:assistantSeat};
+ mode='homes';tool='place';assistantPreview=null;render();
+ announce('🏠 Startplatz 1 '+SEAT_LABELS[assistantSeat]+
+  ' gewählt. Setze ihn genau an die gewünschte Stelle; danach erzeugt der Assistent die übrigen drei.','success');
+});
+$('preview-goals').addEventListener('click',()=>assistanceBuild('goals',true));
+$('preview-homes').addEventListener('click',()=>assistanceBuild('homes',true));
+$('build-goals').addEventListener('click',()=>assistanceBuild('goals',false));
+$('build-homes').addEventListener('click',()=>assistanceBuild('homes',false));
+for(const id of ['assist-goal-dir','assist-goal-spacing','assist-home-layout','assist-home-spacing','assist-home-dir','assist-home-distance']){
+ $(id).addEventListener('change',()=>{assistantPreview=null;draw();});
+}
+$('gap-select').addEventListener('change',()=>{draw();});
+$('check-connections').addEventListener('click',()=>{
+ const report=getTrackConnections(draft);
+ const breaks=report.missing.filter(edge=>edge.hasFrom&&!edge.hasTo).map(edge=>edge.to);
+ connectionFocus=Number($('gap-select').value);
+ draw();
+ if(report.closed){
+   announce('✅ Der Laufweg ist geschlossen. Alle 64 Feldübergänge sind verbunden.','success');
+ }else{
+   announce('🔍 '+report.links.length+'/64 Verbindungen, '+report.missing.length+
+     ' offene Übergänge, '+report.broken.length+' Abstandsprobleme.'+
+     (breaks.length?' Fehlende nächste Felder: '+breaks.slice(0,8).join(', ')+'.':'')+
+     ' Das Verbinden ergänzt nur sichere, gerade Lücken.','warn');
+ }
+});
+$('fill-track-gap').addEventListener('click',()=>{
+ const from=Number($('gap-select').value);
+ if(!Number.isInteger(from)){announce('Wähle zuerst eine kurze gerade Lücke aus.','warn');return;}
+ try{
+   const result=connectStraightGap(draft,from,{step:settings.stepSpacing});
+   assistantPreview=null;connectionFocus=null;
+   updateDraft(result.draft);
+   selected={kind:'track',index:(result.from+result.added)%64,owner:Math.floor(((result.from+result.added)%64)/16)};
+   mode='track';render();
+   announce('🔗 Lauffelder '+((result.from+1)%64)+' bis '+((result.to+63)%64)+
+     ' gleichmäßig verbunden. '+result.added+' Felder ergänzt. Rückgängig ist möglich.','success');
+ }catch(err){
+   announce('⚠️ Lücke nicht automatisch verbunden: '+err.message+
+     ' Bei einem Knick oder einer Kurve die fehlenden Felder einzeln mit den 8 Richtungspfeilen setzen.','warn');
+ }
+});
+
 $('place-coordinates').addEventListener('click',()=>{
  const x=Number($('coord-x').value),y=Number($('coord-y').value);
  if(!Number.isFinite(x)||!Number.isFinite(y)||x<26||x>734||y<26||y>734){
