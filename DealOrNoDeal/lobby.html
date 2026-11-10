@@ -557,13 +557,27 @@ function paintAvatars(){
 async function saveAvatar(){if(!selectedAvatar){$('avatar-status').textContent='Bitte zuerst einen Charakter auswählen.';return false}if((selectedAvatar===11&&!rudolfUnlocked)||(selectedAvatar===12&&!santaUnlocked)||(selectedAvatar===13&&!snowmanUnlocked)||(selectedAvatar===14&&!janUnlocked)||(selectedAvatar===15&&!giftzwergUnlocked)){$('avatar-status').textContent='Dieser Weihnachtscharakter ist noch nicht freigeschaltet.';return false}if(!valid||!user()){$('avatar-status').textContent='Zum Speichern bitte anmelden und Raum öffnen.';return}try{const token=await user().getIdToken();const res=await fetch(base+'/api/deal-or-no-deal/'+encodeURIComponent(code)+'/avatar',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({avatar:selectedAvatar})});const data=await res.json();if(!res.ok||!data.ok)throw Error(data.error||'SPEICHERN_FEHLGESCHLAGEN');savedAvatar=selectedAvatar;roomAvatars=data.avatars||{...roomAvatars,[user().uid]:selectedAvatar};avatarsLastFetched=0;render();paintAvatars();$('avatar-status').textContent='✓ '+avatarNames[selectedAvatar-1]+' reserviert.';return true}catch(e){selectedAvatar=savedAvatar||0;paintAvatars();$('avatar-status').textContent=e.message==='AVATAR_TAKEN'?'Diese Figur ist bereits vergeben. Bitte eine andere wählen.':'Figur konnte nicht gespeichert werden: '+e.message;refreshRoomAvatars(true);return false}}
 const user=()=>{let s=window.SpielOnline?.state?.();return s?.status==='online'&&s?.user?.getIdToken?s.user:null};
 const chrisHatsLink=$('chris-hats-test');
-chrisHatsLink.href='./weihnachtsmuetzen.html'+(valid?'?room='+encodeURIComponent(code):'');
+const hatsHref='./weihnachtsmuetzen.html'+(valid?'?room='+encodeURIComponent(code):'');
+const hatsDemoHref='./weihnachtsmuetzen.html?demo=1'+(valid?'&room='+encodeURIComponent(code):'');
 let chrisHatsCheckedUid='',chrisHatsAllowed=false,chrisHatsCheckGeneration=0;
+function isChrisPreviewProfile(){
+ const profile=window.SpielOnline?.state?.()?.profile;
+ return user()&&String(profile?.name||'').trim().toLocaleLowerCase('de-DE')==='chris';
+}
+function showChrisHatsLink(serverAccess=false){
+ // This visible fallback is a reward-free demo. Actual play stays secured
+ // by the server's verified UID allowlist.
+ const preview=isChrisPreviewProfile();
+ chrisHatsLink.hidden=!(serverAccess||preview);
+ chrisHatsLink.href=serverAccess?hatsHref:hatsDemoHref;
+ chrisHatsLink.textContent=serverAccess?'🎩 Mützen-Test · Chris':'🎩 Mützen-Test · Chris 🧪';
+ chrisHatsLink.title=serverAccess?'Privater Chris-Testzugang':'Chris-Vorschau ohne echte Gutschriften';
+}
 async function checkChrisHatsAccess(){
  const u=user(),generation=++chrisHatsCheckGeneration;
- chrisHatsLink.hidden=true;
+ showChrisHatsLink(false);
  if(!u){chrisHatsCheckedUid='';chrisHatsAllowed=false;return;}
- if(chrisHatsCheckedUid===u.uid){chrisHatsLink.hidden=!chrisHatsAllowed;return;}
+ if(chrisHatsCheckedUid===u.uid){showChrisHatsLink(chrisHatsAllowed);return;}
  chrisHatsCheckedUid=u.uid;chrisHatsAllowed=false;
  try{
   const token=await u.getIdToken();
@@ -571,9 +585,13 @@ async function checkChrisHatsAccess(){
   const data=await response.json();
   if(generation!==chrisHatsCheckGeneration||user()?.uid!==u.uid)return;
   chrisHatsAllowed=!!(response.ok&&data.ok&&data.allowed===true);
-  chrisHatsLink.hidden=!chrisHatsAllowed;
+  showChrisHatsLink(chrisHatsAllowed);
  }catch(e){
-  if(generation===chrisHatsCheckGeneration){chrisHatsCheckedUid='';chrisHatsLink.hidden=true;}
+  if(generation===chrisHatsCheckGeneration){
+   chrisHatsCheckedUid='';
+   chrisHatsAllowed=false;
+   showChrisHatsLink(false);
+  }
   console.warn('Mützen-Testzugang konnte nicht geprüft werden:',e.message);
  }
 }
