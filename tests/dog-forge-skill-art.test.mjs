@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {Script} from 'node:vm';
 import {readFileSync,existsSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {resolve,dirname} from 'node:path';
@@ -38,9 +39,51 @@ test('Forge UI maps every server-recognized skill to an illustration',()=>{
 });
 test('Forge UI styles and HTML load the current skill artwork release',()=>{
  const html=read('dog-forge.html'),css=read('dog-forge.css');
- assert.ok(html.includes('dog-forge-ui.js?v=20261110-skills-b2'));
- assert.ok(html.includes('dog-forge.css?v=20261110-skills-b2'));
+ assert.ok(html.includes('dog-forge-ui.js?v=20261110-forge-c1'));
+ assert.ok(html.includes('dog-forge.css?v=20261110-forge-c1'));
  for(const selector of ['.skill-display','.skill-visual.compact','.item-choice.skill-entry',
   '.result-art .skill-illustration'])assert.ok(css.includes(selector),'missing selector '+selector);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+});
+
+test('C1 filter uses server-provided quotes and never estimates costs',()=>{
+ const ui=read('dog-forge-ui.js'),page=read('dog-forge.html');
+ assert.match(ui,/const canUpgradeItem=id=>\{const q=quoteFor\(id\);return !!q&&!q\.maxed&&q\.affordable/);
+ assert.ok(ui.includes('all.filter(x=>canUpgradeItem(x.id))'));
+ assert.ok(ui.includes('const readyCount=all.filter(x=>canUpgradeItem(x.id)).length'));
+ assert.ok(ui.includes('const missing=Object.entries(quote.cost||{})'));
+ assert.ok(ui.includes('amount-have(id)'));
+ assert.ok(ui.includes("node('span','cost-progress"));
+ for(const id of ['forge-list-toolbar','forge-list-summary','forge-ready-filter','forge-ready-count']){
+  assert.ok(page.includes('id="'+id+'"'),id);
+ }
+});
+test('C1 upgrade confirmation is in-page and never spends before approval',()=>{
+ const ui=read('dog-forge-ui.js'),page=read('dog-forge.html');
+ for(const id of ['forge-confirm','forge-confirm-art','forge-confirm-cost','forge-confirm-title',
+  'forge-confirm-step','forge-confirm-warning','forge-confirm-chance','forge-confirm-submit',
+  'forge-confirm-x','forge-confirm-cancel'])assert.ok(page.includes('id="'+id+'"'),id);
+ assert.ok(ui.includes('function openUpgradeConfirm(item,quote)'));
+ assert.ok(ui.includes("if(!dialog.open)dialog.showModal();"));
+ assert.ok(ui.includes("button.addEventListener('click',()=>openUpgradeConfirm(item,quote))"));
+ assert.ok(ui.includes("void action('upgrade',requested)"));
+ assert.equal(ui.includes('window.confirm('),false,'Native confirmation must not be used');
+ assert.ok(ui.includes('current.level!==requested.expectedLevel'));
+ assert.ok(ui.includes('!current.affordable'));
+});
+test('C1 handles definitive rejections via reload but preserves ambiguous operations',()=>{
+ const ui=read('dog-forge-ui.js');
+ assert.ok(ui.includes("if(['STALE_FORGE_LEVEL','DOG_MATERIALS_MISSING','FORGE_MAX_LEVEL'"));
+ assert.ok(ui.includes('clearPending(account);\n    // Only definitive server rejections'));
+ assert.ok(ui.includes('await reload();'));
+ assert.ok(ui.includes('Bitte „Sicher wiederholen“ wählen'));
+ // A JS parse test catches syntax errors missed by static feature checks.
+ assert.doesNotThrow(()=>new Script(ui,{filename:'dog-forge-ui.js'}));
+});
+test('C1 styles include accessible resource bars and compact responsive confirmation',()=>{
+ const css=read('dog-forge.css');
+ for(const selector of ['.ready-filter.active','.material-hint.missing',
+  '.cost-progress-fill','.forge-confirm::backdrop','.confirm-actions',
+  '@media(max-width:420px)'])assert.ok(css.includes(selector),selector);
+ assert.equal(css.split('{').length,css.split('}').length,'unbalanced CSS block braces');
 });
