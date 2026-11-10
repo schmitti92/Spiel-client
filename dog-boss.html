@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="de">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+ <meta name="theme-color" content="#13131e">
+ <meta name="description" content="Die 100 Tore: Gemeinsam gegen den Aschewächter kämpfen. Nach einer Teamniederlage gilt eine serverseitige Kampfpause von zehn Minuten.">
+ <title>🔥 Tor 1 · Bossarena · Die 100 Tore</title>
+ <link rel="stylesheet" href="./dog-boss.css?v=20261110-boss-v1">
+ <script src="./profile-config.js"></script>
+ <script src="./profile-auth.js"></script>
+ <script src="./dog-boss-ui.js?v=20261110-boss-v1" defer></script>
+</head>
+<body>
+ <main class="arena-layout">
+  <nav class="boss-nav" aria-label="Navigation">
+   <a id="boss-back" href="./dog-expedition.html">← Die 100 Tore</a>
+   <a id="boss-forge-link" href="./dog-forge.html">⚒️ Zur Schmiede</a>
+   <button type="button" id="boss-refresh">↻ Aktualisieren</button>
+  </nav>
+  <header class="boss-head">
+   <span class="boss-eyebrow">⚔️ DREI HELDEN · EIN GEMEINSAMER GEGNER</span>
+   <h1>Die Prüfung des Feuers</h1>
+   <p>Tor <b>1</b> von 100 · <strong>Der Aschewächter</strong></p>
+   <div class="boss-gate-progress"><span style="width:1%"></span></div>
+   <small>Erstes spielbares Tor · weitere Wächter folgen</small>
+  </header>
+  <section class="boss-battle" aria-labelledby="boss-name">
+   <div class="boss-titleline">
+    <div>
+     <div class="boss-stage-label">🔥 DER ERSTE WÄCHTER</div>
+     <h2 id="boss-name">Der Aschewächter</h2>
+    </div>
+    <div class="boss-attempt">Kampfversuch <b id="boss-attempt">1</b></div>
+   </div>
+   <div class="boss-healthline">
+    <strong>LEBEN DES BOSSES</strong>
+    <span id="boss-hp-text" class="boss-hp-text">6.000 / 6.000 LP</span>
+   </div>
+   <div class="boss-healthbar" role="progressbar" aria-label="Lebenspunkte des Aschewächters" aria-valuemin="0" aria-valuemax="6000" aria-valuenow="6000" id="boss-hp-track">
+    <span id="boss-hp-fill"></span>
+   </div>
+   <div class="boss-art-stage">
+    <div class="boss-stage-backdrop"></div>
+    <div class="boss-stage-magma"></div>
+    <div class="boss-falling-embers" aria-hidden="true">
+     <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+    <img class="boss-monster" id="boss-monster" src="./dog-boss-art/aschewaechter.svg" alt="Der Aschewächter, ein großer Golem aus glühendem Gestein" width="430" height="430">
+    <div id="boss-hit-number" class="boss-hit-number" aria-hidden="true"></div>
+    <div class="boss-art-caption" id="boss-art-caption">Sein steinernes Herz glüht – bereitet euch vor.</div>
+    <div id="boss-defeat-panel" class="boss-defeat-panel" hidden aria-live="polite">
+     <div class="boss-defeat-icon">💀</div>
+     <h3>KAMPF VERLOREN</h3>
+     <p>Der Aschewächter hat eure Helden besiegt. Der gemeinsame Kampf ruht zehn Minuten lang.</p>
+     <strong id="boss-countdown" class="boss-countdown" role="timer" aria-label="Verbleibende Kampfpause">10:00</strong>
+     <span id="boss-cooldown-note">Ihr könnt in dieser Zeit Rohstoffe sammeln und eure Ausrüstung verbessern.</span>
+     <a id="boss-defeat-forge" href="./dog-forge.html">⚒️ In die Schmiede wechseln</a>
+     <button type="button" id="boss-restart" hidden disabled>⚔️ Denselben Boss erneut versuchen</button>
+    </div>
+    <div id="boss-victory-panel" class="boss-defeat-panel victory" hidden>
+     <div class="boss-defeat-icon">🏆</div>
+     <h3>TOR 1 GESCHAFFT!</h3>
+     <p>Der Aschewächter ist besiegt. Euer Fortschritt ist gesichert. Der nächste Boss ist noch in Entwicklung.</p>
+     <a href="./dog-expedition.html" id="boss-victory-back">Zur Expedition</a>
+    </div>
+   </div>
+  </section>
+  <section class="boss-team-section" aria-labelledby="boss-team-title">
+   <div class="boss-section-heading">
+    <h2 id="boss-team-title">🛡️ Eure Heldengruppe</h2>
+    <span id="boss-team-size">0 / 3 Helden</span>
+   </div>
+   <div id="boss-team" class="boss-team" aria-live="polite">
+    <div class="boss-empty-slot">🛡️ Platz für Held 1</div>
+    <div class="boss-empty-slot">⚔️ Platz für Held 2</div>
+    <div class="boss-empty-slot">✨ Platz für Held 3</div>
+   </div>
+   <div class="boss-membership">
+    <button type="button" id="boss-join" disabled>🛡️ Der Heldengruppe beitreten</button>
+    <span id="boss-member-info">Dein Online-Profil wird geprüft …</span>
+   </div>
+  </section>
+  <section class="boss-action-section" aria-labelledby="boss-action-title">
+   <div class="boss-section-heading"><h2 id="boss-action-title">⚔️ Deine Kampfaktion</h2></div>
+   <p id="boss-status" class="boss-status" role="status" aria-live="polite">Verbindung zur Bossarena wird hergestellt …</p>
+   <div id="boss-actions" class="boss-actions">
+    <button type="button" data-move="attack" disabled>
+     <span class="boss-move-icon">⚔️</span><strong>Angreifen</strong><small>Zuverlässiger Schaden</small>
+    </button>
+    <button type="button" data-move="power" disabled>
+     <span class="boss-move-icon">🔥</span><strong>Kraftschlag</strong><small>Mehr Schaden</small>
+    </button>
+    <button type="button" data-move="guard" disabled>
+     <span class="boss-move-icon">🛡️</span><strong>Verteidigen</strong><small>Schaden stark verringern</small>
+    </button>
+    <button type="button" data-move="special" disabled>
+     <span class="boss-move-icon">✨</span><strong>Spezialangriff</strong><small>Angriff und Regeneration</small>
+    </button>
+   </div>
+   <div class="boss-pending-wrap" id="boss-pending-wrap" hidden>
+    <p>⚠️ Eine Kampfaktion wurde noch nicht bestätigt. Wiederhole sie sicher, ohne einen zweiten Angriff auszulösen.</p>
+    <button type="button" id="boss-retry">↻ Letzte Aktion sicher wiederholen</button>
+   </div>
+   <p class="boss-rule-note">💡 Bei einer gemeinsamen Niederlage gilt eine <b>serverseitige 10-Minuten-Sperre</b>. Der gleiche Boss startet beim nächsten Versuch wieder mit vollen LP. Eure Schmiedestufen bleiben erhalten.</p>
+  </section>
+  <section class="boss-chronicle" aria-labelledby="boss-chronicle-title">
+   <h2 id="boss-chronicle-title">📜 Kampfchronik</h2>
+   <ul id="boss-log"><li>Hier erscheint euer gemeinsamer Kampfverlauf.</li></ul>
+  </section>
+  <footer class="boss-footer">
+   Die 100 Tore · Tor 1 ist eine spielbare Testarena. Noch keine DOG-Freischaltung oder Bossbelohnung.
+  </footer>
+ </main>
+ <script src="./site-global-controls.js?v=20261109-global-1"></script>
+</body>
+</html>
