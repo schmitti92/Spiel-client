@@ -121,12 +121,12 @@ test('Map uses authenticated server positions and only unlocks mapped personal f
  assert.match(html,/id="gate-boss-button"/);
  assert.ok(!html.includes('href="./DOG/'),'do not bypass final server unlock');
 });
-test('Boss 10 launches the existing training arena, other unfinished bosses do not',()=>{
+test('Boss 10 opens its own three-player arena while later bosses remain unavailable',()=>{
  const {gates,byId}=page();
  gates[9].click();
  assert.equal(byId('gate-boss-button').hidden,false);
- assert.match(byId('gate-boss-button').href,/dog-boss.html\?room=123/);
- assert.match(byId('gate-fight-status').textContent,/Tor-1-Testboss/);
+ assert.match(byId('gate-boss-button').href,/dog-boss10.html\?room=123/);
+ assert.match(byId('gate-fight-status').textContent,/Bereit/);
  byId('gate-detail-close').click();
  gates[19].click();
  assert.equal(byId('gate-boss-button').hidden,true);
