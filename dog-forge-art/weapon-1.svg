@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Schwert 1: Geschmiedet"><defs>
+<linearGradient id="metal" x1="0%" y1="0%" x2="100%" y2="0%"><stop stop-color="#303c4a"/><stop offset=".28" stop-color="#77899c"/><stop offset=".56" stop-color="#e0e7ed"/><stop offset=".84" stop-color="#77899c"/><stop offset="1" stop-color="#303c4a"/></linearGradient>
+<linearGradient id="edge" x1="0%" y1="0%" x2="100%" y2="100%"><stop stop-color="#e0e7ed"/><stop offset=".5" stop-color="#b28c63"/><stop offset="1" stop-color="#303c4a"/></linearGradient>
+<linearGradient id="grip" x1="0%" y1="0%" x2="100%" y2="100%"><stop stop-color="#261c24"/><stop offset=".5" stop-color="#695048"/><stop offset="1" stop-color="#100f1c"/></linearGradient>
+<radialGradient id="halo"><stop stop-color="#718697" stop-opacity="0.16"/><stop offset="1" stop-color="#718697" stop-opacity="0"/></radialGradient>
+<filter id="shadow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur in="SourceAlpha" stdDeviation="5"/><feOffset dy="7"/><feComponentTransfer><feFuncA type="linear" slope=".65"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="glow" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<ellipse cx="128" cy="130" rx="112" ry="110" fill="url(#halo)"/><g filter="url(#shadow)">
+ <path d="M128 12 L118 45 L118 146 L120 162 L136 162 L138 146 L138 45Z" fill="url(#metal)" stroke="#b28c63" stroke-width="2" stroke-linejoin="round"/>
+ <path d="M128 20 L128 151" fill="none" stroke="#e0e7ed" stroke-width="2.5" opacity=".9"/>
+ <path d="M121 50 L121 142" fill="none" stroke="#e4f7ff" stroke-width="1.7" opacity=".5"/>
+ 
+ <path d="M120 166 L136 166 L137 214 L119 214Z" fill="url(#grip)" stroke="#b28c63" stroke-width="3"/>
+ <path d="M119 174L137 182M119 186L137 194M119 198L137 206" stroke="#b28c63" stroke-width="3" opacity=".78"/>
+ <path d="M94 153 Q128 163 162 153 L158 163 L136 171 L120 171 L98 163Z" fill="url(#edge)" stroke="#24232e" stroke-width="2"/>
+ <path d="M128 205 L141 217 L128 229 L115 217Z" fill="url(#edge)" stroke="#b28c63" stroke-width="2"/>
+ <path d="M128 154 L136 162 L128 171 L120 162Z" fill="#b28c63" filter="none"/>
+ </g>
+ 
+ </svg>
