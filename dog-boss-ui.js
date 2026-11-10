@@ -230,6 +230,7 @@
    return;
   }
   busy=true;render();
+  let refreshAfterCommand=false;
   status('⚔️ Der Server berechnet die gemeinsame Kampfaktion …');
   try{
    const payload=await request('POST',op.command,
@@ -255,13 +256,16 @@
     status(e.message==='BOSS_STATE_STALE'?
      '⚠️ Ein anderer Held hat angegriffen. Lade die neue Bosswarnung, bevor du handelst.':
      '↻ Der Bosszustand hat sich geändert ('+e.message+'). Lade den aktuellen Stand.','bad');
-    void reload(true);
+    refreshAfterCommand=true;
    }else status('⚠️ Die Antwort ist nicht sicher bestätigt. Bitte „Letzte Aktion sicher wiederholen“ verwenden.','bad');
   }finally{
    busy=false;
    if(uid!==account||epoch!==session||!viewer()){
     uid=null;view=null;notice='';render();void reload(true);
-   }else render();
+   }else{
+    render();
+    if(refreshAfterCommand)void reload(true);
+   }
   }
  }
  for(const button of document.querySelectorAll('[data-move]')){
