@@ -1,0 +1,101 @@
+/* Christoph's shared Christmas greeting · friendly, accessible show popup. */
+#christoph-surprise[hidden]{display:none!important}
+#christoph-surprise{
+ position:fixed;inset:0;z-index:2147483000;
+ display:grid;place-items:center;
+ padding:clamp(12px,3vw,32px);
+ background:radial-gradient(circle at 50% 28%,#6940627a,transparent 58%),#061123e8;
+ backdrop-filter:blur(13px);
+ overflow:auto;
+ animation:christoph-surprise-fade .45s ease-out both;
+}
+#christoph-surprise *{box-sizing:border-box}
+#christoph-surprise .christoph-surprise-snow{
+ position:fixed;top:6%;left:0;right:0;pointer-events:none;text-align:center;
+ color:#ffe7ac;letter-spacing:clamp(10px,4vw,49px);
+ text-shadow:0 0 27px #fff3c0;font-size:clamp(18px,3vw,40px);
+ animation:christoph-surprise-stars 3.5s ease-in-out infinite alternate;
+}
+#christoph-surprise .christoph-surprise-panel{
+ position:relative;width:min(650px,100%);max-height:calc(100dvh - 25px);overflow:auto;
+ padding:clamp(20px,4vw,38px);text-align:center;
+ color:#fff1d9;border:3px solid #f9dc9f;border-radius:26px;
+ background:radial-gradient(ellipse at 50% 0%,#8d52636e,transparent 63%),
+ linear-gradient(155deg,#243953 0%,#371f3c 48%,#152c43 100%);
+ box-shadow:0 0 0 7px #fce0b52c,0 0 75px #ffc66e64,0 24px 100px #000f,
+ inset 0 0 30px #f3ca6a17;
+ animation:christoph-surprise-rise .65s cubic-bezier(.12,.85,.2,1.12) both;
+}
+#christoph-surprise .christoph-surprise-panel::before{
+ content:"";position:absolute;inset:9px;border:1px solid #ffedc750;
+ pointer-events:none;border-radius:19px;
+}
+#christoph-surprise .christoph-surprise-kicker{
+ font:800 clamp(10px,1.6vw,13px)/1.5 system-ui,sans-serif;
+ letter-spacing:.14em;color:#ffe8a8;
+}
+#christoph-surprise .christoph-surprise-heart{
+ font-size:clamp(45px,8vw,65px);margin:9px auto 3px;line-height:1.2;
+ filter:drop-shadow(0 0 24px #ff689b);
+ animation:christoph-surprise-pulse 2.3s ease-in-out infinite;
+}
+#christoph-surprise h2{
+ color:#fff0ba;font:900 clamp(25px,5vw,42px)/1.12 Georgia,serif;
+ letter-spacing:.008em;margin:6px 0 14px;
+ text-shadow:0 3px 25px #ffcc8d80;
+}
+#christoph-surprise #christoph-surprise-message{
+ max-width:520px;margin:0 auto 17px;color:#fff5ea;
+ font:550 clamp(15px,2.1vw,19px)/1.6 system-ui,sans-serif;
+}
+#christoph-surprise #christoph-surprise-message strong{
+ display:inline-block;margin-top:9px;color:#ffdda4;font-size:1.13em;
+}
+#christoph-surprise .christoph-surprise-divider{
+ color:#ffdd98;margin:15px auto 12px;
+ font:850 12px/1.3 system-ui,sans-serif;letter-spacing:.17em;
+}
+#christoph-surprise .christoph-surprise-prizes{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+}
+#christoph-surprise .christoph-surprise-prize{
+ display:grid;place-items:center;gap:5px;min-width:0;min-height:155px;
+ padding:15px 10px;border:2px solid #ffdb93;
+ border-radius:16px;background:radial-gradient(circle at 50% 10%,#9a6b374b,transparent 85%),#142c40b5;
+ box-shadow:inset 0 1px #fff3cd7a,0 8px 20px #0006;
+}
+#christoph-surprise .christoph-surprise-prize-icon{font-size:38px;line-height:1.1}
+#christoph-surprise .christoph-surprise-prize strong{
+ font:900 clamp(29px,5vw,43px)/1 Georgia,serif;color:#ffe298;
+}
+#christoph-surprise .christoph-surprise-prize>span:last-child{
+ font:800 clamp(11px,2.1vw,14px)/1.3 system-ui,sans-serif;overflow-wrap:anywhere;
+}
+#christoph-surprise .christoph-surprise-confirm{font:750 12px/1.4 system-ui,sans-serif;color:#e3f5d5;margin:15px 0 5px}
+#christoph-surprise .christoph-surprise-status{min-height:17px;color:#ffe1a3;font:700 12px/1.4 system-ui,sans-serif;margin:5px}
+#christoph-surprise #christoph-surprise-thanks{
+ display:block;width:100%;min-height:52px;
+ padding:12px 18px;margin:8px auto 0;cursor:pointer;
+ border:2px solid #fff3c8;border-radius:14px;
+ color:#35210f;background:linear-gradient(125deg,#fff3c2,#eebd68 60%,#d9943d);
+ font:900 clamp(14px,2.2vw,18px)/1.2 system-ui,sans-serif;
+ box-shadow:inset 0 1px #fff,0 9px 25px #0008;
+}
+#christoph-surprise #christoph-surprise-thanks:hover{filter:brightness(1.075);transform:translateY(-2px)}
+#christoph-surprise #christoph-surprise-thanks:focus-visible{outline:3px solid white;outline-offset:4px}
+#christoph-surprise #christoph-surprise-thanks:disabled{opacity:.7;cursor:wait;transform:none}
+@keyframes christoph-surprise-fade{from{opacity:0}to{opacity:1}}
+@keyframes christoph-surprise-rise{from{opacity:0;transform:translateY(35px) scale(.9)}to{opacity:1;transform:none}}
+@keyframes christoph-surprise-pulse{50%{transform:scale(1.12)}}
+@keyframes christoph-surprise-stars{from{opacity:.4;transform:translateY(0)}to{opacity:1;transform:translateY(10px)}}
+@media(max-width:480px){
+ #christoph-surprise .christoph-surprise-prizes{gap:8px}
+ #christoph-surprise .christoph-surprise-prize{padding:10px 5px;min-height:137px}
+ #christoph-surprise .christoph-surprise-prize-icon{font-size:32px}
+ #christoph-surprise .christoph-surprise-kicker{letter-spacing:.05em}
+}
+@media(prefers-reduced-motion:reduce){
+ #christoph-surprise,#christoph-surprise .christoph-surprise-panel,
+ #christoph-surprise .christoph-surprise-heart,
+ #christoph-surprise .christoph-surprise-snow{animation:none}
+}
