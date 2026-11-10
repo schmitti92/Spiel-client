@@ -811,7 +811,7 @@
    try{window.DogForgeCeremony?.abort?.();}catch{}
    if(uid!==account)return;
    const error=e.message;
-   if(['STALE_FORGE_LEVEL','DOG_MATERIALS_MISSING','DOG_FORGE_BOSS_REQUIRED','FORGE_MAX_LEVEL','INVALID_FORGE_ITEM',
+   if(['STALE_FORGE_LEVEL','DOG_MATERIALS_MISSING','FORGE_MAX_LEVEL','DOG_FORGE_BOSS_REQUIRED','INVALID_FORGE_ITEM',
     'INVALID_EXCHANGE_RESOURCE','INVALID_EXCHANGE_COUNT','DOG_MATERIALS_LIMIT',
     'INVALID_FORGE_REQUEST'].includes(error)){
     clearPending(account);
