@@ -19,9 +19,9 @@
 .hat.opening,.hat.revealed-later{z-index:6}
 .hat.opening:before,.hat.revealed-later:before{z-index:0;opacity:.8;background:radial-gradient(ellipse 35% 70% at 50% 50%,#ffe9a574,transparent)}
 .hat.opening .santa-hat,.hat.revealed-later .santa-hat{
- display:block!important;position:absolute!important;top:clamp(6px,1vw,16px)!important;left:50%!important;inset:unset!important;
+ display:block!important;position:absolute!important;top:clamp(6px,1vw,16px)!important;left:50%!important;
  width:clamp(126px,16vw,226px)!important;height:clamp(140px,18vw,250px)!important;
- z-index:5!important;transform-origin:center bottom!important;
+ right:auto!important;bottom:auto!important;z-index:5!important;transform-origin:center bottom!important;
  animation:show-hat-lift 1.42s cubic-bezier(.17,.67,.32,1) forwards!important;
 }
 @keyframes show-hat-lift{
