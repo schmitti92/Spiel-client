@@ -28,7 +28,7 @@ function harness(count=28,{playerCount=3,balance=2,postError=null}={}){
  ].slice(0,playerCount);
  const game={id:'match-1',phase:'open',players,caseCount:count,opened:[],pending:null};
  const privateResults=players.filter(p=>p.id!==myUid).map(p=>({
-  id:p.id,name:p.name,case:p.case,amount:p.case===count-1?1000000000:p.case*100
+  id:p.id,name:p.name,case:p.case,amount:p.case===count-1?(count===30?5000000000:1000000000):p.case*100
  }));
  const context={
   document:{
@@ -64,8 +64,8 @@ function harness(count=28,{playerCount=3,balance=2,postError=null}={}){
 }
 const launch=ui=>Array.from(ui.elements.values()).find(x=>x.id==='peek-launch');
 
-test('all 26–29-case modes highlight own and other players and disable non-personal cases',async()=>{
- for(const count of [26,27,28,29]){
+test('all 26–30-case modes highlight own and other players and disable non-personal cases',async()=>{
+ for(const count of [26,27,28,29,30]){
   const ui=harness(count,{playerCount:3});
   assert.equal(launch(ui).hidden,false);
   await launch(ui).handlers.click();
