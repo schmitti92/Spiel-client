@@ -140,7 +140,7 @@ test('story is private browser presentation, not a shared game action, and reloa
   'never inspect case assignments or hidden values');
  assert.match(app,/window\.DealModeratorStory\?\.observe\(g\)/);
  assert.match(app,/window\.DealModeratorStory\?\.observe\(null\)/);
- assert.match(html,/moderator-stories\.js\?v=20261110-match-stories-v1/);
+ assert.match(html,/moderator-stories\.js\?v=20261110-30cases-50m-v1/);
  assert.match(html,/moderator-story-engine\.js\?v=20261110-split-audio-v3/);
  assert.ok(html.indexOf('amount-voice.js?')<html.indexOf('moderator-stories.js?'));
  assert.ok(html.indexOf('moderator-stories.js?')<html.indexOf('moderator-story-engine.js?'));
