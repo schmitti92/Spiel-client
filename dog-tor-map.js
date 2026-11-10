@@ -308,6 +308,11 @@
   selectedGate=gate;
   lastFight=null;
   $('gate-mini-reward').hidden=true;
+  // The private reward history is part of the authenticated map response;
+  // no extra Firebase read is necessary when revisiting an old mini-boss.
+  const previousReward=(mapState?.progress?.miniRewards||[])
+   .find(entry=>entry.gate===gate)?.reward;
+  if(previousReward?.granted)displayMiniReward(previousReward,gate);
   const kind=gate%10===0?'Gruppenboss':gate%10===5?'Mini-Boss':'Persönlicher Kampf';
   $('gate-detail-kicker').textContent='TOR '+gate+' VON 100 · '+kind.toUpperCase();
   $('gate-detail-title').textContent=titleFor(gate);
