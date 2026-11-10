@@ -11,7 +11,8 @@ const source=read('dog-boss-ui.js');
 const spin=async()=>{for(let i=0;i<18;i++)await Promise.resolve()};
 const basic=({now=1_800_000_000_000,phase='ready',joined=true}={})=>({
  ok:true,gate:1,boss:'Der Aschewächter',bossHp:6000,bossMaxHp:6000,
- phase,serverNow:now,updatedAt:now,cooldownUntil:phase==='cooldown'?now+600000:0,
+ phase,serverNow:now,updatedAt:now,bossTurn:0,reactionChallenge:null,
+ cooldownUntil:phase==='cooldown'?now+600000:0,
  cooldownRemainingMs:phase==='cooldown'?600000:0,attempt:1,
  isMember:joined,canJoin:true,canFight:joined&&phase==='ready',
  members:joined?[{uid:'A',name:'Helden A'}]:[],
@@ -45,7 +46,11 @@ function harness(options={}){
   };
  }
  function el(id){
-  if(!nodes.has(id))nodes.set(id,element(id));
+  if(!nodes.has(id)){
+   const item=element(id);
+   if(id==='boss-reaction-challenge')item.hidden=true;
+   nodes.set(id,item);
+  }
   return nodes.get(id);
  }
  for(const [id,path] of [
