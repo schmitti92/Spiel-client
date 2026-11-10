@@ -147,8 +147,8 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
  <p class="demo-badge" id="demo-badge" hidden>🧪 Chris-Testmodus · Alle Gewinne sind eine Vorschau und werden NICHT dem Spielkonto gutgeschrieben.</p>
 </header>
 <div class="journey-header"><span class="journey-heading">✦ Deine Reise durch die zwanzig Schatzräume</span><span class="journey-current" id="journey-current">🎩 Raum 1 von 20</span></div>
-<div class="tiers" id="tiers" role="group" aria-label="Die zehn Spielräume und ihre Checkpoints"></div>
-<div class="journey-zones" aria-label="Drei Abschnitte der Schatzreise">
+<div class="tiers" id="tiers" role="group" aria-label="Die 20 Spielräume, bombenfreie Bonusräume und Sicherungen"></div>
+<div class="journey-zones" aria-label="Vier Abschnitte der Schatzreise">
  <span data-stage-label="easy" class="active">🧸 Weihnachtswerkstatt · 1–3</span>
  <span data-stage-label="medium">🔑 Goldkammern · 4–9</span>
  <span data-stage-label="jackpot">💎 Eispalast · 10–15</span>
@@ -182,7 +182,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
   <div class="panel"><h3>🛡️ Bereits gesichert</h3><div id="secured" class="prizes"><span class="empty">Noch keine Belohnungen gesichert.</span></div></div>
   <div class="panel"><h3>🎒 Noch auf dem Spiel</h3><div id="pending" class="prizes"><span class="empty">Hier erscheinen deine neuen Gewinne.</span></div></div>
  </div>
- <aside class="story-voice" aria-label="Showmoderator"><span class="story-avatar" aria-hidden="true">🎅</span><div><span class="story-label">Nordpol-Moderator</span><div id="story-speech" class="story-speech">Zehn Räume. Drei Mützen. Ein falscher Griff. Zeig uns, was du draufhast!</div></div></aside>
+ <aside class="story-voice" aria-label="Showmoderator"><span class="story-avatar" aria-hidden="true">🎅</span><div><span class="story-label">Nordpol-Moderator</span><div id="story-speech" class="story-speech">20 Räume, alle drei Räume ein sicherer Bonusraum. Zeig uns, wie weit du kommst!</div></div></aside>
  <div id="status" class="status" role="status" aria-live="polite">Verbinde dich mit deinem Spielerprofil …</div>
 </section>
 <dialog id="cash-dialog" class="cash-dialog" aria-labelledby="cash-dialog-title">
@@ -776,7 +776,7 @@ async function refresh(){
  }catch(e){setStatus('⚠️ '+describeError(e),true);}
  finally{
   busy=false;render();
-  if(autoStartRequested&&state===null&&!pendingRequest&&Number(vouchers?.total||0)>0&&authUser()?.uid===user.uid){
+  if(autoStartRequested&&(!state||state.status==='finished')&&!pendingRequest&&Number(vouchers?.total||0)>0&&authUser()?.uid===user.uid){
    autoStartRequested=false;
    try{const url=new URL(location.href);url.searchParams.delete('autostart');history.replaceState(history.state,'',url.pathname+url.search+url.hash)}catch{}
    void action('start');
