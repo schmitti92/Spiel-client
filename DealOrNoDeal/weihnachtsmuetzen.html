@@ -681,7 +681,7 @@ async function refresh(){
   const data=await call(url);
   if(uid()!==user.uid)return;
   clearShowTimers();closeCinema();closeChoice();
-  state=data.state;vouchers=DEMO?{total:999,free:0,bonus:999}:data.vouchers||null;reveal=null;revealPhase=null;selectedHat=null;
+  showBeforeState=null;fastReveal=false;state=data.state;vouchers=DEMO?{total:999,free:0,bonus:999}:data.vouchers||null;reveal=null;revealPhase=null;selectedHat=null;
   let notice=DEMO?'🧪 Vorschau bereit – keine echten Gewinne oder Gutschriften.':'✅ Spielstand vom Server geladen. Keine dauerhafte Abfrage.';
   if(waiting&&data.pendingAction?.applied){
    savePending(null);
@@ -710,23 +710,32 @@ async function submit(payload){
  try{
   const data=await call('/api/christmas-hats/action','POST',payload);
   if(uid()!==requestUser)return;
+  const previousState=state;
   state=data.state;vouchers=DEMO?{total:999,free:0,bonus:999}:data.vouchers||vouchers;savePending(null);
-  if(payload.type==='pick'&&data.outdated){reveal=null;revealPhase=null;render();setStatus('✅ Alte Aktion bereits bestätigt. Aktueller Spielstand synchronisiert.',false,true);}
+  if(payload.type==='pick'&&data.outdated){reveal=null;revealPhase=null;showBeforeState=null;fastReveal=false;render();setStatus('✅ Alte Aktion bereits bestätigt. Aktueller Spielstand synchronisiert.',false,true);}
   else if(payload.type==='pick'){
+   showBeforeState=previousState;fastReveal=false;
    reveal=data.result;revealPhase='suspense';
-   render();
-   setStatus(reveal?.type==='bomb'?'💥 Bombe! Deine Checkpoint-Gewinne bleiben geschützt.':reveal?.superLuck?'🌟 SUPERGLÜCK! Schau dir deine seltenen Geschenke an!':'🎁 Ein sicherer Treffer! Deine Belohnung ist vorgemerkt.',false,reveal?.type!=='bomb');
+   render();setStatus('🎬 Deine Wahl ist bestätigt. Gleich wird die Mütze geöffnet …',false,true);
    clearShowTimers();
-   const event=data.result;
+   const event=data.result,reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
    suspenseTimer=setTimeout(()=>{
     if(reveal!==event)return;
-    revealPhase='shown';render();
-    soundCue(event.type==='bomb'?'bomb':[3,7].includes(event.room)?'checkpoint':event.superLuck?'super':'win');
-    cinemaTimer=setTimeout(()=>{if(reveal===event&&event.type!=='bomb')openCinema(event)},650);
-    revealTimer=setTimeout(finishReveal,5600);
-   },window.matchMedia('(prefers-reduced-motion: reduce)').matches?120:1050);
+    revealPhase='chosen';render();
+    setStatus('🎩 Die gewählte Mütze hebt sich …',false,true);
+    otherHatTimer=setTimeout(()=>{
+     if(reveal!==event)return;
+     revealPhase='shown';showBeforeState=null;render();
+     soundCue(event.type==='bomb'?'bomb':[3,7].includes(event.room)?'checkpoint':event.superLuck?'super':'win');
+     setStatus(event.type==='bomb'?'💥 BOMBE! Deine gesicherten Checkpoint-Gewinne bleiben erhalten.':
+      event.superLuck?'🌟 SUPERGLÜCK! Legendäre Gewinne entdeckt.':'🎁 Sicherer Treffer! Deine Belohnungen sind vorgemerkt.',
+      event.type==='bomb',event.type!=='bomb');
+     cinemaTimer=setTimeout(()=>{if(reveal===event&&event.type!=='bomb')openCinema(event)},reduced?250:2250);
+     revealTimer=setTimeout(finishReveal,reduced?3000:7600);
+    },reduced?200:1560);
+   },reduced?180:1150);
   }else{
-   clearShowTimers();closeCinema();reveal=null;revealPhase=null;render();setStatus(type==='cash'?(DEMO?'🧪 Probeauszahlung abgeschlossen. Keine echten Gegenstände oder Spielgelder gutgeschrieben.':'✅ Deine Gewinne wurden serverseitig gutgeschrieben.'):(DEMO?'🧪 Neue Testpartie gestartet!':'✨ Neues Spiel gestartet!'),false,true);
+   clearShowTimers();closeCinema();showBeforeState=null;fastReveal=false;reveal=null;revealPhase=null;render();setStatus(type==='cash'?(DEMO?'🧪 Probeauszahlung abgeschlossen. Keine echten Gegenstände oder Spielgelder gutgeschrieben.':'✅ Deine Gewinne wurden serverseitig gutgeschrieben.'):(DEMO?'🧪 Neue Testpartie gestartet!':'✨ Neues Spiel gestartet!'),false,true);
   }
  }catch(e){
   const hardErrors=new Set(['TEST_ACCESS_DENIED','LOGIN_REQUIRED','AUTH_FAILED','INVALID_ACTION','INVALID_HAT','REQUEST_ID_CONFLICT','START_REQUIRED','SESSION_CHANGED','NO_HATS_VOUCHERS']);
@@ -745,7 +754,15 @@ $('sound').onclick=()=>{
 };
 paintSound();
 $('cinema-close').onclick=finishReveal;
-$('continue').onclick=finishReveal;
+function fastForwardReveal(){
+ if(!reveal)return;
+ if(revealPhase==='shown'){finishReveal();return;}
+ const event=reveal;clearShowTimers();closeCinema();
+ fastReveal=true;showBeforeState=null;revealPhase='shown';render();
+ setStatus('⏭️ Alle drei Mützen sind enthüllt. Du kannst jetzt kassieren oder weiterspielen.',false,true);
+ revealTimer=setTimeout(()=>{if(reveal===event)finishReveal()},2400);
+}
+$('continue').onclick=fastForwardReveal;
 $('cash-cancel').onclick=()=>$('cash-dialog').close();
 $('cash-confirm').onclick=()=>{
  $('cash-dialog').close();
