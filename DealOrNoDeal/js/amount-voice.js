@@ -1,7 +1,7 @@
 'use strict';
-/* German Goldstudio host voice. The amount and one original joke are spoken as
-   ONE utterance: no overlapping voices, no extra requests and zero Firebase
-   writes. Only already-revealed public case amounts are announced. */
+/* German Goldstudio case voice: announce ONLY the revealed cash amount, e.g.
+   'Einhundert Euro'. No case number or punchline. Independent story narration
+   is controlled separately. No server requests or Firebase writes. */
 (()=>{
  const caseKey='dealCaseVoiceEnabled';
  const storyKey='dealStoryVoiceEnabled';
@@ -136,7 +136,7 @@
   return button;
  }
  const btn=control('deal-amount-voice','Kofferbeträge vorlesen ein- oder ausschalten',
-  'Liest jeden geöffneten Koffer vor; Witze nur bei 1 Cent und dem Höchstbetrag');
+  'Liest nur den Geldbetrag des geöffneten Koffers vor, ohne Koffernummer oder Zusatzspruch');
  const storyBtn=control('deal-story-voice','Audio-Moderator für die Spielgeschichte umschalten',
   'Moderator erzählt die ereignisabhängige Geschichte der Partie');
  function update(){
@@ -300,10 +300,9 @@
    if(queuedCases.length>12)queuedCases.shift();
    return;
   }
-  const words=spokenAmount(amount),line=exceptional?selectLine(amount,meta):null;
-  const number=Number(meta.caseNumber);
-  const prefix=Number.isInteger(number)&&number>0?'Koffer '+number+'. ':'';
-  const text=prefix+words+'.'+(line?' '+line:'');
+  // The case narrator never says the case number or adds a joke.
+  // The separate Story switch remains responsible for all show commentary.
+  const text=spokenAmount(amount)+'.';
   // A one-cent/top-prize reveal takes priority over an ongoing chapter.
   // A chapter discarded here remains eligible for a future retry.
   stop(fromQueue);
