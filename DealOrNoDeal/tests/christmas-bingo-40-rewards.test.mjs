@@ -48,7 +48,7 @@ test('Christmas album lists the final jackpot in the rewards overview',()=>{
 
 test('Fourth board claims and voucher granting stay on authenticated server',()=>{
  assert.match(page,/northPolePending/);
- assert.match(page,/christmas\/north-pole\/claim/);
+ assert.match(page,/request\('POST','north-pole\/claim'\)/);
  assert.doesNotMatch(js,/fetch\(|XMLHttpRequest|setInterval/);
  assert.doesNotMatch(js,/(?:bonusTickets|monsterWheelTickets|jokerBalance)\s*(?:=|\+\+)/);
 });
