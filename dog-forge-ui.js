@@ -22,6 +22,16 @@
   id,{id,icon,name,index,group:g.group}
  ])));
  const tabLabels={equipment:'⚔️ Ausrüstung',attack:'💥 Angriff',defense:'🛡️ Abwehr',exchange:'💎 Tausch'};
+ const STAGES=Object.freeze([
+  {limit:5,title:'Geschmiedet',weapon:'Schmiedeklinge',armor:'Lederpanzer'},
+  {limit:10,title:'Verstärkt',weapon:'Stahlklinge',armor:'Stahlpanzer'},
+  {limit:15,title:'Runenwerk',weapon:'Runenklinge',armor:'Runenrüstung'},
+  {limit:19,title:'Arkan',weapon:'Astralklinge',armor:'Astralrüstung'},
+  {limit:20,title:'Legendär',weapon:'Drachenklinge',armor:'Drachenrüstung'}
+ ]);
+ const stageFor=level=>Math.max(1,STAGES.findIndex(s=>level<=s.limit)+1||5);
+ const rankFor=total=>total>=450?'Legende':total>=280?'Meister':total>=160?'Veteran':
+  total>=80?'Kämpfer':total>=35?'Rekrut':total>=12?'Lehrling':'Neuling';
  const money=n=>Math.max(0,Number(n)||0).toLocaleString('de-DE');
  const node=(tag,className,textValue)=>{
   const el=document.createElement(tag);
@@ -30,6 +40,21 @@
   return el;
  };
  let uid=null,view=null,busy=false,tab='equipment',selected='weapon',tradeGroup='equipment',loadSerial=0;
+ // One graphic asset for each equipment appearance tier (independent of balance).
+ function gearVisual(id,level,compact=false){
+  const stage=stageFor(level),config=STAGES[stage-1];
+  const root=node('span','gear-visual gear-stage-'+stage+(compact?' compact':''));
+  const img=node('img','gear-illustration');
+  img.src='./dog-forge-art/'+id+'-'+stage+'.svg';
+  img.alt=(id==='weapon'?config.weapon:config.armor)+' · Stufe '+level;
+  img.loading=compact?'lazy':'eager';img.decoding='async';
+  img.addEventListener('error',()=>{
+   img.hidden=true;root.append(node('span','gear-fallback',id==='weapon'?'⚔️':'🛡️'));
+  },{once:true});
+  root.append(img);
+  if(!compact)root.append(node('span','gear-stage-label',config[id]+' · Stufe '+level));
+  return root;
+ }
  const auth=()=>{
   const state=window.SpielOnline?.state?.();
   return state?.status==='online'&&state.user?.uid&&state.profile?.setupComplete!==false?state:null;
@@ -77,7 +102,15 @@
  function header(){
   const state=auth();
   $('forge-player').textContent=state?.profile?.name||state?.user?.displayName||'Online-Held';
+  const invested=view?view.items.reduce((sum,i)=>sum+Math.max(0,levelFor(i.id)-(i.baseLevel||0)),0):0;
   $('forge-player-note').textContent=view?'Bereit für deine nächste Verbesserung':'Persönliches Heldenprofil';
+  $('forge-rank').textContent='✦ '+rankFor(invested);
+  const avatar=$('hero-emblem-art'),armorStage=stageFor(levelFor('armor'));
+  if(avatar.dataset.stage!==String(armorStage)){
+   avatar.dataset.stage=String(armorStage);
+   avatar.src='./dog-forge-art/armor-'+armorStage+'.svg';
+  }
+  $('hero-emblem').className='character-emblem gear-stage-'+armorStage;
   for(const id of ['weapon','armor']){
    const value=levelFor(id);
    const el=$(id==='weapon'?'forge-weapon-level':'forge-armor-level');
@@ -124,7 +157,10 @@
   for(const item of items){
    const button=node('button','item-choice'+(selected===item.id?' selected':''));
    button.type='button';button.setAttribute('aria-pressed',String(selected===item.id));
-   const icon=node('span','item-icon',item.icon);
+   button.classList.toggle('gear-entry',item.group==='equipment');
+   if(item.group==='equipment')button.dataset.stage=String(stageFor(levelFor(item.id)));
+   const icon=item.group==='equipment'?gearVisual(item.id,levelFor(item.id),true):
+    node('span','item-icon',item.icon);
    const info=node('span','item-info');
    info.append(node('strong',null,item.name),node('small',null,'Stufe '+levelFor(item.id)+' / '+item.maxLevel));
    const track=node('div','item-bar'),fill=node('span');
@@ -150,7 +186,12 @@
   const quote=quoteFor(selected),level=levelFor(selected);
   const head=node('div','upgrade-top');
   head.append(node('span','eyebrow','VERBESSERUNG'),node('span','forge-tag',tabLabels[tab]||'⚒️ SCHMIEDE'));
-  root.append(head,node('div','upgrade-symbol',item.icon),node('h2',null,item.name),node('p','upgrade-summary',item.summary));
+  root.append(head);
+  if(item.group==='equipment'){
+   const scene=node('div','gear-display gear-scene-'+stageFor(level));
+   scene.append(gearVisual(item.id,level));root.append(scene);
+  }else root.append(node('div','upgrade-symbol skill-symbol',item.icon));
+  root.append(node('h2',null,item.name),node('p','upgrade-summary',item.summary));
   const line=node('div','level-line'),left=node('span','left','AUSBAUSTUFE'),right=node('strong','value',String(level));
   right.append(node('span',null,' / '+item.maxLevel));line.append(left,right);root.append(line);
   const track=node('div','level-progress'),fill=node('span');
@@ -244,21 +285,32 @@
  }
  const closeModal=()=>{const dialog=$('forge-result');if(dialog.open)dialog.close();};
  function resultDialog(result){
-  const dialog=$('forge-result');dialog.classList.toggle('failure',result?.type==='upgrade'&&!result.success);
-  let emoji='💎',heading='Tausch gelungen',subtitle='Materialien sind sicher umgebucht.';
+  const dialog=$('forge-result'),art=$('forge-result-art');
+  art.replaceChildren();
+  let kind='exchange',emoji='💎',heading='Tausch gelungen',subtitle='Materialien sicher umgebucht.',achievement='';
   if(result.type==='upgrade'){
-   const def=itemFor(result.itemId);
-   emoji=result.success?'✨':'🪨';
-   heading=result.success?'Stufe '+result.newLevel+' erreicht!':'Schmiedevorgang fehlgeschlagen';
-   subtitle=result.success?(def?.name||'Verbesserung')+' wurde erfolgreich aufgewertet.':
-    'Die eingesetzten Rohstoffe sind verbraucht. Deine Stufe bleibt erhalten.';
+   const item=itemFor(result.itemId),equip=item?.group==='equipment',success=!!result.success;
+   kind=success?(equip?'equipment-success':'skill-success'):'failure';
+   if(equip)art.append(gearVisual(result.itemId,result.newLevel));
+   else art.append(node('span','skill-result-emblem',success?item?.icon||'✨':'🌑'));
+   const before=stageFor(result.oldLevel),after=stageFor(result.newLevel);
+   emoji=success?'✦':'✕';
+   heading=success?(equip?'Erfolgreich geschmiedet!':'Fähigkeit verbessert!'):'Schmieden fehlgeschlagen';
+   subtitle=success?(item?.name||'Verbesserung')+' · Stufe '+result.newLevel:
+    'Rohstoffe verbraucht · Stufe '+result.newLevel+' bleibt';
+   achievement=success?(before!==after&&equip?'✦ NEUE AUSSEHENSSTUFE ✦':'STUFE '+result.oldLevel+'  ➜  '+result.newLevel):
+    'STUFE '+result.oldLevel+' BLEIBT';
   }else if(result.type==='exchange'){
    const from=material[result.from],to=material[result.to];
+   art.append(node('span','skill-result-emblem','💎'));
    subtitle='10 × '+(from?.name||result.from)+' → 1 × '+(to?.name||result.to);
+   achievement='ROHSTOFFTAUSCH';
   }
+  dialog.className='forge-result result-'+kind;
   $('forge-result-icon').textContent=emoji;
   $('forge-result-heading').textContent=heading;
   $('forge-result-text').textContent=subtitle;
+  $('forge-result-achievement').textContent=achievement;
   if(!dialog.open)dialog.showModal();
  }
  async function reload(){
