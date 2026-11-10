@@ -2,8 +2,8 @@
 // Show the next call only for new 29-case matches. The server's saved
 // schedule is authoritative; older active games keep their previous cadence.
 function next29BankerCountdown(game){
- if(game?.caseCount!==29||!Array.isArray(game.bankerSchedule)||!['open','reveal'].includes(game.phase))return '';
- const toOpen=Math.max(0,29-(game.players?.length||0)-(game.openedAmounts?.length||0));
+ if(![29,30].includes(game?.caseCount)||!Array.isArray(game.bankerSchedule)||!['open','reveal'].includes(game.phase))return '';
+ const toOpen=Math.max(0,game.caseCount-(game.players?.length||0)-(game.openedAmounts?.length||0));
  const target=Math.max(1,Number(game.bankerSchedule[game.round])||1);
  const until=Math.max(0,Math.min(toOpen,target-(game.roundOpened||0)));
  return until?' · 📞 Banker in '+until+(until===1?' Koffer':' Koffern'):'';
@@ -11,10 +11,10 @@ function next29BankerCountdown(game){
 // Update the stable money board in place; avoid rebuilding 26 DOM nodes per socket update.
 function updateMoneyBoard(openedAmounts){
  const root=$('money'),gone=new Set(openedAmounts.map(a=>a.amount));
- const boardValues=values.slice(0,[26,27,28,29].includes(g?.caseCount)?g.caseCount:27);
+ const boardValues=values.slice(0,[26,27,28,29,30].includes(g?.caseCount)?g.caseCount:27);
  if(root.children.length!==boardValues.length){
   const fragment=document.createDocumentFragment();
-  for(const value of boardValues){const node=document.createElement('span');node.textContent=eur(value);if(value===1000000000)node.classList.add('ten-million-prize');fragment.append(node)}
+  for(const value of boardValues){const node=document.createElement('span');node.textContent=eur(value);if(value===1000000000)node.classList.add('ten-million-prize');if(value===5000000000)node.classList.add('fifty-million-prize');fragment.append(node)}
   root.replaceChildren(fragment);
  }
  for(let i=0;i<boardValues.length;i++){
