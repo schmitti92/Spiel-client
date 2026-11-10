@@ -15,8 +15,14 @@ function harness({legacy=false,cases=null,stories=null,supported=true}={}){
  const node=tag=>({tag,textContent:'',hidden:false,disabled:false,style:{},attributes:{},
   handlers:new Map(),setAttribute(k,v){this.attributes[k]=String(v)},
   addEventListener(k,v){this.handlers.set(k,v)},append(){},title:'',id:''});
+ // The production buttons are present from the HTML first paint.
+ for(const id of ['deal-story-voice','deal-amount-voice']){
+  const el=node('button');el.id=id;el.isConnected=true;el.disabled=true;
+  elements.push(el);
+ }
  const document={hidden:false,body:{append:el=>elements.push(el)},
   createElement:tag=>{const el=node(tag);elements.push(el);return el},
+  getElementById:id=>elements.find(el=>el.id===id)||null,
   querySelector:()=>({append(){}}),
   addEventListener:(name,callback)=>listeners.set(name,callback)};
  const voices=[{lang:'de-DE',name:'Anna female'},{lang:'de-DE',name:'Markus male'}];
@@ -44,8 +50,14 @@ function harness({legacy=false,cases=null,stories=null,supported=true}={}){
 test('both switches are visible, independently accessible and audio subtitles are permanently hidden',()=>{
  const fx=harness(),btn=fx.buttons();
  assert.match(game,/deal\/or\/no\/deal|DEAL OR NO DEAL/i);
- assert.equal(btn.case.textContent,'🧳 Koffer AUS');
- assert.equal(btn.story.textContent,'📖 Story AUS');
+ assert.equal(btn.case.textContent,'🔊 Koffer AUS');
+ assert.equal(btn.story.textContent,'🎙️ Moderator AUS');
+ assert.equal(btn.case.disabled,false);
+ assert.equal(btn.story.disabled,false);
+ assert.equal(fx.buttons().case.isConnected,true);
+ assert.equal(fx.buttons().story.isConnected,true);
+ assert.equal((game.match(/id="deal-story-voice"/g)||[]).length,1,'moderator exists in static HTML');
+ assert.equal((game.match(/id="deal-amount-voice"/g)||[]).length,1,'case button exists in static HTML');
  assert.equal(btn.case.attributes['aria-pressed'],'false');
  assert.equal(btn.story.attributes['aria-pressed'],'false');
  assert.equal(fx.caption.hidden,true);
@@ -53,13 +65,13 @@ test('both switches are visible, independently accessible and audio subtitles ar
  assert.match(fx.caption.attributes['aria-live'],/off/);
  assert.doesNotThrow(()=>new Script(script));
  assert.doesNotThrow(()=>new Script(catalogue));
- assert.match(game,/amount-voice\.js\?v=20261110-split-audio-v4/);
+ assert.match(game,/amount-voice\.js\?v=20261110-moderator-visible-v5/);
  assert.match(caseScript,/announceOpenedAmount\(item\.amount/);
 });
 test('previously enabled combined voice is migrated to both independent switches',()=>{
  const fx=harness({legacy:true});
- assert.equal(fx.buttons().case.textContent,'🧳 Koffer AN');
- assert.equal(fx.buttons().story.textContent,'📖 Story AN');
+ assert.equal(fx.buttons().case.textContent,'🔊 Koffer AN');
+ assert.equal(fx.buttons().story.textContent,'🎙️ Moderator AN');
  fx.click('case');
  assert.equal(fx.storage.get('dealCaseVoiceEnabled'),'false');
  assert.equal(fx.window.DealModeratorAudio.isCaseEnabled(),false);
@@ -192,6 +204,46 @@ test('unsupported browsers disable both independent switches',()=>{
  assert.doesNotThrow(()=>fx.announce(1,{caseCount:29}));
  assert.equal(fx.speakStory('Hallo!'),false);
 });
+
+test('moderator stays visible without JavaScript and is reused, not duplicated, on initialization',()=>{
+ const fx=harness();
+ assert.equal(fx.buttons().story.isConnected,true);
+ assert.equal(fx.buttons().case.isConnected,true);
+ assert.equal(fx.buttons().story.id,'deal-story-voice');
+ assert.equal(fx.buttons().case.id,'deal-amount-voice');
+ assert.match(game,/<nav class="studio-header-controls"[\s\S]*?id="deal-story-voice"[\s\S]*?id="deal-amount-voice"/);
+ assert.match(game,/#deal-story-voice,#?\.?studio-header-controls|\.studio-header-controls #deal-story-voice/);
+ assert.equal(fx.buttons().story.attributes['aria-pressed'],'false');
+ assert.equal(fx.caption.hidden,true,'the spoken subtitle remains invisible');
+});
+
+test('tapping Moderator ON unlocks mobile speech immediately, independently of Koffer narration',()=>{
+ const fx=harness();
+ fx.click('story');
+ assert.equal(fx.buttons().story.textContent,'🎙️ Moderator AN');
+ assert.equal(fx.buttons().case.textContent,'🔊 Koffer AUS');
+ assert.equal(fx.window.DealModeratorAudio.isStoryEnabled(),true);
+ assert.equal(fx.window.DealModeratorAudio.isCaseEnabled(),false);
+ assert.equal(fx.storage.get('dealStoryVoiceEnabled'),'true');
+ assert.equal(fx.spoken.length,1,'audio permission is unlocked directly by user tap');
+ assert.match(fx.spoken[0].text,/Moderator eingeschaltet/);
+ assert.equal(fx.caption.hidden,true);
+ fx.click('story');
+ assert.equal(fx.buttons().story.textContent,'🎙️ Moderator AUS');
+ assert.equal(fx.window.DealModeratorAudio.isStoryEnabled(),false);
+});
+
+test('tapping Koffer ON unlocks separate narration even with Moderator OFF',()=>{
+ const fx=harness();
+ fx.click('case');
+ assert.equal(fx.buttons().case.textContent,'🔊 Koffer AN');
+ assert.equal(fx.buttons().story.textContent,'🎙️ Moderator AUS');
+ assert.equal(fx.spoken.length,1);
+ assert.match(fx.spoken[0].text,/Kofferansagen eingeschaltet/);
+ assert.equal(fx.window.DealModeratorAudio.isCaseEnabled(),true);
+ assert.equal(fx.window.DealModeratorAudio.isStoryEnabled(),false);
+});
+
 test('banker special-bonus audio honors the Story switch, not the Koffer switch',()=>{
  assert.match(banker,/DealModeratorAudio\?\.isStoryEnabled\?\.\(\)/);
  assert.doesNotMatch(banker,/localStorage\.getItem\('dealAmountVoiceEnabled'\)/);
