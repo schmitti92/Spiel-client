@@ -20,5 +20,6 @@ jobs:
         with:
           node-version: '22'
       - run: node --check DOG/app.js
+      - run: node --check DOG/editor.js
       - run: node --check DOG/board-layout.js
       - run: node --test tests/dog-board-layout.test.mjs
