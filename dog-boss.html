@@ -66,6 +66,16 @@
      <div class="boss-defeat-icon">💀</div>
      <h3>KAMPF VERLOREN</h3>
      <p>Der Aschewächter hat eure Helden besiegt. Der gemeinsame Kampf ruht zehn Minuten lang.</p>
+     <section id="boss-defeat-analysis" class="boss-defeat-analysis" hidden aria-label="Auswertung des verlorenen Bosskampfs">
+      <span class="boss-analysis-kicker">📊 AUSWERTUNG DES KAMPFES</span>
+      <strong id="boss-analysis-title">Euer Kampf wird ausgewertet …</strong>
+      <p id="boss-analysis-summary"></p>
+      <div class="boss-analysis-progress" role="progressbar" id="boss-analysis-track" aria-label="Verursachter Boss-Schaden in Prozent" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+       <span id="boss-analysis-fill"></span>
+      </div>
+      <p id="boss-analysis-metrics"></p>
+      <p id="boss-analysis-advice" class="boss-analysis-advice"></p>
+     </section>
      <strong id="boss-countdown" class="boss-countdown" role="timer" aria-label="Verbleibende Kampfpause">10:00</strong>
      <span id="boss-cooldown-note">Ihr könnt in dieser Zeit Rohstoffe sammeln und eure Ausrüstung verbessern.</span>
      <a id="boss-defeat-forge" href="./dog-forge.html">⚒️ In die Schmiede wechseln</a>
