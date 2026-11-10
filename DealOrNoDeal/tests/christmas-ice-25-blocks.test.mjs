@@ -7,28 +7,30 @@ const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const js=read('Weihnachtsevent2/online-ice.js');
 const html=read('Weihnachtsevent2/index.html');
 
-test('50 and 100 ice fields use correct grids and cache-busted client',()=>{
+test('50, 100 and 150 ice fields use correct grids and cache-busted client',()=>{
  assert.doesNotThrow(()=>new Script(js));
  assert.match(html,/ice-tiles\.ice-tiles-50\{grid-template-columns:repeat\(10,minmax\(0,1fr\)\);grid-template-rows:repeat\(5,minmax\(0,1fr\)\)/);
  assert.match(html,/ice-tiles\.ice-tiles-100\{grid-template-columns:repeat\(10,minmax\(0,1fr\)\);grid-template-rows:repeat\(10,minmax\(0,1fr\)\)/);
- assert.match(js,/ice-tiles-50/);assert.match(js,/ice-tiles-100/);
+ assert.match(html,/ice-tiles\.ice-tiles-150\{grid-template-columns:repeat\(15,minmax\(0,1fr\)\);grid-template-rows:repeat\(10,minmax\(0,1fr\)\)/);
+ assert.match(js,/ice-tiles-50/);assert.match(js,/ice-tiles-100/);assert.match(js,/ice-tiles-150/);
  assert.match(js,/Array\.from\(\{length:tileCount\}/);
- assert.match(html,/online-ice\.js\?v=20261110-david-profile-recovery-v2/);
+ assert.match(html,/online-ice\.js\?v=20261110-picture40-150-tiles-v1/);
 });
 
-test('pictures 1–29 use 50 and 30–70 use 100 including old saves',()=>{
+test('pictures 1–29 use 50, 30–39 use 100, 40–70 use 150 including old saves',()=>{
  const start=js.indexOf(' const finished=!!state.finished,done=state.completed>=70');
  const end=js.indexOf(' const photo=n=>',start);
  assert.ok(start>0&&end>start);
  const code=js.slice(start,end)+'\n({tileCount,openedTiles,number})';
  const stage=state=>runInNewContext(code,{state});
- for(const [completed,finished,tileCount] of [[0,false,50],[22,false,50],[28,false,50],[29,true,50],[29,false,100],[30,false,100],[70,true,100]]){
+ for(const [completed,finished,tileCount] of [[0,false,50],[22,false,50],[28,false,50],[29,true,50],[29,false,100],[30,false,100],[38,false,100],[39,true,100],[39,false,150],[40,false,150],[70,true,150]]){
   const state={completed,maxRewarded:completed,finished,opened:[0,1],tileCount:30,tilesRequired:30};
   const actual=stage(state);
   assert.equal(actual.tileCount,tileCount,'completed '+completed+', finished '+finished);
   assert.equal(actual.openedTiles,2);
  }
  assert.equal(stage({completed:0,maxRewarded:40,finished:false,opened:[],tileCount:100}).tileCount,50,'reset to first picture');
+ assert.equal(stage({completed:39,maxRewarded:39,finished:false,opened:[0,1],tileCount:100,tilesRequired:100}).tileCount,150,'old picture-40 save gets expanded');
 });
 
 test('UI shows dynamic ice progress and the star on every image',()=>{
@@ -72,7 +74,7 @@ test('hidden star is present for every picture including 23–70',()=>{
 test('every server-confirmed completed picture uses full-screen reveal before reward',()=>{
  const css=read('Weihnachtsevent2/image-reveal-grand.css');
  assert.match(html,/image-reveal-grand\.css\?v=20261109-grand-reveal-v1/);
- assert.match(html,/online-ice\.js\?v=20261110-david-profile-recovery-v2/);
+ assert.match(html,/online-ice\.js\?v=20261110-picture40-150-tiles-v1/);
  assert.match(js,/celebration\?\.stage==='image'&&!celebrationDelayTimer&&state\.finished&&Number\(state\.completed\)>=celebration\.number/);
  assert.match(js,/photo\(celebration\.number\)/);
  assert.match(js,/id="v44-big-reveal-continue"/);
