@@ -17,16 +17,26 @@ test('Deal stream and HTTP updates reject stale revisions',()=>{
  assert.match(core,/Number\(data\.game\?\.revision\)>Number\(g\.revision\)/);
 });
 test('Deal stream retains HTTP fallback and reward checks are event driven',()=>{
- assert.match(app,/if\(!dealSocketHealthy\(\)\|\|Date\.now\(\)-lastHttpSafetySync>=30000\)await poll\(\)/);
+ assert.match(app,/if\(!dealSocketHealthy\(\)\|\|Date\.now\(\)-lastHttpSafetySync>=60000\)await poll\(\)/);
  assert.match(html,/addEventListener\('deal-game-state-change',\(\)=>\{syncSharedClose\(\);syncWheel\(\);checkRewards\(\);checkWheelStart\(\)\}\)/);
  assert.match(html,/if\(rewardMayExist\(\)&&box.hidden\)checkRewards\(\)/);
  assert.match(html,/setInterval\(\(\)=>\{if\(!document.hidden\)\{syncSharedClose\(\);if\(rewardMayExist\(\)&&box.hidden\)checkRewards\(\)\}\},30000\)/);
  assert.doesNotMatch(html,/setInterval\(checkRewards,1700\)/);
 });
 
+test('WebSocket refreshes credentials in place before the 120-second server expiry',()=>{
+ assert.match(app,/DEAL_SOCKET_REAUTH_AFTER_MS=75000/);
+ assert.match(app,/DEAL_SOCKET_REAUTH_TIMEOUT_MS=15000/);
+ assert.match(app,/type:'reauth',token/);
+ assert.match(app,/msg\.type==='deal-reauthenticated'/);
+ assert.match(app,/dealSocketLastAuth=Date\.now\(\)/);
+ assert.match(app,/dealSocketHealthy\(\)\?4000/);
+ assert.doesNotMatch(app,/dealSocketHealthy\(\)\?8000/);
+});
+
 test('Healthy WebSocket performs a bounded periodic HTTP reconciliation',()=>{
- assert.match(app,/Date\.now\(\)-lastHttpSafetySync>=30000/);
- assert.match(app,/if\(!dealSocketHealthy\(\)\|\|Date\.now\(\)-lastHttpSafetySync>=30000\)await poll\(\)/);
+ assert.match(app,/Date\.now\(\)-lastHttpSafetySync>=60000/);
+ assert.match(app,/if\(!dealSocketHealthy\(\)\|\|Date\.now\(\)-lastHttpSafetySync>=60000\)await poll\(\)/);
 });
 
 test('Deal heartbeats carry clock samples but no revision-triggered Firestore fetch',()=>{
