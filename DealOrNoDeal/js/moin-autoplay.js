@@ -9,7 +9,7 @@
   ['moin','deal-moin-autoplay-open-v1'],
   ['vanessa','deal-vanessa-autoplay-open-v1']
  ]);
- const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\\/+$/,'');
+ const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
  let enabled=false,unlocked=false,checking=false,checkError=false,checked=false;
  let timer=null,scheduledKey='',lastAttemptKey='',stoppedForError=false;
  let activeStorageKey=null,activeUid='',profileEpoch=0,lastCheckedAt=0;
