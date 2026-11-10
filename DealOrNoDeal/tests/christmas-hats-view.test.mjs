@@ -78,3 +78,33 @@ test('V3 keeps real payouts separate from local Chris test games',()=>{
  assert.match(script,/DEMO\?'Testmodus: Deine Gewinne/);
  assert.doesNotMatch(script,/fetch\(['"]\/api\/christmas-hats\/action['"]\)/);
 });
+
+test('Phase 1 quick entry is immediately visible above the progression map when a verified voucher exists',()=>{
+ const css=readFileSync(resolve(root,'css/christmas-hats-quick20-v7.css'),'utf8');
+ const hero=html.indexOf('class="hero"'),entry=html.indexOf('id="quick-entry"'),tiers=html.indexOf('id="tiers"');
+ assert.ok(hero>=0&&entry>hero&&tiers>entry,'start action appears before the 20-stage map');
+ for(const id of ['quick-entry','quick-start','quick-entry-title','quick-entry-detail','quick-entry-vouchers']){
+  assert.equal([...html.matchAll(new RegExp('id="'+id+'"','g'))].length,1,'unique quick-start control '+id);
+ }
+ assert.match(css,/\.hats-quick-entry\[hidden\]/);
+ assert.match(css,/#quick-start:disabled/);
+ assert.match(html,/christmas-hats-quick20-v7\.css\?v=20261110-phase1-onetap-v2/);
+ assert.match(script,/const entryAvailable=!s\|\|finished/);
+ assert.match(script,/\$\('quick-entry'\)\.hidden=!entryAvailable\|\|!!reveal/);
+ assert.match(script,/\$\('quick-start'\)\.disabled=busy\|\|!!pendingRequest\|\|!hasVouchers\|\|!!reveal/);
+ assert.match(script,/\$\('quick-start'\)\.textContent=finished\?'↻ Nochmal spielen':'▶ Jackpot starten'/);
+ assert.match(script,/\$\('quick-start'\)\.onclick=\(\)=>action\('start'\)/);
+ assert.match(script,/\$\('start'\)\.hidden=true/);
+ assert.match(script,/\$\('again'\)\.hidden=true/);
+});
+
+test('Phase 1 advances from verified start into playable hats and preserves protections',()=>{
+ assert.match(script,/if\(autoStartRequested&&\(!state\|\|state\.status==='finished'\)&&!pendingRequest/);
+ assert.match(script,/if\(payload\.type==='start'&&state\?\.status==='playing'&&!pendingRequest&&uid\(\)===requestUser\)/);
+ assert.match(script,/target\?\.scrollIntoView\?\.\(\{behavior:reduced\?'instant':'smooth',block:'start'\}\)/);
+ assert.ok(script.includes("if(type==='start'&&!DEMO&&!(vouchers?.total>0)&&state?.status!=='playing')return;"));
+ assert.ok(script.includes("if(busy||reveal||pendingRequest)return;"));
+ assert.ok(script.includes("if(!fastMode)cinemaTimer=setTimeout("));
+ assert.ok(script.includes("if(outcome?.type!=='bomb'&&!fastMode)showChoice()"));
+ assert.ok(script.includes("for(const id of ['hats-collection','hats-voucher-back','quick-entry-vouchers'])"));
+});
