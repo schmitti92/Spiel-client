@@ -140,3 +140,26 @@ test('a previously placed DOG field can be re-aligned diagonally without changin
  assert.notDeepEqual(after.track[2],before.track[2]);
  assert.ok(Math.abs(Math.hypot(after.track[2].x-after.track[1].x,after.track[2].y-after.track[1].y)-32)<.15);
 });
+
+test('changing an existing 28-unit raster also uses 28-unit straight and diagonal steps',()=>{
+ const ui=openBuilder();
+ ui.get('grid-size').value='28';ui.trigger('grid-size','change');
+ assert.equal(ui.get('step-size').value,'28');
+ ui.touch(115,205);ui.dir(1,0);ui.dir(1,-1);
+ const d=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ const first=Math.hypot(d.track[1].x-d.track[0].x,d.track[1].y-d.track[0].y);
+ const second=Math.hypot(d.track[2].x-d.track[1].x,d.track[2].y-d.track[1].y);
+ assert.ok(Math.abs(first-28)<.15);
+ assert.ok(Math.abs(second-28)<.15);
+});
+test('player-selected equal spacing is independent after choosing a separate guide distance',()=>{
+ const ui=openBuilder();
+ ui.get('step-size').value='36';ui.trigger('step-size','change');
+ ui.get('grid-size').value='28';ui.trigger('grid-size','change');
+ assert.equal(ui.get('grid-size').value,'28');
+ assert.equal(ui.get('step-size').value,'36');
+ ui.touch(115,205);ui.dir(0,1);
+ const d=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ const distance=Math.hypot(d.track[1].x-d.track[0].x,d.track[1].y-d.track[0].y);
+ assert.ok(Math.abs(distance-36)<.15);
+});
