@@ -12,7 +12,7 @@ let bankerBonusVoice=null;
 function bankerBonusClearStages(){for(const timer of bankerBonusStageTimers)clearTimeout(timer);bankerBonusStageTimers=[]}
 function bankerBonusAnnounce(text){
  try{
-  if(localStorage.getItem('dealAmountVoiceEnabled')!=='true'||!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window))return;
+  if(!window.DealModeratorAudio?.isStoryEnabled?.()||!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window))return;
   const voice=new SpeechSynthesisUtterance(text);voice.lang='de-DE';voice.rate=.92;voice.pitch=.82;voice.volume=.95;
   const german=speechSynthesis.getVoices().filter(v=>String(v.lang).toLowerCase().startsWith('de'));
   const male=german.find(v=>/male|mann|markus|stefan|thomas|daniel|florian|klaus|hans|martin|christoph|conrad|bernd/i.test(v.name));
