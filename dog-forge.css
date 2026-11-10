@@ -324,3 +324,131 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;z-i
 }
 
 .forge-result.result-failure .result-plate h2{color:#f4afb1}
+
+
+/* Phase B2 · art-directed skill medallions: lightweight, transparent SVG artwork. */
+.skill-visual{
+ --skill-accent:#e4b973;--skill-glow:#e4b97350;
+ position:relative;display:inline-flex;align-items:center;justify-content:center;
+ isolation:isolate;min-width:0;flex-shrink:0;
+}
+.skill-illustration{
+ display:block;width:clamp(145px,20vw,202px);height:clamp(145px,20vw,202px);
+ object-fit:contain;filter:drop-shadow(0 6px 13px #020715d9) drop-shadow(0 0 16px var(--skill-glow));
+ transition:transform .24s,filter .24s;
+}
+.skill-fallback{font-size:68px;filter:drop-shadow(0 0 12px var(--skill-glow));}
+.skill-visual.compact{
+ width:47px;height:47px;flex:0 0 47px;border-radius:10px;
+ background:radial-gradient(ellipse at center,var(--skill-glow),#111b2b 78%);
+ border:1px solid color-mix(in srgb,var(--skill-accent) 50%,transparent)
+}
+.skill-visual.compact .skill-illustration{width:45px;height:45px;object-fit:contain;
+ filter:drop-shadow(0 2px 5px var(--skill-glow))}
+.skill-visual.compact .skill-fallback{font-size:25px}
+.item-choice.skill-entry{
+ background:linear-gradient(116deg,#142234d8,#1c2333bb);border-color:#7c8aa280;
+ transition:border-color .2s,box-shadow .2s,background .2s
+}
+.item-choice.skill-entry.selected{
+ border-color:var(--skill-accent);
+ background:linear-gradient(112deg,var(--skill-glow),#182336e0 70%);
+ box-shadow:inset 0 0 17px var(--skill-glow),0 0 15px var(--skill-glow)
+}
+.item-choice.skill-entry:hover:not(.selected){border-color:var(--skill-accent)}
+.item-choice.skill-entry:hover .skill-illustration{transform:scale(1.085)}
+.item-choice.skill-entry .item-bar>span{
+ background:linear-gradient(90deg,var(--skill-accent),#fbe7bd);
+ box-shadow:0 0 9px var(--skill-glow)
+}
+.skill-display{
+ position:relative;min-height:235px;margin:10px auto 10px;
+ display:flex;align-items:center;justify-content:center;flex-direction:column;
+ overflow:hidden;isolation:isolate;border-radius:18px;
+ border:1px solid color-mix(in srgb,var(--skill-accent,#d7a96d) 48%,#3d4658);
+ background:
+ radial-gradient(ellipse 54% 62% at 50% 43%,var(--skill-glow,#d7a96d44),transparent 93%),
+ linear-gradient(145deg,#171d31,#121c2c 74%);
+ box-shadow:inset 0 0 30px var(--skill-glow,#d7a96d44)
+}
+.skill-display:before{
+ content:"";position:absolute;width:180px;height:180px;top:calc(50% - 106px);
+ border-radius:50%;border:1px dashed color-mix(in srgb,var(--skill-accent) 54%,transparent);
+ box-shadow:0 0 24px var(--skill-glow);opacity:.7;
+ animation:skill-orbit 19s linear infinite;pointer-events:none
+}
+.skill-display:after{
+ content:"✧  ✦  ✧";position:absolute;top:15px;left:0;right:0;
+ color:var(--skill-accent);font-size:12px;font-weight:900;letter-spacing:.5em;
+ text-align:center;pointer-events:none;opacity:.66;
+ animation:skill-sparkle 4.5s ease-in-out infinite
+}
+.skill-display .skill-visual{margin-top:5px;z-index:1}
+.skill-display .skill-illustration{
+ width:180px;height:180px;animation:skill-hover 4.2s ease-in-out infinite
+}
+.skill-group-label{
+ z-index:1;display:inline-flex;align-items:center;justify-content:center;
+ font-size:9px;font-weight:950;letter-spacing:.12em;
+ border-radius:99px;border:1px solid color-mix(in srgb,var(--skill-accent) 55%,transparent);
+ color:var(--skill-accent);background:#0c1528bf;padding:5px 12px
+}
+.upgrade-panel .skill-display+h2{margin:8px 0 6px}
+.upgrade-panel:has(.skill-display) .level-progress>span{
+ background:linear-gradient(90deg,var(--skill-accent),#fff3d3);
+ box-shadow:0 0 12px var(--skill-glow)
+}
+.upgrade-panel:has(.skill-display) .forge-action{
+ border-color:var(--skill-accent);
+ background:linear-gradient(115deg,#fff2c3,#ecd0ab,#bfa8cb)
+}
+.forge-workspace.forging .skill-display{
+ box-shadow:inset 0 0 65px var(--skill-glow),0 0 20px var(--skill-glow)
+}
+.forge-workspace.forging .skill-display .skill-illustration{
+ animation:skill-cast .65s ease-in-out infinite
+}
+.forge-result.result-skill-success{
+ border-color:var(--skill-accent,#b789ff);
+ box-shadow:0 20px 85px #000d,0 0 50px var(--skill-glow,#aa75ef55)
+}
+.forge-result.result-skill-success .result-plate{
+ background:radial-gradient(ellipse 73% 55% at 50% 37%,var(--skill-glow),transparent),
+ linear-gradient(145deg,#252338,#111b2d 75%)
+}
+.forge-result.result-skill-success .result-plate:after{background:var(--skill-glow)}
+.forge-result.result-skill-success .result-spark{
+ color:var(--skill-accent);text-shadow:0 0 16px var(--skill-glow)
+}
+.result-art .skill-visual{width:157px;height:167px}
+.result-art .skill-illustration{width:157px;height:157px}
+.forge-result.result-skill-success .result-achievement{color:var(--skill-accent)}
+@keyframes skill-hover{
+ 0%,100%{transform:translateY(0) scale(1)}
+ 50%{transform:translateY(-5px) scale(1.025)}
+}
+@keyframes skill-orbit{to{transform:rotate(360deg)}}
+@keyframes skill-sparkle{0%,100%{opacity:.36}45%{opacity:.95}}
+@keyframes skill-cast{
+ 0%,100%{transform:scale(1);filter:brightness(1)}
+ 50%{transform:scale(1.075);filter:brightness(1.45)}
+}
+@media(max-width:780px){
+ .skill-display{min-height:208px}
+ .skill-display .skill-illustration{width:163px;height:163px}
+ .skill-display:before{width:156px;height:156px;top:calc(50% - 95px)}
+}
+@media(max-width:420px){
+ .skill-visual.compact{width:35px;height:35px;flex-basis:35px}
+ .skill-visual.compact .skill-illustration{width:34px;height:34px}
+ .skill-visual.compact .skill-fallback{font-size:20px}
+ .skill-display{min-height:196px}
+ .skill-display .skill-illustration{width:152px;height:152px}
+ .result-art .skill-illustration{width:139px;height:139px}
+ .result-art .skill-visual{width:145px;height:145px}
+ .skill-group-label{font-size:8px;letter-spacing:.08em}
+}
+@media(prefers-reduced-motion:reduce){
+ .skill-display:before,.skill-display:after,.skill-display .skill-illustration,
+ .forge-workspace.forging .skill-display .skill-illustration{animation:none!important}
+}
