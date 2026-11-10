@@ -322,3 +322,5 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;z-i
  .gear-display .gear-illustration,.gear-display:before,.forge-workspace.forging .gear-display,
  .result-plate:before,.result-art,.result-spark{animation:none!important}
 }
+
+.forge-result.result-failure .result-plate h2{color:#f4afb1}
