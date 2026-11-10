@@ -130,31 +130,29 @@ function drawBoard(){
   const path=TRACK_POINTS.map((p,i)=>(i===0?'M ':'L ')+coord(p)).join(' ')+' Z';
   push('<path d="'+path+'" fill="none" stroke="#03152a" stroke-width="32" stroke-linejoin="round" stroke-linecap="round" opacity=".52"/>');
   push('<path d="'+path+'" fill="none" stroke="#4b85a9" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity=".55"/>');
-  // Matching original DOG field layout: a colored start and a parallel 4-field
-  // entrance to each player's own goal; the four home slots are not track cells.
+  // All goal and reserve holes follow the draggable editor coordinates.
   for(let seat=0;seat<4;seat++){
     const c=safeColor(seat),start=boardPoint(seat*16);
-    const home=HOME_POINTS[seat],goals=GOAL_POINTS[seat];
-    const angle=seat*90;
-    push('<g transform="rotate('+angle+' 380 380)">');
-    push('<rect x="160" y="139" width="46" height="148" rx="23" fill="#030e21" fill-opacity=".55" stroke="'+c+'" stroke-width="3" stroke-opacity=".67"/>');
-    push('<rect x="225" y="139" width="46" height="148" rx="23" fill="#06172c" fill-opacity=".63" stroke="'+c+'" stroke-width="3" stroke-opacity=".48"/>');
-    push('<text x="183" y="307" text-anchor="middle" font-size="11" font-weight="850" letter-spacing="1" fill="'+c+'">ZIEL</text>');
-    push('<text x="248" y="307" text-anchor="middle" font-size="11" font-weight="850" letter-spacing="1" fill="'+c+'">START</text>');
-    push('<path d="M 183 151 Q 164 144 145 122" stroke="'+c+'" stroke-width="3" stroke-dasharray="5 5" fill="none" opacity=".75"/>');
-    // Four untouched reserve holes in the home area.
+    const goal=GOAL_POINTS[seat],home=HOME_POINTS[seat];
+    const gps=goal.map(coord).join(' '),hps=home.map(coord).join(' ');
+    push('<polyline points="'+gps+'" fill="none" stroke="'+c+'" stroke-opacity=".23" stroke-width="39" stroke-linecap="round" stroke-linejoin="round"/>');
+    push('<polyline points="'+hps+'" fill="none" stroke="'+c+'" stroke-opacity=".15" stroke-width="37" stroke-linecap="round" stroke-linejoin="round"/>');
+    push('<polyline points="'+gps+'" fill="none" stroke="'+c+'" stroke-opacity=".66" stroke-width="2.5" stroke-linecap="round"/>');
+    push('<polyline points="'+hps+'" fill="none" stroke="'+c+'" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/>');
+    push('<path d="M '+coord(start)+' L '+coord(goal[0])+'" stroke="'+c+'" stroke-width="2.5" stroke-dasharray="5 6" opacity=".65"/>');
     for(let j=0;j<4;j++){
-      const p={x:247,y:164+32*j};
-      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="16.8" fill="#051628" stroke="'+c+'" stroke-width="2.2" stroke-opacity=".62"/>');
-      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="12.8" fill="#122f4b" opacity=".8"/>');
+      const p=home[j];
+      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="16.7" fill="#041629" stroke="'+c+'" stroke-opacity=".7" stroke-width="2.4"/>');
+      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="11.4" fill="#164066" opacity=".6"/>');
     }
-    // The goal entries are physically distinct from the uninterrupted ring.
     for(let j=0;j<4;j++){
-      const p={x:182,y:164+32*j};
-      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="17.4" fill="'+c+'" fill-opacity=".21" stroke="'+c+'" stroke-width="2.7"/>');
-      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="11.5" fill="#ffffff" fill-opacity=".25"/>');
+      const p=goal[j];
+      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="17.3" fill="'+c+'" fill-opacity=".21" stroke="'+c+'" stroke-width="2.5"/>');
+      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="11.4" fill="#ffffff" fill-opacity=".12"/>');
     }
-    push('</g>');
+    const labelGoal=goal[2],labelHome=home[2];
+    push('<text x="'+labelGoal.x+'" y="'+(labelGoal.y+28)+'" text-anchor="middle" fill="'+c+'" font-size="10" font-weight="850" letter-spacing=".8">ZIEL</text>');
+    push('<text x="'+labelHome.x+'" y="'+(labelHome.y+28)+'" text-anchor="middle" fill="'+c+'" font-size="10" font-weight="850" letter-spacing=".8">START</text>');
   }
   // A warm little center crest. Original brand artwork is intentionally not
   // copied so future DOG modes and events can use the same geometric layout.
@@ -336,3 +334,4 @@ $('human-count').addEventListener('change',()=>{if(confirm('Spielerzahl ändern 
 $('rules-button').addEventListener('click',()=>{$('rules').showModal();});
 $('rules-close').addEventListener('click',()=>{$('rules').close();});
 if(online){void initOnline();}else if(!recover())newGame();else{render();scheduleAI();}
+window.addEventListener('pageshow',()=>{if(game)drawBoard();});
