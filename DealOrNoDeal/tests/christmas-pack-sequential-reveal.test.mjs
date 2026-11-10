@@ -50,9 +50,11 @@ test('all reveals including demo, monster packs and normal purchases use the sam
  assert.match(finish,/stopRevealAuto\(\)/);
  assert.match(inline,/close\.addEventListener\('click',\(\)=>\{\s*stopRevealAuto\(\)/);
 });
-test('each opened card is a large spotlight with its own zoom and rarity finale',()=>{
+test('only previously unseen cards get the large spotlight; duplicates keep standard dimensions',()=>{
  assert.match(css,/pc-card-magnify/);
- assert.match(css,/#reveal-overlay\[data-stage=card\] \.reveal-card/);
+ assert.match(css,/#reveal-overlay\[data-stage=card\]\[data-new-card=true\] \.reveal-card/);
+ assert.doesNotMatch(css,/#reveal-overlay\[data-stage=card\] \.reveal-card\s*\{/);
+ assert.match(css,/\[data-stage=card\]\[data-new-card=false\] \.reveal-card\.legendary/);
  assert.match(css,/width:min\(410px,88%\)/);
  assert.match(css,/max-height:345px/);
  assert.match(css,/width:min\(345px,84vw\)/);
@@ -60,11 +62,17 @@ test('each opened card is a large spotlight with its own zoom and rarity finale'
  assert.match(css,/reveal-card\.epic/);
  assert.match(css,/@media\(max-width:380px\)/);
  assert.match(css,/prefers-reduced-motion:reduce/);
- assert.match(html,/christmas-pack-cinema\.js\?v=20261109-platinum-v1/);
+ assert.match(html,/christmas-pack-cinema\.js\?v=20261110-new-only-zoom-v1/);
 });
 
-test('each card reveals, enlarges, then automatically reveals the next until summary',async()=>{
+test('new cards expand while duplicates use the same short hold regardless of rarity',async()=>{
  const nextCode=span('async function revealNext(){',"next.addEventListener('click'");
+ const holdCode=inline.slice(inline.indexOf('function revealCardHoldMs(card){'),inline.indexOf('const overlay=document.getElementById('));
+ assert.ok(holdCode.startsWith('function revealCardHoldMs(card){'));
+ const holdContext={};new Script(holdCode+'\nthis.actualHold=revealCardHoldMs;').runInNewContext(holdContext);
+ assert.equal(holdContext.actualHold({rarity:'legendary',isNew:false}),1300);
+ assert.equal(holdContext.actualHold({rarity:'epic',isNew:false}),1300);
+ assert.equal(holdContext.actualHold({rarity:'common',isNew:true}),1800);
  const state={
   cards:[
    {id:'c',rarity:'common',name:'Normal',isNew:true},
@@ -87,7 +95,7 @@ test('each card reveals, enlarges, then automatically reveals the next until sum
   }},
   christmasCardImage:card=>card.id+'.png',
   stopRevealAuto(){if(ctx.revealAutoTimer!=null){timerJobs.delete(ctx.revealAutoTimer);ctx.revealAutoTimer=null}},
-  revealCardHoldMs:card=>({common:1800,rare:2200,epic:2900,legendary:3900})[card.rarity],
+  revealCardHoldMs:holdContext.actualHold,
   finishReveal(){completed++;ctx.revealState=null},
   setTimeout:(cb,ms)=>{const id=++ticket;timerJobs.set(id,{cb,ms});return id},
   clearTimeout:id=>timerJobs.delete(id)
@@ -106,7 +114,7 @@ test('each card reveals, enlarges, then automatically reveals the next until sum
   assert.equal(ctx.revealMotionBusy,false);
   assert.equal(get('reveal-card').hidden,false);
   assert.equal(get('reveal-image').src,state.cards[i].id+'.png');
-  assert.equal(timerJobs.get(ctx.revealAutoTimer).ms,[1800,2200,2900,3900][i]);
+  assert.equal(timerJobs.get(ctx.revealAutoTimer).ms,[1800,2200,1300,3900][i]);
  }
  const last=timerJobs.get(ctx.revealAutoTimer);
  timerJobs.delete(ctx.revealAutoTimer);last.cb();
@@ -114,4 +122,41 @@ test('each card reveals, enlarges, then automatically reveals the next until sum
  assert.equal(completed,1,'summary must appear after final legendary card');
  assert.equal(shown.length,4);
  assert.equal(ctx.revealState,null);
+});
+
+
+test('epic and legendary duplicates never trigger a rarity enlargement, but new commons and legendaries do',()=>{
+ const nodes=new Map();
+ const classNames=new Set();
+ const root={
+  dataset:{mode:'real',pack:'small',stage:'ready'},
+  classList:{
+   toggle:(name,enabled)=>{if(enabled)classNames.add(name);else classNames.delete(name)},
+   remove:(...names)=>names.forEach(name=>classNames.delete(name))
+  }
+ };
+ const get=id=>{
+  if(id==='reveal-overlay')return root;
+  if(!nodes.has(id))nodes.set(id,{
+   textContent:'',style:{width:''},setAttribute(){},classList:{remove(){}}
+  });
+  return nodes.get(id);
+ };
+ const env={window:{},document:{readyState:'loading',addEventListener(){},getElementById:get},setTimeout};
+ new Script(cinema).runInNewContext(env);
+ const show=env.window.ChristmasPackCinema.showCard;
+ show({name:'Doppelte legendäre',rarity:'legendary',isNew:false},0,3);
+ assert.equal(root.dataset.newCard,'false');
+ assert.equal(classNames.has('is-legendary-reveal'),false);
+ assert.equal(nodes.get('reveal-title').textContent,'🎁 Karte aufgedeckt!');
+ assert.match(nodes.get('pack-cinema-subtitle').textContent,/bereits gesammelt/);
+ show({name:'Doppelte epische',rarity:'epic',isNew:false},1,3);
+ assert.equal(root.dataset.newCard,'false');
+ assert.equal(classNames.has('is-epic-reveal'),false);
+ show({name:'Neue gewöhnliche',rarity:'common',isNew:true},2,3);
+ assert.equal(root.dataset.newCard,'true','every rarity gets a spotlight if new');
+ assert.match(nodes.get('pack-cinema-subtitle').textContent,/NEU/);
+ show({name:'Neue legendäre',rarity:'legendary',isNew:true},2,3);
+ assert.equal(root.dataset.newCard,'true');
+ assert.equal(classNames.has('is-legendary-reveal'),true);
 });
