@@ -268,7 +268,7 @@ function soundCue(kind){
  }catch{}
 }
 const back=$('back'),lobby=$('lobby'),params=new URLSearchParams(location.search),DEMO=params.get('demo')==='1',room=params.get('room')||sessionStorage.getItem('deal-active-room');
-if(room&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(room)){sessionStorage.setItem('deal-active-room',room);const u=new URL(back.href);u.searchParams.set('room',room);back.href=u.href;const ul=new URL(lobby.href);ul.searchParams.set('room',room);lobby.href=ul.href;for(const id of ['hats-collection','hats-voucher-back']){const el=$(id),u=new URL(el.href);u.searchParams.set('room',room);el.href=u.href;}}
+if(room&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(room)){sessionStorage.setItem('deal-active-room',room);const u=new URL(back.href);u.searchParams.set('room',room);back.href=u.href;const ul=new URL(lobby.href);ul.searchParams.set('room',room);lobby.href=ul.href;for(const id of ['hats-collection','hats-voucher-back','quick-entry-vouchers']){const el=$(id),u=new URL(el.href);u.searchParams.set('room',room);el.href=u.href;}}
 function authUser(){const s=window.SpielOnline?.state?.();return s?.status==='online'?s.user:null;}
 const uid=()=>authUser()?.uid||'';
 const isChrisDemo=()=>DEMO&&!!uid()&&String(window.SpielOnline?.state?.()?.profile?.name||'').trim().toLocaleLowerCase('de-DE')==='chris';
