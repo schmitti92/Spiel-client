@@ -8,7 +8,8 @@ import {
 } from './board-layout.js';
 import {
   EDITOR_DRAFT_KEY,clone,emptyDraft,fromCrossPreset,fromLayout,placedCount,
-  fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout
+  fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
+  guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS
 } from './editor-model.js';
 
 const $=id=>document.getElementById(id);
@@ -22,7 +23,7 @@ const toRound=n=>Math.round(n*10)/10;
 let draft=emptyDraft();
 let selected={kind:'track',index:0,owner:0};
 let mode='track',tool='place';
-let settings={spacing:32,snap:true,grid:true,numbers:true,path:true,symmetry:false,auto:true};
+let settings={spacing:32,snap:true,grid:true,numbers:true,path:true,symmetry:false,auto:true,guide:true,stepSpacing:32};
 let photoObject=null,photoOpacity=.4,hover=null,pointer=null,walkTimer=null,walkStep=-1;
 let history=[],historyAt=0,feedbackText='';
 
@@ -35,6 +36,8 @@ try{
 try{
   const pref=JSON.parse(localStorage.getItem(DRAW_PREF_KEY)||'{}');
   if([28,32,36,40,48].includes(pref.spacing))settings.spacing=pref.spacing;
+  if([28,32,36,40,48].includes(pref.stepSpacing))settings.stepSpacing=pref.stepSpacing;
+  if(typeof pref.guide==='boolean')settings.guide=pref.guide;
   for(const key of ['snap','grid','numbers','path','symmetry','auto'])if(typeof pref[key]==='boolean')settings[key]=pref[key];
 }catch(_){}
 history=[clone(draft)];
@@ -52,6 +55,24 @@ function announce(message,level=''){
   $('feedback').className='status '+(level||'');
 }
 function currentPosition(){return fieldOf(draft,selected.kind,selected.index,selected.owner);}
+function guidedPlacement(raw,draftSnapshot=draft,{forceExact=false}={}){
+ if(forceExact)return {x:raw.x,y:raw.y,guided:false};
+ if(settings.guide&&selected.kind==='track'){
+   const anchor=previousTrackField(draftSnapshot,selected);
+   if(anchor){
+     const point=guidedPoint(draftSnapshot,selected,raw,{step:settings.stepSpacing});
+     if(!point)throw Error('Die Richtung liegt außerhalb des Bretts. Wähle eine andere Richtung.');
+     return {...point,guided:true};
+   }
+ }
+ return {...snapXY(raw,settings.spacing,settings.snap),guided:false};
+}
+function placeAt(raw,draftSnapshot=draft,{forceExact=false}={}){
+ const point=guidedPlacement(raw,draftSnapshot,{forceExact});
+ return putField(draftSnapshot,selected,point,{
+   symmetry:settings.symmetry,spacing:settings.spacing,snap:false
+ });
+}
 function selectedName(s=selected){
   if(s.kind==='track')return (s.index%16===0?'🔒 Startfeld ':'⚪ Lauffeld ')+s.index+' · '+names[Math.floor(s.index/16)];
   return (s.kind==='goals'?'🎯 Zielfeld ':'🏠 Startplatz ')+(s.index+1)+' · '+names[s.owner];
@@ -123,6 +144,10 @@ function updateControls(){
   $('field-seat').disabled=mode==='track';
   $('field-seat').value=String(mode==='track'?Math.floor(selected.index/16):selected.owner);
   $('grid-size').value=String(settings.spacing);
+  $('step-size').value=String(settings.stepSpacing);
+  $('equal-spacing').checked=settings.guide;
+  const canGuide=selected.kind==='track'&&Boolean(previousTrackField(draft,selected));
+  document.querySelectorAll('[data-path-dir]').forEach(button=>button.disabled=!canGuide);
   for(const [id,key] of [
     ['snap','snap'],['show-grid','grid'],['show-numbers','numbers'],
     ['show-path','path'],['symmetry','symmetry'],['auto-next','auto']
@@ -142,6 +167,13 @@ function renderProgress(){
   $('goal-progress').textContent=count.goals+'/16';
   $('home-progress').textContent=count.homes+'/16';
   $('progress-total').textContent=count.total+'/96';
+  const gap=measureStepDistances(draft,settings.stepSpacing),anchor=previousTrackField(draft,selected);
+  $('gap-report').textContent=settings.guide?
+    (anchor?'📐 Ausgangspunkt: Feld '+anchor.index+'. ':'📍 Setze Feld 0 frei. ')+
+    (gap.measured?gap.even+' von '+gap.measured+' Verbindungen im Abstand '+settings.stepSpacing+
+      '. '+(gap.uneven?'Orange Linien markieren Abweichungen.':'Alle gemessenen Abstände passen.'):
+      'Mit den 8 Pfeilen setzt du gerade und diagonale Schritte gleich weit auseinander.'):
+    'Abstandshilfe aus – die Felder folgen dem Raster oder der freien Positionierung.';
   $('total-progress').value=count.total;
   $('finish-button').disabled=!check.ready;
   $('save-live-top').disabled=!check.ready;
@@ -157,7 +189,7 @@ function renderProgress(){
   $('validation').className='status '+(check.errors.length?'error':check.ready?'success':'warn');
   $('board-subtitle').textContent=check.ready?'Das Brett kann übernommen werden.':tool==='place'?'Nächster Klick: '+selectedName():tool==='erase'?'Tippe auf ein Feld, um es zu entfernen.':'Ziehe ein Feld an die richtige Rasterposition.';
   if(walkTimer===null)$('board-hint').textContent=tool==='place'
-    ?'Tippe auf die freie Fläche, um '+selectedName()+' zu setzen. Zum Ersetzen ein Feld antippen und danach auf einen neuen freien Platz tippen.'
+    ?(settings.guide&&selected.kind==='track'&&previousTrackField(draft,selected)?'📐 Gleicher Abstand ('+settings.stepSpacing+'): Tippe ungefähr in die Richtung oder nutze die acht Pfeile.':'Tippe auf die freie Fläche, um '+selectedName()+' zu setzen. Zum Ersetzen Feld antippen und dann neue freie Stelle.')
     :tool==='move'?'Tippe auf ein vorhandenes Feld und ziehe es an die neue Position.':'Tippe auf ein Feld, um es zu entfernen.';
   updateControls();
 }
