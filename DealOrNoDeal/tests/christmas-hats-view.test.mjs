@@ -103,7 +103,9 @@ test('Phase 1 advances from verified start into playable hats and preserves prot
  assert.ok(script.includes("if(state?.status==='playing')goToHats()"));
  assert.ok(script.includes("else if((!state||state.status==='finished')&&(DEMO||Number(vouchers?.total||0)>0))void action('start')"));
  assert.match(script,/if\(payload\.type==='start'&&state\?\.status==='playing'&&!pendingRequest&&uid\(\)===requestUser\)/);
- assert.match(script,/target\?\.scrollIntoView\?\.\(\{behavior:reduced\?'instant':'smooth',block:'start'\}\)/);
+ assert.ok(script.includes(" $('hats-stage')?.scrollIntoView?.({behavior:reduced?'instant':'smooth',block:'start'});"));
+ assert.ok(script.includes("if(payload.type==='start'&&state?.status==='playing'&&!pendingRequest&&uid()===requestUser)"));
+ assert.ok(script.includes("let loaded=false;"),'avoid autostart if status request failed');
  assert.ok(script.includes("if(type==='start'&&!DEMO&&!(vouchers?.total>0)&&state?.status!=='playing')return;"));
  assert.ok(script.includes("if(busy||reveal||pendingRequest)return;"));
  assert.ok(script.includes("if(!fastMode)cinemaTimer=setTimeout("));
