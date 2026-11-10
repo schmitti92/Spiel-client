@@ -47,8 +47,10 @@
  }
  const savePending=(account,data)=>{try{localStorage.setItem(pendingKey(account),JSON.stringify(data));}catch{}};
  const clearPending=account=>{try{localStorage.removeItem(pendingKey(account));}catch{}};
- const newId=()=>globalThis.crypto?.randomUUID?.()?'forge-'+globalThis.crypto.randomUUID():
-  'forge-'+Date.now()+'-'+Math.random().toString(36).slice(2,14);
+ const newId=()=>{
+  const uuid=globalThis.crypto?.randomUUID?.();
+  return uuid?'forge-'+uuid:'forge-'+Date.now()+'-'+Math.random().toString(36).slice(2,14);
+ };
  function status(message,type=''){
   $('forge-status').textContent=message;
   $('forge-status').className='forge-status'+(type?' '+type:'');
@@ -198,7 +200,9 @@
    row.append(node('span','exchange-icon',from[1]));
    const left=node('span','exchange-mat',from[2]);
    left.append(node('small',null,'Vorrat: '+money(amount)));
-   row.append(left,node('span','exchange-arrow','→'),node('span','exchange-icon',to[1]));
+   row.append(left,node('span','exchange-arrow','→'));
+   const target=node('span','exchange-target',to[1]+' '+to[2]);
+   row.append(target);
    const button=node('button',null,'10 : 1');
    button.type='button';button.disabled=!usable()||amount<10;
    button.title='10 × '+from[2]+' gegen 1 × '+to[2];
@@ -272,6 +276,7 @@
   const op=old||{id:newId(),action:type,payload:data};
   if(!old)savePending(account,op);
   busy=true;++loadSerial;render();
+  $('forge-workspace').classList.add('forging');
   status('⚒️ Die Schmiede verarbeitet deinen Auftrag …');
   try{
    const response=await request('POST',op.action,{requestId:op.id,...op.payload},account);
@@ -291,7 +296,7 @@
     status('⚠️ Ergebnis unklar. Bitte „Sicher wiederholen“ wählen – kein doppelter Verbrauch.','bad');
    }
   }finally{
-   busy=false;render();
+   busy=false;$('forge-workspace').classList.remove('forging');render();
   }
  }
  for(const button of document.querySelectorAll('.forge-tab')){
