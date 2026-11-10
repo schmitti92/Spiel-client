@@ -65,7 +65,7 @@ test('both switches are visible, independently accessible and audio subtitles ar
  assert.match(fx.caption.attributes['aria-live'],/off/);
  assert.doesNotThrow(()=>new Script(script));
  assert.doesNotThrow(()=>new Script(catalogue));
- assert.match(game,/amount-voice\.js\?v=20261110-moderator-visible-v5/);
+ assert.match(game,/amount-voice\.js\?v=20261110-amount-words-v6/);
  assert.match(caseScript,/announceOpenedAmount\(item\.amount/);
 });
 test('previously enabled combined voice is migrated to both independent switches',()=>{
@@ -278,8 +278,8 @@ test('opened-case currency is spoken as complete German words, never digit by di
  }
  const meta={gameId:'spoken-test',caseNumber:3,caseCount:29};
  fx.announce(10000,meta);
- assert.match(fx.spoken.at(-1).text,/Koffer 3\\. Einhundert Euro\\./);
- assert.doesNotMatch(fx.spoken.at(-1).text,/100[,\\.]00/);
+ assert.match(fx.spoken.at(-1).text,/Koffer 3\. Einhundert Euro\./);
+ assert.doesNotMatch(fx.spoken.at(-1).text,/100[,.]00/);
  assert.equal(fx.window.DealModeratorAudio.formatAmount(10000),'100 Euro',
   'visible currency formatting stays unchanged');
 });
