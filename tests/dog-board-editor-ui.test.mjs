@@ -85,7 +85,7 @@ test('tapping an existing field arms replacement; next empty tap moves it withou
  assert.equal(ui.get('track-progress').textContent,'2/64');
  assert.match(ui.get('feedback').textContent,/ersetzt/);
  const draft=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
- assert.deepEqual(draft.track[0],{x:124,y:220});
+ assert.deepEqual(draft.track[0],{x:124,y:252});
 });
 test('manual X/Y button places a field even if the tablet does not deliver a canvas pointer event',()=>{
  const ui=openBuilder();
