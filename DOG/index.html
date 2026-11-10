@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#091521">
+<title>DOG • Klassisches Team-Brettspiel</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;--bg:#07121e;--panel:#102536;--light:#f1f5f7;--muted:#a8bbc8;--gold:#eec47b;--line:rgba(190,218,234,.16)}
+*{box-sizing:border-box}html{min-height:100%;background:#07121e}body{margin:0;min-height:100vh;color:var(--light);background:radial-gradient(ellipse 50% 42% at 28% 7%,#173b4d 0%,transparent 74%),radial-gradient(ellipse 45% 65% at 93% 80%,#132a3b 0%,transparent 72%),#07121e}
+button,select{font:inherit}button{cursor:pointer}button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #eec47b;outline-offset:3px}
+.topbar{height:79px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:0 clamp(16px,3vw,42px);border-bottom:1px solid var(--line);background:rgba(4,14,23,.64)}
+.brand{display:flex;align-items:center;gap:13px}.mark{width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,#fbe6ad,#a6782e);display:grid;place-items:center;color:#132231;font-size:22px;box-shadow:0 6px 20px #0005}.brand h1{font-size:23px;line-height:1.1;letter-spacing:2px;margin:0;color:#f4e3c0}.brand p{font-size:11px;letter-spacing:1.1px;margin:5px 0 0;color:#aebbc5;text-transform:uppercase}
+.top-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.top-btn{padding:10px 14px;background:rgba(227,242,249,.07);border:1px solid rgba(227,242,249,.17);border-radius:12px;color:#edf2f6;text-decoration:none;font-size:13px;font-weight:700}.top-btn:hover{background:rgba(240,243,253,.13)}
+main{width:min(1640px,calc(100% - 34px));margin:22px auto 48px}
+.heading{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:18px;flex-wrap:wrap}.heading h2{margin:0;font-weight:850;font-size:clamp(18px,2vw,26px)}.heading p{margin:4px 0 0;color:var(--muted);font-size:13px}.phase-pill{font-size:12px;color:#ffe6ba;padding:9px 12px;border:1px solid #be9d6566;background:#b38c4821;border-radius:99px;font-weight:750}
+.layout{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(330px,.72fr);gap:20px;align-items:start}
+.board-card{padding:clamp(9px,2vw,20px);border-radius:24px;background:linear-gradient(145deg,#193b46,#0c1e2f);border:1px solid #e4c6924a;box-shadow:0 20px 60px #0005,inset 0 1px #ffffff17;position:relative}
+.board-svg{display:block;width:100%;height:auto;max-height:min(74vh,800px);margin:auto;touch-action:manipulation}
+.board-svg .can-pick{cursor:pointer}.board-svg .can-pick circle:first-of-type{filter:drop-shadow(0 0 9px #fff9)}
+.teams{margin-top:13px;display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;font-size:12px;color:#bad0dc}.team-chip{display:inline-flex;align-items:center;gap:7px;background:#04182780;border:1px solid #aec9d32b;padding:7px 10px;border-radius:30px}.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.right{display:grid;gap:15px}.panel{border:1px solid var(--line);border-radius:20px;background:linear-gradient(150deg,#152b3eec,#0e1d2dea);padding:19px;box-shadow:0 15px 40px #0002}.panel h3{margin:0 0 12px;font-size:16px}.panel h3 small{display:inline-block;color:var(--gold);font-size:11px;margin-left:6px}
+.meta{display:flex;gap:9px;justify-content:space-between;align-items:center;padding:10px 12px;background:#040f1c88;border-radius:12px;margin-bottom:13px}.meta b{color:#ffe4b8}.meta span{font-size:12px;color:#b9c9d2}.turn{font-size:20px;font-weight:850;letter-spacing:-.5px;margin:7px 0 15px}
+.seat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.seat{display:grid;grid-template-columns:12px minmax(0,1fr) auto;align-items:center;gap:7px;background:#061a2a;border:1px solid #b6d8ea21;padding:10px;border-radius:13px}.seat.on{border-color:#edcd7e;box-shadow:inset 0 0 0 1px #edcd7e44}.seat-mark{height:11px;width:11px;border-radius:50%;background:var(--seat);box-shadow:0 0 13px var(--seat)}.seat-name{font-size:12px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seat b{font-size:13px}.seat-extra{grid-column:2/span 2;color:#a5bac7;font-size:10px}
+.hand-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:11px}.hand-head h3{margin:0;font-size:15px}.reveal{border:1px solid #b9d4dc55;color:#f2dfb9;background:#ffffff09;padding:9px 10px;border-radius:10px;font-weight:800;font-size:12px;white-space:nowrap}
+.hand{display:flex;gap:9px;overflow:auto;padding:7px 2px 13px;scrollbar-color:#88a2b5 transparent;scrollbar-width:thin;min-height:128px}
+.playing-card{position:relative;flex:0 0 70px;height:116px;border-radius:12px;border:2px solid #dbe7ef;background:linear-gradient(150deg,#f7fafb,#d1e0e9);color:#152531;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:10px 4px 9px;box-shadow:0 5px 12px #0005;transition:transform .15s,box-shadow .15s}
+.playing-card.special{background:linear-gradient(150deg,#fcf0dd,#e8be84);border-color:#ffe0a3}.playing-card strong{font-size:26px;letter-spacing:-1.5px;font-weight:1000}.playing-card small{font-size:9px;letter-spacing:.5px;font-weight:850}.playing-card em{font-style:normal;font-size:9px;color:#496273}.playing-card.picked{transform:translateY(-6px);border-color:#e9a956;box-shadow:0 0 0 2px #f7cb68bb,0 8px 20px #0007}.playing-card:hover{transform:translateY(-3px)}
+.hand-veil{display:flex;align-items:center;justify-content:center;text-align:center;border:1px dashed #5876896c;background:#061b2a8f;color:#b7cdd9;min-height:120px;width:100%;border-radius:12px;padding:18px;font-size:13px}
+.move-help{margin:7px 0 10px;color:#aec2cc;font-size:12px}.moves{display:flex;gap:8px;flex-wrap:wrap;max-height:220px;overflow:auto}.move-button{font-size:12px;font-weight:750;padding:9px 10px;color:#f7e4c7;background:#b98e3e22;border:1px solid #e4bd7273;border-radius:11px}.move-button:hover{background:#c6a56244}.move-button.secondary{background:#34536644;color:#d7e6f0;border-color:#c0d9eb44}
+.controls{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}label{font-size:12px;color:#b7c7d0}select{border-radius:10px;background:#081b2c;color:#f1eadc;border:1px solid #ffffff3b;padding:9px 13px}#selected-info{font-size:11px;color:#ffd892}
+.history{max-height:150px;overflow:auto;color:#b6c8d3;font-size:12px;line-height:1.6}.history div:first-child{color:#f3d6a1;font-weight:750}
+.status{color:#9fb2bb;font-size:11px;margin-top:13px;line-height:1.5}
+.winner{border:1px solid #e9bb72;background:linear-gradient(135deg,#f0c07135,#0e2836);padding:16px;border-radius:15px;text-align:center;margin-top:10px}.winner h2{color:#ffe0a3;margin:6px 0;font-size:23px}.winner p{font-size:12px;color:#dde5e9;margin:0}
+dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius:20px;padding:24px;width:min(640px,calc(100% - 28px));box-shadow:0 30px 100px #0009;line-height:1.65}dialog::backdrop{background:#020914d9}dialog h2{margin:0 0 12px;color:#ffe0a3}dialog p{color:#d2dfe8;font-size:14px}.rule-close{margin-top:12px;padding:10px 18px;border-radius:11px;background:#e6c083;color:#112332;border:0;font-weight:850}
+@media(min-width:1300px){.layout{grid-template-columns:minmax(0,1.16fr) minmax(375px,.72fr)}}
+@media(max-width:1040px){.layout{grid-template-columns:1fr}.board-svg{max-height:680px}.right{grid-template-columns:1fr 1fr}.right .panel:nth-child(2){grid-column:span 2}.right .panel:nth-child(3){grid-column:span 2}}
+@media(max-width:680px){.topbar{height:auto;min-height:75px;padding:12px 14px}.brand h1{font-size:19px}.top-btn{padding:8px 9px;font-size:11px}.top-actions{gap:6px}main{width:calc(100% - 18px);margin:14px auto}.layout{gap:11px}.panel{padding:13px;border-radius:16px}.right{grid-template-columns:1fr;gap:10px}.right .panel:nth-child(2),.right .panel:nth-child(3){grid-column:span 1}.board-card{padding:5px;border-radius:14px}.seat-name{font-size:11px}.playing-card{height:111px;flex-basis:66px}.heading{margin-bottom:10px}.heading h2{font-size:17px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><div class="mark">🐾</div><div><h1>DOG</h1><p>Das klassische Team-Brettspiel</p></div></div>
+  <div class="top-actions">
+    <a class="top-btn" href="../spielauswahl-lokal.html">← Zur Spiele-Lobby</a>
+    <button class="top-btn" id="rules-button" type="button">📖 Regeln</button>
+    <button class="top-btn" id="new-game" type="button">↻ Neues Spiel</button>
+  </div>
+</header>
+<main>
+ <div class="heading">
+   <div><h2>Gemeinsam gewinnen. Clever Karten spielen.</h2><p>2 Teams · 4 Spielfarben · klassische Kartenregeln</p></div>
+   <div class="phase-pill"><span id="phase">Kartenrunde</span> · Runde <span id="round">1</span></div>
+ </div>
+ <div class="layout">
+   <section class="board-card" aria-label="DOG-Spielfeld">
+     <svg id="board" class="board-svg" viewBox="0 0 760 760" role="img" aria-label="Spielbrett mit vier Farbrouten, Start- und Zielbahnen"></svg>
+     <div class="teams">
+       <span class="team-chip"><span class="dot" style="background:#e65f58"></span><span class="dot" style="background:#5ac68d"></span>Team Rot / Grün</span>
+       <span style="color:#8b9ead">gegen</span>
+       <span class="team-chip"><span class="dot" style="background:#4c9bfa"></span><span class="dot" style="background:#e8b84e"></span>Team Blau / Gelb</span>
+     </div>
+   </section>
+   <aside class="right">
+    <section class="panel">
+       <div class="meta"><span>SPIELSTATUS</span><b>🐾 DOG KLASSISCH</b></div>
+       <div class="turn" id="turn" aria-live="polite">Karten werden ausgeteilt</div>
+       <div class="seat-grid" id="players"></div>
+       <div id="winner" class="winner" hidden><div style="font-size:30px">🏆</div><h2 id="winner-title">Sieg!</h2><p>Alle acht Teamfiguren sind im Ziel.</p></div>
+    </section>
+    <section class="panel">
+      <div class="hand-head"><h3 id="hand-title">Deine Karten</h3><button id="show-hand" class="reveal" type="button">🃏 Karten ansehen</button></div>
+      <div class="hand" id="hand"></div>
+      <div class="move-help" id="move-help">Wähle eine Karte, um erlaubte Züge zu sehen.</div>
+      <div class="moves" id="moves"></div>
+      <p id="selected-info"></p>
+    </section>
+    <section class="panel">
+      <div class="controls">
+        <label for="human-count">Spieler am Gerät</label>
+        <select id="human-count">
+          <option value="1">1 Mensch + 3 Bots</option>
+          <option value="2">2 Menschen + 2 Bots</option>
+          <option value="3">3 Menschen + 1 Bot</option>
+          <option value="4">4 Menschen (lokal)</option>
+        </select>
+      </div>
+      <h3 style="margin-top:17px">Spielverlauf <small>LETZTE ZÜGE</small></h3>
+      <div id="history" class="history"></div>
+      <div id="status" class="status"></div>
+    </section>
+   </aside>
+ </div>
+</main>
+<dialog id="rules">
+  <h2>🐾 So funktioniert DOG</h2>
+  <p>Rot und Grün spielen gemeinsam gegen Blau und Gelb. Alle beginnen mit vier Figuren zu Hause. Zum Starten benötigt man eine <b>1/11</b>, <b>13</b> oder einen Joker. Die Figuren ziehen über die Außenbahn in ihre vier Zielfelder.</p>
+  <p>Jede Kartenrunde hat <b>6, 5, 4, 3 oder 2 Karten</b>. Vor dem Spielen tauschen die Partner jeweils eine verdeckte Karte. Mit der <b>4</b> darfst du vor- oder rückwärts gehen, mit der <b>7</b> verteilst du sieben Schritte und schlägst alle überholten Figuren. Mit der <b>Tauschkarte</b> tauschst du ungeschützte Figuren. Ein Joker ersetzt jede andere Karte.</p>
+  <p>Eigene Startfelder sind geschützt. Im Ziel kann niemand übersprungen werden. Wenn alle vier Figuren einer Farbe angekommen sind, spielt die Person für ihren Partner weiter. Gewonnen hat das Team mit allen acht Figuren im Ziel.</p>
+  <p><b>Testversion:</b> Das Spiel funktioniert hier zunächst lokal mit Bots oder mehreren Menschen an einem Gerät. Online-Räume, Veranstaltungen und Erweiterungen folgen separat.</p>
+  <button class="rule-close" id="rules-close">Verstanden</button>
+</dialog>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
