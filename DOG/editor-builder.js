@@ -9,7 +9,7 @@ import {
 import {
   EDITOR_DRAFT_KEY,clone,emptyDraft,fromCrossPreset,fromLayout,placedCount,
   fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
-  guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS
+  guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun
 } from './editor-model.js?v=4';
 
 const $=id=>document.getElementById(id);
@@ -169,6 +169,7 @@ function renderProgress(){
   $('home-progress').textContent=count.homes+'/16';
   $('progress-total').textContent=count.total+'/96';
   const gap=measureStepDistances(draft,settings.stepSpacing),anchor=previousTrackField(draft,selected);
+  $('align-run').disabled=selected.kind!=='track'||!Boolean(draft.track[selected.index]);
   $('gap-report').textContent=settings.guide?
     (anchor?'📐 Ausgangspunkt: Feld '+anchor.index+'. ':'📍 Setze Feld 0 frei. ')+
     (gap.measured?gap.even+' von '+gap.measured+' Verbindungen im Abstand '+settings.stepSpacing+
@@ -447,6 +448,33 @@ document.querySelectorAll('[data-path-dir]').forEach(button=>button.addEventList
   tool='place';
   commitPlacement(target,{forceExact:true});
 }));
+$('align-run').addEventListener('click',()=>{
+  if(selected.kind!=='track'||!draft.track[selected.index]){
+    announce('Wähle zuerst ein bereits platziertes Lauffeld als Anfang deiner Geraden oder Diagonale.','warn');
+    return;
+  }
+  const start=selected.index;
+  const count=Number($('align-count').value);
+  const [dx,dy]=String($('align-direction').value).split(',').map(Number);
+  try{
+    const result=alignTrackRun(draft,selected,{
+      count,dx,dy,step:settings.stepSpacing,symmetry:settings.symmetry
+    });
+    const previouslyPresent=result.track.slice(start+1,start+count+1).filter(Boolean).length;
+    draft=result;
+    const changed=recordChange();
+    if(!changed){announce('Dieser Abschnitt ist bereits gleichmäßig ausgerichtet.','success');return;}
+    selected={kind:'track',index:start+count,owner:Math.floor((start+count)/16)};
+    mode='track';
+    tool='place';
+    render();
+    announce('✓ Felder '+(start+1)+' bis '+(start+count)+' im Abstand '+settings.stepSpacing+
+      ' ausgerichtet. Der Startpunkt '+start+' bleibt erhalten. Rückgängig ist möglich.','success');
+  }catch(err){
+    announce('⚠️ Abschnitt unverändert: '+(err?.message||err),'warn');
+  }
+});
+
 $('place-coordinates').addEventListener('click',()=>{
  const x=Number($('coord-x').value),y=Number($('coord-y').value);
  if(!Number.isFinite(x)||!Number.isFinite(y)||x<26||x>734||y<26||y>734){
