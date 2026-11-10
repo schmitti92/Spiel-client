@@ -203,3 +203,59 @@ button:focus-visible,a:focus-visible{outline:3px solid #f7d79b;outline-offset:3p
  *,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
  .boss-falling-embers{display:none}
 }
+
+
+/* Boss v2: three readable phases and a warning BEFORE an explosive attack. */
+.boss-phase-status{
+ margin:13px 0 0;padding:12px 14px;min-width:0;
+ border:1px solid #a08e78c7;border-radius:13px;
+ background:linear-gradient(105deg,#253448ed,#1c2538f0);
+ box-shadow:inset 0 1px #ffe2bd20;
+}
+.boss-phase-top{display:flex;align-items:center;flex-wrap:wrap;
+ justify-content:space-between;gap:7px;margin-bottom:10px}
+#boss-phase-label{font-size:10px;letter-spacing:.14em;color:#c7d5e6;font-weight:950}
+#boss-phase-name{font:900 16px Georgia,serif;color:#fff0c5}
+.boss-phase-ruler{display:grid;grid-template-columns:2fr 1fr 1fr;
+ gap:3px;height:27px;overflow:hidden;border-radius:7px}
+.boss-phase-ruler span{display:grid;place-items:center;
+ background:#343d4c;border:1px solid #99917b5b;
+ color:#d5d8df;font-weight:800;font-size:10px}
+.boss-phase-status[data-phase="1"] .boss-phase-one{background:#a97a4e;color:#1a1110}
+.boss-phase-status[data-phase="2"] .boss-phase-two{background:#e29e62;color:#2c1510}
+.boss-phase-status[data-phase="3"] .boss-phase-three{background:#ed6655;color:#fff4eb}
+.boss-telegraph{margin:11px 0 4px;padding:9px 11px;
+ font-size:12px;font-weight:850;line-height:1.45;color:#d7e2ea;
+ border-radius:9px;background:#141e2b91;
+ border:1px solid #8c97a56b}
+.boss-telegraph.is-warning{background:#572826e6;color:#ffebc3;
+ border:2px solid #ffb279;box-shadow:0 0 14px #ff8b4555;
+ animation:boss-warning-pulse 1.35s ease-in-out infinite alternate}
+.boss-tactical-tip{margin:6px 0 0;color:#c0cbd7;font-size:11px;line-height:1.5}
+.boss-art-stage[data-phase="2"] .boss-stage-magma{
+ filter:saturate(1.45) brightness(1.15)}
+.boss-art-stage[data-phase="3"] .boss-stage-magma{
+ filter:saturate(1.65) brightness(1.4) hue-rotate(-7deg)}
+.boss-art-stage.boss-charging:after{
+ content:"";position:absolute;inset:0;z-index:4;
+ pointer-events:none;border:3px solid #ff994d;
+ box-shadow:inset 0 0 30px #ff541a3c;
+ animation:boss-warning-pulse 1.3s ease-in-out infinite alternate;
+ border-radius:15px}
+.boss-art-stage.boss-charging .boss-monster{
+ filter:drop-shadow(0 0 32px #ff7745b0) drop-shadow(0 0 20px #f9bc5f90)}
+.boss-monster-inferno:not(.boss-monster-down){
+ filter:drop-shadow(0 0 35px #ff6045b8) saturate(1.4)}
+@keyframes boss-warning-pulse{
+ from{opacity:.75}to{opacity:1}
+}
+@media(max-width:520px){
+ .boss-phase-status{padding:9px 10px}
+ .boss-phase-ruler{height:24px}
+ .boss-phase-ruler span{font-size:9px}
+ #boss-phase-name{font-size:14px}
+ .boss-telegraph{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+ .boss-telegraph.is-warning,.boss-art-stage.boss-charging:after{animation:none!important}
+}
