@@ -65,7 +65,7 @@ test('both switches are visible, independently accessible and audio subtitles ar
  assert.match(fx.caption.attributes['aria-live'],/off/);
  assert.doesNotThrow(()=>new Script(script));
  assert.doesNotThrow(()=>new Script(catalogue));
- assert.match(game,/amount-voice\.js\?v=20261110-amount-words-v6/);
+ assert.match(game,/amount-voice\.js\?v=20261110-amount-only-v7/);
  assert.match(caseScript,/announceOpenedAmount\(item\.amount/);
 });
 test('previously enabled combined voice is migrated to both independent switches',()=>{
@@ -290,15 +290,17 @@ test('spoken currency conversion is separate from the evolving match story',()=>
 });
 
 test('even cent and jackpot announcements contain only the cash value, no case ID or funny line',()=>{
- const fx=harness({cases:true,stories:false});
  for(const [value,expected] of [
   [1,'Ein Cent.'],
   [10000,'Einhundert Euro.'],
   [100000000,'Eine Million Euro.'],
   [1000000000,'Zehn Millionen Euro.']
  ]){
+  // A new fixture isolates this revealed value from an earlier speech queue.
+  const fx=harness({cases:true,stories:false});
   fx.announce(value,{caseNumber:29,gameId:'single-amount',caseCount:29});
-  assert.equal(fx.spoken.at(-1).text,expected);
-  assert.doesNotMatch(fx.spoken.at(-1).text,/Koffer|Moderator|Banker/);
+  assert.equal(fx.spoken.length,1);
+  assert.equal(fx.spoken[0].text,expected);
+  assert.doesNotMatch(fx.spoken[0].text,/Koffer|Moderator|Banker/);
  }
 });
