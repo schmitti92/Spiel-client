@@ -68,6 +68,7 @@
   return el;
  };
  let uid=null,view=null,busy=false,tab='equipment',selected='weapon',tradeGroup='equipment',loadSerial=0,readyOnly=false,confirmData=null,exchangeConfirmData=null,goalId=null,sessionEpoch=0,lastLoadedAt=0,loadingUid=null,loadingPromise=null;
+ let chronicleView=undefined,chronicleUid=undefined,stockView=undefined,stockUid=undefined;
  const goalKey=account=>'dog:forge:goal:'+account;
  const loadGoal=account=>{
   try{const id=localStorage.getItem(goalKey(account));
@@ -249,6 +250,8 @@
   return Number(hero?.[def.key]||0);
  }
  function renderChronicle(){
+  if(chronicleView===view&&chronicleUid===uid)return;
+  chronicleView=view;chronicleUid=uid;
   const hero=view?.hero;
   const stats=$('forge-chronicle-stats');stats.replaceChildren();
   const attempts=Number(hero?.crafts||0),success=Number(hero?.successes||0);
@@ -318,6 +321,8 @@
    rank:rankFor(invested),player:$('forge-player').textContent}:null);
  }
  function renderStock(){
+  if(stockView===view&&stockUid===uid)return;
+  stockView=view;stockUid=uid;
   const container=$('forge-stock-groups');container.replaceChildren();
   for(const group of MATERIALS){
    const section=node('section','stock-group');
