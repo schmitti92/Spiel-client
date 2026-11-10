@@ -378,7 +378,7 @@ function hatButton(index,old){
  return hat;
 }
 function render(){
- const s=state,finished=s?.status==='finished',roomNumber=reveal?.room||s?.room||1;
+ const s=state,finished=s?.status==='finished',settledVisible=s?.status==='finished'&&!reveal,roomNumber=reveal?.room||s?.room||1;
  $('roomTitle').textContent='🎄 Raum '+roomNumber+' / 10 – '+names[roomNumber];
  const shownState=showBeforeState&&['suspense','chosen'].includes(revealPhase)?showBeforeState:s;
  $('checkpoint').textContent=(shownState?.checkpoint||0)>0?'🛡️ Checkpoint Raum '+shownState.checkpoint+' gesichert':'🛡️ Noch kein Checkpoint';
@@ -450,8 +450,8 @@ function render(){
  $('story-speech').textContent=voice;
  $('hats').hidden=!s||finished&&!reveal;
  const hasVouchers=DEMO||Number(vouchers?.total||0)>0;
- const showNewGame=finished&&hasVouchers;
- $('hats-voucher-indicator').textContent=DEMO?'🧪 Unbegrenzte Testpartien':s?.status==='playing'?'🎟️ Gutschein eingelöst · Partie aktiv':
+ const showNewGame=settledVisible&&hasVouchers;
+ $('hats-voucher-indicator').textContent=DEMO?'🧪 Unbegrenzte Testpartien':reveal?'🎟️ Gutschein eingelöst · Enthüllung läuft':s?.status==='playing'?'🎟️ Gutschein eingelöst · Partie aktiv':
   '🎟️ '+(vouchers?.total===undefined?'–':vouchers.total)+' '+(vouchers?.total===1?'Spielgutschein':'Spielgutscheine');
  $('start').hidden=!!s;
  $('start').disabled=busy||!!pendingRequest||!hasVouchers;
@@ -462,13 +462,13 @@ function render(){
  $('continue').disabled=busy;
  $('again').hidden=!showNewGame;
  $('again').disabled=busy||!!pendingRequest||!hasVouchers;
- $('hats-locked').hidden=!!DEMO||!finished||hasVouchers;
+ $('hats-locked').hidden=!!DEMO||!settledVisible||hasVouchers;
  $('retry').hidden=!pendingRequest||busy;
- formatItems(s?.secured,$('secured'),'Noch keine gesicherten Gewinne.');
- formatItems(s?.pending,$('pending'),'Noch keine ungesicherten Gewinne.');
+ formatItems(presented?.secured,$('secured'),'Noch keine gesicherten Gewinne.');
+ formatItems(presented?.pending,$('pending'),'Noch keine ungesicherten Gewinne.');
  const ending=$('ending');
- ending.hidden=!finished;
- if(finished){
+ ending.hidden=!settledVisible;
+ if(settledVisible){
   ending.replaceChildren();
   const title=document.createElement('h2'),reason=s.summary?.reason;
   title.textContent=reason==='bomb'?'💥 Die Bombe hat zugeschlagen!':reason==='completed'?'👑 Alle zehn Räume geschafft!':DEMO?'🧪 Probegewinne gesammelt!':'💰 Gewinne erfolgreich kassiert!';
