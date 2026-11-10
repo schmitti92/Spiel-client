@@ -298,13 +298,11 @@ function canvasXY(event){
 // cancel or retarget pointer-up if the SVG has been redrawn during a gesture.
 // A single finger tap now creates the field without depending on pointer-up.
 let lastHandledPointer=0;
-function commitPlacement(pos){
+function commitPlacement(pos,{forceExact=false}={}){
   if(tool!=='place')return;
   try{
     const hadField=Boolean(currentPosition());
-    const next=putField(draft,selected,pos,{
-      symmetry:settings.symmetry,spacing:settings.spacing,snap:settings.snap
-    });
+    const next=placeAt(pos,draft,{forceExact});
     draft=next;
     const changed=recordChange();
     if(changed&&!hadField)maybeNext();
@@ -356,7 +354,7 @@ board.addEventListener('pointermove',event=>{
  const p=canvasXY(event);if(!p)return;
  if(!pointer){
    if(tool!=='place'||event.pointerType==='touch')return;
-   const proposed=snapXY(p,settings.spacing,settings.snap);
+   let proposed;try{proposed=guidedPlacement(p);}catch(_){return;}
    if(!hover||hover.x!==proposed.x||hover.y!==proposed.y){hover=proposed;draw();}
    return;
  }
@@ -365,7 +363,7 @@ board.addEventListener('pointermove',event=>{
  if(Math.hypot(p.x-pointer.initial.x,p.y-pointer.initial.y)>4)pointer.moved=true;
  if(pointer.moved){
    try{
-     draft=putField(pointer.draft,selected,p,{symmetry:settings.symmetry,spacing:settings.spacing,snap:settings.snap});
+     draft=placeAt(p,pointer.draft);
      draw();
    }catch(err){announce('⚠️ Feld konnte nicht bewegt werden: '+err.message,'error');}
  }
@@ -422,7 +420,24 @@ function changeSetting(id,key,parser=el=>el.checked){
  });
 }
 changeSetting('grid-size','spacing',el=>Number(el.value));
+changeSetting('step-size','stepSpacing',el=>Number(el.value));
+changeSetting('equal-spacing','guide');
 for(const [id,key]of [['snap','snap'],['show-grid','grid'],['show-numbers','numbers'],['show-path','path'],['symmetry','symmetry'],['auto-next','auto']])changeSetting(id,key);
+document.querySelectorAll('[data-path-dir]').forEach(button=>button.addEventListener('click',()=>{
+  if(selected.kind!=='track'){
+    announce('Die Richtungspfeile sind für die 64 Lauffelder vorgesehen.','warn');return;
+  }
+  const [dx,dy]=button.dataset.pathDir.split(',').map(Number);
+  let target;
+  try{target=directedPoint(draft,selected,dx,dy,{step:settings.stepSpacing});}
+  catch(err){announce('⚠️ '+err.message,'error');return;}
+  if(!target){
+    announce('Setze zuerst das vorherige Lauffeld oder wähle eine andere Richtung innerhalb des Bretts.','warn');
+    return;
+  }
+  tool='place';
+  commitPlacement(target,{forceExact:true});
+}));
 $('place-coordinates').addEventListener('click',()=>{
  const x=Number($('coord-x').value),y=Number($('coord-y').value);
  if(!Number.isFinite(x)||!Number.isFinite(y)||x<26||x>734||y<26||y>734){
@@ -432,7 +447,7 @@ $('place-coordinates').addEventListener('click',()=>{
  if(tool!=='place'){
    tool='place'; // The manual button is always an explicit set / replace action.
  }
- commitPlacement({x,y});
+ commitPlacement({x,y},{forceExact:true});
 });
 function updateCoord(part){
  const point=currentPosition();if(!point)return;
