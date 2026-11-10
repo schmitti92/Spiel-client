@@ -54,6 +54,21 @@ test('Reconnection reconciles lost ready/react/finish replies against server sta
  assert.ok(arenaJs.includes('DOG_BOSS10_NOT_RUNNING'));
 });
 
+test('Mini-boss rewards are displayed only from an awarded server result',()=>{
+ const mapHtml=read('dog-tor-map.html');
+ for(const id of ['gate-mini-reward','gate-mini-reward-title','gate-mini-reward-details',
+   'gate-mini-reward-link'])
+  assert.ok(mapHtml.includes('id="'+id+'"'),'missing '+id);
+ assert.ok(mapJs.includes('function displayMiniReward(reward,gate)'));
+ assert.ok(mapJs.includes('if(!reward?.granted)return'));
+ for(const rewardType of ['chest','coins','cards','hammer','joker'])
+  assert.ok(mapJs.includes("reward.kind==='"+rewardType+"'"));
+ assert.ok(mapJs.includes('displayMiniReward(fight.miniReward,gate)'));
+ assert.ok(mapJs.includes('lastFight={gate,message:status}'));
+ assert.ok(!mapJs.includes('Belohnung wird im nächsten Ausbauschritt angebunden'));
+ assert.ok(!mapJs.includes('miniReward={'));
+});
+
 test('The client cannot locally grant boss victories or consume inventory',()=>{
  assert.ok(!arenaJs.includes('sharedBosses.push('));
  assert.ok(!arenaJs.includes('dogUnlocked=true'));
