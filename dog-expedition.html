@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#090e1d">
 <meta name="description" content="Die 100 Tore: DOG-Freischaltung vorbereiten, Materialienkisten aus abgeschlossenen Deal-or-No-Deal-Partien öffnen und Rohstoffe sammeln.">
 <title>⚔️ Die 100 Tore · Materialienkisten · SPIELEPORTAL</title>
-<link rel="stylesheet" href="./dog-materials.css?v=20261110-forge-v1">
+<link rel="stylesheet" href="./dog-materials.css?v=20261110-boss-v1">
 <script src="./profile-config.js"></script>
 <script src="./profile-auth.js"></script>
 </head>
@@ -24,11 +24,11 @@
  <div class="chapter" aria-label="Projektfortschritt">
   <span class="focus">📦 Materialienkisten: aktiv</span>
   <a class="chapter-forge" id="forge-launch" href="./dog-forge.html">⚒️ Schmiede: betreten</a>
-  <span>👹 100 Bosse: in Entwicklung</span>
+  <a class="chapter-forge chapter-boss" id="boss-launch" href="./dog-boss.html">👹 Tor 1: Bosskampf starten</a>
   <span>🐺 DOG: nach Raum 100</span>
  </div>
 </header>
-<div class="notice" role="note"><span aria-hidden="true">🛡️</span><span><b>Die Rohstoffsammlung ist die erste Ausbaustufe.</b> Für jede serverseitig abgeschlossene Online-Partie von <b>Deal or No Deal</b> erhält jeder beteiligte Spieler <b>eine zufällige kleine, mittlere oder große Rohstoffkiste</b>. Andere Spiele geben keine Rohstoffkisten. Die Schmiede ist geöffnet: Waffen, Rüstungen und Fähigkeiten lassen sich verbessern. Bosskämpfe sind noch in Entwicklung.</span></div>
+<div class="notice" role="note"><span aria-hidden="true">🛡️</span><span><b>Die Rohstoffsammlung ist die erste Ausbaustufe.</b> Für jede serverseitig abgeschlossene Online-Partie von <b>Deal or No Deal</b> erhält jeder beteiligte Spieler <b>eine zufällige kleine, mittlere oder große Rohstoffkiste</b>. Andere Spiele geben keine Rohstoffkisten. Die Schmiede ist geöffnet: Waffen, Rüstungen und Fähigkeiten lassen sich verbessern. <b>Tor 1</b> ist als gemeinsamer Testboss spielbar. Bei einer Teamniederlage gelten zehn Minuten Kampfpause; danach startet derselbe Boss mit vollen LP.</span></div>
 <div class="columns">
  <section class="panel" aria-labelledby="crates-title">
   <h2 id="crates-title">📦 Deine Materialienkisten</h2>
@@ -82,6 +82,7 @@
    </div>
   </dialog>
   <a href="./dog-forge.html" id="forge-from-storage" class="forge-entry">⚒️ <span><strong>Zur Schmiede</strong><small>Waffe · Rüstung · Fähigkeiten · Tausch</small></span><span aria-hidden="true">➜</span></a>
+   <a href="./dog-boss.html" id="boss-from-storage" class="forge-entry boss-entry">🔥 <span><strong>Zur Bossarena</strong><small>Tor 1 · gemeinsamer Kampf · 10-Minuten-Pause bei Niederlage</small></span><span aria-hidden="true">➜</span></a>
   <h2 style="margin-top:22px">🎒 Dein Rohstofflager</h2>
   <div id="resource-groups" class="inventory-groups" aria-label="Deine 15 Rohstoffe"></div>
   <p class="muted" id="earned" style="margin-top:14px">Gesammelte Kisten: – · Geöffnete Kisten: –</p>
@@ -116,17 +117,17 @@
    <div class="steps">
     <div class="step current"><b>📦</b>1. Kisten sammeln</div>
     <div class="step current"><b>⚒️</b>2. Waffen verbessern</div>
-    <div class="step"><b>👹</b>3. Bosse bezwingen</div>
+    <div class="step current"><b>👹</b>3. Ersten Boss testen</div>
     <div class="step"><b>🐺</b>4. DOG befreien</div>
    </div>
-   <p class="muted">Waffen- und Rüstungsstufen sowie elf Fähigkeiten gehören bereits deinem Helden. Später folgen gemeinsame Kämpfe und 100 Räume. DOG wird erst beim besiegten Boss von Raum 100 freigeschaltet, sofern das Spiel dann veröffentlicht ist.</p>
+   <p class="muted">Waffen- und Rüstungsstufen sowie elf Fähigkeiten gehören bereits deinem Helden. Der gemeinsame erste Bosskampf ist jetzt als Testarena erreichbar. Weitere 99 Bosse werden später ergänzt. DOG wird erst beim besiegten Boss von Tor 100 freigeschaltet, sofern das Spiel dann veröffentlicht ist.</p>
   </div>
   <p class="muted" style="margin-top:15px"><b>Fair und sicher:</b> Kisten entstehen nur aus vom Server bestätigten Spielabschlüssen. Abgebrochene Partien, Gäste und wiederholte Ergebnisanfragen erzeugen keine neuen Kisten.</p>
  </aside>
 </div>
-<footer class="foot">DOG-Expedition · Rohstoffkisten und Schmiede sind der Anfang. Die 100 Bosse folgen als nächste Entwicklungsstufe.</footer>
+<footer class="foot">DOG-Expedition · Rohstoffkisten, Schmiede und der erste gemeinsame Bosskampf sind spielbar. Weitere Tore folgen.</footer>
 </main>
-<script src="./dog-materials-ui.js?v=20261110-forge-v1" defer></script>
+<script src="./dog-materials-ui.js?v=20261110-boss-v1" defer></script>
 <script src="./site-global-controls.js?v=20261109-global-1"></script>
 </body>
 </html>
