@@ -397,7 +397,20 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 .online-room-dialog .online-room-secondary button:disabled{opacity:.5;cursor:not-allowed}
 .online-room-dialog .online-room-feedback{min-height:18px;margin:10px 0 0;color:#ffccaa;font-size:13px}
 @media(max-width:520px){.online-room-dialog{padding:12px}.online-room-dialog-card{margin:12px auto 0;max-height:calc(100dvh - 24px);padding:17px}.online-room-dialog-head h2{font-size:20px}}
-</style><style id="deal-card-style">.deal-card{background:radial-gradient(circle at 65% 32%,#c99b4d,#182748 55%,#070e20)!important;border:2px solid #d5a65d!important}.deal-card::before{background-image:linear-gradient(125deg,#090e1b,#293d60 60%,#b57d2c)!important}.deal-card::after{background:linear-gradient(90deg,#061024e8,#06102422)!important}.deal-card .game-title h2{color:#ffe2a2;text-shadow:0 3px 15px #000}.deal-card .actions{position:relative;z-index:2}.deal-card .btn.gold{background:linear-gradient(120deg,#f1c978,#a9762d);color:#201406;border-color:#ffe3a6}</style>
+</style><style id="deal-card-style">
+/* Bildkachel wie Kniffel: komplettes Motiv anklickbar, Verbindung zur Deal-Lobby unverändert. */
+.deal-card{padding:0!important;background:#0b1022!important;border:2px solid #dcb15f!important;box-shadow:0 13px 35px #0006,0 0 0 1px #fff2 inset}
+.deal-card::before,.deal-card::after{display:none!important}
+.deal-card .deal-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;pointer-events:none;transition:transform .45s ease}
+.deal-card:hover .deal-art{transform:scale(1.035)}
+.deal-card .actions{position:absolute;inset:0;z-index:2;margin:0;padding:0}
+.deal-card .deal-image-card-button{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:flex-end;width:100%;height:100%;min-height:0;margin:0;padding:15px;border:0;border-radius:0;background:transparent!important;box-shadow:none!important;color:#2d1a0c;text-decoration:none}
+.deal-card .deal-entry-caption{display:inline-flex;align-items:center;justify-content:center;padding:11px 15px;border-radius:13px;background:linear-gradient(120deg,#ffe6a7,#e3b458 62%,#b57b2e);border:1px solid #ffefbb;box-shadow:0 5px 20px #0009,inset 0 1px #fff9;color:#2c1a0d;font-weight:800;font-size:clamp(12px,1.1vw,16px);line-height:1.2;text-shadow:none;white-space:nowrap;pointer-events:none;transition:transform .2s ease,box-shadow .2s ease}
+.deal-card .deal-image-card-button:hover .deal-entry-caption,.deal-card .deal-image-card-button:focus-visible .deal-entry-caption{transform:translateY(-2px);box-shadow:0 9px 24px #000b,0 0 0 2px #fff4}
+.deal-card .deal-image-card-button:focus-visible{outline:3px solid #fff1a5;outline-offset:-5px}
+@media(max-width:600px){.deal-card .deal-image-card-button{padding:10px}.deal-card .deal-entry-caption{padding:9px 12px;font-size:13px}}
+@media(prefers-reduced-motion:reduce){.deal-card .deal-art,.deal-card .deal-entry-caption{transition:none}}
+</style>
 </head>
 <body>
   <main class="container">
@@ -451,7 +464,10 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
         <img class="kniffel-art" src="Assets/game-backgrounds/kniffel-kachel.webp" alt="Kniffel" loading="lazy">
         <div class="actions"><button type="button" class="btn purple online-game-button image-card-button" aria-label="Kniffel online auswählen" data-select-game="kniffel"><span class="visually-hidden">Kniffel auswählen</span></button></div>
       </article>
-      <article class="game deal-card"><div class="game-title"><h2>💼 Deal or No Deal</h2></div><p>26 Koffer · Der Banker · Multiplayer Battle</p><div class="actions"><a class="btn gold" id="deal-online-entry" href="DealOrNoDeal/lobby.html">Goldstudio-Lobby öffnen ›</a></div></article>
+      <article class="game deal-card">
+        <img class="deal-art" src="DealOrNoDeal/assets/file_0000000001f4821084eb39e6d210088e.png?v=20261110" alt="" loading="lazy" decoding="async">
+        <div class="actions"><a class="btn gold deal-image-card-button" id="deal-online-entry" href="DealOrNoDeal/lobby.html" aria-label="Deal or No Deal – Goldstudio-Lobby öffnen"><span class="deal-entry-caption">Goldstudio-Lobby öffnen ›</span></a></div>
+      </article>
       <article class="game mini-new-card"><div class="game-title"><h2>🎮 Minispiele NEU</h2></div><div class="actions"><a class="btn green" href="MinispieleV2/lobby.html" id="mini-v2-entry" aria-label="Neue Minispiele-Lobby öffnen">Neue Lobby öffnen ›</a></div></article>
     </section>
   </main>
@@ -539,7 +555,7 @@ document.addEventListener('DOMContentLoaded',()=>{
    const notice=document.getElementById('online-notice');
    const show=message=>{if(notice)notice.textContent=message;else alert(message)};
    if(!person?.getIdToken){show('Bitte zuerst mit deinem Online-Profil anmelden.');return}
-   busy=true;entry.textContent='Raum wird erstellt …';
+   busy=true;const caption=entry.querySelector('.deal-entry-caption');if(caption)caption.textContent='Raum wird erstellt …';else entry.textContent='Raum wird erstellt …';
    try{
      const token=await person.getIdToken();
      const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
@@ -551,7 +567,7 @@ document.addEventListener('DOMContentLoaded',()=>{
      location.assign('DealOrNoDeal/lobby.html?room='+encodeURIComponent(code));
    }catch(error){
      show('Deal-or-No-Deal-Raum konnte nicht erstellt werden: '+(error.message||'Verbindungsfehler'));
-     busy=false;entry.textContent='Goldstudio-Lobby öffnen ›';
+     busy=false;const caption=entry.querySelector('.deal-entry-caption');if(caption)caption.textContent='Goldstudio-Lobby öffnen ›';else entry.textContent='Goldstudio-Lobby öffnen ›';
    }
  });
 })();
