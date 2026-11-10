@@ -95,3 +95,84 @@ nav a:hover,nav button:hover{background:#2f3146}
  .waypoint .steps{grid-template-columns:repeat(2,1fr)}.kicker{letter-spacing:.14em}}
 @media(prefers-reduced-motion:reduce){.chest-art.has-box,.chest-art.opening,.drop{animation:none!important}
  .button:hover{transform:none}}
+
+
+/* DOG v3: three chest sizes, visible inventory categories and instant reward modal. */
+.crate-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px;text-align:center}
+.crate-choice{min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;
+ border:1px solid #b7a08a82;border-radius:16px;padding:12px 8px 13px;
+ background:linear-gradient(150deg,#382e34,#191c31 86%);color:#f5ebd9;transition:transform .15s,border-color .15s,box-shadow .15s}
+.crate-choice:not(:disabled):hover{transform:translateY(-3px);border-color:#fff1c4;box-shadow:0 8px 24px #0009}
+.crate-choice .crate-emoji{font-size:clamp(32px,5vw,48px);filter:drop-shadow(0 6px 7px #000a)}
+.crate-choice strong{font-size:clamp(11px,1.6vw,15px);color:#fff0c7}
+.crate-choice>span:not(.crate-emoji):not(.crate-owned){font-size:12px;font-weight:750;color:#e5d7c2}
+.crate-choice small{font-size:10px;color:#d8caac}
+.crate-choice .crate-owned{display:block;width:100%;margin-top:auto;padding:8px 3px 0;
+ font-size:11px;color:#ffdf9f;border-top:1px solid #cdb48540}
+.crate-choice .crate-owned b{font-size:16px;color:#fff0c7}
+.crate-choice.tier-medium{background:linear-gradient(155deg,#26476c,#171e36 85%);border-color:#6c9bdf91}
+.crate-choice.tier-large{background:linear-gradient(155deg,#64441f,#242238 85%);border-color:#f7c65ba5}
+.crate-choice:disabled{opacity:.54}
+.legacy-crates{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;
+ padding:12px;border:1px dashed #dec88f8a;border-radius:12px;margin-top:15px;font-size:12px;color:#e8dfcb}
+.legacy-crates button{min-height:37px;padding:7px 11px;font-size:12px}
+.inventory-groups{display:grid;gap:15px;margin-top:12px}
+.inventory-group{background:#101b2ba8;border:1px solid #778aa55c;border-radius:14px;padding:11px}
+.inventory-group h3{margin:0 0 9px;color:#f3dcab;font-size:14px}
+.inventory-resources{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.resource-cell{display:flex;flex-direction:column;align-items:center;min-width:0;gap:4px;
+ border:1px solid #788ca478;border-radius:11px;background:#151d2ecc;padding:8px 3px 9px}
+.resource-cell .resource-icon{font-size:clamp(19px,3vw,29px)}
+.resource-cell strong{font-size:clamp(17px,2.4vw,24px);color:#fff4d7;font-variant-numeric:tabular-nums}
+.resource-cell small{font-size:10px;line-height:1.25;word-break:normal;overflow-wrap:anywhere;color:#d2dff2}
+.resource-cell.rarity-3{border-color:#b38af7a6;background:#51336a43}
+.resource-cell.rarity-4{border-color:#efca72b0;background:#74552350}
+.rarity-uncommon{color:#79d9a7}.rarity-rare{color:#83bfff}
+.rarity-epic{color:#c69dff}.rarity-legendary{color:#ffda78}
+.rarity-table th:not(:first-child),.rarity-table td:not(:first-child){text-align:right}
+.reward-dialog{width:min(980px,calc(100vw - 18px));max-width:980px;max-height:calc(100dvh - 22px);
+ overflow:auto;background:#0c1526;color:#fff0d6;border:2px solid #dfb76d;border-radius:22px;
+ padding:0;box-shadow:0 24px 100px #000e,0 0 50px #e4af5f4a}
+.reward-dialog::backdrop{background:#030713e0;backdrop-filter:blur(5px)}
+.reward-shell{position:relative;text-align:center;padding:clamp(16px,3vw,28px);
+ background:radial-gradient(ellipse 70% 26% at 50% 0,#b8874a53,transparent),linear-gradient(145deg,#1c263a,#10182c)}
+.reward-shell h2{font:900 clamp(23px,3.8vw,36px) Georgia,serif;color:#ffe5a5;margin:4px auto 6px}
+.reward-kicker{font-size:11px;letter-spacing:.3em;color:#e2bd82;font-weight:850}
+.reward-subtitle{font-size:clamp(13px,2vw,17px);color:#e2d5b9;margin:5px 0 17px}
+.reward-close{position:absolute;right:12px;top:10px;border:1px solid #d7b87779;background:#1d2c43;
+ color:#fdf5e4;border-radius:10px;padding:6px 11px;font-weight:800;font-size:18px;cursor:pointer}
+.reward-close:hover{background:#3f4962}
+.reward-highlight{border-radius:12px;border:1px solid #aa86ef;padding:10px;font-weight:900;margin:0 8px 15px;
+ background:radial-gradient(ellipse at center,#6b42975b,#231f3b);color:#d7b5ff}
+.reward-highlight.has-legendary{background:radial-gradient(ellipse at center,#b7832e5b,#352514);
+ border-color:#efd083;box-shadow:0 0 20px #dbab5270;color:#ffe199}
+.reward-categories{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;text-align:left}
+.loot-group{min-width:0;border:1px solid #abb2bc54;border-radius:14px;padding:10px;background:#111e32c9}
+.loot-group h3{font-size:14px;margin:2px 0 10px;color:#ffe2aa}
+.loot-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.loot-item{display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:center;
+ gap:4px;min-width:0;padding:10px 5px;background:linear-gradient(145deg,#172339,#0f182c);
+ border:1px solid #8190a26f;border-radius:11px}
+.loot-icon{font-size:clamp(23px,3vw,33px)}
+.loot-name{font-size:11px;line-height:1.28;font-weight:800;color:#f5f1df;overflow-wrap:anywhere}
+.loot-quantity{font-size:18px;color:#fff9dc}
+.loot-rarity{font-size:10px;letter-spacing:.03em;color:#c7d3e2}
+.loot-item.rarity-1{border-color:#53b97f9c}.loot-item.rarity-1 .loot-rarity{color:#78e7ac}
+.loot-item.rarity-2{border-color:#4e9eecb3}.loot-item.rarity-2 .loot-rarity{color:#91c7ff}
+.loot-item.rarity-3{border-color:#af78f5;background:radial-gradient(ellipse at 50% 0,#7542a7a3,#241b37 76%);
+ box-shadow:inset 0 0 15px #a66ee738,0 0 12px #a26ddd58}
+.loot-item.rarity-3 .loot-rarity{color:#d3aeff}
+.loot-item.rarity-4{border-color:#ffd883;background:radial-gradient(ellipse at 50% 0,#ad812ab8,#36251d 78%);
+ box-shadow:inset 0 0 22px #ffd36b55,0 0 18px #ffd86e77;animation:legendary-shimmer 2.6s ease-in-out infinite alternate}
+.loot-item.rarity-4 .loot-rarity{color:#ffe4a2}
+.reward-saved{margin:17px auto 12px;color:#a6f0be;font-size:12px;font-weight:700}
+.reward-shell>.button{margin:0 auto}
+@keyframes legendary-shimmer{from{box-shadow:0 0 5px #ffcf5833}to{box-shadow:0 0 22px #ffce8caa}}
+@media(max-width:820px){.reward-categories{grid-template-columns:1fr}.loot-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:520px){.crate-grid{gap:5px}.crate-choice{padding:9px 4px}.crate-choice strong{font-size:11px}
+ .crate-choice small{font-size:9px}.crate-choice .crate-owned{font-size:10px}
+ .inventory-resources{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .reward-dialog{max-height:calc(100dvh - 14px)}
+ .reward-shell{padding:17px 10px}.loot-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .reward-close{top:5px;right:5px}}
+@media(prefers-reduced-motion:reduce){.loot-item.rarity-4{animation:none}}
