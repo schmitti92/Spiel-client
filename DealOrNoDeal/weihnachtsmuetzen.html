@@ -130,6 +130,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
 </style>
 <link rel="stylesheet" href="./css/christmas-hats-show-v3.css?v=20261110-show-v3">
 <link rel="stylesheet" href="./css/christmas-hats-premium-v4.css?v=20261110-stage-v4">
+<link rel="stylesheet" href="./css/christmas-hats-reveal-v5.css?v=20261110-reveal-v5">
 </head>
 <body>
 <main>
@@ -156,6 +157,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
  <div id="stage-banner" class="stage-banner"><span class="stage-name" id="stage-name">🎁 Weihnachtsstube</span><span class="stage-hint" id="stage-hint">Drei Mützen. Ein Risiko.</span></div>
  <div id="stage-announcer" class="stage-announcer" aria-live="polite"><span class="announcer-icon" aria-hidden="true">🎙️</span><span id="announcer-text">Willkommen zur großen Weihnachts-Jackpot-Show!</span></div>
  <div id="hats" class="hats" aria-label="Drei Weihnachtsmützen"></div>
+ <div id="reveal-hint" class="reveal-hint" aria-live="polite" hidden><span class="reveal-dot active" aria-hidden="true"></span><span id="reveal-hint-text"></span><span class="reveal-dot" aria-hidden="true"></span></div>
  <div class="loot-overview" aria-label="Gewinnübersicht">
   <div class="loot-counter secure"><small>🛡️ Sicher</small><strong id="safe-count">0</strong></div>
   <div class="loot-counter risk"><small>🎒 Im Risiko</small><strong id="risk-count">0</strong></div>
@@ -214,7 +216,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
 const $=id=>document.getElementById(id),API=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const names=['','Weihnachtsstube I','Weihnachtsstube II','Erster Tresor','Schatzsaal I','Schatzsaal II','Goldkammer','Jackpot-Pforte','Königsschatz','Nordpol-Tresor','Legendäres Finale'];
 const emojis={pack:'🎁',hammer:'🔨',joker:'🃏',cash:'💰'};
-let state=null,vouchers=null,userId='',busy=false,reveal=null,pendingRequest=null,revealTimer=null,selectedHat=null,revealPhase=null,suspenseTimer=null,cinemaTimer=null;
+let state=null,vouchers=null,userId='',busy=false,reveal=null,pendingRequest=null,revealTimer=null,selectedHat=null,revealPhase=null,suspenseTimer=null,cinemaTimer=null,otherHatTimer=null,showBeforeState=null,fastReveal=false;
 let soundOn=false,audioContext=null;
 try{soundOn=localStorage.getItem('deal-hats-sound-v3')==='on'}catch{}
 function paintSound(){
@@ -295,8 +297,8 @@ function openCinema(event){
 }
 function closeCinema(){ $('cinema').hidden=true; }
 function clearShowTimers(){
- for(const t of [revealTimer,suspenseTimer,cinemaTimer])if(t)clearTimeout(t);
- revealTimer=null;suspenseTimer=null;cinemaTimer=null;
+ for(const t of [revealTimer,suspenseTimer,cinemaTimer,otherHatTimer])if(t)clearTimeout(t);
+ revealTimer=null;suspenseTimer=null;cinemaTimer=null;otherHatTimer=null;
 }
 const prizeQuantity=items=>(items||[]).reduce((n,item)=>n+Number(item.quantity||1),0);
 function closeChoice(){
@@ -323,7 +325,7 @@ function showChoice(){
 }
 function finishReveal(){
  const outcome=reveal;
- clearShowTimers();closeCinema();reveal=null;revealPhase=null;render();
+ clearShowTimers();closeCinema();reveal=null;revealPhase=null;showBeforeState=null;fastReveal=false;render();
  if(state?.status==='playing'){
   setStatus('🎩 Die Entscheidung liegt bei dir: Gewinne sichern oder weiter?',false,true);
   if(outcome?.type!=='bomb')showChoice();
@@ -345,7 +347,19 @@ function renderTiers(active,checkpoint,cleared){
  }
 }
 function hatButton(index,old){
- const hat=document.createElement('button');hat.type='button';hat.setAttribute('aria-label',old?'Mütze '+(index+1)+' – '+(old.type==='bomb'?'Bombe':old.superLuck?'Superglück':'Geschenk'):'Verdeckte Weihnachtsmütze '+(index+1)+' auswählen');hat.className='hat'+(index===(reveal?.index??selectedHat)?' selected':'')+(revealPhase==='suspense'&&reveal?.index===index?' suspense':'')+(selectedHat===index&&busy?' selecting':'')+(old?' shown '+(old.type==='bomb'?'bomb':old.type==='super'?'super':'gift'):'');
+ const chosen=!!reveal&&reveal.index===index;
+ const opening=!!old&&chosen&&revealPhase==='chosen';
+ const already=!!old&&chosen&&revealPhase==='shown';
+ const later=!!old&&!chosen;
+ const kind=old?.type==='bomb'?'bomb':old?.superLuck||old?.type==='super'?'super':'gift';
+ const hat=document.createElement('button');hat.type='button';
+ hat.setAttribute('aria-label',old?'Mütze '+(index+1)+' – '+(old.type==='bomb'?'Bombe':old.superLuck?'Superglück':old.type==='super'?'Supergeschenk':'Geschenk'):'Verdeckte Weihnachtsmütze '+(index+1)+' auswählen');
+ hat.className='hat'+(chosen?' selected':'')+
+  (revealPhase==='suspense'&&chosen?' suspense':'')+
+  (selectedHat===index&&busy?' selecting':'')+
+  (old?' shown '+(old.type==='bomb'?'bomb':old.type==='super'?'super':'gift'):'')+
+  (opening?' opening':'')+(already?' already-open':'')+(later?' revealed-later':'');
+ if(later)hat.style.setProperty('--reveal-order',String(index<(reveal?.index??0)?0:1));
  hat.disabled=!state||state.status!=='playing'||busy||!!reveal||!!pendingRequest;
  const n=document.createElement('span');n.className='num';n.textContent='MÜTZE '+(index+1);hat.appendChild(n);
  const shape=document.createElement('div');shape.className='santa-hat';const pom=document.createElement('span');pom.className='pom';shape.appendChild(pom);hat.appendChild(shape);
@@ -353,10 +367,12 @@ function hatButton(index,old){
   const label=document.createElement('span');label.className='hatName';label.textContent='Aufdecken';hat.appendChild(label);
   hat.addEventListener('click',()=>action('pick',index));
  }else{
-  const symbol=document.createElement('div');symbol.className='revealEmoji';symbol.textContent=old.type==='bomb'?'💣':old.superLuck?'🌟':old.type==='super'?'👑':'🎁';hat.appendChild(symbol);
-  const t=document.createElement('div');t.className='hatName';t.textContent=old.type==='bomb'?'BOMBE!':old.superLuck?'SUPERGLÜCK!':old.type==='super'?'SUPERGESCHENK':'GESCHENK';hat.appendChild(t);
+  const prop=document.createElement('div');prop.className='reveal-object';prop.dataset.kind=kind;prop.setAttribute('aria-hidden','true');hat.appendChild(prop);
+  const title=document.createElement('div');title.className='hatName';
+  title.textContent=old.type==='bomb'?'💥 BOMBE!':old.superLuck?'🌟 SUPERGLÜCK!':old.type==='super'?'👑 SUPERGESCHENK':'🎁 GESCHENK';
+  hat.appendChild(title);
   if(old.type!=='bomb'){
-   const p=document.createElement('div');p.className='hatDetail';p.textContent=(old.items||[]).map(it=>it.label).join(' · ');hat.appendChild(p);
+   const p=document.createElement('div');p.className='hatDetail';p.textContent=(old.items||[]).map(item=>item.label).join(' · ');hat.appendChild(p);
   }
  }
  return hat;
@@ -364,10 +380,15 @@ function hatButton(index,old){
 function render(){
  const s=state,finished=s?.status==='finished',roomNumber=reveal?.room||s?.room||1;
  $('roomTitle').textContent='🎄 Raum '+roomNumber+' / 10 – '+names[roomNumber];
- $('checkpoint').textContent=(s?.checkpoint||0)>0?'🛡️ Checkpoint Raum '+s.checkpoint+' gesichert':'🛡️ Noch kein Checkpoint';
- $('subtitle').textContent=revealPhase==='suspense'?'🎬 Deine Entscheidung ist endgültig. Was verbirgt sich darunter?':reveal?'🎬 Die Mützen werden enthüllt!':finished?'🏆 Dieser Durchlauf ist beendet.':s?'Wähle eine der drei identischen Weihnachtsmützen.':'Starte dein Weihnachtsabenteuer!';
- const checkpoint=s?.checkpoint||0;
- const cleared=s?(s.status==='playing'?s.room-1:s.summary?.reason==='completed'?10:s.summary?.reason==='bomb'?s.room-1:Math.max(0,s.room-1)):0;
+ const shownState=showBeforeState&&['suspense','chosen'].includes(revealPhase)?showBeforeState:s;
+ $('checkpoint').textContent=(shownState?.checkpoint||0)>0?'🛡️ Checkpoint Raum '+shownState.checkpoint+' gesichert':'🛡️ Noch kein Checkpoint';
+ $('subtitle').textContent=revealPhase==='suspense'?'🎬 Deine Wahl steht fest. Welche Mütze hast du erwischt?':
+  revealPhase==='chosen'?'🎩 Die gewählte Mütze hebt sich langsam …':
+  revealPhase==='shown'?'✨ Jetzt zeigen sich auch die beiden anderen Mützen.':
+  finished?'🏆 Dieser Durchlauf ist beendet.':s?'Wähle eine der drei identischen Weihnachtsmützen.':'Starte dein Weihnachtsabenteuer!';
+ const presented=showBeforeState&&['suspense','chosen'].includes(revealPhase)?showBeforeState:s;
+ const checkpoint=presented?.checkpoint||0;
+ const cleared=presented?(presented.status==='playing'?presented.room-1:presented.summary?.reason==='completed'?10:presented.summary?.reason==='bomb'?presented.room-1:Math.max(0,presented.room-1)):0;
  renderTiers(roomNumber,checkpoint,cleared);
  const banner=$('stage-banner'),zone=roomNumber<=3?'easy':roomNumber<=6?'medium':'jackpot';
  $('hats-stage').dataset.zone=zone;
@@ -376,7 +397,7 @@ function render(){
  banner.classList.toggle('jackpot',zone==='jackpot');
  $('stage-name').textContent=zone==='easy'?'🧸 DIE WEIHNACHTSWERKSTATT':zone==='medium'?'🔑 DIE GOLDENE SCHATZKAMMER':'👑 DER LEGENDÄRE EISPALAST';
  $('stage-hint').textContent=zone==='easy'?'Einfache Hammer & Kartenpakete':zone==='medium'?'Gold, Joker & seltene Millionengewinne':'Höchste Gewinne · Superglück möglich';
- const safe=(s?.secured||[]).flatMap(g=>g.items||[]),risk=(s?.pending||[]).flatMap(g=>g.items||[]);
+ const safe=(presented?.secured||[]).flatMap(g=>g.items||[]),risk=(presented?.pending||[]).flatMap(g=>g.items||[]);
  const positions=items=>items.reduce((acc,it)=>acc+(it.quantity||1),0);
  const money=[...safe,...risk].filter(it=>it.kind==='cash').reduce((acc,it)=>acc+(Number(it.amountCents)||0),0);
  $('safe-count').textContent=String(positions(safe));
@@ -391,11 +412,24 @@ function render(){
   revealPhase==='shown'&&reveal?.type!=='bomb'&&[3,7].includes(reveal?.room));
  const hats=$('hats');hats.replaceChildren();
  hats.classList.toggle('stage-suspense',revealPhase==='suspense');
- for(let i=0;i<3;i++)hats.appendChild(hatButton(i,revealPhase==='shown'?reveal?.hats?.[i]:null));
+ hats.classList.toggle('stage-opening',revealPhase==='chosen');
+ hats.classList.toggle('stage-revealing',revealPhase==='shown');
+ hats.classList.toggle('reveal-in-progress',!!reveal);
+ hats.classList.toggle('skip-reveal',fastReveal);
+ for(let i=0;i<3;i++){
+  const visible=!!reveal&&(revealPhase==='shown'||revealPhase==='chosen'&&i===reveal.index);
+  hats.appendChild(hatButton(i,visible?reveal.hats?.[i]:null));
+ }
+ $('reveal-hint').hidden=!reveal;
+ $('reveal-hint-text').textContent=revealPhase==='suspense'?'Deine Wahl wird geprüft …':
+  revealPhase==='chosen'?'Eine Mütze wird geöffnet – die anderen bleiben noch verdeckt':
+  revealPhase==='shown'?'Alle drei Mützen sind aufgedeckt':'';
+
  const roomLine=roomNumber===3||roomNumber===7?'Der nächste sichere Schritt bringt den Checkpoint!':
   roomNumber>=8?'In dieser Kammer warten die legendären Schätze.':'Zwei Mützen retten deine Beute. Eine einzige kann alles ändern.';
  const last=s?.lastReveal;
- const comment=revealPhase==='suspense'?'Deine Mütze wird geöffnet …':
+ const comment=revealPhase==='suspense'?'Deine Wahl steht fest …':
+  revealPhase==='chosen'?'🎬 Die Mütze wird langsam angehoben …':
   revealPhase==='shown'&&reveal?.type==='bomb'?'💥 Die Bombe! Nur deine gesicherten Gewinne bleiben erhalten.':
   revealPhase==='shown'&&reveal?.superLuck?'🌟 UNGLAUBLICH! SUPERGLÜCK!':
   revealPhase==='shown'&&reveal?.type==='super'?'👑 Das wertvollere Geschenk ist dein!':
@@ -403,6 +437,7 @@ function render(){
   finished?'🏆 Der Durchlauf ist beendet – Zeit für die Bilanz.':roomLine;
  $('announcer-text').textContent=comment;
  const voice=revealPhase==='suspense'?'Die Entscheidung ist gefallen. Jetzt gibt es kein Zurück mehr!':
+  revealPhase==='chosen'?'Die Mütze hebt sich … noch ein kleines Stück … gleich sehen wir den Inhalt!':
   revealPhase==='shown'&&reveal?.type==='bomb'?'Oh nein! Der Nordpol-Tresor ist explodiert. Gut, dass wir die Checkpoints haben.':
   revealPhase==='shown'&&reveal?.superLuck?'Der Weihnachtsmann persönlich kann es nicht fassen! Was für ein sagenhafter Treffer!':
   revealPhase==='shown'&&[3,7].includes(reveal?.room)&&reveal?.type!=='bomb'?'Meine Güte! Der Checkpoint ist erreicht. Diese Schätze kann dir niemand mehr nehmen!':
@@ -422,7 +457,8 @@ function render(){
  $('start').disabled=busy||!!pendingRequest||!hasVouchers;
  $('cash').hidden=!s||finished;
  $('cash').disabled=busy||!!reveal||!!pendingRequest;
- $('continue').hidden=!reveal||revealPhase!=='shown';
+ $('continue').hidden=!reveal;
+ $('continue').textContent=revealPhase==='shown'?'⏭️ Weiter':'⏭️ Enthüllung überspringen';
  $('continue').disabled=busy;
  $('again').hidden=!showNewGame;
  $('again').disabled=busy||!!pendingRequest||!hasVouchers;
