@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="de">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta name="theme-color" content="#140e16">
+ <meta name="description" content="Die 100 Tore – Boss 10: Der Aschewächter. Bereitet euch zu dritt vor und besiegt ihn gemeinsam in 30 Sekunden.">
+ <title>🐉 Boss 10 · Die Prüfung des Aschewächters</title>
+ <link rel="stylesheet" href="./dog-boss10.css?v=20261110-v1">
+ <script src="./profile-config.js"></script>
+ <script src="./profile-auth.js"></script>
+ <script src="./dog-boss10.js?v=20261110-v1" defer></script>
+ <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
+</head>
+<body>
+ <main class="stage">
+  <nav class="topnav" aria-label="Navigation">
+   <a id="to-map" href="./dog-tor-map.html">← Zur 100-Tore-Karte</a>
+   <a id="to-forge" href="./dog-ascension.html">⚒️ Aufstiegsschmiede</a>
+   <button id="refresh" type="button">↻ Aktualisieren</button>
+  </nav>
+  <header class="opening">
+   <div class="eyebrow">TOR 10 VON 100 · GEMEINSAMER BOSS</div>
+   <h1>Die Prüfung des <span>Aschewächters</span></h1>
+   <p>Drei Helden. Drei Bereitschaftsbestätigungen. Ein gemeinsamer Kampf von 30 Sekunden. Nur ein serverseitig bestätigter Sieg schaltet die nächste Schmiedestufe frei.</p>
+   <div class="score">
+    <div><small>🐉 GEGNER</small><strong>Aschewächter</strong></div>
+    <div><small>⏱️ KAMPFDAUER</small><strong>30 Sekunden</strong></div>
+    <div><small>⚒️ SIEGBELOHNUNG</small><strong>Schmiede Lv. 2</strong></div>
+   </div>
+  </header>
+  <section class="arena" aria-labelledby="boss-name">
+   <div class="arena-top">
+    <div><small>🔥 GEMEINSAMER WÄCHTER</small><h2 id="boss-name">Der Aschewächter</h2></div>
+    <div class="status-pill" id="phase">Verbinde …</div>
+   </div>
+   <div class="monster" aria-label="Illustration der Bossarena">
+    <div class="embers" aria-hidden="true">✦ · ✧ · ✦ · ✧</div>
+    <div class="monster-art" aria-hidden="true">🌋</div>
+    <div class="monster-shadow" aria-hidden="true"></div>
+    <div id="battle-message" class="monster-caption">Der Wächter wartet auf drei mutige Helden.</div>
+   </div>
+   <div class="combat-meter" aria-live="polite">
+    <span>🐉 Gemeinsam gegen den Boss</span>
+    <strong id="boss-hp">– LP</strong>
+   </div>
+   <div class="timer-row">
+    <span>Verbleibende Kampfzeit</span>
+    <strong id="timer" role="timer">00:30</strong>
+   </div>
+   <div class="timer-bar"><span id="timer-fill"></span></div>
+   <div id="outcome" class="outcome" hidden aria-live="polite"></div>
+  </section>
+  <section class="squad" aria-labelledby="squad-title">
+   <header class="squad-head">
+    <h2 id="squad-title">🛡️ Eure drei Helden</h2>
+    <strong id="ready-count">0 / 3 bereit</strong>
+   </header>
+   <div id="heroes" class="heroes" aria-live="polite"></div>
+   <p id="status" class="message" role="status" aria-live="polite">Prüfe die Serververbindung …</p>
+   <div class="actions">
+    <button id="ready-button" class="main-button" type="button" disabled>✅ Ich bin bereit</button>
+    <button id="react-button" class="reaction-button" type="button" hidden disabled>⚡ Reaktion! Angriff verstärken</button>
+    <button id="retry-button" class="retry-button" type="button" hidden>↻ Offenen Auftrag sicher wiederholen</button>
+   </div>
+   <p class="note">Jeder Spieler muss die normalen Tore 1–4 und 6–9 geschafft haben. Mini-Boss 5 ist für die Teilnahme nicht erforderlich. Der Kampf startet erst, wenn alle drei „Bereit“ bestätigt haben. Nach einer Niederlage gilt eine gemeinsame Kampfpause von 10 Minuten.</p>
+  </section>
+  <footer>Die 100 Tore · Boss 10 · Die Regeln werden ausschließlich vom Server bestätigt</footer>
+ </main>
+</body>
+</html>
