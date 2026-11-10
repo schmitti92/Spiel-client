@@ -212,3 +212,37 @@ test('voice toggle clearly says it only comments the minimum and maximum',()=>{
  assert.match(page,/amount-voice\.js\?v=20261110-match-stories-v1/);
  assert.match(page,/cases\.js\?v=20261110-extreme-prizes-v2/);
 });
+
+test('a 1-cent announcement finishes before its queued story and ordinary values never interrupt it',()=>{
+ const fx=harness({stored:true});
+ const audio=fx.window.DealModeratorAudio;
+ fx.announce(1,{caseCount:29,caseNumber:8,gameId:'test-voice-queue'});
+ assert.equal(fx.spoken.length,1);
+ assert.equal(audio.speakStory('Dies ist ein langes Kapitel mit einem besonders lustigen Ende.',{
+  title:'Der Gartenzwerg',chapter:3
+ }),true,'story is accepted while extreme value speech is active');
+ assert.equal(audio.speakStory('Eine zweite Rede, die erst später drankommen darf.',{
+  title:'Zweites Kapitel',chapter:4
+ }),false,'two story chapters may not overlap or pile up in a speech backlog');
+ fx.announce(10000000,{caseCount:29,caseNumber:9,gameId:'test-voice-queue'});
+ assert.equal(fx.spoken.length,1,'non-extreme case stays silent and does not cancel the queued story');
+ fx.spoken[0].onend();
+ const continuation=[...fx.timers.values()].find(item=>item.delay===800);
+ assert.ok(continuation,'story is delayed briefly after previous utterance ends');
+ continuation.fn();
+ assert.equal(fx.spoken.length,2);
+ assert.match(fx.spoken[1].text,/Dies ist ein langes Kapitel/);
+ assert.match(fx.caption.textContent,/Der Gartenzwerg · Kapitel 3/);
+ assert.equal(fx.spoken[1].lang,'de-DE');
+});
+
+test('switching off the moderator cancels a queued story and never narrates muted chapters',()=>{
+ const fx=harness({stored:true});
+ fx.announce(1000000000,{caseCount:29,gameId:'test-silence'});
+ assert.equal(fx.window.DealModeratorAudio.speakStory('Eine Geschichte',{title:'Stille',chapter:1}),true);
+ fx.toggle();
+ assert.equal(fx.button.textContent,'🔇 Moderator AUS');
+ assert.equal(fx.window.DealModeratorAudio.speakStory('Mehr Geschichte',{title:'Stille',chapter:2}),false);
+ assert.equal(fx.caption.hidden,true);
+ assert.equal(fx.spoken.length,1);
+});
