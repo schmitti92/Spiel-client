@@ -75,5 +75,5 @@ test('third board displays visible claim and retry status after a server-confirm
  assert.match(html,/claimMessage\('⏳ Erreichte Nordpol-Bingo-Belohnungen/);
  assert.match(html,/claimMessage\('✅ '\+result\.claimed/);
  assert.match(html,/claimMessage\('⚠️ Bingo-Gutschrift noch nicht bestätigt/);
- assert.match(html,/north-pole-bingo\.js\?v=20261110-premium-vouchers-v2/);
+ assert.match(html,/north-pole-bingo\.js\?v=20261110-bingo40-v1/);
 });
