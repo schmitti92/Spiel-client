@@ -57,7 +57,7 @@ test('the six uploaded Christmas dice exist as real image files and both modes l
   const html=read(page);
   assert.match(html,/id="christmas-dice-toggle"/);
   assert.match(html,/id="christmas-dice-status"/);
-  assert.match(html,/christmas-dice.js\?v=20261110-20bilder-fix2/);
+  assert.match(html,/christmas-dice.js\?v=20261110-progress-sync-v3/);
   assert.match(html,/christmas-dice.css\?v=20261110-20bilder-fix2/);
   assert.doesNotMatch(html,/id="christmas-dice-toggle"[^>]* hidden/,'button cannot silently disappear');
  }
@@ -111,21 +111,21 @@ test('below 20 images remains locked but the button permits rechecking',async()=
  await f.refresh();
  assert.equal(f.button.hidden,false);
  assert.equal(f.window.KniffelChristmasDice.isEnabled(),false);
- assert.match(f.status.textContent,/ab 20 abgeschlossenen Bildern/);
+ assert.match(f.status.textContent,/laut Server: 0\/20 Bilder/);
  f.setResponse({ok:true,kniffelChristmasDice:true});
  await f.click();
  assert.equal(f.window.KniffelChristmasDice.isEnabled(),true);
- assert.equal(f.calls.length,2);
+ assert.equal(f.calls.length,3);
 });
 test('revisiting a tab after completing picture 20 refreshes SAME profile, not only new UIDs',async()=>{
  const f=harness();
  await f.refresh();
- assert.equal(f.calls.length,1);
+ assert.equal(f.calls.length,2);
  f.setResponse({ok:true,kniffelChristmasDice:true});
  f.setNow(63000);
  f.documentListeners.get('visibilitychange')();
  await f.flush();
- assert.equal(f.calls.length,2,'same signed-in profile must be rechecked on tab return');
+ assert.equal(f.calls.length,3,'same signed-in profile must be rechecked on tab return');
  assert.equal(f.window.KniffelChristmasDice.isEnabled(),true);
 });
 test('on old Render without /unlocks, authenticated /me progress securely verifies 20 images',async()=>{
@@ -165,7 +165,7 @@ test('Kniffel online lobby provides a pre-game choice with six uploaded dice pre
  assert.match(lobby,/<h2>Spiel vorbereiten<\/h2>/);
  assert.equal((lobby.match(/id="christmas-dice-toggle"/g)||[]).length,1);
  assert.equal((lobby.match(/id="christmas-dice-status"/g)||[]).length,1);
- assert.match(lobby,/christmas-dice.js\?v=20261110-20bilder-fix2/);
+ assert.match(lobby,/christmas-dice.js\?v=20261110-progress-sync-v3/);
  assert.match(lobby,/christmas-dice.css\?v=20261110-20bilder-fix2/);
  const names=Array.from(lobby.matchAll(/src="\.\/Bilder\/weihnachtswuerfel-(\d)\.png"/g),m=>Number(m[1]));
  assert.deepEqual(names,[1,2,3,4,5,6]);
@@ -184,4 +184,47 @@ test('lobby and game modes share one account-scoped stored dice design, never a 
  assert.equal(f.window.KniffelChristmasDice.isEnabled(),false);
  assert.equal(f.calls.length,1,'switching lobby dice skin makes no extra server request');
  assert.doesNotMatch(js,/\/api\/hub\/rooms/,'the dice skin is not written into shared room state');
+});
+
+test('server unlock falsely says locked but Christmas-event /me confirms 20 images',async()=>{
+ const f=harness({response:url=>url.endsWith('/unlocks')
+   ?{ok:true,kniffelChristmasDice:false}
+   :{ok:true,started:true,state:{completed:20,maxRewarded:20}}});
+ await f.refresh();
+ assert.equal(f.calls.length,2,'one extra authenticated progress read only when flag is false');
+ assert.equal(f.calls[0].opts.headers.Authorization,'Bearer player1-token');
+ assert.equal(f.calls[1].opts.headers.Authorization,'Bearer player1-token');
+ assert.match(f.calls[1].url,/\/api\/christmas-ice\/me$/);
+ assert.equal(f.window.KniffelChristmasDice.isEnabled(),true);
+ assert.match(f.status.textContent,/20 Bildern freigeschaltet/);
+ assert.equal(f.button.attrs['aria-pressed'],'true');
+});
+
+test('picture 20 remains unlocked after event reset using maxRewarded from /me',async()=>{
+ const f=harness({response:url=>url.endsWith('/unlocks')
+   ?{ok:true,kniffelChristmasDice:false}
+   :{ok:true,state:{completed:0,maxRewarded:20}}});
+ await f.refresh();
+ assert.equal(f.window.KniffelChristmasDice.isEnabled(),true);
+ assert.equal(f.calls.length,2);
+});
+
+test('server state 19/20 gives an explicit progress explanation, never guesses the reward',async()=>{
+ const f=harness({response:url=>url.endsWith('/unlocks')
+   ?{ok:true,kniffelChristmasDice:false}
+   :{ok:true,state:{completed:19,maxRewarded:19}}});
+ await f.refresh();
+ assert.equal(f.window.KniffelChristmasDice.isEnabled(),false);
+ assert.match(f.status.textContent,/laut Server: 19\/20 Bilder/);
+ assert.equal(f.button.hidden,false);
+});
+
+test('when progress reconciliation fails the button explains retry instead of treating false as proof',async()=>{
+ const f=harness({response:url=>url.endsWith('/unlocks')
+   ?{ok:true,kniffelChristmasDice:false}
+   :new Error('Render temporary error')});
+ await f.refresh();
+ assert.equal(f.window.KniffelChristmasDice.isEnabled(),false);
+ assert.match(f.status.textContent,/konnte nicht geprüft werden/);
+ assert.equal(f.button.hidden,false);
 });
