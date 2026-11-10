@@ -41,3 +41,33 @@ test('Random prize and money decisions are never client-controlled',()=>{
  assert.doesNotMatch(script,/const\s+bombIndex\s*=/);
  assert.doesNotMatch(script,/localStorage\.setItem\(.+balance/);
 });
+
+
+test('V3 stage presents ten checkpoint rooms and professional show controls',()=>{
+ const css=readFileSync(resolve(root,'css/christmas-hats-show-v3.css'),'utf8');
+ assert.match(html,/christmas-hats-show-v3\.css/);
+ for(const id of ['choice-dialog','choice-next','choice-cash','choice-secured','choice-risked',
+   'announcer-text','story-speech','cinema-subtitle','cash-description']){
+  assert.match(html,new RegExp('id="'+id+'"'));
+ }
+ assert.match(css,/\.hats\.stage-suspense/);
+ assert.match(css,/\.choice-dialog::backdrop/);
+ assert.match(css,/\.trophy-groups/);
+ assert.match(css,/prefers-reduced-motion/);
+ assert.match(script,/function showChoice\(\)/);
+ assert.match(script,/function renderFinalShow\(/);
+ assert.match(script,/function clearShowTimers\(\)/);
+ assert.match(script,/revealPhase='suspense'/);
+ assert.match(script,/revealPhase='shown'/);
+ assert.match(script,/setTimeout\(finishReveal,5600\)/);
+ assert.match(script,/showChoice\(\)/);
+ assert.match(script,/function finishReveal\(\)/);
+ assert.match(script,/closeChoice\(\)/);
+});
+
+test('V3 keeps real payouts separate from local Chris test games',()=>{
+ assert.match(script,/if\(DEMO\)\s*\{\s*if\(!isChrisDemo\(\)\)/);
+ assert.match(script,/return demoRequest\(path,method,payload\)/);
+ assert.match(script,/DEMO\?'Testmodus: Deine Gewinne/);
+ assert.doesNotMatch(script,/fetch\(['"]\/api\/christmas-hats\/action['"]\)/);
+});
