@@ -13,8 +13,10 @@ on:
       - dog-ascension.js
       - dog-expedition.html
       - dog-materials-ui.js
+      - dog-materials.css
       - tests/dog-tor-map.test.mjs
       - tests/dog-first-loop-ui.test.mjs
+      - tests/dog-chests-ui.test.mjs
       - .github/workflows/dog-tor-map-check.yml
   pull_request:
     paths:
@@ -29,8 +31,10 @@ on:
       - dog-ascension.js
       - dog-expedition.html
       - dog-materials-ui.js
+      - dog-materials.css
       - tests/dog-tor-map.test.mjs
       - tests/dog-first-loop-ui.test.mjs
+      - tests/dog-chests-ui.test.mjs
       - .github/workflows/dog-tor-map-check.yml
 
 jobs:
@@ -47,5 +51,6 @@ jobs:
           node --check dog-tor-map.js
           node --check dog-boss10.js
           node --check dog-ascension.js
+          node --check dog-materials-ui.js
       - name: Test map structure and safe DOG unlock placeholder
-        run: node --test tests/dog-tor-map.test.mjs tests/dog-first-loop-ui.test.mjs
+        run: node --test tests/dog-tor-map.test.mjs tests/dog-first-loop-ui.test.mjs tests/dog-chests-ui.test.mjs
