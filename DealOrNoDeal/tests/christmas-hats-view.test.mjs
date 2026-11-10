@@ -161,7 +161,7 @@ test('Phase 3 winter map renders twenty connected rooms with correct special cel
  assert.match(script,/\$\('journey-legend'\)\.hidden=!!s&&s\.rulesVersion!==5/);
  const fn=script.match(/function renderTiers\(active,checkpoint,cleared\)\{[\s\S]*?\n\}\n(?=function hatButton)/)?.[0];
  assert.ok(fn,'individual tile renderer is available');
- const stageRoot={children:[],replaceChildren(){this.children=[];},appendChild(el){this.children.push(el);}};
+ const stageRoot={attributes:{},children:[],replaceChildren(){this.children=[];},appendChild(el){this.children.push(el);},setAttribute(k,v){this.attributes[k]=v;}};
  const document={createElement(name){return {tag:name,className:'',dataset:{},attributes:{},children:[],
   setAttribute(key,value){this.attributes[key]=value;},
   append(...els){this.children.push(...els);},appendChild(el){this.children.push(el);}};}};
@@ -169,6 +169,7 @@ test('Phase 3 winter map renders twenty connected rooms with correct special cel
  const ctx={state,document,$:id=>{assert.equal(id,'tiers');return stageRoot;}};
  assert.doesNotThrow(()=>new Script(fn+'renderTiers(15,10,14);').runInNewContext(ctx));
  const tiles=stageRoot.children;
+ assert.equal(stageRoot.attributes['data-layout'],'serpentine');
  assert.equal(tiles.length,20);
  assert.deepEqual(tiles.filter(x=>x.className.includes('bonus-cell')).map(x=>Number(x.dataset.room)),[3,6,9,12,15,18]);
  assert.deepEqual(tiles.filter(x=>x.className.includes('checkpoint-cell')).map(x=>Number(x.dataset.room)),[5,10,15]);
@@ -176,12 +177,14 @@ test('Phase 3 winter map renders twenty connected rooms with correct special cel
  assert.equal(fifteen.dataset.kind,'bonus-checkpoint');
  assert.equal(fifteen.children[0].textContent,'🛡️');
  assert.equal(fifteen.children[2].textContent,'🎁');
+ assert.equal(fifteen.children[3].textContent,'BONUS + SICHER');
  assert.equal(fifteen.attributes['aria-current'],'step');
  const finale=tiles[19];
  assert.equal(finale.dataset.kind,'finale');
  assert.match(finale.className,/finale-cell/);
  assert.doesNotMatch(finale.className,/checkpoint-cell/);
  assert.equal(finale.children[0].textContent,'👑');
+ assert.equal(finale.children.at(-1).textContent,'FINALE');
  assert.match(finale.attributes['aria-label'],/Nordpol-Finale/);
  assert.match(tiles[2].attributes['aria-label'],/alle drei Mützen bombenfrei/);
  assert.match(tiles[9].attributes['aria-label'],/Gewinne bis hier gesichert/);
@@ -195,7 +198,26 @@ test('Phase 3 winter map renders twenty connected rooms with correct special cel
  ctx.state={maxRoom:10,checkpoints:[3,7],rulesVersion:2};
  new Script(fn+'renderTiers(5,3,4);').runInNewContext(ctx);
  assert.equal(stageRoot.children.length,10);
+ assert.equal(stageRoot.attributes['data-layout'],'linear');
  assert.deepEqual(stageRoot.children.filter(x=>x.className.includes('bonus-cell')).map(x=>Number(x.dataset.room)),[]);
  assert.deepEqual(stageRoot.children.filter(x=>x.className.includes('checkpoint-cell')).map(x=>Number(x.dataset.room)),[3,7]);
  assert.equal(stageRoot.children[9].children[0].textContent,'👑');
+});
+
+test('Phase 3.2 uses winding 1→10↘11→20 rooms without touching payouts or old matches',()=>{
+ const css=readFileSync(resolve(root,'css/christmas-hats-serpentine-v10.css'),'utf8');
+ assert.match(html,/christmas-hats-serpentine-v10\.css\?v=20261110-phase3-snake-v1/);
+ assert.match(script,/setAttribute\?\.\('data-layout',limit===20\?'serpentine':'linear'\)/);
+ assert.match(script,/label\.textContent=isFinal\?'FINALE':isBonus&&isCheckpoint\?'BONUS \+ SICHER'/);
+ const positions=[...css.matchAll(/\.tiers\[data-layout="serpentine"\]>\.tier:nth-child\((\d+)\)\{grid-row:2;grid-column:(\d+)\}/g)]
+  .map(m=>({room:Number(m[1]),col:Number(m[2])}));
+ assert.equal(positions.length,10,'ten rooms on the return path');
+ for(let i=11;i<=20;i++)assert.equal(positions.find(x=>x.room===i)?.col,21-i,'room '+i+' is correctly placed');
+ assert.match(css,/nth-child\(10\)::after/,'corner connection 10→11');
+ assert.match(css,/nth-child\(n\+11\):not\(:last-child\)::after/);
+ assert.match(css,/\.tiers\[data-layout="linear"\]/,'old ten-room path remains linear');
+ assert.match(css,/\.tier\.finale-cell\.on/);
+ assert.match(css,/\.tier\.bonus-cell\.checkpoint-cell/);
+ assert.match(css,/@media\(max-width:720px\)/);
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
 });
