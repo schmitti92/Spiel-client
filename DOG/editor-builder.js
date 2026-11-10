@@ -10,7 +10,8 @@ import {
   EDITOR_DRAFT_KEY,clone,emptyDraft,fromCrossPreset,fromLayout,placedCount,
   fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
   guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun
-} from './editor-model.js?v=4';
+} from './editor-model.js?v=5';
+import {referencePoints,buildGoalLane,buildHomeGroup,getTrackConnections,straightGaps,connectStraightGap,SEAT_LABELS} from './board-assistants.js?v=5';
 
 const $=id=>document.getElementById(id);
 const board=$('builder-board');
@@ -26,6 +27,7 @@ let mode='track',tool='place';
 let settings={spacing:32,snap:true,grid:true,numbers:true,path:true,symmetry:false,auto:true,guide:true,stepSpacing:32};
 let photoObject=null,photoOpacity=.4,hover=null,pointer=null,walkTimer=null,walkStep=-1;
 let history=[],historyAt=0,feedbackText='';
+let assistantSeat=0,assistantPreview=null,connectionFocus=null,lastGapSignature=null;
 
 // Initial state must be empty, unless a previously autosaved unfinished draft exists.
 // The live match board is deliberately not automatically loaded into the editor.
@@ -80,6 +82,7 @@ function selectedName(s=selected){
 }
 function setSelection(s){
   if(!selectedValid(s))return;
+  assistantPreview=null;
   selected={...s};
   mode=s.kind;
   updateControls();
@@ -106,6 +109,7 @@ function recordChange(){
   persist();return true;
 }
 function updateDraft(next,{record=true,advance=false}={}){
+  assistantPreview=null;
   draft=next;
   if(record)recordChange();
   if(advance)maybeNext();
@@ -118,7 +122,7 @@ function unwind(direction){
   pointer=null;
   const next=historyAt+direction;
   if(next<0||next>=history.length)return;
-  historyAt=next;draft=clone(history[next]);persist();
+  historyAt=next;draft=clone(history[next]);assistantPreview=null;persist();
   render();announce(direction<0?'↶ Letzte Änderung rückgängig gemacht.':'↷ Änderung wiederhergestellt.');
 }
 function stopPreview(){
@@ -165,6 +169,37 @@ function updateControls(){
   $('undo').disabled=historyAt===0;
   $('redo').disabled=historyAt===history.length-1;
 }
+function refreshAssistantStatus(){
+  const refs=referencePoints(draft,assistantSeat),lane=draft.goals[assistantSeat],house=draft.homes[assistantSeat];
+  const goalCount=lane.filter(Boolean).length,homeCount=house.filter(Boolean).length;
+  $('assist-seat').value=String(assistantSeat);
+  $('assist-reference').innerHTML=
+    '<strong>'+SEAT_LABELS[assistantSeat]+': Ausstieg Feld '+refs.exitIndex+
+    (refs.exit?' ✓':' ✗')+' · Zieleinlauf Feld '+refs.goalEntryIndex+(refs.goalEntry?' ✓':' ✗')+'</strong>'+
+    '<div>Haus: '+homeCount+'/4 Startplätze · Ziel: '+goalCount+'/4 Zielfelder</div>'+
+    '<div>'+(refs.exit?'Der Haus-Ausgang kann bei Bedarf verschoben werden.':'Setze zuerst das farbige Ausstiegsfeld auf dem Laufweg.')+'</div>';
+  const report=getTrackConnections(draft);
+  const invalid=report.broken.length,open=report.missing.length;
+  const missingIndexes=report.missing.filter(x=>x.hasFrom&&!x.hasTo).map(x=>x.to);
+  $('track-summary').textContent=
+    '🔗 '+report.links.length+'/64 Nachbarschaften verbunden · '+open+' offene Übergänge'+
+    (invalid?' · '+invalid+' Abstandsfehler':'')+
+    (report.closed?' · ✅ Rundweg geschlossen':'')+
+    (missingIndexes.length?' · Nächste freie Felder: '+missingIndexes.slice(0,6).join(', '):'');
+  const gaps=straightGaps(draft,{maxMissing:6});
+  const signature=gaps.map(g=>g.from+':'+g.to).join(',');
+  const control=$('gap-select');
+  if(signature!==lastGapSignature){
+    const previously=control.value;
+    control.innerHTML=gaps.length?
+      gaps.map(g=>'<option value="'+g.from+'">Feld '+g.from+' → '+g.to+' ('+g.missing+' fehlend)</option>').join(''):
+      '<option value="">Keine kurze gerade Lücke</option>';
+    control.value=gaps.some(g=>String(g.from)===previously)?previously:(gaps.length?String(gaps[0].from):'');
+    lastGapSignature=signature;
+  }
+  $('fill-track-gap').disabled=gaps.length===0;
+}
+
 function renderProgress(){
   const check=inspectDraft(draft),count=check.count;
   $('track-progress').textContent=count.track+'/64';
@@ -173,6 +208,7 @@ function renderProgress(){
   $('progress-total').textContent=count.total+'/96';
   const gap=measureStepDistances(draft,settings.stepSpacing),anchor=previousTrackField(draft,selected);
   $('align-run').disabled=selected.kind!=='track'||!Boolean(draft.track[selected.index]);
+  refreshAssistantStatus();
   $('gap-report').textContent=settings.guide?
     (anchor?'📐 Ausgangspunkt: Feld '+anchor.index+'. ':'📍 Setze Feld 0 frei. ')+
     (gap.measured?gap.even+' von '+gap.measured+' Verbindungen im Abstand '+settings.stepSpacing+
