@@ -128,6 +128,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
 @media(max-width:620px){.loot-overview{gap:5px}.loot-counter{padding:8px 3px}.stage-banner{padding:9px}.inventory{grid-template-columns:1fr}.hat{min-height:150px;padding:4px}.hatDetail{font-size:10px}.hatName{font-size:11px}.santa-hat{width:85px;height:80px}.game{padding:12px}.tiers{margin-bottom:10px}.hats{margin-top:12px}.hero{padding:12px 5px}}
 @media(prefers-reduced-motion:reduce){*,*:before{animation:none!important;transition:none!important}}
 </style>
+<link rel="stylesheet" href="./css/christmas-hats-show-v3.css?v=20261110-show-v3">
 </head>
 <body>
 <main>
@@ -146,6 +147,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
  <div class="topline"><div id="roomTitle" class="roomTitle">🎅 Weihnachtsmützen</div><div id="checkpoint" class="checkpoint">🛡️ Noch kein Checkpoint</div></div>
  <p id="subtitle" class="subtitle">Unter einer Mütze lauert eine Bombe, zwei enthalten Geschenke.</p>
  <div id="stage-banner" class="stage-banner"><span class="stage-name" id="stage-name">🎁 Weihnachtsstube</span><span class="stage-hint" id="stage-hint">Drei Mützen. Ein Risiko.</span></div>
+ <div id="stage-announcer" class="stage-announcer" aria-live="polite"><span class="announcer-icon" aria-hidden="true">🎙️</span><span id="announcer-text">Willkommen zur großen Weihnachts-Jackpot-Show!</span></div>
  <div id="hats" class="hats" aria-label="Drei Weihnachtsmützen"></div>
  <div class="loot-overview" aria-label="Gewinnübersicht">
   <div class="loot-counter secure"><small>🛡️ Sicher</small><strong id="safe-count">0</strong></div>
@@ -167,6 +169,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
   <div class="panel"><h3>🛡️ Bereits gesichert</h3><div id="secured" class="prizes"><span class="empty">Noch keine Belohnungen gesichert.</span></div></div>
   <div class="panel"><h3>🎒 Noch auf dem Spiel</h3><div id="pending" class="prizes"><span class="empty">Hier erscheinen deine neuen Gewinne.</span></div></div>
  </div>
+ <aside class="story-voice" aria-label="Showmoderator"><span class="story-avatar" aria-hidden="true">🎅</span><div><span class="story-label">Nordpol-Moderator</span><div id="story-speech" class="story-speech">Zehn Räume. Drei Mützen. Ein falscher Griff. Zeig uns, was du draufhast!</div></div></aside>
  <div id="status" class="status" role="status" aria-live="polite">Verbinde dich mit deinem Spielerprofil …</div>
 </section>
 <dialog id="cash-dialog" class="cash-dialog" aria-labelledby="cash-dialog-title">
@@ -174,6 +177,17 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
  <p>Du steigst aus dem Weihnachtsmützen-Jackpot aus. Alle bislang erhaltenen Geschenke werden deinem Spielerprofil gutgeschrieben.</p>
  <div id="cash-preview" class="prizes" style="justify-content:center"></div>
  <div class="actions"><button type="button" id="cash-confirm" class="action cash">✅ Jetzt kassieren</button><button type="button" id="cash-cancel" class="action secondary">↩ Weiterspielen</button></div>
+</dialog>
+<dialog id="choice-dialog" class="choice-dialog" aria-labelledby="choice-title">
+ <div class="choice-eyebrow">🎰 DEIN NÄCHSTER ZUG</div>
+ <h2 id="choice-title">Kassieren oder riskieren?</h2>
+ <p id="choice-description">Noch ein Schritt zum großen Gewinn …</p>
+ <div class="choice-risk">
+  <div><strong id="choice-secured">0</strong><small>🛡️ Gegenstände geschützt</small></div>
+  <div><strong id="choice-risked">0</strong><small>🔥 Gegenstände im Risiko</small></div>
+ </div>
+ <div class="choice-actions"><button id="choice-cash" class="action cash" type="button">💰 Jetzt kassieren</button><button id="choice-next" class="action" type="button">🎩 Weiter riskieren</button></div>
+ <p class="choice-warning" id="choice-warning">Eine Bombe zerstört die noch nicht geschützten Gewinne.</p>
 </dialog>
 <div id="cinema" class="cinema" hidden role="dialog" aria-modal="true" aria-label="Besonderer Weihnachtsgewinn">
  <div class="confetti" id="confetti" aria-hidden="true"></div>
