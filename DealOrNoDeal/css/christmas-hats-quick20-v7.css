@@ -1,0 +1,26 @@
+/* Christmas Hats Quickplay 20: 2-row stage map, clear safe rooms and minimal-click layout. */
+.tiers{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:clamp(3px,.65vw,10px);row-gap:7px;position:relative}
+.tiers:before{display:none!important}
+.tier.bonus-cell{border:2px solid #81f3c2;box-shadow:inset 0 0 0 1px #c1ffe683,0 0 13px #4ae2a75a}
+.tier.bonus-cell:not(.on){background:linear-gradient(145deg,#194a4f,#11263d);color:#b5ffe2}
+.tier.bonus-cell.on{border-color:#fff4c4;box-shadow:inset 0 0 0 1px #89fed1,0 0 29px #8dfbd89c}
+.tier.checkpoint-cell:not(.on){border:2px solid #fbe29f;box-shadow:0 0 14px #f4c96f47,inset 0 0 15px #b38c4863}
+.journey-zones{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.journey-zones span{white-space:normal;line-height:1.35;overflow-wrap:break-word;min-width:0}
+#bomb-chance{font-variant-numeric:tabular-nums;color:#f5dd9e}
+.progress-line{gap:8px 15px;justify-content:center}
+#mode{border-color:#e5c777;background:#173b47;color:#e8ffdf;white-space:nowrap}
+#mode[aria-pressed=false]{background:#38244a;color:#ffe6ce}
+#hats-voucher-indicator{font-variant-numeric:tabular-nums}
+#hats-stage[data-zone=final]{border-color:#f8d37d;box-shadow:0 13px 52px #000a,inset 0 0 32px #facb4b30,0 0 32px #f2bc4490}
+@media(max-width:620px){
+ .tiers{gap:3px;row-gap:5px;padding:7px 3px}
+ .tier{height:clamp(42px,12vw,52px);font-size:12px;border-radius:7px}
+ .tier .stage-step-icon{font-size:12px}
+ .journey-zones{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+ .journey-zones span{padding:4px 2px;font-size:10px}
+ .progress-line{gap:4px 9px;font-size:11px}
+ nav .tools{flex-wrap:wrap}
+ #mode{font-size:12px;padding:8px}
+}
+@media(prefers-reduced-motion:reduce){.tier.on{transform:none}}
