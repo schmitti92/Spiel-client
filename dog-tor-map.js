@@ -19,6 +19,224 @@
  });
  const $=id=>document.getElementById(id);
  const worldRoot=$('worlds'),details=$('details'),pathList=[];
+ const gateButtons=new Map();
+ let mapState=null,selectedGate=null,working=false,mapRequestEpoch=0;
+ const API=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
+ const $node=(tag,klass,text)=>{
+  const el=document.createElement(tag);
+  if(klass)el.className=klass;
+  if(text!==undefined)el.textContent=String(text);
+  return el;
+ };
+ const auth=()=>{
+  const state=window.SpielOnline?.state?.();
+  return state?.status==='online'&&state.user?.uid&&
+   state.profile?.setupComplete!==false?state:null;
+ };
+ const requestId=()=>globalThis.crypto?.randomUUID?.()?
+  'dog-'+globalThis.crypto.randomUUID():
+  'dog-'+Date.now()+'-'+Math.random().toString(36).slice(2,15);
+ const pendingKey=uid=>'dog:map:pending-fight:'+uid;
+ const readPending=uid=>{
+  try{
+   const v=JSON.parse(localStorage.getItem(pendingKey(uid))||'null');
+   return v&&/^[A-Za-z0-9_-]{12,90}$/.test(v.id)&&Number.isSafeInteger(v.gate)&&
+    v.gate>=1&&v.gate<=99&&v.gate%10!==0?v:null;
+  }catch{return null;}
+ };
+ const storePending=(uid,data)=>{
+  try{localStorage.setItem(pendingKey(uid),JSON.stringify(data));
+   return localStorage.getItem(pendingKey(uid))===JSON.stringify(data);
+  }catch{return false;}
+ };
+ const clearPending=uid=>{try{localStorage.removeItem(pendingKey(uid));}catch{}};
+ const roomSuffix=room&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(room)?
+  '?room='+encodeURIComponent(room):'';
+ function setTeamStatus(message){$('team-status').textContent=message;}
+ async function request(method,route,body,uid){
+  const state=auth();
+  if(!state||state.user.uid!==uid)throw Error('LOGIN_REQUIRED');
+  const token=await state.user.getIdToken();
+  if(auth()?.user?.uid!==uid)throw Error('ACCOUNT_CHANGED');
+  const controller=typeof AbortController==='function'?new AbortController():null;
+  const timeout=controller?setTimeout(()=>controller.abort(),18000):null;
+  try{
+   const res=await fetch(API+'/api/dog/gates/'+route,{
+    method,cache:'no-store',
+    headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+    ...(body?{body:JSON.stringify(body)}:{}),...(controller?{signal:controller.signal}:{})
+   });
+   const data=await res.json().catch(()=>({ok:false,error:'DOG_GATE_UNAVAILABLE'}));
+   if(!res.ok||data.ok!==true)throw Error(data.error||'DOG_GATE_UNAVAILABLE');
+   if(auth()?.user?.uid!==uid)throw Error('ACCOUNT_CHANGED');
+   return data;
+  }finally{if(timeout!==null)clearTimeout(timeout);}
+ }
+ function updateMarkers(){
+  for(const [gate,button] of gateButtons){
+   const area=button.querySelector('.party-pins');
+   if(!area)continue;
+   area.replaceChildren();
+   const visiting=(mapState?.members||[]).filter(member=>member.currentGate===gate);
+   for(const member of visiting){
+    const memberIndex=mapState.members.findIndex(m=>m.uid===member.uid);
+    const mark=$node('span','party-pin hero-'+(memberIndex+1),member.name.slice(0,1).toUpperCase());
+    mark.title=member.name+(member.isMe?' (du)':'')+' · Tor '+gate;
+    mark.setAttribute('aria-label',mark.title);
+    area.append(mark);
+   }
+   const count=visiting.length;
+   button.setAttribute('aria-label','Tor '+gate+': '+titleFor(gate)+
+    (count?' · '+visiting.map(x=>x.name).join(', ')+' hier':'')+'. Details ansehen');
+  }
+ }
+ function renderMembers(){
+  const area=$('team-members');area.replaceChildren();
+  const team=mapState?.members||[];
+  if(!team.length){
+   area.append($node('div','team-empty','Noch keine bestätigten Teampositionen vorhanden.'));
+  }
+  for(let i=0;i<3;i++){
+   const member=team[i];
+   const card=$node('div','member-card hero-'+(i+1)+(member?.isMe?' own':'')); 
+   if(member){
+    const avatar=$node('span','member-avatar',member.name.slice(0,1).toUpperCase());
+    const text=$node('div','member-copy');
+    text.append($node('strong',null,member.name+(member.isMe?' (du)':'')));
+    text.append($node('span',null,'📍 Tor '+member.currentGate+' von 100'));
+    text.append($node('small',null,member.lastAttemptAt?
+     'Zuletzt kämpfte hier: '+new Date(member.lastAttemptAt).toLocaleString('de-DE'):
+     'Noch kein persönlicher Kampf gespeichert'));
+    card.append(avatar,text);
+   }else{
+    card.append($node('span','member-avatar','?'));
+    card.append($node('div','member-copy','Freier Heldenplatz'));
+   }
+   area.append(card);
+  }
+  const logged=auth();
+  const join=$('team-join');
+  join.hidden=!logged||!mapState||mapState.isMember||!mapState.canJoin;
+  join.disabled=working;
+  updateMarkers();
+  updateGateActions();
+ }
+ function previousNormal(gate){
+  for(let i=gate-1;i>=1;i--)if(i%5!==0)return i;
+  return null;
+ }
+ function updateGateActions(){
+  const button=$('gate-battle-button'),boss=$('gate-boss-button');
+  const notice=$('gate-fight-status'),pending=auth()?.user?.uid?readPending(auth().user.uid):null;
+  $('gate-retry-button').hidden=!pending;
+  $('gate-retry-button').disabled=working;
+  if(!selectedGate)return;
+  const gate=selectedGate,group=gate%10===0;
+  button.hidden=group;boss.hidden=!group;
+  if(group){
+   if(gate===10){
+    boss.hidden=false;
+    boss.href='./dog-boss.html'+roomSuffix;
+    boss.textContent='🔥 Bestehende Boss-Testarena öffnen';
+    boss.setAttribute('aria-label','Bestehende Boss-Testarena öffnen. Sie ist technisch noch Tor 1.');
+    notice.textContent='⚠️ Die bestehende Arena ist noch ein Tor-1-Testboss. Die echte Tor-10-Arena wird separat an den gemeinsamen Fortschritt angeschlossen.';
+   }else{
+    boss.hidden=true;
+    notice.textContent='🔒 Dieser Gruppenboss ist noch nicht implementiert. Sein Start wird hier freigeschaltet, sobald der Server den Kampf unterstützt.';
+   }
+   return;
+  }
+  const me=mapState?.progress;
+  const done=(gate%10===5?me?.minis:me?.normals)||[];
+  const prereq=previousNormal(gate);
+  const ready=prereq===null||me?.normals?.includes(prereq);
+  const member=!!mapState?.isMember;
+  button.disabled=working||!!pending||!member||!ready||done.includes(gate);
+  button.textContent=gate%10===5?'👹 Mini-Boss herausfordern':'⚔️ Persönlichen Kampf starten';
+  notice.textContent=pending?'⚠️ Ein früherer Kampf bei Tor '+pending.gate+
+   ' muss zuerst sicher wiederholt werden.':
+   done.includes(gate)?'✅ Dieses Tor hast du bereits besiegt.':
+   !auth()?'🔒 Melde dich mit deinem Online-Spielerprofil an, um Kämpfe zu starten.':
+   !member?'🛡️ Tritt oben zuerst der Dreier-Expedition bei.':
+   !ready?'🔒 Um Tor '+gate+' zu kämpfen, musst du zuerst das normale Tor '+
+    prereq+' besiegen. Mini-Bosse und Gruppenbosse blockieren die normalen Tore nicht.':
+   '⚔️ Bereit. Das Kampfergebnis wird vom Server berechnet und gespeichert.';
+ }
+ async function reloadMap(){
+  const account=auth()?.user?.uid;
+  const epoch=++mapRequestEpoch;
+  if(!account){
+   mapState=null;
+   setTeamStatus('🔒 Melde dich an, damit die gespeicherten Torpositionen angezeigt werden.');
+   renderMembers();return;
+  }
+  try{
+   const result=await request('GET','map',null,account);
+   if(epoch!==mapRequestEpoch||auth()?.user?.uid!==account)return;
+   mapState=result;
+   renderMembers();
+   setTeamStatus(result.isMember?
+    '✅ Positionen geladen · '+result.memberCount+'/3 Helden · Änderungen können beim Aktualisieren sichtbar werden.':
+    '🛡️ '+result.memberCount+'/3 Helden sind im Team. Tritt bei, damit dein Tor für die anderen sichtbar wird.');
+  }catch(e){
+   if(epoch!==mapRequestEpoch)return;
+   mapState=null;renderMembers();
+   setTeamStatus('⚠️ Serverpositionen momentan nicht verfügbar. Keine erfundenen Torstände angezeigt.');
+  }
+ }
+ async function joinTeam(){
+  const account=auth()?.user?.uid;
+  if(!account||working||!mapState?.canJoin)return;
+  working=true;renderMembers();setTeamStatus('🛡️ Du wirst der Expedition hinzugefügt …');
+  try{
+   const result=await request('POST','join',{},account);
+   if(auth()?.user?.uid!==account)return;
+   mapState=result;renderMembers();
+   setTeamStatus('✅ Du gehörst zur Dreier-Expedition. Dein Weg beginnt bei Tor 1.');
+  }catch(e){setTeamStatus('⚠️ Beitritt nicht bestätigt ('+e.message+'). Bitte aktualisieren.');}
+  finally{working=false;renderMembers();}
+ }
+ async function fightGate(retry=false){
+  const account=auth()?.user?.uid;
+  if(!account||working||!mapState?.isMember)return;
+  const old=readPending(account);
+  if(retry&&!old)return;
+  if(!retry&&old)return;
+  const gate=old?.gate??selectedGate;
+  if(!Number.isSafeInteger(gate)||gate%10===0)return;
+  const pending=old||{id:requestId(),gate};
+  if(!old&&!storePending(account,pending)){
+   $('gate-fight-status').textContent='⚠️ Die Aktionskennung konnte nicht gesichert werden. Kampf nicht gestartet.';
+   return;
+  }
+  working=true;updateGateActions();
+  $('gate-fight-status').textContent='⚔️ Der Server berechnet deinen Kampf bei Tor '+gate+' …';
+  try{
+   const result=await request('POST','fight',pending,account);
+   if(auth()?.user?.uid!==account)return;
+   clearPending(account);
+   mapState=result.map;
+   renderMembers();
+   const fight=result.result;
+   $('gate-fight-status').textContent=fight.win?
+    '🏆 Tor '+gate+' geschafft! Dein Sieg ist gespeichert.'+
+     (fight.type==='mini'?' Deine Mini-Boss-Belohnung wird im nächsten Ausbauschritt angebunden.':''):
+    '💀 Tor '+gate+' verloren. '+(fight.combat?.feedback?.message||
+      'Verbessere deine Ausrüstung und versuche es erneut.');
+   if(result.replayed)$('gate-fight-status').textContent+=' (Sicher wiederhergestellt)';
+   setTeamStatus('✅ Dein gespeichertes Tor wurde aktualisiert.');
+  }catch(e){
+   // Preserve the request ID after an unknown network/server error.
+   // Definitive application errors did not award the fight.
+   if(['DOG_GATE_ALREADY_WON','DOG_GATE_PREVIOUS_REQUIRED','DOG_GATE_INVALID',
+     'DOG_GATE_COOLDOWN','NOT_DOG_TEAM_MEMBER','DOG_GATE_RECEIPT_CONFLICT'].includes(e.message)){
+     clearPending(account);
+   }
+   $('gate-fight-status').textContent='⚠️ Kampf nicht bestätigt: '+e.message+
+    '. Bei unklarem Ergebnis kannst du dieselbe Aktion sicher wiederholen.';
+  }finally{working=false;updateGateActions();}
+ }
+
  const params=new URLSearchParams(location.search);
  const room=params.get('room');
  if(room&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(room)){
@@ -40,6 +258,7 @@
  function selectGate(gate,button){
   for(const selected of document.querySelectorAll('.gate[aria-pressed="true"]'))selected.setAttribute('aria-pressed','false');
   button?.setAttribute('aria-pressed','true');
+  selectedGate=gate;
   const kind=gate%10===0?'Gruppenboss':gate%10===5?'Mini-Boss':'Persönlicher Kampf';
   $('gate-detail-kicker').textContent='TOR '+gate+' VON 100 · '+kind.toUpperCase();
   $('gate-detail-title').textContent=titleFor(gate);
@@ -47,6 +266,7 @@
   $('gate-detail-future').textContent=gate===100?
    '🔒 DOG ist noch verschlossen. Es wird erst nach einem nachgewiesenen Sieg über den letzten gemeinsamen Boss freigeschaltet.':
    '🛠️ Dies ist eine Kartenvorschau. Der persönliche Fortschritt und die Kämpfe werden in einem weiteren Entwicklungsschritt mit dem Server verbunden.';
+  updateGateActions();
   if(!details.open)details.showModal();
  }
  function drawPaths(){
@@ -101,7 +321,9 @@
    type.textContent=isBoss?(gate===100?'🏰':'🐉'):isMini?'👹':'⚔️';
    type.setAttribute('aria-hidden','true');
    button.append(number,type);
+   const pins=$node('span','party-pins');pins.setAttribute('aria-hidden','true');button.append(pins);
    button.addEventListener('click',()=>selectGate(gate,button));
+   gateButtons.set(gate,button);
    nodes.push(button);grid.append(button);
   }
   content.append(grid);
@@ -123,5 +345,15 @@
  window.requestAnimationFrame(drawPaths);
  window.addEventListener('load',drawPaths,{once:true});
  $('gate-detail-close').addEventListener('click',()=>details.close());
+ $('team-refresh').addEventListener('click',()=>void reloadMap());
+ $('team-join').addEventListener('click',()=>void joinTeam());
+ $('gate-battle-button').addEventListener('click',()=>void fightGate(false));
+ $('gate-retry-button').addEventListener('click',()=>void fightGate(true));
+ window.addEventListener('spielonline-change',()=>void reloadMap());
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!working)void reloadMap();});
+ if(typeof window.setInterval==='function'){
+  window.setInterval(()=>{if(!document.hidden&&!working)void reloadMap();},60000);
+ }
+ void reloadMap();
  details.addEventListener('close',()=>{for(const selected of document.querySelectorAll('.gate[aria-pressed="true"]'))selected.setAttribute('aria-pressed','false');});
 })();
