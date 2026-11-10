@@ -204,3 +204,121 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;z-i
 .preview-bonus{width:100%;border-top:1px solid #b5a17c3c;padding-top:7px;font-size:10px;
  color:#c5d1e1;text-align:center}
 @media(max-width:420px){.upgrade-preview{padding:9px}.preview-value{min-width:65px}.preview-value strong{font-size:13px}}
+
+/* Phase A · weapon/armor evolutions: five art tiers, clear hierarchy. */
+.gear-stage-1,.gear-scene-1{--gear-gleam:#8ea5bb;--gear-aura:#7591b744}
+.gear-stage-2,.gear-scene-2{--gear-gleam:#83c6ee;--gear-aura:#399dc174}
+.gear-stage-3,.gear-scene-3{--gear-gleam:#70e5ff;--gear-aura:#4bdafa75}
+.gear-stage-4,.gear-scene-4{--gear-gleam:#d7b0ff;--gear-aura:#a765f288}
+.gear-stage-5,.gear-scene-5{--gear-gleam:#ffdc88;--gear-aura:#f9b64c99}
+.character-emblem{transition:border-color .4s,box-shadow .4s}
+.character-emblem.gear-stage-3,.character-emblem.gear-stage-4,.character-emblem.gear-stage-5{
+ border-color:var(--gear-gleam);box-shadow:inset 0 0 19px var(--gear-aura),0 0 20px var(--gear-aura)}
+.character-silhouette{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.character-silhouette img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 4px 5px #0009)}
+.hero-rank{display:inline-flex;align-items:center;justify-content:center;gap:4px;border-radius:99px;
+ border:1px solid #dfba7c94;background:linear-gradient(90deg,#573c2c92,#332b2c);
+ padding:4px 9px;margin:0 8px 4px 0;font-size:10px;letter-spacing:.08em;color:#ffe1a5;font-weight:900}
+#forge-player-note{display:inline-block}
+.gear-visual{display:inline-flex;position:relative;align-items:center;justify-content:center;flex-direction:column;
+ color:var(--gear-gleam);isolation:isolate;min-width:0}
+.gear-illustration{display:block;width:180px;height:180px;max-width:100%;object-fit:contain;
+ filter:drop-shadow(0 10px 14px #040913d9) drop-shadow(0 0 12px var(--gear-aura));
+ transition:filter .25s,transform .25s}
+.gear-fallback{font-size:65px;filter:drop-shadow(0 8px 12px #0009)}
+.gear-stage-label{display:block;white-space:nowrap;text-align:center;color:var(--gear-gleam);
+ font:900 11px/1.5 Inter,system-ui,sans-serif;letter-spacing:.11em;
+ background:#081323b8;border:1px solid var(--gear-aura);padding:4px 12px;border-radius:99px;
+ text-shadow:0 0 12px var(--gear-aura)}
+.gear-visual.compact{flex:0 0 47px;width:47px;height:47px;border-radius:9px;
+ border:1px solid var(--gear-aura);background:radial-gradient(circle,var(--gear-aura),#111927 75%)}
+.gear-visual.compact .gear-illustration{width:46px;height:46px;object-fit:contain;filter:drop-shadow(0 2px 3px #000a)}
+.gear-visual.compact .gear-fallback{font-size:28px}
+.item-choice.gear-entry{border-color:#74849c9c}
+.item-choice.gear-entry.selected{border-color:#e0bc7c;box-shadow:inset 0 0 25px #c38e5366,0 0 12px #dea85b2c}
+.item-choice.gear-entry[data-stage="4"]{border-color:#ac82d499}
+.item-choice.gear-entry[data-stage="5"]{border-color:#efcc77b0}
+.item-choice.gear-entry:hover .gear-illustration{transform:scale(1.08)}
+.gear-display{position:relative;display:grid;place-items:center;min-height:245px;margin:10px auto 7px;
+ border-radius:18px;overflow:hidden;isolation:isolate;background:
+ radial-gradient(ellipse 53% 62% at 50% 44%,var(--gear-aura),transparent 90%),
+ linear-gradient(150deg,#121d30b5,#231e2aba 52%,#0b1427b5);
+ border:1px solid #b6a0715e}
+.gear-display:before{content:"";position:absolute;inset:14px;border-radius:50%;pointer-events:none;
+ border:1px dashed #ffffff24;box-shadow:0 0 45px var(--gear-aura);transform:scale(.94)}
+.gear-display:after{content:"✦   ✧   ✦";position:absolute;left:0;right:0;top:19px;text-align:center;
+ font-size:13px;letter-spacing:3.5em;transform:translateX(1.75em);
+ color:var(--gear-gleam);opacity:.48;pointer-events:none}
+.gear-display .gear-illustration{width:206px;height:195px}
+.gear-display .gear-visual{padding:7px 0 10px}
+.gear-display.gear-scene-3,.gear-display.gear-scene-4,.gear-display.gear-scene-5{
+ box-shadow:inset 0 0 39px var(--gear-aura),0 0 17px var(--gear-aura)}
+.gear-display.gear-scene-4 .gear-illustration,.gear-display.gear-scene-5 .gear-illustration{
+ animation:gear-idle 4.5s ease-in-out infinite}
+.gear-display.gear-scene-5:before{animation:gear-halo 13s linear infinite}
+@keyframes gear-idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes gear-halo{to{transform:rotate(360deg) scale(.94)}}
+.upgrade-panel .gear-display+h2{margin-top:11px}
+.forge-workspace.forging .gear-display{animation:forge-art-strike .55s ease-in-out infinite}
+@keyframes forge-art-strike{0%,100%{filter:brightness(1)}55%{filter:brightness(1.65);box-shadow:0 0 28px #ffcf8c9f}}
+/* Phase A · result theatre: equipment gold, skills arcane, failed attempts ash. */
+.forge-result{overflow:hidden;isolation:isolate;width:min(484px,calc(100% - 20px));max-height:calc(100dvh - 24px)}
+.result-plate{overflow:hidden;isolation:isolate;padding:24px 20px 23px;
+ background:radial-gradient(ellipse 65% 45% at 50% 30%,#fcb66340,transparent),
+ linear-gradient(145deg,#28263a,#111b2d 83%)}
+.result-plate:before{content:"";position:absolute;inset:-65%;z-index:-1;opacity:.3;
+ background:repeating-conic-gradient(from 15deg,#ffe3a218 0deg 5deg,transparent 5deg 20deg);
+ pointer-events:none;animation:result-rays 20s linear infinite}
+.result-plate:after{content:"";position:absolute;width:220px;height:220px;left:calc(50% - 110px);top:73px;
+ z-index:-1;pointer-events:none;border-radius:50%;background:#f7be6c4d;filter:blur(42px)}
+.result-ornament{font-size:12px;font-weight:900;letter-spacing:.42em}
+.result-icon{font-size:24px;line-height:30px;margin:4px auto 0;color:#ffe3a3;filter:drop-shadow(0 0 10px #ffe4a8a0)}
+.result-art{min-height:130px;display:flex;align-items:center;justify-content:center;position:relative;margin:0 auto}
+.result-art .gear-illustration{width:170px;height:173px}
+.result-art .gear-visual{padding-bottom:6px}
+.result-art .gear-stage-label{font-size:10px}
+.skill-result-emblem{display:grid;place-items:center;width:114px;height:114px;border-radius:50%;
+ border:2px solid #cfa8f8aa;background:radial-gradient(circle,#855ab081,#251c44 75%);
+ font-size:71px;filter:drop-shadow(0 0 26px #976aff79)}
+.result-achievement{display:inline-block;min-height:17px;color:#ffe0a0;font-size:11px;
+ font-weight:950;letter-spacing:.17em}
+.result-plate h2{font-size:clamp(21px,5vw,30px);margin-top:5px}
+.result-plate p{margin-top:8px;font-size:13px;color:#ded6cf}
+.result-effects{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+.result-spark{position:absolute;color:#ffe6a6;opacity:0;text-shadow:0 0 16px #ffd17b;
+ font-size:27px;animation:result-spark-rise 2s ease-out both}
+.star-one{left:17%;top:50%;animation-delay:.06s}.star-two{left:80%;top:47%;animation-delay:.25s}
+.star-three{left:35%;top:67%;animation-delay:.42s}.star-four{left:67%;top:72%;animation-delay:.65s}
+.forge-result.result-equipment-success{border-color:#ffe6a2;box-shadow:0 20px 85px #000d,0 0 58px #f9bb638c}
+.forge-result.result-equipment-success .result-art{animation:result-reveal 1s cubic-bezier(.1,.9,.18,1.05) both}
+.forge-result.result-skill-success{border-color:#b789ff;box-shadow:0 20px 85px #000d,0 0 45px #bd7bff66}
+.forge-result.result-skill-success .result-plate{background:radial-gradient(ellipse at 50% 33%,#8c67e64c,transparent 60%),#131b34}
+.forge-result.result-skill-success .result-plate:after{background:#9d79ff66}
+.forge-result.result-skill-success .result-spark{color:#d6b5ff;text-shadow:0 0 12px #a76af5}
+.forge-result.result-skill-success .result-art{animation:result-reveal .9s ease-out both}
+.forge-result.result-exchange{border-color:#72bfdb}
+.forge-result.result-exchange .result-plate:after{background:#5ed9d45c}
+.forge-result.result-failure{border-color:#a06872;box-shadow:0 18px 70px #000c,0 0 25px #8e414467}
+.forge-result.result-failure .result-plate{background:radial-gradient(ellipse at 50% 34%,#6b4b5f4c,transparent 65%),#1b1c28}
+.forge-result.result-failure .result-plate:after{background:#463d4c80}
+.forge-result.result-failure .result-spark{animation:none;opacity:0}
+.forge-result.result-failure .result-art{animation:result-fail .65s ease-out both;filter:grayscale(.7) brightness(.7)}
+.forge-result.result-failure .result-achievement{color:#f6a4ad}
+.forge-result.result-failure .result-icon{color:#fdb5b5}
+.forge-result.result-failure .result-plate:before{animation:none;opacity:.1}
+@keyframes result-rays{to{transform:rotate(360deg)}}
+@keyframes result-reveal{0%{opacity:0;transform:translateY(35px) scale(.72);filter:brightness(2.4)}
+ 55%{opacity:1;transform:translateY(-8px) scale(1.1);filter:brightness(1.5)}100%{transform:none;filter:none}}
+@keyframes result-fail{0%{transform:translateX(0) scale(1.03)}25%{transform:translateX(-5px) rotate(-3deg)}
+ 50%{transform:translateX(5px) rotate(3deg)}100%{transform:none;opacity:.75}}
+@keyframes result-spark-rise{0%{opacity:0;transform:translateY(28px) scale(.2)}
+ 20%{opacity:1}70%{opacity:.9}100%{opacity:0;transform:translateY(-115px) scale(1.1)}}
+@media(max-width:780px){.gear-display{min-height:213px}.gear-display .gear-illustration{height:175px;width:185px}}
+@media(max-width:420px){.gear-visual.compact{width:35px;height:35px;flex-basis:35px}
+ .gear-visual.compact .gear-illustration{width:34px;height:34px}
+ .result-plate{padding:18px 14px 22px}.result-art .gear-illustration{height:148px;width:155px}
+ .hero-rank{margin-right:4px}.gear-stage-label{letter-spacing:.02em}}
+@media(prefers-reduced-motion:reduce){
+ .gear-display .gear-illustration,.gear-display:before,.forge-workspace.forging .gear-display,
+ .result-plate:before,.result-art,.result-spark{animation:none!important}
+}
