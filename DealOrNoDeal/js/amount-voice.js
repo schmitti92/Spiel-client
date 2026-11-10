@@ -71,6 +71,38 @@
   if(cent===0&&euros===1)return 'Ein Euro';
   return euros.toLocaleString('de-DE')+' Euro'+(cent?' und '+cent+' Cent':'');
  }
+ // Spoken amounts must contain written-out German number words. Android
+ // speech engines sometimes spell currency digits ("1 0 0 Komma 0 0")
+ // instead of saying "hundert Euro". Visual currency formatting stays intact.
+ function spellUnderThousand(value){
+  const units=['null','eins','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf','dreizehn','vierzehn','fünfzehn','sechzehn','siebzehn','achtzehn','neunzehn'];
+  const tens=['','','zwanzig','dreißig','vierzig','fünfzig','sechzig','siebzig','achtzig','neunzig'];
+  if(value<20)return units[value];
+  if(value<100){
+   const ones=value%10;
+   return ones?(ones===1?'ein':units[ones])+'und'+tens[Math.floor(value/10)]:tens[Math.floor(value/10)];
+  }
+  const hundred=Math.floor(value/100),rest=value%100;
+  return (hundred===1?'ein':units[hundred])+'hundert'+(rest?spellUnderThousand(rest):'');
+ }
+ function spellUnderMillion(value){
+  if(value<1000)return spellUnderThousand(value);
+  const thousands=Math.floor(value/1000),rest=value%1000;
+  return (thousands===1?'ein':spellUnderThousand(thousands))+'tausend'+(rest?spellUnderThousand(rest):'');
+ }
+ function spellNumber(value){
+  if(value<1000000)return spellUnderMillion(value);
+  const millions=Math.floor(value/1000000),rest=value%1000000;
+  const millionsWords=millions===1?'eine Million':spellUnderMillion(millions)+' Millionen';
+  return millionsWords+(rest?' '+spellUnderMillion(rest):'');
+ }
+ function spokenAmount(cents){
+  const euros=Math.floor(cents/100),minor=cents%100;
+  if(euros===0)return (minor===1?'Ein':spellNumber(minor))+' Cent';
+  const euroWords=euros===1?'Ein':spellNumber(euros);
+  const main=euroWords+' Euro';
+  return minor?main+' und '+(minor===1?'ein':spellNumber(minor))+' Cent':main;
+ }
  function hashSeed(s){
   let hash=2166136261;
   for(let i=0;i<s.length;i++)hash=Math.imul(hash^s.charCodeAt(i),16777619);
@@ -265,7 +297,7 @@
    if(queuedCases.length>12)queuedCases.shift();
    return;
   }
-  const words=formatAmount(amount),line=exceptional?selectLine(amount,meta):null;
+  const words=spokenAmount(amount),line=exceptional?selectLine(amount,meta):null;
   const number=Number(meta.caseNumber);
   const prefix=Number.isInteger(number)&&number>0?'Koffer '+number+'. ':'';
   const text=prefix+words+'.'+(line?' '+line:'');
@@ -288,7 +320,7 @@
  window.announceOpenedAmount=announce;
  window.stopOpenedAmountAnnouncement=stop;
  // Pure helpers are also used by regression tests, never for hidden case values.
- window.DealModeratorAudio=Object.freeze({classify,formatAmount,selectLine,shouldComment,topPrizeByCases,categories,
+ window.DealModeratorAudio=Object.freeze({classify,formatAmount,spokenAmount,selectLine,shouldComment,topPrizeByCases,categories,
   speakStory,isStoryEnabled:()=>storyEnabled&&supported,isCaseEnabled:()=>caseEnabled&&supported,
   isEnabled:()=>storyEnabled&&supported});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stop()});
