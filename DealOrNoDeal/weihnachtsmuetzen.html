@@ -225,7 +225,7 @@ async function refresh(){
  if(!user?.uid){state=null;userId='';recoverPending();render();setStatus('🔐 Für echte Gewinne bitte mit dem Spielerprofil anmelden.',true);return;}
  if(userId!==user.uid){state=null;userId=user.uid;recoverPending();}
  busy=true;render();setStatus('⏳ Server-Spielstand wird geladen …');
- try{const data=await call('/api/deal-or-no-deal/hats/me');state=data.state;reveal=null;render();
+ try{const data=await call('/api/christmas-hats/me');state=data.state;reveal=null;render();
   setStatus(pendingRequest?'⚠️ Eine Aktion ist unbestätigt. Sicher wiederholen oder aktualisieren.':'✅ Spielstand vom Server geladen. Keine dauerhafte Abfrage.',false,!pendingRequest);
  }catch(e){setStatus('⚠️ '+describeError(e),true);}
  finally{busy=false;render();}
@@ -241,7 +241,7 @@ async function action(type,index){
 async function submit(payload){
  busy=true;savePending(payload);render();setStatus('✨ Der Weihnachtsmann öffnet den Tresor …');
  try{
-  const data=await call('/api/deal-or-no-deal/hats/action','POST',payload);
+  const data=await call('/api/christmas-hats/action','POST',payload);
   state=data.state;savePending(null);
   if(payload.type==='pick'){
    reveal=data.result;
