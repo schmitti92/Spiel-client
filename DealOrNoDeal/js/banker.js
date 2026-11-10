@@ -35,6 +35,10 @@ const bankerBonusPackTypes=Object.freeze({
  large:{name:'Großes Weihnachtspaket',theme:'large'},
  premium:{name:'Premium-Weihnachtspaket',theme:'premium'}
 });
+const bankerBonusSpecialTypes=Object.freeze({
+ minigame:{name:'1 Minispiel-Gutschein',short:'Hütchen-Minispiel',icon:'🎟️',label:'🎟️ GRATIS-MINISPIEL'},
+ monster:{name:'1 Monster-Rad-Drehung',short:'Monster-Glücksrad',icon:'🎡',label:'🎡 MONSTER-RAD-BONUS'}
+});
 function bankerBonusCloseReveal(){
  clearTimeout(bankerBonusRevealTimer);bankerBonusRevealTimer=null;bankerBonusRevealUntil=0;bankerBonusClearStages();
  const reveal=$('banker-bonus-reveal');if(reveal)reveal.hidden=true;
@@ -44,15 +48,16 @@ function bankerBonusCloseReveal(){
 function bankerBonusShowReveal(h,key){
  const reveal=$('banker-bonus-reveal'),items=$('banker-bonus-reveal-items'),details=document.querySelector('#banker-call .banker-offer-details');
  if(!reveal||!items)return;
- const hammer=bankerBonusHammerTypes[h.bonusHammer],pack=bankerBonusPackTypes[h.bonusPack];
- if(!hammer&&!pack){bankerBonusCloseReveal();return}
+ const hammer=bankerBonusHammerTypes[h.bonusHammer],pack=bankerBonusPackTypes[h.bonusPack],special=bankerBonusSpecialTypes[h.bonusSpecial];
+ const bonusCount=Number(!!hammer)+Number(!!pack)+Number(!!special);
+ if(!bonusCount){bankerBonusCloseReveal();return}
  // DOM nodes are built from server-defined enum values, never untrusted HTML.
  items.replaceChildren();
- reveal.dataset.bonusType=hammer&&pack?'double':hammer?'hammer':'pack';
+ reveal.dataset.bonusType=bonusCount>=2?'double':hammer?'hammer':pack?'pack':'special';
  reveal.dataset.stage='intro';
- reveal.style.setProperty('--banker-bonus-duration',(h.bonusHammer&&h.bonusPack?7200:6200)+'ms');
+ reveal.style.setProperty('--banker-bonus-duration',(bonusCount>=2?7200:6200)+'ms');
  bankerSetText('banker-bonus-chapter','🔐 VERSCHLÜSSELTE NACHRICHT EINGEGANGEN');
- bankerSetText('banker-bonus-reveal-intro',hammer&&pack?'Der Banker legt gleich ZWEI Überraschungen obendrauf!':hammer?'Der Banker hat noch ein besonderes Werkzeug für dich!':'Der Banker hat ein exklusives Kartenpaket für dich!');
+ bankerSetText('banker-bonus-reveal-intro',bonusCount>1?'Der Banker legt gleich '+bonusCount+' Überraschungen obendrauf!':hammer?'Der Banker hat noch ein besonderes Werkzeug für dich!':pack?'Der Banker hat ein exklusives Kartenpaket für dich!':special?.short+' als zusätzliches Geschenk vom Banker!');
  bankerSetText('banker-bonus-reveal-offer','💰 '+eur(h.offer)+' + EXTRABONUS');
  if(hammer){
   const item=document.createElement('div');item.className='banker-bonus-reveal-item hammer';
@@ -70,9 +75,16 @@ function bankerBonusShowReveal(h,key){
   const label=document.createElement('small');label.textContent='🎄 KARTENPACK-ANGEBOT';
   item.append(art,name,label);items.append(item);
  }
- bankerSetText('banker-bonus-reveal-head',hammer&&pack?'DOPPELTER BONUS!':hammer?'HAMMER-ANGEBOT!':'KARTENPACK-ANGEBOT!');
+ if(special){
+  const item=document.createElement('div');item.className='banker-bonus-reveal-item special '+h.bonusSpecial;
+  const art=document.createElement('div');art.className='banker-bonus-special-art';art.textContent=special.icon;art.setAttribute('aria-hidden','true');
+  const name=document.createElement('strong');name.textContent=special.name;
+  const label=document.createElement('small');label.textContent=special.label;
+  item.append(art,name,label);items.append(item);
+ }
+ bankerSetText('banker-bonus-reveal-head',bonusCount>=2?'✦ '+bonusCount+' EXTRABONI!':hammer?'HAMMER-ANGEBOT!':pack?'KARTENPACK-ANGEBOT!':h.bonusSpecial==='monster'?'MONSTER-RAD-ANGEBOT!':'MINISPIEL-GUTSCHEIN!');
  reveal.hidden=false;if(details)details.classList.add('bonus-revealing');
- const duration=hammer&&pack?7200:6200;
+ const duration=bonusCount>=2?7200:6200;
  bankerBonusRevealUntil=Date.now()+duration;
  clearTimeout(bankerBonusRevealTimer);bankerBonusClearStages();
  const stage=(delay,name,spoken)=>bankerBonusStageTimers.push(setTimeout(()=>{
@@ -82,8 +94,8 @@ function bankerBonusShowReveal(h,key){
  },delay));
  stage(850,'spotlight',null);
  bankerBonusStageTimers.push(setTimeout(()=>{if(bankerBonusRevealKey===key&&!reveal.hidden)bankerSetText('banker-bonus-chapter','🔓 DIE BANK GIBT IHR GEHEIMNIS PREIS …')},1050));
- stage(2350,'reward',hammer&&pack?'Eine sensationelle Überraschung. Gleich zwei Extras vom Banker!':hammer?'Der Banker hat einen geheimen Hammer für dich!':'Der Banker hat ein geheimes Kartenpaket für dich!');
- bankerBonusStageTimers.push(setTimeout(()=>{if(bankerBonusRevealKey===key&&!reveal.hidden)bankerSetText('banker-bonus-chapter',hammer&&pack?'✨ ZWEI EXKLUSIVE EXTRAS ENTHÜLLT':hammer?'🔨 EXKLUSIVER HAMMER ENTHÜLLT':'🎁 EXKLUSIVES KARTENPAKET ENTHÜLLT')},2450));
+ stage(2350,'reward',bonusCount>1?'Eine sensationelle Überraschung. Gleich '+bonusCount+' Extras vom Banker!':hammer?'Der Banker hat einen geheimen Hammer für dich!':pack?'Der Banker hat ein geheimes Kartenpaket für dich!':h.bonusSpecial==='monster'?'Der Banker schenkt dir eine Monster-Rad-Drehung!':'Der Banker schenkt dir einen Minispiel-Gutschein!');
+ bankerBonusStageTimers.push(setTimeout(()=>{if(bankerBonusRevealKey===key&&!reveal.hidden)bankerSetText('banker-bonus-chapter',bonusCount>1?'✨ '+bonusCount+' EXKLUSIVE EXTRAS ENTHÜLLT':hammer?'🔨 EXKLUSIVER HAMMER ENTHÜLLT':pack?'🎁 EXKLUSIVES KARTENPAKET ENTHÜLLT':special.icon+' '+special.name+' ENTHÜLLT')},2450));
  stage(duration-1800,'deal',null);
  bankerBonusStageTimers.push(setTimeout(()=>{if(bankerBonusRevealKey===key&&!reveal.hidden)bankerSetText('banker-bonus-chapter','💰 JETZT LIEGT DAS GESAMTANGEBOT AUF DEM TISCH')},duration-1800));
  bankerBonusRevealTimer=setTimeout(()=>{if(bankerBonusRevealKey===key)bankerBonusCloseReveal()},duration);
@@ -159,6 +171,16 @@ function updateBankerCall(){
   }else delete hammerBonus.dataset.hammer;
  }
 
+ const specialBonus=$('banker-special-bonus');
+ if(specialBonus){
+  const special=bankerBonusSpecialTypes[h.bonusSpecial];
+  specialBonus.hidden=!special;
+  if(special){
+   specialBonus.dataset.kind=h.bonusSpecial;
+   bankerSetText('banker-special-bonus-icon',special.icon);
+   bankerSetText('banker-special-bonus-name',special.name);
+  }else delete specialBonus.dataset.kind;
+ }
  const remainingCases=(g.caseCount||26)-(g.openedAmounts?.length||0);
  const finalChoice=remainingCases<=3;
  $('final-choice-compare').hidden=!finalChoice;
@@ -222,6 +244,7 @@ function revealVotesAfterAll(){
   const extras=[];
   if(h.bonusPack)extras.push('🎁 '+({small:'Normales Kartenpaket',large:'Gold-Kartenpaket',premium:'Premium-Kartenpaket'})[h.bonusPack]);
   if(h.bonusHammer)extras.push('🔨 '+({single:'Einfacher Hammer',double:'Doppelhammer',lucky:'Glückshammer'})[h.bonusHammer]);
+  if(h.bonusSpecial&&bankerBonusSpecialTypes[h.bonusSpecial])extras.push(bankerBonusSpecialTypes[h.bonusSpecial].icon+' '+bankerBonusSpecialTypes[h.bonusSpecial].name);
   if(extras.length){
    const bonus=document.createElement('div');
    bonus.className='deal-accepted-extras';
