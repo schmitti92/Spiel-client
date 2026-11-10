@@ -117,6 +117,25 @@
   $('boss-hp-track').setAttribute('aria-valuenow',String(view?.bossHp??0));
   $('boss-hp-fill').style.width=Math.max(0,Math.min(100,percent))+'%';
   $('boss-attempt').textContent=String(view?.attempt||1);
+  // Boss phases and telegraphed attacks are provided by the server.
+  const bossPhase=Math.min(3,Math.max(1,Number(view?.bossPhase)||1));
+  const charging=!!view?.bossCharged&&view?.phase==='fighting';
+  $('boss-phase-status').dataset.phase=String(bossPhase);
+  $('boss-art-stage').dataset.phase=String(bossPhase);
+  $('boss-phase-label').textContent='PHASE '+bossPhase+' VON 3';
+  $('boss-phase-name').textContent=view?.bossPhaseName||
+   ['Der erwachte Wächter','Die Glut erwacht','Das letzte Inferno'][bossPhase-1];
+  $('boss-telegraph').textContent=view?.bossTelegraph||
+   '⚔️ Der Aschewächter beobachtet die Gruppe.';
+  $('boss-telegraph').classList.toggle('is-warning',charging);
+  $('boss-art-stage').classList.toggle('boss-charging',charging);
+  $('boss-monster').classList.toggle('boss-monster-inferno',
+   bossPhase===3&&view?.phase==='fighting');
+  $('boss-tactical-tip').textContent=charging?
+   '🛡️ Jetzt „Verteidigen“ wählen: Die Explosion trifft den nächsten handelnden Helden.':
+   bossPhase===3?'🔥 Im Inferno sind Gegenschläge stärker – achtet auf eure Lebenspunkte.':
+   bossPhase===2?'🔥 Unter 50 % Bossleben lädt der Wächter regelmäßig eine Explosion auf.':
+   '🛡️ Wenn der Wächter glüht, kann der nächste Held mit „Verteidigen“ reagieren.';
   renderTeam();
   const defeat=!!view&&view.phase==='cooldown';
   const victory=!!view&&view.phase==='victory';
@@ -221,6 +240,10 @@
     payload.result?.victory?'🏆 Der Aschewächter wurde besiegt!':
     op.command==='restart'?'⚔️ Versuch '+payload.attempt+': Der gleiche Boss startet wieder mit vollen LP.':
     op.command==='join'?'🛡️ Du bist der Heldengruppe beigetreten!':
+    payload.result?.chargedAttack?'🔥 Flammenexplosion! '+
+     num(payload.result.retaliation)+' LP Gegenschaden – '+num(payload.result.damage)+' Schaden am Boss.':
+    payload.result?.phaseChanged?'🔥 Bossphase '+payload.result.bossPhase+' beginnt! '+
+     num(payload.result.damage)+' Schaden verursacht.':
     '⚔️ '+num(payload.result?.damage)+' Schaden verursacht!','good');
   }catch(e){
    if(uid!==account||epoch!==session)return;
