@@ -108,6 +108,67 @@ export function directedPoint(draft,selection,dx,dy,{step=32}={}){
   const point=exactDirectedPoint(predecessor.point,dx,dy,step);
   return point?{...point,anchor:predecessor.point,from:predecessor.index,dx,dy}:null;
 }
+/**
+ * Re-space a previously drawn straight or diagonal run in a single edit.
+ * Anchor field remains fixed, followed by 1–8 fields at identical Euclidean
+ * distance. Never changes the numbering or any other field. All-or-nothing.
+ * Symmetry applies the same run to the corresponding four colour sectors.
+ */
+export function alignTrackRun(draft,selection,{
+  dx=1,dy=0,step=32,count=3,symmetry=false
+}={}){
+ if(!selectedValid(selection)||selection.kind!=='track')throw Error('Wähle ein vorhandenes Lauffeld als Anfang aus.');
+ if(!Number.isInteger(count)||count<1||count>8)throw Error('Bitte 1 bis 8 folgende Felder wählen.');
+ normaliseStep(step);
+ if(!EIGHT_DIRECTIONS.some(d=>d.dx===dx&&d.dy===dy))throw Error('Nur acht Richtungen sind erlaubt.');
+ const start=selection.index;
+ if(start+count>63)throw Error('Der Abschnitt würde über Feld 63 hinausreichen. Wähle einen früheren Startpunkt.');
+ if(!draft.track[start])throw Error('Das Ausgangsfeld ist noch nicht gesetzt.');
+ const sectors=symmetry?[0,1,2,3]:[Math.floor(start/16)];
+ const local=start%16;
+ if(symmetry&&local+count>=16)throw Error('Gespiegelte Abschnitte dürfen nicht über einen Farbwechsel hinausgehen.');
+ const next=clone(draft);
+ const changed=new Set();
+ const candidates=[];
+ const baseSeat=Math.floor(start/16);
+ const norm=Math.hypot(dx,dy);
+ for(const seat of sectors){
+   const idx=symmetry?seat*16+local:start;
+   const anchor=next.track[idx];
+   if(!anchor)throw Error('Das Ausgangsfeld '+idx+' ist noch nicht gesetzt.');
+   const turn=symmetry?((seat-baseSeat+4)%4):0;
+   const rotated=rotatePoint({x:380+dx,y:380+dy},turn);
+   const stepx=step*(rotated.x-380)/norm,stepy=step*(rotated.y-380)/norm;
+   for(let i=1;i<=count;i++){
+     const x=Math.round((anchor.x+stepx*i)*10)/10;
+     const y=Math.round((anchor.y+stepy*i)*10)/10;
+     if(x<30||x>730||y<30||y>730)throw Error('Das Feld '+(idx+i)+' würde außerhalb der Spielfläche liegen.');
+     changed.add(idx+i);
+     candidates.push({index:idx+i,point:{x,y}});
+   }
+ }
+ const untouched=[];
+ for(let i=0;i<64;i++)if(next.track[i]&&!changed.has(i))untouched.push({id:'track '+i,point:next.track[i]});
+ for(const kind of ['goals','homes'])for(let seat=0;seat<4;seat++)for(let i=0;i<4;i++){
+   const p=next[kind][seat][i];
+   if(p)untouched.push({id:kind+' '+seat+'-'+i,point:p});
+ }
+ // Two equal-radius fields must not land on an existing unrelated field.
+ for(const candidate of candidates){
+   for(const other of untouched){
+     if(Math.hypot(candidate.point.x-other.point.x,candidate.point.y-other.point.y)<23){
+       throw Error('Feld '+candidate.index+' würde '+other.id+' überlappen. Bitte andere Richtung oder Feldanzahl wählen.');
+     }
+   }
+ }
+ for(let i=0;i<candidates.length;i++)for(let j=i+1;j<candidates.length;j++){
+   if(Math.hypot(candidates[i].point.x-candidates[j].point.x,candidates[i].point.y-candidates[j].point.y)<23)
+     throw Error('Die korrigierten Felder würden sich überlappen.');
+ }
+ for(const item of candidates)next.track[item.index]=item.point;
+ return next;
+}
+
 export function measureStepDistances(draft,step,{tolerance=.25}={}){
   normaliseStep(step);
   const edges=[];
