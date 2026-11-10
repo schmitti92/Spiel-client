@@ -165,7 +165,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
   <div class="loot-counter risk"><small>🎒 Im Risiko</small><strong id="risk-count">0</strong></div>
   <div class="loot-counter"><small>💰 Spielgeld im Gewinn</small><strong id="cash-total">0 €</strong></div>
  </div>
- <div class="progress-line"><span>🎁 Mindestens <strong>2 von 3</strong> sicher</span><span>💣 Bombenchance: <strong id="bomb-chance">10 %</strong></span><span id="next-checkpoint">· Nächster Checkpoint: Raum 3</span></div>
+ <div class="progress-line"><span>🎁 Mindestens <strong>2 von 3</strong> sicher</span><span>💣 Bombenchance: <strong id="bomb-chance">10 %</strong></span><span id="next-checkpoint">· Nächster Checkpoint: Raum 5</span></div>
  <div id="last-result" class="last-result" hidden></div>
  <div id="ending" class="ending" hidden></div>
  <div id="actions" class="actions">
@@ -176,7 +176,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
   <button id="retry" class="action secondary" type="button" hidden>↻ Letzte Aktion sicher wiederholen</button>
  </div>
  <p id="hats-locked" class="instructions" hidden>🔒 Dein kostenloser Gutschein wurde bereits eingesetzt. Weitere Spielgutscheine kannst du später im Weihnachts-Event freischalten. <a href="./weihnachten.html?view=hats" id="hats-voucher-back">Zur Gutscheinübersicht</a></p>
- <p class="instructions">Ein Tipp auf eine Mütze genügt. Du kannst jederzeit kassieren. Gesichert wird nach Raum 3, 5, 7, 9, 12, 15 und 18.</p>
+ <p class="instructions">Ein Tipp auf eine Mütze genügt. Du kannst jederzeit kassieren. Gesichert wird nach Raum 5, 10 und 15; in Raum 20 folgt die endgültige Auszahlung. Die Räume 3, 6, 9, 12, 15 und 18 sind garantiert bombenfrei.</p>
  <div class="inventory">
   <div class="panel"><h3>🛡️ Bereits gesichert</h3><div id="secured" class="prizes"><span class="empty">Noch keine Belohnungen gesichert.</span></div></div>
   <div class="panel"><h3>🎒 Noch auf dem Spiel</h3><div id="pending" class="prizes"><span class="empty">Hier erscheinen deine neuen Gewinne.</span></div></div>
@@ -402,7 +402,7 @@ function finishReveal(){
 function renderTiers(active,checkpoint,cleared){
  const root=$('tiers');root.replaceChildren();
  for(let i=1;i<=(state?.maxRoom||10);i++){
-  const isCheckpoint=i===3||i===7||(state?.checkpoints||[]).includes(i);
+  const isCheckpoint=(state?.checkpoints||[3,7]).includes(i);
   const d=document.createElement('div');
   d.className='tier'+(i===active?' on':'')+(i<=checkpoint?' done':'')+(i>checkpoint&&i<=cleared?' cleared':'')+(isCheckpoint?' checkpoint-cell':'');
   d.setAttribute('role','img');
@@ -454,10 +454,10 @@ function render(){
  $('subtitle').textContent=revealPhase==='suspense'?'🎬 Deine Wahl steht fest. Welche Mütze hast du erwischt?':
   revealPhase==='chosen'?'🎩 Die gewählte Mütze hebt sich langsam …':
   revealPhase==='shown'?'✨ Jetzt zeigen sich auch die beiden anderen Mützen.':
-  finished?'🏆 Dieser Durchlauf ist beendet.':s?'Wähle eine Mütze! Mindestens zwei sind sicher.':'Starte dein Weihnachtsabenteuer!';
+  finished?'🏆 Dieser Durchlauf ist beendet.':s?(s.bombOdds===0?'🎁 BONUSRAUM: Alle drei Mützen sind garantiert sicher!':'Wähle eine Mütze! Mindestens zwei sind sicher.'):'Starte dein Weihnachtsabenteuer!';
  const presented=showBeforeState&&['suspense','chosen'].includes(revealPhase)?showBeforeState:s;
  const checkpoint=presented?.checkpoint||0;
- const cleared=presented?(presented.status==='playing'?presented.room-1:presented.summary?.reason==='completed'?10:presented.summary?.reason==='bomb'?presented.room-1:Math.max(0,presented.room-1)):0;
+ const cleared=presented?(presented.status==='playing'?presented.room-1:presented.summary?.reason==='completed'?limit:presented.summary?.reason==='bomb'?presented.room-1:Math.max(0,presented.room-1)):0;
  renderTiers(roomNumber,checkpoint,cleared);
  const banner=$('stage-banner'),zone=roomNumber<=3?'easy':roomNumber<=9?'medium':roomNumber<=15?'jackpot':'final';
  $('hats-stage').dataset.zone=zone;
@@ -477,10 +477,10 @@ function render(){
  $('bomb-chance').textContent=s?.bombOdds==null?'–':s.bombOdds+' %';
  const latest=s?.lastReveal,previous=$('last-result');
  previous.hidden=!latest||!!reveal;
- if(latest&&!reveal)previous.textContent='Zuletzt in Raum '+latest.room+': '+(latest.type==='bomb'?'💥 Bombe':latest.superLuck?'🌟 Superglück':latest.type==='super'?'👑 Supergeschenk':'🎁 Geschenk')+((latest.room===3||latest.room===7)&&latest.type!=='bomb'?' · 🛡️ Checkpoint gesichert!':'');
+ if(latest&&!reveal)previous.textContent='Zuletzt in Raum '+latest.room+': '+(latest.type==='bomb'?'💥 Bombe':latest.superLuck?'🌟 Superglück':latest.type==='super'?'👑 Supergeschenk':'🎁 Geschenk')+((s?.checkpoints||[3,7]).includes(latest.room)&&latest.type!=='bomb'?' · 🛡️ Checkpoint gesichert!':'');
  document.body.classList.toggle('show-bomb',revealPhase==='shown'&&reveal?.type==='bomb');
  document.querySelector('.loot-counter.secure').classList.toggle('checkpoint-pulse',
-  revealPhase==='shown'&&reveal?.type!=='bomb'&&[3,7].includes(reveal?.room));
+  revealPhase==='shown'&&reveal?.type!=='bomb'&&(s?.checkpoints||[3,7]).includes(reveal?.room));
  const hats=$('hats');hats.replaceChildren();
  hats.classList.toggle('stage-suspense',revealPhase==='suspense');
  hats.classList.toggle('stage-opening',revealPhase==='chosen');
@@ -496,7 +496,7 @@ function render(){
   revealPhase==='chosen'?'Eine Mütze wird geöffnet – die anderen bleiben noch verdeckt':
   revealPhase==='shown'?'Alle drei Mützen sind aufgedeckt':'';
 
- const roomLine=roomNumber===3||roomNumber===7?'Der nächste sichere Schritt bringt den Checkpoint!':
+ const roomLine=(s?.bombOdds===0)?'🎁 BONUSRAUM! Alle drei Mützen enthalten garantiert Gewinne.':
   roomNumber>=8?'In dieser Kammer warten die legendären Schätze.':'Mindestens zwei Mützen sind sicher, mit etwas Glück alle drei.';
  const last=s?.lastReveal;
  const comment=revealPhase==='suspense'?'Deine Wahl steht fest …':
@@ -511,12 +511,12 @@ function render(){
   revealPhase==='chosen'?'Die Mütze hebt sich … noch ein kleines Stück … gleich sehen wir den Inhalt!':
   revealPhase==='shown'&&reveal?.type==='bomb'?'Oh nein! Der Nordpol-Tresor ist explodiert. Gut, dass wir die Checkpoints haben.':
   revealPhase==='shown'&&reveal?.superLuck?'Der Weihnachtsmann persönlich kann es nicht fassen! Was für ein sagenhafter Treffer!':
-  revealPhase==='shown'&&[3,7].includes(reveal?.room)&&reveal?.type!=='bomb'?'Meine Güte! Der Checkpoint ist erreicht. Diese Schätze kann dir niemand mehr nehmen!':
+  revealPhase==='shown'&&(s?.checkpoints||[3,7]).includes(reveal?.room)&&reveal?.type!=='bomb'?'Meine Güte! Der Checkpoint ist erreicht. Diese Schätze kann dir niemand mehr nehmen!':
   revealPhase==='shown'&&reveal?.type==='super'?'Jetzt wird es gefährlich schön! Ein Supergeschenk nach dem anderen …':
   finished?'Eine großartige Weihnachts-Jackpot-Show. Schau dir deine Schätze an!':
   roomNumber>=16?'Hier oben werden die Hände zittrig. Willst du wirklich noch eine Mütze riskieren?':
   roomNumber>=4?'Du bist in der Goldkammer. Jeder Griff könnte die Schatztruhe füllen. Oder leeren.':
-  roomNumber===3?'Jetzt heißt es Nerven behalten: Ein Treffer, und die erste Sicherung ist erreicht.':
+  roomNumber===5?'Jetzt heißt es Nerven behalten: Ein Treffer, und die erste Sicherung ist erreicht.':
   'Noch ist alles offen. Such dir eine Mütze aus – aber vertraue niemals einem Weihnachtsmann!';
  $('story-speech').textContent=voice;
  $('hats').hidden=!s||finished&&!reveal;
@@ -543,7 +543,7 @@ function render(){
  if(settledVisible){
   ending.replaceChildren();
   const title=document.createElement('h2'),reason=s.summary?.reason;
-  title.textContent=reason==='bomb'?'💥 Die Bombe hat zugeschlagen!':reason==='completed'?'👑 Alle zehn Räume geschafft!':DEMO?'🧪 Probegewinne gesammelt!':'💰 Gewinne erfolgreich kassiert!';
+  title.textContent=reason==='bomb'?'💥 Die Bombe hat zugeschlagen!':reason==='completed'?'👑 Alle '+(s.maxRoom||20)+' Räume geschafft!':DEMO?'🧪 Probegewinne gesammelt!':'💰 Gewinne erfolgreich kassiert!';
   const p=document.createElement('p');
   const awarded=s.summary?.awarded||[],lost=s.summary?.lost||[];
   const count=awarded.reduce((n,g)=>n+(g.items||[]).length,0);
@@ -586,7 +586,7 @@ function renderFinalShow(rewards,container,reason,lost){
  else{const note=document.createElement('p');note.className='trophy-headline';note.textContent='Noch keine Beute gesichert – die nächste Runde wartet!';container.append(note);}
  if(reason==='completed'){
   const praise=document.createElement('p');praise.className='trophy-headline';
-  praise.textContent='👑 Alle zehn Räume überstanden. Die Nordpol-Schatzkammer gehört dir!';container.append(praise);
+  praise.textContent='👑 Alle '+(state?.maxRoom||20)+' Räume überstanden. Die Nordpol-Schatzkammer gehört dir!';container.append(praise);
  }else if(reason==='bomb'&&lost.length){
   const warning=document.createElement('p');warning.className='trophy-headline';
   warning.textContent='💣 Verloren seit dem Checkpoint: '+lost.reduce((n,g)=>n+qty(g.items||[]),0)+' Gegenstände.';container.append(warning);
