@@ -6,7 +6,7 @@
  const stages=['intro','banker','turn','climax','final'];
  const chapterNumbers=Object.freeze({intro:1,banker:2,turn:3,climax:4,final:5});
  const prefix='deal-moderator-story-v1:';
- let currentGame=null,currentId=null,played=new Set(),retryTimer=null,lastAcceptedAt=0;
+ let currentGame=null,currentId=null,played=new Set(),retryTimer=null,lastAcceptedAt=0,queuedStage=null;
  function key(id){return prefix+String(id)}
  function restore(id){
   let saved=null;
@@ -60,10 +60,11 @@
    currentGame=null;clearRetry();return;
   }
   if(game.id!==currentId){
-   currentId=game.id;clearRetry();restore(game.id);
+   currentId=game.id;clearRetry();queuedStage=null;restore(game.id);
   }
   currentGame=game;
   if(document.hidden||!root.DealModeratorAudio?.isEnabled?.()||!root.DealModeratorStories)return;
+  if(queuedStage!==null)return;
   if(game.phase==='final'||game.phase==='done'){
    if(played.has('final')||!stageReady('final',game))return;
   }else if(game.phase!=='open')return;
@@ -77,11 +78,23 @@
    if(played.has(stage))continue;
    const part=root.DealModeratorStories.chapter(game.id,stage,game);
    if(!part)continue;
+   const gameId=game.id;
    const accepted=root.DealModeratorAudio.speakStory(part.text,{
-    title:part.title,chapter:chapterNumbers[stage],gameId:game.id
+    title:part.title,chapter:chapterNumbers[stage],gameId,
+    // A queued chapter can be pre-empted by the one-cent/jackpot announcement.
+    // Save completion in sessionStorage only when speech really STARTS.
+    onStart:()=>{
+     if(currentId!==gameId)return;
+     queuedStage=null;
+     played.add(stage);lastAcceptedAt=Date.now();persist();
+    },
+    onDiscard:()=>{
+     if(currentId!==gameId||queuedStage!==stage)return;
+     queuedStage=null;retryIn(1800);
+    }
    });
    if(accepted){
-    played.add(stage);lastAcceptedAt=Date.now();persist();
+    if(!played.has(stage))queuedStage=stage;
     return;
    }
    // The current audio channel is busy; retry at the next idle notification.
