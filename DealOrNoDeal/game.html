@@ -186,6 +186,14 @@
  box-shadow:none;
  will-change:transform;
 }
+/* Match winner's wheel only: seven Gold sectors (70%), three Premium (30%).
+   The 1-cent wheel remains on its original independent 40/50/10 odds. */
+#cent-reward.final-dual-active .cent-wheel {
+ background: transparent url("assets/christmas_final_wheel_70_30.svg") center / contain no-repeat;
+}
+#cent-reward .cent-pack-legend-final{display:none}
+#cent-reward.final-dual-active .cent-pack-legend-default{display:none}
+#cent-reward.final-dual-active .cent-pack-legend-final{display:flex}
 /* Christmas studio artwork stays stationary behind the rotating wheel. */
 #cent-reward .cent-reward-card{
  background:linear-gradient(180deg,rgba(8,13,31,.28),rgba(12,10,30,.50)),url("assets/weihnachts_event/file_0000000030448210ac11e0de2fdf13c3.png") center center / cover no-repeat;
@@ -196,7 +204,7 @@
 #cent-reward .cent-wheel-wrap{overflow:visible}
 #cent-reward .cent-wheel-pointer{z-index:5;top:-21px;filter:drop-shadow(0 3px 5px #251309)}
 </style>
-<div id="cent-wheel-stage" class="cent-wheel-stage" hidden><div class="cent-wheel-heading">✨ Das große Sieger-Doppelglücksrad ✨</div><div class="final-dual-wheels"><div class="final-dual-pack"><div class="final-dual-label">1 · 🎁 KARTENPAKET</div><div class="cent-wheel-wrap"><div class="cent-wheel-pointer">▼</div><div id="cent-wheel" class="cent-wheel" role="img" aria-label="Weihnachts-Glücksrad mit vier Normal-, fünf Gold- und einem Premium-Feld"></div></div><div class="cent-pack-legend"><span>🎁 <strong>Normal</strong><small>40 %</small></span><span>🥇 <strong>Gold</strong><small>50 %</small></span><span>💎 <strong>Premium</strong><small>10 %</small></span></div><button id="cent-wheel-spin" class="cent-wheel-spin" type="button">🎡 JETZT DREHEN</button><div id="cent-wheel-status" class="cent-wheel-status" aria-live="polite">Bereit? Drücke auf „Jetzt drehen“!</div></div><div id="final-dual-hammer" class="final-dual-hammer" hidden><div class="final-dual-label">2 · 🔨 HAMMER</div><div class="final-dual-hammer-wrap"><div id="final-dual-hammer-disc" class="final-dual-hammer-disc"></div><div class="final-dual-pointer">▼</div></div><p id="final-dual-hammer-status">🔒 Wird nach dem Kartenpaket automatisch gedreht</p></div></div></div><div id="cent-reveal-stage" class="cent-reveal-stage" hidden><div class="cent-reward-pack" id="cent-reward-icon">🎁</div><div class="cent-reward-name" id="cent-reward-name">Dein Geschenk wird enthüllt …</div>
+<div id="cent-wheel-stage" class="cent-wheel-stage" hidden><div class="cent-wheel-heading">✨ Das große Sieger-Doppelglücksrad ✨</div><div class="final-dual-wheels"><div class="final-dual-pack"><div class="final-dual-label">1 · 🎁 KARTENPAKET</div><div class="cent-wheel-wrap"><div class="cent-wheel-pointer">▼</div><div id="cent-wheel" class="cent-wheel" role="img" aria-label="Weihnachts-Glücksrad"></div></div><div class="cent-pack-legend cent-pack-legend-default"><span>🎁 <strong>Normal</strong><small>40 %</small></span><span>🥇 <strong>Gold</strong><small>50 %</small></span><span>💎 <strong>Premium</strong><small>10 %</small></span></div><div class="cent-pack-legend cent-pack-legend-final"><span>🥇 <strong>Gold</strong><small>70 %</small></span><span>💎 <strong>Premium</strong><small>30 %</small></span></div><button id="cent-wheel-spin" class="cent-wheel-spin" type="button">🎡 JETZT DREHEN</button><div id="cent-wheel-status" class="cent-wheel-status" aria-live="polite">Bereit? Drücke auf „Jetzt drehen“!</div></div><div id="final-dual-hammer" class="final-dual-hammer" hidden><div class="final-dual-label">2 · 🔨 HAMMER</div><div class="final-dual-hammer-wrap"><div id="final-dual-hammer-disc" class="final-dual-hammer-disc"></div><div class="final-dual-pointer">▼</div></div><p id="final-dual-hammer-status">🔒 Wird nach dem Kartenpaket automatisch gedreht</p></div></div></div><div id="cent-reveal-stage" class="cent-reveal-stage" hidden><div class="cent-reward-pack" id="cent-reward-icon">🎁</div><div class="cent-reward-name" id="cent-reward-name">Dein Geschenk wird enthüllt …</div>
 <div id="cent-reward-cards" class="cent-reward-cards"></div><div id="cent-special-overlay" class="cent-special-overlay" hidden><span id="cent-special-new" class="cent-special-new" hidden>✨ NEU ENTDECKT! ✨</span><div class="cent-special-burst">✦ ✧ ✦</div><div id="cent-special-tier" class="cent-special-tier"></div><div class="cent-special-frame"><img id="cent-special-art" alt="Besondere gezogene Weihnachtskarte"></div><div id="cent-special-name" class="cent-special-name"></div><div id="cent-special-owner" class="cent-special-owner"></div></div></div><p id="cent-reward-credit">Die Karten sind bereits sicher gespeichert.</p>
 <button id="cent-reward-close" type="button">🎁 Weiter zum Spiel</button></div></div>
 <script>
@@ -220,6 +228,9 @@
   const awardedCards=Array.isArray(reward.revealed)?reward.revealed:[];
   const newCards=awardedCards.filter(card=>card?.isNew===true);
   const duplicateOnly=awardedCards.length>0&&!newCards.length;box.classList.toggle('final-dual-active',isFinal);document.getElementById('final-dual-hammer').hidden=!isFinal;activeWheelReward=reward;activeWheelKind=kind;finalWheelStarted=false;
+  wheel.setAttribute('aria-label',isFinal
+   ?'Sieger-Glücksrad mit sieben Gold- und drei Premium-Feldern: 70 Prozent Gold, 30 Prozent Premium'
+   :'Weihnachts-Glücksrad: 40 Prozent Normal, 50 Prozent Gold, 10 Prozent Premium');
   if(isFinal)window.DealFinalDualWheel?.reset(reward);
   sequence++;const current=sequence;
   box.dataset.reward=reward.id;box.dataset.stage=directBankerPack?'reveal':'wheel';box.hidden=false;
@@ -240,9 +251,11 @@
   if(isFinal&&reward.uid===uid)setTimeout(()=>{if(sequence===current&&!box.hidden&&!finalWheelStarted&&!spinButton.disabled)startWheel()},2200);
   wheel.style.transition='none';wheel.style.transform='rotate(0deg)';
   const pack=String(reward.packId||'small').toLowerCase();
-  // The uploaded artwork has gold at 0°, normal at 36° and premium at 180°.
-  // The fixed pointer is at 12 o'clock; rotate the selected segment underneath it.
-  const targetAngle=pack==='large'?0:pack==='premium'?180:36;
+  // The winner wheel uses seven Gold sectors (0–252°) and three Premium
+  // sectors (252–360°), measured clockwise from the fixed top pointer.
+  // A separate uploaded legacy wheel remains unchanged for 1-cent rewards.
+  const targetAngle=isFinal?(pack==='premium'?306:126)
+   :(pack==='large'?0:pack==='premium'?180:36);
   // Server outcome is authoritative; the wheel is a presentation, not a second random draw.
   const angle=360*7-targetAngle;
   const christmasArt=[
