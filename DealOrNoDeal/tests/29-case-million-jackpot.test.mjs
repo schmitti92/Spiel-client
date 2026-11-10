@@ -50,7 +50,7 @@ test('Joker UI accepts case 29 and game resources are reloaded without stale cac
  assert.match(peek,/for\(let i=0;i<caseCount\(\);i\+\+\)/);
  assert.match(peek,/p\.case<caseCount\(\)/);
  for(const path of ['core','app','banker','finale','broadcast','deluxe-director','peek-joker']){
-  assert.match(html,new RegExp('js/'+path+'\\.js\\?v='+(path==='peek-joker'?'20261110-dual-own-opponents-v2':path==='app'?'20261110-match-stories-v1':'20261109-'+(path==='banker'?'banker-real-packs-v1':path==='finale'?'personal-cases-show-v2':'29cases-10m'))),'cache-bust '+path);
+  assert.match(html,new RegExp('js/'+path+'\\.js\\?v='+(path==='peek-joker'?'20261110-dual-own-opponents-v2':path==='banker'?'20261110-split-audio-v2':path==='app'?'20261110-match-stories-v1':'20261109-'+(path==='banker'?'banker-real-packs-v1':path==='finale'?'personal-cases-show-v2':'29cases-10m'))),'cache-bust '+path);
  }
  for(const path of ['cases','broadcast'])assert.match(html,new RegExp('css/'+path+'\\.css\\?v=20261109-29cases-10m'));
  for(const source of [app,banker,broadcast,finale,peek,director])assert.doesNotThrow(()=>new Script(source));
