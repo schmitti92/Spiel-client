@@ -25,6 +25,7 @@ nav .back{padding:9px 13px;border:1px solid #f7d99580;background:#181b3ab3;borde
 nav .tools{display:flex;gap:7px}
 nav button{padding:9px 13px;color:#fff8e0;border:1px solid #f7d99580;background:#181b3ab3;border-radius:11px}
 .hero{text-align:center;padding:18px 8px 12px}
+.demo-badge{width:fit-content;max-width:100%;margin:10px auto 0;border:1px solid #ffd36f;border-radius:12px;padding:9px 13px;background:#4a2d18d9;box-shadow:0 0 17px #ffca6570;color:#ffe9ab;font-weight:850;font-size:13px}
 .eyebrow{color:#fed787;letter-spacing:.21em;font-weight:850;font-size:11px}
 h1{font-size:clamp(28px,4.6vw,55px);line-height:1.06;margin:7px 0 9px;font-weight:950;text-shadow:0 3px #310d23,0 0 28px #ffc76970}
 .hero p{color:#f4dcba;margin:0;font-size:clamp(12px,1.3vw,15px)}
@@ -138,6 +139,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
  <div class="eyebrow">DEAL OR NO DEAL · WEIHNACHTSSHOW</div>
  <h1>🎩 Weihnachtsmützen-Jackpot</h1>
  <p>Zehn Räume. Drei Mützen. Eine Bombe. Wie weit traust du dich?</p>
+ <p class="demo-badge" id="demo-badge" hidden>🧪 Chris-Testmodus · Alle Gewinne sind eine Vorschau und werden NICHT dem Spielkonto gutgeschrieben.</p>
 </header>
 <div class="tiers" id="tiers" aria-label="Die zehn Spielräume"></div>
 <section class="game" aria-label="Weihnachtsmützen-Spiel">
@@ -191,10 +193,12 @@ const $=id=>document.getElementById(id),API=String(window.SPIELPORTAL_CONFIG?.ap
 const names=['','Weihnachtsstube I','Weihnachtsstube II','Erster Tresor','Schatzsaal I','Schatzsaal II','Goldkammer','Jackpot-Pforte','Königsschatz','Nordpol-Tresor','Legendäres Finale'];
 const emojis={pack:'🎁',hammer:'🔨',joker:'🃏',cash:'💰'};
 let state=null,userId='',busy=false,reveal=null,pendingRequest=null,revealTimer=null,selectedHat=null;
-const back=$('back'),lobby=$('lobby'),params=new URLSearchParams(location.search),room=params.get('room')||sessionStorage.getItem('deal-active-room');
+const back=$('back'),lobby=$('lobby'),params=new URLSearchParams(location.search),DEMO=params.get('demo')==='1',room=params.get('room')||sessionStorage.getItem('deal-active-room');
 if(room&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(room)){sessionStorage.setItem('deal-active-room',room);const u=new URL(back.href);u.searchParams.set('room',room);back.href=u.href;const ul=new URL(lobby.href);ul.searchParams.set('room',room);lobby.href=ul.href;}
 function authUser(){const s=window.SpielOnline?.state?.();return s?.status==='online'?s.user:null;}
 const uid=()=>authUser()?.uid||'';
+const isChrisDemo=()=>DEMO&&!!uid()&&String(window.SpielOnline?.state?.()?.profile?.name||'').trim().toLocaleLowerCase('de-DE')==='chris';
+$('demo-badge').hidden=!DEMO;
 function setStatus(msg,bad=false,good=false){const el=$('status');el.textContent=msg;el.className='status'+(bad?' bad':good?' good':'');}
 function formatItems(groups,element,empty){
  element.replaceChildren();
@@ -234,7 +238,7 @@ function finishReveal(){
  if(revealTimer){clearTimeout(revealTimer);revealTimer=null;}
  closeCinema();reveal=null;render();
  if(state?.status==='playing')setStatus('🎩 Weiter versuchen oder deine Gewinne kassieren?',false,true);
- else if(state?.status==='finished')setStatus('✅ Spiel beendet – gesicherte Gewinne wurden ausgezahlt.',false,true);
+ else if(state?.status==='finished')setStatus(DEMO?'🧪 Testrunde beendet – keine echten Gewinne verbucht.':'✅ Spiel beendet – gesicherte Gewinne wurden ausgezahlt.',false,true);
 }
 function renderTiers(active,checkpoint,cleared){
  const root=$('tiers');root.replaceChildren();
@@ -302,11 +306,11 @@ function render(){
  if(finished){
   ending.replaceChildren();
   const title=document.createElement('h2'),reason=s.summary?.reason;
-  title.textContent=reason==='bomb'?'💥 Die Bombe hat zugeschlagen!':reason==='completed'?'👑 Alle zehn Räume geschafft!':'💰 Gewinne erfolgreich kassiert!';
+  title.textContent=reason==='bomb'?'💥 Die Bombe hat zugeschlagen!':reason==='completed'?'👑 Alle zehn Räume geschafft!':DEMO?'🧪 Probegewinne gesammelt!':'💰 Gewinne erfolgreich kassiert!';
   const p=document.createElement('p');
   const awarded=s.summary?.awarded||[],lost=s.summary?.lost||[];
   const count=awarded.reduce((n,g)=>n+(g.items||[]).length,0);
-  p.textContent='Ausgezahlt: '+count+' Gewinnpositionen. '+(lost.length?'Verlorene Räume seit dem letzten Checkpoint: '+lost.map(g=>g.room).join(', ')+'.':'');
+  p.textContent=(DEMO?'Nur Vorschau, nicht gutgeschrieben: ':'Ausgezahlt: ')+count+' Gewinnpositionen. '+(lost.length?'Verlorene Räume seit dem letzten Checkpoint: '+lost.map(g=>g.room).join(', ')+'.':'');
   ending.append(title,p);
   const prizes=document.createElement('div');prizes.className='prizes';prizes.style.justifyContent='center';formatItems(awarded,prizes,'Keine Belohnung gewonnen.');
   ending.append(prizes);
@@ -316,7 +320,134 @@ function render(){
 function requestId(){return 'hat_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,12);}
 function savePending(p){pendingRequest=p;try{if(p)sessionStorage.setItem('deal-hats-pending-v1',JSON.stringify({uid:uid(),payload:p}));else sessionStorage.removeItem('deal-hats-pending-v1')}catch{}}
 function recoverPending(){try{const p=JSON.parse(sessionStorage.getItem('deal-hats-pending-v1')||'null');pendingRequest=p?.uid===uid()?p.payload:null}catch{pendingRequest=null}}
+
+/*
+ * Offline Chris preview: uses the same visible state shape and rules as the
+ * authenticated jackpot, but is completely isolated from real profile wallets,
+ * card inventory, hammer inventory and server writes.
+ */
+const demoNames={small:'Normales Weihnachtspaket',large:'Goldpaket',premium:'Premiumpaket',platinum:'Platinpaket',
+ single:'Einfacher Hammer',double:'Doppelhammer',lucky:'Goldener Hammer'};
+const demoRand=n=>Math.floor(Math.random()*n);
+const demoPick=a=>a[demoRand(a.length)];
+const demoOdds=[2,2,2,5,5,5,10,10,15,15];
+const demoStoreKey=()=> 'christmas-hats-chris-preview-v1-'+uid();
+const demoMoney=amount=>({kind:'cash',amountCents:amount*100,quantity:1,label:amount.toLocaleString('de-DE')+' € Spielgeld'});
+function demoItem(kind,variant,quantity){
+ if(kind==='cash')return demoMoney(demoPick([1000000,1500000,2000000,2500000,3000000,4000000,5000000]));
+ if(kind==='joker')return {kind,quantity,label:quantity+' Kofferblick-Joker'};
+ return kind==='pack'?{kind,packId:variant,quantity,label:quantity+'× '+demoNames[variant]}
+  :{kind,hammer:variant,quantity,label:quantity+'× '+demoNames[variant]};
+}
+function demoPrize(room){
+ const superLuck=demoRand(100)<demoOdds[room-1];
+ const tier=room<=3?'easy':room<=6&&demoRand(100)>=10?'medium':room>=7&&demoRand(100)<(room>=9?10:20)?'medium':'high';
+ const normalPools={
+  easy:[['pack','small'],['hammer','single']],
+  medium:[['pack','large'],['hammer','double'],['joker',null],['pack','premium'],['cash',null]],
+  high:[['pack','premium'],['pack','platinum'],['hammer','lucky'],['joker',null],['cash',null]]
+ };
+ const pool=superLuck?[['pack','small'],['pack','large'],['pack','premium'],['pack','platinum'],['hammer','double'],['hammer','lucky'],['joker',null],['cash',null]]
+  :normalPools[tier];
+ const count=superLuck?3+demoRand(3):room<=3?1+demoRand(2):room<=6?1+demoRand(3):1+demoRand(4);
+ const used=new Set(),items=[];
+ for(let attempt=0;items.length<count&&attempt<80;attempt++){
+  const [kind,variant]=demoPick(pool),key=kind+':'+variant;
+  if(used.has(key))continue;
+  used.add(key);
+  let item=demoItem(kind,variant,1+demoRand(room<=3&&!superLuck?2:3));
+  if(kind==='cash'&&tier==='medium'&&!superLuck)item=demoMoney(demoPick([250000,400000,500000,750000,1000000,1500000]));
+  items.push(item);
+ }
+ return {superLuck,items};
+}
+function demoScore(g){
+ const weights={small:200000,large:500000,premium:1000000,platinum:2500000,single:300000,double:500000,lucky:1000000};
+ return (g.items||[]).reduce((n,i)=>n+(i.kind==='cash'?i.amountCents/100:i.kind==='joker'?1000000*i.quantity:weights[i.packId||i.hammer]*i.quantity),0);
+}
+function demoLayout(room){
+ let a=demoPrize(room),b=demoPrize(room);
+ for(let i=0;i<14&&demoScore(a)===demoScore(b);i++)b=demoPrize(room);
+ if(demoScore(a)===demoScore(b)){
+  a={superLuck:false,items:[demoItem('pack',room<=3?'small':room<=6?'large':'premium',1)]};
+  b={superLuck:false,items:[demoItem('pack',room<=3?'small':room<=6?'premium':'platinum',3),demoItem('hammer',room<=3?'single':room<=6?'double':'lucky',3)]};
+ }
+ const normal=demoScore(a)<demoScore(b)?a:b,better=normal===a?b:a;
+ const hats=[{type:'bomb',items:[]},{type:'gift',...normal},{type:'super',...better}];
+ return hats.sort(()=>Math.random()-.5);
+}
+function demoView(run){
+ if(!run)return null;
+ const {id,status,room,checkpoint,secured,pending,lastReveal,summary,updatedAt}=run;
+ return {id,status,room,checkpoint,secured,pending,lastReveal,summary,updatedAt};
+}
+function demoRead(){
+ try{const saved=JSON.parse(sessionStorage.getItem(demoStoreKey())||'null');return saved?.version===1?saved:null;}
+ catch{return null;}
+}
+function demoWrite(run){sessionStorage.setItem(demoStoreKey(),JSON.stringify(run));}
+function demoTotals(rewards){
+ const totals={amountCents:0,jokers:0,packs:{},hammers:{}};
+ for(const reward of rewards)for(const item of reward.items||[]){
+  if(item.kind==='cash')totals.amountCents+=item.amountCents;
+  if(item.kind==='joker')totals.jokers+=item.quantity;
+  if(item.kind==='pack')totals.packs[item.packId]=(totals.packs[item.packId]||0)+item.quantity;
+  if(item.kind==='hammer')totals.hammers[item.hammer]=(totals.hammers[item.hammer]||0)+item.quantity;
+ }
+ return totals;
+}
+function demoFinish(run,reason,awarded,lost){
+ run.status='finished';run.layout=null;run.secured=awarded;run.pending=[];
+ run.summary={reason,room:run.room,awarded,lost,totals:demoTotals(awarded),demo:true};
+}
+function demoRequest(path,method='GET',payload=null){
+ if(!isChrisDemo())throw Error('TEST_ACCESS_DENIED');
+ let run=demoRead();
+ if(method==='GET'){
+  const pendingId=new URLSearchParams(path.split('?')[1]||'').get('pendingId');
+  const prior=run?.receipts?.find(x=>x.id===pendingId);
+  return {ok:true,state:demoView(run),odds:demoOdds,...(pendingId?{pendingAction:{applied:!!prior,result:prior?.result||null}}:{})};
+ }
+ const {type,requestId,runId,index}=payload||{};
+ if(!['start','pick','cash'].includes(type)||!requestId)throw Error('INVALID_ACTION');
+ const prior=run?.receipts?.find(x=>x.id===requestId);
+ if(prior)return {ok:true,state:demoView(run),result:prior.result,replayed:true,outdated:prior.id!==run.lastActionId};
+ if(type==='start'){
+  if(run?.status==='playing')return {ok:true,state:demoView(run),result:{resumed:true},replayed:true};
+  run={version:1,id:'demo-'+Date.now().toString(36)+'-'+demoRand(9999999),status:'playing',room:1,
+   layout:demoLayout(1),secured:[],pending:[],lastReveal:null,checkpoint:0,summary:null,updatedAt:Date.now(),
+   receipts:[],lastActionId:requestId};
+  const result={started:true};run.receipts.push({id:requestId,result});
+  demoWrite(run);return {ok:true,state:demoView(run),result,replayed:false};
+ }
+ if(!run||run.status!=='playing')throw Error('START_REQUIRED');
+ if(run.id!==runId)throw Error('SESSION_CHANGED');
+ let result;
+ if(type==='pick'){
+  if(!Number.isInteger(index)||index<0||index>2)throw Error('INVALID_HAT');
+  const selection=run.layout[index],r=run.room;
+  result={room:r,index,type:selection.type,superLuck:!!selection.superLuck,items:selection.items||[],hats:run.layout};
+  run.lastReveal=result;
+  if(selection.type==='bomb')demoFinish(run,'bomb',run.secured,run.pending);
+  else{
+   run.pending.push({room:r,items:selection.items,superLuck:!!selection.superLuck,hatType:selection.type});
+   if(r===3||r===7){run.secured.push(...run.pending);run.pending=[];run.checkpoint=r;}
+   if(r===10){demoFinish(run,'completed',[...run.secured,...run.pending],[]);}
+   else{run.room++;run.layout=demoLayout(run.room);}
+  }
+ }else{
+  result={cashed:true};demoFinish(run,'cash',[...run.secured,...run.pending],[]);
+ }
+ run.lastActionId=requestId;run.updatedAt=Date.now();run.receipts=[...(run.receipts||[]),{id:requestId,result}].slice(-16);
+ demoWrite(run);
+ return {ok:true,state:demoView(run),result,replayed:false};
+}
+
 async function call(path,method='GET',payload=null){
+ if(DEMO){
+  if(!isChrisDemo())throw Error('TEST_ACCESS_DENIED');
+  return demoRequest(path,method,payload);
+ }
  const user=authUser();if(!user?.getIdToken)throw Error('Bitte zuerst mit deinem Spielerprofil anmelden.');
  const token=await user.getIdToken(),controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),18000);
  try{
@@ -332,9 +463,12 @@ function describeError(error){return errors[error.message]||String(error.message
 async function refresh(){
  if(busy)return;
  const user=authUser();
- if(!user?.uid){state=null;userId='';recoverPending();render();setStatus('🔐 Für echte Gewinne bitte mit dem Spielerprofil anmelden.',true);return;}
+ if(!user?.uid||DEMO&&!isChrisDemo()){
+  state=null;userId='';recoverPending();render();
+  setStatus(DEMO?'🔐 Diese Vorschau ist nur für das angemeldete Profil Chris gedacht.':'🔐 Für echte Gewinne bitte mit dem Spielerprofil anmelden.',true);return;
+ }
  if(userId!==user.uid){state=null;userId=user.uid;recoverPending();}
- busy=true;render();setStatus('⏳ Server-Spielstand wird geladen …');
+ busy=true;render();setStatus(DEMO?'🧪 Dein lokaler Test-Spielstand wird geladen …':'⏳ Server-Spielstand wird geladen …');
  try{
   const waiting=pendingRequest;
   const url='/api/christmas-hats/me'+(waiting?'?pendingId='+encodeURIComponent(waiting.requestId):'');
@@ -343,7 +477,7 @@ async function refresh(){
   if(revealTimer){clearTimeout(revealTimer);revealTimer=null;}
   closeCinema();
   state=data.state;reveal=null;
-  let notice='✅ Spielstand vom Server geladen. Keine dauerhafte Abfrage.';
+  let notice=DEMO?'🧪 Vorschau bereit – keine echten Gewinne oder Gutschriften.':'✅ Spielstand vom Server geladen. Keine dauerhafte Abfrage.';
   if(waiting&&data.pendingAction?.applied){
    savePending(null);
    notice='✅ Deine letzte Aktion war bereits gespeichert. Keine doppelte Gutschrift.';
@@ -380,7 +514,7 @@ async function submit(payload){
    if(reveal?.type!=='bomb')setTimeout(()=>{if(reveal===data.result)openCinema(reveal)},700);
    revealTimer=setTimeout(finishReveal,5200);
   }else{
-   reveal=null;render();setStatus(type==='cash'?'✅ Deine Gewinne wurden serverseitig gutgeschrieben.':'✨ Neues Spiel gestartet!',false,true);
+   reveal=null;render();setStatus(type==='cash'?(DEMO?'🧪 Probeauszahlung abgeschlossen. Keine echten Gegenstände oder Spielgelder gutgeschrieben.':'✅ Deine Gewinne wurden serverseitig gutgeschrieben.'):(DEMO?'🧪 Neue Testpartie gestartet!':'✨ Neues Spiel gestartet!'),false,true);
   }
  }catch(e){
   const hardErrors=new Set(['TEST_ACCESS_DENIED','LOGIN_REQUIRED','AUTH_FAILED','INVALID_ACTION','INVALID_HAT','REQUEST_ID_CONFLICT','START_REQUIRED','SESSION_CHANGED']);
