@@ -18,7 +18,7 @@ test('Christmas-ice browser code parses and ships with cache-busted URL', () => 
 test('GET reconciliation uses a receipt ID in query, never a GET body', () => {
  assert.match(source, /pendingId=type==='GET'\?String\(body\?\.pendingId\|\|''\):''/);
  assert.match(source, /encodeURIComponent\(pendingId\)/);
- assert.match(source, /body:type==='GET'\?undefined/);
+ assert.match(source, /body:type==='GET'\|\|type==='CLAIM'\?undefined/);
  assert.match(source, /data\.pendingAction\?\.applied===true/);
  assert.match(source, /if\(confirmed\)forgetPending\(\)/);
 });
