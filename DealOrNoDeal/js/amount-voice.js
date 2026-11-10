@@ -98,9 +98,12 @@
  }
  function spokenAmount(cents){
   const euros=Math.floor(cents/100),minor=cents%100;
-  if(euros===0)return (minor===1?'Ein':spellNumber(minor))+' Cent';
-  const euroWords=euros===1?'Ein':spellNumber(euros);
-  const main=euroWords+' Euro';
+  if(euros===0){
+   const words=minor===1?'ein':spellNumber(minor);
+   return words[0].toUpperCase()+words.slice(1)+' Cent';
+  }
+  const euroWords=euros===1?'ein':spellNumber(euros);
+  const main=euroWords[0].toUpperCase()+euroWords.slice(1)+' Euro';
   return minor?main+' und '+(minor===1?'ein':spellNumber(minor))+' Cent':main;
  }
  function hashSeed(s){
