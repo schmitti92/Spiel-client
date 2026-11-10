@@ -199,7 +199,7 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
 .reveal-summary-duplicate{position:absolute;right:5px;top:5px;border-radius:6px;padding:2px 5px;color:#23142d;background:#d5bcff;font-size:10px;font-weight:900}
 @media(max-width:640px){.monster-trade{grid-template-columns:1fr;text-align:center}.monster-wheel-preview{width:115px}.monster-trade-stats{justify-content:center}}
 @media(prefers-reduced-motion:reduce){.monster-trade-meter span{transition:none}}
-</style><link rel="stylesheet" href="./css/christmas-north-pole.css?v=20261109-vierte-tafel-v1"><link rel="stylesheet" href="./css/christmas-event-hub.css?v=20261109-unified-tabs-v2"><link rel="stylesheet" href="./css/christmas-hammer-premium.css?v=20261109-premium-v1"><link rel="stylesheet" href="./css/hammer-bingo-cinematics.css?v=20261109-victory-v3"><link rel="stylesheet" href="./css/christmas-pack-cinema.css?v=20261109-card-art-webp-v2"><link rel="stylesheet" href="./css/christmas-show-director.css?v=20261109-show-v1"><link rel="stylesheet" href="./css/christmas-spectacle-v2.css?v=20261109-spectacle-v2"><link rel="stylesheet" href="./css/monster-wheel.css?v=20261109-no-test-v1"><link rel="stylesheet" href="./css/monster-wheel-show.css?v=20261109-monster-show-v1"><link rel="stylesheet" href="./css/christmas-universe-premium.css?v=20261109-nested-nav-v1"></head><body class="christmas-event-main"><main>
+</style><link rel="stylesheet" href="./css/christmas-north-pole.css?v=20261109-vierte-tafel-v1"><link rel="stylesheet" href="./css/christmas-event-hub.css?v=20261109-unified-tabs-v2"><link rel="stylesheet" href="./css/christmas-hammer-premium.css?v=20261109-premium-v1"><link rel="stylesheet" href="./css/hammer-bingo-cinematics.css?v=20261109-victory-v3"><link rel="stylesheet" href="./css/christmas-pack-cinema.css?v=20261109-card-art-webp-v2"><link rel="stylesheet" href="./css/christmas-show-director.css?v=20261109-show-v1"><link rel="stylesheet" href="./css/christmas-spectacle-v2.css?v=20261109-spectacle-v2"><link rel="stylesheet" href="./css/monster-wheel.css?v=20261109-no-test-v1"><link rel="stylesheet" href="./css/monster-wheel-show.css?v=20261109-monster-show-v1"><link rel="stylesheet" href="./css/christmas-universe-premium.css?v=20261109-nested-nav-v1"><link rel="stylesheet" href="./css/christmas-hats-entry.css?v=20261110-v1"></head><body class="christmas-event-main"><main>
 <header class="event-hub-top" aria-label="Weihnachtszauber – gemeinsame Event-Navigation"><a class="event-hub-brand" id="event-world-link" href="./weihnachtswelt.html" title="Zur gemeinsamen Weihnachtswelt" aria-label="Weihnachtswelt – Übersicht öffnen"><span class="event-hub-brand-symbol" aria-hidden="true">🎄</span><span>Weihnachtszauber <small>↗ Zur Event-Übersicht</small></span></a><div class="event-hub-tools"><button type="button" id="christmas-effects-toggle" data-level="full" title="Grafikeffekte ändern">✨ Effekte: Legendär</button><a class="event-hub-tool" id="event-game-link" href="./game.html">🎮 Zum Spiel</a><a class="back" id="lobby" href="./lobby.html">↩ Zur Spiellobby</a><button type="button" id="event-refresh" class="back" title="Aktuelle Eventseite neu laden">↻ Aktualisieren</button><button type="button" id="event-fullscreen" class="back" aria-pressed="false">⛶ Vollbild</button><button type="button" id="event-main-guide" class="event-hub-tool">📖 Anleitung</button></div></header>
 <nav class="event-tabs event-hub-nav" aria-label="Weihnachtsbereiche">
  <button type="button" data-main-view="collection" aria-selected="true" aria-current="page" aria-controls="event-collection-nav">🃏 Sammlung</button>
@@ -210,6 +210,7 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
  <button type="button" role="tab" data-view="album" aria-controls="event-album" aria-selected="true">🃏 Sammelalbum</button>
  <button type="button" role="tab" data-view="hammer" aria-controls="event-hammers" aria-selected="false">🔨 Hammer-Bingo</button>
  <button type="button" role="tab" data-view="monster" aria-controls="event-monster" aria-selected="false">🎰 Monster-Glücksrad</button>
+ <button type="button" role="tab" data-view="hats" aria-controls="event-hats" aria-selected="false">🎩 Mützen-Jackpot</button>
  <button type="button" role="tab" data-view="bingo" aria-controls="bingo" aria-selected="false">🏆 Spielinfo &amp; Gewinner</button>
 </nav>
 <header class="hero"><img class="hero-characters" src="./assets/weihnachts_event/file_0000000075e081f49cb62fd4b11daae2.png" alt="Weihnachtsmann und Rudolf begrüßen die Besucher" loading="eager"><div class="hero-content"><div class="ornament">🎄 ✨ 🎁</div><div class="eyebrow event-chapter">KAPITEL 1 · DIE WEIHNACHTSKOLLEKTION</div><h1>Weihnachtszauber</h1><span id="north-pole-legend-trophy" class="north-pole-trophy" hidden>👑 NORDPOL-LEGENDE · 30 BINGOS</span><p class="event-hero-subtitle">96 Sammelkarten · 6 Sammelfelder · Gemeinsame Weihnachtswelt</p></div></header><div class="event-layout"><section id="event-album" aria-label="Die klassische Weihnachtskartensammlung">
@@ -308,6 +309,38 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
     <small>Deine erste Kopie jedes Motivs bleibt erhalten. Auch Duplikate aus abgeschlossenen Hammer-Bingo-Feldern gehen nicht verloren. Dein Drehgutschein bleibt im Online-Profil gespeichert. Die Gewinne werden vor der 8-Sekunden-Animation sicher auf dem Server ausgelost und gebucht.</small>
    </div>
   </section>
+</section>
+<section id="event-hats" aria-labelledby="hats-entry-title" role="tabpanel">
+ <div class="hats-entry">
+  <div class="hats-entry-head">
+   <div class="hats-entry-kicker">✦ WEIHNACHTSWELT · DEIN NEUES RISIKOSPIEL ✦</div>
+   <h2 id="hats-entry-title">🎩 Der Weihnachtsmützen-Jackpot</h2>
+   <p>Zehn geheimnisvolle Räume, drei Mützen und eine einzige Bombe. Wer mutig ist, kann bis zu fünf Millionen Euro Spielgeld, seltene Kartenpakete, goldene Hammer und Joker gewinnen!</p>
+  </div>
+  <div class="hats-stage-preview" aria-label="Drei verdeckte Weihnachtsmützen">
+   <div class="hat-trophy"><span class="trophy-icon" aria-hidden="true">🎅</span><small>MÜTZE 1 · ???</small></div>
+   <div class="hat-trophy"><span class="trophy-icon" aria-hidden="true">🎅</span><small>MÜTZE 2 · ???</small></div>
+   <div class="hat-trophy"><span class="trophy-icon" aria-hidden="true">🎅</span><small>MÜTZE 3 · ???</small></div>
+  </div>
+  <div class="hats-ticket-wrap">
+   <div class="hats-ticket" aria-live="polite">
+    <div class="hats-ticket-label">🎟️ DEINE SPIELGUTSCHEINE</div>
+    <div class="hats-ticket-count"><strong id="hats-voucher-number">–</strong><span id="hats-voucher-label">wird geprüft …</span></div>
+    <p>Jedes Spielerprofil erhält <strong>einen kostenlosen Gutschein</strong>. Er wird beim ersten Partiestart verbraucht, nicht beim Öffnen dieser Seite.</p>
+    <div id="hats-ticket-status" class="hats-ticket-state" role="status">🔄 Profil wird geprüft …</div>
+   </div>
+   <div class="hats-entry-actions">
+    <a id="hats-entry-launch" class="hats-entry-launch" href="./weihnachtsmuetzen.html" aria-disabled="true" tabindex="-1">⏳ Zugang wird geladen</a>
+    <button type="button" id="hats-entry-refresh" class="hats-entry-refresh">↻ Gutscheine aktualisieren</button>
+    <div class="hats-coming">🔒 Weitere Spielgutscheine werden später über Freischaltungen im Spiel erhältlich sein. Vorerst gibt es keine Kauf- oder Wiederholfunktion.</div>
+   </div>
+  </div>
+  <div class="hats-rules" aria-label="Spielregeln">
+   <div class="hats-rule"><strong>🎁 Räume 1–3</strong>Einfache Gewinne · Checkpoint nach Raum 3</div>
+   <div class="hats-rule"><strong>✨ Räume 4–6</strong>Mittlere Gewinne und seltene Jackpot-Chancen</div>
+   <div class="hats-rule"><strong>👑 Räume 7–10</strong>Legendäre Gewinne · Checkpoint nach Raum 7</div>
+  </div>
+ </div>
 </section>
 <section id="bingo"><div class="section-title"><h2>🏆 Spielinformation und Gewinner</h2><span>Weihnachtsalbum · Bingo-Belohnungen</span></div><div class="christmas-instructions" aria-labelledby="christmas-howto"><h3 id="christmas-howto">🎄 So funktioniert das Weihnachts-Event</h3><p>Öffne Weihnachtspakete mit deinem Spielgeld und sammle die 64 klassischen Weihnachtskarten. Jede Karte zählt für dein persönliches Sammelalbum.</p><p>Vervollständige eine Reihe, Spalte oder Diagonale im 4 × 4-Kartenfeld, um ein <strong>Bingo</strong> zu erzielen. Pro 4 × 4-Feld sind <strong>10 Bingos</strong> möglich, insgesamt also <strong>40 Bingos</strong> auf vier klassischen Tafeln. Vollständige Reihen werden mit einem goldenen BINGO-Siegel gekennzeichnet. Die bisherigen Belohnungen werden bis 30 Gesamt-Bingos nach jeweils zwei Bingos freigeschaltet. Die Preise für 32 bis 40 Bingos werden separat ergänzt.</p><p>Nach den ersten fünf Belohnungen erhältst du auch den exklusiven Sammlerrahmen als Bonus. Bereits erhaltene Karten bleiben gesammelt; doppelte Karten bringen keine zusätzlichen Bingos.</p></div><div class="section-title"><h2>🎁 Freischaltbare Belohnungen</h2><span>Bisherige Belohnungen · 2 bis 30 Bingos</span></div><div class="reward-grid" id="reward-grid"></div><p class="note">Belohnungen werden erst nach der serverseitigen Bingo-Prüfung freigeschaltet. Freischaltungen werden aus deinem Sammelfortschritt berechnet.</p></section></div>
 <section id="event-hammers" aria-labelledby="hammer-heading">
@@ -462,7 +495,7 @@ body[data-view=hammer] #event-hammers{margin-top:8px}
   </div>
   <div class="monster-show-confetti" id="monster-show-confetti" aria-hidden="true" hidden></div>
  </section>
-</div><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script><script src="./js/christmas-show-director.js?v=20261109-show-v1"></script><script src="./js/hammer-bingo-cinematics.js?v=20261109-victory-v3"></script><script src="./js/christmas-pack-cinema.js?v=20261109-platinum-v1"></script><script src="./js/christmas-card-image-loader.js?v=20261109-cards-retry-v2"></script><script src="./js/north-pole-bingo.js?v=20261110-premium-vouchers-v2"></script><script src="./js/monster-wheel.js?v=20261109-full-photo-v1"></script><script src="./js/monster-wheel-show.js?v=20261109-monster-show-v1"></script><script>
+</div><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script src="./js/christmas-hats-entry.js?v=20261110-v1"></script><script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script><script src="./js/christmas-show-director.js?v=20261109-show-v1"></script><script src="./js/hammer-bingo-cinematics.js?v=20261109-victory-v3"></script><script src="./js/christmas-pack-cinema.js?v=20261109-platinum-v1"></script><script src="./js/christmas-card-image-loader.js?v=20261109-cards-retry-v2"></script><script src="./js/north-pole-bingo.js?v=20261110-premium-vouchers-v2"></script><script src="./js/monster-wheel.js?v=20261109-full-photo-v1"></script><script src="./js/monster-wheel-show.js?v=20261109-monster-show-v1"></script><script>
 const cards=[["01_winterdorf","Winterdorf"],["02_lebkuchenhaus","Lebkuchenhaus"],["03_weihnachtsmann","Weihnachtsmann"],["04_rentier","Rentier"],["05_weihnachtsbaum","Weihnachtsbaum"],["06_weihnachtszug","Weihnachtszug"],["07_schneekugel","Schneekugel"],["08_wichtelwerkstatt","Wichtelwerkstatt"],["09_polarlichter","Polarlichter"],["10_eisschloss","Eisschloss"],["11_rentierschlitten","Rentierschlitten"],["12_weihnachtslaterne","Weihnachtslaterne"],["13_weihnachtsengel","Weihnachtsengel"],["14_adventskerzen","Adventskerzen"],["15_schneemannfamilie","Schneemannfamilie"],["16_weihnachtskrippe","Weihnachtskrippe"]];
 cards.push(...[["Weihnachtskarte_17_Schneemann","Schneemann"],["Weihnachtskarte_18_Weihnachtsengel","Weihnachtsengel"],["Weihnachtskarte_19_Rentier","Rentier im Schnee"],["Weihnachtskarte_20_Weihnachtsbaum","Weihnachtsbaum im Glanz"],["Weihnachtskarte_21_Lebkuchenmann","Lebkuchenmann"],["Weihnachtskarte_22_Weihnachtskranz","Weihnachtskranz"],["Weihnachtskarte_23_Schlitten","Schlittenfahrt"],["Weihnachtskarte_24_Stern_von_Bethlehem","Stern von Bethlehem"],["Weihnachtskarte_25_Elfenhilfe","Elfenhilfe"],["Weihnachtskarte_26_Weihnachtspinguin","Weihnachtspinguin"],["Weihnachtskarte_27_Polarbaer","Polarbär"],["Weihnachtskarte_28_Weihnachtsglocken","Weihnachtsglocken"],["Weihnachtskarte_29_Kerzenschein","Kerzenschein"],["Weihnachtskarte_30_Winterdorf","Winterdorf im Schnee"],["Weihnachtskarte_31_Geschenkstapel","Geschenkstapel"],["Weihnachtskarte_32_Schneeflocke","Schneeflocke"]]);
 // Hochgeladene Fotos; bewährte Karten-IDs 65–80 und Sammelfortschritt bleiben unverändert.
@@ -968,7 +1001,7 @@ window.addEventListener('spielonline-change',load);window.addEventListener('load
 
 document.getElementById('retry-connection').addEventListener('click',load);
 // Navigation is local UI state only: no Firebase reads, room reconnects or new requests.
-const collectionViews=new Set(['album','hammer','monster','bingo']);
+const collectionViews=new Set(['album','hammer','monster','hats','bingo']);
 const validChristmasViews=new Set([...collectionViews,'packs']);
 const requestedChristmasView=new URLSearchParams(location.search).get('view');
 let lastCollectionView=collectionViews.has(requestedChristmasView)?requestedChristmasView:'album';
@@ -991,6 +1024,7 @@ function setChristmasView(view,{updateUrl=true,scroll=true}={}){
   else button.removeAttribute('aria-current');
  });
  if(view==='hammer'&&updateUrl){loadHammerStock();if(current)void maybeClaimHammerBingos(current)}
+ if(view==='hats')window.dispatchEvent(new CustomEvent('christmas-hats-view-open'));
  if(updateUrl){const url=new URL(location.href);url.searchParams.set('view',view);history.replaceState(history.state,'',url)}
  if(scroll)window.scrollTo({top:0,behavior:'smooth'});
 }
