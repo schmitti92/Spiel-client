@@ -39,8 +39,8 @@ test('Forge UI maps every server-recognized skill to an illustration',()=>{
 });
 test('Forge UI styles and HTML load the current skill artwork release',()=>{
  const html=read('dog-forge.html'),css=read('dog-forge.css');
- assert.ok(html.includes('dog-forge-ui.js?v=20261110-forge-d4'));
- assert.ok(html.includes('dog-forge.css?v=20261110-forge-d4'));
+ assert.ok(html.includes('dog-forge-ui.js?v=20261110-forge-d5'));
+ assert.ok(html.includes('dog-forge.css?v=20261110-forge-d5'));
  for(const selector of ['.skill-display','.skill-visual.compact','.item-choice.skill-entry',
   '.result-art .skill-illustration'])assert.ok(css.includes(selector),'missing selector '+selector);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
@@ -405,7 +405,7 @@ test('D3 batch trade confirms real quantities and retains pending receipt safety
 test('D4 hero gallery is linked, accessible and presents genuine equipment and milestone info',()=>{
  const html=read('dog-forge.html'),ui=read('dog-forge-ui.js'),
   gallery=read('dog-forge-gallery.js'),css=read('dog-forge.css');
- assert.ok(html.includes('dog-forge-gallery.js?v=20261110-forge-d4'));
+ assert.ok(html.includes('dog-forge-gallery.js?v=20261110-forge-d5'));
  for(const id of ['forge-gallery','forge-gallery-title','forge-gallery-open','forge-display-title',
   'forge-gallery-portrait','forge-gallery-gear','forge-gallery-titles','forge-gallery-frames',
   'forge-gallery-rewards','forge-gallery-milestone-count','forge-result-gallery','forge-result-new-unlock'])
