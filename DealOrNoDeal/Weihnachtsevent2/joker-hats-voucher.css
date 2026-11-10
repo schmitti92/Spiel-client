@@ -1,0 +1,47 @@
+/* Bonus beim Joker-Geschenk: ein Spielgutschein für den Weihnachtsmützen-Jackpot. */
+#ice-online .v44-hats-voucher-gift{
+ position:relative;isolation:isolate;display:flex;flex-direction:column;
+ align-items:center;gap:9px;max-width:580px;margin:12px auto;
+ padding:clamp(13px,2vw,22px);
+ border:2px solid #ffe1a1;border-radius:16px;
+ background:radial-gradient(ellipse at 50% 8%,#e7c17861,transparent 73%),linear-gradient(135deg,#3b2544,#113a47);
+ box-shadow:0 0 25px #f5d18055,inset 0 1px #fff4d582,0 7px 22px #0009;
+ text-align:center;
+ animation:ice-hats-gift-appear .75s cubic-bezier(.16,.94,.28,1.25) both;
+}
+#ice-online .v44-hats-voucher-gift:before{
+ content:"🎩";font-size:clamp(37px,6vw,65px);line-height:1;
+ filter:drop-shadow(0 8px 8px #0009) drop-shadow(0 0 17px #fdd69069);
+}
+#ice-online .v44-hats-voucher-gift strong{
+ font:900 clamp(17px,2.35vw,25px) Georgia,serif;
+ color:#fff0c4;text-shadow:0 2px 7px #000b;
+}
+#ice-online .v44-hats-voucher-gift span{
+ color:#fcf4db;font:750 clamp(12px,1.3vw,17px) system-ui;line-height:1.35;
+}
+#ice-online .v44-hats-voucher-link{
+ display:inline-flex;justify-content:center;align-items:center;
+ margin-top:3px;padding:12px 18px;max-width:100%;
+ border:2px solid #fff2c6;border-radius:12px;
+ background:linear-gradient(135deg,#fff1c2,#dfb16c,#ae772d);
+ font:900 clamp(12px,1.3vw,16px) system-ui;
+ color:#26233a;text-decoration:none;text-align:center;
+ box-shadow:0 6px 14px #0008;
+ transition:transform .2s,filter .2s;
+}
+#ice-online .v44-hats-voucher-link:is(:hover,:focus-visible){
+ transform:translateY(-3px);filter:brightness(1.1);
+}
+@keyframes ice-hats-gift-appear{
+ from{transform:translateY(21px) scale(.88);opacity:0}
+ to{transform:translateY(0) scale(1);opacity:1}
+}
+@media(max-width:640px){
+ #ice-online .v44-hats-voucher-gift{padding:12px 9px}
+ #ice-online .v44-hats-voucher-link{padding:11px}
+}
+@media(prefers-reduced-motion:reduce){
+ #ice-online .v44-hats-voucher-gift{animation:none}
+ #ice-online .v44-hats-voucher-link{transition:none}
+}
