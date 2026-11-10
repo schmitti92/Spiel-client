@@ -146,6 +146,17 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
  <p>Zwanzig Räume. Drei Mützen. Je weiter du kommst, desto größer die Schätze – und das Risiko.</p>
  <p class="demo-badge" id="demo-badge" hidden>🧪 Chris-Testmodus · Alle Gewinne sind eine Vorschau und werden NICHT dem Spielkonto gutgeschrieben.</p>
 </header>
+<section id="quick-entry" class="hats-quick-entry" aria-label="Jackpot-Schnellstart" hidden>
+ <div class="quick-entry-copy">
+  <span class="quick-entry-kicker">⚡ DIREKT ZUM WEIHNACHTS-JACKPOT</span>
+  <strong id="quick-entry-title">🎟️ Spielgutschein wird geprüft …</strong>
+  <span id="quick-entry-detail">Dein Spielerprofil und die verfügbaren Gutscheine werden geprüft.</span>
+ </div>
+ <div class="quick-entry-actions">
+  <button id="quick-start" class="action quick-start" type="button" disabled>▶ Jackpot starten</button>
+  <a id="quick-entry-vouchers" href="./weihnachten.html?view=hats">🎟️ Gutscheine ansehen</a>
+ </div>
+</section>
 <div class="journey-header"><span class="journey-heading">✦ Deine Reise durch die zwanzig Schatzräume</span><span class="journey-current" id="journey-current">🎩 Raum 1 von 20</span></div>
 <div class="tiers" id="tiers" role="group" aria-label="Die 20 Spielräume, bombenfreie Bonusräume und Sicherungen"></div>
 <div class="journey-zones" aria-label="Vier Abschnitte der Schatzreise">
@@ -524,17 +535,30 @@ function render(){
  $('hats').hidden=!s||finished&&!reveal;
  const hasVouchers=DEMO||Number(vouchers?.total||0)>0;
  const showNewGame=settledVisible&&hasVouchers;
+ const entryAvailable=!s||finished;
+ $('quick-entry').hidden=!entryAvailable||!!reveal;
+ $('quick-start').hidden=!hasVouchers;
+ $('quick-start').disabled=busy||!!pendingRequest||!hasVouchers||!!reveal;
+ $('quick-start').textContent=finished?'↻ Nochmal spielen':'▶ Jackpot starten';
+ $('quick-entry-title').textContent=hasVouchers
+  ?finished?'🎁 Die nächste Runde wartet auf dich!':'🎩 Bereit für den Weihnachtsmützen-Jackpot?'
+  :vouchers?'🎟️ Kein Spielgutschein verfügbar':'🎟️ Gutschein wird geprüft …';
+ $('quick-entry-detail').textContent=hasVouchers
+  ?(DEMO?'🧪 Testpartie ohne echte Gutschrift · Sofort losspielen'
+    :'🎟️ '+vouchers.total+' '+(vouchers.total===1?'Gutschein':'Gutscheine')+' bereit · Nur ein Klick bis zur ersten Mütze')
+  :vouchers?'Weitere Gutscheine findest du im Weihnachtsevent.':'Verbinde zuerst dein Online-Spielerprofil.';
+ $('quick-entry-vouchers').hidden=hasVouchers;
  $('hats-voucher-indicator').textContent=DEMO?'🧪 Unbegrenzte Testpartien':reveal?'🎟️ Gutschein eingelöst · Enthüllung läuft':s?.status==='playing'?'🎟️ Gutschein eingelöst · Partie aktiv':
   '🎟️ '+(vouchers?.total===undefined?'–':vouchers.total)+' '+(vouchers?.total===1?'Spielgutschein':'Spielgutscheine');
  $('preview-super').hidden=!isChrisDemo();
- $('start').hidden=!!s;
+ $('start').hidden=true; // The prominent top start button owns this action now.
  $('start').disabled=busy||!!pendingRequest||!hasVouchers;
  $('cash').hidden=!s||finished;
  $('cash').disabled=busy||!!reveal||!!pendingRequest;
  $('continue').hidden=!reveal;
  $('continue').textContent=revealPhase==='shown'?'⏭️ Weiter':'⏭️ Enthüllung überspringen';
  $('continue').disabled=busy;
- $('again').hidden=!showNewGame;
+ $('again').hidden=true; // Restart uses the same top action as a new game.
  $('again').disabled=busy||!!pendingRequest||!hasVouchers;
  $('hats-locked').hidden=!!DEMO||!settledVisible||hasVouchers;
  $('retry').hidden=!pendingRequest||busy;
@@ -830,7 +854,15 @@ async function submit(payload){
   if(permanent)savePending(null);
   setStatus('⚠️ '+describeError(e)+(permanent?' – Bitte Spielstand aktualisieren.':' – Bitte dieselbe Aktion sicher wiederholen.'),true);
  }
- finally{busy=false;selectedHat=null;render();}
+ finally{
+  busy=false;selectedHat=null;render();
+  if(payload.type==='start'&&state?.status==='playing'&&!pendingRequest&&uid()===requestUser){
+   // Move straight to the three playable hats after the server confirms the ticket.
+   const target=$('hats-stage');
+   const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+   target?.scrollIntoView?.({behavior:reduced?'instant':'smooth',block:'start'});
+  }
+ }
 }
 $('choice-next').onclick=closeChoice;
 $('choice-cash').onclick=()=>{closeChoice();askCash()};
@@ -886,6 +918,7 @@ function askCash(){
  if(dialog.showModal)dialog.showModal();
  else if(window.confirm('Alle bisherigen Gewinne kassieren und die Runde beenden?'))action('cash');
 }
+$('quick-start').onclick=()=>action('start');
 $('start').onclick=()=>action('start');
 $('again').onclick=()=>action('start');
 $('cash').onclick=askCash;
