@@ -39,8 +39,8 @@ test('Forge UI maps every server-recognized skill to an illustration',()=>{
 });
 test('Forge UI styles and HTML load the current skill artwork release',()=>{
  const html=read('dog-forge.html'),css=read('dog-forge.css');
- assert.ok(html.includes('dog-forge-ui.js?v=20261110-forge-d2'));
- assert.ok(html.includes('dog-forge.css?v=20261110-forge-d2'));
+ assert.ok(html.includes('dog-forge-ui.js?v=20261110-forge-d3'));
+ assert.ok(html.includes('dog-forge.css?v=20261110-forge-d3'));
  for(const selector of ['.skill-display','.skill-visual.compact','.item-choice.skill-entry',
   '.result-art .skill-illustration'])assert.ok(css.includes(selector),'missing selector '+selector);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
@@ -351,4 +351,53 @@ test('D2 reduced-motion viewers do not get a mandatory animation',async()=>{
  assert.equal(h.dialog.open,false);
  await h.api.finish({type:'upgrade',success:true,oldLevel:1,newLevel:2});
  assert.equal(h.timers.size,0);
+});
+
+test('D3 shows personal goal and uses only local, account-scoped selection',()=>{
+ const html=read('dog-forge.html'),ui=read('dog-forge-ui.js'),css=read('dog-forge.css');
+ for(const id of ['forge-goal-banner','forge-goal-visual','forge-goal-title',
+  'forge-goal-desc','forge-goal-progress','forge-goal-open','forge-goal-clear'])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.ok(ui.includes("const goalKey=account=>'dog:forge:goal:'+account;"));
+ assert.ok(ui.includes('const loadGoal=account=>'));
+ assert.ok(ui.includes('localStorage.setItem(goalKey(uid),goalId)'));
+ assert.ok(ui.includes('localStorage.removeItem(goalKey(uid))'));
+ assert.ok(ui.includes('function renderGoal()'));
+ assert.ok(ui.includes('goalId=loadGoal(account)'));
+ assert.ok(ui.includes('renderGoal();renderChronicle();renderStock();'));
+ assert.ok(ui.includes("node('button','forge-goal-pin'"));
+ assert.ok(css.includes('.forge-goal-banner'));
+ assert.ok(css.includes('.forge-goal-progress'));
+});
+test('D3 validates direct material advice and does not auto-spend resources',()=>{
+ const ui=read('dog-forge-ui.js');
+ assert.ok(ui.includes('function exchangeHints(quote)'));
+ assert.ok(ui.includes('const spare=Math.max(0,have(source)-reserve)'));
+ assert.ok(ui.includes('Math.floor(spare/10)'));
+ assert.ok(ui.includes('1000000-have(id)'));
+ assert.ok(ui.includes("tab='exchange';tradeGroup=suggestion.group;render();"));
+ assert.ok(ui.includes('exchangeHints(quote)'));
+ assert.ok(ui.includes('nur teilweise ausreichend'));
+});
+test('D3 batch trade confirms real quantities and retains pending receipt safety',()=>{
+ const ui=read('dog-forge-ui.js'),html=read('dog-forge.html'),css=read('dog-forge.css');
+ for(const id of ['forge-exchange-confirm','forge-exchange-confirm-submit',
+  'forge-exchange-confirm-cancel','forge-exchange-confirm-preview',
+  'forge-exchange-confirm-description']){
+  assert.ok(html.includes('id="'+id+'"'),id);
+ }
+ assert.ok(ui.includes('Math.min(100,Math.floor(stock/10),1000000-have(to[0]))'));
+ assert.ok(ui.includes('new Set([1,5,10,25,maxBatch])'));
+ assert.ok(ui.includes("if(count===1)void action('exchange',{resourceId:from[0]});"));
+ assert.ok(ui.includes("else openExchangeConfirm(from[0],count);"));
+ assert.ok(ui.includes("void action('exchange',{resourceId:req.resourceId,count:req.count});"));
+ assert.ok(ui.includes('have(req.resourceId)<req.count*10'));
+ assert.ok(ui.includes('have(to)+req.count>1000000'));
+ assert.ok(ui.includes('money(result.spent||10)'));
+ assert.ok(ui.includes('money(result.received||1)'));
+ assert.ok(ui.includes('savePending(account,op)'));
+ assert.ok(css.includes('.multi-exchange-row'));
+ assert.ok(css.includes('.exchange-controls'));
+ assert.doesNotThrow(()=>new Script(ui,{filename:'dog-forge-ui.js'}));
+ assert.equal(css.split('{').length,css.split('}').length);
 });
