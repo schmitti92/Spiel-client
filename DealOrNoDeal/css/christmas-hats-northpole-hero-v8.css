@@ -47,6 +47,17 @@ nav #mode[aria-pressed="false"]{background:linear-gradient(120deg,#49314c,#2d284
  font-size:22px;color:#fff5c8;line-height:1;text-shadow:0 0 8px #ffeba8,0 0 30px #ffe2a4;
  pointer-events:none;
 }
+.hero-landmark{
+ position:absolute;z-index:1;bottom:13px;
+ padding:5px 11px;border:1px solid #f9d38ab0;border-radius:11px;
+ background:linear-gradient(100deg,#102841ee,#18394cd9);
+ color:#ffedc0;font-size:11px;font-weight:900;letter-spacing:.01em;
+ text-shadow:0 2px 5px #000c;
+ box-shadow:inset 0 1px #fff9d138,0 3px 11px #0007;
+ pointer-events:none;
+}
+.hero-landmark--workshop{left:18px;border-color:#fbd287be;background:#432c2bdc}
+.hero-landmark--palace{right:18px;border-color:#8eeeffbd;background:#12395bdc}
 .northpole-hero-inner{position:relative;z-index:1;width:min(100%,840px);margin:auto;text-align:center}
 .hero .eyebrow{
  display:inline-flex;justify-content:center;max-width:100%;
@@ -92,6 +103,7 @@ nav #mode[aria-pressed="false"]{background:linear-gradient(120deg,#49314c,#2d284
 .hero .demo-badge{margin-top:10px;max-width:100%;font-size:12px}
 .hats-quick-entry{margin-top:11px}
 @media(max-width:730px){
+ .hero-landmark{display:none}
  nav{padding:7px;gap:6px}
  nav .tools{justify-content:center;gap:5px;width:100%}
  nav .back,nav button{min-height:34px;padding:7px 9px;font-size:clamp(11px,2.8vw,13px)}
