@@ -176,7 +176,7 @@
     boss.setAttribute('aria-label','Die echte gemeinsame Tor-10-Bossarena betreten');
     notice.textContent=(mapState?.sharedBosses||[]).includes(10)?
      '🏆 Euer gemeinsamer Sieg über Boss 10 ist gespeichert. Die nächste Schmiedestufe ist freigeschaltet.':
-     '🐉 Alle drei Spieler treffen sich in der Bossarena. Jeder muss Tor 9 geschafft haben und auf Bereit klicken.';
+     '🐉 Boss 10: Mit 1, 2 oder 3 Helden starten. Nur die Teilnehmer müssen Tor 9 geschafft haben und auf Bereit klicken. Allein ist der Sieg unmöglich, zu dritt habt ihr die besten Chancen.';
    }else{
     boss.hidden=true;
     notice.textContent='🔒 Dieser Gruppenboss ist noch nicht implementiert. Sein Start wird hier freigeschaltet, sobald der Server den Kampf unterstützt.';
