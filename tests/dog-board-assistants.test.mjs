@@ -74,7 +74,7 @@ test('track gap can wrap from 63 to 0 without skipping numeric order',()=>{
  assert.equal(result.to,0);
 });
 test('turns and long missing sections require intentional field-by-field layout',()=>{
- const d=emptyDraft();d.track[0]={x:100,y:100};d.track[3]={x:160,y:165};
+ const d=emptyDraft();d.track[0]={x:100,y:100};d.track[3]={x:160,y:195};
  assert.throws(()=>connectStraightGap(d,0,{step:28}),/Kurve|Abstand/);
  const long=emptyDraft();long.track[0]={x:100,y:100};long.track[15]={x:500,y:100};
  assert.equal(straightGaps(long).some(x=>x.from===0),false);
