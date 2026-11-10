@@ -222,8 +222,8 @@
  function pick(gameId){return stories[hash(gameId)%stories.length]}
  function revealContext(game){
   const opened=Array.isArray(game?.openedAmounts)?game.openedAmounts:[];
-  const count=[26,27,28,29].includes(game?.caseCount)?game.caseCount:26;
-  const top={26:100000000,27:300000000,28:500000000,29:1000000000}[count];
+  const count=[26,27,28,29,30].includes(game?.caseCount)?game.caseCount:26;
+  const top={26:100000000,27:300000000,28:500000000,29:1000000000,30:5000000000}[count];
   const amounts=opened.map(p=>Number(p.amount)).filter(Number.isSafeInteger);
   const last=amounts.slice(-3);
   const topLost=amounts.includes(top),centLost=amounts.includes(1);
