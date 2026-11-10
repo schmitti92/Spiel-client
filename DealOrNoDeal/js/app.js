@@ -1,11 +1,17 @@
 'use strict';
-// Show the next call only for new 29-case matches. The server's saved
-// schedule is authoritative; older active games keep their previous cadence.
+// Show the next Banker call using the schedule saved by the server.
+// The 30-case variants deliberately have NO surprise call after the last
+// scheduled milestone; the final unsold cases lead directly to the finale.
 function next29BankerCountdown(game){
  if(![29,30].includes(game?.caseCount)||!Array.isArray(game.bankerSchedule)||!['open','reveal'].includes(game.phase))return '';
  const toOpen=Math.max(0,game.caseCount-(game.players?.length||0)-(game.openedAmounts?.length||0));
- const target=Math.max(1,Number(game.bankerSchedule[game.round])||1);
- const until=Math.max(0,Math.min(toOpen,target-(game.roundOpened||0)));
+ if(!toOpen)return '';
+ const rawStep=Number(game.bankerSchedule[game.round]);
+ const scheduled=Number.isInteger(rawStep)&&rawStep>=1;
+ const untilCall=scheduled?Math.max(0,rawStep-(game.roundOpened||0)):1;
+ if(game.caseCount===30&&game.bankerScheduleVariant&&(!scheduled||untilCall>toOpen))
+  return ' · 🏁 Finale in '+toOpen+(toOpen===1?' Koffer':' Koffern');
+ const until=Math.max(0,Math.min(toOpen,untilCall));
  return until?' · 📞 Banker in '+until+(until===1?' Koffer':' Koffern'):'';
 }
 // Update the stable money board in place; avoid rebuilding 26 DOM nodes per socket update.
