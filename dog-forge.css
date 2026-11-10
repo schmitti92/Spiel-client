@@ -1461,3 +1461,51 @@ body:after{
  .character-emblem.forge-frame-dragon,.character-emblem.forge-frame-astral{animation:none!important}
  .gallery-choice{transition:none!important}
 }
+
+
+/* D5 — stability and compact touch layouts.
+   Explicitly honor the semantic hidden attribute even on flex/grid cards. */
+[hidden],
+.retry-bar[hidden],.forge-goal-banner[hidden],.forge-list-toolbar[hidden],
+.forge-new-unlock[hidden],.forge-open-rewards[hidden]{display:none!important}
+.top-nav a,.top-nav button,.forge-tab,.item-choice,.exchange-submit,.forge-action,
+.gallery-choice,.forge-gallery-open{touch-action:manipulation}
+:where(.forge-canvas,.forge-workspace,.workshop-panel,.upgrade-panel,.gallery-shell) {
+ min-width:0;
+}
+.forge-status{overflow-wrap:anywhere}
+.forge-goal-desc,.upgrade-summary,.forge-footer,.journal-content{
+ overflow-wrap:anywhere;
+}
+@media(max-width:640px) and (pointer:coarse){
+ /* Mobile GPUs should not repaint the entire viewport every flame frame. */
+ body:before,body.forge-has-custom-wall:before{
+  background-attachment:scroll;
+ }
+ .workshop-panel,.upgrade-panel,.forge-banner,.forge-chronicle,.stock-panel{
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+ }
+ .furnace-embers i:nth-child(n+5){display:none!important}
+ .furnace-fire{filter:drop-shadow(0 0 10px #ff9654)}
+ .furnace-flames{filter:drop-shadow(0 0 8px #ff9b46)}
+ .forge-workspace.forging .furnace-embers i{animation-duration:1.9s}
+ .forge-gallery::backdrop,.forge-ceremony::backdrop{
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+ }
+ .forge-gallery,.forge-ceremony,.forge-confirm,.forge-result{
+  max-height:calc(100dvh - 12px);
+ }
+}
+@media(max-width:370px){
+ .top-nav{justify-content:center;flex-wrap:wrap}
+ .top-nav a,.top-nav button{max-width:100%}
+ .forge-goal-banner{gap:7px}
+ .gallery-shell{padding:10px 8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .furnace-embers i,.spark,.furnace-flames i{animation:none!important;opacity:.2}
+ .forge-gallery *, .forge-confirm *, .forge-result *,
+ .forge-ceremony *{scroll-behavior:auto!important}
+}
