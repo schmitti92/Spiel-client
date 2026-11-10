@@ -47,6 +47,19 @@
  const stageFor=level=>Math.max(1,STAGES.findIndex(s=>level<=s.limit)+1||5);
  const rankFor=total=>total>=450?'Legende':total>=280?'Meister':total>=160?'Veteran':
   total>=80?'Kämpfer':total>=35?'Rekrut':total>=12?'Lehrling':'Neuling';
+ // Decorative achievements are derived from the authenticated hero's real levels
+ // and lifetime counters. They don't alter gameplay or need extra database writes.
+ const MILESTONES=Object.freeze([
+  {icon:'⚒️',title:'Erster Funke',key:'successes',goal:1},
+  {icon:'🌟',title:'Lehrschmied',key:'successes',goal:10},
+  {icon:'🏅',title:'Meisterhand',key:'successes',goal:50},
+  {icon:'💎',title:'Alchemistenpfad',key:'exchanges',goal:10},
+  {icon:'🗡️',title:'Stahl erwacht',key:'weapon',goal:6},
+  {icon:'🔮',title:'Runenschmied',key:'weapon',goal:11},
+  {icon:'🐉',title:'Drachenschmied',key:'weapon',goal:20},
+  {icon:'🛡️',title:'Wächterrüstung',key:'armor',goal:20},
+  {icon:'✨',title:'Vollendete Kunst',key:'maxSkill',goal:50}
+ ]);
  const money=n=>Math.max(0,Number(n)||0).toLocaleString('de-DE');
  const node=(tag,className,textValue)=>{
   const el=document.createElement(tag);
@@ -154,6 +167,69 @@
   for(const group of ['attack','defense']){
    const total=view?.items?.filter(x=>x.group===group).reduce((sum,x)=>sum+levelFor(x.id),0)||0;
    $('forge-'+(group==='attack'?'attack':'defense')+'-total').textContent=money(total);
+  }
+ }
+ function milestoneValue(def,hero){
+  if(def.key==='weapon'||def.key==='armor')return Number(hero?.levels?.[def.key]||1);
+  if(def.key==='maxSkill'){
+   const skills=(view?.items||[]).filter(x=>x.group!=='equipment');
+   return Math.max(0,...skills.map(x=>Number(hero?.levels?.[x.id]||0)));
+  }
+  return Number(hero?.[def.key]||0);
+ }
+ function renderChronicle(){
+  const hero=view?.hero;
+  const stats=$('forge-chronicle-stats');stats.replaceChildren();
+  const attempts=Number(hero?.crafts||0),success=Number(hero?.successes||0);
+  const fail=Number(hero?.failures||0),trade=Number(hero?.exchanges||0);
+  const rate=attempts?Math.round(success/attempts*100):0;
+  for(const [name,value] of [
+   ['Versuche',attempts],['Erfolge',success],['Fehlschläge',fail],
+   ['Tauschvorgänge',trade],['Erfolgsquote',attempts?rate+' %':'–']
+  ]){
+   const tile=node('div','chronicle-stat');
+   tile.append(node('small',null,name),node('strong',null,typeof value==='number'?money(value):value));
+   stats.append(tile);
+  }
+  const achievements=$('forge-achievements');achievements.replaceChildren();
+  let completed=0;
+  for(const milestone of MILESTONES){
+   const value=hero?milestoneValue(milestone,hero):0;
+   const unlocked=!!hero&&value>=milestone.goal;
+   if(unlocked)completed++;
+   const tile=node('div','milestone'+(unlocked?' unlocked':' locked'));
+   tile.append(node('span','milestone-icon',milestone.icon));
+   const main=node('span','milestone-main');
+   main.append(node('strong',null,milestone.title));
+   main.append(node('small',null,unlocked?'✓ Freigeschaltet':
+    money(Math.min(value,milestone.goal))+' / '+money(milestone.goal)));
+   const bar=node('span','milestone-progress'),fill=node('span');
+   fill.style.width=Math.min(100,value/milestone.goal*100)+'%';
+   bar.append(fill);main.append(bar);
+   tile.append(main);achievements.append(tile);
+  }
+  $('forge-achievements-count').textContent=completed+' / '+MILESTONES.length;
+  const journal=$('forge-journal');journal.replaceChildren();
+  const entries=Array.isArray(hero?.recent)?hero.recent:[];
+  if(!entries.length){
+   journal.append(node('p','journal-empty',hero?
+    'Noch keine neuen Einträge. Frühere Versuche werden nicht rückwirkend angezeigt.':
+    'Nach dem Anmelden erscheinen hier deine letzten Vorgänge.'));
+   return;
+  }
+  for(const entry of entries.slice(0,10)){
+   const isUpgrade=entry.type==='upgrade';
+   const def=isUpgrade?itemFor(entry.itemId):null;
+   const success=entry.success===true;
+   const row=node('div','journal-entry '+(isUpgrade?(success?'journal-success':'journal-failure'):'journal-trade'));
+   const icon=node('span','journal-icon',isUpgrade?(success?'✨':'🌑'):'💎');
+   const details=node('span','journal-content');
+   const title=isUpgrade?(def?.name||'Verbesserung'):(material[entry.from]?.name||'Rohstoff')+' → '+(material[entry.to]?.name||'Rohstoff');
+   const result=isUpgrade?(success?'✓ Stufe '+entry.level:'Fehlschlag · Stufe '+entry.level):'10 : 1 getauscht';
+   details.append(node('strong',null,title),node('small',null,result));
+   const at=Number(entry.at||0);
+   const date=at?new Date(at).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}):'–';
+   row.append(icon,details,node('span','journal-date',date));journal.append(row);
   }
  }
  function renderStock(){
@@ -304,6 +380,28 @@
   fill.style.width=(Math.min(1,level/item.maxLevel)*100)+'%';
   track.append(fill);root.append(track);
   root.append(node('div','level-next',quote?.maxed?'✦ Maximalstufe erreicht':'Nächste Stufe: '+(quote?.nextLevel??'–')));
+  if(item.group==='equipment'){
+   const stage=stageFor(level);
+   const teaser=node('div','evolution-teaser'+(stage===5?' evolution-final':''));
+   if(stage<5){
+    const nextLevel=STAGES[stage-1].limit+1;
+    const next=STAGES[stage];
+    teaser.append(gearVisual(item.id,nextLevel,true));
+    const details=node('div','evolution-description');
+    details.append(node('small',null,'NÄCHSTE AUSSEHENSSTUFE'),
+     node('strong',null,next[item.id]),
+     node('span',null,'Ab Stufe '+nextLevel+' · Vorschau'));
+    teaser.append(details);
+    teaser.append(node('span','evolution-lock','🔒'));
+   }else{
+    teaser.append(node('span','evolution-crown','👑'));
+    const details=node('div','evolution-description');
+    details.append(node('small',null,'LEGENDÄR'),
+     node('strong',null,'Endgültige Ausrüstungsoptik freigeschaltet'));
+    teaser.append(details);
+   }
+   root.append(teaser);
+  }
   root.append(node('div','upgrade-rule'));
   if(!quote){root.append(node('p','upgrade-summary','Dein Held wird geladen …'));return;}
   if(quote.maxed){
@@ -402,7 +500,7 @@
   $('forge-retry-wrap').hidden=!pending(uid);
   $('forge-retry').disabled=!uid||busy;
   $('forge-refresh').disabled=busy;
-  header();renderList();tab==='exchange'?renderExchange():renderUpgrade();renderStock();
+  header();renderList();tab==='exchange'?renderExchange():renderUpgrade();renderChronicle();renderStock();
  }
  const closeModal=()=>{const dialog=$('forge-result');if(dialog.open)dialog.close();};
  function resultDialog(result){
