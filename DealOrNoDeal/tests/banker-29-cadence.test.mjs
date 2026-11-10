@@ -44,3 +44,35 @@ test('countdown is purely local and shown in money-summary with no network or Fi
  assert.match(html,/app\.js\?v=20261110-soft-gold-no-turn-label-v2/);
  assert.doesNotThrow(()=>new Script(app));
 });
+
+test('30-case random banker patterns show only the real upcoming call',()=>{
+ const patterns=[
+  [7,15,21,24,27],
+  [7,13,16,19,25,26],
+  [10,15,20,25,27],
+  [7,16,19,25,27],
+  [8,14,19,22,24,26]
+ ];
+ const players=Array.from({length:3},(_,i)=>({id:'p'+i}));
+ patterns.forEach((targets,index)=>{
+  const steps=targets.map((n,i)=>n-(targets[i-1]||0));
+  const base={caseCount:30,players,bankerScheduleVariant:index+1,bankerSchedule:steps};
+  assert.match(calc(newGame({...base})),new RegExp('Banker in '+targets[0]+' Koffern$'));
+  const almost=targets[0]-1;
+  assert.match(calc(newGame({...base,openedAmounts:Array(almost).fill({}),roundOpened:almost})),/Banker in 1 Koffer$/);
+  const last=targets.at(-1);
+  if(last===26){
+   assert.match(calc(newGame({...base,round:steps.length,roundOpened:0,openedAmounts:Array(last).fill({})})),/Finale in 1 Koffer$/);
+  }else{
+   assert.equal(calc(newGame({...base,round:steps.length,openedAmounts:Array(last).fill({})})),'');
+  }
+ });
+});
+
+test('four protected cases do not create a false final Banker call',()=>{
+ const players=Array.from({length:4},(_,i)=>({id:'p'+i}));
+ const schedule=[7,8,6,3,3]; // Variant 1: last planned call at opening 27.
+ const result=calc(newGame({caseCount:30,bankerScheduleVariant:1,players,
+  bankerSchedule:schedule,round:4,roundOpened:0,openedAmounts:Array(24).fill({})}));
+ assert.match(result,/Finale in 2 Koffern$/);
+});
