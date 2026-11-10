@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-label="Fantasy-Schmiedewerkstatt mit Feuer, Steinwänden und Amboss">
+<defs>
+ <linearGradient id="wall" x2="0" y2="1"><stop stop-color="#32251e"/><stop offset=".55" stop-color="#1e2028"/><stop offset="1" stop-color="#090f1a"/></linearGradient>
+ <linearGradient id="stone" x2="1" y2="1"><stop stop-color="#554436"/><stop offset=".35" stop-color="#392f2b"/><stop offset=".8" stop-color="#211f23"/><stop offset="1" stop-color="#141822"/></linearGradient>
+ <linearGradient id="wood" x2="1" y2="1"><stop stop-color="#714521"/><stop offset=".55" stop-color="#31231d"/><stop offset="1" stop-color="#7b4b27"/></linearGradient>
+ <linearGradient id="iron" x2="1" y2="1"><stop stop-color="#9e8070"/><stop offset=".27" stop-color="#373a3e"/><stop offset=".6" stop-color="#13181e"/><stop offset="1" stop-color="#614f47"/></linearGradient>
+ <radialGradient id="fire"><stop stop-color="#fffbb7"/><stop offset=".19" stop-color="#ffd363"/><stop offset=".5" stop-color="#ec742b"/><stop offset=".8" stop-color="#a43116" stop-opacity=".6"/><stop offset="1" stop-color="#b82b0e" stop-opacity="0"/></radialGradient>
+ <radialGradient id="heat"><stop stop-color="#ec833e" stop-opacity=".63"/><stop offset=".6" stop-color="#b74d20" stop-opacity=".13"/><stop offset="1" stop-color="#b44525" stop-opacity="0"/></radialGradient>
+ <linearGradient id="floor" x2="0" y2="1"><stop stop-color="#382e29"/><stop offset=".53" stop-color="#29221e"/><stop offset="1" stop-color="#0d1219"/></linearGradient>
+ <pattern id="brick" width="224" height="92" patternUnits="userSpaceOnUse"><path d="M0 0H224M0 46H224M112 0V46M0 46V92M224 46V92" stroke="#ac8f6840" stroke-width="5"/><path d="M5 6L101 3M119 54L212 51" stroke="#e4ad7130" stroke-width="2"/></pattern>
+ <filter id="glow"><feGaussianBlur stdDeviation="16"/></filter>
+ <filter id="ember"><feGaussianBlur stdDeviation="3"/></filter>
+</defs>
+<rect width="1920" height="1080" fill="url(#wall)"/>
+<rect x="0" y="80" width="1920" height="680" fill="url(#brick)" opacity=".65"/>
+<path d="M0 240L400 5 500 5 114 274M1920 240L1520 5 1420 5 1806 274" fill="url(#wood)" stroke="#bc7435" stroke-width="12"/>
+<path d="M0 58L1920 58M0 120L1920 120" stroke="#2a1b16" stroke-width="54"/>
+<path d="M0 48L1920 48M0 111L1920 111" stroke="#a66d3c" stroke-width="5" opacity=".5"/>
+<path d="M100 0V800M1830 0V800" stroke="url(#wood)" stroke-width="85"/>
+<rect x="0" y="762" width="1920" height="318" fill="url(#floor)"/>
+<path d="M0 820H1920M0 915H1920M0 1025H1920M0 1080L900 760M1920 1080L1020 760M500 1080L930 760M1420 1080L990 760" stroke="#96705245" stroke-width="9"/>
+<path d="M0 830L1920 840M0 925L1920 930" stroke="#1f1516" stroke-width="3"/>
+<!-- side workbenches and hanging equipment -->
+<rect x="62" y="590" width="470" height="28" rx="7" fill="url(#wood)"/>
+<path d="M110 615V760M474 615V760" stroke="#503321" stroke-width="29"/>
+<rect x="95" y="470" width="135" height="115" rx="13" fill="url(#iron)" stroke="#c4945b" stroke-width="8"/>
+<path d="M90 520H225M132 464V580" stroke="#c19b62" stroke-width="7"/>
+<path d="M330 460Q360 405 399 448L425 565H315Z" fill="url(#iron)" stroke="#ae875e" stroke-width="7"/>
+<rect x="1450" y="595" width="380" height="25" fill="url(#wood)"/>
+<path d="M1490 620V780M1785 620V780" stroke="#533422" stroke-width="30"/>
+<path d="M1522 252V545M1584 252V545M1660 252V545M1740 252V545" stroke="#3b3030" stroke-width="10" stroke-linecap="round"/>
+<path d="M1516 295H1550L1530 350L1540 380M1584 295L1558 365L1588 400M1660 304L1690 358L1658 409M1740 307L1754 358L1728 402" stroke="#92705e" fill="none" stroke-width="10" stroke-linecap="round"/>
+<!-- glowing giant furnace -->
+<ellipse cx="1000" cy="650" rx="630" ry="350" fill="url(#heat)"/>
+<path d="M680 620L680 354Q692 216 945 208H1030Q1285 215 1310 355L1330 665Z" fill="url(#stone)" stroke="#86634b" stroke-width="24"/>
+<path d="M745 580V425Q750 270 998 267Q1250 270 1255 425V585Z" fill="#12131a" stroke="#988066" stroke-width="34"/>
+<ellipse cx="1000" cy="545" rx="230" ry="173" fill="url(#fire)"/>
+<path d="M797 582Q825 493 872 523Q862 425 950 476Q981 365 1014 466Q1074 410 1092 491Q1166 461 1206 579Z" fill="#ec6626" opacity=".81"/>
+<path d="M825 584Q866 508 926 550Q955 467 997 508Q1016 429 1055 507Q1094 488 1175 580Z" fill="#ffc562" opacity=".94"/>
+<path d="M893 576Q948 533 984 565Q1006 489 1041 552Q1092 537 1134 578Z" fill="#fff2b1" opacity=".91"/>
+<rect x="720" y="606" width="588" height="40" rx="4" fill="url(#stone)" stroke="#966a4d" stroke-width="8"/>
+<!-- rustic anvil on oak stand -->
+<ellipse cx="990" cy="833" rx="245" ry="60" fill="#080b12" opacity=".6"/>
+<path d="M868 670H1117L1131 850Q991 898 846 850Z" fill="url(#wood)" stroke="#ae7242" stroke-width="10"/>
+<path d="M850 742H1129M860 830H1134" stroke="#8b7d6c" stroke-width="20"/>
+<path d="M802 613H1173L1258 585L1192 648H1144L1118 692H848L815 648H766Z" fill="url(#iron)" stroke="#c5a07a" stroke-width="10"/>
+<path d="M860 693H1123L1106 755H880Z" fill="#20252b" stroke="#726158" stroke-width="7"/>
+<path d="M944 700L1000 725L1056 700L1000 770Z" fill="#dc953e" opacity=".6"/>
+<ellipse cx="993" cy="900" rx="440" ry="95" fill="url(#heat)" opacity=".74"/>
+<!-- lamps and sparks -->
+<path d="M950 0V132M1045 0V132" stroke="#605b54" stroke-width="7"/>
+<ellipse cx="998" cy="138" rx="175" ry="23" fill="none" stroke="#956744" stroke-width="19"/>
+<g fill="#ffcf62"><circle cx="843" cy="123" r="10"/><circle cx="922" cy="153" r="11"/><circle cx="1043" cy="156" r="11"/><circle cx="1153" cy="123" r="10"/></g>
+<g fill="#ffd984" filter="url(#ember)"><circle cx="827" cy="444" r="4"/><circle cx="923" cy="403" r="3"/><circle cx="1156" cy="417" r="4"/><circle cx="1197" cy="478" r="5"/><circle cx="861" cy="548" r="3"/><circle cx="1044" cy="371" r="3"/><circle cx="764" cy="500" r="2"/></g>
+<rect width="1920" height="1080" fill="#080d18" opacity=".34"/>
+</svg>
