@@ -13,7 +13,7 @@ function directorReveal(){
  const newlyOpened=amounts.filter(x=>!directorSeenOpened.has(x.case));
  for(const item of amounts)directorSeenOpened.add(item.case);
  if(!newlyOpened.length||g.phase==='final')return;
- const item=newlyOpened.at(-1);if(typeof announceOpenedAmount==='function')announceOpenedAmount(item.amount,{caseNumber:item.case+1,gameId:g.id});directorLatestAmount=item.amount;directorLatestUntil=Date.now()+1800;
+ const item=newlyOpened.at(-1);if(typeof announceOpenedAmount==='function')announceOpenedAmount(item.amount,{caseNumber:item.case+1,gameId:g.id,caseCount:g.caseCount});directorLatestAmount=item.amount;directorLatestUntil=Date.now()+1800;
  const prizeScale=Array.isArray(values)&&values.length?values:[];
  const sortedScale=[...prizeScale].sort((a,b)=>a-b);
  const highThreshold=sortedScale[Math.floor(sortedScale.length*.8)]??Infinity;
