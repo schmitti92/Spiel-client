@@ -442,7 +442,7 @@ function renderTiers(active,checkpoint,cleared){
  for(let i=1;i<=limit;i++){
   const isFinal=i===limit;
   const isCheckpoint=roomsProtected.includes(i)&&!isFinal;
-  const isBonus=(state?.rulesVersion===5||!state)&&i%3===0&&i<20;
+  const isBonus=(state?.rulesVersion>=5||!state)&&i%3===0&&i<20;
   const protectedRoom=i<=checkpoint,completed=i>checkpoint&&i<=cleared;
   const d=document.createElement('div');
   const type=isFinal?'finale':isBonus&&isCheckpoint?'bonus-checkpoint':isCheckpoint?'checkpoint':isBonus?'bonus':'normal';
@@ -521,7 +521,7 @@ function render(){
  $('journey-progress-fill').style.width=(completedRooms/limit*100)+'%';
  $('journey-progress-caption').textContent=completedRooms+' von '+limit+' Räumen geschafft';
  $('journey-heading').textContent='✦ Deine Reise durch die '+(limit===10?'zehn':'zwanzig')+' Schatzräume';
- $('journey-legend').hidden=!!s&&s.rulesVersion!==5;
+ $('journey-legend').hidden=!!s&&s.rulesVersion<5;
  const banner=$('stage-banner'),zone=limit===10?(roomNumber<=3?'easy':roomNumber<=6?'medium':'jackpot'):(roomNumber<=3?'easy':roomNumber<=9?'medium':roomNumber<=15?'jackpot':'final');
  $('hats-stage').dataset.zone=zone;
  $('journey-current').textContent='🎩 Raum '+roomNumber+' / '+limit+((s?.checkpoints||[3,7]).includes(roomNumber)?' · 🛡️ Checkpoint':roomNumber===limit?' · 👑 Finale':'');
@@ -750,12 +750,15 @@ function demoScore(g){
  const weights={small:200000,large:500000,premium:1000000,platinum:2500000,single:300000,double:500000,lucky:1000000};
  return (g.items||[]).reduce((n,i)=>n+(i.kind==='cash'?i.amountCents/100:i.kind==='joker'?1000000*i.quantity:weights[i.packId||i.hammer]*i.quantity),0);
 }
-function demoLayout(room,version=5){
- let a=demoPrize(room),b=demoPrize(room);
- for(let i=0;i<14&&demoScore(a)===demoScore(b);i++)b=demoPrize(room);
+function demoLayout(room,version=6){
+ let a=version===6?demoBalancedPrize(room):demoPrize(room),b=version===6?demoBalancedPrize(room):demoPrize(room);
+ for(let i=0;i<14&&demoScore(a)===demoScore(b);i++)b=version===6?demoBalancedPrize(room):demoPrize(room);
  if(demoScore(a)===demoScore(b)){
   a={superLuck:false,items:[demoItem('pack',room<=3?'small':room<=6?'large':'premium',1)]};
-  b={superLuck:false,items:[demoItem('pack',room<=3?'small':room<=6?'premium':'platinum',3),demoItem('hammer',room<=3?'single':room<=6?'double':'lucky',3)]};
+  if(version===6){
+   b={superLuck:false,items:[demoItem('hammer',room<=3?'single':room<=10?'double':'lucky',1)]};
+   if(demoScore(a)===demoScore(b))b={superLuck:false,items:[demoMoney(room<=6?20000:room<=10?50000:room<=15?150000:400000)]};
+  }else b={superLuck:false,items:[demoItem('pack',room<=3?'small':room<=6?'premium':'platinum',3),demoItem('hammer',room<=3?'single':room<=6?'double':'lucky',3)]};
  }
  const normal=demoScore(a)<demoScore(b)?a:b,better=normal===a?b:a;
  const containsBomb=version===1||demoRand(100)<3*demoBombOdds[room-1];
@@ -769,8 +772,8 @@ function demoView(run){
  if(!run)return null;
  const {id,status,room,checkpoint,secured,pending,lastReveal,summary,updatedAt}=run;
  return {id,status,room,checkpoint,secured,pending,lastReveal,summary,updatedAt,
-  rulesVersion:run.rulesVersion===5?5:1,maxRoom:run.rulesVersion===5?20:10,
-  checkpoints:run.rulesVersion===5?demoCheckpoints:[3,7],bombOdds:status==='playing'?(run.rulesVersion===5?demoBombOdds[room-1]:33):null};
+  rulesVersion:run.rulesVersion===6?6:run.rulesVersion===5?5:1,maxRoom:run.rulesVersion>=5?20:10,
+  checkpoints:run.rulesVersion>=5?demoCheckpoints:[3,7],bombOdds:status==='playing'?(run.rulesVersion>=5?demoBombOdds[room-1]:33):null};
 }
 function demoRead(){
  try{const saved=JSON.parse(sessionStorage.getItem(demoStoreKey())||'null');return saved?.version===1?saved:null;}
@@ -797,7 +800,7 @@ function demoRequest(path,method='GET',payload=null){
  if(method==='GET'){
   const pendingId=new URLSearchParams(path.split('?')[1]||'').get('pendingId');
   const prior=run?.receipts?.find(x=>x.id===pendingId);
-  return {ok:true,state:demoView(run),odds:demoOdds,...(pendingId?{pendingAction:{applied:!!prior,result:prior?.result||null}}:{})};
+  return {ok:true,state:demoView(run),odds:run?.rulesVersion===5?demoOdds:demoBalancedOdds,...(pendingId?{pendingAction:{applied:!!prior,result:prior?.result||null}}:{})};
  }
  const {type,requestId,runId,index}=payload||{};
  if(!['start','pick','cash'].includes(type)||!requestId)throw Error('INVALID_ACTION');
@@ -805,8 +808,8 @@ function demoRequest(path,method='GET',payload=null){
  if(prior)return {ok:true,state:demoView(run),result:prior.result,replayed:true,outdated:prior.id!==run.lastActionId};
  if(type==='start'){
   if(run?.status==='playing')return {ok:true,state:demoView(run),result:{resumed:true},replayed:true};
-  run={version:1,rulesVersion:5,id:'demo-'+Date.now().toString(36)+'-'+demoRand(9999999),status:'playing',room:1,
-   layout:demoLayout(1),secured:[],pending:[],lastReveal:null,checkpoint:0,summary:null,updatedAt:Date.now(),
+  run={version:1,rulesVersion:6,id:'demo-'+Date.now().toString(36)+'-'+demoRand(9999999),status:'playing',room:1,
+   layout:demoLayout(1,6),secured:[],pending:[],lastReveal:null,checkpoint:0,summary:null,updatedAt:Date.now(),
    receipts:[],lastActionId:requestId};
   const result={started:true};run.receipts.push({id:requestId,result});
   demoWrite(run);return {ok:true,state:demoView(run),result,replayed:false};
@@ -822,9 +825,9 @@ function demoRequest(path,method='GET',payload=null){
   if(selection.type==='bomb')demoFinish(run,'bomb',run.secured,run.pending);
   else{
    run.pending.push({room:r,items:selection.items,superLuck:!!selection.superLuck,hatType:selection.type});
-   if((run.rulesVersion===5?demoCheckpoints:[3,7]).includes(r)){run.secured.push(...run.pending);run.pending=[];run.checkpoint=r;}
-   if(r===(run.rulesVersion===5?20:10)){demoFinish(run,'completed',[...run.secured,...run.pending],[]);}
-   else{run.room++;run.layout=demoLayout(run.room,run.rulesVersion===5?5:1);}
+   if((run.rulesVersion>=5?demoCheckpoints:[3,7]).includes(r)){run.secured.push(...run.pending);run.pending=[];run.checkpoint=r;}
+   if(r===(run.rulesVersion>=5?20:10)){demoFinish(run,'completed',[...run.secured,...run.pending],[]);}
+   else{run.room++;run.layout=demoLayout(run.room,run.rulesVersion>=5?run.rulesVersion:1);}
   }
  }else{
   result={cashed:true};demoFinish(run,'cash',[...run.secured,...run.pending],[]);
