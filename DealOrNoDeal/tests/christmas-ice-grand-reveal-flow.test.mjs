@@ -81,6 +81,17 @@ test('picture 15 has 50 ice tiles and awaits the confirmed star reveal',async()=
  assert.doesNotMatch(play.root.innerHTML,/id="v44-big-reveal-continue"/);
  assert.doesNotMatch(play.root.innerHTML,/class="v44-big-reveal"/);
 });
+test('picture 30 renders 100 ice tiles in a 10×10 board and keeps unbroken tiles clickable',async()=>{
+ const play=await boot(mockState(29,false));
+ assert.equal(play.requests,1);
+ assert.match(play.root.innerHTML,/Bild 30 von 70/);
+ assert.match(play.root.innerHTML,/99\\/100 Eisfelder/);
+ assert.match(play.root.innerHTML,/ice-tiles-100/);
+ assert.equal(play.tiles.size,100);
+ assert.equal(play.tiles.get(99).disabled,false);
+ assert.equal(typeof play.tiles.get(99).onclick,'function');
+});
+
 test('confirmed picture 15 star reveals the whole photo before the saved prize',async()=>{
  const play=await boot(mockState(15,true));
  assert.equal(play.requests,1);
