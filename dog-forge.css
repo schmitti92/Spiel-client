@@ -786,3 +786,114 @@ body.forge-hidden .spark,body.forge-hidden .fire-glow{animation-play-state:pause
  .furnace-embers i{opacity:0}
  .furnace-flames i{opacity:.55}
 }
+
+
+/* D1 · The cinematic workshop is now an actual page scene, not a flat UI wallpaper.
+   The original SVG is shipped in GitHub; once responsive WebPs are uploaded,
+   JS swaps them in after each asset successfully loads. */
+body:before{
+ background:
+  linear-gradient(180deg,#050b16af 0%,#07101d82 24%,#070f1b9b 60%,#060b15ed 100%),
+  url("./dog-forge-art/forge-workshop-fallback.svg") center 46%/cover no-repeat;
+ background-color:#0d1521;
+ background-attachment:fixed;
+ filter:saturate(1.07);
+}
+body.forge-has-custom-wall:before{
+ background:
+  linear-gradient(180deg,#040a13bd 0%,#070e1ca8 22%,#050b17bf 62%,#040a15f4 100%),
+  var(--forge-custom-wall) center 46%/cover no-repeat;
+ background-color:#0d1521;
+ background-attachment:fixed;
+ filter:saturate(.98);
+}
+body.forge-scene-off:before{
+ background:radial-gradient(ellipse 60% 32% at 50% 0%,#824a2a55,transparent),
+  linear-gradient(145deg,#1c202a,#08121e 68%,#0e1c2c);
+ background-attachment:fixed;
+ filter:none;
+}
+body.forge-scene-off:after{opacity:.12}
+body:after{
+ opacity:.15;
+ background:repeating-linear-gradient(125deg,transparent 0 100px,#ffe7bd0a 102px,transparent 105px 222px);
+}
+.forge-canvas{z-index:0}
+.forge-canvas:before{
+ content:"";position:absolute;z-index:-1;top:0;left:-4vw;right:-4vw;height:440px;
+ pointer-events:none;
+ background:radial-gradient(ellipse 43% 44% at 50% 29%,#f0aa522b,transparent 100%);
+}
+.forge-header{
+ margin:22px auto 24px;
+ padding:14px clamp(8px,1.7vw,30px) 10px;
+ border-radius:18px;
+ background:radial-gradient(ellipse 70% 95% at 50% 40%,#1a121bbd,transparent 88%);
+}
+.forge-header h1{
+ text-shadow:0 2px 2px #160e10,0 5px 15px #080a12,0 0 30px #f6a953a8;
+}
+.forge-kicker,.subtitle{
+ text-shadow:0 2px 7px #000,0 0 9px #0d1424;
+}
+.forge-banner{
+ background:linear-gradient(108deg,#291e28eb,#151d2ce8 42%,#0a1527ed);
+ border-color:#e6b56ba8;
+ box-shadow:0 16px 42px #000b,inset 0 1px #fff7d52c,0 0 28px #e7a04d25;
+ backdrop-filter:blur(10px);
+}
+.workshop-panel,.upgrade-panel{
+ border-color:#d6aa63b5;
+ background:linear-gradient(157deg,#1d2434ef,#10192ce9 69%,#0c1727f2);
+ box-shadow:0 18px 45px #000c,inset 0 1px #fceac929;
+ backdrop-filter:blur(11px);
+}
+.upgrade-panel{
+ background:
+  radial-gradient(ellipse 88% 28% at 50% 2%,#bc834b2c,transparent),
+  linear-gradient(145deg,#242433f0,#0e1a2aeb 75%);
+}
+.forge-chronicle,.stock-panel{
+ backdrop-filter:blur(10px);
+ background:linear-gradient(150deg,#252436ea,#0c1728ec);
+ box-shadow:0 10px 38px #000c,inset 0 1px #ffddaa18;
+}
+.top-nav a,.top-nav button{
+ backdrop-filter:blur(8px);
+ background:#101b2edc;
+ box-shadow:0 5px 15px #0008,inset 0 1px #ffead417;
+}
+.top-nav a:hover,.top-nav button:hover:not(:disabled){background:#273348e9}
+.top-nav #forge-scene-toggle[aria-pressed="true"]{
+ background:linear-gradient(115deg,#5a391ed9,#253549e9);
+ color:#ffe0aa;
+ border-color:#f1c27b;
+ box-shadow:0 0 13px #e8a45133,inset 0 1px #fff7ca2f;
+}
+.top-nav #forge-scene-toggle[aria-pressed="false"]{
+ color:#bcc5d1;border-color:#8c9caf7a;background:#182338c9;
+}
+.forge-footer{color:#d8c6aa;text-shadow:0 2px 6px #05070c}
+@media(max-width:720px){
+ body:before,body.forge-has-custom-wall:before{
+  background-position:center 36%;
+  background-size:cover;
+ }
+ .forge-canvas{padding-left:10px;padding-right:10px}
+ .forge-header{margin:12px auto 16px;padding:12px 4px 8px}
+ .forge-banner,.workshop-panel,.upgrade-panel{
+  backdrop-filter:blur(7px);
+ }
+ .forge-header h1{font-size:clamp(32px,8vw,52px)}
+ .top-nav #forge-scene-toggle{font-size:11px;padding:8px 9px;min-height:38px}
+}
+@media(max-width:400px){
+ .top-nav{gap:6px}
+ .top-nav a,.top-nav button{font-size:10px;padding:7px 8px;min-height:38px}
+ .forge-header{background:linear-gradient(135deg,#12111abd,#1c1726ae)}
+}
+@media(prefers-reduced-transparency:reduce){
+ .forge-banner,.workshop-panel,.upgrade-panel,.forge-chronicle,.stock-panel{
+  backdrop-filter:none;background:#101827f7;
+ }
+}
