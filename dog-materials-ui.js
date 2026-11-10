@@ -67,7 +67,7 @@
   $('chest-count').textContent=inventory?fmt(inventory.unopened):'–';
   $('chest-description').textContent=inventory?.unopened===1?'1 ungeöffnete Kiste wartet auf dich':
    inventory?.unopened>1?fmt(inventory.unopened)+' ungeöffnete Kisten in deinem Profil':
-    'Noch keine Kiste – spiele eine bestätigte Online-Partie';
+    'Noch keine Kiste – spiele Deal or No Deal online';
   for(const kind of ['iron','crystal','rune'])$(kind).textContent=inventory?fmt(inventory.resources?.[kind]):'–';
   $('earned').textContent=inventory?'Verdiente Kisten: '+fmt(inventory.earned)+' · Geöffnete Kisten: '+fmt(inventory.opened):
    'Verdiente Kisten: – · Geöffnete Kisten: –';
@@ -121,7 +121,7 @@
    const pending=getPending(uid);
    message(pending?'⚠️ Eine frühere Öffnung ist noch ungeklärt. Drücke „Öffnung sicher wiederholen“; es entsteht kein zweiter Gewinn.':
     inventory.unopened>0?'✨ Deine Kiste wartet! Jeder Gewinn wird dauerhaft im Online-Profil gespeichert.':
-    '📦 Nach deiner nächsten bestätigten Barikade- oder KreuzKunter-Partie gibt es eine neue Kiste.',pending?'danger':'good');
+    '📦 Nach deiner nächsten abgeschlossenen Deal-or-No-Deal-Online-Partie gibt es eine neue Kiste.',pending?'danger':'good');
   }catch(e){
    if(id!==loadIndex)return;
    message('⚠️ Inventar konnte nicht geladen werden. '+(
