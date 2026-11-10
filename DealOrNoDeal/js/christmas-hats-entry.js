@@ -72,7 +72,8 @@ async function loadVoucher(){
   status.textContent='⚠️ Gutschein konnte nicht geprüft werden. '+(error.name==='AbortError'?'Zeitüberschreitung.':String(error.message||''))+' Bitte aktualisieren.';
   setLink(false,'↻ Gutscheinprüfung erforderlich');
  }finally{
-  clearTimeout(timeout);loading=false;refresh.disabled=false;
+  clearTimeout(timeout);
+  if(stamp===epoch){loading=false;refresh.disabled=false;}
  }
 }
 launch.addEventListener('click',event=>{
