@@ -10,7 +10,7 @@
  document.body.append(dialog);
  const el=id=>document.getElementById(id);
  let selected=null,balance=0,loading=false,receipt=null,recoveringPending=false;
- const caseCount=()=>[26,27,28,29].includes(Number(g?.caseCount))?Number(g.caseCount):26;
+ const caseCount=()=>[26,27,28,29,30].includes(Number(g?.caseCount))?Number(g.caseCount):26;
  const errorMessage=error=>({
   INVALID_REQUEST:'Ungültige Kofferauswahl. Bitte das Spiel aktualisieren.',
   INVALID_CASE:'Dieser Koffer existiert in der aktuellen Partie nicht.',
