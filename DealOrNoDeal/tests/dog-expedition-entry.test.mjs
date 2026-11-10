@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {Script} from 'node:vm';
-const load=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
+const load=path=>readFileSync(new URL('../../'+path,import.meta.url),'utf8');
 const lobby=load('DealOrNoDeal/lobby.html');
 const page=load('dog-expedition.html');
 const client=load('dog-materials-ui.js');
