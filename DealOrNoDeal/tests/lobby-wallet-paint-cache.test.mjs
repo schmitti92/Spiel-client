@@ -29,6 +29,7 @@ test('Deal lobby leaves unchanged wallet portraits alone across repeated room up
   user:()=>({uid:'a'}),
   avatarPortraitPath:n=>'avatar-'+n+'.webp',
   euros:n=>String(n),
+  claimChrisBonus:()=>{},
   $:id=>id==='wallet-grid'?wallet:{href:'shop.html'},
   document:{createElement}
  };
