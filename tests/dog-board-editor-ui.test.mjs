@@ -6,7 +6,8 @@ import {
 } from '../DOG/board-layout.js';
 import {
   EDITOR_DRAFT_KEY,clone,emptyDraft,fromCrossPreset,fromLayout,placedCount,
-  fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout
+  fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
+  guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS
 } from '../DOG/editor-model.js';
 
 function openBuilder(){
@@ -25,9 +26,12 @@ function openBuilder(){
   board.createSVGPoint=()=>({x:0,y:0,matrixTransform(){return {x:this.x,y:this.y};}});
   board.setPointerCapture=()=>{};
   board.querySelector=()=>({setAttribute(){}});
+  const directionButtons=[[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]].map(([dx,dy])=>{
+    const item=fake('path-'+dx+','+dy);item.dataset.pathDir=dx+','+dy;return item;
+  });
   const document={
     getElementById:fake,
-    querySelectorAll:()=>[],
+    querySelectorAll:selector=>selector==='[data-path-dir]'?directionButtons:[],
     body:{append(){}}
   };
   const window={addEventListener(){}};
@@ -40,12 +44,14 @@ function openBuilder(){
   const importNames=[
     'BOARD_LAYOUT_ID','currentBoardLayout','saveBoardLayout','validateBoardLayout',
     'EDITOR_DRAFT_KEY','clone','emptyDraft','fromCrossPreset','fromLayout','placedCount',
-    'fieldOf','selectedValid','snapXY','putField','eraseField','nextSlot','inspectDraft','asGameLayout'
+    'fieldOf','selectedValid','snapXY','putField','eraseField','nextSlot','inspectDraft','asGameLayout',
+    'guidedPoint','directedPoint','previousTrackField','measureStepDistances','EIGHT_DIRECTIONS'
   ];
   const imports=[
     BOARD_LAYOUT_ID,currentBoardLayout,saveBoardLayout,validateBoardLayout,
     EDITOR_DRAFT_KEY,clone,emptyDraft,fromCrossPreset,fromLayout,placedCount,
-    fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout
+    fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
+  guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS
   ];
   let source=readFileSync(new URL('../DOG/editor-builder.js',import.meta.url),'utf8');
   source=source.replace(/^import\s*\{[\s\S]*?\}\s*from '\.\/[^']+';\s*/gm,'');
@@ -61,7 +67,7 @@ function openBuilder(){
     listener({pointerType:kind,button:0,pointerId:1,clientX:x,clientY:y,
       target:{closest(){return hit;}},preventDefault(){}});
   };
-  return {events,elements,storage,board,trigger,touch,get:id=>fake(id)};
+  return {events,elements,storage,board,trigger,touch,dir:(dx,dy)=>trigger('path-'+dx+','+dy),get:id=>fake(id)};
 }
 test('touch pointer-down on empty SVG immediately places a DOG field',()=>{
  const ui=openBuilder();
@@ -106,4 +112,31 @@ test('tap-to-replace does not discard previous draft or change the active game b
  assert.equal(ui.get('track-progress').textContent,'2/64');
  assert.equal(ui.storage.has(EDITOR_DRAFT_KEY),true);
  assert.deepEqual(currentBoardLayout(),before);
+});
+
+test('eight direction buttons give identical centre spacing straight and diagonally',()=>{
+ const ui=openBuilder();
+ ui.touch(115,205);
+ assert.equal(ui.get('field-index').value,'1');
+ ui.dir(1,0); // horizontal step
+ ui.dir(1,-1); // 45° diagonal step
+ const d=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ assert.equal(placedCount(d).track,3);
+ const straight=Math.hypot(d.track[1].x-d.track[0].x,d.track[1].y-d.track[0].y);
+ const diagonal=Math.hypot(d.track[2].x-d.track[1].x,d.track[2].y-d.track[1].y);
+ assert.ok(Math.abs(straight-32)<.15,'straight '+straight);
+ assert.ok(Math.abs(diagonal-32)<.15,'diagonal '+diagonal);
+ assert.ok(Math.abs(straight-diagonal)<.15);
+ assert.match(ui.get('gap-report').textContent,/2 von 2 Verbindungen/);
+});
+test('a previously placed DOG field can be re-aligned diagonally without changing the count',()=>{
+ const ui=openBuilder();
+ ui.touch(115,205);ui.dir(1,0);ui.dir(1,0);
+ const before=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ ui.touch(before.track[2].x,before.track[2].y,{dataset:{kind:'track',index:'2',owner:'0'}});
+ ui.dir(1,-1);
+ const after=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ assert.equal(placedCount(after).track,3);
+ assert.notDeepEqual(after.track[2],before.track[2]);
+ assert.ok(Math.abs(Math.hypot(after.track[2].x-after.track[1].x,after.track[2].y-after.track[1].y)-32)<.15);
 });
