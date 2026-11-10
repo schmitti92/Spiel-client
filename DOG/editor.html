@@ -101,7 +101,7 @@ input[type="range"]{width:100%;accent-color:#efc47d}
  </div>
 </header>
 <main>
- <p class="intro">🎯 <strong>So funktioniert's:</strong> Wähle „Laufweg“ und klicke auf das leere Brett. Du setzt nacheinander die Felder <strong>0 bis 63</strong>. Das Raster sorgt dafür, dass alle Felder bündig auf einer Linie stehen. Danach platzierst du die <strong>16 Zielfelder und 16 Startplätze</strong>. Dein unfertiger Entwurf wird automatisch auf diesem Gerät gesichert.</p>
+ <p class="intro">🎯 <strong>So funktioniert's:</strong> Wähle „Laufweg“ und tippe auf das leere Brett. Zum Ersetzen ein bestehendes Feld antippen und dann den neuen Platz. Du setzt nacheinander die Felder <strong>0 bis 63</strong>. Das Raster sorgt dafür, dass alle Felder bündig auf einer Linie stehen. Danach platzierst du die <strong>16 Zielfelder und 16 Startplätze</strong>. Dein unfertiger Entwurf wird automatisch auf diesem Gerät gesichert.</p>
  <div class="workspace">
   <section class="board-panel">
     <div class="board-top"><b>✦ DEINE LEERE SPIELFLÄCHE</b><span id="board-subtitle">Klicke, um Lauffeld 0 zu setzen</span></div>
@@ -167,12 +167,13 @@ input[type="range"]{width:100%;accent-color:#efc47d}
       <label>X-Koordinate<input id="coord-x" type="number" min="26" max="734" step="1" placeholder="—" disabled></label>
       <label>Y-Koordinate<input id="coord-y" type="number" min="26" max="734" step="1" placeholder="—" disabled></label>
     </div>
+    <button id="place-coordinates" type="button" class="btn primary" style="width:100%;margin-top:9px">📍 Feld an X-/Y-Position setzen oder ersetzen</button>
     <div class="nudge" aria-label="Feld fein ausrichten">
       <span class="none"></span><button type="button" data-nudge="0,-1" title="3 Einheiten hoch">↑</button><span class="none"></span>
       <button type="button" data-nudge="-1,0">←</button><button type="button" data-nudge="0,0" title="Unverändert">•</button><button type="button" data-nudge="1,0">→</button>
       <span class="none"></span><button type="button" data-nudge="0,1">↓</button><span class="none"></span>
     </div>
-    <div class="tip">💡 Die Rasterlinien laufen durch die Mitte des Brettes. Mit „Einrasten“ liegen Spielfelder automatisch exakt in derselben Zeile oder Spalte. Für millimetergenaue Korrekturen das Einrasten kurz ausschalten.</div>
+    <div class="tip">💡 Die Rasterlinien laufen durch die Mitte des Brettes. Mit „Einrasten“ liegen Spielfelder automatisch exakt in derselben Zeile oder Spalte. Falls ein Fingertipp nicht erkannt wird, kannst du das ausgewählte Feld auch über den neuen X-/Y-Button setzen. Für genaue Korrekturen das Einrasten kurz ausschalten.</div>
    </section>
    <section class="card">
      <h2>3 · Vorlage oder frei gestalten</h2>
