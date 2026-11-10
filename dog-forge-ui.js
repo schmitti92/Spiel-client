@@ -54,7 +54,7 @@
   if(textValue!==undefined)el.textContent=String(textValue);
   return el;
  };
- let uid=null,view=null,busy=false,tab='equipment',selected='weapon',tradeGroup='equipment',loadSerial=0;
+ let uid=null,view=null,busy=false,tab='equipment',selected='weapon',tradeGroup='equipment',loadSerial=0,readyOnly=false,confirmData=null;
  // One graphic asset for each equipment appearance tier (independent of balance).
  function gearVisual(id,level,compact=false){
   const stage=stageFor(level),config=STAGES[stage-1];
@@ -129,12 +129,13 @@
  }
  const levelFor=id=>view?.hero?.levels?.[id]??(id==='weapon'||id==='armor'?1:0);
  const quoteFor=id=>view?.quotes?.find(q=>q.itemId===id);
+ const canUpgradeItem=id=>{const q=quoteFor(id);return !!q&&!q.maxed&&q.affordable;};
  const have=id=>view?.inventory?.resources?.[id]||0;
  const itemFor=id=>view?.items?.find(x=>x.id===id);
  const usable=()=>!!uid&&!!view&&!busy&&!pending(uid);
  function header(){
   const state=auth();
-  $('forge-player').textContent=state?.profile?.name||state?.user?.displayName||'Online-Held';
+  $('forge-player').textContent=state?.profile?.name||state?.user?.displayName||'Nicht angemeldet';
   const invested=view?view.items.reduce((sum,i)=>sum+Math.max(0,levelFor(i.id)-(i.baseLevel||0)),0):0;
   $('forge-player-note').textContent=view?'Bereit für deine nächste Verbesserung':'Persönliches Heldenprofil';
   $('forge-rank').textContent='✦ '+rankFor(invested);
@@ -185,8 +186,21 @@
    }
    return;
   }
-  const items=set.filter(x=>x.group===tab);
-  if(!items.length){container.append(node('p','list-placeholder',view?'Keine Verbesserungen vorhanden.':'Schmiedewerte werden geladen …'));return;}
+  const all=set.filter(x=>x.group===tab);
+  const items=readyOnly?all.filter(x=>canUpgradeItem(x.id)):
+   [...all].sort((a,b)=>Number(canUpgradeItem(b.id))-Number(canUpgradeItem(a.id)));
+  if(!items.length){
+   const textValue=!view?'Schmiedewerte werden geladen …':
+    readyOnly?'Hier ist gerade keine Verbesserung möglich. Sammle Rohstoffe oder zeige alle an.':
+    'Keine Verbesserungen vorhanden.';
+   container.append(node('p','list-placeholder',textValue));
+   if(view&&readyOnly){
+    const show=node('button','show-all-forge','Alle anzeigen');
+    show.type='button';show.addEventListener('click',()=>{readyOnly=false;render();});
+    container.append(show);
+   }
+   return;
+  }
   for(const item of items){
    const button=node('button','item-choice'+(selected===item.id?' selected':''));
    button.type='button';button.setAttribute('aria-pressed',String(selected===item.id));
@@ -202,6 +216,11 @@
    const icon=isEquipment?gearVisual(item.id,levelFor(item.id),true):skillVisual(item,true);
    const info=node('span','item-info');
    info.append(node('strong',null,item.name),node('small',null,'Stufe '+levelFor(item.id)+' / '+item.maxLevel));
+   const q=quoteFor(item.id);
+   if(q){
+    const stateText=q.maxed?'✦ Maximal':q.affordable?'✓ Bereit':'Rohstoffe fehlen';
+    info.append(node('span','item-ready-tag '+(q.maxed?'maxed-tag':q.affordable?'ready-tag':'missing-tag'),stateText));
+   }
    const track=node('div','item-bar'),fill=node('span');
    fill.style.width=Math.min(100,Math.round(levelFor(item.id)/item.maxLevel*100))+'%';
    track.append(fill);info.append(track);button.append(icon,info);
@@ -211,13 +230,47 @@
  }
  function costTile(id,amount){
   const info=material[id]||{icon:'💎',name:id,index:0};
-  const enough=have(id)>=amount;
+  const stock=have(id),enough=stock>=amount;
   const tile=node('div','cost-item rarity-'+info.index+(enough?' enough':''));
   tile.append(node('span','cost-icon',info.icon));
   const details=node('span','cost-info');
   details.append(node('strong',null,info.name));
-  details.append(node('small',null,money(have(id))+' / '+money(amount)));
+  details.append(node('small',null,money(stock)+' / '+money(amount)+
+   (enough?' ✓':' · fehlt '+money(amount-stock))));
+  const progress=node('span','cost-progress'+(enough?' complete':''));
+  progress.setAttribute('role','progressbar');
+  progress.setAttribute('aria-label',info.name+' vorhanden');
+  progress.setAttribute('aria-valuemin','0');progress.setAttribute('aria-valuemax',String(amount));
+  progress.setAttribute('aria-valuenow',String(Math.min(stock,amount)));
+  const fill=node('span','cost-progress-fill');
+  fill.style.width=Math.min(100,Math.round(stock/amount*100))+'%';
+  progress.append(fill);details.append(progress);
   tile.append(details);return tile;
+ }
+ function openUpgradeConfirm(item,quote){
+  if(!usable()||!quote||quote.maxed||!quote.affordable)return;
+  const dialog=$('forge-confirm');
+  confirmData={itemId:item.id,expectedLevel:quote.level};
+  const art=$('forge-confirm-art');art.replaceChildren();
+  art.append(item.group==='equipment'?gearVisual(item.id,quote.level,true):skillVisual(item,true));
+  $('forge-confirm-title').textContent=item.name;
+  $('forge-confirm-step').textContent='Stufe '+quote.level+'  ➜  '+quote.nextLevel;
+  const costRoot=$('forge-confirm-cost');costRoot.replaceChildren();
+  for(const [id,amount] of Object.entries(quote.cost))costRoot.append(costTile(id,amount));
+  $('forge-confirm-chance').textContent=quote.successChance+' %';
+  const risky=quote.successChance<100;
+  const warning=$('forge-confirm-warning');
+  warning.classList.toggle('risky',risky);
+  warning.textContent=risky?
+   '⚠️ Fehlschlag: Rohstoffe weg, Stufe bleibt erhalten.':
+   '✓ Die Rohstoffe werden nach dem Bestätigen verbraucht.';
+  $('forge-confirm-submit').textContent=item.group==='equipment'?'⚒️ Jetzt schmieden':'✦ Jetzt verbessern';
+  if(!dialog.open)dialog.showModal();
+ }
+ function closeConfirm(){
+  const dialog=$('forge-confirm');
+  if(dialog.open)dialog.close();
+  confirmData=null;
  }
  function renderUpgrade(){
   const root=$('upgrade-content');root.replaceChildren();
@@ -262,6 +315,14 @@
   const grid=node('div','cost-list');
   for(const [id,amount] of Object.entries(quote.cost||{}))grid.append(costTile(id,amount));
   root.append(costHead,grid);
+  const missing=Object.entries(quote.cost||{})
+   .filter(([id,amount])=>have(id)<amount)
+   .map(([id,amount])=>({id,needed:amount-have(id)}));
+  const hint=node('div','material-hint '+(missing.length?'missing':'ready'));
+  hint.textContent=missing.length?
+   '🎯 Noch '+missing.map(m=>money(m.needed)+' × '+(material[m.id]?.name||m.id)).join(' · '):
+   '✓ Alle Rohstoffe vorhanden';
+  root.append(hint);
   // A short visual preview; boss combat coefficients remain adjustable.
   const preview=node('div','upgrade-preview');
   const current=node('div','preview-value');
@@ -280,14 +341,7 @@
   rate.append(label,chance);root.append(rate);
   const button=node('button','forge-action','⚒️ '+(item.group==='equipment'?'Schmieden':'Verbessern')+' · Stufe '+quote.nextLevel);
   button.type='button';button.disabled=!usable()||!quote.affordable;
-  button.addEventListener('click',()=>{
-   const costs=Object.entries(quote.cost||{}).map(([id,amount])=>amount+' × '+(material[id]?.name||id)).join(' · ');
-   const risk=item.group==='equipment'&&quote.successChance<100?
-    '\n⚠️ Bei einem Fehlschlag sind die Rohstoffe weg, die Stufe bleibt erhalten.':'';
-   if(window.confirm(item.name+' auf Stufe '+quote.nextLevel+' verbessern?\n'+costs+
-    '\nErfolgschance: '+quote.successChance+' %'+risk))
-    void action('upgrade',{itemId:item.id,expectedLevel:quote.level});
-  });
+  button.addEventListener('click',()=>openUpgradeConfirm(item,quote));
   root.append(button);
   root.append(node('p','upgrade-foot',item.group==='equipment'?'Fehlschlag: Rohstoffe verbraucht, Stufe bleibt.':'Fähigkeitsstufen gelingen garantiert.'));
  }
@@ -326,6 +380,20 @@
   root.append(node('p','upgrade-foot','Nur innerhalb derselben Kategorie.'));
  }
  function render(){
+  const all=view?.items?.filter(x=>x.group===tab)||[];
+  if(tab!=='exchange'&&all.length){
+   const available=all.filter(x=>canUpgradeItem(x.id));
+   if(readyOnly&&available.length&&!available.some(x=>x.id===selected))selected=available[0].id;
+   else if(!all.some(x=>x.id===selected))selected=(readyOnly&&available.length?available[0]:all[0]).id;
+  }
+  const toolbar=$('forge-list-toolbar');toolbar.hidden=tab==='exchange';
+  const readyCount=all.filter(x=>canUpgradeItem(x.id)).length;
+  $('forge-ready-count').textContent=String(readyCount);
+  const filter=$('forge-ready-filter');filter.disabled=!view||busy;
+  filter.setAttribute('aria-pressed',String(readyOnly));
+  filter.classList.toggle('active',readyOnly);
+  $('forge-list-summary').textContent=view?
+   readyCount+' von '+all.length+' bereit':'Verbesserungen laden …';
   for(const button of document.querySelectorAll('.forge-tab')){
    const isActive=button.dataset.tab===tab;
    button.classList.toggle('active',isActive);
@@ -377,12 +445,12 @@
  async function reload(){
   const state=auth(),requestIndex=++loadSerial;
   if(!state){
-   uid=null;view=null;closeModal();
+   uid=null;view=null;closeConfirm();closeModal();
    status('Bitte melde dich mit deinem Online-Profil an, um die Schmiede zu nutzen.','bad');
    $('forge-player').textContent='Nicht angemeldet';render();return;
   }
   const account=state.user.uid;
-  if(uid!==account){uid=account;view=null;closeModal();}
+  if(uid!==account){uid=account;view=null;closeConfirm();closeModal();}
   status('⚒️ Heldenwerte werden geladen …');
   render();
   try{
@@ -422,8 +490,12 @@
    if(['STALE_FORGE_LEVEL','DOG_MATERIALS_MISSING','FORGE_MAX_LEVEL','INVALID_FORGE_ITEM',
     'INVALID_EXCHANGE_RESOURCE','INVALID_FORGE_REQUEST'].includes(error)){
     clearPending(account);
-    status(error==='DOG_MATERIALS_MISSING'?'⚠️ Dafür fehlen noch Rohstoffe.':
-      '⚠️ Stand wurde verändert. Inventar erneut laden.','bad');
+    // Only definitive server rejections are safe to discard; ambiguous network
+    // responses keep their request ID and require explicit replay.
+    await reload();
+    if(uid===account&&view)status(error==='DOG_MATERIALS_MISSING'?
+     '⚠️ Rohstoffe reichen nicht mehr. Bestand wurde aktualisiert.':
+     '↻ Heldenstufen und Rohstoffe wurden neu geladen.','bad');
    }else{
     status('⚠️ Ergebnis unklar. Bitte „Sicher wiederholen“ wählen – kein doppelter Verbrauch.','bad');
    }
@@ -439,6 +511,23 @@
    render();
   });
  }
+ $('forge-ready-filter').addEventListener('click',()=>{
+  if(!view||busy)return;
+  readyOnly=!readyOnly;render();
+ });
+ $('forge-confirm-x').addEventListener('click',closeConfirm);
+ $('forge-confirm-cancel').addEventListener('click',closeConfirm);
+ $('forge-confirm').addEventListener('close',()=>{confirmData=null;});
+ $('forge-confirm-submit').addEventListener('click',()=>{
+  const requested=confirmData;
+  if(!requested||!usable())return;
+  const current=quoteFor(requested.itemId);
+  if(!current||current.level!==requested.expectedLevel||current.maxed||!current.affordable){
+   closeConfirm();status('↻ Daten geändert. Bitte erneut auswählen.','bad');void reload();return;
+  }
+  closeConfirm();
+  void action('upgrade',requested);
+ });
  $('forge-refresh').addEventListener('click',()=>void reload());
  $('forge-retry').addEventListener('click',()=>{
   const op=pending(uid);
