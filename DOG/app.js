@@ -3,6 +3,61 @@ import {createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction,CO
 const $=id=>document.getElementById(id);
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KEY='spielportal:dog:local-v1';
+const params=new URL(location.href).searchParams;
+const online=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(params.get('room')||'');
+const hubCode=online?params.get('room'):null;
+const matchHint=params.get('match');
+const apiBase=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
+let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null;
+function user(){const s=window.SpielOnline?.state?.();return s?.status==='online'&&s.user?.getIdToken?s.user:null;}
+async function hubRequest(path,method='GET',payload){
+ const person=user();if(!person)throw Error('Bitte melde dich mit deinem Online-Profil an.');
+ const token=await person.getIdToken();
+ const response=await fetch(apiBase+'/api/hub/rooms/'+hubCode+path,{method,headers:{Authorization:'Bearer '+token,...(payload?{'Content-Type':'application/json'}:{})},body:payload?JSON.stringify(payload):undefined,cache:'no-store'});
+ const body=await response.json();
+ if(!response.ok||!body.ok)throw Error(body.error||'SERVER_ERROR');
+ return body.room;
+}
+function acceptRemote(room){
+ if(room.code!==hubCode)return;
+ if(room.phase==='playing'&&room.match?.game==='dog'&&(!matchHint||matchHint===room.match.id)){
+   if(game?.revision!==room.match.dog?.revision){selectedCard=null;revealed=false;}
+   game=room.match.dog;onlineSeat=room.match.dogSeat;
+   roomRevision=room.revision;
+   render();
+ }else if(game?.phase==='finished'){
+   $('status').textContent='Partie beendet – du kannst in der Raum-Lobby ein neues Spiel auswählen.';
+ }else $('status').textContent='Das DOG-Spiel ist noch nicht gestartet oder wurde bereits beendet. Kehre zur Raum-Lobby zurück.';
+}
+async function refreshOnline(){
+ try{const room=await hubRequest('');acceptRemote(room);}
+ catch(e){$('status').textContent='⚠️ Online: '+e.message;}
+}
+function startSocket(){
+ if(onlineSocket||!user())return;
+ const socket=new WebSocket(apiBase.replace(/^http/i,'ws')+'/hub');onlineSocket=socket;
+ socket.onopen=async()=>{
+  try{const token=await user().getIdToken();if(socket.readyState===1)socket.send(JSON.stringify({type:'subscribe',code:hubCode,profileIdToken:token}));}
+  catch(_){socket.close();}
+  onlineHeartbeat=setInterval(()=>{if(socket.readyState===1)socket.send(JSON.stringify({type:'ping'}));},30000);
+ };
+ socket.onmessage=e=>{let data;try{data=JSON.parse(e.data)}catch(_){return;}if(data.type==='room'&&data.room?.code===hubCode)acceptRemote(data.room);};
+ socket.onclose=()=>{if(onlineHeartbeat){clearInterval(onlineHeartbeat);onlineHeartbeat=null;}if(onlineSocket===socket)onlineSocket=null;};
+ socket.onerror=()=>{};
+}
+async function initOnline(){
+ $('back-link').href='../hub-lobby.html?room='+encodeURIComponent(hubCode)+'&stage=1';
+ $('new-game').hidden=true;
+ $('human-count').disabled=true;
+ $('human-count').closest('.controls').hidden=true;
+ $('turn').textContent='Online-Spielstand wird verbunden …';
+ await refreshOnline();
+ startSocket();
+ if(!onlinePoll)onlinePoll=setInterval(()=>{if(!onlineSocket||onlineSocket.readyState!==1)void refreshOnline();if(!onlineSocket||onlineSocket.readyState>=2)startSocket();},8000);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden){void refreshOnline();startSocket();}});
+ window.addEventListener('spielonline-change',()=>{if(user()){void refreshOnline();startSocket();}});
+}
+
 const names=['Rot','Blau','Grün','Gelb'];
 let game,selectedCard=null,available=[],revealed=false,aiTimer=null,lastTurn=null,humans=1;
 const cardsLabel=t=>t==='swap'?'⇄':t==='joker'?'★':t==='1/11'?'1/11':t;
@@ -13,8 +68,9 @@ function recover(){
   }catch(_){}
   return false;
 }
-function save(){try{localStorage.setItem(KEY,JSON.stringify(game));}catch(_){}}
+function save(){if(online)return;try{localStorage.setItem(KEY,JSON.stringify(game));}catch(_){}}
 function newGame(){
+  if(online)return;
   if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
   humans=Number($('human-count').value)||1;
   game=createGame({names:['Du','Spieler Blau','Spieler Grün','Spieler Gelb'],bots:[0,1,2,3].map(i=>i>=humans)});
@@ -23,10 +79,12 @@ function newGame(){
 }
 function isHumanExchange(){
   if(game.phase!=='exchange')return -1;
+  if(online)return onlineSeat!==null&&game.exchanges[onlineSeat]===false?onlineSeat:-1;
   return game.players.findIndex(p=>!p.bot&&game.exchanges[p.seat]===null);
 }
 function currentHuman(){
   if(game.phase==='exchange')return isHumanExchange();
+  if(online)return game.current===onlineSeat&&game.phase!=='finished'?onlineSeat:-1;
   if(game.phase==='play'||game.phase==='seven')return game.players[game.current].bot?-1:game.current;
   return -1;
 }
@@ -100,7 +158,7 @@ function actionLabel(m){
 function renderPlayers(){
   const seats=game.players.map(p=>{
     const own=game.pieces.filter(x=>x.owner===p.seat),goal=own.filter(x=>x.place==='goal').length,turn=activeSeat()===p.seat&&game.phase!=='finished';
-    const hand=game.hands[p.seat].length,exchange=game.phase==='exchange'&&game.exchanges[p.seat]!==null;
+    const hand=Array.isArray(game.hands[p.seat])?game.hands[p.seat].length:(game.hands[p.seat]?.count||0),exchange=game.phase==='exchange'&&game.exchanges[p.seat]!==null&&game.exchanges[p.seat]!==false;
     return '<div class="seat '+(turn?'on':'')+'" style="--seat:'+COLORS[p.seat]+'"><span class="seat-mark"></span><span class="seat-name">'+escape(p.name)+(p.bot?' 🤖':' 👤')+'</span><b>'+goal+'/4</b><span class="seat-extra">'+(exchange?'✓ Karte getauscht':hand+' Karten')+'</span></div>';
   }).join('');
   $('players').innerHTML=seats;
@@ -136,7 +194,7 @@ function renderHand(){
 }
 function render(){
   if(!game)return;
-  $('human-count').value=String(humans);
+  if(!online)$('human-count').value=String(humans);
   $('round').textContent=String(game.round);
   $('phase').textContent=game.phase==='exchange'?'Geheimer Kartentausch':game.phase==='seven'?'7 verteilen':game.phase==='finished'?'Spielende':'Kartenrunde';
   const active=activeSeat();
@@ -145,7 +203,7 @@ function render(){
   renderPlayers();
   available=game.phase==='seven'&&revealed?legalActions(game,game.current):[];
   drawBoard();renderHand();drawBoard();
-  $('status').textContent='Klassische Regeln • Teams Rot/Grün und Blau/Gelb • Spielstand wird lokal gesichert';
+  $('status').textContent=online?'🌐 Online mit Freunden · Karten serverseitig geschützt · Raum '+hubCode:'Klassische Regeln • Teams Rot/Grün und Blau/Gelb • Spielstand wird lokal gesichert';
   $('winner').hidden=game.phase!=='finished';
   if(game.phase==='finished')$('winner-title').textContent='Team '+(game.winner===0?'Rot / Grün':'Blau / Gelb')+' gewinnt!';
   $('selected-info').textContent=selectedCard?'Karte ausgewählt: '+cardsLabel(game.hands[currentHuman()]?.find(c=>c.id===selectedCard)?.type||''):'';
@@ -158,6 +216,15 @@ function onCard(id){
 function onMove(i){
   const seat=currentHuman();if(seat<0||!revealed)return;
   const move=available[i];if(!move)return;
+  if(online){
+    if(onlineBusy)return;
+    onlineBusy=true;$('status').textContent='Zug wird vom Server geprüft …';
+    hubRequest('/dog/action','POST',{matchId:matchHint||params.get('match')||'',expectedRevision:game.revision,actionId:crypto.randomUUID(),action:move})
+      .then(room=>{selectedCard=null;revealed=false;acceptRemote(room);})
+      .catch(e=>{$('status').textContent='⚠️ '+e.message;void refreshOnline();})
+      .finally(()=>{onlineBusy=false;});
+    return;
+  }
   try{
     if(game.phase==='exchange')game=exchangeCard(game,seat,move.cardId);
     else game=takeAction(game,seat,move);
@@ -165,6 +232,7 @@ function onMove(i){
   }catch(e){$('status').textContent='⚠️ '+e.message;}
 }
 function scheduleAI(){
+  if(online)return;
   if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
   if(!game||game.phase==='finished')return;
   if(game.phase==='exchange'){
@@ -198,4 +266,4 @@ $('new-game').addEventListener('click',()=>{if(confirm('Neue Partie starten? Der
 $('human-count').addEventListener('change',()=>{if(confirm('Spielerzahl ändern und eine neue Partie beginnen?'))newGame();else $('human-count').value=String(humans);});
 $('rules-button').addEventListener('click',()=>{$('rules').showModal();});
 $('rules-close').addEventListener('click',()=>{$('rules').close();});
-if(!recover())newGame();else{render();scheduleAI();}
+if(online){void initOnline();}else if(!recover())newGame();else{render();scheduleAI();}
