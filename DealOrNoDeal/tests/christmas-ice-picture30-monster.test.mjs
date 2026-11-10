@@ -11,7 +11,7 @@ const script=read('online-ice.js'),html=read('index.html'),css=read('picture30-m
 
 test('picture 30 is highlighted as 3 real Monster-Wheel spins, not the 30-Bingo milestone',()=>{
  assert.match(script,/n===30\?'🎰 3 Monster-Rad-Drehungen'/);
- assert.match(script,/n===20\|\|n===30\?Math\.max/);
+ assert.match(script,/\[20,30,40\]\.includes\(n\)\?Math\.max/);
  assert.match(script,/state\.picture30MonsterSpinsClaimed\?'✅ 3 Drehungen gutgeschrieben'/);
  assert.match(script,/celebration\.number===30\?/);
  assert.match(script,/zusätzlich zu deiner normalen Bildbelohnung/);
