@@ -318,8 +318,9 @@ function render(){
  }
 }
 function requestId(){return 'hat_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,12);}
-function savePending(p){pendingRequest=p;try{if(p)sessionStorage.setItem('deal-hats-pending-v1',JSON.stringify({uid:uid(),payload:p}));else sessionStorage.removeItem('deal-hats-pending-v1')}catch{}}
-function recoverPending(){try{const p=JSON.parse(sessionStorage.getItem('deal-hats-pending-v1')||'null');pendingRequest=p?.uid===uid()?p.payload:null}catch{pendingRequest=null}}
+const pendingStorageKey=DEMO?'deal-hats-preview-pending-v1':'deal-hats-pending-v1';
+function savePending(p){pendingRequest=p;try{if(p)sessionStorage.setItem(pendingStorageKey,JSON.stringify({uid:uid(),payload:p}));else sessionStorage.removeItem(pendingStorageKey)}catch{}}
+function recoverPending(){try{const p=JSON.parse(sessionStorage.getItem(pendingStorageKey)||'null');pendingRequest=p?.uid===uid()?p.payload:null}catch{pendingRequest=null}}
 
 /*
  * Offline Chris preview: uses the same visible state shape and rules as the
@@ -374,7 +375,10 @@ function demoLayout(room){
  }
  const normal=demoScore(a)<demoScore(b)?a:b,better=normal===a?b:a;
  const hats=[{type:'bomb',items:[]},{type:'gift',...normal},{type:'super',...better}];
- return hats.sort(()=>Math.random()-.5);
+ for(let i=hats.length-1;i>0;i--){
+  const j=demoRand(i+1);[hats[i],hats[j]]=[hats[j],hats[i]];
+ }
+ return hats;
 }
 function demoView(run){
  if(!run)return null;
