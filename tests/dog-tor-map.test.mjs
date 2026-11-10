@@ -16,6 +16,11 @@ class FakeElement{
   this.classList={add:x=>{this.className+=' '+x}};
  }
  append(...children){this.children.push(...children)}
+ replaceChildren(...children){this.children=[...children]}
+ querySelector(query){
+  if(query==='.party-pins')return this.children.find(c=>c.className?.split(' ').includes('party-pins'))||null;
+  return null;
+ }
  setAttribute(k,v){this.attributes.set(k,String(v))}
  getAttribute(k){return this.attributes.get(k)}
  addEventListener(k,fn){this.events.set(k,fn)}
@@ -32,6 +37,7 @@ function page(search='?room=123'){
  };
  const document={
   getElementById:byId,
+  addEventListener:()=>{},
   createElement:tag=>new FakeElement(tag),
   createElementNS:(ns,tag)=>new FakeElement(tag),
   querySelectorAll:query=>{
@@ -93,9 +99,27 @@ test('Map entry from existing expedition and room-return navigation are connecte
  assert.match(roomJs,/map-launch','map-waypoint/);
 });
 
-test('Map is a read-only preview and does not award progress',()=>{
- assert.ok(!js.includes('fetch('));
- assert.ok(!js.includes('.post('));
- assert.match(html,/Kartenvorschau/);
- assert.match(html,/verändert keine Spielerdaten/);
+test('Map uses authenticated server positions and only unlocks mapped personal fights',()=>{
+ assert.match(js,/\/api\/dog\/gates\//);
+ assert.match(js,/getIdToken\(/);
+ assert.match(js,/request\('GET','map'/);
+ assert.match(js,/request\('POST','fight'/);
+ assert.match(js,/request\('POST','join'/);
+ assert.match(js,/readPending\(account\)/);
+ assert.match(html,/zuletzt vom Server gespeicherte Position/);
+ assert.match(html,/id="team-members"/);
+ assert.match(html,/id="gate-battle-button"/);
+ assert.match(html,/id="gate-boss-button"/);
+ assert.ok(!html.includes('href="./DOG/'),'do not bypass final server unlock');
+});
+test('Boss 10 launches the existing training arena, other unfinished bosses do not',()=>{
+ const {gates,byId}=page();
+ gates[9].click();
+ assert.equal(byId('gate-boss-button').hidden,false);
+ assert.match(byId('gate-boss-button').href,/dog-boss.html\?room=123/);
+ assert.match(byId('gate-fight-status').textContent,/Tor-1-Testboss/);
+ byId('gate-detail-close').click();
+ gates[19].click();
+ assert.equal(byId('gate-boss-button').hidden,true);
+ assert.match(byId('gate-fight-status').textContent,/noch nicht implementiert/);
 });
