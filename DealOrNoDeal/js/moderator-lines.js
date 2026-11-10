@@ -140,6 +140,24 @@
   "Zehn Millionen raus! Der Banker hat uns gerade eine Dankeskarte und eine Quittung geschickt.",
   "Zehn Millionen! Ich möchte kurz wissen, wer hier den roten Knopf ohne Bedienungsanleitung gedrückt hat!"
  ],
+ "fiftyMillion": [
+  "FÜNFZIG MILLIONEN EURO! Meine Damen und Herren, das war kein Koffer. Das war eine komplette Bankfiliale mit Tragegriff!",
+  "Fünfzig Millionen sind raus! Der Banker hat gerade vor Freude seinen Bürostuhl zum Königsthron erklärt.",
+  "FÜNFZIG MILLIONEN! Im Regieraum hat jemand den Taschenrechner ausgeschaltet. Der hat angefangen zu weinen.",
+  "Fünfzig Millionen Euro weniger! Ich benötige jetzt eine sehr, sehr große Tasse Beruhigungstee.",
+  "FÜNFZIG MILLIONEN! Der Banker wollte applaudieren, aber seine Hände waren voller Geldscheine.",
+  "Das waren fünfzig Millionen Euro! Der Koffer war schwerer als die gesamte Hoffnung im Studio.",
+  "Fünfzig Millionen sind weg! Dieses Geräusch war nicht die Kofferklappe. Das war mein Zukunftsplan, der zerbrochen ist.",
+  "FÜNFZIG MILLIONEN EURO! Der Banker hat schon mal Konfetti bestellt. Für seine eigene Siegesfeier.",
+  "Fünfzig Millionen! So einen Betrag streicht man nicht aus der Liste. Man hält eine Trauerrede.",
+  "Unglaublich! Fünfzig Millionen Euro gerade aufgedeckt. Unser Kameramann hat vor Schreck seine Brille gesucht. Er trägt gar keine!",
+  "FÜNFZIG MILLIONEN! Ich glaube, wir brauchen einen neuen Studioboden. Hier ist eben die Stimmung durchgebrochen.",
+  "Fünfzig Millionen sind Geschichte! Der Banker hat gerade gefragt, ob wir vielleicht noch einen Koffer öffnen möchten.",
+  "FÜNFZIG MILLIONEN EURO! Das war die teuerste Neugier, die diese Show je gesehen hat!",
+  "Fünfzig Millionen weg! Die goldenen Träume verlassen gerade das Gebäude – bitte nicht schubsen!",
+  "Fünfzig Millionen Euro! Der Banker lacht. Ich verstehe gerade nur noch Bahnhof und sehr große Zahlen!",
+  "FÜNFZIG MILLIONEN! Von dieser Summe wird heute noch gesprochen, wenn die Scheinwerfer längst aus sind!"
+ ],
  "otherMillion": [
   "Ein Millionenbetrag ist weg! Der Banker hat gerade Freudentränen in seine Bilanz geheult.",
   "Millionen raus! Meine Damen und Herren, dieses Geräusch war unser Kontostand.",
