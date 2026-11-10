@@ -60,3 +60,35 @@ h1{font-size:clamp(34px,6vw,62px);line-height:1.08;letter-spacing:-.055em;margin
 .footer{margin-top:30px;color:#8d9fba;text-align:center;font-size:12px;line-height:1.65}
 @media(max-width:650px){.wrapper{width:min(100% - 16px,1130px);padding-top:12px}.hero{padding:22px 20px}.hero-art{opacity:.22;right:4px}.intro{grid-template-columns:1fr}.world{margin:22px 0;border-radius:18px}.world-head{padding:18px 15px 10px}.world-content{padding:8px 7px 22px}.gate-map{grid-template-rows:repeat(4,70px);row-gap:9px;column-gap:0}.gate{width:53px;height:53px;border-radius:17px}.gate .number{font-size:16px}.gate .kind{font-size:11px}.world-foot{padding:12px 15px}.details{padding:18px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.gate{transition:none}}
+
+/* Server-backed positions and battle entry points. No client-owned unlocks. */
+.team-panel{border:1px solid #80bed076;border-radius:23px;padding:clamp(16px,3vw,28px);margin:22px 0;background:linear-gradient(135deg,#132742,#111b31 75%);box-shadow:0 9px 35px #0004}
+.team-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.team-top h2{margin:7px 0;font-size:clamp(18px,2.5vw,26px);letter-spacing:-.02em}
+.team-status{color:#c6d8eb;font-size:14px;line-height:1.45;margin:10px 0 17px}
+.team-members{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.member-card{display:flex;align-items:center;gap:10px;padding:12px;border-radius:15px;border:1px solid #fff2;background:#0c1427aa;min-width:0}
+.member-card.own{border-color:#e6c27a88;box-shadow:inset 0 0 17px #e2bb5230}
+.member-avatar{width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;border:2px solid #9bdaf4;border-radius:50%;font-weight:900;background:#1a465c;color:#ecffff}
+.member-card.hero-2 .member-avatar{background:#60417c;border-color:#bd96fa}
+.member-card.hero-3 .member-avatar{background:#755334;border-color:#f1c17d}
+.member-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.member-copy strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.member-copy span{color:#d8ecff;font-size:13px;font-weight:800}
+.member-copy small{color:#9eafc7;font-size:11px;line-height:1.3}
+.team-empty{grid-column:1/-1;color:#bfcee0;font-size:14px}
+.team-join,.small-action,.fight-button{background:#233d5a;color:#fff1ca;border:1px solid #d7b87a91;border-radius:12px;padding:11px 15px;font-weight:850;font-size:14px;cursor:pointer}
+.team-join{margin-top:15px;background:#5f4525}
+.small-action:hover,.fight-button:hover,.team-join:hover{filter:brightness(1.15)}
+button:disabled{opacity:.5;cursor:not-allowed;filter:none}
+.team-hint{font-size:12px;line-height:1.5;color:#a3b4cd;margin:12px 0 0}
+.gate{overflow:visible}
+.party-pins{position:absolute;left:50%;transform:translateX(-50%);bottom:-13px;display:flex;justify-content:center;gap:1px;z-index:3;pointer-events:none;white-space:nowrap}
+.party-pin{width:21px;height:21px;display:grid;place-items:center;color:#fff;font-weight:900;font-size:10px;border:2px solid #9bdaf4;border-radius:50%;background:#1c566e;box-shadow:0 2px 7px #000a}
+.party-pin.hero-2{background:#65428a;border-color:#d1a4ff}
+.party-pin.hero-3{background:#865a25;border-color:#ffd188}
+.fight-status{min-height:24px;color:#d8e4f8;font-size:14px;line-height:1.45;margin:15px 0}
+.gate-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.fight-button{background:linear-gradient(150deg,#775527,#523a23);display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.boss-link{background:linear-gradient(135deg,#76432c,#4b2e35)}
+@media(max-width:760px){.team-members{grid-template-columns:1fr}.member-card{padding:10px}.team-panel{border-radius:16px}.party-pin{width:17px;height:17px;font-size:9px}.party-pins{bottom:-10px}}
