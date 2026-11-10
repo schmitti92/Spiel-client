@@ -220,7 +220,9 @@ function draw(){
     for(let i=0;i<64;i++){
       const a=draft.track[i],b=draft.track[(i+1)%64];
       if(!a||!b)continue;
-      out.push('<path d="M '+pair(a)+' L '+pair(b)+'" fill="none" stroke="#d6e6ee" stroke-opacity=".48" stroke-width="3.5" stroke-linecap="round" pointer-events="none"/>');
+      const distance=Math.hypot(a.x-b.x,a.y-b.y),even=Math.abs(distance-settings.stepSpacing)<=.25;
+      const lineColor=settings.guide?(even?'#89e6bc':'#f4a575'):'#d6e6ee';
+      out.push('<path d="M '+pair(a)+' L '+pair(b)+'" fill="none" stroke="'+lineColor+'" stroke-opacity="'+(settings.guide?'.83':'.48')+'" stroke-width="3.5" stroke-linecap="round" pointer-events="none"/>');
     }
     for(let seat=0;seat<4;seat++){
       for(const kind of ['goals','homes'])for(let i=0;i<3;i++){
@@ -250,12 +252,30 @@ function draw(){
   for(let i=0;i<64;i++)if(draft.track[i])fieldMarkup(draft.track[i],'track',i,Math.floor(i/16));
   for(const kind of ['goals','homes'])for(let seat=0;seat<4;seat++)
     for(let i=0;i<4;i++)if(draft[kind][seat][i])fieldMarkup(draft[kind][seat][i],kind,i,seat);
+  // Eight equal-radius destinations around the previous track field.
+  if(settings.guide&&selected.kind==='track'&&tool==='place'){
+    const origin=previousTrackField(draft,selected);
+    if(origin){
+      const p=origin.point,r=settings.stepSpacing;
+      out.push('<circle cx="'+p.x+'" cy="'+p.y+'" r="'+r+'" fill="none" stroke="#ffd794" stroke-opacity=".38" stroke-width="1.5" stroke-dasharray="4 4" pointer-events="none"/>');
+      for(const direction of EIGHT_DIRECTIONS){
+        const target=directedPoint(draft,selected,direction.dx,direction.dy,{step:r});
+        if(target)out.push('<circle cx="'+target.x+'" cy="'+target.y+'" r="5" fill="#ffe0a0" fill-opacity=".48" pointer-events="none"/>');
+      }
+    }
+  }
   // Show the next position only as a preview, never as a real field.
   if(hover&&tool==='place'&&!pointer){
-    const p=snapXY(hover,settings.spacing,settings.snap);
+    let p;try{p=guidedPlacement(hover);}catch(_){p=null;}
+    if(p){
     out.push('<line x1="'+p.x+'" y1="30" x2="'+p.x+'" y2="730" stroke="#ffdc9f" stroke-width="1.2" stroke-dasharray="7 6" opacity=".54" pointer-events="none"/>');
     out.push('<line x1="30" y1="'+p.y+'" x2="730" y2="'+p.y+'" stroke="#ffdc9f" stroke-width="1.2" stroke-dasharray="7 6" opacity=".54" pointer-events="none"/>');
+    if(p.guided){
+      out.push('<path d="M '+p.anchor.x+' '+p.anchor.y+' L '+p.x+' '+p.y+'" stroke="#ffe0a0" stroke-width="3" stroke-dasharray="4 3" pointer-events="none"/>');
+      out.push(svgText(p.x,p.y-25,settings.stepSpacing+' · '+p.label,'#ffe5ae',10));
+    }
     out.push('<circle cx="'+p.x+'" cy="'+p.y+'" r="15" fill="#ffe0a0" fill-opacity=".23" stroke="#ffe2a9" stroke-dasharray="4 3" stroke-width="2.3" pointer-events="none"/>');
+    }
   }
   if(walkStep>=0){
     const p=draft.track[walkStep];
