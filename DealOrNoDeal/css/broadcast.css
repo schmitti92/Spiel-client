@@ -344,3 +344,10 @@ body:has(#banker-call:not([hidden])) .layout>.panel.case-stage:before{
  border-color:#fff3aa!important;color:#fffbea!important;
  box-shadow:0 0 11px #ffcb5b87!important;
 }
+
+/* New 50-million-euro suitcase remains visible on the banker ladder. */
+#banker-call .banker-money-value[data-amount="5000000000"]:not([data-status="gone"]){
+ background:linear-gradient(110deg,#623484,#ffdc88,#8a3971)!important;
+ border:2px solid #fff2c3!important;color:#fffaf0!important;
+ box-shadow:0 0 17px #f3c474bb!important;text-shadow:0 0 8px #fff7d0;
+}
