@@ -38,10 +38,11 @@
  const categories=Object.freeze({
   oneCent:1,tiny:10000,small:1000000,medium:20000000,
   large:100000000,million:100000000,threeMillion:300000000,
-  fiveMillion:500000000,tenMillion:1000000000
+  fiveMillion:500000000,tenMillion:1000000000,fiftyMillion:5000000000
  });
  function classify(cents){
   if(cents===1)return 'oneCent';
+  if(cents>=5000000000)return 'fiftyMillion';
   if(cents>=1000000000)return 'tenMillion';
   if(cents===500000000)return 'fiveMillion';
   if(cents===300000000)return 'threeMillion';
@@ -53,9 +54,9 @@
   return 'tiny';
  }
  // The host speaks ONLY for the lowest and highest cash prize of the
- // currently selected 26–29-case mode. Nothing about the hidden shuffle
+ // currently selected 26–30-case mode. Nothing about the hidden shuffle
  // or the remaining unopened cases is needed.
- const topPrizeByCases=Object.freeze({26:100000000,27:300000000,28:500000000,29:1000000000});
+ const topPrizeByCases=Object.freeze({26:100000000,27:300000000,28:500000000,29:1000000000,30:5000000000});
  function shouldComment(cents,meta={}){
   const count=Number(meta.caseCount);
   return cents===1||topPrizeByCases[count]===cents;
