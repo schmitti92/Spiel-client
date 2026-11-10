@@ -7,7 +7,9 @@
  <meta name="description" content="Die 100 Tore: Fünf Welten, 80 Einzelkämpfe, 10 Mini-Bosse und 10 gemeinsame Wächter führen euch zum Spiel DOG.">
  <title>🏰 Der Weg zu DOG · Die 100 Tore</title>
  <link rel="stylesheet" href="./dog-tor-map.css?v=20261110-v1">
- <script src="./dog-tor-map.js?v=20261110-v1" defer></script>
+ <script src="./profile-config.js"></script>
+ <script src="./profile-auth.js"></script>
+ <script src="./dog-tor-map.js?v=20261110-v2" defer></script>
  <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 </head>
 <body>
@@ -33,9 +35,19 @@
    <div class="small-panel"><strong>🛡️ Gemeinsam stärker</strong><p>Bei Tor 10, 20 und jedem weiteren zehnten Tor kämpft ihr zu dritt. Eure Siege eröffnen die nächste Schmiedestufe.</p></div>
    <div class="small-panel"><strong>🏰 Das große Ziel</strong><p>Erst wenn der letzte Gruppenboss bei Tor 100 serverseitig besiegt ist, darf DOG freigeschaltet werden.</p></div>
   </section>
+  <section class="team-panel" id="map-team" aria-labelledby="team-title">
+   <div class="team-top">
+    <div><span class="world-label">EURE EXPEDITION</span><h2 id="team-title">🧭 Wo stehen die drei Helden?</h2></div>
+    <button type="button" id="team-refresh" class="small-action">↻ Aktualisieren</button>
+   </div>
+   <p id="team-status" class="team-status" role="status" aria-live="polite">Prüfe deine Anmeldung und den gemeinsamen Fortschritt …</p>
+   <div id="team-members" class="team-members" aria-label="Gespeicherte Positionen der Spieler"></div>
+   <button type="button" id="team-join" class="team-join" hidden>🛡️ Der Dreier-Expedition beitreten</button>
+   <p class="team-hint">Die Markierungen zeigen die <b>zuletzt vom Server gespeicherte Position</b>, nicht den minutengenauen Online-Status. Die Karte aktualisiert sich beim Spielen und in größeren Abständen, um Firebase-Abfragen zu sparen.</p>
+  </section>
   <div class="info" role="note">
    <span aria-hidden="true">🧭</span>
-   <span><b>Interaktive Kartenvorschau:</b> Du kannst alle 100 Tore anklicken und ihre Rolle auf eurer Reise ansehen. Der persönliche Fortschritt, die Kämpfe und die DOG-Freischaltung sind noch nicht mit der Karte verbunden. Diese Vorschau verändert keine Spielerdaten.</span>
+   <span><b>Entwicklungsansicht:</b> Die Torstände und Solo-Kämpfe werden nur mit bestätigtem Spielerprofil vom Server geladen. Bei fehlender Serververbindung bleiben die Markierungen bewusst leer. Gemeinsame Bosse nach Tor 10 und die DOG-Freischaltung werden noch ausgebaut.</span>
   </div>
   <section aria-label="Abenteuerkarte von Tor 1 bis Tor 100">
    <div id="worlds"></div>
@@ -45,17 +57,23 @@
    <h2 id="gate-detail-title">Tor auswählen</h2>
    <p id="gate-detail-summary"></p>
    <p id="gate-detail-future"></p>
-   <div class="details-tip"><span>⚔️ Ausrüstung entscheidet mit</span><span>🛡️ Fortschritt wird später sicher gespeichert</span>
-    <button type="button" id="gate-detail-close">Details schließen</button></div>
+   <div class="details-tip"><span>⚔️ Ausrüstung entscheidet mit</span><span>🛡️ Server bestätigt jeden Sieg</span></div>
+   <p id="gate-fight-status" class="fight-status" aria-live="polite"></p>
+   <div class="gate-actions">
+    <button type="button" id="gate-battle-button" class="fight-button" hidden disabled>⚔️ Kampf starten</button>
+    <a id="gate-boss-button" class="fight-button boss-link" href="./dog-boss.html" hidden>🐉 Bossarena betreten</a>
+    <button type="button" id="gate-retry-button" class="small-action" hidden>↻ Offene Aktion sicher wiederholen</button>
+    <button type="button" id="gate-detail-close" class="small-action">Schließen</button>
+   </div>
   </dialog>
   <section class="castle" aria-label="Ziel: das Spiel DOG freischalten">
    <span class="last">HINTER TOR 100 · EUER GEMEINSAMES ZIEL</span>
    <span class="icon" aria-hidden="true">🏰</span>
    <h2>Das verschlossene <strong>DOG-Schloss</strong></h2>
    <p>Hinter dem letzten Wächter verbirgt sich das neue Brettspiel DOG. Wenn eure Heldengruppe Tor 100 gemeinsam besiegt, öffnet sich das Tor – und das Spiel wird freigeschaltet. Bis dahin bleibt DOG das sichtbare Ziel eurer Expedition.</p>
-   <span class="locked" aria-label="DOG ist noch nicht freigeschaltet">🔒 DOG – noch verschlossen</span>
+   <span class="locked" id="dog-lock" aria-label="DOG ist noch nicht freigeschaltet">🔒 DOG – noch verschlossen</span>
   </section>
-  <footer class="footer">Die 100 Tore · Der Weg zum Spiel DOG · Kartenvorschau, noch keine spielbare Version</footer>
+  <footer class="footer">Die 100 Tore · Der Weg zum Spiel DOG · Servergestützte Entwicklungsfassung</footer>
  </main>
 </body>
 </html>
