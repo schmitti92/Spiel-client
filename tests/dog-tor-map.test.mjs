@@ -29,7 +29,7 @@ class FakeElement{
  close(){this.open=false;this.events.get('close')?.()}
 }
 
-function page(search='?room=123'){
+function page(search='?room=123',serverMap=null){
  const elements=new Map();
  const byId=id=>{
   if(!elements.has(id))elements.set(id,new FakeElement(id));
@@ -49,8 +49,17 @@ function page(search='?room=123'){
    return [];
   }
  };
- const window={addEventListener:()=>{},requestAnimationFrame:()=>{}};
- vm.runInNewContext(js,{document,window,location:{search},URLSearchParams},
+ const session=serverMap?{status:'online',user:{uid:'hero-a',getIdToken:async()=> 'test-token'},
+  profile:{setupComplete:true}}:null;
+ const window={addEventListener:()=>{},requestAnimationFrame:()=>{},
+  SpielOnline:session?{state:()=>session}:undefined};
+ const fetch=async(url,options)=>({
+  ok:true,json:async()=>({ok:true,...serverMap})
+ });
+ const storage=new Map();
+ const localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),
+  removeItem:k=>storage.delete(k)};
+ vm.runInNewContext(js,{document,window,location:{search},URLSearchParams,fetch,localStorage},
   {timeout:1500});
  const worlds=byId('worlds').children;
  const collect=(el,into)=>{if(el.className.split(' ').includes('gate'))into.push(el);
@@ -122,4 +131,31 @@ test('Boss 10 launches the existing training arena, other unfinished bosses do n
  gates[19].click();
  assert.equal(byId('gate-boss-button').hidden,true);
  assert.match(byId('gate-fight-status').textContent,/noch nicht implementiert/);
+});
+
+test('Map places server-confirmed positions of three heroes at the exact gate',async()=>{
+ const serverMap={
+  members:[
+   {uid:'hero-a',name:'Christoph',currentGate:14,isMe:true,lastAttemptAt:0},
+   {uid:'hero-b',name:'David',currentGate:9,isMe:false,lastAttemptAt:0},
+   {uid:'hero-c',name:'Vanessa',currentGate:14,isMe:false,lastAttemptAt:0}
+  ],
+  memberCount:3,isMember:true,canJoin:false,
+  progress:{currentGate:14,normals:[1,2,3,4,6,7,8,9,11,12,13],
+   minis:[5],lastAttemptAt:0},sharedBosses:[],dogUnlocked:false
+ };
+ const {gates,byId}=page('?room=123',serverMap);
+ await new Promise(resolve=>setImmediate(resolve));
+ const at14=gates[13].querySelector('.party-pins');
+ const at9=gates[8].querySelector('.party-pins');
+ assert.equal(at14.children.length,2,'two heroes share tor 14');
+ assert.equal(at9.children.length,1);
+ assert.deepEqual(at14.children.map(c=>c.textContent),['C','V']);
+ assert.deepEqual(at9.children.map(c=>c.textContent),['D']);
+ assert.equal(byId('team-members').children.length,3);
+ assert.equal(byId('team-join').hidden,true);
+ gates[13].click();
+ assert.equal(byId('gate-battle-button').disabled,false,'previous normal tor 13 was cleared');
+ gates[14].click();
+ assert.equal(byId('gate-battle-button').disabled,true,'tor 14 not yet cleared, mini boss 15 not yet eligible');
 });
