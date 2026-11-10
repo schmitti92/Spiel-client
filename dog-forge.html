@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0c1019">
+<meta name="description" content="Die Schmiede der 100 Tore: Rüstung, Waffen, Fähigkeiten und Rohstofftausch.">
+<title>⚒️ Schmiede der Helden · Die 100 Tore</title>
+<link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-v1">
+<script src="./profile-config.js"></script>
+<script src="./profile-auth.js"></script>
+<script src="./dog-forge-ui.js?v=20261110-forge-v1" defer></script>
+<script src="./site-global-controls.js?v=20261109-global-1" defer></script>
+</head>
+<body>
+<div class="forge-canvas">
+ <nav class="top-nav" aria-label="Navigation">
+  <a class="nav-back" href="./dog-expedition.html" id="forge-back">← Die 100 Tore</a>
+  <a class="nav-link" href="./dog-expedition.html" id="forge-materials">📦 Rohstoffkisten</a>
+  <button type="button" id="forge-refresh" class="nav-reload">↻ Aktualisieren</button>
+ </nav>
+
+ <header class="forge-header">
+  <div class="forge-kicker"><span class="ember">✦</span> DIE 100 TORE <span class="kicker-line"></span> DEINE SCHMIEDE</div>
+  <h1>Schmiede <span>der Helden</span></h1>
+  <p class="subtitle">Dein Held. Deine Stärke. Dein Weg durch die 100 Tore.</p>
+ </header>
+
+ <section class="forge-banner" aria-label="Persönlicher Fortschritt">
+  <div class="character-emblem" aria-hidden="true">
+   <div class="character-orbit"></div>
+   <div class="character-silhouette">🛡️</div>
+  </div>
+  <div class="banner-player">
+   <span class="eyebrow">PERSÖNLICHER HELD</span>
+   <h2 id="forge-player">Wird geladen …</h2>
+   <span id="forge-player-note">Deine Fortschritte bleiben gespeichert.</span>
+  </div>
+  <div class="hero-metrics">
+   <div class="metric"><span>⚔️ Waffe</span><strong id="forge-weapon-level">1<small>/20</small></strong></div>
+   <div class="metric"><span>🛡️ Rüstung</span><strong id="forge-armor-level">1<small>/20</small></strong></div>
+   <div class="metric"><span>💥 Angriff</span><strong id="forge-attack-total">0</strong></div>
+   <div class="metric"><span>❤️ Abwehr</span><strong id="forge-defense-total">0</strong></div>
+  </div>
+ </section>
+
+ <p id="forge-status" class="forge-status" role="status" aria-live="polite">Verbinde die Schmiede mit deinem Spielerprofil …</p>
+ <div id="forge-retry-wrap" class="retry-bar" hidden>
+  <span>Eine Aktion muss noch bestätigt werden.</span>
+  <button type="button" class="minor-button" id="forge-retry">↻ Sicher wiederholen</button>
+ </div>
+
+ <div class="forge-workspace" id="forge-workspace">
+  <section class="workshop-panel">
+   <div class="panel-title"><span class="ornament">✦</span><h2>Deine Werkstatt</h2><span class="panel-rule"></span></div>
+   <div class="forge-tabs" role="tablist" aria-label="Schmiedebereiche">
+    <button class="forge-tab active" type="button" data-tab="equipment" role="tab" aria-selected="true">⚔️ <span>Ausrüstung</span></button>
+    <button class="forge-tab" type="button" data-tab="attack" role="tab" aria-selected="false">💥 <span>Angriff</span></button>
+    <button class="forge-tab" type="button" data-tab="defense" role="tab" aria-selected="false">🛡️ <span>Abwehr</span></button>
+    <button class="forge-tab" type="button" data-tab="exchange" role="tab" aria-selected="false">💎 <span>Tausch</span></button>
+   </div>
+   <div class="furnace" aria-hidden="true">
+    <div class="furnace-arches"></div>
+    <div class="fire-glow"></div>
+    <div class="furnace-fire">🔥</div>
+    <div class="forge-anvil">⚒️</div>
+    <span class="spark s1">✦</span><span class="spark s2">✧</span><span class="spark s3">✦</span>
+    <div class="furnace-floor"></div>
+    <div class="furnace-label">✦ AUS FEUER WIRD STÄRKE ✦</div>
+   </div>
+   <div class="equipment-list" id="forge-item-list">
+    <div class="list-placeholder">Deine Ausrüstung wird geladen …</div>
+   </div>
+  </section>
+
+  <section class="upgrade-panel" aria-live="polite">
+   <div id="upgrade-content">
+    <div class="upgrade-top"><span class="eyebrow">VERBESSERUNG</span><span class="forge-tag">⚒️ SCHMIEDE</span></div>
+    <div class="upgrade-symbol" aria-hidden="true">⚔️</div>
+    <h2>Waffe</h2>
+    <p class="upgrade-summary">Wähle eine Verbesserung aus.</p>
+   </div>
+  </section>
+ </div>
+
+ <details class="stock-panel" id="forge-stock">
+  <summary><span>🎒 <strong>Mein Rohstofflager</strong></span><span class="stock-hint">15 Materialien <span class="stock-chevron">⌄</span></span></summary>
+  <div id="forge-stock-groups" class="stock-groups"></div>
+ </details>
+ <footer class="forge-footer">⚒️ Fortschritt persönlich gespeichert <span>✦</span> Balancewerte vorläufig <span>✦</span> Bosskampf folgt</footer>
+</div>
+
+<dialog id="forge-result" class="forge-result" aria-labelledby="forge-result-heading">
+ <div class="result-plate">
+  <button id="forge-result-x" type="button" class="result-x" aria-label="Schließen">✕</button>
+  <div class="result-ornament" aria-hidden="true">✧ ✦ ✧</div>
+  <div class="result-icon" id="forge-result-icon">⚒️</div>
+  <h2 id="forge-result-heading">Geschmiedet!</h2>
+  <p id="forge-result-text">Dein Fortschritt wurde gespeichert.</p>
+  <button type="button" id="forge-result-ok" class="forge-action">Zur Schmiede</button>
+ </div>
+</dialog>
+</body>
+</html>
