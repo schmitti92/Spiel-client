@@ -73,4 +73,5 @@ $('tab-gold').onclick=()=>switchAlbum(false);$('tab-christmas').onclick=()=>swit
 const eventRoom=new URLSearchParams(location.search).get('room');if(eventRoom&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(eventRoom))$('christmas-event-link').href='./weihnachten.html?room='+encodeURIComponent(eventRoom);
 if(location.hash==='#weihnachten')switchAlbum(true);window.addEventListener('spielonline-change',()=>{if(!$('christmas-album').hidden)loadChristmasAlbum()});
 </script><script src="../site-global-controls.js?v=20261109-global-1"></script>
+<script defer src="./js/christoph-surprise.js?v=20261110-gift-v1"></script>
 </body></html>
