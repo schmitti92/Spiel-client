@@ -4,6 +4,9 @@ const root=document.getElementById('ice-online'),status=document.getElementById(
 const names=["IMG-20261108-WA0000.jpg","IMG-20261108-WA0001.jpg","IMG-20261108-WA0002.jpg","IMG-20261108-WA0003.jpg","IMG-20261108-WA0004.jpg","IMG-20261108-WA0005.jpg","IMG-20261108-WA0006.jpg","IMG-20261108-WA0007.jpg","IMG-20261108-WA0011.jpg","IMG-20261108-WA0012.jpg","IMG-20261108-WA0013.jpg","IMG-20261108-WA0014.jpg","IMG-20261108-WA0015.jpg","IMG-20261108-WA0016.jpg","IMG-20261108-WA0017.jpg","IMG-20261108-WA0018.jpg","IMG-20261108-WA0023.jpg","IMG-20261108-WA0024.jpg","IMG-20261108-WA0025.jpg","IMG-20261108-WA0027.jpg","IMG-20261108-WA0030.jpg","IMG-20261108-WA0032.jpg","IMG-20261108-WA0033.jpg","IMG-20261108-WA0034.jpg","IMG-20261108-WA0035.jpg","IMG-20261108-WA0036.jpg","IMG-20261108-WA0038.jpg","IMG-20261108-WA0040.jpg","IMG-20261108-WA0041.jpg","IMG-20261108-WA0042.jpg","IMG-20261108-WA0043.jpg","IMG-20261108-WA0045.jpg","IMG-20261108-WA0046.jpg","IMG-20261108-WA0047.jpg","IMG-20261108-WA0048(1).jpg","IMG-20261108-WA0051.jpg","IMG-20261108-WA0052.jpg","IMG-20261108-WA0053.jpg","IMG-20261108-WA0054.jpg","IMG-20261108-WA0056.jpg","IMG-20261108-WA0065.jpg","IMG-20261108-WA0067.jpg","IMG-20261108-WA0068.jpg","IMG-20261108-WA0069.jpg","IMG-20261108-WA0070.jpg","IMG-20261108-WA0074.jpg","IMG-20261108-WA0075.jpg","IMG-20261108-WA0077.jpg","IMG-20261108-WA0079.jpg","IMG-20261108-WA0081.jpg","IMG-20261108-WA0084.jpg","IMG-20261108-WA0085.jpg","IMG-20261108-WA0086.jpg","IMG-20261108-WA0089.jpg","IMG-20261108-WA0091.jpg","IMG-20261108-WA0092.jpg","IMG-20261108-WA0094.jpg","IMG-20261108-WA0097.jpg","IMG-20261108-WA0099.jpg","IMG-20261108-WA0104.jpg","IMG-20261108-WA0105.jpg","IMG-20261108-WA0109.jpg","IMG-20261108-WA0110.jpg","IMG-20261108-WA0111.jpg","IMG-20261108-WA0113(1).jpg","IMG-20261108-WA0114.jpg","IMG-20261108-WA0121.jpg","motion_photo_3952067152776055351.jpg","motion_photo_4388198511032034292.jpg","motion_photo_6120708326686891259.jpg"];
 const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 let state=null,busy=false,pending=null,picture30ClaimBusy=false;
+// Distinguish the authenticated profile from any previously loaded board.
+// Delayed responses must never overwrite a different player's ice progress.
+let activeUserUid=null,authEpoch=0,reloadAfterAccountSwitch=false;
 const money=n=>(Number(n||0)/100).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
 const user=()=>{const a=window.SpielOnline?.state?.();return a?.status==='online'?a.user:null};
 function message(t){status.textContent=t;status.hidden=/^✅ Online-Modus verbunden\.?$/.test(t)}
@@ -279,6 +282,7 @@ function render(){
 }
 async function run(type,extra={}){
  if(busy)return;
+ const actionUid=user()?.uid,actionEpoch=authEpoch;
  // A timed-out request may already have committed. Never replace its id with a new action.
  const unresolved=readPending();
  if(unresolved){
@@ -308,6 +312,7 @@ async function run(type,extra={}){
   const beforeOpened=type==='strike'?new Set(state?.opened||[]):null;
   const data=await request('POST',{type,requestId,...extra,
    ...(expectedPicture!==undefined?{expectedPicture}:{})});
+  if(user()?.uid!==actionUid||authEpoch!==actionEpoch)return;
   const wasFinished=!!state?.finished,oldCompleted=Number(state?.completed||0);
   state=data.state;pending=null;
   // Server response remains authoritative: replayed or rejected requests
@@ -337,19 +342,31 @@ async function run(type,extra={}){
   else if(data.result?.gift){const gift=data.result.gift;message('🎁 '+(gift.kind==='joker'?'Kofferblick-Joker'+(data.result?.hatsVoucherGranted===1?' und 1 Weihnachtsmützen-Spielgutschein':'')+' gewonnen!':gift.kind==='money'?money(gift.amount)+' gewonnen!':'Gratis-Hammer gewonnen: '+gift.hammer))}
   else if(data.result?.found)message('🌟 Stern gefunden! Dieses Bild wurde bereits bei einem früheren Durchlauf belohnt.');
   else message('✅ Fortschritt serverseitig gespeichert.');
- }catch(e){if(e.confirmedRejection){forgetPending();message('⚠️ '+e.message+' – die Aktion wurde vom Server abgelehnt. Du kannst wieder einen Hammer auswählen.')}else{message('⚠️ '+e.message+' – Verbindung unklar. Bitte dieselbe Aktion sicher wiederholen.')}}
+ }catch(e){
+  if(user()?.uid!==actionUid||authEpoch!==actionEpoch)return;
+  if(e.confirmedRejection){forgetPending();message('⚠️ '+e.message+' – die Aktion wurde vom Server abgelehnt. Du kannst wieder einen Hammer auswählen.')}
+  else message('⚠️ '+e.message+' – Verbindung unklar. Bitte dieselbe Aktion sicher wiederholen.');
+ }
  finally{
-  busy=false;render();
-  if(state&&!readPending())void claimPicture30Bonus();
+  busy=false;
+  if(user()?.uid===actionUid&&authEpoch===actionEpoch){
+   render();
+   if(state&&!readPending())void claimPicture30Bonus();
+  }
+  finishAccountRefresh();
  }
 }
 async function load(){
  if(busy)return;
+ const requestedUid=user()?.uid;
+ if(!requestedUid){accountReady();return;}
+ const requestedEpoch=authEpoch;
  busy=true;message('⏳ Spielstand wird geprüft …');
  let shouldRecover=false;
  try{
   const stored=readPending();
   const data=await request('GET',stored?{pendingId:stored.requestId}:undefined);
+  if(user()?.uid!==requestedUid||authEpoch!==requestedEpoch)return;
   state=data.state;
   // An uncertain POST is always retried using its ORIGINAL request ID.
   // A successful receipt proves the debit already happened, so do not replay.
@@ -372,6 +389,7 @@ async function load(){
   if(state&&!state.goldenHammerGift2026){
    try{
     const bonus=await request('POST',{type:'welcome',requestId:id()});
+    if(user()?.uid!==requestedUid||authEpoch!==requestedEpoch)return;
     state=bonus.state;
     if(bonus.result?.granted)message('🎁 Einmaliges Geschenk: 3 goldene Glückshammer wurden gutgeschrieben!');
    }catch(error){message('⚠️ Willkommensgeschenk konnte noch nicht geprüft werden: '+error.message)}
@@ -385,13 +403,18 @@ async function load(){
   if(!shouldRecover)void claimPicture30Bonus();
  }catch(e){
   shouldRecover=false;
-  message('⚠️ '+e.message);
-  root.innerHTML='<button id="ice-retry">🔄 Verbindung erneut prüfen</button>';
+  if(user()?.uid!==requestedUid||authEpoch!==requestedEpoch)return;
+  message('⚠️ '+e.message+' – dein gespeicherter Spielstand bleibt erhalten.');
+  root.innerHTML='<div class="ice-access-recovery" role="alert"><strong>❄️ Weihnachtsevent 2 konnte nicht geladen werden.</strong><p>Deine Bilder, Hammer und Gewinne bleiben online gespeichert.</p><button id="ice-retry" type="button">🔄 Event erneut öffnen</button><button id="ice-login-retry" type="button">🔐 Spielerprofil prüfen</button></div>';
   root.querySelector('#ice-retry').onclick=load;
- }finally{busy=false}
+  root.querySelector('#ice-login-retry').onclick=()=>window.SpielOnline?.openLogin?.();
+ }finally{
+  busy=false;
+  finishAccountRefresh();
+ }
  // A missing receipt means the client must retry ONCE with the same ID.
  // Rejections release the lock; network timeouts keep the visible repair button.
- if(shouldRecover){
+ if(shouldRecover&&user()?.uid===requestedUid&&authEpoch===requestedEpoch){
   const old=readPending();
   if(old)await run(old.type,old.extra||{});
  }
@@ -415,18 +438,38 @@ function accountReady(){
  }
  return false;
 }
+function syncAccount(){
+ const uid=user()?.uid||null;
+ if(uid===activeUserUid)return false;
+ activeUserUid=uid;
+ authEpoch++;
+ state=null;pending=null;showAllGallery=false;largeGalleryImage=null;galleryPage=0;
+ celebration=null;confirmedHit=null;
+ clearTimeout(wheelTimer);clearTimeout(celebrationDelayTimer);
+ wheelTimer=null;celebrationDelayTimer=null;
+ root.innerHTML='<p class="ice-account-loading" role="status">🔄 Dein Weihnachts-Event wird für das aktuelle Spielerprofil geladen …</p>';
+ if(busy)reloadAfterAccountSwitch=true;
+ return true;
+}
+function finishAccountRefresh(){
+ if(!reloadAfterAccountSwitch)return;
+ reloadAfterAccountSwitch=false;
+ if(accountReady())void load();
+}
 async function loadWhenReady(){
+ syncAccount();
  if(!accountReady())return;
+ if(busy)return;
  await load();
 }
 // The redundant reload header was removed; startup must not depend on its button.
 const reloadButton=document.getElementById('ice-reload');
 if(reloadButton)reloadButton.onclick=loadWhenReady;
 window.addEventListener('spielonline-change',()=>{
- const a=window.SpielOnline?.state?.();
- if(a?.status==='online'&&a.user){
-  if(!state&&!busy)loadWhenReady();
- }else if(!busy){state=null;accountReady();}
+ const changed=syncAccount();
+ if(!accountReady())return;
+ if(busy){if(changed)reloadAfterAccountSwitch=true;return;}
+ if(changed||!state)void load();
 });
 loadWhenReady();
 })();
