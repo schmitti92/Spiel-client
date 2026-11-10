@@ -102,7 +102,9 @@
     const avatar=$node('span','member-avatar',member.name.slice(0,1).toUpperCase());
     const text=$node('div','member-copy');
     text.append($node('strong',null,member.name+(member.isMe?' (du)':'')));
-    text.append($node('span',null,'📍 Tor '+member.currentGate+' von 100'));
+    text.append($node('span',null,'📍 Aktuell: Tor '+member.currentGate));
+    text.append($node('small',null,'🏅 Höchstes erreichtes Tor: '+
+     (member.highestGate??member.currentGate)));
     text.append($node('small',null,member.lastAttemptAt?
      'Zuletzt kämpfte hier: '+new Date(member.lastAttemptAt).toLocaleString('de-DE'):
      'Noch kein persönlicher Kampf gespeichert'));
