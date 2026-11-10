@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="de">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta name="theme-color" content="#08101d">
+ <meta name="description" content="Die 100 Tore: Fünf Welten, 80 Einzelkämpfe, 10 Mini-Bosse und 10 gemeinsame Wächter führen euch zum Spiel DOG.">
+ <title>🏰 Der Weg zu DOG · Die 100 Tore</title>
+ <link rel="stylesheet" href="./dog-tor-map.css?v=20261110-v1">
+ <script src="./dog-tor-map.js?v=20261110-v1" defer></script>
+ <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
+</head>
+<body>
+ <main class="wrapper">
+  <nav aria-label="Navigation">
+   <a id="back-event" href="./dog-expedition.html">← Zur Expedition</a>
+   <a id="back-forge" href="./dog-forge.html">⚒️ Zur Schmiede</a>
+   <a href="./hub-lobby.html">🎮 Spielelobby</a>
+  </nav>
+  <header class="hero">
+   <div class="kicker">✦ DIE EXPEDITION ZUM LEGENDÄREN SPIEL ✦</div>
+   <h1>Der Weg zu <span>DOG</span></h1>
+   <p>Hinter dem hundertsten Tor liegt das verschlossene DOG-Schloss. Drei Helden, fünf gefährliche Welten und zehn gemeinsame Wächter trennen euch vom Ziel. Jeder kämpft auf seinem persönlichen Weg – die großen Bosse besiegt ihr gemeinsam.</p>
+   <div class="meta">
+    <span class="chip">⚔️ 80 persönliche Kämpfe</span>
+    <span class="chip">👹 10 Solo-Mini-Bosse</span>
+    <span class="chip">🐉 10 gemeinsame Bosse</span>
+   </div>
+   <span class="hero-art" aria-hidden="true">🏰</span>
+  </header>
+  <section class="intro" aria-label="Spielprinzip">
+   <div class="small-panel"><strong>🗺️ Dein eigener Weg</strong><p>Du kannst die normalen Kämpfe unabhängig von den anderen abschließen. Deine Ausrüstung beeinflusst deine Siegchance.</p></div>
+   <div class="small-panel"><strong>🛡️ Gemeinsam stärker</strong><p>Bei Tor 10, 20 und jedem weiteren zehnten Tor kämpft ihr zu dritt. Eure Siege eröffnen die nächste Schmiedestufe.</p></div>
+   <div class="small-panel"><strong>🏰 Das große Ziel</strong><p>Erst wenn der letzte Gruppenboss bei Tor 100 serverseitig besiegt ist, darf DOG freigeschaltet werden.</p></div>
+  </section>
+  <div class="info" role="note">
+   <span aria-hidden="true">🧭</span>
+   <span><b>Interaktive Kartenvorschau:</b> Du kannst alle 100 Tore anklicken und ihre Rolle auf eurer Reise ansehen. Der persönliche Fortschritt, die Kämpfe und die DOG-Freischaltung sind noch nicht mit der Karte verbunden. Diese Vorschau verändert keine Spielerdaten.</span>
+  </div>
+  <section aria-label="Abenteuerkarte von Tor 1 bis Tor 100">
+   <div id="worlds"></div>
+  </section>
+  <section id="details" class="details" hidden aria-live="polite" aria-labelledby="gate-detail-title">
+   <div class="details-kicker" id="gate-detail-kicker">TOR 1 / 100</div>
+   <h2 id="gate-detail-title">Tor auswählen</h2>
+   <p id="gate-detail-summary"></p>
+   <p id="gate-detail-future"></p>
+   <div class="details-tip"><span>⚔️ Ausrüstung entscheidet mit</span><span>🛡️ Fortschritt wird später sicher gespeichert</span>
+    <button type="button" id="gate-detail-close">Details schließen</button></div>
+  </section>
+  <section class="castle" aria-label="Ziel: das Spiel DOG freischalten">
+   <span class="last">HINTER TOR 100 · EUER GEMEINSAMES ZIEL</span>
+   <span class="icon" aria-hidden="true">🏰</span>
+   <h2>Das verschlossene <strong>DOG-Schloss</strong></h2>
+   <p>Hinter dem letzten Wächter verbirgt sich das neue Brettspiel DOG. Wenn eure Heldengruppe Tor 100 gemeinsam besiegt, öffnet sich das Tor – und das Spiel wird freigeschaltet. Bis dahin bleibt DOG das sichtbare Ziel eurer Expedition.</p>
+   <span class="locked" aria-label="DOG ist noch nicht freigeschaltet">🔒 DOG – noch verschlossen</span>
+  </section>
+  <footer class="footer">Die 100 Tore · Der Weg zum Spiel DOG · Kartenvorschau, noch keine spielbare Version</footer>
+ </main>
+</body>
+</html>
