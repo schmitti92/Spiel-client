@@ -120,8 +120,8 @@ function harness(options={}){
 }
 test('Boss page uses dedicated independent scripts and original illustration',()=>{
  const html=read('dog-boss.html'),css=read('dog-boss.css');
- assert.ok(html.includes('dog-boss-ui.js?v=20261110-boss-v1'));
- assert.ok(html.includes('dog-boss.css?v=20261110-boss-v1'));
+ assert.ok(html.includes('dog-boss-ui.js?v=20261110-boss-v2'));
+ assert.ok(html.includes('dog-boss.css?v=20261110-boss-v2'));
  assert.ok(html.includes('./dog-boss-art/aschewaechter.svg'));
  assert.ok(read('dog-boss-art/aschewaechter.svg').startsWith('<svg'));
  assert.ok(css.includes('.boss-defeat-panel'));
@@ -203,4 +203,52 @@ test('The battle refresh interval avoids Firebase reads every second',async()=>{
  assert.equal(h.get().length,1);
  h.advance(60001);h.intervals.get(60000)();await spin();
  assert.equal(h.get().length,2);
+});
+
+test('Boss phases and warning are displayed only from authoritative server data',async()=>{
+ const now=1_800_000_000_000;
+ const stage2={...basic({now,phase:'fighting'}),bossHp:2890,
+  bossPhase:2,bossPhaseName:'Die Glut erwacht',bossCharged:true,
+  bossTelegraph:'⚠️ Achtung: Eine Flammenexplosion trifft den nächsten handelnden Helden!'};
+ const h=harness({now,view:stage2});
+ await spin();
+ assert.equal(h.el('boss-phase-label').textContent,'PHASE 2 VON 3');
+ assert.equal(h.el('boss-phase-name').textContent,'Die Glut erwacht');
+ assert.match(h.el('boss-telegraph').textContent,/Flammenexplosion/);
+ assert.equal(h.el('boss-telegraph').classList.contains('is-warning'),true);
+ assert.equal(h.el('boss-art-stage').classList.contains('boss-charging'),true);
+ assert.equal(h.el('boss-art-stage').dataset.phase,'2');
+ assert.equal(h.el('boss-hp-text').textContent,'2.890 / 6.000 LP');
+ assert.equal(h.get().length,1,'phase warning uses existing GET, not extra reads');
+});
+test('Inferno and defeated phase show different visuals without a false warning',async()=>{
+ const now=1_800_000_000_000;
+ const h=harness({now,view:{...basic({now,phase:'fighting'}),bossPhase:3,bossHp:1350,
+  bossPhaseName:'Das letzte Inferno',bossCharged:false,
+  bossTelegraph:'🔥 Das Inferno tobt!'}});
+ await spin();
+ assert.equal(h.el('boss-phase-label').textContent,'PHASE 3 VON 3');
+ assert.equal(h.el('boss-monster').classList.contains('boss-monster-inferno'),true);
+ assert.equal(h.el('boss-telegraph').classList.contains('is-warning'),false);
+ assert.match(h.el('boss-tactical-tip').textContent,/Gegenschläge/);
+ const cooldown={...basic({now,phase:'cooldown'}),bossPhase:3,bossHp:1300,
+  bossPhaseName:'Das letzte Inferno',bossCharged:false,
+  bossTelegraph:'💀 Der nächste Kampf ist gesperrt.'};
+ h.setServer(cooldown);h.click('boss-refresh');await spin();
+ assert.equal(h.el('boss-defeat-panel').hidden,false);
+ assert.equal(h.el('boss-art-stage').classList.contains('boss-charging'),false);
+ assert.ok(h.moveButtons.every(b=>b.disabled));
+});
+test('Boss phase UI is responsive and accessible when animations are reduced',()=>{
+ const html=read('dog-boss.html'),css=read('dog-boss.css');
+ for(const id of ['boss-phase-status','boss-phase-label','boss-phase-name',
+  'boss-telegraph','boss-tactical-tip','boss-art-stage'])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.ok(html.includes('aria-live="polite"'));
+ assert.ok(css.includes('.boss-phase-ruler'));
+ assert.ok(css.includes('.boss-telegraph.is-warning'));
+ assert.ok(css.includes('@media(prefers-reduced-motion:reduce)'));
+ assert.ok(source.includes("view?.bossCharged&&view?.phase==='fighting'"));
+ assert.ok(source.includes('bossPhase=Math.min(3'));
+ assert.ok(source.includes("payload.result?.chargedAttack"));
 });
