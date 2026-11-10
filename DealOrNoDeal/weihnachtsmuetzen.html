@@ -772,7 +772,14 @@ async function refresh(){
   }
   render();setStatus(notice,!!pendingRequest,!pendingRequest);
  }catch(e){setStatus('⚠️ '+describeError(e),true);}
- finally{busy=false;render();}
+ finally{
+  busy=false;render();
+  if(autoStartRequested&&state===null&&!pendingRequest&&Number(vouchers?.total||0)>0&&authUser()?.uid===user.uid){
+   autoStartRequested=false;
+   try{const url=new URL(location.href);url.searchParams.delete('autostart');history.replaceState(history.state,'',url.pathname+url.search+url.hash)}catch{}
+   void action('start');
+  }
+ }
 }
 async function action(type,index){
  if(busy||reveal||pendingRequest)return;
