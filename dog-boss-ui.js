@@ -141,6 +141,27 @@
   const victory=!!view&&view.phase==='victory';
   $('boss-defeat-panel').hidden=!defeat;
   $('boss-victory-panel').hidden=!victory;
+  // No guessed local advice: only show the battle's actual server calculation.
+  const analysis=defeat?view.defeatAnalysis:null;
+  $('boss-defeat-analysis').hidden=!analysis;
+  if(analysis){
+   const category=['attack','defense','balanced'].includes(analysis.category)?
+    analysis.category:'balanced';
+   $('boss-defeat-analysis').dataset.reason=category;
+   $('boss-analysis-title').textContent=analysis.title;
+   $('boss-analysis-summary').textContent=analysis.summary;
+   const pct=Math.min(100,Math.max(0,Number(analysis.bossProgressPct)||0));
+   $('boss-analysis-fill').style.width=pct+'%';
+   $('boss-analysis-track').setAttribute('aria-valuenow',String(pct));
+   const total=Number(analysis.teamActions)||0;
+   const avg=Number(analysis.averageDamage)||0;
+   const missing=analysis.estimatedMoreActions;
+   $('boss-analysis-metrics').textContent=total>0?
+    total+' Teamaktionen · durchschnittlich '+num(avg)+' Schaden pro Aktion'+
+    (Number.isFinite(missing)&&missing>0?' · etwa '+num(missing)+' weitere Aktionen benötigt':''):
+    'Der Boss hatte noch '+num(analysis.bossRemaining)+' LP.';
+   $('boss-analysis-advice').textContent='⚒️ '+analysis.recommendation;
+  }
   $('boss-monster').classList.toggle('boss-monster-down',defeat||victory);
   renderClock();
   const joinButton=$('boss-join');
