@@ -185,4 +185,17 @@ test('Phase 3 winter map renders twenty connected rooms with correct special cel
  assert.match(finale.attributes['aria-label'],/Nordpol-Finale/);
  assert.match(tiles[2].attributes['aria-label'],/alle drei Mützen bombenfrei/);
  assert.match(tiles[9].attributes['aria-label'],/Gewinne bis hier gesichert/);
+ // A new player must see all twenty milestones BEFORE spending a voucher.
+ ctx.state=null;
+ new Script(fn+'renderTiers(1,0,0);').runInNewContext(ctx);
+ assert.equal(stageRoot.children.length,20);
+ assert.deepEqual(stageRoot.children.filter(x=>x.className.includes('bonus-cell')).map(x=>Number(x.dataset.room)),[3,6,9,12,15,18]);
+ assert.deepEqual(stageRoot.children.filter(x=>x.className.includes('checkpoint-cell')).map(x=>Number(x.dataset.room)),[5,10,15]);
+ // An existing ten-room match keeps its older path and checkpoints.
+ ctx.state={maxRoom:10,checkpoints:[3,7],rulesVersion:2};
+ new Script(fn+'renderTiers(5,3,4);').runInNewContext(ctx);
+ assert.equal(stageRoot.children.length,10);
+ assert.deepEqual(stageRoot.children.filter(x=>x.className.includes('bonus-cell')).map(x=>Number(x.dataset.room)),[]);
+ assert.deepEqual(stageRoot.children.filter(x=>x.className.includes('checkpoint-cell')).map(x=>Number(x.dataset.room)),[3,7]);
+ assert.equal(stageRoot.children[9].children[0].textContent,'👑');
 });
