@@ -230,9 +230,9 @@
   button.addEventListener('click',()=>{
    const costs=Object.entries(quote.cost||{}).map(([id,amount])=>amount+' × '+(material[id]?.name||id)).join(' · ');
    const risk=item.group==='equipment'&&quote.successChance<100?
-    '\\n⚠️ Bei einem Fehlschlag sind die Rohstoffe weg, die Stufe bleibt erhalten.':'';
-   if(window.confirm(item.name+' auf Stufe '+quote.nextLevel+' verbessern?\\n'+costs+
-    '\\nErfolgschance: '+quote.successChance+' %'+risk))
+    '\n⚠️ Bei einem Fehlschlag sind die Rohstoffe weg, die Stufe bleibt erhalten.':'';
+   if(window.confirm(item.name+' auf Stufe '+quote.nextLevel+' verbessern?\n'+costs+
+    '\nErfolgschance: '+quote.successChance+' %'+risk))
     void action('upgrade',{itemId:item.id,expectedLevel:quote.level});
   });
   root.append(button);
