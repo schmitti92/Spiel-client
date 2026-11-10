@@ -1165,3 +1165,85 @@ body:after{
  .ceremony-item-image{animation:none!important}
  .ceremony-sparks i{opacity:0}
 }
+
+
+/* D3 — personal goal is an optional, lightweight client-only progress reminder. */
+.forge-goal-banner{display:flex;align-items:center;gap:15px;padding:13px 17px;margin:12px 0 5px;
+ background:radial-gradient(ellipse at 0% 50%,#93703b47,transparent 60%),
+ linear-gradient(112deg,#252b3ce8,#101d2eeb 69%);
+ border:1px solid #e2b9729a;border-radius:17px;
+ box-shadow:inset 0 1px #ffefbf24,0 8px 26px #0009;backdrop-filter:blur(9px)}
+.forge-goal-visual{display:grid;place-items:center;flex:0 0 58px;width:58px;height:58px;border-radius:14px;
+ border:1px solid #e2bd7b96;background:#1b2539c4;box-shadow:0 0 16px #efbb6738;
+ font-size:25px;overflow:hidden}
+.forge-goal-visual .gear-visual.compact,.forge-goal-visual .skill-visual.compact{
+ width:53px;height:53px;flex:0 0 53px;border:0;background:transparent}
+.forge-goal-visual .gear-illustration,.forge-goal-visual .skill-illustration{
+ width:52px!important;height:52px!important;object-fit:contain}
+.forge-goal-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.forge-goal-kicker{font-size:9px;letter-spacing:.1em;color:#efc78b;font-weight:950}
+.forge-goal-body strong{color:#ffedcb;font:900 17px Georgia,serif;overflow-wrap:anywhere}
+#forge-goal-desc{font-size:11px;line-height:1.5;color:#d7d4d0;overflow-wrap:anywhere}
+.forge-goal-progress{display:block;height:6px;width:100%;max-width:580px;border-radius:99px;
+ background:#0b1323;border:1px solid #7e87936d;overflow:hidden;margin-top:2px}
+.forge-goal-progress>span{display:block;width:0;height:100%;border-radius:99px;
+ background:linear-gradient(90deg,#b56a43,#ecc779,#b4d5ab);
+ box-shadow:0 0 13px #f0cb7e7a;transition:width .2s}
+.forge-goal-actions{display:flex;align-items:center;gap:7px}
+.forge-goal-actions button{border:1px solid #d4b57c91;background:#26374b;color:#ffe2ad;
+ border-radius:10px;font-weight:850;font-size:11px;min-height:39px;padding:9px 12px}
+.forge-goal-actions button:hover:not(:disabled){background:#485165}
+.forge-goal-actions #forge-goal-clear{padding:8px 11px;min-width:37px}
+.forge-goal-pin{display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;
+ margin:8px 0 10px;padding:8px 11px;border-radius:99px;border:1px solid #b39b70a3;
+ background:#172b3b;color:#f2d8a6;font-size:11px;font-weight:900}
+.forge-goal-pin.active{background:#473824;color:#ffe9ae;border-color:#f9d586;
+ box-shadow:0 0 14px #e9bc6d59}
+.goal-mark{color:#f4c981!important;font-size:9px;font-weight:850}
+.smart-exchange-hint{margin:12px 0 8px;padding:12px;border-radius:12px;
+ background:#15344985;border:1px solid #7cbbd2a6;
+ box-shadow:inset 0 0 19px #63bed31a}
+.smart-exchange-hint>strong{display:block;color:#bceafa;font-size:12px;margin-bottom:7px}
+.smart-exchange-row{display:flex;align-items:center;gap:10px;justify-content:space-between;
+ padding:6px 0;border-top:1px solid #83b2bd32}
+.smart-exchange-row span{font-size:11px;color:#d0e6e5;line-height:1.45}
+.smart-exchange-row button{flex-shrink:0;padding:7px 9px;border-radius:8px;
+ border:1px solid #84bac5;background:#203e53;color:#e4f7f7;font-size:10px;font-weight:900}
+.smart-exchange-row button:hover{background:#346179}
+
+/* D3 — select 1 / 5 / 10 / 25 / Max; server enforces the final count. */
+.multi-exchange-row{flex-wrap:wrap;gap:8px;padding:12px 11px}
+.multi-exchange-row .exchange-mat{min-width:85px}
+.multi-exchange-row .exchange-target{max-width:none}
+.exchange-controls{flex:1 0 100%;display:grid;grid-template-columns:minmax(100px,1fr) minmax(100px,1.5fr) auto;
+ gap:9px;align-items:center;padding-top:9px;margin-top:2px;
+ border-top:1px solid #b29c6952}
+.exchange-quantity{width:100%;min-width:0;border-radius:9px;padding:10px 8px;
+ color:#fbe8c7;background:#17283b;border:1px solid #d8b47d9a;
+ font-size:12px;font-weight:900;min-height:40px;cursor:pointer}
+.exchange-quantity:disabled{opacity:.48;cursor:not-allowed}
+.exchange-quantity-preview{font-size:11px;color:#e7ca96;text-align:center;line-height:1.45}
+.exchange-controls .exchange-submit{min-height:41px;padding:10px 14px;min-width:108px;
+ white-space:nowrap}
+.exchange-confirm-icon{font-size:59px;margin:12px auto;text-shadow:0 0 20px #f3b97987}
+.exchange-confirm-description{font-size:13px;color:#e5d9c7;line-height:1.5;margin:14px 0}
+.exchange-confirm-preview{background:#0d2838bd;border:1px solid #5bc3a17d;color:#b6f9d9;
+ font-size:12px;font-weight:800;line-height:1.5;padding:12px 10px;border-radius:10px;
+ margin-bottom:13px}
+@media(max-width:660px){
+ .forge-goal-banner{padding:10px;gap:9px;flex-wrap:wrap}
+ .forge-goal-visual{flex-basis:48px;width:48px;height:48px}
+ .forge-goal-visual .gear-visual.compact,.forge-goal-visual .skill-visual.compact{width:45px;height:45px;flex-basis:45px}
+ .forge-goal-visual .gear-illustration,.forge-goal-visual .skill-illustration{width:44px!important;height:44px!important}
+ .forge-goal-body strong{font-size:15px}
+ .forge-goal-actions{width:100%;justify-content:flex-end}
+ .forge-goal-actions #forge-goal-open{flex:1}
+}
+@media(max-width:430px){
+ .exchange-controls{grid-template-columns:minmax(90px,1fr) minmax(96px,1.3fr)}
+ .exchange-quantity-preview{font-size:10px;text-align:right}
+ .exchange-controls .exchange-submit{grid-column:1/-1;width:100%}
+ .smart-exchange-row{align-items:stretch;flex-direction:column;gap:5px}
+ .smart-exchange-row button{align-self:flex-end}
+}
+@media(prefers-reduced-motion:reduce){.forge-goal-progress>span{transition:none}}
