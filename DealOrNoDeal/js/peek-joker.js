@@ -6,7 +6,7 @@
  document.head.append(style);
  const launch=document.createElement('button');launch.id='peek-launch';launch.type='button';launch.hidden=true;launch.textContent='🔐 Kofferblick';document.body.append(launch);
  const dialog=document.createElement('div');dialog.id='peek-dialog';dialog.hidden=true;
- dialog.innerHTML='<section id="peek-panel" role="dialog" aria-modal="true" aria-labelledby="peek-title"><h2 id="peek-title">🔐 Geheimer Kofferblick</h2><p id="peek-note">Ein Joker enthüllt die persönlichen Koffer aller anderen Mitspieler – niemals deinen eigenen. Nur du siehst die Beträge.</p><p id="peek-balance">Joker werden geprüft …</p><div id="peek-cases"></div><div id="peek-result" aria-live="polite"></div><p id="peek-error" role="alert"></p><button class="peek-btn" id="peek-confirm" type="button" hidden>1 Joker für diesen Koffer einsetzen</button><button class="peek-btn" id="peek-close" type="button">Schließen</button></section>';
+ dialog.innerHTML='<section id="peek-panel" role="dialog" aria-modal="true" aria-labelledby="peek-title"><h2 id="peek-title">🔐 Geheimer Kofferblick</h2><p id="peek-note">Ein Joker, zwei Möglichkeiten: Deinen eigenen Koffer einzeln ansehen ODER einen Mitspieler-Koffer wählen und damit alle gegnerischen persönlichen Koffer sehen. Nur du siehst die Werte.</p><p id="peek-balance">Joker werden geprüft …</p><div id="peek-cases"></div><div id="peek-result" aria-live="polite"></div><p id="peek-error" role="alert"></p><button class="peek-btn" id="peek-confirm" type="button" hidden>1 Joker für diesen Koffer einsetzen</button><button class="peek-btn" id="peek-close" type="button">Schließen</button></section>';
  document.body.append(dialog);
  const el=id=>document.getElementById(id);
  let selected=null,balance=0,loading=false,receipt=null,recoveringPending=false;
@@ -21,7 +21,7 @@
   NOT_ACTIVE_PLAYER:'Du hast bereits einen Deal angenommen oder spielst nicht mehr aktiv.',
   JOKER_NOT_AVAILABLE:'Der Kofferblick ist in dieser Spielphase nicht verfügbar.',
   CASE_NOT_CLOSED:'Dieser Koffer wurde bereits geöffnet oder wird gerade enthüllt.',
-  OWN_CASE_FORBIDDEN:'Deinen eigenen persönlichen Koffer darfst du mit diesem Joker nicht anschauen.',
+  OWN_CASE_FORBIDDEN:'Dein persönlicher Koffer kann mit dem Joker angesehen werden. Bitte erneut auswählen.',
   NOT_OPPONENT_CASE:'Bitte einen der persönlichen Koffer deiner Mitspieler auswählen.',
   NO_OTHER_PLAYER_CASES:'Momentan gibt es keine anderen persönlichen Koffer zum Anschauen.',
   NO_JOKERS:'Du hast momentan keinen verfügbaren Kofferblick-Joker.',
@@ -38,7 +38,7 @@
   ?g.players.filter(p=>p.id!==myId()&&Number.isInteger(p.case)&&p.case>=0&&p.case<caseCount())
   :[];
  const active=()=>typeof g!=='undefined'&&g&&['open','reveal','decision'].includes(g.phase)&&
-  g.players?.some(p=>p.id===myId()&&p.deal===null)&&opponents().length>0;
+  g.players?.some(p=>p.id===myId()&&p.deal===null)&&Number.isInteger(g.players.find(p=>p.id===myId())?.case);
  const api=async(method,path,body)=>{
   const u=user();if(!u)throw Error('Bitte anmelden');
   const token=await u.getIdToken();
@@ -57,14 +57,14 @@
    const b=document.createElement('button');b.type='button';b.textContent=String(i+1);
    b.classList.toggle('own',own===i);
    b.classList.toggle('opponent',!!owner);
-   b.title='Koffer '+(i+1)+(own===i?' (dein Koffer · gesperrt)':owner?' ('+owner.name+' · Mitspieler)':' (kein persönlicher Mitspieler-Koffer)');
-   b.disabled=loading||balance<1&&!recoveringPending||!owner||g.opened.includes(i)||g.pending?.case===i||
+   b.title='Koffer '+(i+1)+(own===i?' (dein Koffer · allein aufdecken)':owner?' ('+owner.name+' · alle gegnerischen Koffer ansehen)':' (kein persönlicher Koffer)');
+   b.disabled=loading||balance<1&&!recoveringPending||!(owner||own===i)||g.opened.includes(i)||g.pending?.case===i||
     selected!==null&&selected!==i;
    b.onclick=()=>{
-    if(!owner||selected!==null||b.disabled)return;
+    if(!(owner||own===i)||selected!==null||b.disabled)return;
     selected=i;receipt=crypto.randomUUID();
     el('peek-confirm').hidden=false;
-    el('peek-confirm').textContent='1 Joker für alle '+opponents().length+' Mitspieler-Koffer einsetzen';
+    el('peek-confirm').textContent=own===i?'1 Joker einsetzen · meinen Koffer ansehen':'1 Joker einsetzen · alle '+opponents().length+' gegnerischen Koffer ansehen';
     el('peek-error').textContent='';draw();
    };
    root.append(b);
@@ -73,11 +73,12 @@
  }
  function showPrivateResults(data){
   const root=el('peek-result');root.replaceChildren();
-  const allowed=new Set(opponents().map(p=>p.id));
+  const mode=data?.mode==='own'?'own':'opponents';
+  const allowed=new Set(mode==='own'?[myId()]:opponents().map(p=>p.id));
   const cases=Array.isArray(data?.cases)?data.cases.filter(p=>allowed.has(p.id)&&
    Number.isInteger(p.case)&&Number.isSafeInteger(p.amount)&&p.amount>=0):[];
   const header=document.createElement('div');header.className='peek-result-heading';
-  header.textContent='🔓 '+cases.length+' persönliche Mitspieler-Koffer enthüllt!';
+  header.textContent=mode==='own'?'🔓 Dein persönlicher Koffer enthüllt!':'🔓 '+cases.length+' persönliche Mitspieler-Koffer enthüllt!';
   root.append(header);
   const grid=document.createElement('div');grid.id='peek-results-grid';
   for(const p of cases){
@@ -97,7 +98,7 @@
   try{const data=await api('GET','peek/me');balance=data.balance;el('peek-balance').textContent='Verfügbare Joker: '+balance;
    if(!balance&&!recoveringPending)el('peek-error').textContent='Noch keine Online-Joker vorhanden. Offline-Joker können aus Sicherheitsgründen nicht automatisch übertragen werden.';
   }catch(e){balance=0;el('peek-error').textContent='Bestand konnte nicht geladen werden: '+e.message}
-  finally{loading=false;if(recovering&&opponents().some(p=>p.case===selected)){el('peek-confirm').hidden=false;el('peek-confirm').textContent='Mitspieler-Koffer sicher erneut prüfen (kein zweiter Verbrauch)';el('peek-error').textContent='Eine frühere Anfrage ist noch offen. Mit derselben Anfrage-ID sicher fortsetzen.'}else if(recovering){selected=null;receipt=null;recoveringPending=false;clearPending()}draw()}
+  finally{loading=false;if(recovering&&(opponents().some(p=>p.case===selected)||g.players.some(p=>p.id===myId()&&p.case===selected))){el('peek-confirm').hidden=false;el('peek-confirm').textContent='Koffer sicher erneut prüfen (kein zweiter Verbrauch)';el('peek-error').textContent='Eine frühere Anfrage ist noch offen. Mit derselben Anfrage-ID sicher fortsetzen.'}else if(recovering){selected=null;receipt=null;recoveringPending=false;clearPending()}draw()}
  }
  async function confirm(){
   if(loading||selected===null||(balance<1&&!recoveringPending)||!active())return;
@@ -106,7 +107,7 @@
    const data=await api('POST',encodeURIComponent(code)+'/peek',{case:chosen,requestId:receipt});
    balance=data.balance;el('peek-balance').textContent='Verfügbare Joker: '+balance;
    showPrivateResults(data);
-   el('peek-note').textContent='Nur auf deinem Gerät sichtbar. Alle Koffer bleiben verschlossen. Dein eigener Koffer bleibt geheim.';
+   el('peek-note').textContent=data.mode==='own'?'Nur auf deinem Gerät sichtbar. Alle Koffer bleiben verschlossen. Die Koffer der Mitspieler bleiben geheim.':'Nur auf deinem Gerät sichtbar. Alle Koffer bleiben verschlossen. Dein eigener Koffer bleibt geheim.';
    el('peek-confirm').hidden=true;
    clearPending();recoveringPending=false;selected=null;receipt=null;
    }catch(e){
