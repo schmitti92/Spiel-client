@@ -268,3 +268,28 @@ header small{font-size:clamp(8px,.72vw,12px)!important;letter-spacing:.17em!impo
  box-shadow:0 0 21px #efbb7296,inset 0 1px #fff6cb!important;
  text-shadow:0 1px 3px #250d37,0 0 9px #fff0bf;
 }
+
+/* Shared-clock case reveal V1: one start time for every connected player.
+   Negative delays catch late packets up to the same animation frame;
+   positive delays give all clients the small server-defined buffer. */
+#cases .case.revealing,
+#cases .case.revealing .case-lid,
+#cases .case.revealing .case-interior,
+#cases .case.revealing .case-amount,
+#cases .case.revealing .case-shell,
+#cases .case.revealing .case-interior:before,
+#cases .case.revealing .case-interior:after,
+#cases .case.revealing:after {
+  animation-delay:var(--case-reveal-delay,0ms)!important;
+  animation-duration:2.1s!important;
+}
+@media(prefers-reduced-motion:reduce){
+  #cases .case.revealing,
+  #cases .case.revealing .case-lid,
+  #cases .case.revealing .case-interior,
+  #cases .case.revealing .case-amount,
+  #cases .case.revealing .case-shell,
+  #cases .case.revealing:after {
+    animation:none!important;
+  }
+}
