@@ -490,9 +490,10 @@ test('D4 locked titles cannot be activated, and selected cosmetics stay account-
  open.handlers.click();
  assert.equal(t.nodes.get('forge-gallery').open,true);
  const titles=t.nodes.get('forge-gallery-titles').children;
- const locked=titles.find(x=>x.children.some(y=>y.textContent==='Legendärer Drachenschmied'));
+ const hasText=(n,value)=>n.textContent===value||(n.children||[]).some(child=>hasText(child,value));
+ const locked=titles.find(x=>hasText(x,'Legendärer Drachenschmied'));
  assert.equal(locked.disabled,true);
- const first=titles.find(x=>x.children.some(y=>y.textContent==='Lehrschmied der 100 Tore'));
+ const first=titles.find(x=>hasText(x,'Lehrschmied der 100 Tore'));
  assert.equal(first.disabled,false);
  first.handlers.click();
  const stored=JSON.parse(t.store.get('dog:forge:gallery:v1:hero-one'));
