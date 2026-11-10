@@ -62,7 +62,7 @@ function harness({name='David',uid='david',pictures=39,oldEndpoint=false}={}){
   }
  };
 }
-const flush=async()=>{for(let i=0;i<8;i++)await Promise.resolve()};
+const flush=async()=>{for(let i=0;i<4;i++)await new Promise(resolve=>setImmediate(resolve))};
 
 test('picture 39 locks autoplay, picture 40 enables manual opt-in and one legal case opening',async()=>{
  const h=harness();
