@@ -89,3 +89,21 @@ test('Reward card builder preserves exact data and handles quantity and rarity',
  assert.equal(group.children.length,2,'two matching hammer rewards must be grouped');
  assert.equal(group.children[0].children.find(x=>x.className==='reward-count').textContent,'×3');
 });
+
+
+test('Chris-only Superglück preview is explicitly reward-free and never consumes a voucher',()=>{
+ assert.match(page,/id="preview-super"[^>]+hidden/);
+ assert.match(inline,/\$\('preview-super'\)\.hidden=!isChrisDemo\(\)/);
+ assert.match(inline,/cinemaPreview\?'🧪 REINE VORSCHAU:/);
+ const start=inline.indexOf("$('preview-super').onclick=");
+ const end=inline.indexOf("$('cinema-close').onclick=",start);
+ assert.ok(start>0&&end>start);
+ const preview=inline.slice(start,end);
+ assert.match(preview,/if\(!isChrisDemo\(\)\|\|busy\|\|reveal\|\|pendingRequest/);
+ assert.match(preview,/cinemaPreview=true/);
+ assert.match(preview,/openCinema\(\{type:'super',superLuck:true,room:1,items:/);
+ assert.match(preview,/packId:'platinum'/);
+ assert.match(preview,/amountCents:500000000/);
+ assert.doesNotMatch(preview,/action\(|fetch\(|call\(|start\(/);
+ assert.match(inline,/\$\('cinema-close'\)\.onclick=\(\)=>\{if\(cinemaPreview\)closeCinema\(\);else finishReveal\(\);\}/);
+});
