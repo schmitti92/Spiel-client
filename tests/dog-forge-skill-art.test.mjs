@@ -39,8 +39,8 @@ test('Forge UI maps every server-recognized skill to an illustration',()=>{
 });
 test('Forge UI styles and HTML load the current skill artwork release',()=>{
  const html=read('dog-forge.html'),css=read('dog-forge.css');
- assert.ok(html.includes('dog-forge-ui.js?v=20261110-forge-c2'));
- assert.ok(html.includes('dog-forge.css?v=20261110-forge-c2'));
+ assert.ok(html.includes('dog-forge-ui.js?v=20261110-forge-c3'));
+ assert.ok(html.includes('dog-forge.css?v=20261110-forge-c3'));
  for(const selector of ['.skill-display','.skill-visual.compact','.item-choice.skill-entry',
   '.result-art .skill-illustration'])assert.ok(css.includes(selector),'missing selector '+selector);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
@@ -119,4 +119,35 @@ test('C2 milestone awards are display-only and include a future max-skill badge'
  for(const selector of ['.evolution-teaser','.forge-chronicle','.milestone-grid',
   '.journal-entry'])assert.ok(css.includes(selector),selector);
  assert.doesNotThrow(()=>new Script(ui,{filename:'dog-forge-ui.js'}));
+});
+
+test('C3 ambience module is isolated from authoritative forge state',()=>{
+ const ui=read('dog-forge-ui.js'),fx=read('dog-forge-fx.js'),html=read('dog-forge.html');
+ assert.ok(html.includes('dog-forge-fx.js?v=20261110-forge-c3'));
+ assert.ok(html.includes('id="forge-sound-toggle"'));
+ assert.ok(html.includes('data-forge-background=""'));
+ assert.ok(fx.includes("const SOUND_KEY='dog:forge:sound:v1'"));
+ assert.ok(fx.includes("localStorage.getItem(SOUND_KEY)==='on'"));
+ assert.ok(fx.includes("button.addEventListener('click'"));
+ assert.ok(fx.includes("new MutationObserver(onForging)"));
+ assert.ok(fx.includes("new MutationObserver(onResult)"));
+ assert.ok(fx.includes("if(!soundEnabled||!AUDIO_AVAILABLE)return null;"));
+ assert.equal(fx.includes('fetch('),false,'FX controller must never fetch game data');
+ assert.equal(fx.includes('XMLHttpRequest'),false);
+ assert.doesNotThrow(()=>new Script(fx,{filename:'dog-forge-fx.js'}));
+ assert.doesNotThrow(()=>new Script(ui,{filename:'dog-forge-ui.js'}));
+});
+test('C3 background art hook is optional, safe and keeps fallback',()=>{
+ const html=read('dog-forge.html'),fx=read('dog-forge-fx.js'),css=read('dog-forge.css');
+ assert.ok(fx.includes("document.body.dataset.forgeBackground||''"));
+ assert.ok(fx.includes("document.body.classList.add('forge-has-custom-wall')"));
+ assert.ok(css.includes('body.forge-has-custom-wall:before'));
+ assert.ok(css.includes('var(--forge-custom-wall)'));
+ for(const selector of ['.furnace-flames i','.furnace-embers i',
+  '.forge-impact span','.forge-result.result-legendary',
+  'body.forge-hidden .furnace-embers i',
+  '@media(prefers-reduced-motion:reduce)'])assert.ok(css.includes(selector),selector);
+ for(const marker of ['class="furnace-flames"','class="furnace-embers"','class="forge-impact"'])
+  assert.ok(html.includes(marker));
+ assert.equal(css.split('{').length,css.split('}').length);
 });
