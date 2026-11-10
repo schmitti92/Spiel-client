@@ -119,8 +119,10 @@ test('Phase 2 Nordpol hero has a real SVG illustration, compact hierarchy and th
  const heroStart=html.indexOf('<header class="hero">'),heroEnd=html.indexOf('</header>',heroStart);
  const start=html.indexOf('id="quick-entry"');
  assert.ok(heroStart>0&&heroEnd>heroStart&&start>heroEnd,'no extra screen between panorama and one-tap start');
- assert.match(html,/christmas-hats-northpole-hero-v8\.css\?v=20261110-nordpol-phase2-v1/);
+ assert.match(html,/christmas-hats-northpole-hero-v8\.css\?v=20261110-nordpol-phase2-v2/);
  assert.match(html,/class="northpole-hero-inner"/);
+ assert.match(html,/class="hero-landmark hero-landmark--workshop"/);
+ assert.match(html,/class="hero-landmark hero-landmark--palace"/);
  assert.match(html,/class="northpole-highlights"/);
  for(const label of ['20 Räume','6 sichere Bonusräume','3 Sicherungen']){
   assert.ok(html.slice(heroStart,heroEnd).includes(label),'compact rule badge '+label);
