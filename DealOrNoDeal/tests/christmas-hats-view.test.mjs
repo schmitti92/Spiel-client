@@ -112,3 +112,30 @@ test('Phase 1 advances from verified start into playable hats and preserves prot
  assert.ok(script.includes("if(outcome?.type!=='bomb'&&!fastMode)showChoice()"));
  assert.ok(script.includes("for(const id of ['hats-collection','hats-voucher-back','quick-entry-vouchers'])"));
 });
+
+test('Phase 2 Nordpol hero has a real SVG illustration, compact hierarchy and the quick start below it',()=>{
+ const css=readFileSync(resolve(root,'css/christmas-hats-northpole-hero-v8.css'),'utf8');
+ const scene=readFileSync(resolve(root,'assets/hats/northpole-hero-v8.svg'),'utf8');
+ const heroStart=html.indexOf('<header class="hero">'),heroEnd=html.indexOf('</header>',heroStart);
+ const start=html.indexOf('id="quick-entry"');
+ assert.ok(heroStart>0&&heroEnd>heroStart&&start>heroEnd,'no extra screen between panorama and one-tap start');
+ assert.match(html,/christmas-hats-northpole-hero-v8\.css\?v=20261110-nordpol-phase2-v1/);
+ assert.match(html,/class="northpole-hero-inner"/);
+ assert.match(html,/class="northpole-highlights"/);
+ for(const label of ['20 Räume','6 sichere Bonusräume','3 Sicherungen']){
+  assert.ok(html.slice(heroStart,heroEnd).includes(label),'compact rule badge '+label);
+ }
+ assert.match(css,/url\("\.\.\/assets\/hats\/northpole-hero-v8\.svg"\)/);
+ assert.match(css,/background-image:/);
+ assert.match(css,/\.hero h1/);
+ assert.match(css,/@media\(max-width:730px\)/);
+ assert.match(css,/@media\(max-width:420px\)/);
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+ assert.match(scene,/<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
+ assert.match(scene,/<title id="heroTitle">/);
+ assert.match(scene,/<desc id="heroDesc">/);
+ assert.match(scene,/id="aurora"/);
+ assert.match(scene,/id="ice"/);
+ assert.match(scene,/id="roof"/);
+ assert.doesNotMatch(scene,/<script|<foreignObject|onload=|<image\b|http[s]?:\/\/(?!www\.w3\.org)/i);
+});
