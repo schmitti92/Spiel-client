@@ -5,17 +5,25 @@ on:
     paths:
       - 'dog-forge-art/**'
       - 'dog-forge-ui.js'
+      - 'dog-forge-gallery.js'
+      - 'dog-forge-fx.js'
+      - 'dog-forge-ceremony.js'
       - 'dog-forge.css'
       - 'dog-forge.html'
       - 'tests/dog-forge-skill-art.test.mjs'
+      - 'tests/dog-forge-stability.test.mjs'
       - '.github/workflows/dog-forge-art-check.yml'
   pull_request:
     paths:
       - 'dog-forge-art/**'
       - 'dog-forge-ui.js'
+      - 'dog-forge-gallery.js'
+      - 'dog-forge-fx.js'
+      - 'dog-forge-ceremony.js'
       - 'dog-forge.css'
       - 'dog-forge.html'
       - 'tests/dog-forge-skill-art.test.mjs'
+      - 'tests/dog-forge-stability.test.mjs'
       - '.github/workflows/dog-forge-art-check.yml'
   workflow_dispatch:
 jobs:
@@ -28,4 +36,4 @@ jobs:
         with:
           node-version: '22'
       - name: Verify skill art and forge integration
-        run: node --test tests/dog-forge-skill-art.test.mjs
+        run: node --test tests/dog-forge-skill-art.test.mjs tests/dog-forge-stability.test.mjs
