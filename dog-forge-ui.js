@@ -576,13 +576,31 @@
   busy=true;++loadSerial;render();
   $('forge-workspace').classList.add('forging');
   status('⚒️ Die Schmiede verarbeitet deinen Auftrag …');
+  // The ceremony never starts a request or changes hero state.
+  // Safe replays skip the theatrical forging: they only recover a receipt.
+  let ceremonyStarted=false;
+  if(!retry&&op.action==='upgrade'){
+   const item=itemFor(op.payload.itemId);
+   try{
+    if(item&&window.DogForgeCeremony){
+     window.DogForgeCeremony.start({item,level:levelFor(item.id)});
+     ceremonyStarted=true;
+    }
+   }catch{/* Presentation must never block an authorized request. */}
+  }
   try{
    const response=await request('POST',op.action,{requestId:op.id,...op.payload},account);
    if(uid!==account)return;
    clearPending(account);view=response;
    status(response.replayed?'✓ Auftrag sicher wiederhergestellt.':'✓ Auftrag serverseitig gespeichert.','good');
+   // Wait only for an optional local visual flourish, never for server authority.
+   if(ceremonyStarted&&!response.replayed){
+    try{await window.DogForgeCeremony?.finish?.(response.result);}catch{}
+   }
+   if(uid!==account)return;
    resultDialog(response.result);
   }catch(e){
+   try{window.DogForgeCeremony?.abort?.();}catch{}
    if(uid!==account)return;
    const error=e.message;
    if(['STALE_FORGE_LEVEL','DOG_MATERIALS_MISSING','FORGE_MAX_LEVEL','INVALID_FORGE_ITEM',
@@ -598,6 +616,7 @@
     status('⚠️ Ergebnis unklar. Bitte „Sicher wiederholen“ wählen – kein doppelter Verbrauch.','bad');
    }
   }finally{
+   try{window.DogForgeCeremony?.abort?.();}catch{}
    busy=false;$('forge-workspace').classList.remove('forging');render();
   }
  }
