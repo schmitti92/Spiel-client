@@ -39,8 +39,8 @@ test('Forge UI maps every server-recognized skill to an illustration',()=>{
 });
 test('Forge UI styles and HTML load the current skill artwork release',()=>{
  const html=read('dog-forge.html'),css=read('dog-forge.css');
- assert.ok(html.includes('dog-forge-ui.js?v=20261110-forge-c1'));
- assert.ok(html.includes('dog-forge.css?v=20261110-forge-c1'));
+ assert.ok(html.includes('dog-forge-ui.js?v=20261110-forge-c2'));
+ assert.ok(html.includes('dog-forge.css?v=20261110-forge-c2'));
  for(const selector of ['.skill-display','.skill-visual.compact','.item-choice.skill-entry',
   '.result-art .skill-illustration'])assert.ok(css.includes(selector),'missing selector '+selector);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
@@ -86,4 +86,37 @@ test('C1 styles include accessible resource bars and compact responsive confirma
   '.cost-progress-fill','.forge-confirm::backdrop','.confirm-actions',
   '@media(max-width:420px)'])assert.ok(css.includes(selector),selector);
  assert.equal(css.split('{').length,css.split('}').length,'unbalanced CSS block braces');
+});
+
+test('C2 next-look preview derives graphics from actual equipment stages',()=>{
+ const ui=read('dog-forge-ui.js'),page=read('dog-forge.html');
+ assert.ok(ui.includes('STAGES[stage-1].limit+1'));
+ assert.ok(ui.includes('gearVisual(item.id,nextLevel,true)'));
+ assert.ok(ui.includes("'NÄCHSTE AUSSEHENSSTUFE'"));
+ assert.ok(ui.includes("'Ab Stufe '+nextLevel"));
+ assert.ok(ui.includes("'Endgültige Ausrüstungsoptik freigeschaltet'"));
+ assert.ok(page.includes('id="forge-chronicle"'));
+});
+test('C2 book uses persistent hero counters and at most ten journal entries',()=>{
+ const ui=read('dog-forge-ui.js'),page=read('dog-forge.html');
+ for(const key of ['crafts','successes','failures','exchanges']){
+  assert.ok(ui.includes('hero?.'+key),key);
+ }
+ assert.ok(ui.includes('Array.isArray(hero?.recent)?hero.recent:[]'));
+ assert.ok(ui.includes('entries.slice(0,10)'));
+ assert.ok(ui.includes('function milestoneValue('));
+ assert.ok(ui.includes('function renderChronicle(){'));
+ assert.ok(ui.includes('renderChronicle();renderStock();'));
+ for(const id of ['forge-chronicle-stats','forge-achievements',
+  'forge-journal','forge-achievements-count'])assert.ok(page.includes('id="'+id+'"'),id);
+});
+test('C2 milestone awards are display-only and include a future max-skill badge',()=>{
+ const ui=read('dog-forge-ui.js'),css=read('dog-forge.css');
+ assert.ok(ui.includes("title:'Vollendete Kunst',key:'maxSkill',goal:50"));
+ assert.ok(ui.includes("title:'Drachenschmied',key:'weapon',goal:20"));
+ assert.ok(ui.includes("title:'Wächterrüstung',key:'armor',goal:20"));
+ assert.ok(ui.includes('view?.hero'));
+ for(const selector of ['.evolution-teaser','.forge-chronicle','.milestone-grid',
+  '.journal-entry'])assert.ok(css.includes(selector),selector);
+ assert.doesNotThrow(()=>new Script(ui,{filename:'dog-forge-ui.js'}));
 });
