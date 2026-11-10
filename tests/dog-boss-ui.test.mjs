@@ -87,11 +87,20 @@ function harness(options={}){
   if(postMode==='error')return {ok:false,json:async()=>({error:'BOSS_COOLDOWN_ACTIVE'})};
   if(postMode==='stale')return {ok:false,json:async()=>({error:'BOSS_STATE_STALE'})};
   const payload=route==='join'?{...server,isMember:true,members:[{uid:'A',name:'Helden A'}],
-    result:{type:'join'},replayed:false}:route==='restart'?
+    result:{type:'join'},replayed:false}:route==='reaction-start'?{
+    ...server,reactionChallenge:{turn:server.bossTurn||0,attempt:server.attempt,
+     startAt:clock,targetAt:clock+1700,expiresAt:clock+3000},
+    reactionRules:{durationMs:3000,targetMs:1700,maxBonusPct:10},
+    result:{type:'reaction-start'},replayed:false
+   }:route==='restart'?
     {...server,phase:'ready',bossHp:6000,cooldownUntil:0,attempt:server.attempt+1,
     result:{type:'restart'},replayed:false}:{
-    ...server,phase:'fighting',bossHp:5500,
-    result:{type:'combat',damage:500,retaliation:12},replayed:postMode==='replay'};
+    ...server,phase:'fighting',bossHp:5500,bossTurn:(server.bossTurn||0)+1,
+    reactionChallenge:null,
+    result:{type:'combat',damage:500,retaliation:12,
+     ...(JSON.parse(req.body)?.move==='reaction'?
+      {reactionGrade:'perfekt',reactionBonusPct:10}:{})},
+    replayed:postMode==='replay'};
   server=payload;
   return {ok:true,json:async()=>({...payload,serverNow:clock})};
  };
@@ -121,8 +130,8 @@ function harness(options={}){
 }
 test('Boss page uses dedicated independent scripts and original illustration',()=>{
  const html=read('dog-boss.html'),css=read('dog-boss.css');
- assert.ok(html.includes('dog-boss-ui.js?v=20261110-boss-v3'));
- assert.ok(html.includes('dog-boss.css?v=20261110-boss-v3'));
+ assert.ok(html.includes('dog-boss-ui.js?v=20261110-boss-v4'));
+ assert.ok(html.includes('dog-boss.css?v=20261110-boss-v4'));
  assert.ok(html.includes('./dog-boss-art/aschewaechter.svg'));
  assert.ok(read('dog-boss-art/aschewaechter.svg').startsWith('<svg'));
  assert.ok(css.includes('.boss-defeat-panel'));
@@ -342,4 +351,61 @@ test('Analysis panel remains accessible and compact on small screens',()=>{
  assert.ok(css.includes('overflow-y:auto'));
  assert.ok(css.includes('@media(max-width:560px)'));
  assert.ok(source.includes("defeat?view.defeatAnalysis:null"));
+});
+
+test('Reaction button opens a 3-second server-issued timing challenge, not an instant attack',async()=>{
+ const h=harness();await spin();
+ assert.equal(h.el('boss-reaction-start').disabled,false);
+ h.click('boss-reaction-start');await spin();
+ assert.equal(h.posts().length,1);
+ assert.equal(h.posts()[0].route,'reaction-start');
+ assert.equal(h.el('boss-reaction-challenge').hidden,false);
+ assert.equal(h.el('boss-reaction-time').textContent,'3,0 s');
+ assert.ok(h.moveButtons.every(b=>b.disabled),'other attacks disabled during timing');
+ h.advance(1700);h.intervals.get(50)();
+ assert.equal(h.el('boss-reaction-pointer').style.left,'56.7%');
+ assert.match(h.el('boss-reaction-message').textContent,/GOLDENE TREFFERZONE/);
+ h.click('boss-reaction-hit');await spin();
+ assert.equal(h.posts().length,2);
+ assert.equal(h.posts()[1].route,'act');
+ assert.equal(JSON.parse(h.posts()[1].req.body).move,'reaction');
+ assert.equal(JSON.parse(h.posts()[1].req.body).expectedTurn,0);
+ assert.equal(h.el('boss-reaction-challenge').hidden,true);
+ assert.match(h.el('boss-status').textContent,/\+10 %/);
+});
+test('Reaction window expires after 3 seconds without auto-attacking or resetting the ticket',async()=>{
+ const h=harness();await spin();
+ h.click('boss-reaction-start');await spin();
+ h.advance(3001);h.intervals.get(50)();
+ assert.equal(h.el('boss-reaction-challenge').hidden,true);
+ assert.equal(h.posts().length,1,'an expired challenge never sends a combat action');
+ assert.equal(h.el('boss-reaction-start').disabled,true);
+ assert.equal(h.moveButtons[0].disabled,false,'ordinary equipment attack remains possible');
+});
+test('Reaction timing challenge can be resumed without extra writes but cancels when app hides',async()=>{
+ const h=harness();await spin();
+ h.click('boss-reaction-start');await spin();
+ h.click('boss-reaction-dismiss');
+ assert.equal(h.el('boss-reaction-challenge').hidden,true);
+ h.advance(400);
+ h.click('boss-reaction-start');
+ assert.equal(h.posts().length,1,'same server-issued challenge is reused');
+ assert.equal(h.el('boss-reaction-challenge').hidden,false);
+ h.doc.hidden=true;h.emit('visibilitychange');
+ assert.equal(h.el('boss-reaction-challenge').hidden,true);
+ assert.equal(h.posts().length,1);
+});
+test('Reaction UI has mobile-size tap controls, feedback and safe receipt replay support',()=>{
+ const html=read('dog-boss.html'),css=read('dog-boss.css');
+ for(const id of ['boss-reaction-start','boss-reaction-heading','boss-reaction-challenge',
+  'boss-reaction-pointer','boss-reaction-perfect','boss-reaction-time',
+  'boss-reaction-hit','boss-reaction-dismiss','boss-reaction-message']){
+  assert.ok(html.includes('id="'+id+'"')||html.includes('class="'+id+'"'),id);
+ }
+ assert.ok(css.includes('#boss-reaction-hit{width:100%;min-height:67px'));
+ assert.ok(css.includes('@media(max-width:640px)'));
+ assert.ok(css.includes('[hidden]{display:none!important}'));
+ assert.ok(source.includes("'reaction-start'"));
+ assert.ok(source.includes("'reaction'"));
+ assert.ok(source.includes('setInterval(reactionTick,50)'));
 });
