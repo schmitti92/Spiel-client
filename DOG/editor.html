@@ -99,6 +99,27 @@ input[type="range"]{width:100%;accent-color:#efc47d}
 .direction-pad button.center{color:#ffeac3;font-size:19px;background:#66513560;border-color:#e6ba727a;cursor:default}
 .direction-pad button:active:not(:disabled){transform:scale(.94)}
 #gap-report{font-size:12px;color:#d1e4e9;border-top:1px solid #a7c3cd33;margin-top:9px;padding-top:9px}
+
+.assist-card{border-color:#e6bf805e;background:linear-gradient(140deg,#1b4052,#102338)}
+.assist-card h2{color:#ffe2ab}
+.assist-head{display:flex;align-items:center;gap:10px;margin:8px 0}
+.assist-head label{font-size:12px;color:#d0e2eb;font-weight:800;flex:1}
+.assist-head select,.assist-control select{width:100%;margin-top:5px;background:#091f30;color:#f4f7fa;border:1px solid #7595ab;border-radius:10px;padding:9px 10px;min-height:39px}
+.assist-ref{font-size:12px;color:#d4e8f1;padding:10px;border-radius:11px;background:#071c2aa8;border:1px solid #587a8f8c;line-height:1.5}
+.assist-ref strong{color:#ffe0a6}
+.assist-quick{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
+.assist-quick button{flex:1;min-width:110px}
+.assist-section{border-top:1px solid #92b3c54d;padding-top:10px;margin-top:13px}
+.assist-section h3{font-size:13px;margin:0 0 7px;color:#ffdaa2}
+.assist-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:9px 0}
+.assist-control{font-size:11px;color:#d2e3e9;font-weight:700}
+.assist-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+.assist-actions .btn{padding:8px 9px;min-width:0;font-size:12px}
+.assist-note{font-size:11px;color:#a9cadb;margin-top:8px;line-height:1.5}
+#track-summary{display:block;color:#f7dfb4;background:#092234;padding:9px 10px;border:1px solid #7d9bb659;border-radius:9px;font-size:12px;line-height:1.5;margin-top:9px}
+#gap-select{width:100%;min-height:38px;background:#081f32;color:#f3ebdb;border:1px solid #7696a6;border-radius:9px;padding:8px}
+.assist-legend{display:flex;gap:11px;flex-wrap:wrap;font-size:11px;color:#c9dae4;margin-top:8px}
+.assist-legend i{display:inline-block;width:11px;height:11px;border-radius:100%;margin-right:4px}
 .run-fix{margin-top:12px;padding-top:11px;border-top:1px solid #d8c29555}
 .run-fix h3{font-size:13px;color:#ffe1af;margin:1px 0 8px}
 .run-fix p{font-size:11px!important;line-height:1.5!important}
@@ -165,6 +186,94 @@ input[type="range"]{width:100%;accent-color:#efc47d}
        <label><input id="auto-next" type="checkbox" checked> Nach jedem Klick automatisch das nächste Feld wählen</label>
        <label><input id="symmetry" type="checkbox"> Optional: alle vier Seiten spiegeln</label>
      </div>
+   </section>
+   <section class="card assist-card" id="assist-card">
+    <h2>🏠 Ausstieg, Zielbahnen & Haus <small>NEU</small></h2>
+    <p>Jetzt kannst du alle vier Ziel- oder Startplätze einer Farbe exakt ausrichten. Dein bereits gebauter Laufweg bleibt dabei erhalten.</p>
+    <div class="assist-head">
+      <label for="assist-seat">Farbe auswählen
+        <select id="assist-seat">
+          <option value="0">🔴 Rot</option>
+          <option value="1">🔵 Blau</option>
+          <option value="2">🟢 Grün</option>
+          <option value="3">🟡 Gelb</option>
+        </select>
+      </label>
+    </div>
+    <div class="assist-ref" id="assist-reference">Rot: Ausstieg Feld 0 · Zieleinlauf bei Feld 63</div>
+    <div class="assist-quick">
+      <button type="button" class="btn soft small" id="choose-exit">📍 Ausstieg wählen</button>
+      <button type="button" class="btn soft small" id="choose-goal-first">🎯 Zielfeld 1 manuell</button>
+      <button type="button" class="btn soft small" id="choose-home-first">🏠 Startplatz 1 manuell</button>
+    </div>
+    <div class="assist-section">
+      <h3>🎯 Vier Zielfelder in einer Linie</h3>
+      <p>Bei gesetztem Zielfeld 1 bleibt dessen Position unverändert. Andernfalls orientiert sich die Reihe am letzten Lauffeld vor deinem farbigen Ausstieg.</p>
+      <div class="assist-controls">
+        <label class="assist-control">Richtung
+          <select id="assist-goal-dir">
+            <option value="0,-1">↑ Oben</option><option value="1,-1">↗ Rechts oben</option>
+            <option value="1,0" selected>→ Rechts</option><option value="1,1">↘ Rechts unten</option>
+            <option value="0,1">↓ Unten</option><option value="-1,1">↙ Links unten</option>
+            <option value="-1,0">← Links</option><option value="-1,-1">↖ Links oben</option>
+          </select>
+        </label>
+        <label class="assist-control">Abstand
+          <select id="assist-goal-spacing"><option value="24">24</option><option value="28" selected>28</option><option value="32">32</option><option value="36">36</option><option value="40">40</option><option value="48">48</option></select>
+        </label>
+      </div>
+      <div class="assist-actions">
+        <button type="button" class="btn soft" id="preview-goals">👁 Vorschau</button>
+        <button type="button" class="btn primary" id="build-goals">✓ 4 Zielfelder setzen</button>
+      </div>
+    </div>
+    <div class="assist-section">
+      <h3>🏠 Vier Startplätze automatisch anordnen</h3>
+      <p>Erstelle einen 2×2-Block oder eine gerade Reihe. Wenn Startplatz 1 bereits gesetzt ist, bleibt er als Anker bestehen.</p>
+      <div class="assist-controls">
+        <label class="assist-control">Anordnung
+          <select id="assist-home-layout">
+            <option value="square" selected>2×2-Block</option>
+            <option value="row">Waagerechte Reihe</option>
+            <option value="column">Senkrechte Reihe</option>
+          </select>
+        </label>
+        <label class="assist-control">Feldabstand
+          <select id="assist-home-spacing"><option value="24">24</option><option value="28" selected>28</option><option value="32">32</option><option value="36">36</option><option value="40">40</option><option value="48">48</option></select>
+        </label>
+        <label class="assist-control">Richtung vom Ausstieg
+          <select id="assist-home-dir">
+            <option value="0,-1">↑ Oben</option><option value="1,-1">↗ Rechts oben</option>
+            <option value="1,0">→ Rechts</option><option value="1,1">↘ Rechts unten</option>
+            <option value="0,1" selected>↓ Unten</option><option value="-1,1">↙ Links unten</option>
+            <option value="-1,0">← Links</option><option value="-1,-1">↖ Links oben</option>
+          </select>
+        </label>
+        <label class="assist-control">Entfernung zum Ausstieg
+          <select id="assist-home-distance"><option value="60">60</option><option value="80">80</option><option value="100" selected>100</option><option value="120">120</option><option value="150">150</option></select>
+        </label>
+      </div>
+      <div class="assist-actions">
+        <button type="button" class="btn soft" id="preview-homes">👁 Vorschau</button>
+        <button type="button" class="btn primary" id="build-homes">✓ 4 Startplätze setzen</button>
+      </div>
+    </div>
+    <div class="assist-section">
+      <h3>🔗 Laufweg verbinden und kontrollieren</h3>
+      <p>Die Feldfolge bleibt immer 0 → 1 → … → 63 → 0. Auch beim Schließen des Rundwegs werden fehlende Felder nicht übersprungen.</p>
+      <output id="track-summary">Verbindungen werden geprüft …</output>
+      <div class="assist-legend"><span><i style="background:#7fd9ab"></i>Passender Abstand</span><span><i style="background:#f5a06e"></i>Zu große/kleine Lücke</span><span><i style="background:#f4d285"></i>Offener Laufweg</span></div>
+      <div class="assist-controls">
+        <label class="assist-control" style="grid-column:1/-1">Kurze gerade Lücke auswählen
+          <select id="gap-select" aria-label="Gerade Lauffeldlücke auswählen"><option value="">Keine gerade Lücke gefunden</option></select>
+        </label>
+      </div>
+      <div class="assist-actions">
+        <button type="button" class="btn soft" id="check-connections">🔍 Weg prüfen</button>
+        <button type="button" class="btn primary" id="fill-track-gap">🔗 Lücke verbinden</button>
+      </div>
+      <p class="assist-note">„Lücke verbinden“ ergänzt nur gerade Abschnitte mit passendem Abstand. Bei Kurven bleibt die individuelle Feldplatzierung erhalten.</p>
+    </div>
    </section>
    <section class="card">
     <h2>2 · Raster und genaue Ausrichtung</h2>
@@ -279,8 +388,8 @@ input[type="range"]{width:100%;accent-color:#efc47d}
    </section>
   </aside>
  </div>
- <div class="foot">DOG-Spielfeldstudio · Baukasten-Version 4 · Raster, Koordinaten und Zugreihenfolge unabhängig von der Spiel-Engine</div>
+ <div class="foot">DOG-Spielfeldstudio · Baukasten-Version 5 · Raster, Koordinaten und Zugreihenfolge unabhängig von der Spiel-Engine</div>
 </main>
-<script type="module" src="./editor-builder.js?v=4"></script>
+<script type="module" src="./editor-builder.js?v=5"></script>
 </body>
 </html>
