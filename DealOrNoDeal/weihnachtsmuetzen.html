@@ -594,7 +594,7 @@ async function refresh(){
   const data=await call(url);
   if(uid()!==user.uid)return;
   clearShowTimers();closeCinema();closeChoice();
-  state=data.state;reveal=null;
+  state=data.state;reveal=null;revealPhase=null;selectedHat=null;
   let notice=DEMO?'🧪 Vorschau bereit – keine echten Gewinne oder Gutschriften.':'✅ Spielstand vom Server geladen. Keine dauerhafte Abfrage.';
   if(waiting&&data.pendingAction?.applied){
    savePending(null);
@@ -623,7 +623,7 @@ async function submit(payload){
   const data=await call('/api/christmas-hats/action','POST',payload);
   if(uid()!==requestUser)return;
   state=data.state;savePending(null);
-  if(payload.type==='pick'&&data.outdated){reveal=null;render();setStatus('✅ Alte Aktion bereits bestätigt. Aktueller Spielstand synchronisiert.',false,true);}
+  if(payload.type==='pick'&&data.outdated){reveal=null;revealPhase=null;render();setStatus('✅ Alte Aktion bereits bestätigt. Aktueller Spielstand synchronisiert.',false,true);}
   else if(payload.type==='pick'){
    reveal=data.result;revealPhase='suspense';
    render();
@@ -637,7 +637,7 @@ async function submit(payload){
     revealTimer=setTimeout(finishReveal,5600);
    },window.matchMedia('(prefers-reduced-motion: reduce)').matches?120:1050);
   }else{
-   reveal=null;render();setStatus(type==='cash'?(DEMO?'🧪 Probeauszahlung abgeschlossen. Keine echten Gegenstände oder Spielgelder gutgeschrieben.':'✅ Deine Gewinne wurden serverseitig gutgeschrieben.'):(DEMO?'🧪 Neue Testpartie gestartet!':'✨ Neues Spiel gestartet!'),false,true);
+   clearShowTimers();closeCinema();reveal=null;revealPhase=null;render();setStatus(type==='cash'?(DEMO?'🧪 Probeauszahlung abgeschlossen. Keine echten Gegenstände oder Spielgelder gutgeschrieben.':'✅ Deine Gewinne wurden serverseitig gutgeschrieben.'):(DEMO?'🧪 Neue Testpartie gestartet!':'✨ Neues Spiel gestartet!'),false,true);
   }
  }catch(e){
   const hardErrors=new Set(['TEST_ACCESS_DENIED','LOGIN_REQUIRED','AUTH_FAILED','INVALID_ACTION','INVALID_HAT','REQUEST_ID_CONFLICT','START_REQUIRED','SESSION_CHANGED']);
