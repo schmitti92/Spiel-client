@@ -259,3 +259,65 @@ button:focus-visible,a:focus-visible{outline:3px solid #f7d79b;outline-offset:3p
 @media(prefers-reduced-motion:reduce){
  .boss-telegraph.is-warning,.boss-art-stage.boss-charging:after{animation:none!important}
 }
+
+
+/* Server-grounded post-defeat review: exact damage, fair diagnosis and next step. */
+.boss-defeat-panel{
+ overflow-y:auto;
+ justify-content:safe center;
+ overscroll-behavior:contain;
+}
+.boss-defeat-analysis{
+ display:grid;gap:5px;align-content:start;justify-items:center;
+ width:min(100%,530px);padding:11px 13px;
+ border:1px solid #e2b677bd;border-radius:14px;
+ background:linear-gradient(130deg,#232537f5,#302836f0);
+ box-shadow:0 0 18px #ce89552d,inset 0 1px #ffe0b626;
+}
+.boss-analysis-kicker{
+ font-size:9px;letter-spacing:.12em;font-weight:950;color:#ffd8a8;
+}
+#boss-analysis-title{
+ font:900 clamp(14px,2.4vw,19px) Georgia,serif;
+ color:#ffe8bf;line-height:1.25;
+}
+.boss-defeat-panel #boss-analysis-summary{
+ font-size:12px;line-height:1.4;color:#e3dce3;max-width:100%;
+}
+.boss-analysis-progress{
+ width:100%;height:9px;overflow:hidden;background:#301d2d;
+ border:1px solid #ab7e6e;border-radius:99px;margin:4px 0 2px;
+}
+.boss-analysis-progress>span{
+ display:block;height:100%;width:0;border-radius:99px;
+ background:linear-gradient(90deg,#aa654c,#f1c77e);
+ transition:width .25s ease;
+}
+.boss-defeat-panel #boss-analysis-metrics{
+ font-size:10px;color:#c0ccda;line-height:1.45;
+}
+.boss-defeat-panel .boss-analysis-advice{
+ margin-top:2px;font-size:12px;font-weight:800;line-height:1.5;
+ color:#c1f1cf;
+}
+.boss-defeat-analysis[data-reason="attack"]{
+ border-color:#e4a77b;
+}
+.boss-defeat-analysis[data-reason="defense"]{
+ border-color:#9ac7ef;
+}
+.boss-defeat-analysis[data-reason="balanced"]{
+ border-color:#e6ca81;
+}
+@media(max-width:560px){
+ .boss-defeat-panel{justify-content:flex-start;gap:6px}
+ .boss-defeat-analysis{padding:9px 10px;gap:4px}
+ .boss-defeat-icon{font-size:31px}
+ .boss-defeat-panel h3{font-size:21px}
+ .boss-defeat-panel #boss-analysis-summary{font-size:11px}
+ .boss-defeat-panel .boss-analysis-advice{font-size:11px}
+ .boss-countdown{font-size:33px}
+}
+@media(prefers-reduced-motion:reduce){
+ .boss-analysis-progress>span{transition:none!important}
+}
