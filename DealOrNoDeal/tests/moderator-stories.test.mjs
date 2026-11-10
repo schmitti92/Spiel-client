@@ -141,7 +141,7 @@ test('story is private browser presentation, not a shared game action, and reloa
  assert.match(app,/window\.DealModeratorStory\?\.observe\(g\)/);
  assert.match(app,/window\.DealModeratorStory\?\.observe\(null\)/);
  assert.match(html,/moderator-stories\.js\?v=20261110-match-stories-v1/);
- assert.match(html,/moderator-story-engine\.js\?v=20261110-match-stories-v1/);
+ assert.match(html,/moderator-story-engine\.js\?v=20261110-match-stories-v2/);
  assert.ok(html.indexOf('amount-voice.js?')<html.indexOf('moderator-stories.js?'));
  assert.ok(html.indexOf('moderator-stories.js?')<html.indexOf('moderator-story-engine.js?'));
  assert.ok(html.indexOf('moderator-story-engine.js?')<html.indexOf('cases.js?'));
