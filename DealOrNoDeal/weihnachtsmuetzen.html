@@ -31,7 +31,7 @@ h1{font-size:clamp(28px,4.6vw,55px);line-height:1.06;margin:7px 0 9px;font-weigh
 .tiers{display:flex;gap:6px;margin:12px 0 16px}
 .tier{flex:1;text-align:center;border:1px solid #e9c88b73;padding:8px 2px;border-radius:10px;font-size:clamp(10px,1.8vw,13px);background:#0b143bb3;font-weight:800}
 .tier.on{border-color:#ffdf8a;box-shadow:0 0 24px #fac16355;background:#58334df2}
-.tier.done{background:#173d3ab8;color:#bdf8d0}
+.tier.done{background:#173d3ab8;color:#bdf8d0}.tier.cleared{background:#16404bba;color:#b9f0f5}
 .game:has(.stage-banner.jackpot){border-color:#f9cf71;box-shadow:0 13px 52px #000a,inset 0 0 32px #facb4b30,0 0 32px #f2bc4490}
 .game{position:relative;border:2px solid #e0b979;border-radius:24px;overflow:hidden;
  background:radial-gradient(ellipse at 50% 15%,#b3686b66,transparent 45%),linear-gradient(180deg,#291c44 0%,#1d1a37 57%,#152b37 100%);
@@ -207,9 +207,9 @@ function formatItems(groups,element,empty){
  }
 }
 function openCinema(event){
- if(!event||event.type==='bomb'||(!event.superLuck&&event.type!=='super'))return;
+ if(!event||event.type==='bomb'||(!event.superLuck&&event.type!=='super'&&![3,7].includes(event.room)))return;
  const title=$('cinema-title'),list=$('cinema-prizes');
- title.textContent=event.superLuck?'🌟 LEGENDÄRES SUPERGLÜCK!':'👑 SUPERGESCHENK!';
+ title.textContent=event.superLuck?'🌟 LEGENDÄRES SUPERGLÜCK!':[3,7].includes(event.room)?'🛡️ CHECKPOINT GESICHERT!':'👑 SUPERGESCHENK!';
  list.replaceChildren();
  for(const [i,item] of (event.items||[]).entries()){
   const card=document.createElement('div');card.className='cinema-prize';card.style.setProperty('--i',String(i));
@@ -226,16 +226,16 @@ function openCinema(event){
  $('cinema').hidden=false;
 }
 function closeCinema(){ $('cinema').hidden=true; }
-function renderTiers(active,checkpoint){
+function renderTiers(active,checkpoint,cleared){
  const root=$('tiers');root.replaceChildren();
  for(let i=1;i<=10;i++){
-  const d=document.createElement('div');d.className='tier'+(i===active?' on':'')+(i<=checkpoint?' done':'');
+  const d=document.createElement('div');d.className='tier'+(i===active?' on':'')+(i<=checkpoint?' done':'')+(i>checkpoint&&i<=cleared?' cleared':'');
   d.textContent=(i===3||i===7?'🛡️ ':'')+i;
   root.appendChild(d);
  }
 }
 function hatButton(index,old){
- const hat=document.createElement('button');hat.type='button';hat.className='hat'+(old?' shown '+(old.type==='bomb'?'bomb':old.type==='super'?'super':'gift'):'');
+ const hat=document.createElement('button');hat.type='button';hat.className='hat'+(index===(reveal?.index??selectedHat)?' selected':'')+(selectedHat===index&&busy?' selecting':'')+(old?' shown '+(old.type==='bomb'?'bomb':old.type==='super'?'super':'gift'):'');
  hat.disabled=!state||state.status!=='playing'||busy||!!reveal||!!pendingRequest;
  const n=document.createElement('span');n.className='num';n.textContent='MÜTZE '+(index+1);hat.appendChild(n);
  if(!old){
@@ -256,7 +256,23 @@ function render(){
  $('roomTitle').textContent='🎄 Raum '+roomNumber+' / 10 – '+names[roomNumber];
  $('checkpoint').textContent=(s?.checkpoint||0)>0?'🛡️ Checkpoint Raum '+s.checkpoint+' gesichert':'🛡️ Noch kein Checkpoint';
  $('subtitle').textContent=reveal?'🎬 Alle Mützen werden enthüllt!':finished?'🏆 Dieser Durchlauf ist beendet.':s?'Wähle eine der drei identischen Weihnachtsmützen.':'Starte dein Weihnachtsabenteuer!';
- renderTiers(roomNumber,s?.checkpoint||0);
+ const checkpoint=s?.checkpoint||0;
+ const cleared=s?(s.status==='playing'?s.room-1:s.summary?.reason==='completed'?10:s.summary?.reason==='bomb'?s.room-1:Math.max(0,s.room-1)):0;
+ renderTiers(roomNumber,checkpoint,cleared);
+ const banner=$('stage-banner'),zone=roomNumber<=3?'easy':roomNumber<=6?'medium':'jackpot';
+ banner.classList.toggle('jackpot',zone==='jackpot');
+ $('stage-name').textContent=zone==='easy'?'🎁 DIE WEIHNACHTSSTUBE':zone==='medium'?'✨ DIE GOLDENE SCHATZKAMMER':'👑 DIE LEGENDÄRE JACKPOT-ZONE';
+ $('stage-hint').textContent=zone==='easy'?'Einfache Hammer & Kartenpakete':zone==='medium'?'Gold, Joker & seltene Millionengewinne':'Höchste Gewinne · Superglück möglich';
+ const safe=(s?.secured||[]).flatMap(g=>g.items||[]),risk=(s?.pending||[]).flatMap(g=>g.items||[]);
+ const positions=items=>items.reduce((acc,it)=>acc+(it.quantity||1),0);
+ const money=[...safe,...risk].filter(it=>it.kind==='cash').reduce((acc,it)=>acc+(Number(it.amountCents)||0),0);
+ $('safe-count').textContent=String(positions(safe));
+ $('risk-count').textContent=String(positions(risk));
+ $('cash-total').textContent=(money/100).toLocaleString('de-DE',{maximumFractionDigits:0})+' €';
+ $('next-checkpoint').textContent=checkpoint>=7?'· Jetzt zählt jeder Gewinn!':checkpoint>=3?'· Nächster Checkpoint: Raum 7':'· Nächster Checkpoint: Raum 3';
+ const latest=s?.lastReveal,previous=$('last-result');
+ previous.hidden=!latest||!!reveal;
+ if(latest&&!reveal)previous.textContent='Zuletzt in Raum '+latest.room+': '+(latest.type==='bomb'?'💥 Bombe':latest.superLuck?'🌟 Superglück':latest.type==='super'?'👑 Supergeschenk':'🎁 Geschenk')+((latest.room===3||latest.room===7)&&latest.type!=='bomb'?' · 🛡️ Checkpoint gesichert!':'');
  const hats=$('hats');hats.replaceChildren();
  for(let i=0;i<3;i++)hats.appendChild(hatButton(i,reveal?.hats?.[i]));
  $('hats').hidden=!s||finished&&!reveal;
@@ -317,15 +333,17 @@ async function action(type,index){
  const payload={type,requestId:requestId()};
  if(type!=='start')payload.runId=state?.id;
  if(type==='pick')payload.index=index;
- if(type==='cash'&&!window.confirm('Wirklich jetzt aussteigen und alle gesammelten Gewinne kassieren?'))return;
  await submit(payload);
 }
 async function submit(payload){
- busy=true;savePending(payload);render();setStatus('✨ Der Weihnachtsmann öffnet den Tresor …');
+ const requestUser=uid();
+ busy=true;selectedHat=payload.type==='pick'?payload.index:null;savePending(payload);render();setStatus('✨ Der Weihnachtsmann öffnet den Tresor …');
  try{
   const data=await call('/api/christmas-hats/action','POST',payload);
+  if(uid()!==requestUser)return;
   state=data.state;savePending(null);
-  if(payload.type==='pick'){
+  if(payload.type==='pick'&&data.outdated){reveal=null;render();setStatus('✅ Alte Aktion bereits bestätigt. Aktueller Spielstand synchronisiert.',false,true);}
+  else if(payload.type==='pick'){
    reveal=data.result;
    render();
    setStatus(reveal?.type==='bomb'?'💥 Bombe! Deine Checkpoint-Gewinne bleiben geschützt.':reveal?.superLuck?'🌟 SUPERGLÜCK! Schau dir deine seltenen Geschenke an!':'🎁 Ein sicherer Treffer! Deine Belohnung ist vorgemerkt.',false,reveal?.type!=='bomb');
@@ -336,12 +354,24 @@ async function submit(payload){
    reveal=null;render();setStatus(type==='cash'?'✅ Deine Gewinne wurden serverseitig gutgeschrieben.':'✨ Neues Spiel gestartet!',false,true);
   }
  }catch(e){setStatus('⚠️ '+describeError(e)+' – Bitte dieselbe Aktion sicher wiederholen.',true);}
- finally{busy=false;render();}
+ finally{busy=false;selectedHat=null;render();}
 }
 $('cinema-close').onclick=closeCinema;
+$('cash-cancel').onclick=()=>$('cash-dialog').close();
+$('cash-confirm').onclick=()=>{
+ $('cash-dialog').close();
+ action('cash');
+};
+function askCash(){
+ if(busy||reveal||pendingRequest||state?.status!=='playing')return;
+ const dialog=$('cash-dialog');
+ formatItems([...(state.secured||[]),...(state.pending||[])],$('cash-preview'),'Noch keine Gewinne gesammelt.');
+ if(dialog.showModal)dialog.showModal();
+ else if(window.confirm('Alle bisherigen Gewinne kassieren und die Runde beenden?'))action('cash');
+}
 $('start').onclick=()=>action('start');
 $('again').onclick=()=>action('start');
-$('cash').onclick=()=>action('cash');
+$('cash').onclick=askCash;
 $('retry').onclick=()=>{if(pendingRequest)submit(pendingRequest)};
 $('refresh').onclick=refresh;
 $('full').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch(e){setStatus('Vollbild nicht verfügbar.',true)}};
