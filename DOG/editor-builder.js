@@ -112,7 +112,10 @@ function updateDraft(next,{record=true,advance=false}={}){
   render();
 }
 function unwind(direction){
-  if(pointer)return;
+  // A tap on an existing SVG field may lose its pointer-up on some tablets.
+  // Do not let an abandoned, stationary pointer block Undo forever.
+  if(pointer?.moved)return;
+  pointer=null;
   const next=historyAt+direction;
   if(next<0||next>=history.length)return;
   historyAt=next;draft=clone(history[next]);persist();
