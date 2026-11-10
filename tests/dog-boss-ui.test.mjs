@@ -1,0 +1,206 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {dirname,resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {runInNewContext,Script} from 'node:vm';
+
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const read=name=>readFileSync(resolve(root,name),'utf8');
+const source=read('dog-boss-ui.js');
+const spin=async()=>{for(let i=0;i<18;i++)await Promise.resolve()};
+const basic=({now=1_800_000_000_000,phase='ready',joined=true}={})=>({
+ ok:true,gate:1,boss:'Der Aschewächter',bossHp:6000,bossMaxHp:6000,
+ phase,serverNow:now,updatedAt:now,cooldownUntil:phase==='cooldown'?now+600000:0,
+ cooldownRemainingMs:phase==='cooldown'?600000:0,attempt:1,
+ isMember:joined,canJoin:true,canFight:joined&&phase==='ready',
+ members:joined?[{uid:'A',name:'Helden A'}]:[],
+ heroes:joined?{A:{hp:104,maxHp:104,guard:false}}:{},
+ log:[]
+});
+function harness(options={}){
+ let clock=options.now||1_800_000_000_000;
+ let activeUid=options.uid||'A';
+ let server=options.view||basic({now:clock});
+ let blockStorage=false,postMode='normal',pendingResolve;
+ const nodes=new Map(),links=new Map(),calls=[],events=new Map(),timers=new Map(),intervals=new Map(),storage=new Map();
+ let seq=0;
+ const moveButtons=['attack','power','guard','special'].map(move=>{
+  const e=element('button');e.dataset.move=move;return e;
+ });
+ function element(tag='div'){
+  const cls=new Set(),handlers={};
+  return {tag,className:'',textContent:'',disabled:false,hidden:false,href:'',
+   open:false,dataset:{},handlers,children:[],attributes:{},offsetWidth:100,
+   style:{width:''},
+   classList:{
+    contains:k=>cls.has(k),add:k=>cls.add(k),remove:k=>cls.delete(k),
+    toggle:(k,on)=>{if(on)cls.add(k);else cls.delete(k);}
+   },
+   setAttribute(k,v){this.attributes[k]=String(v);},
+   getAttribute(k){return this.attributes[k]??this.href;},
+   addEventListener(k,cb){handlers[k]=cb;},
+   replaceChildren(...children){this.children=[...children];},
+   append(...children){this.children.push(...children);}
+  };
+ }
+ function el(id){
+  if(!nodes.has(id))nodes.set(id,element(id));
+  return nodes.get(id);
+ }
+ for(const [id,path] of [
+  ['boss-back','./dog-expedition.html'],['boss-forge-link','./dog-forge.html'],
+  ['boss-defeat-forge','./dog-forge.html'],['boss-victory-back','./dog-expedition.html']]){
+  const n=el(id);n.href=path;n.attributes.href=path;links.set(id,n);
+ }
+ const on=(name,fn)=>{const handlers=events.get(name)||[];handlers.push(fn);events.set(name,handlers)};
+ const doc={
+  hidden:false,getElementById:el,createElement:element,
+  querySelectorAll(q){return q==='[data-move]'?moveButtons:[];},
+  addEventListener:on
+ };
+ const win={
+  SPIELPORTAL_CONFIG:{apiBase:'https://tests.invalid'},
+  SpielOnline:{state(){return activeUid?{status:'online',
+   user:{uid:activeUid,getIdToken:async()=>activeUid},
+   profile:{name:'Held '+activeUid,setupComplete:true}}:null;}},
+  addEventListener:on
+ };
+ class AbortCtrl{
+  constructor(){const cbs=[];this.signal={aborted:false,
+   addEventListener(name,cb){if(name==='abort')cbs.push(cb)}};
+   this.abort=()=>{this.signal.aborted=true;for(const cb of cbs)cb()};
+  }
+ }
+ const storageApi={
+  getItem(key){return storage.get(key)||null},
+  setItem(key,value){if(blockStorage)throw Error('STORAGE_DENIED');storage.set(key,String(value))},
+  removeItem(key){storage.delete(key)}
+ };
+ const network=async(url,req)=>{
+  const method=req.method,route=url.split('/').at(-1);
+  const call={url,method,route,uid:req.headers.Authorization.replace('Bearer ',''),req};
+  calls.push(call);
+  if(method==='GET')return {ok:true,json:async()=>({...server,serverNow:clock})};
+  if(postMode==='blocked')return new Promise((_,reject)=>req.signal.addEventListener('abort',()=>reject(Error('AbortError'))));
+  if(postMode==='delayed')return new Promise(resolve=>{pendingResolve=payload=>resolve({ok:true,json:async()=>payload})});
+  if(postMode==='error')return {ok:false,json:async()=>({error:'BOSS_COOLDOWN_ACTIVE'})};
+  const payload=route==='join'?{...server,isMember:true,members:[{uid:'A',name:'Helden A'}],
+    result:{type:'join'},replayed:false}:route==='restart'?
+    {...server,phase:'ready',bossHp:6000,cooldownUntil:0,attempt:server.attempt+1,
+    result:{type:'restart'},replayed:false}:{
+    ...server,phase:'fighting',bossHp:5500,
+    result:{type:'combat',damage:500,retaliation:12},replayed:postMode==='replay'};
+  server=payload;
+  return {ok:true,json:async()=>({...payload,serverNow:clock})};
+ };
+ const context={window:win,document:doc,location:{search:'?room=123'},
+  URLSearchParams,Date:{now:()=>clock},AbortController:AbortCtrl,
+  localStorage:storageApi,fetch:network,
+  crypto:{randomUUID:()=>'123e4567-e89b-42d3-a456-426614174001'},
+  setTimeout(fn,ms){const id=++seq;timers.set(id,{fn,ms});return id},
+  clearTimeout(id){timers.delete(id)},
+  setInterval(fn,ms){intervals.set(ms,fn);return ms},
+  clearInterval(ms){intervals.delete(ms)}
+ };
+ runInNewContext(source,context);
+ const emit=name=>{for(const cb of events.get(name)||[])cb()};
+ const click=e=>{const n=typeof e==='string'?el(e):e;
+  assert.equal(typeof n.handlers.click,'function','missing click handler for '+e);
+  n.handlers.click();
+ };
+ return {el,links,moveButtons,calls,emit,click,storage,timers,intervals,
+  get:()=>calls.filter(x=>x.method==='GET'),posts:()=>calls.filter(x=>x.method==='POST'),
+  setTime(n){clock=n},advance(ms){clock+=ms},setServer(v){server=v},
+  account(uid){activeUid=uid;emit('spielonline-change')},
+  blockStorage(v){blockStorage=v},mode(v){postMode=v},
+  finishPost(payload){assert.ok(pendingResolve,'waiting POST');pendingResolve(payload)},
+  getClock(){return clock},context
+ };
+}
+test('Boss page uses dedicated independent scripts and original illustration',()=>{
+ const html=read('dog-boss.html'),css=read('dog-boss.css');
+ assert.ok(html.includes('dog-boss-ui.js?v=20261110-boss-v1'));
+ assert.ok(html.includes('dog-boss.css?v=20261110-boss-v1'));
+ assert.ok(html.includes('./dog-boss-art/aschewaechter.svg'));
+ assert.ok(read('dog-boss-art/aschewaechter.svg').startsWith('<svg'));
+ assert.ok(css.includes('.boss-defeat-panel'));
+ assert.ok(css.includes('.boss-countdown'));
+ assert.ok(css.includes('@media(prefers-reduced-motion:reduce)'));
+ assert.ok(css.includes('[hidden]'));
+ assert.doesNotThrow(()=>new Script(source));
+});
+test('Boss gate navigation retains existing room across forge and expedition',async()=>{
+ const h=harness();await spin();
+ assert.equal(h.el('boss-back').href,'./dog-expedition.html?room=123');
+ assert.equal(h.el('boss-forge-link').href,'./dog-forge.html?room=123');
+ assert.equal(h.el('boss-defeat-forge').href,'./dog-forge.html?room=123');
+ assert.equal(h.el('boss-victory-back').href,'./dog-expedition.html?room=123');
+ const expedition=read('dog-materials-ui.js'),forge=read('dog-forge-ui.js');
+ assert.ok(expedition.includes("['boss-launch','boss-from-storage']"));
+ assert.ok(forge.includes("if($('forge-boss'))$('forge-boss').href"));
+});
+test('Shared 10-minute cooldown is calculated locally from the server timestamp',async()=>{
+ const initial=1_800_000_000_000,h=harness({now:initial,
+  view:basic({now:initial,phase:'cooldown'})});
+ await spin();
+ assert.equal(h.el('boss-defeat-panel').hidden,false);
+ assert.equal(h.el('boss-countdown').textContent,'10:00');
+ assert.equal(h.el('boss-restart').hidden,true);
+ assert.ok(h.moveButtons.every(x=>x.disabled));
+ h.advance(3*60000+1000);
+ h.intervals.get(1000)();
+ assert.equal(h.el('boss-countdown').textContent,'06:59');
+ assert.equal(h.get().length,1,'countdown triggers no server reads');
+ h.advance(7*60000);
+ h.intervals.get(1000)();
+ assert.equal(h.el('boss-countdown').textContent,'00:00');
+ assert.equal(h.el('boss-restart').hidden,false);
+ assert.equal(h.el('boss-restart').disabled,false);
+ assert.equal(h.get().length,1);
+});
+test('Defeat never resets itself; restart is sent only after explicit click',async()=>{
+ const now=1_800_000_000_000,h=harness({
+  now,view:basic({now,phase:'cooldown'})
+ });
+ await spin();h.advance(600001);h.intervals.get(1000)();
+ assert.equal(h.posts().length,0);
+ h.click('boss-restart');await spin();
+ assert.equal(h.posts().length,1);
+ assert.equal(h.posts()[0].route,'restart');
+ assert.equal(h.el('boss-defeat-panel').hidden,true);
+ assert.equal(h.el('boss-attempt').textContent,'2');
+ assert.equal(h.el('boss-hp-text').textContent,'6.000 / 6.000 LP');
+});
+test('A pending request ID must be saved before any damage is submitted',async()=>{
+ const h=harness();await spin();h.blockStorage(true);
+ h.click(h.moveButtons[0]);await spin();
+ assert.equal(h.posts().length,0);
+ assert.match(h.el('boss-status').textContent,/nicht gespeichert/);
+});
+test('One original combat action can be safely replayed after a timeout',async()=>{
+ const h=harness();await spin();
+ h.mode('blocked');h.click(h.moveButtons[0]);await spin();
+ assert.equal(h.posts().length,1);
+ const original=JSON.parse(h.storage.get('dog:boss:pending:A'));
+ assert.ok(original.id.startsWith('boss-'));
+ const timeout=[...h.timers.values()].find(x=>x.ms===20000);
+ assert.ok(timeout,'20-second request timeout exists');
+ timeout.fn();await spin();
+ assert.equal(h.el('boss-pending-wrap').hidden,false);
+ assert.equal(h.storage.has('dog:boss:pending:A'),true);
+ h.mode('replay');h.click('boss-retry');await spin();
+ assert.equal(h.posts().length,2);
+ assert.equal(JSON.parse(h.posts()[1].req.body).requestId,original.id);
+ assert.equal(h.storage.has('dog:boss:pending:A'),false);
+});
+test('The battle refresh interval avoids Firebase reads every second',async()=>{
+ const h=harness();await spin();
+ assert.equal(h.get().length,1);
+ assert.equal(h.intervals.has(1000),true);
+ assert.equal(h.intervals.has(60000),true);
+ for(let i=0;i<10;i++)h.intervals.get(1000)();
+ assert.equal(h.get().length,1);
+ h.advance(60001);h.intervals.get(60000)();await spin();
+ assert.equal(h.get().length,2);
+});
