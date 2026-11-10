@@ -6,10 +6,10 @@
 <meta name="theme-color" content="#0c1019">
 <meta name="description" content="Die Schmiede der 100 Tore: Rüstung, Waffen, Fähigkeiten und Rohstofftausch.">
 <title>⚒️ Schmiede der Helden · Die 100 Tore</title>
-<link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-c1">
+<link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-c2">
 <script src="./profile-config.js"></script>
 <script src="./profile-auth.js"></script>
-<script src="./dog-forge-ui.js?v=20261110-forge-c1" defer></script>
+<script src="./dog-forge-ui.js?v=20261110-forge-c2" defer></script>
 <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 </head>
 <body>
@@ -90,6 +90,24 @@
   </section>
  </div>
 
+ <details class="forge-chronicle" id="forge-chronicle">
+  <summary><span>📖 <strong>Mein Schmiedebuch</strong></span>
+   <span class="chronicle-summary-count"><b id="forge-achievements-count">0 / 9</b> Meilensteine <span aria-hidden="true">⌄</span></span>
+  </summary>
+  <div class="chronicle-body">
+   <div id="forge-chronicle-stats" class="chronicle-stats" aria-label="Deine Schmiedestatistik"></div>
+   <div class="chronicle-columns">
+    <section aria-labelledby="forge-milestones-title">
+     <h3 id="forge-milestones-title">🏆 Meilensteine</h3>
+     <div id="forge-achievements" class="milestone-grid"></div>
+    </section>
+    <section aria-labelledby="forge-journal-title">
+     <h3 id="forge-journal-title">🗃️ Letzte Vorgänge</h3>
+     <div id="forge-journal" class="forge-journal"></div>
+    </section>
+   </div>
+  </div>
+ </details>
  <details class="stock-panel" id="forge-stock">
   <summary><span>🎒 <strong>Mein Rohstofflager</strong></span><span class="stock-hint">15 Materialien <span class="stock-chevron">⌄</span></span></summary>
   <div id="forge-stock-groups" class="stock-groups"></div>
