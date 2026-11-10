@@ -59,7 +59,7 @@ test('V3 stage presents ten checkpoint rooms and professional show controls',()=
  assert.match(script,/function clearShowTimers\(\)/);
  assert.match(script,/revealPhase='suspense'/);
  assert.match(script,/revealPhase='shown'/);
- assert.match(script,/setTimeout\(finishReveal,5600\)/);
+ assert.match(script,/revealTimer=setTimeout\(finishReveal,reduced\?3000:7600\)/);
  assert.match(script,/showChoice\(\)/);
  assert.match(script,/function finishReveal\(\)/);
  assert.match(script,/closeChoice\(\)/);
