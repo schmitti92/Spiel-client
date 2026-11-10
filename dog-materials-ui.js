@@ -5,6 +5,9 @@
  const room=new URLSearchParams(location.search).get('room')||'';
  if(/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(room)){
   $('dog-back-deal').href='./DealOrNoDeal/lobby.html?room='+encodeURIComponent(room)+'&stay=1';
+  for(const id of ['forge-launch','forge-from-storage']){
+   const link=$(id);if(link)link.href='./dog-forge.html?room='+encodeURIComponent(room);
+  }
  }
  const fmt=n=>Math.max(0,Number(n)||0).toLocaleString('de-DE');
  const TIER=Object.freeze({
