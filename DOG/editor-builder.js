@@ -10,7 +10,7 @@ import {
   EDITOR_DRAFT_KEY,clone,emptyDraft,fromCrossPreset,fromLayout,placedCount,
   fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
   guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS
-} from './editor-model.js';
+} from './editor-model.js?v=4';
 
 const $=id=>document.getElementById(id);
 const board=$('builder-board');
@@ -37,6 +37,7 @@ try{
   const pref=JSON.parse(localStorage.getItem(DRAW_PREF_KEY)||'{}');
   if([28,32,36,40,48].includes(pref.spacing))settings.spacing=pref.spacing;
   if([28,32,36,40,48].includes(pref.stepSpacing))settings.stepSpacing=pref.stepSpacing;
+  else settings.stepSpacing=settings.spacing; // Preserve earlier board drafts drawn on a 28-unit grid.
   if(typeof pref.guide==='boolean')settings.guide=pref.guide;
   for(const key of ['snap','grid','numbers','path','symmetry','auto'])if(typeof pref[key]==='boolean')settings[key]=pref[key];
 }catch(_){}
@@ -419,7 +420,15 @@ function changeSetting(id,key,parser=el=>el.checked){
   savePreferences();render();
  });
 }
-changeSetting('grid-size','spacing',el=>Number(el.value));
+// Keep the newly introduced distance guide in sync with the grid until the
+// player deliberately chooses a different step distance.
+$('grid-size').addEventListener('change',event=>{
+ const next=Number(event.target.value);
+ if(![28,32,36,40,48].includes(next))return;
+ if(settings.stepSpacing===settings.spacing)settings.stepSpacing=next;
+ settings.spacing=next;
+ savePreferences();render();
+});
 changeSetting('step-size','stepSpacing',el=>Number(el.value));
 changeSetting('equal-spacing','guide');
 for(const [id,key]of [['snap','snap'],['show-grid','grid'],['show-numbers','numbers'],['show-path','path'],['symmetry','symmetry'],['auto-next','auto']])changeSetting(id,key);
