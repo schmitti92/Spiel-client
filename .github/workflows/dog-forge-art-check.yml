@@ -1,0 +1,31 @@
+name: DOG forge skill artwork
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dog-forge-art/**'
+      - 'dog-forge-ui.js'
+      - 'dog-forge.css'
+      - 'dog-forge.html'
+      - 'tests/dog-forge-skill-art.test.mjs'
+      - '.github/workflows/dog-forge-art-check.yml'
+  pull_request:
+    paths:
+      - 'dog-forge-art/**'
+      - 'dog-forge-ui.js'
+      - 'dog-forge.css'
+      - 'dog-forge.html'
+      - 'tests/dog-forge-skill-art.test.mjs'
+      - '.github/workflows/dog-forge-art-check.yml'
+  workflow_dispatch:
+jobs:
+  artwork:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify skill art and forge integration
+        run: node --test tests/dog-forge-skill-art.test.mjs
