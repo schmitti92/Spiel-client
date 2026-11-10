@@ -93,7 +93,6 @@ button,a{font:inherit}
 <a id="hub-cards-tab" href="./weihnachten.html?view=album">🃏 Sammlung</a>
 <a id="hub-packs-tab" href="./weihnachten.html?view=packs">🎁 Pakete</a>
 <a class="event2-tab" id="hub-ice-tab" href="./Weihnachtsevent2/index.html">❄️ Weihnachtsevent 2</a>
-<a id="hub-hats-tab" href="./weihnachtsmuetzen.html">🎩 Mützen-Jackpot</a>
 </nav>
 <section class="hub-intro" aria-labelledby="hub-title">
 <div class="hub-intro-copy"><p class="eyebrow">DREI KAPITEL · EINE WEIHNACHTSWELT</p><h1 id="hub-title">✨ Weihnachtszauber ✨</h1><p>Wähle dein Event – deine Fortschritte und Belohnungen gehören zu deinem Spielerprofil.</p><div class="hub-world-shortcuts" aria-label="Direkt zu den Weihnachts-Highlights"><a id="hub-shortcut-packs" href="./weihnachten.html?view=packs">🎁 Weihnachtspakete</a><a id="hub-shortcut-hammer" class="hub-world-highlight" href="./weihnachten.html?view=hammer">🔨 Hammer-Bingo</a><a id="hub-shortcut-ice" href="./Weihnachtsevent2/index.html">❄️ Eisabenteuer</a><a id="hub-shortcut-hats" href="./weihnachtsmuetzen.html">🎩 Mützen-Jackpot</a></div></div>
@@ -129,7 +128,7 @@ const query=new URLSearchParams(location.search),provided=query.get('room'),save
 const room=ROOM.test(provided||'')?provided:ROOM.test(saved||'')?saved:null;
 if(room){
  sessionStorage.setItem('deal-active-room',room);
- for(const id of ['hub-game','hub-lobby','hub-cards-tab','hub-packs-tab','hub-ice-tab','hub-hats-tab','hub-enter-hats','hub-shortcut-hats','hub-enter-album','hub-enter-ice','hub-shortcut-packs','hub-shortcut-hammer','hub-shortcut-ice']){
+ for(const id of ['hub-game','hub-lobby','hub-cards-tab','hub-packs-tab','hub-ice-tab','hub-enter-hats','hub-shortcut-hats','hub-enter-album','hub-enter-ice','hub-shortcut-packs','hub-shortcut-hammer','hub-shortcut-ice']){
   const a=$(id),url=new URL(a.href);url.searchParams.set('room',room);a.href=url.href;
  }
 }
