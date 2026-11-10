@@ -6,10 +6,11 @@
 <meta name="theme-color" content="#0c1019">
 <meta name="description" content="Die Schmiede der 100 Tore: Rüstung, Waffen, Fähigkeiten und Rohstofftausch.">
 <title>⚒️ Schmiede der Helden · Die 100 Tore</title>
-<link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-d3">
+<link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-d4">
 <script src="./profile-config.js"></script>
 <script src="./profile-auth.js"></script>
-<script src="./dog-forge-ui.js?v=20261110-forge-d3" defer></script>
+<script src="./dog-forge-ui.js?v=20261110-forge-d4" defer></script>
+<script src="./dog-forge-gallery.js?v=20261110-forge-d4" defer></script>
 <script src="./dog-forge-fx.js?v=20261110-forge-d2" defer></script>
 <script src="./dog-forge-ceremony.js?v=20261110-forge-d2" defer></script>
 <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
@@ -41,7 +42,9 @@
    <span class="eyebrow">PERSÖNLICHER HELD</span>
    <h2 id="forge-player">Wird geladen …</h2>
    <span class="hero-rank" id="forge-rank">✦ Neuling</span>
+   <span class="forge-display-title" id="forge-display-title">Schmiedelehrling</span>
    <span id="forge-player-note">Deine Fortschritte bleiben gespeichert.</span>
+   <button type="button" id="forge-gallery-open" class="forge-gallery-open" disabled>🏆 Meine Heldengalerie</button>
   </div>
   <div class="hero-metrics">
    <div class="metric"><span>⚔️ Waffe</span><strong id="forge-weapon-level">1<small>/20</small></strong></div>
@@ -153,6 +156,8 @@
   <span class="result-achievement" id="forge-result-achievement"></span>
   <h2 id="forge-result-heading">Geschmiedet!</h2>
   <p id="forge-result-text">Dein Fortschritt wurde gespeichert.</p>
+  <div id="forge-result-new-unlock" class="forge-new-unlock" hidden aria-live="polite"></div>
+  <button type="button" id="forge-result-gallery" class="forge-open-rewards" hidden>🏆 Neue Belohnung ansehen</button>
   <button type="button" id="forge-result-ok" class="forge-action">Zur Schmiede</button>
  </div>
 </dialog>
@@ -216,6 +221,51 @@
   <div class="confirm-actions">
    <button type="button" class="confirm-cancel" id="forge-exchange-confirm-cancel">Abbrechen</button>
    <button type="button" class="forge-action" id="forge-exchange-confirm-submit">Tausch bestätigen</button>
+  </div>
+ </div>
+</dialog>
+
+<!-- D4 · All decorations are derived from verified hero values. No shop or combat boosts. -->
+<dialog id="forge-gallery" class="forge-gallery" aria-labelledby="forge-gallery-title">
+ <div class="gallery-shell">
+  <button type="button" id="forge-gallery-close" class="result-x" aria-label="Galerie schließen">✕</button>
+  <div class="gallery-kicker">✦ DIE 100 TORE · DEIN VERMÄCHTNIS ✦</div>
+  <h2 id="forge-gallery-title">🏆 Heldengalerie</h2>
+  <p class="gallery-intro">Deine geschmiedete Ausrüstung, deine Titel und freigeschalteten Ehrenrahmen.</p>
+  <div class="gallery-hero">
+   <div class="gallery-hero-portrait forge-frame-basic" id="forge-gallery-portrait" aria-label="Aktuelle Rüstung"></div>
+   <div class="gallery-hero-identity">
+    <span class="gallery-label">DEIN HELD</span>
+    <strong id="forge-gallery-name">Wird geladen …</strong>
+    <span class="gallery-hero-title" id="forge-gallery-current-title">Schmiedelehrling</span>
+    <span class="gallery-hero-rank" id="forge-gallery-rank">Neuling</span>
+    <div class="gallery-stats">
+     <span><b id="forge-gallery-milestone-count">0/9</b> Meilensteine</span>
+     <span><b id="forge-gallery-success-count">0</b> Erfolge</span>
+    </div>
+   </div>
+  </div>
+  <section class="gallery-section" aria-labelledby="forge-gallery-gear-title">
+   <h3 id="forge-gallery-gear-title">⚔️ Meine Ausrüstung</h3>
+   <div id="forge-gallery-gear" class="gallery-gear-grid"></div>
+  </section>
+  <section class="gallery-section" aria-labelledby="forge-gallery-titles-title">
+   <h3 id="forge-gallery-titles-title">📜 Meine Schmiedetitel</h3>
+   <p>Wähle einen freigeschalteten Titel. „Automatisch“ zeigt immer deinen höchsten erreichten Titel.</p>
+   <div id="forge-gallery-titles" class="gallery-choice-grid"></div>
+  </section>
+  <section class="gallery-section" aria-labelledby="forge-gallery-frames-title">
+   <h3 id="forge-gallery-frames-title">✨ Ehrenrahmen</h3>
+   <p>Die Rahmen sind rein dekorativ und verändern keine Kampfwerte.</p>
+   <div id="forge-gallery-frames" class="gallery-choice-grid gallery-frame-choices"></div>
+  </section>
+  <section class="gallery-section" aria-labelledby="forge-gallery-rewards-title">
+   <h3 id="forge-gallery-rewards-title">🏅 Schmiedebelohnungen</h3>
+   <div id="forge-gallery-rewards" class="gallery-reward-grid"></div>
+  </section>
+  <div class="gallery-footer">
+   <span>Fortschritt vom Server · Anzeigeauswahl nur auf diesem Gerät</span>
+   <button type="button" id="forge-gallery-done" class="forge-action">Zurück zur Schmiede</button>
   </div>
  </div>
 </dialog>
