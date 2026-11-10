@@ -41,6 +41,6 @@ test('countdown is purely local and shown in money-summary with no network or Fi
  const code=app.slice(start,end);
  assert.doesNotMatch(code,/fetch\(|request\(|setTimeout|setInterval|Firestore|Firebase/);
  assert.match(app,/ausgeschieden'\+next29BankerCountdown\(g\)/);
- assert.match(html,/app\.js\?v=20261110-match-stories-v1/);
+ assert.match(html,/app\.js\?v=20261110-30cases-50m-v1/);
  assert.doesNotThrow(()=>new Script(app));
 });
