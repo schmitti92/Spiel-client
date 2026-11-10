@@ -304,3 +304,18 @@ test('even cent and jackpot announcements contain only the cash value, no case I
   assert.doesNotMatch(fx.spoken[0].text,/Koffer|Moderator|Banker/);
  }
 });
+
+test('30-case jackpot is pronounced as Fünfzig Millionen Euro and only 30-case top-prize narration prioritizes it',()=>{
+ const fx=harness({cases:true,stories:false});
+ const audio=fx.window.DealModeratorAudio;
+ assert.equal(audio.classify(5000000000),'fiftyMillion');
+ assert.equal(audio.spokenAmount(5000000000),'Fünfzig Millionen Euro');
+ assert.equal(audio.shouldComment(5000000000,{caseCount:30}),true);
+ assert.equal(audio.shouldComment(5000000000,{caseCount:29}),false);
+ assert.equal(audio.shouldComment(1000000000,{caseCount:30}),false);
+ assert.ok(fx.window.DealModeratorLines.fiftyMillion.length>=12);
+ assert.match(audio.selectLine(5000000000,{gameId:'30-case',caseNumber:30}),/fünfzig/i);
+ fx.announce(5000000000,{gameId:'30-case',caseNumber:30,caseCount:30});
+ assert.equal(fx.spoken.at(-1).text,'Fünfzig Millionen Euro.');
+ assert.equal(fx.caption.hidden,true);
+});
