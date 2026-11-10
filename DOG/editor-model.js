@@ -58,6 +58,71 @@ export function snapXY(point,spacing=32,snap=true){
  x=Math.max(30,Math.min(730,x));y=Math.max(30,Math.min(730,y));
  return {x:Math.round(x*10)/10,y:Math.round(y*10)/10};
 }
+/**
+ * 8-direction equidistant guide. Unlike a square grid, diagonal steps
+ * are normalized: both straight and 45° diagonal steps have equal Euclidean
+ * centre-to-centre length. The grid remains useful for the first field.
+ */
+export const EIGHT_DIRECTIONS=Object.freeze([
+  Object.freeze({dx:-1,dy:-1,label:'↖'}),Object.freeze({dx:0,dy:-1,label:'↑'}),
+  Object.freeze({dx:1,dy:-1,label:'↗'}),Object.freeze({dx:-1,dy:0,label:'←'}),
+  Object.freeze({dx:1,dy:0,label:'→'}),Object.freeze({dx:-1,dy:1,label:'↙'}),
+  Object.freeze({dx:0,dy:1,label:'↓'}),Object.freeze({dx:1,dy:1,label:'↘'})
+]);
+export function previousTrackField(draft,selection){
+  if(!selectedValid(selection)||selection.kind!=='track')return null;
+  const index=(selection.index+63)%64;
+  const point=draft.track[index];
+  return point?{index,point:{...point}}:null;
+}
+const normaliseStep=step=>{
+  if(!Number.isFinite(step)||step<23||step>70)throw Error('Abstand muss zwischen 23 und 70 Einheiten liegen.');
+  return step;
+};
+function exactDirectedPoint(anchor,dx,dy,step){
+  const length=Math.hypot(dx,dy);
+  if(length<.0001)return null;
+  const x=Math.round((anchor.x+step*dx/length)*10)/10;
+  const y=Math.round((anchor.y+step*dy/length)*10)/10;
+  if(x<30||x>730||y<30||y>730)return null;
+  return {x,y};
+}
+export function guidedPoint(draft,selection,target,{step=32}={}){
+  normaliseStep(step);
+  const predecessor=previousTrackField(draft,selection);
+  if(!predecessor)return null; // first field or deliberately broken track: free placement
+  const dx=Number(target?.x)-predecessor.point.x,dy=Number(target?.y)-predecessor.point.y;
+  if(!Number.isFinite(dx)||!Number.isFinite(dy)||Math.hypot(dx,dy)<.0001)return null;
+  const direction=EIGHT_DIRECTIONS.reduce((best,candidate)=>{
+    const dot=(candidate.dx*dx+candidate.dy*dy)/Math.hypot(candidate.dx,candidate.dy);
+    return !best||dot>best.score?{candidate,score:dot}:best;
+  },null).candidate;
+  const point=exactDirectedPoint(predecessor.point,direction.dx,direction.dy,step);
+  return point?{...point,anchor:predecessor.point,from:predecessor.index,dx:direction.dx,dy:direction.dy,label:direction.label}:null;
+}
+export function directedPoint(draft,selection,dx,dy,{step=32}={}){
+  normaliseStep(step);
+  if(!EIGHT_DIRECTIONS.some(d=>d.dx===dx&&d.dy===dy))throw Error('Nur 8 Richtungen sind erlaubt.');
+  const predecessor=previousTrackField(draft,selection);
+  if(!predecessor)return null;
+  const point=exactDirectedPoint(predecessor.point,dx,dy,step);
+  return point?{...point,anchor:predecessor.point,from:predecessor.index,dx,dy}:null;
+}
+export function measureStepDistances(draft,step,{tolerance=.25}={}){
+  normaliseStep(step);
+  const edges=[];
+  for(let i=0;i<64;i++){
+    const a=draft.track[i],b=draft.track[(i+1)%64];
+    if(!a||!b)continue;
+    const distance=Math.hypot(a.x-b.x,a.y-b.y);
+    const diff=Math.abs(distance-step);
+    edges.push({from:i,to:(i+1)%64,distance:Math.round(distance*10)/10,
+      even:diff<=tolerance});
+  }
+  const even=edges.filter(e=>e.even).length;
+  return {measured:edges.length,even,uneven:edges.length-even,edges};
+}
+
 export function putField(draft,selection,position,{symmetry=false,spacing=32,snap=true}={}){
  if(!selectedValid(selection))throw Error('Wähle zuerst ein gültiges Feld.');
  const point=snapXY(position,spacing,snap),next=clone(draft);
