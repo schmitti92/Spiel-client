@@ -28,7 +28,11 @@ test('Voucher landing page shows an accessible one-time ticket and locks later e
   assert.equal([...page.matchAll(new RegExp('id="'+id+'"','g'))].length,1,id);
  }
  assert.match(page,/einen kostenlosen Gutschein/);
- assert.match(page,/Weitere Spielgutscheine werden später/);
+ assert.match(page,/Weitere Spielgutscheine erhältst du über Event-Belohnungen/);
+ assert.match(page,/20 Weihnachtsräume/);
+ assert.match(page,/Räumen 3, 6, 9, 12, 15 und 18/);
+ assert.match(page,/Raum 5, 10 und 15 gesichert/);
+ assert.doesNotMatch(page,/Checkpoint nach Raum 3|Zehn geheimnisvolle Räume/);
  assert.match(script,/aria-disabled/);
  assert.match(script,/data\?\.state\?\.status==='playing'/);
  assert.match(script,/vouchers\.total/);
@@ -57,4 +61,15 @@ test('Real game cannot start another run without a server-confirmed voucher',()=
  assert.match(styles,/body\.christmas-event-main\[data-view="hats"\] #event-hats/);
  assert.match(styles,/body\.christmas-event-main\[data-view="hats"\] \.event-layout\{display:block/);
  assert.match(styles,/\.event-collection-nav\{grid-template-columns:repeat\(5/);
+});
+
+test('One-click launcher starts either a fresh or an already-finished ticket run',()=>{
+ assert.match(script,/setLink\(true,'🎩 Direkt spielen · 1 Klick',true\)/);
+ assert.match(script,/autostart=1/);
+ assert.match(game,/\(!state\|\|state\.status==='finished'\)/);
+ assert.match(game,/!pendingRequest&&Number\(vouchers\?\.total\|\|0\)>0/);
+ assert.match(game,/authUser\(\)\?\.uid===user\.uid/);
+ assert.match(game,/void action\('start'\)/);
+ assert.match(game,/autoStartRequested=false/);
+ assert.match(game,/clearShowTimers\(\)/);
 });
