@@ -206,7 +206,7 @@ footer{font-size:12px;text-align:center;color:#c7aeb3;margin-top:16px}
 const $=id=>document.getElementById(id),API=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const names=['','Weihnachtsstube I','Weihnachtsstube II','Erster Tresor','Schatzsaal I','Schatzsaal II','Goldkammer','Jackpot-Pforte','Königsschatz','Nordpol-Tresor','Legendäres Finale'];
 const emojis={pack:'🎁',hammer:'🔨',joker:'🃏',cash:'💰'};
-let state=null,userId='',busy=false,reveal=null,pendingRequest=null,revealTimer=null,selectedHat=null;
+let state=null,userId='',busy=false,reveal=null,pendingRequest=null,revealTimer=null,selectedHat=null,revealPhase=null,suspenseTimer=null,cinemaTimer=null;
 const back=$('back'),lobby=$('lobby'),params=new URLSearchParams(location.search),DEMO=params.get('demo')==='1',room=params.get('room')||sessionStorage.getItem('deal-active-room');
 if(room&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(room)){sessionStorage.setItem('deal-active-room',room);const u=new URL(back.href);u.searchParams.set('room',room);back.href=u.href;const ul=new URL(lobby.href);ul.searchParams.set('room',room);lobby.href=ul.href;}
 function authUser(){const s=window.SpielOnline?.state?.();return s?.status==='online'?s.user:null;}
@@ -248,22 +248,51 @@ function openCinema(event){
  $('cinema').hidden=false;
 }
 function closeCinema(){ $('cinema').hidden=true; }
+function clearShowTimers(){
+ for(const t of [revealTimer,suspenseTimer,cinemaTimer])if(t)clearTimeout(t);
+ revealTimer=null;suspenseTimer=null;cinemaTimer=null;
+}
+const prizeQuantity=items=>(items||[]).reduce((n,item)=>n+Number(item.quantity||1),0);
+function closeChoice(){
+ const dialog=$('choice-dialog');
+ if(dialog.open)dialog.close();
+}
+function showChoice(){
+ if(!state||state.status!=='playing'||pendingRequest||busy)return;
+ const target=state.room,next=target<=3?3:target<=7?7:null;
+ const secured=(state.secured||[]).flatMap(g=>g.items||[]);
+ const risk=(state.pending||[]).flatMap(g=>g.items||[]);
+ $('choice-secured').textContent=String(prizeQuantity(secured));
+ $('choice-risked').textContent=String(prizeQuantity(risk));
+ $('choice-title').textContent=target>=8?'👑 Das Finale rückt näher!':'💰 Kassieren oder riskieren?';
+ $('choice-description').textContent=next
+  ?'Raum '+target+' wartet! Noch '+(next-target+1)+' sichere '+(next-target+1===1?'Auswahl':'Auswahlen')+' bis zum Checkpoint '+next+'.'
+  :'Raum '+target+' wartet. Hier liegen die höchsten Belohnungen!';
+ $('choice-warning').textContent=risk.length
+  ?'Eine Bombe kostet dich '+prizeQuantity(risk)+' noch ungesicherte Gegenstände. In jeder neuen Runde hast du 2 von 3 sichere Mützen.'
+  :'Alles bisher Erspielte ist geschützt. Ab jetzt riskierst du nur neue Gewinne. Zwei von drei Mützen sind sicher.';
+ $('choice-next').textContent='🎩 Weiter zu Raum '+target;
+ const dialog=$('choice-dialog');
+ if(dialog.showModal&&!dialog.open)dialog.showModal();
+}
 function finishReveal(){
- if(revealTimer){clearTimeout(revealTimer);revealTimer=null;}
- closeCinema();reveal=null;render();
- if(state?.status==='playing')setStatus('🎩 Weiter versuchen oder deine Gewinne kassieren?',false,true);
- else if(state?.status==='finished')setStatus(DEMO?'🧪 Testrunde beendet – keine echten Gewinne verbucht.':'✅ Spiel beendet – gesicherte Gewinne wurden ausgezahlt.',false,true);
+ const outcome=reveal;
+ clearShowTimers();closeCinema();reveal=null;revealPhase=null;render();
+ if(state?.status==='playing'){
+  setStatus('🎩 Die Entscheidung liegt bei dir: Gewinne sichern oder weiter?',false,true);
+  if(outcome?.type!=='bomb')showChoice();
+ }else if(state?.status==='finished')setStatus(DEMO?'🧪 Testrunde beendet – keine echten Gewinne verbucht.':'✅ Spiel beendet – gesicherte Gewinne wurden ausgezahlt.',false,true);
 }
 function renderTiers(active,checkpoint,cleared){
  const root=$('tiers');root.replaceChildren();
  for(let i=1;i<=10;i++){
-  const d=document.createElement('div');d.className='tier'+(i===active?' on':'')+(i<=checkpoint?' done':'')+(i>checkpoint&&i<=cleared?' cleared':'');
+  const d=document.createElement('div');d.className='tier'+(i===active?' on':'')+(i<=checkpoint?' done':'')+(i>checkpoint&&i<=cleared?' cleared':'')+([3,7].includes(i)?' checkpoint-cell':'');
   d.textContent=(i===3||i===7?'🛡️ ':'')+i;
   root.appendChild(d);
  }
 }
 function hatButton(index,old){
- const hat=document.createElement('button');hat.type='button';hat.className='hat'+(index===(reveal?.index??selectedHat)?' selected':'')+(selectedHat===index&&busy?' selecting':'')+(old?' shown '+(old.type==='bomb'?'bomb':old.type==='super'?'super':'gift'):'');
+ const hat=document.createElement('button');hat.type='button';hat.className='hat'+(index===(reveal?.index??selectedHat)?' selected':'')+(revealPhase==='suspense'&&reveal?.index===index?' suspense':'')+(selectedHat===index&&busy?' selecting':'')+(old?' shown '+(old.type==='bomb'?'bomb':old.type==='super'?'super':'gift'):'');
  hat.disabled=!state||state.status!=='playing'||busy||!!reveal||!!pendingRequest;
  const n=document.createElement('span');n.className='num';n.textContent='MÜTZE '+(index+1);hat.appendChild(n);
  const shape=document.createElement('div');shape.className='santa-hat';const pom=document.createElement('span');pom.className='pom';shape.appendChild(pom);hat.appendChild(shape);
@@ -283,7 +312,7 @@ function render(){
  const s=state,finished=s?.status==='finished',roomNumber=reveal?.room||s?.room||1;
  $('roomTitle').textContent='🎄 Raum '+roomNumber+' / 10 – '+names[roomNumber];
  $('checkpoint').textContent=(s?.checkpoint||0)>0?'🛡️ Checkpoint Raum '+s.checkpoint+' gesichert':'🛡️ Noch kein Checkpoint';
- $('subtitle').textContent=reveal?'🎬 Alle Mützen werden enthüllt!':finished?'🏆 Dieser Durchlauf ist beendet.':s?'Wähle eine der drei identischen Weihnachtsmützen.':'Starte dein Weihnachtsabenteuer!';
+ $('subtitle').textContent=revealPhase==='suspense'?'🎬 Deine Entscheidung ist endgültig. Was verbirgt sich darunter?':reveal?'🎬 Die Mützen werden enthüllt!':finished?'🏆 Dieser Durchlauf ist beendet.':s?'Wähle eine der drei identischen Weihnachtsmützen.':'Starte dein Weihnachtsabenteuer!';
  const checkpoint=s?.checkpoint||0;
  const cleared=s?(s.status==='playing'?s.room-1:s.summary?.reason==='completed'?10:s.summary?.reason==='bomb'?s.room-1:Math.max(0,s.room-1)):0;
  renderTiers(roomNumber,checkpoint,cleared);
@@ -302,13 +331,35 @@ function render(){
  previous.hidden=!latest||!!reveal;
  if(latest&&!reveal)previous.textContent='Zuletzt in Raum '+latest.room+': '+(latest.type==='bomb'?'💥 Bombe':latest.superLuck?'🌟 Superglück':latest.type==='super'?'👑 Supergeschenk':'🎁 Geschenk')+((latest.room===3||latest.room===7)&&latest.type!=='bomb'?' · 🛡️ Checkpoint gesichert!':'');
  const hats=$('hats');hats.replaceChildren();
- for(let i=0;i<3;i++)hats.appendChild(hatButton(i,reveal?.hats?.[i]));
+ hats.classList.toggle('stage-suspense',revealPhase==='suspense');
+ for(let i=0;i<3;i++)hats.appendChild(hatButton(i,revealPhase==='shown'?reveal?.hats?.[i]:null));
+ const roomLine=roomNumber===3||roomNumber===7?'Der nächste sichere Schritt bringt den Checkpoint!':
+  roomNumber>=8?'In dieser Kammer warten die legendären Schätze.':'Zwei Mützen retten deine Beute. Eine einzige kann alles ändern.';
+ const last=s?.lastReveal;
+ const comment=revealPhase==='suspense'?'Deine Mütze wird geöffnet …':
+  revealPhase==='shown'&&reveal?.type==='bomb'?'💥 Die Bombe! Nur deine gesicherten Gewinne bleiben erhalten.':
+  revealPhase==='shown'&&reveal?.superLuck?'🌟 UNGLAUBLICH! SUPERGLÜCK!':
+  revealPhase==='shown'&&reveal?.type==='super'?'👑 Das wertvollere Geschenk ist dein!':
+  revealPhase==='shown'?'🎁 Treffer! Die Bombe wurde umgangen.':
+  finished?'🏆 Der Durchlauf ist beendet – Zeit für die Bilanz.':roomLine;
+ $('announcer-text').textContent=comment;
+ const voice=revealPhase==='suspense'?'Die Entscheidung ist gefallen. Jetzt gibt es kein Zurück mehr!':
+  revealPhase==='shown'&&reveal?.type==='bomb'?'Oh nein! Der Nordpol-Tresor ist explodiert. Gut, dass wir die Checkpoints haben.':
+  revealPhase==='shown'&&reveal?.superLuck?'Der Weihnachtsmann persönlich kann es nicht fassen! Was für ein sagenhafter Treffer!':
+  revealPhase==='shown'&&[3,7].includes(reveal?.room)&&reveal?.type!=='bomb'?'Meine Güte! Der Checkpoint ist erreicht. Diese Schätze kann dir niemand mehr nehmen!':
+  revealPhase==='shown'&&reveal?.type==='super'?'Jetzt wird es gefährlich schön! Ein Supergeschenk nach dem anderen …':
+  finished?'Eine großartige Weihnachts-Jackpot-Show. Schau dir deine Schätze an!':
+  roomNumber>=8?'Hier oben werden die Hände zittrig. Willst du wirklich noch eine Mütze riskieren?':
+  roomNumber>=4?'Du bist in der Goldkammer. Jeder Griff könnte die Schatztruhe füllen. Oder leeren.':
+  roomNumber===3?'Jetzt heißt es Nerven behalten: Ein Treffer, und die erste Sicherung ist erreicht.':
+  'Noch ist alles offen. Such dir eine Mütze aus – aber vertraue niemals einem Weihnachtsmann!';
+ $('story-speech').textContent=voice;
  $('hats').hidden=!s||finished&&!reveal;
  $('start').hidden=!!s;
  $('start').disabled=busy||!!pendingRequest;
  $('cash').hidden=!s||finished;
  $('cash').disabled=busy||!!reveal||!!pendingRequest;
- $('continue').hidden=!reveal;
+ $('continue').hidden=!reveal||revealPhase!=='shown';
  $('continue').disabled=busy;
  $('again').hidden=!finished;
  $('again').disabled=busy||!!pendingRequest;
@@ -492,8 +543,7 @@ async function refresh(){
   const url='/api/christmas-hats/me'+(waiting?'?pendingId='+encodeURIComponent(waiting.requestId):'');
   const data=await call(url);
   if(uid()!==user.uid)return;
-  if(revealTimer){clearTimeout(revealTimer);revealTimer=null;}
-  closeCinema();
+  clearShowTimers();closeCinema();closeChoice();
   state=data.state;reveal=null;
   let notice=DEMO?'🧪 Vorschau bereit – keine echten Gewinne oder Gutschriften.':'✅ Spielstand vom Server geladen. Keine dauerhafte Abfrage.';
   if(waiting&&data.pendingAction?.applied){
@@ -525,12 +575,17 @@ async function submit(payload){
   state=data.state;savePending(null);
   if(payload.type==='pick'&&data.outdated){reveal=null;render();setStatus('✅ Alte Aktion bereits bestätigt. Aktueller Spielstand synchronisiert.',false,true);}
   else if(payload.type==='pick'){
-   reveal=data.result;
+   reveal=data.result;revealPhase='suspense';
    render();
    setStatus(reveal?.type==='bomb'?'💥 Bombe! Deine Checkpoint-Gewinne bleiben geschützt.':reveal?.superLuck?'🌟 SUPERGLÜCK! Schau dir deine seltenen Geschenke an!':'🎁 Ein sicherer Treffer! Deine Belohnung ist vorgemerkt.',false,reveal?.type!=='bomb');
-   if(revealTimer)clearTimeout(revealTimer);
-   if(reveal?.type!=='bomb')setTimeout(()=>{if(reveal===data.result)openCinema(reveal)},700);
-   revealTimer=setTimeout(finishReveal,5200);
+   clearShowTimers();
+   const event=data.result;
+   suspenseTimer=setTimeout(()=>{
+    if(reveal!==event)return;
+    revealPhase='shown';render();
+    cinemaTimer=setTimeout(()=>{if(reveal===event&&event.type!=='bomb')openCinema(event)},650);
+    revealTimer=setTimeout(finishReveal,5600);
+   },window.matchMedia('(prefers-reduced-motion: reduce)').matches?120:1050);
   }else{
    reveal=null;render();setStatus(type==='cash'?(DEMO?'🧪 Probeauszahlung abgeschlossen. Keine echten Gegenstände oder Spielgelder gutgeschrieben.':'✅ Deine Gewinne wurden serverseitig gutgeschrieben.'):(DEMO?'🧪 Neue Testpartie gestartet!':'✨ Neues Spiel gestartet!'),false,true);
   }
@@ -542,6 +597,9 @@ async function submit(payload){
  }
  finally{busy=false;selectedHat=null;render();}
 }
+$('choice-next').onclick=closeChoice;
+$('choice-cash').onclick=()=>{closeChoice();askCash()};
+$('choice-dialog').addEventListener('cancel',()=>{});
 $('cinema-close').onclick=finishReveal;
 $('continue').onclick=finishReveal;
 $('cash-cancel').onclick=()=>$('cash-dialog').close();
