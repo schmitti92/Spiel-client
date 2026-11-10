@@ -121,8 +121,8 @@ function harness(options={}){
 }
 test('Boss page uses dedicated independent scripts and original illustration',()=>{
  const html=read('dog-boss.html'),css=read('dog-boss.css');
- assert.ok(html.includes('dog-boss-ui.js?v=20261110-boss-v2'));
- assert.ok(html.includes('dog-boss.css?v=20261110-boss-v2'));
+ assert.ok(html.includes('dog-boss-ui.js?v=20261110-boss-v3'));
+ assert.ok(html.includes('dog-boss.css?v=20261110-boss-v3'));
  assert.ok(html.includes('./dog-boss-art/aschewaechter.svg'));
  assert.ok(read('dog-boss-art/aschewaechter.svg').startsWith('<svg'));
  assert.ok(css.includes('.boss-defeat-panel'));
