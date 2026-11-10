@@ -6,10 +6,10 @@
  <meta name="theme-color" content="#13131e">
  <meta name="description" content="Die 100 Tore: Gemeinsam gegen den Aschewächter kämpfen. Nach einer Teamniederlage gilt eine serverseitige Kampfpause von zehn Minuten.">
  <title>🔥 Tor 1 · Bossarena · Die 100 Tore</title>
- <link rel="stylesheet" href="./dog-boss.css?v=20261110-boss-v3">
+ <link rel="stylesheet" href="./dog-boss.css?v=20261110-boss-v4">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
- <script src="./dog-boss-ui.js?v=20261110-boss-v3" defer></script>
+ <script src="./dog-boss-ui.js?v=20261110-boss-v4" defer></script>
 </head>
 <body>
  <main class="arena-layout">
@@ -121,6 +121,25 @@
      <span class="boss-move-icon">✨</span><strong>Spezialangriff</strong><small>Angriff und Regeneration</small>
     </button>
    </div>
+   <section class="boss-reaction-card" aria-labelledby="boss-reaction-heading">
+    <div class="boss-reaction-intro">
+     <div><strong id="boss-reaction-heading">⚡ Reaktionsschlag</strong>
+      <p>Ein kurzer Timing-Test: Triff den goldenen Bereich für bis zu 10 % Extraschaden.</p>
+     </div>
+     <button id="boss-reaction-start" type="button" disabled>⚡ Reaktion starten</button>
+    </div>
+    <div id="boss-reaction-challenge" class="boss-reaction-challenge" hidden>
+     <div class="boss-reaction-clock"><strong id="boss-reaction-time">3,0 s</strong>
+      <span id="boss-reaction-message">Beobachte den Balken und drücke im goldenen Bereich.</span></div>
+     <div class="boss-reaction-track" aria-label="Timing-Balken mit Trefferzone">
+      <span class="boss-reaction-perfect"></span>
+      <span class="boss-reaction-pointer" id="boss-reaction-pointer"></span>
+     </div>
+     <button type="button" id="boss-reaction-hit">⚡ JETZT TREFFEN!</button>
+     <button type="button" id="boss-reaction-dismiss">Abbrechen</button>
+    </div>
+    <small class="boss-reaction-note">Die Wertung erfolgt über die Serverzeit. Ohne erfolgreichen Reaktionstreffer kämpfst du mit normaler Ausrüstungsstärke.</small>
+   </section>
    <div class="boss-pending-wrap" id="boss-pending-wrap" hidden>
     <p>⚠️ Eine Kampfaktion wurde noch nicht bestätigt. Wiederhole sie sicher, ohne einen zweiten Angriff auszulösen.</p>
     <button type="button" id="boss-retry">↻ Letzte Aktion sicher wiederholen</button>
