@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
  EDITOR_DRAFT_KEY,emptyDraft,fromCrossPreset,fromLayout,placedCount,fieldOf,
- snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout
+ snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS
 } from '../DOG/editor-model.js';
 import {makeDefaultLayout,currentBoardLayout,resetBoardLayout} from '../DOG/board-layout.js';
 
@@ -90,4 +90,52 @@ test('editor refuses malformed imports rather than silently scrambling field ord
  assert.throws(()=>fromLayout({track:[],goals:[],homes:[]}),/gültige Struktur/);
  const broken=emptyDraft();broken.track[0]={x:'oops',y:10};
  assert.throws(()=>fromLayout(broken),/ungültige/);
+});
+
+test('guide uses exactly the same centre-to-centre distance in all eight directions',()=>{
+ const d=emptyDraft();d.track[0]={x:380,y:380};
+ for(const direction of EIGHT_DIRECTIONS){
+   const selection={kind:'track',index:1,owner:0};
+   const result=directedPoint(d,selection,direction.dx,direction.dy,{step:28});
+   assert.ok(result,direction.label+' must fit board');
+   const distance=Math.hypot(result.x-380,result.y-380);
+   assert.ok(Math.abs(distance-28)<.15,direction.label+' distance='+distance);
+   const directionLength=Math.hypot(direction.dx,direction.dy);
+   const angle=(result.x-380)*direction.dy-(result.y-380)*direction.dx;
+   assert.ok(Math.abs(angle/directionLength)<.15,'45 degree direction '+direction.label);
+ }
+});
+test('guided finger taps choose one of eight directions, not the longer square-grid diagonal',()=>{
+ const d=emptyDraft();d.track[0]={x:380,y:380};
+ const selection={kind:'track',index:1,owner:0};
+ const right=guidedPoint(d,selection,{x:500,y:385},{step:32});
+ const diagonal=guidedPoint(d,selection,{x:510,y:250},{step:32});
+ assert.deepEqual([right.dx,right.dy],[1,0]);
+ assert.deepEqual([diagonal.dx,diagonal.dy],[1,-1]);
+ const dr=Math.hypot(right.x-380,right.y-380);
+ const dd=Math.hypot(diagonal.x-380,diagonal.y-380);
+ assert.ok(Math.abs(dd-dr)<.15);
+ assert.ok(Math.abs(Math.hypot(32,32)-32)>10,'square grid diagonal is not equal distance');
+});
+test('eight-way guide works for replacing a pre-existing field and reports off-distance edges',()=>{
+ let d=emptyDraft();d.track[0]={x:380,y:380};
+ const selection={kind:'track',index:1,owner:0};
+ d=putField(d,selection,{x:412,y:380},{snap:false});
+ assert.equal(measureStepDistances(d,32).even,1);
+ d=putField(d,selection,{x:412,y:412},{snap:false});
+ assert.equal(measureStepDistances(d,32).uneven,1);
+ const corrected=guidedPoint(d,selection,{x:500,y:500},{step:32});
+ d=putField(d,selection,corrected,{snap:false});
+ assert.equal(measureStepDistances(d,32).even,1);
+ assert.equal(measureStepDistances(d,32).uneven,0);
+ assert.equal(placedCount(d).track,2);
+});
+test('guide falls back to square grid for the first field and does not place outside the board',()=>{
+ const d=emptyDraft(),selection={kind:'track',index:0,owner:0};
+ assert.equal(previousTrackField(d,selection),null);
+ assert.equal(guidedPoint(d,selection,{x:450,y:450},{step:32}),null);
+ d.track[0]={x:720,y:380};
+ const next={kind:'track',index:1,owner:0};
+ assert.equal(directedPoint(d,next,1,0,{step:32}),null);
+ assert.throws(()=>directedPoint(d,next,1,2,{step:32}),/8 Richtungen/);
 });
