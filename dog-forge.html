@@ -6,10 +6,10 @@
 <meta name="theme-color" content="#0c1019">
 <meta name="description" content="Die Schmiede der 100 Tore: Rüstung, Waffen, Fähigkeiten und Rohstofftausch.">
 <title>⚒️ Schmiede der Helden · Die 100 Tore</title>
-<link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-d2">
+<link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-d3">
 <script src="./profile-config.js"></script>
 <script src="./profile-auth.js"></script>
-<script src="./dog-forge-ui.js?v=20261110-forge-d2" defer></script>
+<script src="./dog-forge-ui.js?v=20261110-forge-d3" defer></script>
 <script src="./dog-forge-fx.js?v=20261110-forge-d2" defer></script>
 <script src="./dog-forge-ceremony.js?v=20261110-forge-d2" defer></script>
 <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
@@ -56,6 +56,19 @@
   <span>Eine Aktion muss noch bestätigt werden.</span>
   <button type="button" class="minor-button" id="forge-retry">↻ Sicher wiederholen</button>
  </div>
+ <section class="forge-goal-banner" id="forge-goal-banner" aria-label="Persönliches Verbesserungsziel" hidden>
+  <div class="forge-goal-visual" id="forge-goal-visual" aria-hidden="true">🎯</div>
+  <div class="forge-goal-body">
+   <span class="forge-goal-kicker">🎯 DEIN NÄCHSTES SCHMIEDEZIEL</span>
+   <strong id="forge-goal-title">Noch kein Ziel festgelegt</strong>
+   <span id="forge-goal-desc">Wähle eine Verbesserung und markiere sie als Ziel.</span>
+   <div class="forge-goal-progress"><span id="forge-goal-progress"></span></div>
+  </div>
+  <div class="forge-goal-actions">
+   <button type="button" id="forge-goal-open">Ansehen</button>
+   <button type="button" id="forge-goal-clear" aria-label="Verbesserungsziel entfernen" title="Ziel entfernen">✕</button>
+  </div>
+ </section>
 
  <div class="forge-workspace" id="forge-workspace">
   <section class="workshop-panel">
@@ -188,6 +201,21 @@
   <div class="ceremony-bottom">
    <span class="ceremony-hint">Deine Rohstoffe werden nur serverseitig verarbeitet.</span>
    <button type="button" id="forge-ceremony-skip" class="ceremony-skip">Animation überspringen <span aria-hidden="true">»</span></button>
+  </div>
+ </div>
+</dialog>
+<dialog id="forge-exchange-confirm" class="forge-confirm exchange-confirm" aria-labelledby="forge-exchange-confirm-title">
+ <div class="confirm-shell">
+  <button type="button" id="forge-exchange-confirm-x" class="result-x" aria-label="Tausch abbrechen">✕</button>
+  <div class="eyebrow">💎 ROHSTOFFTAUSCH</div>
+  <div class="exchange-confirm-icon" aria-hidden="true">💎</div>
+  <h2 id="forge-exchange-confirm-title">Mehrfachtausch</h2>
+  <p id="forge-exchange-confirm-description" class="exchange-confirm-description"></p>
+  <div class="exchange-confirm-preview" id="forge-exchange-confirm-preview"></div>
+  <p class="confirm-warning risky">Die Rohstoffe werden nach deiner Bestätigung einmalig serverseitig umgebucht.</p>
+  <div class="confirm-actions">
+   <button type="button" class="confirm-cancel" id="forge-exchange-confirm-cancel">Abbrechen</button>
+   <button type="button" class="forge-action" id="forge-exchange-confirm-submit">Tausch bestätigen</button>
   </div>
  </div>
 </dialog>
