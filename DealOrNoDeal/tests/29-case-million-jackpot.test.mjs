@@ -55,10 +55,11 @@ test('case 30 works with the Joker and the whole jackpot asset bundle refreshes'
  assert.match(peek,/\[26,27,28,29,30\]\.includes\(Number\(g\?\.caseCount\)\)/);
  assert.match(peek,/for\(let i=0;i<caseCount\(\);i\+\+\)/);
  assert.match(peek,/p\.case<caseCount\(\)/);
- for(const name of ['core','app','finale','broadcast','peek-joker','amount-voice','moderator-stories']){
+ for(const name of ['core','finale','broadcast','peek-joker','amount-voice','moderator-stories']){
   assert.ok(html.includes('./js/'+name+'.js?v=20261110-30cases-50m-v1'),name+' cache bust');
  }
  assert.ok(html.includes('./js/banker.js?v=20261110-special-bonuses-v1'),'banker bonus cache bust');
+ assert.ok(html.includes('./js/app.js?v=20261110-full-gold-turn-v1'),'gold turn client cache bust');
  for(const name of ['cases','broadcast']){
   assert.ok(html.includes('./css/'+name+'.css?v=20261110-30cases-50m-v1'),name+' CSS cache bust');
  }
