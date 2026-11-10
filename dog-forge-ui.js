@@ -287,6 +287,20 @@
    row.append(icon,details,node('span','journal-date',date));journal.append(row);
   }
  }
+ function renderGallery(){
+  const gallery=window.DogForgeGallery;
+  if(!gallery)return;
+  const hero=view?.hero||null;
+  const invested=hero&&view?.items?
+   view.items.reduce((sum,item)=>sum+Math.max(0,(hero.levels?.[item.id]??item.baseLevel)-item.baseLevel),0):0;
+  const milestones=hero?MILESTONES.map(m=>{
+   const current=milestoneValue(m,hero);
+   return {id:m.key+'-'+m.goal,icon:m.icon,title:m.title,goal:m.goal,
+    current,unlocked:current>=m.goal};
+  }):[];
+  gallery.render(hero&&uid?{uid,hero,items:view.items,milestones,
+   rank:rankFor(invested),player:$('forge-player').textContent}:null);
+ }
  function renderStock(){
   const container=$('forge-stock-groups');container.replaceChildren();
   for(const group of MATERIALS){
@@ -627,10 +641,10 @@
   $('forge-retry-wrap').hidden=!pending(uid);
   $('forge-retry').disabled=!uid||busy;
   $('forge-refresh').disabled=busy;
-  header();renderList();tab==='exchange'?renderExchange():renderUpgrade();renderGoal();renderChronicle();renderStock();
+  header();renderList();tab==='exchange'?renderExchange():renderUpgrade();renderGoal();renderChronicle();renderStock();renderGallery();
  }
  const closeModal=()=>{const dialog=$('forge-result');if(dialog.open)dialog.close();};
- function resultDialog(result){
+ function resultDialog(result,newlyUnlocked=[]){
   const dialog=$('forge-result'),art=$('forge-result-art');
   art.replaceChildren();
   let kind='exchange',emoji='💎',heading='Tausch gelungen',subtitle='Materialien sicher umgebucht.',achievement='';
@@ -666,6 +680,13 @@
   $('forge-result-heading').textContent=heading;
   $('forge-result-text').textContent=subtitle;
   $('forge-result-achievement').textContent=achievement;
+  const reward=$('forge-result-new-unlock'),openRewards=$('forge-result-gallery');
+  const hasReward=newlyUnlocked.length>0;
+  reward.hidden=!hasReward;openRewards.hidden=!hasReward;
+  if(hasReward){
+   reward.textContent='🏆 Neu freigeschaltet: '+newlyUnlocked.map(m=>m.title).join(' · ')+
+    ' – Titel und Rahmen jetzt in deiner Galerie!';
+  }else reward.textContent='';
   if(!dialog.open)dialog.showModal();
  }
  async function reload(){
@@ -719,14 +740,20 @@
   try{
    const response=await request('POST',op.action,{requestId:op.id,...op.payload},account);
    if(uid!==account)return;
+   const beforeHero=view?.hero||null;
    clearPending(account);view=response;
+   // Announce only newly completed milestones for this confirmed action.
+   // Receipts recovered after reconnect never celebrate a second time.
+   const unlocked=!response.replayed&&beforeHero&&view?.hero?
+    MILESTONES.filter(m=>milestoneValue(m,beforeHero)<m.goal&&
+     milestoneValue(m,view.hero)>=m.goal):[];
    status(response.replayed?'✓ Auftrag sicher wiederhergestellt.':'✓ Auftrag serverseitig gespeichert.','good');
    // Wait only for an optional local visual flourish, never for server authority.
    if(ceremonyStarted&&!response.replayed){
     try{await window.DogForgeCeremony?.finish?.(response.result);}catch{}
    }
    if(uid!==account)return;
-   resultDialog(response.result);
+   resultDialog(response.result,unlocked);
   }catch(e){
    try{window.DogForgeCeremony?.abort?.();}catch{}
    if(uid!==account)return;
@@ -803,6 +830,11 @@
  });
  $('forge-result-x').addEventListener('click',closeModal);
  $('forge-result-ok').addEventListener('click',closeModal);
+ $('forge-result-gallery').addEventListener('click',()=>{
+  closeModal();
+  window.DogForgeGallery?.open?.();
+ });
+ window.addEventListener('dog-forge-gallery-ready',()=>renderGallery());
  window.addEventListener('spielonline-change',()=>{if(!busy)void reload();});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!busy)void reload();});
  render();void reload();
