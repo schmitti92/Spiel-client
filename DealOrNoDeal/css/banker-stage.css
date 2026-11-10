@@ -666,3 +666,33 @@
 @media(prefers-reduced-motion:reduce){
  #banker-call .banker-bonus-reveal-item.pack .banker-bonus-pack-art{animation:none!important}
 }
+
+/* Banker rare specials: a redeemed Hütchen mini-game voucher or one Monster spin. */
+#banker-call .banker-offer-details > .banker-special-bonus{
+ min-width:0;flex-shrink:0;align-items:center;justify-content:center;
+ gap:clamp(8px,1vw,14px);padding:clamp(6px,.65vw,10px) clamp(10px,.9vw,16px)!important;
+ border:2px solid #f0d58e;border-radius:12px;
+ background:linear-gradient(110deg,#3d235b,#49316b,#211d42);
+ color:#fff1bb;box-shadow:inset 0 1px 0 #fff8,0 0 18px #d6a7ff44;
+ text-align:left;
+}
+#banker-call .banker-offer-details > .banker-special-bonus:not([hidden]){display:flex!important;animation:banker-bonus-chip-in .5s ease both}
+#banker-call .banker-offer-details > .banker-special-bonus[hidden]{display:none!important}
+#banker-call .banker-special-bonus[data-kind="monster"]{
+ border-color:#f8d377;background:linear-gradient(110deg,#5a241e,#825122,#3c2438);
+}
+#banker-call .banker-special-bonus-icon{display:grid;place-items:center;flex:none;width:clamp(33px,3vw,51px);height:clamp(33px,3vw,51px);border-radius:10px;background:#19274eb0;font-size:clamp(22px,2vw,32px)}
+#banker-call .banker-special-bonus-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+#banker-call .banker-special-bonus-copy strong{font-size:clamp(13px,1.35vw,20px);color:#fff4c9;line-height:1.15}
+#banker-call .banker-special-bonus-copy small{font-size:clamp(9px,.78vw,12px);font-weight:800;color:#fae7b2}
+#banker-call .banker-bonus-reveal-item.special{border-color:#c7a9fa;background:linear-gradient(145deg,#4c3080,#201e3e)}
+#banker-call .banker-bonus-reveal-item.special.monster{border-color:#ffdc88;background:linear-gradient(145deg,#784d23,#2b213f)}
+#banker-call .banker-bonus-special-art{display:grid;place-items:center;width:clamp(68px,8vw,110px);height:clamp(68px,8vw,110px);font-size:clamp(45px,6vw,76px);filter:drop-shadow(0 5px 10px #0008)}
+#banker-call .banker-bonus-reveal-items{flex-wrap:wrap}
+#banker-call .banker-bonus-reveal-item{flex:1 1 min(28%,140px);min-width:min(120px,100%)}
+#banker-call .banker-offer-details.bonus-revealing > .banker-special-bonus{visibility:hidden!important}
+@media(max-width:650px){
+ #banker-call .banker-bonus-reveal-item{min-width:0;flex-basis:30%;padding:7px 5px}
+ #banker-call .banker-bonus-special-art{width:56px;height:56px;font-size:42px}
+}
+@media(prefers-reduced-motion:reduce){#banker-call .banker-special-bonus:not([hidden]){animation:none!important}}
