@@ -224,6 +224,12 @@
   $('forge-player').textContent=state?.profile?.name||state?.user?.displayName||'Nicht angemeldet';
   const invested=view?view.items.reduce((sum,i)=>sum+Math.max(0,levelFor(i.id)-(i.baseLevel||0)),0):0;
   $('forge-player-note').textContent=view?'Bereit für deine nächste Verbesserung':'Persönliches Heldenprofil';
+  const cap=$('forge-gate-cap');
+  if(cap){
+   cap.hidden=!view||!Number.isSafeInteger(view.forgeLevel);
+   if(!cap.hidden)cap.textContent='⚒️ Gemeinsame Schmiedestufe '+
+    view.forgeLevel+'/10 · Fähigkeiten bis Level '+view.skillsCap+'/50';
+  }
   $('forge-rank').textContent='✦ '+rankFor(invested);
   const avatar=$('hero-emblem-art'),armorStage=stageFor(levelFor('armor'));
   if(avatar.dataset.stage!==String(armorStage)){
@@ -511,6 +517,9 @@
   const grid=node('div','cost-list');
   for(const [id,amount] of Object.entries(quote.cost||{}))grid.append(costTile(id,amount));
   root.append(costHead,grid);
+  if(quote.locked)root.append(node('p','upgrade-summary',
+   '🔒 Maximal freigeschaltete Stufe: '+quote.unlockedMaxLevel+
+   '. Besiegt den nächsten gemeinsamen Gruppenboss, um weiter aufzusteigen.'));
   const missing=Object.entries(quote.cost||{})
    .filter(([id,amount])=>have(id)<amount)
    .map(([id,amount])=>({id,needed:amount-have(id)}));
@@ -551,7 +560,10 @@
   root.append(preview);
   const rate=node('div','forge-ready'),label=node('span',null,'Erfolgschance');
   const chance=node('b',null,quote.successChance+' %');
-  if(!quote.affordable){label.textContent='Rohstoffe fehlen';label.className='not-ready';}
+  if(!quote.affordable){
+   label.textContent=quote.locked?'🔒 Nächsten gemeinsamen Boss besiegen':'Rohstoffe fehlen';
+   label.className='not-ready';
+  }
   rate.append(label,chance);root.append(rate);
   const button=node('button','forge-action','⚒️ '+(item.group==='equipment'?'Schmieden':'Verbessern')+' · Stufe '+quote.nextLevel);
   button.type='button';button.disabled=!usable()||!quote.affordable;
@@ -799,7 +811,7 @@
    try{window.DogForgeCeremony?.abort?.();}catch{}
    if(uid!==account)return;
    const error=e.message;
-   if(['STALE_FORGE_LEVEL','DOG_MATERIALS_MISSING','FORGE_MAX_LEVEL','INVALID_FORGE_ITEM',
+   if(['STALE_FORGE_LEVEL','DOG_MATERIALS_MISSING','DOG_FORGE_BOSS_REQUIRED','FORGE_MAX_LEVEL','INVALID_FORGE_ITEM',
     'INVALID_EXCHANGE_RESOURCE','INVALID_EXCHANGE_COUNT','DOG_MATERIALS_LIMIT',
     'INVALID_FORGE_REQUEST'].includes(error)){
     clearPending(account);
