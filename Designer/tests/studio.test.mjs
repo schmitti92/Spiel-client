@@ -96,7 +96,7 @@ test('Untrusted JSON files cannot inject HTML, hostile image URLs or unlimited s
 
 test('Standalone editor uses native ES modules without importing the live game runtime',()=>{
  assert.match(html,/<script type="module" src="\.\/studio\.js\?v=[^"]+"><\/script>/);
- assert.match(js,/from '\.\/studio-model\.mjs'/);
+ assert.match(js,/from '\.\/studio-model\.mjs(?:\?[^']+)?'/);
  assert.doesNotMatch(js,/firebase|serverfinal|SpielOnline|api\/dog|GitHub\.token/i);
  assert.match(js,/localStorage\.setItem\(STUDIO_STORAGE_KEY/);
  assert.match(js,/function exportProject\(/);
