@@ -46,7 +46,7 @@
  font-size:clamp(10px,1vw,14px);
 }
 .arena-live .live-metrics{
- display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,26%);
+ display:grid;grid-template-columns:minmax(0,1.5fr) minmax(190px,.78fr) minmax(160px,.68fr);
  align-items:center;gap:12px;min-width:0;
 }
 .arena-live .live-hp{
@@ -511,4 +511,125 @@
 @media(prefers-reduced-motion:reduce){
  .arena-live .live-dodge-ground,.arena-live .live-dodge-result,
  .arena-live .combat-hero.live-hero-dodge{animation:none}
+}
+
+
+/* 40-second four-phase exchange: 100-point shared defense meter. */
+.arena-live .live-team-shield{
+ display:flex;flex-direction:column;gap:5px;min-width:0;
+ border:1px solid #78badd98;border-radius:13px;padding:7px 10px;
+ background:linear-gradient(110deg,#122b44de,#142e46eb);
+}
+.arena-live .live-shield-label{
+ display:flex;justify-content:space-between;align-items:center;gap:6px;
+ color:#cceafa;font:900 clamp(10px,1vw,14px) Georgia,serif;
+ white-space:nowrap;
+}
+.arena-live .live-shield-label strong{
+ color:#f8e7cc;font:900 clamp(13px,1.25vw,19px) Georgia,serif;
+}
+.arena-live .live-shield-track{
+ height:13px;overflow:hidden;border-radius:99px;background:#0d152a;
+ border:1px solid #83c5ff77;box-shadow:inset 0 3px 7px #000a;
+}
+.arena-live .live-shield-track span{
+ display:block;width:100%;height:100%;border-radius:99px;
+ background:linear-gradient(180deg,#cbfaff,#42aee9 52%,#2263af);
+ box-shadow:0 0 12px #65cbffb5;
+ transition:width .6s ease-in-out;
+}
+.arena-live .live-stage-announcement{
+ position:absolute;top:8%;left:44%;width:51%;
+ z-index:12;display:flex;flex-direction:column;align-items:center;
+ gap:10px;padding:12px 15px;text-align:center;pointer-events:none;
+ border:2px ridge #efc480;border-radius:14px;
+ background:linear-gradient(160deg,#131f34f0,#303249ef);
+ box-shadow:0 8px 25px #000a,0 0 20px #f1ad6560;
+ animation:exchange-announcement .65s ease-out both;
+}
+.arena-live .live-stage-announcement[hidden]{display:none}
+.arena-live .live-stage-announcement strong{
+ font:900 clamp(16px,1.7vw,28px) Georgia,serif;
+ color:#fff0bb;text-shadow:0 3px 7px #000;
+}
+.arena-live .live-stage-announcement span{
+ font:800 clamp(12px,1.13vw,18px) system-ui,sans-serif;
+ color:#e4f5fc;line-height:1.35;
+}
+.arena-live .live-stage-announcement span:last-child{font-size:clamp(10px,.9vw,13px);color:#e4c6a4}
+.arena-live .combat-scene.live-exchange-attack .combat-hero-line{
+ animation:exchange-heroes-strike 1.85s cubic-bezier(.22,.77,.35,1) both;
+}
+.arena-live .combat-scene.live-exchange-attack .combat-boss{
+ animation:exchange-boss-recoil 1.85s ease-out both;
+}
+.arena-live .combat-scene.live-exchange-defense .combat-boss{
+ animation:exchange-boss-lunge 1.85s ease-out both;
+}
+.arena-live .combat-scene.live-exchange-defense .combat-hero-line{
+ animation:exchange-shield-recoil 1.85s ease-out both;
+}
+.arena-live .combat-scene.live-exchange-defense .combat-hero-line::after{
+ content:"🛡️";position:absolute;z-index:15;
+ inset:7% 10% 5% 10%;display:grid;place-items:center;font-size:clamp(45px,7vw,95px);
+ border:5px solid #8ce7ff99;border-radius:50%;
+ background:radial-gradient(circle,#56b5df60,#4b84d541,transparent 72%);
+ box-shadow:0 0 35px #5fceff9f,inset 0 0 34px #a5eaff85;
+ animation:exchange-shield-flash 1.85s ease-in-out both;
+ pointer-events:none;
+}
+@keyframes exchange-announcement{
+ from{opacity:0;transform:translateY(-15px) scale(.96)}
+ to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes exchange-heroes-strike{
+ 0%,100%{transform:none}
+ 30%{transform:translateX(-12%) scale(1.04)}
+ 55%{transform:translateX(-20%) scale(1.1)}
+ 75%{transform:translateX(-5%)}
+}
+@keyframes exchange-boss-recoil{
+ 0%,35%,100%{transform:none;filter:brightness(1)}
+ 49%{transform:translateX(-18px) rotate(-5deg);filter:brightness(2)}
+ 68%{transform:translateX(10px) rotate(3deg)}
+}
+@keyframes exchange-boss-lunge{
+ 0%,100%{transform:none}
+ 34%{transform:translateX(19%) rotate(3deg)}
+ 52%{transform:translateX(29%) scale(1.1)}
+ 67%{transform:translateX(13%)}
+}
+@keyframes exchange-shield-recoil{
+ 0%,25%,100%{transform:none}
+ 53%{transform:translateX(13%) scale(.96)}
+ 72%{transform:translateX(3%)}
+}
+@keyframes exchange-shield-flash{
+ 0%,18%,100%{opacity:0;transform:scale(.4)}
+ 42%,67%{opacity:1;transform:scale(1.04)}
+ 85%{opacity:.4;transform:scale(1.17)}
+}
+.arena-live .live-round-step[hidden]{display:none}
+@media (orientation:landscape) and (min-width:900px) and (max-height:720px){
+ .arena-live .live-team-shield{padding:4px 7px;gap:3px}
+ .arena-live .live-shield-track{height:10px}
+ .arena-live .live-stage-announcement{padding:8px 10px;gap:4px}
+}
+@media(max-width:899px),(orientation:portrait){
+ .arena-live .live-metrics{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ .arena-live .live-hp{grid-column:1/-1}
+ .arena-live .live-team-shield,.arena-live .live-timer{min-width:0}
+}
+@media(max-width:620px){
+ .arena-live .live-metrics{grid-template-columns:1fr}
+ .arena-live .live-hp{grid-column:auto}
+ .arena-live .live-stage-announcement{top:6%;left:37%;width:60%}
+}
+@media(prefers-reduced-motion:reduce){
+ .arena-live .combat-scene.live-exchange-attack .combat-boss,
+ .arena-live .combat-scene.live-exchange-attack .combat-hero-line,
+ .arena-live .combat-scene.live-exchange-defense .combat-boss,
+ .arena-live .combat-scene.live-exchange-defense .combat-hero-line,
+ .arena-live .combat-scene.live-exchange-defense .combat-hero-line::after,
+ .arena-live .live-stage-announcement{animation:none}
 }
