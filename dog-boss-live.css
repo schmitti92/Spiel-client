@@ -559,15 +559,19 @@
 .arena-live .live-stage-announcement span:last-child{font-size:clamp(10px,.9vw,13px);color:#e4c6a4}
 .arena-live .combat-scene.live-exchange-attack .combat-hero-line{
  animation:exchange-heroes-strike 1.85s cubic-bezier(.22,.77,.35,1) both;
+ animation-delay:var(--exchange-offset,0ms);
 }
 .arena-live .combat-scene.live-exchange-attack .combat-boss{
  animation:exchange-boss-recoil 1.85s ease-out both;
+ animation-delay:var(--exchange-offset,0ms);
 }
 .arena-live .combat-scene.live-exchange-defense .combat-boss{
  animation:exchange-boss-lunge 1.85s ease-out both;
+ animation-delay:var(--exchange-offset,0ms);
 }
 .arena-live .combat-scene.live-exchange-defense .combat-hero-line{
  animation:exchange-shield-recoil 1.85s ease-out both;
+ animation-delay:var(--exchange-offset,0ms);
 }
 .arena-live .combat-scene.live-exchange-defense .combat-hero-line::after{
  content:"🛡️";position:absolute;z-index:15;
@@ -576,6 +580,7 @@
  background:radial-gradient(circle,#56b5df60,#4b84d541,transparent 72%);
  box-shadow:0 0 35px #5fceff9f,inset 0 0 34px #a5eaff85;
  animation:exchange-shield-flash 1.85s ease-in-out both;
+ animation-delay:var(--exchange-offset,0ms);
  pointer-events:none;
 }
 @keyframes exchange-announcement{
@@ -659,13 +664,16 @@
 .arena-live .live-exchange-bolt-two{top:58%;filter:drop-shadow(0 0 9px #b78eff);background:linear-gradient(90deg,transparent,#c18bff,#f1d6ff,#ab87ff00)}
 .arena-live .live-exchange-bolt-three{top:65%;filter:drop-shadow(0 0 9px #7ae9ff);background:linear-gradient(90deg,transparent,#83dfff,#f3ffff,#7fdcff00)}
 .arena-live .live-exchange-attack .live-exchange-bolt-one{
- animation:exchange-hero-bolt 1.75s 0s ease-out both;
+ animation:exchange-hero-bolt 1.75s ease-out both;
+ animation-delay:var(--exchange-offset,0ms);
 }
 .arena-live .live-exchange-attack .live-exchange-bolt-two{
- animation:exchange-hero-bolt 1.55s .14s ease-out both;
+ animation:exchange-hero-bolt 1.55s ease-out both;
+ animation-delay:calc(var(--exchange-offset,0ms) + 140ms);
 }
 .arena-live .live-exchange-attack .live-exchange-bolt-three{
- animation:exchange-hero-bolt 1.45s .26s ease-out both;
+ animation:exchange-hero-bolt 1.45s ease-out both;
+ animation-delay:calc(var(--exchange-offset,0ms) + 260ms);
 }
 .arena-live .live-exchange-boss-impact{
  position:absolute;left:16%;top:32%;width:clamp(65px,13vw,190px);aspect-ratio:1;
@@ -675,6 +683,7 @@
 }
 .arena-live .live-exchange-attack .live-exchange-boss-impact{
  animation:exchange-boss-impact 1.85s both;
+ animation-delay:var(--exchange-offset,0ms);
 }
 .arena-live .live-exchange-counterbolt{
  position:absolute;left:29%;top:49%;width:46%;height:clamp(9px,1.3vw,18px);
@@ -684,6 +693,7 @@
 }
 .arena-live .live-exchange-defense .live-exchange-counterbolt{
  animation:exchange-boss-bolt 1.85s both;
+ animation-delay:var(--exchange-offset,0ms);
 }
 .arena-live .live-exchange-shield-dome{
  position:absolute;left:55%;top:19%;width:39%;height:70%;
@@ -694,6 +704,7 @@
 }
 .arena-live .live-exchange-defense .live-exchange-shield-dome{
  animation:exchange-team-shield 1.85s both;
+ animation-delay:var(--exchange-offset,0ms);
 }
 .arena-live .live-exchange-shield-crack{
  position:absolute;left:58%;top:27%;width:35%;height:56%;opacity:0;
@@ -704,6 +715,7 @@
 }
 .arena-live .live-exchange-defense.live-exchange-guard-damaged .live-exchange-shield-crack{
  animation:exchange-guard-crack 1.85s both;
+ animation-delay:var(--exchange-offset,0ms);
 }
 .arena-live .live-exchange-attack.live-exchange-miss .live-exchange-boss-impact{animation:none}
 .arena-live .live-exchange-attack.live-exchange-miss .live-exchange-bolt{
