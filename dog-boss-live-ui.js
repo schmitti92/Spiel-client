@@ -17,13 +17,13 @@
   const elapsed=Math.max(0,now-parseMs(view?.startedAt));
   const active=phase==='fighting'?(rounds.find(r=>elapsed>=r.startMs&&elapsed<r.endMs)||null):null;
   const roundIndex=active?.round??(phase==='fighting'&&rounds.length?
-   (elapsed<rounds[0].startMs?0:clamp(rounds.filter(r=>elapsed>=r.endMs).length,0,2)):-1);
+   (elapsed<rounds[0].startMs?0:clamp(rounds.filter(r=>elapsed>=r.endMs).length,0,rounds.length-1)):-1);
   const latest=Object.entries(answers).flatMap(([index,record])=>{
    const events=Array.isArray(record?.attempts)?record.attempts:[record];
    return events.map(item=>({index:Number(index),step:item?.step??0,
     correct:item?.correct===true,wrong:item?.correct===false,
     at:parseMs(item?.at)}));
-  }).filter(x=>Number.isInteger(x.index)&&x.index>=0&&x.index<3&&x.at>0)
+  }).filter(x=>Number.isInteger(x.index)&&x.index>=0&&x.index<rounds.length&&x.at>0)
    .sort((a,b)=>b.at-a.at)[0]||null;
   const initialHp=Number(view?.bossHp);
   const remainingHp=Number(view?.result?.hpRemaining);
@@ -41,10 +41,14 @@
    promptDetail:$(root,'#live-mini-prompt-detail'),
    minigame:$(root,'#mini-game'),
    hpFill:$(root,'#live-hp-fill'),hit:$(root,'#live-hit-effects'),
-   boss:$(root,'#combat-boss'),combat:$(root,'#combat-scene')
+   boss:$(root,'#combat-boss'),combat:$(root,'#combat-scene'),
+   shieldFill:$(root,'#live-shield-fill'),shieldValue:$(root,'#live-shield-value'),
+   announcement:$(root,'#live-stage-announcement'),
+   stageTitle:$(root,'#live-stage-title'),stageScore:$(root,'#live-stage-score'),
+   stageSubtitle:$(root,'#live-stage-subtitle')
   };
   const steps=nodes.steps?[...nodes.steps.querySelectorAll('.live-round-step')]:[];
-  let lastHitKey='',lastRound='',lastFeedback='',lastImpactKey='';
+  let lastHitKey='',lastRound='',lastFeedback='',lastImpactKey='',lastExchangeKey='';
   function dodgeImpact(round,record,view,now){
    const attacks=round?.attacks;
    if(!Array.isArray(attacks)||!nodes.hit||view?.phase!=='fighting')return;
@@ -121,21 +125,72 @@
     void nodes.boss.offsetWidth;nodes.boss.classList.add('live-boss-struck');
    }
   }
+  function updateExchange(view,current){
+   const stages=view?.miniGames?.exchange?.stages;
+   const exchange=current.phase==='fighting'&&Array.isArray(stages)&&
+    current.rounds.length===4;
+   const shield=exchange?Math.max(0,Math.min(100,
+    Number(view.miniGames.exchange.shield)||0)):100;
+   if(nodes.shieldFill)nodes.shieldFill.style.width=shield+'%';
+   text(nodes.shieldValue,shield+' / 100');
+   const scene=exchange?current.rounds.find(round=>
+    current.elapsed>=round.endMs&&current.elapsed<round.endMs+2000):null;
+   if(!scene){
+    if(nodes.announcement)nodes.announcement.hidden=true;
+    if(nodes.combat?.classList){
+     nodes.combat.classList.remove('live-exchange-attack');
+     nodes.combat.classList.remove('live-exchange-defense');
+    }
+    return;
+   }
+   const stage=stages[scene.round],defensive=!!stage?.defensive;
+   const key=String(view.startedAt)+':'+scene.round;
+   if(nodes.announcement)nodes.announcement.hidden=false;
+   const title=defensive?'🛡️ BOSS SCHLÄGT ZURÜCK':
+    '⚔️ GEMEINSAMER ANGRIFF';
+   text(nodes.stageTitle,title);
+   text(nodes.stageScore,stage?.completed?
+    (defensive?'Team-Schild '+stage.shield+' / 100':
+     stage.correct+' / '+stage.max+' Treffer · +'+
+      Number(stage.bonusPercent||0).toLocaleString('de-DE')+' % Extraangriff'):
+    'Die Ergebnisse werden vom Server bestätigt …');
+   text(nodes.stageSubtitle,defensive?
+    'Der Boss greift an – unsere Helden blocken gemeinsam!':
+    'Chris, Nova und Titan schlagen gemeinsam zu!');
+   text(nodes.round,'ZWISCHENSEQUENZ '+(scene.round+1)+' / 4');
+   if(nodes.prompt)nodes.prompt.hidden=false;
+   text(nodes.promptTitle,title);
+   text(nodes.promptDetail,stage?.completed?
+    (defensive?'Gemeinsam übrig: '+stage.shield+' Schildpunkte':
+     stage.correct+' bestätigte Treffer von '+stage.max):
+    'Warte auf die serverbestätigte Teamwertung …');
+   if(lastExchangeKey!==key){
+    lastExchangeKey=key;
+    const cls=defensive?'live-exchange-defense':'live-exchange-attack';
+    if(nodes.combat?.classList){
+     nodes.combat.classList.remove('live-exchange-attack');
+     nodes.combat.classList.remove('live-exchange-defense');
+     void nodes.combat.offsetWidth;
+     nodes.combat.classList.add(cls);
+    }
+   }
+  }
   function update(view,now){
    const current=battleModel(view,now);
    const {phase,rounds,answers,roundIndex,latest}=current;
-   const active=phase==='fighting'&&rounds.length===3;
+   const active=phase==='fighting'&&rounds.length>=3;
    const title=phase==='victory'?'🏆 BOSS BESIEGT':
     phase==='cooldown'?'💀 BOSS ÜBERLEBT':
     phase==='fighting'?'⚔️ LIVE-HERAUSFORDERUNG':'⚔️ BOSS-HERAUSFORDERUNG';
    text($(root,'#live-challenge-heading'),title);
-   text(nodes.round,active?'RUNDE '+(roundIndex+1)+' / 3':'3 RUNDEN · 30 SEK.');
+   text(nodes.round,active?'RUNDE '+(roundIndex+1)+' / '+rounds.length:
+    (rounds.length===4?'4 RUNDEN · 40 SEK.':'3 RUNDEN · 30 SEK.'));
    if(nodes.prompt){
     nodes.prompt.hidden=active||phase==='victory'||phase==='cooldown';
     text(nodes.promptTitle,phase==='fighting'?'⚔️ Kampf läuft':
      phase==='waiting'?'Team vorbereitet?':'Der Boss bereitet sich vor');
     text(nodes.promptDetail,phase==='fighting'?'Die nächsten Aufgaben kommen vom Server.':
-     'Drei zufällige Aufgaben erscheinen hier während des Kampfes.');
+     'Die Aufgaben erscheinen rechts und wechseln mit Kampfszenen.');
    }
    // Never pretend server-authoritative HP has changed mid-battle. The
    // server only confirms the remaining HP with its official result.
@@ -146,6 +201,7 @@
    }
    for(const [i,node] of steps.entries()){
     const round=rounds[i],answer=answers[i];
+    node.hidden=!round;
     const kind=taskNames[round?.kind]||'Aufgabe';
     const value=(i+1)+' · '+kind;
     if(node.textContent!==value)node.textContent=value;
@@ -183,12 +239,14 @@
     }
    }
    const hitKind=latest?rounds[latest.index]?.kind:null;
-   if(phase==='fighting'&&recent&&hitKind!=='dodge')attack(latest,view,now);
-   if(phase==='fighting'){
+   if(phase==='fighting'&&recent&&hitKind!=='dodge'&&rounds.length!==4)
+    attack(latest,view,now);
+   if(phase==='fighting'&&rounds.length!==4){
     const dodge=rounds.find(round=>round.kind==='dodge');
     if(dodge)dodgeImpact(dodge,latest,view,now);
    }
-   if(phase!=='fighting'){lastHitKey='';lastImpactKey='';}
+   updateExchange(view,current);
+   if(phase!=='fighting'){lastHitKey='';lastImpactKey='';lastExchangeKey='';}
   }
   return {update};
  }
