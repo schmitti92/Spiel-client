@@ -6,7 +6,7 @@
  const $=id=>document.getElementById(id);
  const root=$('dog-developer-dialog'),open=$('dog-developer-open');
  if(!root||!open)return;
- const API=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\\/+$/,'');
+ const API=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
  const labels={iron:'Eisen',forge_coal:'Schmiedekohle',steel_core:'Stahlkern',
   mithril:'Mithril',dragonsteel:'Drachenstahl',wood:'Holz',stone:'Stein',
   crystal:'Kristall',rune:'Rune'};
