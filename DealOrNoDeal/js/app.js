@@ -3,6 +3,8 @@
 // The 30-case variants deliberately have NO surprise call after the last
 // scheduled milestone; the final unsold cases lead directly to the finale.
 function next29BankerCountdown(game){
+ if(game?.phase==='batch-pick')return ' · ⚡ '+(game.openingBatch?.picks?.length||0)+' / '+((game.players?.length||0)*3)+' Koffer vorgemerkt';
+ if(game?.phase==='batch-reveal')return ' · ⚡ Schnell-Enthüllung vor dem Banker';
  if(![29,30].includes(game?.caseCount)||!Array.isArray(game.bankerSchedule)||!['open','reveal'].includes(game.phase))return '';
  const toOpen=Math.max(0,game.caseCount-(game.players?.length||0)-(game.openedAmounts?.length||0));
  if(!toOpen)return '';
@@ -29,6 +31,48 @@ function updateMoneyBoard(openedAmounts){
   node.classList.toggle('just-eliminated',directorLatestAmount===value&&directorLatestUntil>Date.now());
  }
 }
+
+// One browser-side clock runs the fast opening show. All nine reveal positions
+// are server-defined; no nine sequential Firestore acknowledgments are needed.
+let firstBatchRenderTimer=null,firstBatchAckTimer=null,firstBatchAckKey='';
+function fastBatchSnapshot(game,now=dealServerNow()){
+ const batch=game?.phase==='batch-reveal'?game.openingBatch:null;
+ const reveals=Array.isArray(batch?.reveals)?batch.reveals:[];
+ const interval=Number(batch?.intervalMs)||650,started=Number(batch?.startedAt)||0;
+ const visible=[],inMotion=[];
+ for(let i=0;i<reveals.length;i++){
+  const elapsed=now-(started+i*interval);
+  if(elapsed>=130)visible.push(reveals[i]);
+  if(elapsed>=0&&elapsed<interval)inMotion.push(reveals[i].case);
+ }
+ return {visible,inMotion,now,interval,started,total:reveals.length};
+}
+function scheduleFastBatch(){
+ clearTimeout(firstBatchRenderTimer);firstBatchRenderTimer=null;
+ const batch=g?.phase==='batch-reveal'?g.openingBatch:null;
+ if(!batch||!Array.isArray(batch.reveals)){
+  clearTimeout(firstBatchAckTimer);firstBatchAckTimer=null;firstBatchAckKey='';
+  return;
+ }
+ const now=dealServerNow(),interval=Number(batch.intervalMs)||650;
+ const marks=batch.reveals.flatMap((_,i)=>[batch.startedAt+i*interval,batch.startedAt+i*interval+135]);
+ const next=marks.find(t=>t>now+20);
+ if(next)firstBatchRenderTimer=setTimeout(()=>{firstBatchRenderTimer=null;if(g?.phase==='batch-reveal')render()},Math.max(30,Math.min(15000,next-now+15)));
+ const key=g.id+':'+batch.startedAt;
+ if(firstBatchAckKey===key)return;
+ firstBatchAckKey=key;
+ clearTimeout(firstBatchAckTimer);
+ // Any connected player can finish the batch. Stagger attempts by player order
+ // to avoid redundant writes; another player takes over if the first is offline.
+ const viewerIndex=Math.max(0,g.order.indexOf(myId()));
+ const due=Number(batch.endsAt)+500+viewerIndex*850;
+ firstBatchAckTimer=setTimeout(async()=>{
+  if(g?.phase!=='batch-reveal'||g?.id+':'+g?.openingBatch?.startedAt!==key)return;
+  if(!busy)await action('ack-batch');
+  if(g?.phase==='batch-reveal')setTimeout(()=>{if(g?.phase==='batch-reveal'&&!busy)action('ack-batch')},4200);
+ },Math.max(50,Math.min(60000,due-now)));
+}
+
 let historyRenderKey='';
 function updateHistoryBoard(history){
  const boost=g?.players?.find(p=>p.id===myId())?.doublePayout===true?2:1;
@@ -40,33 +84,35 @@ function updateHistoryBoard(history){
  for(const h of history){const line=document.createElement('div');line.className='history-entry';const a=document.createElement('span');a.textContent='Runde '+h.round;const b=document.createElement('strong');b.textContent=eur(h.offer*boost);line.append(a,b);fragment.append(line)}
  root.replaceChildren(fragment);
 }
-function render(){if(!g)window.DealModeratorStory?.observe(null);if(!g||g.phase==='final'){resetCaseCamera();clearTimeout(prizeFlashDelay);clearTimeout(prizeFlashTimer);$('prize-flash').classList.remove('active');$('prize-flash').setAttribute('aria-hidden','true')}if(!g){$('turn-spotlight').hidden=true;resetAvatarReaction();document.body.classList.remove('show-high-stakes','show-final-stakes','reveal-spotlight')}announceScene();window.DealDoubleBoost?.render(g);updateBankerCall();document.body.classList.toggle('offer-moment',g?.phase==='decision');if(!g){cancelFinaleTimers();$('finale-cinema').hidden=true;finaleSequenceKey='';$('final-show').hidden=true;$('bank-history').open=false;$('history-list').replaceChildren();$('bank-quote').textContent='„Jeder Koffer verändert das Spiel. Wie mutig bist du?“';$('show-phase').textContent='Warte auf den Spielstart';$('studio-progress-fill').style.width='0%';$('show-round').textContent='26–29 Koffer · bis zu 4 Spieler';$('header-round').textContent=$('show-round').textContent;$('offer').classList.remove('offer-active');$('status').textContent='Noch keine Partie gestartet. Gehe zur Lobby und starte als Host.';$('cases').replaceChildren();for(let i=0;i<27;i++){let b=makeCase(i,null,null,false);b.disabled=true;$('cases').append(b)}$('money-summary').textContent='26–29 Beträge im Spiel';$('money').replaceChildren();for(let v of values.slice(0,27)){let x=document.createElement('span');x.textContent=eur(v);$('money').append(x)}$('players').replaceChildren();$('actions').replaceChildren();$('actions').append(button('← Zur Lobby',()=>location.assign('lobby.html?room='+encodeURIComponent(code||''))));$('offer').textContent='Der Banker wartet auf den Spielstart.';return}$('show-phase').textContent=({select:'Die Kandidaten wählen ihre Koffer',open:'Die Kofferjagd läuft',reveal:'Der Koffer wird enthüllt',decision:'Der Banker macht ein Angebot',final:'Das große Finale',finished:'Die Show ist beendet'})[g.phase]||'Goldstudio Live';$('show-round').textContent='Runde '+Math.max(1,(g.round||0)+1)+' · '+g.opened.length+' / '+(g.caseCount||26)+' geöffnet';$('header-round').textContent=$('show-round').textContent;$('studio-progress-fill').style.width=(g.opened.length/(g.caseCount||26)*100).toFixed(1)+'%';$('bank-quote').textContent=g.phase==='decision'?'„Mein Angebot liegt auf dem Tisch. Deal oder No Deal?“':g.phase==='reveal'?'„Was verbirgt sich hinter diesem goldenen Deckel?“':g.phase==='final'?'„Jetzt kommt die Wahrheit ans Licht!“':g.phase==='open'?'„Ein einziger Koffer kann alles verändern.“':'„Willkommen in meiner Show.“';updateHistoryBoard(g.history||[]);// Only the server-authoritative selector, opener or reveal actor is crowned.
+function render(){if(!g)window.DealModeratorStory?.observe(null);if(!g||g.phase==='final'){resetCaseCamera();clearTimeout(prizeFlashDelay);clearTimeout(prizeFlashTimer);$('prize-flash').classList.remove('active');$('prize-flash').setAttribute('aria-hidden','true')}if(!g){scheduleFastBatch();$('turn-spotlight').hidden=true;resetAvatarReaction();document.body.classList.remove('show-high-stakes','show-final-stakes','reveal-spotlight')}announceScene();window.DealDoubleBoost?.render(g);updateBankerCall();document.body.classList.toggle('offer-moment',g?.phase==='decision');if(!g){cancelFinaleTimers();$('finale-cinema').hidden=true;finaleSequenceKey='';$('final-show').hidden=true;$('bank-history').open=false;$('history-list').replaceChildren();$('bank-quote').textContent='„Jeder Koffer verändert das Spiel. Wie mutig bist du?“';$('show-phase').textContent='Warte auf den Spielstart';$('studio-progress-fill').style.width='0%';$('show-round').textContent='26–29 Koffer · bis zu 4 Spieler';$('header-round').textContent=$('show-round').textContent;$('offer').classList.remove('offer-active');$('status').textContent='Noch keine Partie gestartet. Gehe zur Lobby und starte als Host.';$('cases').replaceChildren();for(let i=0;i<27;i++){let b=makeCase(i,null,null,false);b.disabled=true;$('cases').append(b)}$('money-summary').textContent='26–29 Beträge im Spiel';$('money').replaceChildren();for(let v of values.slice(0,27)){let x=document.createElement('span');x.textContent=eur(v);$('money').append(x)}$('players').replaceChildren();$('actions').replaceChildren();$('actions').append(button('← Zur Lobby',()=>location.assign('lobby.html?room='+encodeURIComponent(code||''))));$('offer').textContent='Der Banker wartet auf den Spielstart.';return}$('show-phase').textContent=({select:'Die Kandidaten wählen ihre Koffer','batch-pick':'⚡ 30 Koffer: Dreierauswahl','batch-reveal':'⚡ Die große Schnell-Enthüllung',open:'Die Kofferjagd läuft',reveal:'Der Koffer wird enthüllt',decision:'Der Banker macht ein Angebot',final:'Das große Finale',finished:'Die Show ist beendet'})[g.phase]||'Goldstudio Live';$('show-round').textContent='Runde '+Math.max(1,(g.round||0)+1)+' · '+g.opened.length+' / '+(g.caseCount||26)+' geöffnet';$('header-round').textContent=$('show-round').textContent;$('studio-progress-fill').style.width=(g.opened.length/(g.caseCount||26)*100).toFixed(1)+'%';$('bank-quote').textContent=g.phase==='decision'?'„Mein Angebot liegt auf dem Tisch. Deal oder No Deal?“':g.phase==='reveal'?'„Was verbirgt sich hinter diesem goldenen Deckel?“':g.phase==='final'?'„Jetzt kommt die Wahrheit ans Licht!“':g.phase==='open'?'„Ein einziger Koffer kann alles verändern.“':'„Willkommen in meiner Show.“';updateHistoryBoard(g.history||[]);// Only the server-authoritative selector, opener or reveal actor is crowned.
  // Banker decisions are simultaneous, so no single player is marked active.
- let who=g.phase==='select'?g.order[g.selectionIndex]:g.phase==='open'?turn():g.phase==='reveal'?g.pending?.actor:null;
+ let who=g.phase==='select'?g.order[g.selectionIndex]:g.phase==='batch-pick'?g.order[Math.floor((g.openingBatch?.picks?.length||0)/3)]:g.phase==='open'?turn():g.phase==='reveal'?g.pending?.actor:null;
  let p=g.players.find(x=>x.id===who);
- const turnSpotlight=$('turn-spotlight'),turnSpotlightVisible=!!p&&['select','open','reveal'].includes(g.phase);
+ const turnSpotlight=$('turn-spotlight'),turnSpotlightVisible=!!p&&['select','batch-pick','open','reveal'].includes(g.phase);
  turnSpotlight.hidden=!turnSpotlightVisible;
  if(turnSpotlightVisible){
   const heading=$('turn-spotlight-player'),actionLabel=$('turn-spotlight-action');
   if(heading.textContent!==p.name)heading.textContent=p.name;
-  const phaseLabel=g.phase==='select'?'WÄHLT SEINEN KOFFER':g.phase==='reveal'?'ÖFFNET DEN KOFFER':'ÖFFNET JETZT EINEN KOFFER';
+  const phaseLabel=g.phase==='select'?'WÄHLT SEINEN KOFFER':g.phase==='batch-pick'?'WÄHLT 3 KOFFER · '+((g.openingBatch.picks.length%3)+1)+'/3':g.phase==='reveal'?'ÖFFNET DEN KOFFER':'ÖFFNET JETZT EINEN KOFFER';
   if(actionLabel.textContent!==phaseLabel)actionLabel.textContent=phaseLabel;
- }$('status').textContent=g.phase==='select'?'Persönliche Koffer wählen: '+p?.name:g.phase==='open'?'Koffer öffnen: '+p?.name:g.phase==='reveal'?'Der Koffer wird geöffnet …':g.phase==='decision'?'Bankangebot · Alle Spieler stimmen gleichzeitig ab':g.phase==='final'?'🏆 Finale: Persönliche Koffer werden enthüllt':'Partie beendet';
+ }$('status').textContent=g.phase==='select'?'Persönliche Koffer wählen: '+p?.name:g.phase==='batch-pick'?'⚡ '+p?.name+' wählt Koffer '+((g.openingBatch.picks.length%3)+1)+' von 3 · '+g.openingBatch.picks.length+'/'+(g.players.length*3)+' gesammelt':g.phase==='batch-reveal'?'⚡ Schnell-Enthüllung: '+fastBatchSnapshot(g).visible.length+'/'+g.openingBatch.picks.length+' Koffer geöffnet':g.phase==='open'?'Koffer öffnen: '+p?.name:g.phase==='reveal'?'Der Koffer wird geöffnet …':g.phase==='decision'?'Bankangebot · Alle Spieler stimmen gleichzeitig ab':g.phase==='final'?'🏆 Finale: Persönliche Koffer werden enthüllt':'Partie beendet';
 const caseGrid=$('cases');
 caseGrid.dataset.caseCount=String(g.caseCount||27);
 document.querySelector('.case-stage')?.setAttribute('aria-label',(g.caseCount||27)+' Goldkoffer');
-const oldCases=Array.from(caseGrid.children);const newCases=[];for(let i=0;i<(g.caseCount||26);i++){const opened=g.openedAmounts.find(x=>x.case===i),owner=g.players.find(x=>x.case===i),pending=g.pending?.case===i;const signature=[opened?.amount??'',owner?.id??'',pending?'reveal':''].join('|');let b=oldCases[i];if(!b||b.dataset.signature!==signature){b=makeCase(i,opened,owner,pending);b.dataset.signature=signature;
+const batchFrame=fastBatchSnapshot(g),queuedCases=new Set(g.openingBatch?.picks?.map(x=>x.case)||[]);
+ const visibleOpened=[...g.openedAmounts,...batchFrame.visible];
+ const oldCases=Array.from(caseGrid.children);const newCases=[];for(let i=0;i<(g.caseCount||26);i++){const opened=visibleOpened.find(x=>x.case===i),owner=g.players.find(x=>x.case===i),batchMotion=batchFrame.inMotion.includes(i),pending=g.pending?.case===i||batchMotion;const signature=[opened?.amount??'',owner?.id??'',pending?'reveal':''].join('|');let b=oldCases[i];if(!b||b.dataset.signature!==signature){b=makeCase(i,opened,owner,pending);b.dataset.signature=signature;
  // A shared server timestamp keeps the briefcase opening synchronized even
  // when devices receive the WebSocket message at different moments.
  if(pending&&Number.isFinite(g.pending?.startedAt)){
   const offsetMs=Math.max(-2400,Math.min(1000,g.pending.startedAt-dealServerNow()));
   b.style.setProperty('--case-reveal-delay',Math.round(offsetMs)+'ms');
  }
-}b.disabled=busy||!free(i)||!['select','open'].includes(g.phase)||who!==myId();b.onclick=()=>action(g.phase==='select'?'select':'open',{case:i});newCases.push(b)}for(let i=0;i<newCases.length;i++){if(oldCases[i]!==newCases[i]){if(oldCases[i])oldCases[i].replaceWith(newCases[i]);else caseGrid.append(newCases[i])}}while(caseGrid.children.length>newCases.length)caseGrid.lastElementChild.remove();
-const remaining=(g.caseCount||26)-g.openedAmounts.length;
+}b.classList.toggle('batch-queued',queuedCases.has(i)&&!opened);b.classList.toggle('batch-fast',batchMotion);b.disabled=busy||!free(i)||!['select','batch-pick','open'].includes(g.phase)||who!==myId();b.onclick=()=>action(g.phase==='select'?'select':'open',{case:i});newCases.push(b)}for(let i=0;i<newCases.length;i++){if(oldCases[i]!==newCases[i]){if(oldCases[i])oldCases[i].replaceWith(newCases[i]);else caseGrid.append(newCases[i])}}while(caseGrid.children.length>newCases.length)caseGrid.lastElementChild.remove();
+const remaining=(g.caseCount||26)-visibleOpened.length;
  document.body.classList.toggle('show-high-stakes',g.phase!=='final'&&remaining<=8);
  document.body.classList.toggle('show-final-stakes',g.phase!=='final'&&remaining<=3);
- directorReveal();window.DealModeratorStory?.observe(g);studioCommentObserve(g);$('money-summary').textContent=((g.caseCount||26)-g.openedAmounts.length)+' Beträge übrig · '+g.openedAmounts.length+' ausgeschieden'+next29BankerCountdown(g);updateMoneyBoard(g.openedAmounts);
+ directorReveal();window.DealModeratorStory?.observe(g);studioCommentObserve(g);$('money-summary').textContent=((g.caseCount||26)-visibleOpened.length)+' Beträge übrig · '+visibleOpened.length+' ausgeschieden'+next29BankerCountdown(g);updateMoneyBoard(visibleOpened);scheduleFastBatch();
 const playerRoot=$('players');const oldPlayers=new Map(Array.from(playerRoot.children).map(el=>[el.dataset.playerId,el]));for(let p of g.players){let el=oldPlayers.get(String(p.id))||document.createElement('div');el.dataset.playerId=String(p.id);const isCurrentPlayer=p.id===who;const playerClass='player'+(isCurrentPlayer?' turn':'')+(p.deal!==null?' dealt':'');if(el.className!==playerClass)el.className=playerClass;
 if(isCurrentPlayer){if(el.getAttribute('aria-current')!=='step')el.setAttribute('aria-current','step')}else if(el.hasAttribute('aria-current'))el.removeAttribute('aria-current');if(avatarReactionType&&avatarReactionUntil>Date.now()){const personality=(Number.isInteger(p.avatar)?p.avatar:g.players.indexOf(p))%4;const reactions={shock:['shock','disbelief','shock','freeze'],cheer:['cheer','relief','cheer','smile'],curious:['curious','thinking','curious','thinking'],thinking:['thinking','curious','thinking','freeze']};const reaction=(reactions[avatarReactionType]||[])[personality]||avatarReactionType;if(el.dataset.reaction!==reaction)el.dataset.reaction=reaction;}else if(el.dataset.reaction)delete el.dataset.reaction;const avatar=el.querySelector('.candidate-avatar')||document.createElement('span');if(avatar.className!=='candidate-avatar')avatar.className='candidate-avatar';const avatarId=Number.isInteger(p.avatar)&&p.avatar>=1&&p.avatar<=15?p.avatar:(g.players.indexOf(p)%4+1);const avatarFile=avatarId===12?'weihnachts_event/file_0000000052f88210a16983ce1ff8c3e0.png':avatarId===11?'weihnachts_event/reindeer-9985063_640.jpg':avatarId===13?'weihnachts_event/schneemann_charakter.png':avatarId===14?'jan-schlappen.png':avatarId===15?'giftzwerg.svg':({1:'buero-portrait-01-avatar.webp',2:'bert-avatar.webp',3:'ernie-avatar.webp',4:'heinz-becker-avatar.webp',5:'buero-portrait-02-avatar.webp',7:'avatar-portrait-05-avatar.webp'}[avatarId]||'avatar-'+avatarId+'.svg');const candidateImage="url('"+new URL('assets/'+avatarFile,document.baseURI).href+"')";if(avatar.dataset.candidateImage!==candidateImage){avatar.style.setProperty('--candidate-image',candidateImage);avatar.dataset.candidateImage=candidateImage;}if(avatar.getAttribute('role')!=='img')avatar.setAttribute('role','img');if(avatar.getAttribute('aria-label')!=='Gewählter Spielcharakter')avatar.setAttribute('aria-label','Gewählter Spielcharakter');const avatarDelay=(-((g.players.indexOf(p)*1.7)%6)).toFixed(1)+'s';if(avatar.dataset.avatarDelay!==avatarDelay){avatar.style.setProperty('--avatar-delay',avatarDelay);avatar.dataset.avatarDelay=avatarDelay;}const personalityValue=String((Number.isInteger(p.avatar)?p.avatar:g.players.indexOf(p))%4);if(avatar.dataset.personality!==personalityValue)avatar.dataset.personality=personalityValue;const avatarNumberValue=String(avatarId);if(avatar.dataset.avatarNumber!==avatarNumberValue)avatar.dataset.avatarNumber=avatarNumberValue;if(!avatar.querySelector('.avatar-portrait')){const portrait=document.createElement('span');portrait.className='avatar-portrait';portrait.setAttribute('aria-hidden','true');avatar.append(portrait);const face=document.createElement('span');face.className='avatar-expression';face.setAttribute('aria-hidden','true');face.append(document.createElement('span'),document.createElement('span'),document.createElement('span'));avatar.append(face)}const portraitImage=avatar.querySelector('img.candidate-photo')||document.createElement('img');portraitImage.className='candidate-photo';portraitImage.alt='';if(!portraitImage.dataset.imageConfigured){portraitImage.decoding='async';portraitImage.loading='eager';portraitImage.dataset.imageConfigured='yes';}const chosenSrc=new URL('assets/'+avatarFile,document.baseURI).href;if(portraitImage.dataset.source!==chosenSrc){portraitImage.dataset.source=chosenSrc;portraitImage.src=chosenSrc;portraitImage.onerror=()=>{portraitImage.onerror=null;portraitImage.src=new URL('assets/avatar-1.svg',document.baseURI).href}}if(!portraitImage.isConnected)avatar.append(portraitImage);if(avatar.parentElement!==el)el.append(avatar);
 let title=el.querySelector('.candidate-name');if(!title){title=document.createElement('strong');title.className='candidate-name';el.append(title)}if(title.textContent!==p.name)title.textContent=p.name;
