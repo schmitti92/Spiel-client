@@ -93,11 +93,13 @@ Der nächste Phase-1-Schritt wurde umgesetzt und automatisiert geprüft:
    nach dem ersten Teilzug durch eine neue Abfrage fortgesetzt wird.
 6. Tests bestätigen, dass ein unberechtigter Benutzer, veraltete Match-IDs
    oder ungültige Befehle den Spielstand nicht verändern.
+7. Ein fünfter, nicht teilnehmender Raummitglied-Account kann das öffentliche
+   DOG-Spielfeld sehen, ohne private Karten oder Spielberechtigungen zu erhalten.
 
 Verifiziert in GitHub Actions:
 - Frontend: 101 DOG-Tests erfolgreich (einschließlich acht neuer
   Synchronisierungstests).
-- Backend: 34 klassische Engine-/Regeltests und sechs gezielte DOG-Hub-Tests
+- Backend: 34 klassische Engine-/Regeltests und sieben gezielte DOG-Hub-Tests
   erfolgreich.
 
 **Grenze der Prüfungen:** Es handelt sich um automatisierte Unit- und
