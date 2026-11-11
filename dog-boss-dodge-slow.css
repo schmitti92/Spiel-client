@@ -43,35 +43,35 @@
  transform:scale(.96);filter:brightness(1.22);
 }
 .arena-live .is-slow-dodge .mini-dodge-history{margin-top:5px}
-.arena-live .combat-scene[data-battle-version="8"][data-cue="dodge"]
+.arena-live .combat-scene:is([data-battle-version="8"],[data-battle-version="9"])[data-cue="dodge"]
  .combat-hero.battle-dodge-leap{
  animation:slow-dodge-hero-leap 4.4s cubic-bezier(.18,.75,.25,1) both!important;
  animation-delay:var(--dodge-move-delay,0ms)!important;
 }
-.arena-live .combat-scene[data-battle-version="8"][data-cue="dodge"] .combat-boss{
+.arena-live .combat-scene:is([data-battle-version="8"],[data-battle-version="9"])[data-cue="dodge"] .combat-boss{
  animation:dodge-boss-windup 5s ease-in-out infinite!important;
 }
-.arena-live .combat-scene[data-battle-version="8"][data-cue="dodge"]
+.arena-live .combat-scene:is([data-battle-version="8"],[data-battle-version="9"])[data-cue="dodge"]
  .combat-boss.battle-boss-strike{
  animation:boss-hammer-body-lunge var(--boss-swing-time,5000ms)
  cubic-bezier(.3,.7,.22,1) both!important;
  animation-delay:var(--boss-swing-offset,0ms)!important;
 }
-.arena-live .combat-scene[data-battle-version="8"][data-dodge-strike="impact"]
+.arena-live .combat-scene:is([data-battle-version="8"],[data-battle-version="9"])[data-dodge-strike="impact"]
  .battle-dodge-strike{
  animation:dodge-boss-slam 1.6s cubic-bezier(.07,.8,.16,1) both;
  animation-delay:var(--dodge-attack-delay,0ms);
 }
-.arena-live .combat-scene[data-battle-version="8"][data-dodge-strike="impact"]
+.arena-live .combat-scene:is([data-battle-version="8"],[data-battle-version="9"])[data-dodge-strike="impact"]
  .battle-dodge-lane.is-danger{
  animation:dodge-lane-impact 1.55s ease-out both;
  animation-delay:var(--dodge-attack-delay,0ms);
 }
-.arena-live .combat-scene[data-battle-version="8"][data-cue="dodge"]
+.arena-live .combat-scene:is([data-battle-version="8"],[data-battle-version="9"])[data-cue="dodge"]
  .combat-hero.battle-dodge-success .combat-hero-symbol{
  filter:drop-shadow(0 0 24px #91ffdb) drop-shadow(0 10px 9px #030d16);
 }
-.arena-live .combat-scene[data-battle-version="8"][data-cue="dodge"]
+.arena-live .combat-scene:is([data-battle-version="8"],[data-battle-version="9"])[data-cue="dodge"]
  .combat-hero.battle-dodge-hit .combat-hero-symbol{
  filter:drop-shadow(0 0 23px #ff7558) drop-shadow(0 10px 9px #030d16);
 }
@@ -97,11 +97,11 @@
 }
 @media(prefers-reduced-motion:reduce){
  .arena-live .is-slow-dodge .mini-dodge-decision-fill{transition:none}
- .arena-live .combat-scene[data-battle-version="8"][data-cue="dodge"]
+ .arena-live .combat-scene:is([data-battle-version="8"],[data-battle-version="9"])[data-cue="dodge"]
   .combat-hero.battle-dodge-leap,
- .arena-live .combat-scene[data-battle-version="8"][data-cue="dodge"] .combat-boss,
- .arena-live .combat-scene[data-battle-version="8"][data-dodge-strike="impact"]
+ .arena-live .combat-scene:is([data-battle-version="8"],[data-battle-version="9"])[data-cue="dodge"] .combat-boss,
+ .arena-live .combat-scene:is([data-battle-version="8"],[data-battle-version="9"])[data-dodge-strike="impact"]
   .battle-dodge-strike,
- .arena-live .combat-scene[data-battle-version="8"][data-dodge-strike="impact"]
+ .arena-live .combat-scene:is([data-battle-version="8"],[data-battle-version="9"])[data-dodge-strike="impact"]
   .battle-dodge-lane.is-danger{animation:none!important}
 }
