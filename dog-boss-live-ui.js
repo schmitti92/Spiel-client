@@ -15,7 +15,7 @@
   const rounds=Array.isArray(view?.miniGames?.rounds)?view.miniGames.rounds:[];
   const answers=view?.miniGames?.myAnswers||{};
   const elapsed=Math.max(0,now-parseMs(view?.startedAt));
-  const active=phase==='fighting'?rounds.find(r=>elapsed>=r.startMs&&elapsed<r.endMs):null;
+  const active=phase==='fighting'?(rounds.find(r=>elapsed>=r.startMs&&elapsed<r.endMs)||null):null;
   const roundIndex=active?.round??(phase==='fighting'&&rounds.length?
    (elapsed<rounds[0].startMs?0:clamp(rounds.filter(r=>elapsed>=r.endMs).length,0,2)):-1);
   const latest=Object.entries(answers).map(([index,record])=>({
