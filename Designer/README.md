@@ -10,6 +10,7 @@ anzufassen. Ergebnisse als bearbeitbare JSON-Datei (alle Ansichten) oder
 aktuelle Ansicht als PNG exportieren und später im Chat zur Umsetzung teilen.
 
 ## Projektvorlagen
+- **100 Tore · Bosskampf LIVE:** Kampfbeginn, Reaktion, Blitz-Mathe, Ausweichen, Zieltreffer, Sieg, Niederlage. Jede Ansicht zeigt den kompletten Kampf auf **einer** Leinwand, mit Boss, LP, Timer und den drei Teamkarten an identischen Positionen. Der mittlere Bereich wechselt zwischen den Minispielen.
 - **100 Tore · Boss-Arena:** Vor dem Kampf, Boss erscheint, Minispiel, Sieg, Niederlage.
 - **100 Tore · Schmiede:** Schmiede, Waffe verbessern, Materialien, Upgrade-Erfolg.
 - **Spielportal · Lobby:** Hauptlobby, Spielauswahl, Raum & Spieler.
@@ -50,3 +51,11 @@ bei Glasunschärfe und Schrift leicht von der Vorschau abweichen.
 Projekt und gegebenenfalls PNG herunterladen, im Chat hochladen und erklären,
 welche Bereiche wie umgesetzt werden sollen. Die JSON-Projektdatei bleibt
 vollständig bearbeitbar. Der Umbau der echten Spielseiten erfolgt später.
+
+## Direktstart: Bosskampf LIVE
+
+[Bosskampf-LIVE-Vorlage direkt im Designer öffnen](https://schmitti92.github.io/Spiel-client/Designer/?template=boss-live)
+
+Beim Öffnen per Direktlink wird ein bereits im Browser vorhandenes Projekt **nicht ohne Nachfrage** ersetzt. Alternativ im linken Auswahlmenü **„100 Tore · Bosskampf LIVE“** wählen und auf **„Neues Projekt“** tippen. Danach alle Bereiche frei anpassen und die JSON-Projektdatei exportieren.
+
+Die Ansichten sind reine visuelle Entwürfe mit Platzhaltern und erfüllen keinerlei Server- oder Kampfmechanik. Die echten Boss-Minispiele werden erst in einem separaten Entwicklungsschritt anhand des fertigen Designer-Projekts umgesetzt.
