@@ -1,5 +1,5 @@
 import {createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction,COLORS} from './engine.js';
-import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js';
+import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=10';
 
 const $=id=>document.getElementById(id);
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -9,7 +9,7 @@ const online=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(params.get('room')||'');
 const hubCode=online?params.get('room'):null;
 const matchHint=params.get('match');
 const editorBack='index.html'+location.search;
-document.querySelectorAll('[data-dog-editor]').forEach(link=>link.href='editor.html?return='+encodeURIComponent(editorBack)+'&v=9');
+document.querySelectorAll('[data-dog-editor]').forEach(link=>link.href='editor.html?return='+encodeURIComponent(editorBack)+'&v=10');
 const apiBase=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null;
 function user(){const s=window.SpielOnline?.state?.();return s?.status==='online'&&s.user?.getIdToken?s.user:null;}
