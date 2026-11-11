@@ -40,7 +40,10 @@ function fixture(version=5){
   version,rounds:[{round:0,kind:'math',startMs:0,endMs:8000,maxSteps:8,puzzles,
    hint:'8 tasks'},
    {round:1,kind:'dodge',startMs:15000,endMs:23000,lanes:2,maxSteps:3,
-    attacks:[]},{round:2,kind:'target',startMs:30000,endMs:38000,maxSteps:3,
+    attacks:Array.from({length:3},(_,step)=>({
+     step,startMs:15000+Math.floor(step*8000/3),
+     impactMs:15000+Math.floor((step+.66)*8000/3),
+     dangerIndex:step%2,secondDangerIndex:null}))},{round:2,kind:'target',startMs:30000,endMs:38000,maxSteps:3,
     lanes:3,stepMs:1300,initialIndex:0},
    {round:3,kind:'reaction',startMs:45000,endMs:53000,maxSteps:3,
     zoneRadius:.1,difficulty:1}],
