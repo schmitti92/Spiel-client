@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {TRACK_POINTS,GOAL_POINTS,HOME_POINTS,START_INDICES,BOARD_LAYOUT_ID,assertBoardLayout,trackPoint,goalPoint,homePoint,isStartField,makeDefaultLayout,currentBoardLayout,validateBoardLayout,setBoardLayout,saveBoardLayout,loadSavedBoardLayout,resetBoardLayout,CUSTOM_BOARD_KEY} from '../DOG/board-layout.js';
 
 test('classic DOG board has sixty-four unique track holes and exactly four start fields',()=>{
-  assert.equal(BOARD_LAYOUT_ID,'dog-classic-cross-v3');
+  assert.equal(BOARD_LAYOUT_ID,'dog-approved-board-v1');
   assert.equal(assertBoardLayout(),true);
   assert.equal(TRACK_POINTS.length,64);
   assert.deepEqual(START_INDICES,[0,16,32,48]);
@@ -34,11 +34,11 @@ test('every private goal and reserve hole is separate from main circuit',()=>{
   for(const p of inner)assert.equal(outer.has(p.x+','+p.y),false);
 });
 
-test('DOG cross course is actually four-armed and not the old rectangular perimeter',()=>{
+test('approved DOG course uses exact uploaded field positions on all four sides',()=>{
  const starts=START_INDICES.map(i=>trackPoint(i));
- assert.deepEqual(starts,[{x:95,y:380},{x:380,y:95},{x:665,y:380},{x:380,y:665}]);
+ assert.deepEqual(starts,[{x:315.4,y:663.1},{x:97,y:316.7},{x:443.4,y:98.3},{x:661.8,y:444.7}]);
  const inner=TRACK_POINTS.filter(p=>p.x>240&&p.x<520&&p.y>240&&p.y<520);
- assert.ok(inner.length>=8,'Track is expected to run into the inner star arms');
+ assert.ok(inner.length>=8,'The inner cross arms must remain intact');
 });
 test('DOG editor rejects overlapping fields and ruptured path sections',()=>{
  const original=makeDefaultLayout();
@@ -58,14 +58,29 @@ test('DOG editor saves, reloads and resets only local geometry',()=>{
   removeItem:key=>data.delete(key)
  };
  const layout=makeDefaultLayout();
- layout.track[1]={x:127,y:384};
+ layout.track[1]={x:315.4,y:627.1};
  assert.deepEqual(validateBoardLayout(layout),[]);
  saveBoardLayout(layout,storage);
- assert.equal(JSON.parse(data.get(CUSTOM_BOARD_KEY)).track[1].y,384);
+ assert.equal(JSON.parse(data.get(CUSTOM_BOARD_KEY)).track[1].y,627.1);
  setBoardLayout(makeDefaultLayout());
  assert.equal(loadSavedBoardLayout(storage),true);
- assert.equal(trackPoint(1).y,384);
+ assert.equal(trackPoint(1).y,627.1);
  resetBoardLayout(storage);
- assert.equal(trackPoint(1).y,380);
+ assert.equal(trackPoint(1).y,631.1);
  assert.equal(data.has(CUSTOM_BOARD_KEY),false);
+});
+
+
+test('approved DOG has the exact four coloured private goal lanes and reserve homes',()=>{
+  const approved=makeDefaultLayout();
+  assert.deepEqual(approved.goals.map(row=>row[0]),[
+    {x:380,y:604},{x:156,y:380},{x:380,y:156},{x:604,y:380}
+  ]);
+  assert.deepEqual(approved.homes.map(row=>row[0]),[
+    {x:252,y:668},{x:92,y:252},{x:508,y:92},{x:668,y:508}
+  ]);
+  assert.deepEqual(approved.goals.map(row=>row.length),[4,4,4,4]);
+  assert.deepEqual(approved.homes.map(row=>row.length),[4,4,4,4]);
+  assert.equal(approved.track.length,64);
+  assert.deepEqual(validateBoardLayout(approved),[]);
 });
