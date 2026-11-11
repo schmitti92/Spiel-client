@@ -246,8 +246,9 @@
      '-'+Math.max(0,current.elapsed-round.endMs)+'ms');
    text(nodes.cineCountdown,(remaining/1000).toFixed(1).replace('.',',')+' s');
    const grand=(view?.miniGames?.version||0)>=7&&totalMs>=14000;
+   const finalCountdown=grand&&remaining<=5000;
    // Let players read confirmed team damage and LP before the final 5s show.
-   if(nodes.showOverlay)nodes.showOverlay.hidden=!grand||remaining>5000;
+   if(nodes.showOverlay)nodes.showOverlay.hidden=!finalCountdown;
    if(nodes.cinematic?.dataset){
     nodes.cinematic.dataset.showVersion=grand?'7':'legacy';
     nodes.cinematic.dataset.showPhase=grand?
@@ -257,7 +258,7 @@
    nodes.cinematic?.style?.setProperty?.('--cine-show-duration',totalMs+'ms');
    nodes.cinematic?.style?.setProperty?.('--cine-show-offset',
     '-'+Math.max(0,current.elapsed-round.endMs)+'ms');
-   if(grand){
+   if(finalCountdown){
     const seconds=Math.max(1,Math.ceil(remaining/1000));
     const currentTick=String(view?.startedAt)+':'+round.round+':'+seconds;
     if(lastShowTick!==currentTick&&nodes.showDigit){
@@ -268,7 +269,7 @@
     }
     text(nodes.showDigit,String(seconds));
     nodes.showRing?.style?.setProperty?.('--show-sweep',
-     Math.max(0,Math.min(360,360*remaining/totalMs)).toFixed(2)+'deg');
+     Math.max(0,Math.min(360,360*remaining/5000)).toFixed(2)+'deg');
    }
    if(nodes.cineProgress)nodes.cineProgress.style.width=
     Math.max(0,Math.min(100,(1-remaining/totalMs)*100)).toFixed(1)+'%';
