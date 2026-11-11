@@ -1,0 +1,122 @@
+/* 100 TORE • Cinematic before-battle page. Pure presentation layer; the
+   existing .arena/.squad become visible when combat or result begins. */
+:root{--pf-gold:#f5c781;--pf-edge:#e8b365;--pf-ink:#fff0d3}
+.stage:has(.boss-preflight){width:min(1640px,calc(100% - 28px));padding-top:12px}
+.stage:has(.boss-preflight)>.topnav{position:relative;z-index:4;justify-content:flex-start;margin-bottom:8px}
+.stage:has(.boss-preflight)>.topnav a,
+.stage:has(.boss-preflight)>.topnav button{background:linear-gradient(160deg,#302a30ee,#131a2cde);border:1px solid #efc07796;box-shadow:inset 0 1px #ffe4b23d,0 6px 20px #0007}
+.stage:has(.boss-preflight)>.topnav button:last-child{margin-left:auto}
+.stage:has(.boss-preflight)>.opening{display:none}
+.stage[data-screen="preflight"]>.arena,.stage[data-screen="preflight"]>.squad,
+.stage[data-screen="preflight"]>footer{display:none}
+.stage[data-screen="battle"]>.boss-preflight{display:none}
+.stage[data-screen="battle"]{width:min(1030px,calc(100% - 24px))}
+.boss-preflight{position:relative;isolation:isolate;min-height:min(930px,calc(100dvh - 90px));padding:12px clamp(14px,2.2vw,32px) 28px;overflow:hidden;border:1px solid #f5b56a90;border-radius:20px;background:#171521 url("./dog-boss-art/boss-preflight-background.svg") center center/cover no-repeat;box-shadow:0 0 0 4px #070c17,0 25px 85px #000b,inset 0 0 75px #170b17c9}
+.boss-preflight::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(90deg,#13112024 0%,#161b2a32 35%,#050d1f9d 55%,#050d1fad 100%),linear-gradient(180deg,#05071626 0%,transparent 30%,#080a16b8 100%)}
+.boss-preflight::after{content:"";position:absolute;inset:7px;z-index:-1;pointer-events:none;border:1px solid #f0c2863c;border-radius:14px}
+.preflight-brand{display:flex;align-items:center;flex-direction:column;margin:0 auto 10px;max-width:390px;position:relative;z-index:1;text-shadow:0 3px 4px #000c,0 0 18px #e45e2d}
+.preflight-brand span{font:1000 clamp(19px,3vw,29px) Georgia,serif;letter-spacing:.13em;color:#fff0be}
+.preflight-brand strong{font:1000 clamp(11px,1.5vw,16px) Georgia,serif;letter-spacing:.16em;color:#ffe1ae}
+.preflight-title{position:relative;text-align:center;width:min(1060px,100%);margin:0 auto 17px;padding:10px 22px 13px;border:3px ridge #e5a958;border-radius:9px;background:linear-gradient(180deg,#34252c,#171422 45%,#3b262a);box-shadow:0 6px 0 #140e12,0 0 28px #fd74213d,inset 0 1px 16px #e69a4d53}
+.preflight-title::before,.preflight-title::after{content:"⚜";position:absolute;top:25%;font-size:31px;color:#e9b86e;text-shadow:0 0 12px #eb6f37}
+.preflight-title::before{left:13px}.preflight-title::after{right:13px}
+.preflight-title small{font-size:10px;color:#d9a971;font-weight:1000;letter-spacing:.17em}
+.preflight-title h1{margin:3px 0 0;font:1000 clamp(24px,3.4vw,52px)/1.12 Georgia,"Times New Roman",serif;color:#ffe7aa;text-transform:uppercase;text-shadow:0 3px #36140f,0 4px 8px #000,0 0 20px #cf6c2b85}
+.preflight-hp{display:flex;gap:9px;align-items:center;margin:0 0 16px auto;width:min(820px,74%)}
+.preflight-hp-emblem{flex:0 0 55px;height:55px;display:grid;place-items:center;font-size:36px;border-radius:50%;border:2px solid #fbd08a;background:linear-gradient(150deg,#473029,#151b29);box-shadow:0 0 17px #f1844a72}
+.preflight-hp-rail{position:relative;flex:1;height:48px;border:3px ridge #e2af67;border-radius:25px;background:#240e20;overflow:hidden;box-shadow:0 2px 15px #000a,inset 0 3px 8px #18050c}
+.preflight-hp-fill{position:absolute;inset:3px auto 3px 3px;width:100%;border-radius:20px;background:linear-gradient(180deg,#ff9d7e 0%,#e33d46 35%,#b4162e 66%,#fa5f5d 100%);box-shadow:inset 0 2px 6px #ffe1cc90,0 0 17px #f04d52a1;transition:width .28s}
+.preflight-hp-rail strong{position:absolute;inset:0;display:grid;place-items:center;color:#fff5e7;font:1000 clamp(14px,2vw,23px) Georgia,serif;text-shadow:0 2px 4px #21030a,0 0 11px #000}
+.preflight-layout{display:grid;grid-template-columns:minmax(0,1.22fr) minmax(0,1fr) minmax(260px,.96fr);align-items:stretch;gap:clamp(10px,1.4vw,23px)}
+.preflight-monster{min-width:0;min-height:450px;position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;margin:0;border-radius:18px;background:radial-gradient(ellipse at 46% 62%,#f5681f77,transparent 47%),linear-gradient(180deg,#101d2a00 40%,#0c1725ad 95%)}
+.preflight-monster-aura{position:absolute;width:min(100%,510px);aspect-ratio:1;border:3px solid #ffb57077;border-radius:50%;background:radial-gradient(circle,#ce3b179e 0%,#ef6e2457 39%,transparent 68%);box-shadow:0 0 90px #db46274d,inset 0 0 65px #f77d1b61;animation:pf-aura 3.7s ease-in-out infinite alternate}
+.preflight-monster img{width:min(100%,550px);height:auto;max-height:480px;object-fit:contain;z-index:1;filter:drop-shadow(0 18px 23px #000d) drop-shadow(0 0 25px #ff5e248c);animation:pf-boss-float 4.3s ease-in-out infinite}
+.preflight-monster-caption{position:relative;z-index:2;text-align:center;margin-top:-12px;padding:8px 18px 12px;border:1px solid #ffcd816b;border-radius:10px;background:linear-gradient(135deg,#1c152de5,#3d2428e5);box-shadow:0 4px 15px #0008}
+.preflight-monster-caption span{display:block;color:#f8b583;font-size:10px;font-weight:900;letter-spacing:.08em}
+.preflight-monster-caption strong{font:1000 clamp(18px,2.5vw,28px) Georgia,serif;color:#ffe4b4;text-shadow:0 2px #180c15}
+.preflight-middle{min-width:0;display:flex;flex-direction:column;gap:12px}
+.preflight-panel{border:2px ridge #e7ae668f;border-radius:14px;background:linear-gradient(145deg,#1e192eda,#1a2437dc);box-shadow:0 9px 22px #0009,inset 0 1px 8px #ffc58220;backdrop-filter:blur(6px);padding:12px 16px;color:#f3e8d8}
+.preflight-panel h2{margin:0 0 10px;font:1000 clamp(14px,1.5vw,19px) Georgia,serif;color:#ffe1a1;text-shadow:0 2px #160f19}
+.preflight-story p{font-size:clamp(12px,1.1vw,15px);line-height:1.56;color:#ede2d7;margin:0 0 10px}
+.preflight-story-stamp{font-size:10px;color:#eccb9c;letter-spacing:.06em;font-weight:800}
+.preflight-info dl{margin:0;display:flex;flex-direction:column;gap:5px}
+.preflight-info dl>div{display:flex;align-items:center;justify-content:space-between;gap:9px;border-bottom:1px solid #f2c48725;padding:4px 0}
+.preflight-info dt{font-size:12px;color:#e4c5a3}.preflight-info dd{font-size:12px;color:#fff0d8;font-weight:800;text-align:right;margin:0}
+.preflight-reward-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.preflight-reward-grid>div{min-height:101px;text-align:center;border:1px solid #e9c36b7c;border-radius:10px;background:linear-gradient(155deg,#50322d9c,#25243c9e);display:flex;flex-direction:column;gap:5px;align-items:center;justify-content:center;padding:9px 5px}
+.preflight-reward-grid span{font-size:31px;line-height:1.2}
+.preflight-reward-grid strong{font-size:11px;color:#ffe6b5;line-height:1.35}
+.preflight-rewards p{font-size:10px;color:#b8c6d8;margin:8px 0 0;line-height:1.45}
+.preflight-team{min-width:0;align-self:start;padding:4px}
+.preflight-team-header{text-align:center;color:#ffe4af;text-shadow:0 2px #000;font:1000 14px Georgia,serif}
+.preflight-team-header h2{font-size:clamp(17px,1.8vw,25px);margin:0 0 5px}
+.preflight-team-header>span{display:block;color:#aee6bc;font-size:11px;font-family:system-ui,sans-serif}
+.preflight-team-members{display:flex;flex-direction:column;gap:13px;margin-top:16px}
+.preflight-team-loading{color:#ffddb0;text-align:center}
+.preflight-member{min-height:109px;display:flex;align-items:center;gap:11px;padding:8px;border:2px solid #55acefc1;border-radius:12px;background:linear-gradient(110deg,#092942e8,#10294bec);box-shadow:inset 0 1px #a7f4ff63,0 0 16px #338dea63,0 8px 14px #0008;transition:border-color .24s,background .24s}
+.preflight-member.is-ready{border-color:#9ef5ab;box-shadow:inset 0 1px #ceffdb7a,0 0 17px #56d78375,0 7px 14px #0008}
+.preflight-member.is-unready{border-color:#936879b5;filter:saturate(.7)}
+.preflight-member-portrait{width:75px;height:78px;object-fit:contain;flex:0 0 75px;border:1px solid #d8b378a1;border-radius:8px;background:#1e2e46}
+.preflight-member-info{flex:1;min-width:0}
+.preflight-member-info strong{display:block;font:1000 clamp(15px,1.7vw,25px) Georgia,serif;color:#fff4da;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.preflight-member-info span{display:block;color:#a5cde8;font-weight:800;font-size:10px;margin-top:9px}
+.preflight-member-state{border:1px solid #ddb172ab;border-radius:999px;background:#65412ab8;color:#ffe0b0;font-size:10px;font-weight:1000;padding:8px 10px;white-space:nowrap}
+.preflight-member.is-ready .preflight-member-state{background:#155526;color:#bdffbc;border-color:#80ea94}
+.preflight-team-help{color:#cfbdd2;font-size:11px;text-align:center;line-height:1.5;margin:15px 9px 0;text-shadow:0 2px #000}
+.preflight-bottom{display:grid;grid-template-columns:minmax(290px,1fr) minmax(340px,1.15fr);align-items:end;gap:24px;margin-top:17px}
+.preflight-equipment{border:2px ridge #d3b17e9e;border-radius:15px;background:linear-gradient(155deg,#111a2bef,#202134ee);padding:12px 17px;box-shadow:0 7px 23px #0009;min-width:0}
+.preflight-equipment h2{font:1000 clamp(15px,1.5vw,20px) Georgia,serif;color:#ffdb9e;margin:0 0 10px}
+.preflight-equipment-slots{display:flex;gap:11px}
+.preflight-equipment-slots span{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;padding:8px 3px;border:2px solid #e0a75e8d;border-radius:10px;background:radial-gradient(circle at 50% 20%,#6b4837,#171c2e);font-size:12px;color:#ffe3be;font-weight:800;text-align:center}
+.preflight-equipment-slots b{font-size:34px}
+.preflight-forge-link{display:inline-block;margin-top:9px;color:#ffe8b4;font-size:11px;font-weight:900;text-underline-offset:3px}
+.preflight-launch{min-width:0;text-align:center;padding:0 0 4px}
+.preflight-launch-flag{font-size:13px;letter-spacing:.1em;color:#ffe3a1;font-weight:1000;text-shadow:0 2px 5px #000e}
+.preflight-launch-buttons{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:9px}
+.preflight-launch-buttons button{font:1000 clamp(16px,2.2vw,28px) Georgia,serif;border:3px ridge #f5d487;border-radius:18px;padding:13px 22px;min-height:71px;min-width:220px;color:#fff6df;text-shadow:0 3px 2px #0007,0 0 8px #000b;box-shadow:0 4px 0 #291608,0 0 20px #ffaa3366,inset 0 3px 13px #ffe2a63b;cursor:pointer;background:linear-gradient(180deg,#369a4a,#126324 52%,#0c3f20);transition:filter .2s,transform .2s}
+.preflight-launch-buttons button:hover:not(:disabled){filter:brightness(1.18);transform:translateY(-2px)}
+.preflight-launch-buttons button:disabled{filter:saturate(.35);opacity:.66;cursor:not-allowed}
+.preflight-launch-buttons #preflight-start{background:linear-gradient(180deg,#42ab48,#1e7226 55%,#10531e);font-size:clamp(21px,2.6vw,34px);min-width:min(100%,310px);animation:pf-button-glow 2.5s ease-in-out infinite}
+.preflight-launch-buttons #preflight-retry{font-family:system-ui,sans-serif;background:linear-gradient(180deg,#ab692c,#654120);font-size:14px}
+.preflight-launch-buttons [hidden]{display:none!important}
+.preflight-message{margin:9px auto 0;max-width:600px;font-size:12px;color:#fff2d5;font-weight:700;line-height:1.45}
+.preflight-connection{font-size:10px;color:#d9b59b;margin:6px 0 0}
+@keyframes pf-boss-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes pf-aura{from{opacity:.56;transform:scale(.97)}to{opacity:1;transform:scale(1.06)}}
+@keyframes pf-button-glow{0%,100%{box-shadow:0 4px 0 #291608,0 0 21px #ffaa3370,inset 0 3px 13px #ffe2a63b}50%{box-shadow:0 4px 0 #291608,0 0 38px #ffb544b3,inset 0 3px 20px #ffe2a654}}
+@media(max-width:1250px){
+ .preflight-layout{grid-template-columns:minmax(220px,1fr) minmax(240px,.92fr)}
+ .preflight-team{grid-column:1/-1}
+ .preflight-team-members{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+ .preflight-member{min-height:95px}.preflight-member-portrait{width:61px;height:70px;flex-basis:61px}
+ .preflight-member{gap:7px}.preflight-member-info strong{font-size:16px}
+ .preflight-member-state{padding:6px;font-size:9px}
+ .preflight-monster{min-height:410px}
+ .preflight-team-help{margin-top:8px}
+}
+@media(max-width:700px){
+ .stage:has(.boss-preflight){width:calc(100% - 10px)}
+ .boss-preflight{padding:9px 11px 20px;border-radius:13px}
+ .preflight-title{padding:9px 20px}.preflight-title::before,.preflight-title::after{display:none}
+ .preflight-title h1{font-size:clamp(21px,5.3vw,32px)}
+ .preflight-hp{width:100%;margin:0 auto 12px}
+ .preflight-hp-emblem{flex-basis:40px;height:40px;font-size:25px}
+ .preflight-hp-rail{height:38px}
+ .preflight-layout{grid-template-columns:minmax(0,1fr)}
+ .preflight-monster{min-height:280px}
+ .preflight-monster img{width:min(77vw,380px);max-height:290px}
+ .preflight-monster-aura{width:min(85vw,340px)}
+ .preflight-middle{gap:10px}
+ .preflight-info dl>div{gap:7px}
+ .preflight-team{grid-column:1}
+ .preflight-team-members{display:grid;grid-template-columns:1fr;gap:8px}
+ .preflight-member{min-height:80px}
+ .preflight-member-portrait{height:62px;width:60px;flex-basis:60px}
+ .preflight-member-info strong{font-size:20px}
+ .preflight-bottom{grid-template-columns:1fr;gap:16px}
+ .preflight-launch-buttons button{width:100%;min-width:0}
+ .preflight-team-help{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){
+ .preflight-monster img,.preflight-monster-aura,.preflight-launch-buttons #preflight-start{animation:none}
+}
