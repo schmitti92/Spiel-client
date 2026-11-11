@@ -175,7 +175,7 @@
    const round=games.rounds.find(r=>elapsed>=r.startMs&&elapsed<r.endMs);
    if(!round){
     // Interludes use synchronized battle choreography, not a stale input panel.
-    root.hidden=games.version===3;
+    root.hidden=games.version>=3;
     if(roundView?.kind==='math'&&mathChoices.length&&!mathSent)flushMath();
     stopAnimation();
     if(roundKey!=='inactive'){
