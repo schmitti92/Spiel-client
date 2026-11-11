@@ -9,6 +9,16 @@
  * Do not use user-provided URLs or store DOM/HTML in a registry entry.
  */
 export const APPEARANCE_STORAGE_KEY='dog:appearance:v1';
+/** Relative, repository-owned images only. No remote or traversal URLs. */
+export function validAssetPath(path){
+  return typeof path==='string'
+    && /^\.\/assets\/(?:[a-z0-9_-]+\/)*[a-z0-9_-]+\.(?:png|jpe?g|webp|svg)$/i.test(path);
+}
+export function assetBackground(path,fallback){
+  if(!validAssetPath(path))return fallback;
+  return 'url("'+path+'") center / cover no-repeat, '+fallback;
+}
+
 export const DEFAULT_APPEARANCE=Object.freeze({
   board:'studio',
   pieces:'classic',
