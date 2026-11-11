@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {
  STUDIO_VERSION,STUDIO_FORMATS,STUDIO_TYPES,createTemplate,createScene,
- createItem,normalizeProject,safeColor,safeImage,rgba
+ createItem,normalizeProject,safeColor,safeImage,rgba,resizeItemFrame
 } from '../studio-model.mjs';
 
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
@@ -137,4 +137,57 @@ test('Moving, resizing, scene management, drag/drop editing and history are wire
  assert.match(js,/body\.classList\.toggle\('is-preview'\)/);
  assert.match(js,/requestFullscreen/);
  assert.match(js,/\.addEventListener\('keydown'/);
+});
+
+
+test('All eight handles resize in each direction and update position on north/west drag',()=>{
+ const frame={x:100,y:100,w:400,h:60},width=1440,height=810;
+ const expected={
+  e:{x:100,y:100,w:470,h:60},
+  w:{x:70,y:100,w:430,h:60},
+  s:{x:100,y:100,w:400,h:105},
+  n:{x:100,y:70,w:400,h:90},
+  se:{x:100,y:100,w:470,h:105},
+  sw:{x:70,y:100,w:430,h:105},
+  ne:{x:100,y:70,w:470,h:90},
+  nw:{x:70,y:70,w:430,h:90}
+ };
+ for(const [direction,result] of Object.entries(expected)){
+  const scaled=resizeItemFrame(frame,direction,
+   direction.includes('w')?-30:70,direction.includes('n')?-30:45,width,height);
+  assert.deepEqual(scaled,result,'bad resize for '+direction);
+ }
+});
+
+test('LP bar resizing is independent for width and height, and clamped to canvas',()=>{
+ const bar=createItem('bar',10,20,900,50,'Boss-LP');
+ const west=resizeItemFrame(bar,'w',400,0,1440,810);
+ assert.equal(west.x,410);assert.equal(west.w,500);assert.equal(west.h,50);
+ const east=resizeItemFrame(bar,'e',350,0,1440,810);
+ assert.equal(east.x,10);assert.equal(east.w,1250);assert.equal(east.h,50);
+ const taller=resizeItemFrame(bar,'s',0,70,1440,810);
+ assert.equal(taller.h,120);assert.equal(taller.w,900);
+ const short=resizeItemFrame(bar,'n',0,80,1440,810);
+ assert.equal(short.h,24);assert.equal(short.y,46);
+ const leftEdge=resizeItemFrame(bar,'w',-1000,0,1440,810);
+ assert.equal(leftEdge.x,0);
+ const rightEdge=resizeItemFrame(bar,'e',3000,0,1440,810);
+ assert.equal(rightEdge.x+rightEdge.w,1440);
+ const withGrid=resizeItemFrame(frameForSnap(),'se',27,17,1440,810,true);
+ assert.deepEqual(withGrid,{x:99,y:99,w:460-99,h:140-99});
+ function frameForSnap(){return {x:99,y:99,w:330,h:24};}
+});
+
+test('Every type exposes eight unclipped, touch-friendly drag handles',()=>{
+ assert.match(js,/const handles=\{nw:/);
+ assert.match(js,/for\(const \[direction,label\] of Object\.entries\(handles\)\)/);
+ assert.match(js,/grip\.dataset\.resize=direction/);
+ assert.match(js,/resizeItemFrame\(drag\.original,drag\.direction/);
+ assert.match(js,/event\.pointerId!==drag\.pointerId/);
+ for(const direction of ['n','ne','e','se','s','sw','w','nw'])
+  assert.match(css,new RegExp('\\.resize-'+direction+'\\{'));
+ assert.match(css,/\.canvas-item\.type-bar\{padding:0;overflow:visible\}/);
+ assert.match(css,/\.canvas-item\.type-image\{padding:0;overflow:visible\}/);
+ assert.doesNotMatch(css,/\.canvas-item\.type-arrow\{clip-path:/);
+ assert.match(css,/\.canvas-item\.type-arrow \.item-arrow-shape/);
 });
