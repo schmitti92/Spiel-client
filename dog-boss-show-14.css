@@ -1,0 +1,299 @@
+/* 100 Tore · 14-second cinematic show (v7 only).
+ * Server time drives the countdown. Older 4.5/7s fights keep their CSS.
+ * Movement and ring effects are decorative, never authority for game state. */
+.arena-live .cinematic-grand-countdown[hidden]{display:none!important}
+.arena-live .live-cinematic[data-show-version="7"]{
+ --show-gold:#ffe39d;--show-blue:#a8eaff;
+ border:2px solid #ffe2a1;
+ box-shadow:inset 0 0 0 1px #ffffff1b,inset 0 0 70px #0b10227a,
+ 0 0 33px #ffb65a59;
+ transition:border-color .25s,box-shadow .25s
+}
+.arena-live .live-cinematic[data-show-version="7"].is-defense{
+ --show-gold:#b5eaff;--show-blue:#d7faff;
+ border-color:#9deaff
+}
+.arena-live .cinematic-grand-countdown{
+ position:absolute;
+ inset:16% 45% 13% 3%;
+ z-index:30;pointer-events:none;
+ display:flex;align-items:center;justify-content:center;
+ flex-direction:column;
+ opacity:.5;transform:scale(.85);
+ transition:opacity .5s ease,transform .5s cubic-bezier(.2,.75,.25,1);
+ isolation:isolate
+}
+.arena-live .live-cinematic[data-show-phase="result"] .cinematic-grand-countdown{
+ opacity:.78;transform:scale(.93)
+}
+.arena-live .live-cinematic[data-show-phase="countdown"] .cinematic-grand-countdown{
+ opacity:1;transform:scale(1.05)
+}
+.arena-live .cinematic-grand-aura{
+ position:absolute;inset:-14%;z-index:-1;
+ background:radial-gradient(circle,#ffbd634d 0%,#ff79482b 30%,#15132900 70%);
+ border-radius:50%;
+ filter:drop-shadow(0 0 21px #ffc66b76);
+ animation:boss-show-aura 3.3s ease-in-out infinite alternate;
+ animation-delay:var(--cine-show-offset,0ms)
+}
+.arena-live .live-cinematic.is-defense .cinematic-grand-aura{
+ background:radial-gradient(circle,#8fe7fc58 0%,#2789d03d 32%,transparent 71%)
+}
+.arena-live .cinematic-grand-ring{
+ --show-sweep:360deg;
+ position:relative;isolation:isolate;
+ width:min(23vw,245px,44vh);height:auto;aspect-ratio:1;
+ min-width:128px;
+ display:grid;place-items:center;border-radius:50%;
+ background:conic-gradient(from -90deg,
+  var(--show-gold) 0deg var(--show-sweep),
+  #273248ab var(--show-sweep) 360deg);
+ padding:clamp(7px,.9vw,13px);
+ box-shadow:0 0 0 3px #edd2a76e,0 0 35px #ffb85282,
+ inset 0 0 25px #fff2b052;
+}
+.arena-live .cinematic-grand-ring::before,
+.arena-live .cinematic-grand-ring::after{
+ content:"";position:absolute;inset:-17px;border:2px dashed #ffe0a5a6;
+ border-radius:50%;
+ animation:boss-show-spin 13.7s linear infinite;
+ animation-delay:var(--cine-show-offset,0ms);
+ pointer-events:none
+}
+.arena-live .cinematic-grand-ring::after{
+ inset:-28px;border:1px dotted #ffe6b46c;
+ animation-direction:reverse;animation-duration:9.3s
+}
+.arena-live .live-cinematic.is-defense .cinematic-grand-ring{
+ box-shadow:0 0 0 3px #aff4ff6a,0 0 36px #78d4fb8c,
+ inset 0 0 21px #c3effe6a
+}
+.arena-live .live-cinematic.is-defense .cinematic-grand-ring::before,
+.arena-live .live-cinematic.is-defense .cinematic-grand-ring::after{
+ border-color:#bdefff9d
+}
+.arena-live .cinematic-grand-core{
+ width:100%;aspect-ratio:1;border-radius:50%;
+ display:flex;align-items:center;justify-content:center;flex-direction:column;
+ gap:clamp(2px,.6vh,8px);
+ background:radial-gradient(circle at 50% 34%,#25384f,
+  #0d1429 65%,#080a17 100%);
+ box-shadow:inset 0 0 32px #050b1ce0,inset 0 0 3px 2px #e9d9a73b;
+ color:#fffbe7;text-align:center
+}
+.arena-live .cinematic-grand-core #cinematic-grand-label{
+ font:1000 clamp(9px,.88vw,14px)/1.1 system-ui,sans-serif;
+ color:#fce8b9;letter-spacing:.15em;
+ text-shadow:0 2px 7px #000a
+}
+.arena-live .cinematic-grand-core #cinematic-grand-digit{
+ font:1000 clamp(60px,9vw,130px)/.94 system-ui,sans-serif;
+ font-variant-numeric:tabular-nums;letter-spacing:-.07em;
+ color:#fff8cf;
+ text-shadow:0 5px 3px #120f1b,0 0 20px #ffcb6380,0 0 40px #ff914569;
+}
+.arena-live .cinematic-grand-core #cinematic-grand-digit.is-rolling{
+ animation:boss-show-number .52s cubic-bezier(.21,.72,.21,1) both
+}
+.arena-live .cinematic-grand-core #cinematic-grand-next{
+ font:900 clamp(9px,.86vw,13px)/1.15 system-ui,sans-serif;
+ max-width:88%;color:#d5edff;letter-spacing:.065em;
+ text-shadow:0 1px 4px #000d
+}
+.arena-live .cinematic-grand-rays{
+ position:absolute;inset:-32%;z-index:-2;
+ border-radius:50%;opacity:.6;
+ background:repeating-conic-gradient(from 10deg,
+  #ffb65c4e 0deg 2deg,transparent 2deg 23deg);
+ filter:blur(5px);mix-blend-mode:screen;
+ animation:boss-show-spin 21s linear infinite;
+ animation-delay:var(--cine-show-offset,0ms)
+}
+.arena-live .live-cinematic.is-defense .cinematic-grand-rays{
+ background:repeating-conic-gradient(from 10deg,#a4eaff56 0deg 2deg,transparent 2deg 23deg)
+}
+.arena-live .live-cinematic[data-show-phase="countdown"] .cinematic-grand-ring{
+ animation:boss-show-final-pulse .8s ease-in-out infinite alternate
+}
+.arena-live .live-cinematic[data-show-phase="countdown"] .live-cinematic-header{
+ border-color:#fff3bd;box-shadow:0 0 16px #ffd4799d,
+ inset 0 0 10px #ffcf6250
+}
+.arena-live .live-cinematic[data-show-phase="countdown"] #cinematic-countdown{
+ color:#fff1a9;text-shadow:0 0 16px #ffba55;
+ font-size:clamp(19px,2.2vw,32px)
+}
+.arena-live .live-cinematic[data-show-phase="countdown"] .live-cinematic-panel{
+ box-shadow:0 0 17px #f9c46e3a,inset 0 0 25px #eabb7419
+}
+/* Staged animation for the entire interlude:
+   0–4s wind-up, 4–8s impact, 8–9s recoil and confirmed outcome,
+   9–14s ring counts down from five to next activity. */
+.arena-live .combat-scene[data-battle-version="7"].live-exchange-attack .combat-hero-line{
+ animation:boss-show-hero-charge 13.7s cubic-bezier(.26,.65,.17,1) both;
+ animation-delay:var(--exchange-offset,0ms)
+}
+.arena-live .combat-scene[data-battle-version="7"].live-exchange-defense .combat-boss{
+ animation:boss-show-boss-strike 13.7s cubic-bezier(.24,.64,.21,1) both;
+ animation-delay:var(--exchange-offset,0ms)
+}
+.arena-live .combat-scene[data-battle-version="7"].live-exchange-attack .combat-boss{
+ animation:boss-show-boss-recoil 13.7s ease-in-out both;
+ animation-delay:var(--exchange-offset,0ms)
+}
+.arena-live .combat-scene[data-battle-version="7"].live-exchange-defense .combat-hero-line{
+ animation:boss-show-hero-block 13.7s ease-in-out both;
+ animation-delay:var(--exchange-offset,0ms)
+}
+.arena-live .combat-scene[data-battle-version="7"].live-exchange-defense .combat-hero-line::after{
+ animation:boss-show-shield-flash 13.7s ease-in-out both;
+ animation-delay:var(--exchange-offset,0ms)
+}
+.arena-live .combat-scene[data-battle-version="7"].live-exchange-attack .live-exchange-bolt-one,
+.arena-live .combat-scene[data-battle-version="7"].live-exchange-attack .live-exchange-bolt-two,
+.arena-live .combat-scene[data-battle-version="7"].live-exchange-attack .live-exchange-bolt-three{
+ animation:boss-show-hero-bolt 13.7s ease-out both;
+ animation-delay:var(--exchange-offset,0ms)
+}
+.arena-live .combat-scene[data-battle-version="7"].live-exchange-attack .live-exchange-bolt-two{
+ animation-delay:calc(var(--exchange-offset,0ms) + 220ms)
+}
+.arena-live .combat-scene[data-battle-version="7"].live-exchange-attack .live-exchange-bolt-three{
+ animation-delay:calc(var(--exchange-offset,0ms) + 430ms)
+}
+.arena-live .combat-scene[data-battle-version="7"].live-exchange-attack .live-exchange-boss-impact{
+ animation:boss-show-boss-impact 13.7s ease-out both;
+ animation-delay:var(--exchange-offset,0ms)
+}
+.arena-live .combat-scene[data-battle-version="7"].live-exchange-defense .live-exchange-counterbolt{
+ animation:boss-show-hero-bolt 13.7s ease-out both;
+ animation-delay:var(--exchange-offset,0ms)
+}
+.arena-live .combat-scene[data-battle-version="7"].live-exchange-defense .live-exchange-shield-dome{
+ animation:boss-show-shield-flash 13.7s ease-in-out both;
+ animation-delay:var(--exchange-offset,0ms)
+}
+.arena-live .combat-scene[data-battle-version="7"].live-exchange-defense.live-exchange-guard-damaged .live-exchange-shield-crack{
+ animation:boss-show-shield-crack 13.7s ease-out both;
+ animation-delay:var(--exchange-offset,0ms)
+}
+@keyframes boss-show-number{
+ 0%{opacity:.4;transform:scale(.75) translateY(9px);filter:brightness(1.9)}
+ 52%{opacity:1;transform:scale(1.19) translateY(-5px);filter:brightness(1.45)}
+ 100%{opacity:1;transform:scale(1) translateY(0);filter:brightness(1)}
+}
+@keyframes boss-show-final-pulse{
+ 0%{box-shadow:0 0 0 3px #ffe59f72,0 0 24px #ffb95478}
+ 100%{box-shadow:0 0 0 5px #fff8ca9f,0 0 65px #ffc85e}
+}
+@keyframes boss-show-spin{to{transform:rotate(360deg)}}
+@keyframes boss-show-aura{
+ from{opacity:.42;transform:scale(.85)}
+ to{opacity:.92;transform:scale(1.18)}
+}
+@keyframes boss-show-hero-charge{
+ 0%,100%{transform:none}
+ 10%{transform:translateX(2%) scale(.99)}
+ 25%{transform:translateX(-7%) scale(1.04)}
+ 39%{transform:translateX(-21%) scale(1.14)}
+ 54%{transform:translateX(-25%) scale(1.1)}
+ 63%{transform:translateX(-8%) scale(1.05)}
+ 69%,100%{transform:none}
+}
+@keyframes boss-show-boss-strike{
+ 0%,100%{transform:none}
+ 10%{transform:translateX(-6%) rotate(-3deg)}
+ 25%{transform:translateX(7%) rotate(2deg)}
+ 42%{transform:translateX(17%) rotate(4deg) scale(1.08)}
+ 54%{transform:translateX(29%) rotate(7deg) scale(1.15)}
+ 64%{transform:translateX(9%) rotate(2deg)}
+ 69%,100%{transform:none}
+}
+@keyframes boss-show-boss-recoil{
+ 0%,31%,100%{transform:none;filter:brightness(1)}
+ 49%{transform:translateX(-11px) rotate(-4deg);filter:brightness(1.8)}
+ 55%{transform:translateX(-25px) rotate(-5deg);filter:brightness(2.1)}
+ 67%{transform:translateX(6px);filter:brightness(1.2)}
+}
+@keyframes boss-show-hero-block{
+ 0%,29%,100%{transform:none}
+ 41%{transform:translateX(-4%) scale(.98)}
+ 54%{transform:translateX(8%) scale(.93)}
+ 64%{transform:translateX(2%)}
+ 69%,100%{transform:none}
+}
+@keyframes boss-show-hero-bolt{
+ 0%,23%{opacity:0;transform:scaleX(.04)}
+ 28%{opacity:.6;transform:scaleX(.23)}
+ 45%{opacity:1;transform:scaleX(.96)}
+ 56%,59%{opacity:1;transform:scaleX(1)}
+ 68%,100%{opacity:0;transform:scaleX(1)}
+}
+@keyframes boss-show-boss-impact{
+ 0%,44%{opacity:0;transform:scale(.2)}
+ 51%{opacity:1;transform:scale(1.16)}
+ 60%{opacity:1;transform:scale(1.55)}
+ 74%,100%{opacity:0;transform:scale(2.8)}
+}
+@keyframes boss-show-shield-flash{
+ 0%,31%{opacity:0;transform:scale(.45)}
+ 43%{opacity:.78;transform:scale(.88)}
+ 52%,59%{opacity:1;transform:scale(1.07)}
+ 66%{opacity:.7;transform:scale(1.17)}
+ 73%,100%{opacity:0;transform:scale(1.35)}
+}
+@keyframes boss-show-shield-crack{
+ 0%,47%{opacity:0;transform:scale(.6)}
+ 54%,60%{opacity:1;transform:scale(1.12)}
+ 71%,100%{opacity:0;transform:scale(1.35)}
+}
+.arena-live .combat-scene[data-battle-version="7"].live-exchange-attack.live-exchange-miss .live-exchange-boss-impact{animation:none}
+@media (orientation:landscape) and (min-width:900px) and (max-height:720px){
+ .arena-live .cinematic-grand-countdown{inset:16% 46% 12% 4%;transform:scale(.75)}
+ .arena-live .cinematic-grand-ring{width:min(17vw,165px,32vh);min-width:90px}
+ .arena-live .cinematic-grand-core #cinematic-grand-digit{font-size:clamp(43px,6vw,82px)}
+ .arena-live .cinematic-grand-core #cinematic-grand-label,
+ .arena-live .cinematic-grand-core #cinematic-grand-next{font-size:9px}
+}
+@media(max-width:899px),(orientation:portrait){
+ .arena-live .cinematic-grand-countdown{
+  inset:14% 5% auto 5%;height:clamp(95px,21vh,160px);
+  opacity:.55;transform:scale(.72)
+ }
+ .arena-live .cinematic-grand-ring{width:clamp(95px,25vw,156px);min-width:85px}
+ .arena-live .cinematic-grand-core #cinematic-grand-digit{font-size:clamp(47px,9vw,78px)}
+ .arena-live .cinematic-grand-core #cinematic-grand-label,
+ .arena-live .cinematic-grand-core #cinematic-grand-next{font-size:9px}
+ .arena-live .live-cinematic[data-show-phase="countdown"] .cinematic-grand-countdown{
+  transform:scale(.9)
+ }
+}
+@media(max-width:620px){
+ .arena-live .cinematic-grand-countdown{inset:11% 3% auto; height:105px}
+ .arena-live .cinematic-grand-ring{width:112px;min-width:0}
+ .arena-live .cinematic-grand-core #cinematic-grand-digit{font-size:57px}
+ .arena-live .cinematic-grand-ring::before{inset:-8px}
+ .arena-live .cinematic-grand-ring::after{inset:-14px}
+ .arena-live .cinematic-grand-core #cinematic-grand-label,
+ .arena-live .cinematic-grand-core #cinematic-grand-next{font-size:8px;letter-spacing:.02em}
+}
+@media(prefers-reduced-motion:reduce){
+ .arena-live .cinematic-grand-aura,
+ .arena-live .cinematic-grand-ring,
+ .arena-live .cinematic-grand-ring::before,
+ .arena-live .cinematic-grand-ring::after,
+ .arena-live .cinematic-grand-rays,
+ .arena-live .cinematic-grand-core #cinematic-grand-digit.is-rolling,
+ .arena-live .combat-scene[data-battle-version="7"].live-exchange-attack .combat-hero-line,
+ .arena-live .combat-scene[data-battle-version="7"].live-exchange-attack .combat-boss,
+ .arena-live .combat-scene[data-battle-version="7"].live-exchange-defense .combat-boss,
+ .arena-live .combat-scene[data-battle-version="7"].live-exchange-defense .combat-hero-line,
+ .arena-live .combat-scene[data-battle-version="7"].live-exchange-defense .combat-hero-line::after,
+ .arena-live .combat-scene[data-battle-version="7"].live-exchange-attack .live-exchange-bolt,
+ .arena-live .combat-scene[data-battle-version="7"].live-exchange-defense .live-exchange-counterbolt,
+ .arena-live .combat-scene[data-battle-version="7"].live-exchange-defense .live-exchange-shield-dome{
+  animation:none!important;transition:none!important
+ }
+ .arena-live .cinematic-grand-countdown{transition:none}
+}
