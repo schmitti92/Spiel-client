@@ -19,7 +19,7 @@
  const message=(value)=>{$('dog-developer-status').textContent=value;};
  const setBusy=value=>{
   busy=value;
-  root.querySelectorAll('button[data-dev-preset],#dog-developer-prepare-boss,#dog-developer-add-materials')
+  root.querySelectorAll('button[data-dev-preset],#dog-developer-prepare-boss,#dog-developer-add-materials,#dog-developer-cooldown')
    .forEach(button=>{button.disabled=value||!ready;});
  };
  async function api(method,route,body){
@@ -65,6 +65,11 @@
    ready=result.botsReady===true;
    $('dog-developer-bots-warning').hidden=ready;
    if(Array.isArray(result.resources))setResourceOptions(result.resources);
+   const noWait=result.bossCooldownDisabled===true;
+   $('dog-developer-cooldown').checked=noWait;
+   $('dog-developer-cooldown-state').textContent=noWait?
+    '✅ Testmodus: Bosskämpfe ohne zehn Minuten Wartezeit':
+    '⏱️ Normale Boss-Pause: 10 Minuten nach einer Niederlage';
    message(ready?'✅ Entwicklerzugang bestätigt. Du kannst Tore, Bosse und Rohstoffe testen.':
     '🔐 Bitte zuerst Nova und Titan im 100-Tore-Event mit dem privaten Freigabecode hinzufügen.');
   }catch(error){
@@ -86,7 +91,10 @@
   try{
    const result=await api('POST','apply',{...inputs,requestId:pending.requestId});
    pending=null;
-   message(inputs.action==='materials'?
+   message(inputs.action==='cooldown'?
+    (inputs.disabled?'✅ Die Boss-Pause ist deaktiviert. Sofortiger neuer Versuch möglich.':
+     '✅ Die normale 10-Minuten-Boss-Pause ist wieder aktiv.'):
+    inputs.action==='materials'?
     '✅ Testmaterialien erfolgreich gutgeschrieben. Öffne das Rohstofflager oder die Schmiede.':
     '✅ '+label+'! Die Tor-Karte und die Boss-Arena sind jetzt vorbereitet.');
    window.dispatchEvent(new Event('dog-developer-updated'));
@@ -114,6 +122,14 @@
   const gate=Number($('dog-developer-boss').value);
   if(!Number.isInteger(gate)||gate<10||gate>100||gate%10!==0)return;
   void apply({action:'boss',gate},'Boss '+gate+' vorbereiten',true);
+ });
+ $('dog-developer-cooldown').addEventListener('change',event=>{
+  const disabled=event.target.checked;
+  // The server owns the setting. Re-read its confirmed value after a
+  // successful change or a network error; do not trust an unsaved click.
+  void apply({action:'cooldown',disabled},
+   disabled?'10-Minuten-Boss-Pause ausschalten':'10-Minuten-Boss-Pause einschalten',false)
+   .finally(()=>void checkAccess());
  });
  $('dog-developer-add-materials').addEventListener('click',()=>{
   const resource=$('dog-developer-resource').value,amount=Number($('dog-developer-amount').value);
