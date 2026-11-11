@@ -30,7 +30,7 @@ test('Banker stays shared while display and final payout are personal',()=>{
  assert.match(finale,/f\.payout/);
 });
 
-test('purchased x2 bonus has a permanent footer in its owner's player card',()=>{
+test("purchased x2 bonus has a permanent footer in its owner\'s player card",()=>{
  assert.match(app,/let boostMarker=el\.querySelector\('\.player-double-boost'\)/);
  assert.match(app,/if\(p\.doublePayout===true\)\{if\(!boostMarker\)/);
  assert.match(app,/boostMarker\.textContent='✦ ×2 GEWINN AKTIV ✦'/);
