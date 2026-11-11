@@ -114,12 +114,13 @@ test('Real original controls govern preflight proxies and each combat phase',()=
 
 
 test('Landscape fullscreen fits preflight into a viewport-height stage',()=>{
- assert.match(css,/@media \(orientation:landscape\) and \(min-width:1000px\) and \(min-height:680px\)/);
+ assert.match(css,/@media \(orientation:landscape\) and \(min-width:900px\) and \(min-height:600px\)/);
  assert.match(css,/\.stage\[data-screen="preflight"\]\s*\{[^}]*height:100vh;height:100dvh;/);
  assert.match(css,/grid-template-rows:auto minmax\(0,1fr\)/);
  assert.match(css,/\.stage\[data-screen="preflight"\]>\.boss-preflight\s*\{[^}]*grid-template-rows:auto auto auto minmax\(0,1fr\) auto;/);
  assert.match(css,/\.preflight-layout\s*\{[^}]*grid-template-rows:minmax\(0,1fr\) auto;/);
  assert.match(css,/\.preflight-bottom\s*\{margin-top:0;/);
+ assert.match(css,/@media \(orientation:landscape\) and \(min-width:900px\) and \(min-height:600px\) and \(max-height:720px\)/);
  assert.match(css,/@media \(max-width:879px\)/);
  assert.match(css,/body:has\(\.stage\[data-screen="preflight"\]\)\{overflow-y:auto\}/);
 });
