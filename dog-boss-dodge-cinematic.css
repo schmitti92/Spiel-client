@@ -222,3 +222,25 @@
  .arena-live .battle-dodge-lane.is-danger{animation:none}
  .arena-live .combat-hero .battle-dodge-verdict{animation:none}
 }
+
+/* Compact permanent per-strike verdict row: success stays readable while the
+ * next strike arrives, without another text-heavy modal. */
+.arena-live .mini-dodge-history{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ width:100%;gap:6px;margin:3px auto 0
+}
+.arena-live .mini-dodge-mark{
+ display:grid;place-items:center;min-height:26px;
+ border:1px solid #72869e7a;border-radius:8px;
+ background:#172439a9;color:#9fb3c8;
+ font:900 clamp(11px,1vw,15px)/1 system-ui,sans-serif;
+ font-variant-numeric:tabular-nums
+}
+.arena-live .mini-dodge-mark.is-correct{
+ background:#155e4bd9;color:#d7ffeb;border-color:#8ef6c1;
+ box-shadow:0 0 10px #58e9ab35
+}
+.arena-live .mini-dodge-mark.is-wrong{
+ background:#772e37d9;color:#ffe1d6;border-color:#ff9282;
+ box-shadow:0 0 10px #f45b4b35
+}
