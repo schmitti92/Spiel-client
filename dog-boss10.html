@@ -10,6 +10,7 @@
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
  <script src="./dog-boss-mini-ui.js?v=20261111-v1" defer></script>
+ <script src="./dog-boss-combat-fx.js?v=20261111-v1" defer></script>
  <script src="./dog-boss10.js?v=20261110-v1" defer></script>
  <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 </head>
@@ -35,10 +36,23 @@
     <div><small>🔥 GEMEINSAMER WÄCHTER</small><h2 id="boss-name">Der Aschewächter</h2></div>
     <div class="status-pill" id="phase">Verbinde …</div>
    </div>
-   <div class="monster" aria-label="Illustration der Bossarena">
+   <div class="monster combat-scene" id="combat-scene" data-cue="waiting" aria-label="Taktische Bosskampfarena">
     <div class="embers" aria-hidden="true">✦ · ✧ · ✦ · ✧</div>
-    <div class="monster-art" aria-hidden="true">🌋</div>
-    <div class="monster-shadow" aria-hidden="true"></div>
+    <div class="combat-stage" aria-hidden="true">
+     <div id="combat-hero-line" class="combat-hero-line"></div>
+     <div class="combat-sword-trail"></div>
+     <div class="combat-magic-beam"></div>
+     <div class="combat-shield-effect">🛡️</div>
+     <div class="combat-danger-zone"></div>
+     <div class="combat-rune-effect">✦ ✧ ✦</div>
+     <div class="combat-target-effect">◎</div>
+     <div id="combat-flash" class="combat-flash"></div>
+     <div class="combat-boss" id="combat-boss">
+      <div class="monster-art"></div>
+      <div class="monster-shadow"></div>
+     </div>
+    </div>
+    <div class="combat-cue" id="combat-cue" aria-live="off">⚔️ HELDEN SAMMELN SICH</div>
     <div id="battle-message" class="monster-caption">Der Wächter wartet auf drei mutige Helden.</div>
    </div>
    <div class="combat-meter" aria-live="polite">
