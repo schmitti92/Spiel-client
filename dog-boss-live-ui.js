@@ -77,23 +77,39 @@
    }
   }
   function attack(record,view,now){
-   if(!record?.correct||record.at<=0||now-record.at>1600||
+   const all=view?.miniGames?.myAnswers?.[record?.index]?.attempts||[];
+   const round=view?.miniGames?.rounds?.[record?.index];
+   const isBatch=round?.kind==='math'&&all.length>1&&
+    all.every(step=>step.at===record?.at);
+   const hits=isBatch?all.filter(step=>step.correct).length:
+    record?.correct?1:0;
+   if(!hits||record.at<=0||now-record.at>3600||
       now-record.at< -500||view?.phase!=='fighting')return;
-   const key=String(view.startedAt)+':'+record.index+':'+record.at;
+   const key=String(view.startedAt)+':'+record.index+':'+record.step+
+    ':'+record.at+':'+hits;
    if(lastHitKey===key)return;
    lastHitKey=key;
    const myHero=(view.members||[]).find(m=>m.isMe);
    const name=String(myHero?.name||'Dein Held').slice(0,24);
    const wrap=nodes.hit;
    if(wrap){
-    const beam=document.createElement('span');
-    beam.className='live-hit-beam';
-    const burst=document.createElement('span');
-    burst.className='live-hit-burst';
+    const effects=[];
+    for(let i=0;i<hits;i++){
+     const delay=(i*.22).toFixed(2)+'s';
+     const beam=document.createElement('span');
+     beam.className='live-hit-beam';
+     beam.style.animationDelay=delay;
+     const burst=document.createElement('span');
+     burst.className='live-hit-burst';
+     burst.style.animationDelay=delay;
+     effects.push(beam,burst);
+    }
     const label=document.createElement('strong');
     label.className='live-hit-label';
-    label.textContent='✅ '+name+' greift an!';
-    wrap.replaceChildren(beam,burst,label);
+    label.textContent=isBatch?'✅ '+name+': '+hits+' bestätigte Treffer!':
+     '✅ '+name+' greift an!';
+    effects.push(label);
+    wrap.replaceChildren(...effects);
    }
    const hero=$(nodes.combat,'.combat-hero-me');
    if(hero?.classList){
@@ -142,11 +158,19 @@
    const signature=(view?.startedAt||'')+':'+(recent?latest.index+':'+latest.step+':'+latest.at:'other')+':'+phase;
    if(signature!==lastFeedback){
     lastFeedback=signature;
+    const recentRound=recent?rounds[latest.index]:null;
+    const answered=recentRound?.kind==='math'?
+     answers[latest.index]?.attempts:null;
+    const batch=Array.isArray(answered)&&answered.length>1&&
+     answered.every(a=>a.at===latest.at);
+    const mathCount=batch?answered.filter(a=>a.correct).length:0;
     const feedback=phase==='victory'?'🏆 Der Boss wurde vom Team besiegt!':
      phase==='cooldown'?'💀 Der Boss hat überlebt – bereitet euch vor.':
      phase!=='fighting'?'Das Team stellt sich dem Wächter.':
-     recent?(rounds[latest.index]?.kind==='dodge'?
-       (latest.correct?'✅ Ausgewichen – kein Treffer!':'💥 Ausweichfeld verfehlt!'):
+     recent?(batch?
+       (mathCount?'✅ '+mathCount+' Mathetreffer bestätigt!':'❌ Keine richtige Matheantwort.'):
+       recentRound?.kind==='dodge'?
+        (latest.correct?'✅ Ausgewichen – kein Treffer!':'💥 Ausweichfeld verfehlt!'):
        latest.correct?'✅ Richtig! Dein Held greift den Boss an!':
        '🛡️ Nicht geschafft – nächste Aufgabe!'):
      current.elapsed<3000?'⚔️ Der Angriff beginnt …':
