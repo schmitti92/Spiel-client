@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Glühende magische Kampfrune">
+<defs><radialGradient id="g"><stop stop-color="#ffe9aa" stop-opacity=".55"/><stop offset=".48" stop-color="#d86d4b" stop-opacity=".18"/><stop offset="1" stop-color="#df6942" stop-opacity="0"/></radialGradient><linearGradient id="m" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0b9"/><stop offset=".53" stop-color="#e5aa6c"/><stop offset="1" stop-color="#fff5cc"/></linearGradient><filter id="a"><feGaussianBlur stdDeviation="7"/></filter></defs>
+<circle cx="256" cy="256" r="248" fill="url(#g)"/>
+<circle cx="256" cy="256" r="181" fill="none" stroke="#f9ab6f" stroke-width="10" opacity=".34" filter="url(#a)"/>
+<g fill="none" stroke="url(#m)" stroke-linejoin="round">
+<circle cx="256" cy="256" r="181" stroke-width="4" opacity=".9"/><circle cx="256" cy="256" r="150" stroke-width="2" opacity=".75"/>
+<path d="M256 42L276 76 256 112 237 76Z M256 400L276 437 256 469 237 436Z M42 256L77 236 112 256 77 276Z M400 256L437 236 468 256 437 276Z" stroke-width="3"/>
+<path d="M256 115L309 196 392 229 309 270 285 394 251 305 176 351 211 265 124 207 226 207Z" stroke-width="5"/>
+<path d="M256 157L303 255 256 353 209 255Z" stroke-width="8"/>
+<path d="M177 176L335 335M335 176L177 335" stroke-width="3" opacity=".6"/>
+</g>
+<path d="M256 197L276 249 256 307 235 249Z" fill="#ffe6a2"/>
+<circle cx="256" cy="256" r="12" fill="#fffbe5"/>
+</svg>
