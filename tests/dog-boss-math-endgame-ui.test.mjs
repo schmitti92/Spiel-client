@@ -107,3 +107,24 @@ test('math CSS maintains large touch choices and responsive, motion-safe layout'
   assert.match(read(page),/dog-boss-mini-ui\.js\?v=20261111-math-v1/);
  }
 });
+
+test('v6 extends only maths to 12 seconds and submits once at the later deadline',async()=>{
+ const {root,ui,view,requests}=fixture(6);
+ const windows=[[0,12000],[19000,27000],[34000,42000],[49000,57000]];
+ view.miniGames.rounds.forEach((round,i)=>{
+  round.startMs=windows[i][0];round.endMs=windows[i][1];
+ });
+ ui.update(view,start+9000,true);
+ const hud=root.children[0].children[2],body=root.children[1];
+ assert.equal(root.hidden,false,'maths must remain active beyond the former 8s cutoff');
+ assert.equal(body.children[1].textContent,'7 + 4 = ?');
+ assert.equal(hud.children[0].children[1].textContent,'3 s');
+ assert.equal(hud.children[2].children[0].style.width,'25.0%');
+ body.children[2].click();
+ ui.update(view,start+11890,true);
+ assert.equal(requests.length,1,'partial answers flush only once at new 12s deadline');
+ await Promise.resolve();await Promise.resolve();
+ assert.deepEqual([...requests[0].answer],[0]);
+ ui.update(view,start+19000,true);
+ assert.equal(root.classList.contains('is-math-battle'),false);
+});
