@@ -143,7 +143,9 @@
    node.style?.setProperty?.('--dodge-near-x',Math.round(x*.84)+'px');
    node.setAttribute?.('data-dodge-direction',lanes===2?(choice===0?'left':'right'):
     ['left','center','right'][choice]);
-   node.style?.setProperty?.('--dodge-move-delay',-Math.min(1750,Math.max(0,serverNow-at))+'ms');
+   node.style?.setProperty?.('--dodge-move-delay',
+    -Math.min(lastBattleView?.miniGames?.version>=8?4400:1750,
+     Math.max(0,serverNow-at))+'ms');
    node.classList?.remove('battle-dodge-leap');
    void node.offsetWidth;
    node.classList?.add('battle-dodge-leap');
@@ -195,7 +197,8 @@
    secondaryImpact.hidden=second===null;
    if(second!==null)dodgeLayer.style?.setProperty?.('--dodge-secondary-x',cells[second]+'%');
    const next=attacks.find(a=>a.step===strike.step+1);
-   const span=Math.max(1900,Math.min(2800,(next?.startMs??round.endMs)-strike.startMs));
+   const span=Math.max(1900,Math.min(view?.miniGames?.version>=8?5000:2800,
+    (next?.startMs??round.endMs)-strike.startMs));
    dodgeLayer.style?.setProperty?.('--boss-swing-time',span+'ms');
    root.style?.setProperty?.('--boss-swing-time',span+'ms');
    if(weaponSession!==sessionKey){
@@ -238,7 +241,7 @@
     if(action.round!==round.round||action.step!==strike.step||
        !heroNodes.has(action.uid))continue;
     if(Number.isInteger(action.choice)&&action.at>0){
-     if(serverNow-action.at<2200)
+     if(serverNow-action.at<(view?.miniGames?.version>=8?5000:2200))
       moveHero(action.uid,action.choice,round.lanes,action.at,serverNow,round.round,strike.step);
      if(impact&&elapsed-strike.impactMs<2300)
       verdict(action.uid,action.correct===true,sessionKey+':'+action.uid,
