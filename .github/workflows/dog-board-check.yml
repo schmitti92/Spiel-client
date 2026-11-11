@@ -11,6 +11,7 @@ on:
       - 'tests/dog-board-group-move.test.mjs'
       - 'tests/dog-appearance.test.mjs'
       - 'tests/dog-official-rules.test.mjs'
+      - 'tests/dog-online-sync.test.mjs'
       - '.github/workflows/dog-board-check.yml'
   pull_request:
     paths:
@@ -22,6 +23,7 @@ on:
       - 'tests/dog-board-group-move.test.mjs'
       - 'tests/dog-appearance.test.mjs'
       - 'tests/dog-official-rules.test.mjs'
+      - 'tests/dog-online-sync.test.mjs'
   workflow_dispatch:
 jobs:
   geometry:
@@ -32,10 +34,11 @@ jobs:
         with:
           node-version: '22'
       - run: node --check DOG/app.js
+      - run: node --check DOG/online-sync.js
       - run: node --check DOG/editor.js
       - run: node --check DOG/editor-builder.js
       - run: node --check DOG/editor-model.js
       - run: node --check DOG/board-assistants.js
       - run: node --check DOG/board-layout.js
       - run: node --check DOG/appearance-registry.js
-      - run: node --test tests/dog-board-layout.test.mjs tests/dog-board-builder.test.mjs tests/dog-board-editor-ui.test.mjs tests/dog-board-assistants.test.mjs tests/dog-board-group-move.test.mjs tests/dog-appearance.test.mjs tests/dog-official-rules.test.mjs
+      - run: node --test tests/dog-board-layout.test.mjs tests/dog-board-builder.test.mjs tests/dog-board-editor-ui.test.mjs tests/dog-board-assistants.test.mjs tests/dog-board-group-move.test.mjs tests/dog-appearance.test.mjs tests/dog-official-rules.test.mjs tests/dog-online-sync.test.mjs
