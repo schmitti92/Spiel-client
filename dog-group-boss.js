@@ -112,7 +112,7 @@
    const info=document.createElement('div');
    const title=document.createElement('strong');title.textContent=m?.name||'Freier Heldenplatz';
    const detail=document.createElement('small');
-   detail.textContent=!m?'Wartet auf einen Helden':!m.eligible?'Tor 9 noch nicht geschafft':
+   detail.textContent=!m?'Wartet auf einen Helden':!m.eligible?'Vorherige Tore noch nicht geschafft':
     m.reacted?'⚡ Reaktion ausgeführt':m.ready?'✅ Bereit':'⏳ Noch nicht bereit';
    info.append(title,detail);card.append(portrait,info);area.append(card);
   }
@@ -149,7 +149,7 @@
   const text=$('battle-message');
   text.textContent=state==='waiting'?'Bereit machen und mit 1, 2 oder 3 Helden starten. Zu dritt sind eure Chancen am größten.':
    state==='fighting'?'🔥 '+(view?.roster?.length||0)+' Helden gegen '+bossName+'! Reagiert innerhalb von 30 Sekunden.':
-   state==='victory'?'🏆 Der Aschewächter ist besiegt. Die Schmiede ist aufgestiegen!':
+   state==='victory'?'🏆 '+bossName+' ist besiegt! Fortschritt für das Team gespeichert.':
    state==='cooldown'?'💀 Der Wächter hat das Team zurückgedrängt. Bereitet euch auf den nächsten Versuch vor.':
    'Verbindung zur Bossarena wird hergestellt …';
   const outcome=$('outcome');
@@ -221,7 +221,7 @@
   }catch(e){
    if(['DOG_GROUP_NOT_READY','DOG_GROUP_PREREQUISITES','DOG_GROUP_ALREADY_WON',
     'DOG_GROUP_RUNNING','DOG_GROUP_COOLDOWN','DOG_GROUP_NOT_RUNNING',
-    'DOG_GROUP_STILL_FIGHTING','DOG_MINIGAME_TOO_LATE','DOG_MINIGAME_BAD_ROUND','DOG_MINIGAME_BAD_ANSWER','DOG_GROUP_NOT_PARTICIPANT','NOT_DOG_TEAM_MEMBER','DOG_GROUP_RECEIPT_CONFLICT'].includes(e.message))
+    'DOG_GROUP_STILL_FIGHTING','DOG_MINIGAME_TOO_LATE','DOG_MINIGAME_NOT_RUNNING','DOG_MINIGAME_NOT_PARTICIPANT','DOG_MINIGAME_MISSING','DOG_MINIGAME_BAD_ROUND','DOG_MINIGAME_BAD_ANSWER','DOG_GROUP_NOT_PARTICIPANT','NOT_DOG_TEAM_MEMBER','DOG_GROUP_RECEIPT_CONFLICT'].includes(e.message))
     clear(uid);
    message('⚠️ Der Auftrag wurde nicht bestätigt: '+e.message+
     '. Bei einer unbekannten Verbindungslage kannst du ihn sicher wiederholen.');
