@@ -1,4 +1,5 @@
 import {createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
+import {decideDogRoomUpdate} from './online-sync.js?v=13';
 import {DEFAULT_APPEARANCE,BOARD_STYLES,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=12';
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=10';
 
@@ -12,7 +13,7 @@ const matchHint=params.get('match');
 const editorBack='index.html'+location.search;
 document.querySelectorAll('[data-dog-editor]').forEach(link=>link.href='editor.html?return='+encodeURIComponent(editorBack)+'&v=10');
 const apiBase=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null;
+let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null;
 function user(){const s=window.SpielOnline?.state?.();return s?.status==='online'&&s.user?.getIdToken?s.user:null;}
 async function hubRequest(path,method='GET',payload){
  const person=user();if(!person)throw Error('Bitte melde dich mit deinem Online-Profil an.');
@@ -23,20 +24,32 @@ async function hubRequest(path,method='GET',payload){
  return body.room;
 }
 function acceptRemote(room){
- if(room.code!==hubCode)return;
- if(room.phase==='playing'&&room.match?.game==='dog'&&(!matchHint||matchHint===room.match.id)){
-   if(game?.revision!==room.match.dog?.revision){selectedCard=null;revealed=false;}
-   game=room.match.dog;onlineSeat=room.match.dogSeat;
-   roomRevision=room.revision;
+ const decision=decideDogRoomUpdate(
+   {roomRevision,game,onlineSeat,matchId:acceptedMatchId},
+   room,{hubCode,matchHint}
+ );
+ if(!decision.accept)return;
+ roomRevision=decision.roomRevision;
+ if(decision.kind==='dog'){
+   if(decision.hideHand)revealed=false;
+   if(decision.clearSelection)selectedCard=null;
+   game=decision.game;onlineSeat=decision.seat;acceptedMatchId=decision.matchId;
    render();
  }else if(game?.phase==='finished'){
    $('status').textContent='Partie beendet – du kannst in der Raum-Lobby ein neues Spiel auswählen.';
- }else $('status').textContent='Das DOG-Spiel ist noch nicht gestartet oder wurde bereits beendet. Kehre zur Raum-Lobby zurück.';
+ }else{
+   $('status').textContent='Das DOG-Spiel ist noch nicht gestartet oder wurde bereits beendet. Kehre zur Raum-Lobby zurück.';
+ }
 }
 async function refreshOnline(){
- try{const room=await hubRequest('');acceptRemote(room);}
- catch(e){$('status').textContent='⚠️ Online: '+e.message;}
+ if(refreshInFlight)return refreshInFlight;
+ refreshInFlight=(async()=>{
+   try{const room=await hubRequest('');acceptRemote(room);}
+   catch(e){$('status').textContent='⚠️ Online: '+e.message;}
+ })();
+ try{await refreshInFlight;}finally{refreshInFlight=null;}
 }
+
 function startSocket(){
  if(onlineSocket||!user())return;
  const socket=new WebSocket(apiBase.replace(/^http/i,'ws')+'/hub');onlineSocket=socket;
@@ -302,8 +315,8 @@ function onMove(i){
   if(online){
     if(onlineBusy)return;
     onlineBusy=true;$('status').textContent='Zug wird vom Server geprüft …';
-    hubRequest('/dog/action','POST',{matchId:matchHint||params.get('match')||'',expectedRevision:game.revision,actionId:crypto.randomUUID(),action:move})
-      .then(room=>{selectedCard=null;revealed=false;acceptRemote(room);})
+    hubRequest('/dog/action','POST',{matchId:acceptedMatchId||matchHint||'',expectedRevision:game.revision,actionId:crypto.randomUUID(),action:move})
+      .then(room=>{acceptRemote(room);})
       .catch(e=>{$('status').textContent='⚠️ '+e.message;void refreshOnline();})
       .finally(()=>{onlineBusy=false;});
     return;
