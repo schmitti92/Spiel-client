@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 280" role="img" aria-label="Glühender Kriegshammer des Aschewächters">
+ <defs>
+  <linearGradient id="shaft" x1="0" x2="1"><stop stop-color="#101525"/><stop offset=".28" stop-color="#586071"/><stop offset=".55" stop-color="#1d2537"/><stop offset="1" stop-color="#0c1123"/></linearGradient>
+  <linearGradient id="iron" x1=".08" y1=".04" x2=".89" y2="1"><stop stop-color="#6d7482"/><stop offset=".22" stop-color="#262d3e"/><stop offset=".5" stop-color="#111828"/><stop offset=".76" stop-color="#343c50"/><stop offset="1" stop-color="#151827"/></linearGradient>
+  <linearGradient id="fire" x1=".12" y1=".1" x2=".82" y2=".96"><stop stop-color="#fff4bb"/><stop offset=".25" stop-color="#ffd474"/><stop offset=".6" stop-color="#f66d37"/><stop offset="1" stop-color="#9c302a"/></linearGradient>
+  <radialGradient id="core"><stop stop-color="#fff7cc"/><stop offset=".32" stop-color="#ffca68"/><stop offset=".72" stop-color="#ff6d28" stop-opacity=".6"/><stop offset="1" stop-color="#fa5715" stop-opacity="0"/></radialGradient>
+  <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
+ </defs>
+ <g stroke-linejoin="round">
+  <path d="M91 18L104 20 116 195 96 249 78 193Z" stroke="#0e101b" stroke-width="7" fill="url(#shaft)"/>
+  <path d="M94 30L104 189" stroke="#bac2cb" stroke-width="3" opacity=".5"/>
+  <path d="M82 120L108 125 110 139 83 133Z M84 157L110 160 111 174 85 170Z" fill="#b56b3c" stroke="#2b1e26" stroke-width="3"/>
+  <path d="M64 211L116 207 124 236 99 264 75 254 61 233Z" fill="#19202e" stroke="#ffad59" stroke-width="5"/>
+  <path d="M69 229L98 214 118 230 99 253 78 243Z" fill="#763826" stroke="#ffbb66" stroke-width="3"/>
+  <path d="M99 219L96 240 108 235 98 252" stroke="#fff1b3" stroke-width="3" fill="none"/>
+  <path d="M56 177L132 177 146 193 143 230 125 245 51 245 35 227 36 192Z" fill="url(#iron)" stroke="#141421" stroke-width="7"/>
+  <path d="M56 177L132 177 146 193 124 197 61 197 36 192Z" fill="#9396a1" stroke="#ffd49d" stroke-width="2" opacity=".8"/>
+  <path d="M35 193L62 198 59 239 51 245 35 227Z" fill="#3a3140" stroke="#e8b275" stroke-width="4"/>
+  <path d="M125 197L145 191 143 230 125 245Z" fill="#171a2b" stroke="#ff975a" stroke-width="4"/>
+  <path d="M59 199L125 199 123 239 61 239Z" fill="#2c303e" stroke="#b36b52" stroke-width="4"/>
+  <path d="M90 202L104 219 90 236 77 217Z" fill="url(#fire)" stroke="#ffe8ad" stroke-width="4"/>
+  <path d="M73 211L60 222 71 229M108 211L122 225 109 234" fill="none" stroke="#ff9448" stroke-width="4" stroke-linecap="round"/>
+  <path d="M43 171L34 157 39 139 50 159M132 174L144 158 142 138 133 158" fill="#151929" stroke="#ff9c55" stroke-width="4"/>
+  <path d="M58 189L69 179 90 185 112 179 124 188" fill="none" stroke="#f4ba70" stroke-width="3"/>
+  <path d="M59 239L74 250 116 249 125 239" stroke="#ff9b51" stroke-width="3" fill="none"/>
+ </g>
+ <circle cx="92" cy="219" r="38" fill="url(#core)" filter="url(#glow)" opacity=".48"/>
+ <path d="M71 182L65 167 70 152M110 184L119 161 113 145" fill="none" stroke="#ffc888" stroke-width="3" opacity=".7"/>
+ <g fill="#ffe8ae"><circle cx="41" cy="183" r="3"/><circle cx="139" cy="170" r="3"/><circle cx="129" cy="242" r="3"/><circle cx="72" cy="255" r="2"/></g>
+</svg>
