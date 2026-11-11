@@ -73,8 +73,14 @@ test('DOG online pinned match URL never silently swaps to a different room match
  assert.equal(active.roomRevision,11);
 });
 test('DOG online refuses invalid projections instead of breaking the UI',()=>{
- const wrong=room(11,mkGame(2),{seat:null});wrong.match.dogSeat=null;
- assert.equal(decide(previous(10,mkGame(1)),wrong).accept,false);
+ const spectator=room(11,mkGame(2),{seat:null});spectator.match.dogSeat=null;
+ spectator.match.dog.hands=[{count:2},{count:2},{count:2},{count:2}];
+ const watch=decide(previous(10,mkGame(1)),spectator);
+ assert.equal(watch.accept,true);
+ assert.equal(watch.seat,null);
+ assert.equal(watch.hideHand,true);
+ spectator.match.dog.hands[0]=[{id:7,type:'7'}];
+ assert.equal(decide(previous(10,mkGame(1)),spectator).reason,'PRIVATE_HAND_IN_SPECTATOR_PROJECTION');
  assert.equal(decide(previous(10,mkGame(1)),{code:'ABC23D',revision:11,phase:'playing',match:{id:'match-1',game:'dog',dog:{revision:'bad'},dogSeat:0}}).accept,false);
 });
 test('DOG online state accepts a recoverable fetch on first load',()=>{
