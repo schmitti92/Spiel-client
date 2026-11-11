@@ -24,7 +24,7 @@
   let roundKey='',roundView=null,buttons=[],progress=null,status=null;
   let question=null,counter=null,attackStatus=null,localSubmitting=false,stepCurrent=0;
   let lastChoice=null,anchor=null,raf=0,activeVersion=1,allowed=false;
-  let mathChoices=[],mathSent=false;
+  let mathChoices=[],mathSent=false,mathQueue=null,mathSending=false,fightStart=0;
   const lead=createElement('div','mini-lead');
   const title=createElement('strong','mini-title');
   const hint=createElement('small','mini-hint');
@@ -32,15 +32,27 @@
   status=createElement('div','mini-feedback','');
   lead.append(title,hint);
   root.replaceChildren(lead,body,status);
+  const pumpMath=()=>{
+   if(!mathQueue||mathSending)return;
+   const batch=mathQueue;
+   mathSending=true;
+   Promise.resolve().then(()=>onSubmit(batch.round,batch.answers,0))
+    .then(accepted=>{
+     // A controller returns false when an earlier request is still pending.
+     // Keep this math batch intact and retry on a later rendering tick.
+     if(accepted!==false&&mathQueue===batch)mathQueue=null;
+    }).catch(()=>{
+     // Keep unsent batch for the next tick. The controller's receipt handles
+     // ambiguous network failures without double-scoring.
+    }).finally(()=>{mathSending=false;});
+  };
   const flushMath=()=>{
    if(!roundView||roundView.kind!=='math'||activeVersion!==2||
       mathSent||!mathChoices.length)return;
    mathSent=true;
-   const round=roundView.round,answers=[...mathChoices];
-   // One server transaction per math sprint, never one per tap.
-   // The authenticated controller persists its receipt for safe retries.
-   Promise.resolve().then(()=>onSubmit(round,answers,0))
-    .catch(()=>{mathSent=false;});
+   mathQueue={round:roundView.round,answers:[...mathChoices],fightStart};
+   // One server transaction for the entire sprint; no delay between taps.
+   pumpMath();
   };
   const choose=(value)=>{
    if(!roundView||localSubmitting||!allowed)return;
@@ -149,6 +161,10 @@
    }
   }
   function update(view,now,canPlay){
+   fightStart=Number(view?.startedAt)||0;
+   // A queued response from a previous battle must never leak into the next.
+   if(mathQueue&&mathQueue.fightStart!==fightStart)mathQueue=null;
+   pumpMath();
    const active=view?.phase==='fighting'&&view?.miniGames?.rounds?.length===3;
    root.hidden=!active;allowed=!!canPlay;
    if(!active){
