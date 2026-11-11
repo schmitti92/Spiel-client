@@ -17,7 +17,7 @@ function bootstrap(){
 const start=1_800_000_000_000;
 const view=(phase='fighting')=>({
  phase,startedAt:start,gate:20,name:'Schattenfürst',
- members:[{uid:'a',name:'Alpha'},{uid:'b',name:'Bravo'},{uid:'c',name:'Charlie'}],
+ members:[{uid:'a',name:'Alpha',isMe:true},{uid:'b',name:'Bravo',isMe:false},{uid:'c',name:'Charlie',isMe:false}],
  roster:[{uid:'a'},{uid:'b'},{uid:'c'}],
  miniGames:{rounds:[
   {kind:'dodge',round:0,startMs:3000,endMs:10000},
@@ -73,6 +73,8 @@ test('Scene creates exactly participating heroes; single player is not visually 
  director.update(solo,start+3500);
  assert.equal(slots['#combat-hero-line'].children.length,1);
  assert.equal(slots['#combat-hero-line'].children[0].children[1].textContent,'Alpha');
+ assert.match(slots['#combat-hero-line'].children[0].className,/combat-hero-me/,
+  'only my own hero should animate my verified dodge');
  assert.equal(root.dataset.cue,'dodge');
  assert.equal(styles['--boss-accent'],'#b68aff');
  assert.equal(slots['#combat-flash'].children.length,1);
@@ -103,6 +105,8 @@ test('Both arenas load the same combat effects before their controllers',()=>{
  for(const name of ['combat-defeated','combat-slam','combat-shield',
   'combat-target','combat-runes','combat-projectile'])
   assert.ok(css.includes('@keyframes '+name),name);
+ assert.ok(css.includes('@keyframes combat-dodge-success'));
+ assert.ok(css.includes('[data-feedback="correct"] .combat-hero-me'));
  assert.ok(css.includes('prefers-reduced-motion:reduce'));
  assert.ok(css.includes('@media(max-width:620px)'));
 });
