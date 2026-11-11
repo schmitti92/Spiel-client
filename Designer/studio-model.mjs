@@ -1,3 +1,5 @@
+import {buildLiveBossTemplate} from './studio-boss-live.mjs';
+
 /** Pure project document model for the independent Spielseiten-Studio.
  * No application API, Firebase, Render, accounts or live-game state involved.
  */
@@ -134,6 +136,7 @@ function buildLobby(){
   width:1440,height:810,screens};
 }
 export function createTemplate(type='boss'){
+ if(type==='boss-live')return buildLiveBossTemplate({createScene,createItem,studioId,version:STUDIO_VERSION});
  if(type==='forge')return buildForge();
  if(type==='lobby')return buildLobby();
  if(type==='empty')return {version:STUDIO_VERSION,id:studioId(),name:'Neues Design-Projekt',
