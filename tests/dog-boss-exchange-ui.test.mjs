@@ -166,3 +166,79 @@ test('Shield energy remains unchanged after the server settles a battle',()=>{
  assert.equal(classes.get('combat-scene').has('live-exchange-attack'),false);
  assert.equal(classes.get('combat-scene').has('live-exchange-defense'),false);
 });
+
+
+function cinematicFixture(){
+ const context=fixture(),view=context.view;
+ view.endsAt=startedAt+50000;
+ view.miniGames.version=4;
+ view.miniGames.rounds.forEach((round,index)=>{
+  const bounds=[[0,8000],[12500,20500],[25000,33000],[37500,45500]][index];
+  round.startMs=bounds[0];round.endMs=bounds[1];
+ });
+ const exchange=view.miniGames.exchange;
+ exchange.version=4;exchange.durationMs=50000;
+ exchange.cumulativeExtraDamage=231;
+ exchange.stages[0].bonusDamage=231;
+ exchange.stages[2].bonusDamage=107;
+ return context;
+}
+test('50-second animation has four 4.5s video-like score windows with readable central totals',()=>{
+ for(const file of ['dog-boss10.html','dog-group-boss.html']){
+  const html=read(file);
+  assert.match(html,/id="live-cinematic"/);
+  assert.match(html,/id="cinematic-score"/);
+  assert.match(html,/id="cinematic-bonus"/);
+  assert.match(html,/id="cinematic-cumulative"/);
+  assert.match(html,/id="cinematic-progress"/);
+  assert.match(html,/id="timer" role="timer">00:50/);
+ }
+ assert.match(css,/\.arena-live \.live-cinematic\s*\{/);
+ assert.match(css,/\.arena-live \.live-cinematic-score\s*\{/);
+ assert.match(css,/\.arena-live \.live-cinematic-bonus strong\s*\{/);
+ assert.match(css,/\.arena-live \.live-cinematic\[hidden\]\{display:none\}/);
+ const {ui,view,node}=cinematicFixture();
+ ui.update(view,startedAt+7500);
+ assert.equal(node('live-cinematic').hidden,true);
+ ui.update(view,startedAt+8000);
+ assert.equal(node('live-cinematic').hidden,false);
+ assert.equal(node('live-stage-announcement').hidden,true);
+ assert.match(node('cinematic-header').textContent,/TEAM SCHLÄGT ZU/);
+ assert.equal(node('cinematic-score').textContent,'18 / 24');
+ assert.equal(node('cinematic-bonus').textContent,'+231');
+ assert.match(node('cinematic-bonus-detail').textContent,/LP-Schaden erst bei Endwertung/);
+ assert.match(node('cinematic-cumulative').textContent,/231 Angriffspotenzial/);
+ assert.match(node('cinematic-next').textContent,/Ausweichen/);
+ assert.equal(node('cinematic-countdown').textContent,'4,5 s');
+ ui.update(view,startedAt+11800);
+ assert.equal(node('live-cinematic').hidden,false,'result stays readable after 3.8s');
+ ui.update(view,startedAt+12500);
+ assert.equal(node('live-cinematic').hidden,true);
+ assert.equal(node('live-round-label').textContent,'RUNDE 2 / 4');
+});
+test('Defense scene highlights 100-point team shield and 25-point block calculation',()=>{
+ const {ui,view,node,classes}=cinematicFixture();
+ view.miniGames.exchange.shield=92;
+ ui.update(view,startedAt+21000);
+ assert.equal(node('live-cinematic').hidden,false);
+ assert.match(node('cinematic-header').textContent,/BOSS GREIFT AN/);
+ assert.equal(node('cinematic-score').textContent,'92 / 100');
+ assert.equal(node('cinematic-bonus').textContent,'17 / 25');
+ assert.match(node('cinematic-bonus-detail').textContent,/−8 Schildpunkte/);
+ assert.ok(classes.get('combat-scene').has('live-exchange-defense'));
+ view.miniGames.exchange.shield=75;
+ ui.update(view,startedAt+46500);
+ assert.equal(node('cinematic-score').textContent,'75 / 100');
+ assert.equal(node('cinematic-bonus').textContent,'8 / 25');
+ assert.match(node('cinematic-next').textContent,/Finale Auswertung/);
+ ui.update(view,startedAt+50001);
+ assert.equal(node('live-cinematic').hidden,true);
+});
+test('Previous 40-second fights still use their original short result scene',()=>{
+ const {ui,view,node}=fixture();
+ ui.update(view,startedAt+9000);
+ assert.equal(node('live-cinematic').hidden,true);
+ assert.equal(node('live-stage-announcement').hidden,false);
+ ui.update(view,startedAt+12000);
+ assert.equal(node('live-stage-announcement').hidden,true);
+});
