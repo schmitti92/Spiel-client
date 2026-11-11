@@ -20,7 +20,7 @@
  };
  const targetIndex=(round,elapsed)=>
   (round.initialIndex+Math.max(0,Math.floor((elapsed-round.startMs)/round.stepMs)))%round.lanes;
- function create(root,onSubmit,onDodgeChoice=null){
+ function create(root,onSubmit,onDodgeChoice=null,clockNow=null){
   let roundKey='',roundView=null,buttons=[],progress=null,status=null;
   let question=null,counter=null,attackStatus=null,localSubmitting=false,stepCurrent=0;
   let dodgeMarks=[],dodgeTimeFill=null;
@@ -40,6 +40,10 @@
   };
   let lastChoice=null,anchor=null,raf=0,activeVersion=1,allowed=false;
   let mathChoices=[],mathSent=false,mathQueue=null,mathSending=false,fightStart=0;
+  let reactionPreview=null;
+  const clockStamp=()=>typeof clockNow==='function'?Math.round(clockNow()):
+   (anchor?Math.round(fightStart+anchor.elapsed+
+    (typeof performance!=='undefined'?performance.now():Date.now())-anchor.stamp):Date.now());
   const lead=createElement('div','mini-lead');
   const title=createElement('strong','mini-title');
   const hint=createElement('small','mini-hint');
@@ -96,16 +100,44 @@
     return;
    }
    const step=activeVersion>=2?stepCurrent:0;
+   const precise=activeVersion>=9&&roundView.kind==='reaction';
+   const tappedAt=precise?clockStamp():null;
+   if(precise){
+    const actualPos=pos(roundView,tappedAt-fightStart);
+    const visualHit=Math.abs(actualPos-.5)<=roundView.zoneRadius;
+    reactionPreview={round:roundView.round,step,at:tappedAt,visualHit};
+    if(progress){
+     progress.classList?.remove('is-tap');
+     void progress.offsetWidth;
+     progress.classList?.add('is-tap');
+     const cursor=progress.firstElementChild;
+     if(cursor)cursor.style.left=(100*actualPos).toFixed(2)+'%';
+    }
+    status.textContent=visualHit?
+     '⚡ GRÜNE ZONE! Treffer wird überprüft …':
+     '⚡ KONTER AUSGELÖST · Server prüft den Zeitpunkt …';
+   }
    localSubmitting=true;lastChoice={round:roundView.round,step,value};
    if(roundView.kind==='dodge'&&typeof onDodgeChoice==='function')
     onDodgeChoice(roundView.round,step,value);
    buttons.forEach(button=>button.disabled=true);
-   Promise.resolve().then(()=>onSubmit(roundView.round,value,step))
+   Promise.resolve().then(()=>onSubmit(roundView.round,value,step,tappedAt))
     .catch(()=>{}).finally(()=>{localSubmitting=false;});
   };
   function makeButton(value,label,css){
    const button=createElement('button','mini-choice '+(css||''),label);
-   button.type='button';button.addEventListener('click',()=>choose(value));
+   button.type='button';
+   let pointerAt=0;
+   if(css==='mini-reaction')button.addEventListener('pointerdown',event=>{
+    if(activeVersion>=9&&roundView?.kind==='reaction'&&event?.isPrimary!==false){
+     pointerAt=Date.now();
+     choose(value);
+    }
+   });
+   button.addEventListener('click',()=>{
+    if(css==='mini-reaction'&&activeVersion>=9&&Date.now()-pointerAt<700)return;
+    choose(value);
+   });
    buttons.push(button);body.append(button);return button;
   }
   function stopAnimation(){
@@ -116,7 +148,8 @@
   function paintReaction(){
    if(!anchor||!progress)return;
    const stamp=typeof performance!=='undefined'?performance.now():Date.now();
-   const elapsed=anchor.elapsed+(stamp-anchor.stamp);
+   const elapsed=activeVersion>=9&&typeof clockNow==='function'?
+    clockStamp()-fightStart:anchor.elapsed+(stamp-anchor.stamp);
    const fraction=pos(anchor.round,elapsed);
    const cursor=progress.firstElementChild;
    if(cursor)cursor.style.left=(fraction*100).toFixed(2)+'%';
@@ -126,13 +159,14 @@
    else raf=0;
   }
   function build(round,version){
-   stopAnimation();roundView=round;activeVersion=version;
+   stopAnimation();roundView=round;activeVersion=version;reactionPreview=null;
    mathChoices=[];mathSent=false;
    buttons=[];body.replaceChildren();progress=null;question=null;counter=null;attackStatus=null;
    dodgeMarks=[];dodgeTimeFill=null;mathMarks=[];mathRank=null;mathClock=null;mathTimeFill=null;
    lead.replaceChildren(title,hint);
    root.classList?.toggle('is-math-battle',round.kind==='math'&&version>=5);
    root.classList?.toggle('is-slow-dodge',round.kind==='dodge'&&version>=8);
+   root.classList?.toggle('is-precise-reaction',round.kind==='reaction'&&version>=9);
    lastChoice=null;
    title.textContent=round.kind==='math'&&version>=5?
     '✦ RUNENPRÜFUNG':'RUNDE '+(round.round+1)+'/'+(version>=3?4:3)+' · '+labels[round.kind];
@@ -235,6 +269,7 @@
     if(roundView?.kind==='math'&&mathChoices.length&&!mathSent)flushMath();
     root.classList?.remove('is-math-battle');
      root.classList?.remove('is-slow-dodge');
+     root.classList?.remove('is-precise-reaction');
     roundKey='';roundView=null;stopAnimation();return;
    }
    const elapsed=now-(view.startedAt||0),games=view.miniGames;
@@ -394,6 +429,19 @@
      lastChoice?.step===step?
       '↔️ BEWEGUNG · '+(localSubmitting?'PRÜFUNG LÄUFT':'SCHLAG ABWARTEN'):
       '🛡️ WÄHLE DEINE AUSWEICHRICHTUNG';
+    return;
+   }
+   if(round.kind==='reaction'&&activeVersion>=9){
+    if(reactionPreview&&reactionPreview.round===round.round&&
+       reactionPreview.step>=attempts.length){
+     status.textContent=reactionPreview.visualHit?
+      '⚡ IM ZIELBEREICH · Server bestätigt den Treffer …':
+      '⚡ KONTER ERFASST · Server prüft …';
+    }else{
+     status.textContent=completed?
+      '✅ KONTER ABGESCHLOSSEN · '+correct+' / '+max+' bestätigt':
+      '⚡ '+correct+' / '+max+' Treffer bestätigt · Drücke im grünen Feld';
+    }
     return;
    }
    status.textContent=round.kind==='math'&&!attempts.length?
