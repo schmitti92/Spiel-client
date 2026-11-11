@@ -111,3 +111,33 @@ test('Real original controls govern preflight proxies and each combat phase',()=
  fake('preflight-retry').click();
  assert.equal(retry.clicks,1);
 });
+
+
+test('Landscape fullscreen fits preflight into a viewport-height stage',()=>{
+ assert.match(css,/@media \(orientation:landscape\) and \(min-width:1000px\) and \(min-height:680px\)/);
+ assert.match(css,/\.stage\[data-screen="preflight"\]\s*\{[^}]*height:100vh;height:100dvh;/);
+ assert.match(css,/grid-template-rows:auto minmax\(0,1fr\)/);
+ assert.match(css,/\.stage\[data-screen="preflight"\]>\.boss-preflight\s*\{[^}]*grid-template-rows:auto auto auto minmax\(0,1fr\) auto;/);
+ assert.match(css,/\.preflight-layout\s*\{[^}]*grid-template-rows:minmax\(0,1fr\) auto;/);
+ assert.match(css,/\.preflight-bottom\s*\{margin-top:0;/);
+ assert.match(css,/@media \(max-width:879px\)/);
+ assert.match(css,/body:has\(\.stage\[data-screen="preflight"\]\)\{overflow-y:auto\}/);
+});
+
+test('Reward shelf spans two columns and supports four honest future reward slots',()=>{
+ assert.match(css,/grid-template-areas:"monster details team" "monster rewards rewards"/);
+ assert.match(css,/\.preflight-rewards\{grid-area:rewards;min-width:0\}/);
+ assert.match(css,/\.preflight-reward-grid\{grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+ for(const html of htmls){
+  const scene=html.slice(html.indexOf('<section class="boss-preflight"'),html.indexOf('<header class="opening">'));
+  const team=scene.indexOf('<section class="preflight-team"');
+  const reward=scene.indexOf('<section class="preflight-panel preflight-rewards">');
+  const bottom=scene.indexOf('<div class="preflight-bottom">');
+  assert.ok(team>0&&reward>team&&bottom>reward,'rewards belong beneath team/info, before bottom controls');
+  assert.equal((scene.match(/class="preflight-reward-reserve"/g)||[]).length,2);
+  assert.match(scene,/data-reward-slot="3"/);
+  assert.match(scene,/data-reward-slot="4"/);
+  assert.match(scene,/Reserveplätze zeigen keine zugesagten Gewinne/);
+  assert.match(html,/dog-boss-preflight\.css\?v=20261111-v2-landscape/);
+ }
+});
