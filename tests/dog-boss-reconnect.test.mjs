@@ -117,7 +117,10 @@ test('Boss 10 and group bosses reconcile the shared opening sooner without exces
   const source=readFileSync(new URL('../'+arena,import.meta.url),'utf8');
   for(const feature of [
    'readyBurstUntil=Date.now()+6000',
-   "openingFight?1200:view?.phase==='fighting'?2800",
+   "const delay=exchangeWindow?850:openingFight?1200:",
+   "view?.phase==='fighting'?2800",
+   "view.miniGames.rounds.some(r=>elapsed>=r.endMs&&elapsed<r.endMs+2100)",
+   "void reload(exchangeWindow===true)",
    'waitingReady&&Date.now()<readyBurstUntil?900',
    'waitingReady?3800:15000',
    'now()<(view.startedAt||0)+5000',
