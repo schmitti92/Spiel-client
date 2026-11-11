@@ -140,23 +140,38 @@
     if(nodes.combat?.classList){
      nodes.combat.classList.remove('live-exchange-attack');
      nodes.combat.classList.remove('live-exchange-defense');
+     nodes.combat.classList.remove('live-exchange-miss');
+     nodes.combat.classList.remove('live-exchange-guard-damaged');
     }
     return;
    }
    const stage=stages[scene.round],defensive=!!stage?.defensive;
+   const previousShield=scene.round===3?
+    Number(stages[1]?.shield??100):100;
+   const shieldLoss=defensive&&stage?.completed?
+    Math.max(0,previousShield-Number(stage.shield??previousShield)):0;
+   const participants=(view.roster||[]).map(m=>
+    (view.members||[]).find(p=>p.uid===m.uid)?.name||m.name||'Held');
+   const heroNames=participants.length?
+    participants.join(', '):'Dein Team';
    const key=String(view.startedAt)+':'+scene.round;
    if(nodes.announcement)nodes.announcement.hidden=false;
    const title=defensive?'🛡️ BOSS SCHLÄGT ZURÜCK':
     '⚔️ GEMEINSAMER ANGRIFF';
    text(nodes.stageTitle,title);
    text(nodes.stageScore,stage?.completed?
-    (defensive?'Team-Schild '+stage.shield+' / 100':
+    (defensive?'Team-Schild '+stage.shield+' / 100 · −'+shieldLoss+
+      ' Schildpunkte':
      stage.correct+' / '+stage.max+' Treffer · +'+
       Number(stage.bonusPercent||0).toLocaleString('de-DE')+' % Extraangriff'):
     'Die Ergebnisse werden vom Server bestätigt …');
    text(nodes.stageSubtitle,defensive?
-    'Der Boss greift an – unsere Helden blocken gemeinsam!':
-    'Chris, Nova und Titan schlagen gemeinsam zu!');
+    (shieldLoss===0&&stage?.completed?
+     'Perfekt! Die Gruppe blockt den Angriff vollständig!':
+     'Der Boss schlägt zu – die Helden verteidigen sich gemeinsam!'):
+    (stage?.completed&&stage.correct===0?
+     'Kein Treffer – der Boss weicht dem Angriff aus.':
+     heroNames+' greifen den Boss gemeinsam an!'));
    text(nodes.round,'ZWISCHENSEQUENZ '+(scene.round+1)+' / 4');
    if(nodes.prompt)nodes.prompt.hidden=false;
    text(nodes.promptTitle,title);
@@ -164,10 +179,20 @@
     (defensive?'Gemeinsam übrig: '+stage.shield+' Schildpunkte':
      stage.correct+' bestätigte Treffer von '+stage.max):
     'Warte auf die serverbestätigte Teamwertung …');
+   if(nodes.combat?.classList){
+    nodes.combat.classList.toggle('live-exchange-miss',
+     !defensive&&stage?.completed&&stage.correct===0);
+    nodes.combat.classList.toggle('live-exchange-guard-damaged',
+     defensive&&stage?.completed&&shieldLoss>0);
+   }
    if(lastExchangeKey!==key){
     lastExchangeKey=key;
     const cls=defensive?'live-exchange-defense':'live-exchange-attack';
     if(nodes.combat?.classList){
+     // Late clients join at the same point in the synchronized 2s action,
+     // instead of replaying a complete strike while teammates are finished.
+     const offset=Math.min(1999,Math.max(0,current.elapsed-scene.endMs));
+     nodes.combat.style?.setProperty?.('--exchange-offset',(-offset)+'ms');
      nodes.combat.classList.remove('live-exchange-attack');
      nodes.combat.classList.remove('live-exchange-defense');
      void nodes.combat.offsetWidth;
