@@ -1,25 +1,18 @@
 /**
- * DOG 4-seat cross board · geometry only.
+ * DOG four-seat shared default board · geometry only.
  * The numbered circuit is immutable in meaning (0..63), but its coordinates
  * may be customized. The classic-cross preset resembles the physical board's
  * four-armed course without copying any publisher artwork.
  *
  * No client-supplied coordinates are ever used by the rules engine.
  */
-export const BOARD_LAYOUT_ID='dog-classic-cross-v3';
+import {APPROVED_BOARD_ID,APPROVED_BOARD_LAYOUT} from './approved-board.js';
+export const BOARD_LAYOUT_ID=APPROVED_BOARD_ID;
 export const BOARD_VIEWBOX=760;
 export const CUSTOM_BOARD_KEY='spielportal:dog:board-layout:v1';
 export const START_INDICES=Object.freeze([0,16,32,48]);
 export const TRACK_COUNT=64,SEAT_COUNT=4,GOAL_COUNT=4,HOME_COUNT=4;
 export const COLORS_CLASSIC=Object.freeze(['#e85b54','#58a9ed','#50bf80','#ecc354']);
-const SECTOR=Object.freeze([
- [95,380],[127,380],[159,380],[191,380],
- [215,356],[239,332],[263,308],[287,284],
- [287,252],[287,220],[287,188],[287,156],
- [287,124],[287,92],[319,92],[351,92]
-]);
-const BASE_GOAL=Object.freeze([[127,420],[159,420],[191,420],[223,420]]);
-const BASE_HOME=Object.freeze([[110,540],[142,540],[174,540],[206,540]]);
 const rotate=(p,quarter)=>{
  const {x,y}=Array.isArray(p)?{x:p[0],y:p[1]}:p;
  switch((quarter%4+4)%4){
@@ -29,14 +22,8 @@ const rotate=(p,quarter)=>{
   default:return {x:y,y:760-x};
  }
 };
-const original=()=>({
- schemaVersion:1,preset:BOARD_LAYOUT_ID,title:'DOG · Kreuz-Spielplan',
- track:Array.from({length:64},(_,i)=>rotate(SECTOR[i%16],Math.floor(i/16))),
- goals:Array.from({length:4},(_,owner)=>BASE_GOAL.map(p=>rotate(p,owner))),
- homes:Array.from({length:4},(_,owner)=>BASE_HOME.map(p=>rotate(p,owner)))
-});
 const clone=x=>JSON.parse(JSON.stringify(x));
-export const DEFAULT_LAYOUT=original();
+export const DEFAULT_LAYOUT=clone(APPROVED_BOARD_LAYOUT);
 export const TRACK_POINTS=clone(DEFAULT_LAYOUT.track);
 export const GOAL_POINTS=clone(DEFAULT_LAYOUT.goals);
 export const HOME_POINTS=clone(DEFAULT_LAYOUT.homes);
