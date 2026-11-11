@@ -9,8 +9,9 @@ import {
 import {
   EDITOR_DRAFT_KEY,clone,emptyDraft,fromCrossPreset,fromLayout,placedCount,
   fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
-  guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun
-} from './editor-model.js?v=5';
+  guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun,
+  trackGroupBounds,translateTrackGroup
+} from './editor-model.js?v=6';
 import {referencePoints,buildGoalLane,buildHomeGroup,getTrackConnections,straightGaps,connectStraightGap,SEAT_LABELS} from './board-assistants.js?v=5';
 
 const $=id=>document.getElementById(id);
@@ -28,6 +29,7 @@ let settings={spacing:32,snap:true,grid:true,numbers:true,path:true,symmetry:fal
 let photoObject=null,photoOpacity=.4,hover=null,pointer=null,walkTimer=null,walkStep=-1;
 let history=[],historyAt=0,feedbackText='';
 let assistantSeat=0,assistantPreview=null,connectionFocus=null,lastGapSignature=null;
+let groupDrag=null;
 
 // Initial state must be empty, unless a previously autosaved unfinished draft exists.
 // The live match board is deliberately not automatically loaded into the editor.
@@ -110,6 +112,7 @@ function recordChange(){
 }
 function updateDraft(next,{record=true,advance=false}={}){
   assistantPreview=null;
+  groupDrag=null;
   draft=next;
   if(record)recordChange();
   if(advance)maybeNext();
@@ -118,7 +121,7 @@ function updateDraft(next,{record=true,advance=false}={}){
 function unwind(direction){
   // A tap on an existing SVG field may lose its pointer-up on some tablets.
   // Do not let an abandoned, stationary pointer block Undo forever.
-  if(pointer?.moved)return;
+  if(pointer?.moved||groupDrag)return;
   pointer=null;
   const next=historyAt+direction;
   if(next<0||next>=history.length)return;
@@ -144,6 +147,9 @@ function updateControls(){
   document.querySelectorAll('[data-mode]').forEach(b=>{
     const on=b.dataset.mode===mode;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on));
   });
+  $('select-track-group').setAttribute('aria-pressed',String(tool==='group'));
+  $('group-move-panel').hidden=tool!=='group';
+  $('group-count').textContent=String(trackGroupBounds(draft)?.count||0);
   document.querySelectorAll('[data-tool]').forEach(b=>{
     const on=b.dataset.tool===tool;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on));
   });
@@ -228,8 +234,8 @@ function renderProgress(){
   if(!check.errors.length&&!check.ready&&count.total>=96)list.push('Prüfe die Abstände benachbarter Lauffelder.');
   $('validation').textContent=list.join('\n');
   $('validation').className='status '+(check.errors.length?'error':check.ready?'success':'warn');
-  $('board-subtitle').textContent=check.ready?'Das Brett kann übernommen werden.':tool==='place'?'Nächster Klick: '+selectedName():tool==='erase'?'Tippe auf ein Feld, um es zu entfernen.':'Ziehe ein Feld an die richtige Rasterposition.';
-  if(walkTimer===null)$('board-hint').textContent=tool==='place'
+  $('board-subtitle').textContent=tool==='group'?'🔶 Alle '+count.track+' vorhandenen Lauffelder gemeinsam ausgewählt':check.ready?'Das Brett kann übernommen werden.':tool==='place'?'Nächster Klick: '+selectedName():tool==='erase'?'Tippe auf ein Feld, um es zu entfernen.':'Ziehe ein Feld an die richtige Rasterposition.';
+  if(walkTimer===null)$('board-hint').textContent=tool==='group'?'🔶 Halte das Brett gedrückt und ziehe den gesamten Laufweg – oder nutze die Gruppentasten unten.':tool==='place'
     ?(settings.guide&&selected.kind==='track'&&previousTrackField(draft,selected)?'📐 Gleicher Abstand ('+settings.stepSpacing+'): Tippe ungefähr in die Richtung oder nutze die acht Pfeile.':'Tippe auf die freie Fläche, um '+selectedName()+' zu setzen. Zum Ersetzen Feld antippen und dann neue freie Stelle.')
     :tool==='move'?'Tippe auf ein vorhandenes Feld und ziehe es an die neue Position.':'Tippe auf ein Feld, um es zu entfernen.';
   updateControls();
@@ -305,6 +311,14 @@ function draw(){
   for(let i=0;i<64;i++)if(draft.track[i])fieldMarkup(draft.track[i],'track',i,Math.floor(i/16));
   for(const kind of ['goals','homes'])for(let seat=0;seat<4;seat++)
     for(let i=0;i<4;i++)if(draft[kind][seat][i])fieldMarkup(draft[kind][seat][i],kind,i,seat);
+  if(tool==='group'){
+    const bounds=trackGroupBounds(draft);
+    if(bounds){
+      const x=bounds.minX-23,y=bounds.minY-23;
+      out.push('<rect x="'+x+'" y="'+y+'" width="'+(bounds.width+46)+'" height="'+(bounds.height+46)+'" rx="18" fill="#f6dba6" fill-opacity=".045" stroke="#f7d792" stroke-width="2.4" stroke-dasharray="9 6" pointer-events="none"/>');
+      out.push(svgText(Math.max(72,Math.min(690,(bounds.minX+bounds.maxX)/2)),Math.max(25,bounds.minY-31),'🔶 '+bounds.count+' Lauffelder ausgewählt','#ffe6b0',15));
+    }
+  }
   // Mark open circuit ends and provide a ghost preview of grouped placement.
   if(settings.path){
     const connection=getTrackConnections(draft);
@@ -394,6 +408,74 @@ function commitPlacement(pos,{forceExact=false}={}){
     announce('⚠️ Feld konnte nicht gesetzt werden: '+(error?.message||error),'error');
   }
 }
+/**
+ * Move all existing track holes without touching goal or home coordinates.
+ * One gesture is one history entry. Invalid moves are rejected atomically.
+ */
+function groupMove(dx,dy,{grid=false}={}){
+  try{
+    const next=translateTrackGroup(draft,{dx,dy,snapToGrid:grid,gridSpacing:settings.spacing});
+    draft=next;assistantPreview=null;connectionFocus=null;
+    const changed=recordChange();
+    render();
+    if(changed)announce('✅ Alle '+(trackGroupBounds(draft)?.count||0)+
+      ' Lauffelder gemeinsam verschoben. Ziel- und Startplätze sind unverändert.','success');
+    else announce('Die Position ist unverändert.','warn');
+    return changed;
+  }catch(err){
+    announce('⚠️ Laufweg unverändert: '+(err?.message||err),'warn');
+    return false;
+  }
+}
+function groupStep(){
+  const mode=$('group-step').value;
+  return mode==='grid'?settings.spacing:mode==='1'?1:5;
+}
+function beginGroupDrag(event,pos){
+  if(!trackGroupBounds(draft)){announce('Setze zuerst mindestens ein Lauffeld.','warn');return;}
+  stopPreview();
+  groupDrag={id:event.pointerId,origin:pos,before:clone(draft),proposed:null,deltaX:0,deltaY:0,error:null};
+  try{board.setPointerCapture(event.pointerId);}catch(_){}
+}
+function moveGroupDrag(event,pos){
+  if(!groupDrag||groupDrag.id!==event.pointerId)return;
+  event.preventDefault();
+  const rawX=pos.x-groupDrag.origin.x,rawY=pos.y-groupDrag.origin.y;
+  const snap=$('group-snap').checked;
+  const dx=snap?Math.round(rawX/settings.spacing)*settings.spacing:Math.round(rawX*10)/10;
+  const dy=snap?Math.round(rawY/settings.spacing)*settings.spacing:Math.round(rawY*10)/10;
+  if(dx===groupDrag.deltaX&&dy===groupDrag.deltaY)return;
+  groupDrag.deltaX=dx;groupDrag.deltaY=dy;
+  try{
+    groupDrag.proposed=translateTrackGroup(groupDrag.before,{dx,dy});
+    groupDrag.error=null;
+    // The SVG root keeps pointer capture; redraw only the *children* for the live preview.
+    const stable=draft;draft=groupDrag.proposed;draw();draft=stable;
+    $('board-hint').textContent='🔶 Gesamter Laufweg: X '+(dx>0?'+':'')+dx+
+      ' · Y '+(dy>0?'+':'')+dy+' · Finger loslassen zum Übernehmen.';
+  }catch(err){
+    groupDrag.proposed=null;groupDrag.error=err.message;
+    draw();
+    $('board-hint').textContent='⚠️ '+err.message+' — in eine gültige Richtung verschieben.';
+  }
+}
+function finishGroupDrag(event,cancel=false){
+  if(!groupDrag||groupDrag.id!==event.pointerId)return;
+  const moved=groupDrag;
+  groupDrag=null;
+  if(cancel||!moved.proposed){
+    render();
+    if(moved.error&&!cancel)announce('⚠️ Laufweg nicht verschoben: '+moved.error,'warn');
+    return;
+  }
+  const displacement=Math.abs(moved.deltaX)+Math.abs(moved.deltaY);
+  if(displacement<.01){render();return;}
+  draft=moved.proposed;assistantPreview=null;connectionFocus=null;
+  recordChange();render();
+  announce('✅ '+(trackGroupBounds(draft)?.count||0)+
+    ' Lauffelder gemeinsam verschoben (X '+moved.deltaX+', Y '+moved.deltaY+
+    '). Abstände, Nummern und übrige Felder bleiben erhalten.','success');
+}
 function targetSelection(event){
   const hit=event.target?.closest?.('[data-kind]');
   if(!hit)return null;
@@ -407,6 +489,10 @@ function clickExisting(s){
 board.addEventListener('pointerdown',event=>{
   if(event.pointerType==='mouse'&&event.button!==0)return;
   const pos=canvasXY(event);if(!pos)return;
+  if(tool==='group'){
+    event.preventDefault();lastHandledPointer=Date.now();
+    beginGroupDrag(event,pos);return;
+  }
   // Discard an abandoned drag when a fresh touch starts (mobile pointercancel may be lost).
   if(pointer)pointer=null;
   const existing=targetSelection(event);
@@ -430,6 +516,7 @@ board.addEventListener('pointerdown',event=>{
 });
 board.addEventListener('pointermove',event=>{
  const p=canvasXY(event);if(!p)return;
+ if(groupDrag){moveGroupDrag(event,p);return;}
  if(!pointer){
    if(tool!=='place'||event.pointerType==='touch')return;
    let proposed;try{proposed=guidedPlacement(p);}catch(_){return;}
@@ -448,6 +535,7 @@ board.addEventListener('pointermove',event=>{
 });
 board.addEventListener('pointerleave',()=>{if(!pointer&&hover){hover=null;draw();}});
 function pointerFinish(event,canceled=false){
+ if(groupDrag){finishGroupDrag(event,canceled);return;}
  if(!pointer||pointer.id!==event.pointerId)return;
  const prior=pointer;
  pointer=null;
@@ -463,6 +551,7 @@ board.addEventListener('pointercancel',event=>pointerFinish(event,true));
 // Fallback for synthetic clicks, keyboard click events and browsers that do not
 // expose Pointer Events. The normal pointerdown path is always processed once.
 board.addEventListener('click',event=>{
+  if(tool==='group')return;
   if(Date.now()-lastHandledPointer<750)return;
   const selectedField=targetSelection(event);
   if(selectedField){clickExisting(selectedField);return;}
@@ -472,7 +561,30 @@ board.addEventListener('click',event=>{
   }
 });
 document.querySelectorAll('[data-tool]').forEach(button=>button.addEventListener('click',()=>{
+ groupDrag=null;
  tool=button.dataset.tool;render();announce(tool==='place'?'✚ Klicke auf eine freie Fläche, um das ausgewählte Feld zu setzen.':tool==='move'?'↔ Ziehe ein vorhandenes Feld an die gewünschte Position.':'⌫ Tippe auf ein Feld, um es zu löschen.');
+}));
+$('select-track-group').addEventListener('click',()=>{
+  groupDrag=null;pointer=null;
+  if(tool==='group'){
+    tool='move';render();
+    announce('Auswahl aufgehoben. Einzelne Felder lassen sich wieder verschieben.','success');
+    return;
+  }
+  const bounds=trackGroupBounds(draft);
+  if(!bounds){announce('Setze zuerst mindestens ein Lauffeld.','warn');return;}
+  stopPreview();tool='group';assistantPreview=null;render();
+  announce('🔶 Alle '+bounds.count+' vorhandenen Lauffelder ausgewählt. Ziehe sie auf dem Brett als Einheit oder nutze die Pfeile.','success');
+});
+$('deselect-track-group').addEventListener('click',()=>{
+  groupDrag=null;tool='move';render();
+  announce('Gruppenauswahl beendet.','success');
+});
+document.querySelectorAll('[data-group-dir]').forEach(button=>button.addEventListener('click',()=>{
+ if(tool!=='group')return;
+ const [dx,dy]=String(button.dataset.groupDir).split(',').map(Number);
+ const step=groupStep();
+ groupMove(dx*step,dy*step);
 }));
 document.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{
  const kind=button.dataset.mode;
@@ -681,6 +793,9 @@ window.addEventListener('keydown',event=>{
  const directions={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
  const [dx,dy]=directions[event.key]||[];
  if(dx===undefined)return;
+ if(tool==='group'){
+   event.preventDefault();const step=event.shiftKey?settings.spacing:groupStep();groupMove(dx*step,dy*step);return;
+ }
  const p=currentPosition();if(!p)return;
  event.preventDefault();
  const step=event.shiftKey?12:3;
