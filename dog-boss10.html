@@ -14,6 +14,7 @@
  <link rel="stylesheet" href="./dog-boss-endgame.css?v=20261111-endgame-v2">
  <link rel="stylesheet" href="./dog-boss-dodge-cinematic.css?v=20261111-math12-v1">
  <link rel="stylesheet" href="./dog-boss-weapon.css?v=20261111-weapon-v1">
+ <link rel="stylesheet" href="./dog-boss-show-14.css?v=20261111-show14-v1">
  <link rel="stylesheet" href="./dog-boss-math-endgame.css?v=20261111-math-v1">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
@@ -21,8 +22,8 @@
  <script src="./dog-boss-director.js?v=20261111-endgame-v1" defer></script>
  <script src="./dog-boss-combat-fx.js?v=20261111-weapon-v2" defer></script>
  <script src="./dog-boss-preflight.js?v=20261111-v1" defer></script>
- <script src="./dog-boss-live-ui.js?v=20261111-math12-v1" defer></script>
- <script src="./dog-boss10.js?v=20261111-math12-v1" defer></script>
+ <script src="./dog-boss-live-ui.js?v=20261111-show14-v1" defer></script>
+ <script src="./dog-boss10.js?v=20261111-show14-v1" defer></script>
  <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 </head>
 <body>
@@ -186,8 +187,19 @@
      <header class="live-cinematic-header">
       <span>🎬 KAMPFSEQUENZ</span>
       <strong id="cinematic-header">⚔️ TEAMANGRIFF</strong>
-      <span id="cinematic-countdown">4,5 s</span>
+      <span id="cinematic-countdown">14,0 s</span>
      </header>
+     <div class="cinematic-grand-countdown" id="cinematic-grand-countdown" hidden aria-hidden="true">
+       <div class="cinematic-grand-aura"></div>
+       <div class="cinematic-grand-ring" id="cinematic-grand-ring">
+        <div class="cinematic-grand-core">
+         <span id="cinematic-grand-label">NÄCHSTE RUNDE IN</span>
+         <strong id="cinematic-grand-digit">14</strong>
+         <span id="cinematic-grand-next">BEREIT MACHEN</span>
+        </div>
+       </div>
+       <span class="cinematic-grand-rays" aria-hidden="true"></span>
+      </div>
      <div class="live-cinematic-stage" aria-hidden="true">
       <span class="live-cinematic-rune">✦</span>
       <span id="cinematic-action-label">GEMEINSAMER SCHLAG</span>
