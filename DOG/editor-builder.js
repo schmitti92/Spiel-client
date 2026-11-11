@@ -11,8 +11,8 @@ import {
   fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
   guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun,
   trackGroupBounds,translateTrackGroup,firstUnplacedSlot
-} from './editor-model.js?v=8';
-import {referencePoints,buildGoalLane,buildHomeGroup,getTrackConnections,straightGaps,connectStraightGap,SEAT_LABELS} from './board-assistants.js?v=8';
+} from './editor-model.js?v=9';
+import {referencePoints,buildGoalLane,buildHomeGroup,getTrackConnections,straightGaps,connectStraightGap,SEAT_LABELS} from './board-assistants.js?v=9';
 
 const $=id=>document.getElementById(id);
 const board=$('builder-board');
@@ -179,6 +179,15 @@ function refreshAssistantStatus(){
   const refs=referencePoints(draft,assistantSeat),lane=draft.goals[assistantSeat],house=draft.homes[assistantSeat];
   const goalCount=lane.filter(Boolean).length,homeCount=house.filter(Boolean).length;
   $('assist-seat').value=String(assistantSeat);
+  document.querySelectorAll('[data-assist-slot]').forEach(button=>{
+    const [kind,indexText]=String(button.dataset.assistSlot).split(',');
+    const index=Number(indexText);
+    const exists=Boolean(draft[kind]?.[assistantSeat]?.[index]);
+    const active=selected.kind===kind&&selected.owner===assistantSeat&&selected.index===index;
+    button.classList.toggle('filled',exists);
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-label',(kind==='goals'?'Zielfeld ':'Startplatz ')+(index+1)+' '+SEAT_LABELS[assistantSeat]+(exists?' bereits gesetzt':' noch frei'));
+  });
   $('assist-reference').innerHTML=
     '<strong>'+SEAT_LABELS[assistantSeat]+': Ausstieg Feld '+refs.exitIndex+
     (refs.exit?' ✓':' ✗')+' · Zieleinlauf über Startfeld '+refs.goalEntryIndex+(refs.goalEntry?' ✓':' ✗')+'</strong>'+
@@ -693,6 +702,17 @@ function assistanceBuild(kind,preview=false){
    announce('⚠️ Keine Änderung: '+(err?.message||err),'warn');
  }
 }
+document.querySelectorAll('[data-assist-slot]').forEach(button=>button.addEventListener('click',()=>{
+ const [kind,rawIndex]=String(button.dataset.assistSlot).split(',');
+ const index=Number(rawIndex);
+ if(!['goals','homes'].includes(kind)||!Number.isInteger(index)||index<0||index>3)return;
+ selected={kind,index,owner:assistantSeat};
+ mode=kind;tool='place';assistantPreview=null;
+ render();
+ announce('📍 '+(kind==='goals'?'Zielfeld ':'Startplatz ')+(index+1)+' für '+SEAT_LABELS[assistantSeat]+
+   (draft[kind][assistantSeat][index]?' ist bereits gesetzt – mit dem nächsten Tipp kannst du es verschieben.':
+    ' ist frei – tippe jetzt auf das Brett, um es einzusetzen.'),'success');
+}));
 $('assist-seat').addEventListener('change',event=>{
  const seat=Number(event.target.value);
  if(!Number.isInteger(seat)||seat<0||seat>3)return;
