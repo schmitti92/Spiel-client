@@ -61,6 +61,7 @@
   const steps=nodes.steps?[...nodes.steps.querySelectorAll('.live-round-step')]:[];
   let lastHitKey='',lastRound='',lastFeedback='',lastImpactKey='',lastExchangeKey='';
   let lastVitalsEncounter='',lastBossHp=null,lastTeamHp=null,lastHeroVitalsKey='';
+  let heroHpNodes=new Map();
   const fmtHealth=new Intl.NumberFormat('de-DE');
   function popDamage(node,damage,enemy=false){
    if(!node||damage<=0||typeof document==='undefined')return;
@@ -96,15 +97,16 @@
     nodes.groupTrack?.setAttribute?.('aria-valuenow',String(teamHp));
    }else{
     if(nodes.heroHealth)nodes.heroHealth.replaceChildren?.();
-    lastHeroVitalsKey='';
+    lastHeroVitalsKey='';heroHpNodes=new Map();
    }
    const members=view?.members||[];
    if(hasPool&&nodes.heroHealth&&typeof document!=='undefined'){
     const players=Array.isArray(pool.heroes)?pool.heroes:[];
-    const signature=JSON.stringify(players.map(p=>[p.uid,p.hp,p.maxHp,
+    const signature=JSON.stringify(players.map(p=>[p.uid,p.maxHp,
      members.find(m=>m.uid===p.uid)?.name||'']));
     if(signature!==lastHeroVitalsKey){
      lastHeroVitalsKey=signature;
+     heroHpNodes=new Map();
      const cards=players.map(p=>{
       const row=document.createElement('div');
       row.className='live-hero-health-card';
@@ -114,15 +116,21 @@
       const track=document.createElement('span');
       track.className='live-hero-health-bar';
       const fill=document.createElement('span');
-      fill.style.width=(100*clamp(Number(p.hp)||0,0,Math.max(1,p.maxHp))/
-       Math.max(1,p.maxHp)).toFixed(2)+'%';
       track.append?.(fill);
       const value=document.createElement('b');
-      value.textContent=fmtHealth.format(p.hp);
       row.append?.(name,track,value);
+      heroHpNodes.set(p.uid,{fill,value});
       return row;
      });
      nodes.heroHealth.replaceChildren?.(...cards);
+    }
+    for(const p of players){
+     const bar=heroHpNodes.get(p.uid);
+     if(!bar)continue;
+     const pct=100*clamp(Number(p.hp)||0,0,Math.max(1,p.maxHp))/
+      Math.max(1,p.maxHp);
+     if(bar.fill?.style)bar.fill.style.width=pct.toFixed(2)+'%';
+     text(bar.value,fmtHealth.format(p.hp));
     }
    }
    const encounter=String(view?.startedAt||0)+':'+String(view?.attempt||0);
@@ -130,7 +138,7 @@
     lastVitalsEncounter=encounter;
     lastBossHp=liveBoss;lastTeamHp=hasPool?teamHp:null;
    }else{
-    if(view?.phase==='fighting'&&lastBossHp!==null&&liveBoss<lastBossHp)
+    if(['fighting','victory','cooldown'].includes(view?.phase)&&lastBossHp!==null&&liveBoss<lastBossHp)
      popDamage(nodes.bossDamage,lastBossHp-liveBoss,true);
     if(view?.phase==='fighting'&&hasPool&&lastTeamHp!==null&&teamHp<lastTeamHp)
      popDamage(nodes.teamDamage,lastTeamHp-teamHp,false);
