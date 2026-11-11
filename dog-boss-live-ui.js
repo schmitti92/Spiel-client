@@ -43,6 +43,9 @@
    hpFill:$(root,'#live-hp-fill'),hit:$(root,'#live-hit-effects'),
    boss:$(root,'#combat-boss'),combat:$(root,'#combat-scene'),
    shieldFill:$(root,'#live-shield-fill'),shieldValue:$(root,'#live-shield-value'),
+    groupTrack:$(root,'#live-group-hp-track'),bossTrack:$(root,'#live-boss-hp-track'),
+    heroHealth:$(root,'#live-hero-health'),bossDamage:$(root,'#combat-boss-damage'),
+    teamDamage:$(root,'#combat-team-damage'),
    announcement:$(root,'#live-stage-announcement'),
    stageTitle:$(root,'#live-stage-title'),stageScore:$(root,'#live-stage-score'),
    stageSubtitle:$(root,'#live-stage-subtitle'),
@@ -57,6 +60,78 @@
   };
   const steps=nodes.steps?[...nodes.steps.querySelectorAll('.live-round-step')]:[];
   let lastHitKey='',lastRound='',lastFeedback='',lastImpactKey='',lastExchangeKey='';
+  let lastVitalsEncounter='',lastBossHp=null,lastTeamHp=null,lastHeroVitalsKey='';
+  const fmtHealth=new Intl.NumberFormat('de-DE');
+  function popDamage(node,damage,enemy=false){
+   if(!node||damage<=0||typeof document==='undefined')return;
+   const label=document.createElement('strong');
+   label.className=enemy?'combat-damage-pop is-boss':'combat-damage-pop is-team';
+   label.textContent='−'+fmtHealth.format(damage)+' LP';
+   node.replaceChildren?.(label);
+  }
+  function updateHealth(view,current){
+   const maxBoss=Math.max(0,Number(view?.bossHp)||0);
+   const fromServer=Number(view?.bossLiveHp);
+   const liveBoss=Number.isFinite(fromServer)&&view?.bossLiveHp!==undefined?
+    clamp(fromServer,0,maxBoss):
+    current.knownHp===null?maxBoss:current.knownHp;
+   if(nodes.hpFill)nodes.hpFill.style.width=(maxBoss?
+    clamp(100*liveBoss/maxBoss,0,100):100).toFixed(2)+'%';
+   nodes.bossTrack?.setAttribute?.('aria-valuemax',String(maxBoss||1));
+   nodes.bossTrack?.setAttribute?.('aria-valuenow',String(Math.round(liveBoss)));
+   const pool=view?.teamHealth;
+   const hasPool=Number(pool?.maxHp)>0;
+   const teamMax=hasPool?Number(pool.maxHp):0;
+   const teamHp=hasPool?clamp(Number(pool.hp)||0,0,teamMax):0;
+   if(hasPool){
+    if(nodes.shieldFill)nodes.shieldFill.style.width=(100*teamHp/teamMax).toFixed(2)+'%';
+    text(nodes.shieldValue,fmtHealth.format(teamHp)+' / '+fmtHealth.format(teamMax)+' LP');
+    nodes.groupTrack?.setAttribute?.('aria-valuemax',String(teamMax));
+    nodes.groupTrack?.setAttribute?.('aria-valuenow',String(teamHp));
+   }else{
+    if(nodes.heroHealth)nodes.heroHealth.replaceChildren?.();
+    lastHeroVitalsKey='';
+   }
+   const members=view?.members||[];
+   if(hasPool&&nodes.heroHealth&&typeof document!=='undefined'){
+    const players=Array.isArray(pool.heroes)?pool.heroes:[];
+    const signature=JSON.stringify(players.map(p=>[p.uid,p.hp,p.maxHp,
+     members.find(m=>m.uid===p.uid)?.name||'']));
+    if(signature!==lastHeroVitalsKey){
+     lastHeroVitalsKey=signature;
+     const cards=players.map(p=>{
+      const row=document.createElement('div');
+      row.className='live-hero-health-card';
+      const name=document.createElement('span');
+      name.className='live-hero-health-name';
+      name.textContent=members.find(m=>m.uid===p.uid)?.name||'Held';
+      const track=document.createElement('span');
+      track.className='live-hero-health-bar';
+      const fill=document.createElement('span');
+      fill.style.width=(100*clamp(Number(p.hp)||0,0,Math.max(1,p.maxHp))/
+       Math.max(1,p.maxHp)).toFixed(2)+'%';
+      track.append?.(fill);
+      const value=document.createElement('b');
+      value.textContent=fmtHealth.format(p.hp);
+      row.append?.(name,track,value);
+      return row;
+     });
+     nodes.heroHealth.replaceChildren?.(...cards);
+    }
+   }
+   const encounter=String(view?.startedAt||0)+':'+String(view?.attempt||0);
+   if(encounter!==lastVitalsEncounter){
+    lastVitalsEncounter=encounter;
+    lastBossHp=liveBoss;lastTeamHp=hasPool?teamHp:null;
+   }else{
+    if(view?.phase==='fighting'&&lastBossHp!==null&&liveBoss<lastBossHp)
+     popDamage(nodes.bossDamage,lastBossHp-liveBoss,true);
+    if(view?.phase==='fighting'&&hasPool&&lastTeamHp!==null&&teamHp<lastTeamHp)
+     popDamage(nodes.teamDamage,lastTeamHp-teamHp,false);
+    lastBossHp=liveBoss;lastTeamHp=hasPool?teamHp:null;
+   }
+  }
+
   function dodgeImpact(round,record,view,now){
    const attacks=round?.attacks;
    if(!Array.isArray(attacks)||!nodes.hit||view?.phase!=='fighting')return;
@@ -205,8 +280,10 @@
    // Keep the last server-confirmed shield amount visible after settlement.
    const shield=exchange?Math.max(0,Math.min(100,
     Number(view.miniGames.exchange.shield)||0)):100;
-   if(nodes.shieldFill)nodes.shieldFill.style.width=shield+'%';
-   text(nodes.shieldValue,shield+' / 100');
+   if(!Number(view?.teamHealth?.maxHp)){
+    if(nodes.shieldFill)nodes.shieldFill.style.width=shield+'%';
+    text(nodes.shieldValue,shield+' / 100');
+   }
    const scene=fightingExchange?current.rounds.find((round,index)=>{
     const next=current.rounds[index+1];
     const end=next?next.startMs:Number(view.miniGames?.exchange?.durationMs)||40000;
@@ -296,13 +373,7 @@
     text(nodes.promptDetail,phase==='fighting'?'Die nächsten Aufgaben kommen vom Server.':
      'Die Aufgaben erscheinen rechts und wechseln mit Kampfszenen.');
    }
-   // Never pretend server-authoritative HP has changed mid-battle. The
-   // server only confirms the remaining HP with its official result.
-   if(nodes.hpFill){
-    nodes.hpFill.style.width=current.knownHp===null?'100%':
-     (current.initialHp?
-      (current.knownHp/current.initialHp*100).toFixed(1)+'%':'0%');
-   }
+   updateHealth(view,current);
    for(const [i,node] of steps.entries()){
     const round=rounds[i],answer=answers[i];
     node.hidden=!round;
