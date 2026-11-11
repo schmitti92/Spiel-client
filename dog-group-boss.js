@@ -152,7 +152,7 @@
   outcome.textContent=state==='victory'?
    '🏆 '+bossName+' besiegt! '+Number(view?.result?.damage||0).toLocaleString('de-DE')+
     ' Schaden. '+(gate===100?
-    'Das DOG-Schloss ist für eure Gruppe geöffnet!':
+    'Der Sieg an Tor 100 ist gespeichert. Die DOG-Spielberechtigung wird noch separat angebunden!':
     'Die nächste Schmiedestufe ist für eure Gruppe freigeschaltet.'):
    state==='cooldown'?'💀 Boss überlebt! '+Number(view?.result?.damage||0).toLocaleString('de-DE')+
     ' Schaden von '+(view?.bossHp||0).toLocaleString('de-DE')+
