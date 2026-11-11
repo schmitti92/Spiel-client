@@ -137,7 +137,27 @@
 .combat-scene[data-cue="finale"] .combat-hero{animation:combat-attack 1.4s ease-in-out infinite}
 .combat-scene[data-feedback="correct"] .combat-shield-effect{opacity:1;animation:combat-shield 1.1s ease-out both}
 .combat-scene[data-feedback="correct"] .combat-hero-line{filter:drop-shadow(0 0 16px #76dba9)}
-.combat-scene[data-feedback="wrong"] .combat-hero-line{animation:combat-recoil .4s ease-in-out}
+.combat-scene[data-feedback="wrong"] .combat-hero-me{animation:combat-recoil .4s ease-in-out}
+.combat-scene[data-cue="dodge"][data-feedback="correct"] .combat-hero-me{
+ animation:combat-dodge-success .75s ease-out both}
+.combat-scene[data-cue="target"][data-feedback="correct"] .combat-target-effect{
+ filter:drop-shadow(0 0 22px #ffcc69);animation:combat-target-hit .85s ease-out both}
+.combat-scene[data-cue="math"][data-feedback="correct"] .combat-rune-effect{
+ filter:brightness(1.7);animation:combat-rune-success .8s ease-out both}
+.combat-scene[data-cue="reaction"][data-feedback="correct"] .combat-magic-beam{
+ filter:brightness(1.5);animation:combat-beam-success .7s ease-out both}
+@keyframes combat-dodge-success{
+ 0%{transform:translateX(0) rotate(0)}
+ 40%{transform:translateX(-22px) rotate(-12deg)}
+ 80%{transform:translateX(-17px) rotate(-5deg)}
+ 100%{transform:translateX(0) rotate(0)}
+}
+@keyframes combat-target-hit{0%{transform:scale(1);opacity:1}
+ 90%{transform:scale(1.45);opacity:0}100%{opacity:0}}
+@keyframes combat-rune-success{0%{transform:scale(.9);opacity:.3}
+ 55%{transform:scale(1.35);opacity:1}100%{transform:scale(1);opacity:.5}}
+@keyframes combat-beam-success{0%{transform:scaleX(.4);opacity:.3}
+ 65%{transform:scaleX(1.25);opacity:1}100%{transform:scaleX(1);opacity:.5}}
 .combat-scene[data-cue="victory"] .combat-boss{animation:combat-defeated 1.4s ease-out both}
 .combat-scene[data-cue="victory"] .combat-hero{animation:combat-celebrate 1s ease-in-out infinite alternate}
 .combat-scene[data-cue="victory"] .combat-cue{color:#cbffd7;border-color:#75d99d;
