@@ -77,8 +77,10 @@
     (view?.members||[]).filter(m=>m.ready):
     Array.isArray(view?.roster)?view.roster:[];
    const membersByUid=new Map((view?.members||[]).map(m=>[m.uid,m]));
-   const ids=selected.map(m=>m.uid);
-   const nextKey=ids.join('|');
+   const nextKey=selected.map(m=>{
+    const member=membersByUid.get(m.uid);
+    return [m.uid,member?.name||'',member?.isMe===true?'me':'guest'].join(':');
+   }).join('|');
    if(fightersKey===nextKey)return;
    fightersKey=nextKey;
    if(!heroes)return;
