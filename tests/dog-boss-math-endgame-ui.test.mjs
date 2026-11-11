@@ -122,9 +122,9 @@ test('v6 extends only maths to 12 seconds and submits once at the later deadline
  assert.equal(hud.children[2].children[0].style.width,'25.0%');
  body.children[2].click();
  ui.update(view,start+11890,true);
- assert.equal(requests.length,1,'partial answers flush only once at new 12s deadline');
  await Promise.resolve();await Promise.resolve();
+ assert.equal(requests.length,1,'partial answers flush only once at new 12s deadline');
  assert.deepEqual([...requests[0].answer],[0]);
- ui.update(view,start+19000,true);
+ ui.update(view,start+13000,true);
  assert.equal(root.classList.contains('is-math-battle'),false);
 });
