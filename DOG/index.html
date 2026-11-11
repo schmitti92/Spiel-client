@@ -7,7 +7,7 @@
 <title>DOG • Klassisches Team-Brettspiel</title>
 <style>
 :root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;--bg:#07121e;--panel:#102536;--light:#f1f5f7;--muted:#a8bbc8;--gold:#eec47b;--line:rgba(190,218,234,.16)}
-*{box-sizing:border-box}html{min-height:100%;background:#07121e}body{margin:0;min-height:100vh;color:var(--light);background:radial-gradient(ellipse 50% 42% at 28% 7%,#173b4d 0%,transparent 74%),radial-gradient(ellipse 45% 65% at 93% 80%,#132a3b 0%,transparent 72%),#07121e}
+*{box-sizing:border-box}html{min-height:100%;background:#07121e}body{margin:0;min-height:100vh;color:var(--light);background:var(--dog-page-bg,radial-gradient(ellipse 50% 42% at 28% 7%,#173b4d 0%,transparent 74%),radial-gradient(ellipse 45% 65% at 93% 80%,#132a3b 0%,transparent 72%),#07121e)}
 button,select{font:inherit}button{cursor:pointer}button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #eec47b;outline-offset:3px}
 .topbar{height:79px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:0 clamp(16px,3vw,42px);border-bottom:1px solid var(--line);background:rgba(4,14,23,.64)}
 .brand{display:flex;align-items:center;gap:13px}.mark{width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,#fbe6ad,#a6782e);display:grid;place-items:center;color:#132231;font-size:22px;box-shadow:0 6px 20px #0005}.brand h1{font-size:23px;line-height:1.1;letter-spacing:2px;margin:0;color:#f4e3c0}.brand p{font-size:11px;letter-spacing:1.1px;margin:5px 0 0;color:#aebbc5;text-transform:uppercase}
@@ -15,7 +15,7 @@ button,select{font:inherit}button{cursor:pointer}button:focus-visible,select:foc
 main{width:min(1640px,calc(100% - 34px));margin:22px auto 48px}
 .heading{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:18px;flex-wrap:wrap}.heading h2{margin:0;font-weight:850;font-size:clamp(18px,2vw,26px)}.heading p{margin:4px 0 0;color:var(--muted);font-size:13px}.phase-pill{font-size:12px;color:#ffe6ba;padding:9px 12px;border:1px solid #be9d6566;background:#b38c4821;border-radius:99px;font-weight:750}
 .layout{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(330px,.72fr);gap:20px;align-items:start}
-.board-card{padding:clamp(9px,2vw,20px);border-radius:24px;background:linear-gradient(145deg,#193b46,#0c1e2f);border:1px solid #e4c6924a;box-shadow:0 20px 60px #0005,inset 0 1px #ffffff17;position:relative}
+.board-card{padding:clamp(9px,2vw,20px);border-radius:24px;background:var(--dog-frame-bg,linear-gradient(145deg,#193b46,#0c1e2f));border:1px solid #e4c6924a;box-shadow:0 20px 60px #0005,inset 0 1px #ffffff17;position:relative}
 .board-svg{display:block;width:100%;height:auto;max-height:min(74vh,800px);margin:auto;touch-action:manipulation}
 .board-svg .can-pick{cursor:pointer}.board-svg .can-pick circle:first-of-type{filter:drop-shadow(0 0 9px #fff9)}
 .board-editor-link{display:inline-flex;align-items:center;gap:5px;border-radius:22px;padding:7px 12px;text-decoration:none;color:#ffe3ad;font-weight:800;font-size:12px;border:1px solid #dcb77c6e;background:#c6954323}.board-editor-link:hover{background:#dfb3653e}
@@ -25,9 +25,9 @@ main{width:min(1640px,calc(100% - 34px));margin:22px auto 48px}
 .seat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.seat{display:grid;grid-template-columns:12px minmax(0,1fr) auto;align-items:center;gap:7px;background:#061a2a;border:1px solid #b6d8ea21;padding:10px;border-radius:13px}.seat.on{border-color:#edcd7e;box-shadow:inset 0 0 0 1px #edcd7e44}.seat-mark{height:11px;width:11px;border-radius:50%;background:var(--seat);box-shadow:0 0 13px var(--seat)}.seat-name{font-size:12px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seat b{font-size:13px}.seat-extra{grid-column:2/span 2;color:#a5bac7;font-size:10px}
 .hand-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:11px}.hand-head h3{margin:0;font-size:15px}.reveal{border:1px solid #b9d4dc55;color:#f2dfb9;background:#ffffff09;padding:9px 10px;border-radius:10px;font-weight:800;font-size:12px;white-space:nowrap}
 .hand{display:flex;gap:9px;overflow:auto;padding:7px 2px 13px;scrollbar-color:#88a2b5 transparent;scrollbar-width:thin;min-height:128px}
-.playing-card{position:relative;flex:0 0 70px;height:116px;border-radius:12px;border:2px solid #dbe7ef;background:linear-gradient(150deg,#f7fafb,#d1e0e9);color:#152531;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:10px 4px 9px;box-shadow:0 5px 12px #0005;transition:transform .15s,box-shadow .15s}
-.playing-card.special{background:linear-gradient(150deg,#fcf0dd,#e8be84);border-color:#ffe0a3}.playing-card strong{font-size:26px;letter-spacing:-1.5px;font-weight:1000}.playing-card small{font-size:9px;letter-spacing:.5px;font-weight:850}.playing-card em{font-style:normal;font-size:9px;color:#496273}.playing-card.picked{transform:translateY(-6px);border-color:#e9a956;box-shadow:0 0 0 2px #f7cb68bb,0 8px 20px #0007}.playing-card:hover{transform:translateY(-3px)}
-.hand-veil{display:flex;align-items:center;justify-content:center;text-align:center;border:1px dashed #5876896c;background:#061b2a8f;color:#b7cdd9;min-height:120px;width:100%;border-radius:12px;padding:18px;font-size:13px}
+.playing-card{position:relative;flex:0 0 70px;height:116px;border-radius:12px;border:2px solid var(--dog-card-border,#dbe7ef);background:var(--dog-card-face,linear-gradient(150deg,#f7fafb,#d1e0e9));color:var(--dog-card-ink,#152531);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:10px 4px 9px;box-shadow:0 5px 12px #0005;transition:transform .15s,box-shadow .15s}
+.playing-card.special{background:var(--dog-card-special,linear-gradient(150deg,#fcf0dd,#e8be84));border-color:var(--dog-card-special-border,#ffe0a3)}.playing-card strong{font-size:26px;letter-spacing:-1.5px;font-weight:1000}.playing-card small{font-size:9px;letter-spacing:.5px;font-weight:850}.playing-card em{font-style:normal;font-size:9px;color:var(--dog-card-ink,#496273);opacity:.79}.playing-card.picked{transform:translateY(-6px);border-color:#e9a956;box-shadow:0 0 0 2px #f7cb68bb,0 8px 20px #0007}.playing-card:hover{transform:translateY(-3px)}
+.hand-veil{display:flex;flex-direction:column;gap:9px;align-items:center;justify-content:center;text-align:center;border:1px dashed #5876896c;background:#061b2a8f;color:#b7cdd9;min-height:120px;width:100%;border-radius:12px;padding:18px;font-size:13px}
 .move-help{margin:7px 0 10px;color:#aec2cc;font-size:12px}.moves{display:flex;gap:8px;flex-wrap:wrap;max-height:220px;overflow:auto}.move-button{font-size:12px;font-weight:750;padding:9px 10px;color:#f7e4c7;background:#b98e3e22;border:1px solid #e4bd7273;border-radius:11px}.move-button:hover{background:#c6a56244}.move-button.secondary{background:#34536644;color:#d7e6f0;border-color:#c0d9eb44}
 .controls{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}label{font-size:12px;color:#b7c7d0}select{border-radius:10px;background:#081b2c;color:#f1eadc;border:1px solid #ffffff3b;padding:9px 13px}#selected-info{font-size:11px;color:#ffd892}
 .history{max-height:150px;overflow:auto;color:#b6c8d3;font-size:12px;line-height:1.6}.history div:first-child{color:#f3d6a1;font-weight:750}
@@ -37,6 +37,23 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 @media(min-width:1300px){.layout{grid-template-columns:minmax(0,1.16fr) minmax(375px,.72fr)}}
 @media(max-width:1040px){.layout{grid-template-columns:1fr}.board-svg{max-height:680px}.right{grid-template-columns:1fr 1fr}.right .panel:nth-child(2){grid-column:span 2}.right .panel:nth-child(3){grid-column:span 2}}
 @media(max-width:680px){.topbar{height:auto;min-height:75px;padding:12px 14px}.brand h1{font-size:19px}.top-btn{padding:8px 9px;font-size:11px}.top-actions{gap:6px}main{width:calc(100% - 18px);margin:14px auto}.layout{gap:11px}.panel{padding:13px;border-radius:16px}.right{grid-template-columns:1fr;gap:10px}.right .panel:nth-child(2),.right .panel:nth-child(3){grid-column:span 1}.board-card{padding:5px;border-radius:14px}.seat-name{font-size:11px}.playing-card{height:111px;flex-basis:66px}.heading{margin-bottom:10px}.heading h2{font-size:17px}}
+
+/* Visual-only content packs. More designs need only registry entries and assets. */
+.dog-card-backs{display:flex;align-items:center;justify-content:center;padding:4px 0;gap:0;min-height:58px}
+.dog-card-back{display:grid;place-items:center;width:44px;height:60px;flex:none;border-radius:8px;border:2px solid var(--dog-card-border,#b4c5d5);background:var(--dog-card-back,repeating-linear-gradient(45deg,#193958 0 8px,#244d6e 8px 16px));color:#fff9df;text-shadow:0 2px 4px #000a;font-size:24px;box-shadow:0 4px 10px #0008}
+.dog-card-back:nth-child(1){transform:rotate(-12deg) translateX(8px)}.dog-card-back:nth-child(2){z-index:1}.dog-card-back:nth-child(3){transform:rotate(12deg) translateX(-8px)}
+.dog-appearance-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:14px 0}
+.dog-appearance-layout label{display:flex;flex-direction:column;gap:5px;font-weight:800;color:#e2edf4}
+.dog-appearance-layout select{width:100%;min-width:0}
+.dog-appearance-layout label:first-child{grid-column:span 2}
+.dog-appearance-preview{display:flex;align-items:center;justify-content:center;gap:15px;background:#071a2c;border:1px solid #99b7c74d;border-radius:13px;padding:14px;margin:10px 0}
+.dog-appearance-preview .playing-card{cursor:default;transform:none!important}
+.dog-appearance-note{font-size:12px!important;color:#bacdd9!important;line-height:1.5}
+.dog-appearance-buttons{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:13px}
+.dog-appearance-buttons button{font-weight:800;padding:9px 14px;border:1px solid #bbd0da65;border-radius:10px;background:#204259;color:#f0f5f8}
+.dog-appearance-buttons button:last-child{color:#142536;background:#e9bf7d;border-color:#e9bf7d}
+@media(max-width:530px){.dog-appearance-layout{grid-template-columns:1fr}.dog-appearance-layout label:first-child{grid-column:1/-1}}
+
 </style>
 </head>
 <body>
@@ -45,6 +62,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
   <div class="top-actions">
     <a class="top-btn" id="back-link" href="../spielauswahl-lokal.html">← Zur Spiele-Lobby</a>
     <a class="top-btn" href="editor.html" data-dog-editor>🛠 Spielfeldstudio</a>
+    <button class="top-btn" id="appearance-button" type="button">🎨 Designs</button>
     <button class="top-btn" id="rules-button" type="button">📖 Regeln</button>
     <button class="top-btn" id="new-game" type="button">↻ Neues Spiel</button>
   </div>
@@ -95,6 +113,30 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
    </aside>
  </div>
 </main>
+<dialog id="appearance-dialog" aria-labelledby="appearance-title">
+  <h2 id="appearance-title">🎨 DOG-Designstudio</h2>
+  <p>Ändere Hintergrund, Figurenfarben und Kartenmotiv, ohne die Partie zu verändern. Die Auswahl wird auf deinem Gerät gespeichert.</p>
+  <div class="dog-appearance-layout">
+    <label for="appearance-board">🌄 Spielfeld und Hintergrund
+      <select id="appearance-board"></select>
+    </label>
+    <label for="appearance-pieces">🔴 Figurenfarben
+      <select id="appearance-pieces"></select>
+    </label>
+    <label for="appearance-cards">🃏 Kartenmotiv
+      <select id="appearance-cards"></select>
+    </label>
+  </div>
+  <div class="dog-appearance-preview">
+    <div id="appearance-preview-back" class="dog-card-back" aria-label="Vorschau Kartenrückseite">🐾</div>
+    <div class="playing-card" aria-label="Vorschau Kartenvorderseite"><small>DOG</small><strong>7</strong><em>7 teilen</em></div>
+  </div>
+  <p class="dog-appearance-note">Auch zukünftige Event-Hintergründe, eigene Bilddateien und besondere Kartendecks können als neue Designpakete ergänzt werden. In Online-Partien sind diese Einstellungen rein optisch und unabhängig von den Regeln und Karten der Mitspieler.</p>
+  <div class="dog-appearance-buttons">
+    <button type="button" id="appearance-reset">Standarddesign</button>
+    <button type="button" id="appearance-close">Fertig</button>
+  </div>
+</dialog>
 <dialog id="rules">
   <h2>🐾 So funktioniert DOG</h2>
   <p>Rot und Grün spielen gemeinsam gegen Blau und Gelb. Alle beginnen mit vier Figuren zu Hause. Zum Starten benötigt man eine <b>1/11</b>, <b>13</b> oder einen Joker. Die Figuren ziehen über die Außenbahn in ihre vier Zielfelder.</p>
@@ -105,6 +147,6 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 </dialog>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./app.js?v=10"></script>
+<script type="module" src="./app.js?v=11"></script>
 </body>
 </html>
