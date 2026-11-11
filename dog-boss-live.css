@@ -1,0 +1,431 @@
+/* 100 TORE · LIVE BOSS ARENA v1
+ * One responsive battlefield, server-driven minigames; scene changes never
+ * create a separate scrolling section. All art is local and reusable.
+ */
+.stage[data-screen="battle"]{
+ width:min(1710px,calc(100% - 16px));
+ margin:0 auto;
+ padding:8px 0 10px;
+}
+.stage[data-screen="battle"]>.opening,
+.stage[data-screen="battle"]>footer{display:none}
+.stage[data-screen="battle"]>.arena-live{
+ margin:8px 0 0;
+ border-radius:19px;
+ border:2px solid #c99b5d;
+ background:
+  linear-gradient(105deg,#11172aba,#131827cd),
+  url("./dog-boss-art/boss-preflight-background.svg") center/cover no-repeat;
+ box-shadow:0 16px 40px #0009,inset 0 0 55px #090e23a6;
+ isolation:isolate;
+ padding:11px 15px 12px;
+ display:grid;
+ grid-template-rows:auto auto minmax(0,1fr) auto;
+ gap:10px;
+ overflow:hidden;
+ min-width:0;
+}
+.arena-live .live-arena-heading{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:10px;padding:2px 10px 5px;
+ border-bottom:1px solid #e7b8734f;
+}
+.arena-live .live-heading-text{min-width:0}
+.arena-live .live-heading-text small{
+ color:#f7cb84;font-size:clamp(9px,.92vw,13px);
+ letter-spacing:.11em;font-weight:900;
+}
+.arena-live .live-heading-text h2{
+ font:900 clamp(20px,2.1vw,37px)/1.12 Georgia,serif;
+ margin:3px 0 0;
+ color:#ffe7bb;text-shadow:0 3px 8px #000b,0 0 16px #e16c3659;
+}
+.arena-live .status-pill{
+ padding:7px 13px;white-space:nowrap;
+ color:#ffe0a4;background:#3d2631e7;border:1px solid #eeb8787e;
+ font-size:clamp(10px,1vw,14px);
+}
+.arena-live .live-metrics{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,26%);
+ align-items:center;gap:12px;min-width:0;
+}
+.arena-live .live-hp{
+ display:flex;flex-direction:column;gap:4px;
+ padding:5px 13px;border-radius:13px;
+ background:linear-gradient(120deg,#1a1e30e8,#38222fe8);
+ border:1px solid #d69d65aa;
+}
+.arena-live .live-meter-label{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.arena-live .live-meter-label span{font:900 clamp(11px,1.08vw,15px) Georgia,serif;color:#ffdf9e}
+.arena-live .live-meter-label strong{font-size:clamp(13px,1.35vw,20px);font-weight:900}
+.arena-live .live-hp-track{
+ height:15px;overflow:hidden;border-radius:999px;border:1px solid #ffbc7f77;
+ background:#190e1c;box-shadow:inset 0 2px 7px #0009;
+}
+.arena-live .live-hp-track span{
+ display:block;width:100%;height:100%;background:
+ linear-gradient(180deg,#ffa08c,#fa564d 39%,#a61e32 100%);
+ box-shadow:0 0 10px #f26864c3;transition:width .55s ease;
+}
+.arena-live .live-timer{
+ display:flex;flex-direction:column;gap:6px;
+ padding:8px 13px 7px;border:1px solid #d8ad6fa1;border-radius:13px;
+ background:#121d31ec;
+}
+.arena-live .timer-row{padding:0;display:flex;justify-content:space-between}
+.arena-live .timer-row span{font-size:clamp(10px,1vw,14px);color:#ffe3ad;font-weight:900}
+.arena-live .timer-row strong{font:900 clamp(19px,2.1vw,32px) Georgia,serif}
+.arena-live .timer-bar{
+ margin:0;height:9px;border:1px solid #ffffff27;border-radius:99px;
+ background:#0b1323;
+}
+.arena-live .timer-bar span{
+ background:linear-gradient(90deg,#ff8b53,#ffe2a0);
+}
+.arena-live .live-battlefield{
+ display:grid;
+ grid-template-columns:minmax(0,1.77fr) minmax(300px,.9fr);
+ min-height:0;
+ gap:12px;
+}
+.arena-live .combat-scene{
+ min-width:0;min-height:0;height:100%;
+ border:1px solid #ffc36a8a;border-radius:17px;
+ background:
+  radial-gradient(ellipse at 16% 64%,#fa704349,transparent 34%),
+  radial-gradient(ellipse at 74% 70%,#4b98e63d,transparent 43%),
+  linear-gradient(140deg,#0f1823bf,#151d33c9),
+  url("./dog-boss-art/boss-preflight-background.svg") center / cover no-repeat;
+ box-shadow:inset 0 0 50px #03091780;
+ padding:0;
+}
+.arena-live .combat-stage{
+ min-height:0;height:100%;width:100%;
+ display:block;flex:1;
+ overflow:hidden;
+}
+.arena-live .combat-stage::before{
+ bottom:0;height:17%;
+}
+.arena-live .combat-boss{
+ left:1%;right:auto;bottom:5%;
+ width:42%;min-width:0;height:79%;
+ z-index:3;
+ transform-origin:42% 85%;
+}
+.arena-live .combat-boss .monster-art{
+ width:100%;height:calc(100% - 16px);flex:1 1 auto;
+ max-height:none;
+ background-size:contain;
+}
+.arena-live .combat-boss .monster-shadow{
+ flex:0 0 13px;
+}
+.arena-live .combat-hero-line{
+ left:44%;bottom:5%;width:54%;height:76%;
+ max-height:none;align-items:flex-end;
+ z-index:4;gap:clamp(1px,.4vw,6px);
+}
+.arena-live .combat-hero{
+ max-width:33.333%;
+ gap:3px;min-width:0;
+}
+.arena-live .combat-hero-portrait .combat-hero-symbol{
+ width:min(100%,125px);
+ height:clamp(92px,21vh,215px);
+ min-height:0;max-height:70%;
+}
+.arena-live .combat-hero-name{
+ font-size:clamp(9px,.94vw,15px);padding:5px 7px;
+ font-weight:900;
+ background:#0b1827e8;
+ border:1px solid #e2bb79bb;
+ border-radius:8px;text-transform:uppercase;
+}
+.arena-live .combat-cue{
+ z-index:7;
+ margin:0 auto 4px;
+ padding:6px 10px;font-size:clamp(10px,.9vw,13px);
+ max-width:calc(100% - 14px);
+ border-color:#e9a865ba;
+}
+.arena-live .monster-caption{
+ z-index:7;
+ margin:0 8px 6px;
+ padding:5px 7px 7px;
+ max-width:none;
+ font-size:clamp(10px,.95vw,13px);
+ color:#ffe6cc;
+ background:#12192bd9;
+ border:1px solid #c28d5c53;
+ line-height:1.2;
+}
+.arena-live .combat-stage .combat-sword-trail{
+ left:24%;top:46%;width:45%;transform:rotate(160deg) scaleX(.1);
+}
+.arena-live .combat-stage .combat-magic-beam{
+ left:25%;top:50%;width:50%;transform-origin:left;
+}
+.arena-live .combat-stage .combat-target-effect{left:17%;right:auto;top:25%}
+.arena-live .combat-stage .combat-rune-effect{left:46%;top:20%;width:42%}
+.arena-live .combat-stage .combat-shield-effect{left:60%;top:25%}
+.arena-live .combat-stage .combat-danger-zone{left:40%;width:62%}
+.arena-live .live-hit-effects{
+ position:absolute;inset:0;z-index:8;pointer-events:none;overflow:hidden;
+}
+.live-hit-beam{
+ position:absolute;top:54%;left:64%;width:42%;height:12px;
+ transform-origin:left center;transform:rotate(180deg) scaleX(.12);
+ background:linear-gradient(90deg,#eefbff00,#fff4b4,#ffb64c,#ffebca00);
+ border-radius:999px;
+ filter:drop-shadow(0 0 11px #ffbb59);
+ animation:live-hit-beam .8s ease-out both;
+}
+.live-hit-burst{
+ position:absolute;left:25%;top:42%;width:90px;aspect-ratio:1;border-radius:50%;
+ background:radial-gradient(circle,#fff9c4,#ffc25b 22%,#ff6d2945 48%,transparent 70%);
+ animation:live-hit-burst 1.1s ease-out both;
+}
+.live-hit-label{
+ position:absolute;left:20%;top:30%;max-width:42%;
+ font:900 clamp(13px,1.4vw,20px) Georgia,serif;color:#bdffc8;
+ text-shadow:0 2px 9px #02070f,0 0 9px #40da78;
+ animation:live-hit-label 1.35s ease-out both;
+}
+.arena-live .combat-stage .combat-boss.live-boss-struck{
+ animation:live-boss-struck .65s ease-in-out both;
+}
+.arena-live .combat-hero.live-hero-attack{
+ animation:live-hero-attack .65s ease-out both;
+}
+@keyframes live-hit-beam{
+ 0%{opacity:0;transform:rotate(180deg) scaleX(.08)}
+ 30%{opacity:1;transform:rotate(180deg) scaleX(1)}
+ 70%{opacity:1}100%{opacity:0;transform:rotate(180deg) scaleX(1)}
+}
+@keyframes live-hit-burst{
+ 0%,18%{opacity:0;transform:scale(.2)}
+ 42%{opacity:1;transform:scale(1.2)}
+ 100%{opacity:0;transform:scale(1.9)}
+}
+@keyframes live-hit-label{
+ 0%{opacity:0;transform:translateY(14px)}
+ 25%{opacity:1}75%{opacity:1}100%{opacity:0;transform:translateY(-44px)}
+}
+@keyframes live-boss-struck{
+ 0%,100%{transform:none;filter:brightness(1)}
+ 30%,58%{transform:translateX(-14px) rotate(-3deg);filter:brightness(1.75)}
+ 47%{transform:translateX(9px) rotate(2deg)}
+}
+@keyframes live-hero-attack{
+ 0%,100%{transform:none}
+ 38%{transform:translateX(-28px) rotate(-7deg)}
+ 70%{transform:translateX(-12px)}
+}
+.arena-live .live-challenge{
+ min-width:0;min-height:0;
+ border:2px solid #c69a60;
+ border-radius:17px;
+ background:linear-gradient(160deg,#142540f5,#0d1a32f7);
+ box-shadow:inset 0 0 38px #2799c31e,0 7px 30px #0007;
+ display:grid;grid-template-rows:auto minmax(0,1fr);
+ overflow:hidden;
+}
+.arena-live .live-challenge-heading{
+ padding:13px 12px 11px;
+ background:linear-gradient(135deg,#263957,#25243f);
+ border-bottom:1px solid #e5b9808a;
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ color:#ffe5ae;font:900 clamp(12px,1.28vw,19px) Georgia,serif;
+}
+.arena-live #live-round-label{
+ flex:0 0 auto;font:900 11px system-ui,sans-serif;
+ color:#a8e1f9;
+}
+.arena-live .live-challenge-content{
+ min-width:0;min-height:0;
+ display:flex;flex-direction:column;
+ justify-content:center;
+ padding:8px 11px;
+ overflow:hidden;
+}
+.arena-live .live-mini-prompt{
+ margin:auto;text-align:center;
+ display:flex;align-items:center;justify-content:center;flex-direction:column;
+ gap:8px;
+}
+.arena-live .live-mini-prompt[hidden]{display:none}
+.arena-live .live-mini-symbol{font-size:clamp(38px,5.2vw,85px);line-height:1.1}
+.arena-live .live-mini-prompt strong{color:#ffe2b8;font:900 clamp(17px,1.8vw,26px) Georgia,serif}
+.arena-live .live-mini-prompt p{margin:0;color:#c6d5e8;font-size:clamp(11px,1vw,15px);line-height:1.35}
+.arena-live .mini-tactical{
+ width:100%;margin:0;padding:12px 8px;min-height:0;
+ background:transparent;border:0;box-shadow:none;
+}
+.arena-live .mini-tactical[hidden]{display:none}
+.arena-live .mini-lead{
+ flex-direction:column;align-items:center;justify-content:center;
+ text-align:center;gap:6px;margin-bottom:12px;
+}
+.arena-live .mini-title{
+ font:900 clamp(16px,1.55vw,23px) Georgia,serif;color:#ffe2a6;
+}
+.arena-live .mini-hint{font-size:clamp(11px,1vw,15px);line-height:1.4;color:#d7e9ff}
+.arena-live .mini-choices{display:flex;gap:9px;min-height:0;align-items:center}
+.arena-live .mini-question{
+ font-size:clamp(30px,3.2vw,58px);margin:10px 0 16px;
+ line-height:1.12;text-shadow:0 0 15px #4776bf60;
+}
+.arena-live .mini-choice{
+ min-height:clamp(50px,8.8vh,84px);min-width:0;
+ flex:1 1 26%;font-size:clamp(18px,2.1vw,34px);
+ border-radius:12px;
+ border:2px solid #819fe6;
+ box-shadow:0 3px 11px #0008;
+ touch-action:manipulation;
+}
+.arena-live .mini-choice:disabled{opacity:.7}
+.arena-live .mini-math{background:linear-gradient(145deg,#53386e,#2c274f)}
+.arena-live .mini-reaction{flex:1 1 100%;font-size:clamp(15px,1.9vw,25px)}
+.arena-live .mini-meter{height:24px;max-width:100%;margin:12px 4px 0}
+.arena-live .mini-target{min-width:0;flex:1 1 18%;font-size:clamp(20px,2.5vw,38px)}
+.arena-live .mini-target.mini-weakpoint{background:#9c4a33;box-shadow:0 0 17px #ffc5717a}
+.arena-live .mini-feedback{
+ font-weight:800;line-height:1.4;
+ font-size:clamp(11px,1vw,14px);color:#d6ecfb;margin-top:14px;
+}
+.arena-live .outcome{margin:8px 0;padding:12px;max-width:none;
+ font-size:clamp(12px,1.2vw,17px);line-height:1.45}
+.arena-live .outcome[hidden]{display:none}
+.arena-live .live-rounds{
+ display:grid;grid-template-columns:auto 1fr minmax(240px,.8fr);
+ align-items:center;gap:11px;
+ min-height:56px;padding:8px 10px;
+ border:1px solid #d9a86e85;
+ border-radius:12px;
+ background:linear-gradient(95deg,#191b2fec,#182334e8);
+}
+.arena-live .live-rounds-title{
+ color:#f4ce91;font-size:clamp(10px,.9vw,13px);
+ font-weight:900;white-space:nowrap;
+}
+.arena-live .live-round-steps{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;
+ min-width:0;
+}
+.arena-live .live-round-step{
+ display:flex;align-items:center;justify-content:center;
+ min-width:0;min-height:30px;padding:6px 5px;
+ border-radius:8px;border:1px solid #789ac050;
+ background:#1a2b42b3;
+ text-align:center;
+ font-weight:900;font-size:clamp(9px,.85vw,12px);color:#c1cbda;
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.arena-live .live-round-step.is-current{
+ border-color:#f2d28a;
+ color:#ffe8b8;background:#6a452b9c;
+ box-shadow:0 0 13px #f5ad485c;
+}
+.arena-live .live-round-step.is-correct{
+ border-color:#8dddab;color:#bffdd1;background:#17563cac;
+}
+.arena-live .live-round-step.is-wrong{
+ border-color:#f2a69a;color:#ffd2cb;background:#6a313b91;
+}
+.arena-live .live-round-step.is-finished{color:#bac4d6}
+.arena-live .live-feedback{
+ color:#d8e9f9;font-size:clamp(10px,.98vw,14px);
+ font-weight:850;text-align:right;line-height:1.3;
+}
+.arena-live .live-feedback.is-correct{color:#baffbd}
+.arena-live .live-feedback.is-wrong{color:#ffcabf}
+/* Keep the underlying multiplayer controls inside this very same screen. */
+.stage[data-screen="battle"]>.squad{
+ margin:7px 0 0;padding:8px 12px;
+ border:1px solid #ddac6c7b;border-radius:12px;
+ background:#111b2dea;
+ display:flex;gap:10px;align-items:center;justify-content:space-between;
+ min-height:45px;max-height:82px;
+}
+.stage[data-screen="battle"]>.squad>.squad-head,
+.stage[data-screen="battle"]>.squad>.heroes,
+.stage[data-screen="battle"]>.squad>.note{display:none}
+.stage[data-screen="battle"]>.squad>.message{
+ margin:0;min-width:0;flex:1;
+ font-size:clamp(10px,.95vw,13px);
+ line-height:1.25;
+}
+.stage[data-screen="battle"]>.squad>.actions{margin:0;gap:7px;flex:0 0 auto}
+.stage[data-screen="battle"]>.squad>.actions button{
+ min-height:36px;padding:6px 10px;
+ font-size:clamp(10px,.86vw,13px);
+ border-radius:9px;
+}
+.stage[data-screen="battle"]>.squad>.actions [hidden]{display:none}
+@media (orientation:landscape) and (min-width:900px) and (min-height:510px){
+ body:has(.stage[data-screen="battle"]){overflow:hidden}
+ .stage[data-screen="battle"]{
+  height:100vh;height:100dvh;max-height:100dvh;min-height:0;
+  display:grid;grid-template-rows:auto minmax(0,1fr) auto;
+  gap:5px;padding:3px 0 5px;
+ }
+ .stage[data-screen="battle"]>.topnav{margin:0;gap:6px;flex-wrap:nowrap}
+ .stage[data-screen="battle"]>.topnav a,
+ .stage[data-screen="battle"]>.topnav button{
+  min-height:34px;padding:5px 9px;font-size:clamp(10px,1vw,13px);
+ }
+ .stage[data-screen="battle"]>.arena-live{
+  margin:0;min-height:0;height:100%;max-height:100%;
+  gap:clamp(5px,.85vh,9px);
+  padding:clamp(7px,1vh,11px);
+ }
+ .stage[data-screen="battle"]>.squad{margin:0;min-height:38px;padding:5px 9px}
+ .arena-live .live-arena-heading{padding:0 8px 3px}
+ .arena-live .live-heading-text h2{font-size:clamp(20px,2vw,30px)}
+ .arena-live .live-metrics{gap:9px}
+ .arena-live .live-hp{padding:4px 10px;gap:3px}
+ .arena-live .live-hp-track{height:11px}
+ .arena-live .live-timer{padding:5px 9px;gap:3px}
+ .arena-live .timer-bar{height:7px}
+ .arena-live .live-battlefield{gap:9px}
+ .arena-live .combat-hero-portrait .combat-hero-symbol{height:clamp(80px,18vh,155px)}
+ .arena-live .combat-cue{padding:4px 8px;font-size:11px;margin-bottom:2px}
+ .arena-live .monster-caption{font-size:11px;padding:4px 7px;margin-bottom:4px}
+ .arena-live .live-challenge-heading{padding:8px 10px;font-size:clamp(12px,1.2vw,17px)}
+ .arena-live .live-challenge-content{padding:5px 8px}
+ .arena-live .mini-tactical{padding:7px 3px}
+ .arena-live .mini-lead{margin-bottom:7px;gap:4px}
+ .arena-live .mini-question{margin:6px 0 10px;font-size:clamp(29px,3vw,46px)}
+ .arena-live .mini-choice{min-height:clamp(45px,7.1vh,67px)}
+ .arena-live .mini-feedback{margin-top:7px}
+ .arena-live .live-rounds{padding:5px 8px;min-height:40px;gap:7px}
+ .arena-live .live-round-step{min-height:28px;padding:4px}
+}
+/* Portrait phones and small viewports use natural flow so buttons remain usable. */
+@media(max-width:899px),(orientation:portrait){
+ body:has(.stage[data-screen="battle"]){overflow-y:auto}
+ .stage[data-screen="battle"]{height:auto}
+ .arena-live .live-battlefield{grid-template-columns:1fr}
+ .arena-live .combat-scene{height:clamp(230px,40vw,420px)}
+ .arena-live .live-challenge{min-height:250px}
+ .arena-live .live-challenge-content{min-height:225px}
+ .arena-live .live-rounds{grid-template-columns:1fr}
+ .arena-live .live-feedback{text-align:center}
+ .stage[data-screen="battle"]>.squad{flex-wrap:wrap;max-height:none}
+ .stage[data-screen="battle"]>.squad>.actions{flex-wrap:wrap}
+}
+@media(max-width:620px){
+ .arena-live .live-metrics{grid-template-columns:1fr}
+ .arena-live .live-battlefield{gap:9px}
+ .arena-live .combat-hero-portrait .combat-hero-symbol{height:clamp(76px,27vw,120px)}
+ .arena-live .live-challenge-heading{padding:9px}
+ .arena-live .mini-choice{font-size:20px;min-height:53px}
+ .arena-live .live-round-steps{gap:4px}
+ .stage[data-screen="battle"]>.squad>.actions button{min-height:43px}
+}
+@media(prefers-reduced-motion:reduce){
+ .live-hit-beam,.live-hit-burst,.live-hit-label,
+ .arena-live .combat-stage .combat-boss.live-boss-struck,
+ .arena-live .combat-hero.live-hero-attack{animation:none}
+}
