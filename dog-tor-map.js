@@ -25,6 +25,16 @@
   85:'Dunkler Ritter',95:'Todeswächter'
  });
  const $=id=>document.getElementById(id);
+ const PILOT_IDS=['dog-live-bot-nova','dog-live-bot-titan'];
+ const PILOT_KEY='dog:private-100:link-key';
+ const pilotHash=new URLSearchParams(location.hash.slice(1)).get('k');
+ if(pilotHash&&pilotHash.length>=20){
+  try{localStorage.setItem(PILOT_KEY,pilotHash)}catch{}
+  history.replaceState(null,'',location.pathname+location.search);
+ }
+ let pilotKey='';
+ try{pilotKey=localStorage.getItem(PILOT_KEY)||''}catch{}
+ if($('pilot-code'))$('pilot-code').value=pilotKey;
  const worldRoot=$('worlds'),details=$('details'),pathList=[];
  const gateButtons=new Map();
  let mapState=null,selectedGate=null,working=false,mapRequestEpoch=0,lastFight=null;
@@ -128,6 +138,14 @@
  }
  function renderMembers(){
    renderExpeditionProgress();
+   const botsAdded=mapState?.isMember===true&&
+    PILOT_IDS.every(id=>mapState.members?.some(m=>m.uid===id));
+   $('pilot-bots').hidden=botsAdded;
+   $('pilot-add-bots').disabled=working||!auth();
+   if(botsAdded)$('pilot-status').textContent='✅ Nova und Titan spielen mit deinem echten Profil.';
+   else $('pilot-status').textContent=auth()?
+    '🧪 Du kannst die zwei Bots jetzt hinzufügen.':
+    '🔒 Melde dich mit deinem Spielerprofil an.';
   const area=$('team-members');area.replaceChildren();
   const team=mapState?.members||[];
   if(!team.length){
@@ -276,8 +294,47 @@
   }catch(e){
    if(epoch!==mapRequestEpoch)return;
    mapState=null;renderMembers();
-   setTeamStatus('⚠️ Serverpositionen momentan nicht verfügbar. Keine erfundenen Torstände angezeigt.');
+   setTeamStatus(e.message==='DOG_EVENT_NOT_PUBLIC'?
+    '🔒 Die Expedition ist noch nicht öffentlich. Bitte oben die zwei Testspieler hinzufügen.':
+    '⚠️ Serverpositionen momentan nicht verfügbar. Keine erfundenen Torstände angezeigt.');
   }
+ }
+ async function addTwoBots(){
+  const login=auth();
+  if(!login){$('pilot-status').textContent='🔒 Bitte zuerst anmelden.';return;}
+  if(working)return;
+  const code=String($('pilot-code').value||pilotKey).trim();
+  if(code.length<20){
+   $('pilot-status').textContent='🔑 Öffne deinen privaten Link oder gib den Freigabecode ein.';
+   return;
+  }
+  try{localStorage.setItem(PILOT_KEY,code)}catch{}
+  pilotKey=code;working=true;$('pilot-add-bots').disabled=true;
+  $('pilot-status').textContent='⏳ Nova und Titan werden mit deinem echten Profil verbunden …';
+  try{
+   const uid=login.user.uid,token=await login.user.getIdToken();
+   if(auth()?.user?.uid!==uid)throw Error('ACCOUNT_CHANGED');
+   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),18000);
+   let response;
+   try{
+    response=await fetch(API+'/api/dog/live-bots/enable',{
+     method:'POST',cache:'no-store',signal:controller.signal,
+     headers:{Authorization:'Bearer '+token,'Content-Type':'application/json',
+      'X-DOG-Preview-Key':code},
+     body:'{}'
+    });
+   }finally{clearTimeout(timer)}
+   const value=await response.json().catch(()=>({ok:false,error:'DOG_PILOT_UNAVAILABLE'}));
+   if(!response.ok||value.ok!==true)throw Error(value.error||'DOG_PILOT_UNAVAILABLE');
+   if(auth()?.user?.uid!==uid)return;
+   mapState=value;renderMembers();
+   setTeamStatus('✅ Du, Nova und Titan sind verbunden. Du kannst auf der echten Karte Tore spielen.');
+  }catch(e){
+   $('pilot-status').textContent=['DOG_BOTS_OTHER_PLAYERS_IN_TEAM','DOG_BOTS_OTHER_PLAYERS_IN_PROGRESS'].includes(e.message)?
+    '⚠️ In der bisherigen Gruppe sind noch andere echte Spieler. Ihre Daten werden nicht überschrieben.':
+    e.message==='DOG_BOTS_RESERVED'?'🔒 Der private Zugang gehört bereits einem anderen Konto.':
+    '⚠️ Hinzufügen nicht bestätigt: '+e.message;
+  }finally{working=false;$('pilot-add-bots').disabled=!auth();}
  }
  async function joinTeam(){
   const account=auth()?.user?.uid;
@@ -466,6 +523,7 @@
  window.addEventListener('load',drawPaths,{once:true});
  $('gate-detail-close').addEventListener('click',()=>details.close());
  $('team-refresh').addEventListener('click',()=>void reloadMap());
+ $('pilot-add-bots').addEventListener('click',()=>void addTwoBots());
  $('team-join').addEventListener('click',()=>void joinTeam());
  $('gate-battle-button').addEventListener('click',()=>void fightGate(false));
  $('gate-retry-button').addEventListener('click',()=>void fightGate(true));

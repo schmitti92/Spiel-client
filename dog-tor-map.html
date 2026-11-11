@@ -6,10 +6,10 @@
  <meta name="theme-color" content="#08101d">
  <meta name="description" content="Die 100 Tore: Fünf Welten, 80 Einzelkämpfe, 10 Mini-Bosse und 10 gemeinsame Wächter führen euch zum Spiel DOG.">
  <title>🏰 Der Weg zu DOG · Die 100 Tore</title>
- <link rel="stylesheet" href="./dog-tor-map.css?v=20261110-v1">
+ <link rel="stylesheet" href="./dog-tor-map.css?v=20261111-real-bots-v1">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
- <script src="./dog-tor-map.js?v=20261110-v2" defer></script>
+ <script src="./dog-tor-map.js?v=20261111-real-bots-v1" defer></script>
  <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 </head>
 <body>
@@ -40,7 +40,11 @@
     <div><span class="world-label">EURE EXPEDITION</span><h2 id="team-title">🧭 Wo stehen die drei Helden?</h2></div>
     <button type="button" id="team-refresh" class="small-action">↻ Aktualisieren</button>
    </div>
-   <p id="team-status" class="team-status" role="status" aria-live="polite">Prüfe deine Anmeldung und den gemeinsamen Fortschritt …</p>
+   <section id="pilot-bots" class="pilot-bots" aria-label="Zwei Testspieler zur echten Expedition hinzufügen">
+ <div class="pilot-copy"><strong>🤖 Zwei Testspieler hinzufügen</strong><p>Du spielst mit deinem <b>echten Profil</b>. Nova und Titan besetzen die zwei freien Heldenplätze, spielen Boss-Minispiele automatisch und erhalten selbst keine Kisten. Dein Fortschritt, deine Rohstoffe und deine Ausrüstung bleiben normal gespeichert.</p></div>
+ <div class="pilot-actions"><input id="pilot-code" type="password" autocomplete="off" spellcheck="false" aria-label="Privater Freigabecode" placeholder="Privater Code (im Link enthalten)"><button type="button" id="pilot-add-bots" class="team-join">🤖 Zwei Testspieler hinzufügen</button></div>
+ <p id="pilot-status" class="team-status" role="status" aria-live="polite">Nur für dein Spielerprofil freigegeben.</p>
+</section><p id="team-status" class="team-status" role="status" aria-live="polite">Prüfe deine Anmeldung und den gemeinsamen Fortschritt …</p>
    <section id="expedition-progress" class="expedition-progress" hidden aria-label="Gespeicherter Fortschritt der 100 Tore">
 <div class="expedition-counters">
 <span>📍 Höchstes Tor <strong id="ep-high">–</strong></span>

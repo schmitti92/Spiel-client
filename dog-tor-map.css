@@ -136,3 +136,12 @@ button:disabled{opacity:.5;cursor:not-allowed;filter:none}
 #event-castle[data-victory="yes"]{border-color:#a8e7b0;box-shadow:0 0 55px #61b48233}
 #event-castle[data-victory="yes"] .locked{background:#1e4e37;color:#e6ffe5}
 @media(max-width:660px){.expedition-counters{grid-template-columns:repeat(2,minmax(0,1fr))}.ep-milestones{gap:2px}}
+
+/* Genuine expedition with two authenticated-server bots. */
+.pilot-bots{display:flex;align-items:center;flex-wrap:wrap;gap:14px;padding:18px;margin:15px 0 20px;border:1px solid #e2bd7b88;border-radius:17px;background:linear-gradient(125deg,#26374d,#12233b)}
+.pilot-copy{flex:1 1 320px}.pilot-copy strong{font-size:19px;color:#ffe3a5}.pilot-copy p{font-size:13px;line-height:1.55;color:#d5e3f6;margin:7px 0}
+.pilot-actions{flex:1 1 330px;display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.pilot-actions input{flex:1 1 175px;min-width:0;padding:12px;border:1px solid #a7b6cb;border-radius:10px;background:#0c1e34;color:#f6faff}
+.pilot-actions button{flex:1 1 220px;min-height:44px;margin:0}
+#pilot-status{flex-basis:100%;margin:0}
+@media(max-width:650px){.pilot-bots{padding:13px}.pilot-copy,.pilot-actions{flex-basis:100%}.pilot-actions button{flex-basis:100%}}
