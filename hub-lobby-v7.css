@@ -216,16 +216,16 @@ header{background:linear-gradient(90deg,#052947fa,#063453ef);border:1px solid #4
 @media(max-width:600px){#challenge-single-grid>button .mini-players{padding:2px 5px}#challenge-single-grid>button .mini-online{font-size:10px}#challenge-single-grid>button .mini-art{font-size:32px!important}}
 
 /* V6: individual offline-friendly SVG illustrations for all nine original minigames */
-#challenge-single-grid>button:nth-child(1){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/challenge/zeitgefuehl.svg")!important}
-#challenge-single-grid>button:nth-child(2){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/challenge/recheninsel.svg")!important}
-#challenge-single-grid>button:nth-child(3){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/challenge/huetchen.svg")!important}
-#challenge-single-grid>button:nth-child(4){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/challenge/maulwurf.svg")!important}
-#challenge-single-grid>button:nth-child(5){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/challenge/fluss.svg")!important}
-#challenge-single-grid>button:nth-child(6){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/challenge/lava.svg")!important}
-#challenge-single-grid>button:nth-child(7){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/challenge/snake.svg")!important}
-#challenge-single-grid>button:nth-child(8){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/challenge/bomber.svg")!important}
-#challenge-single-grid>button:nth-child(9){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/challenge/preis.svg")!important}
-#challenge-single-grid>button .mini-art{visibility:hidden!important}
+#challenge-single-grid>button:nth-child(1){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/skyjo.webp")!important}
+#challenge-single-grid>button:nth-child(2){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/business.webp")!important}
+#challenge-single-grid>button:nth-child(3){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/barikade.webp")!important}
+#challenge-single-grid>button:nth-child(4){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/kreuzkunter.webp")!important}
+#challenge-single-grid>button:nth-child(5){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/skyjo.webp")!important}
+#challenge-single-grid>button:nth-child(6){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/barikade.webp")!important}
+#challenge-single-grid>button:nth-child(7){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/kreuzkunter.webp")!important}
+#challenge-single-grid>button:nth-child(8){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/barikade.webp")!important}
+#challenge-single-grid>button:nth-child(9){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/business.webp")!important}
+#challenge-single-grid>button .mini-art{visibility:visible!important}
 #challenge-single-grid>button{background-size:cover!important;background-repeat:no-repeat!important}
 #challenge-single-grid>button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .challenge-premium>div:first-child{background:linear-gradient(100deg,#70411f,#0a3a60)!important;border:2px solid #d99b4b!important}
@@ -399,7 +399,7 @@ body.challenge-room-active #challenge-single-grid>button:focus-visible{outline:3
 
 
 /* Premium V20: tropical reference palette and textured room sign, no gameplay changes. */
-body.challenge-room-active{background:linear-gradient(90deg,#00172b50,#00182d18),url("Assets/challenge/tropical-lobby.svg") center/cover fixed!important}
+body.challenge-room-active{background:linear-gradient(90deg,#00172b50,#00182d18),url("Assets/game-backgrounds/Mini-Spiele.png") center/cover fixed!important}
 body.challenge-room-active .shell>header{background:linear-gradient(110deg,#061e3af5,#06416bed)!important;border-color:#42b7e7!important;box-shadow:0 5px 0 #087fc87a,0 14px 28px #00192e8c!important}
 body.challenge-room-active #challenge-settings-panel{background:linear-gradient(145deg,#062842f7,#06304bf4)!important;border:1px solid #4b9dbe!important;border-radius:18px!important}
 body.challenge-room-active #challenge-settings-panel>div:first-child{background:linear-gradient(100deg,#805024,#183c56 62%,#073454)!important;border:1px solid #e3aa54!important;border-radius:13px!important;box-shadow:inset 0 1px 0 #ffe2a55c,0 5px 16px #0006!important}
@@ -533,15 +533,15 @@ body.challenge-room-active #challenge-host-launch #start-btn:not(:disabled){text
 
 /* Premium V26: accurate nine game artworks. Override legacy four-game thumbnails. */
 body.challenge-room-active #challenge-single-grid>button{background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important}
-body.challenge-room-active #challenge-single-grid>button:nth-child(1){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/zeitgefuehl.svg")!important}
-body.challenge-room-active #challenge-single-grid>button:nth-child(2){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/recheninsel.svg")!important}
-body.challenge-room-active #challenge-single-grid>button:nth-child(3){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/huetchen.svg")!important}
-body.challenge-room-active #challenge-single-grid>button:nth-child(4){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/maulwurf.svg")!important}
-body.challenge-room-active #challenge-single-grid>button:nth-child(5){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/fluss.svg")!important}
-body.challenge-room-active #challenge-single-grid>button:nth-child(6){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/lava.svg")!important}
-body.challenge-room-active #challenge-single-grid>button:nth-child(7){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/snake.svg")!important}
-body.challenge-room-active #challenge-single-grid>button:nth-child(8){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/bomber.svg")!important}
-body.challenge-room-active #challenge-single-grid>button:nth-child(9){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/preis.svg")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(1){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/game-backgrounds/skyjo.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(2){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/game-backgrounds/business.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(3){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/game-backgrounds/barikade.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(4){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/game-backgrounds/kreuzkunter.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(5){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/game-backgrounds/skyjo.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(6){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/game-backgrounds/barikade.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(7){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/game-backgrounds/kreuzkunter.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(8){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/game-backgrounds/barikade.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(9){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/game-backgrounds/business.webp")!important}
 body.challenge-room-active #challenge-single-grid>button .mini-art{position:absolute!important;right:8px;top:5px;opacity:.64;font-size:clamp(16px,2.7dvh,24px)!important;min-height:0!important;flex:none!important;pointer-events:none}
 body.challenge-room-active #challenge-single-grid>button strong{margin-top:auto!important}
 body.challenge-room-active #challenge-single-grid>button .mini-meta{position:relative;z-index:1}
@@ -827,17 +827,17 @@ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>.row{
 
 
 /* Premium V38: refresh the first three upgraded illustrated environments. */
-body.challenge-room-active #challenge-single-grid>button:nth-child(1){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/zeitgefuehl.svg?v=38")!important}
-body.challenge-room-active #challenge-single-grid>button:nth-child(5){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/fluss.svg?v=38")!important}
-body.challenge-room-active #challenge-single-grid>button:nth-child(6){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/lava.svg?v=38")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(1){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/game-backgrounds/skyjo.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(5){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/game-backgrounds/skyjo.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(6){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/game-backgrounds/barikade.webp")!important}
 
 /* Premium V39: cache-bust the six new illustrated game cards. */
-body.challenge-room-active #challenge-single-grid>button:nth-child(2){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/recheninsel.svg?v=39")!important}
-body.challenge-room-active #challenge-single-grid>button:nth-child(3){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/huetchen.svg?v=39")!important}
-body.challenge-room-active #challenge-single-grid>button:nth-child(4){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/maulwurf.svg?v=39")!important}
-body.challenge-room-active #challenge-single-grid>button:nth-child(7){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/snake.svg?v=39")!important}
-body.challenge-room-active #challenge-single-grid>button:nth-child(8){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/bomber.svg?v=39")!important}
-body.challenge-room-active #challenge-single-grid>button:nth-child(9){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/preis.svg?v=39")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(2){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/game-backgrounds/business.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(3){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/game-backgrounds/barikade.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(4){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/game-backgrounds/kreuzkunter.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(7){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/game-backgrounds/kreuzkunter.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(8){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/game-backgrounds/barikade.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(9){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/game-backgrounds/business.webp")!important}
 
 
 /* Premium V40 – artwork polish without increasing card or sidebar dimensions. */
@@ -888,3 +888,19 @@ body.challenge-room-active #challenge-single-grid>button[aria-pressed="true"]::a
 }
 #challenge-progress.preisjaeger-original-playing::before,
 #challenge-progress.preisjaeger-original-playing::after{display:none!important}
+
+/* Restored illustrations after the old nine SVG files were removed.
+ * The eleven server-supported Party Challenge games use existing assets,
+ * while their emoji remain visible as a recognizable identity. */
+body.challenge-room-active #challenge-single-grid>button:nth-child(1){background-image:linear-gradient(0deg,#021b2bef,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/kreuzkunter.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(2){background-image:linear-gradient(0deg,#021b2bef,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/business.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(3){background-image:linear-gradient(0deg,#021b2bef,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/skyjo.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(4){background-image:linear-gradient(0deg,#021b2bef,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/business.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(5){background-image:linear-gradient(0deg,#021b2bef,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/barikade.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(6){background-image:linear-gradient(0deg,#021b2bef,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/kreuzkunter.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(7){background-image:linear-gradient(0deg,#021b2bef,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/skyjo.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(8){background-image:linear-gradient(0deg,#021b2bef,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/barikade.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(9){background-image:linear-gradient(0deg,#021b2bef,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/kreuzkunter.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(10){background-image:linear-gradient(0deg,#021b2bef,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/barikade.webp")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(11){background-image:linear-gradient(0deg,#021b2bef,#073e5840 55%,transparent 85%),url("Assets/game-backgrounds/business.webp")!important}
+body.challenge-room-active #challenge-single-grid>button .mini-art{visibility:visible!important}
