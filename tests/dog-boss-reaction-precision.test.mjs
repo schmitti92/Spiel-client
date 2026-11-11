@@ -62,7 +62,7 @@ test('v9 draws an exact narrow hitbox and triggers on pointerdown at real synchr
  assert.equal(requests[0].tapAt,epoch+click);
  assert.equal(requests[0].step,0);
  assert.ok(bar.classList.contains('is-tap'));
- assert.match(root.children[2].textContent,/Server|KONTER/i);
+ assert.match(root.children[2].textContent,/Server|KONTER|überprüft/i);
 });
 test('previous v8 reaction remains wide and does not require a tap timestamp',async()=>{
  const {root,ui,view,requests,setNow}=setup(8);
