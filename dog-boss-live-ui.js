@@ -223,13 +223,14 @@
    }
   }
   function updateCinematic(view,current,round,stage,shieldLoss){
-   if(view?.miniGames?.version!==4){
+   if((view?.miniGames?.version||0)<4){
     if(nodes.cinematic)nodes.cinematic.hidden=true;
     return;
    }
    if(nodes.cinematic)nodes.cinematic.hidden=false;
    const index=round.round,defensive=!!stage?.defensive;
-   const next=current.rounds[index+1],windowEnd=next?.startMs??50000;
+   const next=current.rounds[index+1],windowEnd=next?.startMs??
+    (Number(view?.miniGames?.exchange?.durationMs)||50000);
    const totalMs=windowEnd-round.endMs;
    const remaining=Math.max(0,windowEnd-current.elapsed);
    const fmt=new Intl.NumberFormat('de-DE');
@@ -333,7 +334,7 @@
    const heroNames=participants.length?
     participants.join(', '):'Dein Team';
    const key=String(view.startedAt)+':'+scene.round;
-   if(nodes.announcement)nodes.announcement.hidden=view?.miniGames?.version===4;
+   if(nodes.announcement)nodes.announcement.hidden=(view?.miniGames?.version||0)>=4;
    const title=defensive?'🛡️ BOSS SCHLÄGT ZURÜCK':
     '⚔️ GEMEINSAMER ANGRIFF';
    text(nodes.stageTitle,title);
@@ -370,7 +371,8 @@
     if(nodes.combat?.classList){
      // Late clients join at the same point in the synchronized 2s action,
      // instead of replaying a complete strike while teammates are finished.
-     const offset=Math.min(4499,Math.max(0,current.elapsed-scene.endMs));
+     const offset=Math.min(Math.max(0,Math.floor((view?.miniGames?.exchange?.durationMs||50000)-scene.endMs-100)),
+      Math.max(0,current.elapsed-scene.endMs));
      nodes.combat.style?.setProperty?.('--exchange-offset',(-offset)+'ms');
      nodes.combat.classList.remove('live-exchange-attack');
      nodes.combat.classList.remove('live-exchange-defense');
@@ -381,6 +383,7 @@
   }
   function update(view,now){
    const current=battleModel(view,now);
+   if(nodes.combat?.dataset)nodes.combat.dataset.battleVersion=String(view?.miniGames?.version||0);
    const {phase,rounds,answers,roundIndex,latest}=current;
    const active=phase==='fighting'&&rounds.length>=3;
    const title=phase==='victory'?'🏆 BOSS BESIEGT':
@@ -388,7 +391,7 @@
     phase==='fighting'?'⚔️ LIVE-HERAUSFORDERUNG':'⚔️ BOSS-HERAUSFORDERUNG';
    text($(root,'#live-challenge-heading'),title);
    text(nodes.round,active?'RUNDE '+(roundIndex+1)+' / '+rounds.length:
-    (rounds.length===4?'4 RUNDEN · '+(view?.miniGames?.version===4?'50':'40')+' SEK.':'3 RUNDEN · 30 SEK.'));
+    (rounds.length===4?'4 RUNDEN · '+(view?.miniGames?.version>=5?'60':view?.miniGames?.version===4?'50':'40')+' SEK.':'3 RUNDEN · 30 SEK.'));
    if(nodes.prompt){
     nodes.prompt.hidden=active||phase==='victory'||phase==='cooldown';
     text(nodes.promptTitle,phase==='fighting'?'⚔️ Kampf läuft':
