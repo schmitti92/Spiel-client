@@ -9,6 +9,7 @@ on:
       - 'tests/dog-board-editor-ui.test.mjs'
       - 'tests/dog-board-assistants.test.mjs'
       - 'tests/dog-board-group-move.test.mjs'
+      - 'tests/dog-appearance.test.mjs'
       - '.github/workflows/dog-board-check.yml'
   pull_request:
     paths:
@@ -18,6 +19,7 @@ on:
       - 'tests/dog-board-editor-ui.test.mjs'
       - 'tests/dog-board-assistants.test.mjs'
       - 'tests/dog-board-group-move.test.mjs'
+      - 'tests/dog-appearance.test.mjs'
   workflow_dispatch:
 jobs:
   geometry:
@@ -33,4 +35,5 @@ jobs:
       - run: node --check DOG/editor-model.js
       - run: node --check DOG/board-assistants.js
       - run: node --check DOG/board-layout.js
-      - run: node --test tests/dog-board-layout.test.mjs tests/dog-board-builder.test.mjs tests/dog-board-editor-ui.test.mjs tests/dog-board-assistants.test.mjs tests/dog-board-group-move.test.mjs
+      - run: node --check DOG/appearance-registry.js
+      - run: node --test tests/dog-board-layout.test.mjs tests/dog-board-builder.test.mjs tests/dog-board-editor-ui.test.mjs tests/dog-board-assistants.test.mjs tests/dog-board-group-move.test.mjs tests/dog-appearance.test.mjs
