@@ -123,7 +123,9 @@ for(const button of buttons){
    location.assign(roomLocation(game));
   }catch(e){
    choosing=false;buttons.forEach(b=>b.disabled=false);
-   status(e?.message==='HOST_ONLY'?'Nur der Host kann das Spiel auswählen.':'Die Spielauswahl ist fehlgeschlagen: '+(e.message||'Netzwerkfehler'),true);
+   status(e?.message==='HOST_ONLY'?'Nur der Host kann das Spiel auswählen.':
+     e?.message==='DOG_LOCKED_UNTIL_GATE_100'?'🔒 DOG ist noch gesperrt: Erst wenn eure Heldengruppe Tor 100 besiegt hat, könnt ihr das Spiel öffnen.':
+     'Die Spielauswahl ist fehlgeschlagen: '+(e.message||'Netzwerkfehler'),true);
    void refresh();
   }
  });

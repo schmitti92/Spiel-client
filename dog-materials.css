@@ -188,3 +188,19 @@ nav a:hover,nav button:hover{background:#2f3146}
 .forge-entry>span:nth-child(2){flex:1;display:grid;gap:3px}.forge-entry strong{font:900 21px Georgia,serif}
 .forge-entry small{font-size:11px;color:#d9c6ad;font-weight:700}.forge-entry>span:last-child{font-size:22px}
 .forge-entry:hover{background:linear-gradient(120deg,#765437,#30354c)}
+
+/* Five-stage DOG expedition chest cabinet. Older stored boxes remain below. */
+.chest-section-title{font-size:clamp(17px,2.4vw,22px);margin:24px 0 9px;color:#f4d499;letter-spacing:-.015em}
+.expedition-grid{grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin-top:14px}
+.expedition-grid .crate-choice{min-height:178px;position:relative;overflow:hidden;border:1px solid #c4b7a955}
+.expedition-grid .crate-choice .crate-emoji{font-size:38px;filter:drop-shadow(0 0 12px #ffffff29)}
+.expedition-grid .crate-choice strong{font-size:15px}
+.expedition-grid .crate-choice.tier-wood{background:linear-gradient(145deg,#3c2b20,#1e202a);border-color:#be8d61}
+.expedition-grid .crate-choice.tier-iron{background:linear-gradient(145deg,#38434b,#192635);border-color:#8e9dad}
+.expedition-grid .crate-choice.tier-silver{background:linear-gradient(145deg,#334f71,#1b2637);border-color:#add6ee}
+.expedition-grid .crate-choice.tier-gold{background:linear-gradient(145deg,#745221,#322a20);border-color:#e6bb64}
+.expedition-grid .crate-choice.tier-legendary{background:radial-gradient(circle at 50% 10%,#b27fe64f,transparent 80%),linear-gradient(145deg,#41295d,#191f39);border-color:#ddadff;box-shadow:inset 0 0 18px #d699ff33}
+.expedition-grid .crate-choice:disabled{opacity:.55;filter:saturate(.65)}
+.expedition-grid .crate-choice:enabled{box-shadow:0 4px 19px #0007}
+.expedition-grid .crate-choice:enabled:hover{transform:translateY(-3px);box-shadow:0 8px 24px #0009}
+@media(max-width:550px){.expedition-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}

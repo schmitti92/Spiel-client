@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" role="img" aria-label="Tor 80: Eisenkoloss. Eigene, unverwechselbare Fantasy-Bossfigur.">
+<defs>
+ <radialGradient id="halo"><stop offset="0" stop-color="#bfd5e5" stop-opacity=".53"/><stop offset=".55" stop-color="#bfd5e5" stop-opacity=".19"/><stop offset="1" stop-color="#4b657b" stop-opacity="0"/></radialGradient>
+ <linearGradient id="metal" x1=".08" y1=".04" x2=".95" y2=".95"><stop stop-color="#bfd5e5"/><stop offset=".27" stop-color="#4b657b"/><stop offset=".55" stop-color="#171b2b"/><stop offset=".8" stop-color="#4b657b"/><stop offset="1" stop-color="#0b0d18"/></linearGradient>
+ <linearGradient id="deep" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4b657b"/><stop offset=".45" stop-color="#191b2c"/><stop offset="1" stop-color="#0a0d18"/></linearGradient>
+ <linearGradient id="power" x1="0" y1="0" x2=".25" y2="1"><stop stop-color="#ffffff"/><stop offset=".3" stop-color="#9cf8ff"/><stop offset=".66" stop-color="#bfd5e5"/><stop offset="1" stop-color="#4b657b"/></linearGradient>
+ <linearGradient id="rim"><stop stop-color="#9cf8ff"/><stop offset=".6" stop-color="#bfd5e5"/><stop offset="1" stop-color="#4b657b"/></linearGradient>
+ <filter id="shine"><feGaussianBlur stdDeviation="1.2"/></filter>
+ <filter id="mist"><feGaussianBlur stdDeviation="12"/></filter>
+</defs>
+<ellipse cx="360" cy="355" rx="300" ry="316" fill="url(#halo)"/>
+<ellipse cx="361" cy="679" rx="260" ry="29" fill="#05070c" opacity=".8" filter="url(#mist)"/>
+<g fill="#9cf8ff" opacity=".75"><circle cx="110" cy="151" r="5"/><circle cx="621" cy="147" r="5"/><circle cx="72" cy="434" r="4"/><circle cx="639" cy="531" r="6"/><circle cx="560" cy="70" r="4"/><circle cx="161" cy="619" r="4"/></g>
+
+<g fill="url(#metal)" stroke="#d1ecff" stroke-width="10"><path d="M245 251L170 214L111 277L139 400L204 413L276 342Z"/><path d="M467 254L547 212L619 283L583 405L511 417L443 341Z"/></g>
+<path d="M155 374L86 438L53 546L113 587L198 535L244 427Z" fill="url(#deep)" stroke="#b6d8e8" stroke-width="12"/>
+<path d="M562 374L631 435L662 544L607 586L518 535L478 426Z" fill="url(#deep)" stroke="#b6d8e8" stroke-width="12"/>
+<path d="M220 264L269 223L443 223L495 269L510 477L447 584L278 579L212 477Z" fill="url(#metal)" stroke="#e0f0ff" stroke-width="13"/>
+<path d="M251 307L466 307L476 461L420 534L294 534L244 458Z" fill="url(#deep)" stroke="#9dcce3" stroke-width="10"/>
+<circle cx="354" cy="413" r="91" fill="#192c3c" stroke="#c7e6f1" stroke-width="19"/>
+<circle cx="354" cy="413" r="67" fill="url(#power)" stroke="#f0ffff" stroke-width="10" filter="url(#shine)"/>
+<path d="M354 345L373 387L417 401L377 427L354 476L334 428L289 405L333 390Z" fill="#defaff" stroke="#c8ffff" stroke-width="5"/>
+<path d="M280 201L269 126L297 90L414 90L447 123L436 205L452 264L261 266Z" fill="url(#metal)" stroke="#c5e7ff" stroke-width="13"/>
+<path d="M279 192L323 181L339 213L288 224ZM373 213L388 181L431 192L421 224Z" fill="#9cf7ff" filter="url(#shine)"/>
+<path d="M303 240L411 240L387 263L328 264Z" fill="#101a2a" stroke="#d0ebf5" stroke-width="6"/>
+<path d="M268 119L232 99L230 146L272 167M439 118L479 100L481 153L442 171" fill="url(#deep)" stroke="#c9ddec" stroke-width="9"/>
+<path d="M271 552L228 653L273 682L352 661L342 554ZM390 555L409 665L494 680L527 649L451 552Z" fill="url(#metal)" stroke="#c0ddec" stroke-width="12"/>
+<g fill="#e1f5ff"><circle cx="240" cy="285" r="7"/><circle cx="475" cy="284" r="7"/><circle cx="230" cy="469" r="7"/><circle cx="480" cy="468" r="7"/><circle cx="288" cy="588" r="7"/><circle cx="436" cy="589" r="7"/></g>
+</svg>

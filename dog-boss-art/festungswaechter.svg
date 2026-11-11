@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" role="img" aria-label="Tor 90: Festungswächter. Eigene, unverwechselbare Fantasy-Bossfigur.">
+<defs>
+ <radialGradient id="halo"><stop offset="0" stop-color="#ffa2b0" stop-opacity=".53"/><stop offset=".55" stop-color="#ffa2b0" stop-opacity=".19"/><stop offset="1" stop-color="#8b4a5b" stop-opacity="0"/></radialGradient>
+ <linearGradient id="metal" x1=".08" y1=".04" x2=".95" y2=".95"><stop stop-color="#ffa2b0"/><stop offset=".27" stop-color="#8b4a5b"/><stop offset=".55" stop-color="#171b2b"/><stop offset=".8" stop-color="#8b4a5b"/><stop offset="1" stop-color="#0b0d18"/></linearGradient>
+ <linearGradient id="deep" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8b4a5b"/><stop offset=".45" stop-color="#191b2c"/><stop offset="1" stop-color="#0a0d18"/></linearGradient>
+ <linearGradient id="power" x1="0" y1="0" x2=".25" y2="1"><stop stop-color="#ffffff"/><stop offset=".3" stop-color="#ffe4b1"/><stop offset=".66" stop-color="#ffa2b0"/><stop offset="1" stop-color="#8b4a5b"/></linearGradient>
+ <linearGradient id="rim"><stop stop-color="#ffe4b1"/><stop offset=".6" stop-color="#ffa2b0"/><stop offset="1" stop-color="#8b4a5b"/></linearGradient>
+ <filter id="shine"><feGaussianBlur stdDeviation="1.2"/></filter>
+ <filter id="mist"><feGaussianBlur stdDeviation="12"/></filter>
+</defs>
+<ellipse cx="360" cy="355" rx="300" ry="316" fill="url(#halo)"/>
+<ellipse cx="361" cy="679" rx="260" ry="29" fill="#05070c" opacity=".8" filter="url(#mist)"/>
+<g fill="#ffe4b1" opacity=".75"><circle cx="110" cy="151" r="5"/><circle cx="621" cy="147" r="5"/><circle cx="72" cy="434" r="4"/><circle cx="639" cy="531" r="6"/><circle cx="560" cy="70" r="4"/><circle cx="161" cy="619" r="4"/></g>
+
+<path d="M222 213L190 135L243 148L257 98L317 145L360 97L402 143L451 99L470 152L525 138L497 230L470 318L242 315Z" fill="url(#metal)" stroke="#e1a7af" stroke-width="13"/>
+<path d="M248 199L248 146L289 146L289 198L323 198L323 145L367 145L367 199L411 199L411 147L458 147L458 201L487 201L478 263L240 262Z" fill="url(#deep)" stroke="#ffb8ad" stroke-width="10"/>
+<path d="M232 294L168 252L114 303L128 411L211 430L265 356ZM477 292L549 249L608 302L596 413L502 437L441 359Z" fill="url(#metal)" stroke="#e3acb2" stroke-width="12"/>
+<path d="M157 406L102 470L83 585L151 614L221 550L254 418ZM561 401L635 470L641 583L580 615L503 549L476 417Z" fill="url(#deep)" stroke="#dab8b7" stroke-width="11"/>
+<path d="M260 280L461 279L508 334L480 560L419 631L284 633L231 560L220 333Z" fill="url(#metal)" stroke="#ffc1bc" stroke-width="12"/>
+<path d="M263 355L455 355L455 502L411 574L295 573L265 504Z" fill="url(#deep)" stroke="#ffc6b9" stroke-width="8"/>
+<path d="M317 403L356 387L395 404L385 462L324 459Z" fill="url(#power)" stroke="#ffe2b8" stroke-width="8"/>
+<path d="M266 265L279 236L432 236L447 263L445 315L271 315Z" fill="#151925" stroke="#e4adad" stroke-width="9"/>
+<path d="M276 278L328 279L312 294L282 297ZM385 278L440 280L434 296L397 296Z" fill="#fff3be" filter="url(#shine)"/>
+<path d="M284 318L431 317L406 334L304 332Z" fill="#271d29" stroke="#e6b8b2" stroke-width="5"/>
+<path d="M241 552L214 656L289 677L348 662L333 576ZM385 577L414 665L488 678L534 656L465 546Z" fill="url(#metal)" stroke="#ffbdb3" stroke-width="12"/>
+<path d="M105 395L51 381L38 534L121 551L175 512L169 406Z" fill="url(#metal)" stroke="#ffe0c2" stroke-width="12"/>
+<path d="M60 426L148 425L148 512L67 518Z" fill="url(#deep)" stroke="#ffb69c" stroke-width="9"/>
+<path d="M552 382L650 362L653 420L597 445L646 540" fill="none" stroke="#ffc0ae" stroke-width="25"/>
+<path d="M594 420L643 396L668 464L643 487L588 457Z" fill="url(#power)" stroke="#ffdebd" stroke-width="8"/>
+<g fill="#ffe2b1"><circle cx="257" cy="351" r="7"/><circle cx="453" cy="349" r="7"/><circle cx="249" cy="544" r="7"/><circle cx="464" cy="542" r="7"/></g>
+</svg>

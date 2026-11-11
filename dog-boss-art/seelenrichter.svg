@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" role="img" aria-label="Tor 70: Seelenrichter. Eigene, unverwechselbare Fantasy-Bossfigur.">
+<defs>
+ <radialGradient id="halo"><stop offset="0" stop-color="#cd9dff" stop-opacity=".53"/><stop offset=".55" stop-color="#cd9dff" stop-opacity=".19"/><stop offset="1" stop-color="#554179" stop-opacity="0"/></radialGradient>
+ <linearGradient id="metal" x1=".08" y1=".04" x2=".95" y2=".95"><stop stop-color="#cd9dff"/><stop offset=".27" stop-color="#554179"/><stop offset=".55" stop-color="#171b2b"/><stop offset=".8" stop-color="#554179"/><stop offset="1" stop-color="#0b0d18"/></linearGradient>
+ <linearGradient id="deep" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#554179"/><stop offset=".45" stop-color="#191b2c"/><stop offset="1" stop-color="#0a0d18"/></linearGradient>
+ <linearGradient id="power" x1="0" y1="0" x2=".25" y2="1"><stop stop-color="#ffffff"/><stop offset=".3" stop-color="#fcddff"/><stop offset=".66" stop-color="#cd9dff"/><stop offset="1" stop-color="#554179"/></linearGradient>
+ <linearGradient id="rim"><stop stop-color="#fcddff"/><stop offset=".6" stop-color="#cd9dff"/><stop offset="1" stop-color="#554179"/></linearGradient>
+ <filter id="shine"><feGaussianBlur stdDeviation="1.2"/></filter>
+ <filter id="mist"><feGaussianBlur stdDeviation="12"/></filter>
+</defs>
+<ellipse cx="360" cy="355" rx="300" ry="316" fill="url(#halo)"/>
+<ellipse cx="361" cy="679" rx="260" ry="29" fill="#05070c" opacity=".8" filter="url(#mist)"/>
+<g fill="#fcddff" opacity=".75"><circle cx="110" cy="151" r="5"/><circle cx="621" cy="147" r="5"/><circle cx="72" cy="434" r="4"/><circle cx="639" cy="531" r="6"/><circle cx="560" cy="70" r="4"/><circle cx="161" cy="619" r="4"/></g>
+
+<circle cx="360" cy="261" r="185" fill="none" stroke="#cfb7ff" stroke-width="12" opacity=".66"/>
+<circle cx="360" cy="261" r="149" fill="none" stroke="#b585ff" stroke-width="7" stroke-dasharray="30 25" opacity=".8"/>
+<path d="M274 241Q190 304 150 457L69 626L247 582L201 677L508 673L469 575L645 637L559 456L449 239Z" fill="url(#deep)" stroke="#aa88de" stroke-width="13"/>
+<path d="M238 307L170 411L132 546L203 565L270 451ZM483 300L555 412L595 542L527 561L444 452Z" fill="url(#metal)" stroke="#b89ced" stroke-width="11"/>
+<path d="M274 252Q284 137 357 112Q440 139 445 252L470 350L416 424L301 417L247 347Z" fill="#151228" stroke="#c7b0ff" stroke-width="14"/>
+<path d="M273 273L319 224L359 244L403 222L449 274L416 322L302 325Z" fill="url(#metal)" stroke="#e0ccff" stroke-width="10"/>
+<path d="M291 311L335 329L307 351Z" fill="#f9deff" filter="url(#shine)"/><path d="M378 331L424 312L411 351Z" fill="#f9deff" filter="url(#shine)"/>
+<path d="M315 369L354 395L405 367L395 402L350 420Z" fill="#19122d" stroke="#a98ad8" stroke-width="8"/>
+<path d="M255 465L308 490L357 460L412 496L463 463L456 581L263 589Z" fill="url(#metal)" stroke="#d1baff" stroke-width="9"/>
+<path d="M350 465L384 514L359 558L335 517Z" fill="url(#power)" stroke="#f2d5ff" stroke-width="7"/>
+<path d="M155 395L132 234M132 234L100 273L164 275" fill="none" stroke="#e2c6ff" stroke-width="16"/>
+<path d="M96 279L70 366L132 397L197 367L166 279Z" fill="url(#power)" stroke="#e2c9ff" stroke-width="9"/>
+<path d="M535 394L566 235M566 235L537 278L602 270" fill="none" stroke="#e2c6ff" stroke-width="16"/>
+<path d="M503 275L467 360L533 399L602 358L573 274Z" fill="url(#power)" stroke="#e2c9ff" stroke-width="9"/>
+<path d="M86 378Q130 402 187 380M482 380Q535 402 592 373" fill="none" stroke="#fff2ff" stroke-width="9"/>
+<g fill="none" stroke="#f2d7ff" stroke-width="7"><path d="M350 51L374 83L350 111L325 82Z"/><path d="M120 159L143 190L119 220L96 189Z"/><path d="M572 157L598 189L570 217L544 189Z"/></g>
+</svg>

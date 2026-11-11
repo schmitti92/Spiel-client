@@ -1,0 +1,90 @@
+name: DOG 100-Tore Karte
+on:
+  push:
+    paths:
+      - dog-tor-map.html
+      - dog-tor-map.css
+      - dog-tor-map.js
+      - dog-boss10.html
+      - dog-boss10.css
+      - dog-boss10.js
+      - dog-group-boss.html
+      - dog-group-boss.js
+      - dog-boss-mini-ui.js
+      - dog-boss-combat-fx.js
+      - 'dog-boss-art/**'
+      - dog-ascension.html
+      - dog-ascension.css
+      - dog-ascension.js
+      - dog-expedition.html
+      - dog-materials-ui.js
+      - dog-materials.css
+      - tests/dog-tor-map.test.mjs
+      - tests/dog-first-loop-ui.test.mjs
+      - tests/dog-group-boss-ui.test.mjs
+      - tests/dog-boss-minigames-ui.test.mjs
+      - tests/dog-boss-combat-fx.test.mjs
+      - tests/dog-chests-ui.test.mjs
+      - .github/workflows/dog-tor-map-check.yml
+  pull_request:
+    paths:
+      - dog-tor-map.html
+      - dog-tor-map.css
+      - dog-tor-map.js
+      - dog-boss10.html
+      - dog-boss10.css
+      - dog-boss10.js
+      - dog-group-boss.html
+      - dog-group-boss.js
+      - dog-boss-mini-ui.js
+      - dog-boss-combat-fx.js
+      - 'dog-boss-art/**'
+      - dog-ascension.html
+      - dog-ascension.css
+      - dog-ascension.js
+      - dog-expedition.html
+      - dog-materials-ui.js
+      - dog-materials.css
+      - tests/dog-tor-map.test.mjs
+      - tests/dog-first-loop-ui.test.mjs
+      - tests/dog-group-boss-ui.test.mjs
+      - tests/dog-boss-minigames-ui.test.mjs
+      - tests/dog-boss-combat-fx.test.mjs
+      - tests/dog-chests-ui.test.mjs
+      - .github/workflows/dog-tor-map-check.yml
+
+jobs:
+  dog-map:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate unique boss and hero SVG artworks
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          files = sorted(Path('dog-boss-art').glob('*.svg'))
+          assert len(files) >= 13, "Missing individual boss or hero sprites"
+          for file in files:
+              root = ET.parse(file).getroot()
+              assert root.tag.endswith('svg'), f"{file}: not an SVG"
+              assert root.attrib.get('viewBox'), f"{file}: no viewBox"
+              assert not any(e.tag.split('}')[-1] in ('script','foreignObject','image')
+                             for e in root.iter()), f"{file}: disallowed embedded content"
+          print(f"Validated {len(files)} standalone SVG artworks")
+          PY
+      - name: Check JavaScript syntax
+        run: |
+          node --check dog-tor-map.js
+          node --check dog-boss10.js
+          node --check dog-group-boss.js
+          node --check dog-boss-mini-ui.js
+          node --check dog-boss-combat-fx.js
+          node --check dog-ascension.js
+          node --check dog-materials-ui.js
+      - name: Test map structure and safe DOG unlock placeholder
+        run: node --test tests/dog-tor-map.test.mjs tests/dog-first-loop-ui.test.mjs tests/dog-group-boss-ui.test.mjs tests/dog-boss-minigames-ui.test.mjs tests/dog-boss-combat-fx.test.mjs tests/dog-chests-ui.test.mjs

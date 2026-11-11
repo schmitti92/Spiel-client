@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="de">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta name="theme-color" content="#0c1019">
+ <meta name="description" content="Die Aufstiegsschmiede: Waffen und Rüstung auf Level 10, freigeschaltet durch gemeinsame Siege bei den 100 Toren.">
+ <title>⚒️ Aufstiegsschmiede · Die 100 Tore</title>
+ <link rel="stylesheet" href="./dog-ascension.css?v=20261110-v1">
+ <script src="./profile-config.js"></script>
+ <script src="./profile-auth.js"></script>
+ <script src="./dog-ascension.js?v=20261110-v1" defer></script>
+ <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
+</head>
+<body>
+ <main class="shell">
+  <nav class="nav" aria-label="Navigation">
+   <a id="to-map" href="./dog-tor-map.html">← Zur 100-Tore-Karte</a>
+   <a id="to-boss" href="./dog-boss10.html">🐉 Boss 10</a>
+   <a id="to-inventory" href="./dog-expedition.html">📦 Rohstoffe</a>
+   <button id="reload" type="button">↻ Aktualisieren</button>
+  </nav>
+  <header class="hero">
+   <div class="kicker">⚒️ DIE 100 TORE · DEIN PERSÖNLICHER AUFSTIEG</div>
+   <h1>Schmiede der <span>Helden</span></h1>
+   <p>Besiegt die Wächter gemeinsam und erweitert eure Schmiedestufen. Die freigeschalteten Level gelten für alle drei – Rohstoffe und Aufwertungen bleiben persönlich.</p>
+   <div class="forge-rank">Aktuelle gemeinsame Schmiedestufe <strong id="forge-level">– / 10</strong></div>
+  </header>
+  <section class="notice">
+   <strong>🏆 Gemeinsamer Sieg → persönliche Verbesserung</strong>
+   <p>Nach Boss 10 könnt ihr Waffe und Rüstung bis Level 2 aufwerten. Jede Stufe verdoppelt den Grundwert. Benötigte Rohstoffe werden erst beim serverbestätigten Versuch verbraucht. Spätere Level erfordern weitere gemeinsame Boss-Siege.</p>
+  </section>
+  <p id="status" class="status" role="status" aria-live="polite">Verbinde die Schmiede …</p>
+  <section class="equipment" aria-label="Ausrüstungsverbesserungen">
+   <article class="forge-card">
+    <div class="equip-icon" aria-hidden="true">⚔️</div>
+    <div class="equip-name">Waffe</div>
+    <div class="equip-level" id="weapon-level">Level –</div>
+    <div class="equip-base" id="weapon-base">Grundschaden: –</div>
+    <div class="equip-cost" id="weapon-cost">Materialien laden …</div>
+    <button class="upgrade" data-type="weapon" id="upgrade-weapon" disabled>⚒️ Waffe verbessern</button>
+   </article>
+   <article class="forge-card">
+    <div class="equip-icon" aria-hidden="true">🛡️</div>
+    <div class="equip-name">Rüstung</div>
+    <div class="equip-level" id="armor-level">Level –</div>
+    <div class="equip-base" id="armor-base">Grundschutz: –</div>
+    <div class="equip-cost" id="armor-cost">Materialien laden …</div>
+    <button class="upgrade" data-type="armor" id="upgrade-armor" disabled>⚒️ Rüstung verbessern</button>
+   </article>
+  </section>
+  <section class="extras">
+   <h2>🎒 Rohstofflager</h2>
+   <div id="inventory" class="inventory">Rohstoffe werden geladen …</div>
+   <button id="retry" type="button" hidden>↻ Offenen Schmiedeversuch sicher wiederholen</button>
+   <p class="fine">Diese Ausbauschmiede verarbeitet nur die neuen Level 1–10. Bereits existierende Ausrüstung über Level 10 bleibt erhalten und wird hier nicht automatisch herabgestuft. Das bisherige Schmiedemenü wird bis zur vollständigen Migration getrennt behandelt.</p>
+  </section>
+  <footer>Die 100 Tore · Neue Aufstiegsschmiede · Sicher durch serverseitige Transaktionen</footer>
+ </main>
+</body>
+</html>

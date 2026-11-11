@@ -15,6 +15,13 @@ button,select{font:inherit}button{cursor:pointer}button:focus-visible,select:foc
 main{width:min(1640px,calc(100% - 34px));margin:22px auto 48px}
 .heading{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:18px;flex-wrap:wrap}.heading h2{margin:0;font-weight:850;font-size:clamp(18px,2vw,26px)}.heading p{margin:4px 0 0;color:var(--muted);font-size:13px}.phase-pill{font-size:12px;color:#ffe6ba;padding:9px 12px;border:1px solid #be9d6566;background:#b38c4821;border-radius:99px;font-weight:750}
 .layout{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(330px,.72fr);gap:20px;align-items:start}
+.layout[hidden]{display:none}
+.dog-unlock-panel{width:min(760px,100%);margin:20px auto;padding:clamp(22px,5vw,46px);border:1px solid #e6c47b66;border-radius:24px;background:radial-gradient(circle at 80% 10%,#87612936,transparent 50%),#122a3d;text-align:center;box-shadow:0 20px 60px #0005}
+.dog-unlock-panel[hidden]{display:none}
+.dog-unlock-icon{font-size:56px;margin-bottom:12px}
+.dog-unlock-panel h2{color:#f6dda1;font-size:clamp(22px,3vw,29px);margin:0 0 10px}
+.dog-unlock-panel p{color:#d4e2eb;line-height:1.6;margin:8px auto 19px;max-width:530px}
+.dog-unlock-panel a{display:inline-block;border:1px solid #edc87a;border-radius:13px;background:#e8be73;color:#142438;text-decoration:none;font-weight:850;padding:13px 22px}
 .board-card{padding:clamp(9px,2vw,20px);border-radius:24px;background:linear-gradient(145deg,#193b46,#0c1e2f);border:1px solid #e4c6924a;box-shadow:0 20px 60px #0005,inset 0 1px #ffffff17;position:relative}
 .board-svg{display:block;width:100%;height:auto;max-height:min(74vh,800px);margin:auto;touch-action:manipulation}
 .board-svg .can-pick{cursor:pointer}.board-svg .can-pick circle:first-of-type{filter:drop-shadow(0 0 9px #fff9)}
@@ -54,7 +61,13 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
    <div><h2>Gemeinsam gewinnen. Clever Karten spielen.</h2><p>2 Teams · 4 Spielfarben · klassische Kartenregeln</p></div>
    <div class="phase-pill"><span id="phase">Kartenrunde</span> · Runde <span id="round">1</span></div>
  </div>
- <div class="layout">
+ <section id="dog-access-gate" class="dog-unlock-panel" role="status" aria-live="polite">
+   <div class="dog-unlock-icon" aria-hidden="true">🔒🐾</div>
+   <h2>DOG – das Geheimnis hinter Tor 100</h2>
+   <p id="dog-access-message">Dein Online-Profil und die gemeinsame Freischaltung werden geprüft …</p>
+   <a href="../dog-expedition.html">⚔️ Zurück zu den 100 Toren</a>
+ </section>
+ <div class="layout" id="dog-game-layout" hidden>
    <section class="board-card" aria-label="DOG-Spielfeld">
      <svg id="board" class="board-svg" viewBox="0 0 760 760" role="img" aria-label="Spielbrett mit vier Farbrouten, Start- und Zielbahnen"></svg>
      <div class="teams">

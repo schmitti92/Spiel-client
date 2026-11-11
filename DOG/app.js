@@ -339,5 +339,69 @@ $('new-game').addEventListener('click',()=>{if(confirm('Neue Partie starten? Der
 $('human-count').addEventListener('change',()=>{if(confirm('Spielerzahl ändern und eine neue Partie beginnen?'))newGame();else $('human-count').value=String(humans);});
 $('rules-button').addEventListener('click',()=>{$('rules').showModal();});
 $('rules-close').addEventListener('click',()=>{$('rules').close();});
-if(online){void initOnline();}else if(!recover())newGame();else{render();scheduleAI();}
+// Local DOG is a reward for the original three heroes after their
+// server-confirmed shared Tor-100 victory. A static HTML page itself is not
+// the online security boundary: the shared-room backend independently
+// rejects unauthorised DOG matches.
+const accessGate=$('dog-access-gate');
+const dogLayout=$('dog-game-layout');
+const accessMessage=$('dog-access-message');
+let localAccessUid=null,localAccessChecking=null;
+const currentAccessUid=()=>{
+ const state=window.SpielOnline?.state?.();
+ return state?.status==='online'&&state.profile?.setupComplete!==false&&
+  state.user?.getIdToken?state.user.uid:null;
+};
+function showLocalLock(message){
+ dogLayout.hidden=true;accessGate.hidden=false;
+ accessMessage.textContent=message;
+}
+async function verifyLocalDogAccess(){
+ if(online)return;
+ const uid=currentAccessUid();
+ if(!uid){
+  if(localAccessUid){localAccessUid=null;game=null;if(aiTimer)clearTimeout(aiTimer);}
+  showLocalLock('🔐 Melde dich mit einem deiner drei Event-Helden an. DOG wird erst nach dem gemeinsamen Sieg über Tor 100 freigeschaltet.');
+  return;
+ }
+ if(localAccessUid===uid||localAccessChecking)return;
+ localAccessChecking=uid;
+ showLocalLock('⌛ Wir prüfen deine DOG-Freischaltung auf dem Spielserver …');
+ try{
+  const token=await window.SpielOnline.state().user.getIdToken();
+  if(currentAccessUid()!==uid)return;
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),15000);
+  let data;
+  try{
+   const response=await fetch(apiBase+'/api/hub/dog-access',{
+    headers:{Authorization:'Bearer '+token},cache:'no-store',signal:controller.signal
+   });
+   data=await response.json();
+   if(!response.ok||data.ok!==true)throw Error(data.error||'DOG_ACCESS_UNAVAILABLE');
+  }finally{clearTimeout(timeout);}
+  if(currentAccessUid()!==uid)return;
+  if(data.unlocked!==true){
+   showLocalLock('🔒 DOG ist noch gesperrt. Besiegt gemeinsam den letzten Wächter an Tor 100, damit alle drei Helden das Spiel erhalten.');
+   return;
+  }
+  localAccessUid=uid;dogLayout.hidden=false;accessGate.hidden=true;
+  if(!recover())newGame();else{render();scheduleAI();}
+ }catch{
+  if(currentAccessUid()===uid)showLocalLock('⚠️ Der Server konnte die Freischaltung nicht bestätigen. Bitte prüfe deine Verbindung und melde dich erneut an.');
+ }finally{
+  localAccessChecking=null;
+  if(currentAccessUid()&&currentAccessUid()!==uid)void verifyLocalDogAccess();
+ }
+}
+if(online){dogLayout.hidden=false;accessGate.hidden=true;void initOnline();}
+else{
+ window.addEventListener('spielonline-change',()=>{
+  if(localAccessUid&&currentAccessUid()!==localAccessUid){
+   localAccessUid=null;game=null;if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
+  }
+  void verifyLocalDogAccess();
+ });
+ void verifyLocalDogAccess();
+}
 window.addEventListener('pageshow',()=>{if(game)drawBoard();});
