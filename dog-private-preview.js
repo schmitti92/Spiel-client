@@ -6,6 +6,7 @@
  const API=String(window.SPIELPORTAL_CONFIG?.apiBase||
   'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
  const KEY='dog:private-100:link-key';
+ const ACTION_KEY='dog:private-100:unfinished:';
  const KINDS={wood:'🪵 Holzkiste',iron:'🔩 Eisenkiste',silver:'🥈 Silberkiste',
   gold:'🏆 Goldkiste',legendary:'💎 Legendäre Truhe'};
  const BOSS={
@@ -36,6 +37,23 @@
  function toast(message){
   $('toast').hidden=false;$('toast').textContent=message;toastUntil=Date.now()+4500;
  }
+ const queued=()=>{
+  const uid=user()?.uid;if(!uid)return null;
+  try{const p=JSON.parse(sessionStorage.getItem(ACTION_KEY+uid)||'null');
+   return p&&typeof p.requestId==='string'&&/^[A-Za-z0-9_-]{12,90}$/.test(p.requestId)&&
+    typeof p.command==='string'&&p.params&&typeof p.params==='object'?p:null;
+  }catch{return null}
+ };
+ const storeQueue=p=>{
+  const uid=user()?.uid;if(!uid)return false;
+  try{const str=JSON.stringify(p);sessionStorage.setItem(ACTION_KEY+uid,str);
+   return sessionStorage.getItem(ACTION_KEY+uid)===str;
+  }catch{return false}
+ };
+ const clearQueue=()=>{
+  const uid=user()?.uid;
+  if(uid)try{sessionStorage.removeItem(ACTION_KEY+uid)}catch{}
+ };
  const requestId=()=>globalThis.crypto?.randomUUID?.()||
   ('preview-'+Date.now()+'-'+Math.random().toString(36).slice(2));
  const errorText=error=>{
@@ -112,11 +130,25 @@
   }catch(e){toast(errorText(e.message));}
   finally{pending=false;}
  }
- async function act(command,params={}){
+ async function act(command,params={},retry=false){
   if(pending||!claimed)return;
+  const existing=queued();
+  if(retry&&!existing)return;
+  if(!retry&&existing){
+   $('retry-action').hidden=false;
+   toast('⚠️ Eine Aktion ist noch ungeklärt. Bitte zuerst sicher wiederholen.');
+   return;
+  }
+  const operation=existing||{requestId:requestId(),command,params};
+  if(!existing&&!storeQueue(operation)){
+   toast('⚠️ Diese Aktion kann im Browser nicht sicher gespeichert werden. Bitte Speicher freigeben.');
+   return;
+  }
   pending=true;
   try{
-   const data=await api('action',{requestId:requestId(),command,...params});
+   const data=await api('action',{requestId:operation.requestId,
+    command:operation.command,...operation.params});
+   clearQueue();
    offset=Number(data.view.serverNow||Date.now())-Date.now();
    view=data.view;lastFetch=Date.now();render();
    const result=data.result;
@@ -131,7 +163,14 @@
    else if(result.type==='upgrade')toast(result.success?'⚒️ Verbesserung erfolgreich!':'🔨 Aufwertung fehlgeschlagen. Rohstoffe verbraucht.');
    else if(result.type==='prepare')toast('🧪 Tor '+result.gate+' für den Schnelltest vorbereitet.');
    else if(result.type==='reset')toast('🔄 Nur der private Teststand wurde zurückgesetzt.');
-  }catch(e){toast(errorText(e.message));}
+  }catch(e){
+   // A rejected action cannot have been committed. On an ambiguous network
+   // failure keep its receipt ID so retry never awards a second chest.
+   if(/^(DOG_|FORGE_|INVALID_|NO_|NOT_|PREVIEW_(?!UNAVAILABLE))/.test(e.message||''))
+    clearQueue();
+   toast(errorText(e.message));
+   $('retry-action').hidden=!queued();
+  }
   finally{pending=false;}
  }
  const done=(g,p,bosses)=>g%10===0?bosses.includes(g):
@@ -319,8 +358,10 @@
  }
  function render(){
   if(!view)return;showApp();renderGates();renderParty();renderBoss();renderMaterials();renderForge();
+  $('retry-action').hidden=!queued();
  }
  $('unlock').onclick=unlock;
+ $('retry-action').onclick=()=>act(null,{},true);
  $('login').onclick=()=>window.SpielOnline?.openLogin?.();
  $('ready').onclick=()=>act('ready',{gate:view.bossGate});
  $('chest').onclick=()=>act('chest');
