@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="de">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta name="theme-color" content="#140e16">
+ <meta name="description" content="Die 100 Tore – Gruppenboss 20 bis 100. Mit einem, zwei oder drei Helden in die 30-Sekunden-Arena.">
+ <title>🐉 Gruppenboss · Die 100 Tore</title>
+ <link rel="stylesheet" href="./dog-boss10.css?v=20261111-combat-fx1">
+ <script src="./profile-config.js"></script>
+ <script src="./profile-auth.js"></script>
+ <script src="./dog-boss-mini-ui.js?v=20261111-v1" defer></script>
+ <script src="./dog-boss-combat-fx.js?v=20261111-combat-fx1" defer></script>
+ <script src="./dog-group-boss.js?v=20261111-combat-fx1" defer></script>
+ <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
+</head>
+<body>
+ <main class="stage">
+  <nav class="topnav" aria-label="Navigation">
+   <a id="to-map" href="./dog-tor-map.html">← Zur 100-Tore-Karte</a>
+   <a id="to-forge" href="./dog-ascension.html">⚒️ Aufstiegsschmiede</a>
+   <button id="refresh" type="button">↻ Aktualisieren</button>
+  </nav>
+  <header class="opening">
+   <div class="eyebrow" id="group-kicker">GRUPPENBOSS · DIE 100 TORE</div>
+   <h1>Die Prüfung des <span id="group-title">Wächters</span></h1>
+   <p>Ein, zwei oder drei Helden können antreten. Allein ist ein Sieg unmöglich; zu zweit gelingt er nur mit maximaler Vorbereitung und außergewöhnlichem Glück. In 30 Sekunden erscheinen drei zufällige Minispiele: Ausweichen, Timing, Blitz-Mathe oder Zieltreffer. Bei späteren Bossen werden die Aufgaben deutlich schwieriger. Die Ausrüstung ist weiterhin entscheidend.</p>
+   <div class="score">
+    <div><small>🐉 GEGNER</small><strong id="group-enemy">Wächter</strong></div>
+    <div><small>⏱️ KAMPFDAUER</small><strong>30 Sekunden</strong></div>
+    <div><small>⚒️ SIEGBELOHNUNG</small><strong id="group-reward">Schmiedeaufstieg</strong></div>
+   </div>
+  </header>
+  <section class="arena" id="arena" aria-labelledby="boss-name">
+   <div class="arena-top">
+    <div><small>🔥 GEMEINSAMER WÄCHTER</small><h2 id="boss-name">Der Gruppenwächter</h2></div>
+    <div class="status-pill" id="phase">Verbinde …</div>
+   </div>
+   <div class="monster combat-scene" id="combat-scene" data-cue="waiting" aria-label="Taktische Bosskampfarena">
+    <div class="embers" aria-hidden="true">✦ · ✧ · ✦ · ✧</div>
+    <div class="combat-stage" aria-hidden="true">
+     <div id="combat-hero-line" class="combat-hero-line"></div>
+     <div class="combat-sword-trail"></div>
+     <div class="combat-magic-beam"></div>
+     <div class="combat-shield-effect">🛡️</div>
+     <div class="combat-danger-zone"></div>
+     <div class="combat-rune-effect">✦ ✧ ✦</div>
+     <div class="combat-target-effect">◎</div>
+     <div id="combat-flash" class="combat-flash"></div>
+     <div class="combat-boss" id="combat-boss">
+      <div class="monster-art"></div>
+      <div class="monster-shadow"></div>
+     </div>
+    </div>
+    <div class="combat-cue" id="combat-cue" aria-live="off">⚔️ HELDEN SAMMELN SICH</div>
+    <div id="battle-message" class="monster-caption">Der Wächter wartet auf eure Herausforderung.</div>
+   </div>
+   <div class="combat-meter" aria-live="polite">
+    <span>🐉 Gemeinsam gegen den Boss</span>
+    <strong id="boss-hp">– LP</strong>
+   </div>
+   <div class="timer-row">
+    <span>Verbleibende Kampfzeit</span>
+    <strong id="timer" role="timer">00:30</strong>
+   </div>
+   <div class="timer-bar"><span id="timer-fill"></span></div>
+   <section class="mini-tactical" id="mini-game" hidden aria-label="Taktisches Boss-Minispiel"></section>
+   <div id="outcome" class="outcome" hidden aria-live="polite"></div>
+  </section>
+  <section class="squad" aria-labelledby="squad-title">
+   <header class="squad-head">
+    <h2 id="squad-title">🛡️ Eure drei Helden</h2>
+    <strong id="ready-count">0 / 3 bereit</strong>
+   </header>
+   <div id="heroes" class="heroes" aria-live="polite"></div>
+   <p id="status" class="message" role="status" aria-live="polite">Prüfe die Serververbindung …</p>
+   <div class="actions">
+    <button id="ready-button" class="main-button" type="button" disabled>✅ Ich bin bereit</button>
+    <button id="start-button" class="main-button" type="button" hidden disabled>⚔️ Mit dem bereiten Team starten</button>
+    <button id="react-button" class="reaction-button" type="button" hidden disabled>⚡ Reaktion! Angriff verstärken</button>
+    <button id="retry-button" class="retry-button" type="button" hidden>↻ Offenen Auftrag sicher wiederholen</button>
+   </div>
+   <p class="note">Jeder teilnehmende Spieler muss die normalen Tore vor seinem jeweiligen Gruppenboss geschafft haben. Mini-Bosse bleiben optional. Der vorherige gemeinsame Boss muss besiegt sein. Wer bereit ist, darf den 30-Sekunden-Kampf auch allein oder zu zweit starten. Sobald alle drei bereit sind, beginnt der Kampf automatisch. Nur Spieler, die vor dem Start bereit waren, kämpfen mit. Allein ist der Sieg ausgeschlossen; zu zweit ist er nur mit maximalen Werten, mindestens zwei richtigen Minispielen pro Held und sehr viel Glück möglich. Ein serverseitig bestätigter Sieg schaltet die nächste Schmiedestufe für das Team frei. Nach einer Niederlage gilt eine gemeinsame Kampfpause von 10 Minuten.</p>
+  </section>
+  <footer>Die 100 Tore · Gruppenbosse 20–100 · Das Ergebnis wird ausschließlich vom Server bestätigt</footer>
+ </main>
+</body>
+</html>

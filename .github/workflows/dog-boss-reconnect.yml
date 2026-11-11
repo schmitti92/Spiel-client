@@ -1,0 +1,28 @@
+name: DOG 100-Tore Boss Reconnect Checks
+
+on:
+  push:
+    paths:
+      - 'dog-boss10.js'
+      - 'dog-group-boss.js'
+      - 'tests/dog-boss-reconnect.test.mjs'
+      - '.github/workflows/dog-boss-reconnect.yml'
+  pull_request:
+    paths:
+      - 'dog-boss10.js'
+      - 'dog-group-boss.js'
+      - 'tests/dog-boss-reconnect.test.mjs'
+      - '.github/workflows/dog-boss-reconnect.yml'
+  workflow_dispatch:
+
+jobs:
+  boss-reconnect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check dog-boss10.js && node --check dog-group-boss.js
+      - run: node --test tests/dog-boss-reconnect.test.mjs tests/dog-group-boss-ui.test.mjs tests/dog-first-loop-ui.test.mjs

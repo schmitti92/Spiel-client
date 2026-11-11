@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" role="img" aria-label="Tor 20: Schattenfürst. Eigene, unverwechselbare Fantasy-Bossfigur.">
+<defs>
+ <radialGradient id="halo"><stop offset="0" stop-color="#9f71fa" stop-opacity=".53"/><stop offset=".55" stop-color="#9f71fa" stop-opacity=".19"/><stop offset="1" stop-color="#483364" stop-opacity="0"/></radialGradient>
+ <linearGradient id="metal" x1=".08" y1=".04" x2=".95" y2=".95"><stop stop-color="#9f71fa"/><stop offset=".27" stop-color="#483364"/><stop offset=".55" stop-color="#171b2b"/><stop offset=".8" stop-color="#483364"/><stop offset="1" stop-color="#0b0d18"/></linearGradient>
+ <linearGradient id="deep" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#483364"/><stop offset=".45" stop-color="#191b2c"/><stop offset="1" stop-color="#0a0d18"/></linearGradient>
+ <linearGradient id="power" x1="0" y1="0" x2=".25" y2="1"><stop stop-color="#ffffff"/><stop offset=".3" stop-color="#d7b4ff"/><stop offset=".66" stop-color="#9f71fa"/><stop offset="1" stop-color="#483364"/></linearGradient>
+ <linearGradient id="rim"><stop stop-color="#d7b4ff"/><stop offset=".6" stop-color="#9f71fa"/><stop offset="1" stop-color="#483364"/></linearGradient>
+ <filter id="shine"><feGaussianBlur stdDeviation="1.2"/></filter>
+ <filter id="mist"><feGaussianBlur stdDeviation="12"/></filter>
+</defs>
+<ellipse cx="360" cy="355" rx="300" ry="316" fill="url(#halo)"/>
+<ellipse cx="361" cy="679" rx="260" ry="29" fill="#05070c" opacity=".8" filter="url(#mist)"/>
+<g fill="#d7b4ff" opacity=".75"><circle cx="110" cy="151" r="5"/><circle cx="621" cy="147" r="5"/><circle cx="72" cy="434" r="4"/><circle cx="639" cy="531" r="6"/><circle cx="560" cy="70" r="4"/><circle cx="161" cy="619" r="4"/></g>
+
+<path d="M235 290Q153 346 92 581L220 548L162 690L350 645L546 684L500 535L638 589Q588 358 474 274Z" fill="url(#deep)" stroke="#8667bf" stroke-width="13"/>
+<path d="M213 278Q167 208 184 147L237 208L270 147L327 210L397 148L445 214L520 153L510 289L461 348L272 352Z" fill="url(#metal)" stroke="url(#rim)" stroke-width="12"/>
+<path d="M201 331L117 375L83 484L143 540L207 465L269 384ZM510 324L588 376L634 483L564 542L500 465L455 381Z" fill="url(#deep)" stroke="#7955aa" stroke-width="11"/>
+<path d="M247 289Q252 140 357 125Q470 148 478 289L455 418L286 424Z" fill="#130e27" stroke="#b192fb" stroke-width="13"/>
+<path d="M278 329Q350 285 443 336L413 404L298 402Z" fill="#090c20" stroke="#8e6bd6" stroke-width="10"/>
+<path d="M294 344L339 359L308 374ZM382 359L424 345L408 374Z" fill="#f0cbff" filter="url(#shine)"/>
+<path d="M318 398L356 410L398 394" fill="none" stroke="#bda0ff" stroke-width="7"/>
+<path d="M248 448L277 524L355 571L442 525L476 442L419 469L356 448L295 466Z" fill="url(#metal)" stroke="#9a78da" stroke-width="10"/>
+<path d="M341 462L356 496L372 462L394 515L356 548L321 511Z" fill="url(#power)" stroke="#dfc7ff" stroke-width="6"/>
+<path d="M515 381L563 324L604 352L565 427L609 517" fill="none" stroke="#b59aff" stroke-width="19"/>
+<path d="M566 322L582 249L617 292L647 244L654 332L606 364Z" fill="url(#metal)" stroke="#e6ccff" stroke-width="9"/>
+<g fill="none" stroke="#bda1ff" stroke-width="6"><path d="M108 227L129 202L144 235L126 251Z"/><path d="M572 171L599 153L606 183L585 195Z"/><path d="M104 569L127 552L146 581L130 606Z"/></g>
+</svg>

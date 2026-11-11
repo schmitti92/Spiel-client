@@ -20,15 +20,18 @@
 <header class="hero">
  <div class="kicker">⚔️ Drei Helden · ein Ziel · hundert Tore</div>
  <h1>Die 100 Tore</h1>
- <p>Besiegt gemeinsam die Wächter und befreit eines Tages das legendäre Spiel <strong>DOG</strong>. Sammelt Rohstoffe, schmiedet eure Ausrüstung und stärkt euren persönlichen Helden.</p>
+ <p>Folgt auf der <strong>100-Tore-Karte</strong> dem Weg zum verschlossenen DOG-Schloss. Kämpft euch durch fünf Welten, sammelt Rohstoffe, verbessert eure Ausrüstung und bezwingt die großen Wächter zu dritt. <strong>Tor 100</strong> öffnet das Ziel.</p>
  <div class="chapter" aria-label="Projektfortschritt">
   <span class="focus">📦 Materialienkisten: aktiv</span>
   <a class="chapter-forge" id="forge-launch" href="./dog-forge.html">⚒️ Schmiede: betreten</a>
   <a class="chapter-forge chapter-boss" id="boss-launch" href="./dog-boss.html">👹 Tor 1: Bosskampf starten</a>
-  <span>🐺 DOG: nach Raum 100</span>
+  <a class="chapter-forge" id="map-launch" href="./dog-tor-map.html">🗺️ Der Weg zu DOG · 100-Tore-Karte</a>
+  <a class="chapter-forge" id="boss10-launch" href="./dog-boss10.html">🐉 Gemeinsam Boss 10</a>
+  <a class="chapter-forge" id="ascension-launch" href="./dog-ascension.html">⚒️ Aufstiegsschmiede</a>
+  <span>🔒 DOG: nach Tor 100</span>
  </div>
 </header>
-<div class="notice" role="note"><span aria-hidden="true">🛡️</span><span><b>Die Rohstoffsammlung ist die erste Ausbaustufe.</b> Für jede serverseitig abgeschlossene Online-Partie von <b>Deal or No Deal</b> erhält jeder beteiligte Spieler <b>eine zufällige kleine, mittlere oder große Rohstoffkiste</b>. Andere Spiele geben keine Rohstoffkisten. Die Schmiede ist geöffnet: Waffen, Rüstungen und Fähigkeiten lassen sich verbessern. <b>Tor 1</b> ist als gemeinsamer Testboss spielbar. Bei einer Teamniederlage gelten zehn Minuten Kampfpause; danach startet derselbe Boss mit vollen LP.</span></div>
+<div class="notice" role="note"><span aria-hidden="true">🛡️</span><span><b>Die Rohstoffsammlung ist die erste Ausbaustufe.</b> Für jede serverseitig abgeschlossene Online-Partie von <b>Deal or No Deal</b> erhält jeder beteiligte Spieler eine Rohstoffkiste. Mitglieder der <b>DOG-Expedition</b> bekommen eine der fünf neuen Kistenarten passend zu ihrem höchsten erreichten Tor. Bereits verdiente alte Kisten bleiben unverändert. Andere Spiele geben derzeit keine Rohstoffkisten. Die Schmiede ist geöffnet: Waffen, Rüstungen und Fähigkeiten lassen sich verbessern. <b>Tor 1</b> ist als gemeinsamer Testboss spielbar. Bei einer Teamniederlage gelten zehn Minuten Kampfpause; danach startet derselbe Boss mit vollen LP.</span></div>
 <div class="columns">
  <section class="panel" aria-labelledby="crates-title">
   <h2 id="crates-title">📦 Deine Materialienkisten</h2>
@@ -37,6 +40,47 @@
    <div class="chest-art" id="chest-art" role="img" aria-label="Rohstoffkisten">🧰</div>
    <div class="chest-number" id="chest-count" aria-live="polite">–</div>
    <div class="chest-note" id="chest-description">Ungeöffnete Kisten in deinem Spielerprofil</div>
+   <h3 class="chest-section-title">🗺️ Neue Expeditionskisten</h3>
+   <p class="muted">Die Kistenart und Menge werden bereits bei der gewonnenen Deal-Partie festgelegt. Nur vorhandene Kisten lassen sich öffnen.</p>
+   <div class="crate-grid expedition-grid" aria-label="Fünf Expeditionskisten öffnen">
+    <button id="open-wood" class="crate-choice expedition-tier tier-wood" type="button" disabled>
+     <span class="crate-emoji" aria-hidden="true">🪵</span>
+     <strong>Holzkiste</strong>
+     <span>1–3 Rohstoffe</span>
+     <small>Ab Tor 1</small>
+     <span class="crate-owned">Vorhanden: <b id="wood-count">–</b></span>
+    </button>
+    <button id="open-iron" class="crate-choice expedition-tier tier-iron" type="button" disabled>
+     <span class="crate-emoji" aria-hidden="true">🔩</span>
+     <strong>Eisenkiste</strong>
+     <span>2–5 Rohstoffe</span>
+     <small>Ab Tor 21</small>
+     <span class="crate-owned">Vorhanden: <b id="iron-count">–</b></span>
+    </button>
+    <button id="open-silver" class="crate-choice expedition-tier tier-silver" type="button" disabled>
+     <span class="crate-emoji" aria-hidden="true">🥈</span>
+     <strong>Silberkiste</strong>
+     <span>4–8 Rohstoffe</span>
+     <small>Ab Tor 31</small>
+     <span class="crate-owned">Vorhanden: <b id="silver-count">–</b></span>
+    </button>
+    <button id="open-gold" class="crate-choice expedition-tier tier-gold" type="button" disabled>
+     <span class="crate-emoji" aria-hidden="true">🏆</span>
+     <strong>Goldkiste</strong>
+     <span>6–12 Rohstoffe</span>
+     <small>Ab Tor 51</small>
+     <span class="crate-owned">Vorhanden: <b id="gold-count">–</b></span>
+    </button>
+    <button id="open-legendary" class="crate-choice expedition-tier tier-legendary" type="button" disabled>
+     <span class="crate-emoji" aria-hidden="true">💎</span>
+     <strong>Legendäre Truhe</strong>
+     <span>10–20 Rohstoffe</span>
+     <small>Ab Tor 81</small>
+     <span class="crate-owned">Vorhanden: <b id="legendary-count">–</b></span>
+    </button>
+   </div>
+   <h3 class="chest-section-title">🎁 Bereits gesammelte ältere Kisten</h3>
+   <p class="muted">Diese alten Kisten behalten ihren bisherigen Inhalt und werden nicht kleiner gerechnet.</p>
    <div class="crate-grid" aria-label="Kistensorten öffnen">
     <button id="open-small" class="crate-choice tier-small" type="button" disabled>
      <span class="crate-emoji" aria-hidden="true">📦</span>
@@ -92,6 +136,8 @@
  <aside class="panel" aria-labelledby="rules-title">
   <h2 id="rules-title">🎲 Kisten und Seltenheiten</h2>
   <p class="muted">Nach jeder abgeschlossenen Online-Partie von <b>Deal or No Deal</b> bekommt jeder Spieler eine zufällige Kiste. Die Kistengröße wird beim Gewinn festgelegt. Beim Öffnen erscheinen alle Rohstoffe <b>sofort zusammen</b> im Belohnungsfenster.</p>
+  <p class="muted"><b>Fünf Expeditionskisten:</b> 🪵 Holz (1–3), 🔩 Eisen (2–5), 🥈 Silber (4–8), 🏆 Gold (6–12) und 💎 legendär (10–20 Rohstoffe). Die Kistenchancen hängen von deinem erreichten Tor ab. Ab Tor 81 kann erstmals eine legendäre Truhe erscheinen, bei Tor 91–100 mit 7 % Wahrscheinlichkeit.</p>
+  <p class="muted"><b>Alte Kisten:</b> Die folgende Tabelle gilt ausschließlich für früher verdiente Kisten.</p>
   <table class="rule-table" aria-label="Wahrscheinlichkeit der Kistengrößen">
    <thead><tr><th>Kiste</th><th>Inhalt</th><th>Chance</th></tr></thead>
    <tbody>
@@ -100,7 +146,7 @@
     <tr><td>🐉 Groß</td><td>20–40</td><td>10 %</td></tr>
    </tbody>
   </table>
-  <p class="muted">Durchschnitt: <strong>12 Rohstoffe</strong> je Kiste. Jeder Rohstoff gehört mit gleicher Chance zu Angriff, Verteidigung oder Ausrüstung. Innerhalb der Kategorie hängt die Seltenheit von der Kistengröße ab.</p>
+  <p class="muted">Die alten Kisten liefern im Durchschnitt <strong>12 Rohstoffe</strong>. Bei den neuen Expeditionskisten ist der Durchschnitt vom Torfortschritt abhängig. Jeder Rohstoff gehört mit gleicher Chance zu Angriff, Verteidigung oder Ausrüstung. Innerhalb der Kategorie hängt die Seltenheit von der Kistengröße ab.</p>
   <table class="rule-table rarity-table" aria-label="Chance je Seltenheit und Kistengröße">
    <thead><tr><th>Seltenheit</th><th>Klein</th><th>Mittel</th><th>Groß</th></tr></thead>
    <tbody>
@@ -114,13 +160,14 @@
   <p class="muted">Deine 15 Rohstoffe sind auf drei Kategorien verteilt: <b>Angriffsfähigkeiten</b>, <b>Verteidigungsfähigkeiten</b> und <b>Waffen &amp; Rüstung</b>. Besonders seltene Funde werden lila oder goldfarben hervorgehoben.</p>
   <div class="waypoint" aria-labelledby="waypoint-title">
    <h2 id="waypoint-title" style="margin-top:22px">🚪 Euer Weg zu DOG</h2>
+   <p class="muted"><a id="map-waypoint" href="./dog-tor-map.html">🗺️ Die Abenteuerkarte mit allen 100 Toren ansehen</a> – von den ersten Ruinen bis zum verschlossenen DOG-Schloss. <a id="boss10-waypoint" href="./dog-boss10.html">🐉 Der erste gemeinsame Boss</a> und <a id="ascension-waypoint" href="./dog-ascension.html">⚒️ die neue Aufstiegsschmiede</a> sind als Entwicklungsversion vorbereitet.</p>
    <div class="steps">
     <div class="step current"><b>📦</b>1. Kisten sammeln</div>
     <div class="step current"><b>⚒️</b>2. Waffen verbessern</div>
     <div class="step current"><b>👹</b>3. Ersten Boss testen</div>
     <div class="step"><b>🐺</b>4. DOG befreien</div>
    </div>
-   <p class="muted">Waffen- und Rüstungsstufen sowie elf Fähigkeiten gehören bereits deinem Helden. Der gemeinsame erste Bosskampf ist jetzt als Testarena erreichbar. Weitere 99 Bosse werden später ergänzt. DOG wird erst beim besiegten Boss von Tor 100 freigeschaltet, sofern das Spiel dann veröffentlicht ist.</p>
+   <p class="muted">Waffen- und Rüstungsstufen sowie elf Fähigkeiten gehören bereits deinem Helden. Der gemeinsame erste Bosskampf ist jetzt als Testarena erreichbar. Für das geplante Event gibt es 80 persönliche Kämpfe, 10 Solo-Mini-Bosse und 10 gemeinsame Bosse. Der Aschewächter ist derzeit noch eine technische Testarena bei Tor 1 und wird später dem gemeinsamen Tor 10 zugeordnet. Erst wenn Tor 100 gemeinsam besiegt wurde, darf das neue DOG-Spiel serverseitig freigeschaltet werden.</p>
   </div>
   <p class="muted" style="margin-top:15px"><b>Fair und sicher:</b> Kisten entstehen nur aus vom Server bestätigten Spielabschlüssen. Abgebrochene Partien, Gäste und wiederholte Ergebnisanfragen erzeugen keine neuen Kisten.</p>
  </aside>
