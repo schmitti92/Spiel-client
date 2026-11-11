@@ -7,14 +7,14 @@ const forge=read('dog-ascension.html'),forgeJs=read('dog-ascension.js');
 const mapJs=read('dog-tor-map.js'),event=read('dog-expedition.html');
 const nav=read('dog-materials-ui.js');
 
-test('Tor 10 has a dedicated 30s ready room for exactly three players',()=>{
+test('Tor 10 has a dedicated 40s ready room for up to three players',()=>{
  for(const id of ['ready-button','react-button','heroes','ready-count','timer',
   'timer-fill','retry-button','status','outcome','phase'])
   assert.ok(arena.includes('id="'+id+'"'),'missing '+id);
  assert.ok(arenaJs.includes('/api/dog/gates/boss10'));
  for(const action of ["command('ready')","command('react')","command('finish')"])
   assert.ok(arenaJs.includes(action),'missing '+action);
- assert.ok(arenaJs.includes('30000'));
+ assert.ok(arenaJs.includes('40000'));
  assert.ok(arenaJs.includes('cooldownExpired'));
  assert.ok(arenaJs.includes('dog:boss10:pending:'));
  assert.ok(arenaJs.includes('setInterval'));
