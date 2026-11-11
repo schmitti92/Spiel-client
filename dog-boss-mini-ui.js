@@ -234,6 +234,7 @@
    if(!active){
     if(roundView?.kind==='math'&&mathChoices.length&&!mathSent)flushMath();
     root.classList?.remove('is-math-battle');
+     root.classList?.remove('is-slow-dodge');
     roundKey='';roundView=null;stopAnimation();return;
    }
    const elapsed=now-(view.startedAt||0),games=view.miniGames;
@@ -243,6 +244,7 @@
     root.hidden=games.version>=3;
     if(roundView?.kind==='math'&&mathChoices.length&&!mathSent)flushMath();
     stopAnimation();root.classList?.remove('is-math-battle');
+     root.classList?.remove('is-slow-dodge');
     if(roundKey!=='inactive'){
      roundKey='inactive';body.replaceChildren();buttons=[];
      title.textContent=elapsed<games.rounds[0].startMs?
