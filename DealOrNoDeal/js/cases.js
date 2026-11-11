@@ -13,6 +13,9 @@ function directorReveal(){
  const newlyOpened=amounts.filter(x=>!directorSeenOpened.has(x.case));
  for(const item of amounts)directorSeenOpened.add(item.case);
  if(!newlyOpened.length||g.phase==='final')return;
+ // The fast 30-case opening already animated every value on the shared clock.
+ // Do not announce the last of nine cases a second time when the banker starts.
+ if(g.openingBatch?.picks?.length&&newlyOpened.length===g.openingBatch.picks.length&&g.history?.length===1)return;
  const item=newlyOpened.at(-1);if(typeof announceOpenedAmount==='function')announceOpenedAmount(item.amount,{caseNumber:item.case+1,gameId:g.id,caseCount:g.caseCount});directorLatestAmount=item.amount;directorLatestUntil=Date.now()+1800;
  const prizeScale=Array.isArray(values)&&values.length?values:[];
  const sortedScale=[...prizeScale].sort((a,b)=>a-b);
