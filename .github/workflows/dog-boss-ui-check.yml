@@ -25,6 +25,7 @@ on:
       - 'dog-boss-weapon.css'
       - 'dog-boss-show-14.css'
       - 'tests/dog-boss-show14-ui.test.mjs'
+      - 'tests/dog-boss-show14.test.mjs'
       - 'dog-group-boss.html'
       - 'tests/dog-boss-preflight-ui.test.mjs'
       - 'tests/dog-boss-combat-fx.test.mjs'
@@ -60,6 +61,7 @@ on:
       - 'dog-boss-weapon.css'
       - 'dog-boss-show-14.css'
       - 'tests/dog-boss-show14-ui.test.mjs'
+      - 'tests/dog-boss-show14.test.mjs'
       - 'dog-group-boss.html'
       - 'tests/dog-boss-preflight-ui.test.mjs'
       - 'tests/dog-boss-combat-fx.test.mjs'
@@ -88,9 +90,10 @@ jobs:
           node --check dog-boss-mini-ui.js
           node --check tests/dog-boss-math-endgame-ui.test.mjs
           node --check tests/dog-boss-show14-ui.test.mjs
+          node --check tests/dog-boss-show14.test.mjs
           node --check dog-boss-preflight.js
           node --check dog-boss-director.js
           node --check dog-boss-live-ui.js
           node --check dog-boss10.js
           node --check dog-group-boss.js
-          node --test tests/dog-boss-ui.test.mjs tests/dog-boss-cinematic-assets.test.mjs tests/dog-boss-combat-fx.test.mjs tests/dog-boss-preflight-ui.test.mjs tests/dog-boss-endgame-ui.test.mjs tests/dog-boss-live-ui.test.mjs tests/dog-boss-exchange-ui.test.mjs tests/dog-boss-dodge-cinematic.test.mjs tests/dog-boss-math-endgame-ui.test.mjs tests/dog-boss-show14-ui.test.mjs
+          node --test tests/dog-boss-ui.test.mjs tests/dog-boss-cinematic-assets.test.mjs tests/dog-boss-combat-fx.test.mjs tests/dog-boss-preflight-ui.test.mjs tests/dog-boss-endgame-ui.test.mjs tests/dog-boss-live-ui.test.mjs tests/dog-boss-exchange-ui.test.mjs tests/dog-boss-dodge-cinematic.test.mjs tests/dog-boss-math-endgame-ui.test.mjs tests/dog-boss-show14-ui.test.mjs tests/dog-boss-show14.test.mjs
