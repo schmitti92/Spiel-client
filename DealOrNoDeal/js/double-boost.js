@@ -7,7 +7,7 @@
  panel.id='deal-double-boost';
  panel.className='deal-double-boost';
  panel.hidden=true;
- panel.innerHTML='<div class="deal-double-boost-mark" aria-hidden="true">✦ <b>×2</b> ✦</div><div class="deal-double-boost-copy"><strong>💎 Doppelter Gewinn für diese Partie</strong><span>Auch Bankerangebote ×2 · einmalig 3.000.000 € Spielgeld</span><small id="deal-double-boost-info" role="status" aria-live="polite"></small></div><button id="deal-double-boost-buy" type="button">Für 3.000.000 € aktivieren</button><span id="deal-double-boost-active" class="deal-double-boost-active" hidden>✓ ×2 AKTIV</span>';
+ panel.innerHTML='<div class="deal-double-boost-mark" aria-hidden="true">✦ <b>×2</b> ✦</div><div class="deal-double-boost-copy"><strong>💎 ×2-Auszahlungsbonus</strong><span>Spielergebnis und Bankerangebote bleiben normal · ×2 erst ganz am Ende · 3.000.000 €</span><small id="deal-double-boost-info" role="status" aria-live="polite"></small></div><button id="deal-double-boost-buy" type="button">Für 3.000.000 € aktivieren</button><span id="deal-double-boost-active" class="deal-double-boost-active" hidden>✓ ×2 AKTIV</span>';
  stage.insertBefore(panel,stage.querySelector('#turn-spotlight')||stage.firstChild);
  const buy=panel.querySelector('#deal-double-boost-buy');
  const active=panel.querySelector('#deal-double-boost-active');
@@ -25,7 +25,7 @@
   buy.hidden=enabled;
   buy.disabled=pending||busy;
   active.hidden=!enabled;
-  info.textContent=enabled?'Nur deine Geldgewinne werden verdoppelt; Kofferwerte und Sonderpreise bleiben unverändert.':feedback||'Nur dein Gewinn wird ×2; die anderen Spieler bleiben unbeeinflusst.';
+  info.textContent=enabled?'Erst nach dem normalen Spielende wird dein Geldgewinn auf dem Konto verdoppelt. Sieger und Sonderpreise bleiben unverändert.':feedback||'Keine Auswirkungen auf Gewinner, Platzierungen oder Bankerangebote. ×2 nur bei der Schlussgutschrift.';
  }
  buy.addEventListener('click',async()=>{
   if(pending||busy||!g||g.phase!=='select')return;
