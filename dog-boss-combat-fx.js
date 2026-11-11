@@ -104,7 +104,22 @@
   const strikeBurst=document.createElement('span');
   strikeBurst.className='battle-dodge-strike';
   dodgeLayer.append?.(strikeBurst);
+  // These effects are cosmetic. They use the published strike schedule and
+  // never produce an HP deduction or an extra server request.
+  const weapon=document.createElement('span');
+  weapon.className='battle-boss-weapon';
+  weapon.setAttribute?.('aria-hidden','true');
+  weapon.setAttribute?.('data-weapon',gate===10?'warhammer':'elemental');
+  const weaponTrail=document.createElement('span');
+  weaponTrail.className='battle-weapon-trail';
+  const primaryImpact=document.createElement('span');
+  primaryImpact.className='battle-weapon-impact';
+  const secondaryImpact=document.createElement('span');
+  secondaryImpact.className='battle-weapon-impact battle-weapon-impact-secondary';
+  secondaryImpact.hidden=true;
+  dodgeLayer.append?.(weaponTrail,weapon,primaryImpact,secondaryImpact);
   root.append?.(dodgeLayer);
+  let weaponSession='',swingCount=0;
   const lanesX=lanes=>lanes===2?[62,85]:[54,74,92];
   function clearDodgeClasses(){
    for(const hero of heroNodes.values()){
@@ -151,7 +166,12 @@
    const round=view?.phase==='fighting'&&view?.miniGames?.version>=5?
     view.miniGames.rounds?.find(r=>r.kind==='dodge'&&elapsed>=r.startMs&&elapsed<r.endMs):null;
    dodgeLayer.hidden=!round;
-   if(!round){root.dataset.dodgeStrike='idle';return;}
+   if(!round){
+    root.dataset.dodgeStrike='idle';
+    root.dataset.bossSwing='idle';
+    weaponSession='';
+    return;
+   }
    const attacks=round.attacks||[];
    const strike=attacks.find((r,i)=>elapsed>=r.startMs&&
     elapsed<(attacks[i+1]?.startMs??round.endMs));
@@ -167,7 +187,34 @@
    dodgeLayer.style?.setProperty?.('--dodge-attack-delay',
     -Math.max(0,elapsed-strike.impactMs)+'ms');
    const cells=lanesX(round.lanes);
+   const validLane=index=>Number.isInteger(index)&&index>=0&&index<round.lanes;
+   if(!validLane(strike.dangerIndex))return;
    dodgeLayer.style?.setProperty?.('--dodge-hit-x',cells[strike.dangerIndex]+'%');
+   const second=validLane(strike.secondDangerIndex)&&
+    strike.secondDangerIndex!==strike.dangerIndex?strike.secondDangerIndex:null;
+   secondaryImpact.hidden=second===null;
+   if(second!==null)dodgeLayer.style?.setProperty?.('--dodge-secondary-x',cells[second]+'%');
+   const next=attacks.find(a=>a.step===strike.step+1);
+   const span=Math.max(1900,Math.min(2800,(next?.startMs??round.endMs)-strike.startMs));
+   dodgeLayer.style?.setProperty?.('--boss-swing-time',span+'ms');
+   if(weaponSession!==sessionKey){
+    weaponSession=sessionKey;
+    // A reconnect starts at the server-clock animation offset, not frame 0.
+    const offset=-Math.min(span,Math.max(0,elapsed-strike.startMs));
+    dodgeLayer.style?.setProperty?.('--boss-swing-offset',offset+'ms');
+    weapon.classList?.remove('battle-weapon-swing');
+    weaponTrail.classList?.remove('battle-weapon-swing');
+    primaryImpact.classList?.remove('battle-weapon-swing');
+    secondaryImpact.classList?.remove('battle-weapon-swing');
+    void weapon.offsetWidth;
+    weapon.classList?.add('battle-weapon-swing');
+    weaponTrail.classList?.add('battle-weapon-swing');
+    primaryImpact.classList?.add('battle-weapon-swing');
+    if(second!==null)secondaryImpact.classList?.add('battle-weapon-swing');
+    root.dataset.bossSwing='armed';
+    swingCount++;
+   }
+   root.dataset.bossSwing=impact?'impact':'windup';
    dangerCells.forEach((cell,i)=>{
     const visible=i<round.lanes;
     cell.hidden=!visible;
