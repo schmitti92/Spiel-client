@@ -49,3 +49,15 @@ test('Resources use secure idempotent server action and refresh the real game ma
  assert.match(map,/clearPending\(uid\)/);
  assert.match(map,/void reloadMap\(\)/);
 });
+
+test('Chris can disable and re-enable 10-minute boss pauses from the saved server state',()=>{
+ assert.ok(html.includes('id="dog-developer-cooldown" disabled'));
+ assert.ok(html.includes('10-Minuten-Boss-Pause deaktivieren'));
+ assert.ok(html.includes('id="dog-developer-cooldown-state"'));
+ assert.ok(js.includes("const noWait=result.bossCooldownDisabled===true"));
+ assert.ok(js.includes("$('dog-developer-cooldown').checked=noWait"));
+ assert.ok(js.includes("addEventListener('change',event=>{"));
+ assert.ok(js.includes("apply({action:'cooldown',disabled}"));
+ assert.ok(js.includes(".finally(()=>void checkAccess())"));
+ assert.ok(css.includes('.dog-dev-switch:has(input:checked)'));
+});
