@@ -1,6 +1,6 @@
 import {
  STUDIO_STORAGE_KEY,STUDIO_FORMATS,createTemplate,createScene,createItem,
- normalizeProject,studioId,itemTypeLabel,clamp,rgba,safeImage
+ normalizeProject,studioId,itemTypeLabel,clamp,rgba,safeImage,resizeItemFrame
 } from './studio-model.mjs';
 
 (()=>{
@@ -112,6 +112,10 @@ function makeCanvasItem(item){
   boxShadow:item.shadow?'0 15px 33px rgba(0,0,0,.46)':'none',
   fontSize:item.fontSize+'px',fontWeight:item.bold?'900':'500'
  });
+ if(item.type==='arrow'){
+  const shape=document.createElement('span');shape.className='item-arrow-shape';
+  shape.style.backgroundColor=rgba(item.fill,item.opacity);el.append(shape);
+ }
  if(item.type==='bar'){
   const progress=document.createElement('div');progress.className='bar-progress';
   progress.style.width=item.progress+'%';el.append(progress);
@@ -126,8 +130,18 @@ function makeCanvasItem(item){
   if(item.type==='circle')label.style.justifyContent='center';
   el.append(label);
  }
- const handle=document.createElement('span');handle.className='resize-handle';
- handle.setAttribute('aria-hidden','true');el.append(handle);
+ // Eight visible side/corner grips, including on LP bars and image elements.
+ // Direction is stored explicitly; screen zoom does not affect the geometry.
+ const handles={nw:'Oben links',n:'Oben',ne:'Oben rechts',e:'Rechts',
+  se:'Unten rechts',s:'Unten',sw:'Unten links',w:'Links'};
+ for(const [direction,label] of Object.entries(handles)){
+  const grip=document.createElement('span');
+  grip.className='resize-handle resize-'+direction;
+  grip.dataset.resize=direction;
+  grip.setAttribute('role','presentation');
+  grip.title=label+' ziehen: Größe ändern';
+  el.append(grip);
+ }
  return el;
 }
 function renderItems(){
@@ -312,17 +326,21 @@ function startDrag(event){
  selectItem(item.id);
  if(item.locked)return;
  const pt=stagePoint(event);
- drag={id:item.id,mode:event.target.classList.contains('resize-handle')?'resize':'move',
+ const grip=event.target.closest('.resize-handle');
+ drag={id:item.id,mode:grip?'resize':'move',
+  direction:grip?.dataset.resize||'se',pointerId:event.pointerId,
   x:pt.x,y:pt.y,original:{x:item.x,y:item.y,w:item.w,h:item.h}};
+ if(grip)$('status-line').textContent='↔ Ziehen zum Vergrößern oder Verkleinern';
  stage.setPointerCapture(event.pointerId);event.preventDefault();
 }
 function dragMove(event){
- if(!drag)return;
+ if(!drag||event.pointerId!==drag.pointerId)return;
  const item=byId(drag.id);if(!item)return;
  const pt=stagePoint(event),dx=pt.x-drag.x,dy=pt.y-drag.y;
  if(drag.mode==='resize'){
-  item.w=clamp(snapValue(drag.original.w+dx),30,project.width-item.x);
-  item.h=clamp(snapValue(drag.original.h+dy),30,project.height-item.y);
+  const frame=resizeItemFrame(drag.original,drag.direction,dx,dy,
+   project.width,project.height,$('snap-toggle').checked);
+  Object.assign(item,frame);
  }else{
   item.x=clamp(snapValue(drag.original.x+dx),0,Math.max(0,project.width-item.w));
   item.y=clamp(snapValue(drag.original.y+dy),0,Math.max(0,project.height-item.h));
@@ -332,8 +350,10 @@ function dragMove(event){
   el.style.width=item.w+'px';el.style.height=item.h+'px';}
  for(const key of ['x','y','w','h'])$('prop-'+key).value=item[key];
 }
-function stopDrag(){
- if(!drag)return;drag=null;renderItems();renderLayers();checkpoint('Element positioniert');
+function stopDrag(event){
+ if(!drag||(event?.pointerId!==undefined&&event.pointerId!==drag.pointerId))return;
+ const didResize=drag.mode==='resize';
+ drag=null;renderItems();renderLayers();checkpoint(didResize?'Größe angepasst':'Element positioniert');
 }
 async function compressImage(file){
  if(!file||!/^image\/(png|jpeg|webp|gif)$/.test(file.type))
