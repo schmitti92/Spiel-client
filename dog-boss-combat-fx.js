@@ -90,6 +90,110 @@
    bossArt.style.backgroundImage='url("./dog-boss-art/'+bossPortraits[gate]+'")';
   let fightersKey='',phaseKey='',waveKey='',feedbackKey='';
   let healthBars=new Map();
+  let heroNodes=new Map(),lastBattleView=null,lastDodgeScene='',dodgeMoves=new Map(),dodgeResults=new Set();
+  const dodgeLayer=document.createElement('div');
+  dodgeLayer.className='battle-dodge-layer';
+  dodgeLayer.setAttribute?.('aria-hidden','true');
+  dodgeLayer.hidden=true;
+  const dangerCells=Array.from({length:3},(_,i)=>{
+   const cell=document.createElement('span');
+   cell.className='battle-dodge-lane';
+   dodgeLayer.append?.(cell);
+   return cell;
+  });
+  const strikeBurst=document.createElement('span');
+  strikeBurst.className='battle-dodge-strike';
+  dodgeLayer.append?.(strikeBurst);
+  root.append?.(dodgeLayer);
+  const lanesX=lanes=>lanes===2?[62,85]:[54,74,92];
+  function clearDodgeClasses(){
+   for(const hero of heroNodes.values()){
+    hero.classList?.remove('battle-dodge-success');
+    hero.classList?.remove('battle-dodge-hit');
+    const badge=hero.querySelector?.('.battle-dodge-verdict');
+    badge?.remove?.();
+   }
+  }
+  function moveHero(uid,choice,lanes,at,serverNow,round,step){
+   const node=heroNodes.get(uid);
+   if(!node||!Number.isInteger(choice)||choice<0||choice>=lanes)return;
+   const encounter=String(lastBattleView?.startedAt||0);
+   const key=encounter+':'+round+':'+step+':'+choice;
+   if(dodgeMoves.get(uid)===key)return;
+   dodgeMoves.set(uid,key);
+   const x=lanes===2?(choice===0?-56:56):[-68,0,68][choice];
+   node.style?.setProperty?.('--dodge-move-x',x+'px');
+   node.style?.setProperty?.('--dodge-move-delay',-Math.min(1750,Math.max(0,serverNow-at))+'ms');
+   node.classList?.remove('battle-dodge-leap');
+   void node.offsetWidth;
+   node.classList?.add('battle-dodge-leap');
+  }
+  function verdict(uid,correct,sessionKey){
+   const node=heroNodes.get(uid);
+   if(!node||dodgeResults.has(sessionKey))return;
+   dodgeResults.add(sessionKey);
+   node.classList?.toggle('battle-dodge-success',!!correct);
+   node.classList?.toggle('battle-dodge-hit',!correct);
+   const badge=document.createElement('strong');
+   badge.className='battle-dodge-verdict '+(correct?'is-safe':'is-hit');
+   badge.textContent=correct?'✓ AUSGEWICHEN':'✕ GETROFFEN';
+   node.append?.(badge);
+  }
+  function renderDodges(view,serverNow){
+   lastBattleView=view;
+   const elapsed=serverNow-(Number(view?.startedAt)||0);
+   const round=view?.phase==='fighting'&&view?.miniGames?.version>=5?
+    view.miniGames.rounds?.find(r=>r.kind==='dodge'&&elapsed>=r.startMs&&elapsed<r.endMs):null;
+   dodgeLayer.hidden=!round;
+   if(!round){root.dataset.dodgeStrike='idle';return;}
+   const attacks=round.attacks||[];
+   const strike=attacks.find((r,i)=>elapsed>=r.startMs&&
+    elapsed<(attacks[i+1]?.startMs??round.endMs));
+   if(!strike)return;
+   const sessionKey=String(view.startedAt)+':'+round.round+':'+strike.step;
+   if(sessionKey!==lastDodgeScene){
+    lastDodgeScene=sessionKey;
+    clearDodgeClasses();
+    if(dodgeResults.size>30)dodgeResults.clear();
+   }
+   const impact=elapsed>=strike.impactMs;
+   root.dataset.dodgeStrike=impact?'impact':'warning';
+   dodgeLayer.style?.setProperty?.('--dodge-attack-delay',
+    -Math.max(0,elapsed-strike.impactMs)+'ms');
+   const cells=lanesX(round.lanes);
+   dangerCells.forEach((cell,i)=>{
+    const visible=i<round.lanes;
+    cell.hidden=!visible;
+    if(!visible)return;
+    cell.style.left=cells[i]+'%';
+    cell.classList?.toggle('is-danger',
+     i===strike.dangerIndex||i===strike.secondDangerIndex);
+    cell.classList?.toggle('is-safe',
+     i!==strike.dangerIndex&&i!==strike.secondDangerIndex);
+   });
+   // Both local and remote heroes move in the server-confirmed chosen direction.
+   // Do not infer a success or reveal a secret result before the impact.
+   const actions=Array.isArray(view.miniGames?.dodgeActions)?
+    view.miniGames.dodgeActions:[];
+   for(const action of actions){
+    if(action.round!==round.round||action.step!==strike.step||
+       !heroNodes.has(action.uid))continue;
+    if(Number.isInteger(action.choice)&&action.at>0){
+     if(serverNow-action.at<2200)
+      moveHero(action.uid,action.choice,round.lanes,action.at,serverNow,round.round,strike.step);
+     if(impact&&elapsed-strike.impactMs<2300)
+      verdict(action.uid,action.correct===true,sessionKey+':'+action.uid);
+    }
+   }
+  }
+  function previewDodge(view,roundIndex,step,choice,serverNow){
+   if(view?.phase!=='fighting'||view?.miniGames?.version<5)return;
+   const round=view.miniGames.rounds?.[roundIndex];
+   if(round?.kind!=='dodge')return;
+   const uid=view.members?.find(m=>m.isMe)?.uid;
+   if(uid)moveHero(uid,choice,round.lanes,serverNow,serverNow,roundIndex,step);
+  }
+
   function fighters(view){
    const selected=view?.phase==='waiting'?
     (view?.members||[]).filter(m=>m.ready):
@@ -103,6 +207,7 @@
    fightersKey=nextKey;
    if(!heroes)return;
    const nextHealthBars=new Map();
+   const nextHeroNodes=new Map();
    const elements=selected.map((m,i)=>{
     // Stable portraits from the original three-person expedition order.
     // Solo/Duo attempts do not change the appearance of a known hero.
@@ -130,10 +235,12 @@
     hpTrack.append(hpFill);
     item.append(mark,name,hpTrack);
     nextHealthBars.set(m.uid,hpFill);
+    nextHeroNodes.set(m.uid,item);
     return item;
    });
    heroes.replaceChildren(...elements);
    healthBars=nextHealthBars;
+   heroNodes=nextHeroNodes;dodgeMoves.clear();dodgeResults.clear();
   }
   function update(view,serverNow){
    fighters(view);
@@ -142,6 +249,7 @@
     if(fill?.style)fill.style.width=(100*Math.max(0,Number(hero.hp)||0)/
       Math.max(1,Number(hero.maxHp)||1)).toFixed(2)+'%';
    }
+   renderDodges(view,serverNow);
    const scene=deriveCue(view,serverNow);
    const pKey=(view?.startedAt||0)+':'+scene.kind+':'+scene.round+':'+
     (view?.phase||'waiting');
@@ -181,7 +289,7 @@
    if(boss)boss.setAttribute('aria-label',
     'Boss – '+(view?.name||'Gemeinsamer Wächter'));
   }
-  return {update};
+  return {update,previewDodge};
  }
  window.DogBossCombatFX={create,deriveCue,bossPortraits,heroPortraits};
 })();
