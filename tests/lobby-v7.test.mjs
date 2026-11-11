@@ -73,14 +73,16 @@ test('SKYJO reference sidebar shows standings without exposing current card sums
  assert.doesNotMatch(html,/meta-chip open-chip/);
 });
 
-// Guard the nine original games and the landscape tablet layout against regressions.
-test('Party Challenge renders exactly nine unique original game choices',()=>{
- const source=js.match(/const singleGames=\[([\s\S]*?)\];/);
+// Guard the eleven playable games and the landscape tablet layout against regressions.
+test('Party Challenge renders all eleven server-supported games exactly once',()=>{
+ const source=js.match(/const singleGames=\\[([\\s\\S]*?)\\];/);
  assert.ok(source,'missing minigame registry');
- const gameIds=[...source[1].matchAll(/\['([^']+)','[^']+','[^']+'\]/g)].map(m=>m[1]);
- assert.equal(gameIds.length,9);
- assert.equal(new Set(gameIds).size,9);
- assert.match(js,/if\(seen\.has\(button\.dataset\.minigame\)\)button\.remove\(\)/);
+ const ids=[...source[1].matchAll(/\\['([^']+)','[^']+','[^']+'\\]/g)].map(m=>m[1]);
+ assert.equal(ids.length,11);
+ assert.equal(new Set(ids).size,11);
+ for(const id of ['eisstock','fallende-gegenstaende','zeitgefuehl','preisjaeger'])
+  assert.ok(ids.includes(id),'missing playable game '+id);
+ assert.match(js,/if\\(seen\\.has\\(button\\.dataset\\.minigame\\)\\)button\\.remove\\(\\)/);
 });
 test('Tablet landscape card sizing remains bounded and cache version matches',()=>{
  assert.match(css,/@media \(min-width:901px\) and \(max-height:850px\) and \(orientation:landscape\)/);
@@ -91,11 +93,10 @@ test('Tablet landscape card sizing remains bounded and cache version matches',()
  assert.ok(Number(cssVersion.split('-').at(-1))>=18,'outdated tablet stylesheet');
 });
 
-test('Marathon selection prevents duplicate submissions while a request is pending',()=>{
- assert.match(js,/const button=el\('challenge-marathon'\);if\(button\.disabled\)return;/);
- assert.match(js,/button\.disabled=true;[\s\S]*?count:9,selectedGame:null[\s\S]*?finally\{button\.disabled=false;challengeSettingsBusy=false;\}/);
+test('Eleven-game Challenge selection rejects duplicate submissions while pending',()=>{
+ assert.match(js,/const button=el\\('challenge-marathon'\\);if\\(button\\.disabled\\)return;/);
+ assert.match(js,/button\\.disabled=true;[\\s\\S]*?count:11,selectedGame:null[\\s\\S]*?finally\\{button\\.disabled=false;challengeSettingsBusy=false;\\}/);
 });
-
 test('Replay, return-to-selection and next-game controls ignore duplicate taps',()=>{
  assert.match(js,/for\(const \[id,route\] of \[\['challenge-replay','challenge-replay'\],\['challenge-select','challenge-select'\]\]\)/);
  assert.match(js,/const btn=el\(id\);if\(btn\.disabled\)return;/);
@@ -191,18 +192,16 @@ test('Late failed recovery responses do not affect a newly active room',()=>{
 });
 
 
-test('Premium tablet landscape supports taller browser viewports and all nine matching artworks',()=>{
- assert.match(css,/@media \(min-width:901px\) and \(orientation:landscape\) and \(max-height:1200px\)/);
- assert.match(css,/height:clamp\(88px,11\.5dvh,125px\)/);
- const artworks=['zeitgefuehl','recheninsel','huetchen','maulwurf','fluss','lava','snake','bomber','preis'];
- artworks.forEach((name,index)=>{
-  const selector=new RegExp('body\\.challenge-room-active #challenge-single-grid>button:nth-child\\('+(index+1)+'\\)');
-  assert.match(css,selector,'missing card selector '+name);
-  assert.ok(css.includes('url("Assets/challenge/'+name+'.svg")'),'missing artwork '+name);
- });
+test('Premium tablet landscape includes artwork for all eleven live Challenge games',()=>{
+ assert.match(css,/@media \\(min-width:901px\\) and \\(orientation:landscape\\) and \\(max-height:1200px\\)/);
+ assert.match(css,/height:clamp\\(88px,11\\.5dvh,125px\\)/);
+ for(let index=1;index<=11;index++){
+  const selector=new RegExp('body\\\\.challenge-room-active #challenge-single-grid>button:nth-child\\\\('+
+   index+'\\\\)');
+  assert.match(css,selector,'missing challenge card '+index);
+ }
+ assert.doesNotMatch(css,/Assets\\/challenge\\//,'removed SVG directory is no longer served');
 });
-
-
 test('Challenge ready panel uses its original controls and restores them on game switch',()=>{
  assert.match(js,/const readyPanel=el\('ready-panel'\)/);
  assert.match(js,/if\(active&&readyPanel\.parentElement!==challengeRoomCard\)/);
@@ -236,20 +235,15 @@ test('Premium Challenge readiness visually follows the player seats',()=>{
 });
 
 
-test('All nine premium illustrations are self-contained SVG assets',()=>{
- const names=['zeitgefuehl','recheninsel','huetchen','maulwurf','fluss','lava','snake','bomber','preis'];
- for(const name of names){
-  const art=text('Assets/challenge/'+name+'.svg');
-  assert.match(art,/^<svg\s/,'invalid SVG opening for '+name);
-  assert.match(art,/<\/svg>\s*$/,'missing SVG closing for '+name);
-  assert.match(art,/viewBox="0 0 720 420"/,'incorrect card aspect ratio for '+name);
-  assert.ok(art.length>1000,'suspiciously empty artwork for '+name);
-  assert.doesNotMatch(art,/<(?:script|foreignObject|image)\b|(?:href|xlink:href)=["'](?:https?:)?\/\//i,'unsafe or remote SVG content in '+name);
-  assert.ok(css.includes('Assets/challenge/'+name+'.svg'),'card not mapped to '+name);
+test('Challenge cards use existing local background images and visible fallback icons',()=>{
+ for(const name of ['barikade','business','skyjo','kreuzkunter']){
+  const image=readFileSync(new URL('../Assets/game-backgrounds/'+name+'.webp',import.meta.url));
+  assert.ok(image.length>1000,'missing background '+name);
+  assert.ok(css.includes('Assets/game-backgrounds/'+name+'.webp'),name);
  }
+ assert.match(css,/#challenge-single-grid>button \\.mini-art\\{visibility:visible!important\\}/);
+ assert.doesNotMatch(css,/Assets\\/challenge\\//);
 });
-
-
 test('Premium settings navigation points to the active game controls',()=>{
  assert.match(html,/data-lobby-settings/);
  assert.match(js,/settingsNav\.setAttribute\('href',active\?'#challenge-settings-panel':'#ready-panel'\)/);
@@ -258,55 +252,39 @@ test('Premium settings navigation points to the active game controls',()=>{
 });
 
 
-test('Preisjäger original UI is connected to server-authoritative Challenge state',()=>{
- assert.match(js,/Minispiele\/Preisjaeger_v11_0_RC23\.html\?onlineView=1/);
- assert.match(js,/PREISJAEGER_ONLINE_STATE/);
- assert.match(js,/PREISJAEGER_ONLINE_GUESS/);
+test('Preisjäger uses the current server-backed form rather than a deleted iframe',()=>{
+ assert.match(js,/id="pj-guess-form"/);
+ assert.match(js,/id="pj-guess"/);
+ assert.match(js,/id="pj-product-photo"/);
  assert.match(js,/challenge-preisjaeger-answer/);
- assert.match(js,/event\.origin!==location\.origin/);
+ assert.doesNotMatch(js,/Minispiele\\/Preisjaeger_v11_0_RC23\\.html/);
 });
-
-
-test('Preisjäger original online submission has retry and duplicate protection',()=>{
- const original=text('Minispiele/Preisjaeger_v11_0_RC23.html');
- assert.match(original,/PREISJAEGER_ONLINE_ERROR/);
- assert.match(original,/pendingKey===stateKey\(state\)/);
- assert.match(original,/Schätzung wird gespeichert/);
- assert.match(js,/type:'PREISJAEGER_ONLINE_ERROR'/);
+test('Preisjäger submission validates input, prevents duplicates and supports retry',()=>{
+ assert.match(js,/pjSubmitPendingKey===key/);
+ assert.match(js,/pjSubmitPendingKey=key/);
+ assert.match(js,/const raw=el\\('pj-guess'\\)\\.value\\.trim\\(\\)/);
+ assert.match(js,/challenge-preisjaeger-answer/);
+ assert.match(js,/finally\\{if\\(pjSubmitPendingKey===key\\)pjSubmitPendingKey='';\\}/);
 });
-
-
-test('Preisjäger original reveal is sourced from completed server history',()=>{
- const original=text('Minispiele/Preisjaeger_v11_0_RC23.html');
- assert.match(js,/history:Array\.isArray\(pj\.history\)\?pj\.history\.slice\(-1\):\[\]/);
- assert.match(original,/pj-online-previous-reveal/);
- assert.match(original,/last\.product\?\.price/);
- assert.match(original,/last\.entries/);
- assert.match(original,/previous\.hidden=!last\|\|!waitingForNext/);
+test('Preisjäger reveals the previously settled round from server history',()=>{
+ assert.match(js,/const previous=pj\\.history\\?\\.\\[pj\\.history\\.length-1\\]/);
+ assert.match(js,/reveal\\.hidden=!previous/);
+ assert.match(js,/previous\\.product\\.price/);
+ assert.match(js,/previous\\.entries/);
 });
-
-
-test('Preisjäger final podium reads authoritative server totals',()=>{
- const original=text('Minispiele/Preisjaeger_v11_0_RC23.html');
- assert.match(js,/finished:ch\.phase==='finished'/);
- assert.match(js,/totals:ch\.phase==='finished'/);
- assert.match(original,/if\(data\.finished\)/);
- assert.match(original,/finalScores/);
- assert.match(original,/data\.totals/);
+test('Preisjäger final podium uses the Challenge server totals',()=>{
+ assert.match(js,/if\\(result\\?\\.game==='preisjaeger'&&Array\\.isArray\\(result\\.rounds\\)\\)/);
+ assert.match(js,/const standings=\\(ch\\.totals\\|\\|\\[\\]\\)\\.slice\\(\\)\\.sort/);
+ assert.match(js,/const winners=standings\\.filter/);
+ assert.match(js,/ch\\.phase==='finished'/);
 });
-
-
-test('Preisjäger online input supports Enter and isolates offline submit handler',()=>{
- const original=text('Minispiele/Preisjaeger_v11_0_RC23.html');
- assert.match(original,/function submitOnlineGuess\(event\)/);
- assert.match(original,/addEventListener\('click',submitOnlineGuess,true\)/);
- assert.match(original,/event\.key==='Enter'/);
- assert.match(original,/event\?\.stopImmediatePropagation\(\)/);
- assert.match(original,/PREISJAEGER_ONLINE_ERROR/);
- assert.match(js,/const fail=message=>/);
+test('Preisjäger form uses browser submit for click and Enter without offline handlers',()=>{
+ assert.match(js,/el\\('pj-guess-form'\\)\\.addEventListener\\('submit',async event=>\\{/);
+ assert.match(js,/event\\.preventDefault\\(\\)/);
+ assert.match(js,/el\\('pj-submit'\\)\\.disabled=true/);
+ assert.match(js,/pjSubmitPendingKey===key/);
+ assert.doesNotMatch(js,/submitOnlineGuess\\(/);
 });
-
-
 test('Preisjäger countdown progresses even when room socket is idle',()=>{
  assert.match(js,/preisjaegerClockReceivedAt=Date\.now\(\)/);
  assert.match(js,/Math\.max\(0,Date\.now\(\)-preisjaegerClockReceivedAt\)/);
@@ -382,12 +360,12 @@ test('all embedded originals use shared edge-to-edge stage and preserve hidden f
 });
 
 
-test('inactive Preisjäger iframe never overlays another original minigame',()=>{
- assert.match(js,/frame\.hidden=!active/);
- assert.match(js,/frame\.hidden=true/);
- assert.match(js,/\.preisjaeger-original-playing:not\(\.hidden\)>#preisjaeger-original-online:not\(\[hidden\]\)/);
+test('Retired Preisjäger iframe is hidden and no longer controls the Challenge stage',()=>{
+ assert.match(js,/old\\.hidden=true;old\\.style\\.display='none'/);
+ assert.match(js,/classList\\.remove\\('preisjaeger-original-playing'\\)/);
+ assert.match(js,/el\\('challenge-preisjaeger'\\)\\.hidden=!\\(isPreisjaeger&&ch\\.preisjaeger&&ch\\.phase==='countdown'\\)/);
+ assert.doesNotMatch(js,/frame\\.src='Minispiele\\//);
 });
-
 test('Recheninsel online landscape fits all answer barrels and hides offline controls',()=>{
  const game=text('recheninsel-original-online.html');
  assert.match(game,/body\.rechen-online \.board\{flex:1;min-height:0;grid-template-rows:repeat\(3,minmax\(0,1fr\)\)/);
