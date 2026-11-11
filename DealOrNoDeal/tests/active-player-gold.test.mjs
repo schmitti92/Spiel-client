@@ -18,11 +18,13 @@ test('Goldstudio loads fresh subtle turn styling and keeps the turn above the ca
  assert.ok(html.indexOf('id="turn-spotlight"')<html.indexOf('id="cases"'));
 });
 
-test('active player card has a restrained gold edge and readable dark background',()=>{
+test('active player card is luminous gold with dark legible text and a bright avatar frame',()=>{
  assert.match(css,/#players \.player\.turn\s*\{/);
- assert.match(css,/border:2px solid #c5a469!important/);
- assert.match(css,/linear-gradient\(145deg,#3b322d/);
- assert.match(css,/box-shadow:0 0 0 1px #9e7d4780,0 0 14px #d5a75540/);
+ assert.match(css,/border:3px solid #ffefb2!important/);
+ assert.match(css,/linear-gradient\(120deg,#ffe8a4/);
+ assert.match(css,/box-shadow:0 0 0 2px #9c681b,0 0 25px #ffcf69a6/);
+ assert.match(css,/#players \.player\.turn \.candidate-name\{[^}]*color:#302005!important/s);
+ assert.match(css,/#players \.player\.turn \.candidate-avatar\{[^}]*border:3px solid #fff1b7!important/s);
  assert.match(css,/#players \.player\.turn \.candidate-name\{/);
  assert.match(css,/#players \.player\.turn \.candidate-badge\{/);
  assert.match(css,/#players \.player\.turn \.candidate-avatar\{/);
