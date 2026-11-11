@@ -12,6 +12,7 @@ on:
       - dog-group-boss.js
       - dog-boss-mini-ui.js
       - dog-boss-combat-fx.js
+      - 'dog-boss-art/**'
       - dog-ascension.html
       - dog-ascension.css
       - dog-ascension.js
@@ -37,6 +38,7 @@ on:
       - dog-group-boss.js
       - dog-boss-mini-ui.js
       - dog-boss-combat-fx.js
+      - 'dog-boss-art/**'
       - dog-ascension.html
       - dog-ascension.css
       - dog-ascension.js
@@ -60,6 +62,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Validate unique boss and hero SVG artworks
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          files = sorted(Path('dog-boss-art').glob('*.svg'))
+          assert len(files) >= 13, "Missing individual boss or hero sprites"
+          for file in files:
+              root = ET.parse(file).getroot()
+              assert root.tag.endswith('svg'), f"{file}: not an SVG"
+              assert root.attrib.get('viewBox'), f"{file}: no viewBox"
+              assert not any(e.tag.split('}')[-1] in ('script','foreignObject','image')
+                             for e in root.iter()), f"{file}: disallowed embedded content"
+          print(f"Validated {len(files)} standalone SVG artworks")
+          PY
       - name: Check JavaScript syntax
         run: |
           node --check dog-tor-map.js
