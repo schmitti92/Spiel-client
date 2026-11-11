@@ -100,6 +100,21 @@ input[type="range"]{width:100%;accent-color:#efc47d}
 .direction-pad button:active:not(:disabled){transform:scale(.94)}
 #gap-report{font-size:12px;color:#d1e4e9;border-top:1px solid #a7c3cd33;margin-top:9px;padding-top:9px}
 
+.group-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+#select-track-group[aria-pressed="true"]{background:linear-gradient(135deg,#f3d49b,#daa65f);color:#122939;border-color:#ffe5b3}
+.group-move-panel{background:linear-gradient(145deg,#213f51,#092538);border:1px solid #e8bb778f;border-radius:13px;padding:12px;margin-top:9px}
+.group-move-panel[hidden]{display:none!important}
+.group-move-panel strong{font-size:13px;color:#ffe3ae}
+.group-move-panel p{font-size:12px;color:#c9dce9;margin:7px 0}
+.group-options{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.group-options label{font-size:12px;color:#d7e6f0}
+.group-options select{margin-left:6px;background:#081f30;border:1px solid #83a4b8;color:#f7f2eb;border-radius:9px;padding:7px}
+.group-options input{accent-color:#eab772}
+.group-pad{display:grid;grid-template-columns:repeat(3,44px);gap:5px;justify-content:center;margin:10px auto}
+.group-pad button{width:44px;height:40px;border:1px solid #7894aa;background:#153749;color:#fff1d6;font-size:22px;font-weight:800;border-radius:10px}
+.group-pad button:active{background:#386174}
+.group-pad button.center{font-size:18px;color:#d6c8a6;cursor:default}
+.group-count{color:#ffe5b1;font-weight:850}
 .assist-card{border-color:#e6bf805e;background:linear-gradient(140deg,#1b4052,#102338)}
 .assist-card h2{color:#ffe2ab}
 .assist-head{display:flex;align-items:center;gap:10px;margin:8px 0}
@@ -154,12 +169,32 @@ input[type="range"]{width:100%;accent-color:#efc47d}
        <button type="button" data-tool="move" aria-pressed="false">↔ Verschieben</button>
        <button type="button" data-tool="erase" aria-pressed="false">⌫ Löschen</button>
       </div>
+      <button id="select-track-group" type="button" class="btn small" aria-pressed="false">⬚ Alle Lauffelder auswählen</button>
       <button id="undo" type="button" class="btn small soft">↶ Rückgängig</button>
       <button id="redo" type="button" class="btn small soft">↷ Wiederholen</button>
       <button id="preview" type="button" class="btn small soft">▶ Zugweg ansehen</button>
       <button id="stop-preview" type="button" class="btn small soft">■ Stopp</button>
     </div>
     <div class="board-hint" id="board-hint">Tippe auf eine freie Position. Bereits platzierte Felder kannst du anfassen und verschieben.</div>
+    <div class="group-move-panel" id="group-move-panel" hidden>
+      <strong>🔶 <span id="group-count">0</span> Lauffelder gemeinsam ausgewählt</strong>
+      <p>Ziehe die markierten Lauffelder mit dem Finger oder der Maus über das Brett. Der ganze Laufweg bewegt sich als Einheit – Abstände und Feldnummern bleiben gleich.</p>
+      <div class="group-options">
+        <label><input type="checkbox" id="group-snap"> Verschiebung ans Raster anpassen</label>
+        <label for="group-step">Pfeilschritt
+          <select id="group-step"><option value="1">1 Einheit</option><option value="5" selected>5 Einheiten</option><option value="grid">Rasterabstand</option></select>
+        </label>
+      </div>
+      <div class="group-pad" role="group" aria-label="Alle Lauffelder gemeinsam verschieben">
+        <span></span><button type="button" data-group-dir="0,-1" aria-label="Alle Lauffelder nach oben">↑</button><span></span>
+        <button type="button" data-group-dir="-1,0" aria-label="Alle Lauffelder nach links">←</button>
+        <button type="button" class="center" disabled>✥</button>
+        <button type="button" data-group-dir="1,0" aria-label="Alle Lauffelder nach rechts">→</button>
+        <span></span><button type="button" data-group-dir="0,1" aria-label="Alle Lauffelder nach unten">↓</button><span></span>
+      </div>
+      <button id="deselect-track-group" type="button" class="btn small soft">✓ Auswahl beenden</button>
+    </div>
+
   </section>
   <aside class="work-side">
    <section class="card">
@@ -388,8 +423,8 @@ input[type="range"]{width:100%;accent-color:#efc47d}
    </section>
   </aside>
  </div>
- <div class="foot">DOG-Spielfeldstudio · Baukasten-Version 5 · Raster, Koordinaten und Zugreihenfolge unabhängig von der Spiel-Engine</div>
+ <div class="foot">DOG-Spielfeldstudio · Baukasten-Version 6 · Raster, Koordinaten und Zugreihenfolge unabhängig von der Spiel-Engine</div>
 </main>
-<script type="module" src="./editor-builder.js?v=5"></script>
+<script type="module" src="./editor-builder.js?v=6"></script>
 </body>
 </html>
