@@ -6,11 +6,11 @@
  <meta name="theme-color" content="#08101d">
  <meta name="description" content="Die 100 Tore: Fünf Welten, 80 Einzelkämpfe, 10 Mini-Bosse und 10 gemeinsame Wächter führen euch zum Spiel DOG.">
  <title>🏰 Der Weg zu DOG · Die 100 Tore</title>
- <link rel="stylesheet" href="./dog-tor-map.css?v=20261111-developer-v1">
+ <link rel="stylesheet" href="./dog-tor-map.css?v=20261111-cooldown-v1">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
  <script src="./dog-tor-map.js?v=20261111-developer-v1" defer></script>
- <script src="./dog-developer-ui.js?v=20261111-developer-v1" defer></script>
+ <script src="./dog-developer-ui.js?v=20261111-cooldown-v1" defer></script>
  <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 </head>
 <body>
@@ -130,6 +130,15 @@
      </label>
      <button type="button" id="dog-developer-prepare-boss">⚔️ Boss vorbereiten</button>
     </div>
+   </section>
+   <section class="dog-dev-section dog-dev-cooldown" aria-labelledby="dog-dev-cooldown-title">
+    <h3 id="dog-dev-cooldown-title">⏱️ Boss-Pause zum Testen</h3>
+    <label class="dog-dev-switch" for="dog-developer-cooldown">
+     <input type="checkbox" id="dog-developer-cooldown" disabled>
+     <span><strong>10-Minuten-Boss-Pause deaktivieren</strong>
+     <small>Ein verlorener Gruppenboss kann sofort erneut gestartet werden. Gilt für Tor 10 bis 100, nur bei Chris mit Nova und Titan.</small></span>
+    </label>
+    <p id="dog-developer-cooldown-state" class="dog-dev-cooldown-state">Normale Boss-Pause: aktiv</p>
    </section>
    <section class="dog-dev-section" aria-labelledby="dog-dev-materials-title">
     <h3 id="dog-dev-materials-title">⚒️ Testmaterialien vergeben</h3>
