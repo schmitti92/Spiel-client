@@ -80,7 +80,7 @@
     phase==='cooldown'?'💀 BOSS ÜBERLEBT':
     phase==='fighting'?'⚔️ LIVE-HERAUSFORDERUNG':'⚔️ BOSS-HERAUSFORDERUNG';
    text($(root,'#live-challenge-heading'),title);
-   text(nodes.round,active?'RUNDE '+(roundIndex+1)+' / 3':'3 RUN DEN · 30 SEK.');
+   text(nodes.round,active?'RUNDE '+(roundIndex+1)+' / 3':'3 RUNDEN · 30 SEK.');
    if(nodes.prompt){
     nodes.prompt.hidden=active||phase==='victory'||phase==='cooldown';
     text(nodes.promptTitle,phase==='fighting'?'⚔️ Kampf läuft':
@@ -98,7 +98,7 @@
    for(const [i,node] of steps.entries()){
     const round=rounds[i],answer=answers[i];
     const kind=taskNames[round?.kind]||'Aufgabe';
-    const value=(i+1)+' · '+kind.replace(/^.\s*/u,'');
+    const value=(i+1)+' · '+kind;
     if(node.textContent!==value)node.textContent=value;
     node.classList.toggle('is-current',active&&i===roundIndex);
     node.classList.toggle('is-correct',answer?.correct===true);
