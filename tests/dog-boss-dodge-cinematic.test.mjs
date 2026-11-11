@@ -153,6 +153,8 @@ test('boss weapon actually swings from the monster to the server-targeted lane',
  assert.equal(root.dataset.bossSwing,'windup');
  assert.equal(layer.style['--dodge-hit-x'],'85%','hammer targets the dangerous right lane');
  assert.equal(layer.style['--boss-swing-offset'],'-100ms');
+ assert.equal(root.style['--boss-swing-offset'],'-100ms',
+  'boss body and separate weapon layer must share one server-timed strike');
  assert.ok(fields.get('#combat-boss').classList.contains('battle-boss-strike'),
   'body moves in sync with held weapon');
  fx.update(view,at+16900);
