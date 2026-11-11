@@ -109,7 +109,7 @@
    const stamped=Number(data?.view?.serverNow??data?.serverNow);
    if(Number.isFinite(stamped))
     data._clockOffsetMs=stamped-receivedAt+
-     Math.min(250,Math.max(0,(receivedAt-requestStartedAt)/2));
+     Math.min(75,Math.max(0,(receivedAt-requestStartedAt)/4));
    return data;
   }finally{if(timeout!==null)clearTimeout(timeout);}
  }
