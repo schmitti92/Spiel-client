@@ -24,6 +24,7 @@
   let roundKey='',roundView=null,buttons=[],progress=null,status=null;
   let question=null,counter=null,attackStatus=null,localSubmitting=false,stepCurrent=0;
   let lastChoice=null,anchor=null,raf=0,activeVersion=1,allowed=false;
+  let mathChoices=[],mathSent=false;
   const lead=createElement('div','mini-lead');
   const title=createElement('strong','mini-title');
   const hint=createElement('small','mini-hint');
@@ -31,8 +32,34 @@
   status=createElement('div','mini-feedback','');
   lead.append(title,hint);
   root.replaceChildren(lead,body,status);
+  const flushMath=()=>{
+   if(!roundView||roundView.kind!=='math'||activeVersion!==2||
+      mathSent||!mathChoices.length)return;
+   mathSent=true;
+   const round=roundView.round,answers=[...mathChoices];
+   // One server transaction per math sprint, never one per tap.
+   // The authenticated controller persists its receipt for safe retries.
+   Promise.resolve().then(()=>onSubmit(round,answers,0))
+    .catch(()=>{mathSent=false;});
+  };
   const choose=(value)=>{
    if(!roundView||localSubmitting||!allowed)return;
+   if(activeVersion===2&&roundView.kind==='math'){
+    // Immediate local advancement prevents network lag between questions.
+    if(mathSent||mathChoices.length>=8)return;
+    mathChoices.push(value);
+    const step=mathChoices.length;
+    const next=roundView.puzzles?.[step];
+    if(question)question.textContent=next?.question||'✅ Acht Aufgaben beantwortet!';
+    buttons.forEach((button,i)=>{
+     button.textContent=next?String(next.options[i]):'✓';
+     button.disabled=!next;
+    });
+    if(counter)counter.textContent=step+' / 8 beantwortet';
+    if(status)status.textContent='⚡ '+step+' von 8 – deine Antworten werden gesammelt geprüft';
+    if(step>=8)flushMath();
+    return;
+   }
    const step=activeVersion===2?stepCurrent:0;
    localSubmitting=true;lastChoice={round:roundView.round,step,value};
    buttons.forEach(button=>button.disabled=true);
@@ -63,6 +90,7 @@
   }
   function build(round,version){
    stopAnimation();roundView=round;activeVersion=version;
+   mathChoices=[];mathSent=false;
    buttons=[];body.replaceChildren();progress=null;question=null;counter=null;attackStatus=null;
    lastChoice=null;
    title.textContent='RUNDE '+(round.round+1)+'/3 · '+labels[round.kind];
@@ -123,10 +151,14 @@
   function update(view,now,canPlay){
    const active=view?.phase==='fighting'&&view?.miniGames?.rounds?.length===3;
    root.hidden=!active;allowed=!!canPlay;
-   if(!active){roundKey='';roundView=null;stopAnimation();return;}
+   if(!active){
+    if(roundView?.kind==='math'&&mathChoices.length&&!mathSent)flushMath();
+    roundKey='';roundView=null;stopAnimation();return;
+   }
    const elapsed=now-(view.startedAt||0),games=view.miniGames;
    const round=games.rounds.find(r=>elapsed>=r.startMs&&elapsed<r.endMs);
    if(!round){
+    if(roundView?.kind==='math'&&mathChoices.length&&!mathSent)flushMath();
     stopAnimation();
     if(roundKey!=='inactive'){
      roundKey='inactive';body.replaceChildren();buttons=[];
@@ -140,7 +172,10 @@
     return;
    }
    const key=view.startedAt+':'+round.round+':'+(games.version||1);
-   if(key!==roundKey){roundKey=key;build(round,games.version||1);}
+   if(key!==roundKey){
+    if(roundView?.kind==='math'&&mathChoices.length&&!mathSent)flushMath();
+    roundKey=key;build(round,games.version||1);
+   }
    const mine=games.myAnswers?.[round.round],remaining=
     Math.max(0,Math.ceil((round.endMs-elapsed)/1000));
    if(activeVersion===1){
@@ -172,8 +207,17 @@
     return;
    }
    const attempts=mine?.attempts||[],correct=attempts.filter(a=>a.correct).length;
-   const max=round.maxSteps||3,completed=attempts.length>=max;
-   let step=attempts.length,windowOpen=true;
+   const max=round.maxSteps||3;
+   const completed=attempts.length>=max||
+    (round.kind==='math'&&mathChoices.length>=max);
+   let step=round.kind==='math'?Math.max(attempts.length,mathChoices.length):
+    attempts.length,windowOpen=true;
+   if(round.kind==='math'){
+    if(attempts.length)mathSent=true;
+    // Allow all eight seconds; flush remaining answers just before expiry
+    // or upon switching to the next challenge (server allows transit grace).
+    if(elapsed>=round.endMs-120&&mathChoices.length&&!mathSent)flushMath();
+   }
    if(round.kind==='dodge'){
     // Each strike has its own exact telegraph/impact window.
     step=Math.min(2,Math.floor((elapsed-round.startMs)*3/8000));
@@ -203,7 +247,8 @@
    }
    stepCurrent=step;
    if(counter){
-    counter.textContent=correct+' / '+max+' richtig';
+    counter.textContent=round.kind==='math'&&!attempts.length?
+     mathChoices.length+' / '+max+' beantwortet':correct+' / '+max+' richtig';
     counter.classList.toggle('is-perfect',correct===max);
    }
    if(round.kind==='math'){
@@ -228,7 +273,10 @@
      button.textContent=i===moving?'🎯':'◇';
     });
    }
-   status.textContent=completed?
+   status.textContent=round.kind==='math'&&!attempts.length?
+    (mathSent?'⏳ Acht-Sekunden-Sprint wird serverseitig geprüft …':
+     '⚡ '+mathChoices.length+' von 8 beantwortet · '+remaining+' Sek.'):
+    completed?
     '✅ Runde abgeschlossen · '+correct+' von '+max+' richtig':
     '⏱️ '+remaining+' Sek. · '+correct+' Treffer · '+max+' Versuche möglich'+
      (localSubmitting?' · Server prüft …':'');
