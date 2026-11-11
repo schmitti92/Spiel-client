@@ -242,30 +242,39 @@
     text(nodes.cineCumulative,'');
    }else if(defensive){
     const blocked=Math.max(0,25-shieldLoss);
-    text(nodes.cineEyebrow,'🛡️ TEAMVERTEIDIGUNG');
-    text(nodes.cineScore,fmt.format(stage.shield)+' / 100');
-    text(nodes.cineScoreDesc,'Verbleibende gemeinsame Schildpunkte');
-    text(nodes.cineBonusLabel,'🛡️ ABGEBLOCKTE SCHILDPUNKTE');
-    text(nodes.cineBonus,fmt.format(blocked)+' / 25');
-    text(nodes.cineBonusDetail,shieldLoss===0?
-     'Perfekter Block! Kein Schildverlust.':
-     'Bossangriff: −'+fmt.format(shieldLoss)+' Schildpunkte');
+    const maxTeamHp=Number(view?.teamHealth?.maxHp)||0;
+    const priorShield=round.round===3?
+     Number(view?.miniGames?.exchange?.stages?.[1]?.shield??100):100;
+    const hp=maxTeamHp?Math.round(maxTeamHp*stage.shield/100):0;
+    const priorHp=maxTeamHp?Math.round(maxTeamHp*priorShield/100):0;
+    const lost=Math.max(0,priorHp-hp);
+    text(nodes.cineEyebrow,'❤️ TEAMVERTEIDIGUNG');
+    text(nodes.cineScore,maxTeamHp?
+     fmt.format(hp)+' / '+fmt.format(maxTeamHp):fmt.format(stage.shield)+' / 100');
+    text(nodes.cineScoreDesc,maxTeamHp?'GRUPPEN-LP':'Teamverteidigung');
+    text(nodes.cineBonusLabel,'🛡️ ABGEWEHRT');
+    text(nodes.cineBonus,maxTeamHp?
+     fmt.format(Math.max(0,Math.round(maxTeamHp*.25)-lost))+' LP':
+     fmt.format(blocked)+' / 25');
+    text(nodes.cineBonusDetail,maxTeamHp?
+     (lost?'−'+fmt.format(lost)+' LP':'PERFEKT! KEIN SCHADEN'):
+     (shieldLoss?'−'+fmt.format(shieldLoss)+' Schildpunkte':'Perfekter Block'));
     text(nodes.cineCumulative,
-     fmt.format(stage.correct)+' / '+fmt.format(stage.max)+' erfolgreiche Abwehraktionen');
+     fmt.format(stage.correct)+' / '+fmt.format(stage.max)+' Abwehraktionen');
    }else{
     const percent=Number(stage.bonusPercent||0);
     const bonus=stage.bonusDamage;
     text(nodes.cineEyebrow,'⚔️ GEMEINSAMER TEAMANGRIFF');
     text(nodes.cineScore,fmt.format(stage.correct)+' / '+fmt.format(stage.max));
-    text(nodes.cineScoreDesc,'Richtige Aufgaben aller kämpfenden Helden');
-    text(nodes.cineBonusLabel,'🔥 ZUSÄTZLICHES ANGRIFFSPOTENZIAL');
+    text(nodes.cineScoreDesc,'TEAMTREFFER');
+    text(nodes.cineBonusLabel,'🔥 EXTRA-SCHADEN');
     text(nodes.cineBonus,Number.isFinite(bonus)?
      '+'+fmt.format(bonus):'+'+fmt.format(percent)+' %');
     text(nodes.cineBonusDetail,
-     '+'+percent.toLocaleString('de-DE')+' % Team-Bonus · LP-Schaden erst bei Endwertung');
+     '+'+percent.toLocaleString('de-DE')+' % · Finale Wertung folgt');
     const cumulative=view.miniGames.exchange?.cumulativeExtraDamage;
     text(nodes.cineCumulative,Number.isFinite(cumulative)?
-     '🔥 Bisher gesammelt: +'+fmt.format(cumulative)+' Angriffspotenzial':
+     '🔥 Gesamtbonus: +'+fmt.format(cumulative):
      'Gemeinsamer Angriff wird vorbereitet');
    }
    const upcoming=next?({'dodge':'🛡️ Ausweichen','target':'🎯 Zieltreffer',
