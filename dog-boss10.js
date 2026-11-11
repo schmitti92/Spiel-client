@@ -16,6 +16,7 @@
  const miniUi=window.DogBossMinigames?.create($('mini-game'),
   (round,answer)=>void command('minigame',false,{round,answer}));
  const combatFx=window.DogBossCombatFX?.create($('combat-scene'),10);
+ const preflight=window.DogBossPreflight?.create(10);
  const key=uid=>'dog:boss10:pending:'+uid;
  const newId=()=>globalThis.crypto?.randomUUID?.()?
   'boss10-'+globalThis.crypto.randomUUID():
@@ -157,6 +158,7 @@
   miniUi?.update(view,now(),logged&&!working&&!pendingOp&&
    !!view?.roster?.some(m=>m.uid===account));
   combatFx?.update(view,now());
+  preflight?.update(view,now());
   $('retry-button').hidden=!pendingOp;
   $('retry-button').disabled=working;
   const time=state==='fighting'?remaining():state==='cooldown'?cooling():30000;
