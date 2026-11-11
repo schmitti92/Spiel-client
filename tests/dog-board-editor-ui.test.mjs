@@ -34,9 +34,14 @@ function openBuilder(){
   const groupButtons=[[-1,0],[1,0],[0,-1],[0,1]].map(([dx,dy])=>{
     const item=fake('group-'+dx+','+dy);item.dataset.groupDir=dx+','+dy;return item;
   });
+  const assistSlots=['goals','homes'].flatMap(kind=>[0,1,2,3].map(index=>{
+    const item=fake('assist-slot-'+kind+','+index);
+    item.dataset.assistSlot=kind+','+index;
+    return item;
+  }));
   const document={
     getElementById:fake,
-    querySelectorAll:selector=>selector==='[data-path-dir]'?directionButtons:selector==='[data-group-dir]'?groupButtons:[],
+    querySelectorAll:selector=>selector==='[data-path-dir]'?directionButtons:selector==='[data-group-dir]'?groupButtons:selector==='[data-assist-slot]'?assistSlots:[],
     body:{append(){}}
   };
   const window={addEventListener(){}};
@@ -341,4 +346,31 @@ test('DOG assistant chooses the next empty goal/home slot rather than replacing 
  ui.trigger('choose-home-first');ui.touch(120,240);
  ui.trigger('choose-home-first');
  assert.equal(ui.get('field-index').value,'1');
+});
+
+test('DOG explicit coloured goal buttons allow placing or replacing goal slots 1–4 independently',()=>{
+ const ui=openBuilder();
+ for(let i=0;i<4;i++){
+   ui.trigger('assist-slot-goals,'+i);
+   assert.equal(ui.get('field-index').value,String(i));
+   ui.touch(120+i*40,120);
+ }
+ let draft=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ assert.equal(draft.goals[0].filter(Boolean).length,4);
+ assert.equal(placedCount(draft).goals,4);
+ ui.trigger('assist-slot-goals,2');
+ ui.touch(200,180);
+ draft=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ assert.equal(draft.goals[0].filter(Boolean).length,4);
+ assert.deepEqual(draft.goals[0][2],{x:188,y:188});
+});
+test('DOG explicit house slot buttons let player place third and fourth reserve positions',()=>{
+ const ui=openBuilder();
+ ui.trigger('assist-slot-homes,0');ui.touch(120,260);
+ ui.trigger('assist-slot-homes,1');ui.touch(160,260);
+ ui.trigger('assist-slot-homes,2');ui.touch(120,300);
+ ui.trigger('assist-slot-homes,3');ui.touch(160,300);
+ const d=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ assert.equal(d.homes[0].filter(Boolean).length,4);
+ assert.equal(placedCount(d).homes,4);
 });
