@@ -1,7 +1,7 @@
 import {
  STUDIO_STORAGE_KEY,STUDIO_FORMATS,createTemplate,createScene,createItem,
  normalizeProject,studioId,itemTypeLabel,clamp,rgba,safeImage,resizeItemFrame
-} from './studio-model.mjs?v=3-liveboss';
+} from './studio-model.mjs?v=4-three-column';
 
 (()=>{
 'use strict';
