@@ -293,3 +293,22 @@ header small{font-size:clamp(8px,.72vw,12px)!important;letter-spacing:.17em!impo
     animation:none!important;
   }
 }
+
+/* 30-case first round: selected cases stay closed, then open in a
+   shared fast 650ms rhythm with the same clock on every device. */
+#cases .case.batch-queued:not(.opened){border-color:#ffe69e!important;box-shadow:0 0 0 2px #e5ae5188,0 0 17px #ffdc8466!important;filter:saturate(1.12)}
+#cases .case.batch-queued:not(.opened)::before{content:'✓';position:absolute;z-index:8;top:-8px;right:-7px;border:1px solid #fff0b9;border-radius:50%;width:23px;height:23px;display:grid;place-items:center;background:linear-gradient(140deg,#ffdc7b,#a76b17);color:#241406;font:900 13px system-ui,sans-serif;box-shadow:0 2px 8px #0007}
+#cases .case.batch-fast.revealing,
+#cases .case.batch-fast.revealing .case-lid,
+#cases .case.batch-fast.revealing .case-interior,
+#cases .case.batch-fast.revealing .case-shell,
+#cases .case.batch-fast.revealing .case-amount,
+#cases .case.batch-fast.revealing::after,
+#cases .case.batch-fast.revealing .case-interior::after{
+ animation-duration:.52s!important;animation-delay:0ms!important;
+}
+@media(prefers-reduced-motion:reduce){
+ #cases .case.batch-fast.revealing,
+ #cases .case.batch-fast.revealing .case-lid,
+ #cases .case.batch-fast.revealing .case-amount{animation:none!important}
+}
