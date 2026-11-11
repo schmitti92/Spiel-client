@@ -9,7 +9,7 @@ on:
       - 'tests/dog-board-editor-ui.test.mjs'
       - 'tests/dog-board-assistants.test.mjs'
       - 'tests/dog-board-group-move.test.mjs'
-      - 'tests/dog-appearance.test.mjs tests/dog-official-rules.test.mjs'
+      - 'tests/dog-appearance.test.mjs'
       - 'tests/dog-official-rules.test.mjs'
       - '.github/workflows/dog-board-check.yml'
   pull_request:
@@ -38,4 +38,4 @@ jobs:
       - run: node --check DOG/board-assistants.js
       - run: node --check DOG/board-layout.js
       - run: node --check DOG/appearance-registry.js
-      - run: node --test tests/dog-board-layout.test.mjs tests/dog-board-builder.test.mjs tests/dog-board-editor-ui.test.mjs tests/dog-board-assistants.test.mjs tests/dog-board-group-move.test.mjs tests/dog-appearance.test.mjs
+      - run: node --test tests/dog-board-layout.test.mjs tests/dog-board-builder.test.mjs tests/dog-board-editor-ui.test.mjs tests/dog-board-assistants.test.mjs tests/dog-board-group-move.test.mjs tests/dog-appearance.test.mjs tests/dog-official-rules.test.mjs
