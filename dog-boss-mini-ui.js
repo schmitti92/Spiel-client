@@ -1,19 +1,29 @@
-/* Taktische Minispiele für sämtliche DOG-Bossarenen.
- * Alle drei Aufgaben, Startzeiten und Lösungen kommen vom Server.
- * Keine Zufallsauswahl und keine Trefferwertung im Client.
+/* 100 TORE • Server-verified tactical minigames.
+ * v2: eight rapid math tasks, three visual dodges, continuously accelerating
+ * reaction meter, and three moving targets. All action timings and solutions
+ * are checked by the server. v1 in-progress battles remain supported.
  */
 (()=>{
  'use strict';
- const labels={dodge:'🛡️ Ausweichen',reaction:'⚡ Reaktionsspiel',
-  math:'🧮 Blitz-Mathe',target:'🎯 Schwachpunkt treffen'};
+ const labels={dodge:'🛡️ Ausweichen',reaction:'⚡ Konter-Reaktion',
+  math:'🧮 Blitz-Mathe',target:'🎯 Zieltreffer'};
  const createElement=(tag,cls,txt)=>{
   const el=document.createElement(tag);
   if(cls)el.className=cls;
   if(txt!==undefined)el.textContent=txt;
   return el;
  };
+ const pos=(round,elapsed)=>{
+  const t=Math.max(0,Math.min(8,(elapsed-round.startMs)/1000));
+  const cycles=.68*t+(.075+.004*(round.difficulty||1))*t*t;
+  return 1-Math.abs(1-(cycles%2));
+ };
+ const targetIndex=(round,elapsed)=>
+  (round.initialIndex+Math.max(0,Math.floor((elapsed-round.startMs)/round.stepMs)))%round.lanes;
  function create(root,onSubmit){
   let roundKey='',roundView=null,buttons=[],progress=null,status=null;
+  let question=null,counter=null,attackStatus=null,localSubmitting=false,stepCurrent=0;
+  let lastChoice=null,anchor=null,raf=0,activeVersion=1,allowed=false;
   const lead=createElement('div','mini-lead');
   const title=createElement('strong','mini-title');
   const hint=createElement('small','mini-hint');
@@ -22,85 +32,206 @@
   lead.append(title,hint);
   root.replaceChildren(lead,body,status);
   const choose=(value)=>{
-   if(!roundView)return;
-   onSubmit(roundView.round,value);
+   if(!roundView||localSubmitting||!allowed)return;
+   const step=activeVersion===2?stepCurrent:0;
+   localSubmitting=true;lastChoice={round:roundView.round,step,value};
+   buttons.forEach(button=>button.disabled=true);
+   Promise.resolve().then(()=>onSubmit(roundView.round,value,step))
+    .catch(()=>{}).finally(()=>{localSubmitting=false;});
   };
   function makeButton(value,label,css){
    const button=createElement('button','mini-choice '+(css||''),label);
-   button.type='button';
-   button.addEventListener('click',()=>choose(value));
-   buttons.push(button);body.append(button);
-   return button;
+   button.type='button';button.addEventListener('click',()=>choose(value));
+   buttons.push(button);body.append(button);return button;
   }
-  function build(round){
-   roundView=round;buttons=[];body.replaceChildren();progress=null;
+  function stopAnimation(){
+   anchor=null;
+   if(raf&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(raf);
+   raf=0;
+  }
+  function paintReaction(){
+   if(!anchor||!progress)return;
+   const stamp=typeof performance!=='undefined'?performance.now():Date.now();
+   const elapsed=anchor.elapsed+(stamp-anchor.stamp);
+   const fraction=pos(anchor.round,elapsed);
+   const cursor=progress.firstElementChild;
+   if(cursor)cursor.style.left=(fraction*100).toFixed(2)+'%';
+   if(typeof requestAnimationFrame==='function'&&
+      !document.hidden&&elapsed<anchor.round.endMs)
+    raf=requestAnimationFrame(paintReaction);
+   else raf=0;
+  }
+  function build(round,version){
+   stopAnimation();roundView=round;activeVersion=version;
+   buttons=[];body.replaceChildren();progress=null;question=null;counter=null;attackStatus=null;
+   lastChoice=null;
    title.textContent='RUNDE '+(round.round+1)+'/3 · '+labels[round.kind];
    hint.textContent=round.hint||'Schnell reagieren!';
-   if(round.kind==='math'){
-    const question=createElement('div','mini-question',round.question||'');
-    body.append(question);
-    for(const [i,value] of (round.options||[]).entries())
-     makeButton(i,String(value),'mini-math');
-   }else if(round.kind==='dodge'){
-    for(let i=0;i<round.lanes;i++){
-     const dangerous=i===round.dangerIndex||i===round.secondDangerIndex;
-     makeButton(i,(round.lanes===2?['⬅️','➡️']:['⬅️','⬆️','➡️'])[i]+
-      (dangerous?' 🔥':' 🛡️'),dangerous?'mini-danger':'mini-safe');
+   if(version===1){
+    if(round.kind==='math'){
+     question=createElement('div','mini-question',round.question||'');
+     body.append(question);
+     for(const [i,value] of (round.options||[]).entries())
+      makeButton(i,String(value),'mini-math');
+    }else if(round.kind==='dodge'){
+     for(let i=0;i<round.lanes;i++){
+      const dangerous=i===round.dangerIndex||i===round.secondDangerIndex;
+      makeButton(i,(round.lanes===2?['⬅️','➡️']:['⬅️','⬆️','➡️'])[i]+
+       (dangerous?' 🔥':' 🛡️'),dangerous?'mini-danger':'mini-safe');
+     }
+    }else if(round.kind==='reaction'){
+     progress=createElement('div','mini-meter');
+     const fill=createElement('span','mini-meter-fill');
+     progress.append(fill);body.append(progress);
+     makeButton(1,'⚡ JETZT DRÜCKEN','mini-reaction');
+    }else if(round.kind==='target'){
+     for(let i=0;i<round.lanes;i++)makeButton(i,'◇','mini-target');
     }
+    return;
+   }
+   counter=createElement('div','mini-step-counter','0 / '+round.maxSteps+' geschafft');
+   body.append(counter);
+   if(round.kind==='math'){
+    question=createElement('div','mini-question','');
+    body.append(question);
+    for(let i=0;i<3;i++)makeButton(i,'…','mini-math');
+   }else if(round.kind==='dodge'){
+    const warning=createElement('div','mini-dodge-warning','Der Boss holt aus …');
+    attackStatus=warning;body.append(warning);
+    const lanes=createElement('div','mini-dodge-lanes');
+    body.append(lanes);
+    for(let i=0;i<round.lanes;i++){
+     const button=createElement('button','mini-choice mini-dodge-lane','');
+     button.type='button';button.addEventListener('click',()=>choose(i));
+     buttons.push(button);lanes.append(button);
+    }
+    const shock=createElement('div','mini-dodge-impact','⚡ DER SCHLAG KOMMT!');
+    body.append(shock);
    }else if(round.kind==='reaction'){
-    progress=createElement('div','mini-meter');
-    const fill=createElement('span','mini-meter-fill');
-    progress.append(fill);body.append(progress);
-    makeButton(1,'⚡ JETZT DRÜCKEN','mini-reaction');
+    const speed=createElement('div','mini-speed-indicator','');
+    attackStatus=speed;body.append(speed);
+    progress=createElement('div','mini-meter is-accelerating');
+    const cursor=createElement('span','mini-meter-fill');
+    progress.append(cursor);body.append(progress);
+    makeButton(1,'⚡ KONTER!','mini-reaction');
    }else if(round.kind==='target'){
+    question=createElement('div','mini-target-hint','Treffe den leuchtenden Schwachpunkt!');
+    body.append(question);
     for(let i=0;i<round.lanes;i++)makeButton(i,'◇','mini-target');
    }
   }
   function update(view,now,canPlay){
    const active=view?.phase==='fighting'&&view?.miniGames?.rounds?.length===3;
-   root.hidden=!active;
-   if(!active){roundKey='';roundView=null;return;}
-   const elapsed=now-(view.startedAt||0);
-   const games=view.miniGames;
+   root.hidden=!active;allowed=!!canPlay;
+   if(!active){roundKey='';roundView=null;stopAnimation();return;}
+   const elapsed=now-(view.startedAt||0),games=view.miniGames;
    const round=games.rounds.find(r=>elapsed>=r.startMs&&elapsed<r.endMs);
    if(!round){
-    if(roundKey!=='inactive'){roundKey='inactive';body.replaceChildren();buttons=[];
-     title.textContent=elapsed<3000?'🐉 Der Boss bereitet sich vor':'⚔️ Finaler Angriff';
-     hint.textContent=elapsed<3000?'Drei zufällige Aufgaben beginnen gleich':
+    stopAnimation();
+    if(roundKey!=='inactive'){
+     roundKey='inactive';body.replaceChildren();buttons=[];
+     title.textContent=elapsed<games.rounds[0].startMs?
+      '🐉 Der Boss bereitet sich vor':'⚔️ Finaler Angriff';
+     hint.textContent=elapsed<games.rounds[0].startMs?
+      'Drei zufällige Aufgaben beginnen gleich':
       'Die Ergebnisse werden vom Server berechnet';
-     status.textContent='';}
+     status.textContent='';
+    }
     return;
    }
-   const key=view.startedAt+':'+round.round;
-   if(key!==roundKey){roundKey=key;build(round);}
-   const mine=games.myAnswers?.[round.round];
-   const remaining=Math.max(0,Math.ceil((round.endMs-elapsed)/1000));
-   const bonus=Object.values(games.myAnswers||{}).filter(v=>v?.correct).length;
-   status.textContent=mine?
-    (mine.correct?'✅ Richtig!':'❌ Leider daneben!')+
-     ' · '+(Math.round(bonus/3*1000)/10).toLocaleString('de-DE')+' % Bonus':
-    '⏱️ '+remaining+' Sek. · Deine Eingabe wird serverseitig geprüft';
-   buttons.forEach(button=>{button.disabled=!!mine||!canPlay;});
-   if(round.kind==='reaction'&&progress){
-    const bar=progress.firstElementChild;
-    if(bar){
-     const fraction=Math.max(0,Math.min(1,
-      (elapsed-round.startMs)/(round.endMs-round.startMs)));
-     bar.style.width=(fraction*100).toFixed(1)+'%';
-     const center=(round.targetMs-round.startMs)/(round.endMs-round.startMs);
-     const tolerance=round.toleranceMs/(round.endMs-round.startMs);
-     progress.style.setProperty('--timing-left',Math.max(0,(center-tolerance)*100)+'%');
-     progress.style.setProperty('--timing-width',(2*tolerance*100)+'%');
+   const key=view.startedAt+':'+round.round+':'+(games.version||1);
+   if(key!==roundKey){roundKey=key;build(round,games.version||1);}
+   const mine=games.myAnswers?.[round.round],remaining=
+    Math.max(0,Math.ceil((round.endMs-elapsed)/1000));
+   if(activeVersion===1){
+    const bonus=Object.values(games.myAnswers||{}).filter(v=>v?.correct).length;
+    status.textContent=mine?
+     (mine.correct?'✅ Richtig!':'❌ Leider daneben!')+
+      ' · '+(Math.round(bonus/3*1000)/10).toLocaleString('de-DE')+' % Bonus':
+     '⏱️ '+remaining+' Sek. · Deine Eingabe wird serverseitig geprüft';
+    buttons.forEach(button=>button.disabled=!!mine||!canPlay||localSubmitting);
+    if(round.kind==='reaction'&&progress){
+     const bar=progress.firstElementChild;
+     if(bar){
+      const fraction=Math.max(0,Math.min(1,
+       (elapsed-round.startMs)/(round.endMs-round.startMs)));
+      bar.style.width=(fraction*100).toFixed(1)+'%';
+      const center=(round.targetMs-round.startMs)/(round.endMs-round.startMs);
+      const tolerance=round.toleranceMs/(round.endMs-round.startMs);
+      progress.style.setProperty('--timing-left',Math.max(0,(center-tolerance)*100)+'%');
+      progress.style.setProperty('--timing-width',(2*tolerance*100)+'%');
+     }
     }
+    if(round.kind==='target'){
+     const moving=targetIndex(round,elapsed);
+     buttons.forEach((button,i)=>{
+      button.classList.toggle('mini-weakpoint',i===moving);
+      button.textContent=i===moving?'🎯':'◇';
+     });
+    }
+    return;
    }
-   if(round.kind==='target'){
-    const pos=Math.max(0,Math.floor((elapsed-round.startMs)/round.stepMs));
-    const moving=(round.initialIndex+pos)%round.lanes;
+   const attempts=mine?.attempts||[],correct=attempts.filter(a=>a.correct).length;
+   const max=round.maxSteps||3,completed=attempts.length>=max;
+   let step=attempts.length,windowOpen=true;
+   if(round.kind==='dodge'){
+    // Each strike has its own exact telegraph/impact window.
+    step=Math.min(2,Math.floor((elapsed-round.startMs)*3/8000));
+    const strike=round.attacks[step];
+    windowOpen=elapsed>=strike.startMs&&elapsed<strike.impactMs;
+    if(attackStatus){
+     const remainingToImpact=Math.max(0,(strike.impactMs-elapsed)/1000);
+     const places=['LINKS','MITTE','RECHTS'];
+     attackStatus.textContent=windowOpen?
+      '⚠️ ANGRIFF '+(step+1)+'/3 · Einschlag in '+remainingToImpact.toFixed(1)+' s':
+      '💥 EINSCHLAG! '+(places[strike.dangerIndex]||'Gefahrenfeld')+' getroffen';
+     attackStatus.classList.toggle('is-impact',!windowOpen);
+    }
+    buttons.forEach((button,i)=>{
+     const danger=i===strike.dangerIndex||i===strike.secondDangerIndex;
+     const label=round.lanes===2?['⬅️ LINKS','RECHTS ➡️'][i]:
+      ['⬅️ LINKS','⬆️ MITTE','RECHTS ➡️'][i];
+     button.textContent=label+(danger?' 🔥':' 🛡️');
+     button.classList.toggle('mini-danger',danger);
+     button.classList.toggle('mini-safe',!danger);
+     button.classList.toggle('is-selected',lastChoice?.step===step&&lastChoice.value===i);
+     const hasRecord=!!attempts[step];
+     button.disabled=!canPlay||localSubmitting||!windowOpen||hasRecord;
+    });
+   }else{
+    buttons.forEach(b=>b.disabled=!canPlay||localSubmitting||completed);
+   }
+   stepCurrent=step;
+   if(counter){
+    counter.textContent=correct+' / '+max+' richtig';
+    counter.classList.toggle('is-perfect',correct===max);
+   }
+   if(round.kind==='math'){
+    const puzzle=round.puzzles[Math.min(step,7)];
+    if(question)question.textContent=completed?'✅ Acht Aufgaben abgeschlossen':puzzle.question;
+    buttons.forEach((button,i)=>{
+     button.textContent=completed?'✓':String(puzzle.options[i]);
+    });
+   }else if(round.kind==='reaction'&&progress){
+    const elapsedGame=(elapsed-round.startMs)/1000;
+    if(attackStatus)attackStatus.textContent=
+     '⚡ TEMPO '+(1+elapsedGame*.3).toFixed(1)+'× · wird immer schneller';
+    progress.style.setProperty('--timing-left',((.5-round.zoneRadius)*100)+'%');
+    progress.style.setProperty('--timing-width',(round.zoneRadius*200)+'%');
+    anchor={round,elapsed,stamp:typeof performance!=='undefined'?performance.now():Date.now()};
+    if(!raf)paintReaction();
+    if(completed)stopAnimation();
+   }else if(round.kind==='target'){
+    const moving=targetIndex(round,elapsed);
     buttons.forEach((button,i)=>{
      button.classList.toggle('mini-weakpoint',i===moving);
      button.textContent=i===moving?'🎯':'◇';
     });
    }
+   status.textContent=completed?
+    '✅ Runde abgeschlossen · '+correct+' von '+max+' richtig':
+    '⏱️ '+remaining+' Sek. · '+correct+' Treffer · '+max+' Versuche möglich'+
+     (localSubmitting?' · Server prüft …':'');
   }
   return {update};
  }
