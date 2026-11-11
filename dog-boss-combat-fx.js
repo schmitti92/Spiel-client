@@ -197,11 +197,15 @@
    const next=attacks.find(a=>a.step===strike.step+1);
    const span=Math.max(1900,Math.min(2800,(next?.startMs??round.endMs)-strike.startMs));
    dodgeLayer.style?.setProperty?.('--boss-swing-time',span+'ms');
+   root.style?.setProperty?.('--boss-swing-time',span+'ms');
    if(weaponSession!==sessionKey){
     weaponSession=sessionKey;
     // A reconnect starts at the server-clock animation offset, not frame 0.
     const offset=-Math.min(span,Math.max(0,elapsed-strike.startMs));
     dodgeLayer.style?.setProperty?.('--boss-swing-offset',offset+'ms');
+    // The boss actor lives outside dodgeLayer: synchronize its body lunge
+    // using the same inherited timestamp on the scene root.
+    root.style?.setProperty?.('--boss-swing-offset',offset+'ms');
     weapon.classList?.remove('battle-weapon-swing');
     boss?.classList?.remove('battle-boss-strike');
     weaponTrail.classList?.remove('battle-weapon-swing');
