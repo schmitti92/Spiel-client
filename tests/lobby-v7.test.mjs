@@ -75,14 +75,14 @@ test('SKYJO reference sidebar shows standings without exposing current card sums
 
 // Guard the eleven playable games and the landscape tablet layout against regressions.
 test('Party Challenge renders all eleven server-supported games exactly once',()=>{
- const source=js.match(/const singleGames=\\[([\\s\\S]*?)\\];/);
+ const source=js.match(/const singleGames=\[([\s\S]*?)\];/);
  assert.ok(source,'missing minigame registry');
- const ids=[...source[1].matchAll(/\\['([^']+)','[^']+','[^']+'\\]/g)].map(m=>m[1]);
+ const ids=[...source[1].matchAll(/\['([^']+)','[^']+','[^']+'\]/g)].map(m=>m[1]);
  assert.equal(ids.length,11);
  assert.equal(new Set(ids).size,11);
  for(const id of ['eisstock','fallende-gegenstaende','zeitgefuehl','preisjaeger'])
   assert.ok(ids.includes(id),'missing playable game '+id);
- assert.match(js,/if\\(seen\\.has\\(button\\.dataset\\.minigame\\)\\)button\\.remove\\(\\)/);
+ assert.match(js,/if\(seen\.has\(button\.dataset\.minigame\)\)button\.remove\(\)/);
 });
 test('Tablet landscape card sizing remains bounded and cache version matches',()=>{
  assert.match(css,/@media \(min-width:901px\) and \(max-height:850px\) and \(orientation:landscape\)/);
@@ -94,8 +94,8 @@ test('Tablet landscape card sizing remains bounded and cache version matches',()
 });
 
 test('Eleven-game Challenge selection rejects duplicate submissions while pending',()=>{
- assert.match(js,/const button=el\\('challenge-marathon'\\);if\\(button\\.disabled\\)return;/);
- assert.match(js,/button\\.disabled=true;[\\s\\S]*?count:11,selectedGame:null[\\s\\S]*?finally\\{button\\.disabled=false;challengeSettingsBusy=false;\\}/);
+ assert.match(js,/const button=el\('challenge-marathon'\);if\(button\.disabled\)return;/);
+ assert.match(js,/button\.disabled=true;[\s\S]*?count:11,selectedGame:null[\s\S]*?finally\{button\.disabled=false;challengeSettingsBusy=false;\}/);
 });
 test('Replay, return-to-selection and next-game controls ignore duplicate taps',()=>{
  assert.match(js,/for\(const \[id,route\] of \[\['challenge-replay','challenge-replay'\],\['challenge-select','challenge-select'\]\]\)/);
@@ -193,14 +193,14 @@ test('Late failed recovery responses do not affect a newly active room',()=>{
 
 
 test('Premium tablet landscape includes artwork for all eleven live Challenge games',()=>{
- assert.match(css,/@media \\(min-width:901px\\) and \\(orientation:landscape\\) and \\(max-height:1200px\\)/);
- assert.match(css,/height:clamp\\(88px,11\\.5dvh,125px\\)/);
+ assert.match(css,/@media \(min-width:901px\) and \(orientation:landscape\) and \(max-height:1200px\)/);
+ assert.match(css,/height:clamp\(88px,11\.5dvh,125px\)/);
  for(let index=1;index<=11;index++){
   const selector=new RegExp('body\\\\.challenge-room-active #challenge-single-grid>button:nth-child\\\\('+
    index+'\\\\)');
   assert.match(css,selector,'missing challenge card '+index);
  }
- assert.doesNotMatch(css,/Assets\\/challenge\\//,'removed SVG directory is no longer served');
+ assert.doesNotMatch(css,/Assets\/challenge\//,'removed SVG directory is no longer served');
 });
 test('Challenge ready panel uses its original controls and restores them on game switch',()=>{
  assert.match(js,/const readyPanel=el\('ready-panel'\)/);
@@ -241,8 +241,8 @@ test('Challenge cards use existing local background images and visible fallback 
   assert.ok(image.length>1000,'missing background '+name);
   assert.ok(css.includes('Assets/game-backgrounds/'+name+'.webp'),name);
  }
- assert.match(css,/#challenge-single-grid>button \\.mini-art\\{visibility:visible!important\\}/);
- assert.doesNotMatch(css,/Assets\\/challenge\\//);
+ assert.match(css,/#challenge-single-grid>button \.mini-art\{visibility:visible!important\}/);
+ assert.doesNotMatch(css,/Assets\/challenge\//);
 });
 test('Premium settings navigation points to the active game controls',()=>{
  assert.match(html,/data-lobby-settings/);
@@ -257,33 +257,33 @@ test('Preisjäger uses the current server-backed form rather than a deleted ifra
  assert.match(js,/id="pj-guess"/);
  assert.match(js,/id="pj-product-photo"/);
  assert.match(js,/challenge-preisjaeger-answer/);
- assert.doesNotMatch(js,/Minispiele\\/Preisjaeger_v11_0_RC23\\.html/);
+ assert.doesNotMatch(js,/Minispiele\/Preisjaeger_v11_0_RC23\.html/);
 });
 test('Preisjäger submission validates input, prevents duplicates and supports retry',()=>{
  assert.match(js,/pjSubmitPendingKey===key/);
  assert.match(js,/pjSubmitPendingKey=key/);
- assert.match(js,/const raw=el\\('pj-guess'\\)\\.value\\.trim\\(\\)/);
+ assert.match(js,/const raw=el\('pj-guess'\)\.value\.trim\(\)/);
  assert.match(js,/challenge-preisjaeger-answer/);
- assert.match(js,/finally\\{if\\(pjSubmitPendingKey===key\\)pjSubmitPendingKey='';\\}/);
+ assert.match(js,/finally\{if\(pjSubmitPendingKey===key\)pjSubmitPendingKey='';\}/);
 });
 test('Preisjäger reveals the previously settled round from server history',()=>{
- assert.match(js,/const previous=pj\\.history\\?\\.\\[pj\\.history\\.length-1\\]/);
- assert.match(js,/reveal\\.hidden=!previous/);
- assert.match(js,/previous\\.product\\.price/);
- assert.match(js,/previous\\.entries/);
+ assert.match(js,/const previous=pj\.history\?\.\[pj\.history\.length-1\]/);
+ assert.match(js,/reveal\.hidden=!previous/);
+ assert.match(js,/previous\.product\.price/);
+ assert.match(js,/previous\.entries/);
 });
 test('Preisjäger final podium uses the Challenge server totals',()=>{
- assert.match(js,/if\\(result\\?\\.game==='preisjaeger'&&Array\\.isArray\\(result\\.rounds\\)\\)/);
- assert.match(js,/const standings=\\(ch\\.totals\\|\\|\\[\\]\\)\\.slice\\(\\)\\.sort/);
- assert.match(js,/const winners=standings\\.filter/);
- assert.match(js,/ch\\.phase==='finished'/);
+ assert.match(js,/if\(result\?\.game==='preisjaeger'&&Array\.isArray\(result\.rounds\)\)/);
+ assert.match(js,/const standings=\(ch\.totals\|\|\[\]\)\.slice\(\)\.sort/);
+ assert.match(js,/const winners=standings\.filter/);
+ assert.match(js,/ch\.phase==='finished'/);
 });
 test('Preisjäger form uses browser submit for click and Enter without offline handlers',()=>{
- assert.match(js,/el\\('pj-guess-form'\\)\\.addEventListener\\('submit',async event=>\\{/);
- assert.match(js,/event\\.preventDefault\\(\\)/);
- assert.match(js,/el\\('pj-submit'\\)\\.disabled=true/);
+ assert.match(js,/el\('pj-guess-form'\)\.addEventListener\('submit',async event=>\{/);
+ assert.match(js,/event\.preventDefault\(\)/);
+ assert.match(js,/el\('pj-submit'\)\.disabled=true/);
  assert.match(js,/pjSubmitPendingKey===key/);
- assert.doesNotMatch(js,/submitOnlineGuess\\(/);
+ assert.doesNotMatch(js,/submitOnlineGuess\(/);
 });
 test('Preisjäger countdown progresses even when room socket is idle',()=>{
  assert.match(js,/preisjaegerClockReceivedAt=Date\.now\(\)/);
@@ -361,10 +361,10 @@ test('all embedded originals use shared edge-to-edge stage and preserve hidden f
 
 
 test('Retired Preisjäger iframe is hidden and no longer controls the Challenge stage',()=>{
- assert.match(js,/old\\.hidden=true;old\\.style\\.display='none'/);
- assert.match(js,/classList\\.remove\\('preisjaeger-original-playing'\\)/);
- assert.match(js,/el\\('challenge-preisjaeger'\\)\\.hidden=!\\(isPreisjaeger&&ch\\.preisjaeger&&ch\\.phase==='countdown'\\)/);
- assert.doesNotMatch(js,/frame\\.src='Minispiele\\//);
+ assert.match(js,/old\.hidden=true;old\.style\.display='none'/);
+ assert.match(js,/classList\.remove\('preisjaeger-original-playing'\)/);
+ assert.match(js,/el\('challenge-preisjaeger'\)\.hidden=!\(isPreisjaeger&&ch\.preisjaeger&&ch\.phase==='countdown'\)/);
+ assert.doesNotMatch(js,/frame\.src='Minispiele\//);
 });
 test('Recheninsel online landscape fits all answer barrels and hides offline controls',()=>{
  const game=text('recheninsel-original-online.html');
