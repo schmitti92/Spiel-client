@@ -63,17 +63,26 @@
    request.command==='minigame'?
     !!state?.miniGames?.myAnswers?.[request.payload?.round]||settled:
    request.command==='finish'&&settled;
-  if(confirmed){clear(uid);return true;}
+  if(confirmed){clear(uid);return 'confirmed';}
+  // An old unanswered minigame must never lock the next seven-second round.
+  // This check uses the shared clock, without extra Firestore reads.
+  if(request.command==='minigame'&&state?.phase==='fighting'){
+   const round=request.payload?.round;
+   const entry=Number.isInteger(round)?state.miniGames?.rounds?.[round]:null;
+   if(entry&&now()>=(state.startedAt||0)+entry.endMs+250){
+    clear(uid);return 'expired';
+   }
+  }
   return false;
  }
 
  function message(str){$('status').textContent=str;}
- async function request(method,action,body,uid){
+ async function request(method,action,body,uid,timeoutMs=18000){
   const me=auth();if(!me||me.user.uid!==uid)throw Error('LOGIN_REQUIRED');
   const token=await me.user.getIdToken();
   if(auth()?.user?.uid!==uid)throw Error('ACCOUNT_CHANGED');
   const ctl=typeof AbortController==='function'?new AbortController():null;
-  const timeout=ctl?setTimeout(()=>ctl.abort(),18000):null;
+  const timeout=ctl?setTimeout(()=>ctl.abort(),timeoutMs):null;
   try{
    const requestStartedAt=Date.now();
    const response=await fetch(API+route+action,{
@@ -196,6 +205,7 @@
   if(!uid){account=null;view=null;message('🔒 Für den gemeinsamen Bosskampf bitte mit einem Online-Spielerprofil anmelden.');render();return;}
   if(inflight)return inflight;
   if(!force&&Date.now()-lastLoad<3000)return;
+  if(uid!==account){view=null;lastLoad=0;}
   account=uid;
   const task=request('GET','',null,uid).then(data=>{
    if(auth()?.user?.uid!==uid)return;
@@ -204,7 +214,8 @@
    noteReadyChange(data);lastLoad=Date.now();
    const restored=acknowledgePending(uid,data);
    render();
-   if(restored)message('✅ Die zuvor offene Bossaktion wurde mit dem Serverstand abgeglichen.');
+   if(restored==='confirmed')message('✅ Die zuvor offene Bossaktion wurde mit dem Serverstand abgeglichen.');
+   else if(restored==='expired')message('⏱️ Das vorige Minispiel ist abgelaufen. Die nächste Aufgabe ist wieder spielbar.');
    else if(!pending(uid)){
     message(data.phase==='waiting'?
      !data.eligible?'🔒 Zuerst die normalen Tore vor diesem Boss und den vorherigen Gruppenboss schaffen.':
@@ -214,7 +225,8 @@
      data.phase==='victory'?'🏆 Der gemeinsame Boss-Sieg wurde serverseitig bestätigt.':'⚒️ Verbessert eure Ausrüstung für den nächsten Versuch.');
    }
   }).catch(()=>{
-   view=null;message('⚠️ Die Bossdaten konnten nicht geladen werden. Bitte Verbindung prüfen und aktualisieren.');render();
+   // Retain the last confirmed boss state during brief network outages.
+   message('⚠️ Verbindung unterbrochen. Letzter Bossstand bleibt sichtbar; Wiederverbindung läuft.');render();
   });
   inflight=task;
   try{await task}finally{if(inflight===task)inflight=null}
@@ -232,7 +244,8 @@
   working=true;render();
   message('⏳ Server prüft und speichert den Auftrag …');
   try{
-   const data=await request('POST','/'+req.command,{requestId:req.id,...(req.payload||{})},uid);
+   const data=await request('POST','/'+req.command,{requestId:req.id,...(req.payload||{})},uid,
+    req.command==='minigame'?4500:18000);
    if(auth()?.user?.uid!==uid)return;
    clear(uid);view=data.view;serverOffset=Number.isFinite(data._clockOffsetMs)?
     data._clockOffsetMs:Number(data.view.serverNow||Date.now())-Date.now();
@@ -271,6 +284,8 @@
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void reload(true)});
  window.setInterval?.(()=>{
   if(document.hidden)return;
+  const cleared=account?acknowledgePending(account,view):false;
+  if(cleared==='expired')message('⏱️ Vorige Aufgabe freigegeben – du kannst die nächste wieder spielen.');
   render();
   if(view?.phase==='fighting'&&remaining()===0&&!working&&!pending(account)){
    void command('finish');return;
