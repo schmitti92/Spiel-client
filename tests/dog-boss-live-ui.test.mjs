@@ -66,7 +66,7 @@ test('Server-confirmed answer triggers one attack animation, never a fake damage
  assert.equal(element('live-hit-effects').calls,0);
  assert.equal(element('live-mini-prompt').hidden,true);
  assert.equal(element('live-round-label').textContent,'RUNDE 2 / 3');
- assert.equal(element('live-hp-fill').style.width,'100%');
+ assert.equal(element('live-hp-fill').style.width,'100.00%');
  b.miniGames.myAnswers[1]={correct:true,at:start+11600};
  display.update(b,start+11900);
  assert.equal(element('live-hit-effects').calls,1);
@@ -92,7 +92,7 @@ test('Late reconnect does not replay old attacks, and result is not obscured',()
  assert.equal(element('live-hit-effects').calls,0);
  display.update({...b,phase:'victory',result:{hpRemaining:0}},start+31000);
  assert.equal(element('live-mini-prompt').hidden,true);
- assert.equal(element('live-hp-fill').style.width,'0.0%');
+ assert.equal(element('live-hp-fill').style.width,'0.00%');
  assert.match(element('live-challenge-heading').textContent,/BOSS BESIEGT/);
 });
 
