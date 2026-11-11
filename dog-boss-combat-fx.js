@@ -107,6 +107,7 @@
     const originalIndex=(view?.members||[]).findIndex(x=>x.uid===m.uid);
     const roleIndex=(originalIndex>=0?originalIndex:i)%3;
     const item=document.createElement('div');
+    item.setAttribute?.('data-hero-uid',m.uid);
     item.className='combat-hero combat-hero-'+(roleIndex+1)+
      ' combat-hero-portrait'+
      (membersByUid.get(m.uid)?.isMe?' combat-hero-me':'');
