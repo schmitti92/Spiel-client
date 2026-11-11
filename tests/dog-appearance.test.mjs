@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
  APPEARANCE_STORAGE_KEY,DEFAULT_APPEARANCE,
  BOARD_STYLES,PIECE_STYLES,CARD_STYLES,EVENT_PACKS,
- normalizeAppearance,resolveAppearance,loadAppearance,saveAppearance
+ normalizeAppearance,resolveAppearance,loadAppearance,saveAppearance,validAssetPath,assetBackground
 } from '../DOG/appearance-registry.js';
 import {makeDefaultLayout} from '../DOG/board-layout.js';
 
@@ -70,4 +70,16 @@ test('changing DOG presentation never changes approved geometry or game card ide
  assert.notDeepEqual(winter.board.surface,studio.board.surface);
  assert.deepEqual([0,16,32,48].map(i=>makeDefaultLayout().track[i]),ids);
  assert.deepEqual(makeDefaultLayout(),original);
+});
+
+test('artwork filenames are local-only, with fallback for missing or unsafe paths',()=>{
+ assert.equal(validAssetPath('./assets/board/winter.webp'),true);
+ assert.equal(validAssetPath('./assets/cards/royal/back.png'),true);
+ assert.equal(validAssetPath('../assets/private.png'),false);
+ assert.equal(validAssetPath('./assets/../secret.png'),false);
+ assert.equal(validAssetPath('https://example.org/tracker.png'),false);
+ assert.equal(validAssetPath('javascript:alert(1)'),false);
+ assert.equal(assetBackground(null,'linear-gradient(red,blue)'),'linear-gradient(red,blue)');
+ assert.equal(assetBackground('https://example.org/bad.png','blue'),'blue');
+ assert.match(assetBackground('./assets/cards/classic/front.webp','white'),/^url\("\.\/assets\/cards\/classic\/front\.webp"\)/);
 });
