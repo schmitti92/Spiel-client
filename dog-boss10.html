@@ -8,13 +8,13 @@
  <title>🐉 Boss 10 · Die Prüfung des Aschewächters</title>
  <link rel="stylesheet" href="./dog-boss10.css?v=20261111-combat-fx1">
  <link rel="stylesheet" href="./dog-boss-preflight.css?v=20261111-v3-tablet-fit">
- <link rel="stylesheet" href="./dog-boss-live.css?v=20261111-v3-combat">
+ <link rel="stylesheet" href="./dog-boss-live.css?v=20261111-v4-exchange">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
  <script src="./dog-boss-mini-ui.js?v=20261111-v3-fastmath" defer></script>
  <script src="./dog-boss-combat-fx.js?v=20261111-combat-fx1" defer></script>
  <script src="./dog-boss-preflight.js?v=20261111-v1" defer></script>
- <script src="./dog-boss-live-ui.js?v=20261111-v4-mathhits" defer></script>
+ <script src="./dog-boss-live-ui.js?v=20261111-v5-exchange" defer></script>
  <script src="./dog-boss10.js?v=20261111-v4-mathresult" defer></script>
  <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 </head>
@@ -52,8 +52,8 @@
      <h2>⚔️ BOSS-INFORMATION</h2>
      <dl>
       <div><dt>🚪 Tor</dt><dd id="preflight-gate">10 / 100</dd></div>
-      <div><dt>⏱️ Kampfzeit</dt><dd>30 Sekunden</dd></div>
-      <div><dt>🎯 Herausforderungen</dt><dd>3 zufällige Minispiele</dd></div>
+      <div><dt>⏱️ Kampfzeit</dt><dd>40 Sekunden</dd></div>
+      <div><dt>🎯 Herausforderungen</dt><dd>4 Minispiele · Angriff und Verteidigung</dd></div>
       <div><dt>🛡️ Erfolgsfaktor</dt><dd>Ausrüstung & Teamleistung</dd></div>
      </dl>
     </section>
@@ -101,10 +101,10 @@
   <header class="opening">
    <div class="eyebrow">TOR 10 VON 100 · GEMEINSAMER BOSS</div>
    <h1>Die Prüfung des <span>Aschewächters</span></h1>
-   <p>Ein, zwei oder drei Helden können antreten. Allein ist ein Sieg unmöglich; zu zweit gelingt er nur mit maximaler Vorbereitung und außergewöhnlichem Glück. In 30 Sekunden erscheinen drei zufällige Minispiele: Ausweichen, Timing, Blitz-Mathe oder Zieltreffer. Bei späteren Bossen werden die Aufgaben deutlich schwieriger. Die Ausrüstung ist weiterhin entscheidend.</p>
+   <p>Ein, zwei oder drei Helden können antreten. Allein ist ein Sieg unmöglich; zu zweit gelingt er nur mit maximaler Vorbereitung und außergewöhnlichem Glück. In 40 Sekunden erscheinen vier feste Minispiele: Ausweichen, Timing, Blitz-Mathe oder Zieltreffer. Bei späteren Bossen werden die Aufgaben deutlich schwieriger. Die Ausrüstung ist weiterhin entscheidend.</p>
    <div class="score">
     <div><small>🐉 GEGNER</small><strong>Aschewächter</strong></div>
-    <div><small>⏱️ KAMPFDAUER</small><strong>30 Sekunden</strong></div>
+    <div><small>⏱️ KAMPFDAUER</small><strong>40 Sekunden</strong></div>
     <div><small>⚒️ SIEGBELOHNUNG</small><strong>Schmiede Lv. 2</strong></div>
    </div>
   </header>
@@ -117,6 +117,10 @@
     <div class="combat-meter live-hp">
      <div class="live-meter-label"><span>🐉 BOSS-LP</span><strong id="boss-hp">– LP</strong></div>
      <div class="live-hp-track" aria-hidden="true"><span id="live-hp-fill"></span></div>
+    </div>
+    <div class="live-team-shield" aria-label="Gemeinsame Schildenergie">
+     <div class="live-shield-label"><span>🛡️ TEAM-SCHILD</span><strong id="live-shield-value">100 / 100</strong></div>
+     <div class="live-shield-track"><span id="live-shield-fill"></span></div>
     </div>
     <div class="live-timer">
      <div class="timer-row"><span>⏱️ KAMPFZEIT</span><strong id="timer" role="timer">00:30</strong></div>
@@ -134,13 +138,18 @@
       <div class="combat-rune-effect">✦ ✧ ✦</div><div class="combat-target-effect">◎</div>
       <div id="combat-flash" class="combat-flash"></div><div id="live-hit-effects" class="live-hit-effects"></div>
      </div>
+     <div class="live-stage-announcement" id="live-stage-announcement" hidden aria-live="polite">
+      <strong id="live-stage-title">⚔️ GEMEINSAMER ANGRIFF</strong>
+      <span id="live-stage-score">Ergebnis wird bestätigt …</span>
+      <span id="live-stage-subtitle"></span>
+     </div>
      <div class="combat-cue" id="combat-cue" aria-live="off">⚔️ HELDEN SAMMELN SICH</div>
      <div id="battle-message" class="monster-caption">Der Wächter wartet auf seine Gegner.</div>
     </div>
     <section class="live-challenge" aria-labelledby="live-challenge-heading">
      <header class="live-challenge-heading">
       <span id="live-challenge-heading">🎮 DEINE HERAUSFORDERUNG</span>
-      <span id="live-round-label">RUNDE – / 3</span>
+      <span id="live-round-label">RUNDE – / 4</span>
      </header>
      <div class="live-challenge-content">
       <div class="live-mini-prompt" id="live-mini-prompt">
@@ -155,10 +164,11 @@
    </div>
    <div class="live-rounds">
     <span class="live-rounds-title">⚡ KAMPFABLAUF</span>
-    <div class="live-round-steps" id="live-round-steps" aria-label="Fortschritt der drei Aufgaben">
+    <div class="live-round-steps" id="live-round-steps" aria-label="Vier Kampfrunden: Angriff, Verteidigung, Angriff, Verteidigung">
      <span class="live-round-step" data-step="0">1 · Aufgabe</span>
      <span class="live-round-step" data-step="1">2 · Aufgabe</span>
      <span class="live-round-step" data-step="2">3 · Aufgabe</span>
+     <span class="live-round-step" data-step="3" hidden>4 · Verteidigung</span>
     </div>
     <span id="live-feedback" class="live-feedback" role="status" aria-live="polite">Boss und Team sind bereit.</span>
    </div>
@@ -176,7 +186,7 @@
     <button id="react-button" class="reaction-button" type="button" hidden disabled>⚡ Reaktion! Angriff verstärken</button>
     <button id="retry-button" class="retry-button" type="button" hidden>↻ Offenen Auftrag sicher wiederholen</button>
    </div>
-   <p class="note">Jeder teilnehmende Spieler muss die normalen Tore 1–4 und 6–9 geschafft haben; Mini-Boss 5 ist optional. Wer bereit ist, darf den 30-Sekunden-Kampf auch allein oder zu zweit starten. Sobald alle drei bereit sind, beginnt der Kampf automatisch. Nur Spieler, die vor dem Start bereit waren, kämpfen mit. Allein ist der Sieg ausgeschlossen; zu zweit ist er nur mit maximalen Werten, mindestens zwei richtigen Minispielen pro Held und sehr viel Glück möglich. Ein serverseitig bestätigter Sieg schaltet die nächste Schmiedestufe für das Team frei. Nach einer Niederlage gilt eine gemeinsame Kampfpause von 10 Minuten.</p>
+   <p class="note">Jeder teilnehmende Spieler muss die normalen Tore 1–4 und 6–9 geschafft haben; Mini-Boss 5 ist optional. Wer bereit ist, darf den 40-Sekunden-Kampf auch allein oder zu zweit starten. Sobald alle drei bereit sind, beginnt der Kampf automatisch. Nur Spieler, die vor dem Start bereit waren, kämpfen mit. Allein ist der Sieg ausgeschlossen; zu zweit ist er nur mit maximalen Werten, mindestens zwei richtigen Minispielen pro Held und sehr viel Glück möglich. Ein serverseitig bestätigter Sieg schaltet die nächste Schmiedestufe für das Team frei. Nach einer Niederlage gilt eine gemeinsame Kampfpause von 10 Minuten.</p>
   </section>
   <footer>Die 100 Tore · Boss 10 · Die Regeln werden ausschließlich vom Server bestätigt</footer>
  </main>
