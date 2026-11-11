@@ -17,16 +17,24 @@ test('3m x2 purchase can only be displayed before choosing personal case',()=>{
  assert.match(css,/\.deal-double-boost\[hidden\]/);
  assert.match(app,/DealDoubleBoost\?\.render\(g\)/);
 });
-test('Banker stays shared while display and final payout are personal',()=>{
+test('Banker offers, the finale and winning rank always show original money',()=>{
  assert.doesNotThrow(()=>new Script(app));
  assert.doesNotThrow(()=>new Script(banker));
  assert.doesNotThrow(()=>new Script(finale));
- assert.match(banker,/function personalBankerAmount/);
- assert.match(banker,/personalBankerAmount\(h,d\.id\)/);
- assert.match(banker,/personalBankerAmount\(h\)/);
- assert.match(app,/myBankerBoost/);
- assert.match(app,/×2-Bonus/);
- assert.match(finale,/×2-Gewinn/);
+ assert.doesNotMatch(banker,/personalBankerAmount/);
+ assert.match(banker,/banker-call-amount',eur\(h\.offer\)/);
+ assert.match(banker,/final-choice-offer',eur\(h\.offer\)/);
+ assert.match(app,/b\.textContent=eur\(h\.offer\)/);
+ assert.match(app,/Bankangebot für alle: /);
+ assert.match(app,/Letztes Bankangebot: /);
+ assert.match(app,/eur\(p\.deal\)/);
+ assert.doesNotMatch(app,/myBankerBoost/);
+ assert.doesNotMatch(finale,/×2-Gewinn|p\.doublePayout|entry\.p\.doublePayout/);
+ assert.match(finale,/Die Spielwertung erfolgt ausschließlich nach dem ursprünglichen Gewinn/);
+ assert.match(app,/const boosted=g\.finalValues\.filter/);
+ assert.match(app,/final-wallet-boost/);
+ assert.match(app,/Kontogutschrift/);
+ assert.match(app,/bonus = /i);
  assert.match(finale,/f\.payout/);
 });
 
