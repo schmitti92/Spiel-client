@@ -30,6 +30,8 @@ export function decideDogRoomUpdate(previous,room,{hubCode,matchHint=null}={}){
     return {accept:false,reason:'INVALID_DOG_PROJECTION'};
   if(spectator&&match.dog.hands?.some(Array.isArray))
     return {accept:false,reason:'PRIVATE_HAND_IN_SPECTATOR_PROJECTION'};
+  if(!spectator&&!Array.isArray(match.dog.hands?.[match.dogSeat]))
+    return {accept:false,reason:'MISSING_PRIVATE_HAND'};
   if(!Number.isSafeInteger(match.dog.revision)||match.dog.revision<0)
     return {accept:false,reason:'INVALID_DOG_REVISION'};
   const sameMatch=previous?.matchId===match.id;
