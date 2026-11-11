@@ -184,6 +184,52 @@ export function measureStepDistances(draft,step,{tolerance=.25}={}){
   return {measured:edges.length,even,uneven:edges.length-even,edges};
 }
 
+/**
+ * Move only existing 64-track positions as a rigid unit. Unplaced track slots
+ * stay empty and goal/home positions stay unchanged. Neither the field order
+ * nor the distances between placed circuit fields may change.
+ *
+ * Grid snapping quantizes the *shared translation*, never the individual
+ * circles. This is important for preserving hand-drawn diagonals.
+ */
+export function trackGroupBounds(draft){
+ const points=draft?.track?.filter(p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y))||[];
+ if(!points.length)return null;
+ const xs=points.map(p=>p.x),ys=points.map(p=>p.y);
+ const minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys);
+ return {minX,maxX,minY,maxY,width:maxX-minX,height:maxY-minY,count:points.length};
+}
+export function translateTrackGroup(draft,{dx=0,dy=0,snapToGrid=false,gridSpacing=32}={}){
+ const bounds=trackGroupBounds(draft);
+ if(!bounds)throw Error('Setze erst mindestens ein Lauffeld.');
+ if(!Number.isFinite(dx)||!Number.isFinite(dy))throw Error('Ungültige Verschiebung.');
+ if(snapToGrid){
+   if(!Number.isInteger(gridSpacing)||gridSpacing<20||gridSpacing>64)throw Error('Ungültige Rastergröße.');
+   dx=Math.round(dx/gridSpacing)*gridSpacing;
+   dy=Math.round(dy/gridSpacing)*gridSpacing;
+ }
+ dx=Math.round(dx*10)/10;
+ dy=Math.round(dy*10)/10;
+ if(Math.abs(dx)<.00001&&Math.abs(dy)<.00001)return clone(draft);
+ const next=clone(draft);
+ next.track=next.track.map((p,index)=>{
+   if(!p)return null;
+   const x=Math.round((p.x+dx)*10)/10,y=Math.round((p.y+dy)*10)/10;
+   if(x<30||x>730||y<30||y>730)
+     throw Error('Das gesamte Lauffeld würde am Brettrand herausragen (Feld '+index+').');
+   return {x,y};
+ });
+ const fixed=[...next.goals.flat(),...next.homes.flat()].filter(Boolean);
+ for(let i=0;i<next.track.length;i++){
+   const p=next.track[i];
+   if(!p)continue;
+   for(const q of fixed){
+     if(Math.hypot(p.x-q.x,p.y-q.y)<23)
+       throw Error('Die Lauffelder würden mit Ziel- oder Startplätzen überlappen.');
+   }
+ }
+ return next;
+}
 export function putField(draft,selection,position,{symmetry=false,spacing=32,snap=true}={}){
  if(!selectedValid(selection))throw Error('Wähle zuerst ein gültiges Feld.');
  const point=snapXY(position,spacing,snap),next=clone(draft);
