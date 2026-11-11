@@ -11,6 +11,8 @@
   math:'🧮 MAGISCHE RUNEN AKTIV',
   target:'🎯 SCHWACHPUNKT ENTDECKT',
   finale:'⚔️ LETZTER ANGRIFF',
+  attackScene:'⚔️ HELDEN GREIFEN AN!',
+  defenseScene:'🛡️ GEMEINSAM BLOCKEN!',
   awaiting:'⌛ DAS KAMPFERGEBNIS WIRD GEPRÜFT',
   victory:'🏆 BOSS BESIEGT!',
   defeat:'💀 DER BOSS HAT ÜBERLEBT',
@@ -42,6 +44,16 @@
   if(view.phase!=='fighting')return {kind:'waiting',round:-1,elapsed:0,wave:-1};
   const begun=Number(view.startedAt)||0;
   const elapsed=Math.max(0,serverNow-begun);
+  if(view.miniGames?.version===3){
+   const rounds=view.miniGames.rounds||[];
+   const current=rounds.find(r=>elapsed>=r.startMs&&elapsed<r.endMs);
+   if(current)return {kind:current.kind,round:current.round,elapsed,
+    wave:Math.floor((elapsed-current.startMs)/2000),feedback:'none',feedbackAt:0};
+   const between=rounds.find(r=>elapsed>=r.endMs&&elapsed<r.endMs+2000);
+   if(between)return {kind:['dodge','reaction'].includes(between.kind)?
+    'defenseScene':'attackScene',round:between.round,elapsed,wave:-1};
+   return {kind:'awaiting',round:-1,elapsed,wave:-1};
+  }
   if(elapsed<3000)return {kind:'intro',round:-1,elapsed,wave:0};
   const current=view.miniGames?.rounds?.find(r=>
    elapsed>=r.startMs&&elapsed<r.endMs);
