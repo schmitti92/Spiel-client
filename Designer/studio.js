@@ -354,15 +354,23 @@ async function compressImage(file){
  }finally{URL.revokeObjectURL(url);}
 }
 async function importPicture(file,kind){
+ // Remember the target before asynchronous image compression so switching
+ // tabs during upload cannot accidentally edit a different screen.
+ const sceneId=current().id,itemId=selectedId;
  try{
   const data=await compressImage(file);
-  if(kind==='background'){current().background.image=data;renderBackground();renderInspector();}
+  const scene=project.screens.find(x=>x.id===sceneId);
+  if(!scene)return;
+  if(kind==='background')scene.background.image=data;
   else{
-   const item=selected();
+   const item=scene.items.find(x=>x.id===itemId);
    if(!item||item.type!=='image')return;
-   item.src=data;renderItems();
+   item.src=data;
   }
-  checkpoint('Bild eingefügt');notify('🖼 Bild ist in deiner Ansicht eingefügt');
+  if(current().id===sceneId){
+   renderBackground();renderItems();renderInspector();
+  }
+  checkpoint('Bild eingefügt');notify('🖼 Bild wurde der Ansicht „'+scene.name+'“ hinzugefügt');
  }catch(error){notify('⚠ '+error.message);}
 }
 function download(blob,name){
