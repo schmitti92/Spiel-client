@@ -84,16 +84,34 @@ input::placeholder,textarea::placeholder{color:#8f9fba}
 .canvas-item.is-hidden{opacity:.2!important}
 .canvas-item .item-label{display:flex;flex-direction:column;justify-content:center;min-width:0;width:100%;height:100%;white-space:pre-wrap;word-wrap:break-word;overflow:hidden;pointer-events:none}
 .canvas-item.type-circle{border-radius:50%!important}
-.canvas-item.type-arrow{clip-path:polygon(0 34%,66% 34%,66% 0,100% 50%,66% 100%,66% 66%,0 66%);border:none!important}
-.canvas-item.type-bar{padding:0;overflow:hidden}
-.canvas-item.type-bar .bar-progress{height:100%;width:66%;background:linear-gradient(90deg,#f35d67,#ffcf8b);position:absolute;inset:0 auto 0 0;pointer-events:none}
+.canvas-item.type-arrow{background:transparent!important;border:none!important}
+.canvas-item.type-arrow .item-arrow-shape{position:absolute;inset:0;clip-path:polygon(0 34%,66% 34%,66% 0,100% 50%,66% 100%,66% 66%,0 66%);pointer-events:none}
+.canvas-item.type-bar{padding:0;overflow:visible}
+.canvas-item.type-bar .bar-progress{height:100%;width:66%;background:linear-gradient(90deg,#f35d67,#ffcf8b);position:absolute;inset:0 auto 0 0;pointer-events:none;border-radius:inherit}
 .canvas-item.type-bar .item-label{position:relative;z-index:1;text-align:center;display:grid;place-items:center;padding:4px;font-weight:900;text-shadow:0 2px 5px #0009}
 .canvas-item.type-player .item-label{gap:5px}
 .canvas-item.type-player .player-icon{font-size:33px;text-align:center}
-.canvas-item.type-image{padding:0;overflow:hidden}
-.canvas-item.type-image img{width:100%;height:100%;object-fit:cover;pointer-events:none}
+.canvas-item.type-image{padding:0;overflow:visible}
+.canvas-item.type-image img{width:100%;height:100%;object-fit:cover;pointer-events:none;border-radius:inherit}
 .canvas-item.type-image .item-label{position:absolute;inset:0;text-align:center;padding:8px}
-.resize-handle{position:absolute;bottom:-7px;right:-7px;width:15px;height:15px;background:var(--gold);border:2px solid #101b2f;border-radius:3px;z-index:4;cursor:nwse-resize;touch-action:none}
+/* Eight touch-friendly grips. The hit area is larger than the golden
+   square so fingers can select each one on a 53%-zoomed tablet. */
+.resize-handle{position:absolute;width:34px;height:34px;z-index:9;transform:translate(-50%,-50%);background:transparent;border:0;touch-action:none;pointer-events:auto}
+.resize-handle::after{content:'';position:absolute;left:50%;top:50%;width:17px;height:17px;transform:translate(-50%,-50%);background:#ffd995;border:2px solid #132036;border-radius:5px;box-shadow:0 2px 7px #030a17d9,0 0 0 1px #ffe9b585;transition:background .15s,scale .15s}
+.resize-handle:hover::after,.resize-handle:active::after{background:#fff0c8;scale:1.16}
+.resize-nw{left:0;top:0;cursor:nwse-resize}
+.resize-n{left:50%;top:0;cursor:ns-resize}
+.resize-ne{left:100%;top:0;cursor:nesw-resize}
+.resize-e{left:100%;top:50%;cursor:ew-resize}
+.resize-se{left:100%;top:100%;cursor:nwse-resize}
+.resize-s{left:50%;top:100%;cursor:ns-resize}
+.resize-sw{left:0;top:100%;cursor:nesw-resize}
+.resize-w{left:0;top:50%;cursor:ew-resize}
+.resize-n::after,.resize-s::after{width:27px;height:11px;border-radius:6px}
+.resize-w::after,.resize-e::after{width:11px;height:27px;border-radius:6px}
+.canvas-item.is-selected{z-index:2}
+.canvas-item.is-selected .resize-handle{user-select:none;-webkit-user-select:none}
+.canvas-item.is-selected.type-bar .resize-handle{z-index:15}
 .canvas-item:not(.is-selected) .resize-handle{display:none}
 .canvas-item.locked .resize-handle{display:none}
 .canvas-item.type-note{transform:rotate(-2deg)}
