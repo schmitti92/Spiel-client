@@ -47,7 +47,7 @@
     }).finally(()=>{mathSending=false;});
   };
   const flushMath=()=>{
-   if(!roundView||roundView.kind!=='math'||activeVersion!==2||
+   if(!roundView||roundView.kind!=='math'||activeVersion<2||
       mathSent||!mathChoices.length)return;
    mathSent=true;
    mathQueue={round:roundView.round,answers:[...mathChoices],fightStart};
@@ -56,7 +56,7 @@
   };
   const choose=(value)=>{
    if(!roundView||localSubmitting||!allowed)return;
-   if(activeVersion===2&&roundView.kind==='math'){
+   if(activeVersion>=2&&roundView.kind==='math'){
     // Immediate local advancement prevents network lag between questions.
     if(mathSent||mathChoices.length>=8)return;
     mathChoices.push(value);
@@ -72,7 +72,7 @@
     if(step>=8)flushMath();
     return;
    }
-   const step=activeVersion===2?stepCurrent:0;
+   const step=activeVersion>=2?stepCurrent:0;
    localSubmitting=true;lastChoice={round:roundView.round,step,value};
    buttons.forEach(button=>button.disabled=true);
    Promise.resolve().then(()=>onSubmit(roundView.round,value,step))
@@ -105,7 +105,7 @@
    mathChoices=[];mathSent=false;
    buttons=[];body.replaceChildren();progress=null;question=null;counter=null;attackStatus=null;
    lastChoice=null;
-   title.textContent='RUNDE '+(round.round+1)+'/3 · '+labels[round.kind];
+   title.textContent='RUNDE '+(round.round+1)+'/'+(version===3?4:3)+' · '+labels[round.kind];
    hint.textContent=round.hint||'Schnell reagieren!';
    if(version===1){
     if(round.kind==='math'){
@@ -165,7 +165,7 @@
    // A queued response from a previous battle must never leak into the next.
    if(mathQueue&&mathQueue.fightStart!==fightStart)mathQueue=null;
    pumpMath();
-   const active=view?.phase==='fighting'&&view?.miniGames?.rounds?.length===3;
+   const active=view?.phase==='fighting'&&view?.miniGames?.rounds?.length>=3;
    root.hidden=!active;allowed=!!canPlay;
    if(!active){
     if(roundView?.kind==='math'&&mathChoices.length&&!mathSent)flushMath();
@@ -174,6 +174,8 @@
    const elapsed=now-(view.startedAt||0),games=view.miniGames;
    const round=games.rounds.find(r=>elapsed>=r.startMs&&elapsed<r.endMs);
    if(!round){
+    // Interludes use synchronized battle choreography, not a stale input panel.
+    root.hidden=games.version===3;
     if(roundView?.kind==='math'&&mathChoices.length&&!mathSent)flushMath();
     stopAnimation();
     if(roundKey!=='inactive'){
