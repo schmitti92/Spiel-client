@@ -6,6 +6,8 @@ const html=read('dog-boss10.html');
 const css=read('dog-boss-cinematic.css');
 const backdrop=read('dog-boss-art/arena-volcano-cinematic.svg');
 const crest=read('dog-boss-art/arena-rune-crest.svg');
+const cinematicCharacters=['aschewaechter','held-krieger','held-magier','held-schildtraeger']
+ .map(name=>read('dog-boss-art/'+name+'-cinematic.svg'));
 
 test('Tor 10 uses local cinematic styling after functional battle styling',()=>{
  const live=html.indexOf('dog-boss-live.css'),art=html.indexOf('dog-boss-cinematic.css');
@@ -15,7 +17,7 @@ test('Tor 10 uses local cinematic styling after functional battle styling',()=>{
  assert.match(css,/url\("\.\/dog-boss-art\/arena-rune-crest\.svg"\)/);
 });
 test('original SVG assets are standalone, scalable and self-contained',()=>{
- for(const source of [backdrop,crest]){
+ for(const source of [backdrop,crest,...cinematicCharacters]){
   assert.match(source,/^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
   assert.match(source,/viewBox="0 0 /);
   assert.match(source,/<\/svg>\s*$/);
@@ -37,4 +39,14 @@ test('art has keyboard focus, mobile layouts and reduced motion support',()=>{
  assert.match(css,/\.mini-choice:focus-visible/);
  assert.match(css,/@media\(max-width:620px\)/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+});
+
+test('boss 10 alone uses cinematic character files; remaining gates keep originals',()=>{
+ const fx=read('dog-boss-combat-fx.js'),briefing=read('dog-boss-preflight.js');
+ assert.ok(fx.includes("10:'aschewaechter-cinematic.svg'"));
+ assert.ok(fx.includes('(gate===10?cinematicHeroPortraits:heroPortraits)'));
+ assert.ok(briefing.includes('(gate===10?cinematicRolePortraits:rolePortraits)'));
+ for(const name of ['aschewaechter','held-krieger','held-magier','held-schildtraeger']){
+  assert.ok(fx.includes(name+'-cinematic.svg')||briefing.includes(name+'-cinematic.svg'));
+ }
 });
