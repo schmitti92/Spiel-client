@@ -30,7 +30,8 @@
  let lastHeroSignature=''; // No 250ms remount of unchanged multiplayer cards
  let lastReadyMask='',readyBurstUntil=0;
  const miniUi=window.DogBossMinigames?.create($('mini-game'),
-  (round,answer,step=0)=>command('minigame',false,{round,answer,step}));
+  (round,answer,step=0)=>command('minigame',false,{round,answer,step}),
+  (round,step,choice)=>combatFx?.previewDodge?.(view,round,step,choice,now()));
  const combatFx=window.DogBossCombatFX?.create($('combat-scene'),gate);
  const preflight=window.DogBossPreflight?.create(gate);
  const liveUi=window.DogBossLiveUI?.create($('arena'));
@@ -182,7 +183,8 @@
   $('retry-button').disabled=working;
   preflight?.update(view,now());
   const duration=(Number(view?.endsAt)>Number(view?.startedAt)?
-   view.endsAt-view.startedAt:view?.miniGames?.version===3?40000:50000);
+   view.endsAt-view.startedAt:view?.miniGames?.version===3?40000:
+    view?.miniGames?.version===4?50000:60000);
   const time=state==='fighting'?remaining():state==='cooldown'?cooling():duration;
   $('timer').textContent=formatTime(time);
   $('timer-fill').style.width=(state==='fighting'?Math.min(100,time/duration*100):state==='victory'?0:100)+'%';
@@ -327,7 +329,9 @@
     const windowEnd=next?.startMs??(view.endsAt-view.startedAt);
     return elapsed>=r.endMs&&elapsed<windowEnd;
    });
-  const delay=exchangeWindow?850:openingFight?1200:
+  const dodgeActive=view?.phase==='fighting'&&view?.miniGames?.version>=5&&
+    view.miniGames.rounds.some(r=>r.kind==='dodge'&&elapsed>=r.startMs&&elapsed<r.endMs);
+   const delay=exchangeWindow?850:dodgeActive?850:openingFight?1200:
    view?.phase==='fighting'?2800:
    waitingReady&&Date.now()<readyBurstUntil?900:
    waitingReady?3800:15000;
