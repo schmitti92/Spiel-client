@@ -23,7 +23,7 @@
  function create(root,onSubmit,onDodgeChoice=null){
   let roundKey='',roundView=null,buttons=[],progress=null,status=null;
   let question=null,counter=null,attackStatus=null,localSubmitting=false,stepCurrent=0;
-  let dodgeMarks=[];
+  let dodgeMarks=[],dodgeTimeFill=null;
   let mathMarks=[],mathRank=null,mathClock=null,mathTimeFill=null;
   const mathLevels=['LEICHT','AUFWÄRMEN','GENAUIGKEIT','MALNEHMEN',
    'TEILEN','KOMBINATION','KLAMMERN','FINALE'];
@@ -129,9 +129,10 @@
    stopAnimation();roundView=round;activeVersion=version;
    mathChoices=[];mathSent=false;
    buttons=[];body.replaceChildren();progress=null;question=null;counter=null;attackStatus=null;
-   dodgeMarks=[];mathMarks=[];mathRank=null;mathClock=null;mathTimeFill=null;
+   dodgeMarks=[];dodgeTimeFill=null;mathMarks=[];mathRank=null;mathClock=null;mathTimeFill=null;
    lead.replaceChildren(title,hint);
    root.classList?.toggle('is-math-battle',round.kind==='math'&&version>=5);
+   root.classList?.toggle('is-slow-dodge',round.kind==='dodge'&&version>=8);
    lastChoice=null;
    title.textContent=round.kind==='math'&&version>=5?
     '✦ RUNENPRÜFUNG':'RUNDE '+(round.round+1)+'/'+(version>=3?4:3)+' · '+labels[round.kind];
@@ -188,6 +189,12 @@
    }else if(round.kind==='dodge'){
     const warning=createElement('div','mini-dodge-warning','⚠️ BOSS GREIFT AN');
     attackStatus=warning;body.append(warning);
+    if(version>=8){
+     const decisionTrack=createElement('div','mini-dodge-decision-track');
+     decisionTrack.setAttribute?.('aria-label','Verbleibende Zeit bis zum Boss-Einschlag');
+     dodgeTimeFill=createElement('span','mini-dodge-decision-fill');
+     decisionTrack.append(dodgeTimeFill);body.append(decisionTrack);
+    }
     const lanes=createElement('div','mini-dodge-lanes');
     body.append(lanes);
     for(let i=0;i<round.lanes;i++){
@@ -304,9 +311,16 @@
      mark.classList.toggle('is-wrong',reached&&action?.correct===false);
     });
     // Each strike has its own exact telegraph/impact window.
-    step=Math.min(2,Math.floor((elapsed-round.startMs)*3/8000));
+    step=Math.min(2,Math.floor((elapsed-round.startMs)*3/(round.endMs-round.startMs)));
     const strike=round.attacks[step];
     windowOpen=elapsed>=strike.startMs&&elapsed<strike.impactMs;
+    if(dodgeTimeFill){
+     const availableMs=Math.max(1,strike.impactMs-strike.startMs);
+     dodgeTimeFill.style.width=(100*Math.max(0,Math.min(1,
+      (strike.impactMs-elapsed)/availableMs))).toFixed(1)+'%';
+     dodgeTimeFill.classList.toggle('is-urgent',
+      strike.impactMs-elapsed<1100);
+    }
     if(attackStatus){
      const remainingToImpact=Math.max(0,(strike.impactMs-elapsed)/1000);
      const places=['LINKS','MITTE','RECHTS'];
