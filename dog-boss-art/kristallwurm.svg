@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" role="img" aria-label="Tor 30: Kristallwurm. Eigene, unverwechselbare Fantasy-Bossfigur.">
+<defs>
+ <radialGradient id="halo"><stop offset="0" stop-color="#65dcff" stop-opacity=".53"/><stop offset=".55" stop-color="#65dcff" stop-opacity=".19"/><stop offset="1" stop-color="#235a7e" stop-opacity="0"/></radialGradient>
+ <linearGradient id="metal" x1=".08" y1=".04" x2=".95" y2=".95"><stop stop-color="#65dcff"/><stop offset=".27" stop-color="#235a7e"/><stop offset=".55" stop-color="#171b2b"/><stop offset=".8" stop-color="#235a7e"/><stop offset="1" stop-color="#0b0d18"/></linearGradient>
+ <linearGradient id="deep" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#235a7e"/><stop offset=".45" stop-color="#191b2c"/><stop offset="1" stop-color="#0a0d18"/></linearGradient>
+ <linearGradient id="power" x1="0" y1="0" x2=".25" y2="1"><stop stop-color="#ffffff"/><stop offset=".3" stop-color="#d9ffff"/><stop offset=".66" stop-color="#65dcff"/><stop offset="1" stop-color="#235a7e"/></linearGradient>
+ <linearGradient id="rim"><stop stop-color="#d9ffff"/><stop offset=".6" stop-color="#65dcff"/><stop offset="1" stop-color="#235a7e"/></linearGradient>
+ <filter id="shine"><feGaussianBlur stdDeviation="1.2"/></filter>
+ <filter id="mist"><feGaussianBlur stdDeviation="12"/></filter>
+</defs>
+<ellipse cx="360" cy="355" rx="300" ry="316" fill="url(#halo)"/>
+<ellipse cx="361" cy="679" rx="260" ry="29" fill="#05070c" opacity=".8" filter="url(#mist)"/>
+<g fill="#d9ffff" opacity=".75"><circle cx="110" cy="151" r="5"/><circle cx="621" cy="147" r="5"/><circle cx="72" cy="434" r="4"/><circle cx="639" cy="531" r="6"/><circle cx="560" cy="70" r="4"/><circle cx="161" cy="619" r="4"/></g>
+
+<path d="M117 615C114 489 234 451 316 487S532 545 556 399S458 187 304 239" fill="none" stroke="#09253e" stroke-width="137" stroke-linecap="round"/>
+<path d="M117 615C114 489 234 451 316 487S532 545 556 399S458 187 304 239" fill="none" stroke="url(#metal)" stroke-width="105" stroke-linecap="round"/>
+<path d="M117 615C114 489 234 451 316 487S532 545 556 399S458 187 304 239" fill="none" stroke="#9df4ff" stroke-width="10" stroke-linecap="round" stroke-dasharray="60 34" opacity=".6"/>
+<path d="M106 544L47 493L70 611L108 661L164 588Z" fill="url(#power)" stroke="#9df8ff" stroke-width="9"/>
+<path d="M175 472L143 401L206 448L241 390L260 475Z" fill="url(#power)" stroke="#b9fbff" stroke-width="10"/>
+<path d="M310 492L270 415L345 457L372 390L398 507Z" fill="url(#power)" stroke="#9cf9ff" stroke-width="10"/>
+<path d="M473 493L458 389L516 415L548 345L575 425Z" fill="url(#power)" stroke="#b3f9ff" stroke-width="10"/>
+<path d="M550 350L514 246L462 226L481 160L384 166L317 105L274 170L199 187L161 252L208 311L315 332L402 313L495 366Z" fill="url(#metal)" stroke="#99ecff" stroke-width="13"/>
+<path d="M316 107L333 27L380 116L424 62L436 168L506 135L476 223" fill="url(#power)" stroke="#c8ffff" stroke-width="9"/>
+<path d="M200 211L120 173L159 271L188 309L248 286Z" fill="url(#power)" stroke="#ccffff" stroke-width="9"/>
+<path d="M282 229L334 247L286 275Z" fill="#e9ffff" filter="url(#shine)"/>
+<path d="M367 254L419 224L407 275Z" fill="#e9ffff" filter="url(#shine)"/>
+<path d="M216 291L309 331L414 305L355 371L266 354Z" fill="#10243e" stroke="#9fe9ff" stroke-width="8"/>
+<path d="M276 343L290 367L308 345L331 376L354 338L383 350" fill="none" stroke="#e0ffff" stroke-width="9"/>
+<g fill="url(#power)" stroke="#b7fbff" stroke-width="7"><path d="M585 187L612 120L633 206L612 242Z"/><path d="M76 351L112 282L129 367L106 391Z"/><path d="M594 537L626 482L651 565L616 586Z"/></g>
+</svg>
