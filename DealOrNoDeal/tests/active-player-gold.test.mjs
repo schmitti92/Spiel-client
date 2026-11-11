@@ -38,7 +38,8 @@ test('all participants still share the same active player, without duplicate tur
  assert.match(app,/if\(isCurrentPlayer\)/);
  assert.match(app,/setAttribute\('aria-current','step'\)/);
  assert.match(app,/removeAttribute\('aria-current'\)/);
- assert.match(app,/const badgeText=p\.deal!==null\?'Deal gesichert':'Kandidat'/);
+ assert.match(app,/const badgeText=p\.deal!==null\?'Deal gesichert'/);
+ assert.match(app,/p\.doublePayout\?'✨ ×2 aktiv':'Kandidat'/);
  assert.match(app,/const statusText=p\.deal!==null\?'🤝 DEAL · '/);
  assert.doesNotMatch(app,/👑 ÖFFNET KOFFER|👑 JETZT AM ZUG|✨ DU BIST AM ZUG|✨ AKTIVER SPIELER/);
  assert.match(app,/if\(!g\)\{\$\('turn-spotlight'\)\.hidden=true/);
