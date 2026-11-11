@@ -3,7 +3,7 @@
  * A draft may contain null holes; the live board never may.
  * All coordinates use a 760x760 SVG viewBox.
  */
-import {BOARD_LAYOUT_ID,makeDefaultLayout,validateBoardLayout,rotatePoint} from './board-layout.js';
+import {BOARD_LAYOUT_ID,makeDefaultLayout,validateBoardLayout,rotatePoint} from './board-layout.js?v=10';
 export const EDITOR_DRAFT_KEY='spielportal:dog:editor-draft:v2';
 export const FIELD_TOTAL=96;
 export const GRID_SIZES=Object.freeze([28,32,36,40,48]);
