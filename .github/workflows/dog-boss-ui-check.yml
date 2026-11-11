@@ -17,7 +17,9 @@ on:
       - 'dog-boss-live-ui.js'
       - 'dog-boss-director.js'
       - 'dog-boss-endgame.css'
-      - 'tests/dog-boss-dodge-cinematic.test.mjs'
+      - 'dog-boss-math-endgame.css'
+      - 'tests/dog-boss-math-endgame-ui.test.mjs'
+      - 'tests/dog-boss-dodge-cinematic.test.mjs tests/dog-boss-math-endgame-ui.test.mjs'
       - 'dog-boss-mini-ui.js'
       - 'dog-boss-dodge-cinematic.css'
       - 'dog-boss-weapon.css'
@@ -48,6 +50,8 @@ on:
       - 'dog-boss-live-ui.js'
       - 'dog-boss-director.js'
       - 'dog-boss-endgame.css'
+      - 'dog-boss-math-endgame.css'
+      - 'tests/dog-boss-math-endgame-ui.test.mjs'
       - 'tests/dog-boss-dodge-cinematic.test.mjs'
       - 'dog-boss-mini-ui.js'
       - 'dog-boss-dodge-cinematic.css'
@@ -78,6 +82,7 @@ jobs:
           node --check dog-boss-ui.js
           node --check dog-boss-combat-fx.js
           node --check dog-boss-mini-ui.js
+          node --check tests/dog-boss-math-endgame-ui.test.mjs
           node --check dog-boss-preflight.js
           node --check dog-boss-director.js
           node --check dog-boss-live-ui.js
