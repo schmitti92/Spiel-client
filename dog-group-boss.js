@@ -263,7 +263,7 @@
    noteReadyChange(data.view);
    render();
    message(req.command==='ready'?
-    (view.phase==='fighting'?'⚔️ Drei Helden bereit – 40-Sekunden-Kampf gestartet.':
+    (view.phase==='fighting'?'⚔️ Drei Helden bereit – Kampf über '+Math.round((view.endsAt-view.startedAt)/1000)+' Sekunden gestartet.':
      '✅ Bereitschaft gespeichert. Du kannst starten oder auf weitere Helden warten.'):
     req.command==='start'?'⚔️ Der Kampf mit '+view.roster.length+' Helden hat begonnen.':
     req.command==='react'?'⚡ Reaktionsbonus für das Team gespeichert.':
