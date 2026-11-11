@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" role="img" aria-label="Tor 40: Dornenkönig. Eigene, unverwechselbare Fantasy-Bossfigur.">
+<defs>
+ <radialGradient id="halo"><stop offset="0" stop-color="#91dc84" stop-opacity=".53"/><stop offset=".55" stop-color="#91dc84" stop-opacity=".19"/><stop offset="1" stop-color="#365a39" stop-opacity="0"/></radialGradient>
+ <linearGradient id="metal" x1=".08" y1=".04" x2=".95" y2=".95"><stop stop-color="#91dc84"/><stop offset=".27" stop-color="#365a39"/><stop offset=".55" stop-color="#171b2b"/><stop offset=".8" stop-color="#365a39"/><stop offset="1" stop-color="#0b0d18"/></linearGradient>
+ <linearGradient id="deep" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#365a39"/><stop offset=".45" stop-color="#191b2c"/><stop offset="1" stop-color="#0a0d18"/></linearGradient>
+ <linearGradient id="power" x1="0" y1="0" x2=".25" y2="1"><stop stop-color="#ffffff"/><stop offset=".3" stop-color="#d4ffb1"/><stop offset=".66" stop-color="#91dc84"/><stop offset="1" stop-color="#365a39"/></linearGradient>
+ <linearGradient id="rim"><stop stop-color="#d4ffb1"/><stop offset=".6" stop-color="#91dc84"/><stop offset="1" stop-color="#365a39"/></linearGradient>
+ <filter id="shine"><feGaussianBlur stdDeviation="1.2"/></filter>
+ <filter id="mist"><feGaussianBlur stdDeviation="12"/></filter>
+</defs>
+<ellipse cx="360" cy="355" rx="300" ry="316" fill="url(#halo)"/>
+<ellipse cx="361" cy="679" rx="260" ry="29" fill="#05070c" opacity=".8" filter="url(#mist)"/>
+<g fill="#d4ffb1" opacity=".75"><circle cx="110" cy="151" r="5"/><circle cx="621" cy="147" r="5"/><circle cx="72" cy="434" r="4"/><circle cx="639" cy="531" r="6"/><circle cx="560" cy="70" r="4"/><circle cx="161" cy="619" r="4"/></g>
+
+<path d="M255 527L222 670L151 693L179 650L115 663L189 604L206 507ZM445 527L482 677L564 698L512 648L586 662L515 598L493 494Z" fill="url(#deep)" stroke="#5f9061" stroke-width="13"/>
+<path d="M232 305L154 380L104 502L150 557L219 485L297 391ZM475 303L568 371L629 486L580 553L511 481L414 395Z" fill="url(#metal)" stroke="#8ed485" stroke-width="13"/>
+<path d="M154 398L104 318L132 383L91 426L171 442ZM551 382L624 313L595 395L647 433L539 446Z" fill="#1a3b2a" stroke="#9bd68c" stroke-width="10"/>
+<path d="M245 267L295 221L431 219L487 277L475 464L416 570L288 566L220 460Z" fill="url(#metal)" stroke="#9dd185" stroke-width="12"/>
+<path d="M260 351L305 377L350 338L393 381L452 347M270 463L312 490L360 456L411 506L454 454" fill="none" stroke="#c6e7a0" stroke-width="11"/>
+<path d="M335 377L364 403L346 448L317 416Z" fill="url(#power)" stroke="#f0ffc0" stroke-width="8"/>
+<path d="M240 236L198 126L272 162L291 61L355 144L420 54L436 172L515 127L474 262" fill="url(#deep)" stroke="#a7d77d" stroke-width="13"/>
+<path d="M291 201L303 151L350 188L391 147L411 206L448 186L443 295L270 302Z" fill="url(#metal)" stroke="#b5e698" stroke-width="11"/>
+<path d="M275 293L324 308L310 337L276 322ZM382 308L436 289L437 321L395 335Z" fill="#eeffb0" stroke="#dff6a4" stroke-width="6"/>
+<path d="M316 358L353 368L393 353L379 397L344 408Z" fill="#13251b" stroke="#a5c980" stroke-width="7"/>
+<g fill="none" stroke="#80ba70" stroke-width="13"><path d="M160 524Q80 482 64 401Q123 416 175 460"/><path d="M559 538Q646 485 665 413Q604 420 542 460"/><path d="M319 178Q249 94 210 76"/><path d="M395 174Q454 90 495 66"/></g>
+<g fill="#9bdf85"><path d="M64 401L62 357L96 394ZM665 413L676 367L626 398ZM210 76L185 48L222 54ZM495 66L514 31L520 81Z"/></g>
+</svg>

@@ -1,4 +1,4 @@
-/* DOG – server-owned personal loot, 3 chest sizes, 15 rarity-coded materials. */
+/* DOG – authenticated chest inventory: 5 expedition types + 3 legacy types. */
 (()=>{'use strict';
  const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
  const $=id=>document.getElementById(id);
@@ -11,12 +11,27 @@
   for(const id of ['boss-launch','boss-from-storage']){
    const link=$(id);if(link)link.href='./dog-boss.html?room='+encodeURIComponent(room);
   }
+  for(const id of ['map-launch','map-waypoint']){
+   const link=$(id);if(link)link.href='./dog-tor-map.html?room='+encodeURIComponent(room);
+  }
+  for(const id of ['boss10-launch','boss10-waypoint']){
+   const link=$(id);if(link)link.href='./dog-boss10.html?room='+encodeURIComponent(room);
+  }
+  for(const id of ['ascension-launch','ascension-waypoint']){
+   const link=$(id);if(link)link.href='./dog-ascension.html?room='+encodeURIComponent(room);
+  }
  }
  const fmt=n=>Math.max(0,Number(n)||0).toLocaleString('de-DE');
+ const EXPEDITION_TIERS=Object.freeze(['wood','iron','silver','gold','legendary']);
  const TIER=Object.freeze({
-  small:{label:'Kleine Rohstoffkiste',icon:'📦'},
-  medium:{label:'Mittlere Rohstoffkiste',icon:'💎'},
-  large:{label:'Große Rohstoffkiste',icon:'🐉'},
+  wood:{label:'Holzkiste',icon:'🪵'},
+  iron:{label:'Eisenkiste',icon:'🔩'},
+  silver:{label:'Silberkiste',icon:'🥈'},
+  gold:{label:'Goldkiste',icon:'🏆'},
+  legendary:{label:'Legendäre Truhe',icon:'💎'},
+  small:{label:'Kleine Rohstoffkiste (Bestand)',icon:'📦'},
+  medium:{label:'Mittlere Rohstoffkiste (Bestand)',icon:'💎'},
+  large:{label:'Große Rohstoffkiste (Bestand)',icon:'🐉'},
   legacy:{label:'Bestandskiste',icon:'🎁'}
  });
  const GROUPS=Object.freeze([
@@ -52,7 +67,11 @@
   return null;
  }
  function storePending(uid,id,tier){
-  try{localStorage.setItem(keyFor(uid),JSON.stringify({id,tier}))}catch{}
+  try{
+   const value=JSON.stringify({id,tier});
+   localStorage.setItem(keyFor(uid),value);
+   return localStorage.getItem(keyFor(uid))===value;
+  }catch{return false}
  }
  function clearPending(uid){try{localStorage.removeItem(keyFor(uid))}catch{}}
  function newId(){
@@ -83,6 +102,13 @@
   if(!inventory)return {small:0,medium:0,large:0,legacy:0};
   return inventory.chests||{small:0,medium:0,large:0,legacy:inventory.unopened||0};
  }
+ function expeditionCounts(){
+  const totals=Object.fromEntries(EXPEDITION_TIERS.map(tier=>[tier,0]));
+  for(const offer of inventory?.expeditionChests||[]){
+   if(Object.hasOwn(totals,offer.tier))totals[offer.tier]+=offer.quantity||0;
+  }
+  return totals;
+ }
  function normalizeItems(raw={}){
   const out={...raw};
   if(out.power_crystal===undefined&&out.crystal!==undefined)out.power_crystal=out.crystal;
@@ -107,8 +133,12 @@
  }
  function renderInventory(){
   const pending=getPending(currentUid||'');
-  const chests=chestCounts();
+  const chests=chestCounts(),expedition=expeditionCounts();
   const eligible=!!currentUid&&!!inventory&&!busy&&!pending;
+  for(const tier of EXPEDITION_TIERS){
+   $(tier+'-count').textContent=inventory?fmt(expedition[tier]):'–';
+   $('open-'+tier).disabled=!eligible||!(expedition[tier]>0);
+  }
   for(const tier of ['small','medium','large']){
    $(tier+'-count').textContent=inventory?fmt(chests[tier]||0):'–';
    $('open-'+tier).disabled=!eligible||!(chests[tier]>0);
@@ -229,9 +259,14 @@
   if(!state||busy||!inventory)return;
   const uid=state.user.uid;
   const pending=getPending(uid);
-  if(!pending&&(!tier||!(chestCounts()[tier]>0)))return;
+  const available=tier?(EXPEDITION_TIERS.includes(tier)?
+   expeditionCounts()[tier]:chestCounts()[tier]):0;
+  if(!pending&&(!tier||!Object.hasOwn(TIER,tier)||!(available>0)))return;
   const id=pending?.id||newId(),requestTier=pending?.tier??tier;
-  if(!pending)storePending(uid,id,requestTier);
+  if(!pending&&!storePending(uid,id,requestTier)){
+   message('⚠️ Die Kistenöffnung konnte nicht sicher gespeichert werden. Bitte Speicherfunktion des Browsers prüfen.','danger');
+   return;
+  }
   busy=true;++loadIndex;
   renderInventory();closeReward();
   $('chest-art').classList.add('opening');
@@ -258,7 +293,7 @@
    busy=false;$('chest-art').classList.remove('opening');renderInventory();
   }
  }
- for(const tier of ['small','medium','large','legacy']){
+ for(const tier of [...EXPEDITION_TIERS,'small','medium','large','legacy']){
   $('open-'+tier).addEventListener('click',()=>void openChest(tier));
  }
  $('retry-pending').addEventListener('click',()=>void openChest());

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 660" role="img" aria-label="Magier: stilisierter Fantasy-Held in Kampfhaltung">
+<defs>
+ <radialGradient id="aura"><stop stop-color="#dbc7ff" stop-opacity=".27"/><stop offset="1" stop-color="#dbc7ff" stop-opacity="0"/></radialGradient>
+ <linearGradient id="armor" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#dbc7ff"/><stop offset=".29" stop-color="#6b4586"/><stop offset=".58" stop-color="#172136"/><stop offset=".86" stop-color="#6b4586"/><stop offset="1" stop-color="#111526"/></linearGradient>
+ <linearGradient id="shadow" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b4586"/><stop offset=".6" stop-color="#141526"/><stop offset="1" stop-color="#0a0d1b"/></linearGradient>
+ <linearGradient id="light" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffffff"/><stop offset=".33" stop-color="#ffdefc"/><stop offset=".8" stop-color="#dbc7ff"/><stop offset="1" stop-color="#6b4586"/></linearGradient>
+ <filter id="shine"><feGaussianBlur stdDeviation="1.3"/></filter>
+</defs>
+<ellipse cx="225" cy="342" rx="215" ry="285" fill="url(#aura)"/>
+<ellipse cx="224" cy="624" rx="138" ry="18" fill="#080c18" opacity=".65"/>
+
+<path d="M169 270L100 382L73 566L151 603L192 548L210 643L286 643L299 549L353 600L403 565L343 375L292 271Z" fill="url(#shadow)" stroke="#e2bfff" stroke-width="12"/>
+<path d="M176 276L225 307L275 274L294 547L247 620L198 549Z" fill="url(#armor)" stroke="#e4c5ff" stroke-width="10"/>
+<path d="M215 335L244 389L277 333L273 504L240 568L207 502Z" fill="url(#light)" stroke="#fff0ff" stroke-width="9"/>
+<path d="M146 331L76 417L42 514L98 559L176 473Z" fill="url(#armor)" stroke="#e3baff" stroke-width="11"/>
+<path d="M322 329L376 421L405 520L350 562L286 468Z" fill="url(#armor)" stroke="#dfbbff" stroke-width="11"/>
+<path d="M163 242L151 143L183 83L245 64L316 105L332 193L307 281L194 287Z" fill="url(#shadow)" stroke="#ddb4ff" stroke-width="13"/>
+<path d="M186 173L246 132L295 177L277 242L198 244Z" fill="#130f2d" stroke="#bd9af3" stroke-width="10"/>
+<path d="M201 197L232 211L215 228ZM254 211L284 198L274 226Z" fill="#f8e4ff" filter="url(#shine)"/>
+<path d="M185 127L207 32L245 78L285 24L299 123L327 147L289 166L188 167L156 144Z" fill="url(#armor)" stroke="#e2baff" stroke-width="10"/>
+<path d="M344 500L373 99L390 94L370 505Z" fill="url(#armor)" stroke="#f0d7ff" stroke-width="10"/>
+<path d="M379 104L353 66L382 14L423 71L392 111Z" fill="url(#light)" stroke="#fff7ff" stroke-width="10"/>
+<g fill="none" stroke="#f3dcff" stroke-width="7"><path d="M91 220L121 186L149 225L118 255Z"/><path d="M368 245L409 206L439 249L406 282Z"/><path d="M311 121L329 91L349 121L330 154Z"/></g>
+<path d="M102 452Q156 425 193 466M302 464Q347 422 378 459" fill="none" stroke="#edc9ff" stroke-width="11"/>
+
+</svg>

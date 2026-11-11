@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" role="img" aria-label="Tor 50: Hüter der Tiefe. Eigene, unverwechselbare Fantasy-Bossfigur.">
+<defs>
+ <radialGradient id="halo"><stop offset="0" stop-color="#64b8eb" stop-opacity=".53"/><stop offset=".55" stop-color="#64b8eb" stop-opacity=".19"/><stop offset="1" stop-color="#1f4266" stop-opacity="0"/></radialGradient>
+ <linearGradient id="metal" x1=".08" y1=".04" x2=".95" y2=".95"><stop stop-color="#64b8eb"/><stop offset=".27" stop-color="#1f4266"/><stop offset=".55" stop-color="#171b2b"/><stop offset=".8" stop-color="#1f4266"/><stop offset="1" stop-color="#0b0d18"/></linearGradient>
+ <linearGradient id="deep" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1f4266"/><stop offset=".45" stop-color="#191b2c"/><stop offset="1" stop-color="#0a0d18"/></linearGradient>
+ <linearGradient id="power" x1="0" y1="0" x2=".25" y2="1"><stop stop-color="#ffffff"/><stop offset=".3" stop-color="#a1f7ff"/><stop offset=".66" stop-color="#64b8eb"/><stop offset="1" stop-color="#1f4266"/></linearGradient>
+ <linearGradient id="rim"><stop stop-color="#a1f7ff"/><stop offset=".6" stop-color="#64b8eb"/><stop offset="1" stop-color="#1f4266"/></linearGradient>
+ <filter id="shine"><feGaussianBlur stdDeviation="1.2"/></filter>
+ <filter id="mist"><feGaussianBlur stdDeviation="12"/></filter>
+</defs>
+<ellipse cx="360" cy="355" rx="300" ry="316" fill="url(#halo)"/>
+<ellipse cx="361" cy="679" rx="260" ry="29" fill="#05070c" opacity=".8" filter="url(#mist)"/>
+<g fill="#a1f7ff" opacity=".75"><circle cx="110" cy="151" r="5"/><circle cx="621" cy="147" r="5"/><circle cx="72" cy="434" r="4"/><circle cx="639" cy="531" r="6"/><circle cx="560" cy="70" r="4"/><circle cx="161" cy="619" r="4"/></g>
+
+<g fill="none" stroke="url(#metal)" stroke-linecap="round">
+ <path d="M264 380C126 349 91 458 135 562S239 634 190 683" stroke-width="65"/>
+ <path d="M319 435C214 500 248 616 290 678" stroke-width="66"/>
+ <path d="M421 431C530 531 466 612 510 686" stroke-width="72"/>
+ <path d="M473 363C621 352 677 475 604 561S548 635 606 660" stroke-width="72"/>
+</g>
+<g fill="none" stroke="#78daff" stroke-width="11" stroke-dasharray="11 34" opacity=".85">
+ <path d="M264 380C126 349 91 458 135 562S239 634 190 683"/>
+ <path d="M319 435C214 500 248 616 290 678"/>
+ <path d="M421 431C530 531 466 612 510 686"/>
+ <path d="M473 363C621 352 677 475 604 561S548 635 606 660"/>
+</g>
+<path d="M219 272Q183 171 242 134L303 169L354 87L397 170L489 130Q533 197 491 295L488 452L449 545L276 541L224 441Z" fill="url(#deep)" stroke="#69c9fa" stroke-width="15"/>
+<path d="M253 230L198 139L295 174L352 102L409 169L501 144L461 248" fill="url(#metal)" stroke="#a1e5ff" stroke-width="9"/>
+<path d="M256 310Q359 264 455 310L447 394L283 404Z" fill="#051627" stroke="#69c3f5" stroke-width="11"/>
+<ellipse cx="359" cy="344" rx="85" ry="50" fill="#08263d" stroke="#6be6ff" stroke-width="10"/>
+<ellipse cx="359" cy="344" rx="51" ry="43" fill="url(#power)" filter="url(#shine)"/>
+<ellipse cx="359" cy="344" rx="21" ry="38" fill="#051320"/>
+<path d="M294 430Q359 489 419 431" fill="none" stroke="#9de6ff" stroke-width="12"/>
+<path d="M327 467L310 506L343 486L365 525L389 480L411 499L406 470" fill="url(#power)" stroke="#c5ffff" stroke-width="5"/>
+<g fill="url(#power)" stroke="#c6ffff" stroke-width="7">
+ <circle cx="250" cy="293" r="14"/><circle cx="470" cy="290" r="14"/>
+ <circle cx="229" cy="576" r="13"/><circle cx="504" cy="583" r="13"/>
+ <circle cx="553" cy="241" r="10"/><circle cx="171" cy="241" r="10"/>
+</g>
+</svg>
