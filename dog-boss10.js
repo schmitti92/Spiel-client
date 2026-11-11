@@ -265,7 +265,7 @@
    message('⚠️ Der Auftrag wurde nicht bestätigt: '+e.message+
     '. Bei einer unbekannten Verbindungslage kannst du ihn sicher wiederholen.');
    // Another player may have already reconciled the result after the
-   // 30-second deadline. Fetch the official outcome rather than showing
+   // 40-second deadline. Fetch the official outcome rather than showing
    // an obsolete local request forever.
    if(['DOG_BOSS10_NOT_RUNNING','DOG_BOSS10_ALREADY_WON'].includes(e.message))
     void reload(true);
@@ -295,13 +295,20 @@
   const waitingReady=view?.phase==='waiting'&&view?.members?.some(m=>m.ready);
   // Start updates arrive sooner on all three screens. The server's
   // startedAt/endsAt timestamps remain authoritative and still define
-  // exactly 30 seconds of combat, independent of each browser's latency.
+  // exactly the server-assigned combat duration, independent of each browser's latency.
   const openingFight=view?.phase==='fighting'&&
    now()<(view.startedAt||0)+5000;
-  const delay=openingFight?1200:view?.phase==='fighting'?2800:
+  const elapsed=now()-(view?.startedAt||0);
+  const exchangeWindow=view?.phase==='fighting'&&view?.miniGames?.version===3&&
+   view.miniGames.rounds.some(r=>elapsed>=r.endMs&&elapsed<r.endMs+2100);
+  const delay=exchangeWindow?850:openingFight?1200:
+   view?.phase==='fighting'?2800:
    waitingReady&&Date.now()<readyBurstUntil?900:
    waitingReady?3800:15000;
-  if(!working&&Date.now()-lastLoad>delay)void reload();
+  // Scene-only refresh: get the latest server-confirmed team shield and
+  // shared hits while all devices play their 2-second exchange.
+  if(!working&&Date.now()-lastLoad>delay)
+   void reload(exchangeWindow===true);
  },250);
  void reload(true);
 })();
