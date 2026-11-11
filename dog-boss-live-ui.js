@@ -79,10 +79,16 @@
     clamp(100*liveBoss/maxBoss,0,100):100).toFixed(2)+'%';
    nodes.bossTrack?.setAttribute?.('aria-valuemax',String(maxBoss||1));
    nodes.bossTrack?.setAttribute?.('aria-valuenow',String(Math.round(liveBoss)));
+   if(nodes.combat?.dataset){
+    nodes.combat.dataset.bossCritical=String(maxBoss>0&&liveBoss/maxBoss<=.3);
+   }
    const pool=view?.teamHealth;
    const hasPool=Number(pool?.maxHp)>0;
    const teamMax=hasPool?Number(pool.maxHp):0;
    const teamHp=hasPool?clamp(Number(pool.hp)||0,0,teamMax):0;
+   if(nodes.combat?.dataset){
+    nodes.combat.dataset.teamCritical=String(hasPool&&teamHp/teamMax<=.56);
+   }
    if(hasPool){
     if(nodes.shieldFill)nodes.shieldFill.style.width=(100*teamHp/teamMax).toFixed(2)+'%';
     text(nodes.shieldValue,fmtHealth.format(teamHp)+' / '+fmtHealth.format(teamMax)+' LP');
