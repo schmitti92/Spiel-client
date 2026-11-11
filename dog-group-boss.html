@@ -21,6 +21,77 @@
    <a id="to-forge" href="./dog-ascension.html">⚒️ Aufstiegsschmiede</a>
    <button id="refresh" type="button">↻ Aktualisieren</button>
   </nav>
+  <section class="boss-preflight" id="boss-preflight" aria-labelledby="preflight-title">
+  <div class="preflight-brand"><span>✦ 100 TORE ✦</span><strong>BOSS-ARENA</strong></div>
+  <header class="preflight-title"><small>⚔️ GEMEINSAME HERAUSFORDERUNG</small>
+   <h1 id="preflight-title">TOR 10 · DER ASCHEWÄCHTER</h1>
+  </header>
+  <div class="preflight-hp" aria-label="Lebenspunkte des Gruppenbosses">
+   <span class="preflight-hp-emblem">🐉</span>
+   <div class="preflight-hp-rail"><div class="preflight-hp-fill" id="preflight-hp-fill"></div>
+    <strong id="preflight-hp">BOSS-LP · WIRD GELADEN</strong></div>
+  </div>
+  <div class="preflight-layout">
+   <section class="preflight-monster" aria-label="Der nächste Wächter">
+    <span class="preflight-monster-aura" aria-hidden="true"></span>
+    <img id="preflight-boss-image" src="./dog-boss-art/aschewaechter.svg" alt="Illustration des Bosses" width="540" height="540" decoding="async">
+    <div class="preflight-monster-caption"><span id="preflight-boss-type">🔥 EIN MÄCHTIGER GEGNER</span>
+     <strong id="preflight-boss-name">Der Aschewächter</strong></div>
+   </section>
+   <div class="preflight-middle">
+    <section class="preflight-panel preflight-story">
+     <h2>📜 DIE GESCHICHTE</h2>
+     <p id="preflight-story">Ein Wächter versperrt euch den Weg zum nächsten Tor.</p>
+     <span class="preflight-story-stamp">Drei Helden · Ein gemeinsames Ziel</span>
+    </section>
+    <section class="preflight-panel preflight-info">
+     <h2>⚔️ BOSS-INFORMATION</h2>
+     <dl>
+      <div><dt>🚪 Tor</dt><dd id="preflight-gate">10 / 100</dd></div>
+      <div><dt>⏱️ Kampfzeit</dt><dd>30 Sekunden</dd></div>
+      <div><dt>🎯 Herausforderungen</dt><dd>3 zufällige Minispiele</dd></div>
+      <div><dt>🛡️ Erfolgsfaktor</dt><dd>Ausrüstung & Teamleistung</dd></div>
+     </dl>
+    </section>
+    <section class="preflight-panel preflight-rewards">
+     <h2>🎁 BEI EINEM SIEG</h2>
+     <div class="preflight-reward-grid">
+      <div><span>⚒️</span><strong id="preflight-reward">Nächste Schmiedestufe</strong></div>
+      <div><span>🚪</span><strong>Gemeinsamer Torfortschritt</strong></div>
+     </div>
+     <p>Belohnungen und Fortschritt werden ausschließlich vom Server bestätigt.</p>
+    </section>
+   </div>
+   <section class="preflight-team" aria-labelledby="preflight-team-title">
+    <div class="preflight-team-header"><h2 id="preflight-team-title">👥 DEIN TEAM</h2>
+     <span id="preflight-ready-counter">0 / 3 bereit</span></div>
+    <div class="preflight-team-members" id="preflight-team-members">
+     <p class="preflight-team-loading">Team wird geladen …</p>
+    </div>
+    <div class="preflight-team-help">Alleine und zu zweit kann der Kampf gestartet werden. Zu dritt sind die Chancen am höchsten.</div>
+   </section>
+  </div>
+  <div class="preflight-bottom">
+   <section class="preflight-equipment" aria-labelledby="preflight-equipment-title">
+    <h2 id="preflight-equipment-title">⚒️ DEINE VORBEREITUNG</h2>
+    <div class="preflight-equipment-slots">
+     <span><b>⚔️</b>Waffe</span><span><b>🛡️</b>Rüstung</span>
+     <span><b>✨</b>Fertigkeiten</span>
+    </div>
+    <a class="preflight-forge-link" id="preflight-forge-link" href="./dog-ascension.html">⚒️ Ausrüstung in der Schmiede prüfen</a>
+   </section>
+   <section class="preflight-launch" aria-label="Kampf vorbereiten und starten">
+    <div class="preflight-launch-flag" id="preflight-launch-flag">⏳ WARTE AUF SPIELER</div>
+    <div class="preflight-launch-buttons">
+     <button id="preflight-ready" type="button" disabled>✅ Ich bin bereit</button>
+     <button id="preflight-start" type="button" disabled hidden>⚔️ Kampf starten</button>
+     <button id="preflight-retry" type="button" hidden>↻ Auftrag wiederholen</button>
+    </div>
+    <p class="preflight-message" id="preflight-message" role="status" aria-live="polite">Verbinde mit dem Boss-Server …</p>
+    <p class="preflight-connection">🔒 Bereit, Start und Kampfergebnis bleiben serverbestätigt.</p>
+   </section>
+  </div>
+ </section>
   <header class="opening">
    <div class="eyebrow" id="group-kicker">GRUPPENBOSS · DIE 100 TORE</div>
    <h1>Die Prüfung des <span id="group-title">Wächters</span></h1>
