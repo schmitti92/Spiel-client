@@ -245,3 +245,19 @@ test('LIVE template can be exported and safely reopened with all seven scenes',(
   assert.equal(loaded.screens[i].items.length,initial.screens[i].items.length);
  }
 });
+
+
+test('Final designer layout matches the approved left-Boss center-Heroes right-Minigame arrangement',()=>{
+ const live=createTemplate('boss-live');
+ for(const screen of live.screens){
+  const heroes=screen.items.filter(i=>i.type==='player');
+  assert.equal(heroes.length,3);
+  assert.ok(heroes.every(i=>i.x>=480&&i.x+i.w<=940),
+   'Heroes must be centered between the boss and minigame');
+  const boss=screen.items.find(i=>i.type==='circle'&&i.y>=205&&i.x<450);
+  assert.ok(boss&&boss.x<480,'Boss artwork remains in the left column');
+  const challenge=screen.items.find(i=>i.type==='panel'&&i.y===205&&i.x>940);
+  assert.ok(challenge&&challenge.x+challenge.w<=1440,
+   'Interactive area must be placed to the right without scrolling');
+ }
+});
