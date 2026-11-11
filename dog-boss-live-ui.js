@@ -56,10 +56,16 @@
    cineBonus:$(root,'#cinematic-bonus'),cineBonusLabel:$(root,'#cinematic-bonus-label'),
    cineBonusDetail:$(root,'#cinematic-bonus-detail'),
    cineCumulative:$(root,'#cinematic-cumulative'),
-   cineNext:$(root,'#cinematic-next'),cineProgress:$(root,'#cinematic-progress')
+   cineNext:$(root,'#cinematic-next'),cineProgress:$(root,'#cinematic-progress'),
+   showOverlay:$(root,'#cinematic-grand-countdown'),
+   showRing:$(root,'#cinematic-grand-ring'),
+   showDigit:$(root,'#cinematic-grand-digit'),
+   showLabel:$(root,'#cinematic-grand-label'),
+   showNext:$(root,'#cinematic-grand-next')
   };
   const steps=nodes.steps?[...nodes.steps.querySelectorAll('.live-round-step')]:[];
   let lastHitKey='',lastRound='',lastFeedback='',lastImpactKey='',lastExchangeKey='';
+  let lastShowTick='';
   let lastVitalsEncounter='',lastBossHp=null,lastTeamHp=null,lastHeroVitalsKey='';
   let heroHpNodes=new Map();
   const fmtHealth=new Intl.NumberFormat('de-DE');
@@ -238,6 +244,30 @@
     nodes.cinematic.style.setProperty('--cine-animation-offset',
      '-'+Math.max(0,current.elapsed-round.endMs)+'ms');
    text(nodes.cineCountdown,(remaining/1000).toFixed(1).replace('.',',')+' s');
+   const grand=(view?.miniGames?.version||0)>=7&&totalMs>=14000;
+   if(nodes.showOverlay)nodes.showOverlay.hidden=!grand;
+   if(nodes.cinematic){
+    nodes.cinematic.dataset.showVersion=grand?'7':'legacy';
+    nodes.cinematic.dataset.showPhase=grand?
+     (remaining<=5000?'countdown':current.elapsed-round.endMs<4700?'impact':'result'):
+     'legacy';
+    nodes.cinematic.style?.setProperty?.('--cine-show-duration',totalMs+'ms');
+    nodes.cinematic.style?.setProperty?.('--cine-show-offset',
+     '-'+Math.max(0,current.elapsed-round.endMs)+'ms');
+   }
+   if(grand){
+    const seconds=Math.max(1,Math.ceil(remaining/1000));
+    const currentTick=String(view?.startedAt)+':'+round.round+':'+seconds;
+    if(lastShowTick!==currentTick&&nodes.showDigit){
+     lastShowTick=currentTick;
+     nodes.showDigit.classList?.remove('is-rolling');
+     void nodes.showDigit.offsetWidth;
+     nodes.showDigit.classList?.add('is-rolling');
+    }
+    text(nodes.showDigit,String(seconds));
+    nodes.showRing?.style?.setProperty?.('--show-sweep',
+     Math.max(0,Math.min(360,360*remaining/totalMs)).toFixed(2)+'deg');
+   }
    if(nodes.cineProgress)nodes.cineProgress.style.width=
     Math.max(0,Math.min(100,(1-remaining/totalMs)*100)).toFixed(1)+'%';
    const title=defensive?'🛡️ DER BOSS GREIFT AN!':'⚔️ UNSER TEAM SCHLÄGT ZU!';
@@ -296,6 +326,10 @@
     'reaction':'⚡ Reaktion','math':'🧮 Blitz-Mathe'}[next.kind]||'Nächste Runde'):
     '🏆 Finale Auswertung folgt';
    text(nodes.cineNext,next?'Als Nächstes: '+upcoming:upcoming);
+   if((view?.miniGames?.version||0)>=7){
+    text(nodes.showLabel,next?'NÄCHSTE RUNDE IN':'FINALE IN');
+    text(nodes.showNext,upcoming);
+   }
   }
   function updateExchange(view,current){
    const stages=view?.miniGames?.exchange?.stages;
@@ -315,6 +349,8 @@
    }):null;
    if(!scene){
     if(nodes.cinematic)nodes.cinematic.hidden=true;
+    if(nodes.showOverlay)nodes.showOverlay.hidden=true;
+    lastShowTick='';
     if(nodes.announcement)nodes.announcement.hidden=true;
     if(nodes.combat?.classList){
      nodes.combat.classList.remove('live-exchange-attack');
@@ -391,7 +427,7 @@
     phase==='fighting'?'⚔️ LIVE-HERAUSFORDERUNG':'⚔️ BOSS-HERAUSFORDERUNG';
    text($(root,'#live-challenge-heading'),title);
    text(nodes.round,active?'RUNDE '+(roundIndex+1)+' / '+rounds.length:
-    (rounds.length===4?'4 RUNDEN · '+(view?.miniGames?.version>=6?'64':view?.miniGames?.version===5?'60':view?.miniGames?.version===4?'50':'40')+' SEK.':'3 RUNDEN · 30 SEK.'));
+    (rounds.length===4?'4 RUNDEN · '+(view?.miniGames?.version>=7?'92':view?.miniGames?.version===6?'64':view?.miniGames?.version===5?'60':view?.miniGames?.version===4?'50':'40')+' SEK.':'3 RUNDEN · 30 SEK.'));
    if(nodes.prompt){
     nodes.prompt.hidden=active||phase==='victory'||phase==='cooldown';
     text(nodes.promptTitle,phase==='fighting'?'⚔️ Kampf läuft':
