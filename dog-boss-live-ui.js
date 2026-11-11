@@ -45,7 +45,15 @@
    shieldFill:$(root,'#live-shield-fill'),shieldValue:$(root,'#live-shield-value'),
    announcement:$(root,'#live-stage-announcement'),
    stageTitle:$(root,'#live-stage-title'),stageScore:$(root,'#live-stage-score'),
-   stageSubtitle:$(root,'#live-stage-subtitle')
+   stageSubtitle:$(root,'#live-stage-subtitle'),
+   cinematic:$(root,'#live-cinematic'),cineHeader:$(root,'#cinematic-header'),
+   cineCountdown:$(root,'#cinematic-countdown'),cineAction:$(root,'#cinematic-action-label'),
+   cineEyebrow:$(root,'#cinematic-eyebrow'),cineScore:$(root,'#cinematic-score'),
+   cineScoreDesc:$(root,'#cinematic-score-description'),
+   cineBonus:$(root,'#cinematic-bonus'),cineBonusLabel:$(root,'#cinematic-bonus-label'),
+   cineBonusDetail:$(root,'#cinematic-bonus-detail'),
+   cineCumulative:$(root,'#cinematic-cumulative'),
+   cineNext:$(root,'#cinematic-next'),cineProgress:$(root,'#cinematic-progress')
   };
   const steps=nodes.steps?[...nodes.steps.querySelectorAll('.live-round-step')]:[];
   let lastHitKey='',lastRound='',lastFeedback='',lastImpactKey='',lastExchangeKey='';
@@ -125,6 +133,71 @@
     void nodes.boss.offsetWidth;nodes.boss.classList.add('live-boss-struck');
    }
   }
+  function updateCinematic(view,current,round,stage,shieldLoss){
+   if(view?.miniGames?.version!==4){
+    if(nodes.cinematic)nodes.cinematic.hidden=true;
+    return;
+   }
+   if(nodes.cinematic)nodes.cinematic.hidden=false;
+   const index=round.round,defensive=!!stage?.defensive;
+   const next=current.rounds[index+1],windowEnd=next?.startMs??50000;
+   const totalMs=windowEnd-round.endMs;
+   const remaining=Math.max(0,windowEnd-current.elapsed);
+   const fmt=new Intl.NumberFormat('de-DE');
+   if(nodes.cinematic?.style?.setProperty)
+    nodes.cinematic.style.setProperty('--cine-animation-offset',
+     '-'+Math.max(0,current.elapsed-round.endMs)+'ms');
+   text(nodes.cineCountdown,(remaining/1000).toFixed(1).replace('.',',')+' s');
+   if(nodes.cineProgress)nodes.cineProgress.style.width=
+    Math.max(0,Math.min(100,(1-remaining/totalMs)*100)).toFixed(1)+'%';
+   const title=defensive?'🛡️ DER BOSS GREIFT AN!':'⚔️ UNSER TEAM SCHLÄGT ZU!';
+   text(nodes.cineHeader,title);
+   text(nodes.cineAction,defensive?'SCHUTZSCHILD AKTIV':'GEMEINSAMER EXTRAANGRIFF');
+   if(nodes.cinematic){
+    nodes.cinematic.classList.toggle('is-defense',defensive);
+    nodes.cinematic.classList.toggle('is-attack',!defensive);
+   }
+   if(!stage?.completed){
+    text(nodes.cineEyebrow,'SERVERERGEBNIS WIRD BESTÄTIGT');
+    text(nodes.cineScore,'…');
+    text(nodes.cineScoreDesc,'Bitte Ergebnisprüfung abwarten');
+    text(nodes.cineBonusLabel,'⏳ BESTÄTIGUNG');
+    text(nodes.cineBonus,'…');
+    text(nodes.cineBonusDetail,'Keine unbestätigten Schadenswerte');
+    text(nodes.cineCumulative,'');
+   }else if(defensive){
+    const blocked=Math.max(0,25-shieldLoss);
+    text(nodes.cineEyebrow,'🛡️ TEAMVERTEIDIGUNG');
+    text(nodes.cineScore,fmt.format(stage.shield)+' / 100');
+    text(nodes.cineScoreDesc,'Verbleibende gemeinsame Schildpunkte');
+    text(nodes.cineBonusLabel,'🛡️ ABGEBLOCKTE SCHILDPUNKTE');
+    text(nodes.cineBonus,fmt.format(blocked)+' / 25');
+    text(nodes.cineBonusDetail,shieldLoss===0?
+     'Perfekter Block! Kein Schildverlust.':
+     'Bossangriff: −'+fmt.format(shieldLoss)+' Schildpunkte');
+    text(nodes.cineCumulative,
+     fmt.format(stage.correct)+' / '+fmt.format(stage.max)+' erfolgreiche Abwehraktionen');
+   }else{
+    const percent=Number(stage.bonusPercent||0);
+    const bonus=stage.bonusDamage;
+    text(nodes.cineEyebrow,'⚔️ GEMEINSAMER TEAMANGRIFF');
+    text(nodes.cineScore,fmt.format(stage.correct)+' / '+fmt.format(stage.max));
+    text(nodes.cineScoreDesc,'Richtige Aufgaben aller kämpfenden Helden');
+    text(nodes.cineBonusLabel,'🔥 ZUSÄTZLICHES ANGRIFFSPOTENZIAL');
+    text(nodes.cineBonus,Number.isFinite(bonus)?
+     '+'+fmt.format(bonus):'+'+fmt.format(percent)+' %');
+    text(nodes.cineBonusDetail,
+     '+'+percent.toLocaleString('de-DE')+' % Team-Bonus · LP-Schaden erst bei Endwertung');
+    const cumulative=view.miniGames.exchange?.cumulativeExtraDamage;
+    text(nodes.cineCumulative,Number.isFinite(cumulative)?
+     '🔥 Bisher gesammelt: +'+fmt.format(cumulative)+' Angriffspotenzial':
+     'Gemeinsamer Angriff wird vorbereitet');
+   }
+   const upcoming=next?({'dodge':'🛡️ Ausweichen','target':'🎯 Zieltreffer',
+    'reaction':'⚡ Reaktion','math':'🧮 Blitz-Mathe'}[next.kind]||'Nächste Runde'):
+    '🏆 Finale Auswertung folgt';
+   text(nodes.cineNext,next?'Als Nächstes: '+upcoming:upcoming);
+  }
   function updateExchange(view,current){
    const stages=view?.miniGames?.exchange?.stages;
    const exchange=Array.isArray(stages)&&current.rounds.length===4;
@@ -134,9 +207,13 @@
     Number(view.miniGames.exchange.shield)||0)):100;
    if(nodes.shieldFill)nodes.shieldFill.style.width=shield+'%';
    text(nodes.shieldValue,shield+' / 100');
-   const scene=fightingExchange?current.rounds.find(round=>
-    current.elapsed>=round.endMs&&current.elapsed<round.endMs+2000):null;
+   const scene=fightingExchange?current.rounds.find((round,index)=>{
+    const next=current.rounds[index+1];
+    const end=next?next.startMs:Number(view.miniGames?.exchange?.durationMs)||40000;
+    return current.elapsed>=round.endMs&&current.elapsed<end;
+   }):null;
    if(!scene){
+    if(nodes.cinematic)nodes.cinematic.hidden=true;
     if(nodes.announcement)nodes.announcement.hidden=true;
     if(nodes.combat?.classList){
      nodes.combat.classList.remove('live-exchange-attack');
@@ -156,7 +233,7 @@
    const heroNames=participants.length?
     participants.join(', '):'Dein Team';
    const key=String(view.startedAt)+':'+scene.round;
-   if(nodes.announcement)nodes.announcement.hidden=false;
+   if(nodes.announcement)nodes.announcement.hidden=view?.miniGames?.version===4;
    const title=defensive?'🛡️ BOSS SCHLÄGT ZURÜCK':
     '⚔️ GEMEINSAMER ANGRIFF';
    text(nodes.stageTitle,title);
@@ -174,6 +251,7 @@
      'Kein Treffer – der Boss weicht dem Angriff aus.':
      heroNames+' greifen den Boss gemeinsam an!'));
    text(nodes.round,'ZWISCHENSEQUENZ '+(scene.round+1)+' / 4');
+   updateCinematic(view,current,scene,stage,shieldLoss);
    if(nodes.prompt)nodes.prompt.hidden=false;
    text(nodes.promptTitle,title);
    text(nodes.promptDetail,stage?.completed?
@@ -192,7 +270,7 @@
     if(nodes.combat?.classList){
      // Late clients join at the same point in the synchronized 2s action,
      // instead of replaying a complete strike while teammates are finished.
-     const offset=Math.min(1999,Math.max(0,current.elapsed-scene.endMs));
+     const offset=Math.min(4499,Math.max(0,current.elapsed-scene.endMs));
      nodes.combat.style?.setProperty?.('--exchange-offset',(-offset)+'ms');
      nodes.combat.classList.remove('live-exchange-attack');
      nodes.combat.classList.remove('live-exchange-defense');
@@ -210,7 +288,7 @@
     phase==='fighting'?'⚔️ LIVE-HERAUSFORDERUNG':'⚔️ BOSS-HERAUSFORDERUNG';
    text($(root,'#live-challenge-heading'),title);
    text(nodes.round,active?'RUNDE '+(roundIndex+1)+' / '+rounds.length:
-    (rounds.length===4?'4 RUNDEN · 40 SEK.':'3 RUNDEN · 30 SEK.'));
+    (rounds.length===4?'4 RUNDEN · '+(view?.miniGames?.version===4?'50':'40')+' SEK.':'3 RUNDEN · 30 SEK.'));
    if(nodes.prompt){
     nodes.prompt.hidden=active||phase==='victory'||phase==='cooldown';
     text(nodes.promptTitle,phase==='fighting'?'⚔️ Kampf läuft':
