@@ -1,6 +1,5 @@
 'use strict';
-// All candidates receive the same base offer; only the purchaser's payout is doubled.
-function personalBankerAmount(h,playerId=myId()){return h.offer*(g?.players?.find(p=>p.id===playerId)?.doublePayout===true?2:1)}
+// Banker offers always remain identical for everyone. Wallet bonuses are credited only after the game.
 function bankerPhrase(h){
  const seed=String(g?.id||'')+':'+String(h.round);
  let hash=2166136261;for(let i=0;i<seed.length;i++){hash=Math.imul(hash^seed.charCodeAt(i),16777619)}
@@ -60,7 +59,7 @@ function bankerBonusShowReveal(h,key){
  reveal.style.setProperty('--banker-bonus-duration',(bonusCount>=2?7200:6200)+'ms');
  bankerSetText('banker-bonus-chapter','🔐 VERSCHLÜSSELTE NACHRICHT EINGEGANGEN');
  bankerSetText('banker-bonus-reveal-intro',bonusCount>1?'Der Banker legt gleich '+bonusCount+' Überraschungen obendrauf!':hammer?'Der Banker hat noch ein besonderes Werkzeug für dich!':pack?'Der Banker hat ein exklusives Kartenpaket für dich!':special?.short+' als zusätzliches Geschenk vom Banker!');
- bankerSetText('banker-bonus-reveal-offer','💰 '+eur(personalBankerAmount(h))+' + EXTRABONUS');
+ bankerSetText('banker-bonus-reveal-offer','💰 '+eur(h.offer)+' + EXTRABONUS');
  if(hammer){
   const item=document.createElement('div');item.className='banker-bonus-reveal-item hammer';
   const art=document.createElement('img');art.alt='';art.src='./Weihnachtsevent2/Weihnachtsbilder/'+hammer.image;
@@ -141,8 +140,8 @@ function updateBankerCall(){
   quality.hidden=!average;
  }
  bankerSetText('banker-call-quote','„'+bankerPhrase(h)+'“');
- bankerSetText('banker-call-amount',eur(personalBankerAmount(h)));
-  call.dataset.doubleBoost=g.players.some(p=>p.id===myId()&&p.doublePayout===true)?'yes':'no';
+ bankerSetText('banker-call-amount',eur(h.offer));
+  delete call.dataset.doubleBoost;
  const bonus=$('banker-christmas-bonus');
  if(bonus){
   bonus.hidden=!h.bonusPack;
@@ -188,12 +187,12 @@ function updateBankerCall(){
  const finalChoice=remainingCases<=3;
  $('final-choice-compare').hidden=!finalChoice;
  if(finalChoice){
-  bankerSetText('final-choice-offer',eur(personalBankerAmount(h)));
+  bankerSetText('final-choice-offer',eur(h.offer));
   $('final-choice-footnote').textContent=remainingCases===1?'Der letzte Koffer. Nimmst du das sichere Angebot oder riskierst du alles?':remainingCases+' Koffer sind noch im Spiel. Wie viel Risiko gehst du ein?';
  }
  const mine=h.participants.includes(myId())&&!h.decisions.some(d=>d.id===myId());
  const voted=h.decisions.some(d=>d.id===myId());
- $('banker-call-sub').textContent=(g.players.some(p=>p.id===myId()&&p.doublePayout===true)?'✨ Dein ×2-Bonus ist aktiv · ':'')+((g.caseCount||26)-(g.openedAmounts?.length||0))+' Kofferwerte noch im Spiel · '+(mine?'Entscheide jetzt selbst: Deal oder No Deal?':voted?'Deine Stimme ist gespeichert. Warte auf die anderen Spieler.':'Die Spieler stimmen gleichzeitig ab …');
+ $('banker-call-sub').textContent=((g.caseCount||26)-(g.openedAmounts?.length||0))+' Kofferwerte noch im Spiel · '+(mine?'Entscheide jetzt selbst: Deal oder No Deal?':voted?'Deine Stimme ist gespeichert. Warte auf die anderen Spieler.':'Die Spieler stimmen gleichzeitig ab …');
  const total=h.participants.length;
  const castVotes=h.decisions.length;
  const voteProgress=$('banker-vote-progress');
@@ -242,7 +241,7 @@ function revealVotesAfterAll(){
   const player=g.players.find(p=>p.id===d.id);
   const item=document.createElement('div');item.className='deal-accepted-person';
   const name=document.createElement('div');name.className='deal-accepted-name';name.textContent=(player?.name||'Ein Spieler')+' hat den Deal angenommen!';
-  const amount=document.createElement('strong');amount.className='deal-accepted-amount';amount.textContent=eur(personalBankerAmount(h,d.id));
+  const amount=document.createElement('strong');amount.className='deal-accepted-amount';amount.textContent=eur(h.offer);
   item.append(name,amount);
   const extras=[];
   if(h.bonusPack)extras.push('🎁 '+({small:'Normales Kartenpaket',large:'Gold-Kartenpaket',premium:'Premium-Kartenpaket'})[h.bonusPack]);
