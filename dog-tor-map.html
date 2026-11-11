@@ -6,10 +6,11 @@
  <meta name="theme-color" content="#08101d">
  <meta name="description" content="Die 100 Tore: Fünf Welten, 80 Einzelkämpfe, 10 Mini-Bosse und 10 gemeinsame Wächter führen euch zum Spiel DOG.">
  <title>🏰 Der Weg zu DOG · Die 100 Tore</title>
- <link rel="stylesheet" href="./dog-tor-map.css?v=20261111-real-bots-v1">
+ <link rel="stylesheet" href="./dog-tor-map.css?v=20261111-developer-v1">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
- <script src="./dog-tor-map.js?v=20261111-real-bots-v1" defer></script>
+ <script src="./dog-tor-map.js?v=20261111-developer-v1" defer></script>
+ <script src="./dog-developer-ui.js?v=20261111-developer-v1" defer></script>
  <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 </head>
 <body>
@@ -17,6 +18,7 @@
   <nav aria-label="Navigation">
    <a id="back-event" href="./dog-expedition.html">← Zur Expedition</a>
    <a id="back-forge" href="./dog-forge.html">⚒️ Zur Schmiede</a>
+   <button type="button" id="dog-developer-open" class="dog-dev-open" hidden aria-controls="dog-developer-dialog">🛠️ Entwickler-Einstellungen · Chris</button>
    <a href="./hub-lobby.html">🎮 Spielelobby</a>
   </nav>
   <header class="hero">
@@ -91,6 +93,60 @@
     <button type="button" id="gate-retry-button" class="small-action" hidden>↻ Offene Aktion sicher wiederholen</button>
     <button type="button" id="gate-detail-close" class="small-action">Schließen</button>
    </div>
+  </dialog>
+  <dialog id="dog-developer-dialog" class="dog-dev-dialog" aria-labelledby="dog-developer-title">
+   <div class="dog-dev-head">
+    <div><span class="dog-dev-eyebrow">🔒 PRIVATER ENTWICKLERZUGANG · CHRIS</span><h2 id="dog-developer-title">🛠️ 100 Tore – Teststeuerung</h2></div>
+    <button type="button" id="dog-developer-close" class="small-action" aria-label="Entwickler-Einstellungen schließen">✕ Schließen</button>
+   </div>
+   <p class="dog-dev-intro">Hier änderst du den <b>echten Expeditions-Spielstand</b> für dich, Nova und Titan. Bestehende Tore und Boss-Ergebnisse können überschrieben werden. Das Spiel DOG wird dadurch nicht automatisch freigeschaltet.</p>
+   <div id="dog-developer-bots-warning" class="dog-dev-warning" hidden>🔐 Zuerst Nova und Titan oben im Event mit dem privaten Freigabecode hinzufügen.</div>
+   <section class="dog-dev-section" aria-labelledby="dog-dev-gates-title">
+    <h3 id="dog-dev-gates-title">🗝️ Tore zum Testen freischalten</h3>
+    <p>Öffnet auch die nötigen vorherigen Gruppenbosse. Tor 100 bleibt als echte letzte Prüfung offen.</p>
+    <div class="dog-dev-actions">
+     <button type="button" data-dev-preset="9">🗝️ Bis Tor 9</button>
+     <button type="button" data-dev-preset="19">🗝️ Bis Tor 19</button>
+     <button type="button" data-dev-preset="99">🏰 Alle Tore vorbereiten</button>
+    </div>
+   </section>
+   <section class="dog-dev-section" aria-labelledby="dog-dev-boss-title">
+    <h3 id="dog-dev-boss-title">🐉 Bosskampf gezielt testen</h3>
+    <p>Setzt die Expedition direkt vor diesen Boss und macht den Kampf erneut möglich. Spätere Tor- und Boss-Siege werden zurückgesetzt.</p>
+    <div class="dog-dev-controls">
+     <label for="dog-developer-boss">Boss auswählen
+      <select id="dog-developer-boss">
+       <option value="10">Tor 10 · Aschewächter</option>
+       <option value="20">Tor 20 · Schattenfürst</option>
+       <option value="30">Tor 30 · Kristallwurm</option>
+       <option value="40">Tor 40 · Dornenkönig</option>
+       <option value="50">Tor 50 · Hüter der Tiefe</option>
+       <option value="60">Tor 60 · Flammendrache</option>
+       <option value="70">Tor 70 · Seelenrichter</option>
+       <option value="80">Tor 80 · Eisenkoloss</option>
+       <option value="90">Tor 90 · Festungswächter</option>
+       <option value="100">Tor 100 · Der letzte Wächter</option>
+      </select>
+     </label>
+     <button type="button" id="dog-developer-prepare-boss">⚔️ Boss vorbereiten</button>
+    </div>
+   </section>
+   <section class="dog-dev-section" aria-labelledby="dog-dev-materials-title">
+    <h3 id="dog-dev-materials-title">⚒️ Testmaterialien vergeben</h3>
+    <p>Die Materialien werden deinem echten Inventar gutgeschrieben. Keine automatische Verbesserung der Waffe oder Rüstung.</p>
+    <div class="dog-dev-controls">
+     <label for="dog-developer-resource">Rohstoff
+      <select id="dog-developer-resource"><option value="all">Alle 15 Rohstoffarten</option></select>
+     </label>
+     <label for="dog-developer-amount">Menge je Rohstoff
+      <select id="dog-developer-amount">
+       <option value="10">+10</option><option value="100" selected>+100</option><option value="1000">+1.000</option>
+      </select>
+     </label>
+     <button type="button" id="dog-developer-add-materials">📦 Hinzufügen</button>
+    </div>
+   </section>
+   <p id="dog-developer-status" class="dog-dev-status" role="status" aria-live="polite"></p>
   </dialog>
   <section class="castle" id="event-castle" aria-label="Ziel der 100 Tore">
    <span class="last">HINTER TOR 100 · EUER GEMEINSAMES ZIEL</span>
