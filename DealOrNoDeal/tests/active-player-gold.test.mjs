@@ -35,7 +35,8 @@ test('active player card is luminous gold with dark legible text and a bright av
 
 test('all participants still share the same active player, without duplicate turn labels in character panels',()=>{
  assert.doesNotThrow(()=>new Script(app,{filename:'app.js'}));
- assert.match(app,/g\.phase==='select'\?g\.order\[g\.selectionIndex\]:g\.phase==='open'\?turn\(\):g\.phase==='reveal'\?g\.pending\?\.actor:null/);
+ assert.match(app,/g\.phase==='select'\?g\.order\[g\.selectionIndex\]:g\.phase==='batch-pick'\?g\.order\[Math\.floor/);
+ assert.match(app,/g\.phase==='open'\?turn\(\):g\.phase==='reveal'\?g\.pending\?\.actor:null/);
  assert.match(app,/turnSpotlight\.hidden=!turnSpotlightVisible/);
  assert.match(app,/if\(isCurrentPlayer\)/);
  assert.match(app,/setAttribute\('aria-current','step'\)/);
