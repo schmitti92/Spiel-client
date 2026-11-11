@@ -165,7 +165,7 @@
   $('retry-button').disabled=working;
   preflight?.update(view,now());
   const duration=(Number(view?.endsAt)>Number(view?.startedAt)?
-   view.endsAt-view.startedAt:40000);
+   view.endsAt-view.startedAt:view?.miniGames?.version===3?40000:50000);
   const time=state==='fighting'?remaining():state==='cooldown'?cooling():duration;
   $('timer').textContent=formatTime(time);
   $('timer-fill').style.width=(state==='fighting'?Math.min(100,time/duration*100):state==='victory'?0:100)+'%';
