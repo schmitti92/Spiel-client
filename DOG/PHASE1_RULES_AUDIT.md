@@ -70,3 +70,37 @@ umgekehrte Laufrichtung ist nicht als Raumoption aktiviert.
    bestehende klassische Partien stillschweigend umzubauen.
 
 Diese Punkte sind nicht durch reine Unit-Tests abschließend nachgewiesen.
+
+
+## Fortschritt – Online-Raumstabilität (11. November 2026)
+
+Der nächste Phase-1-Schritt wurde umgesetzt und automatisiert geprüft:
+
+1. \`DOG/online-sync.js\` ordnet HTTP- und WebSocket-Zustände nach der
+   autoritativen \`room.revision\` statt nach Ankunftszeit. Alte oder doppelte
+   Antworten überschreiben den jüngsten Zustand nicht mehr.
+2. Die private Kartenhand bleibt bei unveränderter eigener Karten-ID-Liste
+   sichtbar, selbst wenn andere Spieler ihre Karten austauschen. Beim Beginn
+   einer geteilten Sieben bleibt sie ebenfalls sichtbar; ein eigener
+   Kartenwechsel oder eine neue Partie verdeckt sie wieder.
+3. \`DOG/app.js\` verwendet die vom Server bestätigte \`match.id\` für
+   zukünftige Aktionen und akzeptiert Spiel-URLs ohne eigenes \`match\`-Argument.
+4. Überschneidende HTTP-Aktualisierungen werden zusammengeführt, anstatt
+   gleichzeitige unnötige Abrufe auszulösen.
+5. Der Backend-Test simuliert vier echte Spieler mit gleichzeitigem
+   Kartentausch, per Benutzer geheim projizierten Händen, erneuter Anmeldung,
+   Wiederholung derselben Aktion, veralteten Revisionen und einer Sieben, die
+   nach dem ersten Teilzug durch eine neue Abfrage fortgesetzt wird.
+6. Tests bestätigen, dass ein unberechtigter Benutzer, veraltete Match-IDs
+   oder ungültige Befehle den Spielstand nicht verändern.
+
+Verifiziert in GitHub Actions:
+- Frontend: 101 DOG-Tests erfolgreich (einschließlich acht neuer
+  Synchronisierungstests).
+- Backend: 34 klassische Engine-/Regeltests und sechs gezielte DOG-Hub-Tests
+  erfolgreich.
+
+**Grenze der Prüfungen:** Es handelt sich um automatisierte Unit- und
+Transaktionstests. Tatsächliche Verbindungsausfälle auf vier verschiedenen
+Endgeräten sowie die laufende Render-Instanz müssen weiterhin live geprüft
+werden. Optische Design- und Event-Module wurden nicht verändert.
