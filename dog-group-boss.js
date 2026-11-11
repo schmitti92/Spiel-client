@@ -108,7 +108,7 @@
   const mask=(next?.members||[]).filter(m=>m.ready).map(m=>m.uid).join('|');
   if(mask!==lastReadyMask){
    lastReadyMask=mask;
-   readyBurstUntil=Date.now()+12000;
+   readyBurstUntil=Date.now()+6000;
   }
  }
  const now=()=>Date.now()+serverOffset;
@@ -299,8 +299,13 @@
   // enter the first challenge promptly; fall back to economical polling
   // if the group waits for minutes. No animation-frame backend requests.
   const waitingReady=view?.phase==='waiting'&&view?.members?.some(m=>m.ready);
-  const delay=view?.phase==='fighting'?2800:
-   waitingReady&&Date.now()<readyBurstUntil?1400:
+  // Start updates arrive sooner on all three screens. The server's
+  // startedAt/endsAt timestamps remain authoritative and still define
+  // exactly 30 seconds of combat, independent of each browser's latency.
+  const openingFight=view?.phase==='fighting'&&
+   now()<(view.startedAt||0)+5000;
+  const delay=openingFight?1200:view?.phase==='fighting'?2800:
+   waitingReady&&Date.now()<readyBurstUntil?900:
    waitingReady?3800:15000;
   if(!working&&Date.now()-lastLoad>delay)void reload();
  },250);

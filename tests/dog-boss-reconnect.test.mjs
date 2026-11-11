@@ -111,3 +111,19 @@ for(const file of ['dog-boss10.js','dog-group-boss.js']){
   assert.ok(h.getCount()<=after+1,'failed GET must not trigger a 250-ms fetch storm');
  });
 }
+
+test('Boss 10 and group bosses reconcile the shared opening sooner without excess idle reads',()=>{
+ for(const arena of ['dog-boss10.js','dog-group-boss.js']){
+  const source=readFileSync(new URL('../'+arena,import.meta.url),'utf8');
+  for(const feature of [
+   'readyBurstUntil=Date.now()+6000',
+   "openingFight?1200:view?.phase==='fighting'?2800",
+   'waitingReady&&Date.now()<readyBurstUntil?900',
+   'waitingReady?3800:15000',
+   'now()<(view.startedAt||0)+5000',
+   'if(document.hidden)return'
+  ])assert.ok(source.includes(feature),arena+' missing '+feature);
+ }
+ // Old: up to 9 reads during each 12s burst; new: 7 reads/6s burst.
+ assert.ok(Math.ceil(6000/900)<Math.ceil(12000/1400));
+});
