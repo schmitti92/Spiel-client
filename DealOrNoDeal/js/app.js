@@ -66,11 +66,15 @@ function scheduleFastBatch(){
  // to avoid redundant writes; another player takes over if the first is offline.
  const viewerIndex=Math.max(0,g.order.indexOf(myId()));
  const due=Number(batch.endsAt)+500+viewerIndex*850;
- firstBatchAckTimer=setTimeout(async()=>{
+ const tryFinishBatch=async()=>{
   if(g?.phase!=='batch-reveal'||g?.id+':'+g?.openingBatch?.startedAt!==key)return;
-  if(!busy)await action('ack-batch');
-  if(g?.phase==='batch-reveal')setTimeout(()=>{if(g?.phase==='batch-reveal'&&!busy)action('ack-batch')},4200);
- },Math.max(50,Math.min(60000,due-now)));
+  if(busy){firstBatchAckTimer=setTimeout(tryFinishBatch,1100);return}
+  await action('ack-batch');
+  // If the request timed out or a player reconnected, keep trying safely;
+  // the server accepts the transition exactly once.
+  if(g?.phase==='batch-reveal')firstBatchAckTimer=setTimeout(tryFinishBatch,4200);
+ };
+ firstBatchAckTimer=setTimeout(tryFinishBatch,Math.max(50,Math.min(60000,due-now)));
 }
 
 let historyRenderKey='';
