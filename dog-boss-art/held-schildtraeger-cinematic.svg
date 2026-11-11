@@ -1,4 +1,4 @@
-<svg data-edition="cinematic-2026" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 660" role="img" aria-label="Schildträger: stilisierter Fantasy-Held in Kampfhaltung">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 660" data-edition="cinematic-2026" role="img" aria-label="Schildträger: stilisierter Fantasy-Held in Kampfhaltung">
 <defs>
  <radialGradient id="aura"><stop stop-color="#aee5ff" stop-opacity=".27"/><stop offset="1" stop-color="#aee5ff" stop-opacity="0"/></radialGradient>
  <linearGradient id="armor" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#aee5ff"/><stop offset=".29" stop-color="#39577a"/><stop offset=".58" stop-color="#172136"/><stop offset=".86" stop-color="#39577a"/><stop offset="1" stop-color="#111526"/></linearGradient>
