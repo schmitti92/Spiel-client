@@ -11,6 +11,7 @@
  const auth=()=>{const v=window.SpielOnline?.state?.();
   return v?.status==='online'&&v.user?.uid&&v.profile?.setupComplete!==false?v:null;};
  let view=null,account=null,working=false,serverOffset=0,lastLoad=0,inflight=null;
+ let lastHeroSignature=''; // No 250ms remount of unchanged multiplayer cards
  const miniUi=window.DogBossMinigames?.create($('mini-game'),
   (round,answer)=>void command('minigame',false,{round,answer}));
  const combatFx=window.DogBossCombatFX?.create($('combat-scene'),10);
@@ -88,8 +89,13 @@
   $('ready-count').textContent=members.filter(x=>x.ready).length+' / 3 bereit · '+
    (state==='fighting'?(view?.participantCount||view?.roster?.length||0)+' kämpfen':
     'zu dritt empfohlen');
-  const area=$('heroes');area.replaceChildren();
-  for(let i=0;i<3;i++){
+  const area=$('heroes');
+  const heroSignature=JSON.stringify(members.map(m=>m?
+   [m.uid,m.name,m.ready,m.eligible,m.reacted]:null));
+  if(heroSignature!==lastHeroSignature){
+   lastHeroSignature=heroSignature;
+   area.replaceChildren();
+   for(let i=0;i<3;i++){
    const m=members[i];
    const card=document.createElement('article');card.className='hero'+(m?.ready?' is-ready':'');
    const portrait=document.createElement('span');portrait.className='hero-portrait';
@@ -100,6 +106,7 @@
    detail.textContent=!m?'Wartet auf einen Helden':!m.eligible?'Tor 9 noch nicht geschafft':
     m.reacted?'⚡ Reaktion ausgeführt':m.ready?'✅ Bereit':'⏳ Noch nicht bereit';
    info.append(title,detail);card.append(portrait,info);area.append(card);
+   }
   }
   const mine=members.find(m=>m.uid===account);
   const pendingOp=account?pending(account):null;
