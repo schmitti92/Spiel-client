@@ -73,7 +73,7 @@
   if(request.command==='minigame'&&state?.phase==='fighting'){
    const round=request.payload?.round;
    const entry=Number.isInteger(round)?state.miniGames?.rounds?.[round]:null;
-   if(entry&&now()>=(state.startedAt||0)+entry.endMs+250){
+   if(entry&&now()>=(state.startedAt||0)+entry.endMs+(Array.isArray(request.payload?.answer)?2200:250)){
     clear(uid);return 'expired';
    }
   }
@@ -242,13 +242,13 @@
  }
  async function command(action,retry=false,payload=null){
   const uid=auth()?.user?.uid;
-  if(!uid||working)return;
+  if(!uid||working)return false;
   const older=pending(uid);
-  if(retry&&!older)return;
-  if(!retry&&older)return;
+  if(retry&&!older)return false;
+  if(!retry&&older)return false;
   const req=older||{id:newId(),command:action,payload};
   if(!older&&!save(uid,req)){
-   message('⚠️ Auftrag konnte nicht lokal gesichert werden. Aktion wurde nicht gesendet.');return;
+   message('⚠️ Auftrag konnte nicht lokal gesichert werden. Aktion wurde nicht gesendet.');return false;
   }
   working=true;render();
   message('⏳ Server prüft und speichert den Auftrag …');
@@ -287,6 +287,7 @@
    if(['DOG_GROUP_NOT_RUNNING','DOG_GROUP_ALREADY_WON'].includes(e.message))
     void reload(true);
   }finally{working=false;render();}
+  return true;
  }
  $('ready-button').addEventListener('click',()=>void command('ready'));
  $('start-button').addEventListener('click',()=>void command('start'));
