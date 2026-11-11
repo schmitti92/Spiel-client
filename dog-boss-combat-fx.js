@@ -89,6 +89,7 @@
   if(bossArt?.style&&bossPortraits[gate])
    bossArt.style.backgroundImage='url("./dog-boss-art/'+bossPortraits[gate]+'")';
   let fightersKey='',phaseKey='',waveKey='',feedbackKey='';
+  let healthBars=new Map();
   function fighters(view){
    const selected=view?.phase==='waiting'?
     (view?.members||[]).filter(m=>m.ready):
@@ -101,6 +102,7 @@
    if(fightersKey===nextKey)return;
    fightersKey=nextKey;
    if(!heroes)return;
+   const nextHealthBars=new Map();
    const elements=selected.map((m,i)=>{
     // Stable portraits from the original three-person expedition order.
     // Solo/Duo attempts do not change the appearance of a known hero.
@@ -120,13 +122,26 @@
     name.className='combat-hero-name';
     name.textContent=String(membersByUid.get(m.uid)?.name||
      'Held '+(i+1)).slice(0,22);
-    item.append(mark,name);
+    const hpTrack=document.createElement('span');
+    hpTrack.className='combat-hero-hp-track';
+    hpTrack.setAttribute?.('aria-hidden','true');
+    const hpFill=document.createElement('span');
+    hpFill.className='combat-hero-hp-fill';
+    hpTrack.append(hpFill);
+    item.append(mark,name,hpTrack);
+    nextHealthBars.set(m.uid,hpFill);
     return item;
    });
    heroes.replaceChildren(...elements);
+   healthBars=nextHealthBars;
   }
   function update(view,serverNow){
    fighters(view);
+   for(const hero of view?.teamHealth?.heroes||[]){
+    const fill=healthBars.get(hero.uid);
+    if(fill?.style)fill.style.width=(100*Math.max(0,Number(hero.hp)||0)/
+      Math.max(1,Number(hero.maxHp)||1)).toFixed(2)+'%';
+   }
    const scene=deriveCue(view,serverNow);
    const pKey=(view?.startedAt||0)+':'+scene.kind+':'+scene.round+':'+
     (view?.phase||'waiting');
