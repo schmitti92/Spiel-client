@@ -57,6 +57,10 @@ test('Four rounds share one screen, without replacing the main battle stage',()=
   assert.match(html,/id="live-shield-value"/);
   assert.match(html,/id="live-shield-fill"/);
   assert.match(html,/id="live-stage-announcement"/);
+  assert.match(html,/class="live-exchange-beams"/);
+  assert.equal((html.match(/class="live-exchange-bolt live-exchange-bolt-/g)||[]).length,3);
+  assert.match(html,/class="live-exchange-counterbolt"/);
+  assert.match(html,/class="live-exchange-shield-dome"/);
   assert.match(html,/data-step="3"/);
   assert.match(html,/id="combat-scene"/);
   assert.match(html,/id="mini-game"/);
@@ -67,6 +71,10 @@ test('Four rounds share one screen, without replacing the main battle stage',()=
  assert.match(css,/live-exchange-defense/);
  assert.match(css,/exchange-boss-lunge/);
  assert.match(css,/exchange-shield-flash/);
+ assert.match(css,/exchange-hero-bolt/);
+ assert.match(css,/exchange-boss-bolt/);
+ assert.match(css,/exchange-team-shield/);
+ assert.match(css,/--exchange-offset/);
  assert.match(css,/prefers-reduced-motion/);
 });
 test('First 2s exchange shows server-scored group attack and creates one strike scene',()=>{
@@ -112,4 +120,35 @@ test('Older three-game fights do not show a fictitious shield exchange',()=>{
  assert.equal(node('live-stage-announcement').hidden,true);
  assert.equal(node('live-round-label').textContent,'RUNDE 3 / 3');
  assert.equal(node('live-shield-value').textContent,'100 / 100');
+});
+
+
+test('Three named team heroes perform the attack; empty success does not fake a boss hit',()=>{
+ const {ui,view,node,classes}=fixture();
+ view.roster=[{uid:'c',name:'Chris'},{uid:'d',name:'David'},{uid:'v',name:'Vanessa'}];
+ view.members.push({uid:'d',name:'David',isMe:false},
+  {uid:'v',name:'Vanessa',isMe:false});
+ ui.update(view,startedAt+8500);
+ assert.match(node('live-stage-subtitle').textContent,/Chris, David, Vanessa/);
+ view.miniGames.exchange.stages[0].correct=0;
+ view.miniGames.exchange.stages[0].bonusPercent=0;
+ ui.update(view,startedAt+8900);
+ assert.match(node('live-stage-subtitle').textContent,/Kein Treffer/);
+ assert.ok(classes.get('combat-scene').has('live-exchange-miss'));
+ ui.update(view,startedAt+11400);
+ assert.ok(!classes.get('combat-scene').has('live-exchange-miss'));
+});
+
+test('Second defensive blow displays actual shield damage and visual shield fracture',()=>{
+ const {ui,view,node,classes}=fixture();
+ view.miniGames.exchange.shield=75;
+ ui.update(view,startedAt+38500);
+ assert.match(node('live-stage-score').textContent,/−17 Schildpunkte/);
+ assert.equal(node('live-shield-value').textContent,'75 / 100');
+ assert.ok(classes.get('combat-scene').has('live-exchange-guard-damaged'));
+ ui.update(view,startedAt+39990);
+ assert.equal(node('live-stage-announcement').hidden,false);
+ ui.update(view,startedAt+40010);
+ assert.equal(node('live-stage-announcement').hidden,true);
+ assert.ok(!classes.get('combat-scene').has('live-exchange-guard-damaged'));
 });
