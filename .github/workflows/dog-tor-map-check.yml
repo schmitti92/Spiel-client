@@ -5,6 +5,7 @@ on:
       - dog-tor-map.html
       - dog-tor-map.css
       - dog-tor-map.js
+      - dog-developer-ui.js
       - dog-boss10.html
       - dog-boss10.css
       - dog-boss10.js
@@ -20,6 +21,7 @@ on:
       - dog-materials-ui.js
       - dog-materials.css
       - tests/dog-tor-map.test.mjs
+      - tests/dog-developer-ui.test.mjs
       - tests/dog-first-loop-ui.test.mjs
       - tests/dog-group-boss-ui.test.mjs
       - tests/dog-boss-minigames-ui.test.mjs
@@ -31,6 +33,7 @@ on:
       - dog-tor-map.html
       - dog-tor-map.css
       - dog-tor-map.js
+      - dog-developer-ui.js
       - dog-boss10.html
       - dog-boss10.css
       - dog-boss10.js
@@ -46,6 +49,7 @@ on:
       - dog-materials-ui.js
       - dog-materials.css
       - tests/dog-tor-map.test.mjs
+      - tests/dog-developer-ui.test.mjs
       - tests/dog-first-loop-ui.test.mjs
       - tests/dog-group-boss-ui.test.mjs
       - tests/dog-boss-minigames-ui.test.mjs
@@ -80,6 +84,7 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check dog-tor-map.js
+          node --check dog-developer-ui.js
           node --check dog-boss10.js
           node --check dog-group-boss.js
           node --check dog-boss-mini-ui.js
@@ -87,4 +92,4 @@ jobs:
           node --check dog-ascension.js
           node --check dog-materials-ui.js
       - name: Test map structure and safe DOG unlock placeholder
-        run: node --test tests/dog-tor-map.test.mjs tests/dog-first-loop-ui.test.mjs tests/dog-group-boss-ui.test.mjs tests/dog-boss-minigames-ui.test.mjs tests/dog-boss-combat-fx.test.mjs tests/dog-chests-ui.test.mjs
+        run: node --test tests/dog-developer-ui.test.mjs tests/dog-tor-map.test.mjs tests/dog-first-loop-ui.test.mjs tests/dog-group-boss-ui.test.mjs tests/dog-boss-minigames-ui.test.mjs tests/dog-boss-combat-fx.test.mjs tests/dog-chests-ui.test.mjs
