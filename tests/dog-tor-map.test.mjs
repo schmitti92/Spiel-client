@@ -236,3 +236,36 @@ test('Every group boss previews its own local artwork before entering the arena'
  assert.equal(byId('gate-boss-preview').hidden,true,
   'normal tor should hide the boss-only preview');
 });
+
+test('100-Tore event dashboard shows only confirmed server milestones',async()=>{
+ const saved={isMember:true,memberCount:3,dogUnlocked:false,sharedBosses:[10,20],
+  members:[{uid:'hero-a',name:'A',isMe:true,highestGate:27,currentGate:27}],
+  progress:{highestGate:27,normals:[1,2,3],minis:[5]}};
+ const {byId}=page('?room=123',saved);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(byId('expedition-progress').hidden,false);
+ assert.equal(byId('ep-high').textContent,'27');
+ assert.equal(byId('ep-normal').textContent,'3 / 80');
+ assert.equal(byId('ep-mini').textContent,'1 / 10');
+ assert.equal(byId('ep-boss').textContent,'2 / 10');
+ assert.equal(byId('ep-bar').getAttribute('aria-valuenow'),'2');
+ assert.equal(byId('ep-fill').style.width,'20%');
+ assert.match(byId('ep-next').textContent,/Tor 30/);
+ assert.equal(byId('ep-milestones').children.length,10);
+ assert.match(byId('ep-milestones').children[0].className,/won/);
+ assert.equal(byId('event-castle').dataset.victory,'no');
+});
+test('100-Tore event finale displays victory only when server confirmed Tor 100',async()=>{
+ const saved={isMember:true,memberCount:3,dogUnlocked:true,
+  sharedBosses:[10,20,30,40,50,60,70,80,90,100],
+  members:[{uid:'hero-a',name:'A',isMe:true,highestGate:100,currentGate:100}],
+  progress:{highestGate:100,normals:[],minis:[]}};
+ const {byId,gates}=page('?room=123',saved);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(byId('ep-boss').textContent,'10 / 10');
+ assert.equal(byId('ep-fill').style.width,'100%');
+ assert.equal(byId('event-castle').dataset.victory,'yes');
+ assert.match(byId('dog-lock').textContent,/Expedition abgeschlossen/);
+ gates[99].click();
+ assert.match(byId('gate-detail-future').textContent,/Server bestätigt/);
+});

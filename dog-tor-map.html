@@ -41,13 +41,24 @@
     <button type="button" id="team-refresh" class="small-action">↻ Aktualisieren</button>
    </div>
    <p id="team-status" class="team-status" role="status" aria-live="polite">Prüfe deine Anmeldung und den gemeinsamen Fortschritt …</p>
-   <div id="team-members" class="team-members" aria-label="Gespeicherte Positionen der Spieler"></div>
+   <section id="expedition-progress" class="expedition-progress" hidden aria-label="Gespeicherter Fortschritt der 100 Tore">
+<div class="expedition-counters">
+<span>📍 Höchstes Tor <strong id="ep-high">–</strong></span>
+<span>⚔️ Normale Siege <strong id="ep-normal">–</strong></span>
+<span>👹 Mini-Bosse <strong id="ep-mini">–</strong></span>
+<span>🐉 Gruppenbosse <strong id="ep-boss">–</strong></span>
+</div>
+<p id="ep-next">Nächster Gruppenboss: Tor 10</p>
+<div class="ep-bar" id="ep-bar" role="progressbar" aria-label="Besiegte Gruppenbosse" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0"><span id="ep-fill"></span></div>
+<div class="ep-milestones" id="ep-milestones" aria-label="Gemeinsame Boss-Siege"></div>
+</section>
+<div id="team-members" class="team-members" aria-label="Gespeicherte Positionen der Spieler"></div>
    <button type="button" id="team-join" class="team-join" hidden>🛡️ Der Dreier-Expedition beitreten</button>
    <p class="team-hint">Die Markierungen zeigen die <b>zuletzt vom Server gespeicherte Position</b>, nicht den minutengenauen Online-Status. Die Karte aktualisiert sich beim Spielen und in größeren Abständen, um Firebase-Abfragen zu sparen.</p>
   </section>
   <div class="info" role="note">
    <span aria-hidden="true">🧭</span>
-   <span><b>Entwicklungsansicht:</b> Die Torstände und Solo-Kämpfe werden nur mit bestätigtem Spielerprofil vom Server geladen. Bei fehlender Serververbindung bleiben die Markierungen bewusst leer. Gemeinsame Bosse nach Tor 10 und die DOG-Freischaltung werden noch ausgebaut.</span>
+   <span><b>Entwicklungsansicht:</b> Die Torstände und Solo-Kämpfe werden nur mit bestätigtem Spielerprofil vom Server geladen. Bei fehlender Serververbindung bleiben die Markierungen bewusst leer. Die zehn gemeinsamen Bosse sind im Entwicklungsstand bereits integriert; der gemeinsame Praxistest steht noch aus.</span>
   </div>
   <section aria-label="Abenteuerkarte von Tor 1 bis Tor 100">
    <div id="worlds"></div>
@@ -77,7 +88,7 @@
     <button type="button" id="gate-detail-close" class="small-action">Schließen</button>
    </div>
   </dialog>
-  <section class="castle" aria-label="Ziel: das Spiel DOG freischalten">
+  <section class="castle" id="event-castle" aria-label="Ziel der 100 Tore">
    <span class="last">HINTER TOR 100 · EUER GEMEINSAMES ZIEL</span>
    <span class="icon" aria-hidden="true">🏰</span>
    <h2>Das verschlossene <strong>DOG-Schloss</strong></h2>

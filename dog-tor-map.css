@@ -121,3 +121,18 @@ button:disabled{opacity:.5;cursor:not-allowed;filter:none}
  .gate-boss-preview{margin:9px 0;padding:6px}
  .gate-boss-preview img{height:130px;width:min(140px,46vw)}
 }
+
+.expedition-progress[hidden]{display:none}
+.expedition-progress{margin:0 0 18px;padding:16px;border:1px solid #e8cc8170;border-radius:16px;background:#091a2dcc}
+.expedition-counters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.expedition-counters span{display:flex;flex-direction:column;gap:6px;padding:12px;background:#1b2e49;border:1px solid #ffffff20;border-radius:11px;font-size:12px;color:#d6e4f2}
+.expedition-counters strong{font-size:clamp(19px,3vw,27px);color:#ffe3a8;font-variant-numeric:tabular-nums}
+#ep-next{color:#ffd99c;margin:15px 0 10px;font-size:13px;font-weight:800}
+.ep-bar{height:12px;overflow:hidden;background:#2d3c55;border-radius:10px}
+.ep-bar>span{display:block;width:0;height:100%;background:linear-gradient(90deg,#4dc4a0,#e7c474)}
+.ep-milestones{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;margin-top:10px}
+.ep-mark{display:grid;place-items:center;min-height:29px;border:1px solid #ffffff25;background:#21304a;border-radius:8px;font-size:11px;color:#d1def0}
+.ep-mark.won{background:#38694c;color:#fff6d7;border-color:#afdfaf}
+#event-castle[data-victory="yes"]{border-color:#a8e7b0;box-shadow:0 0 55px #61b48233}
+#event-castle[data-victory="yes"] .locked{background:#1e4e37;color:#e6ffe5}
+@media(max-width:660px){.expedition-counters{grid-template-columns:repeat(2,minmax(0,1fr))}.ep-milestones{gap:2px}}

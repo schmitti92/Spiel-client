@@ -96,7 +96,38 @@
     (count?' · '+visiting.map(x=>x.name).join(', ')+' hier':'')+'. Details ansehen');
   }
  }
+
+ function renderExpeditionProgress(){
+   const verified=mapState?.isMember===true;
+   $('expedition-progress').hidden=!verified;
+   const victory=verified&&mapState.dogUnlocked===true;
+   $('event-castle').dataset.victory=victory?'yes':'no';
+   const lock=$('dog-lock');
+   lock.textContent=victory?'🏆 Tor 100 besiegt – Expedition abgeschlossen!':'🔒 DOG – noch verschlossen';
+   const marks=$('ep-milestones');marks.replaceChildren();
+   if(!verified)return;
+   const won=new Set((mapState.sharedBosses||[]).filter(n=>Number.isSafeInteger(n)&&n>=10&&n<=100&&n%10===0));
+   const own=mapState.progress||{};
+   const mine=mapState.members?.find(m=>m.isMe);
+   const length=(v,max)=>Array.isArray(v)?Math.min(v.length,max):0;
+   $('ep-high').textContent=String(Math.max(1,Math.min(100,mine?.highestGate||own.highestGate||1)));
+   $('ep-normal').textContent=length(own.normals,80)+' / 80';
+   $('ep-mini').textContent=length(own.minis,10)+' / 10';
+   $('ep-boss').textContent=won.size+' / 10';
+   $('ep-bar').setAttribute('aria-valuenow',String(won.size));
+   $('ep-fill').style.width=(won.size*10)+'%';
+   const next=Array.from({length:10},(_,i)=>(i+1)*10).find(n=>!won.has(n));
+   $('ep-next').textContent=next?'Nächster Gruppenboss: Tor '+next:'🏆 Alle zehn Wächter besiegt!';
+   for(let n=10;n<=100;n+=10){
+     const yes=won.has(n);
+     const badge=$node('span','ep-mark'+(yes?' won':''),yes?'✓':String(n));
+     badge.title='Tor '+n+': '+(yes?'besiegt':'noch offen');
+     badge.setAttribute('aria-label',badge.title);
+     marks.append(badge);
+   }
+ }
  function renderMembers(){
+   renderExpeditionProgress();
   const area=$('team-members');area.replaceChildren();
   const team=mapState?.members||[];
   if(!team.length){
@@ -353,7 +384,7 @@
   }
   $('gate-detail-summary').textContent=summaryFor(gate);
   $('gate-detail-future').textContent=gate===100?
-   '🔒 DOG ist noch verschlossen. Es wird erst nach einem nachgewiesenen Sieg über den letzten gemeinsamen Boss freigeschaltet.':
+   (mapState?.isMember&&mapState?.dogUnlocked?'🏆 Der Sieg an Tor 100 ist vom Server bestätigt. Die Expedition ist abgeschlossen!':'🔒 Der letzte Wächter muss gemeinsam besiegt werden, damit die Expedition endet.'):
    '⚔️ Kämpfe und Mini-Boss-Belohnungen werden vom Server berechnet und einmalig gespeichert.';
   updateGateActions();
   if(!details.open)details.showModal();
