@@ -1,0 +1,32 @@
+name: Spielseiten-Studio Designer
+on:
+  push:
+    paths:
+      - 'Designer/**'
+      - '.github/workflows/designer-studio-check.yml'
+  pull_request:
+    paths:
+      - 'Designer/**'
+      - '.github/workflows/designer-studio-check.yml'
+  workflow_dispatch:
+jobs:
+  editor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax
+        run: |
+          node --check Designer/studio-model.mjs
+          node --check Designer/studio.js
+      - name: Designer model, templates and UI checks
+        run: node --test Designer/tests/*.test.mjs
+      - name: No missing standalone files
+        run: |
+          test -s Designer/index.html
+          test -s Designer/studio.css
+          test -s Designer/studio.js
+          test -s Designer/studio-model.mjs
