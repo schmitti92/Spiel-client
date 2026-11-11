@@ -14,7 +14,7 @@
  let lastHeroSignature=''; // No 250ms remount of unchanged multiplayer cards
  let lastReadyMask='',readyBurstUntil=0;
  const miniUi=window.DogBossMinigames?.create($('mini-game'),
-  (round,answer)=>void command('minigame',false,{round,answer}));
+  (round,answer,step=0)=>command('minigame',false,{round,answer,step}));
  const combatFx=window.DogBossCombatFX?.create($('combat-scene'),10);
  const preflight=window.DogBossPreflight?.create(10);
  const liveUi=window.DogBossLiveUI?.create($('arena'));
@@ -47,7 +47,9 @@
     (state?.phase==='fighting'&&state?.roster?.some(m=>m.uid===uid))||settled:
    request.command==='react'?!!mine?.reacted||settled||state?.phase==='waiting':
    request.command==='minigame'?
-    !!state?.miniGames?.myAnswers?.[request.payload?.round]||settled:
+    (state?.miniGames?.version===2?
+     !!state?.miniGames?.myAnswers?.[request.payload?.round]?.attempts?.[request.payload?.step??0]:
+     !!state?.miniGames?.myAnswers?.[request.payload?.round])||settled:
    request.command==='finish'&&settled;
   if(confirmed){clear(uid);return 'confirmed';}
   // An old unanswered minigame must never lock the next seven-second round.
@@ -252,7 +254,8 @@
   }catch(e){
    if(['DOG_BOSS10_NEEDS_THREE','DOG_BOSS10_PREREQUISITES','DOG_BOSS10_ALREADY_WON',
     'DOG_BOSS10_RUNNING','DOG_BOSS10_COOLDOWN','DOG_BOSS10_NOT_RUNNING',
-    'DOG_BOSS10_STILL_FIGHTING','DOG_MINIGAME_TOO_LATE','DOG_MINIGAME_NOT_RUNNING','DOG_MINIGAME_NOT_PARTICIPANT','DOG_MINIGAME_MISSING','DOG_MINIGAME_BAD_ROUND','DOG_MINIGAME_BAD_ANSWER','NOT_DOG_TEAM_MEMBER','DOG_BOSS10_RECEIPT_CONFLICT'].includes(e.message))
+    'DOG_BOSS10_STILL_FIGHTING','DOG_MINIGAME_TOO_LATE','DOG_MINIGAME_NOT_RUNNING','DOG_MINIGAME_NOT_PARTICIPANT','DOG_MINIGAME_MISSING','DOG_MINIGAME_BAD_ROUND','DOG_MINIGAME_BAD_ANSWER','DOG_MINIGAME_BAD_STEP',
+    'DOG_MINIGAME_STEP_ORDER','DOG_MINIGAME_TOO_FAST','NOT_DOG_TEAM_MEMBER','DOG_BOSS10_RECEIPT_CONFLICT'].includes(e.message))
     clear(uid);
    message('⚠️ Der Auftrag wurde nicht bestätigt: '+e.message+
     '. Bei einer unbekannten Verbindungslage kannst du ihn sicher wiederholen.');
