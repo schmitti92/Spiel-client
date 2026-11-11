@@ -23,8 +23,13 @@ export function decideDogRoomUpdate(previous,room,{hubCode,matchHint=null}={}){
   const match=room.phase==='playing'&&room.match?.game==='dog'?room.match:null;
   if(!match||(matchHint&&matchHint!==match.id))
     return {accept:true,kind:'inactive',roomRevision:room.revision};
-  if(!match.dog||!Number.isInteger(match.dogSeat)||match.dogSeat<0||match.dogSeat>3)
+  // Non-participating room members are allowed to watch the public board.
+  // Their projection never contains a private hand or a playable seat.
+  const spectator=match.dogSeat===null;
+  if(!match.dog||(!spectator&&(!Number.isInteger(match.dogSeat)||match.dogSeat<0||match.dogSeat>3)))
     return {accept:false,reason:'INVALID_DOG_PROJECTION'};
+  if(spectator&&match.dog.hands?.some(Array.isArray))
+    return {accept:false,reason:'PRIVATE_HAND_IN_SPECTATOR_PROJECTION'};
   if(!Number.isSafeInteger(match.dog.revision)||match.dog.revision<0)
     return {accept:false,reason:'INVALID_DOG_REVISION'};
   const sameMatch=previous?.matchId===match.id;
@@ -36,7 +41,7 @@ export function decideDogRoomUpdate(previous,room,{hubCode,matchHint=null}={}){
     ||seat!==previous?.onlineSeat
     ||ownHandIds(previous?.game,seat)!==ownHandIds(match.dog,seat);
   const phaseChanged=sameMatch&&previous?.game?.phase!==match.dog.phase;
-  const hideHand=handChanged||match.dog.phase==='finished'
+  const hideHand=spectator||handChanged||match.dog.phase==='finished'
     ||(phaseChanged&&match.dog.phase==='exchange');
   const clearSelection=handChanged||phaseChanged;
   return {
