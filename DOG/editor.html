@@ -117,6 +117,14 @@ input[type="range"]{width:100%;accent-color:#efc47d}
 .group-count{color:#ffe5b1;font-weight:850}
 .assist-card{border-color:#e6bf805e;background:linear-gradient(140deg,#1b4052,#102338)}
 .assist-card h2{color:#ffe2ab}
+.assist-slots{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.assist-slot-group{background:#092437;border:1px solid #7a9aab52;border-radius:11px;padding:9px}
+.assist-slot-group b{display:block;font-size:11px;margin-bottom:8px;color:#f8e2b7}
+.assist-slot-buttons{display:flex;gap:5px}
+.assist-slot-buttons button{flex:1;min-width:0;min-height:34px;border-radius:8px;border:1px solid #7694a988;color:#edf4f7;background:#113449;font-size:12px;font-weight:900;touch-action:manipulation}
+.assist-slot-buttons button.filled{background:#246048;color:#e0ffef;border-color:#73cd9c}
+.assist-slot-buttons button.active{outline:2px solid #ffe2a8;outline-offset:2px}
+@media(max-width:520px){.assist-slots{grid-template-columns:1fr}}
 .assist-head{display:flex;align-items:center;gap:10px;margin:8px 0}
 .assist-head label{font-size:12px;color:#d0e2eb;font-weight:800;flex:1}
 .assist-head select,.assist-control select{width:100%;margin-top:5px;background:#091f30;color:#f4f7fa;border:1px solid #7595ab;border-radius:10px;padding:9px 10px;min-height:39px}
@@ -235,11 +243,19 @@ input[type="range"]{width:100%;accent-color:#efc47d}
         </select>
       </label>
     </div>
-    <div class="assist-ref" id="assist-reference">Rot: Ausstieg Feld 0 · Zieleinlauf bei Feld 63</div>
+    <div class="assist-ref" id="assist-reference">Rot: Ausstieg Feld 0 · Zieleinlauf über Feld 0</div>
     <div class="assist-quick">
       <button type="button" class="btn soft small" id="choose-exit">📍 Ausstieg wählen</button>
       <button type="button" class="btn soft small" id="choose-goal-first">🎯 Nächstes Zielfeld setzen</button>
       <button type="button" class="btn soft small" id="choose-home-first">🏠 Nächsten Startplatz setzen</button>
+    </div>
+    <div class="assist-slots" aria-label="Alle vier Start- und Zielfelder direkt auswählen">
+      <div class="assist-slot-group"><b>🎯 Zielplätze 1–4</b><div class="assist-slot-buttons">
+        <button type="button" data-assist-slot="goals,0">1</button><button type="button" data-assist-slot="goals,1">2</button><button type="button" data-assist-slot="goals,2">3</button><button type="button" data-assist-slot="goals,3">4</button>
+      </div></div>
+      <div class="assist-slot-group"><b>🏠 Startplätze 1–4</b><div class="assist-slot-buttons">
+        <button type="button" data-assist-slot="homes,0">1</button><button type="button" data-assist-slot="homes,1">2</button><button type="button" data-assist-slot="homes,2">3</button><button type="button" data-assist-slot="homes,3">4</button>
+      </div></div>
     </div>
     <div class="assist-section">
       <h3>🎯 Vier Zielfelder in einer Linie</h3>
@@ -423,8 +439,8 @@ input[type="range"]{width:100%;accent-color:#efc47d}
    </section>
   </aside>
  </div>
- <div class="foot">DOG-Spielfeldstudio · Baukasten-Version 8 · Raster, Koordinaten und Zugreihenfolge unabhängig von der Spiel-Engine</div>
+ <div class="foot">DOG-Spielfeldstudio · Baukasten-Version 9 · Raster, Koordinaten und Zugreihenfolge unabhängig von der Spiel-Engine</div>
 </main>
-<script type="module" src="./editor-builder.js?v=8"></script>
+<script type="module" src="./editor-builder.js?v=9"></script>
 </body>
 </html>
