@@ -1,5 +1,6 @@
 /** Editable, visual-only live-boss wireframe shared by all four minigames.
- * All seven screens use exactly the same boss/LP/timer/team coordinates.
+ * All seven screens keep the same boss/LP/timer/team positions and place
+ * each changing minigame on the right.
  * The studio does not simulate, award, or connect to the real multiplayer game.
  */
 export function buildLiveBossTemplate({createScene,createItem,studioId,version}){
@@ -129,6 +130,27 @@ export function buildLiveBossTemplate({createScene,createItem,studioId,version})
  btn(6,622,572,358,68,'⚒️  ZUR SCHMIEDE',{fill:'#92564d',color:colors.white});
  note(6,'Niederlage · Fortschritt und Pausenzeit sind später servergesteuert');
 
+ // The finished battle layout uses three stable columns (Boss | Heroes |
+ // Minigame). Convert the original middle/right placeholder coordinates
+ // for every scene consistently; future content can still be dragged freely.
+ for(const scene of scenes){
+  for(const item of scene.items){
+   if(item.y<205||item.y>=660)continue;
+   if(item.x>=1125){
+    // Hero cards: old narrow right column -> generous center column.
+    item.x=Math.round(486+(item.x-1125)*1.56);
+    item.w=Math.round(item.w*1.56);
+    if(item.x+item.w>935)item.w=935-item.x;
+   }else if(item.x>=484){
+    // Minigame: center area -> fixed right-hand interaction panel.
+    item.x=Math.round(956+(item.x-484)*.72);
+    item.w=Math.round(item.w*.72);
+    if(item.x+item.w>1400)item.w=1400-item.x;
+    if(item.type==='button'||item.fontSize>34)
+     item.fontSize=Math.min(item.fontSize,29);
+   }
+  }
+ }
  return {version,id:studioId(),name:'100 Tore · Bosskampf LIVE · Entwurf',
   width:1440,height:810,screens:scenes};
 }
