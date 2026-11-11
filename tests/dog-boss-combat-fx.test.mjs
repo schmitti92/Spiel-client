@@ -6,7 +6,7 @@ const source=readFileSync(new URL('../dog-boss-combat-fx.js',import.meta.url),'u
 function bootstrap(){
  const window={};
  const document={createElement(tag){
-  return {tag,className:'',textContent:'',children:[],
+  return {tag,className:'',textContent:'',style:{},children:[],
    append(...children){this.children.push(...children)},
    replaceChildren(...children){this.children=children},
    setAttribute(key,value){this[key]=value}};
@@ -60,8 +60,8 @@ test('Reconnected client jumps to current round; feedback comes only from server
 });
 test('Scene creates exactly participating heroes; single player is not visually replaced by three',()=>{
  const fx=bootstrap(),slots={};
- for(const name of ['#combat-hero-line','#combat-cue','#combat-flash','#combat-boss']){
-  slots[name]={children:[],textContent:'',replaceChildren(...nodes){this.children=nodes},
+ for(const name of ['#combat-hero-line','#combat-cue','#combat-flash','#combat-boss','.monster-art']){
+  slots[name]={children:[],style:{},textContent:'',replaceChildren(...nodes){this.children=nodes},
    append(...nodes){this.children.push(...nodes)},
    setAttribute(k,v){this[k]=v}};
  }
@@ -77,9 +77,23 @@ test('Scene creates exactly participating heroes; single player is not visually 
   'only my own hero should animate my verified dodge');
  assert.equal(root.dataset.cue,'dodge');
  assert.equal(styles['--boss-accent'],'#b68aff');
+ assert.match(slots['.monster-art'].style.backgroundImage,/schattenfuerst\.svg/,
+  'Boss 20 must not reuse the Aschewächter silhouette');
+ assert.match(slots['#combat-hero-line'].children[0].children[0].style.backgroundImage,
+  /held-krieger\.svg/);
  assert.equal(slots['#combat-flash'].children.length,1);
  const team=view();director.update(team,start+11300);
  assert.equal(slots['#combat-hero-line'].children.length,3);
+ assert.match(slots['#combat-hero-line'].children[1].children[0].style.backgroundImage,
+  /held-schildtraeger\.svg/);
+ assert.match(slots['#combat-hero-line'].children[2].children[0].style.backgroundImage,
+  /held-magier\.svg/);
+ // The third hero keeps the mage artwork when fighting alone.
+ const mageSolo=view();mageSolo.roster=[{uid:'c'}];
+ director.update(mageSolo,start+11900);
+ assert.match(slots['#combat-hero-line'].children[0].children[0].style.backgroundImage,
+  /held-magier\.svg/);
+ director.update(team,start+11900);
  assert.equal(root.dataset.cue,'math');
  director.update(view('victory'),start+30001);
  assert.equal(root.dataset.cue,'victory');
@@ -109,4 +123,27 @@ test('Both arenas load the same combat effects before their controllers',()=>{
  assert.ok(css.includes('[data-feedback="correct"] .combat-hero-me'));
  assert.ok(css.includes('prefers-reduced-motion:reduce'));
  assert.ok(css.includes('@media(max-width:620px)'));
+});
+
+test('All ten group bosses and all three hero portraits are unique real local SVG files',()=>{
+ const fx=bootstrap();
+ const entries=Object.entries(fx.bossPortraits);
+ assert.equal(entries.length,10);
+ assert.equal(new Set(entries.map(([,file])=>file)).size,10);
+ const heroNames=fx.heroPortraits;
+ assert.equal(heroNames.length,3);
+ assert.equal(new Set(heroNames).size,3);
+ for(const filename of [...entries.map(([,file])=>file),...heroNames]){
+  const svg=readFileSync(new URL('../dog-boss-art/'+filename,import.meta.url),'utf8');
+  assert.ok(svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg"'),filename);
+  assert.match(svg,/viewBox="0 0/);
+  assert.match(svg,/<linearGradient/);
+  assert.match(svg,/<radialGradient/);
+  assert.match(svg,/<path /);
+  assert.ok(svg.length>2300,filename+' is missing its distinctive silhouette');
+  assert.ok(!/<script\b|<foreignObject\b|<image\b|https?:\/\//i.test(
+   svg.replace('http://www.w3.org/2000/svg','')),
+   filename+' must not load external imagery or active content');
+ }
+ assert.equal(fx.bossPortraits[100],'letzter-waechter.svg');
 });
