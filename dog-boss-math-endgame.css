@@ -1,0 +1,188 @@
+/* 100 Tore · Rune Arithmetic — an endgame arena overlay.
+ * Purely visual: the backend still owns math questions and correct answers.
+ * The progress strip indicates ANSWERED questions, never guessed successes. */
+.arena-live .mini-tactical.is-math-battle{
+ --math-gold:#ffdb8d;--math-violet:#a98bff;
+ position:relative;isolation:isolate;border-radius:17px;
+ background:radial-gradient(ellipse at 50% 14%,#8462c537,transparent 67%),
+  linear-gradient(155deg,#1a2040ef,#111c32f2 70%,#17172fee);
+ border:1px solid #c4a6f4a3;
+ box-shadow:inset 0 1px #fff2c454,inset 0 0 48px #7959de24,0 0 17px #7960da2f;
+ padding:clamp(8px,1vw,15px) clamp(8px,1vw,14px)
+}
+.arena-live .mini-tactical.is-math-battle::before{
+ content:"";position:absolute;inset:3px;border-radius:15px;z-index:-1;
+ border:1px solid #eedbff19;pointer-events:none;
+ background:radial-gradient(circle at 11% 11%,#ffdd9231 1px,transparent 2px),
+  radial-gradient(circle at 91% 73%,#e6caff4f 1px,transparent 3px);
+ background-size:64px 79px,72px 65px
+}
+.arena-live .is-math-battle .mini-lead{
+ display:flex;flex-direction:column;align-items:stretch;gap:4px;
+ width:100%;margin:0 0 5px
+}
+.arena-live .is-math-battle .mini-title{
+ display:block;width:100%;font:1000 clamp(15px,1.45vw,23px)/1.15 system-ui,sans-serif;
+ letter-spacing:.1em;color:#ffe4aa;text-align:center;
+ text-shadow:0 2px 12px #f6bd7050
+}
+.arena-live .is-math-battle .mini-hint{
+ color:#cec0e9;font:800 clamp(9px,.84vw,11px)/1.2 system-ui,sans-serif;
+ letter-spacing:.085em;opacity:.85;text-align:center
+}
+.arena-live .mini-math-hud{width:100%;display:flex;flex-direction:column;gap:5px;margin-top:2px}
+.arena-live .mini-math-topline{
+ display:flex;align-items:center;justify-content:space-between;gap:8px
+}
+.arena-live .mini-math-rank{
+ display:inline-flex;align-items:center;gap:4px;max-width:78%;overflow:hidden;
+ font:900 clamp(10px,1vw,14px)/1.2 system-ui,sans-serif;white-space:nowrap;
+ letter-spacing:.025em;color:#ffedbf;
+ text-shadow:0 1px 6px #000b
+}
+.arena-live .mini-math-rank::before{
+ content:"◆";display:inline;color:#f9ce7f;filter:drop-shadow(0 0 5px #ffbb56)
+}
+.arena-live .mini-math-clock{
+ color:#fff8df;border:1px solid #e5c99f86;border-radius:7px;
+ background:#372b48d9;padding:3px 8px;
+ font:900 clamp(10px,.95vw,14px)/1 system-ui,sans-serif;
+ font-variant-numeric:tabular-nums;white-space:nowrap
+}
+.arena-live .mini-math-runes{
+ display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:3px;
+ align-items:center
+}
+.arena-live .mini-math-rune{
+ min-width:0;min-height:22px;display:grid;place-items:center;border-radius:6px;
+ background:linear-gradient(145deg,#242c4a,#171d37);
+ border:1px solid #766caa7d;color:#948cab;
+ box-shadow:inset 0 1px #ffffff12;
+ font:900 clamp(10px,.82vw,13px)/1 system-ui,sans-serif
+}
+.arena-live .mini-math-rune.is-current{
+ border-color:#ffda91;color:#fff6d5;
+ background:linear-gradient(150deg,#5c4070,#7d5060);
+ box-shadow:0 0 12px #ffc87084,inset 0 1px #fff4d95c;
+ transform:translateY(-1px)
+}
+.arena-live .mini-math-rune.is-complete{
+ border-color:#92dab3;color:#e3ffe8;
+ background:linear-gradient(155deg,#236e61,#214a56);
+ box-shadow:inset 0 1px #ffffff1d
+}
+.arena-live .mini-math-rune.is-complete::after{content:"✓";margin-left:2px}
+.arena-live .mini-math-time{
+ width:100%;height:5px;border-radius:99px;overflow:hidden;
+ border:1px solid #baa6bb5e;background:#0d1328e9
+}
+.arena-live .mini-math-time-fill{
+ display:block;width:100%;height:100%;
+ background:linear-gradient(90deg,#72d5ec,#b494ff 45%,#ffe299);
+ box-shadow:0 0 10px #d6a9ff96;
+ transition:width .15s linear
+}
+.arena-live .is-math-battle .mini-choices{
+ display:flex;flex-wrap:wrap;gap:clamp(6px,.8vw,12px);
+ align-content:center;align-items:stretch;justify-content:center;min-height:0;
+ margin:0
+}
+.arena-live .is-math-battle .mini-step-counter{
+ width:100%;font:900 clamp(10px,.82vw,13px)/1 system-ui,sans-serif;
+ text-align:center;color:#afbbe0;letter-spacing:.1em;order:0;
+ margin:0
+}
+.arena-live .is-math-battle .mini-question{
+ order:1;position:relative;isolation:isolate;
+ width:100%;margin:0;padding:clamp(8px,1.3vh,16px) 7px;
+ min-height:clamp(66px,11vh,120px);
+ display:grid;place-items:center;
+ font:1000 clamp(27px,3.1vw,55px)/1.12 system-ui,sans-serif;
+ letter-spacing:-.025em;font-variant-numeric:tabular-nums;
+ color:#fff7df;white-space:normal;overflow-wrap:normal;text-wrap:balance;
+ text-shadow:0 4px 4px #000b,0 0 22px #ffc8754d;
+ border-radius:14px;border:2px solid #ebcd927d;
+ background:radial-gradient(ellipse at 50% 0%,#ffca7a31,transparent 62%),
+  linear-gradient(165deg,#392e4ae8,#1c263cfa 73%);
+ box-shadow:inset 0 1px #fff0c24d,inset 0 -10px 21px #070b1a49,0 5px 13px #0006
+}
+.arena-live .is-math-battle .mini-question::before,
+.arena-live .is-math-battle .mini-question::after{
+ content:"✦";position:absolute;font-size:17px;font-weight:900;
+ color:#facd7bc7;text-shadow:0 0 12px #ffd78a9b
+}
+.arena-live .is-math-battle .mini-question::before{left:12px;top:8px}
+.arena-live .is-math-battle .mini-question::after{right:12px;bottom:8px}
+.arena-live .is-math-battle .mini-question.mini-math-advance{
+ animation:rune-math-swap .24s ease-out both
+}
+.arena-live .is-math-battle .mini-math{
+ order:2;flex:1 1 calc(33.333% - 12px);max-width:none;min-width:0;
+ min-height:clamp(56px,9vh,84px);padding:7px 5px;
+ display:grid;place-items:center;position:relative;overflow:hidden;
+ font:1000 clamp(21px,2.35vw,39px)/1 system-ui,sans-serif;
+ font-variant-numeric:tabular-nums;
+ border-radius:13px;border:2px solid #a5aff4;
+ color:#f9f5ff;text-shadow:0 2px 7px #000b;
+ background:radial-gradient(ellipse at 50% 0%,#c3b7ff35,transparent 75%),
+  linear-gradient(153deg,#514270,#292a55 75%);
+ box-shadow:inset 0 2px #fff7ff45,inset 0 -5px #050a204c,0 6px 12px #0008;
+ transition:filter .12s,transform .12s,border-color .12s
+}
+.arena-live .is-math-battle .mini-math::after{
+ content:"";pointer-events:none;position:absolute;inset:5px;border-radius:8px;
+ border:1px solid #e7d6ff3c
+}
+.arena-live .is-math-battle .mini-math:nth-of-type(3){border-color:#8bcef3}
+.arena-live .is-math-battle .mini-math:nth-of-type(5){border-color:#f2c888}
+.arena-live .is-math-battle .mini-math:focus-visible{
+ outline:3px solid #ffe28f;outline-offset:3px
+}
+.arena-live .is-math-battle .mini-math:not(:disabled):hover{
+ filter:brightness(1.17);border-color:#ffe0a7;
+ box-shadow:0 0 16px #d9afff65,0 7px 14px #0009,inset 0 1px #ffffff52
+}
+.arena-live .is-math-battle .mini-math:not(:disabled):active{
+ transform:scale(.95);filter:brightness(1.3)
+}
+.arena-live .is-math-battle .mini-feedback{
+ margin:6px 0 0;min-height:1.1em;
+ color:#cadcf6;font:850 clamp(9px,.87vw,13px)/1.15 system-ui,sans-serif;
+ letter-spacing:.02em;text-align:center
+}
+@keyframes rune-math-swap{
+ from{opacity:.7;filter:brightness(1.7);transform:translateY(7px) scale(.98)}
+ to{opacity:1;filter:brightness(1);transform:translateY(0) scale(1)}
+}
+@media (orientation:landscape) and (min-width:900px) and (max-height:720px){
+ .arena-live .mini-tactical.is-math-battle{padding:6px 9px}
+ .arena-live .is-math-battle .mini-lead{gap:2px;margin-bottom:4px}
+ .arena-live .is-math-battle .mini-hint{font-size:9px}
+ .arena-live .mini-math-hud{gap:3px;margin-top:0}
+ .arena-live .mini-math-rune{min-height:18px;font-size:10px}
+ .arena-live .is-math-battle .mini-question{
+  min-height:clamp(50px,8.4vh,78px);padding:5px 7px;
+  font-size:clamp(26px,2.8vw,44px)
+ }
+ .arena-live .is-math-battle .mini-math{
+  min-height:clamp(45px,7.3vh,66px);font-size:clamp(20px,2vw,32px)
+ }
+ .arena-live .is-math-battle .mini-feedback{margin-top:3px}
+}
+@media(max-width:899px),(orientation:portrait){
+ .arena-live .is-math-battle .mini-question{font-size:clamp(25px,6vw,48px)}
+ .arena-live .is-math-battle .mini-math{min-height:64px}
+}
+@media(max-width:620px){
+ .arena-live .mini-tactical.is-math-battle{padding:9px 6px}
+ .arena-live .is-math-battle .mini-hint{font-size:9px}
+ .arena-live .is-math-battle .mini-question{font-size:clamp(25px,7vw,39px);min-height:84px;padding:10px 5px}
+ .arena-live .is-math-battle .mini-math{min-height:65px;font-size:25px}
+ .arena-live .mini-math-runes{gap:2px}
+ .arena-live .mini-math-rune{min-height:22px}
+}
+@media(prefers-reduced-motion:reduce){
+ .arena-live .is-math-battle .mini-question.mini-math-advance{animation:none}
+ .arena-live .is-math-battle .mini-math,
+ .arena-live .mini-math-time-fill{transition:none}
+}
