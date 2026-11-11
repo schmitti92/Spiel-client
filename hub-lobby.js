@@ -15,7 +15,7 @@ const GAME_DESCRIPTIONS={
  kreuz:'Würfeln, Farben ankreuzen und gemeinsam Punkte sammeln.',
  business:'Unternehmen, Aktien und Branchen – mit 10, 20 oder 30 Runden.',
  dog:'Das klassische Team-Brettspiel mit Karten, Startfeldern, Jokern und Partnern.',
- partychallenge:'Neun Online-Minispiele in einem Raum – inklusive Preisjäger.'
+ partychallenge:'Elf Online-Minispiele in einem Raum – inklusive Preisjäger.'
 };
 function setPlayMode(next){
  playMode=next==='local'?'local':'online';
@@ -176,7 +176,7 @@ function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code
  },12000);}
 function leaveView(){cancelPendingRecovery();pollStop();room=null;choosingGame=false;displayGame=null;setRoomCode(null);render();}
 
-const CHALLENGE_LABELS={'lava-arena':'Lava Arena','maulwurf-arena':'Maulwurf Arena',recheninsel:'Recheninsel',flusssprung:'Flusssprung',zeitgefuehl:'Zeitgefühl','huetchen-challenge':'Hütchen Challenge','snake-arena':'Snake Arena','bomber-strand-arena':'Bomber Strand Arena',preisjaeger:'Preisjäger'};
+const CHALLENGE_LABELS={eisstock:'Eisstock','fallende-gegenstaende':'Fallende Gegenstände','lava-arena':'Lava Arena','maulwurf-arena':'Maulwurf Arena',recheninsel:'Recheninsel',flusssprung:'Flusssprung',zeitgefuehl:'Zeitgefühl','huetchen-challenge':'Hütchen Challenge','snake-arena':'Snake Arena','bomber-strand-arena':'Bomber Strand Arena',preisjaeger:'Preisjäger'};
 const CHALLENGE_STAGE_CSS=`
 #challenge-progress:not(.hidden){position:fixed!important;inset:0!important;z-index:10020!important;margin:0!important;border-radius:0!important;overflow:auto!important;overscroll-behavior:contain;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:clamp(6px,1.4vh,16px);padding:clamp(20px,4vh,46px) clamp(18px,5vw,70px)!important;box-sizing:border-box;background:radial-gradient(ellipse at 50% 105%,#d5b575 0%,#b68c55 12%,transparent 38%),radial-gradient(ellipse at 7% 88%,#163f30 0%,#163f30 14%,transparent 31%),radial-gradient(ellipse at 96% 82%,#124f3a 0%,#124f3a 12%,transparent 30%),linear-gradient(180deg,#051b30 0%,#0b4765 45%,#1b8290 75%,#174f56 100%)!important;color:#fff!important;text-shadow:0 2px 12px #001b2e88;box-shadow:none!important}
 #challenge-single-actions[hidden],#challenge-single-actions button[hidden]{display:none!important}
@@ -423,41 +423,13 @@ async function ensureRecheninselOriginalBridge(){
  finally{recheninselOriginalLoading=false;}
 }
 
-/* Original Preisjäger V11: server-authoritative presentation, never local game state. */
+/* The retired Preisjäger iframe no longer exists. The authenticated,
+ * server-authoritative form and reveal are rendered in the active Challenge
+ * stage, so the game never depends on an obsolete Minispiele HTML path. */
 let preisjaegerOriginalReady=false;
-function ensurePreisjaegerOriginalFrame(){
- let frame=document.getElementById('preisjaeger-original-online');
- if(frame)return frame;
- frame=document.createElement('iframe');
- frame.id='preisjaeger-original-online';
- frame.hidden=true;
- frame.title='Preisjäger Original V11 – gemeinsamer Online-Raum';
- frame.setAttribute('referrerpolicy','same-origin');
- frame.style.cssText='display:none;width:min(98vw,1100px);height:min(78dvh,730px);min-height:400px;border:0;border-radius:14px;background:#09111f';
- frame.src='Minispiele/Preisjaeger_v11_0_RC23.html?onlineView=1&build=52';
- el('challenge-progress').append(frame);
- return frame;
-}
-function syncPreisjaegerOriginal(ch){
- const frame=ensurePreisjaegerOriginalFrame();
- const active=ch?.order?.[ch.index]==='preisjaeger'&&(ch.phase==='countdown'||ch.phase==='finished')&&!!ch.preisjaeger;
- frame.hidden=!active;
- frame.style.display=active?'block':'none';
- el('challenge-preisjaeger').hidden=true;
- if(!active)return;
- if(!preisjaegerOriginalReady)return;
- const pj=ch.preisjaeger;
- const mySeat=room.players.find(p=>p.me)?.seat;
- const state={
-  challengeId:ch.id,round:pj.round,finished:ch.phase==='finished',totals:ch.phase==='finished'?(ch.totals||[]):[],startsInMs:Math.max(0,(ch.startAt||0)-((room.serverNow||Date.now())+Math.max(0,Date.now()-preisjaegerClockReceivedAt))),product:{
-   name:pj.product?.name||'',category:pj.product?.category||'',shop:pj.product?.shop||'',description:pj.product?.description||'',
-   image:pj.product?.image||'',icon:pj.product?.icon||'🛒'
-  },
-  history:Array.isArray(pj.history)?pj.history.slice(-1):[],
-  answered:(pj.answered||[]).includes(mySeat),
-  players:(room.players||[]).filter(p=>p.participating).map(p=>({name:p.name,answered:(pj.answered||[]).includes(p.seat)}))
- };
- frame.contentWindow?.postMessage({type:'PREISJAEGER_ONLINE_STATE',state},location.origin);
+function syncPreisjaegerOriginal(_challenge){
+ const old=document.getElementById('preisjaeger-original-online');
+ if(old){old.hidden=true;old.style.display='none';}
 }
 // Refresh the round countdown locally even when the room socket is idle.
 setInterval(()=>{
@@ -602,11 +574,11 @@ function renderChallengeProgress(){
  box.classList.toggle('rechen-finale',ch.order[index]==='recheninsel'&&ch.phase==='finished'&&ch.order.length===1);
  box.classList.toggle('zeitgefuehl-playing',ch.order[index]==='zeitgefuehl'&&['countdown','results','finished'].includes(ch.phase));
  const isPreisjaeger=ch.order[index]==='preisjaeger';
- box.classList.toggle('preisjaeger-original-playing',isPreisjaeger&&(ch.phase==='countdown'||ch.phase==='finished'));
+ box.classList.remove('preisjaeger-original-playing');
  if(!isPreisjaeger)pjTimeoutKey='';
 
  const pj=ch.preisjaeger;
- el('challenge-preisjaeger').hidden=true;
+ el('challenge-preisjaeger').hidden=!(isPreisjaeger&&ch.preisjaeger&&ch.phase==='countdown');
  syncPreisjaegerOriginal(ch);
  if(isPreisjaeger&&pj){
   const key=ch.id+':'+ch.index+':'+pj.round;
@@ -658,7 +630,7 @@ function renderChallengeProgress(){
  if(!originalSnakeActive&&snakeOriginalBridge){snakeOriginalBridge.destroy();snakeOriginalBridge=null;}
  if(!originalLavaActive&&lavaOriginalBridge){lavaOriginalBridge.destroy();lavaOriginalBridge=null;}
  if(!originalFlusssprungActive&&flusssprungOriginalBridge){flusssprungOriginalBridge.destroy();flusssprungOriginalBridge=null;}
- box.classList.toggle('original-edge-playing',originalActive||(isPreisjaeger&&ch.phase==='countdown'));
+ box.classList.toggle('original-edge-playing',originalActive);
  el('challenge-original-frame').hidden=!originalActive;
  box.classList.toggle('maulwurf-playing',originalMaulwurfActive||originalFlusssprungActive||originalLavaActive||originalSnakeActive||originalBomberActive);
  box.classList.toggle('preisjaeger-playing',isPreisjaeger&&ch.phase==='countdown');
@@ -883,7 +855,7 @@ function renderChallengeSetup(showStage){
  if(!box){
   box=document.createElement('section');box.id='challenge-settings-panel';
   box.style.cssText='padding:18px;margin:12px 0;border:1px solid #49a6c5;border-radius:20px;background:linear-gradient(145deg,#092b47,#06253e);color:#fff;box-shadow:0 12px 32px #00162980';box.classList.add('challenge-premium');
-  box.innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px"><span style="font-size:36px">🏆</span><div><h3 style="margin:0;font-size:25px">Party Challenge</h3><small style="color:#d5eaff">ALLE 9 MINISPIELE · EIN GEMEINSAMER RAUM</small></div></div><p style="color:#d4e7f6;margin:12px 0 20px">Wähle die Challenge. Die Minispiele werden nacheinander gespielt und alle Punkte zusammengezählt.</p><div style="margin:20px 0 12px;padding:16px;border-radius:18px;background:linear-gradient(135deg,#132c48,#285b71);color:white"><div style="font-size:20px;font-weight:900">🎮 Wähle dein Minispiel</div><p style="margin:7px 0 14px;color:#d3e6f5">Wählt euer Spiel. Nach der Runde könnt ihr direkt wiederholen oder ein anderes Spiel auswählen.</p><div id="challenge-single-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px"></div><button type="button" id="challenge-marathon" style="margin-top:14px;padding:12px 18px;border-radius:12px;border:2px solid #d9b878;background:#f8e7bd;color:#24334b;font-weight:900;cursor:pointer">🏆 Alle 9 als Challenge spielen</button></div><label for="challenge-count" style="display:block;font-weight:700;margin:18px 0 7px">🎲 Challenge-Umfang</label><select id="challenge-count" style="width:100%;max-width:440px;min-height:45px;border-radius:12px;border:1px solid #c7d4e3;padding:8px 12px;background:white"><option value="9">✅ 9 Online-Minispiele</option><option value="1">🎮 Ein einzelnes Minispiel</option></select><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px"><button type="button" id="challenge-save" style="border:0;border-radius:12px;padding:12px 17px;background:#167d72;color:white;font-weight:700">✓ Auswahl speichern</button><button type="button" id="challenge-bots" style="border:1px solid #c8d7e8;border-radius:12px;padding:12px 17px;background:white;color:#243b5a;font-weight:700">🤖 2 Testspieler hinzufügen</button></div><p id="challenge-feedback" role="status" style="font-size:13px;color:#c6e5f5;margin:12px 0 0"></p>`;
+  box.innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px"><span style="font-size:36px">🏆</span><div><h3 style="margin:0;font-size:25px">Party Challenge</h3><small style="color:#d5eaff">ALLE 11 MINISPIELE · EIN GEMEINSAMER RAUM</small></div></div><p style="color:#d4e7f6;margin:12px 0 20px">Wähle die Challenge. Die Minispiele werden nacheinander gespielt und alle Punkte zusammengezählt.</p><div style="margin:20px 0 12px;padding:16px;border-radius:18px;background:linear-gradient(135deg,#132c48,#285b71);color:white"><div style="font-size:20px;font-weight:900">🎮 Wähle dein Minispiel</div><p style="margin:7px 0 14px;color:#d3e6f5">Wählt euer Spiel. Nach der Runde könnt ihr direkt wiederholen oder ein anderes Spiel auswählen.</p><div id="challenge-single-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px"></div><button type="button" id="challenge-marathon" style="margin-top:14px;padding:12px 18px;border-radius:12px;border:2px solid #d9b878;background:#f8e7bd;color:#24334b;font-weight:900;cursor:pointer">🏆 Alle 11 als Challenge spielen</button></div><label for="challenge-count" style="display:block;font-weight:700;margin:18px 0 7px">🎲 Challenge-Umfang</label><select id="challenge-count" style="width:100%;max-width:440px;min-height:45px;border-radius:12px;border:1px solid #c7d4e3;padding:8px 12px;background:white"><option value="11">✅ 11 Online-Minispiele</option><option value="1">🎮 Ein einzelnes Minispiel</option></select><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px"><button type="button" id="challenge-save" style="border:0;border-radius:12px;padding:12px 17px;background:#167d72;color:white;font-weight:700">✓ Auswahl speichern</button><button type="button" id="challenge-bots" style="border:1px solid #c8d7e8;border-radius:12px;padding:12px 17px;background:white;color:#243b5a;font-weight:700">🤖 2 Testspieler hinzufügen</button></div><p id="challenge-feedback" role="status" style="font-size:13px;color:#c6e5f5;margin:12px 0 0"></p>`;
   const anchor=el('game-stage-hero');anchor.parentNode.insertBefore(box,anchor);
   el('challenge-bots').addEventListener('click',async()=>{
    if(!room?.host)return;
@@ -893,7 +865,7 @@ function renderChallengeSetup(showStage){
    finally{button.disabled=false;}
   });
   let challengeSettingsBusy=false;
-  const singleGames=[['zeitgefuehl','⏱️','Zeitgefühl'],['recheninsel','🏴‍☠️','Recheninsel'],['huetchen-challenge','🎩','Hütchen Challenge'],['maulwurf-arena','🔨','Maulwurf Arena'],['flusssprung','🌊','Flusssprung'],['lava-arena','🌋','Lava Arena'],['snake-arena','🐍','Snake Arena'],['bomber-strand-arena','💣','Bomber Strand'],['preisjaeger','🛒','Preisjäger']];
+  const singleGames=[['eisstock','🥌','Eisstock'],['fallende-gegenstaende','🎁','Fallende Gegenstände'],['zeitgefuehl','⏱️','Zeitgefühl'],['recheninsel','🏴‍☠️','Recheninsel'],['huetchen-challenge','🎩','Hütchen Challenge'],['maulwurf-arena','🔨','Maulwurf Arena'],['flusssprung','🌊','Flusssprung'],['lava-arena','🌋','Lava Arena'],['snake-arena','🐍','Snake Arena'],['bomber-strand-arena','💣','Bomber Strand'],['preisjaeger','🛒','Preisjäger']];
   const grid=el('challenge-single-grid');
   for(const [id,icon,title] of singleGames){
    const btn=document.createElement('button');btn.type='button';btn.dataset.minigame=id;
@@ -911,7 +883,7 @@ function renderChallengeSetup(showStage){
    if(!room?.host||room.phase!=='preparing'||challengeSettingsBusy)return;
    const button=el('challenge-marathon');if(button.disabled)return;
    challengeSettingsBusy=true;button.disabled=true;
-   try{const requestedCode=room.code;const response=await request('/rooms/'+encodeURIComponent(requestedCode)+'/challenge-settings','POST',{count:9,selectedGame:null});if(code!==requestedCode)return;acceptRoom(response.room);el('challenge-feedback').textContent='🏆 Alle neun Minispiele ausgewählt.';}
+   try{const requestedCode=room.code;const response=await request('/rooms/'+encodeURIComponent(requestedCode)+'/challenge-settings','POST',{count:11,selectedGame:null});if(code!==requestedCode)return;acceptRoom(response.room);el('challenge-feedback').textContent='🏆 Alle elf Minispiele ausgewählt.';}
    catch(e){el('challenge-feedback').textContent=e.message;}
    finally{button.disabled=false;challengeSettingsBusy=false;}
   });
@@ -919,12 +891,12 @@ function renderChallengeSetup(showStage){
    if(challengeSettingsBusy)return;
    const button=el('challenge-save');if(button.disabled)return;
    challengeSettingsBusy=true;button.disabled=true;
-   try{if(!room?.host||room.phase!=='preparing')return;const selectedGame=el('challenge-count').value==='1'?(room.settings?.partychallenge?.selectedGame||'zeitgefuehl'):null;const count=selectedGame?1:9;if(count===Number(room.settings?.partychallenge?.count)&&(selectedGame||null)===(room.settings?.partychallenge?.selectedGame||null)){el('challenge-feedback').textContent='✓ Bereits gespeichert – die Bereitmeldungen bleiben erhalten.';return;}const requestedCode=room.code;await request('/rooms/'+encodeURIComponent(requestedCode)+'/challenge-settings','POST',{count,selectedGame});if(code!==requestedCode)return;el('challenge-feedback').textContent='Auswahl gespeichert. Alle Spieler müssen erneut bereit sein.';const updated=await request('/rooms/'+encodeURIComponent(requestedCode));if(code!==requestedCode)return;acceptRoom(updated.room);}
+   try{if(!room?.host||room.phase!=='preparing')return;const selectedGame=el('challenge-count').value==='1'?(room.settings?.partychallenge?.selectedGame||'zeitgefuehl'):null;const count=selectedGame?1:11;if(count===Number(room.settings?.partychallenge?.count)&&(selectedGame||null)===(room.settings?.partychallenge?.selectedGame||null)){el('challenge-feedback').textContent='✓ Bereits gespeichert – die Bereitmeldungen bleiben erhalten.';return;}const requestedCode=room.code;await request('/rooms/'+encodeURIComponent(requestedCode)+'/challenge-settings','POST',{count,selectedGame});if(code!==requestedCode)return;el('challenge-feedback').textContent='Auswahl gespeichert. Alle Spieler müssen erneut bereit sein.';const updated=await request('/rooms/'+encodeURIComponent(requestedCode));if(code!==requestedCode)return;acceptRoom(updated.room);}
    catch(e){el('challenge-feedback').textContent='Speichern fehlgeschlagen: '+e.message;}
    finally{button.disabled=false;challengeSettingsBusy=false;}
   });
  }
- // Keep exactly one selector and exactly nine buttons even after repeated room refreshes.
+ // Keep exactly one selector and eleven available game buttons after every refresh.
  const panels=document.querySelectorAll('#challenge-settings-panel');
  panels.forEach((panel,index)=>{if(index>0)panel.remove();});
  const cardGrid=box.querySelector('#challenge-single-grid');
@@ -936,7 +908,7 @@ function renderChallengeSetup(showStage){
   });
  }
  // Normalize duplicate nodes, including buttons accidentally inserted without data attributes.
- const expectedIds=['zeitgefuehl','recheninsel','huetchen-challenge','maulwurf-arena','flusssprung','lava-arena','snake-arena','bomber-strand-arena','preisjaeger'];
+ const expectedIds=['eisstock','fallende-gegenstaende','zeitgefuehl','recheninsel','huetchen-challenge','maulwurf-arena','flusssprung','lava-arena','snake-arena','bomber-strand-arena','preisjaeger'];
  if(cardGrid){
   const cards=Array.from(cardGrid.children);
   const kept=new Set();
