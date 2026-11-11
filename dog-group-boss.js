@@ -33,6 +33,7 @@
   (round,answer)=>void command('minigame',false,{round,answer}));
  const combatFx=window.DogBossCombatFX?.create($('combat-scene'),gate);
  const preflight=window.DogBossPreflight?.create(gate);
+ const liveUi=window.DogBossLiveUI?.create($('arena'));
  const key=uid=>'dog:groupboss:'+gate+':pending:'+uid;
  const newId=()=>globalThis.crypto?.randomUUID?.()?
   'boss'+gate+'-'+globalThis.crypto.randomUUID():
@@ -200,6 +201,7 @@
    state==='cooldown'?'💀 Boss überlebt! '+Number(view?.result?.damage||0).toLocaleString('de-DE')+
     ' Schaden von '+(view?.bossHp||0).toLocaleString('de-DE')+
     ' nötigen LP. Die gemeinsame Kampfpause endet in '+formatTime(cooling())+'.':'';
+  liveUi?.update(view,now());
  }
  async function reload(force=false){
   const uid=auth()?.user?.uid;
