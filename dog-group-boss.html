@@ -8,11 +8,13 @@
  <title>🐉 Gruppenboss · Die 100 Tore</title>
  <link rel="stylesheet" href="./dog-boss10.css?v=20261111-combat-fx1">
  <link rel="stylesheet" href="./dog-boss-preflight.css?v=20261111-v3-tablet-fit">
+ <link rel="stylesheet" href="./dog-boss-live.css?v=20261111-live-v1">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
  <script src="./dog-boss-mini-ui.js?v=20261111-v1" defer></script>
  <script src="./dog-boss-combat-fx.js?v=20261111-combat-fx1" defer></script>
  <script src="./dog-boss-preflight.js?v=20261111-v1" defer></script>
+ <script src="./dog-boss-live-ui.js?v=20261111-live-v1" defer></script>
  <script src="./dog-group-boss.js?v=20261111-preflight-v1" defer></script>
  <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 </head>
@@ -106,41 +108,60 @@
     <div><small>⚒️ SIEGBELOHNUNG</small><strong id="group-reward">Schmiedeaufstieg</strong></div>
    </div>
   </header>
-  <section class="arena" id="arena" aria-labelledby="boss-name">
-   <div class="arena-top">
-    <div><small>🔥 GEMEINSAMER WÄCHTER</small><h2 id="boss-name">Der Gruppenwächter</h2></div>
+  <section class="arena arena-live" id="arena" aria-labelledby="boss-name">
+   <header class="arena-top live-arena-heading">
+    <div class="live-heading-text"><small>✦ 100 TORE · GEMEINSAME BOSS-ARENA ✦</small><h2 id="boss-name">Der Aschewächter</h2></div>
     <div class="status-pill" id="phase">Verbinde …</div>
-   </div>
-   <div class="monster combat-scene" id="combat-scene" data-cue="waiting" aria-label="Taktische Bosskampfarena">
-    <div class="embers" aria-hidden="true">✦ · ✧ · ✦ · ✧</div>
-    <div class="combat-stage" aria-hidden="true">
-     <div id="combat-hero-line" class="combat-hero-line"></div>
-     <div class="combat-sword-trail"></div>
-     <div class="combat-magic-beam"></div>
-     <div class="combat-shield-effect">🛡️</div>
-     <div class="combat-danger-zone"></div>
-     <div class="combat-rune-effect">✦ ✧ ✦</div>
-     <div class="combat-target-effect">◎</div>
-     <div id="combat-flash" class="combat-flash"></div>
-     <div class="combat-boss" id="combat-boss">
-      <div class="monster-art"></div>
-      <div class="monster-shadow"></div>
-     </div>
+   </header>
+   <div class="live-metrics">
+    <div class="combat-meter live-hp">
+     <div class="live-meter-label"><span>🐉 BOSS-LP</span><strong id="boss-hp">– LP</strong></div>
+     <div class="live-hp-track" aria-hidden="true"><span id="live-hp-fill"></span></div>
     </div>
-    <div class="combat-cue" id="combat-cue" aria-live="off">⚔️ HELDEN SAMMELN SICH</div>
-    <div id="battle-message" class="monster-caption">Der Wächter wartet auf eure Herausforderung.</div>
+    <div class="live-timer">
+     <div class="timer-row"><span>⏱️ KAMPFZEIT</span><strong id="timer" role="timer">00:30</strong></div>
+     <div class="timer-bar"><span id="timer-fill"></span></div>
+    </div>
    </div>
-   <div class="combat-meter" aria-live="polite">
-    <span>🐉 Gemeinsam gegen den Boss</span>
-    <strong id="boss-hp">– LP</strong>
+   <div class="live-battlefield">
+    <div class="monster combat-scene" id="combat-scene" data-cue="waiting" aria-label="Boss links, kämpfende Helden in der Mitte">
+     <div class="embers" aria-hidden="true">✦ · ✧ · ✦</div>
+     <div class="combat-stage" aria-hidden="true">
+      <div class="combat-boss" id="combat-boss"><div class="monster-art"></div><div class="monster-shadow"></div></div>
+      <div id="combat-hero-line" class="combat-hero-line"></div>
+      <div class="combat-sword-trail"></div><div class="combat-magic-beam"></div>
+      <div class="combat-shield-effect">🛡️</div><div class="combat-danger-zone"></div>
+      <div class="combat-rune-effect">✦ ✧ ✦</div><div class="combat-target-effect">◎</div>
+      <div id="combat-flash" class="combat-flash"></div><div id="live-hit-effects" class="live-hit-effects"></div>
+     </div>
+     <div class="combat-cue" id="combat-cue" aria-live="off">⚔️ HELDEN SAMMELN SICH</div>
+     <div id="battle-message" class="monster-caption">Der Wächter wartet auf seine Gegner.</div>
+    </div>
+    <section class="live-challenge" aria-labelledby="live-challenge-heading">
+     <header class="live-challenge-heading">
+      <span id="live-challenge-heading">🎮 DEINE HERAUSFORDERUNG</span>
+      <span id="live-round-label">RUNDE – / 3</span>
+     </header>
+     <div class="live-challenge-content">
+      <div class="live-mini-prompt" id="live-mini-prompt">
+       <span class="live-mini-symbol">⚔️</span>
+       <strong id="live-mini-prompt-title">Der Boss bereitet sich vor</strong>
+       <p id="live-mini-prompt-detail">Die Aufgaben erscheinen hier während des Kampfes.</p>
+      </div>
+      <section class="mini-tactical" id="mini-game" hidden aria-label="Taktisches Boss-Minispiel"></section>
+      <div id="outcome" class="outcome" hidden aria-live="polite"></div>
+     </div>
+    </section>
    </div>
-   <div class="timer-row">
-    <span>Verbleibende Kampfzeit</span>
-    <strong id="timer" role="timer">00:30</strong>
+   <div class="live-rounds">
+    <span class="live-rounds-title">⚡ KAMPFABLAUF</span>
+    <div class="live-round-steps" id="live-round-steps" aria-label="Fortschritt der drei Aufgaben">
+     <span class="live-round-step" data-step="0">1 · Aufgabe</span>
+     <span class="live-round-step" data-step="1">2 · Aufgabe</span>
+     <span class="live-round-step" data-step="2">3 · Aufgabe</span>
+    </div>
+    <span id="live-feedback" class="live-feedback" role="status" aria-live="polite">Boss und Team sind bereit.</span>
    </div>
-   <div class="timer-bar"><span id="timer-fill"></span></div>
-   <section class="mini-tactical" id="mini-game" hidden aria-label="Taktisches Boss-Minispiel"></section>
-   <div id="outcome" class="outcome" hidden aria-live="polite"></div>
   </section>
   <section class="squad" aria-labelledby="squad-title">
    <header class="squad-head">
