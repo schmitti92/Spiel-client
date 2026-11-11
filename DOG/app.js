@@ -1,4 +1,5 @@
-import {createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction,COLORS} from './engine.js';
+import {createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
+import {DEFAULT_APPEARANCE,BOARD_STYLES,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance} from './appearance-registry.js?v=11';
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=10';
 
 const $=id=>document.getElementById(id);
@@ -63,6 +64,9 @@ async function initOnline(){
 
 const names=['Rot','Blau','Grün','Gelb'];
 let game,selectedCard=null,available=[],revealed=false,aiTimer=null,lastTurn=null,humans=1;
+let appearance=loadAppearance();
+const currentLook=()=>resolveAppearance(appearance);
+const displayColors=()=>currentLook().pieces.colors;
 const cardsLabel=t=>t==='swap'?'⇄':t==='joker'?'★':t==='1/11'?'1/11':t;
 function recover(){
   try{
@@ -106,13 +110,15 @@ function drawBoard(){
   if(!game)return;
   const board=[];
   const push=part=>board.push(part);
-  const safeColor=seat=>COLORS[seat]||COLORS[0];
+  const look=currentLook(),skin=look.board;
+  const palette=look.pieces.colors;
+  const safeColor=seat=>palette[seat]||palette[0];
   push('<title>DOG Klassisch – 64 Lauffelder, 4 geschützte Startfelder und 4 Zielbahnen</title>');
   push('<defs>'+
-    '<linearGradient id="dog-wood" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5f422c"/><stop offset=".22" stop-color="#cca471"/><stop offset=".44" stop-color="#6e4930"/><stop offset=".7" stop-color="#a5774e"/><stop offset="1" stop-color="#4c3223"/></linearGradient>'+
-    '<radialGradient id="dog-blue" cx=".42" cy=".34" r=".88"><stop stop-color="#194e83"/><stop offset=".56" stop-color="#123963"/><stop offset="1" stop-color="#061c35"/></radialGradient>'+
+    '<linearGradient id="dog-wood" x1="0" y1="0" x2="1" y2="1"><stop stop-color="'+skin.wood[0]+'"/><stop offset=".22" stop-color="'+skin.wood[1]+'"/><stop offset=".44" stop-color="'+skin.wood[2]+'"/><stop offset=".7" stop-color="'+skin.wood[3]+'"/><stop offset="1" stop-color="'+skin.wood[4]+'"/></linearGradient>'+
+    '<radialGradient id="dog-blue" cx=".42" cy=".34" r=".88"><stop stop-color="'+skin.surface[0]+'"/><stop offset=".56" stop-color="'+skin.surface[1]+'"/><stop offset="1" stop-color="'+skin.surface[2]+'"/></radialGradient>'+
     '<linearGradient id="dog-hole" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff"/><stop offset=".52" stop-color="#ecf1f4"/><stop offset="1" stop-color="#b6c4d0"/></linearGradient>'+
-    '<linearGradient id="dog-center" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#133c62"/><stop offset="1" stop-color="#071d37"/></linearGradient>'+
+    '<linearGradient id="dog-center" x1="0" y1="0" x2="0" y2="1"><stop stop-color="'+skin.center[0]+'"/><stop offset="1" stop-color="'+skin.center[1]+'"/></linearGradient>'+
     '<filter id="dog-pawn-shadow" x="-60%" y="-60%" width="220%" height="220%"><feDropShadow dx="0" dy="3" stdDeviation="2.8" flood-color="#000" flood-opacity=".65"/></filter>'+
     '<filter id="dog-halo" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4"/></filter>'+
     '<pattern id="dog-speckle" x="0" y="0" width="31" height="43" patternUnits="userSpaceOnUse"><circle cx="5" cy="11" r=".8" fill="#ffffff" opacity=".09"/><circle cx="22" cy="34" r=".65" fill="#ffffff" opacity=".12"/><circle cx="16" cy="6" r=".55" fill="#06172f" opacity=".38"/></pattern>'
@@ -125,13 +131,16 @@ function drawBoard(){
   push('<rect x="8" y="8" width="744" height="744" rx="44" fill="url(#dog-wood)" stroke="#2c1b13" stroke-width="7"/>');
   push('<rect x="27" y="27" width="706" height="706" rx="30" fill="#051323" stroke="#ead4a4" stroke-opacity=".66" stroke-width="2"/>');
   push('<rect x="35" y="35" width="690" height="690" rx="25" fill="url(#dog-blue)"/>');
+  // Optional trusted image asset specified by a built-in board theme.
+  if(skin.image&&/^\.\/assets\/[a-z0-9_./-]+\.(?:png|webp|jpe?g|svg)$/i.test(skin.image))
+    push('<image href="'+skin.image+'" x="35" y="35" width="690" height="690" preserveAspectRatio="xMidYMid slice" opacity=".94" pointer-events="none"/>');
   push('<rect x="35" y="35" width="690" height="690" rx="25" fill="url(#dog-speckle)"/>');
-  push('<rect x="41" y="41" width="678" height="678" rx="20" fill="none" stroke="#7ca9cb" stroke-opacity=".27" stroke-width="1.5"/>');
+  push('<rect x="41" y="41" width="678" height="678" rx="20" fill="none" stroke="'+skin.edge+'" stroke-opacity=".27" stroke-width="1.5"/>');
   // The course makes a single uninterrupted 64-step circuit. Start indices are
   // 0/16/32/48; the correct corner is independent of future cosmetic themes.
   const path=TRACK_POINTS.map((p,i)=>(i===0?'M ':'L ')+coord(p)).join(' ')+' Z';
   push('<path d="'+path+'" fill="none" stroke="#03152a" stroke-width="32" stroke-linejoin="round" stroke-linecap="round" opacity=".52"/>');
-  push('<path d="'+path+'" fill="none" stroke="#4b85a9" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity=".55"/>');
+  push('<path d="'+path+'" fill="none" stroke="'+skin.route+'" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity=".55"/>');
   // All goal and reserve holes follow the draggable editor coordinates.
   for(let seat=0;seat<4;seat++){
     const c=safeColor(seat),start=boardPoint(seat*16);
@@ -232,7 +241,7 @@ function renderPlayers(){
   const seats=game.players.map(p=>{
     const own=game.pieces.filter(x=>x.owner===p.seat),goal=own.filter(x=>x.place==='goal').length,turn=activeSeat()===p.seat&&game.phase!=='finished';
     const hand=Array.isArray(game.hands[p.seat])?game.hands[p.seat].length:(game.hands[p.seat]?.count||0),exchange=game.phase==='exchange'&&game.exchanges[p.seat]!==null&&game.exchanges[p.seat]!==false;
-    return '<div class="seat '+(turn?'on':'')+'" style="--seat:'+COLORS[p.seat]+'"><span class="seat-mark"></span><span class="seat-name">'+escape(p.name)+(p.bot?' 🤖':' 👤')+'</span><b>'+goal+'/4</b><span class="seat-extra">'+(exchange?'✓ Karte getauscht':hand+' Karten')+'</span></div>';
+    return '<div class="seat '+(turn?'on':'')+'" style="--seat:'+displayColors()[p.seat]+'"><span class="seat-mark"></span><span class="seat-name">'+escape(p.name)+(p.bot?' 🤖':' 👤')+'</span><b>'+goal+'/4</b><span class="seat-extra">'+(exchange?'✓ Karte getauscht':hand+' Karten')+'</span></div>';
   }).join('');
   $('players').innerHTML=seats;
 }
@@ -244,7 +253,8 @@ function renderHand(){
   if(lastTurn!==seat){revealed=false;selectedCard=null;lastTurn=seat;}
   button.hidden=false;button.textContent=revealed?'🙈 Hand verdecken':'🃏 Karten ansehen';
   title.textContent=game.phase==='exchange'?'🔐 '+game.players[seat].name+': Karte an Partner geben':game.phase==='seven'?'🔥 Die 7 verteilen – noch '+(7-game.seven.spent)+' Schritte':'🎯 '+game.players[seat].name+' ist am Zug';
-  if(!revealed){hand.innerHTML='<div class="hand-veil">Deine Karten sind verdeckt. Tippe auf „Karten ansehen“.</div>';return;}
+  if(!revealed){const symbol=escape(currentLook().cards.emblem);
+    hand.innerHTML='<div class="hand-veil"><div class="dog-card-backs" aria-hidden="true"><span class="dog-card-back">'+symbol+'</span><span class="dog-card-back">'+symbol+'</span><span class="dog-card-back">'+symbol+'</span></div><span>Deine Karten sind verdeckt. Tippe auf „Karten ansehen“.</span></div>';return;}
   if(game.phase==='seven'){
     available=legalActions(game,seat);
     hand.innerHTML='<div class="hand-veil">Wähle eine Figur und wie viele Schritte sie laufen soll. Alle 7 Schritte müssen verwendet werden.</div>';
@@ -337,7 +347,58 @@ $('board').addEventListener('click',e=>{
 $('show-hand').addEventListener('click',()=>{revealed=!revealed;render();});
 $('new-game').addEventListener('click',()=>{if(confirm('Neue Partie starten? Der aktuelle Spielstand wird ersetzt.'))newGame();});
 $('human-count').addEventListener('change',()=>{if(confirm('Spielerzahl ändern und eine neue Partie beginnen?'))newGame();else $('human-count').value=String(humans);});
+
+function applyAppearance(){
+  const look=currentLook();
+  const variables={
+    '--dog-page-bg':look.board.page,
+    '--dog-frame-bg':look.board.frame,
+    '--dog-card-face':look.cards.face,
+    '--dog-card-special':look.cards.special,
+    '--dog-card-border':look.cards.border,
+    '--dog-card-special-border':look.cards.specialBorder,
+    '--dog-card-ink':look.cards.ink,
+    '--dog-card-back':look.cards.back
+  };
+  for(const [name,value] of Object.entries(variables))
+    document.documentElement.style.setProperty(name,value);
+  $('appearance-preview-back').textContent=look.cards.emblem;
+  for(const field of ['board','pieces','cards']){
+    const select=$('appearance-'+field);
+    if(select)select.value=appearance[field];
+  }
+  document.querySelectorAll('[data-appearance-seat]').forEach(element=>{
+    const seat=Number(element.dataset.appearanceSeat);
+    if(Number.isInteger(seat)&&seat>=0&&seat<4)element.style.backgroundColor=look.pieces.colors[seat];
+  });
+  if(game)render();
+}
+function prepareAppearanceUI(){
+  const groups={board:BOARD_STYLES,pieces:PIECE_STYLES,cards:CARD_STYLES};
+  for(const [type,registry] of Object.entries(groups)){
+    const select=$('appearance-'+type);
+    select.replaceChildren();
+    for(const [id,design] of Object.entries(registry)){
+      const option=document.createElement('option');
+      option.value=id;option.textContent=design.label;
+      select.appendChild(option);
+    }
+    select.addEventListener('change',()=>{
+      appearance=saveAppearance({...appearance,[type]:select.value});
+      applyAppearance();
+    });
+  }
+  $('appearance-button').addEventListener('click',()=>{$('appearance-dialog').showModal();});
+  $('appearance-close').addEventListener('click',()=>{$('appearance-dialog').close();});
+  $('appearance-reset').addEventListener('click',()=>{
+    appearance=saveAppearance(DEFAULT_APPEARANCE);
+    applyAppearance();
+  });
+  applyAppearance();
+}
+
 $('rules-button').addEventListener('click',()=>{$('rules').showModal();});
 $('rules-close').addEventListener('click',()=>{$('rules').close();});
+prepareAppearanceUI();
 if(online){void initOnline();}else if(!recover())newGame();else{render();scheduleAI();}
 window.addEventListener('pageshow',()=>{if(game)drawBoard();});
