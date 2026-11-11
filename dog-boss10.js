@@ -47,7 +47,7 @@
     (state?.phase==='fighting'&&state?.roster?.some(m=>m.uid===uid))||settled:
    request.command==='react'?!!mine?.reacted||settled||state?.phase==='waiting':
    request.command==='minigame'?
-    (state?.miniGames?.version===2?
+    (state?.miniGames?.version>=2?
      !!state?.miniGames?.myAnswers?.[request.payload?.round]?.attempts?.[request.payload?.step??0]:
      !!state?.miniGames?.myAnswers?.[request.payload?.round])||settled:
    request.command==='finish'&&settled;
@@ -164,15 +164,17 @@
   $('retry-button').hidden=!pendingOp;
   $('retry-button').disabled=working;
   preflight?.update(view,now());
-  const time=state==='fighting'?remaining():state==='cooldown'?cooling():30000;
+  const duration=(Number(view?.endsAt)>Number(view?.startedAt)?
+   view.endsAt-view.startedAt:40000);
+  const time=state==='fighting'?remaining():state==='cooldown'?cooling():duration;
   $('timer').textContent=formatTime(time);
-  $('timer-fill').style.width=(state==='fighting'?Math.min(100,time/30000*100):state==='victory'?0:100)+'%';
+  $('timer-fill').style.width=(state==='fighting'?Math.min(100,time/duration*100):state==='victory'?0:100)+'%';
   const bossLeft=view?.result&&state==='victory'||state==='cooldown'?
    view?.result?.hpRemaining:view?.bossHp;
   $('boss-hp').textContent=view?Number(bossLeft||0).toLocaleString('de-DE')+' LP':'– LP';
   const text=$('battle-message');
   text.textContent=state==='waiting'?'Bereit machen und mit 1, 2 oder 3 Helden starten. Zu dritt sind eure Chancen am größten.':
-   state==='fighting'?'🔥 '+(view?.roster?.length||0)+' Helden greifen an! Reagiert innerhalb von 30 Sekunden.':
+   state==='fighting'?'🔥 '+(view?.roster?.length||0)+' Helden greifen an! Reagiert innerhalb von '+Math.round(duration/1000)+' Sekunden.':
    state==='victory'?'🏆 Der Aschewächter ist besiegt. Die Schmiede ist aufgestiegen!':
    state==='cooldown'?'💀 Der Wächter hat das Team zurückgedrängt. Bereitet euch auf den nächsten Versuch vor.':
    'Verbindung zur Bossarena wird hergestellt …';
@@ -242,7 +244,7 @@
    noteReadyChange(data.view);
    render();
    message(req.command==='ready'?
-    (view.phase==='fighting'?'⚔️ Drei Helden bereit – 30-Sekunden-Kampf gestartet.':
+    (view.phase==='fighting'?'⚔️ Drei Helden bereit – 40-Sekunden-Kampf gestartet.':
      '✅ Bereitschaft gespeichert. Du kannst starten oder auf weitere Helden warten.'):
     req.command==='start'?'⚔️ Der Kampf mit '+view.roster.length+' Helden hat begonnen.':
     req.command==='react'?'⚡ Reaktionsbonus für das Team gespeichert.':
