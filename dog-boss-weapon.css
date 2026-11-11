@@ -1,0 +1,149 @@
+/* 100 Tore · Boss weapon choreography v1.
+   Presentation only: the server defines lanes and impactMs; never damage here.
+   A late reconnect joins the same server-timed animation via negative delay. */
+.arena-live .combat-scene .battle-boss-weapon {
+ position:absolute;z-index:13;pointer-events:none;opacity:0;
+ left:27%;top:29%;width:clamp(92px,15.6vw,189px);height:auto;
+ aspect-ratio:180/280;
+ background: url("./dog-boss-art/ashen-warhammer.svg") center/contain no-repeat;
+ transform:translate(-50%,-78%) rotate(-62deg) scale(.75);
+ transform-origin:50% 78%;
+ filter:drop-shadow(0 0 13px #ff954a) drop-shadow(0 8px 21px #060911c9);
+ will-change:transform,left,top,opacity
+}
+.arena-live .battle-boss-weapon[data-weapon="elemental"]{
+ filter:hue-rotate(150deg) saturate(.8) drop-shadow(0 0 18px var(--boss-accent,#9ed0ff));
+}
+.arena-live .combat-scene .battle-weapon-trail{
+ position:absolute;inset:0;pointer-events:none;z-index:11;opacity:0;
+ background:linear-gradient(145deg,transparent 19%,#ffba6080 45%,#ffde9daa 55%,transparent 72%);
+ clip-path:polygon(27% 20%,33% 24%,var(--dodge-hit-x,66%) 73%,var(--dodge-hit-x,66%) 80%,27% 31%);
+ filter:drop-shadow(0 0 17px #ff7a35);
+ will-change:opacity,clip-path
+}
+.arena-live .combat-scene .battle-weapon-impact{
+ position:absolute;z-index:12;pointer-events:none;opacity:0;
+ width:clamp(110px,20%,220px);aspect-ratio:1;
+ left:var(--dodge-hit-x,66%);top:78%;
+ border-radius:50%;transform:translate(-50%,-50%) scale(.2);
+ background:radial-gradient(circle,#fffcebcf 0%,#ffd488bc 8%,
+  #fa88399b 21%,#d8452750 37%,#ed361300 68%);
+ filter:drop-shadow(0 0 20px #ff622c);
+ will-change:transform,opacity
+}
+.arena-live .combat-scene .battle-weapon-impact::before,
+.arena-live .combat-scene .battle-weapon-impact::after{
+ content:"";position:absolute;inset:10%;border-radius:50%;
+ border:clamp(2px,.6vw,6px) solid #ffc980;
+ box-shadow:0 0 15px #ff9b47,inset 0 0 14px #ff7a37;
+}
+.arena-live .combat-scene .battle-weapon-impact::after{
+ inset:29%;border-width:3px;border-color:#fff0c3;
+ box-shadow:0 0 18px #fff0af
+}
+.arena-live .combat-scene .battle-weapon-impact-secondary{
+ left:var(--dodge-secondary-x,74%);top:77%;
+ width:clamp(95px,16%,170px);
+ background:radial-gradient(circle,#e2f9ffff,#a0e6ffff 11%,#6ca9fb9e 26%,#5392ff00 66%);
+ filter:drop-shadow(0 0 18px #9cceff)
+}
+.arena-live .combat-scene .battle-weapon-impact-secondary::before{
+ border-color:#bceaff;box-shadow:0 0 15px #8ac9ff
+}
+.arena-live .combat-scene .battle-weapon-impact-secondary[hidden]{display:none}
+.arena-live .combat-scene[data-cue="dodge"] .battle-boss-weapon.battle-weapon-swing{
+ animation:boss-hammer-to-lane var(--boss-swing-time,2666ms) cubic-bezier(.22,.65,.2,1) both;
+ animation-delay:var(--boss-swing-offset,0ms);
+}
+.arena-live .combat-scene[data-cue="dodge"] .battle-weapon-trail.battle-weapon-swing{
+ animation:boss-hammer-trail var(--boss-swing-time,2666ms) linear both;
+ animation-delay:var(--boss-swing-offset,0ms)
+}
+.arena-live .combat-scene[data-cue="dodge"] .battle-weapon-impact.battle-weapon-swing{
+ animation:boss-hammer-ground-impact var(--boss-swing-time,2666ms) ease-out both;
+ animation-delay:var(--boss-swing-offset,0ms)
+}
+.arena-live .combat-scene[data-cue="dodge"] .combat-boss.battle-boss-strike{
+ animation:boss-hammer-body-lunge var(--boss-swing-time,2666ms) cubic-bezier(.3,.7,.22,1) both!important;
+ animation-delay:var(--boss-swing-offset,0ms)!important
+}
+/* Each strike takes 2.666s: the 66% keyframe equals the server's
+   strike.impactMs (1.76s from strike.startMs). */
+@keyframes boss-hammer-to-lane{
+ 0%{left:26%;top:47%;opacity:.25;
+  transform:translate(-50%,-78%) rotate(-42deg) scale(.65)}
+ 17%{left:28%;top:29%;opacity:1;
+  transform:translate(-50%,-78%) rotate(-87deg) scale(.87)}
+ 33%{left:31%;top:24%;opacity:1;
+  transform:translate(-50%,-78%) rotate(-116deg) scale(.96)}
+ 44%{left:37%;top:34%;opacity:1;
+  transform:translate(-50%,-78%) rotate(-69deg) scale(1.05)}
+ 62%{left:var(--dodge-hit-x,66%);top:71%;opacity:1;
+  transform:translate(-50%,-78%) rotate(10deg) scale(1.17)}
+ 66%{left:var(--dodge-hit-x,66%);top:79%;opacity:1;
+  transform:translate(-50%,-78%) rotate(20deg) scale(1.18)}
+ 76%{left:var(--dodge-hit-x,66%);top:70%;opacity:.98;
+  transform:translate(-50%,-78%) rotate(13deg) scale(1.08)}
+ 89%{left:41%;top:45%;opacity:.66;
+  transform:translate(-50%,-78%) rotate(-35deg) scale(.83)}
+ 100%{left:29%;top:37%;opacity:0;
+  transform:translate(-50%,-78%) rotate(-52deg) scale(.7)}
+}
+@keyframes boss-hammer-ground-impact{
+ 0%,61%{opacity:0;transform:translate(-50%,-50%) scale(.17)}
+ 66%{opacity:1;transform:translate(-50%,-50%) scale(.7)}
+ 75%{opacity:.95;transform:translate(-50%,-50%) scale(1.45)}
+ 90%{opacity:.45;transform:translate(-50%,-50%) scale(2)}
+ 100%{opacity:0;transform:translate(-50%,-50%) scale(2.3)}
+}
+@keyframes boss-hammer-trail{
+ 0%,38%{opacity:0}
+ 46%{opacity:.1}
+ 60%{opacity:.68}
+ 66%{opacity:1}
+ 78%{opacity:.28}
+ 91%,100%{opacity:0}
+}
+@keyframes boss-hammer-body-lunge{
+ 0%,100%{transform:translateX(0) rotate(0)}
+ 17%{transform:translateX(-5px) rotate(-3deg)}
+ 32%{transform:translateX(-8px) rotate(-4deg)}
+ 51%{transform:translateX(15px) rotate(4deg)}
+ 66%{transform:translateX(30px) rotate(7deg)}
+ 75%{transform:translateX(14px) rotate(2deg)}
+ 90%{transform:translateX(2px) rotate(0)}
+}
+/* Secondary hazard is a shockwave, never an invented second hammer;
+   both lanes are always sourced from the same public attack descriptor. */
+.arena-live .combat-scene[data-effects="off"] .battle-boss-weapon,
+.arena-live .combat-scene[data-effects="off"] .battle-weapon-trail,
+.arena-live .combat-scene[data-effects="off"] .battle-weapon-impact{
+ animation:none!important;opacity:0!important
+}
+.arena-live .combat-scene[data-effects="off"] .combat-boss.battle-boss-strike{
+ animation:none!important
+}
+@media (orientation:landscape) and (min-width:900px) and (max-height:720px){
+ .arena-live .combat-scene .battle-boss-weapon{width:clamp(78px,13vw,155px)}
+ .arena-live .combat-scene .battle-weapon-impact{width:clamp(95px,17%,170px)}
+}
+@media(max-width:620px){
+ .arena-live .combat-scene .battle-boss-weapon{width:clamp(70px,19vw,128px)}
+ .arena-live .combat-scene .battle-weapon-impact{width:clamp(76px,20%,130px)}
+ .arena-live .combat-scene .battle-weapon-impact-secondary{width:clamp(60px,15%,115px)}
+}
+@media(prefers-reduced-motion:reduce){
+ .arena-live .combat-scene[data-cue="dodge"] .battle-boss-weapon.battle-weapon-swing,
+ .arena-live .combat-scene[data-cue="dodge"] .battle-weapon-trail.battle-weapon-swing,
+ .arena-live .combat-scene[data-cue="dodge"] .battle-weapon-impact.battle-weapon-swing,
+ .arena-live .combat-scene[data-cue="dodge"] .combat-boss.battle-boss-strike{
+  animation:none!important;transition:none!important
+ }
+ .arena-live .combat-scene[data-boss-swing="impact"] .battle-weapon-impact:not([hidden]){
+  opacity:.55!important;transform:translate(-50%,-50%) scale(.82)!important
+ }
+ .arena-live .combat-scene[data-boss-swing="windup"] .battle-boss-weapon{
+  opacity:.5!important;left:28%;top:29%;
+  transform:translate(-50%,-78%) rotate(-85deg) scale(.9)
+ }
+}
