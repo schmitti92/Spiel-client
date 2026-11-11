@@ -62,7 +62,7 @@
    const selected=view?.phase==='waiting'?
     (view?.members||[]).filter(m=>m.ready):
     Array.isArray(view?.roster)?view.roster:[];
-   const memberNames=new Map((view?.members||[]).map(m=>[m.uid,m.name]));
+   const membersByUid=new Map((view?.members||[]).map(m=>[m.uid,m]));
    const ids=selected.map(m=>m.uid);
    const nextKey=ids.join('|');
    if(fightersKey===nextKey)return;
@@ -70,13 +70,15 @@
    if(!heroes)return;
    const elements=selected.map((m,i)=>{
     const item=document.createElement('div');
-    item.className='combat-hero combat-hero-'+(i+1);
+    item.className='combat-hero combat-hero-'+(i+1)+
+     (membersByUid.get(m.uid)?.isMe?' combat-hero-me':'');
     const mark=document.createElement('span');
     mark.className='combat-hero-symbol';
     mark.textContent=iconFor[i]||'⚔️';
     const name=document.createElement('span');
     name.className='combat-hero-name';
-    name.textContent=String(memberNames.get(m.uid)||'Held '+(i+1)).slice(0,22);
+    name.textContent=String(membersByUid.get(m.uid)?.name||
+     'Held '+(i+1)).slice(0,22);
     item.append(mark,name);
     return item;
    });
