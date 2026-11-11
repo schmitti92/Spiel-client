@@ -191,7 +191,7 @@ test('50-second animation has four 4.5s video-like score windows with readable c
   assert.match(html,/id="cinematic-bonus"/);
   assert.match(html,/id="cinematic-cumulative"/);
   assert.match(html,/id="cinematic-progress"/);
-  assert.match(html,/id="timer" role="timer">00:50/);
+  assert.match(html,/id="timer" role="timer">01:39/);
  }
  assert.match(css,/\.arena-live \.live-cinematic\s*\{/);
  assert.match(css,/\.arena-live \.live-cinematic-score\s*\{/);
