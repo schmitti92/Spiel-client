@@ -6,7 +6,7 @@
  * A home/house connector is a visual guide, NOT an extra track square.
  * The goal entrance reference is the previous circuit square.
  */
-import {clone} from './editor-model.js';
+import {clone} from './editor-model.js?v=10';
 
 export const SEAT_LABELS=Object.freeze(['Rot','Blau','Grün','Gelb']);
 export const EXIT_INDICES=Object.freeze([0,16,32,48]);
