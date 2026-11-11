@@ -152,3 +152,17 @@ test('Second defensive blow displays actual shield damage and visual shield frac
  assert.equal(node('live-stage-announcement').hidden,true);
  assert.ok(!classes.get('combat-scene').has('live-exchange-guard-damaged'));
 });
+
+
+test('Shield energy remains unchanged after the server settles a battle',()=>{
+ const {ui,view,node,classes}=fixture();
+ view.miniGames.exchange.shield=75;
+ view.phase='cooldown';
+ view.result={hpRemaining:400};
+ ui.update(view,startedAt+41000);
+ assert.equal(node('live-shield-value').textContent,'75 / 100');
+ assert.equal(node('live-shield-fill').style.width,'75%');
+ assert.equal(node('live-stage-announcement').hidden,true);
+ assert.equal(classes.get('combat-scene').has('live-exchange-attack'),false);
+ assert.equal(classes.get('combat-scene').has('live-exchange-defense'),false);
+});
