@@ -170,7 +170,8 @@
    view.endsAt-view.startedAt:view?.miniGames?.version===3?40000:
     view?.miniGames?.version===4?50000:
     view?.miniGames?.version===5?60000:
-    view?.miniGames?.version===6?64000:92000);
+    view?.miniGames?.version===6?64000:
+    view?.miniGames?.version===7?92000:99000);
   const time=state==='fighting'?remaining():state==='cooldown'?cooling():duration;
   $('timer').textContent=formatTime(time);
   $('timer-fill').style.width=(state==='fighting'?Math.min(100,time/duration*100):state==='victory'?0:100)+'%';
