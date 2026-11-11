@@ -528,6 +528,12 @@
  $('gate-battle-button').addEventListener('click',()=>void fightGate(false));
  $('gate-retry-button').addEventListener('click',()=>void fightGate(true));
  window.addEventListener('spielonline-change',()=>void reloadMap());
+ window.addEventListener('dog-developer-updated',()=>{
+  const uid=auth()?.user?.uid;
+  if(uid)clearPending(uid); // old fight receipts must not replay after a developer reset
+  if(details.open)details.close();
+  void reloadMap();
+ });
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!working)void reloadMap();});
  if(typeof window.setInterval==='function'){
   window.setInterval(()=>{if(!document.hidden&&!working)void reloadMap();},60000);
