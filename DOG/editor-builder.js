@@ -5,14 +5,14 @@
  */
 import {
   BOARD_LAYOUT_ID,currentBoardLayout,saveBoardLayout,validateBoardLayout
-} from './board-layout.js';
+} from './board-layout.js?v=10';
 import {
   EDITOR_DRAFT_KEY,clone,emptyDraft,fromCrossPreset,fromLayout,placedCount,
   fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
   guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun,
   trackGroupBounds,translateTrackGroup,firstUnplacedSlot
-} from './editor-model.js?v=9';
-import {referencePoints,buildGoalLane,buildHomeGroup,getTrackConnections,straightGaps,connectStraightGap,SEAT_LABELS} from './board-assistants.js?v=9';
+} from './editor-model.js?v=10';
+import {referencePoints,buildGoalLane,buildHomeGroup,getTrackConnections,straightGaps,connectStraightGap,SEAT_LABELS} from './board-assistants.js?v=10';
 
 const $=id=>document.getElementById(id);
 const board=$('builder-board');
@@ -833,8 +833,8 @@ $('new-blank').addEventListener('click',()=>{
  replaceDraft(emptyDraft(),'✓ Leere Spielfläche erstellt. Beginne mit Lauffeld 0.');
 });
 $('load-cross').addEventListener('click',()=>{
- if(placedCount(draft).total&& !confirm('Die Kreuz-Vorlage laden? Der aktuelle Entwurf wird überschrieben.'))return;
- replaceDraft(fromCrossPreset(),'✓ Kreuz-Vorlage geladen. Du kannst jedes Feld nachträglich verschieben.');
+ if(placedCount(draft).total&& !confirm('Den gemeinsamen DOG-Standardspielplan laden? Der aktuelle Entwurf wird überschrieben.'))return;
+ replaceDraft(fromCrossPreset(),'✓ Dein genehmigtes DOG-Standardbrett geladen. Du kannst jedes Feld nachträglich verschieben.');
 });
 $('load-current').addEventListener('click',()=>{
  if(placedCount(draft).total&& !confirm('Das zuletzt im DOG-Spiel gespeicherte Brett laden? Der aktuelle Entwurf wird überschrieben.'))return;
