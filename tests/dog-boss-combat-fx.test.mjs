@@ -62,6 +62,7 @@ test('Scene creates exactly participating heroes; single player is not visually 
  const fx=bootstrap(),slots={};
  for(const name of ['#combat-hero-line','#combat-cue','#combat-flash','#combat-boss']){
   slots[name]={children:[],textContent:'',replaceChildren(...nodes){this.children=nodes},
+   append(...nodes){this.children.push(...nodes)},
    setAttribute(k,v){this[k]=v}};
  }
  const styles={};
