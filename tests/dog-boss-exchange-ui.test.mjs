@@ -206,8 +206,8 @@ test('50-second animation has four 4.5s video-like score windows with readable c
  assert.match(node('cinematic-header').textContent,/TEAM SCHLÄGT ZU/);
  assert.equal(node('cinematic-score').textContent,'18 / 24');
  assert.equal(node('cinematic-bonus').textContent,'+231');
- assert.match(node('cinematic-bonus-detail').textContent,/LP-Schaden erst bei Endwertung/);
- assert.match(node('cinematic-cumulative').textContent,/231 Angriffspotenzial/);
+ assert.match(node('cinematic-bonus-detail').textContent,/Finale Wertung folgt/);
+ assert.match(node('cinematic-cumulative').textContent,/Gesamtbonus: \\+231/);
  assert.match(node('cinematic-next').textContent,/Ausweichen/);
  assert.equal(node('cinematic-countdown').textContent,'4,5 s');
  ui.update(view,startedAt+11800);
