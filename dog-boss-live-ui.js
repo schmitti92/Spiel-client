@@ -127,13 +127,14 @@
   }
   function updateExchange(view,current){
    const stages=view?.miniGames?.exchange?.stages;
-   const exchange=current.phase==='fighting'&&Array.isArray(stages)&&
-    current.rounds.length===4;
+   const exchange=Array.isArray(stages)&&current.rounds.length===4;
+   const fightingExchange=exchange&&current.phase==='fighting';
+   // Keep the last server-confirmed shield amount visible after settlement.
    const shield=exchange?Math.max(0,Math.min(100,
     Number(view.miniGames.exchange.shield)||0)):100;
    if(nodes.shieldFill)nodes.shieldFill.style.width=shield+'%';
    text(nodes.shieldValue,shield+' / 100');
-   const scene=exchange?current.rounds.find(round=>
+   const scene=fightingExchange?current.rounds.find(round=>
     current.elapsed>=round.endMs&&current.elapsed<round.endMs+2000):null;
    if(!scene){
     if(nodes.announcement)nodes.announcement.hidden=true;
