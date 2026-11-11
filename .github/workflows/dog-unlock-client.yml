@@ -1,0 +1,37 @@
+name: DOG Tor-100 Frontend Guard
+
+on:
+  push:
+    paths:
+      - 'DOG/**'
+      - 'spielauswahl-online.js'
+      - 'hub-lobby.js'
+      - 'spielauswahl-lokal.html'
+      - 'tests/dog-unlock-access-ui.test.mjs'
+      - '.github/workflows/dog-unlock-client.yml'
+  pull_request:
+    paths:
+      - 'DOG/**'
+      - 'spielauswahl-online.js'
+      - 'hub-lobby.js'
+      - 'spielauswahl-lokal.html'
+      - 'tests/dog-unlock-access-ui.test.mjs'
+      - '.github/workflows/dog-unlock-client.yml'
+  workflow_dispatch:
+
+jobs:
+  unlock-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check syntax
+        run: |
+          node --check DOG/app.js
+          node --check spielauswahl-online.js
+          node --check hub-lobby.js
+      - name: Verify DOG unlock flow
+        run: node --test tests/dog-unlock-access-ui.test.mjs
