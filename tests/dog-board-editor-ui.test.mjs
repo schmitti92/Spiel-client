@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import * as editorModel from '../DOG/editor-model.js';
 import {
   BOARD_LAYOUT_ID,currentBoardLayout,saveBoardLayout,validateBoardLayout
 } from '../DOG/board-layout.js';
@@ -47,6 +48,7 @@ function openBuilder(){
     'EDITOR_DRAFT_KEY','clone','emptyDraft','fromCrossPreset','fromLayout','placedCount',
     'fieldOf','selectedValid','snapXY','putField','eraseField','nextSlot','inspectDraft','asGameLayout',
     'guidedPoint','directedPoint','previousTrackField','measureStepDistances','EIGHT_DIRECTIONS','alignTrackRun',
+    'trackGroupBounds','translateTrackGroup',
     'referencePoints','buildGoalLane','buildHomeGroup','getTrackConnections','straightGaps','connectStraightGap','SEAT_LABELS'
   ];
   const imports=[
@@ -54,6 +56,7 @@ function openBuilder(){
     EDITOR_DRAFT_KEY,clone,emptyDraft,fromCrossPreset,fromLayout,placedCount,
     fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
   guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun,
+    editorModel.trackGroupBounds,editorModel.translateTrackGroup,
     referencePoints,buildGoalLane,buildHomeGroup,getTrackConnections,straightGaps,connectStraightGap,SEAT_LABELS
   ];
   let source=readFileSync(new URL('../DOG/editor-builder.js',import.meta.url),'utf8');
