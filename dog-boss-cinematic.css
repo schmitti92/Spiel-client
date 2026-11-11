@@ -1,0 +1,311 @@
+/* 100 TORE · Boss 10 — Cinematic Art Direction v1
+ * VISUAL-ONLY: no network calls, scoring changes or battle-clock changes.
+ * Loaded after the existing live styles. SVG assets are local and replaceable.
+ */
+:root{--cin-ember:#ff9657;--cin-gold:#ffdfa2;--cin-night:#0c1425;--cin-ice:#92daff}
+body:has(.stage[data-screen="battle"]){
+ background:#070c16 radial-gradient(ellipse at 50% 4%,#4c2b33 0%,#0b1120 58%,#050911 100%);
+ color:#f8e8d1
+}
+.stage[data-screen="battle"]>.arena-live{
+ position:relative;
+ border:1px solid #e6b977;
+ background:
+  linear-gradient(180deg,#101322ee 0%,#15101ed7 36%,#080d19e9 100%),
+  url("./dog-boss-art/arena-volcano-cinematic.svg") center 54%/cover no-repeat;
+ box-shadow:0 0 0 1px #d2a05f31,0 26px 70px #000b,inset 0 0 100px #0b111fd4;
+}
+.stage[data-screen="battle"]>.arena-live::before{
+ content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+ background:radial-gradient(ellipse at 14% 30%,#ff653b20,transparent 45%),
+  radial-gradient(ellipse at 80% 55%,#75a6eb16,transparent 51%);
+}
+.arena-live .live-arena-heading{
+ position:relative;border-bottom:1px solid #edb97766;padding-bottom:9px;
+ background:linear-gradient(90deg,#0b111f55,transparent 84%)
+}
+.arena-live .live-heading-text small{
+ color:#ffce80;letter-spacing:.17em;text-shadow:0 2px 7px #000
+}
+.arena-live .live-heading-text h2{
+ font:900 clamp(24px,2.4vw,40px)/1.03 Georgia,serif;
+ color:#ffedc7;letter-spacing:.012em;
+ text-shadow:0 3px 0 #331c25,0 6px 13px #000e,0 0 24px #ee70416e
+}
+.arena-live .status-pill{
+ border-radius:999px;background:linear-gradient(90deg,#523032,#2b283b);
+ border:1px solid #d9a668;box-shadow:0 0 16px #ee945530,inset 0 1px 1px #ffecb43d;
+ color:#ffebc3;text-shadow:0 2px 4px #000a
+}
+.arena-live .live-metrics{gap:clamp(7px,1vw,14px)}
+.arena-live .live-hp,.arena-live .live-team-shield,.arena-live .live-timer{
+ min-width:0;border-radius:12px;backdrop-filter:blur(6px);
+ box-shadow:inset 0 1px #ffffff1a,0 7px 17px #0005;
+}
+.arena-live .live-hp{border-color:#e99a79b3;background:linear-gradient(120deg,#3b222cda,#241c30e9)}
+.arena-live .live-team-shield{border-color:#7bcaffaa;background:linear-gradient(120deg,#12283de3,#0a2335eb)}
+.arena-live .live-timer{background:linear-gradient(120deg,#1d2536df,#121727eb)}
+.arena-live .live-meter-label span,.arena-live .live-shield-label span,.arena-live .timer-row span{
+ font-family:system-ui,sans-serif;font-weight:900;letter-spacing:.065em
+}
+.arena-live .live-hp-track,.arena-live .live-shield-track,.arena-live .timer-bar{
+ position:relative;box-shadow:inset 0 3px 8px #02060e
+}
+.arena-live .live-hp-track::after,.arena-live .live-shield-track::after{
+ content:"";position:absolute;inset:0;pointer-events:none;
+ background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),#10142691 calc(10% - 2px) 10%)
+}
+.arena-live .live-hp-track span{
+ background:linear-gradient(180deg,#fff4ce 0%,#ff9869 22%,#ef4d4b 53%,#7b1937);
+ box-shadow:0 0 20px #ff8866c2
+}
+.arena-live .live-shield-track span{background:linear-gradient(180deg,#e8ffff,#68c6f0 43%,#2979bc)}
+.arena-live .timer-row strong{color:#f7ecd7;text-shadow:0 0 14px #ffad6a42}
+.arena-live .live-battlefield{gap:clamp(7px,.95vw,15px)}
+.arena-live .combat-scene{
+ position:relative;isolation:isolate;overflow:hidden;
+ border-radius:17px;border:1px solid #dcb474;
+ background:
+  radial-gradient(ellipse at 20% 58%,#f765332a,transparent 38%),
+  linear-gradient(180deg,#1115261e 0%,#11132125 48%,#090e1bba 100%),
+  url("./dog-boss-art/arena-volcano-cinematic.svg") center 52%/cover no-repeat;
+ box-shadow:inset 0 0 0 1px #fff2ce1b,inset 0 -62px 72px #080c16aa,0 0 22px #0007;
+}
+.arena-live .combat-scene::before{
+ content:"";pointer-events:none;position:absolute;inset:0;z-index:0;
+ background:radial-gradient(circle at 26% 43%,#ff6c351e,transparent 27%),
+  radial-gradient(circle at 73% 43%,#80c1ff16,transparent 29%),
+  linear-gradient(90deg,#050a1785,transparent 39%,transparent 65%,#090e1a55);
+}
+.arena-live .combat-scene::after{
+ content:"";pointer-events:none;position:absolute;inset:0;z-index:1;
+ background-image:
+  radial-gradient(3px 3px at 18% 18%,#ffc277,transparent),
+  radial-gradient(2px 2px at 31% 73%,#ffdd9f,transparent),
+  radial-gradient(3px 3px at 69% 22%,#ffaa73,transparent),
+  radial-gradient(2px 2px at 92% 48%,#ff8d5e,transparent),
+  radial-gradient(2px 2px at 53% 32%,#d5efff,transparent);
+ background-size:100% 100%;opacity:.65;animation:cin-ash 7s ease-in-out infinite alternate
+}
+.arena-live .combat-stage{position:relative;z-index:2;overflow:hidden}
+.arena-live .combat-stage::before{
+ content:"";position:absolute;inset:auto 0 0;z-index:1;height:28%;
+ background:radial-gradient(ellipse at 37% 102%,#ef663833,transparent 61%),
+  linear-gradient(0deg,#090e19d8,transparent 90%);
+ pointer-events:none
+}
+.arena-live .combat-stage::after{
+ content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+ background:radial-gradient(ellipse at 26% 49%,var(--boss-accent,#ff995f) 0%,transparent 34%),
+  radial-gradient(ellipse at 76% 69%,#62beff 0%,transparent 38%);
+ opacity:.075;mix-blend-mode:screen
+}
+.arena-live .combat-boss{
+ left:-1%;right:auto;bottom:6%;width:44%;height:88%;min-width:0;z-index:4;
+ filter:drop-shadow(0 16px 13px #010610e3);
+}
+.arena-live .combat-boss .monster-art{
+ width:100%;max-height:none;background-position:center bottom;
+ filter:hue-rotate(var(--boss-shift,0deg)) drop-shadow(0 0 12px #ff8535a6)
+  drop-shadow(0 0 36px #ef69337b) drop-shadow(0 13px 9px #04070c)
+}
+.arena-live .combat-boss .monster-shadow{
+ width:75%;height:16px;opacity:.85;background:#000d;filter:blur(8px)
+}
+.arena-live .combat-hero-line{left:45%;width:53%;bottom:5%;height:78%;z-index:5;gap:clamp(1px,.6vw,9px)}
+.arena-live .combat-hero{position:relative;max-width:33.333%;filter:drop-shadow(0 11px 8px #030711e8)}
+.arena-live .combat-hero::before{
+ content:"";position:absolute;left:14%;right:14%;bottom:20px;height:20px;
+ border-radius:50%;background:var(--cin-ice);filter:blur(17px);opacity:.18;
+ pointer-events:none
+}
+.arena-live .combat-hero-portrait .combat-hero-symbol{
+ width:min(100%,152px);height:clamp(110px,25vh,265px);
+ max-height:80%;filter:drop-shadow(0 12px 6px #05070ddd) drop-shadow(0 0 17px #b1d6ff86)
+}
+.arena-live .combat-hero-portrait.combat-hero-2 .combat-hero-symbol{
+ filter:drop-shadow(0 12px 6px #05070ddd) drop-shadow(0 0 17px #c3aaff86)
+}
+.arena-live .combat-hero-portrait.combat-hero-3 .combat-hero-symbol{
+ filter:drop-shadow(0 12px 6px #05070ddd) drop-shadow(0 0 18px #ffdc9594)
+}
+.arena-live .combat-hero-name{
+ padding:5px 9px;border-radius:8px;letter-spacing:.02em;
+ background:linear-gradient(115deg,#111a2bf4,#263047ef);
+ border-color:#e8c18ac4;box-shadow:0 5px 10px #010610b8,inset 0 1px #ffffff14;
+}
+.arena-live .combat-cue{
+ position:relative;z-index:9;max-width:calc(100% - 20px);
+ background:linear-gradient(95deg,#14172cf0,#24213cf0);
+ border:1px solid #eabf7b;border-radius:999px;
+ color:#ffe3a8;box-shadow:0 4px 16px #000a,0 0 14px #e8a16626;
+ text-shadow:0 1px 5px #000a
+}
+.arena-live .monster-caption{
+ position:relative;z-index:9;color:#ffe6ce;
+ background:linear-gradient(90deg,#141b2ae9,#2a1f2ee7);
+ border-color:#c8a2708e;box-shadow:0 5px 14px #0008
+}
+.arena-live .embers{opacity:.58;letter-spacing:1.3em;filter:drop-shadow(0 0 8px #ffa059)}
+/* Tension transitions are tied only to the existing server-derived cue. */
+.arena-live .combat-scene[data-cue="dodge"]{
+ box-shadow:inset 0 0 55px #e0443552,0 0 0 1px #ff645e88
+}
+.arena-live .combat-scene[data-cue="reaction"] .combat-stage::after{opacity:.16}
+.arena-live .combat-scene[data-cue="target"] .combat-stage::after{opacity:.15}
+.arena-live .combat-scene:is([data-cue="attackScene"],[data-cue="finale"]).live-exchange-attack .combat-stage::after{opacity:.25}
+.arena-live .combat-scene.live-exchange-attack .live-exchange-boss-impact{
+ filter:drop-shadow(0 0 25px #ffda75) saturate(1.4)
+}
+.arena-live .combat-scene.live-exchange-defense .live-exchange-shield-dome{
+ box-shadow:0 0 35px #83eaff,inset 0 0 50px #abebff;
+ border-color:#dcfbff
+}
+.arena-live .live-hit-label{font-size:clamp(18px,2.3vw,33px);color:#d2ffd7}
+.arena-live .live-challenge{
+ position:relative;border-radius:16px;
+ border:1px solid #7fa4c2b5;
+ background:linear-gradient(145deg,#16253ced,#0c182bee 65%,#15243ae9);
+ box-shadow:inset 0 1px #d8ecff21,inset 0 0 32px #407cb81d,0 14px 25px #030915b3
+}
+.arena-live .live-challenge::before{
+ content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+ background:radial-gradient(ellipse at 50% 1%,#93c5ed15,transparent 60%)
+}
+.arena-live .live-challenge-heading{
+ position:relative;z-index:1;padding:11px 15px;
+ background:linear-gradient(105deg,#263c55,#182a42);
+ border-bottom:1px solid #9db4c384;
+ text-shadow:0 2px 8px #0008
+}
+.arena-live .live-challenge-content{position:relative;z-index:1}
+.arena-live .live-mini-prompt strong{color:#ffe6b5}
+.arena-live .mini-choice{
+ border:1px solid #98bdd3;outline:1px solid #e1eef526;
+ background:linear-gradient(135deg,#33415c,#17253d);
+ box-shadow:inset 0 1px #f8ffff2a,0 6px 14px #01081385;
+ transition:filter .12s ease,transform .12s ease,border-color .12s ease
+}
+.arena-live .mini-choice:not(:disabled):active{transform:scale(.97);filter:brightness(1.22)}
+.arena-live .mini-choice:focus-visible{outline:3px solid #ffe28e;outline-offset:3px}
+.arena-live .mini-choice.mini-danger{background:linear-gradient(145deg,#7b3031,#44272c);border-color:#fc8d73}
+.arena-live .mini-target.mini-weakpoint{border-color:#ffc970;box-shadow:0 0 16px #ffb75d7b}
+.arena-live .live-rounds{
+ border-color:#b98d5c9c;background:linear-gradient(110deg,#191d31f2,#131f32ee);
+ box-shadow:inset 0 1px #ffd69f14,0 6px 20px #0005
+}
+.arena-live .live-round-steps:has(> .live-round-step:nth-child(4):not([hidden])){
+ grid-template-columns:repeat(4,minmax(0,1fr))
+}
+.arena-live .live-round-step{
+ border:1px solid #6887a063;background:#1b2b41c8;
+ box-shadow:inset 0 1px #f0f7ff12
+}
+.arena-live .live-round-step.is-current{
+ border-color:#f8cb82;color:#ffebb9;
+ background:linear-gradient(140deg,#765033,#4a3040);
+ box-shadow:0 0 16px #ffa54a53,inset 0 1px #ffe7b93b
+}
+.arena-live .live-round-step.is-correct{
+ background:linear-gradient(130deg,#1a6048,#153d39);color:#c5ffd5
+}
+.arena-live .live-round-step.is-wrong{
+ background:linear-gradient(130deg,#6e343d,#462a38);color:#ffd9d0
+}
+.arena-live .live-stage-announcement{
+ border:1px solid #ffe0a2;border-radius:16px;
+ background:linear-gradient(145deg,#101d34f7,#3a2638f2);
+ box-shadow:0 12px 45px #000b,0 0 24px #ffc5705c
+}
+/* Full-screen payoff: team result must read in a single glance. */
+.arena-live .live-cinematic{
+ border:1px solid #ffd99a;
+ background:linear-gradient(90deg,#060a1670 0%,#080d1b55 34%,#0b1222cf 56%,#0a1223f4 100%),
+  radial-gradient(ellipse at 34% 42%,#ffad4f23,transparent 49%);
+ box-shadow:inset 0 0 0 1px #ffffc329,inset 0 0 85px #03060d94,0 0 25px #ffb65c43
+}
+.arena-live .live-cinematic-header{
+ background:linear-gradient(100deg,#24192cf0,#2c293ff0);
+ border-color:#d3a975;border-left:4px solid #ffcc88
+}
+.arena-live .live-cinematic-stage{justify-content:flex-end}
+.arena-live .live-cinematic-rune{
+ font-size:clamp(54px,7vw,108px);width:clamp(60px,9vw,130px);
+ height:clamp(60px,9vw,130px);display:block;font-size:0!important;
+ background:url("./dog-boss-art/arena-rune-crest.svg") center/contain no-repeat;
+ filter:drop-shadow(0 0 17px #ffc174b7);
+ animation:cin-crest 4.2s ease-in-out infinite alternate
+}
+.arena-live .live-cinematic-stage #cinematic-action-label{
+ padding:10px 18px;font-size:clamp(15px,1.8vw,28px);
+ border-color:#ffd591;background:#101729e9;box-shadow:0 0 17px #ff8d4541
+}
+.arena-live .live-cinematic-panel{
+ border:1px solid #f4ce89;
+ background:linear-gradient(150deg,#122239f6,#161c32f7 45%,#2f2234fa);
+ box-shadow:inset 0 0 0 1px #ffd68f1a,inset 0 0 45px #eaa16a1a,0 20px 42px #000b
+}
+.arena-live .live-cinematic-score{
+ font-size:clamp(45px,4.5vw,85px);color:#fff2d2;text-shadow:0 4px 16px #000d,0 0 20px #ffb85f56
+}
+.arena-live .live-cinematic-bonus{
+ border:1px solid #d3bc8b;
+ background:linear-gradient(110deg,#2c3044f1,#263e50ed);
+ box-shadow:inset 0 1px #fff0b92b
+}
+.arena-live .live-cinematic-bonus strong{
+ font-size:clamp(40px,3.9vw,70px);color:#aaffc5;text-shadow:0 0 18px #69dd8b5c
+}
+.arena-live .live-cinematic.is-defense .live-cinematic-bonus strong{color:#a7ebff}
+.arena-live .live-cinematic-cumulative{
+ padding:5px 12px;min-height:1.7em;border-radius:8px;background:#121b2ad9;color:#fff2c6;
+ font-size:clamp(12px,1.08vw,17px)
+}
+.arena-live .live-cinematic-footer{
+ background:#0e192cef;border-color:#af9c82;box-shadow:inset 0 1px #fff3d915
+}
+.boss-preflight{
+ background:
+  linear-gradient(180deg,#080e1bc4,#0c111d8c 48%,#090f1bbd),
+  url("./dog-boss-art/arena-volcano-cinematic.svg") center/cover no-repeat;
+ border-color:#e2b877;
+ box-shadow:0 0 0 3px #04070f,0 20px 75px #000b,inset 0 0 78px #060b17bd
+}
+.preflight-monster{
+ background:radial-gradient(ellipse at 49% 55%,#ff8a3e45,transparent 51%),
+  linear-gradient(180deg,#10162522 27%,#090e1bc9 100%)
+}
+.preflight-monster img{
+ filter:drop-shadow(0 20px 19px #000e) drop-shadow(0 0 28px #ff8b4b8f)
+}
+@keyframes cin-ash{0%{opacity:.25;transform:translateY(0)}100%{opacity:.8;transform:translateY(-10px)}}
+@keyframes cin-crest{from{transform:scale(.95) rotate(-6deg)}to{transform:scale(1.1) rotate(7deg)}}
+@media (orientation:landscape) and (min-width:900px) and (max-height:720px){
+ .arena-live .live-arena-heading{padding-bottom:4px}
+ .arena-live .live-heading-text h2{font-size:clamp(23px,2.15vw,33px)}
+ .arena-live .combat-boss{height:91%}
+ .arena-live .combat-hero-portrait .combat-hero-symbol{height:clamp(90px,20vh,170px)}
+ .arena-live .live-cinematic-score{font-size:clamp(41px,3.5vw,65px)}
+ .arena-live .live-cinematic-bonus strong{font-size:clamp(35px,3vw,54px)}
+}
+@media(max-width:899px),(orientation:portrait){
+ .arena-live .combat-scene{min-height:240px}
+ .arena-live .combat-boss{height:83%;width:43%}
+ .arena-live .combat-hero-portrait .combat-hero-symbol{height:clamp(88px,18vw,156px)}
+ .arena-live .live-cinematic{background:linear-gradient(0deg,#080f1af2,#090f1bbd)}
+ .arena-live .live-cinematic-panel{min-height:0}
+ .arena-live .live-cinematic-rune{display:none}
+}
+@media(max-width:620px){
+ .arena-live .live-round-steps:has(> .live-round-step:nth-child(4):not([hidden])){
+  grid-template-columns:repeat(2,minmax(0,1fr))
+ }
+ .arena-live .combat-hero-name{padding:3px 4px}
+ .arena-live .live-cinematic-score{font-size:clamp(34px,9vw,60px)}
+ .arena-live .live-cinematic-bonus strong{font-size:clamp(30px,8vw,54px)}
+ .arena-live .live-cinematic-header strong{font-size:clamp(14px,4vw,22px)}
+}
+@media(prefers-reduced-motion:reduce){
+ .arena-live .combat-scene::after,.arena-live .live-cinematic-rune{animation:none!important}
+ .arena-live .mini-choice{transition:none}
+}
