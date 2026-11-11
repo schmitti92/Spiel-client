@@ -40,35 +40,39 @@ function fakeUI(version=7){
     cumulativeExtraDamage:270,stages}}};
  return{ui:window.DogBossLiveUI.create(root),node,view};
 }
-test('new 14-second scene uses server timeline and visibly counts 14, 9, then 5',()=>{
+test('14-second scene keeps combat readable until the final spectacular 5s countdown',()=>{
  const {ui,node,view}=fakeUI();
  ui.update(view,at+12100);
  assert.equal(node('live-cinematic').hidden,false);
- assert.equal(node('cinematic-grand-countdown').hidden,false);
- assert.equal(node('cinematic-grand-digit').textContent,'14');
+ assert.equal(node('cinematic-grand-countdown').hidden,true);
  assert.equal(node('live-cinematic').dataset.showVersion,'7');
  assert.equal(node('live-cinematic').dataset.showPhase,'impact');
- assert.equal(node('cinematic-grand-label').textContent,'NÄCHSTE RUNDE IN');
- assert.match(node('cinematic-grand-next').textContent,/Ausweichen/);
- assert.equal(node('cinematic-grand-ring').style['--show-sweep'],
-  (360*13900/14000).toFixed(2)+'deg');
  ui.update(view,at+17000);
- assert.equal(node('cinematic-grand-digit').textContent,'9');
+ assert.equal(node('cinematic-grand-countdown').hidden,true);
  assert.equal(node('live-cinematic').dataset.showPhase,'result');
  ui.update(view,at+21000);
+ assert.equal(node('cinematic-grand-countdown').hidden,false);
  assert.equal(node('cinematic-grand-digit').textContent,'5');
  assert.equal(node('live-cinematic').dataset.showPhase,'countdown');
- assert.equal(node('cinematic-grand-ring').style['--show-sweep'],
-  (360*5000/14000).toFixed(2)+'deg');
+ assert.equal(node('cinematic-grand-label').textContent,'NÄCHSTE RUNDE IN');
+ assert.match(node('cinematic-grand-next').textContent,/Ausweichen/);
+ assert.equal(node('cinematic-grand-ring').style['--show-sweep'],'360.00deg');
+ ui.update(view,at+22000);
+ assert.equal(node('cinematic-grand-digit').textContent,'4');
  ui.update(view,at+25850);
  assert.equal(node('cinematic-grand-digit').textContent,'1');
  ui.update(view,at+26000);
  assert.equal(node('live-cinematic').hidden,true);
  assert.equal(node('cinematic-grand-countdown').hidden,true);
+ assert.equal(node('cinematic-start-flash').hidden,false);
+ ui.update(view,at+26950);
+ assert.equal(node('cinematic-start-flash').hidden,true);
 });
 test('last interlude counts down to finale rather than claiming another minigame',()=>{
  const {ui,node,view}=fakeUI();
  ui.update(view,at+78100);
+ assert.equal(node('cinematic-grand-countdown').hidden,true);
+ ui.update(view,at+87000);
  assert.equal(node('cinematic-grand-countdown').hidden,false);
  assert.equal(node('cinematic-grand-label').textContent,'FINALE IN');
  assert.match(node('cinematic-grand-next').textContent,/Finale Auswertung/);
