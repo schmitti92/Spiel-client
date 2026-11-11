@@ -1,5 +1,5 @@
 import {createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
-import {DEFAULT_APPEARANCE,BOARD_STYLES,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance} from './appearance-registry.js?v=11';
+import {DEFAULT_APPEARANCE,BOARD_STYLES,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=12';
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=10';
 
 const $=id=>document.getElementById(id);
@@ -132,7 +132,7 @@ function drawBoard(){
   push('<rect x="27" y="27" width="706" height="706" rx="30" fill="#051323" stroke="#ead4a4" stroke-opacity=".66" stroke-width="2"/>');
   push('<rect x="35" y="35" width="690" height="690" rx="25" fill="url(#dog-blue)"/>');
   // Optional trusted image asset specified by a built-in board theme.
-  if(skin.image&&/^\.\/assets\/[a-z0-9_./-]+\.(?:png|webp|jpe?g|svg)$/i.test(skin.image))
+  if(validAssetPath(skin.image))
     push('<image href="'+skin.image+'" x="35" y="35" width="690" height="690" preserveAspectRatio="xMidYMid slice" opacity=".94" pointer-events="none"/>');
   push('<rect x="35" y="35" width="690" height="690" rx="25" fill="url(#dog-speckle)"/>');
   push('<rect x="41" y="41" width="678" height="678" rx="20" fill="none" stroke="'+skin.edge+'" stroke-opacity=".27" stroke-width="1.5"/>');
@@ -353,12 +353,12 @@ function applyAppearance(){
   const variables={
     '--dog-page-bg':look.board.page,
     '--dog-frame-bg':look.board.frame,
-    '--dog-card-face':look.cards.face,
-    '--dog-card-special':look.cards.special,
+    '--dog-card-face':assetBackground(look.cards.faceImage,look.cards.face),
+    '--dog-card-special':assetBackground(look.cards.specialImage,look.cards.special),
     '--dog-card-border':look.cards.border,
     '--dog-card-special-border':look.cards.specialBorder,
     '--dog-card-ink':look.cards.ink,
-    '--dog-card-back':look.cards.back
+    '--dog-card-back':assetBackground(look.cards.backImage,look.cards.back)
   };
   for(const [name,value] of Object.entries(variables))
     document.documentElement.style.setProperty(name,value);
