@@ -119,7 +119,7 @@
   secondaryImpact.hidden=true;
   dodgeLayer.append?.(weaponTrail,weapon,primaryImpact,secondaryImpact);
   root.append?.(dodgeLayer);
-  let weaponSession='',swingCount=0;
+  let weaponSession='';
   const lanesX=lanes=>lanes===2?[62,85]:[54,74,92];
   function clearDodgeClasses(){
    for(const hero of heroNodes.values()){
@@ -203,16 +203,17 @@
     const offset=-Math.min(span,Math.max(0,elapsed-strike.startMs));
     dodgeLayer.style?.setProperty?.('--boss-swing-offset',offset+'ms');
     weapon.classList?.remove('battle-weapon-swing');
+    boss?.classList?.remove('battle-boss-strike');
     weaponTrail.classList?.remove('battle-weapon-swing');
     primaryImpact.classList?.remove('battle-weapon-swing');
     secondaryImpact.classList?.remove('battle-weapon-swing');
     void weapon.offsetWidth;
     weapon.classList?.add('battle-weapon-swing');
+    boss?.classList?.add('battle-boss-strike');
     weaponTrail.classList?.add('battle-weapon-swing');
     primaryImpact.classList?.add('battle-weapon-swing');
     if(second!==null)secondaryImpact.classList?.add('battle-weapon-swing');
     root.dataset.bossSwing='armed';
-    swingCount++;
    }
    root.dataset.bossSwing=impact?'impact':'windup';
    dangerCells.forEach((cell,i)=>{
