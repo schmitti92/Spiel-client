@@ -134,7 +134,7 @@ test('All ten shared bosses launch directly from their map gates, preserving the
   assert.match(byId('gate-boss-button').href,
    new RegExp('dog-group-boss.html\\?gate='+gate+'&room=123'));
   assert.match(byId('gate-boss-button').textContent,
-   new RegExp('Boss '+gate));
+   new RegExp('Gruppenboss '+gate));
  }
  assert.match(byId('gate-fight-status').textContent,/Boss 90/);
 });
