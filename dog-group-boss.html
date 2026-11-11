@@ -4,17 +4,17 @@
  <meta charset="utf-8">
  <meta name="viewport" content="width=device-width,initial-scale=1">
  <meta name="theme-color" content="#140e16">
- <meta name="description" content="Die 100 Tore – Gruppenboss 20 bis 100. Mit einem, zwei oder drei Helden in die 40-Sekunden-Arena.">
+ <meta name="description" content="Die 100 Tore – Gruppenboss 20 bis 100. Mit einem, zwei oder drei Helden in die 50-Sekunden-Arena.">
  <title>🐉 Gruppenboss · Die 100 Tore</title>
  <link rel="stylesheet" href="./dog-boss10.css?v=20261111-combat-fx1">
  <link rel="stylesheet" href="./dog-boss-preflight.css?v=20261111-v3-tablet-fit">
- <link rel="stylesheet" href="./dog-boss-live.css?v=20261111-v7-strike-fx">
+ <link rel="stylesheet" href="./dog-boss-live.css?v=20261111-v8-cinematic50">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
  <script src="./dog-boss-mini-ui.js?v=20261111-v6-exchange" defer></script>
  <script src="./dog-boss-combat-fx.js?v=20261111-v6-exchange" defer></script>
  <script src="./dog-boss-preflight.js?v=20261111-v1" defer></script>
- <script src="./dog-boss-live-ui.js?v=20261111-v8-strike-fx" defer></script>
+ <script src="./dog-boss-live-ui.js?v=20261111-v9-cinematic50" defer></script>
  <script src="./dog-group-boss.js?v=20261111-v5-exchange" defer></script>
  <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 </head>
@@ -52,7 +52,7 @@
      <h2>⚔️ BOSS-INFORMATION</h2>
      <dl>
       <div><dt>🚪 Tor</dt><dd id="preflight-gate">10 / 100</dd></div>
-      <div><dt>⏱️ Kampfzeit</dt><dd>40 Sekunden</dd></div>
+      <div><dt>⏱️ Kampfzeit</dt><dd>50 Sekunden</dd></div>
       <div><dt>🎯 Herausforderungen</dt><dd>4 Minispiele · Angriff und Verteidigung</dd></div>
       <div><dt>🛡️ Erfolgsfaktor</dt><dd>Ausrüstung & Teamleistung</dd></div>
      </dl>
@@ -101,10 +101,10 @@
   <header class="opening">
    <div class="eyebrow" id="group-kicker">GRUPPENBOSS · DIE 100 TORE</div>
    <h1>Die Prüfung des <span id="group-title">Wächters</span></h1>
-   <p>Ein, zwei oder drei Helden können antreten. Allein ist ein Sieg unmöglich; zu zweit gelingt er nur mit maximaler Vorbereitung und außergewöhnlichem Glück. In 40 Sekunden erscheinen vier feste Minispiele: Ausweichen, Timing, Blitz-Mathe oder Zieltreffer. Bei späteren Bossen werden die Aufgaben deutlich schwieriger. Die Ausrüstung ist weiterhin entscheidend.</p>
+   <p>Ein, zwei oder drei Helden können antreten. Allein ist ein Sieg unmöglich; zu zweit gelingt er nur mit maximaler Vorbereitung und außergewöhnlichem Glück. In 50 Sekunden erscheinen vier feste Minispiele: Blitz-Mathe, Ausweichen, Zieltreffer und Reaktion. Bei späteren Bossen werden die Aufgaben deutlich schwieriger. Die Ausrüstung ist weiterhin entscheidend.</p>
    <div class="score">
     <div><small>🐉 GEGNER</small><strong id="group-enemy">Wächter</strong></div>
-    <div><small>⏱️ KAMPFDAUER</small><strong>40 Sekunden</strong></div>
+    <div><small>⏱️ KAMPFDAUER</small><strong>50 Sekunden</strong></div>
     <div><small>⚒️ SIEGBELOHNUNG</small><strong id="group-reward">Schmiedeaufstieg</strong></div>
    </div>
   </header>
@@ -123,7 +123,7 @@
      <div class="live-shield-track"><span id="live-shield-fill"></span></div>
     </div>
     <div class="live-timer">
-     <div class="timer-row"><span>⏱️ KAMPFZEIT</span><strong id="timer" role="timer">00:40</strong></div>
+     <div class="timer-row"><span>⏱️ KAMPFZEIT</span><strong id="timer" role="timer">00:50</strong></div>
      <div class="timer-bar"><span id="timer-fill"></span></div>
     </div>
    </div>
@@ -170,6 +170,32 @@
       <div id="outcome" class="outcome" hidden aria-live="polite"></div>
      </div>
     </section>
+    <section class="live-cinematic" id="live-cinematic" hidden aria-label="Gemeinsame Kampf-Zwischensequenz" aria-live="polite">
+     <header class="live-cinematic-header">
+      <span>🎬 KAMPFSEQUENZ</span>
+      <strong id="cinematic-header">⚔️ TEAMANGRIFF</strong>
+      <span id="cinematic-countdown">4,5 s</span>
+     </header>
+     <div class="live-cinematic-stage" aria-hidden="true">
+      <span class="live-cinematic-rune">✦</span>
+      <span id="cinematic-action-label">GEMEINSAMER SCHLAG</span>
+     </div>
+     <div class="live-cinematic-panel">
+      <div class="live-cinematic-eyebrow" id="cinematic-eyebrow">UNSER GEMEINSAMES ERGEBNIS</div>
+      <div class="live-cinematic-score" id="cinematic-score">0 / 24</div>
+      <div class="live-cinematic-score-description" id="cinematic-score-description">Richtige Aufgaben im Team</div>
+      <div class="live-cinematic-bonus">
+       <small id="cinematic-bonus-label">⚔️ EXTRA-ANGRIFFSPOTENZIAL</small>
+       <strong id="cinematic-bonus">+0</strong>
+       <span id="cinematic-bonus-detail">Zusätzlicher Angriff vor der finalen LP-Wertung</span>
+      </div>
+      <div class="live-cinematic-cumulative" id="cinematic-cumulative">Gesamtbonus bisher: +0</div>
+     </div>
+     <footer class="live-cinematic-footer">
+      <span id="cinematic-next">Nächstes Minispiel startet gleich</span>
+      <span class="live-cinematic-progress"><span id="cinematic-progress"></span></span>
+     </footer>
+    </section>
    </div>
    <div class="live-rounds">
     <span class="live-rounds-title">⚡ KAMPFABLAUF</span>
@@ -195,7 +221,7 @@
     <button id="react-button" class="reaction-button" type="button" hidden disabled>⚡ Reaktion! Angriff verstärken</button>
     <button id="retry-button" class="retry-button" type="button" hidden>↻ Offenen Auftrag sicher wiederholen</button>
    </div>
-   <p class="note">Jeder teilnehmende Spieler muss die normalen Tore vor seinem jeweiligen Gruppenboss geschafft haben. Mini-Bosse bleiben optional. Der vorherige gemeinsame Boss muss besiegt sein. Wer bereit ist, darf den 40-Sekunden-Kampf auch allein oder zu zweit starten. Sobald alle drei bereit sind, beginnt der Kampf automatisch. Nur Spieler, die vor dem Start bereit waren, kämpfen mit. Allein ist der Sieg ausgeschlossen; zu zweit ist er nur mit maximalen Werten, mindestens zwei richtigen Minispielen pro Held und sehr viel Glück möglich. Ein serverseitig bestätigter Sieg schaltet die nächste Schmiedestufe für das Team frei. Nach einer Niederlage gilt eine gemeinsame Kampfpause von 10 Minuten.</p>
+   <p class="note">Jeder teilnehmende Spieler muss die normalen Tore vor seinem jeweiligen Gruppenboss geschafft haben. Mini-Bosse bleiben optional. Der vorherige gemeinsame Boss muss besiegt sein. Wer bereit ist, darf den 50-Sekunden-Kampf auch allein oder zu zweit starten. Sobald alle drei bereit sind, beginnt der Kampf automatisch. Nur Spieler, die vor dem Start bereit waren, kämpfen mit. Allein ist der Sieg ausgeschlossen; zu zweit ist er nur mit maximalen Werten, mindestens zwei richtigen Minispielen pro Held und sehr viel Glück möglich. Ein serverseitig bestätigter Sieg schaltet die nächste Schmiedestufe für das Team frei. Nach einer Niederlage gilt eine gemeinsame Kampfpause von 10 Minuten.</p>
   </section>
   <footer>Die 100 Tore · Gruppenbosse 20–100 · Das Ergebnis wird ausschließlich vom Server bestätigt</footer>
  </main>
