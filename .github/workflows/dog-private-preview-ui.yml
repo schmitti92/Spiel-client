@@ -1,0 +1,21 @@
+name: Private 100-Tore Pilot UI
+on:
+  push:
+    paths:
+      - 'dog-private-preview.html'
+      - 'dog-private-preview.js'
+      - 'dog-private-preview.css'
+      - 'DealOrNoDeal/lobby.html'
+      - 'tests/dog-private-preview-ui.test.mjs'
+      - '.github/workflows/dog-private-preview-ui.yml'
+  workflow_dispatch:
+jobs:
+  pilot-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check dog-private-preview.js
+      - run: node --test tests/dog-private-preview-ui.test.mjs

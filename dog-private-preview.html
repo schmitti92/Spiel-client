@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>⚔️ Die 100 Tore – privater Test mit 2 Bots</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="./dog-private-preview.css?v=1">
+<script src="./profile-config.js"></script>
+<script src="./profile-auth.js"></script>
+<script src="./dog-private-preview.js?v=1" defer></script>
+</head>
+<body>
+<header class="header">
+ <a href="./DealOrNoDeal/lobby.html" class="back">← Spiellobby</a>
+ <strong>⚔️ DIE 100 TORE</strong>
+ <span class="mode">🔒 Privater Test</span>
+</header>
+<main>
+ <section id="intro" class="panel entrance">
+  <div class="hero-emblem">🗝️</div>
+  <h1>Deine geheime Expedition</h1>
+  <p>Ein echtes Spielerprofil, zwei simulierte Verbündete. Keine weiteren Geräte notwendig. Hier verwendest du <strong>nur einen getrennten Testspielstand</strong> – echte Materialien, DOG-Freischaltungen und Weihnachtspreise bleiben unberührt.</p>
+  <div class="access-row">
+   <input type="password" id="test-code" autocomplete="off" spellcheck="false" placeholder="Privaten Testcode eingeben">
+   <button type="button" id="unlock">🗝️ Testzugang öffnen</button>
+  </div>
+  <button type="button" id="login" class="secondary" hidden>🔐 Mit dem Spielprofil anmelden</button>
+  <p id="access-status" role="status">Prüfe Anmeldung und Testzugang …</p>
+ </section>
+ <div id="app" hidden>
+  <section class="overview panel">
+   <div>
+    <p class="eyebrow">EINE EXPEDITION · DREI HELDEN</p>
+    <h1>100 Tore bis zum letzten Wächter</h1>
+    <p class="subline">Du spielst selbst. Nova und Titan übernehmen automatisch ihre Plätze, Bereitmeldungen und Reaktionsaufgaben.</p>
+   </div>
+   <div class="overview-stats">
+    <div><strong id="overall-gate">1</strong><small>Dein Tor</small></div>
+    <div><strong id="overall-bosses">0 / 10</strong><small>Gruppenbosse</small></div>
+    <div><strong id="overall-chests">0</strong><small>Testkisten</small></div>
+   </div>
+  </section>
+  <div class="notice" role="note">🧪 <strong>Testmodus:</strong> Die beiden Bots sind serverseitig aktiv. Schnelltests können Kapitel überspringen. Ein echter Drei-Geräte-Verbindungstest wird dadurch nicht ersetzt.</div>
+  <button type="button" class="secondary" id="retry-action" hidden>↻ Letzte Testaktion sicher wiederholen</button>
+  <section class="panel">
+   <h2>🛡️ Die Heldengruppe</h2>
+   <div id="party" class="party"></div>
+  </section>
+  <section class="panel">
+   <div class="heading"><h2>🗺️ Die Karte der 100 Tore</h2><span>10 Kapitel · 10 Wächter</span></div>
+   <p class="subline">Goldene Felder sind Gruppenbosse, violette Felder Mini-Bosse. Wähle ein freigeschaltetes Tor, um es zu spielen.</p>
+   <div id="gate-grid" class="gate-grid" aria-label="100 Tore"></div>
+   <div id="gate-status" class="message" role="status"></div>
+  </section>
+  <section class="panel boss-panel" id="boss-panel">
+   <div class="heading"><h2>🐉 Gemeinsamer Bosskampf</h2><span id="boss-status"></span></div>
+   <div class="boss-hero">
+    <img id="boss-image" src="./dog-boss-art/schattenfuerst.svg" alt="" loading="lazy">
+    <div class="boss-info">
+     <p class="eyebrow" id="boss-gate-label">TOR 10</p>
+     <h3 id="boss-title">Der Aschewächter</h3>
+     <div class="health"><div id="boss-health"></div></div>
+     <p id="boss-hp">Boss-Lebenspunkte</p>
+     <p id="boss-timer">00:30</p>
+    </div>
+   </div>
+   <div id="boss-people" class="roster"></div>
+   <p id="boss-info" class="message"></p>
+   <button type="button" id="ready" class="primary">⚔️ Gemeinsam bereit – Boss starten</button>
+   <div id="challenge" class="challenge" hidden></div>
+   <div id="boss-result" class="message"></div>
+  </section>
+  <div class="two-columns">
+   <section class="panel">
+    <h2>📦 Materialkisten testen</h2>
+    <p class="subline">Simuliert eine verdiente Deal-Partie – ausschließlich für diesen Testspielstand.</p>
+    <button id="chest" type="button" class="secondary">🎁 Eine Test-Materialkiste verdienen</button>
+    <div id="chest-list" class="chest-list"></div>
+    <h3>Rohstofflager</h3>
+    <div id="resources" class="resources"></div>
+   </section>
+   <section class="panel">
+    <h2>⚒️ Test-Schmiede</h2>
+    <p class="subline">Waffe, Rüstung und Fähigkeiten nach den tatsächlichen Event-Rezepten verbessern.</p>
+    <div id="forge-items" class="forge-list"></div>
+   </section>
+  </div>
+  <section class="panel controls">
+   <h2>🧪 Erweiterte Teststeuerung</h2>
+   <p>Für einen schnellen Boss-Test kannst du die Voraussetzungen für ein Kapitel vorbereiten. Das ersetzt nur den privaten Testfortschritt.</p>
+   <div class="access-row"><select id="chapter"><option value="10">Tor 10 – Aschewächter</option><option value="20">Tor 20 – Schattenfürst</option><option value="30">Tor 30 – Kristallwurm</option><option value="40">Tor 40 – Dornenkönig</option><option value="50">Tor 50 – Hüter der Tiefe</option><option value="60">Tor 60 – Flammendrache</option><option value="70">Tor 70 – Seelenrichter</option><option value="80">Tor 80 – Eisenkoloss</option><option value="90">Tor 90 – Festungswächter</option><option value="100">Tor 100 – Der letzte Wächter</option></select>
+   <button type="button" id="prepare" class="secondary">Kapitel als Schnelltest laden</button></div>
+   <button type="button" id="reset" class="danger">🔄 Privaten Testfortschritt zurücksetzen</button>
+  </section>
+  <p class="foot">Nur mit privatem Zugang und dem zuerst freigeschalteten Spielerprofil nutzbar. Der Test kann jederzeit wieder geschlossen werden.</p>
+ </div>
+</main>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
