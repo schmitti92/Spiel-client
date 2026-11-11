@@ -1,0 +1,15 @@
+/* One-time personal x2 boost, visible only before personal case selection. */
+.deal-double-boost{position:relative;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:clamp(8px,1.3vw,16px);padding:clamp(9px,1.2vw,15px);margin:3px auto 12px;width:min(100%,860px);border:1px solid #ffdf8799;border-radius:16px;background:linear-gradient(110deg,#0e1930f0,#422c19f0 58%,#151f32f0);box-shadow:0 7px 23px #0006,inset 0 1px #fff3;color:#fff3d0}
+.deal-double-boost[hidden],.deal-double-boost [hidden]{display:none!important}
+.deal-double-boost-mark{font-size:clamp(16px,2vw,26px);font-weight:1000;color:#ffdc7e;text-shadow:0 2px 12px #e7b44788;white-space:nowrap}
+.deal-double-boost-copy{flex:1 1 190px;min-width:0;display:flex;flex-direction:column;gap:3px;font-size:clamp(10px,1.1vw,13px);line-height:1.3}
+.deal-double-boost-copy strong{font-size:clamp(12px,1.4vw,17px);font-weight:900;color:#ffe3a4}
+.deal-double-boost-copy span{color:#f6e3c0}
+.deal-double-boost-copy small{color:#e9cb93;font-size:clamp(10px,1vw,12px)}
+#deal-double-boost-buy{flex:0 1 auto;border:1px solid #fff6c0;border-radius:12px;padding:11px 16px;min-height:40px;background:linear-gradient(#ffde83,#c28a2a);box-shadow:0 4px 15px #0005;color:#301d08;font:inherit;font-size:clamp(11px,1.2vw,14px);font-weight:900;cursor:pointer}
+#deal-double-boost-buy:hover:not(:disabled){filter:brightness(1.13)}
+#deal-double-boost-buy:disabled{opacity:.58;cursor:wait}
+.deal-double-boost-active{font-size:clamp(12px,1.5vw,17px);font-weight:1000;color:#dbffba;letter-spacing:.04em}
+.deal-double-boost[data-active="yes"]{border-color:#d5f7a4aa;background:linear-gradient(110deg,#102a22f0,#263a28f0,#0f1e24f0)}
+@media(max-width:600px){.deal-double-boost{gap:7px;margin-bottom:8px}.deal-double-boost-mark{display:none}#deal-double-boost-buy{width:100%}}
+@media(prefers-reduced-motion:reduce){#deal-double-boost-buy{transition:none}}
