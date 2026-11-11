@@ -175,6 +175,9 @@
 .arena-live .combat-scene[data-battle-version="5"].live-exchange-defense .live-exchange-counterbolt,
 .arena-live .combat-scene[data-battle-version="5"].live-exchange-defense .live-exchange-shield-dome,
 .arena-live .combat-scene[data-battle-version="5"].live-exchange-attack .live-exchange-boss-impact,
+.arena-live .combat-scene[data-battle-version="6"].live-exchange-attack .live-exchange-bolt,
+.arena-live .combat-scene[data-battle-version="6"].live-exchange-defense .live-exchange-counterbolt,
+.arena-live .combat-scene[data-battle-version="6"].live-exchange-defense .live-exchange-shield-dome,
 .arena-live .combat-scene[data-battle-version="6"].live-exchange-attack .live-exchange-boss-impact{
  animation-duration:6.2s;animation-fill-mode:both;
 }
@@ -221,7 +224,11 @@
  .arena-live .combat-scene[data-battle-version="5"].live-exchange-attack .combat-hero-line,
  .arena-live .combat-scene[data-battle-version="5"].live-exchange-defense .combat-hero-line,
  .arena-live .combat-scene[data-battle-version="5"].live-exchange-attack .combat-boss,
- .arena-live .combat-scene[data-battle-version="5"].live-exchange-defense .combat-boss{
+ .arena-live .combat-scene[data-battle-version="5"].live-exchange-defense .combat-boss,
+ .arena-live .combat-scene[data-battle-version="6"].live-exchange-attack .combat-hero-line,
+ .arena-live .combat-scene[data-battle-version="6"].live-exchange-defense .combat-hero-line,
+ .arena-live .combat-scene[data-battle-version="6"].live-exchange-attack .combat-boss,
+ .arena-live .combat-scene[data-battle-version="6"].live-exchange-defense .combat-boss{
   animation:none!important;transition:none!important
  }
  .arena-live .battle-dodge-lane.is-danger{animation:none}
