@@ -35,7 +35,7 @@ test('the original server-supplied final values and winner logic remain authorit
  assert.ok(finale.includes('const openAfter=reduced?180:1450;'));
  assert.ok(finale.includes("finaleLater(()=>showMiniCase(entry),reduced?0:1150)"));
  assert.ok(finale.includes('if(finaleElapsed>=openAt)showMiniCase(entry)'), 'late joining spectators catch up');
- assert.ok(finale.includes("ceremonyProgress.textContent='🏆 DIE TATSÄCHLICHE AUSZAHLUNG ENTSCHEIDET 🏆'"));
+ assert.ok(finale.includes("ceremonyProgress.textContent='🏆 DER NORMALE SPIELGEWINN ENTSCHEIDET 🏆'"));
  assert.match(finale, /sessionStorage\.setItem\('finale-watched:/);
  assert.doesNotMatch(css,/\bfetch\(|localStorage|firebase|\/api\//i);
 });
