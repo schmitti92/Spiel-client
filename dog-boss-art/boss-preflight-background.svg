@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-label="Vulkanische Festung mit Lavagräben">
+ <defs>
+  <linearGradient id="sky" x2=".1" y2="1"><stop stop-color="#181c42"/><stop offset=".45" stop-color="#6e3443"/><stop offset=".72" stop-color="#db623a"/><stop offset="1" stop-color="#241b25"/></linearGradient>
+  <radialGradient id="ember" cx="50%" cy="68%" r="53%"><stop stop-color="#ffb359" stop-opacity=".82"/><stop offset=".42" stop-color="#d3452d" stop-opacity=".3"/><stop offset="1" stop-color="#a62f2f" stop-opacity="0"/></radialGradient>
+  <linearGradient id="rocks" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#2f2b40"/><stop offset=".6" stop-color="#151b31"/><stop offset="1" stop-color="#0a1021"/></linearGradient>
+  <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#5c3b39"/><stop offset=".25" stop-color="#21212b"/><stop offset="1" stop-color="#090e1a"/></linearGradient>
+  <linearGradient id="lava" x1="0" x2="1"><stop stop-color="#ff8b3c"/><stop offset=".4" stop-color="#ffdd7f"/><stop offset=".6" stop-color="#f05e28"/><stop offset="1" stop-color="#db401b"/></linearGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="14"/></filter>
+  <filter id="smoke"><feGaussianBlur stdDeviation="28"/></filter>
+  <pattern id="specks" width="110" height="110" patternUnits="userSpaceOnUse"><circle cx="10" cy="13" r="1.5" fill="#ffb36a" opacity=".55"/><circle cx="74" cy="80" r="1.1" fill="#ffbd82" opacity=".65"/><circle cx="45" cy="45" r=".8" fill="#fff0bf" opacity=".45"/></pattern>
+ </defs>
+ <rect width="1600" height="900" fill="url(#sky)"/>
+ <path fill="#19152c" opacity=".7" d="M0 190L135 166L220 192L325 126L418 178L536 120L600 164L690 91L795 184L870 152L994 54L1080 163L1248 74L1341 158L1420 106L1600 161V0H0Z"/>
+ <g fill="#eaa188" opacity=".2" filter="url(#smoke)">
+  <ellipse cx="260" cy="313" rx="375" ry="75"/><ellipse cx="850" cy="245" rx="360" ry="98"/><ellipse cx="1360" cy="357" rx="335" ry="99"/>
+ </g>
+ <ellipse cx="800" cy="520" rx="780" ry="560" fill="url(#ember)"/>
+ <path fill="#151625" d="M0 585L94 409L160 453L285 325L382 443L460 378L553 498L720 300L824 451L938 308L1073 469L1170 344L1315 441L1392 347L1515 460L1600 410V900H0Z"/>
+ <path fill="#241f2d" d="M0 647L130 533L207 566L330 470L466 588L598 474L702 548L831 467L941 595L1087 501L1212 555L1370 488L1500 576L1600 539V900H0Z"/>
+ <g opacity=".96">
+  <path fill="#17182a" d="M90 580V245H146V202H222V240H257V568L228 613L110 618Z"/>
+  <path fill="#111625" d="M114 250V170H143V147H163V162H183V147H209V183H231V250Z"/>
+  <path fill="#211d2b" d="M103 327L253 295V311L103 348ZM108 424L259 390V405L108 440Z"/>
+  <path fill="#e97039" d="M170 265L188 272L188 320L169 325Z" opacity=".85"/>
+  <path fill="#211a2c" d="M1187 565V258H1242V211H1328V258H1361V553Z"/>
+  <path fill="#151726" d="M1217 265V176H1240V150H1264V166H1295V140H1317V164H1342V265Z"/>
+  <path fill="#292132" d="M1196 354L1368 324V341L1196 373ZM1196 462L1368 431V450L1196 480Z"/>
+  <path fill="#f6954c" d="M1280 272L1301 275L1301 326L1280 322Z" opacity=".8"/>
+ </g>
+ <path fill="#111524" opacity=".9" d="M0 660Q290 589 520 664T1080 631T1600 653V900H0Z"/>
+ <g opacity=".75">
+  <path stroke="#fa7b36" stroke-width="22" fill="none" filter="url(#glow)" d="M-80 758Q125 714 246 812T560 824T940 783T1250 809T1660 757"/>
+  <path stroke="url(#lava)" stroke-width="10" fill="none" d="M-80 758Q125 714 246 812T560 824T940 783T1250 809T1660 757"/>
+  <path stroke="#f77a38" stroke-width="12" fill="none" filter="url(#glow)" d="M485 659Q590 702 738 694T1055 707"/>
+  <path stroke="url(#lava)" stroke-width="5" fill="none" d="M485 659Q590 702 738 694T1055 707"/>
+ </g>
+ <path fill="url(#ground)" d="M0 785L146 745L287 793L401 740L546 772L656 721L812 770L929 727L1072 781L1164 723L1338 779L1509 713L1600 766V900H0Z" opacity=".98"/>
+ <g fill="none" stroke="#e86636" stroke-width="3" opacity=".72">
+  <path d="M0 830L153 799L207 840L291 823L329 900"/>
+  <path d="M398 798L510 839L623 793L674 837L719 900"/>
+  <path d="M876 806L963 857L1056 833L1190 864L1207 900"/>
+  <path d="M1308 838L1442 798L1490 831L1600 820"/>
+ </g>
+ <rect width="1600" height="900" fill="url(#specks)" opacity=".65"/>
+ <rect width="1600" height="900" fill="#091020" opacity=".22"/>
+</svg>
