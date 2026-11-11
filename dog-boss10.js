@@ -12,6 +12,7 @@
   return v?.status==='online'&&v.user?.uid&&v.profile?.setupComplete!==false?v:null;};
  let view=null,account=null,working=false,serverOffset=0,lastLoad=0,inflight=null;
  let lastHeroSignature=''; // No 250ms remount of unchanged multiplayer cards
+ let lastReadyMask='',readyBurstUntil=0;
  const miniUi=window.DogBossMinigames?.create($('mini-game'),
   (round,answer)=>void command('minigame',false,{round,answer}));
  const combatFx=window.DogBossCombatFX?.create($('combat-scene'),10);
@@ -58,6 +59,7 @@
   const ctl=typeof AbortController==='function'?new AbortController():null;
   const timeout=ctl?setTimeout(()=>ctl.abort(),18000):null;
   try{
+   const requestStartedAt=Date.now();
    const response=await fetch(API+'/api/dog/gates/boss10'+route,{
     method,cache:'no-store',
     headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
@@ -66,8 +68,23 @@
    const data=await response.json().catch(()=>({error:'DOG_BOSS10_UNAVAILABLE'}));
    if(!response.ok||data?.ok!==true)throw Error(data?.error||'DOG_BOSS10_UNAVAILABLE');
    if(auth()?.user?.uid!==uid)throw Error('ACCOUNT_CHANGED');
+   // serverNow is stamped near the server response, not when the browser
+   // receives it. Compensate only for a bounded transfer delay so an
+   // occasional slow Firestore transaction cannot shift the UI by seconds.
+   const receivedAt=Date.now();
+   const stamped=Number(data?.view?.serverNow??data?.serverNow);
+   if(Number.isFinite(stamped))
+    data._clockOffsetMs=stamped-receivedAt+
+     Math.min(250,Math.max(0,(receivedAt-requestStartedAt)/2));
    return data;
   }finally{if(timeout!==null)clearTimeout(timeout);}
+ }
+ function noteReadyChange(next){
+  const mask=(next?.members||[]).filter(m=>m.ready).map(m=>m.uid).join('|');
+  if(mask!==lastReadyMask){
+   lastReadyMask=mask;
+   readyBurstUntil=Date.now()+12000;
+  }
  }
  const now=()=>Date.now()+serverOffset;
  const remaining=()=>Math.max(0,(view?.endsAt||0)-now());
@@ -163,7 +180,9 @@
   account=uid;
   const task=request('GET','',null,uid).then(data=>{
    if(auth()?.user?.uid!==uid)return;
-   view=data;serverOffset=Number(data.serverNow||Date.now())-Date.now();lastLoad=Date.now();
+   view=data;serverOffset=Number.isFinite(data._clockOffsetMs)?
+    data._clockOffsetMs:Number(data.serverNow||Date.now())-Date.now();
+   noteReadyChange(data);lastLoad=Date.now();
    const restored=acknowledgePending(uid,data);
    render();
    if(restored)message('✅ Die zuvor offene Bossaktion wurde mit dem Serverstand abgeglichen.');
@@ -196,7 +215,9 @@
   try{
    const data=await request('POST','/'+req.command,{requestId:req.id,...(req.payload||{})},uid);
    if(auth()?.user?.uid!==uid)return;
-   clear(uid);view=data.view;serverOffset=Number(data.view.serverNow||Date.now())-Date.now();
+   clear(uid);view=data.view;serverOffset=Number.isFinite(data._clockOffsetMs)?
+    data._clockOffsetMs:Number(data.view.serverNow||Date.now())-Date.now();
+   noteReadyChange(data.view);
    render();
    message(req.command==='ready'?
     (view.phase==='fighting'?'⚔️ Drei Helden bereit – 30-Sekunden-Kampf gestartet.':
@@ -237,8 +258,13 @@
   }
   // Waiting heroes need to notice the shared start before the first
   // challenge at second 3. Keep the idle/no-ready state economical.
-  const delay=view?.phase==='fighting'?3200:
-   view?.phase==='waiting'&&view?.members?.some(m=>m.ready)?3200:15000;
+  // Briefly poll faster after a readiness change so all three clients
+  // enter the first challenge promptly; fall back to economical polling
+  // if the group waits for minutes. No animation-frame backend requests.
+  const waitingReady=view?.phase==='waiting'&&view?.members?.some(m=>m.ready);
+  const delay=view?.phase==='fighting'?2800:
+   waitingReady&&Date.now()<readyBurstUntil?1400:
+   waitingReady?3800:15000;
   if(!working&&Date.now()-lastLoad>delay)void reload();
  },250);
  void reload(true);
