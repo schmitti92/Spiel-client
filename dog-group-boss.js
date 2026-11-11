@@ -333,7 +333,11 @@
    });
   const dodgeActive=view?.phase==='fighting'&&view?.miniGames?.version>=5&&
     view.miniGames.rounds.some(r=>r.kind==='dodge'&&elapsed>=r.startMs&&elapsed<r.endMs);
-   const delay=exchangeWindow?850:dodgeActive?850:openingFight?1200:
+  // Extended shows run on shared clock; after the opening result is
+  // confirmed, reduce redundant reads during the remaining 14-second scene.
+  const extendedScene=exchangeWindow&&view?.miniGames?.version>=7&&
+   view.miniGames.rounds.some(r=>elapsed>=r.endMs+3200&&elapsed<r.endMs+14000);
+   const delay=exchangeWindow?(extendedScene?2800:850):dodgeActive?850:openingFight?1200:
    view?.phase==='fighting'?2800:
    waitingReady&&Date.now()<readyBurstUntil?900:
    waitingReady?3800:15000;
