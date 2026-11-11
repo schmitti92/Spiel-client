@@ -135,7 +135,7 @@ test('Existing minigame submit and multiplayer command paths are unchanged',()=>
   const controller=read(file);
   assert.match(controller,/DogBossLiveUI\?\.create\(\$\('arena'\)\)/);
   assert.match(controller,/liveUi\?\.update\(view,now\(\)\)/);
-  assert.match(controller,/command\\('minigame',false,\\{/);
+   assert.ok(controller.includes("command('minigame',false,{"),'minigame API path kept');
   assert.match(controller,/function acknowledgePending\(uid,state\)/);
   assert.match(controller,/DogBossCombatFX\?\.create\(\$\('combat-scene'\)/);
  }
