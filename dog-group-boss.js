@@ -225,6 +225,9 @@
      data.phase==='victory'?'🏆 Der gemeinsame Boss-Sieg wurde serverseitig bestätigt.':'⚒️ Verbessert eure Ausrüstung für den nächsten Versuch.');
    }
   }).catch(()=>{
+   // Throttle failed polling as well; otherwise every animation tick could
+   // immediately retry a failed GET and burn Firebase requests.
+   lastLoad=Date.now();
    // Retain the last confirmed boss state during brief network outages.
    message('⚠️ Verbindung unterbrochen. Letzter Bossstand bleibt sichtbar; Wiederverbindung läuft.');render();
   });
