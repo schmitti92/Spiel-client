@@ -20,9 +20,10 @@
  });
  const iconFor=['⚔️','🛡️','✨'];
  const heroPortraits=['held-krieger.svg','held-magier.svg','held-schildtraeger.svg'];
+ const cinematicHeroPortraits=['held-krieger-cinematic.svg','held-magier-cinematic.svg','held-schildtraeger-cinematic.svg'];
  // Explicit allowlist prevents arbitrary URLs or player-controlled image paths.
  const bossPortraits=Object.freeze({
-  10:'aschewaechter.svg',20:'schattenfuerst.svg',
+  10:'aschewaechter-cinematic.svg',20:'schattenfuerst.svg',
   30:'kristallwurm.svg',40:'dornenkoenig.svg',
   50:'hueter-der-tiefe.svg',60:'flammendrache.svg',
   70:'seelenrichter.svg',80:'eisenkoloss.svg',
@@ -113,7 +114,7 @@
     mark.className='combat-hero-symbol';
     mark.textContent=iconFor[roleIndex]||'⚔️';
     mark.style.backgroundImage='url("./dog-boss-art/'+
-     heroPortraits[roleIndex]+'")';
+     (gate===10?cinematicHeroPortraits:heroPortraits)[roleIndex]+'")';
     const name=document.createElement('span');
     name.className='combat-hero-name';
     name.textContent=String(membersByUid.get(m.uid)?.name||
