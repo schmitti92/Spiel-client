@@ -61,7 +61,8 @@
    showRing:$(root,'#cinematic-grand-ring'),
    showDigit:$(root,'#cinematic-grand-digit'),
    showLabel:$(root,'#cinematic-grand-label'),
-   showNext:$(root,'#cinematic-grand-next')
+   showNext:$(root,'#cinematic-grand-next'),
+   startFlash:$(root,'#cinematic-start-flash')
   };
   const steps=nodes.steps?[...nodes.steps.querySelectorAll('.live-round-step')]:[];
   let lastHitKey='',lastRound='',lastFeedback='',lastImpactKey='',lastExchangeKey='';
@@ -245,7 +246,8 @@
      '-'+Math.max(0,current.elapsed-round.endMs)+'ms');
    text(nodes.cineCountdown,(remaining/1000).toFixed(1).replace('.',',')+' s');
    const grand=(view?.miniGames?.version||0)>=7&&totalMs>=14000;
-   if(nodes.showOverlay)nodes.showOverlay.hidden=!grand;
+   // Let players read confirmed team damage and LP before the final 5s show.
+   if(nodes.showOverlay)nodes.showOverlay.hidden=!grand||remaining>5000;
    if(nodes.cinematic?.dataset){
     nodes.cinematic.dataset.showVersion=grand?'7':'legacy';
     nodes.cinematic.dataset.showPhase=grand?
@@ -420,6 +422,12 @@
   function update(view,now){
    const current=battleModel(view,now);
    if(nodes.combat?.dataset)nodes.combat.dataset.battleVersion=String(view?.miniGames?.version||0);
+   // The "LOS!" flash is local to the published round start, with no new
+   // subscription, network request or client-authoritative timer.
+   const entering=(view?.miniGames?.version||0)>=7&&current.phase==='fighting'&&
+    current.rounds.some(r=>r.round>0&&current.elapsed>=r.startMs&&
+     current.elapsed<r.startMs+900);
+   if(nodes.startFlash)nodes.startFlash.hidden=!entering;
    const {phase,rounds,answers,roundIndex,latest}=current;
    const active=phase==='fighting'&&rounds.length>=3;
    const title=phase==='victory'?'🏆 BOSS BESIEGT':
