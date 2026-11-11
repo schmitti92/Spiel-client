@@ -10,7 +10,7 @@ import {clone} from './editor-model.js';
 
 export const SEAT_LABELS=Object.freeze(['Rot','Blau','Grün','Gelb']);
 export const EXIT_INDICES=Object.freeze([0,16,32,48]);
-export const GOAL_ENTRY_INDICES=Object.freeze([63,15,31,47]);
+export const GOAL_ENTRY_INDICES=Object.freeze([0,16,32,48]);
 export const HOUSE_LAYOUTS=Object.freeze(['square','row','column']);
 const allowed=(p)=>p && Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=30&&p.x<=730&&p.y>=30&&p.y<=730;
 const rounded=n=>Math.round(n*10)/10;
@@ -63,9 +63,11 @@ export function validateGroupPlacement(draft,kind,seat,candidates,minDistance=23
 export function buildGoalLane(draft,seat,{dx=0,dy=1,spacing=28,first=null}={}){
   const s=properSeat(seat),gap=properSpacing(spacing),dir=vector(dx,dy);
   const entrance=draft.track[GOAL_ENTRY_INDICES[s]];
-  if(!entrance && !first && !draft.goals[s][0])throw Error('Setze zuerst das Einlauffeld '+GOAL_ENTRY_INDICES[s]+' oder positioniere Zielfeld 1 manuell.');
-  // If goal #1 already exists and first is omitted, keep its location fixed.
-  // Otherwise place it one field spacing away from the preceding track square.
+  if(!entrance && !first && !draft.goals[s][0])throw Error('Setze zuerst das Startfeld '+GOAL_ENTRY_INDICES[s]+' oder positioniere Zielfeld 1 manuell.');
+  // The goal branch leaves the same-colour start square (0/16/32/48).
+  // A pawn must travel through that start square from the previous circuit
+  // square and may not turn into goal when beginning on start itself.
+  // If goal #1 already exists, keep it exactly where the player placed it.
   const firstPoint=first||draft.goals[s][0]||point(entrance.x+dir.x*gap,entrance.y+dir.y*gap);
   const row=Array.from({length:4},(_,i)=>point(firstPoint.x+dir.x*gap*i,firstPoint.y+dir.y*gap*i));
   validateGroupPlacement(draft,'goals',s,row);
