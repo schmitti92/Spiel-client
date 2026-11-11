@@ -248,7 +248,7 @@
    }else if(round.kind==='reaction'){
     const speed=createElement('div','mini-speed-indicator','');
     attackStatus=speed;body.append(speed);
-    progress=createElement('div','mini-meter is-accelerating');
+    progress=createElement('div','mini-meter is-accelerating'+(version>=9?' is-precision':''));
     const cursor=createElement('span','mini-meter-fill');
     progress.append(cursor);body.append(progress);
     makeButton(1,'⚡ KONTER!','mini-reaction');
