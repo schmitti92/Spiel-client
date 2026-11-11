@@ -208,3 +208,31 @@ test('Map repeats the same five-gate buffer for Boss 20 and Tor 25/26',async()=>
  assert.equal(byId('gate-battle-button').disabled,true);
  assert.match(byId('gate-fight-status').textContent,/Boss 20/);
 });
+
+
+test('Every group boss previews its own local artwork before entering the arena',()=>{
+ assert.match(html,/id="gate-boss-preview"/);
+ assert.match(html,/id="gate-boss-portrait"/);
+ const bosses=[
+  [10,'aschewaechter.svg','Aschewächter'],
+  [20,'schattenfuerst.svg','Schattenfürst'],
+  [30,'kristallwurm.svg','Kristallwurm'],
+  [40,'dornenkoenig.svg','Dornenkönig'],
+  [50,'hueter-der-tiefe.svg','Hüter der Tiefe'],
+  [60,'flammendrache.svg','Flammendrache'],
+  [70,'seelenrichter.svg','Seelenrichter'],
+  [80,'eisenkoloss.svg','Eisenkoloss'],
+  [90,'festungswaechter.svg','Festungswächter'],
+  [100,'letzter-waechter.svg','Der letzte Wächter']
+ ];
+ const {gates,byId}=page();
+ for(const [gate,file,name] of bosses){
+  gates[gate-1].click();
+  assert.equal(byId('gate-boss-preview').hidden,false);
+  assert.equal(byId('gate-boss-portrait').src,'./dog-boss-art/'+file);
+  assert.equal(byId('gate-boss-portrait').alt,'Tor '+gate+': '+name);
+ }
+ gates[18].click();
+ assert.equal(byId('gate-boss-preview').hidden,true,
+  'normal tor should hide the boss-only preview');
+});
