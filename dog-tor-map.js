@@ -178,8 +178,20 @@
      '🏆 Euer gemeinsamer Sieg über Boss 10 ist gespeichert. Die nächste Schmiedestufe ist freigeschaltet.':
      '🐉 Boss 10: Mit 1, 2 oder 3 Helden starten. Nur die Teilnehmer müssen Tor 9 geschafft haben und auf Bereit klicken. Allein ist der Sieg unmöglich, zu dritt habt ihr die besten Chancen.';
    }else{
-    boss.hidden=true;
-    notice.textContent='🔒 Dieser Gruppenboss ist noch nicht implementiert. Sein Start wird hier freigeschaltet, sobald der Server den Kampf unterstützt.';
+    boss.hidden=false;
+    boss.href='./dog-group-boss.html?gate='+gate+
+     (roomSuffix?'&'+roomSuffix.slice(1):'');
+    boss.textContent='🐉 Gruppenboss '+gate+' herausfordern';
+    boss.setAttribute('aria-label','Bossarena für Tor '+gate+' betreten');
+    const previousBoss=gate-10;
+    notice.textContent=(mapState?.sharedBosses||[]).includes(gate)?
+     '🏆 Boss '+gate+' gemeinsam besiegt! '+(gate===100?
+      'Das DOG-Schloss ist von eurer Expedition erreicht worden.':
+      'Die nächste Schmiedestufe ist freigeschaltet.'):
+     !(mapState?.sharedBosses||[]).includes(previousBoss)?
+      '🔒 Vor Boss '+gate+' müsst ihr gemeinsam Boss '+previousBoss+
+      ' besiegen. Ihr könnt die Arena schon ansehen, aber noch nicht starten.':
+      '🐉 Mit 1, 2 oder 3 vorbereiteten Helden starten. Alleine ist ein Sieg unmöglich; zwei maximale Helden können mit Glück gewinnen. Zu dritt habt ihr die besten Chancen.';
    }
    return;
   }
@@ -304,8 +316,8 @@
   gate%10===5?'Solo-Mini-Boss – '+MINI_BOSSES[gate]:
   'Persönlicher Kampf – Tor '+gate;
  const summaryFor=gate=>{
-  if(gate===100)return 'Der letzte Wächter verteidigt das DOG-Schloss. Alle drei Spieler müssen ihn gemeinsam besiegen. Erst der bestätigte serverseitige Sieg darf DOG für euch freischalten.';
-  if(gate%10===0)return 'Eine gemeinsame Herausforderung für alle drei Helden. Der Sieg schaltet die nächste Stufe in der Schmiede sowie neue Ausrüstungsmöglichkeiten frei.';
+  if(gate===100)return 'Der letzte Wächter verteidigt das DOG-Schloss. Ein Held darf ihn herausfordern, zwei können nur mit sehr viel Glück siegen. Drei gut aufgerüstete Helden sind eure beste Chance. Erst der bestätigte Sieg darf DOG freischalten.';
+  if(gate%10===0)return 'Gemeinsamer Bosskampf: mit 1–3 Helden startbar, aber am besten zu dritt. Der Sieg schaltet die nächste Schmiedestufe und Ausrüstung frei.';
   if(gate%10===5)return 'Ein besonders harter Einzelkampf: Eine gute Waffe allein reicht oft nicht. Verstärke auch Rüstung und Fähigkeiten. Nach einem erstmaligen Sieg winkt eine besondere zufällige Belohnung.';
   return 'Ein normaler Einzelkampf mit einer von deiner Ausrüstung abhängigen Gewinnchance zwischen 30 % und 80 %. Du kannst ihn nach einer Niederlage erneut versuchen.';
  };
