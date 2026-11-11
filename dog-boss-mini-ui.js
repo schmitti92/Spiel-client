@@ -20,7 +20,7 @@
  };
  const targetIndex=(round,elapsed)=>
   (round.initialIndex+Math.max(0,Math.floor((elapsed-round.startMs)/round.stepMs)))%round.lanes;
- function create(root,onSubmit){
+ function create(root,onSubmit,onDodgeChoice=null){
   let roundKey='',roundView=null,buttons=[],progress=null,status=null;
   let question=null,counter=null,attackStatus=null,localSubmitting=false,stepCurrent=0;
   let lastChoice=null,anchor=null,raf=0,activeVersion=1,allowed=false;
@@ -74,6 +74,8 @@
    }
    const step=activeVersion>=2?stepCurrent:0;
    localSubmitting=true;lastChoice={round:roundView.round,step,value};
+   if(roundView.kind==='dodge'&&typeof onDodgeChoice==='function')
+    onDodgeChoice(roundView.round,step,value);
    buttons.forEach(button=>button.disabled=true);
    Promise.resolve().then(()=>onSubmit(roundView.round,value,step))
     .catch(()=>{}).finally(()=>{localSubmitting=false;});
@@ -105,7 +107,7 @@
    mathChoices=[];mathSent=false;
    buttons=[];body.replaceChildren();progress=null;question=null;counter=null;attackStatus=null;
    lastChoice=null;
-   title.textContent='RUNDE '+(round.round+1)+'/'+(version===3?4:3)+' · '+labels[round.kind];
+   title.textContent='RUNDE '+(round.round+1)+'/'+(version>=3?4:3)+' · '+labels[round.kind];
    hint.textContent=round.hint||'Schnell reagieren!';
    if(version===1){
     if(round.kind==='math'){
@@ -136,7 +138,7 @@
     body.append(question);
     for(let i=0;i<3;i++)makeButton(i,'…','mini-math');
    }else if(round.kind==='dodge'){
-    const warning=createElement('div','mini-dodge-warning','Der Boss holt aus …');
+    const warning=createElement('div','mini-dodge-warning','⚠️ BOSS GREIFT AN');
     attackStatus=warning;body.append(warning);
     const lanes=createElement('div','mini-dodge-lanes');
     body.append(lanes);
@@ -145,7 +147,7 @@
      button.type='button';button.addEventListener('click',()=>choose(i));
      buttons.push(button);lanes.append(button);
     }
-    const shock=createElement('div','mini-dodge-impact','⚡ DER SCHLAG KOMMT!');
+    const shock=createElement('div','mini-dodge-impact','⚡ EINSCHLAG');
     body.append(shock);
    }else if(round.kind==='reaction'){
     const speed=createElement('div','mini-speed-indicator','');
@@ -244,9 +246,14 @@
     if(attackStatus){
      const remainingToImpact=Math.max(0,(strike.impactMs-elapsed)/1000);
      const places=['LINKS','MITTE','RECHTS'];
-     attackStatus.textContent=windowOpen?
-      '⚠️ ANGRIFF '+(step+1)+'/3 · Einschlag in '+remainingToImpact.toFixed(1)+' s':
-      '💥 EINSCHLAG! '+(places[strike.dangerIndex]||'Gefahrenfeld')+' getroffen';
+     const ownAttempt=attempts[step];
+     attackStatus.textContent=elapsed>=strike.impactMs?
+      (ownAttempt?.correct===true?'✅ AUSGEWICHEN':
+       ownAttempt?.correct===false||elapsed>=strike.impactMs+160?
+        '💥 GETROFFEN':'⚡ EINSCHLAG'):
+      '⚠️ SCHLAG '+(step+1)+'/3 · '+remainingToImpact.toFixed(1)+' s';
+     attackStatus.classList.toggle('is-success',
+      elapsed>=strike.impactMs&&ownAttempt?.correct===true);
      attackStatus.classList.toggle('is-impact',!windowOpen);
     }
     buttons.forEach((button,i)=>{
@@ -290,6 +297,17 @@
      button.classList.toggle('mini-weakpoint',i===moving);
      button.textContent=i===moving?'🎯':'◇';
     });
+   }
+   if(round.kind==='dodge'){
+    const strike=round.attacks[step],myAction=attempts[step];
+    status.textContent=elapsed>=strike.impactMs?
+     (myAction?.correct===true?'✅ AUSGEWICHEN!':
+      myAction?.correct===false||elapsed>strike.impactMs+160?
+       '💥 GETROFFEN!':'⚡ EINSCHLAG'):
+     lastChoice?.step===step?
+      '↔️ BEWEGUNG · '+(localSubmitting?'PRÜFUNG LÄUFT':'SCHLAG ABWARTEN'):
+      '🛡️ WÄHLE DEINE AUSWEICHRICHTUNG';
+    return;
    }
    status.textContent=round.kind==='math'&&!attempts.length?
     (mathSent?'⏳ Acht-Sekunden-Sprint wird serverseitig geprüft …':
