@@ -8,7 +8,7 @@ test('Private single-device pilot uses real server preview with two bots',()=>{
  assert.match(html,/id="gate-grid"/);assert.match(html,/id="chapter"/);
  assert.match(js,/\/api\/dog\/preview\//);assert.match(js,/X-DOG-Preview-Key/);
  assert.match(js,/preview-bot-alpha/);assert.match(js,/preview-bot-beta/);
- assert.match(js,/action.*minigame/);assert.match(js,/command:'ready'|act\('ready'/);
+ assert.match(js,/act\('minigame'/);assert.match(js,/command:'ready'|act\('ready'/);
 });
 test('Private actions are persisted and retried using the same receipt ID',()=>{
  const html=read('dog-private-preview.html'),js=read('dog-private-preview.js');
