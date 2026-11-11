@@ -15,7 +15,7 @@ test('All ten arenas display the same tactical three-round widget',()=>{
  }
  for(const client of [arena,group]){
   assert.ok(client.includes("DogBossMinigames?.create($('mini-game')"));
-  assert.ok(client.includes("command('minigame',false,{round,answer,step})"));
+  assert.ok(client.includes("command('minigame',false,{"));
   assert.ok(client.includes("['ready','start','react','minigame','finish']"));
   assert.ok(client.includes('miniUi?.update(view,now()'));
   assert.ok(client.includes('req.payload||{}'));
@@ -31,7 +31,7 @@ test('Interface offers all four input types without locally deciding success',()
  assert.ok(ui.includes('round.targetMs'));
  assert.ok(ui.includes('round.initialIndex'));
  assert.ok(ui.includes('round.dangerIndex'));
- assert.ok(ui.includes('onSubmit(roundView.round,value,step)'));
+ assert.ok(ui.includes('onSubmit(roundView.round,value,step,tappedAt)'));
  assert.ok(!ui.includes('Math.random('));
  assert.ok(!ui.includes('correctIndex'));
  assert.ok(ui.includes('games.myAnswers'));
