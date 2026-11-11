@@ -1,0 +1,75 @@
+/* 100 Tore · v9 precision Konter.
+   The green target is narrow and the pointer follows the server clock.
+   CSS changes visual size only; server validates the same zoneRadius. */
+.arena-live .mini-tactical .mini-meter.is-precision{
+ flex:1 1 100%;width:min(100%,620px);max-width:620px;
+ height:clamp(34px,5vh,51px);
+ border:2px solid #93d9ed;border-radius:15px;
+ background:linear-gradient(180deg,#101b35,#172947 54%,#101c37);
+ box-shadow:inset 0 3px 12px #030b1d,0 0 19px #70ccf437;
+ overflow:hidden;isolation:isolate;
+}
+.arena-live .mini-tactical .mini-meter.is-precision::before{
+ content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+ background:repeating-linear-gradient(90deg,
+  transparent 0 calc(10% - 1px),#c3eaff1a calc(10% - 1px) 10%);
+}
+.arena-live .mini-tactical .mini-meter.is-precision::after{
+ left:var(--timing-left,46%);
+ width:var(--timing-width,8%);
+ background:linear-gradient(180deg,#7cffafad,#23d88a7c);
+ border-left:2px solid #b6ffd5;border-right:2px solid #b6ffd5;
+ box-shadow:0 0 18px #39ffb6b5,inset 0 0 9px #d0ffce82;
+ border-radius:4px;transition:none;
+}
+.arena-live .mini-tactical .mini-meter.is-precision .mini-meter-fill{
+ position:absolute;top:0;bottom:0;left:50%;width:5px;height:100%;
+ transform:translateX(-50%);z-index:3;
+ border-radius:5px;
+ background:#fff8cc;
+ box-shadow:0 0 0 1px #0b2940,0 0 12px 3px #ffe3a0,
+  0 0 24px #fff2b2;
+ will-change:left;
+}
+.arena-live .mini-tactical .mini-meter.is-precision.is-tap{
+ animation:precision-konterspark .4s ease-out;
+}
+.arena-live .mini-tactical .mini-meter.is-precision.is-tap::after{
+ filter:brightness(1.8)
+}
+.arena-live .mini-tactical .mini-reaction{
+ min-height:clamp(66px,9vh,92px);
+ min-width:min(100%,260px);
+ padding:12px 30px;
+ font-size:clamp(21px,2.8vw,30px);
+ border:2px solid #b8e9ff;
+ border-radius:18px;
+ box-shadow:0 0 22px #8b9bff44;
+ touch-action:manipulation;
+ -webkit-tap-highlight-color:transparent;
+ user-select:none;
+}
+.arena-live .mini-tactical .mini-reaction:not(:disabled):active{
+ transform:scale(.96);filter:brightness(1.2)
+}
+@keyframes precision-konterspark{
+ 0%{filter:brightness(1)}
+ 30%{filter:brightness(2);box-shadow:0 0 34px #93ffd9}
+ 100%{filter:brightness(1)}
+}
+@media(max-width:620px){
+ .arena-live .mini-tactical .mini-meter.is-precision{
+  width:100%;height:39px
+ }
+ .arena-live .mini-tactical .mini-reaction{
+  min-height:68px;width:100%;min-width:0
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ .arena-live .mini-tactical .mini-meter.is-precision.is-tap{
+  animation:none!important
+ }
+ .arena-live .mini-tactical .mini-meter.is-precision .mini-meter-fill{
+  will-change:auto
+ }
+}
