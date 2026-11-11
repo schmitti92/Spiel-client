@@ -8,13 +8,13 @@
  <title>🐉 Boss 10 · Die Prüfung des Aschewächters</title>
  <link rel="stylesheet" href="./dog-boss10.css?v=20261111-combat-fx1">
  <link rel="stylesheet" href="./dog-boss-preflight.css?v=20261111-v3-tablet-fit">
- <link rel="stylesheet" href="./dog-boss-live.css?v=20261111-v5-exchange">
+ <link rel="stylesheet" href="./dog-boss-live.css?v=20261111-v6-exchange">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
  <script src="./dog-boss-mini-ui.js?v=20261111-v6-exchange" defer></script>
  <script src="./dog-boss-combat-fx.js?v=20261111-v6-exchange" defer></script>
  <script src="./dog-boss-preflight.js?v=20261111-v1" defer></script>
- <script src="./dog-boss-live-ui.js?v=20261111-v6-exchange" defer></script>
+ <script src="./dog-boss-live-ui.js?v=20261111-v7-scenefx" defer></script>
  <script src="./dog-boss10.js?v=20261111-v5-exchange" defer></script>
  <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 </head>
@@ -123,7 +123,7 @@
      <div class="live-shield-track"><span id="live-shield-fill"></span></div>
     </div>
     <div class="live-timer">
-     <div class="timer-row"><span>⏱️ KAMPFZEIT</span><strong id="timer" role="timer">00:30</strong></div>
+     <div class="timer-row"><span>⏱️ KAMPFZEIT</span><strong id="timer" role="timer">00:40</strong></div>
      <div class="timer-bar"><span id="timer-fill"></span></div>
     </div>
    </div>
@@ -136,6 +136,15 @@
       <div class="combat-sword-trail"></div><div class="combat-magic-beam"></div>
       <div class="combat-shield-effect">🛡️</div><div class="combat-danger-zone"></div>
       <div class="combat-rune-effect">✦ ✧ ✦</div><div class="combat-target-effect">◎</div>
+      <div class="live-exchange-beams" aria-hidden="true">
+       <span class="live-exchange-bolt live-exchange-bolt-one"></span>
+       <span class="live-exchange-bolt live-exchange-bolt-two"></span>
+       <span class="live-exchange-bolt live-exchange-bolt-three"></span>
+       <span class="live-exchange-boss-impact"></span>
+       <span class="live-exchange-counterbolt"></span>
+       <span class="live-exchange-shield-dome"></span>
+       <span class="live-exchange-shield-crack"></span>
+      </div>
       <div id="combat-flash" class="combat-flash"></div><div id="live-hit-effects" class="live-hit-effects"></div>
      </div>
      <div class="live-stage-announcement" id="live-stage-announcement" hidden aria-live="polite">
