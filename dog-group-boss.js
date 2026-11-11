@@ -266,7 +266,10 @@
     req.command==='start'?'⚔️ Der Kampf mit '+view.roster.length+' Helden hat begonnen.':
     req.command==='react'?'⚡ Reaktionsbonus für das Team gespeichert.':
     req.command==='minigame'?
-     (data.result?.correct?'✅ Minispiel gelöst!':'❌ Minispiel nicht geschafft.')+
+     (Array.isArray(req.payload?.answer)?
+      '🧮 Blitz-Mathe: '+Number(data.result?.correctCount||0)+' von '+
+       req.payload.answer.length+' Aufgaben richtig.':
+      (data.result?.correct?'✅ Treffer bestätigt!':'❌ Nicht getroffen.'))+
       ' Dein Bonus: '+Number(data.result?.bonusPercent||0).toLocaleString('de-DE')+' %.':
     data.result?.win?'🏆 Gruppenboss '+gate+' besiegt. '+(gate===100?'DOG ist freigeschaltet!':'Schmiedestufe erhöht!'):
     '💀 Der Bosskampf ist entschieden. Eine erneute Herausforderung folgt nach der Kampfpause.');
