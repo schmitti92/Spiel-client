@@ -169,3 +169,15 @@ button:disabled{opacity:.5;cursor:not-allowed;filter:none}
 .dog-dev-warning{padding:12px 14px;background:#422d1e;border:1px solid #dcb577;border-radius:12px;font-size:13px;color:#ffdf9a}
 .dog-dev-status{font-size:14px;line-height:1.5;color:#ffdfaa;margin-top:13px;min-height:38px}
 @media(max-width:600px){.dog-dev-dialog{padding:16px;border-radius:15px}.dog-dev-actions button{flex:1 1 145px}.dog-dev-controls button{flex:1 1 100%}}
+
+
+/* Protected 100-Gates developer cooldown control. */
+.dog-dev-switch{display:flex;align-items:flex-start;gap:14px;min-height:71px;padding:15px;border:1px solid #efca827e;border-radius:15px;background:linear-gradient(120deg,#24364f,#233147);cursor:pointer}
+.dog-dev-switch input{appearance:auto;accent-color:#f3c878;flex:0 0 auto;width:23px;height:23px;margin:2px 0 0;cursor:pointer}
+.dog-dev-switch input:disabled{cursor:not-allowed}
+.dog-dev-switch span{display:flex;flex-direction:column;gap:5px;min-width:0}
+.dog-dev-switch strong{font-size:15px;color:#ffe2a4}
+.dog-dev-switch small{font-size:12px;line-height:1.5;color:#d7e4f2}
+.dog-dev-cooldown-state{font-size:13px;font-weight:800;color:#f2d59c}
+.dog-dev-switch:has(input:checked){border-color:#72dbae;background:linear-gradient(115deg,#1b453d,#17364a)}
+.dog-dev-switch:has(input:checked) strong{color:#bcffe0}
