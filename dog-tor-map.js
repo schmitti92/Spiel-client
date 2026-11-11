@@ -347,7 +347,7 @@
   if(bossPreview)bossPreview.hidden=gate%10!==0;
   if(bossPortrait&&gate%10===0&&BOSS_ART[gate]){
    const artwork='./dog-boss-art/'+BOSS_ART[gate];
-   if(!bossPortrait.src.endsWith('/'+BOSS_ART[gate]))
+   if(!String(bossPortrait.src||'').endsWith('/'+BOSS_ART[gate]))
     bossPortrait.src=artwork;
    bossPortrait.alt='Tor '+gate+': '+MAJOR_BOSSES[gate];
   }
