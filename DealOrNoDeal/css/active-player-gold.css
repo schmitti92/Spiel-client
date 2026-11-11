@@ -119,3 +119,21 @@
 @media(prefers-reduced-motion:reduce){
   #players .player.turn{animation:none!important;transform:none!important;filter:none!important}
 }
+
+/* The purchased boost appears only AFTER the normal winner rankings; it does
+   not alter the comparison bars, banker amounts, or championship animation. */
+#final-wallet-boost[hidden]{display:none!important}
+#final-wallet-boost.final-wallet-boost{
+ display:grid;
+ gap:6px;
+ margin:16px 0 20px;
+ padding:14px 18px;
+ border:2px solid #e3bc60;
+ border-radius:14px;
+ background:linear-gradient(120deg,#2b220f,#4d3516 48%,#241d11);
+ box-shadow:inset 0 1px #fff2bc33,0 6px 20px #0006;
+ color:#ffe8af;
+ text-align:center;
+}
+#final-wallet-boost strong{color:#ffe5a1;font-size:clamp(15px,1.6vw,20px)}
+#final-wallet-boost p{margin:2px 0;font-weight:750;line-height:1.5}
