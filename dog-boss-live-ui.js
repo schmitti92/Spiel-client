@@ -246,15 +246,15 @@
    text(nodes.cineCountdown,(remaining/1000).toFixed(1).replace('.',',')+' s');
    const grand=(view?.miniGames?.version||0)>=7&&totalMs>=14000;
    if(nodes.showOverlay)nodes.showOverlay.hidden=!grand;
-   if(nodes.cinematic){
+   if(nodes.cinematic?.dataset){
     nodes.cinematic.dataset.showVersion=grand?'7':'legacy';
     nodes.cinematic.dataset.showPhase=grand?
      (remaining<=5000?'countdown':current.elapsed-round.endMs<4700?'impact':'result'):
      'legacy';
-    nodes.cinematic.style?.setProperty?.('--cine-show-duration',totalMs+'ms');
-    nodes.cinematic.style?.setProperty?.('--cine-show-offset',
-     '-'+Math.max(0,current.elapsed-round.endMs)+'ms');
    }
+   nodes.cinematic?.style?.setProperty?.('--cine-show-duration',totalMs+'ms');
+   nodes.cinematic?.style?.setProperty?.('--cine-show-offset',
+    '-'+Math.max(0,current.elapsed-round.endMs)+'ms');
    if(grand){
     const seconds=Math.max(1,Math.ceil(remaining/1000));
     const currentTick=String(view?.startedAt)+':'+round.round+':'+seconds;
