@@ -10,10 +10,11 @@
  <link rel="stylesheet" href="./dog-boss10.css?v=20261111-combat-fx1">
  <link rel="stylesheet" href="./dog-boss-preflight.css?v=20261111-v3-tablet-fit">
  <link rel="stylesheet" href="./dog-boss-live.css?v=20261111-v8-cinematic50">
- <link rel="stylesheet" href="./dog-boss-cinematic.css?v=20261111-art-v1">
+ <link rel="stylesheet" href="./dog-boss-cinematic.css?v=20261111-endgame-v2">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
  <script src="./dog-boss-mini-ui.js?v=20261111-v7-cinematic50" defer></script>
+ <script src="./dog-boss-director.js?v=20261111-endgame-v1" defer></script>
  <script src="./dog-boss-combat-fx.js?v=20261111-v7-cinematic50" defer></script>
  <script src="./dog-boss-preflight.js?v=20261111-v1" defer></script>
  <script src="./dog-boss-live-ui.js?v=20261111-v9-cinematic50" defer></script>
@@ -118,11 +119,12 @@
    <div class="live-metrics">
     <div class="combat-meter live-hp">
      <div class="live-meter-label"><span>🐉 BOSS-LP</span><strong id="boss-hp">– LP</strong></div>
-     <div class="live-hp-track" aria-hidden="true"><span id="live-hp-fill"></span></div>
+     <div class="live-hp-track" role="progressbar" aria-label="Boss-Lebenspunkte" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" id="live-boss-hp-track"><span id="live-hp-fill"></span></div>
     </div>
-    <div class="live-team-shield" aria-label="Gemeinsame Schildenergie">
-     <div class="live-shield-label"><span>🛡️ TEAM-SCHILD</span><strong id="live-shield-value">100 / 100</strong></div>
-     <div class="live-shield-track"><span id="live-shield-fill"></span></div>
+    <div class="live-team-shield" aria-label="Lebenspunkte aller kämpfenden Helden zusammen">
+     <div class="live-shield-label"><span>❤️ GRUPPEN-LP</span><strong id="live-shield-value">– / – LP</strong></div>
+     <div class="live-shield-track" role="progressbar" aria-label="Gruppen-Lebenspunkte" aria-valuemin="0" aria-valuenow="0" aria-valuemax="100" id="live-group-hp-track"><span id="live-shield-fill"></span></div>
+      <div id="live-hero-health" class="live-hero-health" aria-label="Lebenspunkte je Held"></div>
     </div>
     <div class="live-timer">
      <div class="timer-row"><span>⏱️ KAMPFZEIT</span><strong id="timer" role="timer">00:50</strong></div>
@@ -130,8 +132,12 @@
     </div>
    </div>
    <div class="live-battlefield">
-    <div class="monster combat-scene" id="combat-scene" data-cue="waiting" aria-label="Boss links, kämpfende Helden in der Mitte">
+    <div class="monster combat-scene" id="combat-scene" data-cue="waiting" data-camera="normal" aria-label="Boss links, kämpfende Helden in der Mitte">
      <div class="embers" aria-hidden="true">✦ · ✧ · ✦</div>
+      <div class="combat-view-controls"><button type="button" id="combat-camera" aria-label="Kamerawinkel wechseln" title="Kamera wechseln">🎥</button><button type="button" id="combat-fx" aria-label="Effekte umschalten" aria-pressed="true" title="Effekte">✨</button></div>
+      <div id="combat-focus-label" class="combat-focus-label" aria-live="polite"></div>
+      <div id="combat-boss-damage" class="combat-boss-damage" aria-hidden="true"></div>
+      <div id="combat-team-damage" class="combat-team-damage" aria-hidden="true"></div>
      <div class="combat-stage" aria-hidden="true">
       <div class="combat-boss" id="combat-boss"><div class="monster-art"></div><div class="monster-shadow"></div></div>
       <div id="combat-hero-line" class="combat-hero-line"></div>
