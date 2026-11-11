@@ -151,26 +151,31 @@
 }
 /* Seven-second cinematic window in v5: approach, impact, pause to read results,
    retreat. Late reconnects join the correct offset rather than restarting. */
-.arena-live .combat-scene[data-battle-version="5"].live-exchange-attack .combat-hero-line{
+.arena-live .combat-scene[data-battle-version="5"].live-exchange-attack .combat-hero-line,
+.arena-live .combat-scene[data-battle-version="6"].live-exchange-attack .combat-hero-line{
  animation:dodge-cinematic-heroes 6.4s ease-in-out both;
  animation-delay:var(--exchange-offset,0ms)
 }
-.arena-live .combat-scene[data-battle-version="5"].live-exchange-defense .combat-boss{
+.arena-live .combat-scene[data-battle-version="5"].live-exchange-defense .combat-boss,
+.arena-live .combat-scene[data-battle-version="6"].live-exchange-defense .combat-boss{
  animation:dodge-cinematic-boss 6.4s ease-in-out both;
  animation-delay:var(--exchange-offset,0ms)
 }
-.arena-live .combat-scene[data-battle-version="5"].live-exchange-attack .combat-boss{
+.arena-live .combat-scene[data-battle-version="5"].live-exchange-attack .combat-boss,
+.arena-live .combat-scene[data-battle-version="6"].live-exchange-attack .combat-boss{
  animation:dodge-cinematic-recoil 6.4s ease-in-out both;
  animation-delay:var(--exchange-offset,0ms)
 }
-.arena-live .combat-scene[data-battle-version="5"].live-exchange-defense .combat-hero-line{
+.arena-live .combat-scene[data-battle-version="5"].live-exchange-defense .combat-hero-line,
+.arena-live .combat-scene[data-battle-version="6"].live-exchange-defense .combat-hero-line{
  animation:dodge-cinematic-defense 6.4s ease-in-out both;
  animation-delay:var(--exchange-offset,0ms)
 }
 .arena-live .combat-scene[data-battle-version="5"].live-exchange-attack .live-exchange-bolt,
 .arena-live .combat-scene[data-battle-version="5"].live-exchange-defense .live-exchange-counterbolt,
 .arena-live .combat-scene[data-battle-version="5"].live-exchange-defense .live-exchange-shield-dome,
-.arena-live .combat-scene[data-battle-version="5"].live-exchange-attack .live-exchange-boss-impact{
+.arena-live .combat-scene[data-battle-version="5"].live-exchange-attack .live-exchange-boss-impact,
+.arena-live .combat-scene[data-battle-version="6"].live-exchange-attack .live-exchange-boss-impact{
  animation-duration:6.2s;animation-fill-mode:both;
 }
 @keyframes dodge-cinematic-heroes{
