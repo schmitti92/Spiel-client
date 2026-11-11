@@ -17,6 +17,15 @@
   waiting:'⚔️ HELDEN SAMMELN SICH'
  });
  const iconFor=['⚔️','🛡️','✨'];
+ const heroPortraits=['held-krieger.svg','held-schildtraeger.svg','held-magier.svg'];
+ // Explicit allowlist prevents arbitrary URLs or player-controlled image paths.
+ const bossPortraits=Object.freeze({
+  10:'aschewaechter.svg',20:'schattenfuerst.svg',
+  30:'kristallwurm.svg',40:'dornenkoenig.svg',
+  50:'hueter-der-tiefe.svg',60:'flammendrache.svg',
+  70:'seelenrichter.svg',80:'eisenkoloss.svg',
+  90:'festungswaechter.svg',100:'letzter-waechter.svg'
+ });
  const glowFor=Object.freeze({
   10:'#ff995f',20:'#b68aff',30:'#6de6ff',40:'#8be6a1',
   50:'#65b6f5',60:'#ff7b50',70:'#d7a4ff',80:'#d6e0ec',
@@ -55,8 +64,13 @@
   const cue=$ (root,'#combat-cue');
   const flash=$ (root,'#combat-flash');
   const boss=$ (root,'#combat-boss');
+  const bossArt=$(root,'.monster-art');
   root.style?.setProperty?.('--boss-accent',glowFor[gate]||glowFor[10]);
-  root.style?.setProperty?.('--boss-shift',String(Math.max(0,(gate-10)*2.4))+'deg');
+  // Every boss now has its own silhouette and intrinsic palette, not just a
+  // recolored Aschewächter. The CSS base portrait remains a safe fallback.
+  root.style?.setProperty?.('--boss-shift','0deg');
+  if(bossArt?.style&&bossPortraits[gate])
+   bossArt.style.backgroundImage='url("./dog-boss-art/'+bossPortraits[gate]+'")';
   let fightersKey='',phaseKey='',waveKey='',feedbackKey='';
   function fighters(view){
    const selected=view?.phase==='waiting'?
@@ -69,12 +83,19 @@
    fightersKey=nextKey;
    if(!heroes)return;
    const elements=selected.map((m,i)=>{
+    // Stable portraits from the original three-person expedition order.
+    // Solo/Duo attempts do not change the appearance of a known hero.
+    const originalIndex=(view?.members||[]).findIndex(x=>x.uid===m.uid);
+    const roleIndex=(originalIndex>=0?originalIndex:i)%3;
     const item=document.createElement('div');
-    item.className='combat-hero combat-hero-'+(i+1)+
+    item.className='combat-hero combat-hero-'+(roleIndex+1)+
+     ' combat-hero-portrait'+
      (membersByUid.get(m.uid)?.isMe?' combat-hero-me':'');
     const mark=document.createElement('span');
     mark.className='combat-hero-symbol';
-    mark.textContent=iconFor[i]||'⚔️';
+    mark.textContent=iconFor[roleIndex]||'⚔️';
+    mark.style.backgroundImage='url("./dog-boss-art/'+
+     heroPortraits[roleIndex]+'")';
     const name=document.createElement('span');
     name.className='combat-hero-name';
     name.textContent=String(membersByUid.get(m.uid)?.name||
@@ -127,5 +148,5 @@
   }
   return {update};
  }
- window.DogBossCombatFX={create,deriveCue};
+ window.DogBossCombatFX={create,deriveCue,bossPortraits,heroPortraits};
 })();
