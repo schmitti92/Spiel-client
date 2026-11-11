@@ -10,7 +10,7 @@ import {
   EDITOR_DRAFT_KEY,clone,emptyDraft,fromCrossPreset,fromLayout,placedCount,
   fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
   guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun,
-  trackGroupBounds,translateTrackGroup
+  trackGroupBounds,translateTrackGroup,firstUnplacedSlot
 } from './editor-model.js?v=6';
 import {referencePoints,buildGoalLane,buildHomeGroup,getTrackConnections,straightGaps,connectStraightGap,SEAT_LABELS} from './board-assistants.js?v=5';
 
@@ -95,10 +95,10 @@ function maybeNext(){
   const previous={...selected};
   const count=placedCount(draft);
   if(selected.kind==='track'&&count.track===64){
-    if(count.goals<16){selected={kind:'goals',index:0,owner:0};mode='goals';announce('✅ Laufweg vollständig! Jetzt die 16 Zielfelder anlegen.','success');}
-    else if(count.homes<16){selected={kind:'homes',index:0,owner:0};mode='homes';}
+    if(count.goals<16){selected=firstUnplacedSlot(draft,'goals',0);mode='goals';announce('✅ Laufweg vollständig! Jetzt die 16 Zielfelder anlegen.','success');}
+    else if(count.homes<16){selected=firstUnplacedSlot(draft,'homes',0);mode='homes';}
   }else if(selected.kind==='goals'&&count.goals===16){
-    if(count.homes<16){selected={kind:'homes',index:0,owner:0};mode='homes';announce('✅ Alle Zielfelder gesetzt! Jetzt die 16 Startplätze platzieren.','success');}
+    if(count.homes<16){selected=firstUnplacedSlot(draft,'homes',0);mode='homes';announce('✅ Alle Zielfelder gesetzt! Jetzt die 16 Startplätze platzieren.','success');}
   }else selected=nextSlot(draft,previous,{symmetry:settings.symmetry});
 }
 function recordChange(){
@@ -181,7 +181,7 @@ function refreshAssistantStatus(){
   $('assist-seat').value=String(assistantSeat);
   $('assist-reference').innerHTML=
     '<strong>'+SEAT_LABELS[assistantSeat]+': Ausstieg Feld '+refs.exitIndex+
-    (refs.exit?' ✓':' ✗')+' · Zieleinlauf Feld '+refs.goalEntryIndex+(refs.goalEntry?' ✓':' ✗')+'</strong>'+
+    (refs.exit?' ✓':' ✗')+' · Zieleinlauf über Startfeld '+refs.goalEntryIndex+(refs.goalEntry?' ✓':' ✗')+'</strong>'+
     '<div>Haus: '+homeCount+'/4 Startplätze · Ziel: '+goalCount+'/4 Zielfelder</div>'+
     '<div>'+(refs.exit?'Der Haus-Ausgang kann bei Bedarf verschoben werden.':'Setze zuerst das farbige Ausstiegsfeld auf dem Laufweg.')+'</div>';
   const report=getTrackConnections(draft);
@@ -588,9 +588,7 @@ document.querySelectorAll('[data-group-dir]').forEach(button=>button.addEventLis
 }));
 document.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{
  const kind=button.dataset.mode;
- const count=placedCount(draft);
- selected=kind==='track'?{kind,index:count.track<64?draft.track.findIndex(p=>p===null):0,owner:0}:
-  {kind,index:0,owner:0};
+ selected=firstUnplacedSlot(draft,kind,kind==='track'?0:selected.owner);
  mode=kind;render();
 }));
 $('field-index').addEventListener('input',event=>{
@@ -700,7 +698,7 @@ $('assist-seat').addEventListener('change',event=>{
  if(!Number.isInteger(seat)||seat<0||seat>3)return;
  assistantSeat=seat;assistantPreview=null;render();
  announce('📍 '+SEAT_LABELS[seat]+': Ausstieg Feld '+(seat*16)+
-   ', Zieleinlauf über Feld '+((seat*16+63)%64)+'.');
+   ', Zieleinlauf über dasselbe Startfeld '+(seat*16)+'.');
 });
 $('choose-exit').addEventListener('click',()=>{
  selected={kind:'track',index:assistantSeat*16,owner:assistantSeat};
@@ -709,16 +707,16 @@ $('choose-exit').addEventListener('click',()=>{
    ' ausgewählt. Tippe zum Setzen oder Verschieben auf das Brett.','success');
 });
 $('choose-goal-first').addEventListener('click',()=>{
- selected={kind:'goals',index:0,owner:assistantSeat};
+ selected=firstUnplacedSlot(draft,'goals',assistantSeat);
  mode='goals';tool='place';assistantPreview=null;render();
- announce('🎯 Zielfeld 1 '+SEAT_LABELS[assistantSeat]+
-  ' gewählt. Setze es genau an die gewünschte Stelle; danach erzeugt der Assistent die übrigen drei.','success');
+ announce('🎯 Nächstes freies Zielfeld '+(selected.index+1)+' '+SEAT_LABELS[assistantSeat]+
+  ' gewählt. Setze es mit einem Tipp; die Nummer wird automatisch weitergezählt.','success');
 });
 $('choose-home-first').addEventListener('click',()=>{
- selected={kind:'homes',index:0,owner:assistantSeat};
+ selected=firstUnplacedSlot(draft,'homes',assistantSeat);
  mode='homes';tool='place';assistantPreview=null;render();
- announce('🏠 Startplatz 1 '+SEAT_LABELS[assistantSeat]+
-  ' gewählt. Setze ihn genau an die gewünschte Stelle; danach erzeugt der Assistent die übrigen drei.','success');
+ announce('🏠 Nächster freier Startplatz '+(selected.index+1)+' '+SEAT_LABELS[assistantSeat]+
+  ' gewählt. Setze ihn mit einem Tipp; die Nummer wird automatisch weitergezählt.','success');
 });
 $('preview-goals').addEventListener('click',()=>assistanceBuild('goals',true));
 $('preview-homes').addEventListener('click',()=>assistanceBuild('homes',true));
