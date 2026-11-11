@@ -121,16 +121,22 @@ test('Map uses authenticated server positions and only unlocks mapped personal f
  assert.match(html,/id="gate-boss-button"/);
  assert.ok(!html.includes('href="./DOG/'),'do not bypass final server unlock');
 });
-test('Boss 10 opens its own three-player arena while later bosses remain unavailable',()=>{
+test('All ten shared bosses launch directly from their map gates, preserving the room',()=>{
  const {gates,byId}=page();
  gates[9].click();
  assert.equal(byId('gate-boss-button').hidden,false);
  assert.match(byId('gate-boss-button').href,/dog-boss10.html\?room=123/);
  assert.match(byId('gate-fight-status').textContent,/Bereit/);
- byId('gate-detail-close').click();
- gates[19].click();
- assert.equal(byId('gate-boss-button').hidden,true);
- assert.match(byId('gate-fight-status').textContent,/noch nicht implementiert/);
+ for(const gate of [20,30,40,50,60,70,80,90,100]){
+  byId('gate-detail-close').click();
+  gates[gate-1].click();
+  assert.equal(byId('gate-boss-button').hidden,false,'Boss '+gate+' is available');
+  assert.match(byId('gate-boss-button').href,
+   new RegExp('dog-group-boss.html\\?gate='+gate+'&room=123'));
+  assert.match(byId('gate-boss-button').textContent,
+   new RegExp('Boss '+gate));
+ }
+ assert.match(byId('gate-fight-status').textContent,/Boss 90/);
 });
 
 test('Map places server-confirmed positions of three heroes at the exact gate',async()=>{
