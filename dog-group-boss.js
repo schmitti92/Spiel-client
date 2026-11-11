@@ -27,6 +27,8 @@
  const auth=()=>{const v=window.SpielOnline?.state?.();
   return v?.status==='online'&&v.user?.uid&&v.profile?.setupComplete!==false?v:null;};
  let view=null,account=null,working=false,serverOffset=0,lastLoad=0,inflight=null;
+ const miniUi=window.DogBossMinigames?.create($('mini-game'),
+  (round,answer)=>void command('minigame',false,{round,answer}));
  const key=uid=>'dog:groupboss:'+gate+':pending:'+uid;
  const newId=()=>globalThis.crypto?.randomUUID?.()?
   'boss'+gate+'-'+globalThis.crypto.randomUUID():
@@ -34,7 +36,7 @@
  function pending(uid){
   try{const value=JSON.parse(localStorage.getItem(key(uid))||'null');
    return value&&/^[A-Za-z0-9_-]{12,90}$/.test(value.id)&&
-    ['ready','start','react','finish'].includes(value.command)?value:null;
+    ['ready','start','react','minigame','finish'].includes(value.command)?value:null;
   }catch{return null;}
  }
  function save(uid,data){
@@ -55,6 +57,8 @@
    request.command==='start'?
     (state?.phase==='fighting'&&state?.roster?.some(m=>m.uid===uid))||settled:
    request.command==='react'?!!mine?.reacted||settled||state?.phase==='waiting':
+   request.command==='minigame'?
+    !!state?.miniGames?.myAnswers?.[request.payload?.round]||settled:
    request.command==='finish'&&settled;
   if(confirmed){clear(uid);return true;}
   return false;
@@ -128,10 +132,12 @@
   start.textContent='⚔️ Mit '+members.filter(m=>m.ready).length+
    ' Helden starten';
   const reaction=$('react-button');
-  reaction.hidden=state!=='fighting';
+  reaction.hidden=state!=='fighting'||!!view?.miniGames;
   reaction.disabled=!logged||working||!!pendingOp||!!mine?.reacted||remaining()<=0||
    !view?.roster?.some(m=>m.uid===account);
   reaction.textContent=mine?.reacted?'⚡ Reaktion gezählt':'⚡ Reaktion! Angriff verstärken';
+  miniUi?.update(view,now(),logged&&!working&&!pendingOp&&
+   !!view?.roster?.some(m=>m.uid===account));
   $('retry-button').hidden=!pendingOp;
   $('retry-button').disabled=working;
   const time=state==='fighting'?remaining():state==='cooldown'?cooling():30000;
@@ -176,7 +182,7 @@
      !data.eligible?'🔒 Zuerst die normalen Tore vor diesem Boss und den vorherigen Gruppenboss schaffen.':
      data.canStart?'⚔️ Du kannst starten oder auf weitere Helden warten. Zu dritt gewinnt ihr am ehesten.':
      '✅ Klicke auf Bereit, damit du am Kampf teilnehmen kannst.':
-     data.phase==='fighting'?'⚔️ Der Bosskampf läuft. Nutze deine Reaktion!':
+     data.phase==='fighting'?'⚔️ Der Bosskampf läuft. Löse die drei taktischen Minispiele!':
      data.phase==='victory'?'🏆 Der gemeinsame Boss-Sieg wurde serverseitig bestätigt.':'⚒️ Verbessert eure Ausrüstung für den nächsten Versuch.');
    }
   }).catch(()=>{
@@ -185,20 +191,20 @@
   inflight=task;
   try{await task}finally{if(inflight===task)inflight=null}
  }
- async function command(action,retry=false){
+ async function command(action,retry=false,payload=null){
   const uid=auth()?.user?.uid;
   if(!uid||working)return;
   const older=pending(uid);
   if(retry&&!older)return;
   if(!retry&&older)return;
-  const req=older||{id:newId(),command:action};
+  const req=older||{id:newId(),command:action,payload};
   if(!older&&!save(uid,req)){
    message('⚠️ Auftrag konnte nicht lokal gesichert werden. Aktion wurde nicht gesendet.');return;
   }
   working=true;render();
   message('⏳ Server prüft und speichert den Auftrag …');
   try{
-   const data=await request('POST','/'+req.command,{requestId:req.id},uid);
+   const data=await request('POST','/'+req.command,{requestId:req.id,...(req.payload||{})},uid);
    if(auth()?.user?.uid!==uid)return;
    clear(uid);view=data.view;serverOffset=Number(data.view.serverNow||Date.now())-Date.now();
    render();
@@ -207,12 +213,15 @@
      '✅ Bereitschaft gespeichert. Du kannst starten oder auf weitere Helden warten.'):
     req.command==='start'?'⚔️ Der Kampf mit '+view.roster.length+' Helden hat begonnen.':
     req.command==='react'?'⚡ Reaktionsbonus für das Team gespeichert.':
+    req.command==='minigame'?
+     (data.result?.correct?'✅ Minispiel gelöst!':'❌ Minispiel nicht geschafft.')+
+      ' Dein Bonus: '+Number(data.result?.bonusPercent||0).toLocaleString('de-DE')+' %.':
     data.result?.win?'🏆 Gruppenboss '+gate+' besiegt. '+(gate===100?'DOG ist freigeschaltet!':'Schmiedestufe erhöht!'):
     '💀 Der Bosskampf ist entschieden. Eine erneute Herausforderung folgt nach der Kampfpause.');
   }catch(e){
    if(['DOG_GROUP_NOT_READY','DOG_GROUP_PREREQUISITES','DOG_GROUP_ALREADY_WON',
     'DOG_GROUP_RUNNING','DOG_GROUP_COOLDOWN','DOG_GROUP_NOT_RUNNING',
-    'DOG_GROUP_STILL_FIGHTING','DOG_GROUP_NOT_PARTICIPANT','NOT_DOG_TEAM_MEMBER','DOG_GROUP_RECEIPT_CONFLICT'].includes(e.message))
+    'DOG_GROUP_STILL_FIGHTING','DOG_MINIGAME_TOO_LATE','DOG_MINIGAME_BAD_ROUND','DOG_MINIGAME_BAD_ANSWER','DOG_GROUP_NOT_PARTICIPANT','NOT_DOG_TEAM_MEMBER','DOG_GROUP_RECEIPT_CONFLICT'].includes(e.message))
     clear(uid);
    message('⚠️ Der Auftrag wurde nicht bestätigt: '+e.message+
     '. Bei einer unbekannten Verbindungslage kannst du ihn sicher wiederholen.');
