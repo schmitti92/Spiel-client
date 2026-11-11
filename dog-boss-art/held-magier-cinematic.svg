@@ -1,0 +1,46 @@
+<svg data-edition="cinematic-2026" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 660" role="img" aria-label="Magier: stilisierter Fantasy-Held in Kampfhaltung">
+<defs>
+ <radialGradient id="aura"><stop stop-color="#dbc7ff" stop-opacity=".27"/><stop offset="1" stop-color="#dbc7ff" stop-opacity="0"/></radialGradient>
+ <linearGradient id="armor" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#dbc7ff"/><stop offset=".29" stop-color="#6b4586"/><stop offset=".58" stop-color="#172136"/><stop offset=".86" stop-color="#6b4586"/><stop offset="1" stop-color="#111526"/></linearGradient>
+ <linearGradient id="shadow" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b4586"/><stop offset=".6" stop-color="#141526"/><stop offset="1" stop-color="#0a0d1b"/></linearGradient>
+ <linearGradient id="light" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffffff"/><stop offset=".33" stop-color="#ffdefc"/><stop offset=".8" stop-color="#dbc7ff"/><stop offset="1" stop-color="#6b4586"/></linearGradient>
+ <filter id="shine"><feGaussianBlur stdDeviation="1.3"/></filter>
+<radialGradient id="cinHalo" cx=".5" cy=".51" r=".5"><stop stop-color="#bd9aff" stop-opacity=".31"/><stop offset=".4" stop-color="#bd9aff" stop-opacity=".13"/><stop offset="1" stop-color="#bd9aff" stop-opacity="0"/></radialGradient>
+<linearGradient id="cinEdge" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f0dfff"/><stop offset=".5" stop-color="#bd9aff"/><stop offset="1" stop-color="#40364e"/></linearGradient>
+<filter id="cinSoft"><feGaussianBlur stdDeviation="7"/></filter>
+</defs>
+<g class="cinematic-aura" aria-hidden="true">
+ <ellipse cx="230" cy="336.6" rx="207" ry="303.6" fill="url(#cinHalo)"/>
+ <g fill="none" stroke="#bd9aff" stroke-opacity=".46"><circle cx="230" cy="310.2" r="158.7" stroke-width="3" stroke-dasharray="27 21"/><circle cx="230" cy="310.2" r="177.1" stroke-width="1.8" stroke-dasharray="9 32"/></g>
+ <g filter="url(#cinSoft)" stroke="#bd9aff" stroke-width="18" stroke-opacity=".38" fill="none">
+ <path d="M78.2 501.6Q32.2 343.2 105.80000000000001 191.39999999999998"/>
+ <path d="M377.2 521.4Q441.59999999999997 310.2 331.2 138.6"/></g>
+ <g><circle cx="32" cy="22" r="0.8" fill="#f0dfff" opacity="0.20"/><circle cx="103" cy="125" r="1.8" fill="#bd9aff" opacity="0.30"/><circle cx="174" cy="228" r="2.8" fill="#f0dfff" opacity="0.40"/><circle cx="245" cy="331" r="0.8" fill="#bd9aff" opacity="0.50"/><circle cx="316" cy="434" r="1.8" fill="#f0dfff" opacity="0.60"/><circle cx="387" cy="537" r="2.8" fill="#bd9aff" opacity="0.70"/><circle cx="28" cy="30" r="0.8" fill="#f0dfff" opacity="0.20"/><circle cx="99" cy="133" r="1.8" fill="#bd9aff" opacity="0.30"/><circle cx="170" cy="236" r="2.8" fill="#f0dfff" opacity="0.40"/><circle cx="241" cy="339" r="0.8" fill="#bd9aff" opacity="0.50"/><circle cx="312" cy="442" r="1.8" fill="#f0dfff" opacity="0.60"/><circle cx="383" cy="545" r="2.8" fill="#bd9aff" opacity="0.70"/><circle cx="24" cy="38" r="0.8" fill="#f0dfff" opacity="0.20"/><circle cx="95" cy="141" r="1.8" fill="#bd9aff" opacity="0.30"/><circle cx="166" cy="244" r="2.8" fill="#f0dfff" opacity="0.40"/><circle cx="237" cy="347" r="0.8" fill="#bd9aff" opacity="0.50"/><circle cx="308" cy="450" r="1.8" fill="#f0dfff" opacity="0.60"/><circle cx="379" cy="553" r="2.8" fill="#bd9aff" opacity="0.70"/><circle cx="20" cy="46" r="0.8" fill="#f0dfff" opacity="0.20"/><circle cx="91" cy="149" r="1.8" fill="#bd9aff" opacity="0.30"/><circle cx="162" cy="252" r="2.8" fill="#f0dfff" opacity="0.40"/><circle cx="233" cy="355" r="0.8" fill="#bd9aff" opacity="0.50"/><circle cx="304" cy="458" r="1.8" fill="#f0dfff" opacity="0.60"/><circle cx="375" cy="561" r="2.8" fill="#bd9aff" opacity="0.70"/></g>
+ </g>
+<ellipse cx="225" cy="342" rx="215" ry="285" fill="url(#aura)"/>
+<ellipse cx="224" cy="624" rx="138" ry="18" fill="#080c18" opacity=".65"/>
+
+<path d="M169 270L100 382L73 566L151 603L192 548L210 643L286 643L299 549L353 600L403 565L343 375L292 271Z" fill="url(#shadow)" stroke="#e2bfff" stroke-width="12"/>
+<path d="M176 276L225 307L275 274L294 547L247 620L198 549Z" fill="url(#armor)" stroke="#e4c5ff" stroke-width="10"/>
+<path d="M215 335L244 389L277 333L273 504L240 568L207 502Z" fill="url(#light)" stroke="#fff0ff" stroke-width="9"/>
+<path d="M146 331L76 417L42 514L98 559L176 473Z" fill="url(#armor)" stroke="#e3baff" stroke-width="11"/>
+<path d="M322 329L376 421L405 520L350 562L286 468Z" fill="url(#armor)" stroke="#dfbbff" stroke-width="11"/>
+<path d="M163 242L151 143L183 83L245 64L316 105L332 193L307 281L194 287Z" fill="url(#shadow)" stroke="#ddb4ff" stroke-width="13"/>
+<path d="M186 173L246 132L295 177L277 242L198 244Z" fill="#130f2d" stroke="#bd9af3" stroke-width="10"/>
+<path d="M201 197L232 211L215 228ZM254 211L284 198L274 226Z" fill="#f8e4ff" filter="url(#shine)"/>
+<path d="M185 127L207 32L245 78L285 24L299 123L327 147L289 166L188 167L156 144Z" fill="url(#armor)" stroke="#e2baff" stroke-width="10"/>
+<path d="M344 500L373 99L390 94L370 505Z" fill="url(#armor)" stroke="#f0d7ff" stroke-width="10"/>
+<path d="M379 104L353 66L382 14L423 71L392 111Z" fill="url(#light)" stroke="#fff7ff" stroke-width="10"/>
+<g fill="none" stroke="#f3dcff" stroke-width="7"><path d="M91 220L121 186L149 225L118 255Z"/><path d="M368 245L409 206L439 249L406 282Z"/><path d="M311 121L329 91L349 121L330 154Z"/></g>
+<path d="M102 452Q156 425 193 466M302 464Q347 422 378 459" fill="none" stroke="#edc9ff" stroke-width="11"/>
+
+<!-- Cinematic material highlights and heraldic effects -->
+<g fill="none" stroke-linecap="round">
+ <path d="M182 315Q225 336 272 309M170 414Q215 444 291 413M174 515Q232 553 291 514" stroke="#f0dfff" stroke-width="4" opacity=".6"/>
+ <path d="M375 138L391 196 363 263M385 324L365 380M384 406L369 449" stroke="#bd9aff" stroke-width="5"/>
+ <circle cx="389" cy="82" r="67" stroke="#bd9aff" stroke-width="4" stroke-dasharray="15 11" opacity=".65"/>
+ <circle cx="389" cy="82" r="46" stroke="#f0dfff" stroke-width="2" opacity=".7"/>
+ <path d="M335 86L351 110 336 132 320 110Z" stroke="#f0dfff" stroke-width="3"/>
+ <path d="M91 343L121 316 144 352 119 383Z" stroke="#bd9aff" stroke-width="3"/>
+ </g><g fill="#f0dfff" opacity=".78"><path d="M387 21L400 70 389 91 378 70Z"/><circle cx="322" cy="81" r="4"/><circle cx="441" cy="116" r="5"/><circle cx="360" cy="169" r="3"/></g>
+</svg>
