@@ -13,6 +13,7 @@
  let view=null,account=null,working=false,serverOffset=0,lastLoad=0,inflight=null;
  const miniUi=window.DogBossMinigames?.create($('mini-game'),
   (round,answer)=>void command('minigame',false,{round,answer}));
+ const combatFx=window.DogBossCombatFX?.create($('combat-scene'),10);
  const key=uid=>'dog:boss10:pending:'+uid;
  const newId=()=>globalThis.crypto?.randomUUID?.()?
   'boss10-'+globalThis.crypto.randomUUID():
@@ -122,6 +123,7 @@
   reaction.textContent=mine?.reacted?'⚡ Reaktion gezählt':'⚡ Reaktion! Angriff verstärken';
   miniUi?.update(view,now(),logged&&!working&&!pendingOp&&
    !!view?.roster?.some(m=>m.uid===account));
+  combatFx?.update(view,now());
   $('retry-button').hidden=!pendingOp;
   $('retry-button').disabled=working;
   const time=state==='fighting'?remaining():state==='cooldown'?cooling():30000;
