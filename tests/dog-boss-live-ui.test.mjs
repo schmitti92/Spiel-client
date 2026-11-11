@@ -140,3 +140,25 @@ test('Existing minigame submit and multiplayer command paths are unchanged',()=>
   assert.match(controller,/DogBossCombatFX\?\.create\(\$\('combat-scene'\)/);
  }
 });
+
+
+test('A verified math batch creates one visible strike per correct answer',()=>{
+ const {ui}=bootstrap(),{root,element}=fakeDom(),display=ui.create(root);
+ const battle=model(),at=start+11500;
+ battle.miniGames.myAnswers[1]={
+  attempts:[
+   {step:0,correct:false,at},
+   {step:1,correct:true,at},
+   {step:2,correct:true,at},
+   {step:3,correct:false,at}
+  ],at,correctCount:2,correct:true
+ };
+ display.update(battle,at+350);
+ const effect=element('live-hit-effects');
+ assert.equal(effect.calls,1);
+ assert.equal(effect.children.length,5,'two confirmed attacks plus one label');
+ assert.match(effect.children[4].textContent,/2 bestätigte Treffer/);
+ assert.match(element('live-feedback').textContent,/2 Mathetreffer/);
+ display.update(battle,at+650);
+ assert.equal(effect.calls,1,'the same batch is not replayed');
+});
