@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="de">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+ <meta name="theme-color" content="#131c30">
+ <meta name="description" content="Spielseiten-Studio: visuelles Layout-Tool für Bosskämpfe, Schmiede, Lobby und zukünftige Spiele.">
+ <title>Designer · Spielseiten-Studio</title>
+ <link rel="stylesheet" href="./studio.css?v=1">
+ <script src="./studio.js?v=1" defer></script>
+</head>
+<body>
+ <header class="topbar">
+  <a class="brand" href="../index.html" title="Zurück zum Spieleportal"><span class="brand-mark">✦</span><span><strong>SPIELSEITEN</strong><small>CREATIVE STUDIO</small></span></a>
+  <div class="top-project"><label for="project-name" class="sr-only">Projektname</label><input id="project-name" value="100 Tore · Boss-Arena" maxlength="70" autocomplete="off"><span id="save-indicator">● Lokal gespeichert</span></div>
+  <div class="top-actions">
+   <button type="button" id="undo-btn" title="Rückgängig (Strg+Z)" aria-label="Rückgängig">↶</button>
+   <button type="button" id="redo-btn" title="Wiederholen (Strg+Y)" aria-label="Wiederholen">↷</button>
+   <button type="button" id="import-btn" title="Gespeichertes Projekt laden">↥ <span class="button-label">Laden</span></button>
+   <button type="button" id="export-json" title="Alle Ansichten als bearbeitbares Projekt speichern">💾 <span class="button-label">Projekt</span></button>
+   <button type="button" id="export-png" title="Aktuelle Ansicht als PNG exportieren">📷 <span class="button-label">Bild</span></button>
+   <button type="button" id="preview-btn" class="button-accent">◉ <span class="button-label">Vorschau</span></button>
+   <button type="button" id="fullscreen-btn" title="Studio in Vollbild öffnen">⛶</button>
+   <button type="button" id="help-btn" title="Hilfe" aria-label="Hilfe">?</button>
+  </div>
+ </header>
+ <div class="workspace">
+  <aside class="rail left-rail" aria-label="Werkzeuge">
+   <div class="rail-header"><span class="eyebrow">BAUKASTEN</span><h2>✨ Elemente</h2><p>Klicken zum Hinzufügen, danach frei verschieben.</p></div>
+   <div class="tool-grid">
+    <button type="button" data-add="text"><span>𝐓</span><small>Text</small></button>
+    <button type="button" data-add="panel"><span>▣</span><small>Glas-Panel</small></button>
+    <button type="button" data-add="rect"><span>▭</span><small>Rechteck</small></button>
+    <button type="button" data-add="circle"><span>◯</span><small>Kreis</small></button>
+    <button type="button" data-add="button"><span>⬚</span><small>Button</small></button>
+    <button type="button" data-add="image"><span>▧</span><small>Bild</small></button>
+    <button type="button" data-add="bar"><span>▰</span><small>LP-Leiste</small></button>
+    <button type="button" data-add="player"><span>♟</span><small>Spieler</small></button>
+    <button type="button" data-add="arrow"><span>➜</span><small>Pfeil</small></button>
+    <button type="button" data-add="note"><span>✎</span><small>Notiz</small></button>
+   </div>
+   <div class="rail-divider"></div>
+   <span class="eyebrow">NEUES PROJEKT</span>
+   <label class="field-label" for="template-picker">Vorlage auswählen</label>
+   <select id="template-picker">
+    <option value="boss">🐉 100 Tore · Boss-Seite</option>
+    <option value="forge">⚒️ Schmiede</option>
+    <option value="lobby">🏰 Spiellobby</option>
+    <option value="empty">✦ Freie Seite</option>
+   </select>
+   <button type="button" id="new-project" class="wide-button">＋ Neues Projekt</button>
+   <div class="rail-divider"></div>
+   <div class="quick-tips"><strong>💡 Dein Kreativplatz</strong><p>Jede Ansicht hat ihre eigenen Elemente und Hintergründe. Du kannst jederzeit zwischen ihnen wechseln.</p><button type="button" id="sample-tip">Anleitung ansehen ↗</button></div>
+  </aside>
+  <main class="main-stage">
+   <div class="stage-heading">
+    <div><span class="eyebrow">PROJEKT-ABLAUF</span><h1>Deine Seiten <span>gestalten</span></h1></div>
+    <div class="stage-actions"><button id="rename-screen" type="button">✎ Umbenennen</button><button id="duplicate-screen" type="button">⧉ Duplizieren</button><button id="delete-screen" type="button" title="Ansicht löschen">🗑</button></div>
+   </div>
+   <nav class="scene-tabs" id="scene-tabs" aria-label="Ansichten im Projekt"></nav>
+   <div class="board-toolbar">
+    <div class="view-controls">
+     <label for="screen-size" class="sr-only">Bildschirmgröße</label>
+     <select id="screen-size"><option value="1440x810">▣ Desktop · 16:9</option><option value="1024x768">▣ Tablet · 4:3</option><option value="390x844">▣ Handy · Hochkant</option></select>
+     <button type="button" id="fit-btn" title="An verfügbare Fläche anpassen">⊞ Anpassen</button>
+     <label class="grid-label"><input type="checkbox" id="grid-toggle"> Raster</label>
+     <label class="grid-label"><input type="checkbox" id="snap-toggle"> Einrasten</label>
+    </div>
+    <div class="zoom-controls"><span id="stage-dimensions">1440 × 810</span><button type="button" id="zoom-out" aria-label="Verkleinern">−</button><span id="zoom-value">70 %</span><button type="button" id="zoom-in" aria-label="Vergrößern">＋</button></div>
+   </div>
+   <div class="stage-scroll" id="stage-scroll" tabindex="0" aria-label="Arbeitsfläche">
+    <div class="board-shell" id="board-shell">
+     <div class="artboard" id="artboard" role="group" aria-label="Seitenentwurf">
+      <div id="canvas-backdrop" class="canvas-backdrop"></div>
+      <div id="canvas-overlay" class="canvas-overlay"></div>
+      <div id="canvas-grid" class="canvas-grid"></div>
+      <div class="canvas-content" id="canvas-content"></div>
+      <div id="canvas-empty" class="canvas-empty" hidden>✨ Wähle links ein Element, um deine erste Seite zu gestalten.</div>
+     </div>
+    </div>
+   </div>
+   <div class="stage-footer">
+    <span id="active-scene-label">🎬 Vor dem Kampf</span>
+    <span><kbd>Entf</kbd> Löschen · <kbd>Strg</kbd> + <kbd>D</kbd> Duplizieren · Doppelklick Text bearbeiten</span>
+    <span id="status-line" role="status" aria-live="polite">Studio bereit ✨</span>
+   </div>
+  </main>
+  <aside class="rail right-rail" aria-label="Einstellungen und Ebenen">
+   <div class="rail-header"><span class="eyebrow">KREATIV-WERKSTATT</span><h2>🎨 Eigenschaften</h2></div>
+   <section id="screen-inspector" class="inspector-section">
+    <h3>🌄 Hintergrund</h3>
+    <label class="field-label" for="background-color">Hintergrundfarbe</label><input id="background-color" type="color" value="#122541">
+    <div class="two-buttons"><button type="button" id="background-upload-btn">🖼 Bild einfügen</button><button type="button" id="background-remove-btn">✕ Entfernen</button></div>
+    <label class="field-label" for="background-fit">Bilddarstellung</label><select id="background-fit"><option value="cover">Bildschirm ausfüllen</option><option value="contain">Gesamtes Bild zeigen</option></select>
+    <label class="field-label" for="background-overlay">Farbfilter</label><input id="background-overlay" type="color" value="#081426">
+    <label class="field-label" for="overlay-opacity">Abdunkeln / Overlay <output id="overlay-opacity-value">40 %</output></label><input id="overlay-opacity" type="range" min="0" max="100" value="40">
+    <label class="field-label" for="background-blur">Hintergrund-Unschärfe <output id="background-blur-value">0 px</output></label><input id="background-blur" type="range" min="0" max="16" value="0">
+    <p class="inspector-tip">💡 Jeder Bildschirm kann sein eigenes Bild und seinen eigenen Look bekommen.</p>
+   </section>
+   <section id="item-inspector" class="inspector-section" hidden>
+    <div class="inspector-title"><h3 id="selected-type">Element bearbeiten</h3><button id="delete-item" type="button" title="Element löschen">🗑</button></div>
+    <label class="field-label" for="prop-text">Beschriftung / Notiz</label><textarea id="prop-text" rows="3" placeholder="Text eingeben …"></textarea>
+    <div class="prop-two">
+     <label>Links (X)<input id="prop-x" type="number" min="0" step="1"></label><label>Oben (Y)<input id="prop-y" type="number" min="0" step="1"></label>
+     <label>Breite<input id="prop-w" type="number" min="10" step="1"></label><label>Höhe<input id="prop-h" type="number" min="10" step="1"></label>
+    </div>
+    <label class="field-label" for="prop-fill">Flächenfarbe</label><input id="prop-fill" type="color">
+    <label class="field-label" for="prop-opacity">Transparenz / Deckkraft <output id="prop-opacity-value">80 %</output></label><input id="prop-opacity" type="range" min="0" max="100">
+    <label class="field-label" for="prop-stroke">Rahmenfarbe</label><input id="prop-stroke" type="color">
+    <div class="prop-two">
+     <label>Rahmenbreite<input id="prop-border" type="number" min="0" max="16"></label>
+     <label>Rundung<input id="prop-radius" type="number" min="0" max="300"></label>
+    </div>
+    <label class="field-label" for="prop-blur">Glaseffekt <output id="prop-blur-value">0 px</output></label><input id="prop-blur" type="range" min="0" max="28">
+    <div class="prop-two">
+     <label>Schriftfarbe<input id="prop-color" type="color"></label>
+     <label>Schriftgröße<input id="prop-font" type="number" min="8" max="170"></label>
+    </div>
+    <label class="field-label" for="prop-align">Textausrichtung</label><select id="prop-align"><option value="left">Links</option><option value="center">Mittig</option><option value="right">Rechts</option></select>
+    <div class="prop-check"><label><input type="checkbox" id="prop-bold"> Fett</label><label><input type="checkbox" id="prop-shadow"> Schatten</label></div>
+    <div class="two-buttons"><button type="button" id="item-image-btn">🖼 Bild einsetzen</button><button type="button" id="duplicate-item">⧉ Duplizieren</button></div>
+    <div class="two-buttons"><button type="button" id="item-front">↑ Nach vorne</button><button type="button" id="item-back">↓ Nach hinten</button></div>
+    <div class="prop-check"><label><input type="checkbox" id="prop-lock"> 🔒 Fixieren</label><label><input type="checkbox" id="prop-hide"> 👁 Ausblenden</label></div>
+   </section>
+   <div class="rail-divider"></div>
+   <div class="layers-head"><h3>🗂 Ebenen</h3><span id="layer-count">0 Elemente</span></div>
+   <div id="layer-list" class="layer-list"><p class="layer-empty">Noch keine Elemente vorhanden.</p></div>
+  </aside>
+ </div>
+ <input id="project-file" type="file" accept=".json,application/json" hidden>
+ <input id="background-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+ <input id="item-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+ <dialog id="help-dialog" class="studio-dialog">
+  <div class="dialog-header"><span>✦ KREATIV-STUDIO</span><button type="button" data-close-dialog aria-label="Schließen">✕</button></div>
+  <h2>Willkommen in deinem Spielseiten-Studio!</h2>
+  <p>Hier entwirfst du Bildschirm für Bildschirm, wie euer Spiel später aussehen soll – ganz ohne den laufenden Spielcode zu verändern.</p>
+  <ol><li><strong>Ansicht wählen</strong> – oben zwischen Kampf, Boss, Minispiel und Ergebnissen wechseln.</li><li><strong>Element hinzufügen</strong> – links Text, Glasblock, Button, Bild oder Form anklicken.</li><li><strong>Anordnen</strong> – auf der Leinwand ziehen, an den Ecken vergrößern und rechts die Deckkraft ändern.</li><li><strong>Hintergrund einsetzen</strong> – rechts ein Bild hochladen; jede Ansicht hat ihre eigene Hintergrundgestaltung.</li><li><strong>Speichern</strong> – „💾 Projekt“ exportiert eine JSON-Datei mit allen Ansichten. „📷 Bild“ exportiert die aktuelle Ansicht als PNG.</li></ol>
+  <p><strong>Hinweis:</strong> Dein Entwurf wird automatisch nur in diesem Browser gespeichert. Für die spätere gemeinsame Umsetzung die Projektdatei exportieren und hier im Chat hochladen. Es werden keine Live-Spielstände geändert.</p>
+  <button type="button" class="dialog-done button-accent" data-close-dialog>Los geht’s ✨</button>
+ </dialog>
+ <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
