@@ -409,7 +409,7 @@
     if(attackStatus)attackStatus.textContent=
      '⚡ TEMPO '+(1+elapsedGame*.3).toFixed(1)+'× · wird immer schneller';
     progress.style.setProperty('--timing-left',((.5-round.zoneRadius)*100)+'%');
-    progress.style.setProperty('--timing-width',(round.zoneRadius*200)+'%');
+    progress.style.setProperty('--timing-width',(round.zoneRadius*200).toFixed(1)+'%');
     anchor={round,elapsed,stamp:typeof performance!=='undefined'?performance.now():Date.now()};
     if(!raf)paintReaction();
     if(completed)stopAnimation();
