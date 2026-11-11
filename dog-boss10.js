@@ -226,7 +226,10 @@
   if(view?.phase==='fighting'&&remaining()===0&&!working&&!pending(account)){
    void command('finish');return;
   }
-  const delay=view?.phase==='fighting'?4500:15000;
+  // Waiting heroes need to notice the shared start before the first
+  // challenge at second 3. Keep the idle/no-ready state economical.
+  const delay=view?.phase==='fighting'?3200:
+   view?.phase==='waiting'&&view?.members?.some(m=>m.ready)?3200:15000;
   if(!working&&Date.now()-lastLoad>delay)void reload();
  },250);
  void reload(true);
