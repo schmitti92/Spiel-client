@@ -11,6 +11,7 @@ on:
       - dog-group-boss.html
       - dog-group-boss.js
       - dog-boss-mini-ui.js
+      - dog-boss-combat-fx.js
       - dog-ascension.html
       - dog-ascension.css
       - dog-ascension.js
@@ -21,6 +22,7 @@ on:
       - tests/dog-first-loop-ui.test.mjs
       - tests/dog-group-boss-ui.test.mjs
       - tests/dog-boss-minigames-ui.test.mjs
+      - tests/dog-boss-combat-fx.test.mjs
       - tests/dog-chests-ui.test.mjs
       - .github/workflows/dog-tor-map-check.yml
   pull_request:
@@ -34,6 +36,7 @@ on:
       - dog-group-boss.html
       - dog-group-boss.js
       - dog-boss-mini-ui.js
+      - dog-boss-combat-fx.js
       - dog-ascension.html
       - dog-ascension.css
       - dog-ascension.js
@@ -44,6 +47,7 @@ on:
       - tests/dog-first-loop-ui.test.mjs
       - tests/dog-group-boss-ui.test.mjs
       - tests/dog-boss-minigames-ui.test.mjs
+      - tests/dog-boss-combat-fx.test.mjs
       - tests/dog-chests-ui.test.mjs
       - .github/workflows/dog-tor-map-check.yml
 
@@ -62,7 +66,8 @@ jobs:
           node --check dog-boss10.js
           node --check dog-group-boss.js
           node --check dog-boss-mini-ui.js
+          node --check dog-boss-combat-fx.js
           node --check dog-ascension.js
           node --check dog-materials-ui.js
       - name: Test map structure and safe DOG unlock placeholder
-        run: node --test tests/dog-tor-map.test.mjs tests/dog-first-loop-ui.test.mjs tests/dog-group-boss-ui.test.mjs tests/dog-boss-minigames-ui.test.mjs tests/dog-chests-ui.test.mjs
+        run: node --test tests/dog-tor-map.test.mjs tests/dog-first-loop-ui.test.mjs tests/dog-group-boss-ui.test.mjs tests/dog-boss-minigames-ui.test.mjs tests/dog-boss-combat-fx.test.mjs tests/dog-chests-ui.test.mjs
