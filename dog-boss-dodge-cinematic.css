@@ -1,0 +1,224 @@
+/* 100 Tore · Dodge choreography, synchronized with server dodge strikes.
+ * No input interception, no damage changes, no extra fetches.
+ */
+.arena-live .combat-scene .battle-dodge-layer{
+ position:absolute;inset:0;z-index:8;overflow:hidden;pointer-events:none;
+ isolation:isolate;filter:drop-shadow(0 3px 7px #020814)
+}
+.arena-live .combat-scene .battle-dodge-layer[hidden]{display:none}
+.arena-live .battle-dodge-layer::before{
+ content:"";position:absolute;inset:35% 2% 9% 41%;pointer-events:none;
+ background:radial-gradient(ellipse at 57% 86%,#a1e5ff15,transparent 70%);
+ border-radius:50%;
+}
+.arena-live .battle-dodge-lane{
+ display:block;position:absolute;bottom:11%;width:clamp(52px,10%,110px);
+ aspect-ratio:1.8/1;transform:translateX(-50%) perspective(150px) rotateX(61deg);
+ border-radius:50%;background:radial-gradient(ellipse,#b1edff39,#80d8ed18 50%,transparent 72%);
+ border:2px solid #8aeaf74d;box-shadow:0 0 16px #8bdef429,inset 0 0 14px #b4f9ff30;
+ transition:background .18s,border-color .18s;
+}
+.arena-live .battle-dodge-lane[hidden]{display:none}
+.arena-live .battle-dodge-lane::before{
+ content:"";position:absolute;inset:8%;border-radius:50%;
+ border:1px dashed #e8fcff6b;opacity:.8
+}
+.arena-live .battle-dodge-lane.is-danger{
+ border:3px solid #ff674f;background:radial-gradient(ellipse,#ff4040a6 0%,#f04f426d 39%,#fb793000 76%);
+ box-shadow:0 0 21px #ff4d49c0,inset 0 0 16px #ff6c53;
+ animation:dodge-danger-warning .39s ease-in-out infinite alternate
+}
+.arena-live .battle-dodge-lane.is-safe{
+ border-color:#7ef6c0a6;background:radial-gradient(ellipse,#78f3c38c 0%,#41cfaa30 41%,transparent 76%);
+ box-shadow:0 0 14px #53e9b075,inset 0 0 7px #afffde55
+}
+.arena-live .battle-dodge-lane.is-danger::after{
+ content:"!";position:absolute;left:50%;top:20%;transform:translate(-50%,-50%) rotateX(-61deg);
+ font:1000 28px/1 system-ui,sans-serif;color:#fff0d9;text-shadow:0 0 10px #f64436
+}
+.arena-live .battle-dodge-strike{
+ display:block;position:absolute;top:14%;left:var(--dodge-hit-x,66%);width:8px;height:77%;
+ transform:translateX(-50%) scaleY(.3);transform-origin:center top;opacity:0;
+ background:linear-gradient(180deg,#fffff2 0%,#ffcf93 13%,#ff653c 54%,#ff5c334a 90%,transparent);
+ border-radius:100%;filter:drop-shadow(0 0 9px #ffc58d) drop-shadow(0 0 22px #ff633c);
+}
+.arena-live .combat-scene[data-dodge-strike="impact"] .battle-dodge-strike{
+ animation:dodge-boss-slam .82s cubic-bezier(.07,.8,.16,1) both;
+ animation-delay:var(--dodge-attack-delay,0ms)
+}
+.arena-live .combat-scene[data-dodge-strike="impact"] .battle-dodge-lane.is-danger{
+ animation:dodge-lane-impact .88s ease-out both;
+ animation-delay:var(--dodge-attack-delay,0ms)
+}
+/* Each participant is positioned independently from the chosen direction;
+   local input previews movement, while remote players use verified actions. */
+.arena-live .combat-scene[data-cue="dodge"] .combat-hero.battle-dodge-leap{
+ animation:dodge-hero-side-step 2.48s cubic-bezier(.25,.79,.25,1) both!important;
+ animation-delay:var(--dodge-move-delay,0ms)!important;
+ transform-origin:50% 88%;will-change:transform
+}
+.arena-live .combat-scene[data-cue="dodge"] .combat-hero.battle-dodge-success .combat-hero-symbol{
+ filter:drop-shadow(0 0 17px #a0ffde) drop-shadow(0 10px 6px #050916);
+}
+.arena-live .combat-scene[data-cue="dodge"] .combat-hero.battle-dodge-hit .combat-hero-symbol{
+ filter:drop-shadow(0 0 18px #ff715e) drop-shadow(0 10px 6px #050916);
+}
+.arena-live .combat-hero .battle-dodge-verdict{
+ position:absolute;left:50%;top:-20px;z-index:17;transform:translateX(-50%);
+ white-space:nowrap;font:1000 clamp(10px,.9vw,14px)/1.1 system-ui,sans-serif;
+ border-radius:8px;padding:5px 9px;color:#eafff8;
+ border:1px solid #81ecb7;background:#0d463adf;
+ text-shadow:0 1px 3px #000c;box-shadow:0 3px 15px #000b,0 0 14px #7ff9c54d;
+ animation:dodge-verdict-appear .28s ease-out both;pointer-events:none
+}
+.arena-live .combat-hero .battle-dodge-verdict.is-hit{
+ color:#ffe0d4;border-color:#ff977f;background:#792d37ea;
+ box-shadow:0 3px 15px #000b,0 0 18px #ff71504d
+}
+.arena-live .combat-scene[data-cue="dodge"] .combat-boss{
+ animation:dodge-boss-windup 2.66s ease-in-out infinite!important;
+}
+.arena-live .combat-scene[data-dodge-strike="impact"] .combat-boss{
+ filter:drop-shadow(0 0 20px #ffa671);
+}
+.arena-live .mini-dodge-lanes{
+ position:relative;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px
+}
+.arena-live .mini-dodge-lanes:has(> :nth-child(2):last-child){
+ grid-template-columns:repeat(2,minmax(0,1fr))
+}
+.arena-live .mini-dodge-lane{
+ border-radius:13px;min-height:clamp(65px,10.4vh,95px);
+ font-size:clamp(12px,1.35vw,19px);
+ transition:filter .12s,transform .12s,background .16s;
+}
+.arena-live .mini-dodge-lane.mini-safe{
+ border-color:#4de2b7;color:#effff7;
+ background:linear-gradient(145deg,#1b7660,#14544e);
+ box-shadow:0 0 13px #3cdda832,inset 0 1px #ceffea54
+}
+.arena-live .mini-dodge-lane.mini-danger{
+ border-color:#ff8b75;color:#ffe5db;
+ background:linear-gradient(155deg,#8b3839,#52242d);
+ box-shadow:0 0 14px #e34c3c45,inset 0 1px #ffc0a535
+}
+.arena-live .mini-dodge-lane.is-selected{
+ outline:3px solid #fff4b4;outline-offset:1px;
+ box-shadow:0 0 20px #ffe5a569,inset 0 1px #fff9d48c
+}
+.arena-live .mini-dodge-warning{
+ font-size:clamp(13px,1.3vw,19px);letter-spacing:.03em;text-transform:uppercase;
+ min-height:32px
+}
+.arena-live .mini-dodge-warning.is-success{
+ background:#195a4ca9;border:1px solid #83f6bf;color:#e6ffef
+}
+.arena-live .mini-dodge-impact{
+ font-size:clamp(11px,1.05vw,15px);font-weight:900;letter-spacing:.08em;
+ text-align:center;color:#ffcaa6;min-height:18px;
+}
+@keyframes dodge-hero-side-step{
+ 0%{transform:translate3d(0,0,0) rotate(0);filter:brightness(1)}
+ 12%{transform:translate3d(calc(var(--dodge-move-x,0px)*.23),-16px,0) rotate(-6deg);filter:brightness(1.2)}
+ 27%{transform:translate3d(calc(var(--dodge-move-x,0px)*.84),-27px,0) rotate(4deg)}
+ 40%{transform:translate3d(var(--dodge-move-x,0px),-5px,0) rotate(0);filter:brightness(1.3)}
+ 70%{transform:translate3d(var(--dodge-move-x,0px),-5px,0) rotate(0);filter:brightness(1.15)}
+ 84%{transform:translate3d(calc(var(--dodge-move-x,0px)*.45),-6px,0) rotate(-2deg)}
+ 100%{transform:translate3d(0,0,0) rotate(0);filter:brightness(1)}
+}
+@keyframes dodge-boss-slam{
+ 0%{opacity:0;transform:translateX(-50%) scaleY(.2)}
+ 22%{opacity:1;transform:translateX(-50%) scaleY(1.04)}
+ 43%{opacity:1;transform:translateX(-50%) scaleY(1)}
+ 100%{opacity:0;transform:translateX(-50%) scaleY(1.07)}
+}
+@keyframes dodge-danger-warning{from{opacity:.6}to{opacity:1}}
+@keyframes dodge-lane-impact{
+ 0%{opacity:1;filter:brightness(1)}
+ 23%{opacity:1;filter:brightness(2.6)}
+ 55%{opacity:.9;filter:brightness(1.3)}
+ 100%{opacity:.4;filter:brightness(.7)}
+}
+@keyframes dodge-verdict-appear{
+ from{opacity:0;transform:translate(-50%,12px) scale(.85)}
+ to{opacity:1;transform:translate(-50%,0) scale(1)}
+}
+@keyframes dodge-boss-windup{
+ 0%,100%{transform:translateX(0) rotate(0)}
+ 40%{transform:translateX(10px) rotate(2deg)}
+ 62%{transform:translateX(27px) rotate(4deg)}
+ 72%{transform:translateX(3px) rotate(-2deg)}
+}
+/* Seven-second cinematic window in v5: approach, impact, pause to read results,
+   retreat. Late reconnects join the correct offset rather than restarting. */
+.arena-live .combat-scene[data-battle-version="5"].live-exchange-attack .combat-hero-line{
+ animation:dodge-cinematic-heroes 6.4s ease-in-out both;
+ animation-delay:var(--exchange-offset,0ms)
+}
+.arena-live .combat-scene[data-battle-version="5"].live-exchange-defense .combat-boss{
+ animation:dodge-cinematic-boss 6.4s ease-in-out both;
+ animation-delay:var(--exchange-offset,0ms)
+}
+.arena-live .combat-scene[data-battle-version="5"].live-exchange-attack .combat-boss{
+ animation:dodge-cinematic-recoil 6.4s ease-in-out both;
+ animation-delay:var(--exchange-offset,0ms)
+}
+.arena-live .combat-scene[data-battle-version="5"].live-exchange-defense .combat-hero-line{
+ animation:dodge-cinematic-defense 6.4s ease-in-out both;
+ animation-delay:var(--exchange-offset,0ms)
+}
+.arena-live .combat-scene[data-battle-version="5"].live-exchange-attack .live-exchange-bolt,
+.arena-live .combat-scene[data-battle-version="5"].live-exchange-defense .live-exchange-counterbolt,
+.arena-live .combat-scene[data-battle-version="5"].live-exchange-defense .live-exchange-shield-dome,
+.arena-live .combat-scene[data-battle-version="5"].live-exchange-attack .live-exchange-boss-impact{
+ animation-duration:6.2s;animation-fill-mode:both;
+}
+@keyframes dodge-cinematic-heroes{
+ 0%,100%{transform:none}
+ 14%{transform:translateX(-5%)}
+ 27%{transform:translateX(-17%) scale(1.06)}
+ 39%{transform:translateX(-20%) scale(1.08)}
+ 56%,75%{transform:translateX(-10%)}
+}
+@keyframes dodge-cinematic-boss{
+ 0%,100%{transform:none}
+ 14%{transform:translateX(8%) rotate(2deg)}
+ 27%{transform:translateX(20%) scale(1.08)}
+ 40%{transform:translateX(28%) scale(1.13)}
+ 58%,74%{transform:translateX(12%)}
+}
+@keyframes dodge-cinematic-recoil{
+ 0%,18%,100%{transform:none;filter:brightness(1)}
+ 37%{transform:translateX(-16px) rotate(-4deg);filter:brightness(1.8)}
+ 53%,75%{transform:translateX(7px);filter:brightness(1.2)}
+}
+@keyframes dodge-cinematic-defense{
+ 0%,100%{transform:none}
+ 18%{transform:translateX(-5%)}
+ 39%{transform:translateX(9%) scale(.95)}
+ 48%,75%{transform:translateX(7%) scale(.96)}
+}
+@media (orientation:landscape) and (min-width:900px) and (max-height:720px){
+ .arena-live .combat-hero .battle-dodge-verdict{font-size:11px;top:-16px;padding:3px 6px}
+ .arena-live .mini-dodge-lane{min-height:clamp(51px,8.8vh,80px);font-size:12px}
+ .arena-live .battle-dodge-lane{bottom:8%}
+}
+@media(max-width:620px){
+ .arena-live .combat-hero .battle-dodge-verdict{font-size:10px;top:-15px;padding:3px}
+ .arena-live .mini-dodge-lane{min-height:64px;font-size:13px}
+ .arena-live .battle-dodge-lane{width:10%;bottom:12%}
+}
+@media(prefers-reduced-motion:reduce){
+ .arena-live .combat-scene[data-cue="dodge"] .combat-hero.battle-dodge-leap,
+ .arena-live .combat-scene[data-cue="dodge"] .combat-boss,
+ .arena-live .combat-scene[data-dodge-strike="impact"] .battle-dodge-strike,
+ .arena-live .combat-scene[data-dodge-strike="impact"] .battle-dodge-lane.is-danger,
+ .arena-live .combat-scene[data-battle-version="5"].live-exchange-attack .combat-hero-line,
+ .arena-live .combat-scene[data-battle-version="5"].live-exchange-defense .combat-hero-line,
+ .arena-live .combat-scene[data-battle-version="5"].live-exchange-attack .combat-boss,
+ .arena-live .combat-scene[data-battle-version="5"].live-exchange-defense .combat-boss{
+  animation:none!important;transition:none!important
+ }
+ .arena-live .battle-dodge-lane.is-danger{animation:none}
+ .arena-live .combat-hero .battle-dodge-verdict{animation:none}
+}
