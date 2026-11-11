@@ -85,14 +85,14 @@ test('Scene creates exactly participating heroes; single player is not visually 
  const team=view();director.update(team,start+11300);
  assert.equal(slots['#combat-hero-line'].children.length,3);
  assert.match(slots['#combat-hero-line'].children[1].children[0].style.backgroundImage,
-  /held-schildtraeger\.svg/);
- assert.match(slots['#combat-hero-line'].children[2].children[0].style.backgroundImage,
   /held-magier\.svg/);
- // The third hero keeps the mage artwork when fighting alone.
+ assert.match(slots['#combat-hero-line'].children[2].children[0].style.backgroundImage,
+  /held-schildtraeger\.svg/);
+ // The third hero keeps the shieldbearer artwork when fighting alone.
  const mageSolo=view();mageSolo.roster=[{uid:'c'}];
  director.update(mageSolo,start+11900);
  assert.match(slots['#combat-hero-line'].children[0].children[0].style.backgroundImage,
-  /held-magier\.svg/);
+  /held-schildtraeger\.svg/);
  director.update(team,start+11900);
  assert.equal(root.dataset.cue,'math');
  director.update(view('victory'),start+30001);
