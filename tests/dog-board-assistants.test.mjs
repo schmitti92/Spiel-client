@@ -6,14 +6,14 @@ import {
   validateGroupPlacement,getTrackConnections,straightGaps,connectStraightGap
 } from '../DOG/board-assistants.js';
 
-test('each DOG colour has a protected start on the track and a preceding goal entry',()=>{
+test('each DOG colour enters its finish via its protected start field',()=>{
  assert.deepEqual(EXIT_INDICES,[0,16,32,48]);
- assert.deepEqual(GOAL_ENTRY_INDICES,[63,15,31,47]);
+ assert.deepEqual(GOAL_ENTRY_INDICES,[0,16,32,48]);
  const d=emptyDraft();d.track[0]={x:200,y:200};d.track[63]={x:180,y:200};
- assert.deepEqual(referencePoints(d,0),{exitIndex:0,exit:{x:200,y:200},goalEntryIndex:63,goalEntry:{x:180,y:200}});
+ assert.deepEqual(referencePoints(d,0),{exitIndex:0,exit:{x:200,y:200},goalEntryIndex:0,goalEntry:{x:200,y:200}});
 });
-test('goal generator creates four exact equally spaced positions from preceding circuit field',()=>{
- const d=emptyDraft();d.track[63]={x:200,y:200};
+test('goal generator creates four exact equally spaced positions from own start field',()=>{
+ const d=emptyDraft();d.track[0]={x:200,y:200};
  const next=buildGoalLane(d,0,{dx:1,dy:0,spacing:28});
  assert.deepEqual(next.goals[0],[{x:228,y:200},{x:256,y:200},{x:284,y:200},{x:312,y:200}]);
  assert.equal(d.goals[0].every(p=>p===null),true);
@@ -37,7 +37,7 @@ test('home generator respects first manually placed reserve and supports rows',(
  assert.deepEqual(next.homes[3],[{x:130,y:560},{x:158,y:560},{x:186,y:560},{x:214,y:560}]);
 });
 test('generators prevent collisions or placement outside gameboard without modifying draft',()=>{
- const d=emptyDraft();d.track[63]={x:200,y:200};d.track[20]={x:228,y:200};
+ const d=emptyDraft();d.track[0]={x:200,y:200};d.track[20]={x:228,y:200};
  const previous=structuredClone(d);
  assert.throws(()=>buildGoalLane(d,0,{dx:1,dy:0,spacing:28}),/überlappen/);
  assert.deepEqual(d,previous);
