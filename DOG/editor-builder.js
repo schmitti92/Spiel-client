@@ -11,8 +11,8 @@ import {
   fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
   guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun,
   trackGroupBounds,translateTrackGroup,firstUnplacedSlot
-} from './editor-model.js?v=6';
-import {referencePoints,buildGoalLane,buildHomeGroup,getTrackConnections,straightGaps,connectStraightGap,SEAT_LABELS} from './board-assistants.js?v=5';
+} from './editor-model.js?v=8';
+import {referencePoints,buildGoalLane,buildHomeGroup,getTrackConnections,straightGaps,connectStraightGap,SEAT_LABELS} from './board-assistants.js?v=8';
 
 const $=id=>document.getElementById(id);
 const board=$('builder-board');
