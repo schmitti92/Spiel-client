@@ -42,7 +42,7 @@ function fastBatchSnapshot(game,now=dealServerNow()){
  const visible=[],inMotion=[];
  for(let i=0;i<reveals.length;i++){
   const elapsed=now-(started+i*interval);
-  if(elapsed>=130)visible.push(reveals[i]);
+  if(elapsed>=0)visible.push(reveals[i]);
   if(elapsed>=0&&elapsed<interval)inMotion.push(reveals[i].case);
  }
  return {visible,inMotion,now,interval,started,total:reveals.length};
@@ -55,7 +55,7 @@ function scheduleFastBatch(){
   return;
  }
  const now=dealServerNow(),interval=Number(batch.intervalMs)||650;
- const marks=batch.reveals.flatMap((_,i)=>[batch.startedAt+i*interval,batch.startedAt+i*interval+135]);
+ const marks=batch.reveals.map((_,i)=>batch.startedAt+i*interval);
  const next=marks.find(t=>t>now+20);
  if(next)firstBatchRenderTimer=setTimeout(()=>{firstBatchRenderTimer=null;if(g?.phase==='batch-reveal')render()},Math.max(30,Math.min(15000,next-now+15)));
  const key=g.id+':'+batch.startedAt;
