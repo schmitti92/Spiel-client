@@ -123,12 +123,17 @@
    dodgeMoves.set(uid,key);
    const x=lanes===2?(choice===0?-56:56):[-68,0,68][choice];
    node.style?.setProperty?.('--dodge-move-x',x+'px');
+   node.style?.setProperty?.('--dodge-quarter-x',Math.round(x*.23)+'px');
+   node.style?.setProperty?.('--dodge-mid-x',Math.round(x*.45)+'px');
+   node.style?.setProperty?.('--dodge-near-x',Math.round(x*.84)+'px');
+   node.setAttribute?.('data-dodge-direction',lanes===2?(choice===0?'left':'right'):
+    ['left','center','right'][choice]);
    node.style?.setProperty?.('--dodge-move-delay',-Math.min(1750,Math.max(0,serverNow-at))+'ms');
    node.classList?.remove('battle-dodge-leap');
    void node.offsetWidth;
    node.classList?.add('battle-dodge-leap');
   }
-  function verdict(uid,correct,sessionKey){
+  function verdict(uid,correct,sessionKey,choice,lanes){
    const node=heroNodes.get(uid);
    if(!node||dodgeResults.has(sessionKey))return;
    dodgeResults.add(sessionKey);
@@ -136,7 +141,8 @@
    node.classList?.toggle('battle-dodge-hit',!correct);
    const badge=document.createElement('strong');
    badge.className='battle-dodge-verdict '+(correct?'is-safe':'is-hit');
-   badge.textContent=correct?'✓ AUSGEWICHEN':'✕ GETROFFEN';
+   const side=lanes===2?['LINKS','RECHTS'][choice]:['LINKS','MITTE','RECHTS'][choice];
+   badge.textContent=(correct?'✓ AUSGEWICHEN':'✕ GETROFFEN')+(side?' · '+side:'');
    node.append?.(badge);
   }
   function renderDodges(view,serverNow){
@@ -161,6 +167,7 @@
    dodgeLayer.style?.setProperty?.('--dodge-attack-delay',
     -Math.max(0,elapsed-strike.impactMs)+'ms');
    const cells=lanesX(round.lanes);
+   dodgeLayer.style?.setProperty?.('--dodge-hit-x',cells[strike.dangerIndex]+'%');
    dangerCells.forEach((cell,i)=>{
     const visible=i<round.lanes;
     cell.hidden=!visible;
@@ -182,7 +189,8 @@
      if(serverNow-action.at<2200)
       moveHero(action.uid,action.choice,round.lanes,action.at,serverNow,round.round,strike.step);
      if(impact&&elapsed-strike.impactMs<2300)
-      verdict(action.uid,action.correct===true,sessionKey+':'+action.uid);
+      verdict(action.uid,action.correct===true,sessionKey+':'+action.uid,
+       action.choice,round.lanes);
     }
    }
   }
