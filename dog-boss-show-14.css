@@ -297,3 +297,66 @@
  }
  .arena-live .cinematic-grand-countdown{transition:none}
 }
+
+/* The big ring appears ONLY for the final five seconds. Before that the
+   players have an unobstructed view of the boss strike and confirmed totals. */
+.arena-live .live-cinematic[data-show-phase="countdown"] .cinematic-grand-countdown{
+ animation:boss-show-ring-entrance .48s cubic-bezier(.18,.75,.22,1) both
+}
+@keyframes boss-show-ring-entrance{
+ 0%{opacity:0;transform:scale(.44) rotate(-21deg);filter:brightness(1.8)}
+ 66%{opacity:1;transform:scale(1.14) rotate(3deg)}
+ 100%{opacity:1;transform:scale(1.05) rotate(0)}
+}
+.arena-live .cinematic-start-flash[hidden]{display:none!important}
+.arena-live .cinematic-start-flash{
+ position:absolute;inset:0;z-index:35;pointer-events:none;overflow:hidden;
+ display:grid;place-items:center;isolation:isolate
+}
+.arena-live .cinematic-start-flash::before{
+ content:"";position:absolute;inset:0;z-index:-1;
+ background:radial-gradient(ellipse at 50% 47%,#fff7b18e 0%,#ffc66c40 29%,transparent 73%);
+ animation:boss-show-launch-light .86s ease-out both
+}
+.arena-live .cinematic-start-flash strong{
+ font:1000 clamp(55px,9vw,160px)/1 system-ui,sans-serif;
+ letter-spacing:.055em;color:#fff9c7;
+ -webkit-text-stroke:2px #b3652d;
+ text-shadow:0 5px 2px #1b1425,0 0 25px #fff4aa,0 0 60px #ffad4d;
+ filter:drop-shadow(0 9px 6px #0009);
+ animation:boss-show-launch-word .88s cubic-bezier(.17,.74,.2,1) both
+}
+.arena-live .cinematic-start-shockwave{
+ position:absolute;inset:12% 25%;border-radius:50%;
+ border:8px solid #ffdb95b8;
+ box-shadow:0 0 35px #ffb96f,inset 0 0 25px #ffba67;
+ animation:boss-show-launch-wave .87s cubic-bezier(.18,.77,.17,1) both
+}
+@keyframes boss-show-launch-light{
+ 0%{opacity:0}16%,33%{opacity:1}100%{opacity:0}
+}
+@keyframes boss-show-launch-word{
+ 0%{opacity:0;transform:scale(.5) translateY(25px)}
+ 27%{opacity:1;transform:scale(1.23) translateY(-4px)}
+ 50%{opacity:1;transform:scale(1)}
+ 100%{opacity:0;transform:scale(1.16) translateY(-16px)}
+}
+@keyframes boss-show-launch-wave{
+ 0%{opacity:1;transform:scale(.2)}
+ 45%{opacity:.7;transform:scale(.95)}
+ 100%{opacity:0;transform:scale(2.2)}
+}
+@media(max-width:620px){
+ .arena-live .cinematic-start-flash strong{font-size:clamp(48px,18vw,110px)}
+ .arena-live .cinematic-start-shockwave{inset:25% 15%}
+}
+@media(prefers-reduced-motion:reduce){
+ .arena-live .live-cinematic[data-show-phase="countdown"] .cinematic-grand-countdown{
+  animation:none!important;opacity:1;transform:none
+ }
+ .arena-live .cinematic-start-flash::before,
+ .arena-live .cinematic-start-flash strong,
+ .arena-live .cinematic-start-shockwave{animation:none!important}
+ .arena-live .cinematic-start-flash strong{opacity:1;transform:none}
+ .arena-live .cinematic-start-shockwave{opacity:.5;transform:none}
+}
