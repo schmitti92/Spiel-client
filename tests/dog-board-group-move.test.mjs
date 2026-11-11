@@ -51,8 +51,8 @@ test('DOG group selection covers incomplete 48-field drafts, preserving numbers 
  const moved=translateTrackGroup(d,{dx:2,dy:1});
  assert.equal(placedCount(moved).track,48);
  for(let i=0;i<48;i++){
-  assert.equal(moved.track[i].x-d.track[i].x,2);
-  assert.equal(moved.track[i].y-d.track[i].y,1);
+  assert.ok(Math.abs((moved.track[i].x-d.track[i].x)-2)<1e-9);
+  assert.ok(Math.abs((moved.track[i].y-d.track[i].y)-1)<1e-9);
  }
  assert.ok(moved.track.slice(48).every(p=>p===null));
  assert.deepEqual(moved.goals,d.goals);
