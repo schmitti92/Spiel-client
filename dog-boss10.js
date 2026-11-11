@@ -18,6 +18,7 @@
  const combatFx=window.DogBossCombatFX?.create($('combat-scene'),10);
  const preflight=window.DogBossPreflight?.create(10);
  const liveUi=window.DogBossLiveUI?.create($('arena'));
+ const director=window.DogBossDirector?.create($('arena'));
  const key=uid=>'dog:boss10:pending:'+uid;
  const newId=()=>globalThis.crypto?.randomUUID?.()?
   'boss10-'+globalThis.crypto.randomUUID():
@@ -169,14 +170,15 @@
   const time=state==='fighting'?remaining():state==='cooldown'?cooling():duration;
   $('timer').textContent=formatTime(time);
   $('timer-fill').style.width=(state==='fighting'?Math.min(100,time/duration*100):state==='victory'?0:100)+'%';
-  const bossLeft=view?.result&&state==='victory'||state==='cooldown'?
-   view?.result?.hpRemaining:view?.bossHp;
-  $('boss-hp').textContent=view?Number(bossLeft||0).toLocaleString('de-DE')+' LP':'– LP';
+  const bossLeft=Number(view?.bossLiveHp??view?.result?.hpRemaining??view?.bossHp)||0;
+  const bossMax=Number(view?.bossHp)||0;
+  $('boss-hp').textContent=view?
+   bossLeft.toLocaleString('de-DE')+' / '+bossMax.toLocaleString('de-DE'):'– / –';
   const text=$('battle-message');
-  text.textContent=state==='waiting'?'Bereit machen und mit 1, 2 oder 3 Helden starten. Zu dritt sind eure Chancen am größten.':
-   state==='fighting'?'🔥 '+(view?.roster?.length||0)+' Helden greifen an! Reagiert innerhalb von '+Math.round(duration/1000)+' Sekunden.':
-   state==='victory'?'🏆 Der Aschewächter ist besiegt. Die Schmiede ist aufgestiegen!':
-   state==='cooldown'?'💀 Der Wächter hat das Team zurückgedrängt. Bereitet euch auf den nächsten Versuch vor.':
+  text.textContent=state==='waiting'?'⚔️ Team bereit machen':
+   state==='fighting'?'⚔️ '+(view?.roster?.length||0)+' Helden im Kampf':
+   state==='victory'?'🏆 Boss besiegt!':
+   state==='cooldown'?'💀 Boss überlebt':
    'Verbindung zur Bossarena wird hergestellt …';
   const outcome=$('outcome');
   outcome.hidden=!['victory','cooldown'].includes(state);
@@ -188,6 +190,7 @@
     ' Schaden von '+(view?.bossHp||0).toLocaleString('de-DE')+
     ' nötigen LP. Die gemeinsame Kampfpause endet in '+formatTime(cooling())+'.':'';
   liveUi?.update(view,now());
+  director?.update(view);
  }
  async function reload(force=false){
   const uid=auth()?.user?.uid;
