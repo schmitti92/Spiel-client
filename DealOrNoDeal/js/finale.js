@@ -171,7 +171,7 @@ function startFinaleCinema(){
   spotlightValue.textContent=opened?eur(f.amount):'';
   spotlightStatus.textContent=opened?'DER KOFFER IST GEÖFFNET':'🔒 DIE SCHLÖSSER SIND NOCH VERRIEGELT';
   spotlightResult.textContent=opened
-   ? (p?.deal!=null?'Kofferinhalt: '+eur(f.amount)+' · DEAL angenommen: '+eur(f.payout)+(p.doublePayout?' (×2)':''):p?.doublePayout?'Kofferinhalt: '+eur(f.amount)+' · ×2-Gewinn: '+eur(f.payout):'Kofferinhalt und Gewinn: '+eur(f.amount))
+   ? (p?.deal!=null?'Kofferinhalt: '+eur(f.amount)+' · DEAL angenommen: '+eur(f.payout):'Kofferinhalt und Gewinn: '+eur(f.amount))
    :'Der Geldbetrag bleibt bis zum Öffnen geheim.';
   grid.querySelectorAll('.finale-player').forEach(c=>c.classList.remove('on-stage'));
   x.card.classList.add('on-stage');
@@ -188,12 +188,12 @@ function startFinaleCinema(){
   spotlight.dataset.state='open';
   spotlightStatus.textContent='✨ DIE SCHLÖSSER SIND OFFEN – DER BETRAG ERSCHEINT';
   spotlightResult.textContent=entry.p?.deal!=null
-   ? 'Kofferinhalt: '+eur(entry.f.amount)+' · DEAL angenommen: '+eur(entry.f.payout)+(entry.p.doublePayout?' (×2)':'')
-   : entry.p?.doublePayout?'Kofferinhalt: '+eur(entry.f.amount)+' · ×2-Gewinn: '+eur(entry.f.payout):'Kofferinhalt und Gewinn: '+eur(entry.f.amount);
+   ? 'Kofferinhalt: '+eur(entry.f.amount)+' · DEAL angenommen: '+eur(entry.f.payout)
+   : 'Kofferinhalt und Gewinn: '+eur(entry.f.amount);
   $('finale-tension').textContent='✨ KOFFER '+(entry.f.case+1)+' ENTHÜLLT';
   $('finale-caption').textContent=entry.p?.deal!=null
    ? 'Der Kofferwert ist sichtbar – der angenommene Deal bleibt der Gewinn.'
-   : entry.p?.doublePayout?'Der Kofferwert wurde durch den gekauften ×2-Bonus verdoppelt.':'Der Kofferwert ist der tatsächliche Gewinn.';
+   : 'Der Kofferwert ist der tatsächliche Gewinn.';
   // Let the large case finish opening before the small result card gives away the amount.
   finaleLater(()=>showMiniCase(entry),reduced?0:1150);
  }
@@ -217,7 +217,7 @@ function startFinaleCinema(){
  function revealChampion(){
   if($('finale-cinema').hidden)return;
   spotlight.hidden=true;
-  if(ceremonyProgress)ceremonyProgress.textContent='🏆 DIE TATSÄCHLICHE AUSZAHLUNG ENTSCHEIDET 🏆';
+  if(ceremonyProgress)ceremonyProgress.textContent='🏆 DER NORMALE SPIELGEWINN ENTSCHEIDET 🏆';
   grid.classList.add('champion-phase');
   grid.querySelectorAll('.finale-player').forEach(c=>c.classList.remove('on-stage'));
   $('finale-tension').textContent='🏆 DIE ENTSCHEIDUNG IST GEFALLEN 🏆';
@@ -237,7 +237,7 @@ function startFinaleCinema(){
    x.note.textContent='🏆 '+(w.p?.deal!=null?'Deal: ':'Gewinn: ')+eur(w.f.payout);
   }
   $('finale-title').textContent=winners.length>1?'Wir haben mehrere Gewinner!':'Der Gewinner steht fest!';
-  $('finale-caption').textContent='Entscheidend ist die tatsächliche Auszahlung – inklusive angenommener Deals und ×2-Boni.';
+  $('finale-caption').textContent='Die Spielwertung erfolgt ausschließlich nach dem ursprünglichen Gewinn – angenommene Deals zählen ganz normal.';
   $('finale-champion-name').textContent=winners.map(w=>w.p?.name||'Spieler').join(' & ');
   $('finale-champion-value').textContent='Gewinn: '+eur(top);
   $('finale-champion').hidden=false;
