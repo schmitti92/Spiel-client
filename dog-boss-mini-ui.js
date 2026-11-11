@@ -23,6 +23,7 @@
  function create(root,onSubmit,onDodgeChoice=null){
   let roundKey='',roundView=null,buttons=[],progress=null,status=null;
   let question=null,counter=null,attackStatus=null,localSubmitting=false,stepCurrent=0;
+  let dodgeMarks=[];
   let lastChoice=null,anchor=null,raf=0,activeVersion=1,allowed=false;
   let mathChoices=[],mathSent=false,mathQueue=null,mathSending=false,fightStart=0;
   const lead=createElement('div','mini-lead');
@@ -106,6 +107,7 @@
    stopAnimation();roundView=round;activeVersion=version;
    mathChoices=[];mathSent=false;
    buttons=[];body.replaceChildren();progress=null;question=null;counter=null;attackStatus=null;
+   dodgeMarks=[];
    lastChoice=null;
    title.textContent='RUNDE '+(round.round+1)+'/'+(version>=3?4:3)+' · '+labels[round.kind];
    hint.textContent=round.hint||'Schnell reagieren!';
@@ -147,6 +149,13 @@
      button.type='button';button.addEventListener('click',()=>choose(i));
      buttons.push(button);lanes.append(button);
     }
+    const history=createElement('div','mini-dodge-history');
+    history.setAttribute('aria-label','Ausweich-Ergebnisse 1 bis 3');
+    dodgeMarks=Array.from({length:3},(_,i)=>{
+     const badge=createElement('span','mini-dodge-mark',String(i+1)+' ·');
+     history.append(badge);return badge;
+    });
+    body.append(history);
     const shock=createElement('div','mini-dodge-impact','⚡ EINSCHLAG');
     body.append(shock);
    }else if(round.kind==='reaction'){
@@ -239,6 +248,14 @@
     if(elapsed>=round.endMs-120&&mathChoices.length&&!mathSent)flushMath();
    }
    if(round.kind==='dodge'){
+    dodgeMarks.forEach((mark,i)=>{
+     const hit=round.attacks[i],action=attempts[i];
+     const reached=elapsed>=hit.impactMs;
+     const code=!reached?'·':action?(action.correct?'✓':'✕'):'–';
+     mark.textContent=(i+1)+' '+code;
+     mark.classList.toggle('is-correct',reached&&action?.correct===true);
+     mark.classList.toggle('is-wrong',reached&&action?.correct===false);
+    });
     // Each strike has its own exact telegraph/impact window.
     step=Math.min(2,Math.floor((elapsed-round.startMs)*3/8000));
     const strike=round.attacks[step];
