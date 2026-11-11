@@ -19,7 +19,7 @@ test('original SVG assets are standalone, scalable and self-contained',()=>{
   assert.match(source,/^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
   assert.match(source,/viewBox="0 0 /);
   assert.match(source,/<\/svg>\s*$/);
-  assert.doesNotMatch(source,/<script|https?:\/\//i,'no remote image or script resources');
+  assert.doesNotMatch(source,/<script\\b|(?:href|xlink:href)\\s*=\\s*["\x27]https?:\\/\\//i,'no remote image or script resources');
  }
 });
 test('battle logic, clock and interaction elements stay in place',()=>{
