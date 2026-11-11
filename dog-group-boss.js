@@ -318,14 +318,18 @@
   const openingFight=view?.phase==='fighting'&&
    now()<(view.startedAt||0)+5000;
   const elapsed=now()-(view?.startedAt||0);
-  const exchangeWindow=view?.phase==='fighting'&&view?.miniGames?.version===3&&
-   view.miniGames.rounds.some(r=>elapsed>=r.endMs&&elapsed<r.endMs+2100);
+  const exchangeWindow=view?.phase==='fighting'&&view?.miniGames?.version>=3&&
+   view.miniGames.rounds.some((r,i)=>{
+    const next=view.miniGames.rounds[i+1];
+    const windowEnd=next?.startMs??(view.endsAt-view.startedAt);
+    return elapsed>=r.endMs&&elapsed<windowEnd;
+   });
   const delay=exchangeWindow?850:openingFight?1200:
    view?.phase==='fighting'?2800:
    waitingReady&&Date.now()<readyBurstUntil?900:
    waitingReady?3800:15000;
   // Scene-only refresh: get the latest server-confirmed team shield and
-  // shared hits while all devices play their 2-second exchange.
+  // shared hits while all devices play their cinematic exchange.
   if(!working&&Date.now()-lastLoad>delay)
    void reload(exchangeWindow===true);
  },250);
