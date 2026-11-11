@@ -44,12 +44,16 @@
   if(view.phase!=='fighting')return {kind:'waiting',round:-1,elapsed:0,wave:-1};
   const begun=Number(view.startedAt)||0;
   const elapsed=Math.max(0,serverNow-begun);
-  if(view.miniGames?.version===3){
+  if(view.miniGames?.version>=3){
    const rounds=view.miniGames.rounds||[];
    const current=rounds.find(r=>elapsed>=r.startMs&&elapsed<r.endMs);
    if(current)return {kind:current.kind,round:current.round,elapsed,
     wave:Math.floor((elapsed-current.startMs)/2000),feedback:'none',feedbackAt:0};
-   const between=rounds.find(r=>elapsed>=r.endMs&&elapsed<r.endMs+2000);
+   const between=rounds.find((r,i)=>{
+    const next=rounds[i+1],end=next?.startMs??
+     (Number(view.endsAt)-Number(view.startedAt));
+    return elapsed>=r.endMs&&elapsed<end;
+   });
    if(between)return {kind:['dodge','reaction'].includes(between.kind)?
     'defenseScene':'attackScene',round:between.round,elapsed,wave:-1};
    return {kind:'awaiting',round:-1,elapsed,wave:-1};
