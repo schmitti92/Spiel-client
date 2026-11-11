@@ -196,9 +196,8 @@ test('Premium tablet landscape includes artwork for all eleven live Challenge ga
  assert.match(css,/@media \(min-width:901px\) and \(orientation:landscape\) and \(max-height:1200px\)/);
  assert.match(css,/height:clamp\(88px,11\.5dvh,125px\)/);
  for(let index=1;index<=11;index++){
-  const selector=new RegExp('body\\\\.challenge-room-active #challenge-single-grid>button:nth-child\\\\('+
-   index+'\\\\)');
-  assert.match(css,selector,'missing challenge card '+index);
+  assert.ok(css.includes('body.challenge-room-active #challenge-single-grid>button:nth-child('+index+')'),
+   'missing challenge card '+index);
  }
  assert.doesNotMatch(css,/Assets\/challenge\//,'removed SVG directory is no longer served');
 });
