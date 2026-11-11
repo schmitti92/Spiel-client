@@ -145,3 +145,27 @@ button:disabled{opacity:.5;cursor:not-allowed;filter:none}
 .pilot-actions button{flex:1 1 220px;min-height:44px;margin:0}
 #pilot-status{flex-basis:100%;margin:0}
 @media(max-width:650px){.pilot-bots{padding:13px}.pilot-copy,.pilot-actions{flex-basis:100%}.pilot-actions button{flex-basis:100%}}
+
+
+/* Chris-only developer console: visible only after authenticated profile
+ * check; the backend also validates the UID-bound expedition owner. */
+.dog-dev-open{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid #f4c878;background:linear-gradient(130deg,#6b4c25,#34263e);color:#fff1cf;border-radius:11px;padding:10px 14px;font-weight:900;cursor:pointer}
+.dog-dev-open[hidden],.dog-dev-warning[hidden]{display:none!important}
+.dog-dev-open:hover{filter:brightness(1.14)}
+.dog-dev-dialog{color:#f7efff;width:min(780px,calc(100% - 18px));max-height:min(91dvh,850px);overflow:auto;margin:auto;border:2px solid #e9c47a;border-radius:23px;padding:clamp(16px,3vw,29px);background:radial-gradient(ellipse at 100% 0,#684c3e8f,transparent 50%),linear-gradient(155deg,#152e43,#101629);box-shadow:0 22px 70px #000d}
+.dog-dev-dialog::backdrop{background:#010610d9;backdrop-filter:blur(6px)}
+.dog-dev-head{display:flex;align-items:flex-start;justify-content:space-between;gap:13px;flex-wrap:wrap}
+.dog-dev-eyebrow{font-size:11px;letter-spacing:.1em;font-weight:950;color:#f2c56e}
+.dog-dev-head h2{margin:6px 0 4px;font-size:clamp(21px,3vw,30px);line-height:1.2}
+.dog-dev-intro{font-size:13px;line-height:1.6;color:#d4e1f4}
+.dog-dev-section{padding:16px 0;margin:8px 0;border-top:1px solid #ffffff38}
+.dog-dev-section h3{margin:2px 0 6px;color:#ffe0a3;font-size:clamp(17px,2vw,21px)}
+.dog-dev-section p{color:#c8d6ea;font-size:13px;line-height:1.5;margin:7px 0 13px}
+.dog-dev-actions,.dog-dev-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+.dog-dev-actions button,.dog-dev-controls button{min-height:43px;padding:11px 14px;border:1px solid #f1cc7d;border-radius:11px;background:linear-gradient(125deg,#5a4024,#283b56);color:#fff0d3;font-size:13px;font-weight:900;cursor:pointer}
+.dog-dev-actions button:hover:not(:disabled),.dog-dev-controls button:hover:not(:disabled){filter:brightness(1.2)}
+.dog-dev-controls label{display:flex;flex:1 1 180px;flex-direction:column;gap:6px;font-size:12px;font-weight:900;color:#dce9fd}
+.dog-dev-controls select{width:100%;min-height:43px;border-radius:10px;padding:9px;border:1px solid #acbad4;background:#10253d;color:#fff;max-width:100%}
+.dog-dev-warning{padding:12px 14px;background:#422d1e;border:1px solid #dcb577;border-radius:12px;font-size:13px;color:#ffdf9a}
+.dog-dev-status{font-size:14px;line-height:1.5;color:#ffdfaa;margin-top:13px;min-height:38px}
+@media(max-width:600px){.dog-dev-dialog{padding:16px;border-radius:15px}.dog-dev-actions button{flex:1 1 145px}.dog-dev-controls button{flex:1 1 100%}}
