@@ -5,7 +5,7 @@
  */
 (()=>{
  'use strict';
- const icons={10:'aschewaechter.svg',20:'schattenfuerst.svg',
+ const icons={10:'aschewaechter-cinematic.svg',20:'schattenfuerst.svg',
   30:'kristallwurm.svg',40:'dornenkoenig.svg',50:'hueter-der-tiefe.svg',
   60:'flammendrache.svg',70:'seelenrichter.svg',80:'eisenkoloss.svg',
   90:'festungswaechter.svg',100:'letzter-waechter.svg'};
@@ -29,6 +29,7 @@
   100:'Hinter diesem letzten Wächter wartet das Ziel eurer hundert Tore. Jetzt muss eure gesamte Expedition zusammenhalten.'
  };
  const rolePortraits=['held-krieger.svg','held-magier.svg','held-schildtraeger.svg'];
+ const cinematicRolePortraits=['held-krieger-cinematic.svg','held-magier-cinematic.svg','held-schildtraeger-cinematic.svg'];
  const $=id=>document.getElementById(id);
  function create(gate){
   const root=$('boss-preflight'),stage=document.querySelector('main.stage');
@@ -69,7 +70,7 @@
      (!member?.eligible?' is-unready':'');
     const image=document.createElement('img');
     image.className='preflight-member-portrait';
-    image.src='./dog-boss-art/'+rolePortraits[i];
+    image.src='./dog-boss-art/'+(gate===10?cinematicRolePortraits:rolePortraits)[i];
     image.alt='';image.width=70;image.height=70;
     const info=document.createElement('div');info.className='preflight-member-info';
     const title=document.createElement('strong');
