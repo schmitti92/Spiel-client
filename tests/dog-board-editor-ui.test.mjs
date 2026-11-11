@@ -7,7 +7,8 @@ import {
 import {
   EDITOR_DRAFT_KEY,clone,emptyDraft,fromCrossPreset,fromLayout,placedCount,
   fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
-  guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun
+  guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun,
+  translateTrackGroup,trackGroupBounds,firstUnplacedSlot
 } from '../DOG/editor-model.js';
 import {referencePoints,buildGoalLane,buildHomeGroup,getTrackConnections,straightGaps,connectStraightGap,SEAT_LABELS} from '../DOG/board-assistants.js';
 
@@ -30,9 +31,12 @@ function openBuilder(){
   const directionButtons=[[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]].map(([dx,dy])=>{
     const item=fake('path-'+dx+','+dy);item.dataset.pathDir=dx+','+dy;return item;
   });
+  const groupButtons=[[-1,0],[1,0],[0,-1],[0,1]].map(([dx,dy])=>{
+    const item=fake('group-'+dx+','+dy);item.dataset.groupDir=dx+','+dy;return item;
+  });
   const document={
     getElementById:fake,
-    querySelectorAll:selector=>selector==='[data-path-dir]'?directionButtons:[],
+    querySelectorAll:selector=>selector==='[data-path-dir]'?directionButtons:selector==='[data-group-dir]'?groupButtons:[],
     body:{append(){}}
   };
   const window={addEventListener(){}};
@@ -46,14 +50,14 @@ function openBuilder(){
     'BOARD_LAYOUT_ID','currentBoardLayout','saveBoardLayout','validateBoardLayout',
     'EDITOR_DRAFT_KEY','clone','emptyDraft','fromCrossPreset','fromLayout','placedCount',
     'fieldOf','selectedValid','snapXY','putField','eraseField','nextSlot','inspectDraft','asGameLayout',
-    'guidedPoint','directedPoint','previousTrackField','measureStepDistances','EIGHT_DIRECTIONS','alignTrackRun',
+    'guidedPoint','directedPoint','previousTrackField','measureStepDistances','EIGHT_DIRECTIONS','alignTrackRun','translateTrackGroup','trackGroupBounds','firstUnplacedSlot',
     'referencePoints','buildGoalLane','buildHomeGroup','getTrackConnections','straightGaps','connectStraightGap','SEAT_LABELS'
   ];
   const imports=[
     BOARD_LAYOUT_ID,currentBoardLayout,saveBoardLayout,validateBoardLayout,
     EDITOR_DRAFT_KEY,clone,emptyDraft,fromCrossPreset,fromLayout,placedCount,
     fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
-  guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun,
+  guidedPoint,directedPoint,previousTrackField,measureStepDistances,EIGHT_DIRECTIONS,alignTrackRun,translateTrackGroup,trackGroupBounds,firstUnplacedSlot,
     referencePoints,buildGoalLane,buildHomeGroup,getTrackConnections,straightGaps,connectStraightGap,SEAT_LABELS
   ];
   let source=readFileSync(new URL('../DOG/editor-builder.js',import.meta.url),'utf8');
@@ -70,7 +74,14 @@ function openBuilder(){
     listener({pointerType:kind,button:0,pointerId:1,clientX:x,clientY:y,
       target:{closest(){return hit;}},preventDefault(){}});
   };
-  return {events,elements,storage,board,trigger,touch,dir:(dx,dy)=>trigger('path-'+dx+','+dy),get:id=>fake(id)};
+  const pointer=(type,x,y,id=1)=>{
+    const listener=board.listeners.get(type);assert.ok(listener,'Missing '+type);
+    listener({pointerType:'touch',button:0,pointerId:id,clientX:x,clientY:y,
+      target:{closest(){return null;}},preventDefault(){}});
+  };
+  return {events,elements,storage,board,trigger,touch,pointer,
+    dir:(dx,dy)=>trigger('path-'+dx+','+dy),
+    groupDir:(dx,dy)=>trigger('group-'+dx+','+dy),get:id=>fake(id)};
 }
 test('touch pointer-down on empty SVG immediately places a DOG field',()=>{
  const ui=openBuilder();
@@ -215,8 +226,8 @@ test('DOG assistant selects house exit without losing existing positions',()=>{
 });
 test('DOG assistant previews goal lane without persisting, then generates four equally spaced goals',()=>{
  const ui=openBuilder();
- // Set the goal-entry circuit square 63 (preceding red start).
- ui.get('field-index').value='63';ui.trigger('field-index','input');
+ // Set red's start square 0, where the goal lane branches.
+ ui.get('field-index').value='0';ui.trigger('field-index','input');
  ui.touch(115,310);
  const before=ui.storage.get(EDITOR_DRAFT_KEY);
  ui.trigger('preview-goals');
@@ -264,4 +275,70 @@ test('DOG track connector fills only safe straight gaps, preserving both endpoin
  assert.equal(finished.track[1].x,156);
  assert.equal(finished.track[2].x,188);
  assert.match(ui.get('feedback').textContent,/gleichmäßig verbunden/);
+});
+
+
+test('DOG group mode moves all created track circles together, preserving spacing and undo',()=>{
+ const ui=openBuilder();
+ ui.touch(115,205);ui.dir(1,0);ui.dir(1,0);
+ const original=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ assert.equal(placedCount(original).track,3);
+ ui.trigger('select-track-group');
+ assert.equal(ui.get('group-count').textContent,'3');
+ assert.equal(ui.get('group-move-panel').hidden,false);
+ ui.groupDir(1,0);
+ const changed=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ for(let i=0;i<3;i++){
+   assert.equal(changed.track[i].x-original.track[i].x,5);
+   assert.equal(changed.track[i].y-original.track[i].y,0);
+ }
+ assert.deepEqual(changed.goals,original.goals);
+ ui.trigger('undo');
+ assert.deepEqual(JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY)),original);
+});
+test('DOG group drag previews all fields, then saves one translation on pointer release',()=>{
+ const ui=openBuilder();
+ ui.touch(115,205);ui.dir(1,0);
+ const original=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ ui.trigger('select-track-group');
+ ui.pointer('pointerdown',130,210,77);
+ ui.pointer('pointermove',160,238,77);
+ assert.deepEqual(JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY)),original);
+ ui.pointer('pointerup',160,238,77);
+ const moved=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ assert.equal(moved.track[0].x-original.track[0].x,30);
+ assert.equal(moved.track[0].y-original.track[0].y,28);
+ assert.equal(moved.track[1].x-original.track[1].x,30);
+ assert.equal(moved.track[1].y-original.track[1].y,28);
+ ui.trigger('undo');
+ assert.deepEqual(JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY)),original);
+});
+test('DOG manual goal and home creation advances across all four spots in a colour',()=>{
+ const ui=openBuilder();
+ ui.trigger('choose-goal-first');
+ assert.equal(ui.get('field-index').value,'0');
+ ui.touch(120,120);
+ assert.equal(ui.get('field-index').value,'1');
+ ui.touch(160,120);
+ assert.equal(ui.get('field-index').value,'2');
+ ui.touch(200,120);
+ assert.equal(ui.get('field-index').value,'3');
+ ui.touch(240,120);
+ let d=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ assert.equal(d.goals[0].filter(Boolean).length,4);
+ ui.trigger('choose-home-first');
+ assert.equal(ui.get('field-index').value,'0');
+ ui.touch(120,250);ui.touch(160,250);ui.touch(200,250);ui.touch(240,250);
+ d=JSON.parse(ui.storage.get(EDITOR_DRAFT_KEY));
+ assert.equal(d.homes[0].filter(Boolean).length,4);
+ assert.equal(placedCount(d).total,8);
+});
+test('DOG assistant chooses the next empty goal/home slot rather than replacing first',()=>{
+ const ui=openBuilder();
+ ui.trigger('choose-goal-first');ui.touch(120,120);
+ ui.trigger('choose-goal-first');
+ assert.equal(ui.get('field-index').value,'1');
+ ui.trigger('choose-home-first');ui.touch(120,240);
+ ui.trigger('choose-home-first');
+ assert.equal(ui.get('field-index').value,'1');
 });
