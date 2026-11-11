@@ -257,6 +257,21 @@ export function eraseField(draft,selection,{symmetry=false}={}){
  else next[selection.kind][selection.owner][selection.index]=null;
  return next;
 }
+/** Select the next *unplaced* home/goal slot, favouring the chosen colour. */
+export function firstUnplacedSlot(draft,kind,owner=0){
+ if(kind==='track'){
+   const index=draft.track.findIndex(p=>!p);
+   return {kind:'track',index:index<0?0:index,owner:index<0?0:Math.floor(index/16)};
+ }
+ if(!['goals','homes'].includes(kind))throw Error('Ungültiger Platztyp');
+ for(let offset=0;offset<4;offset++){
+   const seat=(owner+offset)%4;
+   for(let index=0;index<4;index++){
+     if(!draft[kind][seat][index])return {kind,index,owner:seat};
+   }
+ }
+ return {kind,index:0,owner};
+}
 export function nextSlot(draft,selection,{symmetry=false}={}){
  const kind=selection.kind;
  if(kind==='track'){
@@ -276,11 +291,13 @@ export function nextSlot(draft,selection,{symmetry=false}={}){
     if([0,1,2,3].some(seat=>!draft[kind][seat][idx]))return {kind,index:idx,owner:0};
    }
   }else{
-   for(let step=1;step<=16;step++){
-    const flat=(selection.owner*4+selection.index+step)%16;
-    const owner=Math.floor(flat/4),index=flat%4;
-    if(!draft[kind][owner][index])return {kind,index,owner};
+   // Finish the selected player's entire four-slot lane or reserve first.
+   // This is much easier when building the coloured sections separately.
+   for(let step=1;step<=4;step++){
+     const idx=(selection.index+step)%4;
+     if(!draft[kind][selection.owner][idx])return {kind,index:idx,owner:selection.owner};
    }
+   return firstUnplacedSlot(draft,kind,(selection.owner+1)%4);
   }
  }
  return {...selection};
