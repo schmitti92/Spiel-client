@@ -1,7 +1,7 @@
 import {
  BOARD_LAYOUT_ID,CUSTOM_BOARD_KEY,COLORS_CLASSIC,START_INDICES,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,
  makeDefaultLayout,currentBoardLayout,validateBoardLayout,saveBoardLayout,resetBoardLayout,rotatePoint
-} from './board-layout.js';
+} from './board-layout.js?v=10';
 
 const $=id=>document.getElementById(id);
 const svg=$('editor-board');
@@ -244,8 +244,8 @@ $('reference-upload').addEventListener('change',event=>{
 $('remove-photo').addEventListener('click',()=>{previewPhoto=null;$('reference-upload').value='';renderBoard();report('Foto ausgeblendet.');});
 $('photo-opacity').addEventListener('input',event=>{previewOpacity=Number(event.target.value);$('opacity-label').textContent=previewOpacity+' %';renderBoard();});
 $('use-default').addEventListener('click',()=>{
- if(!confirm('Kreuz-Vorlage laden? Deine aktuellen, noch nicht gespeicherten Feldverschiebungen werden durch die Vorlage ersetzt.'))return;
- stopWalk();draft=makeDefaultLayout();recordHistory();selectField('track',0,0);renderAll();report('Kreuz-Vorlage geladen. Noch nicht gespeichert.');
+ if(!confirm('Gemeinsamen DOG-Standardspielplan laden? Deine aktuellen, noch nicht gespeicherten Feldverschiebungen werden durch die Vorlage ersetzt.'))return;
+ stopWalk();draft=makeDefaultLayout();recordHistory();selectField('track',0,0);renderAll();report('DOG-Standardspielplan geladen. Noch nicht gespeichert.');
 });
 function returnLocation(){
  const raw=new URL(location.href).searchParams.get('return');
@@ -300,7 +300,7 @@ $('clear-saved').addEventListener('click',()=>{
  if(!confirm('Gespeicherten DOG-Spielplan auf diesem Gerät löschen?'))return;
  try{
   resetBoardLayout();draft=makeDefaultLayout();recordHistory();selectField('track',0,0);renderAll();
-  report('Gespeichertes Brett gelöscht. Der ursprüngliche Kreuz-Spielplan ist wieder aktiv.','success');
+  report('Gespeichertes Brett gelöscht. Der gemeinsame DOG-Standardspielplan ist wieder aktiv.','success');
  }catch(err){report('Löschen fehlgeschlagen: '+err.message,'error');}
 });
 renderAll();
