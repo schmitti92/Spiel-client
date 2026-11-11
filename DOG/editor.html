@@ -224,7 +224,7 @@ input[type="range"]{width:100%;accent-color:#efc47d}
    </section>
    <section class="card assist-card" id="assist-card">
     <h2>🏠 Ausstieg, Zielbahnen & Haus <small>NEU</small></h2>
-    <p>Jetzt kannst du alle vier Ziel- oder Startplätze einer Farbe exakt ausrichten. Dein bereits gebauter Laufweg bleibt dabei erhalten.</p>
+    <p>Jetzt kannst du alle vier Ziel- oder Startplätze einer Farbe exakt ausrichten. Dein bereits gebauter Laufweg bleibt dabei erhalten. Wähle unten „Nächstes Zielfeld“ oder „Nächster Startplatz“, wenn du alle vier Felder lieber nacheinander antippen möchtest.</p>
     <div class="assist-head">
       <label for="assist-seat">Farbe auswählen
         <select id="assist-seat">
@@ -238,12 +238,12 @@ input[type="range"]{width:100%;accent-color:#efc47d}
     <div class="assist-ref" id="assist-reference">Rot: Ausstieg Feld 0 · Zieleinlauf bei Feld 63</div>
     <div class="assist-quick">
       <button type="button" class="btn soft small" id="choose-exit">📍 Ausstieg wählen</button>
-      <button type="button" class="btn soft small" id="choose-goal-first">🎯 Zielfeld 1 manuell</button>
-      <button type="button" class="btn soft small" id="choose-home-first">🏠 Startplatz 1 manuell</button>
+      <button type="button" class="btn soft small" id="choose-goal-first">🎯 Nächstes Zielfeld setzen</button>
+      <button type="button" class="btn soft small" id="choose-home-first">🏠 Nächsten Startplatz setzen</button>
     </div>
     <div class="assist-section">
       <h3>🎯 Vier Zielfelder in einer Linie</h3>
-      <p>Bei gesetztem Zielfeld 1 bleibt dessen Position unverändert. Andernfalls orientiert sich die Reihe am letzten Lauffeld vor deinem farbigen Ausstieg.</p>
+      <p>Wenn Zielfeld 1 bereits gesetzt ist, bleibt es als Anker erhalten. Sonst beginnt die Zielreihe am farbigen Startfeld des Rundwegs – die Figur muss dieses Startfeld überqueren, bevor sie ins Ziel darf.</p>
       <div class="assist-controls">
         <label class="assist-control">Richtung
           <select id="assist-goal-dir">
@@ -423,8 +423,8 @@ input[type="range"]{width:100%;accent-color:#efc47d}
    </section>
   </aside>
  </div>
- <div class="foot">DOG-Spielfeldstudio · Baukasten-Version 6 · Raster, Koordinaten und Zugreihenfolge unabhängig von der Spiel-Engine</div>
+ <div class="foot">DOG-Spielfeldstudio · Baukasten-Version 7 · Raster, Koordinaten und Zugreihenfolge unabhängig von der Spiel-Engine</div>
 </main>
-<script type="module" src="./editor-builder.js?v=6"></script>
+<script type="module" src="./editor-builder.js?v=7"></script>
 </body>
 </html>
