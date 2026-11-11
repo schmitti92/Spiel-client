@@ -17,10 +17,17 @@ test('Private actions are persisted and retried using the same receipt ID',()=>{
  assert.match(js,/requestId:operation.requestId/);
  assert.match(js,/act\(null,\{\},true\)/);
 });
-test('Normal players cannot see a 100-Tore button in the Deal lobby',()=>{
+test('100 Tore is hidden until the signed-in Chris profile is identified, then opens the real map',()=>{
  const html=read('DealOrNoDeal/lobby.html');
- assert.doesNotMatch(html,/<a class="dog-event-entry" id="dog-expedition-entry"/);
- assert.match(html,/Die 100 Tore sind bis zum Abschluss des privaten Tests ausgeblendet/);
+ const css=read('DealOrNoDeal/css/dog-expedition-entry.css');
+ assert.match(html,/<a id="dog-expedition-entry" class="dog-event-entry" href="\.\.\/dog-tor-map\.html" hidden/);
+ assert.match(html,/entry\.hidden=!isChrisPreviewProfile\(\)/);
+ assert.match(html,/function isChrisPreviewProfile\(\)/);
+ assert.match(html,/return !!user\(\)&&String\(profile\?\.name\|\|''\)/);
+ assert.match(html,/function boot\(\)\{checkChrisHatsAccess\(\);checkChrisGatesAccess\(\)/);
+ assert.match(css,/\.launch-stage \.dog-event-entry\[hidden\]\{display:none!important\}/);
+ assert.ok(html.indexOf('id="dog-expedition-entry"')<
+  html.indexOf('class="santa-event-entry"'),'100 Tore must appear above Christmas');
 });
 test('Private route is not referenced by public menus',()=>{
  for(const path of ['DealOrNoDeal/lobby.html','index.html','hub-lobby.html']){
