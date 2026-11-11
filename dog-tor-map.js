@@ -27,7 +27,7 @@
  const $=id=>document.getElementById(id);
  const PILOT_IDS=['dog-live-bot-nova','dog-live-bot-titan'];
  const PILOT_KEY='dog:private-100:link-key';
- const pilotHash=new URLSearchParams(location.hash.slice(1)).get('k');
+ const pilotHash=new URLSearchParams(String(location.hash||'').slice(1)).get('k');
  if(pilotHash&&pilotHash.length>=20){
   try{localStorage.setItem(PILOT_KEY,pilotHash)}catch{}
   history.replaceState(null,'',location.pathname+location.search);
