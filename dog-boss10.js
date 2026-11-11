@@ -158,9 +158,9 @@
   miniUi?.update(view,now(),logged&&!working&&!pendingOp&&
    !!view?.roster?.some(m=>m.uid===account));
   combatFx?.update(view,now());
-  preflight?.update(view,now());
   $('retry-button').hidden=!pendingOp;
   $('retry-button').disabled=working;
+  preflight?.update(view,now());
   const time=state==='fighting'?remaining():state==='cooldown'?cooling():30000;
   $('timer').textContent=formatTime(time);
   $('timer-fill').style.width=(state==='fighting'?Math.min(100,time/30000*100):state==='victory'?0:100)+'%';
