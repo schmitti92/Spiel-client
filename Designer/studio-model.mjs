@@ -178,6 +178,24 @@ export function normalizeProject(source){
   width,height,screens};
 }
 export const clamp=(number,min,max)=>Math.max(min,Math.min(max,number));
+/** Resize any visual component using the 8 edge/corner handles.
+ * Dragging west/north repositions the corresponding top/left edges.
+ * Works equally for bars, text, panels, circles and uploaded images.
+ * All output coordinates remain inside the active canvas. */
+export function resizeItemFrame(frame,direction,dx,dy,canvasWidth,canvasHeight,snap=false){
+ const original={x:Number(frame.x),y:Number(frame.y),w:Number(frame.w),h:Number(frame.h)};
+ if(!/^(n|s|e|w|ne|nw|se|sw)$/.test(direction))return {...original};
+ const cw=Math.max(40,Number(canvasWidth)||1440),ch=Math.max(40,Number(canvasHeight)||810);
+ const minW=Math.min(24,cw),minH=Math.min(24,ch);
+ const tick=value=>snap?Math.round(value/20)*20:Math.round(value);
+ let x1=clamp(original.x,0,cw-minW),x2=clamp(original.x+original.w,x1+minW,cw);
+ let y1=clamp(original.y,0,ch-minH),y2=clamp(original.y+original.h,y1+minH,ch);
+ if(direction.includes('w'))x1=clamp(tick(original.x+dx),0,x2-minW);
+ if(direction.includes('e'))x2=clamp(tick(original.x+original.w+dx),x1+minW,cw);
+ if(direction.includes('n'))y1=clamp(tick(original.y+dy),0,y2-minH);
+ if(direction.includes('s'))y2=clamp(tick(original.y+original.h+dy),y1+minH,ch);
+ return {x:x1,y:y1,w:x2-x1,h:y2-y1};
+}
 export const rgba=(hex,alpha=100)=>{
  const c=safeColor(hex);return 'rgba('+[1,3,5].map(i=>parseInt(c.slice(i,i+2),16)).join(',')+','+
   clamp(Number(alpha)||0,0,100)/100+')';
