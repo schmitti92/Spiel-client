@@ -12,6 +12,13 @@
   50:'Hüter der Tiefe',60:'Flammendrache',70:'Seelenrichter',
   80:'Eisenkoloss',90:'Festungswächter',100:'Der letzte Wächter'
  });
+ const BOSS_ART=Object.freeze({
+  10:'aschewaechter.svg',20:'schattenfuerst.svg',
+  30:'kristallwurm.svg',40:'dornenkoenig.svg',
+  50:'hueter-der-tiefe.svg',60:'flammendrache.svg',
+  70:'seelenrichter.svg',80:'eisenkoloss.svg',
+  90:'festungswaechter.svg',100:'letzter-waechter.svg'
+ });
  const MINI_BOSSES=Object.freeze({
   5:'Steinbrecher',15:'Schattenwolf',25:'Dornenbestie',35:'Kristallgolem',
   45:'Giftstachel',55:'Lavabestie',65:'Seelenjäger',75:'Jungdrache',
@@ -335,6 +342,15 @@
   const kind=gate%10===0?'Gruppenboss':gate%10===5?'Mini-Boss':'Persönlicher Kampf';
   $('gate-detail-kicker').textContent='TOR '+gate+' VON 100 · '+kind.toUpperCase();
   $('gate-detail-title').textContent=titleFor(gate);
+  const bossPreview=$('gate-boss-preview');
+  const bossPortrait=$('gate-boss-portrait');
+  if(bossPreview)bossPreview.hidden=gate%10!==0;
+  if(bossPortrait&&gate%10===0&&BOSS_ART[gate]){
+   const artwork='./dog-boss-art/'+BOSS_ART[gate];
+   if(!bossPortrait.src.endsWith('/'+BOSS_ART[gate]))
+    bossPortrait.src=artwork;
+   bossPortrait.alt='Tor '+gate+': '+MAJOR_BOSSES[gate];
+  }
   $('gate-detail-summary').textContent=summaryFor(gate);
   $('gate-detail-future').textContent=gate===100?
    '🔒 DOG ist noch verschlossen. Es wird erst nach einem nachgewiesenen Sieg über den letzten gemeinsamen Boss freigeschaltet.':
