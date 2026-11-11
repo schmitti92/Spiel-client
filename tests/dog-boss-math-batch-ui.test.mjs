@@ -17,13 +17,13 @@ function createElement(tag){
  };
  return el;
 }
-function fixture(){
+function fixture(submit=null){
  const window={};
  const document={createElement,hidden:false};
  runInNewContext(source,{window,document,Date,Promise});
  const root=createElement('section'),requests=[];
  const ui=window.DogBossMinigames.create(root,(round,answer,step)=>{
-  requests.push({round,answer,step});return Promise.resolve();
+  requests.push({round,answer,step});return submit?submit(round,answer,step):Promise.resolve();
  });
  const puzzles=Array.from({length:8},(_,i)=>({
   question:(i+2)+' + 3 = ?',options:[i+5,i+6,i+7]
@@ -78,4 +78,43 @@ test('Client never decides arithmetic success locally; only server scores it',()
  assert.doesNotMatch(source,/correctIndex/);
  assert.match(source,/mathChoices\.push\(value\)/);
  assert.match(source,/round\.kind==='math'&&mathChoices\.length/);
+});
+
+
+test('Queued math batch survives a temporarily busy controller and is delivered only once',async()=>{
+ let busy=true;
+ const {root,ui,view,requests}=fixture(()=>!busy);
+ ui.update(view,view.startedAt+3400,true);
+ const buttons=root.children[1].children.slice(2);
+ for(let i=0;i<8;i++)buttons[i%3].click();
+ for(let i=0;i<5;i++)await Promise.resolve();
+ assert.equal(requests.length,1);
+ assert.equal(requests[0].answer.length,8);
+ // First attempt was rejected solely because an earlier controller command
+ // was busy. The new queue must not discard the answers at round switch.
+ ui.update(view,view.startedAt+11200,true);
+ for(let i=0;i<5;i++)await Promise.resolve();
+ assert.equal(requests.length,2);
+ busy=false;
+ ui.update(view,view.startedAt+11450,true);
+ for(let i=0;i<5;i++)await Promise.resolve();
+ assert.equal(requests.length,3);
+ assert.deepEqual([...requests[2].answer],[0,1,2,0,1,2,0,1]);
+ ui.update(view,view.startedAt+11700,true);
+ for(let i=0;i<5;i++)await Promise.resolve();
+ assert.equal(requests.length,3,'successful batch must never be submitted again');
+});
+
+test('An unsent previous fight batch cannot be submitted into a new boss fight',async()=>{
+ const {root,ui,view,requests}=fixture(()=>false);
+ ui.update(view,view.startedAt+3400,true);
+ const buttons=root.children[1].children.slice(2);
+ buttons[0].click();
+ ui.update(view,view.startedAt+11100,true);
+ for(let i=0;i<5;i++)await Promise.resolve();
+ assert.equal(requests.length,1);
+ const next={...view,startedAt:view.startedAt+120000};
+ ui.update(next,next.startedAt+1000,true);
+ for(let i=0;i<5;i++)await Promise.resolve();
+ assert.equal(requests.length,1);
 });
