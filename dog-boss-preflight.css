@@ -120,3 +120,155 @@
 @media(prefers-reduced-motion:reduce){
  .preflight-monster img,.preflight-monster-aura,.preflight-launch-buttons #preflight-start{animation:none}
 }
+
+
+/* v2 — Rewards occupy the entire center/right lower row. This leaves four
+   independent reward cells available without moving the player cards. */
+.preflight-layout{
+ display:grid;
+ grid-template-columns:minmax(0,1.18fr) minmax(0,.93fr) minmax(0,1fr);
+ grid-template-areas:"monster details team" "monster rewards rewards";
+ grid-template-rows:minmax(0,1fr) auto;
+ align-items:stretch;
+ gap:11px clamp(10px,1.3vw,20px);
+}
+.preflight-monster{grid-area:monster;min-height:390px}
+.preflight-middle{grid-area:details;min-width:0}
+.preflight-team{grid-area:team;min-width:0}
+.preflight-rewards{grid-area:rewards;min-width:0}
+.preflight-rewards h2{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.preflight-reward-capacity{font:750 10px/1.4 system-ui,sans-serif;color:#d4ba91}
+.preflight-reward-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.preflight-reward-grid>div{min-width:0;min-height:90px;padding:7px 5px}
+.preflight-reward-grid span{font-size:29px}
+.preflight-reward-grid strong{font-size:clamp(10px,1vw,12px);overflow-wrap:anywhere}
+.preflight-reward-reserve{border-style:dashed!important;border-color:#d5c09a55!important;background:#161d2c7a!important}
+.preflight-reward-reserve span,.preflight-reward-reserve strong{color:#cfbb9d9c!important}
+.preflight-reward-reserve span{font-size:24px;line-height:1}
+.preflight-rewards p{margin:5px 0 0;line-height:1.35}
+
+/* Desktop / tablet landscape stage is a single, non-scrolling viewport.
+   Small or portrait viewports remain scrollable instead of hiding content.
+   minmax(0,1fr) lets the tall monster and panels give space back to the CTA. */
+@media (orientation:landscape) and (min-width:1000px) and (min-height:680px){
+ body:has(.stage[data-screen="preflight"]){overflow:hidden}
+ .stage[data-screen="preflight"]{
+  width:min(1640px,calc(100% - 18px));
+  height:100vh;height:100dvh;
+  min-height:0;max-height:100dvh;
+  padding:5px 0 6px;
+  display:grid;grid-template-rows:auto minmax(0,1fr);
+  gap:5px;
+ }
+ .stage[data-screen="preflight"]>.topnav{
+  margin:0;min-height:42px;gap:8px;align-items:center;flex-wrap:nowrap
+ }
+ .stage[data-screen="preflight"]>.topnav a,
+ .stage[data-screen="preflight"]>.topnav button{
+  padding:7px 11px;font-size:12px;white-space:nowrap;min-height:40px
+ }
+ .stage[data-screen="preflight"]>.boss-preflight{
+  display:grid;
+  grid-template-rows:auto auto auto minmax(0,1fr) auto;
+  gap:clamp(3px,.55vh,8px);
+  width:100%;height:100%;min-height:0;max-height:100%;
+  padding:clamp(7px,1vh,12px) clamp(12px,1.5vw,22px);
+  border-radius:15px;
+ }
+ .preflight-brand{margin:0 auto;line-height:1.02}
+ .preflight-brand span{font-size:clamp(17px,2.1vw,25px)}
+ .preflight-brand strong{font-size:clamp(10px,1.1vw,13px)}
+ .preflight-title{margin:0 auto;padding:5px 18px 7px;max-width:1010px}
+ .preflight-title small{font-size:9px}
+ .preflight-title h1{font-size:clamp(22px,3vw,43px);line-height:1.05}
+ .preflight-title::before,.preflight-title::after{top:17%;font-size:25px}
+ .preflight-hp{margin:0 0 1px auto;width:min(815px,70%);gap:7px}
+ .preflight-hp-emblem{flex-basis:43px;height:43px;font-size:26px}
+ .preflight-hp-rail{height:39px}
+ .preflight-hp-rail strong{font-size:clamp(14px,1.6vw,21px)}
+ .preflight-layout{
+  min-height:0;
+  grid-template-rows:minmax(0,1fr) auto;
+  gap:clamp(6px,.85vh,10px) clamp(10px,1.2vw,17px);
+ }
+ .preflight-monster{height:100%;min-height:0;overflow:hidden}
+ .preflight-monster img{width:min(100%,500px);max-height:74%;min-height:0}
+ .preflight-monster-aura{width:min(88%,430px)}
+ .preflight-monster-caption{margin-top:-5px;padding:5px 12px 7px}
+ .preflight-monster-caption strong{font-size:clamp(17px,2vw,25px)}
+ .preflight-middle{min-height:0;gap:clamp(6px,.8vh,9px)}
+ .preflight-panel{padding:clamp(7px,1vh,11px) 12px}
+ .preflight-panel h2{margin:0 0 6px;font-size:clamp(14px,1.3vw,17px)}
+ .preflight-story{flex:1;min-height:0}
+ .preflight-story p{font-size:clamp(11px,1vw,13px);line-height:1.38;margin-bottom:5px}
+ .preflight-story-stamp{font-size:9px}
+ .preflight-info{flex:none}
+ .preflight-info dl{gap:2px}
+ .preflight-info dl>div{padding:2px 0;gap:7px}
+ .preflight-info dt,.preflight-info dd{font-size:clamp(10px,.9vw,12px)}
+ .preflight-team{padding:0;min-height:0}
+ .preflight-team-header h2{font-size:clamp(18px,1.65vw,23px);margin:0 0 2px}
+ .preflight-team-members{margin-top:7px;gap:clamp(6px,.9vh,10px)}
+ .preflight-member{min-height:clamp(68px,8.2vh,92px);padding:5px 7px;gap:8px}
+ .preflight-member-portrait{width:clamp(53px,6vh,69px);height:clamp(55px,6.8vh,73px);flex-basis:clamp(53px,6vh,69px)}
+ .preflight-member-info strong{font-size:clamp(14px,1.55vw,20px)}
+ .preflight-member-info span{font-size:9px;margin-top:5px}
+ .preflight-member-state{font-size:9px;padding:6px 8px}
+ .preflight-team-help{margin:6px 3px 0;font-size:10px;line-height:1.35}
+ .preflight-rewards{min-height:0;padding:7px 11px}
+ .preflight-rewards h2{margin-bottom:5px;font-size:clamp(14px,1.35vw,17px)}
+ .preflight-reward-grid>div{min-height:clamp(59px,7.2vh,78px);padding:4px 4px;gap:2px}
+ .preflight-reward-grid span{font-size:clamp(21px,2.2vw,27px)}
+ .preflight-reward-grid strong{font-size:clamp(9px,.9vw,11px);line-height:1.22}
+ .preflight-rewards p{font-size:9px;line-height:1.2;margin-top:4px}
+ .preflight-bottom{margin-top:0;min-height:0;gap:clamp(10px,1.4vw,24px);align-items:center}
+ .preflight-equipment{padding:7px 12px}
+ .preflight-equipment h2{font-size:clamp(14px,1.35vw,18px);margin-bottom:5px}
+ .preflight-equipment-slots{gap:7px}
+ .preflight-equipment-slots span{padding:5px 3px;gap:1px;font-size:10px}
+ .preflight-equipment-slots b{font-size:clamp(23px,2.4vw,31px)}
+ .preflight-forge-link{margin-top:5px;font-size:10px}
+ .preflight-launch-flag{font-size:11px}
+ .preflight-launch-buttons{margin-top:5px;gap:7px}
+ .preflight-launch-buttons button{min-height:clamp(47px,6.4vh,60px);padding:8px 16px;font-size:clamp(15px,1.8vw,24px)}
+ .preflight-launch-buttons #preflight-start{font-size:clamp(18px,2vw,27px)}
+ .preflight-message{font-size:11px;line-height:1.25;margin:5px 0 0}
+ .preflight-connection{font-size:9px;margin:2px 0 0}
+}
+
+/* Compact laptop/tablet widths: keep the three-column boss showcase, but
+   allocate the final row entirely to the expandable reward shelf. */
+@media (min-width:880px) and (max-width:1250px){
+ .preflight-layout{
+  grid-template-columns:minmax(0,1fr) minmax(0,.98fr) minmax(0,1fr);
+  grid-template-areas:"monster details team" "monster rewards rewards";
+ }
+ .preflight-team{grid-area:team;grid-column:auto}
+ .preflight-team-members{display:flex;flex-direction:column;gap:8px}
+ .preflight-member{min-height:75px}
+ .preflight-member-portrait{width:54px;height:62px;flex-basis:54px}
+ .preflight-member-info strong{font-size:clamp(13px,1.55vw,18px)}
+ .preflight-member-state{font-size:9px;padding:6px}
+ .preflight-monster{min-height:330px}
+}
+
+/* Portrait and narrow screens retain a natural vertical flow: no clipped
+   start controls even when accessibility font scaling is enabled. */
+@media (max-width:879px){
+ body:has(.stage[data-screen="preflight"]){overflow-y:auto}
+ .preflight-layout{
+  grid-template-columns:minmax(0,1fr);
+  grid-template-areas:"monster" "details" "team" "rewards";
+  grid-template-rows:auto;
+ }
+ .preflight-monster{min-height:290px}
+ .preflight-team{grid-area:team;grid-column:auto}
+ .preflight-team-members{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+ .preflight-reward-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:700px){
+ .preflight-team-members{grid-template-columns:1fr}
+ .preflight-member{min-height:78px}
+ .preflight-reward-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .preflight-reward-grid>div{min-height:80px}
+}
