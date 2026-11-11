@@ -38,3 +38,145 @@
  .mini-choice{min-width:66px;min-height:52px;font-size:18px}
  .mini-target{min-width:42px}.mini-title{font-size:16px}}
 @media(prefers-reduced-motion:reduce){.mini-choice{transition:none}}
+
+
+
+/* Visual combat director – no gameplay, timers, or scores are calculated in CSS.
+   One lightweight stage shared by Boss 10 and Boss 20–100. */
+.combat-scene{--boss-accent:#fb9361;--boss-shift:0deg;
+ display:flex;flex-direction:column;min-height:388px;
+ background:
+ radial-gradient(ellipse at 73% 61%,color-mix(in srgb,var(--boss-accent) 30%,transparent),transparent 45%),
+ radial-gradient(ellipse at 13% 88%,#3d83d13b,transparent 46%),
+ linear-gradient(170deg,#0c1630,#1d162b 63%,#21131b)}
+.combat-scene .embers{position:absolute;top:6px;right:0;left:0;z-index:0;
+ text-align:center;opacity:.38;font-size:19px;letter-spacing:22px;pointer-events:none}
+.combat-stage{position:relative;flex:1;width:100%;min-height:275px;overflow:hidden;
+ isolation:isolate;background:
+ radial-gradient(ellipse at 50% 98%,#c0904a26,transparent 60%),
+ repeating-linear-gradient(170deg,transparent 0 78px,#ffffff05 79px 81px)}
+.combat-stage::before{content:"";position:absolute;left:-10%;right:-10%;bottom:4px;
+ height:28%;border-top:1px solid #c7a37b50;
+ background:linear-gradient(0deg,#111b2ad6,#28304740);
+ transform:perspective(250px) rotateX(45deg);z-index:0;pointer-events:none}
+.combat-stage::after{content:"";position:absolute;inset:0;
+ background:radial-gradient(ellipse at 70% 20%,var(--boss-accent),transparent 70%);
+ opacity:.09;z-index:1;pointer-events:none}
+.combat-hero-line{position:absolute;left:3.5%;bottom:9%;width:49%;height:190px;
+ display:flex;justify-content:space-around;align-items:flex-end;gap:3px;z-index:4}
+.combat-hero{flex:1;min-width:0;max-width:105px;display:flex;flex-direction:column;
+ justify-content:flex-end;align-items:center;gap:4px;
+ transform-origin:center 80%;filter:drop-shadow(0 6px 8px #0009)}
+.combat-hero-symbol{height:74px;width:67px;display:grid;place-items:center;
+ border-radius:48% 48% 26% 26%;
+ border:1px solid #bad5ff8c;
+ background:linear-gradient(155deg,#5573a2d9,#172b4fe0 75%);
+ font-size:37px;box-shadow:inset 0 -12px 20px #0d182f85,0 0 20px #82bffb30;
+ animation:combat-hero-idle 2.6s ease-in-out infinite}
+.combat-hero-2 .combat-hero-symbol{background:linear-gradient(150deg,#53769e,#394777 70%);
+ border-color:#c7baf5bf;animation-delay:-.9s}
+.combat-hero-3 .combat-hero-symbol{background:linear-gradient(160deg,#80569a,#322355 75%);
+ border-color:#d4acf8a6;animation-delay:-1.7s}
+.combat-hero-name{display:block;max-width:100%;padding:4px 6px;
+ font-size:clamp(10px,1.7vw,12px);font-weight:800;white-space:nowrap;
+ overflow:hidden;text-overflow:ellipsis;color:#f1f5ff;text-shadow:0 2px 3px #000;
+ background:#102036d9;border:1px solid #7a96b670;border-radius:6px}
+.combat-boss{position:absolute;right:4%;bottom:8%;width:48%;min-width:160px;
+ height:250px;z-index:3;display:flex;flex-direction:column;align-items:center;
+ justify-content:flex-end;transform-origin:60% 85%}
+.combat-scene .combat-boss .monster-art{width:min(100%,300px);height:228px;
+ flex:0 0 228px;filter:hue-rotate(var(--boss-shift)) drop-shadow(0 0 27px var(--boss-accent));
+ animation:combat-boss-idle 3s ease-in-out infinite}
+.combat-scene .combat-boss .monster-shadow{width:60%;height:12px;flex:0 0 12px;
+ filter:blur(9px);background:#0009}
+.combat-cue{position:relative;z-index:6;display:inline-block;align-self:center;
+ padding:7px 15px;border:1px solid #e4ae6e85;
+ border-radius:999px;background:#14182ae8;box-shadow:0 4px 12px #0008;
+ color:#ffdb9d;font-size:clamp(11px,1.6vw,14px);font-weight:900;
+ letter-spacing:.045em;text-align:center;max-width:calc(100% - 28px);
+ margin:0 auto 4px}
+.combat-scene .monster-caption{position:relative;z-index:6;margin:0;
+ font-size:clamp(11px,1.5vw,13px);background:#111a2b84;
+ border-radius:8px;padding:6px 12px 10px}
+.combat-sword-trail,.combat-magic-beam,.combat-shield-effect,
+.combat-danger-zone,.combat-rune-effect,.combat-target-effect,
+.combat-flash{pointer-events:none;position:absolute;z-index:5;opacity:0}
+.combat-sword-trail{left:40%;top:43%;width:30%;height:8px;
+ border-radius:99px;background:linear-gradient(90deg,#adf0ff00,#a9ebff,#ffdc97,#ffffff00);
+ box-shadow:0 0 13px #b3f6ff,0 0 29px #ffb45d;
+ transform:rotate(-17deg) scaleX(.1)}
+.combat-magic-beam{left:35%;top:51%;height:7px;width:39%;
+ border-radius:50%;background:linear-gradient(90deg,#a7daff00,#c29dff,#f8e5ff);
+ box-shadow:0 0 19px #a9b8ff,0 0 31px #ac76f0}
+.combat-shield-effect{left:27%;top:28%;font-size:90px;
+ filter:drop-shadow(0 0 22px #7ad7ff);transform:scale(.3)}
+.combat-danger-zone{left:0;bottom:3%;height:30%;width:70%;
+ border-radius:50%;
+ background:radial-gradient(ellipse,#ff41414f,transparent 70%);
+ border-top:2px dashed #ff796c9e}
+.combat-rune-effect{left:33%;top:20%;width:35%;text-align:center;
+ font-size:44px;letter-spacing:3px;color:#d5a9ff;
+ text-shadow:0 0 12px #ae7dff,0 0 28px #a85eff}
+.combat-target-effect{right:20%;top:18%;font-size:110px;font-weight:100;
+ color:#ffd895;text-shadow:0 0 25px #fca945}
+.combat-flash{inset:0;z-index:6;opacity:1}
+.combat-energy-pulse{position:absolute;left:43%;top:47%;width:36px;height:36px;
+ border:3px solid var(--boss-accent);border-radius:50%;box-shadow:0 0 20px var(--boss-accent);
+ animation:combat-projectile 1s ease-out both}
+.combat-scene[data-cue="intro"] .combat-boss{animation:combat-entrance 1.6s ease-out}
+.combat-scene[data-cue="dodge"] .combat-danger-zone{opacity:.9;animation:combat-danger .7s ease-in-out infinite alternate}
+.combat-scene[data-cue="dodge"] .combat-boss{animation:combat-slam 1.8s ease-in-out infinite}
+.combat-scene[data-cue="reaction"] .combat-boss{animation:combat-charge 1.75s ease-in-out infinite}
+.combat-scene[data-cue="reaction"] .combat-magic-beam{opacity:.9;animation:combat-beam 1.75s ease-in-out infinite}
+.combat-scene[data-cue="math"] .combat-rune-effect{opacity:1;animation:combat-runes 1.9s ease-in-out infinite}
+.combat-scene[data-cue="math"] .combat-hero-symbol{filter:drop-shadow(0 0 16px #be86ff)}
+.combat-scene[data-cue="target"] .combat-target-effect{opacity:1;animation:combat-target 1.2s ease-in-out infinite}
+.combat-scene[data-cue="target"] .combat-sword-trail,
+.combat-scene[data-cue="finale"] .combat-sword-trail{opacity:1;animation:combat-slash 1.6s ease-out infinite}
+.combat-scene[data-cue="finale"] .combat-magic-beam{opacity:1;animation:combat-beam 1.5s ease-in-out infinite}
+.combat-scene[data-cue="finale"] .combat-hero{animation:combat-attack 1.4s ease-in-out infinite}
+.combat-scene[data-feedback="correct"] .combat-shield-effect{opacity:1;animation:combat-shield 1.1s ease-out both}
+.combat-scene[data-feedback="correct"] .combat-hero-line{filter:drop-shadow(0 0 16px #76dba9)}
+.combat-scene[data-feedback="wrong"] .combat-hero-line{animation:combat-recoil .4s ease-in-out}
+.combat-scene[data-cue="victory"] .combat-boss{animation:combat-defeated 1.4s ease-out both}
+.combat-scene[data-cue="victory"] .combat-hero{animation:combat-celebrate 1s ease-in-out infinite alternate}
+.combat-scene[data-cue="victory"] .combat-cue{color:#cbffd7;border-color:#75d99d;
+ box-shadow:0 0 25px #35c67850}
+.combat-scene[data-cue="defeat"] .combat-boss{animation:combat-victor 2s ease-in-out infinite}
+.combat-scene[data-cue="defeat"] .combat-hero{opacity:.66;filter:grayscale(.6)}
+@keyframes combat-hero-idle{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)}}
+@keyframes combat-boss-idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes combat-entrance{0%{transform:translate(80px,-40px) scale(.6);opacity:.3}100%{transform:none;opacity:1}}
+@keyframes combat-slam{0%,100%{transform:none}45%{transform:translate(-12px,18px) rotate(-4deg)}65%{transform:translate(-32px,8px) rotate(-6deg)}}
+@keyframes combat-charge{0%,100%{transform:scale(1)}60%{transform:scale(1.07)}}
+@keyframes combat-danger{0%{filter:brightness(.6)}100%{filter:brightness(1.6)}}
+@keyframes combat-beam{0%,100%{transform:scaleX(.05);opacity:.15}45%,70%{transform:scaleX(1);opacity:1}}
+@keyframes combat-runes{0%,100%{transform:translateY(12px) rotate(-4deg);opacity:.3}50%{transform:translateY(-14px) rotate(4deg);opacity:1}}
+@keyframes combat-target{0%,100%{transform:scale(.68) rotate(-12deg);opacity:.4}50%{transform:scale(1.05) rotate(12deg);opacity:1}}
+@keyframes combat-slash{0%,25%,100%{transform:rotate(-17deg) scaleX(.08);opacity:0}48%{transform:rotate(-17deg) scaleX(1);opacity:1}}
+@keyframes combat-projectile{0%{transform:translate(-115px,30px) scale(.3);opacity:0}35%{opacity:1}100%{transform:translate(90px,-10px) scale(2.7);opacity:0}}
+@keyframes combat-shield{0%{transform:scale(.2);opacity:0}35%{transform:scale(1.2);opacity:1}100%{transform:scale(.9);opacity:0}}
+@keyframes combat-recoil{0%,100%{transform:translateX(0)}25%,75%{transform:translateX(-7px)}50%{transform:translateX(7px)}}
+@keyframes combat-attack{0%,100%{transform:translateX(0)}45%{transform:translateX(11px)}}
+@keyframes combat-defeated{0%{transform:none;opacity:1}60%{transform:translate(19px,40px) rotate(9deg);opacity:.8}100%{transform:translate(28px,65px) rotate(13deg) scale(.9);opacity:.4}}
+@keyframes combat-celebrate{0%{transform:translateY(0)}100%{transform:translateY(-15px)}}
+@keyframes combat-victor{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@media(max-width:620px){
+ .combat-scene{min-height:300px}.combat-stage{min-height:211px}
+ .combat-boss{right:0;bottom:7%;height:175px;width:54%;min-width:0}
+ .combat-scene .combat-boss .monster-art{height:157px;flex-basis:157px}
+ .combat-hero-line{left:1%;bottom:8%;width:47%;height:125px;gap:1px}
+ .combat-hero-symbol{height:46px;width:42px;font-size:25px}
+ .combat-hero-name{font-size:9px;max-width:80px;padding:3px}
+ .combat-cue{padding:5px 9px;font-size:11px}
+ .combat-shield-effect{left:20%;top:33%;font-size:55px}
+ .combat-target-effect{right:15%;top:25%;font-size:70px}
+ .combat-rune-effect{font-size:27px}
+ .combat-scene .monster-caption{font-size:11px;padding:6px 8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .combat-scene *, .combat-scene *::before,.combat-scene *::after{
+  animation:none!important;transition:none!important}
+ .combat-scene[data-cue="victory"] .combat-boss{opacity:.4}
+ .combat-scene[data-feedback="correct"] .combat-shield-effect{opacity:.9;transform:scale(.75)}
+}
