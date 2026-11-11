@@ -429,3 +429,86 @@
  .arena-live .combat-stage .combat-boss.live-boss-struck,
  .arena-live .combat-hero.live-hero-attack{animation:none}
 }
+
+
+/* v2 eight-second tactical mechanics — touch-friendly without extra panels. */
+.arena-live .mini-choices{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px}
+.arena-live .mini-step-counter{width:100%;font-size:12px;font-weight:900;text-align:center;color:#9ddbf1;letter-spacing:.04em;margin:2px 0}
+.arena-live .mini-step-counter.is-perfect{color:#a0ffb4}
+.arena-live .mini-dodge-warning{
+ width:100%;min-height:35px;text-align:center;font-weight:900;font-size:clamp(13px,1.35vw,18px);
+ padding:7px;background:#60302e9c;border:1px solid #ff9869a6;
+ border-radius:10px;color:#ffe0b9
+}
+.arena-live .mini-dodge-warning.is-impact{background:#7d272c;border-color:#ffb58d;color:#fff1d5}
+.arena-live .mini-dodge-lanes{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.arena-live .mini-dodge-lanes:has(> :nth-child(2):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}
+.arena-live .mini-dodge-lane{font-size:clamp(12px,1.1vw,16px);min-height:clamp(66px,11vh,101px);
+ font-weight:900;white-space:normal;line-height:1.35}
+.arena-live .mini-dodge-lane.mini-danger{background:linear-gradient(160deg,#a74342,#60292f);
+ border-color:#fca18d;color:#ffe3d6}
+.arena-live .mini-dodge-lane.mini-safe{background:linear-gradient(160deg,#246f61,#183d46);
+ border-color:#91efce;color:#eaffeb}
+.arena-live .mini-dodge-lane.is-selected{outline:3px solid #f8d487;outline-offset:2px}
+.arena-live .mini-dodge-impact{
+ width:100%;padding:7px 4px;text-align:center;font-size:12px;
+ font-weight:800;color:#dfedfa
+}
+.arena-live .mini-speed-indicator{width:100%;font-weight:900;font-size:clamp(13px,1.3vw,18px);text-align:center;color:#ffe2b0}
+.arena-live .mini-meter.is-accelerating{
+ position:relative;width:min(100%,400px);height:32px;flex:0 0 auto;
+ border:2px solid #a8c5e5;border-radius:10px;overflow:hidden;
+ background:linear-gradient(90deg,#193a63,#22659b 45%,#153954)
+}
+.arena-live .mini-meter.is-accelerating::before{
+ content:"";position:absolute;z-index:2;
+ left:var(--timing-left,40%);width:var(--timing-width,20%);
+ top:0;height:100%;background:linear-gradient(90deg,#21b977,#9af8aa,#22bd6e);
+ box-shadow:0 0 20px #73ffb8bd
+}
+.arena-live .mini-meter.is-accelerating .mini-meter-fill{
+ position:absolute;z-index:4;left:0;top:0;bottom:0;
+ width:5px!important;height:100%;background:#fff0c5;
+ border-radius:4px;box-shadow:0 0 9px #fff,0 0 19px #ffe9a0;
+ transition:none
+}
+.arena-live .mini-meter.is-accelerating+.mini-reaction{flex:0 1 290px;max-width:100%;min-height:65px}
+.arena-live .mini-target-hint{width:100%;font-size:clamp(11px,1vw,14px);color:#dbebfc;text-align:center}
+.arena-live .mini-choice.mini-target{font-size:clamp(22px,2.7vw,39px)}
+.arena-live .mini-math{border-color:#c4a8fa;background:linear-gradient(145deg,#654f87,#39335f)}
+.arena-live .live-dodge-ground{position:absolute;bottom:8%;width:70px;height:38px;
+ transform:translateX(-50%);border:5px solid #ff9b61;border-radius:50%;
+ box-shadow:0 0 20px #f95f37,0 0 34px #ff7d38;
+ background:radial-gradient(circle,#fff0a5aa,#fa653144,transparent);
+ animation:live-ground-impact .9s ease-out both}
+.arena-live .live-dodge-result{position:absolute;left:45%;top:17%;
+ font:900 clamp(15px,1.5vw,22px) Georgia,serif;
+ color:#fbe5b1;text-shadow:0 3px 9px #000;
+ animation:live-dodge-note 1.05s ease-out both}
+.arena-live .combat-hero.live-hero-dodge{animation:live-dodge-jump .75s ease-out both}
+@keyframes live-ground-impact{
+ from{opacity:0;transform:translateX(-50%) scale(.25)}
+ 35%{opacity:1;transform:translateX(-50%) scale(1.15)}
+ to{opacity:0;transform:translateX(-50%) scale(1.45)}
+}
+@keyframes live-dodge-note{
+ 0%{opacity:0;transform:translateY(10px)}
+ 30%,70%{opacity:1}
+ 100%{opacity:0;transform:translateY(-16px)}
+}
+@keyframes live-dodge-jump{
+ 0%,100%{transform:translate(0,0)}
+ 50%{transform:translate(25px,-24px)}
+}
+@media (orientation:landscape) and (min-width:900px) and (max-height:720px){
+ .arena-live .mini-lead{gap:4px;margin-bottom:5px}
+ .arena-live .mini-step-counter{font-size:11px;margin:0}
+ .arena-live .mini-choices{gap:6px}
+ .arena-live .mini-dodge-lane{min-height:clamp(53px,9vh,75px);font-size:12px}
+ .arena-live .mini-meter.is-accelerating{height:26px}
+ .arena-live .mini-meter.is-accelerating+.mini-reaction{min-height:53px}
+}
+@media(prefers-reduced-motion:reduce){
+ .arena-live .live-dodge-ground,.arena-live .live-dodge-result,
+ .arena-live .combat-hero.live-hero-dodge{animation:none}
+}
