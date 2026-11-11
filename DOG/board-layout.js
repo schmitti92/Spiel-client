@@ -1,15 +1,16 @@
 /**
  * DOG four-seat shared default board · geometry only.
- * The numbered circuit is immutable in meaning (0..63), but its coordinates
- * may be customized. The classic-cross preset resembles the physical board's
- * four-armed course without copying any publisher artwork.
+ * The numbered circuit is immutable in meaning (0..63). The default coordinates
+ * are the user's approved uploaded layout; visual customization remains optional.
  *
  * No client-supplied coordinates are ever used by the rules engine.
  */
 import {APPROVED_BOARD_ID,APPROVED_BOARD_LAYOUT} from './approved-board.js';
 export const BOARD_LAYOUT_ID=APPROVED_BOARD_ID;
 export const BOARD_VIEWBOX=760;
-export const CUSTOM_BOARD_KEY='spielportal:dog:board-layout:v1';
+// A new key activates the newly approved common standard on all devices.
+// Older v1 edits remain in browser storage as a backup, untouched.
+export const CUSTOM_BOARD_KEY='spielportal:dog:board-layout:v2';
 export const START_INDICES=Object.freeze([0,16,32,48]);
 export const TRACK_COUNT=64,SEAT_COUNT=4,GOAL_COUNT=4,HOME_COUNT=4;
 export const COLORS_CLASSIC=Object.freeze(['#e85b54','#58a9ed','#50bf80','#ecc354']);
