@@ -63,7 +63,8 @@ test('DOG online fresh match and seat changes do not expose another player hand'
  assert.equal(update.accept,true);
  assert.equal(update.hideHand,true);
  assert.equal(update.matchId,'match-2');
- const switched=decide(previous(61,mkGame(1),'match-2',0),room(62,mkGame(2),{seat:2}));
+ const seatTwoGame=mkGame(2);seatTwoGame.hands[2]=seatTwoGame.hands[0];seatTwoGame.hands[0]={count:2};
+ const switched=decide(previous(61,mkGame(1),'match-2',0),room(62,seatTwoGame,{seat:2}));
  assert.equal(switched.hideHand,true);
 });
 test('DOG online pinned match URL never silently swaps to a different room match',()=>{
