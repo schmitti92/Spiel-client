@@ -14,8 +14,11 @@
  let lastHeroSignature=''; // No 250ms remount of unchanged multiplayer cards
  let lastReadyMask='',readyBurstUntil=0;
  const miniUi=window.DogBossMinigames?.create($('mini-game'),
-  (round,answer,step=0)=>command('minigame',false,{round,answer,step}),
-  (round,step,choice)=>combatFx?.previewDodge?.(view,round,step,choice,now()));
+  (round,answer,step=0,tapAt=null)=>command('minigame',false,{
+   round,answer,step,...(tapAt!==null?{tapAt}:{}),
+  }),
+  (round,step,choice)=>combatFx?.previewDodge?.(view,round,step,choice,now()),
+  ()=>now());
  const combatFx=window.DogBossCombatFX?.create($('combat-scene'),10);
  const preflight=window.DogBossPreflight?.create(10);
  const liveUi=window.DogBossLiveUI?.create($('arena'));
@@ -268,7 +271,7 @@
    if(['DOG_BOSS10_NEEDS_THREE','DOG_BOSS10_PREREQUISITES','DOG_BOSS10_ALREADY_WON',
     'DOG_BOSS10_RUNNING','DOG_BOSS10_COOLDOWN','DOG_BOSS10_NOT_RUNNING',
     'DOG_BOSS10_STILL_FIGHTING','DOG_MINIGAME_TOO_LATE','DOG_MINIGAME_NOT_RUNNING','DOG_MINIGAME_NOT_PARTICIPANT','DOG_MINIGAME_MISSING','DOG_MINIGAME_BAD_ROUND','DOG_MINIGAME_BAD_ANSWER','DOG_MINIGAME_BAD_STEP',
-    'DOG_MINIGAME_STEP_ORDER','DOG_MINIGAME_TOO_FAST','NOT_DOG_TEAM_MEMBER','DOG_BOSS10_RECEIPT_CONFLICT'].includes(e.message))
+    'DOG_MINIGAME_STEP_ORDER','DOG_MINIGAME_TOO_FAST','DOG_MINIGAME_BAD_TIMESTAMP','NOT_DOG_TEAM_MEMBER','DOG_BOSS10_RECEIPT_CONFLICT'].includes(e.message))
     clear(uid);
    message('⚠️ Der Auftrag wurde nicht bestätigt: '+e.message+
     '. Bei einer unbekannten Verbindungslage kannst du ihn sicher wiederholen.');
