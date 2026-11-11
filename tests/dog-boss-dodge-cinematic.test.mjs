@@ -139,3 +139,72 @@ test('sprite motion and impact effects are local, accessible and respect reduced
   assert.match(html,/dog-boss-combat-fx\.js/);
  }
 });
+
+test('boss weapon actually swings from the monster to the server-targeted lane',()=>{
+ const {fx,root,fields,view}=fixture();
+ fx.update(view,at+15100);
+ const layer=root.children.find(child=>child.className==='battle-dodge-layer');
+ const hammer=layer.children.find(child=>child.className==='battle-boss-weapon');
+ const trail=layer.children.find(child=>child.className==='battle-weapon-trail');
+ const impact=layer.children.find(child=>child.className==='battle-weapon-impact');
+ assert.ok(hammer&&trail&&impact,'dedicated visible weapon, travel trail and ground crater');
+ assert.equal(hammer.attrs['data-weapon'],'warhammer');
+ assert.ok(hammer.classList.contains('battle-weapon-swing'));
+ assert.equal(root.dataset.bossSwing,'windup');
+ assert.equal(layer.style['--dodge-hit-x'],'85%','hammer targets the dangerous right lane');
+ assert.equal(layer.style['--boss-swing-offset'],'-100ms');
+ assert.ok(fields.get('#combat-boss').classList.contains('battle-boss-strike'),
+  'body moves in sync with held weapon');
+ fx.update(view,at+16900);
+ assert.equal(root.dataset.bossSwing,'impact');
+ assert.equal(layer.style['--boss-swing-offset'],'-100ms',
+  'the animation must not restart on subsequent updates');
+ fx.update(view,at+18000);
+ assert.equal(layer.style['--dodge-hit-x'],'62%',
+  'the next blow is now aimed to the dangerous left field');
+ assert.equal(layer.style['--boss-swing-offset'],'-334ms',
+  'the second swing jumps to its own server-clock offset');
+ assert.equal(root.dataset.bossSwing,'windup');
+});
+test('when two fields are unsafe, primary hammer and secondary shockwave both show',()=>{
+ const {fx,root,view}=fixture();
+ const dodge=view.miniGames.rounds[1];
+ dodge.lanes=3;
+ dodge.attacks[0].dangerIndex=0;
+ dodge.attacks[0].secondDangerIndex=2;
+ fx.update(view,at+15100);
+ const layer=root.children.find(child=>child.className==='battle-dodge-layer');
+ const shock=layer.children.find(child=>
+  child.className==='battle-weapon-impact battle-weapon-impact-secondary');
+ assert.ok(shock&&!shock.hidden);
+ assert.equal(layer.style['--dodge-hit-x'],'54%');
+ assert.equal(layer.style['--dodge-secondary-x'],'92%');
+ assert.ok(shock.classList.contains('battle-weapon-swing'));
+ // Two safe-guarded lanes have only a visual indicator, never a client HP calculation.
+ assert.equal(view.miniGames.myAnswers[1],undefined);
+});
+test('reconnect resumes the currently active hammer swing without replaying older hits',()=>{
+ const {fx,root,view}=fixture();
+ fx.update(view,at+17200);
+ const layer=root.children.find(child=>child.className==='battle-dodge-layer');
+ assert.equal(layer.style['--boss-swing-offset'],'-2200ms');
+ assert.equal(root.dataset.bossSwing,'impact');
+ fx.update(view,at+23100);
+ assert.equal(layer.hidden,true);
+ assert.equal(root.dataset.bossSwing,'idle');
+ assert.equal(root.dataset.dodgeStrike,'idle');
+});
+test('warhammer artwork is self-contained and responsive with reduced-motion fallback',()=>{
+ const art=read('dog-boss-art/ashen-warhammer.svg');
+ const css=read('dog-boss-weapon.css');
+ assert.match(art,/viewBox="0 0 180 280"/);
+ assert.match(art,/Glühender Kriegshammer/);
+ assert.ok(!art.includes('<script')&&!art.includes('href="http'));
+ for(const name of ['boss-hammer-to-lane','boss-hammer-body-lunge',
+  'boss-hammer-ground-impact','--boss-swing-offset',
+  'data-effects="off"','prefers-reduced-motion:reduce'])assert.ok(css.includes(name),name);
+ assert.match(css,/66%\{left:var\(--dodge-hit-x/);
+ for(const page of ['dog-boss10.html','dog-group-boss.html']){
+  assert.match(read(page),/dog-boss-weapon\.css/);
+ }
+});
