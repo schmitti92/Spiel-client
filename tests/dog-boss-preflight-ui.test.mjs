@@ -17,7 +17,7 @@ test('Both bosses have the same cinematic pre-fight screen and all controls',()=
   assert.match(html,/<main class="stage" data-screen="preflight">/);
   assert.match(html,/dog-boss-preflight\.css\?v=/);
   assert.match(html,/dog-boss-preflight\.js\?v=/);
-  assert.ok(html.indexOf('dog-boss-preflight.js')<html.indexOf('src="./dog-boss'), 'presenter before boss script');
+  assert.ok(html.indexOf('dog-boss-preflight.js')<Math.max(html.indexOf('src="./dog-boss10.js'),html.indexOf('src="./dog-group-boss.js')), 'presenter before boss script');
   for(const id of required)assert.ok(html.includes('id="'+id+'"'),'missing '+id);
   assert.match(html,/id="ready-button"/);
   assert.match(html,/id="start-button"/);
