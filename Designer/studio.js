@@ -1,7 +1,7 @@
 import {
  STUDIO_STORAGE_KEY,STUDIO_FORMATS,createTemplate,createScene,createItem,
  normalizeProject,studioId,itemTypeLabel,clamp,rgba,safeImage,resizeItemFrame
-} from './studio-model.mjs?v=2-resize';
+} from './studio-model.mjs?v=3-liveboss';
 
 (()=>{
 'use strict';
@@ -10,10 +10,22 @@ const stage=$('artboard'),content=$('canvas-content'),scroll=$('stage-scroll');
 const byId=id=>current().items.find(i=>i.id===id);
 let project,activeIndex=0,selectedId=null,zoomMultiplier=1,scale=1;
 let drag=null,history=[],historyIndex=0,toastTimer=0,silentChange=false;
+// An optional one-click link preselects the new LIVE boss storyboard.
+ // Always ask before replacing an existing browser-saved design.
+const requestedTemplate=new URLSearchParams(location.search).get('template');
 try{
  const raw=localStorage.getItem(STUDIO_STORAGE_KEY);
- project=raw?normalizeProject(JSON.parse(raw)):createTemplate('boss');
-}catch(error){project=createTemplate('boss');}
+ const previous=raw?normalizeProject(JSON.parse(raw)):null;
+ const openLive=requestedTemplate==='boss-live'&&
+  (!previous||window.confirm('Bosskampf-LIVE-Vorlage öffnen? Dein bisheriger Entwurf wird im Browser ersetzt. Exportiere ihn vorher als JSON, wenn du ihn behalten möchtest. Mit „Abbrechen“ bleibt er erhalten.'));
+ project=openLive?createTemplate('boss-live'):(previous||createTemplate('boss'));
+}catch(error){
+ project=createTemplate(requestedTemplate==='boss-live'?'boss-live':'boss');
+}
+// Avoid reopening/replacing the saved draft on every refresh.
+if(requestedTemplate==='boss-live'&&window.history?.replaceState){
+ try{window.history.replaceState(null,'',location.pathname+location.hash);}catch{}
+}
 const current=()=>project.screens[activeIndex];
 const selected=()=>selectedId?byId(selectedId):null;
 const sectionIds=['screen-inspector','item-inspector'];
