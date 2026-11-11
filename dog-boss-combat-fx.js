@@ -17,7 +17,7 @@
   waiting:'⚔️ HELDEN SAMMELN SICH'
  });
  const iconFor=['⚔️','🛡️','✨'];
- const heroPortraits=['held-krieger.svg','held-schildtraeger.svg','held-magier.svg'];
+ const heroPortraits=['held-krieger.svg','held-magier.svg','held-schildtraeger.svg'];
  // Explicit allowlist prevents arbitrary URLs or player-controlled image paths.
  const bossPortraits=Object.freeze({
   10:'aschewaechter.svg',20:'schattenfuerst.svg',
