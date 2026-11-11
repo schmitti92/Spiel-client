@@ -191,3 +191,57 @@ test('Every type exposes eight unclipped, touch-friendly drag handles',()=>{
  assert.doesNotMatch(css,/\.canvas-item\.type-arrow\{clip-path:/);
  assert.match(css,/\.canvas-item\.type-arrow \.item-arrow-shape/);
 });
+
+
+test('Bosskampf LIVE starter has seven individually editable single-screen phases',()=>{
+ const project=createTemplate('boss-live');
+ assert.equal(project.width,1440);
+ assert.equal(project.height,810);
+ assert.deepEqual(project.screens.map(x=>x.name),[
+  'Kampfbeginn','Reaktion','Blitz-Mathe','Ausweichen','Zieltreffer','Sieg','Niederlage'
+ ]);
+ assert.notEqual(project.id,createTemplate('boss-live').id);
+ for(const scene of project.screens){
+  assert.ok(scene.items.length>=17,scene.name+' has too few elements');
+  assert.ok(scene.items.length<=160,scene.name+' has too many elements');
+  assert.ok(scene.items.every(i=>i.x>=0&&i.y>=0&&i.x+i.w<=1440&&i.y+i.h<=810),
+   scene.name+' must fit inside one 1440×810 screen');
+  assert.ok(scene.items.some(i=>i.type==='bar'&&i.text.includes('BOSS-LP')),
+   scene.name+' needs a visible boss HP meter');
+  assert.ok(scene.items.some(i=>i.text.includes('DER ASCHEWÄCHTER')),
+   scene.name+' needs the persistent boss');
+  assert.equal(scene.items.filter(i=>i.type==='player').length,3,
+   scene.name+' needs Chris, Nova and Titan cards');
+ }
+ const offsets=project.screens.map(s=>s.items.filter(i=>i.type==='player')
+  .map(i=>[i.x,i.y,i.w,i.h]));
+ assert.ok(offsets.every(o=>JSON.stringify(o)===JSON.stringify(offsets[0])),
+  'Player cards must remain fixed while the challenge changes');
+});
+
+test('LIVE storyboard contains each existing minigame and both endings',()=>{
+ const x=createTemplate('boss-live');
+ const all=x.screens.map(scene=>scene.items.map(item=>item.text).join('\n'));
+ for(const [sceneIndex,term] of [[1,'REAKTION'],[2,'BLITZ-MATHE'],
+   [3,'AUSWEICHEN'],[4,'ZIELTREFFER'],[5,'BOSS BESIEGT'],
+   [6,'BOSS HAT ÜBERLEBT']]){
+  assert.ok(all[sceneIndex].includes(term),'Missing '+term);
+ }
+ const round2=x.screens[2].items.map(i=>i.text);
+ assert.ok(round2.includes('7 + 15 = ?'));
+ for(const answer of ['18','20','22'])assert.ok(round2.includes(answer));
+ assert.match(html,/value="boss-live"/);
+ assert.match(js,/new URLSearchParams\(location\.search\)\.get\('template'\)/);
+ assert.match(js,/window\.confirm\('Bosskampf-LIVE-Vorlage öffnen/);
+ assert.match(js,/window\.history\.replaceState/);
+});
+
+test('LIVE template can be exported and safely reopened with all seven scenes',()=>{
+ const initial=createTemplate('boss-live');
+ const loaded=normalizeProject(JSON.parse(JSON.stringify(initial)));
+ assert.equal(loaded.screens.length,7);
+ for(let i=0;i<7;i++){
+  assert.equal(loaded.screens[i].name,initial.screens[i].name);
+  assert.equal(loaded.screens[i].items.length,initial.screens[i].items.length);
+ }
+});
