@@ -18,6 +18,7 @@
  color:#fff1cb!important;cursor:pointer;
  transition:transform .18s ease,filter .18s ease;
 }
+.launch-stage .dog-event-entry[hidden]{display:none!important}
 .launch-stage .dog-event-entry:hover{filter:brightness(1.13);transform:translateY(-2px)}
 .launch-stage .dog-event-entry:focus-visible{outline:3px solid #b4e9ff;outline-offset:2px}
 .launch-stage .dog-event-icon{font-size:clamp(31px,3.8vw,45px);line-height:1;flex:none;
