@@ -139,6 +139,6 @@ test('Reward shelf spans two columns and supports four honest future reward slot
   assert.match(scene,/data-reward-slot="3"/);
   assert.match(scene,/data-reward-slot="4"/);
   assert.match(scene,/Reserveplätze zeigen keine zugesagten Gewinne/);
-  assert.match(html,/dog-boss-preflight\.css\?v=20261111-v2-landscape/);
+  assert.match(html,/dog-boss-preflight\.css\?v=20261111-v3-tablet-fit/);
  }
 });
