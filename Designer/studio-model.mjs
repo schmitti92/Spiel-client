@@ -1,4 +1,4 @@
-import {buildLiveBossTemplate} from './studio-boss-live.mjs';
+import {buildLiveBossTemplate} from './studio-boss-live.mjs?v=20261111-three-column';
 
 /** Pure project document model for the independent Spielseiten-Studio.
  * No application API, Firebase, Render, accounts or live-game state involved.
