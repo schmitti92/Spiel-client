@@ -45,6 +45,6 @@ test('all participants still share the same active player, without duplicate tur
  assert.match(app,/p\.doublePayout\?'✨ ×2 aktiv':'Kandidat'/);
  assert.match(app,/const statusText=p\.deal!==null\?'🤝 DEAL · '/);
  assert.doesNotMatch(app,/👑 ÖFFNET KOFFER|👑 JETZT AM ZUG|✨ DU BIST AM ZUG|✨ AKTIVER SPIELER/);
- assert.match(app,/if\(!g\)\{\$\('turn-spotlight'\)\.hidden=true/);
+ assert.match(app,/if\(!g\)\{scheduleFastBatch\(\);\$\('turn-spotlight'\)\.hidden=true/);
  assert.doesNotMatch(app,/g\.phase==='decision'\?currentDecision\(\):null/);
 });
