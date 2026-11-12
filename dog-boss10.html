@@ -20,7 +20,8 @@
  <link rel="stylesheet" href="./dog-boss-color-target.css?v=20261112-color10-v1">
  <link rel="stylesheet" href="./dog-hero-selection.css?v=20261112-onboarding1">
  <link rel="stylesheet" href="./dog-boss-math-endgame.css?v=20261111-math-v1">
- <link rel="stylesheet" href="./dog-boss-legendary-arena.css?v=20261112-legendary-v2">
+ <link rel="stylesheet" href="./dog-boss-compact-arena.css?v=20261112-compactdamage1">
+  <link rel="stylesheet" href="./dog-boss-legendary-arena.css?v=20261112-legendary-v2">
  <link rel="stylesheet" href="./dog-boss-real-heroes.css?v=20261112-realheroes2">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
@@ -28,8 +29,8 @@
  <script src="./dog-boss-director.js?v=20261111-endgame-v1" defer></script>
  <script src="./dog-boss-combat-fx.js?v=20261111-dodge8-v1" defer></script>
  <script src="./dog-boss-preflight.js?v=20261112-onboarding1" defer></script>
- <script src="./dog-boss-live-ui.js?v=20261112-midstrike1" defer></script>
- <script src="./dog-boss10.js?v=20261112-onboarding1" defer></script>
+ <script src="./dog-boss-live-ui.js?v=20261112-compactdamage1" defer></script>
+ <script src="./dog-boss10.js?v=20261112-compactdamage1" defer></script>
  <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 </head>
 <body>
@@ -145,6 +146,10 @@
      <div class="timer-bar"><span id="timer-fill"></span></div>
     </div>
    </div>
+   <section class="live-damage-recap" aria-label="Zuletzt bestätigte Schäden">
+    <strong>💥 LETZTE SCHÄDEN</strong>
+    <div id="live-recent-damage" class="live-damage-recap-list" role="log" aria-live="off" aria-label="Letzte bestätigte Treffer">Noch keine bestätigten Treffer</div>
+   </section>
    <div class="live-battlefield">
     <div class="monster combat-scene" id="combat-scene" data-cue="waiting" data-camera="normal" aria-label="Boss links, kämpfende Helden in der Mitte">
      <div class="embers" aria-hidden="true">✦ · ✧ · ✦</div>
@@ -236,7 +241,7 @@
      <strong>LOS!</strong>
     </div>
    </div>
-   <div class="live-rounds">
+   <div class="live-rounds" hidden aria-hidden="true">
     <span class="live-rounds-title">⚡ KAMPFABLAUF</span>
     <div class="live-round-steps" id="live-round-steps" aria-label="Vier Kampfrunden: Angriff, Verteidigung, Angriff, Verteidigung">
      <span class="live-round-step" data-step="0">1 · Aufgabe</span>
@@ -247,7 +252,7 @@
     <span id="live-feedback" class="live-feedback" role="status" aria-live="polite">Boss und Team sind bereit.</span>
    </div>
   </section>
-  <section class="squad" aria-labelledby="squad-title">
+  <section class="squad" id="boss-squad" aria-labelledby="squad-title">
    <header class="squad-head">
     <h2 id="squad-title">🛡️ Eure drei Helden</h2>
     <strong id="ready-count">0 / 3 bereit</strong>
