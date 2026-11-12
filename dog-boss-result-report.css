@@ -1,25 +1,58 @@
 /* 100 Tore · Battle conclusion, same layout for Boss 10 and all group bosses.
  * The result is informational and a local replay, never another attack.
  */
-.stage.boss-result-open{
- width:min(1450px,calc(100% - 22px))!important;max-width:none!important;
+/* Full-screen overlay outside the stage grid; confirmation is mandatory. */
+body.dog-boss-report-visible{
+ overflow:hidden!important;touch-action:auto;
 }
-body:has(.stage.boss-result-open){
- overflow-y:auto!important;overflow-x:hidden!important;
-}
-.stage.boss-result-open #boss-preflight,
-.stage.boss-result-open #arena,
-.stage.boss-result-open #boss-squad{display:none!important}
 .boss-result-report[hidden]{display:none!important}
 .boss-result-report{
- display:block;max-width:1320px;margin:clamp(8px,1vw,16px) auto 28px;
- padding:clamp(12px,2vw,26px);
- border:1px solid #b38d5f;border-radius:22px;
- background:radial-gradient(ellipse at 50% 0%,#4b354481,transparent 52%),
-  linear-gradient(150deg,#161c2dec,#0c1525f7 66%,#17192af7);
- color:#f6ead5;box-shadow:0 20px 54px #0008;
- font-family:system-ui,-apple-system,sans-serif;
+ position:fixed!important;inset:0!important;z-index:2147483000!important;
+ display:flex!important;align-items:center;justify-content:center;
+ padding:clamp(8px,2vh,24px) clamp(8px,2vw,24px)!important;
+ width:100vw!important;height:100dvh!important;max-width:none!important;
+ margin:0!important;box-sizing:border-box;
+ overflow:hidden;overscroll-behavior:contain;
+ background:radial-gradient(ellipse at 50% 50%,#210e1abf,#03060be8 80%);
+ color:#f6ead5;font-family:system-ui,-apple-system,sans-serif;
+ backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
 }
+.boss-result-report .br-dialog{
+ position:relative;display:flex;flex-direction:column;min-height:0;
+ width:min(1180px,100%);height:auto;
+ max-height:min(940px,calc(100dvh - 16px));
+ border:2px solid #e1ae6a;border-radius:24px;
+ background:radial-gradient(ellipse at 50% 0%,#4b354481,transparent 52%),
+  linear-gradient(150deg,#161c2dfb,#0c1525ff 66%,#17192aff);
+ box-shadow:0 30px 92px #000e,inset 0 0 42px #ffad4822,0 0 30px #d08a5129;
+ overflow:hidden;outline:none;
+}
+.boss-result-report .br-scroll{
+ overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+ scrollbar-width:thin;min-height:0;flex:1 1 auto;
+ padding:clamp(12px,2vw,26px);
+}
+.boss-result-report .br-dialog:focus-visible{outline:3px solid #98e5ff;outline-offset:3px}
+.boss-result-report .br-footer{
+ position:relative;flex:none;display:flex;align-items:center;
+ justify-content:space-between;gap:12px;flex-wrap:wrap;
+ padding:14px clamp(14px,2vw,24px);
+ background:linear-gradient(90deg,#241d2efb,#172837fb);
+ border-top:1px solid #dfb6738f;
+ box-shadow:0 -8px 26px #030814a1;
+}
+.boss-result-report .br-footer-caption{
+ color:#bdd0dd;font:650 clamp(11px,1vw,13px)/1.4 system-ui;
+}
+.boss-result-report #br-return{
+ min-width:min(245px,100%);padding:13px 24px;
+ border:2px solid #fff0bc;border-radius:12px;
+ background:linear-gradient(180deg,#f3cf83,#b97a38);
+ color:#221623;font:950 clamp(15px,1.3vw,18px)/1.3 system-ui;
+ box-shadow:0 0 17px #f5bc7373;
+}
+.boss-result-report #br-return:hover{filter:brightness(1.13)}
+.boss-result-report #br-return:active{transform:translateY(1px)}
 .boss-result-report h2,.boss-result-report h3,.boss-result-report p{
  margin:0;
 }
@@ -311,7 +344,12 @@ body:has(.stage.boss-result-open){
  .boss-result-report .br-metrics{grid-template-columns:1fr}
 }
 @media(max-width:580px){
- .boss-result-report{padding:10px;border-radius:12px}
+ .boss-result-report{padding:6px!important}
+ .boss-result-report .br-dialog{border-radius:13px;max-height:calc(100dvh - 12px)}
+ .boss-result-report .br-scroll{padding:12px 9px}
+ .boss-result-report .br-footer{flex-direction:column;gap:8px;padding:10px 12px}
+ .boss-result-report .br-footer-caption{font-size:10px;text-align:center}
+ .boss-result-report #br-return{width:100%;min-width:0;padding:12px}
  .boss-result-report .br-replay-stage{
   min-height:180px;grid-template-columns:1fr minmax(90px,.8fr) 1fr;
   gap:4px;padding:10px 6px 33px;
