@@ -1,7 +1,7 @@
 # ⚔️ 100 Tore – Gemeinsamer Entwicklungs- und Aufgabenplan
 
 > **Verbindlicher Arbeitsplan** für die schrittweise Verbesserung von „100 Tore“ auf GitHub `main`.
-> Erstellt: **12. November 2026** · Fortschritt: **A-01 technisch gemessen; Produktions-Firestore-Zähler fehlen noch.** Keine neue Aufgabe vollständig abgenommen.
+> Erstellt: **12. November 2026** · Fortschritt: **A-01 technisch gemessen; erster kontrollierter Praxiswert der Firestore-Usage dokumentiert; weitere Szenarien offen.** Keine neue Aufgabe vollständig abgenommen.
 > Beteiligte Repositories: [Spiel-client](https://github.com/schmitti92/Spiel-client) (Frontend, GitHub Pages) und [serverfinal](https://github.com/schmitti92/serverfinal) (Backend, Render, Firestore).
 
 ## 0. Wie wir diesen Plan abarbeiten
@@ -25,7 +25,7 @@
 - **Knappe Dokumentation:** pro Paket 1–3 Sätze in diesem Plan (was geändert, grob getestet, GitHub-Commit, Auswirkungen auf Firestore). Umfangreiche Zusatzberichte nur bei tatsächlich neuen Messungen oder Architekturentscheidungen.
 - **Primär Spielqualität:** gefühlte Reaktionszeit, Synchronität und fehlerfreie Bedienung haben Vorrang vor dem Erstellen immer neuer theoretischer Tests. Firestore möglichst sparsam, aber nicht zulasten eines flüssigen Spiels.
 
-**Praxisbeobachtung vom Nutzer, noch nicht isoliert:** Bei einem selbst gespielten Spiel wurden in Firebase ungefähr **200 „Abfragen“** beobachtet. **Noch nicht geklärt**, ob damit Firestore-Dokumentreads, Writes, gesamte Projektoperationen oder HTTP-Requests gemeint sind und ob im Messfenster weitere Aktivitäten stattfanden. Diese Zahl vorerst **nicht** mit den isolierten A-01-Codepfad-Zählungen gleichsetzen; als Hinweis für eine schlanke Live-Nachmessung verwenden, nicht als Beweis für vollständige A-01e-Abnahme.
+**Kontrollierter Praxisvergleich vom Nutzer:** Für **ein Spiel** wurden die Firebase-Firestore-Projektzähler vor und nach dem Spiel mit bewusst großzügigem zeitlichem Abstand aufgenommen, sodass laut Nutzer keine anderen Vorgänge im Messfenster aktiv waren: **145 Reads, 26 Writes, zusammen 171 Operationen**. Das ersetzt die frühere grobe Schätzung von 200–250 „Abfragen“. Cloud-Metriken können verzögert nachlaufen; eine isolierte vollständige Messreihe zu allen A-01e-Szenarien liegt noch nicht vor.
 
 ### Arbeitsvorlage für jeden Schritt
 
@@ -110,6 +110,20 @@
 **Achtung:** Bei echten Online-Spielen entstehen weitere Reads durch häufigeres Polling, Profil-Cache-Misses (15-s-Fenster), Pilot-Berechtigungscache (30-s-Fenster) sowie ggf. SDK-Transaktionswiederholungen. Render liefert derzeit keine Firestore-Abrechnungsdaten; die Firebase-Usage-Konsole des Projekts `spiel-barik` ist für A-01e noch erforderlich. **Nicht als „100 Firestore-Reads pro realem Dreierkampf“ interpretieren.**
 
 **Zusätzlicher kontrollierter Offline-Polling-Test (12.11.):** Mit jeweils **44 zusätzlichen Status-GETs pro Browser** bei festem 3-s-Abstand ergeben sich **129 Reads / 24 Writes** (1 Mensch), **248 / 44** (2 Menschen) und **364 / 62** (3 Menschen). Das ist eine illustrative Sensitivitätsrechnung aus dem tatsächlichen API-Codepfad, **keine Firebase-Usage- oder echte Browsermessung**. Alle vier CI-Testworkflows zum [Test-Commit](https://github.com/schmitti92/serverfinal/commit/90bc7902aa223162866d5db0a33247a975eef5f0) bestanden. Render `http_request_count` und `http_latency` lieferten leere Datenreihen, **nicht null Traffic**. [Details](./100-TORE-FIRESTORE-A01-MESSBERICHT.md) · [CSV-Vorlage für echte Cloud-Werte](./100-TORE-A01E-LIVE-MESSWERTE.csv).
+
+### A-01e – erster kontrollierter Praxiswert aus Firestore-Screenshots (12.11.2026)
+
+Der Nutzer hat **vor und nach genau einem Spiel** die Nutzungszähler in der Firebase-Konsole (`Spiel barik` → Cloud Firestore → Nutzung) fotografiert. **Er bestätigt ausdrücklich**, dass er zwischen beiden Aufnahmen genügend Abstand gelassen und andere Vorgänge ausgeschlossen hat. Dies ist damit eine **kontrollierte Nutzerbeobachtung für ein einzelnes Spiel**, kein willkürliches Projektzeitfenster.
+
+| Screenshot (lokale Uhrzeit) | Lesevorgänge | Schreibvorgänge |
+|---|---:|---:|
+| **16:32 Uhr** | 1.688 | 325 |
+| **16:45 Uhr** | 1.833 | 351 |
+| **Differenz für die beobachtete Spielmessung** | **145** | **26** |
+
+**Insgesamt: 171 angezeigte Firestore-Vorgänge pro beobachtetem Spiel** (145 Dokumentlesevorgänge + 26 Dokumentschreibvorgänge). Die Screenshots zeigen die echte **Projekt-Usage**, keine HTTP-Anfragen und keine simulierten Zähler. Der Abstand zwischen den Bildern beträgt 13 Minuten, **nicht zwingend die Dauer des Spiels**. Zuordnung zu einem spezifischen Boss-Tor und zur Zahl der menschlichen Mitspieler ist noch nicht notiert. Eine mögliche Verzögerung/Aggregation der Firebase-Nutzungsanzeige bleibt als kleine Messunsicherheit; die bewusste Ruhezeit rund um das Spiel verbessert die Zuordenbarkeit erheblich.
+
+**Entwicklungsentscheidung:** 171 Gesamtoperationen für ein gespieltes Spiel sind ein sinnvoller erster Richtwert. Keine zusätzlichen schwergewichtigen Testserien nur um diese Zahl erneut zu schätzen; weitere Live-Messungen bei Gelegenheit gesammelt erfassen. **A-01e insgesamt noch offen**, weil 5-Minuten-Leerlauf sowie gesonderte 1-/2-/3-Spieler- und Bot-Szenarien nicht vollständig belegt sind. Spielkomfort und Synchronität nicht für marginale Einsparungen verschlechtern.
 
 ### A-02 – Stand der Netzwerk-/Timing-Messung vom 12.11.2026
 
@@ -214,6 +228,7 @@
 |---|---|---|---|---|---|
 | 12.11.2026 | **Plan** | Entwicklungsplan mit Phasen A, S, K, M, E, F, D und T angelegt | Dokumentation erstellt | Noch keine Werte | [Plan-Commit](https://github.com/schmitti92/Spiel-client/commit/697a22925ccaedf95ae0ce0dc1df6eeeeef1554f) |
 | 12.11.2026 | **A-01a–d, Teilabschluss** | Isolierte API-Codepfad-Baseline 1/2/3 Spieler, Nova/Titan und Leerlauf erhoben. **A-01e offen:** Cloud-Zähler. | [Server Tests](https://github.com/schmitti92/serverfinal/actions/runs/43244351339) – 574 bestanden | 1/2/3: **41/24, 72/44, 100/62**; Bots **100/31**; Idle **40/0** (*nur Offline-Methodenaufrufe*) | [Test-Commit](https://github.com/schmitti92/serverfinal/commit/4203f7fdb61deb917ad19205dd003db26e0b2d2a) · [Messbericht](./100-TORE-FIRESTORE-A01-MESSBERICHT.md) |
+| 12.11.2026 | **A-01e: kontrollierte Live-Spielmessung** | Zwei Firebase-Nutzungsscreenshots vor/nach einem Spiel, laut Nutzer bei ruhendem sonstigem Projektbetrieb; Messabstand 16:32–16:45 Uhr, nicht als Spieldauer interpretiert. Weitere Szenarien offen. | Nutzerbeobachtung mit Original-Screenshots | **+145 Reads / +26 Writes = 171 Firestore-Vorgänge** | Dokumentation auf `main`, keine Spielfunktionen geändert |
 | 12.11.2026 | **A-01e Vorbereitung** | Dreiergruppen-Polling mit 3 s je Client isoliert gemessen, echte Render-/Cloud-Messbarkeit geprüft, CSV vorbereitet. **Produktivwerte noch offen.** | [Server CI erfolgreich](https://github.com/schmitti92/serverfinal/actions/runs/43248227536) + drei weitere Workflows grün | 1/2/3: **129/24, 248/44, 364/62**, nur simulierte DB-Methodenaufrufe | [Test](https://github.com/schmitti92/serverfinal/commit/90bc7902aa223162866d5db0a33247a975eef5f0) · [Bericht](./100-TORE-FIRESTORE-A01-MESSBERICHT.md) · [Live-Werte-Vorlage](./100-TORE-A01E-LIVE-MESSWERTE.csv) |
 | 12.11.2026 | **A-02a–d, Teilabschluss** | Freiwillige lokale HTTP-/Serverzeit-Diagnose in Boss 10 und Gruppenbossen; CSV-Export für echte Messungen verfügbar. **A-02e offen.** | [Client checks grün](https://github.com/schmitti92/Spiel-client/actions/runs/43250565768) | **Keine** neuen diagnostischen Firestore-Reads/Writes; Browser-Live-Messwerte fehlen | [Messbericht](./100-TORE-A02-NETZWERK-MESSBERICHT.md) · [Diagnosemodul](../dog-network-diagnostics.js) |
 
@@ -221,4 +236,4 @@
 
 **Definition von „fertig“:** Funktion auf GitHub `main` integriert, Frontend-/Backend-Tests erfolgreich, auf echter Anzeige nachvollziehbar, keine ungeklärten Doppelbuchungen oder unnötigen Firestore-Mehrzugriffe, Task abgehakt und Fortschrittsprotokoll ergänzt.
 
-**Nächste konkrete Schritte:** **A-01e** – Firebase-Usage-Zähler für kontrollierte Live-Szenarien erfassen und **A-02e** – mit dem neuen `netdiag=1`-Messfeld die reale 1/2/3-Geräte-Baseline plus Nova/Titan erheben. Danach A-01/A-02 abnehmen. **Keine Optimierung als abgeschlossen bezeichnen, solange der Vergleich zur Live-Baseline fehlt.**
+**Nächste konkrete Schritte:** **A-01e** – bereits dokumentierten kontrollierten Praxiswert (145 Reads / 26 Writes) bei künftigen Spielen um Leerlauf und weitere Szenarien ergänzen und **A-02e** – mit dem neuen `netdiag=1`-Messfeld die reale 1/2/3-Geräte-Baseline plus Nova/Titan erheben. Danach A-01/A-02 abnehmen. **Keine Optimierung als abgeschlossen bezeichnen, solange der Vergleich zur Live-Baseline fehlt.**
