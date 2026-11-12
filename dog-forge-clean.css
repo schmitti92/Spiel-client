@@ -292,3 +292,53 @@ body:not(.merchant-page) #upgrade-content .forge-action-panel .forge-action{marg
 body:not(.merchant-page) #upgrade-content .forge-action-panel .forge-action:disabled{background:#344052;color:#d5dfeb;border-color:#768b9c;box-shadow:none;opacity:1;cursor:not-allowed}
 body:not(.merchant-page) #upgrade-content .forge-action-panel .upgrade-foot{margin:0;font-size:10px}
 @media(max-width:390px){body:not(.merchant-page) #upgrade-content .forge-compact-cost-list{gap:5px}body:not(.merchant-page) #upgrade-content .forge-compact-cost-list .cost-item{padding:6px 4px;gap:4px}}
+/* SCH-UI-06: remove redundant text/space, keep live alerts and stock accessible. */
+body:not(.merchant-page) .forge-level-panel{
+ margin-bottom:10px;padding:11px 15px;gap:clamp(9px,1.2vw,17px);border-radius:14px;
+}
+body:not(.merchant-page) .forge-level-heading>span{width:43px;height:43px;font-size:26px}
+body:not(.merchant-page) .forge-level-heading strong{font-size:22px}
+body:not(.merchant-page) .forge-level-progress{height:11px}
+body:not(.merchant-page) .forge-level-middle{gap:5px}
+body:not(.merchant-page) .forge-clean-header{min-height:92px!important;margin-bottom:8px!important}
+body:not(.merchant-page) .forge-clean-header .subtitle{display:none!important}
+body:not(.merchant-page) .forge-clean-logo{width:53px;height:53px;font-size:29px}
+body:not(.merchant-page) .forge-list-toolbar{padding:0 0 8px}
+body:not(.merchant-page) .forge-workspace{gap:12px}
+body:not(.merchant-page) .forge-workspace .workshop-panel,
+body:not(.merchant-page) .forge-workspace .upgrade-panel{
+ padding:clamp(10px,1.3vw,16px);border-radius:15px;
+}
+body:not(.merchant-page) .forge-item-group{padding:9px 11px}
+body:not(.merchant-page) .forge-item-group+.forge-item-group{margin-top:9px}
+body:not(.merchant-page) .upgrade-panel .upgrade-rule{display:none!important}
+body:not(.merchant-page) .forge-upgrade-details .level-next{display:none!important}
+body:not(.merchant-page) .forge-upgrade-details .upgrade-summary{
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+ overflow:hidden;line-height:1.3;
+}
+body:not(.merchant-page) #forge-status{
+ margin:0 0 7px;padding:3px 8px;min-height:0;line-height:1.35;
+}
+body:not(.merchant-page) .stock-panel{
+ margin:10px 0 0;border-radius:12px;overflow:hidden;
+}
+body:not(.merchant-page) #forge-stock>summary{
+ min-height:45px;padding:10px 13px;display:flex;
+ justify-content:space-between;align-items:center;gap:10px;
+ cursor:pointer;font-size:12px;
+}
+body:not(.merchant-page) #forge-stock>summary strong{font-size:13px}
+body:not(.merchant-page) #forge-stock .stock-hint{font-size:11px;white-space:nowrap}
+body:not(.merchant-page) #forge-stock>summary:focus-visible{
+ outline:2px solid #ffe1a4;outline-offset:-3px;
+}
+body:not(.merchant-page) #forge-stock[open]>summary{
+ border-bottom:1px solid #bba37d52;
+}
+@media(max-width:760px){
+ body:not(.merchant-page) .forge-level-panel{gap:9px;padding:10px 12px}
+ body:not(.merchant-page) .forge-level-action{gap:7px}
+ body:not(.merchant-page) .forge-workspace{gap:10px}
+ body:not(.merchant-page) .forge-clean-header{min-height:77px!important}
+}
