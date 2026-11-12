@@ -151,7 +151,7 @@
    const card=document.createElement('article');card.className='hero'+(m?.ready?' is-ready':'');
    const portrait=document.createElement('span');portrait.className='hero-portrait';
    portrait.textContent=m?.name?.charAt(0)?.toUpperCase()||'?';
-    if(m){const roles=['krieger','magierin','waechter'];portrait.classList.add('dog-hero-art','is-'+(roles.includes(m.heroClass)?m.heroClass:roles[i]));}
+    if(m){const roles=['krieger','magierin','waechter'];portrait.classList?.add('dog-hero-art');portrait.classList?.add('is-'+(roles.includes(m.heroClass)?m.heroClass:roles[i]));}
    const info=document.createElement('div');
    const title=document.createElement('strong');title.textContent=m?.name||'Freier Heldenplatz';
    const detail=document.createElement('small');
