@@ -47,6 +47,7 @@
   let lastChoice=null,anchor=null,raf=0,activeVersion=1,allowed=false;
   let mathChoices=[],mathSent=false,mathQueue=null,mathSending=false,fightStart=0;
   let targetChoices=[],targetSent=false,targetLocalCorrect=0,targetLastHit=null;
+  let chainMarks=[],chainHits=[];
   let targetClock=null,targetClockFill=null;
   let reactionPreview=null;
   const clockStamp=()=>typeof clockNow==='function'?Math.round(clockNow()):
@@ -108,18 +109,26 @@
    if(!roundView||roundView.kind!=='chain'||activeVersion<13)return;
    const step=targetChoices.length,puzzle=roundView.puzzles?.[step];
    if(question)question.textContent=puzzle?
-    '⛓️ SCHNEIDE DIE GLÜHENDE KETTE!':'🔥 KETTENBRECHER ABGESCHLOSSEN';
+    '✨ TIPPE DIE GOLDENE KETTE AN – ODER WISCHE DARÜBER!':
+    '🏆 ALLE 10 KETTEN GESCHAFFT!';
    buttons.forEach((button,i)=>{
     button.classList?.remove('is-severed','is-missed');
     button.classList?.toggle('is-glowing',!!puzzle&&i===puzzle.target);
     button.disabled=!puzzle;
-    button.textContent=(puzzle&&i===puzzle.target?'✦ ':'⛓ ')+'KETTE '+(i+1);
+    button.textContent=(puzzle&&i===puzzle.target?
+     '✨ HIER TIPPEN · KETTE ':'⛓️ KETTE ')+(i+1);
     button.setAttribute?.('aria-label',(puzzle&&i===puzzle.target?
-     'Glühende Schwachstelle. ':'')+'Kette '+(i+1)+
-     '. Mit Finger oder Maus darüberwischen, per Tastatur Enter.');
+     'RICHTIGE GOLDENE KETTE. ':'')+'Kette '+(i+1)+
+     '. Tippen, klicken oder darüberwischen.');
    });
-   if(counter)counter.textContent=step+' / 10 Ketten geschlagen · '+
-    targetLocalCorrect+' gebrochen (vorläufig)';
+   chainMarks.forEach((mark,i)=>{
+    mark.classList?.toggle('is-correct',i<chainHits.length&&chainHits[i]);
+    mark.classList?.toggle('is-wrong',i<chainHits.length&&!chainHits[i]);
+    mark.classList?.toggle('is-current',i===step);
+    mark.textContent=i<chainHits.length?(chainHits[i]?'✓':'✕'):String(i+1);
+   });
+   if(counter)counter.textContent='⛓️ '+step+' / 10 Versuche · '+
+    targetLocalCorrect+' Ketten gebrochen';
   };
   const choose=(value)=>{
    if(!roundView||localSubmitting||!allowed)return;
@@ -155,12 +164,13 @@
     if(!puzzle||!Number.isSafeInteger(value)||value<0||value>=roundView.lanes)return;
     const hit=value===puzzle.target;
     targetChoices.push(value);
+    chainHits.push(hit);
     targetLocalCorrect+=Number(hit);
     targetLastHit=hit;
     paintChainStep();
     buttons[value]?.classList?.add(hit?'is-severed':'is-missed');
-    status.textContent=(hit?'💥 KETTE ZERBROCHEN!':'⚡ FALSCHE KETTE!')+
-     ' · '+targetChoices.length+' / 10 · '+targetLocalCorrect+' Brüche (vorläufig)';
+    status.textContent=(hit?'💥 KETTE ZERBROCHEN!':'❌ DAS WAR NICHT DIE GOLDENE KETTE!')+
+     ' · '+targetLocalCorrect+' / '+targetChoices.length+' getroffen';
     if(targetChoices.length>=10)flushTarget();
     return;
    }
@@ -246,6 +256,7 @@
    stopAnimation();roundView=round;activeVersion=version;reactionPreview=null;
    mathChoices=[];mathSent=false;
    targetChoices=[];targetSent=false;targetLocalCorrect=0;targetLastHit=null;
+   chainMarks=[];chainHits=[];
    buttons=[];body.replaceChildren();progress=null;question=null;counter=null;attackStatus=null;
    dodgeMarks=[];dodgeTimeFill=null;mathMarks=[];mathRank=null;mathClock=null;mathTimeFill=null;
    targetClock=null;targetClockFill=null;
@@ -346,40 +357,49 @@
     makeButton(1,'⚡ KONTER!','mini-reaction');
    }else if(round.kind==='chain'&&version>=13){
     const hud=createElement('div','mini-chain-hud');
-    targetClock=createElement('strong','mini-chain-clock','10 s');
+    targetClock=createElement('strong','mini-chain-clock',
+     version>=14?'20 s':'10 s');
     const timeTrack=createElement('div','mini-chain-time');
     targetClockFill=createElement('span','mini-chain-time-fill');
     timeTrack.append(targetClockFill);hud.append(targetClock,timeTrack);
     body.append(hud);
-    question=createElement('div','mini-chain-instruction','⛓️ WISCHE ÜBER DIE GLÜHENDE KETTE!');
+    question=createElement('div','mini-chain-instruction',
+     '✨ TIPPE DIE GOLDENE KETTE AN – ODER WISCHE DARÜBER!');
     body.append(question);
     const arena=createElement('div','mini-chain-arena');
     arena.setAttribute?.('aria-label','Kettenbrecher: glühende Kette durchtrennen');
     body.append(arena);
+    const progressTrack=createElement('div','mini-chain-progress');
+    progressTrack.setAttribute?.('aria-label','Fortschritt der zehn Kettenschnitte');
+    chainMarks=Array.from({length:10},(_,i)=>{
+     const mark=createElement('span','mini-chain-mark',String(i+1));
+     progressTrack.append(mark);return mark;
+    });
+    body.append(progressTrack);
     for(let i=0;i<round.lanes;i++){
      const button=createElement('button','mini-choice mini-chain-lane','KETTE '+(i+1));
      button.type='button';
-     let pointerStart=null;
+     let pointerStart=null,lastPointerAction=0;
      button.addEventListener('pointerdown',event=>{
       if(event?.isPrimary===false||!allowed||roundView?.kind!=='chain')return;
-      pointerStart={x:Number(event.clientX)||0,y:Number(event.clientY)||0,
-       id:event.pointerId};
-      button.setPointerCapture?.(event.pointerId);
+      pointerStart=event.pointerId;
+      if(event.pointerId!==undefined)
+       button.setPointerCapture?.(event.pointerId);
       event.preventDefault?.();
      });
      button.addEventListener('pointerup',event=>{
-      if(!pointerStart||event.pointerId!==pointerStart.id)return;
-      const distance=Math.hypot((Number(event.clientX)||0)-pointerStart.x,
-       (Number(event.clientY)||0)-pointerStart.y);
-      pointerStart=null;
-      button.releasePointerCapture?.(event.pointerId);
+      if(pointerStart===null||event.pointerId!==pointerStart)return;
+      pointerStart=null;lastPointerAction=Date.now();
+      if(event.pointerId!==undefined)
+       button.releasePointerCapture?.(event.pointerId);
       event.preventDefault?.();
-      if(distance>=38)choose(i); // deliberate swipe, not accidental touch
+      choose(i); // short tap OR swipe: reliable on Android and desktop
      });
      button.addEventListener('pointercancel',()=>{pointerStart=null});
-     button.addEventListener('click',event=>{
-      // Pointer activation requires a swipe; Enter/Space stays accessible.
-      if(event?.detail===0)choose(i);
+     button.addEventListener('click',()=>{
+      // Prevent the synthetic click that follows pointerup from double scoring.
+      if(Date.now()-lastPointerAction<600)return;
+      choose(i); // mouse click, keyboard and older touch browsers
      });
      buttons.push(button);arena.append(button);
     }
@@ -629,7 +649,7 @@
      '✅ SERVER BESTÄTIGT · '+correct+' / '+max+' Ketten · '+
       (Math.round(5*correct/max*10)/10).toLocaleString('de-DE')+' % Extraangriff':
      targetSent?'⏳ '+targetChoices.length+' Schnitte werden geprüft …':
-     (targetLastHit===null?'⛓️ Wische über die leuchtende Kette!':
+     (targetLastHit===null?'✨ Tippe die GOLDENE Kette an oder wische darüber!':
       (targetLastHit?'💥 Kette gesprengt!':'⚡ Daneben!')+
       ' · '+targetChoices.length+' / 10 · '+targetLocalCorrect+' gebrochen (vorläufig)');
     return;
