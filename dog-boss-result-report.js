@@ -29,6 +29,11 @@
    !view.result||!Array.isArray(view.roster)||!view.roster.length)return null;
   const result=view.result,rawStages=view.miniGames?.exchange?.stages;
   const stages=Array.isArray(rawStages)?rawStages.filter(s=>s?.completed):[];
+  // Five equal stages, read-only from the server. Old reports retain their grade.
+  const evaluation=view.miniGames?.exchange?.evaluation;
+  const officialScore=evaluation?.completedRounds===5&&
+   evaluation.weighting==='equal'&&Number.isFinite(evaluation.teamPercent)?
+   evaluation:null;
   const serverEvents=Number(view.miniGames?.version)>=11&&
    view.combat?.version===1&&
    Array.isArray(view.combat?.events)?view.combat.events:null;
@@ -47,6 +52,7 @@
      .map(p=>({...p,kind:s.kind,round:s.round})));
    const correct=playerStages.reduce((n,p)=>n+num(p.correct),0);
    const possible=playerStages.reduce((n,p)=>n+num(p.max),0);
+   const performance=officialScore?.players?.find(p=>p.uid===hero.uid);
    const attacks=strikes.filter(e=>e.uid===hero.uid&&
     ['hero-strike','hero-finisher'].includes(e.kind));
    const received=strikes.filter(e=>e.uid===hero.uid&&e.kind==='boss-strike');
@@ -58,14 +64,16 @@
     defenseSkill:num(hero.skillDefense),guardSkill:num(hero.skillGuard),
     attack:attacks.reduce((n,e)=>n+num(e.amount),0),
     taken:received.reduce((n,e)=>n+num(e.amount),0),
-    correct,possible,percentage:possible?Math.round(100*correct/possible):null,
+    correct,possible,percentage:Number.isFinite(performance?.percent)?
+     performance.percent:possible?Math.round(100*correct/possible):null,
     hp:hp?num(hp.hp):null,maxHp:hp?num(hp.maxHp):null,
     fallen:Number(view?.miniGames?.version)>=15&&hp?.hp===0,
     attacks:attacks.length,blocks:received.filter(e=>e.blocked).length};
   });
   const right=rows.reduce((n,r)=>n+r.correct,0);
   const possible=rows.reduce((n,r)=>n+r.possible,0);
-  const percent=possible?Math.round(100*right/possible):null;
+  const percent=officialScore?officialScore.teamPercent:
+   possible?Math.round(100*right/possible):null;
   const bossHp=num(result.bossHp||view.bossHp);
   const bossRemaining=num(result.hpRemaining);
   const finalDamage=num(result.damage);
@@ -79,7 +87,8 @@
    const stageHits=strikes.filter(e=>e.round===s.round);
    return {round:s.round,kind:s.kind,
     title:(s.round+1)+'. '+(LABELS[s.kind]||'Aufgabe'),
-    correct,max,percent:max?Math.round(100*correct/max):null,
+    correct,max,percent:Number.isFinite(officialScore?.rounds?.[s.round]?.percent)?
+     officialScore.rounds[s.round].percent:max?Math.round(100*correct/max):null,
     damage:stageHits.filter(e=>e.kind==='hero-strike')
      .reduce((n,e)=>n+num(e.amount),0),
     taken:stageHits.filter(e=>e.kind==='boss-strike')
@@ -159,7 +168,8 @@
    result:{win:!!result.win,damage:finalDamage,bossHp,bossRemaining,
     critical:!!result.rareCritical},
    rows,stages:stageRows,score:{correct:right,max:possible,
-    percent,grade:percent===null?'Nicht verfügbar':grade(percent)},
+    percent,grade:percent===null?'Nicht verfügbar':grade(percent),
+     equalWeight:!!officialScore,perfect:officialScore?.perfect??null},
    teamHp,teamMax,tips:tips.slice(0,4),replay,
    settlement,finisher,guard,finale,
    cooldownUntil:num(view.cooldownUntil),key:String(view.gate||10)+':'+
@@ -478,7 +488,9 @@
     clamp(score.percent===null?0:score.percent,0,100)+'%';
    text(node('br-score-detail'),score.max?
     fmt.format(score.correct)+' / '+fmt.format(score.max)+
-    ' Aufgaben im Team richtig · reine Minispiel-Leistung (ohne Ausrüstung)':
+    ' Aufgaben im Team richtig · reine Minispiel-Leistung (ohne Ausrüstung)'+
+    (score.equalWeight?' · 5 Spiele je 20 % gewichtet · '+
+     (score.perfect?'PERFEKT!':'100 % nur bei Maximalleistung'):''):
     'Für diesen älteren Kampf sind keine Einzelwertungen verfügbar.');
    const stageNodes=stages.map(s=>{
     const row=make('div','br-round');
