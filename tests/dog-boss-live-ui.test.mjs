@@ -196,13 +196,19 @@ test('The compact hit log lists only verified per-hero and boss HP losses, never
 });
 test('the rebuilt V3 arena keeps the minigame and hides old bars without losing retry actions',()=>{
  const active=read('dog-boss-battle-v3.css');
- assert.match(active,/grid-template-rows:auto auto minmax\(0,1fr\) auto/);
+ assert.match(active,/grid-template-rows:auto auto minmax\(0,1fr\)/);
  assert.match(active,/\.v3-compat\{display:none!important\}/);
  assert.match(active,/\.squad\[hidden\]/);
  for(const page of ['dog-boss10.html','dog-group-boss.html']){
   const html=read(page);
   assert.match(html,/data-arena-design="v3"/);
   assert.match(html,/id="live-recent-damage"/);
+  assert.match(html,/class="v3-actor-action" id="v3-actor-action" hidden/);
+  assert.ok(html.indexOf('class="v3-combat-log"')>
+   html.indexOf('id="combat-scene"')&&
+   html.indexOf('class="v3-combat-log"')<
+   html.indexOf('class="combat-stage"'),
+   'Recent damage appears within the fight stage, not as a bottom bar');
   assert.match(html,/class="v3-compat" aria-hidden="true" hidden/);
   assert.match(html,/id="boss-squad"/);
   assert.match(html,/id="mini-game"/);
