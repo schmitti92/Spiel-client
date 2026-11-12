@@ -682,6 +682,56 @@
   const dialog=$('forge-exchange-confirm');
   if(!dialog.open)dialog.showModal();
  }
+ function renderRefinement(){
+  if(merchantMode)return;
+  const locks=$('forge-refinement-locks'),groups=$('forge-refinement-groups'),list=$('forge-refinement-list');
+  if(!locks||!groups||!list)return;
+  locks.replaceChildren();groups.replaceChildren();list.replaceChildren();
+  const unlocked=view?Number(view.qualityUnlocked||1):1;
+  const chance=view?.qualityRefinementChances||{2:90,3:75};
+  for(const [quality,boss] of [[2,30],[3,60]]){
+   const active=unlocked>=quality;
+   locks.append(node('span','quality-forge-unlock '+(active?'unlocked':'locked'),
+    active?'✓ Qualität '+quality+' nach Boss '+boss+' freigeschaltet':'🔒 Qualität '+quality+' nach Sieg über Boss '+boss));
+  }
+  for(const group of MATERIALS){
+   const btn=node('button','quality-forge-group'+(refineGroup===group.group?' selected':''),group.label);
+   btn.type='button';btn.disabled=!view||busy;
+   btn.setAttribute('aria-pressed',String(refineGroup===group.group));
+   btn.addEventListener('click',()=>{refineGroup=group.group;renderRefinement();});
+   groups.append(btn);
+  }
+  const group=MATERIALS.find(g=>g.group===refineGroup)||MATERIALS[2];
+  for(const [id,icon,name] of group.values){
+   const row=node('div','quality-forge-row');
+   const heading=node('div','quality-forge-resource');
+   heading.append(node('span','quality-forge-icon',icon),node('strong',null,name));
+   heading.append(node('small','quality-forge-balances',
+    'Stufe 1: '+money(haveQuality(id,1))+' · Stufe 2: '+money(haveQuality(id,2))+
+    ' · Stufe 3: '+money(haveQuality(id,3))));
+   row.append(heading);
+   const actions=node('div','quality-forge-actions');
+   for(const level of [1,2]){
+    const target=level+1,probability=Number(chance[target]??(target===2?90:75));
+    const unlockedTarget=unlocked>=target;
+    const button=node('button','quality-forge-action'+(unlockedTarget?'':' locked'));
+    button.type='button';
+    button.textContent=unlockedTarget?
+     '⚒️ '+level+' → '+target+' · '+probability+' %':
+     '🔒 Stufe '+target+' · Boss '+(target===2?30:60);
+    button.title=unlockedTarget?
+     '5 Rohstoffe der Stufe '+level+' einsetzen; bei Fehlschlag werden sie verbraucht':
+     'Erst nach dem Sieg über Boss '+(target===2?30:60)+' möglich';
+    button.disabled=!usable()||!unlockedTarget||haveQuality(id,level)<5;
+    button.addEventListener('click',()=>{
+     if(!usable()||Number(view?.qualityUnlocked||1)<target||haveQuality(id,level)<5)return;
+     void action('refine',{resourceId:id,fromQuality:level,count:1},false,true);
+    });
+    actions.append(button);
+   }
+   row.append(actions);list.append(row);
+  }
+ }
  function renderExchange(){
   const root=$('upgrade-content');root.replaceChildren();
   const head=node('div','upgrade-top');
@@ -906,9 +956,12 @@
     try{await window.DogForgeCeremony?.finish?.(response.result);}catch{}
    }
    if(uid!==account)return;
-   if(instant){
-    const outcome=response.result?.success===false?'⚠️ Verbesserung fehlgeschlagen – Rohstoffe verbraucht.':'✓ Verbesserung abgeschlossen.';
-    status(outcome,response.result?.success===false?'bad':'good');
+   if(instant||op.action==='refine'){
+    const failed=response.result?.success===false;
+    const label=op.action==='refine'?
+     (failed?'⚠️ Veredelung fehlgeschlagen – 5 Rohstoffe verbraucht.':'✓ Rohstoff erfolgreich veredelt!'):
+     (failed?'⚠️ Verbesserung fehlgeschlagen – Rohstoffe verbraucht.':'✓ Verbesserung abgeschlossen.');
+    status(label,failed?'bad':'good');
    }else resultDialog(response.result,unlocked);
   }catch(e){
    try{window.DogForgeCeremony?.abort?.();}catch{}
