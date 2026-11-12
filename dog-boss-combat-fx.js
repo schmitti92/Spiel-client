@@ -18,7 +18,8 @@
   defeat:'💀 DER BOSS HAT ÜBERLEBT',
   waiting:'⚔️ HELDEN SAMMELN SICH'
  });
- const iconFor=['⚔️','🛡️','✨'];
+ const iconFor=['⚔️','✨','🛡️'];
+ const heroClasses=['krieger','magierin','waechter'];
  const heroPortraits=['held-krieger.svg','held-magier.svg','held-schildtraeger.svg'];
  const cinematicHeroPortraits=['held-krieger-cinematic.svg','held-magier-cinematic.svg','held-schildtraeger-cinematic.svg'];
  // Explicit allowlist prevents arbitrary URLs or player-controlled image paths.
@@ -264,7 +265,7 @@
    const membersByUid=new Map((view?.members||[]).map(m=>[m.uid,m]));
    const nextKey=selected.map(m=>{
     const member=membersByUid.get(m.uid);
-    return [m.uid,member?.name||'',member?.isMe===true?'me':'guest'].join(':');
+    return [m.uid,member?.name||'',member?.heroClass||'',member?.isMe===true?'me':'guest'].join(':');
    }).join('|');
    if(fightersKey===nextKey)return;
    fightersKey=nextKey;
@@ -276,6 +277,8 @@
     // Solo/Duo attempts do not change the appearance of a known hero.
     const originalIndex=(view?.members||[]).findIndex(x=>x.uid===m.uid);
     const roleIndex=(originalIndex>=0?originalIndex:i)%3;
+    const heroClass=membersByUid.get(m.uid)?.heroClass;
+    const portraitIndex=heroClasses.includes(heroClass)?heroClasses.indexOf(heroClass):roleIndex;
     const item=document.createElement('div');
     item.setAttribute?.('data-hero-uid',m.uid);
     item.className='combat-hero combat-hero-'+(roleIndex+1)+
@@ -283,9 +286,10 @@
      (membersByUid.get(m.uid)?.isMe?' combat-hero-me':'');
     const mark=document.createElement('span');
     mark.className='combat-hero-symbol';
-    mark.textContent=iconFor[roleIndex]||'⚔️';
+    item.dataset.heroClass=heroClasses[portraitIndex];
+    mark.textContent=iconFor[portraitIndex]||'⚔️';
     mark.style.backgroundImage='url("./dog-boss-art/'+
-     (gate===10?cinematicHeroPortraits:heroPortraits)[roleIndex]+'")';
+     (gate===10?cinematicHeroPortraits:heroPortraits)[portraitIndex]+'")';
     const name=document.createElement('span');
     name.className='combat-hero-name';
     name.textContent=String(membersByUid.get(m.uid)?.name||
