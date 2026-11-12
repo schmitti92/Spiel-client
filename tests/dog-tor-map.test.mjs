@@ -281,6 +281,6 @@ test('Approved three-character artwork and server-backed choice are present in t
  }
  assert.match(html,/id="hero-selection"/);
  assert.match(js,/request\('POST','hero',\{heroClass\},account\)/);
- assert.match(css,/100tore-hero-atlas\\.jpg/);
- assert.match(html,/dog-hero-selection\\.css/);
+ assert.ok(css.includes('100tore-hero-atlas.jpg'));
+ assert.ok(html.includes('dog-hero-selection.css'));
 });
