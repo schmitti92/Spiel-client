@@ -141,3 +141,70 @@ test('the real 14s strike is centered and countdown occupies the minigame field'
  ui.update(view,at+48000);
  assert.equal(node('.live-challenge').classList.contains('is-defense'),false);
 });
+
+test('between minigames the right panel shows each player and their confirmed personal reward',()=>{
+ const {ui,node,view}=fakeUI();
+ view.members=[
+  {uid:'a',name:'Chris',isMe:true},
+  {uid:'b',name:'Nova'},
+  {uid:'c',name:'Titan'}
+ ];
+ view.roster=view.members.map(m=>({uid:m.uid,name:m.name}));
+ view.miniGames.exchange.stages[0].playerResults=[
+  {uid:'a',correct:6,max:8,bonusDamage:66,bonusPercent:4.5},
+  {uid:'b',correct:8,max:8,bonusDamage:90,bonusPercent:6},
+  {uid:'c',correct:0,max:8,bonusDamage:0,bonusPercent:0}
+ ];
+ view.miniGames.exchange.stages[0].bonusDamage=156;
+ ui.update(view,at+12100);
+ assert.equal(node('v3-round-results').hidden,false);
+ assert.equal(node('live-mini-prompt').hidden,true);
+ assert.match(node('v3-results-title').textContent,/Blitz-Mathe/);
+ const rows=node('v3-results-rows').children;
+ assert.equal(rows.length,3);
+ assert.equal(rows[0].children[0].textContent,'Chris');
+ assert.equal(rows[0].children[1].textContent,'6 / 8');
+ assert.match(rows[0].children[2].children[0].textContent,/66 Zusatzschaden/);
+ assert.equal(rows[1].children[1].textContent,'8 / 8');
+ assert.match(rows[1].children[2].children[0].textContent,/90 Zusatzschaden/);
+ assert.match(node('v3-results-total').textContent,/156 Zusatzschaden/);
+ // Same rows are not rebuilt every animation frame.
+ const row=node('v3-results-rows').children[0];
+ ui.update(view,at+18000);
+ assert.equal(node('v3-results-rows').children[0],row);
+ // The final five seconds belong to the existing prominent countdown.
+ ui.update(view,at+21000);
+ assert.equal(node('v3-round-results').hidden,true);
+ assert.equal(node('cinematic-grand-countdown').hidden,false);
+ ui.update(view,at+26000);
+ assert.equal(node('v3-round-results').hidden,true);
+ // Personal defensive rewards show actual LP saved and shield points.
+ view.miniGames.exchange.stages[1].playerResults=[
+  {uid:'a',correct:3,max:3,protectionPoints:25,savedHp:37},
+  {uid:'b',correct:1,max:3,protectionPoints:8,savedHp:12},
+  {uid:'c',correct:0,max:3,protectionPoints:0,savedHp:0}
+ ];
+ ui.update(view,at+34100);
+ assert.equal(node('v3-round-results').hidden,false);
+ assert.match(node('v3-results-title').textContent,/Ausweichen/);
+ assert.match(node('v3-results-rows').children[0].children[2].children[0].textContent,/37 LP geschützt/);
+ assert.match(node('v3-results-rows').children[1].children[2].children[1].textContent,/8 \/ 25 Schutzpunkte/);
+ assert.match(node('v3-results-total').textContent,/49 LP bewahrt/);
+ ui.update(view,at+41000);
+ assert.equal(node('v3-round-results').hidden,true);
+});
+test('round scoreboard waits for server results and does not invent players scores',()=>{
+ const {ui,node,view}=fakeUI();
+ ui.update(view,at+12100);
+ assert.equal(node('v3-round-results').hidden,false);
+ assert.match(node('v3-results-rows').children[0].textContent,/Warte auf die bestätigte Einzelwertung/);
+ assert.doesNotMatch(node('v3-results-total').textContent,/\+\d/);
+ const css=read('dog-boss-battle-v3.css');
+ assert.match(css,/\.v3-round-results\[hidden\]/);
+ for(const file of ['dog-boss10.html','dog-group-boss.html']){
+  const html=read(file);
+  assert.match(html,/id="v3-round-results"/);
+  assert.match(html,/id="v3-results-rows"/);
+  assert.match(html,/id="v3-results-total"/);
+ }
+});
