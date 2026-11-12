@@ -624,6 +624,24 @@ test('E-04 reconciliation only displays server-supplied values and old fights st
  assert.equal(another.root.nodes['br-strike-details'].hidden,true);
  assert.equal(another.root.nodes['br-final-damage'].textContent,'900 LP');
 });
+test('E-05 replay uses only server events, supports stopping and a clear final counter',()=>{
+ const f=e02Fixture(),view=fakeView(false);
+ f.ui.update(view);
+ assert.match(f.root.nodes['br-replay-counter'].textContent,/8 bestätigte Kampfereignisse/);
+ f.root.nodes['br-replay-start'].click();
+ assert.match(f.root.nodes['br-replay-counter'].textContent,/Treffer 1 \/ 8/);
+ assert.equal(f.root.nodes['br-replay-stage'].dataset.replayState,'playing');
+ assert.equal(f.intervals.length,1);
+ f.root.nodes['br-replay-start'].click();
+ assert.equal(f.root.nodes['br-replay-stage'].dataset.replayState,'idle');
+ f.root.nodes['br-replay-start'].click();
+ assert.match(f.root.nodes['br-replay-counter'].textContent,/Treffer 1 \/ 8/);
+ for(let i=0;i<8;i++)f.intervals[1]();
+ assert.match(f.root.nodes['br-replay-counter'].textContent,/Alle 8 Ereignisse/);
+ assert.equal(f.root.nodes['br-replay-progress'].style.width,'100%');
+ assert.equal(f.root.nodes['br-replay-stage'].dataset.replayState,'idle');
+ assert.equal(f.root.hidden,false,'replay never confirms or dismisses the report');
+});
 test('both arena screens include conclusion and local replay, with no client-side combat writes',()=>{
  const css=read('dog-boss-result-report.css');
  for(const token of ['dog-boss-report-visible','br-grade-scale','br-attack','br-replay-stage',
