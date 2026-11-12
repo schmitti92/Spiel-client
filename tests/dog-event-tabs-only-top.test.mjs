@@ -11,9 +11,10 @@ const css=fs.readFileSync(new URL('dog-event-tabs.css',root),'utf8');
 test('Shared tabs navigate, with a map-only gameplay boss entry',()=>{
  assert.match(css,/body a\[href\]:not\(\.dog-event-tabs__tab\):not\(#gate-boss-button\)/);
  assert.match(css,/display:none!important/);
+ assert.match(css,/#gate-boss-button\\[hidden\\]\\{display:none!important\\}/);
  for(const page of pages){
   const html=fs.readFileSync(new URL(page,root),'utf8');
-  assert.match(html,/dog-event-tabs\.css\?v=20261112-boss-from-map1/,page);
+  assert.match(html,/dog-event-tabs\.css\?v=20261112-boss-from-map2/,page);
   assert.match(html,/dog-event-tabs\.js\?v=/,page);
  }
 });

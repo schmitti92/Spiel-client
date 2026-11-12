@@ -36,6 +36,10 @@ body a[href]:not(.dog-event-tabs__tab):not(#gate-boss-button){
  visibility:hidden!important;
  pointer-events:none!important;
 }
+/* Only actual group-boss gates expose this in-map action. Hidden keeps priority
+   over the button's author-level display:inline-flex rule. */
+#gate-boss-button[hidden]{display:none!important}
+
 .dog-event-tabs-ready .chapter .focus,
 .dog-event-tabs-ready .chapter > span{
  flex-shrink:0;
