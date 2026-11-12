@@ -99,6 +99,23 @@ for(const file of ['dog-boss10.js','dog-group-boss.js']){
   h.submit(1,2);await spin();
   assert.equal(h.postCount(),2,'next round request was not blocked');
  });
+ test(file+': a confirmed POST snapshot prevents an immediate redundant status GET',async()=>{
+  const h=simulate(file);
+  await spin();
+  assert.equal(h.getCount(),1,'initial GET');
+  h.allowPost(true);
+  h.submit(0,1);
+  await spin();
+  assert.equal(h.postCount(),1);
+  assert.equal(h.getCount(),1,'POST response already refreshed the full battle view');
+  h.tick(1000);await spin();
+  h.tick(1100);await spin();
+  assert.equal(h.getCount(),1,'less than 3 seconds after the POST: no duplicate Firestore GET');
+  h.tick(1100);await spin();
+  assert.equal(h.getCount(),2,'normal status polling resumes after the 3-second throttle');
+  h.refresh();await spin();
+  assert.equal(h.getCount(),3,'manual forced refresh remains available');
+ });
  test(file+': brief GET failure preserves encounter and throttles polling',async()=>{
   const h=simulate(file);await spin();
   const before=h.getCount();assert.equal(before,1);
