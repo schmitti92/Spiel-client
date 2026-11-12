@@ -538,6 +538,10 @@ test('E-03 v15 personal finale is NOT replayed after reload of a confirmed repor
   {uid:'a',sequence:1,amount:25,hpBefore:125,hpAfter:100},
   {uid:'b',sequence:2,amount:40,hpBefore:100,hpAfter:60}
  ]}};
+ // Same authoritative hero-finisher records that the server provides as
+ // confirmed exchange strikes. The finale metadata alone is not a strike.
+ state.miniGames.exchange.strikes.push(...state.combat.finale.strikes.map(
+  (hit,i)=>({...hit,round:4,kind:'hero-finisher',atMs:120000+i*1500})));
  const first=e03Fixture(storage);first.ui.update(state);
  assert.equal(first.root.nodes['br-finale-screen'].hidden,false);
  assert.equal(first.root.nodes['br-return'].disabled,true);
