@@ -10,7 +10,7 @@
  const clean=str=>String(str||'Held').slice(0,23);
  const SEGMENT_WAIT_MS=3000;
  const IMPACT_BEAT=.54; // Matches the server's (slot + .54) * slotDuration
- const IMPACT_VISUAL_MS=240; // Camera flash only around the real contact
+ const IMPACT_VISUAL_MS=420; // Camera flash only around the real contact
  const RECONNECT_BURST_GRACE_MS=1300; // Never replay old hits on reconnect
  const fmt=new Intl.NumberFormat('de-DE');
  const beat=p=>p<.2?'prepare':p<.42?'windup':p<IMPACT_BEAT?'swing':
