@@ -421,3 +421,79 @@ test('Mini-boss keeps existing path and never opens quick-result dialog',async()
  assert.equal(x.fightCalls.length,1);
  assert.equal(x.byId('gate-quick-result').open,false);
 });
+
+
+test('Confirmed server progress visibly distinguishes completed, available and locked gates',async()=>{
+ const map={
+  isMember:true,memberCount:1,sharedBosses:[],
+  members:[{uid:'hero-a',name:'Hero',currentGate:11,highestGate:11,isMe:true,heroLocked:true}],
+  progress:{currentGate:11,highestGate:11,normals:[1,2,3,4,6,7,8,9],
+   minis:[5],miniRewards:[],lastAttemptAt:0}
+ };
+ const {gates,byId}=page('?room=123',map);
+ await new Promise(resolve=>setImmediate(resolve));
+ const at=n=>gates[n-1];
+ assert.equal(at(1).getAttribute('data-state'),'won');
+ assert.equal(at(5).getAttribute('data-state'),'won','mini-boss victory from private progress');
+ assert.equal(at(9).getAttribute('data-state'),'won');
+ assert.equal(at(10).getAttribute('data-state'),'available','boss 10 requires gate 9');
+ assert.equal(at(11).getAttribute('data-state'),'available','gate 11 does NOT require boss 10');
+ assert.equal(at(12).getAttribute('data-state'),'locked','gate 12 requires gate 11');
+ assert.equal(at(15).getAttribute('data-state'),'locked','mini-boss 15 needs gate 14');
+ assert.equal(at(16).getAttribute('data-state'),'locked','gate 16 gated by boss 10');
+ assert.match(at(5).getAttribute('aria-label'),/Bereits geschafft/);
+ assert.match(at(11).getAttribute('aria-label'),/Jetzt spielbar/);
+ assert.match(at(12).getAttribute('aria-label'),/Noch gesperrt/);
+ at(11).click();
+ assert.match(byId('gate-detail-progress').textContent,/Jetzt spielbar/);
+});
+
+test('Mini-boss 15 optional, boss gates need own previous normal and shared boss victory',async()=>{
+ const map={
+  isMember:true,memberCount:1,sharedBosses:[],
+  members:[{uid:'hero-a',name:'Hero',currentGate:15,highestGate:15,isMe:true,heroLocked:true}],
+  progress:{currentGate:15,highestGate:15,normals:[1,2,3,4,6,7,8,9,11,12,13,14],
+   minis:[],lastAttemptAt:0}
+ };
+ const {gates}=page('?room=123',map);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(gates[14].getAttribute('data-state'),'available','mini 15 is optional & ready');
+ assert.equal(gates[15].getAttribute('data-state'),'locked','boss 10 not yet beaten');
+ assert.equal(gates[9].getAttribute('data-state'),'available','boss 10 remains open');
+ map.sharedBosses=[10];
+ const fresh=page('?room=123',map);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(fresh.gates[9].getAttribute('data-state'),'won','shared boss 10 confirmed for all');
+ assert.equal(fresh.gates[15].getAttribute('data-state'),'available','gate 16 available after boss 10');
+ assert.equal(fresh.gates[19].getAttribute('data-state'),'locked','boss 20 requires gate 19');
+});
+
+test('Public/unknown progress never fabricates gate wins or falsely paints locks',async()=>{
+ const {gates}=page();
+ for(const gate of [1,5,10,11,20,100]){
+  assert.equal(gates[gate-1].getAttribute('data-state'),null,'no server data, no claimed progress');
+ }
+ const preview=page('?room=123',{isMember:false,sharedBosses:[],members:[],progress:{}});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(preview.gates[0].getAttribute('data-state'),'unknown');
+ assert.match(preview.gates[4].getAttribute('aria-label'),/Mini-Boss/);
+});
+
+test('Server progress updates gate colors immediately after a successful quick fight',async()=>{
+ const map={isMember:true,memberCount:1,canJoin:false,sharedBosses:[],
+  members:[{uid:'hero-a',name:'Hero',currentGate:11,highestGate:11,isMe:true,heroLocked:true}],
+  progress:{currentGate:11,highestGate:11,normals:[1,2,3,4,6,7,8,9],minis:[]}};
+ const app=page('?room=123',map,{
+  onFight:body=>({ok:true,json:async()=>({ok:true,result:{gate:11,type:'normal',win:true,
+   chancePercent:45},map:{...map,progress:{...map.progress,
+     normals:[...map.progress.normals,11]}}})})
+ });
+ await new Promise(resolve=>setImmediate(resolve));
+ app.gates[10].click();
+ app.byId('gate-battle-button').click();
+ await new Promise(resolve=>setImmediate(resolve));
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(app.gates[10].getAttribute('data-state'),'won');
+ assert.equal(app.gates[11].getAttribute('data-state'),'available','new gate unlocked without more map GETs');
+ assert.equal(app.fightCalls.length,1,'reuse fight response; no extra fetch');
+});

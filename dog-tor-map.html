@@ -7,11 +7,11 @@
  <meta name="description" content="Die 100 Tore: Fünf Welten, 80 Einzelkämpfe, 10 Mini-Bosse und 10 gemeinsame Wächter führen euch zum Spiel DOG.">
  <title>🏰 Der Weg zu DOG · Die 100 Tore</title>
  <link rel="stylesheet" href="./dog-tor-map.css?v=20261112-quick-finish1">
- <link rel="stylesheet" href="./dog-tor-map-worlds.css?v=20261112-castle-showcase1">
+ <link rel="stylesheet" href="./dog-tor-map-worlds.css?v=20261113-gate-progress1">
  <link rel="stylesheet" href="./dog-hero-selection.css?v=20261112-onboarding1">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
- <script src="./dog-tor-map.js?v=20261112-quick-finish1" defer></script>
+ <script src="./dog-tor-map.js?v=20261113-gate-progress1" defer></script>
  <script src="./dog-developer-ui.js?v=20261111-cooldown-v1" defer></script>
  <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 <link rel="stylesheet" href="./dog-event-tabs.css?v=20261112-boss-from-map2">
@@ -89,11 +89,19 @@
    <span><b>Entwicklungsansicht:</b> Die Torstände und Solo-Kämpfe werden nur mit bestätigtem Spielerprofil vom Server geladen. Bei fehlender Serververbindung bleiben die Markierungen bewusst leer. Die zehn gemeinsamen Bosse sind im Entwicklungsstand bereits integriert; der gemeinsame Praxistest steht noch aus.</span>
   </div>
   <section aria-label="Abenteuerkarte von Tor 1 bis Tor 100">
+   <div class="gate-status-legend" aria-label="Legende des Torfortschritts">
+    <span class="gate-legend-item"><span class="gate-legend-symbol won" aria-hidden="true">✓</span> Geschafft</span>
+    <span class="gate-legend-item"><span class="gate-legend-symbol available" aria-hidden="true">✦</span> Jetzt spielbar</span>
+    <span class="gate-legend-item"><span class="gate-legend-symbol locked" aria-hidden="true">🔒</span> Gesperrt</span>
+    <span class="gate-legend-item"><span class="gate-legend-symbol mini" aria-hidden="true">👹</span> Mini-Boss · Tor 5, 15, 25 …</span>
+    <span class="gate-legend-item"><span class="gate-legend-symbol boss" aria-hidden="true">🐉</span> Gruppenboss · Tor 10, 20, 30 …</span>
+   </div>
    <div id="worlds"></div>
   </section>
   <dialog id="details" class="details" aria-labelledby="gate-detail-title">
    <div class="details-kicker" id="gate-detail-kicker">TOR 1 / 100</div>
    <h2 id="gate-detail-title">Tor auswählen</h2>
+   <p id="gate-detail-progress" class="gate-detail-progress" aria-live="polite"></p>
    <figure id="gate-boss-preview" class="gate-boss-preview" hidden>
     <img id="gate-boss-portrait" width="170" height="170"
      loading="lazy" decoding="async" alt="">

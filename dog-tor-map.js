@@ -90,8 +90,37 @@
    return data;
   }finally{if(timeout!==null)clearTimeout(timeout);}
  }
+ // Gate markers are a derived VIEW of server-confirmed progress.
+ // Mini-bosses are optional; normal gates 11–15 do not require boss 10.
+ function gateStatus(gate){
+  if(mapState?.isMember!==true||!mapState.progress)return 'unknown';
+  const progress=mapState.progress;
+  const normals=Array.isArray(progress.normals)?progress.normals:[];
+  const minis=Array.isArray(progress.minis)?progress.minis:[];
+  const shared=Array.isArray(mapState.sharedBosses)?mapState.sharedBosses:[];
+  const isBoss=gate%10===0,isMini=gate%10===5;
+  if(isBoss?shared.includes(gate):isMini?minis.includes(gate):normals.includes(gate))
+   return 'won';
+  const previous=previousNormal(gate);
+  const hasPrevious=previous===null||normals.includes(previous);
+  const requiredBoss=isBoss?(gate-10):
+   gate>=16?Math.floor((gate-6)/10)*10:0;
+  const bossUnlocked=requiredBoss===0||shared.includes(requiredBoss);
+  return hasPrevious&&bossUnlocked?'available':'locked';
+ }
+ const gateStatusText=Object.freeze({
+  won:'Bereits geschafft',available:'Jetzt spielbar',
+  locked:'Noch gesperrt',unknown:'Fortschritt wird geladen'
+ });
+ const gateStatusSymbol=Object.freeze({
+  won:'✓',available:'✦',locked:'🔒',unknown:''
+ });
  function updateMarkers(){
   for(const [gate,button] of gateButtons){
+   const status=gateStatus(gate);
+   button.setAttribute('data-state',status);
+   const icon=button.querySelector('.gate-state-icon');
+   if(icon)icon.textContent=gateStatusSymbol[status];
    const area=button.querySelector('.party-pins');
    if(!area)continue;
    area.replaceChildren();
@@ -105,7 +134,9 @@
    }
    const count=visiting.length;
    button.setAttribute('aria-label','Tor '+gate+': '+titleFor(gate)+
+    ' · '+gateStatusText[status]+
     (count?' · '+visiting.map(x=>x.name).join(', ')+' hier':'')+'. Details ansehen');
+   button.title='Tor '+gate+' · '+gateStatusText[status];
   }
  }
 
@@ -581,6 +612,10 @@
   const kind=gate%10===0?'Gruppenboss':gate%10===5?'Mini-Boss':'Schnellkampf';
   $('gate-detail-kicker').textContent='TOR '+gate+' VON 100 · '+kind.toUpperCase();
   $('gate-detail-title').textContent=titleFor(gate);
+  const status=gateStatus(gate);
+  const progress=$('gate-detail-progress');
+  progress.dataset.state=status;
+  progress.textContent=gateStatusSymbol[status]+' '+gateStatusText[status];
   const bossPreview=$('gate-boss-preview');
   const bossPortrait=$('gate-boss-portrait');
   if(bossPreview)bossPreview.hidden=gate%10!==0;
@@ -648,7 +683,9 @@
    const type=document.createElement('span');type.className='kind';
    type.textContent=isBoss?(gate===100?'🏰':'🐉'):isMini?'👹':'⚔️';
    type.setAttribute('aria-hidden','true');
-   button.append(number,type);
+   const indicator=$node('span','gate-state-icon');
+   indicator.setAttribute('aria-hidden','true');
+   button.append(number,type,indicator);
    const pins=$node('span','party-pins');pins.setAttribute('aria-hidden','true');button.append(pins);
    button.addEventListener('click',()=>selectGate(gate,button));
    gateButtons.set(gate,button);

@@ -92,3 +92,109 @@
  }
  .castle .dog-castle-artwork img{object-position:center center}
 }
+
+/* Progress on the hundred-gate journey: only authenticated server wins. */
+.gate-status-legend{
+ display:flex;align-items:center;justify-content:center;flex-wrap:wrap;
+ gap:9px 16px;max-width:1400px;margin:12px auto 4px;
+ padding:10px 14px;border:1px solid #b4c4dd45;border-radius:13px;
+ background:linear-gradient(120deg,#18253adf,#0d192bd9);
+ box-shadow:0 5px 17px #0004;
+}
+.gate-legend-item{
+ display:inline-flex;align-items:center;gap:7px;
+ color:#e9effc;font-size:12px;font-weight:750;white-space:nowrap;
+}
+.gate-legend-symbol{
+ display:inline-grid;place-items:center;width:22px;height:22px;
+ border:1px solid #76889b;border-radius:8px;background:#1a263b;
+ color:#dae5f3;font-size:12px;
+}
+.gate-legend-symbol.won{border-color:#86ecc2;background:#1d674d;color:#d7ffed}
+.gate-legend-symbol.available{border-color:#ffe0a0;background:#695129;color:#ffe7a8}
+.gate-legend-symbol.locked{background:#252c3a;color:#d7deeb}
+.gate-legend-symbol.mini{border-color:#e7a6df;background:#4a2649}
+.gate-legend-symbol.boss{border-color:#f4c574;background:#5a4226}
+.world .gate[data-state="won"]{
+ background:linear-gradient(155deg,#307758,#174435 74%,#123126);
+ border-color:#7de6b1;color:#e5fff1;
+ box-shadow:0 0 0 2px #70eab827,0 0 18px #34c68d44,inset 0 1px #eafff538;
+}
+.world .gate[data-state="available"]{
+ background:linear-gradient(145deg,#725431,#40301e 70%,#291e1a);
+ border-color:#ffe1a2;color:#fff4d6;
+ box-shadow:0 0 0 3px #f7c76d3b,0 0 26px #ffce7478,inset 0 1px #fff4bb70;
+}
+.world .gate[data-state="locked"]{
+ background:linear-gradient(145deg,#212c3c,#111a2a);
+ border-color:#71849a99;color:#aebed0;
+ box-shadow:0 4px 14px #0009,inset 0 1px #ffffff14;
+}
+.world .gate.mini{
+ border-style:solid;border-width:3px;
+}
+.world .gate.mini[data-state="locked"]{
+ border-color:#ad7aa58c;background:linear-gradient(145deg,#342438,#1b192c);
+}
+.world .gate.mini[data-state="won"]{
+ border-color:#bbecd5;background:linear-gradient(145deg,#2b655b,#283a49);
+}
+.world .gate.mini[data-state="available"]{
+ border-color:#f7c8f0;background:linear-gradient(145deg,#845077,#402641);
+ box-shadow:0 0 0 3px #e8a6e047,0 0 28px #d982f08c;
+}
+.world .gate.boss[data-state="locked"]{
+ border-color:#947951b8;background:linear-gradient(150deg,#383025,#201e23);
+}
+.world .gate.boss[data-state="won"]{
+ border-color:#b5f2ce;
+ box-shadow:0 0 0 3px #dfba713b,0 0 22px #43d6976e;
+}
+.world .gate.boss[data-state="available"]{
+ border-color:#ffe0a1;
+ box-shadow:0 0 0 3px #f7cc6985,0 0 29px #f5c574a8;
+}
+.world .gate[data-state="unknown"]{
+ background:linear-gradient(145deg,#203047,#0a1426);
+}
+.world .gate .gate-state-icon{
+ display:grid;place-items:center;position:absolute;top:-9px;right:-11px;
+ min-width:23px;height:23px;padding:0 3px;border-radius:99px;
+ border:1.5px solid #75859a;background:#172337;color:#e9eefc;
+ box-shadow:0 3px 8px #000b;font-weight:900;font-size:12px;line-height:1;
+ pointer-events:none;z-index:4;
+}
+.world .gate[data-state="won"] .gate-state-icon{
+ background:#1b885e;border-color:#b3f6d4;color:#fff;font-size:16px;
+}
+.world .gate[data-state="available"] .gate-state-icon{
+ background:#986625;border-color:#ffe1a2;color:#fff0c4;font-size:15px;
+}
+.world .gate[data-state="locked"] .gate-state-icon{
+ background:#303849;border-color:#8291a5;color:#f1f3fa;font-size:11px;
+}
+.world .gate[data-state="unknown"] .gate-state-icon{display:none}
+.world .gate:focus-visible{outline:3px solid #fff;outline-offset:5px}
+.gate-detail-progress{
+ display:inline-flex;gap:6px;align-items:center;
+ padding:5px 11px!important;margin:2px 0 8px!important;border-radius:999px;
+ border:1px solid #8697b3;color:#dce6f5!important;
+ background:#1c2a40;font-weight:800;font-size:12px;
+}
+.gate-detail-progress[data-state="won"]{
+ border-color:#5fce9a;background:#1b513e;color:#d7ffef!important;
+}
+.gate-detail-progress[data-state="available"]{
+ border-color:#e9bf6e;background:#5c4329;color:#ffecba!important;
+}
+.gate-detail-progress[data-state="locked"]{
+ border-color:#718396;background:#252d3c;color:#d2dceb!important;
+}
+@media(max-width:650px){
+ .gate-status-legend{gap:7px 10px;padding:8px;margin:8px 0 3px}
+ .gate-legend-item{font-size:10px;gap:5px}
+ .gate-legend-symbol{width:18px;height:18px;font-size:10px}
+ .world .gate .gate-state-icon{
+  top:-7px;right:-7px;min-width:18px;height:18px;font-size:10px;
+ }
+}
