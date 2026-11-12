@@ -6,7 +6,7 @@ import {runInNewContext} from 'node:vm';
 const load=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
 async function flush(){for(let i=0;i<20;i++)await Promise.resolve()}
 function harness(query='?gate=20&dogpush=1'){
- const sockets=[],timers=new Map(),changes=[];let next=1;
+ const sockets=[],timers=new Map(),changes=[];let next=1,allowChange=true;
  class FakeWS{
   constructor(url){this.url=url;this.readyState=0;this.sent=[];sockets.push(this)}
   send(s){this.sent.push(JSON.parse(s))}
@@ -22,9 +22,13 @@ function harness(query='?gate=20&dogpush=1'){
  const user={uid:'hero-a',getIdToken:async()=>'test-token'};
  const client=window.DogBossPushClient.create({
   api:'https://serverfinal-ynbe.onrender.com',gate:20,
-  getUser:()=>user,onChanged:()=>changes.push('changed')
+  getUser:()=>user,onChanged:()=>{
+   if(!allowChange)return false;
+   changes.push('changed');return true;
+  }
  });
  return {client,sockets,timers,changes,flush,
+  allow:v=>{allowChange=v},
   runTimer:(ms)=>{const entry=[...timers.entries()].find(([,t])=>t.ms===ms);
    assert.ok(entry,'missing timer '+ms);timers.delete(entry[0]);entry[1].fn()}};
 }
@@ -73,6 +77,53 @@ test('S-04 explicit authorization denial stops reconnect loop and extra team rea
  assert.equal(h.sockets.length,1,'denied identity is not retried automatically');
 });
 
+test('S-05 out-of-order, lost and repeated hints produce one catch-up',async()=>{
+ const h=harness();await h.client.start();await flush();
+ const ws=h.sockets[0];ws.open();ws.recv({type:'subscribed',gate:20});
+ ws.recv({type:'changed',seq:3}); // gap
+ ws.recv({type:'changed',seq:2}); // delayed message
+ ws.recv({type:'changed',seq:3}); // duplicate
+ ws.recv({type:'changed',seq:5}); // another gap
+ assert.equal(h.client.stats().gaps,2);
+ assert.equal(h.client.stats().duplicates,2);
+ assert.equal(h.client.stats().pending,true);
+ assert.equal(h.timers.size,1,'one coalesced request planned');
+ h.runTimer(250);
+ assert.equal(h.changes.length,1,'one official GET for all changes');
+ assert.equal(h.client.stats().pending,false);
+});
+test('S-05 queued hints survive user action or hidden tab',async()=>{
+ const h=harness();await h.client.start();await flush();
+ const ws=h.sockets[0];ws.open();ws.recv({type:'subscribed',gate:20});
+ h.allow(false);
+ ws.recv({type:'changed',seq:1});h.runTimer(250);
+ assert.equal(h.changes.length,0);
+ assert.equal(h.client.stats().pending,true);
+ assert.equal(h.client.flush(),false);
+ h.allow(true);
+ assert.equal(h.client.flush(),true);
+ assert.equal(h.changes.length,1);
+ assert.equal(h.client.flush(),false,'no duplicate GET');
+});
+test('S-05 recovery reconciles exactly once on WS reconnect',async()=>{
+ const h=harness();await h.client.start();await flush();
+ const first=h.sockets[0];first.open();first.recv({type:'subscribed',gate:20});
+ assert.equal(h.client.stats().recoveries,0);
+ first.close();
+ assert.equal(h.client.active(),false);
+ h.runTimer(2000);await flush();
+ const second=h.sockets[1];second.open();second.recv({type:'subscribed',gate:20});
+ assert.equal(h.client.stats().recoveries,1);
+ assert.equal(h.client.stats().pending,true);
+ h.runTimer(250);
+ assert.equal(h.changes.length,1);
+ second.recv({type:'changed',seq:1});
+ second.recv({type:'changed',seq:1});
+ h.runTimer(250);
+ assert.equal(h.changes.length,2);
+ assert.equal(h.client.stats().duplicates,1);
+});
+
 test('S-04 integration retains the original status GET polling as fallback',()=>{
  for(const [name,html] of [['dog-boss10.js','dog-boss10.html'],
   ['dog-group-boss.js','dog-group-boss.html']]){
@@ -83,6 +134,7 @@ test('S-04 integration retains the original status GET polling as fallback',()=>
   assert.match(source,/const pollDelay=/);
   assert.match(source,/void reload\(exchangeWindow===true\)/);
   assert.match(source,/push\?\.start\?\.\(\)/);
-  assert.match(source,/onChanged:\(\)=>\{if\(!document.hidden&&!working\)void reload\(true\)/);
+  assert.match(source,/if\(document\.hidden\|\|working\|\|inflight\)return false/);
+  assert.match(source,/push\?\.flush\?\.\(\)/);
  }
 });

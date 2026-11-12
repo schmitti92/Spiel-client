@@ -12,16 +12,33 @@
   if(!/^wss?:\/\//.test(url))return null;
   let ws=null,uid=null,connected=false,connecting=false,generation=0;
   let revision=0,reconnectTimer=null,coalesceTimer=null,denied=false;
+  let subscribedBefore=false,pending=false,gaps=0,duplicates=0,recoveries=0;
   function clear(id){if(id!==null)clearTimeout(id)}
   function stop(){
    generation++;
    connected=false;connecting=false;revision=0;
+   subscribedBefore=false;pending=false;
    clear(reconnectTimer);reconnectTimer=null;
    clear(coalesceTimer);coalesceTimer=null;
    const old=ws;ws=null;
    if(old)try{old.close()}catch{}
   }
   function active(){return connected&&ws?.readyState===1}
+  // A background tab or an active POST/GET must not drop a notification.
+  // Keep the hint until the browser can safely fetch an official snapshot.
+  function flush(){
+   if(!pending||!active())return false;
+   try{
+    if(onChanged?.()===false)return false;
+    pending=false;
+    return true;
+   }catch{return false}
+  }
+  function queue(){
+   pending=true;
+   if(coalesceTimer!==null)return;
+   coalesceTimer=setTimeout(()=>{coalesceTimer=null;flush()},250);
+  }
   function schedule(){
    if(reconnectTimer!==null)return;
    reconnectTimer=setTimeout(()=>{
@@ -57,16 +74,21 @@
       denied=true;connected=false;return;
      }
      if(payload?.type==='subscribed'&&payload.gate===gate){
-      connected=true;connecting=false;revision=0;return;
+      connected=true;connecting=false;revision=0;
+      // The initial page already makes its own HTTP GET. Only a real
+      // reconnect needs one extra recovery GET for events missed offline.
+      if(subscribedBefore){recoveries++;queue()}
+      subscribedBefore=true;
+      return;
      }
      if(payload?.type==='changed'&&connected&&
-      Number.isSafeInteger(payload.seq)&&payload.seq>revision){
+      Number.isSafeInteger(payload.seq)&&payload.seq>0){
+      if(payload.seq<=revision){duplicates++;return}
+      if(payload.seq>revision+1)gaps++;
       revision=payload.seq;
-      // Coalesce rapid POSTs into a single verified HTTP GET.
-      if(coalesceTimer===null)coalesceTimer=setTimeout(()=>{
-       coalesceTimer=null;
-       if(epoch===generation&&active())onChanged?.();
-      },250);
+      // One authoritative GET covers missing/late/duplicate hints.
+      // Never derive actual damage from websocket hints.
+      queue();
      }
     };
     socket.onerror=()=>{connected=false};
@@ -79,7 +101,9 @@
     if(epoch===generation){connecting=false;connected=false;schedule()}
    }
   }
-  return Object.freeze({start,stop,active});
+  return Object.freeze({start,stop,active,flush,
+   stats:()=>({gaps,duplicates,recoveries,pending,revision})
+  });
  }
  window.DogBossPushClient={create};
 })();

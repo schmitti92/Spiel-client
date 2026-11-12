@@ -32,7 +32,11 @@
  const push=window.DogBossPushClient?.create?.({
   api:API,gate:gate,
   getUser:()=>auth()?.user||null,
-  onChanged:()=>{if(!document.hidden&&!working)void reload(true)}
+  onChanged:()=>{
+   if(document.hidden||working||inflight)return false;
+   void reload(true);
+   return true;
+  }
  });
  let lastHeroSignature=''; // No 250ms remount of unchanged multiplayer cards
  let lastReadyMask='',readyBurstUntil=0;
@@ -349,9 +353,15 @@
  window.addEventListener('spielonline-change',()=>{
   push?.start?.();void reload(true);
  });
- document.addEventListener('visibilitychange',()=>{if(!document.hidden)void reload(true)});
+ document.addEventListener('visibilitychange',()=>{
+  if(document.hidden)return;
+  // A delayed notification is reconciled once when the tab returns.
+  if(!push?.flush?.()&&!inflight)void reload(true);
+ });
  window.setInterval?.(()=>{
   if(document.hidden)return;
+  // Local-only check: postponed hints wait for POST/GET to finish.
+  push?.flush?.();
   const cleared=account?acknowledgePending(account,view):false;
   if(cleared==='expired')message('⏱️ Vorige Aufgabe freigegeben – du kannst die nächste wieder spielen.');
   render();
