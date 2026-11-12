@@ -280,11 +280,13 @@
    }
    if(nodes.cineProgress)nodes.cineProgress.style.width=
     Math.max(0,Math.min(100,(1-remaining/totalMs)*100)).toFixed(1)+'%';
-   const title=defensive?
-    (cinematicPhase==='prepare'?'🛡️ DER BOSS HOLT AUS!':
-     cinematicPhase==='impact'?'💥 DER BOSS GREIFT AN!':'🛡️ UNSERE ABWEHR'):
-    (cinematicPhase==='prepare'?'⚔️ DAS TEAM SAMMELT KRAFT!':
-     cinematicPhase==='impact'?'💥 JETZT TRIFFT UNSER TEAM!':'⚔️ UNSER TEAMERGEBNIS');
+   const title=cinematicPhase==='legacy'?
+    (defensive?'🛡️ DER BOSS GREIFT AN!':'⚔️ UNSER TEAM SCHLÄGT ZU!'):
+    defensive?
+     (cinematicPhase==='prepare'?'🛡️ DER BOSS HOLT AUS!':
+      cinematicPhase==='impact'?'💥 DER BOSS GREIFT AN!':'🛡️ UNSERE ABWEHR'):
+     (cinematicPhase==='prepare'?'⚔️ DAS TEAM SAMMELT KRAFT!':
+      cinematicPhase==='impact'?'💥 JETZT TRIFFT UNSER TEAM!':'⚔️ UNSER TEAMERGEBNIS');
    text(nodes.cineHeader,title);
    text(nodes.cineAction,defensive?'SCHUTZSCHILD AKTIV':'GEMEINSAMER EXTRAANGRIFF');
    if(nodes.cinematic){
