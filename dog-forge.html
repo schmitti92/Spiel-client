@@ -8,12 +8,12 @@
 <title>⚒️ Schmiede der Helden · Die 100 Tore</title>
 <link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-d5">
 <link rel="stylesheet" href="./dog-hero-equipment.css?v=20261112-hd-armor1">
-<link rel="stylesheet" href="./dog-forge-areas.css?v=20261113-instant-quality-v1">
+<link rel="stylesheet" href="./dog-forge-areas.css?v=20261113-quality-forge-v2">
 <link rel="stylesheet" href="./dog-forge-clean.css?v=20261112-tablet-fine1">
 <script src="./profile-config.js"></script>
 <script src="./profile-auth.js"></script>
 <script src="./dog-hero-equipment.js?v=20261112-forge50-v1"></script>
-<script src="./dog-forge-ui.js?v=20261113-instant-quality-v1" defer></script>
+<script src="./dog-forge-ui.js?v=20261113-quality-forge-v2" defer></script>
 <script src="./dog-forge-ascent-ui.js?v=20261112-forge50-v1" defer></script>
 <script src="./dog-forge-gallery.js?v=20261112-forge50-v1" defer></script>
 <script src="./dog-forge-fx.js?v=20261110-forge-d2" defer></script>
@@ -151,6 +151,15 @@
   </section>
  </div>
 
+ <details class="quality-forge-panel" id="forge-refinement" open>
+  <summary>💎 <strong>Rohstoffe in der Schmiede veredeln</strong> <span>5 : 1 · mit Erfolgschance</span></summary>
+  <div class="quality-forge-body">
+   <p>Pro Versuch werden 5 Rohstoffe derselben Art eingesetzt. Bei Erfolg entsteht 1 Rohstoff der nächsten Qualitätsstufe. Bei einem Fehlschlag sind die 5 eingesetzten Rohstoffe verbraucht.</p>
+   <div id="forge-refinement-locks" class="quality-forge-unlocks" aria-live="polite"></div>
+   <div id="forge-refinement-groups" class="quality-forge-groups" role="group" aria-label="Rohstoffkategorie wählen"></div>
+   <div id="forge-refinement-list" class="quality-forge-list"></div>
+  </div>
+ </details>
  <details class="forge-chronicle" id="forge-chronicle">
   <summary><span>📖 <strong>Mein Schmiedebuch</strong></span>
    <span class="chronicle-summary-count"><b id="forge-achievements-count">0 / 9</b> Meilensteine <span aria-hidden="true">⌄</span></span>
