@@ -533,3 +533,53 @@
 .live-hero-health-card[data-fallen="true"] .live-hero-health-bar>span{
  width:0%!important;
 }
+
+/* K-06 · Aschewächter / Tor 10: distinctive ash-spear boss telegraph.
+ * All timing comes from the shared battle scene; impact remains gated by
+ * server-confirmed combat events. Other bosses retain their base attacks. */
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="ash-storm"]
+ [data-v3-action="boss-strike"]{--v3-ash:#ffb153}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="ash-storm"]
+ [data-v3-action="boss-strike"]::after{pointer-events:none}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="ash-storm"][data-v3-action="boss-strike"]::after{
+ content:"";position:absolute;z-index:25;pointer-events:none;
+ top:22%;left:8%;width:84%;height:64%;border-radius:50%;
+ background:
+  radial-gradient(circle at var(--v3-impact-left,55%) 46%,#fff1bc 0%,#ff8e3ab5 8%,#e7413670 19%,transparent 35%),
+  linear-gradient(105deg,transparent 12%,#ffecb300 25%,#ffb14d74 48%,#b72a3460 56%,transparent 72%);
+ filter:drop-shadow(0 0 18px #f65a33);
+ opacity:0;transform:scale(.65);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="ash-storm"][data-v3-beat="windup"][data-v3-action="boss-strike"]::after{
+ animation:v3-ash-charge .72s ease-in-out infinite alternate;
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="ash-storm"][data-v3-beat="swing"][data-v3-action="boss-strike"]::after{
+ animation:v3-ash-spear .42s ease-out both;
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="ash-storm"][data-v3-impact="yes"][data-v3-strike-side="boss"]::after{
+ animation:v3-ash-hit .42s ease-out both;
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="ash-storm"][data-v3-beat="windup"] .combat-boss[data-v3-active="true"]::after{
+ filter:drop-shadow(0 0 22px #ffb153) drop-shadow(0 0 16px #e7432a);
+}
+@keyframes v3-ash-charge{
+ from{opacity:.20;transform:scale(.63) rotate(-5deg)}
+ to{opacity:.67;transform:scale(.92) rotate(5deg)}
+}
+@keyframes v3-ash-spear{
+ from{opacity:.30;transform:translateX(-13%) scale(.65)}
+ to{opacity:.90;transform:translateX(5%) scale(1.12)}
+}
+@keyframes v3-ash-hit{
+ from{opacity:.75;transform:scale(.85)}
+ 45%{opacity:1;transform:scale(1.14)}
+ to{opacity:0;transform:scale(1.42)}
+}
+@media(prefers-reduced-motion:reduce){
+ .arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="ash-storm"]::after{
+  animation:none!important;opacity:0!important;
+ }
+ .arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="ash-storm"][data-v3-impact="yes"][data-v3-strike-side="boss"]::after{
+  opacity:.48!important;transform:none!important;
+ }
+}

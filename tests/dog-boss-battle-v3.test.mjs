@@ -373,3 +373,35 @@ test('K-04 v15 fallen fighter skips last stage without stopping surviving heroes
  assert.equal(alive.uid,'nova');
  assert.equal(v.endsAt-begin,135000,'new v15 fight preserves 135-second timeline');
 });
+
+test('K-06 Aschewächter has dedicated, server-timed ash-spear callouts without extra damage',()=>{
+ const make=(kind)=>{const e={kind,dataset:{},children:[],textContent:'',
+  style:{setProperty(){}},classList:{add(){}},append(...a){e.children.push(...a)},
+  querySelector:()=>null,querySelectorAll:()=>[],getAttribute:()=>null};return e};
+ const scene=make('scene'),action=make('action'),boss=make('boss');
+ const nodes={'#combat-scene':scene,'#combat-boss':boss,
+  '#v3-actor-action':action,'#v3-turn-progress':make('progress')};
+ const window={};const document={createElement:make};
+ runInNewContext(js,{window,document},{timeout:1000});
+ const ui=window.DogBossArenaV3.create({dataset:{},
+  querySelector:selector=>nodes[selector]||null});
+ const ash=view(10);
+ ui.update(ash,begin+42000);
+ assert.equal(scene.dataset.v3BossStyle,'ash-storm');
+ assert.match(action.textContent,/Aschensturm/);
+ ui.update(ash,begin+42700);
+ assert.match(action.textContent,/Aschenlanze/);
+ ui.update(ash,begin+42980);
+ assert.match(action.textContent,/prüfe Treffer/,
+  'before server confirmation the ash-spear does not assert damage');
+ const later=view(20);
+ ui.update(later,begin+42000);
+ assert.equal(scene.dataset.v3BossStyle,'standard');
+ assert.doesNotMatch(action.textContent,/Aschensturm|Aschenlanze/,
+  'the Aschewächter effect must not leak to other gates');
+ const css=read('dog-boss-weapon-strikes.css');
+ assert.match(css,/data-v3-boss-style="ash-storm"/);
+ assert.match(css,/data-v3-impact="yes"/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+ assert.doesNotMatch(js,/\bfetch\s*\(|firebase|Math\.random\(/i);
+});

@@ -29,7 +29,22 @@
   magierin:{windup:'bündelt Arkankraft',swing:'Magieimpuls'},
   waechter:{windup:'stemmt den Schild vor',swing:'Schildstoß'}
  });
- const describeStrike=(state,name,bossName,heroClass)=>{
+ const describeStrike=(state,name,bossName,heroClass,bossStyle)=>{
+  // Boss identity changes only visuals/callouts, never server-owned damage.
+  if(state.kind==='boss-strike'&&bossStyle==='ash-storm'){
+   if(state.beat==='prepare')return '🌋 Der Aschewächter sammelt glühende Asche';
+   if(state.beat==='windup')return '🔥 Der Aschewächter lädt den Aschensturm auf';
+   if(state.beat==='swing')return '☄️ Der Aschewächter schleudert eine Aschenlanze!';
+   if(state.beat==='impact'){
+    if(!state.confirmed)return '🌫️ Aschenlanze bei '+name+' – prüfe Treffer';
+    if(state.confirmedDamage===0)return state.roundKind==='dodge'?
+     '💨 '+name+' entkommt dem Aschensturm!':
+     '🛡️ '+name+' blockt die Aschenlanze!';
+    return '💥 Die Aschenlanze trifft '+name+'!';
+   }
+   if(state.beat==='recovery')return '↩️ Die Asche glüht nach';
+   return '🌋 Der Aschewächter sammelt neue Kraft';
+  }
   const target=state.kind==='boss-strike'?name:bossName;
   const actor=state.kind==='boss-strike'?bossName:name;
   if(state.beat==='prepare')return '🛡️ '+actor+' nimmt seine Position ein';
@@ -235,6 +250,7 @@
    const state=derive(view,now);
    if(!scene)return;
    scene.dataset.v3Action=state.kind;
+   scene.dataset.v3BossStyle=Number(view?.gate)===10?'ash-storm':'standard';
    scene.dataset.v3Final=state.index===4?'true':'false';
    scene.dataset.v3Beat=state.beat||'idle';
    scene.dataset.v3Impact=state.impact?'yes':'no';
@@ -276,7 +292,7 @@
      else if(isStrike)
       action.textContent=describeStrike(state,
        nameMap.get(state.uid)||'Ein Held',
-       clean(view?.name||'Der Wächter'),actorClass);
+       clean(view?.name||'Der Wächter'),actorClass,scene.dataset.v3BossStyle);
      else if(state.kind==='countdown')action.textContent='⏳ Nächste Runde';
      else if(state.kind==='minigame')
       action.textContent='🎮 Runde '+(state.index+1)+' – zeige dein Können!';
