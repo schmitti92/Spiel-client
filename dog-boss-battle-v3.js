@@ -160,6 +160,7 @@
  function create(root){
   if(!root)return {update(){},derive};
   const scene=query(root,'#combat-scene');
+  const audio=window.DogBossAudio?.create?.(root);
   const boss=query(root,'#combat-boss');
   const action=query(root,'#v3-actor-action');
   const progressBar=query(root,'#v3-turn-progress');
@@ -282,6 +283,7 @@
     if(log)log.textContent='Noch keine bestätigten Treffer';
    }
    const state=derive(view,now);
+   audio?.update?.(view,state);
    if(!scene)return;
    scene.dataset.v3Action=state.kind;
    scene.dataset.v3BossStyle=bossStyle(view?.gate);

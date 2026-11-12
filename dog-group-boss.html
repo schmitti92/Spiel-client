@@ -19,6 +19,7 @@
  <link rel="stylesheet" href="./dog-hero-selection.css?v=20261112-onboarding1">
  <link rel="stylesheet" href="./dog-boss-math-endgame.css?v=20261111-math-v1">
  <link rel="stylesheet" href="./dog-boss-battle-v3.css?v=20261112-final5-runes1">
+ <link rel="stylesheet" href="./dog-boss-k07.css?v=20261112-k07-audio1">
   <link rel="stylesheet" href="./dog-boss-weapon-strikes.css?v=20261112-k06-ash1">
  <link rel="stylesheet" href="./dog-boss-signature-attacks.css?v=k06-boss-groups1">
  <link rel="stylesheet" href="./dog-boss-chain-breaker.css?v=20261112-chainbreak20">
@@ -26,9 +27,10 @@
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
  <script src="./dog-boss-mini-ui.js?v=20261112-k04-fallen1" defer></script>
- <script src="./dog-boss-director.js?v=20261112-k03-hit-sync1" defer></script>
+ <script src="./dog-boss-director.js?v=20261112-k07-audio1" defer></script>
  <script src="./dog-boss-combat-fx.js?v=20261112-strike2" defer></script>
- <script src="./dog-boss-battle-v3.js?v=20261112-k06-groups1" defer></script>
+ <script src="./dog-boss-audio.js?v=20261112-k07-audio1" defer></script>
+ <script src="./dog-boss-battle-v3.js?v=20261112-k07-audio1" defer></script>
  <script src="./dog-boss-preflight.js?v=20261112-preflight-v3" defer></script>
  <script src="./dog-boss-live-ui.js?v=20261112-k04-fallen1" defer></script>
  <script src="./dog-boss-result-report.js?v=20261112-k05-final3" defer></script>
@@ -161,7 +163,7 @@
       <div id="live-recent-damage" class="live-damage-recap-list" role="log" aria-live="off">Noch keine bestätigten Treffer</div>
      </div>
      <div class="embers" aria-hidden="true">✦ · ✧ · ✦</div>
-      <div class="combat-view-controls"><button type="button" id="combat-camera" aria-label="Kamerawinkel wechseln" title="Kamera wechseln">🎥</button><button type="button" id="combat-fx" aria-label="Effekte umschalten" aria-pressed="true" title="Effekte">✨</button></div>
+      <div class="combat-view-controls"><button type="button" id="combat-camera" aria-label="Kamerawinkel wechseln" title="Kamera wechseln">🎥</button><button type="button" id="combat-fx" aria-label="Effekte umschalten" aria-pressed="true" title="Effekte">✨</button><button type="button" id="combat-sound" aria-label="Kampfgeräusche einschalten" aria-pressed="false" title="Kampfgeräusche an">🔇</button></div>
       <div id="combat-focus-label" class="combat-focus-label" aria-live="polite"></div>
       <div id="combat-boss-damage" class="combat-boss-damage" aria-hidden="true"></div>
       <div id="combat-team-damage" class="combat-team-damage" aria-hidden="true"></div>

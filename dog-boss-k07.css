@@ -1,0 +1,37 @@
+/* K-07: cinematic camera cues and accessible reduced-effects handling.
+ * Uses existing data-camera, data-effects and confirmed v3 impact flags. */
+.arena-live[data-arena-design="v3"] .combat-view-controls{
+ display:flex;flex-wrap:nowrap;gap:4px;align-items:center;
+}
+.arena-live[data-arena-design="v3"] #combat-sound{
+ border:1px solid #d9b877a8;background:#17223ee8;color:#ffe8bd;
+ font-size:17px;touch-action:manipulation;
+}
+.arena-live[data-arena-design="v3"] #combat-sound[aria-pressed="true"]{
+ box-shadow:0 0 0 1px #ffd187aa,0 0 12px #ffd18755;
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-camera="boss"] .combat-boss{
+ filter:drop-shadow(0 0 22px #f5ac78);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-camera="team"] .combat-hero-line{
+ filter:drop-shadow(0 0 12px #88caff);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-impact="yes"]
+ [data-v3-strike-side="boss"] .v3-impact-flare{opacity:1}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-impact="yes"][data-effects="on"]
+ .combat-stage{filter:brightness(1.12) contrast(1.04)}
+/* FX off must be a real reduction, not just a changed icon. */
+.arena-live[data-arena-design="v3"] .combat-scene[data-effects="off"] .v3-impact-flare,
+.arena-live[data-arena-design="v3"] .combat-scene[data-effects="off"] .v3-class-effect,
+.arena-live[data-arena-design="v3"] .combat-scene[data-effects="off"] .battle-weapon-impact{
+ visibility:hidden!important;animation:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+ .arena-live[data-arena-design="v3"] .combat-scene[data-v3-impact="yes"] .combat-stage{
+  animation:none!important;transition:none!important;filter:none!important;
+ }
+ .arena-live[data-arena-design="v3"] .combat-scene[data-camera] .combat-boss,
+ .arena-live[data-arena-design="v3"] .combat-scene[data-camera] .combat-hero-line{
+  animation:none!important;transition:none!important;
+ }
+}

@@ -8,15 +8,15 @@
   const camera=root.querySelector('#combat-camera');
   const fx=root.querySelector('#combat-fx');
   const note=root.querySelector('#combat-focus-label');
-  const modes=['normal','boss','team'];
+  const modes=['auto','normal','boss','team'];
   const format=n=>Math.max(0,Math.round(Number(n)||0)).toLocaleString('de-DE');
-  let mode='normal',enabled=true,view=null,vitals=null,focusUid=null,session=null;
+  let mode='auto',enabled=true,view=null,vitals=null,focusUid=null,session=null;
   function activate(next){
    mode=modes.includes(next)?next:'normal';
-   scene.dataset.camera=mode;
+   scene.dataset.camera=mode==='auto'?'normal':mode;
    if(camera){
-    camera.textContent=mode==='boss'?'🐉':mode==='team'?'🛡️':'🎥';
-    camera.setAttribute('aria-label','Kamera: '+(mode==='boss'?'Boss':mode==='team'?'Helden':'Übersicht')+'. Zum Wechseln antippen');
+    camera.textContent=mode==='auto'?'🎬':mode==='boss'?'🐉':mode==='team'?'🛡️':'🎥';
+    camera.setAttribute('aria-label','Kamera: '+(mode==='auto'?'automatischer Fokus':mode==='boss'?'Boss':mode==='team'?'Helden':'Übersicht')+'. Zum Wechseln antippen');
    }
    showFocus();
   }
@@ -33,11 +33,11 @@
     }
     focusUid=null;
    }
-   if(mode==='boss'&&view?.bossHp){
+   if(scene.dataset.camera==='boss'&&view?.bossHp){
     note.textContent='🐉 '+format(vitals?.bossHp??view?.bossLiveHp??view.bossHp)+
      ' / '+format(vitals?.bossMaxHp??view.bossHp)+' LP';
     note.hidden=false;
-   }else if(mode==='team'&&(vitals?.teamMaxHp||view?.teamHealth?.maxHp)){
+   }else if(scene.dataset.camera==='team'&&(vitals?.teamMaxHp||view?.teamHealth?.maxHp)){
     note.textContent='❤️ '+format(vitals?.teamHp??view.teamHealth.hp)+
      ' / '+format(vitals?.teamMaxHp??view.teamHealth.maxHp)+' LP';
     note.hidden=false;
@@ -66,7 +66,7 @@
     focusUid=null;activate('boss');
    }
   });
-  activate('normal');
+  activate('auto');
   scene.dataset.effects='on';
   return {update(next,now){
    view=next;
@@ -74,11 +74,18 @@
    const stamp=String(next?.startedAt||'')+':'+String(next?.attempt||'');
    if(session!==stamp){
     session=stamp;focusUid=null;
-    activate('normal');
+    activate('auto');
    }
    if(!['fighting','victory','cooldown'].includes(next?.phase)){
-    focusUid=null;activate('normal');
-   }else showFocus();
+    focusUid=null;activate('auto');
+   }else {
+    if(mode==='auto'){
+     const event=window.DogBossArenaV3?.derive?.(next,now);
+     scene.dataset.camera=event?.kind==='boss-strike'?'team':
+      event?.kind==='hero-strike'?'boss':'normal';
+    }
+    showFocus();
+   }
   }};
  };
  window.DogBossDirector={create};

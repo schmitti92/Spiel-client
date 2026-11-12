@@ -16,6 +16,8 @@ on:
       - 'dog-boss10.js'
       - 'dog-boss-live-ui.js'
       - 'dog-boss-director.js'
+      - 'dog-boss-audio.js'
+      - 'dog-boss-k07.css'
       - 'dog-boss-endgame.css'
       - 'dog-boss-math-endgame.css'
       - 'tests/dog-boss-math-endgame-ui.test.mjs'
@@ -68,6 +70,8 @@ on:
       - 'dog-boss10.js'
       - 'dog-boss-live-ui.js'
       - 'dog-boss-director.js'
+      - 'dog-boss-audio.js'
+      - 'dog-boss-k07.css'
       - 'dog-boss-endgame.css'
       - 'dog-boss-math-endgame.css'
       - 'tests/dog-boss-math-endgame-ui.test.mjs'
@@ -130,6 +134,7 @@ jobs:
           node --check tests/dog-boss-dodge-slow.test.mjs
           node --check dog-boss-preflight.js
           node --check dog-boss-director.js
+          node --check dog-boss-audio.js
           node --check dog-boss-live-ui.js
           node --check dog-boss-battle-v3.js
           node --check dog-boss-result-report.js

@@ -431,3 +431,68 @@ test('K-06b nine group bosses each have an individual cosmetic signature',()=>{
   'cosmetic skin does not affect the server-selected target');
  assert.doesNotMatch(js,/\bfetch\s*\(|firebase|Math\.random\(/i);
 });
+
+test('K-07 sound opt-in and confirmed-hit-only audio; automatic camera with manual override',()=>{
+ const soundSrc=read('dog-boss-audio.js'),directorSrc=read('dog-boss-director.js');
+ const k07css=read('dog-boss-k07.css');
+ assert.doesNotMatch(soundSrc,/\bfetch\s*\(|firebase|localStorage|XMLHttpRequest/);
+ for(const page of ['dog-boss10.html','dog-group-boss.html']){
+  const html=read(page);
+  assert.match(html,/id="combat-sound"/);
+  assert.match(html,/dog-boss-audio\.js\?v=20261112-k07-audio1/);
+  assert.match(html,/dog-boss-k07\.css\?v=20261112-k07-audio1/);
+ }
+ assert.match(k07css,/prefers-reduced-motion:reduce/);
+ assert.match(k07css,/data-effects="off"/);
+ const handlers=new Map();
+ const button={textContent:'',attrs:{},addEventListener:(type,fn)=>handlers.set(type,fn),
+  setAttribute(k,v){this.attrs[k]=v}};
+ const soundWindow={};let created=0,played=0;
+ class FakeAudioContext{
+  constructor(){created++;this.currentTime=1;this.destination={};this.state='running'}
+  resume(){this.state='running';return Promise.resolve()}
+  suspend(){this.state='suspended';return Promise.resolve()}
+  createOscillator(){return {frequency:{setValueAtTime(){},exponentialRampToValueAtTime(){}},
+   connect(){},start(){played++},stop(){},disconnect(){}}}
+  createGain(){return {gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},
+   connect(){},disconnect(){}}}
+ }
+ soundWindow.AudioContext=FakeAudioContext;
+ runInNewContext(soundSrc,{window:soundWindow,document:{hidden:false}});
+ const audio=soundWindow.DogBossAudio.create({querySelector:s=>
+  s==='#combat-sound'?button:null});
+ const v=view(),state={kind:'hero-strike',index:0,slot:0,
+  confirmed:true,confirmedDamage:150,impact:true,beat:'impact'};
+ audio.update(v,state);
+ assert.equal(created,0,'audio is off by default and requires a tap');
+ handlers.get('click')({stopPropagation(){}});
+ assert.equal(audio.isEnabled(),true);
+ audio.update(v,{...state,confirmed:false,impact:false});
+ assert.equal(played,0,'no hit before server confirmation');
+ audio.update(v,state);audio.update(v,state);
+ assert.equal(played,1,'one cue per server-confirmed strike');
+ handlers.get('click')({stopPropagation(){}});
+ assert.equal(audio.isEnabled(),false);
+ audio.update(v,{...state,slot:1});
+ assert.equal(played,1,'mute disables later cues');
+ const cHandlers={};const scene={dataset:{},addEventListener(t,fn){cHandlers[t]=fn}};
+ const camera={attrs:{},addEventListener(t,fn){cHandlers['camera-'+t]=fn},
+  setAttribute(k,v){this.attrs[k]=v}};
+ const fx={addEventListener(){},setAttribute(){}};
+ const focus={hidden:true,textContent:''};
+ const root={querySelector:s=>({'#combat-scene':scene,'#combat-camera':camera,
+  '#combat-fx':fx,'#combat-focus-label':focus}[s]||null)};
+ const directorWin={DogBossArenaV3:{derive:(view,now)=>
+  ({kind:now===1?'boss-strike':'hero-strike'})}};
+ runInNewContext(directorSrc,{window:directorWin});
+ const director=directorWin.DogBossDirector.create(root);
+ const fight={phase:'fighting',startedAt:100,attempt:1,bossHp:100,
+  teamHealth:{hp:30,maxHp:50}};
+ director.update(fight,1);
+ assert.equal(scene.dataset.camera,'team','boss attack focuses endangered team');
+ director.update(fight,2);
+ assert.equal(scene.dataset.camera,'boss','hero attack focuses boss');
+ cHandlers['camera-click']({stopPropagation(){}});
+ director.update(fight,1);
+ assert.equal(scene.dataset.camera,'normal','manual overview overrides auto mode');
+});
