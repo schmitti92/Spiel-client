@@ -1,0 +1,9 @@
+/* Class-linked equipment art, never affecting stats or server state. */
+.forge-class-badge{display:inline-flex;align-items:center;margin:4px 0 8px;padding:6px 11px;border:1px solid #f0c87780;border-radius:999px;background:#231c33c7;color:#fff0bb;font-size:12px;font-weight:850;letter-spacing:.025em}
+body[data-hero-class="magierin"] .forge-class-badge{color:#e9dbff;border-color:#b995ff9c;background:#2d2045d6}
+body[data-hero-class="waechter"] .forge-class-badge{color:#c5fbe9;border-color:#80d7c2a3;background:#163b3bcf}
+body[data-hero-class="krieger"] .forge-class-badge{color:#ffe6c0;border-color:#edab6eab;background:#3a261ad5}
+.gear-stage-label{max-width:100%;white-space:normal;text-align:center}
+.ascension-art{width:min(160px,70%);height:145px;object-fit:contain;display:block;margin:4px auto 13px;filter:drop-shadow(0 6px 18px #0008)}
+.ascension-hero-class{text-align:center;margin:0 0 20px;color:#ffe0a0;font-size:14px;font-weight:800}
+@media(max-width:650px){.ascension-art{width:106px;height:105px}.forge-class-badge{font-size:11px}}

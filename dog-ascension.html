@@ -7,9 +7,11 @@
  <meta name="description" content="Die Aufstiegsschmiede: Waffen und Rüstung auf Level 10, freigeschaltet durch gemeinsame Siege bei den 100 Toren.">
  <title>⚒️ Aufstiegsschmiede · Die 100 Tore</title>
  <link rel="stylesheet" href="./dog-ascension.css?v=20261110-v1">
+<link rel="stylesheet" href="./dog-hero-equipment.css?v=20261112-hero-gear1">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
- <script src="./dog-ascension.js?v=20261110-v1" defer></script>
+ <script src="./dog-hero-equipment.js?v=20261112-hero-gear1"></script>
+ <script src="./dog-ascension.js?v=20261110-v1&amp;classGear=1" defer></script>
  <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 <link rel="stylesheet" href="./dog-event-tabs.css?v=20261112-only-top-tabs2">
 <script src="./dog-event-tabs.js?v=20261112-unified1" defer></script>
@@ -33,18 +35,19 @@
    <p>Nach Boss 10 könnt ihr Waffe und Rüstung bis Level 2 aufwerten. Jede Stufe verdoppelt den Grundwert. Benötigte Rohstoffe werden erst beim serverbestätigten Versuch verbraucht. Spätere Level erfordern weitere gemeinsame Boss-Siege.</p>
   </section>
   <p id="status" class="status" role="status" aria-live="polite">Verbinde die Schmiede …</p>
+  <p id="ascension-hero-class" class="ascension-hero-class">Heldenklasse wird geladen …</p>
   <section class="equipment" aria-label="Ausrüstungsverbesserungen">
    <article class="forge-card">
-    <div class="equip-icon" aria-hidden="true">⚔️</div>
-    <div class="equip-name">Waffe</div>
+    <img id="weapon-art" class="ascension-art" src="./dog-forge-art/weapon-1.svg" alt="" width="150" height="150">
+    <div class="equip-name" id="weapon-name">Waffe</div>
     <div class="equip-level" id="weapon-level">Level –</div>
     <div class="equip-base" id="weapon-base">Grundschaden: –</div>
     <div class="equip-cost" id="weapon-cost">Materialien laden …</div>
     <button class="upgrade" data-type="weapon" id="upgrade-weapon" disabled>⚒️ Waffe verbessern</button>
    </article>
    <article class="forge-card">
-    <div class="equip-icon" aria-hidden="true">🛡️</div>
-    <div class="equip-name">Rüstung</div>
+    <img id="armor-art" class="ascension-art" src="./dog-forge-art/armor-1.svg" alt="" width="150" height="150">
+    <div class="equip-name" id="armor-name">Rüstung</div>
     <div class="equip-level" id="armor-level">Level –</div>
     <div class="equip-base" id="armor-base">Grundschutz: –</div>
     <div class="equip-cost" id="armor-cost">Materialien laden …</div>

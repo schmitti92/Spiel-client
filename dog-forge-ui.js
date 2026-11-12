@@ -46,6 +46,10 @@
   {limit:20,title:'Legendär',weapon:'Drachenklinge',armor:'Drachenrüstung'}
  ]);
  const stageFor=level=>Math.max(1,STAGES.findIndex(s=>level<=s.limit)+1||5);
+ const heroClass=()=>view?.heroClass||null;
+ const gearName=(id,level)=>window.DogHeroEquipment?.name(heroClass(),id,level)||
+  STAGES[stageFor(level)-1][id];
+ const displayName=item=>item?.group==='equipment'?gearName(item.id,levelFor(item.id)):item?.name||'Verbesserung';
  const rankFor=total=>total>=450?'Legende':total>=280?'Meister':total>=160?'Veteran':
   total>=80?'Kämpfer':total>=35?'Rekrut':total>=12?'Lehrling':'Neuling';
  // Decorative achievements are derived from the authenticated hero's real levels
@@ -105,7 +109,7 @@
   const level=levelFor(item.id),quote=quoteFor(item.id);
   const icon=$('forge-goal-visual');icon.replaceChildren();
   icon.append(item.group==='equipment'?gearVisual(item.id,level,true):skillVisual(item,true));
-  $('forge-goal-title').textContent=item.name+' · Stufe '+level+' / '+item.maxLevel;
+  $('forge-goal-title').textContent=displayName(item)+' · Stufe '+level+' / '+item.maxLevel;
   let percent=0;
   if(quote?.maxed){
    percent=100;
@@ -127,17 +131,18 @@
 
  // One graphic asset for each equipment appearance tier (independent of balance).
  function gearVisual(id,level,compact=false){
-  const stage=stageFor(level),config=STAGES[stage-1];
+  const stage=stageFor(level);
   const root=node('span','gear-visual gear-stage-'+stage+(compact?' compact':''));
   const img=node('img','gear-illustration');
-  img.src='./dog-forge-art/'+id+'-'+stage+'.svg';
-  img.alt=(id==='weapon'?config.weapon:config.armor)+' · Stufe '+level;
+  img.src=window.DogHeroEquipment?.image(heroClass(),id,level)||
+   './dog-forge-art/'+id+'-'+stage+'.svg';
+  img.alt=gearName(id,level)+' · Stufe '+level;
   img.loading=compact?'lazy':'eager';img.decoding='async';
   img.addEventListener('error',()=>{
    img.hidden=true;root.append(node('span','gear-fallback',id==='weapon'?'⚔️':'🛡️'));
   },{once:true});
   root.append(img);
-  if(!compact)root.append(node('span','gear-stage-label',config[id]+' · Stufe '+level));
+  if(!compact)root.append(node('span','gear-stage-label',gearName(id,level)+' · Stufe '+level));
   return root;
  }
  function skillVisual(item,compact=false){
@@ -224,6 +229,9 @@
   $('forge-player').textContent=state?.profile?.name||state?.user?.displayName||'Nicht angemeldet';
   const invested=view?view.items.reduce((sum,i)=>sum+Math.max(0,levelFor(i.id)-(i.baseLevel||0)),0):0;
   $('forge-player-note').textContent=view?'Bereit für deine nächste Verbesserung':'Persönliches Heldenprofil';
+  const classLabel=$('forge-class-badge');
+  if(classLabel)classLabel.textContent=window.DogHeroEquipment?.label(heroClass())||'Held noch nicht gewählt';
+  document.body.dataset.heroClass=window.DogHeroEquipment?.normalize(heroClass())||'';
   const cap=$('forge-gate-cap');
   if(cap){
    cap.hidden=!view||!Number.isSafeInteger(view.forgeLevel);
@@ -232,9 +240,12 @@
   }
   $('forge-rank').textContent='✦ '+rankFor(invested);
   const avatar=$('hero-emblem-art'),armorStage=stageFor(levelFor('armor'));
-  if(avatar.dataset.stage!==String(armorStage)){
+  const appearance=(heroClass()||'generic')+':'+armorStage;
+  if(avatar.dataset.appearance!==appearance){
+   avatar.dataset.appearance=appearance;
    avatar.dataset.stage=String(armorStage);
-   avatar.src='./dog-forge-art/armor-'+armorStage+'.svg';
+   avatar.src=window.DogHeroEquipment?.image(heroClass(),'armor',levelFor('armor'))||
+    './dog-forge-art/armor-'+armorStage+'.svg';
   }
   $('hero-emblem').className='character-emblem gear-stage-'+armorStage;
   for(const id of ['weapon','armor']){
@@ -305,7 +316,7 @@
    const row=node('div','journal-entry '+(isUpgrade?(success?'journal-success':'journal-failure'):'journal-trade'));
    const icon=node('span','journal-icon',isUpgrade?(success?'✨':'🌑'):'💎');
    const details=node('span','journal-content');
-   const title=isUpgrade?(def?.name||'Verbesserung'):(material[entry.from]?.name||'Rohstoff')+' → '+(material[entry.to]?.name||'Rohstoff');
+   const title=isUpgrade?displayName(def):(material[entry.from]?.name||'Rohstoff')+' → '+(material[entry.to]?.name||'Rohstoff');
    const result=isUpgrade?(success?'✓ Stufe '+entry.level:'Fehlschlag · Stufe '+entry.level):'10 : 1 getauscht';
    details.append(node('strong',null,title),node('small',null,result));
    const at=Number(entry.at||0);
@@ -325,7 +336,7 @@
     current,unlocked:current>=m.goal};
   }):[];
   gallery.render(hero&&uid?{uid,hero,items:view.items,milestones,
-   rank:rankFor(invested),player:$('forge-player').textContent}:null);
+   rank:rankFor(invested),player:$('forge-player').textContent,heroClass:heroClass()}:null);
  }
  function renderStock(){
   if(stockView===view&&stockUid===uid)return;
@@ -388,7 +399,7 @@
    }
    const icon=isEquipment?gearVisual(item.id,levelFor(item.id),true):skillVisual(item,true);
    const info=node('span','item-info');
-   info.append(node('strong',null,item.name),node('small',null,'Stufe '+levelFor(item.id)+' / '+item.maxLevel));
+   info.append(node('strong',null,displayName(item)),node('small',null,'Stufe '+levelFor(item.id)+' / '+item.maxLevel));
    if(goalId===item.id)info.append(node('small','goal-mark','🎯 Mein Schmiedeziel'));
    const q=quoteFor(item.id);
    if(q){
@@ -427,7 +438,7 @@
   confirmData={itemId:item.id,expectedLevel:quote.level};
   const art=$('forge-confirm-art');art.replaceChildren();
   art.append(item.group==='equipment'?gearVisual(item.id,quote.level,true):skillVisual(item,true));
-  $('forge-confirm-title').textContent=item.name;
+  $('forge-confirm-title').textContent=displayName(item);
   $('forge-confirm-step').textContent='Stufe '+quote.level+'  ➜  '+quote.nextLevel;
   const costRoot=$('forge-confirm-cost');costRoot.replaceChildren();
   for(const [id,amount] of Object.entries(quote.cost))costRoot.append(costTile(id,amount));
@@ -477,7 +488,7 @@
      item.group==='attack'?'⚔️ ANGRIFFSFÄHIGKEIT':'🛡️ VERTEIDIGUNGSFÄHIGKEIT');
    scene.append(groupLabel);root.append(scene);
   }
-  root.append(node('h2',null,item.name),node('p','upgrade-summary',item.summary));
+  root.append(node('h2',null,displayName(item)),node('p','upgrade-summary',item.summary));
   const line=node('div','level-line'),left=node('span','left','AUSBAUSTUFE'),right=node('strong','value',String(level));
   right.append(node('span',null,' / '+item.maxLevel));line.append(left,right);root.append(line);
   const track=node('div','level-progress'),fill=node('span');
@@ -493,7 +504,7 @@
     teaser.append(gearVisual(item.id,nextLevel,true));
     const details=node('div','evolution-description');
     details.append(node('small',null,'NÄCHSTE AUSSEHENSSTUFE'),
-     node('strong',null,next[item.id]),
+     node('strong',null,gearName(item.id,nextLevel)),
      node('span',null,'Ab Stufe '+nextLevel+' · Vorschau'));
     teaser.append(details);
     teaser.append(node('span','evolution-lock','🔒'));
@@ -691,7 +702,7 @@
    const before=stageFor(result.oldLevel),after=stageFor(result.newLevel);
    emoji=success?'✦':'✕';
    heading=success?(equip?'Erfolgreich geschmiedet!':'Fähigkeit verbessert!'):'Schmieden fehlgeschlagen';
-   subtitle=success?(item?.name||'Verbesserung')+' · Stufe '+result.newLevel:
+   subtitle=success?displayName(item)+' · Stufe '+result.newLevel:
     'Rohstoffe verbraucht · Stufe '+result.newLevel+' bleibt';
    achievement=success?(before!==after&&equip?'✦ NEUE AUSSEHENSSTUFE ✦':'STUFE '+result.oldLevel+'  ➜  '+result.newLevel):
     'STUFE '+result.oldLevel+' BLEIBT';

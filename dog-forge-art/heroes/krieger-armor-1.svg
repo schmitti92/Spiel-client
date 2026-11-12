@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Krieger: Rüstung Stufe 1">
+ <defs>
+ <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#52656a"/><stop offset=".5" stop-color="#e2e4cd"/><stop offset="1" stop-color="#a2b6b2"/></linearGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#e2e4cd"/><stop offset="1" stop-color="#a2b6b2"/></linearGradient>
+ <linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#322437"/><stop offset=".4" stop-color="#d65c55"/><stop offset="1" stop-color="#16182d"/></linearGradient>
+ <linearGradient id="crystal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e2e4cd"/><stop offset=".55" stop-color="#f4b272"/><stop offset="1" stop-color="#a2b6b2"/></linearGradient>
+ <linearGradient id="robe" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d65c55"/><stop offset=".55" stop-color="#52656a"/><stop offset="1" stop-color="#242141"/></linearGradient>
+ <radialGradient id="halo"><stop stop-color="#9fbac4" stop-opacity=".42"/><stop offset="1" stop-color="#9fbac4" stop-opacity="0"/></radialGradient>
+ <filter id="shadow" x="-50%" y="-50%" width="200%" height="210%"><feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#02050e" flood-opacity=".65"/></filter>
+ <filter id="aura" x="-90%" y="-90%" width="280%" height="280%"><feGaussianBlur stdDeviation="4"/></filter>
+ </defs>
+ <ellipse cx="128" cy="131" rx="118" ry="119" fill="url(#halo)"/>
+ <circle cx="128" cy="128" r="106" fill="none" stroke="#a2b6b2" stroke-width="1.5" opacity=".2"/>
+ 
+ <g filter="url(#shadow)">
+ <path d="M75 67L55 83L28 125L67 149L86 126L95 104L128 91L161 104L170 126L189 149L228 125L201 83L181 67Z" fill="url(#steel)" stroke="#e2e4cd" stroke-width="4"/>
+ <path d="M86 62L128 80L170 62L184 119L170 209L128 234L86 209L72 119Z" fill="url(#steel)" stroke="#e2e4cd" stroke-width="4"/>
+ <path d="M100 84L128 98L156 84L164 146L128 184L92 146Z" fill="#52656a" stroke="#a2b6b2" stroke-width="4"/>
+ <path d="M98 179Q128 199 158 179L160 209L128 221L96 209Z" fill="#a2b6b2" stroke="#e2e4cd" stroke-width="3"/>
+ <path d="M128 99V183M90 144L128 183L166 144" stroke="#e2e4cd" stroke-width="3" opacity=".85"/>
+ <path d="M126 112L139 131L127 148L115 131Z" fill="url(#crystal)"/>
+ </g><path d="M42 32l2.4 5 5 2.4-5 2.4-2.4 5-2.4-5-5-2.4 5-2.4Z" fill="#e2e4cd" opacity=".8"/><path d="M126 188l2.4 5 5 2.4-5 2.4-2.4 5-2.4-5-5-2.4 5-2.4Z" fill="#e2e4cd" opacity=".8"/>
+ 
+ </svg>

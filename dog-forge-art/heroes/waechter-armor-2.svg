@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Wächter: Rüstung Stufe 2">
+ <defs>
+ <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2c527b"/><stop offset=".5" stop-color="#e0f6ff"/><stop offset="1" stop-color="#6baee8"/></linearGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#e0f6ff"/><stop offset="1" stop-color="#6baee8"/></linearGradient>
+ <linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#322437"/><stop offset=".4" stop-color="#36a49b"/><stop offset="1" stop-color="#16182d"/></linearGradient>
+ <linearGradient id="crystal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e0f6ff"/><stop offset=".55" stop-color="#a1e7dd"/><stop offset="1" stop-color="#6baee8"/></linearGradient>
+ <linearGradient id="robe" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#36a49b"/><stop offset=".55" stop-color="#2c527b"/><stop offset="1" stop-color="#242141"/></linearGradient>
+ <radialGradient id="halo"><stop stop-color="#71cdfb" stop-opacity=".42"/><stop offset="1" stop-color="#71cdfb" stop-opacity="0"/></radialGradient>
+ <filter id="shadow" x="-50%" y="-50%" width="200%" height="210%"><feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#02050e" flood-opacity=".65"/></filter>
+ <filter id="aura" x="-90%" y="-90%" width="280%" height="280%"><feGaussianBlur stdDeviation="4"/></filter>
+ </defs>
+ <ellipse cx="128" cy="131" rx="118" ry="119" fill="url(#halo)"/>
+ <circle cx="128" cy="128" r="106" fill="none" stroke="#6baee8" stroke-width="1.5" opacity=".2"/>
+ 
+ <g filter="url(#shadow)">
+ <path d="M70 62L42 88L20 127L59 154L86 132L128 91L170 132L197 154L236 127L214 88L186 62Z" fill="url(#steel)" stroke="#e0f6ff" stroke-width="4"/>
+ <path d="M84 58L128 75L172 58L187 127L170 204L128 232L86 204L69 127Z" fill="#2c527b" stroke="#6baee8" stroke-width="4"/>
+ <path d="M128 87L176 104L170 181L128 220L86 181L80 104Z" fill="url(#steel)" stroke="#e0f6ff" stroke-width="5"/>
+ <path d="M128 96L157 112L158 169L128 196L98 169L99 112Z" fill="#36a49b" stroke="#6baee8" stroke-width="4"/>
+ <path d="M128 116L142 139L128 167L114 139Z" fill="url(#gold)" stroke="#e0f6ff" stroke-width="3"/>
+ <path d="M128 107V172M108 142H148" stroke="#e0f6ff" stroke-width="3"/>
+ <path d="M87 196L128 224L169 196" stroke="#e0f6ff" stroke-width="4" fill="none"/>
+ </g><path d="M42 32l2.4 5 5 2.4-5 2.4-2.4 5-2.4-5-5-2.4 5-2.4Z" fill="#e0f6ff" opacity=".8"/><path d="M126 188l2.4 5 5 2.4-5 2.4-2.4 5-2.4-5-5-2.4 5-2.4Z" fill="#e0f6ff" opacity=".8"/><path d="M210 32l2.4 5 5 2.4-5 2.4-2.4 5-2.4-5-5-2.4 5-2.4Z" fill="#e0f6ff" opacity=".8"/>
+ 
+ </svg>

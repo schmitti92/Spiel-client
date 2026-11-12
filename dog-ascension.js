@@ -48,8 +48,15 @@
    return data;
   }finally{if(timeout!==null)clearTimeout(timeout)}
  }
+ function equipmentName(type,level){
+  return window.DogHeroEquipment?.name(view?.heroClass,type,level)||
+   (type==='weapon'?'Waffe':'Rüstung');
+ }
  function render(){
   $('forge-level').textContent=(view?.forgeLevel||1)+' / 10';
+  const classDisplay=$('ascension-hero-class');
+  if(classDisplay)classDisplay.textContent=window.DogHeroEquipment?.label(view?.heroClass)||
+   'Heldenklasse noch nicht gewählt';
   const p=uid?pending(uid):null;
   $('retry').hidden=!p;$('retry').disabled=busy;
   for(const type of ['weapon','armor']){
@@ -57,6 +64,15 @@
    const current=quote?.level;
    $(type+'-level').textContent=Number.isSafeInteger(current)?
     'Level '+current+' / 10':'Level –';
+   const name=$(type+'-name');
+   if(name)name.textContent=Number.isSafeInteger(current)?equipmentName(type,current):
+    (type==='weapon'?'Waffe':'Rüstung');
+   const art=$(type+'-art');
+   if(art){
+    art.src=window.DogHeroEquipment?.image(view?.heroClass,type,current||1)||
+      './dog-forge-art/'+type+'-1.svg';
+    art.alt=(name?.textContent||type)+' · Stufe '+(current||1);
+   }
    $(type+'-base').textContent=type==='weapon'?
     'Grundschaden: '+(Number.isSafeInteger(current)?fmt(100*2**(Math.min(10,current)-1)):'–'):
     'Grundschutz: '+(Number.isSafeInteger(current)?fmt(100*2**(Math.min(10,current)-1)):'–');
@@ -126,7 +142,7 @@
    const data=await request('POST','/upgrade',command,account);
    if(auth()?.user?.uid!==account)return;
    clear(account);view=data.view;render();
-   message(data.result.success?'🎉 Erfolg! '+(data.result.type==='weapon'?'Deine Waffe':'Deine Rüstung')+
+   message(data.result.success?'🎉 Erfolg! '+equipmentName(data.result.type,data.result.newLevel)+
     ' ist jetzt Level '+data.result.newLevel+'.':
     '🔥 Der Schmiedeversuch ist fehlgeschlagen. Dein Ausrüstungslevel bleibt erhalten, die Materialien wurden verbraucht.');
    if(data.replayed)message($('status').textContent+' (Sicher wiederhergestellt)');

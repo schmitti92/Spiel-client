@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Krieger: Waffe Stufe 2">
+ <defs>
+ <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2c527b"/><stop offset=".5" stop-color="#e0f6ff"/><stop offset="1" stop-color="#6baee8"/></linearGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#e0f6ff"/><stop offset="1" stop-color="#6baee8"/></linearGradient>
+ <linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#322437"/><stop offset=".4" stop-color="#d65c55"/><stop offset="1" stop-color="#16182d"/></linearGradient>
+ <linearGradient id="crystal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e0f6ff"/><stop offset=".55" stop-color="#f4b272"/><stop offset="1" stop-color="#6baee8"/></linearGradient>
+ <linearGradient id="robe" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d65c55"/><stop offset=".55" stop-color="#2c527b"/><stop offset="1" stop-color="#242141"/></linearGradient>
+ <radialGradient id="halo"><stop stop-color="#71cdfb" stop-opacity=".42"/><stop offset="1" stop-color="#71cdfb" stop-opacity="0"/></radialGradient>
+ <filter id="shadow" x="-50%" y="-50%" width="200%" height="210%"><feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#02050e" flood-opacity=".65"/></filter>
+ <filter id="aura" x="-90%" y="-90%" width="280%" height="280%"><feGaussianBlur stdDeviation="4"/></filter>
+ </defs>
+ <ellipse cx="128" cy="131" rx="118" ry="119" fill="url(#halo)"/>
+ <circle cx="128" cy="128" r="106" fill="none" stroke="#6baee8" stroke-width="1.5" opacity=".2"/>
+ 
+ <g filter="url(#shadow)">
+ <path d="M128 20 L149 51 L147 139 L136 161 L120 161 L109 139 L107 51Z" fill="url(#steel)" stroke="#e0f6ff" stroke-width="3"/>
+ <path d="M128 28V158" stroke="#e0f6ff" stroke-width="3" opacity=".85"/>
+ <path d="M110 67 L128 56 L146 67" stroke="#d65c55" stroke-width="2.9" fill="none"/>
+ <path d="M119 79 L128 88 L137 79 M120 110 L128 119 L136 110" stroke="#71cdfb" stroke-width="3" fill="none" opacity=".85"/>
+ <path d="M68 147Q89 156 112 152H144Q167 156 188 147L182 173Q166 166 148 173L128 188L108 173Q90 166 74 173Z" fill="url(#gold)" stroke="#e0f6ff" stroke-width="3"/>
+ <path d="M119 180H137V227H119Z" fill="#2c527b" stroke="#6baee8" stroke-width="4"/>
+ <path d="M117 194L139 206M117 205L139 217" stroke="#e0f6ff" stroke-width="3"/>
+ <path d="M128 221L141 234L128 247L115 234Z" fill="url(#gold)" stroke="#e0f6ff" stroke-width="2"/>
+ </g><path d="M42 32l2.4 5 5 2.4-5 2.4-2.4 5-2.4-5-5-2.4 5-2.4Z" fill="#e0f6ff" opacity=".8"/><path d="M126 188l2.4 5 5 2.4-5 2.4-2.4 5-2.4-5-5-2.4 5-2.4Z" fill="#e0f6ff" opacity=".8"/><path d="M210 32l2.4 5 5 2.4-5 2.4-2.4 5-2.4-5-5-2.4 5-2.4Z" fill="#e0f6ff" opacity=".8"/>
+ 
+ </svg>

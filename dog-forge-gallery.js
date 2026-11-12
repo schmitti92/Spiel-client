@@ -61,7 +61,8 @@
  }
  function imageFor(id,level){
   const img=make('img','gallery-equip-image');
-  img.src='./dog-forge-art/'+id+'-'+stage(level)+'.svg';
+  img.src=window.DogHeroEquipment?.image(state?.heroClass,id,level)||
+   './dog-forge-art/'+id+'-'+stage(level)+'.svg';
   img.alt='';
   img.loading='lazy';img.decoding='async';
   img.addEventListener('error',()=>{
@@ -127,7 +128,7 @@
    tile.dataset.stage=String(stage(level));
    const imageBox=make('div','gallery-gear-art');
    imageBox.append(imageFor(id,level));
-   tile.append(imageBox,make('strong',null,STAGE_NAMES[id][stage(level)-1]),
+   tile.append(imageBox,make('strong',null,window.DogHeroEquipment?.name(state?.heroClass,id,level)||STAGE_NAMES[id][stage(level)-1]),
     make('small',null,(id==='weapon'?'⚔️ Waffe':'🛡️ Rüstung')+' · Stufe '+level+' / 20'));
    gear.append(tile);
   }
@@ -176,7 +177,7 @@
   // Avoid recreating gallery images and unlock cards for unchanged state.
   if(!next&&!state)return;
   if(next&&state&&next.uid===state.uid&&next.hero===state.hero&&
-     next.rank===state.rank&&next.player===state.player)return;
+     next.rank===state.rank&&next.player===state.player&&next.heroClass===state.heroClass)return;
   if(next?.uid!==state?.uid)prefs=next?readPrefs(next.uid):{title:'auto',frame:'auto'};
   state=next;
   paint();
