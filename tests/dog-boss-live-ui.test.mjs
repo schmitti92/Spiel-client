@@ -221,7 +221,7 @@ test('the rebuilt V3 arena keeps the minigame and hides old bars without losing 
   const controller=read(js);
   assert.match(controller,/squad\.hidden=\['fighting','victory'\]/);
   assert.match(controller,/\$\('retry-button'\)\.hidden/);
-  assert.match(controller,/battleV3\?\.update\(view,now\(\)\)/);
+  assert.match(controller,/battleV3\?\.update\(view,frameNow\)/);
  }
 });
 
