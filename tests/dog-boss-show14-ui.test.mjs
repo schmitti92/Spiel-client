@@ -208,3 +208,38 @@ test('round scoreboard waits for server results and does not invent players scor
   assert.match(html,/id="v3-results-total"/);
  }
 });
+
+test('fifth Finalschlag is playable at 101s, shows individual earned bonus, then three-second victory countdown',()=>{
+ const {ui,node,view}=fakeUI();
+ const specs=[[0,12000,'math',8],[26000,41000,'dodge',3],
+  [55000,65000,'target',10],[79000,87000,'reaction',3],
+  [101000,111000,'target',10]];
+ view.miniGames.version=12;
+ view.miniGames.rounds=specs.map(([startMs,endMs,kind,maxSteps],round)=>
+  ({round,kind,startMs,endMs,maxSteps}));
+ view.miniGames.exchange.version=12;
+ view.miniGames.exchange.durationMs=125000;
+ view.miniGames.exchange.stages=view.miniGames.rounds.map((r,i)=>({
+  round:i,kind:r.kind,defensive:i===1||i===3,completed:true,
+  correct:i===4?7:3,max:i===4?10:9,bonusPercent:i===4?3.5:2,
+  bonusDamage:i===4?35:10,shield:i%2?86:null,
+  playerResults:i===4?[{uid:'a',correct:7,max:10,bonusDamage:35}]:[]
+ }));
+ view.endsAt=at+125000;
+ ui.update(view,at+101200);
+ assert.equal(node('live-round-label').textContent,'RUNDE 5 / 5');
+ assert.equal(node('v3-round-results').hidden,true);
+ ui.update(view,at+111100);
+ assert.equal(node('v3-round-results').hidden,false);
+ assert.match(node('v3-results-title').textContent,/Finaler Schlag/);
+ assert.equal(node('v3-results-rows').children[0].children[1].textContent,'7 / 10');
+ assert.match(node('v3-results-total').textContent,/35 Zusatzschaden/);
+ ui.update(view,at+121999);
+ assert.equal(node('cinematic-grand-countdown').hidden,true);
+ ui.update(view,at+122000);
+ assert.equal(node('cinematic-grand-countdown').hidden,false);
+ assert.equal(node('cinematic-grand-digit').textContent,'3');
+ assert.equal(node('cinematic-grand-label').textContent,'FINALE IN');
+ ui.update(view,at+125000);
+ assert.equal(node('v3-round-results').hidden,true);
+});
