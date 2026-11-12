@@ -196,7 +196,7 @@
    rows,stages:stageRows,score:{correct:right,max:possible,
     percent,grade:percent===null?'Nicht verfügbar':grade(percent),
      equalWeight:!!officialScore,perfect:officialScore?.perfect??null},
-   teamHp,teamMax,tips:tips.slice(0,4),replay,
+   teamHp,teamMax,tips:tips.slice(0,5),replay,
    settlement,finisher,guard,finale,
    cooldownUntil:num(view.cooldownUntil),
    fightId:String(view.gate||10)+':'+String(view.startedAt||0)+':'+
