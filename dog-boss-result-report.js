@@ -328,6 +328,7 @@
      <div class="br-replay-caption" id="br-replay-caption" role="status" aria-live="polite">Wiederholung aus den bestätigten Treffern.</div>
     </div>
     <div class="br-replay-meter"><span id="br-replay-progress"></span></div>
+    <p class="br-replay-counter" id="br-replay-counter" aria-live="off"></p>
    </section>
     </div>
    <div class="br-footer">
@@ -431,6 +432,9 @@
    if(timer!==null){clearInterval(timer);timer=null;}
    node('br-replay-start').textContent='↻ Highlights erneut abspielen';
    node('br-replay-stage').dataset.replayState='idle';
+   node('br-replay-stage').classList?.remove('br-hit-burst');
+   for(const child of node('br-replay-heroes').children)
+    child.classList?.remove('is-active');
   };
   function showStrike(event){
    const field=node('br-replay-stage');
@@ -462,6 +466,8 @@
    field.classList?.add('br-hit-burst');
    node('br-replay-progress').style.width=
     Math.round(100*(nextIndex+1)/Math.max(1,events.length))+'%';
+   text(node('br-replay-counter'),'Treffer '+(nextIndex+1)+' / '+
+    events.length+' · '+event.roundTitle);
   }
   function startReplay(){
    ended();nextIndex=0;
@@ -470,11 +476,21 @@
     return;
    }
    const tick=()=>{
-    if(nextIndex>=events.length){ended();return;}
+    if(nextIndex>=events.length){
+     ended();
+     text(node('br-replay-caption'),'🏁 Wiederholung abgeschlossen · '+
+      events.length+' bestätigte Kampfereignisse');
+     text(node('br-replay-counter'),'Alle '+events.length+
+      ' Ereignisse abgespielt');
+     node('br-replay-progress').style.width='100%';
+     return;
+    }
     showStrike(events[nextIndex]);nextIndex++;
    };
    text(node('br-replay-start'),'■ Wiederholung stoppen');
-   tick();timer=setInterval(tick,1350);
+   tick();
+   if(nextIndex<events.length)timer=setInterval(tick,1350);
+   else ended();
   }
   node('br-replay-start').addEventListener('click',()=>{
    if(timer!==null){ended();return;}startReplay();
@@ -635,6 +651,8 @@
     'Für ältere Kämpfe sind keine einzelnen Angriffsmomente gespeichert.');
    text(node('br-replay-hit'),'Bereit zur Wiederholung');
    node('br-replay-progress').style.width='0%';
+   text(node('br-replay-counter'),replay.length?
+    replay.length+' bestätigte Kampfereignisse · bereit':'Keine Ereignisse verfügbar');
    node('br-replay-start').disabled=!replay.length;
    node('br-replay-start').textContent=replay.length?
     '▶ Kampf-Highlights abspielen':'Keine Treffer verfügbar';
