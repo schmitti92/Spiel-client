@@ -40,6 +40,12 @@
    promptTitle:$(root,'#live-mini-prompt-title'),
    promptDetail:$(root,'#live-mini-prompt-detail'),
    minigame:$(root,'#mini-game'),challenge:$(root,'.live-challenge'),
+   resultsPanel:$(root,'#v3-round-results'),
+   resultsTitle:$(root,'#v3-results-title'),
+   resultsSubtitle:$(root,'#v3-results-subtitle'),
+   resultsRows:$(root,'#v3-results-rows'),
+   resultsTotal:$(root,'#v3-results-total'),
+   resultsNote:$(root,'#v3-results-note'),
    recentDamage:$(root,'#live-recent-damage'),
    hpFill:$(root,'#live-hp-fill'),hit:$(root,'#live-hit-effects'),
    boss:$(root,'#combat-boss'),combat:$(root,'#combat-scene'),
@@ -66,7 +72,7 @@
    startFlash:$(root,'#cinematic-start-flash')
   };
   const steps=nodes.steps?[...nodes.steps.querySelectorAll('.live-round-step')]:[];
-  let lastHitKey='',lastRound='',lastFeedback='',lastImpactKey='',lastExchangeKey='';
+  let lastHitKey='',lastRound='',lastFeedback='',lastImpactKey='',lastExchangeKey='',lastScoreKey='';
   let lastShowTick='';
   let lastVitalsEncounter='',lastBossHp=null,lastTeamHp=null,lastHeroVitalsKey='';
   let lastHeroHp=new Map(),recentDamage=[];
@@ -382,6 +388,85 @@
     text(nodes.showNext,upcoming);
    }
   }
+  // Per-person interlude statistics are read-only server awards.
+  // The panel reuses the minigame space while inputs are unavailable.
+  function renderRoundResults(view,round,stage){
+   if(!nodes.resultsPanel||!nodes.resultsRows)return;
+   const defensive=!!stage?.defensive;
+   const labels={math:'🧮 Blitz-Mathe',dodge:'🛡️ Ausweichen',
+    target:(view?.miniGames?.version||0)>=10?'🎨 Farbe & Symbole':'🎯 Zieltreffer',
+    reaction:'⚡ Reaktion'};
+   text(nodes.resultsTitle,(labels[round.kind]||'Herausforderung')+' · Ergebnis');
+   text(nodes.resultsSubtitle,defensive?
+    'Persönlich erspielte Verteidigung':'Persönlich erspielter Angriff');
+   const rows=Array.isArray(stage?.playerResults)?stage.playerResults:null;
+   if(!rows){
+    const info=document.createElement('div');
+    info.className='v3-results-row';
+    info.textContent='⏳ Warte auf die bestätigte Einzelwertung …';
+    nodes.resultsRows.replaceChildren(info);
+    text(nodes.resultsTotal,'Ergebnisse werden überprüft');
+    text(nodes.resultsNote,'Bis zur Bestätigung werden keine Belohnungen geschätzt.');
+    return;
+   }
+   const members=Array.isArray(view?.members)?view.members:[];
+   const players=Array.isArray(view?.roster)?view.roster:[];
+   const fmt=(v)=>Math.max(0,Number(v)||0).toLocaleString('de-DE');
+   const personalRows=rows.map(item=>{
+    const member=members.find(m=>m.uid===item.uid);
+    const roster=players.find(p=>p.uid===item.uid);
+    const name=String(member?.name||roster?.name||'Held').slice(0,24);
+    const row=document.createElement('div');
+    row.className='v3-results-row'+(member?.isMe?' is-me':'');
+    row.setAttribute?.('role','row');
+    const label=document.createElement('span');
+    label.className='v3-result-name';label.textContent=name;
+    label.setAttribute?.('role','cell');
+    const score=document.createElement('span');
+    score.className='v3-result-score';
+    score.textContent=fmt(item.correct)+' / '+fmt(item.max);
+    score.setAttribute?.('role','cell');
+    const reward=document.createElement('span');
+    reward.className='v3-result-reward'+(defensive?' is-defense':'');
+    reward.setAttribute?.('role','cell');
+    const amount=document.createElement('strong');
+    const detail=document.createElement('small');
+    if(defensive){
+     amount.textContent=Number.isFinite(item.savedHp)?
+      '+'+fmt(item.savedHp)+' LP geschützt':
+      '+'+fmt(item.protectionPoints)+' Schutzpunkte';
+     detail.textContent=Number.isFinite(item.savedHp)?
+      '+'+fmt(item.protectionPoints)+' / 25 Schutzpunkte':
+      'Abwehrbeitrag · Gruppenregel';
+    }else{
+     amount.textContent=Number.isFinite(item.bonusDamage)?
+      '+'+fmt(item.bonusDamage)+' Zusatzschaden':
+      '+'+fmt(item.bonusPercent)+' % Angriff';
+     detail.textContent='Potenzial für die Endwertung';
+    }
+    reward.replaceChildren(amount,detail);
+    row.replaceChildren(label,score,reward);
+    return row;
+   });
+   nodes.resultsRows.replaceChildren(...personalRows);
+   if(defensive){
+    const saved=rows.reduce((sum,x)=>sum+(Number(x.savedHp)||0),0);
+    const points=rows.reduce((sum,x)=>sum+(Number(x.protectionPoints)||0),0);
+    const individual=rows.some(x=>Number.isFinite(x.savedHp));
+    text(nodes.resultsTotal,individual?
+     '🛡️ Zusammen +'+fmt(saved)+' LP bewahrt':
+     '🛡️ Zusammen +'+fmt(points)+' Schutzpunkte');
+    text(nodes.resultsNote,individual?
+     'LP gegenüber keinem richtigen Ausweichen/Konter geschützt · kein dauerhafter Rüstungsbonus':
+     'Abwehrpunkte nach bisheriger Gruppenregel · keine dauerhafte Rüstung');
+   }else{
+    text(nodes.resultsTotal,Number.isFinite(stage?.bonusDamage)?
+     '🔥 Team: +'+fmt(stage.bonusDamage)+' Zusatzschaden':
+     '🔥 Angriffswertung wird bestätigt');
+    text(nodes.resultsNote,
+     'Angriffspotenzial aus Ausrüstung und richtigen Aufgaben; tatsächlicher Schaden folgt in der Endwertung.');
+   }
+  }
   function updateExchange(view,current){
    const stages=view?.miniGames?.exchange?.stages;
    const exchange=Array.isArray(stages)&&current.rounds.length===4;
@@ -399,6 +484,8 @@
     return current.elapsed>=round.endMs&&current.elapsed<end;
    }):null;
    if(!scene){
+    if(nodes.resultsPanel)nodes.resultsPanel.hidden=true;
+    lastScoreKey='';
     if(nodes.cinematic)nodes.cinematic.hidden=true;
     if(nodes.showOverlay)nodes.showOverlay.hidden=true;
     nodes.challenge?.classList?.remove('is-cinematic-countdown');
@@ -414,6 +501,22 @@
     return;
    }
    const stage=stages[scene.round],defensive=!!stage?.defensive;
+   const nextRound=current.rounds[scene.round+1];
+   const windowEnd=nextRound?.startMs??
+    (Number(view.miniGames?.exchange?.durationMs)||50000);
+   const remaining=Math.max(0,windowEnd-current.elapsed);
+   const longScene=(view?.miniGames?.version||0)>=7&&windowEnd-scene.endMs>=14000;
+   const showResults=remaining>0&&(!longScene||remaining>5000);
+   if(nodes.resultsPanel)nodes.resultsPanel.hidden=!showResults;
+   if(showResults&&nodes.resultsPanel){
+    const rowsSignature=JSON.stringify(stage?.playerResults||null);
+    const key=String(view.startedAt)+':'+scene.round+':'+rowsSignature+':'+
+     JSON.stringify((view.members||[]).map(m=>[m.uid,m.name,m.isMe]));
+    if(lastScoreKey!==key){
+     lastScoreKey=key;
+     renderRoundResults(view,scene,stage);
+    }
+   }
    const previousShield=scene.round===3?
     Number(stages[1]?.shield??100):100;
    const shieldLoss=defensive&&stage?.completed?
@@ -442,7 +545,7 @@
      heroNames+' greifen den Boss gemeinsam an!'));
    text(nodes.round,'ZWISCHENSEQUENZ '+(scene.round+1)+' / 4');
    updateCinematic(view,current,scene,stage,shieldLoss);
-   if(nodes.prompt)nodes.prompt.hidden=false;
+   if(nodes.prompt)nodes.prompt.hidden=showResults;
    text(nodes.promptTitle,title);
    text(nodes.promptDetail,stage?.completed?
     (defensive?'Gemeinsam übrig: '+stage.shield+' Schildpunkte':
