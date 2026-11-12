@@ -189,6 +189,7 @@ test('M-02 stale tap after a confirmed impact cannot submit for previous strike'
  buttons[0].click();
  assert.equal(requests.length,0,'does not submit an old step for the new attack');
  ui.update(view,now,true);
+ assert.equal(buttons[1].disabled,false,'the next confirmed strike must enable its choices');
  buttons[1].click();
  await Promise.resolve();await Promise.resolve();
  assert.equal(requests.length,1);

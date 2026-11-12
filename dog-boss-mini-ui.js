@@ -237,6 +237,14 @@
      '⚡ KONTER AUSGELÖST · Server prüft den Zeitpunkt …';
    }
    localSubmitting=true;lastChoice={round:roundView.round,step,value};
+   if(activeVersion>=8&&roundView.kind==='dodge'&&dodgeImpact){
+    // A selected direction is acknowledged on the very same tap, without
+    // waiting for the next animation frame or claiming a successful dodge.
+    dodgeImpact.textContent='↔️ RICHTUNG ERFASST · EINSCHLAG ABWARTEN';
+    dodgeImpact.classList.toggle('is-pending',false);
+    dodgeImpact.classList.toggle('is-success',false);
+    dodgeImpact.classList.toggle('is-hit',false);
+   }
    if(roundView.kind==='dodge'&&typeof onDodgeChoice==='function')
     onDodgeChoice(roundView.round,step,value);
    buttons.forEach(button=>button.disabled=true);
