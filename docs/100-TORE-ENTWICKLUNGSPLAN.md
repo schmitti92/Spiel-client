@@ -454,7 +454,7 @@ Die vorhandene Aschenlanze bei Tor 10 bleibt unverändert. Die neun Gruppenbosse
 
 ### Phase F – Schmiede, Materialien, Balance und Fortschritt `P1/P2`
 
-- [ ] **F-01 – Langzeitsimulation:** Benötigte Deal-or-No-Deal-Partien, Kistenarten, 15 Ressourcen, Upgrade-Fehlschläge und Zeit bis zu den Bossen 10–100 simulieren.
+- [ ] **F-01 – Langzeitsimulation (gestartet):** Reproduzierbares Offline-Simulationsmodul `serverfinal/dog-f01-simulation.mjs` und Regressionstests angelegt. Die Simulation verwendet echte serverseitige Kapitel-Kisten, alle 15 Ressourcen und die aktuellen Schmiederezepte/-Erfolgsquoten. **Erste Teilrechnung:** ein Spieler, vier ausgewählte Aufwertungen (Waffe, Rüstung, Angriffskraft, Lebensenergie) bis zum Kapitelmaximum; angenommene Freischaltung der vorherigen Gruppenbosse. Noch offen: belastbare Simulationsausgabe/CI, alle 13 Aufwertungen, Drei-Spieler- und Zeit-Szenarien, Ressourcen-Tausch, Bossfehlversuche und Empfehlung. Keine Live-Balance geändert, keine Firebase-Abfragen.
 - [ ] **F-02 – Schmiede verständlicher:** Materialien für nächstes Upgrade, fehlende Rohstoffe, Erfolgswahrscheinlichkeit, erreichbares aktuelles Maximum und Auswirkungen auf Angriff/HP zeigen.
 - [ ] **F-03 – Pechschutz bewerten:** Lange Misserfolgsserien begrenzen, ohne die langfristige Herausforderung oder Materialökonomie zu zerstören.
 - [ ] **F-04 – Charakterrollen prüfen:** Krieger, Magierin, Wächter bislang überwiegend optisch; mögliche kleine Rollenboni nur mit fairer Übergangsregel für bereits endgültig gewählte Figuren.
