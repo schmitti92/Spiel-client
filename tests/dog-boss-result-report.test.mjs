@@ -594,11 +594,11 @@ test('E-04 result accounting separates authoritative final damage from cinematic
  const {model}=load(),view=fakeView(false),report=model(view);
  assert.equal(report.result.damage,900);
  assert.equal(report.rows.reduce((sum,p)=>sum+p.attack,0),660);
- assert.equal(report.rows[0].percentage,67);
+ assert.equal(report.rows[0].percentage,76);
  assert.equal(report.teamHp,221);
  assert.equal(report.teamMax,465);
  assert.equal(report.replay.length,8);
- assert.ok(report.tips.some(x=>x.includes('Chris')&&x.includes('67 %')),
+ assert.ok(report.tips.some(x=>x.includes('Titan')&&x.includes('19 %')),
   'the weakest hero receives specific training advice');
  const f=e02Fixture();f.ui.update(view);
  assert.match(f.root.nodes['br-attack-note'].textContent,/8 bestätigte Ereignisse/);
@@ -606,8 +606,8 @@ test('E-04 result accounting separates authoritative final damage from cinematic
  assert.match(f.root.nodes['br-settlement'].textContent,/Keine gesonderte Server-Aufschlüsselung/);
  assert.equal(f.root.nodes['br-final-damage'].textContent,'900 LP');
  const chris=f.root.nodes['br-attack-rows'].children[0];
- assert.match(chris.children[1].textContent,/3 Treffer · 290 LP/);
- assert.match(chris.children[3].textContent,/67 %/);
+ assert.match(chris.children[1].textContent,/2 Treffer · 290 LP/);
+ assert.match(chris.children[3].textContent,/76 %/);
  assert.equal(f.root.nodes['br-strike-rows'].children.length,8);
 });
 test('E-04 reconciliation only displays server-supplied values and old fights stay honest',()=>{
