@@ -200,7 +200,7 @@
     view?.miniGames?.version===5?60000:
     view?.miniGames?.version===6?64000:
     view?.miniGames?.version===7?92000:
-      view?.miniGames?.version>=12?125000:view?.miniGames?.version>=10?101000:99000);
+      view?.miniGames?.version>=14?135000:view?.miniGames?.version>=12?125000:view?.miniGames?.version>=10?101000:99000);
   const time=state==='fighting'?remaining():state==='cooldown'?cooling():duration;
   $('timer').textContent=formatTime(time);
   $('timer-fill').style.width=(state==='fighting'?Math.min(100,time/duration*100):state==='victory'?0:100)+'%';
