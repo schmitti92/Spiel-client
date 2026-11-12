@@ -31,7 +31,10 @@ test('Interface offers all four input types without locally deciding success',()
  assert.ok(ui.includes('round.targetMs'));
  assert.ok(ui.includes('round.initialIndex'));
  assert.ok(ui.includes('round.dangerIndex'));
- assert.ok(ui.includes('onSubmit(roundView.round,value,step,tappedAt)'));
+ assert.ok(ui.includes('const submittedRound=roundView.round;'),
+  'M-08 pins the original round before a deferred network request');
+ assert.ok(ui.includes('onSubmit(submittedRound,value,step,tappedAt)'),
+  'the captured server round is transmitted, never an updated roundView');
  assert.ok(!ui.includes('Math.random('));
  assert.ok(!ui.includes('correctIndex'));
  assert.ok(ui.includes('games.myAnswers'));
