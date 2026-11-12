@@ -140,6 +140,31 @@ test('M-06 end report uses the verified equal-weight grade instead of raw 39/63 
  assert.equal(model(perfect).score.grade,'Maximum');
  assert.equal(model(perfect).score.perfect,true);
 });
+
+test('M-07: final report itemizes verified per-hero hits and genuine saved HP, never inventing absent hits',()=>{
+ const {model}=load();
+ const view=fakeView();
+ view.miniGames.exchange.stages[0].playerResults[0].bonusDamage=45;
+ view.miniGames.exchange.stages[1].playerResults[0].savedHp=20;
+ const result=model(view);
+ const chrisAttack=result.stages[0].persons[0];
+ assert.equal(chrisAttack.name,'Chris');
+ assert.equal(chrisAttack.correct,6);
+ assert.equal(chrisAttack.max,8);
+ assert.equal(chrisAttack.bonusDamage,45);
+ assert.equal(chrisAttack.hit,200,'actual stage strike, not equipment bonus');
+ assert.equal(result.stages[0].persons[2].hit,100);
+ const chrisDefense=result.stages[1].persons[0];
+ assert.equal(chrisDefense.correct,3);
+ assert.equal(chrisDefense.savedHp,20);
+ assert.equal(chrisDefense.hit,20,'boss hit is separate from shielded HP');
+ assert.equal(result.stages[2].persons[2].hit,null,
+  'absent strike history must not be reported as a confirmed zero');
+ const old={...view,miniGames:{...view.miniGames,exchange:{
+  ...view.miniGames.exchange,strikes:[]}}};
+ assert.equal(model(old).stages[0].persons[0].hit,null);
+ assert.equal(result.result.damage,900,'no combat mechanic is changed');
+});
 test('single hero loss yields honest tactical advice; report never invents absent teammates',()=>{
  const {model}=load();
  const one=fakeView();
@@ -203,6 +228,12 @@ test('result opens automatically, replays only supplied strikes, and closes/reop
  assert.equal(root.nodes['br-strike-rows'].children[0].children[1].textContent,'Chris');
  assert.equal(root.nodes['br-strike-rows'].children[0].children[3].textContent,'−200 LP');
  assert.equal(root.nodes['br-rounds'].children.length,3);
+ const firstStage=root.nodes['br-rounds'].children[0];
+ assert.ok(firstStage.children.some(x=>x.className==='br-round-personal'),
+  'end report displays a compact individual round-by-round reward row');
+ const firstDetail=firstStage.children.find(x=>x.className==='br-round-personal');
+ assert.match(firstDetail.children[0].textContent,/Chris · 6\/8 richtig/);
+ assert.match(firstDetail.children[0].textContent,/200 Boss-LP/);
  assert.equal(root.nodes['br-score-value'].textContent,'62 %');
  assert.match(root.nodes['br-title'].textContent,/NIEDERLAGE/);
  assert.equal(root.nodes['br-final-damage'].textContent,'900 LP');

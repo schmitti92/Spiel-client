@@ -49,7 +49,8 @@ function fixture(){
   miniGames:{version:3,rounds,myAnswers:{},
    exchange:{version:3,durationMs:40000,shield:100,stages}}};
  return {nodes,classes,node,ui:window.DogBossLiveUI.create(root),
-  derive:window.DogBossLiveUI.battleModel,view};
+  derive:window.DogBossLiveUI.battleModel,
+  roundRewards:window.DogBossLiveUI.roundRewards,view};
 }
 test('Four rounds share one screen, without replacing the main battle stage',()=>{
  for(const file of ['dog-boss10.html','dog-group-boss.html']){
@@ -280,6 +281,48 @@ test('M-06 live interlude shows server-normalized accuracy and only final offici
  view.result={win:true,damage:900,bossHp:1000,hpRemaining:0};
  ui.update(view,startedAt+136000);
  assert.match(node('live-feedback').textContent,/Fünf-Spiele-Leistung: 68,3 %/);
+});
+
+test('M-07: server bonus, saved LP and applied LP are distinguished per hero and impact time',()=>{
+ const {roundRewards,view}=fixture();
+ const round={round:0,kind:'math'};
+ const stage={completed:true,defensive:false,playerResults:[
+  {uid:'c',correct:6,max:8,bonusDamage:150},
+  {uid:'d',correct:0,max:8,bonusDamage:0}
+ ]};
+ assert.equal(roundRewards(view,round,{...stage,completed:false},5000),null);
+ view.miniGames.exchange.strikes=[
+  {round:0,uid:'c',kind:'hero-strike',amount:375,atMs:8700},
+  {round:0,uid:'d',kind:'hero-strike',amount:90,atMs:9300},
+  {round:1,uid:'c',kind:'boss-strike',amount:14,atMs:21300}
+ ];
+ const pending=roundRewards(view,round,stage,8600);
+ assert.equal(pending[0].correct,6);
+ assert.equal(pending[0].max,8);
+ assert.equal(pending[0].earnedBonus,150);
+ assert.equal(pending[0].appliedDamage,null,'future hit is not yet dealt');
+ assert.equal(pending[0].strikePending,true);
+ assert.equal(pending[1].earnedBonus,0);
+ assert.equal(roundRewards(view,round,stage,9000)[0].appliedDamage,375);
+ assert.equal(roundRewards(view,round,stage,9000)[1].appliedDamage,null);
+ assert.equal(roundRewards(view,round,stage,9400)[1].appliedDamage,90,
+  'a missed minigame does not suppress the equipment-based base hit');
+ const defense={completed:true,defensive:true,playerResults:[
+  {uid:'c',correct:2,max:3,savedHp:23,protectionPoints:17}
+ ]};
+ const safe=roundRewards(view,{round:1},defense,20000)[0];
+ assert.equal(safe.savedHp,23);
+ assert.equal(safe.receivedDamage,null);
+ assert.equal(safe.strikePending,true);
+ assert.equal(roundRewards(view,{round:1},defense,22000)[0].receivedDamage,14);
+ assert.equal(roundRewards(view,{round:1},defense,22000)[0].savedHp,23,
+  'received damage and protected LP are different valid server quantities');
+ const missed=roundRewards(view,{round:2},
+  {completed:true,defensive:false,playerResults:[
+   {uid:'c',correct:0,max:0,fallen:true,bonusDamage:0}]},50000)[0];
+ assert.equal(missed.fallen,true);
+ assert.equal(missed.earnedBonus,0);
+ assert.equal(missed.appliedDamage,null);
 });
 test('Previous 40-second fights still use their original short result scene',()=>{
  const {ui,view,node}=fixture();
