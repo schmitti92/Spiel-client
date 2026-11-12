@@ -44,7 +44,9 @@ function fixture(version=14){
   endsAt:epoch+(version>=14?135000:125000),
   miniGames:{version,rounds,myAnswers:{}}};
  const update=()=>ui.update(view,epoch+elapsed,true);
- const arena=()=>root.children[1].children.find(x=>x.className==='mini-chain-arena');
+ const stage=()=>root.children[1].children.find(x=>x.className==='mini-chain-stage');
+ const arena=()=>stage()?.children.find(x=>x.className==='mini-chain-arena');
+ const effects=()=>stage()?.children.find(x=>x.className==='mini-chain-fx-host');
  function swipe(index,dx=55,dy=5){
   const b=arena().children[index];
   b.dispatch('pointerdown',{isPrimary:true,pointerId:1,clientX:40,clientY:25,
@@ -52,7 +54,7 @@ function fixture(version=14){
   b.dispatch('pointerup',{pointerId:1,clientX:40+dx,clientY:25+dy,
    preventDefault(){}});
  }
- return {root,ui,view,requests,update,arena,swipe,
+ return {root,ui,view,requests,update,arena,effects,swipe,
   setElapsed:v=>{elapsed=v}};
 }
 test('Kettenbrecher renders three chains, a single glowing target and accessible keyboard controls',()=>{
@@ -115,6 +117,60 @@ test('Already started v13 chain battles keep their old 10-second schedule',()=>{
  assert.equal(f.root.hidden,true);
  assert.equal(f.requests.length,0);
 });
+
+test('M-05 severed fragments keep animating when the next gold target appears',()=>{
+ const f=fixture();f.update();
+ f.swipe(0);
+ const fx=f.effects();
+ assert.equal(fx.children.length,1);
+ assert.ok(fx.children[0].className.includes('is-hit'));
+ assert.equal(fx.children[0].children.length,3,'two halves plus sparks');
+ assert.equal(fx.children[0].style['--chain-row'],'1');
+ const first=fx.children[0];
+ f.swipe(1);
+ assert.equal(fx.children.length,2);
+ assert.equal(fx.children[0],first,'previous break must survive next puzzle repaint');
+ assert.equal(fx.children[1].style['--chain-row'],'2');
+ assert.ok(f.arena().children[2].classList.contains('is-glowing'));
+ assert.ok(f.root.children[1].children.find(x=>x.className==='mini-chain-progress')
+  .children[0].classList.contains('is-provisional'));
+ assert.match(f.root.children[1].children.find(x=>x.className==='mini-chain-verdict')
+  .textContent,/VORLÄUFIG/);
+ assert.equal(f.requests.length,0);
+});
+test('M-05 wrong swipe shows separate miss and keeps local scores provisional',()=>{
+ const f=fixture();f.update();f.swipe(2);
+ const fx=f.effects();
+ assert.equal(fx.children.length,1);
+ assert.ok(fx.children[0].className.includes('is-miss'));
+ const mark=f.root.children[1].children.find(x=>x.className==='mini-chain-progress').children[0];
+ assert.ok(mark.classList.contains('is-provisional'));
+ assert.ok(!mark.classList.contains('is-wrong'));
+ assert.match(f.root.children[2].textContent,/VORLÄUFIG/);
+});
+test('M-05 server-confirmed partial results lock input after reconnect',()=>{
+ const f=fixture();f.update();f.swipe(0);f.swipe(2);
+ assert.equal(f.requests.length,0);
+ f.view.miniGames.myAnswers[4]={attempts:[
+  {step:0,correct:true},{step:1,correct:false}]};
+ f.update();
+ const progress=f.root.children[1].children.find(x=>x.className==='mini-chain-progress');
+ const verdict=f.root.children[1].children.find(x=>x.className==='mini-chain-verdict');
+ assert.ok(progress.children[0].classList.contains('is-correct'));
+ assert.ok(progress.children[1].classList.contains('is-wrong'));
+ assert.ok(!progress.children[0].classList.contains('is-provisional'));
+ assert.match(verdict.textContent,/SERVER BESTÄTIGT · 1 \/ 2/);
+ assert.ok(f.arena().children.every(button=>button.disabled));
+ f.swipe(0);
+ assert.equal(f.requests.length,0);
+});
+test('M-05 effect DOM is bounded after all 10 chain cuts',()=>{
+ const f=fixture();f.update();
+ for(let i=0;i<10;i++)f.swipe(i%3);
+ assert.equal(f.effects().children.length,3);
+ assert.equal(f.root.children[1].children.find(x=>x.className==='mini-chain-progress').children.length,10);
+ assert.ok(f.arena().children.every(button=>button.disabled));
+});
 test('Both boss screens load mobile-friendly chain art and keep v12 rune encounters untouched',()=>{
  const js=read('dog-boss-mini-ui.js'),css=read('dog-boss-chain-breaker.css');
  assert.doesNotMatch(js,/\bfetch\s*\(/);
@@ -125,7 +181,7 @@ test('Both boss screens load mobile-friendly chain art and keep v12 rune encount
   assert.ok(css.includes(token),token);
  for(const page of ['dog-boss10.html','dog-group-boss.html']){
   const html=read(page);
-  assert.match(html,/dog-boss-chain-breaker\.css\?v=20261112-chainbreak20/);
+  assert.match(html,/dog-boss-chain-breaker\.css\?v=20261112-m05-chainfx1/);
   assert.match(html,/dog-boss-mini-ui\.js\?v=[A-Za-z0-9_-]+/);
   assert.match(html,/dog-boss-live-ui\.js\?v=[A-Za-z0-9_-]+/);
  }
