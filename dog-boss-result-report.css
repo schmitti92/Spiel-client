@@ -168,6 +168,21 @@ body:has(.stage.boss-result-open){
  white-space:nowrap;
 }
 .boss-result-report tbody tr:last-child td{border-bottom:none}
+.boss-result-report .br-attack-details{
+ margin-top:13px;border:1px solid #8f96a57a;
+ border-radius:10px;background:#182436b8;
+}
+.boss-result-report .br-attack-details[hidden]{display:none!important}
+.boss-result-report .br-attack-details summary{
+ padding:12px 14px;cursor:pointer;user-select:none;
+ color:#f4d7a4;font:800 clamp(12px,1.1vw,15px) system-ui;
+}
+.boss-result-report .br-attack-details summary:focus-visible{
+ outline:3px solid #96e3fa;outline-offset:2px;
+}
+.boss-result-report .br-attack-details[open] .br-table-scroll{
+ padding:0 9px 9px;
+}
 .boss-result-report .br-final-damage{
  margin-top:13px;padding:11px 15px;
  background:linear-gradient(90deg,#5435269c,#1c30478c);
