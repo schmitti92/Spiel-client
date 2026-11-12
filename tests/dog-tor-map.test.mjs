@@ -471,7 +471,7 @@ test('Mini-boss 15 optional, boss gates need own previous normal and shared boss
 test('Public/unknown progress never fabricates gate wins or falsely paints locks',async()=>{
  const {gates}=page();
  for(const gate of [1,5,10,11,20,100]){
-  assert.equal(gates[gate-1].getAttribute('data-state'),null,'no server data, no claimed progress');
+  assert.equal(gates[gate-1].getAttribute('data-state'),'unknown','no server data, no claimed progress');
  }
  const preview=page('?room=123',{isMember:false,sharedBosses:[],members:[],progress:{}});
  await new Promise(resolve=>setImmediate(resolve));

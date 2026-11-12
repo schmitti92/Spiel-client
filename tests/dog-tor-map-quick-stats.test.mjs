@@ -16,5 +16,5 @@ test('Server combat receipt stats populate the victory/defeat dialog',()=>{
  assert.match(s,/stats.heroRemainingHp/);
  assert.match(s,/stats.heroDamageTaken/);
  assert.match(h,/id="gate-quick-result-stats"/);
- assert.match(h,/dog-tor-map\.js\?v=20261112-quick-finish1/);
+ assert.match(h,/dog-tor-map\.js\?v=20261113-gate-progress1/);
 });

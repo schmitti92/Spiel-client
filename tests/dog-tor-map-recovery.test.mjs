@@ -15,5 +15,5 @@ test('Recovery error visible and request ID retained on network uncertainty',()=
  assert.match(s,/\$\('gate-recovery-status'\)\.textContent=detail/);
  assert.match(s,/const definitive=\['INVALID_REQUEST_ID'/);
  assert.match(h,/id="gate-recovery-status" role="status"/);
- assert.match(h,/dog-tor-map\.js\?v=20261112-quick-finish1/);
+ assert.match(h,/dog-tor-map\.js\?v=20261113-gate-progress1/);
 });
