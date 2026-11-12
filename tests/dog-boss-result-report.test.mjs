@@ -83,6 +83,11 @@ test('the end report uses only a server-confirmed verdict and exact final boss H
  assert.ok(win.tips.some(x=>x.includes('besiegt')));
  assert.equal(model({...fakeView(),phase:'fighting'}),null);
  assert.equal(model({...fakeView(),result:null}),null);
+ const bypassed={...fakeView(),phase:'waiting',developerBossCooldownDisabled:true};
+ assert.equal(model(bypassed).result.win,false,
+  'developer cooldown bypass must not hide an already completed defeat');
+ assert.equal(model({...bypassed,developerBossCooldownDisabled:false}),null);
+ assert.equal(model({...bypassed,startedAt:0}),null);
 });
 
 test('minigame grade is bounded 0–100 with explicit maximum and missing-data handling',()=>{
