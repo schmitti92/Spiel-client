@@ -9,7 +9,6 @@
  <link rel="stylesheet" href="./dog-boss10.css?v=20261111-combat-fx1">
  <link rel="stylesheet" href="./dog-boss-preflight.css?v=20261111-v3-tablet-fit">
  <link rel="stylesheet" href="./dog-boss-live.css?v=20261111-v8-cinematic50">
- <link rel="stylesheet" href="./dog-boss-cinematic.css?v=20261111-endgame-v2">
  <link rel="stylesheet" href="./dog-boss-endgame.css?v=20261111-endgame-v2">
  <link rel="stylesheet" href="./dog-boss-dodge-cinematic.css?v=20261111-math12-v1">
  <link rel="stylesheet" href="./dog-boss-weapon.css?v=20261111-weapon-v1">
@@ -19,17 +18,16 @@
  <link rel="stylesheet" href="./dog-boss-color-target.css?v=20261112-color10-v1">
  <link rel="stylesheet" href="./dog-hero-selection.css?v=20261112-onboarding1">
  <link rel="stylesheet" href="./dog-boss-math-endgame.css?v=20261111-math-v1">
- <link rel="stylesheet" href="./dog-boss-legendary-arena.css?v=20261112-legendary-v2">
- <link rel="stylesheet" href="./dog-boss-real-heroes.css?v=20261112-realheroes2">
- <link rel="stylesheet" href="./dog-boss-compact-arena.css?v=20261112-compactdamage1">
+ <link rel="stylesheet" href="./dog-boss-battle-v3.css?v=20261112-rebuild1">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
  <script src="./dog-boss-mini-ui.js?v=20261112-color10-v1" defer></script>
  <script src="./dog-boss-director.js?v=20261111-endgame-v1" defer></script>
  <script src="./dog-boss-combat-fx.js?v=20261111-dodge8-v1" defer></script>
+ <script src="./dog-boss-battle-v3.js?v=20261112-rebuild1" defer></script>
  <script src="./dog-boss-preflight.js?v=20261112-onboarding1" defer></script>
  <script src="./dog-boss-live-ui.js?v=20261112-compactdamage1" defer></script>
- <script src="./dog-group-boss.js?v=20261112-compactdamage1" defer></script>
+ <script src="./dog-group-boss.js?v=20261112-rebuild1" defer></script>
  <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 </head>
 <body>
@@ -122,7 +120,8 @@
     <div><small>⚒️ SIEGBELOHNUNG</small><strong id="group-reward">Schmiedeaufstieg</strong></div>
    </div>
   </header>
-  <section class="arena arena-live" id="arena" data-arena-design="legendary" aria-labelledby="boss-name">
+  <!-- Arena V3: one battle surface, one interactive challenge; old UI adapters are hidden. -->
+  <section class="arena arena-live" id="arena" data-arena-design="v3" aria-labelledby="boss-name">
    <header class="arena-top live-arena-heading">
     <div class="live-heading-text"><small>✦ 100 TORE · GEMEINSAME BOSS-ARENA ✦</small><h2 id="boss-name">Der Aschewächter</h2></div>
     <div class="status-pill" id="phase">Verbinde …</div>
@@ -145,18 +144,17 @@
      <div class="timer-bar"><span id="timer-fill"></span></div>
     </div>
    </div>
-   <section class="live-damage-recap" aria-label="Zuletzt bestätigte Schäden">
-    <strong>💥 LETZTE SCHÄDEN</strong>
-    <div id="live-recent-damage" class="live-damage-recap-list" role="log" aria-live="off" aria-label="Letzte bestätigte Treffer">Noch keine bestätigten Treffer</div>
-   </section>
    <div class="live-battlefield">
-    <div class="monster combat-scene" id="combat-scene" data-cue="waiting" data-camera="normal" aria-label="Boss links, kämpfende Helden in der Mitte">
+    <div class="monster combat-scene" id="combat-scene" data-cue="waiting" data-camera="normal" aria-label="Boss links, drei wählbare Helden rechts">
+     <div class="v3-turn-progress" id="v3-turn-progress" aria-hidden="true"></div>
+     <div class="v3-actor-action" id="v3-actor-action" role="status" aria-live="off">⚔️ Die Helden bereiten sich vor</div>
      <div class="embers" aria-hidden="true">✦ · ✧ · ✦</div>
       <div class="combat-view-controls"><button type="button" id="combat-camera" aria-label="Kamerawinkel wechseln" title="Kamera wechseln">🎥</button><button type="button" id="combat-fx" aria-label="Effekte umschalten" aria-pressed="true" title="Effekte">✨</button></div>
       <div id="combat-focus-label" class="combat-focus-label" aria-live="polite"></div>
       <div id="combat-boss-damage" class="combat-boss-damage" aria-hidden="true"></div>
       <div id="combat-team-damage" class="combat-team-damage" aria-hidden="true"></div>
      <div class="combat-stage" aria-hidden="true">
+       <div class="v3-impact-flare"></div>
       <span class="combat-arena-aura"></span>
       <span class="combat-team-aegis"></span>
       <div class="combat-boss" id="combat-boss"><div class="monster-art"></div><div class="monster-shadow"></div></div>
@@ -209,6 +207,12 @@
       </div>
      </div>
     </section>
+   </div>
+   <div class="v3-combat-log" aria-label="Zuletzt bestätigte Treffer">
+    <strong>💥 LETZTE TREFFER</strong>
+    <div id="live-recent-damage" class="live-damage-recap-list" role="log" aria-live="off">Noch keine bestätigten Treffer</div>
+   </div>
+   <div class="v3-compat" aria-hidden="true" hidden>
     <section class="live-cinematic" id="live-cinematic" hidden aria-label="Gemeinsame Kampf-Zwischensequenz" aria-live="polite">
      <header class="live-cinematic-header">
       <span>🎬 KAMPFSEQUENZ</span>
@@ -249,6 +253,7 @@
      <span class="live-round-step" data-step="3" hidden>4 · Verteidigung</span>
     </div>
     <span id="live-feedback" class="live-feedback" role="status" aria-live="polite">Boss und Team sind bereit.</span>
+   </div>
    </div>
   </section>
   <section class="squad" id="boss-squad" aria-labelledby="squad-title">
