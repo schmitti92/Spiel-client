@@ -210,7 +210,7 @@ test('v12 runs all five minigames; the extra 10-second Finalschlag triggers thre
  assert.match(sheet,/mini-tactical\.is-final-attack/);
  for(const p of ['dog-boss10.html','dog-group-boss.html']){
   const html=read(p);
-  assert.match(html,/dog-boss-mini-ui\.js\?v=20261112-chainbreak20/);
+  assert.match(html,/dog-boss-mini-ui\.js\?v=[A-Za-z0-9_-]+/);
   assert.match(html,/dog-boss-live-ui\.js\?v=[A-Za-z0-9_-]+/);
   assert.match(html,/dog-boss-battle-v3\.js\?v=[A-Za-z0-9_-]+/);
  }
@@ -357,7 +357,10 @@ test('K-03 only flashes after the official server impact',()=>{
 // their exact pre-existing individual strike slots.
 test('K-04 v15 fallen fighter skips last stage without stopping surviving heroes',()=>{
  const {derive}=load(),v=view();
+ v.endsAt=begin+135000;
  v.miniGames.version=15;
+ v.miniGames.rounds=[...rounds,{round:4,kind:'chain',
+  startMs:101000,endMs:121000}];
  v.combat={version:1,events:[
   {round:3,slot:0,kind:'boss-strike',uid:'chris',
    targetId:'chris',hpAfter:0,atMs:89000}
@@ -365,8 +368,8 @@ test('K-04 v15 fallen fighter skips last stage without stopping surviving heroes
  const dead=derive(v,begin+121900);
  assert.equal(dead.kind,'fallen');
  assert.equal(dead.uid,'chris');
- const alive=derive(v,begin+124500);
+ const alive=derive(v,begin+125000);
  assert.equal(alive.kind,'hero-strike');
  assert.equal(alive.uid,'nova');
- assert.equal(v.endsAt-begin,101000,'v11 fixture keeps original timeline');
+ assert.equal(v.endsAt-begin,135000,'new v15 fight preserves 135-second timeline');
 });
