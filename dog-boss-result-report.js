@@ -29,7 +29,8 @@
    !view.result||!Array.isArray(view.roster)||!view.roster.length)return null;
   const result=view.result,rawStages=view.miniGames?.exchange?.stages;
   const stages=Array.isArray(rawStages)?rawStages.filter(s=>s?.completed):[];
-  const serverEvents=view.combat?.version===1&&
+  const serverEvents=Number(view.miniGames?.version)>=11&&
+   view.combat?.version===1&&
    Array.isArray(view.combat?.events)?view.combat.events:null;
   const strikes=(serverEvents||view.miniGames?.exchange?.strikes||[])
    .filter(x=>x&&Number.isInteger(x.round)&&

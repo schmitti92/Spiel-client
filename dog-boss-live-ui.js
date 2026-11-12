@@ -103,7 +103,8 @@
    // S-01: all screens use the server-confirmed, sequenced hit events when
    // available. Time continues locally between polls; no extra requests.
    const stream=view?.combat;
-   const inFight=view?.phase==='fighting'&&stream?.version===1&&
+   const inFight=view?.phase==='fighting'&&
+    Number(view?.miniGames?.version)>=11&&stream?.version===1&&
     !!stream.fightId&&Array.isArray(stream.events)&&Number(view?.startedAt)>0;
    const elapsed=Math.max(0,Number(now)-Number(view?.startedAt||0));
    const released=inFight?stream.events.filter(e=>Number(e.atMs)<=elapsed):[];

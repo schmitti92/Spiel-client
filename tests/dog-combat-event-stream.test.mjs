@@ -21,7 +21,7 @@ test('S-01 replay statistics select authoritative event stream over legacy strik
   members:[{uid:'a',name:'Hero'}],teamHealth:{heroes:[{uid:'a',hp:100,maxHp:145}]},
   result:{win:false,damage:250,bossHp:1000,hpRemaining:750},
   combat:{version:1,fightId:event.fightId,events:[event]},
-  miniGames:{rounds:[{round:0,kind:'math'}],
+  miniGames:{version:14,rounds:[{round:0,kind:'math'}],
    exchange:{stages:[{round:0,kind:'math',completed:true,
     playerResults:[{uid:'a',correct:1,max:8}]}],
     strikes:[{uid:'a',round:0,slot:0,kind:'hero-strike',amount:999,atMs:13500}]}}
@@ -38,6 +38,8 @@ test('S-01 timeline and personal LP consume official events, preserve old-state 
  const arena=read('dog-boss-battle-v3.js');
  const live=read('dog-boss-live-ui.js');
  assert.match(arena,/view\.combat\.events:view\?\.miniGames\?\.exchange\?\.strikes/);
+ assert.match(arena,/Number\(view\?\.miniGames\?\.version\)>=11/);
+ assert.match(live,/Number\(view\?\.miniGames\?\.version\)>=11/);
  assert.match(live,/stream\.events\.filter\(e=>Number\(e\.atMs\)<=elapsed\)/);
  assert.match(live,/latestBoss\?\.hpAfter\?\?stream\.initialBossHp/);
  assert.match(live,/stream\.initialHeroHp\?\.\[hero\.uid\]/);

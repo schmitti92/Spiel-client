@@ -43,7 +43,8 @@
     // Combat uses the very same impact time as the server's LP breakdown.
     // If the stage has not been confirmed yet, animate without a damage number.
     const kind=defensive?'boss-strike':'hero-strike';
-    const confirmed=view?.combat?.version===1&&Array.isArray(view?.combat?.events)?
+    const confirmed=Number(view?.miniGames?.version)>=11&&
+     view?.combat?.version===1&&Array.isArray(view?.combat?.events)?
      view.combat.events:view?.miniGames?.exchange?.strikes;
     const server=Array.isArray(confirmed)?confirmed.find(x=>
      x?.round===i&&x.uid===uid&&x.kind===kind&&x.slot===slot):null;
@@ -84,7 +85,8 @@
    elem.dataset.weapon=type;
   }
   function strikeEffects(view,state,heroNodes){
-   const provided=view?.combat?.version===1&&Array.isArray(view?.combat?.events)?
+   const provided=Number(view?.miniGames?.version)>=11&&
+     view?.combat?.version===1&&Array.isArray(view?.combat?.events)?
      view.combat.events:view?.miniGames?.exchange?.strikes;
    if(!Array.isArray(provided)||!Number(view?.startedAt))return;
    const actors=new Set((view?.roster||[]).map(a=>a?.uid).filter(Boolean));
