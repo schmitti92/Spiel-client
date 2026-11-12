@@ -16,7 +16,8 @@
   const elapsed=Math.max(0,now-Number(view.startedAt));
   const rounds=view?.miniGames?.rounds||[];
   const duration=Number(view?.endsAt)-Number(view?.startedAt);
-  const fightDuration=Number.isFinite(duration)&&duration>0?duration:101000;
+  const fightDuration=Number.isFinite(duration)&&duration>0?duration:
+   (view?.miniGames?.version>=12?125000:101000);
   // v1-v6 can still be replayed with their historical shorter sequences.
   const wait=Number(view?.miniGames?.version)>=7?SEGMENT_WAIT_MS:5000;
   for(let i=0;i<rounds.length;i++){
