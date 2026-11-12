@@ -113,11 +113,15 @@
     proxy.textContent=real.textContent;
    }
    const mine=members.find(m=>m.isMe);
+   const needsHeroChoice=!!mine&&mine.heroLocked!==true;
    $('preflight-launch-flag').textContent=!view?'⏳ SERVERVERBINDUNG WIRD GEPRÜFT':
+    needsHeroChoice?'🎭 BITTE ZUERST DEINEN HELDEN WÄHLEN':
     phase==='cooldown'?'⚔️ NEUER VERSUCH MÖGLICH':
     mine?.ready?'✅ BEREIT · AUF START WARTEN':
     !view.eligible?'🔒 VORHERIGE TORE ABSCHLIESSEN':'⚔️ BEREIT ZUM KAMPF';
-   const source=$('status')?.textContent||'Bereite deinen Helden auf den Kampf vor.';
+   const source=needsHeroChoice?
+    'Öffne die 100-Tore-Karte und bestätige zuerst deine endgültige Charakterwahl.':
+    ($('status')?.textContent||'Bereite deinen Helden auf den Kampf vor.');
    const message=$('preflight-message');
    if(message.textContent!==source)message.textContent=source;
   }
