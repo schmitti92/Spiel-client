@@ -29,6 +29,7 @@
   100:'Hinter diesem letzten Wächter wartet das Ziel eurer hundert Tore. Jetzt muss eure gesamte Expedition zusammenhalten.'
  };
  const rolePortraits=['held-krieger.svg','held-magier.svg','held-schildtraeger.svg'];
+ const heroClasses=['krieger','magierin','waechter'];
  const cinematicRolePortraits=['held-krieger-cinematic.svg','held-magier-cinematic.svg','held-schildtraeger-cinematic.svg'];
  const $=id=>document.getElementById(id);
  function create(gate){
@@ -59,7 +60,7 @@
   let lastRoster='',lastScreen='';
   function teamCards(members){
    const signature=JSON.stringify(members.map(m=>m?
-    [m.uid,m.name,m.isMe,m.ready,m.eligible]:null));
+    [m.uid,m.name,m.heroClass,m.isMe,m.ready,m.eligible]:null));
    if(lastRoster===signature)return;
    lastRoster=signature;
    const parent=$('preflight-team-members');
@@ -68,15 +69,16 @@
     const member=members[i],card=document.createElement('article');
     card.className='preflight-member'+(member?.ready?' is-ready':'')+
      (!member?.eligible?' is-unready':'');
+    const chosen=heroClasses.includes(member?.heroClass)?heroClasses.indexOf(member.heroClass):i;
     const image=document.createElement('img');
     image.className='preflight-member-portrait';
-    image.src='./dog-boss-art/'+(gate===10?cinematicRolePortraits:rolePortraits)[i];
+    image.src='./dog-boss-art/'+(gate===10?cinematicRolePortraits:rolePortraits)[chosen];
     image.alt='';image.width=70;image.height=70;
     const info=document.createElement('div');info.className='preflight-member-info';
     const title=document.createElement('strong');
     title.textContent=member?.name||'Freier Heldenplatz';
     const subtitle=document.createElement('span');
-    subtitle.textContent=member?.isMe?'DEIN HELD':member?'TEAMMITGLIED':'WARTET AUF SPIELER';
+    subtitle.textContent=member?((member.isMe?'DEIN HELD':'TEAMMITGLIED')+' · '+['KRIEGER','MAGIERIN','WÄCHTER'][chosen]):'WARTET AUF SPIELER';
     info.append(title,subtitle);
     const marker=document.createElement('span');marker.className='preflight-member-state';
     marker.textContent=!member?'Frei':!member.eligible?'Gesperrt':member.ready?'✓ Bereit':'Wartet';
