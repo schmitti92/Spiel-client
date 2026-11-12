@@ -9,16 +9,18 @@
 <link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-d5">
 <link rel="stylesheet" href="./dog-hero-equipment.css?v=20261112-hd-armor1">
 <link rel="stylesheet" href="./dog-forge-areas.css?v=20261112-plus-v1">
+<link rel="stylesheet" href="./dog-forge-clean.css?v=20261112-forge50-v1">
 <script src="./profile-config.js"></script>
 <script src="./profile-auth.js"></script>
-<script src="./dog-hero-equipment.js?v=20261112-weapon-ready1"></script>
-<script src="./dog-forge-ui.js?v=20261112-hd-armor1" defer></script>
-<script src="./dog-forge-gallery.js?v=20261112-hd-armor1" defer></script>
+<script src="./dog-hero-equipment.js?v=20261112-forge50-v1"></script>
+<script src="./dog-forge-ui.js?v=20261112-forge50-v1" defer></script>
+<script src="./dog-forge-ascent-ui.js?v=20261112-forge50-v1" defer></script>
+<script src="./dog-forge-gallery.js?v=20261112-forge50-v1" defer></script>
 <script src="./dog-forge-fx.js?v=20261110-forge-d2" defer></script>
 <script src="./dog-forge-ceremony.js?v=20261110-forge-d2" defer></script>
 <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 <link rel="stylesheet" href="./dog-event-tabs.css?v=20261112-boss-from-map2">
-<script src="./dog-event-tabs.js?v=20261112-boss-from-map1" defer></script>
+<script src="./dog-event-tabs.js?v=20261112-forge50-v1" defer></script>
 </head>
 <body data-forge-background=""
       data-forge-background-desktop="./dog-forge-art/forge-workshop-desktop.webp"
@@ -33,12 +35,32 @@
   <button type="button" id="forge-refresh" class="nav-reload">↻ Aktualisieren</button>
  </nav>
 
- <header class="forge-header">
-  <div class="forge-kicker"><span class="ember">✦</span> DIE 100 TORE <span class="kicker-line"></span> DEINE SCHMIEDE</div>
-  <h1>Schmiede <span>der Helden</span></h1>
-  <p class="subtitle">Dein Held. Deine Stärke. Dein Weg durch die 100 Tore.</p>
+ <header class="forge-header forge-clean-header">
+  <div class="forge-clean-title"><span class="forge-clean-logo" aria-hidden="true">⚒️</span>
+   <div><h1>Schmiede <span>der Helden</span></h1><p class="subtitle">Links wählen – rechts verbessern.</p></div>
+  </div>
+  <button type="button" id="forge-gallery-open" class="forge-gallery-open" disabled>🏆 Galerie</button>
  </header>
-
+ <section class="forge-level-panel" id="forge-level-panel" aria-label="Gemeinsame Schmiedestufe">
+  <div class="forge-level-heading"><span aria-hidden="true">⚒️</span><div>
+   <small>GEMEINSAME SCHMIEDE</small><strong>Stufe <span id="forge-level-value">1</span><em> / 10</em></strong>
+  </div></div>
+  <div class="forge-level-middle">
+   <div class="forge-level-progress" id="forge-level-progress" role="progressbar"
+    aria-label="Schmiedestufe" aria-valuemin="1" aria-valuemax="10" aria-valuenow="1"><span id="forge-level-fill"></span></div>
+   <span id="forge-level-cap">Waffen & Rüstung bis Level 5 · Fähigkeiten bis Level 5</span>
+  </div>
+  <div class="forge-level-action">
+   <span id="forge-level-sigils">🔱 Boss-Siegel: –</span>
+   <button id="forge-level-up" type="button" disabled>🔒 Boss-Siegel benötigt</button>
+  </div>
+ </section>
+ <p id="forge-level-status" role="status" aria-live="polite" hidden></p>
+ <div class="forge-clean-help" aria-label="So funktioniert die Schmiede">
+  <strong>So funktioniert's:</strong><span>① Links wählen</span>
+  <span class="forge-help-arrow">›</span><span>② Kosten prüfen</span>
+  <span class="forge-help-arrow">›</span><span>③ Verbessern</span>
+ </div>
  <section class="forge-banner" aria-label="Persönlicher Fortschritt">
   <div class="character-emblem gear-stage-1" id="hero-emblem" aria-hidden="true">
    <div class="character-orbit"></div>
@@ -52,7 +74,7 @@
    <span class="hero-rank" id="forge-rank">✦ Neuling</span>
    <span class="forge-display-title" id="forge-display-title">Schmiedelehrling</span>
    <span id="forge-player-note">Deine Fortschritte bleiben gespeichert.</span>
-   <button type="button" id="forge-gallery-open" class="forge-gallery-open" disabled>🏆 Meine Heldengalerie</button>
+
   </div>
   <div class="hero-metrics">
    <div class="metric"><span>⚔️ Waffe</span><strong id="forge-weapon-level">1<small>/20</small></strong></div>
@@ -83,7 +105,7 @@
 
  <div class="forge-workspace" id="forge-workspace">
   <section class="workshop-panel">
-   <div class="panel-title"><span class="ornament">✦</span><h2>Deine Werkstatt</h2><span class="panel-rule"></span></div>
+   <div class="panel-title forge-clean-workshop-label"><h2>Wähle deine Verbesserung</h2></div>
    <div class="forge-tabs" role="tablist" aria-label="Bisherige Bereichsauswahl" hidden>
     <button class="forge-tab active" type="button" data-tab="equipment" role="tab" aria-selected="true">⚔️ <span>Ausrüstung</span></button>
     <button class="forge-tab" type="button" data-tab="attack" role="tab" aria-selected="false">💥 <span>Angriff</span></button>
@@ -150,6 +172,17 @@
  <footer class="forge-footer">⚒️ Fortschritt persönlich gespeichert <span>✦</span> Balancewerte vorläufig <span>✦</span> Bosskampf folgt</footer>
 </div>
 
+<dialog id="forge-level-dialog" class="forge-level-dialog" aria-labelledby="forge-level-dialog-title">
+ <div class="forge-level-modal">
+  <div class="forge-level-modal-icon" aria-hidden="true">🔱</div>
+  <h2 id="forge-level-dialog-title">Schmiede verbessern?</h2>
+  <p id="forge-level-dialog-desc">Ein Boss-Siegel wird verbraucht. Alle Helden erhalten fünf zusätzliche Level.</p>
+  <div class="forge-level-modal-actions">
+   <button id="forge-level-cancel" type="button">Abbrechen</button>
+   <button id="forge-level-confirm" type="button">⚒️ Aufsteigen</button>
+  </div>
+ </div>
+</dialog>
 <dialog id="forge-result" class="forge-result" aria-labelledby="forge-result-heading">
  <div class="result-plate">
   <button id="forge-result-x" type="button" class="result-x" aria-label="Schließen">✕</button>
