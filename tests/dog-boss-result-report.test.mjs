@@ -157,6 +157,10 @@ test('result opens automatically, replays only supplied strikes, and closes/reop
  assert.equal(body.classList.contains('boss-result-open'),true);
  assert.equal(root.nodes['br-hero-vitals'].children.length,3);
  assert.equal(root.nodes['br-attack-rows'].children.length,3);
+ assert.equal(root.nodes['br-strike-rows'].children.length,8);
+ assert.equal(root.nodes['br-strike-details'].hidden,false);
+ assert.equal(root.nodes['br-strike-rows'].children[0].children[1].textContent,'Chris');
+ assert.equal(root.nodes['br-strike-rows'].children[0].children[3].textContent,'−200 LP');
  assert.equal(root.nodes['br-rounds'].children.length,3);
  assert.equal(root.nodes['br-score-value'].textContent,'62 %');
  assert.match(root.nodes['br-title'].textContent,/NIEDERLAGE/);
