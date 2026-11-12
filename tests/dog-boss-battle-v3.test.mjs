@@ -85,6 +85,11 @@ test('both battle pages use only the new visual layer while retaining every requ
    'cinematic-grand-countdown','live-stage-announcement','v3-actor-action',
    'v3-turn-progress','live-recent-damage','retry-button','timer'])
    assert.ok(html.includes('id="'+id+'"'),path+' missing '+id);
+  const compat=html.indexOf('class="v3-compat"');
+  const hiddenFlow=html.indexOf('class="live-rounds" hidden');
+  const squad=html.indexOf('id="boss-squad"');
+  assert.ok(compat>=0&&hiddenFlow>compat&&squad>hiddenFlow,
+   'hidden legacy round flow remains inside the offscreen compatibility section');
   const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
   assert.equal(new Set(ids).size,ids.length,'duplicate IDs on '+path);
   const controller=read(path==='dog-boss10.html'?'dog-boss10.js':'dog-group-boss.js');
