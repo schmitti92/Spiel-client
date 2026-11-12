@@ -361,3 +361,34 @@ body.dog-boss-report-visible{
   animation:none!important;transition:none!important;
  }
 }
+
+/* K-05: a short local-only personal finale before the single verdict.
+ * This overlay does not make requests and never changes server damage. */
+.br-dialog{position:relative}
+.br-finale-screen:not([hidden]){
+ position:absolute;inset:0;z-index:15;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:clamp(12px,2.1vh,24px);padding:clamp(18px,5vw,45px);
+ text-align:center;border-radius:inherit;
+ background:radial-gradient(ellipse at 50% 47%,#744022e8,#12152ef7 70%),
+  linear-gradient(145deg,#15152a,#341d28);
+ color:#ffe8c3;overflow:hidden;
+}
+.br-finale-screen:before{
+ content:"";position:absolute;inset:-25%;pointer-events:none;
+ background:conic-gradient(from 20deg,transparent,#f9af5366,transparent,#8dbdfb44,transparent);
+ animation:br-finale-glow 4s linear infinite;opacity:.34;
+}
+.br-finale-screen>*{position:relative;z-index:1}
+.br-finale-eyebrow{margin:0;letter-spacing:.13em;font:900 clamp(10px,1.6vw,15px) system-ui;color:#ffcd89}
+.br-finale-name{display:block;font:900 clamp(24px,4.2vw,52px)/1.1 Georgia,serif;text-shadow:0 4px 20px #000b}
+.br-finale-value{display:block;font:900 clamp(39px,8vw,94px)/1 Georgia,serif;
+ color:#fff3d6;text-shadow:0 0 24px #f9b26aa8;animation:br-finale-hit .48s ease-out}
+.br-finale-hp{font:800 clamp(15px,2vw,25px) system-ui;font-variant-numeric:tabular-nums}
+.br-finale-step{font:800 clamp(12px,1.5vw,17px) system-ui;color:#a6dfff}
+.br-dialog[data-finale="running"]{overflow:hidden}
+@keyframes br-finale-glow{to{transform:rotate(360deg)}}
+@keyframes br-finale-hit{from{transform:scale(.76);opacity:.3}to{transform:scale(1);opacity:1}}
+@media(prefers-reduced-motion:reduce){
+ .br-finale-screen:before,.br-finale-value{animation:none!important}
+}

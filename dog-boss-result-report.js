@@ -47,7 +47,8 @@
      .map(p=>({...p,kind:s.kind,round:s.round})));
    const correct=playerStages.reduce((n,p)=>n+num(p.correct),0);
    const possible=playerStages.reduce((n,p)=>n+num(p.max),0);
-   const attacks=strikes.filter(e=>e.uid===hero.uid&&e.kind==='hero-strike');
+   const attacks=strikes.filter(e=>e.uid===hero.uid&&
+    ['hero-strike','hero-finisher'].includes(e.kind));
    const received=strikes.filter(e=>e.uid===hero.uid&&e.kind==='boss-strike');
    return {uid:hero.uid,name:cap(m.name||'Held '+(i+1)),
     heroClass:['krieger','magierin','waechter'].includes(m.heroClass)?
@@ -86,6 +87,10 @@
     defensive:!!s.defensive};
   });
   const finisher=strikes.find(e=>e.kind==='team-finisher')||null;
+  const personalFinales=strikes.filter(e=>e.kind==='hero-finisher');
+  const finale=Number(view.miniGames?.version)>=15&&
+   view.combat?.finale?.kind==='personal'&&personalFinales.length?
+   {strikes:personalFinales,outcome:view.result.win?'victory':'defeat'}:null;
   const guard=strikes.find(e=>e.kind==='boss-guard')||null;
   const settlement=view.combat?.reconciliation?.reconciled===true?
    view.combat.reconciliation:null;
@@ -94,6 +99,13 @@
    title:'⚡ Gemeinsamer Schlussangriff · Glück / Kritisch',
    correct:0,max:0,percent:null,
    damage:num(finisher.amount),taken:0,defensive:false
+  });
+  if(personalFinales.length)stageRows.push({
+   round:4,kind:'hero-finisher',
+   title:'⚡ Persönliche Schlussangriffe · '+personalFinales.length+' Helden',
+   correct:0,max:0,percent:null,
+   damage:personalFinales.reduce((n,e)=>n+num(e.amount),0),
+   taken:0,defensive:false
   });
   if(guard)stageRows.push({
    round:guard.round,kind:'boss-guard',
@@ -110,7 +122,8 @@
     ...event,name:event.kind==='team-finisher'?'Team':
      event.kind==='boss-guard'?'Boss':
      rows.find(r=>r.uid===event.uid)?.name||'Held',
-    amount:num(event.amount),seq:Number.isInteger(event.sequence)?event.sequence:i+1,
+    amount:event.kind==='boss-guard'?Math.round(Number(event.amount)||0):
+     num(event.amount),seq:Number.isInteger(event.sequence)?event.sequence:i+1,
     kind:event.kind,
     roundTitle:LABELS[view.miniGames?.rounds?.[event.round]?.kind]||
      ('Runde '+(event.round+1))
@@ -148,7 +161,7 @@
    rows,stages:stageRows,score:{correct:right,max:possible,
     percent,grade:percent===null?'Nicht verfügbar':grade(percent)},
    teamHp,teamMax,tips:tips.slice(0,4),replay,
-   settlement,finisher,guard,
+   settlement,finisher,guard,finale,
    cooldownUntil:num(view.cooldownUntil),key:String(view.gate||10)+':'+
     String(view.startedAt||0)+':'+String(view.attempt||0)+':'+
     String(result.win)+':'+String(finalDamage)};
@@ -161,9 +174,18 @@
   const openButton=document.querySelector('#boss-result-open');
   if(document.body?.appendChild)document.body.appendChild(root);
   let visibleKey='',dismissedKey='',timer=null,events=[],nextIndex=0;
+  let finaleTimer=null,finaleStep=0;
   const html=`
    <div class="br-dialog" role="dialog" aria-modal="true" aria-labelledby="br-title"
     aria-describedby="br-subtitle" tabindex="-1">
+    <div id="br-finale-screen" class="br-finale-screen" hidden
+     aria-label="Persönliche Schlussangriffe" role="status" aria-live="polite">
+     <p class="br-finale-eyebrow">⛓️ KETTENBRECHER GESCHAFFT · DAS FINALE</p>
+     <strong id="br-finale-name" class="br-finale-name">Die Helden sammeln ihre Kräfte</strong>
+     <span id="br-finale-value" class="br-finale-value">⚔️</span>
+     <p id="br-finale-hp" class="br-finale-hp"></p>
+     <p id="br-finale-step" class="br-finale-step"></p>
+    </div>
     <div class="br-scroll">
    <header class="br-head">
     <p class="br-eyebrow">✦ DIE 100 TORE · KAMPFABRECHNUNG ✦</p>
@@ -276,6 +298,51 @@
    fill.style.width=clamp(percent,0,100)+'%';
    meter.append(fill);parent.append(meter);
   };
+  function clearFinale(){
+   if(finaleTimer!==null){clearInterval(finaleTimer);finaleTimer=null;}
+   const screen=node('br-finale-screen');
+   if(screen)screen.hidden=true;
+   root.dataset.finale='finished';
+   node('br-return').disabled=false;
+   node('br-replay-start').disabled=!events.length;
+  }
+  function startFinale(report){
+   const strikes=report.finale?.strikes||[];
+   if(!strikes.length)return;
+   clearFinale();
+   root.dataset.finale='running';
+   node('br-finale-screen').hidden=false;
+   node('br-return').disabled=true;
+   node('br-replay-start').disabled=true;
+   finaleStep=0;
+   const display=()=>{
+    if(finaleStep<strikes.length){
+     const strike=strikes[finaleStep];
+     const name=report.rows.find(r=>r.uid===strike.uid)?.name||'Held';
+     text(node('br-finale-name'),'⚔️ '+name+' trifft den Boss!');
+     text(node('br-finale-value'),'−'+fmt.format(strike.amount)+' LP');
+     text(node('br-finale-hp'),'Boss-LP: '+
+      fmt.format(strike.hpBefore)+' → '+fmt.format(strike.hpAfter)+
+      (strike.overkillDamage>0?' · '+fmt.format(strike.overkillDamage)+
+       ' LP Übertreffer':''));
+     text(node('br-finale-step'),'Schlussangriff '+(finaleStep+1)+
+      ' / '+strikes.length);
+     finaleStep++;return;
+    }
+    if(finaleStep===strikes.length){
+     text(node('br-finale-name'),report.result.win?
+      '🏆 SIEG! DER BOSS IST BESIEGT':'💀 NIEDERLAGE! DER BOSS HAT ÜBERLEBT');
+     text(node('br-finale-value'),report.result.win?'🏆':'🛡️');
+     text(node('br-finale-hp'),'Endstand: '+
+      fmt.format(report.result.bossRemaining)+' Boss-LP');
+     text(node('br-finale-step'),'Serverbestätigte Schlusswertung');
+     finaleStep++;return;
+    }
+    clearFinale();
+   };
+   display();
+   finaleTimer=setInterval(display,1500);
+  }
   const ended=()=>{
    if(timer!==null){clearInterval(timer);timer=null;}
    node('br-replay-start').textContent='↻ Highlights erneut abspielen';
@@ -283,7 +350,8 @@
   };
   function showStrike(event){
    const field=node('br-replay-stage');
-   const final=event.kind==='team-finisher';
+   const final=['team-finisher','hero-finisher'].includes(event.kind);
+   const personal=event.kind==='hero-finisher';
    const guard=event.kind==='boss-guard';
    field.dataset.hitKind=guard?'guard':final?'final':
     event.kind==='boss-strike'?'boss':'hero';
@@ -296,6 +364,7 @@
    text(node('br-replay-hit'),label);
    text(node('br-replay-caption'),
     (guard?'🛡️ Der Boss wehrt durch Glück einen Teil des Schadens ab':
+     personal?'⚡ Persönlicher Schlussangriff von '+event.name:
      final?'⚡ Gemeinsamer Schlussangriff · Glück / Kritisch':
      event.roundTitle+' · '+(event.kind==='boss-strike'?
       'Boss greift '+event.name+' an':event.name+' greift den Boss an'))+
@@ -327,7 +396,7 @@
    if(timer!==null){ended();return;}startReplay();
   });
   node('br-return').addEventListener('click',()=>{
-   if(!visibleKey)return;
+   if(!visibleKey||finaleTimer!==null)return;
    dismissedKey=visibleKey;
    ended();
    setOpen(false);
@@ -387,9 +456,11 @@
    const individualHits=replay.map(e=>{
     const tr=make('tr');
     const againstBoss=e.kind!=='boss-strike';
-    const final=e.kind==='team-finisher';
+    const personal=e.kind==='hero-finisher';
+    const final=e.kind==='team-finisher'||personal;
     const guard=e.kind==='boss-guard';
-    for(const v of [guard?'Glücksabwehr':final?'Finalschlag':'Runde '+(e.round+1),
+    for(const v of [guard?'Glücksabwehr':
+     personal?'Persönlicher Schlussangriff':final?'Finalschlag':'Runde '+(e.round+1),
      againstBoss?e.name:report.bossName,
      againstBoss?report.bossName:e.name,
      guard?'+'+fmt.format(-e.amount)+' Boss-LP':
@@ -446,16 +517,17 @@
   function update(view){
    const report=model(view);
    if(!report){
-    if(visibleKey)ended();
+    if(visibleKey){ended();clearFinale();}
     visibleKey='';dismissedKey='';
     setOpen(false);
     if(openButton)openButton.hidden=true;
     return;
    }
    if(report.key!==visibleKey){
-    ended();visibleKey=report.key;dismissedKey='';
+    ended();clearFinale();visibleKey=report.key;dismissedKey='';
     render(report);
     setOpen(true);
+    startFinale(report);
    }else{
     // No clock tick, poll or unchanged server state may close the dialog.
     const show=dismissedKey!==visibleKey;

@@ -124,3 +124,45 @@ test('S-02 historical low-luck boss guard is visible, not credited to a player',
  assert.equal(report.replay.reduce((sum,e)=>sum+
   (e.targetId==='boss'?e.amount:0),0),50);
 });
+
+test('K-05 personal finale: three named survivors, exact rolled totals and no anonymous extra hit',()=>{
+ const {model}=load('dog-boss-result-report.js','DogBossResultReport');
+ const startedAt=1900000000000, fightId='g10-t'+startedAt+'-a3';
+ const heroes=[{uid:'a',name:'Chris'},{uid:'b',name:'Nova'},{uid:'c',name:'Titan'}];
+ const old=[
+  {eventId:fightId+':1',sequence:1,uid:'a',kind:'hero-strike',
+   targetId:'boss',round:4,slot:0,amount:10,atMs:125000},
+  {eventId:fightId+':2',sequence:2,uid:'b',kind:'hero-strike',
+   targetId:'boss',round:4,slot:1,amount:20,atMs:128000},
+  {eventId:fightId+':3',sequence:3,uid:'c',kind:'hero-strike',
+   targetId:'boss',round:4,slot:2,amount:30,atMs:131000}
+ ];
+ const finals=[15,30,45].map((amount,slot)=>({
+  eventId:fightId+':'+(slot+4),sequence:slot+4,uid:heroes[slot].uid,
+  kind:'hero-finisher',targetId:'boss',round:4,slot,amount,
+  hpBefore:140-[0,15,45][slot],hpAfter:140-[15,45,90][slot],
+  atMs:135001+slot*1500,overkillDamage:0
+ }));
+ const view={gate:10,phase:'cooldown',startedAt,endsAt:startedAt+135000,
+  name:'Der Aschewächter',attempt:3,
+  roster:heroes.map(h=>({...h,weaponLevel:1,armorLevel:1})),
+  members:heroes,teamHealth:{heroes:heroes.map(h=>({uid:h.uid,hp:100,maxHp:145}))},
+  result:{win:false,damage:150,bossHp:200,hpRemaining:50},
+  combat:{version:1,fightId,events:[...old,...finals],
+   finale:{kind:'personal',strikes:finals,outcome:'defeat',sceneDurationMs:4500},
+   reconciliation:{reconciled:true,rawDamage:150,appliedDamage:150,
+    stageDamage:60,finisherDamage:90,overkillDamage:0,finalBossHp:50}},
+  miniGames:{version:15,rounds:[{kind:'math',round:0},{kind:'chain',round:4}],
+   exchange:{stages:[{round:4,kind:'chain',completed:true,defensive:false,
+    playerResults:heroes.map(h=>({uid:h.uid,correct:5,max:10}))}]}}
+ };
+ const report=model(view);
+ assert.equal(report.finale.strikes.length,3);
+ assert.deepEqual(report.finale.strikes.map(e=>e.uid),['a','b','c']);
+ assert.deepEqual(report.rows.map(r=>r.attack),[25,50,75]);
+ assert.equal(report.rows.reduce((n,r)=>n+r.attack,0),150);
+ assert.equal(report.replay.length,6);
+ assert.equal(report.stages.at(-1).kind,'hero-finisher');
+ assert.equal(report.stages.at(-1).damage,90);
+ assert.equal(report.replay.filter(e=>e.kind==='team-finisher').length,0);
+});
