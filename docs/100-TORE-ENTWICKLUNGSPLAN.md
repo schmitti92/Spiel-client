@@ -1,7 +1,7 @@
 # ⚔️ 100 Tore – Gemeinsamer Entwicklungs- und Aufgabenplan
 
 > **Verbindlicher Arbeitsplan** für die schrittweise Verbesserung von „100 Tore“ auf GitHub `main`.
-> Erstellt: **12. November 2026** · Status: **Plan angelegt – noch keine der neuen Aufgaben abgenommen**.
+> Erstellt: **12. November 2026** · Fortschritt: **A-01 technisch gemessen; Produktions-Firestore-Zähler fehlen noch.** Keine neue Aufgabe vollständig abgenommen.
 > Beteiligte Repositories: [Spiel-client](https://github.com/schmitti92/Spiel-client) (Frontend, GitHub Pages) und [serverfinal](https://github.com/schmitti92/serverfinal) (Backend, Render, Firestore).
 
 ## 0. Wie wir diesen Plan abarbeiten
@@ -61,10 +61,33 @@
 ### Phase A – Ist-Zustand messen und absichern `P0`
 *Zuerst durchführen, damit jede spätere Verbesserung nachweisbar bleibt.*
 
-- [ ] **A-01 – Firestore-Kosten-Baseline:** Firestore-Lese- und Schreibvorgänge für einen vollständigen 135-s-Bosskampf mit 1, 2 und 3 Helden sowie mit Nova/Titan erfassen. Zusätzlich 5 Minuten Leerlauf prüfen. **Fertig:** Vergleichstabelle mit Zählweise und reproduzierbarem Testszenario.
+- [ ] **A-01 – Firestore-Kosten-Baseline (TEILWEISE ERLEDIGT):** Firestore-Lese- und Schreibvorgänge für einen vollständigen 135-s-Bosskampf mit 1, 2 und 3 Helden sowie mit Nova/Titan erfassen. Zusätzlich 5 Minuten Leerlauf prüfen. **Fertig erst nach:** tatsächlichen Firestore-Usage-Zählern aus der Produktion, Vergleichstabelle und Testnachweis. Die reproduzierbare Codepfad-Baseline ist bereits erfolgreich.
+  - [x] **A-01a:** Unveränderte Backend-API mit einer isolierten, zählenden In-Memory-Firestore-Attrappe für 1/2/3 reale Helden testen, fünf Minispiele und Abschluss durchspielen.
+  - [x] **A-01b:** 135-s-Simulation mit 1 echtem Testhelden sowie Nova und Titan durchführen; schreibende Bot-GETs erfassen.
+  - [x] **A-01c:** 5-Minuten-Leerlauf, konstante GET-Kosten und zusätzliche Profil-/Pilot-Reads im Quellcode untersuchen.
+  - [x] **A-01d:** Messbericht auf GitHub ablegen und klar zwischen Offline-Operationen und echter Firebase-Abrechnung unterscheiden.
+  - [ ] **A-01e – NOCH OFFEN:** Tatsächliche Cloud-Firestore-Usage-Zähler für 5 Minuten Leerlauf und die vier Kampfszenarien vor/nach einem kontrollierten Live-Lauf erfassen. Erst dann A-01 abnehmen; keine erfundenen Produktivzahlen.
 - [ ] **A-02 – Netzwerk- und Timing-Baseline:** API-Aufrufe pro Minute, Antwortzeiten, Verzögerungen bei Start/Runden/Treffern/Resultat, abgebrochene Requests erfassen. Keine sensiblen Tokens oder Nutzerdaten loggen. **Fertig:** dokumentierte Zahlen und konkrete Problemstellen.
 - [ ] **A-03 – Regressions-Schutz:** Automatisierte Tests für 1/2/3 Helden, fünf Minispiele, 20-s-Kettenbrecher, 3-s-Countdown, Sieg/Niederlage, alte Kampfversionen und Bot-Antworten kontrollieren und ergänzen. **Fertig:** CI grün und Testfälle nachvollziehbar.
 - [ ] **A-04 – Originalzustand sichern:** Vor Umbauten Startzustände, Server-Versionen, wichtige API-Ansichten und Rollback-Commit festhalten. **Fertig:** jedes Update lässt sich ohne Spielstandsverlust zurückrollen.
+
+### A-01 – Technische Ausgangsmessung vom 12.11.2026
+
+**Messbericht:** [Firestore-A-01-Messbericht](./100-TORE-FIRESTORE-A01-MESSBERICHT.md) · **Testquelle:** [`serverfinal/tests/dog-firestore-a01.test.js`](https://github.com/schmitti92/serverfinal/blob/main/tests/dog-firestore-a01.test.js) · [erfolgreicher Server-Testlauf](https://github.com/schmitti92/serverfinal/actions/runs/43244351339).
+
+**Messart:** echte Backend-API-Programmpfade gegen **isolierte, zählende In-Memory-Firestore-Attrappe**; **KEIN produktiv abgerechneter Firebase-Verbrauch**. Keine Änderung an Spielregeln oder Spielständen.
+
+| A-01-Testszenario | GETs / POSTs | Gezählt: Reads | Gezählt: Writes | Einschränkung |
+|---|---|---:|---:|---|
+| 135 s, 1 echter Held | 2 / 12 | **41** | **24** | nur 2 GETs; keine Auth-/Pilot-Reads |
+| 135 s, 2 echte Helden | 2 / 22 | **72** | **44** | nur 2 GETs; keine Auth-/Pilot-Reads |
+| 135 s, 3 echte Helden | 2 / 31 | **100** | **62** | nur 2 GETs; keine Auth-/Pilot-Reads |
+| 135 s, 1 Held + Nova/Titan | 29 / 10 | **100** | **31** | 5-s-GET-Testschema; 11 schreibende GETs |
+| 5 Min. Leerlauf, 20 GETs | 20 / 0 | **40** | **0** | ohne Profilcache und Pilotzugriff |
+
+**Ergebnis:** Ein unveränderter Status-GET hat im Backend mindestens **2 Dokumentreads**. Ein neuer gültiger Minispiel-POST verursacht üblicherweise **3 Reads und 2 Writes** (Fortschritt + idempotente Quittung). Im Bot-Test verursachten **11 von 29 GETs** je eine weitere Dokumentänderung; das ist ein wichtiges Optimierungsthema für S-06.
+
+**Achtung:** Bei echten Online-Spielen entstehen weitere Reads durch häufigeres Polling, Profil-Cache-Misses (15-s-Fenster), Pilot-Berechtigungscache (30-s-Fenster) sowie ggf. SDK-Transaktionswiederholungen. Render liefert derzeit keine Firestore-Abrechnungsdaten; die Firebase-Usage-Konsole des Projekts `spiel-barik` ist für A-01e noch erforderlich. **Nicht als „100 Firestore-Reads pro realem Dreierkampf“ interpretieren.**
 
 ### Phase S – Verbindliche Kampfereignisse und Online-Synchronisation `P0`
 *Größter Qualitätsgewinn für flüssige und gleichzeitig sichtbare Kämpfe.*
@@ -159,10 +182,11 @@
 
 | Datum | Aufgaben-ID(s) | Ergebnis / Änderung | Tests | Reads / Writes | Commit / Deployment |
 |---|---|---|---|---|---|
-| 12.11.2026 | **Plan** | Entwicklungsplan mit Phasen A, S, K, M, E, F, D und T angelegt | Noch keine neue Aufgabe abgeschlossen | Ausgangswerte noch zu ermitteln | Dieses Dokument |
+| 12.11.2026 | **Plan** | Entwicklungsplan mit Phasen A, S, K, M, E, F, D und T angelegt | Dokumentation erstellt | Noch keine Werte | [Plan-Commit](https://github.com/schmitti92/Spiel-client/commit/697a22925ccaedf95ae0ce0dc1df6eeeeef1554f) |
+| 12.11.2026 | **A-01a–d, Teilabschluss** | Isolierte API-Codepfad-Baseline 1/2/3 Spieler, Nova/Titan und Leerlauf erhoben. **A-01e offen:** Cloud-Zähler. | [Server Tests](https://github.com/schmitti92/serverfinal/actions/runs/43244351339) – 574 bestanden | 1/2/3: **41/24, 72/44, 100/62**; Bots **100/31**; Idle **40/0** (*nur Offline-Methodenaufrufe*) | [Test-Commit](https://github.com/schmitti92/serverfinal/commit/4203f7fdb61deb917ad19205dd003db26e0b2d2a) · [Messbericht](./100-TORE-FIRESTORE-A01-MESSBERICHT.md) |
 
 ---
 
 **Definition von „fertig“:** Funktion auf GitHub `main` integriert, Frontend-/Backend-Tests erfolgreich, auf echter Anzeige nachvollziehbar, keine ungeklärten Doppelbuchungen oder unnötigen Firestore-Mehrzugriffe, Task abgehakt und Fortschrittsprotokoll ergänzt.
 
-**Nächste konkrete Aufgabe:** **A-01 – tatsächliche Firebase-/Firestore-Reads und -Writes eines vollständigen Bosskampfs messen.**
+**Nächste konkrete Aufgabe:** **A-01e – echte Firestore-Usage-Zähler aus der Firebase-Konsole für kontrollierte Live-Szenarien eintragen.** Die rein technische API-Basis ist dokumentiert. **Bis zu den Cloud-Werten keine Firestore-Optimierungen als abgeschlossen ausgeben.**
