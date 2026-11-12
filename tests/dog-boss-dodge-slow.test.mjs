@@ -41,7 +41,14 @@ function miniFixture(clockNow=null){
  const ui=window.DogBossMinigames.create(root,(round,value,step)=>{
   requests.push({round,value,step});return Promise.resolve(true);
  },null,clockNow);
- const view={phase:'fighting',startedAt:at,miniGames:{version:8,rounds,myAnswers:{}}};
+ // Each fixture owns its own round/attack objects; the legacy-v7 test
+ // must not shorten the timing window used by subsequent v8 assertions.
+ const independent=rounds.map(r=>({
+  ...r,...(r.attacks?{attacks:r.attacks.map(a=>({...a}))}:{})
+ }));
+ const view={phase:'fighting',startedAt:at,miniGames:{
+  version:8,rounds:independent,myAnswers:{}
+ }};
  return {root,ui,view,requests};
 }
 function visualFixture(){
