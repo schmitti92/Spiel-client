@@ -12,8 +12,8 @@
  const LABELS={math:'🧮 Blitz-Mathe',dodge:'🛡️ Ausweichen',
   target:'🎯 Farbe & Symbole',reaction:'⚡ Reaktion',chain:'⛓️ Kettenbrecher'};
  const DEFENSIVE=new Set(['dodge','reaction']);
- const grades=[[95,'Maximum'],[80,'Sehr gut'],[60,'Gut'],
-  [40,'Ordentlich'],[20,'Ausbaufähig'],[0,'Schwach']];
+ const grades=[[100,'Maximum'],[90,'Hervorragend'],[75,'Sehr gut'],
+  [55,'Gut'],[35,'Ordentlich'],[15,'Ausbaufähig'],[0,'Schwach']];
  function grade(percent){
   return grades.find(([mark])=>percent>=mark)?.[1]||'Schwach';
  }
@@ -44,6 +44,8 @@
     heroClass:['krieger','magierin','waechter'].includes(m.heroClass)?
      m.heroClass:'krieger',isMe:!!m.isMe,
     weaponLevel:num(hero.weaponLevel),armorLevel:num(hero.armorLevel),
+    attackPower:num(hero.skillPower),destruction:num(hero.skillDestruction),
+    defenseSkill:num(hero.skillDefense),guardSkill:num(hero.skillGuard),
     attack:attacks.reduce((n,e)=>n+num(e.amount),0),
     taken:received.reduce((n,e)=>n+num(e.amount),0),
     correct,possible,percentage:possible?Math.round(100*correct/possible):null,
@@ -84,7 +86,22 @@
      ('Runde '+(event.round+1))
    }));
   const tips=[];
+  const gate=num(view.gate)||10;
+  const gearCap=Math.max(1,Math.floor(gate/10));
+  const skillCap=Math.min(50,gearCap*5);
+  if(!result.win&&bossRemaining>0){
+   tips.push('⚔️ Dem Boss blieben '+fmt.format(bossRemaining)+
+    ' LP. Konzentriert euch auf mehr richtige Angriffe und die offensive Vorbereitung.');
+  }
   if(rows.length<3)tips.push('👥 Tretet möglichst zu dritt an. Allein ist ein Sieg ausgeschlossen; zu zweit ist er nur unter besonderen Voraussetzungen möglich.');
+  const weapon=rows.find(r=>r.weaponLevel<gearCap);
+  const attackSkill=rows.find(r=>r.attackPower<skillCap||r.destruction<skillCap);
+  if(!result.win&&weapon)
+   tips.push('⚒️ '+weapon.name+': Die Waffe steht auf Stufe '+
+    weapon.weaponLevel+'. Vor diesem Tor ist bis Stufe '+gearCap+
+    ' möglich. Verbessert die Waffe in der Schmiede.');
+  else if(!result.win&&attackSkill)
+   tips.push('✨ '+attackSkill.name+': Angriffskraft und Vernichtungsschlag sind noch nicht beide auf der für diesen Boss passenden Fertigkeitsstufe '+skillCap+'.');
   if(percent!==null&&percent<75)
    tips.push('🎮 Übt die Minispiele: '+fmt.format(right)+' von '+fmt.format(possible)+
     ' möglichen Aufgaben wurden richtig gelöst. Mehr Treffer verbessern eure Angriffe und Abwehr.');
@@ -92,13 +109,9 @@
   if(chain&&chain.percent!==null&&chain.percent<70)
    tips.push('⛓️ Beim Kettenbrecher die goldene Kette treffen: Ein Tipp reicht. Die letzte Runde erhöht euren finalen Angriff.');
   if(teamHp!==null&&teamMax&&teamHp/teamMax<.7)
-   tips.push('🛡️ Verbessert Rüstung und Verteidigungsfähigkeiten in der Schmiede. So halten eure Helden mehr LP.');
-  if(!result.win&&bossRemaining>0){
-   const gap=fmt.format(bossRemaining);
-   tips.push('⚔️ Euch fehlten '+gap+' Boss-LP. Höhere Waffenstufen und Angriffsfähigkeiten steigern euren Schaden.');
-  }
+   tips.push('🛡️ Achtet auf eure Verteidigung: Weniger Fehler bei Ausweichen und Reaktion bewahren LP. Rüstung verbessern, sofern das Tor weitere Stufen erlaubt.');
   if(result.win)tips.push('🏆 Der Boss ist besiegt! Nutzt die nächste Schmiedestufe, bevor ihr zum nächsten Wächter aufbrecht.');
-  if(!tips.length)tips.push('⚒️ Verbessert in der Schmiede die schwächsten Waffen und verteilt eure Fertigkeiten für den nächsten Versuch.');
+  if(!tips.length)tips.push('⚒️ Überprüft die Ausrüstung in der Schmiede und konzentriert euch beim nächsten Versuch auf präzisere Minispiele.');
   return {gate:num(view.gate)||10,bossName:cap(view.name||'Boss'),
    result:{win:!!result.win,damage:finalDamage,bossHp,bossRemaining,
     critical:!!result.rareCritical},
@@ -303,7 +316,10 @@
      s.max?fmt.format(s.correct)+' / '+fmt.format(s.max)+' richtig':'—'));
     const track=make('div','br-mini-track'),fill=make('span');
     fill.style.width=(s.percent||0)+'%';track.append(fill);
-    row.append(top,track);return row;
+    const impact=make('small','br-round-impact',s.defensive?
+     '🛡️ '+fmt.format(s.taken)+' LP erlitten':
+     '⚔️ '+fmt.format(s.damage)+' LP in den sichtbaren Trefferphasen');
+    row.append(top,track,impact);return row;
    });
    node('br-rounds').replaceChildren(...stageNodes);
    node('br-advice-lines').replaceChildren(...tips.map(t=>make('p','br-advice-item',t)));
