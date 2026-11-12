@@ -262,10 +262,12 @@ test('M-06 live interlude shows server-normalized accuracy and only final offici
    {completed:false,percent:null,players:null}]
  };
  view.miniGames.exchange.evaluation=evaluation;
- ui.update(view,startedAt+122000);
+ stages[4].completed=false;
+ ui.update(view,startedAt+88000);
  assert.match(node('v3-results-subtitle').textContent,/20 % Gewicht/);
  assert.match(node('live-stage-score').textContent,/Genauigkeit/);
  assert.doesNotMatch(node('v3-results-note').textContent,/Gesamtleistung/);
+ stages[4].completed=true;
  evaluation.completedRounds=5;
  evaluation.teamPercent=68.3;
  evaluation.perfect=false;
