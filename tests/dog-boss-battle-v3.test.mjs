@@ -321,7 +321,7 @@ test('K-02 class-specific sword, arcane bolt and shield wave share the server cl
  const window={};
  runInNewContext(js,{window,document:doc},{timeout:1000});
  const ui=window.DogBossArenaV3.create(root),v=view();
- for(const [ms,uid] of [[13800,'chris'],[17300,'nova'],[20600,'titan']]){
+ for(const [ms,uid] of [[13000,'chris'],[16000,'nova'],[18700,'titan']]){
   ui.update(v,begin+ms);
   const hero=actors.find(h=>h.getAttribute('data-hero-uid')===uid);
   assert.equal(hero.children.filter(c=>c.className==='v3-class-effect').length,1);
@@ -331,8 +331,8 @@ test('K-02 class-specific sword, arcane bolt and shield wave share the server cl
  v.members=[{...players[0],heroClass:'krieger'},
   {...players[1],heroClass:'magierin'},
   {...players[2],heroClass:'waechter'}];
- for(const [ms,word] of [[13800,'Klingenhieb'],[17500,'Magieimpuls'],
-  [21100,'Schildstoß']]){
+ for(const [ms,word] of [[13300,'Klingenhieb'],[15970,'Magieimpuls'],
+  [18630,'Schildstoß']]){
   ui.update(v,begin+ms);
   assert.match(action.textContent,new RegExp(word));
  }
