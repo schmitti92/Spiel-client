@@ -152,6 +152,14 @@ for(const file of ['dog-boss10.js','dog-group-boss.js']){
  });
 }
 
+test('S-03 readiness and fight-start responses do not delay shared start polling',()=>{
+ for(const arena of ['dog-boss10.js','dog-group-boss.js']){
+  const source=read(arena);
+  assert.match(source,/if\(req\.command==='minigame'\|\|req\.command==='finish'\)lastLoad=Date\.now\(\)/);
+  assert.doesNotMatch(source,/if\(req\.command==='ready'\|\|req\.command==='start'\)lastLoad=Date\.now\(\)/);
+ }
+});
+
 test('Boss 10 and group bosses reconcile the shared opening sooner without excess idle reads',()=>{
  for(const arena of ['dog-boss10.js','dog-group-boss.js']){
   const source=readFileSync(new URL('../'+arena,import.meta.url),'utf8');

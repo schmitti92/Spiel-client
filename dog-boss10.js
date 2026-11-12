@@ -276,11 +276,12 @@
    const data=await request('POST','/'+req.command,{requestId:req.id,...(req.payload||{})},uid,
     req.command==='minigame'?4500:18000);
    if(auth()?.user?.uid!==uid)return;
-   // S-03: a successful POST already returns the authoritative full
-   // battle view. Count it as the latest status snapshot to avoid a
-   // redundant immediate GET (normally 2 document reads). Forced refresh
-   // and time-critical shared combat polls remain enabled.
-   clear(uid);view=data.view;lastLoad=Date.now();
+   // S-03: minigame/finish POST already returned the authoritative
+   // battle view: suppress one redundant status read (2 Firestore reads).
+   // Never throttle readiness/start; other players could start the boss
+   // within seconds. Forced refresh and combat exchange still take priority.
+   clear(uid);view=data.view;
+   if(req.command==='minigame'||req.command==='finish')lastLoad=Date.now();
    serverOffset=Number.isFinite(data._clockOffsetMs)?
     data._clockOffsetMs:Number(data.view.serverNow||Date.now())-Date.now();
    noteReadyChange(data.view);
