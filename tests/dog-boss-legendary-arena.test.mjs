@@ -26,7 +26,7 @@ test('isolated V3 art and controls load after functional minigame CSS for every 
   }
   assert.match(html,/class="combat-arena-aura"/);
   assert.match(html,/class="combat-team-aegis"/);
-  assert.match(html,/101 Sekunden/);
+  assert.match(html,/135 Sekunden/);
  }
 });
 test('true boss and individual party HP are always sourced from the server',()=>{
