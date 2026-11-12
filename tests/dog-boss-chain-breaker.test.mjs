@@ -23,7 +23,7 @@ function element(tag='div'){
   get firstElementChild(){return this.children[0]||null}};
  return el;
 }
-function fixture(){
+function fixture(version=14){
  let elapsed=101100;
  const requests=[],document={createElement:element,hidden:false},window={};
  runInNewContext(read('dog-boss-mini-ui.js'),{window,document,Date,Promise});
@@ -36,11 +36,13 @@ function fixture(){
   {round:1,kind:'dodge',startMs:26000,endMs:41000,maxSteps:3,lanes:2,attacks:[]},
   {round:2,kind:'target',startMs:55000,endMs:65000,maxSteps:10,puzzles:[]},
   {round:3,kind:'reaction',startMs:79000,endMs:87000,maxSteps:3,zoneRadius:.06},
-  {round:4,kind:'chain',startMs:101000,endMs:111000,maxSteps:10,lanes:3,
+  {round:4,kind:'chain',startMs:101000,endMs:version>=14?121000:111000,
+   maxSteps:10,lanes:3,
    puzzles:Array.from({length:10},(_,i)=>({target:i%3}))}
  ];
- const view={phase:'fighting',startedAt:epoch,endsAt:epoch+125000,
-  miniGames:{version:13,rounds,myAnswers:{}}};
+ const view={phase:'fighting',startedAt:epoch,
+  endsAt:epoch+(version>=14?135000:125000),
+  miniGames:{version,rounds,myAnswers:{}}};
  const update=()=>ui.update(view,epoch+elapsed,true);
  const arena=()=>root.children[1].children.find(x=>x.className==='mini-chain-arena');
  function swipe(index,dx=55,dy=5){
@@ -61,21 +63,26 @@ test('Kettenbrecher renders three chains, a single glowing target and accessible
  assert.equal(f.arena().children.filter(x=>x.classList.contains('is-glowing')).length,1);
  assert.equal(f.arena().children[0].classList.contains('is-glowing'),true);
  assert.match(f.root.children[0].children[0].textContent,/KETTENBRECHER/);
- assert.match(f.arena().children[0].attrs['aria-label'],/Glühende Schwachstelle/);
- assert.match(f.root.children[1].children.find(x=>x.className==='mini-chain-hud').children[0].textContent,/10 s/);
+ assert.match(f.arena().children[0].attrs['aria-label'],/RICHTIGE GOLDENE KETTE/);
+ assert.match(f.root.children[1].children.find(x=>x.className==='mini-chain-hud').children[0].textContent,/20 s/);
+ assert.equal(f.root.children[1].children.find(x=>x.className==='mini-chain-progress').children.length,10);
+ assert.match(f.root.children[1].children.find(x=>x.className==='mini-chain-instruction').textContent,/TIPPE DIE GOLDENE KETTE/);
  assert.equal(f.requests.length,0);
 });
-test('Only deliberate swipes count, wrong cuts do not earn points and ten slashes submit once',async()=>{
+test('Simple tap OR swipe scores, wrong chains do not earn points and ten actions send only one batch',async()=>{
  const f=fixture();f.update();
- f.swipe(0,12,8);
- assert.match(f.root.children[1].children[0].textContent,/0 \/ 10/);
+ f.swipe(0,12,8); // a short touch must be enough on Android
+ assert.match(f.root.children[1].children[0].textContent,/1 \/ 10/);
  assert.equal(f.requests.length,0);
- const expected=[];
- for(let i=0;i<10;i++){
+ const expected=[0];
+ const first=f.arena().children[0];
+ first.dispatch('click',{detail:1}); // browser-generated click must not count twice
+ assert.match(f.root.children[1].children[0].textContent,/1 \/ 10/);
+ for(let i=1;i<10;i++){
   const index=i===4?(i+1)%3:i%3;
   expected.push(index);
   f.swipe(index);
-  if(i===4)assert.match(f.root.children[2].textContent,/FALSCHE KETTE/);
+  if(i===4)assert.match(f.root.children[2].textContent,/NICHT DIE GOLDENE KETTE/);
  }
  await Promise.resolve();await Promise.resolve();
  assert.equal(f.requests.length,1,'no per-swipe server writes');
@@ -86,20 +93,27 @@ test('Only deliberate swipes count, wrong cuts do not earn points and ten slashe
  await Promise.resolve();
  assert.equal(f.requests.length,1,'overlapping pointer-ups must not submit twice');
 });
-test('Keyboard Enter/Space works; partial chain results flush after 10s without faking correctness',async()=>{
+test('Keyboard/mouse clicks work; incomplete chain results flush after 20s with server verification',async()=>{
  const f=fixture();f.update();
  f.arena().children[0].dispatch('click',{detail:0});
  f.arena().children[1].dispatch('click',{detail:0});
  f.arena().children[2].dispatch('click',{detail:0});
  f.arena().children[0].dispatch('click',{detail:1});
  assert.equal(f.requests.length,0);
- f.setElapsed(111030);f.update();
+ f.setElapsed(121030);f.update();
  await Promise.resolve();await Promise.resolve();
  assert.equal(f.requests.length,1);
- assert.deepEqual([...f.requests[0].answer],[0,1,2]);
+ assert.deepEqual([...f.requests[0].answer],[0,1,2,0]);
  assert.equal(f.root.hidden,true,'combat interlude replaces input after expiry');
  f.update();await Promise.resolve();
  assert.equal(f.requests.length,1);
+});
+test('Already started v13 chain battles keep their old 10-second schedule',()=>{
+ const f=fixture(13);f.update();
+ assert.match(f.root.children[1].children.find(x=>x.className==='mini-chain-hud').children[0].textContent,/10 s/);
+ f.setElapsed(111010);f.update();
+ assert.equal(f.root.hidden,true);
+ assert.equal(f.requests.length,0);
 });
 test('Both boss screens load mobile-friendly chain art and keep v12 rune encounters untouched',()=>{
  const js=read('dog-boss-mini-ui.js'),css=read('dog-boss-chain-breaker.css');
