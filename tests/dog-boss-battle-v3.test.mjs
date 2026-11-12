@@ -122,3 +122,66 @@ test('three seconds are reserved for countdown, leaving eleven for drawn weapons
   assert.ok(effects.includes('data-weapon="'+classname+'"'));
  assert.match(effects,/v3-floating-damage/);
 });
+
+test('damage pops once above the actually hit target and can show a verified block',()=>{
+ const createNode=(name='div')=>{
+  const node={name,className:'',textContent:'',dataset:{},attrs:{},
+   children:[],style:{setProperty(k,v){this[k]=v}},
+   classList:{add(c){node.className+=' '+c}},
+   setAttribute(k,v){node.attrs[k]=v},
+   getAttribute(k){return node.attrs[k]},
+   append(...children){node.children.push(...children)},
+   querySelector(sel){return node.children.find(c=>
+    c.className.split(' ').includes(sel.slice(1)))||null},
+   querySelectorAll(sel){return node.children.filter(c=>
+    c.className.split(' ').includes(sel.slice(1)))}
+  };
+  return node;
+ };
+ const heroes=players.map(p=>{
+  const node=createNode('hero');node.className='combat-hero';
+  node.setAttribute('data-hero-uid',p.uid);
+  return node;
+ });
+ const scene=createNode('scene');
+ scene.querySelectorAll=()=>heroes;
+ const boss=createNode('boss');
+ const log=createNode('log');
+ const elems={
+  '#combat-scene':scene,'#combat-boss':boss,
+  '#live-recent-damage':log,'#v3-actor-action':createNode('action'),
+  '#v3-turn-progress':createNode('progress')
+ };
+ const root={dataset:{},querySelector:sel=>elems[sel]||null};
+ const document={createElement:createNode};
+ const window={};runInNewContext(js,{window,document},{timeout:1000});
+ const ui=window.DogBossArenaV3.create(root),v=view();
+ v.miniGames.version=11;
+ v.miniGames.exchange={strikes:[]};
+ ui.update(v,begin+14030);
+ assert.equal(boss.children.length,0,'never invent damage before server confirms it');
+ v.miniGames.exchange.strikes=[{
+  round:0,slot:0,uid:'chris',kind:'hero-strike',atMs:13980,amount:128
+ }];
+ ui.update(v,begin+14030);
+ assert.equal(boss.children.length,1);
+ assert.equal(boss.children[0].textContent,'−128');
+ assert.match(log.textContent,/Chris → Boss: −128 LP/);
+ assert.ok(heroes[0].children.some(x=>x.className==='v3-weapon'),
+  'selected mage has a rendered weapon');
+ ui.update(v,begin+14100);
+ assert.equal(boss.children.length,1,'same server strike is never replayed');
+ v.miniGames.exchange.strikes.push({
+  round:1,slot:0,uid:'chris',kind:'boss-strike',atMs:42980,amount:27
+ });
+ ui.update(v,begin+43100);
+ assert.ok(heroes[0].children.some(x=>x.textContent==='−27'));
+ assert.ok(!heroes[1].children.some(x=>x.textContent==='−27'),
+  'boss damage is anchored only to its designated hero');
+ v.miniGames.exchange.strikes.push({
+  round:1,slot:1,uid:'nova',kind:'boss-strike',atMs:46647,amount:0
+ });
+ ui.update(v,begin+46700);
+ assert.ok(heroes[1].children.some(x=>x.textContent==='BLOCK!'));
+ assert.match(log.textContent,/BLOCK!/);
+});
