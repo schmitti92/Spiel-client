@@ -21,12 +21,19 @@
   // Admins can bypass the defeat cooldown. The server then exposes phase
   // "waiting" while retaining the concluded result and its saved roster.
   // The report must still open and require confirmation for that real fight.
+  // E-01: a modal requires a genuine SERVER-CONFIRMED verdict. A phase
+  // flag, elapsed countdown or incomplete response can never fabricate a win
+  // or loss. Admin cooldown bypass exposes the last confirmed defeat in the
+  // waiting phase; that is still a real, identified completed encounter.
+  const ended=Number(view?.startedAt)>0&&
+   Number(view?.endsAt)>Number(view.startedAt);
+  const win=view?.result?.win;
   const bypassedDefeat=view?.phase==='waiting'&&
-   view.developerBossCooldownDisabled===true&&
-   view.result?.win===false&&Number(view.startedAt)>0&&
-   Number(view.endsAt)>Number(view.startedAt);
-  if(!view||(!['victory','cooldown'].includes(view.phase)&&!bypassedDefeat)||
-   !view.result||!Array.isArray(view.roster)||!view.roster.length)return null;
+   view.developerBossCooldownDisabled===true&&win===false;
+  const verified=(view?.phase==='victory'&&win===true)||
+   (view?.phase==='cooldown'&&win===false)||bypassedDefeat;
+  if(!verified||!ended||!Array.isArray(view.roster)||
+   !view.roster.some(hero=>hero?.uid))return null;
   const result=view.result,rawStages=view.miniGames?.exchange?.stages;
   const stages=Array.isArray(rawStages)?rawStages.filter(s=>s?.completed):[];
   // Five equal stages, read-only from the server. Old reports retain their grade.
