@@ -10,7 +10,7 @@ test('premium arena visual layer loads last in Boss 10 and every later group bos
  for(const page of pages){
   const html=read(page);
   assert.match(html,/<section class="arena arena-live" id="arena" data-arena-design="legendary"/);
-  assert.match(html,/dog-boss-legendary-arena\.css\?v=20261112-legendary-v1/);
+  assert.match(html,/dog-boss-legendary-arena\.css\?v=20261112-legendary-v2/);
   const premium=html.indexOf('dog-boss-legendary-arena.css');
   for(const old of ['dog-boss-live.css','dog-boss-color-target.css','dog-boss-reaction-precision.css',
    'dog-boss-show-14.css','dog-boss-dodge-slow.css','dog-boss-math-endgame.css'])
