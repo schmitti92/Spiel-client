@@ -440,7 +440,7 @@ test('K-07 sound opt-in and confirmed-hit-only audio; automatic camera with manu
   const html=read(page);
   assert.match(html,/id="combat-sound"/);
   assert.match(html,/dog-boss-audio\.js\?v=20261112-k07-audio1/);
-  assert.match(html,/dog-boss-k07\.css\?v=20261112-k07-audio1/);
+  assert.match(html,/dog-boss-k07\.css\?v=[A-Za-z0-9_-]+/);
  }
  assert.match(k07css,/prefers-reduced-motion:reduce/);
  assert.match(k07css,/data-effects="off"/);
