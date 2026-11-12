@@ -409,3 +409,30 @@ body.dog-boss-report-visible{
  .boss-result-report .br-round-personal{display:grid;grid-template-columns:minmax(0,1fr);gap:3px}
  .boss-result-report .br-round-player{width:100%;padding:4px 6px}
 }
+
+/* E-05: verified-event replay, with distinct boss and hero hit reactions. */
+.boss-result-report .br-replay-counter{
+ margin:5px 0 0;text-align:center;color:#bcd4eb;
+ font:750 clamp(11px,1vw,13px) system-ui;font-variant-numeric:tabular-nums;
+}
+.boss-result-report .br-replay-stage[data-hit-kind="final"].br-hit-burst .br-replay-boss{
+ animation:br-replay-final-hit .95s ease-out;
+}
+.boss-result-report .br-replay-stage[data-hit-kind="guard"].br-hit-burst .br-replay-boss{
+ animation:br-replay-guard .9s ease-out;
+}
+@keyframes br-replay-final-hit{
+ 0%,100%{transform:scale(1);filter:none}
+ 28%{transform:scale(1.16);filter:drop-shadow(0 0 22px #ffc866)}
+ 55%{transform:translateX(-10px) scale(.94)}
+}
+@keyframes br-replay-guard{
+ 0%,100%{filter:none}
+ 45%{filter:drop-shadow(0 0 25px #6ce3ff) brightness(1.5)}
+}
+@media(prefers-reduced-motion:reduce){
+ .boss-result-report .br-replay-stage[data-hit-kind="final"].br-hit-burst .br-replay-boss,
+ .boss-result-report .br-replay-stage[data-hit-kind="guard"].br-hit-burst .br-replay-boss{
+  animation:none!important;
+ }
+}
