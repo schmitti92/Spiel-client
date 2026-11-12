@@ -64,7 +64,7 @@
    if(!mathQueue||mathSending)return;
    // Avoid repeated submissions after the server's +2000ms transit grace.
    // The controller retains the original requestId for uncertain POSTs.
-   if(typeof clockNow==='function'&&clockStamp()>mathQueue.deadline){
+   if(typeof clockNow==='function'&&clockStamp()>=mathQueue.deadline){
     mathQueue=null;return;
    }
    const batch=mathQueue;
