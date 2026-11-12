@@ -222,3 +222,65 @@ test('both arena screens include conclusion and local replay, with no client-sid
   assert.match(controller,/resultReport\?\.update\(view\)/);
  }
 });
+
+test('K-05 finale reveals three personal attacks before the single confirmed result',()=>{
+ const body=node('main'),open=node('button'),root=node('section');
+ const portal=node('body');
+ portal.appendChild=el=>{portal.children.push(el)};
+ root.closest=()=>body;
+ Object.defineProperty(root,'innerHTML',{set(html){
+  root.html=html;root.nodes={};
+  for(const match of html.matchAll(/id="([^"]+)"/g))
+   root.nodes[match[1]]=node('div');
+ }});
+ const doc={body:portal,querySelector:sel=>
+  ({'#boss-result-open':open,'.stage':body}[sel]||null),
+  createElement:node};
+ const intervals=[];
+ const {create}=load({document:doc,
+  setInterval:fn=>{intervals.push(fn);return intervals.length},
+  clearInterval(){},Intl});
+ const ui=create(root);
+ const view=fakeView(false);
+ view.miniGames.version=15;
+ const id='g10-t'+view.startedAt+'-a2';
+ const finals=['a','b','c'].map((uid,i)=>({
+  eventId:id+':'+(i+1),sequence:i+1,
+  round:4,slot:i,uid,kind:'hero-finisher',
+  targetId:'boss',amount:10*(i+1),
+  hpBefore:100-i*10,hpAfter:90-i*20,
+  atMs:135001+i*1500,overkillDamage:0
+ }));
+ view.combat={version:1,fightId:id,events:finals,
+  finale:{kind:'personal',strikes:finals,outcome:'defeat',
+   sceneDurationMs:4500},
+  reconciliation:{reconciled:true,rawDamage:900,
+   appliedDamage:900,stageDamage:840,finisherDamage:60,
+   overkillDamage:0,finalBossHp:100}};
+ ui.update(view);
+ assert.equal(root.hidden,false);
+ assert.equal(root.nodes['br-finale-screen'].hidden,false);
+ assert.equal(root.nodes['br-return'].disabled,true);
+ assert.match(root.nodes['br-finale-step'].textContent,/1 \/ 3/);
+ assert.match(root.nodes['br-finale-name'].textContent,/Chris/);
+ root.nodes['br-return'].click();
+ assert.equal(root.hidden,false,'cannot dismiss before all three attacks');
+ ui.update(view);
+ assert.match(root.nodes['br-finale-step'].textContent,/1 \/ 3/,
+  'polling must not restart the finale');
+ intervals[0]();
+ assert.match(root.nodes['br-finale-name'].textContent,/Nova/);
+ intervals[0]();
+ assert.match(root.nodes['br-finale-name'].textContent,/Titan/);
+ intervals[0]();
+ assert.match(root.nodes['br-finale-name'].textContent,/NIEDERLAGE/);
+ assert.equal(root.nodes['br-return'].disabled,true,
+  'final decision appears only after all personal hits');
+ intervals[0]();
+ assert.equal(root.nodes['br-finale-screen'].hidden,true);
+ assert.equal(root.nodes['br-return'].disabled,false);
+ root.nodes['br-return'].click();
+ assert.equal(root.hidden,true);
+ ui.update(view);
+ assert.equal(root.hidden,true,'a repeated status GET cannot reopen final judgment');
+});
