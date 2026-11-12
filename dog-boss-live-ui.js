@@ -187,7 +187,8 @@
   function attack(record,view,now){
    const all=view?.miniGames?.myAnswers?.[record?.index]?.attempts||[];
    const round=view?.miniGames?.rounds?.[record?.index];
-   const isBatch=round?.kind==='math'&&all.length>1&&
+   const isBatch=(round?.kind==='math'||
+     (round?.kind==='target'&&view?.miniGames?.version>=10))&&all.length>1&&
     all.every(step=>step.at===record?.at);
    const hits=isBatch?all.filter(step=>step.correct).length:
     record?.correct?1:0;
@@ -436,7 +437,7 @@
     phase==='fighting'?'⚔️ LIVE-HERAUSFORDERUNG':'⚔️ BOSS-HERAUSFORDERUNG';
    text($(root,'#live-challenge-heading'),title);
    text(nodes.round,active?'RUNDE '+(roundIndex+1)+' / '+rounds.length:
-    (rounds.length===4?'4 RUNDEN · '+(view?.miniGames?.version>=8?'99':view?.miniGames?.version===7?'92':view?.miniGames?.version===6?'64':view?.miniGames?.version===5?'60':view?.miniGames?.version===4?'50':'40')+' SEK.':'3 RUNDEN · 30 SEK.'));
+    (rounds.length===4?'4 RUNDEN · '+(view?.miniGames?.version>=10?'101':view?.miniGames?.version>=8?'99':view?.miniGames?.version===7?'92':view?.miniGames?.version===6?'64':view?.miniGames?.version===5?'60':view?.miniGames?.version===4?'50':'40')+' SEK.':'3 RUNDEN · 30 SEK.'));
    if(nodes.prompt){
     nodes.prompt.hidden=active||phase==='victory'||phase==='cooldown';
     text(nodes.promptTitle,phase==='fighting'?'⚔️ Kampf läuft':
