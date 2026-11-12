@@ -169,16 +169,18 @@
     lastBossHp=liveBoss;lastTeamHp=hasPool?teamHp:null;
     lastHeroHp=heroHpNow;recentDamage=[];
    }else{
-    if(['fighting','victory','cooldown'].includes(view?.phase)&&
+    const perHitFx=Number(view?.miniGames?.version)>=11&&
+      Array.isArray(view?.miniGames?.exchange?.strikes);
+    if(!perHitFx&&['fighting','victory','cooldown'].includes(view?.phase)&&
       lastBossHp!==null&&liveBoss<lastBossHp){
      const damage=lastBossHp-liveBoss;
      popDamage(nodes.bossDamage,damage,true);
      logConfirmedDamage('Boss',damage,true);
     }
     if(view?.phase==='fighting'&&hasPool){
-     if(lastTeamHp!==null&&teamHp<lastTeamHp)
+     if(!perHitFx&&lastTeamHp!==null&&teamHp<lastTeamHp)
       popDamage(nodes.teamDamage,lastTeamHp-teamHp,false);
-     for(const hero of visibleHeroes){
+     if(!perHitFx)for(const hero of visibleHeroes){
       const previous=lastHeroHp.get(hero.uid);
       const currentHp=heroHpNow.get(hero.uid);
       if(Number.isFinite(previous)&&currentHp<previous){
@@ -190,7 +192,8 @@
     lastBossHp=liveBoss;lastTeamHp=hasPool?teamHp:null;
     lastHeroHp=heroHpNow;
    }
-   showRecentDamage();
+   if(Number(view?.miniGames?.version)<11||
+    !Array.isArray(view?.miniGames?.exchange?.strikes))showRecentDamage();
   }
 
   function dodgeImpact(round,record,view,now){
@@ -288,7 +291,7 @@
      '-'+Math.max(0,current.elapsed-round.endMs)+'ms');
    text(nodes.cineCountdown,(remaining/1000).toFixed(1).replace('.',',')+' s');
    const grand=(view?.miniGames?.version||0)>=7&&totalMs>=14000;
-   const finalCountdown=grand&&remaining<=5000;
+   const finalCountdown=grand&&remaining<=3000;
    // All four 14s scenes land their strike at the shared server-clock midpoint.
    const strikeMid=totalMs/2;
    const cinematicPhase=!grand?'legacy':finalCountdown?'countdown':
@@ -296,7 +299,7 @@
    nodes.challenge?.classList?.toggle('is-cinematic-countdown',finalCountdown);
    nodes.challenge?.classList?.toggle('is-defense',finalCountdown&&defensive);
    nodes.showOverlay?.style?.setProperty?.('--cine-show-offset','-'+sceneMs+'ms');
-   // Let players read confirmed team damage and LP before the final 5s show.
+   // Keep scoreboards readable until the final 3-second countdown.
    if(nodes.showOverlay)nodes.showOverlay.hidden=!finalCountdown;
    if(nodes.cinematic?.dataset){
     nodes.cinematic.dataset.showVersion=grand?'7':'legacy';
@@ -316,7 +319,7 @@
     }
     text(nodes.showDigit,String(seconds));
     nodes.showRing?.style?.setProperty?.('--show-sweep',
-     Math.max(0,Math.min(360,360*remaining/5000)).toFixed(2)+'deg');
+     Math.max(0,Math.min(360,360*remaining/3000)).toFixed(2)+'deg');
    }
    if(nodes.cineProgress)nodes.cineProgress.style.width=
     Math.max(0,Math.min(100,(1-remaining/totalMs)*100)).toFixed(1)+'%';
@@ -506,7 +509,7 @@
     (Number(view.miniGames?.exchange?.durationMs)||50000);
    const remaining=Math.max(0,windowEnd-current.elapsed);
    const longScene=(view?.miniGames?.version||0)>=7&&windowEnd-scene.endMs>=14000;
-   const showResults=remaining>0&&(!longScene||remaining>5000);
+   const showResults=remaining>0&&(!longScene||remaining>3000);
    if(nodes.resultsPanel)nodes.resultsPanel.hidden=!showResults;
    if(showResults&&nodes.resultsPanel){
     const rowsSignature=JSON.stringify(stage?.playerResults||null);
