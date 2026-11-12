@@ -362,7 +362,14 @@
    section.append(node('h3',null,group.label));
    for(const [id,icon,name] of group.values){
     const data=material[id],row=node('div','stock-row rarity-'+data.index);
-    row.append(node('span',null,icon),node('span',null,name),node('strong','stock-num',view?money(have(id)):'–'));
+    const counts=node('span','stock-quality-counts');
+    const quality=view?.inventory?.qualityResources||view?.qualityResources||null;
+    for(let level=1;level<=3;level++){
+     const quantity=quality?quality[id+':'+level]:level===1?have(id):0;
+     counts.append(node('span','stock-quality stock-quality-'+level,
+      'Stufe '+level+': '+(view?money(quantity??0):'–')));
+    }
+    row.append(node('span',null,icon),node('span',null,name),counts);
     section.append(row);
    }
    container.append(section);
@@ -468,8 +475,8 @@
      event.stopPropagation();
      const current=quoteFor(item.id);
      if(!usable()||!current||current.maxed||current.locked||!current.affordable)return;
-     tab=item.group;selected=item.id;render();
-     openUpgradeConfirm(item,current);
+     tab=item.group;selected=item.id;
+     void action('upgrade',{itemId:item.id,expectedLevel:current.level},false,true);
     });
     card.append(plus);
    }
@@ -842,7 +849,7 @@
   }
   render();
  }
- async function action(type,data,retry=false){
+ async function action(type,data,retry=false,instant=false){
   if(busy||!uid||!view)return;
   const account=uid,startEpoch=sessionEpoch;
   if(auth()?.user?.uid!==account){void reload();return;}
@@ -860,7 +867,7 @@
   // The ceremony never starts a request or changes hero state.
   // Safe replays skip the theatrical forging: they only recover a receipt.
   let ceremonyStarted=false;
-  if(!retry&&op.action==='upgrade'){
+  if(!retry&&!instant&&op.action==='upgrade'){
    const item=itemFor(op.payload.itemId);
    try{
     if(item&&window.DogForgeCeremony){
@@ -886,7 +893,10 @@
     try{await window.DogForgeCeremony?.finish?.(response.result);}catch{}
    }
    if(uid!==account)return;
-   resultDialog(response.result,unlocked);
+   if(instant){
+    const outcome=response.result?.success===false?'⚠️ Verbesserung fehlgeschlagen – Rohstoffe verbraucht.':'✓ Verbesserung abgeschlossen.';
+    status(outcome,response.result?.success===false?'bad':'good');
+   }else resultDialog(response.result,unlocked);
   }catch(e){
    try{window.DogForgeCeremony?.abort?.();}catch{}
    if(uid!==account)return;
