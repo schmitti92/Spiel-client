@@ -210,8 +210,8 @@ test('v12 runs all five minigames; the extra 10-second Finalschlag triggers thre
  assert.match(sheet,/mini-tactical\.is-final-attack/);
  for(const p of ['dog-boss10.html','dog-group-boss.html']){
   const html=read(p);
-  assert.match(html,/dog-boss-mini-ui\.js\?v=20261112-final5-runes1/);
-  assert.match(html,/dog-boss-live-ui\.js\?v=20261112-final5-runes1/);
+  assert.match(html,/dog-boss-mini-ui\.js\?v=20261112-chainbreak1/);
+  assert.match(html,/dog-boss-live-ui\.js\?v=20261112-chainbreak1/);
   assert.match(html,/dog-boss-battle-v3\.js\?v=20261112-final5-runes1/);
  }
 });
