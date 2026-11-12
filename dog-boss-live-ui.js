@@ -100,7 +100,7 @@
   }
   function updateHealth(view,current){
    const maxBoss=Math.max(0,Number(view?.bossHp)||0);
-   const fromServer=Number(view?.bossLiveHp);
+   const fromServer=Number(view?.miniGames?.exchange?.displayBossHp??view?.bossLiveHp);
    const liveBoss=Number.isFinite(fromServer)&&view?.bossLiveHp!==undefined?
     clamp(fromServer,0,maxBoss):
     current.knownHp===null?maxBoss:current.knownHp;
@@ -111,7 +111,7 @@
    if(nodes.combat?.dataset){
     nodes.combat.dataset.bossCritical=String(maxBoss>0&&liveBoss/maxBoss<=.3);
    }
-   const pool=view?.teamHealth;
+   const pool=view?.miniGames?.exchange?.displayTeamHealth||view?.teamHealth;
    const hasPool=Number(pool?.maxHp)>0;
    const teamMax=hasPool?Number(pool.maxHp):0;
    const teamHp=hasPool?clamp(Number(pool.hp)||0,0,teamMax):0;
