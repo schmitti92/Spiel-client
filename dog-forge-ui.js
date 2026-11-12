@@ -73,7 +73,7 @@
   if(textValue!==undefined)el.textContent=String(textValue);
   return el;
  };
- let uid=null,view=null,busy=false,tab=merchantMode?'exchange':'equipment',selected='weapon',tradeGroup='equipment',refineGroup='equipment',loadSerial=0,readyOnly=false,confirmData=null,exchangeConfirmData=null,goalId=null,sessionEpoch=0,lastLoadedAt=0,loadingUid=null,loadingPromise=null;
+ let uid=null,view=null,busy=false,tab=merchantMode?'exchange':'equipment',selected='weapon',tradeGroup='equipment',tradeQuality=1,refineGroup='equipment',loadSerial=0,readyOnly=false,confirmData=null,exchangeConfirmData=null,goalId=null,sessionEpoch=0,lastLoadedAt=0,loadingUid=null,loadingPromise=null;
  let chronicleView=undefined,chronicleUid=undefined,stockView=undefined,stockUid=undefined;
  const sectionExpanded={equipment:true,attack:false,defense:false};
  const goalKey=account=>'dog:forge:goal:'+account;
@@ -666,20 +666,20 @@
   if(dialog.open)dialog.close();
   exchangeConfirmData=null;
  }
- function openExchangeConfirm(resourceId,count){
+ function openExchangeConfirm(resourceId,count,quality=1){
   if(!usable()||!Number.isSafeInteger(count)||count<1||count>100)return;
   const info=material[resourceId],group=MATERIALS.find(g=>g.group===info?.group);
   const idx=group?.values.findIndex(x=>x[0]===resourceId)??-1;
   if(idx<0||idx>=4)return;
   const target=group.values[idx+1];
-  if(have(resourceId)<count*10||have(target[0])+count>1000000)return;
-  exchangeConfirmData={resourceId,count};
-  $('forge-exchange-confirm-title').textContent=count+' × '+target[2]+' erhalten';
+  if(haveQuality(resourceId,quality)<count*10||haveQuality(target[0],quality)+count>1000000)return;
+  exchangeConfirmData={resourceId,count,quality};
+  $('forge-exchange-confirm-title').textContent=count+' × '+target[2]+' (Qualität '+quality+') erhalten';
   $('forge-exchange-confirm-description').textContent=
-   'Du tauschst '+money(count*10)+' × '+info.name+' gegen '+money(count)+' × '+target[2]+'.';
+   'Du tauschst '+money(count*10)+' × '+info.name+' der Qualität '+quality+' gegen '+money(count)+' × '+target[2]+' derselben Qualität.';
   $('forge-exchange-confirm-preview').textContent=
-   'Danach: '+money(have(resourceId)-count*10)+' × '+info.name+
-   ' · '+money(have(target[0])+count)+' × '+target[2];
+   'Danach: '+money(haveQuality(resourceId,quality)-count*10)+' × '+info.name+
+   ' · '+money(haveQuality(target[0],quality)+count)+' × '+target[2];
   const dialog=$('forge-exchange-confirm');
   if(!dialog.open)dialog.showModal();
  }
@@ -748,15 +748,28 @@
    tabs.append(btn);
   }
   root.append(tabs);
+  const levels=node('div','exchange-groups quality-level-filter');
+  const qualityUnlocked=Number(view?.qualityUnlocked||1);
+  for(const level of [1,2,3]){
+   const allowed=level<=qualityUnlocked;
+   const btn=node('button',tradeQuality===level?'active':'',
+    allowed?'Materialstufe '+level:'🔒 Stufe '+level+' · Boss '+(level===2?30:60));
+   btn.type='button';btn.disabled=!view||busy||!allowed;
+   btn.setAttribute('aria-pressed',String(tradeQuality===level));
+   btn.addEventListener('click',()=>{tradeQuality=level;render();});
+   levels.append(btn);
+  }
+  if(tradeQuality>qualityUnlocked)tradeQuality=1;
+  root.append(levels);
   const group=MATERIALS.find(g=>g.group===tradeGroup)||MATERIALS[2];
   const list=node('div','exchange-list');
   for(let i=0;i<4;i++){
-   const from=group.values[i],to=group.values[i+1],stock=haveQuality(from[0],1);
-   const maxBatch=Math.min(100,Math.floor(stock/10),1000000-have(to[0]));
+   const from=group.values[i],to=group.values[i+1],stock=haveQuality(from[0],tradeQuality);
+   const maxBatch=Math.min(100,Math.floor(stock/10),1000000-haveQuality(to[0],tradeQuality));
    const row=node('div','exchange-row multi-exchange-row');
    row.append(node('span','exchange-icon',from[1]));
    const label=node('span','exchange-mat',from[2]);
-   label.append(node('small',null,'Vorrat: '+money(stock)));
+   label.append(node('small',null,'Qualität '+tradeQuality+' · Vorrat: '+money(stock)));
    row.append(label,node('span','exchange-arrow','→'),
     node('span','exchange-target',to[1]+' '+to[2]));
    const controls=node('div','exchange-controls');
@@ -783,8 +796,8 @@
    button.addEventListener('click',()=>{
     const count=Number(select.value);
     if(!usable()||!Number.isSafeInteger(count)||count<1||count>maxBatch)return;
-    if(count===1)void action('exchange',{resourceId:from[0]});
-    else openExchangeConfirm(from[0],count);
+    if(count===1)void action('exchange',{resourceId:from[0],quality:tradeQuality});
+    else openExchangeConfirm(from[0],count,tradeQuality);
    });
    controls.append(select,preview,button);row.append(controls);list.append(row);
   }
@@ -849,7 +862,7 @@
    const from=material[result.from],to=material[result.to];
    art.append(node('span','skill-result-emblem','💎'));
    subtitle=money(result.spent||10)+' × '+(from?.name||result.from)+
-    ' → '+money(result.received||1)+' × '+(to?.name||result.to);
+    ' → '+money(result.received||1)+' × '+(to?.name||result.to)+' · Qualität '+(result.quality||1);
    achievement='ROHSTOFFTAUSCH';
   }
   dialog.className='forge-result result-'+kind;
@@ -1022,12 +1035,12 @@
   const group=MATERIALS.find(g=>g.values.some(x=>x[0]===req.resourceId));
   const idx=group?.values.findIndex(x=>x[0]===req.resourceId)??-1;
   const to=idx>=0&&idx<4?group.values[idx+1][0]:null;
-  if(!to||haveQuality(req.resourceId,1)<req.count*10||have(to)+req.count>1000000){
+  if(!to||Number(view?.qualityUnlocked||1)<req.quality||haveQuality(req.resourceId,req.quality)<req.count*10||haveQuality(to,req.quality)+req.count>1000000){
    closeExchangeConfirm();status('↻ Rohstoffbestand geändert. Bitte neu prüfen.','bad');
    void reload();return;
   }
   closeExchangeConfirm();
-  void action('exchange',{resourceId:req.resourceId,count:req.count});
+  void action('exchange',{resourceId:req.resourceId,count:req.count,quality:req.quality});
  });
  $('forge-ready-filter').addEventListener('click',()=>{
   if(!view||busy)return;
