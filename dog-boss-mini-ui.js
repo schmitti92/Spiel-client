@@ -335,9 +335,11 @@
    root.hidden=!active;allowed=!!canPlay;
    if(!active){
     if(roundView?.kind==='math'&&mathChoices.length&&!mathSent)flushMath();
+    if(roundView?.kind==='target'&&targetChoices.length&&!targetSent)flushTarget();
     root.classList?.remove('is-math-battle');
      root.classList?.remove('is-slow-dodge');
      root.classList?.remove('is-precise-reaction');
+    root.classList?.remove('is-color-target');
     roundKey='';roundView=null;stopAnimation();return;
    }
    const elapsed=now-(view.startedAt||0),games=view.miniGames;
@@ -346,6 +348,7 @@
     // Interludes use synchronized battle choreography, not a stale input panel.
     root.hidden=games.version>=3;
     if(roundView?.kind==='math'&&mathChoices.length&&!mathSent)flushMath();
+    if(roundView?.kind==='target'&&targetChoices.length&&!targetSent)flushTarget();
     stopAnimation();root.classList?.remove('is-math-battle');
      root.classList?.remove('is-slow-dodge');
     if(roundKey!=='inactive'){
@@ -362,6 +365,7 @@
    const key=view.startedAt+':'+round.round+':'+(games.version||1);
    if(key!==roundKey){
     if(roundView?.kind==='math'&&mathChoices.length&&!mathSent)flushMath();
+    if(roundView?.kind==='target'&&targetChoices.length&&!targetSent)flushTarget();
     roundKey=key;build(round,games.version||1);
    }
    const mine=games.myAnswers?.[round.round],remaining=
@@ -397,14 +401,21 @@
    const attempts=mine?.attempts||[],correct=attempts.filter(a=>a.correct).length;
    const max=round.maxSteps||3;
    const completed=attempts.length>=max||
-    (round.kind==='math'&&mathChoices.length>=max);
+    (round.kind==='math'&&mathChoices.length>=max)||
+    (round.kind==='target'&&activeVersion>=10&&targetChoices.length>=max);
    let step=round.kind==='math'?Math.max(attempts.length,mathChoices.length):
-    attempts.length,windowOpen=true;
+    round.kind==='target'&&activeVersion>=10?
+     Math.max(attempts.length,targetChoices.length):
+     attempts.length,windowOpen=true;
    if(round.kind==='math'){
     if(attempts.length)mathSent=true;
     // Allow all eight seconds; flush remaining answers just before expiry
     // or upon switching to the next challenge (server allows transit grace).
     if(elapsed>=round.endMs-120&&mathChoices.length&&!mathSent)flushMath();
+   }
+   if(round.kind==='target'&&activeVersion>=10){
+    if(attempts.length)targetSent=true;
+    if(elapsed>=round.endMs-150&&targetChoices.length&&!targetSent)flushTarget();
    }
    if(round.kind==='dodge'){
     dodgeMarks.forEach((mark,i)=>{
@@ -451,12 +462,17 @@
      button.disabled=!canPlay||localSubmitting||!windowOpen||hasRecord;
     });
    }else{
-    buttons.forEach(b=>b.disabled=!canPlay||localSubmitting||completed);
+    buttons.forEach(b=>b.disabled=!canPlay||localSubmitting||completed||
+      (round.kind==='target'&&activeVersion>=10&&targetSent));
    }
    stepCurrent=step;
    if(counter){
     counter.textContent=round.kind==='math'&&!attempts.length?
-     mathChoices.length+' / '+max+' beantwortet':correct+' / '+max+' richtig';
+     mathChoices.length+' / '+max+' beantwortet':
+     round.kind==='target'&&activeVersion>=10?
+      (attempts.length?correct+' / 10 richtig · bestätigt':
+       targetChoices.length+' / 10 beantwortet · '+targetLocalCorrect+' Treffer (vorläufig)'):
+      correct+' / '+max+' richtig';
     counter.classList.toggle('is-perfect',correct===max);
    }
    if(round.kind==='math'){
@@ -481,6 +497,16 @@
     anchor={round,elapsed,stamp:typeof performance!=='undefined'?performance.now():Date.now()};
     if(!raf)paintReaction();
     if(completed)stopAnimation();
+   }else if(round.kind==='target'&&activeVersion>=10){
+    if(targetClock)targetClock.textContent=remaining+' s';
+    if(targetClockFill)targetClockFill.style.width=
+     Math.max(0,Math.min(100,100*(round.endMs-elapsed)/(round.endMs-round.startMs)))
+      .toFixed(1)+'%';
+    if(attempts.length||completed&&targetSent){
+     if(question)question.textContent=attempts.length?
+      '🏆 '+correct+' VON '+max+' TREFFERN BESTÄTIGT':
+      '⏳ SERVER PRÜFT DIE ANTWORTEN';
+    }
    }else if(round.kind==='target'){
     const moving=targetIndex(round,elapsed);
     buttons.forEach((button,i)=>{
@@ -510,6 +536,16 @@
       '✅ KONTER ABGESCHLOSSEN · '+correct+' / '+max+' bestätigt':
       '⚡ '+correct+' / '+max+' Treffer bestätigt · Drücke im grünen Feld';
     }
+    return;
+   }
+   if(round.kind==='target'&&activeVersion>=10){
+    status.textContent=attempts.length?
+     '✅ SERVER BESTÄTIGT · '+correct+' / '+max+' Treffer · '+
+      (Math.round(3*correct/max*10)/10).toLocaleString('de-DE')+' % Zusatzschaden':
+     targetSent?'⏳ '+targetChoices.length+' Antworten werden gesammelt geprüft …':
+     (targetLastHit===null?'🎯 Triff die vorgegebene Farbe und/oder das Symbol!':
+      (targetLastHit?'✅ Treffer!':'❌ Daneben!')+
+       ' · '+targetChoices.length+' / 10 · '+targetLocalCorrect+' richtig (vorläufig)');
     return;
    }
    status.textContent=round.kind==='math'&&!attempts.length?
