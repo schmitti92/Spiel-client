@@ -50,3 +50,31 @@ body.merchant-page .exchange-controls{grid-template-columns:minmax(90px,.8fr) mi
 .stock-row .stock-quality-2{color:#8ecbff}
 .stock-row .stock-quality-3{color:#d9b4ff}
 @media(max-width:720px){.stock-row .stock-quality-counts{gap:2px 7px}.stock-row .stock-quality{font-size:.72em}}
+
+
+/* Three-stage material refinement belongs to the forge, never to the merchant. */
+.quality-forge-panel{margin:18px 0;border:1px solid #b58b50aa;border-radius:18px;background:linear-gradient(140deg,#14243adf,#0d182beb);box-shadow:0 8px 26px #0004;overflow:hidden;color:#f1e4d1}
+.quality-forge-panel>summary{cursor:pointer;list-style:none;padding:17px 20px;font-weight:800;font-size:18px;color:#f1d6a5;display:flex;gap:12px;align-items:center;justify-content:space-between}
+.quality-forge-panel>summary::-webkit-details-marker{display:none}
+.quality-forge-panel>summary span{font-size:12px;font-weight:600;color:#bcd2e0}
+.quality-forge-body{padding:0 18px 18px}
+.quality-forge-body>p{font-size:13px;line-height:1.55;color:#cad5e4;margin:4px 0 14px}
+.quality-forge-unlocks{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.quality-forge-unlock{border-radius:9px;padding:7px 10px;font-size:12px;background:#2c3447;border:1px solid #59657d;color:#cad3e1}
+.quality-forge-unlock.unlocked{background:#184338;border-color:#4d9980;color:#b9efd8}
+.quality-forge-groups{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.quality-forge-group{border:1px solid #64778a;background:#172a41;color:#e6ecf6;border-radius:10px;font-size:13px;font-weight:700;min-height:40px;padding:9px 14px;cursor:pointer}
+.quality-forge-group.selected{border-color:#f8cc80;background:#71522d;color:#fff3d3}
+.quality-forge-group:disabled{opacity:.55;cursor:default}
+.quality-forge-list{display:grid;gap:9px}
+.quality-forge-row{display:grid;grid-template-columns:minmax(175px,1fr) minmax(275px,1.2fr);align-items:center;gap:12px;padding:12px;border:1px solid #64718b88;border-radius:12px;background:#15243a}
+.quality-forge-resource{display:grid;grid-template-columns:auto 1fr;column-gap:8px;align-items:center;min-width:0}
+.quality-forge-icon{grid-row:1/3;font-size:25px}
+.quality-forge-resource strong{font-size:14px;color:#ffe1af;line-height:1.3}
+.quality-forge-balances{font-size:11px;color:#b5c4d7;line-height:1.5;overflow-wrap:anywhere}
+.quality-forge-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.quality-forge-action{min-height:39px;border:1px solid #ddbe86;border-radius:10px;background:linear-gradient(145deg,#266b50,#174b41);color:#f4f7e9;font-weight:800;font-size:12px;padding:9px 12px;cursor:pointer;flex:1 1 125px}
+.quality-forge-action:disabled{background:#343e50;color:#b2bdc9;border-color:#536071;cursor:not-allowed;opacity:.78}
+.quality-forge-action:focus-visible,.quality-forge-group:focus-visible{outline:3px solid #f9dc91;outline-offset:2px}
+@media(max-width:800px){.quality-forge-row{grid-template-columns:1fr}.quality-forge-actions{justify-content:stretch}.quality-forge-panel>summary{font-size:16px}}
+@media(max-width:470px){.quality-forge-body{padding:0 12px 14px}.quality-forge-panel>summary{padding:14px 12px;align-items:flex-start;flex-direction:column;gap:5px}.quality-forge-row{padding:10px}.quality-forge-actions{gap:6px}.quality-forge-action{padding:9px 7px}.quality-forge-group{flex:1 1 125px}}
