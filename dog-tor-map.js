@@ -160,7 +160,7 @@
     const avatar=$node('span','member-avatar dog-hero-art is-'+(HERO_CLASSES.includes(member.heroClass)?member.heroClass:HERO_CLASSES[i]),member.name.slice(0,1).toUpperCase());
     const text=$node('div','member-copy');
     text.append($node('strong',null,member.name+(member.isMe?' (du)':'')));
-    text.append($node('span',null,'🎭 '+(HERO_LABELS[member.heroClass]||HERO_LABELS[HERO_CLASSES[i]])+' · 📍 Tor '+member.currentGate));
+    text.append($node('span',null,'📍 Aktuell: Tor '+member.currentGate+' · 🎭 '+(HERO_LABELS[member.heroClass]||HERO_LABELS[HERO_CLASSES[i]])));
     text.append($node('small',null,'🏅 Höchstes erreichtes Tor: '+
      (member.highestGate??member.currentGate)));
     text.append($node('small',null,member.lastAttemptAt?
