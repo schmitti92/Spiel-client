@@ -78,6 +78,9 @@
   if(auth()?.user?.uid!==uid)throw Error('ACCOUNT_CHANGED');
   const ctl=typeof AbortController==='function'?new AbortController():null;
   const timeout=ctl?setTimeout(()=>ctl.abort(),timeoutMs):null;
+  // A-02 only: opt-in local request timings. No request data or user IDs.
+  let diag=null,httpStatus=0;
+  try{diag=window.DogBossNetDiag?.begin?.('boss10',method,route);}catch{}
   try{
    const requestStartedAt=Date.now();
    const response=await fetch(API+'/api/dog/gates/boss10'+route,{
@@ -85,6 +88,7 @@
     headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
     ...(body?{body:JSON.stringify(body)}:{}),...(ctl?{signal:ctl.signal}:{})
    });
+   httpStatus=response.status;
    const data=await response.json().catch(()=>({error:'DOG_BOSS10_UNAVAILABLE'}));
    if(!response.ok||data?.ok!==true)throw Error(data?.error||'DOG_BOSS10_UNAVAILABLE');
    if(auth()?.user?.uid!==uid)throw Error('ACCOUNT_CHANGED');
@@ -96,7 +100,15 @@
    if(Number.isFinite(stamped))
     data._clockOffsetMs=stamped-receivedAt+
      Math.min(75,Math.max(0,(receivedAt-requestStartedAt)/4));
+   // Never affect the game if the optional diagnostic hook fails.
+   try{
+    diag?.finish('ok',httpStatus);
+    window.DogBossNetDiag?.observe?.('boss10',data.view||data);
+   }catch{}
    return data;
+  }catch(error){
+   try{diag?.finish(error?.name==='AbortError'?'aborted':'failed',httpStatus);}catch{}
+   throw error;
   }finally{if(timeout!==null)clearTimeout(timeout);}
  }
  function noteReadyChange(next){
