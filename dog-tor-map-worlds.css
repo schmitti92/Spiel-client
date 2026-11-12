@@ -1,30 +1,53 @@
-/* 100 Tore / Rettet DOG — lightweight, static, illustrated world backdrops.
-   Only presentation: game logic, server requests and stored progress are unchanged. */
+/* Die 100 Tore – Rettet DOG.
+   Fünf hochauflösende, vom Benutzer hochgeladene Fantasy-Hintergründe.
+   Rein visuelle Änderung; Fortschritt/Kampf/Firestore bleiben unberührt. */
 .world{
-  isolation:isolate;
-  background-position:center center;
-  background-size:cover;
-  background-repeat:no-repeat;
-  box-shadow:0 18px 50px #0009,inset 0 0 0 1px #ffffff0b;
+ isolation:isolate;
+ background-repeat:no-repeat;
+ background-size:cover;
+ background-position:center 48%;
+ background-color:#0a1526;
+ box-shadow:0 18px 50px #0009,inset 0 0 0 1px #ffffff0b;
 }
-.world[data-world="1"]{background-image:linear-gradient(90deg,#081c19b8,#07152040 52%,#0718205e),url("./dog-map-art/ruins.svg")}
-.world[data-world="2"]{background-image:linear-gradient(90deg,#0c0c24bd,#0e092f52 52%,#0b0d23a3),url("./dog-map-art/forest.svg")}
-.world[data-world="3"]{background-image:linear-gradient(90deg,#071a2bc6,#041a3150 55%,#08182ca0),url("./dog-map-art/crystals.svg")}
-.world[data-world="4"]{background-image:linear-gradient(90deg,#1c0d18c7,#240f185a 55%,#150c18a0),url("./dog-map-art/volcano.svg")}
-.world[data-world="5"]{background-image:linear-gradient(90deg,#101023c8,#16112850 56%,#11101f9e),url("./dog-map-art/fortress.svg")}
-.world::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(180deg,#0610219c 0%,#0612252c 20%,#07152524 75%,#06101eb8 100%),radial-gradient(ellipse at 50% 56%,transparent 25%,#04091483 100%)}
-.world::after{content:"";position:absolute;inset:7px;border:1px solid color-mix(in srgb,var(--world-accent) 20%,transparent);border-radius:19px;pointer-events:none;z-index:0;opacity:.64}
+.world[data-world="1"]{
+ background-image:linear-gradient(90deg,#0a1a168c,#09152224 54%,#0a1c2640),url("./dog-map-art/a_highly_detailed_cinematic_fantasy_adventure_lan.png")
+}
+.world[data-world="2"]{
+ background-image:linear-gradient(90deg,#0e0b278e,#0b092b27 54%,#0a0b2480),url("./dog-map-art/a_highly_detailed_cinematic_fantasy_scene_a_wide.png")
+}
+.world[data-world="3"]{
+ background-image:linear-gradient(90deg,#07192b93,#07172824 54%,#07162b79),url("./dog-map-art/a_highly_detailed_cinematic_fantasy_cave_environm.png")
+}
+.world[data-world="4"]{
+ background-image:linear-gradient(90deg,#210d1890,#220e142d 54%,#180d2472),url("./dog-map-art/a_cinematic_high_detail_fantasy_volcanic_landscap.png")
+}
+.world[data-world="5"]{
+ background-image:linear-gradient(90deg,#15122393,#10152c25 54%,#0e101f81),url("./dog-map-art/a_highly_detailed_cinematic_fantasy_concept_art_sc.png")
+}
+.world::before{
+ content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+ background:linear-gradient(180deg,#050d1cb0 0%,#07101e30 22%,#07111e10 66%,#050b19aa 100%),
+ radial-gradient(ellipse at 50% 52%,transparent 30%,#03081359 100%)
+}
+.world::after{
+ content:"";position:absolute;inset:7px;z-index:0;pointer-events:none;
+ border:1px solid color-mix(in srgb,var(--world-accent) 22%,transparent);
+ border-radius:19px;opacity:.65
+}
 .world-head,.world-content,.world-foot{position:relative;z-index:1}
-.world-head>div{max-width:80%;text-shadow:0 2px 16px #000e}
-.world-head p{color:#e2eaf2}
+.world-head>div{max-width:80%;text-shadow:0 2px 13px #000e,0 0 24px #0009}
+.world-head p{color:#f0f4fa}
 .world-icon{filter:drop-shadow(0 5px 14px #000e) drop-shadow(0 0 13px var(--world-accent))}
-.world .gate:not(.boss):not(.mini){background:linear-gradient(150deg,#172b3ce8,#07101feb)}
+.world .gate:not(.boss):not(.mini){background:linear-gradient(150deg,#192c40ed,#07111fe9)}
 .world .gate{box-shadow:0 5px 17px #000c,inset 0 1px #ffffff20;text-shadow:0 1px 3px #000}
-.world .gate-path path{opacity:.8;filter:drop-shadow(0 0 4px #010712) drop-shadow(0 0 5px var(--world-accent))}
-.world-foot{background:linear-gradient(90deg,#030a17d9,#030914be);text-shadow:0 1px 6px #000}
-@media (max-width:650px){
- .world{background-position:60% center}
- .world[data-world="2"]{background-position:55% center}
+.world .gate-path path{opacity:.86;filter:drop-shadow(0 0 4px #010712) drop-shadow(0 0 5px var(--world-accent))}
+.world-foot{background:linear-gradient(90deg,#030916df,#030916c3);text-shadow:0 1px 7px #000}
+@media(max-width:650px){
+ .world{background-position:center center}
+ .world[data-world="1"]{background-position:62% center}
+ .world[data-world="2"]{background-position:52% center}
+ .world[data-world="3"]{background-position:60% center}
+ .world[data-world="4"]{background-position:55% center}
  .world[data-world="5"]{background-position:center center}
  .world::after{inset:4px;border-radius:15px}
  .world-head>div{max-width:83%}
