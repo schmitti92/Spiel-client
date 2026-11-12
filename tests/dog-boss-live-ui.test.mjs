@@ -194,27 +194,27 @@ test('The compact hit log lists only verified per-hero and boss HP losses, never
  display.update({...b,startedAt:start+101000,attempt:2,bossLiveHp:25000},start+101500);
  assert.equal(element('live-recent-damage').textContent,'Noch keine bestätigten Treffer');
 });
-test('The simplified Boss 10 and group-boss pages keep the minigame while removing the visible bottom bars',()=>{
- const compact=read('dog-boss-compact-arena.css');
- assert.match(compact,/grid-template-rows:auto auto auto minmax\(0,1fr\)/);
- assert.match(compact,/\.live-rounds\[hidden\]/);
- assert.match(compact,/\.squad\[hidden\]/);
+test('the rebuilt V3 arena keeps the minigame and hides old bars without losing retry actions',()=>{
+ const active=read('dog-boss-battle-v3.css');
+ assert.match(active,/grid-template-rows:auto auto minmax\(0,1fr\) auto/);
+ assert.match(active,/\.v3-compat\{display:none!important\}/);
+ assert.match(active,/\.squad\[hidden\]/);
  for(const page of ['dog-boss10.html','dog-group-boss.html']){
   const html=read(page);
+  assert.match(html,/data-arena-design="v3"/);
   assert.match(html,/id="live-recent-damage"/);
-  assert.match(html,/class="live-rounds" hidden/);
+  assert.match(html,/class="v3-compat" aria-hidden="true" hidden/);
   assert.match(html,/id="boss-squad"/);
   assert.match(html,/id="mini-game"/);
   assert.match(html,/id="live-round-label"/);
   assert.match(html,/id="timer"/);
-  assert.match(html,/dog-boss-compact-arena\.css\?v=/);
-  assert.ok(html.indexOf('dog-boss-real-heroes.css')<
-   html.indexOf('dog-boss-compact-arena.css'),
-   'compact styles load after character artwork for '+page);
+  assert.match(html,/dog-boss-battle-v3\.css\?v=/);
+  assert.doesNotMatch(html,/href="\.\/dog-boss-compact-arena\.css/);
  }
  for(const js of ['dog-boss10.js','dog-group-boss.js']){
   const controller=read(js);
   assert.match(controller,/squad\.hidden=\['fighting','victory'\]/);
   assert.match(controller,/\$\('retry-button'\)\.hidden/);
+  assert.match(controller,/battleV3\?\.update\(view,now\(\)\)/);
  }
 });
