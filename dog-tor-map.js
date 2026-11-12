@@ -476,7 +476,7 @@
    '↻ Gespeicherte Kampfaktion von Tor '+gate+' wird beim Server wiederhergestellt …':
    '⚔️ Der Server berechnet deinen Kampf bei Tor '+gate+' …';
   try{
-   const result=await request('POST','fight',pending,account);
+   const result=await request('POST','fight',{requestId:pending.id,gate:pending.gate},account);
    if(auth()?.user?.uid!==account)return;
    clearPending(account);
    mapState=result.map;
@@ -499,6 +499,9 @@
   }catch(e){
    // Preserve the request ID after an unknown network/server error.
    // Definitive application errors did not award the fight.
+   if(e.message==='INVALID_REQUEST_ID'){
+    $('gate-recovery-status').textContent='⚠️ Server hat die Aktionskennung abgelehnt. Bitte Seite aktualisieren; die ursprüngliche Kennung bleibt erhalten.';
+   }
    if(['DOG_GATE_ALREADY_WON','DOG_GATE_PREVIOUS_REQUIRED','DOG_GATE_INVALID',
      'DOG_GATE_BOSS_REQUIRED','DOG_GATE_COOLDOWN','NOT_DOG_TEAM_MEMBER',
      'DOG_GATE_RECEIPT_CONFLICT'].includes(e.message)){
