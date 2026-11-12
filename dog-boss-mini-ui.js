@@ -414,21 +414,28 @@
    if(roundView.kind==='dodge'&&typeof onDodgeChoice==='function')
     onDodgeChoice(roundView.round,step,value);
    buttons.forEach(button=>button.disabled=true);
-   Promise.resolve().then(()=>onSubmit(roundView.round,value,step,tappedAt))
+   const submittedRound=roundView.round; // M-08: freeze original tap's round
+   Promise.resolve().then(()=>onSubmit(submittedRound,value,step,tappedAt))
     .catch(()=>{}).finally(()=>{localSubmitting=false;});
   };
   function makeButton(value,label,css){
    const button=createElement('button','mini-choice '+(css||''),label);
    button.type='button';
-   let pointerAt=0;
+   const ownerRound=roundView?.round;
+   let suppressPointerClick=false;
    if(css==='mini-reaction')button.addEventListener('pointerdown',event=>{
+    if(roundView?.round!==ownerRound)return;
     if(activeVersion>=9&&roundView?.kind==='reaction'&&event?.isPrimary!==false){
-     pointerAt=Date.now();
-     choose(value);
+     // A delayed Android click must not count after the initial pointerdown.
+     suppressPointerClick=true;choose(value);
     }
    });
-   button.addEventListener('click',()=>{
-    if(css==='mini-reaction'&&activeVersion>=9&&Date.now()-pointerAt<700)return;
+   button.addEventListener('click',event=>{
+    if(roundView?.round!==ownerRound)return;
+    if(css==='mini-reaction'&&activeVersion>=9&&suppressPointerClick){
+     suppressPointerClick=false;
+     if(event?.detail!==0||event?.isTrusted!==true)return;
+    }
     choose(value);
    });
    buttons.push(button);body.append(button);return button;
@@ -605,9 +612,11 @@
     for(let i=0;i<round.lanes;i++){
      const button=createElement('button','mini-choice mini-chain-lane','KETTE '+(i+1));
      button.type='button';
-     let pointerStart=null,lastPointerAction=0;
+     const ownerRound=round.round;
+     let pointerStart=null,suppressPointerClick=false;
      button.addEventListener('pointerdown',event=>{
-      if(event?.isPrimary===false||!allowed||roundView?.kind!=='chain')return;
+      if(event?.isPrimary===false||!allowed||roundView?.kind!=='chain'||
+         roundView.round!==ownerRound)return;
       pointerStart=event.pointerId;
       if(event.pointerId!==undefined)
        button.setPointerCapture?.(event.pointerId);
@@ -615,17 +624,20 @@
      });
      button.addEventListener('pointerup',event=>{
       if(pointerStart===null||event.pointerId!==pointerStart)return;
-      pointerStart=null;lastPointerAction=Date.now();
+      pointerStart=null;suppressPointerClick=true;
       if(event.pointerId!==undefined)
        button.releasePointerCapture?.(event.pointerId);
       event.preventDefault?.();
       choose(i); // short tap OR swipe: reliable on Android and desktop
      });
      button.addEventListener('pointercancel',()=>{pointerStart=null});
-     button.addEventListener('click',()=>{
-      // Prevent the synthetic click that follows pointerup from double scoring.
-      if(Date.now()-lastPointerAction<600)return;
-      choose(i); // mouse click, keyboard and older touch browsers
+     button.addEventListener('click',event=>{
+      if(roundView?.round!==ownerRound)return;
+      if(suppressPointerClick){
+       suppressPointerClick=false;
+       if(event?.detail!==0||event?.isTrusted!==true)return;
+      }
+      choose(i); // real keyboard click or browsers without Pointer Events
      });
      buttons.push(button);arena.append(button);
     }
@@ -658,7 +670,11 @@
     body.append(cells);
     for(let i=0;i<(round.puzzles?.[0]?.options?.length||4);i++){
      const button=createElement('button','mini-choice mini-color-target','');
-     button.type='button';button.addEventListener('click',()=>choose(i));
+     button.type='button';
+     const ownerRound=round.round;
+     button.addEventListener('click',()=>{
+      if(roundView?.round===ownerRound)choose(i);
+     });
      buttons.push(button);cells.append(button);
     }
     targetFeedback=createElement('div','mini-color-verdict',
