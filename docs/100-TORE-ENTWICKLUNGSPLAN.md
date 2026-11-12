@@ -142,10 +142,11 @@
 | 135 s, 1 echter Held | 2 / 12 | **41** | **24** | nur 2 GETs; keine Auth-/Pilot-Reads |
 | 135 s, 2 echte Helden | 2 / 22 | **72** | **44** | nur 2 GETs; keine Auth-/Pilot-Reads |
 | 135 s, 3 echte Helden | 2 / 31 | **100** | **62** | nur 2 GETs; keine Auth-/Pilot-Reads |
-| 135 s, 1 Held + Nova/Titan | 29 / 10 | **100** | **31** | 5-s-GET-Testschema; 11 schreibende GETs |
+| 135 s, 1 Held + Nova/Titan (vor S-06) | 29 / 10 | **100** | **31** | 5-s-GET-Testschema; 11 schreibende GETs |
+| 135 s, 1 Held + Nova/Titan (nach S-06) | 29 / 10 | **95** | **26** | gleiches Szenario; nur 6 schreibende GETs, 16 statt 21 Transaktionen |
 | 5 Min. Leerlauf, 20 GETs | 20 / 0 | **40** | **0** | ohne Profilcache und Pilotzugriff |
 
-**Ergebnis:** Ein unveränderter Status-GET hat im Backend mindestens **2 Dokumentreads**. Ein neuer gültiger Minispiel-POST verursacht üblicherweise **3 Reads und 2 Writes** (Fortschritt + idempotente Quittung). Im Bot-Test verursachten **11 von 29 GETs** je eine weitere Dokumentänderung; das ist ein wichtiges Optimierungsthema für S-06.
+**Ergebnis:** Ein unveränderter Status-GET hat im Backend mindestens **2 Dokumentreads**. Ein neuer gültiger Minispiel-POST verursacht üblicherweise **3 Reads und 2 Writes** (Fortschritt + idempotente Quittung). Im ursprünglichen Bot-Test verursachten **11 von 29 GETs** je eine weitere Dokumentänderung. **Nach S-06 sind es im exakt gleichen Test nur noch 6 GETs**; im Test werden **5 Reads, 5 Writes und 5 Transaktionen** eingespart. Das ist eine isolierte Offline-Messung und nicht die reale Firebase-Abrechnung.
 
 **Achtung:** Bei echten Online-Spielen entstehen weitere Reads durch häufigeres Polling, Profil-Cache-Misses (15-s-Fenster), Pilot-Berechtigungscache (30-s-Fenster) sowie ggf. SDK-Transaktionswiederholungen. Render liefert derzeit keine Firestore-Abrechnungsdaten; die Firebase-Usage-Konsole des Projekts `spiel-barik` ist für A-01e noch erforderlich. **Nicht als „100 Firestore-Reads pro realem Dreierkampf“ interpretieren.**
 
@@ -225,8 +226,27 @@ Der Nutzer hat **vor und nach genau einem Spiel** die Nutzungszähler in der Fir
 - [ ] **S-03 – Firestore-Abfragen reduzieren (Teilfortschritt):** Häufige GETs und redundante Abfragen prüfen, unveränderte Antworten nach Revision bewerten. **S-03a erledigt:** Nach erfolgreich bestätigten `minigame`- und `finish`-POSTs nutzt der Browser die vollständige Serveransicht aus der Antwort und setzt den GET-Takt zurück; bei `ready`/`start` erfolgt bewusst keine Drosselung. Unnötige unmittelbare Doppelabfragen entfallen; nach spätestens 3 s läuft normales Polling weiter, **erzwungene Szenen-/Manuell-/Wiederverbindungsabfragen bleiben unverändert**. Für die komplette Abnahme fehlen ein gemessener Live-Vorher/Nachher-Vergleich und gegebenenfalls weitere nachweisbar sichere Optimierungen; **nicht** allein wegen der Codeänderung als „Reads reduziert“ abnehmen.
 - [ ] **S-04 – Ereignis-Push (PILOT auf `main`):** Getrennter, authentifizierter WebSocket-Kanal als **freiwilliger Test mit `?dogpush=1`**, der nur Änderungshinweise sendet, keine Spieldaten. Boss 10 und Gruppenbosse rufen daraufhin ihre geschützte API ab; bei aktiver Verbindung weniger regelmäßige HTTP-Statusabfragen im Kampf, bei Verbindungsabbruch sofort normaler Polling-Fallback. Serverseitige Hinweise werden nach erfolgreich bestätigtem Kampf-POST, Bot-Fortschritt oder Endabrechnung verschickt. **Noch offen:** Drei echte Geräte, Zeit-/Firestore-Vorher-Nachher-Vergleich und Pilotentscheidung für Standardbetrieb; deshalb bewusst nicht vollständig abgehakt.
 - [ ] **S-05 – Robuste Reihenfolge und Nachholen (technisch umgesetzt, Praxis offen):** Push-Hinweise mit Sequenznummer werden entdoppelt; verpasste Nummern erkannt und zu **einem** autoritativen HTTP-Abgleich zusammengefasst. Hinweise während POST/GET oder verborgenem Tab bleiben vorgemerkt. Nach Wiederverbindung erfolgt ein Sicherheitsabgleich; HTTP-Polling bleibt erhalten. **Abnahme offen:** echter WLAN- und Tab-Wechsel mit mehreren Geräten.
-- [ ] **S-06 – Serverseitige Bot-Bündelung optimieren:** Nova/Titan mit gebündelten Aktionen, festen Abrechnungsfenstern und maximal nötigen Transaktionen führen. **Fertig:** Bot-Tests erfolgreich, keine unkontrollierten Reads/Writes.
-- [ ] **S-07 – Synchronisierungskosten als CI-Regression schützen:** Tests/Instrumentierung für „keine Datenbankaktion pro Frame“, gebündelte Antworten und idempotente Resultate. **Fertig:** neue unnötige DB-Aktionen fallen automatisch auf.
+- [x] **S-06 – Serverseitige Bot-Bündelung optimieren (technisch abgeschlossen):** Nova/Titan speichern ihre weiterhin deterministisch zum Originalzeitpunkt berechneten Minispielantworten **erst nach Ende der jeweiligen serverseitigen Phase zusammen**. Die öffentlich sichtbare Rundenauswertung erfolgt ohnehin erst nach Rundenschluss. Im identischen 135-s-Mock-Kampf sinken Bot-Update-GETs **11 → 6**; Gesamtreads **100 → 95**, Writes **31 → 26**, Transaktionen **21 → 16**. Ergebnis/Antworten im Test unverändert, Bot-Pilot und CI grün; echte Firebase-Nachmessung und Sichttest bleiben offen.
+- [x] **S-07 – Synchronisierungskosten als CI-Regression schützen (bestehende Tests wiederverwendet):** Backend-Mock-Tests prüfen 0 Writes bei Leerlauf-GETs, exakt gezählte 1-/2-/3-Helden-Codepfade sowie maximal 7 schreibende GETs beim Nova/Titan-Kampf; bestehende HTTP-Tests sichern gebündelte Minispielantworten, Quittungs-Idempotenz und einmalige Endabrechnung. Client-Tests sichern, dass der lokale 250-ms-Tick bei Fehlern keine GET-Flut erzeugt. **Keine neuen umfangreichen Testreihen und kein zusätzlicher reiner Test-Deploy nötig.** Gültig für bekannte geprüfte Codepfade, nicht als allgemeine Cloud-Billing-Garantie.
+
+#### S-06 / S-07 – Bot-Bündelung und vorhandene Kosten-Wächter
+
+**Exakter Offline-Vorher/Nachher-Vergleich**, derselbe 135-s-Test mit 1 echtem Helden + Nova/Titan, 29 Status-GETs und 10 POSTs:
+
+| Kennzahl | Vor S-06 | Nach S-06 | Differenz |
+|---|---:|---:|---:|
+| Dokumentreads im isolierten API-Mock | 100 | **95** | −5 |
+| Dokumentwrites | 31 | **26** | −5 |
+| Firestore-Transaktionen | 21 | **16** | −5 |
+| GETs, die Bot-Fortschritt persistieren | 11 | **6** | −5 (≈45 % weniger) |
+
+**Quelle der Ausgangswerte:** [Node-Tests zum vorherigen Serverstand](https://github.com/schmitti92/serverfinal/actions/runs/43260335475), Konsolenzeile `[A-01 synthetic bot fight]`. **Quelle der neuen Werte:** [Node-Tests nach S-06](https://github.com/schmitti92/serverfinal/actions/runs/43263058289), derselbe Test und dieselbe Kennzahl. [S-06-Commit](https://github.com/schmitti92/serverfinal/commit/56a3a90a86010e91df875804f127f26961f835ac).
+
+**Spielregeln unverändert:** Die Bots nutzen exakt die bisherigen Antwortwerte, Erfolgsraten und ursprünglichen Zeitstempel; nur die persistierende Fortschreibung wird gesammelt, sobald der jeweilige Minispielabschnitt vorbei ist. Vergleichstests beweisen gleiche `miniGames.answers` und `result` bei schrittweisem Rundenabschluss gegenüber vollständigem Aufholen nach Verbindungsunterbrechung. [Zwei-Bot-Pilot grün](https://github.com/schmitti92/serverfinal/actions/runs/43263058646), [Server-Tests grün](https://github.com/schmitti92/serverfinal/actions/runs/43263058443), [Multiplayer-Regression grün](https://github.com/schmitti92/serverfinal/actions/runs/43263058451).
+
+**S-07 ohne doppelte Testarbeit:** Bereits laufende [A-01-Codepfad-Tests](https://github.com/schmitti92/serverfinal/blob/main/tests/dog-firestore-a01.test.js) zählen Reads und Writes; die neue Obergrenze von **7 botbedingten Schreib-GETs** fällt im CI durch, falls S-06 wesentlich rückgängig gemacht wird. [Gruppenboss-Tests](https://github.com/schmitti92/serverfinal/blob/main/tests/dog-group-boss.test.js) kontrollieren wiederholte Minispiel-Quittungen, gleiche Siegresultate und keine Doppelbelohnung; [Reconnect-Tests](../tests/dog-boss-reconnect.test.mjs) begrenzen GETs bei 250-ms-Client-Ticks und Fehlern. Diese Schutzwächter messen **kein echtes Firestore-Billing**.
+
+**Noch offen:** Ein erneuter, möglichst isolierter Live-Firebase-Vergleich sowie S-04/S-05-Prüfung auf mehreren Geräten. Der frühere Nutzerwert **145 Reads/26 Writes** ist eine andere reale Spielsituation; nicht mit den Bot-Mock-Zahlen gleichsetzen.
 
 ### Phase K – Kampfsystem, Überleben und Inszenierung `P0/P1`
 
@@ -332,8 +352,10 @@ Der Nutzer hat **vor und nach genau einem Spiel** die Nutzungszähler in der Fir
 
 | 12.11.2026 | **S-05 technisch umgesetzt** | Sequenzsprünge/Duplikate und offene Hinweise bei laufenden Aktionen, Tabwechsel und Reconnect geschützt; kein neues Firestore-Datenmodell. Echte Mehrgeräteabnahme ausstehend. | Gezielte WS-Client-Tests + Frontend-CI (nach Commit) | 0 zusätzliche DB-Writes; Nachhol-GET ungefähr 2 Reads, Nettokosten noch offen | [Push-Client](../dog-boss-push-client.js) · [Tests](../tests/dog-boss-push-client.test.mjs) |
 
+| 12.11.2026 | **S-06 erledigt, S-07 geprüft** | Nova/Titan schreiben ab Rundenschluss statt pro fälligem Einzelschritt; bestehende CI schützt Lesen/Schreiben, Bot-Write-Obergrenze, Idempotenz und GET-Fehlerschleifen. | [Node-CI](https://github.com/schmitti92/serverfinal/actions/runs/43263058289), [Zwei-Bot-Pilot](https://github.com/schmitti92/serverfinal/actions/runs/43263058646), [Multiplayer](https://github.com/schmitti92/serverfinal/actions/runs/43263058451) erfolgreich | **100 → 95 Reads, 31 → 26 Writes, 21 → 16 Transaktionen** im gleichen Bot-Test, keine Live-Firebase-Abrechnung | [Backend-Commit](https://github.com/schmitti92/serverfinal/commit/56a3a90a86010e91df875804f127f26961f835ac) |
+
 **Definition von „fertig“:** Funktion auf GitHub `main` integriert, Frontend-/Backend-Tests erfolgreich, auf echter Anzeige nachvollziehbar, keine ungeklärten Doppelbuchungen oder unnötigen Firestore-Mehrzugriffe, Task abgehakt und Fortschrittsprotokoll ergänzt.
 
-**Nächster Entwicklungsblock:** S-04/S-05 optionalen Push-Piloten mit echtem Verbindungsverlust und Tabwechsel prüfen; anschließend **S-06 – unnötige Bot-Fortschritts-Transaktionen** untersuchen. Alle sicheren Verbesserungen nur bei belegtem Mehrwert für Spielgefühl oder Firebase-Verbrauch. A-01e/A-02e bleiben offene Live-Messaufgaben.
+**Nächster Entwicklungsblock:** **K-01 – die 135-s-Kampfinszenierung mit serverbestätigten Trefferereignissen zu einer einheitlichen visuellen Zeitleiste verbinden**, ohne die Spielzeit/Ergebnisregeln zu ändern. Parallel S-04/S-05 nur nach echter Mehrgeräte-Erprobung als fertig abnehmen und Firebase-Verbrauch nach Möglichkeit isoliert nachmessen. A-01e/A-02e bleiben offen.
 
 **Nächste konkrete Schritte:** **A-01e** – bereits dokumentierten kontrollierten Praxiswert (145 Reads / 26 Writes) bei künftigen Spielen um Leerlauf und weitere Szenarien ergänzen und **A-02e** – mit dem neuen `netdiag=1`-Messfeld die reale 1/2/3-Geräte-Baseline plus Nova/Titan erheben. Danach A-01/A-02 abnehmen. **Keine Optimierung als abgeschlossen bezeichnen, solange der Vergleich zur Live-Baseline fehlt.**
