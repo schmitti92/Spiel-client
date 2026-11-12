@@ -1,0 +1,96 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
+const read=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
+const js=read('dog-boss-battle-v3.js'),css=read('dog-boss-battle-v3.css');
+const boss=readFileSync(new URL('../dog-boss-art/aschewaechter-battle-v3.webp',import.meta.url));
+const begin=1900000000000;
+const rounds=[
+ {round:0,kind:'math',startMs:0,endMs:12000},
+ {round:1,kind:'dodge',startMs:26000,endMs:41000},
+ {round:2,kind:'target',startMs:55000,endMs:65000},
+ {round:3,kind:'reaction',startMs:79000,endMs:87000},
+];
+const players=[
+ {uid:'chris',name:'Chris',heroClass:'magierin'},
+ {uid:'nova',name:'Nova',heroClass:'magierin'},
+ {uid:'titan',name:'Titan',heroClass:'magierin'}
+];
+const view=(gate=10)=>({
+ gate,name:'Der Aschewächter',phase:'fighting',startedAt:begin,
+ endsAt:begin+101000,attempt:1,members:players,roster:players,
+ miniGames:{version:10,rounds}
+});
+const load=()=>{
+ const window={};runInNewContext(js,{window},{timeout:1000});
+ return window.DogBossArenaV3;
+};
+test('new boss asset is the exact, real transparent character sprite and is only assigned to Boss 10',()=>{
+ assert.equal(boss.toString('ascii',0,4),'RIFF');
+ assert.equal(boss.toString('ascii',8,12),'WEBP');
+ assert.ok(boss.byteLength>50000,'the new boss must not be a tiny icon');
+ assert.match(css,/aschewaechter-battle-v3\.webp/);
+ assert.match(css,/\[data-v3-gate="10"\]/);
+ assert.doesNotMatch(css,/fetch\s*\(|XMLHttpRequest|@import|https?:\/\//);
+});
+test('the same class can appear three times; each party member attacks separately in stable order',()=>{
+ const {derive}=load(),v=view();
+ for(const [offset,expected] of [[12700,'chris'],[15700,'nova'],[18700,'titan']]){
+  const s=derive(v,begin+offset);
+  assert.equal(s.kind,'hero-strike');
+  assert.equal(s.uid,expected);
+ }
+ assert.equal(derive(v,begin+21500).kind,'countdown');
+ assert.equal(derive(v,begin+26500).kind,'minigame');
+});
+test('the boss attacks every individual player in the defensive scene',()=>{
+ const {derive}=load(),v=view();
+ for(const [offset,expected] of [[41800,'chris'],[44800,'nova'],[47800,'titan']]){
+  const s=derive(v,begin+offset);
+  assert.equal(s.kind,'boss-strike');
+  assert.equal(s.uid,expected);
+ }
+ assert.equal(derive(v,begin+50000).kind,'countdown');
+ assert.equal(derive(v,begin+80000).kind,'minigame');
+ assert.equal(derive(v,begin+89500).kind,'boss-strike');
+});
+test('players who are not in the battle roster are not animated as targets',()=>{
+ const {derive}=load(),v=view();v.roster=players.slice(0,2);
+ assert.equal(derive(v,begin+12700).uid,'chris');
+ assert.equal(derive(v,begin+16800).uid,'nova');
+ assert.equal(derive(v,begin+19100).uid,'nova');
+ assert.notEqual(derive(v,begin+43000).uid,'titan');
+});
+test('new scene is entirely cosmetic and preserves server-owned time and minigames',()=>{
+ assert.doesNotMatch(js,/fetch\s*\(|XMLHttpRequest|localStorage|Math\.random\(|firebase/i);
+ assert.match(js,/now-Number\(view\.startedAt\)/);
+ assert.match(js,/Array\.isArray\(view\.roster\)/);
+ assert.match(css,/grid-template-columns:minmax\(0,1\.75fr\) minmax\(320px,\.98fr\)/);
+ assert.match(css,/@media\(max-width:899px\),\(orientation:portrait\)/);
+ assert.match(css,/prefers-reduced-motion/);
+ assert.match(css,/\.live-challenge-content/);
+});
+test('both battle pages use only the new visual layer while retaining every required live-game element',()=>{
+ for(const path of ['dog-boss10.html','dog-group-boss.html']){
+  const html=read(path);
+  assert.match(html,/data-arena-design="v3"/);
+  assert.match(html,/dog-boss-battle-v3\.css\?v=/);
+  assert.match(html,/dog-boss-battle-v3\.js\?v=/);
+  for(const old of ['dog-boss-legendary-arena.css','dog-boss-compact-arena.css',
+   'dog-boss-cinematic.css','dog-boss-real-heroes.css'])
+   assert.doesNotMatch(html,new RegExp('<link[^>]*'+old.replaceAll('.','\\.')+'>'));
+  for(const id of ['combat-boss','combat-hero-line','combat-camera',
+   'combat-fx','live-boss-hp-track','live-hero-health','mini-game',
+   'cinematic-grand-countdown','live-stage-announcement','v3-actor-action',
+   'v3-turn-progress','live-recent-damage','retry-button','timer'])
+   assert.ok(html.includes('id="'+id+'"'),path+' missing '+id);
+  const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
+  assert.equal(new Set(ids).size,ids.length,'duplicate IDs on '+path);
+  const controller=read(path==='dog-boss10.html'?'dog-boss10.js':'dog-group-boss.js');
+  assert.match(controller,/DogBossArenaV3\?\.create/);
+  assert.match(controller,/battleV3\?\.update\(view,now\(\)\)/);
+  assert.match(controller,/acknowledgePending/);
+  assert.match(controller,/command\('minigame',false,/);
+ }
+});
