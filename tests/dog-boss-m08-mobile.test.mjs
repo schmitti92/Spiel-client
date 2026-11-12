@@ -153,7 +153,7 @@ test('M-08 all ten color decisions are local: an unknown network result stays pe
  assert.equal(calls,1,'ten taps use one POST');
  assert.equal(f.requestCalls.length,1);
  assert.equal(f.find('mini-color-progress').children.length,10);
- assert.match(f.find('mini-color-verdict').textContent,/SERVER PRÜFT/);
+ assert.match(f.find('mini-color-verdict').textContent,/WARTE AUF SERVER/);
  // GET returned a fully verified batch after POST response was lost.
  f.view.miniGames.myAnswers[2]={attempts:Array.from({length:10},(_,step)=>({
   step,correct:step%2===0}))};
