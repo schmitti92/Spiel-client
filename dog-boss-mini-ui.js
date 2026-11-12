@@ -82,10 +82,11 @@
    pumpMath();
   };
   const flushTarget=()=>{
-   if(!roundView||roundView.kind!=='target'||activeVersion<10||
+   if(!roundView||!['target','chain'].includes(roundView.kind)||activeVersion<10||
       targetSent||!targetChoices.length)return;
    targetSent=true;
-   mathQueue={round:roundView.round,answers:[...targetChoices],fightStart,kind:'target'};
+   mathQueue={round:roundView.round,answers:[...targetChoices],fightStart,
+    kind:roundView.kind};
    pumpMath();
   };
   const paintTargetStep=()=>{
@@ -102,6 +103,23 @@
    });
    if(counter)counter.textContent=step+' / 10 beantwortet · '+
      targetLocalCorrect+' Treffer (vorläufig)';
+  };
+  const paintChainStep=()=>{
+   if(!roundView||roundView.kind!=='chain'||activeVersion<13)return;
+   const step=targetChoices.length,puzzle=roundView.puzzles?.[step];
+   if(question)question.textContent=puzzle?
+    '⛓️ SCHNEIDE DIE GLÜHENDE KETTE!':'🔥 KETTENBRECHER ABGESCHLOSSEN';
+   buttons.forEach((button,i)=>{
+    button.classList?.remove('is-severed','is-missed');
+    button.classList?.toggle('is-glowing',!!puzzle&&i===puzzle.target);
+    button.disabled=!puzzle;
+    button.textContent=(puzzle&&i===puzzle.target?'✦ ':'⛓ ')+'KETTE '+(i+1);
+    button.setAttribute?.('aria-label',(puzzle&&i===puzzle.target?
+     'Glühende Schwachstelle. ':'')+'Kette '+(i+1)+
+     '. Mit Finger oder Maus darüberwischen, per Tastatur Enter.');
+   });
+   if(counter)counter.textContent=step+' / 10 Ketten geschlagen · '+
+    targetLocalCorrect+' gebrochen (vorläufig)';
   };
   const choose=(value)=>{
    if(!roundView||localSubmitting||!allowed)return;
@@ -127,6 +145,23 @@
      (step>=8?'⏳ SERVER PRÜFT 8 ANTWORTEN':'⚡ '+step+' / 8 EINGEGEBEN'):
      '⚡ '+step+' von 8 – deine Antworten werden gesammelt geprüft';
     if(step>=8)flushMath();
+    return;
+   }
+   if(activeVersion>=13&&roundView.kind==='chain'){
+    if(targetSent||targetChoices.length>=10)return;
+    const stamp=clockStamp()-fightStart;
+    if(stamp<roundView.startMs||stamp>=roundView.endMs)return;
+    const puzzle=roundView.puzzles?.[targetChoices.length];
+    if(!puzzle||!Number.isSafeInteger(value)||value<0||value>=roundView.lanes)return;
+    const hit=value===puzzle.target;
+    targetChoices.push(value);
+    targetLocalCorrect+=Number(hit);
+    targetLastHit=hit;
+    paintChainStep();
+    buttons[value]?.classList?.add(hit?'is-severed':'is-missed');
+    status.textContent=(hit?'💥 KETTE ZERBROCHEN!':'⚡ FALSCHE KETTE!')+
+     ' · '+targetChoices.length+' / 10 · '+targetLocalCorrect+' Brüche (vorläufig)';
+    if(targetChoices.length>=10)flushTarget();
     return;
    }
    if(activeVersion>=10&&roundView.kind==='target'){
@@ -220,8 +255,10 @@
    root.classList?.toggle('is-precise-reaction',round.kind==='reaction'&&version>=9);
    root.classList?.toggle('is-color-target',round.kind==='target'&&version>=10);
    root.classList?.toggle('is-final-attack',version>=12&&round.round===4);
+   root.classList?.toggle('is-chain-breaker',version>=13&&round.kind==='chain');
    lastChoice=null;
-   title.textContent=version>=12&&round.round===4?
+   title.textContent=version>=13&&round.kind==='chain'?
+    '⛓️ KETTENBRECHER · RUNDE 5/5':version>=12&&round.round===4?
     '🔥 FINALER SCHLAG · RUNDE 5/5':round.kind==='target'&&version>=10?
     '🎨 FARBEN- & SYMBOL-TREFFER':round.kind==='math'&&version>=5?
     '✦ RUNENPRÜFUNG':'RUNDE '+(round.round+1)+'/'+(version>=3?4:3)+' · '+labels[round.kind];
@@ -307,6 +344,46 @@
     const cursor=createElement('span','mini-meter-fill');
     progress.append(cursor);body.append(progress);
     makeButton(1,'⚡ KONTER!','mini-reaction');
+   }else if(round.kind==='chain'&&version>=13){
+    const hud=createElement('div','mini-chain-hud');
+    targetClock=createElement('strong','mini-chain-clock','10 s');
+    const timeTrack=createElement('div','mini-chain-time');
+    targetClockFill=createElement('span','mini-chain-time-fill');
+    timeTrack.append(targetClockFill);hud.append(targetClock,timeTrack);
+    body.append(hud);
+    question=createElement('div','mini-chain-instruction','⛓️ WISCHE ÜBER DIE GLÜHENDE KETTE!');
+    body.append(question);
+    const arena=createElement('div','mini-chain-arena');
+    arena.setAttribute?.('aria-label','Kettenbrecher: glühende Kette durchtrennen');
+    body.append(arena);
+    for(let i=0;i<round.lanes;i++){
+     const button=createElement('button','mini-choice mini-chain-lane','KETTE '+(i+1));
+     button.type='button';
+     let pointerStart=null;
+     button.addEventListener('pointerdown',event=>{
+      if(event?.isPrimary===false||!allowed||roundView?.kind!=='chain')return;
+      pointerStart={x:Number(event.clientX)||0,y:Number(event.clientY)||0,
+       id:event.pointerId};
+      button.setPointerCapture?.(event.pointerId);
+      event.preventDefault?.();
+     });
+     button.addEventListener('pointerup',event=>{
+      if(!pointerStart||event.pointerId!==pointerStart.id)return;
+      const distance=Math.hypot((Number(event.clientX)||0)-pointerStart.x,
+       (Number(event.clientY)||0)-pointerStart.y);
+      pointerStart=null;
+      button.releasePointerCapture?.(event.pointerId);
+      event.preventDefault?.();
+      if(distance>=38)choose(i); // deliberate swipe, not accidental touch
+     });
+     button.addEventListener('pointercancel',()=>{pointerStart=null});
+     button.addEventListener('click',event=>{
+      // Pointer activation requires a swipe; Enter/Space stays accessible.
+      if(event?.detail===0)choose(i);
+     });
+     buttons.push(button);arena.append(button);
+    }
+    paintChainStep();
    }else if(round.kind==='target'&&version>=10){
     const hud=createElement('div','mini-color-hud');
     targetClock=createElement('strong','mini-color-clock','10 s');
@@ -339,12 +416,13 @@
    root.hidden=!active;allowed=!!canPlay;
    if(!active){
     if(roundView?.kind==='math'&&mathChoices.length&&!mathSent)flushMath();
-    if(roundView?.kind==='target'&&targetChoices.length&&!targetSent)flushTarget();
+    if(['target','chain'].includes(roundView?.kind)&&targetChoices.length&&!targetSent)flushTarget();
     root.classList?.remove('is-math-battle');
      root.classList?.remove('is-slow-dodge');
      root.classList?.remove('is-precise-reaction');
     root.classList?.remove('is-color-target');
     root.classList?.remove('is-final-attack');
+    root.classList?.remove('is-chain-breaker');
     roundKey='';roundView=null;stopAnimation();return;
    }
    const elapsed=now-(view.startedAt||0),games=view.miniGames;
@@ -353,7 +431,7 @@
     // Interludes use synchronized battle choreography, not a stale input panel.
     root.hidden=games.version>=3;
     if(roundView?.kind==='math'&&mathChoices.length&&!mathSent)flushMath();
-    if(roundView?.kind==='target'&&targetChoices.length&&!targetSent)flushTarget();
+    if(['target','chain'].includes(roundView?.kind)&&targetChoices.length&&!targetSent)flushTarget();
     stopAnimation();root.classList?.remove('is-math-battle');
      root.classList?.remove('is-slow-dodge');
     if(roundKey!=='inactive'){
@@ -372,7 +450,7 @@
    const key=view.startedAt+':'+round.round+':'+(games.version||1);
    if(key!==roundKey){
     if(roundView?.kind==='math'&&mathChoices.length&&!mathSent)flushMath();
-    if(roundView?.kind==='target'&&targetChoices.length&&!targetSent)flushTarget();
+    if(['target','chain'].includes(roundView?.kind)&&targetChoices.length&&!targetSent)flushTarget();
     roundKey=key;build(round,games.version||1);
    }
    const mine=games.myAnswers?.[round.round],remaining=
@@ -407,12 +485,12 @@
    }
    const attempts=mine?.attempts||[],correct=attempts.filter(a=>a.correct).length;
    const max=round.maxSteps||3;
+   const sprint=activeVersion>=10&&['target','chain'].includes(round.kind);
    const completed=attempts.length>=max||
     (round.kind==='math'&&mathChoices.length>=max)||
-    (round.kind==='target'&&activeVersion>=10&&targetChoices.length>=max);
+    (sprint&&targetChoices.length>=max);
    let step=round.kind==='math'?Math.max(attempts.length,mathChoices.length):
-    round.kind==='target'&&activeVersion>=10?
-     Math.max(attempts.length,targetChoices.length):
+    sprint?Math.max(attempts.length,targetChoices.length):
      attempts.length,windowOpen=true;
    if(round.kind==='math'){
     if(attempts.length)mathSent=true;
@@ -420,7 +498,7 @@
     // or upon switching to the next challenge (server allows transit grace).
     if(elapsed>=round.endMs-120&&mathChoices.length&&!mathSent)flushMath();
    }
-   if(round.kind==='target'&&activeVersion>=10){
+   if(sprint){
     if(attempts.length)targetSent=true;
     if(elapsed>=round.endMs-20&&targetChoices.length&&!targetSent)flushTarget();
    }
@@ -470,15 +548,16 @@
     });
    }else{
     buttons.forEach(b=>b.disabled=!canPlay||localSubmitting||completed||
-      (round.kind==='target'&&activeVersion>=10&&targetSent));
+      (sprint&&targetSent));
    }
    stepCurrent=step;
    if(counter){
     counter.textContent=round.kind==='math'&&!attempts.length?
      mathChoices.length+' / '+max+' beantwortet':
-     round.kind==='target'&&activeVersion>=10?
+     sprint?
       (attempts.length?correct+' / 10 richtig · bestätigt':
-       targetChoices.length+' / 10 beantwortet · '+targetLocalCorrect+' Treffer (vorläufig)'):
+       targetChoices.length+' / 10 '+(round.kind==='chain'?'geschlagen':'beantwortet')+
+       ' · '+targetLocalCorrect+' Treffer (vorläufig)'):
       correct+' / '+max+' richtig';
     counter.classList.toggle('is-perfect',correct===max);
    }
@@ -504,7 +583,7 @@
     anchor={round,elapsed,stamp:typeof performance!=='undefined'?performance.now():Date.now()};
     if(!raf)paintReaction();
     if(completed)stopAnimation();
-   }else if(round.kind==='target'&&activeVersion>=10){
+   }else if(sprint){
     if(targetClock)targetClock.textContent=remaining+' s';
     if(targetClockFill)targetClockFill.style.width=
      Math.max(0,Math.min(100,100*(round.endMs-elapsed)/(round.endMs-round.startMs)))
@@ -543,6 +622,16 @@
       '✅ KONTER ABGESCHLOSSEN · '+correct+' / '+max+' bestätigt':
       '⚡ '+correct+' / '+max+' Treffer bestätigt · Drücke im grünen Feld';
     }
+    return;
+   }
+   if(round.kind==='chain'&&activeVersion>=13){
+    status.textContent=attempts.length?
+     '✅ SERVER BESTÄTIGT · '+correct+' / '+max+' Ketten · '+
+      (Math.round(5*correct/max*10)/10).toLocaleString('de-DE')+' % Extraangriff':
+     targetSent?'⏳ '+targetChoices.length+' Schnitte werden geprüft …':
+     (targetLastHit===null?'⛓️ Wische über die leuchtende Kette!':
+      (targetLastHit?'💥 Kette gesprengt!':'⚡ Daneben!')+
+      ' · '+targetChoices.length+' / 10 · '+targetLocalCorrect+' gebrochen (vorläufig)');
     return;
    }
    if(round.kind==='target'&&activeVersion>=10){
