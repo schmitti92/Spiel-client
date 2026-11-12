@@ -268,7 +268,7 @@ test('K-01 stage labels change during the same strike and never invent damage',(
  assert.match(action.textContent,/Position ein/);
  ui.update(v,begin+13000);
  assert.match(action.textContent,/holt zum Angriff aus/);
- ui.update(v,begin+14000);
+ ui.update(v,begin+13800);
  assert.match(action.textContent,/schlägt zu/);
  const hit=ui.derive(v,begin+13980);
  ui.update(v,begin+Math.round(hit.impactAtMs));
