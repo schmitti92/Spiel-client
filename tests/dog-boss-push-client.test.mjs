@@ -146,9 +146,12 @@ test('S-04 repeated failed websocket sessions back off to avoid repeated team re
   const ws=h.sockets.at(-1);
   ws.open();
   ws.recv({type:'subscribed',gate:20});
+  // On a reconnect, one pending 250-ms reconciliation may coexist with
+  // the reconnect timer. Settle it before measuring backoff behavior.
+  if([...h.timers.values()].some(t=>t.ms===250))h.runTimer(250);
   ws.close();
   assert.equal(h.client.active(),false);
-  assert.equal([...h.timers.values()][0].ms,delay);
+  assert.equal([...h.timers.values()].find(t=>t.ms===delay)?.ms,delay);
   assert.equal(h.client.stats().nextRetryMs,delay);
   h.runTimer(delay);await flush();
  }
