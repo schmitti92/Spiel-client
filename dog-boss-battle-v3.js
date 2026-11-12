@@ -119,6 +119,7 @@
    const state=derive(view,now);
    if(!scene)return;
    scene.dataset.v3Action=state.kind;
+   scene.dataset.v3Final=state.index===4?'true':'false';
    scene.dataset.v3Impact=state.impact?'yes':'no';
    scene.dataset.v3StrikeSide=state.defensive?'boss':'hero';
    const members=Array.isArray(view?.members)?view.members:[];
