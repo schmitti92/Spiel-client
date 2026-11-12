@@ -403,6 +403,31 @@
    'Tor '+gate+' wurde besiegt. Dein Fortschritt ist gespeichert.':
    'Tor '+gate+' ist noch nicht besiegt. '+(fight.combat?.feedback?.message||
     'Verbessere deine Ausrüstung und versuche es erneut.');
+  const stats=fight.combatStats;
+  const area=$('gate-quick-result-stats');
+  area.replaceChildren();
+  if(stats&&stats.model==='single-roll-summary-v1'){
+   const rows=[
+    ['Gegner-LP',stats.enemyRemainingHp+' / '+stats.enemyMaxHp],
+    ['Dein verursachter Schaden',String(stats.enemyDamageTaken)],
+    ['Deine verbleibenden LP',stats.heroRemainingHp+' / '+stats.heroMaxHp],
+    ['Erlittener Schaden',String(stats.heroDamageTaken)],
+    ['Siegchance',stats.chancePercent+' %'],
+    ['Waffenstufe / Rüstungsstufe',stats.weaponLevel+' / '+stats.armorLevel]
+   ];
+   for(const [label,value] of rows){
+    const row=document.createElement('div');row.className='quick-result-stat';
+    const key=document.createElement('span');key.textContent=label;
+    const val=document.createElement('strong');val.textContent=value;
+    row.append(key,val);area.append(row);
+   }
+   $('gate-quick-result-model').hidden=false;
+  }else{
+   $('gate-quick-result-model').hidden=true;
+   const p=document.createElement('p');p.textContent=
+    'Für diesen älteren Kampf sind noch keine LP- und Schadenswerte gespeichert.';
+   area.append(p);
+  }
   $('gate-quick-result-note').textContent=replayed?
    '✓ Bereits berechnetes Serverergebnis sicher wiederhergestellt.':
    '✓ Ergebnis vom Server berechnet und bestätigt.';
@@ -584,6 +609,8 @@
  }else window.addEventListener('resize',drawPaths);
  window.requestAnimationFrame(drawPaths);
  window.addEventListener('load',drawPaths,{once:true});
+ $('gate-battle-button').addEventListener('click',()=>void fightGate(false));
+ $('gate-retry-button').addEventListener('click',()=>void fightGate(true));
  $('gate-detail-close').addEventListener('click',()=>details.close());
  $('gate-quick-result-close').addEventListener('click',()=>$('gate-quick-result').close());
  $('team-refresh').addEventListener('click',()=>void reloadMap());
