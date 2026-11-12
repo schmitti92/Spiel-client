@@ -326,7 +326,8 @@
      '🔥 Gesamtbonus: +'+fmt.format(cumulative):
      'Gemeinsamer Angriff wird vorbereitet');
    }
-   const upcoming=next?({'dodge':'🛡️ Ausweichen','target':'🎯 Zieltreffer',
+   const upcoming=next?.kind==='target'&&view?.miniGames?.version>=10?
+    '🎨 Farb- und Symbol-Treffer':next?({'dodge':'🛡️ Ausweichen','target':'🎯 Zieltreffer',
     'reaction':'⚡ Reaktion','math':'🧮 Blitz-Mathe'}[next.kind]||'Nächste Runde'):
     '🏆 Finale Auswertung folgt';
    text(nodes.cineNext,next?'Als Nächstes: '+upcoming:upcoming);
@@ -449,7 +450,8 @@
    for(const [i,node] of steps.entries()){
     const round=rounds[i],answer=answers[i];
     node.hidden=!round;
-    const kind=taskNames[round?.kind]||'Aufgabe';
+    const kind=round?.kind==='target'&&view?.miniGames?.version>=10?
+     '🎨 Farb- und Symbol-Treffer':taskNames[round?.kind]||'Aufgabe';
     const value=(i+1)+' · '+kind;
     if(node.textContent!==value)node.textContent=value;
     node.classList.toggle('is-current',active&&i===roundIndex);
