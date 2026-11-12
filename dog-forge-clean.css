@@ -438,3 +438,82 @@ body:not(.merchant-page) #forge-ready-filter:focus-visible{
   grid-template-columns:minmax(0,1fr);
  }
 }
+/* SCH-UI-08b: tablet landscape visual acceptance from user screenshots (1536x960).
+   Keep game logic, merchant and phone layouts untouched. */
+@media(min-width:1181px) and (orientation:landscape){
+ body:not(.merchant-page) .forge-canvas{padding-top:3px}
+ body:not(.merchant-page) .forge-clean-header{
+  min-height:72px!important;padding:7px 14px!important;margin-bottom:6px!important;
+ }
+ body:not(.merchant-page) .forge-clean-logo{
+  width:46px;height:46px;font-size:25px;border-radius:11px;
+ }
+ body:not(.merchant-page) .forge-clean-header h1{
+  font-size:clamp(24px,2.15vw,33px)!important;
+ }
+ body:not(.merchant-page) .forge-level-panel{
+  padding:8px 13px;margin-bottom:7px;gap:12px;border-radius:13px;
+ }
+ body:not(.merchant-page) .forge-level-heading>span{
+  width:39px;height:39px;font-size:22px;
+ }
+ body:not(.merchant-page) .forge-level-heading strong{font-size:20px}
+ body:not(.merchant-page) .forge-level-progress{height:9px}
+ body:not(.merchant-page) #forge-status{margin-bottom:5px;padding:2px 8px}
+ body:not(.merchant-page) .forge-workspace{
+  grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);
+  gap:11px;
+ }
+ body:not(.merchant-page) .forge-workspace .workshop-panel,
+ body:not(.merchant-page) .forge-workspace .upgrade-panel{
+  padding:11px 13px;border-radius:14px;
+ }
+ body:not(.merchant-page) .forge-list-toolbar{padding-bottom:5px}
+ body:not(.merchant-page) .forge-item-group{
+  padding:8px 10px;border-radius:12px;
+ }
+ body:not(.merchant-page) .forge-item-group+.forge-item-group{margin-top:8px}
+ body:not(.merchant-page) .forge-area-heading{margin-bottom:6px}
+ body:not(.merchant-page) .forge-area-grid{gap:7px}
+ body:not(.merchant-page) .forge-item-group .item-choice{min-height:62px}
+ body:not(.merchant-page) .forge-upgrade-hero{
+  padding:8px;gap:11px;margin-bottom:7px;
+  grid-template-columns:minmax(0,39%) minmax(0,1fr);
+ }
+ body:not(.merchant-page) .forge-upgrade-hero .gear-display,
+ body:not(.merchant-page) .forge-upgrade-hero .skill-display{
+  min-height:130px;height:155px;
+ }
+ body:not(.merchant-page) .forge-upgrade-hero .gear-display .gear-illustration,
+ body:not(.merchant-page) .forge-upgrade-hero .gear-display .gear-illustration[src$=".png"]{
+  height:143px;
+ }
+ body:not(.merchant-page) .forge-upgrade-details{gap:4px}
+ body:not(.merchant-page) .forge-upgrade-details h2{font-size:clamp(21px,2vw,28px)}
+ body:not(.merchant-page) .evolution-teaser{
+  min-height:66px;padding:6px 9px;margin:0 0 7px;
+ }
+ body:not(.merchant-page) .evolution-teaser .gear-visual.compact{
+  width:49px;height:49px;
+ }
+ body:not(.merchant-page) #upgrade-content .forge-cost-heading{margin-bottom:5px}
+ body:not(.merchant-page) #upgrade-content .forge-compact-cost-list{
+  grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;
+ }
+ body:not(.merchant-page) #upgrade-content .forge-compact-cost-list .cost-item{
+  padding:6px 8px;min-height:58px;
+ }
+ body:not(.merchant-page) #upgrade-content .forge-compact-cost-list .cost-item:only-child{
+  grid-column:1/-1;max-width:320px;
+ }
+ body:not(.merchant-page) #upgrade-content .forge-action-panel{
+  gap:6px;margin-top:8px;
+ }
+ body:not(.merchant-page) #upgrade-content .forge-action-panel .upgrade-preview{
+  padding:6px 10px;
+ }
+ body:not(.merchant-page) #upgrade-content .forge-action-panel .forge-action{
+  min-height:45px;padding:9px 11px;
+ }
+ body:not(.merchant-page) .stock-panel{margin-top:8px}
+}
