@@ -31,7 +31,8 @@ test('Both bosses have the same cinematic pre-fight screen and all controls',()=
 
 test('All ten group bosses load their own allowlisted illustration and descriptive scene',()=>{
  assert.doesNotThrow(()=>new Script(presenter));
- for(const gate of [10,20,30,40,50,60,70,80,90,100]){
+ assert.match(presenter,/10:'aschewaechter-battle-v3\\.webp'/);
+ for(const gate of [20,30,40,50,60,70,80,90,100]){
   assert.match(presenter,new RegExp(gate+":'[^']+\\.svg'"));
  }
  assert.match(css,/boss-preflight-background\.svg/);
