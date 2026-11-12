@@ -75,6 +75,7 @@
  };
  let uid=null,view=null,busy=false,tab=merchantMode?'exchange':'equipment',selected='weapon',tradeGroup='equipment',loadSerial=0,readyOnly=false,confirmData=null,exchangeConfirmData=null,goalId=null,sessionEpoch=0,lastLoadedAt=0,loadingUid=null,loadingPromise=null;
  let chronicleView=undefined,chronicleUid=undefined,stockView=undefined,stockUid=undefined;
+ const sectionExpanded={equipment:true,attack:false,defense:false};
  const goalKey=account=>'dog:forge:goal:'+account;
  const loadGoal=account=>{
   try{const id=localStorage.getItem(goalKey(account));
@@ -388,17 +389,27 @@
   for(const group of areas){
    let target=container;
    if(!merchantMode){
-    const titles={
-     equipment:['⚔️ Waffen & Rüstung','Deine charaktergebundene Ausrüstung'],
-     attack:['💥 Angriff',''],
-     defense:['🛡️ Abwehr','']
-    };
+    const headings={equipment:'⚔️ Waffen & Rüstung',attack:'💥 Angriff',defense:'🛡️ Abwehr'};
     const block=node('section','forge-item-group forge-item-group-'+group);
-    const title=node('div','forge-area-heading');
-    title.append(node('h3',null,titles[group][0]),
-     node('p',null,titles[group][1]));
+    const heading=node('div','forge-area-heading');
+    heading.append(node('h3',null,headings[group]));
+    const toggle=node('button','forge-section-toggle');
+    toggle.type='button';
+    toggle.setAttribute('aria-controls','forge-area-grid-'+group);
+    toggle.setAttribute('aria-expanded',String(sectionExpanded[group]));
+    toggle.title=sectionExpanded[group]?'Weniger anzeigen':'Weitere anzeigen';
+    toggle.setAttribute('aria-label',headings[group]+' – '+toggle.title);
+    const count=set.filter(item=>item.group===group).length;
+    toggle.append(node('span','forge-section-count',
+     group==='equipment'?count+' Gegenstände':
+      (sectionExpanded[group]?count:Math.min(3,count))+' von '+count+' Fähigkeiten'));
+    toggle.append(node('span','forge-section-chevron',sectionExpanded[group]?'⌃':'⌄'));
+    toggle.addEventListener('click',()=>{sectionExpanded[group]=!sectionExpanded[group];render();});
+    heading.append(toggle);
     const grid=node('div','forge-area-grid');
-    block.append(title,grid);container.append(block);target=grid;
+    grid.id='forge-area-grid-'+group;
+    if(group==='equipment'&&!sectionExpanded.equipment)grid.hidden=true;
+    block.append(heading,grid);container.append(block);target=grid;
    }
    const all=set.filter(x=>x.group===group);
   const items=readyOnly?all.filter(x=>canUpgradeItem(x.id)):
@@ -415,7 +426,9 @@
    }
    continue;
   }
-  for(const item of items){
+  const visibleItems=!merchantMode&&group!=='equipment'&&!sectionExpanded[group]?
+   items.slice(0,3):(!merchantMode&&group==='equipment'&&!sectionExpanded.equipment?[]:items);
+  for(const item of visibleItems){
    const card=node('div','forge-item-quick');
    const button=node('button','item-choice'+(selected===item.id?' selected':''));
    button.type='button';button.setAttribute('aria-pressed',String(selected===item.id));
@@ -430,7 +443,9 @@
    }
    const icon=isEquipment?gearVisual(item.id,levelFor(item.id),true):skillVisual(item,true);
    const info=node('span','item-info');
-   info.append(node('strong',null,displayName(item)),node('small',null,'Stufe '+levelFor(item.id)+' / '+item.maxLevel));
+   const name=node('strong',null,displayName(item));
+   name.title=displayName(item);
+   info.append(name,node('small',null,'Stufe '+levelFor(item.id)+' / '+item.maxLevel));
    if(goalId===item.id)info.append(node('small','goal-mark','🎯 Mein Schmiedeziel'));
    const q=quoteFor(item.id);
    if(q){

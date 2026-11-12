@@ -161,3 +161,34 @@ body:not(.merchant-page) .forge-clean-help{margin-top:0}
  body:not(.merchant-page) .forge-clean-header .subtitle{font-size:11px!important}
  .forge-header-options>summary{width:35px;height:35px}
 }
+
+/* SCH-UI-03: compact default equipment and three-skill previews. */
+body:not(.merchant-page) #forge-item-list.equipment-list{gap:12px}
+body:not(.merchant-page) .forge-item-group{padding:10px 12px}
+body:not(.merchant-page) .forge-area-heading{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ padding:0 0 9px;margin:0 0 9px;border-bottom:1px solid #ffffff24
+}
+body:not(.merchant-page) .forge-area-heading h3{font-size:clamp(16px,1.5vw,21px);margin:0}
+body:not(.merchant-page) .forge-section-toggle{
+ display:flex;align-items:center;gap:10px;min-height:31px;padding:5px 0;
+ border:0;background:transparent;color:#d0d9e8;cursor:pointer
+}
+body:not(.merchant-page) .forge-section-count{font:700 11px system-ui,sans-serif;white-space:nowrap}
+body:not(.merchant-page) .forge-section-chevron{font:800 20px system-ui,sans-serif;color:#fbe2b3;line-height:1}
+body:not(.merchant-page) .forge-section-toggle:focus-visible{outline:2px solid #ffe1a4;outline-offset:3px;border-radius:4px}
+body:not(.merchant-page) .forge-area-grid{gap:8px}
+body:not(.merchant-page) .forge-item-group .item-choice{min-height:73px}
+body:not(.merchant-page) .forge-item-group .item-info{min-width:0}
+body:not(.merchant-page) .forge-item-group .item-info strong{
+ white-space:normal!important;text-overflow:clip!important;
+ overflow-wrap:anywhere;line-height:1.23;display:-webkit-box;
+ -webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:11.5px;max-height:2.6em
+}
+body:not(.merchant-page) .forge-area-grid .forge-item-quick>.item-choice{padding-right:43px}
+body:not(.merchant-page) .forge-area-grid .forge-item-quick>.forge-quick-upgrade{width:35px;height:35px;right:6px;font-size:25px}
+body:not(.merchant-page) .forge-item-group .gear-visual.compact,
+body:not(.merchant-page) .forge-item-group .skill-visual.compact{flex:none;width:45px;height:45px}
+@media(max-width:1030px) and (min-width:761px){
+ body:not(.merchant-page) .forge-area-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
