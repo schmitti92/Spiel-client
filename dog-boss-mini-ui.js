@@ -97,6 +97,12 @@
    targetSent=true;
    mathQueue={round:roundView.round,answers:[...targetChoices],fightStart,
     kind:roundView.kind,deadline:fightStart+roundView.endMs+1900};
+   if(roundView.kind==='target'&&targetFeedback){
+    // After the final local tap immediately show the pending batch state.
+    targetFeedback.textContent='⏳ '+targetChoices.length+
+     ' ANTWORTEN ERFASST · WARTE AUF SERVER';
+    targetFeedback.dataset.state='pending';
+   }
    pumpMath();
   };
   const paintTargetMarks=(confirmed=[])=>{
