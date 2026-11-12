@@ -219,8 +219,10 @@
    root.classList?.toggle('is-slow-dodge',round.kind==='dodge'&&version>=8);
    root.classList?.toggle('is-precise-reaction',round.kind==='reaction'&&version>=9);
    root.classList?.toggle('is-color-target',round.kind==='target'&&version>=10);
+   root.classList?.toggle('is-final-attack',version>=12&&round.round===4);
    lastChoice=null;
-   title.textContent=round.kind==='target'&&version>=10?
+   title.textContent=version>=12&&round.round===4?
+    '🔥 FINALER SCHLAG · RUNDE 5/5':round.kind==='target'&&version>=10?
     '🎨 FARBEN- & SYMBOL-TREFFER':round.kind==='math'&&version>=5?
     '✦ RUNENPRÜFUNG':'RUNDE '+(round.round+1)+'/'+(version>=3?4:3)+' · '+labels[round.kind];
    hint.textContent=round.kind==='math'&&version>=5?
@@ -342,6 +344,7 @@
      root.classList?.remove('is-slow-dodge');
      root.classList?.remove('is-precise-reaction');
     root.classList?.remove('is-color-target');
+    root.classList?.remove('is-final-attack');
     roundKey='';roundView=null;stopAnimation();return;
    }
    const elapsed=now-(view.startedAt||0),games=view.miniGames;
@@ -358,7 +361,9 @@
      title.textContent=elapsed<games.rounds[0].startMs?
       '🐉 Der Boss bereitet sich vor':'⚔️ Finaler Angriff';
      hint.textContent=elapsed<games.rounds[0].startMs?
-      'Drei zufällige Aufgaben beginnen gleich':
+      'Fünf Herausforderungen beginnen gleich':
+      games.version>=12&&elapsed<games.rounds[4].startMs?
+       'Bereite dich auf den fünften und letzten Angriff vor!':
       'Die Ergebnisse werden vom Server berechnet';
      status.textContent='';
     }
@@ -543,7 +548,7 @@
    if(round.kind==='target'&&activeVersion>=10){
     status.textContent=attempts.length?
      '✅ SERVER BESTÄTIGT · '+correct+' / '+max+' Treffer · '+
-      (Math.round(3*correct/max*10)/10).toLocaleString('de-DE')+' % Zusatzschaden':
+      (Math.round((activeVersion>=12&&roundView.round===4?5:3)*correct/max*10)/10).toLocaleString('de-DE')+' % Zusatzschaden':
      targetSent?'⏳ '+targetChoices.length+' Antworten werden gesammelt geprüft …':
      (targetLastHit===null?'🎯 Triff die vorgegebene Farbe und/oder das Symbol!':
       (targetLastHit?'✅ Treffer!':'❌ Daneben!')+
