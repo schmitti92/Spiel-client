@@ -313,6 +313,7 @@
     hud.append(targetClock,timeTrack);body.append(hud);
     question=createElement('div','mini-color-question','');body.append(question);
     const cells=createElement('div','mini-color-grid');
+    cells.dataset.count=String(round.puzzles?.[0]?.options?.length||4);
     body.append(cells);
     for(let i=0;i<(round.puzzles?.[0]?.options?.length||4);i++){
      const button=createElement('button','mini-choice mini-color-target','');
@@ -415,7 +416,7 @@
    }
    if(round.kind==='target'&&activeVersion>=10){
     if(attempts.length)targetSent=true;
-    if(elapsed>=round.endMs-150&&targetChoices.length&&!targetSent)flushTarget();
+    if(elapsed>=round.endMs-20&&targetChoices.length&&!targetSent)flushTarget();
    }
    if(round.kind==='dodge'){
     dodgeMarks.forEach((mark,i)=>{
