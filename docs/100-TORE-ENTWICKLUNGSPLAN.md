@@ -88,7 +88,23 @@
   - [x] **A-02c:** Datenschutz-, Aktivierungs-, Event-Deduplizierungs- und Client-Integrationstests erfolgreich ausführen.
   - [x] **A-02d:** [Technischen A-02-Messbericht und Live-Testanleitung](./100-TORE-A02-NETZWERK-MESSBERICHT.md) auf `main` hinterlegen, ohne neue Firebase-Anfragen.
   - [ ] **A-02e – NOCH OFFEN:** Echte Browser-CSV von 1/2/3 gleichzeitig spielenden Geräten und Nova/Titan (GET/POST/min, p50/p95, Fehler, Beobachtungslags) erheben, auswerten und A-02 erst danach abnehmen.
-- [ ] **A-03 – Regressions-Schutz:** Automatisierte Tests für 1/2/3 Helden, fünf Minispiele, 20-s-Kettenbrecher, 3-s-Countdown, Sieg/Niederlage, alte Kampfversionen und Bot-Antworten kontrollieren und ergänzen. **Fertig:** CI grün und Testfälle nachvollziehbar.
+- [x] **A-03 – Regressions-Schutz (12.11.2026):** Bereits vorhandene Regressionstests für 1/2/3 Helden, alle fünf Minispiele, 20-s-Kettenbrecher, 3-s-Übergänge, Sieg/Niederlage, gespeicherte ältere Kampfversionen sowie Bot-Antworten überprüft. **Kein neuer Testcode erforderlich; die bestehenden CI-Workflows waren grün.** Konkrete Testdateien und Nachweise siehe unten.
+#### A-03: Nachweis der bereits vorhandenen Regressionstests
+
+| Prüfung | Vorhandener Testnachweis |
+|---|---|
+| 1 / 2 / 3 Spieler und kompletter 135-s-Kampf | [Backend: dog-firestore-a01.test.js](https://github.com/schmitti92/serverfinal/blob/main/tests/dog-firestore-a01.test.js), Test „count actual API-code mock operations for one, two and three heroes“ |
+| Fünf Minispiele, serverseitig gültige Zeitfenster, 20-s-Kettenbrecher | [Backend: dog-boss-final5.test.js](https://github.com/schmitti92/serverfinal/blob/main/tests/dog-boss-final5.test.js), [Frontend: dog-boss-chain-breaker.test.mjs](https://github.com/schmitti92/Spiel-client/blob/main/tests/dog-boss-chain-breaker.test.mjs) |
+| Dreisekündiger Übergangs-Countdown und einzelne Angriffe | [Frontend: dog-boss-battle-v3.test.mjs](https://github.com/schmitti92/Spiel-client/blob/main/tests/dog-boss-battle-v3.test.mjs), Test „three seconds are reserved for countdown“ |
+| Sieg / Niederlage, Freischaltung, genaue serverseitige Ergebnisanzeige | [Backend: dog-group-boss.test.js](https://github.com/schmitti92/serverfinal/blob/main/tests/dog-group-boss.test.js), [Frontend: dog-boss-result-report.test.mjs](https://github.com/schmitti92/Spiel-client/blob/main/tests/dog-boss-result-report.test.mjs) |
+| Ältere v1 / v11 / v12 / v13-Kämpfe bleiben kompatibel | [Backend: dog-boss-minigames.test.js](https://github.com/schmitti92/serverfinal/blob/main/tests/dog-boss-minigames.test.js), [dog-boss-final5.test.js](https://github.com/schmitti92/serverfinal/blob/main/tests/dog-boss-final5.test.js), [Frontend: dog-boss-chain-breaker.test.mjs](https://github.com/schmitti92/Spiel-client/blob/main/tests/dog-boss-chain-breaker.test.mjs) |
+| Nova / Titan: Antworten, Fortschritt und idempotenter Abschluss | [Backend: dog-live-bots.test.js](https://github.com/schmitti92/serverfinal/blob/main/tests/dog-live-bots.test.js), [dog-firestore-a01.test.js](https://github.com/schmitti92/serverfinal/blob/main/tests/dog-firestore-a01.test.js) |
+| Abgebrochene Verbindung, Wiederholen ohne Doppel-Aktion | [Frontend: dog-boss-reconnect.test.mjs](https://github.com/schmitti92/Spiel-client/blob/main/tests/dog-boss-reconnect.test.mjs), [Backend: dog-group-boss.test.js](https://github.com/schmitti92/serverfinal/blob/main/tests/dog-group-boss.test.js) |
+
+**CI-Nachweis bei Kontrolle:** Backend [Server tests](https://github.com/schmitti92/serverfinal/actions/runs/43248227536), [Node tests](https://github.com/schmitti92/serverfinal/actions/runs/43248225233), [Multiplayer regression tests](https://github.com/schmitti92/serverfinal/actions/runs/43248225444) und [Shared lobby feature tests](https://github.com/schmitti92/serverfinal/actions/runs/43248225104) jeweils **erfolgreich**; Frontend [Client checks](https://github.com/schmitti92/Spiel-client/actions/runs/43252085732) und [GitHub Pages](https://github.com/schmitti92/Spiel-client/actions/runs/43252082647) ebenfalls **erfolgreich**. Das ist **Regressionstest-Abdeckung**, kein neuer Drei-Geräte-Livetest und kein Nachweis für perfekte Performance.
+
+**Schnellmodus angewendet:** keine doppelten Tests, kein neuer Backend-Deploy und keine Änderung am Kampf, an Firebase oder an Spielständen. A-03 abgehakt; nächste technische Aufgabe **A-04 (Rollback-Sicherung)**.
+
 - [ ] **A-04 – Originalzustand sichern:** Vor Umbauten Startzustände, Server-Versionen, wichtige API-Ansichten und Rollback-Commit festhalten. **Fertig:** jedes Update lässt sich ohne Spielstandsverlust zurückrollen.
 
 ### A-01 – Technische Ausgangsmessung vom 12.11.2026
@@ -233,6 +249,8 @@ Der Nutzer hat **vor und nach genau einem Spiel** die Nutzungszähler in der Fir
 | 12.11.2026 | **A-02a–d, Teilabschluss** | Freiwillige lokale HTTP-/Serverzeit-Diagnose in Boss 10 und Gruppenbossen; CSV-Export für echte Messungen verfügbar. **A-02e offen.** | [Client checks grün](https://github.com/schmitti92/Spiel-client/actions/runs/43250565768) | **Keine** neuen diagnostischen Firestore-Reads/Writes; Browser-Live-Messwerte fehlen | [Messbericht](./100-TORE-A02-NETZWERK-MESSBERICHT.md) · [Diagnosemodul](../dog-network-diagnostics.js) |
 
 ---
+
+| 12.11.2026 | **A-03 erledigt** | Bestehende Regressionstests nach Anforderungen zugeordnet: 1/2/3 Helden, 5 Minispiele, Kettenbrecher, Countdown, Sieg/Niederlage, Legacy-Versionen, Bots und Wiederholungsschutz. Keine doppelten Testdateien erstellt. | [Backend-CI grün](https://github.com/schmitti92/serverfinal/actions/runs/43248227536), [Frontend-CI grün](https://github.com/schmitti92/Spiel-client/actions/runs/43252085732) | 0 zusätzliche Reads/Writes; keine Spielfunktionsänderung | Dieser Plan; nächster Schritt A-04 |
 
 **Definition von „fertig“:** Funktion auf GitHub `main` integriert, Frontend-/Backend-Tests erfolgreich, auf echter Anzeige nachvollziehbar, keine ungeklärten Doppelbuchungen oder unnötigen Firestore-Mehrzugriffe, Task abgehakt und Fortschrittsprotokoll ergänzt.
 
