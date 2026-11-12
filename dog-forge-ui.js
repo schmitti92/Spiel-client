@@ -140,8 +140,12 @@
   img.alt=gearName(id,level)+' · Stufe '+level;
   img.loading=compact?'lazy':'eager';img.decoding='async';
   img.addEventListener('error',()=>{
+   const fallback=window.DogHeroEquipment?.fallbackImage(heroClass(),id,level);
+   if(img.dataset.fallbackAttempted!=='yes'&&fallback&&img.getAttribute('src')!==fallback){
+    img.dataset.fallbackAttempted='yes';img.src=fallback;return;
+   }
    img.hidden=true;root.append(node('span','gear-fallback',id==='weapon'?'⚔️':'🛡️'));
-  },{once:true});
+  });
   root.append(img);
   if(!compact)root.append(node('span','gear-stage-label',gearName(id,level)+' · Stufe '+level));
   return root;
@@ -245,6 +249,15 @@
   if(avatar.dataset.appearance!==appearance){
    avatar.dataset.appearance=appearance;
    avatar.dataset.stage=String(armorStage);
+   avatar.dataset.fallbackAttempted='';
+   avatar.onerror=()=>{
+    const fallback=window.DogHeroEquipment?.fallbackImage(heroClass(),'armor',levelFor('armor'))||
+     './dog-forge-art/armor-'+armorStage+'.svg';
+    if(avatar.dataset.fallbackAttempted!=='yes'&&avatar.getAttribute('src')!==fallback){
+     avatar.dataset.fallbackAttempted='yes';avatar.src=fallback;
+    }else avatar.hidden=true;
+   };
+   avatar.hidden=false;
    avatar.src=window.DogHeroEquipment?.image(heroClass(),'armor',levelFor('armor'))||
     './dog-forge-art/armor-'+armorStage+'.svg';
   }

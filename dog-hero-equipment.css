@@ -7,3 +7,18 @@ body[data-hero-class="krieger"] .forge-class-badge{color:#ffe6c0;border-color:#e
 .ascension-art{width:min(160px,70%);height:145px;object-fit:contain;display:block;margin:4px auto 13px;filter:drop-shadow(0 6px 18px #0008)}
 .ascension-hero-class{text-align:center;margin:0 0 20px;color:#ffe0a0;font-size:14px;font-weight:800}
 @media(max-width:650px){.ascension-art{width:106px;height:105px}.forge-class-badge{font-size:11px}}
+/* Uploaded HD armor previews remain class-specific at all five tiers.
+   Keep their original transparent contours and the existing stage aura. */
+.gear-display .gear-illustration[src$=".png"]{
+ width:min(260px,85vw);height:230px;object-fit:contain;
+ filter:drop-shadow(0 14px 17px #020812aa) drop-shadow(0 0 14px var(--gear-aura));
+}
+.gear-visual.compact .gear-illustration[src$=".png"]{width:100%;height:100%;object-fit:contain}
+.result-art .gear-illustration[src$=".png"]{width:190px;height:190px;object-fit:contain}
+.gallery-gear-art .gallery-equip-image[src$=".png"]{max-width:180px;height:158px;object-fit:contain}
+.gallery-hero-portrait .gallery-equip-image[src$=".png"]{width:95%;height:95%;object-fit:contain}
+.ascension-art[src$=".png"]{width:min(175px,88%);height:165px;object-fit:contain}
+@media(max-width:650px){
+ .gear-display .gear-illustration[src$=".png"]{width:min(225px,70vw);height:205px}
+ .ascension-art[src$=".png"]{height:135px}
+}

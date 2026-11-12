@@ -66,8 +66,12 @@
   img.alt='';
   img.loading='lazy';img.decoding='async';
   img.addEventListener('error',()=>{
+   const fallback=window.DogHeroEquipment?.fallbackImage(state?.heroClass,id,level);
+   if(img.dataset.fallbackAttempted!=='yes'&&fallback&&img.getAttribute('src')!==fallback){
+    img.dataset.fallbackAttempted='yes';img.src=fallback;return;
+   }
    if(img.isConnected)img.replaceWith(make('span','gallery-equip-fallback',id==='weapon'?'⚔️':'🛡️'));
-  },{once:true});
+  });
   return img;
  }
  function rewardProgress(reward){

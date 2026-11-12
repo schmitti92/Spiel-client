@@ -16,9 +16,18 @@ test('three locked hero classes each have different weapon and armor progression
     const file=gear.image(cls,type,level).replace(/^\.\//,'');
     const path=new URL(file,base);
     assert.equal(fs.existsSync(path),true,file);
-    const svg=fs.readFileSync(path,'utf8');
-    assert.match(svg,/^<svg/);
-    assert.match(svg,/<\/svg>$/);
+    if(type==='armor'){
+     const png=fs.readFileSync(path);
+     assert.deepEqual([...png.subarray(0,8)],[137,80,78,71,13,10,26,10],'valid PNG image');
+     assert.match(file,/DOG_(Krieger|Magierin|Waechter)_/);
+     const fallback=gear.fallbackImage(cls,type,level);
+     assert.ok(fallback.endsWith('.svg'));
+     assert.ok(fs.existsSync(new URL(fallback.replace(/^\.\//,''),base)));
+    }else{
+     const svg=fs.readFileSync(path,'utf8');
+     assert.match(svg,/^<svg/);
+     assert.match(svg,/<\/svg>$/);
+    }
    }
   }
  }
@@ -37,4 +46,21 @@ test('all forge screens use one class registry but keep unchanged server item id
  assert.match(gallery,/DogHeroEquipment/);
  assert.match(asc,/DogHeroEquipment/);
  assert.match(ui,/'weapon','armor'/);
+});
+
+test('uploaded armor is hero-specific at every level and weapons remain unchanged',()=>{
+ const expected={krieger:'DOG_Krieger_Plattenruestung.png',magierin:'DOG_Magierin_Kristallrobe.png',waechter:'DOG_Waechter_Schutzruestung.png'};
+ for(const cls of Object.keys(expected)){
+  for(const level of [1,2,5,6,11,16,19,20]){
+   assert.equal(gear.image(cls,'armor',level),'./dog-forge-art/'+expected[cls]);
+   assert.match(gear.image(cls,'weapon',level),new RegExp(cls+'-weapon-[1-5]\\\\.svg$'));
+  }
+ }
+});
+test('every armor surface uses registry imagery and has stage SVG fallback',()=>{
+ for(const path of ['dog-forge-ui.js','dog-forge-gallery.js','dog-ascension.js']){
+  const source=fs.readFileSync(new URL(path,base),'utf8');
+  assert.match(source,/DogHeroEquipment\\?\\.image/);
+  assert.match(source,/DogHeroEquipment\\?\\.fallbackImage/);
+ }
 });

@@ -21,6 +21,9 @@
   weapon:['Schmiedeklinge','Stahlklinge','Runenklinge','Astralklinge','Drachenklinge'],
   armor:['Lederpanzer','Stahlpanzer','Runenrüstung','Astralrüstung','Drachenrüstung']
  });
+ // Uploaded HD artwork (one class-specific PNG per armor type).
+ // Until individual tier images are supplied, art stays consistent across levels.
+ const uploadedArmors=Object.freeze({"krieger":"DOG_Krieger_Plattenruestung.png","magierin":"DOG_Magierin_Kristallrobe.png","waechter":"DOG_Waechter_Schutzruestung.png"});
  const normalize=value=>Object.hasOwn(names,value)?value:null;
  const stage=level=>Math.max(1,tiers.findIndex(limit=>Number(level)<=limit)+1||5);
  const name=(heroClass,type,level)=>{
@@ -29,12 +32,18 @@
   return (c?names[c]?.[type]:fallback[type])?.[tier]||
    (type==='weapon'?'Waffe':'Rüstung');
  };
- const image=(heroClass,type,level)=>{
+ const fallbackImage=(heroClass,type,level)=>{
   if(type!=='weapon'&&type!=='armor')return '';
   const c=normalize(heroClass);
   return c?'./dog-forge-art/heroes/'+c+'-'+type+'-'+stage(level)+'.svg':
    './dog-forge-art/'+type+'-'+stage(level)+'.svg';
  };
+ const image=(heroClass,type,level)=>{
+  if(type!=='weapon'&&type!=='armor')return '';
+  const c=normalize(heroClass);
+  if(c&&type==='armor')return './dog-forge-art/'+uploadedArmors[c];
+  return fallbackImage(heroClass,type,level);
+ };
  const label=heroClass=>names[normalize(heroClass)]?.label||'Held noch nicht gewählt';
- window.DogHeroEquipment=Object.freeze({normalize,stage,name,image,label});
+ window.DogHeroEquipment=Object.freeze({normalize,stage,name,image,fallbackImage,label});
 })();

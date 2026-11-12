@@ -69,8 +69,17 @@
     (type==='weapon'?'Waffe':'Rüstung');
    const art=$(type+'-art');
    if(art){
-    art.src=window.DogHeroEquipment?.image(view?.heroClass,type,current||1)||
+    const artSrc=window.DogHeroEquipment?.image(view?.heroClass,type,current||1)||
       './dog-forge-art/'+type+'-1.svg';
+    art.dataset.fallbackAttempted='';
+    art.onerror=()=>{
+     const fallback=window.DogHeroEquipment?.fallbackImage(view?.heroClass,type,current||1)||
+      './dog-forge-art/'+type+'-1.svg';
+     if(art.dataset.fallbackAttempted!=='yes'&&art.getAttribute('src')!==fallback){
+      art.dataset.fallbackAttempted='yes';art.src=fallback;
+     }else art.hidden=true;
+    };
+    art.hidden=false;art.src=artSrc;
     art.alt=(name?.textContent||type)+' · Stufe '+(current||1);
    }
    $(type+'-base').textContent=type==='weapon'?
