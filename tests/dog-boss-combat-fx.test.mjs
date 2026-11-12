@@ -101,9 +101,9 @@ test('Scene creates exactly participating heroes; single player is not visually 
  chosen.members[2].heroClass='magierin';
  director.update(chosen,start+12100);
  const actors=slots['#combat-hero-line'].children;
- assert.match(actors[0].children[0].style.backgroundImage,/held-schildtraeger\\.svg/);
- assert.match(actors[1].children[0].style.backgroundImage,/held-krieger\\.svg/);
- assert.match(actors[2].children[0].style.backgroundImage,/held-magier\\.svg/);
+ assert.match(actors[0].children[0].style.backgroundImage,/held-schildtraeger\.svg/);
+ assert.match(actors[1].children[0].style.backgroundImage,/held-krieger\.svg/);
+ assert.match(actors[2].children[0].style.backgroundImage,/held-magier\.svg/);
  assert.equal(actors[0]['data-hero-class'],'waechter');
  director.update(view('victory'),start+30001);
  assert.equal(root.dataset.cue,'victory');
