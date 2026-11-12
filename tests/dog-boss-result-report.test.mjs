@@ -284,7 +284,12 @@ test('result opens automatically, replays only supplied strikes, and closes/reop
  assert.match(root.nodes['br-title'].textContent,/SIEG/);
  assert.equal(root.hidden,false,'new battle outcome reopens confirmation');
  ui.update({...next,phase:'fighting',result:null});
- assert.equal(root.hidden,true);
+ assert.equal(root.hidden,false,'transient same-fight status cannot close the report');
+ assert.equal(body.classList.contains('boss-result-open'),true);
+ const later={...next,phase:'fighting',result:null,
+  attempt:4,startedAt:next.startedAt+300000,endsAt:next.endsAt+300000};
+ ui.update(later);
+ assert.equal(root.hidden,true,'a genuinely new fight retires the old report');
  assert.equal(body.classList.contains('boss-result-open'),false);
  assert.equal(portal.classList.contains('dog-boss-report-visible'),false);
 });
@@ -335,6 +340,98 @@ test('E-01 finish dialog opens on first confirmed loss/win and admin-bypassed lo
  ui.update(next);
  assert.equal(root.hidden,true,'new active battle clears old result');
  assert.equal(body.classList.contains('dog-boss-report-visible'),false);
+});
+function e02Fixture(){
+ const stage=node('main'),open=node('button'),root=node('section');
+ const body=node('body'),intervals=[];
+ body.appendChild=child=>body.children.push(child);
+ root.closest=()=>stage;
+ Object.defineProperty(root,'innerHTML',{set(html){
+  root.html=html;root.nodes={};
+  for(const match of html.matchAll(/id="([^"]+)"/g))
+   root.nodes[match[1]]=node('div');
+ }});
+ const document={body,querySelector:sel=>
+  ({'.stage':stage,'#boss-result-open':open}[sel]||null),
+  createElement:node};
+ const {create}=load({document,Intl,
+  setInterval:fn=>{intervals.push(fn);return intervals.length},
+  clearInterval(){}});
+ return {stage,body,open,root,ui:create(root),intervals};
+}
+test('E-02 confirmed window survives brief invalid GET, polling, animation ticks and rebuilt layout',()=>{
+ const f=e02Fixture(),confirmed=fakeView(false);
+ f.ui.update(confirmed);
+ assert.equal(f.root.hidden,false);
+ const title=f.root.nodes['br-title'].textContent;
+ f.ui.update({...confirmed,result:null});
+ assert.equal(f.root.hidden,false,'missing result during same encounter is not confirmation');
+ assert.equal(f.root.nodes['br-title'].textContent,title);
+ f.ui.update({...confirmed,phase:'fighting',result:null});
+ assert.equal(f.root.hidden,false,'stale fighting phase must not force-close the result');
+ f.ui.update({...confirmed,phase:'waiting',result:null});
+ assert.equal(f.root.hidden,false,'temporary waiting phase must not close the result');
+ f.stage.classList.remove('boss-result-open');
+ f.body.classList.remove('dog-boss-report-visible');
+ f.root.hidden=true; // layout swap momentarily hides the overlay
+ f.ui.update(confirmed);
+ assert.equal(f.root.hidden,false,'next safe render restores the overlay');
+ assert.equal(f.stage.classList.contains('boss-result-open'),true);
+ assert.equal(f.body.classList.contains('dog-boss-report-visible'),true);
+ f.root.nodes['br-replay-start'].click();
+ assert.equal(f.intervals.length,1);
+ f.intervals[0](); // replay timer must not dismiss the modal
+ f.ui.update(confirmed);
+ assert.equal(f.root.hidden,false);
+ assert.equal(f.open.hidden,true);
+ assert.equal(f.root.nodes['br-title'].textContent,title);
+});
+test('E-02 only confirmation dismisses; final-damage corrections do not re-open the same battle',()=>{
+ const f=e02Fixture(),base=fakeView(false);
+ const {model}=load();
+ assert.equal(model(base).fightId,model({
+  ...base,result:{...base.result,damage:905}}).fightId,
+  'damage is not part of the stable battle identity');
+ f.ui.update(base);
+ const changed={...base,result:{...base.result,damage:905}};
+ f.ui.update(changed);
+ assert.equal(f.root.hidden,false,'server correction updates the existing open report');
+ assert.equal(f.root.nodes['br-final-damage'].textContent,'905 LP');
+ f.root.nodes['br-return'].click();
+ assert.equal(f.root.hidden,true);
+ assert.equal(f.open.hidden,false);
+ for(const refreshed of [
+  base,changed,{...base,result:{...base.result,damage:906}},
+  {...base,result:null},{...base,phase:'fighting',result:null},
+  {...base,phase:'waiting',result:null}
+ ]){
+  f.ui.update(refreshed);
+  assert.equal(f.root.hidden,true,
+   'one confirmed battle must not auto-reopen after confirmation');
+ }
+ f.open.click();
+ assert.equal(f.root.hidden,false,'explicit click to inspect results is allowed');
+ f.root.nodes['br-return'].click();
+ assert.equal(f.root.hidden,true);
+ const newFight={...fakeView(true),
+  startedAt:base.startedAt+300000,endsAt:base.endsAt+300000,attempt:3};
+ f.ui.update({...newFight,phase:'fighting',result:null});
+ assert.equal(f.root.hidden,true,'a new fight resets old modal');
+ f.ui.update(newFight);
+ assert.equal(f.root.hidden,false,'new confirmed fight has its own mandatory modal');
+ assert.match(f.root.nodes['br-title'].textContent,/SIEG/);
+});
+test('E-02 admin bypass loss holds through temporary phase mismatch until confirmation',()=>{
+ const f=e02Fixture(),loss={...fakeView(false),phase:'waiting',
+  developerBossCooldownDisabled:true};
+ f.ui.update(loss);
+ assert.equal(f.root.hidden,false);
+ f.ui.update({...loss,developerBossCooldownDisabled:false});
+ assert.equal(f.root.hidden,false,'same admin encounter remains visible');
+ f.root.nodes['br-return'].click();
+ assert.equal(f.root.hidden,true);
+ f.ui.update(loss);
+ assert.equal(f.root.hidden,true);
 });
 test('both arena screens include conclusion and local replay, with no client-side combat writes',()=>{
  const css=read('dog-boss-result-report.css');
