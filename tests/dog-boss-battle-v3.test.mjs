@@ -36,7 +36,7 @@ test('new boss asset is the exact, real transparent character sprite and is only
 });
 test('the same class can appear three times; each party member attacks separately in stable order',()=>{
  const {derive}=load(),v=view();
- for(const [offset,expected] of [[12700,'chris'],[15700,'nova'],[18700,'titan']]){
+ for(const [offset,expected] of [[12700,'chris'],[15700,'nova'],[20100,'titan']]){
   const s=derive(v,begin+offset);
   assert.equal(s.kind,'hero-strike');
   assert.equal(s.uid,expected);
@@ -46,7 +46,7 @@ test('the same class can appear three times; each party member attacks separatel
 });
 test('the boss attacks every individual player in the defensive scene',()=>{
  const {derive}=load(),v=view();
- for(const [offset,expected] of [[41800,'chris'],[44800,'nova'],[47800,'titan']]){
+ for(const [offset,expected] of [[41800,'chris'],[44800,'nova'],[49500,'titan']]){
   const s=derive(v,begin+offset);
   assert.equal(s.kind,'boss-strike');
   assert.equal(s.uid,expected);
@@ -58,7 +58,7 @@ test('the boss attacks every individual player in the defensive scene',()=>{
 test('players who are not in the battle roster are not animated as targets',()=>{
  const {derive}=load(),v=view();v.roster=players.slice(0,2);
  assert.equal(derive(v,begin+12700).uid,'chris');
- assert.equal(derive(v,begin+16800).uid,'nova');
+ assert.equal(derive(v,begin+18000).uid,'nova');
  assert.equal(derive(v,begin+19100).uid,'nova');
  assert.notEqual(derive(v,begin+43000).uid,'titan');
 });
