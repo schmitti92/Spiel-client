@@ -193,60 +193,59 @@
  to{opacity:.92;transform:scale(1.18)}
 }
 @keyframes boss-show-hero-charge{
- 0%,100%{transform:none}
- 10%{transform:translateX(2%) scale(.99)}
- 25%{transform:translateX(-7%) scale(1.04)}
- 39%{transform:translateX(-21%) scale(1.14)}
- 54%{transform:translateX(-25%) scale(1.1)}
- 63%{transform:translateX(-8%) scale(1.05)}
- 69%,100%{transform:none}
+ 0%,28%,100%{transform:none}
+ 34%{transform:translateX(2%) scale(.99)}
+ 41%{transform:translateX(-7%) scale(1.04)}
+ 49%,53%{transform:translateX(-25%) scale(1.14)}
+ 61%{transform:translateX(-8%) scale(1.05)}
+ 70%,100%{transform:none}
 }
 @keyframes boss-show-boss-strike{
- 0%,100%{transform:none}
- 10%{transform:translateX(-6%) rotate(-3deg)}
- 25%{transform:translateX(7%) rotate(2deg)}
- 42%{transform:translateX(17%) rotate(4deg) scale(1.08)}
- 54%{transform:translateX(29%) rotate(7deg) scale(1.15)}
- 64%{transform:translateX(9%) rotate(2deg)}
- 69%,100%{transform:none}
+ 0%,28%,100%{transform:none}
+ 34%{transform:translateX(-6%) rotate(-3deg)}
+ 42%{transform:translateX(7%) rotate(2deg)}
+ 49%,53%{transform:translateX(29%) rotate(7deg) scale(1.15)}
+ 61%{transform:translateX(9%) rotate(2deg)}
+ 70%,100%{transform:none}
 }
 @keyframes boss-show-boss-recoil{
- 0%,31%,100%{transform:none;filter:brightness(1)}
- 49%{transform:translateX(-11px) rotate(-4deg);filter:brightness(1.8)}
- 55%{transform:translateX(-25px) rotate(-5deg);filter:brightness(2.1)}
- 67%{transform:translateX(6px);filter:brightness(1.2)}
+ 0%,44%,100%{transform:none;filter:brightness(1)}
+ 50%{transform:translateX(-11px) rotate(-4deg);filter:brightness(1.8)}
+ 54%{transform:translateX(-25px) rotate(-5deg);filter:brightness(2.1)}
+ 65%{transform:translateX(6px);filter:brightness(1.2)}
+ 72%,100%{transform:none;filter:brightness(1)}
 }
 @keyframes boss-show-hero-block{
- 0%,29%,100%{transform:none}
- 41%{transform:translateX(-4%) scale(.98)}
- 54%{transform:translateX(8%) scale(.93)}
- 64%{transform:translateX(2%)}
- 69%,100%{transform:none}
+ 0%,43%,100%{transform:none}
+ 48%{transform:translateX(-4%) scale(.98)}
+ 53%{transform:translateX(8%) scale(.93)}
+ 62%{transform:translateX(2%)}
+ 70%,100%{transform:none}
 }
 @keyframes boss-show-hero-bolt{
- 0%,23%{opacity:0;transform:scaleX(.04)}
- 28%{opacity:.6;transform:scaleX(.23)}
- 45%{opacity:1;transform:scaleX(.96)}
- 56%,59%{opacity:1;transform:scaleX(1)}
- 68%,100%{opacity:0;transform:scaleX(1)}
+ 0%,43%{opacity:0;transform:scaleX(.04)}
+ 47%{opacity:.6;transform:scaleX(.23)}
+ 51%{opacity:1;transform:scaleX(.96)}
+ 55%,57%{opacity:1;transform:scaleX(1)}
+ 65%,100%{opacity:0;transform:scaleX(1)}
 }
 @keyframes boss-show-boss-impact{
- 0%,44%{opacity:0;transform:scale(.2)}
+ 0%,46%{opacity:0;transform:scale(.2)}
  51%{opacity:1;transform:scale(1.16)}
- 60%{opacity:1;transform:scale(1.55)}
- 74%,100%{opacity:0;transform:scale(2.8)}
+ 57%{opacity:1;transform:scale(1.55)}
+ 67%,100%{opacity:0;transform:scale(2.8)}
 }
 @keyframes boss-show-shield-flash{
- 0%,31%{opacity:0;transform:scale(.45)}
- 43%{opacity:.78;transform:scale(.88)}
- 52%,59%{opacity:1;transform:scale(1.07)}
- 66%{opacity:.7;transform:scale(1.17)}
- 73%,100%{opacity:0;transform:scale(1.35)}
+ 0%,44%{opacity:0;transform:scale(.45)}
+ 49%{opacity:.78;transform:scale(.88)}
+ 52%,57%{opacity:1;transform:scale(1.07)}
+ 64%{opacity:.7;transform:scale(1.17)}
+ 70%,100%{opacity:0;transform:scale(1.35)}
 }
 @keyframes boss-show-shield-crack{
- 0%,47%{opacity:0;transform:scale(.6)}
- 54%,60%{opacity:1;transform:scale(1.12)}
- 71%,100%{opacity:0;transform:scale(1.35)}
+ 0%,49%{opacity:0;transform:scale(.6)}
+ 53%,58%{opacity:1;transform:scale(1.12)}
+ 69%,100%{opacity:0;transform:scale(1.35)}
 }
 .arena-live .combat-scene:is([data-battle-version="7"],[data-battle-version="8"],[data-battle-version="9"],[data-battle-version="10"]).live-exchange-attack.live-exchange-miss .live-exchange-boss-impact{animation:none}
 @media (orientation:landscape) and (min-width:900px) and (max-height:720px){
@@ -359,4 +358,67 @@
  .arena-live .cinematic-start-shockwave{animation:none!important}
  .arena-live .cinematic-start-flash strong{opacity:1;transform:none}
  .arena-live .cinematic-start-shockwave{opacity:.5;transform:none}
+}
+
+/* Midpoint strike, followed by a five-second countdown IN the right-hand
+ * minigame field. Never move the gameplay clock or cover the combat actors. */
+.arena-live .live-challenge.is-cinematic-countdown{
+ position:relative;z-index:28;isolation:isolate;
+ border-color:#ffe2a1;
+ background:radial-gradient(ellipse at 50% 52%,#4a334d,#121f39 64%,#10192d);
+ box-shadow:inset 0 0 32px #ffba4c2c,0 0 24px #ffc56b6d;
+ --show-gold:#ffe39d;--show-blue:#a8eaff;
+}
+.arena-live .live-challenge.is-cinematic-countdown.is-defense{
+ --show-gold:#b5eaff;--show-blue:#d7faff;
+ border-color:#9deaff;
+ background:radial-gradient(ellipse at 50% 52%,#234e6c,#122b46 64%,#111d34);
+}
+.arena-live .live-challenge.is-cinematic-countdown .live-challenge-heading{
+ position:relative;z-index:2;
+}
+.arena-live .live-challenge.is-cinematic-countdown .live-challenge-content{
+ position:relative;min-height:0;overflow:hidden;
+}
+.arena-live .live-challenge .cinematic-grand-countdown{
+ inset:0;z-index:3;width:100%;height:100%;
+ opacity:1;transform:scale(1);
+ display:flex;align-items:center;justify-content:center;
+}
+.arena-live .live-challenge .cinematic-grand-countdown[hidden]{display:none!important}
+.arena-live .live-challenge.is-cinematic-countdown .cinematic-grand-aura{
+ opacity:.9;
+}
+.arena-live .live-challenge.is-cinematic-countdown .cinematic-grand-ring{
+ animation:boss-show-final-pulse .8s ease-in-out infinite alternate;
+ width:min(19vw,225px,39vh);
+ min-width:110px;
+}
+.arena-live .live-challenge.is-cinematic-countdown.is-defense .cinematic-grand-aura{
+ background:radial-gradient(circle,#8fe7fc58 0%,#2789d03d 32%,transparent 71%);
+}
+.arena-live .live-challenge.is-cinematic-countdown.is-defense .cinematic-grand-ring{
+ box-shadow:0 0 0 3px #aff4ff6a,0 0 36px #78d4fb8c,inset 0 0 21px #c3effe6a;
+}
+.arena-live .live-challenge.is-cinematic-countdown.is-defense .cinematic-grand-ring::before,
+.arena-live .live-challenge.is-cinematic-countdown.is-defense .cinematic-grand-ring::after{
+ border-color:#bdefff9d;
+}
+.arena-live .live-challenge.is-cinematic-countdown.is-defense .cinematic-grand-rays{
+ background:repeating-conic-gradient(from 10deg,#a4eaff56 0deg 2deg,transparent 2deg 23deg);
+}
+@media (orientation:landscape) and (min-width:900px) and (max-height:720px){
+ .arena-live .live-challenge.is-cinematic-countdown .cinematic-grand-ring{width:min(16vw,158px,29vh);min-width:85px}
+ .arena-live .live-challenge .cinematic-grand-countdown{inset:0;transform:none}
+}
+@media(max-width:899px),(orientation:portrait){
+ .arena-live .live-challenge .cinematic-grand-countdown{inset:0;height:100%;transform:none}
+ .arena-live .live-challenge.is-cinematic-countdown .cinematic-grand-ring{width:clamp(115px,22vw,170px);min-width:100px}
+}
+@media(max-width:620px){
+ .arena-live .live-challenge .cinematic-grand-countdown{inset:0;height:100%;transform:none}
+ .arena-live .live-challenge.is-cinematic-countdown .cinematic-grand-ring{width:clamp(108px,28vw,145px);min-width:0}
+}
+@media(prefers-reduced-motion:reduce){
+ .arena-live .live-challenge.is-cinematic-countdown .cinematic-grand-ring{animation:none!important}
 }
