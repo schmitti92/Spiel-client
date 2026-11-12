@@ -590,6 +590,40 @@ test('E-03 before confirmation or without player identity no local receipt may h
  assert.equal(fresh.root.hidden,false,'unconfirmed fight must still appear');
  assert.equal(storage.values.size,0);
 });
+test('E-04 result accounting separates authoritative final damage from cinematic hits',()=>{
+ const {model}=load(),view=fakeView(false),report=model(view);
+ assert.equal(report.result.damage,900);
+ assert.equal(report.rows.reduce((sum,p)=>sum+p.attack,0),660);
+ assert.equal(report.rows[0].percentage,67);
+ assert.equal(report.teamHp,221);
+ assert.equal(report.teamMax,465);
+ assert.equal(report.replay.length,8);
+ assert.ok(report.tips.some(x=>x.includes('Chris')&&x.includes('67 %')),
+  'the weakest hero receives specific training advice');
+ const f=e02Fixture();f.ui.update(view);
+ assert.match(f.root.nodes['br-attack-note'].textContent,/8 bestätigte Ereignisse/);
+ assert.match(f.root.nodes['br-attack-note'].textContent,/660 LP persönliche Treffer/);
+ assert.match(f.root.nodes['br-settlement'].textContent,/Keine gesonderte Server-Aufschlüsselung/);
+ assert.equal(f.root.nodes['br-final-damage'].textContent,'900 LP');
+ const chris=f.root.nodes['br-attack-rows'].children[0];
+ assert.match(chris.children[1].textContent,/3 Treffer · 290 LP/);
+ assert.match(chris.children[3].textContent,/67 %/);
+ assert.equal(f.root.nodes['br-strike-rows'].children.length,8);
+});
+test('E-04 reconciliation only displays server-supplied values and old fights stay honest',()=>{
+ const f=e02Fixture(),view=fakeView(false);
+ view.combat={version:1,events:view.miniGames.exchange.strikes,
+  reconciliation:{reconciled:true,appliedDamage:900,overkillDamage:0,
+   guardRecovered:40}};
+ f.ui.update(view);
+ assert.match(f.root.nodes['br-settlement'].textContent,/900 Boss-LP tatsächlich abgezogen/);
+ assert.match(f.root.nodes['br-settlement'].textContent,/40 LP Boss-Abwehr/);
+ const old={...fakeView(false),miniGames:{version:0,exchange:{stages:[],strikes:[]}}};
+ const another=e02Fixture();another.ui.update(old);
+ assert.match(another.root.nodes['br-attack-note'].textContent,/keine Einzelangriff-Historie/);
+ assert.equal(another.root.nodes['br-strike-details'].hidden,true);
+ assert.equal(another.root.nodes['br-final-damage'].textContent,'900 LP');
+});
 test('both arena screens include conclusion and local replay, with no client-side combat writes',()=>{
  const css=read('dog-boss-result-report.css');
  for(const token of ['dog-boss-report-visible','br-grade-scale','br-attack','br-replay-stage',
