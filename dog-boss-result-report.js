@@ -261,7 +261,7 @@
      <p id="br-finale-hp" class="br-finale-hp"></p>
      <p id="br-finale-step" class="br-finale-step"></p>
     </div>
-    <div class="br-scroll">
+    <div class="br-scroll" tabindex="0" role="region" aria-label="Kampfabrechnung, nach unten scrollen für weitere Statistiken">
    <header class="br-head">
     <p class="br-eyebrow">✦ DIE 100 TORE · KAMPFABRECHNUNG ✦</p>
     <h2 id="br-title">🏆 Kampf abgeschlossen</h2>
@@ -339,12 +339,14 @@
   root.innerHTML=html;
   root.setAttribute?.('aria-live','off');
   const dialog=root.querySelector?.('.br-dialog');
+  let lastFocus=null;
   const setOpen=(opened)=>{
+   if(opened&&root.hidden)lastFocus=document.activeElement||openButton||null;
    root.hidden=!opened;
    stage?.classList?.toggle('boss-result-open',opened);
    document.body?.classList?.toggle('dog-boss-report-visible',opened);
    if(openButton)openButton.hidden=opened;
-   if(opened)dialog?.focus?.({preventScroll:true});
+   if(opened&&root.hidden===false)dialog?.focus?.({preventScroll:true});
   };
   const ensureOpen=(opened)=>{
    // E-02: rendering ticks can rebuild arena classes or momentarily hide
@@ -360,12 +362,15 @@
    if(root.hidden||event.key!=='Tab')return;
    const targets=[...(dialog?.querySelectorAll?.(
     'button:not([disabled]),a[href],summary,[tabindex="0"]')||[])];
-   const focusable=targets.filter(el=>!el.hidden&&el.offsetParent!==null);
+   const focusable=targets.filter(el=>!el.hidden&&
+    !el.closest?.('[hidden]')&&el.offsetParent!==null);
    if(!focusable.length)return;
    const first=focusable[0],last=focusable[focusable.length-1];
-   if(event.shiftKey&&document.activeElement===first){
+   if(event.shiftKey&&(document.activeElement===first||
+    document.activeElement===dialog)){
     event.preventDefault();last.focus?.();
-   }else if(!event.shiftKey&&document.activeElement===last){
+   }else if(!event.shiftKey&&(document.activeElement===last||
+    document.activeElement===dialog)){
     event.preventDefault();first.focus?.();
    }
   });
@@ -501,7 +506,7 @@
    saveAcknowledgement();
    ended();
    setOpen(false);
-   openButton?.focus?.({preventScroll:true});
+   (lastFocus?.isConnected?lastFocus:openButton)?.focus?.({preventScroll:true});
   });
   if(openButton)openButton.addEventListener('click',()=>{
    if(!activeFightId)return;
