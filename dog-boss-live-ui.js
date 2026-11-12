@@ -40,6 +40,7 @@
    promptTitle:$(root,'#live-mini-prompt-title'),
    promptDetail:$(root,'#live-mini-prompt-detail'),
    minigame:$(root,'#mini-game'),challenge:$(root,'.live-challenge'),
+   recentDamage:$(root,'#live-recent-damage'),
    hpFill:$(root,'#live-hp-fill'),hit:$(root,'#live-hit-effects'),
    boss:$(root,'#combat-boss'),combat:$(root,'#combat-scene'),
    shieldFill:$(root,'#live-shield-fill'),shieldValue:$(root,'#live-shield-value'),
@@ -68,8 +69,22 @@
   let lastHitKey='',lastRound='',lastFeedback='',lastImpactKey='',lastExchangeKey='';
   let lastShowTick='';
   let lastVitalsEncounter='',lastBossHp=null,lastTeamHp=null,lastHeroVitalsKey='';
+  let lastHeroHp=new Map(),recentDamage=[];
   let heroHpNodes=new Map();
   const fmtHealth=new Intl.NumberFormat('de-DE');
+  // Display only decreases between two server-derived HP snapshots.
+  // We cannot infer which hero caused boss damage from aggregate HP values.
+  // No new requests or persistence: just three most recent visible losses.
+  function logConfirmedDamage(label,amount,enemy=false){
+   if(!Number.isFinite(amount)||amount<=0)return;
+   recentDamage.unshift((enemy?'🔥 ':'🛡️ ')+label+': −'+
+    fmtHealth.format(Math.round(amount))+' LP');
+   recentDamage=recentDamage.slice(0,3);
+  }
+  function showRecentDamage(){
+   text(nodes.recentDamage,recentDamage.length?
+    recentDamage.join('  ·  '):'Noch keine bestätigten Treffer');
+  }
   function popDamage(node,damage,enemy=false){
    if(!node||damage<=0||typeof document==='undefined')return;
    const label=document.createElement('strong');
@@ -141,16 +156,35 @@
     }
    }
    const encounter=String(view?.startedAt||0)+':'+String(view?.attempt||0);
+   const visibleHeroes=hasPool&&Array.isArray(pool.heroes)?pool.heroes:[];
+   const heroHpNow=new Map(visibleHeroes.map(h=>[h.uid,Number(h.hp)||0]));
    if(encounter!==lastVitalsEncounter){
     lastVitalsEncounter=encounter;
     lastBossHp=liveBoss;lastTeamHp=hasPool?teamHp:null;
+    lastHeroHp=heroHpNow;recentDamage=[];
    }else{
-    if(['fighting','victory','cooldown'].includes(view?.phase)&&lastBossHp!==null&&liveBoss<lastBossHp)
-     popDamage(nodes.bossDamage,lastBossHp-liveBoss,true);
-    if(view?.phase==='fighting'&&hasPool&&lastTeamHp!==null&&teamHp<lastTeamHp)
-     popDamage(nodes.teamDamage,lastTeamHp-teamHp,false);
+    if(['fighting','victory','cooldown'].includes(view?.phase)&&
+      lastBossHp!==null&&liveBoss<lastBossHp){
+     const damage=lastBossHp-liveBoss;
+     popDamage(nodes.bossDamage,damage,true);
+     logConfirmedDamage('Boss',damage,true);
+    }
+    if(view?.phase==='fighting'&&hasPool){
+     if(lastTeamHp!==null&&teamHp<lastTeamHp)
+      popDamage(nodes.teamDamage,lastTeamHp-teamHp,false);
+     for(const hero of visibleHeroes){
+      const previous=lastHeroHp.get(hero.uid);
+      const currentHp=heroHpNow.get(hero.uid);
+      if(Number.isFinite(previous)&&currentHp<previous){
+       const name=members.find(m=>m.uid===hero.uid)?.name||'Held';
+       logConfirmedDamage(String(name).slice(0,22),previous-currentHp);
+      }
+     }
+    }
     lastBossHp=liveBoss;lastTeamHp=hasPool?teamHp:null;
+    lastHeroHp=heroHpNow;
    }
+   showRecentDamage();
   }
 
   function dodgeImpact(round,record,view,now){
