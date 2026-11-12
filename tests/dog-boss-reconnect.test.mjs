@@ -152,6 +152,21 @@ for(const file of ['dog-boss10.js','dog-group-boss.js']){
  });
 }
 
+test('S-03 ready POST leaves waiting for other heroes responsive',async()=>{
+ for(const file of ['dog-boss10.js','dog-group-boss.js']){
+  const h=simulate(file);
+  await spin();assert.equal(h.getCount(),1);
+  h.tick(2900);await spin();
+  assert.equal(h.getCount(),1,'normal throttle before 3s');
+  h.allowPost(true);
+  h.el('ready-button').handlers.click();
+  await spin();
+  assert.equal(h.postCount(),1);
+  h.tick(300);await spin();
+  assert.equal(h.getCount(),2,'ready must not postpone a due team status GET');
+ }
+});
+
 test('S-03 readiness and fight-start responses do not delay shared start polling',()=>{
  for(const arena of ['dog-boss10.js','dog-group-boss.js']){
   const source=read(arena);

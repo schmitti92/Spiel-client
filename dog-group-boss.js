@@ -304,10 +304,6 @@
    serverOffset=Number.isFinite(data._clockOffsetMs)?
     data._clockOffsetMs:Number(data.view.serverNow||Date.now())-Date.now();
    noteReadyChange(data.view);
-   // S-03: The successful POST already includes the authoritative battle
-   // snapshot. Do not immediately spend two Firestore reads fetching it
-   // again. Forced refreshes (including exchange scenes) still work.
-   lastLoad=Date.now();
    render();
    message(req.command==='ready'?
     (view.phase==='fighting'?'⚔️ Drei Helden bereit – Kampf über '+Math.round((view.endsAt-view.startedAt)/1000)+' Sekunden gestartet.':

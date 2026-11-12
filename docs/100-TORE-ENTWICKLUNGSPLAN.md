@@ -308,6 +308,6 @@ Der Nutzer hat **vor und nach genau einem Spiel** die Nutzungszähler in der Fir
 
 **Definition von „fertig“:** Funktion auf GitHub `main` integriert, Frontend-/Backend-Tests erfolgreich, auf echter Anzeige nachvollziehbar, keine ungeklärten Doppelbuchungen oder unnötigen Firestore-Mehrzugriffe, Task abgehakt und Fortschrittsprotokoll ergänzt.
 
-**Nächster Entwicklungsblock:** **S-03b – nach dem schlanken POST/GET-Fix die übrigen Firestore-Reads kritisch prüfen und nur bei echter Kostenersparnis und unverändert schneller Synchronisation weiter optimieren.** A-01e/A-02e und der echte Mehrgeräte-Sichttest bleiben als ergänzende Praxisaufgaben offen.
+**Nächster Entwicklungsblock:** **S-03b – nach dem schlanken, teamstart-sicheren POST/GET-Fix die übrigen Firestore-Reads kritisch prüfen und nur bei echter Kostenersparnis und unverändert schneller Synchronisation weiter optimieren.** A-01e/A-02e und der echte Mehrgeräte-Sichttest bleiben als ergänzende Praxisaufgaben offen.
 
 **Nächste konkrete Schritte:** **A-01e** – bereits dokumentierten kontrollierten Praxiswert (145 Reads / 26 Writes) bei künftigen Spielen um Leerlauf und weitere Szenarien ergänzen und **A-02e** – mit dem neuen `netdiag=1`-Messfeld die reale 1/2/3-Geräte-Baseline plus Nova/Titan erheben. Danach A-01/A-02 abnehmen. **Keine Optimierung als abgeschlossen bezeichnen, solange der Vergleich zur Live-Baseline fehlt.**
