@@ -198,6 +198,15 @@ Der Nutzer hat **vor und nach genau einem Spiel** die Nutzungszähler in der Fir
 
 **Commits:** [Backend mit privatem Push-Kanal](https://github.com/schmitti92/serverfinal/commit/b04d581280381653d4c8aeeec47393a714d9ff90) · [Client-Pilot](https://github.com/schmitti92/Spiel-client/commit/d9692de2978f4fcdb604b9cb4388f8d7d2d1d590). CI: [Server-Tests](https://github.com/schmitti92/serverfinal/actions/runs/43260335409) und [Client-Checks](https://github.com/schmitti92/Spiel-client/actions/runs/43260675340) erfolgreich; weitere Tests folgen nach finaler kleiner Zugangs-Absicherung. Vorheriger kontrollierter Nutzerwert (anderes Spiel/Messfenster) **145 Reads / 26 Writes**, aktuell **kein neuer Nachher-Verbrauch gemessen**.
 
+#### S-04 Zusatzschutz – Verbindungsabbrüche sparsam behandeln (12.11.2026)
+
+Der optionale WebSocket-Pilot wurde auf **abgebrochene bzw. nie authentifizierte Verbindungen** gehärtet, ohne seine Datennutzung zu vergrößern.
+
+- **Server:** Eine WebSocket-Verbindung, die nicht innerhalb von 10 Sekunden erfolgreich `subscribe` aufruft, wird geschlossen. Das benötigt **keinen Firestore-Read/Write**. Erfolgreiche Abos löschen den Handshake-Timer und behalten ihre bisherige 5-Minuten-Reauthentifizierung.
+- **Browser:** Nach wiederholten kurzlebigen WebSocket-Ausfällen erhöht sich ausschließlich der **Reconnect-Abstand** von zunächst 2 Sekunden auf 4, 8, 16 und maximal 30 Sekunden. Dadurch können wiederholte Teamzugehörigkeitsprüfungen samt Firestore-Reads bei instabiler Verbindung deutlich seltener werden. Nach einer stabilen Verbindung (mindestens 20 Sekunden) beginnt eine neue Störung wieder beim kurzen Abstand. Das normale HTTP-Status-Polling läuft **durchgehend unverändert**; manuelles Aktualisieren und bestätigte POSTs funktionieren weiterhin.
+- **Nachweis:** [Server-Code](https://github.com/schmitti92/serverfinal/blob/main/dog-boss-push.js) · [Browser-Code](../dog-boss-push-client.js) · [Server-Schutztests](https://github.com/schmitti92/serverfinal/blob/main/tests/dog-boss-push.test.js) · [Client-Reconnect-Tests](../tests/dog-boss-push-client.test.mjs). Keine Änderung an Kampfzustand, Belohnungen, Quittungen oder Firestore-Dokumentstruktur.
+- **Rollout/Abnahme:** Pilot bleibt nur mit `dogpush=1` aktiviert. Ein echtes Zwei-/Drei-Geräte-Spiel und Cloud-Verbrauchsvergleich stehen weiterhin aus.
+
 ### S-05 – Sequenzschutz und Nachholen (12.11.2026)
 
 **Technischer Schritt auf Basis des optionalen S-04-WebSocket-Piloten (Standard weiter ausgeschaltet):** Die WebSocket-Sequenz wird auf verspätete, doppelte und ausgelassene Hinweise geprüft. Eine Folge mehrerer Benachrichtigungen löst **maximal einen** gebündelten, autorisierten GET aus. Boss-Schadensereignisse bleiben im bereits serverbestätigten `combat.events`-Protokoll; der Push überträgt keine Schadenswerte.
@@ -391,6 +400,8 @@ Die bestehenden Schwerter, Zauberstäbe und Schilde bleiben bestehen. Der Client
 | 12.11.2026 | **K-02 technisch umgesetzt** | Klassenangriffe Klinge/Magie/Schild; synchronisierte Figur-, Waffen- und Klassen-Effekte; Boss markiert individuellen Gegner; keine neuen Spieldaten/Abfragen. | Gezielter Arena-Test und CI nach Commit; echter Mehrgeräte-Blick ausstehend | 0 zusätzliche Firestore-Reads/Writes | [Waffen-CSS](../dog-boss-weapon-strikes.css) · [Kampf-Arena](../dog-boss-battle-v3.js) |
 
 | 12.11.2026 | **K-03 technisch umgesetzt** | Boss-/Team-/Helden-LP, Boss-Zahlen und Kamera nutzen dasselbe bestätigte Ereignis und dieselbe Uhrzeit; Ausweichen/Blocken differenziert; keine doppelten Popups. | Gezielte Arena-/Live-UI-Tests plus CI; echte Mehrgeräteprüfung offen | **0 zusätzliche Firestore-Reads/Writes** | [Live-UI](../dog-boss-live-ui.js) · [Arena](../dog-boss-battle-v3.js) |
+
+| 12.11.2026 | **S-04 Pilot-Verbindungsstabilität verbessert** | Unauthentifizierte WS-Verbindungen schließen nach 10 s; wiederholte Push-Ausfälle drosseln reconnect-bezogene Team-Reads mit maximal 30 s Abstand. HTTP-Fallback und Kampf-GETs unverändert. | Gezielte Handshake-/Reconnect-Tests; CI-Protokolle am Commit | 0 zusätzliche Writes/Reads; potenziell weniger Team-Reads bei WS-Flattern, noch keine reale Verbrauchsmessung | [Backend-Schutz](https://github.com/schmitti92/serverfinal/commit/3cf5ab76b9bd613f04bf11cb267d9295ee047407) · Frontend-Commit dieses Pakets |
 
 **Definition von „fertig“:** Funktion auf GitHub `main` integriert, Frontend-/Backend-Tests erfolgreich, auf echter Anzeige nachvollziehbar, keine ungeklärten Doppelbuchungen oder unnötigen Firestore-Mehrzugriffe, Task abgehakt und Fortschrittsprotokoll ergänzt.
 

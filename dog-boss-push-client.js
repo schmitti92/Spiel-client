@@ -13,11 +13,13 @@
   let ws=null,uid=null,connected=false,connecting=false,generation=0;
   let revision=0,reconnectTimer=null,coalesceTimer=null,denied=false;
   let subscribedBefore=false,pending=false,gaps=0,duplicates=0,recoveries=0;
+  let reconnectFailures=0,nextRetryMs=0,subscribedAt=0;
   function clear(id){if(id!==null)clearTimeout(id)}
   function stop(){
    generation++;
    connected=false;connecting=false;revision=0;
    subscribedBefore=false;pending=false;
+   reconnectFailures=0;nextRetryMs=0;subscribedAt=0;
    clear(reconnectTimer);reconnectTimer=null;
    clear(coalesceTimer);coalesceTimer=null;
    const old=ws;ws=null;
@@ -40,11 +42,17 @@
    coalesceTimer=setTimeout(()=>{coalesceTimer=null;flush()},250);
   }
   function schedule(){
-   if(reconnectTimer!==null)return;
+   if(reconnectTimer!==null||denied)return;
+   // Each failed WS handshake can otherwise trigger another verified
+   // team-document read every two seconds. Back off only the optional
+   // push channel; the existing HTTP game-state fallback stays active.
+   const wait=Math.min(30000,2000*2**Math.min(reconnectFailures,4));
+   reconnectFailures=Math.min(4,reconnectFailures+1);
+   nextRetryMs=wait;
    reconnectTimer=setTimeout(()=>{
     reconnectTimer=null;
     void start();
-   },2000);
+   },wait);
   }
   async function start(){
    const user=typeof getUser==='function'?getUser():null;
@@ -75,6 +83,7 @@
      }
      if(payload?.type==='subscribed'&&payload.gate===gate){
       connected=true;connecting=false;revision=0;
+      subscribedAt=Date.now();nextRetryMs=0;
       // The initial page already makes its own HTTP GET. Only a real
       // reconnect needs one extra recovery GET for events missed offline.
       if(subscribedBefore){recoveries++;queue()}
@@ -94,6 +103,11 @@
     socket.onerror=()=>{connected=false};
     socket.onclose=()=>{
      if(epoch!==generation)return;
+     // A stable 20-second subscription is healthy; reset accumulated
+     // backoff so an occasional disconnect recovers promptly.
+     if(subscribedAt&&Date.now()-subscribedAt>=20000)
+      reconnectFailures=0;
+     subscribedAt=0;
      connected=false;connecting=false;ws=null;
      if(!denied)schedule();
     };
@@ -102,7 +116,8 @@
    }
   }
   return Object.freeze({start,stop,active,flush,
-   stats:()=>({gaps,duplicates,recoveries,pending,revision})
+   stats:()=>({gaps,duplicates,recoveries,pending,revision,
+    reconnectFailures,nextRetryMs})
   });
  }
  window.DogBossPushClient={create};

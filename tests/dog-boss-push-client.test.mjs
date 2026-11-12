@@ -138,3 +138,36 @@ test('S-04 integration retains the original status GET polling as fallback',()=>
   assert.match(source,/push\?\.flush\?\.\(\)/);
  }
 });
+
+test('S-04 repeated failed websocket sessions back off to avoid repeated team reads',async()=>{
+ const h=harness();
+ await h.client.start();await flush();
+ for(const delay of [2000,4000,8000,16000,30000]){
+  const ws=h.sockets.at(-1);
+  ws.open();
+  ws.recv({type:'subscribed',gate:20});
+  ws.close();
+  assert.equal(h.client.active(),false);
+  assert.equal([...h.timers.values()][0].ms,delay);
+  assert.equal(h.client.stats().nextRetryMs,delay);
+  h.runTimer(delay);await flush();
+ }
+ const ws=h.sockets.at(-1);
+ ws.open();ws.recv({type:'subscribed',gate:20});
+ ws.close();
+ assert.equal(h.client.stats().nextRetryMs,30000,'reconnect cost is bounded');
+ h.client.stop();
+ assert.equal(h.timers.size,0,'no deferred socket attempts after leaving the page');
+});
+
+test('S-04 failed websocket authentication never changes the HTTP fallback',async()=>{
+ const h=harness();
+ await h.client.start();await flush();
+ const ws=h.sockets[0];
+ ws.close();
+ assert.equal(h.client.active(),false);
+ assert.equal(h.client.stats().nextRetryMs,2000);
+ assert.equal(h.changes.length,0,'no hidden state requests from the client socket');
+ h.client.stop();
+ assert.equal(h.timers.size,0);
+});
