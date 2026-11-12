@@ -51,7 +51,7 @@ test('Preparation view is display-only and never bypasses authenticated commands
  for(const script of ['dog-boss10.js','dog-group-boss.js']){
   const source=read(script);
   assert.match(source,/DogBossPreflight\?\.create\(/);
-  assert.match(source,/preflight\?\.update\(view,now\(\)\)/);
+  assert.match(source,/preflight\?\.update\(view,frameNow\)/);
   assert.match(source,/command\('ready'\)/);
   assert.match(source,/command\('start'\)/);
   assert.match(source,/command\('minigame'/);

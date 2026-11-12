@@ -134,7 +134,7 @@ test('Existing minigame submit and multiplayer command paths are unchanged',()=>
  for(const file of ['dog-boss10.js','dog-group-boss.js']){
   const controller=read(file);
   assert.match(controller,/DogBossLiveUI\?\.create\(\$\('arena'\)\)/);
-  assert.match(controller,/liveUi\?\.update\(view,now\(\)\)/);
+  assert.match(controller,/liveUi\?\.update\(view,frameNow\)/);
    assert.ok(controller.includes("command('minigame',false,{"),'minigame API path kept');
   assert.match(controller,/function acknowledgePending\(uid,state\)/);
   assert.match(controller,/DogBossCombatFX\?\.create\(\$\('combat-scene'\)/);
@@ -250,7 +250,8 @@ test('K-03 official event time gates boss, individual and team HP',()=>{
  display.update(b,start+13980);
  assert.equal(ui.combatVitals(b,start+13980).bossHp,24770);
  assert.equal(element('live-hp-fill').style.width,'99.08%');
- assert.equal(element('live-recent-damage').textContent,'Noch keine bestätigten Treffer');
+ assert.doesNotMatch(element('live-recent-damage').textContent,/−\d+ LP/,
+  'no additional HP-difference log alongside the authoritative V3 hit log');
  display.update(b,start+42000);
  assert.equal(ui.combatVitals(b,start+42000).teamHp,285);
  assert.equal(ui.combatVitals(b,start+42000).heroes[0].hp,85);

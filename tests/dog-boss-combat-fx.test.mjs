@@ -123,7 +123,7 @@ test('Both arenas load the same combat effects before their controllers',()=>{
  for(const file of ['dog-boss10.js','dog-group-boss.js']){
   const script=readFileSync(new URL('../'+file,import.meta.url),'utf8');
   assert.ok(script.includes("DogBossCombatFX?.create($('combat-scene')"));
-  assert.ok(script.includes('combatFx?.update(view,now())'));
+  assert.ok(script.includes('combatFx?.update(view,frameNow)'));
  }
  const css=readFileSync(new URL('../dog-boss10.css',import.meta.url),'utf8');
  for(const name of ['combat-defeated','combat-slam','combat-shield',

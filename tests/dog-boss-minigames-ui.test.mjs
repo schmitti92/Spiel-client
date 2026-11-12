@@ -17,7 +17,7 @@ test('All ten arenas display the same tactical three-round widget',()=>{
   assert.ok(client.includes("DogBossMinigames?.create($('mini-game')"));
   assert.ok(client.includes("command('minigame',false,{"));
   assert.ok(client.includes("['ready','start','react','minigame','finish']"));
-  assert.ok(client.includes('miniUi?.update(view,now()'));
+  assert.ok(client.includes('miniUi?.update(view,frameNow'));
   assert.ok(client.includes('req.payload||{}'));
   assert.ok(client.includes("request.command==='minigame'"));
   assert.ok(client.includes('state?.miniGames?.myAnswers?.[request.payload?.round]'));

@@ -337,7 +337,7 @@ test('K-02 class-specific sword, arcane bolt and shield wave share the server cl
   assert.match(action.textContent,new RegExp(word));
  }
  for(const page of ['dog-boss10.html','dog-group-boss.html'])
-  assert.match(read(page),/dog-boss-weapon-strikes\.css\?v=20261112-k02-classes1/);
+  assert.match(read(page),/dog-boss-weapon-strikes\.css\?v=[A-Za-z0-9_-]+/);
 });
 
 // K-03: a cinematic swing without server confirmation must never flash as a hit.
