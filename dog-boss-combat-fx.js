@@ -311,7 +311,8 @@
   }
   function update(view,serverNow){
    fighters(view);
-   for(const hero of view?.teamHealth?.heroes||[]){
+   for(const hero of view?.miniGames?.exchange?.displayTeamHealth?.heroes||
+     view?.teamHealth?.heroes||[]){
     const fill=healthBars.get(hero.uid);
     if(fill?.style)fill.style.width=(100*Math.max(0,Number(hero.hp)||0)/
       Math.max(1,Number(hero.maxHp)||1)).toFixed(2)+'%';
