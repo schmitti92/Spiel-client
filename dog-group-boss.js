@@ -142,7 +142,7 @@
     'zu dritt empfohlen');
   const area=$('heroes');
   const heroSignature=JSON.stringify(members.map(m=>m?
-   [m.uid,m.name,m.ready,m.eligible,m.reacted]:null));
+   [m.uid,m.name,m.heroClass,m.ready,m.eligible,m.reacted]:null));
   if(heroSignature!==lastHeroSignature){
    lastHeroSignature=heroSignature;
    area.replaceChildren();
@@ -151,6 +151,7 @@
    const card=document.createElement('article');card.className='hero'+(m?.ready?' is-ready':'');
    const portrait=document.createElement('span');portrait.className='hero-portrait';
    portrait.textContent=m?.name?.charAt(0)?.toUpperCase()||'?';
+    if(m){const roles=['krieger','magierin','waechter'];portrait.classList.add('dog-hero-art','is-'+(roles.includes(m.heroClass)?m.heroClass:roles[i]));}
    const info=document.createElement('div');
    const title=document.createElement('strong');title.textContent=m?.name||'Freier Heldenplatz';
    const detail=document.createElement('small');
