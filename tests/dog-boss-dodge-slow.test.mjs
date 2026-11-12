@@ -121,7 +121,7 @@ test('v8 longer animation CSS and legacy V7 battle are isolated',()=>{
  for(const p of ['dog-boss10.html','dog-group-boss.html']){
   const html=read(p);
   assert.match(html,/dog-boss-dodge-slow\.css/);
-  assert.match(html,/dog-boss-mini-ui\.js\?v=20261112-final5-runes1/);
+  assert.match(html,/dog-boss-mini-ui\.js\?v=20261112-chainbreak1/);
   assert.match(html,/dog-boss-combat-fx\.js\?v=20261112-strike2/);
  }
  const old=miniFixture();
