@@ -6,8 +6,8 @@ import {runInNewContext} from 'node:vm';
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const src=read('dog-boss-result-report.js');
 function load(extra={}){
- const window={};
- runInNewContext(src,{window,...extra},{timeout:1000});
+ const window=extra.window||{};
+ runInNewContext(src,{...extra,window},{timeout:1000});
  return window.DogBossResultReport;
 }
 const fakeView=(win=false)=>({
@@ -433,12 +433,166 @@ test('E-02 admin bypass loss holds through temporary phase mismatch until confir
  f.ui.update(loss);
  assert.equal(f.root.hidden,true);
 });
+function e03Store(){
+ const values=new Map(),writes=[];
+ return {values,writes,
+  getItem(key){return values.get(key)??null;},
+  setItem(key,value){values.set(key,String(value));writes.push({key,value:String(value)});},
+  removeItem(key){values.delete(key);}
+ };
+}
+function e03Fixture(storage,opts={}){
+ let account=opts.uid??'a';
+ const stage=node('main'),open=node('button'),root=node('section');
+ const body=node('body'),intervals=[];
+ body.appendChild=child=>body.children.push(child);
+ root.closest=()=>stage;
+ Object.defineProperty(root,'innerHTML',{set(html){
+  root.html=html;root.nodes={};
+  for(const match of html.matchAll(/id="([^"]+)"/g))
+   root.nodes[match[1]]=node('div');
+ }});
+ const document={body,querySelector:sel=>
+  ({'.stage':stage,'#boss-result-open':open}[sel]||null),createElement:node};
+ const window={};
+ if(storage!==undefined){
+  Object.defineProperty(window,'localStorage',{get(){
+   if(opts.blockedGet)throw new Error('localStorage unavailable');
+   return storage;
+  }});
+ }
+ if(opts.sessionStore)window.sessionStorage=opts.sessionStore;
+ const {create}=load({window,document,Intl,
+  setInterval:fn=>{intervals.push(fn);return intervals.length},
+  clearInterval(){}});
+ return {stage,open,root,body,intervals,ui:create(root,()=>account),
+  setUid:id=>{account=id}};
+}
+test('E-03 confirmed defeat is remembered locally after page reload; voluntary reopening remains possible',()=>{
+ const storage=e03Store(),state=fakeView(false);
+ const first=e03Fixture(storage);
+ first.ui.update(state);
+ assert.equal(first.root.hidden,false);
+ assert.equal(storage.writes.length,0,'no write before the actual confirmation');
+ first.root.nodes['br-return'].click();
+ assert.equal(storage.writes.length,1,'only explicit confirmation persists');
+ const key='dog:boss:result:ack:v1:a:10',id='10:'+state.startedAt+':2';
+ assert.equal(storage.values.get(key),id);
+ const second=e03Fixture(storage); // fresh JavaScript context: actual page reload
+ second.ui.update(state);
+ assert.equal(second.root.hidden,true,'same completed fight must stay acknowledged');
+ assert.equal(second.open.hidden,false,'user can still inspect the report');
+ assert.equal(second.root.nodes['br-final-damage'].textContent,'900 LP');
+ assert.equal(storage.writes.length,1,'reload must not write anything');
+ second.ui.update({...state,result:{...state.result,damage:901}});
+ assert.equal(second.root.hidden,true,'late result correction must not reopen');
+ second.open.click();
+ assert.equal(second.root.hidden,false,'a deliberate user action reopens it');
+ second.root.nodes['br-return'].click();
+ assert.equal(second.root.hidden,true);
+ assert.equal(storage.writes.length,2,'re-confirming after voluntary re-open persists the same ID');
+});
+test('E-03 player switch cannot reuse another account confirmation on one device',()=>{
+ const storage=e03Store(),state=fakeView(false);
+ const f=e03Fixture(storage,{uid:'a'});
+ f.ui.update(state);f.root.nodes['br-return'].click();
+ assert.equal(f.root.hidden,true);
+ f.setUid('b');
+ f.ui.update(state);
+ assert.equal(f.root.hidden,false,'another signed-in player must see their own report');
+ f.root.nodes['br-return'].click();
+ assert.equal(storage.values.size,2);
+ assert.equal(storage.values.get('dog:boss:result:ack:v1:b:10'),
+  '10:'+state.startedAt+':2');
+ f.setUid('a');f.ui.update(state);
+ assert.equal(f.root.hidden,true,'switching back restores only player A receipt');
+ f.setUid('c');f.ui.update(state);
+ assert.equal(f.root.hidden,false,'an unacknowledged third user is not hidden');
+});
+test('E-03 a newer attempt or another gate always gets a distinct mandatory report',()=>{
+ const storage=e03Store(),state=fakeView(false);
+ const f=e03Fixture(storage);
+ f.ui.update(state);f.root.nodes['br-return'].click();
+ const next={...state,attempt:3,
+  startedAt:state.startedAt+300000,endsAt:state.endsAt+300000};
+ f.ui.update({...next,phase:'fighting',result:null});
+ assert.equal(f.root.hidden,true);
+ f.ui.update(next);
+ assert.equal(f.root.hidden,false,'attempt three has not been acknowledged');
+ f.root.nodes['br-return'].click();
+ assert.equal(storage.values.get('dog:boss:result:ack:v1:a:10'),
+  '10:'+next.startedAt+':3');
+ const gate20={...next,gate:20,name:'Zweiter Wächter'};
+ f.ui.update(gate20);
+ assert.equal(f.root.hidden,false,'gate 20 cannot use gate 10 acknowledgement');
+ f.root.nodes['br-return'].click();
+ assert.equal(storage.values.size,2,'one small receipt per player per gate');
+ const reloaded=e03Fixture(storage);
+ reloaded.ui.update(gate20);
+ assert.equal(reloaded.root.hidden,true);
+});
+test('E-03 v15 personal finale is NOT replayed after reload of a confirmed report',()=>{
+ const storage=e03Store(),state=fakeView(false);
+ state.miniGames.version=15;
+ state.combat={finale:{kind:'personal',strikes:[
+  {uid:'a',sequence:1,amount:25,hpBefore:125,hpAfter:100},
+  {uid:'b',sequence:2,amount:40,hpBefore:100,hpAfter:60}
+ ]}};
+ const first=e03Fixture(storage);first.ui.update(state);
+ assert.equal(first.root.nodes['br-finale-screen'].hidden,false);
+ assert.equal(first.root.nodes['br-return'].disabled,true);
+ // Complete cinematic timers; confirmation remains blocked until finished.
+ for(let i=0;i<state.combat.finale.strikes.length+2;i++)
+  first.intervals[0]();
+ assert.equal(first.root.nodes['br-return'].disabled,false);
+ first.root.nodes['br-return'].click();
+ assert.equal(first.root.hidden,true);
+ const reloaded=e03Fixture(storage);
+ reloaded.ui.update(state);
+ assert.equal(reloaded.root.hidden,true);
+ assert.equal(reloaded.root.nodes['br-finale-screen'].hidden,true);
+ assert.equal(reloaded.intervals.length,0,'no automatic v15 finale on confirmed reload');
+});
+test('E-03 blocked localStorage safely falls back to sessionStorage, then in-memory only',()=>{
+ const state=fakeView(false),persistent=e03Store(),session=e03Store();
+ const a=e03Fixture(persistent,{blockedGet:true,sessionStore:session});
+ a.ui.update(state);
+ a.root.nodes['br-return'].click();
+ assert.equal(a.root.hidden,true);
+ assert.equal(session.writes.length,1,'session fallback preserves reload within tab');
+ const b=e03Fixture(persistent,{blockedGet:true,sessionStore:session});
+ b.ui.update(state);
+ assert.equal(b.root.hidden,true);
+ const locked={getItem(){throw Error('denied')},setItem(){throw Error('denied')}};
+ const c=e03Fixture(locked);
+ c.ui.update(state);
+ assert.equal(c.root.hidden,false);
+ c.root.nodes['br-return'].click();
+ assert.equal(c.root.hidden,true,'memory-only acknowledgement works during session');
+ c.ui.update(state);
+ assert.equal(c.root.hidden,true,'failed storage does not cause an immediate reopen');
+ const fresh=e03Fixture(locked);
+ fresh.ui.update(state);
+ assert.equal(fresh.root.hidden,false,
+  'blocked storage cannot promise persistence after a reload');
+});
+test('E-03 before confirmation or without player identity no local receipt may hide the report',()=>{
+ const storage=e03Store(),state=fakeView(false);
+ const f=e03Fixture(storage,{uid:''});
+ f.ui.update(state);f.root.nodes['br-return'].click();
+ assert.equal(storage.writes.length,0,'anonymous viewer is never attributed to another account');
+ const fresh=e03Fixture(storage,{uid:'a'});
+ fresh.ui.update(state);
+ assert.equal(fresh.root.hidden,false,'unconfirmed fight must still appear');
+ assert.equal(storage.values.size,0);
+});
 test('both arena screens include conclusion and local replay, with no client-side combat writes',()=>{
  const css=read('dog-boss-result-report.css');
  for(const token of ['dog-boss-report-visible','br-grade-scale','br-attack','br-replay-stage',
   'br-dialog','br-scroll','br-footer-caption',
   'prefers-reduced-motion'])assert.ok(css.includes(token),token);
- assert.doesNotMatch(src,/\bfetch\s*\(|XMLHttpRequest|localStorage|firebase|Math\.random\(/i);
+ assert.doesNotMatch(src,/\bfetch\s*\(|XMLHttpRequest|firebase|Math\.random\(/i);
+ assert.match(src,/localStorage/,'E-03 saves only the local confirmation receipt');
  for(const file of ['dog-boss10.html','dog-group-boss.html']){
   const html=read(file);
   assert.match(html,/id="boss-result-report"/);
