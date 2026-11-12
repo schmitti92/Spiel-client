@@ -161,18 +161,20 @@
    }
   }
   const mine=members.find(m=>m.uid===account);
+  const needsHeroChoice=!!mine&&mine.heroLocked!==true;
   const pendingOp=account?pending(account):null;
   const cooldownExpired=state==='cooldown'&&cooling()===0;
-  const canReady=logged&&view?.isMember&&view?.eligible&&
+  const canReady=logged&&view?.isMember&&view?.eligible&&!needsHeroChoice&&
    ((state==='waiting'&&!mine?.ready)||cooldownExpired);
   const ready=$('ready-button');
   ready.hidden=state==='fighting'||state==='victory';
   ready.disabled=!canReady||working||!!pendingOp;
-  ready.textContent=state==='cooldown'&&cooling()===0?
+  ready.textContent=needsHeroChoice?'🎭 Erst Charakter auf der 100-Tore-Karte wählen':
+   state==='cooldown'&&cooling()===0?
    '⚔️ Neuen Versuch vorbereiten':'✅ Ich bin bereit';
   const start=$('start-button');
   start.hidden=state!=='waiting'||!mine?.ready;
-  start.disabled=working||!!pendingOp||!logged||!view?.canStart;
+  start.disabled=working||!!pendingOp||!logged||!view?.canStart||needsHeroChoice;
   start.textContent='⚔️ Mit '+members.filter(m=>m.ready).length+
    ' Helden starten';
   const reaction=$('react-button');
