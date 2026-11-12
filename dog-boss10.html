@@ -19,6 +19,7 @@
  <link rel="stylesheet" href="./dog-boss-reaction-precision.css?v=20261111-kontra9-v1">
  <link rel="stylesheet" href="./dog-boss-color-target.css?v=20261112-color10-v1">
  <link rel="stylesheet" href="./dog-boss-math-endgame.css?v=20261111-math-v1">
+ <link rel="stylesheet" href="./dog-boss-legendary-arena.css?v=20261112-legendary-v1">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
  <script src="./dog-boss-mini-ui.js?v=20261112-color10-v1" defer></script>
@@ -119,22 +120,25 @@
     <div><small>⚒️ SIEGBELOHNUNG</small><strong>Schmiede Lv. 2</strong></div>
    </div>
   </header>
-  <section class="arena arena-live" id="arena" aria-labelledby="boss-name">
+  <section class="arena arena-live" id="arena" data-arena-design="legendary" aria-labelledby="boss-name">
    <header class="arena-top live-arena-heading">
     <div class="live-heading-text"><small>✦ 100 TORE · GEMEINSAME BOSS-ARENA ✦</small><h2 id="boss-name">Der Aschewächter</h2></div>
     <div class="status-pill" id="phase">Verbinde …</div>
    </header>
    <div class="live-metrics">
     <div class="combat-meter live-hp">
+      <span class="live-vital-crest boss-crest" aria-hidden="true">🐉</span>
      <div class="live-meter-label"><span>🐉 BOSS-LP</span><strong id="boss-hp">– LP</strong></div>
      <div class="live-hp-track" role="progressbar" aria-label="Boss-Lebenspunkte" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" id="live-boss-hp-track"><span id="live-hp-fill"></span></div>
     </div>
     <div class="live-team-shield" aria-label="Lebenspunkte aller kämpfenden Helden zusammen">
+      <span class="live-vital-crest team-crest" aria-hidden="true">🛡️</span>
      <div class="live-shield-label"><span>❤️ GRUPPEN-LP</span><strong id="live-shield-value">– / – LP</strong></div>
      <div class="live-shield-track" role="progressbar" aria-label="Gruppen-Lebenspunkte" aria-valuemin="0" aria-valuenow="0" aria-valuemax="100" id="live-group-hp-track"><span id="live-shield-fill"></span></div>
       <div id="live-hero-health" class="live-hero-health" aria-label="Lebenspunkte je Held"></div>
     </div>
     <div class="live-timer">
+      <span class="live-vital-crest time-crest" aria-hidden="true">⌛</span>
      <div class="timer-row"><span>⏱️ KAMPFZEIT</span><strong id="timer" role="timer">01:39</strong></div>
      <div class="timer-bar"><span id="timer-fill"></span></div>
     </div>
@@ -147,6 +151,8 @@
       <div id="combat-boss-damage" class="combat-boss-damage" aria-hidden="true"></div>
       <div id="combat-team-damage" class="combat-team-damage" aria-hidden="true"></div>
      <div class="combat-stage" aria-hidden="true">
+      <span class="combat-arena-aura"></span>
+      <span class="combat-team-aegis"></span>
       <div class="combat-boss" id="combat-boss"><div class="monster-art"></div><div class="monster-shadow"></div></div>
       <div id="combat-hero-line" class="combat-hero-line"></div>
       <div class="combat-sword-trail"></div><div class="combat-magic-beam"></div>
