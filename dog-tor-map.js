@@ -177,7 +177,7 @@
   const selector=$('hero-selection');
    const mine=team.find(m=>m.isMe);
    selector.hidden=!mine;
-   for(const choice of selector.querySelectorAll('[data-hero-class]')){
+   for(const choice of (selector.querySelectorAll?.('[data-hero-class]')||[])){
     const selected=choice.dataset.heroClass===(mine?.heroClass||'krieger');
     choice.setAttribute('aria-pressed',String(selected));
     choice.disabled=heroSaving||!mine;
