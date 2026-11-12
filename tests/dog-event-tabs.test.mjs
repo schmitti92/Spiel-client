@@ -16,5 +16,6 @@ test('Tab destinations exist and navigation does not request additional data',()
   assert.ok(fs.existsSync(new URL(name,root)),name);
  }
  assert.doesNotMatch(script,/\bfetch\s*\(|onSnapshot|getIdToken|firebase|firestore/i);
- assert.match(script,/groupBosses\.some/);
+ assert.doesNotMatch(script,/Boss 10|Bosse 20–100|groupBosses|dog-boss10\\.html/);
+ assert.match(script,/Tor-1-Arena/);
 });

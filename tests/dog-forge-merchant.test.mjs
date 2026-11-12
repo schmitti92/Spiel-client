@@ -21,5 +21,5 @@ test('Equipment and both skill areas stay visible together',()=>{
 });
 test('Nine pages use shared updated navigation',()=>{
  for(const p of ['dog-expedition.html','dog-tor-map.html','dog-forge.html','dog-merchant.html','dog-ascension.html','dog-boss10.html','dog-group-boss.html','dog-boss.html','dog-private-preview.html'])
-  assert.match(read(p),/dog-event-tabs\.js\?v=20261112-merchant1/);
+  assert.match(read(p),/dog-event-tabs\.js\?v=20261112-boss-from-map1/);
 });
