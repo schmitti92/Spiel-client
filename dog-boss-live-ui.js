@@ -39,7 +39,7 @@
    feedback:$(root,'#live-feedback'),prompt:$(root,'#live-mini-prompt'),
    promptTitle:$(root,'#live-mini-prompt-title'),
    promptDetail:$(root,'#live-mini-prompt-detail'),
-   minigame:$(root,'#mini-game'),
+   minigame:$(root,'#mini-game'),challenge:$(root,'.live-challenge'),
    hpFill:$(root,'#live-hp-fill'),hit:$(root,'#live-hit-effects'),
    boss:$(root,'#combat-boss'),combat:$(root,'#combat-scene'),
    shieldFill:$(root,'#live-shield-fill'),shieldValue:$(root,'#live-shield-value'),
@@ -240,6 +240,7 @@
    const next=current.rounds[index+1],windowEnd=next?.startMs??
     (Number(view?.miniGames?.exchange?.durationMs)||50000);
    const totalMs=windowEnd-round.endMs;
+   const sceneMs=Math.max(0,current.elapsed-round.endMs);
    const remaining=Math.max(0,windowEnd-current.elapsed);
    const fmt=new Intl.NumberFormat('de-DE');
    if(nodes.cinematic?.style?.setProperty)
@@ -248,13 +249,18 @@
    text(nodes.cineCountdown,(remaining/1000).toFixed(1).replace('.',',')+' s');
    const grand=(view?.miniGames?.version||0)>=7&&totalMs>=14000;
    const finalCountdown=grand&&remaining<=5000;
+   // All four 14s scenes land their strike at the shared server-clock midpoint.
+   const strikeMid=totalMs/2;
+   const cinematicPhase=!grand?'legacy':finalCountdown?'countdown':
+    sceneMs<strikeMid-1400?'prepare':sceneMs<strikeMid+1400?'impact':'result';
+   nodes.challenge?.classList?.toggle('is-cinematic-countdown',finalCountdown);
+   nodes.challenge?.classList?.toggle('is-defense',finalCountdown&&defensive);
+   nodes.showOverlay?.style?.setProperty?.('--cine-show-offset','-'+sceneMs+'ms');
    // Let players read confirmed team damage and LP before the final 5s show.
    if(nodes.showOverlay)nodes.showOverlay.hidden=!finalCountdown;
    if(nodes.cinematic?.dataset){
     nodes.cinematic.dataset.showVersion=grand?'7':'legacy';
-    nodes.cinematic.dataset.showPhase=grand?
-     (remaining<=5000?'countdown':current.elapsed-round.endMs<4700?'impact':'result'):
-     'legacy';
+    nodes.cinematic.dataset.showPhase=cinematicPhase;
    }
    nodes.cinematic?.style?.setProperty?.('--cine-show-duration',totalMs+'ms');
    nodes.cinematic?.style?.setProperty?.('--cine-show-offset',
@@ -274,7 +280,11 @@
    }
    if(nodes.cineProgress)nodes.cineProgress.style.width=
     Math.max(0,Math.min(100,(1-remaining/totalMs)*100)).toFixed(1)+'%';
-   const title=defensive?'🛡️ DER BOSS GREIFT AN!':'⚔️ UNSER TEAM SCHLÄGT ZU!';
+   const title=defensive?
+    (cinematicPhase==='prepare'?'🛡️ DER BOSS HOLT AUS!':
+     cinematicPhase==='impact'?'💥 DER BOSS GREIFT AN!':'🛡️ UNSERE ABWEHR'):
+    (cinematicPhase==='prepare'?'⚔️ DAS TEAM SAMMELT KRAFT!':
+     cinematicPhase==='impact'?'💥 JETZT TRIFFT UNSER TEAM!':'⚔️ UNSER TEAMERGEBNIS');
    text(nodes.cineHeader,title);
    text(nodes.cineAction,defensive?'SCHUTZSCHILD AKTIV':'GEMEINSAMER EXTRAANGRIFF');
    if(nodes.cinematic){
@@ -355,6 +365,8 @@
    if(!scene){
     if(nodes.cinematic)nodes.cinematic.hidden=true;
     if(nodes.showOverlay)nodes.showOverlay.hidden=true;
+    nodes.challenge?.classList?.remove('is-cinematic-countdown');
+    nodes.challenge?.classList?.remove('is-defense');
     lastShowTick='';
     if(nodes.announcement)nodes.announcement.hidden=true;
     if(nodes.combat?.classList){
