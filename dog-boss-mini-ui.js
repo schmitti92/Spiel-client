@@ -478,7 +478,7 @@
       '🐉 Der Boss bereitet sich vor':'⚔️ Finaler Angriff';
      hint.textContent=elapsed<games.rounds[0].startMs?
       'Fünf Herausforderungen beginnen gleich':
-      games.version>=12&&elapsed<games.rounds[4].startMs?
+      games.version>=12&&games.rounds[4]&&elapsed<games.rounds[4].startMs?
        'Bereite dich auf den fünften und letzten Angriff vor!':
       'Die Ergebnisse werden vom Server berechnet';
      status.textContent='';
