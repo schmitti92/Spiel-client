@@ -112,6 +112,29 @@ for(const file of ['dog-boss10.js','dog-group-boss.js']){
  });
 }
 
+for(const file of ['dog-boss10.js','dog-group-boss.js']){
+ test(file+': S-03 POST response replaces redundant immediate GET, but polling resumes',async()=>{
+  const h=simulate(file);
+  await spin();
+  assert.equal(h.getCount(),1);
+  h.allowPost(true);
+  h.tick(2000);await spin();
+  assert.equal(h.getCount(),1,'the pre-action refresh throttle still applies');
+  h.submit(0,1);await spin();
+  assert.equal(h.postCount(),1,'the minigame action is sent once');
+  const afterPost=h.getCount();
+  h.tick(1500);await spin();
+  assert.equal(h.getCount(),afterPost,
+   'already-current POST snapshot prevents an unnecessary GET');
+  h.tick(2200);await spin();
+  assert.equal(h.getCount(),afterPost+1,
+   'regular fresh status GET still runs after the safety interval');
+  h.refresh();await spin();
+  assert.equal(h.getCount(),afterPost+2,
+   'manual forced refresh remains possible immediately');
+ });
+}
+
 test('Boss 10 and group bosses reconcile the shared opening sooner without excess idle reads',()=>{
  for(const arena of ['dog-boss10.js','dog-group-boss.js']){
   const source=readFileSync(new URL('../'+arena,import.meta.url),'utf8');
