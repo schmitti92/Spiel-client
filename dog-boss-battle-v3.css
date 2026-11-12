@@ -4,7 +4,7 @@
  */
 .stage[data-screen="battle"]>.arena-live[data-arena-design="v3"]{
  --v3-gold:#f0c37d;--v3-ice:#a5ddff;
- display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;
+ display:grid;grid-template-rows:auto auto minmax(0,1fr);
  width:100%;height:100%;min-height:0;min-width:0;
  gap:clamp(5px,.9vh,11px);margin:0;
  padding:clamp(7px,1vw,15px);
@@ -265,16 +265,21 @@
  inset:0;z-index:7;width:100%;height:100%;display:flex;align-items:center;justify-content:center;
 }
 .arena-live[data-arena-design="v3"] .v3-combat-log{
- display:grid;grid-template-columns:auto minmax(0,1fr);
- align-items:center;gap:10px;min-height:31px;min-width:0;padding:5px 12px;
- border-radius:10px;border:1px solid #ac885e82;
- background:#151c30dd;color:#e9ddca;
+ position:absolute;z-index:11;left:12px;right:87px;top:10px;
+ display:flex;align-items:center;gap:clamp(6px,1vw,12px);
+ min-width:0;min-height:28px;max-height:37px;padding:4px 9px;
+ border-radius:9px;border:1px solid #ac885e82;
+ background:#131b2ce0;color:#e9ddca;
+ box-shadow:0 4px 12px #03050a83;pointer-events:none;
 }
-.arena-live[data-arena-design="v3"] .v3-combat-log>strong{font:900 clamp(10px,.98vw,14px) system-ui;color:#ffe0a4;white-space:nowrap}
+.arena-live[data-arena-design="v3"] .v3-combat-log>strong{
+ font:900 clamp(9px,.83vw,12px) system-ui;color:#ffe0a4;white-space:nowrap;
+}
 .arena-live[data-arena-design="v3"] .live-damage-recap-list{
- overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
- font:800 clamp(10px,1vw,14px) system-ui;min-width:0;font-variant-numeric:tabular-nums;
+ flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+ font:800 clamp(10px,.9vw,13px) system-ui;min-width:0;font-variant-numeric:tabular-nums;
 }
+.arena-live[data-arena-design="v3"] .v3-actor-action[hidden]{display:none!important}
 .arena-live[data-arena-design="v3"] .v3-compat{display:none!important}
 .stage[data-screen="battle"]>.squad[hidden]{display:none!important}
 @keyframes v3-boss-breathe{
@@ -298,7 +303,7 @@
  body:has(.stage[data-screen="battle"]){overflow-y:auto}
  .stage[data-screen="battle"]{height:auto;max-height:none}
  .stage[data-screen="battle"]>.arena-live[data-arena-design="v3"]{
-  height:auto;max-height:none;grid-template-rows:auto auto auto auto;
+  height:auto;max-height:none;grid-template-rows:auto auto auto;
  }
  .arena-live[data-arena-design="v3"] .live-arena-heading{padding:6px 85px 7px 12px;justify-content:flex-start;min-height:54px}
  .arena-live[data-arena-design="v3"] .live-heading-text{text-align:left}
@@ -308,7 +313,9 @@
  .arena-live[data-arena-design="v3"] .combat-scene{height:clamp(285px,45vw,460px);min-height:285px}
  .arena-live[data-arena-design="v3"] .live-challenge{min-height:300px}
  .arena-live[data-arena-design="v3"] .live-challenge-content{min-height:230px}
- .arena-live[data-arena-design="v3"] .v3-combat-log{min-height:34px}
+ .arena-live[data-arena-design="v3"] .v3-combat-log{
+  top:8px;left:8px;right:72px;min-height:28px;
+ }
 }
 @media(max-width:620px){
  .arena-live[data-arena-design="v3"] .live-arena-heading{padding:7px 65px 7px 8px}
@@ -322,7 +329,10 @@
  .arena-live[data-arena-design="v3"] .combat-boss{width:43%}
  .arena-live[data-arena-design="v3"] .combat-hero-line{height:72%}
  .arena-live[data-arena-design="v3"] .v3-actor-action{left:5px;right:64px;font-size:9px}
- .arena-live[data-arena-design="v3"] .v3-combat-log{grid-template-columns:minmax(0,1fr);gap:3px;padding:6px 8px}
+ .arena-live[data-arena-design="v3"] .v3-combat-log{
+  top:6px;left:6px;right:66px;gap:4px;padding:4px 6px;
+ }
+ .arena-live[data-arena-design="v3"] .v3-combat-log>strong{font-size:8px}
  .arena-live[data-arena-design="v3"] .live-damage-recap-list{font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){
