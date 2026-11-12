@@ -93,7 +93,21 @@
      .reduce((n,e)=>n+num(e.amount),0),
     taken:stageHits.filter(e=>e.kind==='boss-strike')
      .reduce((n,e)=>n+num(e.amount),0),
-    defensive:!!s.defensive};
+    defensive:!!s.defensive,
+    // Only already-verified answers and cinematic effects. A bonus earned
+    // from the minigame is separate from the actual boss-LP strike.
+    persons:(s.playerResults||[]).map(p=>{
+     const hit=stageHits.filter(e=>e.uid===p.uid&&e.kind===
+      (s.defensive?'boss-strike':'hero-strike'))
+      .reduce((sum,e)=>sum+num(e.amount),0);
+     return {uid:p.uid,name:cap(names.get(p.uid)?.name||'Held'),
+      correct:num(p.correct),max:num(p.max)||num(
+       view.miniGames?.rounds?.[s.round]?.maxSteps),
+      fallen:p.fallen===true,hit,
+      savedHp:Number.isFinite(p.savedHp)?num(p.savedHp):null,
+      bonusDamage:Number.isFinite(p.bonusDamage)?num(p.bonusDamage):null,
+      protectionPoints:Number.isFinite(p.protectionPoints)?num(p.protectionPoints):null};
+    })};
   });
   const finisher=strikes.find(e=>e.kind==='team-finisher')||null;
   const personalFinales=strikes.filter(e=>e.kind==='hero-finisher');
@@ -503,7 +517,25 @@
      '🛡️ +'+fmt.format(s.restored)+' Boss-LP durch Glücksabwehr':
      s.defensive?'🛡️ '+fmt.format(s.taken)+' LP erlitten':
      '⚔️ '+fmt.format(s.damage)+' LP in den sichtbaren Trefferphasen');
-    row.append(top,track,impact);return row;
+    row.append(top,track,impact);
+    if(s.persons?.length){
+     const personal=make('div','br-round-personal');
+     for(const p of s.persons){
+      const details=p.fallen?'💀 ausgefallen':
+       s.defensive?(Number.isFinite(p.savedHp)?
+        '🛡️ '+fmt.format(p.savedHp)+' LP geschützt':
+        '🛡️ '+fmt.format(p.protectionPoints||0)+' Schutzpunkte')+
+        ' · −'+fmt.format(p.hit)+' LP erhalten':
+        (Number.isFinite(p.bonusDamage)?
+         '🔥 +'+fmt.format(p.bonusDamage)+' Bonus erspielt · ':'')+
+         '⚔️ −'+fmt.format(p.hit)+' Boss-LP';
+      personal.append(make('small','br-round-player',
+       p.name+' · '+fmt.format(p.correct)+'/'+fmt.format(p.max)+
+       ' richtig · '+details));
+     }
+     row.append(personal);
+    }
+    return row;
    });
    node('br-rounds').replaceChildren(...stageNodes);
    node('br-advice-lines').replaceChildren(...tips.map(t=>make('p','br-advice-item',t)));
