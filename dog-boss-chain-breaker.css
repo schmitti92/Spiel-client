@@ -96,11 +96,11 @@
  pointer-events:none;
 }
 .arena-live[data-arena-design="v3"] .mini-chain-lane.is-glowing{
- color:#fff7cf;border:2px solid #ffc163;
- background:linear-gradient(90deg,#6a3e2b8f,#3e3344e8,#7e4c2fae);
- text-shadow:0 0 11px #ffaa46,0 1px 3px #1f1420;
- box-shadow:0 0 14px #f79a4c70,inset 0 0 20px #ed8f413c;
- animation:chain-breath .72s ease-in-out infinite alternate;
+ color:#fff7cf;border:3px solid #ffe29a;
+ background:linear-gradient(90deg,#7b421cc9,#ab6238eb,#a55a23cc);
+ text-shadow:0 0 16px #fff0a5,0 1px 3px #1f1420;
+ box-shadow:0 0 26px #ffc75bad,inset 0 0 24px #ffda7169;
+ animation:chain-breath .8s ease-in-out infinite alternate;
 }
 .arena-live[data-arena-design="v3"] .mini-chain-lane.is-glowing::after{
  opacity:1;transform:translate(-50%,-50%) scale(1.3);
@@ -171,4 +171,46 @@
  .arena-live[data-arena-design="v3"] .mini-chain-lane::after{
   animation:none!important;transition:none!important;
  }
+}
+
+/* v14: instructions and ten easy-to-read attempts. Tap OR swipe works. */
+.arena-live[data-arena-design="v3"] .mini-tactical.is-chain-breaker .mini-chain-instruction{
+ color:#fff4cd;background:linear-gradient(100deg,#72431eeb,#56371fef);
+ border:2px solid #e8b370;letter-spacing:.015em;
+ font:900 clamp(12px,1.45vw,19px)/1.3 system-ui;
+ text-shadow:0 0 12px #ffcf83a1;
+}
+.arena-live[data-arena-design="v3"] .mini-chain-lane.is-glowing::before{
+ filter:drop-shadow(0 0 7px #ffd388) brightness(1.6);
+}
+.arena-live[data-arena-design="v3"] .mini-chain-lane.is-glowing::after{
+ width:55%;height:85%;background:radial-gradient(ellipse,
+  #fffcd280 0 10%,#ffe37e88 20%,#f8912d44 44%,transparent 75%);
+}
+.arena-live[data-arena-design="v3"] .mini-chain-progress{
+ display:grid;grid-template-columns:repeat(10,minmax(0,1fr));
+ width:100%;gap:clamp(3px,.4vw,6px);
+ padding:4px 2px 2px;
+}
+.arena-live[data-arena-design="v3"] .mini-chain-mark{
+ display:flex;align-items:center;justify-content:center;
+ min-height:clamp(22px,3.2vh,30px);
+ border-radius:6px;border:1px solid #8da0b17c;
+ background:#101c30d9;color:#94a9c5;
+ font:850 clamp(10px,1vw,14px) system-ui;
+ font-variant-numeric:tabular-nums;
+}
+.arena-live[data-arena-design="v3"] .mini-chain-mark.is-current{
+ border:2px solid #ffdb83;color:#fff1cc;
+ box-shadow:0 0 10px #f4ad5266;
+}
+.arena-live[data-arena-design="v3"] .mini-chain-mark.is-correct{
+ background:#163e2dd9;border-color:#69ddb1;color:#b7ffe6;
+}
+.arena-live[data-arena-design="v3"] .mini-chain-mark.is-wrong{
+ background:#3c1e2cdd;border-color:#ed8a88;color:#ffb0ae;
+}
+@media (orientation:landscape) and (max-height:550px){
+ .arena-live[data-arena-design="v3"] .mini-chain-progress{padding:1px 2px 0}
+ .arena-live[data-arena-design="v3"] .mini-chain-mark{min-height:18px;font-size:9px}
 }
