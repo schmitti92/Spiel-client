@@ -53,7 +53,7 @@ test('v9 draws an exact narrow hitbox and triggers on pointerdown at real synchr
  const bar=body.children.find(e=>e.className.includes('mini-meter'));
  assert.ok(bar.className.includes('is-precision'));
  assert.equal(bar.style['--timing-width'],'11.6%');
- const button=body.children.find(e=>e.className.includes('mini-reaction'));
+ const button=body.children.find(e=>e.className==='mini-choice mini-reaction');
  assert.ok(button);
  button.dispatch('pointerdown',{isPrimary:true});
  button.click();
@@ -69,7 +69,7 @@ test('M-04 v14 records three real taps immediately, submitting only once',async(
  view.miniGames.rounds[3].zoneRadius=.058;
  setNow(epoch+77010);ui.update(view,epoch+77010,true);
  const body=root.children[1];
- const button=body.children.find(e=>e.className.includes('mini-reaction'));
+ const button=body.children.find(e=>e.className==='mini-choice mini-reaction');
  const marks=body.children.find(e=>e.className==='mini-reaction-steps').children;
  assert.equal(marks.length,3);
  const taps=[];
@@ -106,7 +106,7 @@ test('M-04 v14 records three real taps immediately, submitting only once',async(
 test('M-04 ignores double taps and flushes two captures once at round end',async()=>{
  const {root,ui,view,requests,setNow}=setup(14);
  setNow(epoch+77500);ui.update(view,epoch+77500,true);
- const button=root.children[1].children.find(e=>e.className.includes('mini-reaction'));
+ const button=root.children[1].children.find(e=>e.className==='mini-choice mini-reaction');
  button.dispatch('pointerdown',{isPrimary:true});
  button.click();
  setNow(epoch+77700);button.dispatch('pointerdown',{isPrimary:true});
@@ -130,7 +130,7 @@ test('previous v8 reaction remains wide and does not require a tap timestamp',as
  assert.equal(root.classList.contains('is-precise-reaction'),false);
  const body=root.children[1],bar=body.children.find(e=>e.className.includes('mini-meter'));
  assert.ok(!bar.className.includes('is-precision'));
- const button=body.children.find(e=>e.className.includes('mini-reaction'));
+ const button=body.children.find(e=>e.className==='mini-choice mini-reaction');
  button.click();await Promise.resolve();await Promise.resolve();
  assert.equal(requests.length,1);
  assert.equal(requests[0].tapAt,null);
