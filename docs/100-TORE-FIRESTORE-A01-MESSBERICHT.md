@@ -1,0 +1,108 @@
+# A-01 – Firestore-Verbrauch: Messbericht und technische Ausgangsbilanz
+
+**Stand:** 12. November 2026 · **Status:** technische Baseline im Offline-Test erhoben, **reale Firebase-Abrechnung noch nicht gemessen**.
+
+**Geltungsbereich:** Neue Boss-10-Kämpfe, v14, 135 Sekunden, fünf Minispiele; gleiche grundlegende Firestore-Abläufe gelten für andere Gruppenbosse. Für einen realen Spieleabend wurden bewusst **keine** Testkämpfe auf Produktionskonten ausgeführt und **keine** Spielstände verändert.
+
+## 1. Was wirklich gemessen wurde – und was nicht
+
+**Gemessen:** Die konkreten `get`-/`tx.get`- sowie `tx.set`-/`tx.create`-Aufrufe des unveränderten Backend-API-Codes. Dafür führt der automatische Test `tests/dog-firestore-a01.test.js` aus [serverfinal](https://github.com/schmitti92/serverfinal/blob/main/tests/dog-firestore-a01.test.js) reale HTTP-Handler und fünf Minispiel-Programmpfade gegen eine **isolierte, zählende In-Memory-Firestore-Attrappe** aus. Keine Netzwerkverbindung zu Firestore, keine Gebühren, keine Produktionsänderung. **Automatischer Test erfolgreich:** [Server tests #43244351339](https://github.com/schmitti92/serverfinal/actions/runs/43244351339), 574 Tests bestanden, 0 fehlgeschlagen.
+
+**Nicht gemessen:** Die *tatsächlich abgerechneten* Firestore-Reads/Writes im Projekt `spiel-barik`. Die Firebase-/Cloud-Usage-Metriken sind mit den aktuellen verbundenen Werkzeugen nicht auslesbar. Die angefragten Render-Metriken `http_request_count`/`http_latency` lieferten keine Datenpunkte für den abgefragten Zeitraum; dies bedeutet **nicht „0 Requests“**. Render-App-Logs bestätigen jedoch, dass Firestore im Server aktiviert ist. Render-HTTP-Metriken wären ohnehin **nicht identisch** mit Firestore-Dokumentoperationen.
+
+**Deshalb:** Die Zahlen unten sind **reproduzierbare API-Codepfad-Zählungen**, keine Firebase-Produktions-Verbrauchswerte oder Kostenrechnungen.
+
+## 2. Reproduzierbare Ausgangszahlen des isolierten Integrationstests
+
+### A. Vollständiger Boss-10-Kampf: 1 / 2 / 3 echte Spieler
+
+Je vollständigem Szenario wurden alle fünf Minispiele mit erfolgreichen Eingaben durchgeführt; je Held **9 Minispiel-POSTs** (1× Mathe-Bündel, 3× Ausweichen, 1× Farbe/Symbole-Bündel, 3× Reaktion, 1× Kettenbrecher-Bündel). Es gab die nötigen `ready`-/`start`-Aktionen, **einen** `finish`-POST und lediglich **zwei** `GET`-Statusabfragen. Keine Verbindungsprobleme, keine zusätzlichen Browser-GETs, kein Firestore-Profil-Cache und keine SDK-Transaktionswiederholungen.
+
+| Messszenario | GETs | POSTs | Firestore-ähnliche Dokument-Reads | Dokument-Writes | Transaktionen |
+|---|---:|---:|---:|---:|---:|
+| **1 echter Held** | 2 | 12 | **41** | **24** | 12 |
+| **2 echte Helden** | 2 | 22 | **72** | **44** | 22 |
+| **3 echte Helden** | 2 | 31 | **100** | **62** | 31 |
+
+**Wichtige Aufschlüsselung:**
+
+- **Normales Boss-GET:** 2 Reads (Team, Fortschrittsdokument), 0 Writes, sofern kein Bot-Fortschritt und kein überfälliger Kampfabschluss gespeichert werden.
+- **Frischer Boss-POST:** normalerweise 3 Reads (Idempotenz-Quittung, Team, Fortschritt), **2 Writes** (Fortschritt + Quittung). Zusätzliche Reads entstehen beim tatsächlichen Start für das Einfrieren der Held-Ausrüstung.
+- **3-Spieler-Kampf:** 27 Minispiel-POSTs erzeugen allein **81 Reads + 54 Writes**; 3 Bereitschafts-POSTs (einschließlich 3 Equipment-Reads) weitere 12 Reads + 6 Writes; ein Abschluss-POST weitere 3 Reads + 2 Writes; 2 GETs weitere 4 Reads.
+- **Duplikat mit identischer Request-ID:** 3 Reads bei Replay, aber im wiederholten Vorgang keine neuen Writes, sofern der Quittungsdatensatz bereits existiert. Fehlgeschlagene Transaktionen und SDK-Retries können reale Reads dennoch beeinflussen.
+
+### B. Bosskampf mit einem echten Spieler sowie Nova und Titan
+
+Der vollständige 135-s-Kampf lief mit **einem echten Spieler und zwei serverseitigen Testspielern**. Es gab einen `ready`-POST, neun echte Minispiel-POSTs und **29 GETs** (Startstatus plus Abfragen in Schritten von fünf Sekunden bis zum Kampfabschluss). Die Testspieler wurden über den realen Server-Algorithmus auf den GETs weiterberechnet.
+
+| Messszenario | Gesamt-Requests | GETs | Reads | Writes | Transaktionen |
+|---|---:|---:|---:|---:|---:|
+| **1 Mensch + Nova + Titan** | 39 | 29 | **100** | **31** | 21 |
+
+- **11 der 29 GETs** führten wegen fortgeschrittener Botaktionen oder Kampfabschluss eine Transaktion mit **je 1 weiterem Read und 1 Write** auf dem gemeinsamen Fortschrittsdokument aus.
+- Bot-Aktionen werden im selben Fortschrittsdokument gesammelt, nicht als separate POST-Quittungen pro Bot-Tipp.
+- Die **29 GETs in 135 Sekunden** sind ein **festes Testschema**, keine Messung der realen Browser-Abfragefrequenz.
+- Ausgeschlossen bleiben zusätzliche Profil-Lookups, die Live-Pilot-Eigentümerprüfung, andere gleichzeitig geöffnete Seiten sowie Firestore-Retries.
+
+### C. Leerlauf und wiederholte Statusabfragen
+
+| Isoliertes Szenario | GETs | Dokument-Reads | Dokument-Writes |
+|---|---:|---:|---:|
+| Wartende Seite: **20 GETs über 5 Minuten** bei 15-s-Abstand | 20 | **40** | 0 |
+| 90 Status-GETs ohne Zustandsänderung | 90 | **180** | 0 |
+
+Damit ist der wesentliche Zusammenhang bestätigt: **Jeder zusätzliche unveränderte Boss-GET erzeugt mindestens zwei Datenbank-Leseoperationen.** Insbesondere bei mehreren gleichzeitig geöffneten Browsern kann das Polling den Verbrauch dominieren.
+
+## 3. Produktionsseitige Zusatzkosten, die im Offline-Test fehlen
+
+Diese Faktoren sind im produktiven Code vorhanden, aber **nicht im obigen Zahlenwert enthalten**:
+
+1. **Spieleridentität:** `profile-stats.js` liest das Firestore-Profil bei Cache-Miss; pro UID wird es auf einem Serverprozess 15 Sekunden zwischengespeichert. `Firebase Auth.verifyIdToken(idToken,true)` läuft trotzdem bei jeder Anfrage – das ist keine Firestore-Dokumentlesung, kann aber eigene Latenz verursachen.
+2. **Privater Testzugang:** `dog-live-bots.js` liest das Live-Pilot-Eigentümer-Dokument bei abgelaufenem 30-s-Servercache, wenn die geschützten Gates-Routen aufgerufen werden.
+3. **Browser-Polling:** Der Client prüft alle 250 ms den lokalen Zeitplan, sendet aber nur bei Ablauf der dynamischen GET-Frist einen HTTP-Request. Im Kampf unterscheidet er u. a. normale Minispiele (ca. 2,8 Sekunden, **außerhalb von Interludes zusätzliche 3-s-Drossel**) und Zwischenphasen (anfänglich ca. 0,85 Sekunden, später ca. 2,8 Sekunden). Andere geöffnete Karten-/Schmiedeseiten erzeugen eigene Zugriffe.
+4. **GET mit Zustandsänderung:** Live-Bots und überfällige Abschlüsse lösen eine weitere Transaktion aus und können auf GETs tatsächlich Writes produzieren.
+5. **Weitere Schreibvorgänge:** Torfortschritt, Materialbelohnungen, Schmiede, Profiländerungen oder Aktionen in Deal or No Deal gehören *nicht* zur isolierten Boss-10-Messung; bei einer Gesamtverbrauchsmessung des Firebase-Projekts müssen sie separat zugeordnet werden.
+6. **Firestore-Abrechnung:** SDK-Wiederholungen, Lesezugriffe auf fehlende Dokumente, transaktionale Konflikte, mehrere Render-Instanzen, offene Client-Listener und Firestore-interne Abrechnungsdetails können die tatsächliche Projektbilanz von diesen Methoden-Aufrufzahlen unterscheiden.
+
+## 4. Was die Daten bereits zeigen
+
+- **Haupthebel für Reads:** Anzahl der GET-Statusabfragen, jeweils mindestens 2 Dokumentreads, zuzüglich Profil- und Pilotzugriffs-Cache-Misses.
+- **Haupthebel für Writes bei echten Spielern:** Die 9 serverseitigen Minispiel-Aktionsquittungen pro Held. Bei drei echten Spielern sind es **27 Minispiel-Requests / 54 Fortschritt-und-Quittungswrites**, obwohl Mathe/Farbe/Kettenbrecher bereits gebündelt senden.
+- **Haupthebel im Bot-Test:** Polling trifft Bot-Entscheidungen; in der 29-GET-Simulation entstanden **11 schreibende GET-Transaktionen**.
+- **Gut:** Animationen, Treffereffekte, lokale Countdown-Ticks, Schlusswertung und Replay erzeugen laut den überprüften Kampfmodulen keine direkten Firestore-Writes pro Frame.
+- **Nicht voreilig sparen:** Quittungen verhindern doppelte Belohnungen, Server-Validierung verhindert manipulierte Ergebnisse. Diese Sicherheit darf nicht einem ungemessenen Reduktionsziel geopfert werden.
+- **Besonderer Vorsichtspunkt:** Der 3-s-Schutz im Frontend verhindert zusätzliche GETs außerhalb der Zwischenphasen, in den Zwischenphasen erfolgt aber schnelleres Polling. Erst **Messung der echten Abfragezahl** und des wahrgenommenen Multiplayer-Timings, dann Frequenzen ändern.
+
+## 5. Noch fehlende Produktionsmessung – A-01 ist nicht vollständig abgenommen
+
+Es wurde **kein neues Produktivspiel gestartet**, damit weder Bossfortschritt, Inventar noch Testspielerzustand beeinflusst werden. Die Firebase-Konsole beziehungsweise das Cloud-Monitoring-Dashboard für Projekt `spiel-barik` ist hier nicht direkt verbunden.
+
+### Vorzubereitende Messserie, ohne Code-/Spieländerungen
+
+1. **Firestore-Datenbank → Nutzung/Usage** im Firebase-Projekt `spiel-barik` öffnen; exakte Zähler und zeitliche Auflösung dokumentieren. Ein Projekt-Gesamtwert kann nicht nachträglich einer einzelnen Bossrunde zugeschrieben werden, wenn parallel andere Spielmodi genutzt wurden.
+2. Möglichst ohne andere aktive Spieler: 5 Minuten Leerlauf messen, **vorher/nachher** Reads/Writes sowie die genaue Start-/Enduhrzeit protokollieren.
+3. Einen 135-s-Kampf **solo**, dann **zu zweit**, danach **zu dritt** starten und für jeden Lauf getrennt Reads/Writes **vorher/nachher** notieren. Wenn die Konsole nur grobe Zeitfenster bietet, die Ergebnisse als *Projektänderung im Zeitraum* kennzeichnen und nicht als exakte „Reads pro Kampf“ ausgeben.
+4. Einen Lauf **mit Nova/Titan** separat messen, da hierbei GETs auch Writes auslösen können.
+5. Parallel die Browser-Netzwerkübersicht für `/api/dog/gates/boss10` / `/api/dog/gates/boss/:gate` nutzen, Anzahl GET/POST und Verzögerungen erfassen; diese HTTP-Zählung ist **nicht** automatisch die Firestore-Zählung.
+6. Ergebnisse in **Tabelle 6** ergänzen, erst dann **A-01 als `[x]` markieren** und das geplante mindestens-30-%-Optimierungsziel gegen die gemessene Basis bewerten.
+
+### Tabelle 6 – reale Firestore-Projektzähler (noch nicht vorhanden)
+
+| Produktionsszenario | Start/Ende | Firebase Reads vor → nach | Firebase Writes vor → nach | Andere Nutzer/Apps aktiv? | Verwertbarkeit |
+|---|---|---|---|---|---|
+| 5 Min. Leerlauf | offen | **nicht zugänglich** | **nicht zugänglich** | unbekannt | offen |
+| 135 s, 1 Held | offen | **nicht zugänglich** | **nicht zugänglich** | unbekannt | offen |
+| 135 s, 2 Helden | offen | **nicht zugänglich** | **nicht zugänglich** | unbekannt | offen |
+| 135 s, 3 Helden | offen | **nicht zugänglich** | **nicht zugänglich** | unbekannt | offen |
+| 135 s, 1 Held + Nova/Titan | offen | **nicht zugänglich** | **nicht zugänglich** | unbekannt | offen |
+
+## 6. Belege und Status
+
+- **Codepfad-Messung / automatischer Test:** [`tests/dog-firestore-a01.test.js`](https://github.com/schmitti92/serverfinal/blob/main/tests/dog-firestore-a01.test.js)
+- **Erfolgreicher Server-Testlauf:** [Server tests #43244351339](https://github.com/schmitti92/serverfinal/actions/runs/43244351339) (574 bestanden)
+- **GET/POST-Codepfad:** [`dog-boss10.js`](https://github.com/schmitti92/serverfinal/blob/main/dog-boss10.js), [`dog-group-boss.js`](https://github.com/schmitti92/serverfinal/blob/main/dog-group-boss.js)
+- **Bot-Fortschritt auf GETs:** [`dog-live-bots.js`](https://github.com/schmitti92/serverfinal/blob/main/dog-live-bots.js)
+- **15-s-Profilauthentifizierungs-Cache:** [`profile-stats.js`](https://github.com/schmitti92/serverfinal/blob/main/profile-stats.js)
+- **Kampf-Client-Polling:** [`dog-boss10.js`](https://github.com/schmitti92/Spiel-client/blob/main/dog-boss10.js), [`dog-group-boss.js`](https://github.com/schmitti92/Spiel-client/blob/main/dog-group-boss.js)
+
+**A-01 Status:** **Teilweise abgeschlossen / Live-Firebase-Zähler fehlen**. Die Offline-Codepfad-Zählung und der Engpass-Überblick sind abgeschlossen; Spiel- und Businesslogik unverändert. **Nächster Schritt:** Zugriff auf Firestore Usage / echte Vorher-Nachher-Zähler, dann A-01 endgültig abnehmen.
