@@ -190,7 +190,7 @@ test('between minigames the right panel shows each player and their confirmed pe
  assert.match(node('v3-results-rows').children[0].children[2].children[0].textContent,/37 LP geschützt/);
  assert.match(node('v3-results-rows').children[1].children[2].children[1].textContent,/8 \/ 25 Schutzpunkte/);
  assert.match(node('v3-results-total').textContent,/49 LP bewahrt/);
- ui.update(view,at+41000);
+ ui.update(view,at+43000);
  assert.equal(node('v3-round-results').hidden,true);
 });
 test('round scoreboard waits for server results and does not invent players scores',()=>{
