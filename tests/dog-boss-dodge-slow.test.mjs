@@ -152,7 +152,9 @@ test('M-02 never claims hit before the server has confirmed the dodge outcome',a
  const warning=body.children.find(x=>x.className==='mini-dodge-warning');
  assert.equal(panel.attrs['aria-live'],'polite');
  lanes[0].click();
- await Promise.resolve();await Promise.resolve();
+ // The simulated controller returns a resolved Promise, but the browser
+ // submission chain also has a catch/finally turn before the next wave.
+ for(let i=0;i<8;i++)await Promise.resolve();
  assert.equal(requests.length,1);
  assert.match(panel.textContent,/RICHTUNG ERFASST/);
  assert.ok(lanes.every(x=>x.disabled),'one direction per strike');
