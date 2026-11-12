@@ -204,3 +204,11 @@ nav a:hover,nav button:hover{background:#2f3146}
 .expedition-grid .crate-choice:enabled{box-shadow:0 4px 19px #0007}
 .expedition-grid .crate-choice:enabled:hover{transform:translateY(-3px);box-shadow:0 8px 24px #0009}
 @media(max-width:550px){.expedition-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* Server-awarded quality breakdown, independent of material rarity. */
+.resource-quality-levels{display:flex;flex-wrap:wrap;justify-content:center;gap:3px 9px;margin-top:4px}
+.resource-quality-level{font-size:11px;line-height:1.35;color:#f1dbb2}
+.resource-quality-2{color:#8fd3fa}.resource-quality-3{color:#dec0ff}
+.loot-quality-counts{display:block;width:100%;font-weight:700;color:#bcdaf4;font-size:11px;line-height:1.5}
+@media(max-width:560px){.resource-quality-levels{gap:2px 6px}.resource-quality-level{font-size:10px}}
