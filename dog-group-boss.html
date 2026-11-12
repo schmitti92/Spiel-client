@@ -18,7 +18,7 @@
  <link rel="stylesheet" href="./dog-boss-color-target.css?v=20261112-color10-v1">
  <link rel="stylesheet" href="./dog-hero-selection.css?v=20261112-onboarding1">
  <link rel="stylesheet" href="./dog-boss-math-endgame.css?v=20261111-math-v1">
- <link rel="stylesheet" href="./dog-boss-battle-v3.css?v=20261112-rebuild1">
+ <link rel="stylesheet" href="./dog-boss-battle-v3.css?v=20261112-simple-hud2">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
  <script src="./dog-boss-mini-ui.js?v=20261112-color10-v1" defer></script>
@@ -147,7 +147,11 @@
    <div class="live-battlefield">
     <div class="monster combat-scene" id="combat-scene" data-cue="waiting" data-camera="normal" aria-label="Boss links, drei wählbare Helden rechts">
      <div class="v3-turn-progress" id="v3-turn-progress" aria-hidden="true"></div>
-     <div class="v3-actor-action" id="v3-actor-action" role="status" aria-live="off">⚔️ Die Helden bereiten sich vor</div>
+     <div class="v3-actor-action" id="v3-actor-action" hidden aria-hidden="true">⚔️ Die Helden bereiten sich vor</div>
+     <div class="v3-combat-log" aria-label="Zuletzt bestätigte Schäden">
+      <strong>💥 LETZTE SCHÄDEN</strong>
+      <div id="live-recent-damage" class="live-damage-recap-list" role="log" aria-live="off">Noch keine bestätigten Treffer</div>
+     </div>
      <div class="embers" aria-hidden="true">✦ · ✧ · ✦</div>
       <div class="combat-view-controls"><button type="button" id="combat-camera" aria-label="Kamerawinkel wechseln" title="Kamera wechseln">🎥</button><button type="button" id="combat-fx" aria-label="Effekte umschalten" aria-pressed="true" title="Effekte">✨</button></div>
       <div id="combat-focus-label" class="combat-focus-label" aria-live="polite"></div>
@@ -208,10 +212,7 @@
      </div>
     </section>
    </div>
-   <div class="v3-combat-log" aria-label="Zuletzt bestätigte Treffer">
-    <strong>💥 LETZTE TREFFER</strong>
-    <div id="live-recent-damage" class="live-damage-recap-list" role="log" aria-live="off">Noch keine bestätigten Treffer</div>
-   </div>
+
    <div class="v3-compat" aria-hidden="true" hidden>
     <section class="live-cinematic" id="live-cinematic" hidden aria-label="Gemeinsame Kampf-Zwischensequenz" aria-live="polite">
      <header class="live-cinematic-header">
