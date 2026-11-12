@@ -2,7 +2,7 @@
  * Class is supplied only by the server's locked DOG hero choice.
  * Asset names, levels and cosmetic labels NEVER change server-side item IDs. */
 (()=>{'use strict';
- const tiers=[5,10,15,19,20];
+ const tiers=[10,20,30,40,50];
  const names=Object.freeze({
   krieger:Object.freeze({
    label:'⚔️ Krieger',weapon:Object.freeze(['Anfängerschwert','Stahlbreitschwert','Runenschwert','Astralklinge','Drachentöter']),

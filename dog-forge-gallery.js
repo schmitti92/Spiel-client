@@ -34,7 +34,7 @@
   weapon:['Schmiedeklinge','Stahlklinge','Runenklinge','Astralklinge','Drachenklinge'],
   armor:['Lederpanzer','Stahlpanzer','Runenrüstung','Astralrüstung','Drachenrüstung']
  });
- const stage=level=>level>=20?5:level>=16?4:level>=11?3:level>=6?2:1;
+ const stage=level=>level>=41?5:level>=31?4:level>=21?3:level>=11?2:1;
  const make=(tag,klass,content)=>{
   const e=document.createElement(tag);if(klass)e.className=klass;
   if(content!==undefined)e.textContent=String(content);return e;

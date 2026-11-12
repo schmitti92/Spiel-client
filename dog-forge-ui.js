@@ -40,11 +40,11 @@
   last_stand:{accent:'#c38cff',glow:'#c38cff60'}
  });
  const STAGES=Object.freeze([
-  {limit:5,title:'Geschmiedet',weapon:'Schmiedeklinge',armor:'Lederpanzer'},
-  {limit:10,title:'Verstärkt',weapon:'Stahlklinge',armor:'Stahlpanzer'},
-  {limit:15,title:'Runenwerk',weapon:'Runenklinge',armor:'Runenrüstung'},
-  {limit:19,title:'Arkan',weapon:'Astralklinge',armor:'Astralrüstung'},
-  {limit:20,title:'Legendär',weapon:'Drachenklinge',armor:'Drachenrüstung'}
+  {limit:10,title:'Geschmiedet',weapon:'Schmiedeklinge',armor:'Lederpanzer'},
+  {limit:20,title:'Verstärkt',weapon:'Stahlklinge',armor:'Stahlpanzer'},
+  {limit:30,title:'Runenwerk',weapon:'Runenklinge',armor:'Runenrüstung'},
+  {limit:40,title:'Arkan',weapon:'Astralklinge',armor:'Astralrüstung'},
+  {limit:50,title:'Legendär',weapon:'Drachenklinge',armor:'Drachenrüstung'}
  ]);
  const stageFor=level=>Math.max(1,STAGES.findIndex(s=>level<=s.limit)+1||5);
  const heroClass=()=>view?.heroClass||null;
@@ -266,7 +266,7 @@
    const value=levelFor(id);
    const el=$(id==='weapon'?'forge-weapon-level':'forge-armor-level');
    el.replaceChildren(document.createTextNode(String(value)));
-   const small=node('small',null,'/20');el.append(small);
+   const small=node('small',null,'/50');el.append(small);
   }
   for(const group of ['attack','defense']){
    const total=view?.items?.filter(x=>x.group===group).reduce((sum,x)=>sum+levelFor(x.id),0)||0;
@@ -390,8 +390,8 @@
    if(!merchantMode){
     const titles={
      equipment:['⚔️ Waffen & Rüstung','Deine charaktergebundene Ausrüstung'],
-     attack:['💥 Angriffsfähigkeiten','Stärke, Präzision und Spezialangriffe'],
-     defense:['🛡️ Abwehrfähigkeiten','Schutz, Ausweichen und Regeneration']
+     attack:['💥 Angriff',''],
+     defense:['🛡️ Abwehr','']
     };
     const block=node('section','forge-item-group forge-item-group-'+group);
     const title=node('div','forge-area-heading');
@@ -434,7 +434,7 @@
    if(goalId===item.id)info.append(node('small','goal-mark','🎯 Mein Schmiedeziel'));
    const q=quoteFor(item.id);
    if(q){
-    const stateText=q.maxed?'✦ Maximal':q.affordable?'✓ Bereit':'Rohstoffe fehlen';
+    const stateText=q.maxed?'✦ Maximal':q.locked?'🔒 Gesperrt':q.affordable?'✓ Bereit':'Rohstoffe fehlen';
     info.append(node('span','item-ready-tag '+(q.maxed?'maxed-tag':q.affordable?'ready-tag':'missing-tag'),stateText));
    }
    const track=node('div','item-bar'),fill=node('span');
@@ -735,6 +735,7 @@
   $('forge-retry').disabled=!currentAccount||!uid||busy;
   $('forge-refresh').disabled=busy;
   header();renderList();merchantMode?renderExchange():renderUpgrade();renderGoal();renderChronicle();renderStock();renderGallery();
+  if(!merchantMode)window.dispatchEvent(new CustomEvent('dog-forge-view',{detail:{uid,view,busy}}));
  }
  const closeModal=()=>{const dialog=$('forge-result');if(dialog.open)dialog.close();};
  function resultDialog(result,newlyUnlocked=[]){
@@ -941,6 +942,7 @@
   closeConfirm();
   void action('upgrade',requested);
  });
+ window.DogForgeReload=()=>reload();
  $('forge-refresh').addEventListener('click',()=>void reload());
  $('forge-retry').addEventListener('click',()=>{
   const op=pending(uid);

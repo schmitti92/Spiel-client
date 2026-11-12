@@ -5,7 +5,6 @@
   ['dog-tor-map.html','🗺️ 100-Tore-Karte','Alle Tore und fünf Welten'],
   ['dog-forge.html','⚒️ Schmiede','Waffen, Rüstung und Fähigkeiten'],
   ['dog-merchant.html','💎 Händler','Rohstoffe im Verhältnis 10:1 tauschen'],
-  ['dog-ascension.html','✨ Aufstieg','Neue Schmiedestufen'],
   ['dog-boss.html','🔥 Tor-1-Arena','Bisherige Testarena']
  ];
  const current=(location.pathname.split('/').pop()||'').toLowerCase();
