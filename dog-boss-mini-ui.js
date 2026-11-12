@@ -36,7 +36,7 @@
   const paintMathStage=step=>{
    if(activeVersion<5||!mathRank)return;
    const i=Math.min(7,Math.max(0,step));
-   mathRank.textContent=step>=8?'8 / 8 · ABGESCHICKT':
+   mathRank.textContent=step>=8?'8 / 8 · SERVER PRÜFT':
     'STUFE '+(i+1)+' / 8 · '+mathLevels[i];
    mathMarks.forEach((mark,index)=>{
     mark.classList.toggle('is-complete',index<step);
@@ -62,6 +62,11 @@
   root.replaceChildren(lead,body,status);
   const pumpMath=()=>{
    if(!mathQueue||mathSending)return;
+   // Avoid repeated submissions after the server's +2000ms transit grace.
+   // The controller retains the original requestId for uncertain POSTs.
+   if(typeof clockNow==='function'&&clockStamp()>mathQueue.deadline){
+    mathQueue=null;return;
+   }
    const batch=mathQueue;
    mathSending=true;
    Promise.resolve().then(()=>onSubmit(batch.round,batch.answers,0))
@@ -78,7 +83,9 @@
    if(!roundView||roundView.kind!=='math'||activeVersion<2||
       mathSent||!mathChoices.length)return;
    mathSent=true;
-   mathQueue={round:roundView.round,answers:[...mathChoices],fightStart};
+   mathQueue={kind:'math',round:roundView.round,
+    answers:[...mathChoices],fightStart,
+    deadline:fightStart+roundView.endMs+1900};
    // One server transaction for the entire sprint; no delay between taps.
    pumpMath();
   };
@@ -87,7 +94,7 @@
       targetSent||!targetChoices.length)return;
    targetSent=true;
    mathQueue={round:roundView.round,answers:[...targetChoices],fightStart,
-    kind:roundView.kind};
+    kind:roundView.kind,deadline:fightStart+roundView.endMs+1900};
    pumpMath();
   };
   const paintTargetStep=()=>{
@@ -133,6 +140,12 @@
   const choose=(value)=>{
    if(!roundView||localSubmitting||!allowed)return;
    if(activeVersion>=2&&roundView.kind==='math'){
+    // A tap after the deadline cannot alter an unpainted old question.
+    if(typeof clockNow==='function'){
+     const stamp=clockStamp();
+     if(stamp<fightStart+roundView.startMs||
+        stamp>=fightStart+roundView.endMs)return;
+    }
     // Immediate local advancement prevents network lag between questions.
     if(mathSent||mathChoices.length>=8)return;
     mathChoices.push(value);
@@ -431,6 +444,11 @@
    fightStart=Number(view?.startedAt)||0;
    // A queued response from a previous battle must never leak into the next.
    if(mathQueue&&mathQueue.fightStart!==fightStart)mathQueue=null;
+   // An authenticated GET can prove the batch survived a lost response.
+   // Retire before the pump, so there is no redundant transaction.
+   const saved=mathQueue&&view?.miniGames?.myAnswers?.[mathQueue.round]?.attempts;
+   if(mathQueue&&Array.isArray(saved)&&
+      saved.length>=mathQueue.answers.length)mathQueue=null;
    pumpMath();
    const active=view?.phase==='fighting'&&view?.miniGames?.rounds?.length>=3;
    root.hidden=!active;allowed=!!canPlay;
@@ -527,8 +545,21 @@
      attempts.length,windowOpen=true;
    if(round.kind==='math'){
     if(attempts.length)mathSent=true;
-    // Allow all eight seconds; flush remaining answers just before expiry
-    // or upon switching to the next challenge (server allows transit grace).
+    // After reconnect draw the actual server-confirmed progress, not
+    // the first puzzle. Runes indicate answered, never guessed successes.
+    if(attempts.length&&activeVersion>=5){
+     paintMathStage(attempts.length);
+     if(mathRank)mathRank.textContent=
+      attempts.length+' / 8 · SERVER BESTÄTIGT';
+     if(question)question.textContent='✅ Deine Mathe-Antworten wurden geprüft';
+     if(counter)counter.textContent=attempts.length+' / 8 bestätigt';
+     buttons.forEach(button=>{button.textContent='✓';button.disabled=true});
+     status.textContent='✅ SERVER BESTÄTIGT · '+
+      correct+' / '+attempts.length+' richtig';
+     return;
+    }
+    // No network pause between clicks; one batch just before expiry
+    // or at the change to the next synchronized challenge.
     if(elapsed>=round.endMs-120&&mathChoices.length&&!mathSent)flushMath();
    }
    if(sprint){

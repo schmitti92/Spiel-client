@@ -18,14 +18,14 @@ function element(tag){
   get firstElementChild(){return this.children[0]||null}};
 }
 const start=1_900_000_000_000;
-function fixture(version=5){
+function fixture(version=5,submit=null,clockNow=null){
  const window={},document={createElement:element,hidden:false};
  runInNewContext(source,{window,document,Date,Promise});
  const root=element('section'),requests=[];
  const ui=window.DogBossMinigames.create(root,(round,answer,step)=>{
   requests.push({round,answer,step});
-  return Promise.resolve(true);
- });
+  return submit?submit(round,answer,step):Promise.resolve(true);
+ },null,clockNow);
  const puzzles=[
   ['7 + 4 = ?',[10,11,12]],
   ['26 + 19 = ?',[44,45,46]],
@@ -79,7 +79,7 @@ test('eight progressively harder questions light eight runes without inventing c
  await Promise.resolve();await Promise.resolve();
  assert.equal(requests.length,1);
  assert.deepEqual([...requests[0].answer],[0,1,2,0,1,2,0,1]);
- assert.equal(topline.children[0].textContent,'8 / 8 · ABGESCHICKT');
+ assert.equal(topline.children[0].textContent,'8 / 8 · SERVER PRÜFT');
  assert.ok(!runes.children.some(c=>c.classList.contains('is-wrong')||c.classList.contains('is-correct')),
   'completed rune is not an unverified success');
 });
@@ -130,4 +130,64 @@ test('v6 extends only maths to 12 seconds and submits once at the later deadline
  assert.deepEqual([...requests[0].answer],[0]);
  ui.update(view,start+13000,true);
  assert.equal(root.classList.contains('is-math-battle'),false);
+});
+
+test('M-01 reconnect shows only server-confirmed math progress',async()=>{
+ const {root,ui,view,requests}=fixture(15);
+ view.miniGames.myAnswers={0:{attempts:Array.from({length:8},(_,step)=>({
+  step,correct:step%2===0
+ }))}};
+ ui.update(view,start+3500,true);
+ const body=root.children[1],hud=root.children[0].children[2];
+ assert.equal(hud.children[0].children[0].textContent,'8 / 8 · SERVER BESTÄTIGT');
+ assert.equal(hud.children[1].children.filter(x=>x.classList.contains('is-complete')).length,8);
+ assert.match(body.children[1].textContent,/wurden geprüft/);
+ assert.equal(body.children[0].textContent,'8 / 8 bestätigt');
+ assert.match(root.children[2].textContent,/4 \/ 8 richtig/);
+ for(const button of body.children.slice(2))assert.equal(button.disabled,true);
+ ui.update(view,start+3850,true);
+ await Promise.resolve();await Promise.resolve();
+ assert.equal(requests.length,0,'a confirmed batch is never resubmitted');
+});
+test('M-01 stale math taps cannot enter the next round batch',async()=>{
+ let time=start+2500;
+ const {root,ui,view,requests}=fixture(15,null,()=>time);
+ ui.update(view,start+2500,true);
+ const button=root.children[1].children[2];
+ button.click();
+ assert.equal(root.children[1].children[0].textContent,'1 / 8 beantwortet');
+ time=start+8000;
+ button.click();
+ assert.equal(root.children[1].children[0].textContent,'1 / 8 beantwortet');
+ ui.update(view,start+8010,true);
+ for(let i=0;i<8;i++)await Promise.resolve();
+ assert.equal(requests.length,1);
+ assert.deepEqual([...requests[0].answer],[0],'partial input sent once');
+});
+test('M-01 accepted GET state clears a retry queue before any duplicate POST',async()=>{
+ const {root,ui,view,requests}=fixture(15,()=>Promise.resolve(false));
+ ui.update(view,start+600,true);
+ for(let i=0;i<8;i++)root.children[1].children[2+i%3].click();
+ for(let i=0;i<8;i++)await Promise.resolve();
+ assert.equal(requests.length,1);
+ ui.update(view,start+1000,true);
+ for(let i=0;i<8;i++)await Promise.resolve();
+ assert.equal(requests.length,2,'busy controller keeps batch for later');
+ view.miniGames.myAnswers={0:{attempts:Array.from({length:8},(_,step)=>({step,correct:true}))}};
+ ui.update(view,start+1100,true);
+ ui.update(view,start+1300,true);
+ for(let i=0;i<8;i++)await Promise.resolve();
+ assert.equal(requests.length,2,'confirmation retires the pending batch');
+});
+test('M-01 stops retries when the existing server grace window has passed',async()=>{
+ let time=start+500;
+ const {root,ui,view,requests}=fixture(15,()=>Promise.resolve(false),()=>time);
+ ui.update(view,start+500,true);
+ for(let i=0;i<8;i++)root.children[1].children[2+i%3].click();
+ for(let i=0;i<8;i++)await Promise.resolve();
+ assert.equal(requests.length,1);
+ time=start+9900; // math ends at 8000; the 2-second grace ends at 10000
+ ui.update(view,time,true);
+ for(let i=0;i<8;i++)await Promise.resolve();
+ assert.equal(requests.length,1,'expired batch is not sent again');
 });
