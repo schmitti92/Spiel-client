@@ -34,7 +34,7 @@ test('unconfirmed classes display only generic equipment and never forge a class
  assert.equal(gear.normalize('unconfirmed'),null);
  assert.equal(gear.normalize(null),null);
  assert.equal(gear.image(null,'weapon',6),'./dog-forge-art/weapon-2.svg');
- assert.equal(gear.name('unconfirmed','armor',20),'Drachenrüstung');
+ assert.equal(gear.name('unconfirmed','armor',50),'Drachenrüstung');
 });
 test('all forge screens use one class registry but keep unchanged server item ids',()=>{
  const ui=fs.readFileSync(new URL('dog-forge-ui.js',base),'utf8');
