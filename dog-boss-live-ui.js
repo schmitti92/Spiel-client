@@ -69,6 +69,36 @@
    lost:Math.max(0,teamMaxHp-teamHp)}:original;
   return {bossHp,bossMaxHp,teamHp,teamMaxHp,hasTeam,heroes,pool};
  }
+ // M-07: read-only per-hero rewards from verified server projections.
+ // Earned equipment bonus is NOT the same number as boss HP already lost.
+ // An applied strike is shown only once its synchronized impact time passes.
+ function roundRewards(view,round,stage,elapsed){
+  if(!stage?.completed||!Array.isArray(stage.playerResults))return null;
+  const strikes=Array.isArray(view?.miniGames?.exchange?.strikes)?
+   view.miniGames.exchange.strikes:[];
+  const defensive=!!stage.defensive;
+  return stage.playerResults.map(result=>{
+   const relevant=strikes.filter(hit=>hit?.round===round.round&&
+    hit.uid===result.uid&&hit.kind===(defensive?'boss-strike':'hero-strike'));
+   const occurred=relevant.filter(hit=>Number.isFinite(Number(hit.atMs))&&
+    Number(hit.atMs)<=elapsed);
+   const total=occurred.reduce((sum,hit)=>sum+Math.max(0,
+    Math.round(Number(hit.amount)||0)),0);
+   return {uid:result.uid,correct:Math.max(0,Number(result.correct)||0),
+    max:Math.max(0,Number(result.max)||0),fallen:result.fallen===true,
+    earnedBonus:Number.isFinite(result.bonusDamage)?
+     Math.max(0,Math.round(result.bonusDamage)):null,
+    earnedPercent:Number.isFinite(result.bonusPercent)?
+     Math.max(0,result.bonusPercent):null,
+    savedHp:Number.isFinite(result.savedHp)?
+     Math.max(0,Math.round(result.savedHp)):null,
+    protectionPoints:Number.isFinite(result.protectionPoints)?
+     Math.max(0,Math.round(result.protectionPoints)):null,
+    appliedDamage:!defensive&&occurred.length?total:null,
+    receivedDamage:defensive&&occurred.length?total:null,
+    strikePending:relevant.some(hit=>Number(hit.atMs)>elapsed)};
+  });
+ }
  function create(root){
   if(!root)return {update:()=>{}};
   const nodes={
@@ -434,7 +464,7 @@
   }
   // Per-person interlude statistics are read-only server awards.
   // The panel reuses the minigame space while inputs are unavailable.
-  function renderRoundResults(view,round,stage){
+  function renderRoundResults(view,round,stage,elapsed){
    if(!nodes.resultsPanel||!nodes.resultsRows)return;
    const defensive=!!stage?.defensive;
    const evaluation=view?.miniGames?.exchange?.evaluation;
@@ -450,7 +480,7 @@
    text(nodes.resultsSubtitle,(defensive?
     'Persönlich erspielte Verteidigung':'Persönlich erspielter Angriff')+
     (normalized!==null?' · 20 % Gewicht in der Gesamtwertung':''));
-   const rows=Array.isArray(stage?.playerResults)?stage.playerResults:null;
+   const rows=roundRewards(view,round,stage,elapsed);
    if(!rows){
     const info=document.createElement('div');
     info.className='v3-results-row';
@@ -486,18 +516,27 @@
     reward.setAttribute?.('role','cell');
     const amount=document.createElement('strong');
     const detail=document.createElement('small');
-    if(defensive){
+    if(item.fallen){
+     amount.textContent='💀 Keine weiteren Aktionen';
+     detail.textContent='0 LP · dieser Held ist ausgefallen';
+    }else if(defensive){
      amount.textContent=Number.isFinite(item.savedHp)?
-      '+'+fmt(item.savedHp)+' LP geschützt':
-      '+'+fmt(item.protectionPoints)+' Schutzpunkte';
-     detail.textContent=Number.isFinite(item.savedHp)?
-      '+'+fmt(item.protectionPoints)+' / 25 Schutzpunkte':
-      'Abwehrbeitrag · Gruppenregel';
+      '🛡️ '+fmt(item.savedHp)+' LP geschützt':
+      '🛡️ '+fmt(item.protectionPoints)+' Schutzpunkte';
+     detail.textContent=Number.isFinite(item.receivedDamage)?
+      'Boss-Treffer: −'+fmt(item.receivedDamage)+' LP · Server bestätigt':
+      item.strikePending?'Boss-Einschlag steht noch aus':
+      Number.isFinite(item.savedHp)?
+       'Gegenüber 0/3 richtigen Abwehraktionen gerettet':
+       'Abwehrbeitrag · bestehende Gruppenregel';
     }else{
-     amount.textContent=Number.isFinite(item.bonusDamage)?
-      '+'+fmt(item.bonusDamage)+' Zusatzschaden':
-      '+'+fmt(item.bonusPercent)+' % Angriff';
-     detail.textContent='Potenzial für die Endwertung';
+     amount.textContent=Number.isFinite(item.earnedBonus)?
+      '🔥 +'+fmt(item.earnedBonus)+' Bonus-Schaden erspielt':
+      '🔥 +'+fmt(item.earnedPercent)+' % Angriffsbonus';
+     detail.textContent=Number.isFinite(item.appliedDamage)?
+      'Bestätigter Treffer: −'+fmt(item.appliedDamage)+' Boss-LP':
+      item.strikePending?'Persönlicher Schlag folgt · LP noch unverändert':
+      'Ersparter Bonus-Anteil · endgültiger Schaden folgt mit dem Kampf';
     }
     reward.replaceChildren(amount,detail);
     row.replaceChildren(label,score,reward);
@@ -517,10 +556,10 @@
      (normalized!==null?' · 🎯 Minispiel-Genauigkeit '+normalized:''));
    }else{
     text(nodes.resultsTotal,Number.isFinite(stage?.bonusDamage)?
-     '🔥 Team: +'+fmt(stage.bonusDamage)+' Zusatzschaden':
+     '🔥 Team: +'+fmt(stage.bonusDamage)+' Schadensbonus erspielt':
      '🔥 Angriffswertung wird bestätigt');
     text(nodes.resultsNote,
-     'Angriffspotenzial aus Ausrüstung und richtigen Aufgaben; tatsächlicher Schaden folgt in der Endwertung.'+
+     'Serverbestätigter Bonus aus Ausrüstung und Lösungen; wirkliche Boss-LP erst beim angezeigten Schlag.'+
      (normalized!==null?' · 🎯 Minispiel-Genauigkeit '+normalized:''));
    }
    // Show the equal-weight total only after ALL five server-clock rounds end.
@@ -578,11 +617,15 @@
    if(nodes.resultsPanel)nodes.resultsPanel.hidden=!showResults;
    if(showResults&&nodes.resultsPanel){
     const rowsSignature=JSON.stringify(stage?.playerResults||null);
+    // Refresh only when a confirmed strike crosses its server impact time.
+    const activeStrikes=(view.miniGames.exchange.strikes||[]).filter(hit=>
+     hit.round===scene.round&&Number(hit.atMs)<=current.elapsed);
     const key=String(view.startedAt)+':'+scene.round+':'+rowsSignature+':'+
+     activeStrikes.map(hit=>hit.uid+':'+hit.kind+':'+hit.amount).join(',')+':'+
      JSON.stringify((view.members||[]).map(m=>[m.uid,m.name,m.isMe]));
     if(lastScoreKey!==key){
      lastScoreKey=key;
-     renderRoundResults(view,scene,stage);
+     renderRoundResults(view,scene,stage,current.elapsed);
     }
    }
    const previousShield=scene.round===3?
@@ -729,5 +772,5 @@
   }
   return {update};
  }
- window.DogBossLiveUI=Object.freeze({create,battleModel,combatVitals});
+ window.DogBossLiveUI=Object.freeze({create,battleModel,combatVitals,roundRewards});
 })();
