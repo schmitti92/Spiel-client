@@ -67,6 +67,7 @@
   - [x] **A-01c:** 5-Minuten-Leerlauf, konstante GET-Kosten und zusätzliche Profil-/Pilot-Reads im Quellcode untersuchen.
   - [x] **A-01d:** Messbericht auf GitHub ablegen und klar zwischen Offline-Operationen und echter Firebase-Abrechnung unterscheiden.
   - [ ] **A-01e – NOCH OFFEN:** Tatsächliche Cloud-Firestore-Usage-Zähler für 5 Minuten Leerlauf und die vier Kampfszenarien vor/nach einem kontrollierten Live-Lauf erfassen. Erst dann A-01 abnehmen; keine erfundenen Produktivzahlen.
+  - [x] **A-01e-Vorbereitung (12.11.):** Zusätzlichen 3-s-Status-Polling-Offline-Test mit 1/2/3 gleichzeitigen Browsern ausführen, CI prüfen, Render-Metrikzugriff kontrollieren und leere Messvorlage für echte Zähler bereitstellen. **Ersetzt nicht A-01e.**
 - [ ] **A-02 – Netzwerk- und Timing-Baseline:** API-Aufrufe pro Minute, Antwortzeiten, Verzögerungen bei Start/Runden/Treffern/Resultat, abgebrochene Requests erfassen. Keine sensiblen Tokens oder Nutzerdaten loggen. **Fertig:** dokumentierte Zahlen und konkrete Problemstellen.
 - [ ] **A-03 – Regressions-Schutz:** Automatisierte Tests für 1/2/3 Helden, fünf Minispiele, 20-s-Kettenbrecher, 3-s-Countdown, Sieg/Niederlage, alte Kampfversionen und Bot-Antworten kontrollieren und ergänzen. **Fertig:** CI grün und Testfälle nachvollziehbar.
 - [ ] **A-04 – Originalzustand sichern:** Vor Umbauten Startzustände, Server-Versionen, wichtige API-Ansichten und Rollback-Commit festhalten. **Fertig:** jedes Update lässt sich ohne Spielstandsverlust zurückrollen.
@@ -88,6 +89,8 @@
 **Ergebnis:** Ein unveränderter Status-GET hat im Backend mindestens **2 Dokumentreads**. Ein neuer gültiger Minispiel-POST verursacht üblicherweise **3 Reads und 2 Writes** (Fortschritt + idempotente Quittung). Im Bot-Test verursachten **11 von 29 GETs** je eine weitere Dokumentänderung; das ist ein wichtiges Optimierungsthema für S-06.
 
 **Achtung:** Bei echten Online-Spielen entstehen weitere Reads durch häufigeres Polling, Profil-Cache-Misses (15-s-Fenster), Pilot-Berechtigungscache (30-s-Fenster) sowie ggf. SDK-Transaktionswiederholungen. Render liefert derzeit keine Firestore-Abrechnungsdaten; die Firebase-Usage-Konsole des Projekts `spiel-barik` ist für A-01e noch erforderlich. **Nicht als „100 Firestore-Reads pro realem Dreierkampf“ interpretieren.**
+
+**Zusätzlicher kontrollierter Offline-Polling-Test (12.11.):** Mit jeweils **44 zusätzlichen Status-GETs pro Browser** bei festem 3-s-Abstand ergeben sich **129 Reads / 24 Writes** (1 Mensch), **248 / 44** (2 Menschen) und **364 / 62** (3 Menschen). Das ist eine illustrative Sensitivitätsrechnung aus dem tatsächlichen API-Codepfad, **keine Firebase-Usage- oder echte Browsermessung**. Alle vier CI-Testworkflows zum [Test-Commit](https://github.com/schmitti92/serverfinal/commit/90bc7902aa223162866d5db0a33247a975eef5f0) bestanden. Render `http_request_count` und `http_latency` lieferten leere Datenreihen, **nicht null Traffic**. [Details](./100-TORE-FIRESTORE-A01-MESSBERICHT.md) · [CSV-Vorlage für echte Cloud-Werte](./100-TORE-A01E-LIVE-MESSWERTE.csv).
 
 ### Phase S – Verbindliche Kampfereignisse und Online-Synchronisation `P0`
 *Größter Qualitätsgewinn für flüssige und gleichzeitig sichtbare Kämpfe.*
@@ -184,6 +187,7 @@
 |---|---|---|---|---|---|
 | 12.11.2026 | **Plan** | Entwicklungsplan mit Phasen A, S, K, M, E, F, D und T angelegt | Dokumentation erstellt | Noch keine Werte | [Plan-Commit](https://github.com/schmitti92/Spiel-client/commit/697a22925ccaedf95ae0ce0dc1df6eeeeef1554f) |
 | 12.11.2026 | **A-01a–d, Teilabschluss** | Isolierte API-Codepfad-Baseline 1/2/3 Spieler, Nova/Titan und Leerlauf erhoben. **A-01e offen:** Cloud-Zähler. | [Server Tests](https://github.com/schmitti92/serverfinal/actions/runs/43244351339) – 574 bestanden | 1/2/3: **41/24, 72/44, 100/62**; Bots **100/31**; Idle **40/0** (*nur Offline-Methodenaufrufe*) | [Test-Commit](https://github.com/schmitti92/serverfinal/commit/4203f7fdb61deb917ad19205dd003db26e0b2d2a) · [Messbericht](./100-TORE-FIRESTORE-A01-MESSBERICHT.md) |
+| 12.11.2026 | **A-01e Vorbereitung** | Dreiergruppen-Polling mit 3 s je Client isoliert gemessen, echte Render-/Cloud-Messbarkeit geprüft, CSV vorbereitet. **Produktivwerte noch offen.** | [Server CI erfolgreich](https://github.com/schmitti92/serverfinal/actions/runs/43248227536) + drei weitere Workflows grün | 1/2/3: **129/24, 248/44, 364/62**, nur simulierte DB-Methodenaufrufe | [Test](https://github.com/schmitti92/serverfinal/commit/90bc7902aa223162866d5db0a33247a975eef5f0) · [Bericht](./100-TORE-FIRESTORE-A01-MESSBERICHT.md) · [Live-Werte-Vorlage](./100-TORE-A01E-LIVE-MESSWERTE.csv) |
 
 ---
 
