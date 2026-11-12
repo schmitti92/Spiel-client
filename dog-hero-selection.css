@@ -1,0 +1,28 @@
+/* Drei ausschließlich kosmetische 100-Tore-Helden. Portraits from the approved concept art. */
+.dog-hero-art{--hero-pos:0%;display:block;background:#1a2946 url("./dog-boss-art/100tore-hero-atlas.svg") var(--hero-pos) center/300% 100% no-repeat;box-shadow:inset 0 0 0 2px #f8daa885,0 0 16px #ffc77726;color:transparent!important;text-shadow:none!important;overflow:hidden}
+.dog-hero-art.is-krieger{--hero-pos:0%}.dog-hero-art.is-magierin{--hero-pos:50%}.dog-hero-art.is-waechter{--hero-pos:100%}
+.dog-hero-selection{margin:19px 0 8px;padding:clamp(12px,2vw,22px);border:2px solid #bd936a;border-radius:20px;background:radial-gradient(ellipse at 50% 0,#77593330,transparent 75%),linear-gradient(140deg,#17223d,#1a1e34);box-shadow:inset 0 0 31px #e5b45f1c,0 8px 27px #03071476}
+.dog-hero-selection[hidden]{display:none}
+.dog-hero-selection-intro{display:flex;gap:12px;align-items:start;justify-content:space-between;flex-wrap:wrap}
+.dog-hero-selection-intro h3{margin:5px 0 12px;font:900 clamp(22px,2.5vw,32px) Georgia,serif;color:#ffe4a0}
+.dog-hero-selection-intro p{max-width:430px;margin:0 0 12px;font-size:13px;line-height:1.5;color:#bdcce0}
+.dog-hero-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(7px,1.5vw,17px)}
+.dog-hero-choice{--accent:#ffc387;cursor:pointer;position:relative;min-width:0;display:flex;align-items:center;gap:8px;flex-direction:column;padding:11px 6px 13px;border:2px solid #8a778b;border-radius:16px;background:linear-gradient(150deg,#26334d,#101b31 65%,#141d37);color:#fff3d5;box-shadow:inset 0 1px #fff2;transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease}
+.dog-hero-choice.is-magierin{--accent:#89daff}.dog-hero-choice.is-waechter{--accent:#f5e5a4}
+.dog-hero-choice .dog-hero-art{width:clamp(70px,12vw,133px);aspect-ratio:1;border-radius:16px;border:2px solid var(--accent);box-shadow:0 0 20px color-mix(in srgb,var(--accent) 35%,transparent)}
+.dog-hero-choice strong{font-size:clamp(14px,1.5vw,19px);text-shadow:0 2px 5px #0008}
+.dog-hero-choice small{color:#c7d3e5;font-size:clamp(10px,1vw,13px);text-align:center;line-height:1.35}
+.dog-hero-choice[aria-pressed="true"]{border-color:var(--accent);background:linear-gradient(145deg,#65512fb5,#283c56 55%,#151b31);box-shadow:0 0 0 2px #f7d58f3a,0 0 22px #eaba6e73}
+.dog-hero-choice[aria-pressed="true"]::after{content:"✓ AUSGEWÄHLT";position:absolute;right:9px;top:8px;font:900 9px system-ui;color:#0f2a20;background:#b8ffcb;padding:4px 6px;border-radius:6px}
+.dog-hero-choice:not(:disabled):hover{transform:translateY(-3px)}
+.dog-hero-choice:disabled{cursor:wait;opacity:.8}
+.dog-hero-choice:focus-visible{outline:3px solid #ffdb81;outline-offset:3px}
+.dog-hero-selection-status{margin:10px 2px 0;color:#dbeaff;min-height:1.3em;font-size:13px}
+.member-avatar.dog-hero-art,.hero-portrait.dog-hero-art{background-color:#172b40;border-color:#e5bd7a;border-radius:50%;font-size:0}
+.member-avatar.dog-hero-art{width:48px;height:48px;flex-basis:48px}
+.hero-portrait.dog-hero-art{width:51px;height:51px;flex-basis:51px}
+.arena-live .combat-hero[data-hero-class="magierin"] .combat-hero-name{border-color:#82d9ff!important;box-shadow:0 0 15px #54b4ff77}
+.arena-live .combat-hero[data-hero-class="krieger"] .combat-hero-name{border-color:#ffb16d!important}
+.arena-live .combat-hero[data-hero-class="waechter"] .combat-hero-name{border-color:#f4dba2!important;box-shadow:0 0 15px #ffe7ae53}
+@media(max-width:560px){.dog-hero-selection{padding:9px}.dog-hero-choice{gap:5px;padding:8px 4px}.dog-hero-choice .dog-hero-art{width:clamp(65px,22vw,112px)}.dog-hero-choice small{font-size:9px}.dog-hero-choice[aria-pressed="true"]::after{font-size:7px;right:3px;top:3px}}
+@media(prefers-reduced-motion:reduce){.dog-hero-choice{transition:none}.dog-hero-choice:hover{transform:none}}
