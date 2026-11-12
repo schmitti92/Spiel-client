@@ -100,6 +100,14 @@ Es wurde **kein neues Produktivspiel gestartet**, damit weder Bossfortschritt, I
 - Der Render-Zugang stellt **keine Cloud-Firestore-Dokument-Usage-Zähler** bereit. Es gibt derzeit auch keinen verbundenen Zugang zu den Firebase-/Cloud-Monitoring-Metriken von `spiel-barik`. **A-01e bleibt offen**.
 - Für die Live-Werte wurde eine **ausfüllbare [CSV-Messvorlage](./100-TORE-A01E-LIVE-MESSWERTE.csv)** hinterlegt. Nur echte, mit Zeitfenster belegte Projekt-Zähler dort eintragen; bei aggregierten Tageswerten nicht behaupten, dass genau ein Bosskampf isoliert gemessen wurde. Keine Spielstände oder Live-Aktionen für die bloße Metrikabfrage verändern.
 
+### Korrekte Interpretation der Cloud-Firestore-Metriken
+
+Die [offizielle Firebase-Dokumentation](https://firebase.google.com/docs/firestore/monitor-usage) unterscheidet **Usage-Dashboard** und **Abrechnungsbericht**: Dokument-Reads/-Writes aus der Firebase-/Google-Cloud-Konsole sind **Nutzungsmetriken bzw. Schätzwerte**, **keine exakte Rechnung**. Bestimmte No-op-Operationen, Index-Reads oder zusammengefasste Writes können zu Abweichungen führen; für tatsächliche abgerechnete Einheiten gilt die Abrechnung als maßgeblich.
+
+Firestore-Metriken werden laut Dokumentation **minütlich erfasst** und können **bis zu vier Minuten verspätet** erscheinen. Für einen 135-s-Test müssen deshalb genaue Zeitfenster und die Auflösung dokumentiert und abgewartet werden. Bei überlappender Aktivität anderer Spieler darf ein Projekt-Gesamtzähler nicht einem einzelnen Kampf zugeschrieben werden. Ein reiner Tageszähler genügt nicht zur exakten Abnahme einzelner Live-Szenarien.
+
+**Benötigt wird ein manueller Cloud-Zugriff mit Leseberechtigung** auf das Projekt `spiel-barik` (z. B. Firestore → Nutzung / Cloud Monitoring). Keine Datenbank-Anmeldedaten oder Service-Account-Schlüssel in GitHub oder Chat hochladen; CSV nur mit Zählern und Zeitfenstern füllen. Die zusätzliche Messung soll **keine** Kämpfe auf produktiven Konten unbeaufsichtigt auslösen.
+
 ### Vorzubereitende Messserie, ohne Code-/Spieländerungen
 
 1. **Firestore-Datenbank → Nutzung/Usage** im Firebase-Projekt `spiel-barik` öffnen; exakte Zähler und zeitliche Auflösung dokumentieren. Ein Projekt-Gesamtwert kann nicht nachträglich einer einzelnen Bossrunde zugeschrieben werden, wenn parallel andere Spielmodi genutzt wurden.
