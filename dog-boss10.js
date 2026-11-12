@@ -24,6 +24,7 @@
  const liveUi=window.DogBossLiveUI?.create($('arena'));
  const director=window.DogBossDirector?.create($('arena'));
  const battleV3=window.DogBossArenaV3?.create($('arena'));
+ const resultReport=window.DogBossResultReport?.create($('boss-result-report'));
  const key=uid=>'dog:boss10:pending:'+uid;
  const newId=()=>globalThis.crypto?.randomUUID?.()?
   'boss10-'+globalThis.crypto.randomUUID():
@@ -210,6 +211,7 @@
     ' nötigen LP. Die gemeinsame Kampfpause endet in '+formatTime(cooling())+'.':'';
   liveUi?.update(view,now());
   battleV3?.update(view,now());
+  resultReport?.update(view);
   director?.update(view);
  }
  async function reload(force=false){
