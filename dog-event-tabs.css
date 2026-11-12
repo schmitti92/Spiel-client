@@ -27,3 +27,30 @@
 .dog-event-tabs-ready header.header>a.back{display:none!important}
 @media(max-width:1140px){.dog-event-tabs__inner{padding:54px 11px 8px}}
 @media(max-width:680px){.dog-event-tabs__inner{flex-wrap:wrap;gap:4px;padding-top:52px}.dog-event-tabs__seal{font-size:22px}.dog-event-tabs__brand-text{flex-direction:row;align-items:center;gap:7px}.dog-event-tabs__brand-text strong{font-size:12px}.dog-event-tabs__rail{flex-basis:100%;padding-bottom:8px}.dog-event-tabs__tab,.dog-event-tabs__group{min-height:36px;padding:8px 10px!important;font-size:11px!important}}
+
+/* Top tabs are the ONLY navigable links in the 100-Tore event.
+   Applies to links that already exist AND links revealed later by battle/reward JS.
+   Keep legacy nodes in the DOM for script compatibility; hide them from sight,
+   keyboard navigation and pointer input without touching gameplay buttons. */
+body a[href]:not(.dog-event-tabs__tab){
+ display:none!important;
+ visibility:hidden!important;
+ pointer-events:none!important;
+}
+#gate-boss-navigation-hint{display:none}
+#gate-boss-button:not([hidden]) ~ #gate-boss-navigation-hint{
+ display:block;
+ flex-basis:100%;
+ margin:10px 0 0;
+ padding:11px 13px;
+ border:1px solid #c5a46963;
+ border-radius:12px;
+ background:#091829d9;
+ color:#fce2b2;
+ font-size:13px;
+ line-height:1.5;
+}
+.dog-event-tabs-ready .chapter .focus,
+.dog-event-tabs-ready .chapter > span{
+ flex-shrink:0;
+}
