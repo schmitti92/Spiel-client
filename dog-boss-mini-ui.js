@@ -29,7 +29,7 @@
  function create(root,onSubmit,onDodgeChoice=null,clockNow=null){
   let roundKey='',roundView=null,buttons=[],progress=null,status=null;
   let question=null,counter=null,attackStatus=null,localSubmitting=false,stepCurrent=0;
-  let dodgeMarks=[],dodgeTimeFill=null;
+  let dodgeMarks=[],dodgeTimeFill=null,dodgeImpact=null;
   let mathMarks=[],mathRank=null,mathClock=null,mathTimeFill=null;
   const mathLevels=['LEICHT','AUFWÄRMEN','GENAUIGKEIT','MALNEHMEN',
    'TEILEN','KOMBINATION','KLAMMERN','FINALE'];
@@ -207,6 +207,18 @@
     return;
    }
    const step=activeVersion>=2?stepCurrent:0;
+   if(activeVersion>=8&&roundView.kind==='dodge'){
+    // The next visual frame may be late after a CPU pause. Never submit
+    // a previous strike after the server-owned impact timestamp.
+    if(typeof clockNow==='function'){
+     const attack=roundView.attacks?.[step];
+     const at=clockStamp()-fightStart;
+     if(!attack||at<attack.startMs||at>=attack.impactMs)return;
+    }
+    // One captured choice per strike. A pending POST cannot turn a
+    // repeated tap into another local movement or another API request.
+    if(lastChoice?.round===roundView.round&&lastChoice.step===step)return;
+   }
    const precise=activeVersion>=9&&roundView.kind==='reaction';
    const tappedAt=precise?clockStamp():null;
    if(precise){
@@ -271,7 +283,7 @@
    targetChoices=[];targetSent=false;targetLocalCorrect=0;targetLastHit=null;
    chainMarks=[];chainHits=[];
    buttons=[];body.replaceChildren();progress=null;question=null;counter=null;attackStatus=null;
-   dodgeMarks=[];dodgeTimeFill=null;mathMarks=[];mathRank=null;mathClock=null;mathTimeFill=null;
+   dodgeMarks=[];dodgeTimeFill=null;dodgeImpact=null;mathMarks=[];mathRank=null;mathClock=null;mathTimeFill=null;
    targetClock=null;targetClockFill=null;
    lead.replaceChildren(title,hint);
    root.classList?.toggle('is-math-battle',round.kind==='math'&&version>=5);
@@ -359,8 +371,9 @@
      history.append(badge);return badge;
     });
     body.append(history);
-    const shock=createElement('div','mini-dodge-impact','⚡ EINSCHLAG');
-    body.append(shock);
+    dodgeImpact=createElement('div','mini-dodge-impact','🛡️ WÄHLE EINE RICHTUNG');
+    dodgeImpact.setAttribute?.('aria-live','polite');
+    body.append(dodgeImpact);
    }else if(round.kind==='reaction'){
     const speed=createElement('div','mini-speed-indicator','');
     attackStatus=speed;body.append(speed);
@@ -570,13 +583,17 @@
     dodgeMarks.forEach((mark,i)=>{
      const hit=round.attacks[i],action=attempts[i];
      const reached=elapsed>=hit.impactMs;
-     const code=!reached?'·':action?(action.correct?'✓':'✕'):'–';
+     const code=!reached?'·':action?(action.correct?'✓':'✕'):'…';
      mark.textContent=(i+1)+' '+code;
      mark.classList.toggle('is-correct',reached&&action?.correct===true);
      mark.classList.toggle('is-wrong',reached&&action?.correct===false);
+     mark.classList.toggle('is-pending',reached&&!action);
     });
     // Each strike has its own exact telegraph/impact window.
-    step=Math.min(2,Math.floor((elapsed-round.startMs)*3/(round.endMs-round.startMs)));
+    // The exact attack schedule is authoritative. Do not estimate the
+    // current step from an approximate one-third of the round duration.
+    step=round.attacks.reduce((current,hit,i)=>
+     elapsed>=hit.startMs?i:current,0);
     const strike=round.attacks[step];
     windowOpen=elapsed>=strike.startMs&&elapsed<strike.impactMs;
     if(dodgeTimeFill){
@@ -586,18 +603,30 @@
      dodgeTimeFill.classList.toggle('is-urgent',
       strike.impactMs-elapsed<1100);
     }
+    const ownAttempt=attempts[step];
+    const verdict=elapsed<strike.impactMs?'warning':
+     ownAttempt?.correct===true?'safe':
+     ownAttempt?.correct===false?'hit':'pending';
     if(attackStatus){
      const remainingToImpact=Math.max(0,(strike.impactMs-elapsed)/1000);
-     const places=['LINKS','MITTE','RECHTS'];
-     const ownAttempt=attempts[step];
-     attackStatus.textContent=elapsed>=strike.impactMs?
-      (ownAttempt?.correct===true?'✅ AUSGEWICHEN':
-       ownAttempt?.correct===false||elapsed>=strike.impactMs+160?
-        '💥 GETROFFEN':'⚡ EINSCHLAG'):
-      '⚠️ SCHLAG '+(step+1)+'/3 · '+remainingToImpact.toFixed(1)+' s';
-     attackStatus.classList.toggle('is-success',
-      elapsed>=strike.impactMs&&ownAttempt?.correct===true);
+     attackStatus.textContent=verdict==='warning'?
+      '⚠️ SCHLAG '+(step+1)+'/3 · '+remainingToImpact.toFixed(1)+' s':
+      verdict==='safe'?'✅ AUSGEWICHEN':
+      verdict==='hit'?'💥 GETROFFEN':
+       '⚡ EINSCHLAG · ERGEBNIS OFFEN';
+     attackStatus.classList.toggle('is-success',verdict==='safe');
      attackStatus.classList.toggle('is-impact',!windowOpen);
+    }
+    if(dodgeImpact){
+     const picked=lastChoice?.round===round.round&&lastChoice.step===step;
+     dodgeImpact.textContent=verdict==='safe'?'🛡️ AUSGEWICHEN · SERVER BESTÄTIGT':
+      verdict==='hit'?'💥 GETROFFEN · SERVER BESTÄTIGT':
+      verdict==='pending'?'⏳ EINSCHLAG · SERVERERGEBNIS OFFEN':
+      picked?'↔️ RICHTUNG ERFASST · EINSCHLAG ABWARTEN':
+       '🛡️ WÄHLE LINKS / RECHTS'+(round.lanes===3?' / MITTE':'');
+     dodgeImpact.classList.toggle('is-success',verdict==='safe');
+     dodgeImpact.classList.toggle('is-hit',verdict==='hit');
+     dodgeImpact.classList.toggle('is-pending',verdict==='pending');
     }
     buttons.forEach((button,i)=>{
      const danger=i===strike.dangerIndex||i===strike.secondDangerIndex;
@@ -608,7 +637,9 @@
      button.classList.toggle('mini-safe',!danger);
      button.classList.toggle('is-selected',lastChoice?.step===step&&lastChoice.value===i);
      const hasRecord=!!attempts[step];
-     button.disabled=!canPlay||localSubmitting||!windowOpen||hasRecord;
+     button.disabled=!canPlay||localSubmitting||!windowOpen||hasRecord||
+      (activeVersion>=8&&lastChoice?.round===round.round&&
+       lastChoice.step===step);
     });
    }else{
     buttons.forEach(b=>b.disabled=!canPlay||localSubmitting||completed||
@@ -667,12 +698,13 @@
    if(round.kind==='dodge'){
     const strike=round.attacks[step],myAction=attempts[step];
     status.textContent=elapsed>=strike.impactMs?
-     (myAction?.correct===true?'✅ AUSGEWICHEN!':
-      myAction?.correct===false||elapsed>strike.impactMs+160?
-       '💥 GETROFFEN!':'⚡ EINSCHLAG'):
-     lastChoice?.step===step?
-      '↔️ BEWEGUNG · '+(localSubmitting?'PRÜFUNG LÄUFT':'SCHLAG ABWARTEN'):
-      '🛡️ WÄHLE DEINE AUSWEICHRICHTUNG';
+     (myAction?.correct===true?'✅ AUSGEWICHEN · SERVER BESTÄTIGT':
+      myAction?.correct===false?'💥 GETROFFEN · SERVER BESTÄTIGT':
+       '⏳ EINSCHLAG · WARTE AUF SERVERBESTÄTIGUNG'):
+     lastChoice?.round===round.round&&lastChoice.step===step?
+      '↔️ RICHTUNG ERFASST · '+(localSubmitting?'SERVER PRÜFT':'EINSCHLAG ABWARTEN'):
+      windowOpen?'🛡️ WÄHLE DEINE AUSWEICHRICHTUNG':
+       '⏱️ NÄCHSTER SCHLAG WIRD VORBEREITET';
     return;
    }
    if(round.kind==='reaction'&&activeVersion>=9){

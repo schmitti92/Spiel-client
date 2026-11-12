@@ -105,3 +105,37 @@
  .arena-live .combat-scene:is([data-battle-version="8"],[data-battle-version="9"],[data-battle-version="10"])[data-dodge-strike="impact"]
   .battle-dodge-lane.is-danger{animation:none!important}
 }
+
+/* M-02 · transparent, server-confirmed hit feedback.
+ * The outcome is deliberately not guessed when a receipt is still pending. */
+.arena-live .is-slow-dodge .mini-dodge-impact{
+ display:flex;align-items:center;justify-content:center;text-align:center;
+ min-height:36px;margin-top:6px;padding:7px 9px;border-radius:10px;
+ border:1px solid #80c2d881;background:linear-gradient(135deg,#18344de8,#1a2d3dea);
+ color:#d5efff;font:900 clamp(11px,1.12vw,15px)/1.25 system-ui,sans-serif;
+ letter-spacing:.02em;
+}
+.arena-live .is-slow-dodge .mini-dodge-impact.is-pending,
+.arena-live .is-slow-dodge .mini-dodge-mark.is-pending{
+ border-color:#ffd48ab3;color:#ffe6af;background:#503a2ade;
+}
+.arena-live .is-slow-dodge .mini-dodge-impact.is-success{
+ border-color:#8be9b9;color:#caffde;background:#235b44e6;
+ box-shadow:inset 0 0 16px #4eec9944;
+}
+.arena-live .is-slow-dodge .mini-dodge-impact.is-hit{
+ border-color:#ff9983;color:#ffe2d2;background:#672c37e6;
+ box-shadow:inset 0 0 16px #ff654c44;
+}
+.arena-live .is-slow-dodge .mini-dodge-lane.is-selected{
+ border-color:#d7f4ff;box-shadow:0 0 0 2px #95e1ff80,inset 0 0 12px #9bd7ff35;
+}
+.arena-live .is-slow-dodge .mini-dodge-lane:focus-visible{
+ outline:3px solid #ffecaa;outline-offset:2px;
+}
+@media(max-width:620px){
+ .arena-live .is-slow-dodge .mini-dodge-impact{min-height:32px;padding:5px 7px;font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+ .arena-live .is-slow-dodge .mini-dodge-impact{animation:none!important;transition:none!important}
+}

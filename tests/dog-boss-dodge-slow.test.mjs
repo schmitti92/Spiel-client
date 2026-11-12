@@ -34,13 +34,13 @@ const rounds=[
  {kind:'target',round:2,startMs:55000,endMs:63000,maxSteps:3,lanes:3,initialIndex:0,stepMs:1200},
  {kind:'reaction',round:3,startMs:77000,endMs:85000,maxSteps:3,zoneRadius:.1}
 ];
-function miniFixture(){
+function miniFixture(clockNow=null){
  const document={createElement:element,hidden:false};
  const window={};runInNewContext(read('dog-boss-mini-ui.js'),{window,document,Promise,Date});
  const root=element('section'),requests=[];
  const ui=window.DogBossMinigames.create(root,(round,value,step)=>{
   requests.push({round,value,step});return Promise.resolve(true);
- });
+ },null,clockNow);
  const view={phase:'fighting',startedAt:at,miniGames:{version:8,rounds,myAnswers:{}}};
  return {root,ui,view,requests};
 }
@@ -134,4 +134,81 @@ test('v8 longer animation CSS and legacy V7 battle are isolated',()=>{
  old.ui.update(old.view,at+26000,true);
  assert.ok(!old.root.classList.contains('is-slow-dodge'));
  assert.ok(!old.root.children[1].children.some(e=>e.className==='mini-dodge-decision-track'));
+});
+
+test('M-02 never claims hit before the server has confirmed the dodge outcome',async()=>{
+ let now=at+26000;
+ const {root,ui,view,requests}=miniFixture(()=>now);
+ ui.update(view,now,true);
+ const body=root.children[1],lanes=body.children.find(x=>x.className==='mini-dodge-lanes').children;
+ const panel=body.children.find(x=>x.className==='mini-dodge-impact');
+ const warning=body.children.find(x=>x.className==='mini-dodge-warning');
+ assert.equal(panel.attrs['aria-live'],'polite');
+ lanes[0].click();
+ await Promise.resolve();await Promise.resolve();
+ assert.equal(requests.length,1);
+ assert.match(panel.textContent,/RICHTUNG ERFASST/);
+ assert.ok(lanes.every(x=>x.disabled),'one direction per strike');
+ lanes[0].click();
+ assert.equal(requests.length,1,'double taps never make duplicate requests');
+ now=at+29300;
+ ui.update(view,now,true);
+ assert.match(warning.textContent,/ERGEBNIS OFFEN/);
+ assert.match(panel.textContent,/SERVERERGEBNIS OFFEN/);
+ assert.match(root.children[2].textContent,/WARTE AUF SERVERBESTÄTIGUNG/);
+ assert.equal(panel.classList.contains('is-pending'),true);
+ assert.equal(panel.classList.contains('is-hit'),false);
+ assert.ok(lanes.every(x=>x.disabled));
+ view.miniGames.myAnswers={1:{attempts:[{step:0,correct:true}]}};
+ ui.update(view,now,true);
+ assert.match(panel.textContent,/AUSGEWICHEN.*SERVER BESTÄTIGT/);
+ assert.equal(panel.classList.contains('is-success'),true);
+ now=at+31000;ui.update(view,now,true);
+ assert.equal(warning.textContent,'⚠️ SCHLAG 2/3 · 3.3 s');
+ assert.equal(panel.classList.contains('is-success'),false,'previous verdict resets');
+ assert.ok(lanes.every(x=>!x.disabled));
+ view.miniGames.myAnswers[1].attempts.push({step:1,correct:false});
+ now=at+34300;ui.update(view,now,true);
+ assert.match(panel.textContent,/GETROFFEN.*SERVER BESTÄTIGT/);
+ assert.equal(panel.classList.contains('is-hit'),true);
+ const marks=body.children.find(x=>x.className==='mini-dodge-history').children;
+ assert.equal(marks[0].textContent,'1 ✓');
+ assert.equal(marks[1].textContent,'2 ✕');
+ assert.match(marks[2].textContent,/3/);
+});
+test('M-02 stale tap after a confirmed impact cannot submit for previous strike',async()=>{
+ let now=at+26000;
+ const {root,ui,view,requests}=miniFixture(()=>now);
+ ui.update(view,now,true);
+ const buttons=root.children[1].children.find(x=>x.className==='mini-dodge-lanes').children;
+ now=at+29300; // actual impact, but slow browser has not repainted yet
+ buttons[0].click();
+ await Promise.resolve();await Promise.resolve();
+ assert.equal(requests.length,0,'no stale choice at or after boss impact');
+ now=at+31000; // next attack began while UI is still displaying prior one
+ buttons[0].click();
+ assert.equal(requests.length,0,'does not submit an old step for the new attack');
+ ui.update(view,now,true);
+ buttons[1].click();
+ await Promise.resolve();await Promise.resolve();
+ assert.equal(requests.length,1);
+ assert.equal(requests[0].step,1,'correct attack index comes from server timings');
+});
+test('M-02 keeps v7 historical controls and has no new network operations',()=>{
+ const css=read('dog-boss-dodge-slow.css');
+ assert.match(css,/mini-dodge-impact\.is-pending/);
+ assert.match(css,/mini-dodge-impact\.is-success/);
+ assert.match(css,/mini-dodge-impact\.is-hit/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+ for(const page of ['dog-boss10.html','dog-group-boss.html']){
+  const html=read(page);
+  assert.match(html,/dog-boss-dodge-slow\.css\?v=20261112-m02-feedback1/);
+  assert.match(html,/dog-boss-mini-ui\.js\?v=20261112-m02-feedback1/);
+ }
+ const original=read('dog-boss-mini-ui.js');
+ assert.doesNotMatch(original,/\bfetch\s*\(|XMLHttpRequest|firebase/i);
+ const legacy=miniFixture();
+ legacy.view.miniGames.version=7;
+ legacy.ui.update(legacy.view,at+26000,true);
+ assert.ok(!legacy.root.classList.contains('is-slow-dodge'));
 });
