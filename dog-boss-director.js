@@ -10,7 +10,7 @@
   const note=root.querySelector('#combat-focus-label');
   const modes=['normal','boss','team'];
   const format=n=>Math.max(0,Math.round(Number(n)||0)).toLocaleString('de-DE');
-  let mode='normal',enabled=true,view=null,focusUid=null,session=null;
+  let mode='normal',enabled=true,view=null,vitals=null,focusUid=null,session=null;
   function activate(next){
    mode=modes.includes(next)?next:'normal';
    scene.dataset.camera=mode;
@@ -22,7 +22,7 @@
   }
   function showFocus(){
    if(!note)return;
-   const heroes=view?.teamHealth?.heroes||[];
+   const heroes=vitals?.heroes||view?.teamHealth?.heroes||[];
    if(focusUid){
     const hero=heroes.find(h=>h.uid===focusUid);
     if(hero){
@@ -34,10 +34,12 @@
     focusUid=null;
    }
    if(mode==='boss'&&view?.bossHp){
-    note.textContent='🐉 '+format(view?.bossLiveHp??view.bossHp)+' / '+format(view.bossHp)+' LP';
+    note.textContent='🐉 '+format(vitals?.bossHp??view?.bossLiveHp??view.bossHp)+
+     ' / '+format(vitals?.bossMaxHp??view.bossHp)+' LP';
     note.hidden=false;
-   }else if(mode==='team'&&view?.teamHealth?.maxHp){
-    note.textContent='❤️ '+format(view.teamHealth.hp)+' / '+format(view.teamHealth.maxHp)+' LP';
+   }else if(mode==='team'&&(vitals?.teamMaxHp||view?.teamHealth?.maxHp)){
+    note.textContent='❤️ '+format(vitals?.teamHp??view.teamHealth.hp)+
+     ' / '+format(vitals?.teamMaxHp??view.teamHealth.maxHp)+' LP';
     note.hidden=false;
    }else {note.textContent='';note.hidden=true;}
   }
@@ -57,7 +59,7 @@
    const hero=target?.closest?.('.combat-hero');
    if(hero){
     const uid=hero.getAttribute?.('data-hero-uid');
-    if(uid&&view?.teamHealth?.heroes?.some(h=>h.uid===uid)){
+    if(uid&&(vitals?.heroes||view?.teamHealth?.heroes)?.some(h=>h.uid===uid)){
      focusUid=uid;activate('team');
     }
    }else if(target?.closest?.('#combat-boss')){
@@ -66,8 +68,9 @@
   });
   activate('normal');
   scene.dataset.effects='on';
-  return {update(next){
+  return {update(next,now){
    view=next;
+   vitals=window.DogBossLiveUI?.combatVitals?.(next,now)||null;
    const stamp=String(next?.startedAt||'')+':'+String(next?.attempt||'');
    if(session!==stamp){
     session=stamp;focusUid=null;

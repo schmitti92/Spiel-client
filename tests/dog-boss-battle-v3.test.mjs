@@ -94,7 +94,7 @@ test('both battle pages use only the new visual layer while retaining every requ
   assert.equal(new Set(ids).size,ids.length,'duplicate IDs on '+path);
   const controller=read(path==='dog-boss10.html'?'dog-boss10.js':'dog-group-boss.js');
   assert.match(controller,/DogBossArenaV3\?\.create/);
-  assert.match(controller,/battleV3\?\.update\(view,now\(\)\)/);
+  assert.match(controller,/battleV3\?\.update\(view,frameNow\)/);
   assert.match(controller,/acknowledgePending/);
   assert.match(controller,/command\('minigame',false,/);
  }
@@ -182,8 +182,8 @@ test('damage pops once above the actually hit target and can show a verified blo
   round:1,slot:1,uid:'nova',kind:'boss-strike',atMs:46647,amount:0
  });
  ui.update(v,begin+46700);
- assert.ok(heroes[1].children.some(x=>x.textContent==='BLOCK!'));
- assert.match(log.textContent,/BLOCK!/);
+ assert.ok(heroes[1].children.some(x=>x.textContent==='AUSGEWICHEN!'));
+ assert.match(log.textContent,/AUSGEWICHEN!/);
 });
 
 test('v12 runs all five minigames; the extra 10-second Finalschlag triggers three closing hits before the result',()=>{
@@ -338,4 +338,17 @@ test('K-02 class-specific sword, arcane bolt and shield wave share the server cl
  }
  for(const page of ['dog-boss10.html','dog-group-boss.html'])
   assert.match(read(page),/dog-boss-weapon-strikes\.css\?v=20261112-k02-classes1/);
+});
+
+// K-03: a cinematic swing without server confirmation must never flash as a hit.
+test('K-03 only flashes after the official server impact',()=>{
+ const {derive}=load(),v=view();
+ v.miniGames.version=14;
+ v.combat={version:1,events:[]};
+ assert.equal(derive(v,begin+14000).impact,false);
+ v.combat.events=[{eventId:'fight:1',round:0,slot:0,uid:'chris',
+  kind:'hero-strike',atMs:13980,amount:300}];
+ assert.equal(derive(v,begin+14000).impact,true);
+ assert.equal(derive(v,begin+14000).confirmedDamage,300);
+ assert.equal(derive(v,begin+14500).impact,false);
 });

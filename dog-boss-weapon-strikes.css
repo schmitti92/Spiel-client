@@ -179,6 +179,13 @@
 .arena-live[data-arena-design="v3"] .v3-floating-damage.is-blocked::before{
  content:"🛡";color:#75dbff;opacity:.7;
 }
+.arena-live[data-arena-design="v3"] .v3-floating-damage.is-dodged{
+ top:1%;color:#b2f5e0;font-size:clamp(16px,1.7vw,29px);
+ text-shadow:0 2px #104d4e,0 0 13px #69ffc5;
+}
+.arena-live[data-arena-design="v3"] .v3-floating-damage.is-dodged::before{
+ content:"💨";color:#b2ffe6;opacity:.8;
+}
 .arena-live[data-arena-design="v3"] .v3-floating-damage.is-fallback{
  animation:v3-number-burst 1.45s ease-out forwards;
 }

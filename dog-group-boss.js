@@ -153,6 +153,7 @@
   const s=secs(ms);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
  };
  function render(){
+  const frameNow=now();
   const current=auth()?.user?.uid||null;
   const logged=!!current&&current===account;
   const state=view?.phase||'unavailable';
@@ -207,9 +208,9 @@
   reaction.disabled=!logged||working||!!pendingOp||!!mine?.reacted||remaining()<=0||
    !view?.roster?.some(m=>m.uid===account);
   reaction.textContent=mine?.reacted?'⚡ Reaktion gezählt':'⚡ Reaktion! Angriff verstärken';
-  miniUi?.update(view,now(),logged&&!working&&!pendingOp&&
+  miniUi?.update(view,frameNow,logged&&!working&&!pendingOp&&
    !!view?.roster?.some(m=>m.uid===account));
-  combatFx?.update(view,now());
+  combatFx?.update(view,frameNow);
   $('retry-button').hidden=!pendingOp;
   $('retry-button').disabled=working;
   // No empty status strip below the battlefield during an active fight.
@@ -217,7 +218,7 @@
   const squad=$('boss-squad');
   if(squad)squad.hidden=['fighting','victory'].includes(state)&&
    ready.hidden&&start.hidden&&reaction.hidden&&$('retry-button').hidden;
-  preflight?.update(view,now());
+  preflight?.update(view,frameNow);
   const duration=(Number(view?.endsAt)>Number(view?.startedAt)?
    view.endsAt-view.startedAt:view?.miniGames?.version===3?40000:
     view?.miniGames?.version===4?50000:
@@ -228,7 +229,9 @@
   const time=state==='fighting'?remaining():state==='cooldown'?cooling():duration;
   $('timer').textContent=formatTime(time);
   $('timer-fill').style.width=(state==='fighting'?Math.min(100,time/duration*100):state==='victory'?0:100)+'%';
-  const bossLeft=Number(view?.miniGames?.exchange?.displayBossHp??
+  const vitals=window.DogBossLiveUI?.combatVitals?.(view,frameNow);
+  const bossLeft=Number(vitals?.bossHp??
+    view?.miniGames?.exchange?.displayBossHp??
     view?.bossLiveHp??view?.result?.hpRemaining??view?.bossHp)||0;
   const bossMax=Number(view?.bossHp)||0;
   $('boss-hp').textContent=view?
@@ -250,10 +253,10 @@
    state==='cooldown'?'💀 Boss überlebt! '+Number(view?.result?.damage||0).toLocaleString('de-DE')+
     ' Schaden von '+(view?.bossHp||0).toLocaleString('de-DE')+
     ' nötigen LP. Die gemeinsame Kampfpause endet in '+formatTime(cooling())+'.':'';
-  liveUi?.update(view,now());
-  battleV3?.update(view,now());
+  liveUi?.update(view,frameNow);
+  battleV3?.update(view,frameNow);
   resultReport?.update(view);
-  director?.update(view);
+  director?.update(view,frameNow);
  }
  async function reload(force=false){
   const uid=auth()?.user?.uid;

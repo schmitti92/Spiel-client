@@ -32,6 +32,43 @@
     clamp(remainingHp,0,initialHp):null;
   return {phase,rounds,answers,active,roundIndex,latest,initialHp,knownHp,elapsed};
  }
+ // K-03: one pure projection, driven only by server-confirmed impact time.
+ function combatVitals(view,now){
+  const bossMaxHp=Math.max(0,Number(view?.bossHp)||0);
+  const stream=view?.combat;
+  const modern=view?.phase==='fighting'&&
+   Number(view?.miniGames?.version)>=11&&stream?.version===1&&
+   !!stream.fightId&&Array.isArray(stream.events)&&
+   Number(view?.startedAt)>0;
+  const elapsed=Math.max(0,Number(now)-Number(view?.startedAt||0));
+  const released=modern?stream.events.filter(e=>
+   Number.isFinite(Number(e.atMs))&&Number(e.atMs)<=elapsed):[];
+  const finished=['victory','cooldown'].includes(view?.phase)&&
+   view?.result?.hpRemaining!=null&&Number.isFinite(Number(view.result.hpRemaining));
+  const sourceBoss=finished?view.result.hpRemaining:
+   modern?stream.initialBossHp:
+   view?.miniGames?.exchange?.displayBossHp??view?.bossLiveHp??bossMaxHp;
+  let bossHp=clamp(Number(sourceBoss)||0,0,bossMaxHp);
+  if(modern)for(const e of released)if(e.targetId==='boss'&&
+   Number.isFinite(Number(e.hpAfter)))bossHp=clamp(Number(e.hpAfter),0,bossMaxHp);
+  const original=view?.miniGames?.exchange?.displayTeamHealth||view?.teamHealth;
+  const heroes=Array.isArray(original?.heroes)?original.heroes.map(hero=>{
+   if(!modern)return hero;
+   const maxHp=Math.max(0,Number(hero.maxHp)||0);
+   let hp=stream.initialHeroHp?.[hero.uid];
+   for(const e of released)if(e.targetId===hero.uid&&
+    Number.isFinite(Number(e.hpAfter)))hp=e.hpAfter;
+   return {...hero,hp:hp===undefined?hero.hp:clamp(Number(hp)||0,0,maxHp)};
+  }):[];
+  const teamMaxHp=Math.max(0,Number(original?.maxHp)||0);
+  const hasTeam=teamMaxHp>0;
+  const teamHp=hasTeam?clamp(modern?
+   heroes.reduce((sum,hero)=>sum+(Number(hero.hp)||0),0):
+   Number(original?.hp)||0,0,teamMaxHp):0;
+  const pool=original&&modern?{...original,heroes,hp:teamHp,
+   lost:Math.max(0,teamMaxHp-teamHp)}:original;
+  return {bossHp,bossMaxHp,teamHp,teamMaxHp,hasTeam,heroes,pool};
+ }
  function create(root){
   if(!root)return {update:()=>{}};
   const nodes={
@@ -99,22 +136,9 @@
    node.replaceChildren?.(label);
   }
   function updateHealth(view,current,now){
-   const maxBoss=Math.max(0,Number(view?.bossHp)||0);
-   // S-01: all screens use the server-confirmed, sequenced hit events when
-   // available. Time continues locally between polls; no extra requests.
-   const stream=view?.combat;
-   const inFight=view?.phase==='fighting'&&
-    Number(view?.miniGames?.version)>=11&&stream?.version===1&&
-    !!stream.fightId&&Array.isArray(stream.events)&&Number(view?.startedAt)>0;
-   const elapsed=Math.max(0,Number(now)-Number(view?.startedAt||0));
-   const released=inFight?stream.events.filter(e=>Number(e.atMs)<=elapsed):[];
-   const latestBoss=inFight?[...released].reverse().find(e=>e.targetId==='boss'):null;
-   const fromServer=Number(inFight?
-    latestBoss?.hpAfter??stream.initialBossHp:
-    view?.miniGames?.exchange?.displayBossHp??view?.bossLiveHp);
-   const liveBoss=Number.isFinite(fromServer)&&view?.bossLiveHp!==undefined?
-    clamp(fromServer,0,maxBoss):
-    current.knownHp===null?maxBoss:current.knownHp;
+   const vitals=combatVitals(view,now);
+   const maxBoss=vitals.bossMaxHp;
+   const liveBoss=vitals.bossHp;
    if(nodes.hpFill)nodes.hpFill.style.width=(maxBoss?
     clamp(100*liveBoss/maxBoss,0,100):100).toFixed(2)+'%';
    nodes.bossTrack?.setAttribute?.('aria-valuemax',String(maxBoss||1));
@@ -122,19 +146,10 @@
    if(nodes.combat?.dataset){
     nodes.combat.dataset.bossCritical=String(maxBoss>0&&liveBoss/maxBoss<=.3);
    }
-   let pool=view?.miniGames?.exchange?.displayTeamHealth||view?.teamHealth;
-   if(inFight&&Array.isArray(pool?.heroes)){
-    const heroes=pool.heroes.map(hero=>{
-     const event=[...released].reverse().find(e=>e.targetId===hero.uid);
-     const hp=Number(event?.hpAfter??stream.initialHeroHp?.[hero.uid]);
-     return {...hero,hp:Number.isFinite(hp)?clamp(hp,0,hero.maxHp):hero.hp};
-    });
-    const hp=heroes.reduce((sum,hero)=>sum+(Number(hero.hp)||0),0);
-    pool={...pool,heroes,hp,lost:Math.max(0,(Number(pool.maxHp)||0)-hp)};
-   }
-   const hasPool=Number(pool?.maxHp)>0;
-   const teamMax=hasPool?Number(pool.maxHp):0;
-   const teamHp=hasPool?clamp(Number(pool.hp)||0,0,teamMax):0;
+   const pool=vitals.pool;
+   const hasPool=vitals.hasTeam;
+   const teamMax=vitals.teamMaxHp;
+   const teamHp=vitals.teamHp;
    if(nodes.combat?.dataset){
     nodes.combat.dataset.teamCritical=String(hasPool&&teamHp/teamMax<=.56);
    }
@@ -190,7 +205,8 @@
     lastHeroHp=heroHpNow;recentDamage=[];
    }else{
     const perHitFx=Number(view?.miniGames?.version)>=11&&
-      Array.isArray(view?.miniGames?.exchange?.strikes);
+     (Array.isArray(view?.combat?.events)||
+      Array.isArray(view?.miniGames?.exchange?.strikes));
     if(!perHitFx&&['fighting','victory','cooldown'].includes(view?.phase)&&
       lastBossHp!==null&&liveBoss<lastBossHp){
      const damage=lastBossHp-liveBoss;
@@ -213,7 +229,8 @@
     lastHeroHp=heroHpNow;
    }
    if(Number(view?.miniGames?.version)<11||
-    !Array.isArray(view?.miniGames?.exchange?.strikes))showRecentDamage();
+    !(Array.isArray(view?.combat?.events)||
+      Array.isArray(view?.miniGames?.exchange?.strikes)))showRecentDamage();
   }
 
   function dodgeImpact(round,record,view,now){
@@ -680,5 +697,5 @@
   }
   return {update};
  }
- window.DogBossLiveUI=Object.freeze({create,battleModel});
+ window.DogBossLiveUI=Object.freeze({create,battleModel,combatVitals});
 })();

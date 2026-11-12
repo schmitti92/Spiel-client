@@ -224,3 +224,52 @@ test('the rebuilt V3 arena keeps the minigame and hides old bars without losing 
   assert.match(controller,/battleV3\?\.update\(view,now\(\)\)/);
  }
 });
+
+// K-03: one server event changes all matching HP widgets at its impact time.
+test('K-03 official event time gates boss, individual and team HP',()=>{
+ const {ui}=bootstrap(),{root,element}=fakeDom(),display=ui.create(root);
+ const b=model();b.miniGames.version=14;
+ b.miniGames.exchange={strikes:[]};
+ b.bossLiveHp=25000;
+ b.teamHealth={hp:300,maxHp:300,heroes:[
+  {uid:'chris',hp:100,maxHp:100},{uid:'nova',hp:100,maxHp:100},
+  {uid:'titan',hp:100,maxHp:100}]};
+ const fightId='g10-t'+start+'-a1';
+ b.combat={version:1,fightId,initialBossHp:25000,
+  initialHeroHp:{chris:100,nova:100,titan:100},events:[
+   {eventId:fightId+':1',sequence:1,atMs:13980,round:0,
+    uid:'chris',targetId:'boss',kind:'hero-strike',
+    amount:230,hpBefore:25000,hpAfter:24770},
+   {eventId:fightId+':2',sequence:2,atMs:42000,round:1,
+    uid:'chris',targetId:'chris',kind:'boss-strike',
+    amount:15,hpBefore:100,hpAfter:85}
+  ]};
+ display.update(b,start+13979);
+ assert.equal(ui.combatVitals(b,start+13979).bossHp,25000);
+ assert.equal(element('live-hp-fill').style.width,'100.00%');
+ display.update(b,start+13980);
+ assert.equal(ui.combatVitals(b,start+13980).bossHp,24770);
+ assert.equal(element('live-hp-fill').style.width,'99.08%');
+ assert.equal(element('live-recent-damage').textContent,'Noch keine bestätigten Treffer');
+ display.update(b,start+42000);
+ assert.equal(ui.combatVitals(b,start+42000).teamHp,285);
+ assert.equal(ui.combatVitals(b,start+42000).heroes[0].hp,85);
+ assert.equal(ui.combatVitals(b,start+42000).heroes[1].hp,100);
+ assert.equal(element('live-shield-value').textContent,'285 / 300 LP');
+ assert.equal(element('combat-team-damage').children.length,0,'V3 owns damage popup');
+ display.update(b,start+43000);
+ assert.equal(element('live-shield-value').textContent,'285 / 300 LP');
+ b.phase='victory';b.result={hpRemaining:0};
+ assert.equal(ui.combatVitals(b,start+136000).bossHp,0);
+});
+test('K-03 all boss labels share one HP projection and server clock',()=>{
+ for(const page of ['dog-boss10.js','dog-group-boss.js']){
+  const source=read(page);
+  assert.match(source,/DogBossLiveUI\?\.combatVitals\?\.\(view,frameNow\)/);
+  assert.match(source,/liveUi\?\.update\(view,frameNow\)/);
+  assert.match(source,/battleV3\?\.update\(view,frameNow\)/);
+  assert.match(source,/director\?\.update\(view,frameNow\)/);
+ }
+ assert.match(read('dog-boss-director.js'),
+  /DogBossLiveUI\?\.combatVitals\?\.\(next,now\)/);
+});

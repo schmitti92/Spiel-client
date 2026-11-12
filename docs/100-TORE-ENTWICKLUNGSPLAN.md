@@ -260,11 +260,21 @@ Die bestehenden Schwerter, Zauberstäbe und Schilde bleiben bestehen. Der Client
 
 **Performance/Kosten:** Nur CSS und eine einmalige DOM-Ebene pro Figur, keine HTTP-Requests, keine Firestore-Reads oder -Writes, kein neu berechneter Schaden. Bewegungen werden bei eingeschränkter Animation automatisch reduziert, auch auf Mobilgeräten skalieren die Effekte. Die Regression prüft die drei Waffenmotive, ein Element pro Held, Timing und unveränderte Boss-Seiten.
 
+### K-03 – Gemeinsame serverbestätigte Treffer- und LP-Zeitleiste (12.11.2026)
+
+**Ursache:** Boss-LP-Zahl, Balken und Kamerafokus verwendeten zuvor verschiedene Berechnungspfade. Die rein filmische Einschlagsanimation konnte auch vor einem bestätigten Schadensereignis aufleuchten; Nulltreffer waren nicht nach Ausweichen/Blocken unterschieden.
+
+**Umsetzung:** `DogBossLiveUI.combatVitals(view,now)` leitet Boss-, Team- und Helden-LP aus den vorhandenen `combat.events` ab: `hpAfter` wird erst dann für die Anzeige sichtbar, wenn `atMs` im gemeinsamen `frameNow` erreicht wurde. Auch die Boss-Zahlen und der Kamerafokus verwenden denselben Zeitpunkt. Nach Sieg/Niederlage zählt `result.hpRemaining`. Das Modell der Trefferwahrscheinlichkeit, das vorhandene 135-s-Kampffenster, die fünf Minispiele und die Belohnungen bleiben unverändert. Kein zweiter Schaden-Algorithmus.
+
+**Treffer:** Das Animations-Ausholen darf vor Serverbestätigung stattfinden, ein heller Einschlagsblitz aber nicht. `eventId` verhindert doppelte Pop-ups; ein verspäteter GET löst keinen alten Trefferschauer aus. Reaktions-Nulltreffer: **BLOCK!**; Dodge-Nulltreffer: **AUSGEWICHEN!**. Popup direkt am betroffenen Charakter. Ein einziger Arena-Layer übernimmt Schadens-Popups bei neuen Kämpfen, nicht mehr zusätzlich das alte HP-Differenz-System.
+
+**Firebase:** 0 neue Reads/Writes. **Noch offen:** echte Zwei-/Drei-Geräte-Ansicht sowie Tab-Wechsel/WLAN-Abbruch manuell prüfen.
+
 ### Phase K – Kampfsystem, Überleben und Inszenierung `P0/P1`
 
 - [x] **K-01 – Einheitliche Kampf-Zeitleiste (technisch umgesetzt):** Sechs verständliche Bewegungsabschnitte pro Einzelangriff (Position → Ausholen → Schlag → servergetakteter Einschlag → Zurückweichen → Bereit). Anzeigetexte, Ziele, LP-Treffer und Farbeffekte richten sich nach derselben serverseitigen Ereigniszeit; keine erfundenen Schadenswerte vor bestätigtem Event. Alle Kampfversionen behalten ihre vorgegebene Gesamtdauer, neue Kämpfe 135 s/fünf Minispiele. Visueller Mehrgeräte-Test noch offen.
 - [x] **K-02 – Waffen und Figurbewegung (technisch umgesetzt):** Krieger führt einen kräftigen Klingenhieb mit goldener Schwertspur, Magierin erzeugt einen violett-blauen Magieimpuls aus ihrem Stab und Wächter stößt seinen Schild mit sichtbarer Schutz-Druckwelle vor. Klassenbezogene Kampfansagen, sichtbare Boss-Zielmarkierung pro Spieler und synchroner Waffen-/Figuren-Takt. Rein visuell, **kein Schaden oder Bonus geändert**. Echte Drei-Geräte-Sichtabnahme weiterhin offen.
-- [ ] **K-03 – Treffer-Effekte und LP synchronisieren:** Pop-up direkt am Ziel, Blocken/Ausweichen gesondert markieren, persönliche HP exakt beim Treffer aktualisieren. **Fertig:** kein verspätetes oder doppelt gezeigtes Pop-up.
+- [x] **K-03 – Treffer-Effekte und LP synchronisieren (technisch umgesetzt):** Ein gemeinsamer schreibfreier `combatVitals(view,now)`-Projektor für Boss-/Team-/persönliche Helden-LP, Boss-Zahlen und Fokus-Kamera. Die LP ändern sich ab bestätigtem serverseitigem Einschlag; heftiger Lichtblitz nicht vor bestätigtem Treffer. Eigene Anzeige für **AUSGEWICHEN!** (Dodge) und **BLOCK!** (Reaktion); Event-ID-Deduplizierung der einmaligen Schaden-Pop-ups und keine doppelte ältere HP-Anzeige. Finale Boss-LP aus `result.hpRemaining`. Tests automatisiert, Mehrgeräte-Sichttest offen.
 - [ ] **K-04 – Echte persönliche Überlebensmechanik konzipieren:** Aktuelle Mindest-LP-Regel (50 %) prüfen; festlegen, ob und wie Helden auf 0 LP fallen dürfen, welche Rettungsmechaniken gelten und ob die Kampfzeit für ausgefallene Spieler weiterläuft. **Fertig:** vor Änderung des Balancings abgesprochene Regeln und Simulationen.
 - [ ] **K-05 – Spannender, transparenter Schlussangriff:** Nach Kettenbrecher drei persönliche Schlussangriffe, dann exakt eine Sieg-/Niederlageentscheidung. Kein „unsichtbarer“ Zusatzschaden.
 - [ ] **K-06 – Individuelle Bossattacken:** Tor-10-Aschewächter zuerst; danach eigene Waffen-/Attacken-Optik für Boss 20–100, ohne getrennte Spiellogiken pro Boss.
@@ -370,8 +380,10 @@ Die bestehenden Schwerter, Zauberstäbe und Schilde bleiben bestehen. Der Client
 
 | 12.11.2026 | **K-02 technisch umgesetzt** | Klassenangriffe Klinge/Magie/Schild; synchronisierte Figur-, Waffen- und Klassen-Effekte; Boss markiert individuellen Gegner; keine neuen Spieldaten/Abfragen. | Gezielter Arena-Test und CI nach Commit; echter Mehrgeräte-Blick ausstehend | 0 zusätzliche Firestore-Reads/Writes | [Waffen-CSS](../dog-boss-weapon-strikes.css) · [Kampf-Arena](../dog-boss-battle-v3.js) |
 
+| 12.11.2026 | **K-03 technisch umgesetzt** | Boss-/Team-/Helden-LP, Boss-Zahlen und Kamera nutzen dasselbe bestätigte Ereignis und dieselbe Uhrzeit; Ausweichen/Blocken differenziert; keine doppelten Popups. | Gezielte Arena-/Live-UI-Tests plus CI; echte Mehrgeräteprüfung offen | **0 zusätzliche Firestore-Reads/Writes** | [Live-UI](../dog-boss-live-ui.js) · [Arena](../dog-boss-battle-v3.js) |
+
 **Definition von „fertig“:** Funktion auf GitHub `main` integriert, Frontend-/Backend-Tests erfolgreich, auf echter Anzeige nachvollziehbar, keine ungeklärten Doppelbuchungen oder unnötigen Firestore-Mehrzugriffe, Task abgehakt und Fortschrittsprotokoll ergänzt.
 
-**Nächster Entwicklungsblock:** **K-03 – die exakten Treffer-Pop-ups und LP-Anzeigen auf denselben Servereinschlag abstimmen**, ohne doppelte Effekte beim Nachladen oder Netzwerkausfall. K-01 und K-02 sind technisch integriert; echter Mehrgeräte-Sichttest sowie A-01e/A-02e-Messreihen bleiben offen.
+**Nächster Entwicklungsblock:** **K-04 – die bisherige Überlebensregel (Mindest-LP) fachlich prüfen und ein verbessertes Modell entwerfen, ohne ungefragt das Balancing umzubauen.** K-01 bis K-03 sind technisch integriert; echte Mehrgeräte-Sichtprüfung und A-01e/A-02e-Messreihen bleiben offen.
 
 **Nächste konkrete Schritte:** **A-01e** – bereits dokumentierten kontrollierten Praxiswert (145 Reads / 26 Writes) bei künftigen Spielen um Leerlauf und weitere Szenarien ergänzen und **A-02e** – mit dem neuen `netdiag=1`-Messfeld die reale 1/2/3-Geräte-Baseline plus Nova/Titan erheben. Danach A-01/A-02 abnehmen. **Keine Optimierung als abgeschlossen bezeichnen, solange der Vergleich zur Live-Baseline fehlt.**

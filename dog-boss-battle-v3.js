@@ -41,7 +41,8 @@
   if(state.beat==='impact'){
    if(!state.confirmed)return '💥 Einschlag bei '+target+' – prüfe Treffer';
    if(state.kind==='boss-strike'&&state.confirmedDamage===0)
-    return '🛡️ '+name+' blockt den Boss!';
+    return state.roundKind==='dodge'?
+     '💨 '+name+' weicht aus!':'🛡️ '+name+' blockt den Boss!';
    return '💥 '+actor+' trifft '+target+'!';
   }
   if(state.beat==='recovery')return '↩️ '+actor+' zieht sich zurück';
@@ -87,8 +88,11 @@
      candidate>=slotStart&&candidate<slotStart+slotDuration;
     const impactAtMs=confirmedAt?candidate:Math.round(scriptedAtMs);
     const phaseElapsed=sceneTime-slot*slotDuration;
-    const impact=elapsed>=impactAtMs&&elapsed<impactAtMs+IMPACT_VISUAL_MS;
+    // Cinematic motion can run without a score; flashes cannot.
+    const impact=elapsed>=impactAtMs&&elapsed<impactAtMs+IMPACT_VISUAL_MS&&
+     (Number(view?.miniGames?.version)<11||!!server);
     return {kind,index:i,uid,slot,progress,impact,elapsed,defensive,
+     roundKind:r.kind,
      slotDuration,impactAtMs,
      beat:beat(phaseElapsed,impactAtMs-slotStart,slotDuration),
      confirmed:!!server,confirmedDamage:server?Math.max(0,Number(server.amount)||0):null,
@@ -155,19 +159,23 @@
      const defender=e.kind==='boss-strike';
      const name=nameMap.get(e.uid)||'Held';
      const dmg=Math.max(0,Math.round(Number(e.amount)||0));
+     const dodged=e.kind==='boss-strike'&&dmg===0&&
+      view?.miniGames?.rounds?.[e.round]?.kind==='dodge';
      return e.kind==='boss-guard'?
       '🛡️ Glücksabwehr: +'+fmt.format(-e.amount)+' Boss-LP':
       e.kind==='team-finisher'?
        '⚡ Team → Boss: −'+fmt.format(dmg)+' LP':
-      defender?'🛡️ '+name+': '+(dmg?'−'+fmt.format(dmg)+' LP':'BLOCK!'):
+      defender?'🛡️ '+name+': '+(dmg?'−'+fmt.format(dmg)+' LP':
+       dodged?'AUSGEWICHEN!':'BLOCK!'):
        '🔥 '+name+' → Boss: −'+fmt.format(dmg)+' LP';
     }).join(' · '):'Noch keine bestätigten Treffer';
    }
    // Damage is displayed exactly once per official hit, even if a network
    // response contains an older stage. A reconnect never creates old FX.
    for(const server of timeline){
-    const key=String(view.startedAt)+':'+String(view.attempt||0)+':'+
-     server.round+':'+server.kind+':'+server.slot+':'+server.uid+':'+server.atMs;
+    const key=server.eventId||String(view.startedAt)+':'+
+    String(view.attempt||0)+':'+server.round+':'+server.kind+':'+
+    server.slot+':'+server.uid+':'+server.atMs;
     if(played.has(key))continue;
     played.add(key);
     const late=state.elapsed-server.atMs;
@@ -178,14 +186,17 @@
     const target=defender?heroNodes.get(server.uid):boss;
     if(!target||typeof document==='undefined')continue;
     const damage=Math.max(0,Math.round(Math.abs(Number(server.amount)||0)));
+    const dodged=defender&&damage===0&&
+     view?.miniGames?.rounds?.[server.round]?.kind==='dodge';
     const popup=document.createElement('strong');
     popup.className='v3-floating-damage '+(defender?
-     (damage?'is-hero-hit':'is-blocked'):'is-boss-hit');
+     (damage?'is-hero-hit':dodged?'is-dodged':'is-blocked'):'is-boss-hit');
     popup.textContent=server.kind==='boss-guard'?
      '🛡️ +'+fmt.format(damage):
      server.kind==='team-finisher'?
       '⚡ −'+fmt.format(damage):
-     defender?(damage?'−'+fmt.format(damage):'BLOCK!'):
+     defender?(damage?'−'+fmt.format(damage):
+      dodged?'AUSGEWICHEN!':'BLOCK!'):
       '−'+fmt.format(damage);
     popup.setAttribute?.('aria-hidden','true');
     target.append?.(popup);
