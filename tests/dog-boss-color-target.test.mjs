@@ -84,7 +84,7 @@ test('old v9 moving target path remains intact',()=>{
  assert.equal(buttons.length,3);
  assert.equal(root.classList.contains('is-color-target'),false);
 });
-test('both boss arenas load fast target art and 101s rules without per-frame network',()=>{
+test('both boss arenas load fast target art and current 135s five-minigame rules without per-frame network',()=>{
  const source=read('dog-boss-mini-ui.js'),css=read('dog-boss-color-target.css');
  assert.match(source,/targetChoices\.push\(value\)/);
  assert.match(source,/flushTarget\(\)/);
@@ -94,6 +94,6 @@ test('both boss arenas load fast target art and 101s rules without per-frame net
  for(const page of ['dog-boss10.html','dog-group-boss.html']){
   const html=read(page);
   assert.match(html,/dog-boss-color-target\.css/);
-  assert.match(html,/101 Sekunden/);
+  assert.match(html,/135 Sekunden/);
  }
 });
