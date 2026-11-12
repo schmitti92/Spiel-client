@@ -226,7 +226,7 @@
  }
  const levelFor=id=>view?.hero?.levels?.[id]??(id==='weapon'||id==='armor'?1:0);
  const quoteFor=id=>view?.quotes?.find(q=>q.itemId===id);
- const canUpgradeItem=id=>{const q=quoteFor(id);return !!q&&!q.maxed&&q.affordable;};
+ const canUpgradeItem=id=>{const q=quoteFor(id);return !!q&&!q.maxed&&!q.locked&&q.affordable;};
  const have=id=>view?.inventory?.resources?.[id]||0;
  const itemFor=id=>view?.items?.find(x=>x.id===id);
  const usable=()=>!!uid&&auth()?.user?.uid===uid&&!!view&&!busy&&!pending(uid);
@@ -450,7 +450,7 @@
    const q=quoteFor(item.id);
    if(q){
     const stateText=q.maxed?'✦ Maximal':q.locked?'🔒 Gesperrt':q.affordable?'✓ Bereit':'Rohstoffe fehlen';
-    info.append(node('span','item-ready-tag '+(q.maxed?'maxed-tag':q.affordable?'ready-tag':'missing-tag'),stateText));
+    info.append(node('span','item-ready-tag '+(q.maxed?'maxed-tag':q.locked?'missing-tag':q.affordable?'ready-tag':'missing-tag'),stateText));
    }
    const track=node('div','item-bar'),fill=node('span');
    fill.style.width=Math.min(100,Math.round(levelFor(item.id)/item.maxLevel*100))+'%';
