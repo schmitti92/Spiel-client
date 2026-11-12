@@ -166,6 +166,13 @@
      <tbody id="br-attack-rows"></tbody>
     </table></div>
     <p class="br-muted" id="br-attack-note">Treffer aus den Zwischensequenzen. Der verbindliche Endschaden wird separat serverseitig ermittelt.</p>
+    <details class="br-attack-details" id="br-strike-details">
+     <summary>📜 Jeden Einzelangriff ansehen</summary>
+     <div class="br-table-scroll"><table>
+      <thead><tr><th>Runde</th><th>Angreifer</th><th>Ziel</th><th>Treffer</th></tr></thead>
+      <tbody id="br-strike-rows"></tbody>
+     </table></div>
+    </details>
     <div class="br-final-damage"><span>💥 Endgültiger Teamschaden</span><strong id="br-final-damage"></strong></div>
    </section>
    <section class="br-panel br-advice">
@@ -300,6 +307,16 @@
     attackNodes.push(tr);
    }
    vitals.replaceChildren(...heroNodes);attacks.replaceChildren(...attackNodes);
+   const individualHits=replay.map(e=>{
+    const tr=make('tr');
+    const againstBoss=e.kind==='hero-strike';
+    for(const v of ['Runde '+(e.round+1),againstBoss?e.name:report.bossName,
+     againstBoss?report.bossName:e.name,
+     e.blocked?'BLOCK!':'−'+fmt.format(e.amount)+' LP'])tr.append(make('td',null,v));
+    return tr;
+   });
+   node('br-strike-rows').replaceChildren(...individualHits);
+   node('br-strike-details').hidden=!individualHits.length;
    text(node('br-final-damage'),fmt.format(result.damage)+' LP');
    text(node('br-score-value'),score.percent===null?'–':score.percent+' %');
    text(node('br-score-grade'),score.grade);
