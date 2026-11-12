@@ -5,7 +5,7 @@
 (()=>{
  'use strict';
  const taskNames={dodge:'🛡️ Ausweichen',reaction:'⚡ Reaktion',
-  math:'🧮 Blitz-Mathe',target:'🎯 Zieltreffer'};
+  math:'🧮 Blitz-Mathe',target:'🎯 Zieltreffer',chain:'⛓️ Kettenbrecher'};
  const $=(root,selector)=>root?.querySelector?.(selector)||null;
  const text=(node,value)=>{if(node&&node.textContent!==value)node.textContent=value;};
  const parseMs=value=>Number.isFinite(Number(value))?Number(value):0;
@@ -381,7 +381,8 @@
      '🔥 Gesamtbonus: +'+fmt.format(cumulative):
      'Gemeinsamer Angriff wird vorbereitet');
    }
-   const upcoming=next?.round===4&&view?.miniGames?.version>=12?
+   const upcoming=next?.kind==='chain'&&view?.miniGames?.version>=13?
+    '⛓️ Kettenbrecher':next?.round===4&&view?.miniGames?.version>=12?
     '🔥 Finaler Schlag':next?.kind==='target'&&view?.miniGames?.version>=10?
     '🎨 Farb- und Symbol-Treffer':next?({'dodge':'🛡️ Ausweichen','target':'🎯 Zieltreffer',
     'reaction':'⚡ Reaktion','math':'🧮 Blitz-Mathe'}[next.kind]||'Nächste Runde'):
@@ -399,7 +400,7 @@
    const defensive=!!stage?.defensive;
    const labels={math:'🧮 Blitz-Mathe',dodge:'🛡️ Ausweichen',
     target:(view?.miniGames?.version||0)>=10?'🎨 Farbe & Symbole':'🎯 Zieltreffer',
-    reaction:'⚡ Reaktion'};
+    reaction:'⚡ Reaktion',chain:'⛓️ Kettenbrecher'};
    if((view?.miniGames?.version||0)>=12&&round.round===4)
     labels.target='🔥 Finaler Schlag';
    text(nodes.resultsTitle,(labels[round.kind]||'Herausforderung')+' · Ergebnis');
@@ -608,7 +609,8 @@
    for(const [i,node] of steps.entries()){
     const round=rounds[i],answer=answers[i];
     node.hidden=!round;
-    const kind=round?.round===4&&view?.miniGames?.version>=12?
+    const kind=round?.kind==='chain'&&view?.miniGames?.version>=13?
+     '⛓️ Kettenbrecher':round?.round===4&&view?.miniGames?.version>=12?
      '🔥 Finaler Schlag':round?.kind==='target'&&view?.miniGames?.version>=10?
      '🎨 Farb- und Symbol-Treffer':taskNames[round?.kind]||'Aufgabe';
     const value=(i+1)+' · '+kind;
