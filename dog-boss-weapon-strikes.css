@@ -388,3 +388,122 @@
   animation:none!important;
  }
 }
+
+
+/* K-02 · three unmistakable class animations anchored to the same
+ * authoritative strike slot. Decorative only: no damage or game logic. */
+.arena-live[data-arena-design="v3"] .combat-hero .v3-class-effect{
+ position:absolute;inset:0;z-index:10;pointer-events:none;
+ overflow:visible;opacity:0;
+}
+.arena-live[data-arena-design="v3"] .combat-hero .v3-class-effect::before,
+.arena-live[data-arena-design="v3"] .combat-hero .v3-class-effect::after{
+ content:"";position:absolute;pointer-events:none;opacity:0;
+ transform-origin:center;
+}
+.arena-live[data-arena-design="v3"] .combat-hero[data-v3-active="true"] .v3-class-effect{opacity:1}
+/* Krieger: broad gold steel arc follows the physical sword. */
+.arena-live[data-arena-design="v3"] .combat-hero[data-v3-active="true"][data-hero-class="krieger"] .v3-class-effect::before{
+ width:92%;height:72%;left:-59%;top:9%;
+ border-top:clamp(4px,.7vw,9px) solid #fff2ca;
+ border-left:clamp(3px,.4vw,6px) solid #fcae50;
+ border-radius:50% 40% 0 0;
+ box-shadow:0 -9px 22px #ffca6599,inset 0 8px 13px #ffd97866;
+ animation:v3-warrior-blade var(--v3-duration) linear both;
+ animation-delay:var(--v3-delay);
+}
+.arena-live[data-arena-design="v3"] .combat-hero[data-v3-active="true"][data-hero-class="krieger"] .v3-class-effect::after{
+ width:35%;height:12%;left:-28%;top:42%;
+ background:linear-gradient(90deg,transparent,#ffe6a1,#fff);
+ filter:blur(7px);border-radius:80%;
+ animation:v3-warrior-spark var(--v3-duration) linear both;
+ animation-delay:var(--v3-delay);
+}
+/* Magierin: a bright arcane bolt travels from the staff toward the boss. */
+.arena-live[data-arena-design="v3"] .combat-hero[data-v3-active="true"][data-hero-class="magierin"] .v3-class-effect::before{
+ width:38%;aspect-ratio:1;left:46%;top:19%;border-radius:50%;
+ background:radial-gradient(circle,#fff 0 10%,#aaf9ff 20%,#418fff 46%,#9464f6 70%,transparent 74%);
+ box-shadow:0 0 17px #5de4ff,0 0 35px #6d6dff;
+ animation:v3-arcane-projectile var(--v3-duration) linear both;
+ animation-delay:var(--v3-delay);
+}
+.arena-live[data-arena-design="v3"] .combat-hero[data-v3-active="true"][data-hero-class="magierin"] .v3-class-effect::after{
+ width:64%;height:15%;left:14%;top:37%;border-radius:100%;
+ background:linear-gradient(90deg,transparent,#72d9ffbb,#fff);
+ filter:blur(6px);
+ animation:v3-arcane-trail var(--v3-duration) linear both;
+ animation-delay:var(--v3-delay);
+}
+/* Wächter: a wide shield shockwave rather than a sword or projectile. */
+.arena-live[data-arena-design="v3"] .combat-hero[data-v3-active="true"][data-hero-class="waechter"] .v3-class-effect::before{
+ width:66%;height:66%;left:-14%;top:18%;border:clamp(3px,.4vw,6px) solid #a9efff;
+ border-radius:44% 44% 55% 55%;
+ box-shadow:0 0 17px #55dfff,inset 0 0 21px #7abfff99;
+ background:radial-gradient(ellipse,#d8fbff77,transparent 72%);
+ animation:v3-guardian-shockwave var(--v3-duration) linear both;
+ animation-delay:var(--v3-delay);
+}
+.arena-live[data-arena-design="v3"] .combat-hero[data-v3-active="true"][data-hero-class="waechter"] .v3-class-effect::after{
+ width:46%;height:60%;left:-5%;top:20%;
+ border-left:clamp(4px,.7vw,9px) solid #f9dfa3;
+ border-radius:50%;filter:drop-shadow(0 0 12px #ffeea9);
+ animation:v3-guardian-push var(--v3-duration) linear both;
+ animation-delay:var(--v3-delay);
+}
+@keyframes v3-warrior-blade{
+ 0%,31%,100%{opacity:0;transform:rotate(80deg) scale(.3)}
+ 43%{opacity:.25;transform:rotate(30deg) scale(.85)}
+ 54%{opacity:1;transform:rotate(-34deg) scale(1.15)}
+ 66%{opacity:.45;transform:rotate(-61deg) scale(1.28)}
+ 83%{opacity:0;transform:rotate(-70deg) scale(1.4)}
+}
+@keyframes v3-warrior-spark{
+ 0%,44%,76%,100%{opacity:0;transform:scale(.4)}
+ 54%{opacity:.95;transform:scale(1.4)}
+ 65%{opacity:.3;transform:scale(1.9)}
+}
+@keyframes v3-arcane-projectile{
+ 0%,21%,100%{opacity:0;transform:translate(0,0) scale(.2)}
+ 37%{opacity:.75;transform:translate(-10%,0) scale(.8)}
+ 46%{opacity:1;transform:translate(-45%,0) scale(1.1)}
+ 54%{opacity:1;transform:translate(-170%,-10%) scale(1.65)}
+ 68%{opacity:.3;transform:translate(-205%,-15%) scale(2)}
+ 81%{opacity:0;transform:translate(-205%,-15%) scale(2)}
+}
+@keyframes v3-arcane-trail{
+ 0%,37%,100%{opacity:0;transform:scaleX(.1)}
+ 49%{opacity:.8;transform:translateX(-65%) scaleX(1.5)}
+ 54%{opacity:1;transform:translateX(-120%) scaleX(2)}
+ 73%{opacity:0;transform:translateX(-145%) scaleX(2)}
+}
+@keyframes v3-guardian-shockwave{
+ 0%,24%,100%{opacity:0;transform:translateX(20%) scale(.45)}
+ 41%{opacity:.6;transform:translateX(-5%) scale(.9)}
+ 54%{opacity:1;transform:translateX(-65%) scale(1.3)}
+ 72%{opacity:.15;transform:translateX(-100%) scale(1.75)}
+ 84%{opacity:0;transform:translateX(-100%) scale(1.75)}
+}
+@keyframes v3-guardian-push{
+ 0%,36%,100%{opacity:0;transform:scale(.5)}
+ 54%{opacity:1;transform:translateX(-50%) scale(1.1)}
+ 72%{opacity:.2;transform:translateX(-80%) scale(1.4)}
+}
+/* The boss marks exactly the targeted player during its winding strike.
+ * The shield aura is visual telegraphing, NOT a claim of successful block. */
+.arena-live[data-arena-design="v3"] .combat-hero[data-v3-targeted="true"]{
+ outline:1px solid #ffb970b0;outline-offset:2px;
+}
+.arena-live[data-arena-design="v3"] .combat-hero[data-v3-targeted="true"] .combat-hero-name{
+ text-shadow:0 0 8px #ffab78,0 2px 4px #000;
+}
+@media(max-width:899px),(orientation:portrait){
+ .arena-live[data-arena-design="v3"] .combat-hero .v3-class-effect{
+  transform:scale(.72);transform-origin:60% 55%;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ .arena-live[data-arena-design="v3"] .combat-hero .v3-class-effect::before,
+ .arena-live[data-arena-design="v3"] .combat-hero .v3-class-effect::after{
+  animation:none!important;opacity:0!important;
+ }
+}

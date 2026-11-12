@@ -283,3 +283,59 @@ test('K-01 stage labels change during the same strike and never invent damage',(
  assert.equal(scene.dataset.v3Beat,'impact');
  assert.equal(boss.children.length,1);
 });
+
+// K-02 uses one reusable layer per hero, class-specific movements/labels,
+// and the same confirmed hit timing as K-01; this is a visual-only feature.
+test('K-02 class-specific sword, arcane bolt and shield wave share the server clock',()=>{
+ const source=read('dog-boss-weapon-strikes.css');
+ for(const [hero,fx] of [
+  ['krieger','v3-warrior-blade'],
+  ['magierin','v3-arcane-projectile'],
+  ['waechter','v3-guardian-shockwave']
+ ]){
+  assert.match(source,new RegExp('data-hero-class="'+hero+'"[^\\n]*v3-class-effect::before'));
+  assert.match(source,new RegExp('@keyframes '+fx+'\\{'));
+ }
+ assert.match(source,/animation-delay:var\(--v3-delay\)/);
+ assert.match(source,/animation:none!important;opacity:0!important/);
+ assert.doesNotMatch(source,/fetch\s*\(|XMLHttpRequest|Math\.random\(/);
+ const actorNode=(uid,hero)=>{
+  const el={dataset:{},children:[],style:{setProperty(){}},
+   attrs:{'data-hero-uid':uid},getAttribute(key){return this.attrs[key]},
+   setAttribute(key,v){this.attrs[key]=v},
+   querySelector(name){return this.children.find(c=>c.className===name.slice(1))||null},
+   append(child){this.children.push(child)}
+  };return el;
+ };
+ const actors=players.map(p=>actorNode(p.uid,p.heroClass));
+ const scene={dataset:{},style:{setProperty(){}},
+  querySelectorAll:()=>actors};
+ const action={hidden:false,textContent:''};
+ const root={dataset:{},querySelector(sel){return ({
+  '#combat-scene':scene,'#combat-boss':{dataset:{},style:{setProperty(){}}},
+  '#v3-actor-action':action
+ })[sel]||null}};
+ const doc={createElement:()=>({
+  dataset:{},setAttribute(){},className:''
+ })};
+ const window={};
+ runInNewContext(js,{window,document:doc},{timeout:1000});
+ const ui=window.DogBossArenaV3.create(root),v=view();
+ for(const [ms,uid] of [[13800,'chris'],[17300,'nova'],[20600,'titan']]){
+  ui.update(v,begin+ms);
+  const hero=actors.find(h=>h.getAttribute('data-hero-uid')===uid);
+  assert.equal(hero.children.filter(c=>c.className==='v3-class-effect').length,1);
+  ui.update(v,begin+ms+100);
+  assert.equal(hero.children.filter(c=>c.className==='v3-class-effect').length,1);
+ }
+ v.members=[{...players[0],heroClass:'krieger'},
+  {...players[1],heroClass:'magierin'},
+  {...players[2],heroClass:'waechter'}];
+ for(const [ms,word] of [[13800,'Klingenhieb'],[17500,'Magieimpuls'],
+  [21100,'Schildstoß']]){
+  ui.update(v,begin+ms);
+  assert.match(action.textContent,new RegExp(word));
+ }
+ for(const page of ['dog-boss10.html','dog-group-boss.html'])
+  assert.match(read(page),/dog-boss-weapon-strikes\.css\?v=20261112-k02-classes1/);
+});

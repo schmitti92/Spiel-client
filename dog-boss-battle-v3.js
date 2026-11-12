@@ -24,12 +24,20 @@
   const tail=Math.max(0,slotDuration-lead-IMPACT_VISUAL_MS);
   return slotElapsed<lead+IMPACT_VISUAL_MS+tail*.72?'recovery':'reset';
  };
- const describeStrike=(state,name,bossName)=>{
+ const HERO_MOVES=Object.freeze({
+  krieger:{windup:'spannt die Klinge',swing:'Klingenhieb'},
+  magierin:{windup:'bündelt Arkankraft',swing:'Magieimpuls'},
+  waechter:{windup:'stemmt den Schild vor',swing:'Schildstoß'}
+ });
+ const describeStrike=(state,name,bossName,heroClass)=>{
   const target=state.kind==='boss-strike'?name:bossName;
   const actor=state.kind==='boss-strike'?bossName:name;
   if(state.beat==='prepare')return '🛡️ '+actor+' nimmt seine Position ein';
-  if(state.beat==='windup')return '⚔️ '+actor+' holt zum Angriff aus';
-  if(state.beat==='swing')return '🔥 '+actor+' schlägt zu!';
+  const move=state.kind==='hero-strike'?HERO_MOVES[heroClass]:null;
+  if(state.beat==='windup')return '⚔️ '+actor+' holt zum Angriff aus'+
+   (move?' – '+move.windup:'');
+  if(state.beat==='swing')return '🔥 '+actor+' schlägt zu!'+
+   (move?' '+move.swing:'');
   if(state.beat==='impact'){
    if(!state.confirmed)return '💥 Einschlag bei '+target+' – prüfe Treffer';
    if(state.kind==='boss-strike'&&state.confirmedDamage===0)
@@ -113,6 +121,15 @@
     item.append?.(elem);
    }
    elem.dataset.weapon=type;
+   // A single decorative layer per hero. Every class gets a different
+   // motion synchronized with the existing CSS slot clock.
+   let classFx=query(item,'.v3-class-effect');
+   if(!classFx){
+    classFx=document.createElement('span');
+    classFx.className='v3-class-effect';
+    classFx.setAttribute?.('aria-hidden','true');
+    item.append?.(classFx);
+   }
   }
   function strikeEffects(view,state,heroNodes){
    const provided=Number(view?.miniGames?.version)>=11&&
@@ -222,9 +239,15 @@
       (43+(Number(state.slot)||0)*18.2+9)+'%':'31%');
    }
    const members=Array.isArray(view?.members)?view.members:[];
+   const roster=Array.isArray(view?.roster)?view.roster:[];
    nameMap.clear();
    for(const m of members)if(m?.uid)nameMap.set(m.uid,clean(m.name));
-   const key=motionKey+':'+state.beat+':'+state.confirmedDamage;
+   const actorInfo=members.find(m=>m.uid===state.uid)||
+    roster.find(m=>m.uid===state.uid);
+   const actorClass=ALLOWED.includes(actorInfo?.heroClass)?
+    actorInfo.heroClass:'krieger';
+   const key=motionKey+':'+state.beat+':'+state.confirmedDamage+
+    ':'+actorClass;
    if(action)action.hidden=!isStrike;
    if(key!==lastKey){
     lastKey=key;
@@ -232,7 +255,7 @@
      if(isStrike)
       action.textContent=describeStrike(state,
        nameMap.get(state.uid)||'Ein Held',
-       clean(view?.name||'Der Wächter'));
+       clean(view?.name||'Der Wächter'),actorClass);
      else if(state.kind==='countdown')action.textContent='⏳ Nächste Runde';
      else if(state.kind==='minigame')
       action.textContent='🎮 Runde '+(state.index+1)+' – zeige dein Können!';
@@ -252,7 +275,8 @@
     item.dataset.v3Targeted=targeted?'true':'false';
     item.dataset.v3Hit=targeted&&state.impact?'true':'false';
     item.dataset.v3Guard=targeted&&['prepare','windup','swing'].includes(state.beat)?'true':'false';
-    const current=members.find(m=>m.uid===uid);
+    const current=members.find(m=>m.uid===uid)||
+     roster.find(m=>m.uid===uid);
     const hero=ALLOWED.includes(current?.heroClass)?current.heroClass:'krieger';
     item.dataset.heroClass=hero;
     weapon(item,hero);
