@@ -135,8 +135,8 @@ function node(tag='div'){
 }
 test('result opens automatically, replays only supplied strikes, and closes/reopens without writes',()=>{
  const body=node('main'),open=node('button'),root=node('section');
- const forge=node('a'),map=node('a');
- forge.href='/dog-ascension.html';map.href='/dog-tor-map.html';
+ const portal=node('body');
+ portal.appendChild=el=>{portal.children.push(el);el.portaled=true};
  root.closest=()=>body;
  Object.defineProperty(root,'innerHTML',{
   set(html){
@@ -145,9 +145,8 @@ test('result opens automatically, replays only supplied strikes, and closes/reop
     root.nodes[match[1]]=node('div');
   }
  });
- const nodes={'#boss-result-open':open,'#to-forge':forge,'#to-map':map,
-  '.stage':body};
- const doc={querySelector:sel=>nodes[sel]||null,createElement:node};
+ const nodes={'#boss-result-open':open,'.stage':body};
+ const doc={body:portal,querySelector:sel=>nodes[sel]||null,createElement:node};
  const callbacks=[];
  const {create}=load({document:doc,setInterval:(fn)=>{callbacks.push(fn);return 1},
   clearInterval(){},Intl});
@@ -155,6 +154,12 @@ test('result opens automatically, replays only supplied strikes, and closes/reop
  ui.update(fakeView());
  assert.equal(root.hidden,false);
  assert.equal(body.classList.contains('boss-result-open'),true);
+ assert.equal(portal.children.includes(root),true,'the dialog is moved outside the stage');
+ assert.equal(portal.classList.contains('dog-boss-report-visible'),true);
+ assert.match(root.html,/class="br-dialog" role="dialog" aria-modal="true"/);
+ assert.match(root.html,/class="br-scroll"/);
+ assert.match(root.html,/id="br-return">✓ Bestätigen/);
+ assert.doesNotMatch(root.html,/id="br-forge"|id="br-map"/);
  assert.equal(root.nodes['br-hero-vitals'].children.length,3);
  assert.equal(root.nodes['br-attack-rows'].children.length,3);
  assert.equal(root.nodes['br-strike-rows'].children.length,8);
@@ -165,29 +170,40 @@ test('result opens automatically, replays only supplied strikes, and closes/reop
  assert.equal(root.nodes['br-score-value'].textContent,'62 %');
  assert.match(root.nodes['br-title'].textContent,/NIEDERLAGE/);
  assert.equal(root.nodes['br-final-damage'].textContent,'900 LP');
- assert.equal(root.nodes['br-forge'].href,forge.href);
+ assert.equal(root.nodes['br-return'].textContent,''); // test DOM parser cannot populate inner text
+ assert.equal(root.nodes['br-replay-start'].disabled,false);
  root.nodes['br-replay-start'].click();
  assert.match(root.nodes['br-replay-caption'].textContent,/Blitz-Mathe/);
  assert.equal(root.nodes['br-replay-hit'].textContent,'−200 LP');
  callbacks[0]();
  assert.equal(root.nodes['br-replay-hit'].textContent,'−150 LP');
+ ui.update(fakeView());
+ assert.equal(root.hidden,false,'polling must never close the modal');
+ assert.equal(open.hidden,true);
+ root.click();
+ assert.equal(root.hidden,false,'backdrop click must not dismiss the statistics');
  root.nodes['br-return'].click();
  assert.equal(root.hidden,true);
  assert.equal(open.hidden,false);
+ assert.equal(portal.classList.contains('dog-boss-report-visible'),false);
  ui.update(fakeView());
  assert.equal(root.hidden,true,'polling does not reopen a dismissed report');
  open.click();
  assert.equal(root.hidden,false);
+ assert.equal(portal.classList.contains('dog-boss-report-visible'),true);
  const next={...fakeView(true),attempt:3};
  ui.update(next);
  assert.match(root.nodes['br-title'].textContent,/SIEG/);
+ assert.equal(root.hidden,false,'new battle outcome reopens confirmation');
  ui.update({...next,phase:'fighting',result:null});
  assert.equal(root.hidden,true);
  assert.equal(body.classList.contains('boss-result-open'),false);
+ assert.equal(portal.classList.contains('dog-boss-report-visible'),false);
 });
 test('both arena screens include conclusion and local replay, with no client-side combat writes',()=>{
  const css=read('dog-boss-result-report.css');
- for(const token of ['boss-result-open','br-grade-scale','br-attack','br-replay-stage',
+ for(const token of ['dog-boss-report-visible','br-grade-scale','br-attack','br-replay-stage',
+  'br-dialog','br-scroll','br-footer-caption',
   'prefers-reduced-motion'])assert.ok(css.includes(token),token);
  assert.doesNotMatch(src,/\bfetch\s*\(|XMLHttpRequest|localStorage|firebase|Math\.random\(/i);
  for(const file of ['dog-boss10.html','dog-group-boss.html']){
