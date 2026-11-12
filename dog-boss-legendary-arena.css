@@ -1,0 +1,612 @@
+/* 100 Tore · LEGENDARY ARENA visual upgrade (v1)
+ * Shared Boss 10–100 visual skin. Server remains the sole source of HP,
+ * combat clock, hits, rewards and round progress.
+ * Deliberately CSS-only effects: no frame-by-frame networking or canvas.
+ */
+:root{
+ --la-gold:#f8d28a;
+ --la-gold-light:#fff0bd;
+ --la-gold-deep:#a7662b;
+ --la-obsidian:#0b1120;
+ --la-cyan:#8bdcf8;
+ --la-red:#ff694d;
+}
+body:has(.stage[data-screen="battle"]){
+ background:radial-gradient(ellipse at 51% -8%,#59302e,#111526 45%,#060a14 100%);
+}
+.stage[data-screen="battle"]>.arena-live[data-arena-design="legendary"]{
+ position:relative;
+ border:2px solid #d8a759;
+ border-radius:clamp(13px,1.3vw,24px);
+ padding:clamp(7px,1vw,14px);
+ gap:clamp(6px,1vh,12px);
+ background:
+  linear-gradient(180deg,#070d1dc9,#080c1bdf 40%,#0a1020ed),
+  url("./dog-boss-art/arena-volcano-cinematic.svg") center 51%/cover no-repeat;
+ box-shadow:0 0 0 2px #38241f,0 0 0 4px #d19b4b45,
+  inset 0 0 0 1px #ffe1a14b,inset 0 0 80px #080913bb,
+  0 15px 55px #010306df;
+}
+.arena-live[data-arena-design="legendary"]::before{
+ content:"";position:absolute;inset:4px;border-radius:inherit;
+ border:1px solid #ffeac12c;pointer-events:none;z-index:0;
+ background:
+  radial-gradient(circle at 1% 1%,#ffe0a0 0 2px,transparent 3px),
+  radial-gradient(circle at 99% 1%,#ffe0a0 0 2px,transparent 3px),
+  radial-gradient(circle at 1% 99%,#ffe0a0 0 2px,transparent 3px),
+  radial-gradient(circle at 99% 99%,#ffe0a0 0 2px,transparent 3px);
+}
+.arena-live[data-arena-design="legendary"] .live-arena-heading{
+ position:relative;z-index:1;
+ display:flex;align-items:center;justify-content:center;
+ min-height:59px;
+ padding:5px clamp(100px,10vw,165px);
+ border:0;border-bottom:1px solid #f5bf7973;
+ background:
+  linear-gradient(90deg,transparent,#ce90483b 25%,#29182a99 50%,#ce90483b 75%,transparent);
+}
+.arena-live[data-arena-design="legendary"] .live-heading-text{
+ min-width:0;text-align:center;
+}
+.arena-live[data-arena-design="legendary"] .live-heading-text small{
+ display:block;
+ font:800 clamp(9px,.95vw,13px)/1.2 system-ui,sans-serif;
+ letter-spacing:clamp(.08em,.2vw,.21em);
+ color:#fff0c3;
+ text-shadow:0 0 8px #fa983d8f;
+}
+.arena-live[data-arena-design="legendary"] .live-heading-text h2{
+ margin:2px 0 0;
+ font:900 clamp(24px,2.9vw,48px)/1 Georgia,"Times New Roman",serif;
+ color:#ffe5a6;
+ letter-spacing:.01em;
+ text-shadow:0 2px 0 #5a2d20,0 4px 2px #120b16,
+  0 0 18px #ff944da8,0 0 33px #ff753966;
+}
+.arena-live[data-arena-design="legendary"] .live-arena-heading::before,
+.arena-live[data-arena-design="legendary"] .live-arena-heading::after{
+ content:"✦";position:absolute;top:50%;transform:translateY(-50%);
+ color:#ffcf7a;font-size:clamp(17px,2vw,27px);
+ text-shadow:0 0 16px #ff9250;
+}
+.arena-live[data-arena-design="legendary"] .live-arena-heading::before{left:clamp(8px,6vw,140px)}
+.arena-live[data-arena-design="legendary"] .live-arena-heading::after{right:clamp(8px,6vw,140px)}
+.arena-live[data-arena-design="legendary"] .status-pill{
+ position:absolute;right:9px;top:50%;transform:translateY(-50%);z-index:1;
+ max-width:min(29%,190px);overflow:hidden;text-overflow:ellipsis;
+ padding:6px 11px;border-radius:8px;
+ border:1px solid #f7cd86b8;
+ background:linear-gradient(155deg,#402628e8,#15152be8);
+ box-shadow:0 0 12px #ffb05a25,inset 0 1px #ffe9ba45;
+ color:#ffe5b6;font-size:clamp(10px,.85vw,13px);
+}
+/* Cinematic brass-framed vitals, including authentic server HP figures. */
+.arena-live[data-arena-design="legendary"] .live-metrics{
+ position:relative;z-index:1;
+ display:grid;grid-template-columns:minmax(0,1.28fr) minmax(0,1.02fr) minmax(165px,.51fr);
+ gap:clamp(7px,.85vw,14px);
+ align-items:stretch;
+}
+.arena-live[data-arena-design="legendary"] .live-hp,
+.arena-live[data-arena-design="legendary"] .live-team-shield,
+.arena-live[data-arena-design="legendary"] .live-timer{
+ position:relative;isolation:isolate;min-width:0;
+ min-height:79px;gap:7px;
+ padding:11px 12px 9px clamp(56px,5vw,75px);
+ border:2px solid #d0a063;
+ border-radius:13px;
+ background:linear-gradient(180deg,#2a1829f7,#151426f7 47%,#170e1ef8);
+ box-shadow:
+  inset 0 0 0 1px #ffdf9f45,inset 0 0 19px #0007,
+  0 0 0 2px #3d281edb,0 5px 13px #0009;
+}
+.arena-live[data-arena-design="legendary"] .live-team-shield{
+ border-color:#83bfe1;
+ background:linear-gradient(180deg,#23314df7,#102135f9 52%,#0a172bed);
+ box-shadow:inset 0 0 0 1px #c9f5ff5a,inset 0 0 18px #040e21,
+  0 0 0 2px #152d46,0 5px 15px #0009;
+}
+.arena-live[data-arena-design="legendary"] .live-timer{
+ padding-left:clamp(45px,4vw,65px);
+ border-color:#ecbc6e;
+ background:linear-gradient(150deg,#2e1c2bef,#171524 67%,#291b28eb);
+}
+.arena-live[data-arena-design="legendary"] .live-hp::after,
+.arena-live[data-arena-design="legendary"] .live-team-shield::after,
+.arena-live[data-arena-design="legendary"] .live-timer::after{
+ content:"";position:absolute;inset:4px;z-index:-1;
+ border:1px solid #ffd9a12e;border-radius:8px;pointer-events:none;
+}
+.arena-live[data-arena-design="legendary"] .live-vital-crest{
+ position:absolute;z-index:2;left:clamp(5px,.65vw,10px);top:50%;
+ transform:translateY(-50%);
+ display:grid;place-items:center;
+ width:clamp(39px,3.5vw,55px);height:clamp(39px,3.5vw,55px);
+ font-size:clamp(22px,2vw,32px);
+ border-radius:50%;border:2px solid #ffd699;
+ background:radial-gradient(circle at 35% 24%,#845034,#281629 75%);
+ box-shadow:inset 0 0 0 2px #654225,inset 0 3px 8px #ffe1a130,
+  0 0 16px #ff9c4a76;
+ text-shadow:0 1px #211527,0 0 9px #ffe8c2;
+ pointer-events:none;
+}
+.arena-live[data-arena-design="legendary"] .team-crest{
+ border-color:#a6edff;
+ background:radial-gradient(circle at 40% 20%,#3b7e9d,#123459 75%);
+ box-shadow:inset 0 0 0 2px #224a71,0 0 17px #6dd6ff8e;
+}
+.arena-live[data-arena-design="legendary"] .time-crest{
+ width:clamp(32px,2.9vw,45px);height:clamp(32px,2.9vw,45px);
+ font-size:clamp(21px,1.7vw,29px);
+}
+.arena-live[data-arena-design="legendary"] .live-meter-label,
+.arena-live[data-arena-design="legendary"] .live-shield-label,
+.arena-live[data-arena-design="legendary"] .timer-row{
+ display:flex;align-items:baseline;justify-content:space-between;gap:6px;
+ min-width:0;padding:0;line-height:1.14;
+}
+.arena-live[data-arena-design="legendary"] .live-meter-label span,
+.arena-live[data-arena-design="legendary"] .live-shield-label span,
+.arena-live[data-arena-design="legendary"] .timer-row span{
+ color:#f7d79a;letter-spacing:.045em;
+ font:900 clamp(10px,1vw,15px)/1.2 Georgia,serif;
+ white-space:nowrap;
+}
+.arena-live[data-arena-design="legendary"] .live-shield-label span{color:#c3efff}
+.arena-live[data-arena-design="legendary"] #boss-hp,
+.arena-live[data-arena-design="legendary"] #live-shield-value{
+ color:#fff4e0;
+ font:900 clamp(14px,1.5vw,25px)/1.05 Georgia,serif;
+ font-variant-numeric:tabular-nums;white-space:nowrap;
+ text-shadow:0 2px 5px #02050e,0 0 9px #ffd69b45;
+}
+.arena-live[data-arena-design="legendary"] #live-shield-value{
+ color:#d5f5ff;text-shadow:0 0 11px #57b9fa88;
+}
+.arena-live[data-arena-design="legendary"] .live-hp-track,
+.arena-live[data-arena-design="legendary"] .live-shield-track{
+ position:relative;height:clamp(13px,1.6vh,19px);
+ border:2px solid #f4bb79;border-radius:99px;
+ background:#120d1c;
+ box-shadow:inset 0 3px 5px #000a,0 0 10px #ff86473c;
+ overflow:hidden;
+}
+.arena-live[data-arena-design="legendary"] .live-shield-track{
+ border-color:#85c5f1;background:#08172d;
+ box-shadow:inset 0 2px 6px #020a1c,0 0 12px #56bbfb5c;
+}
+.arena-live[data-arena-design="legendary"] .live-hp-track>span{
+ background:linear-gradient(180deg,#ffe2ab 0%,#ff785a 27%,#f54448 60%,#99102c);
+ box-shadow:0 0 16px #fa5437b5,inset 0 2px 5px #fff8b57a;
+}
+.arena-live[data-arena-design="legendary"] .live-shield-track>span{
+ background:linear-gradient(180deg,#f0ffff,#84deff 38%,#269de6 72%,#145bb8);
+ box-shadow:0 0 17px #54ddffc5,inset 0 2px 4px #fff;
+}
+.arena-live[data-arena-design="legendary"] .live-hero-health{
+ margin-top:1px;gap:clamp(2px,.4vw,6px);
+}
+.arena-live[data-arena-design="legendary"] .live-hero-health-name,
+.arena-live[data-arena-design="legendary"] .live-hero-health-card b{
+ color:#e7f7ff;font-size:clamp(8px,.71vw,11px);
+}
+.arena-live[data-arena-design="legendary"] .timer-row{
+ flex-direction:column;align-items:center;gap:2px;text-align:center;
+}
+.arena-live[data-arena-design="legendary"] .timer-row strong{
+ font:900 clamp(20px,2.1vw,34px)/1 Georgia,serif;
+ font-variant-numeric:tabular-nums;
+ color:#fff3ce;text-shadow:0 2px #553326,0 0 16px #f6a84b8c;
+ white-space:nowrap;
+}
+.arena-live[data-arena-design="legendary"] .timer-bar{
+ height:7px;margin:1px 0 0;border:1px solid #e6aa68a6;
+ background:#0c1024;box-shadow:inset 0 2px 5px #000a;
+}
+.arena-live[data-arena-design="legendary"] .timer-bar span{
+ background:linear-gradient(90deg,#e47c43,#ffd981,#fff4d0);
+ box-shadow:0 0 9px #ffbd75a5;
+}
+/* Open volcanic stage and blue guardian dome behind the real three heroes. */
+.arena-live[data-arena-design="legendary"] .live-battlefield{
+ grid-template-columns:minmax(0,1.69fr) minmax(304px,.93fr);
+ gap:clamp(7px,.9vw,14px);min-height:0;
+}
+.arena-live[data-arena-design="legendary"] .combat-scene{
+ border:2px solid #daa567;border-radius:16px;
+ background:
+  radial-gradient(ellipse at 23% 54%,#ff5a2d2d,transparent 42%),
+  linear-gradient(180deg,#0b152420,#0a0e1a08 28%,#10111a60 70%,#080a16ce),
+  url("./dog-boss-art/arena-volcano-cinematic.svg") 47% 54%/cover no-repeat;
+ box-shadow:inset 0 0 0 1px #fff0c13c,
+  inset 0 -58px 56px #080912c7,
+  0 0 0 2px #392720d9,0 8px 26px #000a;
+}
+.arena-live[data-arena-design="legendary"] .combat-stage{
+ position:relative;isolation:isolate;
+}
+.arena-live[data-arena-design="legendary"] .combat-stage::before{
+ border-top:2px solid #ffbb6690;
+ background:radial-gradient(ellipse at 24% 96%,#ff6a3070,transparent 46%),
+  radial-gradient(ellipse at 74% 90%,#48b9ff59,transparent 45%),
+  linear-gradient(0deg,#070a18e0,#1a22371e);
+}
+.arena-live[data-arena-design="legendary"] .combat-arena-aura{
+ position:absolute;z-index:2;pointer-events:none;
+ left:0;top:16%;width:56%;height:80%;border-radius:50%;
+ background:radial-gradient(ellipse at 46% 45%,#ff98292b,#f04c121e 44%,transparent 72%);
+ filter:blur(7px);
+}
+.arena-live[data-arena-design="legendary"] .combat-team-aegis{
+ position:absolute;z-index:3;pointer-events:none;
+ left:47%;top:28%;width:49%;height:64%;border-radius:52% 52% 17% 17%;
+ border:2px solid #a2ebff9a;
+ background:radial-gradient(ellipse at 46% 72%,#9fe5ff22,#276ee329 49%,#256ed21e 63%,transparent 77%);
+ box-shadow:inset 0 0 25px #76bcff4d,0 0 25px #60bfff6b;
+ opacity:.7;
+ animation:la-aegis 5.8s ease-in-out infinite;
+}
+.arena-live[data-arena-design="legendary"] .combat-boss{
+ left:-1%;width:48%;height:88%;bottom:5%;z-index:4;
+ filter:drop-shadow(0 12px 12px #030413e8);
+}
+.arena-live[data-arena-design="legendary"] .combat-boss .monster-art{
+ background-position:center bottom;
+ filter:hue-rotate(var(--boss-shift,0deg))
+  drop-shadow(0 0 18px var(--boss-accent,#ff9a55))
+  drop-shadow(0 0 32px #f45f3b82)
+  drop-shadow(0 13px 8px #030311e0);
+}
+.arena-live[data-arena-design="legendary"] .combat-hero-line{
+ left:45%;width:53%;height:75%;bottom:5%;z-index:5;
+ gap:clamp(2px,.5vw,9px);
+}
+.arena-live[data-arena-design="legendary"] .combat-hero-portrait .combat-hero-symbol{
+ height:clamp(100px,25vh,260px);
+ width:min(100%,150px);max-height:81%;
+ filter:drop-shadow(0 10px 8px #010514)
+  drop-shadow(0 0 14px #a0d0ffab);
+}
+.arena-live[data-arena-design="legendary"] .combat-hero-name{
+ border:1px solid #f2cf8dc7;border-radius:7px;
+ color:#fff0d5;background:linear-gradient(90deg,#0a1725e8,#17263ce8);
+ text-shadow:0 1px 4px #000e;
+ padding:5px 6px;
+}
+.arena-live[data-arena-design="legendary"] .combat-cue{
+ border:1px solid #e8bf7d9c;
+ color:#fff0c6;font:900 clamp(10px,.92vw,14px)/1.2 Georgia,serif;
+ background:linear-gradient(95deg,#16172ae8,#262138ea);
+ box-shadow:0 0 0 1px #100e19,0 0 12px #f7b96430;
+}
+.arena-live[data-arena-design="legendary"] .monster-caption{
+ border-color:#b18a5b85;background:#081424d8;
+ color:#eed9b8;font-size:clamp(10px,.95vw,13px);
+}
+/* Ornate right-hand challenge in the same battlefield, never an overlay
+   which would block the user's taps. */
+.arena-live[data-arena-design="legendary"] .live-challenge{
+ position:relative;border:2px solid #dfb46e;border-radius:16px;
+ background:
+  radial-gradient(ellipse at 52% 14%,#81502d24,transparent 43%),
+  linear-gradient(155deg,#12192df8,#0b1326fb 50%,#121628fa);
+ box-shadow:inset 0 0 0 1px #ffdd9945,
+  inset 0 0 45px #020715,0 6px 24px #000a,0 0 0 2px #422e26;
+ overflow:hidden;
+}
+.arena-live[data-arena-design="legendary"] .live-challenge::before{
+ content:"✦";position:absolute;z-index:3;top:0;left:50%;
+ transform:translate(-50%,-17%);pointer-events:none;
+ color:#ffd17e;font:900 18px Georgia,serif;
+ text-shadow:0 0 12px #f7a95c;
+}
+.arena-live[data-arena-design="legendary"] .live-challenge-heading{
+ position:relative;min-height:47px;
+ padding:12px clamp(9px,1.2vw,18px);
+ background:linear-gradient(180deg,#392c34e9,#222039ee 55%,#171a2fef);
+ border-bottom:2px solid #e6b76f;
+ color:#ffe0a0;
+ box-shadow:inset 0 1px #fff0b463,0 3px 11px #000a;
+ font:900 clamp(12px,1.25vw,18px)/1.2 Georgia,serif;
+}
+.arena-live[data-arena-design="legendary"] #live-round-label{
+ padding:5px 8px;border:1px solid #d8af769e;
+ border-radius:5px;background:#151b2ce6;
+ color:#ffecbe;font:900 clamp(10px,.85vw,13px) system-ui,sans-serif;
+}
+.arena-live[data-arena-design="legendary"] .live-challenge-content{
+ padding:clamp(5px,.95vw,14px);
+ background:radial-gradient(ellipse at 50% 85%,#3b4e7630,transparent 73%);
+ overflow:hidden;
+}
+.arena-live[data-arena-design="legendary"] .mini-tactical{
+ padding:clamp(6px,.7vw,12px);
+}
+.arena-live[data-arena-design="legendary"] .mini-title{
+ color:#ffe6b4;font:900 clamp(17px,1.6vw,25px)/1.13 Georgia,serif;
+ text-shadow:0 1px #3e2921,0 0 12px #b96a284d;
+}
+.arena-live[data-arena-design="legendary"] .mini-hint{
+ color:#dce9ff;font-weight:650;
+}
+.arena-live[data-arena-design="legendary"] .mini-step-counter{
+ color:#ffe1a5;font-variant-numeric:tabular-nums;
+ font-weight:950;
+}
+.arena-live[data-arena-design="legendary"] .mini-choice{
+ border:2px solid #ecc184;
+ border-radius:12px;color:#fff8e4;
+ text-shadow:0 2px 5px #02050bd8;
+ background:linear-gradient(150deg,#344464,#1b2642 60%,#28243e);
+ box-shadow:inset 0 1px #ffffff3c,0 3px 10px #0009;
+ transition:filter .14s ease,transform .14s ease,box-shadow .14s ease;
+}
+.arena-live[data-arena-design="legendary"] .mini-choice:not(:disabled):active{
+ filter:brightness(1.22);transform:scale(.965);
+}
+.arena-live[data-arena-design="legendary"] .mini-choice:focus-visible{
+ outline:3px solid #fff2ad;outline-offset:2px;
+}
+.arena-live[data-arena-design="legendary"] .mini-dodge-warning{
+ border:1px solid #ff9862;border-radius:10px;
+ background:linear-gradient(90deg,#43252de8,#7d352de4,#43252de8);
+ color:#ffdbab;text-shadow:0 0 8px #ff9f6195;
+ box-shadow:inset 0 1px #fff1be34,0 0 12px #f565383d;
+}
+.arena-live[data-arena-design="legendary"] .mini-dodge-lane.mini-danger{
+ border-color:#ff865d;color:#fff1db;
+ background:linear-gradient(160deg,#a33638,#502232 77%);
+ box-shadow:0 0 15px #ef4a4560,inset 0 1px #ffa68d64;
+}
+.arena-live[data-arena-design="legendary"] .mini-dodge-lane.mini-safe{
+ border-color:#86f4ad;color:#ecffed;
+ background:linear-gradient(150deg,#128b72,#0b4b4f 76%);
+ box-shadow:0 0 15px #42e5af7a,inset 0 1px #d0ffd17d;
+}
+.arena-live[data-arena-design="legendary"] .mini-reaction{
+ background:linear-gradient(160deg,#3687b7,#2d477c 58%,#2b315a);
+ border-color:#b6e7ff;box-shadow:0 0 20px #439efc6b;
+}
+.arena-live[data-arena-design="legendary"] .mini-color-target{
+ border-color:#ffecbcb0;border-radius:12px;
+ background:radial-gradient(circle at 50% 2%,var(--tile-light),transparent 85%),
+  linear-gradient(150deg,var(--tile),#17233de8);
+ box-shadow:inset 0 1px #ffffff59,0 5px 10px #0007;
+}
+.arena-live[data-arena-design="legendary"] .mini-color-question{
+ background:linear-gradient(95deg,#392b3ee9,#1c304dec);
+ border:1px solid #f1bb74a9;color:#fff2c2;
+ box-shadow:0 0 15px #ffa9591a;
+}
+.arena-live[data-arena-design="legendary"] .mini-color-target:not(:disabled):active{
+ transform:scale(.95);filter:brightness(1.3);
+}
+/* Four phases: metallic connected TV-show tiles, active scene illuminated. */
+.arena-live[data-arena-design="legendary"] .live-rounds{
+ display:grid;grid-template-columns:auto minmax(0,1fr) minmax(115px,.25fr);
+ align-items:center;gap:clamp(5px,.8vw,12px);
+ min-height:58px;padding:7px clamp(9px,1vw,16px);
+ border:2px solid #d5a25a;border-radius:13px;
+ background:linear-gradient(180deg,#2b2336f6,#101a30f7 50%,#161b2bf2);
+ box-shadow:inset 0 0 0 1px #ffe9b54e,inset 0 0 20px #0008,
+  0 0 0 2px #281f26,0 5px 12px #0009;
+}
+.arena-live[data-arena-design="legendary"] .live-rounds-title{
+ font:900 clamp(10px,1vw,16px) Georgia,serif;
+ letter-spacing:.055em;color:#fce1a2;
+ text-shadow:0 0 11px #f6a34a81;white-space:nowrap;
+}
+.arena-live[data-arena-design="legendary"] .live-round-steps{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(6px,.6vw,12px);
+ min-width:0;align-items:stretch;
+}
+.arena-live[data-arena-design="legendary"] .live-round-step{
+ position:relative;display:flex;
+ min-height:39px;justify-content:center;align-items:center;
+ border:1px solid #7b96b5b2;border-radius:9px;
+ padding:7px 6px;
+ background:linear-gradient(160deg,#233656,#142139);
+ color:#d8eaff;
+ font:900 clamp(10px,.87vw,15px)/1.22 Georgia,serif;
+ box-shadow:inset 0 1px #c2e4ff32,0 4px 8px #0007;
+ overflow:visible;white-space:normal;
+ text-align:center;
+}
+.arena-live[data-arena-design="legendary"] .live-round-step:not(:last-child)::before{
+ content:"›";position:absolute;top:50%;right:calc(-1 * clamp(7px,.83vw,15px));
+ transform:translate(50%,-53%);z-index:2;color:#ffcd77;
+ font:900 clamp(17px,1.8vw,27px)/1 Georgia,serif;text-shadow:0 0 8px #ffab42;
+ pointer-events:none;
+}
+.arena-live[data-arena-design="legendary"] .live-round-step.is-current{
+ border-color:#ffd98c;color:#fff2d0;
+ background:linear-gradient(150deg,#b76c2b,#6e3a25 60%,#38283a);
+ box-shadow:inset 0 0 0 1px #fff0bb69,inset 0 1px 7px #ffd08b47,
+  0 0 16px #ed904ba0,0 3px 9px #0008;
+}
+.arena-live[data-arena-design="legendary"] .live-round-step.is-correct{
+ border-color:#8be2ae;color:#deffe5;
+ background:linear-gradient(145deg,#205a45,#17384a);
+}
+.arena-live[data-arena-design="legendary"] .live-round-step.is-wrong{
+ border-color:#f7a28a;color:#ffe0d8;
+ background:linear-gradient(145deg,#693f46,#34283c);
+}
+.arena-live[data-arena-design="legendary"] .live-feedback{
+ min-width:0;max-width:none;
+ color:#d3e6ff;font-size:clamp(10px,.82vw,13px);
+ font-weight:800;line-height:1.18;text-align:right;
+}
+/* Cinematic scorecards: keep both team strike and shield loss readable. */
+.arena-live[data-arena-design="legendary"] .live-cinematic{
+ border:3px solid #ebbd70;border-radius:16px;
+ background:
+  linear-gradient(90deg,#050b1a0a 0%,#060c1a28 36%,#080c1bd1 68%,#080d19f7 100%);
+ box-shadow:inset 0 0 0 1px #ffe6ad72,0 0 29px #ffc37b67,0 14px 36px #000a;
+}
+.arena-live[data-arena-design="legendary"] .live-cinematic-header{
+ border:1px solid #ffe0a1a1;
+ background:linear-gradient(110deg,#49303be9,#1e2945f5);
+ box-shadow:inset 0 1px #fff0c24a,0 4px 14px #000b;
+}
+.arena-live[data-arena-design="legendary"] .live-cinematic-panel{
+ border:2px solid #e6ba7c;
+ background:linear-gradient(150deg,#0d1931fa,#1b2544f9 47%,#342335f9);
+ box-shadow:inset 0 0 0 1px #ffe1a132,inset 0 0 28px #de984518,0 7px 20px #000b;
+}
+.arena-live[data-arena-design="legendary"] .live-cinematic-score{
+ color:#fff1b8;text-shadow:0 4px 13px #070a14,0 0 22px #ffa53c9c;
+}
+.arena-live[data-arena-design="legendary"] .live-cinematic-bonus{
+ border-color:#eab975;
+ background:linear-gradient(140deg,#423045ea,#243a58d4);
+}
+.arena-live[data-arena-design="legendary"] .live-cinematic-bonus strong{
+ color:#c9ffd3;text-shadow:0 0 14px #6de4ac6b;
+}
+.arena-live[data-arena-design="legendary"] .live-stage-announcement{
+ border:2px solid #f3cf8b;
+ background:linear-gradient(148deg,#2c2537f1,#11223bea);
+ box-shadow:0 0 18px #ffca7766,0 8px 22px #000c;
+}
+.arena-live[data-arena-design="legendary"] .live-stage-announcement strong{
+ color:#fff0be;text-shadow:0 2px 8px #000e,0 0 13px #e5a14d;
+}
+/* Small finishing touches to waiting, victory and loss states. */
+.stage[data-screen="battle"]>.squad{
+ border-color:#ddb67cba;
+ background:linear-gradient(95deg,#141b2cf5,#252039ef);
+ box-shadow:inset 0 1px #ffe6a33f;
+}
+.arena-live[data-arena-design="legendary"][data-phase="victory"]{
+ border-color:#b8eda6;box-shadow:0 0 30px #8bef914d,inset 0 0 40px #46732f26;
+}
+.arena-live[data-arena-design="legendary"][data-phase="cooldown"] .live-hp{
+ border-color:#f18a66;
+}
+/* Preflight shares the same warm-gold and icy-team art direction. */
+.stage[data-screen="preflight"] .boss-preflight{
+ border:2px solid #e8b46d;
+ box-shadow:0 0 0 2px #38241f,0 0 0 4px #b37b455c,
+  0 20px 80px #000b,inset 0 0 70px #120c21b8;
+}
+.stage[data-screen="preflight"] .preflight-title{
+ border:2px solid #f2c17e;
+ background:linear-gradient(180deg,#472830ed,#191b30f6 65%,#352436ed);
+ box-shadow:0 0 0 2px #362426,0 0 22px #e8a0535e,inset 0 1px #ffda9e71;
+}
+.stage[data-screen="preflight"] .preflight-hp-rail{
+ border:2px solid #f4cb84;
+ background:#1c111e;
+ box-shadow:inset 0 3px 8px #000b,0 0 15px #e58a4779;
+}
+.stage[data-screen="preflight"] .preflight-panel,
+.stage[data-screen="preflight"] .preflight-equipment{
+ border:1px solid #d8b076a8;
+ background:linear-gradient(150deg,#1a2037ef,#111a2ce8);
+ box-shadow:inset 0 1px #ffe1a145,0 6px 18px #000a;
+}
+.stage[data-screen="preflight"] .preflight-member{
+ border-radius:13px;
+ box-shadow:inset 0 1px #d3efff50,0 0 13px #4a8cf348,0 6px 12px #000a;
+}
+.stage[data-screen="preflight"] .preflight-launch-buttons button{
+ border:2px solid #f7dc98;box-shadow:inset 0 1px #fff9c977,
+  0 0 19px #69e58642,0 5px 14px #0009;
+}
+/* Responsive: readable vitals and large tap targets without forced zoom. */
+@media (orientation:landscape) and (min-width:900px) and (max-height:700px){
+ .arena-live[data-arena-design="legendary"] .live-arena-heading{min-height:43px;padding-top:2px;padding-bottom:2px}
+ .arena-live[data-arena-design="legendary"] .live-heading-text h2{font-size:clamp(20px,2.3vw,33px)}
+ .arena-live[data-arena-design="legendary"] .live-hp,
+ .arena-live[data-arena-design="legendary"] .live-team-shield,
+ .arena-live[data-arena-design="legendary"] .live-timer{
+  min-height:61px;padding-top:5px;padding-bottom:5px;gap:3px;
+ }
+ .arena-live[data-arena-design="legendary"] .live-hero-health{margin-top:0}
+ .arena-live[data-arena-design="legendary"] .live-rounds{min-height:44px;padding-top:4px;padding-bottom:4px}
+ .arena-live[data-arena-design="legendary"] .live-round-step{min-height:31px;padding:4px}
+ .arena-live[data-arena-design="legendary"] .live-challenge-heading{min-height:37px;padding:8px 10px}
+ .arena-live[data-arena-design="legendary"] .mini-lead{margin-bottom:5px}
+ .arena-live[data-arena-design="legendary"] .mini-tactical{padding:5px 4px}
+ .arena-live[data-arena-design="legendary"] .mini-color-grid{gap:5px;grid-auto-rows:minmax(46px,auto)}
+ .arena-live[data-arena-design="legendary"] .mini-color-target{min-height:46px;font-size:clamp(12px,1.05vw,16px);padding:4px 3px}
+ .arena-live[data-arena-design="legendary"] .mini-dodge-lane{min-height:clamp(53px,9vh,75px)}
+}
+@media(max-width:899px),(orientation:portrait){
+ .arena-live[data-arena-design="legendary"] .live-arena-heading{
+  min-height:57px;padding:5px 110px 7px 18px;justify-content:flex-start;
+ }
+ .arena-live[data-arena-design="legendary"] .live-heading-text{text-align:left}
+ .arena-live[data-arena-design="legendary"] .live-arena-heading::before,
+ .arena-live[data-arena-design="legendary"] .live-arena-heading::after{display:none}
+ .arena-live[data-arena-design="legendary"] .live-metrics{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+ }
+ .arena-live[data-arena-design="legendary"] .live-hp{grid-column:1/-1}
+ .arena-live[data-arena-design="legendary"] .live-battlefield{grid-template-columns:1fr}
+ .arena-live[data-arena-design="legendary"] .combat-scene{min-height:280px}
+ .arena-live[data-arena-design="legendary"] .live-challenge{min-height:260px}
+ .arena-live[data-arena-design="legendary"] .live-rounds{
+  grid-template-columns:minmax(0,1fr);gap:7px;
+ }
+ .arena-live[data-arena-design="legendary"] .live-rounds-title{text-align:center}
+ .arena-live[data-arena-design="legendary"] .live-feedback{text-align:center}
+}
+@media(max-width:620px){
+ .arena-live[data-arena-design="legendary"] .live-arena-heading{
+  padding:5px 6px;justify-content:center;min-height:54px;
+ }
+ .arena-live[data-arena-design="legendary"] .live-heading-text{text-align:center}
+ .arena-live[data-arena-design="legendary"] .live-heading-text h2{
+  font-size:clamp(19px,5vw,26px);
+ }
+ .arena-live[data-arena-design="legendary"] .live-heading-text small{font-size:9px;letter-spacing:.06em}
+ .arena-live[data-arena-design="legendary"] .status-pill{
+  position:static;transform:none;max-width:110px;padding:5px;
+  font-size:9px;margin-left:5px;
+ }
+ .arena-live[data-arena-design="legendary"] .live-metrics{grid-template-columns:minmax(0,1fr)}
+ .arena-live[data-arena-design="legendary"] .live-hp{grid-column:auto}
+ .arena-live[data-arena-design="legendary"] .live-hp,
+ .arena-live[data-arena-design="legendary"] .live-team-shield,
+ .arena-live[data-arena-design="legendary"] .live-timer{
+  min-height:60px;padding:8px 10px 7px 62px;gap:4px;
+ }
+ .arena-live[data-arena-design="legendary"] .live-timer{min-height:60px}
+ .arena-live[data-arena-design="legendary"] .timer-row{flex-direction:row;align-items:center}
+ .arena-live[data-arena-design="legendary"] #boss-hp,
+ .arena-live[data-arena-design="legendary"] #live-shield-value{font-size:clamp(14px,4vw,20px)}
+ .arena-live[data-arena-design="legendary"] .combat-scene{
+  height:clamp(235px,55vw,370px);min-height:235px;
+ }
+ .arena-live[data-arena-design="legendary"] .combat-hero-portrait .combat-hero-symbol{
+  height:clamp(74px,27vw,123px);
+ }
+ .arena-live[data-arena-design="legendary"] .combat-team-aegis{opacity:.55}
+ .arena-live[data-arena-design="legendary"] .live-round-steps{gap:4px}
+ .arena-live[data-arena-design="legendary"] .live-round-step{
+  padding:5px 3px;font-size:clamp(9px,2.4vw,11px);min-height:42px;
+ }
+ .arena-live[data-arena-design="legendary"] .live-round-step:not(:last-child)::before{display:none}
+ .arena-live[data-arena-design="legendary"] .mini-color-target{
+  font-size:clamp(12px,3vw,16px);
+ }
+}
+@media(max-width:370px){
+ .arena-live[data-arena-design="legendary"] .live-round-steps{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+ }
+ .arena-live[data-arena-design="legendary"] .live-shield-label span,
+ .arena-live[data-arena-design="legendary"] .live-meter-label span{font-size:10px}
+}
+@keyframes la-aegis{
+ 0%,100%{opacity:.5;box-shadow:inset 0 0 25px #76bcff3d,0 0 18px #60bfff57}
+ 50%{opacity:.76;box-shadow:inset 0 0 40px #88caff56,0 0 29px #60bfff83}
+}
+@media(prefers-reduced-motion:reduce){
+ .arena-live[data-arena-design="legendary"] .combat-team-aegis{animation:none!important}
+ .arena-live[data-arena-design="legendary"] .mini-choice{transition:none!important}
+ .arena-live[data-arena-design="legendary"] .live-hp-track>span,
+ .arena-live[data-arena-design="legendary"] .live-shield-track>span{transition:none!important}
+}
