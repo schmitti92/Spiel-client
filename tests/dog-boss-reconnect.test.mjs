@@ -46,7 +46,8 @@ function simulate(file){
   setInterval(fn,ms){assert.equal(ms,250);ticker=fn;return 1}
  };
  const fetchMock=async(url,options)=>{
-  calls.push({url,method:options.method||'GET'});
+  calls.push({url,method:options.method||'GET',
+   requestBody:options.body?JSON.parse(options.body):null});
   if(options.method==='POST'){
    if(offlinePost)throw Error('NETWORK_LOST');
    return {ok:true,json:async()=>({ok:true,view:{...view,serverNow:time},result:{correct:false}})};
@@ -126,6 +127,45 @@ for(const file of ['dog-boss10.js','dog-group-boss.js']){
   for(let i=0;i<15;i++)h.tick(250);
   await spin();
   assert.ok(h.getCount()<=after+1,'failed GET must not trigger a 250-ms fetch storm');
+ });
+}
+
+for(const file of ['dog-boss10.js','dog-group-boss.js']){
+ test(file+': M-08 lost mobile POST response keeps the SAME receipt for an explicit safe retry',async()=>{
+  const h=simulate(file);
+  await spin();
+  h.submit(0,1);await spin();
+  assert.equal(h.postCount(),1);
+  const pending=Array.from(h.storage.values()).map(JSON.parse);
+  assert.equal(pending.length,1);
+  const originalId=pending[0].id;
+  assert.ok(originalId);
+  assert.equal(h.calls.find(x=>x.method==='POST').requestBody.requestId,originalId);
+  h.allowPost(true);
+  h.el('retry-button').handlers.click();
+  await spin();
+  const posted=h.calls.filter(x=>x.method==='POST');
+  assert.equal(posted.length,2);
+  assert.equal(posted[1].requestBody.requestId,originalId,
+   'retry must reuse the original idempotency key');
+  assert.equal(h.storage.size,0,'successful answer clears pending receipt');
+  assert.equal(h.canPlay(),true);
+  h.el('retry-button').handlers.click();await spin();
+  assert.equal(h.postCount(),2,'a settled receipt can never be resent');
+ });
+ test(file+': M-08 confirmed GET after a lost response clears receipt WITHOUT another POST',async()=>{
+  const h=simulate(file);
+  await spin();
+  h.view.miniGames.version=15;
+  h.submit(0,1);await spin();
+  assert.equal(h.postCount(),1);
+  assert.equal(h.storage.size,1);
+  // The server committed the first answer even though its response got lost.
+  h.view.miniGames.myAnswers[0]={attempts:[{step:0,correct:true}]};
+  h.refresh();await spin();
+  assert.equal(h.storage.size,0);
+  h.el('retry-button').handlers.click();await spin();
+  assert.equal(h.postCount(),1,'GET reconciliation must prevent a duplicate POST');
  });
 }
 
