@@ -184,6 +184,11 @@
   if(teamHp!==null&&teamMax&&teamHp/teamMax<.7)
    tips.push('🛡️ Achtet auf eure Verteidigung: Weniger Fehler bei Ausweichen und Reaktion bewahren LP. Rüstung verbessern, sofern das Tor weitere Stufen erlaubt.');
   if(result.win)tips.push('🏆 Der Boss ist besiegt! Nutzt die nächste Schmiedestufe, bevor ihr zum nächsten Wächter aufbrecht.');
+  const weakest=rows.filter(r=>r.possible>0&&r.percentage!==null)
+   .sort((a,b)=>a.percentage-b.percentage)[0];
+  if(!result.win&&weakest&&weakest.percentage<70)
+   tips.push('🎯 '+weakest.name+': '+weakest.percentage+
+    ' % Minispielquote. Gezielt die schwierigsten Aufgaben trainieren.');
   if(!tips.length)tips.push('⚒️ Überprüft die Ausrüstung in der Schmiede und konzentriert euch beim nächsten Versuch auf präzisere Minispiele.');
   return {gate:num(view.gate)||10,bossName:cap(view.name||'Boss'),
    result:{win:!!result.win,damage:finalDamage,bossHp,bossRemaining,
@@ -295,6 +300,7 @@
      <tbody id="br-attack-rows"></tbody>
     </table></div>
     <p class="br-muted" id="br-attack-note">Treffer aus den Zwischensequenzen. Der verbindliche Endschaden wird separat serverseitig ermittelt.</p>
+     <div class="br-settlement" id="br-settlement" role="status"></div>
     <details class="br-attack-details" id="br-strike-details">
      <summary>📜 Jeden Einzelangriff ansehen</summary>
      <div class="br-table-scroll"><table>
@@ -302,7 +308,7 @@
       <tbody id="br-strike-rows"></tbody>
      </table></div>
     </details>
-    <div class="br-final-damage"><span>💥 Endgültiger Teamschaden</span><strong id="br-final-damage"></strong></div>
+    <div class="br-final-damage"><span>💥 Endgültiger Teamschaden (Server)</span><strong id="br-final-damage"></strong></div>
    </section>
    <section class="br-panel br-advice">
     <h3 id="br-advice-title">🧭 So werdet ihr stärker</h3>
@@ -524,8 +530,11 @@
     heroNodes.push(wrap);
     const tr=make('tr');
     for(const value of [hero.name,
-     fmt.format(hero.attack)+' LP',fmt.format(hero.taken)+' LP',
-     hero.possible?fmt.format(hero.correct)+' / '+fmt.format(hero.possible):'—',
+     (hero.attacks?fmt.format(hero.attacks)+' Treffer · ':'')+
+      fmt.format(hero.attack)+' LP',
+     fmt.format(hero.taken)+' LP'+(hero.blocks?' · '+hero.blocks+' blockiert':''),
+     hero.possible?fmt.format(hero.correct)+' / '+fmt.format(hero.possible)+
+      ' ('+hero.percentage+' %)':'Nicht verfügbar',
      hero.fallen?'💀 Gefallen · 0 LP':fmtHp(hero.hp,hero.maxHp)]){
      tr.append(make('td',null,value));
     }
@@ -550,6 +559,22 @@
    });
    node('br-strike-rows').replaceChildren(...individualHits);
    node('br-strike-details').hidden=!individualHits.length;
+   const visibleHeroDamage=rows.reduce((sum,hero)=>sum+hero.attack,0);
+   const finaleDamage=replay.filter(e=>e.kind==='team-finisher')
+    .reduce((sum,e)=>sum+num(e.amount),0);
+   text(node('br-attack-note'),replay.length?
+    '📜 '+replay.length+' bestätigte Ereignisse · '+fmt.format(visibleHeroDamage)+
+    ' LP persönliche Treffer'+(finaleDamage?' · '+fmt.format(finaleDamage)+
+     ' LP gemeinsamer Finalschlag':'')+
+    '. Sichtbare Treffer sind nicht automatisch identisch mit dem verbindlichen Endschaden.':
+    'Für diesen Kampf liegt keine Einzelangriff-Historie vor. Der serverbestätigte Endschaden bleibt gültig.');
+   const accounting=report.settlement;
+   text(node('br-settlement'),accounting?
+    '⚖️ Serverabrechnung: '+fmt.format(num(accounting.appliedDamage))+
+    ' Boss-LP tatsächlich abgezogen · '+fmt.format(num(accounting.overkillDamage))+
+    ' LP Übertreffer · '+fmt.format(num(accounting.guardRecovered))+
+    ' LP Boss-Abwehr.':
+    '⚖️ Keine gesonderte Server-Aufschlüsselung für diesen Kampf verfügbar. Einzelangriffe und Endschaden werden nicht künstlich gleichgesetzt.');
    text(node('br-final-damage'),fmt.format(result.damage)+' LP');
    text(node('br-score-value'),score.percent===null?'–':score.percent+' %');
    text(node('br-score-grade'),score.grade);
