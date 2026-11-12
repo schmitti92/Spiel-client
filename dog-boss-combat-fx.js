@@ -286,7 +286,7 @@
      (membersByUid.get(m.uid)?.isMe?' combat-hero-me':'');
     const mark=document.createElement('span');
     mark.className='combat-hero-symbol';
-    item.dataset.heroClass=heroClasses[portraitIndex];
+    item.setAttribute?.('data-hero-class',heroClasses[portraitIndex]);
     mark.textContent=iconFor[portraitIndex]||'⚔️';
     mark.style.backgroundImage='url("./dog-boss-art/'+
      (gate===10?cinematicHeroPortraits:heroPortraits)[portraitIndex]+'")';
