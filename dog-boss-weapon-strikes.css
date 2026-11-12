@@ -289,6 +289,22 @@
 }
 .arena-live[data-arena-design="v3"] .combat-scene[data-v3-beat="impact"] .v3-actor-action{
  background:#553524db;color:#ffefc9;
+ box-shadow:0 0 24px #ffa76070,0 4px 17px #080b16aa;
+ border-color:#ffe1a4;
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-beat="prepare"] .v3-actor-action{
+ border-color:#a1cdeb;color:#d9edfa;background:#1b3042e6;
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-beat="swing"] .v3-actor-action{
+ border-color:#f8c06f;color:#fff2c8;background:#4d2a28e6;
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-beat="recovery"] .v3-actor-action,
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-beat="reset"] .v3-actor-action{
+ border-color:#7cb8bc;color:#d3f5ea;background:#20353deb;
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-beat="recovery"] .v3-impact-flare,
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-beat="reset"] .v3-impact-flare{
+ opacity:0;
 }
 .arena-live[data-arena-design="v3"] .combat-scene[data-v3-action="countdown"] .combat-hero,
 .arena-live[data-arena-design="v3"] .combat-scene[data-v3-action="countdown"] .combat-boss{

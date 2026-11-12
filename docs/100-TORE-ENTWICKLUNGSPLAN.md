@@ -248,9 +248,15 @@ Der Nutzer hat **vor und nach genau einem Spiel** die Nutzungszähler in der Fir
 
 **Noch offen:** Ein erneuter, möglichst isolierter Live-Firebase-Vergleich sowie S-04/S-05-Prüfung auf mehreren Geräten. Der frühere Nutzerwert **145 Reads/26 Writes** ist eine andere reale Spielsituation; nicht mit den Bot-Mock-Zahlen gleichsetzen.
 
+### K-01 – Servergetaktete Kampf-Choreografie (12.11.2026)
+
+Der bisherige sichtbare Angriffstext wurde nur am Anfang des Einzelangriffs aktualisiert. Jetzt beschreibt das Kampf-HUD **jeden** Abschnitt der laufenden Aktion: Kampfposition, Ausholen, Schlag, Einschlag, Zurückweichen, Ausgangsposition. Für die visuelle Einschlagsphase nimmt die Arena den vorhandenen `combat.events[].atMs`-Wert, wenn serverseitig bestätigt, sonst nur den bisherigen filmischen Animationszeitpunkt **ohne Schadensbehauptung**. Blocken und bestätigtes Treffen erscheinen erst mit dem passenden Server-Ereignis. Die Sequenz wird auf beiden Boss-Seiten identisch dargestellt, CSS-Farben wechseln mit `data-v3-beat`.
+
+**Unverändert:** 135 s und fünf Minispiele bei neuen v14-Kämpfen, 3-s-Übergänge, serverseitige Spielregeln, Firestore-Zugriffe, Bot-Fortschritt, Idempotenz/Rewards. Alte gespeicherte Kampfversionen behalten ihre vorgegebenen Zeitfenster. Kein eigener Client-Schadenswurf. [Arena-Code](../dog-boss-battle-v3.js) · [Effektstile](../dog-boss-weapon-strikes.css) · [gezielte K-01-Tests](../tests/dog-boss-battle-v3.test.mjs). Sichtprüfung mit 2–3 echten Browsern weiterhin offen.
+
 ### Phase K – Kampfsystem, Überleben und Inszenierung `P0/P1`
 
-- [ ] **K-01 – Einheitliche Kampf-Zeitleiste:** Vorbereitung → Ausholen → Angriff → exakter Einschlag → Schaden → Zurückweichen. 135-s-Kampfdauer und fünf Runden beibehalten, sofern eine gezielte Änderung nicht ausdrücklich beschlossen wird.
+- [x] **K-01 – Einheitliche Kampf-Zeitleiste (technisch umgesetzt):** Sechs verständliche Bewegungsabschnitte pro Einzelangriff (Position → Ausholen → Schlag → servergetakteter Einschlag → Zurückweichen → Bereit). Anzeigetexte, Ziele, LP-Treffer und Farbeffekte richten sich nach derselben serverseitigen Ereigniszeit; keine erfundenen Schadenswerte vor bestätigtem Event. Alle Kampfversionen behalten ihre vorgegebene Gesamtdauer, neue Kämpfe 135 s/fünf Minispiele. Visueller Mehrgeräte-Test noch offen.
 - [ ] **K-02 – Waffen und Figurbewegung:** Jede Heldenklasse führt ihre passende Waffe sichtbar; Boss schlägt gezielt jeden Beteiligten. **Fertig:** klar erkennbare Bewegungen statt nur CSS-Blitzen.
 - [ ] **K-03 – Treffer-Effekte und LP synchronisieren:** Pop-up direkt am Ziel, Blocken/Ausweichen gesondert markieren, persönliche HP exakt beim Treffer aktualisieren. **Fertig:** kein verspätetes oder doppelt gezeigtes Pop-up.
 - [ ] **K-04 – Echte persönliche Überlebensmechanik konzipieren:** Aktuelle Mindest-LP-Regel (50 %) prüfen; festlegen, ob und wie Helden auf 0 LP fallen dürfen, welche Rettungsmechaniken gelten und ob die Kampfzeit für ausgefallene Spieler weiterläuft. **Fertig:** vor Änderung des Balancings abgesprochene Regeln und Simulationen.
@@ -354,8 +360,10 @@ Der Nutzer hat **vor und nach genau einem Spiel** die Nutzungszähler in der Fir
 
 | 12.11.2026 | **S-06 erledigt, S-07 geprüft** | Nova/Titan schreiben ab Rundenschluss statt pro fälligem Einzelschritt; bestehende CI schützt Lesen/Schreiben, Bot-Write-Obergrenze, Idempotenz und GET-Fehlerschleifen. | [Node-CI](https://github.com/schmitti92/serverfinal/actions/runs/43263058289), [Zwei-Bot-Pilot](https://github.com/schmitti92/serverfinal/actions/runs/43263058646), [Multiplayer](https://github.com/schmitti92/serverfinal/actions/runs/43263058451) erfolgreich | **100 → 95 Reads, 31 → 26 Writes, 21 → 16 Transaktionen** im gleichen Bot-Test, keine Live-Firebase-Abrechnung | [Backend-Commit](https://github.com/schmitti92/serverfinal/commit/56a3a90a86010e91df875804f127f26961f835ac) |
 
+| 12.11.2026 | **K-01 technisch umgesetzt** | Sechs animierte Abschnitte pro bestätigtem Einzelangriff; servergetakteter Einschlag, phasengenaue Action-Texte und passende Farben, keine erfundenen Treffer. Kampfregeln/135-s-Fenster unverändert. | Gezielte [Arena-Regression](../tests/dog-boss-battle-v3.test.mjs) plus Frontend-CI; reale Geräteprüfung ausstehend | **Keine neuen Firestore-Reads/Writes** (rein visuelle Ableitung) | [Kampf-Arena](../dog-boss-battle-v3.js) |
+
 **Definition von „fertig“:** Funktion auf GitHub `main` integriert, Frontend-/Backend-Tests erfolgreich, auf echter Anzeige nachvollziehbar, keine ungeklärten Doppelbuchungen oder unnötigen Firestore-Mehrzugriffe, Task abgehakt und Fortschrittsprotokoll ergänzt.
 
-**Nächster Entwicklungsblock:** **K-01 – die 135-s-Kampfinszenierung mit serverbestätigten Trefferereignissen zu einer einheitlichen visuellen Zeitleiste verbinden**, ohne die Spielzeit/Ergebnisregeln zu ändern. Parallel S-04/S-05 nur nach echter Mehrgeräte-Erprobung als fertig abnehmen und Firebase-Verbrauch nach Möglichkeit isoliert nachmessen. A-01e/A-02e bleiben offen.
+**Nächster Entwicklungsblock:** **K-02 – Figuren- und Waffenbewegungen für Krieger, Magierin und Wächter schrittweise verfeinern**. Die K-01-Ereigniszeitleiste ist technisch verbunden. Bei realen Online-Runden noch S-04/S-05 und K-01 zeitlich prüfen; A-01e/A-02e bleiben als Live-Messaufgaben offen.
 
 **Nächste konkrete Schritte:** **A-01e** – bereits dokumentierten kontrollierten Praxiswert (145 Reads / 26 Writes) bei künftigen Spielen um Leerlauf und weitere Szenarien ergänzen und **A-02e** – mit dem neuen `netdiag=1`-Messfeld die reale 1/2/3-Geräte-Baseline plus Nova/Titan erheben. Danach A-01/A-02 abnehmen. **Keine Optimierung als abgeschlossen bezeichnen, solange der Vergleich zur Live-Baseline fehlt.**

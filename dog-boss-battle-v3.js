@@ -13,8 +13,32 @@
  const IMPACT_VISUAL_MS=420; // Camera flash only around the real contact
  const RECONNECT_BURST_GRACE_MS=1300; // Never replay old hits on reconnect
  const fmt=new Intl.NumberFormat('de-DE');
- const beat=p=>p<.2?'prepare':p<.42?'windup':p<IMPACT_BEAT?'swing':
-  p<.64?'impact':p<.84?'recovery':'reset';
+ // K-01: Every animation beat is relative to the server-confirmed hit.
+ // Rendering only: no new combat rolls, requests or local HP values.
+ const beat=(slotElapsed,hitInSlot,slotDuration)=>{
+  const lead=Math.max(1,hitInSlot);
+  if(slotElapsed<lead*.22)return 'prepare';
+  if(slotElapsed<lead*.74)return 'windup';
+  if(slotElapsed<lead)return 'swing';
+  if(slotElapsed<lead+IMPACT_VISUAL_MS)return 'impact';
+  const tail=Math.max(0,slotDuration-lead-IMPACT_VISUAL_MS);
+  return slotElapsed<lead+IMPACT_VISUAL_MS+tail*.72?'recovery':'reset';
+ };
+ const describeStrike=(state,name,bossName)=>{
+  const target=state.kind==='boss-strike'?name:bossName;
+  const actor=state.kind==='boss-strike'?bossName:name;
+  if(state.beat==='prepare')return '🛡️ '+actor+' nimmt seine Position ein';
+  if(state.beat==='windup')return '⚔️ '+actor+' holt zum Angriff aus';
+  if(state.beat==='swing')return '🔥 '+actor+' schlägt zu!';
+  if(state.beat==='impact'){
+   if(!state.confirmed)return '💥 Einschlag bei '+target+' – prüfe Treffer';
+   if(state.kind==='boss-strike'&&state.confirmedDamage===0)
+    return '🛡️ '+name+' blockt den Boss!';
+   return '💥 '+actor+' trifft '+target+'!';
+  }
+  if(state.beat==='recovery')return '↩️ '+actor+' zieht sich zurück';
+  return '🛡️ '+actor+' ist wieder bereit';
+ };
  function derive(view,now){
   if(view?.phase!=='fighting'||!Number.isFinite(Number(view.startedAt)))
    return {kind:'waiting',index:-1,uid:null,elapsed:0};
@@ -49,12 +73,18 @@
     const server=Array.isArray(confirmed)?confirmed.find(x=>
      x?.round===i&&x.uid===uid&&x.kind===kind&&x.slot===slot):null;
     const scriptedAtMs=end+(slot+IMPACT_BEAT)*slotDuration;
-    const impactAtMs=Number.isFinite(Number(server?.atMs))?
-     Number(server.atMs):Math.round(scriptedAtMs);
+    const candidate=Number(server?.atMs);
+    const slotStart=end+slot*slotDuration;
+    const confirmedAt=server&&Number.isFinite(candidate)&&
+     candidate>=slotStart&&candidate<slotStart+slotDuration;
+    const impactAtMs=confirmedAt?candidate:Math.round(scriptedAtMs);
+    const phaseElapsed=sceneTime-slot*slotDuration;
     const impact=elapsed>=impactAtMs&&elapsed<impactAtMs+IMPACT_VISUAL_MS;
     return {kind,index:i,uid,slot,progress,impact,elapsed,defensive,
-     slotDuration,impactAtMs,beat:beat(progress),
-     phaseElapsed:sceneTime-slot*slotDuration};
+     slotDuration,impactAtMs,
+     beat:beat(phaseElapsed,impactAtMs-slotStart,slotDuration),
+     confirmed:!!server,confirmedDamage:server?Math.max(0,Number(server.amount)||0):null,
+     phaseElapsed};
    }
   }
   return {kind:elapsed>=fightDuration?'result':'intro',index:-1,uid:null,elapsed};
@@ -176,7 +206,10 @@
    scene.dataset.v3StrikeSide=state.defensive?'boss':'hero';
    scene.dataset.v3TargetSlot=String(state.slot??-1);
    const isStrike=['hero-strike','boss-strike'].includes(state.kind);
-   const motionKey=stamp+':'+state.index+':'+state.kind+':'+state.slot;
+   // If a late authoritative hit timestamp arrives, re-align the existing
+   // CSS motion once, not on every local 250ms UI refresh.
+   const motionKey=stamp+':'+state.index+':'+state.kind+':'+state.slot+
+    ':'+(state.impactAtMs??'');
    // CSS runs freely between updates. Rebase only at actor changes or a
    // genuinely disrupted tab/browser clock, never every 250ms.
    const brokenClock=lastClock!==null&&lastWall!==null&&
@@ -191,16 +224,15 @@
    const members=Array.isArray(view?.members)?view.members:[];
    nameMap.clear();
    for(const m of members)if(m?.uid)nameMap.set(m.uid,clean(m.name));
-   const key=motionKey;
+   const key=motionKey+':'+state.beat+':'+state.confirmedDamage;
    if(action)action.hidden=!isStrike;
    if(key!==lastKey){
     lastKey=key;
     if(action){
-     if(state.kind==='boss-strike')
-      action.textContent='🔥 '+clean(view?.name||'Der Wächter')+
-       ' zielt auf '+(nameMap.get(state.uid)||'einen Helden');
-     else if(state.kind==='hero-strike')
-      action.textContent='⚔️ '+(nameMap.get(state.uid)||'Ein Held')+' holt zum Angriff aus';
+     if(isStrike)
+      action.textContent=describeStrike(state,
+       nameMap.get(state.uid)||'Ein Held',
+       clean(view?.name||'Der Wächter'));
      else if(state.kind==='countdown')action.textContent='⏳ Nächste Runde';
      else if(state.kind==='minigame')
       action.textContent='🎮 Runde '+(state.index+1)+' – zeige dein Können!';

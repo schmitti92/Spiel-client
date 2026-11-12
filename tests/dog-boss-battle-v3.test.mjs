@@ -215,3 +215,71 @@ test('v12 runs all five minigames; the extra 10-second Finalschlag triggers thre
   assert.match(html,/dog-boss-battle-v3\.js\?v=[A-Za-z0-9_-]+/);
  }
 });
+
+// K-01: all movement beats are tied to the authoritative strike timestamp,
+// even when a late server event is not exactly at the scripted 54% position.
+test('K-01 choreography puts contact at the official timestamp, then recovers',()=>{
+ const {derive}=load(),v=view();
+ v.miniGames.version=14;
+ v.combat={version:1,events:[{
+  eventId:'g10-t1900000000000-a1:1',
+  round:0,slot:0,uid:'chris',kind:'hero-strike',
+  atMs:14500,amount:230
+ }]};
+ const inspect=offset=>derive(v,begin+offset);
+ assert.equal(inspect(12100).beat,'prepare');
+ assert.equal(inspect(13600).beat,'windup');
+ assert.equal(inspect(14499).beat,'swing');
+ assert.equal(inspect(14499).impact,false);
+ assert.equal(inspect(14500).beat,'impact');
+ assert.equal(inspect(14500).impact,true);
+ assert.equal(inspect(14500).confirmedDamage,230);
+ assert.equal(inspect(14950).beat,'recovery');
+ assert.equal(inspect(15300).beat,'recovery');
+ const after=inspect(15400);
+ assert.equal(after.uid,'chris');
+ assert.equal(after.beat,'recovery');
+ assert.equal(inspect(12100).impactAtMs,14500,
+  'official impact is used even before local impact time');
+ assert.equal(v.endsAt-begin,101000,'old fight timing is untouched');
+});
+
+test('K-01 stage labels change during the same strike and never invent damage',()=>{
+ const node=(name='div')=>{
+  const el={name,dataset:{},attrs:{},children:[],textContent:'',hidden:false,
+   style:{setProperty(k,v){this[k]=v}},
+   classList:{add(){}},
+   setAttribute(k,v){el.attrs[k]=v},
+   getAttribute(k){return el.attrs[k]},
+   append(...items){el.children.push(...items)},
+   querySelector:()=>null,querySelectorAll:()=>[]
+  };return el;
+ };
+ const scene=node('scene'),action=node('action'),boss=node('boss');
+ const selectors={'#combat-scene':scene,'#combat-boss':boss,
+  '#v3-actor-action':action,'#v3-turn-progress':node('progress')};
+ const window={};const document={createElement:node};
+ runInNewContext(js,{window,document},{timeout:1000});
+ const ui=window.DogBossArenaV3.create({
+  dataset:{},querySelector:sel=>selectors[sel]||null
+ });
+ const v=view();
+ ui.update(v,begin+12100);
+ assert.match(action.textContent,/Position ein/);
+ ui.update(v,begin+13000);
+ assert.match(action.textContent,/holt zum Angriff aus/);
+ ui.update(v,begin+14000);
+ assert.match(action.textContent,/schlägt zu/);
+ const hit=ui.derive(v,begin+13980);
+ ui.update(v,begin+Math.round(hit.impactAtMs));
+ assert.match(action.textContent,/prüfe Treffer/,
+  'unconfirmed animation never claims a verified hit');
+ assert.equal(boss.children.length,0,'no invented damage or popup');
+ v.miniGames.version=11;
+ v.combat={version:1,events:[{round:0,slot:0,uid:'chris',
+  kind:'hero-strike',atMs:13980,amount:400}]};
+ ui.update(v,begin+14020);
+ assert.match(action.textContent,/trifft/);
+ assert.equal(scene.dataset.v3Beat,'impact');
+ assert.equal(boss.children.length,1);
+});
