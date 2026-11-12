@@ -73,6 +73,14 @@
     const slot=clamp(Math.floor(sceneTime/slotDuration),0,players.length-1);
     const uid=players[slot].uid;
     const progress=clamp((sceneTime-slot*slotDuration)/slotDuration,0,1);
+    // v15: a fallen hero keeps their scheduled slot (team clock stays
+    // identical) but performs no imaginary attack after their death.
+    const slotStart=end+slot*slotDuration;
+    const fallen=Number(view?.miniGames?.version)>=15&&
+     view?.combat?.events?.some(e=>e.targetId===uid&&e.hpAfter===0&&
+      Number(e.atMs)<=slotStart);
+    if(fallen)return {kind:'fallen',index:i,uid,slot,progress,
+     elapsed,slotDuration,defensive:false,beat:'reset'};
     // Combat uses the very same impact time as the server's LP breakdown.
     // If the stage has not been confirmed yet, animate without a damage number.
     const kind=defensive?'boss-strike':'hero-strike';
@@ -83,7 +91,6 @@
      x?.round===i&&x.uid===uid&&x.kind===kind&&x.slot===slot):null;
     const scriptedAtMs=end+(slot+IMPACT_BEAT)*slotDuration;
     const candidate=Number(server?.atMs);
-    const slotStart=end+slot*slotDuration;
     const confirmedAt=server&&Number.isFinite(candidate)&&
      candidate>=slotStart&&candidate<slotStart+slotDuration;
     const impactAtMs=confirmedAt?candidate:Math.round(scriptedAtMs);
@@ -259,11 +266,14 @@
     actorInfo.heroClass:'krieger';
    const key=motionKey+':'+state.beat+':'+state.confirmedDamage+
     ':'+actorClass;
-   if(action)action.hidden=!isStrike;
+   if(action)action.hidden=!isStrike&&state.kind!=='fallen';
    if(key!==lastKey){
     lastKey=key;
     if(action){
-     if(isStrike)
+     if(state.kind==='fallen')action.textContent='💀 '+
+      (nameMap.get(state.uid)||'Ein Held')+
+      ' ist gefallen – die anderen kämpfen weiter!';
+     else if(isStrike)
       action.textContent=describeStrike(state,
        nameMap.get(state.uid)||'Ein Held',
        clean(view?.name||'Der Wächter'),actorClass);
@@ -276,14 +286,18 @@
     }
    }
    const all=scene.querySelectorAll?.('.combat-hero')||[];
+   const vitals=window.DogBossLiveUI?.combatVitals?.(view,now);
+   const dead=new Set(Number(view?.miniGames?.version)>=15?
+    (vitals?.heroes||[]).filter(hero=>Number(hero.hp)<=0).map(hero=>hero.uid):[]);
    const heroNodes=new Map();
    for(const item of all){
     const uid=item.getAttribute?.('data-hero-uid');
     if(uid)heroNodes.set(uid,item);
     const active=!!uid&&uid===state.uid&&state.kind==='hero-strike';
     const targeted=!!uid&&uid===state.uid&&state.kind==='boss-strike';
-    item.dataset.v3Active=active?'true':'false';
-    item.dataset.v3Targeted=targeted?'true':'false';
+    item.dataset.v3Fallen=dead.has(uid)?'true':'false';
+    item.dataset.v3Active=active&&!dead.has(uid)?'true':'false';
+    item.dataset.v3Targeted=targeted&&!dead.has(uid)?'true':'false';
     item.dataset.v3Hit=targeted&&state.impact?'true':'false';
     item.dataset.v3Guard=targeted&&['prepare','windup','swing'].includes(state.beat)?'true':'false';
     const current=members.find(m=>m.uid===uid)||

@@ -208,7 +208,9 @@
   reaction.disabled=!logged||working||!!pendingOp||!!mine?.reacted||remaining()<=0||
    !view?.roster?.some(m=>m.uid===account);
   reaction.textContent=mine?.reacted?'⚡ Reaktion gezählt':'⚡ Reaktion! Angriff verstärken';
-  miniUi?.update(view,frameNow,logged&&!working&&!pendingOp&&
+  const fallen=Number(view?.miniGames?.version)>=15&&
+   view?.teamHealth?.heroes?.some(h=>h.uid===account&&Number(h.hp)<=0);
+  miniUi?.update(view,frameNow,logged&&!working&&!pendingOp&&!fallen&&
    !!view?.roster?.some(m=>m.uid===account));
   combatFx?.update(view,frameNow);
   $('retry-button').hidden=!pendingOp;

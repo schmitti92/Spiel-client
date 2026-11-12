@@ -514,3 +514,22 @@
   animation:none!important;opacity:0!important;
  }
 }
+
+/* K-04: defeated player remains visibly present but no longer attacks. */
+.arena-live[data-arena-design="v3"] .combat-hero[data-v3-fallen="true"]{
+ filter:grayscale(.9) brightness(.60);opacity:.63;
+}
+.arena-live[data-arena-design="v3"] .combat-hero[data-v3-fallen="true"] .combat-hero-name::after{
+ content:" 💀 GEFALLEN";color:#ffb8bb;font-size:.75em;
+ font-weight:900;white-space:nowrap;
+}
+.arena-live[data-arena-design="v3"] .combat-hero[data-v3-fallen="true"] .v3-weapon,
+.arena-live[data-arena-design="v3"] .combat-hero[data-v3-fallen="true"] .v3-class-effect{
+ opacity:0!important;animation:none!important;
+}
+.live-hero-health-card[data-fallen="true"]{
+ border-color:#a14c58;opacity:.75;
+}
+.live-hero-health-card[data-fallen="true"] .live-hero-health-bar>span{
+ width:0%!important;
+}

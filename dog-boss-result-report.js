@@ -59,6 +59,7 @@
     taken:received.reduce((n,e)=>n+num(e.amount),0),
     correct,possible,percentage:possible?Math.round(100*correct/possible):null,
     hp:hp?num(hp.hp):null,maxHp:hp?num(hp.maxHp):null,
+    fallen:Number(view?.miniGames?.version)>=15&&hp?.hp===0,
     attacks:attacks.length,blocks:received.filter(e=>e.blocked).length};
   });
   const right=rows.reduce((n,r)=>n+r.correct,0);
@@ -368,7 +369,8 @@
     const header=make('div','br-vital-line');
     header.append(make('strong',null,(hero.heroClass==='magierin'?'✨ ':
      hero.heroClass==='waechter'?'🛡️ ':'⚔️ ')+hero.name),
-     make('span',null,fmtHp(hero.hp,hero.maxHp)));
+     make('span',null,hero.fallen?'💀 Gefallen · 0 LP':
+      fmtHp(hero.hp,hero.maxHp)));
     wrap.append(header);
     bar(wrap,hero.maxHp&&hero.hp!==null?100*hero.hp/hero.maxHp:0);
     heroNodes.push(wrap);
@@ -376,7 +378,7 @@
     for(const value of [hero.name,
      fmt.format(hero.attack)+' LP',fmt.format(hero.taken)+' LP',
      hero.possible?fmt.format(hero.correct)+' / '+fmt.format(hero.possible):'—',
-     fmtHp(hero.hp,hero.maxHp)]){
+     hero.fallen?'💀 Gefallen · 0 LP':fmtHp(hero.hp,hero.maxHp)]){
      tr.append(make('td',null,value));
     }
     attackNodes.push(tr);

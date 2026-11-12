@@ -473,6 +473,19 @@
     if(['target','chain'].includes(roundView?.kind)&&targetChoices.length&&!targetSent)flushTarget();
     roundKey=key;build(round,games.version||1);
    }
+   const myUid=view?.members?.find(m=>m.isMe)?.uid;
+   const fallen=games.version>=15&&myUid&&
+    view?.teamHealth?.heroes?.some(hero=>
+     hero.uid===myUid&&Number(hero.hp)<=0);
+   if(fallen){
+    allowed=false;
+    buttons.forEach(button=>{button.disabled=true});
+    title.textContent='💀 DEIN HELD IST GEFALLEN';
+    hint.textContent='Die anderen kämpfen für euer Team weiter.';
+    status.textContent='0 LP · Keine weiteren Angriffe oder Minispiele';
+    stopAnimation();
+    return;
+   }
    const mine=games.myAnswers?.[round.round],remaining=
     Math.max(0,Math.ceil((round.endMs-elapsed)/1000));
    if(activeVersion===1){

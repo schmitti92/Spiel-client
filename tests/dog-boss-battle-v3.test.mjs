@@ -352,3 +352,21 @@ test('K-03 only flashes after the official server impact',()=>{
  assert.equal(derive(v,begin+14000).confirmedDamage,300);
  assert.equal(derive(v,begin+14500).impact,false);
 });
+
+// K-04: a fallen hero never performs another attack while teammates retain
+// their exact pre-existing individual strike slots.
+test('K-04 v15 fallen fighter skips last stage without stopping surviving heroes',()=>{
+ const {derive}=load(),v=view();
+ v.miniGames.version=15;
+ v.combat={version:1,events:[
+  {round:3,slot:0,kind:'boss-strike',uid:'chris',
+   targetId:'chris',hpAfter:0,atMs:89000}
+ ]};
+ const dead=derive(v,begin+121900);
+ assert.equal(dead.kind,'fallen');
+ assert.equal(dead.uid,'chris');
+ const alive=derive(v,begin+124500);
+ assert.equal(alive.kind,'hero-strike');
+ assert.equal(alive.uid,'nova');
+ assert.equal(v.endsAt-begin,101000,'v11 fixture keeps original timeline');
+});

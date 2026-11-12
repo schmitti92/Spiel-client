@@ -182,7 +182,7 @@
       track.append?.(fill);
       const value=document.createElement('b');
       row.append?.(name,track,value);
-      heroHpNodes.set(p.uid,{fill,value});
+      heroHpNodes.set(p.uid,{fill,value,row});
       return row;
      });
      nodes.heroHealth.replaceChildren?.(...cards);
@@ -193,7 +193,9 @@
      const pct=100*clamp(Number(p.hp)||0,0,Math.max(1,p.maxHp))/
       Math.max(1,p.maxHp);
      if(bar.fill?.style)bar.fill.style.width=pct.toFixed(2)+'%';
-     text(bar.value,fmtHealth.format(p.hp));
+     const fallen=Number(view?.miniGames?.version)>=15&&Number(p.hp)<=0;
+     if(bar.row?.dataset)bar.row.dataset.fallen=fallen?'true':'false';
+     text(bar.value,fallen?'💀 Gefallen · 0 LP':fmtHealth.format(p.hp));
     }
    }
    const encounter=String(view?.startedAt||0)+':'+String(view?.attempt||0);

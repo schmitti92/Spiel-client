@@ -270,12 +270,22 @@ Die bestehenden Schwerter, Zauberstäbe und Schilde bleiben bestehen. Der Client
 
 **Firebase:** 0 neue Reads/Writes. **Noch offen:** echte Zwei-/Drei-Geräte-Ansicht sowie Tab-Wechsel/WLAN-Abbruch manuell prüfen.
 
+### K-04 – Tod bei 0 LP, übrige Helden kämpfen weiter (12.11.2026)
+
+**Beschlossene Spielregel:** Persönlicher Tod/Ausfall ab **0 LP**, keine sofortige Gruppen-Niederlage solange mindestens ein Held noch lebt. Ein ausgefallener Held kann keine weiteren Minispielantworten abgeben, greift in folgenden Angriffsszenen nicht an und ist ausgegraut. Nova/Titan fallen unter dieselbe Regel; überlebende Bots und Spieler machen normal weiter. Endet der Kampf mit allen Helden bei 0 LP, ist es eine Niederlage. Kein frühzeitiges Unterbrechen der 135 Sekunden.
+
+**Gezieltes Balancing ab neuem Kampf v15:** Zwei defensive Phasen mit jeweils bis zu 55 Prozentpunkten persönlichem HP-Verlust; vollständiges Versagen in beiden Runden ergibt 0 LP. Gute Verteidigung schützt die eigenen LP. Der letzte Kettenbrecher bleibt spielbar für Überlebende, nicht für Gefallene. Persönliche HP und Ergebnis werden serverseitig aus bereits vorhandenen Antworten berechnet; keine zusätzlichen Firestore-Abfragen. Neue Kämpfe werden mit `exchange:'individual-lethal'` erzeugt; gespeicherte v14-/ältere Kämpfe bleiben mit dem bisherigen 50-%-HP-Minimum kompatibel.
+
+**Visualisierung:** Graue, untätige Figur mit 💀-Markierung, Status „Gefallen · 0 LP“ in persönlicher HP-Anzeige und Schlusswertung, deaktivierte Minispiele; die Kamera und die übrigen Kämpfer bleiben aktiv.
+
+**Offen:** Echter Drei-Geräte-/Bot-Praxistest, Einsparungs-/Zeitmessung sowie Prüfung der Verteilung des finalen Teamangriffs, wenn ein Held bereits ausgefallen ist.
+
 ### Phase K – Kampfsystem, Überleben und Inszenierung `P0/P1`
 
 - [x] **K-01 – Einheitliche Kampf-Zeitleiste (technisch umgesetzt):** Sechs verständliche Bewegungsabschnitte pro Einzelangriff (Position → Ausholen → Schlag → servergetakteter Einschlag → Zurückweichen → Bereit). Anzeigetexte, Ziele, LP-Treffer und Farbeffekte richten sich nach derselben serverseitigen Ereigniszeit; keine erfundenen Schadenswerte vor bestätigtem Event. Alle Kampfversionen behalten ihre vorgegebene Gesamtdauer, neue Kämpfe 135 s/fünf Minispiele. Visueller Mehrgeräte-Test noch offen.
 - [x] **K-02 – Waffen und Figurbewegung (technisch umgesetzt):** Krieger führt einen kräftigen Klingenhieb mit goldener Schwertspur, Magierin erzeugt einen violett-blauen Magieimpuls aus ihrem Stab und Wächter stößt seinen Schild mit sichtbarer Schutz-Druckwelle vor. Klassenbezogene Kampfansagen, sichtbare Boss-Zielmarkierung pro Spieler und synchroner Waffen-/Figuren-Takt. Rein visuell, **kein Schaden oder Bonus geändert**. Echte Drei-Geräte-Sichtabnahme weiterhin offen.
 - [x] **K-03 – Treffer-Effekte und LP synchronisieren (technisch umgesetzt):** Ein gemeinsamer schreibfreier `combatVitals(view,now)`-Projektor für Boss-/Team-/persönliche Helden-LP, Boss-Zahlen und Fokus-Kamera. Die LP ändern sich ab bestätigtem serverseitigem Einschlag; heftiger Lichtblitz nicht vor bestätigtem Treffer. Eigene Anzeige für **AUSGEWICHEN!** (Dodge) und **BLOCK!** (Reaktion); Event-ID-Deduplizierung der einmaligen Schaden-Pop-ups und keine doppelte ältere HP-Anzeige. Finale Boss-LP aus `result.hpRemaining`. Tests automatisiert, Mehrgeräte-Sichttest offen.
-- [ ] **K-04 – Echte persönliche Überlebensmechanik konzipieren:** Aktuelle Mindest-LP-Regel (50 %) prüfen; festlegen, ob und wie Helden auf 0 LP fallen dürfen, welche Rettungsmechaniken gelten und ob die Kampfzeit für ausgefallene Spieler weiterläuft. **Fertig:** vor Änderung des Balancings abgesprochene Regeln und Simulationen.
+- [x] **K-04 – Neue persönliche 0-LP-Überlebensregel (technisch umgesetzt):** Auf ausdrücklichen Wunsch stirbt/fällt ein Held bei **0 LP**; er greift danach nicht mehr an und kann keine Minispiele mehr einreichen. **Alle anderen lebenden Helden kämpfen weiter**, der gemeinsame 135-s-Zeitplan läuft unverändert. Zwei vollständig fehlgeschlagene persönliche Verteidigungsrunden können im neuen v15-Kampf 0 LP verursachen; ein teilweise geschützter Held kann überleben. Boss-/Team-HP, Grayout, „Gefallen“, gesperrte Bedienelemente und Schlusswertung spiegeln den Zustand wider. Falls keiner überlebt, verliert das Team. Nur neue Kämpfe werden v15; alte v14 behalten ihre 50-%-Mindest-LP-Regel. Automatische Tests, realer Drei-Geräte-Sichttest offen.
 - [ ] **K-05 – Spannender, transparenter Schlussangriff:** Nach Kettenbrecher drei persönliche Schlussangriffe, dann exakt eine Sieg-/Niederlageentscheidung. Kein „unsichtbarer“ Zusatzschaden.
 - [ ] **K-06 – Individuelle Bossattacken:** Tor-10-Aschewächter zuerst; danach eigene Waffen-/Attacken-Optik für Boss 20–100, ohne getrennte Spiellogiken pro Boss.
 - [ ] **K-07 – Audio, Kamera und Effekte:** Treffer-Sound, Vorbereitungssignal, reduzierte Animationen, stumm schaltbar, ohne Extra-Firebase-Zugriffe.
@@ -384,6 +394,6 @@ Die bestehenden Schwerter, Zauberstäbe und Schilde bleiben bestehen. Der Client
 
 **Definition von „fertig“:** Funktion auf GitHub `main` integriert, Frontend-/Backend-Tests erfolgreich, auf echter Anzeige nachvollziehbar, keine ungeklärten Doppelbuchungen oder unnötigen Firestore-Mehrzugriffe, Task abgehakt und Fortschrittsprotokoll ergänzt.
 
-**Nächster Entwicklungsblock:** **K-04 – die bisherige Überlebensregel (Mindest-LP) fachlich prüfen und ein verbessertes Modell entwerfen, ohne ungefragt das Balancing umzubauen.** K-01 bis K-03 sind technisch integriert; echte Mehrgeräte-Sichtprüfung und A-01e/A-02e-Messreihen bleiben offen.
+**Nächster Entwicklungsblock:** **K-05 – den finalen Schadensausgleich und die sichtbaren Einzeltreffer bei ausgefallenen Helden prüfen**, insbesondere wenn nur noch ein Spieler lebt. K-04 ist technisch integriert; Mehrgeräte-Sichttest sowie A-01e/A-02e offen.
 
 **Nächste konkrete Schritte:** **A-01e** – bereits dokumentierten kontrollierten Praxiswert (145 Reads / 26 Writes) bei künftigen Spielen um Leerlauf und weitere Szenarien ergänzen und **A-02e** – mit dem neuen `netdiag=1`-Messfeld die reale 1/2/3-Geräte-Baseline plus Nova/Titan erheben. Danach A-01/A-02 abnehmen. **Keine Optimierung als abgeschlossen bezeichnen, solange der Vergleich zur Live-Baseline fehlt.**
