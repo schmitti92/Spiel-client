@@ -220,7 +220,8 @@
    root.classList?.toggle('is-precise-reaction',round.kind==='reaction'&&version>=9);
    root.classList?.toggle('is-color-target',round.kind==='target'&&version>=10);
    lastChoice=null;
-   title.textContent=round.kind==='math'&&version>=5?
+   title.textContent=round.kind==='target'&&version>=10?
+    '🎨 FARBEN- & SYMBOL-TREFFER':round.kind==='math'&&version>=5?
     '✦ RUNENPRÜFUNG':'RUNDE '+(round.round+1)+'/'+(version>=3?4:3)+' · '+labels[round.kind];
    hint.textContent=round.kind==='math'&&version>=5?
     '8 AUFGABEN · STEIGENDER SCHWIERIGKEITSGRAD':
