@@ -73,7 +73,7 @@ test('the end report uses only a server-confirmed verdict and exact final boss H
  assert.equal(loss.replay.length,8);
  assert.equal(loss.replay[0].uid,'a','replay order uses confirmed timestamps');
  assert.equal(loss.replay.at(-1).uid,'b');
- assert.ok(loss.tips.some(x=>x.includes('100 Boss-LP')));
+ assert.ok(loss.tips.some(x=>x.includes('100 LP')));
  assert.equal(loss.rows.reduce((sum,p)=>sum+p.attack,0),660);
  assert.notEqual(loss.rows.reduce((sum,p)=>sum+p.attack,0),loss.result.damage,
   'cinematic hit subtotal is not falsely passed off as final stochastic result');
@@ -92,7 +92,8 @@ test('minigame grade is bounded 0–100 with explicit maximum and missing-data h
  assert.equal(grade(40),'Ordentlich');
  assert.equal(grade(60),'Gut');
  assert.equal(grade(80),'Sehr gut');
- assert.equal(grade(95),'Maximum');
+ assert.equal(grade(95),'Hervorragend');
+ assert.equal(grade(100),'Maximum');
  const older=fakeView();
  older.miniGames.exchange.stages=[];
  older.miniGames.exchange.strikes=[];
