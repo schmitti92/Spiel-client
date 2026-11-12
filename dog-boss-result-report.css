@@ -20,7 +20,7 @@ body.dog-boss-report-visible{
 .boss-result-report .br-dialog{
  position:relative;display:flex;flex-direction:column;min-height:0;
  width:min(1180px,100%);height:auto;
- max-height:min(940px,calc(100dvh - 16px));
+ max-height:min(940px,calc(100dvh - 48px));
  border:2px solid #e1ae6a;border-radius:24px;
  background:radial-gradient(ellipse at 50% 0%,#4b354481,transparent 52%),
   linear-gradient(150deg,#161c2dfb,#0c1525ff 66%,#17192aff);
@@ -333,10 +333,7 @@ body.dog-boss-report-visible{
  40%{transform:translateX(7px)}
  60%{transform:translateX(-5px)}
 }
-.boss-result-report .br-footer{
- display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;
- padding-top:4px;
-}
+/* Confirmation remains visible below the independently scrollable report. */
 .boss-result-report .br-footer>a{display:inline-flex;align-items:center}
 #boss-result-open[hidden]{display:none!important}
 @media(max-width:800px){
