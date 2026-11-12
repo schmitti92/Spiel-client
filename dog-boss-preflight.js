@@ -5,7 +5,7 @@
  */
 (()=>{
  'use strict';
- const icons={10:'aschewaechter-cinematic.svg',20:'schattenfuerst.svg',
+ const icons={10:'aschewaechter-battle-v3.webp',20:'schattenfuerst.svg',
   30:'kristallwurm.svg',40:'dornenkoenig.svg',50:'hueter-der-tiefe.svg',
   60:'flammendrache.svg',70:'seelenrichter.svg',80:'eisenkoloss.svg',
   90:'festungswaechter.svg',100:'letzter-waechter.svg'};
