@@ -42,3 +42,11 @@ body.merchant-page .exchange-controls{grid-template-columns:minmax(90px,.8fr) mi
 .forge-area-grid .forge-item-quick>.forge-quick-upgrade:disabled{opacity:.45;cursor:not-allowed}
 .forge-area-grid .forge-item-quick>.forge-quick-upgrade:focus-visible{outline:3px solid #fff3a6;outline-offset:3px}
 @media(max-width:560px){.forge-area-grid .forge-item-quick>.item-choice{padding-right:46px}}
+
+/* Compact three-tier stock display; no fabricated higher-tier stock. */
+.stock-row .stock-quality-counts{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px 10px;text-align:right}
+.stock-row .stock-quality{font-size:.78em;white-space:nowrap;color:#cbd5e1;font-variant-numeric:tabular-nums}
+.stock-row .stock-quality-1{color:#f3d89b}
+.stock-row .stock-quality-2{color:#8ecbff}
+.stock-row .stock-quality-3{color:#d9b4ff}
+@media(max-width:720px){.stock-row .stock-quality-counts{gap:2px 7px}.stock-row .stock-quality{font-size:.72em}}
