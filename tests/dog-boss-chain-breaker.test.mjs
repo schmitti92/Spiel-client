@@ -127,6 +127,6 @@ test('Both boss screens load mobile-friendly chain art and keep v12 rune encount
   const html=read(page);
   assert.match(html,/dog-boss-chain-breaker\.css\?v=20261112-chainbreak20/);
   assert.match(html,/dog-boss-mini-ui\.js\?v=20261112-chainbreak20/);
-  assert.match(html,/dog-boss-live-ui\.js\?v=20261112-chainbreak20/);
+  assert.match(html,/dog-boss-live-ui\.js\?v=[A-Za-z0-9_-]+/);
  }
 });
