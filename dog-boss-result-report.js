@@ -199,7 +199,7 @@
    key:String(view.gate||10)+':'+String(view.startedAt||0)+':'+
     String(view.attempt||0)+':'+String(result.win)+':'+String(finalDamage)};
  }
- function create(root){
+ function create(root,getViewerUid=null){
   if(!root)return {update(){},model};
   // Mount the finish screen outside the battle/preflight grid. The old
   // inline section could be hidden by the stage's data-screen CSS rules.
@@ -207,6 +207,42 @@
   const openButton=document.querySelector('#boss-result-open');
   if(document.body?.appendChild)document.body.appendChild(root);
   let activeFightId='',visibleKey='',dismissedFightId='';
+  let activeViewerUid='',activeGate=0;
+  // E-03: only one small local receipt per player and boss gate. No
+  // combat data, profile details, network requests or Firestore writes.
+  // New attempts have a different fightId; old receipts cannot hide them.
+  const acknowledgementKey=(uid,gate)=>
+   'dog:boss:result:ack:v1:'+encodeURIComponent(uid)+':'+gate;
+  const viewerUid=view=>{
+   try{
+    const uid=typeof getViewerUid==='function'?getViewerUid():
+     view?.members?.find(m=>m?.isMe===true)?.uid;
+    return typeof uid==='string'&&uid.length<=160?uid:'';
+   }catch{return '';}
+  };
+  const readAcknowledgement=(uid,report)=>{
+   if(!uid)return false; // anonymous viewer: never reuse another account's receipt
+   const key=acknowledgementKey(uid,report.gate);
+   for(const storage of ['localStorage','sessionStorage']){
+    try{
+     if(window[storage]?.getItem(key)===report.fightId)return true;
+    }catch{ /* Blocked storage is a normal, session-only fallback. */ }
+   }
+   return false;
+  };
+  const saveAcknowledgement=()=>{
+   if(!activeViewerUid||!activeFightId||!activeGate)return;
+   const key=acknowledgementKey(activeViewerUid,activeGate);
+   for(const storage of ['localStorage','sessionStorage']){
+    try{
+     const area=window[storage];
+     if(area){
+      area.setItem(key,activeFightId);
+      if(area.getItem(key)===activeFightId)return;
+     }
+    }catch{ /* Keep the existing in-memory confirmation if storage fails. */ }
+   }
+  };
   let timer=null,events=[],nextIndex=0;
   let finaleTimer=null,finaleStep=0;
   const html=`
@@ -440,6 +476,7 @@
   node('br-return').addEventListener('click',()=>{
    if(!activeFightId||finaleTimer!==null||root.hidden)return;
    dismissedFightId=activeFightId;
+   saveAcknowledgement();
    ended();
    setOpen(false);
    openButton?.focus?.({preventScroll:true});
@@ -579,6 +616,15 @@
    events=replay;nextIndex=0;
   }
   function update(view){
+   const viewer=viewerUid(view);
+   // Shared browsers can switch accounts without a full page refresh.
+   // Neither the in-memory dismissal nor the storage key may cross UIDs.
+   if(viewer!==activeViewerUid){
+    if(activeFightId){ended();clearFinale();}
+    activeViewerUid=viewer;
+    activeFightId='';visibleKey='';dismissedFightId='';activeGate=0;
+    setOpen(false);
+   }
    const report=model(view);
    // The identity of a battle is not its damage amount or win/loss label:
    // an updated official final total must never restart the confirmation.
@@ -593,17 +639,22 @@
     }
     // A new fight, logout or genuinely unrelated view retires the old modal.
     if(activeFightId){ended();clearFinale();}
-    activeFightId='';visibleKey='';dismissedFightId='';
+    activeFightId='';visibleKey='';dismissedFightId='';activeGate=0;
     setOpen(false);
     if(openButton)openButton.hidden=true;
     return;
    }
    if(report.fightId!==activeFightId){
     ended();clearFinale();
-    activeFightId=report.fightId;visibleKey=report.key;dismissedFightId='';
+    activeFightId=report.fightId;activeGate=report.gate;
+    visibleKey=report.key;
+    // On a reload, the local receipt suppresses the automatic finale and
+    // modal. The result remains available via "Schlusswertung öffnen".
+    dismissedFightId=readAcknowledgement(activeViewerUid,report)?
+     activeFightId:'';
     render(report);
-    setOpen(true);
-    startFinale(report);
+    setOpen(dismissedFightId!==activeFightId);
+    if(dismissedFightId!==activeFightId)startFinale(report);
     return;
    }
    if(report.key!==visibleKey){

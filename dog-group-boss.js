@@ -51,7 +51,8 @@
  const liveUi=window.DogBossLiveUI?.create($('arena'));
  const director=window.DogBossDirector?.create($('arena'));
  const battleV3=window.DogBossArenaV3?.create($('arena'));
- const resultReport=window.DogBossResultReport?.create($('boss-result-report'));
+ const resultReport=window.DogBossResultReport?.create($('boss-result-report'),
+  ()=>auth()?.user?.uid||null);
  const key=uid=>'dog:groupboss:'+gate+':pending:'+uid;
  const newId=()=>globalThis.crypto?.randomUUID?.()?
   'boss'+gate+'-'+globalThis.crypto.randomUUID():
