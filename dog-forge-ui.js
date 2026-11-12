@@ -73,7 +73,7 @@
   if(textValue!==undefined)el.textContent=String(textValue);
   return el;
  };
- let uid=null,view=null,busy=false,tab=merchantMode?'exchange':'equipment',selected='weapon',tradeGroup='equipment',loadSerial=0,readyOnly=false,confirmData=null,exchangeConfirmData=null,goalId=null,sessionEpoch=0,lastLoadedAt=0,loadingUid=null,loadingPromise=null;
+ let uid=null,view=null,busy=false,tab=merchantMode?'exchange':'equipment',selected='weapon',tradeGroup='equipment',refineGroup='equipment',loadSerial=0,readyOnly=false,confirmData=null,exchangeConfirmData=null,goalId=null,sessionEpoch=0,lastLoadedAt=0,loadingUid=null,loadingPromise=null;
  let chronicleView=undefined,chronicleUid=undefined,stockView=undefined,stockUid=undefined;
  const sectionExpanded={equipment:true,attack:false,defense:false};
  const goalKey=account=>'dog:forge:goal:'+account;
@@ -179,7 +179,7 @@
   try{
    const data=JSON.parse(localStorage.getItem(pendingKey(account))||'null');
    if(data&&/^[A-Za-z0-9_-]{12,90}$/.test(data.id)&&
-      ['upgrade','exchange'].includes(data.action)&&data.payload&&typeof data.payload==='object')
+      ['upgrade','exchange','refine'].includes(data.action)&&data.payload&&typeof data.payload==='object')
     return data;
   }catch{}
   return null;
@@ -228,6 +228,7 @@
  const quoteFor=id=>view?.quotes?.find(q=>q.itemId===id);
  const canUpgradeItem=id=>{const q=quoteFor(id);return !!q&&!q.maxed&&!q.locked&&q.affordable;};
  const have=id=>view?.inventory?.resources?.[id]||0;
+ const haveQuality=(id,level)=>view?.inventory?.qualityResources?.[id+':'+level]??(level===1?have(id):0);
  const itemFor=id=>view?.items?.find(x=>x.id===id);
  const usable=()=>!!uid&&auth()?.user?.uid===uid&&!!view&&!busy&&!pending(uid);
  function header(){
@@ -325,14 +326,17 @@
    return;
   }
   for(const entry of entries.slice(0,10)){
-   const isUpgrade=entry.type==='upgrade';
+   const isUpgrade=entry.type==='upgrade',isRefine=entry.type==='refine';
    const def=isUpgrade?itemFor(entry.itemId):null;
    const success=entry.success===true;
-   const row=node('div','journal-entry '+(isUpgrade?(success?'journal-success':'journal-failure'):'journal-trade'));
-   const icon=node('span','journal-icon',isUpgrade?(success?'✨':'🌑'):'💎');
+   const row=node('div','journal-entry '+((isUpgrade||isRefine)?(success?'journal-success':'journal-failure'):'journal-trade'));
+   const icon=node('span','journal-icon',(isUpgrade||isRefine)?(success?'✨':'🌑'):'💎');
    const details=node('span','journal-content');
-   const title=isUpgrade?displayName(def):(material[entry.from]?.name||'Rohstoff')+' → '+(material[entry.to]?.name||'Rohstoff');
-   const result=isUpgrade?(success?'✓ Stufe '+entry.level:'Fehlschlag · Stufe '+entry.level):'10 : 1 getauscht';
+   const title=isUpgrade?displayName(def):isRefine?
+    (material[entry.resourceId]?.name||entry.resourceId)+' · Materialstufe '+entry.fromQuality+' → '+(entry.fromQuality+1):
+    (material[entry.from]?.name||'Rohstoff')+' → '+(material[entry.to]?.name||'Rohstoff');
+   const result=isUpgrade?(success?'✓ Stufe '+entry.level:'Fehlschlag · Stufe '+entry.level):
+    isRefine?(success?'✓ '+(entry.count||1)+' veredelt':'Fehlschlag · Materialien verbraucht'):'10 : 1 getauscht';
    details.append(node('strong',null,title),node('small',null,result));
    const at=Number(entry.at||0);
    const date=at?new Date(at).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}):'–';
@@ -603,11 +607,12 @@
    return;
   }
 
-  const missing=Object.entries(quote.cost||{}).filter(([id,need])=>have(id)<need)
-   .map(([id,need])=>({id,needed:need-have(id)}));
+  const materialLevel=quote.qualityLevel||1;
+  const missing=Object.entries(quote.cost||{}).filter(([id,need])=>haveQuality(id,materialLevel)<need)
+   .map(([id,need])=>({id,needed:need-haveQuality(id,materialLevel)}));
   const forgeNeeded=Math.min(10,Math.ceil(quote.nextLevel/5));
   const costHead=node('div','cost-heading forge-cost-heading');
-  costHead.append(node('h3',null,'Rohstoffe für Stufe '+quote.nextLevel));
+  costHead.append(node('h3',null,'Rohstoffe der Qualität '+materialLevel+' für Verbesserung auf Stufe '+quote.nextLevel));
   costHead.append(node('span','forge-cost-badge '+(quote.locked?'blocked':missing.length?'missing':'ready'),
    quote.locked?'🔒 Gesperrt':missing.length?'⚠️ '+missing.length+' fehlen':'✓ Vorhanden'));
   const costGrid=node('div','cost-list forge-compact-cost-list');
@@ -620,7 +625,7 @@
    const notice=node('p','forge-cost-notice '+(quote.locked?'locked':'missing'),reason);
    notice.id='forge-action-status';root.append(notice);
   }
-  const suggestions=missing.length?exchangeHints(quote):[];
+  const suggestions=missing.length&&materialLevel===1?exchangeHints(quote):[];
   if(suggestions.length){
    const exchange=node('details','forge-exchange-suggestions');
    exchange.append(node('summary',null,'💎 Tauschmöglichkeiten beim Händler'));
@@ -695,7 +700,7 @@
   const group=MATERIALS.find(g=>g.group===tradeGroup)||MATERIALS[2];
   const list=node('div','exchange-list');
   for(let i=0;i<4;i++){
-   const from=group.values[i],to=group.values[i+1],stock=have(from[0]);
+   const from=group.values[i],to=group.values[i+1],stock=haveQuality(from[0],1);
    const maxBatch=Math.min(100,Math.floor(stock/10),1000000-have(to[0]));
    const row=node('div','exchange-row multi-exchange-row');
    row.append(node('span','exchange-icon',from[1]));
@@ -760,7 +765,7 @@
   $('forge-retry-wrap').hidden=!currentAccount||!pending(uid);
   $('forge-retry').disabled=!currentAccount||!uid||busy;
   $('forge-refresh').disabled=busy;
-  header();renderList();merchantMode?renderExchange():renderUpgrade();renderGoal();renderChronicle();renderStock();renderGallery();
+  header();renderList();merchantMode?renderExchange():renderUpgrade();renderGoal();renderChronicle();renderStock();renderRefinement();renderGallery();
   if(!merchantMode&&typeof window.dispatchEvent==='function'&&typeof CustomEvent==='function')
    window.dispatchEvent(new CustomEvent('dog-forge-view',{detail:{uid,view,busy}}));
  }
@@ -781,7 +786,15 @@
     'Rohstoffe verbraucht · Stufe '+result.newLevel+' bleibt';
    achievement=success?(before!==after&&equip?'✦ NEUE AUSSEHENSSTUFE ✦':'STUFE '+result.oldLevel+'  ➜  '+result.newLevel):
     'STUFE '+result.oldLevel+' BLEIBT';
-  }else if(result.type==='exchange'){
+   }else if(result.type==='refine'){
+    kind=result.success?'skill-success':'failure';
+    emoji=result.success?'✦':'✕';
+    heading=result.success?'Rohstoff erfolgreich veredelt!':'Veredelung fehlgeschlagen';
+    subtitle=money(result.spent)+' × '+(material[result.resourceId]?.name||result.resourceId)+
+     ' der Stufe '+result.fromQuality+' eingesetzt; '+money(result.received)+' erhalten.';
+    achievement='ERFOLGSCHANCE '+result.chance+' %';
+    art.append(node('span','skill-result-emblem','💎'));
+   }else if(result.type==='exchange'){
    const from=material[result.from],to=material[result.to];
    art.append(node('span','skill-result-emblem','💎'));
    subtitle=money(result.spent||10)+' × '+(from?.name||result.from)+
@@ -903,6 +916,7 @@
    const error=e.message;
    if(['STALE_FORGE_LEVEL','DOG_MATERIALS_MISSING','FORGE_MAX_LEVEL','DOG_FORGE_BOSS_REQUIRED','INVALID_FORGE_ITEM',
     'INVALID_EXCHANGE_RESOURCE','INVALID_EXCHANGE_COUNT','DOG_MATERIALS_LIMIT',
+     'DOG_QUALITY_LOCKED','INVALID_REFINEMENT','INVALID_QUALITY_LEVEL','INSUFFICIENT_QUALITY_RESOURCES',
     'INVALID_FORGE_REQUEST'].includes(error)){
     clearPending(account);
     // Only definitive server rejections are safe to discard; ambiguous network
@@ -948,7 +962,7 @@
   const group=MATERIALS.find(g=>g.values.some(x=>x[0]===req.resourceId));
   const idx=group?.values.findIndex(x=>x[0]===req.resourceId)??-1;
   const to=idx>=0&&idx<4?group.values[idx+1][0]:null;
-  if(!to||have(req.resourceId)<req.count*10||have(to)+req.count>1000000){
+  if(!to||haveQuality(req.resourceId,1)<req.count*10||have(to)+req.count>1000000){
    closeExchangeConfirm();status('↻ Rohstoffbestand geändert. Bitte neu prüfen.','bad');
    void reload();return;
   }
