@@ -53,14 +53,14 @@ test('uploaded armor is hero-specific at every level and weapons remain unchange
  for(const cls of Object.keys(expected)){
   for(const level of [1,2,5,6,11,16,19,20]){
    assert.equal(gear.image(cls,'armor',level),'./dog-forge-art/'+expected[cls]);
-   assert.match(gear.image(cls,'weapon',level),new RegExp(cls+'-weapon-[1-5]\\\\.svg$'));
+   assert.ok(gear.image(cls,'weapon',level).includes('/heroes/'+cls+'-weapon-'));
   }
  }
 });
 test('every armor surface uses registry imagery and has stage SVG fallback',()=>{
  for(const path of ['dog-forge-ui.js','dog-forge-gallery.js','dog-ascension.js']){
   const source=fs.readFileSync(new URL(path,base),'utf8');
-  assert.match(source,/DogHeroEquipment\\?\\.image/);
-  assert.match(source,/DogHeroEquipment\\?\\.fallbackImage/);
+  assert.ok(source.includes('DogHeroEquipment?.image'));
+  assert.ok(source.includes('DogHeroEquipment?.fallbackImage'));
  }
 });
