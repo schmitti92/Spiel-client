@@ -204,7 +204,8 @@
   const time=state==='fighting'?remaining():state==='cooldown'?cooling():duration;
   $('timer').textContent=formatTime(time);
   $('timer-fill').style.width=(state==='fighting'?Math.min(100,time/duration*100):state==='victory'?0:100)+'%';
-  const bossLeft=Number(view?.bossLiveHp??view?.result?.hpRemaining??view?.bossHp)||0;
+  const bossLeft=Number(view?.miniGames?.exchange?.displayBossHp??
+    view?.bossLiveHp??view?.result?.hpRemaining??view?.bossHp)||0;
   const bossMax=Number(view?.bossHp)||0;
   $('boss-hp').textContent=view?
    bossLeft.toLocaleString('de-DE')+' / '+bossMax.toLocaleString('de-DE'):'– / –';
