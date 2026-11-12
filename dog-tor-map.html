@@ -7,10 +7,10 @@
  <meta name="description" content="Die 100 Tore: Fünf Welten, 80 Einzelkämpfe, 10 Mini-Bosse und 10 gemeinsame Wächter führen euch zum Spiel DOG.">
  <title>🏰 Der Weg zu DOG · Die 100 Tore</title>
  <link rel="stylesheet" href="./dog-tor-map.css?v=20261111-cooldown-v1">
- <link rel="stylesheet" href="./dog-hero-selection.css?v=20261112-heroes1">
+ <link rel="stylesheet" href="./dog-hero-selection.css?v=20261112-onboarding1">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
- <script src="./dog-tor-map.js?v=20261112-heroes1" defer></script>
+ <script src="./dog-tor-map.js?v=20261112-onboarding1" defer></script>
  <script src="./dog-developer-ui.js?v=20261111-cooldown-v1" defer></script>
  <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 </head>
@@ -60,15 +60,24 @@
 <div class="ep-milestones" id="ep-milestones" aria-label="Gemeinsame Boss-Siege"></div>
 </section>
 <div id="team-members" class="team-members" aria-label="Gespeicherte Positionen der Spieler"></div>
-   <section id="hero-selection" class="dog-hero-selection" aria-labelledby="hero-selection-title" hidden>
-    <div class="dog-hero-selection-intro"><div><span class="world-label">🎭 DEIN HELD</span><h3 id="hero-selection-title">Wähle deine Spielfigur</h3></div><p>Die Wahl wird für dein Online-Profil gespeichert und bei allen Gruppenbossen angezeigt. Angriff und LP richten sich weiterhin nach deiner Schmiede-Ausrüstung.</p></div>
-    <div class="dog-hero-choices" role="group" aria-label="Charakterklasse auswählen">
+   <dialog id="hero-selection" class="dog-hero-selection dog-hero-onboarding" aria-labelledby="hero-selection-title" aria-describedby="hero-selection-description">
+    <div class="dog-hero-selection-intro">
+     <span class="world-label">✦ 100 TORE · BEGINN DEINES ABENTEUERS ✦</span>
+     <h2 id="hero-selection-title">⚔️ Wähle deinen Helden!</h2>
+     <p id="hero-selection-description">Bevor du dein erstes Tor betrittst, entscheidest du dich ein einziges Mal für deine Spielfigur. <strong>Diese Wahl ist endgültig</strong> und gilt für deine gesamte Reise durch die 100 Tore. Auch alle drei Spieler dürfen denselben Helden wählen.</p>
+    </div>
+    <div class="dog-hero-choices" role="group" aria-label="Deinen endgültigen Charakter auswählen">
      <button type="button" class="dog-hero-choice is-krieger" data-hero-class="krieger" aria-pressed="false"><span class="dog-hero-art is-krieger" aria-hidden="true"></span><strong>⚔️ Krieger</strong><small>Schwert · Mut · Angriff</small></button>
      <button type="button" class="dog-hero-choice is-magierin" data-hero-class="magierin" aria-pressed="false"><span class="dog-hero-art is-magierin" aria-hidden="true"></span><strong>✨ Magierin</strong><small>Magie · Blitz · Fernkampf</small></button>
      <button type="button" class="dog-hero-choice is-waechter" data-hero-class="waechter" aria-pressed="false"><span class="dog-hero-art is-waechter" aria-hidden="true"></span><strong>🛡️ Wächter</strong><small>Schild · Schutz · Abwehr</small></button>
     </div>
-    <p id="hero-selection-status" class="dog-hero-selection-status" role="status" aria-live="polite"></p>
-   </section>
+    <div class="dog-hero-confirm">
+     <p id="hero-choice-warning">🔒 Einmal bestätigt, kannst du den Charakter später nicht mehr wechseln. Ausrüstung und Fähigkeiten kannst du weiterhin verbessern.</p>
+     <button type="button" id="hero-confirm" class="team-join" disabled>🔒 Endgültig bestätigen &amp; Abenteuer beginnen</button>
+     <p id="hero-selection-status" class="dog-hero-selection-status" role="status" aria-live="polite"></p>
+    </div>
+   </dialog>
+   <div id="hero-locked-summary" class="dog-hero-locked-summary" hidden>🔒 <strong id="hero-locked-name">Dein Held</strong> ist für deine gesamte Reise festgelegt. Viel Erfolg auf dem Weg zu Tor 100!</div>
    <button type="button" id="team-join" class="team-join" hidden>🛡️ Der Dreier-Expedition beitreten</button>
    <p class="team-hint">Die Markierungen zeigen die <b>zuletzt vom Server gespeicherte Position</b>, nicht den minutengenauen Online-Status. Die Karte aktualisiert sich beim Spielen und in größeren Abständen, um Firebase-Abfragen zu sparen.</p>
   </section>
