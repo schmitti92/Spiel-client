@@ -15,11 +15,11 @@ test('Merchant uses the original safe server trade workflow on a separate page',
 });
 test('Equipment and both skill areas stay visible together',()=>{
  const ui=read('dog-forge-ui.js'),css=read('dog-forge-areas.css');
- for(const name of ['Waffen & Rüstung','Angriffsfähigkeiten','Abwehrfähigkeiten'])assert.ok(ui.includes(name));
+ for(const name of ['Waffen & Rüstung','Angriff','Abwehr'])assert.ok(ui.includes(name));
  for(const name of ['equipment','attack','defense'])assert.ok(css.includes('forge-item-group-'+name));
  assert.doesNotMatch(ui,/tab='exchange';tradeGroup=suggestion\.group/);
 });
 test('Nine pages use shared updated navigation',()=>{
  for(const p of ['dog-expedition.html','dog-tor-map.html','dog-forge.html','dog-merchant.html','dog-ascension.html','dog-boss10.html','dog-group-boss.html','dog-boss.html','dog-private-preview.html'])
-  assert.match(read(p),/dog-event-tabs\.js\?v=20261112-boss-from-map1/);
+  assert.match(read(p),/dog-event-tabs\.js\?v=20261112-forge50-v1/);
 });

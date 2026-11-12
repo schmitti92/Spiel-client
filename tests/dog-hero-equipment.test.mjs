@@ -9,7 +9,7 @@ const gear=sandbox.window.DogHeroEquipment;
 test('three locked hero classes each have different weapon and armor progression',()=>{
  const classes=['krieger','magierin','waechter'];
  for(const type of ['weapon','armor']){
-  for(const level of [1,6,11,16,20]){
+  for(const level of [1,11,21,31,50]){
    const names=classes.map(cls=>gear.name(cls,type,level));
    assert.equal(new Set(names).size,3,type+' '+level);
    for(const cls of classes){
