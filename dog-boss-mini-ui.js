@@ -51,7 +51,8 @@
   let targetGuide=null,targetFeedback=null,targetMarks=[];
   let chainMarks=[],chainHits=[];
   let targetClock=null,targetClockFill=null;
-  let reactionPreview=null;
+  let reactionPreview=null,reactionTaps=[],reactionHits=[],reactionSent=false;
+  let reactionMarks=[],reactionHint=null;
   const clockStamp=()=>typeof clockNow==='function'?Math.round(clockNow()):
    (anchor?Math.round(fightStart+anchor.elapsed+
     (typeof performance!=='undefined'?performance.now():Date.now())-anchor.stamp):Date.now());
@@ -71,7 +72,8 @@
    }
    const batch=mathQueue;
    mathSending=true;
-   Promise.resolve().then(()=>onSubmit(batch.round,batch.answers,0))
+   Promise.resolve().then(()=>onSubmit(batch.round,batch.answers,0,
+    batch.kind==='reaction'?batch.tapTimes:null))
     .then(accepted=>{
      // A controller returns false when an earlier request is still pending.
      // Keep this math batch intact and retry on a later rendering tick.
@@ -103,6 +105,32 @@
      ' ANTWORTEN ERFASST · WARTE AUF SERVER';
     targetFeedback.dataset.state='pending';
    }
+   pumpMath();
+  };
+  const paintReactionMarks=(official=[])=>{
+   reactionMarks.forEach((mark,i)=>{
+    const record=official[i],verified=typeof record?.correct==='boolean';
+    const local=i<reactionTaps.length;
+    mark.textContent=verified?(record.correct?'✓':'✕'):local?'●':String(i+1);
+    mark.classList.toggle('is-confirmed',verified);
+    mark.classList.toggle('is-safe',verified&&record.correct===true);
+    mark.classList.toggle('is-miss',verified&&record.correct===false);
+    mark.classList.toggle('is-local',!verified&&local);
+    mark.classList.toggle('is-next',!verified&&!local&&i===reactionTaps.length);
+    mark.setAttribute?.('aria-label','Konter '+(i+1)+': '+
+     (verified?(record.correct?'Treffer bestätigt':'Fehlschlag bestätigt'):
+      local?'erfasst, noch nicht bestätigt':'noch offen'));
+   });
+  };
+  const flushReaction=()=>{
+   if(roundView?.kind!=='reaction'||activeVersion<14||
+      reactionSent||!reactionTaps.length)return;
+   reactionSent=true;
+   mathQueue={kind:'reaction',round:roundView.round,
+    answers:reactionTaps.map(()=>1),tapTimes:[...reactionTaps],
+    fightStart,deadline:fightStart+roundView.endMs+1900};
+   if(reactionHint)reactionHint.textContent='⏳ '+
+    reactionTaps.length+' KONTER · SERVER PRÜFT';
    pumpMath();
   };
   const paintTargetMarks=(confirmed=[])=>{
@@ -189,6 +217,40 @@
   };
   const choose=(value)=>{
    if(!roundView||localSubmitting||!allowed)return;
+   if(activeVersion>=14&&roundView.kind==='reaction'){
+    // One local press per actual pointer contact, no network wait.
+    const stamp=clockStamp();
+    if(stamp<fightStart+roundView.startMs||
+       stamp>=fightStart+roundView.endMs||reactionSent||
+       reactionTaps.length>=3||
+       (reactionTaps.length&&stamp-reactionTaps.at(-1)<420))return;
+    const at=pos(roundView,stamp-fightStart);
+    const provisional=Math.abs(at-.5)<=roundView.zoneRadius+.004;
+    reactionTaps.push(stamp);reactionHits.push(provisional);
+    reactionPreview={round:roundView.round,step:reactionTaps.length-1,
+     at:stamp,visualHit:provisional};
+    if(progress){
+     progress.classList?.remove('is-tap');
+     void progress.offsetWidth;
+     progress.classList?.add('is-tap');
+     const cursor=progress.firstElementChild;
+     if(cursor)cursor.style.left=(at*100).toFixed(2)+'%';
+    }
+    paintReactionMarks();
+    if(reactionHint)reactionHint.textContent=(provisional?
+     '⚡ GRÜNE ZONE':'⚡ KONTER ERFASST')+' · '+reactionTaps.length+
+     '/3 · VORLÄUFIG';
+    if(counter)counter.textContent=reactionTaps.length+
+     '/3 erfasst · '+reactionHits.filter(Boolean).length+
+     ' im Zielbereich (vorläufig)';
+    status.textContent='⚡ '+reactionTaps.length+
+     '/3 KONTER ERFASST · SERVERBESTÄTIGUNG OFFEN';
+    if(reactionTaps.length===3){
+     buttons.forEach(b=>{b.disabled=true});
+     flushReaction();
+    }
+    return;
+   }
    if(activeVersion>=2&&roundView.kind==='math'){
     // A tap after the deadline cannot alter an unpainted old question.
     if(typeof clockNow==='function'){
@@ -345,6 +407,8 @@
   function build(round,version){
    stopAnimation();roundView=round;activeVersion=version;reactionPreview=null;
    mathChoices=[];mathSent=false;
+   reactionTaps=[];reactionHits=[];reactionSent=false;
+   reactionMarks=[];reactionHint=null;
    targetChoices=[];targetSent=false;targetLocalCorrect=0;targetLastHit=null;
    targetHits=[];targetServerLocked=false;targetLevel=null;targetRule=null;
    targetGuide=null;targetFeedback=null;targetMarks=[];
@@ -447,7 +511,25 @@
     progress=createElement('div','mini-meter is-accelerating'+(version>=9?' is-precision':''));
     const cursor=createElement('span','mini-meter-fill');
     progress.append(cursor);body.append(progress);
-    makeButton(1,'⚡ KONTER!','mini-reaction');
+    if(version>=14){
+     const instructions=createElement('div','mini-reaction-guide',
+      'DRÜCKE 3 × IM GRÜNEN BEREICH · OHNE WARTEPAUSEN');
+     body.append(instructions);
+     const track=createElement('div','mini-reaction-steps');
+     track.setAttribute?.('aria-label','Drei Konter, jeweils serverbestätigt');
+     reactionMarks=Array.from({length:3},(_,i)=>{
+      const mark=createElement('span','mini-reaction-step',String(i+1));
+      track.append(mark);return mark;
+     });
+     body.append(track);
+    }
+    makeButton(1,version>=14?'⚡ KONTER 1/3':'⚡ KONTER!','mini-reaction');
+    if(version>=14){
+     reactionHint=createElement('div','mini-reaction-verdict',
+      '🎯 DREI TASTENDRÜCKE · EIN SERVERERGEBNIS');
+     reactionHint.setAttribute?.('aria-live','polite');
+     body.append(reactionHint);
+    }
    }else if(round.kind==='chain'&&version>=13){
     const hud=createElement('div','mini-chain-hud');
     targetClock=createElement('strong','mini-chain-clock',
@@ -550,6 +632,7 @@
    root.hidden=!active;allowed=!!canPlay;
    if(!active){
     if(roundView?.kind==='math'&&mathChoices.length&&!mathSent)flushMath();
+    if(roundView?.kind==='reaction'&&reactionTaps.length&&!reactionSent)flushReaction();
     if(['target','chain'].includes(roundView?.kind)&&targetChoices.length&&!targetSent)flushTarget();
     root.classList?.remove('is-math-battle');
      root.classList?.remove('is-slow-dodge');
@@ -565,6 +648,7 @@
     // Interludes use synchronized battle choreography, not a stale input panel.
     root.hidden=games.version>=3;
     if(roundView?.kind==='math'&&mathChoices.length&&!mathSent)flushMath();
+    if(roundView?.kind==='reaction'&&reactionTaps.length&&!reactionSent)flushReaction();
     if(['target','chain'].includes(roundView?.kind)&&targetChoices.length&&!targetSent)flushTarget();
     stopAnimation();root.classList?.remove('is-math-battle');
      root.classList?.remove('is-slow-dodge');
@@ -584,6 +668,7 @@
    const key=view.startedAt+':'+round.round+':'+(games.version||1);
    if(key!==roundKey){
     if(roundView?.kind==='math'&&mathChoices.length&&!mathSent)flushMath();
+    if(roundView?.kind==='reaction'&&reactionTaps.length&&!reactionSent)flushReaction();
     if(['target','chain'].includes(roundView?.kind)&&targetChoices.length&&!targetSent)flushTarget();
     roundKey=key;build(round,games.version||1);
    }
@@ -631,6 +716,7 @@
     return;
    }
    const attempts=mine?.attempts||[],correct=attempts.filter(a=>a.correct).length;
+   if(round.kind==='reaction'&&activeVersion>=14&&attempts.length)reactionSent=true;
    if(round.kind==='target'&&activeVersion>=10&&attempts.length){
     // A server-confirmed partial batch also closes input after reconnect.
     targetServerLocked=true;
@@ -639,10 +725,12 @@
    const sprint=activeVersion>=10&&['target','chain'].includes(round.kind);
    const completed=attempts.length>=max||
     (round.kind==='math'&&mathChoices.length>=max)||
-    (sprint&&targetChoices.length>=max);
+    (sprint&&targetChoices.length>=max)||
+    (round.kind==='reaction'&&activeVersion>=14&&reactionTaps.length>=max);
    let step=round.kind==='math'?Math.max(attempts.length,mathChoices.length):
     sprint?Math.max(attempts.length,targetChoices.length):
-     attempts.length,windowOpen=true;
+     activeVersion>=14&&round.kind==='reaction'?
+      Math.max(attempts.length,reactionTaps.length):attempts.length,windowOpen=true;
    if(round.kind==='math'){
     if(attempts.length)mathSent=true;
     // After reconnect draw the actual server-confirmed progress, not
@@ -764,7 +852,28 @@
     progress.style.setProperty('--timing-width',(round.zoneRadius*200).toFixed(1)+'%');
     anchor={round,elapsed,stamp:typeof performance!=='undefined'?performance.now():Date.now()};
     if(!raf)paintReaction();
-    if(completed)stopAnimation();
+    if(activeVersion>=14){
+     paintReactionMarks(attempts);
+     if(counter)counter.textContent=attempts.length?
+      correct+' / '+attempts.length+' serverbestätigt':
+      reactionTaps.length+' / 3 erfasst · '+
+      reactionHits.filter(Boolean).length+' im Zielbereich (vorläufig)';
+     if(reactionHint){
+      reactionHint.textContent=attempts.length?
+       '✅ SERVER BESTÄTIGT · '+correct+' / '+attempts.length+' RICHTIG':
+       reactionSent?'⏳ '+reactionTaps.length+' KONTER · SERVER PRÜFT':
+       reactionTaps.length?'⚡ '+reactionTaps.length+' / 3 ERFASST · VORLÄUFIG':
+       '🎯 DREIMAL IM GRÜNEN ZIELBEREICH DRÜCKEN';
+      reactionHint.dataset.state=attempts.length?'confirmed':
+       reactionSent?'pending':'open';
+     }
+     if(buttons[0]){
+      buttons[0].textContent=completed?'⚡ 3/3 ERFASST':
+       '⚡ KONTER '+(reactionTaps.length+1)+'/3';
+      buttons[0].disabled=!canPlay||reactionSent||completed||
+       attempts.length>0||elapsed<round.startMs||elapsed>=round.endMs;
+     }
+    }else if(completed)stopAnimation();
    }else if(sprint){
     if(targetClock)targetClock.textContent=remaining+' s';
     if(targetClockFill)targetClockFill.style.width=
@@ -805,6 +914,15 @@
       '↔️ RICHTUNG ERFASST · '+(localSubmitting?'SERVER PRÜFT':'EINSCHLAG ABWARTEN'):
       windowOpen?'🛡️ WÄHLE DEINE AUSWEICHRICHTUNG':
        '⏱️ NÄCHSTER SCHLAG WIRD VORBEREITET';
+    return;
+   }
+   if(round.kind==='reaction'&&activeVersion>=14){
+    status.textContent=attempts.length?
+     '✅ SERVER BESTÄTIGT · '+correct+' / '+attempts.length+' TREFFER':
+     reactionSent?'⏳ '+reactionTaps.length+' KONTER WERDEN GEPRÜFT':
+     reactionTaps.length?
+      '⚡ '+reactionTaps.length+' / 3 KONTER ERFASST · VORLÄUFIG':
+      '⚡ TRIFF BIS ZU DREIMAL DEN GRÜNEN BEREICH';
     return;
    }
    if(round.kind==='reaction'&&activeVersion>=9){
