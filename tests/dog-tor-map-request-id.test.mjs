@@ -6,7 +6,7 @@ test('fight sends backend requestId not local storage id field',()=>{
  const s=get('dog-tor-map.js');
  assert.match(s,/const pending=old\|\|\{id:requestId\(\),gate\}/);
  assert.match(s,/request\('POST','fight',\{requestId:pending\.id,gate:pending\.gate\},account\)/);
- assert.doesNotMatch(s,/request\('POST','fight',\{requestId:pending\.id,gate:pending\.gate\},account\)/);
+ assert.doesNotMatch(s,/request\('POST','fight',pending,account\)/);
  assert.match(s,/if\(retry&&!old\)/);
 });
 test('fresh client cache token deployed',()=>{
