@@ -183,6 +183,12 @@
    tips.push('⛓️ Beim Kettenbrecher die goldene Kette treffen: Ein Tipp reicht. Die letzte Runde erhöht euren finalen Angriff.');
   if(teamHp!==null&&teamMax&&teamHp/teamMax<.7)
    tips.push('🛡️ Achtet auf eure Verteidigung: Weniger Fehler bei Ausweichen und Reaktion bewahren LP. Rüstung verbessern, sofern das Tor weitere Stufen erlaubt.');
+  if(result.win&&(gate===30||gate===60)){
+   const quality=gate===30?2:3;
+   tips.unshift('💎 MEILENSTEIN: Materialstufe '+quality+' freigeschaltet! '+
+    'In neuen Kisten können Materialien dieser Qualität enthalten sein. '+
+    'In der Schmiede kannst du sie mit fünf Rohstoffen der vorherigen Stufe veredeln.');
+  }
   if(result.win)tips.push('🏆 Der Boss ist besiegt! Nutzt die nächste Schmiedestufe, bevor ihr zum nächsten Wächter aufbrecht.');
   const weakest=rows.filter(r=>r.possible>0&&r.percentage!==null)
    .sort((a,b)=>a.percentage-b.percentage)[0];
