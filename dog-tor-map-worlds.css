@@ -52,3 +52,43 @@
  .world::after{inset:4px;border-radius:15px}
  .world-head>div{max-width:83%}
 }
+
+/* Final destination: uploaded high-quality DOG castle illustration. */
+.castle .dog-castle-artwork{
+ width:min(100%,1000px);
+ margin:20px auto 28px;
+ border:1px solid #f4d49f87;
+ border-radius:19px;
+ overflow:hidden;
+ position:relative;
+ aspect-ratio:16/8;
+ background:linear-gradient(140deg,#15213e,#554129);
+ box-shadow:0 12px 40px #0009,0 0 30px #ecc36a24;
+}
+.castle .dog-castle-artwork img{
+ display:block;
+ width:100%;
+ height:100%;
+ object-fit:cover;
+ object-position:center center;
+}
+.castle .dog-castle-artwork::after{
+ content:"";
+ position:absolute;
+ inset:0;
+ pointer-events:none;
+ background:linear-gradient(180deg,transparent 68%,#11182c66 100%);
+}
+.castle[data-victory="yes"] .dog-castle-artwork{
+ border-color:#ffe7b3;
+ box-shadow:0 12px 44px #000a,0 0 40px #f5d88369;
+}
+@media(max-width:650px){
+ .castle .dog-castle-artwork{
+  width:100%;
+  margin:16px auto 21px;
+  aspect-ratio:4/3;
+  border-radius:14px;
+ }
+ .castle .dog-castle-artwork img{object-position:center center}
+}
