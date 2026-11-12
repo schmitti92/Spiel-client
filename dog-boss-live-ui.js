@@ -381,7 +381,8 @@
      '🔥 Gesamtbonus: +'+fmt.format(cumulative):
      'Gemeinsamer Angriff wird vorbereitet');
    }
-   const upcoming=next?.kind==='target'&&view?.miniGames?.version>=10?
+   const upcoming=next?.round===4&&view?.miniGames?.version>=12?
+    '🔥 Finaler Schlag':next?.kind==='target'&&view?.miniGames?.version>=10?
     '🎨 Farb- und Symbol-Treffer':next?({'dodge':'🛡️ Ausweichen','target':'🎯 Zieltreffer',
     'reaction':'⚡ Reaktion','math':'🧮 Blitz-Mathe'}[next.kind]||'Nächste Runde'):
     '🏆 Finale Auswertung folgt';
@@ -399,6 +400,8 @@
    const labels={math:'🧮 Blitz-Mathe',dodge:'🛡️ Ausweichen',
     target:(view?.miniGames?.version||0)>=10?'🎨 Farbe & Symbole':'🎯 Zieltreffer',
     reaction:'⚡ Reaktion'};
+   if((view?.miniGames?.version||0)>=12&&round.round===4)
+    labels.target='🔥 Finaler Schlag';
    text(nodes.resultsTitle,(labels[round.kind]||'Herausforderung')+' · Ergebnis');
    text(nodes.resultsSubtitle,defensive?
     'Persönlich erspielte Verteidigung':'Persönlich erspielter Angriff');
@@ -472,7 +475,8 @@
   }
   function updateExchange(view,current){
    const stages=view?.miniGames?.exchange?.stages;
-   const exchange=Array.isArray(stages)&&current.rounds.length===4;
+   const exchange=Array.isArray(stages)&&
+    (current.rounds.length===4||current.rounds.length===5);
    const fightingExchange=exchange&&current.phase==='fighting';
    // Keep the last server-confirmed shield amount visible after settlement.
    const shield=exchange?Math.max(0,Math.min(100,
@@ -531,7 +535,7 @@
    const key=String(view.startedAt)+':'+scene.round;
    if(nodes.announcement)nodes.announcement.hidden=(view?.miniGames?.version||0)>=4;
    const title=defensive?'🛡️ BOSS SCHLÄGT ZURÜCK':
-    '⚔️ GEMEINSAMER ANGRIFF';
+    scene.round===4?'🔥 LETZTER SCHLAG':'⚔️ GEMEINSAMER ANGRIFF';
    text(nodes.stageTitle,title);
    text(nodes.stageScore,stage?.completed?
     (defensive?'Team-Schild '+stage.shield+' / 100 · −'+shieldLoss+
@@ -546,7 +550,7 @@
     (stage?.completed&&stage.correct===0?
      'Kein Treffer – der Boss weicht dem Angriff aus.':
      heroNames+' greifen den Boss gemeinsam an!'));
-   text(nodes.round,'ZWISCHENSEQUENZ '+(scene.round+1)+' / 4');
+   text(nodes.round,'ZWISCHENSEQUENZ '+(scene.round+1)+' / '+current.rounds.length);
    updateCinematic(view,current,scene,stage,shieldLoss);
    if(nodes.prompt)nodes.prompt.hidden=showResults;
    text(nodes.promptTitle,title);
@@ -592,7 +596,7 @@
     phase==='fighting'?'⚔️ LIVE-HERAUSFORDERUNG':'⚔️ BOSS-HERAUSFORDERUNG';
    text($(root,'#live-challenge-heading'),title);
    text(nodes.round,active?'RUNDE '+(roundIndex+1)+' / '+rounds.length:
-    (rounds.length===4?'4 RUNDEN · '+(view?.miniGames?.version>=10?'101':view?.miniGames?.version>=8?'99':view?.miniGames?.version===7?'92':view?.miniGames?.version===6?'64':view?.miniGames?.version===5?'60':view?.miniGames?.version===4?'50':'40')+' SEK.':'3 RUNDEN · 30 SEK.'));
+    (rounds.length>=4?rounds.length+' RUNDEN · '+(view?.miniGames?.version>=12?'125':view?.miniGames?.version>=10?'101':view?.miniGames?.version>=8?'99':view?.miniGames?.version===7?'92':view?.miniGames?.version===6?'64':view?.miniGames?.version===5?'60':view?.miniGames?.version===4?'50':'40')+' SEK.':'3 RUNDEN · 30 SEK.'));
    if(nodes.prompt){
     nodes.prompt.hidden=active||phase==='victory'||phase==='cooldown';
     text(nodes.promptTitle,phase==='fighting'?'⚔️ Kampf läuft':
@@ -604,7 +608,8 @@
    for(const [i,node] of steps.entries()){
     const round=rounds[i],answer=answers[i];
     node.hidden=!round;
-    const kind=round?.kind==='target'&&view?.miniGames?.version>=10?
+    const kind=round?.round===4&&view?.miniGames?.version>=12?
+     '🔥 Finaler Schlag':round?.kind==='target'&&view?.miniGames?.version>=10?
      '🎨 Farb- und Symbol-Treffer':taskNames[round?.kind]||'Aufgabe';
     const value=(i+1)+' · '+kind;
     if(node.textContent!==value)node.textContent=value;
@@ -642,9 +647,9 @@
     }
    }
    const hitKind=latest?rounds[latest.index]?.kind:null;
-   if(phase==='fighting'&&recent&&hitKind!=='dodge'&&rounds.length!==4)
+   if(phase==='fighting'&&recent&&hitKind!=='dodge'&&rounds.length<4)
     attack(latest,view,now);
-   if(phase==='fighting'&&rounds.length!==4){
+   if(phase==='fighting'&&rounds.length<4){
     const dodge=rounds.find(round=>round.kind==='dodge');
     if(dodge)dodgeImpact(dodge,latest,view,now);
    }
