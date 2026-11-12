@@ -22,9 +22,9 @@ test('Quick + skips confirmation and uses server receipt flow',()=>{
  assert.match(js,/if\(instant\)\{/);
 });
 test('Both forge and merchant load the new shared script',()=>{
- assert.match(read('dog-forge.html'),/dog-forge-ui.js\?v=20261113-instant-quality-v1/);
- assert.match(read('dog-merchant.html'),/dog-forge-ui.js\?v=20261113-instant-quality-v1/);
- assert.match(read('dog-forge.html'),/dog-forge-areas.css\?v=20261113-instant-quality-v1/);
+ assert.match(read('dog-forge.html'),/dog-forge-ui.js\?v=20261113-quality-forge-v2/);
+ assert.match(read('dog-merchant.html'),/dog-forge-ui.js\?v=20261113-quality-forge-v2/);
+ assert.match(read('dog-forge.html'),/dog-forge-areas.css\?v=20261113-quality-forge-v2/);
 });
 
 test('Material stock lists quality levels 1, 2, 3 with legacy level-one fallback',()=>{
