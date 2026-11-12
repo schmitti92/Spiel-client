@@ -124,10 +124,16 @@
  }
  function create(root){
   if(!root)return {update(){},model};
+  // Mount the finish screen outside the battle/preflight grid. The old
+  // inline section could be hidden by the stage's data-screen CSS rules.
   const stage=root.closest?.('.stage')||document.querySelector('.stage');
   const openButton=document.querySelector('#boss-result-open');
+  if(document.body?.appendChild)document.body.appendChild(root);
   let visibleKey='',dismissedKey='',timer=null,events=[],nextIndex=0;
   const html=`
+   <div class="br-dialog" role="dialog" aria-modal="true" aria-labelledby="br-title"
+    aria-describedby="br-subtitle" tabindex="-1">
+    <div class="br-scroll">
    <header class="br-head">
     <p class="br-eyebrow">✦ DIE 100 TORE · KAMPFABRECHNUNG ✦</p>
     <h2 id="br-title">🏆 Kampf abgeschlossen</h2>
@@ -194,13 +200,37 @@
     </div>
     <div class="br-replay-meter"><span id="br-replay-progress"></span></div>
    </section>
+    </div>
    <div class="br-footer">
-    <button type="button" id="br-return">↩ Zur Kampfvorbereitung</button>
-    <a id="br-forge" href="./dog-ascension.html">⚒️ Zur Schmiede</a>
-    <a id="br-map" href="./dog-tor-map.html">🗺️ Zur 100-Tore-Karte</a>
+    <span class="br-footer-caption">Die Schlusswertung bleibt geöffnet, bis du bestätigst.</span>
+    <button type="button" id="br-return">✓ Bestätigen</button>
+   </div>
    </div>`;
   root.innerHTML=html;
   root.setAttribute?.('aria-live','off');
+  const dialog=root.querySelector?.('.br-dialog');
+  const setOpen=(opened)=>{
+   root.hidden=!opened;
+   stage?.classList?.toggle('boss-result-open',opened);
+   document.body?.classList?.toggle('dog-boss-report-visible',opened);
+   if(openButton)openButton.hidden=opened;
+   if(opened)dialog?.focus?.({preventScroll:true});
+  };
+  // Closing by Escape, backdrop, timers or document clicks is intentionally
+  // unsupported. Confirmation is the only way to dismiss this result.
+  root.addEventListener?.('keydown',event=>{
+   if(root.hidden||event.key!=='Tab')return;
+   const targets=[...(dialog?.querySelectorAll?.(
+    'button:not([disabled]),a[href],summary,[tabindex="0"]')||[])];
+   const focusable=targets.filter(el=>!el.hidden&&el.offsetParent!==null);
+   if(!focusable.length)return;
+   const first=focusable[0],last=focusable[focusable.length-1];
+   if(event.shiftKey&&document.activeElement===first){
+    event.preventDefault();last.focus?.();
+   }else if(!event.shiftKey&&document.activeElement===last){
+    event.preventDefault();first.focus?.();
+   }
+  });
   const node=id=>$(root,id);
   const make=(tag,className,value)=>{
    const item=document.createElement(tag);
@@ -258,15 +288,15 @@
   });
   node('br-return').addEventListener('click',()=>{
    if(!visibleKey)return;
-   dismissedKey=visibleKey;ended();root.hidden=true;
-   stage?.classList?.remove('boss-result-open');
-   if(openButton)openButton.hidden=false;
+   dismissedKey=visibleKey;
+   ended();
+   setOpen(false);
+   openButton?.focus?.({preventScroll:true});
   });
   if(openButton)openButton.addEventListener('click',()=>{
    if(!visibleKey)return;
-   dismissedKey='';root.hidden=false;
-   stage?.classList?.add('boss-result-open');
-   openButton.hidden=true;
+   dismissedKey='';
+   setOpen(true);
   });
   function render(report){
    const {result,rows,score,stages,replay,tips}=report;
@@ -357,29 +387,26 @@
    node('br-replay-start').disabled=!replay.length;
    node('br-replay-start').textContent=replay.length?
     '▶ Kampf-Highlights abspielen':'Keine Treffer verfügbar';
-   const forge=document.querySelector('#to-forge');
-   const map=document.querySelector('#to-map');
-   if(forge)node('br-forge').href=forge.href;
-   if(map)node('br-map').href=map.href;
    events=replay;nextIndex=0;
   }
   function update(view){
    const report=model(view);
    if(!report){
     if(visibleKey)ended();
-    visibleKey='';dismissedKey='';root.hidden=true;
-    stage?.classList?.remove('boss-result-open');
+    visibleKey='';dismissedKey='';
+    setOpen(false);
     if(openButton)openButton.hidden=true;
     return;
    }
    if(report.key!==visibleKey){
     ended();visibleKey=report.key;dismissedKey='';
     render(report);
+    setOpen(true);
+   }else{
+    // No clock tick, poll or unchanged server state may close the dialog.
+    const show=dismissedKey!==visibleKey;
+    if(root.hidden===show)setOpen(show);
    }
-   const show=dismissedKey!==visibleKey;
-   root.hidden=!show;
-   stage?.classList?.toggle('boss-result-open',show);
-   if(openButton)openButton.hidden=show;
   }
   return {update,model};
  }
