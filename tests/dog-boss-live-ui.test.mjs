@@ -162,3 +162,59 @@ test('A verified math batch creates one visible strike per correct answer',()=>{
  display.update(battle,at+650);
  assert.equal(effect.calls,1,'the same batch is not replayed');
 });
+
+
+test('The compact hit log lists only verified per-hero and boss HP losses, never invented attacks',()=>{
+ const {ui}=bootstrap(),{root,element}=fakeDom(),display=ui.create(root);
+ const b=model();
+ b.bossLiveHp=25000;
+ b.teamHealth={hp:300,maxHp:300,
+  heroes:[{uid:'chris',hp:100,maxHp:100},{uid:'nova',hp:100,maxHp:100},
+   {uid:'titan',hp:100,maxHp:100}]};
+ display.update(b,start+900);
+ assert.equal(element('live-recent-damage').textContent,'Noch keine bestätigten Treffer');
+ // One locally guessed animation must not be recorded as damage.
+ b.miniGames.myAnswers[0]={correct:true,at:start+1100};
+ display.update(b,start+1300);
+ assert.equal(element('live-recent-damage').textContent,'Noch keine bestätigten Treffer');
+ // Two server-confirmed snapshots: one hit to boss, one to Chris only.
+ b.bossLiveHp=24770;
+ b.teamHealth={hp:285,maxHp:300,heroes:[
+  {uid:'chris',hp:85,maxHp:100},{uid:'nova',hp:100,maxHp:100},
+  {uid:'titan',hp:100,maxHp:100}]};
+ display.update(b,start+1500);
+ const recorded=element('live-recent-damage').textContent;
+ assert.match(recorded,/Boss: −230 LP/);
+ assert.match(recorded,/Chris: −15 LP/);
+ assert.doesNotMatch(recorded,/Nova:|Titan:/);
+ display.update(b,start+1700);
+ assert.equal(element('live-recent-damage').textContent,recorded,
+  'unchanged server state must never duplicate the hit log');
+ // A new encounter starts with an empty recent-history display.
+ display.update({...b,startedAt:start+101000,attempt:2,bossLiveHp:25000},start+101500);
+ assert.equal(element('live-recent-damage').textContent,'Noch keine bestätigten Treffer');
+});
+test('The simplified Boss 10 and group-boss pages keep the minigame while removing the visible bottom bars',()=>{
+ const compact=read('dog-boss-compact-arena.css');
+ assert.match(compact,/grid-template-rows:auto auto auto minmax\(0,1fr\)/);
+ assert.match(compact,/\.live-rounds\[hidden\]/);
+ assert.match(compact,/\.squad\[hidden\]/);
+ for(const page of ['dog-boss10.html','dog-group-boss.html']){
+  const html=read(page);
+  assert.match(html,/id="live-recent-damage"/);
+  assert.match(html,/class="live-rounds" hidden/);
+  assert.match(html,/id="boss-squad"/);
+  assert.match(html,/id="mini-game"/);
+  assert.match(html,/id="live-round-label"/);
+  assert.match(html,/id="timer"/);
+  assert.match(html,/dog-boss-compact-arena\.css\?v=/);
+  assert.ok(html.indexOf('dog-boss-real-heroes.css')<
+   html.indexOf('dog-boss-compact-arena.css'),
+   'compact styles load after character artwork for '+page);
+ }
+ for(const js of ['dog-boss10.js','dog-group-boss.js']){
+  const controller=read(js);
+  assert.match(controller,/squad\.hidden=\['fighting','victory'\]/);
+  assert.match(controller,/\$\('retry-button'\)\.hidden/);
+ }
+});
