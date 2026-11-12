@@ -24,6 +24,9 @@
  // Uploaded HD artwork (one class-specific PNG per armor type).
  // Until individual tier images are supplied, art stays consistent across levels.
  const uploadedArmors=Object.freeze({"krieger":"DOG_Krieger_Plattenruestung.png","magierin":"DOG_Magierin_Kristallrobe.png","waechter":"DOG_Waechter_Schutzruestung.png"});
+ // High-resolution class weapon artwork appears as soon as matching PNGs
+ // are uploaded into dog-forge-art. An unavailable PNG falls back to tier SVG.
+ const uploadedWeapons=Object.freeze({"krieger":"DOG_Krieger_Kristallschwert.png","magierin":"DOG_Magierin_Magierstab.png","waechter":"DOG_Waechter_Kriegshammer.png"});
  const normalize=value=>Object.hasOwn(names,value)?value:null;
  const stage=level=>Math.max(1,tiers.findIndex(limit=>Number(level)<=limit)+1||5);
  const name=(heroClass,type,level)=>{
@@ -42,6 +45,7 @@
   if(type!=='weapon'&&type!=='armor')return '';
   const c=normalize(heroClass);
   if(c&&type==='armor')return './dog-forge-art/'+uploadedArmors[c];
+  if(c&&type==='weapon')return './dog-forge-art/'+uploadedWeapons[c];
   return fallbackImage(heroClass,type,level);
  };
  const label=heroClass=>names[normalize(heroClass)]?.label||'Held noch nicht gewählt';

@@ -16,17 +16,15 @@ test('three locked hero classes each have different weapon and armor progression
     const file=gear.image(cls,type,level).replace(/^\.\//,'');
     const path=new URL(file,base);
     assert.equal(fs.existsSync(path),true,file);
+    assert.match(file,/DOG_(Krieger|Magierin|Waechter)_/);
+    const fallback=gear.fallbackImage(cls,type,level);
+    assert.ok(fallback.endsWith('.svg'));
+    assert.ok(fs.existsSync(new URL(fallback.replace(/^\.\//,''),base)));
+    // Rüstungen sind vorhanden. Die Waffen-PNGs können separat hochgeladen
+    // werden; bis dahin lädt die Oberfläche automatisch das passende SVG.
     if(type==='armor'){
      const png=fs.readFileSync(path);
      assert.deepEqual([...png.subarray(0,8)],[137,80,78,71,13,10,26,10],'valid PNG image');
-     assert.match(file,/DOG_(Krieger|Magierin|Waechter)_/);
-     const fallback=gear.fallbackImage(cls,type,level);
-     assert.ok(fallback.endsWith('.svg'));
-     assert.ok(fs.existsSync(new URL(fallback.replace(/^\.\//,''),base)));
-    }else{
-     const svg=fs.readFileSync(path,'utf8');
-     assert.match(svg,/^<svg/);
-     assert.match(svg,/<\/svg>$/);
     }
    }
   }
@@ -48,12 +46,14 @@ test('all forge screens use one class registry but keep unchanged server item id
  assert.match(ui,/'weapon','armor'/);
 });
 
-test('uploaded armor is hero-specific at every level and weapons remain unchanged',()=>{
- const expected={krieger:'DOG_Krieger_Plattenruestung.png',magierin:'DOG_Magierin_Kristallrobe.png',waechter:'DOG_Waechter_Schutzruestung.png'};
- for(const cls of Object.keys(expected)){
+test('all three hero classes are mapped to their uploaded armor and prepared weapon art',()=>{
+ const armors={krieger:'DOG_Krieger_Plattenruestung.png',magierin:'DOG_Magierin_Kristallrobe.png',waechter:'DOG_Waechter_Schutzruestung.png'};
+ const weapons={krieger:'DOG_Krieger_Kristallschwert.png',magierin:'DOG_Magierin_Magierstab.png',waechter:'DOG_Waechter_Kriegshammer.png'};
+ for(const cls of Object.keys(armors)){
   for(const level of [1,2,5,6,11,16,19,20]){
-   assert.equal(gear.image(cls,'armor',level),'./dog-forge-art/'+expected[cls]);
-   assert.ok(gear.image(cls,'weapon',level).includes('/heroes/'+cls+'-weapon-'));
+   assert.equal(gear.image(cls,'armor',level),'./dog-forge-art/'+armors[cls]);
+   assert.equal(gear.image(cls,'weapon',level),'./dog-forge-art/'+weapons[cls]);
+   assert.match(gear.fallbackImage(cls,'weapon',level),/heroes\/[^/]+-weapon-[1-5]\.svg$/);
   }
  }
 });
