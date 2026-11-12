@@ -171,9 +171,16 @@
     const meta=META[key],node=document.createElement('div');
     node.className='resource-cell rarity-'+meta.rarity;
     const iconEl=document.createElement('span');iconEl.className='resource-icon';iconEl.textContent=icon;
-    const amount=document.createElement('strong');amount.textContent=inventory?fmt(items[key]||0):'–';
     const label=document.createElement('small');label.textContent=name;
-    node.append(iconEl,amount,label);container.append(node);
+    const quality=inventory?.qualityResources||null;
+    const amounts=document.createElement('span');amounts.className='resource-quality-levels';
+    for(let level=1;level<=3;level++){
+     const quantity=quality?quality[key+':'+level]:level===1?items[key]:0;
+     const line=document.createElement('small');line.className='resource-quality-level resource-quality-'+level;
+     line.textContent='Stufe '+level+': '+(inventory?fmt(quantity??0):'–');
+     amounts.append(line);
+    }
+    node.append(iconEl,label,amounts);container.append(node);
    }
    section.append(container);groups.append(section);
   }
