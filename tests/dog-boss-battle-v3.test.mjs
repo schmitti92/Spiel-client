@@ -41,7 +41,7 @@ test('the same class can appear three times; each party member attacks separatel
   assert.equal(s.kind,'hero-strike');
   assert.equal(s.uid,expected);
  }
- assert.equal(derive(v,begin+21500).kind,'countdown');
+ assert.equal(derive(v,begin+23500).kind,'countdown');
  assert.equal(derive(v,begin+26500).kind,'minigame');
 });
 test('the boss attacks every individual player in the defensive scene',()=>{
@@ -51,7 +51,7 @@ test('the boss attacks every individual player in the defensive scene',()=>{
   assert.equal(s.kind,'boss-strike');
   assert.equal(s.uid,expected);
  }
- assert.equal(derive(v,begin+50000).kind,'countdown');
+ assert.equal(derive(v,begin+53000).kind,'countdown');
  assert.equal(derive(v,begin+80000).kind,'minigame');
  assert.equal(derive(v,begin+89500).kind,'boss-strike');
 });
@@ -98,4 +98,27 @@ test('both battle pages use only the new visual layer while retaining every requ
   assert.match(controller,/acknowledgePending/);
   assert.match(controller,/command\('minigame',false,/);
  }
+});
+
+test('three seconds are reserved for countdown, leaving eleven for drawn weapons and all three individual strikes',()=>{
+ const {derive}=load(),v=view();
+ assert.equal(derive(v,begin+22600).kind,'hero-strike');
+ assert.equal(derive(v,begin+22999).kind,'hero-strike');
+ assert.equal(derive(v,begin+23000).kind,'countdown');
+ assert.equal(derive(v,begin+25999).kind,'countdown');
+ assert.equal(derive(v,begin+26000).kind,'minigame');
+ assert.equal(derive(v,begin+51000).kind,'boss-strike');
+ assert.equal(derive(v,begin+52000).kind,'countdown');
+ assert.equal(derive(v,begin+55000).kind,'minigame');
+ assert.match(js,/SEGMENT_WAIT_MS=3000/);
+ assert.match(css,/combat-boss\[data-v3-active="true"\]/);
+ for(const page of ['dog-boss10.html','dog-group-boss.html']){
+  const html=read(page);
+  assert.match(html,/dog-boss-weapon-strikes\.css\?v=/);
+  assert.match(html,/dog-boss-battle-v3\.js\?v=20261112-weapon-hit1/);
+ }
+ const effects=read('dog-boss-weapon-strikes.css');
+ for(const classname of ['krieger','magierin','waechter'])
+  assert.ok(effects.includes('data-weapon="'+classname+'"'));
+ assert.match(effects,/v3-floating-damage/);
 });
