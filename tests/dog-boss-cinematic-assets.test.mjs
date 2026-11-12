@@ -56,14 +56,14 @@ test('boss 10 and all later bosses show selected FULL-BODY hero artwork instead 
  const groupHtml=read('dog-group-boss.html');
  const fx=read('dog-boss-combat-fx.js');
  for(const page of [html,groupHtml]){
-  assert.match(page,/dog-boss-real-heroes\.css\?v=20261112-realheroes1/);
+  assert.match(page,/dog-boss-real-heroes\.css\?v=20261112-realheroes2/);
   assert.ok(page.indexOf('dog-boss-real-heroes.css')>
    page.indexOf('dog-boss-legendary-arena.css'),'full-body styles must load last');
  }
  const sprite=battleCss.match(/data:image\/webp;base64,([A-Za-z0-9+/=]+)/);
  assert.ok(sprite,'approved three-character sprite must be bundled locally');
  const data=Buffer.from(sprite[1],'base64');
- assert.ok(data.length>14000,'full body sprite must not be a placeholder');
+ assert.ok(data.length>30000,'full body sprite must not be a placeholder');
  assert.equal(data.toString('ascii',0,4),'RIFF');
  assert.equal(data.toString('ascii',8,12),'WEBP');
  assert.match(battleCss,/background-size:300% 100%/);
