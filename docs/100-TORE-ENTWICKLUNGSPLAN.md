@@ -567,13 +567,15 @@ Die vorhandene Aschenlanze bei Tor 10 bleibt unverändert. Die neun Gruppenbosse
 | **SCH-UI-01 · Bestand & Referenz** | **[x] geprüft 12.11.** | Vorhandene `dog-forge.html`, `dog-forge-ui.js`, gemeinsame CSS-Dateien und drei Screenshots geprüft. Ziel: neue Bildvorlage ohne Funktionsverlust. |
 | **SCH-UI-02 · Kopfbereich & Navigation** | **[x] Code 12.11.; Sichttest offen** | Flacher bebilderter Schmiedekopf. Doppelzeile „Werkstatt/Ton/Aktualisieren“ aus der Oberfläche entfernen; Galerie, Ton und Werkstatt in kleinem ⚙️-Menü erhalten; gemeinsame obere Navigation bleibt. |
 | **SCH-UI-03 · Kompakte Auswahlblöcke** | **[x] Code 12.11.; Sichttest offen** | Waffen/Rüstung zwei Kacheln; Angriff und Abwehr standardmäßig je drei sichtbar, über Pfeil alle Fähigkeiten erreichbar. Plus-Buttons und Auswahl weiterhin direkt bedienbar; lange Namen vollständig sichtbar. |
-| **SCH-UI-04 · Rechte Verbesserungskarte** | **[ ] offen** | Bild links, Name + Stufe rechts; nächste Aussehensstufe kompakt darunter. Gleiche Waffen-/Rüstungs-PNGs, serverbestätigte Level, keine Dopplungen. |
+| **SCH-UI-04 · Rechte Verbesserungskarte** | **[x] Code 12.11.; Sichttest offen** | Bild links, Name + Stufe rechts; nächste Aussehensstufe kompakt darunter. Gleiche Waffen-/Rüstungs-PNGs, serverbestätigte Level, keine Dopplungen. |
 | **SCH-UI-05 · Kosten und Aktion** | **[ ] offen** | Kosten in maximal zwei Spalten, Erfolgschance und Levelvergleich kompakt, zentraler Verbesserungsbutton, lesbare Sperrgründe. Dialog und idempotenter Serverauftrag unverändert. |
 | **SCH-UI-06 · Überflüssige Fläche entfernen** | **[ ] offen** | Doppelhinweise und Leerflächen beseitigen, Rohstofflager als schmalen aufklappbaren Balken, keine doppelte Navigation oder zweite Aktualisieren-Zeile. |
 | **SCH-UI-07 · Tablet/Smartphone** | **[ ] offen** | Querformat: Auswahl links / Verbesserung rechts. Hochformat: untereinander. Kein abgeschnittener Fähigkeitentext, kein horizontales Scrollen, Touchflächen gut erreichbar. |
 | **SCH-UI-08 · Funktions- und Abnahmetest** | **[ ] offen** | Waffe/Rüstung/Fähigkeit, Plus, gesperrtes Level, Boss-Siegel, Reconnect, Galerie, Händler, Audio, Rohstofflager, Barrierefreiheit und sichtbare Screenshot-Abnahme prüfen. Firestore bleibt bei reinem Designumbau unverändert. |
 
-**SCH-UI-02 technische Änderung:** visuell neues Headermotiv aus bereits vorhandener `forge-workshop-desktop.webp`; kein zusätzliches Asset und keine Server-/Firestoreänderung. Einstellungen bleiben per ⚙️ erreichbar. Tests: statische DOM-Prüfung und JavaScript-Kompatibilität; echter Browser-/Tablet-Test offen. **Nächster Schritt: SCH-UI-04.**
+**SCH-UI-02 technische Änderung:** visuell neues Headermotiv aus bereits vorhandener `forge-workshop-desktop.webp`; kein zusätzliches Asset und keine Server-/Firestoreänderung. Einstellungen bleiben per ⚙️ erreichbar. Tests: statische DOM-Prüfung und JavaScript-Kompatibilität; echter Browser-/Tablet-Test offen. **Nächster Schritt: SCH-UI-05.**
 
 
 **SCH-UI-03 – GitHub `main`:** Je drei Angriffs-/Abwehrfähigkeiten als platzsparende Vorschau, restliche Fähigkeiten über Chevron, Gerätebild und Waffen bleiben sichtbar. Lange Namen zweizeilig statt gekürzt. 0 neue Firestore-Operationen; Praxissichttest offen.
+
+**SCH-UI-04 umgesetzt auf `main`:** Rechtes Feld zeigt Bild links, Bezeichnung und Levelbalken rechts, kompakte nächste Aussehensstufe darunter. PNG/SVG-Fallback und bestätigter Server-Upgradeprozess unverändert, 0 zusätzliche Firestore-Operationen. Sichttest noch offen.

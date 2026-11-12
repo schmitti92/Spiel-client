@@ -523,7 +523,7 @@
  }
  function renderUpgrade(){
   const root=$('upgrade-content');root.replaceChildren();
-  const item=itemFor(selected)||{id:selected,name:'Waffe',icon:'⚔️',summary:'Wähle eine Verbesserung aus.',maxLevel:20};
+  const item=itemFor(selected)||{id:selected,name:'Waffe',icon:'⚔️',summary:'Wähle eine Verbesserung aus.',maxLevel:50};
   const quote=quoteFor(selected),level=levelFor(selected);
   const head=node('div','upgrade-top');
   head.append(node('span','eyebrow','VERBESSERUNG'),node('span','forge-tag',tabLabels[tab]||'⚒️ SCHMIEDE'));
@@ -535,11 +535,14 @@
   goalButton.addEventListener('click',()=>setGoal(item.id));
   root.append(goalButton);
   const panel=root.closest('.upgrade-panel');
+  // SCH-UI-04: graphical change only. Keep existing quote and server confirmation.
+  const hero=node('div','forge-upgrade-hero');
+  const details=node('div','forge-upgrade-details');
   if(item.group==='equipment'){
    panel?.style.removeProperty('--skill-accent');
    panel?.style.removeProperty('--skill-glow');
    const scene=node('div','gear-display gear-scene-'+stageFor(level));
-   scene.append(gearVisual(item.id,level));root.append(scene);
+   scene.append(gearVisual(item.id,level));hero.append(scene);
   }else{
    const theme=SKILL_ART[item.id];
    if(panel){
@@ -549,16 +552,21 @@
    const scene=node('div','skill-display');
    scene.append(skillVisual(item));
    const groupLabel=node('span','skill-group-label',
-     item.group==='attack'?'⚔️ ANGRIFFSFÄHIGKEIT':'🛡️ VERTEIDIGUNGSFÄHIGKEIT');
-   scene.append(groupLabel);root.append(scene);
+    item.group==='attack'?'⚔️ ANGRIFFSFÄHIGKEIT':'🛡️ VERTEIDIGUNGSFÄHIGKEIT');
+   scene.append(groupLabel);hero.append(scene);
   }
-  root.append(node('h2',null,displayName(item)),node('p','upgrade-summary',item.summary));
-  const line=node('div','level-line'),left=node('span','left','AUSBAUSTUFE'),right=node('strong','value',String(level));
-  right.append(node('span',null,' / '+item.maxLevel));line.append(left,right);root.append(line);
+  details.append(node('span','forge-upgrade-kind',
+   item.group==='equipment'?(item.id==='armor'?'🛡️ RÜSTUNG':'⚔️ WAFFE'):
+    item.group==='attack'?'💥 ANGRIFF':'🛡️ ABWEHR'));
+  details.append(node('h2',null,displayName(item)),node('p','upgrade-summary',item.summary));
+  const line=node('div','level-line'),left=node('span','left','STUFE'),right=node('strong','value',String(level));
+  right.append(node('span',null,' / '+item.maxLevel));line.append(left,right);details.append(line);
   const track=node('div','level-progress'),fill=node('span');
   fill.style.width=(Math.min(1,level/item.maxLevel)*100)+'%';
-  track.append(fill);root.append(track);
-  root.append(node('div','level-next',quote?.maxed?'✦ Maximalstufe erreicht':'Nächste Stufe: '+(quote?.nextLevel??'–')));
+  track.append(fill);details.append(track);
+  details.append(node('div','level-next',
+   quote?.maxed?'✦ Maximalstufe erreicht':'Als Nächstes: Stufe '+(quote?.nextLevel??'–')));
+  hero.append(details);root.append(hero);
   if(item.group==='equipment'){
    const stage=stageFor(level);
    const teaser=node('div','evolution-teaser'+(stage===5?' evolution-final':''));

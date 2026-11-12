@@ -192,3 +192,76 @@ body:not(.merchant-page) .forge-item-group .skill-visual.compact{flex:none;width
 @media(max-width:1030px) and (min-width:761px){
  body:not(.merchant-page) .forge-area-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+/* SCH-UI-04: art left, name and level right, compact next appearance below. */
+body:not(.merchant-page) .forge-upgrade-hero{
+ display:grid;grid-template-columns:minmax(115px,42%) minmax(0,1fr);
+ align-items:center;gap:clamp(10px,1.7vw,19px);min-width:0;
+ padding:11px;margin:0 0 9px;border:1px solid #c2a27075;border-radius:16px;
+ background:radial-gradient(ellipse at 12% 50%,#aa885136,transparent 60%),
+ linear-gradient(120deg,#1a283be8,#101b2de8);
+}
+body:not(.merchant-page) .forge-upgrade-hero .gear-display,
+body:not(.merchant-page) .forge-upgrade-hero .skill-display{
+ width:100%;min-height:155px;height:clamp(155px,18vw,205px);
+ margin:0;overflow:hidden;box-shadow:none;
+}
+body:not(.merchant-page) .forge-upgrade-hero .gear-display .gear-visual{max-width:100%;padding:0}
+body:not(.merchant-page) .forge-upgrade-hero .gear-display .gear-illustration,
+body:not(.merchant-page) .forge-upgrade-hero .gear-display .gear-illustration[src$=".png"]{
+ width:min(100%,176px);height:clamp(110px,14vw,166px);object-fit:contain;
+}
+body:not(.merchant-page) .forge-upgrade-hero .gear-stage-label{
+ max-width:100%;white-space:normal;font-size:9px;letter-spacing:0;line-height:1.15;padding:3px 7px;
+}
+body:not(.merchant-page) .forge-upgrade-hero .skill-visual{width:150px;max-width:100%;height:141px;margin:0}
+body:not(.merchant-page) .forge-upgrade-hero .skill-display .skill-illustration{
+ width:min(100%,145px);height:140px;object-fit:contain;
+}
+body:not(.merchant-page) .forge-upgrade-hero .skill-group-label{
+ max-width:96%;font-size:8px;letter-spacing:.04em;padding:4px 7px;text-align:center;
+}
+body:not(.merchant-page) .forge-upgrade-details{
+ display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:0;
+}
+body:not(.merchant-page) .forge-upgrade-kind{
+ align-self:flex-start;padding:3px 8px;border:1px solid #d7ac786e;
+ border-radius:99px;background:#142339c7;color:#ffe2b4;font-size:9px;
+ font-weight:850;letter-spacing:.07em;
+}
+body:not(.merchant-page) .forge-upgrade-details h2{
+ margin:0;text-align:left;line-height:1.15;font-size:clamp(20px,2.15vw,30px);overflow-wrap:anywhere;
+}
+body:not(.merchant-page) .forge-upgrade-details .upgrade-summary{
+ text-align:left;font-size:12px;line-height:1.35;min-height:0;margin:0 0 2px;
+}
+body:not(.merchant-page) .forge-upgrade-details .level-line{margin:2px 0 0}
+body:not(.merchant-page) .forge-upgrade-details .level-line .value{font-size:22px}
+body:not(.merchant-page) .forge-upgrade-details .level-progress{height:9px;margin:0}
+body:not(.merchant-page) .forge-upgrade-details .level-next{text-align:left;font-size:11px;margin:0}
+body:not(.merchant-page) .upgrade-panel .evolution-teaser{
+ margin:0 0 10px;padding:7px 10px;min-height:65px;gap:9px;
+}
+body:not(.merchant-page) .upgrade-panel .evolution-teaser .gear-visual.compact{
+ width:62px;height:62px;flex:0 0 62px;
+}
+body:not(.merchant-page) .upgrade-panel .evolution-teaser .gear-illustration{width:59px;height:59px}
+body:not(.merchant-page) .upgrade-panel .evolution-description strong{font-size:clamp(13px,1.3vw,17px)}
+body:not(.merchant-page) .upgrade-panel .upgrade-rule{margin:10px 0 12px}
+@media(max-width:1120px) and (min-width:761px){
+ body:not(.merchant-page) .forge-upgrade-hero{
+  grid-template-columns:minmax(100px,39%) minmax(0,1fr);padding:9px;gap:9px;
+ }
+ body:not(.merchant-page) .forge-upgrade-hero .gear-display,
+ body:not(.merchant-page) .forge-upgrade-hero .skill-display{min-height:140px;height:150px}
+ body:not(.merchant-page) .forge-upgrade-hero .gear-display .gear-illustration,
+ body:not(.merchant-page) .forge-upgrade-hero .gear-display .gear-illustration[src$=".png"]{height:118px}
+}
+@media(max-width:470px){
+ body:not(.merchant-page) .forge-upgrade-hero{grid-template-columns:107px minmax(0,1fr);padding:8px;gap:8px}
+ body:not(.merchant-page) .forge-upgrade-hero .gear-display,
+ body:not(.merchant-page) .forge-upgrade-hero .skill-display{min-height:131px;height:131px}
+ body:not(.merchant-page) .forge-upgrade-hero .gear-display .gear-illustration,
+ body:not(.merchant-page) .forge-upgrade-hero .gear-display .gear-illustration[src$=".png"]{height:105px}
+ body:not(.merchant-page) .forge-upgrade-details h2{font-size:19px}
+ body:not(.merchant-page) .forge-upgrade-details .level-line .value{font-size:19px}
+}
