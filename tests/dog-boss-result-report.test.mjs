@@ -642,6 +642,21 @@ test('E-05 replay uses only server events, supports stopping and a clear final c
  assert.equal(f.root.nodes['br-replay-stage'].dataset.replayState,'idle');
  assert.equal(f.root.hidden,false,'replay never confirms or dismisses the report');
 });
+test('E-06 report remains scrollable with an independent confirmation on narrow screens',()=>{
+ const css=read('dog-boss-result-report.css');
+ assert.match(src,/class="br-scroll" tabindex="0" role="region"/);
+ assert.match(src,/aria-label="Kampfabrechnung, nach unten scrollen/);
+ assert.match(src,/lastFocus=document\.activeElement/);
+ assert.match(src,/document\.activeElement===dialog/);
+ assert.match(css,/\.br-scroll\{[\s\S]*?overflow-y:auto/);
+ assert.match(css,/\.br-footer\{[\s\S]*?flex:none/);
+ assert.match(css,/@media\(orientation:landscape\) and \(max-height:520px\)/);
+ assert.match(css,/safe-area-inset-bottom/);
+ assert.match(css,/\.br-scroll:focus-visible/);
+ assert.match(css,/\.br-footer[\s\S]*?z-index:3/);
+ assert.match(css,/#br-return\{[\s\S]*?min-height:48px/);
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+});
 test('both arena screens include conclusion and local replay, with no client-side combat writes',()=>{
  const css=read('dog-boss-result-report.css');
  for(const token of ['dog-boss-report-visible','br-grade-scale','br-attack','br-replay-stage',
