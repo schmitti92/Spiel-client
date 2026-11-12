@@ -37,7 +37,7 @@
  const opponents=()=>typeof g!=='undefined'&&Array.isArray(g?.players)
   ?g.players.filter(p=>p.id!==myId()&&Number.isInteger(p.case)&&p.case>=0&&p.case<caseCount())
   :[];
- const active=()=>typeof g!=='undefined'&&g&&['open','reveal','decision'].includes(g.phase)&&
+ const active=()=>typeof g!=='undefined'&&g&&['open','reveal','decision','batch-pick','batch-reveal'].includes(g.phase)&&
   g.players?.some(p=>p.id===myId()&&p.deal===null)&&Number.isInteger(g.players.find(p=>p.id===myId())?.case);
  const api=async(method,path,body)=>{
   const u=user();if(!u)throw Error('Bitte anmelden');

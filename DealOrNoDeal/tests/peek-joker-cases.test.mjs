@@ -6,7 +6,7 @@ import {Script} from 'node:vm';
 const js=readFileSync(new URL('../js/peek-joker.js',import.meta.url),'utf8');
 const html=readFileSync(new URL('../game.html',import.meta.url),'utf8');
 
-function harness(count=28,{playerCount=3,balance=2,postError=null}={}){
+function harness(count=28,{playerCount=3,balance=2,postError=null,phase='open'}={}){
  const elements=new Map(),requests=[],storage=new Map();
  const element=id=>{
   if(!elements.has(id)){
@@ -26,7 +26,7 @@ function harness(count=28,{playerCount=3,balance=2,postError=null}={}){
   {id:'david',name:'David',case:5,deal:null},
   {id:'moin',name:'Moin',case:6,deal:null}
  ].slice(0,playerCount);
- const game={id:'match-1',phase:'open',players,caseCount:count,opened:[],pending:null};
+ const game={id:'match-1',phase,players,caseCount:count,opened:[],pending:null};
  const privateResults=players.filter(p=>p.id!==myUid).map(p=>({
   id:p.id,name:p.name,case:p.case,amount:p.case===count-1?(count===30?5000000000:1000000000):p.case*100
  }));
@@ -64,6 +64,26 @@ function harness(count=28,{playerCount=3,balance=2,postError=null}={}){
 }
 const launch=ui=>Array.from(ui.elements.values()).find(x=>x.id==='peek-launch');
 
+test('Kofferblick is available in 30-case batch pick/reveal after selection, but not during selection',async()=>{
+ for(const phase of ['batch-pick','batch-reveal']){
+  const ui=harness(30,{playerCount:3,balance:1,phase});
+  assert.equal(launch(ui).hidden,false,phase);
+  await launch(ui).handlers.click();
+  const buttons=ui.element('peek-cases').children;
+  assert.equal(buttons.length,30);
+  assert.equal(buttons[0].disabled,false);
+  assert.equal(buttons[29].disabled,false);
+  buttons[29].onclick();
+  await ui.element('peek-confirm').handlers.click();
+  const post=ui.requests.find(x=>x.options.method==='POST');
+  assert.equal(JSON.parse(post.options.body).case,29);
+  assert.equal(ui.element('peek-balance').textContent,'Verfügbare Joker: 0');
+ }
+ for(const phase of ['select','final']){
+  const ui=harness(30,{phase});
+  assert.equal(launch(ui).hidden,true,phase);
+ }
+});
 test('all 26–30-case modes highlight own and other players and disable non-personal cases',async()=>{
  for(const count of [26,27,28,29,30]){
   const ui=harness(count,{playerCount:3});
@@ -159,7 +179,7 @@ test('UI displays only the private opponent list and uses dynamic 29-case capaci
  assert.match(js,/mode=data\?\.mode==='own'/);
  assert.match(js,/NO_OTHER_PLAYER_CASES/);
  assert.match(js,/peek-results-grid/);
- assert.match(html,/peek-joker\.js\?v=20261110-30cases-50m-v1/);
+ assert.match(html,/peek-joker\.js\?v=20261112-fix-30case-batch-v1/);
  assert.doesNotMatch(js,/eur\(data\.amount\)/);
 });
 
