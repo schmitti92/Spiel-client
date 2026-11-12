@@ -11,7 +11,7 @@
   const url=String(api||'').replace(/^https:/,'wss:').replace(/^http:/,'ws:');
   if(!/^wss?:\/\//.test(url))return null;
   let ws=null,uid=null,connected=false,connecting=false,generation=0;
-  let revision=0,reconnectTimer=null,coalesceTimer=null;
+  let revision=0,reconnectTimer=null,coalesceTimer=null,denied=false;
   function clear(id){if(id!==null)clearTimeout(id)}
   function stop(){
    generation++;
@@ -35,7 +35,8 @@
     if(uid||ws)stop();
     uid=null;return;
    }
-   if(uid!==user.uid){stop();uid=user.uid}
+   if(uid!==user.uid){stop();uid=user.uid;denied=false}
+   if(denied)return;
    if(active()||connecting)return;
    connecting=true;
    const epoch=++generation;
@@ -52,6 +53,9 @@
      if(epoch!==generation)return;
      let payload;
      try{payload=JSON.parse(e.data)}catch{return}
+     if(payload?.type==='error'&&payload.code==='DENIED'){
+      denied=true;connected=false;return;
+     }
      if(payload?.type==='subscribed'&&payload.gate===gate){
       connected=true;connecting=false;revision=0;return;
      }
@@ -69,7 +73,7 @@
     socket.onclose=()=>{
      if(epoch!==generation)return;
      connected=false;connecting=false;ws=null;
-     schedule();
+     if(!denied)schedule();
     };
    }catch{
     if(epoch===generation){connecting=false;connected=false;schedule()}

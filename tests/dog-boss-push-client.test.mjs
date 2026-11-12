@@ -61,6 +61,18 @@ test('S-04 private websocket subscription, change coalescing and reconnect',asyn
  h.client.stop();
  assert.equal(h.client.active(),false);
 });
+test('S-04 explicit authorization denial stops reconnect loop and extra team reads',async()=>{
+ const h=harness();
+ await h.client.start();await flush();
+ const ws=h.sockets[0];ws.open();
+ ws.recv({type:'error',code:'DENIED'});
+ ws.close();
+ assert.equal(h.client.active(),false);
+ assert.equal(h.timers.size,0,'no repeated unauthorized subscription attempts');
+ await h.client.start();
+ assert.equal(h.sockets.length,1,'denied identity is not retried automatically');
+});
+
 test('S-04 integration retains the original status GET polling as fallback',()=>{
  for(const [name,html] of [['dog-boss10.js','dog-boss10.html'],
   ['dog-group-boss.js','dog-group-boss.html']]){
