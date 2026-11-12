@@ -11,6 +11,13 @@
  const auth=()=>{const v=window.SpielOnline?.state?.();
   return v?.status==='online'&&v.user?.uid&&v.profile?.setupComplete!==false?v:null;};
  let view=null,account=null,working=false,serverOffset=0,lastLoad=0,inflight=null;
+ // S-04 pilot is explicitly enabled with ?dogpush=1. No default
+ // connection, no new Firestore query and original HTTP fallback remains.
+ const push=window.DogBossPushClient?.create?.({
+  api:API,gate:10,
+  getUser:()=>auth()?.user||null,
+  onChanged:()=>{if(!document.hidden&&!working)void reload(true)}
+ });
  let lastHeroSignature=''; // No 250ms remount of unchanged multiplayer cards
  let lastReadyMask='',readyBurstUntil=0;
  const miniUi=window.DogBossMinigames?.create($('mini-game'),
@@ -320,7 +327,9 @@
  $('react-button').addEventListener('click',()=>void command('react'));
  $('retry-button').addEventListener('click',()=>void command(null,true));
  $('refresh').addEventListener('click',()=>void reload(true));
- window.addEventListener('spielonline-change',()=>void reload(true));
+ window.addEventListener('spielonline-change',()=>{
+  push?.start?.();void reload(true);
+ });
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void reload(true)});
  window.setInterval?.(()=>{
   if(document.hidden)return;
@@ -358,10 +367,16 @@
    view?.phase==='fighting'?2800:
    waitingReady&&Date.now()<readyBurstUntil?900:
    waitingReady?3800:15000;
+  // When a secure WS subscriber is alive, most remote changes arrive by
+  // push. Keep a conservative status-GET fallback for missed messages and
+  // multi-instance Render deployments; switch back immediately on WS loss.
+  const pollDelay=push?.active?.()&&view?.phase==='fighting'?
+   exchangeWindow?(extendedScene?5000:3200):5200:delay;
   // Scene-only refresh: get the latest server-confirmed team shield and
   // shared hits while all devices play their cinematic exchange.
-  if(!working&&Date.now()-lastLoad>delay)
+  if(!working&&Date.now()-lastLoad>pollDelay)
    void reload(exchangeWindow===true);
  },250);
+ push?.start?.();
  void reload(true);
 })();
