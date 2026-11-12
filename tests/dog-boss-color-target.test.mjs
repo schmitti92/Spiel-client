@@ -80,7 +80,7 @@ test('old v9 moving target path remains intact',()=>{
  view.miniGames.rounds[2]={round:2,kind:'target',
   startMs:55000,endMs:63000,maxSteps:3,lanes:3,initialIndex:0,stepMs:1000};
  ui.update(view,epoch+55700,true);
- const buttons=root.children[1].children.filter(x=>x.className.includes('mini-target'));
+ const buttons=root.children[1].children.filter(x=>x.className==='mini-choice mini-target');
  assert.equal(buttons.length,3);
  assert.equal(root.classList.contains('is-color-target'),false);
 });
