@@ -13,6 +13,20 @@
 - **Prüfen auf `main`**, CI und Deployment kontrollieren. Automatisierte Tests sind Pflicht; eine praktische Prüfung auf Android und mit drei Spielern bleibt zusätzliche Pflicht.
 - Dieser Plan ist die **einzige maßgebliche Checkliste**. Nicht parallel widersprüchliche Statuslisten pflegen.
 
+### ⚡ Schnellmodus für die weitere Entwicklung (12.11.2026)
+
+**Ziel: schneller sichtbar verbessern, ohne Sicherheits- oder Datenverluste.** Die ausführliche A-01/A-02-Baseline war eine einmalige Bestandsaufnahme; danach werden Messung und Dokumentation schlanker.
+
+- **Pro zusammenhängendem Änderungspaket ein Commit** statt vieler kleiner Nachbesserungs-Commits. Keine unnötigen Test-only-Deployments auf dem Render-Backend.
+- **Kleine rein optische Anpassung:** kurz passende Oberfläche/Dateien prüfen, vorhandenen gezielten Test nutzen, nur wenn tatsächlich nötig einen neuen Test ergänzen. Keine neue umfangreiche Messstudie.
+- **Normale Änderung an UI/Minispiel:** 1–3 passende Tests plus vorhandene automatische GitHub-CI; nur bei Fehlern breiter prüfen.
+- **Kritische Änderung an Firestore/Spielständen, Guthaben, Gewinnen, Sicherheitsprüfung oder Multiplayer-Synchronisierung:** gezielte Fälle für Doppelbuchung, Wiederholung, Unterbrechung und 1/2/3 Spieler beibehalten. Volle Regression vor großen Releases und nach riskanten Umbauten.
+- **Automatische CI und GitHub-Pages/Render-Deployments nicht mehr nach jedem Zwischencommit einzeln abfragen**; nach dem fertigen Paket einmal den Status prüfen und offen kennzeichnen, was noch nicht geprüft wurde.
+- **Knappe Dokumentation:** pro Paket 1–3 Sätze in diesem Plan (was geändert, grob getestet, GitHub-Commit, Auswirkungen auf Firestore). Umfangreiche Zusatzberichte nur bei tatsächlich neuen Messungen oder Architekturentscheidungen.
+- **Primär Spielqualität:** gefühlte Reaktionszeit, Synchronität und fehlerfreie Bedienung haben Vorrang vor dem Erstellen immer neuer theoretischer Tests. Firestore möglichst sparsam, aber nicht zulasten eines flüssigen Spiels.
+
+**Praxisbeobachtung vom Nutzer, noch nicht isoliert:** Bei einem selbst gespielten Spiel wurden in Firebase ungefähr **200 „Abfragen“** beobachtet. **Noch nicht geklärt**, ob damit Firestore-Dokumentreads, Writes, gesamte Projektoperationen oder HTTP-Requests gemeint sind und ob im Messfenster weitere Aktivitäten stattfanden. Diese Zahl vorerst **nicht** mit den isolierten A-01-Codepfad-Zählungen gleichsetzen; als Hinweis für eine schlanke Live-Nachmessung verwenden, nicht als Beweis für vollständige A-01e-Abnahme.
+
 ### Arbeitsvorlage für jeden Schritt
 
 | Feld | Eintrag |
