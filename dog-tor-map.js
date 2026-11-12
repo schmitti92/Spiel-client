@@ -436,13 +436,33 @@
  }
  async function fightGate(retry=false){
   const account=auth()?.user?.uid;
-  if(!account||working||!mapState?.isMember||
-   !mapState.members?.some(m=>m.isMe&&m.heroLocked===true))return;
-  const old=readPending(account);
-  if(retry&&!old)return;
-  if(!retry&&old)return;
+  const old=account?readPending(account):null;
+  const memberReady=!!mapState?.isMember&&
+   !!mapState.members?.some(m=>m.isMe&&m.heroLocked===true);
+  // Existing receipts must be recoverable even when the map has not loaded.
+  // Server permissions and receipt checks remain authoritative.
+  if(working)return;
+  if(!account){
+   $('gate-fight-status').textContent='⚠️ Bitte erneut online anmelden. Die offene Aktion bleibt gespeichert.';
+   return;
+  }
+  if(retry&&!old){
+   $('gate-fight-status').textContent='⚠️ Keine gespeicherte Kampfaktion gefunden.';
+   return;
+  }
+  if(!retry&&old){
+   $('gate-fight-status').textContent='⚠️ Zuerst die offene Aktion sicher wiederholen.';
+   return;
+  }
+  if(!retry&&!memberReady){
+   $('gate-fight-status').textContent='⚠️ Held oder Expedition noch nicht geladen. Bitte aktualisieren.';
+   return;
+  }
   const gate=old?.gate??selectedGate;
-  if(!Number.isSafeInteger(gate)||gate%10===0)return;
+  if(!Number.isSafeInteger(gate)||gate%10===0){
+   $('gate-fight-status').textContent='⚠️ Ungültiges Tor in der gespeicherten Kampfaktion.';
+   return;
+  }
   const pending=old||{id:requestId(),gate};
   if(!old&&!storePending(account,pending)){
    $('gate-fight-status').textContent='⚠️ Die Aktionskennung konnte nicht gesichert werden. Kampf nicht gestartet.';
@@ -451,7 +471,10 @@
   lastFight=null;
   $('gate-mini-reward').hidden=true;
   working=true;updateGateActions();
-  $('gate-fight-status').textContent='⚔️ Der Server berechnet deinen Kampf bei Tor '+gate+' …';
+  $('gate-recovery-status').textContent='';
+  $('gate-fight-status').textContent=retry?
+   '↻ Gespeicherte Kampfaktion von Tor '+gate+' wird beim Server wiederhergestellt …':
+   '⚔️ Der Server berechnet deinen Kampf bei Tor '+gate+' …';
   try{
    const result=await request('POST','fight',pending,account);
    if(auth()?.user?.uid!==account)return;
@@ -469,6 +492,7 @@
    }
    if(result.replayed)status+=' (Sicher wiederhergestellt)';
    lastFight={gate,message:status};
+   $('gate-recovery-status').textContent='';
    if(fight.type!=='mini'&&gate%10!==5)showQuickFightResult(gate,fight,!!result.replayed);
    $('gate-fight-status').textContent=status;
    setTeamStatus('✅ Dein gespeichertes Tor wurde aktualisiert.');
@@ -476,11 +500,15 @@
    // Preserve the request ID after an unknown network/server error.
    // Definitive application errors did not award the fight.
    if(['DOG_GATE_ALREADY_WON','DOG_GATE_PREVIOUS_REQUIRED','DOG_GATE_INVALID',
-     'DOG_GATE_COOLDOWN','NOT_DOG_TEAM_MEMBER','DOG_GATE_RECEIPT_CONFLICT'].includes(e.message)){
+     'DOG_GATE_BOSS_REQUIRED','DOG_GATE_COOLDOWN','NOT_DOG_TEAM_MEMBER',
+     'DOG_GATE_RECEIPT_CONFLICT'].includes(e.message)){
      clearPending(account);
    }
-   $('gate-fight-status').textContent='⚠️ Kampf nicht bestätigt: '+e.message+
+   const reason=e.name==='AbortError'?'Zeitüberschreitung (18 Sekunden)':e.message;
+   const errorText='⚠️ Kampf nicht bestätigt: '+reason+
     '. Bei unklarem Ergebnis kannst du dieselbe Aktion sicher wiederholen.';
+   $('gate-fight-status').textContent=errorText;
+   $('gate-recovery-status').textContent=errorText;
   }finally{working=false;updateGateActions();}
  }
 
