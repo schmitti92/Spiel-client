@@ -239,7 +239,7 @@
   $('forge-player-note').textContent=view?(merchantMode?'Dein Rohstoffhandel ist bereit':'Bereit für deine nächste Verbesserung'):'Persönliches Heldenprofil';
   const classLabel=$('forge-class-badge');
   if(classLabel)classLabel.textContent=window.DogHeroEquipment?.label(heroClass())||'Held noch nicht gewählt';
-  document.body.dataset.heroClass=window.DogHeroEquipment?.normalize(heroClass())||'';
+  if(document.body?.dataset)document.body.dataset.heroClass=window.DogHeroEquipment?.normalize(heroClass())||'';
   const cap=$('forge-gate-cap');
   if(cap){
    cap.hidden=!view||!Number.isSafeInteger(view.forgeLevel);
