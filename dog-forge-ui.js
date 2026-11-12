@@ -735,7 +735,8 @@
   $('forge-retry').disabled=!currentAccount||!uid||busy;
   $('forge-refresh').disabled=busy;
   header();renderList();merchantMode?renderExchange():renderUpgrade();renderGoal();renderChronicle();renderStock();renderGallery();
-  if(!merchantMode)window.dispatchEvent(new CustomEvent('dog-forge-view',{detail:{uid,view,busy}}));
+  if(!merchantMode&&typeof window.dispatchEvent==='function'&&typeof CustomEvent==='function')
+   window.dispatchEvent(new CustomEvent('dog-forge-view',{detail:{uid,view,busy}}));
  }
  const closeModal=()=>{const dialog=$('forge-result');if(dialog.open)dialog.close();};
  function resultDialog(result,newlyUnlocked=[]){
@@ -942,6 +943,7 @@
   closeConfirm();
   void action('upgrade',requested);
  });
+ window.DogForgeState=()=>({uid,view,busy});
  window.DogForgeReload=()=>reload();
  $('forge-refresh').addEventListener('click',()=>void reload());
  $('forge-retry').addEventListener('click',()=>{
