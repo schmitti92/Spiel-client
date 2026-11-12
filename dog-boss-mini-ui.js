@@ -546,7 +546,11 @@
     body.append(lanes);
     for(let i=0;i<round.lanes;i++){
      const button=createElement('button','mini-choice mini-dodge-lane','');
-     button.type='button';button.addEventListener('click',()=>choose(i));
+     button.type='button';
+     const ownerRound=round.round,ownerFight=fightStart;
+     button.addEventListener('click',()=>{
+      if(roundView?.round===ownerRound&&fightStart===ownerFight)choose(i);
+     });
      buttons.push(button);lanes.append(button);
     }
     const history=createElement('div','mini-dodge-history');
