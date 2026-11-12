@@ -90,6 +90,27 @@ test('the end report uses only a server-confirmed verdict and exact final boss H
  assert.equal(model({...bypassed,startedAt:0}),null);
 });
 
+test('E-01 only a full server-confirmed outcome opens the mandatory finish report',()=>{
+ const {model}=load();
+ const victory=fakeView(true),defeat=fakeView(false);
+ assert.equal(model(victory)?.result.win,true);
+ assert.equal(model(defeat)?.result.win,false);
+ assert.equal(model({...defeat,phase:'waiting',
+  developerBossCooldownDisabled:true})?.result.win,false,
+  'administrator bypass still exposes the real, previous defeat');
+ for(const incomplete of [
+  {...victory,phase:'fighting'},
+  {...victory,phase:'victory',result:null},
+  {...defeat,phase:'cooldown',result:{}},
+  {...victory,phase:'victory',result:{...victory.result,win:false}},
+  {...defeat,phase:'cooldown',result:{...defeat.result,win:true}},
+  {...defeat,phase:'waiting',developerBossCooldownDisabled:false},
+  {...defeat,phase:'waiting',developerBossCooldownDisabled:true,startedAt:0},
+  {...victory,endsAt:victory.startedAt},
+  {...victory,roster:[]}
+ ])assert.equal(model(incomplete),null,
+  'unconfirmed or contradictory battle states must not manufacture a result');
+});
 test('minigame grade is bounded 0–100 with explicit maximum and missing-data handling',()=>{
  const {grade,model}=load();
  assert.equal(grade(0),'Schwach');
@@ -266,6 +287,54 @@ test('result opens automatically, replays only supplied strikes, and closes/reop
  assert.equal(root.hidden,true);
  assert.equal(body.classList.contains('boss-result-open'),false);
  assert.equal(portal.classList.contains('dog-boss-report-visible'),false);
+});
+test('E-01 finish dialog opens on first confirmed loss/win and admin-bypassed loss, without any client writes',()=>{
+ const stage=node('main'),reopen=node('button'),root=node('section');
+ const body=node('body');body.appendChild=child=>body.children.push(child);
+ root.closest=()=>stage;
+ Object.defineProperty(root,'innerHTML',{set(html){
+  root.html=html;root.nodes={};
+  for(const match of html.matchAll(/id="([^"]+)"/g))
+   root.nodes[match[1]]=node('div');
+ }});
+ const document={body,querySelector:selector=>
+  ({'.stage':stage,'#boss-result-open':reopen}[selector]||null),
+  createElement:node};
+ const {create}=load({document,Intl,setInterval:()=>1,clearInterval(){}});
+ const ui=create(root);
+ const pending={...fakeView(false),result:null};
+ ui.update(pending);
+ assert.equal(root.hidden,true,'the countdown ending cannot create a defeat');
+ const first=fakeView(false);
+ ui.update(first); // first confirmed server response
+ assert.equal(root.hidden,false);
+ assert.equal(root.dataset.result,'defeat');
+ assert.equal(stage.classList.contains('boss-result-open'),true);
+ assert.equal(body.children.includes(root),true,'modal is portaled outside arena');
+ assert.match(root.html,/role="dialog" aria-modal="true"/);
+ assert.match(root.nodes['br-title'].textContent,/NIEDERLAGE/);
+ root.nodes['br-return'].click();
+ assert.equal(root.hidden,true);
+ ui.update(first);
+ assert.equal(root.hidden,true,'the same confirmed outcome is not reopened');
+ const win={...fakeView(true),attempt:3};
+ ui.update(win);
+ assert.equal(root.hidden,false,'new confirmed victory opens automatically');
+ assert.match(root.nodes['br-title'].textContent,/SIEG/);
+ assert.equal(root.dataset.result,'victory');
+ root.nodes['br-return'].click();
+ const admin={...fakeView(false),phase:'waiting',
+  developerBossCooldownDisabled:true,attempt:4};
+ ui.update(admin);
+ assert.equal(root.hidden,false,'admin cooldown bypass retains result modal');
+ assert.match(root.nodes['br-title'].textContent,/NIEDERLAGE/);
+ assert.equal(root.dataset.result,'defeat');
+ // A later updated fight is a distinct result, not an accidental reopen.
+ const next={...fakeView(false),phase:'fighting',result:null,
+  attempt:5,startedAt:admin.startedAt+300000,endsAt:admin.endsAt+300000};
+ ui.update(next);
+ assert.equal(root.hidden,true,'new active battle clears old result');
+ assert.equal(body.classList.contains('dog-boss-report-visible'),false);
 });
 test('both arena screens include conclusion and local replay, with no client-side combat writes',()=>{
  const css=read('dog-boss-result-report.css');
