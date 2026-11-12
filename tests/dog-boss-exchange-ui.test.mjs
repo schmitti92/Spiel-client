@@ -234,6 +234,51 @@ test('Defense scene highlights 100-point team shield and 25-point block calculat
  ui.update(view,startedAt+50001);
  assert.equal(node('live-cinematic').hidden,true);
 });
+test('M-06 live interlude shows server-normalized accuracy and only final official team score',()=>{
+ const {ui,view,node}=cinematicFixture();
+ view.miniGames.version=15;
+ view.endsAt=startedAt+135000;
+ const rounds=view.miniGames.rounds;
+ const frames=[[0,12000],[26000,41000],[55000,65000],[79000,87000]];
+ for(let i=0;i<4;i++){rounds[i].startMs=frames[i][0];rounds[i].endMs=frames[i][1];}
+ rounds[2].maxSteps=10;
+ rounds.push({kind:'chain',round:4,startMs:101000,endMs:121000,maxSteps:10});
+ const stages=view.miniGames.exchange.stages;
+ stages[4]={round:4,kind:'chain',defensive:false,completed:true,
+  correct:7,max:10,bonusPercent:3.5,bonusDamage:110,
+  playerResults:[{uid:'c',correct:7,max:10,bonusDamage:110}]};
+ stages[0].playerResults=[{uid:'c',correct:6,max:8,bonusDamage:150}];
+ view.roster=[{uid:'c',name:'Chris'}];
+ view.miniGames.exchange.version=15;
+ view.miniGames.exchange.durationMs=135000;
+ const evaluation={
+  weighting:'equal',weightPercentPerGame:20,completedRounds:4,
+  teamPercent:null,perfect:null,
+  rounds:[
+   {completed:true,percent:75,players:[{uid:'c',correct:6,max:8,percent:75}]},
+   {completed:true,percent:100,players:[{uid:'c',correct:3,max:3,percent:100}]},
+   {completed:true,percent:50,players:[{uid:'c',correct:5,max:10,percent:50}]},
+   {completed:true,percent:66.7,players:[{uid:'c',correct:2,max:3,percent:66.7}]},
+   {completed:false,percent:null,players:null}]
+ };
+ view.miniGames.exchange.evaluation=evaluation;
+ ui.update(view,startedAt+122000);
+ assert.match(node('v3-results-subtitle').textContent,/20 % Gewicht/);
+ assert.match(node('live-stage-score').textContent,/Genauigkeit/);
+ assert.doesNotMatch(node('v3-results-note').textContent,/Gesamtleistung/);
+ evaluation.completedRounds=5;
+ evaluation.teamPercent=68.3;
+ evaluation.perfect=false;
+ evaluation.rounds[4]={completed:true,percent:70,
+  players:[{uid:'c',correct:7,max:10,percent:70}]};
+ ui.update(view,startedAt+122500);
+ assert.match(node('v3-results-note').textContent,/Gesamtleistung: 68,3 %/);
+ assert.match(node('v3-results-note').textContent,/alle 5 Minispiele je 20 %/);
+ view.phase='victory';
+ view.result={win:true,damage:900,bossHp:1000,hpRemaining:0};
+ ui.update(view,startedAt+136000);
+ assert.match(node('live-feedback').textContent,/Fünf-Spiele-Leistung: 68,3 %/);
+});
 test('Previous 40-second fights still use their original short result scene',()=>{
  const {ui,view,node}=fixture();
  ui.update(view,startedAt+9000);
