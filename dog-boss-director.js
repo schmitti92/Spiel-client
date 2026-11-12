@@ -8,7 +8,7 @@
   const camera=root.querySelector('#combat-camera');
   const fx=root.querySelector('#combat-fx');
   const note=root.querySelector('#combat-focus-label');
-  const modes=['auto','normal','boss','team'];
+  const modes=['auto','boss','team','normal'];
   const format=n=>Math.max(0,Math.round(Number(n)||0)).toLocaleString('de-DE');
   let mode='auto',enabled=true,view=null,vitals=null,focusUid=null,session=null;
   function activate(next){

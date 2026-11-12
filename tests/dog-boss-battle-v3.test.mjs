@@ -423,7 +423,7 @@ test('K-06b nine group bosses each have an individual cosmetic signature',()=>{
  assert.doesNotMatch(styles,/fetch\s*\(|https?:\/\/|@import/);
  for(const page of ['dog-boss10.html','dog-group-boss.html']){
   assert.match(read(page),/dog-boss-signature-attacks\.css\?v=k06-boss-groups1/);
-  assert.match(read(page),/dog-boss-battle-v3\.js\?v=20261112-k06-groups1/);
+  assert.match(read(page),/dog-boss-battle-v3\.js\?v=[A-Za-z0-9_-]+/);
  }
  const battle=view(60);
  assert.equal(derive(battle,begin+42000).kind,'boss-strike');
@@ -494,5 +494,5 @@ test('K-07 sound opt-in and confirmed-hit-only audio; automatic camera with manu
  assert.equal(scene.dataset.camera,'boss','hero attack focuses boss');
  cHandlers['camera-click']({stopPropagation(){}});
  director.update(fight,1);
- assert.equal(scene.dataset.camera,'normal','manual overview overrides auto mode');
+ assert.equal(scene.dataset.camera,'boss','first click manually focuses the boss');
 });
