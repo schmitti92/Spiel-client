@@ -1,6 +1,12 @@
 /* 100 Tore · Battle conclusion, same layout for Boss 10 and all group bosses.
  * The result is informational and a local replay, never another attack.
  */
+.stage.boss-result-open{
+ width:min(1450px,calc(100% - 22px))!important;max-width:none!important;
+}
+body:has(.stage.boss-result-open){
+ overflow-y:auto!important;overflow-x:hidden!important;
+}
 .stage.boss-result-open #boss-preflight,
 .stage.boss-result-open #arena,
 .stage.boss-result-open #boss-squad{display:none!important}
