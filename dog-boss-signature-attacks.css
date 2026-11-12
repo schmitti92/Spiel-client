@@ -1,0 +1,101 @@
+/* K-06b · group-boss signatures: the same synchronized strike clock,
+   different element, weapon silhouette and on-screen attack telegraph.
+   Ash Warden's existing ash-storm stays in dog-boss-weapon-strikes.css.
+   Nothing here computes hits or touches any network/state API. */
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="shadow-blade"]{
+ --k06-core:#e6cbff;--k06-accent:#9155d9;--k06-dark:#30124f;
+ --k06-shape:polygon(9% 0,92% 0,78% 15%,57% 29%,60% 100%,43% 100%,43% 31%,18% 36%,4% 20%);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="crystal-spike"]{
+ --k06-core:#efffff;--k06-accent:#60d8f2;--k06-dark:#135e8b;
+ --k06-shape:polygon(52% 0,84% 31%,65% 51%,59% 100%,42% 100%,39% 50%,18% 30%);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="thorn-whip"]{
+ --k06-core:#ecffd5;--k06-accent:#78ce59;--k06-dark:#2c632a;
+ --k06-shape:polygon(16% 0,82% 0,71% 16%,88% 36%,62% 45%,79% 68%,56% 74%,58% 100%,42% 100%,41% 62%,13% 49%,36% 29%);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="abyss-trident"]{
+ --k06-core:#e3faff;--k06-accent:#52b4eb;--k06-dark:#145180;
+ --k06-shape:polygon(13% 0,31% 0,32% 30%,42% 1%,58% 1%,69% 30%,70% 0,86% 0,75% 40%,60% 48%,59% 100%,42% 100%,42% 48%,25% 40%);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="dragon-breath"]{
+ --k06-core:#fff4aa;--k06-accent:#ff6036;--k06-dark:#af1930;
+ --k06-shape:polygon(0 78%,20% 46%,33% 12%,48% 44%,64% 0,74% 41%,100% 18%,81% 89%,54% 100%,21% 94%);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="soul-scythe"]{
+ --k06-core:#f4e6ff;--k06-accent:#cb8ff7;--k06-dark:#49267b;
+ --k06-shape:polygon(6% 5%,97% 1%,82% 19%,59% 32%,60% 100%,42% 100%,42% 34%,17% 41%,3% 21%);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="iron-fist"]{
+ --k06-core:#fbfeff;--k06-accent:#bbd0de;--k06-dark:#435468;
+ --k06-shape:polygon(19% 5%,86% 5%,86% 42%,61% 42%,59% 100%,43% 100%,40% 42%,19% 42%);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="fortress-ram"]{
+ --k06-core:#ffe3ef;--k06-accent:#e37d9f;--k06-dark:#79354f;
+ --k06-shape:polygon(6% 20%,32% 20%,32% 0,68% 0,68% 20%,94% 20%,94% 55%,59% 55%,59% 100%,42% 100%,42% 55%,6% 55%);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="final-judgment"]{
+ --k06-core:#fff8e0;--k06-accent:#ffd17a;--k06-dark:#9d6932;
+ --k06-shape:polygon(50% 0,67% 21%,84% 29%,66% 45%,59% 51%,59% 100%,43% 100%,43% 51%,27% 45%,12% 29%,35% 21%);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style]:not([data-v3-boss-style="ash-storm"]):not([data-v3-boss-style="standard"]) .combat-boss::after{
+ background:radial-gradient(circle at 50% 20%,var(--k06-core) 0 8%,
+  var(--k06-accent) 16%,var(--k06-dark) 39%,transparent 43%),
+  linear-gradient(90deg,transparent 38%,var(--k06-accent) 41% 53%,
+   var(--k06-dark) 57% 62%,transparent 68%);
+ clip-path:var(--k06-shape);
+ filter:drop-shadow(0 0 13px var(--k06-accent));
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style]:not([data-v3-boss-style="ash-storm"]):not([data-v3-boss-style="standard"]) .combat-boss[data-v3-active="true"]::after{
+ animation:k06-boss-swing var(--v3-duration) linear both running!important;
+ animation-delay:var(--v3-delay)!important;
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="shadow-blade"] .combat-boss[data-v3-active="true"]::after,
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="soul-scythe"] .combat-boss[data-v3-active="true"]::after{
+ animation-name:k06-boss-arc!important;
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="dragon-breath"] .combat-boss[data-v3-active="true"]::after,
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="abyss-trident"] .combat-boss[data-v3-active="true"]::after{
+ animation-name:k06-boss-wave!important;
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="iron-fist"] .combat-boss[data-v3-active="true"]::after,
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style="fortress-ram"] .combat-boss[data-v3-active="true"]::after{
+ animation-name:k06-boss-crush!important;
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style]:not([data-v3-boss-style="ash-storm"]):not([data-v3-boss-style="standard"])
+ .combat-hero[data-v3-targeted="true"]{
+ outline-color:var(--k06-accent);filter:drop-shadow(0 0 11px var(--k06-accent));
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style]:not([data-v3-boss-style="ash-storm"]):not([data-v3-boss-style="standard"])
+ .v3-impact-flare{
+ background:radial-gradient(ellipse,var(--k06-core),var(--k06-accent) 25%,
+  var(--k06-dark) 42%,transparent 70%);
+}
+@keyframes k06-boss-swing{
+ 0%,12%,100%{transform:rotate(42deg);opacity:.15}
+ 35%{transform:rotate(-75deg) translateY(-12px);opacity:1}
+ 54%,60%{transform:rotate(84deg) translate(16px,5px) scale(1.38);opacity:1}
+ 80%{transform:rotate(34deg);opacity:.5}
+}
+@keyframes k06-boss-arc{
+ 0%,12%,100%{transform:rotate(-35deg) scale(.7);opacity:.1}
+ 35%{transform:rotate(90deg) scale(1.08);opacity:1}
+ 54%,60%{transform:rotate(-80deg) translateX(20px) scale(1.5);opacity:1}
+ 80%{transform:rotate(20deg);opacity:.5}
+}
+@keyframes k06-boss-wave{
+ 0%,13%,100%{transform:translateX(-20px) scale(.3);opacity:.1}
+ 36%{transform:translateX(-7px) scale(.8);opacity:1}
+ 54%,60%{transform:translateX(35px) scale(1.8);opacity:1}
+ 80%{transform:translateX(6px) scale(.8);opacity:.5}
+}
+@keyframes k06-boss-crush{
+ 0%,17%,100%{transform:translateY(-5px) rotate(10deg);opacity:.2}
+ 37%{transform:translateY(-26px) rotate(-11deg);opacity:1}
+ 54%,60%{transform:translateY(19px) rotate(38deg) scale(1.56);opacity:1}
+ 81%{transform:translateY(2px);opacity:.5}
+}
+@media(prefers-reduced-motion:reduce){
+ .arena-live[data-arena-design="v3"] .combat-scene[data-v3-boss-style]
+ .combat-boss[data-v3-active="true"]::after{animation:none!important}
+}

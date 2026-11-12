@@ -29,6 +29,25 @@
   magierin:{windup:'bündelt Arkankraft',swing:'Magieimpuls'},
   waechter:{windup:'stemmt den Schild vor',swing:'Schildstoß'}
  });
+ // K-06: independent visual identities; no local damage or random rolls.
+ const BOSS_STYLES=Object.freeze({
+  10:'ash-storm',20:'shadow-blade',30:'crystal-spike',
+  40:'thorn-whip',50:'abyss-trident',60:'dragon-breath',
+  70:'soul-scythe',80:'iron-fist',90:'fortress-ram',
+  100:'final-judgment'
+ });
+ const BOSS_MOVES=Object.freeze({
+  'shadow-blade':{attack:'Schattenklinge',charge:'sammelt dunkle Schatten'},
+  'crystal-spike':{attack:'Kristallstachel',charge:'bündelt scharfe Kristallsplitter'},
+  'thorn-whip':{attack:'Dornenpeitsche',charge:'spannt seine Dornenranken'},
+  'abyss-trident':{attack:'Tiefenstoß',charge:'ruft die Strömung der Tiefe'},
+  'dragon-breath':{attack:'Feueratem',charge:'holt glühend Luft'},
+  'soul-scythe':{attack:'Seelensichel',charge:'zieht Seelenenergie zusammen'},
+  'iron-fist':{attack:'Kolossfaust',charge:'hebt die schwere Eisenfaust'},
+  'fortress-ram':{attack:'Festungsramme',charge:'stemmt die gepanzerte Ramme'},
+  'final-judgment':{attack:'Urteilsschlag',charge:'sammelt das Licht des letzten Tores'}
+ });
+ const bossStyle=gate=>BOSS_STYLES[Number(gate)]||'standard';
  const describeStrike=(state,name,bossName,heroClass,bossStyle)=>{
   // Boss identity changes only visuals/callouts, never server-owned damage.
   if(state.kind==='boss-strike'&&bossStyle==='ash-storm'){
@@ -44,6 +63,21 @@
    }
    if(state.beat==='recovery')return '↩️ Die Asche glüht nach';
    return '🌋 Der Aschewächter sammelt neue Kraft';
+  }
+  const special=state.kind==='boss-strike'?BOSS_MOVES[bossStyle]:null;
+  if(special){
+   if(state.beat==='prepare')return '⚔️ '+bossName+' nimmt seine Kampfposition ein';
+   if(state.beat==='windup')return '⚡ '+bossName+' '+special.charge+'!';
+   if(state.beat==='swing')return '🔥 '+bossName+' entfesselt '+special.attack+'!';
+   if(state.beat==='impact'){
+    if(!state.confirmed)return '💥 '+special.attack+' bei '+name+' – prüfe Treffer';
+    if(state.confirmedDamage===0)return state.roundKind==='dodge'?
+     '💨 '+name+' entkommt '+special.attack+'!':
+     '🛡️ '+name+' blockt '+special.attack+'!';
+    return '💥 '+special.attack+' trifft '+name+'!';
+   }
+   if(state.beat==='recovery')return '↩️ '+special.attack+' klingt ab';
+   return '🛡️ '+bossName+' ist wieder bereit';
   }
   const target=state.kind==='boss-strike'?name:bossName;
   const actor=state.kind==='boss-strike'?bossName:name;
@@ -250,7 +284,7 @@
    const state=derive(view,now);
    if(!scene)return;
    scene.dataset.v3Action=state.kind;
-   scene.dataset.v3BossStyle=Number(view?.gate)===10?'ash-storm':'standard';
+   scene.dataset.v3BossStyle=bossStyle(view?.gate);
    scene.dataset.v3Final=state.index===4?'true':'false';
    scene.dataset.v3Beat=state.beat||'idle';
    scene.dataset.v3Impact=state.impact?'yes':'no';
@@ -345,5 +379,5 @@
   }
   return {update,derive};
  }
- window.DogBossArenaV3={create,derive};
+ window.DogBossArenaV3={create,derive,bossStyle};
 })();

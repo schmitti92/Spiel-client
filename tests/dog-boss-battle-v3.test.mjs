@@ -396,12 +396,38 @@ test('K-06 Aschewächter has dedicated, server-timed ash-spear callouts without 
   'before server confirmation the ash-spear does not assert damage');
  const later=view(20);
  ui.update(later,begin+42000);
- assert.equal(scene.dataset.v3BossStyle,'standard');
+ assert.equal(scene.dataset.v3BossStyle,'shadow-blade');
+ assert.match(action.textContent,/dunkle Schatten/);
  assert.doesNotMatch(action.textContent,/Aschensturm|Aschenlanze/,
   'the Aschewächter effect must not leak to other gates');
  const css=read('dog-boss-weapon-strikes.css');
  assert.match(css,/data-v3-boss-style="ash-storm"/);
  assert.match(css,/data-v3-impact="yes"/);
  assert.match(css,/prefers-reduced-motion:reduce/);
+ assert.doesNotMatch(js,/\bfetch\s*\(|firebase|Math\.random\(/i);
+});
+
+test('K-06b nine group bosses each have an individual cosmetic signature',()=>{
+ const {bossStyle,create,derive}=load();
+ const ids=[20,30,40,50,60,70,80,90,100];
+ const expected=['shadow-blade','crystal-spike','thorn-whip','abyss-trident',
+  'dragon-breath','soul-scythe','iron-fist','fortress-ram','final-judgment'];
+ assert.deepEqual(ids.map(g=>bossStyle(g)).join(','),expected.join(','));
+ assert.equal(bossStyle(10),'ash-storm','Tor 10 keeps the existing Aschenlanze');
+ const styles=read('dog-boss-signature-attacks.css');
+ for(const style of expected)assert.ok(styles.includes('data-v3-boss-style="'+style+'"'),style);
+ for(const keyframe of ['swing','arc','wave','crush'])
+  assert.ok(styles.includes('@keyframes k06-boss-'+keyframe),keyframe);
+ assert.match(styles,/animation-delay:var\(--v3-delay\)/);
+ assert.match(styles,/prefers-reduced-motion:reduce/);
+ assert.doesNotMatch(styles,/fetch\s*\(|https?:\/\/|@import/);
+ for(const page of ['dog-boss10.html','dog-group-boss.html']){
+  assert.match(read(page),/dog-boss-signature-attacks\.css\?v=k06-boss-groups1/);
+  assert.match(read(page),/dog-boss-battle-v3\.js\?v=20261112-k06-groups1/);
+ }
+ const battle=view(60);
+ assert.equal(derive(battle,begin+42000).kind,'boss-strike');
+ assert.equal(derive(battle,begin+42000).uid,'chris',
+  'cosmetic skin does not affect the server-selected target');
  assert.doesNotMatch(js,/\bfetch\s*\(|firebase|Math\.random\(/i);
 });
