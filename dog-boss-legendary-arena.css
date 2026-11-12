@@ -130,6 +130,11 @@ body:has(.stage[data-screen="battle"]){
  text-shadow:0 1px #211527,0 0 9px #ffe8c2;
  pointer-events:none;
 }
+.arena-live[data-arena-design="legendary"] .boss-crest{
+ border-color:#ffd39a;
+ background:radial-gradient(circle at 38% 24%,#b7643f,#502638 57%,#261525);
+ box-shadow:inset 0 0 0 2px #70402a,0 0 17px #ff7e4c99;
+}
 .arena-live[data-arena-design="legendary"] .team-crest{
  border-color:#a6edff;
  background:radial-gradient(circle at 40% 20%,#3b7e9d,#123459 75%);
