@@ -112,7 +112,7 @@ test('M-04 ignores double taps and flushes two captures once at round end',async
  setNow(epoch+77700);button.dispatch('pointerdown',{isPrimary:true});
  setNow(epoch+78500);ui.update(view,epoch+78500,true);
  button.dispatch('pointerdown',{isPrimary:true});
- assert.match(root.children[2].textContent,/2 \/ 3 KONTER ERFASST/);
+ assert.match(root.children[2].textContent,/2\/3 KONTER ERFASST/);
  assert.equal(requests.length,0);
  setNow(epoch+85500);ui.update(view,epoch+85500,true);
  await Promise.resolve();await Promise.resolve();
