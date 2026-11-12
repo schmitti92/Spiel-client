@@ -926,7 +926,9 @@
    return;
   }
   busy=true;++loadSerial;render();
-  $('forge-workspace').classList.add('forging');
+  // Quick + and material refinement never trigger the forging animation.
+  if(!instant&&!retry&&op.action==='upgrade')
+   $('forge-workspace').classList.add('forging');
   status('⚒️ Die Schmiede verarbeitet deinen Auftrag …');
   // The ceremony never starts a request or changes hero state.
   // Safe replays skip the theatrical forging: they only recover a receipt.
