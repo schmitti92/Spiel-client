@@ -53,6 +53,22 @@ Der vollständige 135-s-Kampf lief mit **einem echten Spieler und zwei serversei
 
 Damit ist der wesentliche Zusammenhang bestätigt: **Jeder zusätzliche unveränderte Boss-GET erzeugt mindestens zwei Datenbank-Leseoperationen.** Insbesondere bei mehreren gleichzeitig geöffneten Browsern kann das Polling den Verbrauch dominieren.
 
+### D. Zusätzlicher Offline-Test mit drei Sekunden HTTP-Polling pro echtem Browser
+
+Am **12.11.2026** wurde ein weiterer reproduzierbarer Test ergänzt, der während des ansonsten unveränderten vollständigen 135-s-Kampfes für **jeden echten Browser alle 3.000 ms** einen zusätzlichen Status-GET sendet (3 s bis 132 s, also **44 zusätzliche GETs je Browser**). Die in Abschnitt A enthaltenen zwei GETs bleiben erhalten. Dieser Test zählt dieselben isolierten Backend-Firestore-Methodenaufrufe und verändert keine Live-Spielstände.
+
+| Szenario | Alle GETs | HTTP-Zusatz-GETs | Simulierte Dokument-Reads | Dokument-Writes |
+|---|---:|---:|---:|---:|
+| 1 Mensch, alle 3 s | 46 | 44 | **129** | **24** |
+| 2 Menschen, je alle 3 s | 90 | 88 | **248** | **44** |
+| 3 Menschen, je alle 3 s | 134 | 132 | **364** | **62** |
+
+**Unterschied zum Minimaltest:** Bei 3 echten Spielern erzeugen allein die 132 zusätzlichen Status-GETs **264 zusätzliche Reads**, aber im isolierten Fall **keine zusätzlichen Writes**. Das ist ein klarer Hinweis auf das spätere Optimierungspotenzial bei Statusabfragen, **kein tatsächlich gemessener Produktionsverbrauch**.
+
+**Grenzen:** Alle GETs folgen einer gleichmäßigen 3-s-Frequenz. Die reale Browserlogik verwendet je nach Phase unter anderem 850/1.200/2.800/3.800/15.000 ms, eine bestehende 3-s-Drossel, Sichtbarkeitsprüfung sowie situationsbedingte Updates. Mehrere geöffnete Tabs, Auth-/Profil-/Pilotzugriffe, Retry und Firestore-Abrechnung sind nicht abgebildet. Der Test liefert **eine illustrative Kostensensitivität** und darf nicht als vollständige reale Netzwerk- oder Cloud-Messung bezeichnet werden.
+
+**Belege:** [Test-Commit](https://github.com/schmitti92/serverfinal/commit/90bc7902aa223162866d5db0a33247a975eef5f0) · [Server tests](https://github.com/schmitti92/serverfinal/actions/runs/43248227536) · [Node tests](https://github.com/schmitti92/serverfinal/actions/runs/43248225233) · [Multiplayer regression tests](https://github.com/schmitti92/serverfinal/actions/runs/43248225444) · [Shared lobby feature tests](https://github.com/schmitti92/serverfinal/actions/runs/43248225104) (alle erfolgreich).
+
 ## 3. Produktionsseitige Zusatzkosten, die im Offline-Test fehlen
 
 Diese Faktoren sind im produktiven Code vorhanden, aber **nicht im obigen Zahlenwert enthalten**:
@@ -76,6 +92,13 @@ Diese Faktoren sind im produktiven Code vorhanden, aber **nicht im obigen Zahlen
 ## 5. Noch fehlende Produktionsmessung – A-01 ist nicht vollständig abgenommen
 
 Es wurde **kein neues Produktivspiel gestartet**, damit weder Bossfortschritt, Inventar noch Testspielerzustand beeinflusst werden. Die Firebase-Konsole beziehungsweise das Cloud-Monitoring-Dashboard für Projekt `spiel-barik` ist hier nicht direkt verbunden.
+
+### Zusatzprüfung der zugänglichen Produktionsdaten am 12.11.2026
+
+- Render-Service `serverfinal` wurde im zutreffenden Workspace geprüft; letztes Deployment war `live`. Der Render-Metrikabruf für **HTTP-Request-Anzahl** und **p95-HTTP-Latenz** im Zeitraum 14:00–15:22 UTC gab jeweils **eine leere Datenreihe** zurück. Das ist **keine Nullmessung**.
+- Render-Request-Logabfragen für Boss-Routen und allgemeine Requests gaben im geprüften Abruf keine verwertbaren Request-Einträge zurück. Andere App-Logs sind vorhanden, also nicht auf „kein Traffic“ schließen.
+- Der Render-Zugang stellt **keine Cloud-Firestore-Dokument-Usage-Zähler** bereit. Es gibt derzeit auch keinen verbundenen Zugang zu den Firebase-/Cloud-Monitoring-Metriken von `spiel-barik`. **A-01e bleibt offen**.
+- Für die Live-Werte wurde eine **ausfüllbare [CSV-Messvorlage](./100-TORE-A01E-LIVE-MESSWERTE.csv)** hinterlegt. Nur echte, mit Zeitfenster belegte Projekt-Zähler dort eintragen; bei aggregierten Tageswerten nicht behaupten, dass genau ein Bosskampf isoliert gemessen wurde. Keine Spielstände oder Live-Aktionen für die bloße Metrikabfrage verändern.
 
 ### Vorzubereitende Messserie, ohne Code-/Spieländerungen
 
