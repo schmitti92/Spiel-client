@@ -39,6 +39,7 @@
  const preflight=window.DogBossPreflight?.create(gate);
  const liveUi=window.DogBossLiveUI?.create($('arena'));
  const director=window.DogBossDirector?.create($('arena'));
+ const battleV3=window.DogBossArenaV3?.create($('arena'));
  const key=uid=>'dog:groupboss:'+gate+':pending:'+uid;
  const newId=()=>globalThis.crypto?.randomUUID?.()?
   'boss'+gate+'-'+globalThis.crypto.randomUUID():
@@ -225,6 +226,7 @@
     ' Schaden von '+(view?.bossHp||0).toLocaleString('de-DE')+
     ' nötigen LP. Die gemeinsame Kampfpause endet in '+formatTime(cooling())+'.':'';
   liveUi?.update(view,now());
+  battleV3?.update(view,now());
   director?.update(view);
  }
  async function reload(force=false){
