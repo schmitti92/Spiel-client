@@ -97,9 +97,9 @@
     // Only already-verified answers and cinematic effects. A bonus earned
     // from the minigame is separate from the actual boss-LP strike.
     persons:(s.playerResults||[]).map(p=>{
-     const hit=stageHits.filter(e=>e.uid===p.uid&&e.kind===
-      (s.defensive?'boss-strike':'hero-strike'))
-      .reduce((sum,e)=>sum+num(e.amount),0);
+     const ownHits=stageHits.filter(e=>e.uid===p.uid&&e.kind===
+      (s.defensive?'boss-strike':'hero-strike'));
+     const hit=ownHits.length?ownHits.reduce((sum,e)=>sum+num(e.amount),0):null;
      return {uid:p.uid,name:cap(names.get(p.uid)?.name||'Held'),
       correct:num(p.correct),max:num(p.max)||num(
        view.miniGames?.rounds?.[s.round]?.maxSteps),
@@ -525,10 +525,12 @@
        s.defensive?(Number.isFinite(p.savedHp)?
         '🛡️ '+fmt.format(p.savedHp)+' LP geschützt':
         '🛡️ '+fmt.format(p.protectionPoints||0)+' Schutzpunkte')+
-        ' · −'+fmt.format(p.hit)+' LP erhalten':
+        (Number.isFinite(p.hit)?' · −'+fmt.format(p.hit)+' LP erhalten':
+         ' · Boss-Trefferhistorie offen'):
         (Number.isFinite(p.bonusDamage)?
          '🔥 +'+fmt.format(p.bonusDamage)+' Bonus erspielt · ':'')+
-         '⚔️ −'+fmt.format(p.hit)+' Boss-LP';
+         (Number.isFinite(p.hit)?'⚔️ −'+fmt.format(p.hit)+' Boss-LP':
+          '⚔️ Trefferhistorie offen');
       personal.append(make('small','br-round-player',
        p.name+' · '+fmt.format(p.correct)+'/'+fmt.format(p.max)+
        ' richtig · '+details));
