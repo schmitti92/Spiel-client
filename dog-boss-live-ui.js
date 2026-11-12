@@ -98,9 +98,19 @@
    label.textContent='−'+fmtHealth.format(damage)+' LP';
    node.replaceChildren?.(label);
   }
-  function updateHealth(view,current){
+  function updateHealth(view,current,now){
    const maxBoss=Math.max(0,Number(view?.bossHp)||0);
-   const fromServer=Number(view?.miniGames?.exchange?.displayBossHp??view?.bossLiveHp);
+   // S-01: all screens use the server-confirmed, sequenced hit events when
+   // available. Time continues locally between polls; no extra requests.
+   const stream=view?.combat;
+   const inFight=view?.phase==='fighting'&&stream?.version===1&&
+    !!stream.fightId&&Array.isArray(stream.events)&&Number(view?.startedAt)>0;
+   const elapsed=Math.max(0,Number(now)-Number(view?.startedAt||0));
+   const released=inFight?stream.events.filter(e=>Number(e.atMs)<=elapsed):[];
+   const latestBoss=inFight?[...released].reverse().find(e=>e.targetId==='boss'):null;
+   const fromServer=Number(inFight?
+    latestBoss?.hpAfter??stream.initialBossHp:
+    view?.miniGames?.exchange?.displayBossHp??view?.bossLiveHp);
    const liveBoss=Number.isFinite(fromServer)&&view?.bossLiveHp!==undefined?
     clamp(fromServer,0,maxBoss):
     current.knownHp===null?maxBoss:current.knownHp;
@@ -111,7 +121,16 @@
    if(nodes.combat?.dataset){
     nodes.combat.dataset.bossCritical=String(maxBoss>0&&liveBoss/maxBoss<=.3);
    }
-   const pool=view?.miniGames?.exchange?.displayTeamHealth||view?.teamHealth;
+   let pool=view?.miniGames?.exchange?.displayTeamHealth||view?.teamHealth;
+   if(inFight&&Array.isArray(pool?.heroes)){
+    const heroes=pool.heroes.map(hero=>{
+     const event=[...released].reverse().find(e=>e.targetId===hero.uid);
+     const hp=Number(event?.hpAfter??stream.initialHeroHp?.[hero.uid]);
+     return {...hero,hp:Number.isFinite(hp)?clamp(hp,0,hero.maxHp):hero.hp};
+    });
+    const hp=heroes.reduce((sum,hero)=>sum+(Number(hero.hp)||0),0);
+    pool={...pool,heroes,hp,lost:Math.max(0,(Number(pool.maxHp)||0)-hp)};
+   }
    const hasPool=Number(pool?.maxHp)>0;
    const teamMax=hasPool?Number(pool.maxHp):0;
    const teamHp=hasPool?clamp(Number(pool.hp)||0,0,teamMax):0;
@@ -605,7 +624,7 @@
     text(nodes.promptDetail,phase==='fighting'?'Die nächsten Aufgaben kommen vom Server.':
      'Die Aufgaben erscheinen rechts und wechseln mit Kampfszenen.');
    }
-   updateHealth(view,current);
+   updateHealth(view,current,now);
    for(const [i,node] of steps.entries()){
     const round=rounds[i],answer=answers[i];
     node.hidden=!round;

@@ -29,10 +29,11 @@
    !view.result||!Array.isArray(view.roster)||!view.roster.length)return null;
   const result=view.result,rawStages=view.miniGames?.exchange?.stages;
   const stages=Array.isArray(rawStages)?rawStages.filter(s=>s?.completed):[];
-  const strikes=Array.isArray(view.miniGames?.exchange?.strikes)?
-   view.miniGames.exchange.strikes.filter(x=>
-    x&&Number.isInteger(x.round)&&Number.isFinite(Number(x.amount))&&
-    Number.isFinite(Number(x.atMs))):[];
+  const serverEvents=view.combat?.version===1&&
+   Array.isArray(view.combat?.events)?view.combat.events:null;
+  const strikes=(serverEvents||view.miniGames?.exchange?.strikes||[])
+   .filter(x=>x&&Number.isInteger(x.round)&&
+    Number.isFinite(Number(x.amount))&&Number.isFinite(Number(x.atMs)));
   const names=new Map((view.members||[]).filter(m=>m?.uid)
    .map(m=>[m.uid,m]));
   const health=new Map((view.teamHealth?.heroes||[]).filter(x=>x?.uid)
@@ -88,7 +89,8 @@
    .sort((a,b)=>a.atMs-b.atMs||a.slot-b.slot)
    .map((event,i)=>({
     ...event,name:rows.find(r=>r.uid===event.uid)?.name||'Held',
-    amount:num(event.amount),seq:i+1,kind:event.kind,
+    amount:num(event.amount),seq:Number.isInteger(event.sequence)?event.sequence:i+1,
+    kind:event.kind,
     roundTitle:LABELS[view.miniGames?.rounds?.[event.round]?.kind]||
      ('Runde '+(event.round+1))
    }));
@@ -268,7 +270,9 @@
    text(node('br-replay-caption'),
     event.roundTitle+' · '+(event.kind==='boss-strike'?
      'Boss greift '+event.name+' an':event.name+' greift den Boss an')+
-    ' · '+target);
+    ' · '+target+(Number.isFinite(Number(event.hpBefore))&&
+     Number.isFinite(Number(event.hpAfter))?
+      ' · LP '+fmt.format(event.hpBefore)+' → '+fmt.format(event.hpAfter):''));
    const chars=node('br-replay-heroes');
    for(const child of chars.children)child.classList?.toggle(
     'is-active',child.dataset.uid===event.uid);
