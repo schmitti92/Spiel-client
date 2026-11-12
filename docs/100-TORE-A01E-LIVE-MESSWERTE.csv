@@ -1,0 +1,6 @@
+scenario;start_utc;end_utc;firestore_reads_before;firestore_reads_after;firestore_writes_before;firestore_writes_after;other_activity;source_and_resolution;attribution_quality;notes
+5 Min. Leerlauf;;;;;;;;;;
+135 s - 1 Held;;;;;;;;;;
+135 s - 2 Helden;;;;;;;;;;
+135 s - 3 Helden;;;;;;;;;;
+135 s - 1 Held + Nova/Titan;;;;;;;;;;
