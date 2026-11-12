@@ -193,9 +193,11 @@
      equalWeight:!!officialScore,perfect:officialScore?.perfect??null},
    teamHp,teamMax,tips:tips.slice(0,4),replay,
    settlement,finisher,guard,finale,
-   cooldownUntil:num(view.cooldownUntil),key:String(view.gate||10)+':'+
-    String(view.startedAt||0)+':'+String(view.attempt||0)+':'+
-    String(result.win)+':'+String(finalDamage)};
+   cooldownUntil:num(view.cooldownUntil),
+   fightId:String(view.gate||10)+':'+String(view.startedAt||0)+':'+
+    String(view.attempt||0),
+   key:String(view.gate||10)+':'+String(view.startedAt||0)+':'+
+    String(view.attempt||0)+':'+String(result.win)+':'+String(finalDamage)};
  }
  function create(root){
   if(!root)return {update(){},model};
@@ -204,7 +206,8 @@
   const stage=root.closest?.('.stage')||document.querySelector('.stage');
   const openButton=document.querySelector('#boss-result-open');
   if(document.body?.appendChild)document.body.appendChild(root);
-  let visibleKey='',dismissedKey='',timer=null,events=[],nextIndex=0;
+  let activeFightId='',visibleKey='',dismissedFightId='';
+  let timer=null,events=[],nextIndex=0;
   let finaleTimer=null,finaleStep=0;
   const html=`
    <div class="br-dialog" role="dialog" aria-modal="true" aria-labelledby="br-title"
@@ -299,6 +302,14 @@
    document.body?.classList?.toggle('dog-boss-report-visible',opened);
    if(openButton)openButton.hidden=opened;
    if(opened)dialog?.focus?.({preventScroll:true});
+  };
+  const ensureOpen=(opened)=>{
+   // E-02: rendering ticks can rebuild arena classes or momentarily hide
+   // the overlay. Only an explicit confirmation may dismiss this fight.
+   if(root.hidden===opened||
+      (stage?.classList?.contains?.('boss-result-open')??opened)!==opened||
+      (document.body?.classList?.contains?.('dog-boss-report-visible')??opened)!==opened||
+      (openButton&&openButton.hidden!==opened))setOpen(opened);
   };
   // Closing by Escape, backdrop, timers or document clicks is intentionally
   // unsupported. Confirmation is the only way to dismiss this result.
@@ -427,15 +438,15 @@
    if(timer!==null){ended();return;}startReplay();
   });
   node('br-return').addEventListener('click',()=>{
-   if(!visibleKey||finaleTimer!==null)return;
-   dismissedKey=visibleKey;
+   if(!activeFightId||finaleTimer!==null||root.hidden)return;
+   dismissedFightId=activeFightId;
    ended();
    setOpen(false);
    openButton?.focus?.({preventScroll:true});
   });
   if(openButton)openButton.addEventListener('click',()=>{
-   if(!visibleKey)return;
-   dismissedKey='';
+   if(!activeFightId)return;
+   dismissedFightId='';
    setOpen(true);
   });
   function render(report){
@@ -569,23 +580,38 @@
   }
   function update(view){
    const report=model(view);
+   // The identity of a battle is not its damage amount or win/loss label:
+   // an updated official final total must never restart the confirmation.
+   const incomingFightId=Number(view?.startedAt)>0?
+    String(view.gate||10)+':'+String(view.startedAt)+':'+String(view.attempt||0):'';
    if(!report){
-    if(visibleKey){ended();clearFinale();}
-    visibleKey='';dismissedKey='';
+    if(activeFightId&&incomingFightId===activeFightId){
+     // A temporarily incomplete GET, delayed phase or layout refresh of the
+     // SAME fight is not a user confirmation. Keep the last verified report.
+     ensureOpen(dismissedFightId!==activeFightId);
+     return;
+    }
+    // A new fight, logout or genuinely unrelated view retires the old modal.
+    if(activeFightId){ended();clearFinale();}
+    activeFightId='';visibleKey='';dismissedFightId='';
     setOpen(false);
     if(openButton)openButton.hidden=true;
     return;
    }
-   if(report.key!==visibleKey){
-    ended();clearFinale();visibleKey=report.key;dismissedKey='';
+   if(report.fightId!==activeFightId){
+    ended();clearFinale();
+    activeFightId=report.fightId;visibleKey=report.key;dismissedFightId='';
     render(report);
     setOpen(true);
     startFinale(report);
-   }else{
-    // No clock tick, poll or unchanged server state may close the dialog.
-    const show=dismissedKey!==visibleKey;
-    if(root.hidden===show)setOpen(show);
+    return;
    }
+   if(report.key!==visibleKey){
+    // Fresh confirmed metrics update in place; no new finale or dismissal.
+    visibleKey=report.key;
+    render(report);
+   }
+   ensureOpen(dismissedFightId!==activeFightId);
   }
   return {update,model};
  }
