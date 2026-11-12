@@ -403,6 +403,7 @@
    continue;
   }
   for(const item of items){
+   const card=node('div','forge-item-quick');
    const button=node('button','item-choice'+(selected===item.id?' selected':''));
    button.type='button';button.setAttribute('aria-pressed',String(selected===item.id));
    const isEquipment=item.group==='equipment';
@@ -427,7 +428,24 @@
    fill.style.width=Math.min(100,Math.round(levelFor(item.id)/item.maxLevel*100))+'%';
    track.append(fill);info.append(track);button.append(icon,info);
    button.addEventListener('click',()=>{tab=item.group;selected=item.id;render();});
-   target.append(button);
+   card.append(button);
+   // A quick upgrade uses exactly the existing confirmation, quote and receipt flow.
+   // Buttons are siblings, never nested; selecting a card still opens its details.
+   if(canUpgradeItem(item.id)){
+    const plus=node('button','forge-quick-upgrade','+');
+    plus.type='button';plus.disabled=!usable();
+    plus.setAttribute('aria-label',displayName(item)+' verbessern auf Stufe '+q.nextLevel);
+    plus.title=displayName(item)+' verbessern auf Stufe '+q.nextLevel;
+    plus.addEventListener('click',event=>{
+     event.stopPropagation();
+     const current=quoteFor(item.id);
+     if(!usable()||!current||current.maxed||current.locked||!current.affordable)return;
+     tab=item.group;selected=item.id;render();
+     openUpgradeConfirm(item,current);
+    });
+    card.append(plus);
+   }
+   target.append(card);
   }
   }
  }

@@ -25,3 +25,20 @@ body.merchant-page .exchange-list{display:grid;grid-template-columns:repeat(2,mi
 body.merchant-page .exchange-controls{grid-template-columns:minmax(90px,.8fr) minmax(110px,1.35fr) auto}
 @media(max-width:810px){body.merchant-page .exchange-list{grid-template-columns:1fr}}
 @media(max-width:560px){.forge-area-grid{grid-template-columns:1fr}body.merchant-page .exchange-groups{grid-template-columns:1fr}body.merchant-page .exchange-controls{grid-template-columns:1fr auto}body.merchant-page .exchange-quantity-preview{grid-column:1/-1}}
+/* Ready upgrades can be started directly from each equipment/skill row. */
+.forge-area-grid .forge-item-quick{position:relative;min-width:0;width:100%}
+.forge-area-grid .forge-item-quick>.item-choice{display:flex;width:100%;min-height:75px;padding-right:48px}
+.forge-area-grid .forge-item-quick>.forge-quick-upgrade{
+ position:absolute;right:8px;top:50%;transform:translateY(-50%);
+ display:grid;place-items:center;width:36px;height:36px;padding:0;
+ border:1px solid #bbffd6;border-radius:11px;
+ background:linear-gradient(145deg,#27945d,#15563c);
+ box-shadow:0 0 0 2px #0e2d23ac,0 0 14px #4af3a850;
+ color:white;font:900 27px/1 system-ui,sans-serif;cursor:pointer;z-index:1;
+}
+.forge-area-grid .forge-item-quick>.forge-quick-upgrade:hover:not(:disabled){
+ background:linear-gradient(145deg,#39b875,#1b8055);box-shadow:0 0 0 2px #0e2d23,0 0 20px #63ffc680;
+}
+.forge-area-grid .forge-item-quick>.forge-quick-upgrade:disabled{opacity:.45;cursor:not-allowed}
+.forge-area-grid .forge-item-quick>.forge-quick-upgrade:focus-visible{outline:3px solid #fff3a6;outline-offset:3px}
+@media(max-width:560px){.forge-area-grid .forge-item-quick>.item-choice{padding-right:46px}}
