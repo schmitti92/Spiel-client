@@ -269,3 +269,18 @@ test('100-Tore event finale displays victory only when server confirmed Tor 100'
  gates[99].click();
  assert.match(byId('gate-detail-future').textContent,/Server bestätigt/);
 });
+
+test('Approved three-character artwork and server-backed choice are present in the map',()=>{
+ const css=fs.readFileSync(new URL('../dog-hero-selection.css',import.meta.url),'utf8');
+ const atlas=fs.readFileSync(new URL('../dog-boss-art/100tore-hero-atlas.jpg',import.meta.url));
+ assert.equal(atlas[0],0xff);assert.equal(atlas[1],0xd8,'hero art is a real JPEG');
+ assert.ok(atlas.length>3000,'three approved portraits are bundled locally');
+ for(const key of ['krieger','magierin','waechter']){
+  assert.match(html,new RegExp('data-hero-class="'+key+'"'));
+  assert.ok(css.includes('is-'+key));
+ }
+ assert.match(html,/id="hero-selection"/);
+ assert.match(js,/request\('POST','hero',\{heroClass\},account\)/);
+ assert.match(css,/100tore-hero-atlas\\.jpg/);
+ assert.match(html,/dog-hero-selection\\.css/);
+});
