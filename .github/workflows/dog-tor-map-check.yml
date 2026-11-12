@@ -27,6 +27,10 @@ on:
       - dog-materials-ui.js
       - dog-materials.css
       - tests/dog-tor-map.test.mjs
+      - tests/dog-tor-map-request-id.test.mjs
+      - tests/dog-tor-map-recovery.test.mjs
+      - tests/dog-tor-map-quick-stats.test.mjs
+      - tests/dog-tor-map-quick-result.test.mjs
       - tests/dog-hero-entry.test.mjs
       - tests/dog-developer-ui.test.mjs
       - tests/dog-first-loop-ui.test.mjs
@@ -66,6 +70,10 @@ on:
       - dog-materials-ui.js
       - dog-materials.css
       - tests/dog-tor-map.test.mjs
+      - tests/dog-tor-map-request-id.test.mjs
+      - tests/dog-tor-map-recovery.test.mjs
+      - tests/dog-tor-map-quick-stats.test.mjs
+      - tests/dog-tor-map-quick-result.test.mjs
       - tests/dog-hero-entry.test.mjs
       - tests/dog-developer-ui.test.mjs
       - tests/dog-first-loop-ui.test.mjs
@@ -117,4 +125,4 @@ jobs:
           node --check dog-ascension.js
           node --check dog-materials-ui.js
       - name: Test map structure and safe DOG unlock placeholder
-        run: node --test tests/dog-developer-ui.test.mjs tests/dog-tor-map.test.mjs tests/dog-hero-entry.test.mjs tests/dog-first-loop-ui.test.mjs tests/dog-group-boss-ui.test.mjs tests/dog-boss-minigames-ui.test.mjs tests/dog-boss-math-batch-ui.test.mjs tests/dog-boss-combat-fx.test.mjs tests/dog-boss-preflight-ui.test.mjs tests/dog-boss-live-ui.test.mjs tests/dog-boss-exchange-ui.test.mjs tests/dog-chests-ui.test.mjs
+        run: node --test tests/dog-developer-ui.test.mjs tests/dog-tor-map.test.mjs tests/dog-tor-map-quick-result.test.mjs tests/dog-tor-map-quick-stats.test.mjs tests/dog-tor-map-recovery.test.mjs tests/dog-tor-map-request-id.test.mjs tests/dog-hero-entry.test.mjs tests/dog-first-loop-ui.test.mjs tests/dog-group-boss-ui.test.mjs tests/dog-boss-minigames-ui.test.mjs tests/dog-boss-math-batch-ui.test.mjs tests/dog-boss-combat-fx.test.mjs tests/dog-boss-preflight-ui.test.mjs tests/dog-boss-live-ui.test.mjs tests/dog-boss-exchange-ui.test.mjs tests/dog-chests-ui.test.mjs

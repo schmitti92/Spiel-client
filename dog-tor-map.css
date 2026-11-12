@@ -239,3 +239,26 @@ button:disabled{opacity:.5;cursor:not-allowed;filter:none}
 .gate-quick-result .quick-result-model{
  font-size:10px;line-height:1.5;color:#b7c5d5;margin:10px 0 0;
 }
+
+/* Instant normal-gate fights: shorter introduction and readable HP bars. */
+#details[data-quick="yes"]{max-width:min(535px,calc(100vw - 28px))}
+#details[data-quick="yes"] #gate-detail-future,
+#details[data-quick="yes"] .details-tip{display:none}
+#details[data-quick="yes"] #gate-detail-summary{margin:8px 0 12px;line-height:1.45}
+#details[data-quick="yes"] .gate-actions{gap:8px}
+#details[data-quick="yes"] #gate-battle-button{min-height:46px}
+#details[data-quick="yes"] #gate-recovery-status:empty{display:none}
+.gate-quick-result .quick-hp-meters{display:grid;gap:11px;margin:2px 0 12px}
+.gate-quick-result .quick-hp-heading{
+ display:flex;justify-content:space-between;gap:8px;
+ font-size:12px;margin:0 0 5px;color:#edf3ff
+}
+.gate-quick-result .quick-hp-heading strong{color:#ffe6b1}
+.gate-quick-result .quick-hp-track{
+ height:10px;border:1px solid #61718691;border-radius:99px;
+ background:#111b2a;overflow:hidden;
+}
+.gate-quick-result .quick-hp-fill{height:100%;display:block;border-radius:99px}
+.gate-quick-result .quick-hp-fill.enemy{background:linear-gradient(90deg,#a33b48,#e78978)}
+.gate-quick-result .quick-hp-fill.hero{background:linear-gradient(90deg,#248d6d,#84dcad)}
+.gate-quick-result .quick-legacy-chance{font-size:12px;color:#f8d9a1}

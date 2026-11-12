@@ -13,7 +13,14 @@ class FakeElement{
   this.tag=tag;this.children=[];this.events=new Map();this.attributes=new Map();
   this.style={};this.dataset={};this.className='';this.textContent='';
   this.open=false;this.href='';
-  this.classList={add:x=>{this.className+=' '+x}};
+  this.classList={
+   add:x=>{this.className+=' '+x},
+   toggle:(x,force)=>{
+    const set=new Set(this.className.split(' ').filter(Boolean));
+    if(force===undefined?!set.has(x):force)set.add(x);else set.delete(x);
+    this.className=[...set].join(' ');
+   }
+  };
  }
  append(...children){this.children.push(...children)}
  replaceChildren(...children){this.children=[...children]}
@@ -29,7 +36,7 @@ class FakeElement{
  close(){this.open=false;this.events.get('close')?.()}
 }
 
-function page(search='?room=123',serverMap=null){
+function page(search='?room=123',serverMap=null,opts={}){
  const elements=new Map();
  const byId=id=>{
   if(!elements.has(id))elements.set(id,new FakeElement(id));
@@ -53,10 +60,17 @@ function page(search='?room=123',serverMap=null){
   profile:{setupComplete:true}}:null;
  const window={addEventListener:()=>{},requestAnimationFrame:()=>{},
   SpielOnline:session?{state:()=>session}:undefined};
- const fetch=async(url,options)=>({
-  ok:true,json:async()=>({ok:true,...serverMap})
- });
- const storage=new Map();
+ const fightCalls=[];
+ const fetch=async(url,options={})=>{
+  if(url.endsWith('/fight')){
+   const data=JSON.parse(options.body||'{}');
+   fightCalls.push(data);
+   if(opts.onFight)return opts.onFight(data,fightCalls.length);
+   throw Error('Unexpected fight request');
+  }
+  return {ok:true,json:async()=>({ok:true,...serverMap})};
+ };
+ const storage=opts.storage||new Map();
  const localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),
   removeItem:k=>storage.delete(k)};
  vm.runInNewContext(js,{document,window,location:{search},URLSearchParams,fetch,localStorage},
@@ -65,7 +79,7 @@ function page(search='?room=123',serverMap=null){
  const collect=(el,into)=>{if(el.className.split(' ').includes('gate'))into.push(el);
   for(const child of el.children)collect(child,into)};
  const gates=[];for(const world of worlds)collect(world,gates);
- return {elements,worlds,gates,byId};
+ return {elements,worlds,gates,byId,fightCalls,storage};
 }
 
 test('All five worlds render exactly 100 numbered gates with correct types',()=>{
@@ -316,4 +330,94 @@ test('A locked character skips onboarding and remains permanently visible',async
  assert.equal(byId('hero-locked-summary').hidden,false);
  assert.equal(byId('hero-locked-name').textContent,'Magierin');
  assert.match(js,/request\('POST','hero',\{heroClass\},account\)/);
+});
+
+const quickSample=()=>{
+ const map={isMember:true,memberCount:1,canJoin:false,sharedBosses:[],
+  members:[{uid:'hero-a',name:'Hero',isMe:true,heroLocked:true,heroClass:'krieger',currentGate:1,highestGate:1}],
+  progress:{currentGate:1,highestGate:1,normals:[],minis:[],miniRewards:[],lastAttemptAt:0}};
+ const respond=(body,win=true,replayed=false)=>({
+  ok:true,json:async()=>({ok:true,replayed,map:{...map,
+   progress:{...map.progress,normals:win?[body.gate]:[]}},
+   result:{gate:body.gate,type:'normal',win,chancePercent:40,
+    combatStats:{model:'single-roll-summary-v1',enemyMaxHp:115,
+     enemyRemainingHp:win?0:52,enemyDamageTaken:win?115:63,
+     heroMaxHp:120,heroRemainingHp:win?91:0,heroDamageTaken:win?29:120,
+     chancePercent:40,weaponLevel:1,armorLevel:1}}})
+ });
+ return {map,respond};
+};
+const nextTick=()=>new Promise(resolve=>setImmediate(resolve));
+test('Start click sends backend requestId and opens server-confirmed victory with HP',async()=>{
+ const {map,respond}=quickSample();
+ const x=page('?room=123',map,{onFight:body=>respond(body,true)});
+ await nextTick();
+ x.gates[0].click();
+ assert.equal(x.byId('details').dataset.quick,'yes');
+ assert.equal(x.byId('gate-battle-button').disabled,false);
+ x.byId('gate-battle-button').click();
+ await nextTick();await nextTick();
+ assert.equal(x.fightCalls.length,1);
+ assert.equal(x.fightCalls[0].gate,1);
+ assert.match(x.fightCalls[0].requestId,/^[A-Za-z0-9_-]{12,90}$/);
+ assert.equal(x.fightCalls[0].id,undefined);
+ assert.equal(x.byId('gate-quick-result').open,true);
+ assert.equal(x.byId('gate-quick-result-title').textContent,'SIEG!');
+ assert.equal(x.byId('gate-quick-result-stats').children.length,7);
+ assert.equal(x.storage.size,0);
+ x.byId('gate-quick-result-close').click();
+ assert.equal(x.byId('gate-quick-result').open,false);
+});
+test('Defeat shows remaining enemy HP and permits a fresh new attempt',async()=>{
+ const {map,respond}=quickSample();
+ const x=page('?room=123',map,{onFight:body=>respond(body,false)});
+ await nextTick();
+ x.gates[0].click();x.byId('gate-battle-button').click();
+ await nextTick();await nextTick();
+ assert.equal(x.byId('gate-quick-result-title').textContent,'NIEDERLAGE');
+ const meters=x.byId('gate-quick-result-stats').children[0].children;
+ assert.equal(meters[0].children[0].children[1].textContent,'52 / 115');
+ assert.equal(meters[1].children[0].children[1].textContent,'0 / 120');
+ assert.equal(x.storage.size,0);
+ x.byId('gate-quick-result-close').click();
+ x.gates[0].click();x.byId('gate-battle-button').click();
+ await nextTick();await nextTick();
+ assert.equal(x.fightCalls.length,2);
+ assert.notEqual(x.fightCalls[0].requestId,x.fightCalls[1].requestId);
+});
+test('Network uncertainty keeps receipt; retry replays same request ID',async()=>{
+ const {map,respond}=quickSample();
+ const x=page('?room=123',map,{onFight:(body,n)=>n===1?
+  Promise.reject(Error('Network offline')):respond(body,true,true)});
+ await nextTick();x.gates[0].click();x.byId('gate-battle-button').click();
+ await nextTick();await nextTick();
+ assert.equal(x.storage.size,1);
+ assert.equal(x.byId('gate-retry-button').hidden,false);
+ x.byId('gate-retry-button').click();
+ await nextTick();await nextTick();
+ assert.equal(x.fightCalls.length,2);
+ assert.equal(x.fightCalls[0].requestId,x.fightCalls[1].requestId);
+ assert.equal(x.byId('gate-quick-result').open,true);
+ assert.equal(x.storage.size,0);
+});
+test('Rejected invalid request ID does not trap the player',async()=>{
+ const {map}=quickSample();
+ const x=page('?room=123',map,{onFight:()=>({ok:false,
+  json:async()=>({ok:false,error:'INVALID_REQUEST_ID'})})});
+ await nextTick();x.gates[0].click();x.byId('gate-battle-button').click();
+ await nextTick();await nextTick();
+ assert.equal(x.storage.size,0);
+ assert.match(x.byId('gate-recovery-status').textContent,/Ungültige Kampfkennung/);
+ assert.equal(x.byId('gate-retry-button').hidden,true);
+});
+test('Mini-boss keeps existing path and never opens quick-result dialog',async()=>{
+ const {map}=quickSample();map.progress.normals=[1,2,3,4];
+ const x=page('?room=123',map,{onFight:body=>({ok:true,json:async()=>({
+  ok:true,map,result:{gate:body.gate,type:'mini',win:false,
+   combat:{feedback:{message:'Besiegt'}}},replayed:false})})});
+ await nextTick();x.gates[4].click();
+ assert.equal(x.byId('details').dataset.quick,'no');
+ x.byId('gate-battle-button').click();await nextTick();await nextTick();
+ assert.equal(x.fightCalls.length,1);
+ assert.equal(x.byId('gate-quick-result').open,false);
 });

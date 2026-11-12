@@ -284,7 +284,7 @@
   const member=!!mapState?.isMember&&
   mapState.members?.some(m=>m.isMe&&m.heroLocked===true);
   button.disabled=working||!!pending||!member||!ready||!bossReady||done.includes(gate);
-  button.textContent=gate%10===5?'👹 Mini-Boss herausfordern':'⚔️ Schnellkampf starten';
+  button.textContent=gate%10===5?'👹 Mini-Boss herausfordern':'⚔️ Jetzt kämpfen';
   notice.textContent=pending?'⚠️ Ein früherer Kampf bei Tor '+pending.gate+
    ' muss zuerst sicher wiederholt werden.':
    done.includes(gate)?'✅ Dieses Tor hast du bereits besiegt.':
@@ -407,6 +407,25 @@
   const area=$('gate-quick-result-stats');
   area.replaceChildren();
   if(stats&&stats.model==='single-roll-summary-v1'){
+   const meters=$node('div','quick-hp-meters');
+   for(const [label,remaining,maximum,kind] of [
+    ['Gegner-LP',stats.enemyRemainingHp,stats.enemyMaxHp,'enemy'],
+    ['Deine LP',stats.heroRemainingHp,stats.heroMaxHp,'hero']
+   ]){
+    const meter=$node('div','quick-hp-meter');
+    const heading=$node('div','quick-hp-heading');
+    heading.append($node('span',null,label),$node('strong',null,remaining+' / '+maximum));
+    const track=$node('div','quick-hp-track');
+    track.setAttribute('role','progressbar');
+    track.setAttribute('aria-label',label);
+    track.setAttribute('aria-valuemin','0');
+    track.setAttribute('aria-valuemax',String(maximum));
+    track.setAttribute('aria-valuenow',String(remaining));
+    const fill=$node('span','quick-hp-fill '+kind);
+    fill.style.width=Math.max(0,Math.min(100,100*remaining/Math.max(1,maximum)))+'%';
+    track.append(fill);meter.append(heading,track);meters.append(meter);
+   }
+   area.append(meters);
    const rows=[
     ['Gegner-LP',stats.enemyRemainingHp+' / '+stats.enemyMaxHp],
     ['Dein verursachter Schaden',String(stats.enemyDamageTaken)],
@@ -427,6 +446,8 @@
    const p=document.createElement('p');p.textContent=
     'Für diesen älteren Kampf sind noch keine LP- und Schadenswerte gespeichert.';
    area.append(p);
+   if(Number.isFinite(fight.chancePercent))
+    area.append($node('p','quick-legacy-chance','Siegchance: '+fight.chancePercent+' %'));
   }
   $('gate-quick-result-note').textContent=replayed?
    '✓ Bereits berechnetes Serverergebnis sicher wiederhergestellt.':
@@ -470,6 +491,7 @@
   }
   lastFight=null;
   $('gate-mini-reward').hidden=true;
+  ++mapRequestEpoch; // Discard in-flight old map GETs before applying the fight result.
   working=true;updateGateActions();
   $('gate-recovery-status').textContent='';
   $('gate-fight-status').textContent=retry?
@@ -478,10 +500,12 @@
   try{
    const result=await request('POST','fight',{requestId:pending.id,gate:pending.gate},account);
    if(auth()?.user?.uid!==account)return;
-   clearPending(account);
+   const fight=result?.result;
+   if(!fight||typeof fight.win!=='boolean'||fight.gate!==gate||
+      !result.map||!Array.isArray(result.map.members))
+    throw Error('DOG_GATE_INVALID_RESPONSE');
    mapState=result.map;
    renderMembers();
-   const fight=result.result;
    let status=fight.win?
     '🏆 Tor '+gate+' geschafft! Dein Sieg ist gespeichert.':
     '💀 Tor '+gate+' verloren. '+(fight.combat?.feedback?.message||
@@ -491,27 +515,34 @@
     if(fight.miniReward?.granted)status+=' 🎁 Deine einmalige Belohnung wurde gutgeschrieben!';
    }
    if(result.replayed)status+=' (Sicher wiederhergestellt)';
+   if(fight.type!=='mini'&&gate%10!==5)showQuickFightResult(gate,fight,!!result.replayed);
+   // Preserve the receipt until the confirmed server outcome is displayed.
+   clearPending(account);
    lastFight={gate,message:status};
    $('gate-recovery-status').textContent='';
-   if(fight.type!=='mini'&&gate%10!==5)showQuickFightResult(gate,fight,!!result.replayed);
    $('gate-fight-status').textContent=status;
    setTeamStatus('✅ Dein gespeichertes Tor wurde aktualisiert.');
   }catch(e){
    // Preserve the request ID after an unknown network/server error.
    // Definitive application errors did not award the fight.
-   if(e.message==='INVALID_REQUEST_ID'){
-    $('gate-recovery-status').textContent='⚠️ Server hat die Aktionskennung abgelehnt. Bitte Seite aktualisieren; die ursprüngliche Kennung bleibt erhalten.';
-   }
-   if(['DOG_GATE_ALREADY_WON','DOG_GATE_PREVIOUS_REQUIRED','DOG_GATE_INVALID',
-     'DOG_GATE_BOSS_REQUIRED','DOG_GATE_COOLDOWN','NOT_DOG_TEAM_MEMBER',
-     'DOG_GATE_RECEIPT_CONFLICT'].includes(e.message)){
-     clearPending(account);
-   }
+   // These are pre-transaction rejections; there is no accepted fight to recover.
+   const definitive=['INVALID_REQUEST_ID','DOG_GATE_ALREADY_WON','DOG_GATE_PREVIOUS_REQUIRED',
+    'DOG_GATE_INVALID','DOG_GATE_BOSS_REQUIRED','DOG_GATE_COOLDOWN',
+    'NOT_DOG_TEAM_MEMBER','DOG_HERO_SELECTION_REQUIRED','DOG_GATE_RECEIPT_CONFLICT']
+    .includes(e.message);
+   if(definitive)clearPending(account);
    const reason=e.name==='AbortError'?'Zeitüberschreitung (18 Sekunden)':e.message;
-   const errorText='⚠️ Kampf nicht bestätigt: '+reason+
-    '. Bei unklarem Ergebnis kannst du dieselbe Aktion sicher wiederholen.';
-   $('gate-fight-status').textContent=errorText;
-   $('gate-recovery-status').textContent=errorText;
+   const detail=e.message==='INVALID_REQUEST_ID'?
+    '⚠️ Ungültige Kampfkennung verworfen. Du kannst den Schnellkampf erneut starten.':
+    e.message==='DOG_GATE_COOLDOWN'?
+    '⏳ Kurze Kampfpause: nach 3 Sekunden erneut starten.':
+    e.message==='DOG_GATE_ALREADY_WON'?
+    '🏆 Laut Server hast du dieses Tor bereits besiegt. Bitte Karte aktualisieren.':
+    definitive?'⚠️ Kampf nicht gestartet: '+reason+'. Voraussetzungen prüfen.':
+    '⚠️ Ergebnis noch unklar: '+reason+
+     '. „Offene Aktion sicher wiederholen“ verwendet dieselbe Kennung.';
+   $('gate-fight-status').textContent=detail;
+   $('gate-recovery-status').textContent=detail;
   }finally{working=false;updateGateActions();}
  }
 
@@ -533,12 +564,13 @@
   if(gate===100)return 'Der letzte Wächter verteidigt das DOG-Schloss. Ein Held darf ihn herausfordern, zwei können nur mit sehr viel Glück siegen. Drei gut aufgerüstete Helden sind eure beste Chance. Erst der bestätigte Sieg darf DOG freischalten.';
   if(gate%10===0)return 'Gemeinsamer Bosskampf: mit 1–3 Helden startbar, aber am besten zu dritt. Der Sieg schaltet die nächste Schmiedestufe und Ausrüstung frei.';
   if(gate%10===5)return 'Ein besonders harter Einzelkampf: Eine gute Waffe allein reicht oft nicht. Verstärke auch Rüstung und Fähigkeiten. Nach einem erstmaligen Sieg winkt eine besondere zufällige Belohnung.';
-  return 'Ein Klick genügt: Der Server berechnet sofort Sieg oder Niederlage anhand deiner Ausrüstung (30–80 % Gewinnchance). Das Ergebnis erscheint direkt im Fenster. Nach einer Niederlage kannst du es erneut versuchen.';
+  return 'Ein Klick genügt: Deine Ausrüstung bestimmt die Siegchance (30–80 %). Das Ergebnis wird sofort vom Server berechnet.';
  };
  function selectGate(gate,button){
   for(const selected of document.querySelectorAll('.gate[aria-pressed="true"]'))selected.setAttribute('aria-pressed','false');
   button?.setAttribute('aria-pressed','true');
   selectedGate=gate;
+  details.dataset.quick=gate%10!==0&&gate%10!==5?'yes':'no';
   lastFight=null;
   $('gate-mini-reward').hidden=true;
   // The private reward history is part of the authenticated map response;

@@ -6,7 +6,7 @@ test('Fight and retry buttons actually invoke the existing idempotent fight flow
  const s=read('dog-tor-map.js');
  assert.match(s,/\$\('gate-battle-button'\)\.addEventListener\('click',\(\)=>void fightGate\(false\)\)/);
  assert.match(s,/\$\('gate-retry-button'\)\.addEventListener\('click',\(\)=>void fightGate\(true\)\)/);
- assert.match(s,/const result=await request\('POST','fight',pending,account\)/);
+ assert.match(s,/const result=await request\('POST','fight',\{requestId:pending\.id,gate:pending\.gate\},account\)/);
 });
 test('Server combat receipt stats populate the victory/defeat dialog',()=>{
  const s=read('dog-tor-map.js'),h=read('dog-tor-map.html');
@@ -16,5 +16,5 @@ test('Server combat receipt stats populate the victory/defeat dialog',()=>{
  assert.match(s,/stats.heroRemainingHp/);
  assert.match(s,/stats.heroDamageTaken/);
  assert.match(h,/id="gate-quick-result-stats"/);
- assert.match(h,/dog-tor-map\.js\?v=20261112-quick-stats2/);
+ assert.match(h,/dog-tor-map\.js\?v=20261112-quick-finish1/);
 });
