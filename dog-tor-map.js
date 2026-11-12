@@ -37,7 +37,7 @@
  if($('pilot-code'))$('pilot-code').value=pilotKey;
  const worldRoot=$('worlds'),details=$('details'),pathList=[];
  const gateButtons=new Map();
- let mapState=null,selectedGate=null,working=false,mapRequestEpoch=0,lastFight=null,heroSaving=false;
+ let mapState=null,selectedGate=null,working=false,mapRequestEpoch=0,lastFight=null,heroSaving=false,stagedHero=null;
  const HERO_CLASSES=['krieger','magierin','waechter'];
  const HERO_LABELS={krieger:'Krieger',magierin:'Magierin',waechter:'Wächter'};
  const API=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
@@ -173,18 +173,30 @@
    }
    area.append(card);
   }
-  const logged=auth();
+  const logged=auth(),mine=team.find(m=>m.isMe);
+  const locked=mine?.heroLocked===true;
+  const mayChoose=!!logged&&!!mapState&&
+   ((!!mine&&!locked)||(!mapState.isMember&&mapState.canJoin));
+  const summary=$('hero-locked-summary');
+  summary.hidden=!locked;
+  if(locked)$('hero-locked-name').textContent=HERO_LABELS[mine.heroClass]||'Dein Held';
   const selector=$('hero-selection');
-   const mine=team.find(m=>m.isMe);
-   selector.hidden=!mine;
-   for(const choice of (selector.querySelectorAll?.('[data-hero-class]')||[])){
-    const selected=choice.dataset.heroClass===(mine?.heroClass||'krieger');
-    choice.setAttribute('aria-pressed',String(selected));
-    choice.disabled=heroSaving||!mine;
-   }
-   const join=$('team-join');
-  join.hidden=!logged||!mapState||mapState.isMember||!mapState.canJoin;
-  join.disabled=working;
+  if(mayChoose){
+   selector.hidden=false;
+   if(!selector.open)selector.showModal?.();
+  }else{
+   if(selector.open)selector.close?.();
+   selector.hidden=true;
+   stagedHero=null;
+  }
+  for(const choice of (selector.querySelectorAll?.('[data-hero-class]')||[])){
+   choice.setAttribute('aria-pressed',String(choice.dataset.heroClass===stagedHero));
+   choice.disabled=heroSaving;
+  }
+  $('hero-confirm').disabled=heroSaving||!stagedHero||!mayChoose;
+  // Enrollment is part of the final choice; nobody can join without choosing.
+  const join=$('team-join');
+  join.hidden=true;join.disabled=true;
   updateMarkers();
   updateGateActions();
  }
@@ -269,7 +281,8 @@
   // up to Tor 15 before Boss 10, Tor 25 before Boss 20, etc.
   const requiredBoss=gate>=16?Math.floor((gate-6)/10)*10:0;
   const bossReady=requiredBoss===0||!!mapState?.sharedBosses?.includes(requiredBoss);
-  const member=!!mapState?.isMember;
+  const member=!!mapState?.isMember&&
+  mapState.members?.some(m=>m.isMe&&m.heroLocked===true);
   button.disabled=working||!!pending||!member||!ready||!bossReady||done.includes(gate);
   button.textContent=gate%10===5?'👹 Mini-Boss herausfordern':'⚔️ Persönlichen Kampf starten';
   notice.textContent=pending?'⚠️ Ein früherer Kampf bei Tor '+pending.gate+
@@ -347,21 +360,24 @@
   }finally{working=false;$('pilot-add-bots').disabled=!auth();}
  }
  async function chooseHero(heroClass){
-   const account=auth()?.user?.uid;
-   if(!HERO_CLASSES.includes(heroClass)||!account||heroSaving||!mapState?.isMember)return;
-   const current=mapState.members?.find(m=>m.isMe)?.heroClass;
-   if(current===heroClass)return;
-   heroSaving=true;renderMembers();
-   $('hero-selection-status').textContent='⏳ Charakter wird sicher gespeichert …';
-   try{
-    const result=await request('POST','hero',{heroClass},account);
-    if(auth()?.user?.uid!==account)return;
-    mapState=result;
-    $('hero-selection-status').textContent='✅ '+HERO_LABELS[heroClass]+' ausgewählt. Deine Mitspieler sehen die Figur beim nächsten Laden.';
-   }catch(e){
-    $('hero-selection-status').textContent='⚠️ Nicht gespeichert: '+e.message+'. Bitte erneut versuchen.';
-   }finally{heroSaving=false;renderMembers();}
-  }
+  const account=auth()?.user?.uid;
+  if(!HERO_CLASSES.includes(heroClass)||!account||heroSaving||!mapState||
+   (!mapState.isMember&&!mapState.canJoin)||!$('hero-selection').open)return;
+  heroSaving=true;renderMembers();
+  $('hero-selection-status').textContent='⏳ Deine endgültige Charakterwahl wird gespeichert …';
+  try{
+   const result=await request('POST','hero',{heroClass},account);
+   if(auth()?.user?.uid!==account)return;
+   mapState=result;stagedHero=null;
+   setTeamStatus('✅ Dein Held '+HERO_LABELS[heroClass]+' ist dauerhaft festgelegt. Dein Abenteuer kann beginnen!');
+  }catch(e){
+   const code=e?.message||'DOG_GATE_UNAVAILABLE';
+   $('hero-selection-status').textContent=
+    code==='DOG_GATE_TEAM_FULL'?'⚠️ Alle drei Expeditionsplätze sind bereits belegt.':
+    code==='DOG_HERO_ALREADY_LOCKED'?'🔒 Für dieses Profil wurde bereits ein anderer Held endgültig bestätigt. Aktualisiere die Karte.':
+    '⚠️ Die endgültige Wahl wurde nicht bestätigt ('+code+'). Bitte erneut versuchen.';
+  }finally{heroSaving=false;renderMembers();}
+ }
   async function joinTeam(){
   const account=auth()?.user?.uid;
   if(!account||working||!mapState?.canJoin)return;
@@ -376,7 +392,8 @@
  }
  async function fightGate(retry=false){
   const account=auth()?.user?.uid;
-  if(!account||working||!mapState?.isMember)return;
+  if(!account||working||!mapState?.isMember||
+   !mapState.members?.some(m=>m.isMe&&m.heroLocked===true))return;
   const old=readPending(account);
   if(retry&&!old)return;
   if(!retry&&old)return;
@@ -552,11 +569,16 @@
  $('pilot-add-bots').addEventListener('click',()=>void addTwoBots());
  $('team-join').addEventListener('click',()=>void joinTeam());
  $('hero-selection').addEventListener('click',e=>{
-  const button=e.target?.closest?.('[data-hero-class]');
-  if(button)void chooseHero(button.dataset.heroClass);
+  const button=e?.target?.closest?.('[data-hero-class]');
+  if(!button||heroSaving)return;
+  const heroClass=button.dataset.heroClass;
+  if(!HERO_CLASSES.includes(heroClass))return;
+  stagedHero=heroClass;
+  $('hero-selection-status').textContent='⚠️ '+HERO_LABELS[heroClass]+' ist ausgewählt. Mit „Endgültig bestätigen“ wird deine Wahl dauerhaft gesperrt.';
+  renderMembers();
  });
- $('gate-battle-button').addEventListener('click',()=>void fightGate(false));
- $('gate-retry-button').addEventListener('click',()=>void fightGate(true));
+ $('hero-confirm').addEventListener('click',()=>void chooseHero(stagedHero));
+ $('hero-selection').addEventListener('cancel',e=>e?.preventDefault?.());
  window.addEventListener('spielonline-change',()=>void reloadMap());
  window.addEventListener('dog-developer-updated',()=>{
   const uid=auth()?.user?.uid;
