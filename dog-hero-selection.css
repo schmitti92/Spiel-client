@@ -43,3 +43,76 @@
   width:clamp(20px,6vw,29px);right:0;top:2px;
  }
 }
+
+/* First entry to the expedition: a real modal blocks all map actions until the
+   player has explicitly confirmed their permanent cosmetic hero. */
+dialog.dog-hero-onboarding{
+ width:min(950px,calc(100vw - 20px));
+ max-width:950px;max-height:min(95dvh,920px);
+ margin:auto;padding:clamp(14px,2.8vw,28px);
+ color:#fff0d3;overflow:auto;
+ border:3px solid #e7be74;border-radius:23px;
+ background:radial-gradient(ellipse at 50% 7%,#5e443a76,transparent 65%),
+  linear-gradient(145deg,#17223c,#11172a 70%);
+ box-shadow:0 24px 85px #000c,0 0 38px #f4b85a6b,inset 0 0 0 1px #fbe4b35a;
+}
+dialog.dog-hero-onboarding::backdrop{
+ background:#020714e9;
+ backdrop-filter:blur(8px) brightness(.6);
+}
+dialog.dog-hero-onboarding[hidden]{display:none!important}
+dialog.dog-hero-onboarding .dog-hero-selection-intro{
+ display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;
+ max-width:800px;margin:0 auto 16px;
+}
+dialog.dog-hero-onboarding .dog-hero-selection-intro h2{
+ margin:2px 0;color:#ffdd95;
+ font:900 clamp(27px,4vw,46px)/1.13 Georgia,serif;
+ text-shadow:0 2px 18px #f4b15862;
+}
+dialog.dog-hero-onboarding .dog-hero-selection-intro p{
+ margin:2px auto 12px;max-width:740px;
+ font-size:clamp(13px,1.6vw,16px);line-height:1.5;color:#e0e9f6;
+}
+dialog.dog-hero-onboarding .dog-hero-selection-intro strong{color:#ffe6a1}
+dialog.dog-hero-onboarding .dog-hero-choice .dog-hero-art{
+ width:clamp(100px,14vw,175px);
+}
+dialog.dog-hero-onboarding .dog-hero-choice{
+ padding:clamp(9px,1.3vw,18px) 6px 18px;gap:9px;
+}
+dialog.dog-hero-onboarding .dog-hero-choice[aria-pressed="true"]::after{
+ content:"✓ MARKIERT";
+}
+.dog-hero-confirm{
+ display:flex;flex-direction:column;align-items:center;gap:8px;
+ margin:15px auto 0;text-align:center;
+}
+.dog-hero-confirm p{
+ margin:0;line-height:1.45;font-size:clamp(12px,1.3vw,14px);color:#f8dda9;
+}
+.dog-hero-confirm #hero-confirm{
+ border:2px solid #e5c47e;border-radius:14px;min-height:51px;
+ padding:11px 23px;font-size:clamp(13px,1.5vw,18px);
+ color:#f9ffe9;font-weight:900;
+ background:linear-gradient(145deg,#30804b,#175331);
+ box-shadow:0 0 22px #72dc7273;
+}
+.dog-hero-confirm #hero-confirm:disabled{
+ opacity:.48;cursor:not-allowed;filter:grayscale(.4);box-shadow:none;
+}
+.dog-hero-confirm #hero-confirm:not(:disabled):focus-visible{
+ outline:3px solid #fff1b1;outline-offset:3px;
+}
+.dog-hero-locked-summary{
+ margin:11px 0 6px;padding:12px 15px;border:1px solid #cbb17f;
+ border-radius:12px;background:linear-gradient(115deg,#2c4434,#20304a);
+ color:#e4f4e2;font-size:13px;line-height:1.45;
+}
+.dog-hero-locked-summary[hidden]{display:none}
+@media(max-width:620px){
+ dialog.dog-hero-onboarding{width:calc(100vw - 12px);max-height:calc(100dvh - 12px);padding:13px 9px}
+ dialog.dog-hero-onboarding .dog-hero-choice{padding:8px 3px 11px}
+ dialog.dog-hero-onboarding .dog-hero-choice .dog-hero-art{width:clamp(76px,24vw,124px)}
+ .dog-hero-confirm #hero-confirm{width:100%}
+}
