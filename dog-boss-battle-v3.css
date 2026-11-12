@@ -498,3 +498,28 @@
  }
  .arena-live[data-arena-design="v3"] .v3-result-reward strong{font-size:11px}
 }
+
+/* v12: one distinct, more difficult rune combination to earn the last blow. */
+.arena-live[data-arena-design="v3"] .mini-tactical.is-final-attack{
+ border:2px solid #ffbe72!important;border-radius:20px;
+ background:radial-gradient(ellipse at 50% 0%,#ad431d8a,transparent 75%),
+  linear-gradient(145deg,#341d2bef,#151b35 65%,#101a2e)!important;
+ box-shadow:inset 0 0 24px #ff9f4e3b,0 0 24px #e5773c45;
+}
+.arena-live[data-arena-design="v3"] .mini-tactical.is-final-attack .mini-lead{
+ color:#ffe4a4;text-shadow:0 0 10px #f98044;
+}
+.arena-live[data-arena-design="v3"] .mini-tactical.is-final-attack .mini-color-question{
+ border:2px solid #ff9d63;
+ background:linear-gradient(110deg,#613026dd,#352847f2);
+ color:#fff3c9;box-shadow:0 0 16px #ec7a4a38;
+}
+.arena-live[data-arena-design="v3"] .mini-tactical.is-final-attack .mini-color-time-fill{
+ background:linear-gradient(90deg,#fa5a2b,#ff9e4d,#ffe69f);
+}
+.arena-live[data-arena-design="v3"] .mini-tactical.is-final-attack .mini-color-target{
+ border-color:#ebbd9a;
+}
+.arena-live[data-arena-design="v3"] .v3-combat[data-v3-final="true"] .combat-boss[data-v3-hit="true"]{
+ filter:brightness(1.8) drop-shadow(0 0 34px #ffb347)!important;
+}
