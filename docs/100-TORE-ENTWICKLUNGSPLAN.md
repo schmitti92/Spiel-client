@@ -68,7 +68,12 @@
   - [x] **A-01d:** Messbericht auf GitHub ablegen und klar zwischen Offline-Operationen und echter Firebase-Abrechnung unterscheiden.
   - [ ] **A-01e – NOCH OFFEN:** Tatsächliche Cloud-Firestore-Usage-Zähler für 5 Minuten Leerlauf und die vier Kampfszenarien vor/nach einem kontrollierten Live-Lauf erfassen. Erst dann A-01 abnehmen; keine erfundenen Produktivzahlen.
   - [x] **A-01e-Vorbereitung (12.11.):** Zusätzlichen 3-s-Status-Polling-Offline-Test mit 1/2/3 gleichzeitigen Browsern ausführen, CI prüfen, Render-Metrikzugriff kontrollieren und leere Messvorlage für echte Zähler bereitstellen. **Ersetzt nicht A-01e.**
-- [ ] **A-02 – Netzwerk- und Timing-Baseline:** API-Aufrufe pro Minute, Antwortzeiten, Verzögerungen bei Start/Runden/Treffern/Resultat, abgebrochene Requests erfassen. Keine sensiblen Tokens oder Nutzerdaten loggen. **Fertig:** dokumentierte Zahlen und konkrete Problemstellen.
+- [ ] **A-02 – Netzwerk- und Timing-Baseline (TEILWEISE ERLEDIGT):** API-Aufrufe pro Minute, Antwortzeiten, Verzögerungen bei Start/Runden/Treffern/Resultat, abgebrochene Requests erfassen. Keine sensiblen Tokens oder Nutzerdaten loggen. **Fertig erst mit:** echten Live-Messungen in 1/2/3-Geräte-Kämpfen; Testwerkzeug allein reicht nicht.
+  - [x] **A-02a:** Polling-Regeln und GET/POST-Timeouts der beiden Boss-Clients aus dem Quellcode aufnehmen.
+  - [x] **A-02b:** Freiwillige, nur lokal arbeitende Netzwerk-Diagnose mit `netdiag=1` für Boss 10 und Gruppenbosse integrieren (HTTP-Zeiten, Fehler/Abbrüche, Serverzeit-Ereignisbeobachtung, CSV).
+  - [x] **A-02c:** Datenschutz-, Aktivierungs-, Event-Deduplizierungs- und Client-Integrationstests erfolgreich ausführen.
+  - [x] **A-02d:** [Technischen A-02-Messbericht und Live-Testanleitung](./100-TORE-A02-NETZWERK-MESSBERICHT.md) auf `main` hinterlegen, ohne neue Firebase-Anfragen.
+  - [ ] **A-02e – NOCH OFFEN:** Echte Browser-CSV von 1/2/3 gleichzeitig spielenden Geräten und Nova/Titan (GET/POST/min, p50/p95, Fehler, Beobachtungslags) erheben, auswerten und A-02 erst danach abnehmen.
 - [ ] **A-03 – Regressions-Schutz:** Automatisierte Tests für 1/2/3 Helden, fünf Minispiele, 20-s-Kettenbrecher, 3-s-Countdown, Sieg/Niederlage, alte Kampfversionen und Bot-Antworten kontrollieren und ergänzen. **Fertig:** CI grün und Testfälle nachvollziehbar.
 - [ ] **A-04 – Originalzustand sichern:** Vor Umbauten Startzustände, Server-Versionen, wichtige API-Ansichten und Rollback-Commit festhalten. **Fertig:** jedes Update lässt sich ohne Spielstandsverlust zurückrollen.
 
@@ -91,6 +96,14 @@
 **Achtung:** Bei echten Online-Spielen entstehen weitere Reads durch häufigeres Polling, Profil-Cache-Misses (15-s-Fenster), Pilot-Berechtigungscache (30-s-Fenster) sowie ggf. SDK-Transaktionswiederholungen. Render liefert derzeit keine Firestore-Abrechnungsdaten; die Firebase-Usage-Konsole des Projekts `spiel-barik` ist für A-01e noch erforderlich. **Nicht als „100 Firestore-Reads pro realem Dreierkampf“ interpretieren.**
 
 **Zusätzlicher kontrollierter Offline-Polling-Test (12.11.):** Mit jeweils **44 zusätzlichen Status-GETs pro Browser** bei festem 3-s-Abstand ergeben sich **129 Reads / 24 Writes** (1 Mensch), **248 / 44** (2 Menschen) und **364 / 62** (3 Menschen). Das ist eine illustrative Sensitivitätsrechnung aus dem tatsächlichen API-Codepfad, **keine Firebase-Usage- oder echte Browsermessung**. Alle vier CI-Testworkflows zum [Test-Commit](https://github.com/schmitti92/serverfinal/commit/90bc7902aa223162866d5db0a33247a975eef5f0) bestanden. Render `http_request_count` und `http_latency` lieferten leere Datenreihen, **nicht null Traffic**. [Details](./100-TORE-FIRESTORE-A01-MESSBERICHT.md) · [CSV-Vorlage für echte Cloud-Werte](./100-TORE-A01E-LIVE-MESSWERTE.csv).
+
+### A-02 – Stand der Netzwerk-/Timing-Messung vom 12.11.2026
+
+**Dokumentation:** [A-02-Messbericht](./100-TORE-A02-NETZWERK-MESSBERICHT.md) · **Messwerkzeug:** [dog-network-diagnostics.js](../dog-network-diagnostics.js) · **Tests:** [dog-network-diagnostics.test.mjs](../tests/dog-network-diagnostics.test.mjs).
+
+**Bereits umgesetzt:** Optionale Browsermessung, aktiviert ausschließlich durch `?netdiag=1` bzw. `&netdiag=1`, für Boss 10 und Gruppenbosse. Zählt GET/POST pro Minute, p50/p95, Fehler/Abbrüche und das erste Eintreffen ausgewählter serverzeitgestempelter Ereignisse. **Standardmäßig aus; keine zusätzliche HTTP-/Firestore-Abfrage und keine Änderungen an der Spiellogik.** Lokal gespeicherte CSV enthält keine Spieler-IDs, Tokens, Request-Bodys oder Raumcodes. Client-Tests [erfolgreich](https://github.com/schmitti92/Spiel-client/actions/runs/43250565768).
+
+**Quellcode-Baseline:** 250-ms-Tick dient der lokalen Oberfläche, nicht einem 250-ms-GET. Je nach Phase 850/1.200/2.800/3.800/15.000-ms-Anforderungen; außerhalb erzwungener Schlagabtausch-GETs greift zusätzlich 3-s-Drossel, ferner keine automatischen Updates in verstecktem Tab. GET-Timeout 18 s; Minispiel-POST-Timeout 4,5 s. **Es gibt noch keine realen p95-Live-Latenzen oder echten Drei-Geräte-Vergleichswerte.** A-01e (Firebase-Usage) bleibt davon unabhängig offen.
 
 ### Phase S – Verbindliche Kampfereignisse und Online-Synchronisation `P0`
 *Größter Qualitätsgewinn für flüssige und gleichzeitig sichtbare Kämpfe.*
@@ -189,8 +202,10 @@
 | 12.11.2026 | **A-01a–d, Teilabschluss** | Isolierte API-Codepfad-Baseline 1/2/3 Spieler, Nova/Titan und Leerlauf erhoben. **A-01e offen:** Cloud-Zähler. | [Server Tests](https://github.com/schmitti92/serverfinal/actions/runs/43244351339) – 574 bestanden | 1/2/3: **41/24, 72/44, 100/62**; Bots **100/31**; Idle **40/0** (*nur Offline-Methodenaufrufe*) | [Test-Commit](https://github.com/schmitti92/serverfinal/commit/4203f7fdb61deb917ad19205dd003db26e0b2d2a) · [Messbericht](./100-TORE-FIRESTORE-A01-MESSBERICHT.md) |
 | 12.11.2026 | **A-01e Vorbereitung** | Dreiergruppen-Polling mit 3 s je Client isoliert gemessen, echte Render-/Cloud-Messbarkeit geprüft, CSV vorbereitet. **Produktivwerte noch offen.** | [Server CI erfolgreich](https://github.com/schmitti92/serverfinal/actions/runs/43248227536) + drei weitere Workflows grün | 1/2/3: **129/24, 248/44, 364/62**, nur simulierte DB-Methodenaufrufe | [Test](https://github.com/schmitti92/serverfinal/commit/90bc7902aa223162866d5db0a33247a975eef5f0) · [Bericht](./100-TORE-FIRESTORE-A01-MESSBERICHT.md) · [Live-Werte-Vorlage](./100-TORE-A01E-LIVE-MESSWERTE.csv) |
 
+| 12.11.2026 | **A-02a–d, Teilabschluss** | Freiwillige lokale HTTP-/Serverzeit-Diagnose in Boss 10 und Gruppenbossen; CSV-Export für echte Messungen verfügbar. **A-02e offen.** | [Client checks grün](https://github.com/schmitti92/Spiel-client/actions/runs/43250565768) | **Keine** neuen diagnostischen Firestore-Reads/Writes; Browser-Live-Messwerte fehlen | [Messbericht](./100-TORE-A02-NETZWERK-MESSBERICHT.md) · [Diagnosemodul](../dog-network-diagnostics.js) |
+
 ---
 
 **Definition von „fertig“:** Funktion auf GitHub `main` integriert, Frontend-/Backend-Tests erfolgreich, auf echter Anzeige nachvollziehbar, keine ungeklärten Doppelbuchungen oder unnötigen Firestore-Mehrzugriffe, Task abgehakt und Fortschrittsprotokoll ergänzt.
 
-**Nächste konkrete Aufgabe:** **A-01e – echte Firestore-Usage-Zähler aus der Firebase-Konsole für kontrollierte Live-Szenarien eintragen.** Die rein technische API-Basis ist dokumentiert. **Bis zu den Cloud-Werten keine Firestore-Optimierungen als abgeschlossen ausgeben.**
+**Nächste konkrete Schritte:** **A-01e** – Firebase-Usage-Zähler für kontrollierte Live-Szenarien erfassen und **A-02e** – mit dem neuen `netdiag=1`-Messfeld die reale 1/2/3-Geräte-Baseline plus Nova/Titan erheben. Danach A-01/A-02 abnehmen. **Keine Optimierung als abgeschlossen bezeichnen, solange der Vergleich zur Live-Baseline fehlt.**
