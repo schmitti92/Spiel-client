@@ -39,6 +39,8 @@
   draw();
  }
  window.addEventListener('dog-forge-view',handleView);
+ const initial=window.DogForgeState?.();
+ if(initial)handleView({detail:initial});
  const close=()=>{if(dialog.open)dialog.close()};
  $('forge-level-cancel').addEventListener('click',close);
  dialog.addEventListener('click',e=>{if(e.target===dialog)close()});
