@@ -62,7 +62,7 @@ test('Kettenbrecher renders three chains, a single glowing target and accessible
  assert.equal(f.arena().children[0].classList.contains('is-glowing'),true);
  assert.match(f.root.children[0].children[0].textContent,/KETTENBRECHER/);
  assert.match(f.arena().children[0].attrs['aria-label'],/Glühende Schwachstelle/);
- assert.match(f.root.children[1].children.find(x=>x.className==='mini-chain-clock').textContent,/10 s/);
+ assert.match(f.root.children[1].children.find(x=>x.className==='mini-chain-hud').children[0].textContent,/10 s/);
  assert.equal(f.requests.length,0);
 });
 test('Only deliberate swipes count, wrong cuts do not earn points and ten slashes submit once',async()=>{
