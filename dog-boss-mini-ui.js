@@ -18,6 +18,12 @@
   const cycles=.68*t+(.075+.004*(round.difficulty||1))*t*t;
   return 1-Math.abs(1-(cycles%2));
  };
+ const targetColors={red:'Rot',blue:'Blau',green:'Grün',yellow:'Gelb',
+  purple:'Lila',orange:'Orange',cyan:'Türkis',pink:'Pink'};
+ const targetSymbols={star:'⭐',shield:'🛡️',flame:'🔥',diamond:'💎',
+  snowflake:'❄️',moon:'🌙',crown:'👑',bolt:'⚡'};
+ const targetNames={star:'Stern',shield:'Schild',flame:'Flamme',
+  diamond:'Diamant',snowflake:'Schneeflocke',moon:'Mond',crown:'Krone',bolt:'Blitz'};
  const targetIndex=(round,elapsed)=>
   (round.initialIndex+Math.max(0,Math.floor((elapsed-round.startMs)/round.stepMs)))%round.lanes;
  function create(root,onSubmit,onDodgeChoice=null,clockNow=null){
@@ -40,6 +46,8 @@
   };
   let lastChoice=null,anchor=null,raf=0,activeVersion=1,allowed=false;
   let mathChoices=[],mathSent=false,mathQueue=null,mathSending=false,fightStart=0;
+  let targetChoices=[],targetSent=false,targetLocalCorrect=0,targetLastHit=null;
+  let targetClock=null,targetClockFill=null;
   let reactionPreview=null;
   const clockStamp=()=>typeof clockNow==='function'?Math.round(clockNow()):
    (anchor?Math.round(fightStart+anchor.elapsed+
@@ -73,6 +81,28 @@
    // One server transaction for the entire sprint; no delay between taps.
    pumpMath();
   };
+  const flushTarget=()=>{
+   if(!roundView||roundView.kind!=='target'||activeVersion<10||
+      targetSent||!targetChoices.length)return;
+   targetSent=true;
+   mathQueue={round:roundView.round,answers:[...targetChoices],fightStart,kind:'target'};
+   pumpMath();
+  };
+  const paintTargetStep=()=>{
+   if(!roundView||roundView.kind!=='target'||activeVersion<10)return;
+   const step=targetChoices.length,puzzle=roundView.puzzles?.[step];
+   if(question)question.textContent=puzzle?.prompt||'🏆 ALLE 10 AUFGABEN BEANTWORTET!';
+   buttons.forEach((button,i)=>{
+    const option=puzzle?.options?.[i];
+    button.className='mini-choice mini-color-target'+(option?' mini-color-'+option.color:'');
+    button.textContent=option?targetSymbols[option.symbol]+' '+targetColors[option.color]:'✓';
+    button.disabled=!option;
+    if(option)button.setAttribute?.('aria-label',
+      targetColors[option.color]+' · '+targetNames[option.symbol]);
+   });
+   if(counter)counter.textContent=step+' / 10 beantwortet · '+
+     targetLocalCorrect+' Treffer (vorläufig)';
+  };
   const choose=(value)=>{
    if(!roundView||localSubmitting||!allowed)return;
    if(activeVersion>=2&&roundView.kind==='math'){
@@ -97,6 +127,25 @@
      (step>=8?'⏳ SERVER PRÜFT 8 ANTWORTEN':'⚡ '+step+' / 8 EINGEGEBEN'):
      '⚡ '+step+' von 8 – deine Antworten werden gesammelt geprüft';
     if(step>=8)flushMath();
+    return;
+   }
+   if(activeVersion>=10&&roundView.kind==='target'){
+    if(targetSent||targetChoices.length>=10)return;
+    const stamp=clockStamp()-fightStart;
+    if(stamp<roundView.startMs||stamp>=roundView.endMs)return;
+    const puzzle=roundView.puzzles?.[targetChoices.length];
+    if(!puzzle||!puzzle.options?.[value])return;
+    const answer=puzzle.options[value];
+    const hit=puzzle.mode==='color'?answer.color===puzzle.targetColor:
+     puzzle.mode==='symbol'?answer.symbol===puzzle.targetSymbol:
+      answer.color===puzzle.targetColor&&answer.symbol===puzzle.targetSymbol;
+    targetChoices.push(value);
+    targetLocalCorrect+=Number(hit);
+    targetLastHit=hit;
+    paintTargetStep();
+    status.textContent=(hit?'✅ Treffer!':'❌ Daneben!')+
+     ' · '+targetChoices.length+' / 10 · '+targetLocalCorrect+' richtig (vorläufig)';
+    if(targetChoices.length>=10)flushTarget();
     return;
    }
    const step=activeVersion>=2?stepCurrent:0;
@@ -161,12 +210,15 @@
   function build(round,version){
    stopAnimation();roundView=round;activeVersion=version;reactionPreview=null;
    mathChoices=[];mathSent=false;
+   targetChoices=[];targetSent=false;targetLocalCorrect=0;targetLastHit=null;
    buttons=[];body.replaceChildren();progress=null;question=null;counter=null;attackStatus=null;
    dodgeMarks=[];dodgeTimeFill=null;mathMarks=[];mathRank=null;mathClock=null;mathTimeFill=null;
+   targetClock=null;targetClockFill=null;
    lead.replaceChildren(title,hint);
    root.classList?.toggle('is-math-battle',round.kind==='math'&&version>=5);
    root.classList?.toggle('is-slow-dodge',round.kind==='dodge'&&version>=8);
    root.classList?.toggle('is-precise-reaction',round.kind==='reaction'&&version>=9);
+   root.classList?.toggle('is-color-target',round.kind==='target'&&version>=10);
    lastChoice=null;
    title.textContent=round.kind==='math'&&version>=5?
     '✦ RUNENPRÜFUNG':'RUNDE '+(round.round+1)+'/'+(version>=3?4:3)+' · '+labels[round.kind];
@@ -252,6 +304,22 @@
     const cursor=createElement('span','mini-meter-fill');
     progress.append(cursor);body.append(progress);
     makeButton(1,'⚡ KONTER!','mini-reaction');
+   }else if(round.kind==='target'&&version>=10){
+    const hud=createElement('div','mini-color-hud');
+    targetClock=createElement('strong','mini-color-clock','10 s');
+    const timeTrack=createElement('div','mini-color-time');
+    targetClockFill=createElement('span','mini-color-time-fill');
+    timeTrack.append(targetClockFill);
+    hud.append(targetClock,timeTrack);body.append(hud);
+    question=createElement('div','mini-color-question','');body.append(question);
+    const cells=createElement('div','mini-color-grid');
+    body.append(cells);
+    for(let i=0;i<(round.puzzles?.[0]?.options?.length||4);i++){
+     const button=createElement('button','mini-choice mini-color-target','');
+     button.type='button';button.addEventListener('click',()=>choose(i));
+     buttons.push(button);cells.append(button);
+    }
+    paintTargetStep();
    }else if(round.kind==='target'){
     question=createElement('div','mini-target-hint','Treffe den leuchtenden Schwachpunkt!');
     body.append(question);
