@@ -142,7 +142,7 @@ test('All ten shared bosses launch directly from their map gates, preserving the
 test('Map places server-confirmed positions of three heroes at the exact gate',async()=>{
  const serverMap={
   members:[
-   {uid:'hero-a',name:'Christoph',currentGate:14,highestGate:35,isMe:true,lastAttemptAt:0},
+   {uid:'hero-a',name:'Christoph',currentGate:14,highestGate:35,isMe:true,heroLocked:true,lastAttemptAt:0},
    {uid:'hero-b',name:'David',currentGate:9,highestGate:9,isMe:false,lastAttemptAt:0},
    {uid:'hero-c',name:'Vanessa',currentGate:14,highestGate:25,isMe:false,lastAttemptAt:0}
   ],
@@ -171,7 +171,7 @@ test('Map places server-confirmed positions of three heroes at the exact gate',a
 
 test('Map permits miniboss 15 before Boss 10, but blocks gate 16 until team victory',async()=>{
  const map={
-  members:[{uid:'hero-a',name:'Hero A',currentGate:15,highestGate:15,isMe:true}],
+  members:[{uid:'hero-a',name:'Hero A',currentGate:15,highestGate:15,isMe:true,heroLocked:true}],
   memberCount:1,isMember:true,canJoin:true,sharedBosses:[],
   progress:{currentGate:15,highestGate:15,normals:[1,2,3,4,6,7,8,9,11,12,13,14],
    minis:[],miniRewards:[],lastAttemptAt:0}
@@ -195,7 +195,7 @@ test('Map permits miniboss 15 before Boss 10, but blocks gate 16 until team vict
 
 test('Map repeats the same five-gate buffer for Boss 20 and Tor 25/26',async()=>{
  const model={
-  members:[{uid:'hero-a',name:'Hero A',currentGate:25,highestGate:25,isMe:true}],
+  members:[{uid:'hero-a',name:'Hero A',currentGate:25,highestGate:25,isMe:true,heroLocked:true}],
   memberCount:1,isMember:true,canJoin:false,sharedBosses:[10],
   progress:{currentGate:25,highestGate:25,normals:[1,2,3,4,6,7,8,9,11,12,13,14,
    16,17,18,19,21,22,23,24],minis:[],miniRewards:[],lastAttemptAt:0}
@@ -239,7 +239,7 @@ test('Every group boss previews its own local artwork before entering the arena'
 
 test('100-Tore event dashboard shows only confirmed server milestones',async()=>{
  const saved={isMember:true,memberCount:3,dogUnlocked:false,sharedBosses:[10,20],
-  members:[{uid:'hero-a',name:'A',isMe:true,highestGate:27,currentGate:27}],
+  members:[{uid:'hero-a',name:'A',isMe:true,heroLocked:true,highestGate:27,currentGate:27}],
   progress:{highestGate:27,normals:[1,2,3],minis:[5]}};
  const {byId}=page('?room=123',saved);
  await new Promise(resolve=>setImmediate(resolve));
@@ -258,7 +258,7 @@ test('100-Tore event dashboard shows only confirmed server milestones',async()=>
 test('100-Tore event finale displays victory only when server confirmed Tor 100',async()=>{
  const saved={isMember:true,memberCount:3,dogUnlocked:true,
   sharedBosses:[10,20,30,40,50,60,70,80,90,100],
-  members:[{uid:'hero-a',name:'A',isMe:true,highestGate:100,currentGate:100}],
+  members:[{uid:'hero-a',name:'A',isMe:true,heroLocked:true,highestGate:100,currentGate:100}],
   progress:{highestGate:100,normals:[],minis:[]}};
  const {byId,gates}=page('?room=123',saved);
  await new Promise(resolve=>setImmediate(resolve));
@@ -283,4 +283,37 @@ test('Approved three-character artwork and server-backed choice are present in t
  assert.match(js,/request\('POST','hero',\{heroClass\},account\)/);
  assert.ok(css.includes('100tore-hero-atlas.jpg'));
  assert.ok(html.includes('dog-hero-selection.css'));
+});
+
+test('An unconfirmed hero opens a non-dismissible first-launch choice before the map',async()=>{
+ const serverMap={
+  members:[{uid:'hero-a',name:'Chris',isMe:true,heroClass:'krieger',heroLocked:false,currentGate:1,highestGate:1}],
+  memberCount:1,isMember:true,canJoin:false,sharedBosses:[],
+  progress:{currentGate:1,highestGate:1,normals:[],minis:[],lastAttemptAt:0}
+ };
+ const {byId,gates}=page('?room=123',serverMap);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(byId('hero-selection').open,true,'first launch is a modal');
+ assert.equal(byId('hero-selection').hidden,false);
+ assert.equal(byId('hero-confirm').disabled,true,'no class is silently preselected');
+ gates[0].click();
+ assert.equal(byId('gate-battle-button').disabled,true,'fight cannot start before locking a class');
+ assert.match(js,/heroLocked===true/);
+ assert.match(js,/addEventListener\('cancel',e=>e\?\.preventDefault\?\.\(\)\)/);
+ assert.match(html,/Endgültig bestätigen/);
+ assert.match(html,/alle drei Spieler dürfen denselben Helden wählen/i);
+});
+test('A locked character skips onboarding and remains permanently visible',async()=>{
+ const serverMap={
+  members:[{uid:'hero-a',name:'Chris',isMe:true,heroClass:'magierin',heroLocked:true,currentGate:1,highestGate:1}],
+  memberCount:1,isMember:true,canJoin:false,sharedBosses:[],
+  progress:{currentGate:1,highestGate:1,normals:[],minis:[],lastAttemptAt:0}
+ };
+ const {byId}=page('?room=123',serverMap);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(byId('hero-selection').open,false);
+ assert.equal(byId('hero-selection').hidden,true);
+ assert.equal(byId('hero-locked-summary').hidden,false);
+ assert.equal(byId('hero-locked-name').textContent,'Magierin');
+ assert.match(js,/request\('POST','hero',\{heroClass\},account\)/);
 });
