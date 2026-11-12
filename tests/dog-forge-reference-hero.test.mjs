@@ -16,5 +16,5 @@ test('Server validated confirmation and visual-only style remain',()=>{
  assert.match(s,/const quote=quoteFor\(selected\)/);
  assert.match(s,/button\.addEventListener\('click',\(\)=>openUpgradeConfirm\(item,quote\)\)/);
  assert.match(get('dog-forge-clean.css'),/body:not\(\.merchant-page\) \.forge-upgrade-hero/);
- assert.match(get('dog-forge.html'),/dog-forge-ui\.js\?v=20261112-upgrade-hero1/);
+ assert.match(get('dog-forge.html'),/dog-forge-ui\.js\?v=20261112-cost-action1/);
 });

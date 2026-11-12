@@ -265,3 +265,30 @@ body:not(.merchant-page) .upgrade-panel .upgrade-rule{margin:10px 0 12px}
  body:not(.merchant-page) .forge-upgrade-details h2{font-size:19px}
  body:not(.merchant-page) .forge-upgrade-details .level-line .value{font-size:19px}
 }
+/* SCH-UI-05: compact cost/status/action. Scoped to forge, not merchant. */
+body:not(.merchant-page) #upgrade-content .forge-cost-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:0 0 8px}
+body:not(.merchant-page) #upgrade-content .forge-cost-heading h3{font-size:14px;margin:0}
+body:not(.merchant-page) #upgrade-content .forge-cost-badge{border:1px solid #82d4ab;border-radius:99px;background:#143d31;color:#b5f7cf;font-size:10px;font-weight:800;padding:4px 8px}
+body:not(.merchant-page) #upgrade-content .forge-cost-badge.missing{background:#462e32;color:#ffe0cf;border-color:#c18b7d}
+body:not(.merchant-page) #upgrade-content .forge-cost-badge.blocked{background:#37333a;color:#ffe1ac;border-color:#c7ab78}
+body:not(.merchant-page) #upgrade-content .forge-compact-cost-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+body:not(.merchant-page) #upgrade-content .forge-compact-cost-list .cost-item{min-width:0;padding:8px 7px;gap:6px;border-radius:10px}
+body:not(.merchant-page) #upgrade-content .forge-compact-cost-list .cost-icon{font-size:23px}
+body:not(.merchant-page) #upgrade-content .forge-compact-cost-list .cost-info strong{white-space:normal;overflow-wrap:anywhere;line-height:1.2}
+body:not(.merchant-page) #upgrade-content .forge-cost-notice{margin:8px 0 0;padding:9px 11px;border-radius:10px;border:1px solid #d1af7b;background:#2e303c;color:#ffe4ba;font-size:11px;line-height:1.5}
+body:not(.merchant-page) #upgrade-content .forge-cost-notice.missing{background:#442f34;border-color:#c18b7d;color:#ffdbca}
+body:not(.merchant-page) #upgrade-content .forge-exchange-suggestions{margin:7px 0 0;border:1px solid #7897b1;border-radius:10px;padding:7px 10px;background:#172639;color:#d6e5ef;font-size:11px}
+body:not(.merchant-page) #upgrade-content .forge-exchange-suggestions summary{cursor:pointer;min-height:28px;color:#f6dbad;font-weight:750}
+body:not(.merchant-page) #upgrade-content .forge-exchange-suggestions summary:focus-visible{outline:2px solid #ffe4a4;outline-offset:2px}
+body:not(.merchant-page) #upgrade-content .forge-exchange-suggestions .smart-exchange-row{padding:5px 0;margin-top:4px;background:transparent;border:0}
+body:not(.merchant-page) #upgrade-content .forge-action-panel{display:grid;gap:8px;min-width:0;margin-top:11px}
+body:not(.merchant-page) #upgrade-content .forge-action-panel .upgrade-preview{margin:0;padding:8px 11px;gap:8px}
+body:not(.merchant-page) #upgrade-content .forge-action-panel .preview-value{min-width:0}
+body:not(.merchant-page) #upgrade-content .forge-action-panel .preview-value strong{font-size:14px}
+body:not(.merchant-page) #upgrade-content .forge-action-panel .preview-arrow{font-size:18px}
+body:not(.merchant-page) #upgrade-content .forge-action-panel .forge-ready{margin:0;padding:2px 2px;font-size:12px}
+body:not(.merchant-page) #upgrade-content .forge-action-panel .forge-ready b{font-size:15px}
+body:not(.merchant-page) #upgrade-content .forge-action-panel .forge-action{margin:0;padding:11px 12px;min-height:49px;font-size:clamp(12px,1.2vw,16px)}
+body:not(.merchant-page) #upgrade-content .forge-action-panel .forge-action:disabled{background:#344052;color:#d5dfeb;border-color:#768b9c;box-shadow:none;opacity:1;cursor:not-allowed}
+body:not(.merchant-page) #upgrade-content .forge-action-panel .upgrade-foot{margin:0;font-size:10px}
+@media(max-width:390px){body:not(.merchant-page) #upgrade-content .forge-compact-cost-list{gap:5px}body:not(.merchant-page) #upgrade-content .forge-compact-cost-list .cost-item{padding:6px 4px;gap:4px}}

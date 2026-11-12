@@ -497,7 +497,7 @@
   tile.append(details);return tile;
  }
  function openUpgradeConfirm(item,quote){
-  if(!usable()||!quote||quote.maxed||!quote.affordable)return;
+  if(!usable()||!quote||quote.maxed||quote.locked||!quote.affordable)return;
   const dialog=$('forge-confirm');
   confirmData={itemId:item.id,expectedLevel:quote.level};
   const art=$('forge-confirm-art');art.replaceChildren();
@@ -595,62 +595,58 @@
    root.append(node('div','maxed','🏆 Meisterstufe erreicht'));
    return;
   }
-  const costHead=node('div','cost-heading');
-  costHead.append(node('h3',null,'Benötigte Rohstoffe'),node('span',null,'Stufe '+quote.nextLevel));
-  const grid=node('div','cost-list');
-  for(const [id,amount] of Object.entries(quote.cost||{}))grid.append(costTile(id,amount));
-  root.append(costHead,grid);
-  if(quote.locked)root.append(node('p','upgrade-summary',
-   '🔒 Maximal freigeschaltete Stufe: '+quote.unlockedMaxLevel+
-   '. Besiegt den nächsten gemeinsamen Gruppenboss, um weiter aufzusteigen.'));
-  const missing=Object.entries(quote.cost||{})
-   .filter(([id,amount])=>have(id)<amount)
-   .map(([id,amount])=>({id,needed:amount-have(id)}));
-  const hint=node('div','material-hint '+(missing.length?'missing':'ready'));
-  hint.textContent=missing.length?
-   '🎯 Noch '+missing.map(m=>money(m.needed)+' × '+(material[m.id]?.name||m.id)).join(' · '):
-   '✓ Alle Rohstoffe vorhanden';
-  root.append(hint);
-  const hints=exchangeHints(quote);
-  if(hints.length){
-   const panel=node('div','smart-exchange-hint');
-   panel.append(node('strong',null,'💎 Tauschmöglichkeiten mit vorhandenem Material'));
-   for(const suggestion of hints){
+
+  const missing=Object.entries(quote.cost||{}).filter(([id,need])=>have(id)<need)
+   .map(([id,need])=>({id,needed:need-have(id)}));
+  const forgeNeeded=Math.min(10,Math.ceil(quote.nextLevel/5));
+  const costHead=node('div','cost-heading forge-cost-heading');
+  costHead.append(node('h3',null,'Rohstoffe für Stufe '+quote.nextLevel));
+  costHead.append(node('span','forge-cost-badge '+(quote.locked?'blocked':missing.length?'missing':'ready'),
+   quote.locked?'🔒 Gesperrt':missing.length?'⚠️ '+missing.length+' fehlen':'✓ Vorhanden'));
+  const costGrid=node('div','cost-list forge-compact-cost-list');
+  for(const [id,need] of Object.entries(quote.cost||{}))costGrid.append(costTile(id,need));
+  root.append(costHead,costGrid);
+  if(quote.locked||missing.length){
+   const reason=quote.locked?
+    '🔒 Schmiedestufe '+forgeNeeded+' nötig. Oben aufsteigen (aktuelle Grenze: Level '+quote.unlockedMaxLevel+').':
+    'Es fehlen: '+missing.map(m=>money(m.needed)+' × '+(material[m.id]?.name||m.id)).join(' · ');
+   const notice=node('p','forge-cost-notice '+(quote.locked?'locked':'missing'),reason);
+   notice.id='forge-action-status';root.append(notice);
+  }
+  const suggestions=missing.length?exchangeHints(quote):[];
+  if(suggestions.length){
+   const exchange=node('details','forge-exchange-suggestions');
+   exchange.append(node('summary',null,'💎 Tauschmöglichkeiten beim Händler'));
+   for(const suggestion of suggestions){
     const count=Math.min(suggestion.missing,suggestion.possible);
-    const line=node('div','smart-exchange-row');
-    line.append(node('span',null,
+    exchange.append(node('div','smart-exchange-row',
      money(count)+' × '+(material[suggestion.id]?.name||suggestion.id)+
-     ' aus '+money(count*10)+' × '+(material[suggestion.source]?.name||suggestion.source)+
-     (suggestion.possible<suggestion.missing?' · nur teilweise ausreichend':'')));
-    line.append(node('span','merchant-tab-hint','💎 Im Händler oben im Register tauschen'));
-    panel.append(line);
+     ' aus '+money(count*10)+' × '+(material[suggestion.source]?.name||suggestion.source)));
    }
-   root.append(panel);
+   root.append(exchange);
   }
-  // A short visual preview; boss combat coefficients remain adjustable.
+  const actionPanel=node('div','forge-action-panel');
   const preview=node('div','upgrade-preview');
-  const current=node('div','preview-value');
-  current.append(node('small',null,'JETZT'),node('strong',null,'Stufe '+level));
-  const arrow=node('span','preview-arrow','➜');
-  const future=node('div','preview-value next');
-  future.append(node('small',null,'DANACH'),node('strong',null,'Stufe '+quote.nextLevel));
-  preview.append(current,arrow,future);
-  if(['attack_power','vitality','resilience'].includes(item.id)){
-   preview.append(node('span','preview-bonus','+1 % Grundwert je Stufe · vorläufig'));
-  }
-  root.append(preview);
-  const rate=node('div','forge-ready'),label=node('span',null,'Erfolgschance');
-  const chance=node('b',null,quote.successChance+' %');
-  if(!quote.affordable){
-   label.textContent=quote.locked?'🔒 Nächsten gemeinsamen Boss besiegen':'Rohstoffe fehlen';
-   label.className='not-ready';
-  }
-  rate.append(label,chance);root.append(rate);
-  const button=node('button','forge-action','⚒️ '+(item.group==='equipment'?'Schmieden':'Verbessern')+' · Stufe '+quote.nextLevel);
-  button.type='button';button.disabled=!usable()||!quote.affordable;
+  const before=node('div','preview-value'),after=node('div','preview-value next');
+  before.append(node('small',null,'JETZT'),node('strong',null,'Stufe '+level));
+  after.append(node('small',null,'DANACH'),node('strong',null,'Stufe '+quote.nextLevel));
+  preview.append(before,node('span','preview-arrow','➜'),after);
+  if(['attack_power','vitality','resilience'].includes(item.id))
+   preview.append(node('span','preview-bonus','+1 % Grundwert je Stufe'));
+  const chance=node('div','forge-ready');
+  chance.append(node('span',null,'Erfolgschance'),node('b',null,quote.successChance+' %'));
+  actionPanel.append(preview,chance);
+  const text=quote.locked?'🔒 Schmiedestufe '+forgeNeeded+' nötig':
+   missing.length?'Rohstoffe fehlen':
+   '⚒️ '+(item.group==='equipment'?'Schmieden':'Verbessern')+' · Stufe '+quote.nextLevel;
+  const button=node('button','forge-action',text);
+  button.type='button';button.disabled=!usable()||!quote.affordable||!!quote.locked;
+  if(quote.locked||missing.length)button.setAttribute('aria-describedby','forge-action-status');
   button.addEventListener('click',()=>openUpgradeConfirm(item,quote));
-  root.append(button);
-  root.append(node('p','upgrade-foot',item.group==='equipment'?'Fehlschlag: Rohstoffe verbraucht, Stufe bleibt.':'Fähigkeitsstufen gelingen garantiert.'));
+  actionPanel.append(button);
+  if(item.group==='equipment'&&quote.successChance<100)
+   actionPanel.append(node('p','upgrade-foot','⚠️ Fehlschlag: Rohstoffe verbraucht, Stufe bleibt.'));
+  root.append(actionPanel);
  }
  function closeExchangeConfirm(){
   const dialog=$('forge-exchange-confirm');

@@ -18,6 +18,6 @@ test('quick upgrades and server confirmation remain unchanged',()=>{
  assert.match(s,/const areas=merchantMode\?\[tab\]:\['equipment','attack','defense'\]/);
 });
 test('preview page loads current stylesheet and script',()=>{
- assert.match(get('dog-forge.html'),/dog-forge-ui\.js\?v=20261112-upgrade-hero1/);
- assert.match(get('dog-forge.html'),/dog-forge-clean\.css\?v=20261112-upgrade-hero1/);
+ assert.match(get('dog-forge.html'),/dog-forge-ui\.js\?v=20261112-cost-action1/);
+ assert.match(get('dog-forge.html'),/dog-forge-clean\.css\?v=20261112-cost-action1/);
 });
