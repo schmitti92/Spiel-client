@@ -107,7 +107,7 @@ test('math CSS maintains large touch choices and responsive, motion-safe layout'
  assert.doesNotMatch(css,/fetch\(|XMLHttpRequest|https?:\/\//);
  for(const page of ['dog-boss10.html','dog-group-boss.html']){
   assert.match(read(page),/dog-boss-math-endgame\.css/);
-  assert.match(read(page),/dog-boss-mini-ui\.js\?v=20261112-chainbreak1/);
+  assert.match(read(page),/dog-boss-mini-ui\.js\?v=20261112-chainbreak20/);
  }
 });
 
