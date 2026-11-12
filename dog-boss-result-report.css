@@ -463,7 +463,7 @@ body.dog-boss-report-visible{
  }
  .boss-result-report .br-scroll{padding:10px 9px}
  .boss-result-report .br-footer{
-  flex-wrap:nowrap;gap:5px;
+  flex-direction:column;flex-wrap:nowrap;gap:5px;
   padding:8px 10px max(8px,env(safe-area-inset-bottom,0px));
  }
  .boss-result-report .br-footer-caption{
