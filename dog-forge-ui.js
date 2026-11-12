@@ -92,13 +92,13 @@
  function exchangeHints(quote){
   const suggestions=[];
   for(const [id,cost] of Object.entries(quote?.cost||{})){
-   const missing=Math.max(0,cost-have(id));
+   const missing=Math.max(0,cost-haveQuality(id,1));
    if(!missing)continue;
    const group=MATERIALS.find(g=>g.values.some(entry=>entry[0]===id));
    const idx=group?.values.findIndex(entry=>entry[0]===id)??-1;
    if(idx<1)continue;
    const source=group.values[idx-1][0],reserve=quote.cost[source]||0;
-   const spare=Math.max(0,have(source)-reserve);
+   const spare=Math.max(0,haveQuality(source,1)-reserve);
    const possible=Math.min(100,Math.floor(spare/10),1000000-have(id));
    if(possible>0)suggestions.push({id,source,missing,possible,group:group.group});
   }
@@ -119,10 +119,11 @@
   }else if(quote){
    const cost=Object.entries(quote.cost||{});
    const needed=cost.reduce((n,[,v])=>n+v,0);
-   const owned=cost.reduce((n,[id,v])=>n+Math.min(v,have(id)),0);
+   const owned=cost.reduce((n,[id,v])=>n+Math.min(v,haveQuality(id,quote.qualityLevel||1)),0);
    percent=needed?Math.round(100*owned/needed):0;
-   const missing=cost.filter(([id,v])=>have(id)<v)
-    .map(([id,v])=>money(v-have(id))+' × '+(material[id]?.name||id));
+   const missing=cost.filter(([id,v])=>haveQuality(id,quote.qualityLevel||1)<v)
+    .map(([id,v])=>money(v-haveQuality(id,quote.qualityLevel||1))+' × '+(material[id]?.name||id)+
+     ' (Qualität '+(quote.qualityLevel||1)+')');
    $('forge-goal-desc').textContent=missing.length?'Fehlt noch: '+missing.join(' · '):
     '✓ Alle Rohstoffe für die nächste Verbesserung vorhanden!';
   }else $('forge-goal-desc').textContent='Verbesserung wird geladen …';
@@ -488,13 +489,13 @@
   }
   }
  }
- function costTile(id,amount){
+ function costTile(id,amount,qualityLevel=1){
   const info=material[id]||{icon:'💎',name:id,index:0};
-  const stock=have(id),enough=stock>=amount;
+  const stock=haveQuality(id,qualityLevel),enough=stock>=amount;
   const tile=node('div','cost-item rarity-'+info.index+(enough?' enough':''));
   tile.append(node('span','cost-icon',info.icon));
   const details=node('span','cost-info');
-  details.append(node('strong',null,info.name));
+  details.append(node('strong',null,info.name+' · Qualität '+qualityLevel));
   details.append(node('small',null,money(stock)+' / '+money(amount)+
    (enough?' ✓':' · fehlt '+money(amount-stock))));
   const progress=node('span','cost-progress'+(enough?' complete':''));
@@ -516,7 +517,7 @@
   $('forge-confirm-title').textContent=displayName(item);
   $('forge-confirm-step').textContent='Stufe '+quote.level+'  ➜  '+quote.nextLevel;
   const costRoot=$('forge-confirm-cost');costRoot.replaceChildren();
-  for(const [id,amount] of Object.entries(quote.cost))costRoot.append(costTile(id,amount));
+  for(const [id,amount] of Object.entries(quote.cost))costRoot.append(costTile(id,amount,quote.qualityLevel||1));
   $('forge-confirm-chance').textContent=quote.successChance+' %';
   const risky=quote.successChance<100;
   const warning=$('forge-confirm-warning');
@@ -616,7 +617,7 @@
   costHead.append(node('span','forge-cost-badge '+(quote.locked?'blocked':missing.length?'missing':'ready'),
    quote.locked?'🔒 Gesperrt':missing.length?'⚠️ '+missing.length+' fehlen':'✓ Vorhanden'));
   const costGrid=node('div','cost-list forge-compact-cost-list');
-  for(const [id,need] of Object.entries(quote.cost||{}))costGrid.append(costTile(id,need));
+  for(const [id,need] of Object.entries(quote.cost||{}))costGrid.append(costTile(id,need,materialLevel));
   root.append(costHead,costGrid);
   if(quote.locked||missing.length){
    const reason=quote.locked?
@@ -956,12 +957,16 @@
     try{await window.DogForgeCeremony?.finish?.(response.result);}catch{}
    }
    if(uid!==account)return;
-   if(instant||op.action==='refine'){
+   if(instant){
     const failed=response.result?.success===false;
     const label=op.action==='refine'?
      (failed?'⚠️ Veredelung fehlgeschlagen – 5 Rohstoffe verbraucht.':'✓ Rohstoff erfolgreich veredelt!'):
      (failed?'⚠️ Verbesserung fehlgeschlagen – Rohstoffe verbraucht.':'✓ Verbesserung abgeschlossen.');
     status(label,failed?'bad':'good');
+   }else if(op.action==='refine'){
+    status(response.result?.success===false?
+     '⚠️ Veredelung fehlgeschlagen – Rohstoffe verbraucht.':'✓ Rohstoff erfolgreich veredelt!',
+     response.result?.success===false?'bad':'good');
    }else resultDialog(response.result,unlocked);
   }catch(e){
    try{window.DogForgeCeremony?.abort?.();}catch{}
