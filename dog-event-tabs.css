@@ -1,0 +1,29 @@
+/* Einheitliches Register: alle Bereiche der Rettet-DOG-Expedition */
+.dog-event-tabs{position:sticky;top:0;z-index:60;isolation:isolate;width:100%;max-width:100%;background:linear-gradient(115deg,#091628f6,#191a30f5 55%,#0a1624f5);border-bottom:1px solid #d6b67670;box-shadow:0 9px 28px #0009;color:#ffe8b5;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.dog-event-combat .dog-event-tabs{position:relative}
+.dog-event-tabs *{box-sizing:border-box}
+.dog-event-tabs__inner{max-width:1500px;margin:auto;padding:10px clamp(12px,1.6vw,24px);padding-right:clamp(14px,16vw,245px);display:flex;align-items:center;gap:14px}
+.dog-event-tabs__brand{display:flex;align-items:center;gap:8px;flex:0 0 auto;text-shadow:0 2px 10px #000e;white-space:nowrap}
+.dog-event-tabs__seal{font-size:28px;filter:drop-shadow(0 0 10px #f8c76b70)}
+.dog-event-tabs__brand-text{display:flex;flex-direction:column;gap:2px}
+.dog-event-tabs__brand-text strong{font-size:13px;letter-spacing:.10em;color:#ffe0a1;font-weight:900}
+.dog-event-tabs__brand-text small{font-size:10px;letter-spacing:.13em;color:#bbc9dc;font-weight:750}
+.dog-event-tabs__rail{min-width:0;flex:1 1 auto;display:flex!important;gap:7px!important;flex-wrap:nowrap!important;align-items:center;overflow-x:auto;overflow-y:hidden;padding:5px 3px 9px;scrollbar-width:thin;scrollbar-color:#d4a95b85 transparent;overscroll-behavior-inline:contain}
+.dog-event-tabs__rail::-webkit-scrollbar{height:4px}.dog-event-tabs__rail::-webkit-scrollbar-thumb{background:#d4a95b85;border-radius:9px}
+.dog-event-tabs__tab,.dog-event-tabs__group{flex:0 0 auto;display:inline-flex!important;justify-content:center;align-items:center;gap:7px;min-height:39px;padding:9px 12px!important;color:#f8e9d1!important;background:linear-gradient(145deg,#27364ce5,#142339ef)!important;border:1px solid #d3ba8a59!important;border-radius:12px!important;box-shadow:inset 0 1px #fff2;text-decoration:none!important;white-space:nowrap;font:750 12px/1.2 system-ui,-apple-system,"Segoe UI",sans-serif!important}
+.dog-event-tabs__tab:hover,.dog-event-tabs__group:hover{background:#324561!important;border-color:#ffe4a6c0!important}
+.dog-event-tabs__tab.is-active,.dog-event-tabs__group.is-active{background:linear-gradient(145deg,#80582e,#443322)!important;border-color:#f9d080!important;box-shadow:0 0 16px #eebc6040,inset 0 1px #ffe9ad42;color:#fff2c8!important}
+.dog-event-tabs__tab:focus-visible,.dog-event-tabs__select:focus-visible{outline:3px solid #99dcff!important;outline-offset:3px}
+.dog-event-tabs__group{padding:5px 8px 5px 11px!important}.dog-event-tabs__group>span{font-weight:850}
+.dog-event-tabs__select{max-width:145px;min-width:95px;height:28px;padding:2px 5px;border:1px solid #d4b9806c!important;border-radius:8px!important;background:#101e35!important;color:#f9e9ce!important;font:700 11px/1.1 system-ui,-apple-system,"Segoe UI",sans-serif!important;cursor:pointer}
+.dog-event-tabs__select option{background:#14223b;color:#fff1da}
+.dog-event-tabs__tab.is-exit{color:#d6ebff!important;border-color:#7199b86b!important}
+.dog-event-tabs-ready .layout>nav[aria-label="Navigation"]>a,
+.dog-event-tabs-ready .wrapper>nav[aria-label="Navigation"]>a,
+.dog-event-tabs-ready .forge-canvas>nav.top-nav>a,
+.dog-event-tabs-ready .arena-layout>nav.boss-nav>a,
+.dog-event-tabs-ready .stage>nav.topnav>a,
+.dog-event-tabs-ready .shell>nav.nav>a,
+.dog-event-tabs-ready header.header>a.back{display:none!important}
+@media(max-width:1140px){.dog-event-tabs__inner{padding:54px 11px 8px}}
+@media(max-width:680px){.dog-event-tabs__inner{flex-wrap:wrap;gap:4px;padding-top:52px}.dog-event-tabs__seal{font-size:22px}.dog-event-tabs__brand-text{flex-direction:row;align-items:center;gap:7px}.dog-event-tabs__brand-text strong{font-size:12px}.dog-event-tabs__rail{flex-basis:100%;padding-bottom:8px}.dog-event-tabs__tab,.dog-event-tabs__group{min-height:36px;padding:8px 10px!important;font-size:11px!important}}
