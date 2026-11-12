@@ -109,6 +109,37 @@ test('minigame grade is bounded 0–100 with explicit maximum and missing-data h
  assert.equal(m.replay.length,0);
  assert.ok(!m.tips.some(x=>x.includes('von 0 möglichen')));
 });
+test('M-06 end report uses the verified equal-weight grade instead of raw 39/63 hit ratio',()=>{
+ const {model}=load();
+ const view=fakeView();
+ view.miniGames.exchange.evaluation={
+  weighting:'equal',weightPercentPerGame:20,completedRounds:5,
+  games:5,teamPercent:55.8,perfect:false,
+  rounds:[{percent:75},{percent:66.7},{percent:70},
+   {percent:0},{percent:67.3}],
+  players:[{uid:'a',percent:67.3},{uid:'b',percent:100},{uid:'c',percent:0}]
+ };
+ const report=model(view);
+ assert.equal(report.score.correct,39);
+ assert.equal(report.score.max,63);
+ assert.equal(report.score.percent,55.8);
+ assert.equal(report.score.grade,'Gut');
+ assert.equal(report.score.equalWeight,true);
+ assert.equal(report.score.perfect,false);
+ assert.deepEqual(report.rows.map(x=>x.percentage),[67.3,100,0]);
+ assert.deepEqual(report.stages.slice(0,3).map(x=>x.percent),[75,66.7,70]);
+ assert.equal(report.result.damage,900,'combat damage cannot change with the grade');
+ const incomplete=fakeView();
+ incomplete.miniGames.exchange.evaluation={...view.miniGames.exchange.evaluation,
+  completedRounds:4,teamPercent:null};
+ assert.equal(model(incomplete).score.percent,62,
+  'pending evaluation must not invent its final percentage');
+ const perfect=fakeView(true);
+ perfect.miniGames.exchange.evaluation={...view.miniGames.exchange.evaluation,
+  teamPercent:100,perfect:true};
+ assert.equal(model(perfect).score.grade,'Maximum');
+ assert.equal(model(perfect).score.perfect,true);
+});
 test('single hero loss yields honest tactical advice; report never invents absent teammates',()=>{
  const {model}=load();
  const one=fakeView();
