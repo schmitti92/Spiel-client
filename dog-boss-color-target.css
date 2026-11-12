@@ -1,0 +1,99 @@
+/* 100 Tore · v10 Farb- und Symboltreffer.
+   The target sprint is entirely local until one authenticated score submission. */
+.arena-live .mini-tactical.is-color-target{
+ border:1px solid #e7bd7cb5;
+ border-radius:20px;padding:clamp(9px,1.5vw,16px);
+ background:radial-gradient(ellipse at 50% 0%,#75552c6b,transparent 65%),
+  linear-gradient(146deg,#181b37f7,#132339f6 65%,#111b30);
+ box-shadow:0 0 34px #ebb35d30,inset 0 1px #fff2ce35;
+}
+.arena-live .mini-tactical.is-color-target .mini-choices{
+ display:flex;flex-direction:column;align-items:stretch;gap:10px;
+ min-height:0;
+}
+.arena-live .mini-color-hud{
+ width:100%;display:flex;align-items:center;gap:12px;
+ font-variant-numeric:tabular-nums;
+}
+.arena-live .mini-color-clock{
+ color:#fff0c1;font-size:clamp(19px,3vw,29px);
+ flex:0 0 62px;text-align:center;
+ text-shadow:0 0 13px #f9aa3b80;
+}
+.arena-live .mini-color-time{
+ flex:1;overflow:hidden;height:10px;
+ background:#0d1930;border:1px solid #f1d09b7a;border-radius:99px;
+}
+.arena-live .mini-color-time-fill{
+ display:block;width:100%;height:100%;border-radius:inherit;
+ background:linear-gradient(90deg,#36cfd1,#97f9cc,#ffe498);
+ transition:width .1s linear;
+}
+.arena-live .mini-color-question{
+ display:grid;place-items:center;width:100%;min-height:48px;
+ padding:8px 14px;text-align:center;border-radius:14px;
+ background:linear-gradient(110deg,#393049cc,#19263dcf);
+ border:1px solid #eec17d7a;color:#fff5cd;
+ font-size:clamp(16px,3vw,27px);
+ font-weight:950;letter-spacing:.035em;line-height:1.15;
+ text-shadow:0 0 13px #f4b15a4a;
+}
+.arena-live .mini-color-grid{
+ display:grid!important;
+ width:100%;grid-template-columns:repeat(4,minmax(0,1fr));
+ grid-auto-rows:minmax(63px,auto);gap:9px;
+}
+.arena-live .mini-color-grid[data-count="4"]{
+ grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.arena-live .mini-color-grid[data-count="6"]{
+ grid-template-columns:repeat(3,minmax(0,1fr));
+}
+.arena-live .mini-color-target{
+ --tile:#345d7d;--tile-light:#6e95b0;
+ min-width:0;width:100%;height:100%;min-height:65px;
+ padding:7px 4px;white-space:normal;
+ font-size:clamp(14px,2.3vw,21px);
+ font-weight:900;letter-spacing:0;
+ border-radius:14px;border:2px solid #ffffff9c;
+ color:#fff;line-height:1.22;
+ background:radial-gradient(circle at 50% 2%,var(--tile-light),transparent 85%),
+  linear-gradient(150deg,var(--tile),#17233de8);
+ text-shadow:0 1px 5px #04090fdd;
+ box-shadow:inset 0 1px #ffffff59,0 5px 10px #0007;
+ touch-action:manipulation;
+ -webkit-tap-highlight-color:transparent;
+ user-select:none;
+}
+.arena-live .mini-color-target:not(:disabled):active{
+ transform:scale(.95);filter:brightness(1.24);
+}
+.arena-live .mini-color-target:focus-visible{
+ outline:3px solid #fff4be;outline-offset:3px;
+}
+.arena-live .mini-color-red{--tile:#a92f48;--tile-light:#f56b76}
+.arena-live .mini-color-blue{--tile:#20559f;--tile-light:#54b8ff}
+.arena-live .mini-color-green{--tile:#167a4e;--tile-light:#54d8a2}
+.arena-live .mini-color-yellow{--tile:#b18b25;--tile-light:#ffe075}
+.arena-live .mini-color-purple{--tile:#7141a2;--tile-light:#c58bff}
+.arena-live .mini-color-orange{--tile:#b95d1c;--tile-light:#ffad5c}
+.arena-live .mini-color-cyan{--tile:#1a819b;--tile-light:#70eafb}
+.arena-live .mini-color-pink{--tile:#a74681;--tile-light:#ffa2d8}
+.arena-live .mini-tactical.is-color-target .mini-step-counter{
+ font-size:clamp(12px,2vw,17px);font-variant-numeric:tabular-nums;
+ color:#b5f8dc;letter-spacing:.01em;
+}
+.arena-live .mini-tactical.is-color-target .mini-feedback{
+ min-height:24px;font-size:clamp(12px,2vw,15px);
+ line-height:1.45;color:#e4eeff;font-weight:700;
+}
+@media(max-width:480px){
+ .arena-live .mini-color-grid{gap:6px;grid-auto-rows:minmax(57px,auto)}
+ .arena-live .mini-color-target{min-height:58px;font-size:13px;padding:4px 2px}
+ .arena-live .mini-color-question{min-height:44px;font-size:17px}
+ .arena-live .mini-color-clock{font-size:20px;flex-basis:55px}
+}
+@media(prefers-reduced-motion:reduce){
+ .arena-live .mini-color-time-fill{transition:none}
+ .arena-live .mini-color-target{transition:none}
+}
