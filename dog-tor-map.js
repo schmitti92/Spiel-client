@@ -284,7 +284,7 @@
   const member=!!mapState?.isMember&&
   mapState.members?.some(m=>m.isMe&&m.heroLocked===true);
   button.disabled=working||!!pending||!member||!ready||!bossReady||done.includes(gate);
-  button.textContent=gate%10===5?'👹 Mini-Boss herausfordern':'⚔️ Persönlichen Kampf starten';
+  button.textContent=gate%10===5?'👹 Mini-Boss herausfordern':'⚔️ Schnellkampf starten';
   notice.textContent=pending?'⚠️ Ein früherer Kampf bei Tor '+pending.gate+
    ' muss zuerst sicher wiederholt werden.':
    done.includes(gate)?'✅ Dieses Tor hast du bereits besiegt.':
@@ -390,6 +390,25 @@
   }catch(e){setTeamStatus('⚠️ Beitritt nicht bestätigt ('+e.message+'). Bitte aktualisieren.');}
   finally{working=false;renderMembers();}
  }
+ function showQuickFightResult(gate,fight,replayed){
+  const modal=$('gate-quick-result');
+  if(!modal)return;
+  const win=!!fight.win;
+  modal.classList.toggle('quick-win',win);
+  modal.classList.toggle('quick-loss',!win);
+  $('gate-quick-result-kicker').textContent='TOR '+gate+' · SCHNELLKAMPF';
+  $('gate-quick-result-icon').textContent=win?'🏆':'💀';
+  $('gate-quick-result-title').textContent=win?'SIEG!':'NIEDERLAGE';
+  $('gate-quick-result-text').textContent=win?
+   'Tor '+gate+' wurde besiegt. Dein Fortschritt ist gespeichert.':
+   'Tor '+gate+' ist noch nicht besiegt. '+(fight.combat?.feedback?.message||
+    'Verbessere deine Ausrüstung und versuche es erneut.');
+  $('gate-quick-result-note').textContent=replayed?
+   '✓ Bereits berechnetes Serverergebnis sicher wiederhergestellt.':
+   '✓ Ergebnis vom Server berechnet und bestätigt.';
+  if(details.open)details.close();
+  if(!modal.open)modal.showModal();
+ }
  async function fightGate(retry=false){
   const account=auth()?.user?.uid;
   if(!account||working||!mapState?.isMember||
@@ -425,6 +444,7 @@
    }
    if(result.replayed)status+=' (Sicher wiederhergestellt)';
    lastFight={gate,message:status};
+   if(fight.type!=='mini'&&gate%10!==5)showQuickFightResult(gate,fight,!!result.replayed);
    $('gate-fight-status').textContent=status;
    setTeamStatus('✅ Dein gespeichertes Tor wurde aktualisiert.');
   }catch(e){
@@ -452,12 +472,12 @@
  const titleFor=gate=>gate===100?'Finaler Gruppenboss – Der letzte Wächter':
   gate%10===0?'Gemeinsamer Boss – '+MAJOR_BOSSES[gate]:
   gate%10===5?'Solo-Mini-Boss – '+MINI_BOSSES[gate]:
-  'Persönlicher Kampf – Tor '+gate;
+  'Schnellkampf – Tor '+gate;
  const summaryFor=gate=>{
   if(gate===100)return 'Der letzte Wächter verteidigt das DOG-Schloss. Ein Held darf ihn herausfordern, zwei können nur mit sehr viel Glück siegen. Drei gut aufgerüstete Helden sind eure beste Chance. Erst der bestätigte Sieg darf DOG freischalten.';
   if(gate%10===0)return 'Gemeinsamer Bosskampf: mit 1–3 Helden startbar, aber am besten zu dritt. Der Sieg schaltet die nächste Schmiedestufe und Ausrüstung frei.';
   if(gate%10===5)return 'Ein besonders harter Einzelkampf: Eine gute Waffe allein reicht oft nicht. Verstärke auch Rüstung und Fähigkeiten. Nach einem erstmaligen Sieg winkt eine besondere zufällige Belohnung.';
-  return 'Ein normaler Einzelkampf mit einer von deiner Ausrüstung abhängigen Gewinnchance zwischen 30 % und 80 %. Du kannst ihn nach einer Niederlage erneut versuchen.';
+  return 'Ein Klick genügt: Der Server berechnet sofort Sieg oder Niederlage anhand deiner Ausrüstung (30–80 % Gewinnchance). Das Ergebnis erscheint direkt im Fenster. Nach einer Niederlage kannst du es erneut versuchen.';
  };
  function selectGate(gate,button){
   for(const selected of document.querySelectorAll('.gate[aria-pressed="true"]'))selected.setAttribute('aria-pressed','false');
@@ -470,7 +490,7 @@
   const previousReward=(mapState?.progress?.miniRewards||[])
    .find(entry=>entry.gate===gate)?.reward;
   if(previousReward?.granted)displayMiniReward(previousReward,gate);
-  const kind=gate%10===0?'Gruppenboss':gate%10===5?'Mini-Boss':'Persönlicher Kampf';
+  const kind=gate%10===0?'Gruppenboss':gate%10===5?'Mini-Boss':'Schnellkampf';
   $('gate-detail-kicker').textContent='TOR '+gate+' VON 100 · '+kind.toUpperCase();
   $('gate-detail-title').textContent=titleFor(gate);
   const bossPreview=$('gate-boss-preview');
@@ -565,6 +585,7 @@
  window.requestAnimationFrame(drawPaths);
  window.addEventListener('load',drawPaths,{once:true});
  $('gate-detail-close').addEventListener('click',()=>details.close());
+ $('gate-quick-result-close').addEventListener('click',()=>$('gate-quick-result').close());
  $('team-refresh').addEventListener('click',()=>void reloadMap());
  $('pilot-add-bots').addEventListener('click',()=>void addTwoBots());
  $('team-join').addEventListener('click',()=>void joinTeam());

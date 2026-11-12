@@ -6,12 +6,12 @@
  <meta name="theme-color" content="#08101d">
  <meta name="description" content="Die 100 Tore: Fünf Welten, 80 Einzelkämpfe, 10 Mini-Bosse und 10 gemeinsame Wächter führen euch zum Spiel DOG.">
  <title>🏰 Der Weg zu DOG · Die 100 Tore</title>
- <link rel="stylesheet" href="./dog-tor-map.css?v=20261111-cooldown-v1">
+ <link rel="stylesheet" href="./dog-tor-map.css?v=20261112-quick-result1">
  <link rel="stylesheet" href="./dog-tor-map-worlds.css?v=20261112-castle-showcase1">
  <link rel="stylesheet" href="./dog-hero-selection.css?v=20261112-onboarding1">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
- <script src="./dog-tor-map.js?v=20261112-onboarding1" defer></script>
+ <script src="./dog-tor-map.js?v=20261112-quick-result1" defer></script>
  <script src="./dog-developer-ui.js?v=20261111-cooldown-v1" defer></script>
  <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 <link rel="stylesheet" href="./dog-event-tabs.css?v=20261112-boss-from-map2">
@@ -116,6 +116,14 @@
     <button type="button" id="gate-retry-button" class="small-action" hidden>↻ Offene Aktion sicher wiederholen</button>
     <button type="button" id="gate-detail-close" class="small-action">Schließen</button>
    </div>
+  </dialog>
+  <dialog id="gate-quick-result" class="gate-quick-result" aria-labelledby="gate-quick-result-title" aria-describedby="gate-quick-result-text">
+   <div class="quick-result-kicker" id="gate-quick-result-kicker">TOR · SCHNELLKAMPF</div>
+   <div class="quick-result-icon" id="gate-quick-result-icon" aria-hidden="true">⚔️</div>
+   <h2 id="gate-quick-result-title">Kampfergebnis</h2>
+   <p id="gate-quick-result-text"></p>
+   <p class="quick-result-note" id="gate-quick-result-note"></p>
+   <button type="button" id="gate-quick-result-close" class="quick-result-close">Bestätigen</button>
   </dialog>
   <dialog id="dog-developer-dialog" class="dog-dev-dialog" aria-labelledby="dog-developer-title">
    <div class="dog-dev-head">
