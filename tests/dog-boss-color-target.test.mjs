@@ -74,6 +74,68 @@ test('partial v10 answers flush once on reaching the 10s boundary',async()=>{
  assert.deepEqual([...requests[0].answer],[0,1,2]);
  assert.equal(root.hidden,true,'cinematic interlude replaces minigame');
 });
+
+test('M-03 explains color-only versus symbol-only targets and keeps taps provisional',()=>{
+ const {root,ui,view,requests}=fixture();
+ const four=options.slice(0,4);
+ view.miniGames.rounds[2].puzzles=Array.from({length:10},(_,i)=>({
+  mode:i%2?'symbol':'color',targetColor:'blue',targetSymbol:'star',
+  prompt:i%2?'TRIFF STERN!':'TRIFF BLAU!',options:four
+ }));
+ ui.update(view,epoch+55100,true);
+ const body=root.children[1],find=name=>body.children.find(x=>x.className===name);
+ assert.match(find('mini-color-rule').textContent,/NUR FARBE/);
+ assert.match(find('mini-color-guide').textContent,/Symbol ist egal/);
+ assert.match(find('mini-color-level').textContent,/1\/10 · 4 FELDER/);
+ const cells=find('mini-color-grid');
+ cells.children[0].click();
+ assert.match(find('mini-color-rule').textContent,/NUR SYMBOL/);
+ assert.match(find('mini-color-guide').textContent,/Farbe ist egal/);
+ assert.match(find('mini-color-verdict').textContent,/RICHTIG.*VORLÄUFIG/);
+ const marks=find('mini-color-progress').children;
+ assert.equal(marks.length,10);
+ assert.ok(marks[0].classList.contains('is-provisional'));
+ assert.ok(!marks[0].classList.contains('is-confirmed'));
+ assert.equal(requests.length,0);
+});
+test('M-03 displays eight-field combined rule, then only server-confirmed final score',async()=>{
+ const {root,ui,view,requests}=fixture();
+ const eight=[...options,{color:'pink',symbol:'bolt'},{color:'purple',symbol:'crown'}];
+ view.miniGames.rounds[2].puzzles=Array.from({length:10},()=>({
+  mode:'both',targetColor:'blue',targetSymbol:'star',
+  prompt:'TRIFF BLAU + STERN!',options:eight
+ }));
+ ui.update(view,epoch+55100,true);
+ const body=root.children[1],find=name=>body.children.find(x=>x.className===name);
+ assert.match(find('mini-color-level').textContent,/8 FELDER/);
+ assert.match(find('mini-color-rule').textContent,/FARBE UND SYMBOL/);
+ assert.match(find('mini-color-guide').textContent,/beide Merkmale/);
+ for(let i=0;i<10;i++)find('mini-color-grid').children[i%2].click();
+ await Promise.resolve();await Promise.resolve();
+ assert.equal(requests.length,1);
+ assert.match(find('mini-color-verdict').textContent,/WARTE AUF SERVER/);
+ assert.ok(find('mini-color-progress').children[0].classList.contains('is-provisional'));
+ view.miniGames.myAnswers[2]={attempts:Array.from({length:10},(_,i)=>({
+  step:i,correct:i%2===0
+ }))};
+ ui.update(view,epoch+59500,true);
+ assert.match(find('mini-color-verdict').textContent,/SERVER BESTÄTIGT · 5 \/ 10/);
+ assert.ok(find('mini-color-progress').children[0].classList.contains('is-confirmed'));
+ assert.ok(find('mini-color-grid').children.every(button=>button.disabled));
+});
+test('M-03 closes controls on server-confirmed partial batches after reconnect',()=>{
+ const {root,ui,view,requests}=fixture();
+ view.miniGames.myAnswers[2]={attempts:[{step:0,correct:true},{step:1,correct:false}]};
+ ui.update(view,epoch+55100,true);
+ const body=root.children[1],find=name=>body.children.find(x=>x.className===name);
+ const tiles=find('mini-color-grid').children;
+ assert.ok(tiles.every(button=>button.disabled));
+ assert.match(find('mini-color-verdict').textContent,/SERVER BESTÄTIGT · 1 \/ 2/);
+ tiles[0].click();
+ assert.equal(requests.length,0);
+ assert.ok(find('mini-color-progress').children[0].classList.contains('is-confirmed'));
+});
+
 test('old v9 moving target path remains intact',()=>{
  const {root,ui,view}=fixture();
  view.miniGames.version=9;

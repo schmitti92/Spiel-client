@@ -47,6 +47,8 @@
   let lastChoice=null,anchor=null,raf=0,activeVersion=1,allowed=false;
   let mathChoices=[],mathSent=false,mathQueue=null,mathSending=false,fightStart=0;
   let targetChoices=[],targetSent=false,targetLocalCorrect=0,targetLastHit=null;
+  let targetHits=[],targetServerLocked=false,targetLevel=null,targetRule=null;
+  let targetGuide=null,targetFeedback=null,targetMarks=[];
   let chainMarks=[],chainHits=[];
   let targetClock=null,targetClockFill=null;
   let reactionPreview=null;
@@ -97,20 +99,62 @@
     kind:roundView.kind,deadline:fightStart+roundView.endMs+1900};
    pumpMath();
   };
+  const paintTargetMarks=(confirmed=[])=>{
+   targetMarks.forEach((mark,i)=>{
+    const official=confirmed[i];
+    const local=i<targetHits.length?targetHits[i]:null;
+    const recorded=official?.correct===true||official?.correct===false;
+    mark.textContent=recorded?(official.correct?'✓':'✕'):
+     local===null?String(i+1):local?'✓':'✕';
+    mark.classList.toggle('is-confirmed',recorded);
+    mark.classList.toggle('is-correct',recorded&&official.correct===true);
+    mark.classList.toggle('is-wrong',recorded&&official.correct===false);
+    mark.classList.toggle('is-provisional',!recorded&&local!==null);
+    mark.classList.toggle('is-current',i===targetChoices.length&&i<10&&!recorded);
+    mark.setAttribute?.('aria-label','Aufgabe '+(i+1)+': '+
+     (recorded?(official.correct?'richtig, serverbestätigt':'falsch, serverbestätigt'):
+      local===null?'noch offen':(local?'richtig':'falsch')+', vorläufig'));
+   });
+  };
   const paintTargetStep=()=>{
    if(!roundView||roundView.kind!=='target'||activeVersion<10)return;
    const step=targetChoices.length,puzzle=roundView.puzzles?.[step];
-   if(question)question.textContent=puzzle?.prompt||'🏆 ALLE 10 AUFGABEN BEANTWORTET!';
+   const color=puzzle?targetColors[puzzle.targetColor]||puzzle.targetColor:'';
+   const symbol=puzzle?targetNames[puzzle.targetSymbol]||puzzle.targetSymbol:'';
+   const icon=puzzle?targetSymbols[puzzle.targetSymbol]||'◆':'';
+   if(targetLevel)targetLevel.textContent=puzzle?
+    'AUFGABE '+(step+1)+'/10 · '+puzzle.options.length+' FELDER':
+    '10/10 BEANTWORTET';
+   if(targetRule){
+    targetRule.dataset.mode=puzzle?.mode||'done';
+    targetRule.textContent=!puzzle?'⏳ SERVER PRÜFT':
+     puzzle.mode==='color'?'🎨 NUR FARBE':
+     puzzle.mode==='symbol'?'✦ NUR SYMBOL':'🎨 + ✦ FARBE UND SYMBOL';
+   }
+   if(question){
+    question.dataset.mode=puzzle?.mode||'done';
+    question.textContent=puzzle?.prompt||'🏆 ALLE 10 AUFGABEN BEANTWORTET!';
+   }
+   if(targetGuide)targetGuide.textContent=!puzzle?
+    'Alle Eingaben erfasst. Die offizielle Trefferzahl kommt vom Server.':
+    puzzle.mode==='color'?'Gesucht: '+color.toUpperCase()+' · das Symbol ist egal.':
+    puzzle.mode==='symbol'?'Gesucht: '+icon+' '+symbol.toUpperCase()+
+     ' · die Farbe ist egal.':
+     'Gesucht: '+color.toUpperCase()+' UND '+icon+' '+symbol.toUpperCase()+
+     ' · beide Merkmale müssen stimmen.';
    buttons.forEach((button,i)=>{
     const option=puzzle?.options?.[i];
     button.className='mini-choice mini-color-target'+(option?' mini-color-'+option.color:'');
-    button.textContent=option?targetSymbols[option.symbol]+' '+targetColors[option.color]:'✓';
-    button.disabled=!option;
+    button.textContent=option?(targetSymbols[option.symbol]||'◆')+' '+
+     (targetColors[option.color]||option.color):'✓';
+    button.disabled=!option||targetServerLocked;
     if(option)button.setAttribute?.('aria-label',
-      targetColors[option.color]+' · '+targetNames[option.symbol]);
+     (targetColors[option.color]||option.color)+' · '+
+     (targetNames[option.symbol]||option.symbol));
    });
    if(counter)counter.textContent=step+' / 10 beantwortet · '+
-     targetLocalCorrect+' Treffer (vorläufig)';
+    targetLocalCorrect+' Treffer (vorläufig)';
+   paintTargetMarks();
   };
   const paintChainStep=()=>{
    if(!roundView||roundView.kind!=='chain'||activeVersion<13)return;
@@ -188,7 +232,7 @@
     return;
    }
    if(activeVersion>=10&&roundView.kind==='target'){
-    if(targetSent||targetChoices.length>=10)return;
+    if(targetSent||targetServerLocked||targetChoices.length>=10)return;
     const stamp=clockStamp()-fightStart;
     if(stamp<roundView.startMs||stamp>=roundView.endMs)return;
     const puzzle=roundView.puzzles?.[targetChoices.length];
@@ -198,9 +242,16 @@
      puzzle.mode==='symbol'?answer.symbol===puzzle.targetSymbol:
       answer.color===puzzle.targetColor&&answer.symbol===puzzle.targetSymbol;
     targetChoices.push(value);
+    targetHits.push(hit);
     targetLocalCorrect+=Number(hit);
     targetLastHit=hit;
     paintTargetStep();
+    if(targetFeedback){
+     targetFeedback.textContent=(hit?'✅ RICHTIG':'❌ DANEBEN')+
+      ' · '+targetLocalCorrect+' / '+targetChoices.length+
+      ' getroffen · VORLÄUFIG';
+     targetFeedback.dataset.state=hit?'correct':'wrong';
+    }
     status.textContent=(hit?'✅ Treffer!':'❌ Daneben!')+
      ' · '+targetChoices.length+' / 10 · '+targetLocalCorrect+' richtig (vorläufig)';
     if(targetChoices.length>=10)flushTarget();
@@ -289,6 +340,8 @@
    stopAnimation();roundView=round;activeVersion=version;reactionPreview=null;
    mathChoices=[];mathSent=false;
    targetChoices=[];targetSent=false;targetLocalCorrect=0;targetLastHit=null;
+   targetHits=[];targetServerLocked=false;targetLevel=null;targetRule=null;
+   targetGuide=null;targetFeedback=null;targetMarks=[];
    chainMarks=[];chainHits=[];
    buttons=[];body.replaceChildren();progress=null;question=null;counter=null;attackStatus=null;
    dodgeMarks=[];dodgeTimeFill=null;dodgeImpact=null;mathMarks=[];mathRank=null;mathClock=null;mathTimeFill=null;
@@ -445,7 +498,19 @@
     targetClockFill=createElement('span','mini-color-time-fill');
     timeTrack.append(targetClockFill);
     hud.append(targetClock,timeTrack);body.append(hud);
+    const goal=createElement('div','mini-color-goal');
+    targetLevel=createElement('span','mini-color-level','AUFGABE 1/10');
+    targetRule=createElement('strong','mini-color-rule','');
+    goal.append(targetLevel,targetRule);body.append(goal);
     question=createElement('div','mini-color-question','');body.append(question);
+    targetGuide=createElement('div','mini-color-guide','');body.append(targetGuide);
+    const progressSteps=createElement('div','mini-color-progress');
+    progressSteps.setAttribute?.('aria-label','Fortschritt der zehn Farb- und Symbolaufgaben');
+    targetMarks=Array.from({length:10},(_,index)=>{
+     const mark=createElement('span','mini-color-mark',String(index+1));
+     progressSteps.append(mark);return mark;
+    });
+    body.append(progressSteps);
     const cells=createElement('div','mini-color-grid');
     cells.dataset.count=String(round.puzzles?.[0]?.options?.length||4);
     body.append(cells);
@@ -454,6 +519,10 @@
      button.type='button';button.addEventListener('click',()=>choose(i));
      buttons.push(button);cells.append(button);
     }
+    targetFeedback=createElement('div','mini-color-verdict',
+     '🎯 WÄHLE DAS PASSENDE FELD · 10 AUFGABEN');
+    targetFeedback.setAttribute?.('aria-live','polite');
+    body.append(targetFeedback);
     paintTargetStep();
    }else if(round.kind==='target'){
     question=createElement('div','mini-target-hint','Treffe den leuchtenden Schwachpunkt!');
@@ -556,6 +625,10 @@
     return;
    }
    const attempts=mine?.attempts||[],correct=attempts.filter(a=>a.correct).length;
+   if(round.kind==='target'&&activeVersion>=10&&attempts.length){
+    // A server-confirmed partial batch also closes input after reconnect.
+    targetServerLocked=true;
+   }
    const max=round.maxSteps||3;
    const sprint=activeVersion>=10&&['target','chain'].includes(round.kind);
    const completed=attempts.length>=max||
@@ -691,9 +764,22 @@
     if(targetClockFill)targetClockFill.style.width=
      Math.max(0,Math.min(100,100*(round.endMs-elapsed)/(round.endMs-round.startMs)))
       .toFixed(1)+'%';
+    if(round.kind==='target'&&activeVersion>=10){
+     paintTargetMarks(attempts);
+     if(attempts.length&&targetFeedback){
+      targetFeedback.textContent='✅ SERVER BESTÄTIGT · '+correct+
+       ' / '+attempts.length+' RICHTIG';
+      targetFeedback.dataset.state='confirmed';
+     }else if(targetSent&&targetFeedback){
+      targetFeedback.textContent='⏳ '+targetChoices.length+
+       ' ANTWORTEN ERFASST · WARTE AUF SERVER';
+      targetFeedback.dataset.state='pending';
+     }
+     if(targetServerLocked)buttons.forEach(button=>{button.disabled=true});
+    }
     if(attempts.length||completed&&targetSent){
      if(question)question.textContent=attempts.length?
-      '🏆 '+correct+' VON '+max+' TREFFERN BESTÄTIGT':
+      '🏆 '+correct+' VON '+attempts.length+' TREFFERN BESTÄTIGT':
       '⏳ SERVER PRÜFT DIE ANTWORTEN';
     }
    }else if(round.kind==='target'){

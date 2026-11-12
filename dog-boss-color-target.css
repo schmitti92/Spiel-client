@@ -97,3 +97,95 @@
  .arena-live .mini-color-time-fill{transition:none}
  .arena-live .mini-color-target{transition:none}
 }
+
+/* M-03: Mode, goal and each answer remain readable without relying on color. */
+.arena-live .mini-color-goal{
+ display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+ gap:6px 12px;width:100%;font-variant-numeric:tabular-nums;
+}
+.arena-live .mini-color-level{
+ color:#e4eafe;font-weight:850;font-size:clamp(12px,1.8vw,15px);
+ letter-spacing:.025em;
+}
+.arena-live .mini-color-rule{
+ display:inline-flex;align-items:center;gap:4px;
+ border:1px solid #f6dba9a6;border-radius:999px;
+ background:#352b45;color:#fff0b7;
+ font-size:clamp(12px,1.9vw,16px);font-weight:950;
+ padding:5px 11px;letter-spacing:.02em;
+}
+.arena-live .mini-color-rule[data-mode="color"]{
+ background:#24435b;border-color:#9bd6ff;
+}
+.arena-live .mini-color-rule[data-mode="symbol"]{
+ background:#493357;border-color:#e6bfff;
+}
+.arena-live .mini-color-question{
+ min-height:53px;border-width:2px;
+}
+.arena-live .mini-color-question[data-mode="both"]{
+ border-color:#f4dc9c;
+}
+.arena-live .mini-color-guide{
+ width:100%;min-height:20px;
+ color:#f2f6ff;font-size:clamp(12px,1.9vw,15px);
+ font-weight:700;text-align:center;line-height:1.35;
+}
+.arena-live .mini-color-progress{
+ display:grid;grid-template-columns:repeat(10,minmax(0,1fr));
+ gap:4px;width:100%;font-variant-numeric:tabular-nums;
+}
+.arena-live .mini-color-mark{
+ display:grid;place-items:center;min-width:0;min-height:24px;
+ border:1px solid #879cb68a;border-radius:6px;
+ background:#132038;color:#bdcce1;font-size:12px;font-weight:900;
+}
+.arena-live .mini-color-mark.is-current{
+ border:2px solid #f6d79c;color:#fff6d8;
+ box-shadow:0 0 0 1px #eec16c42;
+}
+.arena-live .mini-color-mark.is-provisional{
+ border-style:dashed;border-color:#c6e5fa;color:#f4f9ff;
+ background:#32455d;
+}
+.arena-live .mini-color-mark.is-confirmed.is-correct{
+ border-color:#6bffc4;color:#dcffef;background:#145943;
+}
+.arena-live .mini-color-mark.is-confirmed.is-wrong{
+ border-color:#ffad9e;color:#ffe0d7;background:#732e38;
+}
+.arena-live .mini-color-verdict{
+ width:100%;min-height:30px;padding:6px 10px;
+ border:1px solid #a4bdd18a;border-radius:10px;
+ background:#172b41;color:#f3f8ff;
+ font-size:clamp(12px,2vw,15px);font-weight:850;
+ text-align:center;line-height:1.35;
+}
+.arena-live .mini-color-verdict[data-state="correct"]{
+ color:#e5fff1;border-color:#5af1a9;background:#144d3f;
+}
+.arena-live .mini-color-verdict[data-state="wrong"]{
+ color:#ffe7e0;border-color:#ff9e94;background:#642d39;
+}
+.arena-live .mini-color-verdict[data-state="pending"]{
+ color:#fff4d5;border-color:#f4d189;background:#574122;
+}
+.arena-live .mini-color-verdict[data-state="confirmed"]{
+ color:#e8fff3;border-color:#85f4ca;background:#245846;
+}
+@media(max-width:480px){
+ .arena-live .mini-tactical.is-color-target .mini-choices{gap:7px}
+ .arena-live .mini-color-goal{gap:5px}
+ .arena-live .mini-color-rule{padding:4px 7px}
+ .arena-live .mini-color-question{min-height:42px;padding:6px 9px}
+ .arena-live .mini-color-guide{font-size:12px}
+ .arena-live .mini-color-progress{gap:3px}
+ .arena-live .mini-color-mark{min-height:21px;font-size:11px}
+ .arena-live .mini-color-target{min-height:54px}
+ .arena-live .mini-color-verdict{min-height:24px;padding:4px 7px}
+}
+@media(max-height:650px){
+ .arena-live .mini-tactical.is-color-target .mini-choices{gap:5px}
+ .arena-live .mini-color-target{min-height:50px}
+ .arena-live .mini-color-question{min-height:38px}
+}
