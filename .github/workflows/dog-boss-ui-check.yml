@@ -30,6 +30,8 @@ on:
       - 'dog-boss-legendary-arena.css'
       - 'dog-boss-battle-v3.js'
       - 'dog-boss-battle-v3.css'
+      - 'dog-boss-chain-breaker.css'
+      - 'tests/dog-boss-chain-breaker.test.mjs'
       - 'tests/dog-boss-battle-v3.test.mjs'
       - 'tests/dog-boss-legendary-arena.test.mjs'
       - 'tests/dog-boss-color-target.test.mjs'
@@ -77,6 +79,8 @@ on:
       - 'dog-boss-legendary-arena.css'
       - 'dog-boss-battle-v3.js'
       - 'dog-boss-battle-v3.css'
+      - 'dog-boss-chain-breaker.css'
+      - 'tests/dog-boss-chain-breaker.test.mjs'
       - 'tests/dog-boss-battle-v3.test.mjs'
       - 'tests/dog-boss-legendary-arena.test.mjs'
       - 'tests/dog-boss-color-target.test.mjs'
@@ -110,6 +114,7 @@ jobs:
           node --check dog-boss-ui.js
           node --check dog-boss-combat-fx.js
           node --check dog-boss-mini-ui.js
+          node --check tests/dog-boss-chain-breaker.test.mjs
           node --check tests/dog-boss-math-endgame-ui.test.mjs
           node --check tests/dog-boss-show14-ui.test.mjs
           node --check tests/dog-boss-reaction-precision.test.mjs
@@ -123,4 +128,4 @@ jobs:
           node --check dog-boss-battle-v3.js
           node --check dog-boss10.js
           node --check dog-group-boss.js
-          node --test tests/dog-boss-ui.test.mjs tests/dog-boss-battle-v3.test.mjs tests/dog-boss-cinematic-assets.test.mjs tests/dog-boss-combat-fx.test.mjs tests/dog-boss-preflight-ui.test.mjs tests/dog-boss-endgame-ui.test.mjs tests/dog-boss-live-ui.test.mjs tests/dog-boss-exchange-ui.test.mjs tests/dog-boss-dodge-cinematic.test.mjs tests/dog-boss-math-endgame-ui.test.mjs tests/dog-boss-show14-ui.test.mjs tests/dog-boss-reaction-precision.test.mjs tests/dog-boss-color-target.test.mjs tests/dog-boss-legendary-arena.test.mjs tests/dog-boss-show14.test.mjs tests/dog-boss-dodge-slow.test.mjs
+          node --test tests/dog-boss-chain-breaker.test.mjs tests/dog-boss-ui.test.mjs tests/dog-boss-battle-v3.test.mjs tests/dog-boss-cinematic-assets.test.mjs tests/dog-boss-combat-fx.test.mjs tests/dog-boss-preflight-ui.test.mjs tests/dog-boss-endgame-ui.test.mjs tests/dog-boss-live-ui.test.mjs tests/dog-boss-exchange-ui.test.mjs tests/dog-boss-dodge-cinematic.test.mjs tests/dog-boss-math-endgame-ui.test.mjs tests/dog-boss-show14-ui.test.mjs tests/dog-boss-reaction-precision.test.mjs tests/dog-boss-color-target.test.mjs tests/dog-boss-legendary-arena.test.mjs tests/dog-boss-show14.test.mjs tests/dog-boss-dodge-slow.test.mjs
