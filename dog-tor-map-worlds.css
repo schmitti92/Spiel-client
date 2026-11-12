@@ -1,0 +1,31 @@
+/* 100 Tore / Rettet DOG — lightweight, static, illustrated world backdrops.
+   Only presentation: game logic, server requests and stored progress are unchanged. */
+.world{
+  isolation:isolate;
+  background-position:center center;
+  background-size:cover;
+  background-repeat:no-repeat;
+  box-shadow:0 18px 50px #0009,inset 0 0 0 1px #ffffff0b;
+}
+.world[data-world="1"]{background-image:linear-gradient(90deg,#081c19b8,#07152040 52%,#0718205e),url("./dog-map-art/ruins.svg")}
+.world[data-world="2"]{background-image:linear-gradient(90deg,#0c0c24bd,#0e092f52 52%,#0b0d23a3),url("./dog-map-art/forest.svg")}
+.world[data-world="3"]{background-image:linear-gradient(90deg,#071a2bc6,#041a3150 55%,#08182ca0),url("./dog-map-art/crystals.svg")}
+.world[data-world="4"]{background-image:linear-gradient(90deg,#1c0d18c7,#240f185a 55%,#150c18a0),url("./dog-map-art/volcano.svg")}
+.world[data-world="5"]{background-image:linear-gradient(90deg,#101023c8,#16112850 56%,#11101f9e),url("./dog-map-art/fortress.svg")}
+.world::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(180deg,#0610219c 0%,#0612252c 20%,#07152524 75%,#06101eb8 100%),radial-gradient(ellipse at 50% 56%,transparent 25%,#04091483 100%)}
+.world::after{content:"";position:absolute;inset:7px;border:1px solid color-mix(in srgb,var(--world-accent) 20%,transparent);border-radius:19px;pointer-events:none;z-index:0;opacity:.64}
+.world-head,.world-content,.world-foot{position:relative;z-index:1}
+.world-head>div{max-width:80%;text-shadow:0 2px 16px #000e}
+.world-head p{color:#e2eaf2}
+.world-icon{filter:drop-shadow(0 5px 14px #000e) drop-shadow(0 0 13px var(--world-accent))}
+.world .gate:not(.boss):not(.mini){background:linear-gradient(150deg,#172b3ce8,#07101feb)}
+.world .gate{box-shadow:0 5px 17px #000c,inset 0 1px #ffffff20;text-shadow:0 1px 3px #000}
+.world .gate-path path{opacity:.8;filter:drop-shadow(0 0 4px #010712) drop-shadow(0 0 5px var(--world-accent))}
+.world-foot{background:linear-gradient(90deg,#030a17d9,#030914be);text-shadow:0 1px 6px #000}
+@media (max-width:650px){
+ .world{background-position:60% center}
+ .world[data-world="2"]{background-position:55% center}
+ .world[data-world="5"]{background-position:center center}
+ .world::after{inset:4px;border-radius:15px}
+ .world-head>div{max-width:83%}
+}

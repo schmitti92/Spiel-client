@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 760" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Fantasy-Welt: Alte Ruinen">
+<defs>
+ <linearGradient id="sky" x2=".2" y2="1"><stop stop-color="#0e302e"/><stop offset=".5" stop-color="#355743"/><stop offset="1" stop-color="#a77e54"/></linearGradient>
+ <radialGradient id="halo"><stop stop-color="#f7c77e" stop-opacity=".68"/><stop offset=".38" stop-color="#f7c77e" stop-opacity=".18"/><stop offset="1" stop-color="#f7c77e" stop-opacity="0"/></radialGradient>
+ <linearGradient id="earth" x2=".12" y2="1"><stop stop-color="#355743"/><stop offset="1" stop-color="#070e19"/></linearGradient>
+ <linearGradient id="sheen" x1="0" x2="1" y2=".45"><stop stop-color="#a9e7c1" stop-opacity=".66"/><stop offset="1" stop-color="#f7c77e" stop-opacity=".08"/></linearGradient>
+ <linearGradient id="mist" x2="0" y2="1"><stop stop-color="#a9e7c1" stop-opacity=".13"/><stop offset="1" stop-color="#a9e7c1" stop-opacity="0"/></linearGradient>
+</defs>
+<rect width="1440" height="760" fill="url(#sky)"/>
+<ellipse cx="1040" cy="240" rx="510" ry="355" fill="url(#halo)"/>
+<circle cx="59" cy="30" r="2.4" fill="#a9e7c1" opacity="0.15"/><circle cx="282" cy="137" r="1.15" fill="#a9e7c1" opacity="0.22"/><circle cx="505" cy="244" r="1.15" fill="#a9e7c1" opacity="0.29000000000000004"/><circle cx="728" cy="351" r="1.15" fill="#a9e7c1" opacity="0.36"/><circle cx="951" cy="458" r="1.15" fill="#a9e7c1" opacity="0.15"/><circle cx="1174" cy="15" r="2.4" fill="#a9e7c1" opacity="0.22"/><circle cx="1397" cy="122" r="1.15" fill="#a9e7c1" opacity="0.29000000000000004"/><circle cx="180" cy="229" r="1.15" fill="#a9e7c1" opacity="0.36"/><circle cx="403" cy="336" r="1.15" fill="#a9e7c1" opacity="0.15"/><circle cx="626" cy="443" r="1.15" fill="#a9e7c1" opacity="0.22"/><circle cx="849" cy="0" r="2.4" fill="#a9e7c1" opacity="0.29000000000000004"/><circle cx="1072" cy="107" r="1.15" fill="#a9e7c1" opacity="0.36"/><circle cx="1295" cy="214" r="1.15" fill="#a9e7c1" opacity="0.15"/><circle cx="78" cy="321" r="1.15" fill="#a9e7c1" opacity="0.22"/><circle cx="301" cy="428" r="1.15" fill="#a9e7c1" opacity="0.29000000000000004"/><circle cx="524" cy="535" r="2.4" fill="#a9e7c1" opacity="0.36"/><circle cx="747" cy="92" r="1.15" fill="#a9e7c1" opacity="0.15"/><circle cx="970" cy="199" r="1.15" fill="#a9e7c1" opacity="0.22"/><circle cx="1193" cy="306" r="1.15" fill="#a9e7c1" opacity="0.29000000000000004"/><circle cx="1416" cy="413" r="1.15" fill="#a9e7c1" opacity="0.36"/><circle cx="199" cy="520" r="2.4" fill="#a9e7c1" opacity="0.15"/><circle cx="422" cy="77" r="1.15" fill="#a9e7c1" opacity="0.22"/><circle cx="645" cy="184" r="1.15" fill="#a9e7c1" opacity="0.29000000000000004"/><circle cx="868" cy="291" r="1.15" fill="#a9e7c1" opacity="0.36"/><circle cx="1091" cy="398" r="1.15" fill="#a9e7c1" opacity="0.15"/><circle cx="1314" cy="505" r="2.4" fill="#a9e7c1" opacity="0.22"/>
+<circle cx="1080" cy="169" r="81" fill="#f3cf9c" opacity=".6"/><circle cx="1080" cy="169" r="118" fill="#eacc9a" opacity=".10"/>
+<path d="M0 424 170 270 335 380 480 258 640 385 805 280 997 430 1140 330 1440 455V760H0Z" fill="#1c4b48" opacity=".58"/>
+<path d="M0 530 128 444 257 481 390 426 585 540 790 427 1010 503 1232 391 1440 483V760H0Z" fill="#143e3e" opacity=".86"/>
+<path d="M0 613 185 562 353 612 565 545 747 603 935 545 1132 597 1325 548 1440 574V760H0Z" fill="#0d292e"/>
+<g fill="#435750" stroke="#819285" stroke-width="4" opacity=".95">
+<path d="M975 472V281h34V472Z"/><path d="M1106 472V281h34V472Z"/><path d="M943 276h229l-22-26H964Z"/><path d="M949 484h216v18H949Z"/>
+<path d="M1037 480V351a52 52 0 0 1 74 0v129Z" fill="#142c32" stroke="#718a77"/>
+<path d="M1160 527V330h28v197Z"/><path d="M1151 333h48v17h-48Z"/><path d="M1263 550V373h25v177Z"/><path d="M1252 379h46v17h-46Z"/>
+</g>
+<path d="M1036 477V376Q1071 321 1111 376V477" fill="#ddbc79" opacity=".21"/>
+<path d="M1167 250q50 49 3 140m-183-110q-61 40-35 121" stroke="#296c4a" stroke-width="15" fill="none"/>
+<path d="M0 590 Q270 470 435 574 T820 590" stroke="#34534b" stroke-width="110" fill="none" opacity=".54"/>
+<g fill="#1c4039"><path d="M0 0h77l-18 760H0Z"/><path d="M1396 0h44v760h-27Z"/></g>
+<g fill="#224c39"><ellipse cx="84" cy="640" rx="152" ry="80"/><ellipse cx="1349" cy="630" rx="165" ry="90"/><ellipse cx="258" cy="691" rx="133" ry="65"/></g>
+<g stroke="#70a777" stroke-width="4" opacity=".35"><path d="M420 681 465 637 478 588"/><path d="M423 679 385 627"/><path d="M730 700 698 650 709 604"/></g>
+<rect x="0" y="0" width="1440" height="760" fill="url(#mist)" opacity=".25"/>
+<path d="M0 690 Q250 655 480 702 T960 696 T1440 688 V760 H0" fill="#040b14" opacity=".36"/>
+</svg>
