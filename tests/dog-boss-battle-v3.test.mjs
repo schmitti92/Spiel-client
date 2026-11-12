@@ -496,3 +496,49 @@ test('K-07 sound opt-in and confirmed-hit-only audio; automatic camera with manu
  director.update(fight,1);
  assert.equal(scene.dataset.camera,'boss','first click manually focuses the boss');
 });
+
+test('K-08 both boss pages use identical and intentional stylesheet order',()=>{
+ const pages=['dog-boss10.html','dog-group-boss.html'];
+ const links=pages.map(page=>[...read(page).matchAll(/<link\s+rel="stylesheet"\s+href="\.\/([^"]+\.css\?v=[^"]+)"/g)]
+  .map(x=>x[1].split('?')[0]));
+ assert.deepEqual(links[0],links[1],'boss 10 and group boss use the same CSS cascade');
+ for(const list of links){
+  for(const name of ['dog-boss-battle-v3.css','dog-boss-weapon-strikes.css',
+   'dog-boss-signature-attacks.css','dog-boss-k07.css']){
+   assert.equal(list.filter(s=>s===name).length,1,name+' must appear exactly once');
+  }
+  const pos=name=>list.indexOf(name);
+  assert.ok(pos('dog-boss-battle-v3.css')<pos('dog-boss-weapon-strikes.css'));
+  assert.ok(pos('dog-boss-weapon-strikes.css')<pos('dog-boss-signature-attacks.css'));
+  assert.ok(pos('dog-boss-signature-attacks.css')<pos('dog-boss-k07.css'),
+   'camera, audio and FX safety overrides must be applied LAST');
+ }
+ const overrides=read('dog-boss-k07.css');
+ assert.match(overrides,/\[data-effects="off"\] \ .combat-stage|\[data-effects="off"\] \.combat-stage/);
+ assert.match(overrides,/\.combat-stage::after/);
+ assert.match(overrides,/content:none!important/);
+ assert.match(overrides,/prefers-reduced-motion:reduce/);
+ assert.doesNotMatch(overrides,/\[data-v3-impact="yes"\]\s+\[data-v3-strike-side="boss"\]/,
+  'strike side is on the parent scene, not a nested element');
+});
+test('K-08 timeline, hit confirmation and visual FX share one official event selector',()=>{
+ const source=read('dog-boss-battle-v3.js');
+ assert.equal((source.match(/const officialStrikes=view=>/g)||[]).length,1);
+ assert.equal((source.match(/officialStrikes\(view\)/g)||[]).length,2);
+ assert.equal((source.match(/view\.combat\.events:view\?\.miniGames\?\.exchange\?\.strikes/g)||[]).length,1);
+ const {derive}=load();
+ const v=view();v.miniGames.version=14;
+ const scripted=derive(v,begin+14500);
+ assert.equal(scripted.confirmed,false);
+ v.combat={version:1,events:[{uid:'chris',kind:'hero-strike',
+  round:0,slot:0,amount:70,atMs:14500}]};
+ const official=derive(v,begin+14500);
+ assert.equal(official.confirmed,true);
+ assert.equal(official.confirmedDamage,70);
+ const legacy=view();legacy.miniGames.version=10;
+ legacy.miniGames.exchange={strikes:[{uid:'chris',kind:'hero-strike',
+  round:0,slot:0,amount:50,atMs:14500}]};
+ assert.equal(derive(legacy,begin+14500).confirmedDamage,50,
+  'old battles must still read their historical confirmed strikes');
+ assert.doesNotMatch(source,/\bfetch\s*\(|XMLHttpRequest|firebase/i);
+});

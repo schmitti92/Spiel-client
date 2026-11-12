@@ -13,6 +13,12 @@
  const IMPACT_VISUAL_MS=420; // Camera flash only around the real contact
  const RECONNECT_BURST_GRACE_MS=1300; // Never replay old hits on reconnect
  const fmt=new Intl.NumberFormat('de-DE');
+ // K-08: one authoritative stream choice for timeline and damage labels.
+ // Old v1-v10 fights keep their historical strike field. Neither branch
+ // changes any hit, target, damage value, server timing or network activity.
+ const officialStrikes=view=>Number(view?.miniGames?.version)>=11&&
+  view?.combat?.version===1&&Array.isArray(view?.combat?.events)?
+  view.combat.events:view?.miniGames?.exchange?.strikes;
  // K-01: Every animation beat is relative to the server-confirmed hit.
  // Rendering only: no new combat rolls, requests or local HP values.
  const beat=(slotElapsed,hitInSlot,slotDuration)=>{
@@ -133,9 +139,7 @@
     // Combat uses the very same impact time as the server's LP breakdown.
     // If the stage has not been confirmed yet, animate without a damage number.
     const kind=defensive?'boss-strike':'hero-strike';
-    const confirmed=Number(view?.miniGames?.version)>=11&&
-     view?.combat?.version===1&&Array.isArray(view?.combat?.events)?
-     view.combat.events:view?.miniGames?.exchange?.strikes;
+    const confirmed=officialStrikes(view);
     const server=Array.isArray(confirmed)?confirmed.find(x=>
      x?.round===i&&x.uid===uid&&x.kind===kind&&x.slot===slot):null;
     const scriptedAtMs=end+(slot+IMPACT_BEAT)*slotDuration;
@@ -193,9 +197,7 @@
    }
   }
   function strikeEffects(view,state,heroNodes){
-   const provided=Number(view?.miniGames?.version)>=11&&
-     view?.combat?.version===1&&Array.isArray(view?.combat?.events)?
-     view.combat.events:view?.miniGames?.exchange?.strikes;
+   const provided=officialStrikes(view);
    if(!Array.isArray(provided)||!Number(view?.startedAt))return;
    const actors=new Set((view?.roster||[]).map(a=>a?.uid).filter(Boolean));
    const confirmed=provided.filter(x=>x&&

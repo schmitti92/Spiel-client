@@ -16,8 +16,10 @@
 .arena-live[data-arena-design="v3"] .combat-scene[data-camera="team"] .combat-hero-line{
  filter:drop-shadow(0 0 12px #88caff);
 }
-.arena-live[data-arena-design="v3"] .combat-scene[data-v3-impact="yes"]
- [data-v3-strike-side="boss"] .v3-impact-flare{opacity:1}
+/* K-08: The original selector incorrectly looked for strike-side on a
+ * descendant; both data attributes actually belong to .combat-scene.
+ * The confirmed-impact flare itself is owned by battle-v3/weapon-strikes.
+ * Do not duplicate its opacity rule in the camera/FX layer. */
 .arena-live[data-arena-design="v3"] .combat-scene[data-v3-impact="yes"][data-effects="on"]
  .combat-stage{filter:brightness(1.12) contrast(1.04)}
 /* FX off must be a real reduction, not just a changed icon. */
@@ -25,6 +27,15 @@
 .arena-live[data-arena-design="v3"] .combat-scene[data-effects="off"] .v3-class-effect,
 .arena-live[data-arena-design="v3"] .combat-scene[data-effects="off"] .battle-weapon-impact{
  visibility:hidden!important;animation:none!important;
+}
+/* Cosmetic impact slash/camera jolt must also respect the FX switch.
+ * The HP meter, numeric damage, hero/boss sprites and action text remain. */
+.arena-live[data-arena-design="v3"] .combat-scene[data-effects="off"] .combat-stage{
+ animation:none!important;filter:none!important;
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-effects="off"][data-v3-impact="yes"]
+ .combat-stage::after{
+ content:none!important;animation:none!important;
 }
 @media(prefers-reduced-motion:reduce){
  .arena-live[data-arena-design="v3"] .combat-scene[data-v3-impact="yes"] .combat-stage{
