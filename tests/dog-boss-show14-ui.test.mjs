@@ -46,14 +46,21 @@ test('14-second scene keeps combat readable until the final spectacular 5s count
  assert.equal(node('live-cinematic').hidden,false);
  assert.equal(node('cinematic-grand-countdown').hidden,true);
  assert.equal(node('live-cinematic').dataset.showVersion,'7');
- assert.equal(node('live-cinematic').dataset.showPhase,'impact');
+ assert.equal(node('live-cinematic').dataset.showPhase,'prepare');
+ assert.match(node('cinematic-header').textContent,/SAMMELT KRAFT/);
  ui.update(view,at+17000);
  assert.equal(node('cinematic-grand-countdown').hidden,true);
+ assert.equal(node('live-cinematic').dataset.showPhase,'prepare');
+ ui.update(view,at+19000);
+ assert.equal(node('live-cinematic').dataset.showPhase,'impact');
+ assert.match(node('cinematic-header').textContent,/TRIFFT/);
+ ui.update(view,at+20400);
  assert.equal(node('live-cinematic').dataset.showPhase,'result');
  ui.update(view,at+21000);
  assert.equal(node('cinematic-grand-countdown').hidden,false);
  assert.equal(node('cinematic-grand-digit').textContent,'5');
  assert.equal(node('live-cinematic').dataset.showPhase,'countdown');
+ assert.equal(node('.live-challenge').classList.contains('is-cinematic-countdown'),true);
  assert.equal(node('cinematic-grand-label').textContent,'NÄCHSTE RUNDE IN');
  assert.match(node('cinematic-grand-next').textContent,/Ausweichen/);
  assert.equal(node('cinematic-grand-ring').style['--show-sweep'],'360.00deg');
@@ -64,6 +71,7 @@ test('14-second scene keeps combat readable until the final spectacular 5s count
  ui.update(view,at+26000);
  assert.equal(node('live-cinematic').hidden,true);
  assert.equal(node('cinematic-grand-countdown').hidden,true);
+ assert.equal(node('.live-challenge').classList.contains('is-cinematic-countdown'),false);
  assert.equal(node('cinematic-start-flash').hidden,false);
  ui.update(view,at+26950);
  assert.equal(node('cinematic-start-flash').hidden,true);
@@ -104,4 +112,32 @@ test('new frontend exposes dramatic and accessible time display without new requ
   'boss-show-boss-strike','boss-show-number','prefers-reduced-motion:reduce',
   'data-show-phase="countdown"'])assert.ok(css.includes(token),token);
  assert.doesNotMatch(js,/XMLHttpRequest|\bfetch\(/);
+});
+
+test('the real 14s strike is centered and countdown occupies the minigame field',()=>{
+ const css=read('dog-boss-show-14.css');
+ for(const name of ['boss-show-hero-charge','boss-show-boss-strike',
+  'boss-show-hero-bolt','boss-show-boss-impact','boss-show-shield-flash']){
+  const frame=css.split('@keyframes '+name+'{')[1]?.split('\n}')[0]||'';
+  assert.ok(frame,'missing animation '+name);
+  assert.match(frame,/0%,(?:28|43|44|46)%/,'first part must not hit: '+name);
+  assert.match(frame,/5[0123]%/,'impact must occur near scene midpoint: '+name);
+ }
+ for(const asset of ['dog-boss10.html','dog-group-boss.html']){
+  const html=read(asset);
+  const mini=html.indexOf('id="mini-game"');
+  const ring=html.indexOf('id="cinematic-grand-countdown"');
+  const cinema=html.indexOf('id="live-cinematic"');
+  assert.ok(mini>0&&mini<ring&&ring<cinema,
+   'countdown must live in minigame panel before cinematic overlay: '+asset);
+ }
+ assert.match(css,/live-challenge\.is-cinematic-countdown/);
+ const {ui,view,node}=fakeUI();
+ ui.update(view,at+34100);
+ assert.equal(node('cinematic-grand-countdown').hidden,true);
+ ui.update(view,at+43000);
+ assert.equal(node('cinematic-grand-countdown').hidden,false);
+ assert.equal(node('.live-challenge').classList.contains('is-defense'),true);
+ ui.update(view,at+48000);
+ assert.equal(node('.live-challenge').classList.contains('is-defense'),false);
 });
