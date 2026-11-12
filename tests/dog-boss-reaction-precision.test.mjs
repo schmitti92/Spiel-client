@@ -64,6 +64,65 @@ test('v9 draws an exact narrow hitbox and triggers on pointerdown at real synchr
  assert.ok(bar.classList.contains('is-tap'));
  assert.match(root.children[2].textContent,/Server|KONTER|überprüft/i);
 });
+test('M-04 v14 records three real taps immediately, submitting only once',async()=>{
+ const {root,ui,view,requests,setNow}=setup(14);
+ view.miniGames.rounds[3].zoneRadius=.058;
+ setNow(epoch+77010);ui.update(view,epoch+77010,true);
+ const body=root.children[1];
+ const button=body.children.find(e=>e.className.includes('mini-reaction'));
+ const marks=body.children.find(e=>e.className==='mini-reaction-steps').children;
+ assert.equal(marks.length,3);
+ const taps=[];
+ for(let ms=77000;ms<84800;ms+=10){
+  const t=(ms-77000)/1000,cycles=.68*t+(.075+.004)*t*t;
+  const fraction=1-Math.abs(1-cycles%2);
+  if(Math.abs(fraction-.5)>.02)continue;
+  if(!taps.length||ms-taps.at(-1)>=550)taps.push(ms);
+  if(taps.length===3)break;
+ }
+ assert.equal(taps.length,3);
+ for(let i=0;i<3;i++){
+  setNow(epoch+taps[i]);ui.update(view,epoch+taps[i],true);
+  button.dispatch('pointerdown',{isPrimary:true});
+  button.click();
+  if(i<2){
+   assert.equal(requests.length,0,'clicks must not be blocked by a network request');
+   assert.ok(marks[i].classList.contains('is-local'));
+   assert.equal(button.disabled,false);
+  }
+ }
+ await Promise.resolve();await Promise.resolve();
+ assert.equal(requests.length,1);
+ assert.deepEqual([...requests[0].value],[1,1,1]);
+ assert.deepEqual([...requests[0].tapAt],taps.map(ms=>epoch+ms));
+ assert.ok(button.disabled);
+ view.miniGames.myAnswers[3]={attempts:[{step:0,correct:true},
+  {step:1,correct:false},{step:2,correct:true}]};
+ ui.update(view,epoch+84400,true);
+ assert.match(root.children[2].textContent,/SERVER BESTÄTIGT · 2 \/ 3/);
+ assert.ok(marks[0].classList.contains('is-safe'));
+ assert.ok(marks[1].classList.contains('is-miss'));
+});
+test('M-04 ignores double taps and flushes two captures once at round end',async()=>{
+ const {root,ui,view,requests,setNow}=setup(14);
+ setNow(epoch+77500);ui.update(view,epoch+77500,true);
+ const button=root.children[1].children.find(e=>e.className.includes('mini-reaction'));
+ button.dispatch('pointerdown',{isPrimary:true});
+ button.click();
+ setNow(epoch+77700);button.dispatch('pointerdown',{isPrimary:true});
+ setNow(epoch+78500);ui.update(view,epoch+78500,true);
+ button.dispatch('pointerdown',{isPrimary:true});
+ assert.match(root.children[2].textContent,/2 \/ 3 KONTER ERFASST/);
+ assert.equal(requests.length,0);
+ setNow(epoch+85500);ui.update(view,epoch+85500,true);
+ await Promise.resolve();await Promise.resolve();
+ assert.equal(requests.length,1);
+ assert.deepEqual([...requests[0].value],[1,1]);
+ assert.deepEqual([...requests[0].tapAt],[epoch+77500,epoch+78500]);
+ ui.update(view,epoch+85600,true);
+ assert.equal(requests.length,1);
+});
+
 test('previous v8 reaction remains wide and does not require a tap timestamp',async()=>{
  const {root,ui,view,requests,setNow}=setup(8);
  setNow(epoch+78000);

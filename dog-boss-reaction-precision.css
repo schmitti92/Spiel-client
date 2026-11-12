@@ -73,3 +73,50 @@
   will-change:auto
  }
 }
+
+/* M-04: the three Konter presses remain interactive without server pauses. */
+.arena-live .mini-tactical.is-precise-reaction .mini-choices{
+ display:flex;flex-direction:column;align-items:center;gap:10px;
+}
+.arena-live .mini-reaction-guide{
+ width:100%;text-align:center;color:#effad6;
+ font-size:clamp(12px,2vw,16px);font-weight:850;letter-spacing:.025em;
+}
+.arena-live .mini-reaction-steps{
+ display:flex;width:min(100%,370px);gap:9px;
+ justify-content:center;align-items:center;
+}
+.arena-live .mini-reaction-step{
+ display:grid;place-items:center;width:42px;height:35px;
+ background:#162b45;color:#d8e4fa;border:2px solid #6885a7;
+ border-radius:9px;font-size:16px;font-weight:950;
+}
+.arena-live .mini-reaction-step.is-next{
+ border-color:#ffdf9d;box-shadow:0 0 0 2px #ccaa6e2e;
+}
+.arena-live .mini-reaction-step.is-local{
+ border-style:dashed;border-color:#85d3ed;color:#c8f3ff;
+ background:#34506b;
+}
+.arena-live .mini-reaction-step.is-confirmed.is-safe{
+ border-color:#61ffba;color:#e7fff0;background:#14543e;
+}
+.arena-live .mini-reaction-step.is-confirmed.is-miss{
+ border-color:#ff9e9e;color:#ffe5e5;background:#6e323c;
+}
+.arena-live .mini-reaction-verdict{
+ padding:7px 12px;width:100%;min-height:27px;text-align:center;
+ color:#e9f2ff;font-weight:800;font-size:clamp(12px,1.9vw,15px);
+ border-radius:10px;background:#18324d;border:1px solid #5d91b3;
+}
+.arena-live .mini-reaction-verdict[data-state="pending"]{
+ background:#504122;border-color:#e6ca8a;color:#fff1c6;
+}
+.arena-live .mini-reaction-verdict[data-state="confirmed"]{
+ background:#18523c;border-color:#9bf4bb;color:#e5ffef;
+}
+@media(max-width:620px){
+ .arena-live .mini-tactical.is-precise-reaction .mini-choices{gap:7px}
+ .arena-live .mini-reaction-step{height:29px;width:38px}
+ .arena-live .mini-reaction-verdict{padding:5px 8px}
+}
