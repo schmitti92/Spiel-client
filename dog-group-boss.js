@@ -187,6 +187,11 @@
   combatFx?.update(view,now());
   $('retry-button').hidden=!pendingOp;
   $('retry-button').disabled=working;
+  // No empty status strip below the battlefield during an active fight.
+  // Keep real action and recovery buttons reachable when they are needed.
+  const squad=$('boss-squad');
+  if(squad)squad.hidden=['fighting','victory'].includes(state)&&
+   ready.hidden&&start.hidden&&reaction.hidden&&$('retry-button').hidden;
   preflight?.update(view,now());
   const duration=(Number(view?.endsAt)>Number(view?.startedAt)?
    view.endsAt-view.startedAt:view?.miniGames?.version===3?40000:
