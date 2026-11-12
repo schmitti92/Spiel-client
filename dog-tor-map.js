@@ -37,7 +37,9 @@
  if($('pilot-code'))$('pilot-code').value=pilotKey;
  const worldRoot=$('worlds'),details=$('details'),pathList=[];
  const gateButtons=new Map();
- let mapState=null,selectedGate=null,working=false,mapRequestEpoch=0,lastFight=null;
+ let mapState=null,selectedGate=null,working=false,mapRequestEpoch=0,lastFight=null,heroSaving=false;
+ const HERO_CLASSES=['krieger','magierin','waechter'];
+ const HERO_LABELS={krieger:'Krieger',magierin:'Magierin',waechter:'Wächter'};
  const API=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
  const $node=(tag,klass,text)=>{
   const el=document.createElement(tag);
@@ -155,10 +157,10 @@
    const member=team[i];
    const card=$node('div','member-card hero-'+(i+1)+(member?.isMe?' own':'')); 
    if(member){
-    const avatar=$node('span','member-avatar',member.name.slice(0,1).toUpperCase());
+    const avatar=$node('span','member-avatar dog-hero-art is-'+(HERO_CLASSES.includes(member.heroClass)?member.heroClass:HERO_CLASSES[i]),member.name.slice(0,1).toUpperCase());
     const text=$node('div','member-copy');
     text.append($node('strong',null,member.name+(member.isMe?' (du)':'')));
-    text.append($node('span',null,'📍 Aktuell: Tor '+member.currentGate));
+    text.append($node('span',null,'🎭 '+(HERO_LABELS[member.heroClass]||HERO_LABELS[HERO_CLASSES[i]])+' · 📍 Tor '+member.currentGate));
     text.append($node('small',null,'🏅 Höchstes erreichtes Tor: '+
      (member.highestGate??member.currentGate)));
     text.append($node('small',null,member.lastAttemptAt?
@@ -172,7 +174,15 @@
    area.append(card);
   }
   const logged=auth();
-  const join=$('team-join');
+  const selector=$('hero-selection');
+   const mine=team.find(m=>m.isMe);
+   selector.hidden=!mine;
+   for(const choice of selector.querySelectorAll('[data-hero-class]')){
+    const selected=choice.dataset.heroClass===(mine?.heroClass||'krieger');
+    choice.setAttribute('aria-pressed',String(selected));
+    choice.disabled=heroSaving||!mine;
+   }
+   const join=$('team-join');
   join.hidden=!logged||!mapState||mapState.isMember||!mapState.canJoin;
   join.disabled=working;
   updateMarkers();
@@ -336,7 +346,23 @@
     '⚠️ Hinzufügen nicht bestätigt: '+e.message;
   }finally{working=false;$('pilot-add-bots').disabled=!auth();}
  }
- async function joinTeam(){
+ async function chooseHero(heroClass){
+   const account=auth()?.user?.uid;
+   if(!HERO_CLASSES.includes(heroClass)||!account||heroSaving||!mapState?.isMember)return;
+   const current=mapState.members?.find(m=>m.isMe)?.heroClass;
+   if(current===heroClass)return;
+   heroSaving=true;renderMembers();
+   $('hero-selection-status').textContent='⏳ Charakter wird sicher gespeichert …';
+   try{
+    const result=await request('POST','hero',{heroClass},account);
+    if(auth()?.user?.uid!==account)return;
+    mapState=result;
+    $('hero-selection-status').textContent='✅ '+HERO_LABELS[heroClass]+' ausgewählt. Deine Mitspieler sehen die Figur beim nächsten Laden.';
+   }catch(e){
+    $('hero-selection-status').textContent='⚠️ Nicht gespeichert: '+e.message+'. Bitte erneut versuchen.';
+   }finally{heroSaving=false;renderMembers();}
+  }
+  async function joinTeam(){
   const account=auth()?.user?.uid;
   if(!account||working||!mapState?.canJoin)return;
   working=true;renderMembers();setTeamStatus('🛡️ Du wirst der Expedition hinzugefügt …');
@@ -525,6 +551,10 @@
  $('team-refresh').addEventListener('click',()=>void reloadMap());
  $('pilot-add-bots').addEventListener('click',()=>void addTwoBots());
  $('team-join').addEventListener('click',()=>void joinTeam());
+ $('hero-selection').addEventListener('click',e=>{
+  const button=e.target?.closest?.('[data-hero-class]');
+  if(button)void chooseHero(button.dataset.heroClass);
+ });
  $('gate-battle-button').addEventListener('click',()=>void fightGate(false));
  $('gate-retry-button').addEventListener('click',()=>void fightGate(true));
  window.addEventListener('spielonline-change',()=>void reloadMap());
