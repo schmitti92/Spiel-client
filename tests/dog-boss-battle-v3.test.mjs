@@ -185,3 +185,33 @@ test('damage pops once above the actually hit target and can show a verified blo
  assert.ok(heroes[1].children.some(x=>x.textContent==='BLOCK!'));
  assert.match(log.textContent,/BLOCK!/);
 });
+
+test('v12 runs all five minigames; the extra 10-second Finalschlag triggers three closing hits before the result',()=>{
+ const {derive}=load(),v=view();
+ v.miniGames.version=12;
+ v.miniGames.rounds=[...rounds,
+  {round:4,kind:'target',startMs:101000,endMs:111000,maxSteps:10}];
+ v.endsAt=begin+125000;
+ assert.equal(derive(v,begin+100999).kind,'countdown');
+ assert.equal(derive(v,begin+101000).kind,'minigame');
+ assert.equal(derive(v,begin+110999).kind,'minigame');
+ assert.equal(derive(v,begin+111000).kind,'hero-strike');
+ assert.equal(derive(v,begin+112000).uid,'chris');
+ assert.equal(derive(v,begin+116500).uid,'nova');
+ assert.equal(derive(v,begin+120500).uid,'titan');
+ assert.equal(derive(v,begin+121999).kind,'hero-strike');
+ assert.equal(derive(v,begin+122000).kind,'countdown');
+ assert.equal(derive(v,begin+124999).kind,'countdown');
+ assert.equal(derive(v,begin+125000).kind,'result');
+ const legacy=view();
+ assert.equal(derive(legacy,begin+101000).kind,'result',
+  'already active four-minigame battles keep their historical timeline');
+ const sheet=read('dog-boss-battle-v3.css');
+ assert.match(sheet,/mini-tactical\.is-final-attack/);
+ for(const p of ['dog-boss10.html','dog-group-boss.html']){
+  const html=read(p);
+  assert.match(html,/dog-boss-mini-ui\.js\?v=20261112-final5-runes1/);
+  assert.match(html,/dog-boss-live-ui\.js\?v=20261112-final5-runes1/);
+  assert.match(html,/dog-boss-battle-v3\.js\?v=20261112-final5-runes1/);
+ }
+});
