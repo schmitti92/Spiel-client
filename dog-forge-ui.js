@@ -22,6 +22,7 @@
  const material=Object.fromEntries(MATERIALS.flatMap(g=>g.values.map(([id,icon,name],index)=>[
   id,{id,icon,name,index,group:g.group}
  ])));
+ const merchantMode=document.body?.dataset.dogArea==='merchant';
  const tabLabels={equipment:'⚔️ Ausrüstung',attack:'💥 Angriff',defense:'🛡️ Abwehr',exchange:'💎 Tausch'};
  // Independent look-and-feel tokens: extending a skill requires one entry and one SVG.
  // Attack = warm tones, defense = restorative/cool tones. No combat data lives here.
@@ -72,7 +73,7 @@
   if(textValue!==undefined)el.textContent=String(textValue);
   return el;
  };
- let uid=null,view=null,busy=false,tab='equipment',selected='weapon',tradeGroup='equipment',loadSerial=0,readyOnly=false,confirmData=null,exchangeConfirmData=null,goalId=null,sessionEpoch=0,lastLoadedAt=0,loadingUid=null,loadingPromise=null;
+ let uid=null,view=null,busy=false,tab=merchantMode?'exchange':'equipment',selected='weapon',tradeGroup='equipment',loadSerial=0,readyOnly=false,confirmData=null,exchangeConfirmData=null,goalId=null,sessionEpoch=0,lastLoadedAt=0,loadingUid=null,loadingPromise=null;
  let chronicleView=undefined,chronicleUid=undefined,stockView=undefined,stockUid=undefined;
  const goalKey=account=>'dog:forge:goal:'+account;
  const loadGoal=account=>{
@@ -228,7 +229,7 @@
   const state=auth();
   $('forge-player').textContent=state?.profile?.name||state?.user?.displayName||'Nicht angemeldet';
   const invested=view?view.items.reduce((sum,i)=>sum+Math.max(0,levelFor(i.id)-(i.baseLevel||0)),0):0;
-  $('forge-player-note').textContent=view?'Bereit für deine nächste Verbesserung':'Persönliches Heldenprofil';
+  $('forge-player-note').textContent=view?(merchantMode?'Dein Rohstoffhandel ist bereit':'Bereit für deine nächste Verbesserung'):'Persönliches Heldenprofil';
   const classLabel=$('forge-class-badge');
   if(classLabel)classLabel.textContent=window.DogHeroEquipment?.label(heroClass())||'Held noch nicht gewählt';
   document.body.dataset.heroClass=window.DogHeroEquipment?.normalize(heroClass())||'';
@@ -370,20 +371,36 @@
    }
    return;
   }
-  const all=set.filter(x=>x.group===tab);
+  const areas=merchantMode?[tab]:['equipment','attack','defense'];
+  for(const group of areas){
+   let target=container;
+   if(!merchantMode){
+    const titles={
+     equipment:['⚔️ Waffen & Rüstung','Deine charaktergebundene Ausrüstung'],
+     attack:['💥 Angriffsfähigkeiten','Stärke, Präzision und Spezialangriffe'],
+     defense:['🛡️ Abwehrfähigkeiten','Schutz, Ausweichen und Regeneration']
+    };
+    const block=node('section','forge-item-group forge-item-group-'+group);
+    const title=node('div','forge-area-heading');
+    title.append(node('h3',null,titles[group][0]),
+     node('p',null,titles[group][1]));
+    const grid=node('div','forge-area-grid');
+    block.append(title,grid);container.append(block);target=grid;
+   }
+   const all=set.filter(x=>x.group===group);
   const items=readyOnly?all.filter(x=>canUpgradeItem(x.id)):
    [...all].sort((a,b)=>Number(canUpgradeItem(b.id))-Number(canUpgradeItem(a.id)));
   if(!items.length){
    const textValue=!view?'Schmiedewerte werden geladen …':
     readyOnly?'Hier ist gerade keine Verbesserung möglich. Sammle Rohstoffe oder zeige alle an.':
     'Keine Verbesserungen vorhanden.';
-   container.append(node('p','list-placeholder',textValue));
+   target.append(node('p','list-placeholder',textValue));
    if(view&&readyOnly){
     const show=node('button','show-all-forge','Alle anzeigen');
     show.type='button';show.addEventListener('click',()=>{readyOnly=false;render();});
-    container.append(show);
+    target.append(show);
    }
-   return;
+   continue;
   }
   for(const item of items){
    const button=node('button','item-choice'+(selected===item.id?' selected':''));
@@ -409,8 +426,9 @@
    const track=node('div','item-bar'),fill=node('span');
    fill.style.width=Math.min(100,Math.round(levelFor(item.id)/item.maxLevel*100))+'%';
    track.append(fill);info.append(track);button.append(icon,info);
-   button.addEventListener('click',()=>{selected=item.id;render();});
-   container.append(button);
+   button.addEventListener('click',()=>{tab=item.group;selected=item.id;render();});
+   target.append(button);
+  }
   }
  }
  function costTile(id,amount){
@@ -550,10 +568,8 @@
      money(count)+' × '+(material[suggestion.id]?.name||suggestion.id)+
      ' aus '+money(count*10)+' × '+(material[suggestion.source]?.name||suggestion.source)+
      (suggestion.possible<suggestion.missing?' · nur teilweise ausreichend':'')));
-    const jump=node('button',null,'Zum Tausch');
-    jump.type='button';jump.disabled=!view||busy;
-    jump.addEventListener('click',()=>{tab='exchange';tradeGroup=suggestion.group;render();});
-    line.append(jump);panel.append(line);
+    line.append(node('span','merchant-tab-hint','💎 Im Händler oben im Register tauschen'));
+    panel.append(line);
    }
    root.append(panel);
   }
@@ -671,13 +687,13 @@
    else if(!all.some(x=>x.id===selected))selected=(readyOnly&&available.length?available[0]:all[0]).id;
   }
   const toolbar=$('forge-list-toolbar');toolbar.hidden=tab==='exchange';
-  const readyCount=all.filter(x=>canUpgradeItem(x.id)).length;
+  const readyCount=(merchantMode?all:(view?.items||[])).filter(x=>canUpgradeItem(x.id)).length;
   $('forge-ready-count').textContent=String(readyCount);
   const filter=$('forge-ready-filter');filter.disabled=!view||busy;
   filter.setAttribute('aria-pressed',String(readyOnly));
   filter.classList.toggle('active',readyOnly);
   $('forge-list-summary').textContent=view?
-   readyCount+' von '+all.length+' bereit':'Verbesserungen laden …';
+   readyCount+' von '+(merchantMode?all.length:(view?.items||[]).length)+' bereit':'Verbesserungen laden …';
   for(const button of document.querySelectorAll('.forge-tab')){
    const isActive=button.dataset.tab===tab;
    button.classList.toggle('active',isActive);
@@ -687,7 +703,7 @@
   $('forge-retry-wrap').hidden=!currentAccount||!pending(uid);
   $('forge-retry').disabled=!currentAccount||!uid||busy;
   $('forge-refresh').disabled=busy;
-  header();renderList();tab==='exchange'?renderExchange():renderUpgrade();renderGoal();renderChronicle();renderStock();renderGallery();
+  header();renderList();merchantMode?renderExchange():renderUpgrade();renderGoal();renderChronicle();renderStock();renderGallery();
  }
  const closeModal=()=>{const dialog=$('forge-result');if(dialog.open)dialog.close();};
  function resultDialog(result,newlyUnlocked=[]){
@@ -764,7 +780,8 @@
    if(uid!==account||requestIndex!==loadSerial)return;
    view=payload;lastLoadedAt=Date.now();
    status(pending(account)?'⚠️ Noch nicht bestätigte Aktion – bitte sicher wiederholen.':
-    '✦ Bereit. Wähle eine Verbesserung oder tausche Rohstoffe.',
+    merchantMode?'💎 Händler bereit. Tausche Rohstoffe im Verhältnis 10 : 1.':
+     '✦ Bereit. Wähle eine Waffe, Rüstung oder Fähigkeit.',
     pending(account)?'bad':'good');
   }catch(e){
    if(uid!==account||requestIndex!==loadSerial)return;

@@ -1,0 +1,27 @@
+/* Class-based forge grouping and a dedicated 100-Tore merchant. */
+body:not(.merchant-page) .forge-tabs{display:none!important}
+body:not(.merchant-page) #forge-item-list.equipment-list{display:flex;flex-direction:column;gap:18px;max-height:none;overflow:visible}
+.forge-item-group{padding:15px;border:1px solid #7890ad77;border-radius:16px;background:linear-gradient(135deg,#111f34e8,#101829ef)}
+.forge-item-group-equipment{border-color:#e8bf7793;background:linear-gradient(135deg,#30272ceb,#111f33ef)}
+.forge-item-group-attack{border-color:#cb816c92;background:linear-gradient(135deg,#2e232cec,#121e30ef)}
+.forge-item-group-defense{border-color:#72b4bb92;background:linear-gradient(135deg,#193340e9,#121d31ef)}
+.forge-area-heading{padding:0 0 11px;margin:0 0 12px;border-bottom:1px solid #ffffff22}
+.forge-area-heading h3{font:850 19px Georgia,serif;color:#ffe3af;margin:0 0 5px}
+.forge-area-heading p{color:#c8d1df;font-size:11px;line-height:1.5;margin:0}
+.forge-area-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.forge-item-group .item-choice{min-height:75px}
+.forge-item-group .item-choice.selected{box-shadow:0 0 0 1px #d5ae6569,0 0 16px #d5ae6535}
+.merchant-tab-hint{color:#ffe6b6;font-size:11px;font-weight:800}
+body.merchant-page .forge-workspace{display:block;max-width:1040px;margin:17px auto}
+body.merchant-page .forge-workspace .workshop-panel{display:none!important}
+body.merchant-page .forge-workspace .upgrade-panel{width:100%;padding:clamp(16px,3vw,32px);background:radial-gradient(ellipse at 92% 4%,#c29a5738,transparent 65%),linear-gradient(130deg,#282534f2,#101c30ed)}
+body.merchant-page .forge-goal-banner,body.merchant-page .forge-chronicle,body.merchant-page .forge-gallery-open{display:none!important}
+body.merchant-page .forge-stock{max-width:1040px;margin:18px auto}
+.merchant-intro{max-width:1040px;margin:18px auto 0;padding:16px 20px;background:linear-gradient(125deg,#392d34e9,#14243ae9);border:1px solid #e6c18d78;border-radius:18px;text-align:center}
+.merchant-intro strong{display:block;font:800 20px Georgia,serif;color:#ffe4aa;margin-bottom:6px}
+.merchant-intro p{font-size:13px;line-height:1.55;color:#dce4ec;margin:0}
+body.merchant-page .exchange-groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+body.merchant-page .exchange-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+body.merchant-page .exchange-controls{grid-template-columns:minmax(90px,.8fr) minmax(110px,1.35fr) auto}
+@media(max-width:810px){body.merchant-page .exchange-list{grid-template-columns:1fr}}
+@media(max-width:560px){.forge-area-grid{grid-template-columns:1fr}body.merchant-page .exchange-groups{grid-template-columns:1fr}body.merchant-page .exchange-controls{grid-template-columns:1fr auto}body.merchant-page .exchange-quantity-preview{grid-column:1/-1}}

@@ -375,7 +375,7 @@ test('D3 validates direct material advice and does not auto-spend resources',()=
  assert.ok(ui.includes('const spare=Math.max(0,have(source)-reserve)'));
  assert.ok(ui.includes('Math.floor(spare/10)'));
  assert.ok(ui.includes('1000000-have(id)'));
- assert.ok(ui.includes("tab='exchange';tradeGroup=suggestion.group;render();"));
+ assert.ok(ui.includes("Im Händler oben im Register tauschen"));
  assert.ok(ui.includes('exchangeHints(quote)'));
  assert.ok(ui.includes('nur teilweise ausreichend'));
 });

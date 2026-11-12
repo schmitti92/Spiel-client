@@ -3,7 +3,8 @@
  const pages=[
   ['dog-expedition.html','📦 Start & Lager','Kisten und Rohstoffe'],
   ['dog-tor-map.html','🗺️ 100-Tore-Karte','Alle Tore und fünf Welten'],
-  ['dog-forge.html','⚒️ Schmiede','Ausrüstung und Fähigkeiten'],
+  ['dog-forge.html','⚒️ Schmiede','Waffen, Rüstung und Fähigkeiten'],
+  ['dog-merchant.html','💎 Händler','Rohstoffe im Verhältnis 10:1 tauschen'],
   ['dog-ascension.html','✨ Aufstieg','Neue Schmiedestufen'],
   ['dog-boss10.html','🐉 Boss 10','Gemeinsamer Boss 10'],
   ['dog-boss.html','🔥 Tor-1-Arena','Bisherige Testarena']

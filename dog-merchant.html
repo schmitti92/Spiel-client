@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0c1019">
+<meta name="description" content="Der Händler der 100 Tore: sicherer Rohstofftausch 10 zu 1.">
+<title>💎 Der Händler · Die 100 Tore</title>
+<link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-d5">
+<link rel="stylesheet" href="./dog-hero-equipment.css?v=20261112-hero-gear1">
+<link rel="stylesheet" href="./dog-forge-areas.css?v=20261112-merchant1">
+<script src="./profile-config.js"></script>
+<script src="./profile-auth.js"></script>
+<script src="./dog-hero-equipment.js?v=20261112-hero-gear1"></script>
+<script src="./dog-forge-ui.js?v=20261112-merchant1" defer></script>
+<script src="./dog-forge-gallery.js?v=20261110-forge-d5&amp;classGear=1" defer></script>
+<script src="./dog-forge-fx.js?v=20261110-forge-d2" defer></script>
+<script src="./dog-forge-ceremony.js?v=20261110-forge-d2" defer></script>
+<script src="./site-global-controls.js?v=20261109-global-1" defer></script>
+<link rel="stylesheet" href="./dog-event-tabs.css?v=20261112-only-top-tabs2">
+<script src="./dog-event-tabs.js?v=20261112-merchant1" defer></script>
+</head>
+<body class="merchant-page" data-dog-area="merchant" data-forge-background=""
+      data-forge-background-desktop="./dog-forge-art/forge-workshop-desktop.webp"
+      data-forge-background-mobile="./dog-forge-art/forge-workshop-mobile.webp">
+<div class="forge-canvas">
+ <nav class="top-nav" aria-label="Navigation">
+  <a class="nav-back" href="./dog-expedition.html" id="forge-back">← Die 100 Tore</a>
+  <a class="nav-link" href="./dog-expedition.html" id="forge-materials">📦 Rohstoffkisten</a>
+  <a class="nav-link" href="./dog-boss.html" id="forge-boss">🔥 Zur Bossarena</a>
+  <button type="button" id="forge-scene-toggle" class="nav-sound" aria-pressed="true" aria-label="Schmiedehintergrund ausblenden" title="Fantasy-Werkstatt ein- oder ausblenden">🏰 Werkstatt an</button>
+  <button type="button" id="forge-sound-toggle" class="nav-sound" aria-pressed="false" aria-label="Schmiedegeräusche einschalten" title="Optionale Schmiedegeräusche">🔇 Ton aus</button>
+  <button type="button" id="forge-refresh" class="nav-reload">↻ Aktualisieren</button>
+ </nav>
+
+ <header class="forge-header">
+  <div class="forge-kicker"><span class="ember">✦</span> DIE 100 TORE <span class="kicker-line"></span> DEIN ROHSTOFFHANDEL</div>
+  <h1>Der magische <span>Händler</span></h1>
+  <p class="subtitle">Verwandle überschüssige Materialien in wertvollere Rohstoffe für deine Expedition.</p>
+ </header>
+
+ <section class="forge-banner" aria-label="Persönlicher Fortschritt">
+  <div class="character-emblem gear-stage-1" id="hero-emblem" aria-hidden="true">
+   <div class="character-orbit"></div>
+   <div class="character-silhouette"><img id="hero-emblem-art" src="./dog-forge-art/armor-1.svg" alt="" width="76" height="76"></div>
+  </div>
+  <div class="banner-player">
+   <span class="eyebrow">PERSÖNLICHER HELD</span>
+   <h2 id="forge-player">Wird geladen …</h2>
+   <span id="forge-class-badge" class="forge-class-badge">Heldenklasse wird geladen …</span>
+   <span id="forge-gate-cap" class="forge-display-title" hidden>⚒️ Deine gemeinsame Aufstiegsgrenze wird geladen …</span>
+   <span class="hero-rank" id="forge-rank">✦ Neuling</span>
+   <span class="forge-display-title" id="forge-display-title">Schmiedelehrling</span>
+   <span id="forge-player-note">Deine Fortschritte bleiben gespeichert.</span>
+   <button type="button" id="forge-gallery-open" class="forge-gallery-open" disabled>🏆 Meine Heldengalerie</button>
+  </div>
+  <div class="hero-metrics">
+   <div class="metric"><span>⚔️ Waffe</span><strong id="forge-weapon-level">1<small>/20</small></strong></div>
+   <div class="metric"><span>🛡️ Rüstung</span><strong id="forge-armor-level">1<small>/20</small></strong></div>
+   <div class="metric"><span>💥 Angriff</span><strong id="forge-attack-total">0</strong></div>
+   <div class="metric"><span>❤️ Abwehr</span><strong id="forge-defense-total">0</strong></div>
+  </div>
+ </section>
+
+ <p id="forge-status" class="forge-status" role="status" aria-live="polite">Verbinde die Schmiede mit deinem Spielerprofil …</p>
+ <div id="forge-retry-wrap" class="retry-bar" hidden>
+  <span>Eine Aktion muss noch bestätigt werden.</span>
+  <button type="button" class="minor-button" id="forge-retry">↻ Sicher wiederholen</button>
+ </div>
+ <section class="forge-goal-banner" id="forge-goal-banner" aria-label="Persönliches Verbesserungsziel" hidden>
+  <div class="forge-goal-visual" id="forge-goal-visual" aria-hidden="true">🎯</div>
+  <div class="forge-goal-body">
+   <span class="forge-goal-kicker">🎯 DEIN NÄCHSTES SCHMIEDEZIEL</span>
+   <strong id="forge-goal-title">Noch kein Ziel festgelegt</strong>
+   <span id="forge-goal-desc">Wähle eine Verbesserung und markiere sie als Ziel.</span>
+   <div class="forge-goal-progress"><span id="forge-goal-progress"></span></div>
+  </div>
+  <div class="forge-goal-actions">
+   <button type="button" id="forge-goal-open">Ansehen</button>
+   <button type="button" id="forge-goal-clear" aria-label="Verbesserungsziel entfernen" title="Ziel entfernen">✕</button>
+  </div>
+ </section>
+
+ <section class="merchant-intro"><strong>💎 Der magische Rohstoffhandel</strong>
+<p>10 gleiche Rohstoffe ergeben 1 Rohstoff der nächsten Stufe. Bis zu 100 Tausche in einem Auftrag sind möglich – sicher über deinen Online-Spielstand.</p></section>
+<div class="forge-workspace" id="forge-workspace">
+  <section class="workshop-panel">
+   <div class="panel-title"><span class="ornament">✦</span><h2>Handelsangebote</h2><span class="panel-rule"></span></div>
+   <div class="forge-tabs" role="tablist" aria-label="Schmiedebereiche">
+    <button class="forge-tab active" type="button" data-tab="equipment" role="tab" aria-selected="true">⚔️ <span>Ausrüstung</span></button>
+    <button class="forge-tab" type="button" data-tab="attack" role="tab" aria-selected="false">💥 <span>Angriff</span></button>
+    <button class="forge-tab" type="button" data-tab="defense" role="tab" aria-selected="false">🛡️ <span>Abwehr</span></button>
+    <button class="forge-tab" type="button" data-tab="exchange" role="tab" aria-selected="false">💎 <span>Tausch</span></button>
+   </div>
+   <div class="furnace" aria-hidden="true">
+    <div class="furnace-arches"></div>
+    <div class="fire-glow"></div>
+    <div class="furnace-flames"><i></i><i></i><i></i><i></i></div>
+    <div class="furnace-fire">🔥</div>
+    <div class="furnace-embers">
+     <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+    <div class="forge-anvil">⚒️</div>
+    <div class="forge-impact" aria-hidden="true"><span></span><span></span><span></span></div>
+    <span class="spark s1">✦</span><span class="spark s2">✧</span><span class="spark s3">✦</span>
+    <div class="furnace-floor"></div>
+    <div class="furnace-label">✦ AUS FEUER WIRD STÄRKE ✦</div>
+   </div>
+   <div class="forge-list-toolbar" id="forge-list-toolbar">
+    <span id="forge-list-summary" aria-live="polite">Verbesserungen laden …</span>
+    <button type="button" class="ready-filter" id="forge-ready-filter" aria-pressed="false" title="Nur aktuell bezahlbare Verbesserungen zeigen">
+      <span>✦ Nur möglich</span><b id="forge-ready-count">0</b>
+    </button>
+   </div>
+   <div class="equipment-list" id="forge-item-list">
+    <div class="list-placeholder">Deine Ausrüstung wird geladen …</div>
+   </div>
+  </section>
+
+  <section class="upgrade-panel" aria-live="polite">
+   <div id="upgrade-content">
+    <div class="upgrade-top"><span class="eyebrow">VERBESSERUNG</span><span class="forge-tag">⚒️ SCHMIEDE</span></div>
+    <div class="upgrade-symbol" aria-hidden="true">⚔️</div>
+    <h2>Waffe</h2>
+    <p class="upgrade-summary">Wähle eine Verbesserung aus.</p>
+   </div>
+  </section>
+ </div>
+
+ <details class="forge-chronicle" id="forge-chronicle">
+  <summary><span>📖 <strong>Mein Schmiedebuch</strong></span>
+   <span class="chronicle-summary-count"><b id="forge-achievements-count">0 / 9</b> Meilensteine <span aria-hidden="true">⌄</span></span>
+  </summary>
+  <div class="chronicle-body">
+   <div id="forge-chronicle-stats" class="chronicle-stats" aria-label="Deine Schmiedestatistik"></div>
+   <div class="chronicle-columns">
+    <section aria-labelledby="forge-milestones-title">
+     <h3 id="forge-milestones-title">🏆 Meilensteine</h3>
+     <div id="forge-achievements" class="milestone-grid"></div>
+    </section>
+    <section aria-labelledby="forge-journal-title">
+     <h3 id="forge-journal-title">🗃️ Letzte Vorgänge</h3>
+     <div id="forge-journal" class="forge-journal"></div>
+    </section>
+   </div>
+  </div>
+ </details>
+ <details class="stock-panel" id="forge-stock">
+  <summary><span>🎒 <strong>Mein Rohstofflager</strong></span><span class="stock-hint">15 Materialien <span class="stock-chevron">⌄</span></span></summary>
+  <div id="forge-stock-groups" class="stock-groups"></div>
+ </details>
+ <footer class="forge-footer">💎 Händler · Jeder Handel wird serverseitig bestätigt und sicher gespeichert</footer>
+</div>
+
+<dialog id="forge-result" class="forge-result" aria-labelledby="forge-result-heading">
+ <div class="result-plate">
+  <button id="forge-result-x" type="button" class="result-x" aria-label="Schließen">✕</button>
+  <div class="result-effects" aria-hidden="true">
+   <span class="result-spark star-one">✦</span><span class="result-spark star-two">✧</span>
+   <span class="result-spark star-three">✦</span><span class="result-spark star-four">✧</span>
+  </div>
+  <div class="result-impact" aria-hidden="true"></div>
+  <div class="result-ornament" aria-hidden="true">✧ ✦ ✧</div>
+  <div class="result-icon" id="forge-result-icon">⚒️</div>
+  <div class="result-art" id="forge-result-art" aria-hidden="true"></div>
+  <span class="result-achievement" id="forge-result-achievement"></span>
+  <h2 id="forge-result-heading">Geschmiedet!</h2>
+  <p id="forge-result-text">Dein Fortschritt wurde gespeichert.</p>
+  <div id="forge-result-new-unlock" class="forge-new-unlock" hidden aria-live="polite"></div>
+  <button type="button" id="forge-result-gallery" class="forge-open-rewards" hidden>🏆 Neue Belohnung ansehen</button>
+  <button type="button" id="forge-result-ok" class="forge-action">Zur Schmiede</button>
+ </div>
+</dialog>
+
+<dialog id="forge-confirm" class="forge-confirm" aria-labelledby="forge-confirm-title" aria-describedby="forge-confirm-warning">
+ <div class="confirm-shell">
+  <button type="button" id="forge-confirm-x" class="result-x" aria-label="Schmiedevorgang abbrechen">✕</button>
+  <div class="eyebrow">✦ AUFTRAG BESTÄTIGEN</div>
+  <div id="forge-confirm-art" class="confirm-art" aria-hidden="true">⚒️</div>
+  <h2 id="forge-confirm-title">Verbesserung</h2>
+  <div class="confirm-step" id="forge-confirm-step">Stufe 1 ➜ 2</div>
+  <div class="confirm-heading">Rohstoffkosten</div>
+  <div id="forge-confirm-cost" class="cost-list confirm-cost"></div>
+  <div class="confirm-chance"><span>Erfolgschance</span><strong id="forge-confirm-chance">100 %</strong></div>
+  <p id="forge-confirm-warning" class="confirm-warning">Die Rohstoffe werden beim Auftrag verbraucht.</p>
+  <div class="confirm-actions">
+   <button type="button" id="forge-confirm-cancel" class="confirm-cancel">Abbrechen</button>
+   <button type="button" id="forge-confirm-submit" class="forge-action">⚒️ Jetzt verbessern</button>
+  </div>
+ </div>
+</dialog>
+
+<!-- Purely visual. This never spends resources or initiates any network request. -->
+<dialog id="forge-ceremony" class="forge-ceremony" aria-labelledby="forge-ceremony-title" aria-describedby="forge-ceremony-status">
+ <div class="ceremony-shell">
+  <div class="ceremony-heading">✦ DIE MAGISCHE SCHMIEDE ✦</div>
+  <h2 id="forge-ceremony-title">Der Amboss ruft</h2>
+  <p id="forge-ceremony-status" class="ceremony-status" aria-live="polite">Dein Werkstück wird geschmiedet …</p>
+  <div class="ceremony-stage" aria-hidden="true">
+   <div class="ceremony-glow"></div>
+   <div class="ceremony-ring"></div>
+   <div class="ceremony-smoke"><i></i><i></i><i></i></div>
+   <div class="ceremony-hammer"><span class="hammer-head"></span><span class="hammer-handle"></span></div>
+   <div class="ceremony-weapon" id="forge-ceremony-art"><span>⚔️</span></div>
+   <div class="ceremony-anvil">
+    <div class="anvil-top"></div>
+    <div class="anvil-body"></div>
+    <div class="anvil-base"></div>
+   </div>
+   <div class="ceremony-sparks">
+    <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+   </div>
+   <div class="ceremony-reveal">✦</div>
+  </div>
+  <div id="forge-ceremony-caption" class="ceremony-caption">Das Feuer brennt – der Hammer fällt.</div>
+  <div class="ceremony-bottom">
+   <span class="ceremony-hint">Deine Rohstoffe werden nur serverseitig verarbeitet.</span>
+   <button type="button" id="forge-ceremony-skip" class="ceremony-skip">Animation überspringen <span aria-hidden="true">»</span></button>
+  </div>
+ </div>
+</dialog>
+<dialog id="forge-exchange-confirm" class="forge-confirm exchange-confirm" aria-labelledby="forge-exchange-confirm-title">
+ <div class="confirm-shell">
+  <button type="button" id="forge-exchange-confirm-x" class="result-x" aria-label="Tausch abbrechen">✕</button>
+  <div class="eyebrow">💎 ROHSTOFFTAUSCH</div>
+  <div class="exchange-confirm-icon" aria-hidden="true">💎</div>
+  <h2 id="forge-exchange-confirm-title">Mehrfachtausch</h2>
+  <p id="forge-exchange-confirm-description" class="exchange-confirm-description"></p>
+  <div class="exchange-confirm-preview" id="forge-exchange-confirm-preview"></div>
+  <p class="confirm-warning risky">Die Rohstoffe werden nach deiner Bestätigung einmalig serverseitig umgebucht.</p>
+  <div class="confirm-actions">
+   <button type="button" class="confirm-cancel" id="forge-exchange-confirm-cancel">Abbrechen</button>
+   <button type="button" class="forge-action" id="forge-exchange-confirm-submit">Tausch bestätigen</button>
+  </div>
+ </div>
+</dialog>
+
+<!-- D4 · All decorations are derived from verified hero values. No shop or combat boosts. -->
+<dialog id="forge-gallery" class="forge-gallery" aria-labelledby="forge-gallery-title">
+ <div class="gallery-shell">
+  <button type="button" id="forge-gallery-close" class="result-x" aria-label="Galerie schließen">✕</button>
+  <div class="gallery-kicker">✦ DIE 100 TORE · DEIN VERMÄCHTNIS ✦</div>
+  <h2 id="forge-gallery-title">🏆 Heldengalerie</h2>
+  <p class="gallery-intro">Deine geschmiedete Ausrüstung, deine Titel und freigeschalteten Ehrenrahmen.</p>
+  <div class="gallery-hero">
+   <div class="gallery-hero-portrait forge-frame-basic" id="forge-gallery-portrait" aria-label="Aktuelle Rüstung"></div>
+   <div class="gallery-hero-identity">
+    <span class="gallery-label">DEIN HELD</span>
+    <strong id="forge-gallery-name">Wird geladen …</strong>
+    <span class="gallery-hero-title" id="forge-gallery-current-title">Schmiedelehrling</span>
+    <span class="gallery-hero-rank" id="forge-gallery-rank">Neuling</span>
+    <div class="gallery-stats">
+     <span><b id="forge-gallery-milestone-count">0/9</b> Meilensteine</span>
+     <span><b id="forge-gallery-success-count">0</b> Erfolge</span>
+    </div>
+   </div>
+  </div>
+  <section class="gallery-section" aria-labelledby="forge-gallery-gear-title">
+   <h3 id="forge-gallery-gear-title">⚔️ Meine Ausrüstung</h3>
+   <div id="forge-gallery-gear" class="gallery-gear-grid"></div>
+  </section>
+  <section class="gallery-section" aria-labelledby="forge-gallery-titles-title">
+   <h3 id="forge-gallery-titles-title">📜 Meine Schmiedetitel</h3>
+   <p>Wähle einen freigeschalteten Titel. „Automatisch“ zeigt immer deinen höchsten erreichten Titel.</p>
+   <div id="forge-gallery-titles" class="gallery-choice-grid"></div>
+  </section>
+  <section class="gallery-section" aria-labelledby="forge-gallery-frames-title">
+   <h3 id="forge-gallery-frames-title">✨ Ehrenrahmen</h3>
+   <p>Die Rahmen sind rein dekorativ und verändern keine Kampfwerte.</p>
+   <div id="forge-gallery-frames" class="gallery-choice-grid gallery-frame-choices"></div>
+  </section>
+  <section class="gallery-section" aria-labelledby="forge-gallery-rewards-title">
+   <h3 id="forge-gallery-rewards-title">🏅 Schmiedebelohnungen</h3>
+   <div id="forge-gallery-rewards" class="gallery-reward-grid"></div>
+  </section>
+  <div class="gallery-footer">
+   <span>Fortschritt vom Server · Anzeigeauswahl nur auf diesem Gerät</span>
+   <button type="button" id="forge-gallery-done" class="forge-action">Zurück zur Schmiede</button>
+  </div>
+ </div>
+</dialog>
+</body>
+</html>

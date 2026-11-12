@@ -4,20 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0c1019">
-<meta name="description" content="Die Schmiede der 100 Tore: Rüstung, Waffen, Fähigkeiten und Rohstofftausch.">
+<meta name="description" content="Die Schmiede der 100 Tore: Waffen, Rüstung sowie getrennte Angriff- und Abwehrfähigkeiten.">
 <title>⚒️ Schmiede der Helden · Die 100 Tore</title>
 <link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-d5">
 <link rel="stylesheet" href="./dog-hero-equipment.css?v=20261112-hero-gear1">
+<link rel="stylesheet" href="./dog-forge-areas.css?v=20261112-merchant1">
 <script src="./profile-config.js"></script>
 <script src="./profile-auth.js"></script>
 <script src="./dog-hero-equipment.js?v=20261112-hero-gear1"></script>
-<script src="./dog-forge-ui.js?v=20261110-forge-d5&amp;classGear=1" defer></script>
+<script src="./dog-forge-ui.js?v=20261112-merchant1" defer></script>
 <script src="./dog-forge-gallery.js?v=20261110-forge-d5&amp;classGear=1" defer></script>
 <script src="./dog-forge-fx.js?v=20261110-forge-d2" defer></script>
 <script src="./dog-forge-ceremony.js?v=20261110-forge-d2" defer></script>
 <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 <link rel="stylesheet" href="./dog-event-tabs.css?v=20261112-only-top-tabs2">
-<script src="./dog-event-tabs.js?v=20261112-unified1" defer></script>
+<script src="./dog-event-tabs.js?v=20261112-merchant1" defer></script>
 </head>
 <body data-forge-background=""
       data-forge-background-desktop="./dog-forge-art/forge-workshop-desktop.webp"
@@ -83,11 +84,11 @@
  <div class="forge-workspace" id="forge-workspace">
   <section class="workshop-panel">
    <div class="panel-title"><span class="ornament">✦</span><h2>Deine Werkstatt</h2><span class="panel-rule"></span></div>
-   <div class="forge-tabs" role="tablist" aria-label="Schmiedebereiche">
+   <div class="forge-tabs" role="tablist" aria-label="Bisherige Bereichsauswahl" hidden>
     <button class="forge-tab active" type="button" data-tab="equipment" role="tab" aria-selected="true">⚔️ <span>Ausrüstung</span></button>
     <button class="forge-tab" type="button" data-tab="attack" role="tab" aria-selected="false">💥 <span>Angriff</span></button>
     <button class="forge-tab" type="button" data-tab="defense" role="tab" aria-selected="false">🛡️ <span>Abwehr</span></button>
-    <button class="forge-tab" type="button" data-tab="exchange" role="tab" aria-selected="false">💎 <span>Tausch</span></button>
+    
    </div>
    <div class="furnace" aria-hidden="true">
     <div class="furnace-arches"></div>
