@@ -22,9 +22,12 @@ on:
       - dog-ascension.css
       - dog-ascension.js
       - dog-expedition.html
+      - dog-hero-entry.js
+      - dog-hero-selection.css
       - dog-materials-ui.js
       - dog-materials.css
       - tests/dog-tor-map.test.mjs
+      - tests/dog-hero-entry.test.mjs
       - tests/dog-developer-ui.test.mjs
       - tests/dog-first-loop-ui.test.mjs
       - tests/dog-group-boss-ui.test.mjs
@@ -58,9 +61,12 @@ on:
       - dog-ascension.css
       - dog-ascension.js
       - dog-expedition.html
+      - dog-hero-entry.js
+      - dog-hero-selection.css
       - dog-materials-ui.js
       - dog-materials.css
       - tests/dog-tor-map.test.mjs
+      - tests/dog-hero-entry.test.mjs
       - tests/dog-developer-ui.test.mjs
       - tests/dog-first-loop-ui.test.mjs
       - tests/dog-group-boss-ui.test.mjs
@@ -100,6 +106,7 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check dog-tor-map.js
+          node --check dog-hero-entry.js
           node --check dog-developer-ui.js
           node --check dog-boss10.js
           node --check dog-group-boss.js
@@ -110,4 +117,4 @@ jobs:
           node --check dog-ascension.js
           node --check dog-materials-ui.js
       - name: Test map structure and safe DOG unlock placeholder
-        run: node --test tests/dog-developer-ui.test.mjs tests/dog-tor-map.test.mjs tests/dog-first-loop-ui.test.mjs tests/dog-group-boss-ui.test.mjs tests/dog-boss-minigames-ui.test.mjs tests/dog-boss-math-batch-ui.test.mjs tests/dog-boss-combat-fx.test.mjs tests/dog-boss-preflight-ui.test.mjs tests/dog-boss-live-ui.test.mjs tests/dog-boss-exchange-ui.test.mjs tests/dog-chests-ui.test.mjs
+        run: node --test tests/dog-developer-ui.test.mjs tests/dog-tor-map.test.mjs tests/dog-hero-entry.test.mjs tests/dog-first-loop-ui.test.mjs tests/dog-group-boss-ui.test.mjs tests/dog-boss-minigames-ui.test.mjs tests/dog-boss-math-batch-ui.test.mjs tests/dog-boss-combat-fx.test.mjs tests/dog-boss-preflight-ui.test.mjs tests/dog-boss-live-ui.test.mjs tests/dog-boss-exchange-ui.test.mjs tests/dog-chests-ui.test.mjs
