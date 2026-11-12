@@ -105,7 +105,31 @@
 
 **Schnellmodus angewendet:** keine doppelten Tests, kein neuer Backend-Deploy und keine Änderung am Kampf, an Firebase oder an Spielständen. A-03 abgehakt; nächste technische Aufgabe **A-04 (Rollback-Sicherung)**.
 
-- [ ] **A-04 – Originalzustand sichern:** Vor Umbauten Startzustände, Server-Versionen, wichtige API-Ansichten und Rollback-Commit festhalten. **Fertig:** jedes Update lässt sich ohne Spielstandsverlust zurückrollen.
+- [x] **A-04 – Originalzustand sichern (12.11.2026):** Ausgangs-Commits und **zwei echte GitHub-Backup-Branches** angelegt, ihre unveränderten HEAD-SHAs bestätigt, Render-Live-Deployment, Frontend-CI/Pages, API-Verträge und vorsichtigen Rückweg dokumentiert. **Wichtig:** Quellcode-Backup ist **kein** Firestore-Datenbankbackup; bei späteren Datenstrukturänderungen ist eine separate Sicherung/Kompatibilitätsprüfung vor dem Update verpflichtend.
+
+#### A-04: Gesicherter Rücksprungpunkt vor S-01
+
+| Bereich | Backup-Branch (verifiziert) | Exakter Ausgangs-Commit | Bestätigter Zustand |
+|---|---|---|---|
+| Frontend `schmitti92/Spiel-client` | [`backup/a04-2026-11-12`](https://github.com/schmitti92/Spiel-client/tree/backup/a04-2026-11-12) | [`36249ef6cb2c830c50f422604bda09cf427fe88a`](https://github.com/schmitti92/Spiel-client/commit/36249ef6cb2c830c50f422604bda09cf427fe88a) | [Client checks erfolgreich](https://github.com/schmitti92/Spiel-client/actions/runs/43252576463), [Pages veröffentlicht](https://github.com/schmitti92/Spiel-client/actions/runs/43252573736) |
+| Backend `schmitti92/serverfinal` | [`backup/a04-2026-11-12`](https://github.com/schmitti92/serverfinal/tree/backup/a04-2026-11-12) | [`90bc7902aa223162866d5db0a33247a975eef5f0`](https://github.com/schmitti92/serverfinal/commit/90bc7902aa223162866d5db0a33247a975eef5f0) | [Server-CI erfolgreich](https://github.com/schmitti92/serverfinal/actions/runs/43248227536), Render-Deployment `dep-dbqtmc15efls73femb40` **live** (Service `srv-d5815dur433s73f0mv6g`) |
+
+**API-Ansichten / bekannte Verträge aus dem gesicherten Servercode (keine privaten Live-Daten ausgelesen):**
+
+- **Boss 10:** `GET /api/dog/gates/boss10`, `POST /api/dog/gates/boss10/{ready,start,react,minigame,finish}`. Im GET u. a. `phase`, `startedAt`, `endsAt`, `roster`, `miniGames`, `result`, `bossHp`, `bossLiveHp`, `teamHealth`, `serverNow`, `remainingMs`.
+- **Gruppenbosse 20–100:** `GET /api/dog/gates/boss/:gate`, entsprechende `POST .../:gate/{ready,start,react,minigame,finish}`; zusätzlich z. B. `forgeLevel`, `finalBoss`, `dogUnlocked`.
+- **Fortschritt/Schmiede:** `GET /api/dog/gates/map`, `POST /api/dog/gates/{join,hero,fight}`, `GET /api/dog/forge/me`, `POST /api/dog/forge/{upgrade,exchange}`. Persistierte Modellversionen u. a. `dog_gate_progress_v1` und `dog_hero_v1`. Der aktuelle `boss10`-Startzustand besitzt `phase: waiting`, leere `ready/reactions/roster`, `attempt: 1`, keine `miniGames` und `result: null`. **Nur Strukturreferenz**, keine produktiven Dokumentinhalte kopiert.
+- Bestehende Kampf-Tests: [Regressionstest-Matrix unter A-03](#a-03-nachweis-der-bereits-vorhandenen-regressionstests). Damit sind wichtige alte Kampfversionen abgesichert.
+
+**Vorgehen beim Rückrollen (ohne `main` gewaltsam zurückzusetzen):**
+
+1. Aktuellen Stand und GitHub-Commit/Render-Deploy identifizieren; Änderung am besten durch **neuen Revert-Commit** auf `main` zurücknehmen. Alternativ betroffene Dateien gezielt aus dem jeweiligen `backup/a04-2026-11-12`-Branch in einen neuen Commit übernehmen. Backup-Branches nicht überschreiben.
+2. Bei Änderungen an **Backend und Frontend** Schnittstellen aufeinander abstimmen; Backend-Autodeploy (Render `main`) und GitHub Pages (`main`) anschließend prüfen. Nicht allein einen alten Backend-Deploy als automatische Wiederherstellung aller App-Daten betrachten.
+3. Vor allem bei einer neuen Firestore-Dokumentstruktur: **zuerst** Kompatibilität der gespeicherten Daten mit der alten Serverversion prüfen, bei destruktiven/inkompatiblen Änderungen zuvor einen **echten Firestore-Datenexport/Backup** sicher bereitstellen. Ein Git-Revert stellt niemals gelöschte oder umgeschriebene Firestore-Dokumente wieder her.
+4. Bestehende Profile/Belohnungen nicht löschen oder zurücksetzen; nach Rollback die passenden Regressionstests, einen lesenden Statusabruf und einen normalen Nutzer-Test verifizieren. Live-Spielstände wurden bei dieser Sicherung **nicht** geändert.
+
+**Firestore-Kosten für A-04:** 0 zusätzliche Reads/Writes durch die Branch-Sicherung und Dokumentation. **Aktive Spiele** wurden nicht gestartet; es wurde weder eine Datenbankkopie angefertigt noch ein Rollback ausgelöst. A-04 sichert den Code-Ausgangszustand; die allgemeine Aussage „ohne jeden möglichen Spielstandsverlust“ ist nur gültig, wenn spätere Updates abwärtskompatibel bleiben oder ein gesichertes Migrations-/Restore-Verfahren besteht.
+
 
 ### A-01 – Technische Ausgangsmessung vom 12.11.2026
 
@@ -252,6 +276,10 @@ Der Nutzer hat **vor und nach genau einem Spiel** die Nutzungszähler in der Fir
 
 | 12.11.2026 | **A-03 erledigt** | Bestehende Regressionstests nach Anforderungen zugeordnet: 1/2/3 Helden, 5 Minispiele, Kettenbrecher, Countdown, Sieg/Niederlage, Legacy-Versionen, Bots und Wiederholungsschutz. Keine doppelten Testdateien erstellt. | [Backend-CI grün](https://github.com/schmitti92/serverfinal/actions/runs/43248227536), [Frontend-CI grün](https://github.com/schmitti92/Spiel-client/actions/runs/43252085732) | 0 zusätzliche Reads/Writes; keine Spielfunktionsänderung | Dieser Plan; nächster Schritt A-04 |
 
+| 12.11.2026 | **A-04 erledigt (Code-Backup)** | Beide Repositories auf gesicherte Branches `backup/a04-2026-11-12` mit verifizierter Commit-SHA gesetzt; Render/Pages und Boss-API-Verträge dokumentiert. Daten-Rollback bei zukünftigen Schemaänderungen separat sichern. | [Frontend-CI](https://github.com/schmitti92/Spiel-client/actions/runs/43252576463) · [Backend-CI](https://github.com/schmitti92/serverfinal/actions/runs/43248227536) | 0 zusätzliche Firestore-Reads/Writes | [Frontend-Backup](https://github.com/schmitti92/Spiel-client/tree/backup/a04-2026-11-12) · [Backend-Backup](https://github.com/schmitti92/serverfinal/tree/backup/a04-2026-11-12) |
+
 **Definition von „fertig“:** Funktion auf GitHub `main` integriert, Frontend-/Backend-Tests erfolgreich, auf echter Anzeige nachvollziehbar, keine ungeklärten Doppelbuchungen oder unnötigen Firestore-Mehrzugriffe, Task abgehakt und Fortschrittsprotokoll ergänzt.
+
+**Nächster Entwicklungsblock nach A-04:** **S-01 – ein einheitliches serverseitiges Kampfereignis-Protokoll** in einem rückrollbaren Paket. Zuerst nicht-destruktiv in der bestehenden Kampfansicht ableiten; keine neuen Firestore-Collections oder Reads/Writes pro Schlag. Parallel bleiben A-01e/A-02e als Live-Messaufgaben offen.
 
 **Nächste konkrete Schritte:** **A-01e** – bereits dokumentierten kontrollierten Praxiswert (145 Reads / 26 Writes) bei künftigen Spielen um Leerlauf und weitere Szenarien ergänzen und **A-02e** – mit dem neuen `netdiag=1`-Messfeld die reale 1/2/3-Geräte-Baseline plus Nova/Titan erheben. Danach A-01/A-02 abnehmen. **Keine Optimierung als abgeschlossen bezeichnen, solange der Vergleich zur Live-Baseline fehlt.**
