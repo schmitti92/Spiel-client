@@ -437,14 +437,19 @@
   function renderRoundResults(view,round,stage){
    if(!nodes.resultsPanel||!nodes.resultsRows)return;
    const defensive=!!stage?.defensive;
+   const evaluation=view?.miniGames?.exchange?.evaluation;
+   const metric=evaluation?.rounds?.[round.round];
+   const normalized=metric?.completed&&Number.isFinite(metric.percent)?
+    metric.percent.toLocaleString('de-DE')+' %':null;
    const labels={math:'🧮 Blitz-Mathe',dodge:'🛡️ Ausweichen',
     target:(view?.miniGames?.version||0)>=10?'🎨 Farbe & Symbole':'🎯 Zieltreffer',
     reaction:'⚡ Reaktion',chain:'⛓️ Kettenbrecher'};
    if((view?.miniGames?.version||0)>=12&&round.round===4)
     labels.target='🔥 Finaler Schlag';
    text(nodes.resultsTitle,(labels[round.kind]||'Herausforderung')+' · Ergebnis');
-   text(nodes.resultsSubtitle,defensive?
-    'Persönlich erspielte Verteidigung':'Persönlich erspielter Angriff');
+   text(nodes.resultsSubtitle,(defensive?
+    'Persönlich erspielte Verteidigung':'Persönlich erspielter Angriff')+
+    (normalized!==null?' · 20 % Gewicht in der Gesamtwertung':''));
    const rows=Array.isArray(stage?.playerResults)?stage.playerResults:null;
    if(!rows){
     const info=document.createElement('div');
@@ -470,7 +475,11 @@
     label.setAttribute?.('role','cell');
     const score=document.createElement('span');
     score.className='v3-result-score';
-    score.textContent=fmt(item.correct)+' / '+fmt(item.max);
+    const accuracy=metric?.players?.find(p=>p.uid===item.uid);
+    score.textContent=fmt(accuracy?.correct??item.correct)+' / '+
+     fmt(accuracy?.max??item.max)+
+     (Number.isFinite(accuracy?.percent)?
+      ' · '+accuracy.percent.toLocaleString('de-DE')+' %':'');
     score.setAttribute?.('role','cell');
     const reward=document.createElement('span');
     reward.className='v3-result-reward'+(defensive?' is-defense':'');
@@ -502,15 +511,27 @@
     text(nodes.resultsTotal,individual?
      '🛡️ Zusammen +'+fmt(saved)+' LP bewahrt':
      '🛡️ Zusammen +'+fmt(points)+' Schutzpunkte');
-    text(nodes.resultsNote,individual?
+    text(nodes.resultsNote,(individual?
      'LP gegenüber keinem richtigen Ausweichen/Konter geschützt · kein dauerhafter Rüstungsbonus':
-     'Abwehrpunkte nach bisheriger Gruppenregel · keine dauerhafte Rüstung');
+     'Abwehrpunkte nach bisheriger Gruppenregel · keine dauerhafte Rüstung')+
+     (normalized!==null?' · 🎯 Minispiel-Genauigkeit '+normalized:''));
    }else{
     text(nodes.resultsTotal,Number.isFinite(stage?.bonusDamage)?
      '🔥 Team: +'+fmt(stage.bonusDamage)+' Zusatzschaden':
      '🔥 Angriffswertung wird bestätigt');
     text(nodes.resultsNote,
-     'Angriffspotenzial aus Ausrüstung und richtigen Aufgaben; tatsächlicher Schaden folgt in der Endwertung.');
+     'Angriffspotenzial aus Ausrüstung und richtigen Aufgaben; tatsächlicher Schaden folgt in der Endwertung.'+
+     (normalized!==null?' · 🎯 Minispiel-Genauigkeit '+normalized:''));
+   }
+   // Show the equal-weight total only after ALL five server-clock rounds end.
+   // Its accuracy is separate from the boss's damage/HP calculation.
+   if(evaluation?.completedRounds===5&&
+      Number.isFinite(evaluation.teamPercent)){
+    const grade='🏅 Gesamtleistung: '+
+     evaluation.teamPercent.toLocaleString('de-DE')+
+     ' % · alle 5 Minispiele je 20 %';
+    text(nodes.resultsNote,grade+
+     ' · '+(evaluation.perfect?'PERFEKT!':'100 % nur bei voller Trefferquote'));
    }
   }
   function updateExchange(view,current){
@@ -577,11 +598,15 @@
    const title=defensive?'🛡️ BOSS SCHLÄGT ZURÜCK':
     scene.round===4?'🔥 LETZTER SCHLAG':'⚔️ GEMEINSAMER ANGRIFF';
    text(nodes.stageTitle,title);
+   const normalized=view?.miniGames?.exchange?.evaluation?.
+    rounds?.[scene.round]?.percent;
    text(nodes.stageScore,stage?.completed?
     (defensive?'Team-Schild '+stage.shield+' / 100 · −'+shieldLoss+
       ' Schildpunkte':
      stage.correct+' / '+stage.max+' Treffer · +'+
-      Number(stage.bonusPercent||0).toLocaleString('de-DE')+' % Extraangriff'):
+      Number(stage.bonusPercent||0).toLocaleString('de-DE')+' % Extraangriff')+
+     (Number.isFinite(normalized)?
+      ' · Genauigkeit '+normalized.toLocaleString('de-DE')+' %':''):
     'Die Ergebnisse werden vom Server bestätigt …');
    text(nodes.stageSubtitle,defensive?
     (shieldLoss===0&&stage?.completed?
@@ -669,8 +694,13 @@
     const batch=Array.isArray(answered)&&answered.length>1&&
      answered.every(a=>a.at===latest.at);
     const mathCount=batch?answered.filter(a=>a.correct).length:0;
-    const feedback=phase==='victory'?'🏆 Der Boss wurde vom Team besiegt!':
-     phase==='cooldown'?'💀 Der Boss hat überlebt – bereitet euch vor.':
+    const rating=view?.miniGames?.exchange?.evaluation;
+    const grade=rating?.completedRounds===5&&
+     Number.isFinite(rating.teamPercent)?
+     ' · 🏅 Fünf-Spiele-Leistung: '+
+      rating.teamPercent.toLocaleString('de-DE')+' %':'';
+    const feedback=phase==='victory'?'🏆 Der Boss wurde vom Team besiegt!'+grade:
+     phase==='cooldown'?'💀 Der Boss hat überlebt – bereitet euch vor.'+grade:
      phase!=='fighting'?'Das Team stellt sich dem Wächter.':
      recent?(batch?
        (mathCount?'✅ '+mathCount+' Mathetreffer bestätigt!':'❌ Keine richtige Matheantwort.'):
