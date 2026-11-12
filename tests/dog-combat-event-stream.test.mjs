@@ -48,3 +48,46 @@ test('S-01 timeline and personal LP consume official events, preserve old-state 
   assert.doesNotMatch(src,/firebase\.firestore\(|addDoc\(|setDoc\(/);
  }
 });
+
+test('S-02 final event is included once in the server-confirmed result table and replay',()=>{
+ const {model}=load('dog-boss-result-report.js','DogBossResultReport');
+ const start=1900000000000;
+ const id='g10-t'+start+'-a2';
+ const stage={fightId:id,eventId:id+':1',sequence:1,uid:'a',
+  heroId:'a',slot:0,round:0,kind:'hero-strike',targetId:'boss',
+  amount:70,damage:70,rawDamage:70,overkillDamage:0,
+  hpBefore:100,hpAfter:30,atMs:13000,impactAt:start+13000};
+ const final={fightId:id,eventId:id+':2',sequence:2,uid:null,
+  heroId:null,slot:1,round:4,kind:'team-finisher',targetId:'boss',
+  amount:30,damage:30,rawDamage:55,overkillDamage:25,
+  hpBefore:30,hpAfter:0,atMs:135000,impactAt:start+135000,
+  rareCritical:true};
+ const view={gate:10,phase:'victory',name:'Boss',
+  startedAt:start,endsAt:start+135000,attempt:2,
+  roster:[{uid:'a',weaponLevel:1,armorLevel:1}],
+  members:[{uid:'a',name:'Hero'}],
+  teamHealth:{heroes:[{uid:'a',hp:100,maxHp:145}]},
+  result:{win:true,damage:125,bossHp:100,hpRemaining:0,rareCritical:true},
+  combat:{version:1,fightId:id,events:[stage,final],
+   reconciliation:{reconciled:true,rawDamage:125,
+    appliedDamage:100,stageDamage:70,finisherDamage:30,
+    overkillDamage:25,finalBossHp:0}},
+  miniGames:{version:14,rounds:[{round:0,kind:'math'},
+   {round:4,kind:'chain'}],exchange:{
+   stages:[{round:0,kind:'math',completed:true,
+    playerResults:[{uid:'a',correct:7,max:8}]}],
+   strikes:[{uid:'a',round:0,slot:0,kind:'hero-strike',amount:999,atMs:13000}]
+  }}
+ };
+ const report=model(view);
+ assert.equal(report.result.damage,125);
+ assert.equal(report.rows[0].attack,70,'team finisher is not falsely credited to hero');
+ assert.equal(report.finisher.amount,30);
+ assert.equal(report.settlement.overkillDamage,25);
+ assert.equal(report.stages.at(-1).kind,'team-finisher');
+ assert.equal(report.replay.length,2);
+ assert.equal(report.replay.at(-1).name,'Team');
+ assert.equal(report.replay.at(-1).seq,2);
+ assert.equal(report.replay.reduce((sum,e)=>sum+
+  (e.targetId==='boss'?e.amount:0),0),100);
+});

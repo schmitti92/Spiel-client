@@ -84,12 +84,22 @@
      .reduce((n,e)=>n+num(e.amount),0),
     defensive:!!s.defensive};
   });
+  const finisher=strikes.find(e=>e.kind==='team-finisher')||null;
+  const settlement=view.combat?.reconciliation?.reconciled===true?
+   view.combat.reconciliation:null;
+  if(finisher)stageRows.push({
+   round:finisher.round,kind:'team-finisher',
+   title:'⚡ Gemeinsamer Schlussangriff · Glück / Kritisch',
+   correct:0,max:0,percent:null,
+   damage:num(finisher.amount),taken:0,defensive:false
+  });
   // Deterministic, read-only highlight sequence; does not replay minigames.
   const replay=strikes
-   .filter(e=>view.roster.some(p=>p.uid===e.uid))
+   .filter(e=>e.kind==='team-finisher'||view.roster.some(p=>p.uid===e.uid))
    .sort((a,b)=>a.atMs-b.atMs||a.slot-b.slot)
    .map((event,i)=>({
-    ...event,name:rows.find(r=>r.uid===event.uid)?.name||'Held',
+    ...event,name:event.kind==='team-finisher'?'Team':
+     rows.find(r=>r.uid===event.uid)?.name||'Held',
     amount:num(event.amount),seq:Number.isInteger(event.sequence)?event.sequence:i+1,
     kind:event.kind,
     roundTitle:LABELS[view.miniGames?.rounds?.[event.round]?.kind]||
@@ -128,6 +138,7 @@
    rows,stages:stageRows,score:{correct:right,max:possible,
     percent,grade:percent===null?'Nicht verfügbar':grade(percent)},
    teamHp,teamMax,tips:tips.slice(0,4),replay,
+   settlement,finisher,
    cooldownUntil:num(view.cooldownUntil),key:String(view.gate||10)+':'+
     String(view.startedAt||0)+':'+String(view.attempt||0)+':'+
     String(result.win)+':'+String(finalDamage)};
@@ -262,15 +273,19 @@
   };
   function showStrike(event){
    const field=node('br-replay-stage');
-   field.dataset.hitKind=event.kind==='boss-strike'?'boss':'hero';
+   const final=event.kind==='team-finisher';
+   field.dataset.hitKind=final?'final':
+    event.kind==='boss-strike'?'boss':'hero';
    field.dataset.replayState='playing';
    const target=event.kind==='boss-strike'?'🛡️ '+event.name:'🐉 Boss';
    const label=event.blocked?'BLOCK!':'−'+fmt.format(event.amount)+' LP';
-   text(node('br-replay-icon'),event.kind==='boss-strike'?'🔥':'⚔️');
+   text(node('br-replay-icon'),final?'⚡':
+    event.kind==='boss-strike'?'🔥':'⚔️');
    text(node('br-replay-hit'),label);
    text(node('br-replay-caption'),
-    event.roundTitle+' · '+(event.kind==='boss-strike'?
-     'Boss greift '+event.name+' an':event.name+' greift den Boss an')+
+    (final?'⚡ Gemeinsamer Schlussangriff · Glück / Kritisch':
+     event.roundTitle+' · '+(event.kind==='boss-strike'?
+      'Boss greift '+event.name+' an':event.name+' greift den Boss an'))+
     ' · '+target+(Number.isFinite(Number(event.hpBefore))&&
      Number.isFinite(Number(event.hpAfter))?
       ' · LP '+fmt.format(event.hpBefore)+' → '+fmt.format(event.hpAfter):''));
@@ -327,7 +342,11 @@
    node('br-team-fill').style.width=report.teamMax?
     100*report.teamHp/report.teamMax+'%':'0%';
    text(node('br-damage-total'),'Kampfergebnis: '+(result.win?'Sieg':'Niederlage')+
-    (result.critical?' · Seltener kritischer Treffer':''));
+    (result.critical?' · Seltener kritischer Treffer':'')+
+    (report.settlement?' · '+fmt.format(report.settlement.appliedDamage)+
+     ' Boss-LP abgezogen'+(report.settlement.overkillDamage>0?
+      ' · '+fmt.format(report.settlement.overkillDamage)+' LP Übertreffer':''):'')
+   );
    const vitals=node('br-hero-vitals');const attacks=node('br-attack-rows');
    const heroNodes=[],attackNodes=[];
    for(const hero of rows){
@@ -351,10 +370,14 @@
    vitals.replaceChildren(...heroNodes);attacks.replaceChildren(...attackNodes);
    const individualHits=replay.map(e=>{
     const tr=make('tr');
-    const againstBoss=e.kind==='hero-strike';
-    for(const v of ['Runde '+(e.round+1),againstBoss?e.name:report.bossName,
+    const againstBoss=e.kind!=='boss-strike';
+    const final=e.kind==='team-finisher';
+    for(const v of [final?'Finalschlag':'Runde '+(e.round+1),
+     againstBoss?e.name:report.bossName,
      againstBoss?report.bossName:e.name,
-     e.blocked?'BLOCK!':'−'+fmt.format(e.amount)+' LP'])tr.append(make('td',null,v));
+     e.blocked?'BLOCK!':'−'+fmt.format(e.amount)+' LP'+
+      (final&&e.overkillDamage>0?' (+'+fmt.format(e.overkillDamage)+
+       ' Übertreffer)':'')])tr.append(make('td',null,v));
     return tr;
    });
    node('br-strike-rows').replaceChildren(...individualHits);

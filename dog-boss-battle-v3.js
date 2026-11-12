@@ -90,10 +90,11 @@
      view.combat.events:view?.miniGames?.exchange?.strikes;
    if(!Array.isArray(provided)||!Number(view?.startedAt))return;
    const actors=new Set((view?.roster||[]).map(a=>a?.uid).filter(Boolean));
-   const confirmed=provided.filter(x=>x&&actors.has(x.uid)&&
+   const confirmed=provided.filter(x=>x&&
+    (actors.has(x.uid)||x.kind==='team-finisher')&&
     Number.isInteger(x.round)&&x.round>=0&&
     Number.isInteger(x.slot)&&x.slot>=0&&
-    ['boss-strike','hero-strike'].includes(x.kind)&&
+    ['boss-strike','hero-strike','team-finisher'].includes(x.kind)&&
     Number.isFinite(Number(x.atMs))&&Number(x.atMs)>=0&&
     Number.isFinite(Number(x.amount))&&Number(x.amount)>=0)
     .sort((a,b)=>a.atMs-b.atMs||a.slot-b.slot);
@@ -106,8 +107,10 @@
      const defender=e.kind==='boss-strike';
      const name=nameMap.get(e.uid)||'Held';
      const dmg=Math.max(0,Math.round(Number(e.amount)||0));
-     return defender?'🛡️ '+name+': '+(dmg?'−'+fmt.format(dmg)+' LP':'BLOCK!'):
-      '🔥 '+name+' → Boss: −'+fmt.format(dmg)+' LP';
+     return e.kind==='team-finisher'?
+      '⚡ Team → Boss: −'+fmt.format(dmg)+' LP':
+      defender?'🛡️ '+name+': '+(dmg?'−'+fmt.format(dmg)+' LP':'BLOCK!'):
+       '🔥 '+name+' → Boss: −'+fmt.format(dmg)+' LP';
     }).join(' · '):'Noch keine bestätigten Treffer';
    }
    // Damage is displayed exactly once per official hit, even if a network
@@ -118,7 +121,9 @@
     if(played.has(key))continue;
     played.add(key);
     const late=state.elapsed-server.atMs;
-    if(late>RECONNECT_BURST_GRACE_MS||view?.phase!=='fighting')continue;
+    if(late>RECONNECT_BURST_GRACE_MS||
+     (view?.phase!=='fighting'&&!(server.kind==='team-finisher'&&
+      ['victory','cooldown'].includes(view?.phase))))continue;
     const defender=server.kind==='boss-strike';
     const target=defender?heroNodes.get(server.uid):boss;
     if(!target||typeof document==='undefined')continue;
@@ -126,8 +131,10 @@
     const popup=document.createElement('strong');
     popup.className='v3-floating-damage '+(defender?
      (damage?'is-hero-hit':'is-blocked'):'is-boss-hit');
-    popup.textContent=defender?(damage?'−'+fmt.format(damage):'BLOCK!'):
-     '−'+fmt.format(damage);
+    popup.textContent=server.kind==='team-finisher'?
+     '⚡ −'+fmt.format(damage):
+     defender?(damage?'−'+fmt.format(damage):'BLOCK!'):
+      '−'+fmt.format(damage);
     popup.setAttribute?.('aria-hidden','true');
     target.append?.(popup);
     const existing=target.querySelectorAll?.('.v3-floating-damage')||[];
