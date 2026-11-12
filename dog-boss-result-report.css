@@ -146,6 +146,9 @@ body:has(.stage.boss-result-open){
  display:block;height:100%;width:0;
  background:linear-gradient(90deg,#4ca2bb,#98e1cb,#edd7a4);
 }
+.boss-result-report .br-round-impact{
+ color:#adcfda;font:650 clamp(10px,.86vw,12px)/1.25 system-ui;
+}
 .boss-result-report .br-attacks,
 .boss-result-report .br-advice,
 .boss-result-report .br-replay-panel{margin-bottom:14px}
