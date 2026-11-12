@@ -115,7 +115,7 @@ test('three seconds are reserved for countdown, leaving eleven for drawn weapons
  for(const page of ['dog-boss10.html','dog-group-boss.html']){
   const html=read(page);
   assert.match(html,/dog-boss-weapon-strikes\.css\?v=/);
-  assert.match(html,/dog-boss-battle-v3\.js\?v=20261112-weapon-hit1/);
+  assert.match(html,/dog-boss-battle-v3\.js\?v=20261112-final5-runes1/);
  }
  const effects=read('dog-boss-weapon-strikes.css');
  for(const classname of ['krieger','magierin','waechter'])
