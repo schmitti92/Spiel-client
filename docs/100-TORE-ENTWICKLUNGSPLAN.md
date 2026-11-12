@@ -534,3 +534,24 @@ Die vorhandene Aschenlanze bei Tor 10 bleibt unverändert. Die neun Gruppenbosse
 **Nächster Entwicklungsblock:** **M-03 – Farbe und Symbole**: klare Zehner-Aufgaben, unmittelbare Eingaben ohne Ladepause und saubere serverbestätigte Auswertung. M-02 technisch umgesetzt; echter Mehrgeräte-Test und Firestore-Nachmessung weiter offen.
 
 **Nächste konkrete Schritte:** **A-01e** – bereits dokumentierten kontrollierten Praxiswert (145 Reads / 26 Writes) bei künftigen Spielen um Leerlauf und weitere Szenarien ergänzen und **A-02e** – mit dem neuen `netdiag=1`-Messfeld die reale 1/2/3-Geräte-Baseline plus Nova/Titan erheben. Danach A-01/A-02 abnehmen. **Keine Optimierung als abgeschlossen bezeichnen, solange der Vergleich zur Live-Baseline fehlt.**
+
+
+## SCH-UI – Schmiede nach Bildvorlage (12.11.2026)
+
+**Beschlossenes Ziel:** Die vom Nutzer bestätigte Fantasy-Schmiede als tatsächliche Bedienoberfläche übernehmen: gemeinsames oberes Register, bebilderter aber flacher Kopfbereich, ein einziger durchgehender Aufstiegsbalken, kompakte linke Ausrüstungs-/Fähigkeitsblöcke, große aber platzsparende rechte Verbesserungsansicht und unten ein zugeklapptes Rohstofflager. **Schrittweise** auf `Spiel-client/main`; keine unnötigen Backendänderungen.
+
+**Verbindliche Regeln:** Die bestehenden echten Funktionen (Boss-Siegel, Schmiedestufen 1–10, Waffen/Rüstung und Fähigkeiten bis 50, Plus-Aktionen, Kosten und Erfolgswahrscheinlichkeiten, Heldengalerie, Ton/Hintergrund, Rohstofflager, Serverbelege und geschützte Wiederholung) bleiben erhalten. Das Menü „Händler“ wird nicht verändert. Bei UI-Schritten **0 zusätzliche Firestore-Reads/Writes**. Tests und Tabletansicht erst als bestanden markieren, wenn wirklich geprüft.
+
+| Schritt | Status | Konkretes Ergebnis und Abnahme |
+|---|---|---|
+| **SCH-UI-01 · Bestand & Referenz** | **[x] geprüft 12.11.** | Vorhandene `dog-forge.html`, `dog-forge-ui.js`, gemeinsame CSS-Dateien und drei Screenshots geprüft. Ziel: neue Bildvorlage ohne Funktionsverlust. |
+| **SCH-UI-02 · Kopfbereich & Navigation** | **[x] Code 12.11.; Sichttest offen** | Flacher bebilderter Schmiedekopf. Doppelzeile „Werkstatt/Ton/Aktualisieren“ aus der Oberfläche entfernen; Galerie, Ton und Werkstatt in kleinem ⚙️-Menü erhalten; gemeinsame obere Navigation bleibt. |
+| **SCH-UI-03 · Kompakte Auswahlblöcke** | **[ ] offen** | Waffen/Rüstung zwei Kacheln; Angriff und Abwehr standardmäßig je drei sichtbar, über Pfeil alle Fähigkeiten erreichbar. Plus-Buttons und Auswahl weiterhin direkt bedienbar; lange Namen vollständig sichtbar. |
+| **SCH-UI-04 · Rechte Verbesserungskarte** | **[ ] offen** | Bild links, Name + Stufe rechts; nächste Aussehensstufe kompakt darunter. Gleiche Waffen-/Rüstungs-PNGs, serverbestätigte Level, keine Dopplungen. |
+| **SCH-UI-05 · Kosten und Aktion** | **[ ] offen** | Kosten in maximal zwei Spalten, Erfolgschance und Levelvergleich kompakt, zentraler Verbesserungsbutton, lesbare Sperrgründe. Dialog und idempotenter Serverauftrag unverändert. |
+| **SCH-UI-06 · Überflüssige Fläche entfernen** | **[ ] offen** | Doppelhinweise und Leerflächen beseitigen, Rohstofflager als schmalen aufklappbaren Balken, keine doppelte Navigation oder zweite Aktualisieren-Zeile. |
+| **SCH-UI-07 · Tablet/Smartphone** | **[ ] offen** | Querformat: Auswahl links / Verbesserung rechts. Hochformat: untereinander. Kein abgeschnittener Fähigkeitentext, kein horizontales Scrollen, Touchflächen gut erreichbar. |
+| **SCH-UI-08 · Funktions- und Abnahmetest** | **[ ] offen** | Waffe/Rüstung/Fähigkeit, Plus, gesperrtes Level, Boss-Siegel, Reconnect, Galerie, Händler, Audio, Rohstofflager, Barrierefreiheit und sichtbare Screenshot-Abnahme prüfen. Firestore bleibt bei reinem Designumbau unverändert. |
+
+**SCH-UI-02 technische Änderung:** visuell neues Headermotiv aus bereits vorhandener `forge-workshop-desktop.webp`; kein zusätzliches Asset und keine Server-/Firestoreänderung. Einstellungen bleiben per ⚙️ erreichbar. Tests: statische DOM-Prüfung und JavaScript-Kompatibilität; echter Browser-/Tablet-Test offen. **Nächster Schritt: SCH-UI-03.**
+

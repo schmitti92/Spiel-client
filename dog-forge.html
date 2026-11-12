@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="./dog-forge.css?v=20261110-forge-d5">
 <link rel="stylesheet" href="./dog-hero-equipment.css?v=20261112-hd-armor1">
 <link rel="stylesheet" href="./dog-forge-areas.css?v=20261112-plus-v1">
-<link rel="stylesheet" href="./dog-forge-clean.css?v=20261112-forge50-v1">
+<link rel="stylesheet" href="./dog-forge-clean.css?v=20261112-reference-header1">
 <script src="./profile-config.js"></script>
 <script src="./profile-auth.js"></script>
 <script src="./dog-hero-equipment.js?v=20261112-forge50-v1"></script>
@@ -30,16 +30,25 @@
   <a class="nav-back" href="./dog-expedition.html" id="forge-back">← Die 100 Tore</a>
   <a class="nav-link" href="./dog-expedition.html" id="forge-materials">📦 Rohstoffkisten</a>
   <a class="nav-link" href="./dog-boss.html" id="forge-boss">🔥 Zur Bossarena</a>
-  <button type="button" id="forge-scene-toggle" class="nav-sound" aria-pressed="true" aria-label="Schmiedehintergrund ausblenden" title="Fantasy-Werkstatt ein- oder ausblenden">🏰 Werkstatt an</button>
-  <button type="button" id="forge-sound-toggle" class="nav-sound" aria-pressed="false" aria-label="Schmiedegeräusche einschalten" title="Optionale Schmiedegeräusche">🔇 Ton aus</button>
   <button type="button" id="forge-refresh" class="nav-reload">↻ Aktualisieren</button>
  </nav>
 
- <header class="forge-header forge-clean-header">
-  <div class="forge-clean-title"><span class="forge-clean-logo" aria-hidden="true">⚒️</span>
-   <div><h1>Schmiede <span>der Helden</span></h1><p class="subtitle">Links wählen – rechts verbessern.</p></div>
+ <header class="forge-header forge-clean-header" aria-label="Schmiede der Helden">
+  <div class="forge-clean-title">
+   <span class="forge-clean-logo" aria-hidden="true">⚒️</span>
+   <div>
+    <h1>Schmiede <span>der Helden</span></h1>
+    <p class="subtitle">Ausrüstung und Fähigkeiten deiner Helden verbessern.</p>
+   </div>
   </div>
-  <button type="button" id="forge-gallery-open" class="forge-gallery-open" disabled>🏆 Galerie</button>
+  <details class="forge-header-options">
+   <summary aria-label="Weitere Schmiedeoptionen öffnen" title="Galerie, Werkstatt und Ton">⚙️</summary>
+   <div class="forge-header-options-menu">
+    <button type="button" id="forge-gallery-open" class="forge-gallery-open" disabled>🏆 Heldengalerie</button>
+    <button type="button" id="forge-scene-toggle" class="nav-sound" aria-pressed="true" aria-label="Schmiedehintergrund ausblenden" title="Fantasy-Werkstatt ein- oder ausblenden">🏰 Werkstatt an</button>
+    <button type="button" id="forge-sound-toggle" class="nav-sound" aria-pressed="false" aria-label="Schmiedegeräusche einschalten" title="Optionale Schmiedegeräusche">🔇 Ton aus</button>
+   </div>
+  </details>
  </header>
  <section class="forge-level-panel" id="forge-level-panel" aria-label="Gemeinsame Schmiedestufe">
   <div class="forge-level-heading"><span aria-hidden="true">⚒️</span><div>
