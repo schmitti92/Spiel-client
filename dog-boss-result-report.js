@@ -18,8 +18,15 @@
   return grades.find(([mark])=>percent>=mark)?.[1]||'Schwach';
  }
  function model(view){
-  if(!view||!['victory','cooldown'].includes(view.phase)||!view.result||
-   !Array.isArray(view.roster)||!view.roster.length)return null;
+  // Admins can bypass the defeat cooldown. The server then exposes phase
+  // "waiting" while retaining the concluded result and its saved roster.
+  // The report must still open and require confirmation for that real fight.
+  const bypassedDefeat=view?.phase==='waiting'&&
+   view.developerBossCooldownDisabled===true&&
+   view.result?.win===false&&Number(view.startedAt)>0&&
+   Number(view.endsAt)>Number(view.startedAt);
+  if(!view||(!['victory','cooldown'].includes(view.phase)&&!bypassedDefeat)||
+   !view.result||!Array.isArray(view.roster)||!view.roster.length)return null;
   const result=view.result,rawStages=view.miniGames?.exchange?.stages;
   const stages=Array.isArray(rawStages)?rawStages.filter(s=>s?.completed):[];
   const strikes=Array.isArray(view.miniGames?.exchange?.strikes)?
