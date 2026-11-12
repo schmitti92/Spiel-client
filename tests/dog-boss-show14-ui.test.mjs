@@ -56,16 +56,16 @@ test('14-second scene keeps combat readable until the final spectacular 5s count
  assert.match(node('cinematic-header').textContent,/TRIFFT/);
  ui.update(view,at+20400);
  assert.equal(node('live-cinematic').dataset.showPhase,'result');
- ui.update(view,at+21000);
+ ui.update(view,at+23000);
  assert.equal(node('cinematic-grand-countdown').hidden,false);
- assert.equal(node('cinematic-grand-digit').textContent,'5');
+ assert.equal(node('cinematic-grand-digit').textContent,'3');
  assert.equal(node('live-cinematic').dataset.showPhase,'countdown');
  assert.equal(node('.live-challenge').classList.contains('is-cinematic-countdown'),true);
  assert.equal(node('cinematic-grand-label').textContent,'NÄCHSTE RUNDE IN');
  assert.match(node('cinematic-grand-next').textContent,/Ausweichen/);
  assert.equal(node('cinematic-grand-ring').style['--show-sweep'],'360.00deg');
- ui.update(view,at+22000);
- assert.equal(node('cinematic-grand-digit').textContent,'4');
+ ui.update(view,at+24000);
+ assert.equal(node('cinematic-grand-digit').textContent,'2');
  ui.update(view,at+25850);
  assert.equal(node('cinematic-grand-digit').textContent,'1');
  ui.update(view,at+26000);
@@ -80,12 +80,12 @@ test('last interlude counts down to finale rather than claiming another minigame
  const {ui,node,view}=fakeUI();
  ui.update(view,at+78100);
  assert.equal(node('cinematic-grand-countdown').hidden,true);
- ui.update(view,at+87000);
+ ui.update(view,at+89000);
  assert.equal(node('cinematic-grand-countdown').hidden,false);
  assert.equal(node('cinematic-grand-label').textContent,'FINALE IN');
  assert.match(node('cinematic-grand-next').textContent,/Finale Auswertung/);
- ui.update(view,at+87000);
- assert.equal(node('cinematic-grand-digit').textContent,'5');
+ ui.update(view,at+89000);
+ assert.equal(node('cinematic-grand-digit').textContent,'3');
  ui.update(view,at+92001);
  assert.equal(node('cinematic-grand-countdown').hidden,true);
 });
@@ -135,7 +135,7 @@ test('the real 14s strike is centered and countdown occupies the minigame field'
  const {ui,view,node}=fakeUI();
  ui.update(view,at+34100);
  assert.equal(node('cinematic-grand-countdown').hidden,true);
- ui.update(view,at+43000);
+ ui.update(view,at+45000);
  assert.equal(node('cinematic-grand-countdown').hidden,false);
  assert.equal(node('.live-challenge').classList.contains('is-defense'),true);
  ui.update(view,at+48000);
@@ -172,8 +172,8 @@ test('between minigames the right panel shows each player and their confirmed pe
  const row=node('v3-results-rows').children[0];
  ui.update(view,at+18000);
  assert.equal(node('v3-results-rows').children[0],row);
- // The final five seconds belong to the existing prominent countdown.
- ui.update(view,at+21000);
+ // The final three seconds belong to the existing prominent countdown.
+ ui.update(view,at+23000);
  assert.equal(node('v3-round-results').hidden,true);
  assert.equal(node('cinematic-grand-countdown').hidden,false);
  ui.update(view,at+26000);
@@ -190,7 +190,7 @@ test('between minigames the right panel shows each player and their confirmed pe
  assert.match(node('v3-results-rows').children[0].children[2].children[0].textContent,/37 LP geschützt/);
  assert.match(node('v3-results-rows').children[1].children[2].children[1].textContent,/8 \/ 25 Schutzpunkte/);
  assert.match(node('v3-results-total').textContent,/49 LP bewahrt/);
- ui.update(view,at+43000);
+ ui.update(view,at+45000);
  assert.equal(node('v3-round-results').hidden,true);
 });
 test('round scoreboard waits for server results and does not invent players scores',()=>{
