@@ -91,3 +91,36 @@ test('S-02 final event is included once in the server-confirmed result table and
  assert.equal(report.replay.reduce((sum,e)=>sum+
   (e.targetId==='boss'?e.amount:0),0),100);
 });
+
+test('S-02 historical low-luck boss guard is visible, not credited to a player',()=>{
+ const {model}=load('dog-boss-result-report.js','DogBossResultReport');
+ const start=1900000000000, fightId='g20-t'+start+'-a1';
+ const before={eventId:fightId+':1',sequence:1,
+  fightId,uid:'hero',slot:0,round:0,kind:'hero-strike',
+  targetId:'boss',amount:65,atMs:12000};
+ const guarded={eventId:fightId+':2',sequence:2,
+  fightId,uid:null,slot:1,round:3,kind:'boss-guard',
+  targetId:'boss',amount:-15,atMs:101000,
+  hpBefore:35,hpAfter:50};
+ const report=model({
+  gate:20,phase:'cooldown',startedAt:start,endsAt:start+101000,
+  name:'Boss',attempt:1,roster:[{uid:'hero',weaponLevel:1,armorLevel:1}],
+  members:[{uid:'hero',name:'Hero'}],
+  teamHealth:{heroes:[{uid:'hero',hp:100,maxHp:145}]},
+  result:{win:false,damage:50,bossHp:100,hpRemaining:50},
+  combat:{version:1,fightId,events:[before,guarded],
+   reconciliation:{reconciled:true,rawDamage:50,
+    appliedDamage:50,stageDamage:65,finisherDamage:0,
+    guardRecovered:15,overkillDamage:0,finalBossHp:50}},
+  miniGames:{version:11,rounds:[{kind:'math'}],
+   exchange:{stages:[{round:0,kind:'math',completed:true,
+    playerResults:[{uid:'hero',correct:0,max:8}]}]}}
+ });
+ assert.equal(report.replay.length,2);
+ assert.equal(report.replay.at(-1).kind,'boss-guard');
+ assert.equal(report.replay.at(-1).name,'Boss');
+ assert.equal(report.stages.at(-1).restored,15);
+ assert.equal(report.rows[0].attack,65);
+ assert.equal(report.replay.reduce((sum,e)=>sum+
+  (e.targetId==='boss'?e.amount:0),0),50);
+});

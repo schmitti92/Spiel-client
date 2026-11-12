@@ -91,12 +91,13 @@
    if(!Array.isArray(provided)||!Number(view?.startedAt))return;
    const actors=new Set((view?.roster||[]).map(a=>a?.uid).filter(Boolean));
    const confirmed=provided.filter(x=>x&&
-    (actors.has(x.uid)||x.kind==='team-finisher')&&
+    (actors.has(x.uid)||['team-finisher','boss-guard'].includes(x.kind))&&
     Number.isInteger(x.round)&&x.round>=0&&
     Number.isInteger(x.slot)&&x.slot>=0&&
-    ['boss-strike','hero-strike','team-finisher'].includes(x.kind)&&
+    ['boss-strike','hero-strike','team-finisher','boss-guard'].includes(x.kind)&&
     Number.isFinite(Number(x.atMs))&&Number(x.atMs)>=0&&
-    Number.isFinite(Number(x.amount))&&Number(x.amount)>=0)
+    Number.isFinite(Number(x.amount))&&
+    (Number(x.amount)>=0||x.kind==='boss-guard'))
     .sort((a,b)=>a.atMs-b.atMs||a.slot-b.slot);
    const timeline=confirmed.filter(x=>state.elapsed>=x.atMs);
    const latest=timeline.slice(-3).reverse();
@@ -107,8 +108,10 @@
      const defender=e.kind==='boss-strike';
      const name=nameMap.get(e.uid)||'Held';
      const dmg=Math.max(0,Math.round(Number(e.amount)||0));
-     return e.kind==='team-finisher'?
-      '⚡ Team → Boss: −'+fmt.format(dmg)+' LP':
+     return e.kind==='boss-guard'?
+      '🛡️ Glücksabwehr: +'+fmt.format(-e.amount)+' Boss-LP':
+      e.kind==='team-finisher'?
+       '⚡ Team → Boss: −'+fmt.format(dmg)+' LP':
       defender?'🛡️ '+name+': '+(dmg?'−'+fmt.format(dmg)+' LP':'BLOCK!'):
        '🔥 '+name+' → Boss: −'+fmt.format(dmg)+' LP';
     }).join(' · '):'Noch keine bestätigten Treffer';
@@ -122,17 +125,19 @@
     played.add(key);
     const late=state.elapsed-server.atMs;
     if(late>RECONNECT_BURST_GRACE_MS||
-     (view?.phase!=='fighting'&&!(server.kind==='team-finisher'&&
+     (view?.phase!=='fighting'&&!(['team-finisher','boss-guard'].includes(server.kind)&&
       ['victory','cooldown'].includes(view?.phase))))continue;
     const defender=server.kind==='boss-strike';
     const target=defender?heroNodes.get(server.uid):boss;
     if(!target||typeof document==='undefined')continue;
-    const damage=Math.max(0,Math.round(Number(server.amount)||0));
+    const damage=Math.max(0,Math.round(Math.abs(Number(server.amount)||0)));
     const popup=document.createElement('strong');
     popup.className='v3-floating-damage '+(defender?
      (damage?'is-hero-hit':'is-blocked'):'is-boss-hit');
-    popup.textContent=server.kind==='team-finisher'?
-     '⚡ −'+fmt.format(damage):
+    popup.textContent=server.kind==='boss-guard'?
+     '🛡️ +'+fmt.format(damage):
+     server.kind==='team-finisher'?
+      '⚡ −'+fmt.format(damage):
      defender?(damage?'−'+fmt.format(damage):'BLOCK!'):
       '−'+fmt.format(damage);
     popup.setAttribute?.('aria-hidden','true');

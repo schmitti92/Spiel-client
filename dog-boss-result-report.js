@@ -85,6 +85,7 @@
     defensive:!!s.defensive};
   });
   const finisher=strikes.find(e=>e.kind==='team-finisher')||null;
+  const guard=strikes.find(e=>e.kind==='boss-guard')||null;
   const settlement=view.combat?.reconciliation?.reconciled===true?
    view.combat.reconciliation:null;
   if(finisher)stageRows.push({
@@ -93,12 +94,20 @@
    correct:0,max:0,percent:null,
    damage:num(finisher.amount),taken:0,defensive:false
   });
+  if(guard)stageRows.push({
+   round:guard.round,kind:'boss-guard',
+   title:'🛡️ Glücksabwehr des Bosses',
+   correct:0,max:0,percent:null,
+   damage:0,taken:0,restored:num(-guard.amount),defensive:false
+  });
   // Deterministic, read-only highlight sequence; does not replay minigames.
   const replay=strikes
-   .filter(e=>e.kind==='team-finisher'||view.roster.some(p=>p.uid===e.uid))
+   .filter(e=>['team-finisher','boss-guard'].includes(e.kind)||
+    view.roster.some(p=>p.uid===e.uid))
    .sort((a,b)=>a.atMs-b.atMs||a.slot-b.slot)
    .map((event,i)=>({
     ...event,name:event.kind==='team-finisher'?'Team':
+     event.kind==='boss-guard'?'Boss':
      rows.find(r=>r.uid===event.uid)?.name||'Held',
     amount:num(event.amount),seq:Number.isInteger(event.sequence)?event.sequence:i+1,
     kind:event.kind,
@@ -138,7 +147,7 @@
    rows,stages:stageRows,score:{correct:right,max:possible,
     percent,grade:percent===null?'Nicht verfügbar':grade(percent)},
    teamHp,teamMax,tips:tips.slice(0,4),replay,
-   settlement,finisher,
+   settlement,finisher,guard,
    cooldownUntil:num(view.cooldownUntil),key:String(view.gate||10)+':'+
     String(view.startedAt||0)+':'+String(view.attempt||0)+':'+
     String(result.win)+':'+String(finalDamage)};
@@ -274,16 +283,19 @@
   function showStrike(event){
    const field=node('br-replay-stage');
    const final=event.kind==='team-finisher';
-   field.dataset.hitKind=final?'final':
+   const guard=event.kind==='boss-guard';
+   field.dataset.hitKind=guard?'guard':final?'final':
     event.kind==='boss-strike'?'boss':'hero';
    field.dataset.replayState='playing';
    const target=event.kind==='boss-strike'?'🛡️ '+event.name:'🐉 Boss';
-   const label=event.blocked?'BLOCK!':'−'+fmt.format(event.amount)+' LP';
-   text(node('br-replay-icon'),final?'⚡':
+   const label=guard?'🛡️ +'+fmt.format(-event.amount)+' Boss-LP':
+    event.blocked?'BLOCK!':'−'+fmt.format(event.amount)+' LP';
+   text(node('br-replay-icon'),guard?'🛡️':final?'⚡':
     event.kind==='boss-strike'?'🔥':'⚔️');
    text(node('br-replay-hit'),label);
    text(node('br-replay-caption'),
-    (final?'⚡ Gemeinsamer Schlussangriff · Glück / Kritisch':
+    (guard?'🛡️ Der Boss wehrt durch Glück einen Teil des Schadens ab':
+     final?'⚡ Gemeinsamer Schlussangriff · Glück / Kritisch':
      event.roundTitle+' · '+(event.kind==='boss-strike'?
       'Boss greift '+event.name+' an':event.name+' greift den Boss an'))+
     ' · '+target+(Number.isFinite(Number(event.hpBefore))&&
@@ -345,7 +357,9 @@
     (result.critical?' · Seltener kritischer Treffer':'')+
     (report.settlement?' · '+fmt.format(report.settlement.appliedDamage)+
      ' Boss-LP abgezogen'+(report.settlement.overkillDamage>0?
-      ' · '+fmt.format(report.settlement.overkillDamage)+' LP Übertreffer':''):'')
+      ' · '+fmt.format(report.settlement.overkillDamage)+' LP Übertreffer':'')+
+     (report.settlement.guardRecovered>0?
+      ' · '+fmt.format(report.settlement.guardRecovered)+' LP Glücksabwehr':''):'')
    );
    const vitals=node('br-hero-vitals');const attacks=node('br-attack-rows');
    const heroNodes=[],attackNodes=[];
@@ -372,12 +386,14 @@
     const tr=make('tr');
     const againstBoss=e.kind!=='boss-strike';
     const final=e.kind==='team-finisher';
-    for(const v of [final?'Finalschlag':'Runde '+(e.round+1),
+    const guard=e.kind==='boss-guard';
+    for(const v of [guard?'Glücksabwehr':final?'Finalschlag':'Runde '+(e.round+1),
      againstBoss?e.name:report.bossName,
      againstBoss?report.bossName:e.name,
-     e.blocked?'BLOCK!':'−'+fmt.format(e.amount)+' LP'+
-      (final&&e.overkillDamage>0?' (+'+fmt.format(e.overkillDamage)+
-       ' Übertreffer)':'')])tr.append(make('td',null,v));
+     guard?'+'+fmt.format(-e.amount)+' Boss-LP':
+      e.blocked?'BLOCK!':'−'+fmt.format(e.amount)+' LP'+
+       (final&&e.overkillDamage>0?' (+'+fmt.format(e.overkillDamage)+
+        ' Übertreffer)':'')])tr.append(make('td',null,v));
     return tr;
    });
    node('br-strike-rows').replaceChildren(...individualHits);
@@ -398,8 +414,9 @@
      s.max?fmt.format(s.correct)+' / '+fmt.format(s.max)+' richtig':'—'));
     const track=make('div','br-mini-track'),fill=make('span');
     fill.style.width=(s.percent||0)+'%';track.append(fill);
-    const impact=make('small','br-round-impact',s.defensive?
-     '🛡️ '+fmt.format(s.taken)+' LP erlitten':
+    const impact=make('small','br-round-impact',s.kind==='boss-guard'?
+     '🛡️ +'+fmt.format(s.restored)+' Boss-LP durch Glücksabwehr':
+     s.defensive?'🛡️ '+fmt.format(s.taken)+' LP erlitten':
      '⚔️ '+fmt.format(s.damage)+' LP in den sichtbaren Trefferphasen');
     row.append(top,track,impact);return row;
    });
