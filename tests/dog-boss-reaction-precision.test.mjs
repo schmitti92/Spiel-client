@@ -7,7 +7,7 @@ const epoch=1_900_000_000_000;
 function makeElement(tag='div'){
  const listeners=new Map(),classes=new Set();
  return {tag,textContent:'',hidden:false,disabled:false,children:[],className:'',
-  offsetWidth:100,attrs:{},style:{setProperty(k,v){this[k]=v}},
+  offsetWidth:100,attrs:{},dataset:{},style:{setProperty(k,v){this[k]=v}},
   classList:{add:x=>classes.add(x),remove:x=>classes.delete(x),
    toggle:(x,v)=>v?classes.add(x):classes.delete(x),contains:x=>classes.has(x)},
   addEventListener:(name,fn)=>listeners.set(name,fn),

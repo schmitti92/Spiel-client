@@ -73,7 +73,7 @@ test('A partially solved sprint submits once as the eight-second window ends',as
  assert.deepEqual([...requests[0].answer],[0,1,2]);
 });
 test('Client never decides arithmetic success locally; only server scores it',()=>{
- assert.match(source,/onSubmit\(batch\.round,batch\.answers,0\)/);
+ assert.match(source,/onSubmit\(batch\.round,batch\.answers,0(?:,|\))/);
  assert.match(source,/one server transaction for the entire sprint|One server transaction for the entire sprint/);
  assert.doesNotMatch(source,/correctIndex/);
  assert.match(source,/mathChoices\.push\(value\)/);

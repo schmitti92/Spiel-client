@@ -213,7 +213,7 @@ test('M-02 keeps v7 historical controls and has no new network operations',()=>{
  for(const page of ['dog-boss10.html','dog-group-boss.html']){
   const html=read(page);
   assert.match(html,/dog-boss-dodge-slow\.css\?v=20261112-m02-feedback1/);
-  assert.match(html,/dog-boss-mini-ui\.js\?v=20261112-m0[23]-/);
+  assert.match(html,/dog-boss-mini-ui\.js\?v=20261112-m0[234]-/);
  }
  const original=read('dog-boss-mini-ui.js');
  assert.doesNotMatch(original,/\bfetch\s*\(|XMLHttpRequest|firebase/i);
