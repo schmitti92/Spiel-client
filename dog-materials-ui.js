@@ -115,7 +115,7 @@
   if(out.war_rune===undefined&&out.rune!==undefined)out.war_rune=out.rune;
   return out;
  }
- function createLootItem(key,count,{history=false}={}){
+ function createLootItem(key,count,{history=false,qualityItems=null}={}){
   const meta=META[key];
   if(!meta||!count)return null;
   const node=document.createElement('div');
@@ -129,6 +129,12 @@
   const rarity=document.createElement('small');
   rarity.className='loot-rarity';rarity.textContent=meta.label;
   node.append(icon,title,quantity,rarity);
+  if(qualityItems){
+   const qualities=document.createElement('small');qualities.className='loot-quality-counts';
+   qualities.textContent=[1,2,3].filter(level=>Number(qualityItems[key+':'+level])>0)
+    .map(level=>'Stufe '+level+': '+fmt(qualityItems[key+':'+level])).join(' · ');
+   if(qualities.textContent)node.append(qualities);
+  }
   return node;
  }
  function renderInventory(){
@@ -196,7 +202,11 @@
    const details=document.createElement('span');
    const normalized=normalizeItems(item.items);
    details.textContent=Object.entries(META).filter(([key])=>normalized[key]>0)
-    .map(([key,meta])=>meta.icon+' '+fmt(normalized[key])).join(' · ');
+    .map(([key,meta])=>{
+     const grades=item.qualityItems?[1,2,3].filter(level=>item.qualityItems[key+':'+level]>0)
+      .map(level=>'S'+level+':'+fmt(item.qualityItems[key+':'+level])).join(', '):'';
+     return meta.icon+' '+fmt(normalized[key])+(grades?' ('+grades+')':'');
+    }).join(' · ');
    li.append(strong,details);history.append(li);
   }
  }
@@ -217,7 +227,7 @@
    const title=document.createElement('h3');title.textContent=group.label;
    const grid=document.createElement('div');grid.className='loot-grid';
    for(const [key] of entries){
-    const element=createLootItem(key,items[key]);
+    const element=createLootItem(key,items[key],{qualityItems:drop.qualityItems||null});
     if(element)grid.append(element);
     if(META[key].rarity===3)epic+=items[key];
     if(META[key].rarity===4)legendary+=items[key];
