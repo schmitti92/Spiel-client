@@ -1,5 +1,5 @@
 /* 100 TORE · one shared weapon layer for Boss 10 and later bosses.
- * Animation phases are synchronized to server time (negative paused delay).
+ * Animation phases start at the current server-clock position, then run smoothly; delays are reset only when another actor attacks or the browser clock shifts.
  * Does not affect HP, RNG, game rules or round duration.
  */
 .arena-live[data-arena-design="v3"] .combat-hero,
@@ -54,7 +54,7 @@
  clip-path:polygon(35% 0,65% 0,65% 36%,100% 36%,100% 64%,65% 64%,65% 100%,35% 100%,35% 64%,0 64%,0 36%,35% 36%);
 }
 .arena-live[data-arena-design="v3"] .combat-hero[data-v3-active="true"]{
- animation:v3-drawn-attack var(--v3-duration) linear both paused!important;
+ animation:v3-drawn-attack var(--v3-duration) linear both running!important;
  animation-delay:var(--v3-delay)!important;z-index:7;
 }
 .arena-live[data-arena-design="v3"] .combat-hero[data-v3-active="true"][data-hero-class="magierin"]{
@@ -64,7 +64,7 @@
  animation-name:v3-guardian-strike!important;
 }
 .arena-live[data-arena-design="v3"] .combat-hero[data-v3-active="true"] .v3-weapon{
- opacity:1;animation:v3-weapon-draw var(--v3-duration) linear both paused;
+ opacity:1;animation:v3-weapon-draw var(--v3-duration) linear both running;
  animation-delay:var(--v3-delay);
 }
 .arena-live[data-arena-design="v3"] .combat-hero[data-v3-active="true"][data-hero-class="magierin"] .v3-weapon{
@@ -125,16 +125,16 @@
  transform-origin:48% 91%;transform:rotate(42deg);
 }
 .arena-live[data-arena-design="v3"] .combat-boss[data-v3-active="true"]{
- animation:v3-boss-aimed-strike var(--v3-duration) linear both paused!important;
+ animation:v3-boss-aimed-strike var(--v3-duration) linear both running!important;
  animation-delay:var(--v3-delay)!important;
 }
 .arena-live[data-arena-design="v3"] .combat-boss[data-v3-active="true"]::after{
  opacity:1;
- animation:v3-lava-mace var(--v3-duration) linear both paused!important;
+ animation:v3-lava-mace var(--v3-duration) linear both running!important;
  animation-delay:var(--v3-delay)!important;
 }
 .arena-live[data-arena-design="v3"] .combat-boss[data-v3-active="true"] .monster-art{
- animation:v3-boss-torso var(--v3-duration) linear both paused!important;
+ animation:v3-boss-torso var(--v3-duration) linear both running!important;
  animation-delay:var(--v3-delay)!important;
 }
 @keyframes v3-boss-aimed-strike{
@@ -211,4 +211,164 @@
   animation:none!important;transition:none!important;
  }
  .arena-live[data-arena-design="v3"] .v3-floating-damage{font-size:clamp(18px,2.4vw,32px)}
+}
+
+/* V4 COMBAT RHYTHM: visual-only, shared by Boss 10 and later group bosses.
+ * The official server hit lands 54% into every personal strike slot.
+ * Stable running CSS prevents 250ms frame-stepping; the director only
+ * rebases the clock at the beginning of a slot or after tab suspension. */
+.arena-live[data-arena-design="v3"] .combat-hero[data-v3-active="true"],
+.arena-live[data-arena-design="v3"] .combat-boss[data-v3-active="true"],
+.arena-live[data-arena-design="v3"] .combat-hero[data-v3-active="true"] .v3-weapon,
+.arena-live[data-arena-design="v3"] .combat-boss[data-v3-active="true"]::after,
+.arena-live[data-arena-design="v3"] .combat-boss[data-v3-active="true"] .monster-art{
+ animation-play-state:running!important;
+ will-change:transform;
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-beat="prepare"] .combat-hero[data-v3-active="true"]{
+ filter:drop-shadow(0 9px 10px #000b) drop-shadow(0 0 10px #90cef766);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-beat="windup"] .combat-hero[data-v3-active="true"] .v3-weapon{
+ filter:drop-shadow(0 0 12px #ffedb6) drop-shadow(0 0 17px #ffc16e);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-beat="swing"] .combat-hero[data-v3-active="true"] .v3-weapon{
+ filter:drop-shadow(0 0 22px #ffe6b0) drop-shadow(0 0 16px #ffe5a7);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-beat="windup"] .combat-boss[data-v3-active="true"]::after{
+ filter:drop-shadow(0 0 18px #ff7827) drop-shadow(0 0 11px #ffca6a);
+}
+.arena-live[data-arena-design="v3"] .combat-hero[data-v3-guard="true"]{
+ filter:drop-shadow(0 0 10px #f9ad6977);
+}
+.arena-live[data-arena-design="v3"] .combat-hero[data-v3-guard="true"] .combat-hero-hp-track{
+ position:relative;overflow:visible;
+ border-color:#ffbd83;box-shadow:0 0 11px #ff915e7a;
+}
+.arena-live[data-arena-design="v3"] .combat-hero[data-v3-guard="true"] .combat-hero-hp-track::after{
+ content:"⚠";position:absolute;bottom:120%;left:50%;transform:translateX(-50%);
+ color:#ffe1a1;text-shadow:0 0 8px #ff743a,0 0 4px #001a25;
+ font:900 clamp(15px,2.2vw,26px) system-ui;
+ animation:v3-warning-beat .6s ease-in-out infinite alternate;
+}
+.arena-live[data-arena-design="v3"] .combat-boss[data-v3-targeted="true"]::before{
+ background:radial-gradient(ellipse at 50% 60%,#ffb15394,transparent 64%);
+ filter:blur(12px);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-impact="yes"] .combat-stage{
+ animation:v3-impact-jolt .36s cubic-bezier(.1,.75,.6,1) both;
+}
+.arena-live[data-arena-design="v3"] .combat-scene .v3-impact-flare{
+ left:var(--v3-impact-left,38%)!important;
+ top:28%;width:24%;height:55%;
+ background:radial-gradient(ellipse,#fff5c9bb 0%,#ffbd5d94 16%,#ee533874 35%,transparent 67%);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-strike-side="boss"] .v3-impact-flare{
+ width:18%;height:40%;top:39%;
+ background:radial-gradient(ellipse,#fef0a3 0%,#ff7b4b96 18%,#fa353f77 35%,transparent 70%);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-impact="yes"] .combat-stage::after{
+ content:"";position:absolute;z-index:8;pointer-events:none;
+ top:39%;left:var(--v3-impact-left,38%);
+ width:clamp(36px,6vw,84px);height:clamp(50px,10vw,150px);
+ transform-origin:center;
+ background:linear-gradient(115deg,transparent 22%,#fff9ce 36%,#ffbb5c96 49%,transparent 68%);
+ clip-path:polygon(25% 0,100% 0,60% 100%,0 100%);
+ filter:drop-shadow(0 0 12px #ffc268);
+ animation:v3-hit-slash .37s ease-out both;
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-strike-side="boss"][data-v3-impact="yes"] .combat-stage::after{
+ background:linear-gradient(70deg,transparent 9%,#fff6bc 40%,#ff68478f 60%,transparent 79%);
+}
+.arena-live[data-arena-design="v3"] .v3-actor-action{
+ top:clamp(44px,6.5vh,63px);left:12px;right:78px;
+ border-color:#ffc2769e;box-shadow:0 4px 16px #0a0c17bf;
+ font-size:clamp(10px,1vw,14px);
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-beat="windup"] .v3-actor-action{
+ color:#ffe8ad;border-color:#eaa759;
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-beat="impact"] .v3-actor-action{
+ background:#553524db;color:#ffefc9;
+}
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-action="countdown"] .combat-hero,
+.arena-live[data-arena-design="v3"] .combat-scene[data-v3-action="countdown"] .combat-boss{
+ filter:drop-shadow(0 8px 8px #03050dbb);
+}
+.arena-live[data-arena-design="v3"] .live-exchange-beams{
+ /* Old one-size-fits-all pulses used to overlap the v3 actor strikes. */
+ display:none!important;
+}
+.arena-live[data-arena-design="v3"] .v3-floating-damage.is-reduced{
+ opacity:1;transform:translate(-50%,-18px);animation:none!important;
+}
+@keyframes v3-warning-beat{
+ from{opacity:.5;transform:translate(-50%,3px) scale(.86)}
+ to{opacity:1;transform:translate(-50%,-4px) scale(1.15)}
+}
+@keyframes v3-impact-jolt{
+ 0%,100%{transform:translate(0,0)}
+ 18%{transform:translate(-2px,-1px)}
+ 36%{transform:translate(3px,2px)}
+ 52%{transform:translate(-2px,0)}
+ 70%{transform:translate(1px,-1px)}
+}
+@keyframes v3-hit-slash{
+ 0%{opacity:0;transform:rotate(-34deg) scale(.4)}
+ 22%{opacity:1;transform:rotate(4deg) scale(1.35)}
+ 100%{opacity:0;transform:rotate(15deg) scale(1.75)}
+}
+/* The weapon's strike pose meets the server contact point at 54%. */
+@keyframes v3-drawn-attack{
+ 0%,13%,100%{transform:translateX(0) translateY(0) scale(1)}
+ 24%{transform:translateX(7%) translateY(-2%) scale(1.03)}
+ 38%{transform:translateX(12%) translateY(-4%) scale(1.05)}
+ 49%{transform:translateX(-21%) translateY(-5%) scale(1.08)}
+ 54%{transform:translateX(-42%) translateY(-8%) scale(1.16)}
+ 59%{transform:translateX(-38%) translateY(-6%) scale(1.12)}
+ 74%{transform:translateX(-7%) scale(1.06)}
+ 88%{transform:translateX(1%) scale(1.01)}
+}
+@keyframes v3-cast-attack{
+ 0%,15%,100%{transform:none}
+ 29%{transform:translateY(-3%) scale(1.05)}
+ 44%{transform:translateX(2%) translateY(-5%) scale(1.1)}
+ 54%,59%{transform:translateX(-10%) translateY(-6%) scale(1.13)}
+ 77%{transform:translateX(-2%) scale(1.04)}
+}
+@keyframes v3-guardian-strike{
+ 0%,13%,100%{transform:none}
+ 27%{transform:translateX(7%) scale(1.05)}
+ 42%{transform:translateX(10%) scale(1.04)}
+ 54%{transform:translateX(-27%) translateY(-2%) scale(1.16)}
+ 63%{transform:translateX(-20%) scale(1.08)}
+ 83%{transform:translateX(-2%)}
+}
+@keyframes v3-boss-aimed-strike{
+ 0%,12%,100%{transform:none}
+ 30%{transform:translateX(-9%) translateY(-2%) scale(1.035)}
+ 43%{transform:translateX(-11%) translateY(-4%) scale(1.06)}
+ 54%{transform:translateX(14%) translateY(-1%) scale(1.12)}
+ 60%{transform:translateX(12%) scale(1.1)}
+ 78%{transform:translateX(3%) scale(1.03)}
+}
+@keyframes v3-lava-mace{
+ 0%,12%,100%{transform:rotate(42deg);opacity:.25}
+ 29%{transform:rotate(-66deg) translate(-5px,-12px);opacity:1}
+ 43%{transform:rotate(-98deg) translate(-8px,-18px);opacity:1}
+ 54%{transform:rotate(85deg) translate(19px,5px) scale(1.35);opacity:1}
+ 60%{transform:rotate(76deg) translate(13px,4px);opacity:1}
+ 77%{transform:rotate(33deg);opacity:.8}
+}
+@media(max-width:620px){
+ .arena-live[data-arena-design="v3"] .v3-actor-action{
+  top:36px;left:4px;right:60px;
+  white-space:normal;min-height:22px;padding:4px 5px;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ .arena-live[data-arena-design="v3"] .combat-scene[data-v3-impact="yes"] .combat-stage,
+ .arena-live[data-arena-design="v3"] .combat-hero[data-v3-guard="true"] .combat-hero-hp-track::after,
+ .arena-live[data-arena-design="v3"] .combat-scene[data-v3-impact="yes"] .combat-stage::after{
+  animation:none!important;
+ }
 }
