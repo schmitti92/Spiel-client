@@ -523,15 +523,16 @@
      amount.textContent=Number.isFinite(item.savedHp)?
       '🛡️ '+fmt(item.savedHp)+' LP geschützt':
       '🛡️ '+fmt(item.protectionPoints)+' Schutzpunkte';
-     detail.textContent=Number.isFinite(item.receivedDamage)?
-      'Boss-Treffer: −'+fmt(item.receivedDamage)+' LP · Server bestätigt':
-      item.strikePending?'Boss-Einschlag steht noch aus':
-      Number.isFinite(item.savedHp)?
-       'Gegenüber 0/3 richtigen Abwehraktionen gerettet':
-       'Abwehrbeitrag · bestehende Gruppenregel';
+     detail.textContent='+'+fmt(item.protectionPoints||0)+' / 25 Schutzpunkte · '+
+      (Number.isFinite(item.receivedDamage)?
+       'Boss-Treffer: −'+fmt(item.receivedDamage)+' LP · Server bestätigt':
+       item.strikePending?'Boss-Einschlag steht noch aus':
+       Number.isFinite(item.savedHp)?
+        'gegenüber 0/3 Treffern gerettet':
+        'bestehende Gruppenregel');
     }else{
      amount.textContent=Number.isFinite(item.earnedBonus)?
-      '🔥 +'+fmt(item.earnedBonus)+' Bonus-Schaden erspielt':
+      '🔥 +'+fmt(item.earnedBonus)+' Zusatzschaden erspielt':
       '🔥 +'+fmt(item.earnedPercent)+' % Angriffsbonus';
      detail.textContent=Number.isFinite(item.appliedDamage)?
       'Bestätigter Treffer: −'+fmt(item.appliedDamage)+' Boss-LP':
@@ -556,7 +557,7 @@
      (normalized!==null?' · 🎯 Minispiel-Genauigkeit '+normalized:''));
    }else{
     text(nodes.resultsTotal,Number.isFinite(stage?.bonusDamage)?
-     '🔥 Team: +'+fmt(stage.bonusDamage)+' Schadensbonus erspielt':
+     '🔥 Team: +'+fmt(stage.bonusDamage)+' Zusatzschaden erspielt':
      '🔥 Angriffswertung wird bestätigt');
     text(nodes.resultsNote,
      'Serverbestätigter Bonus aus Ausrüstung und Lösungen; wirkliche Boss-LP erst beim angezeigten Schlag.'+
