@@ -83,7 +83,7 @@ test('M-03 explains color-only versus symbol-only targets and keeps taps provisi
   prompt:i%2?'TRIFF STERN!':'TRIFF BLAU!',options:four
  }));
  ui.update(view,epoch+55100,true);
- const body=root.children[1],find=name=>body.children.find(x=>x.className===name);
+ const body=root.children[1],find=name=>body.children.flatMap(x=>[x,...x.children]).find(x=>x.className===name);
  assert.match(find('mini-color-rule').textContent,/NUR FARBE/);
  assert.match(find('mini-color-guide').textContent,/Symbol ist egal/);
  assert.match(find('mini-color-level').textContent,/1\/10 · 4 FELDER/);
@@ -106,7 +106,7 @@ test('M-03 displays eight-field combined rule, then only server-confirmed final 
   prompt:'TRIFF BLAU + STERN!',options:eight
  }));
  ui.update(view,epoch+55100,true);
- const body=root.children[1],find=name=>body.children.find(x=>x.className===name);
+ const body=root.children[1],find=name=>body.children.flatMap(x=>[x,...x.children]).find(x=>x.className===name);
  assert.match(find('mini-color-level').textContent,/8 FELDER/);
  assert.match(find('mini-color-rule').textContent,/FARBE UND SYMBOL/);
  assert.match(find('mini-color-guide').textContent,/beide Merkmale/);
@@ -127,7 +127,7 @@ test('M-03 closes controls on server-confirmed partial batches after reconnect',
  const {root,ui,view,requests}=fixture();
  view.miniGames.myAnswers[2]={attempts:[{step:0,correct:true},{step:1,correct:false}]};
  ui.update(view,epoch+55100,true);
- const body=root.children[1],find=name=>body.children.find(x=>x.className===name);
+ const body=root.children[1],find=name=>body.children.flatMap(x=>[x,...x.children]).find(x=>x.className===name);
  const tiles=find('mini-color-grid').children;
  assert.ok(tiles.every(button=>button.disabled));
  assert.match(find('mini-color-verdict').textContent,/SERVER BESTÄTIGT · 1 \/ 2/);
