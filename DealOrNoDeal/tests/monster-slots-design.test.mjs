@@ -9,8 +9,8 @@ const html=read('game.html');
 const slotMarkup=JSON.parse(js.split('root.innerHTML=')[1].split(';\n')[0]);
 test('Monster Slots script parses as a classic browser script and is loaded with a cache-busted asset',()=>{
  assert.doesNotThrow(()=>new Script(js,{filename:'monster-slots-final.js'}));
- assert.match(html,/js\/monster-slots-final\.js\?v=20261113-slots-prize-art-v3/);
- assert.match(html,/css\/monster-slots-final\.css\?v=20261113-slots-prize-art-v3/);
+ assert.match(html,/js\/monster-slots-final\.js\?v=20261113-slots-new-cards-v4/);
+ assert.match(html,/css\/monster-slots-final\.css\?v=20261113-slots-new-cards-v4/);
 });
 test('three reels with real scrolling icon tracks and sequential stops, never a browser-side prize roll',()=>{
  assert.equal((slotMarkup.match(/class="monster-slot-reel"/g)||[]).length,3,'exactly three reels');
