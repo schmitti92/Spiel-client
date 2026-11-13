@@ -1,10 +1,10 @@
-/* S-04 · Optional 100-Tore WebSocket pilot.
- * ?dogpush=1 enables it. Requires authenticated signed-in profile;
+/* 100-Tore boss notifications are enabled by default for real players.
+ * ?dogpush=0 explicitly disables them. Requires authenticated signed-in profile;
  * all game state is still fetched through the existing HTTP API.
  * Inactive or disconnected WS never suppresses the HTTP fallback.
  */
 (()=>{'use strict';
- const enabled=new URLSearchParams(location.search).get('dogpush')==='1';
+ const enabled=new URLSearchParams(location.search).get('dogpush')!=='0';
  function create({api,gate,getUser,onChanged}={}){
   if(!enabled||typeof WebSocket!=='function')return null;
   if(!Number.isInteger(gate)||gate<10||gate>100||gate%10!==0)return null;
