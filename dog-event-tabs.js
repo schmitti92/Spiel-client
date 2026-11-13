@@ -97,6 +97,16 @@
    document.body.classList.add('dog-event-combat');
   }
   document.body.classList.add('dog-event-tabs-ready');
+  // Subscribe to the cheap ready-invite channel only outside an arena.
+  // The arena itself has a separate per-gate boss-state push connection.
+  if(!['dog-boss.html','dog-boss10.html','dog-group-boss.html'].includes(current)&&
+     !document.querySelector('script[data-dog-invite]')){
+   const invite=document.createElement('script');
+   invite.src='./dog-boss-invites.js?v=20261113-ready-invite-v1';
+   invite.dataset.dogInvite='1';
+   invite.async=true;
+   document.body.append(invite);
+  }
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 })();
