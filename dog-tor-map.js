@@ -338,13 +338,16 @@
    const result=await request('GET','map',null,account);
    if(epoch!==mapRequestEpoch||auth()?.user?.uid!==account)return;
    mapState=result;
+   if(selectedGate&&details.open)showGateRequirements(selectedGate);
    renderMembers();
    setTeamStatus(result.isMember?
     '✅ Positionen geladen · '+result.memberCount+'/3 Helden · Änderungen können beim Aktualisieren sichtbar werden.':
     '🛡️ '+result.memberCount+'/3 Helden sind im Team. Tritt bei, damit dein Tor für die anderen sichtbar wird.');
   }catch(e){
    if(epoch!==mapRequestEpoch)return;
-   mapState=null;renderMembers();
+   mapState=null;
+   if(selectedGate&&details.open)showGateRequirements(selectedGate);
+   renderMembers();
    setTeamStatus(e.message==='DOG_EVENT_NOT_PUBLIC'?
     '🔒 Die Expedition ist noch nicht öffentlich. Bitte oben die zwei Testspieler hinzufügen.':
     '⚠️ Serverpositionen momentan nicht verfügbar. Keine erfundenen Torstände angezeigt.');
@@ -634,6 +637,20 @@
   const stufe=Math.floor((gate-1)/10)*5+1+Math.floor(((gate-1)%10)/2);
   return '⚔️ Berechneter Schnellkampf: Du und dein Gegner greifen abwechselnd mit drei Angriffsarten an, bis einer 0 LP hat. Empfohlene Waffen- und Rüstungsstufe: '+stufe+'. Keine Zufalls-Siegchance.';
  };
+ function showGateRequirements(gate){
+  const panel=$('gate-detail-requirements');
+  if(!panel)return;
+  const info=gate%5===0?null:
+   mapState?.normalGateRequirements?.find(row=>row.gate===gate);
+  panel.hidden=!info;
+  if(!info)return;
+  // Exactly the server's immutable HP and attack requirements.
+  const number=value=>Number(value).toLocaleString('de-DE');
+  $('gate-req-hp').textContent=number(info.enemyMaxHp)+' LP';
+  $('gate-req-attack').textContent=number(info.enemyAttack);
+  $('gate-req-weapon').textContent='Stufe '+info.recommendedWeaponLevel;
+  $('gate-req-armor').textContent='Stufe '+info.recommendedArmorLevel;
+ }
  function selectGate(gate,button){
   for(const selected of document.querySelectorAll('.gate[aria-pressed="true"]'))selected.setAttribute('aria-pressed','false');
   button?.setAttribute('aria-pressed','true');
@@ -663,6 +680,7 @@
    bossPortrait.alt='Tor '+gate+': '+MAJOR_BOSSES[gate];
   }
   $('gate-detail-summary').textContent=summaryFor(gate);
+  showGateRequirements(gate);
   $('gate-detail-future').textContent=gate===100?
    (mapState?.isMember&&mapState?.dogUnlocked?'🏆 Der Sieg an Tor 100 ist vom Server bestätigt. Die Expedition ist abgeschlossen!':'🔒 Der letzte Wächter muss gemeinsam besiegt werden, damit die Expedition endet.'):
    '⚔️ Kämpfe und Mini-Boss-Belohnungen werden vom Server berechnet und einmalig gespeichert.';
