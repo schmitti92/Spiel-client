@@ -27,6 +27,19 @@ root.innerHTML="<div class=\"monster-slot-machine\">\n <div class=\"monster-slot
 document.body.append(root);
 const reels=[...root.querySelectorAll('.monster-slot-reel')],lights=[...root.querySelectorAll('.monster-slot-progress span')];
 const status=$('monster-slot-status'),accept=$('monster-slot-accept');
+const entitledReels=()=>typeof g!=='undefined'?Number(window.dealSlotReelsFor?.(g,user()?.uid)||0):0;
+function configureReels(count){
+ const n=count===1?1:3;
+ root.dataset.reels=String(n);
+ for(let i=0;i<reels.length;i++){reels[i].hidden=i>=n;lights[i].hidden=i>=n;}
+ root.querySelector('.monster-slot-subheading').textContent=
+  n===1?'🥈 ZWEITER PLATZ · 1 WALZE · 1 GARANTIERTER GEWINN':
+   '🏆 ERSTER PLATZ · 3 WALZEN · 3 GARANTIERTE GEWINNE';
+ root.querySelector('.monster-slot-reels').setAttribute('aria-label',
+  n===1?'Eine Gewinnwalze':'Drei Gewinnwalzen');
+ summaryTitle.textContent='🎉 '+n+(n===1?' Slot-Gewinn':' Slot-Gewinne');
+ summaryButton.textContent='✅ '+(n===1?'Gewinn':'Alle Gewinne')+' bestätigen';
+}
 
  // The summary is a single, scrollable view: all prizes and every opened card
  // appear together. No extra payout or pack-opening requests are sent.
@@ -91,15 +104,16 @@ const isTiedFinal=game=>{
  const values=Array.isArray(game?.finalValues)?game.finalValues.map(f=>f.payout):[];
  return values.length>1&&values.filter(v=>v===Math.max(...values)).length>1;
 };
-const canShow=()=>typeof g!=='undefined'&&g?.phase==='final'&&g.monsterSlotsVersion===1&&!isTiedFinal(g)&&
+const canShow=()=>typeof g!=='undefined'&&g?.phase==='final'&&g.monsterSlotsVersion===1&&!isTiedFinal(g)&&entitledReels()>0&&
  document.getElementById('finale-cinema')?.hidden!==false&&
  document.getElementById('cent-reward')?.hidden!==false&&!document.hidden;
 function showAlreadySettled(){
- reels.forEach((reel,i)=>showPrize(reel,claimed.prizes[i]));
- lights.forEach(light=>light.classList.add('lit'));
+ configureReels(claimed.prizes.length);
+ reels.slice(0,claimed.prizes.length).forEach((reel,i)=>showPrize(reel,claimed.prizes[i]));
+ lights.slice(0,claimed.prizes.length).forEach(light=>light.classList.add('lit'));
  root.dataset.phase='summary';root.hidden=false;renderSummary();summary.hidden=false;
  accept.disabled=true;summaryButton.disabled=false;summaryButton.textContent='✓ Fenster schließen';
- setStatus('🎉 Diese drei Gewinne wurden bereits gutgeschrieben.');
+ setStatus('🎉 '+(claimed.prizes.length===1?'Dein Gewinn wurde':'Deine drei Gewinne wurden')+' bereits gutgeschrieben.');
 }
 
  // Opened packs already have all their cards settled and persisted by the server.
@@ -168,25 +182,31 @@ function showSummary(token,id){
 function present(reopen=false){
  if(opening||!claimed||claimed.gameId!==liveGame||claimedUid!==user()?.uid||shown===liveGame&&!reopen||!canShow())return;
  const id=liveGame;
+ configureReels(claimed.prizes.length);
  if(watched(id)&&!reopen){try{sessionStorage.setItem('final-wheel-complete:'+id,'yes')}catch{}window.dispatchEvent(new Event('deal-final-wheel-complete'));return}
  const token=++seq;shown=id;priorFocus=document.activeElement;root.hidden=false;summary.hidden=true;
  lights.forEach(light=>light.classList.remove('lit'));
  if(watched(id)){showAlreadySettled();root.focus({preventScroll:true});return}
  opening=true;root.dataset.phase='rolling';accept.disabled=true;accept.textContent='🎁 Gewinne bestätigen';
- reels.forEach(reel=>{resetReel(reel);setPhase(reel,'running')});
- setStatus('🎰 Alle drei Walzen drehen gleichzeitig!');root.focus({preventScroll:true});
- const stops=reduced()?[100,220,340]:[3000,4500,6000];
+ reels.slice(0,claimed.prizes.length).forEach(reel=>{resetReel(reel);setPhase(reel,'running')});
+ const single=claimed.prizes.length===1;
+ setStatus(single?'🥈 Deine einzige Gewinnwalze dreht!':'🎰 Alle drei Walzen drehen gleichzeitig!');
+ root.focus({preventScroll:true});
+ const stops=(reduced()?[100,220,340]:[3000,4500,6000]).slice(0,claimed.prizes.length);
  stops.forEach((ms,i)=>timer(()=>{
   if(token!==seq||liveGame!==id||root.hidden)return;
   showPrize(reels[i],claimed.prizes[i]);lights[i].classList.add('lit');
-  setStatus(i===2?'🎉 Alle drei Gewinne wurden gutgeschrieben!':'✨ Walze '+(i+1)+' gestoppt – die anderen drehen weiter!');
-  if(i===2)timer(()=>showSummary(token,id),2000);
+  const finished=i===claimed.prizes.length-1;
+  setStatus(finished?single?'🎉 Dein Slot-Gewinn wurde gutgeschrieben!':
+   '🎉 Alle drei Gewinne wurden gutgeschrieben!':
+   '✨ Walze '+(i+1)+' gestoppt – die anderen drehen weiter!');
+  if(finished)timer(()=>showSummary(token,id),single?1000:2000);
  },ms));
 }
 async function claim(){
- if(claiming||!liveGame||claimed?.gameId===liveGame&&claimedUid===user()?.uid)return;
+ if(claiming||!liveGame||entitledReels()===0||claimed?.gameId===liveGame&&claimedUid===user()?.uid)return;
  const u=user();if(!u?.getIdToken)return;
- const id=liveGame,uid=u.uid;claiming=id;setStatus('🎁 Deine drei Gewinne werden sicher geladen …');
+ const id=liveGame,uid=u.uid;claiming=id;setStatus('🎁 Deine '+entitledReels()+' Slot-Gewinne werden sicher geladen …');
  try{
   const token=await u.getIdToken();
   const response=await fetch(base()+'/api/deal-or-no-deal/monster-slots/claim',{
@@ -194,7 +214,7 @@ async function claim(){
    body:JSON.stringify({gameId:id}),cache:'no-store'
   });
   const data=await response.json();
-  if(!response.ok||!data.ok||data.gameId!==id||!Array.isArray(data.prizes)||data.prizes.length!==3)
+  if(!response.ok||!data.ok||data.gameId!==id||!Array.isArray(data.prizes)||data.prizes.length!==entitledReels()||data.guaranteed!==entitledReels())
    throw Error(data.error||'GEWINNE_NICHT_VERFUEGBAR');
   if(liveGame!==id||user()?.uid!==uid)return;
   claimed=data;claimedUid=uid;if(canShow())present();
@@ -215,7 +235,7 @@ function confirmSlots(){
 accept.addEventListener('click',confirmSlots);
 summaryButton.addEventListener('click',confirmSlots);
 function sync(){
- if(typeof g==='undefined'||g?.phase!=='final'||g.monsterSlotsVersion!==1||isTiedFinal(g)){
+ if(typeof g==='undefined'||g?.phase!=='final'||g.monsterSlotsVersion!==1||isTiedFinal(g)||entitledReels()===0){
   if(liveGame){cancel();liveGame=null;claimed=null;claimedUid=null}return;
  }
  if(liveGame!==g.id||claimedUid&&claimedUid!==user()?.uid){cancel();liveGame=g.id;claimed=null;claimedUid=null}
@@ -228,7 +248,7 @@ window.addEventListener('spielonline-change',sync);
 // Wait until the legacy banker/one-cent reward layer has closed, then show the finale slots.
 window.addEventListener('deal-reward-window-closed',()=>setTimeout(sync,400));
 window.addEventListener('deal-monster-slot-retry',()=>{
- if(!liveGame)return;
+ if(!liveGame||entitledReels()===0)return;
  if(claimed?.gameId===liveGame&&claimedUid===user()?.uid){if(!opening){shown='';present(true)}}
  else{root.hidden=false;void claim()}
 });
