@@ -14,10 +14,15 @@ test('Server combat receipt stats populate the victory/defeat dialog',()=>{
  assert.match(s,/alternating-three-attacks-v1/);
  assert.match(s,/quick-attack-breakdown/);
  assert.match(s,/quick-combat-log/);
+ assert.match(h,/id="gate-detail-requirements"/);
+ assert.match(h,/id="gate-req-hp"/);
+ assert.match(h,/id="gate-req-attack"/);
+ assert.match(s,/mapState\?\.normalGateRequirements\?\.find/);
+ assert.match(s,/showGateRequirements\(gate\)/);
  assert.match(s,/stats.enemyRemainingHp/);
  assert.match(s,/stats.enemyDamageTaken/);
  assert.match(s,/stats.heroRemainingHp/);
  assert.match(s,/stats.heroDamageTaken/);
  assert.match(h,/id="gate-quick-result-stats"/);
- assert.match(h,/dog-tor-map\.js\?v=20261113-real-duels1/);
+ assert.match(h,/dog-tor-map\.js\?v=20261113-real-duels2/);
 });
