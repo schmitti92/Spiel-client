@@ -84,7 +84,13 @@ function showPrize(reel,prize){
  reel.dataset.rarity=prize.kind==='chest'&&prize.id==='legendary'||prize.kind==='pack'&&prize.id==='platinum'||isCash&&prize.amountCents>=100000000?'legendary':prize.kind==='chest'&&prize.id==='gold'||prize.kind==='pack'&&prize.id==='premium'?'epic':'common';
  win.hidden=false;setPhase(reel,'won');
 }
-const canShow=()=>typeof g!=='undefined'&&g?.phase==='final'&&g.monsterSlotsVersion===1&&
+// All clients agree on a draw based on the server's original (unboosted) payouts.
+// A tied highest result never triggers a claim or shows the Slot machine.
+const isTiedFinal=game=>{
+ const values=Array.isArray(game?.finalValues)?game.finalValues.map(f=>f.payout):[];
+ return values.length>1&&values.filter(v=>v===Math.max(...values)).length>1;
+};
+const canShow=()=>typeof g!=='undefined'&&g?.phase==='final'&&g.monsterSlotsVersion===1&&!isTiedFinal(g)&&
  document.getElementById('finale-cinema')?.hidden!==false&&
  document.getElementById('cent-reward')?.hidden!==false&&!document.hidden;
 function showAlreadySettled(){
@@ -198,7 +204,7 @@ accept.addEventListener('click',()=>{
  if(priorFocus?.isConnected)priorFocus.focus({preventScroll:true});
 });
 function sync(){
- if(typeof g==='undefined'||g?.phase!=='final'||g.monsterSlotsVersion!==1){
+ if(typeof g==='undefined'||g?.phase!=='final'||g.monsterSlotsVersion!==1||isTiedFinal(g)){
   if(liveGame){cancel();liveGame=null;claimed=null;claimedUid=null}return;
  }
  if(liveGame!==g.id||claimedUid&&claimedUid!==user()?.uid){cancel();liveGame=g.id;claimed=null;claimedUid=null}
