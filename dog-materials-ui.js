@@ -51,7 +51,7 @@
  const META=Object.fromEntries(GROUPS.flatMap(group=>group.items.map(([id,icon,name],rarity)=>[
   id,{id,icon,name,group:group.id,rarity,label:RARITY[rarity]}
  ])));
- let currentUid=null,inventory=null,busy=false,loadIndex=0,openQuantity=1,unlockedRarity=4,forgeLevel=null;
+ let currentUid=null,inventory=null,busy=false,loadIndex=0,openQuantity=1,unlockedRarity=4,forgeLevel=null,lastInventoryLoadedAt=0;
  const auth=()=>{
   const s=window.SpielOnline?.state?.();
   return s?.status==='online'&&s.user?.uid&&s.profile?.setupComplete!==false?s:null;
@@ -294,14 +294,14 @@
    renderInventory();return;
   }
   const uid=state.user.uid;
-  if(currentUid!==uid){currentUid=uid;inventory=null;unlockedRarity=4;forgeLevel=null;closeReward();}
+  if(currentUid!==uid){currentUid=uid;inventory=null;unlockedRarity=4;forgeLevel=null;lastInventoryLoadedAt=0;closeReward();}
   $('account').textContent='👤 '+String(state.profile?.name||state.user?.displayName||'Online-Spieler');
   message('🔄 Kisten und Rohstoffe werden vom Server geladen …');
   renderInventory();
   try{
    const data=await request('GET','me',null,uid);
    if(load!==loadIndex||currentUid!==uid)return;
-   inventory=data.inventory;
+   inventory=data.inventory;lastInventoryLoadedAt=Date.now();
    unlockedRarity=Number.isInteger(data.unlockedRarity)?data.unlockedRarity:4;
    forgeLevel=Number.isInteger(data.forgeLevel)?data.forgeLevel:null;
    const pending=getPending(uid);
@@ -338,7 +338,7 @@
    const result=await request('POST','open',
     {requestId:id,quantity,...(requestTier?{tier:requestTier}:{})},uid);
    if(currentUid!==uid)return;
-   inventory=result.inventory;
+   inventory=result.inventory;lastInventoryLoadedAt=Date.now();
    if(Number.isInteger(result.unlockedRarity))unlockedRarity=result.unlockedRarity;
    if(Number.isInteger(result.forgeLevel))forgeLevel=result.forgeLevel;
    clearPending(uid);
@@ -370,6 +370,9 @@
  $('refresh').addEventListener('click',()=>void reload());
  $('refresh-hero')?.addEventListener('click',()=>void reload());
  window.addEventListener('spielonline-change',()=>void reload());
- document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!busy)void reload();});
+ document.addEventListener('visibilitychange',()=>{
+  // Returning quickly to this tab must not reload the same three inventory documents.
+  if(!document.hidden&&!busy&&(!inventory||Date.now()-lastInventoryLoadedAt>120000))void reload();
+ });
  void reload();
 })();
