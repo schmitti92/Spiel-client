@@ -5,7 +5,7 @@ import {runInNewContext} from 'node:vm';
 
 const script=readFileSync(new URL('../dog-boss-invites.js',import.meta.url),'utf8');
 const microtasks=async()=>{for(let i=0;i<25;i++)await Promise.resolve()};
-function fixture({pathname:'/Spiel-client/dog-tor-map.html',query:'?room=123',online=true}={}){
+function fixture({pathname='/Spiel-client/dog-tor-map.html',query='?room=123',online=true}={}){
  const timers=new Map(),ticks=new Map(),listeners=new Map(),sockets=[],redirects=[],added=[];
  let seq=0;
  class Element{
