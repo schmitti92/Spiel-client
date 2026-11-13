@@ -54,3 +54,46 @@
 @media(max-height:550px){
   #cent-reward .cent-reward-cards .reward-card img{max-height:145px}
 }
+
+/* Stable shared stage: no recentering or repeated window-scale animation when
+   players are watching another person's card reward. */
+#cent-reward{
+ overflow:hidden;
+}
+#cent-reward .cent-reward-card{
+ box-sizing:border-box;
+ height:min(94dvh,720px);
+ max-height:calc(100dvh - 16px);
+ min-height:0;
+ overflow-y:auto;overflow-x:hidden;
+ overscroll-behavior:contain;
+ scrollbar-gutter:stable;
+ transform:none!important;
+ animation:none!important;
+ transition:none!important;
+}
+#cent-reward[data-stage="reveal"] .cent-reward-card{
+ animation:none!important;
+}
+#cent-reward[data-stage="reveal"] .cent-reward-pack{
+ animation:none!important;
+ transform:none!important;
+}
+#cent-reward[data-spectator="true"] .cent-reward-cards .reward-card,
+#cent-reward[data-spectator="true"] .cent-reward-cards .reward-card::before{
+ animation:none!important;
+ transform:none!important;
+ opacity:1!important;
+}
+#cent-reward[data-spectator="true"] .cent-reward-cards .reward-card::before{
+ display:none!important;
+}
+#cent-reward[data-spectator="true"] .cent-special-frame{
+ animation:none!important;transform:none!important;
+}
+#cent-reward[data-spectator="true"] .cent-special-overlay{
+ animation:none!important;
+}
+@media(max-height:620px){
+ #cent-reward .cent-reward-card{height:calc(100dvh - 12px)}
+}
