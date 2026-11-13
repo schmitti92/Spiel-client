@@ -1,15 +1,13 @@
 # Premium Slot – neue Grafiken
 
-Dieser Ordner ist für die Grafiken des optischen Updates der Monster Slots im Deal-or-No-Deal-Finale vorgesehen. **Noch keine neuen Gewinnregeln oder Gewinnchancen**.
+Dieser Ordner ist für das optische Update der Monster Slots im Deal-or-No-Deal-Finale vorgesehen. Die serverseitigen Auszahlungen und Gewinnchancen bleiben unverändert.
 
-Aus dem heruntergeladenen ZIP `slot-premium-bilderpaket.zip` nach dem Entpacken die Bilder in die folgenden Unterordner hochladen:
+## Einfacher Upload (auch vom Handy)
 
-- `slot-background.png` – neutraler Bühnenhintergrund
-- `symbols/` – Kiste, Kartenpakete, Hämmer, Joker, Geld, Fragezeichenkarte und weitere grafische Symbole
-- `panels/` – Maschinenrahmen, Walzen, Jackpot- und Gewinnbanner
-- `effects/` – Leuchten, Funken und Blitz-Effekte
-- `buttons/` – optionale Designvorlagen (5x/Auto bedeuten keine neuen Funktionen)
+Das Paket **`slot-premium-bilder-zum-hochladen.zip`** entpacken und die **31 PNG-Dateien direkt in diesen Ordner** `DealOrNoDeal/assets/slot-premium/` hochladen. Alle Dateinamen sind eindeutig und beginnen mit `slot-`. Die ZIP **nicht direkt hochladen**, da GitHub sie nicht entpackt.
 
-Die vorhandene Slot-Gewinnlogik, Originalbilder für Monster-Glücksrad und Minispielgutschein sowie die serverseitigen Auszahlungen bleiben erhalten. Einbinden der neuen Dateien erfolgt separat nach dem Upload.
+Es gibt ein zweites ZIP `slot-premium-bilderpaket.zip` mit optionaler Unterordner-Struktur; für diesen Upload empfehlen wir aber das flache Paket mit den PNGs direkt in diesem Ordner.
 
-**Achtung:** Bitte **den Inhalt** der ZIP hochladen, nicht die ZIP-Datei selbst – GitHub entpackt hochgeladene ZIPs nicht automatisch.
+Grafiken: neutraler Slot-Hintergrund, Maschinenrahmen, Walzen, Gewinne (Kisten, Pakete, Hämmer, Joker, Geld, Fragezeichenkarte), Jackpot-/Gewinnbanner, Lichteffekte und optionale Buttondesigns.
+
+Die vorhandenen Originalbilder für Monster-Glücksrad, Minispielgutschein und Platinpakete dürfen weiterverwendet werden. Die neuen PNGs werden **erst nach dem Upload** im Spielcode eingebunden. Die grafischen 5×-/Auto-Buttons stellen noch keine neuen Bedienfunktionen bereit.
