@@ -548,6 +548,7 @@
   sequence++;pendingSpin=null;activeWheelReward=null;activeWheelKind=null;finalWheelStarted=false;box.hidden=true;box.classList.remove('final-dual-active');box.dataset.reward='';delete box.dataset.stage;
   if(completedFinal)window.dispatchEvent(new Event('deal-final-wheel-complete'));
   lastRewardProbeKey='';checkRewards();
+  window.dispatchEvent(new Event('deal-reward-window-closed'));
  }
  async function continueReward(){
   if(!activeWheelReward||activeWheelReward.uid!==user()?.uid||close.disabled||(!finalWheelStarted&&!['banker','cent'].includes(activeWheelKind)))return;
@@ -626,7 +627,7 @@
  }
  // React to confirmed game-state changes; retain a slow safety poll for reconnects.
  function finishTiedFinal(){
-  if(typeof g==='undefined'||!g||g.phase!=='final'||!Array.isArray(g.finalValues))return false;
+  if(typeof g==='undefined'||!g||g.phase!=='final'||!Array.isArray(g.finalValues)||g.monsterSlotsVersion===1)return false;
   const payouts=g.finalValues.map(p=>p.payout);
   if(payouts.length<2||payouts.filter(v=>v===Math.max(...payouts)).length<2)return false;
   const key='final-wheel-complete:'+g.id;
