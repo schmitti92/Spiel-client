@@ -49,7 +49,7 @@
  const META=Object.fromEntries(GROUPS.flatMap(group=>group.items.map(([id,icon,name],rarity)=>[
   id,{id,icon,name,group:group.id,rarity,label:RARITY[rarity]}
  ])));
- let currentUid=null,inventory=null,busy=false,loadIndex=0;
+ let currentUid=null,inventory=null,busy=false,loadIndex=0,openQuantity=1;
  const auth=()=>{
   const s=window.SpielOnline?.state?.();
   return s?.status==='online'&&s.user?.uid&&s.profile?.setupComplete!==false?s:null;
@@ -59,16 +59,17 @@
   try{
    const stored=localStorage.getItem(keyFor(uid));
    if(!stored)return null;
-   if(/^[A-Za-z0-9_-]{12,90}$/.test(stored))return {id:stored,tier:null};
+   if(/^[A-Za-z0-9_-]{12,90}$/.test(stored))return {id:stored,tier:null,quantity:1};
    const data=JSON.parse(stored);
    if(data&&/^[A-Za-z0-9_-]{12,90}$/.test(data.id)&&
-     (data.tier===null||Object.hasOwn(TIER,data.tier)))return data;
+     (data.tier===null||Object.hasOwn(TIER,data.tier))&&
+      (data.quantity===undefined||data.quantity==='all'||Number.isSafeInteger(data.quantity)&&data.quantity>=1&&data.quantity<=1000))return data;
   }catch{}
   return null;
  }
- function storePending(uid,id,tier){
+ function storePending(uid,id,tier,quantity=1){
   try{
-   const value=JSON.stringify({id,tier});
+   const value=JSON.stringify({id,tier,quantity});
    localStorage.setItem(keyFor(uid),value);
    return localStorage.getItem(keyFor(uid))===value;
   }catch{return false}
@@ -141,6 +142,11 @@
   const pending=getPending(currentUid||'');
   const chests=chestCounts(),expedition=expeditionCounts();
   const eligible=!!currentUid&&!!inventory&&!busy&&!pending;
+  for(const btn of document.querySelectorAll('[data-open-quantity]')){
+   btn.classList.toggle('active',String(openQuantity)===btn.dataset.openQuantity);
+   btn.setAttribute('aria-pressed',String(String(openQuantity)===btn.dataset.openQuantity));
+   btn.disabled=busy||!!pending;
+  }
   for(const tier of EXPEDITION_TIERS){
    const amount=expedition[tier],button=$('open-'+tier);
    $(tier+'-count').textContent=inventory?fmt(amount):'–';
@@ -150,7 +156,8 @@
    const action=button.querySelector('.crate-action');
    if(action)action.textContent=!inventory?'Bestand wird geladen …':
     amount>0?(busy?'Öffnung läuft …':pending?'Offene Öffnung abschließen':
-     '✦ '+(amount===1?'Kiste öffnen':'Eine Kiste öffnen')):'Noch keine Kiste';
+     '✦ '+fmt(openQuantity==='all'?Math.min(amount,1000):Math.min(amount,openQuantity))+
+      (openQuantity==='all'&&amount>1000?' von '+fmt(amount):'')+' Kiste(n) öffnen'):'Noch keine Kiste';
    button.setAttribute('aria-label',(TIER[tier]?.label||tier)+
     (inventory?', '+fmt(amount)+' ungeöffnete Kisten'+(amount>0?', zum Öffnen auswählen':''):': Bestand wird geladen'));
   }
@@ -293,7 +300,8 @@
    expeditionCounts()[tier]:chestCounts()[tier]):0;
   if(!pending&&(!tier||!Object.hasOwn(TIER,tier)||!(available>0)))return;
   const id=pending?.id||newId(),requestTier=pending?.tier??tier;
-  if(!pending&&!storePending(uid,id,requestTier)){
+   const quantity=pending?.quantity??(openQuantity==='all'?Math.min(available,1000):Math.min(available,openQuantity));
+  if(!pending&&!storePending(uid,id,requestTier,quantity)){
    message('⚠️ Die Kistenöffnung konnte nicht sicher gespeichert werden. Bitte Speicherfunktion des Browsers prüfen.','danger');
    return;
   }
@@ -303,13 +311,13 @@
   message('⚒️ Deine Kiste wird vom Server geöffnet …');
   try{
    const result=await request('POST','open',
-    {requestId:id,...(requestTier?{tier:requestTier}:{})},uid);
+    {requestId:id,quantity,...(requestTier?{tier:requestTier}:{})},uid);
    if(currentUid!==uid)return;
    inventory=result.inventory;
    clearPending(uid);
    renderReward(result.drop);
    message(result.replayed?'✅ Die bereits abgeschlossene Kistenöffnung wurde sicher wiederhergestellt.':
-    '🎉 Kiste geöffnet! Alle Rohstoffe sind im persönlichen Inventar gespeichert.','good');
+    '🎉 '+fmt(result.openedChests||1)+' Kiste(n) geöffnet! Alle Rohstoffe sind gespeichert.','good');
   }catch(e){
    if(currentUid!==uid)return;
    if(['INVALID_REQUEST_ID','NO_DOG_CHESTS','NO_DOG_CHEST_TYPE','INVALID_DOG_CHEST_TIER'].includes(e.message)){
@@ -322,6 +330,9 @@
   }finally{
    busy=false;$('chest-art').classList.remove('opening');renderInventory();
   }
+ }
+ for(const btn of document.querySelectorAll('[data-open-quantity]')){
+  btn.addEventListener('click',()=>{openQuantity=btn.dataset.openQuantity==='all'?'all':Number(btn.dataset.openQuantity);renderInventory();});
  }
  for(const tier of [...EXPEDITION_TIERS,'small','medium','large','legacy']){
   $('open-'+tier).addEventListener('click',()=>void openChest(tier));
