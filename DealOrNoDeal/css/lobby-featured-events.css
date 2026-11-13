@@ -1,0 +1,183 @@
+/* Separate the two event entrances from the Deal or No Deal launch controls.
+ * Presentation-only: original IDs, URLs and room-link logic remain intact.
+ * Upload 100-Tore artwork to DealOrNoDeal/assets/100_tore_aufstieg_zum_letzten_tor.png.
+ * The CSS gradient remains a usable fallback until the file is present. */
+body .featured-events{
+ position:relative;min-width:0;margin:10px 0 0;padding:10px 13px 12px;
+ border:1px solid #d9af6d99;border-radius:17px;
+ background:linear-gradient(120deg,#07172ce8,#102944db 50%,#181b35ec);
+ box-shadow:inset 0 1px #fff8c62b,0 9px 24px #0005;
+ color:#fff0d1;
+}
+.featured-events__heading{
+ display:flex;align-items:end;justify-content:space-between;gap:10px;
+ margin-bottom:8px;min-width:0;
+}
+.featured-events__heading h2{
+ margin:1px 0 0;color:#ffe7ae;
+ font:900 clamp(16px,1.55vw,21px)/1.15 system-ui,sans-serif;
+}
+.featured-events__eyebrow{
+ color:#edcf89;font:900 clamp(9px,.76vw,11px)/1.2 system-ui,sans-serif;
+ letter-spacing:.14em;
+}
+.featured-events__heading p{
+ margin:0;color:#cdddf1;
+ font:650 clamp(10px,.84vw,12px)/1.2 system-ui,sans-serif;
+}
+.featured-events__grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:clamp(8px,1vw,14px);min-width:0;
+}
+body .featured-events .featured-event{
+ position:relative!important;inset:auto!important;
+ display:block!important;flex:initial!important;min-width:0!important;
+ width:100%!important;height:clamp(150px,15vw,190px)!important;
+ margin:0!important;padding:0!important;overflow:hidden!important;
+ border:2px solid #d4dfe8;border-radius:14px;
+ color:#fff8e6!important;text-decoration:none!important;cursor:pointer;
+ filter:none!important;transform:none!important;
+ box-shadow:0 9px 20px #0008,inset 0 1px #ffffff66;
+ isolation:isolate;
+ transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
+}
+body .featured-events .featured-event--christmas{
+ background:radial-gradient(ellipse at top,#225b78,#101f38 67%);
+ border-color:#a6e9f7;
+}
+body .featured-events .featured-event--gates{
+ background:
+  linear-gradient(180deg,#080e2240 0%,#0b0d1c1a 32%,#080d1ca6 75%,#080d1cf4 100%),
+  url('../assets/100_tore_aufstieg_zum_letzten_tor.png') center 49%/cover no-repeat,
+  radial-gradient(ellipse at 62% 30%,#5a4677,#243c56 55%,#0d1731);
+ border-color:#f6ce80;
+}
+body .featured-events .featured-event:hover,
+body .featured-events .featured-event:focus-visible{
+ transform:translateY(-2px)!important;
+ filter:brightness(1.08)!important;
+ box-shadow:0 0 0 1px #ffecb9,0 9px 24px #e2b66266,0 12px 22px #0008!important;
+}
+body .featured-events .featured-event:focus-visible{
+ outline:3px solid #fff3c0!important;outline-offset:3px!important;
+}
+.featured-event__image{
+ position:absolute;inset:0;z-index:-1;
+ display:block;width:100%;height:100%;object-fit:cover;object-position:center;
+ transition:transform .22s ease;
+}
+body .featured-events .featured-event--christmas::before{
+ content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+ background:linear-gradient(180deg,#06152c44 0%,transparent 35%,#071525e3 100%);
+}
+body .featured-events .featured-event--christmas:hover .featured-event__image{
+ transform:scale(1.035)!important;
+}
+.featured-event__top{
+ position:absolute;z-index:1;top:10px;left:12px;
+ padding:4px 9px;border-radius:99px;
+ background:#08162bdc;border:1px solid #ffe0a37d;
+ color:#fff4d7;font:900 clamp(10px,.88vw,12px)/1.2 system-ui,sans-serif;
+ letter-spacing:.05em;text-shadow:0 1px 3px #000c;
+}
+.featured-event--christmas .featured-event__top{border-color:#b9f4ef91;color:#d6fdff}
+.featured-event__bottom{
+ position:absolute;z-index:1;right:0;bottom:0;left:0;min-width:0;
+ display:flex;align-items:end;justify-content:space-between;
+ gap:12px;padding:13px 14px;
+ background:linear-gradient(180deg,transparent,#071121f2 22%,#081527ef);
+}
+.featured-event__caption{display:flex;flex-direction:column;gap:3px;min-width:0;text-align:left}
+.featured-event__caption strong{
+ color:#fff3d3;font:900 clamp(15px,1.3vw,19px)/1.1 system-ui,sans-serif;
+ text-shadow:0 2px 5px #000d;
+}
+.featured-event__caption small{
+ color:#cfe2f4;font:700 clamp(10px,.85vw,12px)/1.2 system-ui,sans-serif;
+ overflow:hidden;text-overflow:ellipsis;
+}
+.featured-event__action{
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ flex:none;padding:7px 11px;border-radius:9px;
+ border:1px solid #ffe1a4;
+ color:#301a09;background:linear-gradient(130deg,#ffe8a9,#d5a149);
+ font:900 clamp(11px,.95vw,13px)/1.2 system-ui,sans-serif;
+ box-shadow:0 0 14px #eec97844;
+}
+.featured-event__action span{font-size:20px;line-height:.8}
+
+/* The launch panel now contains only the Deal or No Deal game controls. */
+body .launch-stage{
+ min-height:230px!important;height:100%!important;
+ padding:clamp(9px,1.4vw,17px)!important;
+ justify-content:center!important;gap:5px!important;
+ background:
+  radial-gradient(ellipse at 50% 0%,#6e531e52,transparent 60%),
+  linear-gradient(130deg,#091f3bf5,#102943f2 50%,#06162ff5)!important;
+}
+body .launch-stage .show-marquee{
+ display:flex!important;margin:0 0 8px!important;
+}
+body .launch-stage .launch-actions{
+ width:100%!important;margin:0!important;
+ padding:clamp(5px,.8vw,9px)!important;
+}
+@media(min-width:900px) and (orientation:landscape){
+ body main{
+  grid-template-rows:
+   clamp(56px,8dvh,89px)
+   clamp(70px,10dvh,101px)
+   clamp(134px,19dvh,205px)
+   minmax(170px,1fr)
+   clamp(115px,19dvh,175px)!important;
+  row-gap:clamp(5px,.8dvh,9px)!important;
+ }
+ body main>.hero{grid-row:1!important}
+ body main>.wallet-panel{grid-row:2!important}
+ body main>.featured-events{grid-row:3!important;margin:0!important;
+  padding:6px 10px!important;min-height:0!important;overflow:hidden}
+ body main>.grid{grid-row:4!important;min-height:0!important}
+ body main>.avatar-panel{grid-row:5!important}
+ body .featured-events__heading{margin-bottom:5px}
+ body .featured-events__heading p{display:none}
+ body .featured-events__grid{height:calc(100% - 27px)}
+ body .featured-events .featured-event{height:100%!important;min-height:0!important}
+ body .featured-event__bottom{padding:8px 12px}
+ body .featured-event__top{top:7px;left:9px}
+ body .launch-stage{min-height:0!important}
+}
+@media(min-width:900px) and (orientation:landscape) and (max-height:700px){
+ body main{
+  grid-template-rows:clamp(48px,8dvh,66px) clamp(58px,9dvh,79px)
+   clamp(116px,19dvh,150px) minmax(150px,1fr)
+   clamp(106px,18dvh,140px)!important;
+ }
+ body .featured-event__caption small{display:none}
+ body .featured-event__bottom{padding:6px 10px}
+ body .featured-event__action{padding:5px 8px}
+ body .launch-stage .launch-actions .button{min-height:38px!important}
+}
+@media(max-width:899px){
+ body .featured-events{margin-top:10px}
+ body .featured-events .featured-event{height:clamp(142px,24vw,190px)!important}
+ body .featured-events__heading p{font-size:10px}
+ body .launch-stage{min-height:225px!important;padding-top:10px!important}
+}
+@media(max-width:610px){
+ body .featured-events{padding:10px!important}
+ body .featured-events__heading{align-items:start;flex-direction:column;gap:3px}
+ body .featured-events__grid{grid-template-columns:1fr}
+ body .featured-events .featured-event{height:160px!important}
+ body .featured-event__bottom{padding:10px 11px}
+ body .featured-event__caption strong{font-size:16px}
+ body .featured-event__caption small{font-size:10px}
+ body .featured-event__action{font-size:11px;padding:7px 9px}
+}
+@media(max-width:380px){
+ body .featured-event__bottom{gap:5px}
+ body .featured-event__caption small{max-width:170px}
+}
+@media(prefers-reduced-motion:reduce){
+ body .featured-events .featured-event,
+ body .featured-events .featured-event__image{transition:none!important}
+}
