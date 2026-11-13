@@ -30,7 +30,7 @@ const status=$('monster-slot-status'),accept=$('monster-slot-accept');
 
  // The summary is a single, scrollable view: all prizes and every opened card
  // appear together. No extra payout or pack-opening requests are sent.
-const summary=document.createElement('section');
+const summary=document.createElement('div');
 summary.id='monster-slot-reward-summary';summary.className='monster-slot-reward-summary';summary.hidden=true;
 summary.setAttribute('role','region');summary.setAttribute('aria-label','Alle Slotgewinne und Sammelkarten');
 const summaryContent=document.createElement('div');summaryContent.className='monster-slot-reward-content';
@@ -41,7 +41,7 @@ summaryTitle.textContent='🎉 Deine 3 Slot-Gewinne';
 const summaryDetail=document.createElement('p');summaryDetail.className='monster-slot-reward-detail';
 summaryDetail.textContent='Alle Belohnungen wurden bereits deinem Profil gutgeschrieben.';
 const summaryPrizes=document.createElement('div');summaryPrizes.className='monster-slot-reward-prizes';
-const summaryCardsPanel=document.createElement('section');summaryCardsPanel.className='monster-slot-reward-cards-panel';summaryCardsPanel.hidden=true;
+const summaryCardsPanel=document.createElement('div');summaryCardsPanel.className='monster-slot-reward-cards-panel';summaryCardsPanel.hidden=true;
 const summaryCardsTitle=document.createElement('h4');summaryCardsTitle.className='monster-slot-reward-cards-title';
 const summaryCardsDetail=document.createElement('p');summaryCardsDetail.className='monster-slot-reward-cards-detail';
 const summaryCards=document.createElement('div');summaryCards.className='monster-slot-reward-cards';
