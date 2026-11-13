@@ -47,3 +47,23 @@ test('all five already-uploaded chest artworks exist and no new prize payout is 
  assert.match(js,/claimed\.prizes/);
  assert.match(html,/g\.monsterSlotsVersion!==1/,'old reward wheel suppressed for new game finales');
 });
+
+test('real reward artwork resolves for every award category and all hammer types',()=>{
+ const basePaths=[
+  'assets/hats/prize-pack.svg','assets/hats/reward-pack.svg','assets/hats/reward-platinum.svg',
+  'assets/hats/reward-joker.svg','assets/hats/reveal-gift.svg','assets/hats/reward-cash.svg',
+  'Weihnachtsevent2/Weihnachtsbilder/hammer-einfach.webp',
+  'Weihnachtsevent2/Weihnachtsbilder/hammer-doppel.webp',
+  'Weihnachtsevent2/Weihnachtsbilder/hammer-glueck.webp',
+  'Weihnachtsevent2/Weihnachtsbilder/file_0000000077288210bd94623e0d40c452.png'
+ ];
+ for(const name of basePaths){
+  assert.ok(existsSync(new URL('../'+name,import.meta.url)),'missing slot art '+name);
+  assert.ok(js.includes(name),'slot reward mapping missing '+name);
+ }
+ for(const key of ['chest','pack','hammer','joker','minigame','monster','cash']){
+  assert.ok(js.includes(key+':'),'missing reward category '+key);
+ }
+ assert.match(js,/if\(art\.contains\(img\)\)art\.classList\.add\('has-image'\)/);
+ assert.match(js,/img\.addEventListener\('error'/,'broken images must fall back to icons');
+});
