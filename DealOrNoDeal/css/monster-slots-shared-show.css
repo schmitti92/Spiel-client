@@ -486,7 +486,7 @@
 /* The summary is a SIBLING of the slot cabinet, not part of its scrolling box.
    Use one real touch-scroll surface on the full-screen dialog. Nested/absolute
    overflow containers could trap Android users above the remaining DOG cards. */
-#deal-monster-slots[data-phase="summary"]{
+#deal-monster-slots[data-phase="summary"]:not([hidden]){
  display:block!important;
  overflow-x:hidden!important;
  overflow-y:auto!important;
