@@ -11,12 +11,16 @@
 | MS-02 | Goldenes, tiefblau-violettes Showgehäuse mit Lichtpunkten, Banderole, Ergebniszone und Button eingebaut | Im Quellcode umgesetzt; optische Prüfung auf echten Endgeräten offen |
 | MS-03 | Drei echte vertikal scrollende Symbolstreifen eingefügt; alle starten in einem gemeinsamen Schritt | Technisch umgesetzt; Browser-Animation noch praktisch zu prüfen |
 | MS-04 | Stopps nach ca. 3,0 / 4,5 / 6,0 Sekunden, individuelle Gewinnerhellung und Seltenheitseffekte | Technisch umgesetzt; flüssiges Timing und letzte Stoppanimation praktisch zu prüfen |
-| MS-05 | Originalbilder für alle fünf Rohstoffkisten eingebunden, sichere Emoji-Fallbacks für übrige Kategorien | **Teilweise**: weitere Originalgrafiken und typografischer Feinschliff offen |
+| MS-05 | Originalbilder für alle fünf Rohstoffkisten, Kartenpakete, drei Hammersorten, Joker, Minispiele, Monster-Rad und Spielgeld eingebunden; sichere Emoji-Fallbacks | **Im Code umgesetzt**: Sichtprüfung, Langtext-/Mobilfeinschliff noch offen |
 | MS-06 | Slotfenster als Abschlussanzeige mit versioniertem Laden in `game.html` eingebunden | **Teilweise**: kompletter Durchlauf mit mehreren Profilen offen |
 | MS-07 | Spielerprofilbezogene lokale Sichtbestätigung und unveränderte serverseitige Gewinnquittungen | **Teilweise**: Wiederaufnahme/Parallelabruf im Livebetrieb prüfen |
 | MS-08 | Responsive Ansichten, kleine Displayhöhen, Fokus und Reduced Motion eingebaut | **Teilweise**: echte Mobil-/Tablet-Sichtprüfung offen |
-| MS-09 | Eigenen fokussierten Design- und Skripttest angelegt: `DealOrNoDeal/tests/monster-slots-design.test.mjs` | CI-Ergebnis und anschließender Mehrspielertest prüfen |
+| MS-09 | Fokussierten Design-, Skript- und Gewinngrafiktest angelegt; vorhandenen allgemeinen Asset-Test um Slot-Assets und das Popup ergänzt | **Teilweise**: neue Einzeltests geprüft, Gesamt-Regression und Mehrspielertest offen |
 | MS-10 | Vergleich mit einer fertig generierten Referenzgrafik | Offen: ursprüngliche Bildgenerierung wurde unterbrochen |
+
+**Zweite Bauphase (13.11.2026):** Vorhandene Kunstdateien nun für alle sieben Kategorien angebunden; echte Geschenk- und Hammerbilder statt Platzhaltern, eigene Farblichtstimmungen für Kartenpakete und Spezialgewinne, bessere Lesbarkeit langer Geldsummen, langsamer durchlaufende Symbolstreifen (2,05 s pro Zyklus). Grafik-Fehlermeldungen fallen ohne Netzwerk-Endlosschleife auf Emojis zurück. In `game.html` laden beide Slot-Assets mit neuer Versionskennung `20261113-slots-prize-art-v3`. Zusätzlich `DealOrNoDeal/tests/assets.test.mjs` an die neuen Skripte angepasst, ohne alte Ereignis-Endpunkte zu löschen.
+
+**Originaldateien (nur eingebunden, nicht dupliziert):** `dog-chest-art/*.png`, `DealOrNoDeal/Weihnachtsevent2/Weihnachtsbilder/hammer-*.webp`, `DealOrNoDeal/assets/hats/reward-*.svg` und `prize-pack.svg`, außerdem das vorhandene Monster-Rad-PNG. Das Monster-Rad-Gewinnasset wird nur beim entsprechenden Gewinn geladen.
 
 **Nicht verändert:** serverseitige Gewinnkategorien (35/30/20/4/3/3/5), Mengen, Gewinnwahrscheinlichkeiten oder Auszahlungscodes; das separate Monster-Glücksrad bleibt erhalten. Der Umbau ist ein Frontend-Redesign, keine neue Auszahlung.
 
