@@ -48,3 +48,14 @@ test('uploaded premium assets are live in the shared slot and preserve old fallb
  assert.match(html,/monster-slots-shared-show\.css\?v=20261114-spectator-v1/);
  assert.match(html,/monster-slots-final\.js\?v=20261114-spectator/);
 });
+
+
+test('premium cabinet loads uploaded reel and glow assets without cropping DOG cards',()=>{
+ assert.match(css,/slot-reel-panel\.png/);
+ assert.match(css,/slot-win-glow\.png/);
+ assert.match(css,/monster-slot-reward-card-art[\s\S]*?aspect-ratio:2\/3/);
+ assert.match(css,/monster-slot-reward-card-art img[\s\S]*?object-fit:contain/);
+ assert.match(css,/ms-studio-summary-fade/);
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+ assert.match(html,/monster-slots-shared-show\.css\?v=20261114-spectator-v1-studio-v2/);
+});
