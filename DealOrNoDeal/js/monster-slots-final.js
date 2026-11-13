@@ -22,38 +22,39 @@ const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 const seenKey=id=>'monster-slots-watched:'+String(user()?.uid||'anonymous')+':'+id;
 const root=document.createElement('section');root.id='deal-monster-slots';root.hidden=true;root.tabIndex=-1;
 root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');root.setAttribute('aria-labelledby','monster-slots-title');
-root.innerHTML="<div class=\"monster-slot-machine\">\n <div class=\"monster-slot-lights\" aria-hidden=\"true\">✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦</div>\n <div class=\"monster-slot-kicker\">✦ GOLDSTUDIO · DAS GROSSE GEWINNFINALE ✦</div>\n <h2 id=\"monster-slots-title\">🎰 MONSTER SLOTS</h2>\n <p class=\"monster-slot-subheading\">3 WALZEN <span aria-hidden=\"true\">◆</span> 3 GARANTIERTE GEWINNE</p>\n <div class=\"monster-slot-ribbon\" aria-hidden=\"true\">✧ &nbsp; JEDER SLOT GEWINNT &nbsp; ✧</div>\n <div class=\"monster-slot-reels\" role=\"group\" aria-label=\"Drei Gewinnwalzen\">\n  <div class=\"monster-slot-reel\" data-reel=\"0\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 01<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n  <div class=\"monster-slot-reel\" data-reel=\"1\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 02<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n  <div class=\"monster-slot-reel\" data-reel=\"2\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 03<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n </div>\n <div class=\"monster-slot-progress\" aria-hidden=\"true\"><span></span><span></span><span></span></div>\n <p id=\"monster-slot-status\" class=\"monster-slot-status\" role=\"status\" aria-live=\"polite\">Deine Gewinne werden geladen …</p>\n <button id=\"monster-slot-accept\" type=\"button\" disabled>🎁 Gewinne bestätigen</button>\n <p class=\"monster-slot-footnote\">Jede Walze gewinnt. Die Preise sind serverseitig gesichert.</p>\n <div class=\"monster-slot-card-cinema\" id=\"monster-slot-card-cinema\" hidden>\n  <div class=\"monster-slot-card-content\">\n   <div class=\"monster-slot-card-kicker\">✦ NEUE SAMMELKARTE ENTDECKT ✦</div>\n   <h3 id=\"monster-slot-card-pack\">🎁 Kartenpaket wird geöffnet</h3>\n   <div class=\"monster-slot-gift-stage\" id=\"monster-slot-gift-stage\" data-stage=\"gift\">\n    <div class=\"monster-slot-gift-icon\" aria-hidden=\"true\">🎁</div>\n    <img id=\"monster-slot-card-image\" alt=\"\" hidden>\n   </div>\n   <div id=\"monster-slot-card-name\" class=\"monster-slot-card-name\">Deine neuen Karten werden enthüllt …</div>\n   <p id=\"monster-slot-card-detail\" class=\"monster-slot-card-detail\">Dein Gewinn ist bereits sicher gespeichert.</p>\n   <button type=\"button\" id=\"monster-slot-card-skip\">⏭ Weitere Enthüllungen überspringen</button>\n  </div>\n </div>\n</div>";
+root.innerHTML="<div class=\"monster-slot-machine\">\n <div class=\"monster-slot-lights\" aria-hidden=\"true\">✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦</div>\n <div class=\"monster-slot-kicker\">✦ GOLDSTUDIO · DAS GROSSE GEWINNFINALE ✦</div>\n <h2 id=\"monster-slots-title\">🎰 MONSTER SLOTS</h2>\n <p class=\"monster-slot-subheading\">3 WALZEN <span aria-hidden=\"true\">◆</span> 3 GARANTIERTE GEWINNE</p>\n <div class=\"monster-slot-ribbon\" aria-hidden=\"true\">✧ &nbsp; JEDER SLOT GEWINNT &nbsp; ✧</div>\n <div class=\"monster-slot-reels\" role=\"group\" aria-label=\"Drei Gewinnwalzen\">\n  <div class=\"monster-slot-reel\" data-reel=\"0\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 01<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n  <div class=\"monster-slot-reel\" data-reel=\"1\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 02<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n  <div class=\"monster-slot-reel\" data-reel=\"2\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 03<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n </div>\n <div class=\"monster-slot-progress\" aria-hidden=\"true\"><span></span><span></span><span></span></div>\n <p id=\"monster-slot-status\" class=\"monster-slot-status\" role=\"status\" aria-live=\"polite\">Deine Gewinne werden geladen …</p>\n <button id=\"monster-slot-accept\" type=\"button\" disabled>🎁 Gewinne bestätigen</button>\n <p class=\"monster-slot-footnote\">Jede Walze gewinnt. Die Preise sind serverseitig gesichert.</p>\n</div>";
 
 document.body.append(root);
 const reels=[...root.querySelectorAll('.monster-slot-reel')],lights=[...root.querySelectorAll('.monster-slot-progress span')];
 const status=$('monster-slot-status'),accept=$('monster-slot-accept');
-// Card-reveal stage belongs to the slot overlay, not to a separate HTML page.
-// Build it here so the finale works on existing game.html installations.
-const cinema=document.createElement('div');cinema.id='monster-slot-card-cinema';
-cinema.className='monster-slot-card-cinema';cinema.hidden=true;
-cinema.setAttribute('role','region');cinema.setAttribute('aria-label','Neue Sammelkarten aufdecken');
-const cardContent=document.createElement('div');cardContent.className='monster-slot-card-content';
-const cardKicker=document.createElement('div');cardKicker.className='monster-slot-card-kicker';
-cardKicker.textContent='✦ NEUER SAMMELKARTENFUND ✦';
-const cardTitle=document.createElement('h3');cardTitle.id='monster-slot-card-pack';
-const cardStage=document.createElement('div');cardStage.id='monster-slot-gift-stage';cardStage.className='monster-slot-gift-stage';
-const giftIcon=document.createElement('span');giftIcon.className='monster-slot-gift-icon';
-giftIcon.textContent='🎁';giftIcon.setAttribute('aria-hidden','true');
-const cardImage=document.createElement('img');cardImage.id='monster-slot-card-image';cardImage.hidden=true;
-cardStage.append(giftIcon,cardImage);
-const cardName=document.createElement('div');cardName.id='monster-slot-card-name';cardName.className='monster-slot-card-name';
-const cardDetail=document.createElement('p');cardDetail.id='monster-slot-card-detail';cardDetail.className='monster-slot-card-detail';
-const cardSkip=document.createElement('button');cardSkip.id='monster-slot-card-skip';cardSkip.type='button';
-cardSkip.textContent='⏭ Aufdeckanimation überspringen';
-cardContent.append(cardKicker,cardTitle,cardStage,cardName,cardDetail,cardSkip);
-cinema.append(cardContent);root.append(cinema);
-let skipCardCinema=null;
-cardSkip.addEventListener('click',()=>skipCardCinema?.());
+
+ // The summary is a single, scrollable view: all prizes and every opened card
+ // appear together. No extra payout or pack-opening requests are sent.
+const summary=document.createElement('section');
+summary.id='monster-slot-reward-summary';summary.className='monster-slot-reward-summary';summary.hidden=true;
+summary.setAttribute('role','region');summary.setAttribute('aria-label','Alle Slotgewinne und Sammelkarten');
+const summaryContent=document.createElement('div');summaryContent.className='monster-slot-reward-content';
+const summaryKicker=document.createElement('p');summaryKicker.className='monster-slot-reward-kicker';
+summaryKicker.textContent='✦ GOLDSTUDIO · ALLE DEINE BELONUNGEN ✦';
+const summaryTitle=document.createElement('h3');summaryTitle.className='monster-slot-reward-title';
+summaryTitle.textContent='🎉 Deine 3 Slot-Gewinne';
+const summaryDetail=document.createElement('p');summaryDetail.className='monster-slot-reward-detail';
+summaryDetail.textContent='Alle Belohnungen wurden bereits deinem Profil gutgeschrieben.';
+const summaryPrizes=document.createElement('div');summaryPrizes.className='monster-slot-reward-prizes';
+const summaryCardsPanel=document.createElement('section');summaryCardsPanel.className='monster-slot-reward-cards-panel';summaryCardsPanel.hidden=true;
+const summaryCardsTitle=document.createElement('h4');summaryCardsTitle.className='monster-slot-reward-cards-title';
+const summaryCardsDetail=document.createElement('p');summaryCardsDetail.className='monster-slot-reward-cards-detail';
+const summaryCards=document.createElement('div');summaryCards.className='monster-slot-reward-cards';
+summaryCardsPanel.append(summaryCardsTitle,summaryCardsDetail,summaryCards);
+const summaryButton=document.createElement('button');summaryButton.id='monster-slot-summary-accept';
+summaryButton.type='button';summaryButton.textContent='✅ Alle Gewinne bestätigen';
+summaryContent.append(summaryKicker,summaryTitle,summaryDetail,summaryPrizes,summaryCardsPanel,summaryButton);
+summary.append(summaryContent);root.append(summary);
 let liveGame=null,claimed=null,claimedUid=null,claiming=null,opening=false,shown='',seq=0,timers=[],priorFocus=null;
 const setStatus=t=>status.textContent=t;
 const watched=id=>{try{return sessionStorage.getItem(seenKey(id))==='yes'}catch{return false}};
 function timer(fn,ms){const id=setTimeout(()=>{timers=timers.filter(t=>t!==id);fn()},ms);timers.push(id)}
-function cancel(hide=true){seq++;timers.forEach(clearTimeout);timers=[];opening=false;shown='';skipCardCinema=null;cinema.hidden=true;if(hide)root.hidden=true}
+function cancel(hide=true){seq++;timers.forEach(clearTimeout);timers=[];opening=false;shown='';summary.hidden=true;if(hide)root.hidden=true}
 function setPhase(el,phase){el.dataset.phase=phase;el.querySelector('.monster-slot-state').textContent=phase==='running'?'DREHT …':phase==='won'?'✓ GEWONNEN':'BEREIT'}
 for(const reel of reels){
  reel.querySelector('.monster-slot-track').replaceChildren(...rolling.concat(rolling).map(icon=>{
@@ -96,68 +97,79 @@ const canShow=()=>typeof g!=='undefined'&&g?.phase==='final'&&g.monsterSlotsVers
 function showAlreadySettled(){
  reels.forEach((reel,i)=>showPrize(reel,claimed.prizes[i]));
  lights.forEach(light=>light.classList.add('lit'));
- root.dataset.phase='finished';root.hidden=false;accept.disabled=false;accept.textContent='✓ Fenster schließen';
+ root.dataset.phase='summary';root.hidden=false;renderSummary();summary.hidden=false;
+ accept.disabled=true;summaryButton.disabled=false;summaryButton.textContent='✓ Fenster schließen';
  setStatus('🎉 Diese drei Gewinne wurden bereits gutgeschrieben.');
 }
-// The server has already added every pack's cards to DOG Season 2.
-// Only packs with at least one truly NEW card get a visual opening;
-// duplicate-only packs are silently credited without card animations.
+
+ // Opened packs already have all their cards settled and persisted by the server.
+ // Render both NEW and duplicate cards, including packs without any new cards.
 const awardedPacks=prizes=>(prizes||[]).filter(p=>p.kind==='pack')
  .flatMap(p=>Array.isArray(p.openedPacks)?p.openedPacks:[]);
-function finishSlots(token,id,skippedDuplicates=0){
- if(token!==seq||liveGame!==id||root.hidden)return;
- cinema.hidden=true;skipCardCinema=null;opening=false;root.dataset.phase='finished';
- setStatus(skippedDuplicates>0
-  ?'🎉 Alle Gewinne gutgeschrieben! '+skippedDuplicates+' Paket(e) nur mit Duplikaten – Animation übersprungen.'
-  :'🎉 Alle drei Gewinne wurden gutgeschrieben!');
- accept.disabled=false;accept.textContent='🎁 Gewinne bestätigen';accept.focus({preventScroll:true});
-}
-function revealNewPacks(token,id){
- if(token!==seq||liveGame!==id||!claimed)return;
- const packs=awardedPacks(claimed.prizes);
- // For historical receipts, packs remained vouchers. Never auto-open them
- // again or fabricate cards from an old payout.
- const newPacks=packs.filter(p=>p.hasNew===true&&Array.isArray(p.revealed)&&p.revealed.some(c=>c.isNew===true));
- const duplicatePacks=packs.filter(p=>p.hasNew===false).length;
- if(!newPacks.length){finishSlots(token,id,duplicatePacks);return}
- cinema.hidden=false;root.dataset.phase='cards';setStatus('🌟 Neue Sammelkarte! Das Kartenpaket öffnet sich …');
- let packIndex=0,cardIndex=0;
- const valid=()=>token===seq&&liveGame===id&&!root.hidden&&!cinema.hidden;
- const complete=()=>{
-  if(!valid())return;
-  timers.forEach(clearTimeout);timers=[];
-  finishSlots(token,id,duplicatePacks);
- };
- skipCardCinema=complete;
- function nextPack(){
-  if(!valid())return;
-  if(packIndex>=newPacks.length){timer(complete,reduced()?120:500);return}
-  const pack=newPacks[packIndex++],cards=pack.revealed;
-   const newCount=cards.filter(c=>c.isNew===true).length;
-  cardIndex=0;cardTitle.textContent='🎁 '+String(pack.packName||'DOG Kartenpaket');
-  cardDetail.textContent='✨ '+newCount+' neue '+(newCount===1?'Karte':'Karten')+' · '+(cards.length-newCount)+' doppelte Karten';
-  cardStage.dataset.stage='gift';cardImage.hidden=true;
-  cardName.textContent='Ein neues Kartenmotiv wartet auf dich!';
-  timer(nextCard,reduced()?120:850);
-  function nextCard(){
-   if(!valid())return;
-   if(cardIndex>=cards.length){timer(nextPack,reduced()?160:550);return}
-   const card=cards[cardIndex++];
-   const image='Weihnachtsevent2/Sammelalbum_Saison_2_Bilder/'+encodeURIComponent(String(card.image||''));
-   cardImage.hidden=false;cardImage.src=image;cardImage.alt=String(card.name||'Neue Sammelkarte');
-   cardStage.dataset.stage='card';cardStage.dataset.rarity=String(card.rarity||'common');
-   cardName.textContent=(card.isNew?'🌟 NEU! ':'Doppelt: ')+String(card.name||'Sammelkarte');
-   cardDetail.textContent=String(card.series||'DOG Sammelalbum')+' · Karte '+cardIndex+' / '+cards.length+(card.isNew?' · NEU':' · bereits vorhanden');
-   timer(nextCard,reduced()?150:(card.isNew?1250:260));
+function renderSummary(){
+ if(!claimed)return;
+ const prizeItems=claimed.prizes.map((prize,index)=>{
+  const item=document.createElement('article');item.className='monster-slot-reward-item';
+  item.dataset.kind=String(prize.kind||'');
+  const heading=document.createElement('span');heading.className='monster-slot-reward-item-reel';heading.textContent='WALZE '+(index+1);
+  const art=document.createElement('div');art.className='monster-slot-reward-item-art';
+  const fallback=document.createElement('span');fallback.textContent=icons[prize.kind]||'🎁';art.append(fallback);
+  const imagePath=awardImage(prize);
+  if(imagePath){
+   const img=document.createElement('img');img.alt='';img.loading='eager';img.decoding='async';
+   img.addEventListener('load',()=>{art.classList.add('has-image')},{once:true});
+   img.addEventListener('error',()=>{img.remove()},{once:true});
+   img.src=imagePath;art.append(img);
   }
- }
- nextPack();
+  const label=document.createElement('strong');label.className='monster-slot-reward-item-name';
+  label.textContent=String(prize.label||'Gewinn');
+  item.append(heading,art,label);
+  return item;
+ });
+ summaryPrizes.replaceChildren(...prizeItems);
+ const packs=awardedPacks(claimed.prizes);
+ const cards=packs.flatMap(pack=>(Array.isArray(pack.revealed)?pack.revealed:[])
+  .map(card=>({card,packName:String(pack.packName||'DOG Kartenpaket')})));
+ const freshCount=cards.filter(({card})=>card.isNew===true).length;
+ const duplicateCount=cards.length-freshCount;
+ summaryCardsPanel.hidden=packs.length===0;
+ summaryCardsTitle.textContent='🃏 Alle Sammelkarten ('+cards.length+')';
+ summaryCardsDetail.textContent=cards.length
+  ?'🌟 '+freshCount+' neu · '+duplicateCount+' doppelt · Alle Karten aus '+packs.length+' '+(packs.length===1?'Paket':'Paketen')+' gleichzeitig aufgedeckt'
+  :'Die gewonnenen Pakete sind gutgeschrieben; bei älteren Gewinnen können sie noch als Gutscheine vorliegen.';
+ const tiles=cards.map(({card,packName})=>{
+  const tile=document.createElement('article');tile.className='monster-slot-reward-card';
+  tile.dataset.rarity=String(card.rarity||'common');
+  tile.dataset.new=card.isNew===true?'yes':'no';
+  const art=document.createElement('div');art.className='monster-slot-reward-card-art';
+  if(card.image){
+   const img=document.createElement('img');
+   img.src='Weihnachtsevent2/Sammelalbum_Saison_2_Bilder/'+encodeURIComponent(String(card.image));
+   img.alt=String(card.name||'Sammelkarte');img.loading='eager';img.decoding='async';art.append(img);
+  }else{const fallback=document.createElement('span');fallback.textContent='🎴';art.append(fallback)}
+  const flag=document.createElement('span');flag.className='monster-slot-reward-card-flag';
+  flag.textContent=card.isNew===true?'🌟 NEU':'DOPPELT';
+  const name=document.createElement('strong');name.className='monster-slot-reward-card-name';
+  name.textContent=String(card.name||'Sammelkarte');
+  const origin=document.createElement('span');origin.className='monster-slot-reward-card-origin';
+  origin.textContent=packName;
+  tile.append(art,flag,name,origin);return tile;
+ });
+ summaryCards.replaceChildren(...tiles);
+}
+function showSummary(token,id){
+ if(token!==seq||liveGame!==id||root.hidden||!claimed)return;
+ renderSummary();
+ summary.hidden=false;opening=false;root.dataset.phase='summary';
+ setStatus('🎉 Alle Gewinne auf einen Blick – bereits gutgeschrieben!');
+ accept.disabled=true;summaryButton.disabled=false;summaryButton.textContent='✅ Alle Gewinne bestätigen';
+ summaryButton.focus({preventScroll:true});
 }
 function present(reopen=false){
  if(opening||!claimed||claimed.gameId!==liveGame||claimedUid!==user()?.uid||shown===liveGame&&!reopen||!canShow())return;
  const id=liveGame;
  if(watched(id)&&!reopen){try{sessionStorage.setItem('final-wheel-complete:'+id,'yes')}catch{}window.dispatchEvent(new Event('deal-final-wheel-complete'));return}
- const token=++seq;shown=id;priorFocus=document.activeElement;root.hidden=false;
+ const token=++seq;shown=id;priorFocus=document.activeElement;root.hidden=false;summary.hidden=true;
  lights.forEach(light=>light.classList.remove('lit'));
  if(watched(id)){showAlreadySettled();root.focus({preventScroll:true});return}
  opening=true;root.dataset.phase='rolling';accept.disabled=true;accept.textContent='🎁 Gewinne bestätigen';
@@ -168,10 +180,7 @@ function present(reopen=false){
   if(token!==seq||liveGame!==id||root.hidden)return;
   showPrize(reels[i],claimed.prizes[i]);lights[i].classList.add('lit');
   setStatus(i===2?'🎉 Alle drei Gewinne wurden gutgeschrieben!':'✨ Walze '+(i+1)+' gestoppt – die anderen drehen weiter!');
-  if(i===2)timer(()=>{
-   if(token!==seq||liveGame!==id||root.hidden)return;
-   revealNewPacks(token,id);
-  },reduced()?150:700);
+  if(i===2)timer(()=>showSummary(token,id),2000);
  },ms));
 }
 async function claim(){
@@ -196,13 +205,15 @@ async function claim(){
   if(canShow()){root.hidden=false;accept.disabled=false;accept.textContent='↻ Gewinne erneut abrufen'}
  }finally{claiming=null;if(liveGame!==id||user()?.uid!==uid)sync()}
 }
-accept.addEventListener('click',()=>{
+function confirmSlots(){
  if(!claimed||claimed.gameId!==liveGame||claimedUid!==user()?.uid){accept.disabled=true;void claim();return}
  if(opening)return;
  try{sessionStorage.setItem(seenKey(liveGame),'yes');sessionStorage.setItem('final-wheel-complete:'+liveGame,'yes')}catch(e){console.warn('[monster-slots] Anzeigequittung nicht gespeichert',e)}
  cancel();window.dispatchEvent(new Event('deal-final-wheel-complete'));
  if(priorFocus?.isConnected)priorFocus.focus({preventScroll:true});
-});
+}
+accept.addEventListener('click',confirmSlots);
+summaryButton.addEventListener('click',confirmSlots);
 function sync(){
  if(typeof g==='undefined'||g?.phase!=='final'||g.monsterSlotsVersion!==1||isTiedFinal(g)){
   if(liveGame){cancel();liveGame=null;claimed=null;claimedUid=null}return;
