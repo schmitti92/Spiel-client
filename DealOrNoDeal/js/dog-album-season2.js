@@ -9,6 +9,7 @@
  const number=n=>(Number(n)||0).toLocaleString('de-DE');
  const money=n=>(Number(n||0)/100).toLocaleString('de-DE',{style:'currency',currency:'EUR',maximumFractionDigits:0});
  let data=null,busy=false,requestNumber=0,loadedUser='',boardBuilt=false;
+ const embedded=!!document.getElementById('dog-season-panel');
  function state(){return window.SpielOnline?.state?.()||{}}
  function activeUser(){const s=state();return s.status==='online'&&s.user?.getIdToken?s.user:null}
  function status(text){$('status').textContent=text}
@@ -72,6 +73,7 @@
   const p=data.progress;
   $('owned').textContent=p.collected+' / 96';$('bingos').textContent=p.bingos+' / 60';
   $('coins').textContent=money(data.balance);$('meter-fill').style.width=(p.collected/96*100)+'%';
+  if(embedded&&activeUser()?.uid)window.dispatchEvent(new CustomEvent('dog-s2-progress',{detail:{uid:activeUser().uid,progress:p}}));
   const defs=data.definitions||[];
   for(let b=0;b<6;b++){
    const board=p.boards[b];$('board-cards-'+b).textContent=board.collected+' / 16 Karten';
@@ -158,7 +160,7 @@
    if(activeUser()?.uid!==uid)return;
    data={...data,...out};render();reveal(out.revealed||[]);
    status(out.usedFreePack?'✅ Gratispaket eingelöst – kein Spielgeld abgezogen.':'✅ DOG-Karten wurden deinem Saison-2-Album gutgeschrieben.');
-   await load(false);
+   // Der quittierte POST enthält den aktuellen Stand; kein zusätzlicher Firestore-GET.
   }catch(e){
    if(!['Failed to fetch','SERVER_ERROR'].includes(e.message))clearId(packId);
    status('⚠️ '+e.message+' · Bei Netzproblemen denselben Kauf erneut versuchen.');
@@ -172,7 +174,7 @@
    const out=await api('POST','duplicates/exchange',{requestId:requestId('trade')});
    clearId('trade');if(activeUser()?.uid!==uid)return;
    data={...data,...out};render();status('✅ Monster-Rad-Ticket gutgeschrieben!');
-   await load(false);
+   // Der quittierte POST enthält den aktuellen Stand; kein zusätzlicher Firestore-GET.
   }catch(e){if(!['Failed to fetch','SERVER_ERROR'].includes(e.message))clearId('trade');status('⚠️ '+e.message)}
   finally{busy=false;render()}
  }
@@ -189,20 +191,50 @@
    if(initial)status('✅ DOG Saison 2 ist aktiv. Sammle jetzt die 96 neuen Karten!');
   }catch(e){if(seq===requestNumber)status('⚠️ '+e.message+' · „↻“ zum erneuten Prüfen.')}
  }
+ function acceptHubData(info){
+  const uid=activeUser()?.uid;
+  if(!uid||info?.uid!==uid||!info?.data?.ok)return false;
+  if(loadedUser&&loadedUser!==uid)clear();
+  ++requestNumber;loadedUser=uid;data=info.data;$('login').hidden=true;
+  render();status('✅ Dein DOG-Sammelfortschritt ist geladen.');
+  return true;
+ }
+ function openIntegratedTab(tab){
+  showTab(tab);
+  if(embedded&&!data&&activeUser()&&!acceptHubData(window.__dogSeason2HubData))void load();
+ }
+ window.DogAlbumSeason2={open:openIntegratedTab,refresh:()=>load(),acceptHubData};
+ window.addEventListener('dog-s2-hub-data',event=>acceptHubData(event.detail));
  let lastUid='';
  window.addEventListener('spielonline-change',()=>{
   const uid=activeUser()?.uid||'';
   if(uid===lastUid)return;
   ++requestNumber;lastUid=uid;clear();
-  if(uid)void load();else status(state().status==='initializing'?'🔄 Online-Profil wird geladen …':'🔒 Bitte einloggen, um die neue Sammlung zu sehen.');
+  if(!uid){status(state().status==='initializing'?'🔄 Online-Profil wird geladen …':'🔒 Bitte einloggen, um die neue Sammlung zu sehen.');return}
+  if(!acceptHubData(window.__dogSeason2HubData)&&(!embedded||!$('dog-season-panel').hidden))void load();
  });
- document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{
+  showTab(b.dataset.tab);
+  if(embedded){
+   const url=new URL(location.href);url.searchParams.set('view',b.dataset.tab);
+   history.replaceState(history.state,'',url);
+  }
+ }));
  document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
  $('exchange').addEventListener('click',exchange);
  $('login').addEventListener('click',()=>window.SpielOnline?.openLogin?.());
- $('reload').addEventListener('click',()=>void load());
- $('fullscreen').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch{status('Vollbild wird von diesem Gerät nicht unterstützt.')}});
- const room=sessionStorage.getItem('deal-active-room');if(/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(room||''))$('back').href='./lobby.html?room='+encodeURIComponent(room);
- // Also handle an already-connected profile when this script starts.
- lastUid=activeUser()?.uid||'';$('login').hidden=!!lastUid;if(location.hash==='#packs')showTab('packs');else if(location.hash==='#duplicates')showTab('duplicates');if(lastUid)void load();else status('🔄 Online-Profil wird geladen …');
+ $('reload')?.addEventListener('click',()=>void load());
+ $('fullscreen')?.addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch{status('Vollbild wird von diesem Gerät nicht unterstützt.')}});
+ const room=sessionStorage.getItem('deal-active-room'),back=$('back');
+ if(back&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(room||''))back.href='./lobby.html?room='+encodeURIComponent(room);
+ lastUid=activeUser()?.uid||'';
+ $('login').hidden=!!lastUid;
+ const initialView=new URLSearchParams(location.search).get('view');
+ if(embedded){
+  showTab(['packs','duplicates'].includes(initialView)?initialView:'album');
+  if(!acceptHubData(window.__dogSeason2HubData)&&lastUid&&!$('dog-season-panel').hidden)void load();
+ }else{
+  if(location.hash==='#packs')showTab('packs');else if(location.hash==='#duplicates')showTab('duplicates');
+  if(lastUid)void load();
+ }
 })();
