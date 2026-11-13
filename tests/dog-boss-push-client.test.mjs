@@ -32,10 +32,15 @@ function harness(query='?gate=20&dogpush=1'){
   runTimer:(ms)=>{const entry=[...timers.entries()].find(([,t])=>t.ms===ms);
    assert.ok(entry,'missing timer '+ms);timers.delete(entry[0]);entry[1].fn()}};
 }
-test('S-04 is off by default and never creates a socket',()=>{
+test('Boss push is enabled by default; explicit dogpush=0 disables the socket',async()=>{
  const h=harness('?gate=20');
- assert.equal(h.client,null);
- assert.equal(h.sockets.length,0);
+ assert.ok(h.client,'signed-in player receives normal boss notifications');
+ await h.client.start();await flush();
+ assert.equal(h.sockets.length,1);
+ const disabled=harness('?gate=20&dogpush=0');
+ assert.equal(disabled.client,null);
+ assert.equal(disabled.sockets.length,0);
+ h.client.stop();
 });
 test('S-04 private websocket subscription, change coalescing and reconnect',async()=>{
  const h=harness();
