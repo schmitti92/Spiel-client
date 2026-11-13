@@ -795,6 +795,7 @@ function load(){
    if(seq!==loadSequence||authState()?.user?.uid!==uid)return;
    visibleUid=uid;
    render(data);
+   if(document.body.dataset.view==='monster')void refreshSeason2MonsterStock();
    void maybeClaimHammerBingos(data);
    void maybeClaimNorthPoleBingos(data);
    notice.textContent='Wähle ein Weihnachtspaket.';
@@ -840,6 +841,11 @@ document.querySelectorAll('[data-pack]').forEach(b=>b.addEventListener('click',a
   notice.textContent='⚠️ '+(e.message==='INSUFFICIENT_FUNDS'?'Nicht genug Spielgeld.':e.message)+' · Bei Verbindungsproblemen erneut versuchen.';
  }finally{busy=false;if(current)render(current)}
 }));
+async function refreshSeason2MonsterStock(){
+ if(!current||document.body.dataset.view!=='monster')return;
+ const uid=authState().user?.uid;
+ try{const fresh=await request('GET','season2/me');if(current&&uid===authState().user?.uid){current.duplicates=fresh.duplicates;renderDuplicateExchange(current)}}catch(_){}
+}
 function renderDuplicateExchange(data){
  const stock=data?.duplicates||{};
  const available=Number(stock.available)||0,tickets=Number(stock.tickets)||0;
@@ -872,8 +878,8 @@ document.getElementById('monster-exchange-btn').addEventListener('click',async()
   const result=await request('POST','season2/duplicates/exchange',{requestId:monsterRequestId()});
   clearMonsterRequestId();
   // An idempotent replay might be older than recent card openings: refresh once.
-  if(result.replayed){await load();}
-  else render({...current,...result});
+  if(result.replayed){await load();void refreshSeason2MonsterStock();}
+  else if(current){current.duplicates=result.duplicates;renderDuplicateExchange(current)}
   message.textContent='✅ Monster-Drehgutschein gesichert! Das Glücksrad folgt bald. 🎰';
  }catch(e){
   if(!['Failed to fetch','AbortError','SERVER_ERROR'].includes(e.message))clearMonsterRequestId();
@@ -1023,6 +1029,7 @@ function setChristmasView(view,{updateUrl=true,scroll=true}={}){
  });
  if(view==='hammer'&&updateUrl){loadHammerStock();if(current)void maybeClaimHammerBingos(current)}
  if(view==='hats')window.dispatchEvent(new CustomEvent('christmas-hats-view-open'));
+ if(view==='monster')void refreshSeason2MonsterStock();
  if(updateUrl){const url=new URL(location.href);url.searchParams.set('view',view);history.replaceState(history.state,'',url)}
  if(scroll)window.scrollTo({top:0,behavior:'smooth'});
 }
