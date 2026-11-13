@@ -46,7 +46,7 @@ test('uploaded premium assets are live in the shared slot and preserve old fallb
  assert.match(css,/monster-slot-shared-caption/);
  assert.match(css,/@media\(max-width:570px\)/);
  assert.match(html,/monster-slots-shared-show\.css\?v=20261114-slot-results-scroll-v1/);
- assert.match(html,/monster-slots-final\.js\?v=20261114-(?:spectator|cards-priority)/);
+ assert.match(html,/monster-slots-final\.js\?v=20261114-(?:spectator|cards-priority|slot-results-scroll)/);
 });
 
 
