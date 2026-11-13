@@ -236,7 +236,7 @@
  }
  function renderReward(drop){
   const dialog=$('reward-dialog'),tier=TIER[drop?.tier]||TIER.legacy;
-  $('reward-title').textContent=tier.icon+' '+tier.label+' · '+fmt(drop.count)+' Rohstoffe';
+  $('reward-title').textContent=tier.icon+' '+(drop.openedChests?fmt(drop.openedChests)+' × ':'')+tier.label+' · '+fmt(drop.count)+' Rohstoffe';
   const area=$('reward-items');area.replaceChildren();
   const items=normalizeItems(drop.items);
   let epic=0,legendary=0;
