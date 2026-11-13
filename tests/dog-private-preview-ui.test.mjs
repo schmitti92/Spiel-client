@@ -17,11 +17,15 @@ test('Private actions are persisted and retried using the same receipt ID',()=>{
  assert.match(js,/requestId:operation.requestId/);
  assert.match(js,/act\(null,\{\},true\)/);
 });
-test('100 Tore is hidden until the signed-in Chris profile is identified, then opens the real map',()=>{
+test('100 Tore is hidden until the signed-in Chris profile is identified, then opens the Start hub',()=>{
  const html=read('DealOrNoDeal/lobby.html');
  const css=read('DealOrNoDeal/css/dog-expedition-entry.css');
- assert.match(html,/<a id="dog-expedition-entry" class="dog-event-entry" href="\.\.\/dog-tor-map\.html" hidden/);
+ assert.match(html,/<a id="dog-expedition-entry" class="dog-event-entry" href="\.\.\/dog-start\.html" hidden/);
  assert.match(html,/entry\.hidden=!isChrisPreviewProfile\(\)/);
+ assert.match(html,/entry\.href='\.\.\/dog-start\.html'/);
+ const start=read('dog-start.html');
+ for(const page of ['dog-tor-map.html','dog-expedition.html','dog-forge.html','dog-merchant.html','DealOrNoDeal/lobby.html'])assert.ok(start.includes('data-dog-page="'+page+'"'));
+
  assert.match(html,/function isChrisPreviewProfile\(\)/);
  assert.match(html,/return !!user\(\)&&String\(profile\?\.name\|\|''\)/);
  assert.match(html,/function boot\(\)\{checkChrisHatsAccess\(\);checkChrisGatesAccess\(\)/);
