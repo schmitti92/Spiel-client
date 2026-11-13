@@ -94,13 +94,18 @@ function scheduleFastBatch(){
 }
 
 let historyRenderKey='';
+function personalBankerAmount(h){
+ const uid=typeof myId==='function'?myId():null;
+ const amount=uid&&g?.individualBankerOffers===true?h?.offersByPlayer?.[uid]:null;
+ return Number.isSafeInteger(amount)&&amount>=1?amount:h?.offer;
+}
 function updateHistoryBoard(history){
- const key=JSON.stringify(history.map(h=>[h.round,h.offer]));
+ const key=JSON.stringify(history.map(h=>[h.round,personalBankerAmount(h)]));
  const root=$('history-list');
  if(key===historyRenderKey&&root.children.length===history.length)return;
  historyRenderKey=key;
  const fragment=document.createDocumentFragment();
- for(const h of history){const line=document.createElement('div');line.className='history-entry';const a=document.createElement('span');a.textContent='Runde '+h.round;const b=document.createElement('strong');b.textContent=eur(h.offer);line.append(a,b);fragment.append(line)}
+ for(const h of history){const line=document.createElement('div');line.className='history-entry';const a=document.createElement('span');a.textContent='Runde '+h.round;const b=document.createElement('strong');b.textContent=eur(personalBankerAmount(h));line.append(a,b);fragment.append(line)}
  root.replaceChildren(fragment);
 }
 function render(){if(!g)window.DealModeratorStory?.observe(null);if(!g||g.phase==='final'){resetCaseCamera();clearTimeout(prizeFlashDelay);clearTimeout(prizeFlashTimer);$('prize-flash').classList.remove('active');$('prize-flash').setAttribute('aria-hidden','true')}if(!g){scheduleFastBatch();$('turn-spotlight').hidden=true;resetAvatarReaction();document.body.classList.remove('show-high-stakes','show-final-stakes','reveal-spotlight')}announceScene();window.DealDoubleBoost?.render(g);updateBankerCall();document.body.classList.toggle('offer-moment',g?.phase==='decision');if(!g){cancelFinaleTimers();$('finale-cinema').hidden=true;finaleSequenceKey='';$('final-show').hidden=true;$('bank-history').open=false;$('history-list').replaceChildren();$('bank-quote').textContent='„Jeder Koffer verändert das Spiel. Wie mutig bist du?“';$('show-phase').textContent='Warte auf den Spielstart';$('studio-progress-fill').style.width='0%';$('show-round').textContent='26–29 Koffer · bis zu 4 Spieler';$('header-round').textContent=$('show-round').textContent;$('offer').classList.remove('offer-active');$('status').textContent='Noch keine Partie gestartet. Gehe zur Lobby und starte als Host.';$('cases').replaceChildren();for(let i=0;i<27;i++){let b=makeCase(i,null,null,false);b.disabled=true;$('cases').append(b)}$('money-summary').textContent='26–29 Beträge im Spiel';$('money').replaceChildren();for(let v of values.slice(0,27)){let x=document.createElement('span');x.textContent=eur(v);$('money').append(x)}$('players').replaceChildren();$('actions').replaceChildren();$('actions').append(button('← Zur Lobby',()=>location.assign('lobby.html?room='+encodeURIComponent(code||''))));$('offer').textContent='Der Banker wartet auf den Spielstart.';return}$('show-phase').textContent=({select:'Die Kandidaten wählen ihre Koffer','batch-pick':'⚡ 30 Koffer: Dreierauswahl','batch-reveal':'⚡ Die große Schnell-Enthüllung',open:'Die Kofferjagd läuft',reveal:'Der Koffer wird enthüllt',decision:'Der Banker macht ein Angebot',final:'Das große Finale',finished:'Die Show ist beendet'})[g.phase]||'Goldstudio Live';$('show-round').textContent='Runde '+Math.max(1,(g.round||0)+1)+' · '+g.opened.length+' / '+(g.caseCount||26)+' geöffnet';$('header-round').textContent=$('show-round').textContent;$('studio-progress-fill').style.width=(g.opened.length/(g.caseCount||26)*100).toFixed(1)+'%';$('bank-quote').textContent=g.phase==='decision'?'„Mein Angebot liegt auf dem Tisch. Deal oder No Deal?“':g.phase==='reveal'?'„Was verbirgt sich hinter diesem goldenen Deckel?“':g.phase==='final'?'„Jetzt kommt die Wahrheit ans Licht!“':g.phase==='open'?'„Ein einziger Koffer kann alles verändern.“':'„Willkommen in meiner Show.“';updateHistoryBoard(g.history||[]);// Only the server-authoritative selector, opener or reveal actor is crowned.
@@ -162,7 +167,7 @@ if(g.phase==='final'&&!$('final-show').hidden){
  }else finalBonusRoot.hidden=true;
 }else finalBonusRoot.hidden=true;
 if(finalBonusRoot.parentElement!==$('final-show'))$('final-rankings').after(finalBonusRoot);
-$('offer').classList.toggle('offer-active',g.phase==='decision');$('offer').textContent=g.phase==='decision'?'Bankangebot für alle: '+eur(g.offer):g.history.length?'Letztes Bankangebot: '+eur(g.history.at(-1).offer):'Der Banker wartet.';
+$('offer').classList.toggle('offer-active',g.phase==='decision');$('offer').textContent=g.phase==='decision'?(g.individualBankerOffers===true?'🎩 Dein persönliches Banker-Angebot: ':'Bankangebot für alle: ')+eur(personalBankerAmount(g.history.at(-1))):g.history.length?(g.individualBankerOffers===true?'Dein letztes Bankangebot: ':'Letztes Bankangebot: ')+eur(personalBankerAmount(g.history.at(-1))):'Der Banker wartet.';
 $('actions').replaceChildren();$('final-extra-actions')?.replaceChildren();if(g.phase==='reveal'&&g.pending?.actor===myId()&&!busy){$('status').textContent='🧳 Koffer '+(g.pending.case+1)+' öffnet sich – Enthüllung läuft …';$('actions').append(button('🧳 Enthüllung jetzt abschließen',()=>action('ack-reveal')));if(lastReveal!==g.pending.eventId){lastReveal=g.pending.eventId;clearTimeout(revealTimer);const revealId=g.pending.eventId;
 const untilEnd=Number.isFinite(g.pending.startedAt)?Math.max(0,Math.min(4000,g.pending.startedAt+2150-dealServerNow())):2200;
 revealTimer=setTimeout(()=>{if(g?.phase==='reveal'&&g.pending?.eventId===revealId)action('ack-reveal')},untilEnd)}
