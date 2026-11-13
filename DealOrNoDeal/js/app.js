@@ -136,7 +136,10 @@ if(g.phase==='final'&&!$('final-show').hidden){
   const heading=document.createElement('strong');heading.textContent='💎 Letzter Schritt: ×2-Geldbonus nach der Siegerehrung';finalBonusRoot.append(heading);
   for(const f of boosted){
    const line=document.createElement('p'),name=g.players.find(p=>p.id===f.id)?.name||'Spieler';
-   line.textContent=name+': '+eur(f.payout)+' Spielgewinn + '+eur(f.payout)+' Bonus = '+eur(f.payout*2)+' Kontogutschrift';
+   // x2 is only the last wallet step, and can never exceed EUR 50 million.
+   const limit=5_000_000_000,credit=Math.min(f.payout*2,limit);
+   const bonus=Math.max(0,credit-f.payout);
+   line.textContent=name+': '+eur(f.payout)+' Spielgewinn + '+eur(bonus)+' Bonus = '+eur(credit)+' Kontogutschrift'+(credit===limit?' · 🏆 50-Millionen-Limit erreicht':'');
    finalBonusRoot.append(line);
   }
   finalBonusRoot.hidden=false;
