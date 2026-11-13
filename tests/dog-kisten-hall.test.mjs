@@ -70,3 +70,13 @@ test('All five uploaded PNG assets are wired to their correct chest cards',()=>{
  assert.match(css,/\.chest-illustration-image img/);
  assert.match(html,/dog-materials\.css\?v=20261113-chest-art-v4/);
 });
+
+test('Chest quantity selector supports 1, 5, and all in a single receipt-safe request',()=>{
+ for(const quantity of ['1','5','all'])
+  assert.match(html,new RegExp('data-open-quantity="'+quantity+'"'));
+ assert.match(ui,/quantity=pending\?\.quantity\?\?/);
+ assert.match(ui,/Math\.min\(available,openQuantity\)/);
+ assert.match(ui,/storePending\(uid,id,requestTier,quantity\)/);
+ assert.match(ui,/\{requestId:id,quantity,/);
+ assert.match(ui,/result\.openedChests\|\|1/);
+});
