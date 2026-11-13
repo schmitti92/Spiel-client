@@ -397,6 +397,7 @@
    const result=await request('POST','hero',{heroClass},account);
    if(auth()?.user?.uid!==account)return;
    mapState=result;stagedHero=null;
+   window.dispatchEvent(new Event('dog-team-joined'));
    setTeamStatus('✅ Dein Held '+HERO_LABELS[heroClass]+' ist dauerhaft festgelegt. Dein Abenteuer kann beginnen!');
   }catch(e){
    const code=e?.message||'DOG_GATE_UNAVAILABLE';
@@ -415,6 +416,7 @@
    const result=await request('POST','join',{},account);
    if(auth()?.user?.uid!==account)return;
    mapState=result;renderMembers();
+   window.dispatchEvent(new Event('dog-team-joined'));
    setTeamStatus('✅ Du gehörst zur Dreier-Expedition. Dein Weg beginnt bei Tor 1.');
   }catch(e){setTeamStatus('⚠️ Beitritt nicht bestätigt ('+e.message+'). Bitte aktualisieren.');}
   finally{working=false;renderMembers();}
