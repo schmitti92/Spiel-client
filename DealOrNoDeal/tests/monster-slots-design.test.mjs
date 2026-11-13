@@ -9,8 +9,8 @@ const html=read('game.html');
 const slotMarkup=JSON.parse(js.split('root.innerHTML=')[1].split(';\n')[0]);
 test('Monster Slots script parses as a classic browser script and is loaded with a cache-busted asset',()=>{
  assert.doesNotThrow(()=>new Script(js,{filename:'monster-slots-final.js'}));
- assert.match(html,/js\/monster-slots-final\.js\?v=20261113-slots-all-rewards-v1/);
- assert.match(html,/css\/monster-slots-final\.css\?v=20261113-slots-all-rewards-v1/);
+ assert.match(html,/js\/monster-slots-final\.js\?v=20261113-podium-slots-v2/);
+ assert.match(html,/css\/monster-slots-final\.css\?v=20261113-podium-slots-v2/);
 });
 test('three reels with real scrolling icon tracks and sequential stops, never a browser-side prize roll',()=>{
  assert.equal((slotMarkup.match(/class="monster-slot-reel"/g)||[]).length,3,'exactly three reels');
@@ -23,7 +23,9 @@ test('three reels with real scrolling icon tracks and sequential stops, never a 
  assert.match(css,/@keyframes ms-roll/);
  assert.match(css,/translateY\(-50%\)/);
  assert.match(css,/animation:ms-roll/);
- assert.match(js,/if\(i===2\)timer\(\(\)=>showSummary\(token,id\),2000\)/,'one summary appears two seconds after the third stop');
+ assert.match(js,/if\(finished\)timer\(\(\)=>showSummary\(token,id\),single\?1000:2000\)/,'single reel reveals after one stop, triple reel after third stop');
+ assert.match(js,/reels\.slice\(0,claimed\.prizes\.length\)/,'only allowed reels spin');
+ assert.match(css,/data-reels="1"/,'runner-up has a single centered reel');
 });
 test('premium show appearance supports three visible reel windows, mobile screens and reduced motion',()=>{
  assert.match(css,/linear-gradient\(155deg,#372054/);
