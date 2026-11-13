@@ -294,22 +294,25 @@ async function sharedAction(operation){
   setStatus('⚠️ Gemeinsame Slot-Aktion fehlgeschlagen: '+String(error.message||error)+'. Bitte erneut versuchen.');
   sharedSignature=''; // repaint the current turn without creating prizes
  }finally{
+  // Recompute the action buttons after the network request completes.
+  // The state broadcast can arrive while sharedPending is still true.
   sharedPending=false;
-  if(currentSignature===sharedSignature||!sharedSignature)renderShared();
+  sharedSignature='';
+  renderShared();
  }
 }
 function renderShared(){
  const game=typeof g!=='undefined'?g:null,stage=game?.monsterSlotShow;
  if(!stage||game.phase!=='final')return;
  if(stage.phase==='ceremony'){
-  if(sharedSignature){cancel();sharedSignature='';}
+  if(sharedSignature||!root.hidden){cancel();sharedSignature='';}
   root.dataset.shared='no';liveGame=null;claimed=null;claimedUid=null;
   return;
  }
  // Existing Christmas prize presentation stays above slot loading order.
  if(document.hidden||document.getElementById('cent-reward')?.hidden===false||
   document.getElementById('vote-reveal')?.hidden===false)return;
- const signature=game.id+':'+stage.turn+':'+stage.phase+':'+String(stage.startedAt||0);
+ const signature=game.id+':'+stage.turn+':'+stage.phase+':'+String(stage.startedAt||0)+':'+String(user()?.uid||'');
  if(signature===sharedSignature&&!root.hidden)return;
  cancel();sharedSignature=signature;liveGame=game.id;claimed=null;claimedUid=null;
  root.dataset.shared='yes';

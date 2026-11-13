@@ -34,7 +34,10 @@ function browserFixture(customPrizes=null){
   return {reel,win,name,quantity,status};
  }
  const reels=[makeReel(),makeReel(),makeReel()],lamps=Array.from({length:3},()=>new Node('lamp'));
- const root=new Node('root');root.hidden=true;root.querySelectorAll=q=>{
+ const root=new Node('root');root.hidden=true;
+ const sharedCaption=new Node('shared-caption');sharedCaption.hidden=true;
+ root.querySelector=q=>q==='.monster-slot-shared-caption'?sharedCaption:null;
+ root.querySelectorAll=q=>{
   if(q==='.monster-slot-reel')return reels.map(e=>e.reel);
   if(q==='.monster-slot-progress span')return lamps;
   return [];
@@ -68,7 +71,28 @@ function browserFixture(customPrizes=null){
  const g={id:'11111111-1111-4111-8111-111111111111',phase:'final',monsterSlotsVersion:1,
   finalValues:[{id:'host',payout:3000000},{id:'guest',payout:2000000},{id:'quiet',payout:1000000}]};
  const fetch=async(_url,options)=>{
-  const uid=options.headers.Authorization.slice(7),{gameId}=JSON.parse(options.body);
+  const uid=options.headers.Authorization.slice(7),{gameId,operation}=JSON.parse(options.body);
+  if(operation){
+   requests.push({uid,gameId,operation});
+   const current=g.monsterSlotShow;
+   if(operation==='spin'){
+    const count=current.reels;
+    const prizeItems=customPrizes||[
+     {kind:'joker',id:null,label:'1× Joker',quantity:1},
+     {kind:'cash',id:null,label:'10,00 €',amountCents:1000,quantity:1},
+     {kind:'chest',id:'wood',label:'Holzkiste',quantity:1}
+    ];
+    g.monsterSlotShow={...current,phase:'rolling',startedAt:Date.now()-9000,prizes:prizeItems.slice(0,count)};
+   }else if(current.turn==='runner'){
+    g.monsterSlotShow={phase:'ready',turn:'champion',uid:'host',reels:3,
+     runnerUid:'guest',championUid:'host',activatedAt:Date.now(),startedAt:null,prizes:[]};
+   }else{
+    g.monsterSlotShow={phase:'ceremony',turn:'complete',uid:null,reels:0,
+     runnerUid:'guest',championUid:'host',finishedAt:Date.now(),prizes:[]};
+   }
+   g.revision=(g.revision||0)+1;
+   return {ok:true,json:async()=>({ok:true,game:g})};
+  }
   requests.push({uid,gameId});
   const count=window.dealSlotReelsFor(g,uid);
   const items=customPrizes||[{kind:'joker',id:null,label:'1× Joker',quantity:1},
@@ -77,7 +101,7 @@ function browserFixture(customPrizes=null){
   return {ok:true,json:async()=>({ok:true,gameId,guaranteed:count,prizes:items.slice(0,count)})};
  };
  async function flush(){for(let i=0;i<15;i++)await Promise.resolve()}
- const context=createContext({window,document,g,fetch,console,sessionStorage:{
+ const context=createContext({window,document,g,fetch,console,code:'123',render:()=>{},sessionStorage:{
   getItem:key=>store.get(key)||null,setItem:(key,val)=>store.set(key,val)
  },matchMedia:()=>({matches:true}),setTimeout:setFakeTimeout,clearTimeout:id=>timers.delete(id),
   Event:class{constructor(type){this.type=type}}
@@ -91,6 +115,45 @@ function browserFixture(customPrizes=null){
   summaryPrizes:summaryContent?.children[3],summaryCardsPanel:summaryContent?.children[4],
   summaryCards:summaryContent?.children[4]?.children[2]};
 }
+
+test('all three profiles watch the same runner-up then champion Slot show before ceremony',async()=>{
+ const b=browserFixture();
+ b.g.monsterSlotShow={phase:'ready',turn:'runner',uid:'guest',reels:1,
+  runnerUid:'guest',championUid:'host',activatedAt:Date.now(),startedAt:null,prizes:[]};
+ b.window.person='quiet';
+ b.emit('deal-game-state-change');await b.flush();
+ assert.equal(b.root.hidden,false,'third place sees the shared slot as spectator');
+ assert.equal(b.root.dataset.reels,'1');
+ assert.equal(b.accept.disabled,true,'spectator must not trigger the runner-up spin');
+ assert.equal(b.requests.length,0,'spectator never requests or credits a personal prize');
+
+ b.window.person='guest';b.emit('spielonline-change');await b.flush();
+ assert.equal(b.accept.disabled,false,'runner-up may press spin');
+ b.accept.click();await b.flush();
+ assert.equal(b.requests[0]?.operation,'spin');
+ assert.equal(b.root.dataset.reels,'1');
+ assert.equal(b.summary.hidden,false,'all spectators can view the server-stored prize');
+ assert.equal(b.summaryButton.disabled,false,'runner-up confirms their own gift');
+
+ b.window.person='quiet';b.emit('spielonline-change');await b.flush();
+ assert.equal(b.summaryButton.disabled,true,'spectators can see but cannot confirm');
+ b.window.person='guest';b.emit('spielonline-change');await b.flush();
+ assert.equal(b.summaryButton.disabled,false);
+ b.summaryButton.click();await b.flush();
+ assert.equal(b.requests[1]?.operation,'confirm');
+ assert.equal(b.g.monsterSlotShow.turn,'champion','winner follows runner-up');
+
+ b.window.person='host';b.emit('spielonline-change');await b.flush();
+ assert.equal(b.accept.disabled,false);
+ b.accept.click();await b.flush();
+ assert.equal(b.requests[2]?.operation,'spin');
+ assert.equal(b.summaryPrizes.children.length,3,'champion receives three real server-settled prizes');
+ b.summaryButton.click();await b.flush();
+ assert.equal(b.requests[3]?.operation,'confirm');
+ assert.equal(b.g.monsterSlotShow.phase,'ceremony');
+ assert.equal(b.root.hidden,true,'the Slot overlay closes before the ceremony');
+ assert.equal(b.requests.length,4,'viewing the entire finale needs only four authorized actions');
+});
 
 test('a three-player finale shows each reel then the combined summary without duplicate reward requests',async()=>{
  const b=browserFixture();
