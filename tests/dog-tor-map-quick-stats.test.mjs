@@ -24,5 +24,5 @@ test('Server combat receipt stats populate the victory/defeat dialog',()=>{
  assert.match(s,/stats.heroRemainingHp/);
  assert.match(s,/stats.heroDamageTaken/);
  assert.match(h,/id="gate-quick-result-stats"/);
- assert.match(h,/dog-tor-map\.js\?v=20261113-real-duels2/);
+ assert.match(h,/dog-tor-map\.js\?v=20261113-boss-gear-50-v1/);
 });
