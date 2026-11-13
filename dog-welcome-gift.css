@@ -1,0 +1,32 @@
+/* 100-Tore: persönliches einmaliges Willkommensgeschenk */
+.dog-welcome-dialog{position:fixed;inset:0;width:100vw;max-width:none;height:100dvh;max-height:none;margin:0;border:0;padding:clamp(10px,2vw,24px);overflow-y:auto;background:rgba(4,9,22,.92);color:#fff3d8;box-sizing:border-box;z-index:1000001;overscroll-behavior:contain;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.dog-welcome-dialog::backdrop{background:rgba(2,5,13,.88);backdrop-filter:blur(14px)}
+.dog-welcome-dialog[open]{display:flex;align-items:center;justify-content:center}
+.dog-welcome-dialog *{box-sizing:border-box}
+.dog-welcome-card{position:relative;isolation:isolate;width:min(98%,950px);max-height:calc(100dvh - 26px);overflow:auto;margin:auto;border:1px solid #e4bf7f9c;border-radius:28px;background:radial-gradient(circle at 9% 12%,#b07a3445,transparent 37%),linear-gradient(132deg,#202641,#111c32 65%,#10182b);box-shadow:0 26px 95px #000d,0 0 0 6px #e5b86015}
+.dog-welcome-card::before{content:"✧ ✦ ✧ ✦ ✧";position:absolute;top:10px;right:22px;color:#eccb83;font-size:26px;letter-spacing:12px;opacity:.6;pointer-events:none}
+.dog-welcome-top{padding:24px 28px 16px;text-align:center}
+.dog-welcome-eyebrow{font-size:11px;font-weight:900;letter-spacing:.22em;color:#f0c982}
+.dog-welcome-top h2{font:900 clamp(26px,4vw,46px)/1.15 Georgia,serif;margin:7px 0 7px;color:#ffe6a8;text-shadow:0 4px 23px #0008}
+.dog-welcome-top p{margin:0;color:#d3ddef;font-size:15px;line-height:1.5}
+.dog-welcome-grid{display:grid;grid-template-columns:minmax(180px,.82fr) minmax(0,1.18fr);gap:24px;align-items:stretch;padding:0 25px}
+.dog-welcome-photo{position:relative;overflow:hidden;min-height:280px;max-height:465px;border-radius:19px;border:2px solid #eec78a8c;background:linear-gradient(145deg,#4c5b73,#1c2741);box-shadow:0 10px 27px #0007}
+.dog-welcome-photo img{display:block;width:100%;height:100%;max-height:465px;min-height:280px;object-fit:cover;object-position:center 44%}
+.dog-welcome-photo-caption{position:absolute;left:0;right:0;bottom:0;padding:24px 13px 12px;background:linear-gradient(transparent,#10162fe8);color:#ffe2aa;text-align:center;font-size:13px;font-weight:800;letter-spacing:.04em}
+.dog-welcome-photo-missing{display:none;position:absolute;inset:0;align-items:center;justify-content:center;padding:24px;color:#fae3b4;text-align:center;font-size:16px;line-height:1.6}
+.dog-welcome-photo.is-missing img{display:none}.dog-welcome-photo.is-missing .dog-welcome-photo-missing{display:flex}
+.dog-welcome-gifts{display:flex;flex-direction:column;gap:13px;justify-content:center}
+.dog-welcome-gifts-heading{text-align:center;color:#ffde9e;font-size:12px;font-weight:900;letter-spacing:.17em}
+.dog-welcome-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.dog-welcome-item{display:flex;min-width:0;flex-direction:column;align-items:center;gap:6px;text-align:center;border-radius:17px;padding:16px 8px 13px;border:1px solid #e7c18450;background:linear-gradient(158deg,#ffffff16,#ffffff05);box-shadow:inset 0 1px #ffffff22}
+.dog-welcome-icon{font-size:32px;line-height:1.2}
+.dog-welcome-qty{color:#ffe6a6;font:900 27px/1 Georgia,serif}
+.dog-welcome-label{font-size:12px;line-height:1.35;font-weight:750;color:#e3eafa}
+.dog-welcome-foot{padding:16px 25px 25px;text-align:center}
+.dog-welcome-foot p{margin:0 0 12px;line-height:1.5;font-size:13px;color:#d6e4d5}
+.dog-welcome-state{min-height:19px;font-size:12px;color:#ffcf99!important}
+.dog-welcome-confirm{display:inline-flex;justify-content:center;align-items:center;min-height:48px;width:min(100%,410px);padding:12px 20px;border:1px solid #ffe5ab;border-radius:14px;background:linear-gradient(135deg,#fff3ca,#ddb05b);box-shadow:0 6px 20px #c88a3240;color:#28213b;font-size:15px;font-weight:900;cursor:pointer}
+.dog-welcome-confirm:hover{filter:brightness(1.05)}.dog-welcome-confirm:disabled{opacity:.55;cursor:wait}
+.dog-welcome-confirm:focus-visible{outline:3px solid #8ed5ff;outline-offset:4px}
+@media(max-width:650px){.dog-welcome-card{border-radius:19px}.dog-welcome-grid{grid-template-columns:1fr;gap:12px;padding:0 14px}.dog-welcome-top{padding:22px 14px 12px}.dog-welcome-photo{min-height:0;height:155px}.dog-welcome-photo img{min-height:0;max-height:none;height:155px;object-position:center 36%}.dog-welcome-photo-caption{padding:12px 8px 5px;font-size:11px}.dog-welcome-gifts{gap:8px}.dog-welcome-items{gap:7px}.dog-welcome-item{padding:9px 5px}.dog-welcome-icon{font-size:25px}.dog-welcome-qty{font-size:22px}.dog-welcome-label{font-size:11px}.dog-welcome-foot{padding:12px 15px 19px}.dog-welcome-foot p{font-size:12px}.dog-welcome-confirm{min-height:43px;font-size:13px}}
+@media(prefers-reduced-motion:reduce){.dog-welcome-confirm{transition:none}}
