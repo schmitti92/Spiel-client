@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="./css/christmas-event-hub.css?v=20261109-unified-tabs-v2">
 <link rel="stylesheet" href="./css/christmas-spectacle-v2.css?v=20261109-spectacle-v2">
 <link rel="stylesheet" href="./css/christmas-universe-premium.css?v=20261109-nested-nav-v1">
+<link rel="stylesheet" href="./css/dog-super-slots.css?v=20261113-dog-cycles-v1">
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
 <style>
@@ -125,22 +126,25 @@ body.hats-beta-open .hub-body{grid-template-columns:repeat(3,minmax(0,1fr))}
 <section class="dog-hero">
  <div class="eyebrow">🎄 WEIHNACHTSZAUBER · KAPITEL 1 · OFFIZIELLE DOG-SAMMELSAISON</div>
  <h1>🃏 DOG Sammelalbum <em>Saison 2</em></h1>
- <p>Sechs Sammelwelten, 96 Karten und 60 mögliche Bingo-Linien. Deine neue DOG-Sammlung gehört zur Weihnachtswelt. Die Weihnachts-Sammelkarten aus Saison 1 sind beendet.</p>
+ <p>Sechs DOG-Sammelwelten mit jeweils 16 Karten. Jede vollendete DOG-Tafel startet erneut und schenkt dir einen Super-Slot-Dreh mit fünf Gewinnen. Das Hammer-Bingo zählt ausdrücklich nicht mit.</p>
  <div class="stats" aria-label="DOG-Sammelfortschritt">
   <div><strong id="owned">0 / 96</strong><small>Neue Karten entdeckt</small></div>
   <div><strong id="bingos">0 / 60</strong><small>Erreichte Bingos</small></div>
   <div><strong id="coins">–</strong><small>Spielgeld</small></div>
  </div><div class="meter" role="progressbar" aria-label="Sammelfortschritt"><span id="meter-fill"></span></div>
+ <div class="dog-career" aria-label="DOG-Sammelkarriere"><span>🏆 Vollständige DOG-Tafeln: <strong id="dog-cycle-total">0</strong></span><span>🎰 Super-Slot-Drehs: <strong id="dog-super-count">0</strong></span><span>📅 Turnierpunkte: <strong id="dog-tourney-points">0</strong></span></div>
  <nav class="dog-actions" aria-label="DOG-Sammelalbum Bereiche">
   <button type="button" data-tab="album" class="active">🃏 6 Sammeltafeln</button>
   <button type="button" data-tab="rewards">🏆 Bingo-Belohnungen</button>
   <button type="button" data-tab="duplicates">🎰 Duplikate tauschen</button>
+  <button type="button" data-tab="super">🎰 5er-Super-Slots</button>
+  <button type="button" data-tab="tournament">🏆 Monatsturnier</button>
   <a href="./weihnachten.html?view=monster">🎡 Monster-Glücksrad</a>
  </nav>
  <p id="status" role="status" aria-live="polite">🔄 Spielerprofil wird geprüft …</p>
  <button id="login" type="button" hidden>👤 Mit Online-Profil anmelden</button>
 </section>
-<section id="album-panel"><div class="sectionhead"><h2>✨ Deine sechs DOG-Sammelalben</h2><p>Jede Tafel hat 4 Reihen, 4 Spalten und 2 Diagonalen – 10 mögliche Bingos.</p></div>
+<section id="album-panel"><div class="sectionhead"><h2>✨ Deine sechs DOG-Sammelalben</h2><p>Jede Tafel hat 4 Reihen, 4 Spalten und 2 Diagonalen – 10 mögliche Bingos. Nach 16/16 Karten startet nur diese DOG-Tafel wieder bei 0/16. Lebenslange Karten und einmalige Bingo-Meilensteine bleiben erhalten.</p></div>
 <div id="boards" class="boards"></div><p class="rewards-note">🎁 Für alle 2 Bingos erhältst du eine Materialkiste und zufällige Zusatzpreise. <button type="button" id="album-show-rewards">🏆 Bingo-Gewinne ansehen</button></p></section>
 <section id="rewards-panel" hidden aria-label="Bingo-Belohnungen Saison 2">
   <div class="sectionhead"><h2>🏆 Deine Bingo-Belohnungen</h2><p>Alle zwei Bingos eine Rohstoffkiste. Holz → Eisen → Silber → Gold → Legendär. Die weiteren Gewinne wechseln per Zufall; die letzten Meilensteine zahlen mehrere Extras.</p></div>
@@ -149,7 +153,24 @@ body.hats-beta-open .hub-body{grid-template-columns:repeat(3,minmax(0,1fr))}
   <p id="reward-claim-status" role="status" aria-live="polite"></p>
   <div id="reward-milestones" class="reward-milestones"></div>
  </section>
- <section id="packs-panel" hidden><div class="sectionhead"><h2>🎁 DOG-Kartenpacks</h2><p>Karten aus allen sechs Sammelwelten. Gewöhnliche, seltene, epische und legendäre Motive entdecken.</p></div><div id="packs" class="packs"></div></section>
+ 
+<section id="super-panel" hidden aria-label="DOG Super Slots mit fünf Walzen">
+ <div class="sectionhead"><h2>🎰 DOG-Super-Slots · 5 Gewinne</h2><p>Jede vollständig gesammelte DOG-Tafel schenkt dir genau einen Dreh mit fünf Walzen. Nur DOG-Sammelkarten zählen – kein Hammer-Bingo.</p></div>
+ <div class="dog-super-promo">
+  <div class="dog-super-symbols" aria-hidden="true"><span>📦</span><span>🎴</span><span>🔨</span><span>🃏</span><span>💰</span></div>
+  <strong id="dog-super-tickets">0 verfügbare Super-Slot-Drehs</strong>
+  <button id="dog-super-play" type="button" disabled>🎰 5 Walzen drehen</button>
+  <p id="dog-super-status" role="status" aria-live="polite">Sammle eine vollständige DOG-Tafel, um einen Dreh freizuschalten.</p>
+ </div>
+</section>
+<section id="tournament-panel" hidden aria-label="DOG Sammelturnier">
+ <div class="sectionhead"><h2>🏆 DOG-Monatsturnier</h2><p>Punkte für neue Karten einer DOG-Sammelrunde, Bingo-Linien und komplette Tafeln. Das Hammer-Bingo zählt nicht. Monatspunkte beginnen neu, deine Lebenszeit-Abschlüsse bleiben.</p></div>
+ <div class="dog-tournament-overview"><strong id="dog-tournament-month">Aktueller Monat</strong><strong id="dog-tournament-personal">0 Punkte</strong></div>
+ <button id="dog-tournament-refresh" type="button">↻ Rangliste ansehen</button>
+ <p id="dog-tournament-status" role="status" aria-live="polite">Die Rangliste wird nur auf Anfrage geladen – keine ständige Firebase-Abfrage.</p>
+ <div id="dog-tournament-ranking" class="dog-tournament-ranking"></div>
+</section>
+<section id="packs-panel" hidden><div class="sectionhead"><h2>🎁 DOG-Kartenpacks</h2><p>Karten aus allen sechs Sammelwelten. Gewöhnliche, seltene, epische und legendäre Motive entdecken.</p></div><div id="packs" class="packs"></div></section>
 <section id="duplicates-panel" hidden><div class="sectionhead"><h2>🎰 DOG-Duplikate und Monster-Rad</h2><p>Die erste Kopie jeder Karte bleibt erhalten. 100 doppelte DOG-Karten ergeben ein Monster-Rad-Ticket.</p></div>
 <div class="exchange"><strong id="duplicate-count">0 Duplikate</strong><p id="ticket-count">0 Monster-Rad-Tickets</p>
 <button type="button" id="exchange" disabled>100 Duplikate eintauschen</button><a href="./weihnachten.html?view=monster">🎡 Monster-Rad öffnen</a></div></section>
@@ -157,6 +178,8 @@ body.hats-beta-open .hub-body{grid-template-columns:repeat(3,minmax(0,1fr))}
 <footer class="hub-footer"><span id="hub-status" class="status" role="status" aria-live="polite">⏳ Spielerprofil wird geprüft …</span><button type="button" id="hub-refresh" class="hub-refresh" disabled>↻ Fortschritt aktualisieren</button></footer>
 </main>
 <dialog id="card-dialog"><button class="dialog-close" data-close type="button" aria-label="Kartenansicht schließen">✕</button><img id="card-image" alt=""><h2 id="card-title"></h2><p id="card-subtitle"></p><button type="button" data-close>Schließen</button></dialog>
+<dialog id="dog-cycle-complete-dialog" aria-labelledby="dog-cycle-complete-title"><h2 id="dog-cycle-complete-title">🏆 DOG-Tafel vollständig!</h2><div id="dog-cycle-complete-content"></div><button type="button" id="dog-cycle-complete-ok">🎰 Super-Slots ansehen</button></dialog>
+<dialog id="dog-super-slot-dialog" aria-labelledby="dog-super-slot-title" class="dog-super-dialog"><div class="dog-super-window"><h2 id="dog-super-slot-title">🎰 DOG-SUPER-SLOTS</h2><p>Fünf Walzen · Fünf garantierte Gewinne</p><div id="dog-super-reels" class="dog-super-reels"></div><p id="dog-super-phase" role="status" aria-live="polite"></p><div id="dog-super-summary" hidden><h3>🎁 Alle fünf Gewinne auf einen Blick!</h3><div id="dog-super-prizes" class="dog-super-prizes"></div><div id="dog-super-cards-section" hidden><h3>🃏 Alle Karten aus deinen Packs</h3><p id="dog-super-cards-caption"></p><div id="dog-super-cards" class="dog-super-cards"></div></div></div><button id="dog-super-close" type="button" disabled>✅ Alle Gewinne bestätigen</button></div></dialog>
 <dialog id="bingo-reward-dialog" aria-labelledby="bingo-dialog-title"><h2 id="bingo-dialog-title">🏆 Deine neuen Bingo-Gewinne!</h2><div id="bingo-dialog-awards"></div><button type="button" data-close>🎁 Alle Gewinne erhalten</button></dialog>
 <dialog id="reveal-dialog"><div class="reveal-heading">🎁 DEIN DOG-KARTENPACK</div><div id="reveal-items" class="reveal-items"></div><button type="button" data-close>✅ Weiter zur Sammlung</button></dialog>
 <script>
@@ -297,7 +320,8 @@ window.addEventListener('spielonline-change',()=>{checkHatsAccess();refresh(fals
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{checkHatsAccess();refresh(false)});else{checkHatsAccess();refresh(false)};
 })();
 </script>
-<script defer src="./js/dog-album-season2.js?v=20261113-legendary500-v1"></script>
+<script defer src="./js/dog-album-season2.js?v=20261113-dog-cycles-v1"></script>
+<script defer src="./js/dog-super-slots.js?v=20261113-dog-cycles-v1"></script>
 <script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script>
 <script src="../site-global-controls.js?v=20261109-global-1"></script>
 <script defer src="./js/christoph-surprise.js?v=20261110-gift-v1"></script>
