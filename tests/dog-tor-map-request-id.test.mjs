@@ -10,5 +10,5 @@ test('fight sends backend requestId not local storage id field',()=>{
  assert.match(s,/if\(retry&&!old\)/);
 });
 test('fresh client cache token deployed',()=>{
- assert.match(get('dog-tor-map.html'),/dog-tor-map\.js\?v=20261113-gate-progress1/);
+ assert.match(get('dog-tor-map.html'),/dog-tor-map\.js\?v=20261113-real-duels1/);
 });
