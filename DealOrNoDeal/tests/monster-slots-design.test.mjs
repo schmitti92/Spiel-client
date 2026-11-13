@@ -9,8 +9,8 @@ const html=read('game.html');
 const slotMarkup=JSON.parse(js.split('root.innerHTML=')[1].split(';\n')[0]);
 test('Monster Slots script parses as a classic browser script and is loaded with a cache-busted asset',()=>{
  assert.doesNotThrow(()=>new Script(js,{filename:'monster-slots-final.js'}));
- assert.match(html,/js\/monster-slots-final\.js\?v=20261113-slots-new-cards-v4/);
- assert.match(html,/css\/monster-slots-final\.css\?v=20261113-slots-new-cards-v4/);
+ assert.match(html,/js\/monster-slots-final\.js\?v=20261113-slots-all-rewards-v1/);
+ assert.match(html,/css\/monster-slots-final\.css\?v=20261113-slots-all-rewards-v1/);
 });
 test('three reels with real scrolling icon tracks and sequential stops, never a browser-side prize roll',()=>{
  assert.equal((slotMarkup.match(/class="monster-slot-reel"/g)||[]).length,3,'exactly three reels');
@@ -23,7 +23,7 @@ test('three reels with real scrolling icon tracks and sequential stops, never a 
  assert.match(css,/@keyframes ms-roll/);
  assert.match(css,/translateY\(-50%\)/);
  assert.match(css,/animation:ms-roll/);
- assert.match(js,/if\(i===2\)timer\(/,'confirmation waits for the third stop');
+ assert.match(js,/if\(i===2\)timer\(\(\)=>showSummary\(token,id\),2000\)/,'one summary appears two seconds after the third stop');
 });
 test('premium show appearance supports three visible reel windows, mobile screens and reduced motion',()=>{
  assert.match(css,/linear-gradient\(155deg,#372054/);
@@ -45,6 +45,8 @@ test('all five already-uploaded chest artworks exist and no new prize payout is 
  assert.match(js,/sessionStorage\.setItem\(seenKey\(liveGame\),'yes'\)/);
  assert.match(js,/monster-slots-watched:/);
  assert.match(js,/claimed\.prizes/);
+ assert.match(js,/summaryCards\.replaceChildren\(\.\.\.tiles\)/,'all cards appear together instead of sequential reveal');
+ assert.doesNotMatch(js,/function revealNewPacks/,'do not replay each pack separately');
  assert.match(html,/g\.monsterSlotsVersion!==1/,'old reward wheel suppressed for new game finales');
 });
 
