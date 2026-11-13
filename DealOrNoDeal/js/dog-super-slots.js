@@ -138,4 +138,8 @@
   }
  });
  window.DogSuperSlots={play,tryRecover};
+ window.addEventListener('spielonline-change',tryRecover);
+ // The album script loads first; restore a pending, already-settled spin
+ // even if the auth event fired before this presentation module loaded.
+ setTimeout(tryRecover,250);
 })();
