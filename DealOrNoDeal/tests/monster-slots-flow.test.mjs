@@ -351,3 +351,28 @@ test('scheduled shared Slots open and spin together without resetting an existin
  assert.equal(b.reels[0].reel.dataset.phase,'won','reel must stop at same absolute time');
  assert.equal(b.requests.length,0,'spectators do not request or settle personal prizes');
 });
+
+test('spectator keeps the same card tiles after recovery becomes available, without duplicate payouts',async()=>{
+ const card={id:'dog2-001',name:'Drachenritter',image:'DOG_01_11.png',
+  rarity:'legendary',isNew:true};
+ const packs=[0,1,2].map(i=>({kind:'pack',id:'small',
+  label:'DOG Kartenpaket',quantity:1,openedPacks:[{packId:'small',
+   packName:'DOG Normalpaket',revealed:[{...card,id:'dog2-'+i}]}]}));
+ const b=browserFixture(packs);
+ b.banker.hidden=true;
+ b.g.monsterSlotShow={phase:'rolling',turn:'champion',uid:'host',reels:3,
+  activatedAt:b.now(),startedAt:b.now()-12000,prizes:packs};
+ b.window.person='quiet';
+ b.emit('deal-game-state-change');await b.flush();
+ assert.equal(b.summary.hidden,false);
+ assert.equal(b.summaryCards.children.length,3);
+ assert.equal(b.summaryButton.disabled,true);
+ const firstTile=b.summaryCards.children[0];
+ b.root.scrollTop=325;
+ await b.advance(30100);
+ assert.equal(b.summaryCards.children[0],firstTile,'recovery must not re-render card images');
+ assert.equal(b.root.scrollTop,325,'the scroll position must survive spectator recovery');
+ assert.equal(b.summaryButton.disabled,false,'a spectator can recover the room after 30 seconds');
+ assert.match(b.summaryButton.textContent,/bestätigen/);
+ assert.equal(b.requests.length,0,'no claim, spin or confirm should be sent by scrolling or waiting');
+});
