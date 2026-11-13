@@ -222,7 +222,7 @@
  const packNames={small:'Normales Kartenpaket',large:'Gold-Kartenpaket',premium:'Premium-Kartenpaket'};
  const spinButton=document.getElementById('cent-wheel-spin');let pendingSpin=null,activeWheelReward=null,activeWheelKind=null,finalWheelStarted=false;
  function openReward(reward,kind,uid){
-  const isFinal=kind==='final',directBankerPack=kind==='banker';
+  const isFinal=kind==='final',directBankerPack=kind==='banker'||kind==='cent';
   // All cards are already credited by the server. Only reveal genuinely new
   // discoveries for the winning player's collection, including to spectators.
   const awardedCards=Array.isArray(reward.revealed)?reward.revealed:[];
@@ -550,7 +550,7 @@
   lastRewardProbeKey='';checkRewards();
  }
  async function continueReward(){
-  if(!activeWheelReward||activeWheelReward.uid!==user()?.uid||close.disabled||(!finalWheelStarted&&activeWheelKind!=='banker'))return;
+  if(!activeWheelReward||activeWheelReward.uid!==user()?.uid||close.disabled||(!finalWheelStarted&&!['banker','cent'].includes(activeWheelKind)))return;
   close.disabled=true;close.textContent='⏳ Für alle wird fortgesetzt …';
   try{
    const token=await user().getIdToken();
