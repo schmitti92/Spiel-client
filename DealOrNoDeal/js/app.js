@@ -150,17 +150,21 @@ revealTimer=setTimeout(()=>{if(g?.phase==='reveal'&&g.pending?.eventId===revealI
  if(!revealRecoveryTimer){const recoveryRevealId=g.pending.eventId;revealRecoveryTimer=setTimeout(()=>{revealRecoveryTimer=null;if(g?.phase==='reveal'&&g.pending?.eventId===recoveryRevealId&&g.pending?.actor===myId()&&!busy){action('ack-reveal')}},6500)}}if(g.phase==='final'&&$('finale-cinema').hidden){
  updateFinaleStartControl();
  const extraActions=$('final-extra-actions')||$('actions');
- const recover=button('🎡 Sieger-Glücksrad erneut prüfen',()=>{
-  recover.textContent='⏳ Siegerbonus wird geprüft …';
-  $('status').textContent='🎡 Manuelle Siegerbonus-Prüfung gestartet …';
-  window.dispatchEvent(new Event('deal-final-wheel-retry'));
-  setTimeout(()=>{if(recover.isConnected&&recover.textContent.includes('geprüft'))recover.textContent='🎡 Sieger-Glücksrad erneut prüfen'},5000);
+ const isMonsterSlots=g.monsterSlotsVersion===1;
+ const recover=button(isMonsterSlots?'🎰 Monster-Slots anzeigen':'🎡 Sieger-Glücksrad erneut prüfen',()=>{
+  recover.textContent='⏳ Bonus wird geprüft …';
+  $('status').textContent=isMonsterSlots?'🎰 Monster-Slots werden geladen …':'🎡 Siegerbonus wird geprüft …';
+  window.dispatchEvent(new Event(isMonsterSlots?'deal-monster-slot-retry':'deal-final-wheel-retry'));
+  setTimeout(()=>{if(recover.isConnected)recover.textContent=isMonsterSlots?'🎰 Monster-Slots anzeigen':'🎡 Sieger-Glücksrad erneut prüfen'},4500);
  });
  recover.disabled=false;extraActions.append(recover);
  const replay=button('🎬 Finale komplett wiederholen',()=>window.dispatchEvent(new Event('deal-replay-finale-sequence')));
  replay.disabled=false;extraActions.append(replay);
- const finish=button('✅ Zur Lobby ohne weiteren Bonus',()=>{
-  if(!confirm('Zur Lobby zurückkehren? Noch offene Karten- und Hammerauslosungen bleiben ausstehend und können bei einer Rückkehr zur Partie fortgesetzt werden.'))return;
+ const finish=button('✅ Zur Lobby',()=>{
+  if(isMonsterSlots&&sessionStorage.getItem('monster-slots-watched:'+g.id)!=='yes'){
+   $('status').textContent='🎰 Bitte zuerst deine drei Monster-Slotgewinne ansehen und bestätigen.';return;
+  }
+  if(!isMonsterSlots&&!confirm('Zur Lobby zurückkehren? Noch offene Bonusauslosungen können später fortgesetzt werden.'))return;
   // Leaving the room is not proof that the shared card and hammer awards finished.
   // Do not poison the completion flag: players must still be able to resume a pending wheel.
   sessionStorage.setItem('finale-watched:'+String(g.id)+':finale','yes');
