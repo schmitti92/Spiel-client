@@ -38,6 +38,9 @@
  const worldRoot=$('worlds'),details=$('details'),pathList=[];
  const gateButtons=new Map();
  let mapState=null,selectedGate=null,working=false,mapRequestEpoch=0,lastFight=null,heroSaving=false,stagedHero=null;
+ // A map is an informational view, not a live boss arena. Refresh at most every 5 min when idle.
+ const MAP_IDLE_REFRESH_MS=5*60*1000;
+ let lastMapRequestAt=0;
  const HERO_CLASSES=['krieger','magierin','waechter'];
  const HERO_LABELS={krieger:'Krieger',magierin:'Magierin',waechter:'Wächter'};
  const API=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
@@ -328,6 +331,7 @@
  }
  async function reloadMap(){
   const account=auth()?.user?.uid;
+  lastMapRequestAt=Date.now();
   const epoch=++mapRequestEpoch;
   if(!account){
    mapState=null;
@@ -805,9 +809,12 @@
   if(details.open)details.close();
   void reloadMap();
  });
- document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!working)void reloadMap();});
+ document.addEventListener('visibilitychange',()=>{
+  // Returning from another tab soon after loading needs zero Firestore reads.
+  if(!document.hidden&&!working&&Date.now()-lastMapRequestAt>=MAP_IDLE_REFRESH_MS)void reloadMap();
+ });
  if(typeof window.setInterval==='function'){
-  window.setInterval(()=>{if(!document.hidden&&!working)void reloadMap();},60000);
+  window.setInterval(()=>{if(!document.hidden&&!working)void reloadMap();},MAP_IDLE_REFRESH_MS);
  }
  void reloadMap();
  details.addEventListener('close',()=>{for(const selected of document.querySelectorAll('.gate[aria-pressed="true"]'))selected.setAttribute('aria-pressed','false');});
