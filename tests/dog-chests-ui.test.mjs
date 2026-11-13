@@ -38,10 +38,10 @@ test('The old three earned chest types and the legacy chest button remain usable
 });
 
 test('The UI persists the exact request ID before sending a loot-opening request',()=>{
- assert.ok(js.includes('function storePending(uid,id,tier)'));
+ assert.ok(js.includes('function storePending(uid,id,tier,quantity=1)'));
  assert.ok(js.includes('localStorage.setItem(keyFor(uid),value)'));
  assert.ok(js.includes('localStorage.getItem(keyFor(uid))===value'));
- assert.ok(js.includes('if(!pending&&!storePending(uid,id,requestTier))'));
+ assert.ok(js.includes('if(!pending&&!storePending(uid,id,requestTier,quantity))'));
  assert.ok(js.includes('clearPending(uid)'));
  assert.ok(js.includes('result.replayed'));
 });
