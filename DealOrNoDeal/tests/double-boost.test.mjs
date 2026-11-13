@@ -5,7 +5,7 @@ import {Script} from 'node:vm';
 const read=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
 const html=read('game.html'),boost=read('js/double-boost.js'),app=read('js/app.js'),banker=read('js/banker.js'),finale=read('js/finale.js'),css=read('css/double-boost.css'),playerCss=read('css/active-player-gold.css');
 test('3m x2 purchase can only be displayed before choosing personal case',()=>{
- assert.match(html,/double-boost\.js\?v=20261111-x2-v1/);
+ assert.match(html,/double-boost\.js\?v=20261113-x2-cap50m-v1/);
  assert.match(html,/double-boost\.css\?v=20261111-x2-v1/);
  assert.doesNotThrow(()=>new Script(boost));
  assert.match(boost,/game\.phase==='select'&&player\.case===null/);
@@ -13,6 +13,7 @@ test('3m x2 purchase can only be displayed before choosing personal case',()=>{
  assert.match(boost,/player\.doublePayout===true/);
  assert.match(boost,/BOOST_INSUFFICIENT_FUNDS/);
  assert.match(boost,/3\.000\.000 €/);
+ assert.match(boost,/maximal 50\.000\.000 €/,'purchase panel explains payout cap');
  assert.match(boost,/data\.game\?\.id===g\?\.id/);
  assert.match(css,/\.deal-double-boost\[hidden\]/);
  assert.match(app,/DealDoubleBoost\?\.render\(g\)/);
@@ -34,6 +35,9 @@ test('Banker offers, the finale and winning rank always show original money',()=
  assert.match(app,/const boosted=g\.finalValues\.filter/);
  assert.match(app,/final-wallet-boost/);
  assert.match(app,/Kontogutschrift/);
+ assert.match(app,/Math\.min\(f\.payout\*2,limit\)/,'finale cannot show more than the server cap');
+ assert.match(app,/credit-f\.payout/,'bonus display is the capped difference');
+ assert.match(app,/50-Millionen-Limit erreicht/);
  assert.match(app,/bonus = /i);
  assert.match(finale,/f\.payout/);
 });
