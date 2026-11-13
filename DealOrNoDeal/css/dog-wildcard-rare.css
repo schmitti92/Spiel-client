@@ -1,0 +1,55 @@
+/* DOG question-mark wildcard: distinct from 96 regular album cards. */
+.dog-wildcard-stash{display:flex;align-items:center;gap:clamp(12px,2vw,24px);flex-wrap:wrap;margin:14px 0 19px;padding:clamp(13px,2.4vw,23px);border:3px solid #ffd878;border-radius:20px;background:radial-gradient(ellipse at 6% 6%,#ac61fa59,transparent 55%),linear-gradient(130deg,#151741,#382052 58%,#785021);box-shadow:0 0 32px #c080e36a,inset 0 0 25px #ffe69a23;color:#fff5dc}
+.dog-wildcard-symbol{display:grid;place-items:center;flex:0 0 104px;height:132px;border:4px ridge #fff5ab;border-radius:15px;background:linear-gradient(145deg,#7923ad,#421c76 50%,#f4a73e);box-shadow:0 0 22px #d784ffcc,0 0 42px #e4a44852;transform:rotate(-4deg)}
+.dog-wildcard-symbol span{font:1000 67px/1 system-ui;filter:drop-shadow(0 4px 8px #251349);animation:dog-wildcard-float 2.3s ease-in-out infinite alternate}
+.dog-wildcard-symbol small{font:900 12px system-ui;letter-spacing:.15em;color:#fff4ac}
+.dog-wildcard-copy{min-width:190px;flex:1}.dog-wildcard-copy h3{font-size:clamp(19px,2.7vw,29px);margin:0 0 8px;color:#fff1aa;text-shadow:0 0 14px #ffcc96}
+.dog-wildcard-copy p{font:500 13px/1.5 system-ui;opacity:.94;margin:5px 0 10px}
+.dog-wildcard-copy strong{display:inline-block;border:1px solid #fff4ac;border-radius:24px;background:#261b4a;padding:6px 14px;font-weight:900;color:#fff5b3}
+#dog-wildcard-use{padding:12px 17px;border:2px solid #ffeab4;border-radius:12px;background:linear-gradient(130deg,#fff3ad,#f7aa3e);color:#321a34;font:950 14px system-ui;box-shadow:0 4px 18px #e9c77f45}
+#dog-wildcard-use:disabled{opacity:.65;filter:grayscale(.55);cursor:not-allowed}
+.dog-wildcard-dialog{width:min(880px,95vw);max-height:88dvh;overflow-y:auto;border:3px solid #ffd875;border-radius:18px;background:linear-gradient(155deg,#111b37,#302044 75%,#503e23);color:#fff4d3;box-shadow:0 0 70px #cb7aff85,0 20px 90px #000c;padding:20px}
+.dog-wildcard-dialog::backdrop{background:#060518db;backdrop-filter:blur(6px)}
+.dog-wildcard-dialog-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.dog-wildcard-dialog-head strong{font:900 12px system-ui;color:#edb6ff;letter-spacing:.1em}
+.dog-wildcard-dialog-head h2{color:#ffefa8;font-size:clamp(21px,3vw,30px);margin:5px 0}
+.dog-wildcard-dialog-head p{font-size:13px;line-height:1.4}
+#dog-wildcard-cancel,#dog-wildcard-close{padding:9px 14px;background:#162e48;color:#fff4d5;border:1px solid #e2bf76;border-radius:9px}
+.dog-wildcard-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0;max-height:50dvh;overflow-y:auto;overscroll-behavior:contain}
+.dog-wildcard-choice{display:flex;align-items:center;text-align:left;gap:11px;min-width:0;padding:10px;border:2px solid #777d95;border-radius:11px;background:#121f36;color:#eaf3ff}
+.dog-wildcard-choice.rare{border-color:#58b9ff}.dog-wildcard-choice.epic{border-color:#ca81ff}.dog-wildcard-choice.legendary{border-color:#ffd36e;background:#382c25}
+.dog-wildcard-choice.ultimate{box-shadow:inset 0 0 14px #ffd3546b,0 0 9px #f5d16c66;border-width:3px}
+.dog-wildcard-choice:hover,.dog-wildcard-choice:focus-visible{filter:brightness(1.3);outline:2px solid #fff7ba}
+.dog-wildcard-choice-number{flex:0 0 auto;min-width:55px;border-radius:10px;padding:9px 4px;background:#503177;color:#fff1ad;text-align:center;font:900 14px system-ui}
+.dog-wildcard-choice-label{flex:1;min-width:0;display:grid;gap:3px}
+.dog-wildcard-choice-label strong{font-size:13px;line-height:1.35;overflow-wrap:anywhere}
+.dog-wildcard-choice-label small{font-size:10px;line-height:1.3;color:#cedded}
+.dog-wildcard-choice b{font-size:10px;color:#ffe2a3}
+#dog-wildcard-status{font-weight:850;color:#ffd38a;font-size:13px}
+@keyframes dog-wildcard-float{from{transform:translateY(0) rotate(-7deg)}to{transform:translateY(-8px) rotate(8deg)}}
+/* Dynamic rarity recognition on both Slot machines. */
+#deal-monster-slots .monster-slot-reel[data-rarity="rare"][data-phase="won"]{border-color:#55baff;box-shadow:0 0 22px #50beffcf,0 7px 24px #000a}
+#deal-monster-slots .monster-slot-reel[data-rarity="epic"][data-phase="won"]{border-color:#d48cff;box-shadow:0 0 32px #a75bfcdd,0 0 12px #e1a4ff}
+#deal-monster-slots .monster-slot-reel[data-rarity="legendary"][data-phase="won"]{border-color:#ffe48a;background:#593910;box-shadow:0 0 34px #ffcf67,0 0 17px #ffe59ba8}
+#deal-monster-slots .monster-slot-reel[data-rarity="mythic"][data-phase="won"]{border:4px solid #ffed9c;box-shadow:0 0 40px #f6a9ff,0 0 28px #ffe15f,0 0 65px #7fe5ff;animation:dog-mythic-glow 1.35s ease-in-out infinite alternate}
+#deal-monster-slots .monster-slot-reel[data-rarity="mythic"] .monster-slot-prize{background:radial-gradient(ellipse at 50% 14%,#fff1c4,#edc1ff 55%,#a0e6fc)!important}
+#deal-monster-slots .monster-slot-reel[data-rarity="mythic"] .monster-slot-emoji{font-size:clamp(55px,9vw,100px);filter:drop-shadow(0 0 15px #fa73ff)}
+.monster-slot-scarcity{position:relative;z-index:2;border-radius:8px;padding:3px 7px;background:#162343;color:#fff2ab;font:950 10px system-ui;letter-spacing:.05em;text-align:center}
+.monster-slot-reel[data-rarity="rare"] .monster-slot-scarcity{background:#11558a;color:#eefaff}
+.monster-slot-reel[data-rarity="epic"] .monster-slot-scarcity{background:#6c2aa0;color:#fff0ff}
+.monster-slot-reel[data-rarity="legendary"] .monster-slot-scarcity{background:#855112;color:#fff4bd}
+.monster-slot-reel[data-rarity="mythic"] .monster-slot-scarcity{background:linear-gradient(110deg,#7524b1,#bb4674,#af7412);color:white;box-shadow:0 0 12px #faddbb}
+.monster-slot-reward-item[data-rarity="rare"]{border-color:#5cbeff!important;background:linear-gradient(#16456f,#1b203f)!important}
+.monster-slot-reward-item[data-rarity="epic"]{border-color:#c48aff!important;background:linear-gradient(#563078,#272248)!important}
+.monster-slot-reward-item[data-rarity="legendary"]{border-color:#ffe181!important;background:linear-gradient(#655028,#3a2544)!important}
+.monster-slot-reward-item[data-rarity="mythic"]{border:3px solid #f8ed9a!important;background:linear-gradient(135deg,#8f4797,#59488d,#d7a152)!important;box-shadow:0 0 24px #e5bafab9!important}
+.monster-slot-reward-item .monster-slot-summary-rarity{font:950 11px system-ui;color:#fff0b8}
+.dog-super-reel[data-rarity="rare"][data-phase="won"],.dog-super-prize[data-rarity="rare"]{border-color:#5bbcff!important;box-shadow:0 0 15px #52bcff9d}
+.dog-super-reel[data-rarity="epic"][data-phase="won"],.dog-super-prize[data-rarity="epic"]{border-color:#cc8cff!important;box-shadow:0 0 19px #b783f6bb}
+.dog-super-reel[data-rarity="legendary"][data-phase="won"],.dog-super-prize[data-rarity="legendary"]{border-color:#ffe48d!important;box-shadow:0 0 22px #ffd56eab;background:linear-gradient(135deg,#6b3d29,#3c3157)!important}
+.dog-super-reel[data-rarity="mythic"][data-phase="won"],.dog-super-prize[data-rarity="mythic"]{border:3px solid #ffe794!important;box-shadow:0 0 30px #eda4ff,0 0 24px #ffdf73!important;background:linear-gradient(135deg,#683289,#ad578d,#a77738)!important;animation:dog-mythic-glow 1.3s ease-in-out infinite alternate}
+.dog-super-rarity{display:block;padding:3px 5px;border:1px solid #ffe19d;border-radius:8px;background:#33204b;font:900 10px system-ui;color:#ffedbe}
+.dog-super-prize[data-rarity="mythic"] .dog-super-prize-art{font-size:60px;filter:drop-shadow(0 0 10px #ffe5aa)}
+@keyframes dog-mythic-glow{from{filter:brightness(1);transform:scale(1)}to{filter:brightness(1.17);transform:scale(1.012)}}
+@media(max-width:640px){.dog-wildcard-symbol{flex-basis:65px;height:93px}.dog-wildcard-symbol span{font-size:46px}.dog-wildcard-stash{justify-content:center}.dog-wildcard-choices{grid-template-columns:1fr}.dog-wildcard-dialog{padding:12px}.dog-wildcard-copy h3{font-size:21px}}
+@media(prefers-reduced-motion:reduce){.dog-wildcard-symbol span,.dog-super-reel[data-rarity="mythic"][data-phase="won"],.dog-super-prize[data-rarity="mythic"],#deal-monster-slots .monster-slot-reel[data-rarity="mythic"][data-phase="won"]{animation:none!important}}

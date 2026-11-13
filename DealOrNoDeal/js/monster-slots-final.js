@@ -5,7 +5,9 @@
 const base=()=>String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const user=()=>window.SpielOnline?.state?.()?.user;
 const $=id=>document.getElementById(id);
-const icons={chest:'📦',pack:'🎴',hammer:'🔨',joker:'🃏',minigame:'🎟️',monster:'👹',cash:'💰'};
+const icons={chest:'📦',pack:'🎴',hammer:'🔨',joker:'🃏',minigame:'🎟️',monster:'👹',cash:'💰',wildcard:'❓'};
+const rarityNames={rare:'🔹 SELTEN',epic:'💜 EPISCH',legendary:'👑 LEGENDÄR',mythic:'🌈 MYTHISCHER JACKPOT'};
+const rarityOf=p=>p.rarity||((p.kind==='wildcard'||p.kind==='cash'&&p.amountCents>=500000000)?'mythic':p.kind==='chest'&&p.id==='legendary'||p.kind==='pack'&&p.id==='platinum'?'legendary':'common');
 const chestArt={wood:'../dog-chest-art/01_Holzkiste.png',iron:'../dog-chest-art/02_Eisenkiste.png',silver:'../dog-chest-art/03_Silberkiste.png',gold:'../dog-chest-art/04_Goldkiste.png',legendary:'../dog-chest-art/05_Legendaere_Kiste.png'};
 const awardArt={
  chest:chestArt,
@@ -17,7 +19,7 @@ const awardArt={
  cash:'assets/hats/reward-cash.svg'
 };
 const awardImage=prize=>typeof awardArt[prize.kind]==='string'?awardArt[prize.kind]:awardArt[prize.kind]?.[prize.id]||null;
-const rolling=['📦','🎴','🔨','🃏','🎟️','👹','💰','💎'];
+const rolling=['📦','🎴','🔨','🃏','🎟️','👹','💰','💎','❓'];
 const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 const seenKey=id=>'monster-slots-watched:'+String(user()?.uid||'anonymous')+':'+id;
 const root=document.createElement('section');root.id='deal-monster-slots';root.hidden=true;root.tabIndex=-1;
@@ -94,9 +96,14 @@ function showPrize(reel,prize){
   img.src=imagePath;art.append(img);
  }
  const count=Number.isInteger(prize.quantity)?prize.quantity:1,isCash=prize.kind==='cash';
- win.querySelector('.monster-slot-quantity').textContent=isCash?'💶 ZUFALLSGELD':count+'×';
+ win.querySelector('.monster-slot-quantity').textContent=isCash?'💶 ZUFALLSGELD':prize.kind==='wildcard'?'❓ JOKER-SAMMELKARTE':count+'×';
  win.querySelector('.monster-slot-prize-name').textContent=isCash?String(prize.label||'Geldgewinn'):String(prize.label||'Gewinn').replace(/^\d+\s*×\s*/,'');
- reel.dataset.rarity=prize.kind==='chest'&&prize.id==='legendary'||prize.kind==='pack'&&prize.id==='platinum'||isCash&&prize.amountCents>=100000000?'legendary':prize.kind==='chest'&&prize.id==='gold'||prize.kind==='pack'&&prize.id==='premium'?'epic':'common';
+ const rarity=rarityOf(prize);reel.dataset.rarity=rarity;
+  win.querySelector('.monster-slot-scarcity')?.remove();
+  if(rarityNames[rarity]){
+   const mark=document.createElement('strong');mark.className='monster-slot-scarcity';mark.textContent=rarityNames[rarity];
+   win.append(mark);
+  }
  win.hidden=false;setPhase(reel,'won');
 }
 // All clients agree on a draw based on the server's original (unboosted) payouts.
@@ -125,7 +132,7 @@ function renderSummary(){
  if(!claimed)return;
  const prizeItems=claimed.prizes.map((prize,index)=>{
   const item=document.createElement('article');item.className='monster-slot-reward-item';
-  item.dataset.kind=String(prize.kind||'');
+  item.dataset.kind=String(prize.kind||'');item.dataset.rarity=rarityOf(prize);
   const heading=document.createElement('span');heading.className='monster-slot-reward-item-reel';heading.textContent='WALZE '+(index+1);
   const art=document.createElement('div');art.className='monster-slot-reward-item-art';
   const fallback=document.createElement('span');fallback.textContent=icons[prize.kind]||'🎁';art.append(fallback);
@@ -139,6 +146,9 @@ function renderSummary(){
   const label=document.createElement('strong');label.className='monster-slot-reward-item-name';
   label.textContent=String(prize.label||'Gewinn');
   item.append(heading,art,label);
+   if(rarityNames[rarityOf(prize)]){
+    const mark=document.createElement('small');mark.className='monster-slot-summary-rarity';mark.textContent=rarityNames[rarityOf(prize)];item.append(mark);
+   }
   return item;
  });
  summaryPrizes.replaceChildren(...prizeItems);

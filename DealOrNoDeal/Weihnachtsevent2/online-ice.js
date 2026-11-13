@@ -82,6 +82,7 @@ const jackpotText=bonus=>!bonus?[]:[
  bonus.superSlots?'🎰 '+bonus.superSlots+' DOG-Super-Slot-Drehungen (je 5 Walzen)':null,
  bonus.goldHammers?'🔨 '+bonus.goldHammers+' Glückshämmer':null,
  bonus.jokers?'🃏 '+bonus.jokers+' Kofferblick-Joker':null,
+ bonus.wildcards?'❓ '+bonus.wildcards+' Joker-Sammelkarte für eine frei wählbare DOG-Karte':null,
  bonus.hatsVouchers?'🎩 '+bonus.hatsVouchers+' Weihnachtsmützen-Gutscheine':null,
  bonus.legendaryChests?'📦 '+bonus.legendaryChests+' legendäre DOG-Materialtruhen':null
 ].filter(Boolean);

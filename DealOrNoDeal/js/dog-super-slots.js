@@ -5,7 +5,9 @@
  const $=id=>document.getElementById(id);
  const base=()=>String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
  const player=()=>window.SpielOnline?.state?.()?.user;
- const emoji={chest:'📦',pack:'🎴',hammer:'🔨',joker:'🃏',minigame:'🎟️',monster:'👹',cash:'💰'};
+ const emoji={chest:'📦',pack:'🎴',hammer:'🔨',joker:'🃏',minigame:'🎟️',monster:'👹',cash:'💰',wildcard:'❓'};
+ const rarities={rare:'🔹 SELTEN',epic:'💜 EPISCH',legendary:'👑 LEGENDÄR',mythic:'🌈 MYTHISCH'};
+ const rarityOf=p=>p.rarity||(p.kind==='wildcard'?'mythic':'common');
  const art={
   chest:{wood:'../dog-chest-art/01_Holzkiste.png',iron:'../dog-chest-art/02_Eisenkiste.png',silver:'../dog-chest-art/03_Silberkiste.png',gold:'../dog-chest-art/04_Goldkiste.png',legendary:'../dog-chest-art/05_Legendaere_Kiste.png'},
   pack:{small:'assets/hats/prize-pack.svg',large:'assets/hats/reward-pack.svg',premium:'assets/hats/reward-pack.svg',platinum:'assets/hats/reward-platinum.svg'},
@@ -38,9 +40,11 @@
  function renderSummary(prizes){
   const summary=$('dog-super-summary'),items=$('dog-super-prizes'),cardsRoot=$('dog-super-cards'),cardsSection=$('dog-super-cards-section');
   const awards=prizes.map(prize=>{
-   const tile=element('article','dog-super-prize');
+   const tile=element('article','dog-super-prize');tile.dataset.rarity=rarityOf(prize);
    const graphic=element('div','dog-super-prize-art');displayArt(prize,graphic);
-   tile.append(graphic,element('strong',null,String(prize.label||'Gewinn')));return tile;
+   tile.append(graphic,element('strong',null,String(prize.label||'Gewinn')));
+   if(rarities[rarityOf(prize)])tile.append(element('small','dog-super-rarity',rarities[rarityOf(prize)]));
+   return tile;
   });
   items.replaceChildren(...awards);
   const cards=prizes.filter(prize=>prize.kind==='pack').flatMap(prize=>
@@ -80,8 +84,10 @@
   for(let i=0;i<receipt.prizes.length;i++){
    await wait(reduced?120:600);
    const tile=tiles[i],prize=receipt.prizes[i];
-   tile.dataset.phase='won';tile.children[1].replaceChildren();displayArt(prize,tile.children[1]);
+   tile.dataset.phase='won';tile.dataset.rarity=rarityOf(prize);
+   tile.children[1].replaceChildren();displayArt(prize,tile.children[1]);
    tile.children[2].textContent=String(prize.label||'Gewinn');
+   if(rarities[rarityOf(prize)])tile.append(element('small','dog-super-rarity',rarities[rarityOf(prize)]));
    $('dog-super-phase').textContent='✨ '+(i+1)+' von 5 Gewinnen sichtbar';
   }
   $('dog-super-phase').textContent='🎉 Alle fünf Gewinne! In zwei Sekunden erscheint deine Gesamtübersicht.';

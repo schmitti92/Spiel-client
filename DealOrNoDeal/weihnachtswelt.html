@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="./css/christmas-spectacle-v2.css?v=20261109-spectacle-v2">
 <link rel="stylesheet" href="./css/christmas-universe-premium.css?v=20261109-nested-nav-v1">
 <link rel="stylesheet" href="./css/dog-super-slots.css?v=20261113-dog-cycles-v1">
+<link rel="stylesheet" href="./css/dog-wildcard-rare.css?v=20261113-wildcard-v1">
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
 <style>
@@ -147,6 +148,7 @@ body.hats-beta-open .hub-body{grid-template-columns:repeat(3,minmax(0,1fr))}
  <button id="login" type="button" hidden>👤 Mit Online-Profil anmelden</button>
 </section>
 <section id="album-panel"><div class="sectionhead"><h2>✨ Deine sechs DOG-Sammelalben</h2><p>Jede Tafel hat 4 Reihen, 4 Spalten und 2 Diagonalen – 10 mögliche Bingos. Nach 16/16 Karten startet nur diese DOG-Tafel wieder bei 0/16. Lebenslange Karten und einmalige Bingo-Meilensteine bleiben erhalten.</p></div>
+<section id="dog-wildcard-stash" class="dog-wildcard-stash" aria-label="Joker-Sammelkarten"><div class="dog-wildcard-symbol" aria-hidden="true"><span>❓</span><small>MYTHISCH</small></div><div class="dog-wildcard-copy"><h3>❓ Joker-Sammelkarte</h3><p>Eine noch fehlende Karte deiner Wahl freischalten – sogar die legendäre 1:500-Karte. Nur für DOG, nicht für das Hammer-Bingo.</p><strong id="dog-wildcard-count">0 verfügbar</strong></div><button type="button" id="dog-wildcard-use" disabled>❓ Wunschkarte wählen</button></section>
 <div id="boards" class="boards"></div><p class="rewards-note">🎁 Für alle 2 Bingos erhältst du eine Materialkiste und zufällige Zusatzpreise. <button type="button" id="album-show-rewards">🏆 Bingo-Gewinne ansehen</button></p></section>
 <section id="rewards-panel" hidden aria-label="Bingo-Belohnungen Saison 2">
   <div class="sectionhead"><h2>🏆 Deine Bingo-Belohnungen</h2><p>Alle zwei Bingos eine Rohstoffkiste. Holz → Eisen → Silber → Gold → Legendär. Die weiteren Gewinne wechseln per Zufall; die letzten Meilensteine zahlen mehrere Extras.</p></div>
@@ -179,6 +181,7 @@ body.hats-beta-open .hub-body{grid-template-columns:repeat(3,minmax(0,1fr))}
 </section>
 <footer class="hub-footer"><span id="hub-status" class="status" role="status" aria-live="polite">⏳ Spielerprofil wird geprüft …</span><button type="button" id="hub-refresh" class="hub-refresh" disabled>↻ Fortschritt aktualisieren</button></footer>
 </main>
+<dialog id="dog-wildcard-dialog" class="dog-wildcard-dialog" aria-labelledby="dog-wildcard-dialog-title"><div class="dog-wildcard-dialog-head"><div><strong>❓ MYTHISCHER KARTEN-JOKER</strong><h2 id="dog-wildcard-dialog-title">Welche DOG-Karte fehlt dir?</h2><p>Wähle eine noch fehlende Karte dieser Sammelrunde. Die Auswahl wird erst mit deiner Bestätigung verbucht.</p></div><button type="button" id="dog-wildcard-cancel" aria-label="Schließen">✕</button></div><div id="dog-wildcard-choices" class="dog-wildcard-choices"></div><p id="dog-wildcard-status" role="status" aria-live="polite"></p><button type="button" id="dog-wildcard-close">Zurück zum Album</button></dialog>
 <dialog id="card-dialog"><button class="dialog-close" data-close type="button" aria-label="Kartenansicht schließen">✕</button><img id="card-image" alt=""><h2 id="card-title"></h2><p id="card-subtitle"></p><button type="button" data-close>Schließen</button></dialog>
 <dialog id="dog-cycle-complete-dialog" aria-labelledby="dog-cycle-complete-title"><h2 id="dog-cycle-complete-title">🏆 DOG-Tafel vollständig!</h2><div id="dog-cycle-complete-content"></div><button type="button" id="dog-cycle-complete-ok">🎰 Super-Slots ansehen</button></dialog>
 <dialog id="dog-super-slot-dialog" aria-labelledby="dog-super-slot-title" class="dog-super-dialog"><div class="dog-super-window"><h2 id="dog-super-slot-title">🎰 DOG-SUPER-SLOTS</h2><p>Fünf Walzen · Fünf garantierte Gewinne</p><div id="dog-super-reels" class="dog-super-reels"></div><p id="dog-super-phase" role="status" aria-live="polite"></p><div id="dog-super-summary" hidden><h3>🎁 Alle fünf Gewinne auf einen Blick!</h3><div id="dog-super-prizes" class="dog-super-prizes"></div><div id="dog-super-cards-section" hidden><h3>🃏 Alle Karten aus deinen Packs</h3><p id="dog-super-cards-caption"></p><div id="dog-super-cards" class="dog-super-cards"></div></div></div><button id="dog-super-close" type="button" disabled>✅ Alle Gewinne bestätigen</button></div></dialog>
@@ -322,8 +325,8 @@ window.addEventListener('spielonline-change',()=>{checkHatsAccess();refresh(fals
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{checkHatsAccess();refresh(false)});else{checkHatsAccess();refresh(false)};
 })();
 </script>
-<script defer src="./js/dog-album-season2.js?v=20261113-dog-cycles-v1"></script>
-<script defer src="./js/dog-super-slots.js?v=20261113-dog-cycles-v1"></script>
+<script defer src="./js/dog-album-season2.js?v=20261113-wildcard-v1"></script>
+<script defer src="./js/dog-super-slots.js?v=20261113-wildcard-v1"></script>
 <script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script>
 <script src="../site-global-controls.js?v=20261109-global-1"></script>
 <script defer src="./js/christoph-surprise.js?v=20261110-gift-v1"></script>

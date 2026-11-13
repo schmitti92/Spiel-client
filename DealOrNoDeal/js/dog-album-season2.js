@@ -34,6 +34,9 @@
   $('reward-milestones')?.replaceChildren();if($('reward-summary'))$('reward-summary').textContent='0 / 30 Meilensteine erhalten';
   for(const id of ['dog-cycle-total','dog-super-count','dog-tourney-points'])if($(id))$(id).textContent='0';
   $('dog-tournament-ranking')?.replaceChildren();queuedCompletions=[];
+  if($('dog-wildcard-count'))$('dog-wildcard-count').textContent='0 verfügbar';
+  if($('dog-wildcard-use'))$('dog-wildcard-use').disabled=true;
+  if($('dog-wildcard-dialog')?.open)$('dog-wildcard-dialog').close();
  }
  function showTab(tab){
   for(const name of ['album','rewards','packs','duplicates','super','tournament'])$(name+'-panel').hidden=tab!==name;
@@ -220,6 +223,12 @@
   $('dog-tourney-points').textContent=number(p.tournament?.points||0);
   $('dog-super-tickets').textContent=number(p.superSlotTickets||0)+' verfügbare Super-Slot-'+((p.superSlotTickets||0)===1?'Dreh':'Drehs');
   $('dog-super-play').disabled=busy||cyclesClaimBusy||!(p.superSlotTickets>0);
+  if($('dog-wildcard-count')){
+   const count=Number(data.wildcardTickets||p.wildcardTickets)||0;
+   $('dog-wildcard-count').textContent=number(count)+' Joker-Sammelkarte'+(count===1?'':'n')+' verfügbar';
+   $('dog-wildcard-use').disabled=busy||count<1||!(data.missingWildcardCards||[]).length;
+   $('dog-wildcard-use').textContent=count>0?'❓ Wunschkarte wählen':'🔒 Noch keine Joker-Karte';
+  }
   $('dog-tournament-personal').textContent=number(p.tournament?.points||0)+' Monatspunkte';
   $('dog-tournament-month').textContent='📅 Turnier '+String(p.tournament?.month||'');
   if(embedded&&activeUser()?.uid)window.dispatchEvent(new CustomEvent('dog-s2-progress',{detail:{uid:activeUser().uid,progress:p}}));
@@ -299,6 +308,71 @@
   }
   $('reveal-dialog').showModal();
  }
+ // One pending request per profile, preserving selected card and receipt ID
+ // across a failed connection. Never change the card on a retry.
+ const wildcardKey=uid=>'dog-s2-wildcard-pending:'+uid;
+ function pendingWildcard(uid){try{
+  const item=JSON.parse(sessionStorage.getItem(wildcardKey(uid))||'null');
+  return item&&typeof item.requestId==='string'&&typeof item.cardId==='string'?item:null;
+ }catch{return null}}
+ function rememberWildcard(uid,item){try{sessionStorage.setItem(wildcardKey(uid),JSON.stringify(item))}catch{}}
+ function forgetWildcard(uid){try{sessionStorage.removeItem(wildcardKey(uid))}catch{}}
+ function openWildcardChooser(){
+  if(!data||busy||!activeUser())return;
+  const dlg=$('dog-wildcard-dialog'),root=$('dog-wildcard-choices');
+  const available=new Set(data.missingWildcardCards||[]);
+  if(Number(data.wildcardTickets||0)<1||available.size===0)return;
+  root.replaceChildren();
+  for(const card of data.definitions||[]){
+   if(!available.has(card.id))continue;
+   const option=document.createElement('button');option.type='button';option.className='dog-wildcard-choice '+card.rarity;
+   if(card.slot===16)option.classList.add('ultimate');
+   const num=document.createElement('span');num.className='dog-wildcard-choice-number';num.textContent='❓ '+card.board+'-'+String(card.slot).padStart(2,'0');
+   const info=document.createElement('span');info.className='dog-wildcard-choice-label';
+   const name=document.createElement('strong');name.textContent=card.name;
+   const sub=document.createElement('small');sub.textContent=card.series+' · '+rarities[card.rarity]+(card.slot===16?' · ULTRASELTENE 1:500-KARTE':'');
+   info.append(name,sub);
+   const pick=document.createElement('b');pick.textContent='WÄHLEN';
+   option.append(num,info,pick);
+   option.onclick=()=>void redeemWildcard(card);
+   root.append(option);
+  }
+  $('dog-wildcard-status').textContent='Verfügbar: '+number(data.wildcardTickets)+' Joker-Sammelkarte(n) · '+root.children.length+' fehlende Motive';
+  if(!dlg.open)dlg.showModal();
+ }
+ async function redeemWildcard(card,resume=false){
+  const uid=activeUser()?.uid;
+  if(!uid||busy||!data)return;
+  const stored=pendingWildcard(uid);
+  const pending=resume?stored:(stored&&stored.cardId===card.id?stored:null);
+  if(resume&&!pending)return;
+  const request={cardId:card.id,requestId:pending?.requestId||'dogwild_'+crypto.randomUUID().replace(/-/g,'')};
+  if(!resume&&!confirm('❓ Joker-Sammelkarte wirklich für „'+card.name+'“ einlösen? Diese Karte wird danach sofort freigeschaltet.'))return;
+  rememberWildcard(uid,request);
+  busy=true;render();$('dog-wildcard-status').textContent='⏳ Wunschkarte wird sicher verbucht …';
+  try{
+   const out=await api('POST','wildcards/redeem',request);
+   if(activeUser()?.uid!==uid)return;
+   forgetWildcard(uid);data={...data,...out};
+   if($('dog-wildcard-dialog').open)$('dog-wildcard-dialog').close();
+   render();status('🌟 JOKER-KARTE! „'+out.card.name+'“ ist jetzt im DOG-Album freigeschaltet!');
+   reveal([out.card]);queueCompletedBoards(out.completedBoards);
+  }catch(e){
+   if(activeUser()?.uid!==uid)return;
+   if(['INVALID_REQUEST_ID','INVALID_DOG_WILDCARD_CARD','DOG_CARD_ALREADY_COLLECTED','DOG_WILDCARD_REQUIRED'].includes(e.message))forgetWildcard(uid);
+   status('⚠️ Joker-Einlösung: '+e.message+(pendingWildcard(uid)?' · Letzte Auswahl wird beim nächsten Laden wiederholt.':''));
+   $('dog-wildcard-status').textContent=e.message;
+  }finally{busy=false;render();maybeClaimBingos()}
+ }
+ function recoverWildcard(){
+  const uid=activeUser()?.uid,entry=uid&&pendingWildcard(uid);
+  const card=entry&&data?.definitions?.find(c=>c.id===entry.cardId);
+  if(card&&!busy)void redeemWildcard(card,true);
+ }
+ $('dog-wildcard-use')?.addEventListener('click',openWildcardChooser);
+ $('dog-wildcard-cancel')?.addEventListener('click',()=>$('dog-wildcard-dialog').close());
+ $('dog-wildcard-close')?.addEventListener('click',()=>$('dog-wildcard-dialog').close());
+
  const keyFor=pack=>'dog-s2-'+(activeUser()?.uid||'guest')+'-'+pack;
  function requestId(pack){
   const key=keyFor(pack);let id;try{id=sessionStorage.getItem(key)}catch{}
@@ -345,7 +419,7 @@
    if(loadedUser&&loadedUser!==uid)clear();
    loadedUser=uid;data=fresh;$('login').hidden=true;render();
    if(initial)status('✅ DOG Saison 2 ist aktiv. Jede vollständige DOG-Tafel bringt einen Fünf-Walzen-Slot!');
-   maybeClaimBingos();void claimExistingCycles();window.DogSuperSlots?.tryRecover?.();
+   maybeClaimBingos();void claimExistingCycles();window.DogSuperSlots?.tryRecover?.();recoverWildcard();
   }catch(e){if(seq===requestNumber)status('⚠️ '+e.message+' · „↻“ zum erneuten Prüfen.')}
  }
  function acceptHubData(info){
@@ -353,7 +427,7 @@
   if(!uid||info?.uid!==uid||!info?.data?.ok)return false;
   if(loadedUser&&loadedUser!==uid)clear();
   ++requestNumber;loadedUser=uid;data=info.data;$('login').hidden=true;
-  render();status('✅ Dein DOG-Sammelfortschritt ist geladen.');maybeClaimBingos();void claimExistingCycles();window.DogSuperSlots?.tryRecover?.();
+  render();status('✅ Dein DOG-Sammelfortschritt ist geladen.');maybeClaimBingos();void claimExistingCycles();window.DogSuperSlots?.tryRecover?.();recoverWildcard();
   return true;
  }
  function openIntegratedTab(tab){
