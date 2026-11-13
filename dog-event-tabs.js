@@ -1,7 +1,7 @@
 /* Einheitliche 100-Tore-Navigation. Client-only: keine Netzwerk- oder Datenbankaufrufe. */
 (()=>{'use strict';
  const pages=[
-  ['dog-expedition.html','📦 Start & Lager','Kisten und Rohstoffe'],
+  ['dog-expedition.html','📦 Kisten','Fünf Kistenarten sammeln und selbst öffnen'],
   ['dog-tor-map.html','🗺️ 100-Tore-Karte','Alle Tore und fünf Welten'],
   ['dog-forge.html','⚒️ Schmiede','Waffen, Rüstung und Fähigkeiten'],
   ['dog-merchant.html','💎 Händler','Rohstoffe im Verhältnis 10:1 tauschen'],
