@@ -14,8 +14,8 @@ test('Deal lobby shows two equal large dedicated event tiles outside the game la
  const launch=lobby.indexOf('class="launch-stage"');
  assert.ok(section>0&&christmas>section&&dog>christmas&&room>dog&&launch>dog);
  assert.equal((lobby.match(/id="dog-expedition-entry"/g)||[]).length,1);
- assert.equal((lobby.match(/santa-event-entry"/g)||[]).length,2,
-  'one accessible Christmas anchor plus existing JS room preservation selector');
+ assert.equal((lobby.match(/class="featured-event featured-event--christmas santa-event-entry"/g)||[]).length,1,
+  'exactly one accessible Christmas entry');
  assert.match(lobby,/aria-labelledby="featured-events-title"/);
  assert.match(lobby,/href="\.\/weihnachtswelt\.html"/);
  assert.match(lobby,/href="\.\.\/dog-start\.html"/);
