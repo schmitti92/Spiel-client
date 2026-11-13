@@ -400,13 +400,17 @@
   }else if(!claimed){void unlock();}
  });
  document.addEventListener('visibilitychange',()=>{
-  if(!document.hidden&&claimed)void refresh();
+  // Repeated focus changes during an idle preview must not read Firestore.
+  if(!document.hidden&&claimed&&(!view||Date.now()-lastFetch>
+   (view.boss?.phase==='fighting'?1500:60000)))void refresh();
  });
  window.setInterval(()=>{
   if(Date.now()>toastUntil)$('toast').hidden=true;
   if(!claimed||!view)return;
   paintClock();
-  const interval=view.boss?.phase==='fighting'?1500:6000;
+  // Private playtest: 60s idle recovery instead of expensive 6s GETs.
+  // Keep 1.5s polling exclusively while a shared boss is fighting.
+  const interval=view.boss?.phase==='fighting'?1500:60000;
   if(!pending&&!document.hidden&&Date.now()-lastFetch>interval)void refresh();
  },300);
  if(user()&&key)void unlock();
