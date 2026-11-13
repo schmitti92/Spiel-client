@@ -724,7 +724,7 @@ function paintPlayerRecords(){
   card.append(buildRecordCategory('deal',info?.dealStats),buildRecordCategory('slot',info?.slotStats));
   if(info&&Number(info.games||0)>Number(info.dealStats?.count||0)){
    const foot=document.createElement('small');foot.className='lobby-record-foot';
-   foot.textContent='ℹ️ '+(info.games-info.dealStats?.count||0)+' ältere Deal-Partien sind noch nicht in der Rekordstatistik enthalten.';
+   foot.textContent='ℹ️ '+(Number(info.games||0)-Number(info.dealStats?.count||0))+' ältere Deal-Partien sind noch nicht in der Rekordstatistik enthalten.';
    card.append(foot);
   }
   target.append(card);
