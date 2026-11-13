@@ -425,19 +425,21 @@
   const modal=$('gate-quick-result');
   if(!modal)return;
   const win=!!fight.win;
+  const stats=fight.combatStats;
+  const realCombat=stats?.model==='alternating-three-attacks-v1';
+  const oldCombat=stats?.model==='single-roll-summary-v1';
   modal.classList.toggle('quick-win',win);
   modal.classList.toggle('quick-loss',!win);
-  $('gate-quick-result-kicker').textContent='TOR '+gate+' · SCHNELLKAMPF';
+  $('gate-quick-result-kicker').textContent='TOR '+gate+' · '+(realCombat?'AUTOMATISCHES DUELL':'SCHNELLKAMPF');
   $('gate-quick-result-icon').textContent=win?'🏆':'💀';
   $('gate-quick-result-title').textContent=win?'SIEG!':'NIEDERLAGE';
   $('gate-quick-result-text').textContent=win?
-   'Tor '+gate+' wurde besiegt. Dein Fortschritt ist gespeichert.':
-   'Tor '+gate+' ist noch nicht besiegt. '+(fight.combat?.feedback?.message||
+   'Tor '+gate+' wurde im Schlagabtausch besiegt. Dein Fortschritt ist gespeichert.':
+   'Tor '+gate+' ist noch nicht besiegt. '+(stats?.feedback||fight.combat?.feedback?.message||
     'Verbessere deine Ausrüstung und versuche es erneut.');
-  const stats=fight.combatStats;
   const area=$('gate-quick-result-stats');
   area.replaceChildren();
-  if(stats&&stats.model==='single-roll-summary-v1'){
+  if(realCombat||oldCombat){
    const meters=$node('div','quick-hp-meters');
    for(const [label,remaining,maximum,kind] of [
     ['Gegner-LP',stats.enemyRemainingHp,stats.enemyMaxHp,'enemy'],
@@ -462,8 +464,13 @@
     ['Dein verursachter Schaden',String(stats.enemyDamageTaken)],
     ['Deine verbleibenden LP',stats.heroRemainingHp+' / '+stats.heroMaxHp],
     ['Erlittener Schaden',String(stats.heroDamageTaken)],
-    ['Siegchance',stats.chancePercent+' %'],
-    ['Waffenstufe / Rüstungsstufe',stats.weaponLevel+' / '+stats.armorLevel]
+    ...(realCombat?[
+     ['Kampfrunden',String(stats.rounds)],
+     ['Feste Angriffskraft des Gegners',String(stats.enemyAttack)],
+     ['Empfohlene Waffe / Rüstung','Stufe '+stats.recommendedWeaponLevel+' / '+stats.recommendedArmorLevel],
+     ...(stats.healing?[['Regeneration',stats.healing+' LP']]:[])
+    ]:[['Siegchance im früheren System',stats.chancePercent+' %']]),
+    ['Deine Waffe / Rüstung','Stufe '+stats.weaponLevel+' / '+stats.armorLevel]
    ];
    for(const [label,value] of rows){
     const row=document.createElement('div');row.className='quick-result-stat';
@@ -471,14 +478,43 @@
     const val=document.createElement('strong');val.textContent=value;
     row.append(key,val);area.append(row);
    }
+   if(realCombat&&Array.isArray(stats.attacks)){
+    const wrap=$node('section','quick-attack-breakdown');
+    wrap.append($node('h3',null,'⚔️ Drei Angriffsarten im Duell'));
+    for(const attack of stats.attacks){
+     const row=$node('div','quick-attack-line');
+     row.append($node('span',null,(attack.icon||'⚔️')+' '+attack.name),
+      $node('strong',null,attack.damage+' Schaden · '+attack.hits+'×'));
+     wrap.append(row,$node('small',null,
+      '🛡️ '+attack.enemyName+': '+attack.enemyDamage+' Schaden · '+attack.enemyHits+'×'));
+    }
+    area.append(wrap);
+   }
+   if(realCombat&&Array.isArray(stats.timeline)&&stats.timeline.length){
+    const history=document.createElement('details');history.className='quick-combat-log';
+    const summary=document.createElement('summary');
+    summary.textContent='📜 Alle '+stats.rounds+' Kampfrunden anzeigen';
+    history.append(summary);
+    const log=$node('ol','quick-combat-log-entries');
+    for(const event of stats.timeline){
+     const item=document.createElement('li');
+     item.className=event.actor==='hero'?'hero':'enemy';
+     item.textContent='Runde '+event.round+' · '+(event.actor==='hero'?'Du: ':'Gegner: ')+
+      event.name+' · '+event.damage+' Schaden'+(event.healed?' · +'+event.healed+' LP regeneriert':'')+
+      ' · Gegner '+event.enemyHp+' LP / Du '+event.heroHp+' LP';
+     log.append(item);
+    }
+    history.append(log);area.append(history);
+   }
+   $('gate-quick-result-model').textContent=realCombat?
+    'Keine Zufalls-Siegchance: Angriff, Rüstung, Lebenspunkte und Fähigkeiten entscheiden. Jeder Gegner hat feste Torwerte.':
+    'Älteres Kampfergebnis aus dem vorherigen Zufallssystem.';
    $('gate-quick-result-model').hidden=false;
   }else{
    $('gate-quick-result-model').hidden=true;
-   const p=document.createElement('p');p.textContent=
-    'Für diesen älteren Kampf sind noch keine LP- und Schadenswerte gespeichert.';
-   area.append(p);
+   area.append($node('p',null,'Für diesen älteren Kampf sind noch keine vollständigen LP- und Schadenswerte gespeichert.'));
    if(Number.isFinite(fight.chancePercent))
-    area.append($node('p','quick-legacy-chance','Siegchance: '+fight.chancePercent+' %'));
+    area.append($node('p','quick-legacy-chance','Frühere Siegchance: '+fight.chancePercent+' %'));
   }
   $('gate-quick-result-note').textContent=replayed?
    '✓ Bereits berechnetes Serverergebnis sicher wiederhergestellt.':
@@ -595,7 +631,8 @@
   if(gate===100)return 'Der letzte Wächter verteidigt das DOG-Schloss. Ein Held darf ihn herausfordern, zwei können nur mit sehr viel Glück siegen. Drei gut aufgerüstete Helden sind eure beste Chance. Erst der bestätigte Sieg darf DOG freischalten.';
   if(gate%10===0)return 'Gemeinsamer Bosskampf: mit 1–3 Helden startbar, aber am besten zu dritt. Der Sieg schaltet die nächste Schmiedestufe und Ausrüstung frei.';
   if(gate%10===5)return 'Ein besonders harter Einzelkampf: Eine gute Waffe allein reicht oft nicht. Verstärke auch Rüstung und Fähigkeiten. Nach einem erstmaligen Sieg winkt eine besondere zufällige Belohnung.';
-  return 'Ein Klick genügt: Deine Ausrüstung bestimmt die Siegchance (30–80 %). Das Ergebnis wird sofort vom Server berechnet.';
+  const stufe=Math.floor((gate-1)/10)*5+1+Math.floor(((gate-1)%10)/2);
+  return '⚔️ Berechneter Schnellkampf: Du und dein Gegner greifen abwechselnd mit drei Angriffsarten an, bis einer 0 LP hat. Empfohlene Waffen- und Rüstungsstufe: '+stufe+'. Keine Zufalls-Siegchance.';
  };
  function selectGate(gate,button){
   for(const selected of document.querySelectorAll('.gate[aria-pressed="true"]'))selected.setAttribute('aria-pressed','false');
