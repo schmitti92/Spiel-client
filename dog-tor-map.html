@@ -6,12 +6,12 @@
  <meta name="theme-color" content="#08101d">
  <meta name="description" content="Die 100 Tore: Fünf Welten, 80 Einzelkämpfe, 10 Mini-Bosse und 10 gemeinsame Wächter führen euch zum Spiel DOG.">
  <title>🏰 Der Weg zu DOG · Die 100 Tore</title>
- <link rel="stylesheet" href="./dog-tor-map.css?v=20261113-real-duels1">
+ <link rel="stylesheet" href="./dog-tor-map.css?v=20261113-real-duels2">
  <link rel="stylesheet" href="./dog-tor-map-worlds.css?v=20261113-gate-progress1">
  <link rel="stylesheet" href="./dog-hero-selection.css?v=20261112-onboarding1">
  <script src="./profile-config.js"></script>
  <script src="./profile-auth.js"></script>
- <script src="./dog-tor-map.js?v=20261113-real-duels1" defer></script>
+ <script src="./dog-tor-map.js?v=20261113-real-duels2" defer></script>
  <script src="./dog-developer-ui.js?v=20261111-cooldown-v1" defer></script>
  <script src="./site-global-controls.js?v=20261109-global-1" defer></script>
 <link rel="stylesheet" href="./dog-event-tabs.css?v=20261113-home-nav1">
@@ -108,6 +108,15 @@
     <figcaption>🐉 Dein nächster Gruppenboss</figcaption>
    </figure>
    <p id="gate-detail-summary"></p>
+   <section id="gate-detail-requirements" class="gate-requirements" aria-label="Festgelegte Tor-Schwierigkeit" hidden>
+    <div class="gate-requirements-heading">🛡️ Feste Gegnerwerte · kein Glückswurf</div>
+    <div class="gate-requirements-grid">
+     <div><small>❤️ Gegner-LP</small><strong id="gate-req-hp">–</strong></div>
+     <div><small>⚔️ Gegner-Angriff</small><strong id="gate-req-attack">–</strong></div>
+     <div><small>🗡️ Empf. Waffe</small><strong id="gate-req-weapon">–</strong></div>
+     <div><small>🛡️ Empf. Rüstung</small><strong id="gate-req-armor">–</strong></div>
+    </div>
+   </section>
    <p id="gate-detail-future"></p>
    <div class="details-tip"><span>⚔️ Ausrüstung entscheidet mit</span><span>🛡️ Server bestätigt jeden Sieg</span></div>
    <p id="gate-fight-status" class="fight-status" aria-live="polite"></p>
