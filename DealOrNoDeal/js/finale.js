@@ -243,13 +243,13 @@ function startFinaleCinema(){
    x.note.textContent=(tied?'🤝 ':'🏆 ')+(w.p?.deal!=null?'Deal: ':'Gewinn: ')+eur(w.f.payout);
   }
   $('finale-title').textContent=tied?'Unentschieden – kein Slot-Gewinn':'Der Gewinner steht fest!';
-  $('finale-caption').textContent=tied?'Gleicher höchster Gewinn: Niemand erhält die Monster-Slots-Belohnung.':'Die Spielwertung erfolgt ausschließlich nach dem ursprünglichen Gewinn – angenommene Deals zählen ganz normal.';
+  $('finale-caption').textContent=tied?'Gleicher höchster Gewinn: Niemand erhält die Monster-Slots-Belohnung.':'🏆 Platz 1: drei Slot-Gewinne · 🥈 Platz 2 (ab 3 Spielern): ein Slot-Gewinn · alle anderen: kein Slot. Grundlage ist der ursprüngliche Spielgewinn.';
   $('finale-champion-name').textContent=winners.map(w=>w.p?.name||'Spieler').join(' & ');
   $('finale-champion-value').textContent=(tied?'Gleichstand: ':'Gewinn: ')+eur(top);
   $('finale-champion').hidden=false;
   $('finale-replay').hidden=true;
   $('finale-skip').hidden=false;
-  $('finale-skip').textContent=tied?'✓ Unentschieden bestätigen':'🎁 Weiter zum Siegerbonus ›';
+  $('finale-skip').textContent=tied?'✓ Unentschieden bestätigen':window.dealSlotReelsFor?.(g,myId())>0?'🎁 Weiter zu deinem Slotbonus ›':'✅ Ergebnis bestätigen ›';
  }
  if(finaleElapsed>=championAt)revealChampion();
  else finaleLater(revealChampion,at(championAt));
