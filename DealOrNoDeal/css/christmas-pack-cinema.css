@@ -626,3 +626,50 @@
  background:radial-gradient(circle,#304460,#132139);
  object-fit:contain;
 }
+
+/* Card-view consistency (Banker / 1-cent / normal and premium packs).
+   Every complete illustration fits inside its frame. New cards keep the rarity
+   celebration, but the common/rare cards do not grow to 410px. */
+#reveal-overlay[data-stage=card] .pack-cinema-theater{
+  width:min(440px,100%);height:clamp(270px,34vw,320px);
+  min-height:0;
+}
+#reveal-overlay[data-stage=card] .reveal-card,
+#reveal-overlay[data-stage=card][data-new-card=true] .reveal-card{
+  box-sizing:border-box;width:min(245px,77%);max-width:245px;
+  padding:10px;gap:5px;
+}
+#reveal-overlay[data-stage=card] .reveal-card img,
+#reveal-overlay[data-stage=card][data-new-card=true] .reveal-card img{
+  width:100%;height:auto;aspect-ratio:1;
+  max-height:220px;object-fit:contain;object-position:center;
+  background:#243a55 url("../assets/weihnachts_event/card-back-winter.svg") center/contain no-repeat;
+}
+#reveal-overlay[data-stage=card] .reveal-card strong,
+#reveal-overlay[data-stage=card][data-new-card=true] .reveal-card strong{
+  max-width:100%;font-size:clamp(13px,1.6vw,17px);
+  margin:3px 0 0;overflow-wrap:anywhere;
+}
+#reveal-overlay #reveal-summary .reveal-summary-item img{
+  object-fit:contain;object-position:center;background-color:#243a55;
+}
+@media(max-width:700px){
+ #reveal-overlay[data-stage=card] .pack-cinema-theater{
+  height:clamp(250px,64vw,300px);min-height:0;
+ }
+ #reveal-overlay[data-stage=card] .reveal-card,
+ #reveal-overlay[data-stage=card][data-new-card=true] .reveal-card{
+  width:min(220px,76vw);max-width:220px;padding:8px;
+ }
+ #reveal-overlay[data-stage=card] .reveal-card img,
+ #reveal-overlay[data-stage=card][data-new-card=true] .reveal-card img{max-height:195px}
+}
+@media(max-height:600px) and (min-width:701px){
+ #reveal-overlay[data-stage=card] .pack-cinema-theater{height:215px;min-height:0}
+ #reveal-overlay[data-stage=card] .reveal-card,
+ #reveal-overlay[data-stage=card][data-new-card=true] .reveal-card{
+  width:min(180px,75%);max-width:180px;padding:6px
+ }
+ #reveal-overlay[data-stage=card] .reveal-card img,
+ #reveal-overlay[data-stage=card][data-new-card=true] .reveal-card img{max-height:150px}
+}
