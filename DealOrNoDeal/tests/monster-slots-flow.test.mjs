@@ -239,6 +239,7 @@ test('podium UI allows only first and unique second to claim, with 3/1 visual re
 
 test('two-player loser never receives a runner-up spin, and tied second prizes are not duplicated',async()=>{
  const b=browserFixture();
+ b.banker.hidden=true;
  b.g.finalValues=[{id:'host',payout:5000000},{id:'guest',payout:1000000}];
  b.window.person='guest';b.emit('deal-game-state-change');await b.flush();
  assert.equal(b.requests.length,0);
