@@ -1,6 +1,6 @@
 /* 100 Tore: lightweight team boss invitations for event pages and Deal lobby.
  * Authenticated WebSocket message only, no Firestore polling or writes.
- * Invites fire when a participant presses Ready; actual battle is server-owned.
+ * Entering an arena or pressing Ready invites teammates; combat is server-owned.
  */
 (()=>{'use strict';
  const API=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
@@ -31,7 +31,7 @@
   if(room&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(room))dest.searchParams.set('room',room);
   return dest.href;
  };
- function showInvite(gate){
+ function showInvite(gate,reason='entered'){
   if(!VALID_GATE(gate)||!isVisible()){pendingGate=gate;return;}
   if(visibleGate===gate)return;
   const last=seen.get(gate)||0;
@@ -42,6 +42,7 @@
   bar.setAttribute('aria-label','Einladung zum gemeinsamen Bosskampf');
   bar.style.cssText='position:fixed;z-index:99990;left:50%;bottom:18px;transform:translateX(-50%);width:min(94vw,540px);box-sizing:border-box;padding:16px 18px;border:2px solid #f4ce82;border-radius:19px;background:linear-gradient(145deg,#182448,#341e49);color:#ffefcf;box-shadow:0 13px 50px #000b,0 0 30px #e6ac6360;text-align:center;font:600 15px/1.45 system-ui';
   const title=document.createElement('strong');title.textContent='🐉 Dein Team ruft dich zu Boss '+gate+'!';
+  const invitation=reason==='ready'?'Ein Mitspieler ist bereit.':'Ein Mitspieler hat die Bossarena betreten.';
   title.style.cssText='display:block;font-size:19px;color:#ffdc85;margin-bottom:5px';
   const desc=document.createElement('p');desc.style.cssText='margin:0 0 12px;color:#e2e6fa';
   const row=document.createElement('div');row.style.cssText='display:flex;gap:9px;justify-content:center;flex-wrap:wrap';
@@ -59,13 +60,13 @@
   row.append(go,stay);bar.append(title,desc,row);
   document.body.append(bar);notice=bar;
   let seconds=6;
-  desc.textContent='Ein Mitspieler ist bereit. Automatischer Wechsel in '+seconds+' Sekunden. Du entscheidest danach selbst über „Bereit“.';
+  desc.textContent=invitation+' Automatischer Wechsel in '+seconds+' Sekunden. Du entscheidest danach selbst über „Bereit“.';
   interval=setInterval(()=>{
    if(!isVisible()){clearIntervalNotice();return;}
    if(document.querySelector('dialog[open]')){clearIntervalNotice();desc.textContent='Ein offenes Fenster bleibt erhalten. Du kannst freiwillig zur Bossarena wechseln.';return;}
    seconds--;
    if(seconds<=0){navigate();return;}
-   desc.textContent='Ein Mitspieler ist bereit. Automatischer Wechsel in '+seconds+' Sekunden. Du entscheidest danach selbst über „Bereit“.';
+   desc.textContent=invitation+' Automatischer Wechsel in '+seconds+' Sekunden. Du entscheidest danach selbst über „Bereit“.';
   },1000);
  }
  const schedule=()=>{
@@ -91,7 +92,7 @@
     let msg;try{msg=JSON.parse(e.data)}catch{return}
     if(msg?.type==='error'&&msg.code==='DENIED'){denied=true;subscribed=false;return;}
     if(msg?.type==='subscribed'&&msg.gate===0){subscribed=true;connecting=false;failures=0;return;}
-    if(msg?.type==='invite'&&subscribed&&VALID_GATE(msg.gate))showInvite(msg.gate);
+    if(msg?.type==='invite'&&subscribed&&VALID_GATE(msg.gate))showInvite(msg.gate,msg.reason);
    };
    socket.onerror=()=>{subscribed=false;};
    socket.onclose=()=>{
