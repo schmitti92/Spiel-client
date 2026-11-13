@@ -21,7 +21,7 @@ function replayFinaleSequence(){
  $('vote-reveal').hidden=true;
  $('finale-cinema').hidden=true;
  finaleSequenceKey='';
- $('status').textContent='🎬 Finale wird erneut abgespielt. Danach wird der Siegerbonus geprüft.';
+ $('status').textContent='🎬 Die Siegerehrung wird erneut abgespielt.';
  startFinaleCinema();
 }
 window.addEventListener('deal-replay-finale-sequence',replayFinaleSequence);
@@ -32,6 +32,7 @@ function finaleBonusesComplete(game){
  const payouts=(game.finalValues||[]).map(v=>v.payout);
  // A draw has no Slot winner: no bonus confirmation should block the next round.
  if(payouts.length>1&&payouts.filter(v=>v===Math.max(...payouts)).length>1)return true;
+ if(game.monsterSlotShow)return game.monsterSlotShow.phase==='ceremony'&&sessionStorage.getItem('finale-watched:'+game.id+':finale')==='yes';
  if(game.monsterSlotsVersion===1)return sessionStorage.getItem('monster-slots-watched:'+String(window.SpielOnline?.state?.()?.user?.uid||'anonymous')+':'+game.id)==='yes';
  const key='final:'+game.id,spunAt=Number(game.christmasWheelSpins?.[key]||0);
  const hammer=game.christmasHammerWheel;
@@ -89,6 +90,11 @@ $('final-recover').addEventListener('click',()=>{if(confirm('Eine neue Partie st
 $('final-lobby').href='lobby.html?room='+encodeURIComponent(code||'');
 let finaleRecoveryTimer=null;
 function startFinaleCinema(){
+ // The synchronized runner-up and champion Slots always come FIRST.
+ if(g?.monsterSlotShow&&g.monsterSlotShow.phase!=='ceremony'){
+  if(!$('finale-cinema').hidden){cancelFinaleTimers();$('finale-cinema').hidden=true;}
+  return;
+ }
  // The final accepted banker offer must be announced for three seconds first.
  if(!$('vote-reveal').hidden||dealServerNow()<finalDealRevealUntil){
   // A lost banker close timer must never block the final reveal indefinitely.
@@ -122,8 +128,9 @@ function startFinaleCinema(){
  // large suitcase is never skipped when that vote announcement finishes.
  const finalBallot=g.history?.at(-1);
  const dealAnnouncementMs=finalBallot?.decisions?.some(d=>d.deal===true)?3000:0;
- const finaleEpoch=Number(g.finalStartedAt)+dealAnnouncementMs;
- const finaleElapsed=!replayFinaleLocally&&Number.isFinite(g.finalStartedAt)
+ const sharedCeremony=g.monsterSlotShow?.phase==='ceremony';
+ const finaleEpoch=sharedCeremony?Number(g.monsterSlotShow.finishedAt):Number(g.finalStartedAt)+dealAnnouncementMs;
+ const finaleElapsed=!replayFinaleLocally&&Number.isFinite(finaleEpoch)
   ?Math.max(0,dealServerNow()-finaleEpoch):0;
  const at=ms=>Math.max(0,ms-finaleElapsed);
 
@@ -243,13 +250,13 @@ function startFinaleCinema(){
    x.note.textContent=(tied?'🤝 ':'🏆 ')+(w.p?.deal!=null?'Deal: ':'Gewinn: ')+eur(w.f.payout);
   }
   $('finale-title').textContent=tied?'Unentschieden – kein Slot-Gewinn':'Der Gewinner steht fest!';
-  $('finale-caption').textContent=tied?'Gleicher höchster Gewinn: Niemand erhält die Monster-Slots-Belohnung.':'🏆 Platz 1: drei Slot-Gewinne · 🥈 Platz 2 (ab 3 Spielern): ein Slot-Gewinn · alle anderen: kein Slot. Grundlage ist der ursprüngliche Spielgewinn.';
+  $('finale-caption').textContent=tied?'Gleicher höchster Gewinn: Niemand erhält die Monster-Slots-Belohnung.':g.monsterSlotShow?'🎰 Die gemeinsamen Monster-Slots sind gespielt. Jetzt feiern wir den Gewinner!':'🏆 Platz 1: drei Slot-Gewinne · 🥈 Platz 2 (ab 3 Spielern): ein Slot-Gewinn · alle anderen: kein Slot. Grundlage ist der ursprüngliche Spielgewinn.';
   $('finale-champion-name').textContent=winners.map(w=>w.p?.name||'Spieler').join(' & ');
   $('finale-champion-value').textContent=(tied?'Gleichstand: ':'Gewinn: ')+eur(top);
   $('finale-champion').hidden=false;
   $('finale-replay').hidden=true;
   $('finale-skip').hidden=false;
-  $('finale-skip').textContent=tied?'✓ Unentschieden bestätigen':window.dealSlotReelsFor?.(g,myId())>0?'🎁 Weiter zu deinem Slotbonus ›':'✅ Ergebnis bestätigen ›';
+  $('finale-skip').textContent=tied?'✓ Unentschieden bestätigen':g.monsterSlotShow?'✅ Siegerehrung bestätigen':window.dealSlotReelsFor?.(g,myId())>0?'🎁 Weiter zu deinem Slotbonus ›':'✅ Ergebnis bestätigen ›';
  }
  if(finaleElapsed>=championAt)revealChampion();
  else finaleLater(revealChampion,at(championAt));
