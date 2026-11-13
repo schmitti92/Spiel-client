@@ -82,6 +82,66 @@
   entry.append(name,wrap,odds);slotFields.append(entry);
  }
  document.body.append(backdrop,dialog);
+
+ // Reusable five-wooden-chest gift for every genuine player in this room,
+ // including the host. This is NOT a one-time welcome reward.
+ const giftPanel=document.createElement('section');
+ giftPanel.className='dog-host-chest-gift';
+ giftPanel.innerHTML='<div class="dog-host-chest-gift-title">🎁 100-Tore-Geschenke</div>'+
+  '<p>Verschenke <strong>5 Holzkisten</strong> an alle echten Spieler dieses Raums – auch an dich selbst. Du kannst das jederzeit wiederholen.</p>'+
+  '<button type="button" class="dog-host-chest-send">📦 5 Holzkisten an alle verschenken</button>'+
+  '<p class="dog-host-chest-status" role="status" aria-live="polite"></p>';
+ dialog.append(giftPanel);
+ const giftButton=giftPanel.querySelector('.dog-host-chest-send');
+ const giftStatus=giftPanel.querySelector('.dog-host-chest-status');
+ let giftBusy=false;
+ const giftStorageKey=uid=>'dog-host-wood5-pending-v1:'+room+':'+uid;
+ const pendingGift=uid=>{
+  try{
+   const id=localStorage.getItem(giftStorageKey(uid))||'';
+   return /^[a-zA-Z0-9_-]{12,90}$/.test(id)?id:'';
+  }catch{return ''}
+ };
+ const savePendingGift=(uid,id)=>{try{localStorage.setItem(giftStorageKey(uid),id)}catch{}};
+ const clearPendingGift=uid=>{try{localStorage.removeItem(giftStorageKey(uid))}catch{}};
+ const giftRequestId=()=>window.crypto?.randomUUID?.()||('gift-'+Date.now()+'-'+Math.random().toString(36).slice(2,14));
+ async function sendHostGift(id){
+  const u=active();if(!u)throw Error('Bitte anmelden.');
+  const token=await u.getIdToken();
+  if(active()?.uid!==u.uid)throw Error('PROFILE_CHANGED');
+  const reply=await fetch(api+'/api/dog/host-gift/'+encodeURIComponent(room)+'/wood5',{
+   method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+   cache:'no-store',body:JSON.stringify({requestId:id})
+  });
+  const result=await reply.json().catch(()=>({}));
+  if(!reply.ok||result.ok!==true)throw Error(result.error||'GIFT_UNAVAILABLE');
+  if(result.requestId!==id||result.quantity!==5||!Number.isInteger(result.players))
+   throw Error('GIFT_RESPONSE_INVALID');
+  return result;
+ }
+ giftButton.addEventListener('click',async()=>{
+  if(!isHost||giftBusy)return;
+  const u=active();if(!u)return;
+  const previous=pendingGift(u.uid);
+  if(!previous&&!window.confirm('Jetzt an ALLE echten Spieler im Raum '+room+' (einschließlich dir) jeweils 5 Holzkisten verschenken?'))return;
+  const id=previous||giftRequestId();
+  if(!previous)savePendingGift(u.uid,id);
+  giftBusy=true;giftButton.disabled=true;
+  giftStatus.textContent=previous?'⏳ Prüfe die letzte Geschenkvergabe …':'⏳ Die Holzkisten werden sicher verteilt …';
+  try{
+   const response=await sendHostGift(id);
+   if(active()?.uid!==u.uid)return;
+   clearPendingGift(u.uid);
+   giftStatus.textContent='✅ '+response.players+' Spieler erhalten je 5 Holzkisten (insgesamt '+response.totalChests+'). Auch der Host hat seine Kisten bekommen.'+(response.replayed?' Bereits verbuchte Vergabe bestätigt.':'');
+   giftButton.textContent='📦 Erneut 5 Holzkisten verschenken';
+  }catch(error){
+   if(active()?.uid===u.uid){
+    giftStatus.textContent='⚠️ '+String(error?.message||error)+'. Bei unklarer Verbindung dieselbe Vergabe erneut prüfen – keine doppelte Buchung.';
+    giftButton.textContent='↻ Letzte Vergabe sicher prüfen';
+   }
+  }finally{giftBusy=false;giftButton.disabled=false}
+ });
+
  const close=()=>{dialog.hidden=true;backdrop.hidden=true;document.body.classList.remove('deal-economy-open');dirty=false;(lastFocus||trigger).focus()};
  const fill=value=>{
   for(const [key] of FIELDS)form.elements.namedItem(key).value=String(Math.round(value.prices[key]/100));
