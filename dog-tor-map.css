@@ -282,3 +282,6 @@ body.dog-tor-map-page .hero-art{opacity:.14}
  url("./dog-forge-art/abenteuerpfad_zum_pfotenschloss.png") 62% top / auto 100vh fixed no-repeat,#08101d}
  body.dog-tor-map-page .hero{background-position:center,60% center}
 }
+
+/* Public event: legacy private bot controls must stay absent, including before JS loads. */
+#pilot-bots[hidden]{display:none!important}
