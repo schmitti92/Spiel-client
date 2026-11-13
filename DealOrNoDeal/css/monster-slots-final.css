@@ -1,19 +1,179 @@
-#deal-monster-slots[hidden]{display:none!important}
-#deal-monster-slots{position:fixed;inset:0;z-index:45000;display:grid;place-items:center;padding:14px;background:radial-gradient(circle at center,#26244ce8,#040715f5);backdrop-filter:blur(9px)}
-.monster-slot-machine{width:min(900px,100%);max-height:95dvh;overflow:auto;padding:clamp(18px,4vw,40px);text-align:center;color:#fff4d9;border:3px solid #f8ce67;border-radius:28px;background:radial-gradient(ellipse at top,#544078,#122443 65%,#070b1e);box-shadow:0 0 75px #bd82e55b,0 22px 80px #000c}
-.monster-slot-stars{color:#ffe5a0;font-size:clamp(10px,1.7vw,16px);letter-spacing:.14em;font-weight:900}
-.monster-slot-machine h2{font-size:clamp(30px,6vw,65px);margin:10px 0 0;color:#ffe49b;text-shadow:0 4px 15px #240518,0 0 24px #debd5c}
-.monster-slot-subheading{color:#f5ddbb;letter-spacing:.14em;font-size:clamp(10px,2vw,17px);font-weight:900}
-.monster-slot-reels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(5px,2vw,17px);margin:22px 0}
-.monster-slot-reel{min-height:clamp(145px,27vw,255px);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;overflow:hidden;padding:12px 5px;border:5px solid #e4c575;border-radius:16px;background:linear-gradient(145deg,#f8f1cc,#b7c5e0 52%,#8f7aaa);color:#271d3e;box-shadow:inset 0 0 18px #fffa,0 9px 20px #0008;transition:box-shadow .3s,transform .4s}
-.monster-slot-icon{font-size:clamp(40px,8vw,94px);filter:drop-shadow(0 5px 6px #0003)}
-.monster-slot-reel strong{font-size:clamp(10px,1.8vw,17px);line-height:1.25}
-.monster-slot-reel small{font-size:clamp(10px,1.4vw,15px);font-weight:900}
-.monster-slot-reel.spinning .monster-slot-icon{animation:monster-slot-flip .16s linear infinite alternate}
-.monster-slot-reel.stopped{border-color:#fff0ab;box-shadow:0 0 30px #ffd35eaa,inset 0 0 16px #ffe5bb;transform:scale(1.025)}
-@keyframes monster-slot-flip{0%{transform:translateY(-15px) scaleY(.78);filter:blur(2px)}100%{transform:translateY(15px) scaleY(1.15);filter:blur(4px)}}
-.monster-slot-status{font-size:clamp(13px,2vw,19px);min-height:26px;font-weight:800}
-#monster-slot-accept{border:2px solid #fff2bd;border-radius:15px;padding:14px 22px;background:linear-gradient(145deg,#ffeaa5,#d89b38);color:#26170c;font:900 clamp(14px,2vw,20px) system-ui;cursor:pointer}
-#monster-slot-accept:disabled{opacity:.45;cursor:wait}
-@media(max-width:580px){.monster-slot-machine{padding:14px 7px}.monster-slot-reels{gap:4px}.monster-slot-reel{border-width:3px;border-radius:11px;padding:8px 2px;gap:8px}.monster-slot-reel strong{word-break:break-word}}
-@media(prefers-reduced-motion:reduce){.monster-slot-reel.spinning .monster-slot-icon{animation:none}}
+/* Monster Slots · Goldstudio premium stage. Presentation only: probabilities live on the server. */
+#deal-monster-slots[hidden],#deal-monster-slots .monster-slot-prize[hidden]{display:none!important}
+#deal-monster-slots{
+ position:fixed;inset:0;z-index:45000;display:grid;place-items:center;
+ padding:clamp(6px,1.5vw,22px);overflow:hidden;overscroll-behavior:contain;
+ background:radial-gradient(ellipse at 50% 32%,rgba(93,60,148,.60),transparent 53%),linear-gradient(130deg,rgba(4,9,29,.94),rgba(13,8,36,.97));
+ backdrop-filter:blur(11px);-webkit-backdrop-filter:blur(11px);
+}
+#deal-monster-slots::before{
+ content:"";position:absolute;inset:0;pointer-events:none;opacity:.32;
+ background:radial-gradient(2px 2px at 12% 24%,#fff5c2 80%,transparent),radial-gradient(2px 2px at 73% 13%,#fff7cf 80%,transparent),radial-gradient(3px 3px at 84% 74%,#eb9cfc 80%,transparent),radial-gradient(2px 2px at 27% 86%,#fff7d5 80%,transparent);
+}
+.monster-slot-machine{
+ position:relative;isolation:isolate;box-sizing:border-box;
+ width:min(975px,100%);max-height:calc(100dvh - 18px);overflow-y:auto;overscroll-behavior:contain;
+ padding:clamp(14px,2.5vw,36px) clamp(12px,3vw,43px) clamp(18px,2.3vw,28px);
+ border:4px solid #dbac48;border-radius:clamp(19px,3vw,36px);text-align:center;color:#fff5d8;
+ background:
+  radial-gradient(ellipse at 50% -35%,rgba(204,108,251,.55),transparent 58%),
+  radial-gradient(ellipse at 84% 84%,rgba(48,67,159,.46),transparent 51%),
+  linear-gradient(155deg,#372054 0%,#171a3c 53%,#0b1026 100%);
+ box-shadow:0 0 0 2px #ffeca9a1,0 0 0 9px #6a3d2380,0 25px 80px #000d,0 0 100px #c47cff55,inset 0 0 50px #ffdc7825;
+ font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.monster-slot-machine::before{
+ content:"";position:absolute;inset:8px;border:1px solid #ffe9af72;border-radius:inherit;pointer-events:none;z-index:-1;
+}
+.monster-slot-machine::after{
+ content:"";position:absolute;left:8%;right:8%;top:0;height:6px;
+ background:linear-gradient(90deg,transparent,#fff7d3,#f6c955,#fff7d3,transparent);filter:blur(2px);pointer-events:none;
+}
+.monster-slot-lights{
+ position:relative;line-height:1;color:#fbd585;letter-spacing:clamp(4px,1.3vw,14px);font-size:clamp(14px,2.2vw,24px);
+ text-shadow:0 0 11px #ffd97a,0 0 24px #efad4a;margin-bottom:clamp(5px,1vh,12px);
+ animation:ms-lights 2.6s ease-in-out infinite alternate;
+}
+.monster-slot-kicker{font-size:clamp(9px,1.4vw,13px);font-weight:850;letter-spacing:.17em;color:#e7c2f9}
+#monster-slots-title{
+ margin:4px 0 0;line-height:1.08;font-size:clamp(34px,5.6vw,67px);font-weight:1000;letter-spacing:.055em;
+ background:linear-gradient(180deg,#fffde2 0%,#ffe8a1 25%,#ecb349 55%,#fff0b4 77%,#c4832d);
+ -webkit-background-clip:text;background-clip:text;color:transparent;
+ filter:drop-shadow(0 4px 5px #100b24);text-shadow:none;
+}
+.monster-slot-subheading{margin:9px auto 0;color:#fff0ca;font-size:clamp(11px,1.65vw,16px);font-weight:850;letter-spacing:.15em}
+.monster-slot-subheading span{color:#f9cf77;margin-inline:clamp(3px,.8vw,10px)}
+.monster-slot-ribbon{
+ width:fit-content;max-width:95%;margin:clamp(12px,2vh,21px) auto 0;padding:5px 24px;
+ border-top:1px solid #f2d38a74;border-bottom:1px solid #f2d38a74;
+ color:#ffe8ae;font-size:clamp(10px,1.35vw,14px);font-weight:850;letter-spacing:.13em;
+}
+.monster-slot-reels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(6px,1.8vw,20px);margin:clamp(12px,2vw,23px) auto clamp(10px,1.5vw,16px)}
+.monster-slot-reel{
+ --ms-coin:#d9ab54;position:relative;min-width:0;padding:clamp(4px,.75vw,10px);
+ border:3px solid #f8d98c;border-radius:clamp(12px,1.6vw,22px);
+ background:linear-gradient(145deg,#ffefb4 0%,#a76b26 17%,#f6d995 37%,#895a32 71%,#fce4a6 100%);
+ box-shadow:inset 0 0 0 2px #6b3d2199,0 10px 25px #000a,0 0 20px #f4cb6659;
+ transition:box-shadow .3s,transform .3s,border-color .3s;
+}
+.monster-slot-reel-head,.monster-slot-reel-foot{
+ display:flex;align-items:center;justify-content:space-between;gap:5px;height:clamp(19px,2.9vw,29px);
+ color:#30203b;font-size:clamp(9px,1.2vw,14px);font-weight:1000;letter-spacing:.085em;text-shadow:0 1px #fff6cc;
+}
+.monster-slot-reel-foot{height:clamp(22px,3vw,30px);padding-inline:4px;font-size:clamp(9px,1.1vw,12px)}
+.monster-slot-led{width:clamp(5px,1vw,10px);height:clamp(5px,1vw,10px);flex:0 0 auto;border-radius:50%;background:#65452e;box-shadow:inset 0 1px 3px #24130c}
+.monster-slot-reel[data-phase="running"] .monster-slot-led{background:#f8e16c;box-shadow:0 0 9px #ffffb1;animation:ms-lights .28s alternate infinite}
+.monster-slot-reel[data-phase="won"] .monster-slot-led{background:#9afd83;box-shadow:0 0 9px #89fe6d}
+.monster-slot-window{
+ position:relative;overflow:hidden;height:clamp(145px,22vw,230px);border:clamp(3px,.6vw,7px) solid #51304e;
+ border-radius:clamp(7px,.9vw,13px);background:linear-gradient(135deg,#fff7df,#c3cbe1 52%,#ded1ed);
+ box-shadow:inset 0 0 0 2px #fffbeb,0 0 0 1px #211b33;
+}
+.monster-slot-window::before,.monster-slot-window::after{
+ content:"";position:absolute;left:0;right:0;height:24%;pointer-events:none;z-index:4;
+}
+.monster-slot-window::before{top:0;background:linear-gradient(#47335678,transparent)}
+.monster-slot-window::after{bottom:0;background:linear-gradient(transparent,#2b234077)}
+.monster-slot-track{
+ position:absolute;left:0;right:0;top:0;display:flex;flex-direction:column;align-items:stretch;opacity:.4;
+ will-change:transform;transition:opacity .2s;pointer-events:none;
+}
+.monster-slot-track-symbol{
+ flex:0 0 clamp(75px,12vw,115px);display:grid;place-items:center;line-height:1;
+ font-size:clamp(42px,7vw,82px);filter:drop-shadow(0 4px 3px #31204a44);
+ border-bottom:1px solid #765e8f33;
+}
+.monster-slot-reel[data-phase="running"] .monster-slot-track{
+ opacity:1;animation:ms-roll .72s linear infinite;
+}
+.monster-slot-reel[data-phase="won"] .monster-slot-track{opacity:0}
+@keyframes ms-roll{from{transform:translateY(0)}to{transform:translateY(-50%)}}
+.monster-slot-glass{
+ position:absolute;inset:0;pointer-events:none;z-index:5;border-radius:inherit;
+ background:linear-gradient(112deg,#fff9 0%,#fff0 24%,#fff2 46%,#fff0 51%,#ffffff10 87%);
+}
+.monster-slot-prize{
+ position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ padding:clamp(5px,1vw,12px);gap:clamp(2px,.7vw,7px);box-sizing:border-box;
+ background:radial-gradient(ellipse at 50% 25%,#fffdf2,#ebdef9 90%);
+ animation:ms-win-arrive .48s cubic-bezier(.18,1.4,.3,1) both;
+}
+.monster-slot-art{
+ position:relative;display:grid;place-items:center;min-height:0;flex:1 1 auto;width:100%;
+ max-height:clamp(74px,13vw,135px);
+}
+.monster-slot-emoji{font-size:clamp(45px,7vw,85px);line-height:1;filter:drop-shadow(0 5px 5px #0003)}
+.monster-slot-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;filter:drop-shadow(0 5px 8px #33233a55);transition:opacity .3s}
+.monster-slot-art.has-image img{opacity:1}
+.monster-slot-art.has-image .monster-slot-emoji{opacity:0}
+.monster-slot-quantity{
+ flex:0 0 auto;color:#623673;font-size:clamp(11px,1.65vw,19px);font-weight:1000;letter-spacing:.04em;
+}
+.monster-slot-prize-name{
+ display:block;flex:0 0 auto;width:100%;max-width:100%;font-size:clamp(10px,1.5vw,17px);line-height:1.13;
+ font-weight:1000;color:#282047;text-wrap:balance;overflow-wrap:anywhere;hyphens:auto;
+}
+.monster-slot-reel[data-phase="won"]{
+ transform:translateY(-3px);border-color:#fff7c1;
+ box-shadow:inset 0 0 0 2px #6b3d2199,0 12px 30px #000a,0 0 22px #ffe18fa0;
+}
+.monster-slot-reel[data-rarity="epic"][data-phase="won"]{box-shadow:0 0 28px #c581facc,0 12px 30px #000a}
+.monster-slot-reel[data-rarity="legendary"][data-phase="won"]{box-shadow:0 0 35px #ffdd7be0,0 0 20px #b68bff,0 12px 30px #000a;animation:ms-jackpot 1.1s ease-in-out 2 alternate}
+@keyframes ms-win-arrive{from{opacity:0;transform:scale(.78)}to{opacity:1;transform:scale(1)}}
+@keyframes ms-jackpot{to{filter:brightness(1.16);transform:translateY(-6px)}}
+.monster-slot-progress{display:flex;align-items:center;justify-content:center;gap:12px;margin:0 auto 12px}
+.monster-slot-progress span{height:8px;width:clamp(25px,5vw,48px);border-radius:12px;background:#534362;border:1px solid #9b7c6f}
+.monster-slot-progress span.lit{background:linear-gradient(90deg,#ffc34f,#fff8c2);box-shadow:0 0 12px #ffe6a6}
+.monster-slot-status{font-size:clamp(12px,1.8vw,20px);line-height:1.4;font-weight:850;min-height:26px;color:#fff2d5;margin:0 0 14px;text-shadow:0 2px 5px #171026}
+#monster-slot-accept{
+ display:inline-flex;justify-content:center;align-items:center;max-width:100%;min-height:51px;padding:12px clamp(18px,4vw,42px);
+ border:2px solid #fff5cd;border-radius:16px;background:linear-gradient(160deg,#fff7c5,#ecc36d 45%,#bf7934);
+ color:#2b1609;font:1000 clamp(14px,1.9vw,20px)/1.2 system-ui;cursor:pointer;
+ box-shadow:inset 0 2px 1px #fff8,0 7px 23px #0008,0 0 18px #fbd88375;
+}
+#monster-slot-accept:hover:not(:disabled){filter:brightness(1.09);transform:translateY(-1px)}
+#monster-slot-accept:focus-visible{outline:3px solid #fff;outline-offset:4px}
+#monster-slot-accept:disabled{opacity:.52;cursor:wait;box-shadow:none}
+.monster-slot-footnote{font-size:clamp(9px,1.2vw,12px);margin:12px 0 0;color:#d4bedc}
+@keyframes ms-lights{to{opacity:.65;filter:brightness(1.4)}}
+@media(max-width:570px){
+ #deal-monster-slots{padding:6px}
+ .monster-slot-machine{border-width:3px;padding:16px 7px 13px;max-height:calc(100dvh - 10px);border-radius:20px}
+ .monster-slot-lights{margin-bottom:4px}
+ .monster-slot-kicker{font-size:9px;letter-spacing:.06em}
+ #monster-slots-title{font-size:clamp(28px,8vw,39px);letter-spacing:0}
+ .monster-slot-subheading{font-size:10px;letter-spacing:.04em;margin-top:6px}
+ .monster-slot-ribbon{margin:10px auto 0;padding:5px 8px;font-size:9px}
+ .monster-slot-reels{gap:4px;margin:10px 0 11px}
+ .monster-slot-reel{border-width:2px;border-radius:11px;padding:3px}
+ .monster-slot-reel-head{font-size:9px;letter-spacing:0;gap:2px}
+ .monster-slot-reel-foot{font-size:8px;letter-spacing:0}
+ .monster-slot-window{height:clamp(132px,40vw,175px);border-width:3px;border-radius:6px}
+ .monster-slot-prize{padding:3px;gap:3px}
+ .monster-slot-art{max-height:86px}
+ .monster-slot-emoji{font-size:clamp(36px,11vw,60px)}
+ .monster-slot-quantity{font-size:11px}
+ .monster-slot-prize-name{font-size:clamp(9px,2.75vw,12px)}
+ .monster-slot-track-symbol{flex-basis:79px;font-size:46px}
+ .monster-slot-progress{margin-bottom:7px}
+ .monster-slot-status{font-size:12px;margin-bottom:10px}
+ .monster-slot-footnote{font-size:9px}
+}
+@media(max-height:655px){
+ .monster-slot-machine{padding-top:10px;padding-bottom:9px}
+ .monster-slot-lights{display:none}
+ .monster-slot-ribbon{margin-top:7px}
+ .monster-slot-reels{margin-top:8px;margin-bottom:5px}
+ .monster-slot-window{height:clamp(113px,22vh,155px)}
+ .monster-slot-art{max-height:80px}
+ .monster-slot-progress{margin-bottom:4px}
+ .monster-slot-status{margin-bottom:6px}
+ #monster-slot-accept{min-height:42px;padding-block:9px}
+ .monster-slot-footnote{margin-top:5px}
+}
+@media(prefers-reduced-motion:reduce){
+ .monster-slot-lights,.monster-slot-reel[data-phase="running"] .monster-slot-track,.monster-slot-prize,
+ .monster-slot-reel[data-rarity="legendary"][data-phase="won"],.monster-slot-reel[data-phase="won"]{
+  animation:none!important;transition:none!important;
+ }
+}
