@@ -70,7 +70,7 @@
   cell.appendChild(fracture);
   fx.appendChild(cell);
  }
- function burst(fx,at,amount,hammer,finished,reduced){
+ function burst(fx,at,amount,hammer,finished,reduced,partial=false){
   const glow=element('span','icefx-burst');
   glow.style.left=at.x+'px';glow.style.top=at.y+'px';
   fx.appendChild(glow);
@@ -88,20 +88,20 @@
   const caption=element('span','icefx-caption');
   caption.style.left=Math.max(10,Math.min(at.x,fx.clientWidth-10))+'px';
   caption.style.top=Math.max(22,at.y-30)+'px';
-  caption.textContent=finished?'🌟 BILD FREIGELEGT!':(titles[hammer]||titles.single)+' · '+amount+' 🧊';
+  caption.textContent=finished?'🌟 BILD FREIGELEGT!':partial?'💥 EIS ANGERISSEN · NOCH 1 TREFFER!':(titles[hammer]||titles.single)+' · '+amount+' 🧊';
   fx.appendChild(caption);
  }
- function confirmed(board,{hammer='single',targets=[],anchor=null,finished=false}={}){
+ function confirmed(board,{hammer='single',targets=[],anchor=null,finished=false,partial=false}={}){
   if(!board||!Array.isArray(targets)||!targets.length)return;
   const indices=[...new Set(targets)].filter(i=>Number.isInteger(i)&&i>=0).slice(0,6);
   const at=indices.map(i=>board.querySelector('[data-tile="'+i+'"]')).filter(Boolean).map(el=>point(board,el));
   if(!at.length)return;
   const reduced=prefersReduced(),fx=layer(board,hammer);
   fx.classList.add('icefx-confirmed');
-  if(!reduced)at.forEach((pos,i)=>shatter(fx,pos,i));
+  if(!reduced&&!partial)at.forEach((pos,i)=>shatter(fx,pos,i));
   const anchorTile=board.querySelector('[data-tile="'+anchor+'"]');
   const center=anchorTile?point(board,anchorTile):at[0];
-  burst(fx,center,at.length,hammer,finished,reduced);
+  burst(fx,center,at.length,hammer,finished,reduced,partial);
   window.setTimeout(()=>{if(fx.isConnected)fx.remove()},reduced?550:1000);
  }
  window.ChristmasIceHammerFX=Object.freeze({cue,confirmed});
