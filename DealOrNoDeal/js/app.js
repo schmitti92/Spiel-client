@@ -294,6 +294,16 @@ async function refreshDealSocketAuth(){
   if(ws===dealSocket&&ws.readyState===WebSocket.OPEN)ws.close();
  }
 }
+// Short HTTP reconciliation only around live shared slots or a final vote.
+// It recovers missed WebSocket pushes across Render instances, with no writes.
+function sharedSlotRecoveryActive(){
+ if(!g)return false;
+ const show=g.monsterSlotShow;
+ if(g.phase==='final'&&show&&show.phase!=='ceremony')return true;
+ const ballot=g.phase==='decision'?g.history?.at(-1):null;
+ return !!ballot&&Array.isArray(ballot.participants)&&ballot.participants.length>0&&
+  (ballot.decisions||[]).length>=ballot.participants.length-1;
+}
 async function pollLoop(){
  if(!document.hidden){
   if(!dealSocket||dealSocket.readyState===WebSocket.CLOSED)connectDealSocket();
@@ -304,9 +314,10 @@ async function pollLoop(){
   if(dealSocket?.readyState===WebSocket.OPEN&&!dealSocketHealthy()&&dealSocketLastMessage&&Date.now()-dealSocketLastMessage>45000)dealSocket.close();
   // HTTP reconciliation remains essential when the action and socket hit different Render instances.
   // Clock-only heartbeats avoid a Firestore read on every connected player's ping.
-  if(!dealSocketHealthy()||Date.now()-lastHttpSafetySync>=60000)await poll();
+  if(!dealSocketHealthy()||Date.now()-lastHttpSafetySync>=(sharedSlotRecoveryActive()?3000:60000))await poll();
  }
- const delay=dealSocketHealthy()?4000:Math.max(pollDelay(),Math.min(8000,1000*2**dealSocketRetry));
+ const delay=sharedSlotRecoveryActive()?2500:
+  dealSocketHealthy()?4000:Math.max(pollDelay(),Math.min(8000,1000*2**dealSocketRetry));
  setTimeout(pollLoop,delay);
 }
 $('studio-refresh').addEventListener('click',()=>window.location.reload());
