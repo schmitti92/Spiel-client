@@ -323,3 +323,27 @@ body.dog-tor-map-page .hero-art{opacity:.14}
  .gate-quick-result .quick-result-stat{font-size:11px}
  .gate-quick-result .quick-result-stat strong{max-width:58%;white-space:normal}
 }
+
+/* Exact server-defined requirements visible before each ordinary Tor fight. */
+.gate-requirements{
+ margin:12px 0 14px;padding:12px;border:1px solid #d1ad66a3;
+ border-radius:14px;background:linear-gradient(135deg,#152942,#251d2b);
+ color:#f8e9c8;
+}
+.gate-requirements[hidden]{display:none}
+.gate-requirements-heading{
+ margin-bottom:11px;font-weight:850;font-size:13px;color:#ffe3a4;
+}
+.gate-requirements-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;
+}
+.gate-requirements-grid>div{
+ border:1px solid #e3ca8c44;background:#0b1526a3;
+ border-radius:10px;padding:10px;min-width:0;
+ display:flex;flex-direction:column;gap:5px;
+}
+.gate-requirements-grid small{font-size:11px;color:#ced7ec}
+.gate-requirements-grid strong{
+ font-size:clamp(14px,3.2vw,18px);color:#ffe8b2;
+ overflow-wrap:anywhere;
+}
