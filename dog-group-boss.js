@@ -405,8 +405,14 @@
   // When a secure WS subscriber is alive, most remote changes arrive by
   // push. Keep a conservative status-GET fallback for missed messages and
   // multi-instance Render deployments; switch back immediately on WS loss.
-  const pollDelay=push?.active?.()&&view?.phase==='fighting'?
-   exchangeWindow?(extendedScene?5000:3200):5200:delay;
+  // A waiting lobby uses inexpensive WebSocket hints instead of frequent
+  // Firestore reads. Keep fast HTTP fallback when the push channel is down.
+  // During actual combat, the existing synchronized cadence is unchanged.
+  const pushOnline=push?.active?.()===true;
+  const pollDelay=view?.phase==='waiting'?
+   (pushOnline?(waitingReady?12000:90000):(waitingReady?delay:30000)):
+   pushOnline&&view?.phase==='fighting'?
+    exchangeWindow?(extendedScene?5000:3200):5200:delay;
   // Scene-only refresh: get the latest server-confirmed team shield and
   // shared hits while all devices play their cinematic exchange.
   if(!working&&Date.now()-lastLoad>pollDelay)
