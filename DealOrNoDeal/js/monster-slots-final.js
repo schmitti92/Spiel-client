@@ -126,9 +126,10 @@ function revealNewPacks(token,id){
  function nextPack(){
   if(!valid())return;
   if(packIndex>=newPacks.length){timer(complete,reduced()?120:500);return}
-  const pack=newPacks[packIndex++],cards=pack.revealed.filter(c=>c.isNew===true);
+  const pack=newPacks[packIndex++],cards=pack.revealed;
+   const newCount=cards.filter(c=>c.isNew===true).length;
   cardIndex=0;cardTitle.textContent='🎁 '+String(pack.packName||'DOG Kartenpaket');
-  cardDetail.textContent='✨ '+cards.length+' neue '+(cards.length===1?'Karte':'Karten')+' – alle übrigen Karten sind ebenfalls gespeichert.';
+  cardDetail.textContent='✨ '+newCount+' neue '+(newCount===1?'Karte':'Karten')+' · '+(cards.length-newCount)+' doppelte Karten';
   cardStage.dataset.stage='gift';cardImage.hidden=true;
   cardName.textContent='Ein neues Kartenmotiv wartet auf dich!';
   timer(nextCard,reduced()?120:850);
@@ -139,9 +140,9 @@ function revealNewPacks(token,id){
    const image='Weihnachtsevent2/Sammelalbum_Saison_2_Bilder/'+encodeURIComponent(String(card.image||''));
    cardImage.hidden=false;cardImage.src=image;cardImage.alt=String(card.name||'Neue Sammelkarte');
    cardStage.dataset.stage='card';cardStage.dataset.rarity=String(card.rarity||'common');
-   cardName.textContent='🌟 NEU! '+String(card.name||'Neue Sammelkarte');
-   cardDetail.textContent=String(card.series||'DOG Sammelalbum')+' · '+cardIndex+' / '+cards.length+' neue Karten in diesem Paket';
-   timer(nextCard,reduced()?250:1600);
+   cardName.textContent=(card.isNew?'🌟 NEU! ':'Doppelt: ')+String(card.name||'Sammelkarte');
+   cardDetail.textContent=String(card.series||'DOG Sammelalbum')+' · Karte '+cardIndex+' / '+cards.length+(card.isNew?' · NEU':' · bereits vorhanden');
+   timer(nextCard,reduced()?150:(card.isNew?1250:260));
   }
  }
  nextPack();
