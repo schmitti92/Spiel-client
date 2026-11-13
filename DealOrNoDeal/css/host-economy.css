@@ -34,3 +34,13 @@ body.deal-economy-open{overflow:hidden}
 .deal-economy-slot-field .deal-economy-input strong{font-size:12px;min-width:28px}
 .deal-economy-slot-field .deal-economy-slot-percent{font-weight:900;color:#c9f3d9;font-size:12px}
 @media(max-width:570px){.deal-economy-slot-grid{grid-template-columns:1fr}.deal-economy-slots{padding:9px}.deal-economy-slots legend{font-size:15px}}
+
+/* Host-controlled, repeatable wooden chest gifts for all human room members. */
+.dog-host-chest-gift{margin:20px 0 0;padding:16px;border:1px solid #dcb96c;border-radius:16px;background:linear-gradient(130deg,#322b43,#142d3f);text-align:center;box-shadow:inset 0 1px #ffffff22}
+.dog-host-chest-gift-title{font:900 21px/1.25 Georgia,serif;color:#ffe1a0;margin-bottom:8px}
+.dog-host-chest-gift p{margin:8px 0 13px;color:#e1eaf5;font-size:13px;line-height:1.55}
+.dog-host-chest-send{min-height:48px;width:100%;padding:12px 14px;border:1px solid #ffe19d;border-radius:12px;background:linear-gradient(120deg,#ffe8a3,#d7a449);color:#292036;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 7px 16px #0006}
+.dog-host-chest-send:hover{filter:brightness(1.08)}
+.dog-host-chest-send:disabled{opacity:.6;cursor:wait}
+.dog-host-chest-send:focus-visible{outline:3px solid #8ad0ff;outline-offset:3px}
+.dog-host-chest-gift .dog-host-chest-status{min-height:20px;margin:12px 0 0;color:#b8f3cc;font-weight:850}
