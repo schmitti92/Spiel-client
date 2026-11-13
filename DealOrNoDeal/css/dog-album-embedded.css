@@ -1,0 +1,72 @@
+/* DOG Saison 2 ist ein fester Teil der Weihnachtswelt, keine eigene App-Oberfläche. */
+#dog-season-panel[hidden],.hub-intro[hidden],.hub-body[hidden],.hub-footer[hidden]{display:none!important}
+#dog-season-panel{color:#fff0ce;font:15px system-ui,sans-serif;margin:10px auto 22px}
+#dog-season-panel *{box-sizing:border-box}
+#dog-season-panel button{cursor:pointer;font:inherit}
+#dog-season-panel .dog-hero{position:relative;isolation:isolate;overflow:hidden;border:2px solid #e8bd74;border-radius:19px;padding:clamp(17px,2.6vw,32px);box-shadow:0 12px 35px #000b,inset 0 0 0 2px #fff0bd23,0 0 18px #ffc25d24;
+background:linear-gradient(105deg,#0c1f38f4 5%,#172c47f1 56%,#3a1c32e8),url("../assets/weihnachts_event/file_00000000a9f481f4a900f341475e2e6d.png") center/cover}
+#dog-season-panel .dog-hero:after{content:"❄ ✦ 🃏 ✦ ❄";position:absolute;right:2.5%;top:12%;font-size:clamp(24px,4vw,64px);color:#f8d89520;pointer-events:none}
+#dog-season-panel .dog-hero>*{position:relative;z-index:1}
+#dog-season-panel .eyebrow{font-size:clamp(10px,.86vw,13px);letter-spacing:.18em;color:#eac58a;font-weight:900}
+#dog-season-panel h1{font:900 clamp(25px,3.3vw,48px)/1.08 Georgia,serif;color:#ffe1a1;margin:8px 0 9px;text-shadow:0 2px 7px #260b07,0 0 18px #ffc66b40}
+#dog-season-panel h1 em{font-style:normal;color:#ffc967}
+#dog-season-panel .dog-hero>p:not(#status){margin:0;line-height:1.5;color:#d4e6ef;max-width:900px}
+#dog-season-panel .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(6px,1vw,12px);margin:18px 0 10px;max-width:1050px}
+#dog-season-panel .stats>div{border:1px solid #c49f67a0;border-radius:11px;background:linear-gradient(#162b45ee,#09192ff1);padding:10px 13px;display:grid;gap:2px}
+#dog-season-panel .stats strong{color:#ffe3a1;font-weight:900;font-size:clamp(19px,2.1vw,30px);font-variant-numeric:tabular-nums}
+#dog-season-panel .stats small{color:#bed7e4;font-size:clamp(10px,.84vw,13px)}
+#dog-season-panel .meter{height:10px;overflow:hidden;border-radius:10px;background:#061429;border:1px solid #c6a46d80;max-width:1050px}
+#dog-season-panel .meter span{display:block;width:0;height:100%;background:linear-gradient(90deg,#bd8434,#ffe6a6);transition:width .3s}
+#dog-season-panel .dog-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:16px 0 8px}
+#dog-season-panel .dog-actions button{border:1px solid #bfa16c;color:#ffe7b5;border-radius:10px;background:#10283ee9;padding:9px 15px;font-weight:800}
+#dog-season-panel .dog-actions button.active{background:linear-gradient(120deg,#fff1c1,#d7a050);color:#291b0b}
+#dog-season-panel #status{min-height:19px;color:#d5e5ed;font-size:13px;margin:9px 0 0}
+#dog-season-panel #login{border:1px solid #e5be73;border-radius:8px;background:#243750;color:#ffebc5;padding:9px 13px;margin-top:8px;font-weight:800}
+#dog-season-panel .sectionhead{text-align:center;margin:24px auto 20px}
+#dog-season-panel .sectionhead h2{font:900 clamp(23px,2.6vw,35px)/1.2 Georgia,serif;color:#ffe0a0;margin:0 0 6px}
+#dog-season-panel .sectionhead p{color:#d8e9ee;margin:0}
+#dog-season-panel .boards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(10px,1.3vw,19px)}
+#dog-season-panel .board{min-width:0;position:relative;border:2px solid #ddba7d;border-radius:19px;padding:clamp(10px,1.4vw,19px);background:linear-gradient(154deg,#12263fe8,#061529f4);box-shadow:inset 0 0 0 1px #ffe9b51d,0 10px 28px #0008}
+#dog-season-panel .board-head{display:flex;justify-content:space-between;align-items:center;gap:9px}
+#dog-season-panel .board-head h3{margin:0;font:900 clamp(19px,2vw,27px)/1.16 Georgia,serif;color:#ffe1a7}
+#dog-season-panel .board-head small{color:#f9d68e;font-weight:800;white-space:nowrap}
+#dog-season-panel .board-progress{display:flex;justify-content:space-between;gap:8px;margin:9px 0 13px;color:#d8e8f5;font-size:clamp(11px,.9vw,14px);font-weight:750}
+#dog-season-panel .card-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(5px,.75vw,12px)}
+#dog-season-panel .card{position:relative;overflow:hidden;min-width:0;aspect-ratio:3/3.8;padding:0;border:2px solid #9d8d6c;border-radius:12px;background:radial-gradient(circle at 50% 25%,#26425e,#0b192c 80%);box-shadow:0 3px 10px #0009;cursor:pointer;transition:transform .16s,box-shadow .16s}
+#dog-season-panel .card:hover,#dog-season-panel .card:focus-visible{transform:translateY(-3px);box-shadow:0 8px 20px #000a,0 0 13px #ffdb8b55}
+#dog-season-panel .card img{display:block;width:100%;height:100%;object-fit:cover}
+#dog-season-panel .card .back{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(24px,4vw,49px);color:#eacb89;background:radial-gradient(circle,#34415b,#0b1a31 85%)}
+#dog-season-panel .card .rarity{position:absolute;top:4px;left:4px;font-size:clamp(8px,.7vw,10px);color:#fff5d9;background:#101b30e9;border:1px solid #fff5d942;border-radius:6px;padding:3px 5px;pointer-events:none}
+#dog-season-panel .card .stamp{position:absolute;right:4px;bottom:4px;background:#0b182bea;border:1px solid #f6dfab66;border-radius:5px;color:#fff2c6;padding:2px 5px;font-size:11px;font-weight:900;pointer-events:none}
+#dog-season-panel .card.owned{border-color:#f5d887}
+#dog-season-panel .card.legendary{border-color:#e8bd58;box-shadow:0 0 13px #f1bd4480}
+#dog-season-panel .card.epic{border-color:#b99bfc}
+#dog-season-panel .card.rare{border-color:#8dd7fa}
+#dog-season-panel .card.bingo{outline:2px solid #ffd975;outline-offset:1px}
+#dog-season-panel .board-foot{margin-top:12px;font-size:12px;color:#d7e3ea}
+#dog-season-panel .rewards-note{margin:20px auto;text-align:center;max-width:800px;padding:14px;border-radius:12px;color:#ffe6b7;border:1px dashed #bb975a;background:#0b1d34c9}
+#dog-season-panel .packs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(9px,1vw,16px)}
+#dog-season-panel .pack{border:2px solid #e1b96f;border-radius:18px;padding:22px 15px;text-align:center;background:linear-gradient(160deg,#152f4aea,#09162cef);box-shadow:0 9px 20px #0008}
+#dog-season-panel .pack .emoji{font-size:clamp(50px,7vw,90px);filter:drop-shadow(0 0 13px #fbe09a55)}
+#dog-season-panel .pack h3{margin:10px 0;color:#ffe0a0;font:900 clamp(20px,1.8vw,28px) Georgia,serif}
+#dog-season-panel .pack p{color:#d2e4eb;line-height:1.4}
+#dog-season-panel .pack button,#dog-season-panel .exchange button,#card-dialog button:not(.dialog-close),#reveal-dialog button{border:1px solid #ffe9bb;border-radius:10px;background:linear-gradient(125deg,#fff3bf,#dbac59 70%,#c88b35);color:#261b0d;font-weight:900;padding:12px 13px;min-height:43px;max-width:100%}
+#dog-season-panel .pack button:disabled,#dog-season-panel .exchange button:disabled{opacity:.48;cursor:default}
+#dog-season-panel .exchange{text-align:center;max-width:800px;margin:15px auto;padding:25px;border:2px solid #deb77a;border-radius:17px;background:#132a41;display:grid;justify-items:center;gap:10px}
+#dog-season-panel .exchange strong{font-size:29px;color:#ffe2a1}
+#dog-season-panel .exchange a{color:#ffdc88}
+#card-dialog,#reveal-dialog{width:min(760px,calc(100% - 25px));max-height:90dvh;overflow:auto;color:#fff2ce;border:2px solid #e6c47e;border-radius:18px;padding:20px;background:linear-gradient(140deg,#18344d,#09182c);text-align:center;box-shadow:0 15px 55px #000c}
+#card-dialog::backdrop,#reveal-dialog::backdrop{background:#000b;backdrop-filter:blur(6px)}
+#card-dialog img{max-width:100%;max-height:67dvh;object-fit:contain;display:block;margin:0 auto;border-radius:9px}
+#card-dialog .dialog-close{position:absolute;right:10px;top:10px;border:1px solid #e7c07e;border-radius:8px;background:#14253d;color:#fff;padding:7px 12px;cursor:pointer}
+#reveal-dialog .reveal-heading{font:900 25px Georgia,serif;color:#ffe1a1}
+#reveal-dialog .reveal-items{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:10px;margin:20px auto}
+#reveal-dialog .reveal-item{border:1px solid #d8ba80;border-radius:11px;padding:7px;background:#142d49}
+#reveal-dialog .reveal-item img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:7px}
+#reveal-dialog .reveal-item strong{font-size:12px;display:block}
+#reveal-dialog .reveal-item small{color:#f8d78d}
+#reveal-dialog .reveal-item.legendary{border-color:#f5d261}
+#reveal-dialog .reveal-item.epic{border-color:#c6a0ff}
+#hub-cards-tab[aria-current="page"],#hub-packs-tab[aria-current="page"]{border-color:#ffdfa0!important;background:linear-gradient(145deg,#6e4325,#284969)!important;color:#ffe6a3!important;box-shadow:inset 0 0 0 1px #e9c07877,0 0 10px #ffd07944}
+@media(max-width:850px){#dog-season-panel .boards{grid-template-columns:1fr}#dog-season-panel .packs{grid-template-columns:1fr}#dog-season-panel .board{padding:12px}}
+@media(max-width:510px){#dog-season-panel .stats{gap:5px}#dog-season-panel .stats>div{padding:8px 7px}#dog-season-panel .card-grid{gap:5px}#dog-season-panel .card{border-radius:8px}#dog-season-panel .dog-hero{padding:15px}}
