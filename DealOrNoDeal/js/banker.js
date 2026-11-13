@@ -1,6 +1,16 @@
 'use strict';
-// Banker offers always remain identical for everyone. Wallet bonuses are credited only after the game.
+// Shared by default; personal cash offers exist only in the host-enabled special mode.
+function bankerCashOffer(h){
+ const person=typeof myId==='function'?myId():null;
+ const amount=g?.individualBankerOffers===true&&person?h?.offersByPlayer?.[person]:null;
+ return Number.isSafeInteger(amount)&&amount>=1?amount:h?.offer;
+}
+function bankerMegaOffer(h){
+ const person=typeof myId==='function'?myId():null;
+ return g?.individualBankerOffers===true&&person&&Array.isArray(h?.megaOfferUids)&&h.megaOfferUids.includes(person);
+}
 function bankerPhrase(h){
+ if(bankerMegaOffer(h))return 'Nur für dich: ein sensationelles MEGA-ANGEBOT. Was sagst du dazu?';
  const seed=String(g?.id||'')+':'+String(h.round);
  let hash=2166136261;for(let i=0;i<seed.length;i++){hash=Math.imul(hash^seed.charCodeAt(i),16777619)}
  return bankerPhrases[(hash>>>0)%bankerPhrases.length];
@@ -59,7 +69,7 @@ function bankerBonusShowReveal(h,key){
  reveal.style.setProperty('--banker-bonus-duration',(bonusCount>=2?7200:6200)+'ms');
  bankerSetText('banker-bonus-chapter','🔐 VERSCHLÜSSELTE NACHRICHT EINGEGANGEN');
  bankerSetText('banker-bonus-reveal-intro',bonusCount>1?'Der Banker legt gleich '+bonusCount+' Überraschungen obendrauf!':hammer?'Der Banker hat noch ein besonderes Werkzeug für dich!':pack?'Der Banker hat ein exklusives Kartenpaket für dich!':special?.short+' als zusätzliches Geschenk vom Banker!');
- bankerSetText('banker-bonus-reveal-offer','💰 '+eur(h.offer)+' + EXTRABONUS');
+ bankerSetText('banker-bonus-reveal-offer','💰 '+eur(bankerCashOffer(h))+' + EXTRABONUS');
  if(hammer){
   const item=document.createElement('div');item.className='banker-bonus-reveal-item hammer';
   const art=document.createElement('img');art.alt='';art.src='./Weihnachtsevent2/Weihnachtsbilder/'+hammer.image;
@@ -106,7 +116,12 @@ function updateBankerCall(){
  const call=$('banker-call');
  if(!g||g.phase!=='decision'||!g.history?.length){bankerBonusRevealKey='';bankerBonusCloseReveal();bankerEntranceKey='';bankerEntranceUntil=0;clearTimeout(bankerEntranceTimer);call.hidden=true;call.classList.remove('call-entering');call.removeAttribute('data-offer-key');return}
  const h=g.history.at(-1);
- const offerKey=String(g.id)+'-'+String(h.round)+'-'+String(h.offer);
+ const offerAmount=bankerCashOffer(h),mega=bankerMegaOffer(h);
+ const offerKey=String(g.id)+'-'+String(h.round)+'-'+String(offerAmount);
+ call.dataset.individual=g.individualBankerOffers===true?'yes':'no';
+ call.dataset.mega=mega?'yes':'no';
+ const eyebrow=call.querySelector('.banker-call-eyebrow');
+ if(eyebrow)eyebrow.textContent=mega?'💎 DEIN MEGA-ANGEBOT':g.individualBankerOffers===true?'🎩 DEIN PERSÖNLICHES BANKANGEBOT':'DAS EXKLUSIVE BANKANGEBOT';
  if(bankerEntranceKey!==offerKey){
   // Remove any previous bonus scene before preparing the next offer.
   bankerBonusCloseReveal();
@@ -130,7 +145,7 @@ function updateBankerCall(){
   const removed=new Set((g.openedAmounts||[]).map(entry=>entry.amount));
   const remaining=values.slice(0,[26,27,28,29,30].includes(g.caseCount)?g.caseCount:27).filter(amount=>!removed.has(amount));
   const average=remaining.length?remaining.reduce((sum,amount)=>sum+amount,0)/remaining.length:0;
-  const ratio=average>0?h.offer/average*100:0;
+  const ratio=average>0?offerAmount/average*100:0;
   const strength=Math.max(0,Math.min(100,Math.round(ratio/2)));
   const width=strength+'%';
   if($('banker-offer-quality-fill').style.width!==width)$('banker-offer-quality-fill').style.width=width;
@@ -140,7 +155,7 @@ function updateBankerCall(){
   quality.hidden=!average;
  }
  bankerSetText('banker-call-quote','„'+bankerPhrase(h)+'“');
- bankerSetText('banker-call-amount',eur(h.offer));
+ bankerSetText('banker-call-amount',eur(offerAmount));
   delete call.dataset.doubleBoost;
  const bonus=$('banker-christmas-bonus');
  if(bonus){
@@ -187,12 +202,12 @@ function updateBankerCall(){
  const finalChoice=remainingCases<=3;
  $('final-choice-compare').hidden=!finalChoice;
  if(finalChoice){
-  bankerSetText('final-choice-offer',eur(h.offer));
+  bankerSetText('final-choice-offer',eur(offerAmount));
   $('final-choice-footnote').textContent=remainingCases===1?'Der letzte Koffer. Nimmst du das sichere Angebot oder riskierst du alles?':remainingCases+' Koffer sind noch im Spiel. Wie viel Risiko gehst du ein?';
  }
  const mine=h.participants.includes(myId())&&!h.decisions.some(d=>d.id===myId());
  const voted=h.decisions.some(d=>d.id===myId());
- $('banker-call-sub').textContent=((g.caseCount||26)-(g.openedAmounts?.length||0))+' Kofferwerte noch im Spiel · '+(mine?'Entscheide jetzt selbst: Deal oder No Deal?':voted?'Deine Stimme ist gespeichert. Warte auf die anderen Spieler.':'Die Spieler stimmen gleichzeitig ab …');
+ $('banker-call-sub').textContent=(g.individualBankerOffers===true?(mega?'💎 MEGA-ANGEBOT nur für dich · ':'🎩 Dein individuelles Angebot · '):'')+((g.caseCount||26)-(g.openedAmounts?.length||0))+' Kofferwerte noch im Spiel · '+(mine?'Entscheide jetzt selbst: Deal oder No Deal?':voted?'Deine Stimme ist gespeichert. Warte auf die anderen Spieler.':'Die Spieler stimmen gleichzeitig ab …');
  const total=h.participants.length;
  const castVotes=h.decisions.length;
  const voteProgress=$('banker-vote-progress');
@@ -241,7 +256,7 @@ function revealVotesAfterAll(){
   const player=g.players.find(p=>p.id===d.id);
   const item=document.createElement('div');item.className='deal-accepted-person';
   const name=document.createElement('div');name.className='deal-accepted-name';name.textContent=(player?.name||'Ein Spieler')+' hat den Deal angenommen!';
-  const amount=document.createElement('strong');amount.className='deal-accepted-amount';amount.textContent=eur(h.offer);
+  const amount=document.createElement('strong');amount.className='deal-accepted-amount';amount.textContent=eur(g.individualBankerOffers===true&&Number.isSafeInteger(h.offersByPlayer?.[d.id])?h.offersByPlayer[d.id]:h.offer);
   item.append(name,amount);
   const extras=[];
   if(h.bonusPack)extras.push('🎁 '+({small:'Normales Kartenpaket',large:'Gold-Kartenpaket',premium:'Premium-Kartenpaket'})[h.bonusPack]);
