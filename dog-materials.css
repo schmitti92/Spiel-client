@@ -318,3 +318,14 @@ body:before{opacity:.34}
 @media(max-width:710px){.expedition-grid .chest-illustration-image{height:127px}.expedition-grid .chest-illustration-image img{max-width:178px}}
 @media(max-width:440px){.expedition-grid .chest-illustration-image{height:110px}.expedition-grid .chest-illustration-image img{max-width:148px}}
 @media(prefers-reduced-motion:reduce){.expedition-grid .chest-illustration-image img{transition:none!important}}
+
+
+.chest-quantity-picker{grid-area:choices;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 15px;border:1px solid #b5a07775;border-radius:15px;background:#18263cc7;margin:0 0 9px}
+.chest-quantity-picker>span{font-weight:800;color:#f6dfae;font-size:14px}
+.chest-quantity-options{display:flex;gap:7px;flex-wrap:wrap}
+.chest-quantity-options button{padding:10px 16px;border-radius:10px;border:1px solid #8290a6;background:#253249;color:#e8f0fc;font-weight:800;cursor:pointer;min-height:42px}
+.chest-quantity-options button.active{border-color:#ffe2a0;color:#201b13;background:linear-gradient(115deg,#fff2c0,#dfad60);box-shadow:0 0 13px #e9b86469}
+.chest-quantity-options button:disabled{opacity:.6;cursor:wait}
+.chest-zone{grid-template-areas:"symbol count" "symbol summary" "title title" "explain explain" "choices choices" "gallery gallery" "legacy legacy" "retry retry"}
+.crate-grid.expedition-grid{grid-area:gallery}
+@media(max-width:600px){.chest-quantity-picker{padding:10px}.chest-quantity-options{width:100%}.chest-quantity-options button{flex:1;padding:10px 5px;font-size:12px}}
