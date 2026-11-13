@@ -362,8 +362,17 @@ function renderShared(){
   // A game-state refresh or HTTP response must not restart the reel animation.
   const canRecover=now-Number(stage.activatedAt||0)>=30000;
   const mayAct=stage.uid===user()?.uid||canRecover;
-  if(stage.phase==='ready')accept.disabled=sharedPending||!mayAct;
-  else if(stage.phase==='rolling'&&!opening)summaryButton.disabled=sharedPending||!mayAct;
+  if(stage.phase==='ready'){
+   accept.disabled=sharedPending||!mayAct;
+   accept.textContent=stage.uid===user()?.uid?'🎰 Jetzt deine Walze'+(stage.reels===3?'n':'')+' drehen':
+    canRecover?'⏳ Für '+(game.players?.find(p=>p.id===stage.uid)?.name||'den Spieler')+' fortsetzen':
+    '👀 Zuschauer · '+(game.players?.find(p=>p.id===stage.uid)?.name||'Spieler')+' ist am Zug';
+  }else if(stage.phase==='rolling'&&!opening){
+   summaryButton.disabled=sharedPending||!mayAct;
+   summaryButton.textContent=stage.uid===user()?.uid?'✅ Meine Gewinne bestätigen · weiter':
+    canRecover?'⏳ Für '+(game.players?.find(p=>p.id===stage.uid)?.name||'den Spieler')+' bestätigen':
+    '👀 Zuschauer · '+(game.players?.find(p=>p.id===stage.uid)?.name||'Spieler')+' bestätigt';
+  }
   return;
  }
  cancel();sharedSignature=signature;liveGame=game.id;claimed=null;claimedUid=null;
@@ -392,7 +401,7 @@ function renderShared(){
    '👀 '+name+' ist an der Reihe. Bitte warte auf den gemeinsamen Dreh.');
   if(!mayAct){
    const wait=Math.max(100,30050-(now-Number(stage.activatedAt||0)));
-   timer(()=>{if(g?.id===game.id&&g.monsterSlotShow?.phase==='ready'&&sharedSignature===signature){sharedSignature='';renderShared()}},wait);
+   timer(()=>{if(g?.id===game.id&&g.monsterSlotShow?.phase==='ready'&&sharedSignature===signature)renderShared()},wait);
   }
   return;
  }
@@ -436,6 +445,8 @@ function renderShared(){
  const finish=()=>{
   if(seq!==token||sharedSignature!==signature||root.hidden)return;
   opening=false;root.dataset.phase='summary';renderSummary();summary.hidden=false;
+  // Show the top of the standalone, vertically scrollable card-results page.
+  root.scrollTop=0;
   const recovery=(typeof dealServerNow==='function'?dealServerNow():Date.now())-Number(stage.activatedAt||0)>=30000;
   summaryButton.disabled=sharedPending||!(me||recovery);
   summaryButton.textContent=me?'✅ Meine Gewinne bestätigen · weiter':
@@ -444,7 +455,7 @@ function renderShared(){
  };
  if(elapsed>=resultAt)finish();else timer(finish,resultAt-elapsed);
  if(!mayAct&&elapsed<30000)
-  timer(()=>{if(g?.id===game.id&&g.monsterSlotShow?.phase==='rolling'&&sharedSignature===signature){sharedSignature='';renderShared()}},
+  timer(()=>{if(g?.id===game.id&&g.monsterSlotShow?.phase==='rolling'&&sharedSignature===signature)renderShared()},
    Math.max(500,30050-(now-Number(stage.activatedAt||0))));
 }
 function sync(){
