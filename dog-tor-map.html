@@ -46,7 +46,7 @@
     <div><span class="world-label">EURE EXPEDITION</span><h2 id="team-title">🧭 Wo stehen die drei Helden?</h2></div>
     <button type="button" id="team-refresh" class="small-action">↻ Aktualisieren</button>
    </div>
-   <section id="pilot-bots" class="pilot-bots" aria-label="Zwei Testspieler zur echten Expedition hinzufügen">
+   <section id="pilot-bots" class="pilot-bots" hidden aria-hidden="true" aria-label="Privater früherer Testspieler-Zugang">
  <div class="pilot-copy"><strong>🤖 Zwei Testspieler hinzufügen</strong><p>Du spielst mit deinem <b>echten Profil</b>. Nova und Titan besetzen die zwei freien Heldenplätze, spielen Boss-Minispiele automatisch und erhalten selbst keine Kisten. Dein Fortschritt, deine Rohstoffe und deine Ausrüstung bleiben normal gespeichert.</p></div>
  <div class="pilot-actions"><input id="pilot-code" type="password" autocomplete="off" spellcheck="false" aria-label="Privater Freigabecode" placeholder="Privater Code (im Link enthalten)"><button type="button" id="pilot-add-bots" class="team-join">🤖 Zwei Testspieler hinzufügen</button></div>
  <p id="pilot-status" class="team-status" role="status" aria-live="polite">Nur für dein Spielerprofil freigegeben.</p>
@@ -181,7 +181,7 @@
     <label class="dog-dev-switch" for="dog-developer-cooldown">
      <input type="checkbox" id="dog-developer-cooldown" disabled>
      <span><strong>10-Minuten-Boss-Pause deaktivieren</strong>
-     <small>Ein verlorener Gruppenboss kann sofort erneut gestartet werden. Gilt für Tor 10 bis 100, nur bei Chris mit Nova und Titan.</small></span>
+     <small>Im öffentlichen Event gilt nach einer Boss-Niederlage die reguläre 10-Minuten-Pause. Private Testausnahmen gelten nicht für normale Teams.</small></span>
     </label>
     <p id="dog-developer-cooldown-state" class="dog-dev-cooldown-state">Normale Boss-Pause: aktiv</p>
    </section>
