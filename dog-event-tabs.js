@@ -4,8 +4,7 @@
   ['dog-expedition.html','📦 Kisten','Fünf Kistenarten sammeln und selbst öffnen'],
   ['dog-tor-map.html','🗺️ 100-Tore-Karte','Alle Tore und fünf Welten'],
   ['dog-forge.html','⚒️ Schmiede','Waffen, Rüstung und Fähigkeiten'],
-  ['dog-merchant.html','💎 Händler','Rohstoffe im Verhältnis 10:1 tauschen'],
-  ['dog-boss.html','🔥 Tor-1-Arena','Bisherige Testarena']
+  ['dog-merchant.html','💎 Händler','Rohstoffe im Verhältnis 10:1 tauschen']
  ];
  const current=(location.pathname.split('/').pop()||'').toLowerCase();
  const query=new URLSearchParams(location.search);
@@ -44,7 +43,6 @@
    addLink(file,label,title);
 
   }
-  addLink('hub-lobby.html','🎮 Spielelobby','Zur Spielelobby','is-exit');
   const deal=node('a','dog-event-tabs__tab is-exit','🎲 Deal or No Deal');
   deal.href=href('DealOrNoDeal/lobby.html',room?{stay:1}:{});
   deal.title='Zurück zum Deal-or-No-Deal-Spiel';rail.append(deal);
