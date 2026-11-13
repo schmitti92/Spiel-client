@@ -25,8 +25,8 @@ test('Hammer-Bingo keeps its own working page and is no longer redirected to DOG
 
 test('DOG career and tournament only observe six DOG boards, never legacy Hammer-Bingo progress',()=>{
  const dog=read('js/dog-album-season2.js');
- assert.match(dog,/progress\.completedTotal/);
- assert.match(dog,/progress\.superSlotTickets/);
+ assert.match(dog,/p\.completedTotal/);
+ assert.match(dog,/p\.superSlotTickets/);
  assert.doesNotMatch(dog,/hammerBingoProgress|hammerBingoClaimed|hammerBingoCycles|hammerProgress/);
  const hub=read('weihnachtswelt.html');
  assert.match(hub,/Nur DOG-Sammelkarten zählen – kein Hammer-Bingo/);
