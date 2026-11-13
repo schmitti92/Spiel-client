@@ -148,7 +148,7 @@ body.hats-beta-open .hub-body{grid-template-columns:repeat(3,minmax(0,1fr))}
  <button id="login" type="button" hidden>👤 Mit Online-Profil anmelden</button>
 </section>
 <section id="album-panel"><div class="sectionhead"><h2>✨ Deine sechs DOG-Sammelalben</h2><p>Jede Tafel hat 4 Reihen, 4 Spalten und 2 Diagonalen – 10 mögliche Bingos. Nach 16/16 Karten startet nur diese DOG-Tafel wieder bei 0/16. Lebenslange Karten und einmalige Bingo-Meilensteine bleiben erhalten.</p></div>
-<section id="dog-wildcard-stash" class="dog-wildcard-stash" aria-label="Joker-Sammelkarten"><div class="dog-wildcard-symbol" aria-hidden="true"><span>❓</span><small>MYTHISCH</small></div><div class="dog-wildcard-copy"><h3>❓ Joker-Sammelkarte</h3><p>Eine noch fehlende Karte deiner Wahl freischalten – sogar die legendäre 1:500-Karte. Nur für DOG, nicht für das Hammer-Bingo.</p><strong id="dog-wildcard-count">0 verfügbar</strong></div><button type="button" id="dog-wildcard-use" disabled>❓ Wunschkarte wählen</button></section>
+<section id="dog-wildcard-stash" class="dog-wildcard-stash" aria-label="Joker-Sammelkarten"><div class="dog-wildcard-symbol" aria-hidden="true"><span>❓</span><small>MYTHISCH</small></div><div class="dog-wildcard-copy"><h3>❓ Joker-Sammelkarte</h3><p>Eine noch fehlende Karte deiner Wahl freischalten – sogar die legendäre 1:500-Karte. Nur für DOG, nicht für das Hammer-Bingo.</p><strong id="dog-wildcard-count">0 verfügbar</strong></div><button type="button" id="dog-wildcard-use" disabled>❓ Wunschkarte wählen</button><a class="dog-wildcard-backfill" href="./Weihnachtsevent2/index.html">❄️ Frühere Eisbild-Joker prüfen</a></section>
 <div id="boards" class="boards"></div><p class="rewards-note">🎁 Für alle 2 Bingos erhältst du eine Materialkiste und zufällige Zusatzpreise. <button type="button" id="album-show-rewards">🏆 Bingo-Gewinne ansehen</button></p></section>
 <section id="rewards-panel" hidden aria-label="Bingo-Belohnungen Saison 2">
   <div class="sectionhead"><h2>🏆 Deine Bingo-Belohnungen</h2><p>Alle zwei Bingos eine Rohstoffkiste. Holz → Eisen → Silber → Gold → Legendär. Die weiteren Gewinne wechseln per Zufall; die letzten Meilensteine zahlen mehrere Extras.</p></div>
@@ -325,7 +325,7 @@ window.addEventListener('spielonline-change',()=>{checkHatsAccess();refresh(fals
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{checkHatsAccess();refresh(false)});else{checkHatsAccess();refresh(false)};
 })();
 </script>
-<script defer src="./js/dog-album-season2.js?v=20261113-wildcard-v1"></script>
+<script defer src="./js/dog-album-season2.js?v=20261113-wildcard-v2"></script>
 <script defer src="./js/dog-super-slots.js?v=20261113-wildcard-v1"></script>
 <script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script>
 <script src="../site-global-controls.js?v=20261109-global-1"></script>

@@ -226,7 +226,7 @@
   if($('dog-wildcard-count')){
    const count=Number(data.wildcardTickets||p.wildcardTickets)||0;
    $('dog-wildcard-count').textContent=number(count)+' Joker-Sammelkarte'+(count===1?'':'n')+' verfügbar';
-   $('dog-wildcard-use').disabled=busy||count<1||!(data.missingWildcardCards||[]).length;
+   $('dog-wildcard-use').disabled=busy||count<1||!(data.definitions||[]).some(card=>!boardCycleOwned(data.progress,card));
    $('dog-wildcard-use').textContent=count>0?'❓ Wunschkarte wählen':'🔒 Noch keine Joker-Karte';
   }
   $('dog-tournament-personal').textContent=number(p.tournament?.points||0)+' Monatspunkte';
@@ -320,7 +320,7 @@
  function openWildcardChooser(){
   if(!data||busy||!activeUser())return;
   const dlg=$('dog-wildcard-dialog'),root=$('dog-wildcard-choices');
-  const available=new Set(data.missingWildcardCards||[]);
+  const available=new Set((data.definitions||[]).filter(card=>!boardCycleOwned(data.progress,card)).map(card=>card.id));
   if(Number(data.wildcardTickets||0)<1||available.size===0)return;
   root.replaceChildren();
   for(const card of data.definitions||[]){

@@ -53,3 +53,6 @@
 @keyframes dog-mythic-glow{from{filter:brightness(1);transform:scale(1)}to{filter:brightness(1.17);transform:scale(1.012)}}
 @media(max-width:640px){.dog-wildcard-symbol{flex-basis:65px;height:93px}.dog-wildcard-symbol span{font-size:46px}.dog-wildcard-stash{justify-content:center}.dog-wildcard-choices{grid-template-columns:1fr}.dog-wildcard-dialog{padding:12px}.dog-wildcard-copy h3{font-size:21px}}
 @media(prefers-reduced-motion:reduce){.dog-wildcard-symbol span,.dog-super-reel[data-rarity="mythic"][data-phase="won"],.dog-super-prize[data-rarity="mythic"],#deal-monster-slots .monster-slot-reel[data-rarity="mythic"][data-phase="won"]{animation:none!important}}
+
+.dog-wildcard-backfill{display:inline-flex;align-items:center;text-align:center;padding:9px 10px;border:1px solid #b3dafa;border-radius:10px;background:#193557;color:#e4f4ff;text-decoration:none;font:850 12px system-ui}
+.dog-wildcard-backfill:hover,.dog-wildcard-backfill:focus-visible{background:#2b537d;outline:2px solid #fff3bc}

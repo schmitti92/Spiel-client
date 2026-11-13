@@ -3,7 +3,7 @@
 const root=document.getElementById('ice-online'),status=document.getElementById('ice-online-status');
 const names=["IMG-20261108-WA0000.jpg","IMG-20261108-WA0001.jpg","IMG-20261108-WA0002.jpg","IMG-20261108-WA0003.jpg","IMG-20261108-WA0004.jpg","IMG-20261108-WA0005.jpg","IMG-20261108-WA0006.jpg","IMG-20261108-WA0007.jpg","IMG-20261108-WA0011.jpg","IMG-20261108-WA0012.jpg","IMG-20261108-WA0013.jpg","IMG-20261108-WA0014.jpg","IMG-20261108-WA0015.jpg","IMG-20261108-WA0016.jpg","IMG-20261108-WA0017.jpg","IMG-20261108-WA0018.jpg","IMG-20261108-WA0023.jpg","IMG-20261108-WA0024.jpg","IMG-20261108-WA0025.jpg","IMG-20261108-WA0027.jpg","IMG-20261108-WA0030.jpg","IMG-20261108-WA0032.jpg","IMG-20261108-WA0033.jpg","IMG-20261108-WA0034.jpg","IMG-20261108-WA0035.jpg","IMG-20261108-WA0036.jpg","IMG-20261108-WA0038.jpg","IMG-20261108-WA0040.jpg","IMG-20261108-WA0041.jpg","IMG-20261108-WA0042.jpg","IMG-20261108-WA0043.jpg","IMG-20261108-WA0045.jpg","IMG-20261108-WA0046.jpg","IMG-20261108-WA0047.jpg","IMG-20261108-WA0048(1).jpg","IMG-20261108-WA0051.jpg","IMG-20261108-WA0052.jpg","IMG-20261108-WA0053.jpg","IMG-20261108-WA0054.jpg","IMG-20261108-WA0056.jpg","IMG-20261108-WA0065.jpg","IMG-20261108-WA0067.jpg","IMG-20261108-WA0068.jpg","IMG-20261108-WA0069.jpg","IMG-20261108-WA0070.jpg","IMG-20261108-WA0074.jpg","IMG-20261108-WA0075.jpg","IMG-20261108-WA0077.jpg","IMG-20261108-WA0079.jpg","IMG-20261108-WA0081.jpg","IMG-20261108-WA0084.jpg","IMG-20261108-WA0085.jpg","IMG-20261108-WA0086.jpg","IMG-20261108-WA0089.jpg","IMG-20261108-WA0091.jpg","IMG-20261108-WA0092.jpg","IMG-20261108-WA0094.jpg","IMG-20261108-WA0097.jpg","IMG-20261108-WA0099.jpg","IMG-20261108-WA0104.jpg","IMG-20261108-WA0105.jpg","IMG-20261108-WA0109.jpg","IMG-20261108-WA0110.jpg","IMG-20261108-WA0111.jpg","IMG-20261108-WA0113(1).jpg","IMG-20261108-WA0114.jpg","IMG-20261108-WA0121.jpg","motion_photo_3952067152776055351.jpg","motion_photo_4388198511032034292.jpg","motion_photo_6120708326686891259.jpg"];
 const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-let state=null,busy=false,pending=null,picture30ClaimBusy=false;
+let state=null,busy=false,pending=null,picture30ClaimBusy=false,wildcardClaimBusy=false;
 // Distinguish the authenticated profile from any previously loaded board.
 // Delayed responses must never overwrite a different player's ice progress.
 let activeUserUid=null,authEpoch=0,reloadAfterAccountSwitch=false;
@@ -18,10 +18,10 @@ async function request(type,body){
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),25000);
  try{
   const pendingId=type==='GET'?String(body?.pendingId||''):'';
-  const route=type==='GET'?'me':type==='CLAIM'?'claim-picture30':'action';
+  const route=type==='GET'?'me':type==='CLAIM'?'claim-picture30':type==='WILDCARD_CLAIM'?'claim-wildcards':'action';
   const endpoint=api+'/api/christmas-ice/'+route+(pendingId?'?pendingId='+encodeURIComponent(pendingId):'');
   const method=type==='GET'?'GET':'POST';
-  const response=await fetch(endpoint,{method,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},cache:'no-store',signal:controller.signal,body:type==='GET'||type==='CLAIM'?undefined:(body?JSON.stringify(body):undefined)});
+  const response=await fetch(endpoint,{method,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},cache:'no-store',signal:controller.signal,body:type==='GET'||type==='CLAIM'||type==='WILDCARD_CLAIM'?undefined:(body?JSON.stringify(body):undefined)});
   const data=await response.json();if(!response.ok||!data.ok){const error=new Error(data.error||'SERVER_ERROR');error.confirmedRejection=true;throw error}return data;
  }catch(error){
   if(error?.name==='AbortError')throw Error('Zeitüberschreitung nach 25 Sekunden');
@@ -89,6 +89,23 @@ const jackpotText=bonus=>!bonus?[]:[
 const jackpotHtml=bonus=>!bonus?'':'<div class="v44-jackpot-banner"><strong>👑 '+(bonus.cash?'DEIN GARANTIERTER JACKPOT':'BONUS-DREHUNGEN FREIGESCHALTET')+'</strong><ul>'+
  jackpotText(bonus).map(line=>'<li>'+line+'</li>').join('')+'</ul><a class="v44-jackpot-link" href="../weihnachtswelt.html?view=album">🎰 Zur DOG-Sammlung & Super-Slots</a></div>';
 
+// Only older, already-completed pictures need a backfill call. Fresh picture
+ // wins are paid directly in the winning strike transaction, without polling.
+ async function claimHistoricWildcards(){
+  if(wildcardClaimBusy||!state||!user())return;
+  const best=Math.max(Number(state.completed)||0,Number(state.maxRewarded)||0);
+  if(best<50||state.iceWildcard50Claimed&& (best<60||state.iceWildcard60Claimed))return;
+  const uid=user().uid,epoch=authEpoch;wildcardClaimBusy=true;
+  try{
+   const bonus=await request('WILDCARD_CLAIM');
+   if(user()?.uid!==uid||epoch!==authEpoch)return;
+   state={...state,iceWildcard50Claimed:!!bonus.iceWildcard50Claimed||!!state.iceWildcard50Claimed,
+    iceWildcard60Claimed:!!bonus.iceWildcard60Claimed||!!state.iceWildcard60Claimed};
+   if(bonus.granted)message('❓ '+bonus.granted+' Joker-Sammelkarte(n) für bereits geschaffte Eisbilder sicher nachgetragen! Im DOG-Album kannst du deine Wunschkarte auswählen.');
+   render();
+  }catch(e){if(user()?.uid===uid&&epoch===authEpoch)message('⚠️ Joker-Bonus der Bilder 50/60 noch nicht abgeglichen. Mit „Spielstand prüfen“ erneut versuchen: '+e.message)}
+  finally{wildcardClaimBusy=false}
+ }
 function recoveredGift(){
  // Rebuild only the presentation from already confirmed state after a reload.
  // Never draw another reward or re-run an action; image 70 is also recoverable.
@@ -374,7 +391,7 @@ async function run(type,extra={}){
   busy=false;
   if(user()?.uid===actionUid&&authEpoch===actionEpoch){
    render();
-   if(state&&!readPending())void claimPicture30Bonus();
+   if(state&&!readPending()){void claimPicture30Bonus();void claimHistoricWildcards();}
   }
   finishAccountRefresh();
  }
@@ -423,7 +440,7 @@ async function load(){
   // Release the load lock before painting, otherwise all closed ice tiles
   // remain disabled until a separate re-render (previously hammer selection).
   recoveredGift();busy=false;render();
-  if(!shouldRecover)void claimPicture30Bonus();
+  if(!shouldRecover){void claimPicture30Bonus();void claimHistoricWildcards();}
  }catch(e){
   shouldRecover=false;
   if(user()?.uid!==requestedUid||authEpoch!==requestedEpoch)return;
