@@ -32,10 +32,11 @@ function configureReels(count){
  const n=count===1?1:3;
  root.dataset.reels=String(n);
  for(let i=0;i<reels.length;i++){reels[i].hidden=i>=n;lights[i].hidden=i>=n;}
- root.querySelector('.monster-slot-subheading').textContent=
-  n===1?'🥈 ZWEITER PLATZ · 1 WALZE · 1 GARANTIERTER GEWINN':
-   '🏆 ERSTER PLATZ · 3 WALZEN · 3 GARANTIERTE GEWINNE';
- root.querySelector('.monster-slot-reels').setAttribute('aria-label',
+ const subtitle=root.querySelector('.monster-slot-subheading');
+ if(subtitle)subtitle.textContent=n===1?
+  '🥈 ZWEITER PLATZ · 1 WALZE · 1 GARANTIERTER GEWINN':
+  '🏆 ERSTER PLATZ · 3 WALZEN · 3 GARANTIERTE GEWINNE';
+ root.querySelector('.monster-slot-reels')?.setAttribute('aria-label',
   n===1?'Eine Gewinnwalze':'Drei Gewinnwalzen');
  summaryTitle.textContent='🎉 '+n+(n===1?' Slot-Gewinn':' Slot-Gewinne');
  summaryButton.textContent='✅ '+(n===1?'Gewinn':'Alle Gewinne')+' bestätigen';
@@ -176,7 +177,7 @@ function showSummary(token,id){
  renderSummary();
  summary.hidden=false;opening=false;root.dataset.phase='summary';
  setStatus('🎉 Alle Gewinne auf einen Blick – bereits gutgeschrieben!');
- accept.disabled=true;summaryButton.disabled=false;summaryButton.textContent='✅ Alle Gewinne bestätigen';
+ accept.disabled=true;summaryButton.disabled=false;summaryButton.textContent='✅ '+(claimed.prizes.length===1?'Gewinn':'Alle Gewinne')+' bestätigen';
  summaryButton.focus({preventScroll:true});
 }
 function present(reopen=false){
@@ -206,7 +207,7 @@ function present(reopen=false){
 async function claim(){
  if(claiming||!liveGame||entitledReels()===0||claimed?.gameId===liveGame&&claimedUid===user()?.uid)return;
  const u=user();if(!u?.getIdToken)return;
- const id=liveGame,uid=u.uid;claiming=id;setStatus('🎁 Deine '+entitledReels()+' Slot-Gewinne werden sicher geladen …');
+ const id=liveGame,uid=u.uid;claiming=id;setStatus('🎁 '+(entitledReels()===1?'Dein Slot-Gewinn wird':'Deine drei Slot-Gewinne werden')+' sicher geladen …');
  try{
   const token=await u.getIdToken();
   const response=await fetch(base()+'/api/deal-or-no-deal/monster-slots/claim',{
