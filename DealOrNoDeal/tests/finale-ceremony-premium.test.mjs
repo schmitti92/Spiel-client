@@ -16,7 +16,7 @@ test('personal case finale has a complete full-size goldstudio stage',()=>{
   'finale-stage-light-left','finale-stage-light-right','finale-stage-flash','finale-stage-stars'
  ])assert.ok(html.includes('class="'+cls+'"')||html.includes(' '+cls+'"'),cls);
  assert.ok(html.includes('./css/finale-ceremony-premium.css?v=20261109-personal-cases-show-v2'));
- assert.ok(html.includes('./js/finale.js?v=20261110-30cases-50m-v1'));
+ assert.ok(html.includes('./js/finale.js?v=20261113-podium-slots-v2'));
  assert.match(css,/@media\(max-width:760px\)/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
  assert.match(css, /finale-golden-unlock/);
