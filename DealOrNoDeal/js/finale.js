@@ -41,6 +41,7 @@ let finaleControlTimer=null;
 function updateFinaleStartControl(){
  if(typeof g==='undefined'||g?.phase!=='final')return;
  const ready=finaleBonusesComplete(g),button=$('final-replay');
+ const oldRecovery=$('final-recover');if(oldRecovery)oldRecovery.hidden=g.monsterSlotsVersion===1;
  if(button&&!finaleRestartBusy){
   button.disabled=!ready;
   button.textContent=ready?'🎬 Neue Runde starten':'⏳ Siegerbonus noch nicht abgeschlossen';
