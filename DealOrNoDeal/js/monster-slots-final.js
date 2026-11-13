@@ -6,6 +6,16 @@ const user=()=>window.SpielOnline?.state?.()?.user;
 const $=id=>document.getElementById(id);
 const icons={chest:'📦',pack:'🎴',hammer:'🔨',joker:'🃏',minigame:'🎟️',monster:'👹',cash:'💰'};
 const chestArt={wood:'../dog-chest-art/01_Holzkiste.png',iron:'../dog-chest-art/02_Eisenkiste.png',silver:'../dog-chest-art/03_Silberkiste.png',gold:'../dog-chest-art/04_Goldkiste.png',legendary:'../dog-chest-art/05_Legendaere_Kiste.png'};
+const awardArt={
+ chest:chestArt,
+ pack:{small:'assets/hats/prize-pack.svg',large:'assets/hats/reward-pack.svg',premium:'assets/hats/reward-pack.svg',platinum:'assets/hats/reward-platinum.svg'},
+ hammer:{single:'Weihnachtsevent2/Weihnachtsbilder/hammer-einfach.webp',double:'Weihnachtsevent2/Weihnachtsbilder/hammer-doppel.webp',lucky:'Weihnachtsevent2/Weihnachtsbilder/hammer-glueck.webp'},
+ joker:'assets/hats/reward-joker.svg',
+ minigame:'assets/hats/reveal-gift.svg',
+ monster:'Weihnachtsevent2/Weihnachtsbilder/file_0000000077288210bd94623e0d40c452.png',
+ cash:'assets/hats/reward-cash.svg'
+};
+const awardImage=prize=>typeof awardArt[prize.kind]==='string'?awardArt[prize.kind]:awardArt[prize.kind]?.[prize.id]||null;
 const rolling=['📦','🎴','🔨','🃏','🎟️','👹','💰','💎'];
 const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 const seenKey=id=>'monster-slots-watched:'+String(user()?.uid||'anonymous')+':'+id;
@@ -28,7 +38,7 @@ for(const reel of reels){
  }));
 }
 function resetReel(reel){
- setPhase(reel,'ready');reel.dataset.rarity='';
+ setPhase(reel,'ready');reel.dataset.rarity='';reel.dataset.award='';reel.dataset.variant='';
  const win=reel.querySelector('.monster-slot-prize');win.hidden=true;
  win.querySelector('.monster-slot-art').replaceChildren();
 }
@@ -36,10 +46,14 @@ function showPrize(reel,prize){
  const win=reel.querySelector('.monster-slot-prize'),art=win.querySelector('.monster-slot-art');
  art.replaceChildren();art.classList.remove('has-image');
  const span=document.createElement('span');span.className='monster-slot-emoji';span.textContent=icons[prize.kind]||'🎁';art.append(span);
- if(prize.kind==='chest'&&chestArt[prize.id]){
-  const img=document.createElement('img');img.alt='';img.src=chestArt[prize.id];
-  img.addEventListener('load',()=>art.classList.add('has-image'),{once:true});
-  img.addEventListener('error',()=>img.remove(),{once:true});art.append(img);
+ const imagePath=awardImage(prize);
+ reel.dataset.award=prize.kind||'';
+ reel.dataset.variant=prize.id||'';
+ if(imagePath){
+  const img=document.createElement('img');img.alt='';img.loading='eager';img.decoding='async';
+  img.addEventListener('load',()=>{if(art.contains(img))art.classList.add('has-image')},{once:true});
+  img.addEventListener('error',()=>{if(art.contains(img))img.remove()},{once:true});
+  img.src=imagePath;art.append(img);
  }
  const count=Number.isInteger(prize.quantity)?prize.quantity:1,isCash=prize.kind==='cash';
  win.querySelector('.monster-slot-quantity').textContent=isCash?'💶 ZUFALLSGELD':count+'×';
