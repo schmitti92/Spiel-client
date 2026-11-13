@@ -144,7 +144,10 @@ test('won DOG packs open only when one card is new; duplicate-only packs skip th
  assert.equal(withNew.accept.disabled,true);
  await withNew.advance(120);
  assert.equal(withNew.cinema.children[0].children[3].textContent,'🌟 NEU! Drachenritter');
- await withNew.advance(250+160+120);
+ await withNew.advance(150);
+ assert.equal(withNew.cinema.children[0].children[3].textContent,'Doppelt: Doppeltes Motiv',
+  'a pack with new cards reveals every card, but highlights only the new ones');
+ await withNew.advance(150+160+120);
  assert.equal(withNew.cinema.hidden,true,'completed reveal returns to the three winnings');
  assert.equal(withNew.accept.disabled,false);
  assert.equal(withNew.requests.length,1,'card reveal cannot call an additional payout endpoint');
