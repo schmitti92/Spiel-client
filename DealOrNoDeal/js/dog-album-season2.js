@@ -53,10 +53,10 @@
    const grid=document.createElement('div');grid.className='card-grid';
    for(const card of cards){
     const button=document.createElement('button');button.type='button';
-    button.className='card '+card.rarity;button.dataset.id=card.id;
-    button.setAttribute('aria-label','Karte '+card.slot+' noch nicht entdeckt');
+    button.className='card '+card.rarity+(card.slot===16?' jackpot':'');button.dataset.id=card.id;
+    button.setAttribute('aria-label',card.slot===16?'Legendäre 1-zu-500-Karte noch nicht entdeckt':'Karte '+card.slot+' noch nicht entdeckt');
     const back=document.createElement('span');back.className='back';back.textContent='🔒';
-    const tag=document.createElement('span');tag.className='rarity';tag.textContent=rarities[card.rarity];
+    const tag=document.createElement('span');tag.className='rarity';tag.textContent=card.slot===16?'👑 1:500':rarities[card.rarity];
     const stamp=document.createElement('span');stamp.className='stamp';stamp.textContent=card.slot;
     button.append(back,tag,stamp);
     button.addEventListener('click',()=>openCard(card));
@@ -165,8 +165,8 @@
    const count=Number(data.cards?.[card.id])||0;
    const owned=count>0;
    el.classList.toggle('owned',owned);
-   el.title=owned?card.name+' · '+count+'×':'🔒 Noch nicht gesammelt';
-   el.setAttribute('aria-label',owned?card.name+' · '+count+' mal gesammelt':'Karte '+card.slot+' noch nicht entdeckt');
+   el.title=owned?card.name+' · '+count+'×'+(card.slot===16?' · legendäre 1:500-Karte':''):card.slot===16?'👑 Legendärer Schatz · Chance 1:500 pro Karte aus diesem Block':'🔒 Noch nicht gesammelt';
+   el.setAttribute('aria-label',owned?card.name+' · '+count+' mal gesammelt'+(card.slot===16?' · legendärer Jackpot 1 zu 500':''):card.slot===16?'Legendäre 1-zu-500-Karte noch nicht entdeckt':'Karte '+card.slot+' noch nicht entdeckt');
    const previous=el.querySelector('img');
    if(owned&&!previous){
     const img=document.createElement('img');img.loading='lazy';img.decoding='async';img.src=imageSrc(card);img.alt=card.name;
