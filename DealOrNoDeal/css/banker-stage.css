@@ -696,3 +696,30 @@
  #banker-call .banker-bonus-special-art{width:56px;height:56px;font-size:42px}
 }
 @media(prefers-reduced-motion:reduce){#banker-call .banker-special-bonus:not([hidden]){animation:none!important}}
+
+
+/* Host opt-in: personal banker offers · 2026-11-14 */
+#banker-call[data-individual="yes"] .banker-call-eyebrow{
+ color:#ffe1a0;font-weight:950;letter-spacing:.09em;
+ text-shadow:0 0 13px #f6c97085;
+}
+#banker-call[data-individual="yes"] .banker-call-amount{
+ border-color:#f7d88a;box-shadow:0 0 0 2px #d6a94a45,0 0 26px #f0d29155;
+}
+#banker-call[data-mega="yes"] .banker-call-eyebrow{
+ color:#fff7c6;text-shadow:0 0 14px #ffdc57,0 0 24px #e28bf2;
+}
+#banker-call[data-mega="yes"] .banker-call-amount{
+ background:radial-gradient(ellipse at 50% 24%,#f7cb7442,transparent 78%),linear-gradient(155deg,#432e37,#221b37);
+ border:2px solid #ffdd70!important;
+ box-shadow:inset 0 0 17px #ffe19c4b,0 0 0 2px #fff1b150,0 0 37px #ffce769a;
+ text-shadow:0 1px 0 #3c240a,0 0 16px #ffd6759a;
+ animation:deal-banker-mega-reveal .9s ease-out both;
+}
+@keyframes deal-banker-mega-reveal{
+ from{filter:brightness(1.4);transform:scale(.98)}
+ to{filter:brightness(1);transform:scale(1)}
+}
+@media(prefers-reduced-motion:reduce){
+ #banker-call[data-mega="yes"] .banker-call-amount{animation:none}
+}
