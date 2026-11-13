@@ -10,7 +10,8 @@ import { Script } from 'node:vm';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const html = readFileSync(resolve(root, 'weihnachten.html'), 'utf8');
 const css = readFileSync(resolve(root, 'css/christmas-hammer-premium.css'), 'utf8');
-const inline = html.match(/<script>([\s\S]*?)<\/script>/)?.[1] ?? '';
+const inline = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
+  .map(([,body]) => body).sort((a, b) => b.length - a.length)[0] ?? '';
 const segment = (from, to) => {
   const a = html.indexOf(from);
   const b = html.indexOf(to, a + from.length);
