@@ -70,3 +70,31 @@ background:linear-gradient(105deg,#0c1f38f4 5%,#172c47f1 56%,#3a1c32e8),url("../
 #hub-cards-tab[aria-current="page"],#hub-packs-tab[aria-current="page"]{border-color:#ffdfa0!important;background:linear-gradient(145deg,#6e4325,#284969)!important;color:#ffe6a3!important;box-shadow:inset 0 0 0 1px #e9c07877,0 0 10px #ffd07944}
 @media(max-width:850px){#dog-season-panel .boards{grid-template-columns:1fr}#dog-season-panel .packs{grid-template-columns:1fr}#dog-season-panel .board{padding:12px}}
 @media(max-width:510px){#dog-season-panel .stats{gap:5px}#dog-season-panel .stats>div{padding:8px 7px}#dog-season-panel .card-grid{gap:5px}#dog-season-panel .card{border-radius:8px}#dog-season-panel .dog-hero{padding:15px}}
+
+/* Bingo-Preise: 30 Meilensteine auf sechs Tafeln, ohne extra Seite. */
+#dog-season-panel .rewards-note button{margin-left:9px;padding:7px 12px;border-radius:9px;border:1px solid #eed195;color:#1e170d;background:linear-gradient(145deg,#fff0bc,#dbab5d);font-weight:900;cursor:pointer}
+#dog-season-panel .reward-summary{padding:16px 20px;border:1px solid #e1bd7c;border-radius:12px;background:linear-gradient(140deg,#1b3453,#0b1b32);font-weight:900;color:#ffdda0;text-align:center;font-size:clamp(16px,2vw,22px);margin:14px 0}
+#dog-season-panel #claim-bingo-rewards{margin:10px auto;display:block;background:linear-gradient(135deg,#ffe7aa,#c78e40);color:#241b12;border:2px solid #fff4cb;border-radius:11px;padding:12px 17px;font-weight:950}
+#dog-season-panel #claim-bingo-rewards[hidden]{display:none}
+#dog-season-panel #claim-bingo-rewards:disabled{opacity:.55;cursor:default}
+#dog-season-panel #reward-claim-status{color:#e9d8b4;text-align:center}
+#dog-season-panel .reward-milestones{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#dog-season-panel .reward-milestone{display:flex;align-items:flex-start;gap:12px;border:1px solid #b79664;border-radius:13px;padding:12px 15px;background:linear-gradient(145deg,#152d48ef,#0b1a30ee);min-width:0}
+#dog-season-panel .reward-milestone.legendary{border-color:#f7c961;box-shadow:0 0 15px #ffd36a24}
+#dog-season-panel .reward-milestone.ready{border-color:#ffe6a0;background:linear-gradient(120deg,#3e3225,#1b3454)}
+#dog-season-panel .reward-milestone.claimed{border-color:#93cba87d}
+#dog-season-panel .reward-milestone .reward-icon{flex:0 0 42px;height:42px;border-radius:11px;background:radial-gradient(circle at 50% 20%,#dbb775,#533b23);display:grid;place-items:center;font-size:25px;box-shadow:0 2px 9px #0007}
+#dog-season-panel .reward-milestone .reward-text{min-width:0;flex:1}
+#dog-season-panel .reward-milestone .reward-text strong{display:block;font-weight:900;color:#ffe0a0;font-size:15px}
+#dog-season-panel .reward-milestone .reward-text p{margin:3px 0;color:#d4e3ee;line-height:1.45;font-size:13px}
+#dog-season-panel .reward-milestone .reward-text small{display:block;color:#acc1d0;line-height:1.45}
+#dog-season-panel .reward-milestone .reward-state{font-weight:900;font-size:12px;white-space:nowrap;color:#ffdf9b}
+#dog-season-panel .reward-milestone.claimed .reward-state{color:#9cf0bf}
+#bingo-reward-dialog{max-width:min(770px,calc(100% - 25px));max-height:90dvh;overflow:auto;background:linear-gradient(140deg,#1c344e,#111b33);color:#fff1ca;border:2px solid #eaca79;border-radius:17px;padding:20px 25px;text-align:center}
+#bingo-reward-dialog::backdrop{background:#000c;backdrop-filter:blur(5px)}
+#bingo-reward-dialog h2{font:900 clamp(22px,3vw,34px) Georgia,serif;color:#ffe0a0}
+#bingo-reward-dialog .bingo-award{margin:10px 0;padding:13px;border:1px solid #e2bb73;border-radius:12px;background:#10243c;text-align:left}
+#bingo-reward-dialog .bingo-award h3{color:#ffe4a2;font-size:18px;margin:2px 0 7px}
+#bingo-reward-dialog .bingo-award p{margin:4px 0;font-size:14px}
+#bingo-reward-dialog button{background:linear-gradient(130deg,#fff3bb,#c89042);color:#1c160e;border:1px solid #f8db9d;border-radius:11px;padding:12px 20px;font-weight:900;cursor:pointer;margin-top:13px}
+@media(max-width:780px){#dog-season-panel .reward-milestones{grid-template-columns:1fr}#dog-season-panel .reward-milestone{padding:10px}}
