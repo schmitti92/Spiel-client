@@ -1,0 +1,48 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync,existsSync} from 'node:fs';
+import {Script} from 'node:vm';
+const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
+const js=read('js/monster-slots-final.js');
+const css=read('css/monster-slots-final.css');
+const html=read('game.html');
+test('Monster Slots script parses as a classic browser script and is loaded with a cache-busted asset',()=>{
+ assert.doesNotThrow(()=>new Script(js,{filename:'monster-slots-final.js'}));
+ assert.match(html,/js\/monster-slots-final\.js\?v=20261113-slots-goldshow-v2/);
+ assert.match(html,/css\/monster-slots-final\.css\?v=20261113-slots-goldshow-v2/);
+});
+test('three reels with real scrolling icon tracks and sequential stops, never a browser-side prize roll',()=>{
+ assert.equal((js.match(/class="monster-slot-reel"/g)||[]).length,3,'exactly three reels');
+ assert.equal((js.match(/class="monster-slot-track"/g)||[]).length,3,'one moving track per reel');
+ assert.equal((js.match(/class="monster-slot-prize"/g)||[]).length,3,'one server prize display per reel');
+ assert.match(js,/3000,4500,6000/,'three left-to-right stop timestamps');
+ assert.match(js,/setPhase\(reel,'running'\)/);
+ assert.match(js,/showPrize\(reels\[i\],claimed\.prizes\[i\]\)/,'server prize is displayed');
+ assert.doesNotMatch(js,/Math\.random|crypto\.randomInt|randomPrize/,'reels must not compute prize outcomes');
+ assert.match(css,/@keyframes ms-roll/);
+ assert.match(css,/translateY\(-50%\)/);
+ assert.match(css,/animation:ms-roll/);
+ assert.match(js,/if\(i===2\)timer\(/,'confirmation waits for the third stop');
+});
+test('premium show appearance supports three visible reel windows, mobile screens and reduced motion',()=>{
+ assert.match(css,/linear-gradient\(155deg,#372054/);
+ assert.match(css,/border:4px solid #dbac48/);
+ assert.match(css,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+ assert.match(css,/@media\(max-width:570px\)/);
+ assert.match(css,/@media\(max-height:655px\)/);
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+ assert.match(js,/aria-live="polite"/);
+ assert.match(js,/role','dialog'/);
+ assert.match(js,/accept\.disabled=true/);
+});
+test('all five already-uploaded chest artworks exist and no new prize payout is made by presentation',()=>{
+ for(const name of ['01_Holzkiste.png','02_Eisenkiste.png','03_Silberkiste.png','04_Goldkiste.png','05_Legendaere_Kiste.png']){
+  assert.ok(existsSync(new URL('../../dog-chest-art/'+name,import.meta.url)),name);
+  assert.ok(js.includes(name),name);
+ }
+ assert.match(js,/monster-slots\/claim/);
+ assert.match(js,/sessionStorage\.setItem\(seenKey\(liveGame\),'yes'\)/);
+ assert.match(js,/monster-slots-watched:/);
+ assert.match(js,/claimed\.prizes/);
+ assert.match(html,/g\.monsterSlotsVersion!==1/,'old reward wheel suppressed for new game finales');
+});
