@@ -17,7 +17,7 @@ test('Top expedition tab is called Kisten and keeps the same URL and room contex
 
 test('The five primary chests render as an accessible, responsive collection',()=>{
  const five=['wood','iron','silver','gold','legendary'];
- assert.equal((html.match(/class="chest-illustration"/g)||[]).length,5);
+ assert.equal((html.match(/class="chest-illustration chest-illustration-image"/g)||[]).length,5);
  assert.equal((html.match(/class="crate-action"/g)||[]).length,5);
  for(const tier of five){
   assert.match(html,new RegExp('id="open-'+tier+'"'));
@@ -52,4 +52,21 @@ test('Legacy chests and material stock are preserved behind secondary sections',
  assert.match(ui,/result\.replayed/);
  assert.match(html,/id="refresh-hero"/);
  assert.match(ui,/refresh-hero'\)\?\.addEventListener\('click'/);
+});
+
+test('All five uploaded PNG assets are wired to their correct chest cards',()=>{
+ const expected={
+  wood:'01_Holzkiste.png',
+  iron:'02_Eisenkiste.png',
+  silver:'03_Silberkiste.png',
+  gold:'04_Goldkiste.png',
+  legendary:'05_Legendaere_Kiste.png'
+ };
+ for(const [tier,file] of Object.entries(expected)){
+  const card=html.match(new RegExp('<button id="open-'+tier+'"[^>]*>([\\s\\S]*?)<\\/button>'));
+  assert.ok(card,'missing '+tier+' card');
+  assert.ok(card[1].includes('src="dog-chest-art/'+file+'"'),tier+' wrong PNG');
+ }
+ assert.match(css,/\.chest-illustration-image img/);
+ assert.match(html,/dog-materials\.css\?v=20261113-chest-art-v4/);
 });
