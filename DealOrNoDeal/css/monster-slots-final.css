@@ -84,7 +84,7 @@
  border-bottom:1px solid #765e8f33;
 }
 .monster-slot-reel[data-phase="running"] .monster-slot-track{
- opacity:1;animation:ms-roll .72s linear infinite;
+ opacity:1;animation:ms-roll 2.05s linear infinite;
 }
 .monster-slot-reel[data-phase="won"] .monster-slot-track{opacity:0}
 @keyframes ms-roll{from{transform:translateY(0)}to{transform:translateY(-50%)}}
@@ -106,6 +106,21 @@
 .monster-slot-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;filter:drop-shadow(0 5px 8px #33233a55);transition:opacity .3s}
 .monster-slot-art.has-image img{opacity:1}
 .monster-slot-art.has-image .monster-slot-emoji{opacity:0}
+/* Original prize artwork is displayed on the same reel surface as chest art.
+   Keep per-tier styling in CSS, not in server-determined prize data. */
+.monster-slot-reel[data-award="pack"] .monster-slot-prize{background:radial-gradient(ellipse at 50% 20%,#fff7df,#e9e1f7 95%)}
+.monster-slot-reel[data-award="pack"][data-variant="small"] .monster-slot-prize{background:radial-gradient(ellipse at 50% 25%,#fcf2e4,#ddd8ee)}
+.monster-slot-reel[data-award="pack"][data-variant="large"] .monster-slot-prize{background:radial-gradient(ellipse at 50% 20%,#fff2c0,#dcc485)}
+.monster-slot-reel[data-award="pack"][data-variant="premium"] .monster-slot-prize{background:radial-gradient(ellipse at 50% 20%,#fff7f1,#c8a6ed)}
+.monster-slot-reel[data-award="pack"][data-variant="platinum"] .monster-slot-prize{background:radial-gradient(ellipse at 50% 20%,#fff,#c7dcf5)}
+.monster-slot-reel[data-award="hammer"] .monster-slot-prize{background:radial-gradient(ellipse at 50% 20%,#fff8e0,#d2d7ed)}
+.monster-slot-reel[data-award="cash"] .monster-slot-prize{background:radial-gradient(ellipse at 50% 20%,#fffad9,#d2ebd7)}
+.monster-slot-reel[data-award="monster"] .monster-slot-prize{background:radial-gradient(ellipse at 50% 20%,#fff2d9,#e6b8f0)}
+.monster-slot-reel[data-award="monster"] .monster-slot-art img{filter:drop-shadow(0 4px 5px #5f327977)}
+.monster-slot-reel[data-award="hammer"] .monster-slot-art img{filter:drop-shadow(0 4px 6px #37204855)}
+.monster-slot-reel[data-award="cash"] .monster-slot-prize-name{font-size:clamp(10px,1.4vw,15px);font-variant-numeric:tabular-nums;word-break:break-word}
+.monster-slot-reel[data-award="monster"] .monster-slot-art img{border-radius:50%}
+
 .monster-slot-quantity{
  flex:0 0 auto;color:#623673;font-size:clamp(11px,1.65vw,19px);font-weight:1000;letter-spacing:.04em;
 }
