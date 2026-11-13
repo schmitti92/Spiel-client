@@ -118,3 +118,24 @@ background:linear-gradient(105deg,#0c1f38f4 5%,#172c47f1 56%,#3a1c32e8),url("../
 @media (max-width:510px){
  #dog-season-panel .card.jackpot .rarity{padding:2px 3px;font-size:8px}
 }
+
+/* Complete DOG card artwork at every reward size.
+   The former auto-fit 1fr columns could expand a single card to dialog width. */
+#dog-season-panel .card img{object-fit:contain;object-position:center;background:#152a43}
+#reveal-dialog .reveal-items{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(min(108px,40vw),148px));
+ justify-content:center;align-items:start;gap:10px;
+ max-width:700px;margin:16px auto;
+}
+#reveal-dialog .reveal-item{box-sizing:border-box;min-width:0;width:100%;padding:7px}
+#reveal-dialog .reveal-item img{
+ display:block;width:100%;height:auto;aspect-ratio:3/4;
+ max-height:200px;object-fit:contain;object-position:center;
+ background:#233854;border:1px solid #d8bb8580;
+}
+#reveal-dialog .reveal-item strong{overflow-wrap:anywhere;line-height:1.25}
+#reveal-dialog .reveal-item img.card-art-unavailable{object-fit:contain}
+@media(max-width:510px){
+ #reveal-dialog .reveal-items{grid-template-columns:repeat(auto-fit,minmax(min(104px,40vw),132px));gap:7px}
+ #reveal-dialog .reveal-item img{max-height:175px}
+}
