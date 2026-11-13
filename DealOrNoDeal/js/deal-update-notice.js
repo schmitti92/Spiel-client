@@ -5,6 +5,17 @@ const ID='slot-dog-season2',URL=String(window.SPIELPORTAL_CONFIG?.apiBase||'http
 const FILE='./assets/updates/deal-update-slot-dog-season2.png',KEY='deal-update-ack-v1-'+ID+'-';
 let dialog,button,info,activeUid='',generation=0,busy=false,checking=false,syncing='';
 const player=()=>{const s=window.SpielOnline?.state?.();return s?.status==='online'&&s.user?.uid&&s.user?.getIdToken?s.user:null};
+// Show ONLY once an authenticated player's actual match is visible with its briefcases.
+// Do not show on entering the lobby, before a room starts, or on a finished round.
+const activeMatch=uid=>{
+ try{
+  const game=typeof g!=='undefined'?g:null;
+  const phases=['select','batch-pick','batch-reveal','open','reveal','decision'];
+  return !!(uid&&game?.id&&phases.includes(game.phase)&&
+   Array.isArray(game.players)&&game.players.some(p=>p.id===uid)&&
+   document.getElementById('cases')?.children.length>0);
+ }catch{return false}
+};
 const localState=uid=>{try{return localStorage.getItem(KEY+uid)||''}catch{return ''}};
 const saved=uid=>['yes','pending'].includes(localState(uid));
 const save=(uid,remoteConfirmed)=>{try{localStorage.setItem(KEY+uid,remoteConfirmed?'yes':'pending')}catch{}};
@@ -59,6 +70,12 @@ async function check(){
  const u=player(),uid=u?.uid||'';
  if(!uid){activeUid='';++generation;checking=false;if(dialog?.open)dialog.close();return}
  if(saved(uid)){activeUid=uid;++generation;if(dialog?.open)dialog.close();void syncPending(u);return}
+ // The player must first see the real case stage, never a lobby/pre-game page.
+ if(!activeMatch(uid)){
+  if(dialog?.open&&!busy)dialog.close();
+  if(uid!==activeUid){activeUid=uid;++generation}
+  return;
+ }
  if(uid===activeUid&&(checking||dialog?.open||busy))return;
  activeUid=uid;const seq=++generation;mount();if(!dialog.open)dialog.showModal();
  info.textContent='Bitte einmal bestätigen, um zum Spiel fortzufahren.';
@@ -71,5 +88,6 @@ async function check(){
  finally{if(seq===generation)checking=false}
 }
 window.addEventListener('spielonline-change',()=>void check());
+window.addEventListener('deal-game-state-change',()=>void check());
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>void check(),{once:true});else void check();
 })();
