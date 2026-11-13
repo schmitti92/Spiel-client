@@ -9,7 +9,7 @@ const html=read('game.html');
 const slotMarkup=JSON.parse(js.split('root.innerHTML=')[1].split(';\n')[0]);
 test('Monster Slots script parses as a classic browser script and is loaded with a cache-busted asset',()=>{
  assert.doesNotThrow(()=>new Script(js,{filename:'monster-slots-final.js'}));
- assert.match(html,/js\/monster-slots-final\.js\?v=20261113-podium-slots-v2/);
+ assert.match(html,/js\/monster-slots-final\.js\?v=20261114-spectator/);
  assert.match(html,/css\/monster-slots-final\.css\?v=20261113-podium-slots-v2/);
 });
 test('three reels with real scrolling icon tracks and sequential stops, never a browser-side prize roll',()=>{
@@ -54,11 +54,12 @@ test('all five already-uploaded chest artworks exist and no new prize payout is 
 
 test('real reward artwork resolves for every award category and all hammer types',()=>{
  const basePaths=[
-  'assets/hats/prize-pack.svg','assets/hats/reward-pack.svg','assets/hats/reward-platinum.svg',
-  'assets/hats/reward-joker.svg','assets/hats/reveal-gift.svg','assets/hats/reward-cash.svg',
-  'Weihnachtsevent2/Weihnachtsbilder/hammer-einfach.webp',
-  'Weihnachtsevent2/Weihnachtsbilder/hammer-doppel.webp',
-  'Weihnachtsevent2/Weihnachtsbilder/hammer-glueck.webp',
+  'assets/slot-premium/slot-pack-silver.png','assets/slot-premium/slot-pack-gold.png',
+  'assets/slot-premium/slot-pack-premium.png','assets/hats/reward-platinum.svg',
+  'assets/slot-premium/slot-joker.png','assets/hats/reveal-gift.svg',
+  'assets/slot-premium/slot-money.png','assets/slot-premium/slot-hammer.png',
+  'assets/slot-premium/slot-doublehammer.png','assets/slot-premium/slot-goldhammer.png',
+  'assets/slot-premium/slot-question-card.png',
   'Weihnachtsevent2/Weihnachtsbilder/file_0000000077288210bd94623e0d40c452.png'
  ];
  for(const name of basePaths){

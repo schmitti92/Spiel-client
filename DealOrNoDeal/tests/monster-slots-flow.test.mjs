@@ -118,6 +118,7 @@ function browserFixture(customPrizes=null){
 
 test('all three profiles watch the same runner-up then champion Slot show before ceremony',async()=>{
  const b=browserFixture();
+ b.banker.hidden=true;
  b.g.monsterSlotShow={phase:'ready',turn:'runner',uid:'guest',reels:1,
   runnerUid:'guest',championUid:'host',activatedAt:Date.now(),startedAt:null,prizes:[]};
  b.window.person='quiet';
