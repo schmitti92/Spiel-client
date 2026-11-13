@@ -313,7 +313,7 @@
    const out=await api('POST','open',{packId,requestId:requestId(packId)});
    clearId(packId);
    if(activeUser()?.uid!==uid)return;
-   data={...data,...out};render();queueCompletedBoards(out.completedBoards);reveal(out.revealed||[]);
+   data={...data,...out};render();reveal(out.revealed||[]);queueCompletedBoards(out.completedBoards);
    status(out.usedFreePack?'✅ Gratispaket eingelöst – kein Spielgeld abgezogen.':'✅ DOG-Karten wurden deinem Saison-2-Album gutgeschrieben.');
    // Der quittierte POST enthält den aktuellen Stand; kein zusätzlicher Firestore-GET.
   }catch(e){
