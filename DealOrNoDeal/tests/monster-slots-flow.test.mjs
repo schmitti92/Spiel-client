@@ -152,6 +152,7 @@ test('every won pack displays all cards at once, including NEW and duplicates',a
    openedPacks:[{packId:'premium',packName:'DOG Premiumpaket',hasNew:false,revealed:[special]}]},
   {kind:'cash',quantity:1,label:'5,00 €',amountCents:500}
  ]);
+ b.banker.hidden=true;
  b.emit('deal-game-state-change');await b.flush();
  await b.advance(340);
  assert.deepEqual(b.reels.map(r=>r.reel.dataset.phase),['won','won','won']);
@@ -183,6 +184,7 @@ test('duplicate-only packs still appear in the same summary without opening anim
   {kind:'joker',quantity:1,label:'1× Kofferblick-Joker'},
   {kind:'cash',quantity:1,label:'5,00 €',amountCents:500}
  ]);
+ b.banker.hidden=true;
  b.emit('deal-game-state-change');await b.flush();
  await b.advance(2340);
  assert.equal(b.summary.hidden,false);
