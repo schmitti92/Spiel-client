@@ -329,3 +329,6 @@ body:before{opacity:.34}
 .chest-zone{grid-template-areas:"symbol count" "symbol summary" "title title" "explain explain" "choices choices" "gallery gallery" "legacy legacy" "retry retry"}
 .crate-grid.expedition-grid{grid-area:gallery}
 @media(max-width:600px){.chest-quantity-picker{padding:10px}.chest-quantity-options{width:100%}.chest-quantity-options button{flex:1;padding:10px 5px;font-size:12px}}
+
+/* Kisten: eigene Registerleiste linksbündig trotz globaler nav-Regel. */
+.dog-event-tabs__rail{justify-content:flex-start!important}

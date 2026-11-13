@@ -424,8 +424,8 @@
     block.append(heading,grid);container.append(block);target=grid;
    }
    const all=set.filter(x=>x.group===group);
-  const items=readyOnly?all.filter(x=>canUpgradeItem(x.id)):
-   [...all].sort((a,b)=>Number(canUpgradeItem(b.id))-Number(canUpgradeItem(a.id)));
+  // Keine automatische Neuordnung: Die +-Buttons bleiben beim Aufwerten am selben Platz.
+   const items=readyOnly?all.filter(x=>canUpgradeItem(x.id)):all;
   if(!items.length){
    const textValue=!view?'Schmiedewerte werden geladen …':
     readyOnly?'Hier ist gerade keine Verbesserung möglich. Sammle Rohstoffe oder zeige alle an.':
@@ -471,11 +471,12 @@
    card.append(button);
    // A quick upgrade uses exactly the existing confirmation, quote and receipt flow.
    // Buttons are siblings, never nested; selecting a card still opens its details.
-   if(canUpgradeItem(item.id)){
-    const plus=node('button','forge-quick-upgrade','+');
-    plus.type='button';plus.disabled=!usable();
-    plus.setAttribute('aria-label',displayName(item)+' verbessern auf Stufe '+q.nextLevel);
-    plus.title=displayName(item)+' verbessern auf Stufe '+q.nextLevel;
+   // Der + Platz bleibt reserviert, auch wenn die Verbesserung gerade nicht möglich ist.
+    if(q){
+     const plus=node('button','forge-quick-upgrade','+');
+     plus.type='button';plus.disabled=!usable()||q.maxed||q.locked||!q.affordable;
+     plus.setAttribute('aria-label',displayName(item)+(plus.disabled?' derzeit nicht verbesserbar':' verbessern auf Stufe '+q.nextLevel));
+     plus.title=plus.disabled?(q.maxed?'Maximalstufe erreicht':q.locked?'Stufe noch gesperrt':'Noch nicht genug Rohstoffe'):displayName(item)+' verbessern auf Stufe '+q.nextLevel;
     plus.addEventListener('click',event=>{
      event.stopPropagation();
      const current=quoteFor(item.id);
