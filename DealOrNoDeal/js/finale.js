@@ -29,7 +29,7 @@ $('finale-watch-again').addEventListener('click',replayFinaleSequence);
 // Ordinary restarts must wait for both shared award stages (ties need no winner wheel).
 function finaleBonusesComplete(game){
  if(!game||game.phase!=='final')return false;
- if(game.monsterSlotsVersion===1)return true;
+ if(game.monsterSlotsVersion===1)return sessionStorage.getItem('monster-slots-watched:'+game.id)==='yes';
  const payouts=(game.finalValues||[]).map(v=>v.payout);
  if(payouts.length>1&&payouts.filter(v=>v===Math.max(...payouts)).length>1)return true;
  const key='final:'+game.id,spunAt=Number(game.christmasWheelSpins?.[key]||0);
@@ -56,6 +56,7 @@ function updateFinaleStartControl(){
  if(!ready&&waitMs>0&&waitMs<5000)finaleControlTimer=setTimeout(updateFinaleStartControl,waitMs);
 }
 window.addEventListener('deal-game-state-change',updateFinaleStartControl);
+window.addEventListener('deal-final-wheel-complete',updateFinaleStartControl);
 // Restart is a server-authoritative host action, never a local reset of shared game state.
 let finaleRestartBusy=false;
 async function restartFromFinale(skipFinalWheel=false){
