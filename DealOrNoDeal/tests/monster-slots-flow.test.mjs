@@ -6,6 +6,8 @@ import {Script,createContext} from 'node:vm';
 // A lightweight fake browser: executes the *real* finale slot script with
 // virtual DOM nodes, state events, a reduced-motion clock and a stub API.
 const src=readFileSync(new URL('../js/monster-slots-final.js',import.meta.url),'utf8');
+const app=readFileSync(new URL('../js/app.js',import.meta.url),'utf8');
+const helper=app.slice(app.indexOf('function dealSlotReelsFor('),app.indexOf('// Show the next Banker'));
 function browserFixture(customPrizes=null){
  class Node{
   constructor(name='node'){this.name=name;this.hidden=false;this.disabled=false;this.isConnected=true;
@@ -63,14 +65,16 @@ function browserFixture(customPrizes=null){
    if(!listeners.has(e))listeners.set(e,[]);listeners.get(e).push(fn)
   },dispatchEvent:event=>{emit(event.type);return true}
  };
- const g={id:'11111111-1111-4111-8111-111111111111',phase:'final',monsterSlotsVersion:1};
+ const g={id:'11111111-1111-4111-8111-111111111111',phase:'final',monsterSlotsVersion:1,
+  finalValues:[{id:'host',payout:3000000},{id:'guest',payout:2000000},{id:'quiet',payout:1000000}]};
  const fetch=async(_url,options)=>{
   const uid=options.headers.Authorization.slice(7),{gameId}=JSON.parse(options.body);
   requests.push({uid,gameId});
-  return {ok:true,json:async()=>({ok:true,gameId,
-   prizes:customPrizes||[{kind:'joker',id:null,label:'1× Joker',quantity:1},
-    {kind:'minigame',id:null,label:'2× Minispiel-Gutschein',quantity:2},
-    {kind:'cash',id:null,label:'10,00 €',amountCents:1000,quantity:1}]})};
+  const count=window.dealSlotReelsFor(g,uid);
+  const items=customPrizes||[{kind:'joker',id:null,label:'1× Joker',quantity:1},
+   {kind:'minigame',id:null,label:'2× Minispiel-Gutschein',quantity:2},
+   {kind:'cash',id:null,label:'10,00 €',amountCents:1000,quantity:1}];
+  return {ok:true,json:async()=>({ok:true,gameId,guaranteed:count,prizes:items.slice(0,count)})};
  };
  async function flush(){for(let i=0;i<15;i++)await Promise.resolve()}
  const context=createContext({window,document,g,fetch,console,sessionStorage:{
@@ -78,6 +82,7 @@ function browserFixture(customPrizes=null){
  },matchMedia:()=>({matches:true}),setTimeout:setFakeTimeout,clearTimeout:id=>timers.delete(id),
   Event:class{constructor(type){this.type=type}}
  });
+ new Script(helper,{filename:'deal-slot-ranking-helper.js'}).runInContext(context);
  new Script(src,{filename:'monster-slots-final.js'}).runInContext(context);
  const summary=root.children.find(n=>n.id==='monster-slot-reward-summary');
  const summaryContent=summary?.children[0];
@@ -122,6 +127,9 @@ test('a three-player finale shows each reel then the combined summary without du
  assert.equal(b.requests.length,2);
  assert.equal(b.requests[1].uid,'guest');
  assert.equal(b.root.hidden,false);
+ assert.equal(b.root.dataset.reels,'1','runner-up sees one reel');
+ assert.equal(b.reels[1].reel.hidden,true);
+ assert.equal(b.reels[2].reel.hidden,true);
  await b.advance(2340);b.summaryButton.click();
  assert.equal(b.store.get('monster-slots-watched:guest:'+b.g.id),'yes');
 
@@ -203,4 +211,42 @@ test('a tied finale never requests Monster Slots and a later unique winner can s
  b.g.finalValues[1].payout=500000;
  b.emit('deal-game-state-change');await b.flush();
  assert.equal(b.requests.length,1,'unique highest payout still gets normal Slot reward flow');
+});
+
+
+test('podium UI allows only first and unique second to claim, with 3/1 visual reels',async()=>{
+ const b=browserFixture();
+ b.banker.hidden=true;
+ b.window.person='quiet';b.emit('deal-game-state-change');await b.flush();
+ assert.equal(b.requests.length,0,'third place cannot claim, even if the frontend receives a final event');
+ assert.equal(b.root.hidden,true,'loser never sees any slot machine');
+ b.window.person='guest';b.emit('spielonline-change');await b.flush();
+ assert.equal(b.requests.length,1,'second place may claim exactly once');
+ assert.equal(b.root.dataset.reels,'1');
+ assert.equal(b.reels.filter(r=>r.reel.hidden===false).length,1);
+ await b.advance(1100);
+ assert.equal(b.summary.hidden,false,'single reel finishes in its own animation');
+ assert.equal(b.summaryPrizes.children.length,1);
+ b.summaryButton.click();
+ assert.equal(b.store.get('monster-slots-watched:guest:'+b.g.id),'yes');
+ b.window.person='host';b.emit('spielonline-change');await b.flush();
+ assert.equal(b.requests.length,2);
+ assert.equal(b.root.dataset.reels,'3');
+ assert.equal(b.reels.filter(r=>r.reel.hidden===false).length,3);
+ await b.advance(2340);
+ assert.equal(b.summaryPrizes.children.length,3);
+});
+
+test('two-player loser never receives a runner-up spin, and tied second prizes are not duplicated',async()=>{
+ const b=browserFixture();
+ b.g.finalValues=[{id:'host',payout:5000000},{id:'guest',payout:1000000}];
+ b.window.person='guest';b.emit('deal-game-state-change');await b.flush();
+ assert.equal(b.requests.length,0);
+ b.window.person='host';b.emit('spielonline-change');await b.flush();
+ assert.equal(b.requests.length,1);
+ assert.equal(b.root.dataset.reels,'3');
+ b.g.id='22222222-2222-4222-8222-222222222222';
+ b.g.finalValues=[{id:'host',payout:5000000},{id:'guest',payout:2000000},{id:'quiet',payout:2000000},{id:'fourth',payout:1000000}];
+ b.window.person='guest';b.emit('spielonline-change');await b.flush();
+ assert.equal(b.requests.length,1,'two players tied for second receive no spin');
 });
