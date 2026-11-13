@@ -25,7 +25,7 @@
   return out;
  }
  function clear(){
-  data=null;loadedUser='';boardBuilt=false;$('boards').replaceChildren();$('packs').replaceChildren();
+  data=null;loadedUser='';boardBuilt=false;$('login').hidden=!!activeUser();$('boards').replaceChildren();$('packs').replaceChildren();
   $('owned').textContent='0 / 96';$('bingos').textContent='0 / 60';$('coins').textContent='–';$('meter-fill').style.width='0%';
   $('duplicate-count').textContent='0 Duplikate';$('ticket-count').textContent='0 Monster-Rad-Tickets';$('exchange').disabled=true;
  }
@@ -185,7 +185,7 @@
    const fresh=await api('GET','me');
    if(seq!==requestNumber||activeUser()?.uid!==uid)return;
    if(loadedUser&&loadedUser!==uid)clear();
-   loadedUser=uid;data=fresh;render();
+   loadedUser=uid;data=fresh;$('login').hidden=true;render();
    if(initial)status('✅ DOG Saison 2 ist aktiv. Sammle jetzt die 96 neuen Karten!');
   }catch(e){if(seq===requestNumber)status('⚠️ '+e.message+' · „↻“ zum erneuten Prüfen.')}
  }
@@ -199,9 +199,10 @@
  document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
  document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
  $('exchange').addEventListener('click',exchange);
+ $('login').addEventListener('click',()=>window.SpielOnline?.openLogin?.());
  $('reload').addEventListener('click',()=>void load());
  $('fullscreen').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch{status('Vollbild wird von diesem Gerät nicht unterstützt.')}});
  const room=sessionStorage.getItem('deal-active-room');if(/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(room||''))$('back').href='./lobby.html?room='+encodeURIComponent(room);
  // Also handle an already-connected profile when this script starts.
- lastUid=activeUser()?.uid||'';if(lastUid)void load();else status('🔄 Online-Profil wird geladen …');
+ lastUid=activeUser()?.uid||'';$('login').hidden=!!lastUid;if(location.hash==='#packs')showTab('packs');else if(location.hash==='#duplicates')showTab('duplicates');if(lastUid)void load();else status('🔄 Online-Profil wird geladen …');
 })();
