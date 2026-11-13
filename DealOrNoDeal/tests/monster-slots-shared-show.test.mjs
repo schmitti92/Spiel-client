@@ -45,7 +45,7 @@ test('uploaded premium assets are live in the shared slot and preserve old fallb
  assert.match(css,/slot-stage-alternative\.png/);
  assert.match(css,/monster-slot-shared-caption/);
  assert.match(css,/@media\(max-width:570px\)/);
- assert.match(html,/monster-slots-shared-show\.css\?v=20261114-spectator-v1/);
+ assert.match(html,/monster-slots-shared-show\.css\?v=20261114-slot-results-scroll-v1/);
  assert.match(html,/monster-slots-final\.js\?v=20261114-(?:spectator|cards-priority)/);
 });
 
@@ -57,7 +57,7 @@ test('premium cabinet loads uploaded reel and glow assets without cropping DOG c
  assert.match(css,/monster-slot-reward-card-art img[\s\S]*?object-fit:contain/);
  assert.match(css,/ms-studio-summary-fade/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
- assert.match(html,/monster-slots-shared-show\.css\?v=20261114-spectator-v1-studio-v2/);
+ assert.match(html,/monster-slots-shared-show\.css\?v=20261114-slot-results-scroll-v1/);
 });
 
 
@@ -86,8 +86,8 @@ test('full premium artwork integration uses the shared 3-reel cabinet and origin
  assert.match(css,/data-actor="yes"/);
  assert.match(css,/prefers-reduced-motion:reduce/);
  assert.doesNotMatch(js,/Math\.random|randomPrize/);
- assert.match(html,/monster-slots-shared-show\.css\?v=20261114-spectator-v1-studio-v2-art-v3/);
- assert.match(html,/monster-slots-final\.js\?v=20261114-cards-priority-v3-art-v3/);
+ assert.match(html,/monster-slots-shared-show\.css\?v=20261114-slot-results-scroll-v1/);
+ assert.match(html,/monster-slots-final\.js\?v=20261114-slot-results-scroll-v1/);
 });
 
 test('preview-only control images are not misleadingly displayed as finale options',()=>{
@@ -97,4 +97,16 @@ test('preview-only control images are not misleadingly displayed as finale optio
  }
  assert.match(css,/data-phase="ready"\] #monster-slot-accept:not\(:disabled\)/);
  assert.match(css,/data-actor="yes"\] #monster-slot-summary-accept:not\(:disabled\)/);
+});
+
+test('shared slot summary provides full-height native touch scrolling without exposing a hidden overlay',()=>{
+ assert.match(css,/#deal-monster-slots\[data-phase="summary"\]:not\(\[hidden\]\)\{/);
+ assert.match(css,/#deal-monster-slots\[data-phase="summary"\]:not\(\[hidden\]\)\{[\s\S]*?overflow-y:auto!important/);
+ assert.match(css,/#deal-monster-slots\[data-phase="summary"\] \.monster-slot-machine\{\s*display:none!important/);
+ assert.match(css,/#deal-monster-slots\[data-phase="summary"\] \.monster-slot-reward-summary\{[\s\S]*?position:relative!important/);
+ assert.match(css,/touch-action:pan-y/);
+ assert.match(css,/-webkit-overflow-scrolling:touch/);
+ assert.match(js,/root\.scrollTop=0/);
+ assert.doesNotMatch(js,/sharedSignature='';renderShared\(\)\}\},wait/);
+ assert.match(js,/renderShared\(\)\},wait/);
 });
