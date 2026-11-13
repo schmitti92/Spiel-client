@@ -246,7 +246,7 @@ body:before{opacity:.34}
 .chest-art{grid-area:symbol;height:65px;width:74px;font-size:52px;filter:drop-shadow(0 4px 10px #f2c16a4d);border-radius:12px;background:#30405a5e;animation:none!important}
 .chest-art:after{display:none}
 .chest-number{grid-area:count;font:900 33px/1 Georgia,serif;color:#ffe7ae}
-.chest-number:after{content:" ungeöffnete Kisten";font:800 14px/1.4 system-ui,sans-serif;color:#ddcfb4;margin-left:10px}
+.chest-number:after{content:" · Gesamtbestand";font:800 14px/1.4 system-ui,sans-serif;color:#ddcfb4;margin-left:10px}
 .chest-note{grid-area:summary;margin:0;color:#b7c8de;font-size:12px}
 .chest-five-title{grid-area:title!important;margin:22px 0 2px!important;color:#f3d098;font:bold 18px Georgia,serif!important}
 .chest-five-note{grid-area:explain;margin:0 0 11px;font-size:12px}
