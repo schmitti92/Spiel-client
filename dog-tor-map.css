@@ -285,3 +285,41 @@ body.dog-tor-map-page .hero-art{opacity:.14}
 
 /* Public event: legacy private bot controls must stay absent, including before JS loads. */
 #pilot-bots[hidden]{display:none!important}
+
+
+/* Deterministic DOG normal gate combat: readable three-style statistics. */
+.gate-quick-result .quick-attack-breakdown{
+ margin:15px 0 5px;padding:12px 0 3px;border-top:1px solid #e6c58d68;
+}
+.gate-quick-result .quick-attack-breakdown h3{
+ margin:0 0 10px;font-size:15px;color:#ffe1a2;
+}
+.gate-quick-result .quick-attack-line{
+ display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+ margin-top:9px;font-size:13px;color:#e4eefb;
+}
+.gate-quick-result .quick-attack-line strong{
+ white-space:normal;text-align:right;color:#ffdfa1;font-size:12px;
+}
+.gate-quick-result .quick-attack-breakdown small{
+ display:block;margin:2px 0 0;padding-bottom:7px;
+ border-bottom:1px solid #c9d4e71c;color:#b7c5d5;font-size:11px;
+}
+.gate-quick-result .quick-combat-log{
+ margin:15px 0 0;padding:10px 12px;border:1px solid #f0c98266;
+ border-radius:10px;color:#e6d4a5;background:#0f1a2eb0;
+}
+.gate-quick-result .quick-combat-log summary{
+ cursor:pointer;font-size:13px;font-weight:800;min-height:28px;
+}
+.gate-quick-result .quick-combat-log-entries{
+ max-height:235px;overflow:auto;padding-left:23px;margin:8px 0 0;
+ font:500 11px/1.6 system-ui,sans-serif;color:#ebf1fb;
+}
+.gate-quick-result .quick-combat-log-entries li{padding:3px 0}
+.gate-quick-result .quick-combat-log-entries .enemy{color:#ffb6a5}
+.gate-quick-result .quick-combat-log-entries .hero{color:#abf0d0}
+@media(max-width:500px){
+ .gate-quick-result .quick-result-stat{font-size:11px}
+ .gate-quick-result .quick-result-stat strong{max-width:58%;white-space:normal}
+}
