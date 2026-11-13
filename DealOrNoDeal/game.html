@@ -357,6 +357,7 @@
    'images-33.jpeg'
   ];
   const gameCardArt=card=>{
+    if(String(card?.id||'').startsWith('dog2-')&&card?.image)return 'Weihnachtsevent2/Sammelalbum_Saison_2_Bilder/'+encodeURIComponent(card.image);
    const match=/^christmas-(\d{2})$/.exec(String(card?.id||''));
    const index=match?Number(match[1])-1:-1;
    if(index<0||index>=christmasArt.length)return null;
@@ -381,23 +382,23 @@
    const rarityLabels={common:'Gewöhnlich',rare:'Selten',epic:'Episch',legendary:'Legendär'};
    const rarityIcons={common:'❄️',rare:'🔹',epic:'🔮',legendary:'🌟'};
    const drawn=newCards;
-   subtitle.textContent='🌟 '+owner+' entdeckt '+drawn.length+' neue '+(drawn.length===1?'Weihnachtskarte':'Weihnachtskarten')+'! · Doppelte Karten wurden im Hintergrund gespeichert.';
+   subtitle.textContent='🌟 '+owner+' entdeckt '+drawn.length+' neue '+(drawn.length===1?'DOG-Sammelkarte':'DOG-Sammelkarten')+'! · Doppelte Karten wurden im Hintergrund gespeichert.';
    drawn.forEach((card,i)=>{
     const item=document.createElement('div');item.className='reward-card'+(card.isNew===true?' is-new':'');item.dataset.rarity=card.rarity||'common';
     item.style.setProperty('--delay',(reduced?0:i*480)+'ms');
     const idMatch=/^christmas-(\d{2})$/.exec(String(card.id||''));
     const artIndex=idMatch?Number(idMatch[1])-1:-1;
-    if(artIndex>=0&&artIndex<christmasArt.length){
+    if(gameCardArt(card)){
      const picture=document.createElement('img');
      const url=gameCardArt(card);
-     picture.alt='Gezogene Weihnachtskarte: '+(card.name||'');
+     picture.alt='Gezogene DOG-Sammelkarte: '+(card.name||'');
      picture.loading='eager';picture.decoding='async';
      window.ChristmasCardImages?.guard(picture);
      if(window.ChristmasCardImages?.show)window.ChristmasCardImages.show(picture,url);
      else picture.src=url;
      item.append(picture);
     }else{const symbol=document.createElement('span');symbol.className='reward-icon';symbol.textContent=rarityIcons[card.rarity]||'🎄';item.append(symbol)}
-    const label=document.createElement('strong');label.textContent=card.name||'Weihnachtskarte';
+    const label=document.createElement('strong');label.textContent=card.name||'DOG-Sammelkarte';
     const rarity=document.createElement('small');rarity.textContent=(rarityIcons[card.rarity]||'✦')+' '+(rarityLabels[card.rarity]||'Karte');
     item.append(label,rarity);if(card.isNew===true){const newly=document.createElement('span');newly.className='christmas-new-label';newly.textContent='✨ NEU!';item.append(newly)}cards.append(item);
    });
@@ -417,11 +418,11 @@
      if(sequence!==current||box.hidden)return;
      const match=/^christmas-(\d{2})$/.exec(String(card.id||''));
      const artIndex=match?Number(match[1])-1:-1;
-     const artFile=artIndex>=0?christmasArt[artIndex]:null;
+     const artFile=gameCardArt(card);
      const legendary=card.rarity==='legendary';
      overlay.dataset.rarity=legendary?'legendary':'epic';overlay.dataset.new=card.isNew===true?'true':'false';document.getElementById('cent-special-new').hidden=card.isNew!==true;
      specialTier.textContent=legendary?'🌟 LEGENDÄRE KARTE! 🌟':'💜 EPISCHE KARTE! 💜';
-     specialName.textContent=card.name||'Weihnachtskarte';
+     specialName.textContent=card.name||'DOG-Sammelkarte';
      specialOwner.textContent='Gezogen von '+owner;
      specialArt.hidden=!artFile;
      if(artFile){
