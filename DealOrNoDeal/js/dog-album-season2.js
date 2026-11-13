@@ -3,7 +3,8 @@
  'use strict';
  const $=id=>document.getElementById(id);
  const BASE=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
- const ROOT='./Weihnachtsevent2/Sammelalbum_Saison_2_Bilder/';
+ // Resolve artwork relative to this script instead of the embedding page.
+ const ROOT=new URL('../Weihnachtsevent2/Sammelalbum_Saison_2_Bilder/',document.currentScript?.src||new URL('./js/dog-album-season2.js',document.baseURI).href).href;
  const BOARD_ICONS=['🎲','🚀','🦖','🎡','🏰','🤠'];
  const rarities={common:'Gewöhnlich',rare:'Selten',epic:'Episch',legendary:'Legendär'};
  const number=n=>(Number(n)||0).toLocaleString('de-DE');
@@ -16,6 +17,18 @@
  function activeUser(){const s=state();return s.status==='online'&&s.user?.getIdToken?s.user:null}
  function status(text){$('status').textContent=text}
  function imageSrc(card){return ROOT+encodeURIComponent(card.image)}
+ function displayArtwork(img,card,loading='eager'){
+  const source=imageSrc(card);
+  img.alt=card.name||'DOG-Sammelkarte';
+  img.loading=loading;img.decoding='async';
+  if(window.ChristmasCardImages?.guard&&window.ChristmasCardImages?.show){
+   window.ChristmasCardImages.guard(img);
+   window.ChristmasCardImages.show(img,source);
+  }else{
+   img.onerror=()=>{img.onerror=null;img.src=new URL('../../assets/weihnachts_event/card-back-winter.svg',ROOT).href;};
+   img.src=source;
+  }
+ }
  async function api(method,path,body){
   const user=activeUser();if(!user)throw Error('Bitte melde dich mit deinem Online-Profil an.');
   const token=await user.getIdToken();
@@ -253,7 +266,7 @@
     card.slot===16?'Legendäre 1-zu-500-Karte noch nicht entdeckt':'Karte '+card.slot+' noch nicht entdeckt');
    const previous=el.querySelector('img');
    if(owned&&!previous){
-    const img=document.createElement('img');img.loading='lazy';img.decoding='async';img.src=imageSrc(card);img.alt=card.name;
+    const img=document.createElement('img');displayArtwork(img,card,'lazy');
     el.querySelector('.back')?.replaceWith(img);
    }else if(!owned&&previous){
     previous.remove();const lock=document.createElement('span');lock.className='back';lock.textContent='🔒';el.prepend(lock);
@@ -292,7 +305,7 @@
  }
  function openCard(card){
   if(!data||Number(data.cards?.[card.id])<1)return;
-  $('card-image').src=imageSrc(card);$('card-image').alt=card.name;
+  displayArtwork($('card-image'),card);
   $('card-title').textContent=card.name;
   $('card-subtitle').textContent=card.series+' · '+rarities[card.rarity]+' · '+data.cards[card.id]+'× gesammelt';
   $('card-dialog').showModal();
@@ -301,7 +314,7 @@
   $('reveal-items').replaceChildren();
   for(const card of cards){
    const tile=document.createElement('article');tile.className='reveal-item '+card.rarity;
-   const art=document.createElement('img');art.src=imageSrc(card);art.alt=card.name;art.loading='lazy';
+   const art=document.createElement('img');displayArtwork(art,card);
    const name=document.createElement('strong');name.textContent=card.name;
    const badge=document.createElement('small');badge.textContent=card.isNew?'🌟 NEU':'🔁 DOPPELT';
    tile.append(art,name,badge);$('reveal-items').append(tile);
