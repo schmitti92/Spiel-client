@@ -233,7 +233,8 @@
    :'Weihnachts-Glücksrad: 40 Prozent Normal, 50 Prozent Gold, 10 Prozent Premium');
   if(isFinal)window.DealFinalDualWheel?.reset(reward);
   sequence++;const current=sequence;
-  box.dataset.reward=reward.id;box.dataset.stage=directBankerPack?'reveal':'wheel';box.hidden=false;
+  box.dataset.reward=reward.id;box.dataset.stage=directBankerPack?'reveal':'wheel';
+  box.dataset.spectator=String(reward.uid!==uid);box.hidden=false;
   // Keep the server handoff active even when the show itself is invisible.
   // The final prize's separate hammer wheel is still shown to all players.
   box.style.visibility='';
@@ -438,7 +439,7 @@
    setTimeout(()=>{if(sequence===current&&!box.hidden){
     close.disabled=reward.uid!==user()?.uid;close.hidden=reward.uid!==user()?.uid;
     close.textContent='🎉 Für alle Spieler fortfahren';
-    if(isFinal&&reward.uid===user()?.uid)setTimeout(()=>{if(sequence===current&&!box.hidden&&!close.disabled&&finalWheelStarted)continueReward()},1800);
+    // The recipient must confirm: do not automatically close the reveal.
     if(reward.uid!==user()?.uid)wheelStatus.textContent='⏳ Warte, bis '+owner+' die Karten bestätigt …';
    }},revealDuration);
   };
@@ -538,6 +539,7 @@
   if(completedFinal)sessionStorage.setItem('final-wheel-complete:'+completedFinal,'yes');
   document.getElementById('cent-special-overlay').hidden=true;
   box.style.visibility='';
+  delete box.dataset.spectator;
   sequence++;pendingSpin=null;activeWheelReward=null;activeWheelKind=null;finalWheelStarted=false;box.hidden=true;box.classList.remove('final-dual-active');box.dataset.reward='';delete box.dataset.stage;
   if(completedFinal)window.dispatchEvent(new Event('deal-final-wheel-complete'));
   lastRewardProbeKey='';checkRewards();
@@ -570,11 +572,15 @@
  // the server (or watched by this player). Historic bonuses cost no extra reads.
  function pendingReward(kind,id){
   if(!id||typeof g==='undefined'||!g)return false;
+  const gate=g.pendingCardReveals?.[0];
+  // Server-pending awards always show, even after a tab reload.
+  if(gate)return gate.kind===kind&&gate.rewardId===id&&!g.christmasWheelClosed?.[kind+':'+id];
   const me=user()?.uid;
   return !g.christmasWheelClosed?.[kind+':'+id]&&(!me||!seen(me,id));
  }
  function rewardMayExist(){
   if(typeof g==='undefined'||!g?.id)return false;
+  if(g.pendingCardReveals?.length)return true;
   if((g.events||[]).some(e=>e.type==='opened'&&e.amount===1&&pendingReward('cent',g.id+'_'+e.eventId)))return true;
   if((g.history||[]).some(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true&&pendingReward('banker',g.id+'_'+h.round+'_'+d.id))))return true;
   if(g.phase==='final'&&g.monsterSlotsVersion!==1&&pendingReward('final',g.id)){
@@ -593,25 +599,34 @@
   const u=user();if(!u?.getIdToken)return 'not-signed-in';
   // A new reward event is checked immediately; unchanged rewards retry at most
   // every 30 seconds, rather than reading Firestore on every case reveal.
-  const rewardKey=g.id+':'+(g.phase==='final'?'final:'+!!g.finalWheelSpun:'')+':'+(g.events||[]).filter(e=>e.type==='opened'&&e.amount===1).map(e=>e.eventId).join(',')+':'+(g.history||[]).filter(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true)).map(h=>h.round+':'+(h.decisions||[]).filter(d=>d.deal===true).map(d=>d.id).join(',')).join(';');
+  const gate=g.pendingCardReveals?.[0];
+  const rewardKey=(gate?gate.kind+':'+gate.rewardId+':':'')+g.id+':'+(g.phase==='final'?'final:'+!!g.finalWheelSpun:'')+':'+(g.events||[]).filter(e=>e.type==='opened'&&e.amount===1).map(e=>e.eventId).join(',')+':'+(g.history||[]).filter(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true)).map(h=>h.round+':'+(h.decisions||[]).filter(d=>d.deal===true).map(d=>d.id).join(',')).join(';');
   const now=Date.now();
-  if(!manual&&rewardKey===lastRewardProbeKey&&now-lastRewardProbeAt<30000)return 'cooldown';
+  if(!manual&&rewardKey===lastRewardProbeKey&&now-lastRewardProbeAt<(gate?5000:30000))return 'cooldown';
   lastRewardProbeKey=rewardKey;lastRewardProbeAt=now;checking=true;
   let outcome='no-reward';
   try{
    const token=await u.getIdToken(),headers={Authorization:'Bearer '+token};
    const endpoints=[];
-   // Show already-awarded banker packs before the separate winner-wheel prize,
-   // including when the last accepted deal has just ended the match.
-   if((g.history||[]).some(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true&&pendingReward('banker',g.id+'_'+h.round+'_'+d.id))))endpoints.push('/christmas-banker-rewards');
-   if(g.phase==='final'&&g.monsterSlotsVersion!==1&&pendingReward('final',g.id)&&document.getElementById('finale-cinema')?.hidden&&!finishTiedFinal()&&!sessionStorage.getItem('final-wheel-complete:'+g.id))endpoints.push('/christmas-final-reward');
-   if((g.events||[]).some(e=>e.type==='opened'&&e.amount===1&&pendingReward('cent',g.id+'_'+e.eventId)))endpoints.push('/christmas-cent-reward');
+   // Never replace an active player's card reveal with another prize.
+   if(gate){
+    if(gate.kind==='banker')endpoints.push('/christmas-banker-rewards');
+    else if(gate.kind==='cent')endpoints.push('/christmas-cent-reward');
+   }else{
+    if((g.history||[]).some(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true&&pendingReward('banker',g.id+'_'+h.round+'_'+d.id))))endpoints.push('/christmas-banker-rewards');
+    if(g.phase==='final'&&g.monsterSlotsVersion!==1&&pendingReward('final',g.id)&&document.getElementById('finale-cinema')?.hidden&&!finishTiedFinal()&&!sessionStorage.getItem('final-wheel-complete:'+g.id))endpoints.push('/christmas-final-reward');
+    if((g.events||[]).some(e=>e.type==='opened'&&e.amount===1&&pendingReward('cent',g.id+'_'+e.eventId)))endpoints.push('/christmas-cent-reward');
+   }
    for(const endpoint of endpoints){
     const response=await fetch(api(endpoint),{headers,cache:'no-store'});
     if(!response.ok){outcome='HTTP '+response.status;continue}
     const data=await response.json();
     const rewards=endpoint.includes('banker')?data.rewards||[]:data.reward?[data.reward]:[];
-    const reward=rewards.find(x=>x.gameId===g.id&&!seen(u.uid,x.id)&&!g.christmasWheelClosed?.[(endpoint.includes('final')?'final':endpoint.includes('banker')?'banker':'cent')+':'+x.id]);
+    const kind=endpoint.includes('final')?'final':endpoint.includes('banker')?'banker':'cent';
+    const active=g.pendingCardReveals?.[0];
+    const reward=rewards.find(x=>x.gameId===g.id&&
+     (active?(active.kind===kind&&active.rewardId===x.id):!seen(u.uid,x.id))&&
+     !g.christmasWheelClosed?.[kind+':'+x.id]);
     if(reward){openReward(reward,endpoint.includes('final')?'final':endpoint.includes('banker')?'banker':'cent',u.uid);syncWheel();outcome='opened';break}
    }
   }catch(e){outcome='error: '+String(e.message||e);console.warn('Weihnachtsbonus wird erneut geprüft',e)}
