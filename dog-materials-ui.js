@@ -142,20 +142,33 @@
   const chests=chestCounts(),expedition=expeditionCounts();
   const eligible=!!currentUid&&!!inventory&&!busy&&!pending;
   for(const tier of EXPEDITION_TIERS){
-   $(tier+'-count').textContent=inventory?fmt(expedition[tier]):'–';
-   $('open-'+tier).disabled=!eligible||!(expedition[tier]>0);
+   const amount=expedition[tier],button=$('open-'+tier);
+   $(tier+'-count').textContent=inventory?fmt(amount):'–';
+   button.disabled=!eligible||!(amount>0);
+   button.classList.toggle('has-chest',!!inventory&&amount>0);
+   button.classList.toggle('is-empty',!!inventory&&amount===0);
+   const action=button.querySelector('.crate-action');
+   if(action)action.textContent=!inventory?'Bestand wird geladen …':
+    amount>0?(busy?'Öffnung läuft …':pending?'Offene Öffnung abschließen':
+     '✦ '+(amount===1?'Kiste öffnen':'Eine Kiste öffnen')):'Noch keine Kiste';
+   button.setAttribute('aria-label',(TIER[tier]?.label||tier)+
+    (inventory?', '+fmt(amount)+' ungeöffnete Kisten'+(amount>0?', zum Öffnen auswählen':''):': Bestand wird geladen'));
   }
   for(const tier of ['small','medium','large']){
    $(tier+'-count').textContent=inventory?fmt(chests[tier]||0):'–';
    $('open-'+tier).disabled=!eligible||!(chests[tier]>0);
   }
   const legacy=chests.legacy||0;
+  const archive=document.querySelector('.chest-archive');
+  if(archive)archive.hidden=!inventory||
+   (chests.small+chests.medium+chests.large+legacy)===0;
   $('legacy-crates').hidden=!inventory||legacy===0;
   $('legacy-count').textContent=fmt(legacy);
   $('open-legacy').disabled=!eligible||legacy===0;
   $('retry-wrap').hidden=!pending;
   $('retry-pending').disabled=!currentUid||busy;
   $('refresh').disabled=busy;
+  const heroRefresh=$('refresh-hero');if(heroRefresh)heroRefresh.disabled=busy;
   const hasBoxes=!!inventory?.unopened;
   $('chest-art').classList.toggle('has-box',hasBoxes&&!busy);
   $('chest-art').textContent=hasBoxes?'🧰':'📦';
@@ -317,6 +330,7 @@
  $('close-reward').addEventListener('click',closeReward);
  $('close-reward-bottom').addEventListener('click',closeReward);
  $('refresh').addEventListener('click',()=>void reload());
+ $('refresh-hero')?.addEventListener('click',()=>void reload());
  window.addEventListener('spielonline-change',()=>void reload());
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!busy)void reload();});
  void reload();
