@@ -1,0 +1,97 @@
+/* DOG Season 2 only. Independent of Christmas Hammer-Bingo and normal 3-reel finale. */
+.dog-career{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:12px auto 16px;max-width:1100px}
+.dog-career span{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:39px;
+ padding:8px 13px;border:1px solid #efd18a80;border-radius:14px;
+ background:linear-gradient(145deg,#292a51,#191b34);font-size:clamp(11px,1.4vw,14px);color:#f9e9cc}
+.dog-career strong{color:#ffe08b;font-size:1.25em}
+.board .board-foot{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.dog-super-promo{display:grid;place-items:center;gap:18px;max-width:890px;margin:12px auto;padding:clamp(18px,3vw,34px);
+ border:2px solid #e9bf6a;border-radius:23px;background:linear-gradient(140deg,#332249,#111a38);
+ box-shadow:0 12px 40px #0005,inset 0 0 36px #c8933517;text-align:center}
+.dog-super-symbols{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(5px,1vw,13px);width:100%}
+.dog-super-symbols span{display:grid;place-items:center;font-size:clamp(28px,5vw,53px);
+ aspect-ratio:1/1;border:2px solid #e1b96f;border-radius:16px;background:linear-gradient(145deg,#e9e0f7,#c9acc9);
+ box-shadow:inset 0 0 15px #fff9,0 5px 18px #0008}
+#dog-super-tickets{color:#ffde94;font-size:clamp(17px,2.3vw,25px)}
+#dog-super-play,#dog-tournament-refresh,#dog-cycle-complete-ok{border:2px solid #ffe5a4;border-radius:14px;
+ background:linear-gradient(135deg,#fff3c0,#eec06e 55%,#b87939);color:#31200e;
+ font-weight:900;padding:11px 24px;min-height:48px;cursor:pointer}
+#dog-super-play:disabled{opacity:.48;cursor:not-allowed}
+#dog-super-status,#dog-tournament-status{margin:0;color:#e5d2e9;font-size:clamp(11px,1.5vw,15px)}
+.dog-tournament-overview{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+ border:1px solid #c8aa6d;border-radius:14px;background:#232344;padding:14px;margin:10px 0 14px}
+.dog-tournament-ranking{display:grid;gap:7px;margin-top:14px}
+.dog-tournament-entry{display:grid;grid-template-columns:48px minmax(0,1fr) minmax(75px,auto);gap:10px;
+ align-items:center;padding:12px;border-radius:12px;border:1px solid #85769b;background:#252345}
+.dog-tournament-entry[data-me="yes"]{border-color:#ffe08d;background:#413257}
+.dog-tournament-entry .dog-tourney-rank{font-size:23px}
+.dog-tournament-entry .dog-tourney-player{min-width:0;overflow-wrap:anywhere;font-weight:800}
+.dog-tournament-entry .dog-tourney-score{text-align:right;font-weight:900;color:#ffdb8c}
+.dog-super-dialog{width:min(1060px,97vw);max-width:97vw;max-height:95dvh;padding:0;
+ background:transparent;color:#fff2d8;border:0;border-radius:24px;overflow-y:auto;overscroll-behavior:contain}
+.dog-super-dialog::backdrop,#dog-cycle-complete-dialog::backdrop{background:#050a1de8;backdrop-filter:blur(9px)}
+.dog-super-window{min-height:0;padding:clamp(13px,2.6vw,26px);border:3px solid #f4cc79;
+ border-radius:22px;background:radial-gradient(ellipse at 50% 0%,#5f3775,#1b1d40 58%,#10132b);
+ box-shadow:inset 0 0 28px #ffc36a20,0 16px 70px #000b;text-align:center}
+#dog-super-slot-title{font-size:clamp(24px,4.4vw,46px);line-height:1.12;
+ margin:3px 0 7px;color:#ffe7a5;text-shadow:0 3px 22px #f5b85172}
+.dog-super-window>p{margin:5px 0 18px;color:#ead2ed}
+.dog-super-reels,.dog-super-prizes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+ gap:clamp(5px,1.3vw,14px)}
+.dog-super-reel{display:grid;place-items:center;gap:6px;min-width:0;min-height:clamp(110px,17vw,195px);
+ padding:10px 4px;border:2px solid #bc98ba;border-radius:15px;
+ background:linear-gradient(155deg,#faf2db,#d2b3d6);color:#292146;
+ box-shadow:inset 0 0 15px #fff,0 6px 14px #0007}
+.dog-super-reel[data-phase="rolling"] .dog-super-emoji{animation:dog-super-roll .38s linear infinite}
+.dog-super-reel[data-phase="won"]{border-color:#ffe5a2;box-shadow:0 0 18px #ffc86f88,0 7px 14px #0007}
+.dog-super-label{font-size:clamp(9px,1.2vw,13px);font-weight:950;color:#624778}
+.dog-super-emoji{font-size:clamp(33px,7vw,78px);line-height:1}
+.dog-super-reel-name{font-size:clamp(10px,1.3vw,15px);font-weight:950;line-height:1.2;
+ overflow-wrap:anywhere;max-width:100%}
+.dog-super-reel img{width:100%;height:clamp(55px,9vw,91px);object-fit:contain}
+#dog-super-phase{min-height:28px;margin:17px 0;color:#ffe3a6;font-weight:850}
+#dog-super-summary{margin:12px auto;padding-top:13px;border-top:1px solid #d2b77a77}
+#dog-super-summary[hidden],#dog-super-cards-section[hidden]{display:none!important}
+#dog-super-summary h3{margin:7px 0 15px;color:#ffe09e;font-size:clamp(18px,2.8vw,30px)}
+.dog-super-prize{display:grid;justify-items:center;gap:6px;min-width:0;padding:10px 5px;
+ border:1px solid #eac581;border-radius:12px;background:linear-gradient(150deg,#fdf2dc,#d7c0df);
+ color:#302048;font-weight:850;font-size:clamp(10px,1.4vw,15px);overflow-wrap:anywhere}
+.dog-super-prize .dog-super-prize-art{font-size:clamp(26px,5vw,50px)}
+.dog-super-prize img{width:100%;height:70px;object-fit:contain}
+#dog-super-cards-section{margin:23px auto 0;border-top:1px solid #d2b77a66;padding-top:16px}
+#dog-super-cards-caption{margin:0 0 14px;color:#e1cee6}
+.dog-super-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(125px,100%),1fr));gap:11px}
+.dog-super-card{min-width:0;display:grid;justify-items:center;gap:5px;padding:8px 5px;
+ border:1px solid #9c87bc;border-radius:12px;background:#272748}
+.dog-super-card[data-new="yes"]{border:2px solid #ffe097;background:#3f3157;
+ box-shadow:0 0 15px #f6c65b55}
+.dog-super-card img{width:100%;height:clamp(110px,14vw,165px);object-fit:contain;
+ background:#bdb4d3;border-radius:8px}
+.dog-super-card strong{font-size:clamp(10px,1.3vw,13px);overflow-wrap:anywhere}
+.dog-super-card small{font-size:10px;color:#f2d28b}
+#dog-super-close{display:block;margin:22px auto 3px;border:2px solid #ffe4a7;
+ border-radius:14px;background:linear-gradient(155deg,#fff1bc,#dba857);color:#31210e;
+ font-weight:900;min-height:48px;padding:12px 27px;cursor:pointer}
+#dog-super-close:disabled{opacity:.5;cursor:wait}
+#dog-cycle-complete-dialog{max-width:min(530px,94vw);border:2px solid #ffd37e;
+ border-radius:20px;background:linear-gradient(145deg,#41284e,#192143);color:#fff4d7;
+ text-align:center;box-shadow:0 12px 55px #000a;padding:23px}
+#dog-cycle-complete-dialog h2{color:#ffe39a}
+#dog-cycle-complete-content{line-height:1.65;margin:12px auto 20px}
+@keyframes dog-super-roll{0%{transform:translateY(-7px);filter:blur(1px)}50%{transform:translateY(7px);filter:blur(2px)}100%{transform:translateY(-7px);filter:blur(1px)}}
+@media(max-width:570px){
+ .dog-career{gap:5px}
+ .dog-career span{padding:7px;font-size:10px}
+ .dog-super-reels,.dog-super-prizes{gap:4px}
+ .dog-super-reel{min-height:116px;padding:6px 2px;border-radius:8px}
+ .dog-super-emoji{font-size:clamp(28px,9vw,48px)}
+ .dog-super-reel-name{font-size:9px}
+ .dog-super-label{font-size:9px}
+ .dog-super-reel img{height:52px}
+ .dog-super-prize{padding:5px 2px;font-size:9px}
+ .dog-super-prize img{height:44px}
+ .dog-super-cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ .dog-super-card img{height:clamp(93px,28vw,143px)}
+ .dog-super-window{padding:12px 6px}
+}
+@media(prefers-reduced-motion:reduce){.dog-super-reel[data-phase="rolling"] .dog-super-emoji{animation:none}}
