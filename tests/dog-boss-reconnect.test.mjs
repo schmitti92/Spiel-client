@@ -236,3 +236,32 @@ test('Boss 10 and group bosses reconcile the shared opening sooner without exces
  // Old: up to 9 reads during each 12s burst; new: 7 reads/6s burst.
  assert.ok(Math.ceil(6000/900)<Math.ceil(12000/1400));
 });
+
+test('100-Tore idle Firestore budget keeps the map and waiting bosses quiet',()=>{
+ const map=read('dog-tor-map.js');
+ assert.match(map,/MAP_IDLE_REFRESH_MS=5\*60\*1000/);
+ assert.match(map,/Date\.now\(\)-lastMapRequestAt>=MAP_IDLE_REFRESH_MS/);
+ assert.match(map,/setInterval\(\(\)=>\{if\(!document\.hidden&&!working\)void reloadMap\(\);\},MAP_IDLE_REFRESH_MS\)/);
+ assert.doesNotMatch(map,/setInterval[\s\S]{0,120}reloadMap\(\)[\s\S]{0,30}60000/);
+ for(const arena of ['dog-boss10.js','dog-group-boss.js']){
+  const src=read(arena);
+  assert.match(src,/const pushOnline=push\?\.active\?\.\(\)===true/);
+  assert.match(src,/pushOnline\?\(waitingReady\?12000:90000\):\(waitingReady\?delay:30000\)/);
+  assert.match(src,/pushOnline&&view\?\.phase==='fighting'\?/);
+  assert.match(src,/exchangeWindow\?\(extendedScene\?5000:3200\):5200:delay/);
+  assert.match(src,/if\(document\.hidden\)return/);
+ }
+ const inventory=read('dog-materials-ui.js');
+ assert.match(inventory,/lastInventoryLoadedAt=Date\.now\(\)/);
+ assert.match(inventory,/Date\.now\(\)-lastInventoryLoadedAt>120000/);
+ const sandbox=read('dog-private-preview.js');
+ assert.match(sandbox,/view\.boss\?\.phase==='fighting'\?1500:60000/);
+ assert.doesNotMatch(sandbox,/view\.boss\?\.phase==='fighting'\?1500:6000;/);
+ // Estimated HTTP GET budget for one continuously visible but inactive page.
+ const mapOld=Math.floor(3600000/60000),mapNew=Math.floor(3600000/300000);
+ const bossOld=Math.floor(3600000/15000),bossNew=Math.floor(3600000/90000);
+ const previewOld=Math.floor(3600000/6000),previewNew=Math.floor(3600000/60000);
+ assert.equal(mapOld,60);assert.equal(mapNew,12);
+ assert.equal(bossOld,240);assert.equal(bossNew,40);
+ assert.equal(previewOld,600);assert.equal(previewNew,60);
+});
