@@ -133,6 +133,7 @@ body.hats-beta-open .hub-body{grid-template-columns:repeat(3,minmax(0,1fr))}
  </div><div class="meter" role="progressbar" aria-label="Sammelfortschritt"><span id="meter-fill"></span></div>
  <nav class="dog-actions" aria-label="DOG-Sammelalbum Bereiche">
   <button type="button" data-tab="album" class="active">🃏 6 Sammeltafeln</button>
+  <button type="button" data-tab="rewards">🏆 Bingo-Belohnungen</button>
   <button type="button" data-tab="duplicates">🎰 Duplikate tauschen</button>
   <a href="./weihnachten.html?view=monster">🎡 Monster-Glücksrad</a>
  </nav>
@@ -140,8 +141,15 @@ body.hats-beta-open .hub-body{grid-template-columns:repeat(3,minmax(0,1fr))}
  <button id="login" type="button" hidden>👤 Mit Online-Profil anmelden</button>
 </section>
 <section id="album-panel"><div class="sectionhead"><h2>✨ Deine sechs DOG-Sammelalben</h2><p>Jede Tafel hat 4 Reihen, 4 Spalten und 2 Diagonalen – 10 mögliche Bingos.</p></div>
-<div id="boards" class="boards"></div><p class="rewards-note">🏆 Die Bingo-Belohnungen ergänzen wir später. Gesammelte Karten und fertige Linien bleiben gespeichert.</p></section>
-<section id="packs-panel" hidden><div class="sectionhead"><h2>🎁 DOG-Kartenpacks</h2><p>Karten aus allen sechs Sammelwelten. Gewöhnliche, seltene, epische und legendäre Motive entdecken.</p></div><div id="packs" class="packs"></div></section>
+<div id="boards" class="boards"></div><p class="rewards-note">🎁 Für alle 2 Bingos erhältst du eine Materialkiste und zufällige Zusatzpreise. <button type="button" id="album-show-rewards">🏆 Bingo-Gewinne ansehen</button></p></section>
+<section id="rewards-panel" hidden aria-label="Bingo-Belohnungen Saison 2">
+  <div class="sectionhead"><h2>🏆 Deine Bingo-Belohnungen</h2><p>Alle zwei Bingos eine Rohstoffkiste. Holz → Eisen → Silber → Gold → Legendär. Die weiteren Gewinne wechseln per Zufall; die letzten Meilensteine zahlen mehrere Extras.</p></div>
+  <div id="reward-summary" class="reward-summary">0 / 30 Meilensteine erhalten</div>
+  <button type="button" id="claim-bingo-rewards" disabled hidden>🎁 Ausstehende Bingo-Gewinne abholen</button>
+  <p id="reward-claim-status" role="status" aria-live="polite"></p>
+  <div id="reward-milestones" class="reward-milestones"></div>
+ </section>
+ <section id="packs-panel" hidden><div class="sectionhead"><h2>🎁 DOG-Kartenpacks</h2><p>Karten aus allen sechs Sammelwelten. Gewöhnliche, seltene, epische und legendäre Motive entdecken.</p></div><div id="packs" class="packs"></div></section>
 <section id="duplicates-panel" hidden><div class="sectionhead"><h2>🎰 DOG-Duplikate und Monster-Rad</h2><p>Die erste Kopie jeder Karte bleibt erhalten. 100 doppelte DOG-Karten ergeben ein Monster-Rad-Ticket.</p></div>
 <div class="exchange"><strong id="duplicate-count">0 Duplikate</strong><p id="ticket-count">0 Monster-Rad-Tickets</p>
 <button type="button" id="exchange" disabled>100 Duplikate eintauschen</button><a href="./weihnachten.html?view=monster">🎡 Monster-Rad öffnen</a></div></section>
@@ -149,6 +157,7 @@ body.hats-beta-open .hub-body{grid-template-columns:repeat(3,minmax(0,1fr))}
 <footer class="hub-footer"><span id="hub-status" class="status" role="status" aria-live="polite">⏳ Spielerprofil wird geprüft …</span><button type="button" id="hub-refresh" class="hub-refresh" disabled>↻ Fortschritt aktualisieren</button></footer>
 </main>
 <dialog id="card-dialog"><button class="dialog-close" data-close type="button" aria-label="Kartenansicht schließen">✕</button><img id="card-image" alt=""><h2 id="card-title"></h2><p id="card-subtitle"></p><button type="button" data-close>Schließen</button></dialog>
+<dialog id="bingo-reward-dialog" aria-labelledby="bingo-dialog-title"><h2 id="bingo-dialog-title">🏆 Deine neuen Bingo-Gewinne!</h2><div id="bingo-dialog-awards"></div><button type="button" data-close>🎁 Alle Gewinne erhalten</button></dialog>
 <dialog id="reveal-dialog"><div class="reveal-heading">🎁 DEIN DOG-KARTENPACK</div><div id="reveal-items" class="reveal-items"></div><button type="button" data-close>✅ Weiter zur Sammlung</button></dialog>
 <script>
 (()=>{
@@ -157,12 +166,12 @@ const $=id=>document.getElementById(id),ROOM=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i;
 const query=new URLSearchParams(location.search),provided=query.get('room'),saved=sessionStorage.getItem('deal-active-room');
 const room=ROOM.test(provided||'')?provided:ROOM.test(saved||'')?saved:null;
 function showWorldView(view,{updateUrl=true}={}){
- const active=['album','packs','duplicates'].includes(view);
+ const active=['album','packs','duplicates','rewards'].includes(view);
  document.querySelector('.hub-intro').hidden=active;
  document.querySelector('.hub-body').hidden=active;
  document.querySelector('.hub-footer').hidden=active;
  $('dog-season-panel').hidden=!active;
- for(const [id,selected] of [['hub-cards-tab',view==='album'||view==='duplicates'],['hub-packs-tab',view==='packs']]){
+ for(const [id,selected] of [['hub-cards-tab',view==='album'||view==='duplicates'||view==='rewards'],['hub-packs-tab',view==='packs']]){
   const tab=$(id);
   if(selected)tab.setAttribute('aria-current','page');else tab.removeAttribute('aria-current');
  }
@@ -185,11 +194,11 @@ document.addEventListener('click',event=>{
  const url=new URL(a.href,location.href);
  if(url.origin!==location.origin||url.pathname!==location.pathname)return;
  const view=url.searchParams.get('view');
- if(!['album','packs','duplicates'].includes(view))return;
+ if(!['album','packs','duplicates','rewards'].includes(view))return;
  event.preventDefault();showWorldView(view);
 });
 const initialView=query.get('view');
-showWorldView(['album','packs','duplicates'].includes(initialView)?initialView:'overview',{updateUrl:false});
+showWorldView(['album','packs','duplicates','rewards'].includes(initialView)?initialView:'overview',{updateUrl:false});
 if(room){
  sessionStorage.setItem('deal-active-room',room);
  for(const id of ['hub-game','hub-lobby','hub-cards-tab','hub-packs-tab','hub-ice-tab','hub-enter-hats','hub-shortcut-hats','hub-enter-album','hub-enter-ice','hub-shortcut-packs','hub-shortcut-hammer','hub-shortcut-ice']){
@@ -288,7 +297,7 @@ window.addEventListener('spielonline-change',()=>{checkHatsAccess();refresh(fals
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{checkHatsAccess();refresh(false)});else{checkHatsAccess();refresh(false)};
 })();
 </script>
-<script defer src="./js/dog-album-season2.js?v=20261113-unified-v1"></script>
+<script defer src="./js/dog-album-season2.js?v=20261113-bingorewards-v1"></script>
 <script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script>
 <script src="../site-global-controls.js?v=20261109-global-1"></script>
 <script defer src="./js/christoph-surprise.js?v=20261110-gift-v1"></script>
