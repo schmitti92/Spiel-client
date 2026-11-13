@@ -393,6 +393,8 @@ window.addEventListener('deal-finale-finished',sync);
 window.addEventListener('spielonline-change',sync);
 // Wait until the legacy banker/one-cent reward layer has closed, then show the finale slots.
 window.addEventListener('deal-reward-window-closed',()=>setTimeout(sync,400));
+// The final Banker announcement can finish after the shared show arrived.
+window.addEventListener('deal-banker-reveal-finished',sync);
 window.addEventListener('deal-monster-slot-retry',()=>{
  if(g?.monsterSlotShow){sharedSignature='';renderShared();return;}
  if(!liveGame||entitledReels()===0)return;
