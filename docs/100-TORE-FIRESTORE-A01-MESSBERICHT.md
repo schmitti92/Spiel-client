@@ -137,3 +137,23 @@ Firestore-Metriken werden laut Dokumentation **minütlich erfasst** und können 
 - **Kampf-Client-Polling:** [`dog-boss10.js`](https://github.com/schmitti92/Spiel-client/blob/main/dog-boss10.js), [`dog-group-boss.js`](https://github.com/schmitti92/Spiel-client/blob/main/dog-group-boss.js)
 
 **A-01 Status:** **Teilweise abgeschlossen / Live-Firebase-Zähler fehlen**. Die Offline-Codepfad-Zählung und der Engpass-Überblick sind abgeschlossen; Spiel- und Businesslogik unverändert. **Nächster Schritt:** Zugriff auf Firestore Usage / echte Vorher-Nachher-Zähler, dann A-01 endgültig abnehmen.
+
+
+## Ergänzung 14.11.2026 – Firestore-Leerlaufoptimierung
+
+**Status:** Code auf `main` geändert; Live-Abrechnungszähler weiterhin nicht direkt auslesbar. Änderungen gelten für sichtbare Browserseiten und erzeugen keine zusätzlichen Firestore-Schreibvorgänge.
+
+| Ansicht und Zustand | Bisheriger HTTP-Abstand | Neuer HTTP-Abstand | GETs bei 1 h ununterbrochen sichtbarer, unveränderter Seite (vorher → nachher) |
+|---|---:|---:|---:|
+| 100-Tore-Karte | 60 s | 300 s | 60 → 12 (−80 %) |
+| Boss-Warteraum, niemand bereit, Push verbunden | 15 s | 90 s | 240 → 40 (−83 %) |
+| Boss-Warteraum, niemand bereit, Push getrennt | 15 s | 30 s | 240 → 120 (−50 %) |
+| Boss-Warteraum, mindestens ein Held bereit, Push verbunden | 3,8 s (kurzer Burst 0,9 s) | 12 s als Fallback; WebSocket-Änderungshinweise sofort | im reinen Wartezustand ca. 947 → 300 (−68 %), ohne initialen Burst |
+| Private 100-Tore-Testansicht, kein laufender Bosskampf | 6 s | 60 s | 600 → 60 (−90 %) |
+| Kisteninventar, Tab wird erneut sichtbar | bei jedem Sichtbarwerden | nur wenn letzter Zustand älter als 120 s | abhängig vom Nutzerverhalten |
+
+**Herleitung:** Die Zahlen sind theoretische **HTTP-GET-Anzahlen** aus den festgelegten Mindestabständen, nicht Firestore-Verbrauchszähler. Jeder normale `GET /api/dog/gates/map` liest laut aktuellem Code Team- und Fortschrittsdokument (zwei direkte `get()`). Im normalen unveränderten Kampfstatus liest das Boss-GET ebenfalls mindestens zwei Dokumente (siehe A-01-Baseline). Profilprüfung, Socket-Neuverbindungen, SDK-Retries sowie andere gleichzeitig geöffnete Tabs sind in der Tabelle nicht berücksichtigt. Der private Preview-GET liest initial ein eigenes Sandbox-Dokument und kann bei tatsächlich fälligem Bot-/Kampfabschluss zusätzlich schreibend werden. Im normalen Kartenzustand sollten keine neuen Fortschrittswrites entstehen.
+
+**Synchronisierung:** Während laufender Bosskämpfe bleiben die schnellen 2,8-s-/Szenenintervall-Abfragen und WebSocket-Änderungshinweise erhalten. In der Wartelobby wird bei einem WebSocket-Ereignis weiterhin sofort ein echter Status-Snapshot geladen. Manuelles Aktualisieren, Kämpfe, Materialöffnen, Hero-/Teamaktionen und serverseitige Fortschrittsbestätigungen werden nicht gedrosselt.
+
+**Abnahme:** Der Regressionstest `tests/dog-boss-reconnect.test.mjs` prüft diese Leerlaufgrenzen und die Beibehaltung des schnellen Kampfpfades. Der Vergleich `5 min ohne Aktionen` muss in der Firebase-Konsole für das Projekt `spiel-barik` noch mit isoliertem Zeitraum, genauer Zeitmarke und aktiven Tabs erfolgen. **Keine aus dieser theoretischen Tabelle abgeleitete Firestore-Ersparnis als real gemessen kennzeichnen.**
