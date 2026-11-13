@@ -28,6 +28,8 @@
 
 **Dateien der ersten Bauphase:** `js/monster-slots-final.js`, `css/monster-slots-final.css`, `js/finale.js`, `js/app.js`, `game.html` und `tests/monster-slots-design.test.mjs` (alle relativ zu `DealOrNoDeal/`).
 
+**Vierte Designphase (13./14.11.2026):** Premium-Studio-Feinschliff auf `main` in `css/monster-slots-shared-show.css`: vorhandene Originalgrafik `slot-reel-panel.png` als Walzenverkleidung und `slot-win-glow.png` als dezenter Hintergrund der Gewinneranzeige eingebunden. Lichtleisten, Goldkanten, Walzenzustände, seltene Preise und Bestätigungsbuttons optisch nachgearbeitet. Ergebnisfenster erhält einen reinen Fade statt Scale-Animation, stabile Scrollleisten und Kartenbilder mit einem 2:3-Rahmen bei `object-fit: contain`, damit Karten im mobilen Zuschauermodus vollständig erkennbar bleiben. Cachekennung für die Show-CSS in `game.html` aktualisiert und gezielten Styling-Kontrakttest ergänzt. **Keine Veränderung** am serverseitigen Gewinnkatalog, den Auszahlungen, der gemeinsamen Drehrangfolge oder Firestore-Polling. Die automatische Browser-/Live-Sichtprüfung auf mehreren echten Geräten bleibt offen; der hier dokumentierte Fortschritt ist ein Code- und Styling-Update, keine bestätigte pixelgenaue Abnahme.
+
 ## 1. Ziel und Grenzen
 Das automatische Gewinnfenster am Ende **jeder abgeschlossenen Deal-or-No-Deal-Partie** soll eine hochwertige, eigenständige Monster-Slotmaschine darstellen: **drei große Walzen**, alle **zeitgleich in Bewegung**, dann **nacheinander von links nach rechts** stoppen. Jede Walze hat **immer einen eigenständigen, serverseitig zugeschriebenen Gewinn** – keine Dreierkombination, keine Nieten, keine erneute Auslosung im Browser.
 
