@@ -9,6 +9,7 @@
  const number=n=>(Number(n)||0).toLocaleString('de-DE');
  const money=n=>(Number(n||0)/100).toLocaleString('de-DE',{style:'currency',currency:'EUR',maximumFractionDigits:0});
  let data=null,busy=false,requestNumber=0,loadedUser='',boardBuilt=false;
+ let rewardsClaimBusy=false,queuedBingoAwards=[];
  const embedded=!!document.getElementById('dog-season-panel');
  function state(){return window.SpielOnline?.state?.()||{}}
  function activeUser(){const s=state();return s.status==='online'&&s.user?.getIdToken?s.user:null}
@@ -29,9 +30,10 @@
   data=null;loadedUser='';boardBuilt=false;$('login').hidden=!!activeUser();$('boards').replaceChildren();$('packs').replaceChildren();
   $('owned').textContent='0 / 96';$('bingos').textContent='0 / 60';$('coins').textContent='–';$('meter-fill').style.width='0%';
   $('duplicate-count').textContent='0 Duplikate';$('ticket-count').textContent='0 Monster-Rad-Tickets';$('exchange').disabled=true;
+  $('reward-milestones')?.replaceChildren();if($('reward-summary'))$('reward-summary').textContent='0 / 30 Meilensteine erhalten';
  }
  function showTab(tab){
-  for(const name of ['album','packs','duplicates'])$(name+'-panel').hidden=tab!==name;
+  for(const name of ['album','rewards','packs','duplicates'])$(name+'-panel').hidden=tab!==name;
   document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
  }
  function buildBoards(){
@@ -62,10 +64,87 @@
    }
    article.append(grid);
    const foot=document.createElement('div');foot.className='board-foot';
-   foot.textContent='🏆 10 Bingo-Linien · Belohnungen werden später ergänzt';article.append(foot);
+   foot.textContent='🏆 10 Bingo-Linien · Alle 2 Bingos eine Kiste und weitere Gewinne';article.append(foot);
    fragment.append(article);
   }
   $('boards').replaceChildren(fragment);boardBuilt=true;
+ }
+
+ const CHESTS={wood:['🪵','Holzkiste'],iron:['⚙️','Eisenkiste'],silver:['🥈','Silberkiste'],gold:['🥇','Goldkiste'],legendary:['💎','Legendäre Kiste']};
+ function renderRewards(){
+  const root=$('reward-milestones'),rewards=data?.rewards;
+  if(!root||!rewards)return;
+  const total=rewards.claimed||0,pending=rewards.pending||[];
+  $('reward-summary').textContent='🏆 '+total+' / 30 Meilensteine erhalten · '+(data.progress?.bingos||0)+' / 60 Bingos';
+  $('claim-bingo-rewards').hidden=!pending.length;
+  $('claim-bingo-rewards').disabled=rewardsClaimBusy||!pending.length;
+  $('claim-bingo-rewards').textContent=rewardsClaimBusy?'⏳ Gewinne werden gebucht …':'🎁 '+pending.length+' Bingo-'+(pending.length===1?'Belohnung':'Belohnungen')+' erhalten';
+  const fragment=document.createDocumentFragment();
+  for(const m of rewards.milestones||[]){
+   const chest=CHESTS[m.tier]||['🎁',m.tier],article=document.createElement('article');
+   article.className='reward-milestone '+m.state+' '+m.tier;
+   const icon=document.createElement('div');icon.className='reward-icon';icon.textContent=chest[0];
+   const content=document.createElement('div');content.className='reward-text';
+   const title=document.createElement('strong');title.textContent='Bingo '+m.at+' · '+(m.chests>1?m.chests+'× ':'')+chest[1];
+   const detail=document.createElement('p');
+   detail.textContent=m.state==='claimed'?'🎉 '+(m.bonuses||[]).map(b=>b.label).join(' · '):
+    '🎲 '+m.extraCount+' zusätzliche '+(m.extraCount===1?'Zufallsbelohnung':'Zufallsbelohnungen');
+   const sub=document.createElement('small');
+   sub.textContent=m.state==='claimed'?'Alle Gewinne gutgeschrieben':
+    m.state==='ready'?'Bingo-Ziel erreicht · Auszahlen':m.at+' von 60 Bingos benötigt';
+   content.append(title,detail,sub);
+   const flag=document.createElement('span');flag.className='reward-state';
+   flag.textContent=m.state==='claimed'?'✓ Erhalten':m.state==='ready'?'🎁 Bereit':'🔒';
+   article.append(icon,content,flag);fragment.append(article);
+  }
+  root.replaceChildren(fragment);
+ }
+ function revealBingoAwards(awards){
+  if(!Array.isArray(awards)||!awards.length)return;
+  queuedBingoAwards.push(...awards);
+  showQueuedBingoAwards();
+ }
+ function showQueuedBingoAwards(){
+  const dlg=$('bingo-reward-dialog');
+  if(!dlg||dlg.open||$('reveal-dialog')?.open||$('card-dialog')?.open||!queuedBingoAwards.length)return;
+  const awards=queuedBingoAwards.splice(0),root=$('bingo-dialog-awards');
+  root.replaceChildren();
+  for(const award of awards){
+   const article=document.createElement('article');article.className='bingo-award';
+   const h=document.createElement('h3');h.textContent='🏆 '+award.at+' Bingos geschafft!';
+   article.append(h);
+   const chest=document.createElement('p');
+   chest.textContent='🎁 '+award.chests.length+'× '+(CHESTS[award.chestTier]?.[1]||award.chestLabel)+' · Rohstoffe beim Öffnen';
+   article.append(chest);
+   for(const bonus of award.bonuses){
+    const p=document.createElement('p');p.textContent='✨ '+bonus.label;article.append(p);
+   }
+   root.append(article);
+  }
+  dlg.showModal();
+ }
+ function pendingRewards(){return Array.isArray(data?.rewards?.pending)?data.rewards.pending.length:0}
+ async function claimBingoRewards(){
+  if(rewardsClaimBusy||busy||!pendingRewards()||!activeUser())return;
+  const uid=activeUser().uid;rewardsClaimBusy=true;renderRewards();
+  $('reward-claim-status').textContent='⏳ Deine Bingo-Kisten und Bonusgewinne werden gespeichert …';
+  try{
+   const result=await api('POST','rewards/claim');
+   if(activeUser()?.uid!==uid)return;
+   // Update rewards and wallet, but never roll back concurrently opened cards.
+   data.rewards=result.rewards;
+   if(Number.isSafeInteger(result.balance))data.balance=result.balance;
+   render();
+   $('reward-claim-status').textContent=result.awarded?.length
+    ?'✅ '+result.awarded.length+' Meilenstein-'+(result.awarded.length===1?'Belohnung':'Belohnungen')+' sicher gutgeschrieben!'
+    :'✅ Alle erreichten Bingo-Belohnungen sind bereits gutgeschrieben.';
+   if(result.awarded?.length)revealBingoAwards(result.awarded);
+  }catch(e){
+   if(activeUser()?.uid===uid)$('reward-claim-status').textContent='⚠️ Gewinne noch nicht bestätigt: '+(e.message||e)+'. Erneut abholen ist sicher.';
+  }finally{rewardsClaimBusy=false;renderRewards()}
+ }
+ function maybeClaimBingos(){
+  if(pendingRewards()&&!rewardsClaimBusy&&!busy&&activeUser()&&(!embedded||!$('dog-season-panel').hidden))void claimBingoRewards();
  }
  function render(){
   if(!data)return;
@@ -125,6 +204,7 @@
   $('ticket-count').textContent=number(duplicates.tickets)+' Monster-Rad-Tickets';
   $('exchange').disabled=busy||!duplicates.canExchange;
   $('exchange').textContent=duplicates.canExchange?'🎟️ 100 Duplikate gegen 1 Dreh tauschen':'🔒 '+Math.max(0,100-(duplicates.available||0))+' bis zum nächsten Monster-Dreh';
+  renderRewards();
  }
  function openCard(card){
   if(!data||Number(data.cards?.[card.id])<1)return;
@@ -164,7 +244,7 @@
   }catch(e){
    if(!['Failed to fetch','SERVER_ERROR'].includes(e.message))clearId(packId);
    status('⚠️ '+e.message+' · Bei Netzproblemen denselben Kauf erneut versuchen.');
-  }finally{busy=false;render()}
+  }finally{busy=false;render();maybeClaimBingos()}
  }
  async function exchange(){
   if(busy||!data?.duplicates?.canExchange)return;
@@ -189,6 +269,7 @@
    if(loadedUser&&loadedUser!==uid)clear();
    loadedUser=uid;data=fresh;$('login').hidden=true;render();
    if(initial)status('✅ DOG Saison 2 ist aktiv. Sammle jetzt die 96 neuen Karten!');
+   maybeClaimBingos();
   }catch(e){if(seq===requestNumber)status('⚠️ '+e.message+' · „↻“ zum erneuten Prüfen.')}
  }
  function acceptHubData(info){
@@ -196,12 +277,13 @@
   if(!uid||info?.uid!==uid||!info?.data?.ok)return false;
   if(loadedUser&&loadedUser!==uid)clear();
   ++requestNumber;loadedUser=uid;data=info.data;$('login').hidden=true;
-  render();status('✅ Dein DOG-Sammelfortschritt ist geladen.');
+  render();status('✅ Dein DOG-Sammelfortschritt ist geladen.');maybeClaimBingos();
   return true;
  }
  function openIntegratedTab(tab){
   showTab(tab);
   if(embedded&&!data&&activeUser()&&!acceptHubData(window.__dogSeason2HubData))void load();
+  else maybeClaimBingos();
  }
  window.DogAlbumSeason2={open:openIntegratedTab,refresh:()=>load(),acceptHubData};
  window.addEventListener('dog-s2-hub-data',event=>acceptHubData(event.detail));
@@ -213,6 +295,8 @@
   if(!uid){status(state().status==='initializing'?'🔄 Online-Profil wird geladen …':'🔒 Bitte einloggen, um die neue Sammlung zu sehen.');return}
   if(!acceptHubData(window.__dogSeason2HubData)&&(!embedded||!$('dog-season-panel').hidden))void load();
  });
+ $('claim-bingo-rewards')?.addEventListener('click',claimBingoRewards);
+ $('album-show-rewards')?.addEventListener('click',()=>{openIntegratedTab('rewards');if(embedded){const url=new URL(location.href);url.searchParams.set('view','rewards');history.replaceState(history.state,'',url)}});
  document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{
   showTab(b.dataset.tab);
   if(embedded){
@@ -220,7 +304,7 @@
    history.replaceState(history.state,'',url);
   }
  }));
- document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
+ document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>{b.closest('dialog').close();showQueuedBingoAwards()}));
  $('exchange').addEventListener('click',exchange);
  $('login').addEventListener('click',()=>window.SpielOnline?.openLogin?.());
  $('reload')?.addEventListener('click',()=>void load());
@@ -231,7 +315,7 @@
  $('login').hidden=!!lastUid;
  const initialView=new URLSearchParams(location.search).get('view');
  if(embedded){
-  showTab(['packs','duplicates'].includes(initialView)?initialView:'album');
+  showTab(['packs','duplicates','rewards'].includes(initialView)?initialView:'album');
   if(!acceptHubData(window.__dogSeason2HubData)&&lastUid&&!$('dog-season-panel').hidden)void load();
  }else{
   if(location.hash==='#packs')showTab('packs');else if(location.hash==='#duplicates')showTab('duplicates');
