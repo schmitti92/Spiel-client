@@ -1,7 +1,26 @@
 # Monster Slots – Design- und Umsetzungsplan
-**Stand:** 13.11.2026 · **Zielbranch:** `main` · **Status:** geplant, noch nicht grafisch umgesetzt
+**Stand:** 13.11.2026 · **Zielbranch:** `main` · **Status:** MS-01 bis MS-04 erste Implementierung auf `main`; Live-/Bildprüfung noch offen
 
 > **Referenzhinweis:** Das zuletzt angefragte Entwurfsbild wurde während der Generierung abgebrochen und liegt hier nicht als vollständig prüfbare Bilddatei vor. Daher beschreibt dieser Plan die im Gespräch festgelegte Bildidee verbindlich in Textform (Gold/Purpur/Blau, drei große Walzen, dreifache Gewinne). Für eine pixelgenaue 1:1-Anpassung wird eine fertige Referenzaufnahme benötigt. Der technische Umbau kann dennoch anhand dieses Plans beginnen.
+
+## 0. Arbeitsfortschritt – erste Bauphase auf `main` (13.11.2026)
+
+| ID | Umsetzung | Prüfstand |
+| --- | --- | --- |
+| MS-01 | Bisherige Slots, Finale-Events und fünf vorhandene Kistenbilder in GitHub `main` geprüft | Codeprüfung durchgeführt; kein pixelgenaues Referenzbild verfügbar |
+| MS-02 | Goldenes, tiefblau-violettes Showgehäuse mit Lichtpunkten, Banderole, Ergebniszone und Button eingebaut | Im Quellcode umgesetzt; optische Prüfung auf echten Endgeräten offen |
+| MS-03 | Drei echte vertikal scrollende Symbolstreifen eingefügt; alle starten in einem gemeinsamen Schritt | Technisch umgesetzt; Browser-Animation noch praktisch zu prüfen |
+| MS-04 | Stopps nach ca. 3,0 / 4,5 / 6,0 Sekunden, individuelle Gewinnerhellung und Seltenheitseffekte | Technisch umgesetzt; flüssiges Timing und letzte Stoppanimation praktisch zu prüfen |
+| MS-05 | Originalbilder für alle fünf Rohstoffkisten eingebunden, sichere Emoji-Fallbacks für übrige Kategorien | **Teilweise**: weitere Originalgrafiken und typografischer Feinschliff offen |
+| MS-06 | Slotfenster als Abschlussanzeige mit versioniertem Laden in `game.html` eingebunden | **Teilweise**: kompletter Durchlauf mit mehreren Profilen offen |
+| MS-07 | Spielerprofilbezogene lokale Sichtbestätigung und unveränderte serverseitige Gewinnquittungen | **Teilweise**: Wiederaufnahme/Parallelabruf im Livebetrieb prüfen |
+| MS-08 | Responsive Ansichten, kleine Displayhöhen, Fokus und Reduced Motion eingebaut | **Teilweise**: echte Mobil-/Tablet-Sichtprüfung offen |
+| MS-09 | Eigenen fokussierten Design- und Skripttest angelegt: `DealOrNoDeal/tests/monster-slots-design.test.mjs` | CI-Ergebnis und anschließender Mehrspielertest prüfen |
+| MS-10 | Vergleich mit einer fertig generierten Referenzgrafik | Offen: ursprüngliche Bildgenerierung wurde unterbrochen |
+
+**Nicht verändert:** serverseitige Gewinnkategorien (35/30/20/4/3/3/5), Mengen, Gewinnwahrscheinlichkeiten oder Auszahlungscodes; das separate Monster-Glücksrad bleibt erhalten. Der Umbau ist ein Frontend-Redesign, keine neue Auszahlung.
+
+**Dateien der ersten Bauphase:** `js/monster-slots-final.js`, `css/monster-slots-final.css`, `js/finale.js`, `js/app.js`, `game.html` und `tests/monster-slots-design.test.mjs` (alle relativ zu `DealOrNoDeal/`).
 
 ## 1. Ziel und Grenzen
 Das automatische Gewinnfenster am Ende **jeder abgeschlossenen Deal-or-No-Deal-Partie** soll eine hochwertige, eigenständige Monster-Slotmaschine darstellen: **drei große Walzen**, alle **zeitgleich in Bewegung**, dann **nacheinander von links nach rechts** stoppen. Jede Walze hat **immer einen eigenständigen, serverseitig zugeschriebenen Gewinn** – keine Dreierkombination, keine Nieten, keine erneute Auslosung im Browser.
