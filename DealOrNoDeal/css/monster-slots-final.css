@@ -193,69 +193,137 @@
  }
 }
 
-/* Automatic reveal cinema only for newly discovered DOG trading cards. */
-#monster-slot-card-cinema[hidden],#monster-slot-card-image[hidden]{display:none!important}
-.monster-slot-card-cinema{
- position:absolute;inset:0;z-index:20;display:grid;place-items:center;
- padding:clamp(9px,2vw,30px);box-sizing:border-box;border-radius:inherit;
- background:radial-gradient(ellipse at 50% 32%,#58317eea,#1b2043f5 65%,#080e26fa);
- backdrop-filter:blur(10px);overflow:auto;
+
+/* All winnings appear in one summary exactly two seconds after the third reel.
+   The grid shows every opened DOG card (including duplicates) without slides. */
+#deal-monster-slots .monster-slot-reward-summary[hidden],
+#deal-monster-slots .monster-slot-reward-cards-panel[hidden]{display:none!important}
+.monster-slot-reward-summary{
+ position:absolute;inset:0;z-index:30;box-sizing:border-box;
+ display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+ overflow-y:auto;overscroll-behavior:contain;padding:clamp(10px,2.5vw,32px);
+ background:radial-gradient(ellipse at 50% 4%,#734288e8,#1a2244f6 54%,#090d25fc);
+ backdrop-filter:blur(12px);scrollbar-color:#cda969 #211733;
+ animation:ms-summary-arrive .38s ease-out both;
 }
-.monster-slot-card-content{
- display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,1.4vh,16px);
- width:min(630px,100%);min-height:0;padding:clamp(14px,3vh,30px) clamp(10px,2vw,22px);
- box-sizing:border-box;border:2px solid #efc572;border-radius:24px;text-align:center;
- background:linear-gradient(145deg,#392452,#15213e 73%,#0c1430);
- box-shadow:0 0 38px #e1a85b55,0 10px 55px #000b,inset 0 0 26px #f8d4a31c;
+.monster-slot-reward-content{
+ width:min(1040px,100%);margin:auto;min-width:0;box-sizing:border-box;
+ padding:clamp(15px,2.4vw,28px);border:2px solid #ebca87;border-radius:24px;
+ text-align:center;color:#fff5df;
+ background:linear-gradient(155deg,#312149,#151b38 75%,#0e1730);
+ box-shadow:0 0 42px #f1ca7950,0 16px 60px #000a,inset 0 0 26px #f5d8a916;
 }
-.monster-slot-card-kicker{
- color:#ffdf96;letter-spacing:.17em;font-size:clamp(10px,1.5vw,15px);font-weight:900;
+.monster-slot-reward-kicker{
+ margin:0 0 4px;color:#ffdb91;font-size:clamp(10px,1.5vw,14px);
+ font-weight:900;letter-spacing:.12em;text-transform:uppercase;
 }
-#monster-slot-card-pack{
- margin:0;color:#fff1bf;font-size:clamp(18px,3vw,31px);line-height:1.16;
+.monster-slot-reward-title{
+ margin:0;color:#fff0be;font-size:clamp(23px,4vw,38px);line-height:1.15;
+ text-shadow:0 3px 16px #efbc6a66;
 }
-.monster-slot-gift-stage{
- position:relative;display:grid;place-items:center;overflow:hidden;
- height:clamp(145px,29vh,300px);width:min(340px,90%);
- border:3px solid #ffdf88;border-radius:20px;
- background:radial-gradient(ellipse at 50% 20%,#fff9e3,#cdb6e7 75%);
- box-shadow:inset 0 0 26px #fff,0 0 24px #d8ad76a1;
+.monster-slot-reward-detail{
+ margin:7px auto 18px;color:#e9d9f5;font-size:clamp(12px,1.6vw,16px);
 }
-.monster-slot-gift-icon{font-size:clamp(64px,15vh,140px);filter:drop-shadow(0 8px 7px #624c71);animation:monster-slot-present 1s ease-in-out infinite alternate}
-.monster-slot-gift-stage[data-stage="card"] .monster-slot-gift-icon{display:none}
-#monster-slot-card-image{
- display:block;max-height:100%;max-width:100%;width:100%;height:100%;
- object-fit:contain;filter:drop-shadow(0 8px 14px #25142b55);
- animation:monster-slot-card-appear .55s cubic-bezier(.2,1.3,.4,1);
+.monster-slot-reward-prizes{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(7px,1.5vw,16px);
+ margin-bottom:clamp(16px,2.5vw,26px);
 }
-.monster-slot-gift-stage[data-rarity="legendary"]{box-shadow:0 0 28px #ffe69f,0 0 44px #eab556}
-.monster-slot-gift-stage[data-rarity="epic"]{box-shadow:0 0 28px #c89aff,0 0 35px #9652b6}
-.monster-slot-card-name{
- font-size:clamp(16px,2.4vw,26px);line-height:1.2;font-weight:1000;color:#fff3ce;text-wrap:balance;
+.monster-slot-reward-item{
+ min-width:0;padding:clamp(10px,1.8vw,18px);border:1px solid #f0cb8299;border-radius:18px;
+ display:flex;flex-direction:column;align-items:center;gap:6px;
+ background:linear-gradient(160deg,#fff7df,#e8d5f0);
+ box-shadow:0 7px 17px #050e2b66;color:#2c2346;
 }
-.monster-slot-card-detail{margin:0;color:#e1cde9;font-size:clamp(11px,1.7vw,16px);line-height:1.35}
-#monster-slot-card-skip{
- min-height:43px;padding:9px 18px;border:1px solid #f3cf8f;border-radius:12px;
- color:#ffedc9;background:#48375b;font:800 clamp(12px,1.6vw,16px) system-ui;cursor:pointer;
+.monster-slot-reward-item-reel{
+ color:#6c4973;font-size:clamp(9px,1.3vw,13px);font-weight:900;letter-spacing:.12em;
 }
-#monster-slot-card-skip:focus-visible{outline:3px solid #fff;outline-offset:3px}
-@keyframes monster-slot-present{to{transform:translateY(-9px) rotate(5deg) scale(1.04)}}
-@keyframes monster-slot-card-appear{from{opacity:0;transform:scale(.7) rotateY(85deg)}to{opacity:1;transform:scale(1) rotateY(0deg)}}
+.monster-slot-reward-item-art{
+ position:relative;display:grid;place-items:center;width:100%;height:clamp(48px,8vw,98px);
+}
+.monster-slot-reward-item-art span{font-size:clamp(32px,6vw,67px)}
+.monster-slot-reward-item-art img{
+ position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;
+ filter:drop-shadow(0 4px 7px #291c3b55);
+}
+.monster-slot-reward-item-art.has-image img{opacity:1}
+.monster-slot-reward-item-art.has-image span{opacity:0}
+.monster-slot-reward-item-name{
+ font-size:clamp(11px,1.7vw,17px);line-height:1.23;font-weight:950;
+ overflow-wrap:anywhere;text-wrap:balance;
+}
+.monster-slot-reward-cards-panel{
+ padding-top:clamp(10px,1.8vw,18px);border-top:1px solid #e8be7a70;
+}
+.monster-slot-reward-cards-title{
+ margin:0;font-size:clamp(19px,2.7vw,27px);line-height:1.2;color:#ffe1a5;
+}
+.monster-slot-reward-cards-detail{
+ margin:6px 0 16px;font-size:clamp(11px,1.4vw,15px);color:#e2d8f0;
+}
+.monster-slot-reward-cards{
+ display:grid;grid-template-columns:repeat(auto-fill,minmax(min(125px,100%),1fr));
+ gap:clamp(7px,1.2vw,13px);text-align:center;
+}
+.monster-slot-reward-card{
+ min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px;
+ padding:8px 6px 10px;border-radius:13px;border:1px solid #a49bb7;
+ background:linear-gradient(145deg,#343355,#1d2945);
+ box-shadow:0 5px 12px #0005;
+}
+.monster-slot-reward-card[data-new="yes"]{
+ border-color:#ffda78;box-shadow:0 0 18px #f7d07a66,0 5px 12px #0005;
+ background:linear-gradient(145deg,#554060,#262448);
+}
+.monster-slot-reward-card[data-rarity="epic"] .monster-slot-reward-card-art{border-color:#d8a5ff}
+.monster-slot-reward-card[data-rarity="legendary"] .monster-slot-reward-card-art{border-color:#ffe398}
+.monster-slot-reward-card-art{
+ display:grid;place-items:center;width:100%;height:clamp(85px,12vw,145px);
+ overflow:hidden;border-radius:9px;border:2px solid #aaa6bd;
+ background:radial-gradient(circle at 50% 30%,#e5d3f3,#8b85ad);
+}
+.monster-slot-reward-card-art img{height:100%;width:100%;object-fit:contain}
+.monster-slot-reward-card-art span{font-size:46px}
+.monster-slot-reward-card-flag{
+ font-size:clamp(9px,1.2vw,12px);font-weight:1000;letter-spacing:.03em;color:#c9c4d7;
+}
+.monster-slot-reward-card[data-new="yes"] .monster-slot-reward-card-flag{color:#ffebaa}
+.monster-slot-reward-card-name{
+ font-size:clamp(10px,1.35vw,13px);line-height:1.2;color:#fff4dd;
+ overflow-wrap:anywhere;
+}
+.monster-slot-reward-card-origin{
+ font-size:clamp(9px,1.1vw,11px);line-height:1.2;color:#d9d1e9;
+ overflow-wrap:anywhere;margin-top:auto;
+}
+#monster-slot-summary-accept{
+ position:relative;display:inline-flex;align-items:center;justify-content:center;
+ min-height:52px;max-width:100%;margin:clamp(16px,2.8vw,27px) auto 0;padding:12px clamp(20px,4vw,46px);
+ border:2px solid #fff1c3;border-radius:15px;cursor:pointer;
+ background:linear-gradient(155deg,#fff6bf,#edc373 55%,#c38337);
+ color:#30200b;font:900 clamp(14px,1.8vw,19px)/1.2 system-ui;
+ box-shadow:0 6px 20px #0007,0 0 18px #ffde934c;
+}
+#monster-slot-summary-accept:hover:not(:disabled){filter:brightness(1.07)}
+#monster-slot-summary-accept:focus-visible{outline:3px solid #fff;outline-offset:4px}
+#monster-slot-summary-accept:disabled{opacity:.5;cursor:wait}
+@keyframes ms-summary-arrive{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
 @media(max-width:570px){
- .monster-slot-card-cinema{padding:5px}
- .monster-slot-card-content{border-radius:14px;padding:9px;gap:7px}
- .monster-slot-gift-stage{height:clamp(135px,27vh,205px);width:min(220px,90%)}
- #monster-slot-card-pack{font-size:clamp(15px,4.6vw,20px)}
- .monster-slot-card-name{font-size:clamp(14px,4.4vw,19px)}
- .monster-slot-card-detail{font-size:11px}
- #monster-slot-card-skip{min-height:38px}
-}
-@media(max-height:560px){
- .monster-slot-card-content{gap:4px;padding:7px}
- .monster-slot-gift-stage{height:clamp(90px,27vh,140px)}
- #monster-slot-card-pack{font-size:16px}
- .monster-slot-card-kicker{font-size:10px}
+ .monster-slot-reward-summary{padding:7px}
+ .monster-slot-reward-content{padding:13px 8px;border-radius:16px}
+ .monster-slot-reward-kicker{font-size:9px;letter-spacing:.06em}
+ .monster-slot-reward-detail{margin-bottom:12px}
+ .monster-slot-reward-prizes{gap:5px}
+ .monster-slot-reward-item{padding:7px 4px;border-radius:10px}
+ .monster-slot-reward-item-art{height:54px}
+ .monster-slot-reward-item-art span{font-size:36px}
+ .monster-slot-reward-item-name{font-size:10px}
+ .monster-slot-reward-cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ .monster-slot-reward-card{padding:5px 3px 7px;gap:4px}
+ .monster-slot-reward-card-art{height:clamp(95px,30vw,135px)}
+ .monster-slot-reward-card-name{font-size:10px}
+ .monster-slot-reward-card-origin{font-size:9px}
+ #monster-slot-summary-accept{min-height:46px}
 }
 @media(prefers-reduced-motion:reduce){
- .monster-slot-gift-icon,#monster-slot-card-image{animation:none!important}
+ .monster-slot-reward-summary{animation:none}
 }
