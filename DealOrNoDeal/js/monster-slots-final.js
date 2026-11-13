@@ -172,8 +172,15 @@ function renderSummary(){
   const art=document.createElement('div');art.className='monster-slot-reward-card-art';
   if(card.image){
    const img=document.createElement('img');
-   img.src='Weihnachtsevent2/Sammelalbum_Saison_2_Bilder/'+encodeURIComponent(String(card.image));
-   img.alt=String(card.name||'Sammelkarte');img.loading='eager';img.decoding='async';art.append(img);
+   const source='Weihnachtsevent2/Sammelalbum_Saison_2_Bilder/'+encodeURIComponent(String(card.image));
+   img.alt=String(card.name||'Sammelkarte');img.loading='eager';img.decoding='async';
+   if(window.ChristmasCardImages?.guard&&window.ChristmasCardImages?.show){
+    window.ChristmasCardImages.guard(img);window.ChristmasCardImages.show(img,source);
+   }else{
+    img.onerror=()=>{img.onerror=null;img.src='assets/weihnachts_event/card-back-winter.svg'};
+    img.src=source;
+   }
+   art.append(img);
   }else{const fallback=document.createElement('span');fallback.textContent='🎴';art.append(fallback)}
   const flag=document.createElement('span');flag.className='monster-slot-reward-card-flag';
   flag.textContent=card.isNew===true?'🌟 NEU':'DOPPELT';
