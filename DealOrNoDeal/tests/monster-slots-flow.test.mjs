@@ -41,7 +41,7 @@ function browserFixture(){
  finale.hidden=true; // The suitcase ceremony has just finished before the slots open.
  const dom={'monster-slot-status':status,'monster-slot-accept':accept,'finale-cinema':finale,'cent-reward':banker};
  const listeners=new Map(),store=new Map(),requests=[];
- const document={hidden:false,activeElement:new Node('prior'),body:{append(){}},
+ const document={hidden:false,activeElement:new Node('prior'),body:{append(){}},addEventListener(){},
   createElement:type=>type==='section'?root:new Node(type),getElementById:id=>dom[id]||null
  };
  const timers=new Map();let clock=0,timerId=0;
