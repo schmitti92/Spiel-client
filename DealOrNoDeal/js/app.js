@@ -161,7 +161,7 @@ revealTimer=setTimeout(()=>{if(g?.phase==='reveal'&&g.pending?.eventId===revealI
  const replay=button('🎬 Finale komplett wiederholen',()=>window.dispatchEvent(new Event('deal-replay-finale-sequence')));
  replay.disabled=false;extraActions.append(replay);
  const finish=button('✅ Zur Lobby',()=>{
-  if(isMonsterSlots&&sessionStorage.getItem('monster-slots-watched:'+g.id)!=='yes'){
+  if(isMonsterSlots&&sessionStorage.getItem('monster-slots-watched:'+String(window.SpielOnline?.state?.()?.user?.uid||'anonymous')+':'+g.id)!=='yes'){
    $('status').textContent='🎰 Bitte zuerst deine drei Monster-Slotgewinne ansehen und bestätigen.';return;
   }
   if(!isMonsterSlots&&!confirm('Zur Lobby zurückkehren? Noch offene Bonusauslosungen können später fortgesetzt werden.'))return;
