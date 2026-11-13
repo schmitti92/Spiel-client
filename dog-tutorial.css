@@ -1,0 +1,14 @@
+/* Einmalige Bild-Spielanleitungen. Echte Bestätigung statt Klick auf Pixel. */
+.dog-guide-dialog{position:fixed;inset:0;margin:auto;width:min(1480px,calc(100vw - 20px));max-width:none;max-height:calc(100dvh - 18px);padding:12px;background:linear-gradient(130deg,#142747,#071223);border:2px solid #f1c47e;border-radius:18px;box-shadow:0 25px 90px #000e,0 0 50px #edb76044;color:#fff1d2;overflow:auto;overscroll-behavior:contain;z-index:2147483500}
+.dog-guide-dialog::backdrop{background:#01050ee9;backdrop-filter:blur(8px)}
+.dog-guide-dialog.dog-guide-fallback{display:block!important;position:fixed!important;z-index:2147483646}
+.dog-guide-open{overflow:hidden!important}
+.dog-guide-content{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;min-width:0}
+.dog-guide-heading{margin:0;font:800 clamp(17px,2.3vw,26px)/1.3 Georgia,"Times New Roman",serif;color:#ffe4aa}
+.dog-guide-hint{margin:0;font:600 clamp(11px,1.1vw,14px)/1.35 system-ui,sans-serif;color:#dce5f3}
+.dog-guide-image{display:block;max-width:100%;width:auto;height:auto;max-height:calc(100dvh - 170px);object-fit:contain;border:1px solid #d9b27288;border-radius:10px}
+.dog-guide-error{padding:20px 10px;color:#ffd6b6;font:600 13px/1.5 system-ui,sans-serif}
+.dog-guide-accept{display:inline-flex;align-items:center;justify-content:center;min-width:230px;min-height:47px;padding:10px 25px;margin:2px auto 1px;border:2px solid #baffb0;border-radius:13px;background:linear-gradient(165deg,#32bd62,#127044);color:white;box-shadow:0 4px 18px #00c75e5c;font:850 16px/1.2 system-ui,sans-serif;cursor:pointer;touch-action:manipulation}
+.dog-guide-accept:hover{filter:brightness(1.12)}
+.dog-guide-accept:focus-visible{outline:3px solid #fff0a0;outline-offset:3px}
+@media(max-width:620px){.dog-guide-dialog{padding:7px;width:calc(100vw - 10px);max-height:calc(100dvh - 10px);border-radius:12px}.dog-guide-content{gap:6px}.dog-guide-image{max-height:calc(100dvh - 156px)}.dog-guide-heading{font-size:17px}.dog-guide-accept{min-height:44px;font-size:14px}}
