@@ -82,7 +82,7 @@ summaryButton.type='button';summaryButton.textContent='✅ Alle Gewinne bestäti
 summaryContent.append(summaryKicker,summaryTitle,summaryDetail,summaryPrizes,summaryCardsPanel,summaryButton);
 summary.append(summaryContent);root.append(summary);
 let liveGame=null,claimed=null,claimedUid=null,claiming=null,opening=false,shown='',seq=0,timers=[],priorFocus=null;
-let sharedSignature='',sharedPending=false;
+let sharedSignature='',sharedPending=false,scheduledWindowKey='';
 const sharedCaption=root.querySelector('.monster-slot-shared-caption');
 const setStatus=t=>status.textContent=t;
 const watched=id=>{try{return sessionStorage.getItem(seenKey(id))==='yes'}catch{return false}};
@@ -299,7 +299,6 @@ async function sharedAction(operation){
  if(sharedPending||!stage||!['ready','rolling'].includes(stage.phase)||!g?.id||g.pendingCardReveals?.length)return;
  const id=g.id,uid=user()?.uid,now=typeof dealServerNow==='function'?dealServerNow():Date.now();
  if(stage.uid!==uid&&now-Number(stage.activatedAt||0)<30000)return;
- const currentSignature=sharedSignature;
  sharedPending=true;accept.disabled=true;summaryButton.disabled=true;
  setStatus(operation==='spin'?'🎰 Der gemeinsame Slot startet …':'✅ Bestätigung wird für alle gespeichert …');
  try{
@@ -323,10 +322,8 @@ async function sharedAction(operation){
   setStatus('⚠️ Gemeinsame Slot-Aktion fehlgeschlagen: '+String(error.message||error)+'. Bitte erneut versuchen.');
   sharedSignature=''; // repaint the current turn without creating prizes
  }finally{
-  // Recompute the action buttons after the network request completes.
-  // The state broadcast can arrive while sharedPending is still true.
+  // Refresh controls without re-mounting the same scene or restarting animations.
   sharedPending=false;
-  sharedSignature='';
   renderShared();
  }
 }
@@ -346,8 +343,29 @@ function renderShared(){
  // Existing Christmas prize presentation stays above slot loading order.
  if(document.hidden||document.getElementById('cent-reward')?.hidden===false||
   document.getElementById('vote-reveal')?.hidden===false)return;
+ const now=typeof dealServerNow==='function'?dealServerNow():Date.now();
+ // Each new slot turn has a future server-stamped opening time. Legacy
+ // matches have no showAt and remain visible immediately.
+ const showAt=Number(stage.showAt||0);
+ if(stage.phase==='ready'&&showAt>now){
+  const windowKey=game.id+':'+stage.turn+':'+showAt;
+  if(scheduledWindowKey!==windowKey){
+   if(!root.hidden)cancel();
+   scheduledWindowKey=windowKey;
+   timer(()=>{if(scheduledWindowKey===windowKey){scheduledWindowKey='';renderShared()}},Math.max(20,showAt-now));
+  }
+  return;
+ }
+ scheduledWindowKey='';
  const signature=game.id+':'+stage.turn+':'+stage.phase+':'+String(stage.startedAt||0)+':'+String(user()?.uid||'');
- if(signature===sharedSignature&&!root.hidden)return;
+ if(signature===sharedSignature&&!root.hidden){
+  // A game-state refresh or HTTP response must not restart the reel animation.
+  const canRecover=now-Number(stage.activatedAt||0)>=30000;
+  const mayAct=stage.uid===user()?.uid||canRecover;
+  if(stage.phase==='ready')accept.disabled=sharedPending||!mayAct;
+  else if(stage.phase==='rolling'&&!opening)summaryButton.disabled=sharedPending||!mayAct;
+  return;
+ }
  cancel();sharedSignature=signature;liveGame=game.id;claimed=null;claimedUid=null;
  root.dataset.shared='yes';
  root.dataset.turn=stage.turn;root.dataset.phase=stage.phase;
@@ -355,7 +373,6 @@ function renderShared(){
  const name=recipient?.name||'Spieler',me=stage.uid===user()?.uid;
  root.dataset.actor=me?'yes':'no';
  const roundLabel=stage.turn==='runner'?'🥈 ZWEITPLATZIERTER':'🏆 SIEGER';
- const now=typeof dealServerNow==='function'?dealServerNow():Date.now();
  const canRecover=now-Number(stage.activatedAt||0)>=30000;
  const mayAct=me||canRecover;
  sharedCaption.hidden=false;
@@ -384,10 +401,27 @@ function renderShared(){
  claimed={gameId:game.id,prizes};
  opening=true;accept.disabled=true;accept.textContent='⏳ Live-Dreh läuft …';
  const started=Number(stage.startedAt||now);
- const elapsed=Math.max(0,now-started);
+ // A negative elapsed means every device has been notified BEFORE the spin.
+ const elapsed=now-started;
+ const leadIn=Math.max(0,-elapsed);
  const stopTimes=(stage.reels===1?[3000]:[3000,4500,6000]);
- reels.slice(0,stage.reels).forEach(reel=>setPhase(reel,'running'));
  const token=seq;
+ const beginSpin=()=>{
+  if(seq!==token||sharedSignature!==signature||root.hidden)return;
+  root.dataset.phase='rolling';
+  reels.slice(0,stage.reels).forEach(reel=>{
+   const track=reel.querySelector('.monster-slot-track');
+   // Late spectators enter the correct cycle of the 2050ms reel animation.
+   if(track?.style)track.style.animationDelay='-'+(Math.max(0,Math.round((typeof dealServerNow==='function'?dealServerNow():Date.now())-started))%2050)+'ms';
+   setPhase(reel,'running');
+  });
+  setStatus('🎰 '+name+' dreht – alle schauen live zu!');
+ };
+ if(leadIn>0){
+  root.dataset.phase='countdown';
+  setStatus('🎬 Gemeinsamer Dreh startet in '+Math.max(1,Math.ceil(leadIn/1000))+' Sekunden …');
+  timer(beginSpin,leadIn);
+ }else beginSpin();
  const resultAt=stage.reels===1?4200:7800;
  const reveal=(index)=>{
   if(seq!==token||sharedSignature!==signature||root.hidden)return;
