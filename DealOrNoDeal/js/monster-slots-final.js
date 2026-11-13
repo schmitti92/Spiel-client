@@ -96,6 +96,11 @@ function sync(){
 }
 window.addEventListener('deal-game-state-change',sync);
 window.addEventListener('deal-finale-finished',sync);
+window.addEventListener('deal-monster-slot-retry',()=>{
+ if(!liveGame)return;
+ if(claimed?.gameId===liveGame){openedGame='';void present();}
+ else{container.hidden=false;void claim();}
+});
 window.addEventListener('deal-replay-finale-sequence',()=>{container.hidden=true});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});
 window.addEventListener('load',sync);
