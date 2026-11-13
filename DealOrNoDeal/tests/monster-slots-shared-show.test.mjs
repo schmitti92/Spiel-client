@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {readFileSync,existsSync} from 'node:fs';
 import {Script} from 'node:vm';
 const load=path=>readFileSync(new URL('../../'+path,import.meta.url),'utf8');
 const js=load('DealOrNoDeal/js/monster-slots-final.js');
@@ -58,4 +58,43 @@ test('premium cabinet loads uploaded reel and glow assets without cropping DOG c
  assert.match(css,/ms-studio-summary-fade/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
  assert.match(html,/monster-slots-shared-show\.css\?v=20261114-spectator-v1-studio-v2/);
+});
+
+
+test('full premium artwork integration uses the shared 3-reel cabinet and original prize symbols',()=>{
+ const images=[
+  'slot-machine-frame.png','slot-reel-panel.png','slot-reel-highlight.png',
+  'slot-chest.png','slot-pack-silver.png','slot-pack-gold.png','slot-pack-premium.png',
+  'slot-hammer.png','slot-doublehammer.png','slot-goldhammer.png',
+  'slot-joker.png','slot-money.png','slot-jackpot.png','slot-question-card.png',
+  'slot-flash.png','slot-sparkle.png','slot-confetti.png','slot-win-glow.png',
+  'slot-win-banner.png','slot-epic-banner.png','slot-jackpot-banner.png',
+  'slot-button-spin.png','slot-button-reward.png'
+ ];
+ for(const name of images){
+  assert.ok(existsSync(new URL('../assets/slot-premium/'+name,import.meta.url)),name+' is not uploaded');
+  assert.ok(css.includes(name)||js.includes(name),name+' is not used in the slot show');
+ }
+ assert.match(css,/#deal-monster-slots\[data-reels="3"\] \.monster-slot-reels/);
+ assert.match(css,/aspect-ratio:512 \/ 377/);
+ assert.match(css,/slot-machine-frame\.png/);
+ assert.match(js,/const rolling=\[/);
+ assert.match(js,/img\.src=symbol\.src/);
+ assert.match(js,/span\.classList\.add\('has-image'\)/);
+ assert.match(js,/summary\.dataset\.tier=/);
+ assert.match(js,/root\.dataset\.actor=me\?'yes':'no'/);
+ assert.match(css,/data-actor="yes"/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+ assert.doesNotMatch(js,/Math\.random|randomPrize/);
+ assert.match(html,/monster-slots-shared-show\.css\?v=20261114-spectator-v1-studio-v2-art-v3/);
+ assert.match(html,/monster-slots-final\.js\?v=20261114-cards-priority-v3-art-v3/);
+});
+
+test('preview-only control images are not misleadingly displayed as finale options',()=>{
+ for(const name of ['slot-button-auto.png','slot-button-spin5.png','slot-free-spin.png','slot-button-back.png']){
+  assert.doesNotMatch(css,new RegExp(name.replace('.','\\.')));
+  assert.doesNotMatch(js,new RegExp(name.replace('.','\\.')));
+ }
+ assert.match(css,/data-phase="ready"\] #monster-slot-accept:not\(:disabled\)/);
+ assert.match(css,/data-actor="yes"\] #monster-slot-summary-accept:not\(:disabled\)/);
 });
