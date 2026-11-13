@@ -10,8 +10,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const html = readFileSync(resolve(root, 'game.html'), 'utf8');
 const css = [...html.matchAll(/<link\s+rel="stylesheet"\s+href="(\.\/css\/[^"]+)"/g)].map(m => m[1].split('?')[0]);
 const js = [...html.matchAll(/<script\s+src="(\.\/js\/[^"]+)"\s*><\/script>/g)].map(m => m[1].split('?')[0]);
-const expectedCss = ['foundation', 'studio', 'cases', 'double-boost', 'banker', 'avatars', 'effects', 'deluxe-director', 'broadcast', 'christmas-studio', 'christmas-gifts', 'commentary', 'banker-stage', 'finale-ceremony-premium', 'active-player-gold', 'final-dual-wheel'].map(n => './css/' + n + '.css');
-const expectedJs = ['core', 'double-boost', 'christmas-card-image-loader', 'moderator-lines', 'amount-voice', 'moderator-stories', 'moderator-story-engine', 'cases', 'banker', 'finale', 'scenes', 'avatars', 'commentary-lines', 'commentary-replies', 'commentary', 'app', 'moin-autoplay', 'deluxe-director', 'broadcast', 'christmas-themes', 'peek-joker', 'final-hammer-wheel'].map(n => './js/' + n + '.js');
+const expectedCss = ['foundation', 'studio', 'cases', 'double-boost', 'banker', 'avatars', 'effects', 'deluxe-director', 'broadcast', 'christmas-studio', 'christmas-gifts', 'commentary', 'banker-stage', 'finale-ceremony-premium', 'active-player-gold', 'final-dual-wheel', 'monster-slots-final'].map(n => './css/' + n + '.css');
+const expectedJs = ['core', 'double-boost', 'christmas-card-image-loader', 'moderator-lines', 'amount-voice', 'moderator-stories', 'moderator-story-engine', 'cases', 'banker', 'finale', 'scenes', 'avatars', 'commentary-lines', 'commentary-replies', 'commentary', 'app', 'moin-autoplay', 'deluxe-director', 'broadcast', 'christmas-themes', 'peek-joker', 'final-hammer-wheel', 'monster-slots-final'].map(n => './js/' + n + '.js');
 
 test('HTML assets are complete, unique, and loaded in the intended order', () => {
   assert.deepEqual(css, expectedCss);
@@ -69,7 +69,10 @@ test('CSS image paths resolve relative to CSS files', () => {
 });
 test('DOM lookups refer to declared or dynamically created IDs', () => {
   const source = js.map(path => readFileSync(resolve(root, path), 'utf8')).join('\n');
-  const ids = new Set([...html.matchAll(/\bid="([^"]+)"/g), ...source.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]));
+  // Dynamic Monster Slots markup is a serialized HTML literal in its JS module.
+  const slots = readFileSync(resolve(root, 'js/monster-slots-final.js'), 'utf8');
+  const slotMarkup = JSON.parse(slots.split('root.innerHTML=')[1].split(';\n')[0]);
+  const ids = new Set([...html.matchAll(/\bid="([^"]+)"/g), ...source.matchAll(/\bid="([^"]+)"/g), ...slotMarkup.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]));
   for (const match of source.matchAll(/\$\('([^']+)'\)(\?\.)?/g)) {
     if (!match[2]) assert.ok(ids.has(match[1]), 'Missing DOM id: ' + match[1]);
   }
