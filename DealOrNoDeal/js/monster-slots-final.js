@@ -115,7 +115,7 @@ const isTiedFinal=game=>{
  const values=Array.isArray(game?.finalValues)?game.finalValues.map(f=>f.payout):[];
  return values.length>1&&values.filter(v=>v===Math.max(...values)).length>1;
 };
-const canShow=()=>typeof g!=='undefined'&&g?.phase==='final'&&g.monsterSlotsVersion===1&&!isTiedFinal(g)&&entitledReels()>0&&
+const canShow=()=>typeof g!=='undefined'&&g?.phase==='final'&&g.monsterSlotsVersion===1&&!g.pendingCardReveals?.length&&!isTiedFinal(g)&&entitledReels()>0&&
  document.getElementById('finale-cinema')?.hidden!==false&&
  document.getElementById('cent-reward')?.hidden!==false&&!document.hidden;
 function showAlreadySettled(){
@@ -267,7 +267,7 @@ summaryButton.addEventListener('click',confirmSlots);
 // WebSocket game snapshots provide prizes and timestamps; no spectator polling.
 async function sharedAction(operation){
  const stage=typeof g!=='undefined'?g?.monsterSlotShow:null;
- if(sharedPending||!stage||!['ready','rolling'].includes(stage.phase)||!g?.id)return;
+ if(sharedPending||!stage||!['ready','rolling'].includes(stage.phase)||!g?.id||g.pendingCardReveals?.length)return;
  const id=g.id,uid=user()?.uid,now=typeof dealServerNow==='function'?dealServerNow():Date.now();
  if(stage.uid!==uid&&now-Number(stage.activatedAt||0)<30000)return;
  const currentSignature=sharedSignature;
@@ -304,6 +304,11 @@ async function sharedAction(operation){
 function renderShared(){
  const game=typeof g!=='undefined'?g:null,stage=game?.monsterSlotShow;
  if(!stage||game.phase!=='final')return;
+ if(game.pendingCardReveals?.length){
+  if(!root.hidden)cancel();
+  sharedSignature='';
+  return;
+ }
  if(stage.phase==='ceremony'){
   if(sharedSignature||!root.hidden){cancel();sharedSignature='';}
   root.dataset.shared='no';liveGame=null;claimed=null;claimedUid=null;
