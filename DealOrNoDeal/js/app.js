@@ -294,15 +294,21 @@ async function refreshDealSocketAuth(){
   if(ws===dealSocket&&ws.readyState===WebSocket.OPEN)ws.close();
  }
 }
-// Short HTTP reconciliation only around live shared slots or a final vote.
-// It recovers missed WebSocket pushes across Render instances, with no writes.
-function sharedSlotRecoveryActive(){
- if(!g)return false;
+// Bounded read-only reconciliation for slot handoffs across Render instances.
+// Active spins recover promptly; waiting rooms reduce reads after prolonged idle.
+function sharedSlotRecoveryInterval(){
+ if(!g)return 0;
  const show=g.monsterSlotShow;
- if(g.phase==='final'&&show&&show.phase!=='ceremony')return true;
+ if(g.phase==='final'&&show&&show.phase!=='ceremony'){
+  const age=(typeof dealServerNow==='function'?dealServerNow():Date.now())-Number(show.activatedAt||0);
+  return show.phase==='rolling'||age<45000?3000:15000;
+ }
  const ballot=g.phase==='decision'?g.history?.at(-1):null;
- return !!ballot&&Array.isArray(ballot.participants)&&ballot.participants.length>0&&
-  (ballot.decisions||[]).length>=ballot.participants.length-1;
+ if(ballot&&Array.isArray(ballot.participants)&&ballot.participants.length>0&&
+  (ballot.decisions||[]).length>=ballot.participants.length-1){
+  return Date.now()-lastStateChange<30000?3000:15000;
+ }
+ return 0;
 }
 async function pollLoop(){
  if(!document.hidden){
@@ -314,9 +320,10 @@ async function pollLoop(){
   if(dealSocket?.readyState===WebSocket.OPEN&&!dealSocketHealthy()&&dealSocketLastMessage&&Date.now()-dealSocketLastMessage>45000)dealSocket.close();
   // HTTP reconciliation remains essential when the action and socket hit different Render instances.
   // Clock-only heartbeats avoid a Firestore read on every connected player's ping.
-  if(!dealSocketHealthy()||Date.now()-lastHttpSafetySync>=(sharedSlotRecoveryActive()?3000:60000))await poll();
+  const slotPollMs=sharedSlotRecoveryInterval();
+  if(!dealSocketHealthy()||Date.now()-lastHttpSafetySync>=(slotPollMs||60000))await poll();
  }
- const delay=sharedSlotRecoveryActive()?2500:
+ const delay=sharedSlotRecoveryInterval()===3000?2500:
   dealSocketHealthy()?4000:Math.max(pollDelay(),Math.min(8000,1000*2**dealSocketRetry));
  setTimeout(pollLoop,delay);
 }
