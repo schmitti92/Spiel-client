@@ -29,7 +29,7 @@ $('finale-watch-again').addEventListener('click',replayFinaleSequence);
 // Ordinary restarts must wait for both shared award stages (ties need no winner wheel).
 function finaleBonusesComplete(game){
  if(!game||game.phase!=='final')return false;
- if(game.monsterSlotsVersion===1)return sessionStorage.getItem('monster-slots-watched:'+game.id)==='yes';
+ if(game.monsterSlotsVersion===1)return sessionStorage.getItem('monster-slots-watched:'+String(window.SpielOnline?.state?.()?.user?.uid||'anonymous')+':'+game.id)==='yes';
  const payouts=(game.finalValues||[]).map(v=>v.payout);
  if(payouts.length>1&&payouts.filter(v=>v===Math.max(...payouts)).length>1)return true;
  const key='final:'+game.id,spunAt=Number(game.christmasWheelSpins?.[key]||0);
