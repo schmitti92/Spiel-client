@@ -327,3 +327,25 @@
 @media(prefers-reduced-motion:reduce){
  .monster-slot-reward-summary{animation:none}
 }
+
+
+/* Deal or No Deal ranking: runner-up receives a single full-size reel. */
+#deal-monster-slots .monster-slot-reel[hidden],
+#deal-monster-slots .monster-slot-progress span[hidden]{display:none!important}
+#deal-monster-slots[data-reels="1"] .monster-slot-reels{
+ grid-template-columns:minmax(0,1fr);
+ max-width:min(320px,80vw);
+ margin-left:auto;margin-right:auto;
+}
+#deal-monster-slots[data-reels="1"] .monster-slot-reel{
+ min-height:225px;
+}
+#deal-monster-slots[data-reels="1"] .monster-slot-reward-prizes{
+ grid-template-columns:minmax(0,1fr);
+ max-width:380px;margin-left:auto;margin-right:auto;
+}
+#deal-monster-slots[data-reels="1"] .monster-slot-subheading{color:#f1e8cd}
+@media(max-width:550px){
+ #deal-monster-slots[data-reels="1"] .monster-slot-reels{max-width:min(280px,84vw)}
+ #deal-monster-slots[data-reels="1"] .monster-slot-reel{min-height:195px}
+}
