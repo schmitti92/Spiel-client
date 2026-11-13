@@ -17,5 +17,5 @@ test('Dedicated confirmation modal and unchanged recovery receipt',()=>{
  assert.match(js,/const pending=old\|\|\{id:requestId\(\),gate\}/);
  assert.match(js,/if\(!old&&!storePending\(account,pending\)\)/);
  assert.match(js,/clearPending\(account\)/);
- assert.match(html,/dog-tor-map\.js\?v=20261113-gate-progress1/);
+ assert.match(html,/dog-tor-map\.js\?v=20261113-real-duels1/);
 });
