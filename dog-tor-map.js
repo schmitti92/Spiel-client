@@ -640,16 +640,32 @@
  function showGateRequirements(gate){
   const panel=$('gate-detail-requirements');
   if(!panel)return;
-  const info=gate%5===0?null:
+  const boss=gate%5===0;
+  // Both previews come from fixed, server-authored rules in the SAME
+  // existing map GET. No extra subscriptions or Firestore reads.
+  const info=boss?mapState?.bossGearRequirements?.find(row=>row.gate===gate):
    mapState?.normalGateRequirements?.find(row=>row.gate===gate);
   panel.hidden=!info;
   if(!info)return;
-  // Exactly the server's immutable HP and attack requirements.
   const number=value=>Number(value).toLocaleString('de-DE');
+  const heading=$('gate-req-heading');
+  if(heading)heading.textContent=boss?
+   (gate%10===0?'🐉 Gruppenboss · empfohlene Teamstärke':'👹 Zwischenboss · empfohlene Ausrüstung'):
+   '🛡️ Feste Gegnerwerte · kein Glückswurf';
   $('gate-req-hp').textContent=number(info.enemyMaxHp)+' LP';
-  $('gate-req-attack').textContent=number(info.enemyAttack);
-  $('gate-req-weapon').textContent='Stufe '+info.recommendedWeaponLevel;
-  $('gate-req-armor').textContent='Stufe '+info.recommendedArmorLevel;
+  const attackLabel=$('gate-req-attack-label');
+  if(attackLabel)attackLabel.textContent=boss&&gate%10===0?'👥 Teamgröße':'⚔️ Gegner-Angriff';
+  $('gate-req-attack').textContent=boss&&gate%10===0?'3 Spieler empfohlen':number(info.enemyAttack);
+  $('gate-req-weapon').textContent='Stufe '+info.recommendedWeaponLevel+' / 50';
+  $('gate-req-armor').textContent='Stufe '+info.recommendedArmorLevel+' / 50';
+  const note=$('gate-req-note');
+  if(note){
+   note.hidden=!boss;
+   if(boss)note.textContent='✨ Fähigkeiten: ungefähr Stufe '+
+    info.recommendedSkillLevel+' in wichtigen Angriffs- und Abwehrfähigkeiten. '+
+    (gate%10===0?'Mit drei gut vorbereiteten Helden und erfolgreichen Minispielen steigt die Siegchance.':
+    'Auch Rüstung und Angriffs-/Abwehrfähigkeiten entscheiden; die Empfehlung garantiert keinen Sieg.');
+  }
  }
  function selectGate(gate,button){
   for(const selected of document.querySelectorAll('.gate[aria-pressed="true"]'))selected.setAttribute('aria-pressed','false');
