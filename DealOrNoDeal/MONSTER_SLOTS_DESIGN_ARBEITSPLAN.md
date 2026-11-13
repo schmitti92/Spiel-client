@@ -98,6 +98,16 @@ Die Frontend-Animation darf **keine eigenen Gewinnauslosungen** vornehmen. Der S
 - **Performance**: Visuelle Animation lokal; keine zusätzlichen Firestore-Dauerabfragen.
 - **Transparenz**: Ziel von ungefähr 300 DoND-Partien bis 100 Tore bleibt separater Balancing-Auftrag; die Gestaltung der Slots ändert die Gewinnwahrscheinlichkeiten nicht.
 
+## 7a. Neue Regel: gewonnene Kartenpakete nur bei neuen Karten animieren (13.11.2026)
+
+- **Slot-Gewinn `pack`:** Der Server öffnet alle 1–3 gewonnenen Normal-, Gold-, Premium- oder Platinpakete beim einmaligen Slot-Settlement direkt. Jede gezogene Karte wird dem DOG-Saison-2-Sammelalbum gutgeschrieben – unabhängig davon, ob sie neu oder doppelt ist.
+- **Neue Karten:** Der Server berechnet `isNew` anhand des tatsächlich gespeicherten Kartenbestands, nicht aus einer Vermutung des Browsers. Enthält ein Paket mindestens eine neue Karte, öffnet es sich nach dem dritten Slot-Stopp automatisch und zeigt seine Karten; nur neu entdeckte Karten erhalten die auffällige Kennzeichnung.
+- **Nur Duplikate:** Kein zeitaufwendiges Karten-Opening, aber alle doppelten Karten bleiben gutgeschrieben. Die Slot-Gewinne können direkt bestätigt werden.
+- **Mehrere Pakete:** Jedes gewonnene Paket wird separat geprüft, und die Neuheit wird auch über mehrere Pakete derselben Slotrunde korrekt ermittelt.
+- **Sicherheitsregeln:** Das alte Gutscheinmodell bleibt für historische Slot-Quittungen bestehen; neue Karten dürfen nicht nachträglich ein zweites Mal gezogen werden. Neuaufruf/Reload nutzt nur die gespeicherte Quittung; keine Extra-Firestore-Leseabfrage für die Enthüllung. Bei abwesenden Spielern werden die Pakete spätestens beim nächsten gemeinsamen Rundenstart serverseitig ausgezahlt.
+- **UX:** Große Kartenmotive aus `Weihnachtsevent2/Sammelalbum_Saison_2_Bilder/`, Möglichkeit zum Überspringen der laufenden Enthüllung, barrierearme Kurzfassung bei `prefers-reduced-motion`.
+- **Status:** Serverlogik und Frontend-Opening auf `main` eingebaut, gezielte Tests ergänzt; vollständiger Livetest mit 3 aktiven Spielern weiterhin offen.
+
 ## 8. Noch offen / ausdrücklich nicht zugesagt
 - Eine **pixelgenaue Übernahme** ist erst möglich, wenn das vollständige Entwurfsbild tatsächlich vorliegt. Die bisherige Bildgenerierung wurde abgebrochen.
 - Dieser Plan ist **nur die Aufgabenliste**, keine Behauptung, dass Design, End-to-End-Tests oder Live-Deployment abgeschlossen sind.
