@@ -27,11 +27,28 @@ root.innerHTML="<div class=\"monster-slot-machine\">\n <div class=\"monster-slot
 document.body.append(root);
 const reels=[...root.querySelectorAll('.monster-slot-reel')],lights=[...root.querySelectorAll('.monster-slot-progress span')];
 const status=$('monster-slot-status'),accept=$('monster-slot-accept');
-const cinema=$('monster-slot-card-cinema'),cardStage=$('monster-slot-gift-stage');
-const cardImage=$('monster-slot-card-image'),cardName=$('monster-slot-card-name');
-const cardTitle=$('monster-slot-card-pack'),cardDetail=$('monster-slot-card-detail');
+// Card-reveal stage belongs to the slot overlay, not to a separate HTML page.
+// Build it here so the finale works on existing game.html installations.
+const cinema=document.createElement('div');cinema.id='monster-slot-card-cinema';
+cinema.className='monster-slot-card-cinema';cinema.hidden=true;
+cinema.setAttribute('role','region');cinema.setAttribute('aria-label','Neue Sammelkarten aufdecken');
+const cardContent=document.createElement('div');cardContent.className='monster-slot-card-content';
+const cardKicker=document.createElement('div');cardKicker.className='monster-slot-card-kicker';
+cardKicker.textContent='✦ NEUER SAMMELKARTENFUND ✦';
+const cardTitle=document.createElement('h3');cardTitle.id='monster-slot-card-pack';
+const cardStage=document.createElement('div');cardStage.id='monster-slot-gift-stage';cardStage.className='monster-slot-gift-stage';
+const giftIcon=document.createElement('span');giftIcon.className='monster-slot-gift-icon';
+giftIcon.textContent='🎁';giftIcon.setAttribute('aria-hidden','true');
+const cardImage=document.createElement('img');cardImage.id='monster-slot-card-image';cardImage.hidden=true;
+cardStage.append(giftIcon,cardImage);
+const cardName=document.createElement('div');cardName.id='monster-slot-card-name';cardName.className='monster-slot-card-name';
+const cardDetail=document.createElement('p');cardDetail.id='monster-slot-card-detail';cardDetail.className='monster-slot-card-detail';
+const cardSkip=document.createElement('button');cardSkip.id='monster-slot-card-skip';cardSkip.type='button';
+cardSkip.textContent='⏭ Aufdeckanimation überspringen';
+cardContent.append(cardKicker,cardTitle,cardStage,cardName,cardDetail,cardSkip);
+cinema.append(cardContent);root.append(cinema);
 let skipCardCinema=null;
-$('monster-slot-card-skip').addEventListener('click',()=>skipCardCinema?.());
+cardSkip.addEventListener('click',()=>skipCardCinema?.());
 let liveGame=null,claimed=null,claimedUid=null,claiming=null,opening=false,shown='',seq=0,timers=[],priorFocus=null;
 const setStatus=t=>status.textContent=t;
 const watched=id=>{try{return sessionStorage.getItem(seenKey(id))==='yes'}catch{return false}};
