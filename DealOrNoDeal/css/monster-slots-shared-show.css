@@ -71,3 +71,194 @@
 @media(prefers-reduced-motion:reduce){
  #deal-monster-slots[data-shared="yes"] .monster-slot-reel{transition:none!important;animation:none!important}
 }
+
+
+/* Premium studio refinement · 2026-11-14
+   The reel sprites are purely decorative. All prizes remain server-authored. */
+#deal-monster-slots .monster-slot-machine{
+  scrollbar-gutter:stable;
+  background:
+    radial-gradient(ellipse at 50% -10%,#e7b25736 0%,transparent 48%),
+    linear-gradient(155deg,#0b1229ee 0%,#13102eea 55%,#0a1029f2 100%),
+    url('../assets/slot-premium/slot-stage-alternative.png') center/cover no-repeat,
+    linear-gradient(160deg,#1d1b3b,#0a1327)!important;
+}
+#deal-monster-slots .monster-slot-machine::before{
+  inset:7px;border:1px solid #ffe7a273;border-radius:inherit;
+  box-shadow:inset 0 0 0 3px #3d2341a0,inset 0 0 33px #ecbb5e22;
+}
+#deal-monster-slots .monster-slot-lights{
+  letter-spacing:clamp(3px,1.15vw,12px);
+  text-shadow:0 0 8px #fff2a8,0 0 20px #e1a45c,0 0 34px #df7fff;
+}
+#deal-monster-slots #monster-slots-title{
+  filter:drop-shadow(0 3px 2px #110d26) drop-shadow(0 0 18px #e8af6370);
+}
+#deal-monster-slots .monster-slot-ribbon{
+  position:relative;min-width:min(340px,86%);box-sizing:border-box;
+  border:1px solid #f1c9799e;border-radius:999px;
+  background:linear-gradient(90deg,#1b204198,#70426f75,#1b204198);
+  box-shadow:inset 0 0 9px #ffe6b124,0 0 16px #f1b35c24;
+  text-shadow:0 1px 5px #0009;
+}
+#deal-monster-slots .monster-slot-reels{
+  position:relative;isolation:isolate;
+  padding:clamp(5px,.9vw,10px);
+  border:1px solid #e2ba6059;border-radius:clamp(15px,2vw,25px);
+  background:linear-gradient(180deg,#090c20b5,#1e173bb8);
+  box-shadow:inset 0 2px 18px #000b,0 0 0 1px #f5cb6230,0 10px 24px #0005;
+}
+#deal-monster-slots .monster-slot-reels::before{
+  content:"";position:absolute;inset:0 10% auto;height:2px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,#fff2b1,#d68b4f,transparent);
+  filter:drop-shadow(0 0 5px #ffc875);
+}
+#deal-monster-slots .monster-slot-reel{
+  border:clamp(2px,.4vw,4px) solid #f5cc74;
+  background:
+    linear-gradient(135deg,#fff1ba22,#6d3a0924 65%,#fff0ba29),
+    url('../assets/slot-premium/slot-reel-panel.png') center/100% 100% no-repeat,
+    linear-gradient(140deg,#fff3c8,#b77d27 22%,#ffebba 48%,#926024 75%,#f6d37e)!important;
+  box-shadow:inset 0 0 0 2px #ffe4aa75,0 7px 20px #000c,0 0 12px #f4bf6352!important;
+}
+#deal-monster-slots .monster-slot-reel-head{
+  border-bottom:1px solid #5537205c;
+}
+#deal-monster-slots .monster-slot-reel-foot{
+  border-top:1px solid #5537205c;
+}
+#deal-monster-slots .monster-slot-window{
+  isolation:isolate;
+  box-shadow:inset 0 0 0 2px #fff9e7,0 0 0 1px #382b4a,0 0 14px #eac470a8;
+}
+#deal-monster-slots .monster-slot-glass{
+  background:linear-gradient(107deg,#ffffff57 0%,transparent 27%,#ffffff20 47%,transparent 55%,#fff7c11c 100%);
+}
+#deal-monster-slots .monster-slot-reel[data-phase="running"] .monster-slot-window{
+  box-shadow:inset 0 0 0 2px #fff8d7,0 0 16px #ffdb7a,0 0 30px #d7a4ff55;
+}
+#deal-monster-slots .monster-slot-reel[data-phase="won"]{
+  transform:none;
+  border-color:#fff3ba!important;
+  box-shadow:inset 0 0 0 2px #fff1c288,0 0 22px #ffe0a2a0,0 9px 23px #000b!important;
+}
+#deal-monster-slots .monster-slot-prize{
+  isolation:isolate;padding:clamp(3px,.65vw,10px);
+}
+#deal-monster-slots .monster-slot-prize::before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:url('../assets/slot-premium/slot-win-glow.png') center/contain no-repeat;
+  opacity:.25;
+}
+#deal-monster-slots .monster-slot-art img{
+  object-fit:contain;object-position:center;
+  max-width:100%;max-height:100%;
+}
+#deal-monster-slots .monster-slot-quantity{
+  color:#704080;font-variant-numeric:tabular-nums;
+  text-shadow:0 1px 0 #fff;
+}
+#deal-monster-slots .monster-slot-prize-name{
+  max-width:100%;white-space:normal;overflow-wrap:anywhere;
+  font-variant-numeric:tabular-nums;text-wrap:balance;
+}
+#deal-monster-slots .monster-slot-scarcity{
+  display:inline-flex;justify-content:center;align-items:center;
+  max-width:100%;border-radius:99px;padding:2px 5px;
+  font:900 clamp(8px,.9vw,11px)/1.1 system-ui,sans-serif;
+  letter-spacing:.04em;white-space:normal;overflow-wrap:anywhere;
+  color:#49254e;background:#ffffffb5;border:1px solid #9275a780;
+}
+#deal-monster-slots .monster-slot-reel[data-rarity="legendary"][data-phase="won"] .monster-slot-scarcity,
+#deal-monster-slots .monster-slot-reel[data-rarity="mythic"][data-phase="won"] .monster-slot-scarcity{
+  color:#50320a;border-color:#a06a23;background:linear-gradient(90deg,#ffefb5,#f4c970,#fff2bb);
+}
+#deal-monster-slots .monster-slot-reel[data-rarity="mythic"][data-phase="won"]{
+  box-shadow:0 0 0 1px #fff4b4,0 0 26px #d5a2ff,0 0 38px #ffda88,0 9px 23px #000b!important;
+}
+#deal-monster-slots .monster-slot-progress span{
+  transition:background .24s ease,box-shadow .24s ease;
+}
+#deal-monster-slots .monster-slot-status{
+  max-width:85ch;margin-inline:auto;text-wrap:balance;
+}
+#deal-monster-slots #monster-slot-accept,
+#deal-monster-slots #monster-slot-summary-accept{
+  position:relative;overflow:hidden;
+  box-shadow:inset 0 1px 2px #fff9,0 7px 22px #0009,0 0 20px #eec56857;
+  transition:filter .15s ease,box-shadow .15s ease;
+}
+#deal-monster-slots #monster-slot-accept:not(:disabled)::after,
+#deal-monster-slots #monster-slot-summary-accept:not(:disabled)::after{
+  content:"";position:absolute;inset:1px;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(105deg,transparent 33%,#ffffff50 50%,transparent 67%);
+  background-size:240% 100%;animation:ms-studio-button-glint 3.7s ease-in-out infinite;
+}
+@keyframes ms-studio-button-glint{
+  0%,65%,100%{background-position:120% 0}
+  82%{background-position:-120% 0}
+}
+/* The shared overlay never shifts its scale when a spectator reconnects. */
+#deal-monster-slots[data-shared="yes"] .monster-slot-reward-summary{
+  animation:ms-studio-summary-fade .2s ease-out both;
+  scrollbar-gutter:stable;
+}
+@keyframes ms-studio-summary-fade{from{opacity:.65}to{opacity:1}}
+#deal-monster-slots .monster-slot-reward-content{
+  overflow:hidden;
+  border:2px solid #f2d69c;
+  box-shadow:0 0 0 2px #f2bd6640,0 14px 42px #0009,inset 0 0 32px #fbd58a24;
+}
+#deal-monster-slots .monster-slot-reward-item{
+  position:relative;overflow:hidden;
+  border-color:#e9c78b;
+  background:linear-gradient(155deg,#fff9ec,#e5d8f4);
+  box-shadow:inset 0 0 0 1px #fff9,0 7px 16px #0006;
+}
+#deal-monster-slots .monster-slot-reward-item[data-rarity="legendary"],
+#deal-monster-slots .monster-slot-reward-item[data-rarity="mythic"]{
+  border-color:#ffdb7b;background:linear-gradient(155deg,#fff6d4,#e9d7fa);
+  box-shadow:0 0 18px #fbd4867d,0 7px 16px #0006;
+}
+#deal-monster-slots .monster-slot-reward-item-art img{
+  object-fit:contain;object-position:center;
+}
+#deal-monster-slots .monster-slot-reward-card-art{
+  aspect-ratio:2/3;height:auto;min-height:0;
+  box-sizing:border-box;padding:3px;
+  background:linear-gradient(150deg,#ece2fb,#a8a5c4);
+}
+#deal-monster-slots .monster-slot-reward-card-art img{
+  display:block;width:100%;height:100%;object-fit:contain;object-position:center;
+}
+#deal-monster-slots .monster-slot-reward-card[data-new="yes"]{
+  border-color:#ffdb82;box-shadow:0 0 17px #ffd56e7a,0 5px 12px #0007;
+}
+@media(max-width:570px){
+  #deal-monster-slots .monster-slot-machine{scrollbar-gutter:auto}
+  #deal-monster-slots .monster-slot-reels{padding:4px;gap:4px}
+  #deal-monster-slots .monster-slot-reel{padding:2px}
+  #deal-monster-slots .monster-slot-reel-head,
+  #deal-monster-slots .monster-slot-reel-foot{font-size:clamp(7px,2vw,10px)}
+  #deal-monster-slots .monster-slot-window{height:clamp(130px,40vw,168px)}
+  #deal-monster-slots .monster-slot-art{max-height:clamp(57px,20vw,83px)}
+  #deal-monster-slots .monster-slot-quantity{font-size:clamp(9px,2.6vw,12px)}
+  #deal-monster-slots .monster-slot-prize-name{font-size:clamp(9px,2.7vw,12px);line-height:1.1}
+  #deal-monster-slots .monster-slot-scarcity{font-size:8px;letter-spacing:0;padding:2px}
+  #deal-monster-slots .monster-slot-ribbon{min-width:0}
+  #deal-monster-slots .monster-slot-reward-content{overflow:visible}
+  #deal-monster-slots .monster-slot-reward-card-art{height:auto;aspect-ratio:2/3}
+  #deal-monster-slots .monster-slot-reward-cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-height:630px) and (min-width:571px){
+  #deal-monster-slots .monster-slot-reels{margin-top:7px;margin-bottom:6px}
+  #deal-monster-slots .monster-slot-window{height:clamp(110px,22vh,158px)}
+  #deal-monster-slots .monster-slot-ribbon{margin-top:6px}
+}
+@media(prefers-reduced-motion:reduce){
+  #deal-monster-slots #monster-slot-accept::after,
+  #deal-monster-slots #monster-slot-summary-accept::after,
+  #deal-monster-slots[data-shared="yes"] .monster-slot-reward-summary{
+    animation:none!important;
+  }
+}
