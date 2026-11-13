@@ -162,3 +162,14 @@ test('won DOG packs open only when one card is new; duplicate-only packs skip th
  assert.equal(duplicates.accept.disabled,false,'player can confirm immediately');
  assert.equal(duplicates.requests.length,1);
 });
+
+test('a tied finale never requests Monster Slots and a later unique winner can still claim',async()=>{
+ const b=browserFixture();
+ b.g.finalValues=[{id:'host',payout:1000000},{id:'guest',payout:1000000}];
+ b.emit('deal-game-state-change');await b.flush();
+ assert.equal(b.requests.length,0,'draw must not call the reward API');
+ assert.equal(b.root.hidden,true,'draw must not open Slot machine');
+ b.g.finalValues[1].payout=500000;
+ b.emit('deal-game-state-change');await b.flush();
+ assert.equal(b.requests.length,1,'unique highest payout still gets normal Slot reward flow');
+});
