@@ -171,15 +171,10 @@
  }
  function renderMembers(){
    renderExpeditionProgress();
-   const botsAdded=mapState?.isMember===true&&
-    PILOT_IDS.every(id=>mapState.members?.some(m=>m.uid===id));
-   $('pilot-bots').hidden=botsAdded;
-   $('pilot-add-bots').disabled=working||!auth();
-   if(botsAdded)$('pilot-status').textContent='✅ Nova und Titan spielen mit deinem echten Profil.';
-   else $('pilot-status').textContent=auth()?
-    '🧪 Du kannst die zwei Bots jetzt hinzufügen.':
-    '🔒 Melde dich mit deinem Spielerprofil an.';
-  const area=$('team-members');area.replaceChildren();
+   // Public launch: no private test-bot invitation on the real 100-Tore map.
+   $('pilot-bots').hidden=true;
+   $('pilot-add-bots').disabled=true;
+   const area=$('team-members');area.replaceChildren();
   const team=mapState?.members||[];
   if(!team.length){
    area.append($node('div','team-empty','Noch keine bestätigten Teampositionen vorhanden.'));
