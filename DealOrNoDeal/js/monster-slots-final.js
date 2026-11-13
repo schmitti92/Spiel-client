@@ -1,3 +1,4 @@
+'use strict';
 // Goldstudio Monster Slots · premium 3-reel finale visual.
 // The server settles the prizes. These rolling symbols are purely decorative.
 (()=>{'use strict';
