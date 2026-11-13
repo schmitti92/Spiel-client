@@ -98,3 +98,23 @@ background:linear-gradient(105deg,#0c1f38f4 5%,#172c47f1 56%,#3a1c32e8),url("../
 #bingo-reward-dialog .bingo-award p{margin:4px 0;font-size:14px}
 #bingo-reward-dialog button{background:linear-gradient(130deg,#fff3bb,#c89042);color:#1c160e;border:1px solid #f8db9d;border-radius:11px;padding:12px 20px;font-weight:900;cursor:pointer;margin-top:13px}
 @media(max-width:780px){#dog-season-panel .reward-milestones{grid-template-columns:1fr}#dog-season-panel .reward-milestone{padding:10px}}
+
+
+/* DOG season 2: legendary last card in each 4x4 board, 1:500 board-draw rate. */
+#dog-season-panel .card.jackpot{
+ border-color:#ffdc82;
+ box-shadow:0 0 0 1px #fff0b68c,0 0 19px #fac25da1,inset 0 0 15px #e3a64735;
+}
+#dog-season-panel .card.jackpot .rarity{
+ border-color:#ffd470;
+ background:linear-gradient(145deg,#5b3007ed,#18283eed);
+ color:#fff2ba;
+ font-weight:900;
+ letter-spacing:.025em;
+}
+#dog-season-panel .card.jackpot.owned{
+ box-shadow:0 0 0 2px #ffe7adad,0 0 25px #ffd663bc;
+}
+@media (max-width:510px){
+ #dog-season-panel .card.jackpot .rarity{padding:2px 3px;font-size:8px}
+}
