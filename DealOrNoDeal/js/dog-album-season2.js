@@ -383,6 +383,9 @@
   }
  }));
  document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>{b.closest('dialog').close();showQueuedBingoAwards();showQueuedCompletions()}));
+ for(const id of ['reveal-dialog','card-dialog','bingo-reward-dialog'])$(id)?.addEventListener('close',()=>{
+  showQueuedBingoAwards();showQueuedCompletions();
+ });
  $('dog-cycle-complete-ok')?.addEventListener('click',()=>{$('dog-cycle-complete-dialog').close();openIntegratedTab('super');showQueuedCompletions()});
  $('dog-tournament-refresh')?.addEventListener('click',()=>void loadTournament());
  $('exchange').addEventListener('click',exchange);
