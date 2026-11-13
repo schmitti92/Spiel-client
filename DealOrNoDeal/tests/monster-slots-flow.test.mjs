@@ -50,6 +50,8 @@ function browserFixture(customPrizes=null){
   createElement:type=>type==='section'?root:new Node(type),getElementById:id=>dom[id]||null
  };
  const timers=new Map();let clock=0,timerId=0;
+ const epoch=Date.now();
+ class ServerDate extends Date{static now(){return epoch+clock}}
  function setFakeTimeout(fn,ms){const id=++timerId;timers.set(id,{when:clock+ms,fn});return id}
  async function advance(ms){
   const until=clock+ms;
@@ -101,7 +103,7 @@ function browserFixture(customPrizes=null){
   return {ok:true,json:async()=>({ok:true,gameId,guaranteed:count,prizes:items.slice(0,count)})};
  };
  async function flush(){for(let i=0;i<15;i++)await Promise.resolve()}
- const context=createContext({window,document,g,fetch,console,code:'123',render:()=>{},sessionStorage:{
+ const context=createContext({window,document,g,fetch,console,Date:ServerDate,code:'123',render:()=>{},sessionStorage:{
   getItem:key=>store.get(key)||null,setItem:(key,val)=>store.set(key,val)
  },matchMedia:()=>({matches:true}),setTimeout:setFakeTimeout,clearTimeout:id=>timers.delete(id),
   Event:class{constructor(type){this.type=type}}
@@ -111,6 +113,7 @@ function browserFixture(customPrizes=null){
  const summary=root.children.find(n=>n.id==='monster-slot-reward-summary');
  const summaryContent=summary?.children[0];
  return {window,document,g,root,accept,reels,banker,finale,requests,store,emit,flush,advance,
+  now:()=>epoch+clock,
   summary,summaryButton:summaryContent?.children.at(-1),
   summaryPrizes:summaryContent?.children[3],summaryCardsPanel:summaryContent?.children[4],
   summaryCards:summaryContent?.children[4]?.children[2]};
@@ -314,4 +317,37 @@ test('two-player loser never receives a runner-up spin, and tied second prizes a
  b.g.finalValues=[{id:'host',payout:5000000},{id:'guest',payout:2000000},{id:'quiet',payout:2000000},{id:'fourth',payout:1000000}];
  b.window.person='guest';b.emit('spielonline-change');await b.flush();
  assert.equal(b.requests.length,1,'two players tied for second receive no spin');
+});
+
+
+test('scheduled shared Slots open and spin together without resetting an existing spectator window',async()=>{
+ const b=browserFixture();
+ b.banker.hidden=true;
+ b.window.person='quiet';
+ const readyAt=b.now()+2200;
+ b.g.monsterSlotShow={phase:'ready',turn:'runner',uid:'guest',reels:1,
+  runnerUid:'guest',championUid:'host',activatedAt:b.now(),showAt:readyAt,startedAt:null,prizes:[]};
+ b.emit('deal-game-state-change');await b.flush();
+ assert.equal(b.root.hidden,true,'cabinet must not open before the shared showAt');
+ await b.advance(2199);
+ assert.equal(b.root.hidden,true);
+ await b.advance(1);
+ assert.equal(b.root.hidden,false,'all viewers open at the server-stamped moment');
+ assert.equal(b.root.dataset.phase,'ready');
+ const startAt=b.now()+3200;
+ b.g.monsterSlotShow={...b.g.monsterSlotShow,phase:'rolling',startedAt:startAt,
+  prizes:[{kind:'joker',quantity:1,label:'1× Joker'}]};
+ b.emit('deal-game-state-change');await b.flush();
+ assert.equal(b.root.dataset.phase,'countdown');
+ assert.equal(b.reels[0].reel.dataset.phase,'ready','no premature reel movement');
+ await b.advance(3199);
+ assert.equal(b.reels[0].reel.dataset.phase,'ready');
+ await b.advance(1);
+ assert.equal(b.root.dataset.phase,'rolling');
+ assert.equal(b.reels[0].reel.dataset.phase,'running');
+ b.emit('deal-game-state-change');await b.flush();
+ assert.equal(b.reels[0].reel.dataset.phase,'running','duplicate broadcast must not reset live spin');
+ await b.advance(3000);
+ assert.equal(b.reels[0].reel.dataset.phase,'won','reel must stop at same absolute time');
+ assert.equal(b.requests.length,0,'spectators do not request or settle personal prizes');
 });
