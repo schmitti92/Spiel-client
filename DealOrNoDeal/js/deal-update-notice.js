@@ -3,10 +3,19 @@
 'use strict';
 const ID='slot-dog-season2',URL=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'')+'/api/deal-or-no-deal/update-notice/'+ID;
 const FILE='./assets/updates/deal-update-slot-dog-season2.png',KEY='deal-update-ack-v1-'+ID+'-';
-let dialog,button,info,activeUid='',generation=0,busy=false,checking=false;
+let dialog,button,info,activeUid='',generation=0,busy=false,checking=false,syncing='';
 const player=()=>{const s=window.SpielOnline?.state?.();return s?.status==='online'&&s.user?.uid&&s.user?.getIdToken?s.user:null};
-const saved=uid=>{try{return localStorage.getItem(KEY+uid)==='yes'}catch{return false}};
-const save=uid=>{try{localStorage.setItem(KEY+uid,'yes')}catch{}};
+const localState=uid=>{try{return localStorage.getItem(KEY+uid)||''}catch{return ''}};
+const saved=uid=>['yes','pending'].includes(localState(uid));
+const save=(uid,remoteConfirmed)=>{try{localStorage.setItem(KEY+uid,remoteConfirmed?'yes':'pending')}catch{}};
+async function syncPending(user){
+ const uid=user?.uid;
+ if(!uid||syncing===uid||localState(uid)!=='pending')return;
+ syncing=uid;
+ try{await request(user,'POST');save(uid,true)}
+ catch(error){console.warn('[deal-update-notice] Confirmation sync will retry next visit:',error.message)}
+ finally{if(syncing===uid)syncing=''}
+}
 async function request(user,method){
  const token=await user.getIdToken();
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),6500);
@@ -36,9 +45,11 @@ function mount(){
  button.addEventListener('click',async()=>{
   const u=player(),uid=u?.uid,seq=generation;if(!u||uid!==activeUid||busy)return;
   busy=true;button.disabled=true;button.textContent='⏳ Bestätigung wird gespeichert …';
-  try{await request(u,'POST')}catch(e){console.warn('Update acknowledgement saved locally:',e.message)}
+  let remoteConfirmed=false;
+  try{await request(u,'POST');remoteConfirmed=true}
+  catch(e){console.warn('[deal-update-notice] Confirmation will sync on next visit:',e.message)}
   finally{
-   save(uid);
+   save(uid,remoteConfirmed);
    if(seq===generation&&uid===activeUid&&dialog.open)dialog.close();
    busy=false;button.disabled=false;button.textContent='✅ Verstanden – weiter zum Spiel';
   }
@@ -47,7 +58,7 @@ function mount(){
 async function check(){
  const u=player(),uid=u?.uid||'';
  if(!uid){activeUid='';++generation;checking=false;if(dialog?.open)dialog.close();return}
- if(saved(uid)){activeUid=uid;++generation;if(dialog?.open)dialog.close();return}
+ if(saved(uid)){activeUid=uid;++generation;if(dialog?.open)dialog.close();void syncPending(u);return}
  if(uid===activeUid&&(checking||dialog?.open||busy))return;
  activeUid=uid;const seq=++generation;mount();if(!dialog.open)dialog.showModal();
  info.textContent='Bitte einmal bestätigen, um zum Spiel fortzufahren.';
@@ -55,7 +66,7 @@ async function check(){
  try{
   const result=await request(u,'GET');
   if(seq!==generation||player()?.uid!==uid)return;
-  if(result.acknowledged){save(uid);if(dialog.open)dialog.close()}
+  if(result.acknowledged){save(uid,true);if(dialog.open)dialog.close()}
  }catch(e){if(seq===generation)info.textContent='Du kannst jetzt bestätigen und weiterspielen.'}
  finally{if(seq===generation)checking=false}
 }
