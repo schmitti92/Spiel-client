@@ -79,10 +79,15 @@ function browserFixture(customPrizes=null){
   Event:class{constructor(type){this.type=type}}
  });
  new Script(src,{filename:'monster-slots-final.js'}).runInContext(context);
- return {window,document,g,root,accept,reels,banker,finale,requests,store,emit,flush,advance,cinema:root.children.find(n=>n.id==='monster-slot-card-cinema')};
+ const summary=root.children.find(n=>n.id==='monster-slot-reward-summary');
+ const summaryContent=summary?.children[0];
+ return {window,document,g,root,accept,reels,banker,finale,requests,store,emit,flush,advance,
+  summary,summaryButton:summaryContent?.children.at(-1),
+  summaryPrizes:summaryContent?.children[3],summaryCardsPanel:summaryContent?.children[4],
+  summaryCards:summaryContent?.children[4]?.children[2]};
 }
 
-test('a three-player finale shows the correct receipt, sequential reels and no duplicate UI reward request',async()=>{
+test('a three-player finale shows each reel then the combined summary without duplicate reward requests',async()=>{
  const b=browserFixture();
  b.banker.hidden=false;
  b.emit('deal-game-state-change');await b.flush();
@@ -99,9 +104,14 @@ test('a three-player finale shows the correct receipt, sequential reels and no d
  await b.advance(120);
  assert.deepEqual(b.reels.map(r=>r.reel.dataset.phase),['won','won','won']);
  assert.equal(b.accept.disabled,true,'must wait for result hold');
- await b.advance(150);
- assert.equal(b.accept.disabled,false);
- b.accept.click();
+ await b.advance(1999);
+ assert.equal(b.summary.hidden,true,'the complete winners must remain visible for two seconds');
+ await b.advance(1);
+ assert.equal(b.summary.hidden,false,'one combined summary must open after exactly two seconds');
+ assert.equal(b.summaryPrizes.children.length,3,'all three rewards appear together');
+ assert.equal(b.summaryCardsPanel.hidden,true,'summary without packs has no empty cards panel');
+ assert.equal(b.summaryButton.disabled,false);
+ b.summaryButton.click();
  assert.equal(b.root.hidden,true);
  assert.equal(b.store.get('monster-slots-watched:host:'+b.g.id),'yes');
  b.emit('deal-game-state-change');await b.flush();
@@ -112,7 +122,7 @@ test('a three-player finale shows the correct receipt, sequential reels and no d
  assert.equal(b.requests.length,2);
  assert.equal(b.requests[1].uid,'guest');
  assert.equal(b.root.hidden,false);
- await b.advance(490);b.accept.click();
+ await b.advance(2340);b.summaryButton.click();
  assert.equal(b.store.get('monster-slots-watched:guest:'+b.g.id),'yes');
 
  // New game clears previous presentation and requests a new receipt only at its own finale.
@@ -127,40 +137,59 @@ test('a three-player finale shows the correct receipt, sequential reels and no d
 });
 
 
-test('won DOG packs open only when one card is new; duplicate-only packs skip the cinema',async()=>{
+
+test('every won pack displays all cards at once, including NEW and duplicates',async()=>{
  const newCard={id:'dog2-001',name:'Drachenritter',image:'DOG_01_11.png',series:'DOG & Königreich',rarity:'legendary',isNew:true};
  const duplicate={id:'dog2-002',name:'Doppeltes Motiv',image:'DOG_02.png',series:'DOG & Königreich',rarity:'common',isNew:false};
- const pack=(newFlag,cards)=>({kind:'pack',id:'small',quantity:1,label:'1× Normalpaket',
-  openedPacks:[{packId:'small',packName:'DOG Normalpaket',hasNew:newFlag,revealed:cards}]});
- const withNew=browserFixture([
-  pack(true,[newCard,duplicate]),{kind:'joker',quantity:1,label:'1× Joker'},
+ const special={id:'dog2-003',name:'Ritterburg',image:'DOG_03.png',series:'DOG & Königreich',rarity:'epic',isNew:false};
+ const b=browserFixture([
+  {kind:'pack',id:'small',quantity:2,label:'2× Normalpaket',
+   openedPacks:[
+    {packId:'small',packName:'DOG Normalpaket',hasNew:true,revealed:[newCard,duplicate]},
+    {packId:'small',packName:'DOG Normalpaket',hasNew:false,revealed:[duplicate]}
+   ]},
+  {kind:'pack',id:'premium',quantity:1,label:'1× Premiumpaket',
+   openedPacks:[{packId:'premium',packName:'DOG Premiumpaket',hasNew:false,revealed:[special]}]},
   {kind:'cash',quantity:1,label:'5,00 €',amountCents:500}
  ]);
- withNew.banker.hidden=true;withNew.emit('deal-game-state-change');await withNew.flush();
- await withNew.advance(340);
- assert.equal(withNew.accept.disabled,true,'the new-card reveal must follow all three stops');
- await withNew.advance(150);
- assert.equal(withNew.cinema.hidden,false,'a brand-new card opens the pack cinema');
- assert.equal(withNew.accept.disabled,true);
- await withNew.advance(120);
- assert.equal(withNew.cinema.children[0].children[3].textContent,'🌟 NEU! Drachenritter');
- await withNew.advance(150);
- assert.equal(withNew.cinema.children[0].children[3].textContent,'Doppelt: Doppeltes Motiv',
-  'a pack with new cards reveals every card, but highlights only the new ones');
- await withNew.advance(1100); // Fully drain card and pack outro timers.
- assert.equal(withNew.cinema.hidden,true,'completed reveal returns to the three winnings');
- assert.equal(withNew.accept.disabled,false);
- assert.equal(withNew.requests.length,1,'card reveal cannot call an additional payout endpoint');
+ b.emit('deal-game-state-change');await b.flush();
+ await b.advance(340);
+ assert.deepEqual(b.reels.map(r=>r.reel.dataset.phase),['won','won','won']);
+ assert.equal(b.summary.hidden,true,'all three reel prizes must stay visible for two seconds');
+ await b.advance(1999);
+ assert.equal(b.summary.hidden,true,'no premature card reveal');
+ await b.advance(1);
+ assert.equal(b.summary.hidden,false);
+ assert.equal(b.summaryPrizes.children.length,3,'all prize categories are shown');
+ assert.equal(b.summaryCardsPanel.hidden,false);
+ assert.equal(b.summaryCards.children.length,4,'every card from all three packs is visible immediately');
+ assert.deepEqual(b.summaryCards.children.map(c=>c.children[2].textContent),
+  ['Drachenritter','Doppeltes Motiv','Doppeltes Motiv','Ritterburg']);
+ assert.deepEqual(b.summaryCards.children.map(c=>c.children[1].textContent),
+  ['🌟 NEU','DOPPELT','DOPPELT','DOPPELT']);
+ assert.ok(b.summaryCards.children.every(c=>c.children[0].children[0].src.includes('Sammelalbum_Saison_2_Bilder')));
+ assert.match(b.summaryCardsPanel.children[1].textContent,/1 neu · 3 doppelt/);
+ assert.equal(b.requests.length,1,'the summary must use the settled receipt without additional API calls');
+ b.summaryButton.click();
+ assert.equal(b.root.hidden,true);
+ assert.equal(b.store.get('monster-slots-watched:host:'+b.g.id),'yes');
+});
 
- const duplicates=browserFixture([
-  pack(false,[duplicate]),{kind:'joker',quantity:1,label:'1× Joker'},
+test('duplicate-only packs still appear in the same summary without opening animations',async()=>{
+ const duplicate={id:'dog2-002',name:'Vorhandene Karte',image:'DOG_02.png',rarity:'common',isNew:false};
+ const b=browserFixture([
+  {kind:'pack',id:'small',quantity:1,label:'1× Normalpaket',
+   openedPacks:[{packId:'small',packName:'DOG Normalpaket',hasNew:false,revealed:[duplicate]}]},
+  {kind:'joker',quantity:1,label:'1× Kofferblick-Joker'},
   {kind:'cash',quantity:1,label:'5,00 €',amountCents:500}
  ]);
- duplicates.banker.hidden=true;duplicates.emit('deal-game-state-change');await duplicates.flush();
- await duplicates.advance(490);
- assert.equal(duplicates.cinema.hidden,true,'duplicate-only pack has no opening animation');
- assert.equal(duplicates.accept.disabled,false,'player can confirm immediately');
- assert.equal(duplicates.requests.length,1);
+ b.emit('deal-game-state-change');await b.flush();
+ await b.advance(2340);
+ assert.equal(b.summary.hidden,false);
+ assert.equal(b.summaryCards.children.length,1,'duplicates must not disappear from the overview');
+ assert.equal(b.summaryCards.children[0].children[1].textContent,'DOPPELT');
+ assert.equal(b.summaryPrizes.children.length,3);
+ assert.equal(b.requests.length,1);
 });
 
 test('a tied finale never requests Monster Slots and a later unique winner can still claim',async()=>{
