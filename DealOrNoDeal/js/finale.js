@@ -29,9 +29,10 @@ $('finale-watch-again').addEventListener('click',replayFinaleSequence);
 // Ordinary restarts must wait for both shared award stages (ties need no winner wheel).
 function finaleBonusesComplete(game){
  if(!game||game.phase!=='final')return false;
- if(game.monsterSlotsVersion===1)return sessionStorage.getItem('monster-slots-watched:'+String(window.SpielOnline?.state?.()?.user?.uid||'anonymous')+':'+game.id)==='yes';
  const payouts=(game.finalValues||[]).map(v=>v.payout);
+ // A draw has no Slot winner: no bonus confirmation should block the next round.
  if(payouts.length>1&&payouts.filter(v=>v===Math.max(...payouts)).length>1)return true;
+ if(game.monsterSlotsVersion===1)return sessionStorage.getItem('monster-slots-watched:'+String(window.SpielOnline?.state?.()?.user?.uid||'anonymous')+':'+game.id)==='yes';
  const key='final:'+game.id,spunAt=Number(game.christmasWheelSpins?.[key]||0);
  const hammer=game.christmasHammerWheel;
  return Boolean(spunAt&&game.christmasWheelClosed?.[key]&&hammer?.gameId===game.id
@@ -106,6 +107,7 @@ function startFinaleCinema(){
  const ascending=[...entries].sort((a,b)=>a.f.amount-b.f.amount||a.f.case-b.f.case);
  const top=Math.max(...entries.map(x=>x.f.payout));
  const winners=entries.filter(x=>x.f.payout===top);
+ const tied=winners.length>1;
  const grid=$('finale-cases');grid.replaceChildren();grid.classList.remove('champion-phase','finale-suspense');$('finale-sparks').replaceChildren();$('finale-tension').textContent='DIE ENTSCHEIDUNG NAHT …';$('finale-stage-live')?.remove();
  $('finale-skip').hidden=true;$('finale-champion').hidden=true;$('finale-replay').hidden=true;$('finale-cinema-status').textContent='';$('final-replay-status').textContent='';$('finale-cinema').hidden=false;
  $('finale-title').textContent='Die letzten '+entries.length+' Koffer';
@@ -137,7 +139,7 @@ function startFinaleCinema(){
  const spotlightProgress=$('finale-spotlight-progress');
  const spotlightStatus=$('finale-spotlight-status');
  const ceremonyProgress=$('finale-ceremony-progress');
- if(ceremonyProgress)ceremonyProgress.textContent='✦ '+ascending.length+' PERSÖNLICHE KOFFER · 1 GEWINNER-ENTSCHEIDUNG ✦';
+ if(ceremonyProgress)ceremonyProgress.textContent='✦ '+ascending.length+' PERSÖNLICHE KOFFER · '+(tied?'UNENTSCHIEDEN':'1 GEWINNER-ENTSCHEIDUNG')+' ✦';
  spotlight.hidden=true;
  spotlight.dataset.state='closed';
  const introAt=reduced?150:1600;
@@ -223,7 +225,7 @@ function startFinaleCinema(){
   if(ceremonyProgress)ceremonyProgress.textContent='🏆 DER NORMALE SPIELGEWINN ENTSCHEIDET 🏆';
   grid.classList.add('champion-phase');
   grid.querySelectorAll('.finale-player').forEach(c=>c.classList.remove('on-stage'));
-  $('finale-tension').textContent='🏆 DIE ENTSCHEIDUNG IST GEFALLEN 🏆';
+  $('finale-tension').textContent=tied?'🤝 UNENTSCHIEDEN 🤝':'🏆 DIE ENTSCHEIDUNG IST GEFALLEN 🏆';
   for(const entry of ascending)showMiniCase(entry);
   for(let i=0;i<45&&!reduced;i++){
    const piece=document.createElement('i');
@@ -236,17 +238,18 @@ function startFinaleCinema(){
   }
   for(const w of winners){
    const x=cards.get(w.f.id);
-   x.card.classList.add('winner','champion-focus');
-   x.note.textContent='🏆 '+(w.p?.deal!=null?'Deal: ':'Gewinn: ')+eur(w.f.payout);
+   x.card.classList.add('champion-focus');
+   if(!tied)x.card.classList.add('winner');
+   x.note.textContent=(tied?'🤝 ':'🏆 ')+(w.p?.deal!=null?'Deal: ':'Gewinn: ')+eur(w.f.payout);
   }
-  $('finale-title').textContent=winners.length>1?'Wir haben mehrere Gewinner!':'Der Gewinner steht fest!';
-  $('finale-caption').textContent='Die Spielwertung erfolgt ausschließlich nach dem ursprünglichen Gewinn – angenommene Deals zählen ganz normal.';
+  $('finale-title').textContent=tied?'Unentschieden – kein Slot-Gewinn':'Der Gewinner steht fest!';
+  $('finale-caption').textContent=tied?'Gleicher höchster Gewinn: Niemand erhält die Monster-Slots-Belohnung.':'Die Spielwertung erfolgt ausschließlich nach dem ursprünglichen Gewinn – angenommene Deals zählen ganz normal.';
   $('finale-champion-name').textContent=winners.map(w=>w.p?.name||'Spieler').join(' & ');
-  $('finale-champion-value').textContent='Gewinn: '+eur(top);
+  $('finale-champion-value').textContent=(tied?'Gleichstand: ':'Gewinn: ')+eur(top);
   $('finale-champion').hidden=false;
   $('finale-replay').hidden=true;
   $('finale-skip').hidden=false;
-  $('finale-skip').textContent=winners.length===1?'🎁 Weiter zum Siegerbonus ›':'✓ Siegerehrung schließen';
+  $('finale-skip').textContent=tied?'✓ Unentschieden bestätigen':'🎁 Weiter zum Siegerbonus ›';
  }
  if(finaleElapsed>=championAt)revealChampion();
  else finaleLater(revealChampion,at(championAt));
