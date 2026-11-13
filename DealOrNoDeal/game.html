@@ -227,7 +227,7 @@
   // discoveries for the winning player's collection, including to spectators.
   const awardedCards=Array.isArray(reward.revealed)?reward.revealed:[];
   const newCards=awardedCards.filter(card=>card?.isNew===true);
-  const duplicateOnly=awardedCards.length>0&&!newCards.length;box.classList.toggle('final-dual-active',isFinal);document.getElementById('final-dual-hammer').hidden=!isFinal;activeWheelReward=reward;activeWheelKind=kind;finalWheelStarted=false;
+  box.classList.toggle('final-dual-active',isFinal);document.getElementById('final-dual-hammer').hidden=!isFinal;activeWheelReward=reward;activeWheelKind=kind;finalWheelStarted=false;
   wheel.setAttribute('aria-label',isFinal
    ?'Sieger-Glücksrad mit sieben Gold- und drei Premium-Feldern: 70 Prozent Gold, 30 Prozent Premium'
    :'Weihnachts-Glücksrad: 40 Prozent Normal, 50 Prozent Gold, 10 Prozent Premium');
@@ -236,7 +236,7 @@
   box.dataset.reward=reward.id;box.dataset.stage=directBankerPack?'reveal':'wheel';box.hidden=false;
   // Keep the server handoff active even when the show itself is invisible.
   // The final prize's separate hammer wheel is still shown to all players.
-  box.style.visibility=duplicateOnly&&!isFinal?'hidden':'';
+  box.style.visibility='';
   close.disabled=true;close.hidden=reward.uid!==uid;
   // A missed socket event or disconnected winner must never trap spectators.
   if(!directBankerPack)setTimeout(()=>{if(sequence===current&&!box.hidden&&!finalWheelStarted){wheelStatus.textContent='⏳ Warte auf den gemeinsamen Drehstart. Verbindung wird automatisch geprüft …';checkWheelStart();}},12000);
@@ -365,24 +365,17 @@
   };
   // Warm up already server-awarded images while the shared wheel/show begins.
   // This adds no account requests and never changes the canonical prize data.
-  if(newCards.length)window.ChristmasCardImages?.prefetch(newCards,0,gameCardArt,newCards.length);
+  if(awardedCards.length)window.ChristmasCardImages?.prefetch(awardedCards,0,gameCardArt,awardedCards.length);
   const showCards=()=>{
    if(sequence!==current||box.hidden)return;
-   // No new card: skip the complete card stage. Server confirmation still
-   // happens so other players and later prize stages never get stuck.
-   if(duplicateOnly){
-    wheelStage.hidden=true;revealStage.hidden=true;box.dataset.stage='background';
-    box.style.visibility='hidden';
-    if(reward.uid===user()?.uid){close.disabled=false;void continueReward()}
-    return;
-   }
+   // Duplicate-only packs also have a visible reveal: they are real awards.
    wheelStage.hidden=true;revealStage.hidden=false;box.dataset.stage='reveal';
    name.textContent=reward.packName||packNames[pack]||'Weihnachtspaket';
    icon.textContent=pack==='premium'?'💎':pack==='large'?'🥇':'🎁';
    const rarityLabels={common:'Gewöhnlich',rare:'Selten',epic:'Episch',legendary:'Legendär'};
    const rarityIcons={common:'❄️',rare:'🔹',epic:'🔮',legendary:'🌟'};
-   const drawn=newCards;
-   subtitle.textContent='🌟 '+owner+' entdeckt '+drawn.length+' neue '+(drawn.length===1?'DOG-Sammelkarte':'DOG-Sammelkarten')+'! · Doppelte Karten wurden im Hintergrund gespeichert.';
+   const drawn=awardedCards;
+   subtitle.textContent='🎴 '+owner+' öffnet '+drawn.length+' '+(drawn.length===1?'DOG-Sammelkarte':'DOG-Sammelkarten')+' · '+newCards.length+' neu · '+(drawn.length-newCards.length)+' doppelt.';
    drawn.forEach((card,i)=>{
     const item=document.createElement('div');item.className='reward-card'+(card.isNew===true?' is-new':'');item.dataset.rarity=card.rarity||'common';
     item.style.setProperty('--delay',(reduced?0:i*480)+'ms');
@@ -400,7 +393,11 @@
     }else{const symbol=document.createElement('span');symbol.className='reward-icon';symbol.textContent=rarityIcons[card.rarity]||'🎄';item.append(symbol)}
     const label=document.createElement('strong');label.textContent=card.name||'DOG-Sammelkarte';
     const rarity=document.createElement('small');rarity.textContent=(rarityIcons[card.rarity]||'✦')+' '+(rarityLabels[card.rarity]||'Karte');
-    item.append(label,rarity);if(card.isNew===true){const newly=document.createElement('span');newly.className='christmas-new-label';newly.textContent='✨ NEU!';item.append(newly)}cards.append(item);
+    item.append(label,rarity);
+    const discovery=document.createElement('span');
+    discovery.className=card.isNew===true?'christmas-new-label':'christmas-duplicate-label';
+    discovery.textContent=card.isNew===true?'✨ NEU!':'🔁 DOPPELT';
+    item.append(discovery);cards.append(item);
    });
    const special=drawn.filter(c=>c.isNew===true&&(c.rarity==='legendary'||c.rarity==='epic'));
    const overlay=document.getElementById('cent-special-overlay');
@@ -491,11 +488,7 @@
   // Banker bonuses have an already selected pack and credited cards. Never
   // start or poll a wheel; open the shared reveal immediately for all clients.
   if(directBankerPack)showCards();
-  // A 1-cent pack containing only duplicates should never wait for a manual
-  // wheel click. Run its existing synchronized, server-confirmed flow unseen.
-  if(duplicateOnly&&!isFinal&&!directBankerPack&&reward.uid===uid){
-   setTimeout(()=>{if(sequence===current&&!box.hidden&&!finalWheelStarted)void startWheel()},0);
-  }
+  // All awarded packs follow the same visible ceremony.
 
  }
 
@@ -720,4 +713,4 @@ syncBankerVideo();
 </script><script src="./js/peek-joker.js?v=20261112-fix-30case-batch-v1"></script><link rel="stylesheet" href="./css/final-dual-wheel.css?v=20261109-double-stage-v1"><script src="./js/final-hammer-wheel.js?v=20261109-double-stage-v1"></script><script src="../site-global-controls.js?v=20261109-global-1"></script>
 <script defer src="./js/deal-update-notice.js?v=20261113-cases-first-v2"></script>
 <script defer src="./js/christoph-surprise.js?v=20261110-gift-v1"></script>
-<link rel="stylesheet" href="./css/monster-slots-final.css?v=20261113-podium-slots-v2"><link rel="stylesheet" href="./css/dog-wildcard-rare.css?v=20261113-wildcard-v1"><script src="./js/monster-slots-final.js?v=20261113-wildcard-v1"></script></body></html>
+<link rel="stylesheet" href="./css/monster-slots-final.css?v=20261113-podium-slots-v2"><link rel="stylesheet" href="./css/card-reveal-unified.css?v=20261113-v1"><link rel="stylesheet" href="./css/dog-wildcard-rare.css?v=20261113-wildcard-v1"><script src="./js/monster-slots-final.js?v=20261113-wildcard-v1"></script></body></html>
