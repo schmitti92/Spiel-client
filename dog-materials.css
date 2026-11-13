@@ -304,3 +304,17 @@ body:before{opacity:.34}
 @media(max-width:710px){.crate-grid.expedition-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.chest-guidance{padding:13px;align-items:flex-start}.chest-guidance-icon{font-size:25px}.chest-refresh{padding:8px 10px;font-size:12px}.layout{width:calc(100% - 18px)}.chest-hall{padding:14px}.chest-hall-heading p{font-size:12px}.expedition-grid .crate-choice{min-height:278px;padding:13px 8px 12px!important}.chest-illustration{height:103px}.chest-information{padding:0 15px}.chest-inventory-fold .inventory-resources{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:440px){.hero{padding:15px 3px 8px}.hero h1{font-size:38px}.chest-guidance{flex-wrap:wrap;margin:12px 0 16px;gap:10px}.chest-guidance>div{flex:1 1 225px}.chest-refresh{margin-left:0;width:100%}.chest-hall-heading{padding-bottom:12px}.hall-seal{font-size:29px}.chest-zone{grid-template-columns:52px 1fr;gap:3px 9px}.chest-art{width:52px;height:52px;font-size:37px}.chest-number{font-size:28px}.chest-number:after{font-size:12px}.chest-five-title{margin-top:15px!important}.crate-grid.expedition-grid{gap:8px}.expedition-grid .crate-choice{min-height:269px;padding:12px 7px!important}.chest-illustration{height:95px;width:min(123px,100%)}.chest-lid{top:9px;height:50px}.chest-box{height:55px}.chest-lock{top:49px}.expedition-grid .crate-choice strong{font-size:15px}.expedition-grid .crate-choice .crate-action{font-size:11px}.chest-archive-content .crate-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.chest-inventory-fold>summary span,.chest-information>summary span{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.expedition-grid .crate-choice,.chest-illustration{transition:none!important}}
+
+
+/* Uploaded final artwork for all five Kisten. Preserve all existing button
+   semantics, inventory badges, and click-to-open behavior. */
+.expedition-grid .chest-illustration-image{display:flex;align-items:center;justify-content:center;width:100%;height:142px;margin:2px auto 0;overflow:visible;transform:none;filter:none}
+.expedition-grid .chest-illustration-image img{display:block;width:100%;max-width:200px;height:100%;object-fit:contain;filter:drop-shadow(0 11px 9px #000a);transition:transform .2s ease,filter .2s ease;pointer-events:none}
+.expedition-grid .crate-choice:not(:disabled):hover .chest-illustration-image{transform:none}
+.expedition-grid .crate-choice:not(:disabled):hover .chest-illustration-image img{transform:translateY(-5px) scale(1.07);filter:drop-shadow(0 14px 13px #000c)}
+.expedition-grid .crate-choice:disabled .chest-illustration-image{filter:none}
+.expedition-grid .crate-choice:disabled .chest-illustration-image img{filter:saturate(.78) drop-shadow(0 7px 7px #0009)}
+.expedition-grid .crate-choice.has-chest .chest-illustration-image img{filter:drop-shadow(0 11px 11px #000b) drop-shadow(0 0 11px var(--chest-glow))}
+@media(max-width:710px){.expedition-grid .chest-illustration-image{height:127px}.expedition-grid .chest-illustration-image img{max-width:178px}}
+@media(max-width:440px){.expedition-grid .chest-illustration-image{height:110px}.expedition-grid .chest-illustration-image img{max-width:148px}}
+@media(prefers-reduced-motion:reduce){.expedition-grid .chest-illustration-image img{transition:none!important}}
