@@ -29,6 +29,7 @@ $('finale-watch-again').addEventListener('click',replayFinaleSequence);
 // Ordinary restarts must wait for both shared award stages (ties need no winner wheel).
 function finaleBonusesComplete(game){
  if(!game||game.phase!=='final')return false;
+ if(game.monsterSlotsVersion===1)return true;
  const payouts=(game.finalValues||[]).map(v=>v.payout);
  if(payouts.length>1&&payouts.filter(v=>v===Math.max(...payouts)).length>1)return true;
  const key='final:'+game.id,spunAt=Number(game.christmasWheelSpins?.[key]||0);
@@ -43,11 +44,11 @@ function updateFinaleStartControl(){
  if(button&&!finaleRestartBusy){
   button.disabled=!ready;
   button.textContent=ready?'🎬 Neue Runde starten':'⏳ Siegerbonus noch nicht abgeschlossen';
-  button.title=ready?'Der Host kann die nächste Partie starten.':'Zuerst Kartenpaket und Hammerauslosung abschließen.';
+  button.title=ready?'Der Host kann die nächste Partie starten.':'Zuerst die Abschlussbelohnungen bestätigen.';
  }
  const messages=$('final-replay-status');
  if(messages&&(!messages.textContent||messages.dataset.bonusNotice==='yes')){
-  messages.textContent=ready?'✅ Siegerehrung abgeschlossen – bereit für die nächste Runde.':'🎁 Bitte zuerst die Karten bestätigen und danach das Hammerrad drehen.';
+  messages.textContent=ready?'✅ Siegerehrung abgeschlossen – bereit für die nächste Runde.':'🎁 Bitte zuerst die Abschlussbelohnungen bestätigen.';
   messages.dataset.bonusNotice='yes';
  }
  clearTimeout(finaleControlTimer);
@@ -59,7 +60,7 @@ window.addEventListener('deal-game-state-change',updateFinaleStartControl);
 let finaleRestartBusy=false;
 async function restartFromFinale(skipFinalWheel=false){
  if(finaleRestartBusy||!g||g.phase!=='final')return;
- if(!skipFinalWheel&&!finaleBonusesComplete(g)){$('final-replay-status').textContent='🎁 Zuerst das Siegerpaket bestätigen und das Hammerrad vollständig auslosen.';$('final-replay-status').dataset.bonusNotice='no';return;}
+ if(!skipFinalWheel&&!finaleBonusesComplete(g)){$('final-replay-status').textContent='🎁 Bitte zuerst die Abschlussbelohnungen bestätigen.';$('final-replay-status').dataset.bonusNotice='no';return;}
  const currentGameId=g.id;
  const buttons=[$('finale-replay'),$('final-replay')];
  const messages=[$('finale-cinema-status'),$('final-replay-status')];
@@ -75,13 +76,13 @@ async function restartFromFinale(skipFinalWheel=false){
   sessionStorage.removeItem('finale-watched:'+currentGameId+':finale');
   location.assign('./game.html?room='+encodeURIComponent(code));
  }catch(e){
-  const message=e.message==='HOST_ONLY'?'Nur der Raum-Host kann eine neue Runde starten. Bitte warte auf den Host.':e.message==='FINAL_WHEEL_PENDING'?'🎡 Zuerst muss das Sieger-Glücksrad beendet werden.':e.message==='MATCH_ALREADY_RUNNING'?'Eine neue Partie läuft bereits. Lade die Spielansicht neu.':'Neustart nicht möglich: '+e.message;
+  const message=e.message==='HOST_ONLY'?'Nur der Raum-Host kann eine neue Runde starten. Bitte warte auf den Host.':e.message==='FINAL_WHEEL_PENDING'?'🎰 Bitte den Abschlussbonus bestätigen.':e.message==='MATCH_ALREADY_RUNNING'?'Eine neue Partie läuft bereits. Lade die Spielansicht neu.':'Neustart nicht möglich: '+e.message;
   messages.forEach(m=>m.textContent=message);
  }finally{finaleRestartBusy=false;buttons.forEach((b,i)=>{b.disabled=false;b.textContent=i===0?'🎬 Direkt neue Runde starten':'🎬 Neue Runde starten'});updateFinaleStartControl()}
 }
 $('finale-replay').addEventListener('click',()=>restartFromFinale());
 $('final-replay').addEventListener('click',()=>restartFromFinale());
-$('final-recover').addEventListener('click',()=>{if(confirm('Das Sieger-Glücksrad wirklich überspringen und eine neue Partie starten? Bereits vergebene Karten bleiben erhalten.'))restartFromFinale(true)});
+$('final-recover').addEventListener('click',()=>{if(confirm('Eine neue Partie starten? Bereits gutgeschriebene Gewinne bleiben erhalten.'))restartFromFinale(true)});
 $('final-lobby').href='lobby.html?room='+encodeURIComponent(code||'');
 let finaleRecoveryTimer=null;
 function startFinaleCinema(){
