@@ -11,10 +11,13 @@ test('Fight and retry buttons actually invoke the existing idempotent fight flow
 test('Server combat receipt stats populate the victory/defeat dialog',()=>{
  const s=read('dog-tor-map.js'),h=read('dog-tor-map.html');
  assert.match(s,/const stats=fight.combatStats/);
+ assert.match(s,/alternating-three-attacks-v1/);
+ assert.match(s,/quick-attack-breakdown/);
+ assert.match(s,/quick-combat-log/);
  assert.match(s,/stats.enemyRemainingHp/);
  assert.match(s,/stats.enemyDamageTaken/);
  assert.match(s,/stats.heroRemainingHp/);
  assert.match(s,/stats.heroDamageTaken/);
  assert.match(h,/id="gate-quick-result-stats"/);
- assert.match(h,/dog-tor-map\.js\?v=20261113-gate-progress1/);
+ assert.match(h,/dog-tor-map\.js\?v=20261113-real-duels1/);
 });
