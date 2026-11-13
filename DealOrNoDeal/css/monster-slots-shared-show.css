@@ -480,3 +480,59 @@
  #deal-monster-slots .monster-slot-reel[data-phase="won"]::after{opacity:.37}
  #deal-monster-slots .monster-slot-reel[data-phase="won"]::before{opacity:0}
 }
+
+
+/* Monster Slots · scroll-safe full-screen summary, 2026-11-14 */
+/* The summary is a SIBLING of the slot cabinet, not part of its scrolling box.
+   Use one real touch-scroll surface on the full-screen dialog. Nested/absolute
+   overflow containers could trap Android users above the remaining DOG cards. */
+#deal-monster-slots[data-phase="summary"]{
+ display:block!important;
+ overflow-x:hidden!important;
+ overflow-y:auto!important;
+ -webkit-overflow-scrolling:touch;
+ overscroll-behavior-y:contain;
+ touch-action:pan-y;
+ scrollbar-color:#efcc84 #201936;
+ box-sizing:border-box;
+}
+#deal-monster-slots[data-phase="summary"] .monster-slot-machine{
+ display:none!important;
+}
+#deal-monster-slots[data-phase="summary"] .monster-slot-reward-summary{
+ position:relative!important;
+ inset:auto!important;
+ display:flex;
+ width:100%;
+ min-height:100%;
+ height:auto!important;
+ max-height:none!important;
+ overflow:visible!important;
+ touch-action:pan-y;
+ box-sizing:border-box;
+ margin:0 auto;
+ padding:clamp(8px,2.1vw,22px);
+ align-items:center;
+ justify-content:flex-start;
+}
+#deal-monster-slots[data-phase="summary"] .monster-slot-reward-content{
+ flex:0 0 auto;
+ align-self:center;
+ width:min(1040px,100%);
+ max-height:none!important;
+ overflow:visible!important;
+ margin:0 auto;
+ box-sizing:border-box;
+}
+#deal-monster-slots[data-phase="summary"] .monster-slot-reward-cards-panel,
+#deal-monster-slots[data-phase="summary"] .monster-slot-reward-cards{
+ overflow:visible;
+}
+#deal-monster-slots[data-phase="summary"] #monster-slot-summary-accept{
+ touch-action:manipulation;
+}
+@media(max-width:570px){
+ #deal-monster-slots[data-phase="summary"]{padding:5px}
+ #deal-monster-slots[data-phase="summary"] .monster-slot-reward-summary{padding:5px}
+ #deal-monster-slots[data-phase="summary"] .monster-slot-reward-content{padding:12px 7px}
+}
