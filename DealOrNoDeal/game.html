@@ -583,7 +583,7 @@
   if(typeof g==='undefined'||!g?.id)return false;
   if((g.events||[]).some(e=>e.type==='opened'&&e.amount===1&&pendingReward('cent',g.id+'_'+e.eventId)))return true;
   if((g.history||[]).some(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true&&pendingReward('banker',g.id+'_'+h.round+'_'+d.id))))return true;
-  if(g.phase==='final'&&pendingReward('final',g.id)){
+  if(g.phase==='final'&&g.monsterSlotsVersion!==1&&pendingReward('final',g.id)){
    const payouts=(g.finalValues||[]).map(v=>v.payout);
    return payouts.length>0&&payouts.filter(v=>v===Math.max(...payouts)).length===1;
   }
@@ -610,7 +610,7 @@
    // Show already-awarded banker packs before the separate winner-wheel prize,
    // including when the last accepted deal has just ended the match.
    if((g.history||[]).some(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true&&pendingReward('banker',g.id+'_'+h.round+'_'+d.id))))endpoints.push('/christmas-banker-rewards');
-   if(g.phase==='final'&&pendingReward('final',g.id)&&document.getElementById('finale-cinema')?.hidden&&!finishTiedFinal()&&!sessionStorage.getItem('final-wheel-complete:'+g.id))endpoints.push('/christmas-final-reward');
+   if(g.phase==='final'&&g.monsterSlotsVersion!==1&&pendingReward('final',g.id)&&document.getElementById('finale-cinema')?.hidden&&!finishTiedFinal()&&!sessionStorage.getItem('final-wheel-complete:'+g.id))endpoints.push('/christmas-final-reward');
    if((g.events||[]).some(e=>e.type==='opened'&&e.amount===1&&pendingReward('cent',g.id+'_'+e.eventId)))endpoints.push('/christmas-cent-reward');
    for(const endpoint of endpoints){
     const response=await fetch(api(endpoint),{headers,cache:'no-store'});
@@ -718,4 +718,4 @@ syncBankerVideo();
 })();
 </script><script src="./js/peek-joker.js?v=20261112-fix-30case-batch-v1"></script><link rel="stylesheet" href="./css/final-dual-wheel.css?v=20261109-double-stage-v1"><script src="./js/final-hammer-wheel.js?v=20261109-double-stage-v1"></script><script src="../site-global-controls.js?v=20261109-global-1"></script>
 <script defer src="./js/christoph-surprise.js?v=20261110-gift-v1"></script>
-</body></html>
+<link rel="stylesheet" href="./css/monster-slots-final.css?v=20261113-slots-1"><script src="./js/monster-slots-final.js?v=20261113-slots-1"></script></body></html>
