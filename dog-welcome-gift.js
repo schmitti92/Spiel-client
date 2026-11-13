@@ -5,7 +5,7 @@
  if(window.__dogWelcomeGiftInstalled)return;
  window.__dogWelcomeGiftInstalled=true;
  const GIFT='dog-100-welcome-2026-11';
- const BASE=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\\/+$/,'');
+ const BASE=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
  let uid='',busy=false,completed=false,shown=false,pending=false,dialog=null,button=null,status=null,previousFocus=null;
  const user=()=>{
   const s=window.SpielOnline?.state?.();
