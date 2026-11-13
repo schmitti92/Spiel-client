@@ -20,7 +20,21 @@ const awardArt={
  wildcard:'assets/slot-premium/slot-question-card.png'
 };
 const awardImage=prize=>typeof awardArt[prize.kind]==='string'?awardArt[prize.kind]:awardArt[prize.kind]?.[prize.id]||null;
-const rolling=['📦','🎴','🔨','🃏','🎟️','👹','💰','💎','❓'];
+// Visual-only roll tape. The settlement result NEVER depends on the symbols below.
+const rolling=[
+ {emoji:'📦',src:'assets/slot-premium/slot-chest.png'},
+ {emoji:'🎴',src:'assets/slot-premium/slot-pack-silver.png'},
+ {emoji:'🔨',src:'assets/slot-premium/slot-hammer.png'},
+ {emoji:'🃏',src:'assets/slot-premium/slot-joker.png'},
+ {emoji:'🎴',src:'assets/slot-premium/slot-pack-gold.png'},
+ {emoji:'👹',src:awardArt.monster},
+ {emoji:'💰',src:'assets/slot-premium/slot-money.png'},
+ {emoji:'💎',src:'assets/slot-premium/slot-pack-premium.png'},
+ {emoji:'🔨',src:'assets/slot-premium/slot-doublehammer.png'},
+ {emoji:'👑',src:'assets/slot-premium/slot-jackpot.png'},
+ {emoji:'❓',src:'assets/slot-premium/slot-question-card.png'},
+ {emoji:'🔨',src:'assets/slot-premium/slot-goldhammer.png'}
+];
 const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 const seenKey=id=>'monster-slots-watched:'+String(user()?.uid||'anonymous')+':'+id;
 const root=document.createElement('section');root.id='deal-monster-slots';root.hidden=true;root.tabIndex=-1;
@@ -76,8 +90,17 @@ function timer(fn,ms){const id=setTimeout(()=>{timers=timers.filter(t=>t!==id);f
 function cancel(hide=true){seq++;timers.forEach(clearTimeout);timers=[];opening=false;shown='';summary.hidden=true;if(hide)root.hidden=true}
 function setPhase(el,phase){el.dataset.phase=phase;el.querySelector('.monster-slot-state').textContent=phase==='running'?'DREHT …':phase==='won'?'✓ GEWONNEN':'BEREIT'}
 for(const reel of reels){
- reel.querySelector('.monster-slot-track').replaceChildren(...rolling.concat(rolling).map(icon=>{
-  const span=document.createElement('span');span.className='monster-slot-track-symbol';span.textContent=icon;return span;
+ reel.querySelector('.monster-slot-track').replaceChildren(...rolling.concat(rolling).map(symbol=>{
+  const span=document.createElement('span');span.className='monster-slot-track-symbol';
+  const fallback=document.createElement('span');fallback.className='monster-slot-track-emoji';
+  fallback.textContent=symbol.emoji;span.append(fallback);
+  if(symbol.src){
+   const img=document.createElement('img');img.alt='';img.loading='eager';img.decoding='async';
+   img.addEventListener('load',()=>{if(span.contains(img))span.classList.add('has-image')},{once:true});
+   img.addEventListener('error',()=>{if(span.contains(img))img.remove()},{once:true});
+   img.src=symbol.src;span.append(img);
+  }
+  return span;
  }));
 }
 function resetReel(reel){
@@ -133,6 +156,12 @@ const awardedPacks=prizes=>(prizes||[]).filter(p=>p.kind==='pack')
  .flatMap(p=>Array.isArray(p.openedPacks)?p.openedPacks:[]);
 function renderSummary(){
  if(!claimed)return;
+ // Decorative rarity, calculated only from the three server-settled prizes.
+ const tierRank={common:0,rare:1,epic:2,legendary:3,mythic:4};
+ summary.dataset.tier=claimed.prizes.reduce((best,prize)=>{
+  const tier=rarityOf(prize);
+  return (tierRank[tier]||0)>(tierRank[best]||0)?tier:best;
+ },'common');
  const prizeItems=claimed.prizes.map((prize,index)=>{
   const item=document.createElement('article');item.className='monster-slot-reward-item';
   item.dataset.kind=String(prize.kind||'');item.dataset.rarity=rarityOf(prize);
@@ -324,6 +353,7 @@ function renderShared(){
  root.dataset.turn=stage.turn;root.dataset.phase=stage.phase;
  const recipient=game.players?.find(p=>p.id===stage.uid);
  const name=recipient?.name||'Spieler',me=stage.uid===user()?.uid;
+ root.dataset.actor=me?'yes':'no';
  const roundLabel=stage.turn==='runner'?'🥈 ZWEITPLATZIERTER':'🏆 SIEGER';
  const now=typeof dealServerNow==='function'?dealServerNow():Date.now();
  const canRecover=now-Number(stage.activatedAt||0)>=30000;
