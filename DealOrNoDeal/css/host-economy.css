@@ -23,3 +23,14 @@ body.deal-economy-open{overflow:hidden}
 .deal-economy-actions .deal-economy-save{background:linear-gradient(130deg,#ffe9aa,#d9a447);color:#2c1c09;border-color:#ffe7a3}
 .deal-economy-actions button:disabled{opacity:.65;cursor:wait}
 @media(max-width:570px){.deal-economy-fields,.deal-economy-switches{grid-template-columns:1fr}.deal-economy-modal{padding:14px}.deal-economy-field{padding:8px}.deal-economy-input input{font-size:16px}}
+
+/* Per-category server-authoritative slot odds, edited by the current room host. */
+.deal-economy-slots{border:1px solid #98714b;border-radius:16px;padding:13px;margin:16px 0 12px;background:linear-gradient(140deg,#1b2446,#1a1529);min-width:0}
+.deal-economy-slots legend{padding:0 8px;color:#ffe6a5;font-weight:900;font-size:17px}
+.deal-economy-slots p{font-size:12px;color:#cfdae9;line-height:1.5;margin:3px 0 12px}
+.deal-economy-slot-summary{font-size:15px;font-weight:900;color:#fff0c5;background:#152c43;border:1px solid #e5bb71;border-radius:10px;padding:10px;margin:0 0 12px}
+.deal-economy-slot-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.deal-economy-slot-field{gap:6px}
+.deal-economy-slot-field .deal-economy-input strong{font-size:12px;min-width:28px}
+.deal-economy-slot-field .deal-economy-slot-percent{font-weight:900;color:#c9f3d9;font-size:12px}
+@media(max-width:570px){.deal-economy-slot-grid{grid-template-columns:1fr}.deal-economy-slots{padding:9px}.deal-economy-slots legend{font-size:15px}}

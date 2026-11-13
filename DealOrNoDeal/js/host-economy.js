@@ -1,7 +1,7 @@
 // Host economy panel shared by the Deal studio and lobby.
 (()=>{
  'use strict';
- const DEFAULT={prices:{doubleBoost:300000000,dogSmall:200000000,dogLarge:400000000,dogPremium:600000000,dogPlatinum:2000000000,goldRare:25000000,goldLegendary:150000000},doubleBoostEnabled:true,packsEnabled:true,revision:0};
+ const DEFAULT={prices:{doubleBoost:300000000,dogSmall:200000000,dogLarge:400000000,dogPremium:600000000,dogPlatinum:2000000000,goldRare:25000000,goldLegendary:150000000},doubleBoostEnabled:true,packsEnabled:true,slotWeights:{chest:35,pack:30,hammer:20,joker:4,minigame:3,monster:3,cash:190},revision:0};
  const FIELDS=[
   ['doubleBoost','💎 ×2-Auszahlungsbonus'],
   ['dogSmall','🎁 DOG Normalpaket'],
@@ -10,6 +10,12 @@
   ['dogPlatinum','💠 DOG Platinpaket'],
   ['goldRare','🎴 Goldstudio Seltenes Paket'],
   ['goldLegendary','🌟 Goldstudio Legendäres Paket']
+ ];
+ const SLOT_FIELDS=[
+  ['cash','💰 Geldgewinne'],['chest','📦 Materialtruhen'],
+  ['pack','🎴 DOG-Kartenpakete'],['hammer','🔨 Hämmer'],
+  ['joker','🃏 Joker'],['minigame','🎮 Minispiel-Gutscheine'],
+  ['monster','👹 Monster-Glücksrad-Gutscheine']
  ];
  const room=new URLSearchParams(location.search).get('room')?.toUpperCase()||'';
  const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
@@ -34,8 +40,24 @@
  const backdrop=document.createElement('div');backdrop.className='deal-economy-backdrop';backdrop.hidden=true;
  const dialog=document.createElement('section');dialog.className='deal-economy-modal';dialog.hidden=true;
  dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.setAttribute('aria-labelledby','deal-economy-title');
- dialog.innerHTML='<div class="deal-economy-head"><div><small>GOLDSTUDIO · HOSTVERWALTUNG</small><h2 id="deal-economy-title">⚙️ Preise & Einstellungen</h2></div><button class="deal-economy-close" type="button" aria-label="Schließen">✕</button></div><p class="deal-economy-note">Diese Preise gelten global für alle Spieler und alle Räume. Käufe werden immer vom Server geprüft. Änderungen betreffen keine bereits bezahlten Käufe.</p><form id="deal-economy-form"><div class="deal-economy-fields"></div><div class="deal-economy-switches"><label><input name="doubleBoostEnabled" type="checkbox"> 💎 ×2-Bonus anbieten</label><label><input name="packsEnabled" type="checkbox"> 🎴 Kartenpakete zum Kauf anbieten</label></div><p class="deal-economy-status" role="status" aria-live="polite"></p><div class="deal-economy-actions"><button type="button" class="deal-economy-reset">↺ Standardpreise</button><button type="submit" class="deal-economy-save">✓ Speichern</button></div></form>';
- const form=dialog.querySelector('form'),fields=dialog.querySelector('.deal-economy-fields'),status=dialog.querySelector('.deal-economy-status');
+ dialog.innerHTML='<div class="deal-economy-head"><div><small>GOLDSTUDIO · HOSTVERWALTUNG</small><h2 id="deal-economy-title">⚙️ Preise & Einstellungen</h2></div><button class="deal-economy-close" type="button" aria-label="Schließen">✕</button></div><p class="deal-economy-note">Diese Preise gelten global für alle Spieler und alle Räume. Käufe werden immer vom Server geprüft. Änderungen betreffen keine bereits bezahlten Käufe.</p><form id="deal-economy-form"><div class="deal-economy-fields"></div><div class="deal-economy-switches"><label><input name="doubleBoostEnabled" type="checkbox"> 💎 ×2-Bonus anbieten</label><label><input name="packsEnabled" type="checkbox"> 🎴 Kartenpakete zum Kauf anbieten</label></div><fieldset class="deal-economy-slots"><legend>🎰 Slotmaschine · Gewinngewichtung</legend><p>Gewichtspunkte bestimmen, welche Art von Gewinn häufiger kommt. Je mehr Punkte, desto höher die Chance. 0 deaktiviert eine Gewinnart. Die Einstellungen gelten für Monster-Slots (1/3 Walzen) und DOG-Super-Slots (5 Walzen). Einzelner Geldpreis: 0,01 € bis maximal 5.000.000 €.</p><div class="deal-economy-slot-summary" role="status" aria-live="polite"></div><div class="deal-economy-slot-grid"></div></fieldset><p class="deal-economy-status" role="status" aria-live="polite"></p><div class="deal-economy-actions"><button type="button" class="deal-economy-reset">↺ Standardwerte</button><button type="submit" class="deal-economy-save">✓ Speichern</button></div></form>';
+ const form=dialog.querySelector('form'),fields=dialog.querySelector('.deal-economy-fields'),
+  slotFields=dialog.querySelector('.deal-economy-slot-grid'),
+  slotSummary=dialog.querySelector('.deal-economy-slot-summary'),
+  status=dialog.querySelector('.deal-economy-status');
+ function readSlotWeights(){
+  return Object.fromEntries(SLOT_FIELDS.map(([key])=>[key,Number(form.elements.namedItem('slot-'+key).value)]));
+ }
+ function updateSlotSummary(){
+  const values=readSlotWeights(),total=Object.values(values).reduce((a,b)=>a+(Number.isFinite(b)?b:0),0);
+  const percent=n=>total>0?(n*100/total).toLocaleString('de-DE',{maximumFractionDigits:1})+' %':'0 %';
+  const cash=values.cash||0,other=total-cash;
+  slotSummary.textContent='💰 Geld: '+percent(cash)+' · 🎁 Gegenstände: '+percent(other)+(total===0?' · ⚠️ Mindestens eine Gewinnart muss Punkte haben.':'');
+  for(const [key] of SLOT_FIELDS){
+   const box=slotFields.querySelector('[data-slot-key="'+key+'"]');
+   if(box)box.querySelector('.deal-economy-slot-percent').textContent=percent(values[key]||0);
+  }
+ }
  for(const [key,label] of FIELDS){
   const entry=document.createElement('label');entry.className='deal-economy-field';
   const name=document.createElement('span');name.textContent=label;
@@ -44,12 +66,30 @@
   const eur=document.createElement('strong');eur.textContent='€';
   unit.append(field,eur);entry.append(name,unit);fields.append(entry);
  }
+ for(const [key,label] of SLOT_FIELDS){
+  const entry=document.createElement('label');
+  entry.className='deal-economy-field deal-economy-slot-field';
+  entry.dataset.slotKey=key;
+  const name=document.createElement('span');name.textContent=label;
+  const wrap=document.createElement('div');wrap.className='deal-economy-input';
+  const input=document.createElement('input');
+  input.type='number';input.name='slot-'+key;input.min='0';input.max='10000';
+  input.step='1';input.required=true;input.inputMode='numeric';
+  input.setAttribute('aria-label',label+' Gewichtspunkte');
+  const unit=document.createElement('strong');unit.textContent='Pkt.';
+  wrap.append(input,unit);
+  const odds=document.createElement('small');odds.className='deal-economy-slot-percent';odds.textContent='–';
+  entry.append(name,wrap,odds);slotFields.append(entry);
+ }
  document.body.append(backdrop,dialog);
  const close=()=>{dialog.hidden=true;backdrop.hidden=true;document.body.classList.remove('deal-economy-open');dirty=false;(lastFocus||trigger).focus()};
  const fill=value=>{
   for(const [key] of FIELDS)form.elements.namedItem(key).value=String(Math.round(value.prices[key]/100));
   form.elements.namedItem('doubleBoostEnabled').checked=value.doubleBoostEnabled!==false;
   form.elements.namedItem('packsEnabled').checked=value.packsEnabled!==false;
+  for(const [key] of SLOT_FIELDS)form.elements.namedItem('slot-'+key).value=String(
+   Number.isSafeInteger(value.slotWeights?.[key])?value.slotWeights[key]:DEFAULT.slotWeights[key]);
+  updateSlotSummary();
   dirty=false;
  };
  function open(){
@@ -62,9 +102,9 @@
  trigger.onclick=open;
  dialog.querySelector('.deal-economy-close').onclick=close;backdrop.onclick=close;
  document.addEventListener('keydown',event=>{if(dialog.hidden)return;if(event.key==='Escape'){event.preventDefault();close();}});
- form.oninput=()=>{dirty=true;status.textContent='Ungespeicherte Änderungen';};
+ form.oninput=()=>{dirty=true;updateSlotSummary();status.textContent='Ungespeicherte Änderungen';};
  dialog.querySelector('.deal-economy-reset').onclick=()=>{
-  fill(DEFAULT);dirty=true;status.textContent='Standardwerte vorgemerkt – zum Übernehmen speichern.';
+  fill(DEFAULT);dirty=true;status.textContent='Standardpreise und Slot-Gewichte vorgemerkt – zum Übernehmen speichern.';
  };
  async function send(method,body){
   const u=active();if(!u)throw Error('Bitte anmelden.');
@@ -103,11 +143,17 @@
    if(!input.value.trim()||!Number.isSafeInteger(value)||value<0||value>50000000){status.textContent='Bitte für alle Preise ganze Eurobeträge von 0 bis 50.000.000 eingeben.';input.focus();return}
    prices[key]=value*100;
   }
-  busy=true;const save=dialog.querySelector('.deal-economy-save');save.disabled=true;status.textContent='⏳ Speichere Preise für alle Spieler …';
+  const slotWeights=readSlotWeights();
+  if(SLOT_FIELDS.some(([key])=>!Number.isSafeInteger(slotWeights[key])||slotWeights[key]<0||slotWeights[key]>10000)||
+    !SLOT_FIELDS.some(([key])=>slotWeights[key]>0)){
+   status.textContent='Bitte für jede Gewinnart 0 bis 10.000 ganze Gewichtspunkte eingeben; mindestens eine Gewinnart muss aktiv sein.';
+   return;
+  }
+  busy=true;const save=dialog.querySelector('.deal-economy-save');save.disabled=true;status.textContent='⏳ Speichere Preise und Slot-Gewichtung …';
   try{
-   const result=await send('POST',{prices,doubleBoostEnabled:form.elements.namedItem('doubleBoostEnabled').checked,packsEnabled:form.elements.namedItem('packsEnabled').checked});
+   const result=await send('POST',{prices,slotWeights,doubleBoostEnabled:form.elements.namedItem('doubleBoostEnabled').checked,packsEnabled:form.elements.namedItem('packsEnabled').checked});
    current=result.economy;dirty=false;emit(current);fill(current);
-   status.textContent='✅ Einstellungen gespeichert · '+new Date(current.updatedAt).toLocaleString('de-DE');
+   status.textContent='✅ Preise und Slot-Gewichtung gespeichert · '+new Date(current.updatedAt).toLocaleString('de-DE');
    window.DogAlbumSeason2?.refresh?.();
   }catch(e){
    status.textContent='⚠️ Speichern fehlgeschlagen: '+e.message;
