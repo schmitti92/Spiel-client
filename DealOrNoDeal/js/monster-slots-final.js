@@ -35,7 +35,7 @@ summary.id='monster-slot-reward-summary';summary.className='monster-slot-reward-
 summary.setAttribute('role','region');summary.setAttribute('aria-label','Alle Slotgewinne und Sammelkarten');
 const summaryContent=document.createElement('div');summaryContent.className='monster-slot-reward-content';
 const summaryKicker=document.createElement('p');summaryKicker.className='monster-slot-reward-kicker';
-summaryKicker.textContent='✦ GOLDSTUDIO · ALLE DEINE BELONUNGEN ✦';
+summaryKicker.textContent='✦ GOLDSTUDIO · ALLE DEINE BELOHNUNGEN ✦';
 const summaryTitle=document.createElement('h3');summaryTitle.className='monster-slot-reward-title';
 summaryTitle.textContent='🎉 Deine 3 Slot-Gewinne';
 const summaryDetail=document.createElement('p');summaryDetail.className='monster-slot-reward-detail';
