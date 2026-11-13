@@ -269,6 +269,7 @@ async function connectDealSocket(){
    }
    dealSocketLastMessage=Date.now();
   }
+   if(msg.type==='deal-economy'&&msg.economy)window.dispatchEvent(new CustomEvent('deal-economy-updated',{detail:msg.economy}));
    if(msg.type==='deal-state'&&dealSocketReady){dealSocketLastMessage=Date.now();applyDealState(msg.game)}
    if(msg.type==='deal-error'){dealSocketReady=false;console.warn('Deal stream:',msg.error)}
   };

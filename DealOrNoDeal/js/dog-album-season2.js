@@ -271,8 +271,8 @@
   for(const pack of data.packs){
    const button=document.querySelector('[data-pack="'+pack.id+'"]');if(!button)continue;
    const vouchers=Math.max(0,Number(data.freePacks?.[pack.id])||0);
-   button.disabled=busy||(!vouchers&&data.balance<pack.price);
-   button.textContent=busy?'⏳ Öffnet …':vouchers?'🎁 Kostenlos öffnen ('+vouchers+' Gutscheine)':money(pack.price)+' · '+pack.count+' Karten';
+   button.disabled=busy||(!vouchers&&(data.purchasesEnabled===false||data.balance<pack.price));
+   button.textContent=busy?'⏳ Öffnet …':vouchers?'🎁 Kostenlos öffnen ('+vouchers+' Gutscheine)':data.purchasesEnabled===false?'🔒 Käufe derzeit deaktiviert':money(pack.price)+' · '+pack.count+' Karten';
   }
   const duplicates=data.duplicates||{};
   $('duplicate-count').textContent=number(duplicates.available)+' Duplikate';
@@ -310,7 +310,7 @@
   if(busy||!data||!activeUser())return;
   const uid=activeUser().uid;busy=true;render();status('🎁 Dein DOG-Kartenpack wird geöffnet …');
   try{
-   const out=await api('POST','open',{packId,requestId:requestId(packId)});
+   const out=await api('POST','open',{packId,requestId:requestId(packId),expectedPrice:data.packs?.find(p=>p.id===packId)?.price});
    clearId(packId);
    if(activeUser()?.uid!==uid)return;
    data={...data,...out};render();reveal(out.revealed||[]);queueCompletedBoards(out.completedBoards);
@@ -318,7 +318,8 @@
    // Der quittierte POST enthält den aktuellen Stand; kein zusätzlicher Firestore-GET.
   }catch(e){
    if(!['Failed to fetch','SERVER_ERROR'].includes(e.message))clearId(packId);
-   status('⚠️ '+e.message+' · Bei Netzproblemen denselben Kauf erneut versuchen.');
+   status('⚠️ '+(e.message==='PRICE_CHANGED'?'Der Host hat den Preis geändert. Aktualisiere die Paketpreise.':e.message==='PACK_PURCHASES_DISABLED'?'Der Host hat den Paketkauf deaktiviert.':e.message)+' · Bei Netzproblemen denselben Kauf erneut versuchen.');
+    if(['PRICE_CHANGED','PACK_PURCHASES_DISABLED'].includes(e.message))setTimeout(()=>void load(false),0);
   }finally{busy=false;render();maybeClaimBingos()}
  }
  async function exchange(){

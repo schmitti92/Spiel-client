@@ -1,0 +1,25 @@
+.deal-economy-trigger[hidden],.deal-economy-modal[hidden],.deal-economy-backdrop[hidden]{display:none!important}
+.deal-economy-trigger{white-space:nowrap;border:1px solid #edc476!important;background:linear-gradient(145deg,#3d2d17,#142e4f)!important;color:#ffdf9c!important;font-weight:850!important;cursor:pointer}
+.deal-economy-trigger:hover{filter:brightness(1.15)}
+.deal-economy-backdrop{position:fixed;inset:0;z-index:59998;background:#020712dc;backdrop-filter:blur(7px)}
+.deal-economy-modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:59999;width:min(760px,calc(100vw - 20px));max-height:calc(100dvh - 28px);overflow-y:auto;overscroll-behavior:contain;box-sizing:border-box;border:2px solid #e8be70;border-radius:22px;padding:clamp(14px,3vw,24px);background:linear-gradient(145deg,#172d4c,#091526 75%);box-shadow:0 30px 90px #000e;color:#fff0d5;font:15px/1.4 system-ui,sans-serif;text-align:left}
+body.deal-economy-open{overflow:hidden}
+.deal-economy-head{display:flex;align-items:flex-start;justify-content:space-between;gap:15px}
+.deal-economy-head small{color:#ebc37c;font-size:11px;letter-spacing:.13em;font-weight:900}
+.deal-economy-head h2{font-size:clamp(22px,4vw,30px);margin:5px 0;color:#ffe4a8}
+.deal-economy-close{background:#1e3857;border:1px solid #e3bc7d;border-radius:10px;color:white;font-size:22px;padding:6px 13px;cursor:pointer}
+.deal-economy-note{font-size:13px;line-height:1.45;color:#d9e4f3;margin:10px 0 18px}
+.deal-economy-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.deal-economy-field{display:flex;flex-direction:column;gap:5px;padding:10px;background:#091d34;border:1px solid #4b6684;border-radius:13px;font-weight:800;font-size:13px;min-width:0}
+.deal-economy-input{display:flex;align-items:center;gap:7px}
+.deal-economy-input input{width:100%;min-width:0;padding:10px;border:1px solid #d9b574;border-radius:8px;background:#0f2946;color:#fff2d4;font:750 17px system-ui;box-sizing:border-box}
+.deal-economy-input strong{color:#ffdd8e;font-size:18px}
+.deal-economy-switches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:13px 0}
+.deal-economy-switches label{padding:13px 8px;border:1px solid #4b6684;border-radius:12px;background:#0d233b;font-weight:750;cursor:pointer}
+.deal-economy-switches input{width:18px;height:18px;accent-color:#f7ca67;vertical-align:middle}
+.deal-economy-status{min-height:22px;margin:10px 0;color:#f7d592;font-size:13px;font-weight:800}
+.deal-economy-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:10px}
+.deal-economy-actions button{border-radius:12px;padding:11px 16px;border:1px solid #e9bd75;background:#173555;color:#fff0d6;font:800 14px system-ui;cursor:pointer}
+.deal-economy-actions .deal-economy-save{background:linear-gradient(130deg,#ffe9aa,#d9a447);color:#2c1c09;border-color:#ffe7a3}
+.deal-economy-actions button:disabled{opacity:.65;cursor:wait}
+@media(max-width:570px){.deal-economy-fields,.deal-economy-switches{grid-template-columns:1fr}.deal-economy-modal{padding:14px}.deal-economy-field{padding:8px}.deal-economy-input input{font-size:16px}}
