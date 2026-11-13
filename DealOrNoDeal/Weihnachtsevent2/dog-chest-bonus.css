@@ -1,0 +1,38 @@
+/* Weihnachtsevent 2: ein zusätzlicher serverbestätigter DOG-Rohstoffkistenpreis
+   pro erstmalig abgeschlossenem Weihnachtsbild. Keine weiteren Datenabfragen. */
+body.christmas-event-ice .v44-dog-chest-reward{
+ display:flex;flex-direction:column;align-items:center;gap:7px;
+ margin:13px auto 17px;padding:15px 16px;
+ max-width:470px;border:2px solid #f4d892;border-radius:17px;
+ background:radial-gradient(circle at 50% 12%,#a9783380,transparent 70%),
+ linear-gradient(125deg,#372717,#60401f 50%,#281c23);
+ box-shadow:0 0 22px #f1c35b57,inset 0 1px #fff7;
+ color:#fff1d4;text-align:center;
+ animation:v44-dog-chest-appear .6s cubic-bezier(.2,1.2,.3,1) both;
+}
+body.christmas-event-ice .v44-dog-chest-reward .v44-dog-chest-icon{
+ font-size:clamp(39px,8vw,54px);line-height:1;filter:drop-shadow(0 3px 13px #ffe0958c);
+}
+body.christmas-event-ice .v44-dog-chest-reward strong{
+ font:900 clamp(17px,3vw,23px)/1.25 Georgia,serif;
+ color:#ffea9a;text-shadow:0 2px 5px #000a;
+}
+body.christmas-event-ice .v44-dog-chest-reward small{
+ font:600 12px/1.5 system-ui,sans-serif;color:#ffebcb;
+}
+body.christmas-event-ice .v44-dog-chest-reward a{
+ display:inline-flex;align-items:center;justify-content:center;
+ margin:3px 0 0;padding:9px 16px;min-height:42px;
+ border:1px solid #f4d698;border-radius:10px;
+ background:linear-gradient(145deg,#b98530,#674016);
+ color:#fff4d2!important;font:800 13px system-ui,sans-serif;
+ text-decoration:none;box-shadow:inset 0 1px #ffeaac6b;
+}
+body.christmas-event-ice .v44-dog-chest-reward a:focus-visible{outline:3px solid #f3f5ff;outline-offset:3px}
+@keyframes v44-dog-chest-appear{
+ from{opacity:0;transform:translateY(17px) scale(.9)}
+ to{opacity:1;transform:none}
+}
+@media(prefers-reduced-motion:reduce){
+ body.christmas-event-ice .v44-dog-chest-reward{animation:none}
+}
