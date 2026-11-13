@@ -27,7 +27,7 @@ root.innerHTML="<div class=\"monster-slot-machine\">\n <div class=\"monster-slot
 document.body.append(root);
 const reels=[...root.querySelectorAll('.monster-slot-reel')],lights=[...root.querySelectorAll('.monster-slot-progress span')];
 const status=$('monster-slot-status'),accept=$('monster-slot-accept');
-let liveGame=null,claimed=null,claiming=null,opening=false,shown='',seq=0,timers=[],priorFocus=null;
+let liveGame=null,claimed=null,claimedUid=null,claiming=null,opening=false,shown='',seq=0,timers=[],priorFocus=null;
 const setStatus=t=>status.textContent=t;
 const watched=id=>{try{return sessionStorage.getItem(seenKey(id))==='yes'}catch{return false}};
 function timer(fn,ms){const id=setTimeout(()=>{timers=timers.filter(t=>t!==id);fn()},ms);timers.push(id)}
@@ -63,7 +63,8 @@ function showPrize(reel,prize){
  win.hidden=false;setPhase(reel,'won');
 }
 const canShow=()=>typeof g!=='undefined'&&g?.phase==='final'&&g.monsterSlotsVersion===1&&
- document.getElementById('finale-cinema')?.hidden!==false&&!document.hidden;
+ document.getElementById('finale-cinema')?.hidden!==false&&
+ document.getElementById('cent-reward')?.hidden!==false&&!document.hidden;
 function showAlreadySettled(){
  reels.forEach((reel,i)=>showPrize(reel,claimed.prizes[i]));
  lights.forEach(light=>light.classList.add('lit'));
@@ -71,7 +72,7 @@ function showAlreadySettled(){
  setStatus('🎉 Diese drei Gewinne wurden bereits gutgeschrieben.');
 }
 function present(reopen=false){
- if(opening||!claimed||claimed.gameId!==liveGame||shown===liveGame&&!reopen||!canShow())return;
+ if(opening||!claimed||claimed.gameId!==liveGame||claimedUid!==user()?.uid||shown===liveGame&&!reopen||!canShow())return;
  const id=liveGame;
  if(watched(id)&&!reopen){try{sessionStorage.setItem('final-wheel-complete:'+id,'yes')}catch{}window.dispatchEvent(new Event('deal-final-wheel-complete'));return}
  const token=++seq;shown=id;priorFocus=document.activeElement;root.hidden=false;
@@ -93,9 +94,9 @@ function present(reopen=false){
  },ms));
 }
 async function claim(){
- if(claiming||!liveGame||claimed?.gameId===liveGame)return;
+ if(claiming||!liveGame||claimed?.gameId===liveGame&&claimedUid===user()?.uid)return;
  const u=user();if(!u?.getIdToken)return;
- const id=liveGame;claiming=id;setStatus('🎁 Deine drei Gewinne werden sicher geladen …');
+ const id=liveGame,uid=u.uid;claiming=id;setStatus('🎁 Deine drei Gewinne werden sicher geladen …');
  try{
   const token=await u.getIdToken();
   const response=await fetch(base()+'/api/deal-or-no-deal/monster-slots/claim',{
@@ -105,17 +106,17 @@ async function claim(){
   const data=await response.json();
   if(!response.ok||!data.ok||data.gameId!==id||!Array.isArray(data.prizes)||data.prizes.length!==3)
    throw Error(data.error||'GEWINNE_NICHT_VERFUEGBAR');
-  if(liveGame!==id)return;
-  claimed=data;if(canShow())present();
+  if(liveGame!==id||user()?.uid!==uid)return;
+  claimed=data;claimedUid=uid;if(canShow())present();
  }catch(error){
   if(liveGame!==id)return;
   console.warn('[monster-slots]',error);
   setStatus('⚠️ Gewinne derzeit nicht erreichbar: '+String(error.message||error)+'. Bitte erneut versuchen.');
   if(canShow()){root.hidden=false;accept.disabled=false;accept.textContent='↻ Gewinne erneut abrufen'}
- }finally{claiming=null;if(liveGame!==id)sync()}
+ }finally{claiming=null;if(liveGame!==id||user()?.uid!==uid)sync()}
 }
 accept.addEventListener('click',()=>{
- if(!claimed||claimed.gameId!==liveGame){accept.disabled=true;void claim();return}
+ if(!claimed||claimed.gameId!==liveGame||claimedUid!==user()?.uid){accept.disabled=true;void claim();return}
  if(opening)return;
  try{sessionStorage.setItem(seenKey(liveGame),'yes');sessionStorage.setItem('final-wheel-complete:'+liveGame,'yes')}catch(e){console.warn('[monster-slots] Anzeigequittung nicht gespeichert',e)}
  cancel();window.dispatchEvent(new Event('deal-final-wheel-complete'));
@@ -123,17 +124,20 @@ accept.addEventListener('click',()=>{
 });
 function sync(){
  if(typeof g==='undefined'||g?.phase!=='final'||g.monsterSlotsVersion!==1){
-  if(liveGame){cancel();liveGame=null;claimed=null}return;
+  if(liveGame){cancel();liveGame=null;claimed=null;claimedUid=null}return;
  }
- if(liveGame!==g.id){cancel();liveGame=g.id;claimed=null}
+ if(liveGame!==g.id||claimedUid&&claimedUid!==user()?.uid){cancel();liveGame=g.id;claimed=null;claimedUid=null}
  if(watched(g.id))return;
  if(!claimed)void claim();else if(canShow())present();
 }
 window.addEventListener('deal-game-state-change',sync);
 window.addEventListener('deal-finale-finished',sync);
+window.addEventListener('spielonline-change',sync);
+// Wait until the legacy banker/one-cent reward layer has closed, then show the finale slots.
+window.addEventListener('deal-reward-window-closed',()=>setTimeout(sync,400));
 window.addEventListener('deal-monster-slot-retry',()=>{
  if(!liveGame)return;
- if(claimed?.gameId===liveGame){if(!opening){shown='';present(true)}}
+ if(claimed?.gameId===liveGame&&claimedUid===user()?.uid){if(!opening){shown='';present(true)}}
  else{root.hidden=false;void claim()}
 });
 window.addEventListener('deal-replay-finale-sequence',()=>cancel());
