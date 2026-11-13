@@ -1,0 +1,1 @@
+Entpacke die ZIP-Datei. Lade dann alle 31 PNG-Dateien gesammelt in DealOrNoDeal/assets/slot-premium/ auf GitHub main hoch. Den Dateinamen nicht aendern. ZIP-Dateien auf GitHub werden nicht automatisch entpackt. Der Spielcode wird anschliessend auf die neuen Grafiken umgestellt.
