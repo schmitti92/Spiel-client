@@ -78,3 +78,9 @@ body.merchant-page .exchange-controls{grid-template-columns:minmax(90px,.8fr) mi
 .quality-forge-action:focus-visible,.quality-forge-group:focus-visible{outline:3px solid #f9dc91;outline-offset:2px}
 @media(max-width:800px){.quality-forge-row{grid-template-columns:1fr}.quality-forge-actions{justify-content:stretch}.quality-forge-panel>summary{font-size:16px}}
 @media(max-width:470px){.quality-forge-body{padding:0 12px 14px}.quality-forge-panel>summary{padding:14px 12px;align-items:flex-start;flex-direction:column;gap:5px}.quality-forge-row{padding:10px}.quality-forge-actions{gap:6px}.quality-forge-action{padding:9px 7px}.quality-forge-group{flex:1 1 125px}}
+
+/* Visible server-verified locks for rarities beyond the shared forge tier. */
+.forge-canvas .stock-row.material-locked,.forge-canvas .exchange-row.material-locked,
+.forge-canvas .quality-forge-row.material-locked{opacity:.58;filter:grayscale(.6);background:#101a2b!important;border-color:#637089!important}
+.forge-canvas .exchange-row.material-locked .exchange-target{color:#c9d2e5}
+.forge-canvas .exchange-row.material-locked .exchange-submit{cursor:not-allowed}

@@ -229,6 +229,9 @@
  const quoteFor=id=>view?.quotes?.find(q=>q.itemId===id);
  const canUpgradeItem=id=>{const q=quoteFor(id);return !!q&&!q.maxed&&!q.locked&&q.affordable;};
  const have=id=>view?.inventory?.resources?.[id]||0;
+ const rarityCap=()=>Number.isInteger(view?.materialRarityCap)?view.materialRarityCap:4;
+ const materialMilestones=[{forgeLevel:1,boss:0},{forgeLevel:2,boss:10},
+  {forgeLevel:3,boss:20},{forgeLevel:4,boss:30},{forgeLevel:6,boss:50}];
  const haveQuality=(id,level)=>view?.inventory?.qualityResources?.[id+':'+level]??(level===1?have(id):0);
  const itemFor=id=>view?.items?.find(x=>x.id===id);
  const usable=()=>!!uid&&auth()?.user?.uid===uid&&!!view&&!busy&&!pending(uid);
@@ -366,7 +369,8 @@
    const section=node('section','stock-group');
    section.append(node('h3',null,group.label));
    for(const [id,icon,name] of group.values){
-    const data=material[id],row=node('div','stock-row rarity-'+data.index);
+    const data=material[id],locked=data.index>rarityCap();
+    const row=node('div','stock-row rarity-'+data.index+(locked?' material-locked':''));
     const counts=node('span','stock-quality-counts');
     const quality=view?.inventory?.qualityResources||view?.qualityResources||null;
     for(let level=1;level<=3;level++){
@@ -374,7 +378,8 @@
      counts.append(node('span','stock-quality stock-quality-'+level,
       'Stufe '+level+': '+(view?money(quantity??0):'–')));
     }
-    row.append(node('span',null,icon),node('span',null,name),counts);
+    row.append(node('span',null,locked?'🔒':icon),
+     node('span',null,name+(locked?' · gesperrt bis Boss '+materialMilestones[data.index].boss:'')),counts);
     section.append(row);
    }
    container.append(section);
@@ -671,7 +676,7 @@
   if(!usable()||!Number.isSafeInteger(count)||count<1||count>100)return;
   const info=material[resourceId],group=MATERIALS.find(g=>g.group===info?.group);
   const idx=group?.values.findIndex(x=>x[0]===resourceId)??-1;
-  if(idx<0||idx>=4)return;
+  if(idx<0||idx>=4||idx+1>rarityCap())return;
   const target=group.values[idx+1];
   if(haveQuality(resourceId,quality)<count*10||haveQuality(target[0],quality)+count>1000000)return;
   exchangeConfirmData={resourceId,count,quality};
@@ -705,9 +710,11 @@
   }
   const group=MATERIALS.find(g=>g.group===refineGroup)||MATERIALS[2];
   for(const [id,icon,name] of group.values){
-   const row=node('div','quality-forge-row');
+   const rarity=material[id]?.index??0,locked=rarity>rarityCap();
+   const row=node('div','quality-forge-row'+(locked?' material-locked':''));
    const heading=node('div','quality-forge-resource');
-   heading.append(node('span','quality-forge-icon',icon),node('strong',null,name));
+   heading.append(node('span','quality-forge-icon',locked?'🔒':icon),
+    node('strong',null,name+(locked?' · Boss '+materialMilestones[rarity].boss+' erforderlich':'')));
    heading.append(node('small','quality-forge-balances',
     'Stufe 1: '+money(haveQuality(id,1))+' · Stufe 2: '+money(haveQuality(id,2))+
     ' · Stufe 3: '+money(haveQuality(id,3))));
@@ -724,7 +731,7 @@
     button.title=unlockedTarget?
      '5 Rohstoffe der Stufe '+level+' einsetzen; bei Fehlschlag werden sie verbraucht':
      'Erst nach dem Sieg über Boss '+(target===2?30:60)+' möglich';
-    button.disabled=!usable()||!unlockedTarget||haveQuality(id,level)<5;
+    button.disabled=!usable()||locked||!unlockedTarget||haveQuality(id,level)<5;
     button.addEventListener('click',()=>{
      if(!usable()||Number(view?.qualityUnlocked||1)<target||haveQuality(id,level)<5)return;
      void action('refine',{resourceId:id,fromQuality:level,count:1},false,true);
@@ -766,13 +773,14 @@
   const list=node('div','exchange-list');
   for(let i=0;i<4;i++){
    const from=group.values[i],to=group.values[i+1],stock=haveQuality(from[0],tradeQuality);
-   const maxBatch=Math.min(100,Math.floor(stock/10),1000000-haveQuality(to[0],tradeQuality));
-   const row=node('div','exchange-row multi-exchange-row');
+    const locked=i+1>rarityCap(),unlock=materialMilestones[i+1];
+   const maxBatch=locked?0:Math.min(100,Math.floor(stock/10),1000000-haveQuality(to[0],tradeQuality));
+   const row=node('div','exchange-row multi-exchange-row'+(locked?' material-locked':''));
    row.append(node('span','exchange-icon',from[1]));
    const label=node('span','exchange-mat',from[2]);
    label.append(node('small',null,'Qualität '+tradeQuality+' · Vorrat: '+money(stock)));
    row.append(label,node('span','exchange-arrow','→'),
-    node('span','exchange-target',to[1]+' '+to[2]));
+    node('span','exchange-target',locked?'🔒 '+to[2]:to[1]+' '+to[2]));
    const controls=node('div','exchange-controls');
    const select=node('select','exchange-quantity');
    select.setAttribute('aria-label','Anzahl Tausche: '+from[2]);
@@ -793,7 +801,7 @@
    };
    select.addEventListener('change',update);
    if(qty.length){select.value='1';update();}
-   else preview.textContent='Zu wenig Materialien';
+   else preview.textContent=locked?'🔒 Erst Boss '+unlock.boss+' und Schmiedestufe '+unlock.forgeLevel:'Zu wenig Materialien';
    button.addEventListener('click',()=>{
     const count=Number(select.value);
     if(!usable()||!Number.isSafeInteger(count)||count<1||count>maxBatch)return;

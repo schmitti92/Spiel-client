@@ -46,10 +46,12 @@
    ['mithril','💠','Mithril'],['dragonsteel','🐉','Drachenstahl']]}
  ]);
  const RARITY=['Gewöhnlich','Ungewöhnlich','Selten','Episch','Legendär'];
+ const RARITY_LEVELS=[{forgeLevel:1,boss:0},{forgeLevel:2,boss:10},
+  {forgeLevel:3,boss:20},{forgeLevel:4,boss:30},{forgeLevel:6,boss:50}];
  const META=Object.fromEntries(GROUPS.flatMap(group=>group.items.map(([id,icon,name],rarity)=>[
   id,{id,icon,name,group:group.id,rarity,label:RARITY[rarity]}
  ])));
- let currentUid=null,inventory=null,busy=false,loadIndex=0,openQuantity=1;
+ let currentUid=null,inventory=null,busy=false,loadIndex=0,openQuantity=1,unlockedRarity=4,forgeLevel=null;
  const auth=()=>{
   const s=window.SpielOnline?.state?.();
   return s?.status==='online'&&s.user?.uid&&s.profile?.setupComplete!==false?s:null;
@@ -186,6 +188,25 @@
    'Noch keine Kiste – spiele Deal or No Deal online';
   $('earned').textContent=inventory?'Verdiente Kisten: '+fmt(inventory.earned)+' · Geöffnete Kisten: '+fmt(inventory.opened):
    'Verdiente Kisten: – · Geöffnete Kisten: –';
+  const unlockPanel=$('dog-rarity-unlocks');
+  if(unlockPanel){
+   unlockPanel.replaceChildren();
+   const title=document.createElement('strong');
+   title.textContent=forgeLevel===null?'🔨 Rohstoff-Freischaltungen':'🔨 Schmiedestufe '+forgeLevel+' · Rohstoff-Freischaltungen';
+   unlockPanel.append(title);
+   const chips=document.createElement('div');chips.className='dog-rarity-unlock-list';
+   for(let i=0;i<RARITY.length;i++){
+    const rule=RARITY_LEVELS[i],unlocked=!!inventory&&i<=unlockedRarity;
+    const chip=document.createElement('span');
+    chip.className='dog-rarity-unlock-chip '+(unlocked?'unlocked':'locked');
+    chip.textContent=(unlocked?'✓ ':'🔒 ')+RARITY[i]+(unlocked?'':rule.boss?' · Boss '+rule.boss+' + Schmiede '+rule.forgeLevel:'');
+    chips.append(chip);
+   }
+   unlockPanel.append(chips);
+   const note=document.createElement('small');
+   note.textContent='Die Kiste behält Typ und Menge. Noch gesperrte Rohstoffe können nicht darin vorkommen.';
+   unlockPanel.append(note);
+  }
   const groups=$('resource-groups');
   groups.replaceChildren();
   const items=normalizeItems(inventory?.resources);
@@ -195,9 +216,11 @@
    const container=document.createElement('div');container.className='inventory-resources';
    for(const [key,icon,name] of group.items){
     const meta=META[key],node=document.createElement('div');
-    node.className='resource-cell rarity-'+meta.rarity;
-    const iconEl=document.createElement('span');iconEl.className='resource-icon';iconEl.textContent=icon;
-    const label=document.createElement('small');label.textContent=name;
+    const locked=!!inventory&&meta.rarity>unlockedRarity,rule=RARITY_LEVELS[meta.rarity];
+    node.className='resource-cell rarity-'+meta.rarity+(locked?' material-locked':'');
+    if(locked)node.title='🔒 '+name+' nach Boss '+rule.boss+' und Schmiedestufe '+rule.forgeLevel+' verfügbar';
+    const iconEl=document.createElement('span');iconEl.className='resource-icon';iconEl.textContent=locked?'🔒':icon;
+    const label=document.createElement('small');label.textContent=name+(locked?' · gesperrt':'');
     const quality=inventory?.qualityResources||null;
     const amounts=document.createElement('span');amounts.className='resource-quality-levels';
     for(let level=1;level<=3;level++){
@@ -264,14 +287,14 @@
  async function reload(){
   const state=auth(),load=++loadIndex;
   if(!state){
-   currentUid=null;inventory=null;busy=false;
+   currentUid=null;inventory=null;busy=false;unlockedRarity=4;forgeLevel=null;
    closeReward();
    $('account').textContent='🔒 Bitte melde dich mit deinem Online-Spielerprofil an.';
    message('Ohne Online-Profil sind noch keine Kisten speicherbar. Anmeldung über das Spieleportal.');
    renderInventory();return;
   }
   const uid=state.user.uid;
-  if(currentUid!==uid){currentUid=uid;inventory=null;closeReward();}
+  if(currentUid!==uid){currentUid=uid;inventory=null;unlockedRarity=4;forgeLevel=null;closeReward();}
   $('account').textContent='👤 '+String(state.profile?.name||state.user?.displayName||'Online-Spieler');
   message('🔄 Kisten und Rohstoffe werden vom Server geladen …');
   renderInventory();
@@ -279,6 +302,8 @@
    const data=await request('GET','me',null,uid);
    if(load!==loadIndex||currentUid!==uid)return;
    inventory=data.inventory;
+   unlockedRarity=Number.isInteger(data.unlockedRarity)?data.unlockedRarity:4;
+   forgeLevel=Number.isInteger(data.forgeLevel)?data.forgeLevel:null;
    const pending=getPending(uid);
    message(pending?'⚠️ Eine Kistenöffnung ist noch ungeklärt. Bitte „Kistenöffnung sicher wiederholen“ wählen.':
     inventory.unopened>0?'📦 Deine Rohstoffkisten warten auf dich. Klicke die gewünschte Sorte zum Öffnen an.':
@@ -314,6 +339,8 @@
     {requestId:id,quantity,...(requestTier?{tier:requestTier}:{})},uid);
    if(currentUid!==uid)return;
    inventory=result.inventory;
+   if(Number.isInteger(result.unlockedRarity))unlockedRarity=result.unlockedRarity;
+   if(Number.isInteger(result.forgeLevel))forgeLevel=result.forgeLevel;
    clearPending(uid);
    renderReward(result.drop);
    message(result.replayed?'✅ Die bereits abgeschlossene Kistenöffnung wurde sicher wiederhergestellt.':

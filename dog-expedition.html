@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#090e1d">
 <meta name="description" content="Die 100 Tore: DOG-Freischaltung vorbereiten, Materialienkisten aus abgeschlossenen Deal-or-No-Deal-Partien öffnen und Rohstoffe sammeln.">
 <title>📦 Kisten · Die 100 Tore · SPIELEPORTAL</title>
-<link rel="stylesheet" href="./dog-materials.css?v=20261113-nav-spacing-v1">
+<link rel="stylesheet" href="./dog-materials.css?v=20261113-material-gates-v1">
 <script src="./profile-config.js"></script>
 <script src="./profile-auth.js"></script>
 <script src="./dog-hero-entry.js?v=20261112-onboarding1" defer></script>
@@ -159,7 +159,7 @@
    </div>
   </dialog>
   <a href="./dog-forge.html" id="forge-from-storage" class="forge-entry">⚒️ <span><strong>Zur Schmiede</strong><small>Waffe · Rüstung · Fähigkeiten · Tausch</small></span><span aria-hidden="true">➜</span></a>
-  <details class="chest-inventory-fold"><summary>🎒 <strong>Meine Rohstoffe</strong> <span>15 Rohstoffarten · Qualitätsstufen 1–3 anzeigen</span></summary>
+  <section id="dog-rarity-unlocks" class="dog-rarity-unlocks" aria-label="Rohstoffklassen freischalten"><strong>🔨 Rohstoff-Freischaltungen werden geladen …</strong></section><details class="chest-inventory-fold"><summary>🎒 <strong>Meine Rohstoffe</strong> <span>15 Rohstoffarten · Qualitätsstufen 1–3 anzeigen</span></summary>
   <div id="resource-groups" class="inventory-groups" aria-label="Deine 15 Rohstoffe"></div>
   <p class="muted" id="earned" style="margin-top:14px">Gesammelte Kisten: – · Geöffnete Kisten: –</p>
   <h2 style="margin-top:23px">🗃️ Letzte geöffnete Kisten</h2>
@@ -169,7 +169,7 @@
  <details class="panel chest-information" aria-labelledby="rules-title"><summary>📖 Kistenwissen <span>Inhalte, Chancen und Seltenheiten ansehen</span></summary><div class="chest-information-content">
   <h2 id="rules-title">🎲 Kisten und Seltenheiten</h2>
   <p class="muted">Nach jeder abgeschlossenen Online-Partie von <b>Deal or No Deal</b> bekommt jeder Spieler eine zufällige Kiste. Die Kistengröße wird beim Gewinn festgelegt. Beim Öffnen erscheinen alle Rohstoffe <b>sofort zusammen</b> im Belohnungsfenster.</p>
-  <p class="muted"><b>Fünf Expeditionskisten:</b> 🪵 Holz (1–3), 🔩 Eisen (2–5), 🥈 Silber (4–8), 🏆 Gold (6–12) und 💎 legendär (10–20 Rohstoffe). Die Kistenchancen hängen von deinem erreichten Tor ab. Ab Tor 81 kann erstmals eine legendäre Truhe erscheinen, bei Tor 91–100 mit 7 % Wahrscheinlichkeit.</p>
+  <p class="muted"><b>Fünf Expeditionskisten:</b> 🪵 Holz (1–3), 🔩 Eisen (2–5), 🥈 Silber (4–8), 🏆 Gold (6–12) und 💎 legendär (10–20 Rohstoffe). Die Kistenchancen hängen von deinem erreichten Tor ab. Hochwertige Kisten können bereits früh selten auftauchen, enthalten aber nur Rohstoffe deiner freigeschalteten Schmiedestufe.</p>
   <p class="muted"><b>Alte Kisten:</b> Die folgende Tabelle gilt ausschließlich für früher verdiente Kisten.</p>
   <table class="rule-table" aria-label="Wahrscheinlichkeit der Kistengrößen">
    <thead><tr><th>Kiste</th><th>Inhalt</th><th>Chance</th></tr></thead>
@@ -210,7 +210,7 @@
 </div>
 <footer class="foot">DOG-Expedition · Rohstoffkisten, Schmiede und der erste gemeinsame Bosskampf sind spielbar. Weitere Tore folgen.</footer>
 </main>
-<script src="./dog-materials-ui.js?v=20261113-chest-bulk-v5" defer></script>
+<script src="./dog-materials-ui.js?v=20261113-material-gates-v1" defer></script>
 <script src="./site-global-controls.js?v=20261109-global-1"></script>
 </body>
 </html>
