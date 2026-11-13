@@ -6,15 +6,16 @@ const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const js=read('js/monster-slots-final.js');
 const css=read('css/monster-slots-final.css');
 const html=read('game.html');
+const slotMarkup=JSON.parse(js.split('root.innerHTML=')[1].split(';\n')[0]);
 test('Monster Slots script parses as a classic browser script and is loaded with a cache-busted asset',()=>{
  assert.doesNotThrow(()=>new Script(js,{filename:'monster-slots-final.js'}));
  assert.match(html,/js\/monster-slots-final\.js\?v=20261113-slots-goldshow-v2/);
  assert.match(html,/css\/monster-slots-final\.css\?v=20261113-slots-goldshow-v2/);
 });
 test('three reels with real scrolling icon tracks and sequential stops, never a browser-side prize roll',()=>{
- assert.equal((js.match(/class="monster-slot-reel"/g)||[]).length,3,'exactly three reels');
- assert.equal((js.match(/class="monster-slot-track"/g)||[]).length,3,'one moving track per reel');
- assert.equal((js.match(/class="monster-slot-prize"/g)||[]).length,3,'one server prize display per reel');
+ assert.equal((slotMarkup.match(/class="monster-slot-reel"/g)||[]).length,3,'exactly three reels');
+ assert.equal((slotMarkup.match(/class="monster-slot-track"/g)||[]).length,3,'one moving track per reel');
+ assert.equal((slotMarkup.match(/class="monster-slot-prize"/g)||[]).length,3,'one server prize display per reel');
  assert.match(js,/3000,4500,6000/,'three left-to-right stop timestamps');
  assert.match(js,/setPhase\(reel,'running'\)/);
  assert.match(js,/showPrize\(reels\[i\],claimed\.prizes\[i\]\)/,'server prize is displayed');
@@ -31,7 +32,7 @@ test('premium show appearance supports three visible reel windows, mobile screen
  assert.match(css,/@media\(max-width:570px\)/);
  assert.match(css,/@media\(max-height:655px\)/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
- assert.match(js,/aria-live="polite"/);
+ assert.match(slotMarkup,/aria-live="polite"/);
  assert.match(js,/role','dialog'/);
  assert.match(js,/accept\.disabled=true/);
 });
