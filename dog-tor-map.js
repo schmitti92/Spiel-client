@@ -200,6 +200,8 @@
    area.append(card);
   }
   const logged=auth(),mine=team.find(m=>m.isMe);
+  if(logged&&mapState&&!mapState.isMember&&!mapState.canJoin)
+   setTeamStatus('⚔️ Die drei Expeditionsplätze sind derzeit belegt oder es läuft ein Bosskampf. Du kannst dir die Eventbereiche ansehen.');
   const locked=mine?.heroLocked===true;
   const mayChoose=!!logged&&!!mapState&&
    ((!!mine&&!locked)||(!mapState.isMember&&mapState.canJoin));
@@ -400,6 +402,7 @@
    const code=e?.message||'DOG_GATE_UNAVAILABLE';
    $('hero-selection-status').textContent=
     code==='DOG_GATE_TEAM_FULL'?'⚠️ Alle drei Expeditionsplätze sind bereits belegt.':
+    code==='DOG_GATE_BOSS_ACTIVE'?'⚠️ Der bisherige Testplatz wird nach dem aktuellen Bosskampf frei. Bitte danach die Karte aktualisieren.':
     code==='DOG_HERO_ALREADY_LOCKED'?'🔒 Für dieses Profil wurde bereits ein anderer Held endgültig bestätigt. Aktualisiere die Karte.':
     '⚠️ Die endgültige Wahl wurde nicht bestätigt ('+code+'). Bitte erneut versuchen.';
   }finally{heroSaving=false;renderMembers();}
