@@ -6,7 +6,7 @@ import {Script,createContext} from 'node:vm';
 // A lightweight fake browser: executes the *real* finale slot script with
 // virtual DOM nodes, state events, a reduced-motion clock and a stub API.
 const src=readFileSync(new URL('../js/monster-slots-final.js',import.meta.url),'utf8');
-function browserFixture(){
+function browserFixture(customPrizes=null){
  class Node{
   constructor(name='node'){this.name=name;this.hidden=false;this.disabled=false;this.isConnected=true;
    this.dataset={};this.children=[];this.events=new Map();this.classList={
@@ -68,7 +68,7 @@ function browserFixture(){
   const uid=options.headers.Authorization.slice(7),{gameId}=JSON.parse(options.body);
   requests.push({uid,gameId});
   return {ok:true,json:async()=>({ok:true,gameId,
-   prizes:[{kind:'joker',id:null,label:'1× Joker',quantity:1},
+   prizes:customPrizes||[{kind:'joker',id:null,label:'1× Joker',quantity:1},
     {kind:'minigame',id:null,label:'2× Minispiel-Gutschein',quantity:2},
     {kind:'cash',id:null,label:'10,00 €',amountCents:1000,quantity:1}]})};
  };
@@ -79,7 +79,7 @@ function browserFixture(){
   Event:class{constructor(type){this.type=type}}
  });
  new Script(src,{filename:'monster-slots-final.js'}).runInContext(context);
- return {window,document,g,root,accept,reels,banker,finale,requests,store,emit,flush,advance};
+ return {window,document,g,root,accept,reels,banker,finale,requests,store,emit,flush,advance,cinema:root.children.find(n=>n.id==='monster-slot-card-cinema')};
 }
 
 test('a three-player finale shows the correct receipt, sequential reels and no duplicate UI reward request',async()=>{
@@ -124,4 +124,38 @@ test('a three-player finale shows the correct receipt, sequential reels and no d
  assert.equal(b.requests.length,3);
  assert.equal(b.requests[2].gameId,b.g.id);
  assert.equal(b.root.hidden,false);
+});
+
+
+test('won DOG packs open only when one card is new; duplicate-only packs skip the cinema',async()=>{
+ const newCard={id:'dog2-001',name:'Drachenritter',image:'DOG_01_11.png',series:'DOG & Königreich',rarity:'legendary',isNew:true};
+ const duplicate={id:'dog2-002',name:'Doppeltes Motiv',image:'DOG_02.png',series:'DOG & Königreich',rarity:'common',isNew:false};
+ const pack=(newFlag,cards)=>({kind:'pack',id:'small',quantity:1,label:'1× Normalpaket',
+  openedPacks:[{packId:'small',packName:'DOG Normalpaket',hasNew:newFlag,revealed:cards}]});
+ const withNew=browserFixture([
+  pack(true,[newCard,duplicate]),{kind:'joker',quantity:1,label:'1× Joker'},
+  {kind:'cash',quantity:1,label:'5,00 €',amountCents:500}
+ ]);
+ withNew.banker.hidden=true;withNew.emit('deal-game-state-change');await withNew.flush();
+ await withNew.advance(340);
+ assert.equal(withNew.accept.disabled,true,'the new-card reveal must follow all three stops');
+ await withNew.advance(150);
+ assert.equal(withNew.cinema.hidden,false,'a brand-new card opens the pack cinema');
+ assert.equal(withNew.accept.disabled,true);
+ await withNew.advance(120);
+ assert.equal(withNew.cinema.children[0].children[3].textContent,'🌟 NEU! Drachenritter');
+ await withNew.advance(250+160+120);
+ assert.equal(withNew.cinema.hidden,true,'completed reveal returns to the three winnings');
+ assert.equal(withNew.accept.disabled,false);
+ assert.equal(withNew.requests.length,1,'card reveal cannot call an additional payout endpoint');
+
+ const duplicates=browserFixture([
+  pack(false,[duplicate]),{kind:'joker',quantity:1,label:'1× Joker'},
+  {kind:'cash',quantity:1,label:'5,00 €',amountCents:500}
+ ]);
+ duplicates.banker.hidden=true;duplicates.emit('deal-game-state-change');await duplicates.flush();
+ await duplicates.advance(490);
+ assert.equal(duplicates.cinema.hidden,true,'duplicate-only pack has no opening animation');
+ assert.equal(duplicates.accept.disabled,false,'player can confirm immediately');
+ assert.equal(duplicates.requests.length,1);
 });
