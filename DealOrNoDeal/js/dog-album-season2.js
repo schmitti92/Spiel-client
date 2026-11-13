@@ -10,6 +10,7 @@
  const money=n=>(Number(n||0)/100).toLocaleString('de-DE',{style:'currency',currency:'EUR',maximumFractionDigits:0});
  let data=null,busy=false,requestNumber=0,loadedUser='',boardBuilt=false;
  let rewardsClaimBusy=false,queuedBingoAwards=[];
+ let cyclesClaimBusy=false,queuedCompletions=[],tournamentBusy=false;
  const embedded=!!document.getElementById('dog-season-panel');
  function state(){return window.SpielOnline?.state?.()||{}}
  function activeUser(){const s=state();return s.status==='online'&&s.user?.getIdToken?s.user:null}
@@ -31,9 +32,11 @@
   $('owned').textContent='0 / 96';$('bingos').textContent='0 / 60';$('coins').textContent='–';$('meter-fill').style.width='0%';
   $('duplicate-count').textContent='0 Duplikate';$('ticket-count').textContent='0 Monster-Rad-Tickets';$('exchange').disabled=true;
   $('reward-milestones')?.replaceChildren();if($('reward-summary'))$('reward-summary').textContent='0 / 30 Meilensteine erhalten';
+  for(const id of ['dog-cycle-total','dog-super-count','dog-tourney-points'])if($(id))$(id).textContent='0';
+  $('dog-tournament-ranking')?.replaceChildren();queuedCompletions=[];
  }
  function showTab(tab){
-  for(const name of ['album','rewards','packs','duplicates'])$(name+'-panel').hidden=tab!==name;
+  for(const name of ['album','rewards','packs','duplicates','super','tournament'])$(name+'-panel').hidden=tab!==name;
   document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
  }
  function buildBoards(){
@@ -64,18 +67,78 @@
    }
    article.append(grid);
    const foot=document.createElement('div');foot.className='board-foot';
-   foot.textContent='🏆 10 Bingo-Linien · Alle 2 Bingos eine Kiste und weitere Gewinne';article.append(foot);
+   foot.id='dog-board-cycle-'+board;
+   foot.textContent='🏆 10 Bingo-Linien · Wiederholbar mit 5er-Super-Slot';article.append(foot);
    fragment.append(article);
   }
   $('boards').replaceChildren(fragment);boardBuilt=true;
  }
 
+
+ function boardCycleOwned(progress,card){
+  return progress?.boards?.[card.board-1]?.ownedSlots?.[card.slot-1]===true;
+ }
+ function queueCompletedBoards(boards){
+  if(!Array.isArray(boards)||!boards.length)return;
+  queuedCompletions.push(...boards);
+  showQueuedCompletions();
+ }
+ function showQueuedCompletions(){
+  const dialog=$('dog-cycle-complete-dialog');
+  if(!dialog||dialog.open||$('reveal-dialog')?.open||$('card-dialog')?.open||
+   $('bingo-reward-dialog')?.open||$('dog-super-slot-dialog')?.open||!queuedCompletions.length)return;
+  const boards=queuedCompletions.splice(0),root=$('dog-cycle-complete-content');
+  root.replaceChildren(...boards.map(board=>{
+   const row=document.createElement('p');
+   row.textContent='🏆 '+String(board.name)+' – Runde '+board.round+' abgeschlossen! 🎰 +1 Super-Slot-Dreh';
+   return row;
+  }));
+  dialog.showModal();
+ }
+ async function claimExistingCycles(){
+  if(cyclesClaimBusy||busy||!activeUser()||!data?.progress?.boards?.some(b=>b.readyToComplete))return;
+  const uid=activeUser().uid;cyclesClaimBusy=true;
+  try{
+   const result=await api('POST','cycles/claim');
+   if(activeUser()?.uid!==uid)return;
+   data.progress=result.progress;
+   data.lifetimeProgress=result.lifetimeProgress;
+   render();
+   queueCompletedBoards(result.completedBoards);
+  }catch(e){if(activeUser()?.uid===uid)status('⚠️ DOG-Tafelabschluss noch nicht bestätigt: '+(e.message||e))}
+  finally{cyclesClaimBusy=false;if(data)render()}
+ }
+ async function loadTournament(){
+  if(tournamentBusy||!activeUser())return;
+  const uid=activeUser().uid;tournamentBusy=true;
+  $('dog-tournament-refresh').disabled=true;
+  $('dog-tournament-status').textContent='🔄 DOG-Monatsrangliste wird geladen …';
+  try{
+   const out=await api('GET','tournament');
+   if(activeUser()?.uid!==uid)return;
+   const root=$('dog-tournament-ranking');
+   root.replaceChildren(...(out.leaderboard||[]).map(player=>{
+    const row=document.createElement('article');row.className='dog-tournament-entry';row.dataset.me=player.isMe?'yes':'no';
+    const place=document.createElement('span');place.className='dog-tourney-rank';
+    place.textContent=player.rank===1?'🥇':player.rank===2?'🥈':player.rank===3?'🥉':String(player.rank)+'.';
+    const name=document.createElement('span');name.className='dog-tourney-player';
+    name.textContent=String(player.name||'Spieler')+(player.isMe?' · Du':'')+' · '+player.completed+' volle DOG-Tafeln';
+    const points=document.createElement('strong');points.className='dog-tourney-score';
+    points.textContent=number(player.points)+' P.';
+    row.append(place,name,points);return row;
+   }));
+   $('dog-tournament-status').textContent=(out.leaderboard?.length||0)
+    ?'✅ DOG-Turnier '+out.month+' · Bestenliste der 20 Punktestärksten'
+    :'🏆 Noch keine DOG-Turnierpunkte in diesem Monat – sammle die ersten Karten!';
+  }catch(e){if(activeUser()?.uid===uid)$('dog-tournament-status').textContent='⚠️ Turnier nicht erreichbar: '+(e.message||e)}
+  finally{tournamentBusy=false;$('dog-tournament-refresh').disabled=false}
+ }
  const CHESTS={wood:['🪵','Holzkiste'],iron:['⚙️','Eisenkiste'],silver:['🥈','Silberkiste'],gold:['🥇','Goldkiste'],legendary:['💎','Legendäre Kiste']};
  function renderRewards(){
   const root=$('reward-milestones'),rewards=data?.rewards;
   if(!root||!rewards)return;
   const total=rewards.claimed||0,pending=rewards.pending||[];
-  $('reward-summary').textContent='🏆 '+total+' / 30 Meilensteine erhalten · '+(data.progress?.bingos||0)+' / 60 Bingos';
+  $('reward-summary').textContent='🏆 '+total+' / 30 einmalige Meilensteine erhalten · '+(data.lifetimeProgress?.bingos??data.progress?.bingos??0)+' / 60 ursprüngliche DOG-Bingos';
   $('claim-bingo-rewards').hidden=!pending.length;
   $('claim-bingo-rewards').disabled=rewardsClaimBusy||!pending.length;
   $('claim-bingo-rewards').textContent=rewardsClaimBusy?'⏳ Gewinne werden gebucht …':'🎁 '+pending.length+' Bingo-'+(pending.length===1?'Belohnung':'Belohnungen')+' erhalten';
@@ -152,21 +215,33 @@
   const p=data.progress;
   $('owned').textContent=p.collected+' / 96';$('bingos').textContent=p.bingos+' / 60';
   $('coins').textContent=money(data.balance);$('meter-fill').style.width=(p.collected/96*100)+'%';
+  $('dog-cycle-total').textContent=number(p.completedTotal||0);
+  $('dog-super-count').textContent=number(p.superSlotTickets||0);
+  $('dog-tourney-points').textContent=number(p.tournament?.points||0);
+  $('dog-super-tickets').textContent=number(p.superSlotTickets||0)+' verfügbare Super-Slot-'+((p.superSlotTickets||0)===1?'Dreh':'Drehs');
+  $('dog-super-play').disabled=busy||cyclesClaimBusy||!(p.superSlotTickets>0);
+  $('dog-tournament-personal').textContent=number(p.tournament?.points||0)+' Monatspunkte';
+  $('dog-tournament-month').textContent='📅 Turnier '+String(p.tournament?.month||'');
   if(embedded&&activeUser()?.uid)window.dispatchEvent(new CustomEvent('dog-s2-progress',{detail:{uid:activeUser().uid,progress:p}}));
   const defs=data.definitions||[];
   for(let b=0;b<6;b++){
    const board=p.boards[b];$('board-cards-'+b).textContent=board.collected+' / 16 Karten';
    $('board-bingos-'+b).textContent=board.bingos+' / 10 Bingos';
-   $('board-summary-'+b).textContent=Math.round(board.collected/16*100)+' %';
+   $('board-summary-'+b).textContent='Runde '+board.round+' · '+Math.round(board.collected/16*100)+' %';
+   $('dog-board-cycle-'+b).textContent='🏆 '+number(board.completions||0)+'× komplett abgeschlossen · '+(board.readyToComplete?'🎁 Super-Slot wird freigeschaltet':'Nächste Belohnung bei 16/16 DOG-Karten');
   }
   for(const card of defs){
    const el=document.querySelector('[data-id="'+card.id+'"]');
    if(!el)continue;
    const count=Number(data.cards?.[card.id])||0;
-   const owned=count>0;
+   const owned=boardCycleOwned(data.progress,card);
    el.classList.toggle('owned',owned);
-   el.title=owned?card.name+' · '+count+'×'+(card.slot===16?' · legendäre 1:500-Karte':''):card.slot===16?'👑 Legendärer Schatz · Chance 1:500 pro Karte aus diesem Block':'🔒 Noch nicht gesammelt';
-   el.setAttribute('aria-label',owned?card.name+' · '+count+' mal gesammelt'+(card.slot===16?' · legendärer Jackpot 1 zu 500':''):card.slot===16?'Legendäre 1-zu-500-Karte noch nicht entdeckt':'Karte '+card.slot+' noch nicht entdeckt');
+   el.title=owned?card.name+' · '+count+'× im Archiv'+(card.slot===16?' · legendäre 1:500-Karte':''):
+    count>0?'🔒 Für die neue DOG-Sammelrunde erneut ziehen · '+count+'× dauerhaft im Archiv':
+    card.slot===16?'👑 Legendärer Schatz · Chance 1:500 pro Karte aus diesem Block':'🔒 Noch nicht gesammelt';
+   el.setAttribute('aria-label',owned?card.name+' für diese DOG-Sammelrunde gesammelt':
+    count>0?card.name+' im Archiv vorhanden, in der neuen Runde noch nicht gesammelt':
+    card.slot===16?'Legendäre 1-zu-500-Karte noch nicht entdeckt':'Karte '+card.slot+' noch nicht entdeckt');
    const previous=el.querySelector('img');
    if(owned&&!previous){
     const img=document.createElement('img');img.loading='lazy';img.decoding='async';img.src=imageSrc(card);img.alt=card.name;
@@ -179,7 +254,7 @@
     return index===row||(index>=4&&index<8&&index-4===col)||(index===8&&row===col)||(index===9&&row+col===3);
    });
    el.classList.toggle('bingo',owned&&isBingo);
-   el.querySelector('.stamp').textContent=count>1?'×'+count:card.slot;
+   el.querySelector('.stamp').textContent=owned&&count>1?'×'+count:card.slot;
   }
   const packIcon={small:'🎁',large:'💎',premium:'👑'};
   if(!$('packs').children.length){
@@ -238,7 +313,7 @@
    const out=await api('POST','open',{packId,requestId:requestId(packId)});
    clearId(packId);
    if(activeUser()?.uid!==uid)return;
-   data={...data,...out};render();reveal(out.revealed||[]);
+   data={...data,...out};render();queueCompletedBoards(out.completedBoards);reveal(out.revealed||[]);
    status(out.usedFreePack?'✅ Gratispaket eingelöst – kein Spielgeld abgezogen.':'✅ DOG-Karten wurden deinem Saison-2-Album gutgeschrieben.');
    // Der quittierte POST enthält den aktuellen Stand; kein zusätzlicher Firestore-GET.
   }catch(e){
@@ -268,8 +343,8 @@
    if(seq!==requestNumber||activeUser()?.uid!==uid)return;
    if(loadedUser&&loadedUser!==uid)clear();
    loadedUser=uid;data=fresh;$('login').hidden=true;render();
-   if(initial)status('✅ DOG Saison 2 ist aktiv. Sammle jetzt die 96 neuen Karten!');
-   maybeClaimBingos();
+   if(initial)status('✅ DOG Saison 2 ist aktiv. Jede vollständige DOG-Tafel bringt einen Fünf-Walzen-Slot!');
+   maybeClaimBingos();void claimExistingCycles();window.DogSuperSlots?.tryRecover?.();
   }catch(e){if(seq===requestNumber)status('⚠️ '+e.message+' · „↻“ zum erneuten Prüfen.')}
  }
  function acceptHubData(info){
@@ -277,15 +352,17 @@
   if(!uid||info?.uid!==uid||!info?.data?.ok)return false;
   if(loadedUser&&loadedUser!==uid)clear();
   ++requestNumber;loadedUser=uid;data=info.data;$('login').hidden=true;
-  render();status('✅ Dein DOG-Sammelfortschritt ist geladen.');maybeClaimBingos();
+  render();status('✅ Dein DOG-Sammelfortschritt ist geladen.');maybeClaimBingos();void claimExistingCycles();window.DogSuperSlots?.tryRecover?.();
   return true;
  }
  function openIntegratedTab(tab){
   showTab(tab);
   if(embedded&&!data&&activeUser()&&!acceptHubData(window.__dogSeason2HubData))void load();
   else maybeClaimBingos();
+  if(tab==='tournament')void loadTournament();
  }
- window.DogAlbumSeason2={open:openIntegratedTab,refresh:()=>load(),acceptHubData};
+ window.DogAlbumSeason2={open:openIntegratedTab,refresh:()=>load(),acceptHubData,
+  superTickets:()=>Number(data?.progress?.superSlotTickets||0)};
  window.addEventListener('dog-s2-hub-data',event=>acceptHubData(event.detail));
  let lastUid='';
  window.addEventListener('spielonline-change',()=>{
@@ -299,12 +376,15 @@
  $('album-show-rewards')?.addEventListener('click',()=>{openIntegratedTab('rewards');if(embedded){const url=new URL(location.href);url.searchParams.set('view','rewards');history.replaceState(history.state,'',url)}});
  document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{
   showTab(b.dataset.tab);
+  if(b.dataset.tab==='tournament')void loadTournament();
   if(embedded){
    const url=new URL(location.href);url.searchParams.set('view',b.dataset.tab);
    history.replaceState(history.state,'',url);
   }
  }));
- document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>{b.closest('dialog').close();showQueuedBingoAwards()}));
+ document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>{b.closest('dialog').close();showQueuedBingoAwards();showQueuedCompletions()}));
+ $('dog-cycle-complete-ok')?.addEventListener('click',()=>{$('dog-cycle-complete-dialog').close();openIntegratedTab('super');showQueuedCompletions()});
+ $('dog-tournament-refresh')?.addEventListener('click',()=>void loadTournament());
  $('exchange').addEventListener('click',exchange);
  $('login').addEventListener('click',()=>window.SpielOnline?.openLogin?.());
  $('reload')?.addEventListener('click',()=>void load());
@@ -315,7 +395,8 @@
  $('login').hidden=!!lastUid;
  const initialView=new URLSearchParams(location.search).get('view');
  if(embedded){
-  showTab(['packs','duplicates','rewards'].includes(initialView)?initialView:'album');
+  showTab(['packs','duplicates','rewards','super','tournament'].includes(initialView)?initialView:'album');
+  if(initialView==='tournament')void loadTournament();
   if(!acceptHubData(window.__dogSeason2HubData)&&lastUid&&!$('dog-season-panel').hidden)void load();
  }else{
   if(location.hash==='#packs')showTab('packs');else if(location.hash==='#duplicates')showTab('duplicates');
