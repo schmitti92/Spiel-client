@@ -21,7 +21,7 @@ main{width:min(1640px,calc(100% - 34px));margin:22px auto 48px}
 .dog-board-zoom button:disabled{opacity:.35;cursor:default}
 #dog-zoom-in,#dog-zoom-out{display:none!important}
 .dog-board-zoom span{min-width:48px;text-align:center;font-size:11px;font-weight:800;color:#f6dfb2;font-variant-numeric:tabular-nums}
-.board-svg{touch-action:none;display:block;width:100%;height:auto;max-height:min(74vh,800px);margin:auto;touch-action:manipulation}
+.board-svg{touch-action:none;display:block;width:100%;height:auto;max-height:min(74vh,800px);margin:auto}
 .board-svg .can-pick{cursor:pointer}.board-svg .can-pick circle:first-of-type{filter:drop-shadow(0 0 9px #fff9)}
 .board-editor-link{display:inline-flex;align-items:center;gap:5px;border-radius:22px;padding:7px 12px;text-decoration:none;color:#ffe3ad;font-weight:800;font-size:12px;border:1px solid #dcb77c6e;background:#c6954323}.board-editor-link:hover{background:#dfb3653e}
 .teams{margin-top:13px;display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;font-size:12px;color:#bad0dc}.team-chip{display:inline-flex;align-items:center;gap:7px;background:#04182780;border:1px solid #aec9d32b;padding:7px 10px;border-radius:30px}.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
@@ -314,6 +314,15 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
   --dog-hand-card-base:clamp(76px,20vw,118px);
  }
 }
+
+/* Gestures remain strictly inside their panel: the browser must not steal the
+   two-finger touch for a page pinch. Links and buttons still receive taps. */
+.board-card{touch-action:none}
+.board-card .board-svg,.board-card .board-svg *{touch-action:none!important}
+.hand,.hand .playing-card,.hand .dog-card-art{touch-action:none!important}
+/* Explicit numeric widths are applied by hand-gestures.js, for browsers that
+   do not support multiplying a CSS length by a variable inside calc(). */
+.hand .playing-card.dog-designed{width:var(--dog-hand-card-base)!important}
 </style>
 </head>
 <body>
@@ -448,7 +457,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 })();
 </script>
 <script type="module">
-import('./app.js?v=22').catch(error=>{
+import('./app.js?v=23').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
