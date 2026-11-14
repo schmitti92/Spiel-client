@@ -324,22 +324,23 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
    do not support multiplying a CSS length by a variable inside calc(). */
 .hand .playing-card.dog-designed{width:var(--dog-hand-card-base)!important}
 </style>
+<link rel="stylesheet" href="./ui-shell.css?v=1">
 </head>
 <body>
 <header class="topbar">
-  <div class="brand"><div class="mark">🐾</div><div><h1>DOG</h1><p>Das klassische Team-Brettspiel</p></div></div>
-  <div class="top-actions">
-    <a class="top-btn" id="back-link" href="../spielauswahl-lokal.html">← Zur Spiele-Lobby</a>
-    <a class="top-btn" href="editor.html" data-dog-editor>🛠 Spielfeldstudio</a>
+  <a class="dog-home" href="../index.html" title="Zur Startseite" aria-label="Zur Startseite">⌂</a>
+  <div class="brand"><div class="mark" aria-hidden="true">🐾</div><div><h1>DOG</h1><p>Das klassische Team-Brettspiel</p></div></div>
+  <nav class="top-actions" aria-label="DOG Navigation">
+    <a class="top-btn" id="back-link" href="../spielauswahl-lokal.html">👥 Lobby</a>
+    <button class="top-btn" id="board-choice-button" type="button">🎨 Brett wählen</button>
     <button class="top-btn" id="fullscreen-button" type="button" aria-pressed="false">⛶ Vollbild</button>
-    <button class="top-btn" id="appearance-button" type="button">🎨 Designs</button>
-    <button class="top-btn" id="rules-button" type="button">📖 Regeln</button>
-    <button class="top-btn" id="new-game" type="button">↻ Neues Spiel</button>
-  </div>
+    <button class="top-btn" id="appearance-button" type="button">⚙ Einstellungen</button>
+    <button class="top-btn" id="rules-button" type="button">❔ Regeln</button>
+  </nav>
 </header>
 <main>
  <!-- Phase and round stay available for the game renderer, without a visible header. -->
- <div hidden style="display:none" aria-hidden="true"><span id="phase">Kartenrunde</span><span id="round">1</span></div>
+ <div hidden style="display:none" aria-hidden="true"><span id="phase">Kartenrunde</span></div>
  <div class="layout">
    <section class="board-card" aria-label="DOG-Spielfeld">
      <div class="dog-board-zoom" aria-label="Spielfeld-Zoom">
@@ -356,47 +357,103 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
        <a href="editor.html" data-dog-editor class="board-editor-link">✎ Brett bearbeiten</a>
      </div>
    </section>
-   <aside class="right">
-    <section class="panel">
-       <div class="meta"><span>SPIELSTATUS</span><b>🐾 DOG KLASSISCH</b></div>
-       <div class="turn" id="turn" aria-live="polite">Karten werden ausgeteilt</div>
+   <aside class="right dog-modules" aria-label="DOG-Spielsteuerung">
+     <!-- Module A: Spielstatus; live fields are the same as before. -->
+     <section class="panel dog-status-panel" aria-labelledby="dog-status-heading">
+       <div class="dog-module-heading">
+         <h2 id="dog-status-heading">👥 Spielstatus</h2>
+         <span class="dog-module-meta">🐾 DOG KLASSISCH</span>
+         <span class="dog-round-badge">Runde <span id="round">1</span></span>
+       </div>
+       <div class="dog-turn-line"><div class="turn" id="turn" aria-live="polite">Karten werden ausgeteilt</div></div>
        <div class="seat-grid" id="players"></div>
        <div id="winner" class="winner" hidden><div style="font-size:30px">🏆</div><h2 id="winner-title">Sieg!</h2><p>Alle acht Teamfiguren sind im Ziel.</p></div>
-    </section>
-    <section class="panel">
-      <div class="hand-head"><h3 id="hand-title">Deine Karten</h3><span id="dog-hand-zoom-status" class="dog-hand-zoom-status" title="Zwei Finger auf den Karten: zoomen und verschieben">Karten 100 %</span><button id="show-hand" class="reveal" type="button">🃏 Karten ansehen</button></div>
-      <div class="dog-piles" aria-label="Kartenstapel">
-<div class="dog-pile"><div class="dog-pile-art dog-pile-back" id="dog-deck-art" aria-hidden="true"></div><div class="dog-pile-copy"><strong>Nachziehstapel</strong><span id="dog-deck-count">– Karten</span></div></div>
-<div class="dog-pile"><div class="dog-pile-art discard" id="dog-discard-art" aria-hidden="true">—</div><div class="dog-pile-copy"><strong>Ablagestapel</strong><span id="dog-discard-count">– Karten</span></div></div>
-</div>
-<div class="hand" id="hand" aria-label="Handkarten: mit zwei Fingern zoomen und verschieben" title="Mit zwei Fingern Karten vergrößern, verkleinern und schieben"></div>
-      <div class="move-help" id="move-help">Wähle eine Karte und berechne deinen Zug selbst.</div>
-      <div class="moves" id="moves"></div>
-      <p id="selected-info"></p>
-    </section>
-    <section class="panel">
-      <div class="controls" id="local-player-controls">
-        <label for="human-count">Spieler am Gerät</label>
-        <select id="human-count">
-          <option value="1">1 Mensch + 3 Bots</option>
-          <option value="2">2 Menschen + 2 Bots</option>
-          <option value="3">3 Menschen + 1 Bot</option>
-          <option value="4">4 Menschen (lokal)</option>
-        </select>
-      </div>
-      <div id="dog-card-test" class="controls" hidden style="margin-top:9px;padding:9px;border:1px dashed #c9a65a80;border-radius:10px">
-<label for="dog-test-card">🧪 Testkarte (nur lokal)</label>
-<select id="dog-test-card" aria-label="Testkarte auswählen"></select>
-<button type="button" class="move-button secondary" id="dog-give-test-card">Testkarte einsetzen</button>
-<button type="button" class="move-button secondary" id="dog-test-seven-setup">7 aufteilen testen</button>
-</div>
-<h3 style="margin-top:17px">Spielverlauf <small>LETZTE ZÜGE</small></h3>
-      <div id="history" class="history"></div>
-      <div id="status" class="status"></div>
-    </section>
+     </section>
+     <!-- Module B: two card piles, independent of the hand. -->
+     <section class="panel dog-pile-module" aria-labelledby="dog-pile-heading">
+       <div class="dog-module-heading">
+         <h2 id="dog-pile-heading">🗂️ Kartenbereich</h2>
+         <span class="dog-module-meta">Nachziehen &amp; Ablegen</span>
+       </div>
+       <div class="dog-piles" aria-label="Kartenstapel">
+         <div class="dog-pile">
+           <div class="dog-pile-art dog-pile-back" id="dog-deck-art" aria-hidden="true"></div>
+           <div class="dog-pile-copy"><strong>Nachziehstapel</strong><span id="dog-deck-count">– Karten</span></div>
+         </div>
+         <div class="dog-pile">
+           <div class="dog-pile-art discard" id="dog-discard-art" aria-hidden="true">—</div>
+           <div class="dog-pile-copy"><strong>Ablagestapel</strong><span id="dog-discard-count">– Karten</span></div>
+         </div>
+       </div>
+     </section>
+     <!-- Module C: playable cards, selection and independent pinch/scroll. -->
+     <section class="panel dog-hand-module" aria-labelledby="dog-hand-heading">
+       <div class="dog-module-heading">
+         <div class="dog-hand-title-group">
+           <h2 id="dog-hand-heading">🃏 Deine Handkarten</h2>
+           <div class="hand-head">
+             <h3 id="hand-title">Deine Karten</h3>
+             <span id="dog-hand-zoom-status" class="dog-hand-zoom-status" title="Zwei Finger: Karten zoomen und verschieben">Karten 100 %</span>
+           </div>
+         </div>
+         <button id="show-hand" class="reveal" type="button">🃏 Karten ansehen</button>
+       </div>
+       <div class="hand" id="hand" aria-label="Handkarten: mit zwei Fingern zoomen und verschieben" title="Mit zwei Fingern Karten vergrößern, verkleinern und schieben"></div>
+       <div class="move-help" id="move-help">Wähle eine Karte und berechne deinen Zug selbst.</div>
+       <div class="moves" id="moves"></div>
+       <p id="selected-info"></p>
+     </section>
+     <!-- Module D: expandable future content, explicitly preview-only. -->
+     <section class="panel dog-extras-panel" aria-label="Aktionen und Extras">
+       <details class="dog-extras-details" id="dog-extras-details" open>
+         <summary class="dog-module-heading">
+           <h2>⚡ Aktionen &amp; Extras</h2>
+           <span class="dog-disclosure-arrow" aria-hidden="true">⌄</span>
+         </summary>
+         <div id="dog-extra-buttons" class="dog-extras-grid" aria-label="Erweiterungsmodule"></div>
+         <div class="dog-extras-tools">
+           <small id="dog-ui-features-status" style="color:#b6cbd8;font-size:10px;align-self:center;margin-right:auto">Erweiterbar</small>
+           <button id="new-game" class="dog-mini-link" type="button">↻ Neues Spiel</button>
+         </div>
+       </details>
+     </section>
+     <!-- Module E: foldable history; local controls remain accessible. -->
+     <section class="panel dog-history-module" aria-label="Spielverlauf">
+       <details class="dog-history-details" open>
+         <summary class="dog-module-heading">
+           <h2>📜 Spielverlauf – Letzte Züge</h2>
+           <span class="dog-disclosure-arrow" aria-hidden="true">⌄</span>
+         </summary>
+         <div id="history" class="history"></div>
+         <details class="dog-devtools" id="dog-local-tools">
+           <summary>⚙ Lokale Spieleinstellungen &amp; Tests</summary>
+           <div class="controls" id="local-player-controls">
+             <label for="human-count">Spieler am Gerät</label>
+             <select id="human-count">
+               <option value="1">1 Mensch + 3 Bots</option>
+               <option value="2">2 Menschen + 2 Bots</option>
+               <option value="3">3 Menschen + 1 Bot</option>
+               <option value="4">4 Menschen (lokal)</option>
+             </select>
+           </div>
+           <div id="dog-card-test" class="controls" hidden style="margin-top:9px;padding:9px;border:1px dashed #c9a65a80;border-radius:10px">
+             <label for="dog-test-card">🧪 Testkarte (nur lokal)</label>
+             <select id="dog-test-card" aria-label="Testkarte auswählen"></select>
+             <button type="button" class="move-button secondary" id="dog-give-test-card">Testkarte einsetzen</button>
+             <button type="button" class="move-button secondary" id="dog-test-seven-setup">7 aufteilen testen</button>
+           </div>
+         </details>
+       </details>
+       <div id="status" class="status" role="status"></div>
+     </section>
    </aside>
  </div>
 </main>
+<dialog id="dog-extra-dialog" class="dog-extra-dialog" aria-labelledby="dog-extra-title">
+  <h2 id="dog-extra-title">⚡ DOG Erweiterung</h2>
+  <p id="dog-extra-description">Dieser Bereich wird in einem späteren DOG-Update ergänzt.</p>
+  <button id="dog-extra-close" type="button">Schließen</button>
+</dialog>
 <dialog id="dog-joker-dialog" class="dog-joker-dialog" aria-labelledby="dog-joker-title">
 <h2 id="dog-joker-title">🃏 Joker – Karte auswählen</h2>
 <p>Wähle, als welche Karte du den Joker spielen möchtest. Danach bestimmst du Figur und Zielfeld selbst.</p>
@@ -457,7 +514,8 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 })();
 </script>
 <script type="module">
-import('./app.js?v=27').catch(error=>{
+import('./ui-shell.js?v=1').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
+import('./app.js?v=28').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
