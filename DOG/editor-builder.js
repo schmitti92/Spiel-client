@@ -3,6 +3,8 @@
  * optional snapping to an adjustable centre-anchored grid.
  * The incomplete draft is never passed to game rules or to the live board.
  */
+import {applyMotionMode,loadMotionMode} from './motion-settings.js';
+applyMotionMode(loadMotionMode());
 import {
   BOARD_LAYOUT_ID,currentBoardLayout,saveBoardLayout,validateBoardLayout
 } from './board-layout.js?v=10';
@@ -309,7 +311,7 @@ function draw(){
     const stroke=here?'#ffe2a0':track&&!start?'#587a94':c;
     const label=track?String(index):String(index+1);
     out.push('<g data-kind="'+kind+'" data-index="'+index+'" data-owner="'+owner+'" aria-label="'+(track?'Lauffeld ':kind==='goals'?'Zielfeld ':'Startplatz ')+label+' '+names[owner]+'">');
-    if(here)out.push('<circle cx="'+point.x+'" cy="'+point.y+'" r="24" fill="none" stroke="#ffe0a1" stroke-width="3" stroke-dasharray="5 4" pointer-events="none"/>');
+    if(here)out.push('<circle class="dog-builder-selected-ring" cx="'+point.x+'" cy="'+point.y+'" r="24" fill="none" stroke="#ffe0a1" stroke-width="3" stroke-dasharray="5 4" pointer-events="none"/>');
     out.push('<circle cx="'+point.x+'" cy="'+(point.y+2)+'" r="16.3" fill="#051323" opacity=".67" pointer-events="none"/>');
     out.push('<circle class="field" cx="'+point.x+'" cy="'+point.y+'" r="14.3" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+(here?3.1:2)+'" pointer-events="none"/>');
     out.push('<circle cx="'+(point.x-4)+'" cy="'+(point.y-5)+'" r="4" fill="#fff" opacity=".35" pointer-events="none"/>');
