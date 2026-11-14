@@ -739,3 +739,182 @@
   animation:none!important;
  }
 }
+
+
+/* Twelve-reel SKYJO special — one machine, one synchronized spin.
+   All reels exist simultaneously. This layout is only active above six reels;
+   the existing Deal or No Deal 2/3/6-reel cabinet remains unchanged. */
+#deal-monster-slots .monster-slot-reel[hidden],
+#deal-monster-slots .monster-slot-progress span[hidden]{
+ display:none!important;
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-machine{
+ width:min(1210px,100%);
+ padding:clamp(9px,1.4vh,18px) clamp(7px,1.5vw,22px);
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-lights{
+ display:none;
+}
+#deal-monster-slots[data-layout="extended"] #monster-slots-title{
+ font-size:clamp(25px,3.5vw,42px);
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-ribbon{
+ margin-top:5px;
+ font-size:clamp(8px,1.2vw,12px);
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-reels{
+ display:grid;
+ grid-template-columns:repeat(6,minmax(0,1fr));
+ align-items:stretch;
+ gap:clamp(4px,.7vw,9px);
+ width:100%;
+ box-sizing:border-box;
+ padding:clamp(6px,.8vw,10px);
+ margin:8px auto;
+ border:2px solid #ddae62!important;
+ border-radius:clamp(12px,1.8vw,21px);
+ background:radial-gradient(ellipse at top,#61477b66,transparent 72%),linear-gradient(145deg,#17112f,#0f1733)!important;
+ box-shadow:inset 0 0 13px #ffda8b3a,0 0 24px #0009!important;
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-reels::before{
+ display:none!important;
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-reel,
+#deal-monster-slots[data-layout="extended"] .monster-slot-reel[data-phase="won"]{
+ min-width:0;
+ min-height:0;
+ height:auto;
+ padding:3px;
+ align-self:stretch;
+ transform:none!important;
+ border:2px solid #d9ad63!important;
+ border-radius:10px;
+ background:linear-gradient(145deg,#fff0bc,#a26b2a 20%,#f7d99a 55%,#814e26)!important;
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-reel-head,
+#deal-monster-slots[data-layout="extended"] .monster-slot-reel-foot{
+ height:clamp(13px,1.7vw,18px);
+ font-size:clamp(8px,.85vw,10px);
+ letter-spacing:0;
+ padding:0 2px;
+ gap:2px;
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-led{
+ width:5px;height:5px;
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-window{
+ height:clamp(95px,11vh,132px);
+ min-height:0;
+ border:3px solid #3b2b4d;
+ border-radius:5px;
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-prize{
+ padding:3px 2px;
+ gap:2px;
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-art{
+ max-height:58%;
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-emoji{
+ font-size:clamp(29px,3.8vw,45px);
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-quantity{
+ font-size:clamp(8px,1vw,11px);
+ line-height:1.08;
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-prize-name{
+ font-size:clamp(8px,1vw,11px);
+ line-height:1.08;
+ overflow-wrap:anywhere;
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-scarcity{
+ font-size:clamp(6px,.7vw,8px);
+ letter-spacing:0;
+ padding:1px;
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-progress{
+ display:grid;
+ grid-template-columns:repeat(12,minmax(0,1fr));
+ gap:4px;
+ width:min(670px,100%);
+ margin:5px auto;
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-progress span{
+ min-width:0;
+ width:100%;
+ height:6px;
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-status{
+ font-size:clamp(11px,1.35vw,15px);
+ margin-bottom:6px;
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-footnote{
+ margin-top:5px;
+}
+#deal-monster-slots[data-layout="extended"] .monster-slot-reward-prizes{
+ display:grid;
+ grid-template-columns:repeat(4,minmax(0,1fr));
+}
+@media(max-width:900px){
+ #deal-monster-slots[data-layout="extended"] .monster-slot-reels{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+ }
+ #deal-monster-slots[data-layout="extended"] .monster-slot-window{
+  height:clamp(79px,12vh,114px);
+ }
+ #deal-monster-slots[data-layout="extended"] .monster-slot-reward-prizes{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+ }
+}
+@media(max-width:570px){
+ #deal-monster-slots[data-layout="extended"]{
+  padding:4px;
+ }
+ #deal-monster-slots[data-layout="extended"] .monster-slot-machine{
+  max-height:calc(100dvh - 8px);
+  padding:7px 4px;
+ }
+ #deal-monster-slots[data-layout="extended"] #monster-slots-title{
+  font-size:27px;
+ }
+ #deal-monster-slots[data-layout="extended"] .monster-slot-subheading{
+  font-size:9px;
+  letter-spacing:0;
+  margin-top:3px;
+ }
+ #deal-monster-slots[data-layout="extended"] .monster-slot-reels{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:3px;
+  padding:4px;
+  margin:5px auto;
+ }
+ #deal-monster-slots[data-layout="extended"] .monster-slot-reel,
+ #deal-monster-slots[data-layout="extended"] .monster-slot-reel[data-phase="won"]{
+  border-width:1px!important;
+  border-radius:7px;
+  padding:2px;
+ }
+ #deal-monster-slots[data-layout="extended"] .monster-slot-reel-head,
+ #deal-monster-slots[data-layout="extended"] .monster-slot-reel-foot{
+  height:12px;
+  font-size:7px;
+  gap:0;
+ }
+ #deal-monster-slots[data-layout="extended"] .monster-slot-window{
+  height:clamp(70px,11vh,90px);
+  border-width:2px;
+ }
+ #deal-monster-slots[data-layout="extended"] .monster-slot-art{max-height:56%}
+ #deal-monster-slots[data-layout="extended"] .monster-slot-emoji{font-size:28px}
+ #deal-monster-slots[data-layout="extended"] .monster-slot-prize-name{font-size:8px}
+ #deal-monster-slots[data-layout="extended"] .monster-slot-quantity{font-size:8px}
+ #deal-monster-slots[data-layout="extended"] .monster-slot-scarcity{font-size:6px}
+ #deal-monster-slots[data-layout="extended"] .monster-slot-reward-prizes{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+ }
+}
+@media(max-height:650px) and (min-width:901px){
+ #deal-monster-slots[data-layout="extended"] .monster-slot-window{
+  height:clamp(70px,14vh,96px);
+ }
+}
