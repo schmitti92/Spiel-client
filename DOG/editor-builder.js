@@ -3,8 +3,6 @@
  * optional snapping to an adjustable centre-anchored grid.
  * The incomplete draft is never passed to game rules or to the live board.
  */
-import {applyMotionMode,loadMotionMode} from './motion-settings.js';
-applyMotionMode(loadMotionMode());
 import {
   BOARD_LAYOUT_ID,currentBoardLayout,saveBoardLayout,validateBoardLayout
 } from './board-layout.js?v=10';
