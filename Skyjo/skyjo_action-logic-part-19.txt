@@ -25,7 +25,7 @@ function maybeShowRoundSummary(force=false){
  if(!s||s.id===roundSummarySeen)return;
  if(scoreSequencePlayback?.id===s.id)return;
  roundSummarySeen=s.id;
- if(s.ended)openRoyalFinaleSummary();
+ if(s.ended&&!(state.skyjoSpecial?.enabled&&!state.skyjoSpecial?.finished))openRoyalFinaleSummary();
  else openRoyalRoundSummary()
 }
 async function nextRound(){
