@@ -329,10 +329,8 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
   </div>
 </header>
 <main>
- <div class="heading">
-   <div><h2>Gemeinsam gewinnen. Clever Karten spielen.</h2><p>2 Teams · 4 Spielfarben · klassische Kartenregeln</p></div>
-   <div class="phase-pill"><span id="phase">Kartenrunde</span> · Runde <span id="round">1</span></div>
- </div>
+ <!-- Phase and round stay available for the game renderer, without a visible header. -->
+ <div hidden style="display:none" aria-hidden="true"><span id="phase">Kartenrunde</span><span id="round">1</span></div>
  <div class="layout">
    <section class="board-card" aria-label="DOG-Spielfeld">
      <div class="dog-board-zoom" aria-label="Spielfeld-Zoom">
