@@ -62,3 +62,28 @@
  #skyjo-inbox-overlay .skyjo-inbox-prize{padding:7px 5px}
  #skyjo-inbox-overlay .skyjo-inbox-prize>span{font-size:22px}
 }
+
+
+/* SKYJO reward vouchers are stored for the real DOG album pack-opening screen. */
+#skyjo-inbox-overlay .skyjo-inbox-voucher{
+ border-color:#ffe1a8!important;
+ background:linear-gradient(125deg,#59402b,#27214d)!important;
+ box-shadow:0 0 10px #efc77836;
+}
+#skyjo-inbox-overlay .skyjo-inbox-voucher strong em{
+ display:block;margin-top:5px;
+ font:700 clamp(9px,1.05vw,12px)/1.35 system-ui,sans-serif;
+ color:#ffe1a8;
+}
+#skyjo-inbox-overlay .skyjo-inbox-voucher-link{
+ display:block;box-sizing:border-box;
+ width:min(600px,100%);margin:5px auto 9px;
+ border:2px solid #f5d28c;border-radius:12px;
+ padding:10px 13px;background:#253959;
+ color:#ffeab9;font:850 clamp(12px,1.3vw,15px)/1.25 system-ui,sans-serif;
+ text-align:center;text-decoration:none;
+}
+#skyjo-inbox-overlay .skyjo-inbox-voucher-link:hover,
+#skyjo-inbox-overlay .skyjo-inbox-voucher-link:focus-visible{
+ background:#3b4e73;outline:2px solid #ffdfa4;outline-offset:1px;
+}
