@@ -428,6 +428,67 @@ function renderCardPiles(){
  discardArt.textContent=art?'':last?cardsLabel(last.type):'—';
  discardArt.title=last?'Zuletzt gespielt: '+last.type+(Number.isInteger(last.seat)?' · '+(game.players?.[last.seat]?.name||'Spieler'):''):'Noch keine Karte gespielt';
 }
+// The ceremony is a client-only projection of the final DOG game result.
+let victoryShownKey=null,victorySummaryKey=null;
+const victoryDialog=$('winner');
+function closeVictoryCeremony(){
+ if(victoryDialog.open && typeof victoryDialog.close==='function')victoryDialog.close();
+ else victoryDialog.removeAttribute('open');
+}
+function openVictoryCeremony(){
+ victoryDialog.hidden=false;
+ if(victoryDialog.open)return;
+ try{
+  if(typeof victoryDialog.showModal==='function')victoryDialog.showModal();
+  else victoryDialog.setAttribute('open','');
+ }catch(error){console.warn('DOG Siegerehrung konnte nicht geöffnet werden',error);}
+}
+function updateVictoryCeremony(){
+ const finished=game?.phase==='finished';
+ $('dog-victory-mini').hidden=!finished;
+ if(!finished){
+  if(victoryDialog.open)closeVictoryCeremony();
+  victoryDialog.hidden=true;victoryShownKey=null;victorySummaryKey=null;
+  return;
+ }
+ const victor=game.winner===1?1:0;
+ const teamSeats=[[0,2],[1,3]],teamNames=['Rot / Grün','Blau / Gelb'];
+ const totals=teamSeats.map(seats=>seats.reduce((sum,seat)=>
+   sum+game.pieces.filter(piece=>piece.owner===seat&&piece.place==='goal').length,0));
+ const key=(online?(acceptedMatchId||matchHint||hubCode):'local')+'|'+game.round+'|'+victor;
+ const summary=JSON.stringify([key,game.players.map(p=>p.name),totals,game.pieces.map(p=>[p.id,p.place,p.pos]),appearance.pieces]);
+ if(victorySummaryKey!==summary){
+  victorySummaryKey=summary;
+  $('winner-title').textContent='Team '+teamNames[victor]+' gewinnt!';
+  $('winner-subtitle').textContent='Alle acht Figuren des Siegerteams sind im Ziel. Gemeinsam geschafft!';
+  $('dog-victory-teams').innerHTML=[victor,1-victor].map((team,index)=>
+    '<div class="dog-victory-team '+(index===0?'is-winner':'')+'">'+
+      '<span class="dog-victory-team-place">'+(index===0?'✦ SIEGERTEAM':'GEGNERTEAM')+'</span>'+
+      '<strong>'+teamNames[team]+'</strong>'+
+      '<span class="dog-victory-team-score">'+totals[team]+'<small> / 8 Figuren</small></span>'+
+    '</div>').join('');
+  const colors=displayColors();
+  $('dog-victory-players').innerHTML=[...teamSeats[victor],...teamSeats[1-victor]].map((seat,index)=>{
+    const p=game.players[seat],done=game.pieces.filter(piece=>piece.owner===seat&&piece.place==='goal').length;
+    return '<div class="dog-victory-player '+(index<2?'is-winning-player':'')+'" style="--dog-victory-color:'+colors[seat]+'">'+
+       '<span class="dog-victory-player-marker" aria-hidden="true"></span>'+
+       '<span class="dog-victory-player-name">'+escape(p.name)+(p.bot?' <small>BOT</small>':'')+'</span>'+
+       '<span class="dog-victory-player-score">'+done+' <small>/ 4</small></span>'+
+     '</div>';
+  }).join('');
+  $('dog-victory-new').hidden=online;
+  $('dog-victory-lobby').href=$('back-link').href;
+ }
+ victoryDialog.hidden=false;
+ if(victoryShownKey!==key){
+  victoryShownKey=key;
+  openVictoryCeremony();
+ }
+}
+$('dog-victory-show').addEventListener('click',openVictoryCeremony);
+$('dog-victory-close').addEventListener('click',closeVictoryCeremony);
+$('dog-victory-new').addEventListener('click',()=>{closeVictoryCeremony();$('new-game').click();});
+
 function render(){
   if(!game)return;
   renderCardPiles();
@@ -453,9 +514,8 @@ function render(){
   available=[];
   renderHand();drawBoard();
   $('status').textContent=online?'🌐 Online mit Freunden · Karten serverseitig geschützt · Raum '+hubCode:'Klassische Regeln • Teams Rot/Grün und Blau/Gelb • Spielstand wird lokal gesichert';
-  $('winner').hidden=game.phase!=='finished';
+  updateVictoryCeremony();
   visualFeedback.sync({game,matchKey:online?(acceptedMatchId||matchHint||'online'):'local',seat:online?onlineSeat:currentHuman(),handVisible:revealed,activeSeat:active});
-  if(game.phase==='finished')$('winner-title').textContent='Team '+(game.winner===0?'Rot / Grün':'Blau / Gelb')+' gewinnt!';
   $('selected-info').textContent=selectedCard?'Karte ausgewählt: '+cardsLabel(game.hands[currentHuman()]?.find(c=>c.id===selectedCard)?.type||''):'';
 }
 function onCard(id){
