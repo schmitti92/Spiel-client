@@ -132,3 +132,58 @@ test('Slot recipient remains visible from spin start through win and confirmatio
  assert.match(css,/data-viewer="owner"/);
  assert.match(css,/@media\(max-width:620px\)/);
 });
+
+
+test('Every player receives a stable new Joker bonus card at round start',()=>{
+ const browser={};new Function('window',read('skyjo_tore_special.js'))(browser);
+ const x=browser.SkyjoToreSpecial;
+ const match='01234567-89ab-4cde-a123-456789abcdef';
+ const game={round:1,phase:'initialReveal',layoutMode:'classic',players:
+  ['Chris','Vanessa','David'].map(name=>({name,grid:Array.from({length:12},()=>({type:'number',value:3,faceUp:false}))}))};
+ x.newGame(game,{toreSpecialEnabled:true},match);
+ for(let i=0;i<game.players.length;i++){
+  const idx=game.skyjoSpecial.bonusCells[i];
+  assert.ok(idx>=0&&idx<12);
+  assert.equal(idx,x.bonusIndex(match,1,i,12));
+ }
+ const old=JSON.stringify(game.skyjoSpecial.bonusCells);
+ game.round=2;x.beginRound(game);
+ assert.notEqual(JSON.stringify(game.skyjoSpecial.bonusCells),old);
+ assert.deepEqual(game.skyjoSpecial.progress,{});
+ assert.equal(game.skyjoSpecial.finished,false);
+});
+test('Joker target earns +2 only on the final board, and missions/win/bonus are additive',()=>{
+ const browser={};new Function('window',read('skyjo_tore_special.js'))(browser);
+ const x=browser.SkyjoToreSpecial;
+ const match='01234567-89ab-4cde-a123-456789abcdef';
+ const game={round:1,phase:'betweenRounds',layoutMode:'classic',players:
+  ['Chris','Vanessa','David'].map(name=>({name,grid:Array.from({length:12},()=>({type:'number',value:3,faceUp:true}))}))};
+ x.newGame(game,{toreSpecialEnabled:true},match);
+ game.skyjoSpecial.progress[0]={rows:3,columns:3,groups:5,streets:3,twelveRows:1,zeroSeen:1,jokerSeen:1,zerosAtOnce:2,jokersAtOnce:2,boardClear:1};
+ game.lastRoundSummary={round:1,players:game.players.map((player,i)=>({index:i,name:player.name,round:[-15,5,8][i],
+  gridSnapshot:structuredClone(player.grid)}))};
+ const idx=game.skyjoSpecial.bonusCells[0];
+ game.lastRoundSummary.players[0].gridSnapshot[idx]={type:'star',faceUp:true};
+ const rows=x.slotBreakdown(game);
+ assert.equal(rows[0].bonusSlots,2);
+ assert.equal(rows[0].winnerSlots,2);
+ assert.equal(rows[0].slots,rows[0].missionSlots+rows[0].winnerSlots+rows[0].bonusSlots);
+ assert.equal(rows[1].bonusSlots,0);
+ game.lastRoundSummary.players[0].gridSnapshot[idx]=null; // Removed before scoring
+ assert.equal(x.slotBreakdown(game)[0].bonusSlots,0);
+});
+test('Bonus field remains clearly marked in board UI and each prize is attributed to its player',()=>{
+ const js=read('skyjo_tore_special.js'),css=read('skyjo_tore_special.css');
+ assert.match(js,/function markCells\(game\)/);
+ assert.match(js,/cell-'\+i\+'-grid-'\+index/);
+ assert.match(js,/node\.classList\.add\('skyjo-tore-joker-bonus-cell'\)/);
+ assert.match(css,/\.card-slot\.skyjo-tore-joker-bonus-cell::before/);
+ assert.match(css,/content:"🃏 \+2 🎰"/);
+ assert.match(css,/data-bonus-won="yes"/);
+ assert.match(js,/missionSlots\+winnerSlots\+bonusSlots/);
+ assert.match(js,/r\.prizes\.length!==slots/);
+ assert.match(js,/Alle Preise aus diesem Dreh gehören/);
+ assert.match(js,/show\.batch\+1<batch\.total/);
+ assert.match(js,/show\.index\+1<show\.players\.length/);
+ assert.match(js,/Math\.ceil\(player\.prizes\.length\/12\)/);
+});
