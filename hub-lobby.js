@@ -20,6 +20,7 @@ const GAME_DESCRIPTIONS={
 };
 function setPlayMode(next,{updateUrl=false}={}){
  playMode=next==='local'?'local':'online';
+ try{sessionStorage.setItem('spielportal:hub-view',playMode);}catch(_e){}
  if(updateUrl){const url=new URL(location.href);url.searchParams.set('view',playMode);history.replaceState(null,'',url);}
  el('mode-online').classList.toggle('active',playMode==='online');
  el('mode-local').classList.toggle('active',playMode==='local');
