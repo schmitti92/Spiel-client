@@ -249,6 +249,11 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
  .hand .playing-card.dog-designed{width:clamp(76px,20vw,118px);height:auto;aspect-ratio:5/7}
  .hand .playing-card.dog-designed.picked{outline:3px solid #ffe38f;outline-offset:2px;z-index:5}
 }
+
+/* Reusable card edition preview: actual normalized PNG artwork. */
+#appearance-preview-face .playing-card.dog-designed{width:76px;height:auto;aspect-ratio:5/7;padding:0;flex:none}
+#appearance-preview-back{width:57px;height:80px;background-size:contain;border:0}
+.dog-pile-art.dog-pile-back{background-size:100% 100%!important}
 </style>
 </head>
 <body>
@@ -294,7 +299,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
     <section class="panel">
       <div class="hand-head"><h3 id="hand-title">Deine Karten</h3><button id="show-hand" class="reveal" type="button">🃏 Karten ansehen</button></div>
       <div class="dog-piles" aria-label="Kartenstapel">
-<div class="dog-pile"><div class="dog-pile-art dog-pile-back" aria-hidden="true"></div><div class="dog-pile-copy"><strong>Nachziehstapel</strong><span id="dog-deck-count">– Karten</span></div></div>
+<div class="dog-pile"><div class="dog-pile-art dog-pile-back" id="dog-deck-art" aria-hidden="true"></div><div class="dog-pile-copy"><strong>Nachziehstapel</strong><span id="dog-deck-count">– Karten</span></div></div>
 <div class="dog-pile"><div class="dog-pile-art discard" id="dog-discard-art" aria-hidden="true">—</div><div class="dog-pile-copy"><strong>Ablagestapel</strong><span id="dog-discard-count">– Karten</span></div></div>
 </div>
 <div class="hand" id="hand"></div>
@@ -344,10 +349,13 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
     <label for="appearance-cards">🃏 Kartenmotiv
       <select id="appearance-cards"></select>
     </label>
+    <label for="appearance-card-edition">🎴 Kartenedition (Einzelbilder)
+      <select id="appearance-card-edition"></select>
+    </label>
   </div>
   <div class="dog-appearance-preview">
     <div id="appearance-preview-back" class="dog-card-back" aria-label="Vorschau Kartenrückseite">🐾</div>
-    <div class="playing-card" aria-label="Vorschau Kartenvorderseite"><small>DOG</small><strong>7</strong><em>7 teilen</em></div>
+    <div id="appearance-preview-face" aria-label="Vorschau Kartenvorderseite"></div>
   </div>
   <p class="dog-appearance-note">Auch zukünftige Event-Hintergründe, eigene Bilddateien und besondere Kartendecks können als neue Designpakete ergänzt werden. In Online-Partien sind diese Einstellungen rein optisch und unabhängig von den Regeln und Karten der Mitspieler.</p>
   <div class="dog-appearance-buttons">
@@ -382,7 +390,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 })();
 </script>
 <script type="module">
-import('./app.js?v=20').catch(error=>{
+import('./app.js?v=21').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
