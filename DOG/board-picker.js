@@ -42,6 +42,11 @@ for(const picker of pickers){
  }
 }
 renderActive();
+// Keep the room code and stage in the return URL while editing locally.
+document.querySelectorAll('[data-dog-studio-link]').forEach(link=>{
+ const caller='../'+location.pathname.split('/').pop()+location.search+location.hash;
+ link.href='DOG/design-studio.html?return='+encodeURIComponent(caller);
+});
 window.addEventListener('storage',event=>{
  if(event.key==='dog:appearance:v1')renderActive();
 });
