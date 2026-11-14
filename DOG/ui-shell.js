@@ -2,6 +2,31 @@ import {DOG_UI_FEATURES,dogFeatureById} from './ui-features.js?v=1';
 
 /** Cosmetic cockpit shell: never writes DOG game state or online messages. */
 const $=id=>document.getElementById(id);
+/* Compact floating menu – all original controls retain their IDs and handlers. */
+const menuRoot=$('dog-floating-menu');
+const menuToggle=$('dog-menu-toggle');
+const menuPanel=$('dog-menu-panel');
+function setMenuOpen(open){
+  if(!menuToggle||!menuPanel)return;
+  menuPanel.hidden=!open;
+  menuToggle.setAttribute('aria-expanded',String(open));
+  menuToggle.setAttribute('aria-label',open?'DOG-Menü schließen':'DOG-Menü öffnen');
+}
+menuToggle?.addEventListener('click',()=>setMenuOpen(menuPanel?.hidden));
+menuPanel?.addEventListener('click',event=>{
+  if(event.target.closest('button, a'))setMenuOpen(false);
+});
+document.addEventListener('pointerdown',event=>{
+  if(menuPanel&&!menuPanel.hidden&&menuRoot&&!menuRoot.contains(event.target))setMenuOpen(false);
+});
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&menuPanel&&!menuPanel.hidden){
+    setMenuOpen(false);
+    menuToggle?.focus();
+  }
+});
+$('dog-refresh-button')?.addEventListener('click',()=>location.reload());
+
 const boardButton=$('board-choice-button');
 boardButton?.addEventListener('click',()=>{
  const dialog=$('appearance-dialog');
