@@ -1,0 +1,14 @@
+/* DOG board selection in local and shared game lobbies. Visual preference only. */
+.dog-plate-select{box-sizing:border-box;margin:14px 0;padding:15px;border:1px solid #cba46e;border-radius:16px;background:linear-gradient(120deg,#122c43,#0a192c);box-shadow:0 8px 24px #07142125;color:#f8e8c2}
+.dog-plate-select.dog-plate-local{grid-column:1/-1}
+.dog-plate-select h3{font:800 17px system-ui,sans-serif;color:#ffe5a9;margin:0 0 4px}
+.dog-plate-select p{font:500 12px system-ui,sans-serif;color:#c4d0dd;margin:0 0 12px}
+.dog-plate-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:9px}
+.dog-plate-choice{display:flex;flex-direction:column;gap:5px;border:2px solid #45627e;border-radius:11px;padding:5px;background:#102e49;color:#fff;cursor:pointer;text-align:center;min-width:0;overflow:hidden;transition:box-shadow .16s,border-color .16s,transform .16s}
+.dog-plate-choice:hover{border-color:#e2bc73;transform:translateY(-2px)}
+.dog-plate-choice[aria-pressed=true]{border-color:#ffdc86;box-shadow:0 0 0 2px #c9953e,0 0 17px #f4bb5d66}
+.dog-plate-choice img,.dog-plate-placeholder{display:block;aspect-ratio:1/1;width:100%;height:auto;object-fit:cover;border-radius:6px;background:radial-gradient(circle at 50% 30%,#1c6699,#071b35)}
+.dog-plate-choice span{font:750 11px system-ui,sans-serif;line-height:1.25;overflow-wrap:anywhere}
+.dog-plate-choice:focus-visible{outline:3px solid #fff2b1;outline-offset:2px}
+.dog-plate-footnote{font:500 11px system-ui,sans-serif!important;margin:10px 0 0!important;color:#bed3d9!important}
+@media(max-width:720px){.dog-plate-choices{grid-template-columns:repeat(3,minmax(0,1fr))}.dog-plate-select{padding:10px}}
