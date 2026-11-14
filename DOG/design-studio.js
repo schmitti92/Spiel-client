@@ -118,7 +118,7 @@ $('save-form').addEventListener('submit',e=>{
  e.preventDefault();const n=$('design-name').value.trim();if(!n)return;
  const p={id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),name:n.slice(0,40),scene:draft.scene,board:draft.board,favorite:false};
  presets.unshift(p);if(!persist()){presets.shift();return}
- $('save-dialog').close();refresh();apply();status('💾 „'+p.name+'“ gespeichert und für DOG aktiviert.');
+ $('save-dialog').close();refresh();if(apply())status('💾 „'+p.name+'“ gespeichert und für DOG aktiviert.');
 });
 try{
  const target=new URLSearchParams(location.search).get('return'),u=target?new URL(target,location.href):null;
