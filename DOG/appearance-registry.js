@@ -121,7 +121,17 @@ export const HUD_TONES=deepFreeze({
   burgundy:{label:'Bordeaux',swatch:'#843653',panel:'rgba(74,24,47,.89)',seat:'rgba(51,14,35,.96)',inner:'rgba(64,19,41,.91)',button:'rgba(102,32,63,.96)',border:'rgba(229,145,171,.66)',accent:'#ffd0dc',text:'#fff5f8',muted:'#efcbd5'},
   violet:{label:'Violett',swatch:'#6944a5',panel:'rgba(51,31,83,.89)',seat:'rgba(34,21,62,.96)',inner:'rgba(42,25,69,.91)',button:'rgba(82,51,132,.96)',border:'rgba(196,158,236,.69)',accent:'#ebd3ff',text:'#fcf8ff',muted:'#dfd1f0'},
   graphite:{label:'Graphit',swatch:'#4b5968',panel:'rgba(30,42,51,.91)',seat:'rgba(21,32,42,.96)',inner:'rgba(26,38,47,.92)',button:'rgba(50,64,76,.96)',border:'rgba(181,199,210,.62)',accent:'#e5eef2',text:'#f6fbfc',muted:'#cedde3'},
-  bronze:{label:'Bronze & Sand',swatch:'#866038',panel:'rgba(67,47,29,.91)',seat:'rgba(52,37,26,.96)',inner:'rgba(60,43,28,.92)',button:'rgba(111,71,31,.96)',border:'rgba(232,185,119,.70)',accent:'#ffe0ac',text:'#fff7e9',muted:'#ead9bd'}
+  bronze:{label:'Bronze & Sand',swatch:'#866038',panel:'rgba(67,47,29,.91)',seat:'rgba(52,37,26,.96)',inner:'rgba(60,43,28,.92)',button:'rgba(111,71,31,.96)',border:'rgba(232,185,119,.70)',accent:'#ffe0ac',text:'#fff7e9',muted:'#ead9bd'},
+  ruby:{label:'Rubinrot',swatch:'#a82b49',panel:'rgba(71,17,39,.91)',seat:'rgba(45,11,27,.96)',inner:'rgba(59,14,34,.93)',button:'rgba(105,25,53,.95)',border:'rgba(236,125,156,.72)',accent:'#ffc1cf',text:'#fff5f8',muted:'#f4cad4'},
+  coral:{label:'Koralle',swatch:'#d46c66',panel:'rgba(85,41,45,.90)',seat:'rgba(59,25,32,.96)',inner:'rgba(72,32,39,.92)',button:'rgba(153,73,77,.94)',border:'rgba(255,165,154,.68)',accent:'#ffe1c2',text:'#fff8f1',muted:'#f3d5c9'},
+  mandarin:{label:'Mandarin',swatch:'#d17726',panel:'rgba(81,42,15,.92)',seat:'rgba(54,29,14,.96)',inner:'rgba(67,35,15,.93)',button:'rgba(136,69,15,.97)',border:'rgba(244,163,85,.72)',accent:'#ffe0a9',text:'#fff7e9',muted:'#f2d6b0'},
+  sunGold:{label:'Sonnengold',swatch:'#cf9d2b',panel:'rgba(67,54,19,.91)',seat:'rgba(43,35,11,.96)',inner:'rgba(55,44,15,.93)',button:'rgba(114,88,18,.96)',border:'rgba(239,211,111,.76)',accent:'#fff0b2',text:'#fff9e5',muted:'#eee2b9'},
+  olive:{label:'Olivgrün',swatch:'#728a3d',panel:'rgba(42,57,24,.93)',seat:'rgba(28,41,15,.97)',inner:'rgba(36,49,20,.95)',button:'rgba(73,99,36,.96)',border:'rgba(179,215,103,.72)',accent:'#e1f4ac',text:'#f6ffe9',muted:'#d8e6c1'},
+  emerald:{label:'Smaragd',swatch:'#0b8e70',panel:'rgba(7,64,54,.91)',seat:'rgba(6,43,37,.97)',inner:'rgba(9,55,46,.95)',button:'rgba(9,112,89,.96)',border:'rgba(94,221,169,.73)',accent:'#b1ffe1',text:'#edfff8',muted:'#b9e7d8'},
+  turquoise:{label:'Türkis',swatch:'#1999a0',panel:'rgba(7,59,66,.91)',seat:'rgba(6,42,50,.96)',inner:'rgba(9,51,58,.94)',button:'rgba(10,102,112,.96)',border:'rgba(109,226,225,.73)',accent:'#bdf9f4',text:'#f0ffff',muted:'#bce6e9'},
+  iceBlue:{label:'Eisblau',swatch:'#4e92bd',panel:'rgba(26,52,76,.93)',seat:'rgba(12,37,60,.97)',inner:'rgba(19,44,66,.95)',button:'rgba(38,94,139,.95)',border:'rgba(144,211,248,.73)',accent:'#d2f3ff',text:'#f4fcff',muted:'#c6e2f4'},
+  magenta:{label:'Magenta',swatch:'#af4f99',panel:'rgba(76,27,70,.92)',seat:'rgba(53,17,48,.97)',inner:'rgba(67,25,63,.94)',button:'rgba(133,42,117,.96)',border:'rgba(231,146,218,.72)',accent:'#ffcfef',text:'#fff4fc',muted:'#f1cce9'},
+  roseGold:{label:'Roségold',swatch:'#bc8588',panel:'rgba(74,40,46,.93)',seat:'rgba(51,27,31,.97)',inner:'rgba(63,34,40,.94)',button:'rgba(128,76,84,.96)',border:'rgba(234,180,174,.74)',accent:'#ffe0d8',text:'#fff8f5',muted:'#eddbd9'}
 });
 export const PIECE_STYLES=deepFreeze({
   classic:{label:'Klassisch',colors:['#e65f58','#4c9bfa','#5ac68d','#e8b84e']},
