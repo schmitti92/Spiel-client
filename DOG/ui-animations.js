@@ -23,7 +23,8 @@ export function createDogVisualFeedback(doc){
    matchKey,round:game.round,phase:game.phase,activeSeat,
    handSeat:seat,handCount:shownHand.length,handVisible,
    lastPlayed:game.lastPlayedCard?game.lastPlayedCard.type+':'+game.lastPlayedCard.seat:null,
-   revision:game.revision,winner:game.winner
+   revision:game.revision,winner:game.winner,
+   discardCount:Array.isArray(game.discard)?game.discard.length:(Number.isInteger(game.discard?.count)?game.discard.count:null)
   };
   const old=previous;
   previous=next;
@@ -36,7 +37,7 @@ export function createDogVisualFeedback(doc){
   else if(next.handVisible&&!old.handVisible&&next.handSeat===old.handSeat)pulse($('hand'),'dog-hand-revealed');
   if(next.round!==old.round)pulse($('dog-deck-art'),'dog-deck-shuffled');
   // A new card really entered the discard pile, regardless of repeated card type.
-  if(next.revision!==old.revision && next.lastPlayed && (next.lastPlayed!==old.lastPlayed || next.activeSeat!==old.activeSeat || next.handCount!==old.handCount)){
+  if(next.revision!==old.revision && next.lastPlayed && (next.lastPlayed!==old.lastPlayed || (next.discardCount!==null && old.discardCount!==null && next.discardCount>old.discardCount))){
    const node=$('dog-discard-art');
    if(node){node.dataset.dogPlayed=game.lastPlayedCard?.type||'';pulse(node,'dog-discard-played');}
   }
