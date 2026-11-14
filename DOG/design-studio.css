@@ -156,3 +156,34 @@ dialog{color:#f5e9d6;background:#10283e;border:1px solid #ddb973;border-radius:1
   scrollbar-color:#6484a4 transparent;
   padding:3px 6px 3px 3px;
 }
+
+
+/* Independent outer board frame selection. The preview wrapper mirrors
+   the in-game .board-card border/shadow without touching game SVG geometry. */
+.frame-divider{height:1px;background:#7896ac66;margin:16px 1px 12px}
+#board-design-panel .frame-gallery-title{font-size:15px;color:#f5d99d;margin:0 0 5px}
+.frame-choice-list{display:grid;gap:7px;padding:3px;max-height:490px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#7793aa transparent}
+.frame-choice{
+  display:flex;align-items:center;gap:10px;width:100%;
+  padding:7px;background:#0c2539;color:#edf5fa;border:1px solid #5b7b93;
+  border-radius:12px;text-align:left;cursor:pointer;
+}
+.frame-choice:hover{border-color:#f2c36f}
+.frame-choice[aria-pressed="true"]{border-color:#ffdb83;box-shadow:inset 0 0 0 1px #ffdb83;background:#263e53}
+.frame-choice-sample{
+  flex:0 0 58px;height:46px;display:grid;place-items:center;
+  border:2px solid var(--sample-line);border-radius:var(--sample-radius,12px);
+  background:var(--sample-fill);color:#f7e6b8;
+  box-shadow:inset 0 0 0 2px var(--sample-inner),0 0 11px var(--sample-glow);
+}
+.frame-choice-sample::before{content:'DOG';font-family:Georgia,serif;font-size:13px;font-weight:900;text-shadow:0 1px 3px #000}
+.frame-choice-info{min-width:0;flex:1}
+.frame-choice-info strong{display:block;font-size:12px}.frame-choice-info small{display:block;font-size:10px;line-height:1.4;color:#aec7d5;margin-top:3px}
+.frame-choice-check{color:#fbd995;font-weight:900;visibility:hidden}
+.frame-choice[aria-pressed="true"] .frame-choice-check{visibility:visible}
+.studio-live-layout .preview-screen[data-board-frame]:not([data-board-frame="classic"]){
+  background:var(--frame-fill)!important;
+  border:2px solid var(--frame-line)!important;
+  border-radius:var(--frame-radius,16px)!important;
+  box-shadow:inset 0 0 0 2px var(--frame-inner),inset 0 1px 13px var(--frame-inner),0 9px 30px rgba(0,0,0,.49),0 0 var(--frame-glow-size,12px) var(--frame-glow)!important;
+}
