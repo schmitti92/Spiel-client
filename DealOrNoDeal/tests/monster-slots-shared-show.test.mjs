@@ -16,8 +16,12 @@ test('shared stage shows both winner and spectators using server-stamped game st
  assert.match(js,/startedAt/);
  assert.match(js,/dealServerNow/);
  assert.match(js,/ALLE SPIELER SEHEN LIVE ZU/);
- assert.match(js,/stage\.reels===1\?\[3000\]:\[3000,4500,6000\]/);
- assert.match(js,/const resultAt=stage\.reels===1\?4200:7800/);
+ assert.match(js,/const slotStops=count=>/);
+ assert.match(js,/count===2\?\[3000,4500\]/);
+ assert.match(js,/\[3000,4000,5000,6000,7000,8000\]/);
+ assert.match(js,/const resultAt=slotDuration\(stage\.reels\)/);
+ assert.match(js,/count===2\?6500/);
+ assert.match(js,/10000/);
  assert.match(js,/sharedAction\('spin'\)/);
  assert.match(js,/sharedAction\('confirm'\)/);
  assert.match(js,/30[05]0/);
@@ -45,8 +49,8 @@ test('uploaded premium assets are live in the shared slot and preserve old fallb
  assert.match(css,/slot-stage-alternative\.png/);
  assert.match(css,/monster-slot-shared-caption/);
  assert.match(css,/@media\(max-width:570px\)/);
- assert.match(html,/monster-slots-shared-show\.css\?v=20261114-slot-handoff-v3/);
- assert.match(html,/monster-slots-final\.js\?v=20261114-(?:spectator|cards-priority|slot-results-scroll|slot-handoff)/);
+ assert.match(html,/monster-slots-shared-show\.css\?v=20261114-slot-handoff-v3-six-two/);
+ assert.match(html,/monster-slots-final\.js\?v=20261114-slot-handoff-v3-six-two-six-two);
 });
 
 
@@ -57,7 +61,7 @@ test('premium cabinet loads uploaded reel and glow assets without cropping DOG c
  assert.match(css,/monster-slot-reward-card-art img[\s\S]*?object-fit:contain/);
  assert.match(css,/ms-studio-summary-fade/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
- assert.match(html,/monster-slots-shared-show\.css\?v=20261114-slot-handoff-v3/);
+ assert.match(html,/monster-slots-shared-show\.css\?v=20261114-slot-handoff-v3-six-two/);
 });
 
 
@@ -86,8 +90,8 @@ test('full premium artwork integration uses the shared 3-reel cabinet and origin
  assert.match(css,/data-actor="yes"/);
  assert.match(css,/prefers-reduced-motion:reduce/);
  assert.doesNotMatch(js,/Math\.random|randomPrize/);
- assert.match(html,/monster-slots-shared-show\.css\?v=20261114-slot-handoff-v3/);
- assert.match(html,/monster-slots-final\.js\?v=20261114-slot-handoff-v3/);
+ assert.match(html,/monster-slots-shared-show\.css\?v=20261114-slot-handoff-v3-six-two/);
+ assert.match(html,/monster-slots-final\.js\?v=20261114-slot-handoff-v3-six-two/);
 });
 
 test('preview-only control images are not misleadingly displayed as finale options',()=>{
@@ -120,4 +124,21 @@ test('runner-up to champion transition shows no premature reel and keeps the sam
  assert.match(js,/expectedStartedAt:Number\(stage\.startedAt\|\|0\)/);
  assert.match(js,/if\(scheduledWindowKey!==windowKey\)/);
  assert.match(js,/Math\.max\(20,showAt-now\)/);
+});
+
+
+test('new shared six/two final uses two gold cabinets, mobile two-column layout and scrollable cards',()=>{
+ assert.match(css,/#deal-monster-slots\[data-reels="6"\] \.monster-slot-reels/);
+ assert.match(css,/repeat\(3,minmax\(0,1fr\)\)/);
+ assert.match(css,/slot-machine-frame\.png'\) center top/);
+ assert.match(css,/slot-machine-frame\.png'\) center bottom/);
+ assert.match(css,/#deal-monster-slots\[data-reels="2"\] \.monster-slot-reels/);
+ assert.match(css,/repeat\(2,minmax\(0,1fr\)\)/);
+ assert.match(css,/@media\(max-width:570px\)/);
+ assert.match(css,/#deal-monster-slots\[data-reels="6"\] \.monster-slot-reward-prizes/);
+ assert.match(js,/count===2\?\[3000,4500\]/);
+ assert.match(js,/count===3\?\[3000,4500,6000\]/);
+ assert.match(js,/10000/);
+ assert.match(js,/slotDuration\(stage\.reels\)/);
+ assert.match(html,/monster-slots-shared-show\.css\?v=20261114-slot-handoff-v3-six-two/);
 });
