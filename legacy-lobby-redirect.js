@@ -21,7 +21,9 @@
  if(stay&&/^[A-Za-z0-9_-]{1,100}$/.test(stay))dest.searchParams.set('stayMatch',stay);
  if(q.get('choose')==='1')dest.searchParams.set('choose','1');
  // Stage is represented by the same main hub, never a different lobby.
- const mode=script?.dataset?.mode==='local'||(script?.dataset?.mode==='auto'&&q.get('view')==='local')?'local':'online';
+ let savedMode='online';
+ try{if(typeof sessionStorage!=='undefined'&&sessionStorage.getItem('spielportal:hub-view')==='local')savedMode='local';}catch(_e){}
+ const mode=script?.dataset?.mode==='local'||(script?.dataset?.mode==='auto'&&(q.get('view')==='local'||(!q.has('view')&&savedMode==='local')))?'local':'online';
  dest.searchParams.set('view',mode);
  if(from.pathname!==dest.pathname){
   document.documentElement.style.visibility='hidden';
