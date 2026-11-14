@@ -245,7 +245,7 @@
   const isFiftyMillionCase=kind==='cent'&&reward.triggerAmount===5_000_000_000;
    title.textContent=(isFiftyMillionCase?'💰 ':'🎄 ')+owner+' gewinnt ein '+(isFiftyMillionCase?'Kartenpaket!':'Weihnachtspaket!');
   subtitle.textContent=(isFinal?'🏆 Siegerbonus der Runde':kind==='banker'?'Banker-Deal angenommen':isFiftyMillionCase?'💰 50-Millionen-Koffer geöffnet':'1-Cent-Koffer geöffnet')+' · Alle Spieler schauen live zu';
-  credit.textContent=reward.uid===uid?'Deine Karten wurden deinem Weihnachtsalbum gutgeschrieben.':'Die Karten wurden dem Weihnachtsalbum von '+owner+' gutgeschrieben.';
+  credit.textContent=reward.uid===uid?'Deine Karten wurden deinem DOG-Sammelalbum gutgeschrieben.':'Die Karten wurden dem DOG-Sammelalbum von '+owner+' gutgeschrieben.';
   name.textContent='';icon.textContent='🎁';cards.replaceChildren();document.getElementById('cent-special-overlay').hidden=true;
   wheelStage.hidden=directBankerPack;revealStage.hidden=true;spinButton.hidden=directBankerPack;spinButton.disabled=directBankerPack;wheelStatus.textContent=directBankerPack?'🎁 Banker-Paket wird direkt geöffnet …':'🎡 Bereit? Drücke auf „Jetzt drehen“!';
   if(reward.uid!==uid&&!directBankerPack){spinButton.hidden=true;wheelStatus.textContent='🎡 '+owner+' darf drehen. Alle schauen gemeinsam zu …'}
