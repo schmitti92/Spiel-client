@@ -48,7 +48,8 @@ test('All settings changes use authenticated server endpoints with server-host r
 test('Skyjo selected from online home opens the dedicated mask, other games remain unchanged',()=>{
  assert.match(home,/Skyjo\/skyjo_start\.html\?room=/);
  assert.match(home,/hub-lobby\.html\?room=/);
- assert.match(hub,/Skyjo\/skyjo_start\.html\?room=/);
+ assert.match(hub,/room\.game==='skyjo'/);
+ assert.doesNotMatch(hub,/location\.replace\('Skyjo\/skyjo_start\.html/);
 });
 test('Automatic ready start preserved, spectators cannot mark themselves ready',()=>{
  assert.match(js,/me\?\.participating/);
