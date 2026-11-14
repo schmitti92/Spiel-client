@@ -8,7 +8,7 @@ const CODE=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/;
 const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 let room=null,busy=false,refreshBusy=false,socket=null,lastSocket=null,reconnectTimer=null,pollTimer=null,lastStreamRoomAt=0,lastHttpAt=0;
 const limits={target:{min:50,max:500,step:10},jokerCount:{min:0,max:30,step:1}};
-const supported=['layoutMode','target','jokerCount','streetModeEnabled','jokerEnabled','beginner'];
+const supported=['layoutMode','target','jokerCount','streetModeEnabled','jokerEnabled','beginner','toreSpecialEnabled'];
 const descriptions={
  layoutMode:'Wählt zwischen 12 Karten (3 × 4) und 15 Karten (5 × 3) pro Spieler.',
  target:'Der Zielwert kann zwischen 50 und 500 Punkten eingestellt werden.',
@@ -17,6 +17,7 @@ const descriptions={
  streetScoring:'Eine alternative Straßen-Wertung ist noch nicht in die Spielengine integriert. Derzeit gelten die Originalregeln.',
  specialCards:'Zusätzliche Spezialkarten-Regelpakete sind für eine spätere Version vorgesehen. Bestehende Joker-Effekte lassen sich separat einstellen.',
  jokerEnabled:'Damit werden die vorhandenen Joker-Spezialeffekte ein- oder ausgeschaltet.',
+ toreSpecialEnabled:'Optionaler Host-Modus: Drei Missionen je Runde, leichte bis sehr schwere Aufgaben mit bis zu zehn Gewinnwalzen. Nach der Runde drehen alle Spieler ihre gesammelten Monster Slots gemeinsam. Gewinne landen im Deal-or-No-Deal-Inventar.',
  beginner:'Verwendet die vorhandenen vereinfachten Einsteigerregeln.',
  maxPlayers:'SKYJO Action unterstützt online 2 bis 5 aktive Spieler. Weitere Mitglieder bleiben Zuschauer.'
 };
