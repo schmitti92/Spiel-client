@@ -74,7 +74,7 @@ function progressFor(game,pi){
  return all[pi];
 }
 function trackRemove(game,pi,m,cards){
- if(!active(game)||!m||!Array.isArray(cards)||game.phase==='scoringSequence')return;
+ if(!active(game)||!m||!Array.isArray(cards)||game.phase!=='play')return;
  const p=progressFor(game,pi),name=String(m.name||'');
  p.groups++;
  if(name.includes('Reihe'))p.rows++;
