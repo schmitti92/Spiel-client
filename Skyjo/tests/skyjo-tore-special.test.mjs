@@ -219,3 +219,25 @@ test('Every earned reel survives 12-reel batches and players rotate one after an
  assert.deepEqual(observed.slice(0,20).map(v=>v.split(':')[0]),Array(20).fill('first'));
  assert.deepEqual(observed.slice(20,34).map(v=>v.split(':')[0]),Array(14).fill('second'));
 });
+
+
+test('SKYJO card-pack prizes are voucher receipts, not automatically opened at the slot',()=>{
+ const js=read('skyjo_tore_special.js');
+ const inbox=read('../DealOrNoDeal/js/skyjo-slot-inbox.js');
+ const css=read('../DealOrNoDeal/css/skyjo-slot-inbox.css');
+ assert.match(js,/voucher:p\.voucher===true/);
+ assert.match(js,/p\.voucher\?' · 🎟️ Gutschein'/);
+ assert.match(inbox,/p\.kind==='pack'&&p\.voucher/);
+ assert.match(inbox,/weihnachtswelt\.html\?view=packs/);
+ assert.match(inbox,/noch nicht geöffnet/);
+ assert.match(inbox,/Gutscheine bleiben/);
+ assert.match(css,/skyjo-inbox-voucher-link/);
+ assert.doesNotThrow(()=>new Function(inbox));
+});
+test('DOG pack redemption already displays the voucher count and a standard card reveal',()=>{
+ const source=read('../DealOrNoDeal/js/dog-album-season2.js');
+ assert.match(source,/data\.freePacks\?\.\[pack\.id\]/);
+ assert.match(source,/Kostenlos öffnen/);
+ assert.match(source,/reveal\(out\.revealed\|\|\[\]\)/);
+ assert.match(source,/NEU/);
+});
