@@ -25,7 +25,7 @@ test('shared stage shows both winner and spectators using server-stamped game st
  assert.match(js,/sharedAction\('spin'\)/);
  assert.match(js,/sharedAction\('confirm'\)/);
  assert.match(js,/30[05]0/);
- assert.match(js,/if\(typeof g!=='undefined'&&g\?\.phase==='final'&&g\.monsterSlotShow\)/);
+ assert.match(js,/g\?\.caseSlotShow\|\|g\?\.phase==='final'/);
 });
 
 test('shared slots precede the suitcase awards ceremony for every player',()=>{
@@ -49,8 +49,8 @@ test('uploaded premium assets are live in the shared slot and preserve old fallb
  assert.match(css,/slot-stage-alternative\.png/);
  assert.match(css,/monster-slot-shared-caption/);
  assert.match(css,/@media\(max-width:570px\)/);
- assert.match(html,/monster-slots-shared-show\.css\?v=20261114-slot-handoff-v3-six-two/);
- assert.match(html,/monster-slots-final\.js\?v=20261114-slot-handoff-v3-six-two/);
+ assert.match(html,/monster-slots-shared-show\.css\?v=20261114-case-slots-v1/);
+ assert.match(html,/monster-slots-final\.js\?v=20261114-case-slots-v1/);
 });
 
 
@@ -61,7 +61,7 @@ test('premium cabinet loads uploaded reel and glow assets without cropping DOG c
  assert.match(css,/monster-slot-reward-card-art img[\s\S]*?object-fit:contain/);
  assert.match(css,/ms-studio-summary-fade/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
- assert.match(html,/monster-slots-shared-show\.css\?v=20261114-slot-handoff-v3-six-two/);
+ assert.match(html,/monster-slots-shared-show\.css\?v=20261114-case-slots-v1/);
 });
 
 
@@ -90,8 +90,8 @@ test('full premium artwork integration uses the shared 3-reel cabinet and origin
  assert.match(css,/data-actor="yes"/);
  assert.match(css,/prefers-reduced-motion:reduce/);
  assert.doesNotMatch(js,/Math\.random|randomPrize/);
- assert.match(html,/monster-slots-shared-show\.css\?v=20261114-slot-handoff-v3-six-two/);
- assert.match(html,/monster-slots-final\.js\?v=20261114-slot-handoff-v3-six-two/);
+ assert.match(html,/monster-slots-shared-show\.css\?v=20261114-case-slots-v1/);
+ assert.match(html,/monster-slots-final\.js\?v=20261114-case-slots-v1/);
 });
 
 test('preview-only control images are not misleadingly displayed as finale options',()=>{
@@ -140,5 +140,15 @@ test('new shared six/two final uses two gold cabinets, mobile two-column layout 
  assert.match(js,/count===3\?\[3000,4500,6000\]/);
  assert.match(js,/10000/);
  assert.match(js,/slotDuration\(stage\.reels\)/);
- assert.match(html,/monster-slots-shared-show\.css\?v=20261114-slot-handoff-v3-six-two/);
+ assert.match(html,/monster-slots-shared-show\.css\?v=20261114-case-slots-v1/);
+});
+
+test('special suitcase three-reel show uses authoritative shared slot stage and preserves finale',()=>{
+ assert.match(js,/caseSlotShow\|\|game\?\.monsterSlotShow/);
+ assert.match(js,/stage\.turn==='case'\?'\/monster-slots\/case-show'/);
+ assert.match(js,/expectedEventId:stage\.eventId/);
+ assert.match(js,/count===3\?\[3000,4500,6000\]/);
+ assert.match(js,/SONDERKOFFER · 3 WALZEN · 3 GARANTIERTE GEWINNE/);
+ assert.match(html,/g\.caseSlotRewardVersion!==1/);
+ assert.match(css,/#deal-monster-slots\[data-reels="3"\]/);
 });
