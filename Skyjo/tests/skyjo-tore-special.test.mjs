@@ -41,6 +41,15 @@ test('Mission selection is deterministic: four challenges per new round, 1–10 
  }
  assert.equal(engine.missionsFor(match,1,{legacy:true}).length,3);
 });
+test('Client mission selection matches authoritative server snapshots',()=>{
+ const app={};new Function('window',read('skyjo_tore_special.js'))(app);
+ const match='01234567-89ab-4cde-a123-456789abcdef';
+ const expected={1:['low-five','two-rows','two-columns','double-twelve'],
+  2:['two-groups','two-jokers','zero-trio','three-streets'],
+  7:['finish-ten','zero-trio','two-columns','three-rows']};
+ for(const [round,ids] of Object.entries(expected))
+  assert.deepEqual(app.SkyjoToreSpecial.missionsFor(match,Number(round)),ids);
+});
 test('Special rewards are mandatory before host may start next round',()=>{
  const browser={};new Function('window',read('skyjo_tore_special.js'))(browser);
  const x=browser.SkyjoToreSpecial,state={round:1,phase:'play',players:[{name:'Chris',grid:[]}]};
