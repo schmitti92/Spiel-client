@@ -102,6 +102,7 @@ function scheduleLocalSnapshot(raw){
 function save(){
  try{
    if(!state)return;
+   window.SkyjoToreSpecial?.scan(state);
    captureTurnFlow();
    const raw=JSON.stringify(state);
    scheduleLocalSnapshot(raw);
