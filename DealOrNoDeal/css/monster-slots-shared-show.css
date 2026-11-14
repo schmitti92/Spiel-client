@@ -557,3 +557,185 @@
 #deal-monster-slots[data-phase="preparing"] .monster-slot-subheading{
  color:#ffdea7;
 }
+
+
+/* Slot finale 6/2 upgrade · dual three-reel cabinets
+   Uploaded 3-reel cabinet artwork is drawn TWICE for the six-reel
+   champion. The runner-up uses two real, full-size reels side by side. */
+#deal-monster-slots[data-reels="6"] .monster-slot-machine{
+ padding-block:clamp(8px,1.4vh,18px);
+}
+#deal-monster-slots[data-reels="6"] .monster-slot-lights{
+ margin-bottom:3px;font-size:clamp(11px,1.55vw,19px);
+}
+#deal-monster-slots[data-reels="6"] #monster-slots-title{
+ font-size:clamp(26px,4vw,47px);
+}
+#deal-monster-slots[data-reels="6"] .monster-slot-ribbon{
+ margin-top:5px;
+}
+#deal-monster-slots[data-reels="6"] .monster-slot-reels{
+ display:grid;
+ box-sizing:border-box;
+ width:min(100%,670px,max(280px,calc((100dvh - 235px)*.64)));
+ aspect-ratio:512/754;
+ max-width:100%;
+ grid-template-columns:repeat(3,minmax(0,1fr));
+ grid-template-rows:repeat(2,minmax(0,1fr));
+ align-items:center;
+ column-gap:clamp(2px,.6vw,7px);row-gap:0;
+ margin:7px auto 6px;
+ padding:0 7%;
+ border:0!important;border-radius:0!important;
+ background:
+  url('../assets/slot-premium/slot-machine-frame.png') center top/100% 50% no-repeat,
+  url('../assets/slot-premium/slot-machine-frame.png') center bottom/100% 50% no-repeat!important;
+ box-shadow:none!important;
+}
+#deal-monster-slots[data-reels="6"] .monster-slot-reels::before{display:none!important}
+#deal-monster-slots[data-reels="6"] .monster-slot-reel{
+ min-width:0;box-sizing:border-box;min-height:0;height:62%;
+ padding:2px;display:flex;flex-direction:column;align-self:center;
+ transform:translateY(18%)!important;
+ border:1px solid #d5a558!important;border-radius:8px;
+ background:linear-gradient(170deg,#251d37e6,#131936f0 45%,#261a39ed)!important;
+ box-shadow:inset 0 0 0 1px #ffebad80,0 0 7px #000c!important;
+}
+#deal-monster-slots[data-reels="6"] .monster-slot-reel[data-phase="won"]{
+ transform:translateY(18%)!important;
+ box-shadow:inset 0 0 0 1px #fff2b4,0 0 14px #fff1a1,0 0 18px #b58eff8c!important;
+}
+#deal-monster-slots[data-reels="6"] .monster-slot-reel-head,
+#deal-monster-slots[data-reels="6"] .monster-slot-reel-foot{
+ box-sizing:border-box;min-height:0;flex:0 0 auto;
+ height:clamp(14px,2vw,23px);
+ padding:0 clamp(1px,.3vw,4px);
+ gap:1px;font-size:clamp(7px,1vw,10px);
+ color:#ffecb9;text-shadow:0 1px 2px #130e27;
+ background:linear-gradient(90deg,#5238208c,#19132aa0,#5238208c);
+ border:0;
+}
+#deal-monster-slots[data-reels="6"] .monster-slot-reel-foot{height:clamp(13px,1.8vw,20px)}
+#deal-monster-slots[data-reels="6"] .monster-slot-led{width:5px;height:5px}
+#deal-monster-slots[data-reels="6"] .monster-slot-window{
+ flex:1 1 auto;min-height:0;height:auto;
+ border:clamp(2px,.35vw,4px) solid #37294c;
+ border-radius:5px;background:linear-gradient(160deg,#faf2df,#cbd8ee 55%,#e5dafa)!important;
+}
+#deal-monster-slots[data-reels="6"] .monster-slot-prize{
+ padding:clamp(1px,.35vw,5px);gap:2px;
+}
+#deal-monster-slots[data-reels="6"] .monster-slot-art{
+ flex:1 1 auto;min-height:0;max-height:60%;width:100%;
+}
+#deal-monster-slots[data-reels="6"] .monster-slot-quantity{
+ font-size:clamp(9px,1.2vw,13px);line-height:1.1;
+}
+#deal-monster-slots[data-reels="6"] .monster-slot-prize-name{
+ font-size:clamp(9px,1.3vw,14px);line-height:1.08;
+ overflow-wrap:anywhere;
+}
+#deal-monster-slots[data-reels="6"] .monster-slot-scarcity{
+ font-size:clamp(7px,.8vw,10px);padding:1px 2px;
+}
+#deal-monster-slots[data-reels="6"] .monster-slot-progress{
+ gap:clamp(4px,1.2vw,10px);margin-bottom:4px;
+}
+#deal-monster-slots[data-reels="6"] .monster-slot-progress span{
+ width:clamp(15px,4vw,35px);
+}
+#deal-monster-slots[data-reels="6"] .monster-slot-status{
+ margin-bottom:6px;font-size:clamp(11px,1.6vw,16px);
+}
+#deal-monster-slots[data-reels="6"] .monster-slot-footnote{
+ margin-top:5px;
+}
+
+/* Two neighboring real reels for runner-up, not a stretched third-reel frame. */
+#deal-monster-slots[data-reels="2"] .monster-slot-reels{
+ box-sizing:border-box;
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ width:min(470px,100%);gap:clamp(6px,1.2vw,15px);
+ margin:clamp(9px,1.4vw,18px) auto;
+ padding:clamp(6px,1vw,12px);
+ border:2px solid #f3cd81;border-radius:21px;
+ background:radial-gradient(ellipse at center,#8254b86b,transparent 75%),linear-gradient(160deg,#241a3d,#111329)!important;
+ box-shadow:0 0 22px #f7d28773,inset 0 0 17px #ffdf8c32!important;
+}
+#deal-monster-slots[data-reels="2"] .monster-slot-reels::before{display:none!important}
+#deal-monster-slots[data-reels="2"] .monster-slot-reel{
+ background:linear-gradient(145deg,#fff1ba,#a36c25 21%,#ffedb5 47%,#885326 80%)!important;
+ min-width:0;
+}
+#deal-monster-slots[data-reels="2"] .monster-slot-window{
+ height:clamp(150px,24vw,220px);
+}
+#deal-monster-slots[data-reels="2"] .monster-slot-prize-name{
+ overflow-wrap:anywhere;
+}
+#deal-monster-slots[data-reels="2"] .monster-slot-progress span{
+ width:clamp(35px,9vw,67px);
+}
+
+/* Six paid winnings remain a single scrollable summary, even if a pack
+   creates dozens of cards. No nested scrolling is introduced. */
+#deal-monster-slots[data-reels="6"] .monster-slot-reward-prizes,
+#deal-monster-slots[data-reels="3"] .monster-slot-reward-prizes{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+}
+#deal-monster-slots[data-reels="2"] .monster-slot-reward-prizes{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+}
+#deal-monster-slots[data-reels="6"] .monster-slot-reward-prizes{
+ padding:clamp(5px,1vw,9px);
+ background:linear-gradient(160deg,#120d2685,#28174087),
+ url('../assets/slot-premium/slot-reel-panel.png') center/100% 100% no-repeat;
+ border:1px solid #c3934e80;border-radius:18px;
+}
+@media(max-width:570px){
+ #deal-monster-slots[data-reels="6"] .monster-slot-machine{
+  padding:9px 7px;
+ }
+ #deal-monster-slots[data-reels="6"] .monster-slot-reels{
+  /* Two columns × three rows keep the artwork legible on narrow phones.
+     The 3-column cabinet images remain reserved for wide viewports. */
+  width:min(100%,340px);
+  aspect-ratio:auto;grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-rows:repeat(3,minmax(0,1fr));
+  gap:5px;padding:6px;
+  background:linear-gradient(160deg,#241a3d,#111329)!important;
+  border:1px solid #f2c57a!important;border-radius:18px!important;
+ }
+ #deal-monster-slots[data-reels="6"] .monster-slot-reel,
+ #deal-monster-slots[data-reels="6"] .monster-slot-reel[data-phase="won"]{
+  height:auto;min-height:0;transform:none!important;
+  padding:2px;align-self:stretch;
+  border:2px solid #f5d18d!important;border-radius:9px;
+  background:linear-gradient(145deg,#fff2c0,#a66c23 20%,#f7dc98 55%,#885326)!important;
+ }
+ #deal-monster-slots[data-reels="6"] .monster-slot-window{
+  flex:0 0 auto;height:clamp(86px,17vh,126px);
+ }
+ #deal-monster-slots[data-reels="6"] .monster-slot-reel-head,
+ #deal-monster-slots[data-reels="6"] .monster-slot-reel-foot{
+  height:15px;font-size:8px;
+ }
+ #deal-monster-slots[data-reels="6"] .monster-slot-art{max-height:62%}
+ #deal-monster-slots[data-reels="6"] .monster-slot-prize-name{font-size:10px}
+ #deal-monster-slots[data-reels="6"] .monster-slot-scarcity{font-size:7px}
+ #deal-monster-slots[data-reels="2"] .monster-slot-reels{width:min(100%,360px);gap:6px}
+ #deal-monster-slots[data-reels="2"] .monster-slot-window{height:clamp(126px,36vw,166px)}
+ #deal-monster-slots[data-reels="6"] .monster-slot-reward-prizes{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+ }
+}
+@media(max-height:570px) and (min-width:571px){
+ #deal-monster-slots[data-reels="6"] .monster-slot-reels{
+  width:clamp(275px,55vh,500px);
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ #deal-monster-slots[data-reels="6"] .monster-slot-reel[data-phase="won"]{
+  animation:none!important;
+ }
+}
