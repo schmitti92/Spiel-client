@@ -41,7 +41,7 @@
    if(scoreSequencePlayback===playback)scoreSequencePlayback=null;
    if(!reachedEnd||!state||Number(state.round)!==Number(seq.round))return;
    const actual=state.lastRoundSummary?.id===seq.id?state.lastRoundSummary:null;
-   if(actual){roundSummarySeen=actual.id;roundSummaryFocus=null;if(actual.ended)openRoyalFinaleSummary();else openRoyalRoundSummary()}
+   if(actual){roundSummarySeen=actual.id;roundSummaryFocus=null;if(actual.ended&&!(state.skyjoSpecial?.enabled&&!state.skyjoSpecial?.finished))openRoyalFinaleSummary();else openRoyalRoundSummary()}
    else if(state.phase==='scoringSequence'){
      const text=document.querySelector('#modal .royal-count-headline');if(text)text.textContent='Alle Spieler gezählt – warte auf Synchronisierung …';
      const progress=document.querySelector('#modal .royal-count-progress');if(progress)progress.textContent='Auszählung abgeschlossen';
