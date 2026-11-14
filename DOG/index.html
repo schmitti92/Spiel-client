@@ -254,6 +254,66 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 #appearance-preview-face .playing-card.dog-designed{width:76px;height:auto;aspect-ratio:5/7;padding:0;flex:none}
 #appearance-preview-back{width:57px;height:80px;background-size:contain;border:0}
 .dog-pile-art.dog-pile-back{background-size:100% 100%!important}
+
+/* Independent touch viewport for the cards: the board and other panels never zoom. */
+.hand{
+ touch-action:none!important;
+ overscroll-behavior:contain;
+ overflow-x:auto!important;
+ overflow-y:auto!important;
+ max-height:min(36dvh,300px);
+ scroll-behavior:auto;
+}
+.hand .playing-card.dog-designed{
+ --dog-hand-card-base:clamp(70px,9vw,100px);
+ flex:0 0 auto;
+ width:calc(var(--dog-hand-card-base) * var(--dog-hand-zoom,1))!important;
+ height:auto!important;
+ aspect-ratio:5/7!important;
+ min-width:0;
+}
+.hand .dog-card-art{user-select:none;-webkit-user-drag:none}
+.dog-hand-zoom-status{font-size:10px;font-weight:700;color:#ecd49d;white-space:nowrap;opacity:.9}
+@media(min-width:900px) and (orientation:landscape) and (max-height:1100px){
+ .hand{max-height:min(27dvh,250px)}
+ .hand .playing-card.dog-designed{
+  --dog-hand-card-base:min(126px,calc((100% - 35px) / 6),17dvh);
+ }
+ .hand[data-card-count="1"] .playing-card.dog-designed,
+ .hand[data-card-count="2"] .playing-card.dog-designed,
+ .hand[data-card-count="3"] .playing-card.dog-designed{
+  --dog-hand-card-base:min(148px,calc((100% - 14px) / 3),17dvh);
+ }
+ .hand[data-card-count="4"] .playing-card.dog-designed{
+  --dog-hand-card-base:min(144px,calc((100% - 21px) / 4),17dvh);
+ }
+ .hand[data-card-count="5"] .playing-card.dog-designed{
+  --dog-hand-card-base:min(132px,calc((100% - 28px) / 5),17dvh);
+ }
+}
+@media(min-width:900px) and (orientation:landscape) and (max-height:650px){
+ .hand{max-height:26dvh}
+ .hand .playing-card.dog-designed{
+  --dog-hand-card-base:min(100px,calc((100% - 25px) / 6),16dvh);
+ }
+ .hand[data-card-count="1"] .playing-card.dog-designed,
+ .hand[data-card-count="2"] .playing-card.dog-designed,
+ .hand[data-card-count="3"] .playing-card.dog-designed{
+  --dog-hand-card-base:min(110px,calc((100% - 10px) / 3),16dvh);
+ }
+ .hand[data-card-count="4"] .playing-card.dog-designed{
+  --dog-hand-card-base:min(105px,calc((100% - 15px) / 4),16dvh);
+ }
+ .hand[data-card-count="5"] .playing-card.dog-designed{
+  --dog-hand-card-base:min(100px,calc((100% - 20px) / 5),16dvh);
+ }
+}
+@media(max-width:899px), (orientation:portrait){
+ .hand{max-height:36dvh}
+ .hand .playing-card.dog-designed{
+  --dog-hand-card-base:clamp(76px,20vw,118px);
+ }
+}
 </style>
 </head>
 <body>
@@ -297,12 +357,12 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
        <div id="winner" class="winner" hidden><div style="font-size:30px">🏆</div><h2 id="winner-title">Sieg!</h2><p>Alle acht Teamfiguren sind im Ziel.</p></div>
     </section>
     <section class="panel">
-      <div class="hand-head"><h3 id="hand-title">Deine Karten</h3><button id="show-hand" class="reveal" type="button">🃏 Karten ansehen</button></div>
+      <div class="hand-head"><h3 id="hand-title">Deine Karten</h3><span id="dog-hand-zoom-status" class="dog-hand-zoom-status" title="Zwei Finger auf den Karten: zoomen und verschieben">Karten 100 %</span><button id="show-hand" class="reveal" type="button">🃏 Karten ansehen</button></div>
       <div class="dog-piles" aria-label="Kartenstapel">
 <div class="dog-pile"><div class="dog-pile-art dog-pile-back" id="dog-deck-art" aria-hidden="true"></div><div class="dog-pile-copy"><strong>Nachziehstapel</strong><span id="dog-deck-count">– Karten</span></div></div>
 <div class="dog-pile"><div class="dog-pile-art discard" id="dog-discard-art" aria-hidden="true">—</div><div class="dog-pile-copy"><strong>Ablagestapel</strong><span id="dog-discard-count">– Karten</span></div></div>
 </div>
-<div class="hand" id="hand"></div>
+<div class="hand" id="hand" aria-label="Handkarten: mit zwei Fingern zoomen und verschieben" title="Mit zwei Fingern Karten vergrößern, verkleinern und schieben"></div>
       <div class="move-help" id="move-help">Wähle eine Karte und berechne deinen Zug selbst.</div>
       <div class="moves" id="moves"></div>
       <p id="selected-info"></p>
@@ -390,7 +450,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 })();
 </script>
 <script type="module">
-import('./app.js?v=21').catch(error=>{
+import('./app.js?v=22').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
