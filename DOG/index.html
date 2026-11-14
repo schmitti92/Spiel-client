@@ -327,6 +327,21 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
  sync();
 })();
 </script>
-<script type="module" src="./app.js?v=18"></script>
+<script type="module">
+import('./app.js?v=19').catch(error=>{
+ const message=error instanceof Error?error.message:String(error);
+ const turn=document.getElementById('turn');
+ if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
+ const status=document.getElementById('status');
+ if(status)status.textContent='Startfehler: '+message+' · Bitte Seite aktualisieren.';
+ else if(turn){
+  const detail=document.createElement('p');
+  detail.style.cssText='font-size:13px;color:#ffd69a;overflow-wrap:anywhere;';
+  detail.textContent=message;
+  turn.insertAdjacentElement('afterend',detail);
+ }
+ console.error('DOG start failed:',error);
+});
+</script>
 </body>
 </html>
