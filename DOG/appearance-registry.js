@@ -218,6 +218,16 @@ export const APPEARANCE_CATEGORIES=deepFreeze({
  * Only panel surfaces are tinted: text, cards, active seat and controls stay solid.
  */
 export const HUD_OPACITY_BLOCKS=Object.freeze(['players','piles','hand','extras']);
+/** Create a solid-color surface with the user's chosen transparency.
+ * Reads only predefined theme colors and a normalized percentage.
+ */
+export function hudOpacityColor(tone,part,percent){
+  const source=String(tone?.[part]||'');
+  const rgb=/^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})/.exec(source);
+  if(!rgb||typeof percent!=='number'||!Number.isFinite(percent))return 'transparent';
+  const opacity=Math.max(0,Math.min(100,percent))/100;
+  return 'rgba('+rgb[1]+','+rgb[2]+','+rgb[3]+','+opacity+')';
+}
 export function normalizeHudOpacity(value){
   const raw=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
   const out={};
