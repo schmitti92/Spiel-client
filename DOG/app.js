@@ -1,4 +1,4 @@
-import {createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
+import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
 import {DEFAULT_APPEARANCE,BOARD_STYLES,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=12';
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=10';
@@ -358,6 +358,27 @@ $('board').addEventListener('click',e=>{
  }
  selectedPiece=null;drawBoard();$('move-help').textContent='Zug nicht erlaubt. Bitte selbst erneut rechnen.';
 });
+// Test controls are deliberately restricted to local games; never send altered cards online.
+const testPanel=$('dog-card-test'),testSelect=$('dog-test-card');
+if(!online){
+ testPanel.hidden=false;
+ for(const type of CARD_TYPES){const option=document.createElement('option');option.value=type;option.textContent=type==='swap'?'Tauschkarte':type==='joker'?'Joker':type==='1/11'?'1 oder 11':type;testSelect.appendChild(option);}
+ $('dog-give-test-card').addEventListener('click',()=>{
+  if(!game||game.phase==='finished'||game.phase==='seven'){ $('status').textContent='🧪 Testkarte erst außerhalb einer laufenden 7 oder nach einem Neustart einsetzen.';return;}
+  const seat=currentHuman();
+  if(seat<0){$('status').textContent='🧪 Warte, bis du wieder an der Reihe bist oder Karten tauschen kannst.';return;}
+  const type=testSelect.value;
+  if(!CARD_TYPES.includes(type))return;
+  const hand=game.hands[seat];
+  if(!Array.isArray(hand)||!hand.length){$('status').textContent='🧪 Keine Handkarte zum Ersetzen vorhanden.';return;}
+  const index=hand.findIndex(c=>c.id===selectedCard);
+  const card=hand[index>=0?index:0];
+  card.type=type;
+  selectedCard=card.id;selectedPiece=null;revealed=true;
+  save();render();
+  $('status').textContent='🧪 Testkarte '+type+' eingesetzt. Nur dein lokaler Spielstand wurde geändert.';
+ });
+}
 $('show-hand').addEventListener('click',()=>{revealed=!revealed;render();});
 $('new-game').addEventListener('click',()=>{if(confirm('Neue Partie starten? Der aktuelle Spielstand wird ersetzt.'))newGame();});
 $('human-count').addEventListener('change',()=>{if(confirm('Spielerzahl ändern und eine neue Partie beginnen?'))newGame();else $('human-count').value=String(humans);});
