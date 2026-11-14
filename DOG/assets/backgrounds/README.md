@@ -7,4 +7,6 @@ Hier liegen zukünftig die **Seitenhintergründe** von DOG (nicht die Spielbrett
 - Dateinamen: klein, ohne Leerzeichen oder Umlaute, mit Bindestrichen.
 - Spielbretter liegen getrennt in `DOG/assets/boards/`.
 
-**Hinweis:** Der Ordner ist vorbereitet. Das reine Hochladen eines Bildes aktiviert es noch nicht im Spiel. Eine spätere Hintergrund-Auswahl verknüpft die Dateien mit der DOG-Oberfläche.
+**Im Spiel aktiv:** `dog-hintergrund-magisches-schloss.png` ist jetzt der Standardhintergrund der rechten DOG-Steuerleiste. Die Auswahl liegt unter **Einstellungen → Hintergrund der rechten Seite**. Daneben gibt es die Option **Ohne Hintergrundbild**.
+
+**Weitere Motive:** Datei in diesen Ordner hochladen und anschließend als Eintrag in `DOG/appearance-registry.js` unter `SIDEBAR_BACKGROUNDS` registrieren. Damit wird sie automatisch in der Auswahlliste angezeigt. Diese Einstellung bleibt lokal und verursacht keine zusätzlichen Firebase-Schreibvorgänge.
