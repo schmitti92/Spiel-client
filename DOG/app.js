@@ -314,6 +314,17 @@ function actionLabel(m){
   if(m.type==='move')return figure+' · '+Math.abs(m.steps)+' '+(m.steps<0?'rückwärts':'vorwärts')+(m.to?.startsWith('goal')?' ins Ziel':'')+(m.captures?.length?' · '+m.captures.length+' geschlagen':'');
   return 'Karte spielen';
 }
+// Active-seat emblems are separate from avatars and from player colors.
+// Future reward unlocks can provide an emblem id through DOG_ACTIVE_EMBLEM_BY_SEAT.
+// The crown is the default; this registry alone does not unlock rewards.
+const DOG_ACTIVE_EMBLEMS=Object.freeze({
+ crown:'👑',dragon:'🐉',phoenix:'🔥',diamond:'💎',lion:'🦁',
+ star:'🌟',knight:'🛡️',moon:'🌙',trophy:'🏆',wolf:'🐺',wings:'🪽'
+});
+function dogActiveEmblem(seat){
+ const id=window.DOG_ACTIVE_EMBLEM_BY_SEAT?.[seat]||'crown';
+ return DOG_ACTIVE_EMBLEMS[id]||DOG_ACTIVE_EMBLEMS.crown;
+}
 function renderPlayers(){
   const seats=game.players.map(p=>{
     const own=game.pieces.filter(x=>x.owner===p.seat),goal=own.filter(x=>x.place==='goal').length,turn=activeSeat()===p.seat&&game.phase!=='finished';
@@ -321,7 +332,8 @@ function renderPlayers(){
     const avatarId=online?onlineDogAvatars[p.seat]:window.DogAvatars?.localAvatar?.(p.seat);
     const portrait=p.bot?'<span class="dog-seat-avatar is-bot" aria-label="Computergegner">🤖</span>':'<span class="dog-seat-avatar" role="img" aria-label="Profilbild von '+escape(p.name)+'" style="'+(window.DogAvatars?.css?.(avatarId)||'')+'"></span>';
     const detail=exchange?'✓ Karte getauscht':hand+' Karten';
-    return '<div class="seat '+(turn?'on':'')+'" style="--seat:'+displayColors()[p.seat]+'">'+portrait+'<span class="dog-seat-info"><span class="seat-name">'+escape(p.name)+'</span><span class="seat-extra'+(exchange?' is-done':'')+'">'+detail+'</span></span><b class="dog-seat-score">'+goal+'/4</b></div>';
+    const activeEmblem=turn?'<span class="dog-active-emblem" aria-label="Aktiver Spieler">'+dogActiveEmblem(p.seat)+'</span>':'';
+    return '<div class="seat '+(turn?'on':'')+'" style="--seat:'+displayColors()[p.seat]+'">'+activeEmblem+portrait+'<span class="dog-seat-info"><span class="seat-name">'+escape(p.name)+'</span><span class="seat-extra'+(exchange?' is-done':'')+'">'+detail+'</span></span><b class="dog-seat-score">'+goal+'/4</b></div>';
   }).join('');
   $('players').innerHTML=seats;
 }
