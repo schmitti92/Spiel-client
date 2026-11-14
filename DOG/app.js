@@ -354,7 +354,12 @@ function renderHand(){
   }
   if(game.phase==='seven')available=legalActions(game,seat);
   const special=available.filter(m=>['exchange','seven','emptySwap'].includes(m.type));
-  actions.insertAdjacentHTML('beforeend',[...new Map(special.map(m=>[m.type,m])).values()].map(m=>'<button type="button" class="move-button" data-special="'+m.type+'">'+(m.type==='exchange'?'Karte weitergeben':m.type==='seven'?'7 beginnen':'Tauschkarte ablegen')+'</button>').join(''));
+  actions.insertAdjacentHTML('beforeend',[...new Map(special.map(m=>[m.type,m])).values()].map(m=>'<button type="button" class="move-button dog-hand-action-primary" data-special="'+m.type+'">'+(m.type==='exchange'?'🎁 Karte weitergeben':m.type==='seven'?'🔥 7 Schritte verteilen':'🗑 Tauschkarte ablegen')+'</button>').join(''));
+  // The rules engine automatically discards the complete hand when no legal
+  // action exists. Do not offer a manual discard while a legal move is possible.
+  if(game.phase==='play' && !legalActions(game,seat).length){
+    actions.insertAdjacentHTML('beforeend','<span class="dog-no-move-note" role="status">🗑 Kein Zug möglich – deine Karten werden automatisch abgelegt.</span>');
+  }
   $('move-help').textContent=jokerAs!==null?'Joker als '+(jokerAs==='swap'?'Tauschkarte':jokerAs)+' gewählt. Figur und Ziel selbst antippen.':game.phase==='exchange'?'Wähle die Karte für deinen Partner.':game.phase==='seven'?'Figur und Zielfeld selbst wählen. Noch '+(7-game.seven.spent)+' Schritte.':selectedCard===null?'Wähle eine Karte.':'Figur und Zielfeld selbst antippen – ohne Zugvorschläge.';
 }
 function renderCardPiles(){
