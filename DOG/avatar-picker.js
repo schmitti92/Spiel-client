@@ -23,8 +23,8 @@
   const p=preferences();
   const n=p.online?.[uid()]??p.online?.guest;
   if(valid(n))return n;
-  const p=Number(profile()?.avatar);
-  return valid(p)?p:0;
+  const fallback=Number(profile()?.avatar);
+  return valid(fallback)?fallback:0;
  }
  function setLocal(seat,avatar){
   if(!valid(avatar)||!Number.isInteger(seat)||seat<0||seat>3)return;
@@ -79,6 +79,7 @@
     const picture=document.createElement('span');picture.className='dog-avatar-face';picture.style.cssText=css(n);
     btn.append(picture);
     btn.addEventListener('click',()=>{
+     if(n===(mode==='local'?localAvatar(seat):onlineAvatar()))return;
      if(mode==='local'){setLocal(seat,n);notice.textContent='✓ Profilbild für Spieler '+(seat+1)+' gespeichert';}
      else{setOnline(n);notice.textContent='✓ Profilbild ausgewählt';void syncRoomAvatar(n,notice);}
      draw();
