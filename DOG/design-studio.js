@@ -136,7 +136,7 @@ function refresh(){
  updateHudOpacityPreview(tone);
  document.querySelectorAll('[data-hud-tone]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.hudTone===draft.hudTone)));
  $('preview-stage').style.setProperty('--scene-wallpaper',bg(SCENE_STYLES[draft.scene]));
- $('preview-heading').textContent=name(draft.scene)+' + '+name(draft.board)+' · '+(BOARD_FRAMES[draft.boardFrame]||BOARD_FRAMES.classic).label+' · '+tone.label;
+ $('preview-heading').textContent=name(draft.board)+' · '+(BOARD_FRAMES[draft.boardFrame]||BOARD_FRAMES.classic).label+' · '+tone.label;
  document.querySelectorAll('[data-scene]').forEach(e=>e.setAttribute('aria-pressed',String(e.dataset.scene===draft.scene)));
  document.querySelectorAll('[data-board]').forEach(e=>e.setAttribute('aria-pressed',String(e.dataset.board===draft.board)));
  drawBoard();
@@ -191,16 +191,34 @@ for(const [id,tone] of Object.entries(HUD_TONES)){
  button.addEventListener('click',()=>{draft.hudTone=id;refresh();status('Spielblock: '+tone.label+' · Layout: Klassisch. Speichern oder im Spiel verwenden.');});
  toneList.append(button);
 }
+// Keep all long design galleries in one compact left-side workspace.
+const studioPanels=['scene','board','frame','hud'];
 function showPanel(section){
- const board=section==='board';
- $('board-design-panel').hidden=!board;
- $('hud-design-panel').hidden=board;
- $('board-tab').setAttribute('aria-selected',String(board));
- $('hud-tab').setAttribute('aria-selected',String(!board));
+ if(!studioPanels.includes(section))return;
+ for(const key of studioPanels){
+  const active=key===section;
+  const tab=$(key+'-tab'),panel=$(key+'-design-panel');
+  tab.setAttribute('aria-selected',String(active));
+  tab.tabIndex=active?0:-1;
+  panel.hidden=!active;
+ }
+ const scroll=$('studio-tools-scroll');
+ if(scroll)scroll.scrollTop=0;
 }
-$('board-tab').addEventListener('click',()=>showPanel('board'));
-$('hud-tab').addEventListener('click',()=>showPanel('hud'));
-showPanel('board');
+for(const key of studioPanels){
+ const tab=$(key+'-tab');
+ tab.addEventListener('click',()=>showPanel(key));
+ tab.addEventListener('keydown',event=>{
+  if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key))return;
+  event.preventDefault();
+  const index=studioPanels.indexOf(key);
+  const next=event.key==='Home'?0:event.key==='End'?studioPanels.length-1:
+    (index+(event.key==='ArrowLeft'||event.key==='ArrowUp'?-1:1)+studioPanels.length)%studioPanels.length;
+  showPanel(studioPanels[next]);
+  $(studioPanels[next]+'-tab').focus();
+ });
+}
+showPanel('scene');
 function apply(){
  try{saveAppearance({...loadAppearance(),board:draft.board,boardFrame:draft.boardFrame,scene:draft.scene,sidebar:draft.scene==='schloss'?'schloss':'none',hudLayout:draft.hudLayout,hudTone:draft.hudTone,hudOpacity:normalizeHudOpacity(draft.hudOpacity)});renderPresets();status('✓ '+name(draft.scene)+' + '+name(draft.board)+' · Rahmen '+BOARD_FRAMES[draft.boardFrame].label+' · Spielblock '+HUD_TONES[draft.hudTone].label+' für DOG aktiviert.');return true}
  catch{status('⚠️ Das Design konnte nicht im Browser gespeichert werden.');return false}
