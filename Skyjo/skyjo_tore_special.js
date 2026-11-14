@@ -451,9 +451,11 @@ function renderPrizes(root,show){
   if(finished&&readable&&!el.dataset.readable){
    const entry=document.createElement('li');
    entry.dataset.reelIndex=String(i);
+   entry.dataset.rarity=p.rarity||'common';
    entry.textContent='Walze '+(batch.offset+i+1)+': '+String(p.label||'Gewinn')+
     (p.voucher?' · Kartenpaket-Gutschein':'')+
-    (Number(p.quantity)>1?' · '+p.quantity+'×':'');
+    (Number(p.quantity)>1?' · '+p.quantity+'×':'')+
+    (rarityNames[p.rarity]?' · '+rarityNames[p.rarity]:'');
    readable.append(entry);
    el.dataset.readable='yes';
   }
