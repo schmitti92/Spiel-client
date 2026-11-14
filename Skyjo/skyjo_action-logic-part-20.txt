@@ -5,6 +5,7 @@ async function returnFinishedGameToRoomLobby(){
  if(!cloud.enabled||!cloud.room||!isRoomDoc(cloud.doc)){await backToLobby();return}
  if(!isHostDevice()){toast('Nur der Host kann alle Spieler gemeinsam in die Raum-Lobby zurückholen.');return}
  if(!state||state.phase!=='gameOver'){toast('Das Spiel ist noch nicht beendet.');return}
+ if(!window.SkyjoToreSpecial?.canNextRound(state)){toast('🎰 Das Monster-Slot-Finale muss zuerst abgeschlossen werden.');return}
 
  closeModal();
  toast('🏠 Alle Spieler werden in die Raum-Lobby zurückgeholt …');
