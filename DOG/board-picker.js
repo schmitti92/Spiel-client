@@ -1,4 +1,4 @@
-import {BOARD_STYLES,loadAppearance,saveAppearance} from './appearance-registry.js?v=20';
+import {BOARD_STYLES,loadAppearance,saveAppearance} from './appearance-registry.js?v=21';
 
 const ORDER=['studio','schiefer','pergament','holz','bergsee','goldwellen','royalMarmor','maerchental','alpenland','kuestenabenteuer','royalKarten','zauberwald'];
 const FALLBACK='linear-gradient(140deg,#243e52,#081524)';
