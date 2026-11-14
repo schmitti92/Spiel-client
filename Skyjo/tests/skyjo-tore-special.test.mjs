@@ -420,3 +420,75 @@ test('Rarity badges do not change synchronized slot awards or 12-reel ordering',
   assert.equal(root.dataset.reels,'12');
  }finally{globalThis.document=prev;}
 });
+
+
+test('synchronized giant jackpot stage displays epic then legendary and expires without blocking play',()=>{
+ const app={};
+ new Function('window',read('skyjo_tore_special.js'))(app);
+ const x=app.SkyjoToreSpecial;
+ const batch={prizes:[
+  {rarity:'epic',label:'250.000 €'},
+  {rarity:'legendary',label:'1.000.000 €'},
+  {rarity:'common',label:'Kiste'}
+ ]};
+ assert.equal(x.featuredJackpot(batch,-1),null);
+ assert.equal(x.featuredJackpot(batch,2999),null);
+ assert.deepEqual(x.featuredJackpot(batch,3000),{
+  index:0,rank:1,when:3000,rarity:'epic',label:'250.000 €'
+ });
+ assert.equal(x.featuredJackpot(batch,4500).rarity,'legendary');
+ assert.equal(x.featuredJackpot(batch,4500).label,'1.000.000 €');
+ assert.equal(x.featuredJackpot(batch,7599).rarity,'legendary');
+ assert.equal(x.featuredJackpot(batch,7600),null);
+ assert.deepEqual(x.featuredJackpot(batch,4500),x.featuredJackpot(batch,4500),
+  'All spectators calculate exactly the same stage at the same shared time');
+});
+test('12 reels can show mythic after legendary with no new payouts or storage writes',()=>{
+ const app={};new Function('window',read('skyjo_tore_special.js'))(app);
+ const x=app.SkyjoToreSpecial;
+ const prizes=Array.from({length:12},(_,i)=>({kind:'cash',rarity:'common',label:String(i)}));
+ prizes[2].rarity='epic';prizes[5].rarity='legendary';prizes[11].rarity='mythic';
+ const old=JSON.stringify(prizes),batch={prizes};
+ assert.equal(x.featuredJackpot(batch,3000+2*470).rarity,'epic');
+ assert.equal(x.featuredJackpot(batch,3000+5*470).rarity,'legendary');
+ assert.equal(x.featuredJackpot(batch,3000+11*470).rarity,'mythic');
+ assert.equal(x.featuredJackpot(batch,3000+11*470+3700),null);
+ assert.equal(JSON.stringify(prizes),old);
+});
+test('giant jackpot layout includes fireworks, named owner, large price, reduced motion and nonblocking controls',()=>{
+ const app={};new Function('window',read('skyjo_tore_special.js'))(app);
+ const x=app.SkyjoToreSpecial;
+ const prior=globalThis.document;
+ globalThis.document={
+  createElement:tag=>({dataset:{},setAttribute(){},focus(){},innerHTML:''}),
+  body:{append(){}}
+ };
+ try{
+  const show={id:'round-jackpot',index:0,batch:0,phase:'rolling',players:[{
+   uid:'winner',name:'Chris',slots:12,missionSlots:8,winnerSlots:2,bonusSlots:2,missionIds:[],winner:true,
+   prizes:Array.from({length:12},(_,i)=>({rarity:i===7?'legendary':'common',label:'Preis '+i,kind:'cash'}))
+  }]};
+  const root=x.createOverlay({},show);
+  const html=root.innerHTML;
+  assert.equal((html.match(/<div\b/g)||[]).length,(html.match(/<\/div>/g)||[]).length);
+  assert.match(html,/id="skyjo-slot-cinematic" aria-hidden="true" hidden/);
+  assert.match(html,/id="skyjo-cinematic-title"/);
+  assert.match(html,/id="skyjo-cinematic-owner"/);
+  assert.match(html,/id="skyjo-cinematic-prize"/);
+  assert.equal((html.match(/style="--star:/g)||[]).length,16);
+  assert.match(html,/id="monster-slot-accept"/);
+  assert.match(html,/skyjo-slot-action-dock/);
+  assert.ok(html.indexOf('skyjo-slot-cinematic')<html.indexOf('skyjo-slot-action-dock'));
+  assert.equal((html.match(/class="monster-slot-reel"/g)||[]).length,12);
+ }finally{globalThis.document=prior;}
+ const css=read('skyjo_tore_special.css');
+ assert.match(css,/SKYJO CINEMATIC JACKPOT SHOW/);
+ assert.match(css,/pointer-events:none!important/);
+ assert.match(css,/skyjo-scene-rays/);
+ assert.match(css,/skyjo-scene-particle/);
+ assert.match(css,/skyjo-jackpot-card-pop/);
+ assert.match(css,/z-index:45!important/);
+ assert.match(css,/@media\(max-width:610px\)/);
+ assert.match(css,/@media\(max-height:470px\)/);
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+});
