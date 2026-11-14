@@ -75,6 +75,11 @@
             <button class="sj-info" type="button" data-info="maxPlayers" aria-label="Info Spielerzahl">i</button>
           </div>
         </div>
+          <div class="sj-option sj-tore-special" data-key="toreSpecialEnabled">
+            <span class="symbol">🎰</span><div class="setting-copy"><strong>100 Tore Special · Monster Slots</strong><small>3 zufällige Missionen je Runde, gemeinsame Slot-Verlosung NACH der Punktewertung; Gewinne für Deal or No Deal</small></div>
+            <div class="sj-stepper"><button type="button" data-step="toreSpecialEnabled" data-dir="-1" aria-label="100 Tore Special umschalten">‹</button><output id="value-toreSpecialEnabled">Aus</output><button type="button" data-step="toreSpecialEnabled" data-dir="1" aria-label="100 Tore Special umschalten">›</button></div>
+            <button class="sj-info" type="button" data-info="toreSpecialEnabled" aria-label="Info 100 Tore Special">i</button>
+          </div>
         <h2 class="sj-board-title"><span class="symbol">🎨</span> Spielfeld</h2>
         <div class="sj-boards" aria-label="Spielbrett auswählen"><button type="button" class="sj-board active" data-board="classic" aria-pressed="true"><span class="preview"></span><strong>Klassisch</strong></button></div>
         <p class="sj-board-hint">ℹ️ Aktuell steht ausschließlich das klassische Spielfeld zur Verfügung.</p>
@@ -101,7 +106,7 @@
 </main>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script src="skyjo_start.js?v=10.3.2-ready-live" defer></script>
+<script src="skyjo_start.js?v=20261114-tore-special-v1" defer></script>
 <script src="../site-global-controls.js?v=20261109-global-1"></script>
 </body>
 </html>
