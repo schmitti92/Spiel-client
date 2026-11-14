@@ -1126,6 +1126,27 @@ async function command(run){if(operation)return;operation=true;render();notice('
 el('login-btn').addEventListener('click',()=>{if(activeProfile())location.assign('profile.html');else window.SpielOnline?.openLogin?.();});
 el('mode-local').addEventListener('click',()=>setPlayMode('local',{updateUrl:true}));
 el('mode-online').addEventListener('click',()=>setPlayMode('online',{updateUrl:true}));
+document.querySelectorAll('[data-hub-shortcut]').forEach(button=>button.addEventListener('click',()=>command(async()=>{
+ if(!activeProfile())throw Error('LOGIN_REQUIRED');
+ if(room?.phase==='playing')throw Error('MATCH_IN_PROGRESS');
+ const shortcut=button.dataset.hubShortcut;
+ if(!['deal','mini','kniffel'].includes(shortcut))return;
+ if(!room){
+  const {room:created}=await request('/rooms','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});
+  activateRoom(created);pollStart();
+ }
+ const currentCode=room?.code;
+ if(!currentCode)throw Error('ROOM_NOT_FOUND');
+ if(shortcut==='kniffel'){
+  const {room:selected}=await request('/rooms/'+currentCode+'/select','POST',{game:'kniffel'});
+  if(!selected||selected.game!=='kniffel')throw Error('GAME_SELECT_FAILED');
+  location.assign('Kniffel/lobby.html?room='+encodeURIComponent(currentCode));
+ }else if(shortcut==='deal'){
+  location.assign('DealOrNoDeal/lobby.html?room='+encodeURIComponent(currentCode));
+ }else{
+  location.assign('MinispieleV2/lobby.html?room='+encodeURIComponent(currentCode));
+ }
+})));
 el('change-game-btn').addEventListener('click',()=>{if(room?.host&&room.phase==='preparing'){displayGame=room.game;choosingGame=true;render();}});
 
 el('create-btn').addEventListener('click',()=>command(async()=>{
