@@ -434,5 +434,5 @@ function attach(gameAPI,b){
  gameAPI.skyjoSpecialAdvance=advance;
 }
 window.SkyjoToreSpecial={newGame,beginRound,trackRemove,scan,hud,nextButton,canNextRound,attach,render,
- missionsFor,missionDone,bonusIndex,bonusAchieved,bonusCellsFor,slotBreakdown,playerSpotlight,definitions:DEFINITIONS};
+ missionsFor,missionDone,bonusIndex,bonusAchieved,bonusCellsFor,slotBreakdown,currentBatch,playerSpotlight,definitions:DEFINITIONS};
 })();
