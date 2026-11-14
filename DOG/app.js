@@ -31,7 +31,7 @@ function acceptRemote(room){
  if(!decision.accept)return;
  roomRevision=decision.roomRevision;
  if(decision.kind==='dog'){
-   if(decision.hideHand)revealed=false;
+   if(decision.hideHand)revealed=decision.seat!==null;
    if(decision.clearSelection)selectedCard=null;
    game=decision.game;onlineSeat=decision.seat;acceptedMatchId=decision.matchId;
    render();
@@ -76,7 +76,7 @@ async function initOnline(){
 }
 
 const names=['Rot','Blau','Grün','Gelb'];
-let game,selectedCard=null,available=[],revealed=false,aiTimer=null,lastTurn=null,humans=1;
+let game,selectedCard=null,selectedPiece=null,available=[],revealed=online,aiTimer=null,lastTurn=null,humans=1;
 let appearance=loadAppearance();
 const currentLook=()=>resolveAppearance(appearance);
 const displayColors=()=>currentLook().pieces.colors;
@@ -94,7 +94,7 @@ function newGame(){
   if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
   humans=Number($('human-count').value)||1;
   game=createGame({names:['Du','Spieler Blau','Spieler Grün','Spieler Gelb'],bots:[0,1,2,3].map(i=>i>=humans)});
-  revealed=false;selectedCard=null;lastTurn=null;
+  revealed=true;selectedCard=null;selectedPiece=null;lastTurn=null;
   save();render();scheduleAI();
 }
 function isHumanExchange(){
@@ -201,31 +201,11 @@ function drawBoard(){
       push('<path d="M '+(x-4)+' '+(y-7)+' L '+(x+5)+' '+y+' L '+(x-4)+' '+(y+7)+' Z" fill="#ffffff" opacity=".88"/>');
     }
   }
-  // Legal landing rings show the actual result of the selected card.
-  const targets=new Set(available.flatMap(m=>[m.pieceId,m.targetId].filter(Number.isInteger)));
-  const landings=new Map();
-  for(const m of available){
-    let p=null;
-    if(m.type==='start'){
-      const owner=game.pieces[m.pieceId]?.owner;
-      if(Number.isInteger(owner))p=boardPoint(owner*16);
-    }else if(m.type==='move'||m.type==='seven-step'){
-      const target=String(m.to||'').split(':');
-      const n=Number(target[1]),owner=game.pieces[m.pieceId]?.owner;
-      if(target[0]==='track'&&Number.isInteger(n)&&n>=0&&n<64)p=boardPoint(n);
-      if(target[0]==='goal'&&Number.isInteger(owner)&&Number.isInteger(n)&&n>=0&&n<4)p=goalPoint(owner,n);
-    }else if(m.type==='swap'){
-      const other=game.pieces[m.targetId];
-      if(other)p=piecePoint(other);
-    }
-    if(p)landings.set(coord(p),p);
-  }
-  for(const p of landings.values()){
-    push('<circle class="dog-landing-hint" cx="'+p.x+'" cy="'+p.y+'" r="22.8" fill="#ffe1a1" fill-opacity=".20" stroke="#ffe5ad" stroke-width="3" stroke-dasharray="5 5" pointer-events="none"/>');
-  }
+  // No move hints: destinations must be calculated by the player.
+  const targets=new Set();
   // Pawns on top, always staying attached to their logical position.
   for(const piece of game.pieces){
-    const p=piecePoint(piece),color=safeColor(piece.owner),hi=targets.has(piece.id);
+    const p=piecePoint(piece),color=safeColor(piece.owner),hi=selectedPiece===piece.id;
     if(!p)continue;
     if(hi)push('<circle class="dog-move-halo" cx="'+p.x+'" cy="'+p.y+'" r="28" fill="'+color+'" fill-opacity=".5" filter="url(#dog-halo)" pointer-events="none"/>');
     push('<g data-piece="'+piece.id+'" class="dog-pawn '+(hi?'can-pick':'')+'" aria-label="Figur '+(piece.id%4+1)+' '+(game.players[piece.owner]?.name||'')+'">');
@@ -262,15 +242,15 @@ function renderHand(){
   const seat=currentHuman(),title=$('hand-title'),hand=$('hand'),actions=$('moves'),button=$('show-hand');
   actions.innerHTML='';hand.innerHTML='';
   if(game.phase==='finished'){title.textContent='🏆 Partie beendet';button.hidden=true;return;}
-  if(seat<0){title.textContent='🤖 Bots spielen';button.hidden=true;return;}
-  if(lastTurn!==seat){revealed=false;selectedCard=null;lastTurn=seat;}
+  if(seat<0){title.textContent=online&&onlineSeat!==null?'🃏 Deine Handkarten':'🤖 Bots spielen';button.hidden=true;if(online&&onlineSeat!==null&&Array.isArray(game.hands[onlineSeat]))hand.innerHTML=game.hands[onlineSeat].map(c=>'<div class="playing-card"><small>DOG</small><strong>'+cardsLabel(c.type)+'</strong><em>Handkarte</em></div>').join('');return;}
+  if(lastTurn!==seat){revealed=online||humans===1;selectedCard=null;selectedPiece=null;lastTurn=seat;}
   button.hidden=false;button.textContent=revealed?'🙈 Hand verdecken':'🃏 Karten ansehen';
   title.textContent=game.phase==='exchange'?'🔐 '+game.players[seat].name+': Karte an Partner geben':game.phase==='seven'?'🔥 Die 7 verteilen – noch '+(7-game.seven.spent)+' Schritte':'🎯 '+game.players[seat].name+' ist am Zug';
   if(!revealed){const symbol=escape(currentLook().cards.emblem);
     hand.innerHTML='<div class="hand-veil"><div class="dog-card-backs" aria-hidden="true"><span class="dog-card-back">'+symbol+'</span><span class="dog-card-back">'+symbol+'</span><span class="dog-card-back">'+symbol+'</span></div><span>Deine Karten sind verdeckt. Tippe auf „Karten ansehen“.</span></div>';return;}
   if(game.phase==='seven'){
     available=legalActions(game,seat);
-    hand.innerHTML='<div class="hand-veil">Wähle eine Figur und wie viele Schritte sie laufen soll. Alle 7 Schritte müssen verwendet werden.</div>';
+    hand.innerHTML='<div class="playing-card special picked"><small>DOG</small><strong>7</strong><em>Noch '+(7-game.seven.spent)+' Schritte</em></div>';
     if(!online){const cancel=document.createElement('button');cancel.className='secondary move-button';cancel.textContent='↶ Sieben zurücknehmen';cancel.addEventListener('click',()=>{game=cancelSeven(game,seat);selectedCard=null;save();render();});actions.appendChild(cancel);}
   }else{
     const cards=game.hands[seat];
@@ -282,11 +262,9 @@ function renderHand(){
     }
   }
   if(game.phase==='seven')available=legalActions(game,seat);
-  if(available.length>0){
-    const unique=available.slice(0,170);
-    actions.insertAdjacentHTML('beforeend',unique.map((m,i)=>'<button type="button" class="move-button" data-move="'+i+'">'+escape(actionLabel(m))+'</button>').join(''));
-    $('move-help').textContent='Wähle einen erlaubten Zug. Tipp: Die hervorgehobenen Figuren sind spielbar.';
-  }else $('move-help').textContent=game.phase==='exchange'?'Wähle eine Karte, die du verdeckt deinem Partner geben möchtest.':'Wähle zuerst eine Karte aus deiner Hand.';
+  const special=available.filter(m=>['exchange','seven','emptySwap'].includes(m.type));
+  actions.innerHTML=special.map(m=>'<button type="button" class="move-button" data-special="'+m.type+'">'+(m.type==='exchange'?'Karte weitergeben':m.type==='seven'?'7 beginnen':'Tauschkarte ablegen')+'</button>').join('');
+  $('move-help').textContent=game.phase==='exchange'?'Wähle die Karte für deinen Partner.':game.phase==='seven'?'Figur und Zielfeld selbst wählen. Noch '+(7-game.seven.spent)+' Schritte.':selectedCard===null?'Wähle eine Karte.':'Figur und Zielfeld selbst antippen – ohne Zugvorschläge.';
 }
 function render(){
   if(!game)return;
@@ -306,7 +284,7 @@ function render(){
 }
 function onCard(id){
   const seat=currentHuman();if(seat<0||!revealed)return;
-  selectedCard=selectedCard===id?null:id;
+  selectedCard=selectedCard===id?null:id;selectedPiece=null;
   render();
 }
 function onMove(i){
@@ -324,7 +302,7 @@ function onMove(i){
   try{
     if(game.phase==='exchange')game=exchangeCard(game,seat,move.cardId);
     else game=takeAction(game,seat,move);
-    selectedCard=null;revealed=false;lastTurn=null;available=[];save();render();scheduleAI();
+    selectedCard=null;selectedPiece=null;revealed=humans===1;lastTurn=null;available=[];save();render();scheduleAI();
   }catch(e){$('status').textContent='⚠️ '+e.message;}
 }
 function scheduleAI(){
@@ -350,12 +328,32 @@ function scheduleAI(){
   }
 }
 $('hand').addEventListener('click',e=>{const btn=e.target.closest('[data-card]');if(btn)onCard(Number(btn.dataset.card));});
-$('moves').addEventListener('click',e=>{const btn=e.target.closest('[data-move]');if(btn)onMove(Number(btn.dataset.move));});
+$('moves').addEventListener('click',e=>{const btn=e.target.closest('[data-special]');if(!btn)return;const index=available.findIndex(m=>m.type===btn.dataset.special);if(index>=0)onMove(index);});
 $('board').addEventListener('click',e=>{
-  const node=e.target.closest('[data-piece]');if(!node)return;
-  const id=Number(node.dataset.piece),matches=available.filter(a=>a.pieceId===id);
-  if(matches.length===1){onMove(available.indexOf(matches[0]));return;}
-  if(matches.length>1){$('move-help').textContent='Für diese Figur gibt es '+matches.length+' Möglichkeiten. Wähle unten den passenden Zug.';document.querySelector('#moves')?.scrollIntoView({behavior:'smooth',block:'nearest'});}
+ if(!revealed||currentHuman()<0)return;
+ const node=e.target.closest('[data-piece]');
+ if(node&&selectedPiece===null){selectedPiece=Number(node.dataset.piece);drawBoard();$('move-help').textContent='Wähle das Zielfeld selbst.';return;}
+ if(selectedPiece===null)return;
+ const matrix=$('board').getScreenCTM();if(!matrix)return;
+ const p=new DOMPoint(e.clientX,e.clientY).matrixTransform(matrix.inverse());
+ const fields=TRACK_POINTS.map((v,i)=>({key:'track:'+i,p:v}));
+ GOAL_POINTS.forEach((group,seat)=>group.forEach((v,i)=>fields.push({key:'goal:'+i,p:v,seat})));
+ let dest=null,best=26*26;
+ for(const field of fields){const d=(field.p.x-p.x)**2+(field.p.y-p.y)**2;if(d<best){best=d;dest=field;}}
+ const matches=available.map((m,i)=>({m,i})).filter(({m})=>{
+  if(m.pieceId!==selectedPiece)return false;
+  if(m.type==='swap')return !!node&&m.targetId===Number(node.dataset.piece);
+  if(m.type==='start')return dest?.key==='track:'+(game.pieces[selectedPiece].owner*16);
+  return dest&&['move','seven-step'].includes(m.type)&&m.to===dest.key&&(dest.seat===undefined||dest.seat===game.pieces[selectedPiece].owner);
+ });
+ if(matches.length===1){onMove(matches[0].i);return;}
+ if(matches.length>1){
+  const choices=matches.map(({m},i)=>(i+1)+': '+(m.as||m.steps||'Zug')+(m.viaGoal?' über Ziel':'')).join(' | ');
+  const selected=Number(prompt('Mehrere Wege führen hierher. Welche Variante? '+choices,'1'))-1;
+  if(Number.isInteger(selected)&&matches[selected])onMove(matches[selected].i);
+  return;
+ }
+ selectedPiece=null;drawBoard();$('move-help').textContent='Zug nicht erlaubt. Bitte selbst erneut rechnen.';
 });
 $('show-hand').addEventListener('click',()=>{revealed=!revealed;render();});
 $('new-game').addEventListener('click',()=>{if(confirm('Neue Partie starten? Der aktuelle Spielstand wird ersetzt.'))newGame();});
