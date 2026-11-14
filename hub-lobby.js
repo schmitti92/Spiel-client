@@ -6,7 +6,10 @@ const config=window.SPIELPORTAL_CONFIG||{};
 const API=String(config.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge',dog:'DOG Klassisch',kniffel:'Kniffel'};
 let code=null,room=null,operation=false,poll=null,accountUid=null,pollErrors=0;
-let playMode=new URL(location.href).searchParams.get('view')==='local'?'local':'online';
+const initialView=new URL(location.href).searchParams.get('view');
+let rememberedMode='online';
+try{if(sessionStorage.getItem('spielportal:hub-view')==='local')rememberedMode='local';}catch(_e){}
+let playMode=initialView==='local'?'local':initialView==='online'?'online':rememberedMode;
 let choosingGame=false,displayGame=null;
 const GAME_ICON={barikade:'🎲',skyjo:'🃏',kreuz:'🎯',business:'💼',partychallenge:'🏆',dog:'🐾',kniffel:'🎲'};
 const GAME_DESCRIPTIONS={
