@@ -41,6 +41,19 @@ const treeDetails=[
   'Der prachtvolle Weihnachtsbaum erleuchtet das ganze Weihnachtsdorf.'
 ];
 const preview={tower:1,workshop:1,bakery:1,inn:1};
+const sceneTitles=['Die Weihnachtsreise beginnt','Die ersten Laternen leuchten','Ein Hauch von Winter','Lichter über den Dächern','Das Dorf entdeckt Weihnachten','Die Weihnachtsvorbereitungen laufen','Ein Sternenglanz erscheint','Lichtertal wird zum Wintermärchen','Das Dorf wartet auf sein Wunder','Das große Weihnachtslicht'];
+const sceneDescriptions=[
+ 'Noch ist Lichtertal ein ruhiges, einfaches Dorf.',
+ 'Das erste Haus wurde verändert – die Vorbereitungen beginnen!',
+ 'Die ersten Schneeflocken bedecken die Dächer.',
+ 'Die vier Freunde bringen Wärme und Licht in die Straßen.',
+ 'Der Weihnachtsbaum wächst, und die Stadt wird festlicher.',
+ 'Überall entstehen Girlanden, Kränze und kleine Überraschungen.',
+ 'Die Häuser strahlen immer heller im winterlichen Dorf.',
+ 'Ein großer Baum und viele Laternen begleiten den Winterabend.',
+ 'Nur noch wenige Schritte bis zum großen Weihnachtsfest!',
+ 'Alle Gebäude sind vollendet: Der Weihnachtsbaum erleuchtet ganz Lichtertal!'
+];
 function treeLevel(){
   const points=Object.values(preview).reduce((a,b)=>a+b,0);
   return TREE_THRESHOLDS.filter(t=>points>=t).length;
@@ -76,6 +89,8 @@ function refreshPreview(){
   card.querySelectorAll('.building-level-markers>span').forEach((dot,i)=>dot.classList.toggle('active',i<level));
   const art=$('art-'+d.id);
   if(art)art.dataset.level=String(level);
+  const plaque=document.querySelector('[data-hotspot-level="'+d.id+'"]');
+  if(plaque)plaque.textContent=level+' / 5';
  }
  const view=$('village-view');
  view.dataset.tree=String(tree);
@@ -85,12 +100,23 @@ function refreshPreview(){
  $('stat-building-levels').textContent=total+' / 20';
  $('stat-tree-level').textContent=tree+' / 10';
  $('village-stage-text').textContent=tree===1?'Anfangszustand · Vorschau':tree===10?'Prachtvolles Weihnachtsdorf · Vorschau':'Baum Stufe '+tree+' · Vorschau';
+ $('village-scene-title').textContent=sceneTitles[tree-1];
+ $('village-scene-caption').textContent=sceneDescriptions[tree-1];
+ $('village-preview-count').textContent=(total-4)+' / 16 Ausbauschritte';
+ $('village-preview-next').disabled=total>=20;
  $('tree-current-title').textContent='Stufe '+tree+' · '+treeNames[tree-1];
  $('tree-current-copy').textContent=treeDetails[tree-1];
  $('tree-progress-fill').style.width=(tree*10)+'%';
  $('tree-progress-label').textContent=tree+' von 10 Entwicklungsstufen · '+total+' von 20 Gebäudestufen';
  for(const item of steps.children)item.classList.toggle('selected',Number(item.dataset.treeStep)===tree);
 }
+$('village-preview-next').addEventListener('click',()=>{
+  // Purely local visual demonstration: grow each building in turn.
+  const lowest=Math.min(...Object.values(preview));
+  const next=['tower','workshop','bakery','inn'].find(id=>preview[id]===lowest&&preview[id]<5);
+  if(next)preview[next]++;
+  refreshPreview();
+});
 $('village-preview-reset').addEventListener('click',()=>{
  for(const d of definitions)preview[d.id]=1;
  refreshPreview();
@@ -132,6 +158,18 @@ for(const id of tabs){
 }
 document.querySelectorAll('[data-open-tab]').forEach(button=>{
  button.addEventListener('click',()=>showPanel(button.dataset.openTab));
+});
+document.querySelectorAll('[data-open-building]').forEach(button=>{
+ button.addEventListener('click',()=>{
+  const id=button.dataset.openBuilding;
+  if(!definitions.some(def=>def.id===id))return;
+  showPanel('buildings');
+  const input=$('preview-'+id);
+  if(input){
+   input.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'center'});
+   input.focus({preventScroll:true});
+  }
+ });
 });
 window.addEventListener('hashchange',()=>showPanel(location.hash.slice(1),{updateHistory:false}));
 showPanel(tabs.includes(location.hash.slice(1))?location.hash.slice(1):'village',{updateHistory:false});
