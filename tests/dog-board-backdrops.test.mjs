@@ -7,7 +7,7 @@ import {BOARD_STYLES,loadAppearance,saveAppearance} from '../DOG/appearance-regi
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const simple=['schiefer','pergament','holz','bergsee','goldwellen'];
-const premium=['royalMarmor','alpenland','kuestenabenteuer','royalKarten','zauberwald'];
+const premium=['royalMarmor','maerchental','alpenland','kuestenabenteuer','royalKarten','zauberwald'];
 
 test('five fieldless classic plates are in the repository',()=>{
  for(const id of simple){
@@ -25,7 +25,7 @@ test('premium themes have a safe SVG fallback until uploaded WEBP exists',()=>{
  for(const id of premium){
   const theme=BOARD_STYLES[id];
   assert.ok(theme,id);
-  assert.match(theme.image,/^\.\/assets\/boards\/[a-z-]+\.webp$/,id);
+  assert.match(theme.image,/^\.\/(?:assets\/boards|Bilder\/Spielhintergrundbilder)\/[a-z-]+\.webp$/,id);
   assert.match(theme.fallbackImage,/^\.\/assets\/boards\/[a-z]+\.svg$/,id);
   assert.ok(existsSync(resolve(root,'DOG',theme.fallbackImage)),id);
  }
