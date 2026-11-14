@@ -1,0 +1,22 @@
+name: Firebase hub read regression (offline)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'hub-game-bridge.js'
+      - 'tests/hub-game-bridge-reads.test.mjs'
+      - '.github/workflows/firebase-hub-read-check.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  hub-read-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node --check hub-game-bridge.js
+      - run: node --test tests/hub-game-bridge-reads.test.mjs
