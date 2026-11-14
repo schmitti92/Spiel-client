@@ -21,3 +21,37 @@
 .dog-emoji-pages button:disabled{opacity:.4}
 .dog-emoji-note{color:#ffe0a6!important;min-height:17px}
 @media(max-width:540px){.dog-emoji-slot-list,.dog-emoji-collection{gap:4px}.dog-emoji-slot,.dog-emoji-option{padding:5px 1px;min-height:62px}.dog-emoji-option small{font-size:9px}.dog-emoji-editor{padding:10px!important}}
+
+/* DOG game: five quick actions pop from the existing Emojis icon. */
+.dog-emoji-quickpick{
+ position:fixed;z-index:11000;box-sizing:border-box;
+ width:min(350px,calc(100vw - 16px));padding:12px;
+ border:1.5px solid #efc772;border-radius:16px;
+ background:linear-gradient(140deg,rgba(9,41,74,.98),rgba(2,17,37,.98));
+ color:#fff0d3;box-shadow:0 10px 25px #0009,0 0 13px #deb56651;
+ -webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);
+}
+.dog-emoji-quickpick[hidden]{display:none!important}
+.dog-emoji-game-title{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:900;margin-bottom:9px}
+.dog-emoji-game-title button{font-size:20px;line-height:1;color:#ffe4aa;border:0;background:none;cursor:pointer;padding:2px 6px}
+.dog-emoji-game-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.dog-emoji-game-tile{min-width:0;aspect-ratio:1;border:1px solid #d6ad69;border-radius:11px;background:#092a4b;color:#fff;font-size:clamp(22px,3.5vw,34px);cursor:pointer}
+.dog-emoji-game-tile:not(:disabled):hover,.dog-emoji-game-tile:focus-visible{background:#275579;border-color:#ffdf89;box-shadow:0 0 9px #f9d16f96}
+.dog-emoji-game-tile:disabled{opacity:.33;cursor:default}
+.dog-emoji-quickpick [data-emoji-game-status]{display:block;font-size:11px;color:#bdcfdb;margin-top:8px}
+.dog-emoji-overlay{position:fixed;inset:0;z-index:20000;pointer-events:none;display:grid;place-items:center;visibility:hidden;opacity:0}
+.dog-emoji-overlay.is-showing{visibility:visible;opacity:1}
+.dog-emoji-effect{display:flex;flex-direction:column;align-items:center;gap:0;filter:drop-shadow(0 8px 18px #0008)}
+.dog-emoji-effect-icon{display:block;font-size:min(48vw,48dvh);line-height:1;transform:scale(.45);opacity:0;
+ filter:drop-shadow(0 0 12px #ffe5a5) drop-shadow(0 0 25px #e7af49)}
+.dog-emoji-effect-name{display:block;border:1px solid #e0be75;border-radius:999px;padding:4px 18px;font-weight:850;
+ color:#fff2ce;text-shadow:0 1px 5px #000;max-width:min(80vw,340px);overflow:hidden;text-overflow:ellipsis;
+ white-space:nowrap;background:#071e38e8;opacity:0}
+.dog-emoji-overlay.is-showing .dog-emoji-effect-icon{animation:dog-emoji-pop .4s cubic-bezier(.18,1.4,.35,1) forwards}
+.dog-emoji-overlay.is-showing .dog-emoji-effect-name{animation:dog-emoji-label .2s ease .3s forwards}
+@keyframes dog-emoji-pop{0%{transform:scale(.45);opacity:0}65%{transform:scale(1.12);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes dog-emoji-label{to{opacity:1}}
+@media(prefers-reduced-motion:reduce){
+ .dog-emoji-overlay.is-showing .dog-emoji-effect-icon,
+ .dog-emoji-overlay.is-showing .dog-emoji-effect-name{animation:none;opacity:1;transform:none}
+}
