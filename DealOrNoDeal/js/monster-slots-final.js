@@ -82,12 +82,12 @@ summaryButton.type='button';summaryButton.textContent='✅ Alle Gewinne bestäti
 summaryContent.append(summaryKicker,summaryTitle,summaryDetail,summaryPrizes,summaryCardsPanel,summaryButton);
 summary.append(summaryContent);root.append(summary);
 let liveGame=null,claimed=null,claimedUid=null,claiming=null,opening=false,shown='',seq=0,timers=[],priorFocus=null;
-let sharedSignature='',sharedPending=false,scheduledWindowKey='';
+let sharedSignature='',sharedPending=false,scheduledWindowKey='',sharedStageReconcile=null;
 const sharedCaption=root.querySelector('.monster-slot-shared-caption');
 const setStatus=t=>status.textContent=t;
 const watched=id=>{try{return sessionStorage.getItem(seenKey(id))==='yes'}catch{return false}};
 function timer(fn,ms){const id=setTimeout(()=>{timers=timers.filter(t=>t!==id);fn()},ms);timers.push(id)}
-function cancel(hide=true){seq++;timers.forEach(clearTimeout);timers=[];opening=false;shown='';scheduledWindowKey='';summary.hidden=true;if(hide)root.hidden=true}
+function cancel(hide=true){seq++;timers.forEach(clearTimeout);timers=[];opening=false;shown='';scheduledWindowKey='';sharedStageReconcile=null;summary.hidden=true;if(hide)root.hidden=true}
 function setPhase(el,phase){el.dataset.phase=phase;el.querySelector('.monster-slot-state').textContent=phase==='running'?'DREHT …':phase==='won'?'✓ GEWONNEN':'BEREIT'}
 for(const reel of reels){
  reel.querySelector('.monster-slot-track').replaceChildren(...rolling.concat(rolling).map(symbol=>{
@@ -391,6 +391,9 @@ function renderShared(){
     canRecover?'⏳ Für '+(game.players?.find(p=>p.id===stage.uid)?.name||'den Spieler')+' bestätigen':
     '👀 Zuschauer · '+(game.players?.find(p=>p.id===stage.uid)?.name||'Spieler')+' bestätigt';
   }
+  // Mobile browsers throttle timers in the background. Catch up to the
+  // authoritative elapsed server time without remounting card elements.
+  sharedStageReconcile?.();
   return;
  }
  cancel();sharedSignature=signature;liveGame=game.id;claimed=null;claimedUid=null;
@@ -455,7 +458,7 @@ function renderShared(){
  }else beginSpin();
  const resultAt=stage.reels===1?4200:7800;
  const reveal=(index)=>{
-  if(seq!==token||sharedSignature!==signature||root.hidden)return;
+  if(seq!==token||sharedSignature!==signature||root.hidden||reels[index].dataset.phase==='won')return;
   showPrize(reels[index],prizes[index]);lights[index].classList.add('lit');
   setStatus(index===stage.reels-1?'🎁 '+name+' hat '+stage.reels+(stage.reels===1?' Geschenk':' Geschenke')+' gewonnen!':
    '✨ '+name+': Walze '+(index+1)+' zeigt ihren Gewinn!');
@@ -465,7 +468,7 @@ function renderShared(){
   else timer(()=>reveal(index),at-elapsed);
  });
  const finish=()=>{
-  if(seq!==token||sharedSignature!==signature||root.hidden)return;
+  if(seq!==token||sharedSignature!==signature||root.hidden||root.dataset.phase==='summary')return;
   opening=false;root.dataset.phase='summary';renderSummary();summary.hidden=false;
   // Show the top of the standalone, vertically scrollable card-results page.
   root.scrollTop=0;
@@ -474,6 +477,15 @@ function renderShared(){
   summaryButton.textContent=me?'✅ Meine Gewinne bestätigen · weiter':
    recovery?'⏳ Für '+name+' bestätigen':'👀 Zuschauer · '+name+' bestätigt';
   setStatus('🎉 '+name+' hat seine Gewinne erhalten.');
+ };
+ // Reconcile after tab resumes, duplicated WebSocket snapshots or timer
+ // throttling. This only updates local DOM and never touches Firebase.
+ sharedStageReconcile=()=>{
+  if(seq!==token||sharedSignature!==signature||root.hidden||root.dataset.phase==='summary')return;
+  const currentElapsed=(typeof dealServerNow==='function'?dealServerNow():Date.now())-started;
+  if(currentElapsed>=0&&root.dataset.phase==='countdown')beginSpin();
+  stopTimes.forEach((at,index)=>{if(currentElapsed>=at)reveal(index)});
+  if(currentElapsed>=resultAt)finish();
  };
  if(elapsed>=resultAt)finish();else timer(finish,resultAt-elapsed);
  if(!mayAct&&elapsed<30000)
