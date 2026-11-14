@@ -55,3 +55,9 @@
  .dog-emoji-overlay.is-showing .dog-emoji-effect-icon,
  .dog-emoji-overlay.is-showing .dog-emoji-effect-name{animation:none;opacity:1;transform:none}
 }
+
+.dog-emoji-error-toast{position:fixed;z-index:20001;left:50%;bottom:max(16px,env(safe-area-inset-bottom,0px));
+ transform:translateX(-50%);max-width:90vw;border:1px solid #f6cb7e;border-radius:12px;
+ padding:11px 16px;background:#172e45f0;color:#fff1d5;font-size:13px;font-weight:850;
+ box-shadow:0 5px 18px #0009;text-align:center;pointer-events:none}
+.dog-emoji-error-toast[hidden]{display:none!important}
