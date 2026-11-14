@@ -159,6 +159,7 @@ async function request(path,method='GET',data){
 }
 function setRoomCode(next){code=next;const u=new URL(location.href);if(code)u.searchParams.set('room',code);else u.searchParams.delete('room');history.replaceState(null,'',u);}
 let preisjaegerClockReceivedAt=Date.now();
+window.addEventListener('dog-avatar-room-sync',e=>{if(e.detail?.room?.code===code)acceptRoom(e.detail.room);});
 function acceptRoom(next){
  if(!next||next.code!==code)return false;
  if(room?.code===next.code&&Number.isFinite(Number(next.revision))&&Number.isFinite(Number(room.revision))&&Number(next.revision)<Number(room.revision))return false;
@@ -1053,7 +1054,7 @@ function render(){
  }
  el('players').replaceChildren(...room.players.map(p=>{
   const div=document.createElement('div');div.className='player';
-  const avatar=document.createElement('span');avatar.className='avatar';avatar.textContent='🙂';
+  const avatar=document.createElement('span');avatar.className='avatar';avatar.textContent=room.game==='dog'?'':'🙂';if(room.game==='dog'&&window.DogAvatars)avatar.style.cssText=window.DogAvatars.css(p.dogAvatar);
   const name=document.createElement('span');name.className='name';name.textContent=p.name;
   const tag=document.createElement('span');tag.className='tag';tag.textContent=(p.host?'👑 Host ':'')+(p.me?'(Du)':'');name.append(tag);
   const ready=document.createElement('span');ready.className='ready'+(!p.participating?' spectator':p.ready?' yes':'');ready.textContent=!p.participating?'Zuschauer':p.ready?'✓ Bereit':'Wartet';
@@ -1137,16 +1138,16 @@ el('mode-online').addEventListener('click',()=>setPlayMode('online'));
 el('change-game-btn').addEventListener('click',()=>{if(room?.host&&room.phase==='preparing')location.assign('spielauswahl-online.html?room='+encodeURIComponent(room.code)+'&choose=1');});
 
 el('create-btn').addEventListener('click',()=>command(async()=>{
- const {room:r}=await request('/rooms','POST');location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
+ const {room:r}=await request('/rooms','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
 }));
 el('join-code').addEventListener('input',event=>{event.target.value=event.target.value.toUpperCase().replace(/[^0-9A-HJ-NP-Z]/g,'').slice(0,6);notice('');});
 el('join-code').addEventListener('keydown',e=>{if(e.key==='Enter')el('join-btn').click();});
 el('join-btn').addEventListener('click',()=>command(async()=>{
  const c=el('join-code').value.trim().toUpperCase();if(!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(c))throw Error('Bitte einen dreistelligen Zahlencode oder bisherigen sechsstelligen Raumcode eingeben.');
- const {room:r}=await request('/rooms/'+c+'/join','POST');location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
+ const {room:r}=await request('/rooms/'+c+'/join','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
 }));
 document.querySelectorAll('[data-game]').forEach(btn=>btn.addEventListener('click',()=>command(async()=>{
- if(!room?.host)return;const {room:r}=await request('/rooms/'+code+'/select','POST',{game:btn.dataset.game});choosingGame=false;activateRoom(r);
+ if(!room?.host)return;const {room:r}=await request('/rooms/'+code+'/select','POST',{game:btn.dataset.game,...(btn.dataset.game==='dog'?{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0}:{})});choosingGame=false;activateRoom(r);
 }))); 
 document.querySelectorAll('[data-barikade-setting]').forEach(field=>field.addEventListener('change',()=>command(async()=>{
  if(!room?.host||room.phase!=='preparing'||room.game!=='barikade')return;
