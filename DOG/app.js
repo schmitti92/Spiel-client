@@ -5,6 +5,7 @@ import {boardGestureTarget} from './board-gesture-math.js?v=1';
 import {snapshotPieces,planPieceMotions,createPieceAnimator} from './piece-animations.js?v=3';
 import {loadMotionMode,saveMotionMode,applyMotionMode} from './motion-settings.js?v=1';
 import {createDogVisualFeedback} from './ui-animations.js?v=2';
+import {summarizeDogVictory} from './victory-summary.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
 import {DEFAULT_APPEARANCE,BOARD_STYLES,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=21';
@@ -444,38 +445,34 @@ function openVictoryCeremony(){
  }catch(error){console.warn('DOG Siegerehrung konnte nicht geöffnet werden',error);}
 }
 function updateVictoryCeremony(){
- const finished=game?.phase==='finished';
+ const result=summarizeDogVictory(game);
+ const finished=!!result;
  $('dog-victory-mini').hidden=!finished;
  if(!finished){
   if(victoryDialog.open)closeVictoryCeremony();
   victoryDialog.hidden=true;victoryShownKey=null;victorySummaryKey=null;
   return;
  }
- const victor=game.winner===1?1:0;
- const teamSeats=[[0,2],[1,3]],teamNames=['Rot / Grün','Blau / Gelb'];
- const totals=teamSeats.map(seats=>seats.reduce((sum,seat)=>
-   sum+game.pieces.filter(piece=>piece.owner===seat&&piece.place==='goal').length,0));
+ const victor=result.winner;
  const key=(online?(acceptedMatchId||matchHint||hubCode):'local')+'|'+game.round+'|'+victor;
- const summary=JSON.stringify([key,game.players.map(p=>p.name),totals,game.pieces.map(p=>[p.id,p.place,p.pos]),appearance.pieces]);
+ const summary=JSON.stringify([key,result.teams,result.players,appearance.pieces]);
  if(victorySummaryKey!==summary){
   victorySummaryKey=summary;
-  $('winner-title').textContent='Team '+teamNames[victor]+' gewinnt!';
+  $('winner-title').textContent='Team '+result.teams[0].name+' gewinnt!';
   $('winner-subtitle').textContent='Alle acht Figuren des Siegerteams sind im Ziel. Gemeinsam geschafft!';
-  $('dog-victory-teams').innerHTML=[victor,1-victor].map((team,index)=>
-    '<div class="dog-victory-team '+(index===0?'is-winner':'')+'">'+
-      '<span class="dog-victory-team-place">'+(index===0?'✦ SIEGERTEAM':'GEGNERTEAM')+'</span>'+
-      '<strong>'+teamNames[team]+'</strong>'+
-      '<span class="dog-victory-team-score">'+totals[team]+'<small> / 8 Figuren</small></span>'+
+  $('dog-victory-teams').innerHTML=result.teams.map((team,index)=>
+    '<div class="dog-victory-team '+(team.winning?'is-winner':'')+'">'+
+      '<span class="dog-victory-team-place">'+(team.winning?'✦ SIEGERTEAM':'GEGNERTEAM')+'</span>'+
+      '<strong>'+team.name+'</strong>'+
+      '<span class="dog-victory-team-score">'+team.total+'<small> / 8 Figuren</small></span>'+
     '</div>').join('');
   const colors=displayColors();
-  $('dog-victory-players').innerHTML=[...teamSeats[victor],...teamSeats[1-victor]].map((seat,index)=>{
-    const p=game.players[seat],done=game.pieces.filter(piece=>piece.owner===seat&&piece.place==='goal').length;
-    return '<div class="dog-victory-player '+(index<2?'is-winning-player':'')+'" style="--dog-victory-color:'+colors[seat]+'">'+
-       '<span class="dog-victory-player-marker" aria-hidden="true"></span>'+
-       '<span class="dog-victory-player-name">'+escape(p.name)+(p.bot?' <small>BOT</small>':'')+'</span>'+
-       '<span class="dog-victory-player-score">'+done+' <small>/ 4</small></span>'+
-     '</div>';
-  }).join('');
+  $('dog-victory-players').innerHTML=result.players.map(player=>
+    '<div class="dog-victory-player '+(player.winning?'is-winning-player':'')+'" style="--dog-victory-color:'+colors[player.seat]+'">'+
+      '<span class="dog-victory-player-marker" aria-hidden="true"></span>'+
+      '<span class="dog-victory-player-name">'+escape(player.name)+(player.bot?' <small>BOT</small>':'')+'</span>'+
+      '<span class="dog-victory-player-score">'+player.goalCount+' <small>/ 4</small></span>'+
+    '</div>').join('');
   $('dog-victory-new').hidden=online;
   $('dog-victory-lobby').href=$('back-link').href;
  }
