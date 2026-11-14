@@ -329,6 +329,23 @@ function playerSpotlight(show,viewerUid){
   position:Number(show.index||0)+1,total:show.players?.length||1,
   viewerLabel:mine?'⭐ DU BIST DRAN':'👀 DU SCHAUST ZU'};
 }
+// Pure time-based reveal: everyone in the room sees the same celebration at
+// the same server-synchronized reel stop, even after reconnecting mid-spin.
+function featuredJackpot(batch,elapsed){
+ if(!batch||!Number.isFinite(elapsed)||elapsed<0)return null;
+ const ranks={epic:1,legendary:2,mythic:3};
+ const duration={epic:2300,legendary:3100,mythic:3700};
+ let best=null;
+ for(let i=0;i<batch.prizes.length;i++){
+  const prize=batch.prizes[i],rank=ranks[prize.rarity]||0;
+  if(!rank)continue;
+  const when=STOP(batch.prizes.length,i),age=elapsed-when;
+  if(age<0||age>=duration[prize.rarity])continue;
+  if(!best||rank>best.rank||rank===best.rank&&when>best.when)
+   best={index:i,rank,when,rarity:prize.rarity,label:String(prize.label||'Besonderer Gewinn')};
+ }
+ return best;
+}
 function createOverlay(game,show){
  const batch=currentBatch(show);if(!batch)return null;
  const n=batch.prizes.length,player=batch.player;
@@ -380,6 +397,22 @@ function createOverlay(game,show){
   '<div class="monster-slot-reels">'+reels+'</div>'+
   '<div class="monster-slot-progress" role="progressbar" aria-label="Aufgedeckte Slot-Gewinne" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="0">'+batch.prizes.map(()=>'<span></span>').join('')+'</div>'+
   '<section class="skyjo-slot-readable-prizes" aria-label="Gewinne als lesbare Liste"><h3>🎁 Aufgedeckte Gewinne <span id="skyjo-slot-revealed-count">0</span> / '+n+'</h3><ol id="skyjo-slot-readable-list" aria-live="polite"></ol></section>'+
+  '</div>'+
+  // The cinematic layer is visual-only: no clicks, server writes or prize changes.
+  // Its content/phase are derived from the SAME synchronized slot state on all screens.
+  '<div class="skyjo-slot-cinematic" id="skyjo-slot-cinematic" aria-hidden="true" hidden>'+
+    '<div class="skyjo-cinematic-wash"></div>'+
+    '<div class="skyjo-cinematic-rays"></div>'+
+    '<div class="skyjo-cinematic-stars">'+Array.from({length:16},(_,i)=>
+     '<i style="--star:'+i+'" aria-hidden="true">✦</i>').join('')+'</div>'+
+    '<div class="skyjo-cinematic-card">'+
+      '<div class="skyjo-cinematic-icon" id="skyjo-cinematic-icon">👑</div>'+
+      '<div class="skyjo-cinematic-overline">🎰 MONSTER SLOTS · SPEZIALGEWINN 🎰</div>'+
+      '<div class="skyjo-cinematic-title" id="skyjo-cinematic-title">LEGENDÄR</div>'+
+      '<div class="skyjo-cinematic-owner" id="skyjo-cinematic-owner"></div>'+
+      '<div class="skyjo-cinematic-prize" id="skyjo-cinematic-prize"></div>'+
+      '<div class="skyjo-cinematic-bottom">✦ EIN BESONDERER MOMENT ✦</div>'+
+    '</div>'+
   '</div>'+
   '<div class="skyjo-slot-action-dock">'+
     '<p class="skyjo-slot-jackpot-alert" id="skyjo-slot-jackpot-alert" role="status" aria-live="polite" hidden></p>'+
@@ -464,6 +497,33 @@ function renderPrizes(root,show){
  if(counter)counter.textContent=String(revealed);
  const progress=root.querySelector('.monster-slot-progress');
  if(progress)progress.setAttribute('aria-valuenow',String(revealed));
+ const scene=show.phase==='rolling'?featuredJackpot(batch,elapsed):null;
+ const cinematic=root.querySelector('#skyjo-slot-cinematic');
+ if(cinematic){
+  if(!scene){
+   cinematic.hidden=true;
+   cinematic.dataset.sceneKey='';
+   cinematic.classList.remove('is-live');
+  }else{
+   const sceneKey=show.id+'|'+show.index+'|'+show.batch+'|'+scene.index;
+   if(cinematic.dataset.sceneKey!==sceneKey){
+    cinematic.dataset.sceneKey=sceneKey;
+    cinematic.dataset.rarity=scene.rarity;
+    cinematic.querySelector('#skyjo-cinematic-icon').textContent=
+     scene.rarity==='epic'?'💎':scene.rarity==='legendary'?'👑':'🌟';
+    cinematic.querySelector('#skyjo-cinematic-title').textContent=
+     scene.rarity==='epic'?'💜 EPISCH!':scene.rarity==='legendary'?'👑 LEGENDÄR!':'🌟 MYTHISCH!';
+    cinematic.querySelector('#skyjo-cinematic-owner').textContent=
+     '🎉 '+batch.player.name+' HAT GEWONNEN!';
+    cinematic.querySelector('#skyjo-cinematic-prize').textContent=scene.label;
+    cinematic.classList.remove('is-live');
+    cinematic.hidden=false;
+    // Restart CSS motion only when the winning reel changes, never each frame.
+    void cinematic.offsetWidth;
+    cinematic.classList.add('is-live');
+   }
+  }
+ }
  const jackpot=root.querySelector('#skyjo-slot-jackpot-alert');
  const rarity=topPrize?.rarity||'';
  root.dataset.highlight=rarity;
@@ -550,5 +610,5 @@ function attach(gameAPI,b){
 }
 window.SkyjoToreSpecial={newGame,beginRound,trackRemove,scan,hud,nextButton,canNextRound,attach,render,
  missionsFor,missionDone,bonusIndex,bonusAchieved,bonusCellsFor,slotBreakdown,currentBatch,playerSpotlight,
- clockOffsetFromSample,createOverlay,definitions:DEFINITIONS};
+ clockOffsetFromSample,createOverlay,featuredJackpot,definitions:DEFINITIONS};
 })();
