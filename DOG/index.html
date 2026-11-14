@@ -181,6 +181,20 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 @media (max-width:899px), (orientation:portrait){
  .hand .playing-card.dog-designed{width:clamp(66px,17vw,95px);height:auto}
 }
+
+/* Suppress generated fallback labels only once a real PNG has loaded.
+   Number-card PNGs have a shorter source ratio than 5:7: keep artwork
+   undistorted and fill the remaining frame with matching parchment. */
+.playing-card.dog-designed.has-dog-art .dog-card-top,
+.playing-card.dog-designed.has-dog-art .dog-card-main,
+.playing-card.dog-designed.has-dog-art .dog-card-footer,
+.dog-joker-choice.dog-designed.has-dog-art .dog-card-top,
+.dog-joker-choice.dog-designed.has-dog-art .dog-card-main,
+.dog-joker-choice.dog-designed.has-dog-art .dog-card-footer{visibility:hidden}
+.playing-card.dog-designed.has-dog-art,
+.dog-joker-choice.dog-designed.has-dog-art{background:linear-gradient(180deg,#efd5a0,#fff3d6 20%,#fff3d6 80%,#efd5a0)!important}
+.playing-card.dog-designed .dog-card-art,
+.dog-joker-choice.dog-designed .dog-card-art{object-fit:contain;display:block}
 </style>
 </head>
 <body>
@@ -313,6 +327,6 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
  sync();
 })();
 </script>
-<script type="module" src="./app.js?v=16"></script>
+<script type="module" src="./app.js?v=17"></script>
 </body>
 </html>
