@@ -4,7 +4,7 @@ export const RULESET = Object.freeze({id:'classic-dog',version:1,trackSize:64,se
 export const CARD_TYPES = Object.freeze(['1/11','2','3','4','5','6','7','8','9','10','12','13','swap','joker']);
 export const COLORS = Object.freeze(['#e65f58','#4c9bfa','#5ac68d','#e8b84e']);
 const stepsByCard = { '1/11':[1,11], '2':[2], '3':[3], '4':[4,-4], '5':[5], '6':[6], '7':[7], '8':[8], '9':[9], '10':[10], '12':[12], '13':[13] };
-const startCards = new Set(['1/11','13']);
+const startCards = new Set(['1/11','12','13']);
 const clone = value => JSON.parse(JSON.stringify(value));
 const mod = n => ((n%64)+64)%64;
 const opponentTeam = owner => owner%2;
@@ -271,7 +271,7 @@ function score(s,action,player=s.current){
     const card=s.hands[player].find(c=>c.id===action.cardId);
     const partner=(player+2)%4;
     const partnerHasMove=s.pieces.some(p=>p.owner===partner&&p.place==='track');
-    return (!partnerHasMove&&['1/11','13','joker'].includes(card.type)?50:0)+(card.type==='swap'?-4:0)+Math.random()*2;
+    return (!partnerHasMove&&['1/11','12','13','joker'].includes(card.type)?50:0)+(card.type==='swap'?-4:0)+Math.random()*2;
   }
   if(action.type==='start')return 95;
   if(action.type==='emptySwap')return -20;
