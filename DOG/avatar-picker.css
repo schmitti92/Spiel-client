@@ -1,0 +1,13 @@
+/* Compact avatar choice shared by both DOG lobby entry points. */
+.dog-avatar-picker{min-width:0;position:relative;padding:13px 16px!important;border:1px solid #bc995c!important;border-radius:16px!important;background:linear-gradient(155deg,#12344b,#061c30)!important;color:#f6e4bf!important}
+.dog-avatar-picker h3{margin:0 0 5px!important;color:#ffe3a4!important;font-size:17px!important}
+.dog-avatar-picker p{margin:0 0 9px!important;color:#c1d6e1!important;font-size:12px!important;max-width:none!important}
+.dog-avatar-picker label{display:flex;align-items:center;gap:9px;margin:8px 0;font-size:12px;font-weight:800}
+.dog-avatar-picker select{min-height:33px;min-width:0;background:#0b263a;color:#fff;border:1px solid #b9965e;border-radius:8px;padding:4px 8px;font:inherit}
+.dog-avatar-options{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:7px;max-width:580px}
+.dog-avatar-option{min-width:0;aspect-ratio:1;border:2px solid #466b80;border-radius:50%;padding:3px;background:#0a2239;display:grid;place-items:center;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.dog-avatar-option .dog-avatar-face{display:block;width:100%;height:100%;border-radius:50%;background-color:#e1d4a3}
+.dog-avatar-option:hover,.dog-avatar-option:focus-visible{border-color:#f0cc77}
+.dog-avatar-option.is-selected{border-color:#ffe5a3;box-shadow:0 0 0 2px #f3c85f66,0 0 12px #eec45f80}
+.dog-avatar-picker [data-dog-avatar-notice]{min-height:17px;margin:8px 0 0!important;color:#b8e8d2!important;font-size:11px!important}
+@media(max-width:560px){.dog-avatar-options{grid-template-columns:repeat(8,minmax(0,1fr));gap:4px}.dog-avatar-picker{padding:10px!important}.dog-avatar-option{padding:1px}}
