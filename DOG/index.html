@@ -340,6 +340,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
     <button class="top-btn" id="board-choice-button" type="button">🎨 Brett wählen</button>
     <button class="top-btn" id="appearance-button" type="button">⚙ Einstellungen</button>
     <button class="top-btn" id="rules-button" type="button">❔ Regeln</button>
+     <a class="top-btn" id="dog-christmas-event-link" href="christmas-event.html?return=index.html">🎄 Weihnachtsevent</a>
     <a class="top-btn" id="back-link" href="../spielauswahl-lokal.html">👥 Zur Lobby</a>
   </nav>
 </div>
@@ -593,7 +594,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 })();
 </script>
 <script type="module">
-import('./ui-shell.js?v=4').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
+import('./ui-shell.js?v=5').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
 import('./app.js?v=51').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
