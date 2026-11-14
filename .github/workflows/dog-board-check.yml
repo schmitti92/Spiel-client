@@ -13,6 +13,7 @@ on:
       - 'tests/dog-card-editions.test.mjs'
       - 'tests/dog-hand-gestures.test.mjs'
       - 'tests/dog-board-gestures.test.mjs'
+      - 'tests/dog-piece-animations.test.mjs'
       - 'tests/dog-board-backdrops.test.mjs'
       - 'tests/dog-ui-shell.test.mjs'
       - 'tests/dog-official-rules.test.mjs'
@@ -31,6 +32,7 @@ on:
       - 'tests/dog-card-editions.test.mjs'
       - 'tests/dog-hand-gestures.test.mjs'
       - 'tests/dog-board-gestures.test.mjs'
+      - 'tests/dog-piece-animations.test.mjs'
       - 'tests/dog-board-backdrops.test.mjs'
       - 'tests/dog-ui-shell.test.mjs'
       - 'tests/dog-official-rules.test.mjs'
@@ -46,6 +48,7 @@ jobs:
         with:
           node-version: '22'
       - run: node --check DOG/app.js
+      - run: node --check DOG/piece-animations.js
       - run: node --check DOG/card-visuals.js
       - run: node --check DOG/hand-gestures.js
       - run: node --check DOG/board-gesture-math.js
@@ -67,4 +70,5 @@ jobs:
       - run: node --test tests/dog-card-editions.test.mjs
       - run: node --test tests/dog-hand-gestures.test.mjs
       - run: node --test tests/dog-board-gestures.test.mjs
+      - run: node --test tests/dog-piece-animations.test.mjs
       - run: node --test tests/dog-board-layout.test.mjs tests/dog-board-builder.test.mjs tests/dog-board-editor-ui.test.mjs tests/dog-board-assistants.test.mjs tests/dog-board-group-move.test.mjs tests/dog-appearance.test.mjs tests/dog-official-rules.test.mjs tests/dog-online-sync.test.mjs
