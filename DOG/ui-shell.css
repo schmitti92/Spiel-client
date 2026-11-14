@@ -557,3 +557,61 @@ main{width:calc(100% - 22px);max-width:1920px;margin:6px auto}
 @media(prefers-reduced-motion:reduce){
  .dog-menu-toggle,.right.dog-modules>.panel{transition:none}
 }
+
+/* DOG final glass cockpit v4 — align right modules to the board, reveal scenic wallpaper. */
+.dog-floating-menu{
+  left:calc(env(safe-area-inset-left,0px) + 14px);
+  right:auto;
+}
+.dog-menu-toggle{margin-left:0}
+.dog-menu-panel{margin-left:0}
+.right.dog-modules{
+  padding:0 0 4px;
+  gap:8px;
+  background:transparent!important;
+}
+.right.dog-modules>.panel,
+.right.dog-modules>.panel:nth-child(2),
+.right.dog-modules>.panel:nth-child(3){
+  background:rgba(9,39,69,.34)!important;
+  border:1px solid rgba(218,202,170,.28);
+  border-radius:17px;
+  box-shadow:0 3px 13px rgba(1,13,28,.15),inset 0 1px rgba(255,255,255,.09);
+  -webkit-backdrop-filter:blur(3px);
+  backdrop-filter:blur(3px);
+}
+.right.dog-modules .dog-module-heading{
+  border-bottom-color:rgba(225,210,184,.23);
+}
+.dog-status-panel .dog-turn-line{
+  background:rgba(6,29,57,.53);
+  border:1px solid rgba(226,201,159,.27);
+  box-shadow:none;
+}
+.dog-status-panel .seat{
+  background:rgba(4,27,53,.7);
+  box-shadow:none;
+}
+.dog-status-panel .seat.on{
+  box-shadow:0 0 9px rgba(242,197,115,.2);
+}
+.right.dog-modules .dog-pile-module .dog-piles,
+.right.dog-modules .dog-piles{
+  background:rgba(5,28,55,.48);
+  border-color:rgba(220,197,157,.22);
+}
+.dog-extras-grid .dog-extra-button{
+  background:rgba(7,34,65,.72);
+  border-color:rgba(211,189,149,.25);
+  box-shadow:none;
+}
+@media(min-width:900px) and (orientation:landscape) and (max-height:1100px){
+  .right.dog-modules{padding:0 0 4px;gap:7px}
+}
+@media(max-width:899px),(orientation:portrait){
+  .dog-floating-menu{
+    left:calc(env(safe-area-inset-left,0px) + 10px);
+    right:auto;
+  }
+  .right.dog-modules{padding:12px 0 6px}
+}
