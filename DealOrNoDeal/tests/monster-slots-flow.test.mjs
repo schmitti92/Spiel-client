@@ -33,7 +33,7 @@ function browserFixture(customPrizes=null){
   win.querySelector=q=>({'.monster-slot-art':art,'.monster-slot-quantity':quantity,'.monster-slot-prize-name':name})[q];
   return {reel,win,name,quantity,status};
  }
- const reels=[makeReel(),makeReel(),makeReel()],lamps=Array.from({length:3},()=>new Node('lamp'));
+ const reels=Array.from({length:6},()=>makeReel()),lamps=Array.from({length:6},()=>new Node('lamp'));
  const root=new Node('root');root.hidden=true;
  const sharedCaption=new Node('shared-caption');sharedCaption.hidden=true;
  root.querySelector=q=>q==='.monster-slot-shared-caption'?sharedCaption:null;
@@ -72,6 +72,7 @@ function browserFixture(customPrizes=null){
  };
  const g={id:'11111111-1111-4111-8111-111111111111',phase:'final',monsterSlotsVersion:1,
   finalValues:[{id:'host',payout:3000000},{id:'guest',payout:2000000},{id:'quiet',payout:1000000}]};
+ const fillPrizes=(items,count)=>Array.from({length:count},(_,i)=>items[i]||{kind:'cash',id:null,label:(i+1)+',00 €',amountCents:(i+1)*100,quantity:1});
  const fetch=async(_url,options)=>{
   const uid=options.headers.Authorization.slice(7),
    {gameId,operation,expectedTurn,expectedUid,expectedStartedAt}=JSON.parse(options.body);
@@ -85,7 +86,7 @@ function browserFixture(customPrizes=null){
      {kind:'cash',id:null,label:'10,00 €',amountCents:1000,quantity:1},
      {kind:'chest',id:'wood',label:'Holzkiste',quantity:1}
     ];
-    g.monsterSlotShow={...current,phase:'rolling',startedAt:Date.now()-9000,prizes:prizeItems.slice(0,count)};
+    g.monsterSlotShow={...current,phase:'rolling',startedAt:Date.now()-12000,prizes:fillPrizes(prizeItems,count)};
    }else if(current.turn==='runner'){
     g.monsterSlotShow={phase:'ready',turn:'champion',uid:'host',reels:3,
      runnerUid:'guest',championUid:'host',activatedAt:Date.now(),startedAt:null,prizes:[]};
@@ -101,7 +102,7 @@ function browserFixture(customPrizes=null){
   const items=customPrizes||[{kind:'joker',id:null,label:'1× Joker',quantity:1},
    {kind:'minigame',id:null,label:'2× Minispiel-Gutschein',quantity:2},
    {kind:'cash',id:null,label:'10,00 €',amountCents:1000,quantity:1}];
-  return {ok:true,json:async()=>({ok:true,gameId,guaranteed:count,prizes:items.slice(0,count)})};
+  return {ok:true,json:async()=>({ok:true,gameId,guaranteed:count,prizes:fillPrizes(items,count)})};
  };
  async function flush(){for(let i=0;i<15;i++)await Promise.resolve()}
  const context=createContext({window,document,g,fetch,console,Date:ServerDate,code:'123',render:()=>{},sessionStorage:{
@@ -177,17 +178,21 @@ test('a three-player finale shows each reel then the combined summary without du
  assert.ok(b.reels.every(r=>r.reel.dataset.phase==='running'),'all reels start together');
  assert.equal(b.accept.disabled,true);
  await b.advance(100);
- assert.deepEqual(b.reels.map(r=>r.reel.dataset.phase),['won','running','running']);
+ assert.deepEqual(b.reels.map(r=>r.reel.dataset.phase),['won','running','running','running','running','running']);
  await b.advance(120);
- assert.deepEqual(b.reels.map(r=>r.reel.dataset.phase),['won','won','running']);
+ assert.deepEqual(b.reels.map(r=>r.reel.dataset.phase),['won','won','running','running','running','running']);
  await b.advance(120);
- assert.deepEqual(b.reels.map(r=>r.reel.dataset.phase),['won','won','won']);
+ assert.deepEqual(b.reels.map(r=>r.reel.dataset.phase),Array(6).fill('won'));
  assert.equal(b.accept.disabled,true,'must wait for result hold');
- await b.advance(1999);
- assert.equal(b.summary.hidden,true,'the complete winners must remain visible for two seconds');
+ await b.advance(120); // 4th reel
+ await b.advance(120); // 5th reel
+ await b.advance(120); // 6th reel
+ assert.deepEqual(b.reels.map(r=>r.reel.dataset.phase),Array(6).fill('won'));
+ await b.advance(499);
+ assert.equal(b.summary.hidden,true,'keep all six prize windows visible');
  await b.advance(1);
- assert.equal(b.summary.hidden,false,'one combined summary must open after exactly two seconds');
- assert.equal(b.summaryPrizes.children.length,3,'all three rewards appear together');
+ assert.equal(b.summary.hidden,false,'open summary only after every reel stopped');
+ assert.equal(b.summaryPrizes.children.length,6,'all six prizes appear together');
  assert.equal(b.summaryCardsPanel.hidden,true,'summary without packs has no empty cards panel');
  assert.equal(b.summaryButton.disabled,false);
  b.summaryButton.click();
@@ -201,8 +206,8 @@ test('a three-player finale shows each reel then the combined summary without du
  assert.equal(b.requests.length,2);
  assert.equal(b.requests[1].uid,'guest');
  assert.equal(b.root.hidden,false);
- assert.equal(b.root.dataset.reels,'1','runner-up sees one reel');
- assert.equal(b.reels[1].reel.hidden,true);
+ assert.equal(b.root.dataset.reels,'2','runner-up sees two reels');
+ assert.equal(b.reels[1].reel.hidden,false);
  assert.equal(b.reels[2].reel.hidden,true);
  await b.advance(2340);b.summaryButton.click();
  assert.equal(b.store.get('monster-slots-watched:guest:'+b.g.id),'yes');
@@ -236,14 +241,14 @@ test('every won pack displays all cards at once, including NEW and duplicates',a
  ]);
  b.banker.hidden=true;
  b.emit('deal-game-state-change');await b.flush();
- await b.advance(340);
- assert.deepEqual(b.reels.map(r=>r.reel.dataset.phase),['won','won','won']);
+ await b.advance(700);
+ assert.deepEqual(b.reels.map(r=>r.reel.dataset.phase),Array(6).fill('won'));
  assert.equal(b.summary.hidden,true,'all three reel prizes must stay visible for two seconds');
- await b.advance(1999);
+ await b.advance(499);
  assert.equal(b.summary.hidden,true,'no premature card reveal');
  await b.advance(1);
  assert.equal(b.summary.hidden,false);
- assert.equal(b.summaryPrizes.children.length,3,'all prize categories are shown');
+ assert.equal(b.summaryPrizes.children.length,6,'all six paid prizes are shown');
  assert.equal(b.summaryCardsPanel.hidden,false);
  assert.equal(b.summaryCards.children.length,4,'every card from all three packs is visible immediately');
  assert.deepEqual(b.summaryCards.children.map(c=>c.children[2].textContent),
@@ -272,7 +277,7 @@ test('duplicate-only packs still appear in the same summary without opening anim
  assert.equal(b.summary.hidden,false);
  assert.equal(b.summaryCards.children.length,1,'duplicates must not disappear from the overview');
  assert.equal(b.summaryCards.children[0].children[1].textContent,'DOPPELT');
- assert.equal(b.summaryPrizes.children.length,3);
+ assert.equal(b.summaryPrizes.children.length,6);
  assert.equal(b.requests.length,1);
 });
 
@@ -288,7 +293,7 @@ test('a tied finale never requests Monster Slots and a later unique winner can s
 });
 
 
-test('podium UI allows only first and unique second to claim, with 3/1 visual reels',async()=>{
+test('podium UI allows only first and unique second to claim, with 6/2 visual reels',async()=>{
  const b=browserFixture();
  b.banker.hidden=true;
  b.window.person='quiet';b.emit('deal-game-state-change');await b.flush();
@@ -296,19 +301,19 @@ test('podium UI allows only first and unique second to claim, with 3/1 visual re
  assert.equal(b.root.hidden,true,'loser never sees any slot machine');
  b.window.person='guest';b.emit('spielonline-change');await b.flush();
  assert.equal(b.requests.length,1,'second place may claim exactly once');
- assert.equal(b.root.dataset.reels,'1');
- assert.equal(b.reels.filter(r=>r.reel.hidden===false).length,1);
+ assert.equal(b.root.dataset.reels,'2');
+ assert.equal(b.reels.filter(r=>r.reel.hidden===false).length,2);
  await b.advance(1100);
  assert.equal(b.summary.hidden,false,'single reel finishes in its own animation');
- assert.equal(b.summaryPrizes.children.length,1);
+ assert.equal(b.summaryPrizes.children.length,2);
  b.summaryButton.click();
  assert.equal(b.store.get('monster-slots-watched:guest:'+b.g.id),'yes');
  b.window.person='host';b.emit('spielonline-change');await b.flush();
  assert.equal(b.requests.length,2);
- assert.equal(b.root.dataset.reels,'3');
- assert.equal(b.reels.filter(r=>r.reel.hidden===false).length,3);
+ assert.equal(b.root.dataset.reels,'6');
+ assert.equal(b.reels.filter(r=>r.reel.hidden===false).length,6);
  await b.advance(2340);
- assert.equal(b.summaryPrizes.children.length,3);
+ assert.equal(b.summaryPrizes.children.length,6);
 });
 
 test('two-player loser never receives a runner-up spin, and tied second prizes are not duplicated',async()=>{
@@ -319,7 +324,7 @@ test('two-player loser never receives a runner-up spin, and tied second prizes a
  assert.equal(b.requests.length,0);
  b.window.person='host';b.emit('spielonline-change');await b.flush();
  assert.equal(b.requests.length,1);
- assert.equal(b.root.dataset.reels,'3');
+ assert.equal(b.root.dataset.reels,'6');
  b.g.id='22222222-2222-4222-8222-222222222222';
  b.g.finalValues=[{id:'host',payout:5000000},{id:'guest',payout:2000000},{id:'quiet',payout:2000000},{id:'fourth',payout:1000000}];
  b.window.person='guest';b.emit('spielonline-change');await b.flush();
@@ -437,7 +442,7 @@ test('mobile tab resumes the actual server-stage result without replaying delaye
  b.emit('deal-game-state-change');await b.flush();
  assert.equal(b.root.dataset.phase,'summary','the returned tab must catch up immediately');
  assert.equal(b.summary.hidden,false);
- assert.ok(b.reels.every(r=>r.reel.dataset.phase==='won'),'every server-revealed reel is complete');
+ assert.ok(b.reels.slice(0,3).every(r=>r.reel.dataset.phase==='won'),'every legacy server-revealed reel is complete');
  assert.equal(b.summaryPrizes.children.length,3);
  b.root.scrollTop=250;
  // Delayed callbacks after returning must never restart spinning or reset scroll.
