@@ -182,7 +182,7 @@ test('a three-player finale shows each reel then the combined summary without du
  await b.advance(120);
  assert.deepEqual(b.reels.map(r=>r.reel.dataset.phase),['won','won','running','running','running','running']);
  await b.advance(120);
- assert.deepEqual(b.reels.map(r=>r.reel.dataset.phase),Array(6).fill('won'));
+ assert.deepEqual(b.reels.map(r=>r.reel.dataset.phase),['won','won','won','running','running','running']);
  assert.equal(b.accept.disabled,true,'must wait for result hold');
  await b.advance(120); // 4th reel
  await b.advance(120); // 5th reel
@@ -243,7 +243,7 @@ test('every won pack displays all cards at once, including NEW and duplicates',a
  b.emit('deal-game-state-change');await b.flush();
  await b.advance(700);
  assert.deepEqual(b.reels.map(r=>r.reel.dataset.phase),Array(6).fill('won'));
- assert.equal(b.summary.hidden,true,'all three reel prizes must stay visible for two seconds');
+ assert.equal(b.summary.hidden,true,'all six prizes remain visible before summary');
  await b.advance(499);
  assert.equal(b.summary.hidden,true,'no premature card reveal');
  await b.advance(1);
@@ -304,7 +304,7 @@ test('podium UI allows only first and unique second to claim, with 6/2 visual re
  assert.equal(b.root.dataset.reels,'2');
  assert.equal(b.reels.filter(r=>r.reel.hidden===false).length,2);
  await b.advance(1100);
- assert.equal(b.summary.hidden,false,'single reel finishes in its own animation');
+ assert.equal(b.summary.hidden,false,'both runner-up reels finish together before summary');
  assert.equal(b.summaryPrizes.children.length,2);
  b.summaryButton.click();
  assert.equal(b.store.get('monster-slots-watched:guest:'+b.g.id),'yes');
