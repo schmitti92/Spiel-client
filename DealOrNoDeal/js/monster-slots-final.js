@@ -358,7 +358,7 @@ function renderShared(){
    if(!root.hidden)cancel();
    scheduledWindowKey=windowKey;
    root.dataset.shared='yes';root.dataset.turn=stage.turn;root.dataset.actor='no';
-   root.dataset.phase='preparing';configureReels(stage.reels);
+   root.dataset.phase='preparing';liveGame=game.id;claimed=null;claimedUid=null;configureReels(stage.reels);
    lights.forEach(light=>light.classList.remove('lit'));
    reels.forEach(resetReel);summary.hidden=true;
    const nextPlayer=game.players?.find(p=>p.id===stage.uid);
