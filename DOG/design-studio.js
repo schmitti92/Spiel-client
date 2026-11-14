@@ -1,3 +1,5 @@
+import {applyMotionMode,loadMotionMode} from './motion-settings.js';
+applyMotionMode(loadMotionMode());
 import {BOARD_STYLES,BOARD_FRAMES,SCENE_STYLES,HUD_LAYOUTS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,loadAppearance,saveAppearance,validAssetPath} from './appearance-registry.js?v=21';
 import {APPROVED_BOARD_LAYOUT as LAYOUT} from './approved-board.js';
 const $=id=>document.getElementById(id);
