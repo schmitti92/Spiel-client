@@ -9,7 +9,7 @@ const COLOR={red:'#f34850',blue:'#298cff',yellow:'#f7c442',green:'#39be6b'};
 let room=null,busy=false,loading=false,ws=null,pollTimer=null,retry=null,currentUser=null;
 const hostOnly=s=>room?.host&&room.phase==='preparing'&&!busy&&s!==false;
 function note(msg='',error=false){el('status').textContent=msg;el('status').classList.toggle('error',error);}
-function home(extra=''){return '../spielauswahl-online.html?room='+encodeURIComponent(code)+extra;}
+function home(extra=''){return '../hub-lobby.html?view=online&room='+encodeURIComponent(code)+extra;}
 function profile(){
  const state=window.SpielOnline?.state?.();
  return state?.status==='online'&&state?.profile?.setupComplete!==false&&state?.user?.getIdToken?state:null;
