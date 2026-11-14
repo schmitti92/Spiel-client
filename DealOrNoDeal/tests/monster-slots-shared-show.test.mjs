@@ -110,3 +110,14 @@ test('shared slot summary provides full-height native touch scrolling without ex
  assert.doesNotMatch(js,/sharedSignature='';renderShared\(\)\}\},wait/);
  assert.match(js,/renderShared\(\)\},wait/);
 });
+
+test('runner-up to champion transition shows no premature reel and keeps the same shared server clock',()=>{
+ assert.match(css,/#deal-monster-slots\[data-phase="preparing"\] \.monster-slot-reels/);
+ assert.match(css,/#deal-monster-slots\[data-phase="preparing"\] \.monster-slot-progress/);
+ assert.match(css,/display:none!important/);
+ assert.match(js,/stage\.turn==='champion'&&stage\.runnerConfirmedAt/);
+ assert.match(js,/expectedTurn:stage\.turn,expectedUid:stage\.uid/);
+ assert.match(js,/expectedStartedAt:Number\(stage\.startedAt\|\|0\)/);
+ assert.match(js,/if\(scheduledWindowKey!==windowKey\)/);
+ assert.match(js,/Math\.max\(20,showAt-now\)/);
+});
