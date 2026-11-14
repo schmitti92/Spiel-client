@@ -195,9 +195,30 @@ function advance(){
 function imagePath(prize){
  const entry=REWARD_ART[prize?.kind];return typeof entry==='string'?entry:entry?.[prize?.id]||'';
 }
+// All clients derive the same recipient/order from the synchronized show.
+// Only the "you" / "spectator" badge depends on the local signed-in user.
+function playerSpotlight(show,viewerUid){
+ const recipient=show?.players?.[show?.index];
+ if(!recipient)return null;
+ const recipientName=String(recipient.name||'Spieler');
+ const mine=!!viewerUid&&recipient.uid===viewerUid;
+ const role=recipient.winner?'🏆 RUNDENSIEGER':'🎯 MISSIONSGEWINNER';
+ const count=Array.isArray(recipient.prizes)?recipient.prizes.length:0;
+ return {name:recipientName,mine,role,slots:count,missionCount:recipient.missionIds?.length||0,
+  position:Number(show.index||0)+1,total:show.players?.length||1,
+  viewerLabel:mine?'⭐ DU BIST DRAN':'👀 DU SCHAUST ZU'};
+}
 function createOverlay(game,show){
  const batch=currentBatch(show);if(!batch)return null;
  const n=batch.prizes.length,player=batch.player;
+ const spotlight=playerSpotlight(show,me()?.uid);
+ const queue=show.players.map((p,i)=>{
+  const status=i<show.index?'✅':i===show.index?'🎰':'⏳';
+  const label=p.winner?'🏆':'🎯';
+  return '<span class="skyjo-slot-queue-player'+(i===show.index?' is-current':'')+
+   (i<show.index?' is-done':'')+'"'+(i===show.index?' aria-current="step"':'')+'>'+status+
+   ' '+label+' '+esc(p.name||'Spieler')+'</span>';
+ }).join('');
  const root=document.createElement('section');
  root.id='deal-monster-slots';root.className='skyjo-monster-special';root.tabIndex=-1;
  root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');
@@ -216,7 +237,20 @@ function createOverlay(game,show){
  root.innerHTML='<div class="monster-slot-machine"><div class="monster-slot-lights">✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦</div>'+
   '<div class="monster-slot-kicker">✦ SKYJO ACTION · 100 TORE SPECIAL ✦</div>'+
   '<h2 id="monster-slots-title">🎰 MONSTER SLOTS</h2>'+
-  '<p class="monster-slot-shared-caption">👀 '+esc(player.name)+' · ALLE SPIELER SEHEN LIVE ZU</p>'+
+  '<div class="skyjo-slot-owner-bar" aria-label="Aktueller Slot-Gewinner">'+
+    '<div class="skyjo-slot-owner-icon" aria-hidden="true">'+(player.winner?'🏆':'🎯')+'</div>'+
+    '<div class="skyjo-slot-owner-center">'+
+      '<div class="skyjo-slot-owner-label" id="skyjo-slot-owner-phase">🎰 JETZT DREHT</div>'+
+      '<div class="skyjo-slot-owner-name">'+esc(spotlight.name)+'</div>'+
+      '<div class="skyjo-slot-owner-role">'+spotlight.role+' · '+spotlight.slots+' GEWINNE · '+spotlight.missionCount+' MISSIONEN</div>'+
+    '</div>'+
+    '<div class="skyjo-slot-owner-rolebox">'+
+      '<strong class="skyjo-slot-owner-me" id="skyjo-slot-viewer-role">'+spotlight.viewerLabel+'</strong>'+
+      '<span>SPIELER '+spotlight.position+' VON '+spotlight.total+'</span>'+
+    '</div>'+
+  '</div>'+
+  '<p class="skyjo-slot-owner-credit" id="skyjo-slot-owner-credit">🎁 Alle Preise aus diesem Dreh gehören '+esc(spotlight.name)+'.</p>'+
+  '<div class="skyjo-slot-queue" aria-label="Reihenfolge der Slot-Gewinner">'+queue+'</div>'+
   '<p class="monster-slot-subheading">'+n+' WALZEN · '+n+' GARANTIERTE GEWINNE'+(batch.total>1?' · DURCHGANG '+(show.batch+1)+'/'+batch.total:'')+'</p>'+
   '<div class="monster-slot-ribbon">✧ JEDER SLOT GEWINNT ✧</div>'+
   '<div class="monster-slot-reels">'+reels+'</div>'+
@@ -251,6 +285,16 @@ function renderPrizes(root,show){
   }
  });
  root.dataset.phase=done?'ended':show.phase;
+ root.dataset.viewer=isMine?'owner':'spectator';
+ const spotlight=playerSpotlight(show,me()?.uid);
+ const phase=root.querySelector('#skyjo-slot-owner-phase');
+ const viewer=root.querySelector('#skyjo-slot-viewer-role');
+ const credit=root.querySelector('#skyjo-slot-owner-credit');
+ if(phase)phase.textContent=done?'🎉 HAT GEWONNEN':show.phase==='rolling'?'🎰 DREHT GERADE':'🎰 JETZT AN DER REIHE';
+ if(viewer)viewer.textContent=spotlight?.viewerLabel||'👀 ZUSCHAUER';
+ if(credit)credit.textContent=done
+  ?'✅ '+batch.player.name+' hat '+n+' Gewinne aufgedeckt – sie gehören ausschließlich diesem Spieler.'
+  :'🎁 Alle '+n+' Gewinne aus diesem Dreh gehören '+batch.player.name+'.';
  const status=root.querySelector('#skyjo-special-status'),button=root.querySelector('#monster-slot-accept');
  if(show.phase==='ready'){
   status.textContent=isMine?'🎰 Du bist dran – alle Spieler schauen zu!':batch.player.name+' dreht als Nächstes.';
@@ -308,5 +352,5 @@ function attach(gameAPI,b){
  gameAPI.skyjoSpecialAdvance=advance;
 }
 window.SkyjoToreSpecial={newGame,beginRound,trackRemove,scan,hud,nextButton,canNextRound,attach,render,
- missionsFor,missionDone,definitions:DEFINITIONS};
+ missionsFor,missionDone,playerSpotlight,definitions:DEFINITIONS};
 })();
