@@ -441,7 +441,10 @@ function renderShared(){
  const stopTimes=(stage.reels===1?[3000]:[3000,4500,6000]);
  const token=seq;
  const beginSpin=()=>{
-  if(seq!==token||sharedSignature!==signature||root.hidden)return;
+  // A delayed countdown callback must never rewind a finished/partly revealed
+  // show after Android resumes a paused tab.
+  if(seq!==token||sharedSignature!==signature||root.hidden||
+   root.dataset.phase==='summary'||reels.slice(0,stage.reels).some(reel=>reel.dataset.phase!=='ready'))return;
   root.dataset.phase='rolling';
   reels.slice(0,stage.reels).forEach(reel=>{
    const track=reel.querySelector('.monster-slot-track');
