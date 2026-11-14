@@ -46,3 +46,15 @@ test('Special rewards are mandatory before host may start next round',()=>{
  state.skyjoSpecial.finished=true;
  assert.equal(x.canNextRound(state),true);
 });
+
+test('The normal Weiter button stays enabled when special runtime is missing',()=>{
+ const nextRound=read('skyjo_action-logic-part-19.txt');
+ const returnToLobby=read('skyjo_action-logic-part-20.txt');
+ assert.match(nextRound,/SkyjoToreSpecial\?\.canNextRound\(state\)===false/);
+ assert.match(returnToLobby,/SkyjoToreSpecial\?\.canNextRound\(state\)===false/);
+ assert.doesNotMatch(nextRound,/if\(!window\.SkyjoToreSpecial\?\.canNextRound\(state\)\)/);
+ // In JavaScript, undefined===false is false: normal games never become blocked.
+ assert.equal(undefined===false,false);
+ assert.equal(false===false,true);
+ assert.equal(true===false,false);
+});
