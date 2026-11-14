@@ -8480,8 +8480,8 @@ dice.style.bottom = "";
     }catch(_e){}
     try{ localStorage.removeItem("barikade_sessionToken"); }catch(_e){}
     window.location.href = hubGameMode
-      ? "../hub-lobby.html?room="+encodeURIComponent(hubGameCode)+"&stayMatch="+encodeURIComponent(hubMatchId)
-      : "barikade_lobby.html";
+      ? "../hub-lobby.html?view=online&room="+encodeURIComponent(hubGameCode)+"&stayMatch="+encodeURIComponent(hubMatchId)
+      : "../hub-lobby.html?view=local";
   });
 })();
 
