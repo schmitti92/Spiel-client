@@ -536,3 +536,24 @@
  #deal-monster-slots[data-phase="summary"] .monster-slot-reward-summary{padding:5px}
  #deal-monster-slots[data-phase="summary"] .monster-slot-reward-content{padding:12px 7px}
 }
+
+
+/* Monster Slots · synchronized runner-up to champion handoff */
+#deal-monster-slots[data-phase="preparing"] .monster-slot-reels,
+#deal-monster-slots[data-phase="preparing"] .monster-slot-progress,
+#deal-monster-slots[data-phase="preparing"] #monster-slot-accept{
+ display:none!important;
+}
+#deal-monster-slots[data-phase="preparing"] .monster-slot-machine{
+ min-height:min(320px,calc(100dvh - 24px));
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:clamp(8px,2vh,19px);
+}
+#deal-monster-slots[data-phase="preparing"] .monster-slot-status{
+ max-width:42rem;margin:clamp(12px,3vh,28px) auto;
+ font-size:clamp(16px,2.4vw,25px);
+ line-height:1.4;color:#fff3cc;
+}
+#deal-monster-slots[data-phase="preparing"] .monster-slot-subheading{
+ color:#ffdea7;
+}
