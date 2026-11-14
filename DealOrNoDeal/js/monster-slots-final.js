@@ -415,7 +415,8 @@ function renderShared(){
  const canRecover=now-Number(stage.activatedAt||0)>=30000;
  const mayAct=me||canRecover;
  sharedCaption.hidden=false;
- root.querySelector('.monster-slot-kicker').textContent=stage.turn==='case'?'✦ GOLDSTUDIO · KOFFERBONUS ✦':'✦ GOLDSTUDIO · DAS GROSSE GEWINNFINALE ✦';
+ const kicker=root.querySelector('.monster-slot-kicker');
+ if(kicker)kicker.textContent=stage.turn==='case'?'✦ GOLDSTUDIO · KOFFERBONUS ✦':'✦ GOLDSTUDIO · DAS GROSSE GEWINNFINALE ✦';
  sharedCaption.textContent=roundLabel+' · '+name+' · ALLE SPIELER SEHEN LIVE ZU';
  configureReels(stage.reels);
  summaryKicker.textContent=roundLabel+' · '+name;
