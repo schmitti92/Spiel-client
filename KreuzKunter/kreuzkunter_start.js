@@ -7,7 +7,7 @@ const query=new URL(location.href).searchParams;
 const roomCode=String(query.get('room')||'').toUpperCase();
 const codeValid=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/;
 const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-const onlineHome=(extra='')=>'../hub-lobby.html?view=online&room='+encodeURIComponent(roomCode)+extra;
+const onlineHome=(extra='')=>'../spielauswahl-online.html?room='+encodeURIComponent(roomCode)+extra;
 const inviteURL=()=>new URL('../hub-lobby.html?invite='+encodeURIComponent(roomCode),location.href).href;
 const COLORS={r:'red',b:'blue',g:'green',y:'yellow',o:'orange'};
 const COLOR_ROWS=[
