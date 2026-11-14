@@ -1,5 +1,5 @@
 {
-  "version": 21,
+  "version": 22,
   "parts": {
     "skyjo_action-logic-part-01.txt": "6f669a7ee73ac4487865dfd84f7cc76e2c1334c47775db02d194ddd38301fcb8",
     "skyjo_action-logic-part-02.txt": "ee38cc7cb667a031b90304e56b951d1e988df777daa6c9dcb206b117a3ce48c1",
@@ -15,7 +15,7 @@
     "skyjo_action-logic-part-12.txt": "466daeac7eded8e423cb94e6e6efac8c7508b702e7303c516cb42b4d3b30be76",
     "skyjo_action-logic-part-13.txt": "1fd19d04112bce6feb430886c74a918cb86f92a55846805ccdf3964af0e00d1f",
     "skyjo_action-logic-part-14.txt": "149b24ef0fb577efd967ea9e552cba1b3fcf8043e88c57f04ba4e9b2e7c3c749",
-    "skyjo_action-logic-part-15.txt": "c97275d01597023b139f65d0880542557c9b00d397fde3c794fcb36e66d62d7c",
+    "skyjo_action-logic-part-15.txt": "3109a65e9fddd0f371d9968593513fc32e03c092df45c2334898dfd83cee6a8f",
     "skyjo_action-logic-part-16.txt": "6a2f3caa6b47767d324546dc5ee9d6bfc2168dcc145c5d8bb09fbe10c7d750ba",
     "skyjo_action-logic-part-17.txt": "9ef2749a5ddecc5df8e27c32f0986efba5067f948b2c4ae1d31e8095d690f6b7",
     "skyjo_action-logic-part-18.txt": "cae11469beced3274b184e6de912b6bc61bc4de57a17b89598e41a97d790e305",
