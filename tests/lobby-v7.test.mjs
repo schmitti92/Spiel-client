@@ -172,7 +172,7 @@ test('Delayed Firebase login can recover the original room without duplicate fet
  assert.match(js,/let pendingRoomRecovery=null,recoveryInFlight=false/);
  assert.match(js,/if\(!pendingRoomRecovery\|\|room\|\|code\|\|!activeProfile\(\)\|\|recoveryInFlight\)return/);
  assert.match(js,/if\(pendingRoomRecovery!==requestedCode\|\|room\|\|code\|\|r\?\.code!==requestedCode\)return/);
- assert.match(js,/render\(\);if\(uid\)void recoverPendingRoom\(\)/);
+ assert.match(js,/render\(\);if\(uid\)\{if\(pendingRoomRecovery\)void recoverPendingRoom\(\);else recoverStoredRoom\(\);\}/);
 });
 
 test('Temporary room restoration failures use bounded exponential retry delays',()=>{
