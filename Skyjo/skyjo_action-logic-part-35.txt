@@ -85,8 +85,13 @@ if(SKYJO_IS_HUB){
    if(cloud.room!==SKYJO_HUB_ROOM)switchCloudRoomContext(SKYJO_HUB_ROOM);
    cloudConfigSave();
    await restoreOnlineRoom();
-   if(cloud.doc&&myPlayerIndex()>=0){connectedUid=uid;cloud.lastError='';}
-   else{connectedUid=null;cloud.lastError='Spielerplatz konnte nicht geladen werden. Bitte erneut verbinden.';render();}
+   if(cloud.doc&&myPlayerIndex()>=0){
+    connectedUid=uid;cloud.lastError='';
+    // The shared SKYJO lobby has ALREADY started the match. Host boots its
+    // game once; guests only receive the same server-synchronized game state.
+    // No second lobby, second readiness phase or in-game start click.
+    if(isHostDevice()&&!cloud.doc.game)await startOnlineGame();
+   }else{connectedUid=null;cloud.lastError='Spielerplatz konnte nicht geladen werden. Bitte erneut verbinden.';render();}
   }catch(error){connectedUid=null;cloud.lastError=error?.message||'Raumverbindung fehlgeschlagen';render();}
   finally{loading=false}
  };
