@@ -11,6 +11,7 @@ on:
       - 'tests/dog-board-group-move.test.mjs'
       - 'tests/dog-appearance.test.mjs'
       - 'tests/dog-card-editions.test.mjs'
+      - 'tests/dog-hand-gestures.test.mjs'
       - 'tests/dog-official-rules.test.mjs'
       - 'tests/dog-online-sync.test.mjs'
       - '.github/workflows/dog-board-check.yml'
@@ -24,6 +25,7 @@ on:
       - 'tests/dog-board-group-move.test.mjs'
       - 'tests/dog-appearance.test.mjs'
       - 'tests/dog-card-editions.test.mjs'
+      - 'tests/dog-hand-gestures.test.mjs'
       - 'tests/dog-official-rules.test.mjs'
       - 'tests/dog-online-sync.test.mjs'
   workflow_dispatch:
@@ -37,6 +39,7 @@ jobs:
           node-version: '22'
       - run: node --check DOG/app.js
       - run: node --check DOG/card-visuals.js
+      - run: node --check DOG/hand-gestures.js
       - run: node --check DOG/online-sync.js
       - run: node --check DOG/editor.js
       - run: node --check DOG/editor-builder.js
@@ -45,4 +48,5 @@ jobs:
       - run: node --check DOG/board-layout.js
       - run: node --check DOG/appearance-registry.js
       - run: node --test tests/dog-card-editions.test.mjs
+      - run: node --test tests/dog-hand-gestures.test.mjs
       - run: node --test tests/dog-board-layout.test.mjs tests/dog-board-builder.test.mjs tests/dog-board-editor-ui.test.mjs tests/dog-board-assistants.test.mjs tests/dog-board-group-move.test.mjs tests/dog-appearance.test.mjs tests/dog-official-rules.test.mjs tests/dog-online-sync.test.mjs
