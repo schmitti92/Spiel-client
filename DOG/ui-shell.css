@@ -665,3 +665,74 @@ main{width:calc(100% - 22px);max-width:1920px;margin:6px auto}
 @media(max-width:899px),(orientation:portrait){
   .right.dog-modules{max-height:none;overflow:visible}
 }
+
+/* Hand-card finishing v6: compact action dock, readable selection and touch targets. */
+.dog-hand-module .hand{
+  gap:7px;
+  padding:9px 6px 11px;
+  border-radius:12px;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(235,198,124,.4) transparent;
+}
+.dog-hand-module .hand .playing-card.dog-designed{
+  border-radius:10px;
+  transition:transform .14s ease,filter .14s ease;
+}
+.dog-hand-module .hand .playing-card.dog-designed[aria-pressed="true"],
+.dog-hand-module .hand .playing-card.dog-designed.selected{
+  filter:drop-shadow(0 0 7px rgba(255,207,112,.75));
+}
+.dog-hand-module .move-help{
+  color:#e1e9f1;
+  font-size:12px;
+  line-height:1.35;
+  margin:6px 0 4px;
+  text-shadow:0 1px 3px #000a;
+}
+.dog-hand-module .moves{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:7px;
+  margin:4px 0 0;
+  max-height:none;
+  overflow:visible;
+}
+.dog-hand-module .moves .dog-hand-action-primary{
+  min-height:42px;
+  padding:9px 17px;
+  border:1px solid rgba(255,225,155,.7);
+  border-radius:12px;
+  background:linear-gradient(140deg,#c28b3a,#785019);
+  color:#fff9e9;
+  font-size:13px;
+  font-weight:850;
+  box-shadow:0 3px 11px #0006,inset 0 1px #ffffff55;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.dog-hand-module .moves .dog-hand-action-primary:hover,
+.dog-hand-module .moves .dog-hand-action-primary:focus-visible{
+  background:linear-gradient(140deg,#dfad55,#91621e);
+  outline:2px solid #f5d79b;
+  outline-offset:2px;
+}
+.dog-hand-module .dog-no-move-note{
+  display:inline-block;
+  padding:9px 12px;
+  border-radius:10px;
+  background:rgba(42,34,42,.82);
+  border:1px solid rgba(230,188,145,.36);
+  color:#ffe5ce;
+  font-size:12px;
+  font-weight:700;
+}
+.dog-hand-module #selected-info{
+  font-size:12px;
+  color:#ffe0a1;
+  margin:5px 0 0;
+}
+@media(min-width:900px) and (orientation:landscape) and (max-height:950px){
+ .dog-hand-module .hand{padding:6px 4px 8px}
+ .dog-hand-module .moves .dog-hand-action-primary{min-height:37px;padding:7px 13px}
+}
