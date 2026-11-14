@@ -27,6 +27,7 @@ main{width:min(1640px,calc(100% - 34px));margin:22px auto 48px}
 .right{display:grid;gap:15px}.panel{border:1px solid var(--line);border-radius:20px;background:linear-gradient(150deg,#152b3eec,#0e1d2dea);padding:19px;box-shadow:0 15px 40px #0002}.panel h3{margin:0 0 12px;font-size:16px}.panel h3 small{display:inline-block;color:var(--gold);font-size:11px;margin-left:6px}
 .meta{display:flex;gap:9px;justify-content:space-between;align-items:center;padding:10px 12px;background:#040f1c88;border-radius:12px;margin-bottom:13px}.meta b{color:#ffe4b8}.meta span{font-size:12px;color:#b9c9d2}.turn{font-size:20px;font-weight:850;letter-spacing:-.5px;margin:7px 0 15px}
 .seat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.seat{display:grid;grid-template-columns:12px minmax(0,1fr) auto;align-items:center;gap:7px;background:#061a2a;border:1px solid #b6d8ea21;padding:10px;border-radius:13px}.seat.on{border-color:#edcd7e;box-shadow:inset 0 0 0 1px #edcd7e44}.seat-mark{height:11px;width:11px;border-radius:50%;background:var(--seat);box-shadow:0 0 13px var(--seat)}.seat-name{font-size:12px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seat b{font-size:13px}.seat-extra{grid-column:2/span 2;color:#a5bac7;font-size:10px}
+.dog-joker-dialog{max-width:650px;width:calc(100% - 28px)}.dog-joker-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(82px,1fr));gap:10px;margin:15px 0}.dog-joker-choice{min-height:105px;border:2px solid #e5c58b;border-radius:12px;background:linear-gradient(145deg,#f8e8c8,#c8d6df);color:#183044;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;font-size:12px;font-weight:800}.dog-joker-choice strong{font-size:28px}.dog-joker-choice:disabled{opacity:.35;cursor:not-allowed}.dog-joker-close{padding:10px 16px;border-radius:10px;background:#28445a;color:white;border:1px solid #a7c2d077}
 .dog-piles{display:flex;gap:12px;align-items:center;justify-content:center;margin:0 0 12px;padding:9px;border:1px solid #c6ab7350;border-radius:13px;background:#0617259e}
 .dog-pile{display:flex;align-items:center;gap:9px;min-width:0;flex:1;justify-content:center}
 .dog-pile-art{position:relative;display:grid;place-items:center;flex:none;width:43px;height:61px;border-radius:7px;border:2px solid #d5bd85;background:var(--dog-card-back,repeating-linear-gradient(45deg,#193958 0 8px,#244d6e 8px 16px));color:#f7e2b1;font-weight:900;box-shadow:3px 4px 0 #020c17,5px 7px 9px #0008}
@@ -215,6 +216,12 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
    </aside>
  </div>
 </main>
+<dialog id="dog-joker-dialog" class="dog-joker-dialog" aria-labelledby="dog-joker-title">
+<h2 id="dog-joker-title">🃏 Joker – Karte auswählen</h2>
+<p>Wähle, als welche Karte du den Joker spielen möchtest. Danach bestimmst du Figur und Zielfeld selbst.</p>
+<div id="dog-joker-grid" class="dog-joker-grid"></div>
+<button type="button" id="dog-joker-close" class="dog-joker-close">Abbrechen</button>
+</dialog>
 <dialog id="appearance-dialog" aria-labelledby="appearance-title">
   <h2 id="appearance-title">🎨 DOG-Designstudio</h2>
   <p>Ändere Hintergrund, Figurenfarben und Kartenmotiv, ohne die Partie zu verändern. Die Auswahl wird auf deinem Gerät gespeichert.</p>
