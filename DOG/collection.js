@@ -88,7 +88,7 @@ function drawGrid(){
 function slotsPreview(){const row=el('div','detail-emoji-slots');for(const id of loadEmojiSlots())row.append(el('span','detail-emoji-slot',emojiById(id)?.emoji||'＋'));return row;}
 async function equipAvatar(item,button){
  const ap=window.DogAvatars;if(!ap){notify('Profilbilder konnten nicht geladen werden.');return;}
- button.disabled=true;ap.setLocal(seat,item.avatar);ap.setOnline(item.avatar);
+ button.disabled=true;if(local)ap.setLocal(seat,item.avatar);else ap.setOnline(item.avatar);
  const code=back.searchParams.get('room')||'',user=window.SpielOnline?.state?.()?.user;
  if(!local&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(code)&&user?.getIdToken){
   try{
