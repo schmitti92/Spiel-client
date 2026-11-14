@@ -29,6 +29,7 @@ export const DEFAULT_APPEARANCE=Object.freeze({
   sidebar:'schloss',
   hudLayout:'classic',
   hudTone:'classic',
+  hudOpacity:Object.freeze({players:null,piles:null,hand:null,extras:null}),
   event:'none'
 });
 const deepFreeze=obj=>{
@@ -212,8 +213,22 @@ export const APPEARANCE_CATEGORIES=deepFreeze({
   cards:CARD_STYLES,
   event:EVENT_PACKS
 });
+/** Independent fill opacity (0–100%) for the four right-side HUD blocks.
+ * null preserves the existing theme styling for old designs and players.
+ * Only panel surfaces are tinted: text, cards, active seat and controls stay solid.
+ */
+export const HUD_OPACITY_BLOCKS=Object.freeze(['players','piles','hand','extras']);
+export function normalizeHudOpacity(value){
+  const raw=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+  const out={};
+  for(const key of HUD_OPACITY_BLOCKS){
+    const v=raw[key];
+    out[key]=typeof v==='number'&&Number.isFinite(v)&&v>=0&&v<=100?Math.round(v):null;
+  }
+  return out;
+}
 export function normalizeAppearance(value){
-  const next={...DEFAULT_APPEARANCE};
+  const next={...DEFAULT_APPEARANCE,hudOpacity:normalizeHudOpacity(value?.hudOpacity)};
   if(!value||typeof value!=='object'||Array.isArray(value))return next;
   for(const [category,registry] of Object.entries(APPEARANCE_CATEGORIES)){
     const id=value[category];
