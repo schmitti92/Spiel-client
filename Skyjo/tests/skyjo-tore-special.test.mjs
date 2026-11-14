@@ -58,3 +58,33 @@ test('The normal Weiter button stays enabled when special runtime is missing',()
  assert.equal(false===false,true);
  assert.equal(true===false,false);
 });
+
+
+test('Online SKYJO hub starts with 2–5 players without an obsolete second lobby',()=>{
+ const startup=read('skyjo_action-logic-part-08.txt');
+ const render=read('skyjo_action-logic-part-35.txt');
+ const legacy=read('skyjo_action-logic-part-22.txt');
+ const entry=read('skyjo_action.html');
+ assert.match(startup,/SKYJO_IS_HUB\?\(ps\.length<2\|\|ps\.length>5\):ps\.length!==3/);
+ assert.match(render,/if\(SKYJO_IS_HUB&&!state\)content=hubLoadingView\(\)/);
+ assert.match(render,/if\(isHostDevice\(\)&&!cloud\.doc\.game\)await startOnlineGame\(\)/);
+ assert.match(legacy,/function hubLoadingView\(\)/);
+ assert.doesNotMatch(entry,/src="skyjo_hub_autostart\.js/);
+});
+test('Old online SKYJO URLs return to the main shared lobby; hub matches and offline games do not',()=>{
+ const script=read('skyjo_online_hub_redirect.js');
+ const navigate=(query)=>{
+  let redirected=null;
+  const location={href:'https://schmitti92.github.io/Spiel-client/Skyjo/skyjo_action.html?'+query,
+   replace:to=>{redirected=to;}};
+  new Function('location',script)(location);
+  return redirected;
+ };
+ const old=navigate('mode=online&room=473');
+ assert.match(old,/spielauswahl-online\.html\?room=473&stay=1/);
+ const oldUnmapped=navigate('mode=online&room=S473AAAAAA');
+ assert.match(oldUnmapped,/spielauswahl-online\.html\?stay=1/);
+ const valid=navigate('mode=online&hub=473&match=01234567-89ab-4cde-a123-456789abcdef&room=S473AAAAAA');
+ assert.equal(valid,null);
+ assert.equal(navigate('mode=local&testPlayers=2'),null);
+});
