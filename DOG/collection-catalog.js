@@ -33,7 +33,7 @@ const BASE_COLLECTION_CATEGORIES=[
   ...Object.entries(CARD_STYLES).map(([id,t])=>avail(id,t.label,{kind:'appearance',field:'cards',cardTheme:t,description:'Optische DOG-Kartengestaltung. Die Kartenwerte bleiben unverändert.',icon:t.emblem,artTone:'gold'})),
  ]},
  {id:'hud',icon:'🎨',title:'Bedienoberfläche',subtitle:'Farbtöne und Anordnung der rechten Spielblöcke',items:[
-  ...Object.entries(HUD_TONES).map(([id,t])=>avail('tone-'+id,t.label,{kind:'appearance',field:'hudTone',value:id,icon:'▤',palette:[t.swatch,t.accent,t.text],description:'Bereits auswählbarer Farbton für die Bedienoberfläche.',artTone:'azure'})),
+  ...Object.entries(HUD_TONES).map(([id,t])=>avail('tone-'+id,t.label,{kind:'appearance',field:'hudTone',value:id,icon:'▤',hudTheme:t,description:'Originalfarben der DOG-Bedienoberfläche mit echten Flächen, Rahmen und Akzenten.',artTone:'azure'})),
   ...Object.entries(HUD_LAYOUTS).map(([id,t])=>avail('layout-'+id,t.label+' · Anordnung',{kind:'appearance',field:'hudLayout',value:id,icon:'☷',description:t.description,artTone:'azure'})),
  ]}
 ];
