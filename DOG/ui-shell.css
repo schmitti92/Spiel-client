@@ -914,3 +914,18 @@ main{width:calc(100% - 22px);max-width:1920px;margin:6px auto}
 :root:not([data-dog-hud-tone="classic"]) .right.dog-modules .dog-extra-button:focus-visible{
   filter:brightness(1.18);
 }
+
+
+/* Board-frame skin — applies to the OUTER board wrapper only.
+   SVG/game positions, board zoom and event handlers never change.
+   Keep classic exactly as before; all other options use identical 2px borders. */
+:root[data-dog-board-frame]:not([data-dog-board-frame="classic"]) .layout>.board-card{
+  background:var(--dog-outer-frame-fill)!important;
+  border:2px solid var(--dog-outer-frame-line)!important;
+  border-radius:var(--dog-outer-frame-radius,16px)!important;
+  box-shadow:
+    inset 0 0 0 2px var(--dog-outer-frame-inner),
+    inset 0 1px 13px var(--dog-outer-frame-inner),
+    0 9px 30px rgba(0,0,0,.49),
+    0 0 var(--dog-outer-frame-glow-size,12px) var(--dog-outer-frame-glow)!important;
+}
