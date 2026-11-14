@@ -236,7 +236,8 @@ details:not([open]) .dog-disclosure-arrow{transform:rotate(-90deg)}
  .topbar .brand h1{font-size:19px}
  .topbar .brand p{font-size:9px;margin:1px 0 0}
  main{flex:1;min-height:0;display:flex;flex-direction:column;margin:6px auto}
- .layout{flex:1;min-height:0;grid-template-columns:minmax(0,.96fr) minmax(0,1.04fr);gap:9px}
+ /* Slightly larger board (+6.25% width at the same viewport) while cards stay visible. */
+ .layout{flex:1;min-height:0;grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);gap:9px}
  .board-card{min-height:0;display:flex;flex-direction:column;justify-content:center;padding:5px;overflow:hidden}
  .board-svg{width:100%;height:100%;flex:1;min-height:0;max-height:none;object-fit:contain}
  .right.dog-modules{
