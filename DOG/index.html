@@ -23,6 +23,13 @@ main{width:min(1640px,calc(100% - 34px));margin:22px auto 48px}
 .right{display:grid;gap:15px}.panel{border:1px solid var(--line);border-radius:20px;background:linear-gradient(150deg,#152b3eec,#0e1d2dea);padding:19px;box-shadow:0 15px 40px #0002}.panel h3{margin:0 0 12px;font-size:16px}.panel h3 small{display:inline-block;color:var(--gold);font-size:11px;margin-left:6px}
 .meta{display:flex;gap:9px;justify-content:space-between;align-items:center;padding:10px 12px;background:#040f1c88;border-radius:12px;margin-bottom:13px}.meta b{color:#ffe4b8}.meta span{font-size:12px;color:#b9c9d2}.turn{font-size:20px;font-weight:850;letter-spacing:-.5px;margin:7px 0 15px}
 .seat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.seat{display:grid;grid-template-columns:12px minmax(0,1fr) auto;align-items:center;gap:7px;background:#061a2a;border:1px solid #b6d8ea21;padding:10px;border-radius:13px}.seat.on{border-color:#edcd7e;box-shadow:inset 0 0 0 1px #edcd7e44}.seat-mark{height:11px;width:11px;border-radius:50%;background:var(--seat);box-shadow:0 0 13px var(--seat)}.seat-name{font-size:12px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seat b{font-size:13px}.seat-extra{grid-column:2/span 2;color:#a5bac7;font-size:10px}
+.dog-piles{display:flex;gap:12px;align-items:center;justify-content:center;margin:0 0 12px;padding:9px;border:1px solid #c6ab7350;border-radius:13px;background:#0617259e}
+.dog-pile{display:flex;align-items:center;gap:9px;min-width:0;flex:1;justify-content:center}
+.dog-pile-art{position:relative;display:grid;place-items:center;flex:none;width:43px;height:61px;border-radius:7px;border:2px solid #d5bd85;background:var(--dog-card-back,repeating-linear-gradient(45deg,#193958 0 8px,#244d6e 8px 16px));color:#f7e2b1;font-weight:900;box-shadow:3px 4px 0 #020c17,5px 7px 9px #0008}
+.dog-pile-art:before{content:"";position:absolute;inset:3px;border:1px solid #f4dba06e;border-radius:3px;pointer-events:none}
+.dog-pile-art.discard{background:linear-gradient(150deg,#f1e4ca,#b3bfc8);color:#253b49}
+.dog-pile-copy{display:flex;flex-direction:column;gap:3px;min-width:0}.dog-pile-copy strong{font-size:12px}.dog-pile-copy span{font-size:11px;color:#b8cbd6}
+@media(max-width:450px){.dog-piles{gap:6px;padding:6px}.dog-pile{gap:5px}.dog-pile-art{width:33px;height:47px}.dog-pile-copy strong{font-size:10px}.dog-pile-copy span{font-size:10px}}
 .hand-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:11px}.hand-head h3{margin:0;font-size:15px}.reveal{border:1px solid #b9d4dc55;color:#f2dfb9;background:#ffffff09;padding:9px 10px;border-radius:10px;font-weight:800;font-size:12px;white-space:nowrap}
 .hand{display:flex;gap:9px;overflow:auto;padding:7px 2px 13px;scrollbar-color:#88a2b5 transparent;scrollbar-width:thin;min-height:128px}
 .playing-card{position:relative;flex:0 0 70px;height:116px;border-radius:12px;border:2px solid var(--dog-card-border,#dbe7ef);background:var(--dog-card-face,linear-gradient(150deg,#f7fafb,#d1e0e9));color:var(--dog-card-ink,#152531);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:10px 4px 9px;box-shadow:0 5px 12px #0005;transition:transform .15s,box-shadow .15s}
@@ -166,7 +173,11 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
     </section>
     <section class="panel">
       <div class="hand-head"><h3 id="hand-title">Deine Karten</h3><button id="show-hand" class="reveal" type="button">🃏 Karten ansehen</button></div>
-      <div class="hand" id="hand"></div>
+      <div class="dog-piles" aria-label="Kartenstapel">
+<div class="dog-pile"><div class="dog-pile-art" aria-hidden="true">DOG</div><div class="dog-pile-copy"><strong>Nachziehstapel</strong><span id="dog-deck-count">– Karten</span></div></div>
+<div class="dog-pile"><div class="dog-pile-art discard" id="dog-discard-art" aria-hidden="true">—</div><div class="dog-pile-copy"><strong>Ablagestapel</strong><span id="dog-discard-count">– Karten</span></div></div>
+</div>
+<div class="hand" id="hand"></div>
       <div class="move-help" id="move-help">Wähle eine Karte und berechne deinen Zug selbst.</div>
       <div class="moves" id="moves"></div>
       <p id="selected-info"></p>
