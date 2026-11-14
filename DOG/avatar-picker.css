@@ -21,3 +21,5 @@
  to{box-shadow:0 0 0 2px #f3c85f66,0 0 12px #eec45f80;filter:brightness(1)}
 }
 @media(prefers-reduced-motion:reduce){.dog-avatar-option{animation:none!important;transition:none!important}}
+
+:root[data-dog-motion="off"] .dog-avatar-option{animation:none!important;transition:none!important}
