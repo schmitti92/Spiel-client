@@ -32,7 +32,7 @@ function acceptRemote(room){
  roomRevision=decision.roomRevision;
  if(decision.kind==='dog'){
    if(decision.hideHand)revealed=decision.seat!==null;
-   if(decision.clearSelection)selectedCard=null;
+   if(decision.clearSelection){selectedCard=null;selectedPiece=null;}
    game=decision.game;onlineSeat=decision.seat;acceptedMatchId=decision.matchId;
    render();
  }else if(game?.phase==='finished'){
@@ -263,7 +263,7 @@ function renderHand(){
   }
   if(game.phase==='seven')available=legalActions(game,seat);
   const special=available.filter(m=>['exchange','seven','emptySwap'].includes(m.type));
-  actions.innerHTML=special.map(m=>'<button type="button" class="move-button" data-special="'+m.type+'">'+(m.type==='exchange'?'Karte weitergeben':m.type==='seven'?'7 beginnen':'Tauschkarte ablegen')+'</button>').join('');
+  actions.insertAdjacentHTML('beforeend',special.map(m=>'<button type="button" class="move-button" data-special="'+m.type+'">'+(m.type==='exchange'?'Karte weitergeben':m.type==='seven'?'7 beginnen':'Tauschkarte ablegen')+'</button>').join(''));
   $('move-help').textContent=game.phase==='exchange'?'Wähle die Karte für deinen Partner.':game.phase==='seven'?'Figur und Zielfeld selbst wählen. Noch '+(7-game.seven.spent)+' Schritte.':selectedCard===null?'Wähle eine Karte.':'Figur und Zielfeld selbst antippen – ohne Zugvorschläge.';
 }
 function render(){
@@ -333,6 +333,7 @@ $('board').addEventListener('click',e=>{
  if(!revealed||currentHuman()<0)return;
  const node=e.target.closest('[data-piece]');
  if(node&&selectedPiece===null){selectedPiece=Number(node.dataset.piece);drawBoard();$('move-help').textContent='Wähle das Zielfeld selbst.';return;}
+ if(node&&Number(node.dataset.piece)===selectedPiece){selectedPiece=null;drawBoard();$('move-help').textContent='Figur abgewählt.';return;}
  if(selectedPiece===null)return;
  const matrix=$('board').getScreenCTM();if(!matrix)return;
  const p=new DOMPoint(e.clientX,e.clientY).matrixTransform(matrix.inverse());
