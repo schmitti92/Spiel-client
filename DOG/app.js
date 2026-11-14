@@ -3,7 +3,7 @@ import {enableHandTouchGestures} from './hand-gestures.js?v=2';
 import {boardGestureTarget} from './board-gesture-math.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
-import {DEFAULT_APPEARANCE,BOARD_STYLES,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=12';
+import {DEFAULT_APPEARANCE,BOARD_STYLES,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=13';
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=10';
 
 const $=id=>document.getElementById(id);
@@ -225,9 +225,13 @@ function drawBoard(){
   push('<rect x="8" y="8" width="744" height="744" rx="44" fill="url(#dog-wood)" stroke="#2c1b13" stroke-width="7"/>');
   push('<rect x="27" y="27" width="706" height="706" rx="30" fill="#051323" stroke="#ead4a4" stroke-opacity=".66" stroke-width="2"/>');
   push('<rect x="35" y="35" width="690" height="690" rx="25" fill="url(#dog-blue)"/>');
-  // Optional trusted image asset specified by a built-in board theme.
+  // Static background art has no spaces or pawns; the interactive path below
+  // always uses the editor's actual track coordinates. Fallback stays visible
+  // until the optional premium WebP image has been uploaded to the repository.
+  if(validAssetPath(skin.fallbackImage))
+    push('<image href="'+skin.fallbackImage+'" x="0" y="0" width="760" height="760" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>');
   if(validAssetPath(skin.image))
-    push('<image href="'+skin.image+'" x="35" y="35" width="690" height="690" preserveAspectRatio="xMidYMid slice" opacity=".94" pointer-events="none"/>');
+    push('<image href="'+skin.image+'" x="0" y="0" width="760" height="760" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>');
   push('<rect x="35" y="35" width="690" height="690" rx="25" fill="url(#dog-speckle)"/>');
   push('<rect x="41" y="41" width="678" height="678" rx="20" fill="none" stroke="'+skin.edge+'" stroke-opacity=".27" stroke-width="1.5"/>');
   // The course makes a single uninterrupted 64-step circuit. Start indices are
