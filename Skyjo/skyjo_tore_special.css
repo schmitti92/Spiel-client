@@ -1012,3 +1012,9 @@
  }
  #deal-monster-slots.skyjo-monster-special .skyjo-cinematic-stars{display:none}
 }
+
+/* Keep the active controls above any visual jackpot layer on every viewport. */
+#deal-monster-slots.skyjo-monster-special .skyjo-slot-action-dock{
+ position:relative;
+ z-index:45!important;
+}
