@@ -436,11 +436,15 @@ test('synchronized giant jackpot stage displays epic then legendary and expires 
  assert.deepEqual(x.featuredJackpot(batch,3000),{
   index:0,rank:1,when:3000,rarity:'epic',label:'250.000 €'
  });
- assert.equal(x.featuredJackpot(batch,4500).rarity,'legendary');
- assert.equal(x.featuredJackpot(batch,4500).label,'1.000.000 €');
- assert.equal(x.featuredJackpot(batch,7599).rarity,'legendary');
- assert.equal(x.featuredJackpot(batch,7600),null);
- assert.deepEqual(x.featuredJackpot(batch,4500),x.featuredJackpot(batch,4500),
+ const epicStop=x.reelStopAt(batch,0),legendStop=x.reelStopAt(batch,1);
+ assert.equal(epicStop,3000);
+ assert.equal(legendStop,5300,'Epic show gets its full 2.3-second window');
+ assert.equal(x.featuredJackpot(batch,4500).rarity,'epic');
+ assert.equal(x.featuredJackpot(batch,legendStop).rarity,'legendary');
+ assert.equal(x.featuredJackpot(batch,legendStop).label,'1.000.000 €');
+ assert.equal(x.featuredJackpot(batch,legendStop+3099).rarity,'legendary');
+ assert.equal(x.featuredJackpot(batch,legendStop+3100),null);
+ assert.deepEqual(x.featuredJackpot(batch,legendStop),x.featuredJackpot(batch,legendStop),
   'All spectators calculate exactly the same stage at the same shared time');
 });
 test('12 reels can show mythic after legendary with no new payouts or storage writes',()=>{
@@ -449,10 +453,12 @@ test('12 reels can show mythic after legendary with no new payouts or storage wr
  const prizes=Array.from({length:12},(_,i)=>({kind:'cash',rarity:'common',label:String(i)}));
  prizes[2].rarity='epic';prizes[5].rarity='legendary';prizes[11].rarity='mythic';
  const old=JSON.stringify(prizes),batch={prizes};
- assert.equal(x.featuredJackpot(batch,3000+2*470).rarity,'epic');
- assert.equal(x.featuredJackpot(batch,3000+5*470).rarity,'legendary');
- assert.equal(x.featuredJackpot(batch,3000+11*470).rarity,'mythic');
- assert.equal(x.featuredJackpot(batch,3000+11*470+3700),null);
+ assert.equal(x.featuredJackpot(batch,x.reelStopAt(batch,2)).rarity,'epic');
+ assert.equal(x.featuredJackpot(batch,x.reelStopAt(batch,5)).rarity,'legendary');
+ assert.equal(x.featuredJackpot(batch,x.reelStopAt(batch,11)).rarity,'mythic');
+ assert.equal(x.featuredJackpot(batch,x.reelStopAt(batch,11)+3700),null);
+ assert.ok(x.reelStopAt(batch,11)>3000+11*470,'Rare wins each pause the following reel');
+ assert.ok(x.showDuration(batch)>=x.reelStopAt(batch,11)+3700);
  assert.equal(JSON.stringify(prizes),old);
 });
 test('giant jackpot layout includes fireworks, named owner, large price, reduced motion and nonblocking controls',()=>{
@@ -524,10 +530,14 @@ test('Every rare reel can be celebrated even immediately after a higher tier',()
   {kind:'chest',rarity:'common',label:'Holzkiste'}
  ]};
  assert.equal(x.featuredJackpot(batch,3000).rarity,'legendary');
- assert.equal(x.featuredJackpot(batch,4500).rarity,'epic',
-  'Later epic wins get an individual spotlight rather than being hidden by an earlier legendary');
- assert.equal(x.featuredJackpot(batch,4500+2300),null);
- assert.equal(x.showDuration(batch),7800,'Existing base time is enough for this batch');
+ assert.equal(x.featuredJackpot(batch,4500).rarity,'legendary','Legendary show is not cut off');
+ const epicStop=x.reelStopAt(batch,1);
+ assert.equal(epicStop,6100);
+ assert.equal(x.featuredJackpot(batch,epicStop).rarity,'epic',
+  'Later epic wins get their entire own spotlight after the legendary ends');
+ assert.equal(x.featuredJackpot(batch,epicStop+2300),null);
+ assert.equal(x.reelStopAt(batch,2),8400);
+ assert.equal(x.showDuration(batch),10200,'Full pauses preserve the normal final spin tail');
 });
 test('Bigger 3-stage epic and legendary stage contains confetti, spotlights and mobile-safe controls',()=>{
  const app={};new Function('window',read('skyjo_tore_special.js'))(app);
@@ -567,4 +577,25 @@ test('Bigger 3-stage epic and legendary stage contains confetti, spotlights and 
  assert.match(css,/z-index:45!important/);
  assert.match(css,/@media\(max-width:610px\)/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+});
+
+
+test('Every highlighted reel is readable for its full special window before the next stops',()=>{
+ const app={};new Function('window',read('skyjo_tore_special.js'))(app);
+ const x=app.SkyjoToreSpecial;
+ for(const n of [1,2,3,6,12]){
+  for(const rarity of ['epic','legendary','mythic']){
+   const prizes=Array.from({length:n},(_,i)=>({rarity:i===0?rarity:'common',kind:'cash',label:'Geld '+i}));
+   const batch={prizes},start=x.reelStopAt(batch,0);
+   const next=n>1?x.reelStopAt(batch,1):x.showDuration(batch);
+   const specialTime={epic:2300,legendary:3100,mythic:3700}[rarity];
+   assert.ok(next-start>=specialTime,n+' reels / '+rarity+' has full show');
+   assert.equal(x.featuredJackpot(batch,start).rarity,rarity);
+   assert.equal(x.featuredJackpot(batch,start+specialTime),null);
+   assert.ok(x.showDuration(batch)>=next);
+  }
+ }
+ const noRare={prizes:Array.from({length:12},()=>({rarity:'common'}))};
+ assert.equal(x.reelStopAt(noRare,11),3000+11*470);
+ assert.equal(x.showDuration(noRare),10500);
 });
