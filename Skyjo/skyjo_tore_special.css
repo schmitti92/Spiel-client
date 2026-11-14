@@ -770,3 +770,245 @@
   transition:none!important;
  }
 }
+
+
+/* SKYJO CINEMATIC JACKPOT SHOW — full-stage, time-synchronized spectacle.
+   Epic: violet gemstone storm; Legendary: gold crown/spotlights;
+   Mythic: iridescent star. Visual-only; the slot button stays clickable. */
+#deal-monster-slots.skyjo-monster-special .monster-slot-machine{
+ position:relative!important;
+ isolation:isolate;
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-slot-cinematic[hidden]{
+ display:none!important;
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-slot-cinematic{
+ --skyjo-scene-ink:#e9ccff;
+ --skyjo-scene-glow:#b158ff;
+ --skyjo-scene-deep:#38145f;
+ position:absolute!important;
+ z-index:30;
+ inset:2px 2px clamp(102px,17vh,150px);
+ display:grid!important;
+ place-items:center;
+ overflow:hidden;
+ border-radius:clamp(10px,2vw,24px);
+ pointer-events:none!important;
+ text-align:center;
+ contain:layout paint;
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-slot-cinematic[data-rarity="legendary"]{
+ --skyjo-scene-ink:#fff3ba;
+ --skyjo-scene-glow:#ffc84c;
+ --skyjo-scene-deep:#6e3508;
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-slot-cinematic[data-rarity="mythic"]{
+ --skyjo-scene-ink:#fff6d7;
+ --skyjo-scene-glow:#e0b5ff;
+ --skyjo-scene-deep:#473280;
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-cinematic-wash{
+ position:absolute;
+ inset:0;
+ background:
+  radial-gradient(ellipse at 50% 46%,color-mix(in srgb,var(--skyjo-scene-glow) 40%,transparent),transparent 54%),
+  radial-gradient(ellipse at 50% 70%,var(--skyjo-scene-deep),#12091ee8 85%);
+ opacity:.97;
+ box-shadow:inset 0 0 60px 14px #050310aa;
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-slot-cinematic[data-rarity="legendary"] .skyjo-cinematic-wash{
+ background:
+  radial-gradient(ellipse at 50% 50%,#ffc451a8,#a46320e8 42%,#1c0f10f5 86%),
+  linear-gradient(130deg,#391a15,#0b1022);
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-slot-cinematic[data-rarity="mythic"] .skyjo-cinematic-wash{
+ background:
+  radial-gradient(ellipse at 50% 48%,#ecd1ffc9,#9856cca8 35%,#142e50ed 70%,#150b29f5 96%);
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-cinematic-rays{
+ position:absolute;
+ width:130vmax;
+ height:130vmax;
+ max-width:none;
+ max-height:none;
+ left:50%;
+ top:50%;
+ transform:translate(-50%,-50%);
+ border-radius:50%;
+ opacity:.64;
+ background:repeating-conic-gradient(
+  from 0deg,
+  transparent 0deg 13deg,
+  color-mix(in srgb,var(--skyjo-scene-glow) 62%,transparent) 15deg 18deg,
+  transparent 21deg 36deg
+ );
+ mix-blend-mode:screen;
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-cinematic-stars{
+ position:absolute;
+ inset:0;
+ pointer-events:none;
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-cinematic-stars i{
+ --angle:calc(var(--star) * 22.5deg);
+ position:absolute;
+ left:50%;
+ top:49%;
+ font-style:normal;
+ color:var(--skyjo-scene-ink);
+ font-size:clamp(17px,3vw,40px);
+ text-shadow:0 0 12px var(--skyjo-scene-glow),0 0 22px var(--skyjo-scene-glow);
+ opacity:0;
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-cinematic-card{
+ position:relative;
+ z-index:4;
+ box-sizing:border-box;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ justify-content:center;
+ width:min(830px,95%);
+ max-height:100%;
+ overflow:hidden;
+ gap:clamp(6px,1.2vw,14px);
+ padding:clamp(14px,3.5vw,43px);
+ border:4px solid var(--skyjo-scene-ink);
+ border-radius:clamp(16px,3vw,32px);
+ background:linear-gradient(150deg,#180d29f3,var(--skyjo-scene-deep) 55%,#120a21f0);
+ box-shadow:
+  0 0 0 5px #100d259e,
+  0 0 55px 14px var(--skyjo-scene-glow),
+  inset 0 0 35px color-mix(in srgb,var(--skyjo-scene-glow) 30%,transparent);
+ color:var(--skyjo-scene-ink);
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-slot-cinematic[data-rarity="legendary"] .skyjo-cinematic-card{
+ background:linear-gradient(145deg,#24131ff5,#75400de8 56%,#24140df5);
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-cinematic-icon{
+ font-size:clamp(60px,11vh,120px);
+ line-height:1;
+ filter:drop-shadow(0 0 18px var(--skyjo-scene-glow));
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-cinematic-overline{
+ color:#fff4f7;
+ font:950 clamp(10px,1.8vw,19px)/1.25 system-ui,sans-serif;
+ letter-spacing:clamp(.02em,.3vw,.13em);
+ text-shadow:0 2px 9px #130721e8;
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-cinematic-title{
+ display:block;
+ max-width:100%;
+ color:var(--skyjo-scene-ink);
+ font:1000 clamp(38px,7.2vw,92px)/1.05 system-ui,sans-serif;
+ letter-spacing:.02em;
+ text-transform:uppercase;
+ text-shadow:0 3px 1px #120618,0 0 26px var(--skyjo-scene-glow),0 0 48px var(--skyjo-scene-glow);
+ overflow-wrap:anywhere;
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-cinematic-owner{
+ color:#fff;
+ font:950 clamp(17px,2.9vw,30px)/1.2 system-ui,sans-serif;
+ text-shadow:0 2px 10px #000b;
+ overflow-wrap:anywhere;
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-cinematic-prize{
+ color:#fff5e8;
+ box-sizing:border-box;
+ width:100%;
+ border:1px solid color-mix(in srgb,var(--skyjo-scene-ink) 75%,transparent);
+ border-radius:16px;
+ background:#120f24ad;
+ padding:clamp(8px,1.3vw,15px);
+ font:950 clamp(18px,3.6vw,37px)/1.2 system-ui,sans-serif;
+ overflow-wrap:anywhere;
+ text-shadow:0 1px 5px #000d;
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-cinematic-bottom{
+ color:var(--skyjo-scene-ink);
+ font:850 clamp(10px,1.45vw,15px)/1.2 system-ui,sans-serif;
+ letter-spacing:.1em;
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-slot-cinematic.is-live{
+ animation:skyjo-scene-arrive .4s ease-out both;
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-slot-cinematic.is-live .skyjo-cinematic-card{
+ animation:skyjo-jackpot-card-pop .72s cubic-bezier(.15,1.25,.4,1) both;
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-slot-cinematic.is-live .skyjo-cinematic-rays{
+ animation:skyjo-scene-rays 15s linear infinite;
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-slot-cinematic.is-live .skyjo-cinematic-stars i{
+ animation:skyjo-scene-particle 2.6s ease-out both;
+ animation-delay:calc(var(--star) * 42ms);
+}
+#deal-monster-slots.skyjo-monster-special .skyjo-slot-cinematic.is-live .skyjo-cinematic-title{
+ animation:skyjo-scene-title-pop .75s cubic-bezier(.15,1.3,.45,1) both;
+}
+@keyframes skyjo-scene-arrive{
+ from{opacity:0}to{opacity:1}
+}
+@keyframes skyjo-jackpot-card-pop{
+ from{opacity:.4;transform:scale(.65) translateY(40px);filter:blur(4px)}
+ 72%{opacity:1;transform:scale(1.045) translateY(0);filter:blur(0)}
+ to{opacity:1;transform:scale(1);filter:blur(0)}
+}
+@keyframes skyjo-scene-title-pop{
+ from{opacity:0;transform:scale(.55)}
+ 70%{opacity:1;transform:scale(1.11)}
+ to{opacity:1;transform:scale(1)}
+}
+@keyframes skyjo-scene-rays{
+ from{transform:translate(-50%,-50%) rotate(0deg)}
+ to{transform:translate(-50%,-50%) rotate(360deg)}
+}
+@keyframes skyjo-scene-particle{
+ 0%{opacity:0;transform:rotate(var(--angle)) translateY(0) scale(.2)}
+ 18%{opacity:1}
+ 72%{opacity:1;transform:rotate(var(--angle)) translateY(clamp(-170px,-18vh,-80px)) scale(1.25)}
+ 100%{opacity:0;transform:rotate(var(--angle)) translateY(clamp(-240px,-25vh,-100px)) scale(.5)}
+}
+/* When the screen is compact, keep the price and player name far larger than
+   normal slot labels while allowing the existing bottom controls to remain visible. */
+@media(max-width:610px){
+ #deal-monster-slots.skyjo-monster-special .skyjo-slot-cinematic{
+  inset:2px 2px 109px;
+  border-radius:14px;
+ }
+ #deal-monster-slots.skyjo-monster-special .skyjo-cinematic-card{
+  width:96%;
+  gap:clamp(5px,1.5vh,10px);
+  padding:clamp(9px,2.8vw,18px);
+  border-width:3px;
+ }
+ #deal-monster-slots.skyjo-monster-special .skyjo-cinematic-icon{font-size:clamp(48px,10vh,78px)}
+ #deal-monster-slots.skyjo-monster-special .skyjo-cinematic-overline{font-size:10px;letter-spacing:.02em}
+ #deal-monster-slots.skyjo-monster-special .skyjo-cinematic-title{font-size:clamp(32px,10vw,55px)}
+ #deal-monster-slots.skyjo-monster-special .skyjo-cinematic-owner{font-size:clamp(14px,4.5vw,23px)}
+ #deal-monster-slots.skyjo-monster-special .skyjo-cinematic-prize{font-size:clamp(17px,5vw,27px)}
+ #deal-monster-slots.skyjo-monster-special .skyjo-cinematic-bottom{font-size:10px;letter-spacing:.02em}
+}
+@media(max-height:550px) and (min-width:611px){
+ #deal-monster-slots.skyjo-monster-special .skyjo-slot-cinematic{inset:2px 2px 82px}
+ #deal-monster-slots.skyjo-monster-special .skyjo-cinematic-card{gap:3px;padding:9px}
+ #deal-monster-slots.skyjo-monster-special .skyjo-cinematic-icon{font-size:35px}
+ #deal-monster-slots.skyjo-monster-special .skyjo-cinematic-title{font-size:clamp(34px,6vh,54px)}
+ #deal-monster-slots.skyjo-monster-special .skyjo-cinematic-prize{font-size:clamp(16px,3vh,23px)}
+ #deal-monster-slots.skyjo-monster-special .skyjo-cinematic-bottom{display:none}
+}
+@media(max-height:470px){
+ #deal-monster-slots.skyjo-monster-special .skyjo-cinematic-icon{font-size:30px}
+ #deal-monster-slots.skyjo-monster-special .skyjo-cinematic-title{font-size:32px}
+ #deal-monster-slots.skyjo-monster-special .skyjo-cinematic-card{padding:8px}
+ #deal-monster-slots.skyjo-monster-special .skyjo-cinematic-bottom{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+ #deal-monster-slots.skyjo-monster-special .skyjo-slot-cinematic,
+ #deal-monster-slots.skyjo-monster-special .skyjo-slot-cinematic *,
+ #deal-monster-slots.skyjo-monster-special .skyjo-slot-cinematic *::before,
+ #deal-monster-slots.skyjo-monster-special .skyjo-slot-cinematic *::after{
+  animation:none!important;
+  transition:none!important;
+ }
+ #deal-monster-slots.skyjo-monster-special .skyjo-cinematic-stars{display:none}
+}
