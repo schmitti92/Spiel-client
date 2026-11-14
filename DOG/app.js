@@ -2,6 +2,7 @@ import {CARD_EDITIONS,CARD_EDITION,loadCardEdition,saveCardEdition,cardBackImage
 import {enableHandTouchGestures} from './hand-gestures.js?v=2';
 import {mountDogEmojiGame,showDogEmoji,showDogEmojiError} from './emoji-game.js?v=3';
 import {boardGestureTarget} from './board-gesture-math.js?v=1';
+import {snapshotPieces,planPieceMotions,createPieceAnimator} from './piece-animations.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
 import {DEFAULT_APPEARANCE,BOARD_STYLES,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=21';
@@ -99,6 +100,8 @@ let boardZoom=1,boardCenter={x:380,y:380},gestureMoved=false,suppressBoardClickU
 const boardPointers=new Map();
 let gestureSnapshot=null;
 const boardSvg=$('board');
+const pieceAnimator=createPieceAnimator(boardSvg);
+let lastBoardKey=null,lastBoardSnapshot=null,lastBoardRevision=null,lastBoardMatch=null,lastMotionDuration=0;
 function applyBoardView(){
  const size=BOARD_SIZE/boardZoom,half=size/2;
  boardCenter.x=Math.max(half,Math.min(BOARD_SIZE-half,boardCenter.x));
@@ -191,6 +194,7 @@ function newGame(){
   humans=Number($('human-count').value)||1;
   game=createGame({names:['Du','Spieler Blau','Spieler Grün','Spieler Gelb'],bots:[0,1,2,3].map(i=>i>=humans)});
   revealed=true;selectedCard=null;selectedPiece=null;jokerAs=null;lastTurn=null;
+  pieceAnimator.cancel();lastBoardKey=null;lastBoardSnapshot=null;lastBoardRevision=null;lastBoardMatch=null;lastMotionDuration=0;
   save();render();scheduleAI();
 }
 function isHumanExchange(){
@@ -217,6 +221,19 @@ function piecePoint(piece){
 }
 function drawBoard(){
   if(!game)return;
+  const snapshot=snapshotPieces(game.pieces);
+  const matchIdentity=online?(acceptedMatchId||matchHint||'online'):'local';
+  // Repeated room/presence updates and card UI changes must not interrupt an
+  // ongoing pawn animation by replacing the entire SVG with identical content.
+  const boardKey=JSON.stringify([snapshot,appearance,selectedPiece,game.players?.map(p=>p.name)]);
+  if(boardKey===lastBoardKey && boardSvg.childElementCount){lastMotionDuration=0;return;}
+  const canAnimate=!!lastBoardSnapshot && lastBoardMatch===matchIdentity &&
+    Number.isInteger(game.revision) && game.revision===lastBoardRevision+1;
+  const motions=canAnimate?planPieceMotions(lastBoardSnapshot,snapshot,{
+    track:TRACK_POINTS,goal:GOAL_POINTS,home:HOME_POINTS
+  }):[];
+  lastBoardKey=boardKey;lastBoardSnapshot=snapshot;
+  lastBoardRevision=game.revision;lastBoardMatch=matchIdentity;
   const board=[];
   const push=part=>board.push(part);
   const look=currentLook(),skin=look.board;
@@ -306,7 +323,7 @@ function drawBoard(){
     const p=piecePoint(piece),color=safeColor(piece.owner),hi=selectedPiece===piece.id;
     if(!p)continue;
     if(hi)push('<circle class="dog-move-halo" cx="'+p.x+'" cy="'+p.y+'" r="28" fill="'+color+'" fill-opacity=".5" filter="url(#dog-halo)" pointer-events="none"/>');
-    push('<g data-piece="'+piece.id+'" class="dog-pawn '+(hi?'can-pick':'')+'" aria-label="Figur '+(piece.id%4+1)+' '+(game.players[piece.owner]?.name||'')+'">');
+    push('<g data-piece="'+piece.id+'" class="dog-pawn '+(hi?'can-pick dog-pawn-selected':'')+'" aria-label="Figur '+(piece.id%4+1)+' '+(game.players[piece.owner]?.name||'')+'">');
     push('<ellipse cx="'+p.x+'" cy="'+(p.y+10)+'" rx="14.6" ry="6.8" fill="#020b15" opacity=".63"/>');
     push('<path d="M '+(p.x-10)+' '+(p.y+5)+' Q '+(p.x-11)+' '+(p.y-3)+' '+(p.x-5)+' '+(p.y-7)+' Q '+p.x+' '+(p.y-13)+' '+(p.x+5)+' '+(p.y-7)+' Q '+(p.x+11)+' '+(p.y-3)+' '+(p.x+10)+' '+(p.y+5)+' Q '+p.x+' '+(p.y+14)+' '+(p.x-10)+' '+(p.y+5)+' Z" fill="url(#dog-pawn-'+piece.owner+')" stroke="'+(hi?'#ffffff':'#061b2c')+'" stroke-width="'+(hi?'3':'1.5')+'" filter="url(#dog-pawn-shadow)"/>');
     push('<circle cx="'+p.x+'" cy="'+(p.y-7)+'" r="9.1" fill="url(#dog-pawn-'+piece.owner+')" stroke="#ffffff" stroke-opacity=".42" stroke-width="1.4"/>');
@@ -315,7 +332,8 @@ function drawBoard(){
     push('<circle cx="'+p.x+'" cy="'+p.y+'" r="22" fill="transparent"/>');
     push('</g>');
   }
-  $('board').innerHTML=board.join('');
+  boardSvg.innerHTML=board.join('');
+  lastMotionDuration=pieceAnimator.play(motions,palette);
 }
 
 function actionLabel(m){
@@ -464,7 +482,7 @@ function scheduleAI(){
         else throw Error('Bot findet keinen erlaubten Zug');
         save();render();scheduleAI();
       }catch(e){$('status').textContent='⚠️ Botfehler: '+e.message;}
-    },250);
+    },Math.max(320,lastMotionDuration+240));
   }
 }
 const jokerDialog=$('dog-joker-dialog');
