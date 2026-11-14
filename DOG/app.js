@@ -76,24 +76,82 @@ async function initOnline(){
  window.addEventListener('spielonline-change',()=>{if(user()){void refreshOnline();startSocket();}});
 }
 
-// Zoom affects only the SVG viewport; game state, cards and surrounding UI stay unchanged.
-const BOARD_SIZE=760,ZOOM_MIN=.75,ZOOM_MAX=2.5,ZOOM_STEP=.25;
-let boardZoom=1;
-function setBoardZoom(value){
- boardZoom=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,Math.round(value*100)/100));
- const size=BOARD_SIZE/boardZoom,offset=(BOARD_SIZE-size)/2;
- $('board').setAttribute('viewBox',[offset,offset,size,size].join(' '));
+// Touch gestures change only the SVG viewBox, never game state or other UI.
+const BOARD_SIZE=760,ZOOM_MIN=1,ZOOM_MAX=3;
+let boardZoom=1,boardCenter={x:380,y:380},gestureMoved=false,suppressBoardClickUntil=0;
+const boardPointers=new Map();
+let gestureSnapshot=null;
+const boardSvg=$('board');
+function applyBoardView(){
+ const size=BOARD_SIZE/boardZoom,half=size/2;
+ boardCenter.x=Math.max(half,Math.min(BOARD_SIZE-half,boardCenter.x));
+ boardCenter.y=Math.max(half,Math.min(BOARD_SIZE-half,boardCenter.y));
+ boardSvg.setAttribute('viewBox',[boardCenter.x-half,boardCenter.y-half,size,size].join(' '));
  $('dog-zoom-label').textContent=Math.round(boardZoom*100)+' %';
  $('dog-zoom-in').disabled=boardZoom>=ZOOM_MAX;
  $('dog-zoom-out').disabled=boardZoom<=ZOOM_MIN;
 }
-$('dog-zoom-in').addEventListener('click',()=>setBoardZoom(boardZoom+ZOOM_STEP));
-$('dog-zoom-out').addEventListener('click',()=>setBoardZoom(boardZoom-ZOOM_STEP));
-$('dog-zoom-reset').addEventListener('click',()=>setBoardZoom(1));
-$('board').addEventListener('wheel',event=>{
+function setBoardZoom(value){
+ boardZoom=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,value));
+ applyBoardView();
+}
+function boardPixelScale(){
+ const rect=boardSvg.getBoundingClientRect();
+ // preserveAspectRatio meet: actual drawing is square and centered.
+ return Math.min(rect.width,rect.height)/(BOARD_SIZE/boardZoom);
+}
+function gestureState(){
+ const points=[...boardPointers.values()];
+ if(!points.length)return null;
+ const mid={x:points.reduce((v,p)=>v+p.x,0)/points.length,y:points.reduce((v,p)=>v+p.y,0)/points.length};
+ return {mid,distance:points.length>1?Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y):0,zoom:boardZoom,center:{...boardCenter}};
+}
+function beginGesture(){gestureSnapshot=gestureState();}
+boardSvg.addEventListener('pointerdown',event=>{
+ if(event.pointerType==='mouse')return;
+ boardPointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+ if(boardPointers.size>=2){gestureMoved=true;suppressBoardClickUntil=performance.now()+450;}
+ beginGesture();
+ try{boardSvg.setPointerCapture(event.pointerId);}catch(_){}
+});
+boardSvg.addEventListener('pointermove',event=>{
+ if(!boardPointers.has(event.pointerId))return;
+ const old=boardPointers.get(event.pointerId);
+ boardPointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+ if(!gestureSnapshot)return;
+ const points=[...boardPointers.values()];
+ const mid={x:points.reduce((v,p)=>v+p.x,0)/points.length,y:points.reduce((v,p)=>v+p.y,0)/points.length};
+ if(points.length>=2&&gestureSnapshot.distance>0){
+  const nextZoom=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,gestureSnapshot.zoom*Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y)/gestureSnapshot.distance));
+  const previousScale=boardPixelScale();
+  const focal={x:gestureSnapshot.center.x+(gestureSnapshot.mid.x-mid.x)/previousScale,y:gestureSnapshot.center.y+(gestureSnapshot.mid.y-mid.y)/previousScale};
+  boardZoom=nextZoom;boardCenter=focal;applyBoardView();
+  gestureMoved=true;suppressBoardClickUntil=performance.now()+450;
+ }else if(boardZoom>1&&points.length===1){
+  const delta=Math.hypot(event.clientX-old.x,event.clientY-old.y);
+  if(delta>2){
+   const scale=boardPixelScale();
+   boardCenter.x-=(event.clientX-old.x)/scale;boardCenter.y-=(event.clientY-old.y)/scale;
+   applyBoardView();gestureMoved=true;suppressBoardClickUntil=performance.now()+450;
+  }
+ }
+});
+function endBoardPointer(event){
+ if(!boardPointers.has(event.pointerId))return;
+ boardPointers.delete(event.pointerId);
+ if(gestureMoved)suppressBoardClickUntil=performance.now()+450;
+ if(!boardPointers.size)gestureMoved=false;
+ beginGesture();
+}
+boardSvg.addEventListener('pointerup',endBoardPointer);
+boardSvg.addEventListener('pointercancel',endBoardPointer);
+boardSvg.addEventListener('lostpointercapture',endBoardPointer);
+$('dog-zoom-in').addEventListener('click',()=>setBoardZoom(boardZoom+.25));
+$('dog-zoom-out').addEventListener('click',()=>setBoardZoom(boardZoom-.25));
+$('dog-zoom-reset').addEventListener('click',()=>{boardCenter={x:380,y:380};setBoardZoom(1);});
+boardSvg.addEventListener('wheel',event=>{
  if(!event.ctrlKey&&!event.shiftKey)return;
- event.preventDefault();
- setBoardZoom(boardZoom+(event.deltaY<0?ZOOM_STEP:-ZOOM_STEP));
+ event.preventDefault();setBoardZoom(boardZoom+(event.deltaY<0?.15:-.15));
 },{passive:false});
 const names=['Rot','Blau','Grün','Gelb'];
 let game,selectedCard=null,selectedPiece=null,jokerAs=null,available=[],revealed=online,aiTimer=null,lastTurn=null,humans=1;
@@ -380,6 +438,7 @@ jokerDialog.addEventListener('cancel',()=>{selectedCard=null;jokerAs=null;select
 $('hand').addEventListener('click',e=>{const btn=e.target.closest('[data-card]');if(btn)onCard(Number(btn.dataset.card));});
 $('moves').addEventListener('click',e=>{const btn=e.target.closest('[data-special]');if(!btn)return;const index=available.findIndex(m=>m.type===btn.dataset.special&&(jokerAs===null||m.as===jokerAs));if(index>=0)onMove(index);});
 $('board').addEventListener('click',e=>{
+ if(performance.now()<suppressBoardClickUntil)return;
  if(!revealed||currentHuman()<0||onlineBusy)return;
  const node=e.target.closest('[data-piece]');
  if(node&&selectedPiece===null){if(!available.some(m=>m.pieceId===Number(node.dataset.piece)))return;selectedPiece=Number(node.dataset.piece);drawBoard();$('move-help').textContent='Wähle das Zielfeld selbst.';return;}
