@@ -24,6 +24,7 @@ export const DEFAULT_APPEARANCE=Object.freeze({
   board:'studio',
   pieces:'classic',
   cards:'classic',
+  sidebar:'schloss',
   event:'none'
 });
 const deepFreeze=obj=>{
@@ -76,6 +77,15 @@ export const BOARD_STYLES=deepFreeze({
   kuestenabenteuer:{label:"Küstenabenteuer · Leuchtturm",image:"./Bilder/Spielhintergrundbilder/kuestenabenteuer.webp",fallbackImage:"./assets/boards/bergsee.svg",page:"radial-gradient(circle at 45% 18%,#0d263e,#06121c 85%)",frame:'linear-gradient(145deg,#253a47,#0b1f2a)',wood:["#203f5a","#e6bd83","#335e78","#a07b5b","#1d3148"],surface:["#17486a","#0d2c4b","#07182e"],center:["#103b58","#07223a"],edge:"#d8bb83",route:"#6aafca"},
   royalKarten:{label:"Royal-Karten · Sammleredition",image:"./Bilder/Spielhintergrundbilder/royal-karten.webp",fallbackImage:"./assets/boards/goldwellen.svg",page:"radial-gradient(circle at 45% 18%,#0b1c3c,#06121c 85%)",frame:'linear-gradient(145deg,#253a47,#0b1f2a)',wood:["#283e5c","#e7bd70","#1e3056","#ba9c61","#111c37"],surface:["#1b4677","#0f3060","#071939"],center:["#17345f","#071d3f"],edge:"#e9c480",route:"#81a9d7"},
   zauberwald:{label:"Zauberwald · Wasserfälle",image:"./Bilder/Spielhintergrundbilder/zauberwald.webp",fallbackImage:"./assets/boards/pergament.svg",page:"radial-gradient(circle at 45% 18%,#102f26,#06121c 85%)",frame:'linear-gradient(145deg,#253a47,#0b1f2a)',wood:["#284a35","#e2c17b","#345b43","#8a8547","#153025"],surface:["#2a6951","#145445","#092a30"],center:["#245640","#082b2d"],edge:"#d4c18b",route:"#79bca3"}
+});
+/* Right-hand cockpit backgrounds are deliberately independent of board art.
+   Add a verified repo-owned image here to offer another choice in Settings. */
+export const SIDEBAR_BACKGROUNDS=deepFreeze({
+  schloss:{
+    label:'🏰 Magisches Schloss am Nebelsee',
+    image:'./assets/backgrounds/dog-hintergrund-magisches-schloss.png'
+  },
+  none:{label:'🌑 Ohne Hintergrundbild',image:null}
 });
 export const PIECE_STYLES=deepFreeze({
   classic:{label:'Klassisch',colors:['#e65f58','#4c9bfa','#5ac68d','#e8b84e']},
@@ -131,6 +141,7 @@ export const EVENT_PACKS=deepFreeze({
 });
 export const APPEARANCE_CATEGORIES=deepFreeze({
   board:BOARD_STYLES,
+  sidebar:SIDEBAR_BACKGROUNDS,
   pieces:PIECE_STYLES,
   cards:CARD_STYLES,
   event:EVENT_PACKS
@@ -154,7 +165,7 @@ export function resolveAppearance(value){
     cards:event.cards&&Object.hasOwn(CARD_STYLES,event.cards)?event.cards:picked.cards
   };
   return {
-    selected:picked,board:BOARD_STYLES[chosen.board],
+    selected:picked,board:BOARD_STYLES[chosen.board],sidebar:SIDEBAR_BACKGROUNDS[chosen.sidebar],
     pieces:PIECE_STYLES[chosen.pieces],cards:CARD_STYLES[chosen.cards],
     event
   };
