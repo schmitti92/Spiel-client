@@ -1,3 +1,4 @@
+import {cardMarkup,cardVisual} from './card-visuals.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
 import {DEFAULT_APPEARANCE,BOARD_STYLES,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=12';
@@ -260,7 +261,7 @@ function renderHand(){
   const seat=currentHuman(),title=$('hand-title'),hand=$('hand'),actions=$('moves'),button=$('show-hand');
   actions.innerHTML='';hand.innerHTML='';
   if(game.phase==='finished'){title.textContent='🏆 Partie beendet';button.hidden=true;return;}
-  if(seat<0){title.textContent=online&&onlineSeat!==null?'🃏 Deine Handkarten':'🤖 Bots spielen';button.hidden=true;if(online&&onlineSeat!==null&&Array.isArray(game.hands[onlineSeat]))hand.innerHTML=game.hands[onlineSeat].map(c=>'<div class="playing-card"><small>DOG</small><strong>'+cardsLabel(c.type)+'</strong><em>Handkarte</em></div>').join('');available=[];return;}
+  if(seat<0){title.textContent=online&&onlineSeat!==null?'🃏 Deine Handkarten':'🤖 Bots spielen';button.hidden=true;if(online&&onlineSeat!==null&&Array.isArray(game.hands[onlineSeat]))hand.innerHTML=game.hands[onlineSeat].map(c=>cardMarkup(c.type,{tag:'div'})).join('');available=[];return;}
   if(lastTurn!==seat){revealed=online||humans===1;selectedCard=null;selectedPiece=null;jokerAs=null;lastTurn=seat;}
   button.hidden=online||humans===1;button.textContent=revealed?'🙈 Hand verdecken':'🃏 Karten ansehen';
   title.textContent=game.phase==='exchange'?'🔐 '+game.players[seat].name+': Karte an Partner geben':game.phase==='seven'?'🔥 Die 7 verteilen – noch '+(7-game.seven.spent)+' Schritte':'🎯 '+game.players[seat].name+' ist am Zug';
@@ -268,12 +269,12 @@ function renderHand(){
     hand.innerHTML='<div class="hand-veil"><div class="dog-card-backs" aria-hidden="true"><span class="dog-card-back">'+symbol+'</span><span class="dog-card-back">'+symbol+'</span><span class="dog-card-back">'+symbol+'</span></div><span>Deine Karten sind verdeckt. Tippe auf „Karten ansehen“.</span></div>';return;}
   if(game.phase==='seven'){
     available=legalActions(game,seat);
-    hand.innerHTML=game.hands[seat].map(c=>'<div class="playing-card '+(c.id===game.seven.cardId?'special picked':'')+'"><small>DOG</small><strong>'+cardsLabel(c.type)+'</strong><em>'+(c.id===game.seven.cardId?'Noch '+(7-game.seven.spent)+' Schritte':'Handkarte')+'</em></div>').join('');
+    hand.innerHTML=game.hands[seat].map(c=>cardMarkup(c.type,{tag:'div',selected:c.id===game.seven.cardId,footer:c.id===game.seven.cardId?'Noch '+(7-game.seven.spent)+' Schritte':null})).join('');
     if(!online){const cancel=document.createElement('button');cancel.className='secondary move-button';cancel.textContent='↶ Sieben zurücknehmen';cancel.addEventListener('click',()=>{game=cancelSeven(game,seat);selectedCard=null;selectedPiece=null;save();render();});actions.appendChild(cancel);}
   }else{
     const cards=game.hands[seat];
     const exchange=game.phase==='exchange';
-    hand.innerHTML=cards.map((c,i)=>'<button type="button" class="playing-card '+(selectedCard===c.id?'picked ':'')+(c.type==='joker'||['swap','7','4','1/11','13'].includes(c.type)?'special':'')+'" data-card="'+c.id+'"><small>'+(c.type==='joker'?'JOKER':c.type==='swap'?'TAUSCH':'DOG')+'</small><strong>'+cardsLabel(c.type)+'</strong><em>'+(exchange?'weitergeben':(c.type==='7'?'7 teilen':c.type==='swap'?'Tauschen':'Spielen'))+'</em></button>').join('');
+    hand.innerHTML=cards.map(c=>cardMarkup(c.type,{selected:selectedCard===c.id,attrs:'type="button" data-card="'+c.id+'"',footer:exchange?'WEITERGEBEN':null})).join('');
     available=exchange?[]:selectedCard!==null?legalActions(game,seat).filter(m=>m.cardId===selectedCard&&(jokerAs===null||m.as===jokerAs)):[];
     if(exchange&&selectedCard!==null){
       available=[{type:'exchange',cardId:selectedCard}];
@@ -365,7 +366,7 @@ function openJokerDialog(seat){
  $('dog-joker-grid').innerHTML=choices.map(type=>{
   const enabled=actions.some(m=>m.as===type);
   const label=type==='swap'?'Tauschkarte':type==='1/11'?'1 oder 11':type;
-  return '<button type="button" class="dog-joker-choice" data-joker-as="'+escape(type)+'" '+(enabled?'':'disabled title="Aktuell kein legaler Zug"')+'><strong>'+escape(type==='swap'?'⇄':type)+'</strong><span>'+escape(label)+'</span></button>';
+  return cardMarkup(type,{extraClass:'dog-joker-choice',attrs:'type="button" data-joker-as="'+escape(type)+'" '+(enabled?'':'disabled title="Aktuell kein legaler Zug"')});
  }).join('');
  if(!jokerDialog.open)jokerDialog.showModal();
 }
