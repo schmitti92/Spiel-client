@@ -30,6 +30,18 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
 @media(max-width:580px){.dog-portal-links{flex-direction:column}.dog-portal-links>a{flex:1 1 auto;width:100%}}
 </style>
 <link rel="stylesheet" href="DOG/board-picker.css?v=3"><link rel="stylesheet" href="DOG/avatar-picker.css?v=2"><link rel="stylesheet" href="DOG/emoji-ui.css?v=3">
+<style>
+.hub-extra-games{margin:10px 0 14px}
+.hub-extra-game-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.hub-extra-game{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;min-height:105px;padding:12px;border:1px solid #b4c8d9;border-radius:15px;color:#16375c;background:linear-gradient(135deg,#f7fbff,#e6f1fa);box-shadow:0 4px 14px #0f34531a;cursor:pointer}
+.hub-extra-game>span{font-size:29px}
+.hub-extra-game strong{font-size:14px}
+.hub-extra-game small{font-size:11px;text-align:center;color:#55718a}
+.hub-extra-game:hover,.hub-extra-game:focus-visible{border-color:#c9a15b;background:#fff9eb;transform:translateY(-1px)}
+.hub-extra-game:disabled{opacity:.6}
+@media(max-width:560px){.hub-extra-game-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.hub-extra-game{padding:7px;min-height:100px}.hub-extra-game strong{font-size:11px}.hub-extra-game small{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.hub-extra-game{transition:none!important;transform:none!important}}
+</style>
 </head>
 <body>
 <div class="shell">
@@ -48,6 +60,16 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
     <div><div class="eyebrow">Dein Online-Konto</div><strong id="account-name">Anmeldung wird geprüft …</strong><p id="account-info" class="subtle">Ein echtes Spielerprofil ist für Online-Räume erforderlich.</p></div>
     <button type="button" class="btn blue" id="login-btn">Anmelden</button>
   </section>
+  <section class="panel hub-extra-games" aria-label="Weitere Spiele über die Hauptlobby">
+    <div class="eyebrow">Weitere Spielwelten · Ein zentraler Einstieg</div>
+    <h2>Weitere Spiele</h2>
+    <p class="subtle">Auch die eigenständigen Spielwelten erreichst du von hier. Dein bestehender Online-Raumcode wird beim Wechsel mitgegeben.</p>
+    <div class="hub-extra-game-grid">
+      <button type="button" class="hub-extra-game" data-hub-shortcut="deal"><span aria-hidden="true">💼</span><strong>Deal or No Deal</strong><small>Goldstudio und Events</small></button>
+      <button type="button" class="hub-extra-game" data-hub-shortcut="kniffel"><span aria-hidden="true">🎲</span><strong>Kniffel Online</strong><small>Gemeinsam würfeln</small></button>
+      <button type="button" class="hub-extra-game" data-hub-shortcut="mini"><span aria-hidden="true">🎮</span><strong>Minispiele 2</strong><small>Minispiel-Sammlung</small></button>
+    </div>
+  </section>
   <section id="entry-view" class="panel" aria-labelledby="entry-title">
     <h2 id="entry-title">Deinem Spieleabend beitreten</h2><p class="subtle">Ein Raumcode für DOG, Barikade, SKYJO Action, KreuzKunter, Business und weitere Spiele.</p>
     <div class="entry-action"><button type="button" class="btn blue" id="create-btn">＋ Neuen Raum erstellen</button><span class="subtle join-separator">oder einem Raum beitreten</span><input class="text-field" id="join-code" aria-label="Raumcode" maxlength="6" inputmode="numeric" placeholder="123" autocomplete="off" spellcheck="false"><button type="button" class="btn light" id="join-btn">Beitreten</button></div>
@@ -63,6 +85,7 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
           <button class="game" type="button" data-game="skyjo"><span class="emoji">🃏</span><span><b>SKYJO Action</b><small>2–3 Personen</small></span></button>
           <button class="game" type="button" data-game="kreuz"><span class="emoji">🎯</span><span><b>KreuzKunter</b><small>2–6 Personen</small></span></button>
           <button class="game" type="button" data-game="business"><span class="emoji">💼</span><span><b>Das große Business</b><small>2–5 Personen</small></span></button>
+          <button class="game" type="button" data-game="partychallenge"><span class="emoji">🏆</span><span><b>Party Challenge</b><small>Gemeinsam Minispiele bestreiten</small></span></button>
         </div>
         <p class="chooser-note">👑 Der Host wählt das Spiel. Danach öffnet sich der passende Online-Vorraum für alle.</p>
       </section>
@@ -166,6 +189,7 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
     <div class="local-game-grid">
       <a class="local-game" href="DOG/index.html"><span class="local-icon">🐾</span><span><strong>DOG Klassisch</strong><small>Auf einem Gerät · mit Bots</small></span></a>
       <a class="local-game" href="Kniffel/index.html"><span class="local-icon">🎲</span><span><strong>Kniffel</strong><small>Lokal würfeln</small></span></a>
+      <a class="local-game" href="MinispieleV2/index.html"><span class="local-icon">🎮</span><span><strong>Minispiele 2</strong><small>Minispiele auswählen</small></span></a>
       <a class="local-game" href="Barikade/barikade.html?offline=1"><span class="local-icon">🎲</span><span><strong>Barikade</strong><small>Offline-Modus am Spielbrett</small></span></a>
       <a class="local-game" href="Skyjo/skyjo_action.html?mode=local"><span class="local-icon">🃏</span><span><strong>SKYJO Action</strong><small>Lokal spielen · auch mit Computergegner</small></span></a>
       <a class="local-game" href="KreuzKunter/kreuzkunter.html?mode=local"><span class="local-icon">🎯</span><span><strong>KreuzKunter</strong><small>Solo, lokal und Computergegner</small></span></a>
