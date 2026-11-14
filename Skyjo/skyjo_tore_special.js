@@ -42,7 +42,7 @@ const DURATION=n=>n===1?4200:n===2?6500:n===3?7800:n<=6?10000:10500;
 const api=()=>String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const me=()=>window.SpielOnline?.state?.()?.user;
 const esc=x=>String(x==null?'':x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let bridge=null,requestBusy=false,animationTimer=null,renderKey='';
+let bridge=null,requestBusy=false,animationTimer=null,renderKey='',lastAutoRound='',lastFinalRound='';
 function seed(matchId,round){
  let n=2166136261>>>0;
  for(const ch of String(matchId)+'|'+String(round))n=Math.imul(n^ch.charCodeAt(0),16777619)>>>0;
@@ -271,6 +271,22 @@ function render(game){
  if(!show){
   if(root)root.remove();renderKey='';
   if(animationTimer){clearInterval(animationTimer);animationTimer=null}
+  if(active(game)&&game.skyjoSpecial.finished===true&&bridge){
+   const key=game.skyjoSpecial.matchId+':'+game.round;
+   if(game.phase==='betweenRounds'&&bridge.isHost()&&lastAutoRound!==key){
+    lastAutoRound=key;
+    setTimeout(()=>{
+     const current=bridge?.getState();
+     if(current?.skyjoSpecial?.finished===true&&current.round===game.round&&current.phase==='betweenRounds'&&bridge.isHost())void bridge.nextRound();
+    },1200);
+   }else if(game.phase==='gameOver'&&lastFinalRound!==key){
+    lastFinalRound=key;
+    setTimeout(()=>{
+     const current=bridge?.getState();
+     if(current?.phase==='gameOver'&&current.skyjoSpecial?.finished===true)bridge.openFinale();
+    },500);
+   }
+  }
   return;
  }
  const batch=currentBatch(show);if(!batch)return;
