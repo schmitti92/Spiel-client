@@ -30,7 +30,8 @@ for(const picker of pickers){
   button.setAttribute('aria-label','DOG-Spielbrett '+theme.label+' auswählen');
   const thumb=document.createElement('span');thumb.className='dog-board-thumb';thumb.setAttribute('aria-hidden','true');
   const url=resolveBoardArt(theme);
-  thumb.style.backgroundImage=(url?'url("'+url+'"), ':'')+FALLBACK;
+  const fallback=resolveBoardArt({image:theme.fallbackImage});
+  thumb.style.backgroundImage=(url?'url("'+url+'"), ':'')+(fallback?'url("'+fallback+'"), ':'')+FALLBACK;
   const text=document.createElement('span');text.className='dog-board-option-name';text.textContent=theme.label;
   button.append(thumb,text);
   button.addEventListener('click',()=>{
