@@ -242,8 +242,9 @@
   // A missed socket event or disconnected winner must never trap spectators.
   if(!directBankerPack)setTimeout(()=>{if(sequence===current&&!box.hidden&&!finalWheelStarted){wheelStatus.textContent='⏳ Warte auf den gemeinsamen Drehstart. Verbindung wird automatisch geprüft …';checkWheelStart();}},12000);
   const owner=reward.playerName||'Spieler';
-  title.textContent='🎄 '+owner+' gewinnt ein Weihnachtspaket!';
-  subtitle.textContent=(isFinal?'🏆 Siegerbonus der Runde':kind==='banker'?'Banker-Deal angenommen':'1-Cent-Koffer geöffnet')+' · Alle Spieler schauen live zu';
+  const isFiftyMillionCase=kind==='cent'&&reward.triggerAmount===5_000_000_000;
+   title.textContent=(isFiftyMillionCase?'💰 ':'🎄 ')+owner+' gewinnt ein '+(isFiftyMillionCase?'Kartenpaket!':'Weihnachtspaket!');
+  subtitle.textContent=(isFinal?'🏆 Siegerbonus der Runde':kind==='banker'?'Banker-Deal angenommen':isFiftyMillionCase?'💰 50-Millionen-Koffer geöffnet':'1-Cent-Koffer geöffnet')+' · Alle Spieler schauen live zu';
   credit.textContent=reward.uid===uid?'Deine Karten wurden deinem Weihnachtsalbum gutgeschrieben.':'Die Karten wurden dem Weihnachtsalbum von '+owner+' gutgeschrieben.';
   name.textContent='';icon.textContent='🎁';cards.replaceChildren();document.getElementById('cent-special-overlay').hidden=true;
   wheelStage.hidden=directBankerPack;revealStage.hidden=true;spinButton.hidden=directBankerPack;spinButton.disabled=directBankerPack;wheelStatus.textContent=directBankerPack?'🎁 Banker-Paket wird direkt geöffnet …':'🎡 Bereit? Drücke auf „Jetzt drehen“!';
@@ -581,7 +582,7 @@
  function rewardMayExist(){
   if(typeof g==='undefined'||!g?.id)return false;
   if(g.pendingCardReveals?.length)return true;
-  if((g.events||[]).some(e=>e.type==='opened'&&e.amount===1&&pendingReward('cent',g.id+'_'+e.eventId)))return true;
+  if((g.events||[]).some(e=>e.type==='opened'&&(e.amount===1||e.amount===5_000_000_000)&&pendingReward('cent',g.id+'_'+e.eventId)))return true;
   if((g.history||[]).some(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true&&pendingReward('banker',g.id+'_'+h.round+'_'+d.id))))return true;
   if(g.phase==='final'&&g.monsterSlotsVersion!==1&&pendingReward('final',g.id)){
    const payouts=(g.finalValues||[]).map(v=>v.payout);
@@ -600,7 +601,7 @@
   // A new reward event is checked immediately; unchanged rewards retry at most
   // every 30 seconds, rather than reading Firestore on every case reveal.
   const gate=g.pendingCardReveals?.[0];
-  const rewardKey=(gate?gate.kind+':'+gate.rewardId+':':'')+g.id+':'+(g.phase==='final'?'final:'+!!g.finalWheelSpun:'')+':'+(g.events||[]).filter(e=>e.type==='opened'&&e.amount===1).map(e=>e.eventId).join(',')+':'+(g.history||[]).filter(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true)).map(h=>h.round+':'+(h.decisions||[]).filter(d=>d.deal===true).map(d=>d.id).join(',')).join(';');
+  const rewardKey=(gate?gate.kind+':'+gate.rewardId+':':'')+g.id+':'+(g.phase==='final'?'final:'+!!g.finalWheelSpun:'')+':'+(g.events||[]).filter(e=>e.type==='opened'&&(e.amount===1||e.amount===5_000_000_000)).map(e=>e.eventId).join(',')+':'+(g.history||[]).filter(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true)).map(h=>h.round+':'+(h.decisions||[]).filter(d=>d.deal===true).map(d=>d.id).join(',')).join(';');
   const now=Date.now();
   if(!manual&&rewardKey===lastRewardProbeKey&&now-lastRewardProbeAt<(gate?5000:30000))return 'cooldown';
   lastRewardProbeKey=rewardKey;lastRewardProbeAt=now;checking=true;
@@ -615,13 +616,13 @@
    }else{
     if((g.history||[]).some(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true&&pendingReward('banker',g.id+'_'+h.round+'_'+d.id))))endpoints.push('/christmas-banker-rewards');
     if(g.phase==='final'&&g.monsterSlotsVersion!==1&&pendingReward('final',g.id)&&document.getElementById('finale-cinema')?.hidden&&!finishTiedFinal()&&!sessionStorage.getItem('final-wheel-complete:'+g.id))endpoints.push('/christmas-final-reward');
-    if((g.events||[]).some(e=>e.type==='opened'&&e.amount===1&&pendingReward('cent',g.id+'_'+e.eventId)))endpoints.push('/christmas-cent-reward');
+    if((g.events||[]).some(e=>e.type==='opened'&&(e.amount===1||e.amount===5_000_000_000)&&pendingReward('cent',g.id+'_'+e.eventId)))endpoints.push('/christmas-cent-reward');
    }
    for(const endpoint of endpoints){
     const response=await fetch(api(endpoint),{headers,cache:'no-store'});
     if(!response.ok){outcome='HTTP '+response.status;continue}
     const data=await response.json();
-    const rewards=endpoint.includes('banker')?data.rewards||[]:data.reward?[data.reward]:[];
+    const rewards=Array.isArray(data.rewards)?data.rewards:data.reward?[data.reward]:[];
     const kind=endpoint.includes('final')?'final':endpoint.includes('banker')?'banker':'cent';
     const active=g.pendingCardReveals?.[0];
     const reward=rewards.find(x=>x.gameId===g.id&&
