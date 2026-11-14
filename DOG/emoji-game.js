@@ -26,9 +26,19 @@ export function showDogEmojiError(reason){
  const messages={COOLDOWN:'Bitte 5 Sekunden zwischen Emojis warten.',NOT_CONNECTED:'Online-Verbindung noch nicht bereit.',
   EMOJI_LOCKED:'Dieses Emoji ist noch nicht freigeschaltet.',NO_DOG_MATCH:'DOG-Partie nicht aktiv.',
   NOT_A_PARTICIPANT:'Nur mitspielende Personen können Emojis senden.',NOT_A_MEMBER:'Du bist nicht mehr im Raum.'};
- if(popup?.hidden)return;
+ const message=messages[reason]||'Emoji konnte nicht gesendet werden.';
  const label=popup?.querySelector('[data-emoji-game-status]');
- if(label)label.textContent=messages[reason]||'Emoji konnte nicht gesendet werden.';
+ if(label)label.textContent=message;
+ // Server may reject an emoji after the picker has closed. Report this
+ // visibly without reopening the picker or blocking gameplay.
+ let toast=document.getElementById('dog-emoji-error-toast');
+ if(!toast){
+  toast=document.createElement('div');toast.id='dog-emoji-error-toast';
+  toast.setAttribute('role','status');toast.className='dog-emoji-error-toast';document.body.appendChild(toast);
+ }
+ toast.textContent=message;toast.hidden=false;
+ clearTimeout(showDogEmojiError._timer);
+ showDogEmojiError._timer=setTimeout(()=>{toast.hidden=true;},2600);
 }
 export function mountDogEmojiGame({send}){
  if(popup)return;
