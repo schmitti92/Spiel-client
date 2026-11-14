@@ -38,6 +38,26 @@ test('Collection registers actual selectable designs without inventing past unlo
  assert.deepEqual(look('frames').items.map(x=>x.id),['frame-current']);
  assert.deepEqual(look('emblems').items.map(x=>x.id),['emblem-crown']);
 });
+test('all HUD color tiles use real theme tokens and support large preview',()=>{
+ const hud=dogCollectionCategory('hud').items;
+ const toneItems=hud.filter(item=>item.field==='hudTone');
+ assert.equal(toneItems.length,Object.keys(HUD_TONES).length);
+ for(const item of toneItems){
+  const tone=HUD_TONES[item.value];
+  assert.equal(item.hudTheme,tone,item.name+' should reference the actual HUD theme');
+  assert.match(item.hudTheme.swatch,/^#[0-9a-f]{6}$/i);
+  assert.ok(item.hudTheme.panel&&item.hudTheme.seat&&item.hudTheme.button&&item.hudTheme.border);
+ }
+ const layoutItems=hud.filter(item=>item.field==='hudLayout');
+ assert.equal(layoutItems.length,Object.keys(HUD_LAYOUTS).length);
+ assert.ok(layoutItems.every(item=>!item.hudTheme),'a layout is not a color theme');
+ const page=text('../DOG/collection.js'),styles=text('../DOG/collection.css');
+ assert.match(page,/if\(item\.hudTheme\)/);
+ assert.match(page,/--hud-preview-base/);
+ assert.match(styles,/\.collection-hud-tone-preview/);
+ assert.match(styles,/\.detail-image \.collection-hud-tone-preview/);
+});
+
 test('only three usable starter emojis appear in the gallery',()=>{
  const entries=dogCollectionCategory('emojis').items;
  assert.equal(DOG_EMOJIS.length,50);
@@ -52,7 +72,7 @@ test('Lobby buttons and collection page remain navigable without changing DOG ga
  assert.match(local,/data-dog-collection-link/);
  assert.match(html,/id="collection-grid"/);
  assert.match(html,/id="collection-detail-content"/);
- assert.match(html,/src="\.\/collection\.js\?v=3"/);
+ assert.match(html,/src="\.\/collection\.js\?v=4"/);
  assert.doesNotMatch(html,/data-filter="planned"/);
  assert.match(html,/data-filter="active"/);
  assert.match(js,/saveAppearance\(/);
