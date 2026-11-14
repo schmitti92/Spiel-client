@@ -468,6 +468,21 @@ $('board').addEventListener('click',e=>{
  const node=e.target.closest('[data-piece]');
  if(node&&selectedPiece===null){if(!available.some(m=>m.pieceId===Number(node.dataset.piece)))return;selectedPiece=Number(node.dataset.piece);drawBoard();$('move-help').textContent='Wähle das Zielfeld selbst.';return;}
  if(node&&Number(node.dataset.piece)===selectedPiece){selectedPiece=null;drawBoard();$('move-help').textContent='Figur abgewählt.';return;}
+ // A target pawn must be resolved before allowing a different source pawn.
+ // Otherwise clicking an opponent (or another selectable pawn) can silently
+ // change the selection instead of performing a legal swap.
+ if(node&&selectedPiece!==null){
+  const targetId=Number(node.dataset.piece);
+  const swapChoices=available.map((m,i)=>({m,i})).filter(({m})=>m.type==='swap'&&m.pieceId===selectedPiece&&m.targetId===targetId);
+  if(swapChoices.length===1){onMove(swapChoices[0].i);return;}
+  if(swapChoices.length>1){
+   const response=prompt('Welche Tauschvariante? '+swapChoices.map(({m},i)=>(i+1)+': '+(m.as||'Tausch')).join(' | '),'1');
+   if(response===null)return;
+   const choice=Number(response)-1;
+   if(Number.isInteger(choice)&&swapChoices[choice])onMove(swapChoices[choice].i);
+   return;
+  }
+ }
  if(node&&available.some(m=>m.pieceId===Number(node.dataset.piece))&&Number(node.dataset.piece)!==selectedPiece){selectedPiece=Number(node.dataset.piece);drawBoard();$('move-help').textContent='Andere Figur gewählt. Jetzt Zielfeld antippen.';return;}
  if(selectedPiece===null)return;
  const matrix=$('board').getScreenCTM();if(!matrix)return;
