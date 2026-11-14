@@ -54,6 +54,58 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 .dog-appearance-buttons button:last-child{color:#142536;background:#e9bf7d;border-color:#e9bf7d}
 @media(max-width:530px){.dog-appearance-layout{grid-template-columns:1fr}.dog-appearance-layout label:first-child{grid-column:1/-1}}
 
+/* DOG tablet/desktop landscape cockpit: board, players and all six cards fit the viewport. */
+@media (min-width:900px) and (orientation:landscape) and (max-height:1100px){
+ html,body{height:100%;min-height:0}
+ body{overflow:hidden;display:flex;flex-direction:column}
+ .topbar{flex:0 0 auto;height:clamp(38px,5.4dvh,56px);padding:0 12px;gap:8px}
+ .brand{gap:7px}.brand .mark{width:29px;height:29px;border-radius:8px;font-size:17px}
+ .brand h1{font-size:16px}.brand p{font-size:9px;margin-top:1px}
+ .top-actions{gap:5px;flex-wrap:nowrap}.top-btn{padding:5px 8px;font-size:11px;white-space:nowrap;border-radius:8px}
+ main{width:calc(100% - 16px);margin:6px auto;flex:1;min-height:0;display:flex;flex-direction:column}
+ .heading{flex:0 0 auto;margin-bottom:5px;gap:8px}
+ .heading h2{font-size:clamp(13px,1.45vw,18px)}.heading p{font-size:10px;margin-top:1px}
+ .phase-pill{font-size:10px;padding:5px 9px}
+ .layout{flex:1;min-height:0;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:9px;align-items:stretch}
+ .board-card{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:center;padding:5px;border-radius:13px;overflow:hidden}
+ .board-svg{flex:1;min-height:0;width:100%;height:100%;max-height:none;object-fit:contain}
+ .teams{flex:0 0 auto;margin-top:3px;gap:4px;font-size:10px}
+ .team-chip{padding:4px 7px;gap:4px}.board-editor-link{padding:4px 7px;font-size:10px}
+ .right{min-width:0;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;grid-template-columns:minmax(0,1fr);gap:7px}
+ .right .panel:nth-child(2),.right .panel:nth-child(3){grid-column:auto}
+ .panel{min-width:0;min-height:0;padding:clamp(7px,1.1vh,12px);border-radius:12px}
+ .meta{padding:5px 8px;margin-bottom:5px}.meta span{font-size:10px}.meta b{font-size:12px}
+ .turn{font-size:clamp(13px,1.6vw,17px);margin:3px 0 6px}
+ .seat-grid{gap:4px}.seat{padding:5px 7px;gap:4px;border-radius:8px}
+ .seat-name{font-size:11px}.seat b{font-size:11px}.seat-extra{font-size:9px}
+ .hand-head{margin-bottom:3px}.hand-head h3{font-size:12px}.reveal{padding:5px 7px;font-size:10px}
+ .right .panel:nth-child(2){display:flex;flex-direction:column;overflow:hidden}
+ .hand{flex:0 1 auto;min-height:0;overflow-x:auto;overflow-y:hidden;gap:clamp(3px,.5vw,8px);padding:5px 2px 8px;justify-content:space-between}
+ .playing-card{flex:1 1 0;min-width:0;max-width:105px;height:clamp(64px,13vh,124px);padding:5px 1px;border-radius:9px}
+ .playing-card strong{font-size:clamp(16px,2.2vw,26px)}.playing-card small,.playing-card em{font-size:clamp(7px,.7vw,9px)}
+ .move-help{font-size:10px;margin:4px 0}.moves{max-height:clamp(50px,12vh,130px);overflow:auto;gap:4px}
+ .move-button{padding:5px 7px;font-size:10px}.right .panel:nth-child(2) #selected-info{margin:3px 0 0}
+ .right .panel:nth-child(3){overflow:hidden}.controls{gap:4px}.controls select{padding:4px 6px;font-size:10px}
+ .right .panel:nth-child(3) h3{font-size:12px!important;margin:5px 0 3px!important}
+ .history{max-height:clamp(24px,6vh,65px);font-size:10px;line-height:1.3}
+ .status{font-size:9px;margin-top:3px;line-height:1.2}
+ dialog{max-height:88dvh;overflow:auto}
+}
+/* Short landscape screens: retain the entire board and cards rather than pushing content offscreen. */
+@media (min-width:900px) and (orientation:landscape) and (max-height:650px){
+ .brand p,.heading p{display:none}
+ .topbar{height:36px}.heading{margin-bottom:3px}
+ .right{gap:4px}.panel{padding:5px 8px}.seat{padding:3px 5px}
+ .meta{margin-bottom:2px;padding:3px 6px}.turn{margin:2px 0 3px}
+ .playing-card{height:clamp(54px,12vh,78px)}
+ .hand{padding:2px 1px 4px}.moves{max-height:9vh}
+ .teams{margin-top:1px}
+}
+/* When a user rotates to portrait, use the normal scrollable responsive layout. */
+@media (max-width:899px), (orientation:portrait){
+ body{overflow:auto}
+}
+
 </style>
 </head>
 <body>
@@ -62,6 +114,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
   <div class="top-actions">
     <a class="top-btn" id="back-link" href="../spielauswahl-lokal.html">← Zur Spiele-Lobby</a>
     <a class="top-btn" href="editor.html" data-dog-editor>🛠 Spielfeldstudio</a>
+    <button class="top-btn" id="fullscreen-button" type="button" aria-pressed="false">⛶ Vollbild</button>
     <button class="top-btn" id="appearance-button" type="button">🎨 Designs</button>
     <button class="top-btn" id="rules-button" type="button">📖 Regeln</button>
     <button class="top-btn" id="new-game" type="button">↻ Neues Spiel</button>
@@ -97,7 +150,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
       <p id="selected-info"></p>
     </section>
     <section class="panel">
-      <div class="controls">
+      <div class="controls" id="local-player-controls">
         <label for="human-count">Spieler am Gerät</label>
         <select id="human-count">
           <option value="1">1 Mensch + 3 Bots</option>
@@ -142,11 +195,27 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
   <p>Rot und Grün spielen gemeinsam gegen Blau und Gelb. Alle beginnen mit vier Figuren zu Hause. Zum Starten benötigt man eine <b>1/11</b>, <b>13</b> oder einen Joker. Die Figuren ziehen über die Außenbahn in ihre vier Zielfelder.</p>
   <p>Jede Kartenrunde hat <b>6, 5, 4, 3 oder 2 Karten</b>. Vor dem Spielen tauschen die Partner jeweils eine verdeckte Karte. Mit der <b>4</b> darfst du vor- oder rückwärts gehen, mit der <b>7</b> verteilst du sieben Schritte und schlägst alle überholten Figuren. Mit der <b>Tauschkarte</b> tauschst du ungeschützte Figuren. Ein Joker ersetzt jede andere Karte.</p>
   <p>Eigene Startfelder sind geschützt. Im Ziel kann niemand übersprungen werden. Wenn alle vier Figuren einer Farbe angekommen sind, spielt die Person für ihren Partner weiter. Gewonnen hat das Team mit allen acht Figuren im Ziel.</p>
-  <p><b>Testversion:</b> Das Spiel funktioniert hier zunächst lokal mit Bots oder mehreren Menschen an einem Gerät. Online-Räume, Veranstaltungen und Erweiterungen folgen separat.</p>
+  <p>DOG funktioniert lokal mit Bots oder mehreren Menschen an einem Gerät sowie online in gemeinsamen Spielräumen.</p>
   <button class="rule-close" id="rules-close">Verstanden</button>
 </dialog>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
+<script>
+(function(){
+ const button=document.getElementById('fullscreen-button');
+ const sync=()=>{const active=!!document.fullscreenElement;button.textContent=active?'⛶ Vollbild verlassen':'⛶ Vollbild';button.setAttribute('aria-pressed',String(active));};
+ button.addEventListener('click',async()=>{
+   try{
+     if(document.fullscreenElement)await document.exitFullscreen();
+     else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();
+     else throw Error('Vollbild wird in diesem Browser nicht unterstützt.');
+   }catch(err){button.title=err.message;button.textContent='⛶ Vollbild nicht verfügbar';}
+   sync();
+ });
+ document.addEventListener('fullscreenchange',sync);
+ sync();
+})();
+</script>
 <script type="module" src="./app.js?v=14"></script>
 </body>
 </html>
