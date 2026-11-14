@@ -24,9 +24,13 @@ function close(){document.getElementById('skyjo-inbox-overlay')?.remove();}
 function display(items){
  close();if(!items.length)return;
  const total=items.reduce((n,x)=>n+Number(x.slots||0),0);
+ const vouchers=items.flatMap(i=>i.prizes||[]).filter(p=>p.kind==='pack'&&p.voucher);
+ const voucherCount=vouchers.reduce((n,p)=>n+Number(p.quantity||0),0);
  const cards=items.slice().reverse().map(item=>{
-  const prizes=(item.prizes||[]).map(p=>'<div class="skyjo-inbox-prize"><span>'+(emoji[p.kind]||'🎁')+'</span><strong>'+
-   esc(p.label||'Gewinn')+'</strong><small>'+(p.rarity==='mythic'?'🌈 MYTHISCH':p.rarity==='legendary'?'👑 LEGENDÄR':p.rarity==='epic'?'💜 EPISCH':'')+'</small></div>').join('');
+  const prizes=(item.prizes||[]).map(p=>'<div class="skyjo-inbox-prize'+(p.voucher?' skyjo-inbox-voucher':'')+'"><span>'+
+   (p.voucher?'🎟️':(emoji[p.kind]||'🎁'))+'</span><strong>'+esc(p.label||'Gewinn')+
+   (p.voucher?'<em>🎁 Kostenloser Kartenpaket-Gutschein · noch nicht geöffnet</em>':'')+
+   '</strong><small>'+(p.rarity==='mythic'?'🌈 MYTHISCH':p.rarity==='legendary'?'👑 LEGENDÄR':p.rarity==='epic'?'💜 EPISCH':'')+'</small></div>').join('');
   return '<section class="skyjo-inbox-round"><h3>🎰 SKYJO Runde '+Number(item.round||0)+
    ' · '+Number(item.slots||0)+' Gewinne</h3><div class="skyjo-inbox-prizes">'+prizes+'</div></section>';
  }).join('');
@@ -35,10 +39,13 @@ function display(items){
  root.setAttribute('aria-label','SKYJO-Belohnungen in Deal or No Deal einsammeln');
  root.innerHTML='<div class="skyjo-inbox-panel"><header><span>✦ GOLDSTUDIO · MONSTER SLOTS ✦</span>'+
   '<h2>🎁 DEINE SKYJO-GEWINNE!</h2><p>Du hast <b>'+total+'</b> Slot-Gewinne in SKYJO Action erspielt. '+
-  'Sie wurden dir bereits sicher gutgeschrieben. Hier kannst du sie alle ansehen und bestätigen.</p></header>'+
+  'Geld, Hämmer und andere Sofortgewinne sind schon gutgeschrieben. Kartenpaket-Gutscheine kannst du selbst öffnen.</p></header>'+
   '<main class="skyjo-inbox-scroll">'+cards+'</main>'+
-  '<footer><p id="skyjo-inbox-status" role="status">Alle Gewinne sind bereits in deinem Deal-or-No-Deal-Inventar.</p>'+
-  '<button id="skyjo-inbox-collect" type="button">✅ ALLE '+total+' GEWINNE EINSAMMELN</button></footer></div>';
+  '<footer><p id="skyjo-inbox-status" role="status">'+
+   (voucherCount?'🎟️ '+voucherCount+' Kartenpaket-Gutscheine warten auf dich. Sie bleiben auch nach dem Bestätigen erhalten.':
+    'Alle Gewinne sind bereits in deinem Deal-or-No-Deal-Inventar.')+'</p>'+
+   (voucherCount?'<a class="skyjo-inbox-voucher-link" href="./weihnachtswelt.html?view=packs">🎟️ '+voucherCount+' Kartenpaket-Gutscheine jetzt öffnen</a>':'')+
+  '<button id="skyjo-inbox-collect" type="button">✅ GEWINNLISTE BESTÄTIGEN</button></footer></div>';
  document.body.append(root);
  root.querySelector('#skyjo-inbox-collect').addEventListener('click',async()=>{
   const button=root.querySelector('#skyjo-inbox-collect'),status=root.querySelector('#skyjo-inbox-status');
