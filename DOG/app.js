@@ -678,7 +678,7 @@ function prepareAppearanceUI(){
       const row=document.createElement('div');row.className='dog-hud-opacity-row';
       const head=document.createElement('div');head.className='dog-hud-opacity-head';
       const label=document.createElement('label');const slider=document.createElement('input');
-      slider.type='range';slider.min='0';slider.max='100';slider.step='5';slider.id='appearance-hud-opacity-'+key;
+      slider.type='range';slider.min='0';slider.max='100';slider.step='1';slider.id='appearance-hud-opacity-'+key;
       slider.dataset.hudOpacity=key;label.htmlFor=slider.id;label.textContent=names[key];
       const output=document.createElement('output');output.dataset.hudOpacityValue=key;output.htmlFor=slider.id;
       head.append(label,output);row.append(head,slider);opacityHost.append(row);
