@@ -183,7 +183,23 @@ function acceptRoom(next){
  if(room?.code===next.code&&Number.isFinite(Number(next.revision))&&Number.isFinite(Number(room.revision))&&Number(next.revision)<Number(room.revision))return false;
  room=next;preisjaegerClockReceivedAt=Date.now();render();return true;
 }
-function activateRoom(result){if(!result?.code)return;cancelPendingRecovery();setRoomCode(result.code);acceptRoom(result);}
+function rememberRoomCode(next){
+ const uid=activeProfile()?.user?.uid;
+ if(!uid)return;
+ try{
+  const key='spielportal:last-room:'+uid;
+  if(next)localStorage.setItem(key,next);
+  else localStorage.removeItem(key);
+ }catch(_e){}
+}
+function storedRoomCode(){
+ const uid=activeProfile()?.user?.uid;if(!uid)return null;
+ try{
+  const saved=String(localStorage.getItem('spielportal:last-room:'+uid)||'').toUpperCase();
+  return /^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/.test(saved)?saved:null;
+ }catch(_e){return null;}
+}
+function activateRoom(result){if(!result?.code)return;cancelPendingRecovery();setRoomCode(result.code);rememberRoomCode(result.code);acceptRoom(result);}
 
 function pollStop(){if(poll){clearInterval(poll);poll=null;}stopWatch();}
 function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code||operation||pollInFlight||!activeProfile()||document.hidden)return;
@@ -1134,7 +1150,7 @@ async function command(run){if(operation)return;operation=true;render();notice('
 }
 el('login-btn').addEventListener('click',()=>{if(activeProfile())location.assign('profile.html');else window.SpielOnline?.openLogin?.();});
 el('mode-local').addEventListener('click',()=>setPlayMode('local',{updateUrl:true}));
-el('mode-online').addEventListener('click',()=>{setPlayMode('online',{updateUrl:true});if(!room&&new URL(location.href).searchParams.has('room'))void boot();});
+el('mode-online').addEventListener('click',()=>{setPlayMode('online',{updateUrl:true});if(room)return;if(new URL(location.href).searchParams.has('room'))void boot();else recoverStoredRoom();});
 document.querySelectorAll('[data-hub-shortcut]').forEach(button=>button.addEventListener('click',()=>command(async()=>{
  if(!activeProfile())throw Error('LOGIN_REQUIRED');
  if(room?.phase==='playing')throw Error('MATCH_IN_PROGRESS');
@@ -1220,10 +1236,16 @@ el('refresh-btn').addEventListener('click',()=>command(async()=>{const {room:r}=
 el('copy-btn').addEventListener('click',async()=>{
  try{await navigator.clipboard.writeText(room?.code||'');notice('Raumcode kopiert.');}catch{notice('Raumcode: '+room?.code);}
 });
-el('leave-btn').addEventListener('click',()=>command(async()=>{await request('/rooms/'+code+'/leave','POST');leaveView();notice('Du hast den Raum verlassen.');}));
+el('leave-btn').addEventListener('click',()=>command(async()=>{await request('/rooms/'+code+'/leave','POST');rememberRoomCode(null);leaveView();notice('Du hast den Raum verlassen.');}));
 let pendingRoomRecovery=null,recoveryInFlight=false,recoveryRetryTimer=null,recoveryAttempts=0;
 function clearRecoveryRetry(){if(recoveryRetryTimer){clearTimeout(recoveryRetryTimer);recoveryRetryTimer=null;}recoveryAttempts=0;}
 function cancelPendingRecovery(){pendingRoomRecovery=null;clearRecoveryRetry();}
+function recoverStoredRoom(){
+ if(playMode!=='online'||room||code||pendingRoomRecovery)return;
+ const saved=storedRoomCode();if(!saved)return;
+ pendingRoomRecovery=saved;
+ void recoverPendingRoom();
+}
 function scheduleRecoveryRetry(){
  if(!pendingRoomRecovery||recoveryRetryTimer||recoveryAttempts>=5)return;
  const delay=Math.min(30000,2000*2**recoveryAttempts++);
@@ -1233,13 +1255,13 @@ async function recoverPendingRoom(){
  if(!pendingRoomRecovery||room||code||!activeProfile()||recoveryInFlight)return;
  const requestedCode=pendingRoomRecovery;recoveryInFlight=true;
  try{const {room:r}=await request('/rooms/'+encodeURIComponent(requestedCode));if(pendingRoomRecovery!==requestedCode||room||code||r?.code!==requestedCode)return;pendingRoomRecovery=null;clearRecoveryRetry();activateRoom(r);pollStart();}
- catch(e){if(pendingRoomRecovery!==requestedCode||room||code)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){pendingRoomRecovery=null;clearRecoveryRetry();notice('Raum nicht zugänglich. Prüfe den Raumcode oder tritt erneut bei.');}else{notice('Raum vorübergehend nicht erreichbar. Wiederherstellung wird erneut versucht.');scheduleRecoveryRetry();}}
+ catch(e){if(pendingRoomRecovery!==requestedCode||room||code)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){pendingRoomRecovery=null;clearRecoveryRetry();if(storedRoomCode()===requestedCode)rememberRoomCode(null);notice('Raum nicht zugänglich. Prüfe den Raumcode oder tritt erneut bei.');}else{notice('Raum vorübergehend nicht erreichbar. Wiederherstellung wird erneut versucht.');scheduleRecoveryRetry();}}
  finally{recoveryInFlight=false;}
 }
 window.addEventListener('spielonline-change',()=>{
  const uid=activeProfile()?.user?.uid||null;
  if(uid!==accountUid){accountUid=uid;if(room){leaveView();notice('Das Spielerprofil hat gewechselt. Bitte dem Raum erneut beitreten.');}}
- render();if(uid)void recoverPendingRoom();
+ render();if(uid){if(pendingRoomRecovery)void recoverPendingRoom();else recoverStoredRoom();}
 });
 async function boot(){
  render();
@@ -1250,7 +1272,8 @@ async function boot(){
   notice('Einladung erhalten: Bitte dem Raum '+invite.toUpperCase()+' beitreten.');
  }
  const fromUrl=params.get('room');
- if(playMode==='local'||!fromUrl||!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(fromUrl))return;
+ if(playMode==='local')return;
+ if(!fromUrl||!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(fromUrl)){recoverStoredRoom();return;}
  let elapsed=0;const timer=setInterval(async()=>{
   elapsed+=250;
   if(!activeProfile()&&elapsed<30000)return;
