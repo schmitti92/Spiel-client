@@ -113,12 +113,12 @@ for(const button of buttons){
   status('Starte '+GAME[game]+' …');
   try{
    if(!codeValid){
-    const created=await request('/rooms','POST');
+    const created=await request('/rooms','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});
     if(!created?.room?.code)throw Error('ROOM_RESPONSE_INVALID');
     code=created.room.code;codeValid=true;room=created.room;
     try{const uid=user()?.uid;if(uid)localStorage.setItem('spielportal:last-room:'+uid,code);}catch(_){}
    }
-   const result=await request('/rooms/'+code+'/select','POST',{game});
+   const result=await request('/rooms/'+code+'/select','POST',{game,...(game==='dog'?{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0}:{})});
    if(result?.room?.game!==game)throw Error('GAME_SELECT_FAILED');
    location.assign(roomLocation(game));
   }catch(e){
@@ -144,7 +144,7 @@ async function quickRoom(action){
  quickBusy=true;quickJoin.disabled=true;quickCreate.disabled=true;
  status(action==='join'?'Raum wird betreten …':'Neuer Raum wird erstellt …');
  try{
-  const result=await request(action==='join'?'/rooms/'+nextCode+'/join':'/rooms','POST');
+  const result=await request(action==='join'?'/rooms/'+nextCode+'/join':'/rooms','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});
   if(!result?.room?.code)throw Error('ROOM_RESPONSE_INVALID');
   try{const uid=user()?.uid;if(uid)localStorage.setItem('spielportal:last-room:'+uid,result.room.code);}catch(_){}
   location.assign('spielauswahl-online.html?room='+encodeURIComponent(result.room.code));
