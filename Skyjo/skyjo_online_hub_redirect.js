@@ -14,7 +14,7 @@
  // Only keep a canonical hub code, never confuse a SKYJO game code with one.
  const valid=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/;
  const code=valid.test(hub)?hub:valid.test(gameRoom)?gameRoom:'';
- const target=new URL('../spielauswahl-online.html',here);
+ const target=new URL('../hub-lobby.html',here);
  if(code)target.searchParams.set('room',code);
  target.searchParams.set('stay','1');
  location.replace(target.href);
