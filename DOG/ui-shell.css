@@ -615,3 +615,53 @@ main{width:calc(100% - 22px);max-width:1920px;margin:6px auto}
   }
   .right.dog-modules{padding:12px 0 6px}
 }
+
+/* DOG cockpit finishing v5: preserve scenic glass, protect readability,
+   and keep all controls reachable on short landscape tablet screens. */
+.right.dog-modules>.panel{
+  padding:7px 10px;
+}
+.right.dog-modules .dog-module-heading{
+  margin-bottom:5px;
+  padding-bottom:4px;
+}
+.right.dog-modules .dog-status-panel .dog-turn-line,
+.right.dog-modules .dog-status-panel .seat,
+.right.dog-modules .dog-pile-module .dog-piles,
+.right.dog-modules .dog-hand-module .hand,
+.right.dog-modules .dog-history-module .history{
+  background-color:rgba(4,20,41,.65);
+  border-radius:10px;
+}
+.right.dog-modules .dog-status-panel .seat{
+  background-color:rgba(4,20,41,.82);
+}
+.right.dog-modules .dog-hand-module .hand{
+  background-color:rgba(4,20,41,.48);
+}
+.right.dog-modules .dog-hand-module .dog-module-heading,
+.right.dog-modules .dog-pile-module .dog-module-heading,
+.right.dog-modules .dog-extras-panel .dog-module-heading{
+  text-shadow:0 1px 3px rgba(0,0,0,.7);
+}
+@media(min-width:900px) and (orientation:landscape) and (max-height:950px){
+  .right.dog-modules{
+    gap:6px;
+    max-height:calc(100dvh - 12px);
+    overflow-y:auto;
+    overflow-x:hidden;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(219,187,126,.42) transparent;
+    padding-bottom:6px;
+  }
+  .right.dog-modules>.panel{padding:6px 9px}
+  .right.dog-modules .dog-module-heading{margin-bottom:4px;padding-bottom:3px}
+  .right.dog-modules .dog-pile-module .dog-piles{margin-bottom:3px;padding:5px}
+  .right.dog-modules .dog-pile-module .dog-pile-art{width:35px;height:49px}
+  .right.dog-modules .dog-extras-grid{gap:5px}
+  .right.dog-modules .dog-extra-button{min-height:47px}
+  .right.dog-modules .dog-history-module .history{max-height:58px;overflow-y:auto}
+}
+@media(max-width:899px),(orientation:portrait){
+  .right.dog-modules{max-height:none;overflow:visible}
+}
