@@ -1,0 +1,23 @@
+name: Firebase Deal read reason (offline)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DealOrNoDeal/js/app.js'
+      - 'DealOrNoDeal/js/core.js'
+      - 'tests/deal-read-reason-offline.test.mjs'
+      - '.github/workflows/firebase-deal-read-reason-offline.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  read-reason:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DealOrNoDeal/js/app.js
+      - run: node --test tests/deal-read-reason-offline.test.mjs
