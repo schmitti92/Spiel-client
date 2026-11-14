@@ -4,7 +4,9 @@ on:
     branches: [main]
     paths:
       - 'hub-game-bridge.js'
+      - 'hub-lobby.js'
       - 'tests/hub-game-bridge-reads.test.mjs'
+      - 'tests/hub-foreground-reconcile-offline.test.mjs'
       - '.github/workflows/firebase-hub-read-check.yml'
   workflow_dispatch:
 permissions:
@@ -19,4 +21,5 @@ jobs:
         with:
           node-version: '20'
       - run: node --check hub-game-bridge.js
-      - run: node --test tests/hub-game-bridge-reads.test.mjs
+      - run: node --check hub-lobby.js
+      - run: node --test tests/hub-game-bridge-reads.test.mjs tests/hub-foreground-reconcile-offline.test.mjs
