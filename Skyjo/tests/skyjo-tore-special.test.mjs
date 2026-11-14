@@ -360,7 +360,7 @@ test('Phone and landscape layouts keep readable reels and a permanently visible 
  const source=read('skyjo_tore_special.js');
  const css=read('skyjo_tore_special.css');
  assert.match(source,/skyjo-health/);
- assert.match(source,/timeBase:'server'/);
+ assert.match(source,/timeBase:serverClockSyncedAt\?'server':'device'/);
  assert.match(source,/stageNow\(show\)/);
  assert.match(css,/Device-safe shared finale/);
  assert.match(css,/\.skyjo-slot-scroll-area\{/);
