@@ -4,7 +4,7 @@ import {mountDogEmojiGame,showDogEmoji,showDogEmojiError} from './emoji-game.js?
 import {boardGestureTarget} from './board-gesture-math.js?v=1';
 import {snapshotPieces,planPieceMotions,createPieceAnimator} from './piece-animations.js?v=2';
 import {loadMotionMode,saveMotionMode,applyMotionMode} from './motion-settings.js?v=1';
-import {createDogVisualFeedback} from './ui-animations.js?v=1';
+import {createDogVisualFeedback} from './ui-animations.js?v=2';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
 import {DEFAULT_APPEARANCE,BOARD_STYLES,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=21';
@@ -440,9 +440,9 @@ function render(){
   renderPlayers();
   available=[];
   renderHand();drawBoard();
-  visualFeedback.sync({game,matchKey:online?(acceptedMatchId||matchHint||'online'):'local',seat:online?onlineSeat:currentHuman(),handVisible:revealed,activeSeat:active});
   $('status').textContent=online?'🌐 Online mit Freunden · Karten serverseitig geschützt · Raum '+hubCode:'Klassische Regeln • Teams Rot/Grün und Blau/Gelb • Spielstand wird lokal gesichert';
   $('winner').hidden=game.phase!=='finished';
+  visualFeedback.sync({game,matchKey:online?(acceptedMatchId||matchHint||'online'):'local',seat:online?onlineSeat:currentHuman(),handVisible:revealed,activeSeat:active});
   if(game.phase==='finished')$('winner-title').textContent='Team '+(game.winner===0?'Rot / Grün':'Blau / Gelb')+' gewinnt!';
   $('selected-info').textContent=selectedCard?'Karte ausgewählt: '+cardsLabel(game.hands[currentHuman()]?.find(c=>c.id===selectedCard)?.type||''):'';
 }
