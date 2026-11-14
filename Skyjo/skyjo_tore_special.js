@@ -349,7 +349,7 @@ function createOverlay(game,show){
  const reels=batch.prizes.map((_,i)=>{
   const num=String(i+batch.offset+1).padStart(2,'0');
   const rolling=['📦','🎴','🔨','💰','👹','🃏','🎁','💎','📦','🎴','🔨','💰'];
-  return '<div class="monster-slot-reel" data-reel="'+i+'" data-phase="ready">'+
+  return '<div class="monster-slot-reel" role="group" aria-label="Walze '+(batch.offset+i+1)+' von '+esc(player.name)+'" data-reel="'+i+'" data-phase="ready">'+
    '<div class="monster-slot-reel-head"><span class="monster-slot-led"></span>WALZE '+num+'<span class="monster-slot-led"></span></div>'+
    '<div class="monster-slot-window"><div class="monster-slot-track" aria-hidden="true">'+
    rolling.concat(rolling).map(sym=>'<span class="monster-slot-track-symbol">'+sym+'</span>').join('')+
@@ -399,6 +399,13 @@ function renderPrizes(root,show){
  batch.prizes.forEach((p,i)=>{
   const finished=elapsed>=STOP(n,i);
   const el=reels[i];if(!el)return;
+  if(!finished&&el.dataset.award){
+   delete el.dataset.award;delete el.dataset.variant;delete el.dataset.rarity;
+   el.querySelector('.monster-slot-prize').hidden=true;
+   lights[i]?.classList.remove('lit');
+   readable?.querySelector('[data-reel-index="'+i+'"]')?.remove();
+   delete el.dataset.readable;
+  }
   const next=show.phase==='rolling'?(finished?'won':'running'):'ready';
   if(el.dataset.phase!==next){el.dataset.phase=next;el.querySelector('.monster-slot-state').textContent=next==='won'?'✓ GEWONNEN':next==='running'?'DREHT …':'BEREIT';}
   if(finished)revealed++;
@@ -427,6 +434,7 @@ function renderPrizes(root,show){
   }
   if(finished&&readable&&!el.dataset.readable){
    const entry=document.createElement('li');
+   entry.dataset.reelIndex=String(i);
    entry.textContent='Walze '+(batch.offset+i+1)+': '+String(p.label||'Gewinn')+
     (p.voucher?' · Kartenpaket-Gutschein':'')+
     (Number(p.quantity)>1?' · '+p.quantity+'×':'');
@@ -516,5 +524,5 @@ function attach(gameAPI,b){
 }
 window.SkyjoToreSpecial={newGame,beginRound,trackRemove,scan,hud,nextButton,canNextRound,attach,render,
  missionsFor,missionDone,bonusIndex,bonusAchieved,bonusCellsFor,slotBreakdown,currentBatch,playerSpotlight,
- clockOffsetFromSample,definitions:DEFINITIONS};
+ clockOffsetFromSample,createOverlay,definitions:DEFINITIONS};
 })();
