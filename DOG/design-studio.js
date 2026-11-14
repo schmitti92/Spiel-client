@@ -1,10 +1,10 @@
-import {BOARD_STYLES,SCENE_STYLES,loadAppearance,saveAppearance,validAssetPath} from './appearance-registry.js?v=16';
+import {BOARD_STYLES,SCENE_STYLES,loadAppearance,saveAppearance,validAssetPath} from './appearance-registry.js?v=17';
 import {APPROVED_BOARD_LAYOUT as LAYOUT} from './approved-board.js';
 const $=id=>document.getElementById(id);
 const S='http://www.w3.org/2000/svg',KEY='dog:design-studio:presets:v1';
-const BOARDS=['studio','schiefer','holz','pergament','bergsee','goldwellen','royalMarmor','midnight','forest','winter'];
-const SCENES=['none','maerchental','zauberwald','kuestenabenteuer','alpenland','royalKarten'];
-const N={studio:'TV-Studio',schiefer:'Schiefer',holz:'Holz',pergament:'Pergament',bergsee:'Bergsee',goldwellen:'Goldwellen',royalMarmor:'Royal-Marmor',midnight:'Mitternacht',forest:'Waldlichtung',winter:'Winterabend',none:'Ohne Hintergrund',maerchental:'Märchental',zauberwald:'Zauberwald',kuestenabenteuer:'Küstenabenteuer',alpenland:'Alpenland',royalKarten:'Royal-Karten'};
+const BOARDS=['studio','schiefer','holz','pergament','bergsee','goldwellen','royalMarmor','maerchental','alpenland','kuestenabenteuer','royalKarten','zauberwald','midnight','forest','winter'];
+const SCENES=['schloss','none'];
+const N={studio:'TV-Studio',schiefer:'Schiefer',holz:'Holz',pergament:'Pergament',bergsee:'Bergsee',goldwellen:'Goldwellen',royalMarmor:'Royal-Marmor',midnight:'Mitternacht',forest:'Waldlichtung',winter:'Winterabend',none:'Ohne Hintergrund',schloss:'Magisches Schloss am Nebelsee',maerchental:'Märchental',zauberwald:'Zauberwald',kuestenabenteuer:'Küstenabenteuer',alpenland:'Alpenland',royalKarten:'Royal-Karten'};
 const C=['#e75c59','#419ef0','#48c27c','#ffc94d'],name=id=>N[id]||id;
 const validBoard=id=>typeof id==='string'&&Object.hasOwn(BOARD_STYLES,id);
 const validScene=id=>typeof id==='string'&&Object.hasOwn(SCENE_STYLES,id);
@@ -14,9 +14,9 @@ const bg=t=>image(t)?'url("'+image(t)+'")':(t?.page||'linear-gradient(130deg,#28
 const status=message=>$('studio-status').textContent=message;
 const applied=()=>{const v=loadAppearance();return {board:validBoard(v.board)?v.board:'studio',scene:validScene(v.scene)?v.scene:'none'}};
 const start=applied();
-let draft=(start.board==='studio'&&start.scene==='none')?{board:'goldwellen',scene:'zauberwald'}:{...start};
+let draft={...start};
 function loadPresets(){
- try{const a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a.slice(0,30).filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&validScene(x.scene)&&validBoard(x.board)).map(x=>({id:x.id.slice(0,64),name:x.name.slice(0,40),scene:x.scene,board:x.board,favorite:x.favorite===true})):[]}
+ try{const a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a.slice(0,30).filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&validBoard(x.board)).map(x=>({id:x.id.slice(0,64),name:x.name.slice(0,40),scene:validScene(x.scene)?x.scene:'schloss',board:x.board,favorite:x.favorite===true})):[]}
  catch{return []}
 }
 let presets=loadPresets();
@@ -73,10 +73,10 @@ function makeOption(list,id,t,kind){
 SCENES.filter(validScene).forEach(k=>makeOption($('scene-choices'),k,SCENE_STYLES[k],'scene'));
 BOARDS.filter(validBoard).forEach(k=>makeOption($('board-choices'),k,BOARD_STYLES[k],'board'));
 function apply(){
- try{saveAppearance({...loadAppearance(),board:draft.board,scene:draft.scene});renderPresets();status('✓ '+name(draft.scene)+' + '+name(draft.board)+' für DOG aktiviert.');return true}
+ try{saveAppearance({...loadAppearance(),board:draft.board,scene:draft.scene,sidebar:draft.scene==='schloss'?'schloss':'none'});renderPresets();status('✓ '+name(draft.scene)+' + '+name(draft.board)+' für DOG aktiviert.');return true}
  catch{status('⚠️ Das Design konnte nicht im Browser gespeichert werden.');return false}
 }
-const ideas=[{name:'Zauber-Mix',scene:'zauberwald',board:'goldwellen'},{name:'Küstenurlaub',scene:'kuestenabenteuer',board:'bergsee'},{name:'Royal Gold',scene:'royalKarten',board:'pergament'}];
+const ideas=[{name:'Zauberwald',scene:'schloss',board:'zauberwald'},{name:'Küstenabenteuer',scene:'schloss',board:'kuestenabenteuer'},{name:'Royal-Karten',scene:'schloss',board:'royalKarten'}];
 function makePreset(p,idea){
  const box=document.createElement('article');box.className='preset';
  const a=applied();if(a.scene===p.scene&&a.board===p.board)box.classList.add('active');
@@ -108,7 +108,7 @@ function renderPresets(){
  }
 }
 $('apply-design').addEventListener('click',apply);
-$('new-design').addEventListener('click',()=>{draft={scene:'zauberwald',board:'goldwellen'};refresh();status('Neuer Entwurf gestartet – gespeicherte Designs bleiben erhalten.')});
+$('new-design').addEventListener('click',()=>{draft={scene:'schloss',board:'goldwellen'};refresh();status('Neuer Entwurf gestartet – gespeicherte Designs bleiben erhalten.')});
 $('save-top').addEventListener('click',()=>{
  if(presets.length>=30){status('Maximal 30 Designs. Lösche zuerst ein altes.');return}
  $('design-name').value='Mein DOG-Design '+(presets.length+1);$('save-dialog').showModal();$('design-name').select();
@@ -125,4 +125,4 @@ try{
  if(u&&u.origin===location.origin&&['hub-lobby.html','spielauswahl-lokal.html','index.html'].includes(u.pathname.split('/').pop()))$('back-link').href=u.href;
 }catch{}
 refresh();renderPresets();
-status('Links Hintergrund, rechts Spielbrett wählen. Beim Bearbeiten entstehen keine Firebase-Schreibvorgänge.');
+status('Links das echte Schloss-Hintergrundbild, rechts alle Brettdesigns wählen. Keine Firebase-Schreibvorgänge beim Gestalten.');
