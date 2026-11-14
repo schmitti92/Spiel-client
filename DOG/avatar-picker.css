@@ -12,3 +12,12 @@
 .dog-avatar-option.is-selected{border-color:#ffe5a3;box-shadow:0 0 0 2px #f3c85f66,0 0 12px #eec45f80}
 .dog-avatar-picker [data-dog-avatar-notice]{min-height:17px;margin:8px 0 0!important;color:#b8e8d2!important;font-size:11px!important}
 @media(max-width:560px){.dog-avatar-options{grid-template-columns:repeat(8,minmax(0,1fr));gap:4px}.dog-avatar-picker{padding:10px!important}.dog-avatar-option{padding:1px}}
+
+/* The chosen DOG avatar provides a brief, tactile confirmation. */
+.dog-avatar-option:active{transform:scale(.94)}
+.dog-avatar-option.is-selected{animation:dog-avatar-selected .32s ease-out}
+@keyframes dog-avatar-selected{
+ from{box-shadow:0 0 0 0 #f3c85f55,0 0 0 #eec45f00;filter:brightness(1.28)}
+ to{box-shadow:0 0 0 2px #f3c85f66,0 0 12px #eec45f80;filter:brightness(1)}
+}
+@media(prefers-reduced-motion:reduce){.dog-avatar-option{animation:none!important;transition:none!important}}
