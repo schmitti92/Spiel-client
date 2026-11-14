@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {snapshotPieces,pointForPiece,planPieceMotions} from '../DOG/piece-animations.js';
+import {snapshotPieces,pointForPiece,planPieceMotions,createPieceAnimator} from '../DOG/piece-animations.js';
 
 const board = {
   track: Array.from({length:64}, (_,i)=>({x:i*10,y:i%2*20})),
@@ -59,4 +59,34 @@ test('unchanged positions produce no animation',()=>{
 test('coordinates come from the supplied board, not a fixed picture',()=>{
   const custom={...board,track:board.track.map(p=>({x:p.x+17,y:p.y+9}))};
   assert.deepEqual(pointForPiece(piece(4,1,'track',21),custom),custom.track[21]);
+});
+
+test('animated tokens render at their previous positions before first animation frame',()=>{
+ const saved={window:globalThis.window,document:globalThis.document,requestAnimationFrame:globalThis.requestAnimationFrame,cancelAnimationFrame:globalThis.cancelAnimationFrame};
+ const attributes={};
+ const node={style:{opacity:''},classList:{add(){},remove(){}},
+  setAttribute:(key,value)=>{attributes[key]=value},
+  removeAttribute:key=>{delete attributes[key]}};
+ const svg={busy:false,querySelectorAll:()=>[],querySelector:()=>node,
+  setAttribute(key,value){if(key==='aria-busy')this.busy=value},
+  removeAttribute(key){if(key==='aria-busy')this.busy=false},
+  appendChild(){}};
+ globalThis.document={hidden:false};
+ globalThis.window={matchMedia:()=>({matches:false})};
+ globalThis.requestAnimationFrame=()=>12;
+ globalThis.cancelAnimationFrame=()=>{};
+ try{
+  const animator=createPieceAnimator(svg);
+  const duration=animator.play([{id:0,owner:0,kind:'step',points:[{x:5,y:5},{x:35,y:25}]}],['#ff0000']);
+  assert.ok(duration>0);
+  assert.equal(attributes.transform,'translate(-30.00 -20.00)');
+  assert.equal(animator.isActive(),true);
+  assert.equal(svg.busy,'true');
+  animator.cancel();
+  assert.equal(attributes.transform,undefined);
+  assert.equal(animator.isActive(),false);
+  assert.equal(svg.busy,false);
+ }finally{
+  for(const [key,value] of Object.entries(saved)){if(value===undefined)delete globalThis[key];else globalThis[key]=value;}
+ }
 });
