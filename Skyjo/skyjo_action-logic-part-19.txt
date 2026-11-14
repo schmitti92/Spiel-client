@@ -31,7 +31,7 @@ function maybeShowRoundSummary(force=false){
 async function nextRound(){
  if(cloud.enabled&&!isHostDevice()){toast('Nur der Host startet die nächste Runde.');return}
  if(!state||state.phase!=='betweenRounds'){toast('Die nächste Runde kann gerade nicht gestartet werden.');return}
- if(!window.SkyjoToreSpecial?.canNextRound(state)){toast('🎰 Zuerst müssen alle Slots der Runde aufgedeckt und bestätigt werden.');return}
+ if(window.SkyjoToreSpecial?.canNextRound(state)===false){toast('🎰 Zuerst müssen alle Slots der Runde aufgedeckt und bestätigt werden.');return}
  closeModal();
  const starter=Number.isInteger(state.roundEnder)?state.roundEnder:0;
  state.startPlayer=starter;
