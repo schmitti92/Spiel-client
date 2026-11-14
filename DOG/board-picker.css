@@ -21,3 +21,20 @@
 .dog-studio-hero-entry .dog-studio-cta{margin:0;max-width:100%;border-radius:16px}
 [data-dog-board-picker]>.dog-studio-cta{margin-top:14px}
 @media(max-width:650px){.dog-studio-cta{width:100%;padding:10px;font-size:13px}.dog-studio-cta span{width:100%}}
+
+/* Animated confirmation on the ACTUAL DOG board picker in both lobbies. */
+.dog-board-option{transition:border-color .17s ease,box-shadow .17s ease,transform .17s ease}
+.dog-board-thumb{transition:filter .2s ease,transform .2s ease}
+@media(hover:hover){.dog-board-option:hover{transform:translateY(-2px)}.dog-board-option:hover .dog-board-thumb{filter:brightness(1.12)}}
+.dog-board-option:active{transform:scale(.97)}
+.dog-board-option.is-picked{animation:dog-board-picked .35s cubic-bezier(.2,.78,.2,1)}
+.dog-studio-cta{transition:filter .18s ease,transform .18s ease}
+.dog-studio-cta:active{transform:scale(.98)}
+@keyframes dog-board-picked{
+ 0%{filter:brightness(1.25);box-shadow:0 0 0 0 #ffe6aa}
+ 60%{box-shadow:0 0 0 3px #f6dfaa,0 0 23px #eab86a88}
+ 100%{filter:brightness(1);box-shadow:0 0 0 1px #f6dfaa,0 0 17px #eab86a77}
+}
+@media(prefers-reduced-motion:reduce){.dog-board-option,.dog-board-thumb,.dog-studio-cta{animation:none!important;transition:none!important}}
+:root[data-dog-motion="off"] .dog-board-option,:root[data-dog-motion="off"] .dog-board-thumb,
+:root[data-dog-motion="off"] .dog-studio-cta{animation:none!important;transition:none!important}
