@@ -43,37 +43,69 @@ if(online){
  if(newGame)newGame.hidden=true;
 }
 const extraGrid=$('dog-extra-buttons');
-const extraDialog=$('dog-extra-dialog');
-const extraTitle=$('dog-extra-title');
-const extraDescription=$('dog-extra-description');
+const extension=$('dog-extension-panel');
+const extensionTitle=$('dog-extension-title');
+const emojiBody=$('dog-emoji-panel-root');
+const placeholder=$('dog-extension-placeholder');
+let activeExtension=null;
+// Only one extension can be open at a time. Never unmount the active game.
+function setExtension(id){
+ const feature=dogFeatureById(id);
+ activeExtension=feature?.id===activeExtension?null:feature?.id||null;
+ if(extension){
+  extension.hidden=!activeExtension;
+  extension.dataset.activeFeature=activeExtension||'';
+ }
+ if(extensionTitle)extensionTitle.textContent=activeExtension?(dogFeatureById(activeExtension).icon+' '+dogFeatureById(activeExtension).title):'';
+ if(emojiBody)emojiBody.hidden=activeExtension!=='emojis';
+ if(placeholder){
+  placeholder.hidden=!activeExtension||activeExtension==='emojis';
+  placeholder.textContent=activeExtension&&activeExtension!=='emojis'?dogFeatureById(activeExtension).description:'';
+ }
+ extraGrid?.querySelectorAll('[data-dog-extra]').forEach(button=>{
+  const isCurrent=button.dataset.dogExtra===activeExtension;
+  button.setAttribute('aria-expanded',String(isCurrent));
+  button.setAttribute('aria-pressed',String(isCurrent));
+  button.classList.toggle('is-active',isCurrent);
+ });
+ window.dispatchEvent(new CustomEvent('dog-extension-change',{detail:{id:activeExtension}}));
+ // On short tablet landscape screens, scroll the right column only,
+ // leaving the large board in place.
+ if(activeExtension&&extension&&extension.getBoundingClientRect().bottom>innerHeight-6){
+  const sidebar=extension.closest('.dog-modules');
+  if(sidebar&&getComputedStyle(sidebar).overflowY!=='visible'){
+   const by=extension.getBoundingClientRect().bottom-sidebar.getBoundingClientRect().bottom+12;
+   if(by>0)sidebar.scrollBy({top:by,behavior:'smooth'});
+  }
+ }
+}
 if(extraGrid){
  for(const feature of DOG_UI_FEATURES){
   const button=document.createElement('button');
   button.type='button';
   button.className='dog-extra-button';
   button.dataset.dogExtra=feature.id;
-  button.setAttribute('aria-label',feature.id==='emojis'?'Emojis senden':feature.title+' – in Vorbereitung');
+  button.setAttribute('aria-label',feature.id==='emojis'?'Emoji-Leiste öffnen oder schließen':feature.title+'-Bereich öffnen oder schließen');
+  button.setAttribute('aria-controls','dog-extension-panel');
+  button.setAttribute('aria-expanded','false');
+  button.setAttribute('aria-pressed','false');
   const symbol=document.createElement('span');
   symbol.className='dog-extra-icon';
   symbol.setAttribute('aria-hidden','true');
   symbol.textContent=feature.icon;
-  const text=document.createElement('span');
-  text.textContent=feature.label;
-  button.append(symbol,text);
+  const label=document.createElement('span');
+  label.textContent=feature.label;
+  button.append(symbol,label);
   extraGrid.appendChild(button);
  }
  extraGrid.addEventListener('click',event=>{
   const button=event.target.closest('[data-dog-extra]');
-  const feature=dogFeatureById(button?.dataset.dogExtra);
-  if(!feature)return;
-  if(feature.id==='emojis'){window.dispatchEvent(new Event('dog-emojis-open'));return;}
-  if(!extraDialog||!extraTitle||!extraDescription)return;
-  extraTitle.textContent=feature.icon+' '+feature.title;
-  extraDescription.textContent=feature.description;
-  if(!extraDialog.open)extraDialog.showModal();
+  if(button)setExtension(button.dataset.dogExtra);
  });
 }
-$('dog-extra-close')?.addEventListener('click',()=>extraDialog?.close());
+$('dog-extension-close')?.addEventListener('click',()=>setExtension(null));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&activeExtension)setExtension(null);});
+$('dog-extra-close')?.addEventListener('click',()=>$('dog-extra-dialog')?.close());
 const cards=$('hand');
 const featureStatus=$('dog-ui-features-status');
 if(featureStatus){
