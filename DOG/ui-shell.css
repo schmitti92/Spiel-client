@@ -361,7 +361,8 @@ details:not([open]) .dog-disclosure-arrow{transform:rotate(-90deg)}
 /* DOG scenic cockpit & compact menu v2:
    the right-side wallpaper is independent of board artwork and player state. */
 .right.dog-modules{
-  padding:9px;
+  /* Leave a small scenic strip for the floating menu, rather than covering controls. */
+  padding:54px 9px 9px;
   border-radius:16px;
   border:1px solid rgba(227,195,139,.42);
   background-color:#0a263e;
@@ -461,6 +462,6 @@ details:not([open]) .dog-disclosure-arrow{transform:rotate(-90deg)}
 }
 @media(min-width:900px) and (orientation:landscape) and (max-height:1100px){
   main{margin:5px auto 4px}
-  .right.dog-modules{padding:7px}
+  .right.dog-modules{padding:52px 7px 7px}
   .board-svg{height:100%;width:100%;max-height:none}
 }
