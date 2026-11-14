@@ -324,7 +324,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
    do not support multiplying a CSS length by a variable inside calc(). */
 .hand .playing-card.dog-designed{width:var(--dog-hand-card-base)!important}
 </style>
-<link rel="stylesheet" href="./ui-shell.css?v=14"><link rel="stylesheet" href="./emoji-ui.css?v=2">
+<link rel="stylesheet" href="./ui-shell.css?v=15"><link rel="stylesheet" href="./emoji-ui.css?v=2">
 </head>
 <body>
 <!-- One floating menu replaces the large heading/nav and frees board height. -->
@@ -414,6 +414,17 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
            <small id="dog-ui-features-status" hidden aria-hidden="true">Erweiterbar</small>
            <button id="new-game" class="dog-mini-link" type="button" title="Neues Spiel" aria-label="Neues Spiel">↻</button>
          </div>
+       </div>
+     </section>
+     <!-- Shared bottom-right expansion dock, also used by future DOG features. -->
+     <section class="panel dog-extension-panel" id="dog-extension-panel" aria-label="DOG Erweiterungsbereich" hidden>
+       <div class="dog-extension-heading">
+         <strong id="dog-extension-title">😀 Emojis</strong>
+         <button id="dog-extension-close" type="button" aria-label="Erweiterungsbereich schließen" title="Schließen">×</button>
+       </div>
+       <div id="dog-extension-content" class="dog-extension-content">
+         <div id="dog-emoji-panel-root" class="dog-emoji-panel-root" hidden></div>
+         <p id="dog-extension-placeholder" class="dog-extension-placeholder" hidden></p>
        </div>
      </section>
      <!-- Module E: foldable history; local controls remain accessible. -->
