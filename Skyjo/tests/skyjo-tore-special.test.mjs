@@ -88,3 +88,47 @@ test('Old online SKYJO URLs return to the main shared lobby; hub matches and off
  assert.equal(valid,null);
  assert.equal(navigate('mode=local&testPlayers=2'),null);
 });
+
+
+test('Shared Monster Slots prominently identify the active winner and the spectator',()=>{
+ const browser={};new Function('window',read('skyjo_tore_special.js'))(browser);
+ const show={index:0,players:[
+  {uid:'chris-id',name:'Chris',winner:false,missionIds:['one-row'],prizes:[{kind:'chest'},{kind:'joker'}]},
+  {uid:'moin-id',name:'Moin',winner:true,missionIds:['three-streets','open-zero'],prizes:Array.from({length:12},()=>({kind:'pack'}))}
+ ]};
+ const current=browser.SkyjoToreSpecial.playerSpotlight(show,'chris-id');
+ assert.equal(current.name,'Chris');
+ assert.equal(current.mine,true);
+ assert.equal(current.position,1);
+ assert.equal(current.total,2);
+ assert.equal(current.slots,2);
+ assert.match(current.role,/MISSIONSGEWINNER/);
+ assert.match(current.viewerLabel,/DU BIST DRAN/);
+ const viewer=browser.SkyjoToreSpecial.playerSpotlight(show,'moin-id');
+ assert.equal(viewer.mine,false);
+ assert.match(viewer.viewerLabel,/DU SCHAUST ZU/);
+ show.index=1;
+ const champion=browser.SkyjoToreSpecial.playerSpotlight(show,'chris-id');
+ assert.equal(champion.name,'Moin');
+ assert.equal(champion.slots,12);
+ assert.equal(champion.position,2);
+ assert.match(champion.role,/RUNDENSIEGER/);
+ assert.match(champion.viewerLabel,/DU SCHAUST ZU/);
+ assert.equal(browser.SkyjoToreSpecial.playerSpotlight(show,'moin-id').mine,true);
+});
+test('Slot recipient remains visible from spin start through win and confirmation',()=>{
+ const js=read('skyjo_tore_special.js');
+ const css=read('skyjo_tore_special.css');
+ assert.match(js,/class="skyjo-slot-owner-bar"/);
+ assert.match(js,/class="skyjo-slot-owner-name"/);
+ assert.match(js,/id="skyjo-slot-owner-phase"/);
+ assert.match(js,/id="skyjo-slot-viewer-role"/);
+ assert.match(js,/skyjo-slot-queue-player/);
+ assert.match(js,/Alle Preise aus diesem Dreh gehören/);
+ assert.match(js,/HAT GEWONNEN/);
+ assert.match(js,/DREHT GERADE/);
+ assert.match(js,/is-current/);
+ assert.match(css,/\.skyjo-slot-owner-name/);
+ assert.match(css,/data-viewer="owner"/);
+ assert.match(css,/@media\(max-width:620px\)/);
+});
