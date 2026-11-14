@@ -187,3 +187,20 @@ dialog{color:#f5e9d6;background:#10283e;border:1px solid #ddb973;border-radius:1
   border-radius:var(--frame-radius,16px)!important;
   box-shadow:inset 0 0 0 2px var(--frame-inner),inset 0 1px 13px var(--frame-inner),0 9px 30px rgba(0,0,0,.49),0 0 var(--frame-glow-size,12px) var(--frame-glow)!important;
 }
+
+
+/* Right-side block transparency: panel surfaces only, keep content at 100%. */
+.opacity-section{margin-top:17px;padding-top:13px;border-top:1px solid #8ca7b34d}
+.opacity-section-heading{display:flex;gap:8px;align-items:center;justify-content:space-between}
+#hud-design-panel .opacity-section-heading h3{margin:0;font-size:14px}
+.opacity-reset{font-size:11px;font-weight:800;color:#e8e1cf;border:1px solid #bfa87388;background:#163247;padding:6px 9px;border-radius:9px}
+.opacity-reset:hover{border-color:#ffe1aa}
+.hud-opacity-controls{display:grid;gap:11px;margin:13px 0}
+.hud-opacity-control{padding:9px;border:1px solid #587e937d;border-radius:12px;background:#0b2539cc}
+.hud-opacity-control .opacity-label-line{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:9px}
+.hud-opacity-control label{font-size:12px;font-weight:750;color:#e6f2f7}
+.hud-opacity-control output{min-width:40px;text-align:right;font-size:12px;font-weight:900;color:#ffe29c;white-space:nowrap}
+.hud-opacity-control input[type="range"],.opacity-all input[type="range"]{display:block;width:100%;margin:0;accent-color:#e9bf77;cursor:pointer;touch-action:pan-y}
+.opacity-all{border:1px dashed #93abc173;background:#12324766;padding:10px;border-radius:11px}
+.opacity-all label{display:block;margin-bottom:9px;font-size:11px;font-weight:850;color:#d3e8f3}
+@media(max-width:540px){.hud-opacity-controls{gap:7px}.hud-opacity-control{padding:8px}}
