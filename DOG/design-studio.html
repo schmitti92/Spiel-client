@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071525">
+<meta name="description" content="DOG Design-Studio: Spielwelten und Spielbretter kombinieren, live ansehen und eigene Designs speichern.">
+<title>DOG Design-Studio</title>
+<link rel="stylesheet" href="./design-studio.css?v=1">
+</head>
+<body>
+<header class="studio-top">
+  <div class="studio-brand"><span class="studio-logo" aria-hidden="true">D</span><div><h1>DOG <span>Design-Studio</span></h1><p>Kombiniere Spielwelten und Brettdesigns</p></div></div>
+  <div class="top-actions"><a href="../hub-lobby.html" id="back-link" class="control secondary">← Zurück zur Lobby</a><button id="save-top" class="control gold" type="button">💾 Speichern</button></div>
+</header>
+<main class="studio-page">
+  <div class="studio-columns">
+    <section class="panel options-panel scenes" aria-labelledby="scenes-heading">
+      <h2 id="scenes-heading">🏔️ Hintergründe</h2><p>Wähle deine Spielwelt</p>
+      <div id="scene-choices" class="choice-list" role="group" aria-label="Hintergrund auswählen"></div>
+    </section>
+    <section class="preview-wrap" aria-labelledby="preview-heading">
+      <div class="preview-heading"><div><span class="eyebrow">◉ LIVE-VORSCHAU</span><h2 id="preview-heading">Mein DOG-Design</h2></div><span class="live-pill">● Sofort sichtbar</span></div>
+      <div class="preview-stage" id="preview-stage">
+        <div class="preview-screen">
+          <svg id="board-preview" viewBox="0 0 760 760" role="img" aria-label="Vorschau des DOG-Spielbretts mit allen 64 Lauf-, 16 Ziel- und 16 Startfeldern"></svg>
+        </div>
+      </div>
+      <div class="preview-controls">
+        <span>🎮 Echte DOG-Feldanordnung · Nur das Aussehen ändert sich</span>
+        <button id="apply-design" class="control green" type="button">✓ Im Spiel verwenden</button>
+      </div>
+    </section>
+    <section class="panel options-panel boards" aria-labelledby="boards-heading">
+      <h2 id="boards-heading">🎲 Brettdesigns</h2><p>Wähle die Oberfläche der Spielplatte</p>
+      <div id="board-choices" class="choice-list" role="group" aria-label="Brettdesign auswählen"></div>
+    </section>
+  </div>
+  <section class="panel designs-panel" aria-labelledby="designs-heading">
+    <div class="design-head"><div><h2 id="designs-heading">✨ Meine Designs</h2><p>Gespeicherte Kombinationen als Schnellzugriff – auf diesem Gerät</p></div><button class="control gold" id="new-design" type="button">＋ Neues Design</button></div>
+    <div id="preset-list" class="preset-list"></div>
+    <p class="future-note">🪄 Bald erweiterbar: Dekorationen, Beleuchtung und Effekte. Spielfeld und Regeln bleiben unverändert.</p>
+  </section>
+  <p id="studio-status" class="studio-status" role="status" aria-live="polite"></p>
+</main>
+<dialog id="save-dialog" aria-labelledby="save-dialog-title">
+  <form id="save-form">
+    <h2 id="save-dialog-title">💾 Design speichern</h2>
+    <p>Gib deiner Kombination einen Namen. Du kannst sie jederzeit wieder aufrufen.</p>
+    <label for="design-name">Designname</label><input id="design-name" type="text" maxlength="40" required autocomplete="off" placeholder="Mein Zauberwald" spellcheck="false">
+    <div class="dialog-actions"><button type="button" class="control secondary" id="cancel-save">Abbrechen</button><button type="submit" class="control gold">Speichern & verwenden</button></div>
+  </form>
+</dialog>
+<script type="module" src="./design-studio.js?v=1"></script>
+</body>
+</html>
