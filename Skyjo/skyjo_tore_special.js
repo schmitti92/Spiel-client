@@ -95,7 +95,8 @@ function progressFor(game,pi){
  return all[pi];
 }
 function trackRemove(game,pi,m,cards){
- if(!active(game)||!m||!Array.isArray(cards)||game.phase!=='play')return;
+ if(!active(game)||!m||!Array.isArray(cards)||
+   !(game.phase==='play'||game.phase==='roundReveal'&&game.roundClose?.stage==='remove'))return;
  const p=progressFor(game,pi),name=String(m.name||'');
  p.groups++;
  if(name.includes('Reihe'))p.rows++;
@@ -171,14 +172,18 @@ function hud(game,index){
   const won=missionDone(m,p,game.phase==='play'?NaN:Number(scored));
   return '<div class="skyjo-tore-mission '+(won?'done':'')+'"><span>'+(won?'✅':'🎯')+'</span><span>'+esc(m.name)+'</span><strong>'+m.slots+' 🎰</strong></div>';
  }).join('');
- const completed=game.skyjoSpecial.missions.filter(id=>LOOKUP[id]&&missionDone(LOOKUP[id],p,game.phase==='play'?NaN:Number(scored))).length;
+ const activeMissions=game.skyjoSpecial.missions.map(id=>LOOKUP[id]).filter(Boolean);
+ const complete=activeMissions.filter(m=>missionDone(m,p,
+  game.phase==='betweenRounds'||game.phase==='gameOver'?Number(scored):NaN));
+ const completed=complete.length;
+ const earnedSlots=complete.reduce((sum,m)=>sum+m.slots,0);
  const target=game.skyjoSpecial.bonusCells?.[index];
  const columns=game.layoutMode==='xl'?5:4;
  const where=Number.isSafeInteger(target)?('Reihe '+(Math.floor(target/columns)+1)+' · Spalte '+(target%columns+1)):'';
  const bonusText=Number.isSafeInteger(target)?
   (bonusAchieved(game,index)?'✅ Joker-Bonusfeld erfüllt · +2 Slots':
    '🃏 Joker-Zielfeld ('+where+') · Joker bei der Schlusswertung = +2 Slots'):'';
- return '<div class="skyjo-tore-hud" aria-label="100 Tore Special Missionen"><div class="skyjo-tore-head">🎰 100 TORE SPECIAL <small>'+completed+'/3 Missionen erfüllt · Slot-Finale erst NACH der Runde</small></div><div class="skyjo-tore-grid">'+results+'</div>'+
+ return '<div class="skyjo-tore-hud" aria-label="100 Tore Special Missionen"><div class="skyjo-tore-head">🎰 100 TORE SPECIAL <small>'+completed+'/3 Missionen · '+earnedSlots+' 🎰 Slots erspielt · Dreh erst NACH der Rundenwertung</small></div><div class="skyjo-tore-grid">'+results+'</div>'+
   (bonusText?'<div class="skyjo-tore-bonus-hint">'+bonusText+'</div>':'')+'</div>';
 }
 function nextButton(game,summary,defaultHTML,host){
