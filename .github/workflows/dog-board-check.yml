@@ -34,6 +34,7 @@ jobs:
         with:
           node-version: '22'
       - run: node --check DOG/app.js
+      - run: node --check DOG/card-visuals.js
       - run: node --check DOG/online-sync.js
       - run: node --check DOG/editor.js
       - run: node --check DOG/editor-builder.js
