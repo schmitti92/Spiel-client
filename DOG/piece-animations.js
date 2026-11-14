@@ -1,3 +1,5 @@
+import {loadMotionMode,motionFactor} from './motion-settings.js';
+
 /**
  * DOG motion layer: presentation only. Never mutates a game, sends network
  * traffic, or changes editor coordinates. All route positions are SVG units.
@@ -76,6 +78,7 @@ export function planPieceMotions(beforePieces, afterPieces, board) {
       points = [start, end];
     } else {
       points = routeForMove(from, piece, board);
+      if (points && from.place === 'track' && piece.place === 'goal') kind = 'goal';
     }
     if (!points) {
       kind = 'relocate';
@@ -90,6 +93,7 @@ export function createPieceAnimator(svg) {
   let active = [];
   function cancel() {
     if (frame) cancelAnimationFrame(frame);
+    svg.querySelectorAll('.dog-motion-arrival').forEach(node=>node.remove());
     frame = 0;
     for (const item of active) {
       item.node.removeAttribute('transform');
@@ -100,17 +104,19 @@ export function createPieceAnimator(svg) {
   }
   function play(motions, colors = []) {
     cancel();
-    if (!motions.length || document.hidden || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return 0;
+    const factor=motionFactor(loadMotionMode(),window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches||false);
+    if (!motions.length || document.hidden || factor===0) return 0;
     const started = performance.now();
     for (const motion of motions) {
       const node = svg.querySelector('[data-piece="' + motion.id + '"]');
       if (!node || motion.points.length < 2) continue;
       const steps = motion.points.length - 1;
-      const duration = motion.kind === 'swap' ? 690
+      const baseDuration = motion.kind === 'swap' ? 690
         : motion.kind === 'capture' ? 540
-        : motion.kind === 'launch' ? 660
-        : motion.kind === 'relocate' ? 380
-        : Math.min(1700, 290 + steps * 108);
+        : motion.kind === 'launch' ? 580
+        : motion.kind === 'relocate' ? 330
+        : Math.min(1650, 250 + steps * 102);
+      const duration=baseDuration*factor;
       node.classList.add('dog-pawn-moving');
       active.push({node, motion, duration, color: colors[motion.owner] || '#f3dba2', done: false});
     }
@@ -120,14 +126,13 @@ export function createPieceAnimator(svg) {
       item.node.removeAttribute('transform');
       item.node.style.opacity = '';
       item.node.classList.remove('dog-pawn-moving');
-      if (item.motion.kind === 'capture') return;
-      const end = item.motion.points.at(-1);
+      const end = item.motion.kind === 'capture' ? item.motion.points[0] : item.motion.points.at(-1);
       const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      ring.setAttribute('class', 'dog-motion-arrival');
+      ring.setAttribute('class', 'dog-motion-arrival dog-arrival-' + item.motion.kind);
       ring.setAttribute('cx', String(end.x));
       ring.setAttribute('cy', String(end.y));
-      ring.setAttribute('r', '13');
-      ring.setAttribute('stroke', item.color);
+      ring.setAttribute('r', item.motion.kind === 'capture' ? '18' : '13');
+      ring.setAttribute('stroke', item.motion.kind === 'capture' ? '#ffe8a8' : item.color);
       ring.setAttribute('pointer-events', 'none');
       svg.appendChild(ring);
       ring.addEventListener('animationend', () => ring.remove(), {once: true});
@@ -174,5 +179,5 @@ export function createPieceAnimator(svg) {
     frame = requestAnimationFrame(tick);
     return maxDuration;
   }
-  return {play, cancel};
+  return {play, cancel, isActive:()=>!!frame};
 }
