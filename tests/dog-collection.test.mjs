@@ -44,7 +44,7 @@ test('all HUD color tiles use real theme tokens and support large preview',()=>{
  assert.equal(toneItems.length,Object.keys(HUD_TONES).length);
  for(const item of toneItems){
   const tone=HUD_TONES[item.value];
-  assert.equal(item.hudTheme,tone,item.name+' should reference the actual HUD theme');
+  assert.deepEqual(item.hudTheme,tone,item.name+' should use the actual HUD palette values');
   assert.match(item.hudTheme.swatch,/^#[0-9a-f]{6}$/i);
   assert.ok(item.hudTheme.panel&&item.hudTheme.seat&&item.hudTheme.button&&item.hudTheme.border);
  }
