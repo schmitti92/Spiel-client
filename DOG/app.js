@@ -436,6 +436,10 @@ function render(){
   $('phase').textContent=game.phase==='exchange'?'Geheimer Kartentausch':game.phase==='seven'?'7 verteilen':game.phase==='finished'?'Spielende':'Kartenrunde';
   const active=activeSeat();
   $('turn').textContent=game.phase==='finished'?'🏆 Team '+(game.winner===0?'Rot / Grün':'Blau / Gelb')+' gewinnt!':game.phase==='exchange'?'Karten werden getauscht':active>=0?game.players[active].name+' ist dran':'Bots spielen';
+  // Visible royal HUD mirrors existing local/server data, without extra requests.
+  $('dog-premium-round').textContent='Runde '+game.round;
+  $('dog-premium-phase').textContent=$('phase').textContent;
+  $('dog-premium-now').textContent=$('turn').textContent;
   $('history').innerHTML=game.history.map(t=>'<div>'+escape(t)+'</div>').join('');
   renderPlayers();
   available=[];
