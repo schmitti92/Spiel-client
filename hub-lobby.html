@@ -18,6 +18,7 @@ footer{margin-top:24px;text-align:center;color:#8298af;font-size:12px}footer a{c
 @media(max-width:700px){.hero{display:block}.hero .pill{margin-top:14px}.cols{grid-template-columns:1fr}.shell{padding-top:15px}.panel{padding:17px;border-radius:18px}.room-code{font-size:25px}.game-grid{gap:8px}.game{padding:9px;min-height:76px}.game .emoji{font-size:22px}.row .btn{flex:1}}
 </style>
 <link rel="stylesheet" href="hub-lobby-v7.css?v=20261025-premium-42">
+<link rel="stylesheet" href="DOG/board-picker.css?v=1">
 </head>
 <body>
 <div class="shell">
@@ -49,6 +50,12 @@ footer{margin-top:24px;text-align:center;color:#8298af;font-size:12px}footer a{c
           <button class="game" type="button" data-game="business"><span class="emoji">💼</span><span><b>Das große Business</b><small>2–5 Personen</small></span></button>
         </div>
         <p class="chooser-note">👑 Der Host wählt das Spiel. Danach öffnet sich der passende Online-Vorraum für alle.</p>
+      </section>
+      <section class="panel" data-dog-board-picker aria-label="DOG-Spielbrett wählen">
+       <h3>🎨 DOG-Spielbrett auswählen</h3>
+       <p>Dein gewünschtes Brettdesign für DOG. Rein optisch, nur auf deinem Gerät – der Host wählt weiterhin das Spiel.</p>
+       <div data-board-picker-options></div>
+       <div data-board-picked-label></div>
       </section>
       <section id="game-stage-hero" class="panel hidden" data-game="barikade" aria-labelledby="selected-game-title">
         <div class="game-stage-cover">
@@ -144,6 +151,7 @@ footer{margin-top:24px;text-align:center;color:#8298af;font-size:12px}footer a{c
   <p class="status" id="main-status" aria-live="polite"></p>
   <footer><a href="hub-lobby.html">← Zum Spielmodus</a> · Online und Lokal · Vier Spiele</footer>
 </div>
+<script type="module" src="DOG/board-picker.js?v=1"></script>
 <script src="profile-config.js"></script><script src="profile-auth.js"></script><script src="hub-lobby.js?v=20261025-ready-reconcile-1" defer></script>
 <script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script><script src="site-global-controls.js?v=20261109-global-1"></script>
 </body>
