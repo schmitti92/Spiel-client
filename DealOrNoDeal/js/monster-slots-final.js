@@ -53,12 +53,13 @@ const entitledReels=()=>typeof g!=='undefined'?Number(window.dealSlotReelsFor?.(
 function configureReels(count){
  const n=[1,2,3,6].includes(Number(count))?Number(count):6;
  root.dataset.reels=String(n);
+ const specialCase=root.dataset.turn==='case';
  for(let i=0;i<reels.length;i++){reels[i].hidden=i>=n;lights[i].hidden=i>=n;}
  const subtitle=root.querySelector('.monster-slot-subheading');
  if(subtitle)subtitle.textContent=n===1?
   '🥈 ZWEITER PLATZ · 1 WALZE · 1 GARANTIERTER GEWINN':n===2?
   '🥈 ZWEITER PLATZ · 2 WALZEN · 2 GARANTIERTE GEWINNE':n===3?
-  '🏆 ERSTER PLATZ · 3 WALZEN · 3 GARANTIERTE GEWINNE':
+  (specialCase?'🎁 SONDERKOFFER · 3 WALZEN · 3 GARANTIERTE GEWINNE':'🏆 ERSTER PLATZ · 3 WALZEN · 3 GARANTIERTE GEWINNE'):
   '🏆 ERSTER PLATZ · 6 WALZEN · 6 GARANTIERTE GEWINNE';
  root.querySelector('.monster-slot-reels')?.setAttribute('aria-label',
   n+' Gewinnwalzen');
@@ -145,7 +146,7 @@ const isTiedFinal=game=>{
  const values=Array.isArray(game?.finalValues)?game.finalValues.map(f=>f.payout):[];
  return values.length>1&&values.filter(v=>v===Math.max(...values)).length>1;
 };
-const canShow=()=>typeof g!=='undefined'&&g?.phase==='final'&&g.monsterSlotsVersion===1&&!g.pendingCardReveals?.length&&!isTiedFinal(g)&&entitledReels()>0&&
+const canShow=()=>typeof g!=='undefined'&&g?.phase==='final'&&g.monsterSlotsVersion===1&&!g.caseSlotShow&&!g.pendingCardReveals?.length&&!isTiedFinal(g)&&entitledReels()>0&&
  document.getElementById('finale-cinema')?.hidden!==false&&
  document.getElementById('cent-reward')?.hidden!==false&&!document.hidden;
 function showAlreadySettled(){
@@ -283,8 +284,8 @@ async function claim(){
  }finally{claiming=null;if(liveGame!==id||user()?.uid!==uid)sync()}
 }
 function confirmSlots(){
- if(typeof g!=='undefined'&&g?.phase==='final'&&g.monsterSlotShow){
-  const stage=g.monsterSlotShow;
+ if(typeof g!=='undefined'&&(g?.caseSlotShow||g?.phase==='final'&&g.monsterSlotShow)){
+  const stage=g.caseSlotShow||g.monsterSlotShow;
   if(stage.phase==='ready')void sharedAction('spin');
   else if(stage.phase==='rolling'&&!opening)void sharedAction('confirm');
   return;
@@ -302,7 +303,7 @@ summaryButton.addEventListener('click',confirmSlots);
 // after 30 seconds of absence) may start or confirm the server-authorized turn.
 // WebSocket game snapshots provide prizes and timestamps; no spectator polling.
 async function sharedAction(operation){
- const stage=typeof g!=='undefined'?g?.monsterSlotShow:null;
+ const stage=typeof g!=='undefined'?(g?.caseSlotShow||g?.monsterSlotShow):null;
  if(sharedPending||!stage||!['ready','rolling'].includes(stage.phase)||!g?.id||g.pendingCardReveals?.length)return;
  const id=g.id,uid=user()?.uid,now=typeof dealServerNow==='function'?dealServerNow():Date.now();
  if(stage.uid!==uid&&now-Number(stage.activatedAt||0)<30000)return;
@@ -311,9 +312,10 @@ async function sharedAction(operation){
  try{
   const token=await user()?.getIdToken?.();
   if(!token)throw Error('Bitte zuerst anmelden.');
-  const response=await fetch(base()+'/api/deal-or-no-deal/'+encodeURIComponent(code||'')+'/monster-slots/show',{
+  const response=await fetch(base()+'/api/deal-or-no-deal/'+encodeURIComponent(code||'')+(stage.turn==='case'?'/monster-slots/case-show':'/monster-slots/show'),{
    method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
    body:JSON.stringify({gameId:id,operation,expectedTurn:stage.turn,expectedUid:stage.uid,
+    ...(stage.turn==='case'?{expectedEventId:stage.eventId}:{}),
     ...(operation==='confirm'?{expectedStartedAt:Number(stage.startedAt||0)}:{})}),cache:'no-store'
   });
   const data=await response.json();
@@ -338,8 +340,8 @@ async function sharedAction(operation){
  }
 }
 function renderShared(){
- const game=typeof g!=='undefined'?g:null,stage=game?.monsterSlotShow;
- if(!stage||game.phase!=='final')return;
+ const game=typeof g!=='undefined'?g:null,stage=game?.caseSlotShow||game?.monsterSlotShow;
+ if(!stage||(stage.turn!=='case'&&game.phase!=='final'))return;
  if(game.pendingCardReveals?.length){
   if(!root.hidden)cancel();
   sharedSignature='';
@@ -371,7 +373,7 @@ function renderShared(){
    const nextPlayer=game.players?.find(p=>p.id===stage.uid);
    const nextName=nextPlayer?.name||'Spieler';
    sharedCaption.hidden=false;
-   sharedCaption.textContent=(stage.turn==='runner'?'🥈 PLATZ 2':'🏆 PLATZ 1')+' · '+nextName+' · LIVE FÜR ALLE';
+   sharedCaption.textContent=(stage.turn==='case'?'🎁 KOFFERBONUS':stage.turn==='runner'?'🥈 PLATZ 2':'🏆 PLATZ 1')+' · '+nextName+' · LIVE FÜR ALLE';
    setStatus(stage.turn==='champion'&&stage.runnerConfirmedAt?
     '🥈 Der Gewinn von Platz 2 wurde aufgedeckt und bestätigt. Als Nächstes dreht '+nextName+' auf Platz 1!':
     '🎬 Die gemeinsame Slot-Auswertung für '+nextName+' wird vorbereitet …');
@@ -409,10 +411,11 @@ function renderShared(){
  const recipient=game.players?.find(p=>p.id===stage.uid);
  const name=recipient?.name||'Spieler',me=stage.uid===user()?.uid;
  root.dataset.actor=me?'yes':'no';
- const roundLabel=stage.turn==='runner'?'🥈 ZWEITPLATZIERTER':'🏆 SIEGER';
+ const roundLabel=stage.turn==='case'?(stage.amount===1?'🧳 1-CENT-KOFFER':'💰 50-MILLIONEN-KOFFER'):stage.turn==='runner'?'🥈 ZWEITPLATZIERTER':'🏆 SIEGER';
  const canRecover=now-Number(stage.activatedAt||0)>=30000;
  const mayAct=me||canRecover;
  sharedCaption.hidden=false;
+ root.querySelector('.monster-slot-kicker').textContent=stage.turn==='case'?'✦ GOLDSTUDIO · KOFFERBONUS ✦':'✦ GOLDSTUDIO · DAS GROSSE GEWINNFINALE ✦';
  sharedCaption.textContent=roundLabel+' · '+name+' · ALLE SPIELER SEHEN LIVE ZU';
  configureReels(stage.reels);
  summaryKicker.textContent=roundLabel+' · '+name;
@@ -503,7 +506,7 @@ function renderShared(){
    Math.max(500,30050-(now-Number(stage.activatedAt||0))));
 }
 function sync(){
- if(typeof g!=='undefined'&&g?.phase==='final'&&g.monsterSlotShow){renderShared();return;}
+ if(typeof g!=='undefined'&&(g?.caseSlotShow||g?.phase==='final'&&g.monsterSlotShow)){renderShared();return;}
  if(sharedSignature){cancel();sharedSignature='';root.dataset.shared='no';claimed=null;claimedUid=null;liveGame=null;}
  if(typeof g==='undefined'||g?.phase!=='final'||g.monsterSlotsVersion!==1||isTiedFinal(g)||entitledReels()===0){
   if(liveGame){cancel();liveGame=null;claimed=null;claimedUid=null}return;
@@ -520,13 +523,13 @@ window.addEventListener('deal-reward-window-closed',()=>setTimeout(sync,400));
 // The final Banker announcement can finish after the shared show arrived.
 window.addEventListener('deal-banker-reveal-finished',sync);
 window.addEventListener('deal-monster-slot-retry',()=>{
- if(g?.monsterSlotShow){sharedSignature='';renderShared();return;}
+ if(g?.caseSlotShow||g?.monsterSlotShow){sharedSignature='';renderShared();return;}
  if(!liveGame||entitledReels()===0)return;
  if(claimed?.gameId===liveGame&&claimedUid===user()?.uid){if(!opening){shown='';present(true)}}
  else{root.hidden=false;void claim()}
 });
-window.addEventListener('deal-replay-finale-sequence',()=>{if(!g?.monsterSlotShow)cancel()});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&opening&&!g?.monsterSlotShow)cancel();else if(!document.hidden)sync()});
+window.addEventListener('deal-replay-finale-sequence',()=>{if(!g?.caseSlotShow&&!g?.monsterSlotShow)cancel()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&opening&&!g?.caseSlotShow&&!g?.monsterSlotShow)cancel();else if(!document.hidden)sync()});
 window.addEventListener('load',sync);
 setTimeout(sync,500);
 })();
