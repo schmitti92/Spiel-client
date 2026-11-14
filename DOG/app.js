@@ -1,5 +1,6 @@
 import {CARD_EDITIONS,CARD_EDITION,loadCardEdition,saveCardEdition,cardBackImage,cardMarkup,cardVisual} from './card-visuals.js?v=6';
 import {enableHandTouchGestures} from './hand-gestures.js?v=2';
+import {mountDogEmojiGame,showDogEmoji,showDogEmojiError} from './emoji-game.js?v=1';
 import {boardGestureTarget} from './board-gesture-math.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
@@ -16,7 +17,7 @@ const matchHint=params.get('match');
 const editorBack='index.html'+location.search;
 document.querySelectorAll('[data-dog-editor]').forEach(link=>link.href='editor.html?return='+encodeURIComponent(editorBack)+'&v=10');
 const apiBase=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null,onlineDogAvatars=[];
+let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null,onlineDogAvatars=[],emojiSocketReady=false;
 function user(){const s=window.SpielOnline?.state?.();return s?.status==='online'&&s.user?.getIdToken?s.user:null;}
 async function hubRequest(path,method='GET',payload){
  const person=user();if(!person)throw Error('Bitte melde dich mit deinem Online-Profil an.');
@@ -56,14 +57,23 @@ async function refreshOnline(){
 
 function startSocket(){
  if(onlineSocket||!user())return;
- const socket=new WebSocket(apiBase.replace(/^http/i,'ws')+'/hub');onlineSocket=socket;
+ const socket=new WebSocket(apiBase.replace(/^http/i,'ws')+'/hub');onlineSocket=socket;emojiSocketReady=false;
  socket.onopen=async()=>{
   try{const token=await user().getIdToken();if(socket.readyState===1)socket.send(JSON.stringify({type:'subscribe',code:hubCode,profileIdToken:token}));}
   catch(_){socket.close();}
   onlineHeartbeat=setInterval(()=>{if(socket.readyState===1)socket.send(JSON.stringify({type:'ping'}));},30000);
  };
- socket.onmessage=e=>{let data;try{data=JSON.parse(e.data)}catch(_){return;}if(data.type==='room'&&data.room?.code===hubCode)acceptRemote(data.room);};
- socket.onclose=()=>{if(onlineHeartbeat){clearInterval(onlineHeartbeat);onlineHeartbeat=null;}if(onlineSocket===socket)onlineSocket=null;};
+ socket.onmessage=e=>{
+  let data;try{data=JSON.parse(e.data)}catch(_){return;}
+  if(data.type==='room'&&data.room?.code===hubCode){
+   emojiSocketReady=true;acceptRemote(data.room);
+  }else if(data.type==='dog_emoji'&&data.code===hubCode&&data.matchId===acceptedMatchId){
+   showDogEmoji(data);
+  }else if(data.type==='dog_emoji_error'){
+   showDogEmojiError(data.reason);
+  }
+ };
+ socket.onclose=()=>{emojiSocketReady=false;if(onlineHeartbeat){clearInterval(onlineHeartbeat);onlineHeartbeat=null;}if(onlineSocket===socket)onlineSocket=null;};
  socket.onerror=()=>{};
 }
 async function initOnline(){
@@ -638,5 +648,14 @@ function prepareAppearanceUI(){
 $('rules-button').addEventListener('click',()=>{$('rules').showModal();});
 $('rules-close').addEventListener('click',()=>{$('rules').close();});
 prepareAppearanceUI();
+mountDogEmojiGame({send:async emojiId=>{
+ if(online){
+  if(!emojiSocketReady||!onlineSocket||onlineSocket.readyState!==1||!acceptedMatchId||!user())throw Error('NOT_CONNECTED');
+  onlineSocket.send(JSON.stringify({type:'dog_emoji',matchId:acceptedMatchId,emojiId}));
+ }else{
+  const actor=game?.players?.find(p=>!p.bot);
+  showDogEmoji({emojiId,senderName:actor?.name||'Spieler',eventId:'local_'+Date.now()});
+ }
+}});
 if(online){void initOnline();}else if(!recover())newGame();else{render();scheduleAI();}
 window.addEventListener('pageshow',()=>{if(game)drawBoard();});
