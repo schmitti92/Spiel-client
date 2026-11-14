@@ -2,7 +2,9 @@ import {CARD_EDITIONS,CARD_EDITION,loadCardEdition,saveCardEdition,cardBackImage
 import {enableHandTouchGestures} from './hand-gestures.js?v=2';
 import {mountDogEmojiGame,showDogEmoji,showDogEmojiError} from './emoji-game.js?v=3';
 import {boardGestureTarget} from './board-gesture-math.js?v=1';
-import {snapshotPieces,planPieceMotions,createPieceAnimator} from './piece-animations.js?v=1';
+import {snapshotPieces,planPieceMotions,createPieceAnimator} from './piece-animations.js?v=2';
+import {loadMotionMode,saveMotionMode,applyMotionMode} from './motion-settings.js?v=1';
+import {createDogVisualFeedback} from './ui-animations.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
 import {DEFAULT_APPEARANCE,BOARD_STYLES,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=21';
@@ -101,6 +103,8 @@ const boardPointers=new Map();
 let gestureSnapshot=null;
 const boardSvg=$('board');
 const pieceAnimator=createPieceAnimator(boardSvg);
+const visualFeedback=createDogVisualFeedback(document);
+applyMotionMode(loadMotionMode());
 let lastBoardKey=null,lastBoardSnapshot=null,lastBoardRevision=null,lastBoardMatch=null,lastMotionDuration=0;
 function applyBoardView(){
  const size=BOARD_SIZE/boardZoom,half=size/2;
@@ -194,7 +198,7 @@ function newGame(){
   humans=Number($('human-count').value)||1;
   game=createGame({names:['Du','Spieler Blau','Spieler Grün','Spieler Gelb'],bots:[0,1,2,3].map(i=>i>=humans)});
   revealed=true;selectedCard=null;selectedPiece=null;jokerAs=null;lastTurn=null;
-  pieceAnimator.cancel();lastBoardKey=null;lastBoardSnapshot=null;lastBoardRevision=null;lastBoardMatch=null;lastMotionDuration=0;
+  pieceAnimator.cancel();visualFeedback.reset();lastBoardKey=null;lastBoardSnapshot=null;lastBoardRevision=null;lastBoardMatch=null;lastMotionDuration=0;
   save();render();scheduleAI();
 }
 function isHumanExchange(){
@@ -367,30 +371,32 @@ function renderPlayers(){
     const activeEmblem=turn?'<span class="dog-active-emblem" aria-label="Aktiver Spieler">'+dogActiveEmblem(p.seat)+'</span>':'';
     return '<div class="seat '+(turn?'on':'')+'" style="--seat:'+displayColors()[p.seat]+'">'+activeEmblem+portrait+'<span class="dog-seat-info"><span class="seat-name">'+escape(p.name)+'</span><span class="seat-extra'+(exchange?' is-done':'')+'">'+detail+'</span></span><b class="dog-seat-score">'+goal+'/4</b></div>';
   }).join('');
-  $('players').innerHTML=seats;
+  const host=$('players');
+  if(host._dogMarkup!==seats){host.innerHTML=seats;host._dogMarkup=seats;}
 }
 function renderHand(){
   const seat=currentHuman(),title=$('hand-title'),hand=$('hand'),actions=$('moves'),button=$('show-hand');
-  actions.innerHTML='';hand.innerHTML='';
+  actions.innerHTML='';
+  const setHandMarkup=markup=>{if(hand._dogMarkup!==markup){hand.innerHTML=markup;hand._dogMarkup=markup;}};
   // Card count controls the physical hand-card size; never affects saved or online game state.
   const shownSeat=seat>=0?seat:(online&&onlineSeat!==null?onlineSeat:-1);
   const shownCards=shownSeat>=0?game.hands?.[shownSeat]:null;
   hand.dataset.cardCount=Array.isArray(shownCards)?String(shownCards.length):'0';
-  if(game.phase==='finished'){title.textContent='🏆 Partie beendet';button.hidden=true;return;}
-  if(seat<0){title.textContent=online&&onlineSeat!==null?'🃏 Deine Handkarten':'🤖 Bots spielen';button.hidden=true;if(online&&onlineSeat!==null&&Array.isArray(game.hands[onlineSeat]))hand.innerHTML=game.hands[onlineSeat].map(c=>cardMarkup(c.type,{tag:'div'})).join('');available=[];return;}
+  if(game.phase==='finished'){title.textContent='🏆 Partie beendet';button.hidden=true;setHandMarkup('');return;}
+  if(seat<0){title.textContent=online&&onlineSeat!==null?'🃏 Deine Handkarten':'🤖 Bots spielen';button.hidden=true;setHandMarkup(online&&onlineSeat!==null&&Array.isArray(game.hands[onlineSeat])?game.hands[onlineSeat].map(c=>cardMarkup(c.type,{tag:'div'})).join(''):'');available=[];return;}
   if(lastTurn!==seat){revealed=online||humans===1;selectedCard=null;selectedPiece=null;jokerAs=null;lastTurn=seat;}
   button.hidden=online||humans===1;button.textContent=revealed?'🙈 Hand verdecken':'🃏 Karten ansehen';
   title.textContent=game.phase==='exchange'?'🔐 '+game.players[seat].name+': Karte an Partner geben':game.phase==='seven'?'🔥 Die 7 verteilen – noch '+(7-game.seven.spent)+' Schritte':'🎯 '+game.players[seat].name+' ist am Zug';
   if(!revealed){const symbol=escape(currentLook().cards.emblem);
-    hand.innerHTML='<div class="hand-veil"><div class="dog-card-backs" aria-hidden="true"><span class="dog-card-back">'+symbol+'</span><span class="dog-card-back">'+symbol+'</span><span class="dog-card-back">'+symbol+'</span></div><span>Deine Karten sind verdeckt. Tippe auf „Karten ansehen“.</span></div>';return;}
+    setHandMarkup('<div class="hand-veil"><div class="dog-card-backs" aria-hidden="true"><span class="dog-card-back">'+symbol+'</span><span class="dog-card-back">'+symbol+'</span><span class="dog-card-back">'+symbol+'</span></div><span>Deine Karten sind verdeckt. Tippe auf „Karten ansehen“.</span></div>');return;}
   if(game.phase==='seven'){
     available=legalActions(game,seat);
-    hand.innerHTML=game.hands[seat].map(c=>cardMarkup(c.type,{tag:'div',selected:c.id===game.seven.cardId,footer:c.id===game.seven.cardId?'Noch '+(7-game.seven.spent)+' Schritte':null})).join('');
+    setHandMarkup(game.hands[seat].map(c=>cardMarkup(c.type,{tag:'div',selected:c.id===game.seven.cardId,footer:c.id===game.seven.cardId?'Noch '+(7-game.seven.spent)+' Schritte':null})).join(''));
     if(!online){const cancel=document.createElement('button');cancel.className='secondary move-button';cancel.textContent='↶ Sieben zurücknehmen';cancel.addEventListener('click',()=>{game=cancelSeven(game,seat);selectedCard=null;selectedPiece=null;save();render();});actions.appendChild(cancel);}
   }else{
     const cards=game.hands[seat];
     const exchange=game.phase==='exchange';
-    hand.innerHTML=cards.map(c=>cardMarkup(c.type,{selected:selectedCard===c.id,attrs:'type="button" data-card="'+c.id+'"',footer:exchange?'WEITERGEBEN':null})).join('');
+    setHandMarkup(cards.map(c=>cardMarkup(c.type,{selected:selectedCard===c.id,attrs:'type="button" data-card="'+c.id+'"',footer:exchange?'WEITERGEBEN':null})).join(''));
     available=exchange?[]:selectedCard!==null?legalActions(game,seat).filter(m=>m.cardId===selectedCard&&(jokerAs===null||m.as===jokerAs)):[];
     if(exchange&&selectedCard!==null){
       available=[{type:'exchange',cardId:selectedCard}];
@@ -434,6 +440,7 @@ function render(){
   renderPlayers();
   available=[];
   renderHand();drawBoard();
+  visualFeedback.sync({game,matchKey:online?(acceptedMatchId||matchHint||'online'):'local',seat:online?onlineSeat:currentHuman(),handVisible:revealed,activeSeat:active});
   $('status').textContent=online?'🌐 Online mit Freunden · Karten serverseitig geschützt · Raum '+hubCode:'Klassische Regeln • Teams Rot/Grün und Blau/Gelb • Spielstand wird lokal gesichert';
   $('winner').hidden=game.phase!=='finished';
   if(game.phase==='finished')$('winner-title').textContent='Team '+(game.winner===0?'Rot / Grün':'Blau / Gelb')+' gewinnt!';
@@ -450,18 +457,18 @@ function onMove(i){
   const move=available[i];if(!move)return;
   if(online){
     if(onlineBusy)return;
-    onlineBusy=true;$('status').textContent='Zug wird vom Server geprüft …';
+    onlineBusy=true;visualFeedback.pending(true);$('status').textContent='Zug wird vom Server geprüft …';
     hubRequest('/dog/action','POST',{matchId:acceptedMatchId||matchHint||'',expectedRevision:game.revision,actionId:crypto.randomUUID(),action:move})
       .then(room=>{acceptRemote(room);})
-      .catch(e=>{$('status').textContent='⚠️ '+e.message;void refreshOnline();})
-      .finally(()=>{onlineBusy=false;});
+      .catch(e=>{visualFeedback.invalid();$('status').textContent='⚠️ '+e.message;void refreshOnline();})
+      .finally(()=>{onlineBusy=false;visualFeedback.pending(false);});
     return;
   }
   try{
     if(game.phase==='exchange')game=exchangeCard(game,seat,move.cardId);
     else game=takeAction(game,seat,move);
     selectedCard=null;selectedPiece=null;jokerAs=null;revealed=humans===1;lastTurn=null;available=[];save();render();scheduleAI();
-  }catch(e){$('status').textContent='⚠️ '+e.message;}
+  }catch(e){visualFeedback.invalid();$('status').textContent='⚠️ '+e.message;}
 }
 function scheduleAI(){
   if(online)return;
@@ -512,7 +519,7 @@ $('board').addEventListener('click',e=>{
  if(performance.now()<suppressBoardClickUntil)return;
  if(!revealed||currentHuman()<0||onlineBusy)return;
  const node=e.target.closest('[data-piece]');
- if(node&&selectedPiece===null){if(!available.some(m=>m.pieceId===Number(node.dataset.piece)))return;selectedPiece=Number(node.dataset.piece);drawBoard();$('move-help').textContent='Wähle das Zielfeld selbst.';return;}
+ if(node&&selectedPiece===null){if(!available.some(m=>m.pieceId===Number(node.dataset.piece))){visualFeedback.invalid();return;}selectedPiece=Number(node.dataset.piece);drawBoard();$('move-help').textContent='Wähle das Zielfeld selbst.';return;}
  if(node&&Number(node.dataset.piece)===selectedPiece){selectedPiece=null;drawBoard();$('move-help').textContent='Figur abgewählt.';return;}
  // A target pawn must be resolved before allowing a different source pawn.
  // Otherwise clicking an opponent (or another selectable pawn) can silently
@@ -552,7 +559,7 @@ $('board').addEventListener('click',e=>{
   if(Number.isInteger(selected)&&matches[selected])onMove(matches[selected].i);
   return;
  }
- selectedPiece=null;drawBoard();$('move-help').textContent='Zug nicht erlaubt. Bitte selbst erneut rechnen.';
+ selectedPiece=null;drawBoard();visualFeedback.invalid();$('move-help').textContent='Zug nicht erlaubt. Bitte selbst erneut rechnen.';
 });
 // Test controls are deliberately restricted to local games; never send altered cards online.
 const testPanel=$('dog-card-test'),testSelect=$('dog-test-card');
@@ -708,6 +715,13 @@ function prepareAppearanceUI(){
     $('appearance-hud-opacity-reset')?.addEventListener('click',()=>{
       appearance=saveAppearance({...appearance,hudOpacity:normalizeHudOpacity(null)});
       applyAppearance();
+    });
+  }
+  const motionSelect=$('appearance-motion');
+  if(motionSelect){
+    motionSelect.value=loadMotionMode();
+    motionSelect.addEventListener('change',()=>{
+      applyMotionMode(saveMotionMode(motionSelect.value));pieceAnimator.cancel();
     });
   }
   const editionSelect=$('appearance-card-edition');
