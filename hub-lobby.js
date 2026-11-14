@@ -76,8 +76,18 @@ async function refreshRoomAfterReconnect(){
  catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){leaveView();showError(e);}else if(++pollErrors===3)showError(e);}
  finally{pollInFlight=false;}
 }
+// A room snapshot received very recently from Render's authenticated WS stream
+// is already the freshest lobby view. Avoid a duplicate Firestore-backed GET on
+// short visibility changes; stale or disconnected streams still reconcile via HTTP.
+function hasRecentHubStream(now=Date.now()){
+ return streamReady&&hubSocket?.readyState===1&&streamLast>0&&now-streamLast>=0&&now-streamLast<15000;
+}
 window.addEventListener('online',()=>{if(!code||!room)return;if(!hubSocket||hubSocket.readyState>1){stopWatch();startWatch();}void refreshRoomAfterReconnect();});
-document.addEventListener('visibilitychange',()=>{if(document.hidden||!code||!room)return;if(!hubSocket||hubSocket.readyState>1){stopWatch();startWatch();}void refreshRoomAfterReconnect();});
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden||!code||!room)return;
+ if(!hubSocket||hubSocket.readyState>1){stopWatch();startWatch();}
+ if(!hasRecentHubStream())void refreshRoomAfterReconnect();
+});
 function enterKreuz(){
  if(room?.phase!=='playing'||room.match?.game!=='kreuz'||!room.match.participating)return;
  const match=room.match;
