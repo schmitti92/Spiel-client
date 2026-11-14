@@ -12,3 +12,21 @@
 .dog-plate-choice:focus-visible{outline:3px solid #fff2b1;outline-offset:2px}
 .dog-plate-footnote{font:500 11px system-ui,sans-serif!important;margin:10px 0 0!important;color:#bed3d9!important}
 @media(max-width:720px){.dog-plate-choices{grid-template-columns:repeat(3,minmax(0,1fr))}.dog-plate-select{padding:10px}}
+
+/* Animation pass: DOG-only lobby tiles, without touching the shared lobby or room state. */
+.dog-plate-choice img{transition:filter .2s ease,transform .2s ease}
+@media(hover:hover){
+ .dog-plate-choice:hover img{filter:brightness(1.10);transform:scale(1.025)}
+}
+.dog-plate-choice[aria-pressed="true"]{
+ animation:dog-lobby-select .31s cubic-bezier(.2,.8,.25,1);
+}
+.dog-plate-choice:active{transform:scale(.98)}
+@keyframes dog-lobby-select{
+ 0%{filter:brightness(1);box-shadow:0 0 0 1px #e6c46d33}
+ 50%{filter:brightness(1.23);box-shadow:0 0 0 3px #e6c46daa,0 0 18px #f4bb5d77}
+ 100%{filter:brightness(1);box-shadow:0 0 0 2px #c9953e,0 0 17px #f4bb5d66}
+}
+@media(prefers-reduced-motion:reduce){
+ .dog-plate-choice,.dog-plate-choice img{animation:none!important;transition:none!important}
+}
