@@ -407,3 +407,37 @@ dialog::backdrop{background:rgba(0,8,20,.78);backdrop-filter:blur(3px)}
  }
 }
 :root[data-dog-motion="off"] .dog-premium-live::before{animation:none!important}
+
+/* Gentle first-visit choreography, not repeated by ordinary room renders. */
+.dog-premium-ribbon{
+ animation:dog-royal-enter calc(.38s * var(--dog-motion-scale,1)) cubic-bezier(.19,.75,.3,1) both;
+}
+.layout>.board-card{
+ animation:dog-royal-enter calc(.50s * var(--dog-motion-scale,1)) cubic-bezier(.19,.75,.3,1) both;
+}
+.right.dog-modules>.panel{animation:dog-royal-enter calc(.42s * var(--dog-motion-scale,1)) ease-out both}
+.right.dog-modules>.panel:nth-child(1){animation-delay:calc(.06s * var(--dog-motion-scale,1))}
+.right.dog-modules>.panel:nth-child(2){animation-delay:calc(.10s * var(--dog-motion-scale,1))}
+.right.dog-modules>.panel:nth-child(3){animation-delay:calc(.14s * var(--dog-motion-scale,1))}
+.right.dog-modules>.panel:nth-child(4){animation-delay:calc(.18s * var(--dog-motion-scale,1))}
+.dog-premium-live.dog-royal-turn-change{
+ animation:dog-royal-turn-cue calc(.42s * var(--dog-motion-scale,1)) ease-out both;
+}
+@keyframes dog-royal-enter{
+ from{opacity:0;transform:translateY(9px)}
+ to{opacity:1;transform:translateY(0)}
+}
+@keyframes dog-royal-turn-cue{
+ from{color:#ffdf8b;filter:brightness(1.35)}
+ to{color:#fff6de;filter:brightness(1)}
+}
+@media(prefers-reduced-motion:reduce){
+ .dog-premium-ribbon,.layout>.board-card,.right.dog-modules>.panel,
+ .dog-premium-live.dog-royal-turn-change{animation:none!important}
+}
+:root[data-dog-motion="off"] .dog-premium-ribbon,
+:root[data-dog-motion="off"] .layout>.board-card,
+:root[data-dog-motion="off"] .right.dog-modules>.panel,
+:root[data-dog-motion="off"] .dog-premium-live.dog-royal-turn-change{
+ animation:none!important
+}
