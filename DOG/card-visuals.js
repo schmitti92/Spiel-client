@@ -1,7 +1,38 @@
 /** DOG card visuals only. Add future editions here without changing rules, card IDs or online state. */
 export const CARD_EDITION='kartendesign-01';
-export const CARD_ASSET_BASE='./assets/karten/kartendesign-01/';
-export const CARD_ASSETS=Object.freeze(Object.fromEntries(['1/11','2','3','4','5','6','7','8','9','10','12','13','swap','joker'].map(type=>[type,CARD_ASSET_BASE+({'1/11':'1-11','swap':'tausch'}[type]||type)+'.png'])));
+export const CARD_EDITION_STORAGE_KEY='dog:card-edition:v1';
+/**
+ * Visual-only card editions: to add Kartendesign 02, create a new folder of
+ * 15 normalized PNGs and register ONE new entry here. No engine/network edits.
+ */
+export const CARD_EDITIONS=Object.freeze({
+ 'kartendesign-01':Object.freeze({
+  label:'DOG Royal · Kartendesign 01',
+  base:'./assets/karten/kartendesign-01/normiert/',
+  width:700,height:980
+ })
+});
+export const CARD_FILE_NAMES=Object.freeze({
+ '1/11':'1-11','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8',
+ '9':'9','10':'10','12':'12','13':'13','swap':'tausch','joker':'joker'
+});
+export function loadCardEdition(storage=typeof localStorage==='undefined'?null:localStorage){
+ try{
+  const id=storage?.getItem(CARD_EDITION_STORAGE_KEY);
+  return id&&Object.hasOwn(CARD_EDITIONS,id)?id:CARD_EDITION;
+ }catch{return CARD_EDITION;}
+}
+export function saveCardEdition(id,storage=typeof localStorage==='undefined'?null:localStorage){
+ const selected=Object.hasOwn(CARD_EDITIONS,id)?id:CARD_EDITION;
+ try{storage?.setItem(CARD_EDITION_STORAGE_KEY,selected);}catch{}
+ return selected;
+}
+export function cardBackImage(edition=loadCardEdition()){
+ const item=CARD_EDITIONS[edition]||CARD_EDITIONS[CARD_EDITION];
+ return item.base+'rueckseite.png';
+}
+export const CARD_ASSET_BASE=CARD_EDITIONS[CARD_EDITION].base;
+export const CARD_ASSETS=Object.freeze(Object.fromEntries(Object.entries(CARD_FILE_NAMES).map(([type,file])=>[type,CARD_ASSET_BASE+file+'.png'])));
 export const CARD_VISUALS=Object.freeze({
  '1/11':{kind:'home',symbol:'⌂ ➜',caption:'HAUS VERLASSEN'},
  '2':{kind:'number',symbol:'🐾',caption:'2 FELDER'},
@@ -19,9 +50,11 @@ export const CARD_VISUALS=Object.freeze({
  'joker':{kind:'wild',symbol:'★',caption:'FREIE KARTENWAHL'}
 });
 /** Can later be replaced by a registered edition with per-card asset paths. */
-export function cardVisual(type,edition=CARD_EDITION){
+export function cardVisual(type,edition=loadCardEdition()){
  const item=CARD_VISUALS[type]||{kind:'number',symbol:'🐾',caption:'KARTE'};
- return {...item,edition,image:CARD_ASSETS[type]||null};
+ const selected=Object.hasOwn(CARD_EDITIONS,edition)?edition:CARD_EDITION;
+ const file=CARD_FILE_NAMES[type];
+ return {...item,edition:selected,image:file?CARD_EDITIONS[selected].base+file+'.png':null};
 }
 export function cardMarkup(type,{tag='button',selected=false,extraClass='',attrs='',footer=null}={}){
  const c=cardVisual(type);
