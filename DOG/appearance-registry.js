@@ -26,6 +26,8 @@ export const DEFAULT_APPEARANCE=Object.freeze({
   pieces:'classic',
   cards:'classic',
   sidebar:'schloss',
+  hudLayout:'classic',
+  hudTone:'classic',
   event:'none'
 });
 const deepFreeze=obj=>{
@@ -105,6 +107,22 @@ export const SIDEBAR_BACKGROUNDS=deepFreeze({
   },
   none:{label:'🌑 Ohne Hintergrundbild',image:null}
 });
+/** The play HUD is cosmetic: one safe layout today, expandable later. */
+export const HUD_LAYOUTS=deepFreeze({
+  classic:{label:'Klassisch',description:'Spieler oben, Karten darunter, Extras am Ende'}
+});
+/** Approved text-readable themes for the RIGHT game modules only.
+ * Board, game-piece player colors and all hit targets are unaffected.
+ */
+export const HUD_TONES=deepFreeze({
+  classic:{label:'Original · Glasblau',swatch:'#174d74',panel:'rgba(9,39,69,.34)',seat:'rgba(4,27,53,.70)',inner:'rgba(5,28,55,.48)',button:'rgba(7,34,65,.72)',border:'rgba(218,202,170,.28)',accent:'#f0cb89',text:'#f8f4ec',muted:'#c7d9e5'},
+  midnight:{label:'Mitternachtsblau',swatch:'#1e387c',panel:'rgba(12,24,67,.88)',seat:'rgba(9,20,52,.96)',inner:'rgba(8,19,49,.90)',button:'rgba(24,40,99,.97)',border:'rgba(126,159,235,.65)',accent:'#c4d7ff',text:'#f1f6ff',muted:'#cbdbf2'},
+  forest:{label:'Waldgrün',swatch:'#23664b',panel:'rgba(12,50,40,.89)',seat:'rgba(10,39,32,.96)',inner:'rgba(10,44,33,.91)',button:'rgba(17,72,52,.96)',border:'rgba(117,191,145,.72)',accent:'#c7efba',text:'#f5fff0',muted:'#c9e4d5'},
+  burgundy:{label:'Bordeaux',swatch:'#843653',panel:'rgba(74,24,47,.89)',seat:'rgba(51,14,35,.96)',inner:'rgba(64,19,41,.91)',button:'rgba(102,32,63,.96)',border:'rgba(229,145,171,.66)',accent:'#ffd0dc',text:'#fff5f8',muted:'#efcbd5'},
+  violet:{label:'Violett',swatch:'#6944a5',panel:'rgba(51,31,83,.89)',seat:'rgba(34,21,62,.96)',inner:'rgba(42,25,69,.91)',button:'rgba(82,51,132,.96)',border:'rgba(196,158,236,.69)',accent:'#ebd3ff',text:'#fcf8ff',muted:'#dfd1f0'},
+  graphite:{label:'Graphit',swatch:'#4b5968',panel:'rgba(30,42,51,.91)',seat:'rgba(21,32,42,.96)',inner:'rgba(26,38,47,.92)',button:'rgba(50,64,76,.96)',border:'rgba(181,199,210,.62)',accent:'#e5eef2',text:'#f6fbfc',muted:'#cedde3'},
+  bronze:{label:'Bronze & Sand',swatch:'#866038',panel:'rgba(67,47,29,.91)',seat:'rgba(52,37,26,.96)',inner:'rgba(60,43,28,.92)',button:'rgba(111,71,31,.96)',border:'rgba(232,185,119,.70)',accent:'#ffe0ac',text:'#fff7e9',muted:'#ead9bd'}
+});
 export const PIECE_STYLES=deepFreeze({
   classic:{label:'Klassisch',colors:['#e65f58','#4c9bfa','#5ac68d','#e8b84e']},
   pastel:{label:'Pastell',colors:['#ec8a91','#94bfff','#9ed8ad','#f0d48f']},
@@ -161,6 +179,8 @@ export const APPEARANCE_CATEGORIES=deepFreeze({
   board:BOARD_STYLES,
   scene:SCENE_STYLES,
   sidebar:SIDEBAR_BACKGROUNDS,
+  hudLayout:HUD_LAYOUTS,
+  hudTone:HUD_TONES,
   pieces:PIECE_STYLES,
   cards:CARD_STYLES,
   event:EVENT_PACKS
@@ -185,6 +205,7 @@ export function resolveAppearance(value){
   };
   return {
     selected:picked,board:BOARD_STYLES[chosen.board],scene:SCENE_STYLES[picked.scene],sidebar:SIDEBAR_BACKGROUNDS[chosen.sidebar],
+    hudLayout:HUD_LAYOUTS[picked.hudLayout],hudTone:HUD_TONES[picked.hudTone],
     pieces:PIECE_STYLES[chosen.pieces],cards:CARD_STYLES[chosen.cards],
     event
   };
