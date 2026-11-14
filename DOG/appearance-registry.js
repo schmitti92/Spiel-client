@@ -22,7 +22,7 @@ export function assetBackground(path,fallback){
 
 export const DEFAULT_APPEARANCE=Object.freeze({
   board:'studio',
-  scene:'none',
+  scene:'schloss',
   pieces:'classic',
   cards:'classic',
   sidebar:'schloss',
@@ -79,14 +79,22 @@ export const BOARD_STYLES=deepFreeze({
   royalKarten:{label:"Royal-Karten · Sammleredition",image:"./Bilder/Spielhintergrundbilder/royal-karten.webp",fallbackImage:"./assets/boards/goldwellen.svg",page:"radial-gradient(circle at 45% 18%,#0b1c3c,#06121c 85%)",frame:'linear-gradient(145deg,#253a47,#0b1f2a)',wood:["#283e5c","#e7bd70","#1e3056","#ba9c61","#111c37"],surface:["#1b4677","#0f3060","#071939"],center:["#17345f","#071d3f"],edge:"#e9c480",route:"#81a9d7"},
   zauberwald:{label:"Zauberwald · Wasserfälle",image:"./Bilder/Spielhintergrundbilder/zauberwald.webp",fallbackImage:"./assets/boards/pergament.svg",page:"radial-gradient(circle at 45% 18%,#102f26,#06121c 85%)",frame:'linear-gradient(145deg,#253a47,#0b1f2a)',wood:["#284a35","#e2c17b","#345b43","#8a8547","#153025"],surface:["#2a6951","#145445","#092a30"],center:["#245640","#082b2d"],edge:"#d4c18b",route:"#79bca3"}
 });
-/** Page scenery, independent from the playable 96-field board surface. */
+/** Scenic page backgrounds are NOT board designs.
+ * Only assets/backgrounds contains selectable page wallpapers.
+ * Old scene IDs (the board pictures) safely normalize to 'schloss'.
+ */
 export const SCENE_STYLES=deepFreeze({
-  none:{label:'Ohne Hintergrund',description:'Neutral · Klassisch',image:null,page:'radial-gradient(circle at 38% 10%,#254358,#071521 70%)'},
-  maerchental:{label:'Märchental',description:'Burgen · Wälder · Fantasy',image:'./Bilder/Spielhintergrundbilder/maerchental.webp'},
-  zauberwald:{label:'Zauberwald',description:'Magisch · Grün · Wasserfälle',image:'./Bilder/Spielhintergrundbilder/zauberwald.webp'},
-  kuestenabenteuer:{label:'Küstenabenteuer',description:'Meer · Leuchtturm · Blau',image:'./Bilder/Spielhintergrundbilder/kuestenabenteuer.webp'},
-  alpenland:{label:'Alpenland',description:'Berge · Natur · Alpen',image:'./Bilder/Spielhintergrundbilder/alpenland.webp'},
-  royalKarten:{label:'Royal-Karten',description:'Elegant · Königliche Farben',image:'./Bilder/Spielhintergrundbilder/royal-karten.webp'}
+  schloss:{
+    label:'Magisches Schloss am Nebelsee',
+    description:'Unser erstes echtes Hintergrundbild',
+    image:'./assets/backgrounds/dog-hintergrund-magisches-schloss.png'
+  },
+  none:{
+    label:'Ohne Hintergrundbild',
+    description:'Neutraler Hintergrund ohne Motiv',
+    image:null,
+    page:'linear-gradient(145deg,#173344,#071521)'
+  }
 });
 /* Right-hand cockpit backgrounds are deliberately independent of board art.
    Add a verified repo-owned image here to offer another choice in Settings. */
