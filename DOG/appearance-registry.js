@@ -22,6 +22,7 @@ export function assetBackground(path,fallback){
 
 export const DEFAULT_APPEARANCE=Object.freeze({
   board:'studio',
+  scene:'none',
   pieces:'classic',
   cards:'classic',
   sidebar:'schloss',
@@ -77,6 +78,15 @@ export const BOARD_STYLES=deepFreeze({
   kuestenabenteuer:{label:"Küstenabenteuer · Leuchtturm",image:"./Bilder/Spielhintergrundbilder/kuestenabenteuer.webp",fallbackImage:"./assets/boards/bergsee.svg",page:"radial-gradient(circle at 45% 18%,#0d263e,#06121c 85%)",frame:'linear-gradient(145deg,#253a47,#0b1f2a)',wood:["#203f5a","#e6bd83","#335e78","#a07b5b","#1d3148"],surface:["#17486a","#0d2c4b","#07182e"],center:["#103b58","#07223a"],edge:"#d8bb83",route:"#6aafca"},
   royalKarten:{label:"Royal-Karten · Sammleredition",image:"./Bilder/Spielhintergrundbilder/royal-karten.webp",fallbackImage:"./assets/boards/goldwellen.svg",page:"radial-gradient(circle at 45% 18%,#0b1c3c,#06121c 85%)",frame:'linear-gradient(145deg,#253a47,#0b1f2a)',wood:["#283e5c","#e7bd70","#1e3056","#ba9c61","#111c37"],surface:["#1b4677","#0f3060","#071939"],center:["#17345f","#071d3f"],edge:"#e9c480",route:"#81a9d7"},
   zauberwald:{label:"Zauberwald · Wasserfälle",image:"./Bilder/Spielhintergrundbilder/zauberwald.webp",fallbackImage:"./assets/boards/pergament.svg",page:"radial-gradient(circle at 45% 18%,#102f26,#06121c 85%)",frame:'linear-gradient(145deg,#253a47,#0b1f2a)',wood:["#284a35","#e2c17b","#345b43","#8a8547","#153025"],surface:["#2a6951","#145445","#092a30"],center:["#245640","#082b2d"],edge:"#d4c18b",route:"#79bca3"}
+});
+/** Page scenery, independent from the playable 96-field board surface. */
+export const SCENE_STYLES=deepFreeze({
+  none:{label:'Ohne Hintergrund',description:'Neutral · Klassisch',image:null,page:'radial-gradient(circle at 38% 10%,#254358,#071521 70%)'},
+  maerchental:{label:'Märchental',description:'Burgen · Wälder · Fantasy',image:'./Bilder/Spielhintergrundbilder/maerchental.webp'},
+  zauberwald:{label:'Zauberwald',description:'Magisch · Grün · Wasserfälle',image:'./Bilder/Spielhintergrundbilder/zauberwald.webp'},
+  kuestenabenteuer:{label:'Küstenabenteuer',description:'Meer · Leuchtturm · Blau',image:'./Bilder/Spielhintergrundbilder/kuestenabenteuer.webp'},
+  alpenland:{label:'Alpenland',description:'Berge · Natur · Alpen',image:'./Bilder/Spielhintergrundbilder/alpenland.webp'},
+  royalKarten:{label:'Royal-Karten',description:'Elegant · Königliche Farben',image:'./Bilder/Spielhintergrundbilder/royal-karten.webp'}
 });
 /* Right-hand cockpit backgrounds are deliberately independent of board art.
    Add a verified repo-owned image here to offer another choice in Settings. */
@@ -141,6 +151,7 @@ export const EVENT_PACKS=deepFreeze({
 });
 export const APPEARANCE_CATEGORIES=deepFreeze({
   board:BOARD_STYLES,
+  scene:SCENE_STYLES,
   sidebar:SIDEBAR_BACKGROUNDS,
   pieces:PIECE_STYLES,
   cards:CARD_STYLES,
@@ -165,7 +176,7 @@ export function resolveAppearance(value){
     cards:event.cards&&Object.hasOwn(CARD_STYLES,event.cards)?event.cards:picked.cards
   };
   return {
-    selected:picked,board:BOARD_STYLES[chosen.board],sidebar:SIDEBAR_BACKGROUNDS[chosen.sidebar],
+    selected:picked,board:BOARD_STYLES[chosen.board],scene:SCENE_STYLES[picked.scene],sidebar:SIDEBAR_BACKGROUNDS[chosen.sidebar],
     pieces:PIECE_STYLES[chosen.pieces],cards:CARD_STYLES[chosen.cards],
     event
   };
