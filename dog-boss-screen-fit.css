@@ -1,0 +1,358 @@
+/* Boss 10 + Gruppenbosse 20-100: ein gemeinsames, responsives Kampffeld.
+   Nur lokale Darstellung. Keine Änderung an Runden, Timern, Server-Sync oder Firebase. */
+.stage[data-screen="battle"]>.arena-live[data-arena-design="v3"],
+.stage[data-screen="battle"]>.arena-live[data-arena-design="v3"] *,
+.stage[data-screen="battle"]>.arena-live[data-arena-design="v3"] *::before,
+.stage[data-screen="battle"]>.arena-live[data-arena-design="v3"] *::after {
+  box-sizing:border-box;
+}
+.stage[data-screen="battle"]>.arena-live[data-arena-design="v3"] .live-challenge-content {
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+}
+.stage[data-screen="battle"]>.arena-live[data-arena-design="v3"] .mini-choice,
+.stage[data-screen="battle"]>.arena-live[data-arena-design="v3"] .mini-color-target {
+  touch-action:manipulation;
+}
+.stage[data-screen="battle"]>.arena-live[data-arena-design="v3"] :is(button,[role="button"]):focus-visible {
+  outline:3px solid #fff1b8;
+  outline-offset:2px;
+}
+
+/* Tablet, PC und Querformat: Boss, LP, Countdown und eigenes Minispiel
+   bleiben gleichzeitig sichtbar. Nur das Minispiel-Innere scrollt bei Bedarf. */
+@media (orientation:landscape) and (min-width:700px) and (min-height:380px),
+       (min-width:700px) and (min-height:680px) {
+  html:has(.stage[data-screen="battle"]),
+  body:has(.stage[data-screen="battle"]){height:100%;min-height:0}
+  body:has(.stage[data-screen="battle"]){overflow:hidden}
+  .stage[data-screen="battle"]{
+    width:min(1720px,calc(100% - 10px));
+    height:100vh;
+    height:100dvh;
+    max-height:100dvh;
+    min-height:0;
+    display:grid;
+    grid-template-rows:auto minmax(0,1fr) auto;
+    gap:4px;
+    margin:0 auto;
+    padding:max(3px,env(safe-area-inset-top)) 0 max(3px,env(safe-area-inset-bottom));
+    overflow:hidden;
+  }
+  .stage[data-screen="battle"]:has(>.squad[hidden]){
+    grid-template-rows:auto minmax(0,1fr);
+  }
+  .stage[data-screen="battle"]>.topnav{
+    display:flex;
+    flex-wrap:nowrap;
+    min-width:0;
+    gap:5px;
+    margin:0;
+    align-items:center;
+  }
+  .stage[data-screen="battle"]>.topnav :is(a,button){
+    flex:0 1 auto;
+    min-width:0;
+    min-height:32px;
+    max-height:37px;
+    padding:5px clamp(5px,.75vw,12px);
+    font-size:clamp(10px,.9vw,13px);
+    white-space:nowrap;
+  }
+  .stage[data-screen="battle"]>.arena-live[data-arena-design="v3"]{
+    width:100%;
+    height:100%;
+    max-height:100%;
+    min-height:0;
+    margin:0;
+    padding:clamp(4px,.65vh,10px);
+    gap:clamp(3px,.65vh,8px);
+    display:grid;
+    grid-template-rows:auto auto minmax(0,1fr);
+    overflow:hidden;
+  }
+  .arena-live[data-arena-design="v3"] .live-arena-heading{
+    min-height:32px;
+    padding:2px clamp(83px,11vw,140px) 3px 8px;
+  }
+  .arena-live[data-arena-design="v3"] .live-heading-text h2{
+    font-size:clamp(17px,1.75vw,30px);
+  }
+  .arena-live[data-arena-design="v3"] .live-metrics{
+    display:grid;
+    grid-template-columns:minmax(0,1.2fr) minmax(0,1.2fr) minmax(112px,.55fr);
+    gap:clamp(4px,.7vw,10px);
+    min-width:0;
+  }
+  .arena-live[data-arena-design="v3"] .live-hp{grid-column:auto}
+  .arena-live[data-arena-design="v3"] .live-timer{grid-column:auto}
+  .arena-live[data-arena-design="v3"] :is(.live-hp,.live-team-shield,.live-timer){
+    min-width:0;
+    min-height:53px;
+    padding:4px 7px 4px 37px;
+    gap:2px;
+  }
+  .arena-live[data-arena-design="v3"] .live-vital-crest{
+    left:5px;
+    width:27px;
+    height:27px;
+    font-size:17px;
+  }
+  .arena-live[data-arena-design="v3"] :is(.live-meter-label,.live-shield-label)>span{
+    font-size:clamp(9px,.8vw,12px);
+  }
+  .arena-live[data-arena-design="v3"] :is(#boss-hp,#live-shield-value){
+    font-size:clamp(11px,1.12vw,18px);
+  }
+  .arena-live[data-arena-design="v3"] .live-hero-health{
+    max-height:none;
+    min-height:0;
+  }
+  .arena-live[data-arena-design="v3"] .timer-row{
+    flex-direction:column;
+    gap:0;
+  }
+  .arena-live[data-arena-design="v3"] .timer-row>span{font-size:10px}
+  .arena-live[data-arena-design="v3"] .timer-row strong{
+    font-size:clamp(18px,2vw,27px);
+  }
+  .arena-live[data-arena-design="v3"] .live-battlefield{
+    min-height:0;
+    min-width:0;
+    height:100%;
+    grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);
+    grid-template-rows:minmax(0,1fr);
+    gap:clamp(5px,.7vw,11px);
+  }
+  .arena-live[data-arena-design="v3"] .combat-scene{
+    height:100%;
+    min-height:0;
+    min-width:0;
+  }
+  .arena-live[data-arena-design="v3"] .live-challenge{
+    display:grid;
+    grid-template-rows:auto minmax(0,1fr);
+    height:100%;
+    min-height:0;
+    min-width:0;
+    overflow:hidden;
+  }
+  .arena-live[data-arena-design="v3"] .live-challenge-heading{
+    min-height:34px;
+    padding:5px 8px;
+    font-size:clamp(11px,1.15vw,16px);
+  }
+  .arena-live[data-arena-design="v3"] .live-challenge-content{
+    min-height:0;
+    height:100%;
+    padding:clamp(4px,.65vw,10px);
+  }
+  .arena-live[data-arena-design="v3"] .mini-tactical{
+    min-height:0;
+    width:100%;
+    padding:6px;
+    margin:0;
+  }
+  .arena-live[data-arena-design="v3"] .mini-lead{margin-bottom:5px}
+  .arena-live[data-arena-design="v3"] .mini-question{
+    font-size:clamp(22px,2.5vw,39px);
+    margin:3px 0 6px;
+  }
+  .arena-live[data-arena-design="v3"] .mini-choice{
+    min-height:clamp(43px,6.7dvh,61px);
+  }
+  .arena-live[data-arena-design="v3"] .mini-dodge-lane{
+    min-height:clamp(47px,7.5dvh,70px);
+  }
+  .arena-live[data-arena-design="v3"] .combat-view-controls button{
+    width:31px;
+    height:31px;
+    min-height:31px;
+  }
+  .stage[data-screen="battle"]>.squad{
+    margin:0;
+    min-height:0;
+    max-height:none;
+    padding:5px 8px;
+    gap:7px;
+  }
+  .stage[data-screen="battle"]>.squad>.actions button{
+    min-height:35px;
+    padding:5px 8px;
+  }
+}
+
+/* Niedrige Tablet-Ansicht: wichtige Aktionen nicht unter großen Figuren verstecken. */
+@media (orientation:landscape) and (min-width:700px) and (max-height:580px){
+  .stage[data-screen="battle"]>.arena-live[data-arena-design="v3"]{gap:3px;padding:4px}
+  .arena-live[data-arena-design="v3"] .live-arena-heading{min-height:27px}
+  .arena-live[data-arena-design="v3"] .live-heading-text small{display:none}
+  .arena-live[data-arena-design="v3"] :is(.live-hp,.live-team-shield,.live-timer){
+    min-height:48px;
+    padding-top:2px;
+    padding-bottom:2px;
+  }
+  .arena-live[data-arena-design="v3"] .live-hero-health{max-height:19px}
+  .arena-live[data-arena-design="v3"] .live-challenge-heading{min-height:30px;padding:3px 7px}
+  .arena-live[data-arena-design="v3"] .mini-choices{gap:5px}
+  .arena-live[data-arena-design="v3"] .mini-choice{min-height:42px}
+  .arena-live[data-arena-design="v3"] .mini-feedback{margin-top:4px}
+  .arena-live[data-arena-design="v3"] .combat-hero-portrait .combat-hero-symbol{
+    height:clamp(65px,16dvh,110px);
+  }
+}
+
+/* Kleines Hochformat: komprimierte Übersicht, Kampf und Aufgabe untereinander. */
+@media (max-width:699px) and (orientation:portrait){
+  .stage[data-screen="battle"]{width:calc(100% - 8px);padding-top:3px}
+  .stage[data-screen="battle"]>.topnav{gap:4px;margin-bottom:4px}
+  .stage[data-screen="battle"]>.topnav :is(a,button){
+    min-height:32px;
+    padding:5px 7px;
+    font-size:10px;
+  }
+  .stage[data-screen="battle"]>.arena-live[data-arena-design="v3"]{
+    padding:5px;
+    gap:5px;
+    margin:0;
+  }
+  .arena-live[data-arena-design="v3"] .live-arena-heading{
+    min-height:34px;
+    padding:3px 80px 3px 6px;
+  }
+  .arena-live[data-arena-design="v3"] .live-heading-text small{display:none}
+  .arena-live[data-arena-design="v3"] .live-heading-text h2{font-size:clamp(16px,4.5vw,23px)}
+  .arena-live[data-arena-design="v3"] .live-metrics{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:4px;
+  }
+  .arena-live[data-arena-design="v3"] .live-hp{
+    grid-column:auto;
+  }
+  .arena-live[data-arena-design="v3"] .live-timer{
+    grid-column:1/-1;
+  }
+  .arena-live[data-arena-design="v3"] :is(.live-hp,.live-team-shield,.live-timer){
+    min-height:46px;
+    padding:4px 5px 4px 29px;
+    gap:2px;
+  }
+  .arena-live[data-arena-design="v3"] .live-vital-crest{
+    width:22px;
+    height:22px;
+    left:3px;
+    font-size:14px;
+  }
+  .arena-live[data-arena-design="v3"] :is(.live-meter-label,.live-shield-label){
+    display:flex;
+    flex-wrap:wrap;
+    gap:0 5px;
+  }
+  .arena-live[data-arena-design="v3"] :is(.live-meter-label,.live-shield-label)>span{
+    font-size:9px;
+  }
+  .arena-live[data-arena-design="v3"] :is(#boss-hp,#live-shield-value){
+    font-size:clamp(11px,2.9vw,15px);
+  }
+  .arena-live[data-arena-design="v3"] .live-hero-health{max-height:21px}
+  .arena-live[data-arena-design="v3"] .live-timer .timer-row{
+    flex-direction:row;
+    justify-content:space-between;
+  }
+  .arena-live[data-arena-design="v3"] .timer-row strong{font-size:19px}
+  .arena-live[data-arena-design="v3"] .live-battlefield{
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:5px;
+  }
+  .arena-live[data-arena-design="v3"] .combat-scene{
+    height:clamp(145px,23dvh,235px);
+    min-height:0;
+  }
+  .arena-live[data-arena-design="v3"] .live-challenge{
+    min-height:245px;
+    overflow:hidden;
+  }
+  .arena-live[data-arena-design="v3"] .live-challenge-content{
+    min-height:0;
+    max-height:none;
+    overflow-y:auto;
+  }
+  .arena-live[data-arena-design="v3"] .mini-tactical{
+    min-height:0;
+    margin:0;
+  }
+}
+
+/* Im Handy-Vollbild ab ausreichender Höhe auch im Hochformat ohne
+   Scrollen der gesamten Seite. Die Aufgabe hat einen eigenen Scrollbereich. */
+@media (max-width:699px) and (orientation:portrait) and (min-height:690px){
+  body:has(.stage[data-screen="battle"]){overflow:hidden}
+  .stage[data-screen="battle"]{
+    height:100vh;
+    height:100dvh;
+    max-height:100dvh;
+    min-height:0;
+    display:grid;
+    grid-template-rows:auto minmax(0,1fr) auto;
+    gap:3px;
+    padding:3px 0 max(3px,env(safe-area-inset-bottom));
+    overflow:hidden;
+  }
+  .stage[data-screen="battle"]:has(>.squad[hidden]){
+    grid-template-rows:auto minmax(0,1fr);
+  }
+  .stage[data-screen="battle"]>.arena-live[data-arena-design="v3"]{
+    height:100%;
+    max-height:100%;
+    min-height:0;
+    grid-template-rows:auto auto minmax(0,1fr);
+    overflow:hidden;
+  }
+  .arena-live[data-arena-design="v3"] .live-battlefield{
+    height:100%;
+    min-height:0;
+    grid-template-rows:minmax(105px,.35fr) minmax(0,1fr);
+  }
+  .arena-live[data-arena-design="v3"] .combat-scene{
+    height:100%;
+    min-height:0;
+  }
+  .arena-live[data-arena-design="v3"] .live-challenge{
+    height:100%;
+    min-height:0;
+    display:grid;
+    grid-template-rows:auto minmax(0,1fr);
+  }
+  .arena-live[data-arena-design="v3"] .live-challenge-heading{min-height:32px;padding:4px 8px}
+  .arena-live[data-arena-design="v3"] .live-challenge-content{
+    height:100%;
+    min-height:0;
+  }
+  .stage[data-screen="battle"]>.squad{
+    margin:0;
+    min-height:0;
+    max-height:none;
+    flex-wrap:wrap;
+    padding:4px;
+  }
+  .stage[data-screen="battle"]>.squad>.actions button{min-height:36px}
+}
+
+/* Kleine/gedrehte Displays unterhalb der Platzgrenze: nicht abschneiden.
+   Gesamte Seite darf scrollen, Minispiel und Bestätigung bleiben erreichbar. */
+@media (orientation:landscape) and (max-width:699px),
+       (orientation:landscape) and (max-height:379px),
+       (orientation:portrait) and (max-width:699px) and (max-height:689px){
+  body:has(.stage[data-screen="battle"]){overflow-y:auto;overflow-x:hidden}
+  .stage[data-screen="battle"]{height:auto;max-height:none;overflow:visible}
+  .stage[data-screen="battle"]>.arena-live[data-arena-design="v3"]{
+    height:auto;
+    max-height:none;
+    overflow:visible;
+  }
+  .arena-live[data-arena-design="v3"] .live-challenge-content{overflow-y:auto}
+}
