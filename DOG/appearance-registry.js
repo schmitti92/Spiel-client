@@ -22,6 +22,7 @@ export function assetBackground(path,fallback){
 
 export const DEFAULT_APPEARANCE=Object.freeze({
   board:'studio',
+  boardFrame:'classic',
   scene:'schloss',
   pieces:'classic',
   cards:'classic',
@@ -85,6 +86,21 @@ export const BOARD_STYLES=deepFreeze({
  * Only assets/backgrounds contains selectable page wallpapers.
  * Old scene IDs (the board pictures) safely normalize to 'schloss'.
  */
+/** Outer board-card border only, independent of SVG track and board imagery.
+ * A consistent 2px border and zero geometry changes on all nine frame variants.
+ * The classic option intentionally leaves the existing game shell untouched.
+ */
+export const BOARD_FRAMES=deepFreeze({
+ classic:{label:'Originalrahmen',description:'Glas & warmes Gold',stroke:'#f5c86f',inner:'#ffe4ac33',glow:'#f5c86f44',fill:'rgba(5,21,40,.36)',radius:'16px',glowSize:'0px'},
+ royal:{label:'Königsgold',description:'Doppelgold · Edel',stroke:'#ffe09b',inner:'#f0bd60',glow:'#e6ab51aa',fill:'linear-gradient(145deg,rgba(103,69,22,.75),rgba(26,25,28,.65))',radius:'17px',glowSize:'17px'},
+ silver:{label:'Silber',description:'Kühler Metallrahmen',stroke:'#e3ebf5',inner:'#8e9fb2',glow:'#a5c6e566',fill:'linear-gradient(145deg,rgba(65,79,100,.75),rgba(16,28,45,.65))',radius:'15px',glowSize:'12px'},
+ timber:{label:'Dunkles Holz',description:'Rustikale Holzfassung',stroke:'#b9864b',inner:'#6f3f23',glow:'#b36f3766',fill:'linear-gradient(145deg,rgba(93,55,28,.79),rgba(39,24,19,.67))',radius:'12px',glowSize:'11px'},
+ obsidian:{label:'Obsidian',description:'Tiefschwarz · Minimal',stroke:'#7b899b',inner:'#172032',glow:'#7693b744',fill:'linear-gradient(145deg,rgba(15,20,34,.91),rgba(4,8,18,.73))',radius:'11px',glowSize:'9px'},
+ emerald:{label:'Smaragd',description:'Leuchtendes Waldgrün',stroke:'#8de0b4',inner:'#1d8e65',glow:'#29cb8c99',fill:'linear-gradient(145deg,rgba(12,72,52,.72),rgba(7,30,27,.68))',radius:'17px',glowSize:'17px'},
+ glacier:{label:'Eiskristall',description:'Helles eisiges Blau',stroke:'#d8f9ff',inner:'#75c9ec',glow:'#81d6f9aa',fill:'linear-gradient(145deg,rgba(29,90,127,.72),rgba(8,29,60,.67))',radius:'18px',glowSize:'18px'},
+ ruby:{label:'Rubinrot',description:'Rotgold & Glanz',stroke:'#f0a6b7',inner:'#b73659',glow:'#e2446a9c',fill:'linear-gradient(145deg,rgba(99,30,54,.75),rgba(45,13,27,.66))',radius:'17px',glowSize:'16px'},
+ violet:{label:'Mystisches Violett',description:'Magischer Lichtschimmer',stroke:'#ddc1ff',inner:'#8757c6',glow:'#ae80f2aa',fill:'linear-gradient(145deg,rgba(67,34,108,.76),rgba(24,15,45,.66))',radius:'20px',glowSize:'18px'}
+});
 export const SCENE_STYLES=deepFreeze({
   schloss:{
     label:'Magisches Schloss am Nebelsee',
@@ -187,6 +203,7 @@ export const EVENT_PACKS=deepFreeze({
 });
 export const APPEARANCE_CATEGORIES=deepFreeze({
   board:BOARD_STYLES,
+  boardFrame:BOARD_FRAMES,
   scene:SCENE_STYLES,
   sidebar:SIDEBAR_BACKGROUNDS,
   hudLayout:HUD_LAYOUTS,
@@ -214,7 +231,7 @@ export function resolveAppearance(value){
     cards:event.cards&&Object.hasOwn(CARD_STYLES,event.cards)?event.cards:picked.cards
   };
   return {
-    selected:picked,board:BOARD_STYLES[chosen.board],scene:SCENE_STYLES[picked.scene],sidebar:SIDEBAR_BACKGROUNDS[chosen.sidebar],
+    selected:picked,board:BOARD_STYLES[chosen.board],boardFrame:BOARD_FRAMES[picked.boardFrame],scene:SCENE_STYLES[picked.scene],sidebar:SIDEBAR_BACKGROUNDS[chosen.sidebar],
     hudLayout:HUD_LAYOUTS[picked.hudLayout],hudTone:HUD_TONES[picked.hudTone],
     pieces:PIECE_STYLES[chosen.pieces],cards:CARD_STYLES[chosen.cards],
     event
