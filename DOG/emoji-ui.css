@@ -1,0 +1,23 @@
+/* DOG emoji picker: online lobby and local lobby */
+.dog-emoji-editor{background:linear-gradient(145deg,rgba(9,37,67,.97),rgba(5,24,48,.97))!important;border:1px solid #d1ad71!important;border-radius:16px!important;color:#fff0cd!important;min-width:0;padding:15px!important}
+.game-grid>.dog-emoji-editor{grid-column:1/-1}
+.dog-emoji-editor h3{font-size:18px;margin:0;color:#ffe4a8}
+.dog-emoji-editor p{margin:7px 0 11px!important;max-width:none!important;font-size:12px!important}
+.dog-emoji-lobby-head,.dog-emoji-collection-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.dog-emoji-lobby-head span,.dog-emoji-collection-head span{font-size:11px;color:#c1d5e9}
+.dog-emoji-hint{color:#c6d6e5}
+.dog-emoji-slot-list{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;max-width:650px}
+.dog-emoji-slot,.dog-emoji-option{cursor:pointer;min-width:0;border:1px solid #7991a9;border-radius:13px;background:linear-gradient(150deg,#153a62,#061b35);color:#fff1d9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:8px 3px;min-height:69px}
+.dog-emoji-slot.is-editing{border:2px solid #ffdb8c;box-shadow:0 0 12px #ffd46679}
+.dog-emoji-big{font-size:clamp(23px,4vw,35px);line-height:1.1}
+.dog-emoji-slot small,.dog-emoji-option small{font-size:10px;color:#d8e3ef;text-align:center;white-space:normal;overflow-wrap:anywhere}
+.dog-emoji-option:disabled{opacity:.5;cursor:not-allowed}
+.dog-emoji-lobby-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0!important}
+.dog-emoji-lobby-actions button,.dog-emoji-pages button{border:1px solid #cfa869;background:#123657;color:#f9e6b9;border-radius:9px;padding:9px 12px;min-height:36px;font-size:12px;font-weight:800;cursor:pointer}
+.dog-emoji-lobby-actions [data-save]{background:linear-gradient(130deg,#b98838,#76501d);color:white}
+.dog-emoji-collection-head{border-top:1px solid #ffffff30;padding-top:12px;margin-top:6px}
+.dog-emoji-collection{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:10px}
+.dog-emoji-pages{display:flex;justify-content:space-between;gap:8px;margin:9px 0}
+.dog-emoji-pages button:disabled{opacity:.4}
+.dog-emoji-note{color:#ffe0a6!important;min-height:17px}
+@media(max-width:540px){.dog-emoji-slot-list,.dog-emoji-collection{gap:4px}.dog-emoji-slot,.dog-emoji-option{padding:5px 1px;min-height:62px}.dog-emoji-option small{font-size:9px}.dog-emoji-editor{padding:10px!important}}
