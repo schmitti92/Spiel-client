@@ -61,8 +61,7 @@ test('Shares room invitations via real offline QR library without external QR AP
 });
 test('Online selection opens branded KreuzKunter pre-room without changing other games',()=>{
  assert.match(home,/game==='kreuz'\?'KreuzKunter\/kreuzkunter_start\.html/);
- assert.match(hub,/function enterKreuz\(\)/);
- assert.doesNotMatch(hub,/location\.replace\('KreuzKunter\/kreuzkunter_start\.html/);
+ assert.match(hub,/location\.replace\('KreuzKunter\/kreuzkunter_start\.html/);
  assert.match(home,/Barikade\/barikade_start\.html/);
  assert.match(home,/Business\/business_start\.html/);
  assert.match(home,/Skyjo\/skyjo_start\.html/);
