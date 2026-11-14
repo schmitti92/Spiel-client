@@ -2,7 +2,7 @@ import {CARD_EDITIONS,CARD_EDITION,loadCardEdition,saveCardEdition,cardBackImage
 import {enableHandTouchGestures} from './hand-gestures.js?v=2';
 import {mountDogEmojiGame,showDogEmoji,showDogEmojiError} from './emoji-game.js?v=3';
 import {boardGestureTarget} from './board-gesture-math.js?v=1';
-import {snapshotPieces,planPieceMotions,createPieceAnimator} from './piece-animations.js?v=2';
+import {snapshotPieces,planPieceMotions,createPieceAnimator} from './piece-animations.js?v=3';
 import {loadMotionMode,saveMotionMode,applyMotionMode} from './motion-settings.js?v=1';
 import {createDogVisualFeedback} from './ui-animations.js?v=2';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
@@ -517,6 +517,7 @@ $('hand').addEventListener('click',e=>{const btn=e.target.closest('[data-card]')
 $('moves').addEventListener('click',e=>{const btn=e.target.closest('[data-special]');if(!btn)return;const index=available.findIndex(m=>m.type===btn.dataset.special&&(jokerAs===null||m.as===jokerAs));if(index>=0)onMove(index);});
 $('board').addEventListener('click',e=>{
  if(performance.now()<suppressBoardClickUntil)return;
+ if(pieceAnimator.isActive()){$('status').textContent='🐾 Die Figuren bewegen sich noch. Danach kannst du ziehen.';return;}
  if(!revealed||currentHuman()<0||onlineBusy)return;
  const node=e.target.closest('[data-piece]');
  if(node&&selectedPiece===null){if(!available.some(m=>m.pieceId===Number(node.dataset.piece))){visualFeedback.invalid();return;}selectedPiece=Number(node.dataset.piece);drawBoard();$('move-help').textContent='Wähle das Zielfeld selbst.';return;}
