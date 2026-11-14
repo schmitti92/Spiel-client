@@ -4,7 +4,7 @@ import {mountDogEmojiGame,showDogEmoji,showDogEmojiError} from './emoji-game.js?
 import {boardGestureTarget} from './board-gesture-math.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
-import {DEFAULT_APPEARANCE,BOARD_STYLES,SIDEBAR_BACKGROUNDS,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=17';
+import {DEFAULT_APPEARANCE,BOARD_STYLES,SIDEBAR_BACKGROUNDS,HUD_TONES,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=18';
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=10';
 
 const $=id=>document.getElementById(id);
@@ -579,11 +579,22 @@ function applyAppearance(){
   const look=currentLook();
   // Only pre-registered same-origin art is allowed, independent of the board skin.
   const sidebarAsset=look.sidebar?.image;
+  const hud=look.hudTone||HUD_TONES.classic;
+  document.documentElement.dataset.dogHudTone=appearance.hudTone;
+  document.documentElement.dataset.dogHudLayout=appearance.hudLayout;
   const sidebarWallpaper=validAssetPath(sidebarAsset)
     ?'url("'+new URL(sidebarAsset,import.meta.url).href+'")'
     :'none';
   const variables={
     '--dog-sidebar-wallpaper':sidebarWallpaper,
+    '--dog-hud-panel':hud.panel,
+    '--dog-hud-seat':hud.seat,
+    '--dog-hud-inner':hud.inner,
+    '--dog-hud-button':hud.button,
+    '--dog-hud-border':hud.border,
+    '--dog-hud-accent':hud.accent,
+    '--dog-hud-text':hud.text,
+    '--dog-hud-muted':hud.muted,
     '--dog-page-bg':look.scene?.image&&validAssetPath(look.scene.image)
       ?assetBackground(look.scene.image,look.board.page)
       :look.board.page,
@@ -603,7 +614,7 @@ function applyAppearance(){
   backPreview.style.background='url("'+cardBackImage(edition)+'") center / contain no-repeat';
   $('appearance-preview-face').innerHTML=cardMarkup('7',{tag:'div'});
   $('appearance-card-edition').value=edition;
-  for(const field of ['board','sidebar','pieces','cards']){
+  for(const field of ['board','sidebar','pieces','cards','hudTone']){
     const select=$('appearance-'+field);
     if(select)select.value=appearance[field];
   }
@@ -614,7 +625,7 @@ function applyAppearance(){
   if(game)render();
 }
 function prepareAppearanceUI(){
-  const groups={board:BOARD_STYLES,sidebar:SIDEBAR_BACKGROUNDS,pieces:PIECE_STYLES,cards:CARD_STYLES};
+  const groups={board:BOARD_STYLES,sidebar:SIDEBAR_BACKGROUNDS,hudTone:HUD_TONES,pieces:PIECE_STYLES,cards:CARD_STYLES};
   for(const [type,registry] of Object.entries(groups)){
     const select=$('appearance-'+type);
     select.replaceChildren();
