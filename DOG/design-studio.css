@@ -146,3 +146,13 @@ dialog{color:#f5e9d6;background:#10283e;border:1px solid #ddb973;border-radius:1
  .studio-hud-player small,.studio-hud-heading span,.studio-hud-pile strong{font-size:10px}
  .studio-hud-extras small{font-size:9px}
 }
+
+/* Long color gallery: all 17 tones remain reachable on small screens. */
+.hud-tone-choices{
+  max-height:min(62vh,680px);
+  overflow-y:auto;
+  overflow-x:hidden;
+  scrollbar-width:thin;
+  scrollbar-color:#6484a4 transparent;
+  padding:3px 6px 3px 3px;
+}
