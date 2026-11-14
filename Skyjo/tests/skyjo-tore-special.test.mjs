@@ -281,3 +281,11 @@ test('Mission heads-up display shows accumulated reels before the final scoring'
  assert.match(html,/Missionen · .*Slots erspielt/);
  assert.match(html,/Dreh erst NACH der Rundenwertung/);
 });
+
+
+test('SKYJO payout waits for a successfully persisted final scoreboard',()=>{
+ const source=read('skyjo_tore_special.js');
+ assert.match(source,/const cloudSaved=await bridge\.waitForCloudIdle\(7500\);/);
+ assert.match(source,/if\(!cloudSaved\)throw Error\('Die Rundenwertung/);
+ assert.match(source,/game\.phase==='roundReveal'&&game\.roundClose\?\.stage==='remove'/);
+});
