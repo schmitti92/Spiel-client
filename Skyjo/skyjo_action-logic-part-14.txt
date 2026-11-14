@@ -134,6 +134,7 @@ function removeMatch(pi,m){
      p.grid[idx]=null;
    }
  }
+ window.SkyjoToreSpecial?.trackRemove(state,pi,m,buried);
  const drawableTop=state.playDiscard[state.playDiscard.length-1]||null;
  log(`${p.name} räumt ${m.label} ab. ${buried.length} Karten liegen gesperrt unter der Ablage${drawableTop?`; ${cardShortText(drawableTop)} bleibt oben ziehbar`:''}.`);
 }
