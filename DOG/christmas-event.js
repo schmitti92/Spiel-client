@@ -41,6 +41,7 @@ const treeDetails=[
   'Der prachtvolle Weihnachtsbaum erleuchtet das ganze Weihnachtsdorf.'
 ];
 const preview={tower:1,workshop:1,bakery:1,inn:1};
+let lastPresentationKey=null;
 const sceneTitles=['Die Weihnachtsreise beginnt','Die ersten Laternen leuchten','Ein Hauch von Winter','Lichter über den Dächern','Das Dorf entdeckt Weihnachten','Die Weihnachtsvorbereitungen laufen','Ein Sternenglanz erscheint','Lichtertal wird zum Wintermärchen','Das Dorf wartet auf sein Wunder','Das große Weihnachtslicht'];
 const sceneDescriptions=[
  'Noch ist Lichtertal ein ruhiges, einfaches Dorf.',
@@ -93,6 +94,13 @@ function refreshPreview(){
   if(plaque)plaque.textContent=level+' / 5';
  }
  const view=$('village-view');
+ const presentationKey=JSON.stringify([preview.tower,preview.workshop,preview.bakery,preview.inn]);
+ if(lastPresentationKey!==null&&presentationKey!==lastPresentationKey&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+   view.classList.remove('is-upgrading');
+   void view.offsetWidth; // restart only on an actual preview upgrade
+   view.classList.add('is-upgrading');
+ }
+ lastPresentationKey=presentationKey;
  view.dataset.tree=String(tree);
  view.dataset.snow=String(tree<=2?1:tree<=4?2:tree<=6?3:tree<=8?4:5);
  const growth=.59+((tree-1)/9)*.41;
