@@ -6,11 +6,11 @@
 <meta name="theme-color" content="#071525">
 <meta name="description" content="DOG Design-Studio: Spielwelten und Spielbretter kombinieren, live ansehen und eigene Designs speichern.">
 <title>DOG Design-Studio</title>
-<link rel="stylesheet" href="./design-studio.css?v=2">
+<link rel="stylesheet" href="./design-studio.css?v=3">
 </head>
 <body>
 <header class="studio-top">
-  <div class="studio-brand"><span class="studio-logo" aria-hidden="true">D</span><div><h1>DOG <span>Design-Studio</span></h1><p>Kombiniere ein Hintergrundbild mit deinem Lieblingsbrett</p></div></div>
+  <div class="studio-brand"><span class="studio-logo" aria-hidden="true">D</span><div><h1>DOG <span>Design-Studio</span></h1><p>Gestalte Spielbrett, Hintergrund und rechten Spielblock</p></div></div>
   <div class="top-actions"><a href="../hub-lobby.html" id="back-link" class="control secondary">← Zurück zur Lobby</a><button id="save-top" class="control gold" type="button">💾 Speichern</button></div>
 </header>
 <main class="studio-page">
@@ -22,18 +22,61 @@
     <section class="preview-wrap" aria-labelledby="preview-heading">
       <div class="preview-heading"><div><span class="eyebrow">◉ LIVE-VORSCHAU</span><h2 id="preview-heading">Mein DOG-Design</h2></div><span class="live-pill">● Sofort sichtbar</span></div>
       <div class="preview-stage" id="preview-stage">
-        <div class="preview-screen">
-          <svg id="board-preview" viewBox="0 0 760 760" role="img" aria-label="Vorschau des DOG-Spielbretts mit allen 64 Lauf-, 16 Ziel- und 16 Startfeldern"></svg>
+        <div class="studio-live-layout">
+          <div class="preview-screen">
+            <svg id="board-preview" viewBox="0 0 760 760" role="img" aria-label="Vorschau des DOG-Spielbretts mit den originalen Spielfeldern"></svg>
+          </div>
+          <aside id="hud-preview" class="studio-hud" aria-label="Vorschau des rechten DOG-Spielblocks, Anordnung Klassisch">
+            <div class="studio-hud-panel studio-hud-players">
+              <div class="studio-hud-player-grid">
+                <div class="studio-hud-player" style="--seat-color:#e75c59"><span class="studio-hud-avatar">👤</span><span><strong>Chris</strong><small>4 Karten</small></span><b>0/4</b></div>
+                <div class="studio-hud-player" style="--seat-color:#419ef0"><span class="studio-hud-avatar">🤖</span><span><strong>DOG-Bot 2</strong><small>4 Karten</small></span><b>0/4</b></div>
+                <div class="studio-hud-player" style="--seat-color:#48c27c"><span class="studio-hud-avatar">🤖</span><span><strong>DOG-Bot 3</strong><small>0 Karten</small></span><b>0/4</b></div>
+                <div class="studio-hud-player" style="--seat-color:#ffc94d"><span class="studio-hud-avatar">🤖</span><span><strong>DOG-Bot 4</strong><small>4 Karten</small></span><b>0/4</b></div>
+              </div>
+            </div>
+            <div class="studio-hud-panel">
+              <div class="studio-hud-heading"><strong>🗂️ Kartenbereich</strong><span>Nachziehen &amp; Ablegen</span></div>
+              <div class="studio-hud-piles">
+                <div class="studio-hud-pile"><span class="studio-hud-card-back">✦</span><span><strong>Nachziehstapel</strong><small>Verdeckt</small></span></div>
+                <div class="studio-hud-pile"><span class="studio-hud-card-back discard">—</span><span><strong>Ablagestapel</strong><small>Verdeckt</small></span></div>
+              </div>
+            </div>
+            <div class="studio-hud-panel">
+              <div class="studio-hud-heading"><strong>🃏 Deine Handkarten</strong><span>Vorschau</span></div>
+              <div class="studio-hud-hand"><span>A</span><span>7</span><span>J</span><span>4</span></div>
+            </div>
+            <div class="studio-hud-panel">
+              <div class="studio-hud-extras">
+                <span>🪄<small>Magie</small></span><span>😀<small>Emojis</small></span><span>🃏<small>Spezialkarten</small></span><span>🎁<small>Events</small></span><span>🧪<small>Items</small></span>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
       <div class="preview-controls">
-        <span>🎮 Echte DOG-Feldanordnung · Nur das Aussehen ändert sich</span>
+        <span>🎮 Brett und Bedienleiste in derselben Links-rechts-Anordnung wie im Spiel</span>
         <button id="apply-design" class="control green" type="button">✓ Im Spiel verwenden</button>
       </div>
     </section>
     <section class="panel options-panel boards" aria-labelledby="boards-heading">
-      <h2 id="boards-heading">🎲 Brettdesigns</h2><p>Hier findest du auch Zauberwald, Märchental, Küstenabenteuer, Alpenland und Royal-Karten.</p>
-      <div id="board-choices" class="choice-list" role="group" aria-label="Brettdesign auswählen"></div>
+      <h2 id="boards-heading">🎨 Gestaltung</h2>
+      <div class="studio-editor-tabs" role="tablist" aria-label="Gestaltungsbereich wählen">
+        <button id="board-tab" type="button" role="tab" aria-controls="board-design-panel" aria-selected="true">🎲 Brett</button>
+        <button id="hud-tab" type="button" role="tab" aria-controls="hud-design-panel" aria-selected="false">🗂️ Spielblock</button>
+      </div>
+      <div id="board-design-panel" role="tabpanel" aria-labelledby="board-tab">
+        <p class="editor-help">Wähle die Oberfläche der Spielplatte.</p>
+        <div id="board-choices" class="choice-list" role="group" aria-label="Brettdesign auswählen"></div>
+      </div>
+      <div id="hud-design-panel" role="tabpanel" aria-labelledby="hud-tab" hidden>
+        <h3>Layout des rechten Spielblocks</h3>
+        <div id="hud-layout-choices" class="hud-layout-choices" role="group" aria-label="Anordnung des Spielblocks auswählen"></div>
+        <p class="editor-help">Die bestehende Anordnung heißt „Klassisch“. Weitere Anordnungen können später folgen.</p>
+        <h3>Farbtöne auswählen</h3>
+        <div id="hud-tone-choices" class="hud-tone-choices" role="group" aria-label="Farbe des Spielblocks auswählen"></div>
+        <p class="editor-help">Farben ändern nur Spielerrahmen, Kartenbereich und Extra-Bedienfelder – nicht das Brett und nicht die Spielfunktionen.</p>
+      </div>
     </section>
   </div>
   <section class="panel designs-panel" aria-labelledby="designs-heading">
@@ -51,6 +94,6 @@
     <div class="dialog-actions"><button type="button" class="control secondary" id="cancel-save">Abbrechen</button><button type="submit" class="control gold">Speichern & verwenden</button></div>
   </form>
 </dialog>
-<script type="module" src="./design-studio.js?v=2"></script>
+<script type="module" src="./design-studio.js?v=3"></script>
 </body>
 </html>
