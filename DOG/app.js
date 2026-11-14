@@ -267,13 +267,9 @@ function drawBoard(){
     push('<text x="'+labelGoal.x+'" y="'+(labelGoal.y+28)+'" text-anchor="middle" fill="'+c+'" font-size="10" font-weight="850" letter-spacing=".8">ZIEL</text>');
     push('<text x="'+labelHome.x+'" y="'+(labelHome.y+28)+'" text-anchor="middle" fill="'+c+'" font-size="10" font-weight="850" letter-spacing=".8">START</text>');
   }
-  // A warm little center crest. Original brand artwork is intentionally not
-  // copied so future DOG modes and events can use the same geometric layout.
-  push('<rect x="289" y="289" width="182" height="182" rx="28" fill="url(#dog-center)" stroke="#cfac75" stroke-opacity=".63" stroke-width="3"/>');
-  push('<rect x="299" y="299" width="162" height="162" rx="20" fill="none" stroke="#b4d0e6" stroke-opacity=".21" stroke-width="1"/>');
-  push('<path d="M 330 339 Q 380 315 430 339 M 330 422 Q 380 448 430 422" stroke="#c6a472" stroke-width="2" fill="none" opacity=".67"/>');
-  push('<text x="380" y="377" text-anchor="middle" fill="#f8e1b5" font-size="47" font-weight="1000" letter-spacing="2">DOG</text>');
-  push('<text x="380" y="402" text-anchor="middle" fill="#91bad1" font-size="12" font-weight="800" letter-spacing="3">KLASSISCH</text>');
+  // Shared transparent DOG crest. This artwork is purely decorative and
+  // never changes the approved track/goal/home coordinates or game rules.
+  push('<image href="./Bilder/Wappen/dog-wappen.png" x="283" y="283" width="194" height="194" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>');
   // Carved white holes, exactly sixty unprotected plus four tinted starts.
   for(let i=0;i<64;i++){
     const {x,y}=boardPoint(i),start=isStartField(i),seat=i/16|0;
