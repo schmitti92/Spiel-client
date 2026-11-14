@@ -384,7 +384,7 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 .dog-classic-card .dog-sub{font-size:clamp(12px,1.2vw,18px);font-weight:650;color:#e5eff4;max-width:440px}
 .dog-classic-card .dog-cta{padding:10px 18px;background:linear-gradient(110deg,#ddbb77,#ae813a);color:#142438;font-size:13px;font-weight:850;border-radius:12px}
 
-</style><link rel="stylesheet" href="DOG/board-picker.css?v=1"><link rel="stylesheet" href="DOG/avatar-picker.css?v=1"><style>.game-grid>.dog-board-lobby{grid-column:1/-1;align-self:stretch;min-width:0}</style></head>
+</style><link rel="stylesheet" href="DOG/board-picker.css?v=1"><link rel="stylesheet" href="DOG/avatar-picker.css?v=1"><link rel="stylesheet" href="DOG/emoji-ui.css?v=1"><style>.game-grid>.dog-board-lobby{grid-column:1/-1;align-self:stretch;min-width:0}</style></head>
 <body>
 <main class="container">
 <header class="page-head"><h1>🎮 Spieleauswahl</h1></header>
@@ -401,6 +401,7 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
           <div class="dog-avatar-options" data-dog-avatar-options role="group" aria-label="Profilbild wählen"></div>
           <p data-dog-avatar-notice aria-live="polite">Die Auswahl wird auf diesem Gerät gespeichert.</p>
         </section>
+        <section class="dog-emoji-editor" data-dog-emoji-editor aria-label="DOG-Emoji-Schnelltasten einstellen"></section>
         <section class="dog-board-lobby" data-dog-board-picker aria-label="DOG Spielbrett auswählen">
          <h3>🎨 DOG-Spielbrett auswählen</h3>
          <p>Wähle deinen Hintergrund vor dem Spiel. Die echten Spielfelder werden im Spiel darüber angezeigt.</p>
@@ -410,7 +411,7 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
        <article class="game business-card"><a class="local-game-link" href="Business/business_local.html" aria-label="Das große Business lokal spielen"><span class="visually-hidden">Das große Business lokal spielen</span></a></article>
 </section>
 </main>
-<script src="DOG/avatar-picker.js?v=3"></script><script type="module" src="DOG/board-picker.js?v=3"></script>
+<script src="DOG/avatar-picker.js?v=3"></script><script type="module" src="DOG/emoji-lobby.js?v=1"></script><script type="module" src="DOG/board-picker.js?v=3"></script>
 <script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script>
 <script src="site-global-controls.js?v=20261109-global-1"></script>
 </body></html>
