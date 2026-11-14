@@ -52,7 +52,7 @@ if(extraGrid){
   button.type='button';
   button.className='dog-extra-button';
   button.dataset.dogExtra=feature.id;
-  button.setAttribute('aria-label',feature.title+' – in Vorbereitung');
+  button.setAttribute('aria-label',feature.id==='emojis'?'Emojis senden':feature.title+' – in Vorbereitung');
   const symbol=document.createElement('span');
   symbol.className='dog-extra-icon';
   symbol.setAttribute('aria-hidden','true');
@@ -65,7 +65,9 @@ if(extraGrid){
  extraGrid.addEventListener('click',event=>{
   const button=event.target.closest('[data-dog-extra]');
   const feature=dogFeatureById(button?.dataset.dogExtra);
-  if(!feature||!extraDialog||!extraTitle||!extraDescription)return;
+  if(!feature)return;
+  if(feature.id==='emojis'){window.dispatchEvent(new Event('dog-emojis-open'));return;}
+  if(!extraDialog||!extraTitle||!extraDescription)return;
   extraTitle.textContent=feature.icon+' '+feature.title;
   extraDescription.textContent=feature.description;
   if(!extraDialog.open)extraDialog.showModal();
