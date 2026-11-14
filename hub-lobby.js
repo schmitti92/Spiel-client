@@ -31,6 +31,7 @@ function setPlayMode(next,{updateUrl=false}={}){
  render();
 }
 const stayInMatchId=new URL(location.href).searchParams.get('stayMatch');
+const stayInSelection=new URL(location.href).searchParams.get('stay')==='1';
 let launchedMatchId=null,hubSocket=null,retrySocket=null,streamReady=false,streamLast=0,hubHeartbeat=null,pollInFlight=false,lastRoomPollAt=0;
 function stopWatch(){
  streamReady=false;
@@ -1006,6 +1007,8 @@ function render(){
     ?'👑 Du bist Host. Nur du kannst Spiel, Regeln und Teilnehmerplätze ändern. Jede Änderung setzt die Bereitmeldungen zurück.'
     :'🔒 Der Host legt Regeln und Teilnehmer fest. Du kannst dich selbst bereit melden, sobald du einen Spielplatz hast.';
  }
+ // Returning from a game with stay=1 must not reopen that same active game.
+ if(stayInSelection&&!launchedMatchId&&room.phase==='playing'&&room.match?.id)launchedMatchId=room.match.id;
  if(room.phase==='playing'&&room.match?.participating&&room.match.id!==stayInMatchId&&room.match.id!==launchedMatchId){
    const matchId=room.match.id;
    try{enterCurrentMatch();launchedMatchId=matchId;}catch(e){showError(e);}
