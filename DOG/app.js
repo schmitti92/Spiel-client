@@ -1,4 +1,4 @@
-import {cardMarkup,cardVisual} from './card-visuals.js?v=5';
+import {CARD_EDITIONS,CARD_EDITION,loadCardEdition,saveCardEdition,cardBackImage,cardMarkup,cardVisual} from './card-visuals.js?v=6';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
 import {DEFAULT_APPEARANCE,BOARD_STYLES,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=12';
@@ -348,6 +348,7 @@ function renderHand(){
   $('move-help').textContent=jokerAs!==null?'Joker als '+(jokerAs==='swap'?'Tauschkarte':jokerAs)+' gewählt. Figur und Ziel selbst antippen.':game.phase==='exchange'?'Wähle die Karte für deinen Partner.':game.phase==='seven'?'Figur und Zielfeld selbst wählen. Noch '+(7-game.seven.spent)+' Schritte.':selectedCard===null?'Wähle eine Karte.':'Figur und Zielfeld selbst antippen – ohne Zugvorschläge.';
 }
 function renderCardPiles(){
+ $('dog-deck-art').style.backgroundImage='url("'+cardBackImage()+'")';
  const deck=Array.isArray(game.deck)?game.deck:null;
  const discard=Array.isArray(game.discard)?game.discard:null;
  $('dog-deck-count').textContent=deck?deck.length+' Karten':'Verdeckt';
@@ -529,7 +530,12 @@ function applyAppearance(){
   };
   for(const [name,value] of Object.entries(variables))
     document.documentElement.style.setProperty(name,value);
-  $('appearance-preview-back').textContent=look.cards.emblem;
+  const edition=loadCardEdition();
+  const backPreview=$('appearance-preview-back');
+  backPreview.textContent='';
+  backPreview.style.background='url("'+cardBackImage(edition)+'") center / contain no-repeat';
+  $('appearance-preview-face').innerHTML=cardMarkup('7',{tag:'div'});
+  $('appearance-card-edition').value=edition;
   for(const field of ['board','pieces','cards']){
     const select=$('appearance-'+field);
     if(select)select.value=appearance[field];
@@ -555,11 +561,25 @@ function prepareAppearanceUI(){
       applyAppearance();
     });
   }
+  const editionSelect=$('appearance-card-edition');
+  editionSelect.replaceChildren();
+  for(const [id,entry] of Object.entries(CARD_EDITIONS)){
+    const option=document.createElement('option');option.value=id;option.textContent=entry.label;
+    editionSelect.appendChild(option);
+  }
+  editionSelect.value=loadCardEdition();
+  editionSelect.addEventListener('change',()=>{
+    saveCardEdition(editionSelect.value);
+    applyAppearance();
+    if(game)render(); // Purely local artwork choice. Never write card edition into online game state.
+  });
   $('appearance-button').addEventListener('click',()=>{$('appearance-dialog').showModal();});
   $('appearance-close').addEventListener('click',()=>{$('appearance-dialog').close();});
   $('appearance-reset').addEventListener('click',()=>{
     appearance=saveAppearance(DEFAULT_APPEARANCE);
+    saveCardEdition(CARD_EDITION);
     applyAppearance();
+    if(game)render();
   });
   applyAppearance();
 }
