@@ -24,19 +24,22 @@ test('SKYJO 100 Tore Special browser runtime and existing Monster Slots parse',(
  assert.match(deal,/for\(let i=6;i<12;i\+\+\)/);
  assert.match(read('skyjo_action.html'),/skyjo_tore_special\.js/);
 });
-test('Mission selection is stable, three per round, and includes hard missions',()=>{
- const browser={};
- new Function('window',read('skyjo_tore_special.js'))(browser);
+test('Mission selection is deterministic: four challenges per new round, 1–10 reels',()=>{
+ const browser={};new Function('window',read('skyjo_tore_special.js'))(browser);
  const engine=browser.SkyjoToreSpecial;
- assert.equal(engine.definitions.length,22);
+ assert.equal(engine.definitions.length,31);
+ assert.deepEqual([...new Set(engine.definitions.map(m=>m.slots))].sort((a,b)=>a-b),[1,2,3,4,5,6,7,8,9,10]);
  const match='abcdef12-3456-4abc-bcde-123456789abc';
- assert.deepEqual(engine.missionsFor(match,1),['two-zero','two-rows','clear-board']);
- for(let round=1;round<100;round++){
+ for(let round=1;round<=400;round++){
   const ids=engine.missionsFor(match,round);
-  assert.equal(ids.length,3);
+  assert.equal(ids.length,4);
   assert.deepEqual(ids,engine.missionsFor(match,round));
-  assert.deepEqual(ids.map(id=>engine.definitions.find(m=>m.id===id)?.tier),['easy','medium','hard']);
+  const chosen=ids.map(id=>engine.definitions.find(m=>m.id===id));
+  assert.deepEqual(chosen.map(m=>m.tier),['easy','medium','medium','hard']);
+  assert.equal(new Set(chosen.map(m=>m.field)).size,4);
+  assert.ok(chosen.reduce((n,m)=>n+m.slots,0)+4<=32);
  }
+ assert.equal(engine.missionsFor(match,1,{legacy:true}).length,3);
 });
 test('Special rewards are mandatory before host may start next round',()=>{
  const browser={};new Function('window',read('skyjo_tore_special.js'))(browser);
@@ -279,6 +282,8 @@ test('Mission heads-up display shows accumulated reels before the final scoring'
  special.trackRemove(game,0,{name:'Reihe 1',idx:[0,1,2,3]},Array.from({length:4},()=>({type:'number',value:12,faceUp:true})));
  const html=special.hud(game,0);
  assert.match(html,/Missionen · .*Slots erspielt/);
+ assert.match(html,/0\/4 Missionen|1\/4 Missionen/);
+ assert.match(html,/Fortschritt:|Rundenwertung/);
  assert.match(html,/Dreh erst NACH der Rundenwertung/);
 });
 
