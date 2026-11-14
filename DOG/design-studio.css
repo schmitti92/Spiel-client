@@ -437,5 +437,5 @@ dialog{color:#f5e9d6;background:#10283e;border:1px solid #ddb973;border-radius:1
   .studio-primary-tabs button{min-height:33px}
   .studio-columns .preview-heading{min-height:42px;padding:5px 12px}
   .studio-columns .preview-controls{min-height:35px;padding:5px 9px}
-  .studio-columns .studio-live-layout .preview-screen{width:min(100%,calc(100dvh - 180px))}
+  .studio-columns .studio-live-layout .preview-screen{width:min(100%,calc(100dvh - 220px))}
 }
