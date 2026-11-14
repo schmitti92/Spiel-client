@@ -1,4 +1,4 @@
-import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=2';
+import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=3';
 import {loadAppearance,saveAppearance} from './appearance-registry.js?v=18';
 import {loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=1';
 // The collection never grants event rewards. Cosmetic choices persist locally;
@@ -69,11 +69,11 @@ function drawNavigation(){
 function drawFilters(){
  const s=dogCollectionStats(cat);
  $('collection-heading').textContent=cat.icon+' '+cat.title;$('collection-subheading').textContent=cat.subtitle;
- $('count-all').textContent='('+s.total+')';$('count-available').textContent='('+s.available+')';$('count-planned').textContent='('+s.planned+')';
+ $('count-all').textContent='('+s.total+')';$('count-active').textContent='('+cat.items.filter(equipped).length+')';
  document.querySelectorAll('[data-filter]').forEach(btn=>btn.setAttribute('aria-pressed',String(btn.dataset.filter===filter)));
 }
 function drawGrid(){
- const items=cat.items.filter(x=>filter==='all'||x.status===filter);
+ const items=cat.items.filter(x=>filter==='all'||(filter==='active'&&equipped(x)));
  if(!items.some(x=>x.id===picked))picked=items.find(equipped)?.id||items[0]?.id||null;
  $('collection-empty').hidden=items.length>0;
  $('collection-grid').replaceChildren(...items.map(item=>{
@@ -151,9 +151,9 @@ function drawDetails(){
 }
 function draw(){
  const stats=dogCollectionStats();
- $('collection-total').textContent=stats.available+' / '+stats.total;
- $('collection-progress-bar').style.width=(100*stats.available/Math.max(1,stats.total)).toFixed(1)+'%';
- $('collection-progress-caption').textContent=stats.planned+' weitere Vorschauen für zukünftige Erweiterungen';
+ $('collection-total').textContent=String(stats.available);
+ 
+ $('collection-progress-caption').textContent='Alle angezeigten Gegenstände sind bereits vorhanden.';
  drawNavigation();drawFilters();drawGrid();drawDetails();
 }
 document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;picked=null;drawFilters();drawGrid();drawDetails();});
