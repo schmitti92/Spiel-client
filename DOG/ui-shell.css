@@ -865,3 +865,52 @@ main{width:calc(100% - 22px);max-width:1920px;margin:6px auto}
 .right.dog-modules .dog-extras-panel .dog-extras-details{display:block!important}
 .right.dog-modules .dog-extras-panel .dog-extras-grid{display:grid!important}
 .right.dog-modules .dog-status-panel{padding-top:8px!important}
+
+/* DOG Studio: tint only the existing right-hand control modules.
+   Classic keeps the original glass look pixel-for-pixel; no layout changes. */
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules>.panel,
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules>.panel:nth-child(2),
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules>.panel:nth-child(3){
+  background:var(--dog-hud-panel)!important;
+  border-color:var(--dog-hud-border);
+  color:var(--dog-hud-text);
+  backdrop-filter:blur(5px);
+}
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules .dog-module-heading{
+  border-bottom-color:var(--dog-hud-border);
+}
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules .dog-module-heading h2,
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules .dog-module-heading h3,
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules .dog-module-meta{
+  color:var(--dog-hud-accent)!important;
+}
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules .dog-status-panel .seat,
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules .dog-status-panel .seat.on{
+  background:var(--dog-hud-seat)!important;
+  background-color:var(--dog-hud-seat)!important;
+}
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules .dog-status-panel .seat-name,
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules .dog-seat-score{
+  color:var(--dog-hud-text);
+}
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules .dog-status-panel .seat-extra,
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules .dog-pile-copy span{
+  color:var(--dog-hud-muted);
+}
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules .dog-pile-module .dog-piles,
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules .dog-hand-module .hand{
+  background:var(--dog-hud-inner)!important;
+  background-color:var(--dog-hud-inner)!important;
+}
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules .dog-pile+.dog-pile{
+  border-left-color:var(--dog-hud-border);
+}
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules .dog-extras-grid .dog-extra-button{
+  background:var(--dog-hud-button)!important;
+  border-color:var(--dog-hud-border);
+  color:var(--dog-hud-text);
+}
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules .dog-extra-button:hover,
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules .dog-extra-button:focus-visible{
+  filter:brightness(1.18);
+}
