@@ -73,9 +73,10 @@ function browserFixture(customPrizes=null){
  const g={id:'11111111-1111-4111-8111-111111111111',phase:'final',monsterSlotsVersion:1,
   finalValues:[{id:'host',payout:3000000},{id:'guest',payout:2000000},{id:'quiet',payout:1000000}]};
  const fetch=async(_url,options)=>{
-  const uid=options.headers.Authorization.slice(7),{gameId,operation}=JSON.parse(options.body);
+  const uid=options.headers.Authorization.slice(7),
+   {gameId,operation,expectedTurn,expectedUid,expectedStartedAt}=JSON.parse(options.body);
   if(operation){
-   requests.push({uid,gameId,operation});
+   requests.push({uid,gameId,operation,expectedTurn,expectedUid,expectedStartedAt});
    const current=g.monsterSlotShow;
    if(operation==='spin'){
     const count=current.reels;
@@ -135,6 +136,8 @@ test('all three profiles watch the same runner-up then champion Slot show before
  assert.equal(b.accept.disabled,false,'runner-up may press spin');
  b.accept.click();await b.flush();
  assert.equal(b.requests[0]?.operation,'spin');
+ assert.equal(b.requests[0]?.expectedTurn,'runner');
+ assert.equal(b.requests[0]?.expectedUid,'guest');
  assert.equal(b.root.dataset.reels,'1');
  assert.equal(b.summary.hidden,false,'all spectators can view the server-stored prize');
  assert.equal(b.summaryButton.disabled,false,'runner-up confirms their own gift');
@@ -145,12 +148,16 @@ test('all three profiles watch the same runner-up then champion Slot show before
  assert.equal(b.summaryButton.disabled,false);
  b.summaryButton.click();await b.flush();
  assert.equal(b.requests[1]?.operation,'confirm');
+ assert.equal(b.requests[1]?.expectedTurn,'runner');
+ assert.equal(b.requests[1]?.expectedUid,'guest');
  assert.equal(b.g.monsterSlotShow.turn,'champion','winner follows runner-up');
 
  b.window.person='host';b.emit('spielonline-change');await b.flush();
  assert.equal(b.accept.disabled,false);
  b.accept.click();await b.flush();
  assert.equal(b.requests[2]?.operation,'spin');
+ assert.equal(b.requests[2]?.expectedTurn,'champion');
+ assert.equal(b.requests[2]?.expectedUid,'host');
  assert.equal(b.summaryPrizes.children.length,3,'champion receives three real server-settled prizes');
  b.summaryButton.click();await b.flush();
  assert.equal(b.requests[3]?.operation,'confirm');
