@@ -11,7 +11,7 @@
   const api=String(config.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
   const hubUrl='../spielauswahl-online.html?room='+encodeURIComponent(hub);
   let busy=false,finished=false,pollTimer=null,autoTimer=null;
-  let completionStatus='finished',aborting=false;
+  let completionStatus='finished',aborting=false,abortButton=null;
   const gotoHub=()=>location.assign(hubUrl);
   const readyProfile=()=>{
     const p=window.SpielOnline?.state?.();
@@ -20,6 +20,7 @@
   function showReturn(){
     if(finished)return;
     finished=true;
+    if(abortButton)abortButton.hidden=true;
     if(pollTimer){clearInterval(pollTimer);pollTimer=null;}
     const panel=document.createElement('aside');
     panel.setAttribute('role','status');
@@ -59,6 +60,9 @@
       if(!response.ok)return;
       const result=await response.json(),room=result?.room;
       if(!result?.ok||!room||room.code!==hub)return;
+      // The existing authenticated sync response already contains host rights.
+      // Do not issue an additional Firestore-backed GET every six seconds.
+      if(abortButton)abortButton.hidden=!(room.host&&room.phase==='playing'&&room.match?.id===matchId);
       if(room.lastCompleted?.id===matchId || (room.phase==='lobby'&&!room.match) || (room.phase==='playing'&&room.match?.id!==matchId)){
         completionStatus=room.lastCompleted?.id===matchId&&room.lastCompleted?.status==='aborted'?'aborted':'finished';
         showReturn();
@@ -67,8 +71,10 @@
     finally{clearTimeout(timeout);busy=false;}
   }
   function installAbortButton(){
-    if(document.getElementById('spiel-hub-abort'))return;
+    const existing=document.getElementById('spiel-hub-abort');
+    if(existing){abortButton=existing;return;}
     const btn=document.createElement('button');
+    abortButton=btn;
     btn.id='spiel-hub-abort';btn.type='button';btn.textContent='⏹ Partie abbrechen';
     btn.style.cssText='position:fixed;bottom:14px;right:14px;z-index:2147483500;border:1px solid #d6a6aa;border-radius:12px;background:#fff8f8;color:#9a2937;padding:11px 14px;font:700 13px system-ui,sans-serif;box-shadow:0 6px 22px #0003;cursor:pointer';
     btn.hidden=true;
@@ -89,19 +95,7 @@
       finally{aborting=false;btn.disabled=false;}
     });
     (document.body||document.documentElement).append(btn);
-    async function updateHost(){
-      if(finished||document.hidden)return;
-      const user=readyProfile();if(!user)return;
-      try{
-        const token=await user.getIdToken();
-        const res=await fetch(api+'/api/hub/rooms/'+hub,{headers:{Authorization:'Bearer '+token},cache:'no-store'});
-        if(!res.ok)return;
-        const data=await res.json(),room=data.room;
-        btn.hidden=!(room?.host&&room.phase==='playing'&&room.match?.id===matchId);
-      }catch(_e){}
-    }
-    const hostTimer=setInterval(updateHost,6000);setTimeout(updateHost,1000);
-    window.addEventListener('pagehide',()=>clearInterval(hostTimer),{once:true});
+    // Host visibility is updated by the existing /sync response in check().
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installAbortButton,{once:true});
   else installAbortButton();
