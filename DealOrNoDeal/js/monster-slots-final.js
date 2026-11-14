@@ -87,7 +87,7 @@ const sharedCaption=root.querySelector('.monster-slot-shared-caption');
 const setStatus=t=>status.textContent=t;
 const watched=id=>{try{return sessionStorage.getItem(seenKey(id))==='yes'}catch{return false}};
 function timer(fn,ms){const id=setTimeout(()=>{timers=timers.filter(t=>t!==id);fn()},ms);timers.push(id)}
-function cancel(hide=true){seq++;timers.forEach(clearTimeout);timers=[];opening=false;shown='';summary.hidden=true;if(hide)root.hidden=true}
+function cancel(hide=true){seq++;timers.forEach(clearTimeout);timers=[];opening=false;shown='';scheduledWindowKey='';summary.hidden=true;if(hide)root.hidden=true}
 function setPhase(el,phase){el.dataset.phase=phase;el.querySelector('.monster-slot-state').textContent=phase==='running'?'DREHT …':phase==='won'?'✓ GEWONNEN':'BEREIT'}
 for(const reel of reels){
  reel.querySelector('.monster-slot-track').replaceChildren(...rolling.concat(rolling).map(symbol=>{
@@ -306,7 +306,8 @@ async function sharedAction(operation){
   if(!token)throw Error('Bitte zuerst anmelden.');
   const response=await fetch(base()+'/api/deal-or-no-deal/'+encodeURIComponent(code||'')+'/monster-slots/show',{
    method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
-   body:JSON.stringify({gameId:id,operation}),cache:'no-store'
+   body:JSON.stringify({gameId:id,operation,expectedTurn:stage.turn,expectedUid:stage.uid,
+    ...(operation==='confirm'?{expectedStartedAt:Number(stage.startedAt||0)}:{})}),cache:'no-store'
   });
   const data=await response.json();
   if(!response.ok||!data.ok||data.game?.id!==id)throw Error(data.error||'SLOT_SHOW_FAILED');
@@ -320,7 +321,9 @@ async function sharedAction(operation){
  }catch(error){
   console.warn('[monster-slots-shared]',error);
   setStatus('⚠️ Gemeinsame Slot-Aktion fehlgeschlagen: '+String(error.message||error)+'. Bitte erneut versuchen.');
-  sharedSignature=''; // repaint the current turn without creating prizes
+  // Preserve the running animation and scroll position on transient errors.
+  // If the server has already switched turns, recover its canonical snapshot.
+  if(['SLOT_SHOW_STALE_STAGE','SLOT_SHOW_ALREADY_STARTED','SLOT_SHOW_NOT_STARTED'].includes(error.message)&&typeof poll==='function')void poll();
  }finally{
   // Refresh controls without re-mounting the same scene or restarting animations.
   sharedPending=false;
@@ -350,8 +353,23 @@ function renderShared(){
  if(stage.phase==='ready'&&showAt>now){
   const windowKey=game.id+':'+stage.turn+':'+showAt;
   if(scheduledWindowKey!==windowKey){
+   // Announce the next participant without spinning or exposing prizes.
+   // Every client enables the actual cabinet at the shared server timestamp.
    if(!root.hidden)cancel();
    scheduledWindowKey=windowKey;
+   root.dataset.shared='yes';root.dataset.turn=stage.turn;root.dataset.actor='no';
+   root.dataset.phase='preparing';configureReels(stage.reels);
+   lights.forEach(light=>light.classList.remove('lit'));
+   reels.forEach(resetReel);summary.hidden=true;
+   const nextPlayer=game.players?.find(p=>p.id===stage.uid);
+   const nextName=nextPlayer?.name||'Spieler';
+   sharedCaption.hidden=false;
+   sharedCaption.textContent=(stage.turn==='runner'?'🥈 PLATZ 2':'🏆 PLATZ 1')+' · '+nextName+' · LIVE FÜR ALLE';
+   setStatus(stage.turn==='champion'&&stage.runnerConfirmedAt?
+    '🥈 Der Gewinn von Platz 2 wurde aufgedeckt und bestätigt. Als Nächstes dreht '+nextName+' auf Platz 1!':
+    '🎬 Die gemeinsame Slot-Auswertung für '+nextName+' wird vorbereitet …');
+   accept.disabled=true;accept.textContent='⏳ Nächster Slot wird vorbereitet …';
+   root.hidden=false;
    timer(()=>{if(scheduledWindowKey===windowKey){scheduledWindowKey='';renderShared()}},Math.max(20,showAt-now));
   }
   return;
@@ -397,8 +415,12 @@ function renderShared(){
   opening=false;accept.disabled=!mayAct||sharedPending;
   accept.textContent=me?'🎰 Jetzt deine Walze'+(stage.reels===3?'n':'')+' drehen':
    canRecover?'⏳ Für '+name+' fortsetzen':'👀 Zuschauer · '+name+' ist am Zug';
-  setStatus(me?'🎰 Du bist jetzt dran! Alle anderen schauen dir beim Drehen zu.':
-   '👀 '+name+' ist an der Reihe. Bitte warte auf den gemeinsamen Dreh.');
+  const handoff=stage.turn==='champion'&&Number(stage.runnerConfirmedAt||0)>0;
+  setStatus(handoff?
+   (me?'🥈 Platz 2 ist vollständig aufgedeckt und bestätigt. 🏆 Jetzt drehst du auf Platz 1!':
+    '🥈 Platz 2 ist vollständig aufgedeckt und bestätigt. 🏆 '+name+' dreht als Sieger als Nächstes!'):
+   (me?'🎰 Du bist jetzt dran! Alle anderen schauen dir beim Drehen zu.':
+    '👀 '+name+' ist an der Reihe. Bitte warte auf den gemeinsamen Dreh.'));
   if(!mayAct){
    const wait=Math.max(100,30050-(now-Number(stage.activatedAt||0)));
    timer(()=>{if(g?.id===game.id&&g.monsterSlotShow?.phase==='ready'&&sharedSignature===signature)renderShared()},wait);
