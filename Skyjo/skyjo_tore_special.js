@@ -350,6 +350,7 @@ function createOverlay(game,show){
   const num=String(i+batch.offset+1).padStart(2,'0');
   const rolling=['📦','🎴','🔨','💰','👹','🃏','🎁','💎','📦','🎴','🔨','💰'];
   return '<div class="monster-slot-reel" role="group" aria-label="Walze '+(batch.offset+i+1)+' von '+esc(player.name)+'" data-reel="'+i+'" data-phase="ready">'+
+   '<span class="skyjo-slot-rarity-flag" hidden></span>'+
    '<div class="monster-slot-reel-head"><span class="monster-slot-led"></span>WALZE '+num+'<span class="monster-slot-led"></span></div>'+
    '<div class="monster-slot-window"><div class="monster-slot-track" aria-hidden="true">'+
    rolling.concat(rolling).map(sym=>'<span class="monster-slot-track-symbol">'+sym+'</span>').join('')+
@@ -381,6 +382,7 @@ function createOverlay(game,show){
   '<section class="skyjo-slot-readable-prizes" aria-label="Gewinne als lesbare Liste"><h3>🎁 Aufgedeckte Gewinne <span id="skyjo-slot-revealed-count">0</span> / '+n+'</h3><ol id="skyjo-slot-readable-list" aria-live="polite"></ol></section>'+
   '</div>'+
   '<div class="skyjo-slot-action-dock">'+
+    '<p class="skyjo-slot-jackpot-alert" id="skyjo-slot-jackpot-alert" role="status" aria-live="polite" hidden></p>'+
     '<p class="monster-slot-status" id="skyjo-special-status" aria-live="polite"></p>'+
     '<button id="monster-slot-accept" type="button" onclick="Game.skyjoSpecialSpin()">🎰 Drehen</button>'+
     '<p class="monster-slot-footnote">Alle Gewinne gehören dem angezeigten Spieler. Kartenpakete bleiben als Gutscheine zum späteren Öffnen erhalten.</p>'+
@@ -394,6 +396,9 @@ function renderPrizes(root,show){
  const done=show.phase==='rolling'&&elapsed>=DURATION(n);
  const actor=actorAllowed(show),isMine=batch.player.uid===me()?.uid;
  const reels=[...root.querySelectorAll('.monster-slot-reel')],lights=[...root.querySelectorAll('.monster-slot-progress span')];
+ const rarityNames={epic:'💜 EPISCH',legendary:'👑 LEGENDÄR',mythic:'🌟 MYTHISCH'};
+ const rarityRanks={epic:1,legendary:2,mythic:3};
+ let topRank=0,topPrize=null;
  let revealed=0;
  const readable=root.querySelector('#skyjo-slot-readable-list');
  batch.prizes.forEach((p,i)=>{
@@ -401,6 +406,8 @@ function renderPrizes(root,show){
   const el=reels[i];if(!el)return;
   if(!finished&&el.dataset.award){
    delete el.dataset.award;delete el.dataset.variant;delete el.dataset.rarity;
+   const oldFlag=el.querySelector('.skyjo-slot-rarity-flag');
+   if(oldFlag)oldFlag.hidden=true;
    el.querySelector('.monster-slot-prize').hidden=true;
    lights[i]?.classList.remove('lit');
    readable?.querySelector('[data-reel-index="'+i+'"]')?.remove();
@@ -408,9 +415,18 @@ function renderPrizes(root,show){
   }
   const next=show.phase==='rolling'?(finished?'won':'running'):'ready';
   if(el.dataset.phase!==next){el.dataset.phase=next;el.querySelector('.monster-slot-state').textContent=next==='won'?'✓ GEWONNEN':next==='running'?'DREHT …':'BEREIT';}
-  if(finished)revealed++;
+  if(finished){
+   revealed++;
+   const rank=rarityRanks[p.rarity]||0;
+   if(rank>topRank){topRank=rank;topPrize=p;}
+  }
   if(finished&&!el.dataset.award){
    el.dataset.award=p.kind||'';el.dataset.variant=p.id||'';el.dataset.rarity=p.rarity||'common';
+   const badge=el.querySelector('.skyjo-slot-rarity-flag');
+   if(badge){
+    badge.textContent=rarityNames[p.rarity]||'';
+    badge.hidden=!rarityNames[p.rarity];
+   }
    const prize=el.querySelector('.monster-slot-prize');
    const path=imagePath(p);
    const art=prize.querySelector('.monster-slot-art');
@@ -446,6 +462,14 @@ function renderPrizes(root,show){
  if(counter)counter.textContent=String(revealed);
  const progress=root.querySelector('.monster-slot-progress');
  if(progress)progress.setAttribute('aria-valuenow',String(revealed));
+ const jackpot=root.querySelector('#skyjo-slot-jackpot-alert');
+ const rarity=topPrize?.rarity||'';
+ root.dataset.highlight=rarity;
+ if(jackpot){
+  jackpot.hidden=!topPrize;
+  if(topPrize)jackpot.textContent=(rarityNames[rarity]||'')+' · '+batch.player.name+
+   ' gewinnt '+String(topPrize.label||'einen besonderen Preis')+'!';
+ }
  root.dataset.phase=done?'ended':show.phase;
  root.dataset.viewer=isMine?'owner':'spectator';
  root.dataset.clock=show.timeBase==='server'&&serverClockSyncedAt?'synchronized':'local';
