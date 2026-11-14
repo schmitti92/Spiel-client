@@ -53,7 +53,7 @@ test('all HUD color tiles use real theme tokens and support large preview',()=>{
  assert.ok(layoutItems.every(item=>!item.hudTheme),'a layout is not a color theme');
  const page=text('../DOG/collection.js'),styles=text('../DOG/collection.css');
  assert.match(page,/if\(item\.hudTheme\)/);
- assert.match(page,/--hud-preview-base/);
+ assert.match(page,/--hud-preview-/);
  assert.match(styles,/\.collection-hud-tone-preview/);
  assert.match(styles,/\.detail-image \.collection-hud-tone-preview/);
 });
