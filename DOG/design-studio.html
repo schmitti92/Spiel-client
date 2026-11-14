@@ -6,19 +6,64 @@
 <meta name="theme-color" content="#071525">
 <meta name="description" content="DOG Design-Studio: Spielwelten und Spielbretter kombinieren, live ansehen und eigene Designs speichern.">
 <title>DOG Design-Studio</title>
-<link rel="stylesheet" href="./design-studio.css?v=8">
+<link rel="stylesheet" href="./design-studio.css?v=9">
 </head>
 <body>
 <header class="studio-top">
   <div class="studio-brand"><span class="studio-logo" aria-hidden="true">D</span><div><h1>DOG <span>Design-Studio</span></h1><p>Gestalte Spielbrett, Hintergrund und rechten Spielblock</p></div></div>
-  <div class="top-actions"><a href="../hub-lobby.html" id="back-link" class="control secondary">← Zurück zur Lobby</a><button id="save-top" class="control gold" type="button">💾 Speichern</button></div>
+  <div class="top-actions"><a href="../hub-lobby.html" id="back-link" class="control secondary">← Zur Lobby</a><button id="save-top" class="control gold" type="button">💾 Speichern</button><button id="apply-design" class="control green" type="button">✓ Übernehmen</button></div>
 </header>
 <main class="studio-page">
   <div class="studio-columns">
-    <section class="panel options-panel scenes" aria-labelledby="scenes-heading">
-      <h2 id="scenes-heading">🏞️ Hintergrundbilder</h2><p>Aktuell ein Bild verfügbar · unabhängig von den Brettdesigns</p>
-      <div id="scene-choices" class="choice-list" role="group" aria-label="Seitenhintergrund auswählen"></div><p class="scene-note">📷 Magisches Schloss am Nebelsee ist bisher unser einziges Hintergrundmotiv. Weitere Bilder können später ergänzt werden.</p>
-    </section>
+    <aside class="studio-tools panel" aria-labelledby="studio-tools-heading">
+      <div class="studio-tools-heading">
+        <div><h2 id="studio-tools-heading">🎨 Gestaltung</h2><p>Wähle den Bereich, den du bearbeiten möchtest</p></div>
+      </div>
+      <div class="studio-primary-tabs" role="tablist" aria-label="Bereich im DOG-Editor">
+        <button type="button" id="scene-tab" role="tab" aria-controls="scene-design-panel" aria-selected="true">🏞️ <span>Hintergrund</span></button>
+        <button type="button" id="board-tab" role="tab" aria-controls="board-design-panel" aria-selected="false">🎲 <span>Spielbrett</span></button>
+        <button type="button" id="frame-tab" role="tab" aria-controls="frame-design-panel" aria-selected="false">🖼️ <span>Rahmen</span></button>
+        <button type="button" id="hud-tab" role="tab" aria-controls="hud-design-panel" aria-selected="false">🗂️ <span>Spielblock</span></button>
+      </div>
+      <div class="studio-tools-scroll" id="studio-tools-scroll">
+        <section id="scene-design-panel" role="tabpanel" aria-labelledby="scene-tab" class="studio-tool-section">
+          <h3>🏞️ Hintergrundbilder</h3>
+          <p class="editor-help">Ein Hintergrundmotiv ist verfügbar. Es liegt hinter Brett und Bedienleiste.</p>
+          <div id="scene-choices" class="choice-list" role="group" aria-label="Seitenhintergrund auswählen"></div>
+          <p class="scene-note">Weitere Hintergrundbilder können wir später hinzufügen.</p>
+        </section>
+        <section id="board-design-panel" role="tabpanel" aria-labelledby="board-tab" class="studio-tool-section" hidden>
+          <h3>🎲 Spielbrett-Design</h3>
+          <p class="editor-help">Wähle die Oberfläche des Bretts. Die Feldanordnung bleibt gleich.</p>
+          <div id="board-choices" class="choice-list" role="group" aria-label="Brettdesign auswählen"></div>
+        </section>
+        <section id="frame-design-panel" role="tabpanel" aria-labelledby="frame-tab" class="studio-tool-section" hidden>
+          <h3>🖼️ Brettrahmen</h3>
+          <p class="editor-help">Der äußere Rahmen lässt sich unabhängig vom Spielbrett verändern.</p>
+          <div id="frame-choices" class="frame-choice-list" role="group" aria-label="Brettrahmen auswählen"></div>
+        </section>
+        <section id="hud-design-panel" role="tabpanel" aria-labelledby="hud-tab" class="studio-tool-section" hidden>
+          <h3>🗂️ Anordnung</h3>
+          <div id="hud-layout-choices" class="hud-layout-choices" role="group" aria-label="Anordnung des Spielblocks auswählen"></div>
+          <p class="editor-help">Klassisch bleibt die aktuelle Anordnung. Weitere Varianten folgen später.</p>
+          <h3>🎨 Farbtöne</h3>
+          <div id="hud-tone-choices" class="hud-tone-choices" role="group" aria-label="Farbe des Spielblocks auswählen"></div>
+          <div class="opacity-section">
+            <div class="opacity-section-heading">
+              <h3>🫧 Transparenz</h3>
+              <button type="button" class="opacity-reset" id="reset-hud-opacity">Standard</button>
+            </div>
+            <p class="editor-help">0 % = durchsichtig · 100 % = deckend. Karten und Schrift bleiben sichtbar.</p>
+            <div id="hud-opacity-controls" class="hud-opacity-controls" role="group" aria-label="Transparenz der vier Bedienblöcke"></div>
+            <div class="opacity-all">
+              <label for="hud-opacity-all">Alle vier Blöcke gemeinsam</label>
+              <input id="hud-opacity-all" type="range" min="0" max="100" step="1" value="70" aria-label="Transparenz aller Blöcke gemeinsam einstellen">
+            </div>
+          </div>
+        </section>
+      </div>
+      <p class="studio-tools-tip">Änderungen siehst du sofort rechts. Zum Behalten oben übernehmen oder speichern.</p>
+    </aside>
     <section class="preview-wrap" aria-labelledby="preview-heading">
       <div class="preview-heading"><div><span class="eyebrow">◉ LIVE-VORSCHAU</span><h2 id="preview-heading">Mein DOG-Design</h2></div><span class="live-pill">● Sofort sichtbar</span></div>
       <div class="preview-stage" id="preview-stage">
@@ -55,43 +100,8 @@
         </div>
       </div>
       <div class="preview-controls">
-        <span>🎮 Brett und Bedienleiste in derselben Links-rechts-Anordnung wie im Spiel</span>
-        <button id="apply-design" class="control green" type="button">✓ Im Spiel verwenden</button>
-      </div>
-    </section>
-    <section class="panel options-panel boards" aria-labelledby="boards-heading">
-      <h2 id="boards-heading">🎨 Gestaltung</h2>
-      <div class="studio-editor-tabs" role="tablist" aria-label="Gestaltungsbereich wählen">
-        <button id="board-tab" type="button" role="tab" aria-controls="board-design-panel" aria-selected="true">🎲 Brett</button>
-        <button id="hud-tab" type="button" role="tab" aria-controls="hud-design-panel" aria-selected="false">🗂️ Spielblock</button>
-      </div>
-      <div id="board-design-panel" role="tabpanel" aria-labelledby="board-tab">
-        <p class="editor-help">Wähle die Oberfläche der Spielplatte.</p>
-        <div id="board-choices" class="choice-list" role="group" aria-label="Brettdesign auswählen"></div>
-        <div class="frame-divider" role="separator"></div>
-        <h3 class="frame-gallery-title">🖼️ Brettrahmen wählen</h3>
-        <p class="editor-help">Der äußere Rahmen ist unabhängig vom Spielbrettdesign und vom rechten Spielblock.</p>
-        <div id="frame-choices" class="frame-choice-list" role="group" aria-label="Brettrahmen auswählen"></div>
-      </div>
-      <div id="hud-design-panel" role="tabpanel" aria-labelledby="hud-tab" hidden>
-        <h3>Layout des rechten Spielblocks</h3>
-        <div id="hud-layout-choices" class="hud-layout-choices" role="group" aria-label="Anordnung des Spielblocks auswählen"></div>
-        <p class="editor-help">Die bestehende Anordnung heißt „Klassisch“. Weitere Anordnungen können später folgen.</p>
-        <h3>Farbtöne auswählen</h3>
-        <div id="hud-tone-choices" class="hud-tone-choices" role="group" aria-label="Farbe des Spielblocks auswählen"></div>
-        <p class="editor-help">Farben ändern nur Spielerrahmen, Kartenbereich und Extra-Bedienfelder – nicht das Brett und nicht die Spielfunktionen.</p>
-        <div class="opacity-section">
-          <div class="opacity-section-heading">
-            <h3>🫧 Transparenz der Blöcke</h3>
-            <button type="button" class="opacity-reset" id="reset-hud-opacity">Standard</button>
-          </div>
-          <p class="editor-help">0 % = ganz durchsichtig · 100 % = deckend. Karten, Text und Bedienelemente bleiben lesbar.</p>
-          <div id="hud-opacity-controls" class="hud-opacity-controls" role="group" aria-label="Transparenz der vier Bedienblöcke"></div>
-          <div class="opacity-all">
-            <label for="hud-opacity-all">Alle vier Blöcke gleichzeitig</label>
-            <input id="hud-opacity-all" type="range" min="0" max="100" step="1" value="70" aria-label="Transparenz aller Blöcke gemeinsam einstellen">
-          </div>
-        </div>
+        <span>🎮 Spielbrett links · Bedienleiste rechts · Darstellung wie im Spiel</span>
+        <p id="studio-status" class="studio-status" role="status" aria-live="polite"></p>
       </div>
     </section>
   </div>
@@ -100,7 +110,6 @@
     <div id="preset-list" class="preset-list"></div>
     <p class="future-note">🪄 Bald erweiterbar: Dekorationen, Beleuchtung und Effekte. Spielfeld und Regeln bleiben unverändert.</p>
   </section>
-  <p id="studio-status" class="studio-status" role="status" aria-live="polite"></p>
 </main>
 <dialog id="save-dialog" aria-labelledby="save-dialog-title">
   <form id="save-form">
@@ -110,6 +119,6 @@
     <div class="dialog-actions"><button type="button" class="control secondary" id="cancel-save">Abbrechen</button><button type="submit" class="control gold">Speichern & verwenden</button></div>
   </form>
 </dialog>
-<script type="module" src="./design-studio.js?v=9"></script>
+<script type="module" src="./design-studio.js?v=10"></script>
 </body>
 </html>
