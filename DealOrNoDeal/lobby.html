@@ -535,7 +535,7 @@ body{background:linear-gradient(180deg,rgba(2,7,18,.2),rgba(3,9,21,.08) 45%,rgba
 'use strict';const $=id=>document.getElementById(id),q=new URLSearchParams(location.search),code=String(q.get('room')||'').toUpperCase(),valid=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(code),base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');let socket=null,room=null,pending=false,balances=null,balancesBusy=false;let roomAvatars={},avatarsBusy=false,avatarsLastFetched=0,avatarsRoomKey='';
 let statusOverride='',roomErrorCode='';
 let selectedAvatar=0,savedAvatar=0,rudolfUnlocked=false,winterLobbyUnlocked=false,christmasStudioUnlocked=false,giftCasesUnlocked=false,santaUnlocked=false,snowmanUnlocked=false,snowfallUnlocked=false,janUnlocked=false,giftzwergUnlocked=false,northAuroraUnlocked=false,northLegendUnlocked=false;
-$('room').textContent=valid?code:'Kein Raum';$('back').href='../hub-lobby.html?view=online'+(valid?'&room='+encodeURIComponent(code)+'&stay=1':'');
+$('room').textContent=valid?code:'Kein Raum';$('back').href='../spielauswahl-online.html'+(valid?'?room='+encodeURIComponent(code)+'&stay=1':'');
 // Die 100 Tore sind offiziell fuer alle in der Spiel-Lobby sichtbar.
 // Decorative cases are now rendered in the lobby markup; no removed #case-art element is accessed.
 const avatarNames=['Stromberg','Bert','Ernie','Heinz Becker','Bürochef 2',null,'Walter White',null,null,null,'Rudolf','Weihnachtsmann','Schneemann','Jan Schlappen','Muffiger Giftzwerg'];
