@@ -7,19 +7,20 @@
 <meta name="description" content="DOG Weihnachtsevent – Das Weihnachtswunder von Lichtertal, Kapitel 1.">
 <title>DOG Weihnachten · Das Weihnachtswunder von Lichtertal</title>
 <link rel="stylesheet" href="./christmas-event.css?v=1">
+<link rel="stylesheet" href="./christmas-event-royal.css?v=1">
 </head>
 <body>
 <div class="snow-sky" aria-hidden="true"></div>
 <header class="event-top">
-  <a class="event-brand" href="../hub-lobby.html"><span class="brand-icon">✦</span><span><strong>DOG <em>WEIHNACHTEN</em></strong><small>Das Weihnachtswunder von Lichtertal</small></span></a>
+  <a class="event-brand" href="../hub-lobby.html"><span class="brand-icon">🎲</span><span><strong>DOG <em>WEIHNACHTEN</em></strong><small>Das Weihnachtswunder von Lichtertal</small></span></a>
   <div class="event-top-actions">
-    <span class="chapter-label">🎄 KAPITEL 1</span>
+    <span class="chapter-label">KAPITEL 1</span>
     <a href="../hub-lobby.html" id="event-return" class="top-action">↩ Zurück</a>
   </div>
 </header>
 <div class="event-layout">
   <aside class="event-sidebar" aria-label="Weihnachtsevent-Navigation">
-    <div class="sidebar-intro"><span class="eyebrow">✨ EINE WEIHNACHTSGESCHICHTE</span><h1>Lichtertal</h1><p>Gemeinsam wird aus einem kleinen Dorf ein Weihnachtswunder.</p></div>
+    <div class="sidebar-intro"><span class="eyebrow">✦ DAS WEIHNACHTSWUNDER ✦</span><h1>Lichtertal</h1><p>Ein Dorf. Vier Gebäude. Ein großes Weihnachtslicht.</p></div>
     <nav class="event-menu" role="tablist" aria-label="Eventbereiche">
       <button type="button" id="tab-village" class="event-tab" role="tab" aria-selected="true" aria-controls="panel-village" data-tab="village"><span>🏘️</span><strong>Weihnachtsdorf</strong><small>Übersicht</small></button>
       <button type="button" id="tab-buildings" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-buildings" data-tab="buildings" tabindex="-1"><span>🏠</span><strong>Die vier Gebäude</strong><small>5 Ausbaustufen</small></button>
@@ -35,15 +36,20 @@
   </aside>
   <main class="event-main" id="event-main">
     <section class="event-panel" id="panel-village" role="tabpanel" aria-labelledby="tab-village">
-      <div class="event-heading"><div><span class="eyebrow">KAPITEL 1 · DAS WEIHNACHTSWUNDER</span><h2>Willkommen in Lichtertal</h2><p>Ein ganz normales Dorf wartet darauf, gemeinsam auf Weihnachten vorbereitet zu werden.</p></div><span class="soft-tag">❄️ Dorf-Entwurf</span></div>
+      <div class="royal-intro"><span class="eyebrow">✦ DAS WEIHNACHTSWUNDER VON LICHTERTAL ✦</span><h2>Willkommen in Lichtertal</h2><div class="royal-ornament" aria-hidden="true">❄ ✧ ❄</div><p>Gemeinsam bereiten wir das Dorf auf Weihnachten vor. Baut die vier Gebäude aus und bringt den großen Weihnachtsbaum zum Leuchten!</p></div>
       <div class="village-shell">
         <div class="village-topline"><span>🏘️ <strong>Unser Weihnachtsdorf</strong></span><span id="village-stage-text">Anfangszustand · Vorschau</span></div>
-        <div class="village-view" id="village-view" data-snow="1">
+        <div class="village-view" id="village-view" data-snow="1" data-tree="1">
           <svg viewBox="0 0 1200 670" role="img" aria-labelledby="village-title village-desc" preserveAspectRatio="xMidYMid meet">
             <title id="village-title">Illustration des Weihnachtsdorfes Lichtertal</title>
             <desc id="village-desc">Vier individuelle Gebäude um einen wachsenden Weihnachtsbaum in einer Berglandschaft. In der Designvorschau nehmen Schnee, Lichter und Dekoration zu.</desc>
             <defs>
-              <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#08192f"/><stop offset=".62" stop-color="#244f72"/><stop offset="1" stop-color="#9d9ea3"/></linearGradient>
+              <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#041126"/><stop offset=".40" stop-color="#172d53"/><stop offset=".76" stop-color="#94678a"/><stop offset="1" stop-color="#c6988f"/></linearGradient>
+              <radialGradient id="horizon-gold" cx="50%" cy="100%" r="80%"><stop stop-color="#f8c991" stop-opacity=".50"/><stop offset="1" stop-color="#f3bd8a" stop-opacity="0"/></radialGradient>
+              <radialGradient id="window-light"><stop stop-color="#fbd793" stop-opacity=".5"/><stop offset="1" stop-color="#fbd793" stop-opacity="0"/></radialGradient>
+              <pattern id="cobblestones" x="0" y="0" width="46" height="22" patternUnits="userSpaceOnUse"><path d="M0 1H46M0 22H46M0 1V10M24 1V10M12 11V22M36 11V22" stroke="#d4bd95" stroke-opacity=".24" fill="none" stroke-width="2"/></pattern>
+              <symbol id="village-lantern" viewBox="0 0 35 110"><ellipse cx="17" cy="105" rx="15" ry="5" fill="#00141c" opacity=".4"/><path d="M16 38V102" stroke="#27312b" stroke-width="8"/><path d="M5 35 8 13H28L31 35Z" fill="#f1bb59" stroke="#372a24" stroke-width="5"/><path d="M17 3V14" stroke="#423529" stroke-width="4"/><path d="M3 13H32" stroke="#40352d" stroke-width="5"/><rect x="8" y="16" width="19" height="17" fill="#ffe7ac" opacity=".86"/></symbol>
+              <symbol id="little-home" viewBox="0 0 75 70"><path d="M3 30 38 4 71 30Z" fill="#473d49"/><rect x="8" y="29" width="58" height="40" fill="#68524e"/><rect x="23" y="42" width="12" height="15" rx="2" fill="#ffce79"/><rect x="43" y="42" width="12" height="15" rx="2" fill="#ffd78b"/></symbol>
               <linearGradient id="ground" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#344b4b"/><stop offset="1" stop-color="#132d34"/></linearGradient>
               <linearGradient id="snowbank" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#e5f1ef"/><stop offset="1" stop-color="#8cafc4"/></linearGradient>
               <linearGradient id="roof" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#805647"/><stop offset="1" stop-color="#483640"/></linearGradient>
@@ -54,18 +60,24 @@
               <pattern id="snow-speckle" width="65" height="60" patternUnits="userSpaceOnUse"><circle cx="7" cy="11" r="1.4" fill="#fff" opacity=".6"/><circle cx="42" cy="34" r="1" fill="#fff" opacity=".55"/></pattern>
               <symbol id="win" viewBox="0 0 30 40"><rect width="30" height="40" rx="4" fill="#f5c977" stroke="#513b30" stroke-width="4"/><path d="M15 0V40 M0 20H30" stroke="#5d463a" stroke-width="3"/></symbol>
             </defs>
-            <rect width="1200" height="670" fill="url(#sky)"/>
+            <rect width="1200" height="670" fill="url(#sky)"/><rect width="1200" height="440" fill="url(#horizon-gold)" opacity=".65"/>
+            <g id="village-stars" fill="#fff7d8" opacity=".85"><circle cx="38" cy="34" r="1.2"/><circle cx="128" cy="72" r="2"/><circle cx="262" cy="30" r="1"/><circle cx="368" cy="78" r="1.8"/><circle cx="486" cy="42" r="1.5"/><circle cx="612" cy="58" r="1.8"/><circle cx="747" cy="38" r="1.3"/><circle cx="846" cy="67" r="1.5"/><circle cx="1094" cy="26" r="1.5"/><circle cx="1181" cy="83" r="1.8"/><path d="M504 92v13m-7-6.5h14M1073 141v15m-8-7.5h16" stroke="#fff2ca" stroke-width="2" opacity=".7"/></g>
             <circle cx="988" cy="98" r="39" fill="#f0e6ca" opacity=".88"/><circle cx="988" cy="98" r="72" fill="url(#star-glow)" opacity=".3"/>
             <g fill="#dce0dc" opacity=".75"><path d="M0 365 130 225 230 313 351 193 506 368 688 224 823 348 958 195 1137 370 1200 279V480H0Z"/><path d="M0 418 206 291 336 388 510 287 720 411 905 275 1080 371 1200 335V520H0Z" fill="#7c9cad" opacity=".8"/></g>
             <path d="M0 437Q180 405 365 453Q560 422 716 455Q987 419 1200 455V670H0Z" fill="url(#ground)"/>
             <g class="snow-layer"><path d="M0 439Q154 405 356 450Q557 418 715 451Q988 414 1200 446V670H0Z" fill="url(#snowbank)"/><path d="M535 650Q577 574 607 511Q647 556 698 670Z" fill="#9eb6c6" opacity=".8"/></g>
             <path d="M510 670Q558 580 594 538Q651 575 720 670" fill="#b5a58a" opacity=".45"/>
+            <path d="M420 670Q519 535 600 522Q673 531 795 670Z" fill="url(#cobblestones)" opacity=".75"/>
+            <g id="village-distant-homes" opacity=".74"><use href="#little-home" x="281" y="356" width="78" height="75"/><use href="#little-home" x="950" y="358" width="75" height="70"/><use href="#little-home" x="656" y="326" width="69" height="65"/><use href="#little-home" x="486" y="353" width="56" height="53"/></g>
+            <g stroke="#897861" stroke-opacity=".56" fill="none"><ellipse cx="612" cy="558" rx="169" ry="38" stroke-width="7"/><path d="M462 549Q612 586 762 549" stroke-width="4" stroke-dasharray="12 17"/></g>
+            <g class="village-lamp-glow" opacity=".7"><circle cx="440" cy="518" r="45" fill="url(#window-light)"/><circle cx="768" cy="516" r="45" fill="url(#window-light)"/></g>
+            <g class="village-lamps"><use href="#village-lantern" x="425" y="455" width="35" height="110"/><use href="#village-lantern" x="747" y="455" width="35" height="110"/><use href="#village-lantern" x="500" y="545" width="28" height="88"/><use href="#village-lantern" x="692" y="545" width="28" height="88"/></g>
             <!-- Background pine trees -->
             <g fill="#164538" stroke="#0a302b" stroke-width="2">
               <path d="M32 425 74 270 122 425ZM113 429 150 317 186 429ZM1037 439 1074 289 1118 439ZM1122 446 1161 326 1195 446Z"/>
             </g>
             <!-- LIGHTS TOWER: building 1 -->
-            <g class="building" id="art-tower" data-level="1" transform="translate(120 260)">
+            <g class="building" id="art-tower" data-level="1" transform="translate(90 245)">
               <ellipse cx="95" cy="251" rx="117" ry="19" fill="#091e27" opacity=".35"/>
               <rect x="21" y="84" width="151" height="156" rx="8" fill="url(#facade)" stroke="#433b3a" stroke-width="4"/>
               <path d="M10 95 91 17 184 95Z" fill="url(#roof)" stroke="#493334" stroke-width="6"/>
@@ -78,7 +90,7 @@
               <g class="decor-stage5"><path d="M94 -70 102 -52 122 -48 108 -35 112 -14 94 -24 76 -14 80 -35 66 -48 86 -52Z" fill="#ffde79"/><circle cx="94" cy="-44" r="51" fill="url(#star-glow)"/></g>
             </g>
             <!-- WORKSHOP -->
-            <g class="building" id="art-workshop" data-level="1" transform="translate(320 348)">
+            <g class="building" id="art-workshop" data-level="1" transform="translate(790 255)">
               <ellipse cx="92" cy="202" rx="120" ry="18" fill="#08212b" opacity=".34"/>
               <rect x="4" y="58" width="180" height="139" rx="7" fill="#8b5846" stroke="#503c35" stroke-width="4"/>
               <path d="M-12 70 94 -4 200 70Z" fill="url(#roof)" stroke="#563c38" stroke-width="6"/>
@@ -90,7 +102,7 @@
               <g class="decor-stage5"><path d="M-17 74Q92 111 197 74" stroke="#ffe58e" stroke-width="7" fill="none"/><g fill="#ffdb8f"><circle cx="21" cy="92" r="6"/><circle cx="75" cy="99" r="6"/><circle cx="125" cy="99" r="6"/><circle cx="172" cy="88" r="6"/></g></g>
             </g>
             <!-- BAKERY -->
-            <g class="building" id="art-bakery" data-level="1" transform="translate(816 350)">
+            <g class="building" id="art-bakery" data-level="1" transform="translate(200 358)">
               <ellipse cx="95" cy="198" rx="122" ry="18" fill="#08212b" opacity=".34"/>
               <rect x="4" y="60" width="184" height="136" rx="8" fill="#b78a63" stroke="#654b3e" stroke-width="4"/>
               <path d="M-12 72 94 -6 205 72Z" fill="url(#roof)" stroke="#5b3d38" stroke-width="6"/>
@@ -102,7 +114,7 @@
               <g class="decor-stage5"><path d="M13 150Q49 119 81 150" fill="none" stroke="#fff5d0" stroke-width="5"/><g fill="#f0bf72"><circle cx="25" cy="86" r="5"/><circle cx="83" cy="96" r="5"/><circle cx="146" cy="93" r="5"/></g></g>
             </g>
             <!-- PEACE INN -->
-            <g class="building" id="art-inn" data-level="1" transform="translate(1022 262)">
+            <g class="building" id="art-inn" data-level="1" transform="translate(965 348)">
               <ellipse cx="84" cy="239" rx="104" ry="17" fill="#08212b" opacity=".34"/>
               <rect x="8" y="81" width="155" height="150" rx="6" fill="#a27d66" stroke="#55463c" stroke-width="4"/>
               <path d="M-1 92 84 20 179 92Z" fill="url(#roof)" stroke="#654b3e" stroke-width="6"/>
@@ -127,12 +139,21 @@
               <g class="tree-star"><circle cx="0" cy="212" r="78" fill="url(#star-glow)"/><path d="M0 167 13 197 46 200 22 220 28 252 0 236 -28 252 -22 220 -46 200 -13 197Z" fill="#fff0b5" stroke="#d6a954" stroke-width="4"/></g>
               <g class="tree-final"><circle cx="0" cy="370" r="230" fill="url(#star-glow)" opacity=".26"/></g>
             </g>
-            <g class="snow-particles"><rect width="1200" height="670" fill="url(#snow-speckle)"/></g>
+            <g id="christmas-light-finale" aria-hidden="true" pointer-events="none">
+              <g fill="none" stroke="#ffe3a0" stroke-width="12" stroke-linecap="round" opacity=".9" filter="url(#glow)"><path d="M612 410Q362 355 211 343"/><path d="M612 410Q786 343 878 340"/><path d="M612 410Q396 540 291 494"/><path d="M612 410Q878 550 1048 493"/></g>
+              <circle cx="612" cy="400" r="245" fill="url(#star-glow)" opacity=".25"/>
+            </g><g class="snow-particles"><rect width="1200" height="670" fill="url(#snow-speckle)"/></g>
           </svg>
           <div class="view-vignette" aria-hidden="true"></div>
-          <div class="village-overlay"><span>🎄</span><strong>Kapitel 1: Das Weihnachtswunder</strong><small>Von einem schlichten Dorf zur festlichen Weihnachtsstadt</small></div>
+          <div class="village-hotspots" aria-label="Gebäude auf dem Weihnachtsdorf">
+            <button type="button" class="building-hotspot hotspot-tower" data-open-building="tower" title="Weihnachtslichter-Turm ansehen">⭐ <span>Weihnachtslichter-Turm</span><small data-hotspot-level="tower">1/5</small></button>
+            <button type="button" class="building-hotspot hotspot-workshop" data-open-building="workshop" title="Wichtelwerkstatt ansehen">🎁 <span>Wichtelwerkstatt</span><small data-hotspot-level="workshop">1/5</small></button>
+            <button type="button" class="building-hotspot hotspot-bakery" data-open-building="bakery" title="Weihnachtsbäckerei ansehen">🍪 <span>Weihnachtsbäckerei</span><small data-hotspot-level="bakery">1/5</small></button>
+            <button type="button" class="building-hotspot hotspot-inn" data-open-building="inn" title="Friedensherberge ansehen">🕯️ <span>Friedensherberge</span><small data-hotspot-level="inn">1/5</small></button>
+          </div>
+          <div class="village-overlay"><span class="overlay-spark">✧</span><strong id="village-scene-title">Die Weihnachtsreise beginnt</strong><small id="village-scene-caption">Das Dorf wartet noch auf seine erste Weihnachtsdekoration.</small></div>
         </div>
-        <div class="village-caption"><span>✨ Entwurfsansicht · Entwicklung noch nicht mit DOG synchronisiert</span><button id="village-preview-reset" type="button" class="button quiet">Vorschau zurücksetzen</button></div>
+        <div class="village-caption"><span>✨ <strong>Designvorschau:</strong> Noch keine echten Gewinne oder Spielstände · <span id="village-preview-count">0 / 16 Ausbauschritte</span></span><div class="village-preview-actions"><button id="village-preview-reset" type="button" class="button quiet">↶ Zurücksetzen</button><button id="village-preview-next" type="button" class="button gold">✦ Nächste Entwicklungsstufe</button></div></div>
       </div>
       <div class="event-stat-grid">
         <article class="stat-card"><span>🏠</span><div><strong id="stat-building-levels">4 / 20</strong><small>Gebäudestufen zusammen</small></div></article>
