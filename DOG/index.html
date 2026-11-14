@@ -195,6 +195,60 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 .dog-joker-choice.dog-designed.has-dog-art{background:linear-gradient(180deg,#efd5a0,#fff3d6 20%,#fff3d6 80%,#efd5a0)!important}
 .playing-card.dog-designed .dog-card-art,
 .dog-joker-choice.dog-designed .dog-card-art{object-fit:contain;display:block}
+
+/* DOG tablet hand layout v2: all six cards visible, larger art, true 5:7 proportions.
+   Reclaim unused width from the board frame without reducing the board itself. */
+@media (min-width:900px) and (orientation:landscape) and (max-height:1100px){
+ .layout{grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)}
+ .hand{display:flex;align-items:flex-start;justify-content:flex-start;gap:7px;padding:6px 2px 11px;overflow-x:auto;overflow-y:visible}
+ .hand .playing-card.dog-designed{
+   flex:0 0 auto;box-sizing:border-box;
+   width:min(126px,calc((100% - 35px) / 6),17dvh);
+   height:auto;aspect-ratio:5/7;min-width:0;max-width:none;padding:0;
+   cursor:pointer;
+ }
+ .hand[data-card-count="1"] .playing-card.dog-designed,
+ .hand[data-card-count="2"] .playing-card.dog-designed,
+ .hand[data-card-count="3"] .playing-card.dog-designed{
+   width:min(148px,calc((100% - 14px) / 3),17dvh);
+ }
+ .hand[data-card-count="4"] .playing-card.dog-designed{
+   width:min(144px,calc((100% - 21px) / 4),17dvh);
+ }
+ .hand[data-card-count="5"] .playing-card.dog-designed{
+   width:min(132px,calc((100% - 28px) / 5),17dvh);
+ }
+ .hand .playing-card.dog-designed.picked{
+   outline:3px solid #ffe38f;outline-offset:2px;
+   box-shadow:0 0 0 2px #342204,0 0 17px #fbd879a8,0 9px 20px #0009;
+   transform:translateY(-3px);z-index:5;
+ }
+ .hand .playing-card.dog-designed:focus-visible{
+   outline:3px solid #ffe38f;outline-offset:2px;z-index:6;
+ }
+}
+@media (min-width:900px) and (orientation:landscape) and (max-height:650px){
+ .hand{padding:2px 2px 6px;gap:5px}
+ .hand .playing-card.dog-designed{
+   width:min(100px,calc((100% - 25px) / 6),16dvh);
+ }
+ .hand[data-card-count="1"] .playing-card.dog-designed,
+ .hand[data-card-count="2"] .playing-card.dog-designed,
+ .hand[data-card-count="3"] .playing-card.dog-designed{
+   width:min(110px,calc((100% - 10px) / 3),16dvh);
+ }
+ .hand[data-card-count="4"] .playing-card.dog-designed{
+   width:min(105px,calc((100% - 15px) / 4),16dvh);
+ }
+ .hand[data-card-count="5"] .playing-card.dog-designed{
+   width:min(100px,calc((100% - 20px) / 5),16dvh);
+ }
+}
+@media (max-width:899px), (orientation:portrait){
+ .hand{gap:8px;padding:7px 4px 13px;overflow-x:auto;overflow-y:visible}
+ .hand .playing-card.dog-designed{width:clamp(76px,20vw,118px);height:auto;aspect-ratio:5/7}
+ .hand .playing-card.dog-designed.picked{outline:3px solid #ffe38f;outline-offset:2px;z-index:5}
+}
 </style>
 </head>
 <body>
@@ -328,7 +382,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 })();
 </script>
 <script type="module">
-import('./app.js?v=19').catch(error=>{
+import('./app.js?v=20').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
