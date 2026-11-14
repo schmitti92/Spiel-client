@@ -22,23 +22,6 @@
 .dog-emoji-note{color:#ffe0a6!important;min-height:17px}
 @media(max-width:540px){.dog-emoji-slot-list,.dog-emoji-collection{gap:4px}.dog-emoji-slot,.dog-emoji-option{padding:5px 1px;min-height:62px}.dog-emoji-option small{font-size:9px}.dog-emoji-editor{padding:10px!important}}
 
-/* DOG game: five quick actions pop from the existing Emojis icon. */
-.dog-emoji-quickpick{
- position:fixed;z-index:11000;box-sizing:border-box;
- width:min(350px,calc(100vw - 16px));padding:12px;
- border:1.5px solid #efc772;border-radius:16px;
- background:linear-gradient(140deg,rgba(9,41,74,.98),rgba(2,17,37,.98));
- color:#fff0d3;box-shadow:0 10px 25px #0009,0 0 13px #deb56651;
- -webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);
-}
-.dog-emoji-quickpick[hidden]{display:none!important}
-.dog-emoji-game-title{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:900;margin-bottom:9px}
-.dog-emoji-game-title button{font-size:20px;line-height:1;color:#ffe4aa;border:0;background:none;cursor:pointer;padding:2px 6px}
-.dog-emoji-game-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
-.dog-emoji-game-tile{min-width:0;aspect-ratio:1;border:1px solid #d6ad69;border-radius:11px;background:#092a4b;color:#fff;font-size:clamp(22px,3.5vw,34px);cursor:pointer}
-.dog-emoji-game-tile:not(:disabled):hover,.dog-emoji-game-tile:focus-visible{background:#275579;border-color:#ffdf89;box-shadow:0 0 9px #f9d16f96}
-.dog-emoji-game-tile:disabled{opacity:.33;cursor:default}
-.dog-emoji-quickpick [data-emoji-game-status]{display:block;font-size:11px;color:#bdcfdb;margin-top:8px}
 .dog-emoji-overlay{position:fixed;inset:0;z-index:20000;pointer-events:none;display:grid;place-items:center;visibility:hidden;opacity:0}
 .dog-emoji-overlay.is-showing{visibility:visible;opacity:1}
 .dog-emoji-effect{display:flex;flex-direction:column;align-items:center;gap:0;filter:drop-shadow(0 8px 18px #0008)}
@@ -61,3 +44,72 @@
  padding:11px 16px;background:#172e45f0;color:#fff1d5;font-size:13px;font-weight:850;
  box-shadow:0 5px 18px #0009;text-align:center;pointer-events:none}
 .dog-emoji-error-toast[hidden]{display:none!important}
+
+/* DOG game: large, persistent emoji drawer below the five extension buttons.
+   The parent panel is shared with future Events/Magic/Items modules. */
+.right.dog-modules>.dog-extension-panel[hidden],
+.dog-extension-panel [hidden]{display:none!important}
+.right.dog-modules>.dog-extension-panel:not([hidden]){
+ display:flex!important;flex-direction:column!important;
+ flex:1 0 clamp(175px,23dvh,310px)!important;
+ min-height:175px!important;min-width:0!important;
+ padding:12px 14px!important;
+ background:linear-gradient(150deg,rgba(5,28,56,.72),rgba(4,23,49,.54))!important;
+ border:1px solid rgba(239,206,143,.45)!important;
+ border-radius:18px!important;
+ box-shadow:0 6px 22px rgba(0,0,0,.19),inset 0 1px rgba(255,255,255,.1)!important;
+ -webkit-backdrop-filter:blur(5px)!important;
+ backdrop-filter:blur(5px)!important;
+}
+.dog-extension-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;
+ padding:0 0 9px;border-bottom:1px solid rgba(230,199,141,.27);
+ color:#ffe7b4;font-size:clamp(13px,1.45vw,17px);font-weight:900}
+.dog-extension-heading button{width:33px;height:33px;flex:0 0 auto;border-radius:50%;
+ display:grid;place-items:center;border:1px solid #d7b87899;color:#ffe6a8;
+ font-size:24px;line-height:1;cursor:pointer;background:rgba(4,27,54,.65)}
+.dog-extension-heading button:hover,.dog-extension-heading button:focus-visible{
+ border-color:#ffdf8b;background:#1d476b}
+.dog-extension-content{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center}
+.dog-extension-placeholder{max-width:560px;margin:auto;color:#e4e6e4;line-height:1.55;
+ font-size:13px;text-align:center;padding:15px}
+.dog-emoji-panel-root{flex:1;display:flex;flex-direction:column;
+ justify-content:center;gap:9px;padding:10px 0 4px}
+.dog-emoji-panel-intro{margin:0;color:#e7e4da;font-size:clamp(11px,1vw,14px);
+ text-align:center;line-height:1.4}
+.dog-emoji-panel-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(5px,.8vw,12px);
+ width:100%;max-width:680px;margin:0 auto}
+.dog-emoji-panel-tile{min-width:0;min-height:clamp(72px,11dvh,120px);
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+ border:1.5px solid #d6ad69;border-radius:14px;
+ background:linear-gradient(145deg,rgba(8,41,72,.91),rgba(3,18,39,.92));color:#fff4dd;
+ box-shadow:0 3px 10px rgba(0,0,0,.23),inset 0 1px #ffffff28;
+ cursor:pointer;touch-action:manipulation}
+.dog-emoji-panel-tile:not(:disabled):hover,
+.dog-emoji-panel-tile:not(:disabled):focus-visible{
+ background:#245477;border-color:#ffe19e;outline:2px solid #f1cc7f;
+ box-shadow:0 0 14px #ffd57677;transform:translateY(-2px)}
+.dog-emoji-panel-tile:disabled{opacity:.36;cursor:default}
+.dog-emoji-panel-icon{font-size:clamp(30px,4vw,59px);line-height:1.1}
+.dog-emoji-panel-tile small{color:#f1e1c0;font-size:clamp(10px,.9vw,13px);
+ font-weight:800;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.dog-emoji-panel-status{font-size:11px;color:#c9d9e9;min-height:15px;
+ margin:0;text-align:center;line-height:1.4}
+.right.dog-modules .dog-extras-grid .dog-extra-button.is-active{
+ border-color:#ffdda2!important;
+ box-shadow:0 0 0 2px rgba(246,200,110,.36),0 0 17px rgba(255,196,77,.49)!important;
+ background:linear-gradient(145deg,rgba(48,69,87,.95),rgba(15,47,82,.96))!important;
+}
+@media(min-width:900px) and (orientation:landscape) and (max-height:670px){
+ .right.dog-modules>.dog-extension-panel:not([hidden]){min-height:150px!important;flex-basis:150px!important;padding:8px!important}
+ .dog-emoji-panel-tile{min-height:59px;gap:3px}
+ .dog-emoji-panel-icon{font-size:clamp(26px,3vw,42px)}
+ .dog-emoji-panel-intro{font-size:10px}
+ .dog-emoji-panel-root{padding:5px 0;gap:5px}
+}
+@media(max-width:540px){
+ .dog-extension-panel{padding:9px!important}
+ .dog-emoji-panel-grid{gap:4px}
+ .dog-emoji-panel-tile{min-height:70px;gap:3px;padding:4px 1px}
+ .dog-emoji-panel-icon{font-size:28px}
+ .dog-emoji-panel-tile small{font-size:9px}
+}
