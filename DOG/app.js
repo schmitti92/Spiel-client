@@ -265,8 +265,18 @@ function renderHand(){
   actions.insertAdjacentHTML('beforeend',special.map(m=>'<button type="button" class="move-button" data-special="'+m.type+'">'+(m.type==='exchange'?'Karte weitergeben':m.type==='seven'?'7 beginnen':'Tauschkarte ablegen')+'</button>').join(''));
   $('move-help').textContent=game.phase==='exchange'?'Wähle die Karte für deinen Partner.':game.phase==='seven'?'Figur und Zielfeld selbst wählen. Noch '+(7-game.seven.spent)+' Schritte.':selectedCard===null?'Wähle eine Karte.':'Figur und Zielfeld selbst antippen – ohne Zugvorschläge.';
 }
+function renderCardPiles(){
+ const deck=Array.isArray(game.deck)?game.deck:null;
+ const discard=Array.isArray(game.discard)?game.discard:null;
+ $('dog-deck-count').textContent=deck?deck.length+' Karten':'Verdeckt';
+ $('dog-discard-count').textContent=discard?discard.length+' Karten':'Verdeckt';
+ const last=discard?.at(-1);
+ $('dog-discard-art').textContent=last?cardsLabel(last.type):'—';
+ $('dog-discard-art').title=last?'Zuletzt abgelegt: '+last.type:'Noch keine Karte abgelegt';
+}
 function render(){
   if(!game)return;
+  renderCardPiles();
   if(!online)$('human-count').value=String(humans);
   $('round').textContent=String(game.round);
   $('phase').textContent=game.phase==='exchange'?'Geheimer Kartentausch':game.phase==='seven'?'7 verteilen':game.phase==='finished'?'Spielende':'Kartenrunde';
