@@ -368,13 +368,15 @@ function renderCardPiles(){
  const discard=Array.isArray(game.discard)?game.discard:null;
  $('dog-deck-count').textContent=deck?deck.length+' Karten':'Verdeckt';
  $('dog-discard-count').textContent=discard?discard.length+' Karten':'Verdeckt';
- const last=discard?.at(-1);
+ // The pile represents the latest played card across ALL players, not
+ // the viewer's own cards. Never infer it from another player's hidden hand.
+ const last=game.lastPlayedCard||discard?.at(-1)||null;
  const discardArt=$('dog-discard-art');
  const art=last?cardVisual(last.type).image:null;
  discardArt.classList.toggle('has-card',!!art);
  discardArt.style.backgroundImage=art?'url("'+art+'")':'';
  discardArt.textContent=art?'':last?cardsLabel(last.type):'—';
- discardArt.title=last?'Zuletzt abgelegt: '+last.type:'Noch keine Karte abgelegt';
+ discardArt.title=last?'Zuletzt gespielt: '+last.type+(Number.isInteger(last.seat)?' · '+(game.players?.[last.seat]?.name||'Spieler'):''):'Noch keine Karte gespielt';
 }
 function render(){
   if(!game)return;
