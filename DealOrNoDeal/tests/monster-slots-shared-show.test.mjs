@@ -50,7 +50,7 @@ test('uploaded premium assets are live in the shared slot and preserve old fallb
  assert.match(css,/monster-slot-shared-caption/);
  assert.match(css,/@media\(max-width:570px\)/);
  assert.match(html,/monster-slots-shared-show\.css\?v=20261114-slot-handoff-v3-six-two/);
- assert.match(html,/monster-slots-final\.js\?v=20261114-slot-handoff-v3-six-two-six-two);
+ assert.match(html,/monster-slots-final\.js\?v=20261114-slot-handoff-v3-six-two/);
 });
 
 
