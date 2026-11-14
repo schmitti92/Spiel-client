@@ -32,7 +32,7 @@ test('UI includes supported settings and exactly two selectable boards',()=>{
 test('Unsupported settings remain preview-only and do not change game rules',()=>{
  assert.match(html,/Aktuell steht ausschließlich das klassische Spielfeld zur Verfügung/i);
  assert.match(html,/Weitere Wertungen sind noch nicht im Spiel verfügbar/);
- assert.match(js,/const supported=\['layoutMode','target','jokerCount','streetModeEnabled','jokerEnabled','beginner','toreSpecialEnabled'\]/);
+ assert.match(js,/const supported=\['layoutMode','target','jokerCount','streetModeEnabled','jokerEnabled','beginner'\]/);
  assert.doesNotMatch(js,/mutate\('\/skyjo-settings'.*?(?:streetScoring|specialCards)/);
 });
 test('All settings changes use authenticated server endpoints with server-host restrictions',()=>{
@@ -48,8 +48,7 @@ test('All settings changes use authenticated server endpoints with server-host r
 test('Skyjo selected from online home opens the dedicated mask, other games remain unchanged',()=>{
  assert.match(home,/Skyjo\/skyjo_start\.html\?room=/);
  assert.match(home,/hub-lobby\.html\?room=/);
- assert.match(hub,/room\.game==='skyjo'/);
- assert.doesNotMatch(hub,/location\.replace\('Skyjo\/skyjo_start\.html/);
+ assert.match(hub,/Skyjo\/skyjo_start\.html\?room=/);
 });
 test('Automatic ready start preserved, spectators cannot mark themselves ready',()=>{
  assert.match(js,/me\?\.participating/);
