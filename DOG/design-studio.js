@@ -1,4 +1,4 @@
-import {BOARD_STYLES,SCENE_STYLES,HUD_LAYOUTS,HUD_TONES,loadAppearance,saveAppearance,validAssetPath} from './appearance-registry.js?v=19';
+import {BOARD_STYLES,BOARD_FRAMES,SCENE_STYLES,HUD_LAYOUTS,HUD_TONES,loadAppearance,saveAppearance,validAssetPath} from './appearance-registry.js?v=20';
 import {APPROVED_BOARD_LAYOUT as LAYOUT} from './approved-board.js';
 const $=id=>document.getElementById(id);
 const S='http://www.w3.org/2000/svg',KEY='dog:design-studio:presets:v1';
@@ -7,6 +7,7 @@ const SCENES=['schloss','none'];
 const N={studio:'TV-Studio',schiefer:'Schiefer',holz:'Holz',pergament:'Pergament',bergsee:'Bergsee',goldwellen:'Goldwellen',royalMarmor:'Royal-Marmor',midnight:'Mitternacht',forest:'Waldlichtung',winter:'Winterabend',none:'Ohne Hintergrund',schloss:'Magisches Schloss am Nebelsee',maerchental:'Märchental',zauberwald:'Zauberwald',kuestenabenteuer:'Küstenabenteuer',alpenland:'Alpenland',royalKarten:'Royal-Karten'};
 const C=['#e75c59','#419ef0','#48c27c','#ffc94d'],name=id=>N[id]||id;
 const validBoard=id=>typeof id==='string'&&Object.hasOwn(BOARD_STYLES,id);
+const validFrame=id=>typeof id==='string'&&Object.hasOwn(BOARD_FRAMES,id);
 const validScene=id=>typeof id==='string'&&Object.hasOwn(SCENE_STYLES,id);
 const validHudLayout=id=>typeof id==='string'&&Object.hasOwn(HUD_LAYOUTS,id);
 const validHudTone=id=>typeof id==='string'&&Object.hasOwn(HUD_TONES,id);
@@ -14,11 +15,11 @@ const safeUrl=p=>validAssetPath(p)?new URL(p,import.meta.url).href:null;
 const image=t=>safeUrl(t?.image)||safeUrl(t?.fallbackImage);
 const bg=t=>image(t)?'url("'+image(t)+'")':(t?.page||'linear-gradient(130deg,#28445d,#091b29)').replace(/,\s*(#[\da-f]{3,8})\s*$/i,(_,c)=>',linear-gradient('+c+','+c+')');
 const status=message=>$('studio-status').textContent=message;
-const applied=()=>{const v=loadAppearance();return {board:validBoard(v.board)?v.board:'studio',scene:validScene(v.scene)?v.scene:'schloss',hudLayout:validHudLayout(v.hudLayout)?v.hudLayout:'classic',hudTone:validHudTone(v.hudTone)?v.hudTone:'classic'}};
+const applied=()=>{const v=loadAppearance();return {board:validBoard(v.board)?v.board:'studio',boardFrame:validFrame(v.boardFrame)?v.boardFrame:'classic',scene:validScene(v.scene)?v.scene:'schloss',hudLayout:validHudLayout(v.hudLayout)?v.hudLayout:'classic',hudTone:validHudTone(v.hudTone)?v.hudTone:'classic'}};
 const start=applied();
 let draft={...start};
 function loadPresets(){
- try{const a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a.slice(0,30).filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&validBoard(x.board)).map(x=>({id:x.id.slice(0,64),name:x.name.slice(0,40),scene:validScene(x.scene)?x.scene:'schloss',board:x.board,hudLayout:validHudLayout(x.hudLayout)?x.hudLayout:'classic',hudTone:validHudTone(x.hudTone)?x.hudTone:'classic',favorite:x.favorite===true})):[]}
+ try{const a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a.slice(0,30).filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&validBoard(x.board)).map(x=>({id:x.id.slice(0,64),name:x.name.slice(0,40),scene:validScene(x.scene)?x.scene:'schloss',board:x.board,boardFrame:validFrame(x.boardFrame)?x.boardFrame:'classic',hudLayout:validHudLayout(x.hudLayout)?x.hudLayout:'classic',hudTone:validHudTone(x.hudTone)?x.hudTone:'classic',favorite:x.favorite===true})):[]}
  catch{return []}
 }
 let presets=loadPresets();
@@ -54,7 +55,16 @@ function drawBoard(){
  element('text',{x:380,y:397,'text-anchor':'middle','font-size':65,'font-weight':900,'font-family':'Georgia,serif',fill:'#ffe5ab'},svg).textContent='DOG';
  element('text',{x:380,y:422,'text-anchor':'middle','font-size':13,'letter-spacing':3,fill:'#f4daac'},svg).textContent='DESIGN STUDIO';
 }
+function renderFramePreview(){
+ const frame=BOARD_FRAMES[draft.boardFrame]||BOARD_FRAMES.classic;
+ const box=$('preview-screen');
+ box.dataset.boardFrame=draft.boardFrame;
+ const props={'--frame-fill':frame.fill,'--frame-line':frame.stroke,'--frame-inner':frame.inner,'--frame-glow':frame.glow,'--frame-glow-size':frame.glowSize,'--frame-radius':frame.radius};
+ for(const [key,value] of Object.entries(props))box.style.setProperty(key,value);
+ document.querySelectorAll('[data-frame-id]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.frameId===draft.boardFrame)));
+}
 function refresh(){
+ renderFramePreview();
  const tone=HUD_TONES[draft.hudTone]||HUD_TONES.classic;
  const panel=$('hud-preview');
  for(const [from,to] of [['panel','--hud-panel'],['seat','--hud-seat'],['inner','--hud-inner'],['button','--hud-button'],['border','--hud-border'],['accent','--hud-accent'],['text','--hud-text'],['muted','--hud-muted']]){
@@ -63,7 +73,7 @@ function refresh(){
  $('hud-preview').dataset.layout=draft.hudLayout;
  document.querySelectorAll('[data-hud-tone]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.hudTone===draft.hudTone)));
  $('preview-stage').style.setProperty('--scene-wallpaper',bg(SCENE_STYLES[draft.scene]));
- $('preview-heading').textContent=name(draft.scene)+' + '+name(draft.board)+' · '+tone.label;
+ $('preview-heading').textContent=name(draft.scene)+' + '+name(draft.board)+' · '+(BOARD_FRAMES[draft.boardFrame]||BOARD_FRAMES.classic).label+' · '+tone.label;
  document.querySelectorAll('[data-scene]').forEach(e=>e.setAttribute('aria-pressed',String(e.dataset.scene===draft.scene)));
  document.querySelectorAll('[data-board]').forEach(e=>e.setAttribute('aria-pressed',String(e.dataset.board===draft.board)));
  drawBoard();
@@ -81,6 +91,23 @@ function makeOption(list,id,t,kind){
 }
 SCENES.filter(validScene).forEach(k=>makeOption($('scene-choices'),k,SCENE_STYLES[k],'scene'));
 BOARDS.filter(validBoard).forEach(k=>makeOption($('board-choices'),k,BOARD_STYLES[k],'board'));
+// Frame options are styled swatches, not new SVG boards. The actual game
+// uses precisely these whitelisted styles on its outer .board-card.
+const frameList=$('frame-choices');
+for(const [id,frame] of Object.entries(BOARD_FRAMES)){
+ const button=document.createElement('button');button.type='button';button.className='frame-choice';
+ button.dataset.frameId=id;button.setAttribute('aria-pressed','false');
+ const preview=document.createElement('span');preview.className='frame-choice-sample';preview.setAttribute('aria-hidden','true');
+ for(const [prop,value] of Object.entries({'--sample-line':frame.stroke,'--sample-inner':frame.inner,'--sample-glow':frame.glow,'--sample-fill':frame.fill,'--sample-radius':frame.radius}))preview.style.setProperty(prop,value);
+ const text=document.createElement('span');text.className='frame-choice-info';
+ const title=document.createElement('strong');title.textContent=frame.label;
+ const desc=document.createElement('small');desc.textContent=frame.description;
+ text.append(title,desc);
+ const tick=document.createElement('span');tick.className='frame-choice-check';tick.textContent='✓';tick.setAttribute('aria-hidden','true');
+ button.append(preview,text,tick);
+ button.addEventListener('click',()=>{draft.boardFrame=id;refresh();status('Brettrahmen „'+frame.label+'“ ausgewählt. Zum Übernehmen „Im Spiel verwenden“ drücken.');});
+ frameList.append(button);
+}
 // Keep gameplay actions outside the editor: these are purely visual previews.
 const layoutTarget=$('hud-layout-choices');
 for(const [id,entry] of Object.entries(HUD_LAYOUTS)){
@@ -112,20 +139,20 @@ $('board-tab').addEventListener('click',()=>showPanel('board'));
 $('hud-tab').addEventListener('click',()=>showPanel('hud'));
 showPanel('board');
 function apply(){
- try{saveAppearance({...loadAppearance(),board:draft.board,scene:draft.scene,sidebar:draft.scene==='schloss'?'schloss':'none',hudLayout:draft.hudLayout,hudTone:draft.hudTone});renderPresets();status('✓ '+name(draft.scene)+' + '+name(draft.board)+' · Spielblock '+HUD_TONES[draft.hudTone].label+' für DOG aktiviert.');return true}
+ try{saveAppearance({...loadAppearance(),board:draft.board,boardFrame:draft.boardFrame,scene:draft.scene,sidebar:draft.scene==='schloss'?'schloss':'none',hudLayout:draft.hudLayout,hudTone:draft.hudTone});renderPresets();status('✓ '+name(draft.scene)+' + '+name(draft.board)+' · Rahmen '+BOARD_FRAMES[draft.boardFrame].label+' · Spielblock '+HUD_TONES[draft.hudTone].label+' für DOG aktiviert.');return true}
  catch{status('⚠️ Das Design konnte nicht im Browser gespeichert werden.');return false}
 }
 const ideas=[{name:'Zauberwald',scene:'schloss',board:'zauberwald'},{name:'Küstenabenteuer',scene:'schloss',board:'kuestenabenteuer'},{name:'Royal-Karten',scene:'schloss',board:'royalKarten'}];
 function makePreset(p,idea){
  const box=document.createElement('article');box.className='preset';
- const a=applied();if(a.scene===p.scene&&a.board===p.board&&a.hudTone===p.hudTone&&a.hudLayout===p.hudLayout)box.classList.add('active');
+ const a=applied();if(a.scene===p.scene&&a.board===p.board&&a.boardFrame===(p.boardFrame||'classic')&&a.hudTone===p.hudTone&&a.hudLayout===p.hudLayout)box.classList.add('active');
  const art=document.createElement('span');art.className='preset-art';art.style.backgroundImage=bg(SCENE_STYLES[p.scene]);
  const body=document.createElement('div');body.className='preset-body';
  const title=document.createElement('strong');title.textContent=(p.favorite?'★ ':'')+p.name;
- const sub=document.createElement('small');sub.textContent=name(p.scene)+' + '+name(p.board)+' · '+(HUD_TONES[p.hudTone||'classic']||HUD_TONES.classic).label+(idea?' · Vorlage':'');
+ const sub=document.createElement('small');sub.textContent=name(p.scene)+' + '+name(p.board)+' · Rahmen '+(BOARD_FRAMES[p.boardFrame||'classic']||BOARD_FRAMES.classic).label+' · '+(HUD_TONES[p.hudTone||'classic']||HUD_TONES.classic).label+(idea?' · Vorlage':'');
  const acts=document.createElement('div');acts.className='preset-actions';
  const use=document.createElement('button');use.type='button';use.textContent=idea?'Vorschau':'Anwenden';use.addEventListener('click',()=>{
-  draft={scene:p.scene,board:p.board,hudLayout:p.hudLayout||'classic',hudTone:p.hudTone||'classic'};refresh();
+  draft={scene:p.scene,board:p.board,boardFrame:p.boardFrame||'classic',hudLayout:p.hudLayout||'classic',hudTone:p.hudTone||'classic'};refresh();
   if(idea)status('Vorlage geladen – jetzt speichern oder im Spiel verwenden.');else apply();
  });
  acts.append(use);
@@ -147,7 +174,7 @@ function renderPresets(){
  }
 }
 $('apply-design').addEventListener('click',apply);
-$('new-design').addEventListener('click',()=>{draft={scene:'schloss',board:'goldwellen',hudLayout:'classic',hudTone:'classic'};refresh();status('Neuer Entwurf gestartet – gespeicherte Designs bleiben erhalten.')});
+$('new-design').addEventListener('click',()=>{draft={scene:'schloss',board:'goldwellen',boardFrame:'classic',hudLayout:'classic',hudTone:'classic'};refresh();status('Neuer Entwurf gestartet – gespeicherte Designs bleiben erhalten.')});
 $('save-top').addEventListener('click',()=>{
  if(presets.length>=30){status('Maximal 30 Designs. Lösche zuerst ein altes.');return}
  $('design-name').value='Mein DOG-Design '+(presets.length+1);$('save-dialog').showModal();$('design-name').select();
@@ -155,7 +182,7 @@ $('save-top').addEventListener('click',()=>{
 $('cancel-save').addEventListener('click',()=>$('save-dialog').close());
 $('save-form').addEventListener('submit',e=>{
  e.preventDefault();const n=$('design-name').value.trim();if(!n)return;
- const p={id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),name:n.slice(0,40),scene:draft.scene,board:draft.board,hudLayout:draft.hudLayout,hudTone:draft.hudTone,favorite:false};
+ const p={id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),name:n.slice(0,40),scene:draft.scene,board:draft.board,boardFrame:draft.boardFrame,hudLayout:draft.hudLayout,hudTone:draft.hudTone,favorite:false};
  presets.unshift(p);if(!persist()){presets.shift();return}
  $('save-dialog').close();refresh();if(apply())status('💾 „'+p.name+'“ gespeichert und für DOG aktiviert.');
 });
@@ -164,4 +191,4 @@ try{
  if(u&&u.origin===location.origin&&['hub-lobby.html','spielauswahl-lokal.html','index.html'].includes(u.pathname.split('/').pop()))$('back-link').href=u.href;
 }catch{}
 refresh();renderPresets();
-status('Wähle Brett, Schloss-Hintergrund und Farbton für den rechten Spielblock. Keine Firebase-Schreibvorgänge beim Gestalten.');
+status('Gestalte Brett, Brettrahmen, Hintergrund und rechten Spielblock – lokal und ohne Firebase-Schreibvorgänge.');
