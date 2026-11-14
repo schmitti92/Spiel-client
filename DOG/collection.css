@@ -190,3 +190,7 @@ button{touch-action:manipulation}
 @media(prefers-reduced-motion:reduce){
  .collection-tile,.collection-detail-content .detail-image,.collection-toast{animation:none!important}
 }
+
+:root[data-dog-motion="off"] *,:root[data-dog-motion="off"] *::before,:root[data-dog-motion="off"] *::after{
+ animation:none!important;transition-duration:0s!important;scroll-behavior:auto!important
+}
