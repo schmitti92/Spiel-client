@@ -66,6 +66,21 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 .dog-appearance-buttons button:last-child{color:#142536;background:#e9bf7d;border-color:#e9bf7d}
 @media(max-width:530px){.dog-appearance-layout{grid-template-columns:1fr}.dog-appearance-layout label:first-child{grid-column:1/-1}}
 
+/* DOG Royal Color Edition: semantic card skin, extensible via data-card-kind. */
+.playing-card.dog-designed,.dog-joker-choice.dog-designed{--card-accent:#153f60;--card-dark:#092c43;--card-light:#fff7e5;position:relative;isolation:isolate;overflow:hidden;aspect-ratio:5/7;border:2px solid #d9ad57!important;border-radius:10px;background:radial-gradient(circle at 50% 36%,#fffdf3 0%,var(--card-light) 65%,#e7d3a9 100%)!important;color:var(--card-dark)!important;box-shadow:inset 0 0 0 2px #fff4ce,0 4px 12px #0006}
+.playing-card.dog-designed::before,.dog-joker-choice.dog-designed::before{content:"";position:absolute;inset:3px;border:1px solid #b58a43;border-radius:6px;pointer-events:none}
+.dog-designed[data-card-kind="home"]{--card-accent:#147441;--card-dark:#06482e;--card-light:#dcf4dc}
+.dog-designed[data-card-kind="reverse"]{--card-accent:#71339c;--card-dark:#4c1c75;--card-light:#f1ddff}
+.dog-designed[data-card-kind="split"]{--card-accent:#a36a0d;--card-dark:#714309;--card-light:#fff0c2}
+.dog-designed[data-card-kind="swap"]{--card-accent:#145aa3;--card-dark:#103d77;--card-light:#d9edff}
+.dog-designed[data-card-kind="wild"]{--card-accent:#a62330;--card-dark:#6e1120;--card-light:#ffe0c6}
+.dog-designed .dog-card-top{position:relative;z-index:1;align-self:stretch;display:flex;justify-content:space-between;align-items:center;width:100%;padding:1px 4px;background:var(--card-accent);color:#fff9dc;border-radius:5px 5px 2px 2px;font-size:clamp(9px,1.2vw,13px);font-weight:900;line-height:1.3}
+.dog-designed .dog-card-main{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;align-items:center;flex:1;min-height:0;gap:1px}
+.dog-designed .dog-card-value{font-size:clamp(17px,2.7vw,33px);font-weight:1000;line-height:1.05;color:var(--card-dark);text-shadow:0 1px #fff}
+.dog-designed .dog-card-symbol{font-size:clamp(15px,2vw,24px);line-height:1.1;white-space:nowrap}
+.dog-designed .dog-card-footer{position:relative;z-index:1;align-self:stretch;padding:2px 2px;text-align:center;background:var(--card-accent);border-radius:2px 2px 5px 5px;color:#fff7df;font-size:clamp(7px,.75vw,10px);font-weight:800;line-height:1.15}
+.dog-joker-choice.dog-designed{padding:4px;min-height:110px}.dog-joker-choice.dog-designed .dog-card-value{font-size:25px}
+@media(max-width:680px){.dog-designed .dog-card-top{font-size:10px}.dog-designed .dog-card-footer{font-size:8px}}
 /* Hidden game controls must stay hidden even when a layout class sets display. */
 [hidden]{display:none!important}
 /* DOG tablet/desktop landscape cockpit: board, players and all six cards fit the viewport. */
