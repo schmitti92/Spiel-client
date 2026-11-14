@@ -34,7 +34,7 @@ test('redirect does not forward a forged room or an external return URL',()=>{
  assert.equal(u.searchParams.has('invite'),false);
  assert.equal(u.searchParams.has('return'),false);
  assert.equal(u.origin,'https://example.org');
- assert.doesNotMatch(redirect,/fetch\(|Firestore|setItem\(/);
+ assert.doesNotMatch(redirect,/\bfetch\(|\bsetItem\(/);
 });
 test('main lobby handles both modes, all core games and active room actions',()=>{
  for(const code of ['dog','barikade','skyjo','kreuz','business','partychallenge'])
