@@ -324,7 +324,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
    do not support multiplying a CSS length by a variable inside calc(). */
 .hand .playing-card.dog-designed{width:var(--dog-hand-card-base)!important}
 </style>
-<link rel="stylesheet" href="./ui-shell.css?v=13">
+<link rel="stylesheet" href="./ui-shell.css?v=14">
 </head>
 <body>
 <!-- One floating menu replaces the large heading/nav and frees board height. -->
@@ -367,7 +367,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
      <section class="panel dog-status-panel" aria-label="Spieler und aktueller Zugstatus">
        <!-- Game engine continues to update this hidden round counter. -->
        <span id="round" hidden style="display:none">1</span>
-       <div class="dog-turn-line"><span aria-hidden="true">🃏</span><div class="turn" id="turn" aria-live="polite">Karten werden ausgeteilt</div><span aria-hidden="true">⇄</span></div>
+       <div class="turn" id="turn" hidden aria-live="polite">Karten werden ausgeteilt</div>
        <div class="seat-grid" id="players"></div>
        <div id="winner" class="winner" hidden><div style="font-size:30px">🏆</div><h2 id="winner-title">Sieg!</h2><p>Alle acht Teamfiguren sind im Ziel.</p></div>
      </section>
@@ -407,17 +407,17 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
      </section>
      <!-- Module D: expandable future content, explicitly preview-only. -->
      <section class="panel dog-extras-panel" aria-label="Aktionen und Extras">
-       <details class="dog-extras-details" id="dog-extras-details" open>
+       <div class="dog-extras-details" id="dog-extras-details">
 
          <div id="dog-extra-buttons" class="dog-extras-grid" aria-label="Erweiterungsmodule"></div>
          <div class="dog-extras-tools">
            <small id="dog-ui-features-status" hidden aria-hidden="true">Erweiterbar</small>
            <button id="new-game" class="dog-mini-link" type="button" title="Neues Spiel" aria-label="Neues Spiel">↻</button>
          </div>
-       </details>
+       </div>
      </section>
      <!-- Module E: foldable history; local controls remain accessible. -->
-     <section class="panel dog-history-module" aria-label="Spielverlauf">
+     <section class="panel dog-history-module" aria-label="Spielverlauf" hidden>
        <details class="dog-history-details" open>
          <summary class="dog-module-heading">
            <h2>📜 Spielverlauf – Letzte Züge</h2>
