@@ -7,7 +7,8 @@ export function createDogVisualFeedback(doc){
  let previous=null;
  const $=id=>doc.getElementById(id);
  function pulse(node,className){
-  if(!node)return;
+  if(!node || doc.documentElement?.dataset?.dogMotion==='off' ||
+    doc.defaultView?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches)return;
   node.classList.remove(className);
   // Explicit restart only on a real state change, never on ordinary re-render.
   void node.offsetWidth;
