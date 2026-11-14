@@ -344,6 +344,7 @@ function createOverlay(game,show){
  root.id='deal-monster-slots';root.className='skyjo-monster-special';root.tabIndex=-1;
  root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');
  root.setAttribute('aria-label','SKYJO Monster Slots · '+player.name);
+ root.setAttribute('data-batch-key',show.id+'|'+show.index+'|'+show.batch);
  root.dataset.reels=String(n);root.dataset.layout=n>6?'extended':'classic';root.dataset.phase='ready';
  const reels=batch.prizes.map((_,i)=>{
   const num=String(i+batch.offset+1).padStart(2,'0');
@@ -361,7 +362,7 @@ function createOverlay(game,show){
   '<div class="skyjo-slot-owner-bar" aria-label="Aktueller Slot-Gewinner">'+
     '<div class="skyjo-slot-owner-icon" aria-hidden="true">'+(player.winner?'🏆':'🎯')+'</div>'+
     '<div class="skyjo-slot-owner-center">'+
-      '<div class="skyjo-slot-owner-label" id="skyjo-slot-owner-phase">🎰 JETZT DREHT</div>'+
+      '<div class="skyjo-slot-owner-label" id="skyjo-slot-owner-phase">🎰 JETZT AN DER REIHE</div>'+
       '<div class="skyjo-slot-owner-name">'+esc(spotlight.name)+'</div>'+
       '<div class="skyjo-slot-owner-role">'+spotlight.role+' · '+spotlight.slots+' GEWINNE · '+spotlight.missionCount+' MISSIONEN</div>'+
     '</div>'+
@@ -405,8 +406,21 @@ function renderPrizes(root,show){
    el.dataset.award=p.kind||'';el.dataset.variant=p.id||'';el.dataset.rarity=p.rarity||'common';
    const prize=el.querySelector('.monster-slot-prize');
    const path=imagePath(p);
-   const fallback='<span class="monster-slot-emoji">'+(EMOJIS[p.kind]||'🎁')+'</span>';
-   prize.querySelector('.monster-slot-art').innerHTML=fallback+(path?'<img src="'+esc(path)+'" alt="" loading="eager" style="opacity:1">':'');
+   const art=prize.querySelector('.monster-slot-art');
+   art.replaceChildren();
+   const fallback=document.createElement('span');
+   fallback.className='monster-slot-emoji';
+   fallback.textContent=EMOJIS[p.kind]||'🎁';
+   art.append(fallback);
+   if(path){
+    const img=document.createElement('img');
+    img.src=path;
+    img.alt='';
+    img.loading='eager';
+    img.style.opacity='1';
+    img.addEventListener('error',()=>img.remove(),{once:true});
+    art.append(img);
+   }
    prize.querySelector('.monster-slot-quantity').textContent=p.kind==='cash'?'💶 GELD':(p.quantity||1)+'×';
    prize.querySelector('.monster-slot-prize-name').textContent=(p.label||'Gewinn')+(p.voucher?' · 🎟️ Gutschein':'');
    prize.hidden=false;lights[i]?.classList.add('lit');
@@ -479,7 +493,12 @@ function render(game){
  const key=show.id+'|'+show.index+'|'+show.batch;
  if(!root||key!==renderKey){root?.remove();root=createOverlay(game,show);renderKey=key;}
  if(show.timeBase==='server'&&(!serverClockSyncedAt||Date.now()-serverClockSyncedAt>CLOCK_TTL))
-  void syncClock().then(ok=>{if(ok&&active(bridge?.getState()))renderPrizes(root,bridge.getState().skyjoSpecial.show);});
+  void syncClock().then(ok=>{
+   if(!ok)return;
+   const current=bridge?.getState(),currentShow=active(current)?current.skyjoSpecial.show:null;
+   const liveRoot=document.querySelector('body > #deal-monster-slots.skyjo-monster-special');
+   if(currentShow&&liveRoot===root&&renderKey===key)renderPrizes(root,currentShow);
+  });
  if(root)renderPrizes(root,show);
  if(!animationTimer)animationTimer=setInterval(()=>{
   const current=bridge?.getState(),s=active(current)?current.skyjoSpecial.show:null;
