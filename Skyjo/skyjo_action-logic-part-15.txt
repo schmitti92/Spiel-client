@@ -42,13 +42,16 @@ async function runRoundClose(seqId){
      if(seq.revealIndex>=list.length){state.roundJokerValues=buildRoundEndJokerValueMap();seq.stage='remove';seq.removePi=0;ui={mode:'roundReveal',data:{stage:'remove'},selected:[]};save();render();await sleepMs(650);continue}
      const ref=list[seq.revealIndex],c=roundCloseCard(ref);
      seq.revealIndex++;
-     if(!c||c.faceUp){save();continue}
+     // The preparation flips are not yet displayed. Persist a recovery checkpoint
+     // every 16 cards and always at the stage boundary to avoid rapid cloud writes.
+     const persistRevealCheckpoint=seq.revealIndex%16===0;
+     if(!c||c.faceUp){if(persistRevealCheckpoint)save();continue}
      // The old pre-score card-flip animation was removed on purpose.
      // The private scoring preparation flips the underlying card data only;
      // players will see the physical flip for the first time on the score stage.
      c.faceUp=true;
      ui={mode:'roundReveal',data:{stage:'reveal',pi:ref.pi,index:seq.revealIndex,total:list.length},selected:[]};
-     save();
+     if(persistRevealCheckpoint)save();
      await sleepMs(12);
      continue
    }
