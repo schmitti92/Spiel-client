@@ -384,6 +384,17 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 .dog-classic-card .dog-sub{font-size:clamp(12px,1.2vw,18px);font-weight:650;color:#e5eff4;max-width:440px}
 .dog-classic-card .dog-cta{padding:10px 18px;background:linear-gradient(110deg,#ddbb77,#ae813a);color:#142438;font-size:13px;font-weight:850;border-radius:12px}
 
+
+/* The collection link is a separate navigation card, never hidden under DOG's full-card play overlay. */
+.game-grid>a.dog-collection-local-cta{grid-column:1/-1;display:flex;align-items:center;gap:15px;
+ border:1.5px solid #e6b961;border-radius:16px;padding:15px 23px;margin:0;text-decoration:none;color:#ffe3ac;
+ background:linear-gradient(120deg,rgba(8,35,62,.92),rgba(78,51,24,.75),rgba(12,42,63,.89));
+ box-shadow:0 7px 18px #0007,inset 0 1px #fff4d94a;min-height:77px}
+.dog-collection-local-cta .collection-icon{font-size:33px;filter:drop-shadow(0 0 9px #e5b34f99)}
+.dog-collection-local-cta>span:last-child{display:flex;flex-direction:column;gap:5px}
+.dog-collection-local-cta strong{font-size:clamp(14px,2vw,21px)}
+.dog-collection-local-cta small{font-size:clamp(10px,1vw,13px);color:#dfddd7}
+.dog-collection-local-cta:hover,.dog-collection-local-cta:focus-visible{border-color:#fff1b9;filter:brightness(1.12)}
 </style><link rel="stylesheet" href="DOG/board-picker.css?v=2"><link rel="stylesheet" href="DOG/avatar-picker.css?v=1"><link rel="stylesheet" href="DOG/emoji-ui.css?v=2"><style>.game-grid>.dog-board-lobby{grid-column:1/-1;align-self:stretch;min-width:0}</style></head>
 <body>
 <main class="container">
@@ -394,6 +405,10 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
       <article class="game kreuzkunter-card"><a class="local-game-link" href="KreuzKunter/kreuzkunter.html?mode=local" aria-label="KreuzKunter lokal spielen"><span class="visually-hidden">KreuzKunter lokal spielen</span></a></article>
       <article class="game merk-matrix-card"><a class="local-game-link" href="MinispieleV2/games/merk-matrix/index.html" aria-label="Merk-Matrix 2 lokal spielen"><span class="visually-hidden">Merk-Matrix 2 lokal spielen</span></a><div class="merk-label">🧠 MERK-MATRIX 2</div><p class="merk-info">Das Gedächtnis-Duell · 1 Mensch + 3 Bots · Neon-Finale mit 8×8-Feld</p><span class="merk-play" aria-hidden="true">▶ Lokal spielen</span></article>
       <article class="game dog-classic-card"><a class="local-game-link" href="DOG/index.html" aria-label="DOG Klassisch lokal spielen"><span class="visually-hidden">DOG lokal spielen</span></a><div class="dog-title">🐾 DOG</div><p class="dog-sub">Das Team-Brettspiel · 4 Spieler · Mit Freunden oder Bots</p><span class="dog-cta" aria-hidden="true">▶ Jetzt spielen</span></article>
+      <a class="dog-collection-local-cta" data-dog-collection-link href="DOG/sammlung.html?return=../spielauswahl-lokal.html">
+        <span class="collection-icon">🏆</span>
+        <span><strong>Freigeschaltet · Meine DOG-Sammlung</strong><small>Spielbretter, Profilbilder, Figuren, Emojis und kommende Event-Belohnungen</small></span>
+      </a>
        <section class="dog-avatar-picker" data-dog-avatar-picker data-mode="local" aria-label="DOG-Profilbilder wählen">
           <h3>🐾 DOG-Profilbilder auswählen</h3>
           <p>Wähle für jeden menschlichen Spieler ein eigenes Bild. Bots erhalten automatisch ein Robotersymbol.</p>
@@ -415,4 +430,9 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 <script src="DOG/avatar-picker.js?v=3"></script><script type="module" src="DOG/emoji-lobby.js?v=1"></script><script type="module" src="DOG/board-picker.js?v=7"></script>
 <script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script>
 <script src="site-global-controls.js?v=20261109-global-1"></script>
+<script>
+(function(){const back='../spielauswahl-lokal.html'+location.search;
+ document.querySelectorAll('[data-dog-collection-link]').forEach(a=>a.href='DOG/sammlung.html?return='+encodeURIComponent(back));
+})();
+</script>
 </body></html>
