@@ -43,6 +43,36 @@ const api=()=>String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-yn
 const me=()=>window.SpielOnline?.state?.()?.user;
 const esc=x=>String(x==null?'':x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let bridge=null,requestBusy=false,animationTimer=null,renderKey='',lastAutoRound='',lastFinalRound='';
+let serverClockOffset=0,serverClockSyncedAt=0,serverClockPromise=null;
+const CLOCK_TTL=5*60*1000;
+function clockOffsetFromSample(start,end,serverTs){
+ if(!Number.isFinite(start)||!Number.isFinite(end)||!Number.isFinite(serverTs)||
+    end<start||end-start>10000)return null;
+ return Math.round(serverTs-(start+end)/2);
+}
+function sharedNow(){return Date.now()+serverClockOffset;}
+function stageNow(show){return show?.timeBase==='server'&&serverClockSyncedAt?sharedNow():Date.now();}
+function syncClock(){
+ if(serverClockSyncedAt&&Date.now()-serverClockSyncedAt<CLOCK_TTL)return Promise.resolve(true);
+ if(serverClockPromise)return serverClockPromise;
+ serverClockPromise=(async()=>{
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),7000);
+  const sent=Date.now();
+  try{
+   const response=await fetch(api()+'/skyjo-health',{method:'GET',cache:'no-store',signal:controller.signal});
+   const result=await response.json(),received=Date.now();
+   if(!response.ok||!result?.ok)throw Error('CLOCK_UNAVAILABLE');
+   const offset=clockOffsetFromSample(sent,received,Number(result.ts));
+   if(offset===null)throw Error('CLOCK_SAMPLE_INVALID');
+   serverClockOffset=offset;serverClockSyncedAt=Date.now();
+   return true;
+  }catch(error){
+   console.warn('[SKYJO Monster Slots] Zeitabgleich fehlgeschlagen:',String(error.message||error));
+   return false;
+  }finally{clearTimeout(timer);serverClockPromise=null;}
+ })();
+ return serverClockPromise;
+}
 function seed(matchId,round){
  let n=2166136261>>>0;
  for(const ch of String(matchId)+'|'+String(round))n=Math.imul(n^ch.charCodeAt(0),16777619)>>>0;
@@ -227,6 +257,7 @@ async function begin(){
  const round=state.round,id=state.lastRoundSummary.id;
  bridge.toast('🎰 Gewinne werden serverseitig geprüft und sicher gutgeschrieben …');
  try{
+  await syncClock();
   const cloudSaved=await bridge.waitForCloudIdle(7500);
   if(!cloudSaved)throw Error('Die Rundenwertung ist noch nicht vollständig auf dem Server gespeichert. Bitte Verbindung prüfen und die Slots erneut starten.');
   const data=await authPost('/api/deal-or-no-deal/skyjo-special/settle',{
@@ -249,7 +280,8 @@ async function begin(){
   // The champion goes last; everyone sees every other player's prizes.
   byMember.sort((a,b)=>Number(a.winner)-Number(b.winner));
   const x=now.skyjoSpecial;
-  x.show=byMember.length?{id,round,players:byMember,index:0,batch:0,phase:'ready',activatedAt:Date.now(),startedAt:0}:null;
+  x.show=byMember.length?{id,round,players:byMember,index:0,batch:0,phase:'ready',
+   timeBase:serverClockSyncedAt?'server':'device',activatedAt:sharedNow(),startedAt:0}:null;
   x.finished=!byMember.length;
   bridge.closeModal();bridge.save();bridge.render();
   bridge.toast(byMember.length?'🎰 Alle Spieler schauen zu: das gemeinsame Slot-Finale beginnt!':'Keine Slots gewonnen – nächste Runde bereit.');
@@ -260,20 +292,23 @@ function actorAllowed(show){
  if(!bridge||!show)return false;
  const player=show.players?.[show.index];
  if(!player)return false;
- return player.uid===me()?.uid||(bridge.isHost()&&Date.now()-Number(show.activatedAt||0)>30000);
+ return player.uid===me()?.uid||(bridge.isHost()&&stageNow(show)-Number(show.activatedAt||0)>30000);
 }
-function spin(){
- const game=bridge?.getState(),show=game?.skyjoSpecial?.show;
+async function spin(){
+ let game=bridge?.getState(),show=game?.skyjoSpecial?.show;
  if(!active(game)||!show||show.phase!=='ready'||!actorAllowed(show))return;
- show.phase='rolling';show.startedAt=Date.now()+900;bridge.save();bridge.render();
+ if(show.timeBase==='server'&&!serverClockSyncedAt)await syncClock();
+ game=bridge?.getState();show=game?.skyjoSpecial?.show;
+ if(!active(game)||!show||show.phase!=='ready'||!actorAllowed(show))return;
+ show.phase='rolling';show.startedAt=stageNow(show)+900;bridge.save();bridge.render();
 }
 function advance(){
  const game=bridge?.getState(),show=game?.skyjoSpecial?.show;
  if(!active(game)||!show||show.phase!=='rolling'||!actorAllowed(show))return;
  const batch=currentBatch(show);
- if(!batch||Date.now()-show.startedAt<DURATION(batch.prizes.length))return;
- if(show.batch+1<batch.total){show.batch++;show.phase='ready';show.activatedAt=Date.now();show.startedAt=0;}
- else if(show.index+1<show.players.length){show.index++;show.batch=0;show.phase='ready';show.activatedAt=Date.now();show.startedAt=0;}
+ if(!batch||stageNow(show)-show.startedAt<DURATION(batch.prizes.length))return;
+ if(show.batch+1<batch.total){show.batch++;show.phase='ready';show.activatedAt=stageNow(show);show.startedAt=0;}
+ else if(show.index+1<show.players.length){show.index++;show.batch=0;show.phase='ready';show.activatedAt=stageNow(show);show.startedAt=0;}
  else{game.skyjoSpecial.show=null;game.skyjoSpecial.finished=true;}
  bridge.save();bridge.render();
  if(!game.skyjoSpecial.show)bridge.toast('🎉 Alle Monster-Slots abgeschlossen! Der Host kann die Runde fortsetzen.');
@@ -320,7 +355,7 @@ function createOverlay(game,show){
    '</div><div class="monster-slot-prize" hidden><div class="monster-slot-art"></div><span class="monster-slot-quantity"></span><strong class="monster-slot-prize-name"></strong></div><div class="monster-slot-glass"></div></div>'+
    '<div class="monster-slot-reel-foot"><span class="monster-slot-state">BEREIT</span><span>✦</span></div></div>';
  }).join('');
- root.innerHTML='<div class="monster-slot-machine"><div class="monster-slot-lights">✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦</div>'+
+ root.innerHTML='<div class="monster-slot-machine"><div class="skyjo-slot-scroll-area" tabindex="0" aria-label="Monster-Slots und Gewinne, vertikal scrollen"><div class="monster-slot-lights">✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦</div>'+
   '<div class="monster-slot-kicker">✦ SKYJO ACTION · 100 TORE SPECIAL ✦</div>'+
   '<h2 id="monster-slots-title">🎰 MONSTER SLOTS</h2>'+
   '<div class="skyjo-slot-owner-bar" aria-label="Aktueller Slot-Gewinner">'+
@@ -341,25 +376,31 @@ function createOverlay(game,show){
   '<p class="monster-slot-subheading">'+n+' WALZEN · '+n+' GARANTIERTE GEWINNE'+(batch.total>1?' · DURCHGANG '+(show.batch+1)+'/'+batch.total:'')+'</p>'+
   '<div class="monster-slot-ribbon">✧ JEDER SLOT GEWINNT ✧</div>'+
   '<div class="monster-slot-reels">'+reels+'</div>'+
-  '<div class="monster-slot-progress">'+batch.prizes.map(()=>'<span></span>').join('')+'</div>'+
-  '<p class="monster-slot-status" id="skyjo-special-status" aria-live="polite"></p>'+
-  '<button id="monster-slot-accept" type="button" onclick="Game.skyjoSpecialSpin()">🎰 Drehen</button>'+
-  '<p class="monster-slot-footnote">Geld und Gegenstände sind gespeichert. Kartenpaket-Gutscheine kannst du später im DOG-Sammelalbum selbst öffnen.</p>'+
-  '</div>';
+  '<div class="monster-slot-progress" role="progressbar" aria-label="Aufgedeckte Slot-Gewinne" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="0">'+batch.prizes.map(()=>'<span></span>').join('')+'</div>'+
+  '<section class="skyjo-slot-readable-prizes" aria-label="Gewinne als lesbare Liste"><h3>🎁 Aufgedeckte Gewinne <span id="skyjo-slot-revealed-count">0</span> / '+n+'</h3><ol id="skyjo-slot-readable-list" aria-live="polite"></ol></section>'+
+  '</div>'+
+  '<div class="skyjo-slot-action-dock">'+
+    '<p class="monster-slot-status" id="skyjo-special-status" aria-live="polite"></p>'+
+    '<button id="monster-slot-accept" type="button" onclick="Game.skyjoSpecialSpin()">🎰 Drehen</button>'+
+    '<p class="monster-slot-footnote">Alle Gewinne gehören dem angezeigten Spieler. Kartenpakete bleiben als Gutscheine zum späteren Öffnen erhalten.</p>'+
+  '</div></div>';
  document.body.append(root);root.focus({preventScroll:true});
  return root;
 }
 function renderPrizes(root,show){
  const batch=currentBatch(show);if(!batch)return;
- const n=batch.prizes.length,now=Date.now(),elapsed=show.phase==='rolling'?now-show.startedAt:-999999;
+ const n=batch.prizes.length,now=stageNow(show),elapsed=show.phase==='rolling'?now-show.startedAt:-999999;
  const done=show.phase==='rolling'&&elapsed>=DURATION(n);
  const actor=actorAllowed(show),isMine=batch.player.uid===me()?.uid;
  const reels=[...root.querySelectorAll('.monster-slot-reel')],lights=[...root.querySelectorAll('.monster-slot-progress span')];
+ let revealed=0;
+ const readable=root.querySelector('#skyjo-slot-readable-list');
  batch.prizes.forEach((p,i)=>{
   const finished=elapsed>=STOP(n,i);
   const el=reels[i];if(!el)return;
   const next=show.phase==='rolling'?(finished?'won':'running'):'ready';
   if(el.dataset.phase!==next){el.dataset.phase=next;el.querySelector('.monster-slot-state').textContent=next==='won'?'✓ GEWONNEN':next==='running'?'DREHT …':'BEREIT';}
+  if(finished)revealed++;
   if(finished&&!el.dataset.award){
    el.dataset.award=p.kind||'';el.dataset.variant=p.id||'';el.dataset.rarity=p.rarity||'common';
    const prize=el.querySelector('.monster-slot-prize');
@@ -370,9 +411,22 @@ function renderPrizes(root,show){
    prize.querySelector('.monster-slot-prize-name').textContent=(p.label||'Gewinn')+(p.voucher?' · 🎟️ Gutschein':'');
    prize.hidden=false;lights[i]?.classList.add('lit');
   }
+  if(finished&&readable&&!el.dataset.readable){
+   const entry=document.createElement('li');
+   entry.textContent='Walze '+(batch.offset+i+1)+': '+String(p.label||'Gewinn')+
+    (p.voucher?' · Kartenpaket-Gutschein':'')+
+    (Number(p.quantity)>1?' · '+p.quantity+'×':'');
+   readable.append(entry);
+   el.dataset.readable='yes';
+  }
  });
+ const counter=root.querySelector('#skyjo-slot-revealed-count');
+ if(counter)counter.textContent=String(revealed);
+ const progress=root.querySelector('.monster-slot-progress');
+ if(progress)progress.setAttribute('aria-valuenow',String(revealed));
  root.dataset.phase=done?'ended':show.phase;
  root.dataset.viewer=isMine?'owner':'spectator';
+ root.dataset.clock=show.timeBase==='server'&&serverClockSyncedAt?'synchronized':'local';
  const spotlight=playerSpotlight(show,me()?.uid);
  const phase=root.querySelector('#skyjo-slot-owner-phase');
  const viewer=root.querySelector('#skyjo-slot-viewer-role');
@@ -424,6 +478,8 @@ function render(game){
  const batch=currentBatch(show);if(!batch)return;
  const key=show.id+'|'+show.index+'|'+show.batch;
  if(!root||key!==renderKey){root?.remove();root=createOverlay(game,show);renderKey=key;}
+ if(show.timeBase==='server'&&(!serverClockSyncedAt||Date.now()-serverClockSyncedAt>CLOCK_TTL))
+  void syncClock().then(ok=>{if(ok&&active(bridge?.getState()))renderPrizes(root,bridge.getState().skyjoSpecial.show);});
  if(root)renderPrizes(root,show);
  if(!animationTimer)animationTimer=setInterval(()=>{
   const current=bridge?.getState(),s=active(current)?current.skyjoSpecial.show:null;
@@ -440,5 +496,6 @@ function attach(gameAPI,b){
  gameAPI.skyjoSpecialAdvance=advance;
 }
 window.SkyjoToreSpecial={newGame,beginRound,trackRemove,scan,hud,nextButton,canNextRound,attach,render,
- missionsFor,missionDone,bonusIndex,bonusAchieved,bonusCellsFor,slotBreakdown,currentBatch,playerSpotlight,definitions:DEFINITIONS};
+ missionsFor,missionDone,bonusIndex,bonusAchieved,bonusCellsFor,slotBreakdown,currentBatch,playerSpotlight,
+ clockOffsetFromSample,definitions:DEFINITIONS};
 })();
