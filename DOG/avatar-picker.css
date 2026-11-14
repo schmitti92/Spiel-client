@@ -1,4 +1,5 @@
 /* Compact avatar choice shared by both DOG lobby entry points. */
+.game-grid>.dog-avatar-picker{grid-column:1/-1}
 .dog-avatar-picker{min-width:0;position:relative;padding:13px 16px!important;border:1px solid #bc995c!important;border-radius:16px!important;background:linear-gradient(155deg,#12344b,#061c30)!important;color:#f6e4bf!important}
 .dog-avatar-picker h3{margin:0 0 5px!important;color:#ffe3a4!important;font-size:17px!important}
 .dog-avatar-picker p{margin:0 0 9px!important;color:#c1d6e1!important;font-size:12px!important;max-width:none!important}
