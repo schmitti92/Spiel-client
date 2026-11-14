@@ -213,7 +213,7 @@ setInterval(()=>{
  startFinaleCinema();
 },5000);
 let polling=false,lastStateChange=Date.now();
-async function poll(){if(!code||!user()||document.hidden||polling)return;polling=true;lastHttpSafetySync=Date.now();try{let data=await request('GET','');if(!g||!data.game||data.game.id!==g.id||Number(data.game.revision)>Number(g.revision)){lastStateChange=Date.now();g=data.game;render();window.dispatchEvent(new Event('deal-game-state-change'))}}catch(e){$('status').textContent='Verbindung: '+e.message}finally{polling=false}}
+async function poll(){if(!code||!user()||document.hidden||polling)return;polling=true;lastHttpSafetySync=Date.now();try{let data=await request('GET',sharedSlotRecoveryInterval()>0?'?syncReason=slot':'');if(!g||!data.game||data.game.id!==g.id||Number(data.game.revision)>Number(g.revision)){lastStateChange=Date.now();g=data.game;render();window.dispatchEvent(new Event('deal-game-state-change'))}}catch(e){$('status').textContent='Verbindung: '+e.message}finally{polling=false}}
 function pollDelay(){if(!g)return 5000;if(g.phase==='final'||g.phase==='done')return 30000;if(g.phase==='select'||g.phase==='reveal'||g.phase==='decision')return 2500;if(Date.now()-lastStateChange>60000)return 8000;return 4000}
 // The server remains authoritative. WebSocket is an optional push channel;
 // HTTP remains available during reconnects and for older backend deployments.
