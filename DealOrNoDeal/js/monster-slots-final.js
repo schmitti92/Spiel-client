@@ -1,5 +1,5 @@
 'use strict';
-// Goldstudio Monster Slots · premium 3-reel finale visual.
+// Goldstudio Monster Slots · six/two reel live finale, with 3/1 legacy compatibility.
 // The server settles the prizes. These rolling symbols are purely decorative.
 (()=>{'use strict';
 const base=()=>String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
@@ -36,25 +36,32 @@ const rolling=[
  {emoji:'🔨',src:'assets/slot-premium/slot-goldhammer.png'}
 ];
 const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Local visuals mirror the authoritative server clock; never choose prizes here.
+const slotStops=count=>count===1?[3000]:count===2?[3000,4500]:
+ count===3?[3000,4500,6000]:[3000,4000,5000,6000,7000,8000];
+const slotDuration=count=>count===1?4200:count===2?6500:count===3?7800:10000;
+
 const seenKey=id=>'monster-slots-watched:'+String(user()?.uid||'anonymous')+':'+id;
 const root=document.createElement('section');root.id='deal-monster-slots';root.hidden=true;root.tabIndex=-1;
 root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');root.setAttribute('aria-labelledby','monster-slots-title');
-root.innerHTML="<div class=\"monster-slot-machine\">\n <div class=\"monster-slot-lights\" aria-hidden=\"true\">✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦</div>\n <div class=\"monster-slot-kicker\">✦ GOLDSTUDIO · DAS GROSSE GEWINNFINALE ✦</div>\n <h2 id=\"monster-slots-title\">🎰 MONSTER SLOTS</h2>\n <p class=\"monster-slot-shared-caption\" aria-live=\"polite\" hidden></p>\n <p class=\"monster-slot-subheading\">3 WALZEN <span aria-hidden=\"true\">◆</span> 3 GARANTIERTE GEWINNE</p>\n <div class=\"monster-slot-ribbon\" aria-hidden=\"true\">✧ &nbsp; JEDER SLOT GEWINNT &nbsp; ✧</div>\n <div class=\"monster-slot-reels\" role=\"group\" aria-label=\"Drei Gewinnwalzen\">\n  <div class=\"monster-slot-reel\" data-reel=\"0\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 01<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n  <div class=\"monster-slot-reel\" data-reel=\"1\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 02<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n  <div class=\"monster-slot-reel\" data-reel=\"2\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 03<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n </div>\n <div class=\"monster-slot-progress\" aria-hidden=\"true\"><span></span><span></span><span></span></div>\n <p id=\"monster-slot-status\" class=\"monster-slot-status\" role=\"status\" aria-live=\"polite\">Deine Gewinne werden geladen …</p>\n <button id=\"monster-slot-accept\" type=\"button\" disabled>🎁 Gewinne bestätigen</button>\n <p class=\"monster-slot-footnote\">Jede Walze gewinnt. Die Preise sind serverseitig gesichert.</p>\n</div>";
+root.innerHTML="<div class=\"monster-slot-machine\">\n <div class=\"monster-slot-lights\" aria-hidden=\"true\">✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦</div>\n <div class=\"monster-slot-kicker\">✦ GOLDSTUDIO · DAS GROSSE GEWINNFINALE ✦</div>\n <h2 id=\"monster-slots-title\">🎰 MONSTER SLOTS</h2>\n <p class=\"monster-slot-shared-caption\" aria-live=\"polite\" hidden></p>\n <p class=\"monster-slot-subheading\">6 WALZEN <span aria-hidden=\"true\">◆</span> 6 GARANTIERTE GEWINNE</p>\n <div class=\"monster-slot-ribbon\" aria-hidden=\"true\">✧ &nbsp; JEDER SLOT GEWINNT &nbsp; ✧</div>\n <div class=\"monster-slot-reels\" role=\"group\" aria-label=\"Sechs Gewinnwalzen\">\n  <div class=\"monster-slot-reel\" data-reel=\"0\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 01<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n  <div class=\"monster-slot-reel\" data-reel=\"1\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 02<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n  <div class=\"monster-slot-reel\" data-reel=\"2\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 03<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n  <div class=\"monster-slot-reel\" data-reel=\"3\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 04<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n  <div class=\"monster-slot-reel\" data-reel=\"4\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 05<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n  <div class=\"monster-slot-reel\" data-reel=\"5\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 06<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n </div>\n <div class=\"monster-slot-progress\" aria-hidden=\"true\"><span></span><span></span><span></span><span></span><span></span><span></span></div>\n <p id=\"monster-slot-status\" class=\"monster-slot-status\" role=\"status\" aria-live=\"polite\">Deine Gewinne werden geladen …</p>\n <button id=\"monster-slot-accept\" type=\"button\" disabled>🎁 Gewinne bestätigen</button>\n <p class=\"monster-slot-footnote\">Jede Walze gewinnt. Die Preise sind serverseitig gesichert.</p>\n</div>";
 
 document.body.append(root);
 const reels=[...root.querySelectorAll('.monster-slot-reel')],lights=[...root.querySelectorAll('.monster-slot-progress span')];
 const status=$('monster-slot-status'),accept=$('monster-slot-accept');
 const entitledReels=()=>typeof g!=='undefined'?Number(window.dealSlotReelsFor?.(g,user()?.uid)||0):0;
 function configureReels(count){
- const n=count===1?1:3;
+ const n=[1,2,3,6].includes(Number(count))?Number(count):6;
  root.dataset.reels=String(n);
  for(let i=0;i<reels.length;i++){reels[i].hidden=i>=n;lights[i].hidden=i>=n;}
  const subtitle=root.querySelector('.monster-slot-subheading');
  if(subtitle)subtitle.textContent=n===1?
-  '🥈 ZWEITER PLATZ · 1 WALZE · 1 GARANTIERTER GEWINN':
-  '🏆 ERSTER PLATZ · 3 WALZEN · 3 GARANTIERTE GEWINNE';
+  '🥈 ZWEITER PLATZ · 1 WALZE · 1 GARANTIERTER GEWINN':n===2?
+  '🥈 ZWEITER PLATZ · 2 WALZEN · 2 GARANTIERTE GEWINNE':n===3?
+  '🏆 ERSTER PLATZ · 3 WALZEN · 3 GARANTIERTE GEWINNE':
+  '🏆 ERSTER PLATZ · 6 WALZEN · 6 GARANTIERTE GEWINNE';
  root.querySelector('.monster-slot-reels')?.setAttribute('aria-label',
-  n===1?'Eine Gewinnwalze':'Drei Gewinnwalzen');
+  n+' Gewinnwalzen');
  summaryTitle.textContent='🎉 '+n+(n===1?' Slot-Gewinn':' Slot-Gewinne');
  summaryButton.textContent='✅ '+(n===1?'Gewinn':'Alle Gewinne')+' bestätigen';
 }
@@ -68,7 +75,7 @@ const summaryContent=document.createElement('div');summaryContent.className='mon
 const summaryKicker=document.createElement('p');summaryKicker.className='monster-slot-reward-kicker';
 summaryKicker.textContent='✦ GOLDSTUDIO · ALLE DEINE BELOHNUNGEN ✦';
 const summaryTitle=document.createElement('h3');summaryTitle.className='monster-slot-reward-title';
-summaryTitle.textContent='🎉 Deine 3 Slot-Gewinne';
+summaryTitle.textContent='🎉 Deine 6 Slot-Gewinne';
 const summaryDetail=document.createElement('p');summaryDetail.className='monster-slot-reward-detail';
 summaryDetail.textContent='Alle Belohnungen wurden bereits deinem Profil gutgeschrieben.';
 const summaryPrizes=document.createElement('div');summaryPrizes.className='monster-slot-reward-prizes';
@@ -147,7 +154,7 @@ function showAlreadySettled(){
  lights.slice(0,claimed.prizes.length).forEach(light=>light.classList.add('lit'));
  root.dataset.phase='summary';root.hidden=false;renderSummary();summary.hidden=false;
  accept.disabled=true;summaryButton.disabled=false;summaryButton.textContent='✓ Fenster schließen';
- setStatus('🎉 '+(claimed.prizes.length===1?'Dein Gewinn wurde':'Deine drei Gewinne wurden')+' bereits gutgeschrieben.');
+ setStatus('🎉 '+claimed.prizes.length+' Slot-Gewinne wurden bereits gutgeschrieben.');
 }
 
  // Opened packs already have all their cards settled and persisted by the server.
@@ -156,7 +163,7 @@ const awardedPacks=prizes=>(prizes||[]).filter(p=>p.kind==='pack')
  .flatMap(p=>Array.isArray(p.openedPacks)?p.openedPacks:[]);
 function renderSummary(){
  if(!claimed)return;
- // Decorative rarity, calculated only from the three server-settled prizes.
+ // Decorative rarity, calculated only from the server-settled prizes.
  const tierRank={common:0,rare:1,epic:2,legendary:3,mythic:4};
  summary.dataset.tier=claimed.prizes.reduce((best,prize)=>{
   const tier=rarityOf(prize);
@@ -240,23 +247,23 @@ function present(reopen=false){
  opening=true;root.dataset.phase='rolling';accept.disabled=true;accept.textContent='🎁 Gewinne bestätigen';
  reels.slice(0,claimed.prizes.length).forEach(reel=>{resetReel(reel);setPhase(reel,'running')});
  const single=claimed.prizes.length===1;
- setStatus(single?'🥈 Deine einzige Gewinnwalze dreht!':'🎰 Alle drei Walzen drehen gleichzeitig!');
+ setStatus(single?'🥈 Deine einzige Gewinnwalze dreht!':'🎰 Alle '+claimed.prizes.length+' Walzen drehen gleichzeitig!');
  root.focus({preventScroll:true});
- const stops=(reduced()?[100,220,340]:[3000,4500,6000]).slice(0,claimed.prizes.length);
+ const stops=reduced()?Array.from({length:claimed.prizes.length},(_,i)=>100+i*120):slotStops(claimed.prizes.length);
  stops.forEach((ms,i)=>timer(()=>{
   if(token!==seq||liveGame!==id||root.hidden)return;
   showPrize(reels[i],claimed.prizes[i]);lights[i].classList.add('lit');
   const finished=i===claimed.prizes.length-1;
   setStatus(finished?single?'🎉 Dein Slot-Gewinn wurde gutgeschrieben!':
-   '🎉 Alle drei Gewinne wurden gutgeschrieben!':
+   '🎉 Alle '+claimed.prizes.length+' Gewinne wurden gutgeschrieben!':
    '✨ Walze '+(i+1)+' gestoppt – die anderen drehen weiter!');
-  if(finished)timer(()=>showSummary(token,id),single?1000:2000);
+  if(finished)timer(()=>showSummary(token,id),reduced()?500:Math.max(1000,slotDuration(claimed.prizes.length)-ms));
  },ms));
 }
 async function claim(){
  if(claiming||!liveGame||entitledReels()===0||claimed?.gameId===liveGame&&claimedUid===user()?.uid)return;
  const u=user();if(!u?.getIdToken)return;
- const id=liveGame,uid=u.uid;claiming=id;setStatus('🎁 '+(entitledReels()===1?'Dein Slot-Gewinn wird':'Deine drei Slot-Gewinne werden')+' sicher geladen …');
+ const id=liveGame,uid=u.uid;claiming=id;setStatus('🎁 Deine '+entitledReels()+' Slot-Gewinne werden sicher geladen …');
  try{
   const token=await u.getIdToken();
   const response=await fetch(base()+'/api/deal-or-no-deal/monster-slots/claim',{
@@ -382,7 +389,7 @@ function renderShared(){
   const mayAct=stage.uid===user()?.uid||canRecover;
   if(stage.phase==='ready'){
    accept.disabled=sharedPending||!mayAct;
-   accept.textContent=stage.uid===user()?.uid?'🎰 Jetzt deine Walze'+(stage.reels===3?'n':'')+' drehen':
+   accept.textContent=stage.uid===user()?.uid?'🎰 Jetzt deine Walze'+(stage.reels===1?'':'n')+' drehen':
     canRecover?'⏳ Für '+(game.players?.find(p=>p.id===stage.uid)?.name||'den Spieler')+' fortsetzen':
     '👀 Zuschauer · '+(game.players?.find(p=>p.id===stage.uid)?.name||'Spieler')+' ist am Zug';
   }else if(stage.phase==='rolling'&&!opening){
@@ -416,7 +423,7 @@ function renderShared(){
  priorFocus=document.activeElement;
  if(stage.phase==='ready'){
   opening=false;accept.disabled=!mayAct||sharedPending;
-  accept.textContent=me?'🎰 Jetzt deine Walze'+(stage.reels===3?'n':'')+' drehen':
+  accept.textContent=me?'🎰 Jetzt deine Walze'+(stage.reels===1?'':'n')+' drehen':
    canRecover?'⏳ Für '+name+' fortsetzen':'👀 Zuschauer · '+name+' ist am Zug';
   const handoff=stage.turn==='champion'&&Number(stage.runnerConfirmedAt||0)>0;
   setStatus(handoff?
@@ -438,7 +445,7 @@ function renderShared(){
  // A negative elapsed means every device has been notified BEFORE the spin.
  const elapsed=now-started;
  const leadIn=Math.max(0,-elapsed);
- const stopTimes=(stage.reels===1?[3000]:[3000,4500,6000]);
+ const stopTimes=slotStops(stage.reels);
  const token=seq;
  const beginSpin=()=>{
   // A delayed countdown callback must never rewind a finished/partly revealed
@@ -459,7 +466,7 @@ function renderShared(){
   setStatus('🎬 Gemeinsamer Dreh startet in '+Math.max(1,Math.ceil(leadIn/1000))+' Sekunden …');
   timer(beginSpin,leadIn);
  }else beginSpin();
- const resultAt=stage.reels===1?4200:7800;
+ const resultAt=slotDuration(stage.reels);
  const reveal=(index)=>{
   if(seq!==token||sharedSignature!==signature||root.hidden||reels[index].dataset.phase==='won')return;
   showPrize(reels[index],prizes[index]);lights[index].classList.add('lit');
