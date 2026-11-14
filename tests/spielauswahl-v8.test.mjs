@@ -29,19 +29,11 @@ test('Online game selection uses four server-protected game buttons, not indepen
  assert.match(controller,/getIdToken\(\)/);
  assert.match(controller,/\/rooms\/'.*?\+code\+'\/select'/s);
 });
-test('Creating or joining a room keeps all game choices in the same main hub',()=>{
- const main=source('hub-lobby.html');
- const legacy=source('legacy-lobby-redirect.js');
- assert.match(hub,/activateRoom\(r\);pollStart\(\);notice/);
- assert.match(hub,/setPlayMode\('local',\{updateUrl:true\}\)/);
- assert.doesNotMatch(hub,/location\.assign\('spielauswahl-online\.html/);
- assert.doesNotMatch(hub,/location\.assign\('spielauswahl-lokal\.html/);
- assert.match(main,/data-game="dog"/);
- assert.match(main,/data-game="partychallenge"/);
- assert.match(local,/data-mode="local"/);
- assert.match(online,/data-mode="online"/);
- assert.match(legacy,/location\.replace\(dest\.href\)/);
- assert.match(bridge,/hub-lobby\.html\?view=online&room=/);
+test('Entering or creating a room navigates to online game-selection home',()=>{
+ assert.match(hub,/request\('\/rooms','POST'\);location\.assign\('spielauswahl-online\.html\?room='/);
+ assert.match(hub,/request\('\/rooms\/'\+c\+'\/join','POST'\);location\.assign\('spielauswahl-online\.html\?room='/);
+ assert.match(hub,/location\.assign\('spielauswahl-lokal\.html'\)/);
+ assert.match(bridge,/spielauswahl-online\.html\?room=/);
 });
 function simulate({host=true,phase='lobby',game=null,choose=false}={}){
  const buttons=GAME_KEYS.map(g=>({dataset:{selectGame:g},disabled:false,listeners:{},addEventListener(t,fn){this.listeners[t]=fn;}}));
