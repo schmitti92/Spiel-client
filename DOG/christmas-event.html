@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071a2a">
+<meta name="description" content="DOG Weihnachtsevent – Das Weihnachtswunder von Lichtertal, Kapitel 1.">
+<title>DOG Weihnachten · Das Weihnachtswunder von Lichtertal</title>
+<link rel="stylesheet" href="./christmas-event.css?v=1">
+</head>
+<body>
+<div class="snow-sky" aria-hidden="true"></div>
+<header class="event-top">
+  <a class="event-brand" href="../hub-lobby.html"><span class="brand-icon">✦</span><span><strong>DOG <em>WEIHNACHTEN</em></strong><small>Das Weihnachtswunder von Lichtertal</small></span></a>
+  <div class="event-top-actions">
+    <span class="chapter-label">🎄 KAPITEL 1</span>
+    <a href="../hub-lobby.html" id="event-return" class="top-action">↩ Zurück</a>
+  </div>
+</header>
+<div class="event-layout">
+  <aside class="event-sidebar" aria-label="Weihnachtsevent-Navigation">
+    <div class="sidebar-intro"><span class="eyebrow">✨ EINE WEIHNACHTSGESCHICHTE</span><h1>Lichtertal</h1><p>Gemeinsam wird aus einem kleinen Dorf ein Weihnachtswunder.</p></div>
+    <nav class="event-menu" role="tablist" aria-label="Eventbereiche">
+      <button type="button" id="tab-village" class="event-tab" role="tab" aria-selected="true" aria-controls="panel-village" data-tab="village"><span>🏘️</span><strong>Weihnachtsdorf</strong><small>Übersicht</small></button>
+      <button type="button" id="tab-buildings" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-buildings" data-tab="buildings" tabindex="-1"><span>🏠</span><strong>Die vier Gebäude</strong><small>5 Ausbaustufen</small></button>
+      <button type="button" id="tab-tree" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-tree" data-tab="tree" tabindex="-1"><span>🎄</span><strong>Weihnachtsbaum</strong><small>10 Entwicklungsstufen</small></button>
+      <button type="button" id="tab-story" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-story" data-tab="story" tabindex="-1"><span>📖</span><strong>Die Geschichte</strong><small>Kapitel 1</small></button>
+      <button type="button" id="tab-gifts" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-gifts" data-tab="gifts" tabindex="-1"><span>🎁</span><strong>Geschenke &amp; Lichter</strong><small>Gemeinsam sammeln</small></button>
+      <button type="button" id="tab-chapters" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-chapters" data-tab="chapters" tabindex="-1"><span>✨</span><strong>Kapitelübersicht</strong><small>Zwei Kapitel insgesamt</small></button>
+    </nav>
+    <div class="sidebar-bottom">
+      <span class="draft-pill">✦ Aufbau in Entwicklung</span>
+      <p>Die Gestaltung lässt sich bereits ansehen. Echte Gewinne und gemeinsamer Fortschritt werden erst mit der DOG-Anbindung aktiviert.</p>
+    </div>
+  </aside>
+  <main class="event-main" id="event-main">
+    <section class="event-panel" id="panel-village" role="tabpanel" aria-labelledby="tab-village">
+      <div class="event-heading"><div><span class="eyebrow">KAPITEL 1 · DAS WEIHNACHTSWUNDER</span><h2>Willkommen in Lichtertal</h2><p>Ein ganz normales Dorf wartet darauf, gemeinsam auf Weihnachten vorbereitet zu werden.</p></div><span class="soft-tag">❄️ Dorf-Entwurf</span></div>
+      <div class="village-shell">
+        <div class="village-topline"><span>🏘️ <strong>Unser Weihnachtsdorf</strong></span><span id="village-stage-text">Anfangszustand · Vorschau</span></div>
+        <div class="village-view" id="village-view" data-snow="1">
+          <svg viewBox="0 0 1200 670" role="img" aria-labelledby="village-title village-desc" preserveAspectRatio="xMidYMid meet">
+            <title id="village-title">Illustration des Weihnachtsdorfes Lichtertal</title>
+            <desc id="village-desc">Vier individuelle Gebäude um einen wachsenden Weihnachtsbaum in einer Berglandschaft. In der Designvorschau nehmen Schnee, Lichter und Dekoration zu.</desc>
+            <defs>
+              <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#08192f"/><stop offset=".62" stop-color="#244f72"/><stop offset="1" stop-color="#9d9ea3"/></linearGradient>
+              <linearGradient id="ground" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#344b4b"/><stop offset="1" stop-color="#132d34"/></linearGradient>
+              <linearGradient id="snowbank" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#e5f1ef"/><stop offset="1" stop-color="#8cafc4"/></linearGradient>
+              <linearGradient id="roof" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#805647"/><stop offset="1" stop-color="#483640"/></linearGradient>
+              <linearGradient id="facade" x1="0" x2=".8" y1="0" y2="1"><stop stop-color="#a77956"/><stop offset="1" stop-color="#4d4140"/></linearGradient>
+              <linearGradient id="treefill" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#337968"/><stop offset=".55" stop-color="#135146"/><stop offset="1" stop-color="#0d3638"/></linearGradient>
+              <radialGradient id="star-glow"><stop stop-color="#fff6c7" stop-opacity=".95"/><stop offset="1" stop-color="#ffcf65" stop-opacity="0"/></radialGradient>
+              <filter id="glow"><feGaussianBlur stdDeviation="7"/></filter>
+              <pattern id="snow-speckle" width="65" height="60" patternUnits="userSpaceOnUse"><circle cx="7" cy="11" r="1.4" fill="#fff" opacity=".6"/><circle cx="42" cy="34" r="1" fill="#fff" opacity=".55"/></pattern>
+              <symbol id="win" viewBox="0 0 30 40"><rect width="30" height="40" rx="4" fill="#f5c977" stroke="#513b30" stroke-width="4"/><path d="M15 0V40 M0 20H30" stroke="#5d463a" stroke-width="3"/></symbol>
+            </defs>
+            <rect width="1200" height="670" fill="url(#sky)"/>
+            <circle cx="988" cy="98" r="39" fill="#f0e6ca" opacity=".88"/><circle cx="988" cy="98" r="72" fill="url(#star-glow)" opacity=".3"/>
+            <g fill="#dce0dc" opacity=".75"><path d="M0 365 130 225 230 313 351 193 506 368 688 224 823 348 958 195 1137 370 1200 279V480H0Z"/><path d="M0 418 206 291 336 388 510 287 720 411 905 275 1080 371 1200 335V520H0Z" fill="#7c9cad" opacity=".8"/></g>
+            <path d="M0 437Q180 405 365 453Q560 422 716 455Q987 419 1200 455V670H0Z" fill="url(#ground)"/>
+            <g class="snow-layer"><path d="M0 439Q154 405 356 450Q557 418 715 451Q988 414 1200 446V670H0Z" fill="url(#snowbank)"/><path d="M535 650Q577 574 607 511Q647 556 698 670Z" fill="#9eb6c6" opacity=".8"/></g>
+            <path d="M510 670Q558 580 594 538Q651 575 720 670" fill="#b5a58a" opacity=".45"/>
+            <!-- Background pine trees -->
+            <g fill="#164538" stroke="#0a302b" stroke-width="2">
+              <path d="M32 425 74 270 122 425ZM113 429 150 317 186 429ZM1037 439 1074 289 1118 439ZM1122 446 1161 326 1195 446Z"/>
+            </g>
+            <!-- LIGHTS TOWER: building 1 -->
+            <g class="building" id="art-tower" data-level="1" transform="translate(120 260)">
+              <ellipse cx="95" cy="251" rx="117" ry="19" fill="#091e27" opacity=".35"/>
+              <rect x="21" y="84" width="151" height="156" rx="8" fill="url(#facade)" stroke="#433b3a" stroke-width="4"/>
+              <path d="M10 95 91 17 184 95Z" fill="url(#roof)" stroke="#493334" stroke-width="6"/>
+              <rect x="68" y="130" width="53" height="110" rx="5" fill="#584137" stroke="#c3a47b" stroke-width="4"/>
+              <use href="#win" x="31" y="118" width="30" height="40"/><use href="#win" x="132" y="118" width="30" height="40"/>
+              <g class="snow-detail"><path d="M10 93 89 15 184 93 168 93 92 35 22 98Z" fill="#f0f5ed"/></g>
+              <g class="decor-stage2"><circle cx="94" cy="113" r="12" fill="none" stroke="#2e7c54" stroke-width="7"/><circle cx="94" cy="102" r="3" fill="#dd4537"/></g>
+              <g class="decor-stage3"><path d="M19 111Q95 141 175 108" fill="none" stroke="#b9a350" stroke-width="5"/><g fill="#ffe6a0"><circle cx="40" cy="123" r="5"/><circle cx="83" cy="132" r="5"/><circle cx="134" cy="124" r="5"/></g></g>
+              <g class="decor-stage4"><rect x="74" y="-7" width="37" height="32" fill="#675143"/><path d="M69 -6 93 -40 119 -6Z" fill="#544046"/><use href="#win" x="79" y="-2" width="25" height="22"/></g>
+              <g class="decor-stage5"><path d="M94 -70 102 -52 122 -48 108 -35 112 -14 94 -24 76 -14 80 -35 66 -48 86 -52Z" fill="#ffde79"/><circle cx="94" cy="-44" r="51" fill="url(#star-glow)"/></g>
+            </g>
+            <!-- WORKSHOP -->
+            <g class="building" id="art-workshop" data-level="1" transform="translate(320 348)">
+              <ellipse cx="92" cy="202" rx="120" ry="18" fill="#08212b" opacity=".34"/>
+              <rect x="4" y="58" width="180" height="139" rx="7" fill="#8b5846" stroke="#503c35" stroke-width="4"/>
+              <path d="M-12 70 94 -4 200 70Z" fill="url(#roof)" stroke="#563c38" stroke-width="6"/>
+              <use href="#win" x="22" y="103" width="42" height="56"/><rect x="94" y="111" width="49" height="85" rx="4" fill="#53352e" stroke="#c59c69" stroke-width="3"/>
+              <path class="snow-detail" d="M-12 68 94 -4 200 68 188 68 94 18 0 75Z" fill="#eef5ed"/>
+              <g class="decor-stage2"><circle cx="117" cy="98" r="11" fill="none" stroke="#2f7f59" stroke-width="7"/><rect x="158" y="169" width="27" height="24" fill="#9c433d"/></g>
+              <g class="decor-stage3"><rect x="-17" y="178" width="35" height="24" rx="3" fill="#bc684d"/><path d="M0 180V201 M-15 190H16" stroke="#f6d69a" stroke-width="4"/><path d="M4 75Q91 101 178 75" fill="none" stroke="#e2bc61" stroke-width="5"/></g>
+              <g class="decor-stage4"><rect x="149" y="-20" width="24" height="52" fill="#87675a"/><path d="M145 -20 162 -30 180 -20Z" fill="#e5e4dd"/><path d="M161 -38Q141 -52 160 -66" stroke="#e4e4da" stroke-width="6" fill="none"/></g>
+              <g class="decor-stage5"><path d="M-17 74Q92 111 197 74" stroke="#ffe58e" stroke-width="7" fill="none"/><g fill="#ffdb8f"><circle cx="21" cy="92" r="6"/><circle cx="75" cy="99" r="6"/><circle cx="125" cy="99" r="6"/><circle cx="172" cy="88" r="6"/></g></g>
+            </g>
+            <!-- BAKERY -->
+            <g class="building" id="art-bakery" data-level="1" transform="translate(816 350)">
+              <ellipse cx="95" cy="198" rx="122" ry="18" fill="#08212b" opacity=".34"/>
+              <rect x="4" y="60" width="184" height="136" rx="8" fill="#b78a63" stroke="#654b3e" stroke-width="4"/>
+              <path d="M-12 72 94 -6 205 72Z" fill="url(#roof)" stroke="#5b3d38" stroke-width="6"/>
+              <use href="#win" x="24" y="103" width="51" height="56"/><rect x="114" y="101" width="49" height="95" rx="4" fill="#6b4b38" stroke="#e0b27a" stroke-width="3"/>
+              <path class="snow-detail" d="M-12 70 94 -6 205 70 193 70 94 15 1 77Z" fill="#eef4e9"/>
+              <g class="decor-stage2"><path d="M27 95Q58 72 83 95" stroke="#3a7d4e" stroke-width="7" fill="none"/><circle cx="60" cy="86" r="4" fill="#c75345"/></g>
+              <g class="decor-stage3"><path d="M-2 80Q94 112 191 78" fill="none" stroke="#f7ca68" stroke-width="5"/><rect x="-17" y="177" width="35" height="22" rx="6" fill="#bc7b48"/></g>
+              <g class="decor-stage4"><path d="M182 51 183 -4 209 -4 210 68" fill="#a07a66" stroke="#60483c" stroke-width="4"/><path d="M193 -17Q181 -30 196 -40" stroke="#eee9d9" stroke-width="6" fill="none"/></g>
+              <g class="decor-stage5"><path d="M13 150Q49 119 81 150" fill="none" stroke="#fff5d0" stroke-width="5"/><g fill="#f0bf72"><circle cx="25" cy="86" r="5"/><circle cx="83" cy="96" r="5"/><circle cx="146" cy="93" r="5"/></g></g>
+            </g>
+            <!-- PEACE INN -->
+            <g class="building" id="art-inn" data-level="1" transform="translate(1022 262)">
+              <ellipse cx="84" cy="239" rx="104" ry="17" fill="#08212b" opacity=".34"/>
+              <rect x="8" y="81" width="155" height="150" rx="6" fill="#a27d66" stroke="#55463c" stroke-width="4"/>
+              <path d="M-1 92 84 20 179 92Z" fill="url(#roof)" stroke="#654b3e" stroke-width="6"/>
+              <use href="#win" x="20" y="117" width="31" height="44"/><use href="#win" x="122" y="117" width="31" height="44"/>
+              <rect x="64" y="161" width="43" height="70" rx="4" fill="#59443b" stroke="#d6b583" stroke-width="3"/>
+              <path class="snow-detail" d="M-1 90 84 20 179 90 164 90 84 41 11 97Z" fill="#eef6ed"/>
+              <g class="decor-stage2"><circle cx="86" cy="117" r="11" fill="none" stroke="#347c56" stroke-width="7"/></g>
+              <g class="decor-stage3"><path d="M12 96Q84 126 162 95" fill="none" stroke="#d9b961" stroke-width="5"/></g>
+              <g class="decor-stage4"><rect x="57" y="-12" width="47" height="34" fill="#705044"/><path d="M51 -12 82 -44 112 -12Z" fill="#6c4a42"/><use href="#win" x="66" y="-5" width="28" height="27"/></g>
+              <g class="decor-stage5"><path d="M82 -72 90 -52 109 -49 95 -35 100 -17 82 -26 64 -17 69 -35 55 -49 75 -52Z" fill="#ffe2a2"/><g fill="#ffe5a1"><circle cx="27" cy="107" r="5"/><circle cx="80" cy="122" r="5"/><circle cx="135" cy="107" r="5"/></g></g>
+            </g>
+            <!-- MAIN TREE -->
+            <g id="art-tree" transform="translate(612 0)">
+              <ellipse cx="0" cy="565" rx="132" ry="27" fill="#051b26" opacity=".28"/>
+              <rect x="-17" y="470" width="34" height="102" rx="5" fill="#63472c"/>
+              <path d="M0 212 -130 432 -96 429 -158 506 0 484 158 506 96 429 130 432Z" fill="url(#treefill)" stroke="#173b35" stroke-width="7"/>
+              <path d="M0 258 -106 424 -84 429 -138 490 0 466Z" fill="#337d65" opacity=".55"/>
+              <g class="tree-snow"><path d="M0 212 -130 432 -105 421 0 254 105 421 130 432Z" fill="#e7eee9" opacity=".85"/><path d="M-144 496 -95 430 -78 445 0 484 78 445 95 430 144 496 0 473Z" fill="#d5e9e9" opacity=".7"/></g>
+              <g class="tree-garland" fill="none" stroke="#e1bd67" stroke-width="7"><path d="M-72 366Q0 399 72 364"/><path d="M-107 440Q0 485 107 440"/></g>
+              <g class="tree-ornaments" fill="#e8ba74"><circle cx="-48" cy="337" r="10"/><circle cx="37" cy="358" r="11"/><circle cx="-85" cy="429" r="10"/><circle cx="73" cy="440" r="12"/><circle cx="3" cy="438" r="11"/></g>
+              <g class="tree-lights" fill="#fff0bb"><circle cx="-21" cy="301" r="7"/><circle cx="38" cy="356" r="7"/><circle cx="-76" cy="418" r="6"/><circle cx="69" cy="449" r="7"/><circle cx="-19" cy="470" r="7"/></g>
+              <g class="tree-star"><circle cx="0" cy="212" r="78" fill="url(#star-glow)"/><path d="M0 167 13 197 46 200 22 220 28 252 0 236 -28 252 -22 220 -46 200 -13 197Z" fill="#fff0b5" stroke="#d6a954" stroke-width="4"/></g>
+              <g class="tree-final"><circle cx="0" cy="370" r="230" fill="url(#star-glow)" opacity=".26"/></g>
+            </g>
+            <g class="snow-particles"><rect width="1200" height="670" fill="url(#snow-speckle)"/></g>
+          </svg>
+          <div class="view-vignette" aria-hidden="true"></div>
+          <div class="village-overlay"><span>🎄</span><strong>Kapitel 1: Das Weihnachtswunder</strong><small>Von einem schlichten Dorf zur festlichen Weihnachtsstadt</small></div>
+        </div>
+        <div class="village-caption"><span>✨ Entwurfsansicht · Entwicklung noch nicht mit DOG synchronisiert</span><button id="village-preview-reset" type="button" class="button quiet">Vorschau zurücksetzen</button></div>
+      </div>
+      <div class="event-stat-grid">
+        <article class="stat-card"><span>🏠</span><div><strong id="stat-building-levels">4 / 20</strong><small>Gebäudestufen zusammen</small></div></article>
+        <article class="stat-card"><span>🎄</span><div><strong id="stat-tree-level">1 / 10</strong><small>Weihnachtsbaum</small></div></article>
+        <article class="stat-card"><span>⭐</span><div><strong>–</strong><small>Gemeinsame Weihnachtslichter</small></div></article>
+        <article class="stat-card"><span>🎁</span><div><strong>–</strong><small>Gesammelte Geschenke</small></div></article>
+      </div>
+      <div class="event-footer-row"><div><h3>Unser gemeinsames Ziel</h3><p>Vier Gebäude ausbauen, den Baum wachsen lassen und ganz Lichtertal auf Weihnachten vorbereiten.</p></div><button type="button" class="button gold" data-open-tab="buildings">🏠 Gebäude ansehen</button></div>
+    </section>
+    <section class="event-panel" id="panel-buildings" role="tabpanel" aria-labelledby="tab-buildings" hidden>
+      <div class="event-heading"><div><span class="eyebrow">DORFAUSBAU</span><h2>Die vier Weihnachtsgebäude</h2><p>Jedes Haus verändert sich fünfmal und bringt später einen eigenen Bonus.</p></div><span class="soft-tag">4 × 5 Stufen</span></div>
+      <div class="notice"><strong>🔎 Gestaltungs-Vorschau</strong> Du kannst die Gebäudestufen hier probeweise verändern. Das kostet keine Lichter und speichert keinen echten Fortschritt.</div>
+      <div class="building-grid" id="building-grid"></div>
+      <div class="event-footer-row"><p>Der Weihnachtsbaum wächst automatisch, wenn die Gesamtstufen der vier Gebäude steigen.</p><button type="button" class="button gold" data-open-tab="village">🏘️ Dorf ansehen</button></div>
+    </section>
+    <section class="event-panel" id="panel-tree" role="tabpanel" aria-labelledby="tab-tree" hidden>
+      <div class="event-heading"><div><span class="eyebrow">IM HERZEN DES DORFES</span><h2>Der große Weihnachtsbaum</h2><p>Zehn Entwicklungsstufen – vom kleinen Tannenbaum bis zum strahlenden Mittelpunkt des Dorfes.</p></div><span class="soft-tag">10 Stufen</span></div>
+      <div class="tree-feature"><div class="tree-feature-icon">🎄</div><div><h3 id="tree-current-title">Stufe 1 · Junger Baum</h3><p id="tree-current-copy">Ein kleiner, noch ungeschmückter Baum steht mitten in Lichtertal.</p><div class="meter"><span id="tree-progress-fill" style="width:10%"></span></div><small id="tree-progress-label">1 von 10 Entwicklungsstufen</small></div></div>
+      <div class="tree-steps" id="tree-steps"></div>
+      <div class="notice"><strong>✨ Das große Finale</strong> Sobald alle vier Gebäude auf Stufe 5 sind, erreicht der Baum Stufe 10. Dann bringt er in der späteren fertigen Eventfassung die ganze Stadt zum Leuchten.</div>
+      <div class="event-footer-row"><p>Keine zusätzliche Baum-Währung: Entscheidend ist allein der gemeinsame Gebäudeausbau.</p><button type="button" class="button gold" data-open-tab="buildings">🏠 Gebäudestufen ansehen</button></div>
+    </section>
+    <section class="event-panel" id="panel-story" role="tabpanel" aria-labelledby="tab-story" hidden>
+      <div class="event-heading"><div><span class="eyebrow">UNSERE WEIHNACHTSGESCHICHTE</span><h2>Ein Wunder beginnt</h2><p>Kapitel 1 begleitet Chris, Vanessa und David bei den Weihnachtsvorbereitungen in Lichtertal.</p></div><span class="soft-tag">📖 Erzählentwurf</span></div>
+      <div class="story-hero"><span>📜</span><div><h3>Das Weihnachtswunder von Lichtertal</h3><p>Eine Geschichte über Freundschaft, gegenseitige Hilfe, Hoffnung und die Vorfreude auf Weihnachten.</p></div></div>
+      <div class="story-list">
+        <article><span class="story-number">01</span><div><h3>Ein unerwarteter Besuch</h3><p>An einem kalten Abend kommen die drei Freunde in ein kleines Dorf. Der Baum auf dem Marktplatz ist noch dunkel, die Häuser sind ungeschmückt. Wichtel Pip braucht dringend Hilfe bei den Weihnachtsvorbereitungen.</p></div></article>
+        <article><span class="story-number">02</span><div><h3>Die ersten Lichter</h3><p>Die Dorfbewohner legen gemeinsam los. Überall wird gebaut, gelacht und manchmal geht etwas herrlich schief. Ein erster Hinweis erinnert an die biblische Hoffnung auf ein Licht in der Dunkelheit.</p></div></article>
+        <article><span class="story-number">03</span><div><h3>Weihnachtsvorbereitungen mit Hindernissen</h3><p>Die Werkstatt, die Bäckerei und die Herberge werden immer schöner. Ein überraschendes Ereignis stellt die Freunde vor die Frage, wie wichtig Zusammenhalt gerade dann ist, wenn nicht alles nach Plan läuft.</p></div></article>
+        <article><span class="story-number">04</span><div><h3>Das Licht über Lichtertal</h3><p>Der Baum wird prachtvoll geschmückt. Als sein Stern schließlich leuchtet, feiert das Dorf. Eine geheimnisvolle Nachricht deutet an, dass die Weihnachtsreise noch nicht zu Ende ist.</p></div></article>
+      </div>
+      <div class="scripture"><span>✦</span><p><strong>Leitgedanke aus Jesaja 9,1:</strong> Menschen in der Dunkelheit wird ein großes Licht verheißen. Dieser Gedanke begleitet die Weihnachtsvorbereitungen und führt später zur Weihnachtsgeschichte.</p></div>
+      <p class="subtle-note">Die Erzähltexte sind ein erster Entwurf. Persönliche gemeinsame Erlebnisse ergänzen wir sorgfältig, ohne belastende Erinnerungen vorauszusetzen.</p>
+    </section>
+    <section class="event-panel" id="panel-gifts" role="tabpanel" aria-labelledby="tab-gifts" hidden>
+      <div class="event-heading"><div><span class="eyebrow">BELOHNUNGEN WÄHREND DOG-PARTIEN</span><h2>Geschenke &amp; Weihnachtslichter</h2><p>Das Herz des gemeinsamen Fortschritts: Sammeln, zusammenlegen und das Dorf ausbauen.</p></div><span class="soft-tag">🎁 In Vorbereitung</span></div>
+      <div class="gift-roadmap">
+        <article><span class="roadmap-icon">🎲</span><h3>1. DOG spielen</h3><p>Im geplanten Weihnachtsmodus liegen zunächst 10 leuchtende Geschenkfelder auf dem Brett.</p></article>
+        <article><span class="roadmap-icon">🎁</span><h3>2. Geschenke einsammeln</h3><p>Eine Figur landet auf einem Geschenkfeld. Das Geschenk verschwindet und bringt Weihnachtslichter.</p></article>
+        <article><span class="roadmap-icon">⭐</span><h3>3. Gemeinsam sparen</h3><p>Die gesammelten Lichter fließen in den Gemeinschaftsvorrat des Weihnachtsdorfes.</p></article>
+        <article><span class="roadmap-icon">🏘️</span><h3>4. Dorf ausbauen</h3><p>Die Gruppe verbessert ein Gebäude. Mit dem Ausbau wächst automatisch der Weihnachtsbaum.</p></article>
+      </div>
+      <div class="notice"><strong>🔒 Noch nicht aktiviert</strong> Geschenkfelder, Währung und Belohnungsbuchungen sind noch nicht an den Render-Server angeschlossen. Bis dahin werden keine echten Gewinne oder Punktestände angezeigt.</div>
+    </section>
+    <section class="event-panel" id="panel-chapters" role="tabpanel" aria-labelledby="tab-chapters" hidden>
+      <div class="event-heading"><div><span class="eyebrow">UNSERE WEIHNACHTSREISE</span><h2>Die zwei Kapitel</h2><p>Nur zwei Kapitel bilden zusammen das Weihnachtsabenteuer. Hier beginnt die Reise.</p></div></div>
+      <div class="chapter-grid">
+        <article class="chapter-card"><div class="chapter-icon">🏘️</div><span class="eyebrow">KAPITEL 1 · AUFBAU</span><h3>Das Weihnachtswunder von Lichtertal</h3><p>Ein Dorf erwacht zum Weihnachtsfest. Vier Häuser wachsen, der Baum erhält zehn Stufen und alle Freunde helfen gemeinsam.</p><button type="button" class="button gold" data-open-tab="village">Kapitel 1 ansehen</button></article>
+        <article class="chapter-card locked"><div class="chapter-icon">⭐</div><span class="eyebrow">KAPITEL 2 · SPÄTER</span><h3>Die Geschichte geht weiter …</h3><p>Ein neues Abenteuer mit einer anderen Handlung. Es knüpft an den Abschluss von Lichtertal an und beendet die Weihnachtsgeschichte.</p><span class="chapter-soon">🔒 Wird später entwickelt</span></article>
+      </div>
+    </section>
+  </main>
+</div>
+<script type="module" src="./christmas-event.js?v=1"></script>
+</body>
+</html>
