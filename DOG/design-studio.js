@@ -1,4 +1,4 @@
-import {BOARD_STYLES,SCENE_STYLES,HUD_LAYOUTS,HUD_TONES,loadAppearance,saveAppearance,validAssetPath} from './appearance-registry.js?v=18';
+import {BOARD_STYLES,SCENE_STYLES,HUD_LAYOUTS,HUD_TONES,loadAppearance,saveAppearance,validAssetPath} from './appearance-registry.js?v=19';
 import {APPROVED_BOARD_LAYOUT as LAYOUT} from './approved-board.js';
 const $=id=>document.getElementById(id);
 const S='http://www.w3.org/2000/svg',KEY='dog:design-studio:presets:v1';
