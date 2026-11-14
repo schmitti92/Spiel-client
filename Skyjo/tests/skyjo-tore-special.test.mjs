@@ -289,3 +289,87 @@ test('SKYJO payout waits for a successfully persisted final scoreboard',()=>{
  assert.match(source,/if\(!cloudSaved\)throw Error\('Die Rundenwertung/);
  assert.match(source,/game\.phase==='roundReveal'&&game\.roundClose\?\.stage==='remove'/);
 });
+
+
+test('One synchronized 12-reel window shows winner, all reels, readable list and fixed actions',()=>{
+ const app={};new Function('window',read('skyjo_tore_special.js'))(app);
+ const x=app.SkyjoToreSpecial;
+ const prior=globalThis.document,created=[];
+ globalThis.document={
+  createElement(tag){
+   const el={tag,dataset:{},setAttribute(name,value){this[name]=value;},focus(){},innerHTML:''};
+   created.push(el);return el;
+  },
+  body:{append(){}}
+ };
+ try{
+  const player={uid:'chris',name:'Chris',winner:true,missionIds:['one-row','one-street'],slots:12,
+   missionSlots:8,winnerSlots:2,bonusSlots:2,
+   prizes:Array.from({length:12},(_,i)=>({kind:'pack',id:'large',quantity:1,label:'Goldpaket '+(i+1)}))};
+  const show={id:'round1',index:0,batch:0,players:[player],phase:'ready'};
+  const root=x.createOverlay({},show);
+  assert.equal(root.dataset.reels,'12');
+  assert.equal(root.dataset.layout,'extended');
+  assert.equal((root.innerHTML.match(/class="monster-slot-reel"/g)||[]).length,12);
+  assert.equal((root.innerHTML.match(/<div\b/g)||[]).length,(root.innerHTML.match(/<\/div>/g)||[]).length,
+   'All DIV tags must be balanced so mobile layout does not collapse');
+  assert.match(root.innerHTML,/skyjo-slot-scroll-area/);
+  assert.match(root.innerHTML,/skyjo-slot-action-dock/);
+  assert.match(root.innerHTML,/skyjo-slot-readable-list/);
+  assert.match(root.innerHTML,/role="progressbar"/);
+  assert.match(root.innerHTML,/aria-valuemax="12"/);
+  assert.match(root.innerHTML,/class="skyjo-slot-owner-name">Chris/);
+  assert.match(root.innerHTML,/8<\/b> \+ 🏆 Rundensieg: <b>2<\/b>/);
+  assert.match(root.innerHTML,/aria-label="Walze 12 von Chris"/);
+  assert.ok(root.innerHTML.indexOf('skyjo-slot-action-dock')>root.innerHTML.indexOf('skyjo-slot-readable-list'));
+  assert.match(root['aria-modal'],/true/);
+ }finally{globalThis.document=prior;}
+});
+test('A second 12-reel page keeps the same recipient and continuous reel numbers',()=>{
+ const app={};new Function('window',read('skyjo_tore_special.js'))(app);
+ const x=app.SkyjoToreSpecial;
+ const prior=globalThis.document;
+ globalThis.document={
+  createElement:tag=>({dataset:{},setAttribute(){},focus(){},innerHTML:''}),
+  body:{append(){}}
+ };
+ try{
+  const actor={uid:'moin',name:'Moin',winner:false,missionIds:['three-streets'],slots:20,
+   missionSlots:18,winnerSlots:0,bonusSlots:2,
+   prizes:Array.from({length:20},(_,i)=>({kind:'cash',label:'Geld '+(i+1)}))};
+  const show={id:'round2',index:0,batch:1,players:[actor]};
+  const root=x.createOverlay({},show);
+  assert.equal(root.dataset.reels,'8');
+  assert.equal((root.innerHTML.match(/class="monster-slot-reel"/g)||[]).length,8);
+  assert.match(root.innerHTML,/aria-label="Walze 13 von Moin"/);
+  assert.match(root.innerHTML,/aria-label="Walze 20 von Moin"/);
+  assert.match(root.innerHTML,/DURCHGANG 2\/2/);
+  assert.match(root.innerHTML,/class="skyjo-slot-owner-name">Moin/);
+ }finally{globalThis.document=prior;}
+});
+test('Server clock sampling is predictable and ignores broken network measurements',()=>{
+ const app={};new Function('window',read('skyjo_tore_special.js'))(app);
+ const x=app.SkyjoToreSpecial;
+ assert.equal(x.clockOffsetFromSample(1000,1200,1150),50);
+ assert.equal(x.clockOffsetFromSample(1000,1000,1500),500);
+ assert.equal(x.clockOffsetFromSample(1000,15000,1600),null);
+ assert.equal(x.clockOffsetFromSample(1200,1000,1100),null);
+ assert.equal(x.clockOffsetFromSample(1000,1200,NaN),null);
+});
+test('Phone and landscape layouts keep readable reels and a permanently visible confirmation bar',()=>{
+ const source=read('skyjo_tore_special.js');
+ const css=read('skyjo_tore_special.css');
+ assert.match(source,/skyjo-health/);
+ assert.match(source,/timeBase:'server'/);
+ assert.match(source,/stageNow\(show\)/);
+ assert.match(css,/Device-safe shared finale/);
+ assert.match(css,/\.skyjo-slot-scroll-area\{/);
+ assert.match(css,/overflow-y:auto/);
+ assert.match(css,/\.skyjo-slot-action-dock\{/);
+ assert.match(css,/flex:0 0 auto/);
+ assert.match(css,/@media\(max-width:610px\)/);
+ assert.match(css,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important/);
+ assert.match(css,/\.monster-slot-prize-name\{[\s\S]*?font-size:12px!important/);
+ assert.match(css,/height:calc\(100dvh - 8px\)!important/);
+ assert.match(css,/touch-action:manipulation/);
+});
