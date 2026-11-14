@@ -357,3 +357,110 @@ details:not([open]) .dog-disclosure-arrow{transform:rotate(-90deg)}
  .dog-pile-module .dog-pile-copy strong{font-size:10px}
  .dog-pile-module .dog-pile-copy span{font-size:9px}
 }
+
+/* DOG scenic cockpit & compact menu v2:
+   the right-side wallpaper is independent of board artwork and player state. */
+.right.dog-modules{
+  padding:9px;
+  border-radius:16px;
+  border:1px solid rgba(227,195,139,.42);
+  background-color:#0a263e;
+  background-image:linear-gradient(180deg,rgba(2,14,29,.25),rgba(3,16,30,.08) 48%,rgba(2,13,27,.35)),var(--dog-sidebar-wallpaper,url("./assets/backgrounds/dog-hintergrund-magisches-schloss.png"));
+  background-position:center,center;
+  background-size:cover,cover;
+  background-repeat:no-repeat;
+  box-shadow:inset 0 1px rgba(255,255,255,.13),0 10px 30px rgba(0,0,0,.3);
+}
+.right.dog-modules>.panel,
+.right.dog-modules>.panel:nth-child(2),
+.right.dog-modules>.panel:nth-child(3){
+  background:rgba(6,23,41,.37);
+  border-color:rgba(231,199,143,.38);
+  box-shadow:0 3px 14px rgba(2,12,26,.19),inset 0 1px rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(4px);
+  backdrop-filter:blur(4px);
+}
+.right.dog-modules .dog-pile-module .dog-piles{
+  background:rgba(5,22,38,.55);
+}
+.right.dog-modules .dog-module-heading{
+  border-bottom-color:rgba(255,216,154,.55);
+}
+.dog-floating-menu{
+  position:fixed;
+  top:calc(env(safe-area-inset-top,0px) + 9px);
+  right:calc(env(safe-area-inset-right,0px) + 16px);
+  z-index:1000;
+  width:max-content;
+  max-width:calc(100vw - 25px);
+}
+.dog-menu-toggle{
+  display:grid;
+  place-items:center;
+  width:43px;
+  height:43px;
+  margin-left:auto;
+  padding:0;
+  border:1px solid #e6c68e;
+  border-radius:13px;
+  color:#ffe4ae;
+  font-size:25px;
+  font-weight:800;
+  background:linear-gradient(155deg,#224a68ee,#071e32f5);
+  box-shadow:0 5px 20px #0008,inset 0 1px #ffffff4f;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.dog-menu-toggle:hover,.dog-menu-toggle:focus-visible{border-color:#fff1cd;background:#315b76}
+.dog-menu-panel{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-top:7px;
+  padding:12px;
+  width:min(245px,calc(100vw - 26px));
+  max-height:min(78dvh,480px);
+  overflow-y:auto;
+  border:1px solid #d8b77e;
+  border-radius:15px;
+  background:linear-gradient(150deg,rgba(12,38,61,.98),rgba(3,18,35,.98));
+  box-shadow:0 18px 45px #000c,inset 0 1px #ffffff1a;
+}
+.dog-menu-panel[hidden]{display:none!important}
+.dog-menu-title{
+  padding:2px 6px 10px;
+  font-size:14px;
+  font-weight:900;
+  color:#ffdf9b;
+  border-bottom:1px solid #e7c27e66;
+}
+.dog-menu-panel .top-btn{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  min-height:39px;
+  padding:9px 12px;
+  border-radius:9px;
+  border:1px solid rgba(230,195,138,.35);
+  background:rgba(34,70,100,.55);
+  color:#f6e9ce;
+  font-size:13px;
+  font-weight:750;
+  text-decoration:none;
+  text-align:left;
+  cursor:pointer;
+}
+.dog-menu-panel .top-btn:hover,.dog-menu-panel .top-btn:focus-visible{
+  background:rgba(53,104,137,.75);
+  border-color:#edcf98;
+}
+@media(max-width:899px),(orientation:portrait){
+  .dog-floating-menu{top:calc(env(safe-area-inset-top,0px) + 8px);right:calc(env(safe-area-inset-right,0px) + 10px)}
+  .dog-menu-toggle{width:40px;height:40px}
+}
+@media(min-width:900px) and (orientation:landscape) and (max-height:1100px){
+  main{margin:5px auto 4px}
+  .right.dog-modules{padding:7px}
+  .board-svg{height:100%;width:100%;max-height:none}
+}
