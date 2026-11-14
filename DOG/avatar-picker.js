@@ -39,7 +39,8 @@
  function css(avatar){
   const n=valid(Number(avatar))?Number(avatar):0;
   const i=n%8,src=new URL(n<8?'profile-avatars.webp':'profile-avatars-extra.webp',ASSET_BASE).href;
-  return 'background-image:url("'+src+'");background-size:400% 200%;background-position:'+(i%4)*100/3+'% '+Math.floor(i/4)*100+'%;background-repeat:no-repeat';
+  // Single-quote the URL: app.js embeds this CSS inside a double-quoted HTML style attribute.
+  return "background-image:url('"+src+"');background-size:400% 200%;background-position:"+(i%4)*100/3+"% "+Math.floor(i/4)*100+"%;background-repeat:no-repeat";
  }
  async function syncRoomAvatar(avatar,notice){
   const code=new URL(location.href).searchParams.get('room');
