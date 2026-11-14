@@ -16,6 +16,7 @@ on:
       - 'tests/dog-piece-animations.test.mjs'
       - 'tests/dog-motion-settings.test.mjs'
       - 'tests/dog-ui-animations.test.mjs'
+      - 'tests/dog-premium-cockpit.test.mjs'
       - 'tests/dog-board-backdrops.test.mjs'
       - 'tests/dog-ui-shell.test.mjs'
       - 'tests/dog-official-rules.test.mjs'
@@ -37,6 +38,7 @@ on:
       - 'tests/dog-piece-animations.test.mjs'
       - 'tests/dog-motion-settings.test.mjs'
       - 'tests/dog-ui-animations.test.mjs'
+      - 'tests/dog-premium-cockpit.test.mjs'
       - 'tests/dog-board-backdrops.test.mjs'
       - 'tests/dog-ui-shell.test.mjs'
       - 'tests/dog-official-rules.test.mjs'
@@ -71,7 +73,7 @@ jobs:
       - run: node --check DOG/collection-catalog.js
       - run: node --check DOG/collection.js
       - run: node --test tests/dog-board-backdrops.test.mjs
-      - run: node --test tests/dog-ui-shell.test.mjs
+      - run: node --test tests/dog-ui-shell.test.mjs tests/dog-premium-cockpit.test.mjs
       - run: node --test tests/dog-collection.test.mjs
       - run: node --test tests/dog-card-editions.test.mjs
       - run: node --test tests/dog-hand-gestures.test.mjs
