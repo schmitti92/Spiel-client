@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#06192e">
-<meta name="description" content="DOG Sammlung: Hintergrundbilder, Spielbretter, Spielfiguren, Profilbilder, Emojis und zukünftige Event-Belohnungen.">
+<meta name="description" content="DOG Sammlung: vorhandene Hintergrundbilder, Spielbretter, Spielfiguren, Profilbilder und Emojis.">
 <title>Meine Sammlung · DOG</title>
-<link rel="stylesheet" href="./collection.css?v=1">
+<link rel="stylesheet" href="./collection.css?v=2">
 </head>
 <body>
 <div class="collection-page">
@@ -16,19 +16,19 @@
     <span class="dog-logo" aria-hidden="true">🐾<span>👑</span></span>
     <div><span class="brand-eyebrow">DOG · DAS KLASSISCHE TEAM-BRETTSPIEL</span>
     <h1>Meine Sammlung</h1>
-    <p>Freigeschaltete Inhalte &amp; zukünftige Belohnungen</p></div>
+    <p>Deine vorhandenen DOG-Designs &amp; Inhalte</p></div>
   </div>
   <div class="collection-progress" aria-label="Verfügbare Sammlungsinhalte">
     <div><span>Verfügbare Inhalte</span><strong id="collection-total">—</strong></div>
-    <div class="progress-track"><span id="collection-progress-bar"></span></div>
-    <small id="collection-progress-caption">Echte Inhalte und geplante Event-Vorschauen</small>
+    
+    <small id="collection-progress-caption">Nur tatsächlich verfügbare DOG-Inhalte</small>
   </div>
 </header>
 <main class="collection-layout">
   <aside class="collection-categories glass-panel" aria-label="Sammlungskategorien">
     <div class="collection-categories-title">📚 Kategorien</div>
     <nav id="collection-categories" aria-label="Themengebiete" class="collection-category-list"></nav>
-    <p class="collection-sidebar-note">🔒 Gesperrte Inhalte sind Vorschauen auf zukünftige Events.</p>
+    
   </aside>
   <section class="collection-gallery glass-panel" aria-labelledby="collection-heading">
     <header class="gallery-header">
@@ -38,8 +38,8 @@
       </div>
       <div class="collection-filters" role="group" aria-label="Sammlungsfilter">
         <button type="button" data-filter="all" aria-pressed="true">Alle <span id="count-all"></span></button>
-        <button type="button" data-filter="available" aria-pressed="false">✓ Verfügbar <span id="count-available"></span></button>
-        <button type="button" data-filter="planned" aria-pressed="false">🔒 Gesperrt <span id="count-planned"></span></button>
+        <button type="button" data-filter="active" aria-pressed="false">✓ Aktiv <span id="count-active"></span></button>
+        
       </div>
     </header>
     <div class="collection-gallery-scroll">
@@ -62,6 +62,6 @@
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
 <script src="./avatar-picker.js?v=3"></script>
-<script type="module" src="./collection.js?v=2"></script>
+<script type="module" src="./collection.js?v=3"></script>
 </body>
 </html>
