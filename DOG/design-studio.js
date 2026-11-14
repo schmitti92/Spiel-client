@@ -95,7 +95,7 @@ function mountHudOpacityControls(){
   const box=document.createElement('div');box.className='hud-opacity-control';
   const line=document.createElement('div');line.className='opacity-label-line';
   const label=document.createElement('label');
-  const range=document.createElement('input');range.type='range';range.min='0';range.max='100';range.step='5';
+  const range=document.createElement('input');range.type='range';range.min='0';range.max='100';range.step='1';
   range.id='hud-opacity-'+key;label.htmlFor=range.id;label.textContent=HUD_OPACITY_LABELS[key];
   const output=document.createElement('output');output.htmlFor=range.id;output.setAttribute('aria-live','off');
   line.append(label,output);box.append(line,range);host.append(box);
