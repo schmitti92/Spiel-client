@@ -382,7 +382,10 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
        <span id="round" hidden style="display:none">1</span>
        <div class="turn" id="turn" hidden aria-live="polite">Karten werden ausgeteilt</div>
        <div class="seat-grid" id="players"></div>
-       <div id="winner" class="winner" hidden><div style="font-size:30px">🏆</div><h2 id="winner-title">Sieg!</h2><p>Alle acht Teamfiguren sind im Ziel.</p></div>
+       <div class="dog-victory-mini" id="dog-victory-mini" hidden>
+         <span aria-hidden="true">🏆</span><strong>Partie beendet</strong>
+         <button id="dog-victory-show" type="button">Siegerehrung ansehen</button>
+       </div>
      </section>
      <!-- Module B: two card piles, independent of the hand. -->
      <section class="panel dog-pile-module" aria-labelledby="dog-pile-heading">
@@ -475,6 +478,32 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
    </aside>
  </div>
 </main>
+<!-- Native modal: focus is trapped by the browser. It can be dismissed and reopened. -->
+<dialog id="winner" class="winner dog-victory-dialog" aria-labelledby="winner-title" aria-describedby="winner-subtitle">
+  <div class="dog-victory-shimmer" aria-hidden="true"></div>
+  <div class="dog-victory-stars" aria-hidden="true">
+    <span>✦</span><span>✧</span><span>✦</span><span>✶</span><span>✧</span><span>✦</span><span>✶</span><span>✧</span>
+  </div>
+  <div class="dog-victory-inner">
+    <div class="dog-victory-eyebrow">✦ DOG ROYAL · SIEGEREHRUNG ✦</div>
+    <div class="dog-victory-medal" aria-hidden="true">
+      <span class="dog-victory-laurel">❧</span>
+      <span class="dog-victory-trophy">🏆</span>
+      <span class="dog-victory-laurel is-right">❧</span>
+    </div>
+    <p class="dog-victory-overline">GEMEINSAM INS ZIEL</p>
+    <h2 id="winner-title">Sieg!</h2>
+    <p class="dog-victory-subtitle" id="winner-subtitle">Die Sieger stehen fest.</p>
+    <div class="dog-victory-team-list" id="dog-victory-teams" aria-label="Ergebnis beider Teams"></div>
+    <div class="dog-victory-players-header"><span>SPIELERÜBERSICHT</span><span>FIGUREN IM ZIEL</span></div>
+    <div class="dog-victory-player-list" id="dog-victory-players" aria-label="Ergebnisse aller vier Spieler"></div>
+    <div class="dog-victory-actions">
+      <button id="dog-victory-close" class="dog-victory-action dog-victory-action-outline" type="button" autofocus>♟ Spielfeld ansehen</button>
+      <button id="dog-victory-new" class="dog-victory-action dog-victory-action-gold" type="button">↻ Neue Partie</button>
+      <a id="dog-victory-lobby" class="dog-victory-action dog-victory-action-muted" href="../spielauswahl-lokal.html">⌂ Zur Lobby</a>
+    </div>
+  </div>
+</dialog>
 <dialog id="dog-extra-dialog" class="dog-extra-dialog" aria-labelledby="dog-extra-title">
   <h2 id="dog-extra-title">⚡ DOG Erweiterung</h2>
   <p id="dog-extra-description">Dieser Bereich wird in einem späteren DOG-Update ergänzt.</p>
