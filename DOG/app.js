@@ -242,16 +242,16 @@ function renderHand(){
   const seat=currentHuman(),title=$('hand-title'),hand=$('hand'),actions=$('moves'),button=$('show-hand');
   actions.innerHTML='';hand.innerHTML='';
   if(game.phase==='finished'){title.textContent='🏆 Partie beendet';button.hidden=true;return;}
-  if(seat<0){title.textContent=online&&onlineSeat!==null?'🃏 Deine Handkarten':'🤖 Bots spielen';button.hidden=true;if(online&&onlineSeat!==null&&Array.isArray(game.hands[onlineSeat]))hand.innerHTML=game.hands[onlineSeat].map(c=>'<div class="playing-card"><small>DOG</small><strong>'+cardsLabel(c.type)+'</strong><em>Handkarte</em></div>').join('');return;}
+  if(seat<0){title.textContent=online&&onlineSeat!==null?'🃏 Deine Handkarten':'🤖 Bots spielen';button.hidden=true;if(online&&onlineSeat!==null&&Array.isArray(game.hands[onlineSeat]))hand.innerHTML=game.hands[onlineSeat].map(c=>'<div class="playing-card"><small>DOG</small><strong>'+cardsLabel(c.type)+'</strong><em>Handkarte</em></div>').join('');available=[];return;}
   if(lastTurn!==seat){revealed=online||humans===1;selectedCard=null;selectedPiece=null;lastTurn=seat;}
-  button.hidden=false;button.textContent=revealed?'🙈 Hand verdecken':'🃏 Karten ansehen';
+  button.hidden=online||humans===1;button.textContent=revealed?'🙈 Hand verdecken':'🃏 Karten ansehen';
   title.textContent=game.phase==='exchange'?'🔐 '+game.players[seat].name+': Karte an Partner geben':game.phase==='seven'?'🔥 Die 7 verteilen – noch '+(7-game.seven.spent)+' Schritte':'🎯 '+game.players[seat].name+' ist am Zug';
   if(!revealed){const symbol=escape(currentLook().cards.emblem);
     hand.innerHTML='<div class="hand-veil"><div class="dog-card-backs" aria-hidden="true"><span class="dog-card-back">'+symbol+'</span><span class="dog-card-back">'+symbol+'</span><span class="dog-card-back">'+symbol+'</span></div><span>Deine Karten sind verdeckt. Tippe auf „Karten ansehen“.</span></div>';return;}
   if(game.phase==='seven'){
     available=legalActions(game,seat);
-    hand.innerHTML='<div class="playing-card special picked"><small>DOG</small><strong>7</strong><em>Noch '+(7-game.seven.spent)+' Schritte</em></div>';
-    if(!online){const cancel=document.createElement('button');cancel.className='secondary move-button';cancel.textContent='↶ Sieben zurücknehmen';cancel.addEventListener('click',()=>{game=cancelSeven(game,seat);selectedCard=null;save();render();});actions.appendChild(cancel);}
+    hand.innerHTML=game.hands[seat].map(c=>'<div class="playing-card '+(c.id===game.seven.cardId?'special picked':'')+'"><small>DOG</small><strong>'+cardsLabel(c.type)+'</strong><em>'+(c.id===game.seven.cardId?'Noch '+(7-game.seven.spent)+' Schritte':'Handkarte')+'</em></div>').join('');
+    if(!online){const cancel=document.createElement('button');cancel.className='secondary move-button';cancel.textContent='↶ Sieben zurücknehmen';cancel.addEventListener('click',()=>{game=cancelSeven(game,seat);selectedCard=null;selectedPiece=null;save();render();});actions.appendChild(cancel);}
   }else{
     const cards=game.hands[seat];
     const exchange=game.phase==='exchange';
@@ -275,8 +275,8 @@ function render(){
   $('turn').textContent=game.phase==='finished'?'🏆 Team '+(game.winner===0?'Rot / Grün':'Blau / Gelb')+' gewinnt!':game.phase==='exchange'?'Karten werden getauscht':active>=0?game.players[active].name+' ist dran':'Bots spielen';
   $('history').innerHTML=game.history.map(t=>'<div>'+escape(t)+'</div>').join('');
   renderPlayers();
-  available=game.phase==='seven'&&revealed?legalActions(game,game.current):[];
-  drawBoard();renderHand();drawBoard();
+  available=[];
+  renderHand();drawBoard();
   $('status').textContent=online?'🌐 Online mit Freunden · Karten serverseitig geschützt · Raum '+hubCode:'Klassische Regeln • Teams Rot/Grün und Blau/Gelb • Spielstand wird lokal gesichert';
   $('winner').hidden=game.phase!=='finished';
   if(game.phase==='finished')$('winner-title').textContent='Team '+(game.winner===0?'Rot / Grün':'Blau / Gelb')+' gewinnt!';
@@ -332,7 +332,7 @@ $('moves').addEventListener('click',e=>{const btn=e.target.closest('[data-specia
 $('board').addEventListener('click',e=>{
  if(!revealed||currentHuman()<0)return;
  const node=e.target.closest('[data-piece]');
- if(node&&selectedPiece===null){selectedPiece=Number(node.dataset.piece);drawBoard();$('move-help').textContent='Wähle das Zielfeld selbst.';return;}
+ if(node&&selectedPiece===null){if(!available.some(m=>m.pieceId===Number(node.dataset.piece)))return;selectedPiece=Number(node.dataset.piece);drawBoard();$('move-help').textContent='Wähle das Zielfeld selbst.';return;}
  if(node&&Number(node.dataset.piece)===selectedPiece){selectedPiece=null;drawBoard();$('move-help').textContent='Figur abgewählt.';return;}
  if(selectedPiece===null)return;
  const matrix=$('board').getScreenCTM();if(!matrix)return;
@@ -350,7 +350,9 @@ $('board').addEventListener('click',e=>{
  if(matches.length===1){onMove(matches[0].i);return;}
  if(matches.length>1){
   const choices=matches.map(({m},i)=>(i+1)+': '+(m.as||m.steps||'Zug')+(m.viaGoal?' über Ziel':'')).join(' | ');
-  const selected=Number(prompt('Mehrere Wege führen hierher. Welche Variante? '+choices,'1'))-1;
+  const response=prompt('Mehrere Wege führen hierher. Welche Variante? '+choices,'1');
+  if(response===null)return;
+  const selected=Number(response)-1;
   if(Number.isInteger(selected)&&matches[selected])onMove(matches[selected].i);
   return;
  }
