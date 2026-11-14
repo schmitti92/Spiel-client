@@ -4,7 +4,7 @@ import {mountDogEmojiGame,showDogEmoji,showDogEmojiError} from './emoji-game.js?
 import {boardGestureTarget} from './board-gesture-math.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
-import {DEFAULT_APPEARANCE,BOARD_STYLES,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=20';
+import {DEFAULT_APPEARANCE,BOARD_STYLES,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=21';
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=10';
 
 const $=id=>document.getElementById(id);
@@ -580,6 +580,11 @@ function applyAppearance(){
   // Only pre-registered same-origin art is allowed, independent of the board skin.
   const sidebarAsset=look.sidebar?.image;
   const hud=look.hudTone||HUD_TONES.classic;
+  const opacity=normalizeHudOpacity(look.selected.hudOpacity);
+  for(const key of HUD_OPACITY_BLOCKS){
+    const prop='dogHudOpacity'+key.charAt(0).toUpperCase()+key.slice(1);
+    document.documentElement.dataset[prop]=opacity[key]===null?'default':'custom';
+  }
   const frame=look.boardFrame||BOARD_FRAMES.classic;
   document.documentElement.dataset.dogBoardFrame=appearance.boardFrame;
   document.documentElement.dataset.dogHudTone=appearance.hudTone;
@@ -597,6 +602,13 @@ function applyAppearance(){
     '--dog-hud-accent':hud.accent,
     '--dog-hud-text':hud.text,
     '--dog-hud-muted':hud.muted,
+    '--dog-hud-players-panel-fill':hudOpacityColor(hud,'panel',opacity.players),
+    '--dog-hud-players-seat-fill':hudOpacityColor(hud,'seat',opacity.players),
+    '--dog-hud-piles-panel-fill':hudOpacityColor(hud,'panel',opacity.piles),
+    '--dog-hud-piles-inner-fill':hudOpacityColor(hud,'inner',opacity.piles),
+    '--dog-hud-hand-panel-fill':hudOpacityColor(hud,'panel',opacity.hand),
+    '--dog-hud-hand-inner-fill':hudOpacityColor(hud,'inner',opacity.hand),
+    '--dog-hud-extras-button-fill':hudOpacityColor(hud,'button',opacity.extras),
     '--dog-page-bg':look.scene?.image&&validAssetPath(look.scene.image)
       ?assetBackground(look.scene.image,look.board.page)
       :look.board.page,
@@ -630,6 +642,18 @@ function applyAppearance(){
     const seat=Number(element.dataset.appearanceSeat);
     if(Number.isInteger(seat)&&seat>=0&&seat<4)element.style.backgroundColor=look.pieces.colors[seat];
   });
+  const controls=$('appearance-hud-opacity-controls');
+  if(controls){
+    controls.querySelectorAll('input[data-hud-opacity]').forEach(input=>{
+      const key=input.dataset.hudOpacity,chosen=opacity[key];
+      const source=hud[key==='extras'?'button':key==='players'?'panel':'inner'];
+      const alpha=/,\s*(0?(?:\.\d+)?|1(?:\.0+)?)\s*\)$/.exec(source)?.[1];
+      const value=chosen===null?Math.round(Number(alpha??0.75)*100):chosen;
+      input.value=String(value);
+      const output=controls.querySelector('[data-hud-opacity-value="'+key+'"]');
+      if(output)output.textContent=value+' %'+(chosen===null?' · Standard':'');
+    });
+  }
   if(game)render();
 }
 function prepareAppearanceUI(){
@@ -644,6 +668,27 @@ function prepareAppearanceUI(){
     }
     select.addEventListener('change',()=>{
       appearance=saveAppearance({...appearance,[type]:select.value});
+      applyAppearance();
+    });
+  }
+  const opacityHost=$('appearance-hud-opacity-controls');
+  if(opacityHost){
+    const names={players:'👥 Spieleranzeige',piles:'🗂️ Kartenbereich',hand:'🃏 Handkartenbereich',extras:'✨ Extras'};
+    for(const key of HUD_OPACITY_BLOCKS){
+      const row=document.createElement('div');row.className='dog-hud-opacity-row';
+      const head=document.createElement('div');head.className='dog-hud-opacity-head';
+      const label=document.createElement('label');const slider=document.createElement('input');
+      slider.type='range';slider.min='0';slider.max='100';slider.step='5';slider.id='appearance-hud-opacity-'+key;
+      slider.dataset.hudOpacity=key;label.htmlFor=slider.id;label.textContent=names[key];
+      const output=document.createElement('output');output.dataset.hudOpacityValue=key;output.htmlFor=slider.id;
+      head.append(label,output);row.append(head,slider);opacityHost.append(row);
+      slider.addEventListener('input',()=>{
+        appearance=saveAppearance({...appearance,hudOpacity:{...appearance.hudOpacity,[key]:Number(slider.value)}});
+        applyAppearance();
+      });
+    }
+    $('appearance-hud-opacity-reset')?.addEventListener('click',()=>{
+      appearance=saveAppearance({...appearance,hudOpacity:normalizeHudOpacity(null)});
       applyAppearance();
     });
   }
