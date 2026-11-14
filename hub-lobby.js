@@ -4,27 +4,21 @@
 const el=id=>document.getElementById(id);
 const config=window.SPIELPORTAL_CONFIG||{};
 const API=String(config.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge',dog:'DOG Klassisch',kniffel:'Kniffel'};
+const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge',dog:'DOG Klassisch'};
 let code=null,room=null,operation=false,poll=null,accountUid=null,pollErrors=0;
-const initialView=new URL(location.href).searchParams.get('view');
-let rememberedMode='online';
-try{if(sessionStorage.getItem('spielportal:hub-view')==='local')rememberedMode='local';}catch(_e){}
-let playMode=initialView==='local'?'local':initialView==='online'?'online':rememberedMode;
+let playMode=new URL(location.href).searchParams.get('view')==='local'?'local':'online';
 let choosingGame=false,displayGame=null;
-const GAME_ICON={barikade:'🎲',skyjo:'🃏',kreuz:'🎯',business:'💼',partychallenge:'🏆',dog:'🐾',kniffel:'🎲'};
+const GAME_ICON={barikade:'🎲',skyjo:'🃏',kreuz:'🎯',business:'💼',partychallenge:'🏆',dog:'🐾'};
 const GAME_DESCRIPTIONS={
  barikade:'Das Brettspiel mit Barikaden, Action-Regeln und optionalem Bossmodus.',
  skyjo:'Karten, Joker und spannende Runden. Der Host legt die Regeln fest.',
  kreuz:'Würfeln, Farben ankreuzen und gemeinsam Punkte sammeln.',
  business:'Unternehmen, Aktien und Branchen – mit 10, 20 oder 30 Runden.',
  dog:'Das klassische Team-Brettspiel mit Karten, Startfeldern, Jokern und Partnern.',
- partychallenge:'Elf Online-Minispiele in einem Raum – inklusive Preisjäger.',
- kniffel:'Kniffel mit Freunden im bestehenden Online-Raum.'
+ partychallenge:'Elf Online-Minispiele in einem Raum – inklusive Preisjäger.'
 };
-function setPlayMode(next,{updateUrl=false}={}){
+function setPlayMode(next){
  playMode=next==='local'?'local':'online';
- try{sessionStorage.setItem('spielportal:hub-view',playMode);}catch(_e){}
- if(updateUrl){const url=new URL(location.href);url.searchParams.set('view',playMode);history.replaceState(null,'',url);}
  el('mode-online').classList.toggle('active',playMode==='online');
  el('mode-local').classList.toggle('active',playMode==='local');
  el('mode-online').setAttribute('aria-pressed',String(playMode==='online'));
@@ -35,7 +29,6 @@ function setPlayMode(next,{updateUrl=false}={}){
  render();
 }
 const stayInMatchId=new URL(location.href).searchParams.get('stayMatch');
-const stayInSelection=new URL(location.href).searchParams.get('stay')==='1';
 let launchedMatchId=null,hubSocket=null,retrySocket=null,streamReady=false,streamLast=0,hubHeartbeat=null,pollInFlight=false,lastRoomPollAt=0;
 function stopWatch(){
  streamReady=false;
@@ -135,7 +128,6 @@ function enterCurrentMatch(){
  if(room?.match?.game==='skyjo')return enterSkyjo();
  if(room?.match?.game==='business')return enterBusiness();
  if(room?.match?.game==='dog')return enterDog();
- if(room?.match?.game==='kniffel'){location.assign('Kniffel/lobby.html?room='+encodeURIComponent(room.code));return;}
  if(room?.match?.game==='partychallenge')return;
  throw Error('GAME_NOT_CONNECTED');
 }
@@ -183,23 +175,7 @@ function acceptRoom(next){
  if(room?.code===next.code&&Number.isFinite(Number(next.revision))&&Number.isFinite(Number(room.revision))&&Number(next.revision)<Number(room.revision))return false;
  room=next;preisjaegerClockReceivedAt=Date.now();render();return true;
 }
-function rememberRoomCode(next){
- const uid=activeProfile()?.user?.uid;
- if(!uid)return;
- try{
-  const key='spielportal:last-room:'+uid;
-  if(next)localStorage.setItem(key,next);
-  else localStorage.removeItem(key);
- }catch(_e){}
-}
-function storedRoomCode(){
- const uid=activeProfile()?.user?.uid;if(!uid)return null;
- try{
-  const saved=String(localStorage.getItem('spielportal:last-room:'+uid)||'').toUpperCase();
-  return /^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/.test(saved)?saved:null;
- }catch(_e){return null;}
-}
-function activateRoom(result){if(!result?.code)return;cancelPendingRecovery();setRoomCode(result.code);rememberRoomCode(result.code);acceptRoom(result);}
+function activateRoom(result){if(!result?.code)return;cancelPendingRecovery();setRoomCode(result.code);acceptRoom(result);}
 
 function pollStop(){if(poll){clearInterval(poll);poll=null;}stopWatch();}
 function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code||operation||pollInFlight||!activeProfile()||document.hidden)return;
@@ -997,11 +973,31 @@ if(settingsNav){
  el('challenge-bots').textContent=room.players.some(p=>p.testBot)?'🤖 2 Testspieler entfernen':'🤖 2 Testspieler hinzufügen';
 }
 function render(){
+ if(room?.game==='kreuz'&&room.phase==='preparing'&&new URL(location.href).searchParams.get('stage')==='1'){
+  location.replace('KreuzKunter/kreuzkunter_start.html?room='+encodeURIComponent(room.code));
+  return;
+ }
+ if(room?.game==='business'&&room.phase==='preparing'&&new URL(location.href).searchParams.get('stage')==='1'){
+  location.replace('Business/business_start.html?room='+encodeURIComponent(room.code));
+  return;
+ }
+ if(room?.game==='barikade'&&room.phase==='preparing'&&new URL(location.href).searchParams.get('stage')==='1'){
+  location.replace('Barikade/barikade_start.html?room='+encodeURIComponent(room.code));
+  return;
+ }
+ if(room?.game==='skyjo'&&room.phase==='preparing'&&new URL(location.href).searchParams.get('stage')==='1'){
+  location.replace('Skyjo/skyjo_start.html?room='+encodeURIComponent(room.code));
+  return;
+ }
  const account=activeProfile();
  el('account-name').textContent=account?.profile?.name||account?.user?.email||'Noch nicht angemeldet';
  el('account-info').textContent=account?'Dein verifiziertes Online-Spielerprofil ist verbunden.':'Bitte anmelden oder ein Profil erstellen, um einen Raum zu betreten.';
  el('login-btn').textContent=account?'Profil ansehen':'Anmelden';
  const inside=!!room;
+ if(inside&&room.phase==='lobby'&&!room.game&&new URL(location.href).searchParams.get('stage')==='1'){
+  location.replace('spielauswahl-online.html?room='+encodeURIComponent(room.code));
+  return;
+ }
  el('entry-view').classList.toggle('hidden',inside);
  el('room-view').classList.toggle('hidden',!inside);
  el('create-btn').disabled=!account||operation;el('join-btn').disabled=!account||operation;
@@ -1027,8 +1023,6 @@ function render(){
     ?'👑 Du bist Host. Nur du kannst Spiel, Regeln und Teilnehmerplätze ändern. Jede Änderung setzt die Bereitmeldungen zurück.'
     :'🔒 Der Host legt Regeln und Teilnehmer fest. Du kannst dich selbst bereit melden, sobald du einen Spielplatz hast.';
  }
- // Returning from a game with stay=1 must not reopen that same active game.
- if(stayInSelection&&!launchedMatchId&&room.phase==='playing'&&room.match?.id)launchedMatchId=room.match.id;
  if(room.phase==='playing'&&room.match?.participating&&room.match.id!==stayInMatchId&&room.match.id!==launchedMatchId){
    const matchId=room.match.id;
    try{enterCurrentMatch();launchedMatchId=matchId;}catch(e){showError(e);}
@@ -1149,39 +1143,18 @@ async function command(run){if(operation)return;operation=true;render();notice('
  try{await run();pollErrors=0;}catch(e){showError(e);}finally{operation=false;render();}
 }
 el('login-btn').addEventListener('click',()=>{if(activeProfile())location.assign('profile.html');else window.SpielOnline?.openLogin?.();});
-el('mode-local').addEventListener('click',()=>setPlayMode('local',{updateUrl:true}));
-el('mode-online').addEventListener('click',()=>{setPlayMode('online',{updateUrl:true});if(room)return;if(new URL(location.href).searchParams.has('room'))void boot();else recoverStoredRoom();});
-document.querySelectorAll('[data-hub-shortcut]').forEach(button=>button.addEventListener('click',()=>command(async()=>{
- if(!activeProfile())throw Error('LOGIN_REQUIRED');
- if(room?.phase==='playing')throw Error('MATCH_IN_PROGRESS');
- const shortcut=button.dataset.hubShortcut;
- if(!['deal','mini','kniffel'].includes(shortcut))return;
- if(!room){
-  const {room:created}=await request('/rooms','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});
-  activateRoom(created);pollStart();
- }
- const currentCode=room?.code;
- if(!currentCode)throw Error('ROOM_NOT_FOUND');
- if(shortcut==='kniffel'){
-  const {room:selected}=await request('/rooms/'+currentCode+'/select','POST',{game:'kniffel'});
-  if(!selected||selected.game!=='kniffel')throw Error('GAME_SELECT_FAILED');
-  location.assign('Kniffel/lobby.html?room='+encodeURIComponent(currentCode));
- }else if(shortcut==='deal'){
-  location.assign('DealOrNoDeal/lobby.html?room='+encodeURIComponent(currentCode));
- }else{
-  location.assign('MinispieleV2/lobby.html?room='+encodeURIComponent(currentCode));
- }
-})));
-el('change-game-btn').addEventListener('click',()=>{if(room?.host&&room.phase==='preparing'){displayGame=room.game;choosingGame=true;render();}});
+el('mode-local').addEventListener('click',()=>location.assign('spielauswahl-lokal.html'));
+el('mode-online').addEventListener('click',()=>setPlayMode('online'));
+el('change-game-btn').addEventListener('click',()=>{if(room?.host&&room.phase==='preparing')location.assign('spielauswahl-online.html?room='+encodeURIComponent(room.code)+'&choose=1');});
 
 el('create-btn').addEventListener('click',()=>command(async()=>{
- const {room:r}=await request('/rooms','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});activateRoom(r);pollStart();notice('🌐 Raum '+r.code+' erstellt. Du kannst jetzt das Spiel auswählen.');
+ const {room:r}=await request('/rooms','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
 }));
 el('join-code').addEventListener('input',event=>{event.target.value=event.target.value.toUpperCase().replace(/[^0-9A-HJ-NP-Z]/g,'').slice(0,6);notice('');});
 el('join-code').addEventListener('keydown',e=>{if(e.key==='Enter')el('join-btn').click();});
 el('join-btn').addEventListener('click',()=>command(async()=>{
  const c=el('join-code').value.trim().toUpperCase();if(!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(c))throw Error('Bitte einen dreistelligen Zahlencode oder bisherigen sechsstelligen Raumcode eingeben.');
- const {room:r}=await request('/rooms/'+c+'/join','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});activateRoom(r);pollStart();notice('✓ Raum '+r.code+' betreten. Ihr bleibt jetzt in der Hauptlobby.');
+ const {room:r}=await request('/rooms/'+c+'/join','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
 }));
 document.querySelectorAll('[data-game]').forEach(btn=>btn.addEventListener('click',()=>command(async()=>{
  if(!room?.host)return;const {room:r}=await request('/rooms/'+code+'/select','POST',{game:btn.dataset.game,...(btn.dataset.game==='dog'?{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0}:{})});choosingGame=false;activateRoom(r);
@@ -1229,23 +1202,17 @@ el('cancel-match-btn').addEventListener('click',()=>{
   const {room:r}=await request('/rooms/'+code+'/cancel','POST');
   launchedMatchId=null;
   activateRoom(r);
-  notice('Die Partie wurde beendet. Ihr könnt das nächste Spiel in der Hauptlobby wählen.');
+  location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
  });
 });
 el('refresh-btn').addEventListener('click',()=>command(async()=>{const {room:r}=await request('/rooms/'+code);activateRoom(r);notice('Raum aktualisiert.');}));
 el('copy-btn').addEventListener('click',async()=>{
  try{await navigator.clipboard.writeText(room?.code||'');notice('Raumcode kopiert.');}catch{notice('Raumcode: '+room?.code);}
 });
-el('leave-btn').addEventListener('click',()=>command(async()=>{await request('/rooms/'+code+'/leave','POST');rememberRoomCode(null);leaveView();notice('Du hast den Raum verlassen.');}));
+el('leave-btn').addEventListener('click',()=>command(async()=>{await request('/rooms/'+code+'/leave','POST');leaveView();notice('Du hast den Raum verlassen.');}));
 let pendingRoomRecovery=null,recoveryInFlight=false,recoveryRetryTimer=null,recoveryAttempts=0;
 function clearRecoveryRetry(){if(recoveryRetryTimer){clearTimeout(recoveryRetryTimer);recoveryRetryTimer=null;}recoveryAttempts=0;}
 function cancelPendingRecovery(){pendingRoomRecovery=null;clearRecoveryRetry();}
-function recoverStoredRoom(){
- if(playMode!=='online'||room||code||pendingRoomRecovery)return;
- const saved=storedRoomCode();if(!saved)return;
- pendingRoomRecovery=saved;
- void recoverPendingRoom();
-}
 function scheduleRecoveryRetry(){
  if(!pendingRoomRecovery||recoveryRetryTimer||recoveryAttempts>=5)return;
  const delay=Math.min(30000,2000*2**recoveryAttempts++);
@@ -1255,13 +1222,13 @@ async function recoverPendingRoom(){
  if(!pendingRoomRecovery||room||code||!activeProfile()||recoveryInFlight)return;
  const requestedCode=pendingRoomRecovery;recoveryInFlight=true;
  try{const {room:r}=await request('/rooms/'+encodeURIComponent(requestedCode));if(pendingRoomRecovery!==requestedCode||room||code||r?.code!==requestedCode)return;pendingRoomRecovery=null;clearRecoveryRetry();activateRoom(r);pollStart();}
- catch(e){if(pendingRoomRecovery!==requestedCode||room||code)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){pendingRoomRecovery=null;clearRecoveryRetry();if(storedRoomCode()===requestedCode)rememberRoomCode(null);notice('Raum nicht zugänglich. Prüfe den Raumcode oder tritt erneut bei.');}else{notice('Raum vorübergehend nicht erreichbar. Wiederherstellung wird erneut versucht.');scheduleRecoveryRetry();}}
+ catch(e){if(pendingRoomRecovery!==requestedCode||room||code)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){pendingRoomRecovery=null;clearRecoveryRetry();notice('Raum nicht zugänglich. Prüfe den Raumcode oder tritt erneut bei.');}else{notice('Raum vorübergehend nicht erreichbar. Wiederherstellung wird erneut versucht.');scheduleRecoveryRetry();}}
  finally{recoveryInFlight=false;}
 }
 window.addEventListener('spielonline-change',()=>{
  const uid=activeProfile()?.user?.uid||null;
  if(uid!==accountUid){accountUid=uid;if(room){leaveView();notice('Das Spielerprofil hat gewechselt. Bitte dem Raum erneut beitreten.');}}
- render();if(uid){if(pendingRoomRecovery)void recoverPendingRoom();else recoverStoredRoom();}
+ render();if(uid)void recoverPendingRoom();
 });
 async function boot(){
  render();
@@ -1272,17 +1239,18 @@ async function boot(){
   notice('Einladung erhalten: Bitte dem Raum '+invite.toUpperCase()+' beitreten.');
  }
  const fromUrl=params.get('room');
- if(playMode==='local')return;
- if(!fromUrl||!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(fromUrl)){recoverStoredRoom();return;}
+ if(!fromUrl||!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(fromUrl))return;
+ if(new URL(location.href).searchParams.get('stage')!=='1'&&!stayInMatchId){
+   location.replace('spielauswahl-online.html?room='+encodeURIComponent(fromUrl.toUpperCase()));
+   return;
+ }
  let elapsed=0;const timer=setInterval(async()=>{
   elapsed+=250;
   if(!activeProfile()&&elapsed<30000)return;
   clearInterval(timer);
   if(!activeProfile()){pendingRoomRecovery=fromUrl.toUpperCase();el('join-code').value=fromUrl.toUpperCase();notice('Bitte melde dich an, um deinen bestehenden Raum wiederherzustellen.');return;}
   const requestedCode=fromUrl.toUpperCase();
-  try{const {room:r}=await request('/rooms/'+encodeURIComponent(requestedCode));if(r?.code!==requestedCode)return;activateRoom(r);pollStart();
-   if(params.get('choose')==='1'&&r.host&&r.phase==='preparing'){displayGame=r.game;choosingGame=true;render();}
-  }
+  try{const {room:r}=await request('/rooms/'+encodeURIComponent(requestedCode));if(r?.code!==requestedCode)return;activateRoom(r);pollStart();}
   catch(e){el('join-code').value=requestedCode;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){notice('Raum nicht zugänglich. Prüfe den Raumcode oder tritt erneut bei.');}else{notice('Raum vorübergehend nicht erreichbar. Aktualisiere die Seite, um es erneut zu versuchen.');}}
  },250);
 }
