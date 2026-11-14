@@ -75,6 +75,25 @@ async function initOnline(){
  window.addEventListener('spielonline-change',()=>{if(user()){void refreshOnline();startSocket();}});
 }
 
+// Zoom affects only the SVG viewport; game state, cards and surrounding UI stay unchanged.
+const BOARD_SIZE=760,ZOOM_MIN=.75,ZOOM_MAX=2.5,ZOOM_STEP=.25;
+let boardZoom=1;
+function setBoardZoom(value){
+ boardZoom=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,Math.round(value*100)/100));
+ const size=BOARD_SIZE/boardZoom,offset=(BOARD_SIZE-size)/2;
+ $('board').setAttribute('viewBox',[offset,offset,size,size].join(' '));
+ $('dog-zoom-label').textContent=Math.round(boardZoom*100)+' %';
+ $('dog-zoom-in').disabled=boardZoom>=ZOOM_MAX;
+ $('dog-zoom-out').disabled=boardZoom<=ZOOM_MIN;
+}
+$('dog-zoom-in').addEventListener('click',()=>setBoardZoom(boardZoom+ZOOM_STEP));
+$('dog-zoom-out').addEventListener('click',()=>setBoardZoom(boardZoom-ZOOM_STEP));
+$('dog-zoom-reset').addEventListener('click',()=>setBoardZoom(1));
+$('board').addEventListener('wheel',event=>{
+ if(!event.ctrlKey&&!event.shiftKey)return;
+ event.preventDefault();
+ setBoardZoom(boardZoom+(event.deltaY<0?ZOOM_STEP:-ZOOM_STEP));
+},{passive:false});
 const names=['Rot','Blau','Grün','Gelb'];
 let game,selectedCard=null,selectedPiece=null,available=[],revealed=online,aiTimer=null,lastTurn=null,humans=1;
 let appearance=loadAppearance();
