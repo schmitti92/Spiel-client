@@ -238,7 +238,7 @@ async function begin(){
    return {uid:r.uid,name:r.name,slots,missionIds:r.missionIds||[],winner:!!r.winner,
     missionSlots,winnerSlots,bonusSlots,bonusAchieved:!!r.bonusAchieved,
     prizes:r.prizes.map(p=>({kind:p.kind,id:p.id||null,quantity:Number(p.quantity)||1,
-     label:p.label,rarity:p.rarity,amountCents:p.amountCents??null}))};
+     label:p.label,rarity:p.rarity,voucher:p.voucher===true,amountCents:p.amountCents??null}))};
   }).filter(p=>p.slots>0);
   // The champion goes last; everyone sees every other player's prizes.
   byMember.sort((a,b)=>Number(a.winner)-Number(b.winner));
@@ -338,7 +338,7 @@ function createOverlay(game,show){
   '<div class="monster-slot-progress">'+batch.prizes.map(()=>'<span></span>').join('')+'</div>'+
   '<p class="monster-slot-status" id="skyjo-special-status" aria-live="polite"></p>'+
   '<button id="monster-slot-accept" type="button" onclick="Game.skyjoSpecialSpin()">🎰 Drehen</button>'+
-  '<p class="monster-slot-footnote">Alle Gewinne sind bereits sicher im Deal-or-No-Deal-Inventar gespeichert. Beim nächsten Besuch erscheint dein Sammelfenster.</p>'+
+  '<p class="monster-slot-footnote">Geld und Gegenstände sind gespeichert. Kartenpaket-Gutscheine kannst du später im DOG-Sammelalbum selbst öffnen.</p>'+
   '</div>';
  document.body.append(root);root.focus({preventScroll:true});
  return root;
@@ -361,7 +361,7 @@ function renderPrizes(root,show){
    const fallback='<span class="monster-slot-emoji">'+(EMOJIS[p.kind]||'🎁')+'</span>';
    prize.querySelector('.monster-slot-art').innerHTML=fallback+(path?'<img src="'+esc(path)+'" alt="" loading="eager" style="opacity:1">':'');
    prize.querySelector('.monster-slot-quantity').textContent=p.kind==='cash'?'💶 GELD':(p.quantity||1)+'×';
-   prize.querySelector('.monster-slot-prize-name').textContent=p.label||'Gewinn';
+   prize.querySelector('.monster-slot-prize-name').textContent=(p.label||'Gewinn')+(p.voucher?' · 🎟️ Gutschein':'');
    prize.hidden=false;lights[i]?.classList.add('lit');
   }
  });
