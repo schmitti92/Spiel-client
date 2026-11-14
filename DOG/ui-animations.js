@@ -5,17 +5,28 @@
  */
 export function createDogVisualFeedback(doc){
  let previous=null;
+ const listeners=new WeakMap();
  const $=id=>doc.getElementById(id);
  function pulse(node,className){
   if(!node || doc.documentElement?.dataset?.dogMotion==='off' ||
     doc.defaultView?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches)return;
-  node.classList.remove(className);
+  const prior=listeners.get(node);
+  if(prior)node.removeEventListener?.('animationend',prior);
+  node.classList.remove('dog-hand-dealt','dog-hand-revealed',className);
   // Explicit restart only on a real state change, never on ordinary re-render.
   void node.offsetWidth;
   node.classList.add(className);
-  node.addEventListener('animationend',event=>{
-   if(event.target===node)node.classList.remove(className);
-  },{once:true});
+  const hand=className==='dog-hand-dealt'||className==='dog-hand-revealed';
+  const expected=hand?(className==='dog-hand-dealt'?'dog-hand-fan':'dog-hand-reveal'):null;
+  const onEnd=event=>{
+   if(hand && (event.animationName!==expected||event.target!==node.lastElementChild))return;
+   if(!hand && event.target!==node)return;
+   node.classList.remove(className);
+   node.removeEventListener?.('animationend',onEnd);
+   listeners.delete(node);
+  };
+  node.addEventListener('animationend',onEnd);
+  listeners.set(node,onEnd);
  }
  function sync({game,matchKey,seat,handVisible,activeSeat}){
   if(!game)return;
