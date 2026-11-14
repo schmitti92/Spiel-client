@@ -10,9 +10,9 @@ const valid=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(code);
 const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const roomEl=document.getElementById('room'),statusEl=document.getElementById('status'),slotsEl=document.getElementById('slots');
 const add=document.getElementById('add-bot'),remove=document.getElementById('remove-bot');
-const back=()=>location.href='../hub-lobby.html?view=online'+(valid?'&room='+encodeURIComponent(code):'');
+const back=()=>location.href='../hub-lobby.html?view=online&stay=1'+(valid?'&room='+encodeURIComponent(code):'');
 document.getElementById('back').onclick=back;
-document.querySelector('main > p > a').href='../hub-lobby.html?view=online'+(valid?'&room='+encodeURIComponent(code):'');
+document.querySelector('main > p > a').href='../hub-lobby.html?view=online&stay=1'+(valid?'&room='+encodeURIComponent(code):'');
 roomEl.textContent=valid?code:'Kein Raum';
 let snapshot=null,bots=2,socket=null,retry=null,heartbeat=null,fetching=false,activeUid=null,connected=false,lastUid=null;
 // Cards are created from the shared release manifest; offline-only games stay offline.
