@@ -465,3 +465,110 @@ details:not([open]) .dog-disclosure-arrow{transform:rotate(-90deg)}
   .right.dog-modules{padding:52px 7px 7px}
   .board-svg{height:100%;width:100%;max-height:none}
 }
+
+/* DOG Royal Scenic layout v3 — shared full-viewport wallpaper, 58/42 cockpit.
+   The board SVG, card hit targets and network state are untouched. */
+html{background:#061a30}
+body{
+  position:relative;
+  isolation:isolate;
+  background:#061a30!important;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background-image:
+    linear-gradient(90deg,rgba(3,15,31,.14),rgba(3,15,31,.12) 54%,rgba(3,15,31,.32)),
+    var(--dog-sidebar-wallpaper,url("./assets/backgrounds/dog-hintergrund-magisches-schloss.png"));
+  background-size:cover,cover;
+  background-position:center,center;
+  background-repeat:no-repeat;
+}
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:radial-gradient(ellipse at 50% 20%,transparent 35%,rgba(1,9,22,.28));
+}
+main{width:calc(100% - 22px);max-width:1920px;margin:6px auto}
+.layout{
+  grid-template-columns:minmax(0,58fr) minmax(0,42fr);
+  gap:12px;
+  align-items:stretch;
+}
+.board-card{
+  background:rgba(5,21,40,.36)!important;
+  border:1px solid rgba(245,200,111,.76);
+  box-shadow:0 0 0 1px rgba(255,233,170,.12),0 8px 30px rgba(0,0,0,.43),inset 0 1px rgba(255,255,255,.2);
+}
+.board-svg{filter:drop-shadow(0 0 4px rgba(250,199,104,.18))}
+.right.dog-modules{
+  background:none!important;
+  border:0;
+  box-shadow:none;
+  padding:56px 0 4px;
+  gap:8px;
+}
+.right.dog-modules>.panel,
+.right.dog-modules>.panel:nth-child(2),
+.right.dog-modules>.panel:nth-child(3){
+  background:linear-gradient(140deg,rgba(5,30,58,.88),rgba(3,23,47,.76))!important;
+  border:1px solid rgba(244,199,109,.74);
+  border-radius:17px;
+  box-shadow:0 0 0 1px rgba(255,230,171,.12),0 5px 16px rgba(0,10,25,.48),inset 0 1px rgba(255,255,255,.13);
+  -webkit-backdrop-filter:blur(5px);
+  backdrop-filter:blur(5px);
+}
+.right.dog-modules .dog-module-heading{
+  border-bottom-color:rgba(242,204,132,.42);
+}
+.dog-status-panel .dog-turn-line{
+  background:linear-gradient(100deg,rgba(4,29,58,.94),rgba(14,56,88,.92),rgba(4,29,58,.94));
+  border-color:rgba(240,195,112,.72);
+  box-shadow:0 0 10px rgba(230,174,91,.18),inset 0 1px rgba(255,255,255,.16);
+}
+.dog-status-panel .seat{
+  background:linear-gradient(130deg,rgba(4,25,48,.96),rgba(5,21,43,.92));
+  box-shadow:0 0 9px color-mix(in srgb,var(--seat) 28%,transparent),inset 0 1px rgba(255,255,255,.1);
+}
+.dog-status-panel .seat.on{
+  box-shadow:0 0 12px rgba(250,194,98,.4),inset 0 0 0 1px rgba(255,227,157,.4);
+}
+.dog-piles{background:rgba(2,17,36,.8);border-color:rgba(238,192,109,.36)}
+.dog-extras-grid .dog-extra-button{
+  background:linear-gradient(145deg,rgba(13,54,89,.92),rgba(3,22,46,.96));
+  border-color:rgba(235,193,112,.55);
+  box-shadow:inset 0 1px rgba(255,255,255,.13),0 3px 10px rgba(0,0,0,.22);
+}
+.dog-menu-toggle{
+  border:2px solid #f6c56d;
+  border-radius:50%;
+  width:48px;
+  height:48px;
+  background:linear-gradient(145deg,#123d67,#031329);
+  box-shadow:0 0 14px rgba(242,187,88,.34),0 6px 18px rgba(0,0,0,.6);
+}
+@media(min-width:900px) and (orientation:landscape) and (max-height:1100px){
+ main{margin:5px auto}
+ .layout{grid-template-columns:minmax(0,58fr) minmax(0,42fr);gap:10px}
+ .right.dog-modules{padding:54px 0 4px;gap:7px}
+ .board-card{padding:4px}
+ .board-svg{width:100%;height:100%;object-fit:contain;max-height:none}
+ .dog-hand-module .hand .playing-card.dog-designed{
+   --dog-hand-card-base:min(118px,calc((100% - 30px) / 6),18dvh);
+ }
+}
+@media(max-width:899px),(orientation:portrait){
+ .layout{grid-template-columns:minmax(0,1fr)}
+ .right.dog-modules{padding:12px 0 6px}
+ .board-card{padding:5px}
+ .dog-floating-menu{position:fixed}
+}
+@media(prefers-reduced-motion:reduce){
+ .dog-menu-toggle,.right.dog-modules>.panel{transition:none}
+}
