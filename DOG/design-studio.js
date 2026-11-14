@@ -271,15 +271,7 @@ $('save-form').addEventListener('submit',e=>{
 });
 try{
  const target=new URLSearchParams(location.search).get('return'),u=target?new URL(target,location.href):null;
- if(u&&u.origin===location.origin&&['hub-lobby.html','spielauswahl-lokal.html','index.html'].includes(u.pathname.split('/').pop())){
-  const file=u.pathname.split('/').pop();
-  const back=new URL('../hub-lobby.html',location.href);
-  if(file==='spielauswahl-lokal.html'||u.searchParams.get('view')==='local')back.searchParams.set('view','local');
-  else back.searchParams.set('view','online');
-  const room=u.searchParams.get('room');
-  if(room&&/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/i.test(room))back.searchParams.set('room',room);
-  $('back-link').href=back.href;
- }
+ if(u&&u.origin===location.origin&&['hub-lobby.html','spielauswahl-lokal.html','index.html'].includes(u.pathname.split('/').pop()))$('back-link').href=u.href;
 }catch{}
 refresh();renderPresets();
 status('Gestalte Brett, Rahmen, Hintergrund und Transparenz der Spielblöcke – lokal ohne Firebase-Schreibvorgänge.');
