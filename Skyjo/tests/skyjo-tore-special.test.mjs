@@ -241,3 +241,43 @@ test('DOG pack redemption already displays the voucher count and a standard card
  assert.match(source,/reveal\(out\.revealed\|\|\[\]\)/);
  assert.match(source,/NEU/);
 });
+
+
+test('Mission progress from automatic round-end removals is credited, not silently lost',()=>{
+ const browser={};new Function('window',read('skyjo_tore_special.js'))(browser);
+ const special=browser.SkyjoToreSpecial;
+ const match='01234567-89ab-4cde-a123-456789abcdef';
+ const game={round:1,phase:'play',players:[{name:'Chris',grid:Array.from({length:12},()=>({type:'number',value:12,faceUp:true}))}]};
+ special.newGame(game,{toreSpecialEnabled:true},match);
+ const cards=Array.from({length:4},()=>({type:'number',value:12,faceUp:true}));
+ special.trackRemove(game,0,{name:'Reihe 1',idx:[0,1,2,3]},cards);
+ assert.equal(game.skyjoSpecial.progress[0].rows,1);
+ assert.equal(game.skyjoSpecial.progress[0].groups,1);
+ game.phase='roundReveal';
+ game.roundClose={stage:'remove'};
+ special.trackRemove(game,0,{name:'Reihe 2',idx:[4,5,6,7]},cards);
+ assert.equal(game.skyjoSpecial.progress[0].rows,2);
+ assert.equal(game.skyjoSpecial.progress[0].groups,2);
+ special.trackRemove(game,0,{name:'Straße Spalte 1',street:true,idx:[0,4,8]},cards.slice(0,3));
+ assert.equal(game.skyjoSpecial.progress[0].streets,1);
+ assert.equal(game.skyjoSpecial.progress[0].groups,3);
+ game.roundClose.stage='ready';
+ special.trackRemove(game,0,{name:'Reihe 3',idx:[8,9,10,11]},cards);
+ assert.equal(game.skyjoSpecial.progress[0].rows,2,'Never award for hypothetical removals');
+ game.lastRoundSummary={round:1,players:[{index:0,name:'Chris',round:12,gridSnapshot:game.players[0].grid}]};
+ game.phase='betweenRounds';
+ const expected=game.skyjoSpecial.missions.map(id=>special.definitions.find(m=>m.id===id)).
+  filter(m=>m&&special.missionDone(m,game.skyjoSpecial.progress[0],12));
+ assert.equal(special.slotBreakdown(game)[0].missionSlots,expected.reduce((n,m)=>n+m.slots,0));
+});
+test('Mission heads-up display shows accumulated reels before the final scoring',()=>{
+ const browser={};new Function('window',read('skyjo_tore_special.js'))(browser);
+ const special=browser.SkyjoToreSpecial;
+ const match='01234567-89ab-4cde-a123-456789abcdef';
+ const game={round:1,phase:'play',players:[{name:'Chris',grid:Array.from({length:12},()=>({type:'number',value:12,faceUp:true}))}]};
+ special.newGame(game,{toreSpecialEnabled:true},match);
+ special.trackRemove(game,0,{name:'Reihe 1',idx:[0,1,2,3]},Array.from({length:4},()=>({type:'number',value:12,faceUp:true})));
+ const html=special.hud(game,0);
+ assert.match(html,/Missionen · .*Slots erspielt/);
+ assert.match(html,/Dreh erst NACH der Rundenwertung/);
+});
