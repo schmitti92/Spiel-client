@@ -38,6 +38,10 @@ const tools=$('dog-local-tools');
 const newGame=$('new-game');
 const room=new URL(location.href).searchParams.get('room')||'';
 const online=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(room);
+const christmasUrl=new URL('./christmas-event.html',location.href);
+christmasUrl.searchParams.set('return','index.html'+location.search);
+const christmasMenuLink=$('dog-christmas-event-link');
+if(christmasMenuLink)christmasMenuLink.href=christmasUrl.href;
 if(online){
  if(tools)tools.hidden=true;
  if(newGame)newGame.hidden=true;
@@ -85,7 +89,7 @@ if(extraGrid){
   button.type='button';
   button.className='dog-extra-button';
   button.dataset.dogExtra=feature.id;
-  button.setAttribute('aria-label',feature.id==='emojis'?'Emoji-Leiste öffnen oder schließen':feature.title+'-Bereich öffnen oder schließen');
+  button.setAttribute('aria-label',feature.id==='events'?'DOG-Weihnachtsevent öffnen':feature.id==='emojis'?'Emoji-Leiste öffnen oder schließen':feature.title+'-Bereich öffnen oder schließen');
   button.setAttribute('aria-controls','dog-extension-panel');
   button.setAttribute('aria-expanded','false');
   button.setAttribute('aria-pressed','false');
@@ -100,7 +104,13 @@ if(extraGrid){
  }
  extraGrid.addEventListener('click',event=>{
   const button=event.target.closest('[data-dog-extra]');
-  if(button)setExtension(button.dataset.dogExtra);
+  if(!button)return;
+   if(button.dataset.dogExtra==='events'){
+    // Keep the room code in the return URL, but never modify the DOG game state.
+    location.assign(christmasUrl.href);
+    return;
+   }
+   setExtension(button.dataset.dogExtra);
  });
 }
 $('dog-extension-close')?.addEventListener('click',()=>setExtension(null));
