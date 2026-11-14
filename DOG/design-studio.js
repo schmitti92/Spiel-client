@@ -1,4 +1,4 @@
-import {BOARD_STYLES,BOARD_FRAMES,SCENE_STYLES,HUD_LAYOUTS,HUD_TONES,loadAppearance,saveAppearance,validAssetPath} from './appearance-registry.js?v=20';
+import {BOARD_STYLES,BOARD_FRAMES,SCENE_STYLES,HUD_LAYOUTS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,loadAppearance,saveAppearance,validAssetPath} from './appearance-registry.js?v=21';
 import {APPROVED_BOARD_LAYOUT as LAYOUT} from './approved-board.js';
 const $=id=>document.getElementById(id);
 const S='http://www.w3.org/2000/svg',KEY='dog:design-studio:presets:v1';
@@ -15,11 +15,11 @@ const safeUrl=p=>validAssetPath(p)?new URL(p,import.meta.url).href:null;
 const image=t=>safeUrl(t?.image)||safeUrl(t?.fallbackImage);
 const bg=t=>image(t)?'url("'+image(t)+'")':(t?.page||'linear-gradient(130deg,#28445d,#091b29)').replace(/,\s*(#[\da-f]{3,8})\s*$/i,(_,c)=>',linear-gradient('+c+','+c+')');
 const status=message=>$('studio-status').textContent=message;
-const applied=()=>{const v=loadAppearance();return {board:validBoard(v.board)?v.board:'studio',boardFrame:validFrame(v.boardFrame)?v.boardFrame:'classic',scene:validScene(v.scene)?v.scene:'schloss',hudLayout:validHudLayout(v.hudLayout)?v.hudLayout:'classic',hudTone:validHudTone(v.hudTone)?v.hudTone:'classic'}};
+const applied=()=>{const v=loadAppearance();return {board:validBoard(v.board)?v.board:'studio',boardFrame:validFrame(v.boardFrame)?v.boardFrame:'classic',scene:validScene(v.scene)?v.scene:'schloss',hudLayout:validHudLayout(v.hudLayout)?v.hudLayout:'classic',hudTone:validHudTone(v.hudTone)?v.hudTone:'classic',hudOpacity:normalizeHudOpacity(v.hudOpacity)}};
 const start=applied();
 let draft={...start};
 function loadPresets(){
- try{const a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a.slice(0,30).filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&validBoard(x.board)).map(x=>({id:x.id.slice(0,64),name:x.name.slice(0,40),scene:validScene(x.scene)?x.scene:'schloss',board:x.board,boardFrame:validFrame(x.boardFrame)?x.boardFrame:'classic',hudLayout:validHudLayout(x.hudLayout)?x.hudLayout:'classic',hudTone:validHudTone(x.hudTone)?x.hudTone:'classic',favorite:x.favorite===true})):[]}
+ try{const a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a.slice(0,30).filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&validBoard(x.board)).map(x=>({id:x.id.slice(0,64),name:x.name.slice(0,40),scene:validScene(x.scene)?x.scene:'schloss',board:x.board,boardFrame:validFrame(x.boardFrame)?x.boardFrame:'classic',hudLayout:validHudLayout(x.hudLayout)?x.hudLayout:'classic',hudTone:validHudTone(x.hudTone)?x.hudTone:'classic',hudOpacity:normalizeHudOpacity(x.hudOpacity),favorite:x.favorite===true})):[]}
  catch{return []}
 }
 let presets=loadPresets();
@@ -55,6 +55,68 @@ function drawBoard(){
  element('text',{x:380,y:397,'text-anchor':'middle','font-size':65,'font-weight':900,'font-family':'Georgia,serif',fill:'#ffe5ab'},svg).textContent='DOG';
  element('text',{x:380,y:422,'text-anchor':'middle','font-size':13,'letter-spacing':3,fill:'#f4daac'},svg).textContent='DESIGN STUDIO';
 }
+
+const HUD_OPACITY_LABELS={players:'👥 Spieleranzeige',piles:'🗂️ Kartenbereich',hand:'🃏 Handkartenbereich',extras:'✨ Magie, Emojis & Extras'};
+const hudOpacityFields=new Map();
+function defaultHudOpacity(key,tone){
+ const color=tone?.[key==='extras'?'button':key==='players'?'panel':'inner']||'';
+ const match=/,\s*(0?(?:\.\d+)?|1(?:\.0+)?)\s*\)$/.exec(color);
+ return match?Math.round(Number(match[1])*100):75;
+}
+function updateHudOpacityPreview(tone){
+ const root=$('hud-preview'),all=[];
+ for(const key of HUD_OPACITY_BLOCKS){
+  const chosen=draft.hudOpacity[key];
+  const value=chosen===null?defaultHudOpacity(key,tone):chosen;
+  all.push(value);
+  const field=hudOpacityFields.get(key);
+  if(field){
+   field.range.value=String(value);
+   field.output.textContent=value+' %'+(chosen===null?' · Standard':'');
+   field.range.setAttribute('aria-valuetext',value+' Prozent'+(chosen===null?', Standard':''));
+  }
+  const box=root.querySelector('[data-hud-block="'+key+'"]');
+  if(!box)continue;
+  box.style.background=chosen===null?'':hudOpacityColor(tone,'panel',chosen);
+  let innerSelector,source;
+  if(key==='players'){innerSelector='.studio-hud-player';source='seat'}
+  else if(key==='piles'){innerSelector='.studio-hud-piles';source='inner'}
+  else if(key==='hand'){innerSelector='.studio-hud-hand';source='inner'}
+  else{innerSelector='.studio-hud-extras>span';source='button'}
+  box.querySelectorAll(innerSelector).forEach(child=>{
+   child.style.background=chosen===null?'':hudOpacityColor(tone,source,chosen);
+  });
+ }
+ $('hud-opacity-all').value=String(Math.round(all.reduce((n,v)=>n+v,0)/all.length));
+}
+function mountHudOpacityControls(){
+ const host=$('hud-opacity-controls');
+ for(const key of HUD_OPACITY_BLOCKS){
+  const box=document.createElement('div');box.className='hud-opacity-control';
+  const line=document.createElement('div');line.className='opacity-label-line';
+  const label=document.createElement('label');
+  const range=document.createElement('input');range.type='range';range.min='0';range.max='100';range.step='5';
+  range.id='hud-opacity-'+key;label.htmlFor=range.id;label.textContent=HUD_OPACITY_LABELS[key];
+  const output=document.createElement('output');output.htmlFor=range.id;output.setAttribute('aria-live','off');
+  line.append(label,output);box.append(line,range);host.append(box);
+  hudOpacityFields.set(key,{range,output});
+  range.addEventListener('input',()=>{
+   draft.hudOpacity={...draft.hudOpacity,[key]:Number(range.value)};
+   refresh();status('Transparenz für '+HUD_OPACITY_LABELS[key]+' geändert. Mit „Im Spiel verwenden“ übernehmen.');
+  });
+ }
+ $('hud-opacity-all').addEventListener('input',event=>{
+  const value=Number(event.target.value);
+  draft.hudOpacity=Object.fromEntries(HUD_OPACITY_BLOCKS.map(key=>[key,value]));
+  refresh();status('Transparenz für alle vier Spielblöcke auf '+value+' % gestellt.');
+ });
+ $('reset-hud-opacity').addEventListener('click',()=>{
+  draft.hudOpacity=normalizeHudOpacity(null);
+  refresh();status('Standard-Transparenz der gewählten Farben wiederhergestellt.');
+ });
+}
+mountHudOpacityControls();
+
 function renderFramePreview(){
  const frame=BOARD_FRAMES[draft.boardFrame]||BOARD_FRAMES.classic;
  const box=$('preview-screen');
@@ -71,6 +133,7 @@ function refresh(){
   panel.style.setProperty(to,tone[from]);
  }
  $('hud-preview').dataset.layout=draft.hudLayout;
+ updateHudOpacityPreview(tone);
  document.querySelectorAll('[data-hud-tone]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.hudTone===draft.hudTone)));
  $('preview-stage').style.setProperty('--scene-wallpaper',bg(SCENE_STYLES[draft.scene]));
  $('preview-heading').textContent=name(draft.scene)+' + '+name(draft.board)+' · '+(BOARD_FRAMES[draft.boardFrame]||BOARD_FRAMES.classic).label+' · '+tone.label;
@@ -139,20 +202,20 @@ $('board-tab').addEventListener('click',()=>showPanel('board'));
 $('hud-tab').addEventListener('click',()=>showPanel('hud'));
 showPanel('board');
 function apply(){
- try{saveAppearance({...loadAppearance(),board:draft.board,boardFrame:draft.boardFrame,scene:draft.scene,sidebar:draft.scene==='schloss'?'schloss':'none',hudLayout:draft.hudLayout,hudTone:draft.hudTone});renderPresets();status('✓ '+name(draft.scene)+' + '+name(draft.board)+' · Rahmen '+BOARD_FRAMES[draft.boardFrame].label+' · Spielblock '+HUD_TONES[draft.hudTone].label+' für DOG aktiviert.');return true}
+ try{saveAppearance({...loadAppearance(),board:draft.board,boardFrame:draft.boardFrame,scene:draft.scene,sidebar:draft.scene==='schloss'?'schloss':'none',hudLayout:draft.hudLayout,hudTone:draft.hudTone,hudOpacity:normalizeHudOpacity(draft.hudOpacity)});renderPresets();status('✓ '+name(draft.scene)+' + '+name(draft.board)+' · Rahmen '+BOARD_FRAMES[draft.boardFrame].label+' · Spielblock '+HUD_TONES[draft.hudTone].label+' für DOG aktiviert.');return true}
  catch{status('⚠️ Das Design konnte nicht im Browser gespeichert werden.');return false}
 }
 const ideas=[{name:'Zauberwald',scene:'schloss',board:'zauberwald'},{name:'Küstenabenteuer',scene:'schloss',board:'kuestenabenteuer'},{name:'Royal-Karten',scene:'schloss',board:'royalKarten'}];
 function makePreset(p,idea){
  const box=document.createElement('article');box.className='preset';
- const a=applied();if(a.scene===p.scene&&a.board===p.board&&a.boardFrame===(p.boardFrame||'classic')&&a.hudTone===p.hudTone&&a.hudLayout===p.hudLayout)box.classList.add('active');
+ const a=applied();if(a.scene===p.scene&&a.board===p.board&&a.boardFrame===(p.boardFrame||'classic')&&a.hudTone===p.hudTone&&a.hudLayout===p.hudLayout&&JSON.stringify(a.hudOpacity)===JSON.stringify(normalizeHudOpacity(p.hudOpacity)))box.classList.add('active');
  const art=document.createElement('span');art.className='preset-art';art.style.backgroundImage=bg(SCENE_STYLES[p.scene]);
  const body=document.createElement('div');body.className='preset-body';
  const title=document.createElement('strong');title.textContent=(p.favorite?'★ ':'')+p.name;
- const sub=document.createElement('small');sub.textContent=name(p.scene)+' + '+name(p.board)+' · Rahmen '+(BOARD_FRAMES[p.boardFrame||'classic']||BOARD_FRAMES.classic).label+' · '+(HUD_TONES[p.hudTone||'classic']||HUD_TONES.classic).label+(idea?' · Vorlage':'');
+ const sub=document.createElement('small');sub.textContent=name(p.scene)+' + '+name(p.board)+' · Rahmen '+(BOARD_FRAMES[p.boardFrame||'classic']||BOARD_FRAMES.classic).label+' · '+(HUD_TONES[p.hudTone||'classic']||HUD_TONES.classic).label+(Object.values(normalizeHudOpacity(p.hudOpacity)).some(v=>v!==null)?' · Eigene Transparenz':'')+(idea?' · Vorlage':'');
  const acts=document.createElement('div');acts.className='preset-actions';
  const use=document.createElement('button');use.type='button';use.textContent=idea?'Vorschau':'Anwenden';use.addEventListener('click',()=>{
-  draft={scene:p.scene,board:p.board,boardFrame:p.boardFrame||'classic',hudLayout:p.hudLayout||'classic',hudTone:p.hudTone||'classic'};refresh();
+  draft={scene:p.scene,board:p.board,boardFrame:p.boardFrame||'classic',hudLayout:p.hudLayout||'classic',hudTone:p.hudTone||'classic',hudOpacity:normalizeHudOpacity(p.hudOpacity)};refresh();
   if(idea)status('Vorlage geladen – jetzt speichern oder im Spiel verwenden.');else apply();
  });
  acts.append(use);
@@ -174,7 +237,7 @@ function renderPresets(){
  }
 }
 $('apply-design').addEventListener('click',apply);
-$('new-design').addEventListener('click',()=>{draft={scene:'schloss',board:'goldwellen',boardFrame:'classic',hudLayout:'classic',hudTone:'classic'};refresh();status('Neuer Entwurf gestartet – gespeicherte Designs bleiben erhalten.')});
+$('new-design').addEventListener('click',()=>{draft={scene:'schloss',board:'goldwellen',boardFrame:'classic',hudLayout:'classic',hudTone:'classic',hudOpacity:normalizeHudOpacity(null)};refresh();status('Neuer Entwurf gestartet – gespeicherte Designs bleiben erhalten.')});
 $('save-top').addEventListener('click',()=>{
  if(presets.length>=30){status('Maximal 30 Designs. Lösche zuerst ein altes.');return}
  $('design-name').value='Mein DOG-Design '+(presets.length+1);$('save-dialog').showModal();$('design-name').select();
@@ -182,7 +245,7 @@ $('save-top').addEventListener('click',()=>{
 $('cancel-save').addEventListener('click',()=>$('save-dialog').close());
 $('save-form').addEventListener('submit',e=>{
  e.preventDefault();const n=$('design-name').value.trim();if(!n)return;
- const p={id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),name:n.slice(0,40),scene:draft.scene,board:draft.board,boardFrame:draft.boardFrame,hudLayout:draft.hudLayout,hudTone:draft.hudTone,favorite:false};
+ const p={id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),name:n.slice(0,40),scene:draft.scene,board:draft.board,boardFrame:draft.boardFrame,hudLayout:draft.hudLayout,hudTone:draft.hudTone,hudOpacity:normalizeHudOpacity(draft.hudOpacity),favorite:false};
  presets.unshift(p);if(!persist()){presets.shift();return}
  $('save-dialog').close();refresh();if(apply())status('💾 „'+p.name+'“ gespeichert und für DOG aktiviert.');
 });
@@ -191,4 +254,4 @@ try{
  if(u&&u.origin===location.origin&&['hub-lobby.html','spielauswahl-lokal.html','index.html'].includes(u.pathname.split('/').pop()))$('back-link').href=u.href;
 }catch{}
 refresh();renderPresets();
-status('Gestalte Brett, Brettrahmen, Hintergrund und rechten Spielblock – lokal und ohne Firebase-Schreibvorgänge.');
+status('Gestalte Brett, Rahmen, Hintergrund und Transparenz der Spielblöcke – lokal ohne Firebase-Schreibvorgänge.');
