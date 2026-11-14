@@ -9,7 +9,7 @@ const html=read('game.html');
 const slotMarkup=JSON.parse(js.split('root.innerHTML=')[1].split(';\n')[0]);
 test('Monster Slots script parses as a classic browser script and is loaded with a cache-busted asset',()=>{
  assert.doesNotThrow(()=>new Script(js,{filename:'monster-slots-final.js'}));
- assert.match(html,/js\/monster-slots-final\.js\?v=20261114-(?:spectator|cards-priority|slot-results-scroll)/);
+ assert.match(html,/js\/monster-slots-final\.js\?v=20261114-(?:spectator|cards-priority|slot-results-scroll|slot-handoff)/);
  assert.match(html,/css\/monster-slots-final\.css\?v=20261113-podium-slots-v2/);
 });
 test('three reels with real scrolling icon tracks and sequential stops, never a browser-side prize roll',()=>{
