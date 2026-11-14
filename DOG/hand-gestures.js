@@ -47,7 +47,7 @@ export function enableHandTouchGestures(hand,{status=null}={}){
  };
  const down=event=>{
   if(event.pointerType!=='touch')return;
-  pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+  pointers.set(event.pointerId,{x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY});
   if(pointers.size===2){
    suppress();
    newSnapshot();
@@ -61,7 +61,7 @@ export function enableHandTouchGestures(hand,{status=null}={}){
  const move=event=>{
   const old=pointers.get(event.pointerId);
   if(!old)return;
-  pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+  pointers.set(event.pointerId,{...old,x:event.clientX,y:event.clientY});
   if(pointers.size>=2){
    if(!gesture)newSnapshot();
    if(!gesture)return;
@@ -75,7 +75,7 @@ export function enableHandTouchGestures(hand,{status=null}={}){
   }else if(pointers.size===1){
    // Single-finger browsing still works after zooming or when cards overflow.
    const dx=event.clientX-old.x,dy=event.clientY-old.y;
-   if((zoom>1.01||hand.scrollWidth>hand.clientWidth+3)&&Math.hypot(dx,dy)>2){
+   if((zoom>1.01||hand.scrollWidth>hand.clientWidth+3)&&Math.hypot(event.clientX-old.startX,event.clientY-old.startY)>7){
     hand.scrollLeft-=dx;
     hand.scrollTop-=dy;
     suppress();
