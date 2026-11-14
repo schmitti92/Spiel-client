@@ -356,15 +356,30 @@ function playerSpotlight(show,viewerUid){
 }
 // Pure time-based reveal: everyone in the room sees the same celebration at
 // the same server-synchronized reel stop, even after reconnecting mid-spin.
+const JACKPOT_SCREEN_MS=Object.freeze({epic:2300,legendary:3100,mythic:3700});
+// Allow every rare prize enough time for its entire spectacle BEFORE the
+// next reel ends. The same already-settled prizes define the schedule on ALL
+// devices; no timers, cloud writes, or random choices are introduced here.
+function reelStopAt(batch,index){
+ const n=batch?.prizes?.length||0;
+ if(!n||index<0||index>=n)return 0;
+ let time=STOP(n,index);
+ for(let i=0;i<index;i++){
+  const minDuration=JACKPOT_SCREEN_MS[batch.prizes[i]?.rarity]||0;
+  const standardGap=STOP(n,i+1)-STOP(n,i);
+  time+=Math.max(0,minDuration-standardGap);
+ }
+ return time;
+}
 function featuredJackpot(batch,elapsed){
  if(!batch||!Number.isFinite(elapsed)||elapsed<0)return null;
  const ranks={epic:1,legendary:2,mythic:3};
- const duration={epic:2300,legendary:3100,mythic:3700};
+ const duration=JACKPOT_SCREEN_MS;
  let best=null;
  for(let i=0;i<batch.prizes.length;i++){
   const prize=batch.prizes[i],rank=ranks[prize.rarity]||0;
   if(!rank)continue;
-  const when=STOP(batch.prizes.length,i),age=elapsed-when;
+  const when=reelStopAt(batch,i),age=elapsed-when;
   if(age<0||age>=duration[prize.rarity])continue;
   // Each NEW high-tier hit gets its moment, even if an earlier, higher-tier
   // reward is still glowing. The show belongs to the most recently stopped reel.
@@ -384,10 +399,12 @@ function jackpotStage(scene,elapsed){
 // has had its full on-screen window; no change to prizes or payouts.
 function showDuration(batch){
  if(!batch)return 0;
- const extras={epic:2300,legendary:3100,mythic:3700};
- let finish=DURATION(batch.prizes.length);
+ const n=batch.prizes.length;
+ // Preserve the normal tail after the last reel, plus the rarity pauses.
+ let finish=DURATION(n)+reelStopAt(batch,n-1)-STOP(n,n-1);
  batch.prizes.forEach((p,i)=>{
-  if(extras[p.rarity])finish=Math.max(finish,STOP(batch.prizes.length,i)+extras[p.rarity]);
+  if(JACKPOT_SCREEN_MS[p.rarity])
+   finish=Math.max(finish,reelStopAt(batch,i)+JACKPOT_SCREEN_MS[p.rarity]);
  });
  return finish;
 }
@@ -488,7 +505,7 @@ function renderPrizes(root,show){
  let revealed=0;
  const readable=root.querySelector('#skyjo-slot-readable-list');
  batch.prizes.forEach((p,i)=>{
-  const finished=elapsed>=STOP(n,i);
+  const finished=elapsed>=reelStopAt(batch,i);
   const el=reels[i];if(!el)return;
   if(!finished&&el.dataset.award){
    delete el.dataset.award;delete el.dataset.variant;delete el.dataset.rarity;
@@ -674,5 +691,5 @@ function attach(gameAPI,b){
 }
 window.SkyjoToreSpecial={newGame,beginRound,trackRemove,scan,hud,nextButton,canNextRound,attach,render,
  missionsFor,missionDone,bonusIndex,bonusAchieved,bonusCellsFor,slotBreakdown,currentBatch,playerSpotlight,
- clockOffsetFromSample,createOverlay,featuredJackpot,jackpotStage,showDuration,definitions:DEFINITIONS};
+ clockOffsetFromSample,createOverlay,featuredJackpot,jackpotStage,reelStopAt,showDuration,definitions:DEFINITIONS};
 })();
