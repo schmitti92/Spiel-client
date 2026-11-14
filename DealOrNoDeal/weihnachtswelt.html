@@ -86,7 +86,7 @@ body.hats-beta-open .hub-body{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-height:740px) and (min-width:801px){.hub-intro{min-height:100px}.hub-art{height:clamp(100px,17dvh,140px)}.hub-content{gap:5px}.hub-stat{padding:5px 8px}.hub-footer{margin-top:6px;padding:6px 11px}}
 @media(prefers-reduced-motion:reduce){.hub-meter i{transition:none}}
 </style>
-<link rel="stylesheet" href="./css/dog-album-embedded.css?v=20261113-card-fit-v3">
+<link rel="stylesheet" href="./css/dog-album-embedded.css?v=20261114-pack-batch-v1">
 </head>
 <body class="christmas-event-world">
 <main class="hub-wrap">
@@ -174,7 +174,7 @@ body.hats-beta-open .hub-body{grid-template-columns:repeat(3,minmax(0,1fr))}
  <p id="dog-tournament-status" role="status" aria-live="polite">Die Rangliste wird nur auf Anfrage geladen – keine ständige Firebase-Abfrage.</p>
  <div id="dog-tournament-ranking" class="dog-tournament-ranking"></div>
 </section>
-<section id="packs-panel" hidden><div class="sectionhead"><h2>🎁 DOG-Kartenpacks</h2><p>Karten aus allen sechs Sammelwelten. Gewöhnliche, seltene, epische und legendäre Motive entdecken.</p></div><div id="packs" class="packs"></div></section>
+<section id="packs-panel" hidden><div class="sectionhead"><h2>🎁 DOG-Kartenpacks</h2><p>Wähle pro Pakettyp <strong>1, 5 oder alle</strong> Gratispakete. Alle Karten landen direkt im DOG-Sammelalbum.</p></div><div class="dog-pack-all-control"><button id="dog-open-all-free" type="button" disabled>🎁 Alle Gratispakete auf einmal öffnen</button><small>Nur deine vorhandenen Paketgutscheine – niemals ein automatischer Einkauf. Bei vielen Karten kannst du im Gewinnfenster blättern.</small></div><div id="packs" class="packs"></div></section>
 <section id="duplicates-panel" hidden><div class="sectionhead"><h2>🎰 DOG-Duplikate und Monster-Rad</h2><p>Die erste Kopie jeder Karte bleibt erhalten. 100 doppelte DOG-Karten ergeben ein Monster-Rad-Ticket.</p></div>
 <div class="exchange"><strong id="duplicate-count">0 Duplikate</strong><p id="ticket-count">0 Monster-Rad-Tickets</p>
 <button type="button" id="exchange" disabled>100 Duplikate eintauschen</button><a href="./weihnachten.html?view=monster">🎡 Monster-Rad öffnen</a></div></section>
@@ -186,7 +186,7 @@ body.hats-beta-open .hub-body{grid-template-columns:repeat(3,minmax(0,1fr))}
 <dialog id="dog-cycle-complete-dialog" aria-labelledby="dog-cycle-complete-title"><h2 id="dog-cycle-complete-title">🏆 DOG-Tafel vollständig!</h2><div id="dog-cycle-complete-content"></div><button type="button" id="dog-cycle-complete-ok">🎰 Super-Slots ansehen</button></dialog>
 <dialog id="dog-super-slot-dialog" aria-labelledby="dog-super-slot-title" class="dog-super-dialog"><div class="dog-super-window"><h2 id="dog-super-slot-title">🎰 DOG-SUPER-SLOTS</h2><p>Fünf Walzen · Fünf garantierte Gewinne</p><div id="dog-super-reels" class="dog-super-reels"></div><p id="dog-super-phase" role="status" aria-live="polite"></p><div id="dog-super-summary" hidden><h3>🎁 Alle fünf Gewinne auf einen Blick!</h3><div id="dog-super-prizes" class="dog-super-prizes"></div><div id="dog-super-cards-section" hidden><h3>🃏 Alle Karten aus deinen Packs</h3><p id="dog-super-cards-caption"></p><div id="dog-super-cards" class="dog-super-cards"></div></div></div><button id="dog-super-close" type="button" disabled>✅ Alle Gewinne bestätigen</button></div></dialog>
 <dialog id="bingo-reward-dialog" aria-labelledby="bingo-dialog-title"><h2 id="bingo-dialog-title">🏆 Deine neuen Bingo-Gewinne!</h2><div id="bingo-dialog-awards"></div><button type="button" data-close>🎁 Alle Gewinne erhalten</button></dialog>
-<dialog id="reveal-dialog"><div class="reveal-heading">🎁 DEIN DOG-KARTENPACK</div><div id="reveal-items" class="reveal-items"></div><button type="button" data-close>✅ Weiter zur Sammlung</button></dialog>
+<dialog id="reveal-dialog"><div id="dog-reveal-title" class="reveal-heading">🎁 DEINE DOG-KARTENPAKETE</div><p id="dog-reveal-summary" class="dog-reveal-summary" role="status"></p><div id="reveal-items" class="reveal-items"></div><nav id="dog-reveal-pages" class="dog-reveal-pages" aria-label="Seiten der geöffneten Karten" hidden><button type="button" id="dog-reveal-prev">← Vorherige</button><span id="dog-reveal-page-info" aria-live="polite"></span><button type="button" id="dog-reveal-next">Nächste →</button></nav><button type="button" data-close>✅ Alle Karten bestätigen</button></dialog>
 <script>
 (()=>{
 'use strict';
@@ -325,7 +325,7 @@ window.addEventListener('spielonline-change',()=>{checkHatsAccess();refresh(fals
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{checkHatsAccess();refresh(false)});else{checkHatsAccess();refresh(false)};
 })();
 </script>
-<script defer src="./js/dog-album-season2.js?v=20261113-card-art-v2"></script>
+<script defer src="./js/dog-album-season2.js?v=20261114-pack-batch-v1"></script>
 <script defer src="./js/dog-super-slots.js?v=20261113-wildcard-v1"></script>
 <script src="./js/christmas-spectacle-v2.js?v=20261109-spectacle-v2"></script>
 <script src="../site-global-controls.js?v=20261109-global-1"></script>
