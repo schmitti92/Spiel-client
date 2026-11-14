@@ -4,9 +4,10 @@
  */
 import {BOARD_STYLES,SCENE_STYLES,PIECE_STYLES,CARD_STYLES,HUD_TONES,HUD_LAYOUTS} from './appearance-registry.js?v=18';
 import {DOG_EMOJIS,DOG_EMOJI_STARTERS} from './dog-emojis.js?v=1';
+import {buildDogCollection} from './collection-extensions.js?v=1';
 const planned=(id,name,icon,description,artTone='indigo')=>({id,name,icon,description,artTone,status:'planned'});
 const avail=(id,name,extra={})=>({id,name,status:'available',...extra});
-export const DOG_COLLECTION_CATEGORIES=Object.freeze([
+const BASE_COLLECTION_CATEGORIES=[
  {id:'backgrounds',icon:'🏞️',title:'Hintergründe',subtitle:'Landschaften für die gesamte DOG-Seite',items:[
   ...Object.entries(SCENE_STYLES).map(([id,t])=>avail(id,t.label,{kind:'appearance',field:'scene',image:t.image||null,description:t.description||'Seitenhintergrund für DOG',icon:id==='none'?'🌑':'🏰',artTone:'azure'})),
   planned('polarlicht','Polarlichter','🌌','Zukünftige Event-Landschaft','cyan'),
@@ -65,7 +66,10 @@ export const DOG_COLLECTION_CATEGORIES=Object.freeze([
   planned('hud-layout-compact','Kompakte Anordnung','▤','Neue Anordnung für ein zukünftiges Update','azure'),
   planned('hud-layout-wide','Breite Anordnung','▦','Neue Anordnung für ein zukünftiges Update','azure')
  ]}
-]);
+];
+// Additional event items and categories are registered in collection-extensions.js.
+// UI lists, filters and counts automatically include any validated additions.
+export const DOG_COLLECTION_CATEGORIES=buildDogCollection(BASE_COLLECTION_CATEGORIES);
 export const dogCollectionStats=(category=null)=>{
  const entries=category?.items||DOG_COLLECTION_CATEGORIES.flatMap(x=>x.items);
  return {total:entries.length,available:entries.filter(x=>x.status==='available').length,
