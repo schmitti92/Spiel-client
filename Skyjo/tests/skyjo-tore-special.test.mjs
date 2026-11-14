@@ -230,7 +230,7 @@ test('SKYJO card-pack prizes are voucher receipts, not automatically opened at t
  assert.match(inbox,/p\.kind==='pack'&&p\.voucher/);
  assert.match(inbox,/weihnachtswelt\.html\?view=packs/);
  assert.match(inbox,/noch nicht geöffnet/);
- assert.match(inbox,/Gutscheine bleiben/);
+ assert.match(inbox,/bleiben auch nach dem Bestätigen erhalten/);
  assert.match(css,/skyjo-inbox-voucher-link/);
  assert.doesNotThrow(()=>new Function(inbox));
 });
