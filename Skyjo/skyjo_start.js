@@ -22,7 +22,7 @@ const descriptions={
  maxPlayers:'SKYJO Action unterstützt online 2 bis 5 aktive Spieler. Weitere Mitglieder bleiben Zuschauer.'
 };
 function onlineHome(extra=''){
- return '../spielauswahl-online.html?room='+encodeURIComponent(code)+extra;
+ return '../hub-lobby.html?view=online&room='+encodeURIComponent(code)+extra;
 }
 function gameUrl(snapshot){
  const m=snapshot.match;
