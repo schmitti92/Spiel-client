@@ -384,7 +384,7 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 .dog-classic-card .dog-sub{font-size:clamp(12px,1.2vw,18px);font-weight:650;color:#e5eff4;max-width:440px}
 .dog-classic-card .dog-cta{padding:10px 18px;background:linear-gradient(110deg,#ddbb77,#ae813a);color:#142438;font-size:13px;font-weight:850;border-radius:12px}
 
-</style></head>
+</style><link rel="stylesheet" href="DOG/board-picker.css?v=1"><style>.game-grid>.dog-board-lobby{grid-column:1/-1;align-self:stretch;min-width:0}</style></head>
 <body>
 <main class="container">
 <header class="page-head"><h1>🎮 Spieleauswahl</h1></header>
@@ -394,6 +394,12 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
       <article class="game kreuzkunter-card"><a class="local-game-link" href="KreuzKunter/kreuzkunter.html?mode=local" aria-label="KreuzKunter lokal spielen"><span class="visually-hidden">KreuzKunter lokal spielen</span></a></article>
       <article class="game merk-matrix-card"><a class="local-game-link" href="MinispieleV2/games/merk-matrix/index.html" aria-label="Merk-Matrix 2 lokal spielen"><span class="visually-hidden">Merk-Matrix 2 lokal spielen</span></a><div class="merk-label">🧠 MERK-MATRIX 2</div><p class="merk-info">Das Gedächtnis-Duell · 1 Mensch + 3 Bots · Neon-Finale mit 8×8-Feld</p><span class="merk-play" aria-hidden="true">▶ Lokal spielen</span></article>
       <article class="game dog-classic-card"><a class="local-game-link" href="DOG/index.html" aria-label="DOG Klassisch lokal spielen"><span class="visually-hidden">DOG lokal spielen</span></a><div class="dog-title">🐾 DOG</div><p class="dog-sub">Das Team-Brettspiel · 4 Spieler · Mit Freunden oder Bots</p><span class="dog-cta" aria-hidden="true">▶ Jetzt spielen</span></article>
+       <section class="dog-board-lobby" data-dog-board-picker aria-label="DOG Spielbrett auswählen">
+         <h3>🎨 DOG-Spielbrett auswählen</h3>
+         <p>Wähle deinen Hintergrund vor dem Spiel. Die echten Spielfelder werden im Spiel darüber angezeigt.</p>
+         <div data-board-picker-options></div>
+         <div data-board-picked-label></div>
+       </section>
        <article class="game business-card"><a class="local-game-link" href="Business/business_local.html" aria-label="Das große Business lokal spielen"><span class="visually-hidden">Das große Business lokal spielen</span></a></article>
 </section>
 </main>
