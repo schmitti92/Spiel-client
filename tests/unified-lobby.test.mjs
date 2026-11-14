@@ -50,7 +50,7 @@ test('main lobby handles both modes, all core games and active room actions',()=
 });
 test('old HTML pages load redirect before legacy game-selection scripts',()=>{
  for(const [html,mode] of [[local,'local'],[online,'online'],[index,'auto']]){
-  const start=html.indexOf('legacy-lobby-redirect.js?v=2');
+  const start=html.indexOf('legacy-lobby-redirect.js?v=3');
   assert.ok(start>=0);
   assert.ok(html.includes('data-mode="'+mode+'"'));
   assert.ok(start<html.indexOf('</head>'));
