@@ -139,3 +139,35 @@ background:linear-gradient(105deg,#0c1f38f4 5%,#172c47f1 56%,#3a1c32e8),url("../
  #reveal-dialog .reveal-items{grid-template-columns:repeat(auto-fit,minmax(min(104px,40vw),132px));gap:7px}
  #reveal-dialog .reveal-item img{max-height:175px}
 }
+
+/* DOG Season 2 multi-pack opening: four pack tiles, separate 1/5/all controls. */
+#dog-season-panel .packs{grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch}
+#dog-season-panel .pack{display:flex;flex-direction:column;min-width:0}
+#dog-season-panel .pack .dog-pack-multi-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:auto;padding-top:12px}
+#dog-season-panel .pack .dog-pack-multi-actions button{font:800 clamp(12px,1.1vw,15px)/1.24 system-ui,sans-serif;overflow-wrap:anywhere;padding:9px 7px;min-height:46px;white-space:normal}
+#dog-season-panel .pack .dog-pack-multi-actions [data-pack-all]{grid-column:1/-1;background:linear-gradient(130deg,#bfebf6,#8cbacd);border-color:#d2f4ff}
+#dog-season-panel .pack .dog-pack-multi-actions button:focus-visible,
+#dog-season-panel .dog-pack-all-control button:focus-visible,
+#reveal-dialog .dog-reveal-pages button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+#dog-season-panel .dog-pack-all-control{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:9px;padding:12px;margin:0 auto 14px;width:min(1100px,100%);border:1px solid #ffde9490;border-radius:13px;background:#142942df}
+#dog-season-panel .dog-pack-all-control button{border:1px solid #ffe1a3;border-radius:10px;background:linear-gradient(130deg,#ffdf8a,#f1a84b);color:#241708;font-weight:900;padding:11px 17px;cursor:pointer;max-width:100%}
+#dog-season-panel .dog-pack-all-control button:disabled{opacity:.48;cursor:default}
+#dog-season-panel .dog-pack-all-control small{flex:1 1 250px;color:#e9e3d5;font-size:12px;line-height:1.45}
+#reveal-dialog .dog-reveal-summary{margin:7px auto;color:#e5f1fc;font-size:clamp(12px,2vw,16px)}
+#reveal-dialog .dog-reveal-pages{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:10px auto 15px;padding:8px;border-radius:12px;background:#0a1931}
+#reveal-dialog .dog-reveal-pages[hidden]{display:none}
+#reveal-dialog .dog-reveal-pages button{padding:8px 11px;min-height:42px}
+#reveal-dialog .dog-reveal-pages button:disabled{opacity:.4;cursor:default}
+#reveal-dialog .dog-reveal-pages span{color:#ffe1aa;font-weight:800;font-size:12px}
+#reveal-dialog .reveal-items{grid-template-columns:repeat(auto-fill,minmax(100px,132px));justify-content:center}
+#reveal-dialog .reveal-item.legendary{box-shadow:0 0 15px #ffe19266;border-color:#ffe192}
+#reveal-dialog .reveal-item.epic{box-shadow:0 0 12px #ac80ed5e}
+@media(max-width:1160px){#dog-season-panel .packs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){
+ #dog-season-panel .packs{grid-template-columns:1fr}
+ #dog-season-panel .pack{padding:14px}
+ #dog-season-panel .pack .dog-pack-multi-actions button{font-size:14px}
+ #dog-season-panel .dog-pack-all-control{flex-direction:column;text-align:center}
+ #dog-season-panel .dog-pack-all-control small{flex-basis:auto}
+ #reveal-dialog .dog-reveal-pages{justify-content:center}
+}
