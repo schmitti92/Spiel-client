@@ -9,7 +9,7 @@ const CODE=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/;
 const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const designNames=['Klassisch','Nachtstadt','Gold'];
 let room=null,busy=false,loading=false,ws=null,retry=null,pollTimer=null,themeIndex=0,closed=false;
-const onlineHome=extra=>'../spielauswahl-online.html?room='+encodeURIComponent(code)+(extra||'');
+const onlineHome=extra=>'../hub-lobby.html?view=online&room='+encodeURIComponent(code)+(extra||'');
 const errors={LOGIN_REQUIRED:'Bitte melde dich mit deinem Online-Profil an.',ROOM_NOT_FOUND:'Der Raum ist nicht mehr vorhanden.',
  NOT_A_MEMBER:'Du gehörst nicht zu diesem Raum. Bitte tritt ihm zunächst bei.',HOST_ONLY:'Nur der Host kann die Rundenanzahl ändern.',
  INVALID_SETTINGS:'Ungültige Rundenanzahl.',NO_BUSINESS_SETUP:'Dieses Spiel ist nicht mehr ausgewählt.',
