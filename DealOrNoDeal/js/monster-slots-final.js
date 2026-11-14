@@ -367,6 +367,8 @@ function renderShared(){
    if(!root.hidden)cancel();
    scheduledWindowKey=windowKey;
    root.dataset.shared='yes';root.dataset.turn=stage.turn;root.dataset.actor='no';
+   const upcomingKicker=root.querySelector('.monster-slot-kicker');
+   if(upcomingKicker)upcomingKicker.textContent=stage.turn==='case'?'✦ GOLDSTUDIO · KOFFERBONUS ✦':'✦ GOLDSTUDIO · DAS GROSSE GEWINNFINALE ✦';
    root.dataset.phase='preparing';liveGame=game.id;claimed=null;claimedUid=null;configureReels(stage.reels);
    lights.forEach(light=>light.classList.remove('lit'));
    reels.forEach(resetReel);summary.hidden=true;
