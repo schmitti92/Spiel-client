@@ -1,4 +1,4 @@
-import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=3';
+import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=4';
 import {loadAppearance,saveAppearance} from './appearance-registry.js?v=18';
 import {loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=1';
 // The collection never grants event rewards. Cosmetic choices persist locally;
@@ -38,6 +38,30 @@ function art(item,big=false){
   img.src=new URL(item.image,import.meta.url).href;wrap.append(img);
  }
  wrap.append(placeholder);
+ // Color tones show a miniature DOG cockpit using their REAL saved HUD palette.
+ // This is a pure local preview: it does not update the appearance or the server.
+ if(item.hudTheme){
+  const tone=item.hudTheme;
+  const preview=el('div','collection-hud-tone-preview');
+  const vars={base:tone.swatch,panel:tone.panel,seat:tone.seat,button:tone.button,
+   border:tone.border,accent:tone.accent,text:tone.text,muted:tone.muted};
+  for(const [key,value] of Object.entries(vars))preview.style.setProperty('--hud-preview-'+key,value);
+  preview.setAttribute('aria-hidden','true');
+  const top=el('div','hud-preview-top');
+  top.append(el('span','hud-preview-paw','🐾'),el('span','hud-preview-heading','DOG'),
+   el('span','hud-preview-spark','✦'));
+  const seats=el('div','hud-preview-seats');
+  for(const [i,color] of ['#e65f58','#4c9bfa'].entries()){
+   const seat=el('span','hud-preview-seat');
+   seat.style.setProperty('--seat-indicator',color);
+   seat.append(el('i','hud-preview-avatar'),el('b','',i===0?'Chris':'Spieler 2'));
+   seats.append(seat);
+  }
+  const controls=el('div','hud-preview-controls');
+  for(const icon of ['✨','😄','🎁'])controls.append(el('span','',icon));
+  preview.append(top,seats,controls);
+  wrap.append(preview);
+ }
  if(item.kind==='avatar'){
   const sprite=el('span','portrait-sprite'),index=item.avatar%8;
   sprite.style.backgroundImage="url('"+new URL(item.avatar<8?'../profile-avatars.webp':'../profile-avatars-extra.webp',import.meta.url).href+"')";
