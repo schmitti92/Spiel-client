@@ -54,6 +54,8 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 .dog-appearance-buttons button:last-child{color:#142536;background:#e9bf7d;border-color:#e9bf7d}
 @media(max-width:530px){.dog-appearance-layout{grid-template-columns:1fr}.dog-appearance-layout label:first-child{grid-column:1/-1}}
 
+/* Hidden game controls must stay hidden even when a layout class sets display. */
+[hidden]{display:none!important}
 /* DOG tablet/desktop landscape cockpit: board, players and all six cards fit the viewport. */
 @media (min-width:900px) and (orientation:landscape) and (max-height:1100px){
  html,body{height:100%;min-height:0}
