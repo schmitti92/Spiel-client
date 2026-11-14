@@ -814,3 +814,47 @@ main{width:calc(100% - 22px);max-width:1920px;margin:6px auto}
   pointer-events:none;
 }
 @media(max-width:540px){.dog-status-panel .dog-active-emblem{left:19px}}
+
+/* Extras: five floating icon tiles on the scenery, no outer glass block. */
+.right.dog-modules>.dog-extras-panel{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  padding:3px 0!important;
+  overflow:visible!important;
+}
+.dog-extras-panel .dog-extras-details{background:transparent;border:0}
+.dog-extras-panel .dog-extras-grid{
+  padding:5px 3px 8px;
+  gap:clamp(5px,1vw,13px);
+  background:transparent;
+}
+.right.dog-modules .dog-extras-grid .dog-extra-button{
+  min-height:68px;
+  border:1.5px solid rgba(255,208,112,.9)!important;
+  border-radius:16px!important;
+  background:linear-gradient(145deg,rgba(8,34,59,.86),rgba(3,18,41,.91))!important;
+  box-shadow:0 5px 12px rgba(0,0,0,.35),inset 0 1px rgba(255,245,207,.18),0 0 7px rgba(255,198,87,.18)!important;
+  color:#fff0cf;
+  transition:transform .16s,box-shadow .16s;
+}
+.right.dog-modules .dog-extras-grid .dog-extra-button:hover,
+.right.dog-modules .dog-extras-grid .dog-extra-button:focus-visible{
+  transform:translateY(-3px);
+  box-shadow:0 7px 15px rgba(0,0,0,.4),0 0 14px rgba(255,204,91,.5)!important;
+}
+.dog-extras-panel #dog-ui-features-status{display:none!important}
+.dog-extras-panel .dog-extras-tools{margin:0;min-height:0}
+.dog-extras-panel #new-game{
+  font-size:17px;
+  line-height:1;
+  padding:4px 8px;
+  border-radius:50%;
+  background:rgba(4,24,45,.5);
+  opacity:.75;
+}
+@media(min-width:900px) and (orientation:landscape) and (max-height:950px){
+ .right.dog-modules .dog-extras-grid .dog-extra-button{min-height:52px}
+}
