@@ -187,3 +187,35 @@ test('Bonus field remains clearly marked in board UI and each prize is attribute
  assert.match(js,/show\.index\+1<show\.players\.length/);
  assert.match(js,/Math\.ceil\(player\.prizes\.length\/12\)/);
 });
+
+
+test('Every earned reel survives 12-reel batches and players rotate one after another',()=>{
+ const browser={};new Function('window',read('skyjo_tore_special.js'))(browser);
+ const x=browser.SkyjoToreSpecial;
+ const players=[
+  {uid:'first',name:'Chris',slots:20,prizes:Array.from({length:20},(_,i)=>({kind:'cash',label:String(i+1)}))},
+  {uid:'second',name:'Vanessa',slots:14,prizes:Array.from({length:14},(_,i)=>({kind:'pack',label:String(i+1)}))},
+  {uid:'third',name:'David',slots:2,prizes:Array.from({length:2},(_,i)=>({kind:'chest',label:String(i+1)}))}
+ ];
+ const show={players,index:0,batch:0};
+ const observed=[],perPlayer={};
+ for(let k=0;k<players.length;k++){
+  show.index=k;show.batch=0;const grouped=[];
+  while(true){
+   const part=x.currentBatch(show);
+   assert.equal(part.player.uid,players[k].uid);
+   assert.ok(part.prizes.length<=12);
+   grouped.push(part.prizes.length);
+   observed.push(...part.prizes.map(p=>players[k].uid+':'+p.label));
+   if(show.batch+1>=part.total)break;
+   show.batch++;
+  }
+  perPlayer[players[k].uid]=grouped;
+  assert.equal(grouped.reduce((a,b)=>a+b,0),players[k].slots);
+ }
+ assert.deepEqual(perPlayer,{first:[12,8],second:[12,2],third:[2]});
+ assert.equal(observed.length,36);
+ assert.equal(new Set(observed).size,36);
+ assert.deepEqual(observed.slice(0,20).map(v=>v.split(':')[0]),Array(20).fill('first'));
+ assert.deepEqual(observed.slice(20,34).map(v=>v.split(':')[0]),Array(14).fill('second'));
+});
