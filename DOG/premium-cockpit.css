@@ -1,0 +1,409 @@
+/* DOG ROYAL — Premium cockpit v1
+   A presentation layer over the existing DOG board and modules.
+   Zero gameplay, card/field coordinates, or network changes.
+   User-selected HUD skins, opacity and board-frame settings still win. */
+:root{
+ --dog-royal-ink:#061427;
+ --dog-royal-night:#0a1c32;
+ --dog-royal-gold:#efcd8c;
+ --dog-royal-deep-gold:#ba874c;
+ --dog-royal-ivory:#fff4da;
+ --dog-royal-muted:#c2d4e3;
+ --dog-royal-rule:rgba(235,199,131,.38);
+ --dog-royal-shadow:0 14px 44px rgba(0,6,20,.38);
+}
+body{isolation:isolate}
+body::after{
+ content:"";position:fixed;z-index:0;inset:0;pointer-events:none;
+ background:
+  radial-gradient(ellipse 64% 44% at 12% 8%,rgba(232,184,100,.08),transparent 70%),
+  radial-gradient(ellipse 75% 60% at 88% 74%,rgba(18,67,111,.22),transparent 70%),
+  linear-gradient(90deg,rgba(2,11,23,.1),rgba(2,11,23,.25));
+}
+body>main{position:relative;z-index:1}
+body>.dog-floating-menu{z-index:1100;left:auto!important;right:calc(env(safe-area-inset-right,0px) + 17px)!important;top:calc(env(safe-area-inset-top,0px) + 11px)!important}
+main{max-width:1920px;width:calc(100% - 24px);margin:7px auto 12px;gap:7px}
+.dog-premium-ribbon{
+ position:relative;isolation:isolate;
+ display:flex;align-items:center;justify-content:space-between;gap:16px;flex:0 0 auto;
+ min-height:54px;padding:7px 70px 7px 12px;margin-bottom:7px;
+ border-radius:15px;
+ border:1px solid rgba(231,191,120,.54);
+ background:linear-gradient(110deg,rgba(4,17,34,.95),rgba(13,44,70,.92) 43%,rgba(6,24,44,.93));
+ box-shadow:inset 0 1px rgba(255,255,255,.17),inset 0 -1px rgba(238,196,119,.12),0 9px 28px rgba(0,8,22,.28);
+ overflow:hidden;
+}
+.dog-premium-ribbon::after{
+ content:"";position:absolute;left:0;right:0;bottom:0;height:1px;pointer-events:none;
+ background:linear-gradient(90deg,transparent,rgba(248,210,149,.75),rgba(192,215,232,.24),transparent);
+}
+.dog-premium-identity,.dog-premium-brandcopy,.dog-premium-info{display:flex;align-items:center}
+.dog-premium-identity{gap:10px;flex:none;min-width:0}
+.dog-premium-monogram{
+ width:37px;height:37px;flex:0 0 37px;display:grid;place-items:center;
+ border:1px solid rgba(255,245,213,.72);border-radius:11px;
+ color:#172c3c;font:900 25px/1 Georgia,serif;
+ background:linear-gradient(140deg,#fff2ca 0%,#d8ad68 49%,#9f692b 100%);
+ box-shadow:inset 0 1px rgba(255,255,255,.7),inset 0 -3px #6947203b,0 3px 11px rgba(0,0,0,.35);
+}
+.dog-premium-brandcopy{flex-direction:column;align-items:flex-start;gap:2px}
+.dog-premium-brandcopy strong{color:var(--dog-royal-ivory);font:800 clamp(16px,1.65vw,22px)/1 Georgia,serif;letter-spacing:.12em;white-space:nowrap;text-shadow:0 2px 6px #0008}
+.dog-premium-brandcopy strong span{color:var(--dog-royal-gold);font-weight:500;letter-spacing:.08em}
+.dog-premium-brandcopy small{color:#b0c2d0;font-size:9px;font-weight:750;letter-spacing:.17em;white-space:nowrap}
+.dog-premium-info{justify-content:flex-end;gap:8px;min-width:0;flex-wrap:wrap}
+.dog-premium-pill{
+ display:inline-flex;align-items:center;justify-content:center;min-height:29px;flex:none;
+ padding:5px 11px;border-radius:999px;border:1px solid rgba(231,200,144,.34);
+ background:rgba(5,21,41,.75);color:#f0d49e;
+ font-size:11px;font-weight:850;letter-spacing:.025em;white-space:nowrap;
+ box-shadow:inset 0 1px rgba(255,255,255,.08);
+}
+.dog-premium-phase{color:#d9ecfb;border-color:rgba(139,187,224,.35)}
+.dog-premium-live{
+ display:inline-flex;align-items:center;min-width:0;gap:7px;
+ padding:5px 9px;color:#fff6de;font-size:clamp(11px,1.05vw,14px);font-weight:850;
+ white-space:nowrap;max-width:min(27vw,350px);overflow:hidden;text-overflow:ellipsis;
+}
+.dog-premium-live::before{
+ content:"";width:7px;height:7px;flex:0 0 auto;border-radius:50%;
+ background:#f0c779;box-shadow:0 0 0 3px #f0c77922,0 0 10px #f0c77966;
+ animation:dog-royal-status-pulse 3.2s ease-in-out infinite;
+}
+.dog-menu-toggle{
+ width:42px!important;height:42px!important;
+ color:#ffe8b2!important;border:1.5px solid #f0cd8d!important;border-radius:14px!important;
+ background:linear-gradient(150deg,#274b63,#07192d)!important;
+ box-shadow:0 4px 17px #0009,inset 0 1px #ffffff42,0 0 0 2px #e2bb7922!important;
+ transition:transform .18s ease,background .18s ease,box-shadow .18s ease;
+}
+.dog-menu-toggle:hover,.dog-menu-toggle:focus-visible{
+ background:linear-gradient(150deg,#345f78,#102d49)!important;
+ box-shadow:0 6px 19px #000a,0 0 0 3px #f1d39944!important;
+}
+.dog-menu-toggle:active{transform:scale(.94)}
+.dog-menu-panel{
+ width:min(282px,calc(100vw - 22px));border-radius:17px;
+ background:linear-gradient(155deg,rgba(10,33,57,.98),rgba(3,16,33,.99));
+ border:1px solid #dfc08c;box-shadow:0 22px 56px rgba(0,4,16,.74);
+}
+.dog-menu-panel .top-btn{min-height:43px;font-size:13px}
+.layout{
+ grid-template-columns:minmax(0,57fr) minmax(0,43fr);
+ gap:clamp(9px,1vw,16px);align-items:stretch;
+}
+.layout>.board-card{
+ border:1px solid rgba(240,199,126,.72);
+ border-radius:19px;
+ background:linear-gradient(145deg,rgba(7,31,53,.68),rgba(2,13,29,.54))!important;
+ box-shadow:inset 0 1px rgba(255,250,216,.2),0 14px 35px rgba(0,7,20,.5),0 0 0 1px rgba(255,214,148,.12);
+ padding:6px;
+}
+.layout>.board-card::after{
+ content:"";position:absolute;inset:3px;border:1px solid rgba(255,236,193,.18);
+ border-radius:16px;pointer-events:none;z-index:1;
+}
+.board-svg{filter:drop-shadow(0 4px 13px rgba(0,7,22,.29));border-radius:13px}
+.dog-board-identity{
+ position:absolute;z-index:4;top:12px;left:13px;display:flex;align-items:center;gap:7px;
+ padding:7px 10px;border:1px solid rgba(235,197,132,.49);border-radius:9px;
+ background:linear-gradient(130deg,rgba(3,18,34,.9),rgba(12,45,70,.78));
+ color:#f5ddb3;pointer-events:none;
+ font-size:9px;font-weight:950;letter-spacing:.16em;
+ box-shadow:inset 0 1px #ffffff19,0 3px 9px #0005;
+}
+.dog-board-identity-mark{color:#f7d797;font-size:15px;line-height:1}
+.dog-board-zoom{
+ background:rgba(4,18,34,.94)!important;border:1px solid rgba(244,206,145,.64)!important;
+ border-radius:12px!important;box-shadow:0 5px 14px #0008,inset 0 1px #ffffff1e!important;
+}
+.dog-board-zoom button{background:#183852;color:#f8dfb1;border-color:#967c55;border-radius:8px}
+.teams{
+ margin-top:4px;padding:6px 7px;gap:7px;border-radius:12px;
+ background:linear-gradient(90deg,rgba(3,18,34,.72),rgba(6,28,51,.55),rgba(3,18,34,.72));
+ border:1px solid rgba(230,201,151,.23);
+ font-size:11px;color:#c8d4df;
+}
+.team-chip{
+ min-height:29px;padding:5px 10px;gap:6px;border-radius:9px;
+ border:1px solid rgba(203,220,231,.17);background:rgba(5,26,48,.8);
+ color:#f3ede5;font-size:11px;font-weight:750;white-space:nowrap;
+}
+.team-chip .dot{width:9px;height:9px;box-shadow:0 0 0 2px #ffffff10}
+.board-editor-link{
+ color:#f9deb0;border:1px solid rgba(244,210,149,.45);border-radius:9px;
+ padding:6px 10px;background:rgba(10,36,61,.82);font-size:10px;
+ transition:background .16s ease,transform .16s ease;
+}
+.board-editor-link:hover{background:#244b66;transform:translateY(-1px)}
+.right.dog-modules{gap:9px;padding:0 2px 6px;scrollbar-color:#bca17464 transparent}
+.right.dog-modules>.panel,
+.right.dog-modules>.panel:nth-child(2),
+.right.dog-modules>.panel:nth-child(3){
+ min-width:0;padding:10px 12px!important;
+ border:1px solid rgba(226,194,143,.52);border-radius:16px;
+ background:linear-gradient(145deg,rgba(8,32,56,.92),rgba(4,20,39,.88))!important;
+ box-shadow:var(--dog-royal-shadow),inset 0 1px rgba(255,242,210,.12)!important;
+ -webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);
+}
+.right.dog-modules>.dog-status-panel{position:relative;padding-top:9px!important}
+.dog-premium-section-head,.dog-premium-extras-head{
+ display:flex;align-items:center;gap:9px;min-height:23px;margin-bottom:8px;
+ color:#f6e9d1;font-size:12px;font-weight:900;letter-spacing:.025em;
+}
+.dog-section-ordinal{
+ flex:none;display:grid;place-items:center;width:23px;height:21px;
+ border:1px solid rgba(246,216,162,.39);border-radius:6px;background:rgba(229,179,100,.1);
+ font-size:10px;letter-spacing:.05em;color:#e9c584;font-weight:900;
+}
+.dog-section-decoration{margin-left:auto;color:#d4b276;font-size:10px}
+.dog-status-panel .seat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.dog-status-panel .seat{
+ position:relative;isolation:isolate;min-height:54px;gap:7px;padding:6px 8px;
+ border-radius:11px;border:1px solid color-mix(in srgb,var(--seat) 43%,rgba(185,209,226,.35));
+ border-left:3px solid var(--seat);
+ background:linear-gradient(125deg,rgba(14,44,71,.88),rgba(4,19,37,.9))!important;
+ box-shadow:inset 0 1px #ffffff18,0 3px 8px #0004!important;
+ transition:background .22s ease,border-color .22s ease,box-shadow .22s ease;
+}
+.dog-status-panel .seat.on{
+ border:1.5px solid #ffe1a0!important;border-left:3px solid var(--seat)!important;
+ background:linear-gradient(115deg,rgba(94,67,28,.96),rgba(42,39,35,.98),rgba(13,32,53,.96))!important;
+ box-shadow:0 0 0 1px rgba(255,223,146,.46),0 0 19px rgba(230,173,67,.38),inset 0 0 12px #efc47323!important;
+}
+.dog-status-panel .seat-name{font-size:clamp(11px,1.1vw,14px)!important;color:#fff9ec;font-weight:900}
+.dog-status-panel .seat-extra{font-size:10px!important;color:#c5d5e0!important}
+.dog-status-panel .dog-seat-score{
+ align-self:center;flex:none;border:1px solid #d3b47755;border-radius:8px;padding:4px 6px;
+ background:#051a2a8a;color:#f6d89b!important;font-size:12px!important;font-variant-numeric:tabular-nums;
+}
+.dog-status-panel .seat.on .dog-seat-score{background:#422c14a3;border-color:#ffe1a088}
+.dog-status-panel .dog-active-emblem{top:-12px!important;left:18px!important;font-size:20px!important}
+.dog-status-panel .dog-seat-avatar{width:34px;height:34px;box-shadow:0 0 0 1px #ffffff20,0 2px 7px #0006}
+.dog-pile-module .dog-module-heading h2,
+.dog-hand-module .dog-module-heading h2,
+.dog-history-module .dog-module-heading h2{font-weight:900!important;letter-spacing:.01em}
+.right.dog-modules .dog-module-heading{border-bottom-color:rgba(244,207,153,.33);margin-bottom:8px;padding-bottom:7px}
+.right .dog-module-meta{font-size:10px;color:#cfb98d}
+.dog-pile-module .dog-piles{
+ gap:9px;padding:8px!important;border-radius:12px!important;
+ background:linear-gradient(120deg,rgba(2,14,31,.94),rgba(8,32,55,.77))!important;
+ border:1px solid rgba(232,196,137,.26)!important;
+}
+.dog-pile-module .dog-pile{
+ display:flex;align-items:center;justify-content:flex-start;gap:11px;
+ min-width:0;min-height:69px;padding:4px 6px;border-radius:9px;
+}
+.dog-pile-module .dog-pile+.dog-pile{border-left:1px solid rgba(220,188,136,.27)}
+.dog-pile-module .dog-pile-art{flex:none;width:42px;height:59px;border-radius:6px;box-shadow:0 2px 9px #0008}
+.dog-pile-module .dog-pile-copy{min-width:0}
+.dog-pile-module .dog-pile-copy strong{font-size:11px;color:#f8f0df}
+.dog-pile-module .dog-pile-copy span{font-size:10px;color:#bfd0dc}
+.dog-hand-module .dog-hand-title-group{display:flex!important;gap:2px;flex:1;min-width:0}
+.dog-hand-module .dog-module-heading:has(#show-hand[hidden]){display:flex!important}
+.dog-hand-module .dog-module-heading{display:flex!important;min-height:35px!important;margin:0 0 7px!important;padding-bottom:6px!important;border-bottom:1px solid rgba(234,193,123,.35)!important}
+.dog-hand-module .hand-head{display:flex;align-items:center;gap:8px;min-width:0}
+.dog-hand-module .hand-head h3{font-size:11px!important;color:#c9d4dc!important;font-weight:700}
+.dog-hand-module .dog-hand-zoom-status{font-size:10px;white-space:nowrap;color:#d7b981}
+.dog-hand-module .hand{
+ display:flex;align-items:flex-start;justify-content:flex-start;
+ min-height:94px;max-height:min(33dvh,246px)!important;
+ gap:8px!important;padding:16px 9px 13px!important;
+ border-radius:13px!important;border:1px solid rgba(232,198,137,.35);
+ background:linear-gradient(145deg,rgba(3,17,37,.9),rgba(9,34,57,.7))!important;
+ box-shadow:inset 0 4px 15px rgba(0,5,17,.45),inset 0 1px rgba(255,255,255,.07);
+ overflow-x:auto!important;overflow-y:auto!important;
+ scrollbar-width:thin;scrollbar-color:#b88e5f77 transparent;
+}
+.dog-hand-module .hand .playing-card.dog-designed{
+ border:2px solid #c49a63!important;
+ box-shadow:0 5px 10px #0008,inset 0 0 0 1px #fff1d7;
+ transition:filter .18s ease,transform .18s ease,box-shadow .18s ease;
+}
+.dog-hand-module .hand .playing-card.dog-designed:hover{filter:brightness(1.06);transform:translateY(-3px)}
+.dog-hand-module .hand .playing-card.dog-designed.picked{
+ outline:3px solid #fff4bd!important;outline-offset:2px!important;
+ box-shadow:0 0 0 3px #b17d35,0 0 15px 4px #e8bb5b8e,0 9px 14px #0009!important;
+ filter:brightness(1.09) saturate(1.06)!important;
+ transform:translateY(-5px) scale(1.025)!important;
+}
+.dog-hand-module #move-help{
+ display:block!important;min-height:0;margin:7px 3px 2px!important;
+ color:#d8e4ec!important;font-size:11px!important;line-height:1.35;letter-spacing:.01em;
+}
+.dog-hand-module #selected-info{display:block!important;font-size:11px;color:#f0d198}
+.dog-hand-module .moves{margin:6px 0 0;gap:7px}
+.dog-hand-module .moves .dog-hand-action-primary{
+ border-radius:10px;background:linear-gradient(145deg,#c99a51,#7f5424);
+ color:#fffaf0;font-weight:900;box-shadow:0 4px 12px #0007,inset 0 1px #fff5;
+}
+.dog-hand-module #show-hand:not([hidden]){
+ background:linear-gradient(145deg,#ddaf64,#a27132);color:#0b1e31;
+ border-radius:9px;border:1px solid #f6d69d;font-weight:900;
+ padding:7px 10px;margin:0;font-size:11px;
+}
+.right.dog-modules>.dog-extras-panel{
+ display:block!important;padding:9px 12px!important;
+ background:linear-gradient(155deg,rgba(8,29,52,.88),rgba(4,21,39,.86))!important;
+ border:1px solid rgba(229,195,140,.53)!important;
+ box-shadow:0 8px 23px rgba(0,6,18,.3),inset 0 1px #ffffff16!important;
+ -webkit-backdrop-filter:blur(7px)!important;backdrop-filter:blur(7px)!important;
+}
+.dog-premium-extras-head{margin:0 0 6px;border-bottom:1px solid rgba(244,207,153,.32);padding-bottom:7px;min-height:26px}
+.dog-premium-extras-head small{margin-left:auto;color:#b8cbd9;font-size:9px;font-weight:800;letter-spacing:.09em}
+.dog-extras-panel .dog-extras-grid{padding:3px 0 1px!important;gap:7px!important;grid-template-columns:repeat(5,minmax(0,1fr))!important}
+.right.dog-modules .dog-extras-grid .dog-extra-button{
+ border:1px solid rgba(227,194,134,.58)!important;border-radius:11px!important;
+ background:linear-gradient(150deg,rgba(18,57,87,.92),rgba(5,24,47,.94))!important;
+ min-height:66px!important;color:#f5e9cf;
+ box-shadow:inset 0 1px #ffffff1f,0 4px 10px #0005!important;
+ transition:transform .17s ease,filter .17s ease,box-shadow .17s ease;
+}
+.right.dog-modules .dog-extras-grid .dog-extra-button:hover,
+.right.dog-modules .dog-extras-grid .dog-extra-button:focus-visible{
+ transform:translateY(-2px);filter:brightness(1.14);
+ box-shadow:inset 0 1px #fff4,0 7px 15px #0007,0 0 10px #eab95d66!important;
+}
+.dog-extras-grid .dog-extra-icon{font-size:clamp(21px,2vw,27px)}
+.dog-extras-tools{margin-top:4px}
+.right.dog-modules>.dog-history-module{
+ display:block!important;padding:4px 12px!important;
+ background:rgba(5,24,44,.81)!important;
+ border-color:rgba(231,197,144,.32)!important;
+}
+.dog-history-module .dog-history-details>summary{
+ margin:0!important;padding:5px 0!important;border:0!important;min-height:28px!important;
+}
+.dog-history-module .dog-history-details>summary h2{font-size:11px!important;color:#d1dce5!important}
+.dog-history-module .history{max-height:112px;overflow-y:auto;font-size:11px}
+.dog-premium-statusline{
+ flex:none;display:flex;align-items:center;gap:9px;min-width:0;min-height:30px;
+ padding:6px 11px;border-radius:11px;border:1px solid rgba(198,217,230,.25);
+ background:linear-gradient(100deg,rgba(5,22,42,.91),rgba(10,38,62,.75));
+ color:#cfdee7;box-shadow:inset 0 1px #fff1,0 3px 11px #0005;
+}
+.dog-status-orb{
+ width:7px;height:7px;flex:none;border-radius:50%;background:#c9ab79;
+ box-shadow:0 0 0 3px #c9ab7920;
+}
+.dog-premium-statusline .status{
+ margin:0!important;min-width:0;font-size:10px!important;line-height:1.45!important;
+ color:#cedae2!important;overflow-wrap:anywhere;
+}
+.dog-status-panel .winner{border:1px solid #f2ca80;border-radius:14px;background:linear-gradient(120deg,#533d25,#122c43);box-shadow:0 0 19px #f4c46855}
+dialog[open]{
+ border:1px solid rgba(245,212,159,.65);border-radius:20px;
+ background:linear-gradient(150deg,#15344f,#071c34 80%);
+ box-shadow:0 26px 78px #000b,inset 0 1px #fff2;
+}
+dialog::backdrop{background:rgba(0,8,20,.78);backdrop-filter:blur(3px)}
+/* Keep appearance choices and custom glass opacity ahead of default skins. */
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules>.panel,
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules>.panel:nth-child(2),
+:root:not([data-dog-hud-tone="classic"]) .right.dog-modules>.panel:nth-child(3){
+ background:var(--dog-hud-panel)!important;border-color:var(--dog-hud-border)!important;
+}
+:root[data-dog-hud-opacity-players="custom"] .right.dog-modules>.dog-status-panel{
+ background:var(--dog-hud-players-panel-fill)!important;
+}
+:root[data-dog-hud-opacity-piles="custom"] .right.dog-modules>.dog-pile-module{
+ background:var(--dog-hud-piles-panel-fill)!important;
+}
+:root[data-dog-hud-opacity-hand="custom"] .right.dog-modules>.dog-hand-module{
+ background:var(--dog-hud-hand-panel-fill)!important;
+}
+:root[data-dog-hud-opacity-extras="custom"] .right.dog-modules .dog-extras-grid .dog-extra-button{
+ background:var(--dog-hud-extras-button-fill)!important;
+}
+/* Respect chosen board frame instead of decorating its geometry. */
+:root[data-dog-board-frame]:not([data-dog-board-frame="classic"]) .layout>.board-card{
+ background:var(--dog-outer-frame-fill)!important;border:2px solid var(--dog-outer-frame-line)!important;
+ border-radius:var(--dog-outer-frame-radius,16px)!important;
+ box-shadow:inset 0 0 0 2px var(--dog-outer-frame-inner),inset 0 1px 13px var(--dog-outer-frame-inner),
+ 0 9px 30px #0008,0 0 var(--dog-outer-frame-glow-size,12px) var(--dog-outer-frame-glow)!important;
+}
+/* Responsive: board stays prominent, panels stay reachable without clipping. */
+@media(max-width:899px),(orientation:portrait){
+ body{overflow:auto}
+ main{display:block;width:calc(100% - 14px);margin:6px auto 22px}
+ .layout{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+ .dog-premium-ribbon{margin-bottom:8px}
+ .right.dog-modules{overflow:visible;max-height:none;padding:0 0 7px}
+ .board-svg{height:auto;max-height:min(75dvh,770px)}
+}
+@media(max-width:650px){
+ .dog-premium-ribbon{gap:8px;min-height:55px;padding:9px 57px 9px 9px;flex-wrap:wrap;justify-content:flex-start}
+ .dog-premium-monogram{width:31px;height:31px;flex-basis:31px;font-size:21px}
+ .dog-premium-brandcopy strong{font-size:16px}
+ .dog-premium-brandcopy small{font-size:7px;letter-spacing:.10em}
+ .dog-premium-info{justify-content:flex-start;flex:1 1 100%;gap:5px}
+ .dog-premium-pill{min-height:24px;padding:4px 8px;font-size:10px}
+ .dog-premium-live{flex:1 1 auto;max-width:100%;font-size:11px}
+ .dog-board-identity{padding:5px 7px;font-size:8px;top:9px;left:8px}
+ .dog-board-zoom{top:7px;right:7px;padding:3px;gap:3px}
+ .dog-status-panel .seat-grid{gap:6px}
+ .right.dog-modules>.panel{padding:9px 10px!important}
+ .dog-extras-panel .dog-extras-grid{gap:5px!important}
+ .right.dog-modules .dog-extras-grid .dog-extra-button{min-height:59px!important;font-size:10px}
+ .dog-hand-module .hand{max-height:36dvh!important}
+ .dog-pile-module .dog-pile{gap:7px;padding:3px}
+ .dog-pile-module .dog-pile-art{width:35px;height:50px}
+ .dog-pile-module .dog-pile-copy strong{font-size:10px}
+ .dog-board-identity-mark{font-size:12px}
+}
+@media(max-width:460px){
+ .dog-status-panel .seat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+ .dog-status-panel .seat{grid-template-columns:27px minmax(0,1fr) auto;min-height:48px;gap:3px;padding:4px}
+ .dog-status-panel .dog-seat-avatar{width:26px;height:26px}
+ .dog-status-panel .seat-name{font-size:10px!important}
+ .dog-status-panel .seat-extra{font-size:9px!important}
+ .dog-status-panel .dog-seat-score{font-size:10px!important;padding:3px 4px}
+ .dog-status-panel .dog-active-emblem{font-size:15px!important;top:-9px!important;left:10px!important}
+ .dog-pile-module .dog-piles{gap:3px!important;padding:5px!important}
+ .dog-pile-module .dog-pile+.dog-pile{padding-left:7px}
+ .dog-pile-module .dog-pile-art{width:31px;height:44px}
+ .dog-pile-module .dog-pile-copy strong{font-size:9px}
+ .dog-pile-module .dog-pile-copy span{font-size:9px}
+}
+@media(max-width:355px){
+ .dog-status-panel .seat-grid{grid-template-columns:minmax(0,1fr)}
+ .dog-status-panel .dog-seat-avatar{width:32px;height:32px}
+ .dog-status-panel .seat{grid-template-columns:32px minmax(0,1fr) auto}
+}
+@media(min-width:900px) and (orientation:landscape) and (max-height:780px){
+ html,body{height:100%;min-height:0}
+ main{flex:1;min-height:0;display:flex;flex-direction:column;margin:4px auto}
+ .dog-premium-ribbon{min-height:40px;padding:4px 62px 4px 9px;margin-bottom:4px;border-radius:11px}
+ .dog-premium-monogram{width:29px;height:29px;flex-basis:29px;border-radius:8px;font-size:20px}
+ .dog-premium-brandcopy strong{font-size:15px}
+ .dog-premium-brandcopy small{display:none}
+ .dog-premium-pill{min-height:24px;padding:3px 9px}
+ .dog-premium-live{font-size:11px}
+ .layout{flex:1;min-height:0;gap:8px}
+ .right.dog-modules{min-height:0;max-height:100%;overflow-y:auto;overflow-x:hidden;gap:6px}
+ .right.dog-modules>.panel{padding:6px 9px!important}
+ .dog-premium-section-head{margin-bottom:5px}
+ .dog-status-panel .seat{min-height:44px;padding:4px 7px}
+ .right.dog-modules .dog-module-heading{margin-bottom:5px;padding-bottom:4px}
+ .dog-pile-module .dog-piles{padding:5px!important}
+ .dog-pile-module .dog-pile{min-height:48px}
+ .dog-pile-module .dog-pile-art{height:46px;width:33px}
+ .dog-hand-module .hand{max-height:25dvh!important;padding:9px 5px 8px!important}
+ .dog-hand-module .dog-module-heading{min-height:26px!important}
+ .right.dog-modules .dog-extras-grid .dog-extra-button{min-height:50px!important}
+ .dog-premium-extras-head{margin-bottom:3px;padding-bottom:4px;min-height:21px}
+ .dog-extras-grid .dog-extra-icon{font-size:21px}
+ .dog-history-module .dog-history-details>summary{min-height:22px!important}
+ .dog-premium-statusline{min-height:26px;padding:4px 9px}
+ .dog-board-identity{font-size:8px;padding:5px 8px}
+}
+@keyframes dog-royal-status-pulse{
+ 0%,100%{opacity:.75;box-shadow:0 0 0 3px #f0c77918,0 0 6px #f0c77936}
+ 50%{opacity:1;box-shadow:0 0 0 4px #f0c77922,0 0 11px #f0c77983}
+}
+@media(prefers-reduced-motion:reduce){
+ .dog-premium-live::before{animation:none!important}
+ .dog-menu-toggle,.dog-board-editor-link,.right .seat,.dog-hand-module .hand .playing-card.dog-designed{
+ transition:none!important;
+ }
+}
+:root[data-dog-motion="off"] .dog-premium-live::before{animation:none!important}
