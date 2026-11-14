@@ -114,7 +114,7 @@ function browserFixture(customPrizes=null){
  const summary=root.children.find(n=>n.id==='monster-slot-reward-summary');
  const summaryContent=summary?.children[0];
  return {window,document,g,root,accept,reels,banker,finale,requests,store,emit,flush,advance,
-  now:()=>epoch+clock,
+  now:()=>epoch+clock,skipTimers:ms=>{clock+=ms},
   summary,summaryButton:summaryContent?.children.at(-1),
   summaryPrizes:summaryContent?.children[3],summaryCardsPanel:summaryContent?.children[4],
   summaryCards:summaryContent?.children[4]?.children[2]};
@@ -419,4 +419,31 @@ test('second-place winner is announced and confirmed before the champion gets a 
  assert.equal(b.accept.disabled,true,'spectator still cannot act for winner');
  b.window.person='host';b.emit('spielonline-change');await b.flush();
  assert.equal(b.accept.disabled,false);
+});
+
+test('mobile tab resumes the actual server-stage result without replaying delayed animation callbacks',async()=>{
+ const b=browserFixture();
+ b.banker.hidden=true;b.window.person='quiet';
+ b.g.monsterSlotShow={phase:'rolling',turn:'champion',uid:'host',reels:3,
+  runnerUid:'guest',championUid:'host',activatedAt:b.now(),startedAt:b.now()+3200,
+  prizes:[{kind:'joker',quantity:1,label:'1× Joker'},
+   {kind:'chest',id:'wood',quantity:1,label:'Holzkiste'},
+   {kind:'cash',quantity:1,label:'100,00 €',amountCents:10000}]};
+ b.emit('deal-game-state-change');await b.flush();
+ assert.equal(b.root.dataset.phase,'countdown');
+ assert.ok(b.reels.every(r=>r.reel.dataset.phase==='ready'));
+ // Background throttling: simulated server time advances but JS timers do not.
+ b.skipTimers(12000);
+ b.emit('deal-game-state-change');await b.flush();
+ assert.equal(b.root.dataset.phase,'summary','the returned tab must catch up immediately');
+ assert.equal(b.summary.hidden,false);
+ assert.ok(b.reels.every(r=>r.reel.dataset.phase==='won'),'every server-revealed reel is complete');
+ assert.equal(b.summaryPrizes.children.length,3);
+ b.root.scrollTop=250;
+ // Delayed callbacks after returning must never restart spinning or reset scroll.
+ await b.advance(0);
+ assert.equal(b.root.dataset.phase,'summary');
+ assert.equal(b.root.scrollTop,250);
+ assert.equal(b.summary.hidden,false);
+ assert.equal(b.requests.length,0,'reconciliation is local and must not consume Firestore writes');
 });
