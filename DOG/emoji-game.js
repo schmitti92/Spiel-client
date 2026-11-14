@@ -1,7 +1,7 @@
 import {DOG_EMOJI_STARTERS,emojiById,loadEmojiSlots} from './dog-emojis.js?v=1';
-/* Lightweight quick-picker and local-only emoji animation.
-   Online transport is injected by app.js and only sends short IDs. */
-let popup=null,overlay=null,displayTimer=null,seenIds=new Set();
+/* DOG emoji quickbar lives in the shared extension panel.
+   Only a small emoji ID travels over the existing Render hub socket. */
+let panelRoot=null,overlay=null,displayTimer=null,seenIds=new Set();
 export function showDogEmoji(event){
  const item=emojiById(event?.emojiId);if(!item)return;
  if(event?.eventId){
@@ -10,7 +10,8 @@ export function showDogEmoji(event){
   if(seenIds.size>70)seenIds=new Set([event.eventId]);
  }
  if(!overlay){
-  overlay=document.createElement('div');overlay.className='dog-emoji-overlay';overlay.setAttribute('aria-live','polite');
+  overlay=document.createElement('div');
+  overlay.className='dog-emoji-overlay';overlay.setAttribute('aria-live','polite');
   overlay.innerHTML='<div class="dog-emoji-effect"><span class="dog-emoji-effect-icon"></span><span class="dog-emoji-effect-name"></span></div>';
   document.body.appendChild(overlay);
  }
@@ -27,10 +28,8 @@ export function showDogEmojiError(reason){
   EMOJI_LOCKED:'Dieses Emoji ist noch nicht freigeschaltet.',NO_DOG_MATCH:'DOG-Partie nicht aktiv.',
   NOT_A_PARTICIPANT:'Nur mitspielende Personen können Emojis senden.',NOT_A_MEMBER:'Du bist nicht mehr im Raum.'};
  const message=messages[reason]||'Emoji konnte nicht gesendet werden.';
- const label=popup?.querySelector('[data-emoji-game-status]');
- if(label)label.textContent=message;
- // Server may reject an emoji after the picker has closed. Report this
- // visibly without reopening the picker or blocking gameplay.
+ const status=panelRoot?.querySelector('[data-emoji-game-status]');
+ if(status)status.textContent=message;
  let toast=document.getElementById('dog-emoji-error-toast');
  if(!toast){
   toast=document.createElement('div');toast.id='dog-emoji-error-toast';
@@ -41,47 +40,48 @@ export function showDogEmojiError(reason){
  showDogEmojiError._timer=setTimeout(()=>{toast.hidden=true;},2600);
 }
 export function mountDogEmojiGame({send}){
- if(popup)return;
- popup=document.createElement('div');popup.className='dog-emoji-quickpick';popup.hidden=true;
- popup.setAttribute('role','group');popup.setAttribute('aria-label','DOG Emoji-Schnellauswahl');
- popup.innerHTML='<div class="dog-emoji-game-title">😄 Schnell-Emojis <button type="button" data-emoji-close aria-label="Schließen">×</button></div><div class="dog-emoji-game-grid" data-emoji-buttons></div><small data-emoji-game-status>In der DOG-Lobby anpassbar.</small>';
- document.body.appendChild(popup);
- const btnArea=popup.querySelector('[data-emoji-buttons]'),status=popup.querySelector('[data-emoji-game-status]');
+ if(panelRoot)return;
+ panelRoot=document.getElementById('dog-emoji-panel-root');
+ if(!panelRoot)return;
+ panelRoot.innerHTML='<p class="dog-emoji-panel-intro">Wähle ein Emoji. Es erscheint bei allen Spielern groß in der Bildschirmmitte.</p><div class="dog-emoji-panel-grid" data-emoji-buttons role="group" aria-label="Fünf Emoji-Schnelltasten"></div><p class="dog-emoji-panel-status" data-emoji-game-status role="status">Deine Schnelltasten kannst du in der DOG-Lobby anpassen.</p>';
+ const btnArea=panelRoot.querySelector('[data-emoji-buttons]');
+ const status=panelRoot.querySelector('[data-emoji-game-status]');
  let lastSend=-Infinity;
- function position(){
-  const anchor=document.querySelector('[data-dog-extra="emojis"]');
-  if(!anchor)return;
-  const rect=anchor.getBoundingClientRect(),width=popup.offsetWidth||330;
-  popup.style.left=Math.max(8,Math.min(innerWidth-width-8,rect.left-(width-rect.width)/2))+'px';
-  popup.style.top=Math.max(8,Math.min(innerHeight-popup.offsetHeight-8,rect.top-popup.offsetHeight-9))+'px';
- }
- function close(){popup.hidden=true;}
- function open(){
+ function renderSlots(){
   const slots=loadEmojiSlots();
   btnArea.replaceChildren(...slots.map((id,i)=>{
    const item=emojiById(id),button=document.createElement('button');button.type='button';
-   button.className='dog-emoji-game-tile';button.disabled=!item||!DOG_EMOJI_STARTERS.includes(id);
+   button.className='dog-emoji-panel-tile';
+   button.disabled=!item||!DOG_EMOJI_STARTERS.includes(id);
    button.title=item?item.name:'Leer – in der Lobby belegen';
    button.setAttribute('aria-label',item?item.name:'Schnellplatz '+(i+1)+' leer');
-   button.textContent=item?.emoji||'＋';
-   if(item)button.addEventListener('click',async()=>{
-    if(Date.now()-lastSend<5000){status.textContent='Noch einen Moment: 5 Sekunden Abklingzeit.';return;}
+   const icon=document.createElement('span');icon.className='dog-emoji-panel-icon';icon.textContent=item?.emoji||'＋';
+   const caption=document.createElement('small');caption.textContent=item?.name||'Frei';
+   button.append(icon,caption);
+   if(item&&DOG_EMOJI_STARTERS.includes(id))button.addEventListener('click',async()=>{
+    const remaining=5000-(Date.now()-lastSend);
+    if(remaining>0){status.textContent='Noch '+Math.ceil(remaining/1000)+' Sekunden bis zum nächsten Emoji.';return;}
     lastSend=Date.now();
-    close();
-    try{await send(id);}catch(e){lastSend=-Infinity;popup.hidden=false;showDogEmojiError(e?.message||'NOT_CONNECTED');}
+    status.textContent='Emoji wird gesendet …';
+    try{
+     await send(id);
+     // Do not hide the panel after sending: users can react again instantly
+     // once the server-enforced cooldown expires.
+     status.textContent='Emoji ausgewählt · Nächstes Emoji nach 5 Sekunden.';
+    }catch(e){
+     lastSend=-Infinity;
+     showDogEmojiError(e?.message||'NOT_CONNECTED');
+    }
    });
    return button;
   }));
-  status.textContent='Bis zu 5 Plätze · in der Lobby anpassen';
-  popup.hidden=false;
-  position();
  }
- window.addEventListener('dog-emojis-open',()=>popup.hidden?open():close());
- popup.querySelector('[data-emoji-close]').addEventListener('click',close);
- document.addEventListener('pointerdown',event=>{
-  if(popup?.hidden)return;
-  if(!popup.contains(event.target)&&!event.target.closest('[data-dog-extra="emojis"]'))close();
+ window.addEventListener('dog-extension-change',e=>{
+  if(e.detail?.id==='emojis'){
+   renderSlots();
+   status.textContent='Ein Emoji antippen, um es an alle Spieler zu senden.';
+  }
  });
- document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
- window.addEventListener('resize',()=>{if(!popup.hidden)position();});
+ window.addEventListener('dog-emojis-changed',renderSlots);
+ renderSlots();
 }
