@@ -439,3 +439,21 @@ dialog{color:#f5e9d6;background:#10283e;border:1px solid #ddb973;border-radius:1
   .studio-columns .preview-controls{min-height:35px;padding:5px 9px}
   .studio-columns .studio-live-layout .preview-screen{width:min(100%,calc(100dvh - 220px))}
 }
+
+/* Studio: subtle responses; preview coordinate geometry remains untouched. */
+.studio-tool-section:not([hidden]){animation:dog-studio-section-in .18s ease-out}
+.choice[aria-pressed="true"],.frame-choice[aria-pressed="true"]{animation:dog-studio-choice .27s ease-out}
+.preview-stage{transition:filter .22s ease}
+.preview-stage:has(.choice:focus-visible){filter:brightness(1.03)}
+.control:active,.choice:active{transform:scale(.98)}
+@keyframes dog-studio-section-in{
+ from{opacity:.67;transform:translateY(5px)}
+ to{opacity:1;transform:translateY(0)}
+}
+@keyframes dog-studio-choice{
+ from{filter:brightness(1.21)}
+ to{filter:brightness(1)}
+}
+@media(prefers-reduced-motion:reduce){
+ .studio-tool-section,.choice,.frame-choice,.preview-stage{animation:none!important;transition:none!important}
+}
