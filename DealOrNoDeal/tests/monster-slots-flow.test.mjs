@@ -70,7 +70,7 @@ function browserFixture(customPrizes=null){
    if(!listeners.has(e))listeners.set(e,[]);listeners.get(e).push(fn)
   },dispatchEvent:event=>{emit(event.type);return true}
  };
- const g={id:'11111111-1111-4111-8111-111111111111',phase:'final',monsterSlotsVersion:1,
+ const g={id:'11111111-1111-4111-8111-111111111111',phase:'final',monsterSlotsVersion:1,slotRewardVersion:3,
   finalValues:[{id:'host',payout:3000000},{id:'guest',payout:2000000},{id:'quiet',payout:1000000}]};
  const fillPrizes=(items,count)=>Array.from({length:count},(_,i)=>items[i]||{kind:'cash',id:null,label:(i+1)+',00 €',amountCents:(i+1)*100,quantity:1});
  const fetch=async(_url,options)=>{
@@ -451,4 +451,48 @@ test('mobile tab resumes the actual server-stage result without replaying delaye
  assert.equal(b.root.scrollTop,250);
  assert.equal(b.summary.hidden,false);
  assert.equal(b.requests.length,0,'reconciliation is local and must not consume Firestore writes');
+});
+
+
+test('modern shared finale reveals two runner-up prizes before six winner prizes',async()=>{
+ const b=browserFixture();
+ b.banker.hidden=true;
+ b.g.monsterSlotShow={phase:'ready',turn:'runner',uid:'guest',reels:2,
+  runnerUid:'guest',championUid:'host',activatedAt:b.now(),startedAt:null,prizes:[]};
+ b.window.person='quiet';b.emit('deal-game-state-change');await b.flush();
+ assert.equal(b.root.dataset.reels,'2');
+ assert.equal(b.reels.filter(x=>!x.reel.hidden).length,2);
+ assert.equal(b.accept.disabled,true,'spectator cannot spin for runner-up');
+ b.window.person='guest';b.emit('spielonline-change');await b.flush();
+ b.accept.click();await b.flush();
+ assert.equal(b.requests[0].operation,'spin');
+ assert.equal(b.summary.hidden,false,'both stopped prizes must appear in summary');
+ assert.equal(b.summaryPrizes.children.length,2);
+ b.summaryButton.click();await b.flush();
+ assert.equal(b.g.monsterSlotShow.turn,'champion');
+ assert.equal(b.g.monsterSlotShow.reels,6);
+ b.window.person='quiet';b.emit('spielonline-change');await b.flush();
+ assert.equal(b.root.dataset.reels,'6');
+ assert.equal(b.reels.filter(x=>!x.reel.hidden).length,6);
+ assert.equal(b.accept.disabled,true);
+ b.window.person='host';b.emit('spielonline-change');await b.flush();
+ b.accept.click();await b.flush();
+ assert.equal(b.requests[2].operation,'spin');
+ assert.equal(b.summaryPrizes.children.length,6,'all six server prizes are presented');
+ assert.ok(b.reels.every(x=>x.reel.dataset.phase==='won'));
+ b.summaryButton.click();await b.flush();
+ assert.equal(b.g.monsterSlotShow.phase,'ceremony');
+ assert.equal(b.requests.length,4,'exactly two spins and two confirmations');
+});
+
+test('legacy standalone 3/1 entitlement survives new six/two display code',()=>{
+ const b=browserFixture();
+ delete b.g.slotRewardVersion;
+ const rank=b.window.dealSlotReelsFor;
+ assert.equal(rank(b.g,'host'),3);
+ assert.equal(rank(b.g,'guest'),1);
+ assert.equal(rank(b.g,'quiet'),0);
+ b.g.slotRewardVersion=3;
+ assert.equal(rank(b.g,'host'),6);
+ assert.equal(rank(b.g,'guest'),2);
 });
