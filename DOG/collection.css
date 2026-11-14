@@ -1,7 +1,7 @@
 :root{color-scheme:dark;--gold:#f2cb76;--gold-soft:#c99b52;--cream:#fff1d4;--text:#f5f0e7;--muted:#c1d3de;--blue:#081d38}
 *{box-sizing:border-box}
 html{min-height:100%;background:#051426}
-body{margin:0;min-height:100dvh;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:var(--text);overflow-x:hidden;background:#061a31}
+body{margin:0;isolation:isolate;position:relative;min-height:100dvh;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:var(--text);overflow-x:hidden;background:#061a31}
 body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:linear-gradient(135deg,rgba(5,23,40,.49),rgba(2,17,35,.09) 50%,rgba(4,21,40,.48)),url("./assets/backgrounds/dog-hintergrund-magisches-schloss.png") center/cover no-repeat}
 body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 53% -10%,#ffd08b23,transparent 60%),linear-gradient(180deg,#031b388e,#041d3750 43%,#040f2560)}
 button,a{font:inherit}button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid #fff3b2;outline-offset:3px}
