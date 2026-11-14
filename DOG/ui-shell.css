@@ -858,3 +858,10 @@ main{width:calc(100% - 22px);max-width:1920px;margin:6px auto}
 @media(min-width:900px) and (orientation:landscape) and (max-height:950px){
  .right.dog-modules .dog-extras-grid .dog-extra-button{min-height:52px}
 }
+
+/* Compact permanent actions, no turn banner or history UI. */
+.right.dog-modules .dog-status-panel #turn{display:none!important}
+.right.dog-modules .dog-history-module{display:none!important}
+.right.dog-modules .dog-extras-panel .dog-extras-details{display:block!important}
+.right.dog-modules .dog-extras-panel .dog-extras-grid{display:grid!important}
+.right.dog-modules .dog-status-panel{padding-top:8px!important}
