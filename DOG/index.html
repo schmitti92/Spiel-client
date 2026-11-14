@@ -167,7 +167,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
     <section class="panel">
       <div class="hand-head"><h3 id="hand-title">Deine Karten</h3><button id="show-hand" class="reveal" type="button">🃏 Karten ansehen</button></div>
       <div class="hand" id="hand"></div>
-      <div class="move-help" id="move-help">Wähle eine Karte, um erlaubte Züge zu sehen.</div>
+      <div class="move-help" id="move-help">Wähle eine Karte und berechne deinen Zug selbst.</div>
       <div class="moves" id="moves"></div>
       <p id="selected-info"></p>
     </section>
@@ -181,7 +181,12 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
           <option value="4">4 Menschen (lokal)</option>
         </select>
       </div>
-      <h3 style="margin-top:17px">Spielverlauf <small>LETZTE ZÜGE</small></h3>
+      <div id="dog-card-test" class="controls" hidden style="margin-top:9px;padding:9px;border:1px dashed #c9a65a80;border-radius:10px">
+<label for="dog-test-card">🧪 Testkarte (nur lokal)</label>
+<select id="dog-test-card" aria-label="Testkarte auswählen"></select>
+<button type="button" class="move-button secondary" id="dog-give-test-card">Testkarte einsetzen</button>
+</div>
+<h3 style="margin-top:17px">Spielverlauf <small>LETZTE ZÜGE</small></h3>
       <div id="history" class="history"></div>
       <div id="status" class="status"></div>
     </section>
