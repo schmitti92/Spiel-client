@@ -324,7 +324,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
    do not support multiplying a CSS length by a variable inside calc(). */
 .hand .playing-card.dog-designed{width:var(--dog-hand-card-base)!important}
 </style>
-<link rel="stylesheet" href="./ui-shell.css?v=20"><link rel="stylesheet" href="./emoji-ui.css?v=4"><link rel="stylesheet" href="./motion.css?v=3">
+<link rel="stylesheet" href="./ui-shell.css?v=20"><link rel="stylesheet" href="./emoji-ui.css?v=4"><link rel="stylesheet" href="./motion.css?v=3"><link rel="stylesheet" href="./premium-cockpit.css?v=1">
 </head>
 <body>
 <!-- One floating menu replaces the large heading/nav and frees board height. -->
@@ -344,10 +344,22 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
   </nav>
 </div>
 <main>
+ <header class="dog-premium-ribbon" aria-label="DOG Spielstatus">
+   <div class="dog-premium-identity">
+     <span class="dog-premium-monogram" aria-hidden="true">D</span>
+     <span class="dog-premium-brandcopy"><strong>DOG <span>ROYAL</span></strong><small>DAS TEAM-BRETTSPIEL</small></span>
+   </div>
+   <div class="dog-premium-info">
+     <span class="dog-premium-pill" id="dog-premium-round" aria-label="Aktuelle Runde">Runde 1</span>
+     <span class="dog-premium-pill dog-premium-phase" id="dog-premium-phase">Kartenrunde</span>
+     <span class="dog-premium-live" id="dog-premium-now" aria-live="polite">Partie wird vorbereitet</span>
+   </div>
+ </header>
  <!-- Phase and round stay available for the game renderer, without a visible header. -->
  <div hidden style="display:none" aria-hidden="true"><span id="phase">Kartenrunde</span></div>
  <div class="layout">
    <section class="board-card" aria-label="DOG-Spielfeld">
+     <div class="dog-board-identity" aria-hidden="true"><span class="dog-board-identity-mark">✦</span><span>ROYAL BOARD</span></div>
      <div class="dog-board-zoom" aria-label="Spielfeld-Zoom">
 <button id="dog-zoom-out" type="button" aria-label="Spielfeld verkleinern" title="Spielfeld verkleinern">−</button>
 <span id="dog-zoom-label" aria-live="polite">100 %</span>
@@ -365,6 +377,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
    <aside class="right dog-modules" aria-label="DOG-Spielsteuerung">
      <!-- Module A: Spielstatus; live fields are the same as before. -->
      <section class="panel dog-status-panel" aria-label="Spieler und aktueller Zugstatus">
+       <div class="dog-premium-section-head"><span class="dog-section-ordinal">01</span><span>Spieler &amp; Teams</span><span class="dog-section-decoration" aria-hidden="true">◆</span></div>
        <!-- Game engine continues to update this hidden round counter. -->
        <span id="round" hidden style="display:none">1</span>
        <div class="turn" id="turn" hidden aria-live="polite">Karten werden ausgeteilt</div>
@@ -428,8 +441,8 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
        </div>
      </section>
      <!-- Module E: foldable history; local controls remain accessible. -->
-     <section class="panel dog-history-module" aria-label="Spielverlauf" hidden>
-       <details class="dog-history-details" open>
+     <section class="panel dog-history-module" aria-label="Spielverlauf">
+       <details class="dog-history-details">
          <summary class="dog-module-heading">
            <h2>📜 Spielverlauf – Letzte Züge</h2>
            <span class="dog-disclosure-arrow" aria-hidden="true">⌄</span>
@@ -454,8 +467,11 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
            </div>
          </details>
        </details>
+       </section>
+     <div class="dog-premium-statusline" role="group" aria-label="Aktueller Spielstatus">
+       <span class="dog-status-orb" aria-hidden="true"></span>
        <div id="status" class="status" role="status"></div>
-     </section>
+     </div>
    </aside>
  </div>
 </main>
@@ -549,7 +565,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 </script>
 <script type="module">
 import('./ui-shell.js?v=4').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
-import('./app.js?v=49').catch(error=>{
+import('./app.js?v=50').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
