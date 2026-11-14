@@ -46,76 +46,7 @@
 <link rel="stylesheet" href="skyjo_wald_theme.css?v=20.1">
 </head>
 <body>
-<script>
-/* Visual-only Wald selection; existing online engine owns game state. */
-(()=>{
- const q=new URLSearchParams(location.search);
- if(q.get('mode')!=='online')return;
- // Standalone rooms previously lacked board=wald, leaving the old Classic UI.
- // This online edition uses Wald for every online entry, including invite links.
- if(q.get('board')!=='wald'){
-  q.set('board','wald');
-  history.replaceState(history.state,'',location.pathname+'?'+q.toString()+location.hash);
- }
- // Wald styles are linked in the document head, identical to the local edition.
- document.body.dataset.skyjoLocalBoard='wald';
- /* The game engine may reset data-skyjo-theme to standard during renders.
-    Wald styling relies on the independent data-skyjo-local-board marker. */
- const playingBannerPresent=()=>!!document.getElementById('skyjo-wald-online-label');
- const check=()=>{
-  if(document.body.dataset.skyjoLocalBoard!=='wald')document.body.dataset.skyjoLocalBoard='wald';
-  // Clearly label the standalone room before play, not just the game board.
-  // One-device Wald preview uses the existing offline AI engine, not the online room.
-  const app=document.getElementById('app');
-  if(app && !document.getElementById('skyjo-wald-preview-link') && !document.body.classList.contains('is-playing')){
-   const anchor=document.createElement('a');
-   anchor.id='skyjo-wald-preview-link';
-   anchor.href='skyjo_action_local.html?mode=local&board=wald&testPlayers=2&layout=classic';
-   anchor.textContent='🌲 Waldlayout mit 2 Testspielern öffnen';
-   anchor.style.cssText='display:block;text-align:center;padding:13px 18px;margin:12px auto;max-width:680px;background:linear-gradient(135deg,#27754d,#134d3a);color:white;border:2px solid #c9a764;border-radius:12px;text-decoration:none;font:700 17px system-ui';
-   const setup=app.querySelector('#target');
-   if(setup){const panel=setup.closest('.panel')||setup.parentElement;panel?.prepend(anchor)}
-   else if(app.querySelector('.lobby-card'))app.querySelector('.lobby-card').prepend(anchor);
-  }
-  if(!playingBannerPresent()){
-   const app=document.getElementById('app');
-   if(app && app.querySelector('.topbar') && !document.body.classList.contains('is-playing')){
-    const tag=document.createElement('div');tag.id='skyjo-wald-online-label';
-    tag.textContent='🌲 SKYJO Wald · Online · genau 3 Spieler';
-    tag.style.cssText='text-align:center;padding:8px 12px;background:#174e3e;color:#f7e6b9;font:700 16px system-ui;border-radius:10px;margin:8px auto;max-width:680px';
-    app.prepend(tag);
-   }
-  }
-  // The standalone lobby is rendered dynamically and does not always use
-  // .lobby-card or #target. Anchor the Wald preview beside its real test button.
-  if(app && !document.body.classList.contains('is-playing')){
-   const buttons=Array.from(app.querySelectorAll('button'));
-   const classicTest=buttons.find(b=>/mit 2 Testspielern starten/i.test(b.textContent||''));
-   if(classicTest && !document.getElementById('skyjo-wald-preview-near-test')){
-    const forest=document.createElement('a');
-    forest.id='skyjo-wald-preview-near-test';
-    forest.href='skyjo_action_local.html?mode=local&board=wald&testPlayers=2&layout=classic';
-    forest.textContent='🌲 Waldlayout mit 2 Testspielern starten';
-    forest.style.cssText='display:block;box-sizing:border-box;width:100%;padding:14px;margin:9px 0;background:linear-gradient(135deg,#247a4f,#0c4937);border:2px solid #dbbc74;border-radius:12px;color:white;text-align:center;font:700 17px system-ui;text-decoration:none';
-    classicTest.insertAdjacentElement('afterend',forest);
-   }
-   // Replace misleading legacy copy without changing game-state rules.
-   for(const node of app.querySelectorAll('small,span,p,div')){
-    if(node.children.length)continue;
-    const value=(node.textContent||'').trim();
-    if(value==='Online spielbar mit 2 bis 5 Spielern')node.textContent='🌲 Wald Online: genau 3 Spieler';
-    else if(value==='5 Spieler' && node.closest('.setting-row,.setting-item,.setting'))node.textContent='3 Spieler';
-    else if(value==='Aktuell steht ausschließlich das klassische Spielfeld zur Verfügung.')node.textContent='🌲 Wald ist online aktiv. Zum Testen mit 2 Computergegnern den grünen Button wählen.';
-   }
-  }
-  // Do not infer player count from CSS classes. The engine and server validate
-  // the actual room participants; DOM geometry is not a reliable game-state source.
-  // Remove stale warnings left by older deployed versions of this entry script.
-  document.getElementById('wald-online-three-only')?.remove();
- };
- addEventListener('DOMContentLoaded',()=>{new MutationObserver(check).observe(document.getElementById('app')||document.body,{childList:true,subtree:true});check()});
-})();
-</script>
+
 <div id="app" class="app"></div>
 <div id="toast" class="toast"></div>
 <div id="modalBack" class="modal-back"><div id="modal" class="modal"></div></div>
