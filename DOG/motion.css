@@ -41,3 +41,129 @@
  .dog-status-panel .dog-active-emblem,
  .winner:not([hidden]){animation:none!important}
 }
+
+/* Phase A: distinct visual language for pieces, hands and card play. */
+:root{--dog-motion-scale:1}
+:root[data-dog-motion="fast"]{--dog-motion-scale:.62}
+.board-svg .dog-arrival-capture{stroke-dasharray:5 4;stroke-width:4.5;animation-name:dog-motion-capture}
+.board-svg .dog-arrival-goal{stroke:#f9da82;stroke-width:5;animation-name:dog-goal-shine}
+.board-svg .dog-arrival-swap{stroke-width:3.2;stroke-dasharray:8 3}
+.board-svg .dog-arrival-launch{stroke-width:4.5}
+.board-svg .dog-motion-arrival{animation-duration:calc(.46s * var(--dog-motion-scale))}
+.board-svg .dog-arrival-goal{animation-duration:calc(.75s * var(--dog-motion-scale))}
+@keyframes dog-motion-capture{
+ from{opacity:1;transform:scale(.45) rotate(0)}
+ to{opacity:0;transform:scale(1.65) rotate(35deg)}
+}
+@keyframes dog-goal-shine{
+ 0%{opacity:.95;transform:scale(.4)}
+ 40%{opacity:.85;transform:scale(1.25)}
+ 100%{opacity:0;transform:scale(1.9)}
+}
+/* The existing hand is preserved on duplicate renders, so effects finish. */
+.dog-hand-module .hand.dog-hand-dealt .playing-card.dog-designed{
+ animation:dog-hand-fan calc(.34s * var(--dog-motion-scale)) cubic-bezier(.2,.78,.22,1) both;
+}
+.dog-hand-module .hand.dog-hand-revealed .playing-card.dog-designed{
+ animation:dog-hand-reveal calc(.27s * var(--dog-motion-scale)) ease-out both;
+}
+.dog-hand-module .hand.dog-hand-dealt .playing-card:nth-child(2),
+.dog-hand-module .hand.dog-hand-revealed .playing-card:nth-child(2){animation-delay:calc(.035s * var(--dog-motion-scale))}
+.dog-hand-module .hand.dog-hand-dealt .playing-card:nth-child(3),
+.dog-hand-module .hand.dog-hand-revealed .playing-card:nth-child(3){animation-delay:calc(.065s * var(--dog-motion-scale))}
+.dog-hand-module .hand.dog-hand-dealt .playing-card:nth-child(4),
+.dog-hand-module .hand.dog-hand-revealed .playing-card:nth-child(4){animation-delay:calc(.095s * var(--dog-motion-scale))}
+.dog-hand-module .hand.dog-hand-dealt .playing-card:nth-child(5),
+.dog-hand-module .hand.dog-hand-revealed .playing-card:nth-child(5){animation-delay:calc(.125s * var(--dog-motion-scale))}
+.dog-hand-module .hand.dog-hand-dealt .playing-card:nth-child(6),
+.dog-hand-module .hand.dog-hand-revealed .playing-card:nth-child(6){animation-delay:calc(.155s * var(--dog-motion-scale))}
+@keyframes dog-hand-fan{
+ from{opacity:.65;transform:translateY(12px) rotate(-3deg) scale(.95)}
+ to{opacity:1;transform:translateY(0) rotate(0) scale(1)}
+}
+@keyframes dog-hand-reveal{
+ from{opacity:.25;transform:rotateY(-32deg) scale(.97)}
+ to{opacity:1;transform:rotateY(0) scale(1)}
+}
+.dog-pile-art.dog-discard-played{
+ animation:dog-card-played calc(.44s * var(--dog-motion-scale)) cubic-bezier(.15,.65,.2,1) both;
+}
+.dog-pile-art.dog-deck-shuffled,
+.dog-pile-art.dog-phase-changed{
+ animation:dog-deck-tap calc(.48s * var(--dog-motion-scale)) ease-out both;
+}
+.dog-pile-art.discard[data-dog-played="7"]{--dog-played-color:#f9a965}
+.dog-pile-art.discard[data-dog-played="joker"]{--dog-played-color:#d99dff}
+.dog-pile-art.discard[data-dog-played="swap"]{--dog-played-color:#80d2ff}
+@keyframes dog-card-played{
+ 0%{transform:translateY(-11px) rotate(-4deg) scale(.94);filter:brightness(1.5);box-shadow:0 0 19px var(--dog-played-color,#ffe0a3)}
+ 100%{transform:translateY(0) rotate(0) scale(1);filter:brightness(1);box-shadow:3px 4px 0 #020c17,5px 7px 9px #0008}
+}
+@keyframes dog-deck-tap{
+ 0%,100%{transform:translateY(0)}
+ 35%{transform:translateY(-5px) rotate(-4deg)}
+ 70%{transform:translateY(-1px) rotate(2deg)}
+}
+/* Phase B: a short turn cue is more useful than constant full-panel blinking. */
+.dog-status-panel .seat.on.dog-seat-turn-enter{
+ animation:dog-turn-enter calc(.56s * var(--dog-motion-scale)) ease-out both;
+}
+.dog-status-panel .seat.on .dog-active-emblem{
+ animation-duration:calc(3.4s * var(--dog-motion-scale));
+}
+@keyframes dog-turn-enter{
+ 0%{filter:brightness(1);transform:translateY(3px)}
+ 50%{filter:brightness(1.27);transform:translateY(-1px)}
+ 100%{filter:brightness(1);transform:translateY(0)}
+}
+.dog-board-invalid{
+ animation:dog-board-invalid calc(.39s * var(--dog-motion-scale)) ease-in-out;
+}
+@keyframes dog-board-invalid{
+ 0%,100%{filter:brightness(1)}
+ 30%,68%{filter:brightness(1.22)}
+}
+.dog-move-pending .board-card{--dog-pending-color:#e5b85e}
+.dog-move-pending .status::before{
+ content:"◌";color:var(--dog-pending-color);display:inline-block;margin-right:5px;
+ animation:dog-pending-spin calc(.85s * var(--dog-motion-scale)) linear infinite;
+}
+@keyframes dog-pending-spin{to{transform:rotate(360deg)}}
+.winner.dog-victory-spotlight::before{
+ content:"✦   ✨   ✦";display:block;position:absolute;left:0;right:0;top:-10px;text-align:center;
+ font-size:18px;pointer-events:none;color:#ffe29a;
+ animation:dog-victory-stars calc(1.05s * var(--dog-motion-scale)) ease-out forwards;
+}
+.winner{position:relative}
+@keyframes dog-victory-stars{
+ 0%{opacity:0;transform:translateY(16px) scale(.8)}
+ 40%{opacity:1}
+ 100%{opacity:0;transform:translateY(-12px) scale(1.2)}
+}
+/* Phase C: compact surfaces respond without taking over the screen. */
+.dog-menu-panel:not([hidden]),.dog-extension-panel:not([hidden]){
+ animation:dog-surface-enter calc(.2s * var(--dog-motion-scale)) ease-out both;
+}
+dialog[open]{animation:dog-dialog-enter calc(.2s * var(--dog-motion-scale)) cubic-bezier(.2,.75,.3,1) both}
+dialog[open]::backdrop{animation:dog-backdrop-enter calc(.2s * var(--dog-motion-scale)) ease-out both}
+.dog-menu-toggle,.dog-extras-grid button,.dog-board-zoom button,.dog-appearance-buttons button{
+ transition:transform .16s ease,filter .16s ease;
+}
+.dog-menu-toggle:active,.dog-extras-grid button:active,.dog-board-zoom button:active,.dog-appearance-buttons button:active{
+ transform:scale(.95);filter:brightness(1.12)
+}
+@keyframes dog-surface-enter{
+ from{opacity:.55;transform:translateY(-6px)}
+ to{opacity:1;transform:translateY(0)}
+}
+@keyframes dog-dialog-enter{
+ from{opacity:.5;transform:translateY(10px) scale(.98)}
+ to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes dog-backdrop-enter{from{opacity:0}to{opacity:1}}
+/* The accessibility preference always takes precedence over the speed setting. */
+:root[data-dog-motion="off"] *, :root[data-dog-motion="off"] *::before,
+:root[data-dog-motion="off"] *::after{animation:none!important;transition-duration:0s!important;scroll-behavior:auto!important}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation:none!important;transition-duration:0s!important;scroll-behavior:auto!important}
+}
