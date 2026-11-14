@@ -492,3 +492,79 @@ test('giant jackpot layout includes fireworks, named owner, large price, reduced
  assert.match(css,/@media\(max-height:470px\)/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
 });
+
+
+
+test('Grand jackpot is three synchronized acts and the last legendary reel finishes before confirmation',()=>{
+ const app={};new Function('window',read('skyjo_tore_special.js'))(app);
+ const x=app.SkyjoToreSpecial;
+ const normal={prizes:Array.from({length:12},()=>({kind:'cash',rarity:'common'}))};
+ const lastLegendary={prizes:Array.from({length:12},(_,i)=>({kind:'cash',rarity:i===11?'legendary':'common',label:'Geld '+i}))};
+ const lastMythic={prizes:Array.from({length:12},(_,i)=>({kind:'cash',rarity:i===11?'mythic':'common',label:'Geld '+i}))};
+ assert.equal(x.showDuration(normal),10500,'Normal slot timing is unchanged');
+ assert.equal(x.showDuration(lastLegendary),3000+11*470+3100);
+ assert.equal(x.showDuration(lastMythic),3000+11*470+3700);
+ const when=3000+11*470;
+ const hit=x.featuredJackpot(lastLegendary,when);
+ assert.equal(hit.index,11);
+ assert.equal(x.jackpotStage(hit,when),'impact');
+ assert.equal(x.jackpotStage(hit,when+649),'impact');
+ assert.equal(x.jackpotStage(hit,when+650),'reveal');
+ assert.equal(x.jackpotStage(hit,when+1549),'reveal');
+ assert.equal(x.jackpotStage(hit,when+1550),'victory');
+ assert.equal(x.featuredJackpot(lastLegendary,when+3100),null);
+ assert.equal(x.jackpotStage(null,0),'');
+});
+test('Every rare reel can be celebrated even immediately after a higher tier',()=>{
+ const app={};new Function('window',read('skyjo_tore_special.js'))(app);
+ const x=app.SkyjoToreSpecial;
+ const batch={prizes:[
+  {kind:'cash',rarity:'legendary',label:'1.000.000 €'},
+  {kind:'cash',rarity:'epic',label:'250.000 €'},
+  {kind:'chest',rarity:'common',label:'Holzkiste'}
+ ]};
+ assert.equal(x.featuredJackpot(batch,3000).rarity,'legendary');
+ assert.equal(x.featuredJackpot(batch,4500).rarity,'epic',
+  'Later epic wins get an individual spotlight rather than being hidden by an earlier legendary');
+ assert.equal(x.featuredJackpot(batch,4500+2300),null);
+ assert.equal(x.showDuration(batch),7800,'Existing base time is enough for this batch');
+});
+test('Bigger 3-stage epic and legendary stage contains confetti, spotlights and mobile-safe controls',()=>{
+ const app={};new Function('window',read('skyjo_tore_special.js'))(app);
+ const x=app.SkyjoToreSpecial;
+ const original=globalThis.document;
+ globalThis.document={
+  createElement:tag=>({dataset:{},setAttribute(){},focus(){},innerHTML:''}),
+  body:{append(){}}
+ };
+ try{
+  const show={id:'stage',index:0,batch:0,phase:'rolling',players:[{
+   uid:'p1',name:'Vanessa',slots:12,missionSlots:8,winnerSlots:2,bonusSlots:2,missionIds:[],winner:true,
+   prizes:Array.from({length:12},(_,i)=>({rarity:i===11?'legendary':'common',label:'Preis '+i,kind:'cash'}))
+  }]};
+  const root=x.createOverlay({},show),html=root.innerHTML;
+  assert.equal((html.match(/<div\b/g)||[]).length,(html.match(/<\/div>/g)||[]).length);
+  assert.equal((html.match(/style="--piece:/g)||[]).length,22);
+  assert.match(html,/skyjo-cinematic-spotlight-left/);
+  assert.match(html,/skyjo-cinematic-spotlight-right/);
+  assert.match(html,/skyjo-cinematic-shockwave/);
+  assert.match(html,/skyjo-cinematic-ring/);
+  assert.match(html,/id="skyjo-cinematic-phase-label"/);
+  assert.match(html,/id="skyjo-cinematic-bottom"/);
+  assert.match(html,/skyjo-slot-action-dock/);
+  assert.match(html,/id="monster-slot-accept"/);
+  assert.equal(root.dataset.reels,'12');
+ }finally{globalThis.document=original;}
+ const css=read('skyjo_tore_special.css');
+ assert.match(css,/GRAND JACKPOT 2/);
+ assert.match(css,/@keyframes skyjo-grand-impact/);
+ assert.match(css,/@keyframes skyjo-grand-confetti/);
+ assert.match(css,/@keyframes skyjo-grand-left/);
+ assert.match(css,/data-stage="impact"/);
+ assert.match(css,/data-stage="reveal"/);
+ assert.match(css,/data-stage="victory"/);
+ assert.match(css,/pointer-events:none!important/);
+ assert.match(css,/z-index:45!important/);
+ assert.match(css,/@media\(max-width:610px\)/);
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+});
