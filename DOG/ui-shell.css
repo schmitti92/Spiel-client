@@ -780,3 +780,37 @@ main{width:calc(100% - 22px);max-width:1920px;margin:6px auto}
 .dog-hand-module .dog-module-heading{min-height:0;padding:0!important;margin:0!important;border:0!important}
 .dog-hand-module #show-hand:not([hidden]){margin:5px 7px}
 .dog-hand-module .hand{margin-top:0!important}
+
+/* Royal active player: golden crown/emblem only on the current seat. */
+.dog-status-panel .seat{position:relative}
+.dog-status-panel .seat.on{
+  background:linear-gradient(120deg,rgba(94,57,12,.95),rgba(51,33,11,.96) 56%,rgba(26,25,26,.94))!important;
+  border:2px solid #ffd45b!important;
+  border-left:3px solid #ffe38a!important;
+  box-shadow:0 0 0 1px rgba(255,245,177,.6),0 0 16px 3px rgba(255,181,31,.74),inset 0 0 17px rgba(255,195,64,.3)!important;
+  overflow:visible;
+  z-index:2;
+}
+.dog-status-panel .seat.on .dog-seat-avatar{
+  border-color:#ffe189;
+  box-shadow:0 0 0 2px #b8791d,0 0 12px 3px rgba(255,204,78,.68);
+}
+.dog-status-panel .seat.on .seat-name{
+  color:#fff0b5;
+  text-shadow:0 0 7px rgba(255,201,83,.48);
+}
+.dog-status-panel .dog-active-emblem{
+  position:absolute;
+  top:-16px;
+  left:22px;
+  display:grid;
+  place-items:center;
+  width:32px;
+  height:26px;
+  font-size:25px;
+  line-height:1;
+  z-index:5;
+  filter:drop-shadow(0 2px 2px #301a03) drop-shadow(0 0 5px #ffc84a);
+  pointer-events:none;
+}
+@media(max-width:540px){.dog-status-panel .dog-active-emblem{left:19px}}
