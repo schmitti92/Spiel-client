@@ -16,6 +16,7 @@ function beginRound(){
  state.setupOrderPos=0;state.setupPlayer=state.setupOrder[0]??0;state.setupRevealed=0;state.currentPlayer=starter;
  ui={mode:'setupReveal',data:{},selected:[]};
  log(`Runde ${state.round} beginnt${state.round>1?` · ${state.players[starter].name} beginnt als Rundenbeender der vorherigen Runde.`:'.'}`);
+ window.SkyjoToreSpecial?.beginRound(state);
  save();render();toast(`${state.players[state.setupPlayer].name}: Decke 2 Karten auf`);scheduleAIIfNeeded()
 }
 function takePlayDirect(){return state.playDeck.pop()}
