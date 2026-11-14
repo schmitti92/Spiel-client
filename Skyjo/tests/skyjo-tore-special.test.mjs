@@ -373,3 +373,50 @@ test('Phone and landscape layouts keep readable reels and a permanently visible 
  assert.match(css,/height:calc\(100dvh - 8px\)!important/);
  assert.match(css,/touch-action:manipulation/);
 });
+
+
+test('Epic and legendary slot rewards have visible, readable rarity markers for every player',()=>{
+ const src=read('skyjo_tore_special.js'),css=read('skyjo_tore_special.css');
+ assert.match(src,/class="skyjo-slot-rarity-flag" hidden/);
+ assert.match(src,/epic:'💜 EPISCH'/);
+ assert.match(src,/legendary:'👑 LEGENDÄR'/);
+ assert.match(src,/mythic:'🌟 MYTHISCH'/);
+ assert.match(src,/badge\.textContent=rarityNames\[p\.rarity\]/);
+ assert.match(src,/badge\.hidden=!rarityNames\[p\.rarity\]/);
+ assert.match(src,/skyjo-slot-jackpot-alert/);
+ assert.match(src,/data(?:set)?\.rarity=p\.rarity\|\|'common'/);
+ assert.match(src,/rarityNames\[p\.rarity\]\?' · '\+rarityNames\[p\.rarity\]/);
+ assert.match(css,/data-rarity="epic"/);
+ assert.match(css,/data-rarity="legendary"/);
+ assert.match(css,/data-rarity="mythic"/);
+ assert.match(css,/skyjo-epic-glow/);
+ assert.match(css,/skyjo-legendary-glow/);
+ assert.match(css,/skyjo-mythic-glow/);
+ assert.match(css,/@media\(max-width:610px\)/);
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+});
+test('Rarity badges do not change synchronized slot awards or 12-reel ordering',()=>{
+ const app={};new Function('window',read('skyjo_tore_special.js'))(app);
+ const x=app.SkyjoToreSpecial;
+ const show={index:0,batch:0,id:'shared',players:[{
+  uid:'winner',name:'Chris',missionSlots:8,winnerSlots:2,bonusSlots:2,slots:12,
+  missionIds:['m1','m2'],winner:true,
+  prizes:Array.from({length:12},(_,i)=>({kind:'cash',label:'Geld '+i,
+   rarity:i===5?'epic':i===7?'legendary':i===11?'mythic':'common'}))
+ }]};
+ const before=JSON.stringify(show.players[0].prizes);
+ assert.equal(x.currentBatch(show).prizes.length,12);
+ assert.equal(JSON.stringify(show.players[0].prizes),before);
+ const prev=globalThis.document;
+ globalThis.document={
+  createElement:tag=>({dataset:{},setAttribute(){},focus(){},innerHTML:''}),
+  body:{append(){}}
+ };
+ try{
+  const root=x.createOverlay({},show);
+  assert.equal((root.innerHTML.match(/class="skyjo-slot-rarity-flag" hidden/g)||[]).length,12);
+  assert.match(root.innerHTML,/skyjo-slot-jackpot-alert/);
+  assert.match(root.innerHTML,/aria-live="polite"/);
+  assert.equal(root.dataset.reels,'12');
+ }finally{globalThis.document=prev;}
+});
