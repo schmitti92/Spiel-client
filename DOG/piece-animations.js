@@ -94,6 +94,7 @@ export function createPieceAnimator(svg) {
   function cancel() {
     if (frame) cancelAnimationFrame(frame);
     svg.querySelectorAll('.dog-motion-arrival').forEach(node=>node.remove());
+    svg.removeAttribute('aria-busy');
     frame = 0;
     for (const item of active) {
       item.node.removeAttribute('transform');
@@ -117,11 +118,26 @@ export function createPieceAnimator(svg) {
         : motion.kind === 'relocate' ? 330
         : Math.min(1650, 250 + steps * 102);
       const duration=baseDuration*factor;
+      // Keep the token at its previous field BEFORE the first animation frame.
+      // Otherwise the freshly drawn final board flickers for one browser frame.
+      const start=motion.points[0],end=motion.points.at(-1);
+      node.setAttribute('transform','translate('+(start.x-end.x).toFixed(2)+' '+(start.y-end.y).toFixed(2)+')');
       node.classList.add('dog-pawn-moving');
-      active.push({node, motion, duration, color: colors[motion.owner] || '#f3dba2', done: false});
+      active.push({node, motion, duration, delay:0, color: colors[motion.owner] || '#f3dba2', done: false});
     }
     if (!active.length) return 0;
-    const maxDuration = Math.max(...active.map(x => x.duration));
+    // The seven can knock out multiple tokens at different intermediate fields.
+    // Start each capture only when the moving piece reaches that field.
+    for(const captured of active.filter(item=>item.motion.kind==='capture')){
+      const hit=captured.motion.points[0];
+      for(const walker of active.filter(item=>!['capture','swap'].includes(item.motion.kind))){
+        const steps=walker.motion.points.length-1;
+        const at=walker.motion.points.findIndex((p,i)=>i>0&&Math.hypot(p.x-hit.x,p.y-hit.y)<.05);
+        if(at!==-1){captured.delay=Math.max(0,(at-.6)/steps*walker.duration);break;}
+      }
+    }
+    svg.setAttribute('aria-busy','true');
+    const maxDuration = Math.max(...active.map(x => x.duration+x.delay));
     function arrival(item) {
       item.node.removeAttribute('transform');
       item.node.style.opacity = '';
@@ -145,7 +161,9 @@ export function createPieceAnimator(svg) {
       let pending = false;
       for (const item of active) {
         if (item.done) continue;
-        const t = Math.min(1, Math.max(0, (now - started) / item.duration));
+        const elapsed=now-started-item.delay;
+        if(elapsed<0){pending=true;continue;}
+        const t = Math.min(1, Math.max(0, elapsed / item.duration));
         const pts = item.motion.points;
         const end = pts[pts.length - 1];
         let x, y, lift = 0;
@@ -174,7 +192,7 @@ export function createPieceAnimator(svg) {
         } else pending = true;
       }
       if (pending) frame = requestAnimationFrame(tick);
-      else {frame = 0; active = [];}
+      else {frame = 0; active = [];svg.removeAttribute('aria-busy');}
     }
     frame = requestAnimationFrame(tick);
     return maxDuration;
