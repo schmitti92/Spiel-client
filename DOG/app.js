@@ -202,7 +202,6 @@ function drawBoard(){
     }
   }
   // No move hints: destinations must be calculated by the player.
-  const targets=new Set();
   // Pawns on top, always staying attached to their logical position.
   for(const piece of game.pieces){
     const p=piecePoint(piece),color=safeColor(piece.owner),hi=selectedPiece===piece.id;
@@ -330,10 +329,11 @@ function scheduleAI(){
 $('hand').addEventListener('click',e=>{const btn=e.target.closest('[data-card]');if(btn)onCard(Number(btn.dataset.card));});
 $('moves').addEventListener('click',e=>{const btn=e.target.closest('[data-special]');if(!btn)return;const index=available.findIndex(m=>m.type===btn.dataset.special);if(index>=0)onMove(index);});
 $('board').addEventListener('click',e=>{
- if(!revealed||currentHuman()<0)return;
+ if(!revealed||currentHuman()<0||onlineBusy)return;
  const node=e.target.closest('[data-piece]');
  if(node&&selectedPiece===null){if(!available.some(m=>m.pieceId===Number(node.dataset.piece)))return;selectedPiece=Number(node.dataset.piece);drawBoard();$('move-help').textContent='Wähle das Zielfeld selbst.';return;}
  if(node&&Number(node.dataset.piece)===selectedPiece){selectedPiece=null;drawBoard();$('move-help').textContent='Figur abgewählt.';return;}
+ if(node&&available.some(m=>m.pieceId===Number(node.dataset.piece))&&Number(node.dataset.piece)!==selectedPiece){selectedPiece=Number(node.dataset.piece);drawBoard();$('move-help').textContent='Andere Figur gewählt. Jetzt Zielfeld antippen.';return;}
  if(selectedPiece===null)return;
  const matrix=$('board').getScreenCTM();if(!matrix)return;
  const p=new DOMPoint(e.clientX,e.clientY).matrixTransform(matrix.inverse());
@@ -344,7 +344,7 @@ $('board').addEventListener('click',e=>{
  const matches=available.map((m,i)=>({m,i})).filter(({m})=>{
   if(m.pieceId!==selectedPiece)return false;
   if(m.type==='swap')return !!node&&m.targetId===Number(node.dataset.piece);
-  if(m.type==='start')return dest?.key==='track:'+(game.pieces[selectedPiece].owner*16);
+  if(m.type==='start')return !node&&dest?.key==='track:'+(game.pieces[selectedPiece].owner*16);
   return dest&&['move','seven-step'].includes(m.type)&&m.to===dest.key&&(dest.seat===undefined||dest.seat===game.pieces[selectedPiece].owner);
  });
  if(matches.length===1){onMove(matches[0].i);return;}
