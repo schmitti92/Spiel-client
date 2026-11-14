@@ -1,10 +1,10 @@
-import {BOARD_STYLES,loadAppearance,saveAppearance} from './appearance-registry.js?v=13';
+import {BOARD_STYLES,loadAppearance,saveAppearance} from './appearance-registry.js?v=14';
 
-const ORDER=['studio','schiefer','pergament','holz','bergsee','goldwellen','royalMarmor','alpenland','kuestenabenteuer','royalKarten','zauberwald'];
+const ORDER=['studio','schiefer','pergament','holz','bergsee','goldwellen','royalMarmor','maerchental','alpenland','kuestenabenteuer','royalKarten','zauberwald'];
 const FALLBACK='linear-gradient(140deg,#243e52,#081524)';
 const resolveBoardArt=theme=>{
  const file=theme?.image;
- return typeof file==='string'&&/^\.\/assets\/boards\/[a-z0-9_-]+\.(?:svg|webp)$/.test(file)
+ return typeof file==='string'&&(/^\.\/assets\/boards\/[a-z0-9_-]+\.(?:svg|webp)$/.test(file)||/^\.\/Bilder\/Spielhintergrundbilder\/[a-z0-9_-]+\.webp$/.test(file))
   ?new URL(file,import.meta.url).href:null;
 };
 const pickers=[...document.querySelectorAll('[data-dog-board-picker]')];
