@@ -306,7 +306,7 @@ function advance(){
  const game=bridge?.getState(),show=game?.skyjoSpecial?.show;
  if(!active(game)||!show||show.phase!=='rolling'||!actorAllowed(show))return;
  const batch=currentBatch(show);
- if(!batch||stageNow(show)-show.startedAt<DURATION(batch.prizes.length))return;
+ if(!batch||stageNow(show)-show.startedAt<showDuration(batch))return;
  if(show.batch+1<batch.total){show.batch++;show.phase='ready';show.activatedAt=stageNow(show);show.startedAt=0;}
  else if(show.index+1<show.players.length){show.index++;show.batch=0;show.phase='ready';show.activatedAt=stageNow(show);show.startedAt=0;}
  else{game.skyjoSpecial.show=null;game.skyjoSpecial.finished=true;}
@@ -341,10 +341,30 @@ function featuredJackpot(batch,elapsed){
   if(!rank)continue;
   const when=STOP(batch.prizes.length,i),age=elapsed-when;
   if(age<0||age>=duration[prize.rarity])continue;
-  if(!best||rank>best.rank||rank===best.rank&&when>best.when)
+  // Each NEW high-tier hit gets its moment, even if an earlier, higher-tier
+  // reward is still glowing. The show belongs to the most recently stopped reel.
+  if(!best||when>best.when)
    best={index:i,rank,when,rarity:prize.rarity,label:String(prize.label||'Besonderer Gewinn')};
  }
  return best;
+}
+// All three phases are derived from shared slot time, not local timeouts.
+// They therefore resume at the correct phase after a reconnect.
+function jackpotStage(scene,elapsed){
+ if(!scene)return '';
+ const age=elapsed-scene.when;
+ return age<650?'impact':age<1550?'reveal':'victory';
+}
+// Never allow the owner to confirm before an important last-reel celebration
+// has had its full on-screen window; no change to prizes or payouts.
+function showDuration(batch){
+ if(!batch)return 0;
+ const extras={epic:2300,legendary:3100,mythic:3700};
+ let finish=DURATION(batch.prizes.length);
+ batch.prizes.forEach((p,i)=>{
+  if(extras[p.rarity])finish=Math.max(finish,STOP(batch.prizes.length,i)+extras[p.rarity]);
+ });
+ return finish;
 }
 function createOverlay(game,show){
  const batch=currentBatch(show);if(!batch)return null;
@@ -405,13 +425,21 @@ function createOverlay(game,show){
     '<div class="skyjo-cinematic-rays"></div>'+
     '<div class="skyjo-cinematic-stars">'+Array.from({length:16},(_,i)=>
      '<i style="--star:'+i+'" aria-hidden="true">✦</i>').join('')+'</div>'+
+    '<div class="skyjo-cinematic-spotlight skyjo-cinematic-spotlight-left"></div>'+
+    '<div class="skyjo-cinematic-spotlight skyjo-cinematic-spotlight-right"></div>'+
+    '<div class="skyjo-cinematic-ring"></div>'+
+    '<div class="skyjo-cinematic-shockwave"></div>'+
+    '<div class="skyjo-cinematic-confetti">'+Array.from({length:22},(_,i)=>
+     '<b style="--piece:'+i+'" aria-hidden="true">✦</b>').join('')+'</div>'+
     '<div class="skyjo-cinematic-card">'+
+      '<div class="skyjo-cinematic-rank">✦ ✦ ✦ ✦ ✦</div>'+
       '<div class="skyjo-cinematic-icon" id="skyjo-cinematic-icon">👑</div>'+
       '<div class="skyjo-cinematic-overline">🎰 MONSTER SLOTS · SPEZIALGEWINN 🎰</div>'+
       '<div class="skyjo-cinematic-title" id="skyjo-cinematic-title">LEGENDÄR</div>'+
       '<div class="skyjo-cinematic-owner" id="skyjo-cinematic-owner"></div>'+
       '<div class="skyjo-cinematic-prize" id="skyjo-cinematic-prize"></div>'+
-      '<div class="skyjo-cinematic-bottom">✦ EIN BESONDERER MOMENT ✦</div>'+
+      '<div class="skyjo-cinematic-phase-label" id="skyjo-cinematic-phase-label">✦ GRANDIOSER TREFFER ✦</div>'+
+      '<div class="skyjo-cinematic-bottom" id="skyjo-cinematic-bottom">✦ EIN BESONDERER MOMENT ✦</div>'+
     '</div>'+
   '</div>'+
   '<div class="skyjo-slot-action-dock">'+
@@ -426,7 +454,7 @@ function createOverlay(game,show){
 function renderPrizes(root,show){
  const batch=currentBatch(show);if(!batch)return;
  const n=batch.prizes.length,now=stageNow(show),elapsed=show.phase==='rolling'?now-show.startedAt:-999999;
- const done=show.phase==='rolling'&&elapsed>=DURATION(n);
+ const done=show.phase==='rolling'&&elapsed>=showDuration(batch);
  const actor=actorAllowed(show),isMine=batch.player.uid===me()?.uid;
  const reels=[...root.querySelectorAll('.monster-slot-reel')],lights=[...root.querySelectorAll('.monster-slot-progress span')];
  const rarityNames={epic:'💜 EPISCH',legendary:'👑 LEGENDÄR',mythic:'🌟 MYTHISCH'};
@@ -516,11 +544,22 @@ function renderPrizes(root,show){
     cinematic.querySelector('#skyjo-cinematic-owner').textContent=
      '🎉 '+batch.player.name+' HAT GEWONNEN!';
     cinematic.querySelector('#skyjo-cinematic-prize').textContent=scene.label;
+    cinematic.querySelector('#skyjo-cinematic-bottom').textContent=
+     '✦ WALZE '+String(batch.offset+scene.index+1).padStart(2,'0')+
+     ' VON '+(batch.offset+batch.prizes.length)+' ✦';
     cinematic.classList.remove('is-live');
     cinematic.hidden=false;
     // Restart CSS motion only when the winning reel changes, never each frame.
     void cinematic.offsetWidth;
     cinematic.classList.add('is-live');
+   }
+   const phaseName=jackpotStage(scene,elapsed);
+   if(cinematic.dataset.stage!==phaseName){
+    cinematic.dataset.stage=phaseName;
+    const cue=cinematic.querySelector('#skyjo-cinematic-phase-label');
+    if(cue)cue.textContent=phaseName==='impact'?'⚡ UNGLAUBLICHER TREFFER! ⚡':
+     phaseName==='reveal'?'✨ EIN SENSATIONELLER GEWINN! ✨':
+     '🏆 '+batch.player.name+' · JACKPOT-MOMENT! 🏆';
    }
   }
  }
@@ -610,5 +649,5 @@ function attach(gameAPI,b){
 }
 window.SkyjoToreSpecial={newGame,beginRound,trackRemove,scan,hud,nextButton,canNextRound,attach,render,
  missionsFor,missionDone,bonusIndex,bonusAchieved,bonusCellsFor,slotBreakdown,currentBatch,playerSpotlight,
- clockOffsetFromSample,createOverlay,featuredJackpot,definitions:DEFINITIONS};
+ clockOffsetFromSample,createOverlay,featuredJackpot,jackpotStage,showDuration,definitions:DEFINITIONS};
 })();
