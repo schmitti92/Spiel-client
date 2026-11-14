@@ -168,3 +168,25 @@ button{touch-action:manipulation}
  .detail-image .hud-preview-seat b{font-size:9px}
  .detail-image .hud-preview-controls span{min-height:24px;font-size:16px}
 }
+
+/* DOG collection animations: selection/preview only, no artificial unlock events. */
+.collection-tile.is-selected{animation:dog-collection-select .25s ease-out}
+.collection-tile:active{transform:scale(.985)}
+.collection-detail-content .detail-image{animation:dog-collection-preview .27s cubic-bezier(.22,.85,.3,1) both}
+.collection-detail-content .detail-button:not(:disabled):active{transform:scale(.98)}
+.collection-toast:not([hidden]){animation:dog-collection-toast .2s ease-out both}
+@keyframes dog-collection-select{
+ from{filter:brightness(1.3);box-shadow:0 0 0 0 #ffdb75}
+ to{filter:brightness(1);box-shadow:0 0 0 2px #ffdb756e,0 0 17px #fbd363a8,0 8px 13px #0009}
+}
+@keyframes dog-collection-preview{
+ from{opacity:.75;transform:translateY(7px) scale(.99)}
+ to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes dog-collection-toast{
+ from{opacity:0;transform:translate(-50%,8px)}
+ to{opacity:1;transform:translate(-50%,0)}
+}
+@media(prefers-reduced-motion:reduce){
+ .collection-tile,.collection-detail-content .detail-image,.collection-toast{animation:none!important}
+}
