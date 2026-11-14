@@ -7,20 +7,11 @@ import {loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=1';
 // only an explicit avatar update in an active room uses the existing DOG API.
 const $=id=>document.getElementById(id),qs=new URLSearchParams(location.search),root=new URL('../',location.href);
 function returnPage(){
- try{
-  const u=new URL(qs.get('return')||'../hub-lobby.html',location.href),file=u.pathname.split('/').pop();
-  if(u.origin!==location.origin||!['hub-lobby.html','spielauswahl-lokal.html'].includes(file)||u.pathname!==root.pathname+file)throw Error('invalid');
-  if(file==='spielauswahl-lokal.html'){
-   const destination=new URL('../hub-lobby.html',location.href);
-   destination.searchParams.set('view','local');
-   const room=u.searchParams.get('room');
-   if(room&&/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/i.test(room))destination.searchParams.set('room',room);
-   return destination;
-  }
-  return u;
- }catch{return new URL('../hub-lobby.html',location.href);}
+ try{const u=new URL(qs.get('return')||'../hub-lobby.html',location.href),file=u.pathname.split('/').pop();
+ if(u.origin!==location.origin||!['hub-lobby.html','spielauswahl-lokal.html'].includes(file)||u.pathname!==root.pathname+file)throw Error('invalid');
+ return u;}catch{return new URL('../hub-lobby.html',location.href);}
 }
-const back=returnPage(),local=back.searchParams.get('view')==='local';
+const back=returnPage(),local=back.pathname.endsWith('/spielauswahl-lokal.html');
 $('collection-back-top').href=back.href;$('collection-back-footer').href=back.href;
 const tones={gold:'linear-gradient(135deg,#a26e28,#2c2147,#071a32)',azure:'linear-gradient(145deg,#206c91,#092c51,#061831)',cyan:'linear-gradient(145deg,#3b92a0,#164878,#101736)',violet:'linear-gradient(135deg,#8c42b1,#371e64,#0a1735)',forest:'linear-gradient(145deg,#3f8d6c,#1b443e,#091c31)',ember:'linear-gradient(140deg,#b86a23,#7b2250,#16223b)',indigo:'linear-gradient(140deg,#3d4a91,#151f58,#081b35)',wood:'linear-gradient(140deg,#8e5826,#49321f,#072341)'};
 let cat=dogCollectionCategory(qs.get('category')),filter='all',picked=null,seat=0,slot=0,toastTimer;
