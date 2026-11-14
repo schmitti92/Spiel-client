@@ -227,7 +227,8 @@ async function begin(){
  const round=state.round,id=state.lastRoundSummary.id;
  bridge.toast('🎰 Gewinne werden serverseitig geprüft und sicher gutgeschrieben …');
  try{
-  await bridge.waitForCloudIdle(7500);
+  const cloudSaved=await bridge.waitForCloudIdle(7500);
+  if(!cloudSaved)throw Error('Die Rundenwertung ist noch nicht vollständig auf dem Server gespeichert. Bitte Verbindung prüfen und die Slots erneut starten.');
   const data=await authPost('/api/deal-or-no-deal/skyjo-special/settle',{
    hubCode:bridge.hubCode(),matchId:special.matchId,round});
   const now=bridge.getState();
