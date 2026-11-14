@@ -127,3 +127,14 @@
  .dog-emoji-overlay.is-showing .dog-emoji-effect{animation:none!important}
  .dog-emoji-panel-tile{transition:none!important}
 }
+
+:root[data-dog-motion="off"] .dog-emoji-effect,:root[data-dog-motion="off"] .dog-emoji-effect-icon,
+:root[data-dog-motion="off"] .dog-emoji-effect-name,:root[data-dog-motion="off"] .dog-emoji-panel-tile{
+ animation:none!important;transition:none!important
+}
+:root[data-dog-motion="off"] .dog-emoji-overlay.is-showing .dog-emoji-effect-icon{
+ transform:none!important;opacity:1!important
+}
+:root[data-dog-motion="off"] .dog-emoji-overlay.is-showing .dog-emoji-effect-name{
+ opacity:1!important
+}
