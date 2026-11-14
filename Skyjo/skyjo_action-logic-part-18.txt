@@ -48,7 +48,7 @@ function buildRoyalRoundSummaryModal(summary,options={}){
    return `<div class="sky-score-entry ${counting?'pending':''}" data-count-index="${idx}"><span class="sky-score-entry-index">${idx+1}</span><span class="sky-score-entry-card">${miniature}</span><span class="sky-score-entry-caption" title="${escapeHTML(name)}">${escapeHTML(name)}</span><b class="sky-score-entry-points ${scoreTone(item.value)}">${scoreFmt(item.value)}</b></div>`
  }).join('');
  const currentRound=counting?0:Number(focus.round||0);
- const extraButtons=summary.ended?`<button class="sky-score-next" onclick="Game.openRoyalFinaleSummary()">ZUM FINALE <span>❯❯</span></button>`:
+ const standardExtraButtons=summary.ended?`<button class="sky-score-next" onclick="Game.openRoyalFinaleSummary()">ZUM FINALE <span>❯❯</span></button>`:
    cloud.enabled&&!isHostDevice()?'<div class="sky-score-wait">⏳ Der Host startet die nächste Runde</div>':'<button class="sky-score-next" onclick="Game.nextRound()">WEITER <span>❯❯</span></button>';
  const centerItems=royalGridMarkup(focus,{counting,isActive:true});
  return `<div class="royal-modal royal-round-modal sky-score-scene ${counting?'royal-counting sky-score-counting':''}" role="region" aria-label="Punkteabrechnung nach Runde ${Number(summary.round)}">
