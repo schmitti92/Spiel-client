@@ -52,7 +52,7 @@ test('Lobby buttons and collection page remain navigable without changing DOG ga
  assert.match(local,/data-dog-collection-link/);
  assert.match(html,/id="collection-grid"/);
  assert.match(html,/id="collection-detail-content"/);
- assert.match(html,/src="\.\/collection\.js\?v=2"/);
+ assert.match(html,/src="\.\/collection\.js\?v=3"/);
  assert.doesNotMatch(html,/data-filter="planned"/);
  assert.match(html,/data-filter="active"/);
  assert.match(js,/saveAppearance\(/);
