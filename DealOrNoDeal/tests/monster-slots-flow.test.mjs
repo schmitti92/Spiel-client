@@ -328,9 +328,11 @@ test('scheduled shared Slots open and spin together without resetting an existin
  b.g.monsterSlotShow={phase:'ready',turn:'runner',uid:'guest',reels:1,
   runnerUid:'guest',championUid:'host',activatedAt:b.now(),showAt:readyAt,startedAt:null,prizes:[]};
  b.emit('deal-game-state-change');await b.flush();
- assert.equal(b.root.hidden,true,'cabinet must not open before the shared showAt');
+ assert.equal(b.root.hidden,false,'all viewers see the shared stage preparation');
+ assert.equal(b.root.dataset.phase,'preparing','reels wait for the server showAt');
+ assert.equal(b.accept.disabled,true,'cannot start before the synchronized opening');
  await b.advance(2199);
- assert.equal(b.root.hidden,true);
+ assert.equal(b.root.dataset.phase,'preparing','cabinet must not enter ready before showAt');
  await b.advance(1);
  assert.equal(b.root.hidden,false,'all viewers open at the server-stamped moment');
  assert.equal(b.root.dataset.phase,'ready');
@@ -375,4 +377,39 @@ test('spectator keeps the same card tiles after recovery becomes available, with
  assert.equal(b.summaryButton.disabled,false,'a spectator can recover the room after 30 seconds');
  assert.match(b.summaryButton.textContent,/bestätigen/);
  assert.equal(b.requests.length,0,'no claim, spin or confirm should be sent by scrolling or waiting');
+});
+
+test('second-place winner is announced and confirmed before the champion gets a shared spin',async()=>{
+ const b=browserFixture();
+ b.banker.hidden=true;
+ b.window.person='quiet';
+ b.g.monsterSlotShow={phase:'ready',turn:'runner',uid:'guest',reels:1,
+  runnerUid:'guest',championUid:'host',activatedAt:b.now(),showAt:b.now()+2200,
+  startedAt:null,prizes:[]};
+ b.emit('deal-game-state-change');await b.flush();
+ assert.equal(b.root.dataset.phase,'preparing');
+ assert.match(b.root.querySelector('.monster-slot-shared-caption').textContent,/PLATZ 2/);
+ await b.advance(2200);
+ assert.equal(b.root.dataset.phase,'ready');
+ assert.equal(b.root.dataset.reels,'1','only one reel for second place');
+ assert.equal(b.accept.disabled,true,'spectator cannot act for second place');
+ b.window.person='guest';b.emit('spielonline-change');await b.flush();
+ assert.equal(b.accept.disabled,false);
+ b.accept.click();await b.flush();
+ assert.equal(b.summary.hidden,false);
+ assert.equal(b.summaryButton.disabled,false,'runner has a complete summary to confirm');
+ b.summaryButton.click();await b.flush();
+ assert.equal(b.g.monsterSlotShow.turn,'champion','winner follows the runner confirmation');
+ // Mirror the new server's future opening time and runner acknowledgement.
+ b.g.monsterSlotShow.showAt=b.now()+2200;
+ b.g.monsterSlotShow.runnerConfirmedAt=b.now();
+ b.window.person='quiet';b.emit('spielonline-change');await b.flush();
+ assert.equal(b.root.dataset.phase,'preparing');
+ assert.match(b.root.querySelector('.monster-slot-shared-caption').textContent,/PLATZ 1/);
+ await b.advance(2200);
+ assert.equal(b.root.dataset.phase,'ready');
+ assert.equal(b.root.dataset.reels,'3','winner now receives three reels');
+ assert.equal(b.accept.disabled,true,'spectator still cannot act for winner');
+ b.window.person='host';b.emit('spielonline-change');await b.flush();
+ assert.equal(b.accept.disabled,false);
 });
