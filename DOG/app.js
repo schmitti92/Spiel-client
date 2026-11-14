@@ -1,4 +1,4 @@
-import {cardMarkup,cardVisual} from './card-visuals.js?v=2';
+import {cardMarkup,cardVisual} from './card-visuals.js?v=3';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
 import {DEFAULT_APPEARANCE,BOARD_STYLES,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=12';
@@ -349,8 +349,12 @@ function renderCardPiles(){
  $('dog-deck-count').textContent=deck?deck.length+' Karten':'Verdeckt';
  $('dog-discard-count').textContent=discard?discard.length+' Karten':'Verdeckt';
  const last=discard?.at(-1);
- $('dog-discard-art').textContent=last?cardsLabel(last.type):'—';
- $('dog-discard-art').title=last?'Zuletzt abgelegt: '+last.type:'Noch keine Karte abgelegt';
+ const discardArt=$('dog-discard-art');
+ const art=last?cardVisual(last.type).image:null;
+ discardArt.classList.toggle('has-card',!!art);
+ discardArt.style.backgroundImage=art?'url("'+art+'")':'';
+ discardArt.textContent=art?'':last?cardsLabel(last.type):'—';
+ discardArt.title=last?'Zuletzt abgelegt: '+last.type:'Noch keine Karte abgelegt';
 }
 function render(){
   if(!game)return;
