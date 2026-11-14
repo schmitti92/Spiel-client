@@ -324,7 +324,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
    do not support multiplying a CSS length by a variable inside calc(). */
 .hand .playing-card.dog-designed{width:var(--dog-hand-card-base)!important}
 </style>
-<link rel="stylesheet" href="./ui-shell.css?v=18"><link rel="stylesheet" href="./emoji-ui.css?v=3">
+<link rel="stylesheet" href="./ui-shell.css?v=19"><link rel="stylesheet" href="./emoji-ui.css?v=3">
 </head>
 <body>
 <!-- One floating menu replaces the large heading/nav and frees board height. -->
@@ -486,6 +486,14 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
     <label for="appearance-hudTone">🎨 Rechter Spielblock · Farbton
       <select id="appearance-hudTone"></select>
     </label>
+    <section class="dog-hud-opacity-settings" aria-labelledby="appearance-hud-opacity-heading">
+      <div class="dog-hud-opacity-title">
+        <strong id="appearance-hud-opacity-heading">🫧 Transparenz der Bedienblöcke</strong>
+        <button type="button" id="appearance-hud-opacity-reset">Standard</button>
+      </div>
+      <p>Die Hintergründe lassen sich getrennt einstellen. Karten, Text und Buttons bleiben vollständig sichtbar.</p>
+      <div id="appearance-hud-opacity-controls" class="dog-hud-opacity-controls"></div>
+    </section>
     <label for="appearance-pieces">🔴 Figurenfarben
       <select id="appearance-pieces"></select>
     </label>
@@ -534,7 +542,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 </script>
 <script type="module">
 import('./ui-shell.js?v=4').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
-import('./app.js?v=44').catch(error=>{
+import('./app.js?v=45').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
