@@ -20,19 +20,19 @@
         <div><h2 id="studio-tools-heading">🎨 Gestaltung</h2><p>Wähle den Bereich, den du bearbeiten möchtest</p></div>
       </div>
       <div class="studio-primary-tabs" role="tablist" aria-label="Bereich im DOG-Editor">
-        <button type="button" id="scene-tab" role="tab" aria-controls="scene-design-panel" aria-selected="true">🏞️ <span>Hintergrund</span></button>
-        <button type="button" id="board-tab" role="tab" aria-controls="board-design-panel" aria-selected="false">🎲 <span>Spielbrett</span></button>
+        <button type="button" id="scene-tab" role="tab" aria-controls="scene-design-panel" aria-selected="false">🏞️ <span>Hintergrund</span></button>
+        <button type="button" id="board-tab" role="tab" aria-controls="board-design-panel" aria-selected="true">🎲 <span>Spielbrett</span></button>
         <button type="button" id="frame-tab" role="tab" aria-controls="frame-design-panel" aria-selected="false">🖼️ <span>Rahmen</span></button>
         <button type="button" id="hud-tab" role="tab" aria-controls="hud-design-panel" aria-selected="false">🗂️ <span>Spielblock</span></button>
       </div>
       <div class="studio-tools-scroll" id="studio-tools-scroll">
-        <section id="scene-design-panel" role="tabpanel" aria-labelledby="scene-tab" class="studio-tool-section">
+        <section id="scene-design-panel" role="tabpanel" aria-labelledby="scene-tab" class="studio-tool-section" hidden>
           <h3>🏞️ Hintergrundbilder</h3>
           <p class="editor-help">Ein Hintergrundmotiv ist verfügbar. Es liegt hinter Brett und Bedienleiste.</p>
           <div id="scene-choices" class="choice-list" role="group" aria-label="Seitenhintergrund auswählen"></div>
           <p class="scene-note">Weitere Hintergrundbilder können wir später hinzufügen.</p>
         </section>
-        <section id="board-design-panel" role="tabpanel" aria-labelledby="board-tab" class="studio-tool-section" hidden>
+        <section id="board-design-panel" role="tabpanel" aria-labelledby="board-tab" class="studio-tool-section">
           <h3>🎲 Spielbrett-Design</h3>
           <p class="editor-help">Wähle die Oberfläche des Bretts. Die Feldanordnung bleibt gleich.</p>
           <div id="board-choices" class="choice-list" role="group" aria-label="Brettdesign auswählen"></div>
@@ -119,6 +119,6 @@
     <div class="dialog-actions"><button type="button" class="control secondary" id="cancel-save">Abbrechen</button><button type="submit" class="control gold">Speichern & verwenden</button></div>
   </form>
 </dialog>
-<script type="module" src="./design-studio.js?v=10"></script>
+<script type="module" src="./design-studio.js?v=11"></script>
 </body>
 </html>
