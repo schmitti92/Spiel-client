@@ -30,7 +30,10 @@ test('five cockpit blocks exist in the correct order, next to the board',()=>{
  assert.ok(html.indexOf('class="board-card"')<indices[0]);
  assert.match(html,/class="right dog-modules"/);
  assert.match(html,/id="dog-extra-buttons"/);
- assert.match(html,/class="dog-history-details" open/);
+ // Premium HUD keeps history accessible but collapsed by default.
+ assert.match(html,/class="dog-history-details"/);
+ assert.doesNotMatch(html,/class="dog-history-details" open/);
+ assert.match(html,/class="dog-premium-statusline"/);
 });
 
 test('top controls support lobby, board selection and existing settings dialogs',()=>{
