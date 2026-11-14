@@ -1,6 +1,6 @@
 import {CARD_EDITIONS,CARD_EDITION,loadCardEdition,saveCardEdition,cardBackImage,cardMarkup,cardVisual} from './card-visuals.js?v=6';
 import {enableHandTouchGestures} from './hand-gestures.js?v=2';
-import {mountDogEmojiGame,showDogEmoji,showDogEmojiError} from './emoji-game.js?v=2';
+import {mountDogEmojiGame,showDogEmoji,showDogEmojiError} from './emoji-game.js?v=3';
 import {boardGestureTarget} from './board-gesture-math.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
