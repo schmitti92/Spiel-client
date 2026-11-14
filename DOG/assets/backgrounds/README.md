@@ -1,12 +1,13 @@
-# DOG – Hintergrundgalerie
+# DOG – Hintergrundbilder für das Design-Studio
 
-Hier liegen zukünftig die **Seitenhintergründe** von DOG (nicht die Spielbretter).
+Dieser Ordner enthält ausschließlich echte **Seiten- und Bühnenhintergründe**. Spielbrett-Oberflächen und feldfreie Spielplatten-Grafiken gehören ausdrücklich **nicht** in diese Galerie.
 
-- Erstes Motiv: `dog-hintergrund-magisches-schloss.png`
-- Weitere Motive als separate PNG-, JPG- oder WebP-Dateien hier ablegen.
-- Dateinamen: klein, ohne Leerzeichen oder Umlaute, mit Bindestrichen.
-- Spielbretter liegen getrennt in `DOG/assets/boards/`.
+Aktuell ist genau **ein Motiv** vorhanden:
 
-**Im Spiel aktiv:** `dog-hintergrund-magisches-schloss.png` ist jetzt der Standardhintergrund der rechten DOG-Steuerleiste. Die Auswahl liegt unter **Einstellungen → Hintergrund der rechten Seite**. Daneben gibt es die Option **Ohne Hintergrundbild**.
+- `dog-hintergrund-magisches-schloss.png` – Magisches Schloss am Nebelsee
 
-**Weitere Motive:** Datei in diesen Ordner hochladen und anschließend als Eintrag in `DOG/appearance-registry.js` unter `SIDEBAR_BACKGROUNDS` registrieren. Damit wird sie automatisch in der Auswahlliste angezeigt. Diese Einstellung bleibt lokal und verursacht keine zusätzlichen Firebase-Schreibvorgänge.
+Im DOG Design-Studio kann links dieses Bild oder »Ohne Hintergrundbild« gewählt werden. Rechts liegen alle Brettdesigns aus `BOARD_STYLES` (unter anderem Zauberwald, Märchental, Küstenabenteuer, Alpenland, Royal-Karten, Goldwellen, Holz und Schiefer).
+
+Neue Hintergrundmotive bitte hier als PNG, JPG oder WebP mit kleingeschriebenem Dateinamen ohne Leerzeichen hochladen und dann in `DOG/appearance-registry.js` unter `SCENE_STYLES` registrieren. Wenn das Bild auch in den separaten Spieleinstellungen für den rechten Seitenbereich erscheinen soll, zusätzlich unter `SIDEBAR_BACKGROUNDS` registrieren. Die Auswahl und gespeicherte Kombinationen werden lokal gespeichert und erzeugen keine zusätzlichen Firebase-Schreibvorgänge.
+
+Die eigentlichen Spielbretter befinden sich unter `DOG/assets/boards/` und `DOG/Bilder/Spielhintergrundbilder/`. Deren Dateien werden nicht als Seitenhintergründe gelistet.
