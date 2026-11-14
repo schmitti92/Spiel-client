@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#071525">
 <meta name="description" content="DOG Design-Studio: Spielwelten und Spielbretter kombinieren, live ansehen und eigene Designs speichern.">
 <title>DOG Design-Studio</title>
-<link rel="stylesheet" href="./design-studio.css?v=6">
+<link rel="stylesheet" href="./design-studio.css?v=7">
 </head>
 <body>
 <header class="studio-top">
@@ -80,6 +80,18 @@
         <h3>Farbtöne auswählen</h3>
         <div id="hud-tone-choices" class="hud-tone-choices" role="group" aria-label="Farbe des Spielblocks auswählen"></div>
         <p class="editor-help">Farben ändern nur Spielerrahmen, Kartenbereich und Extra-Bedienfelder – nicht das Brett und nicht die Spielfunktionen.</p>
+        <div class="opacity-section">
+          <div class="opacity-section-heading">
+            <h3>🫧 Transparenz der Blöcke</h3>
+            <button type="button" class="opacity-reset" id="reset-hud-opacity">Standard</button>
+          </div>
+          <p class="editor-help">0 % = ganz durchsichtig · 100 % = deckend. Karten, Text und Bedienelemente bleiben lesbar.</p>
+          <div id="hud-opacity-controls" class="hud-opacity-controls" role="group" aria-label="Transparenz der vier Bedienblöcke"></div>
+          <div class="opacity-all">
+            <label for="hud-opacity-all">Alle vier Blöcke gleichzeitig</label>
+            <input id="hud-opacity-all" type="range" min="0" max="100" step="5" value="70" aria-label="Transparenz aller Blöcke gemeinsam einstellen">
+          </div>
+        </div>
       </div>
     </section>
   </div>
@@ -98,6 +110,6 @@
     <div class="dialog-actions"><button type="button" class="control secondary" id="cancel-save">Abbrechen</button><button type="submit" class="control gold">Speichern & verwenden</button></div>
   </form>
 </dialog>
-<script type="module" src="./design-studio.js?v=6"></script>
+<script type="module" src="./design-studio.js?v=7"></script>
 </body>
 </html>
