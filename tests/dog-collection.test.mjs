@@ -7,8 +7,8 @@ import {DOG_EMOJIS,DOG_EMOJI_STARTERS} from '../DOG/dog-emojis.js';
 import {buildDogCollection} from '../DOG/collection-extensions.js';
 const text=path=>readFileSync(new URL(path,import.meta.url),'utf8');
 
-test('DOG collection lists 10 categories, unique per-category IDs and real availability counts',()=>{
- assert.equal(DOG_COLLECTION_CATEGORIES.length,10);
+test('DOG collection lists only implemented categories with no invented locked items',()=>{
+ assert.equal(DOG_COLLECTION_CATEGORIES.length,9);
  const names=DOG_COLLECTION_CATEGORIES.map(c=>c.id);
  assert.equal(new Set(names).size,names.length);
  for(const c of DOG_COLLECTION_CATEGORIES){
@@ -16,9 +16,10 @@ test('DOG collection lists 10 categories, unique per-category IDs and real avail
   assert.ok(c.items.length,c.id);
   const s=dogCollectionStats(c);
   assert.equal(s.total,c.items.length);
-  assert.equal(s.available+s.planned,s.total);
-  assert.ok(c.items.every(i=>['available','planned'].includes(i.status)));
-  assert.ok(c.items.every(i=>i.status==='planned'||i.kind==='appearance'||i.kind==='avatar'||i.kind==='emoji'||i.kind==='default'));
+  assert.equal(s.available,s.total);
+  assert.equal(s.planned,0);
+  assert.ok(c.items.every(i=>i.status==='available'),c.id+' includes an unimplemented item');
+  assert.ok(c.items.every(i=>['appearance','avatar','emoji','default'].includes(i.kind)));
  }
  const overall=dogCollectionStats();
  assert.equal(overall.total,DOG_COLLECTION_CATEGORIES.reduce((sum,c)=>sum+c.items.length,0));
@@ -26,21 +27,22 @@ test('DOG collection lists 10 categories, unique per-category IDs and real avail
 });
 test('Collection registers actual selectable designs without inventing past unlocks',()=>{
  const look=id=>dogCollectionCategory(id);
- assert.equal(look('boards').items.filter(x=>x.status==='available').length,Object.keys(BOARD_STYLES).length);
+ assert.equal(look('boards').items.length,Object.keys(BOARD_STYLES).length-1,'missing royal-marmor art stays hidden');
  assert.equal(look('backgrounds').items.filter(x=>x.status==='available').length,Object.keys(SCENE_STYLES).length);
  assert.equal(look('pieces').items.filter(x=>x.status==='available').length,Object.keys(PIECE_STYLES).length);
  assert.equal(look('cards').items.filter(x=>x.status==='available').length,Object.keys(CARD_STYLES).length);
  assert.equal(look('hud').items.filter(x=>x.status==='available').length,Object.keys(HUD_TONES).length+Object.keys(HUD_LAYOUTS).length);
  assert.equal(look('avatars').items.filter(x=>x.status==='available').length,16);
  assert.equal(look('emblems').items.filter(x=>x.status==='available').length,1);
- assert.equal(look('effects').items.filter(x=>x.status==='available').length,0);
- assert.ok(look('frames').items.find(x=>x.id==='frame-elegant').status==='planned');
+ assert.equal(DOG_COLLECTION_CATEGORIES.some(x=>x.id==='effects'),false);
+ assert.deepEqual(look('frames').items.map(x=>x.id),['frame-current']);
+ assert.deepEqual(look('emblems').items.map(x=>x.id),['emblem-crown']);
 });
-test('50 emoji slots and only three unlocked starters appear in collection',()=>{
+test('only three usable starter emojis appear in the gallery',()=>{
  const entries=dogCollectionCategory('emojis').items;
  assert.equal(DOG_EMOJIS.length,50);
  assert.equal(DOG_EMOJI_STARTERS.length,3);
- assert.equal(entries.length,50);
+ assert.equal(entries.length,3);
  assert.deepEqual(entries.filter(x=>x.status==='available').map(x=>x.id),[...DOG_EMOJI_STARTERS]);
 });
 test('Lobby buttons and collection page remain navigable without changing DOG game rules',()=>{
@@ -51,13 +53,15 @@ test('Lobby buttons and collection page remain navigable without changing DOG ga
  assert.match(html,/id="collection-grid"/);
  assert.match(html,/id="collection-detail-content"/);
  assert.match(html,/src="\.\/collection\.js\?v=2"/);
+ assert.doesNotMatch(html,/data-filter="planned"/);
+ assert.match(html,/data-filter="active"/);
  assert.match(js,/saveAppearance\(/);
  assert.match(js,/saveEmojiSlots\(/);
  assert.match(js,/if\(item\.status!=='available'\)return/);
  assert.match(js,/returnPage\(/);
 });
 
-test('future reward and new category extend the collection without changing the gallery',()=>{
+test('extensions can later add content without fake published rewards',()=>{
  const base=DOG_COLLECTION_CATEGORIES;
  const updated=buildDogCollection(base,
   [{id:'banners',title:'Banner',icon:'🎗️',subtitle:'Zukünftige Banner',items:[]}],
