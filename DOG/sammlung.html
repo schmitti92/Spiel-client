@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#06192e">
+<meta name="description" content="DOG Sammlung: Hintergrundbilder, Spielbretter, Spielfiguren, Profilbilder, Emojis und zukünftige Event-Belohnungen.">
+<title>Meine Sammlung · DOG</title>
+<link rel="stylesheet" href="./collection.css?v=1">
+</head>
+<body>
+<div class="collection-page">
+<header class="collection-top">
+  <a class="back-link" id="collection-back-top" href="../hub-lobby.html" aria-label="Zurück zur DOG-Lobby">← Zurück</a>
+  <div class="collection-brand">
+    <span class="dog-logo" aria-hidden="true">🐾<span>👑</span></span>
+    <div><span class="brand-eyebrow">DOG · DAS KLASSISCHE TEAM-BRETTSPIEL</span>
+    <h1>Meine Sammlung</h1>
+    <p>Freigeschaltete Inhalte &amp; zukünftige Belohnungen</p></div>
+  </div>
+  <div class="collection-progress" aria-label="Verfügbare Sammlungsinhalte">
+    <div><span>Verfügbare Inhalte</span><strong id="collection-total">—</strong></div>
+    <div class="progress-track"><span id="collection-progress-bar"></span></div>
+    <small id="collection-progress-caption">Echte Inhalte und geplante Event-Vorschauen</small>
+  </div>
+</header>
+<main class="collection-layout">
+  <aside class="collection-categories glass-panel" aria-label="Sammlungskategorien">
+    <div class="collection-categories-title">📚 Kategorien</div>
+    <nav id="collection-categories" aria-label="Themengebiete" class="collection-category-list"></nav>
+    <p class="collection-sidebar-note">🔒 Gesperrte Inhalte sind Vorschauen auf zukünftige Events.</p>
+  </aside>
+  <section class="collection-gallery glass-panel" aria-labelledby="collection-heading">
+    <header class="gallery-header">
+      <div class="gallery-heading-copy">
+        <h2 id="collection-heading">🏞️ Hintergründe</h2>
+        <p id="collection-subheading">Deine DOG-Designs entdecken</p>
+      </div>
+      <div class="collection-filters" role="group" aria-label="Sammlungsfilter">
+        <button type="button" data-filter="all" aria-pressed="true">Alle <span id="count-all"></span></button>
+        <button type="button" data-filter="available" aria-pressed="false">✓ Verfügbar <span id="count-available"></span></button>
+        <button type="button" data-filter="planned" aria-pressed="false">🔒 Gesperrt <span id="count-planned"></span></button>
+      </div>
+    </header>
+    <div class="collection-gallery-scroll">
+      <div id="collection-grid" class="collection-grid" role="group" aria-label="Sammlungsgegenstände"></div>
+      <p id="collection-empty" class="collection-empty" hidden>Hier gibt es in dieser Auswahl noch keine Inhalte.</p>
+    </div>
+  </section>
+  <aside class="collection-detail glass-panel" aria-label="Gewählter Sammlungsgegenstand">
+    <div id="collection-detail-content" class="collection-detail-content">
+      <p class="collection-detail-loading">Wähle links eine Kategorie und dann ein Bild aus.</p>
+    </div>
+  </aside>
+</main>
+<footer class="collection-footer">
+  <span>🐾 DOG Sammlung · Designs verändern keine Spielregeln</span>
+  <a id="collection-back-footer" href="../hub-lobby.html">← Zurück zur Lobby</a>
+</footer>
+<div class="collection-toast" id="collection-toast" role="status" aria-live="polite" hidden></div>
+</div>
+<script src="../profile-config.js"></script>
+<script src="../profile-auth.js"></script>
+<script src="./avatar-picker.js?v=3"></script>
+<script type="module" src="./collection.js?v=1"></script>
+</body>
+</html>
