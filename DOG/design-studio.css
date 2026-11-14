@@ -204,3 +204,238 @@ dialog{color:#f5e9d6;background:#10283e;border:1px solid #ddb973;border-radius:1
 .opacity-all{border:1px dashed #93abc173;background:#12324766;padding:10px;border-radius:11px}
 .opacity-all label{display:block;margin-bottom:9px;font-size:11px;font-weight:850;color:#d3e8f3}
 @media(max-width:540px){.hud-opacity-controls{gap:7px}.hud-opacity-control{padding:8px}}
+
+
+/* Studio 2.0: one compact toolbox and a height-constrained, board-first preview.
+   Long image/board/frame/color galleries scroll within the toolbox only.
+   The preview must never grow to the height of those galleries. */
+.studio-page{max-width:1920px;padding:12px clamp(10px,1vw,20px) 24px}
+.studio-columns{
+  display:grid;
+  grid-template-columns:minmax(265px,320px) minmax(0,1fr);
+  align-items:start;
+  gap:12px;
+  height:clamp(440px,calc(100dvh - 164px),820px);
+}
+.studio-tools,.studio-columns>.preview-wrap{
+  height:100%;
+  min-height:0;
+  max-height:100%;
+  overflow:hidden;
+}
+.studio-tools{
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  padding:0;
+  min-width:0;
+}
+.studio-tools-heading{
+  flex:none;padding:15px 14px 10px;
+  background:linear-gradient(125deg,#153852,#0b253b);
+  border-bottom:1px solid #6485a75c;
+}
+.studio-tools-heading h2{font:800 21px Georgia,serif;color:#f8dd9e}
+.studio-tools-heading p{margin-top:4px;font-size:11px;line-height:1.45;color:#b9d3df}
+.studio-primary-tabs{
+  flex:none;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+  padding:10px 12px;
+  border-bottom:1px solid #6485a761;
+}
+.studio-primary-tabs button{
+  min-width:0;min-height:40px;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:8px 4px;
+  font-size:12px;font-weight:800;
+  color:#d4e4ef;background:#0c2a40;
+  border:1px solid #658299;
+  border-radius:11px;
+}
+.studio-primary-tabs button[aria-selected="true"]{
+  background:linear-gradient(145deg,#f6db9c,#cf9f55);
+  border-color:#ffe7af;color:#102638;
+  box-shadow:0 2px 11px #e8b95435;
+}
+.studio-primary-tabs button:focus-visible{outline-offset:1px}
+.studio-tools-scroll{
+  min-height:0;
+  flex:1 1 auto;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  padding:13px 12px;
+  scrollbar-width:thin;
+  scrollbar-color:#7495ab #081e31;
+}
+.studio-tools .studio-tool-section[hidden]{display:none!important}
+.studio-tool-section{min-width:0}
+.studio-tool-section>h3{
+  color:#f3d596;font-size:17px;font-weight:850;margin:0 0 7px;
+}
+.studio-tool-section .editor-help{
+  margin:2px 0 12px;
+  line-height:1.55;
+  font-size:11px;
+}
+.studio-tool-section .choice-list,
+.studio-tool-section .frame-choice-list,
+.studio-tool-section .hud-tone-choices{
+  max-height:none;
+  overflow:visible;
+  padding:3px 3px 8px;
+}
+.studio-tool-section .choice{min-height:66px;flex-wrap:nowrap;align-items:center;gap:10px}
+.studio-tool-section .choice-art{flex:0 0 80px;width:80px;height:auto;aspect-ratio:1.25 / 1}
+.studio-tool-section .choice-copy strong{font-size:13px}
+.studio-tool-section .choice-copy small{font-size:10px}
+.studio-tool-section .scene-note{
+  margin:14px 1px 0;
+  padding:10px 12px;border:1px dashed #728fa17e;border-radius:11px;
+  background:#17394a55;color:#b9d5e0;font-size:11px;line-height:1.5;
+}
+.studio-tools-tip{
+  margin:0;
+  padding:10px 12px;
+  flex:none;
+  font-size:10px;line-height:1.4;color:#bbcfdb;
+  border-top:1px solid #6485a75c;background:#0a2135;
+}
+.studio-columns>.preview-wrap{
+  display:flex;
+  flex-direction:column;
+  align-self:start;
+}
+.studio-columns .preview-heading{
+  flex:none;padding:10px 14px;min-height:57px;
+}
+.studio-columns .preview-heading h2{
+  font-size:clamp(14px,1.5vw,19px);
+  margin-top:3px;line-height:1.22;overflow-wrap:anywhere;
+}
+.studio-columns .eyebrow{font-size:10px}
+.studio-columns .preview-stage{
+  min-height:0;
+  flex:1 1 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  padding:clamp(8px,1.2vw,16px);
+}
+.studio-columns .studio-live-layout{
+  width:100%;height:100%;max-width:1380px;
+  margin:0 auto;min-height:0;
+  display:grid;
+  grid-template-columns:minmax(0,58fr) minmax(0,42fr);
+  align-items:center;
+  gap:clamp(7px,1.1vw,16px);
+}
+.studio-columns .studio-live-layout .preview-screen{
+  width:min(100%,max(210px,calc(100dvh - 300px)));
+  max-height:100%;
+  min-width:0;
+  margin:auto;
+  aspect-ratio:1;
+  justify-self:center;
+  padding:4px;
+}
+.studio-columns .studio-hud{
+  min-width:0;
+  max-height:100%;
+  overflow:auto;
+  scrollbar-width:thin;
+  scrollbar-color:#7e9aa44f transparent;
+  align-content:center;
+  gap:clamp(4px,.55vw,7px);
+}
+.studio-columns .studio-hud-panel{padding:clamp(5px,.7vw,9px)}
+.studio-columns .preview-controls{
+  flex:none;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:nowrap;
+  min-height:46px;gap:12px;
+  padding:9px 13px;
+}
+.studio-columns .preview-controls>span{
+  font-size:10px;
+  max-width:46%;
+  line-height:1.4;
+}
+.studio-columns .studio-status{
+  flex:1;min-width:0;max-width:60%;
+  min-height:0;padding:0;margin:0;
+  text-align:right;font-size:11px;line-height:1.35;
+  color:#b9e8d7;overflow-wrap:anywhere;
+}
+.top-actions .control.green{
+  border-color:#93d1a5;
+  background:linear-gradient(135deg,#438a69,#246048);
+  box-shadow:0 3px 11px #04160a3d;
+}
+@media(min-width:1300px){
+  .studio-columns{grid-template-columns:minmax(290px,330px) minmax(0,1fr)}
+}
+@media(max-width:1050px) and (min-width:781px){
+  .studio-columns{grid-template-columns:minmax(240px,280px) minmax(0,1fr)}
+  .studio-primary-tabs button{font-size:11px;gap:3px}
+  .studio-columns .studio-live-layout .preview-screen{width:min(100%,max(200px,calc(100dvh - 315px)))}
+  .studio-columns .studio-hud-player{grid-template-columns:22px minmax(0,1fr)}
+  .studio-columns .studio-hud-player>b{grid-column:2}
+}
+@media(max-width:780px){
+  .studio-page{padding:10px 9px 23px}
+  .studio-columns{height:auto;display:flex;flex-direction:column;gap:10px}
+  .studio-columns>.preview-wrap{
+    order:-1;width:100%;height:auto;max-height:none;
+  }
+  .studio-columns .preview-stage{
+    min-height:0;
+    overflow:visible;
+    display:block;
+    padding:10px;
+  }
+  .studio-columns .studio-live-layout{
+    width:100%;height:auto;
+    align-items:center;
+    grid-template-columns:minmax(0,58fr) minmax(0,42fr);
+  }
+  .studio-columns .studio-live-layout .preview-screen{
+    width:100%;max-height:none;min-width:0;
+  }
+  .studio-columns .studio-hud{max-height:none;overflow:visible}
+  .studio-tools{width:100%;height:auto;min-height:330px;max-height:600px}
+  .studio-tools-scroll{max-height:450px}
+  .studio-primary-tabs{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+  .studio-primary-tabs button{min-height:44px;gap:3px;font-size:10px;flex-direction:column}
+  .studio-columns .preview-controls{flex-wrap:wrap}
+  .studio-columns .preview-controls>span,.studio-columns .studio-status{max-width:none;text-align:left}
+}
+@media(max-width:540px){
+  .studio-top{gap:10px;flex-wrap:wrap;padding:10px}
+  .studio-brand h1{font-size:21px}
+  .top-actions{width:100%;justify-content:space-between}
+  .top-actions .control{font-size:11px;min-height:36px;padding:7px 8px}
+  .studio-columns .studio-live-layout{grid-template-columns:minmax(0,1fr);gap:9px}
+  .studio-columns .studio-live-layout .preview-screen{width:min(100%,430px);margin:auto}
+  .studio-columns .studio-hud{width:100%}
+  .studio-columns .studio-hud-player{grid-template-columns:30px minmax(0,1fr) auto}
+  .studio-columns .studio-hud-player>b{grid-column:auto}
+  .studio-columns .preview-heading h2{font-size:14px}
+  .studio-tools{max-height:575px}
+}
+@media(max-height:590px) and (min-width:781px){
+  .studio-columns{height:clamp(340px,calc(100dvh - 115px),480px)}
+  .studio-tools-heading{padding:7px 12px}
+  .studio-tools-heading h2{font-size:16px}
+  .studio-tools-heading p,.studio-tools-tip{display:none}
+  .studio-primary-tabs{padding:6px 9px;gap:5px}
+  .studio-primary-tabs button{min-height:33px}
+  .studio-columns .preview-heading{min-height:42px;padding:5px 12px}
+  .studio-columns .preview-controls{min-height:35px;padding:5px 9px}
+  .studio-columns .studio-live-layout .preview-screen{width:min(100%,calc(100dvh - 180px))}
+}
