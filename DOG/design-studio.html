@@ -6,18 +6,18 @@
 <meta name="theme-color" content="#071525">
 <meta name="description" content="DOG Design-Studio: Spielwelten und Spielbretter kombinieren, live ansehen und eigene Designs speichern.">
 <title>DOG Design-Studio</title>
-<link rel="stylesheet" href="./design-studio.css?v=1">
+<link rel="stylesheet" href="./design-studio.css?v=2">
 </head>
 <body>
 <header class="studio-top">
-  <div class="studio-brand"><span class="studio-logo" aria-hidden="true">D</span><div><h1>DOG <span>Design-Studio</span></h1><p>Kombiniere Spielwelten und Brettdesigns</p></div></div>
+  <div class="studio-brand"><span class="studio-logo" aria-hidden="true">D</span><div><h1>DOG <span>Design-Studio</span></h1><p>Kombiniere ein Hintergrundbild mit deinem Lieblingsbrett</p></div></div>
   <div class="top-actions"><a href="../hub-lobby.html" id="back-link" class="control secondary">← Zurück zur Lobby</a><button id="save-top" class="control gold" type="button">💾 Speichern</button></div>
 </header>
 <main class="studio-page">
   <div class="studio-columns">
     <section class="panel options-panel scenes" aria-labelledby="scenes-heading">
-      <h2 id="scenes-heading">🏔️ Hintergründe</h2><p>Wähle deine Spielwelt</p>
-      <div id="scene-choices" class="choice-list" role="group" aria-label="Hintergrund auswählen"></div>
+      <h2 id="scenes-heading">🏞️ Hintergrundbilder</h2><p>Aktuell ein Bild verfügbar · unabhängig von den Brettdesigns</p>
+      <div id="scene-choices" class="choice-list" role="group" aria-label="Seitenhintergrund auswählen"></div><p class="scene-note">📷 Magisches Schloss am Nebelsee ist bisher unser einziges Hintergrundmotiv. Weitere Bilder können später ergänzt werden.</p>
     </section>
     <section class="preview-wrap" aria-labelledby="preview-heading">
       <div class="preview-heading"><div><span class="eyebrow">◉ LIVE-VORSCHAU</span><h2 id="preview-heading">Mein DOG-Design</h2></div><span class="live-pill">● Sofort sichtbar</span></div>
@@ -32,7 +32,7 @@
       </div>
     </section>
     <section class="panel options-panel boards" aria-labelledby="boards-heading">
-      <h2 id="boards-heading">🎲 Brettdesigns</h2><p>Wähle die Oberfläche der Spielplatte</p>
+      <h2 id="boards-heading">🎲 Brettdesigns</h2><p>Hier findest du auch Zauberwald, Märchental, Küstenabenteuer, Alpenland und Royal-Karten.</p>
       <div id="board-choices" class="choice-list" role="group" aria-label="Brettdesign auswählen"></div>
     </section>
   </div>
@@ -51,6 +51,6 @@
     <div class="dialog-actions"><button type="button" class="control secondary" id="cancel-save">Abbrechen</button><button type="submit" class="control gold">Speichern & verwenden</button></div>
   </form>
 </dialog>
-<script type="module" src="./design-studio.js?v=1"></script>
+<script type="module" src="./design-studio.js?v=2"></script>
 </body>
 </html>
