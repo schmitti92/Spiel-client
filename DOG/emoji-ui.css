@@ -113,3 +113,17 @@
  .dog-emoji-panel-icon{font-size:28px}
  .dog-emoji-panel-tile small{font-size:9px}
 }
+
+/* Quick reactions remain short and visible without obstructing board taps. */
+.dog-emoji-overlay.is-showing .dog-emoji-effect{
+ animation:dog-reaction-drift .8s ease-out both;
+}
+.dog-emoji-panel-tile:active:not(:disabled){transform:scale(.94);filter:brightness(1.16)}
+@keyframes dog-reaction-drift{
+ from{transform:translateY(9px)}
+ to{transform:translateY(0)}
+}
+@media(prefers-reduced-motion:reduce){
+ .dog-emoji-overlay.is-showing .dog-emoji-effect{animation:none!important}
+ .dog-emoji-panel-tile{transition:none!important}
+}
