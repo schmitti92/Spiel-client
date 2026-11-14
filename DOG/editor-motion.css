@@ -1,0 +1,26 @@
+/* DOG board editor: response to actual selection without moving the layout. */
+#builder-board [data-kind]:hover>.field{filter:drop-shadow(0 0 5px #ffe0a5b8)}
+#builder-board .dog-builder-selected-ring{
+ stroke-dasharray:5 4;animation:dog-builder-ring 2.4s linear infinite;pointer-events:none;
+}
+#builder-board{transition:filter .18s ease}
+#builder-board:active{filter:brightness(1.04)}
+.btn,.tool-switch button,.mode-switch button{transition:filter .14s ease,transform .14s ease}
+.btn:active:not(:disabled),.tool-switch button:active:not(:disabled),.mode-switch button:active:not(:disabled){
+ transform:scale(.975)
+}
+#feedback.success{animation:dog-builder-success .35s ease-out}
+#feedback.error{animation:dog-builder-error .32s ease-out}
+@keyframes dog-builder-ring{to{stroke-dashoffset:-36}}
+@keyframes dog-builder-success{
+ 0%{filter:brightness(1.4)}100%{filter:brightness(1)}
+}
+@keyframes dog-builder-error{
+ 0%,100%{transform:translateX(0)}35%{transform:translateX(-3px)}65%{transform:translateX(3px)}
+}
+@media(prefers-reduced-motion:reduce){
+ #builder-board,#builder-board .dog-builder-selected-ring,.btn,.tool-switch button,.mode-switch button,#feedback{animation:none!important;transition:none!important}
+}
+:root[data-dog-motion="off"] *, :root[data-dog-motion="off"] *::before,:root[data-dog-motion="off"] *::after{
+ animation:none!important;transition-duration:0s!important
+}
