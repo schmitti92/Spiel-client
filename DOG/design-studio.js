@@ -10,7 +10,7 @@ const validBoard=id=>typeof id==='string'&&Object.hasOwn(BOARD_STYLES,id);
 const validScene=id=>typeof id==='string'&&Object.hasOwn(SCENE_STYLES,id);
 const safeUrl=p=>validAssetPath(p)?new URL(p,import.meta.url).href:null;
 const image=t=>safeUrl(t?.image)||safeUrl(t?.fallbackImage);
-const bg=t=>image(t)?'url("'+image(t)+'")':t?.page||'linear-gradient(130deg,#28445d,#091b29)';
+const bg=t=>image(t)?'url("'+image(t)+'")':(t?.page||'linear-gradient(130deg,#28445d,#091b29)').replace(/,\s*(#[\da-f]{3,8})\s*$/i,(_,c)=>',linear-gradient('+c+','+c+')');
 const status=message=>$('studio-status').textContent=message;
 const applied=()=>{const v=loadAppearance();return {board:validBoard(v.board)?v.board:'studio',scene:validScene(v.scene)?v.scene:'none'}};
 const start=applied();
