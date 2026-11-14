@@ -33,6 +33,7 @@ export function createDogVisualFeedback(doc){
   }
   const newHand=(next.round!==old.round || (next.handSeat===old.handSeat && next.handCount>old.handCount)) && next.handVisible;
   if(newHand)pulse($('hand'),'dog-hand-dealt');
+  else if(next.handVisible&&!old.handVisible&&next.handSeat===old.handSeat)pulse($('hand'),'dog-hand-revealed');
   if(next.round!==old.round)pulse($('dog-deck-art'),'dog-deck-shuffled');
   // A new card really entered the discard pile, regardless of repeated card type.
   if(next.revision!==old.revision && next.lastPlayed && (next.lastPlayed!==old.lastPlayed || next.activeSeat!==old.activeSeat || next.handCount!==old.handCount)){
@@ -40,7 +41,7 @@ export function createDogVisualFeedback(doc){
    if(node){node.dataset.dogPlayed=game.lastPlayedCard?.type||'';pulse(node,'dog-discard-played');}
   }
   if(next.phase!==old.phase && next.phase==='exchange'){
-   pulse($('dog-pile-module')||$('dog-deck-art'),'dog-phase-changed');
+   pulse($('dog-deck-art'),'dog-phase-changed');
   }
   if(next.phase==='finished' && old.phase!=='finished')pulse($('winner'),'dog-victory-spotlight');
  }
