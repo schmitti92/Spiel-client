@@ -258,10 +258,13 @@ function drawBoard(){
       push('<circle cx="'+p.x+'" cy="'+p.y+'" r="16.7" fill="#041629" stroke="'+c+'" stroke-opacity=".7" stroke-width="2.4"/>');
       push('<circle cx="'+p.x+'" cy="'+p.y+'" r="11.4" fill="#164066" opacity=".6"/>');
     }
+    // White goal holes with a prominent outline in the owner's player color.
+    // Keep the approved coordinates and hit areas unchanged.
     for(let j=0;j<4;j++){
       const p=goal[j];
-      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="17.3" fill="'+c+'" fill-opacity=".21" stroke="'+c+'" stroke-width="2.5"/>');
-      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="11.4" fill="#ffffff" fill-opacity=".12"/>');
+      push('<circle cx="'+p.x+'" cy="'+(p.y+2.1)+'" r="18.5" fill="#061423" fill-opacity=".8" pointer-events="none"/>');
+      push('<circle class="dog-goal-hole" cx="'+p.x+'" cy="'+p.y+'" r="17.3" fill="url(#dog-hole)" stroke="'+c+'" stroke-width="3.6" pointer-events="none"/>');
+      push('<circle cx="'+(p.x-4)+'" cy="'+(p.y-5)+'" r="4.4" fill="#ffffff" fill-opacity=".66" pointer-events="none"/>');
     }
     const labelGoal=goal[2],labelHome=home[2];
     push('<text x="'+labelGoal.x+'" y="'+(labelGoal.y+28)+'" text-anchor="middle" fill="'+c+'" font-size="10" font-weight="850" letter-spacing=".8">ZIEL</text>');
