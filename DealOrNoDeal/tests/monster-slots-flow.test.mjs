@@ -88,7 +88,7 @@ function browserFixture(customPrizes=null){
     ];
     g.monsterSlotShow={...current,phase:'rolling',startedAt:Date.now()-12000,prizes:fillPrizes(prizeItems,count)};
    }else if(current.turn==='runner'){
-    g.monsterSlotShow={phase:'ready',turn:'champion',uid:'host',reels:3,
+    g.monsterSlotShow={phase:'ready',turn:'champion',uid:'host',reels:current.reels===1?3:6,
      runnerUid:'guest',championUid:'host',activatedAt:Date.now(),startedAt:null,prizes:[]};
    }else{
     g.monsterSlotShow={phase:'ceremony',turn:'complete',uid:null,reels:0,
