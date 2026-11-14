@@ -1,7 +1,7 @@
 /** DOG card visuals only. Add future editions here without changing rules, card IDs or online state. */
 export const CARD_EDITION='kartendesign-01';
 export const CARD_ASSET_BASE='./assets/karten/kartendesign-01/';
-export const CARD_ASSETS=Object.freeze(Object.fromEntries(['1/11','2','3','4','5','6','7','8','9','10','12','13','swap','joker'].map(type=>[type,CARD_ASSET_BASE+({'1/11':'1-11','swap':'tausch'}[type]||type)+'.svg'])));
+export const CARD_ASSETS=Object.freeze(Object.fromEntries(['1/11','2','3','4','5','6','7','8','9','10','12','13','swap','joker'].map(type=>[type,CARD_ASSET_BASE+({'1/11':'1-11','swap':'tausch'}[type]||type)+'.png'])));
 export const CARD_VISUALS=Object.freeze({
  '1/11':{kind:'home',symbol:'⌂ ➜',caption:'HAUS VERLASSEN'},
  '2':{kind:'number',symbol:'🐾',caption:'2 FELDER'},
