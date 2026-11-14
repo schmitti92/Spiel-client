@@ -159,7 +159,7 @@ main{width:calc(100% - 20px);margin:9px auto 12px}
  overflow-x:auto!important;overflow-y:auto!important;
 }
 .dog-hand-module .hand .playing-card.dog-designed{
- --dog-hand-card-base:min(115px,calc((100% - 30px)/6),17dvh);
+ --dog-hand-card-base:min(115px,calc((100% - 30px) / 6),17dvh);
  flex:0 0 auto;
  aspect-ratio:5/7!important;
  height:auto!important;max-width:none;
@@ -254,7 +254,7 @@ details:not([open]) .dog-disclosure-arrow{transform:rotate(-90deg)}
  .dog-pile-module .dog-pile-art{width:37px;height:52px}
  .dog-hand-module .hand{max-height:min(28dvh,210px);padding:5px 3px 8px}
  .dog-hand-module .hand .playing-card.dog-designed{
-  --dog-hand-card-base:min(118px,calc((100% - 30px)/6),18dvh);
+  --dog-hand-card-base:min(118px,calc((100% - 30px) / 6),18dvh);
  }
  .dog-extra-button{min-height:54px}
  .dog-extras-grid{gap:5px}
@@ -273,7 +273,7 @@ details:not([open]) .dog-disclosure-arrow{transform:rotate(-90deg)}
  .dog-extra-button .dog-extra-icon{font-size:18px}
  .dog-hand-module .hand{max-height:22dvh}
  .dog-hand-module .hand .playing-card.dog-designed{
-   --dog-hand-card-base:min(90px,calc((100% - 25px)/6),15dvh);
+   --dog-hand-card-base:min(90px,calc((100% - 25px) / 6),15dvh);
  }
  .dog-history-module .history{max-height:50px}
 }
