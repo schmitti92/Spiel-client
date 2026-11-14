@@ -324,7 +324,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
    do not support multiplying a CSS length by a variable inside calc(). */
 .hand .playing-card.dog-designed{width:var(--dog-hand-card-base)!important}
 </style>
-<link rel="stylesheet" href="./ui-shell.css?v=17"><link rel="stylesheet" href="./emoji-ui.css?v=3">
+<link rel="stylesheet" href="./ui-shell.css?v=18"><link rel="stylesheet" href="./emoji-ui.css?v=3">
 </head>
 <body>
 <!-- One floating menu replaces the large heading/nav and frees board height. -->
@@ -534,7 +534,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 </script>
 <script type="module">
 import('./ui-shell.js?v=4').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
-import('./app.js?v=43').catch(error=>{
+import('./app.js?v=44').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
