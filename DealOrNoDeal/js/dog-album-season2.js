@@ -278,7 +278,7 @@
    el.classList.toggle('bingo',owned&&isBingo);
    el.querySelector('.stamp').textContent=owned&&count>1?'×'+count:card.slot;
   }
-  const packIcon={small:'🎁',large:'💎',premium:'👑'};
+  const packIcon={small:'🎁',large:'💎',premium:'👑',platinum:'🌟'};
   if(!$('packs').children.length){
    for(const pack of data.packs){
     const tile=document.createElement('article');tile.className='pack';
@@ -286,16 +286,35 @@
     const title=document.createElement('h3');title.textContent=pack.name;
     const desc=document.createElement('p');desc.textContent=pack.count+' DOG-Sammelkarten · '+(pack.guaranteedCount?pack.guaranteedCount+' garantierte Ziehungen mindestens '+rarities[pack.guaranteed]:'Zufällige Seltenheiten');
     const rate=document.createElement('p');rate.textContent='⚪ '+pack.weights.common+'% · 🔵 '+pack.weights.rare+'% · 🟣 '+pack.weights.epic+'% · 🟡 '+pack.weights.legendary+'%';
-    const button=document.createElement('button');button.type='button';button.dataset.pack=pack.id;button.addEventListener('click',()=>openPack(pack.id));
-    tile.append(art,title,desc,rate,button);$('packs').append(tile);
+    const actions=document.createElement('div');actions.className='dog-pack-multi-actions';
+    for(const [mode,label,attr] of [['one','1 öffnen','pack'],['five','5 öffnen','packFive'],['all','Alle Gratispakete','packAll']]){
+     const button=document.createElement('button');button.type='button';button.dataset[attr]=pack.id;
+     button.textContent=label;button.addEventListener('click',()=>void openPack(pack.id,mode));
+     actions.append(button);
+    }
+    tile.append(art,title,desc,rate,actions);$('packs').append(tile);
    }
   }
+  let allFree=0;
   for(const pack of data.packs){
    const button=document.querySelector('[data-pack="'+pack.id+'"]');if(!button)continue;
+   const five=document.querySelector('[data-pack-five="'+pack.id+'"]');
+   const all=document.querySelector('[data-pack-all="'+pack.id+'"]');
    const vouchers=Math.max(0,Number(data.freePacks?.[pack.id])||0);
-   button.disabled=busy||(!vouchers&&(data.purchasesEnabled===false||data.balance<pack.price));
-   button.textContent=busy?'⏳ Öffnet …':vouchers?'🎁 Kostenlos öffnen ('+vouchers+' Gutscheine)':data.purchasesEnabled===false?'🔒 Käufe derzeit deaktiviert':money(pack.price)+' · '+pack.count+' Karten';
+   allFree+=vouchers;
+   const singleCost=vouchers?0:pack.price;
+   button.disabled=busy||(singleCost>0&&(data.purchasesEnabled===false||data.balance<singleCost));
+   button.textContent=busy?'⏳ Öffnet …':vouchers?'🎁 1 gratis öffnen':'🎁 1 öffnen · '+money(pack.price);
+   const paidFive=5-Math.min(5,vouchers),fiveCost=paidFive*pack.price;
+   if(five){
+    five.disabled=busy||(paidFive>0&&(data.purchasesEnabled===false||data.balance<fiveCost));
+    five.textContent=busy?'⏳ Öffnet …':paidFive===0?'🎁 5 gratis öffnen':
+     '🎁 5 öffnen · '+money(fiveCost)+(vouchers?' ('+Math.min(5,vouchers)+' gratis)':'');
+   }
+   if(all){all.disabled=busy||vouchers<1;all.textContent='🎟️ Alle '+number(vouchers)+' Gratispakete öffnen';}
   }
+  const allButton=$('dog-open-all-free');
+  if(allButton){allButton.disabled=busy||!allFree;allButton.textContent=busy?'⏳ Öffnung läuft …':'🎁 Alle '+number(allFree)+' Gratispakete auf einmal öffnen';}
   const duplicates=data.duplicates||{};
   $('duplicate-count').textContent=number(duplicates.available)+' Duplikate';
   $('ticket-count').textContent=number(duplicates.tickets)+' Monster-Rad-Tickets';
@@ -310,16 +329,35 @@
   $('card-subtitle').textContent=card.series+' · '+rarities[card.rarity]+' · '+data.cards[card.id]+'× gesammelt';
   $('card-dialog').showModal();
  }
- function reveal(cards){
-  $('reveal-items').replaceChildren();
-  for(const card of cards){
+ const REVEAL_PAGE_SIZE=36;
+ let openedCards=[],revealPage=0;
+ function displayRevealPage(){
+  const root=$('reveal-items'),total=openedCards.length;
+  root.replaceChildren();
+  const from=revealPage*REVEAL_PAGE_SIZE,to=Math.min(total,from+REVEAL_PAGE_SIZE);
+  for(const card of openedCards.slice(from,to)){
    const tile=document.createElement('article');tile.className='reveal-item '+card.rarity;
-   const art=document.createElement('img');displayArtwork(art,card);
+   const art=document.createElement('img');displayArtwork(art,card,'lazy');
    const name=document.createElement('strong');name.textContent=card.name;
    const badge=document.createElement('small');badge.textContent=card.isNew?'🌟 NEU':'🔁 DOPPELT';
-   tile.append(art,name,badge);$('reveal-items').append(tile);
+   tile.append(art,name,badge);root.append(tile);
   }
-  $('reveal-dialog').showModal();
+  const nav=$('dog-reveal-pages');
+  if(nav){
+   nav.hidden=total<=REVEAL_PAGE_SIZE;
+   $('dog-reveal-page-info').textContent='Karten '+number(from+1)+'–'+number(to)+' von '+number(total);
+   $('dog-reveal-prev').disabled=revealPage===0;
+   $('dog-reveal-next').disabled=to>=total;
+  }
+  $('reveal-dialog').scrollTop=0;
+ }
+ function reveal(cards,packCount=1){
+  openedCards=Array.isArray(cards)?cards:[];revealPage=0;
+  const newCount=openedCards.filter(card=>card.isNew).length;
+  $('dog-reveal-title').textContent='🎁 '+number(packCount)+' '+(packCount===1?'DOG-KARTENPAKET':'DOG-KARTENPAKETE')+' GEÖFFNET';
+  $('dog-reveal-summary').textContent=number(openedCards.length)+' Karten · 🌟 '+number(newCount)+' neu · 🔁 '+number(openedCards.length-newCount)+' doppelt';
+  displayRevealPage();
+  if(!$('reveal-dialog').open)$('reveal-dialog').showModal();
  }
  // One pending request per profile, preserving selected card and receipt ID
  // across a failed connection. Never change the card on a retry.
@@ -393,22 +431,109 @@
   return id;
  }
  function clearId(pack){try{sessionStorage.removeItem(keyFor(pack))}catch{}}
- async function openPack(packId){
+ // Keep one unresolved purchase receipt per profile. Replaying that same
+ // request is safe even when the original HTTP response was lost.
+ const batchKey=uid=>'dog-s2-batch-pending:'+uid;
+ function pendingBatch(uid){try{
+  const value=JSON.parse(sessionStorage.getItem(batchKey(uid))||'null');
+  return value&&typeof value.packId==='string'&&Number.isSafeInteger(value.quantity)&&
+   value.quantity>=1&&value.quantity<=10&&typeof value.requestId==='string'?value:null;
+ }catch{return null}}
+ function saveBatch(uid,value){try{sessionStorage.setItem(batchKey(uid),JSON.stringify(value))}catch{}}
+ function clearBatch(uid){try{sessionStorage.removeItem(batchKey(uid))}catch{}}
+ function openBatchEntry(packId,quantity,vouchersOnly){
+  const legacyId=quantity===1&&!vouchersOnly?requestId(packId):null;
+  return {packId,quantity,vouchersOnly,
+   requestId:legacyId||'dog2_'+Date.now()+'_'+Math.random().toString(36).slice(2,14),
+   expectedPrice:data.packs?.find(p=>p.id===packId)?.price};
+ }
+ async function settleBatch(uid,entry){
+  const out=await api('POST','open',entry);
+  if(activeUser()?.uid!==uid)throw Error('SPIELERPROFIL_GEWECHSELT');
+  clearBatch(uid);if(entry.quantity===1&&!entry.vouchersOnly)clearId(entry.packId);
+  data={...data,...out};render();
+  return out;
+ }
+ async function openPack(packId,mode='one'){
   if(busy||!data||!activeUser())return;
-  const uid=activeUser().uid;busy=true;render();status('🎁 Dein DOG-Kartenpack wird geöffnet …');
+  const uid=activeUser().uid,pack=data.packs?.find(p=>p.id===packId);
+  if(!pack)return;
+  const vouchers=Math.max(0,Number(data.freePacks?.[packId])||0);
+  if(mode==='all'&&!vouchers)return;
+  if(mode==='five'){
+   const cost=pack.price*(5-Math.min(5,vouchers));
+   if(cost&&!confirm('🎁 5 '+pack.name+' öffnen?\\n'+Math.min(5,vouchers)+' Gratispakete, '+(5-Math.min(5,vouchers))+' bezahlte Pakete für '+money(cost)+'.'))return;
+  }
+  if(mode==='all'&&vouchers>5&&!confirm('Alle '+number(vouchers)+' kostenlosen '+pack.name+' jetzt öffnen? Du kannst die Karten anschließend seitenweise ansehen.'))return;
+  await openPacks([{packId,mode}]);
+ }
+ async function openAllFreePacks(){
+  if(busy||!data||!activeUser())return;
+  const total=(data.packs||[]).reduce((sum,p)=>sum+Math.max(0,Number(data.freePacks?.[p.id])||0),0);
+  if(!total)return;
+  if(!confirm('🎁 Alle '+number(total)+' kostenlosen DOG-Kartenpakete aus allen vier Sorten öffnen? Es wird kein Spielgeld abgezogen.'))return;
+  await openPacks((data.packs||[]).map(p=>({packId:p.id,mode:'all'})));
+ }
+ async function openPacks(tasks){
+  if(busy||!data||!activeUser())return;
+  const uid=activeUser().uid;busy=true;render();
+  let packsOpened=0,paid=0,free=0;
+  const cards=[],boards=[];
   try{
-   const out=await api('POST','open',{packId,requestId:requestId(packId),expectedPrice:data.packs?.find(p=>p.id===packId)?.price});
-   clearId(packId);
-   if(activeUser()?.uid!==uid)return;
-   data={...data,...out};render();reveal(out.revealed||[]);queueCompletedBoards(out.completedBoards);
-   status(out.usedFreePack?'✅ Gratispaket eingelöst – kein Spielgeld abgezogen.':'✅ DOG-Karten wurden deinem Saison-2-Album gutgeschrieben.');
-   // Der quittierte POST enthält den aktuellen Stand; kein zusätzlicher Firestore-GET.
+   let pending=pendingBatch(uid);
+   if(pending){
+    status('🔄 Letzte Kartenpaket-Buchung wird sicher geprüft …');
+    const out=await settleBatch(uid,pending);
+    packsOpened+=out.quantity||1;paid+=out.paidPacksOpened??(out.usedFreePack?0:1);
+    free+=out.freePacksOpened??(out.usedFreePack?1:0);
+    cards.push(...(out.revealed||[]));boards.push(...(out.completedBoards||[]));
+   }
+   for(const task of tasks){
+    const matchingPending=pending&&pending.packId===task.packId;
+    if(task.mode!=='all'&&matchingPending&&pending.quantity===(task.mode==='five'?5:1)&&pending.vouchersOnly===false){
+     pending=null;continue;
+    }
+    if(task.mode==='all'){
+     let remaining=Math.max(0,Number(data.freePacks?.[task.packId])||0);
+     while(remaining>0){
+      const entry=openBatchEntry(task.packId,Math.min(10,remaining),true);
+      saveBatch(uid,entry);
+      status('🎁 '+number(packsOpened)+' Pakete geöffnet · '+number(remaining)+' Gratispakete dieser Sorte verbleiben …');
+      const out=await settleBatch(uid,entry);
+      packsOpened+=out.quantity||entry.quantity;paid+=out.paidPacksOpened||0;free+=out.freePacksOpened||0;
+      cards.push(...(out.revealed||[]));boards.push(...(out.completedBoards||[]));
+      const next=Math.max(0,Number(data.freePacks?.[task.packId])||0);
+      if(next>=remaining)throw Error('PAKETBESTAND_NICHT_AKTUALISIERT');
+      remaining=next;
+     }
+    }else{
+     const entry=openBatchEntry(task.packId,task.mode==='five'?5:1,false);
+     saveBatch(uid,entry);
+     status('🎁 '+entry.quantity+' DOG-Kartenpakete werden gemeinsam geöffnet …');
+     const out=await settleBatch(uid,entry);
+     packsOpened+=out.quantity||entry.quantity;paid+=out.paidPacksOpened??(out.usedFreePack?0:1);
+     free+=out.freePacksOpened??(out.usedFreePack?1:0);
+     cards.push(...(out.revealed||[]));boards.push(...(out.completedBoards||[]));
+    }
+    pending=null;
+   }
+   if(packsOpened){
+    reveal(cards,packsOpened);queueCompletedBoards(boards);
+    status('✅ '+number(packsOpened)+' Pakete geöffnet · '+number(cards.length)+' Karten gutgeschrieben · '+number(free)+' gratis · '+number(paid)+' gekauft.');
+   }
   }catch(e){
-   if(!['Failed to fetch','SERVER_ERROR'].includes(e.message))clearId(packId);
-   status('⚠️ '+(e.message==='PRICE_CHANGED'?'Der Host hat den Preis geändert. Aktualisiere die Paketpreise.':e.message==='PACK_PURCHASES_DISABLED'?'Der Host hat den Paketkauf deaktiviert.':e.message)+' · Bei Netzproblemen denselben Kauf erneut versuchen.');
-    if(['PRICE_CHANGED','PACK_PURCHASES_DISABLED'].includes(e.message))setTimeout(()=>void load(false),0);
+   if(activeUser()?.uid===uid){
+    if(packsOpened){reveal(cards,packsOpened);queueCompletedBoards(boards)}
+    status('⚠️ '+number(packsOpened)+' Pakete bestätigt. '+(e.message||e)+' · Dieselbe Öffnung kann sicher fortgesetzt werden.');
+    if(['PRICE_CHANGED','PACK_PURCHASES_DISABLED','INSUFFICIENT_PACK_VOUCHERS','INSUFFICIENT_FUNDS'].includes(e.message)){
+     clearBatch(uid);setTimeout(()=>void load(false),0);
+    }
+   }
   }finally{busy=false;render();maybeClaimBingos()}
  }
+ $('dog-open-all-free')?.addEventListener('click',()=>void openAllFreePacks());
+ $('dog-reveal-prev')?.addEventListener('click',()=>{if(revealPage>0){revealPage--;displayRevealPage()}});
+ $('dog-reveal-next')?.addEventListener('click',()=>{if((revealPage+1)*REVEAL_PAGE_SIZE<openedCards.length){revealPage++;displayRevealPage()}});
  async function exchange(){
   if(busy||!data?.duplicates?.canExchange)return;
   if(!confirm('100 DOG-Duplikate für einen Monster-Rad-Dreh eintauschen? Deine ersten Karten bleiben erhalten.'))return;
