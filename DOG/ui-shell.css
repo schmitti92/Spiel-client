@@ -771,3 +771,12 @@ main{width:calc(100% - 22px);max-width:1920px;margin:6px auto}
 @media(prefers-reduced-motion:reduce){
  .dog-hand-module .hand .playing-card.dog-designed.picked{transition:none!important}
 }
+
+/* Card-only hand: remove explanatory labels, keep gameplay buttons available. */
+.dog-hand-module .dog-hand-title-group,
+.dog-hand-module #move-help,
+.dog-hand-module #selected-info{display:none!important}
+.dog-hand-module .dog-module-heading:has(#show-hand[hidden]){display:none!important}
+.dog-hand-module .dog-module-heading{min-height:0;padding:0!important;margin:0!important;border:0!important}
+.dog-hand-module #show-hand:not([hidden]){margin:5px 7px}
+.dog-hand-module .hand{margin-top:0!important}
