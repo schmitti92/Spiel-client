@@ -318,6 +318,10 @@ function renderPlayers(){
 function renderHand(){
   const seat=currentHuman(),title=$('hand-title'),hand=$('hand'),actions=$('moves'),button=$('show-hand');
   actions.innerHTML='';hand.innerHTML='';
+  // Card count controls the physical hand-card size; never affects saved or online game state.
+  const shownSeat=seat>=0?seat:(online&&onlineSeat!==null?onlineSeat:-1);
+  const shownCards=shownSeat>=0?game.hands?.[shownSeat]:null;
+  hand.dataset.cardCount=Array.isArray(shownCards)?String(shownCards.length):'0';
   if(game.phase==='finished'){title.textContent='🏆 Partie beendet';button.hidden=true;return;}
   if(seat<0){title.textContent=online&&onlineSeat!==null?'🃏 Deine Handkarten':'🤖 Bots spielen';button.hidden=true;if(online&&onlineSeat!==null&&Array.isArray(game.hands[onlineSeat]))hand.innerHTML=game.hands[onlineSeat].map(c=>cardMarkup(c.type,{tag:'div'})).join('');available=[];return;}
   if(lastTurn!==seat){revealed=online||humans===1;selectedCard=null;selectedPiece=null;jokerAs=null;lastTurn=seat;}
