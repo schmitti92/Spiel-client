@@ -50,6 +50,7 @@ function buildRoyalRoundSummaryModal(summary,options={}){
  const currentRound=counting?0:Number(focus.round||0);
  const standardExtraButtons=summary.ended?`<button class="sky-score-next" onclick="Game.openRoyalFinaleSummary()">ZUM FINALE <span>❯❯</span></button>`:
    cloud.enabled&&!isHostDevice()?'<div class="sky-score-wait">⏳ Der Host startet die nächste Runde</div>':'<button class="sky-score-next" onclick="Game.nextRound()">WEITER <span>❯❯</span></button>';
+ const extraButtons=window.SkyjoToreSpecial?.nextButton(state,summary,standardExtraButtons,cloud.enabled&&isHostDevice())||standardExtraButtons;
  const centerItems=royalGridMarkup(focus,{counting,isActive:true});
  return `<div class="royal-modal royal-round-modal sky-score-scene ${counting?'royal-counting sky-score-counting':''}" role="region" aria-label="Punkteabrechnung nach Runde ${Number(summary.round)}">
    <div class="sky-score-header"><div class="sky-score-logo"><span>SKYJO</span><strong>ACTION</strong><i class="sky-logo-card lc1"></i><i class="sky-logo-card lc2"></i><i class="sky-logo-card lc3"></i></div><h2>✧ &nbsp; PUNKTEABRECHNUNG &nbsp; ✧</h2><div class="sky-score-round-label">RUNDE ${Number(summary.round)}</div></div>
