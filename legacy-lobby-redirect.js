@@ -1,0 +1,27 @@
+/* Compatibility entry: old game-selection URLs now lead to one main lobby.
+ * No room creation, Firestore reads, or game actions occur during this redirect.
+ */
+(function(){
+ 'use strict';
+ const script=document.currentScript;
+ const from=new URL(location.href);
+ const dest=new URL('hub-lobby.html',from);
+ const q=from.searchParams;
+ // Only known navigation context goes forward; never carry arbitrary destinations.
+ const room=q.get('room');
+ if(room&&/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/i.test(room))
+   dest.searchParams.set('room',room.toUpperCase());
+ const invite=q.get('invite');
+ if(invite&&/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/i.test(invite))
+   dest.searchParams.set('invite',invite.toUpperCase());
+ const stay=q.get('stayMatch');
+ if(stay&&/^[A-Za-z0-9_-]{1,100}$/.test(stay))dest.searchParams.set('stayMatch',stay);
+ if(q.get('choose')==='1')dest.searchParams.set('choose','1');
+ // Stage is represented by the same main hub, never a different lobby.
+ const mode=script?.dataset?.mode==='local'?'local':'online';
+ dest.searchParams.set('view',mode);
+ if(from.pathname!==dest.pathname){
+  document.documentElement.style.visibility='hidden';
+  location.replace(dest.href);
+ }
+})();
