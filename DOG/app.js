@@ -1,4 +1,5 @@
 import {CARD_EDITIONS,CARD_EDITION,loadCardEdition,saveCardEdition,cardBackImage,cardMarkup,cardVisual} from './card-visuals.js?v=6';
+import {enableHandTouchGestures} from './hand-gestures.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
 import {DEFAULT_APPEARANCE,BOARD_STYLES,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=12';
@@ -444,6 +445,7 @@ $('dog-joker-grid').addEventListener('click',event=>{
 });
 $('dog-joker-close').addEventListener('click',()=>{jokerDialog.close();selectedCard=null;jokerAs=null;selectedPiece=null;render();});
 jokerDialog.addEventListener('cancel',()=>{selectedCard=null;jokerAs=null;selectedPiece=null;render();});
+enableHandTouchGestures($('hand'),{status:$('dog-hand-zoom-status')});
 $('hand').addEventListener('click',e=>{const btn=e.target.closest('[data-card]');if(btn)onCard(Number(btn.dataset.card));});
 $('moves').addEventListener('click',e=>{const btn=e.target.closest('[data-special]');if(!btn)return;const index=available.findIndex(m=>m.type===btn.dataset.special&&(jokerAs===null||m.as===jokerAs));if(index>=0)onMove(index);});
 $('board').addEventListener('click',e=>{
