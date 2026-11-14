@@ -363,6 +363,20 @@ const testPanel=$('dog-card-test'),testSelect=$('dog-test-card');
 if(!online){
  testPanel.hidden=false;
  for(const type of CARD_TYPES){const option=document.createElement('option');option.value=type;option.textContent=type==='swap'?'Tauschkarte':type==='joker'?'Joker':type==='1/11'?'1 oder 11':type;testSelect.appendChild(option);}
+ $('dog-test-seven-setup').addEventListener('click',()=>{
+  if(!confirm('7er-Test starten? Dein bisheriger lokaler DOG-Spielstand wird durch eine Testpartie ersetzt.'))return;
+  if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
+  humans=1;$('human-count').value='1';
+  game=createGame({names:['Du','Spieler Blau','Spieler Grün','Spieler Gelb'],bots:[false,true,true,true]});
+  game.phase='play';game.current=0;game.starter=0;
+  game.exchanges=[null,null,null,null];
+  const first=game.pieces.filter(p=>p.owner===0);
+  for(const [i,pos] of [2,8].entries()){first[i].place='track';first[i].pos=pos;}
+  const card=game.hands[0][0];card.type='7';
+  selectedCard=card.id;selectedPiece=null;revealed=true;lastTurn=0;available=[];
+  save();render();
+  $('status').textContent='🧪 Zwei rote Figuren stehen auf der Strecke. Tippe „7 beginnen“ und verteile z. B. 3 + 4 Felder auf beide Figuren.';
+ });
  $('dog-give-test-card').addEventListener('click',()=>{
   if(!game||game.phase==='finished'||game.phase==='seven'){ $('status').textContent='🧪 Testkarte erst außerhalb einer laufenden 7 oder nach einem Neustart einsetzen.';return;}
   const seat=currentHuman();
