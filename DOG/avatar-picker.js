@@ -4,6 +4,7 @@
  'use strict';
  const KEY='spielportal:dog:avatars:v1';
  const MAX=16;
+ const ASSET_BASE=new URL('../',document.currentScript?.src||document.baseURI).href;
  const valid=n=>Number.isInteger(n)&&n>=0&&n<MAX;
  const profile=()=>window.SpielOnline?.state?.()?.profile||null;
  const uid=()=>String(window.SpielOnline?.state?.()?.user?.uid||'');
@@ -19,7 +20,8 @@
   return valid(n)?n:seat%MAX;
  }
  function onlineAvatar(){
-  const n=preferences().online?.[uid()];
+  const p=preferences();
+  const n=p.online?.[uid()]??p.online?.guest;
   if(valid(n))return n;
   const p=Number(profile()?.avatar);
   return valid(p)?p:0;
@@ -36,15 +38,15 @@
  }
  function css(avatar){
   const n=valid(Number(avatar))?Number(avatar):0;
-  const i=n%8,src=new URL(n<8?'../profile-avatars.webp':'../profile-avatars-extra.webp',document.currentScript?.src||location.href).href;
+  const i=n%8,src=new URL(n<8?'profile-avatars.webp':'profile-avatars-extra.webp',ASSET_BASE).href;
   return 'background-image:url("'+src+'");background-size:400% 200%;background-position:'+(i%4)*100/3+'% '+Math.floor(i/4)*100+'%;background-repeat:no-repeat';
  }
  async function syncRoomAvatar(avatar,notice){
   const code=new URL(location.href).searchParams.get('room');
-  if(!/^(?:\\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(code||''))return;
+  if(!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(code||''))return;
   const user=window.SpielOnline?.state?.()?.user;
   if(!user?.getIdToken)return;
-  const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\\/+$/,'');
+  const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
   try{
    notice.textContent='Profilbild wird übernommen …';
    const token=await user.getIdToken();
