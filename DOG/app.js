@@ -4,7 +4,7 @@ import {mountDogEmojiGame,showDogEmoji,showDogEmojiError} from './emoji-game.js?
 import {boardGestureTarget} from './board-gesture-math.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
-import {DEFAULT_APPEARANCE,BOARD_STYLES,SIDEBAR_BACKGROUNDS,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=15';
+import {DEFAULT_APPEARANCE,BOARD_STYLES,SIDEBAR_BACKGROUNDS,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=16';
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=10';
 
 const $=id=>document.getElementById(id);
@@ -580,7 +580,9 @@ function applyAppearance(){
     :'none';
   const variables={
     '--dog-sidebar-wallpaper':sidebarWallpaper,
-    '--dog-page-bg':look.board.page,
+    '--dog-page-bg':look.scene?.image&&validAssetPath(look.scene.image)
+      ?assetBackground(look.scene.image,look.board.page)
+      :look.board.page,
     '--dog-frame-bg':look.board.frame,
     '--dog-card-face':assetBackground(look.cards.faceImage,look.cards.face),
     '--dog-card-special':assetBackground(look.cards.specialImage,look.cards.special),
