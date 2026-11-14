@@ -74,6 +74,7 @@
 
 /* Current SKYJO prize recipient and shared spectator seating. */
 #deal-monster-slots.skyjo-monster-special .skyjo-slot-owner-bar{
+ position:sticky;top:0;z-index:5;
  display:grid;grid-template-columns:auto minmax(0,1fr) auto;
  align-items:center;gap:clamp(7px,1.5vw,20px);width:min(930px,100%);
  box-sizing:border-box;margin:7px auto 4px;padding:clamp(7px,1vw,13px) clamp(9px,1.4vw,19px);
