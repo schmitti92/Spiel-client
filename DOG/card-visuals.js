@@ -27,7 +27,7 @@ export function cardMarkup(type,{tag='button',selected=false,extraClass='',attrs
  const c=cardVisual(type);
  const value=type==='swap'?'⇄':type==='joker'?'★':type;
  const safe=x=>String(x).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
- const art=c.image?'<img class="dog-card-art" src="'+safe(c.image)+'" alt="" loading="eager" onerror="this.remove()">':'';
+ const art=c.image?'<img class="dog-card-art" src="'+safe(c.image)+'" alt="" loading="eager" onload="this.parentNode.classList.add('has-dog-art')" onerror="this.remove()">':'';
  const inner=art+'<span class="dog-card-top"><span>'+safe(value)+'</span><span>✦</span></span><span class="dog-card-main"><span class="dog-card-value">'+safe(value)+'</span><span class="dog-card-symbol">'+safe(c.symbol)+'</span></span><span class="dog-card-footer">'+safe(footer||c.caption)+'</span>';
  return '<'+tag+' class="playing-card dog-designed '+(selected?'picked ':'')+safe(extraClass)+'" data-card-kind="'+safe(c.kind)+'" '+attrs+'>'+inner+'</'+tag+'>';
 }
