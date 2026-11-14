@@ -7,12 +7,13 @@ function dealSlotReelsFor(game,uid){
  const max=Math.max(...results.map(p=>p.payout));
  const champions=results.filter(p=>p.payout===max);
  if(champions.length!==1)return 0;
- if(champions[0].id===uid)return game?.monsterSlotShow?.reels===3||game?.monsterSlotShow?.reels===1?3:6;
+ const modern=game?.slotRewardVersion===3||[2,6].includes(game?.monsterSlotShow?.reels);
+ if(champions[0].id===uid)return modern?6:3;
  if(results.length<3)return 0; // In a 2-player game the runner-up is the loser.
  const lower=[...new Set(results.filter(p=>p.payout<max).map(p=>p.payout))].sort((a,b)=>b-a);
  if(!lower.length)return 0;
  const runners=results.filter(p=>p.payout===lower[0]);
- return runners.length===1&&runners[0].id===uid?(game?.monsterSlotShow?.reels===3||game?.monsterSlotShow?.reels===1?1:2):0;
+ return runners.length===1&&runners[0].id===uid?(modern?2:1):0;
 }
 window.dealSlotReelsFor=dealSlotReelsFor;
 // Show the next Banker call using the schedule saved by the server.
