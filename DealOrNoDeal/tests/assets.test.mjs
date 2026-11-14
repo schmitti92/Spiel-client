@@ -161,7 +161,8 @@ test('rebuilt banker always displays a calculated offer quality gauge', () => {
  const js=readFileSync(resolve(root,'js/banker.js'),'utf8');
  assert.match(html,/id="banker-offer-quality"/);
  assert.match(html,/id="banker-offer-quality-fill"/);
- assert.match(js,/const ratio=average>0\?offerAmount\/average\*100:0/);\n assert.match(js,/const offerAmount=bankerCashOffer\(h\)/);
+ assert.match(js,/const ratio=average>0\?offerAmount\/average\*100:0/);
+ assert.match(js,/const offerAmount=bankerCashOffer\(h\)/);
  assert.match(js,/filter\(amount=>!removed\.has\(amount\)\)/);
   assert.match(js,/g\.caseCount/);
  assert.match(css,/\.banker-offer-quality\[hidden\]\{display:none!important\}/);
