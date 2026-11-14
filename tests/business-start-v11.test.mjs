@@ -52,7 +52,8 @@ test('The existing match URL and central lobby code remain intact',()=>{
  assert.match(js,/new URLSearchParams\(\{hub:r\.code,match:m\.id,gameCode:m\.gameCode\}\)/);
  assert.match(js,/business_online\.html\?/);
  assert.match(home,/^const roomLocation=.*Business\/business_start\.html/m);
- assert.match(hub,/Business\/business_start\.html\?room=/);
+ assert.match(hub,/room\.game==='business'/);
+ assert.doesNotMatch(hub,/location\.replace\('Business\/business_start\.html/);
 });
 test('Authenticated WebSocket and HTTP room updates remain available',()=>{
  assert.match(js,/type:'subscribe',code,profileIdToken:token/);
