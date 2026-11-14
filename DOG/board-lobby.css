@@ -30,3 +30,7 @@
 @media(prefers-reduced-motion:reduce){
  .dog-plate-choice,.dog-plate-choice img{animation:none!important;transition:none!important}
 }
+
+:root[data-dog-motion="off"] .dog-plate-choice,:root[data-dog-motion="off"] .dog-plate-choice img{
+ animation:none!important;transition:none!important
+}
