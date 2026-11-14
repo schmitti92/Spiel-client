@@ -1,0 +1,163 @@
+import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=1';
+import {loadAppearance,saveAppearance} from './appearance-registry.js?v=18';
+import {loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=1';
+// The collection never grants event rewards. Cosmetic choices persist locally;
+// only an explicit avatar update in an active room uses the existing DOG API.
+const $=id=>document.getElementById(id),qs=new URLSearchParams(location.search),root=new URL('../',location.href);
+function returnPage(){
+ try{const u=new URL(qs.get('return')||'../hub-lobby.html',location.href),file=u.pathname.split('/').pop();
+ if(u.origin!==location.origin||!['hub-lobby.html','spielauswahl-lokal.html'].includes(file)||u.pathname!==root.pathname+file)throw Error('invalid');
+ return u;}catch{return new URL('../hub-lobby.html',location.href);}
+}
+const back=returnPage(),local=back.pathname.endsWith('/spielauswahl-lokal.html');
+$('collection-back-top').href=back.href;$('collection-back-footer').href=back.href;
+const tones={gold:'linear-gradient(135deg,#a26e28,#2c2147,#071a32)',azure:'linear-gradient(145deg,#206c91,#092c51,#061831)',cyan:'linear-gradient(145deg,#3b92a0,#164878,#101736)',violet:'linear-gradient(135deg,#8c42b1,#371e64,#0a1735)',forest:'linear-gradient(145deg,#3f8d6c,#1b443e,#091c31)',ember:'linear-gradient(140deg,#b86a23,#7b2250,#16223b)',indigo:'linear-gradient(140deg,#3d4a91,#151f58,#081b35)',wood:'linear-gradient(140deg,#8e5826,#49321f,#072341)'};
+let cat=dogCollectionCategory(qs.get('category')),filter='all',picked=null,seat=0,slot=0,toastTimer;
+function el(tag,className='',textValue){
+ const node=document.createElement(tag);if(className)node.className=className;
+ if(textValue!==undefined)node.textContent=String(textValue);return node;
+}
+function notify(message){const box=$('collection-toast');box.textContent=message;box.hidden=false;
+ clearTimeout(toastTimer);toastTimer=setTimeout(()=>{box.hidden=true;},3500);}
+const avatar=()=>local?(window.DogAvatars?.localAvatar?.(seat)??seat):(window.DogAvatars?.onlineAvatar?.()??0);
+function equipped(item){
+ if(item.status!=='available')return false;
+ if(item.kind==='default')return true;
+ if(item.kind==='avatar')return item.avatar===avatar();
+ if(item.kind==='emoji')return loadEmojiSlots().includes(item.id);
+ if(item.kind==='appearance')return loadAppearance()[item.field]===(item.value??item.id);
+ return false;
+}
+function art(item,big=false){
+ const wrap=el('div',big?'detail-image':'tile-art'),placeholder=el('div',big?'detail-fallback':'tile-fallback');
+ placeholder.style.background=item.background||tones[item.artTone]||tones.azure;
+ placeholder.append(el('span','',item.icon||'🐾'));
+ if(item.image){
+  const img=el('img');img.alt='';img.loading=big?'eager':'lazy';let fallbackUsed=false;
+  img.onerror=()=>{if(!fallbackUsed&&item.fallbackImage){fallbackUsed=true;img.src=new URL(item.fallbackImage,import.meta.url).href;}else img.classList.add('is-broken');};
+  img.src=new URL(item.image,import.meta.url).href;wrap.append(img);
+ }
+ wrap.append(placeholder);
+ if(item.kind==='avatar'){
+  const sprite=el('span','portrait-sprite'),index=item.avatar%8;
+  sprite.style.backgroundImage="url('"+new URL(item.avatar<8?'../profile-avatars.webp':'../profile-avatars-extra.webp',import.meta.url).href+"')";
+  sprite.style.backgroundSize='400% 200%';sprite.style.backgroundPosition=(index%4*100/3)+'% '+(Math.floor(index/4)*100)+'%';wrap.append(sprite);
+ }
+ if(item.palette){
+  const group=el('div','collection-pawn-preview');
+  for(const color of item.palette.slice(0,4)){const mark=el('i');mark.style.setProperty('--pawn',color);group.append(mark);}
+  placeholder.replaceChildren(group);
+ }
+ if(item.cardTheme){
+  const t=item.cardTheme,pic=el('div','collection-card-preview');
+  pic.style.setProperty('--card-face',t.face);pic.style.setProperty('--card-border',t.border);pic.style.setProperty('--card-ink',t.ink);
+  pic.append(el('b','','9'),el('small','',t.emblem));wrap.append(pic);
+ }
+ return wrap;
+}
+function drawNavigation(){
+ const nav=$('collection-categories');
+ nav.replaceChildren(...DOG_COLLECTION_CATEGORIES.map(group=>{
+  const stats=dogCollectionStats(group),btn=el('button','category-button'+(group.id===cat.id?' is-active':''));
+  btn.type='button';btn.setAttribute('aria-current',String(cat.id===group.id));
+  btn.setAttribute('aria-label',group.title+': '+stats.available+' von '+stats.total+' verfügbar');
+  btn.append(el('span','category-icon',group.icon),el('strong','',group.title),el('span','category-count',stats.available+'/'+stats.total));
+  btn.onclick=()=>{cat=group;filter='all';picked=null;const url=new URL(location.href);url.searchParams.set('category',group.id);history.replaceState(null,'',url);draw();};
+  return btn;
+ }));
+}
+function drawFilters(){
+ const s=dogCollectionStats(cat);
+ $('collection-heading').textContent=cat.icon+' '+cat.title;$('collection-subheading').textContent=cat.subtitle;
+ $('count-all').textContent='('+s.total+')';$('count-available').textContent='('+s.available+')';$('count-planned').textContent='('+s.planned+')';
+ document.querySelectorAll('[data-filter]').forEach(btn=>btn.setAttribute('aria-pressed',String(btn.dataset.filter===filter)));
+}
+function drawGrid(){
+ const items=cat.items.filter(x=>filter==='all'||x.status===filter);
+ if(!items.some(x=>x.id===picked))picked=items.find(equipped)?.id||items[0]?.id||null;
+ $('collection-empty').hidden=items.length>0;
+ $('collection-grid').replaceChildren(...items.map(item=>{
+  const locked=item.status==='planned',active=equipped(item),btn=el('button','collection-tile'+(locked?' is-locked':'')+(item.id===picked?' is-selected':''));
+  btn.type='button';btn.setAttribute('aria-pressed',String(item.id===picked));btn.setAttribute('aria-label',item.name+' · '+(locked?'gesperrt':active?'aktiv':'verfügbar'));
+  const image=art(item);image.append(el('span','tile-status-icon'+(locked?' lock':''),locked?'🔒':'✓'));
+  btn.append(image,el('div','tile-title',item.name),el('span','tile-label'+(locked?' planned':active?' active':''),locked?'Späteres Event':active?'✓ Aktiv':'Verfügbar'));
+  btn.onclick=()=>{picked=item.id;drawGrid();drawDetails();if(matchMedia('(max-width:840px)').matches)$('collection-detail').scrollIntoView({behavior:'smooth',block:'nearest'});};
+  return btn;
+ }));
+}
+function slotsPreview(){const row=el('div','detail-emoji-slots');for(const id of loadEmojiSlots())row.append(el('span','detail-emoji-slot',emojiById(id)?.emoji||'＋'));return row;}
+async function equipAvatar(item,button){
+ const ap=window.DogAvatars;if(!ap){notify('Profilbilder konnten nicht geladen werden.');return;}
+ button.disabled=true;ap.setLocal(seat,item.avatar);ap.setOnline(item.avatar);
+ const code=back.searchParams.get('room')||'',user=window.SpielOnline?.state?.()?.user;
+ if(!local&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(code)&&user?.getIdToken){
+  try{
+   const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
+   const response=await fetch(base+'/api/hub/rooms/'+encodeURIComponent(code)+'/dog/avatar',{
+    method:'POST',headers:{Authorization:'Bearer '+await user.getIdToken(),'Content-Type':'application/json'},body:JSON.stringify({avatar:item.avatar})
+   });
+   const data=await response.json();
+   if(!response.ok||data.ok!==true)throw Error(data.error||'Synchronisierung fehlgeschlagen');
+   notify('✓ Profilbild für den DOG-Raum übernommen.');
+  }catch(err){notify('Lokal gespeichert; Synchronisierung im Raum: '+(err.message||'nicht möglich'));}
+ }else notify('✓ Profilbild auf diesem Gerät gespeichert.');
+ draw();
+}
+function equip(item,button){
+ if(item.status!=='available')return;
+ if(item.kind==='avatar'){void equipAvatar(item,button);return;}
+ if(item.kind==='emoji'){
+  const slots=loadEmojiSlots(),previous=slots.indexOf(item.id);
+  if(previous!==-1&&previous!==slot)slots[previous]=slots[slot]||null;
+  slots[slot]=item.id;saveEmojiSlots(slots);
+  notify('✓ '+item.icon+' in Schnellplatz '+(slot+1)+' gespeichert.');draw();return;
+ }
+ if(item.kind==='appearance'){
+  saveAppearance({...loadAppearance(),[item.field]:item.value??item.id});
+  window.dispatchEvent(new Event('dog-appearance-changed'));
+  notify('✓ '+item.name+' für DOG ausgewählt.');draw();return;
+ }
+ notify('Das ist bereits das DOG-Standarddesign.');
+}
+function drawDetails(){
+ const root=$('collection-detail-content');root.replaceChildren();
+ const item=cat.items.find(x=>x.id===picked);if(!item){root.append(el('p','collection-detail-loading','Bitte wähle einen Inhalt aus.'));return;}
+ const locked=item.status==='planned',active=equipped(item),btn=el('button','detail-button'+(locked?' is-locked':active&&item.kind!=='emoji'?' is-active':''));
+ btn.type='button';
+ btn.textContent=locked?'🔒 Später freischaltbar':item.kind==='default'?'✓ Standardsymbol aktiv':active&&item.kind!=='emoji'?'✓ Aktiv':item.kind==='emoji'?'In Schnellleiste verwenden':'✓ Ausrüsten';
+ btn.disabled=locked||item.kind==='default'||(active&&item.kind!=='emoji');
+ if(!btn.disabled)btn.onclick=()=>equip(item,btn);
+ root.append(art(item,true),el('h3','detail-title',item.name),el('div','detail-rule'),
+   el('div','detail-state'+(locked?' is-locked':''),locked?'🔒 Geplantes Event':active?'✓ Aktiv / vorhanden':'✓ Verfügbar'),
+   el('p','detail-description',item.description||'DOG-Design'));
+ if(item.kind==='avatar'&&local&&!locked){
+  const label=el('label','detail-picker','Spielerplatz'),select=el('select');
+  ['Rot','Blau','Grün','Gelb'].forEach((name,i)=>{const option=el('option','','Spieler '+(i+1)+' · '+name);option.value=String(i);option.selected=i===seat;select.append(option);});
+  select.onchange=()=>{seat=Number(select.value)||0;draw();};label.append(select);root.append(label);
+ }
+ if(item.kind==='emoji'){
+  root.append(slotsPreview());
+  if(!locked){
+   const label=el('label','detail-picker','Schnellplatz'),select=el('select');
+   for(let i=0;i<5;i++){const option=el('option','',String(i+1));option.value=String(i);option.selected=i===slot;select.append(option);}
+   select.onchange=()=>{slot=Number(select.value)||0;};label.append(select);root.append(label);
+  }
+ }
+ root.append(btn,el('small','detail-fine',locked?'Vorschau: Diese Belohnung ist noch nicht im Spiel freischaltbar.':
+  item.kind==='emoji'?'Emoji-Schnelltasten werden lokal nach Spielerprofil gespeichert.':
+  item.kind==='avatar'?'Das Profilbild wird lokal und im aktiven DOG-Raum nach Möglichkeit synchronisiert.':
+  item.kind==='default'?'Dieser Standardinhalt ist ohne Freischaltung vorhanden.':
+  'Die Auswahl ist rein optisch und wird ohne zusätzliche Firestore-Schreibvorgänge gespeichert.'));
+}
+function draw(){
+ const stats=dogCollectionStats();
+ $('collection-total').textContent=stats.available+' / '+stats.total;
+ $('collection-progress-bar').style.width=(100*stats.available/Math.max(1,stats.total)).toFixed(1)+'%';
+ $('collection-progress-caption').textContent=stats.planned+' weitere Vorschauen für zukünftige Erweiterungen';
+ drawNavigation();drawFilters();drawGrid();drawDetails();
+}
+document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;picked=null;drawFilters();drawGrid();drawDetails();});
+window.addEventListener('spielonline-change',()=>{if(['avatars','emojis'].includes(cat.id))draw();});
+window.addEventListener('dog-avatar-change',()=>{if(cat.id==='avatars')draw();});
+window.addEventListener('dog-emojis-changed',()=>{if(cat.id==='emojis')draw();});
+draw();
