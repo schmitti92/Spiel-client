@@ -2,6 +2,8 @@
  * DOG plate picker for local catalog and online hub lobby. Everything is
  * cosmetic per device: no Firestore calls and no edits to server game state.
  */
+import {applyMotionMode,loadMotionMode} from './motion-settings.js';
+applyMotionMode(loadMotionMode());
 import {BOARD_STYLES,loadAppearance,saveAppearance} from './appearance-registry.js?v=21';
 const plates=Object.entries(BOARD_STYLES);
 const sections=[];
