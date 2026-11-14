@@ -103,6 +103,26 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
  .hand{padding:2px 1px 4px}.moves{max-height:9vh}
  .teams{margin-top:1px}
 }
+
+/* Phase 2: permanent hand rail and useful move/history space. */
+@media (min-width:900px) and (orientation:landscape) and (max-height:1100px){
+ .right{grid-template-rows:auto auto minmax(0,1fr)}
+ .right .panel:nth-child(2){display:flex;flex-direction:column;flex:none;overflow:visible}
+ .right .panel:nth-child(3){display:flex;flex-direction:column;min-height:0;overflow:hidden}
+ .right .panel:nth-child(3) .history{flex:1;min-height:0;max-height:none;overflow-y:auto}
+ .right .panel:nth-child(3) .status{flex:none}
+ .hand{flex:0 0 auto;min-height:0;width:100%;justify-content:space-between;overflow-x:auto;overflow-y:visible}
+ .hand .playing-card{flex:1 1 0;min-width:0;max-width:none;height:clamp(86px,14dvh,135px)}
+ .hand .playing-card:focus-visible{outline-offset:-3px}
+ .move-help{flex:none}
+ .moves{flex:0 1 auto;min-height:0;max-height:clamp(44px,14dvh,125px);overflow:auto}
+ .right .panel:nth-child(2) #selected-info{flex:none}
+}
+@media (min-width:900px) and (orientation:landscape) and (max-height:650px){
+ .hand .playing-card{height:clamp(60px,12dvh,88px)}
+ .moves{max-height:9dvh}
+}
+
 /* When a user rotates to portrait, use the normal scrollable responsive layout. */
 @media (max-width:899px), (orientation:portrait){
  body{overflow:auto}
