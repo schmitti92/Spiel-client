@@ -1,5 +1,6 @@
 import {CARD_EDITIONS,CARD_EDITION,loadCardEdition,saveCardEdition,cardBackImage,cardMarkup,cardVisual} from './card-visuals.js?v=6';
-import {enableHandTouchGestures} from './hand-gestures.js?v=1';
+import {enableHandTouchGestures} from './hand-gestures.js?v=2';
+import {boardGestureTarget} from './board-gesture-math.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
 import {DEFAULT_APPEARANCE,BOARD_STYLES,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=12';
@@ -123,10 +124,11 @@ boardSvg.addEventListener('pointermove',event=>{
  const points=[...boardPointers.values()];
  const mid={x:points.reduce((v,p)=>v+p.x,0)/points.length,y:points.reduce((v,p)=>v+p.y,0)/points.length};
  if(points.length>=2&&gestureSnapshot.distance>0){
-  const nextZoom=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,gestureSnapshot.zoom*Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y)/gestureSnapshot.distance));
-  const previousScale=boardPixelScale();
-  const focal={x:gestureSnapshot.center.x+(gestureSnapshot.mid.x-mid.x)/previousScale,y:gestureSnapshot.center.y+(gestureSnapshot.mid.y-mid.y)/previousScale};
-  boardZoom=nextZoom;boardCenter=focal;applyBoardView();
+  const target=boardGestureTarget(gestureSnapshot,{
+   x:mid.x,y:mid.y,
+   distance:Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y)
+  },boardSvg.getBoundingClientRect(),{boardSize:BOARD_SIZE,minZoom:ZOOM_MIN,maxZoom:ZOOM_MAX});
+  boardZoom=target.zoom;boardCenter=target.center;applyBoardView();
   gestureMoved=true;suppressBoardClickUntil=performance.now()+450;
  }else if(boardZoom>1&&points.length===1){
   const delta=Math.hypot(event.clientX-old.x,event.clientY-old.y);
