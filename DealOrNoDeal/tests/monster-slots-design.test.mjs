@@ -10,12 +10,12 @@ const slotMarkup=JSON.parse(js.split('root.innerHTML=')[1].split(';\n')[0]);
 test('Monster Slots script parses as a classic browser script and is loaded with a cache-busted asset',()=>{
  assert.doesNotThrow(()=>new Script(js,{filename:'monster-slots-final.js'}));
  assert.match(html,/js\/monster-slots-final\.js\?v=20261114-(?:spectator|cards-priority|slot-results-scroll|slot-handoff)/);
- assert.match(html,/css\/monster-slots-final\.css\?v=20261113-podium-slots-v2/);
+ assert.match(html,/css\/monster-slots-final\.css\?v=20261114-podium-six-two-v1/);
 });
-test('three reels with real scrolling icon tracks and sequential stops, never a browser-side prize roll',()=>{
- assert.equal((slotMarkup.match(/class="monster-slot-reel"/g)||[]).length,3,'exactly three reels');
- assert.equal((slotMarkup.match(/class="monster-slot-track"/g)||[]).length,3,'one moving track per reel');
- assert.equal((slotMarkup.match(/class="monster-slot-prize"/g)||[]).length,3,'one server prize display per reel');
+test('six real reels with rolling icon tracks and sequential stops, never a browser-side prize roll',()=>{
+ assert.equal((slotMarkup.match(/class="monster-slot-reel"/g)||[]).length,6,'exactly six reels');
+ assert.equal((slotMarkup.match(/class="monster-slot-track"/g)||[]).length,6,'one moving track per reel');
+ assert.equal((slotMarkup.match(/class="monster-slot-prize"/g)||[]).length,6,'one server prize display per reel');
  assert.match(js,/3000,4500,6000/,'three left-to-right stop timestamps');
  assert.match(js,/setPhase\(reel,'running'\)/);
  assert.match(js,/showPrize\(reels\[i\],claimed\.prizes\[i\]\)/,'server prize is displayed');
@@ -23,9 +23,11 @@ test('three reels with real scrolling icon tracks and sequential stops, never a 
  assert.match(css,/@keyframes ms-roll/);
  assert.match(css,/translateY\(-50%\)/);
  assert.match(css,/animation:ms-roll/);
- assert.match(js,/if\(finished\)timer\(\(\)=>showSummary\(token,id\),single\?1000:2000\)/,'single reel reveals after one stop, triple reel after third stop');
+ assert.match(js,/const slotStops=count=>/,'show times depend on the exact prize count');
+ assert.match(js,/const slotDuration=count=>/,'results wait for all six stops');
+ assert.match(js,/slotDuration\(claimed\.prizes\.length\)-ms/,'legacy recovery uses the same finish clock');
  assert.match(js,/reels\.slice\(0,claimed\.prizes\.length\)/,'only allowed reels spin');
- assert.match(css,/data-reels="1"/,'runner-up has a single centered reel');
+ assert.match(css,/data-reels="1"/,'legacy runner-up is still supported');
 });
 test('premium show appearance supports three visible reel windows, mobile screens and reduced motion',()=>{
  assert.match(css,/linear-gradient\(155deg,#372054/);
