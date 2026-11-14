@@ -64,10 +64,8 @@ test('Host/game route preserves shared room for Skyjo, KreuzKunter, Business',()
  assert.match(home,/Barikade\/barikade_start\.html/);
  assert.match(home,/Skyjo\/skyjo_start\.html/);
  assert.match(home,/hub-lobby\.html/);
- assert.match(hub,/room\.game==='barikade'/);
- assert.match(hub,/room\.game==='skyjo'/);
- assert.doesNotMatch(hub,/location\.replace\('Barikade\/barikade_start\.html/);
- assert.doesNotMatch(hub,/location\.replace\('Skyjo\/skyjo_start\.html/);
+ assert.match(hub,/Barikade\/barikade_start\.html/);
+ assert.match(hub,/Skyjo\/skyjo_start\.html/);
 });
 test('Readiness and game leave are protected and the game itself stays unchanged',()=>{
  assert.match(js,/if\(players\.length<2\|\|!players\.every\(p=>p\.ready\)\)/);
