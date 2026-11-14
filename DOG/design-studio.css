@@ -15,3 +15,7 @@ dialog{color:#f5e9d6;background:#10283e;border:1px solid #ddb973;border-radius:1
 @media(max-width:760px){.studio-top{align-items:flex-start}.studio-brand{gap:7px}.studio-logo{width:37px;height:37px;font-size:22px}.studio-brand p{max-width:180px}.top-actions .control{font-size:11px;padding:7px 10px}.studio-columns{grid-template-columns:1fr 1fr}.preview-wrap{grid-column:1/-1;grid-row:1}.scenes{grid-column:1;grid-row:2}.boards{grid-column:2;grid-row:2}.choice-list{max-height:330px}.preview-stage{min-height:0;padding:14px}.preview-screen{width:min(100%,520px)}.live-pill{display:none}.preview-controls{padding:9px}.options-panel h2{font-size:15px}.choice{align-items:flex-start;flex-wrap:wrap}.choice-art{width:100%;height:66px;aspect-ratio:auto}.choice-check{margin-left:auto}.choice-copy{flex:1;min-width:60px}.choice-copy small{font-size:9px}.design-head{align-items:flex-start}.design-head .control{font-size:11px}}
 @media(max-width:400px){.studio-top{flex-wrap:wrap}.top-actions{justify-content:space-between;width:100%}.choice-list{max-height:290px}.choice-art{height:52px}.options-panel{padding:9px 6px}.preview-heading{padding:8px}.preview-heading h2{font-size:16px}}
 @media(prefers-reduced-motion:reduce){.control{transition:none}}
+
+/* Background library is intentionally smaller than the collection of board themes. */
+.scenes .scene-note{margin:16px 5px 0;padding:13px 10px;border:1px dashed #7798ab77;border-radius:12px;background:#112e40a8;color:#c3dce8;line-height:1.55;font-size:12px}
+.scenes .choice-list{max-height:none}
