@@ -30,11 +30,37 @@ export function enableHandTouchGestures(hand,{status=null}={}){
    distance:list.length>1?Math.hypot(list[0].x-list[1].x,list[0].y-list[1].y):0
   };
  };
+ // Use real pixel widths so SVG/PNG card art scales on Android browsers too.
+ // The initial widths come from responsive CSS; freshly rendered cards are
+ // measured once, then resized without touching card IDs or game state.
+ const syncCardWidths=()=>{
+  for(const card of hand.querySelectorAll('.playing-card.dog-designed')){
+   let width=Number(card.dataset.dogGestureBaseWidth);
+   if(!(width>0)){
+    card.style.removeProperty('width');
+    width=card.getBoundingClientRect().width;
+    if(!(width>0))continue;
+    card.dataset.dogGestureBaseWidth=String(width);
+   }
+   card.style.setProperty('width',(width*zoom).toFixed(2)+'px','important');
+  }
+ };
+ const watchCards=new MutationObserver(syncCardWidths);
+ watchCards.observe(hand,{childList:true});
+ const onWindowResize=()=>{
+  for(const card of hand.querySelectorAll('.playing-card.dog-designed')){
+   card.style.removeProperty('width');
+   delete card.dataset.dogGestureBaseWidth;
+  }
+  syncCardWidths();
+ };
+ window.addEventListener('resize',onWindowResize);
  const showZoom=value=>{
   zoom=Math.min(HAND_ZOOM_MAX,Math.max(HAND_ZOOM_MIN,value));
   hand.style.setProperty('--dog-hand-zoom',String(Number(zoom.toFixed(3))));
   hand.classList.toggle('dog-hand-magnified',zoom>1.01);
   if(status)status.textContent='Karten '+Math.round(zoom*100)+' %';
+  syncCardWidths();
  };
  const newSnapshot=()=>{
   if(pointers.size<2){gesture=null;return;}
@@ -117,5 +143,11 @@ export function enableHandTouchGestures(hand,{status=null}={}){
   hand.removeEventListener('lostpointercapture',end);
   hand.removeEventListener('click',suppressClick,true);
   hand.removeEventListener('dragstart',stopNativeDrag);
+  watchCards.disconnect();
+  window.removeEventListener('resize',onWindowResize);
+  for(const card of hand.querySelectorAll('.playing-card.dog-designed')){
+   card.style.removeProperty('width');
+   delete card.dataset.dogGestureBaseWidth;
+  }
  };
 }
