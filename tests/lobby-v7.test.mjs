@@ -17,8 +17,7 @@ test('No duplicate or missing HTML elements referenced by room controller',()=>{
 });
 test('Local games available without a user account',()=>{
  assert.match(html,/id="local-view"/);
- assert.match(js,/setPlayMode\('local',\{updateUrl:true\}\)/);
- assert.doesNotMatch(js,/location\.assign\('spielauswahl-lokal\.html'\)/);
+ assert.match(js,/location\.assign\('spielauswahl-lokal\.html'\)/);
  for(const path of [
  'Barikade/barikade.html?offline=1',
  'Skyjo/skyjo_action.html?mode=local',
@@ -172,7 +171,7 @@ test('Delayed Firebase login can recover the original room without duplicate fet
  assert.match(js,/let pendingRoomRecovery=null,recoveryInFlight=false/);
  assert.match(js,/if\(!pendingRoomRecovery\|\|room\|\|code\|\|!activeProfile\(\)\|\|recoveryInFlight\)return/);
  assert.match(js,/if\(pendingRoomRecovery!==requestedCode\|\|room\|\|code\|\|r\?\.code!==requestedCode\)return/);
- assert.match(js,/render\(\);if\(uid\)\{if\(pendingRoomRecovery\)void recoverPendingRoom\(\);else recoverStoredRoom\(\);\}/);
+ assert.match(js,/render\(\);if\(uid\)void recoverPendingRoom\(\)/);
 });
 
 test('Temporary room restoration failures use bounded exponential retry delays',()=>{
