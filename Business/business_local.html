@@ -4654,7 +4654,7 @@ function init(){
  shell.classList.add('hidden');$('game').classList.remove('hidden');setLeftTab('score');render();
 }
 $('localStart').onclick=()=>{saveConfig();init()};
-$('localBack').onclick=()=>location.assign('../hub-lobby.html?view=local');
+$('localBack').onclick=()=>location.assign('../spielauswahl-lokal.html');
 $('newGameBtn').onclick=()=>{if(confirm('Lokales Spiel neu starten?'))location.reload()};
 setup();$('game').classList.add('hidden');shell.classList.remove('hidden');
 })();
