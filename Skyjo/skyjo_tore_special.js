@@ -23,7 +23,17 @@ const DEFINITIONS=[
  ['five-groups','Räume fünf Kombinationen ab',10,'hard','groups',5],
  ['clear-board','Räume dein ganzes Spielfeld ab',10,'hard','boardClear',1],
  ['four-columns','Räume vier Spalten ab',10,'hard','columns',4],
- ['below-minus-ten','Beende die Runde mit −10 oder weniger Punkten',6,'hard','score',-10,true]
+ ['below-minus-ten','Beende die Runde mit −10 oder weniger Punkten',6,'hard','score',-10,true],
+ // New mission variants: 1–10 reels per objective; all use already tracked actions.
+ ['first-combo','Auftakt-Kombo: Räume deine erste Kombination ab',1,'easy','groups',1],
+ ['finish-ten','Punktesammler: Schließe mit höchstens 10 Punkten ab',1,'easy','score',10,true],
+ ['zero-trio','Nullen-Trio: Zeige drei Nullen gleichzeitig',3,'medium','zerosAtOnce',3],
+ ['minus-five','Eiskalt kalkuliert: Beende die Runde mit höchstens −5 Punkten',5,'medium','score',-5,true],
+ ['three-columns','Säulenstürmer: Räume drei Spalten ab',7,'hard','columns',3],
+ ['three-jokers','Jokerfestival: Zeige drei Joker gleichzeitig',8,'hard','jokersAtOnce',3],
+ ['six-groups','Kombinationskönig: Räume sechs Kombinationen ab',9,'hard','groups',6],
+ ['double-twelve','Doppelte Zwölf: Räume zwei reine 12er-Reihen ab',9,'hard','twelveRows',2],
+ ['minus-twenty','Eisbrecher: Schließe mit −20 Punkten oder weniger ab',10,'hard','score',-20,true]
 ].map(r=>({id:r[0],name:r[1],slots:r[2],tier:r[3],field:r[4],at:r[5],less:!!r[6]}));
 const LOOKUP=Object.fromEntries(DEFINITIONS.map(m=>[m.id,m]));
 const REWARD_ART={
@@ -97,13 +107,22 @@ function bonusCellsFor(game,matchId,round){
  });
  return fields;
 }
-function missionsFor(matchId,round){
+function missionsFor(matchId,round,{legacy=false}={}){
  let n=seed(matchId,round);
- return ['easy','medium','hard'].map(tier=>{
-  const pool=DEFINITIONS.filter(m=>m.tier===tier);
+ if(legacy)return ['easy','medium','hard'].map(tier=>{
+  const pool=DEFINITIONS.slice(0,22).filter(m=>m.tier===tier);
   n=(Math.imul(n,1664525)+1013904223)>>>0;
   return pool[n%pool.length].id;
  });
+ const selected=[],used=new Set();
+ for(const tier of ['hard','easy','medium','medium']){
+  const pool=DEFINITIONS.filter(m=>m.tier===tier&&!used.has(m.field));
+  if(!pool.length)throw Error('SKYJO_MISSION_POOL_EXHAUSTED');
+  n=(Math.imul(n,1664525)+1013904223)>>>0;
+  const mission=pool[n%pool.length];
+  selected.push(mission);used.add(mission.field);
+ }
+ return [selected[1],selected[2],selected[3],selected[0]].map(m=>m.id);
 }
 function blankProgress(){return {rows:0,columns:0,streets:0,twelveRows:0,groups:0,zeroSeen:0,jokerSeen:0,zerosAtOnce:0,jokersAtOnce:0,boardClear:0};}
 function active(game){return !!(game&&game.skyjoSpecial?.enabled&&game.skyjoSpecial.round===game.round);}
@@ -196,15 +215,21 @@ function markCells(game){
 function hud(game,index){
  if(!active(game)||index<0)return '';
  const p=game.skyjoSpecial.progress?.[index]||blankProgress();
- const scored=game.lastRoundSummary?.players?.[index]?.round;
- const results=game.skyjoSpecial.missions.map(id=>{
-  const m=LOOKUP[id];if(!m)return '';
-  const won=missionDone(m,p,game.phase==='play'?NaN:Number(scored));
-  return '<div class="skyjo-tore-mission '+(won?'done':'')+'"><span>'+(won?'✅':'🎯')+'</span><span>'+esc(m.name)+'</span><strong>'+m.slots+' 🎰</strong></div>';
- }).join('');
+ const isFinal=game.phase==='betweenRounds'||game.phase==='gameOver';
+ const scored=isFinal?Number(game.lastRoundSummary?.players?.[index]?.round):NaN;
  const activeMissions=game.skyjoSpecial.missions.map(id=>LOOKUP[id]).filter(Boolean);
- const complete=activeMissions.filter(m=>missionDone(m,p,
-  game.phase==='betweenRounds'||game.phase==='gameOver'?Number(scored):NaN));
+ const tierNames={easy:'LEICHT',medium:'MITTEL',hard:'SCHWER'};
+ const results=activeMissions.map(m=>{
+  const won=missionDone(m,p,scored);
+  const tracked=Math.max(0,Math.min(m.at,Number(p?.[m.field]||0)));
+  const status=m.less?(Number.isFinite(scored)?'Endstand: '+scored+' · Ziel: ≤ '+m.at:'⏳ Zählt bei der Rundenwertung'):
+   'Fortschritt: '+tracked+' / '+m.at;
+  return '<div class="skyjo-tore-mission '+(won?'done':'')+' skyjo-tore-tier-'+esc(m.tier)+'" aria-label="'+esc(m.name)+'">'+
+   '<span class="skyjo-tore-mission-icon">'+(won?'✅':'🎯')+'</span>'+
+   '<div class="skyjo-tore-mission-copy"><span class="skyjo-tore-mission-tier">'+tierNames[m.tier]+'</span><span class="skyjo-tore-mission-name">'+esc(m.name)+'</span><small>'+esc(status)+'</small></div>'+
+   '<strong class="skyjo-tore-mission-payout">'+m.slots+' 🎰</strong></div>';
+ }).join('');
+ const complete=activeMissions.filter(m=>missionDone(m,p,scored));
  const completed=complete.length;
  const earnedSlots=complete.reduce((sum,m)=>sum+m.slots,0);
  const target=game.skyjoSpecial.bonusCells?.[index];
@@ -213,7 +238,7 @@ function hud(game,index){
  const bonusText=Number.isSafeInteger(target)?
   (bonusAchieved(game,index)?'✅ Joker-Bonusfeld erfüllt · +2 Slots':
    '🃏 Joker-Zielfeld ('+where+') · Joker bei der Schlusswertung = +2 Slots'):'';
- return '<div class="skyjo-tore-hud" aria-label="100 Tore Special Missionen"><div class="skyjo-tore-head">🎰 100 TORE SPECIAL <small>'+completed+'/3 Missionen · '+earnedSlots+' 🎰 Slots erspielt · Dreh erst NACH der Rundenwertung</small></div><div class="skyjo-tore-grid">'+results+'</div>'+
+ return '<div class="skyjo-tore-hud" aria-label="100 Tore Special Missionen"><div class="skyjo-tore-head">🎰 100 TORE SPECIAL <small>'+completed+'/'+activeMissions.length+' Missionen · '+earnedSlots+' 🎰 Slots erspielt · Dreh erst NACH der Rundenwertung</small></div><div class="skyjo-tore-grid">'+results+'</div>'+
   (bonusText?'<div class="skyjo-tore-bonus-hint">'+bonusText+'</div>':'')+'</div>';
 }
 function nextButton(game,summary,defaultHTML,host){
