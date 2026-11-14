@@ -14,6 +14,7 @@ on:
       - 'tests/dog-hand-gestures.test.mjs'
       - 'tests/dog-board-gestures.test.mjs'
       - 'tests/dog-board-backdrops.test.mjs'
+      - 'tests/dog-ui-shell.test.mjs'
       - 'tests/dog-official-rules.test.mjs'
       - 'tests/dog-online-sync.test.mjs'
       - '.github/workflows/dog-board-check.yml'
@@ -30,6 +31,7 @@ on:
       - 'tests/dog-hand-gestures.test.mjs'
       - 'tests/dog-board-gestures.test.mjs'
       - 'tests/dog-board-backdrops.test.mjs'
+      - 'tests/dog-ui-shell.test.mjs'
       - 'tests/dog-official-rules.test.mjs'
       - 'tests/dog-online-sync.test.mjs'
   workflow_dispatch:
@@ -53,7 +55,10 @@ jobs:
       - run: node --check DOG/board-layout.js
       - run: node --check DOG/appearance-registry.js
       - run: node --check DOG/board-picker.js
+      - run: node --check DOG/ui-shell.js
+      - run: node --check DOG/ui-features.js
       - run: node --test tests/dog-board-backdrops.test.mjs
+      - run: node --test tests/dog-ui-shell.test.mjs
       - run: node --test tests/dog-card-editions.test.mjs
       - run: node --test tests/dog-hand-gestures.test.mjs
       - run: node --test tests/dog-board-gestures.test.mjs
