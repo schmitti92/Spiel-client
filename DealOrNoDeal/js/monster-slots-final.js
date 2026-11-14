@@ -38,21 +38,36 @@ const rolling=[
 const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 // Local visuals mirror the authoritative server clock; never choose prizes here.
 const slotStops=count=>count===1?[3000]:count===2?[3000,4500]:
- count===3?[3000,4500,6000]:[3000,4000,5000,6000,7000,8000];
-const slotDuration=count=>count===1?4200:count===2?6500:count===3?7800:10000;
+ count===3?[3000,4500,6000]:count===6?[3000,4000,5000,6000,7000,8000]:
+ Array.from({length:Math.min(12,Math.max(0,count))},(_,i)=>3000+i*470);
+const slotDuration=count=>count===1?4200:count===2?6500:count===3?7800:count<=6?10000:10500;
 
 const seenKey=id=>'monster-slots-watched:'+String(user()?.uid||'anonymous')+':'+id;
 const root=document.createElement('section');root.id='deal-monster-slots';root.hidden=true;root.tabIndex=-1;
 root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');root.setAttribute('aria-labelledby','monster-slots-title');
 root.innerHTML="<div class=\"monster-slot-machine\">\n <div class=\"monster-slot-lights\" aria-hidden=\"true\">✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦</div>\n <div class=\"monster-slot-kicker\">✦ GOLDSTUDIO · DAS GROSSE GEWINNFINALE ✦</div>\n <h2 id=\"monster-slots-title\">🎰 MONSTER SLOTS</h2>\n <p class=\"monster-slot-shared-caption\" aria-live=\"polite\" hidden></p>\n <p class=\"monster-slot-subheading\">6 WALZEN <span aria-hidden=\"true\">◆</span> 6 GARANTIERTE GEWINNE</p>\n <div class=\"monster-slot-ribbon\" aria-hidden=\"true\">✧ &nbsp; JEDER SLOT GEWINNT &nbsp; ✧</div>\n <div class=\"monster-slot-reels\" role=\"group\" aria-label=\"Sechs Gewinnwalzen\">\n  <div class=\"monster-slot-reel\" data-reel=\"0\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 01<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n  <div class=\"monster-slot-reel\" data-reel=\"1\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 02<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n  <div class=\"monster-slot-reel\" data-reel=\"2\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 03<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n  <div class=\"monster-slot-reel\" data-reel=\"3\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 04<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n  <div class=\"monster-slot-reel\" data-reel=\"4\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 05<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n  <div class=\"monster-slot-reel\" data-reel=\"5\" data-phase=\"ready\">\n   <div class=\"monster-slot-reel-head\"><span class=\"monster-slot-led\"></span>WALZE 06<span class=\"monster-slot-led\"></span></div>\n   <div class=\"monster-slot-window\">\n    <div class=\"monster-slot-track\" aria-hidden=\"true\"></div>\n    <div class=\"monster-slot-prize\" hidden><div class=\"monster-slot-art\"><span class=\"monster-slot-emoji\">🎁</span></div><span class=\"monster-slot-quantity\">1×</span><strong class=\"monster-slot-prize-name\">Dein Gewinn</strong></div>\n    <div class=\"monster-slot-glass\" aria-hidden=\"true\"></div>\n   </div>\n   <div class=\"monster-slot-reel-foot\"><span class=\"monster-slot-state\">BEREIT</span><span aria-hidden=\"true\">✦</span></div>\n  </div>\n </div>\n <div class=\"monster-slot-progress\" aria-hidden=\"true\"><span></span><span></span><span></span><span></span><span></span><span></span></div>\n <p id=\"monster-slot-status\" class=\"monster-slot-status\" role=\"status\" aria-live=\"polite\">Deine Gewinne werden geladen …</p>\n <button id=\"monster-slot-accept\" type=\"button\" disabled>🎁 Gewinne bestätigen</button>\n <p class=\"monster-slot-footnote\">Jede Walze gewinnt. Die Preise sind serverseitig gesichert.</p>\n</div>";
 
+// Reuse the original prize reel to support one shared 7–12-reel SKYJO special.
+ // Existing Deal or No Deal 1/2/3/6-reel stages are completely unchanged.
+const reelGrid=root.querySelector('.monster-slot-reels');
+const progressGrid=root.querySelector('.monster-slot-progress');
+const reelTemplate=root.querySelector('.monster-slot-reel');
+for(let i=6;i<12;i++){
+ const reel=reelTemplate.cloneNode(true);
+ reel.dataset.reel=String(i);
+ reel.querySelector('.monster-slot-reel-head').childNodes[1].textContent='WALZE '+String(i+1).padStart(2,'0');
+ reelGrid.append(reel);
+ progressGrid.append(document.createElement('span'));
+}
 document.body.append(root);
 const reels=[...root.querySelectorAll('.monster-slot-reel')],lights=[...root.querySelectorAll('.monster-slot-progress span')];
 const status=$('monster-slot-status'),accept=$('monster-slot-accept');
 const entitledReels=()=>typeof g!=='undefined'?Number(window.dealSlotReelsFor?.(g,user()?.uid)||0):0;
 function configureReels(count){
- const n=[1,2,3,6].includes(Number(count))?Number(count):6;
+ const requested=Number(count);
+ const n=Number.isInteger(requested)&&requested>=1&&requested<=12?requested:6;
  root.dataset.reels=String(n);
+ root.dataset.layout=n>6?'extended':'classic';
  const specialCase=root.dataset.turn==='case';
  for(let i=0;i<reels.length;i++){reels[i].hidden=i>=n;lights[i].hidden=i>=n;}
  const subtitle=root.querySelector('.monster-slot-subheading');
@@ -60,6 +75,7 @@ function configureReels(count){
   '🥈 ZWEITER PLATZ · 1 WALZE · 1 GARANTIERTER GEWINN':n===2?
   '🥈 ZWEITER PLATZ · 2 WALZEN · 2 GARANTIERTE GEWINNE':n===3?
   (specialCase?'🎁 SONDERKOFFER · 3 WALZEN · 3 GARANTIERTE GEWINNE':'🏆 ERSTER PLATZ · 3 WALZEN · 3 GARANTIERTE GEWINNE'):
+  n>6?'🏰 SKYJO 100 TORE SPECIAL · '+n+' WALZEN · '+n+' GARANTIERTE GEWINNE':
   '🏆 ERSTER PLATZ · 6 WALZEN · 6 GARANTIERTE GEWINNE';
  root.querySelector('.monster-slot-reels')?.setAttribute('aria-label',
   n+' Gewinnwalzen');
