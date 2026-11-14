@@ -1,0 +1,28 @@
+name: SKYJO 100 Tore Special
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Skyjo/**'
+      - 'DealOrNoDeal/js/monster-slots-final.js'
+      - 'DealOrNoDeal/js/skyjo-slot-inbox.js'
+      - 'DealOrNoDeal/game.html'
+      - 'DealOrNoDeal/lobby.html'
+      - '.github/workflows/skyjo-tore-special.yml'
+  pull_request:
+    paths:
+      - 'Skyjo/**'
+      - 'DealOrNoDeal/js/monster-slots-final.js'
+      - 'DealOrNoDeal/js/skyjo-slot-inbox.js'
+  workflow_dispatch:
+jobs:
+  syntax-and-missions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test Skyjo/tests/skyjo-tore-special.test.mjs
+      - run: node --check DealOrNoDeal/js/skyjo-slot-inbox.js
