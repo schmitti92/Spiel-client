@@ -582,7 +582,7 @@
  function rewardMayExist(){
   if(typeof g==='undefined'||!g?.id)return false;
   if(g.pendingCardReveals?.length)return true;
-  if((g.events||[]).some(e=>e.type==='opened'&&(e.amount===1||e.amount===5_000_000_000)&&pendingReward('cent',g.id+'_'+e.eventId)))return true;
+  if((g.caseSlotRewardVersion!==1&&(g.events||[]).some(e=>e.type==='opened'&&(e.amount===1||e.amount===5_000_000_000)&&pendingReward('cent',g.id+'_'+e.eventId))))return true;
   if((g.history||[]).some(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true&&pendingReward('banker',g.id+'_'+h.round+'_'+d.id))))return true;
   if(g.phase==='final'&&g.monsterSlotsVersion!==1&&pendingReward('final',g.id)){
    const payouts=(g.finalValues||[]).map(v=>v.payout);
@@ -616,7 +616,7 @@
    }else{
     if((g.history||[]).some(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true&&pendingReward('banker',g.id+'_'+h.round+'_'+d.id))))endpoints.push('/christmas-banker-rewards');
     if(g.phase==='final'&&g.monsterSlotsVersion!==1&&pendingReward('final',g.id)&&document.getElementById('finale-cinema')?.hidden&&!finishTiedFinal()&&!sessionStorage.getItem('final-wheel-complete:'+g.id))endpoints.push('/christmas-final-reward');
-    if((g.events||[]).some(e=>e.type==='opened'&&(e.amount===1||e.amount===5_000_000_000)&&pendingReward('cent',g.id+'_'+e.eventId)))endpoints.push('/christmas-cent-reward');
+    if((g.caseSlotRewardVersion!==1&&(g.events||[]).some(e=>e.type==='opened'&&(e.amount===1||e.amount===5_000_000_000)&&pendingReward('cent',g.id+'_'+e.eventId))))endpoints.push('/christmas-cent-reward');
    }
    for(const endpoint of endpoints){
     const response=await fetch(api(endpoint),{headers,cache:'no-store'});
