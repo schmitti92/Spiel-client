@@ -233,7 +233,10 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
           <a id="dog-room-christmas" class="dog-room-action dog-room-action-navy" href="DOG/christmas-event.html">🎄 Weihnachtsdorf & Gebäude</a>
           <a id="dog-room-meta-album" class="dog-room-action dog-room-action-navy" data-meta-album-link href="meta-sammelalbum.html?return=hub-lobby.html">📖 Meta-Sammelalbum</a>
         </div>
-        <button id="dog-room-rules-open" class="dog-room-utility dog-room-rules-button" type="button">▣ Spielregeln</button>
+        <div class="dog-room-bottom-actions">
+          <button id="dog-room-rules-open" class="dog-room-utility dog-room-rules-button" type="button">▣ Spielregeln</button>
+          <button id="dog-room-stats-open" class="dog-room-utility dog-room-stats-button" type="button">📊 Spielstatistik</button>
+        </div>
       </section>
     </div>
   </div>
@@ -244,11 +247,33 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
     <p>Online startet DOG automatisch, sobald alle aktiven Mitspieler bereit sind. Freie Plätze übernehmen Computergegner.</p>
     <button id="dog-room-rules-close" class="dog-room-action dog-room-action-gold" type="button">Verstanden</button>
   </dialog>
+  <dialog id="dog-room-stats" class="dog-room-rules-dialog dog-room-stats-dialog" aria-labelledby="dog-room-stats-title">
+    <div class="dog-room-stats-heading">
+      <span class="dog-room-stats-icon" aria-hidden="true">📊</span>
+      <div><span class="dog-room-stats-eyebrow">DEINE PERSÖNLICHE DOG-BILANZ</span>
+      <h2 id="dog-room-stats-title">Spielstatistik</h2></div>
+    </div>
+    <p class="dog-room-stats-subtitle">Deine Ergebnisse aus abgeschlossenen DOG-Onlinepartien – unabhängig von Raum und Mitspielern.</p>
+    <p id="dog-room-stats-feedback" class="dog-room-stats-feedback" role="status" aria-live="polite">Öffne die Statistik, um deine Ergebnisse vom Server zu laden.</p>
+    <div class="dog-room-stats-grid" id="dog-room-stats-grid" aria-label="Persönliche Spielstatistik" hidden>
+      <div class="dog-room-stats-tile dog-room-stats-tile-win"><span aria-hidden="true">🏆</span><strong id="dog-room-stats-wins">0</strong><small>Gewonnene Partien</small></div>
+      <div class="dog-room-stats-tile"><span aria-hidden="true">🎯</span><strong id="dog-room-stats-knocked">0</strong><small>Andere rausgeworfen</small></div>
+      <div class="dog-room-stats-tile"><span aria-hidden="true">💥</span><strong id="dog-room-stats-hit">0</strong><small>Selbst rausgeworfen</small></div>
+      <div class="dog-room-stats-tile"><span aria-hidden="true">🎲</span><strong id="dog-room-stats-played">0</strong><small>Partien abgeschlossen</small></div>
+    </div>
+    <p class="dog-room-stats-note">Gezählt werden bestätigte Online-Partien seit Einführung dieser Statistik. Rauswürfe durch Bots zählen mit. Laufende Partien werden nach dem Spielende gutgeschrieben.</p>
+    <div class="dog-room-stats-footer">
+      <button id="dog-room-stats-refresh" class="dog-room-utility" type="button">↻ Aktualisieren</button>
+      <button id="dog-room-stats-close" class="dog-room-action dog-room-action-gold" type="button">Schließen</button>
+    </div>
+  </dialog>
 </section>
 
 <link rel="stylesheet" href="DOG/room-lobby.css?v=1">
+<link rel="stylesheet" href="DOG/room-statistics.css?v=1">
 <script type="module" src="DOG/init-motion.js?v=1"></script><script src="DOG/avatar-picker.js?v=5"></script><script type="module" src="DOG/emoji-lobby.js?v=2"></script><script type="module" src="DOG/board-picker.js?v=9"></script>
 <script type="module" src="DOG/room-lobby.js?v=5"></script>
+<script type="module" src="DOG/room-statistics.js?v=1"></script>
 <script src="profile-config.js"></script><script src="profile-auth.js"></script><script src="hub-lobby.js?v=20261115-dog-route-fixed-v4" defer></script>
 <script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script><script src="site-global-controls.js?v=20261109-global-1"></script>
 <script>
