@@ -1,4 +1,4 @@
-# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v3
+# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v4
 Stand: 15.11.2026. Status: IN UMSETZUNG. Gewinnlogik, Varianten und funktionale Rubbeloberfläche ins Repository integriert; Artwork und echter Mehrspieler-Endtest noch offen.
 Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 
@@ -83,15 +83,23 @@ Abnahme: automatische Validierung aller 10 Varianten, auch 2–3 Gewinnkombinati
 - [x] `lastResult` wird serverseitig gespeichert; die Oberfläche bietet das noch nicht als gesehen markierte Los nach Neuladen erneut an (nur UI-Marker lokal, keine Berechtigungsprüfung damit).
 Abnahme: Unit-/Integrationstests für Guthaben, Duplikate, Entitlements, Auth, Parallelkäufe.
 
-## Phase 4 – Grafiken [ ]
-- Erst Layouts/Hitboxen finalisieren, dann 10 einzelne, hochwertige Hintergrundbilder generieren.
+## Phase 4 – Grafiken [KARTE 1/10 IN GESTALTUNG]
+- [x] Individuelles Konzeptbild für Karte 1 **Geschenkelinie** (Rot/Gold): WebP `geschenkelinie-rubbellos-01.webp` als Download in der aktuellen Unterhaltung erstellt. Vorgesehener Upload: `DOG/assets/scratch/geschenkelinie-01.webp` im Frontend-Repo. Noch NICHT im Repository hochgeladen/eingebunden.
+- [x] Geschenkelinie im Spiel bereits mit eigenständigem Rot-Gold-CSS gestaltet (`scratch-stage[data-variant="gifts"]`), unabhängig vom späteren Hintergrundbild.
+- [ ] Für Karten 2–10 jeweils ein separates Motiv gestalten, abstimmen, exportieren und einzeln einbinden.
+- [ ] Bildhintergrund von Karte 1 nach Upload maßgerecht integrieren, sodass der dynamische 3×3-Rubbelbereich exakt über der freien Mitte liegt.
 - Gemeinsame Assets: Symbole, Silber-Rubbeltextur, Gewinnleuchten, 3 Klassenrahmen.
 - Bilder ohne fest eingebrannte Gewinnsymbole oder Beträge, da dynamisch.
 - Assets in DOG-Verzeichnis des Frontend-Repos hochladen; Pfade dokumentieren.
 Abnahme: alle 10 auf Desktop und Smartphone ohne Überdeckung.
 
-## Phase 5 – Rubbeloberfläche [FUNKTIONSSTAND EINGEBAUT, VISUELLE ABNAHME OFFEN]
-- [x] Individuelle Canvas-Rubbelfelder (6–20 pro Los), Pointer/Touch, Fortschritt, Kurzregel; Button „Alle Felder aufdecken“ als Alternative.
+## Phase 5 – Rubbeloberfläche [ECHTES FREIRUBBELN + 90-%-AUTOMATIK EINGEBAUT, HANDYTEST OFFEN]
+- [x] Individuelle Canvas-Rubbelfelder (6–20 pro Los) mit Silbertextur, die unter Finger/Maus tatsächlich transparent wird.
+- [x] Fortschritt wird aus dem **Alpha-Kanal der Rubbelbeschichtung** ermittelt (Abtastung pro Canvas), nicht aus Wischstrecke oder Anzahl von Tipps.
+- [x] Ab **90 % der gesamten Beschichtungsfläche** gibt die UI automatisch alle restlichen Felder und Gewinnkombinationen frei; sichtbarer Prozentbalken.
+- [x] Ab 90 % lokalem Rubbelanteil eines Felds verschwindet dessen Restbeschichtung; das zählt als aufgedeckte Fläche.
+- [x] Sofort-Aufdecken für neue Lose ausgeblendet; für Tastaturbedienung einzelne Felder per Enter/Leertaste freigebbar; Altlostickets behalten Kompatibilitätsbutton.
+- [ ] Auf Mobilgeräten prüfen, dass Touch/Pointer-Verhalten und tatsächliche 90-%-Schwelle sauber funktionieren.
 - [x] Gewinnkombinationen werden nach Freirubbeln gold markiert und ihre Preise separat ausgewiesen; ×2 und seltenes Hauptgewinn-×2 gekennzeichnet.
 - [x] Nieten werden nach dem Aufrubbeln ohne leuchtende Gewinnkombination und mit Nieten-Hinweis gezeigt.
 Abnahme: Touch, Maus, Vollbild, Reload, kleine Displays.
@@ -122,4 +130,6 @@ Abnahme: echte Spielrunde über mehrere Geräte.
 - 15.11.2026: Alle zehn Generatoren/Regelprüfer für 0–3 Gewinnkombinationen ergänzt; 10.000 erzeugte Spielfelder in einer isolierten JS-Prüfung erfolgreich kontrolliert; Node-Testdatei eingecheckt. Noch kein Live-Gameplay.
 - 15.11.2026: Phase 3: Gewinnlogik mit exakt gewichteten drei Hauptkategorien und Sonderregeln mit dem 10-Varianten-Generator verbunden; Spielfeld und Gewinn werden zusammen im Kaufbeleg gespeichert. 12.000 simulierte Testkäufe mit erfolgreichen Feld-Prüfungen; dauerhafter Node-Test in `serverfinal/tests/christmas-scratch-purchase.test.js` angelegt.
 - 15.11.2026: Phase 5/6: 6–20 einzelne Rubbel-Felder, Anleitung, Gewinnreihe, Niete, ×2, Mehrfachgewinn und Reload-Wiederherstellung im Frontend eingecheckt. Render rollt Backend via AutoDeploy aus. Browser-Endtest und Artwork stehen noch aus.
-- Nächster Schritt: Render-/GitHub-Pages-Endtest mit signiertem Profil auf Handy und Desktop; anschließend individuell gestaltete Hintergrundbilder für die 10 Varianten.
+- 15.11.2026: Echte Silberschicht-Erasure mit Pixel-Alpha-Messung, 90-%-Automatik und Prozentbalken im Frontend ergänzt. Statische Codeprüfung bestanden, Browser-/Touch-Praxistest steht aus.
+- 15.11.2026: Karte 1 „Geschenkelinie“ einzeln als Bildkonzept generiert und als WebP exportiert; eigenes Rot/Gold-CSS bereits im Frontend. WebP-Asset muss noch vom Nutzer in `DOG/assets/scratch/geschenkelinie-01.webp` hochgeladen und danach eingebunden werden.
+- Nächster Schritt: Geschenkelinie-Bild nach Upload einpassen, Rubbelbereich auf Smartphone abnehmen, anschließend Karte 2 „Schneeflocken-Bingo“ individuell entwickeln.
