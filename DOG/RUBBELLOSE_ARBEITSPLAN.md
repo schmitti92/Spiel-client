@@ -1,4 +1,4 @@
-# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v4
+# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v5
 Stand: 15.11.2026. Status: IN UMSETZUNG. Gewinnlogik, Varianten und funktionale Rubbeloberfläche ins Repository integriert; Artwork und echter Mehrspieler-Endtest noch offen.
 Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 
@@ -83,15 +83,17 @@ Abnahme: automatische Validierung aller 10 Varianten, auch 2–3 Gewinnkombinati
 - [x] `lastResult` wird serverseitig gespeichert; die Oberfläche bietet das noch nicht als gesehen markierte Los nach Neuladen erneut an (nur UI-Marker lokal, keine Berechtigungsprüfung damit).
 Abnahme: Unit-/Integrationstests für Guthaben, Duplikate, Entitlements, Auth, Parallelkäufe.
 
-## Phase 4 – Grafiken [KARTE 1/10 IN GESTALTUNG]
-- [x] Individuelles Konzeptbild für Karte 1 **Geschenkelinie** (Rot/Gold): WebP `geschenkelinie-rubbellos-01.webp` als Download in der aktuellen Unterhaltung erstellt. Vorgesehener Upload: `DOG/assets/scratch/geschenkelinie-01.webp` im Frontend-Repo. Noch NICHT im Repository hochgeladen/eingebunden.
-- [x] Geschenkelinie im Spiel bereits mit eigenständigem Rot-Gold-CSS gestaltet (`scratch-stage[data-variant="gifts"]`), unabhängig vom späteren Hintergrundbild.
-- [ ] Für Karten 2–10 jeweils ein separates Motiv gestalten, abstimmen, exportieren und einzeln einbinden.
-- [ ] Bildhintergrund von Karte 1 nach Upload maßgerecht integrieren, sodass der dynamische 3×3-Rubbelbereich exakt über der freien Mitte liegt.
-- Gemeinsame Assets: Symbole, Silber-Rubbeltextur, Gewinnleuchten, 3 Klassenrahmen.
-- Bilder ohne fest eingebrannte Gewinnsymbole oder Beträge, da dynamisch.
-- Assets in DOG-Verzeichnis des Frontend-Repos hochladen; Pfade dokumentieren.
-Abnahme: alle 10 auf Desktop und Smartphone ohne Überdeckung.
+## Phase 4 – Grafiken [KARTE 1/10 FERTIG VORBEREITET, UPLOAD AUSSTEHEND]
+- [x] **Karte 1 „Geschenkelinie“** einzeln als hochwertiges Motiv (Rot/Gold, neun goldene Rubbelplätze) generiert.
+- [x] Optimierte WebP-Datei erstellt: `geschenkelinie-01.webp`, **1086×1448 Pixel**, ca. 414 KB. Download aus der aktuellen Unterhaltung.
+- [x] **Artwork-Feld-Ausrichtung im Frontend**: `christmas-event.html` enthält den neuen `scratch-card-art`-Wrapper; `christmas-scratch.css` positioniert das 3×3-Spielfeld auf den neun gedruckten goldenen Feldern.
+- [x] Gewinn-Symbole werden weiterhin vom Render-Server generiert; das Motiv enthält keine festen Symbolkombinationen oder Münzbeträge.
+- [x] Zur 3×3-Variante passende Gewinnregel sichtbar: drei gleiche Symbole waagerecht, senkrecht oder diagonal. 0–3 Gewinnreihen können gemäß Ergebnis entstehen.
+- [ ] **Grafik in GitHub hochladen:** Repository `schmitti92/Spiel-client`, Pfad `DOG/assets/scratch/geschenkelinie-01.webp`.
+- [ ] **Visuelle Abnahme nach Upload:** Die silbernen 3×3-Beschichtungen müssen die neun Goldflächen präzise abdecken (Desktop und Smartphone), 90-%-Automatik testen.
+- [ ] Karten 2–10 nacheinander als eigene Motive gestalten, exportieren und integrieren.
+- Gemeinsam genutzte Assets: Silbertextur, Emoji-Symbole, Gewinnleuchten, Qualitätsrahmen.
+Abnahme: Bilddatei öffentlich verfügbar, alle neun Rubbelstellen ausgerichtet, Gewinnreihen sichtbar und 90-%-Aufdeckung auf Touch-Geräten erfolgreich überprüft.
 
 ## Phase 5 – Rubbeloberfläche [ECHTES FREIRUBBELN + 90-%-AUTOMATIK EINGEBAUT, HANDYTEST OFFEN]
 - [x] Individuelle Canvas-Rubbelfelder (6–20 pro Los) mit Silbertextur, die unter Finger/Maus tatsächlich transparent wird.
@@ -132,4 +134,5 @@ Abnahme: echte Spielrunde über mehrere Geräte.
 - 15.11.2026: Phase 5/6: 6–20 einzelne Rubbel-Felder, Anleitung, Gewinnreihe, Niete, ×2, Mehrfachgewinn und Reload-Wiederherstellung im Frontend eingecheckt. Render rollt Backend via AutoDeploy aus. Browser-Endtest und Artwork stehen noch aus.
 - 15.11.2026: Echte Silberschicht-Erasure mit Pixel-Alpha-Messung, 90-%-Automatik und Prozentbalken im Frontend ergänzt. Statische Codeprüfung bestanden, Browser-/Touch-Praxistest steht aus.
 - 15.11.2026: Karte 1 „Geschenkelinie“ einzeln als Bildkonzept generiert und als WebP exportiert; eigenes Rot/Gold-CSS bereits im Frontend. WebP-Asset muss noch vom Nutzer in `DOG/assets/scratch/geschenkelinie-01.webp` hochgeladen und danach eingebunden werden.
-- Nächster Schritt: Geschenkelinie-Bild nach Upload einpassen, Rubbelbereich auf Smartphone abnehmen, anschließend Karte 2 „Schneeflocken-Bingo“ individuell entwickeln.
+- 15.11.2026: Erstes Geschenkelinie-Finalbild exportiert und 3×3-Goldfelder im Frontend per separatem Artwork-Wrapper präzise positioniert. Cache-Version erhöht, restliche neun Varianten erhalten ihre generische Oberfläche. Image-Upload und Geräteprüfung bleiben offen.
+- Nächster Schritt: WebP-Bild über GitHub nach `DOG/assets/scratch/geschenkelinie-01.webp` hochladen, 3×3-Felder auf Handy testen, dann Karte 2 entwickeln.
