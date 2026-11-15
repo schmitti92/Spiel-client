@@ -32,11 +32,14 @@ test('Christmas bonuses are automatic and cannot be toggled by the host or any p
  assert.match(event,/data-upgrade-building/);
 });
 
-test('online DOG displays gift fields received from Render and preserves room context',()=>{
+test('online DOG keeps all hidden gift and scratch positions secret and preserves room context',()=>{
  assert.match(game,/onlineChristmas=room\.match\?\.christmas/);
- assert.match(game,/onlineChristmas\.giftFields/);
- assert.match(game,/onlineChristmas\.claimedFields/);
- assert.match(game,/pointer-events="none"/);
+ assert.match(game,/onlineChristmas\?\.roundGiftCollected/);
+ assert.match(game,/onlineChristmas\.giftFieldCount/);
+ assert.match(game,/onlineChristmas\.roundScratchCollected/);
+ assert.doesNotMatch(game,/for\(const field of onlineChristmas\.giftFields/);
+ assert.doesNotMatch(game,/claimed=new Set\(onlineChristmas\.claimedFields/);
+ assert.match(game,/Hidden Christmas gifts and scratch spots intentionally have NO SVG/);
  assert.match(game,/room:hubCode,return:editorBack/);
  assert.match(lobby,/id="dog-room-christmas"/);
  assert.match(room,/dog-room-christmas/);
