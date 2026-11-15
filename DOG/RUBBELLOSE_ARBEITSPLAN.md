@@ -18,7 +18,8 @@ Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 - **🪙 Geldmünze:** kleiner Geldgewinn
 - **💵 Geldschein:** mittlerer Geldgewinn
 - **💼 Geldkoffer:** großer Geldgewinn
-- **🎁 Geschenk:** ausschließlich eine **Freischaltung / einen Premium-Gewinn**, niemals Goldmünzen.
+- **🎁 💝 🎀 🧧 Vier Geschenk-Symbole:** ausschließlich **Freischaltungen / Premium-Gewinne**, niemals Goldmünzen. Alle vier sind auch als harmlose Füllsymbole möglich; gemischte Geschenke ergeben keinen Gewinn.
+- **Drei gleiche Geschenkzeichen sind erforderlich:** Geschenkelinie in einer Dreierreihe, Schneeflocken-Bingo beliebige drei, Wichtelpfad drei orthogonal verbundene, Premium drei waagerecht (für den 24-Felder-Hauptgewinn zusätzlich 24 echte Symbolfelder).
 - Drei **feste Grundbeträge je Kaufklasse**:
 
   | Klasse | 🪙 Münze | 💵 Schein | 💼 Koffer |
@@ -29,9 +30,9 @@ Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 
 - Ein gesondert sichtbarer **×2-Multiplikator** verdoppelt den aufgedruckten Grundbetrag, ändert aber nicht die Symbolbedeutung.
 - **Gewinnchancen/Grundgewichtungen bleiben unverändert.** Spätere Host-Anpassungen der Gewichtungen erst nach Fertigstellung aller vier Lose.
-- Das Rubbelbrett und die Gewinnvergabe werden vom Server gemeinsam erstellt und unabhängig geprüft. Ein 🎁-Gewinn wird nur bei tatsächlicher Freischaltung eingetragen. Zwei Freischaltungen können als **zwei getrennte Geschenk-Gewinnkombinationen** erscheinen.
-- **Bestandsschutz:** Bereits gekaufte Rubbelkarten ohne `symbolVersion:2` werden nach ihren ursprünglichen Regeln angezeigt und nicht umgebucht.
-- Beim neuen 27-Felder-Premiumlos bleiben die Schwellen bei 20 (Geld) und 24 (Freischaltung) sichtbaren Symbolfeldern sowie waagerechte Dreierreihen erhalten. Der zugeschriebene Geldbetrag ist auch bei diesen Schwellen durch 🪙, 💵 oder 💼 gekennzeichnet; 🎁 bedeutet ausschließlich Freischaltung.
+- Das Rubbelbrett und die Gewinnvergabe werden vom Server gemeinsam erstellt und unabhängig geprüft. Ein Geschenkgewinn wird nur bei tatsächlicher Freischaltung eingetragen. Zwei Freischaltungen erscheinen mit **zwei verschiedenen** Geschenkzeichen als getrennte Gewinnkombinationen.
+- **Bestandsschutz:** Neu gekaufte Rubbelkarten verwenden `symbolVersion:3`. Ältere Lose ohne Version sowie mit `symbolVersion:2` behalten ihre ursprünglichen Regeln und Belohnungen.
+- Beim 27-Felder-Premiumlos bleiben die Schwellen bei 20 (Geld) und 24 (Freischaltung) sichtbaren Symbolfeldern erhalten. Ein neuer 24-Felder-Geschenkgewinn benötigt **zusätzlich drei gleiche Geschenke in einer waagerechten Reihe**. Ältere 24-Felder-Lose bleiben unverändert. Geldtreffer bleiben 🪙, 💵 oder 💼.
 
 ## Bestätigte Gewichtung (15.11.2026)
 
