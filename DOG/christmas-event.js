@@ -585,6 +585,7 @@ function showLiveVillage(data){
  if($('tab-tree').getAttribute('aria-selected')==='true'&&
      (oldTreeLevel===null||newTreeLevel!==oldTreeLevel))void treePrizeScreen?.load();
 }
+let pendingVillageRead=null;
 async function reloadVillage(){
  if(!villageRoomValid){
   $('building-village-role').textContent='🔎 Dorf-Vorschau';
@@ -593,16 +594,22 @@ async function reloadVillage(){
  }
  if(!eventUser()){
   $('building-live-balance').textContent='Anmeldung erforderlich';
+  $('building-village-role').textContent='🔐 Online-Profil nötig';
+  $('building-village-role').dataset.state='preview';
   $('building-event-mode').textContent='🔐 Bitte im DOG-Onlineraum mit deinem Profil anmelden.';
   return;
  }
+ if(pendingVillageRead)return pendingVillageRead; // Coalesce simultaneous open-tab + startup GETs.
  const button=$('building-wallet-refresh');
  if(button)button.disabled=true;
- try{showLiveVillage(await villageRequest('village'));}
+ pendingVillageRead=villageRequest('village');
+ try{showLiveVillage(await pendingVillageRead);}
  catch(e){
+  $('building-village-role').textContent='⚠️ Server nicht erreichbar';
+  $('building-village-role').dataset.state='preview';
   $('building-event-mode').textContent='⚠️ Dorfguthaben nicht abrufbar: '+e.message;
-  $('building-live-notice').textContent='Keine lokale Schätzung: Der Vorrat wird erst nach Bestätigung durch den Server angezeigt.';
- }finally{if(button)button.disabled=false;}
+  $('building-live-notice').textContent='Kein geschätzter Kontostand. Bitte später erneut auf „Guthaben aktualisieren“ drücken.';
+ }finally{pendingVillageRead=null;if(button)button.disabled=false;}
 }
 async function purchaseBuilding(id){
  if(!villageLive||!villageHost||!villageCanUpgrade||villageBusy)return;
