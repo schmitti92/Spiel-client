@@ -14,14 +14,14 @@ function safeBackUrl(){
   return next.href;
  }catch{return new URL('hub-lobby.html',here).href;}
 }
-for(const id of ['meta-back-top','meta-back-bottom'])$(id).href=safeBackUrl();
+$('meta-back-top').href=safeBackUrl();
 const first=metaAlbumThemeById(params.get('theme'));
-let theme=first,selected=first.pictures[0]?.id||'';
+let theme=first,selected='';
 const requestedPage=Number(params.get('page'));
 let pageIndex=Number.isInteger(requestedPage)&&requestedPage>=1?
  Math.min(metaAlbumPageCount(theme)-1,requestedPage-1):0;
 // Deep-linking to page 2 must highlight an image actually visible on that page.
-selected=theme.pictures[pageIndex*6]?.id||selected;
+// No picture selected until the user taps a frame.
 function dom(tag,className='',value){
  const node=document.createElement(tag);
  if(className)node.className=className;
@@ -42,8 +42,21 @@ function imageOf(item){
  });
  return image;
 }
+function closeThemeMenu(){
+ $('meta-theme-list').hidden=true;
+ $('meta-theme-toggle').setAttribute('aria-expanded','false');
+}
+$('meta-theme-toggle').addEventListener('click',()=>{
+ const next=!$('meta-theme-list').hidden;
+ $('meta-theme-list').hidden=next;
+ $('meta-theme-toggle').setAttribute('aria-expanded',String(!next));
+});
+document.addEventListener('pointerdown',event=>{
+ if(!event.target.closest('.meta-theme-picker'))closeThemeMenu();
+});
 function themeMenu(){
  const nav=$('meta-theme-list');nav.replaceChildren();
+ $('meta-theme-toggle').textContent=theme.icon+' '+theme.title+' ▾';
  for(const item of META_ALBUM_THEMES){
   const button=dom('button','meta-theme-button'+(item.id===theme.id?' selected':''));
   button.type='button';button.setAttribute('aria-current',item.id===theme.id?'page':'false');
@@ -53,7 +66,7 @@ function themeMenu(){
   const unlocked=item.pictures.filter(pic=>isMetaAlbumPictureUnlocked(pic)).length;
   button.append(copy,dom('span','meta-theme-count',unlocked+'/'+item.pictures.length));
   button.addEventListener('click',()=>{
-   theme=item;selected=item.pictures[0]?.id||'';pageIndex=0;
+   theme=item;selected='';pageIndex=0;closeThemeMenu();
    const url=new URL(location.href);url.searchParams.set('theme',item.id);url.searchParams.delete('page');
    history.replaceState(null,'',url);
    render();
@@ -78,7 +91,13 @@ function drawGallery(){
   button.append(dom('span','meta-picture-index','BILD '+String(pic.number).padStart(2,'0')+' / '+String(theme.pictures.length).padStart(2,'0')));
   button.append(dom('strong','meta-picture-name',pic.name));
   button.append(dom('span','meta-picture-status',unlocked?'✓ Gesammelt':'🔒 Noch gesperrt'));
-  button.addEventListener('click',()=>{selected=pic.id;drawGallery();drawDetail();});
+  button.addEventListener('click',()=>{
+   selected=pic.id;
+   lastPictureTrigger=button;
+   drawGallery();
+   drawDetail();
+   $('meta-picture-dialog').showModal();
+  });
   grid.append(button);
  }
  // Keep six fixed slots, but never invent three additional collectible items.
@@ -90,25 +109,35 @@ function drawGallery(){
   grid.append(empty);
  }
  $('meta-book-position').textContent='Seite '+(page.index+1)+' von '+page.count;
- $('meta-book-page-mark').textContent='SEITE '+(page.index+1);
  $('meta-book-prev').disabled=page.index===0;
  $('meta-book-next').disabled=page.index===page.count-1;
 }
+let lastPictureTrigger=null;
 function drawDetail(){
  const root=$('meta-picture-detail');
  const pic=theme.pictures.find(p=>p.id===selected);
  root.replaceChildren();
- if(!pic){root.append(dom('p','', 'Noch kein Bild ausgewählt.'));return;}
- // Compact detail panel: the album itself already shows numbering and progress.
+ if(!pic){root.append(dom('p','','Kein Bild ausgewählt.'));return;}
  const artwork=dom('div','meta-detail-artwork');
  artwork.append(imageOf(pic),dom('span','meta-detail-lock','🔒 VORSCHAU · GESPERRT'));
- root.append(artwork,dom('h3','meta-detail-title',pic.icon+' '+pic.name),dom('p','meta-detail-description',pic.description));
- root.append(dom('p','meta-detail-message','🎁 Später im Weihnachtsevent 1 freischaltbar.'));
+ const info=dom('div','meta-detail-info');
+ info.append(dom('h2','meta-detail-title',pic.icon+' '+pic.name));
+ info.append(dom('p','meta-detail-description',pic.description));
+ info.append(dom('p','meta-detail-message','🎁 Später im Weihnachtsevent 1 freischaltbar.'));
  const disabled=dom('button','meta-detail-disabled','🔒 Noch nicht freigeschaltet');
  disabled.type='button';disabled.disabled=true;
- root.append(disabled);
- root.append(dom('small','meta-detail-footnote','Nur Vorschau – keine Freischaltung.'));
+ info.append(disabled,dom('small','meta-detail-footnote','Nur Vorschau – keine Freischaltung.'));
+ root.append(artwork,info);
 }
+const dialog=$('meta-picture-dialog');
+$('meta-dialog-close').addEventListener('click',()=>dialog.close());
+dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close();});
+dialog.addEventListener('close',()=>{
+ // Restore focus to the same thumbnail where possible.
+ const trigger=[...$('meta-picture-grid').querySelectorAll('.meta-picture-card')]
+  .find(node=>node.getAttribute('aria-label')?.startsWith(theme.pictures.find(p=>p.id===selected)?.name+' –'));
+ if(trigger?.isConnected)trigger.focus({preventScroll:true});
+});
 /** Clone the currently visible sheet as a temporary turning leaf.
  * Old content rotates away and the next page is rendered underneath.
  * Reduced-motion users see an instant switch, with no animation.
@@ -135,7 +164,7 @@ function changePage(step){
  if(next<0||next>=metaAlbumPageCount(theme))return;
  turningLeaf(step);
  pageIndex=next;
- selected=theme.pictures[pageIndex*6]?.id||'';
+ selected='';
  const url=new URL(location.href);
  url.searchParams.set('page',String(pageIndex+1));
  history.replaceState(null,'',url);
@@ -158,7 +187,7 @@ $('meta-book-sheet').addEventListener('pointerup',event=>{
 $('meta-book-sheet').addEventListener('pointercancel',()=>{swipeStart=null;});
 // Arrow keys do not interfere with selecting a picture or focusing a field.
 document.addEventListener('keydown',event=>{
- if(event.altKey||event.ctrlKey||event.metaKey||event.target.closest('button,input,textarea,select'))return;
+ if(dialog.open||event.altKey||event.ctrlKey||event.metaKey||event.target.closest('button,input,textarea,select'))return;
  if(event.key==='ArrowRight'){event.preventDefault();changePage(1);}
  if(event.key==='ArrowLeft'){event.preventDefault();changePage(-1);}
 });
@@ -171,6 +200,6 @@ function render(){
  const total=META_ALBUM_THEMES.reduce((n,item)=>n+item.pictures.length,0);
  const owned=META_ALBUM_THEMES.reduce((n,item)=>n+item.pictures.filter(pic=>isMetaAlbumPictureUnlocked(pic)).length,0);
  $('meta-overall-count').textContent=owned+' / '+total;
- drawGallery();drawDetail();
+ drawGallery();
 }
 render();
