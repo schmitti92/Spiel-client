@@ -1,7 +1,7 @@
 /* Read-only DOG room preview. Uses the same approved/custom coordinates and
  * device appearance as the actual game, without creating game or room state. */
 import {currentBoardLayout,START_INDICES} from './board-layout.js?v=10';
-import {BOARD_STYLES,loadAppearance,validAssetPath} from './appearance-registry.js?v=21';
+import {BOARD_STYLES,loadAppearance,validAssetPath} from './appearance-registry.js?v=22';
 
 const NS='http://www.w3.org/2000/svg';
 const COLORS=['#ff5e56','#4eaafb','#4bd887','#ffd056'];
