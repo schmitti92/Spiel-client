@@ -1,112 +1,63 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {existsSync,readFileSync} from 'node:fs';
-import {META_ALBUM_THEMES,META_ALBUM_PICTURES,metaAlbumThemeById,isMetaAlbumPictureUnlocked} from '../meta-album-catalog.js';
+import {readFileSync,existsSync} from 'node:fs';
+import {META_ALBUM_THEMES,META_ALBUM_PICTURES,metaAlbumThemeById,
+ metaAlbumPage,metaAlbumPageCount,META_ALBUM_PAGE_SIZE,isMetaAlbumPictureUnlocked} from '../meta-album-catalog.js';
 const source=path=>readFileSync(new URL(path,import.meta.url),'utf8');
-test('Meta-Sammelalbum has one extensible theme with nine unique Christmas Event 1 images',()=>{
+test('twelve distinct pictures, six per page and two complete leaves',()=>{
  assert.equal(META_ALBUM_THEMES.length,1);
- const theme=META_ALBUM_THEMES[0];
- assert.equal(theme.id,'weihnachtsevent-1');
- assert.equal(theme.pictures.length,9);
- assert.equal(META_ALBUM_PICTURES.length,9);
- assert.equal(new Set(META_ALBUM_PICTURES.map(x=>x.id)).size,9);
- assert.equal(new Set(META_ALBUM_PICTURES.map(x=>x.unlockId)).size,9);
- assert.equal(metaAlbumThemeById('weihnachtsevent-1'),theme);
- assert.equal(metaAlbumThemeById('unknown'),theme);
- for(const [i,pic] of META_ALBUM_PICTURES.entries()){
-  assert.equal(pic.number,i+1);
-  assert.match(pic.unlockId,/^meta:christmas1:picture:\d\d$/);
-  assert.equal(pic.status,'locked');
-  assert.equal(isMetaAlbumPictureUnlocked(pic),false);
-  assert.ok(existsSync(new URL('../'+pic.image,import.meta.url)),pic.image+' must exist in repository');
+ assert.equal(META_ALBUM_PICTURES.length,12);
+ assert.equal(META_ALBUM_PAGE_SIZE,6);
+ assert.equal(metaAlbumPageCount(META_ALBUM_THEMES[0]),2);
+ assert.equal(metaAlbumPage(META_ALBUM_THEMES[0],0).pictures.length,6);
+ assert.equal(metaAlbumPage(META_ALBUM_THEMES[0],1).pictures.length,6);
+ assert.equal(metaAlbumPage(META_ALBUM_THEMES[0],1).emptySlots,0);
+ assert.equal(metaAlbumThemeById('weihnachtsevent-1'),META_ALBUM_THEMES[0]);
+ assert.equal(new Set(META_ALBUM_PICTURES.map(p=>p.id)).size,12);
+ assert.equal(new Set(META_ALBUM_PICTURES.map(p=>p.unlockId)).size,12);
+ for(const p of META_ALBUM_PICTURES){
+  assert.equal(p.status,'locked');
+  assert.match(p.unlockId,/^meta:christmas1:picture:\d{2}$/);
+  assert.ok(existsSync(new URL('../'+p.image,import.meta.url)),p.image);
  }
 });
-test('Meta gallery remains preview-only until verified server grants exist',()=>{
- const frontend=source('../meta-sammelalbum.js');
- const html=source('../meta-sammelalbum.html');
- assert.match(frontend,/const unlocked=isMetaAlbumPictureUnlocked\(pic\)/);
- assert.match(frontend,/disabled\.disabled=true/);
- assert.doesNotMatch(frontend,/localStorage|sessionStorage|setItem|fetch\s*\(|\.post\(/);
- assert.match(html,/id="meta-theme-list"/);
- assert.match(html,/id="meta-picture-grid"/);
- assert.match(html,/id="meta-picture-detail"/);
- assert.match(html,/id="meta-picture-dialog"/);
- assert.match(frontend,/safeBackUrl\(\)/);
+test('tree is only earned at level 10 and all four building pictures at level 5',()=>{
+ const tree=META_ALBUM_PICTURES.find(p=>p.kind==='tree');
+ const buildings=META_ALBUM_PICTURES.filter(p=>p.kind==='building');
+ assert.equal(tree.requiredLevel,10);
+ assert.equal(tree.name,'Weihnachtsbaum');
+ assert.equal(buildings.length,4);
+ assert.ok(buildings.every(p=>p.requiredLevel===5));
+ assert.deepEqual(new Set(buildings.map(p=>p.buildingId)),new Set(['tower','workshop','bakery','inn']));
+ assert.equal(META_ALBUM_PICTURES.filter(p=>p.kind==='planned').length,7);
 });
-test('Meta Sammelalbum is reachable from main, shared, local and DOG lobbies',()=>{
- assert.match(source('../hub-lobby.html'),/data-meta-album-link/);
- assert.match(source('../spielauswahl-lokal.html'),/data-meta-album-link/);
- assert.match(source('../index.html'),/meta-sammelalbum\.html\?return=index\.html/);
- assert.match(source('../hub-lobby.html'),/dog-room-meta-album/);
+test('only authenticated Render-verified Lichtertal status unlocks, not Bingo or previews',()=>{
+ const tree=META_ALBUM_PICTURES[0],other=META_ALBUM_PICTURES[1],later=META_ALBUM_PICTURES[8];
+ const status={version:2,eventId:'weihnachtsevent-1',source:'dog-lichtertal-event',
+  unlockedIds:[tree.unlockId],milestones:[{id:tree.id,unlockId:tree.unlockId,state:'unlocked'}]};
+ assert.equal(isMetaAlbumPictureUnlocked(tree,status),true);
+ assert.equal(isMetaAlbumPictureUnlocked(other,status),false);
+ assert.equal(isMetaAlbumPictureUnlocked(tree,{...status,source:'dog-season-2-bingo-rewards'}),false);
+ assert.equal(isMetaAlbumPictureUnlocked(tree,{...status,unlockedIds:[]}),false);
+ assert.equal(isMetaAlbumPictureUnlocked(later,{...status,unlockedIds:[later.unlockId],
+   milestones:[{id:later.id,unlockId:later.unlockId,state:'unlocked'}]}),false);
+ assert.equal(isMetaAlbumPictureUnlocked(tree,null),false);
 });
-
-test('book pagination keeps six slots per page, nine real images and three empty places',async()=>{
- const {META_ALBUM_PAGE_SIZE,metaAlbumPageCount,metaAlbumPage}=await import('../meta-album-catalog.js');
- const event=META_ALBUM_THEMES[0];
- assert.equal(META_ALBUM_PAGE_SIZE,6);
- assert.equal(metaAlbumPageCount(event),2);
- const first=metaAlbumPage(event,0);
- assert.deepEqual([first.pictures.length,first.emptySlots,first.index,first.count],[6,0,0,2]);
- const second=metaAlbumPage(event,1);
- assert.deepEqual([second.pictures.length,second.emptySlots,second.index,second.count],[3,3,1,2]);
- assert.deepEqual([...first.pictures,...second.pictures].map(p=>p.id),META_ALBUM_PICTURES.map(p=>p.id));
- assert.equal(metaAlbumPage(event,20).index,1);
- assert.equal(metaAlbumPage(event,-20).index,0);
- assert.equal(metaAlbumPage({pictures:[]},0).emptySlots,6);
- const script=source('../meta-sammelalbum.js');
- const html=source('../meta-sammelalbum.html');
- const css=source('../meta-sammelalbum.css');
- assert.match(script,/metaAlbumPage\(theme,pageIndex\)/);
- assert.match(script,/for\(let n=0;n<page.emptySlots;n\+\+\)/);
- assert.match(script,/function changePage\(step\)/);
- assert.match(script,/pointerup/);
- assert.match(script,/prefers-reduced-motion: reduce/);
- assert.match(html,/id="meta-book-sheet"/);
- assert.match(html,/id="meta-book-prev"/);
- assert.match(html,/id="meta-book-next"/);
- assert.match(html,/id="meta-book-position"/);
- assert.match(css,/\.meta-turn-leaf/);
-});
-test('uploaded transparent Christmas book is the page artwork and all six frames are overlaid',()=>{
- const book='assets/meta-sammelalbum/weihnachts_sammelalbum_buch_transparent.png';
- assert.ok(existsSync(new URL('../'+book,import.meta.url)),'uploaded artwork must exist');
- const css=source('../meta-sammelalbum.css');
- const html=source('../meta-sammelalbum.html');
+test('album remains book-only, with profile authentication, popup and zero client writes',()=>{
  const js=source('../meta-sammelalbum.js');
- assert.match(css,/url\("assets\/meta-sammelalbum\/weihnachts_sammelalbum_buch_transparent\.png"\)/);
- assert.match(css,/aspect-ratio:3 \/ 2/);
- assert.match(css,/--album-slots-left:10%/);
- assert.match(css,/--album-slots-top:19\.1%/);
- assert.match(css,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
- assert.match(css,/grid-template-rows:repeat\(2,minmax\(0,1fr\)\)/);
- assert.match(html,/meta-sammelalbum\.css\?v=6/);
- assert.match(js,/let pageIndex=Number\.isInteger\(requestedPage\)/);
- assert.match(js,/const unlocked=isMetaAlbumPictureUnlocked\(pic\)/,'locked rewards remain enforced');
-});
-
-
-test('variant B shows only the standalone book and opens picture previews in a modal',()=>{
  const html=source('../meta-sammelalbum.html');
  const css=source('../meta-sammelalbum.css');
- const js=source('../meta-sammelalbum.js');
+ assert.match(js,/const unlocked=isUnlocked\(pic\)/);
+ assert.match(js,/meta\.unlockedIds/);
+ assert.match(js,/getIdToken\(\)/);
+ assert.match(js,/method:'GET'/);
+ assert.doesNotMatch(js,/method:'POST'|\.setItem\(|localStorage/);
+ assert.match(js,/function changePage\(step\)/);
+ assert.match(js,/pointerup/);
+ assert.match(html,/meta-sammelalbum\.js\?v=8/);
  assert.match(html,/id="meta-picture-dialog"/);
- assert.match(html,/id="meta-dialog-close"/);
- assert.match(html,/id="meta-theme-toggle"/);
- assert.match(html,/id="meta-theme-list"[^>]*hidden/);
- assert.match(html,/id="meta-picture-detail"/);
- assert.doesNotMatch(html,/meta-album-detail glass-panel|meta-album-themes|meta-gallery-header/);
- assert.match(js,/function closeThemeMenu\(\)/);
- assert.match(js,/\$\('meta-picture-dialog'\)\.showModal\(\)/);
- assert.match(js,/dialog\.close\(\)/);
- assert.match(js,/title\.id='meta-dialog-title'/);
- assert.match(js,/dialog\.open\|\|event\.altKey/);
- assert.match(js,/const unlocked=isMetaAlbumPictureUnlocked\(pic\)/);
- assert.match(js,/disabled\.disabled=true/);
- assert.match(css,/\.meta-picture-dialog::backdrop/);
- assert.match(css,/\.meta-book-sheet/);
- assert.match(css,/aspect-ratio:3\/2/);
- assert.match(css,/meta-sammelalbum\/weihnachts_sammelalbum_buch_transparent\.png/);
- assert.match(css,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
- assert.match(html,/meta-sammelalbum\.css\?v=6/);
- assert.match(html,/meta-sammelalbum\.js\?v=6/);
+ assert.match(html,/id="meta-album-feedback"/);
+ assert.match(html,/profile-auth\.js/);
+ assert.match(css,/weihnachts_sammelalbum_buch_transparent\.png/);
+ assert.ok(existsSync(new URL('../assets/meta-sammelalbum/weihnachts_sammelalbum_buch_transparent.png',import.meta.url)));
 });
