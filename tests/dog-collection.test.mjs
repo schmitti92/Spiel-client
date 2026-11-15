@@ -30,7 +30,10 @@ test('Collection registers actual selectable designs without inventing past unlo
  assert.equal(look('boards').items.length,Object.keys(BOARD_STYLES).length-1,'missing royal-marmor art stays hidden');
  assert.equal(look('backgrounds').items.filter(x=>x.status==='available').length,Object.keys(SCENE_STYLES).length);
  assert.equal(look('pieces').items.filter(x=>x.status==='available').length,Object.keys(PIECE_STYLES).length);
- assert.equal(look('cards').items.filter(x=>x.status==='available').length,Object.keys(CARD_STYLES).length);
+ assert.equal(look('cards').items.filter(x=>x.status==='available').length,1,'only the complete picture-based card edition is published');
+ assert.deepEqual(look('cards').items.map(x=>x.id),['classic']);
+ assert.match(look('cards').items[0].image,/kartendesign-01\/normiert\/9\.png$/);
+ assert.ok(look('cards').items.every(x=>x.cardEdition),'each published deck must have real card artwork');
  assert.equal(look('hud').items.filter(x=>x.status==='available').length,Object.keys(HUD_TONES).length+Object.keys(HUD_LAYOUTS).length);
  assert.equal(look('avatars').items.filter(x=>x.status==='available').length,16);
  assert.equal(look('emblems').items.filter(x=>x.status==='available').length,1);
