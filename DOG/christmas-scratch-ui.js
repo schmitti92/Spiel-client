@@ -9,7 +9,8 @@ export const SCRATCH_TICKET_TYPES=Object.freeze([
 ]);
 const VARIANTS={
  gifts:['🎁 Geschenkelinie','Drei gleiche Symbole in einer Reihe, Spalte oder Diagonale',3,3],
- snow:['❄️ Schneeflocken-Bingo','Vier gleiche Symbole in einer Reihe, Spalte oder Diagonale',4,4],
+ snow:['❄️ Schneeflocken-Bingo (älteres Los)','Vier gleiche Symbole in einer Reihe, Spalte oder Diagonale',4,4],
+ snow_collect:['❄️ Schneeflocken-Bingo','Drei gleiche Gewinnsymbole irgendwo auf dem Los zählen als Gewinn – unabhängig von der Position. 🧊 bedeutet Niete und zählt nicht.',4,4],
  stars:['⭐ Sternensammler','Vier gleiche Sterne beliebig auf dem Los',3,4],
  elf:['🧝 Wichtelpfad','Ein zusammenhängender Symbolweg von links nach rechts',4,5],
  reindeer:['🦌 Rentierglück','Drei gleiche Rentiere beliebig auf dem Los',3,4],
@@ -113,6 +114,10 @@ export function initChristmasScratch(){
   const face=el('span','scratch-cell-symbol',symbol);
   face.setAttribute('aria-hidden','true');
   cell.append(face);
+  if(symbol==='🧊'&&stage.dataset.variant==='snow_collect'){
+   cell.classList.add('scratch-dud');
+   cell.append(el('small','scratch-cell-dud-label','Niete'));
+  }
   return cell;
  }
  function attachUnifiedCover(){
