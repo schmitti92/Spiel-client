@@ -395,7 +395,7 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 .dog-collection-local-cta strong{font-size:clamp(14px,2vw,21px)}
 .dog-collection-local-cta small{font-size:clamp(10px,1vw,13px);color:#dfddd7}
 .dog-collection-local-cta:hover,.dog-collection-local-cta:focus-visible{border-color:#fff1b9;filter:brightness(1.12)}
-</style><link rel="stylesheet" href="DOG/board-picker.css?v=4"><link rel="stylesheet" href="DOG/avatar-picker.css?v=3"><link rel="stylesheet" href="DOG/emoji-ui.css?v=3"><style>.game-grid>.dog-board-lobby{grid-column:1/-1;align-self:stretch;min-width:0}</style></head>
+</style><link rel="stylesheet" href="DOG/board-picker.css?v=4"><link rel="stylesheet" href="DOG/avatar-picker.css?v=3"><link rel="stylesheet" href="DOG/emoji-ui.css?v=3"><style>.game-grid>.dog-board-lobby{grid-column:1/-1;align-self:stretch;min-width:0}</style><link rel="stylesheet" href="meta-album-entry.css?v=1"></head>
 <body>
 <main class="container">
 <header class="page-head"><h1>🎮 Spieleauswahl</h1></header>
@@ -405,6 +405,7 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
       <article class="game kreuzkunter-card"><a class="local-game-link" href="KreuzKunter/kreuzkunter.html?mode=local" aria-label="KreuzKunter lokal spielen"><span class="visually-hidden">KreuzKunter lokal spielen</span></a></article>
       <article class="game merk-matrix-card"><a class="local-game-link" href="MinispieleV2/games/merk-matrix/index.html" aria-label="Merk-Matrix 2 lokal spielen"><span class="visually-hidden">Merk-Matrix 2 lokal spielen</span></a><div class="merk-label">🧠 MERK-MATRIX 2</div><p class="merk-info">Das Gedächtnis-Duell · 1 Mensch + 3 Bots · Neon-Finale mit 8×8-Feld</p><span class="merk-play" aria-hidden="true">▶ Lokal spielen</span></article>
       <article class="game dog-classic-card"><a class="local-game-link" href="DOG/index.html" aria-label="DOG Klassisch lokal spielen"><span class="visually-hidden">DOG lokal spielen</span></a><div class="dog-title">🐾 DOG</div><p class="dog-sub">Das Team-Brettspiel · 4 Spieler · Mit Freunden oder Bots</p><span class="dog-cta" aria-hidden="true">▶ Jetzt spielen</span></article>
+      <a class="meta-album-entry meta-album-main" data-meta-album-link href="meta-sammelalbum.html?return=spielauswahl-lokal.html"><span class="meta-album-entry-icon">📖</span><span><strong>Meta-Sammelalbum</strong><small>Weihnachtsevent 1 · Neun Bilder zum Sammeln</small></span></a>
       <a class="dog-collection-local-cta" data-dog-collection-link href="DOG/sammlung.html?return=../spielauswahl-lokal.html">
         <span class="collection-icon">🏆</span>
         <span><strong>Freigeschaltet · Meine DOG-Sammlung</strong><small>Spielbretter, Profilbilder, Figuren und verfügbare Emojis</small></span>
@@ -433,6 +434,7 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 <script>
 (function(){const back='../spielauswahl-lokal.html'+location.search;
  document.querySelectorAll('[data-dog-collection-link]').forEach(a=>a.href='DOG/sammlung.html?return='+encodeURIComponent(back));
+ document.querySelectorAll('[data-meta-album-link]').forEach(a=>a.href='meta-sammelalbum.html?return='+encodeURIComponent('spielauswahl-lokal.html'+location.search));
 })();
 </script>
 </body></html>
