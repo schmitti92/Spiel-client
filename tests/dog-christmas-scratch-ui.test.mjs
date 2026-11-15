@@ -224,11 +224,11 @@ test('premium v4 shows every actual reward and its permanent 1000-coin threshold
  assert.match(js,/symbolVersion===4/);
  assert.match(js,/20 Symbole = 1\.000/);
  assert.match(js,/function drawPrizeTable\(result,entries=\[\]\)/);
- assert.match(js,/if\(finished\)\{/);
+ assert.match(js,/if\(!finished\)\{/);
  assert.match(js,/Array\.isArray\(result\?\.winnings\)\?result\.winnings:entries/);
  assert.match(js,/section=el\('section','scratch-current-awards'\)/);
  assert.match(js,/scratch-current-value/);
- assert.match(js,/scratch-current-summary/);
+ assert.match(js,/scratch-current-hero/);
  assert.match(js,/prize\.milestone\|\|win\?\.rule/);
  assert.match(js,/\[3,4\]\.includes\(board\.symbolVersion\)/);
  assert.match(css,/\.scratch-current-grid/);
