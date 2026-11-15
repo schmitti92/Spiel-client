@@ -1,0 +1,38 @@
+name: DOG Weihnachts-Rubbellose
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/christmas-scratch-ui.js'
+      - 'DOG/christmas-scratch.css'
+      - 'DOG/christmas-event.html'
+      - 'DOG/christmas-event.js'
+      - 'DOG/collection.js'
+      - 'DOG/collection-catalog.js'
+      - 'DOG/dog-emojis.js'
+      - 'DOG/verified-cosmetics.js'
+      - 'DOG/card-visuals.js'
+      - 'DOG/appearance-registry.js'
+      - 'tests/dog-christmas-scratch-ui.test.mjs'
+      - '.github/workflows/dog-christmas-scratch-ui.yml'
+  pull_request:
+    paths:
+      - 'DOG/christmas-scratch-ui.js'
+      - 'DOG/christmas-event.js'
+      - 'DOG/verified-cosmetics.js'
+      - 'tests/dog-christmas-scratch-ui.test.mjs'
+  workflow_dispatch:
+jobs:
+  ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/christmas-scratch-ui.js
+      - run: node --check DOG/christmas-event.js
+      - run: node --check DOG/collection.js
+      - run: node --check DOG/collection-catalog.js
+      - run: node --check DOG/verified-cosmetics.js
+      - run: node --test tests/dog-christmas-scratch-ui.test.mjs tests/dog-collection.test.mjs tests/dog-christmas-rewards.test.mjs tests/dog-card-editions.test.mjs tests/dog-appearance.test.mjs
