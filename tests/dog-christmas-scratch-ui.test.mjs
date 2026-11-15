@@ -271,6 +271,22 @@ test('scratch reveal never leaves an uncovered card stuck or writes literal null
  assert.match(css,/\.scratch-stage:not\(\[hidden\]\) > \.scratch-stage-actions button:not\(\[hidden\]\)/);
 });
 
+test('all four scratch rules and live odds are described without misleading winnings',()=>{
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const css=source('../DOG/christmas-scratch.css');
+ assert.match(js,/3 gleiche Gewinnzeichen in einer Linie/);
+ assert.match(js,/3 gleiche Gewinnzeichen irgendwo/);
+ assert.match(js,/Geld: Pfad · Geschenke: 3 verbunden/);
+ assert.match(js,/rule==='three-anywhere'\?'3 gleiche beliebig'/);
+ assert.match(js,/rule==='gift-three-connected'\?'3 verbundene Geschenke'/);
+ assert.match(js,/rule==='path'\?'Pfad links → rechts'/);
+ assert.match(js,/prize\.bonus\?'🎉 Bonus zu Gewinn '/);
+ assert.match(js,/unlocksLeft===0\?'🎁 Alle Freischaltungen gesammelt'/);
+ assert.match(js,/chanceWeights\.unlock\+Math\.min\(chanceWeights\.coins/);
+ assert.match(js,/premiumMilestoneChance\.toLocaleString\('de-DE'\)/);
+ assert.match(js,/Premium: 🪙 💵 💼 erscheinen jeweils mindestens einmal garantiert/);
+ assert.match(css,/overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain/);
+});
 test('DOG Weihnachten top header is hidden only while a scratch ticket is open',()=>{
  const html=source('../DOG/christmas-event.html');
  const css=source('../DOG/christmas-scratch.css');
