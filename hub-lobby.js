@@ -4,18 +4,17 @@
 const el=id=>document.getElementById(id);
 const config=window.SPIELPORTAL_CONFIG||{};
 const API=String(config.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge',dog:'DOG Klassisch',kniffel:'Kniffel Online'};
+const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge',dog:'DOG Klassisch'};
 let code=null,room=null,operation=false,poll=null,accountUid=null,pollErrors=0;
 let playMode=new URL(location.href).searchParams.get('view')==='local'?'local':'online';
-let choosingGame=new URL(location.href).searchParams.get('choose')==='1',displayGame=null;
-const GAME_ICON={barikade:'🎲',skyjo:'🃏',kreuz:'🎯',business:'💼',partychallenge:'🏆',dog:'🐾',kniffel:'🎲'};
+let choosingGame=false,displayGame=null;
+const GAME_ICON={barikade:'🎲',skyjo:'🃏',kreuz:'🎯',business:'💼',partychallenge:'🏆',dog:'🐾'};
 const GAME_DESCRIPTIONS={
  barikade:'Das Brettspiel mit Barikaden, Action-Regeln und optionalem Bossmodus.',
  skyjo:'Karten, Joker und spannende Runden. Der Host legt die Regeln fest.',
  kreuz:'Würfeln, Farben ankreuzen und gemeinsam Punkte sammeln.',
  business:'Unternehmen, Aktien und Branchen – mit 10, 20 oder 30 Runden.',
  dog:'Das klassische Team-Brettspiel mit Karten, Startfeldern, Jokern und Partnern.',
- kniffel:'Würfelspaß mit eigenen Regeln und Spielraum-Vorbereitung.',
  partychallenge:'Elf Online-Minispiele in einem Raum – inklusive Preisjäger.'
 };
 function setPlayMode(next){
@@ -155,7 +154,7 @@ function enterBarikade(){
 
 const activeProfile=()=>{const p=window.SpielOnline?.state?.();return p?.status==='online'&&p?.profile?.setupComplete!==false&&p?.user?p:null;};
 const messages={DATABASE_UNAVAILABLE:'Der Spielserver hat derzeit keine Firestore-Verbindung.',LOGIN_REQUIRED:'Bitte melde dich mit deinem Online-Profil an.',PROFILE_REQUIRED:'Bitte vervollständige dein Spielerprofil.',ROOM_NOT_FOUND:'Der Raum wurde nicht gefunden oder ist abgelaufen.',NOT_A_MEMBER:'Du bist diesem Raum noch nicht beigetreten.',ROOM_FULL:'Der Raum ist bereits voll.',GAME_FULL:'Für dieses Spiel sind schon zu viele Personen im Raum.',TOO_MANY_PLAYERS_FOR_GAME:'Für dieses Spiel sind zu viele Personen im Raum.',HOST_ONLY:'Nur der Host darf das ändern.',GAME_NOT_CONNECTED:'Dieses Spiel ist noch nicht mit der zentralen Lobby verbunden.',PLAYERS_NOT_READY:'Noch sind nicht alle Mitspieler bereit.',GAME_SEATS_FULL:'Für dieses Spiel sind alle Mitspielerplätze belegt. Der Host kann zunächst jemanden auf Zuschauer setzen.',SPECTATOR_CANNOT_READY:'Als Zuschauer musst du dich nicht bereit melden.',ROOM_ALREADY_PLAYING:'Diese Partie hat bereits begonnen.',MATCH_IN_PROGRESS:'Während einer laufenden Partie kannst du den Raum nicht verlassen.',MATCH_NOT_FINISHED:'Die Partie ist noch nicht beendet. Der Server hat noch keinen Sieger festgestellt.',HOST_MUST_PLAY:'Der Host muss bei der Partie mitspielen.',NO_ACTIVE_MATCH:'Es läuft keine Partie.',INVALID_SETTINGS:'Diese Einstellungen sind ungültig.',NO_BARIKADE_SETUP:'Bitte zuerst Barikade auswählen.',NO_SKYJO_SETUP:'Bitte zuerst SKYJO auswählen.',NO_BUSINESS_SETUP:'Bitte zuerst Business auswählen.',COLOR_TAKEN:'Diese Spielfarbe ist bereits vergeben.',COLORS_BY_WHEEL:'Die Spielerfarben werden ausgelost.',SPECTATOR_CANNOT_SELECT_COLOR:'Zuschauer können keine Spielfarbe wählen.'};
-function notice(message='',isError=false){el('main-status').textContent=message;el('main-status').classList.toggle('error',!!isError);}
+function notice(message='',isError=false){el('main-status').textContent=message;el('main-status').classList.toggle('error',!!isError);if(room?.game==='dog')window.DOGRoomLobby?.feedback(message,isError);}
 function showError(error){const message=messages[error?.message]||error?.message||'Unbekannter Fehler';notice(message,true);}
 function logged(){const p=activeProfile();if(!p)throw Error('LOGIN_REQUIRED');return p;}
 async function request(path,method='GET',data){
@@ -168,16 +167,7 @@ async function request(path,method='GET',data){
   const r=await response.json();if(!response.ok||r.ok!==true)throw Error(r.error||'SERVER_ERROR');return r;
  }finally{clearTimeout(timeout);}
 }
-function setRoomCode(next){
- code=next;
- const u=new URL(location.href);
- if(code)u.searchParams.set('room',code);
- else{u.searchParams.delete('room');u.searchParams.delete('stage');u.searchParams.delete('stayMatch');u.searchParams.delete('choose');}
- history.replaceState(null,'',u);
- // All header/footer shortcuts stay within the same unified room.
- const home='hub-lobby.html'+(code?'?'+new URLSearchParams({room:code,stage:'1',...(u.searchParams.get('stayMatch')?{stayMatch:u.searchParams.get('stayMatch')}:{})}).toString():'');
- document.querySelectorAll('[data-hub-home]').forEach(a=>a.href=home);
-}
+function setRoomCode(next){code=next;const u=new URL(location.href);if(code)u.searchParams.set('room',code);else u.searchParams.delete('room');history.replaceState(null,'',u);}
 let preisjaegerClockReceivedAt=Date.now();
 window.addEventListener('dog-avatar-room-sync',e=>{if(e.detail?.room?.code===code)acceptRoom(e.detail.room);});
 function acceptRoom(next){
@@ -983,10 +973,6 @@ if(settingsNav){
  el('challenge-bots').textContent=room.players.some(p=>p.testBot)?'🤖 2 Testspieler entfernen':'🤖 2 Testspieler hinzufügen';
 }
 function render(){
- if(room?.game==='kniffel'&&room.phase==='preparing'&&new URL(location.href).searchParams.get('stage')==='1'){
-  location.replace('Kniffel/lobby.html?room='+encodeURIComponent(room.code));
-  return;
- }
  if(room?.game==='kreuz'&&room.phase==='preparing'&&new URL(location.href).searchParams.get('stage')==='1'){
   location.replace('KreuzKunter/kreuzkunter_start.html?room='+encodeURIComponent(room.code));
   return;
@@ -1008,12 +994,15 @@ function render(){
  el('account-info').textContent=account?'Dein verifiziertes Online-Spielerprofil ist verbunden.':'Bitte anmelden oder ein Profil erstellen, um einen Raum zu betreten.';
  el('login-btn').textContent=account?'Profil ansehen':'Anmelden';
  const inside=!!room;
- // The central Spielesammlung page also handles rooms without a selected game.
+ if(inside&&room.phase==='lobby'&&!room.game&&new URL(location.href).searchParams.get('stage')==='1'){
+  location.replace('spielauswahl-online.html?room='+encodeURIComponent(room.code));
+  return;
+ }
  el('entry-view').classList.toggle('hidden',inside);
  el('room-view').classList.toggle('hidden',!inside);
  el('create-btn').disabled=!account||operation;el('join-btn').disabled=!account||operation;
- if(!inside||playMode!=='online'){el('dog-unified-tools')?.classList.add('hidden');return;}
- if(displayGame!==room.game){if(displayGame!==null||new URL(location.href).searchParams.get('choose')!=='1')choosingGame=false;displayGame=room.game;}
+ if(!inside||playMode!=='online'){window.DOGRoomLobby?.update(null,operation);return;}
+ if(displayGame!==room.game){choosingGame=false;displayGame=room.game;}
  if(room.phase==='playing')choosingGame=false;
  const showStage=!!room.game&&!choosingGame;
  el('game-chooser').classList.toggle('hidden',showStage);
@@ -1091,17 +1080,14 @@ function render(){
   }
   return div;
  }));
- // Keep four DOG seats visible here in the shared room, not in a second lobby.
- // Empty positions are only illustrative: never manufacture actual server players.
+ // Display all four lobby seats without inventing actual participants.
  const playersPanel=el('players');
  playersPanel.querySelectorAll('.seat-placeholder').forEach(node=>node.remove());
- if((room.game==='partychallenge'||room.game==='dog')&&room.phase==='preparing'){
+ if(room.game==='partychallenge'&&room.phase==='preparing'){
   const occupied=room.players.filter(p=>p.participating).length;
   for(let i=occupied;i<4;i++){
    const seat=document.createElement('div');seat.className='player seat-placeholder';
-   seat.innerHTML=room.game==='dog'
-     ?'<span class="avatar seat-plus" aria-hidden="true">🤖</span><span class="name">Freier DOG-Platz</span><span class="ready spectator">Bot beim Start</span>'
-     :'<span class="avatar seat-plus" aria-hidden="true">＋</span><span class="name">Freier Platz</span>';
+   seat.innerHTML='<span class="avatar seat-plus" aria-hidden="true">＋</span><span class="name">Freier Platz</span>';
    playersPanel.append(seat);
   }
  }
@@ -1117,7 +1103,7 @@ function render(){
  const playing=room.players.filter(p=>p.participating);
  const readyCount=playing.filter(p=>p.ready).length;
  const percent=playing.length?Math.round(readyCount/playing.length*100):0;
- el('ready-counter').textContent=room.phase==='playing'?'Partie läuft':room.game==='skyjo'&&playing.length!==3?'🌲 SKYJO Wald benötigt genau 3 Spieler ('+playing.length+'/3)':playing.length<2&&room.game!=='dog'?'Mindestens 2 Spieler benötigt':room.game==='dog'&&playing.length===1?'🐾 Alleine mit Bots spielbar':room.allReady?'Alle bereit!':'Warten auf Bereitmeldungen';
+ el('ready-counter').textContent=room.phase==='playing'?'Partie läuft':room.game==='skyjo'&&playing.length!==3?'🌲 SKYJO Wald benötigt genau 3 Spieler ('+playing.length+'/3)':playing.length<2&&room.game!=='dog'?'Mindestens 2 Spieler benötigt':room.allReady?'Alle bereit!':'Warten auf Bereitmeldungen';
  el('ready-fraction').textContent=readyCount+' / '+playing.length;
  el('ready-progress-fill').style.width=percent+'%';
  el('ready-progressbar').setAttribute('aria-valuenow',String(percent));
@@ -1152,57 +1138,52 @@ function render(){
    :room.canLaunch
     ?room.game==='partychallenge'?'Alle bereit? Dann startet der Host die Challenge mit dem Startknopf.':'Alle ausgewählten Mitspieler melden sich bereit. Das Spiel startet automatisch.'
     :'Alle vier Spiele sind mit dem gemeinsamen Raum verbunden – Beta.';
- // DOG uses this shared room view, just like every other online game.
- const dogTools=el('dog-unified-tools');
- if(dogTools){
-  const visible=showStage&&room.game==='dog';
-  dogTools.classList.toggle('hidden',!visible);
-  if(visible&&!el('dog-unified-board-preview')?.firstElementChild)
-   requestAnimationFrame(()=>window.DOGUnifiedBoard?.refresh?.());
-  if(visible){
-   const returnParams=new URLSearchParams({room:room.code,stage:'1'});
-   if(room.phase==='playing'&&room.match?.id)returnParams.set('stayMatch',room.match.id);
-   const returnUrl='hub-lobby.html?'+returnParams.toString();
-   for(const [id,path] of [
-    ['dog-unified-designer','DOG/design-studio.html'],
-    ['dog-unified-collection','DOG/sammlung.html'],
-    ['dog-unified-christmas','DOG/christmas-event.html'],
-    ['dog-unified-album','meta-sammelalbum.html']
-   ])el(id).href=path+'?return='+encodeURIComponent(path.startsWith('DOG/')?'../'+returnUrl:returnUrl);
-  }
- }
- if(room.game==='dog'){
-  el('ready-hint').textContent='🐾 Ein DOG-Spieler reicht. Sobald alle aktiven Spieler bereit sind, startet DOG mit Bots auf freien Plätzen automatisch.';
-  el('selected-game-host-note').textContent='🐾 Die vier DOG-Spielplätze sind für alle sichtbar. Der Host kann Spielplätze verwalten, jeder Mitspieler meldet sich selbst bereit.';
- }else{
-  el('ready-hint').textContent='Alle aktiven Spieler melden sich bereit. Der Server startet die Partie automatisch (außer bei Spielen mit eigenem Startknopf).';
- }
+ // DOG-only full-screen waiting room. Every action still uses this hub controller.
+ window.DOGRoomLobby?.update(showStage&&room.game==='dog'?room:null,operation);
 }
 async function command(run){if(operation)return;operation=true;render();notice('');
  try{await run();pollErrors=0;}catch(e){showError(e);}finally{operation=false;render();}
 }
-window.addEventListener('dog-unified-board-ready',()=>window.DOGUnifiedBoard?.refresh?.());
+window.addEventListener('dog-room-lobby-ready',render);
+window.addEventListener('dog-room-lobby-action',event=>{
+ const kind=event.detail?.kind;
+ if(!room||room.game!=='dog'||operation)return;
+ if(kind==='refresh'){
+  void command(async()=>{const {room:r}=await request('/rooms/'+code);activateRoom(r);notice('Raum aktualisiert.');});
+  return;
+ }
+ if(!['ready','join','start'].includes(kind))return;
+ if(room.phase==='playing'){
+  if(kind==='join')enterDog();
+  return;
+ }
+ if(room.phase!=='preparing')return;
+ const player=room.players.find(p=>p.me);
+ if(!player?.participating)return;
+ if(kind==='start'&&(!room.host||player.ready||!room.players.filter(p=>p.participating&&!p.me).every(p=>p.ready)))return;
+ if(kind==='join'&&player.ready)return;
+ const next=kind==='ready'?!player.ready:true;
+ void command(async()=>{
+  const {room:r}=await request('/rooms/'+code+'/ready','POST',{ready:next});
+  activateRoom(r);
+ });
+});
 el('login-btn').addEventListener('click',()=>{if(activeProfile())location.assign('profile.html');else window.SpielOnline?.openLogin?.();});
 el('mode-local').addEventListener('click',()=>location.assign('spielauswahl-lokal.html'));
 el('mode-online').addEventListener('click',()=>setPlayMode('online'));
-el('change-game-btn').addEventListener('click',()=>{
- if(!room?.host||room.phase!=='preparing')return;
- choosingGame=true;render();
- el('game-chooser').scrollIntoView({behavior:'smooth',block:'start'});
-});
+el('change-game-btn').addEventListener('click',()=>{if(room?.host&&room.phase==='preparing')location.assign('spielauswahl-online.html?room='+encodeURIComponent(room.code)+'&choose=1');});
 
 el('create-btn').addEventListener('click',()=>command(async()=>{
- const {room:r}=await request('/rooms','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});activateRoom(r);pollStart();
+ const {room:r}=await request('/rooms','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
 }));
 el('join-code').addEventListener('input',event=>{event.target.value=event.target.value.toUpperCase().replace(/[^0-9A-HJ-NP-Z]/g,'').slice(0,6);notice('');});
 el('join-code').addEventListener('keydown',e=>{if(e.key==='Enter')el('join-btn').click();});
 el('join-btn').addEventListener('click',()=>command(async()=>{
  const c=el('join-code').value.trim().toUpperCase();if(!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(c))throw Error('Bitte einen dreistelligen Zahlencode oder bisherigen sechsstelligen Raumcode eingeben.');
- const {room:r}=await request('/rooms/'+c+'/join','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});activateRoom(r);pollStart();
+ const {room:r}=await request('/rooms/'+c+'/join','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
 }));
 document.querySelectorAll('[data-game]').forEach(btn=>btn.addEventListener('click',()=>command(async()=>{
  if(!room?.host)return;const {room:r}=await request('/rooms/'+code+'/select','POST',{game:btn.dataset.game,...(btn.dataset.game==='dog'?{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0}:{})});choosingGame=false;activateRoom(r);
- if(r.game==='kniffel')location.assign('Kniffel/lobby.html?room='+encodeURIComponent(r.code));
 }))); 
 document.querySelectorAll('[data-barikade-setting]').forEach(field=>field.addEventListener('change',()=>command(async()=>{
  if(!room?.host||room.phase!=='preparing'||room.game!=='barikade')return;
@@ -1247,7 +1228,7 @@ el('cancel-match-btn').addEventListener('click',()=>{
   const {room:r}=await request('/rooms/'+code+'/cancel','POST');
   launchedMatchId=null;
   activateRoom(r);
-  // The shared room is already rendered here. No intermediate lobby.
+  location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
  });
 });
 el('refresh-btn').addEventListener('click',()=>command(async()=>{const {room:r}=await request('/rooms/'+code);activateRoom(r);notice('Raum aktualisiert.');}));
@@ -1285,7 +1266,10 @@ async function boot(){
  }
  const fromUrl=params.get('room');
  if(!fromUrl||!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(fromUrl))return;
- // Old or new links always restore the room inside this same central hub.
+ if(new URL(location.href).searchParams.get('stage')!=='1'&&!stayInMatchId){
+   location.replace('spielauswahl-online.html?room='+encodeURIComponent(fromUrl.toUpperCase()));
+   return;
+ }
  let elapsed=0;const timer=setInterval(async()=>{
   elapsed+=250;
   if(!activeProfile()&&elapsed<30000)return;
