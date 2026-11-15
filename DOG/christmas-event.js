@@ -252,11 +252,11 @@ function buildingCard(entry){
  root.innerHTML='<div class="building-card-head"><span class="building-card-icon" aria-hidden="true">'+entry.icon+'</span><div><h3>'+entry.title+'</h3><p>'+entry.summary+'</p></div></div>'
    +'<div class="building-card-art" data-photo-state="loading" aria-label="Gebäudeansicht der gewählten Stufe"><span class="building-art-glow" aria-hidden="true"></span><img id="building-card-photo-'+entry.id+'" src="'+assetPath(entry.id,1)+'" alt="'+entry.title+' – Stufe 1" loading="lazy" decoding="async"><span class="building-art-plaque" data-building-art-level>STUFE 1 / 5</span><span class="building-art-loading">✨ Gebäude wird geladen …</span><span class="building-art-error">Bild nicht verfügbar</span></div>'
    +'<div class="building-card-info"><strong data-building-effect></strong><span data-building-visual></span></div>'
-   +'<div class="level-row"><label for="preview-'+entry.id+'">Entwicklungsstufe</label><output for="preview-'+entry.id+'" data-building-value></output></div>'
+   +'<div class="building-stage-controls"><div class="level-row"><label for="preview-'+entry.id+'">Entwicklungsstufe</label><output for="preview-'+entry.id+'" data-building-value></output></div>'
    +'<input id="preview-'+entry.id+'" type="range" min="1" max="5" step="1" value="1" aria-label="Vorschau der Entwicklungsstufe für '+entry.title+'">'
-   +'<div class="building-level-markers" aria-hidden="true">'+Array.from({length:5},()=>'<span></span>').join('')+'</div>'
-   +'<div class="building-upgrade-price" data-building-upgrade-price aria-live="polite"></div>'
-   +'<button type="button" class="button gold building-purchase" data-upgrade-building="'+entry.id+'" disabled>⭐ Online-Ausbau vorbereiten</button>';
+   +'<div class="building-level-markers" aria-hidden="true">'+Array.from({length:5},()=>'<span></span>').join('')+'</div></div>'
+   +'<div class="building-upgrade-row"><div class="building-upgrade-price" data-building-upgrade-price aria-live="polite"></div>'
+   +'<button type="button" class="button gold building-purchase" data-upgrade-building="'+entry.id+'" disabled>🔒 Nur im Online-Dorf</button></div>';
  const range=root.querySelector('input');
  range.addEventListener('input',()=>{if(villageLive)return;preview[entry.id]=Number(range.value);refreshPreview()});
  root.querySelector('[data-upgrade-building]').addEventListener('click',()=>void purchaseBuilding(entry.id));
@@ -353,6 +353,7 @@ function refreshPreview(){
   $('preview-'+d.id).value=String(level);
   card.querySelector('[data-building-effect]').textContent=d.effects[level-1]+(villageLive?' · Tatsächlicher Bonus':' · Vorschau');
   card.querySelector('[data-building-visual]').textContent=d.visuals[level-1];
+  card.dataset.mode=villageLive?'live':'preview';
   card.querySelector('[data-building-value]').textContent='Stufe '+level+' / '+CHRISTMAS_BUILDING_MAX_LEVEL;
   card.querySelector('[data-building-art-level]').textContent='STUFE '+level+' / '+CHRISTMAS_BUILDING_MAX_LEVEL;
   $('preview-'+d.id).disabled=Boolean(villageLive);
@@ -360,12 +361,12 @@ function refreshPreview(){
   if(purchase){const upgradeCost=christmasUpgradeCost(level),affordable=villageLive?.lightsTenths>=upgradeCost*10;
    purchase.hidden=false;
    purchase.disabled=!villageLive||!villageHost||!villageCanUpgrade||villageBusy||upgradeCost===null||!affordable;
-   purchase.textContent=!villageLive?'🔒 Im DOG-Onlineraum ausbauen':upgradeCost===null?'✓ Höchststufe erreicht':!villageHost?'🔒 Ausbau durch den Host':!villageCanUpgrade?'⏳ Ausbau nach der laufenden Partie':affordable?'⭐ Jetzt für '+upgradeCost+' Lichter ausbauen':'⭐ Es fehlen '+Math.ceil((upgradeCost*10-(villageLive?.lightsTenths||0))/10)+' Lichter';
+   purchase.textContent=!villageLive?'🔒 Nur im Online-Dorf':upgradeCost===null?'✓ Voll ausgebaut':!villageHost?'🔒 Nur der Host baut aus':!villageCanUpgrade?'⏳ Nach der Partie':affordable?'⭐ Für '+upgradeCost+' Lichter ausbauen':'Noch '+Math.ceil((upgradeCost*10-(villageLive?.lightsTenths||0))/10)+' ⭐ sammeln';
   }
   const nextCost=christmasUpgradeCost(level);
   card.querySelector('[data-building-upgrade-price]').textContent=nextCost===null
-   ?'⭐ Maximalstufe erreicht · kein weiteres Upgrade'
-   :'⭐ Nächster Ausbau: Level '+level+' → '+(level+1)+' kostet '+nextCost+' Weihnachtslichter'+(villageLive?'':' (Vorschau)');
+   ?'🏆 Maximale Stufe erreicht'
+   :'Nächste Stufe '+level+' → '+(level+1)+' · '+nextCost+' ⭐'+(villageLive?'':' · Vorschau');
   card.querySelectorAll('.building-level-markers>span').forEach((dot,i)=>dot.classList.toggle('active',i<level));
   const art=$('art-'+d.id);
   if(art)art.dataset.level=String(level);
@@ -397,7 +398,10 @@ function refreshPreview(){
  $('village-preview-next').disabled=Boolean(villageLive)||total>=20;
  $('village-preview-reset').disabled=Boolean(villageLive);
  $('village-preview-full').disabled=Boolean(villageLive);
- if(!villageLive)$('building-village-counter').textContent=total+' / 20 Gebäudestufen · Vorschau';
+ if(!villageLive){
+  $('building-village-counter').textContent=total+' / 20';
+  $('building-village-tree').textContent='Stufe '+tree+' / 10';
+ }
  updateTreeChapter();
  $('tree-world-mode').textContent=villageLive?'✦ Echter Dorffortschritt':'✦ Gestaltungs-Vorschau';
  $('tree-world-mode').dataset.mode=villageLive?'live':'preview';
@@ -565,17 +569,19 @@ function showLiveVillage(data){
  villageCanUpgrade=data.canUpgrade!==false;
  for(const id of ['tower','workshop','bakery','inn'])preview[id]=v.levels[id];
  $('building-live-balance').textContent=lightsLabel(v.lightsTenths)+' ⭐ Weihnachtslichter';
- $('building-village-role').textContent=villageHost?'👑 Gemeinsames Dorf · Host':'🤝 Gemeinsames Dorf · Mitspieler';
+ $('building-village-role').textContent=villageHost?'🟢 Online · Host':'🟢 Online · Mitspieler';
  $('building-village-role').dataset.state='online';
- $('building-village-counter').textContent=Object.values(v.levels).reduce((a,b)=>a+b,0)+' / 20 Gebäudestufen';
+ $('building-village-counter').textContent=Object.values(v.levels).reduce((a,b)=>a+b,0)+' / 20';
+ $('building-village-tree').textContent='Stufe '+TREE_THRESHOLDS.filter(t=>Object.values(v.levels).reduce((a,b)=>a+b,0)>=t).length+' / 10';
+ $('building-village-gifts').textContent=String(v.giftsCollected);
  $('stat-village-lights').textContent=lightsLabel(v.lightsTenths)+' ⭐';
  $('stat-village-gifts').textContent=String(v.giftsCollected);
- $('building-event-mode').textContent=!villageEventActive?'🏁 Weihnachtsevent beendet – die Gebäude-Boni sind pausiert. Der gesammelte Fortschritt bleibt erhalten.'
-  :data.matchEnabled?'🎁 Die laufende DOG-Partie sammelt automatisch Weihnachtslichter.'
-  :'🎄 Weihnachtsevent aktiv: In jeder Online-DOG-Partie gelten die Gebäude-Boni automatisch.';
+ $('building-event-mode').textContent=!villageEventActive?'🏁 Event beendet · Fortschritt bleibt gespeichert.'
+  :data.matchEnabled?'🎁 Eure laufende DOG-Partie sammelt neue Lichter.'
+  :'🎄 Alle sammeln in eurem DOG-Dorf; Gebäude-Boni gelten automatisch.';
  $('building-live-notice').textContent=villageHost
-  ?'✅ Dieser Vorrat gehört dem gesamten DOG-Dorf. Alle sammeln gemeinsam; als Host kannst du Gebäude ausbauen.'
-  :'✅ Ihr sammelt auf demselben Dorfkonto. Der Host kann die gemeinsam verdienten Lichter für Ausbauten verwenden.';
+  ?'✅ Gemeinsam gesammelt – du kannst als Host die vier Gebäude damit ausbauen.'
+  :'✅ Alle Spieler teilen diesen Vorrat; der Host investiert die Lichter in eure Gebäude.';
  const label=document.querySelector('.village-caption > span');
  if(label)label.textContent='⭐ Echter Dorffortschritt · '+lightsLabel(v.lightsTenths)+' Weihnachtslichter im gemeinsamen Vorrat';
  const giftNotice=document.querySelector('#panel-gifts > .notice');
