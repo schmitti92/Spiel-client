@@ -5,6 +5,7 @@ import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from
 import {BOARD_STYLES,SCENE_STYLES,PIECE_STYLES,CARD_STYLES,HUD_TONES,HUD_LAYOUTS} from '../DOG/appearance-registry.js';
 import {DOG_EMOJIS,DOG_EMOJI_STARTERS,DOG_CHRISTMAS_EMOJIS} from '../DOG/dog-emojis.js';
 import {buildDogCollection} from '../DOG/collection-extensions.js';
+import {DOG_CHRISTMAS_REWARDS,isChristmasRewardLocked,DOG_CHRISTMAS_REWARD_COUNTS} from '../DOG/christmas-reward-locks.js';
 const text=path=>readFileSync(new URL(path,import.meta.url),'utf8');
 
 test('DOG collection distinguishes real selections from locked event previews',()=>{
@@ -30,8 +31,11 @@ test('Collection registers actual selectable designs without inventing past unlo
  assert.equal(look('boards').items.length,Object.keys(BOARD_STYLES).length-1,'missing royal-marmor art stays hidden');
  assert.equal(look('backgrounds').items.filter(x=>x.status==='available').length,Object.keys(SCENE_STYLES).length);
  assert.equal(look('pieces').items.filter(x=>x.status==='available').length,Object.keys(PIECE_STYLES).length);
- assert.equal(look('cards').items.filter(x=>x.status==='available').length,1,'only the complete picture-based card edition is published');
- assert.deepEqual(look('cards').items.map(x=>x.id),['classic']);
+ assert.equal(look('cards').items.filter(x=>x.status==='available').length,1,'classic is the only immediately available edition');
+ assert.equal(look('cards').items.filter(x=>x.status==='planned').length,2);
+ assert.deepEqual(look('cards').items.map(x=>x.id),['classic','kartendesign-02','kartendesign-03']);
+ assert.ok(look('cards').items.filter(x=>x.status==='planned').every(x=>x.kind==='cardEdition'&&x.unlockId?.startsWith('christmas2026:cards:')));
+ assert.ok(look('cards').items.filter(x=>x.status==='planned').every(x=>x.image?.endsWith('/normiert/9.png')));
  assert.match(look('cards').items[0].image,/kartendesign-01\/normiert\/9\.png$/);
  assert.ok(look('cards').items.every(x=>x.cardEdition),'each published deck must have real card artwork');
  assert.equal(look('hud').items.filter(x=>x.status==='available').length,Object.keys(HUD_TONES).length+Object.keys(HUD_LAYOUTS).length);
@@ -43,6 +47,16 @@ test('Collection registers actual selectable designs without inventing past unlo
  assert.ok(look('frames').items.some(x=>x.status==='planned'));
  assert.ok(look('emblems').items.some(x=>x.status==='planned'));
 });
+test('Christmas card editions are registered as verified-only reward previews',()=>{
+ const rewardEntries=DOG_CHRISTMAS_REWARDS.filter(x=>x.category==='cards');
+ assert.equal(rewardEntries.length,2);
+ assert.equal(DOG_CHRISTMAS_REWARD_COUNTS.cards,2);
+ for(const card of dogCollectionCategory('cards').items.filter(x=>x.status==='planned')){
+  assert.ok(isChristmasRewardLocked(card));
+  assert.ok(rewardEntries.some(r=>r.id===card.id&&r.unlockId===card.unlockId));
+ }
+});
+
 test('all HUD color tiles use real theme tokens and support large preview',()=>{
  const hud=dogCollectionCategory('hud').items;
  const toneItems=hud.filter(item=>item.field==='hudTone');
