@@ -1,10 +1,10 @@
-import {BOARD_STYLES,loadAppearance,saveAppearance} from './appearance-registry.js?v=21';
+import {BOARD_STYLES,isBoardUnlocked,loadAppearance,saveAppearance} from './appearance-registry.js?v=22';
 
-const ORDER=['studio','schiefer','pergament','holz','bergsee','goldwellen','royalMarmor','maerchental','alpenland','kuestenabenteuer','royalKarten','zauberwald'];
+const ORDER=['studio','schiefer','pergament','holz','bergsee','goldwellen','royalMarmor','maerchental','alpenland','kuestenabenteuer','royalKarten','zauberwald','weihnachtsdorf','lebkuchenwerkstatt','polarlichtpalast','winterlandschaft'];
 const FALLBACK='linear-gradient(140deg,#243e52,#081524)';
 const resolveBoardArt=theme=>{
  const file=theme?.image;
- return typeof file==='string'&&(/^\.\/assets\/boards\/[a-z0-9_-]+\.(?:svg|webp)$/.test(file)||/^\.\/Bilder\/Spielhintergrundbilder\/[a-z0-9_-]+\.webp$/.test(file))
+ return typeof file==='string'&&(/^\.\/assets\/boards\/[a-z0-9_-]+\.(?:svg|webp)$/.test(file)||/^\.\/Bilder\/Spielhintergrundbilder\/[a-z0-9_-]+\.(?:png|webp)$/.test(file))
   ?new URL(file,import.meta.url).href:null;
 };
 const pickers=[...document.querySelectorAll('[data-dog-board-picker]')];
@@ -26,15 +26,19 @@ for(const picker of pickers){
  for(const id of ORDER){
   const theme=BOARD_STYLES[id];if(!theme)continue;
   const button=document.createElement('button');
+  const locked=!isBoardUnlocked(id);
   button.type='button';button.className='dog-board-option';button.dataset.boardTheme=id;
-  button.setAttribute('aria-label','DOG-Spielbrett '+theme.label+' auswählen');
+  if(locked){button.disabled=true;button.classList.add('is-locked');button.title='Wird im Weihnachtsevent freigeschaltet';}
+  button.setAttribute('aria-label',locked?'🔒 '+theme.label+' – im Weihnachtsevent freischaltbar':'DOG-Spielbrett '+theme.label+' auswählen');
   const thumb=document.createElement('span');thumb.className='dog-board-thumb';thumb.setAttribute('aria-hidden','true');
   const url=resolveBoardArt(theme);
   const fallback=resolveBoardArt({image:theme.fallbackImage});
   thumb.style.backgroundImage=(url?'url("'+url+'"), ':'')+(fallback?'url("'+fallback+'"), ':'')+FALLBACK;
   const text=document.createElement('span');text.className='dog-board-option-name';text.textContent=theme.label;
   button.append(thumb,text);
+  if(locked){const lock=document.createElement('span');lock.className='dog-board-lock';lock.textContent='🔒 Gesperrt';button.append(lock);}
   button.addEventListener('click',()=>{
+   if(!isBoardUnlocked(id))return;
    saveAppearance({...loadAppearance(),board:id});
    renderActive();
   });
