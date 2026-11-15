@@ -1,4 +1,4 @@
-import {META_ALBUM_THEMES,metaAlbumThemeById,isMetaAlbumPictureUnlocked} from './meta-album-catalog.js?v=1';
+import {META_ALBUM_THEMES,metaAlbumThemeById,isMetaAlbumPictureUnlocked,metaAlbumPage,metaAlbumPageCount} from './meta-album-catalog.js?v=2';
 // Preview-only. Absolutely no local grants, inventory writes, Firestore reads,
 // background timers or fake progress are allowed in this first version.
 const $=id=>document.getElementById(id);
@@ -17,6 +17,9 @@ function safeBackUrl(){
 for(const id of ['meta-back-top','meta-back-bottom'])$(id).href=safeBackUrl();
 const first=metaAlbumThemeById(params.get('theme'));
 let theme=first,selected=first.pictures[0]?.id||'';
+const requestedPage=Number(params.get('page'));
+let pageIndex=Number.isInteger(requestedPage)&&requestedPage>=1?
+ Math.min(metaAlbumPageCount(theme)-1,requestedPage-1):0;
 function dom(tag,className='',value){
  const node=document.createElement(tag);
  if(className)node.className=className;
@@ -48,8 +51,8 @@ function themeMenu(){
   const unlocked=item.pictures.filter(pic=>isMetaAlbumPictureUnlocked(pic)).length;
   button.append(copy,dom('span','meta-theme-count',unlocked+'/'+item.pictures.length));
   button.addEventListener('click',()=>{
-   theme=item;selected=item.pictures[0]?.id||'';
-   const url=new URL(location.href);url.searchParams.set('theme',item.id);
+   theme=item;selected=item.pictures[0]?.id||'';pageIndex=0;
+   const url=new URL(location.href);url.searchParams.set('theme',item.id);url.searchParams.delete('page');
    history.replaceState(null,'',url);
    render();
   });
@@ -58,7 +61,9 @@ function themeMenu(){
 }
 function drawGallery(){
  const grid=$('meta-picture-grid');grid.replaceChildren();
- for(const pic of theme.pictures){
+ const page=metaAlbumPage(theme,pageIndex);
+ pageIndex=page.index;
+ for(const pic of page.pictures){
   // This method must stay fail-closed until real verified server grants exist.
   const unlocked=isMetaAlbumPictureUnlocked(pic);
   const button=dom('button','meta-picture-card'+(pic.id===selected?' selected':'')+(!unlocked?' locked':''));
@@ -74,6 +79,18 @@ function drawGallery(){
   button.addEventListener('click',()=>{selected=pic.id;drawGallery();drawDetail();});
   grid.append(button);
  }
+ // Keep six fixed slots, but never invent three additional collectible items.
+ for(let n=0;n<page.emptySlots;n++){
+  const empty=dom('div','meta-book-empty');
+  empty.setAttribute('aria-label','Freier Albumplatz ohne Sammelbild');
+  empty.append(dom('span','meta-book-empty-ornament','✧'),
+   dom('small','', 'Freier Albumplatz'));
+  grid.append(empty);
+ }
+ $('meta-book-position').textContent='Seite '+(page.index+1)+' von '+page.count;
+ $('meta-book-page-mark').textContent='SEITE '+(page.index+1);
+ $('meta-book-prev').disabled=page.index===0;
+ $('meta-book-next').disabled=page.index===page.count-1;
 }
 function drawDetail(){
  const root=$('meta-picture-detail');
@@ -90,6 +107,59 @@ function drawDetail(){
  root.append(disabled);
  root.append(dom('small','meta-detail-footnote','Dein Eventfortschritt ist noch nicht mit dem Meta-Sammelalbum verbunden. Die Vorschau vergibt keine Gewinne.'));
 }
+/** Clone the currently visible sheet as a temporary turning leaf.
+ * Old content rotates away and the next page is rendered underneath.
+ * Reduced-motion users see an instant switch, with no animation.
+ */
+function turningLeaf(direction){
+ const sheet=$('meta-book-sheet');
+ sheet.querySelector('.meta-turn-leaf')?.remove();
+ if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+ const leaf=dom('div','meta-turn-leaf '+(direction>0?'turn-next':'turn-prev'));
+ leaf.setAttribute('aria-hidden','true');
+ leaf.inert=true;
+ for(const child of [...sheet.children]){
+  const clone=child.cloneNode(true);
+  clone.removeAttribute('id');
+  // Avoid duplicate IDs for the grid and the book-page label in the snapshot.
+  clone.querySelectorAll('[id]').forEach(n=>n.removeAttribute('id'));
+  leaf.append(clone);
+ }
+ sheet.append(leaf);
+ leaf.addEventListener('animationend',()=>leaf.remove(),{once:true});
+}
+function changePage(step){
+ const next=pageIndex+step;
+ if(next<0||next>=metaAlbumPageCount(theme))return;
+ turningLeaf(step);
+ pageIndex=next;
+ selected=theme.pictures[pageIndex*6]?.id||'';
+ const url=new URL(location.href);
+ url.searchParams.set('page',String(pageIndex+1));
+ history.replaceState(null,'',url);
+ render();
+}
+$('meta-book-prev').addEventListener('click',()=>changePage(-1));
+$('meta-book-next').addEventListener('click',()=>changePage(1));
+// Tablet/phone navigation: horizontal swipes only, never vertical scrolling.
+let swipeStart=null;
+$('meta-book-sheet').addEventListener('pointerdown',event=>{
+ if(event.pointerType==='mouse'||!event.isPrimary)return;
+ swipeStart={x:event.clientX,y:event.clientY,id:event.pointerId};
+});
+$('meta-book-sheet').addEventListener('pointerup',event=>{
+ if(!swipeStart||event.pointerId!==swipeStart.id)return;
+ const dx=event.clientX-swipeStart.x,dy=event.clientY-swipeStart.y;
+ swipeStart=null;
+ if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.35)changePage(dx<0?1:-1);
+});
+$('meta-book-sheet').addEventListener('pointercancel',()=>{swipeStart=null;});
+// Arrow keys do not interfere with selecting a picture or focusing a field.
+document.addEventListener('keydown',event=>{
+ if(event.altKey||event.ctrlKey||event.metaKey||event.target.closest('button,input,textarea,select'))return;
+ if(event.key==='ArrowRight'){event.preventDefault();changePage(1);}
+ if(event.key==='ArrowLeft'){event.preventDefault();changePage(-1);}
+});
 function render(){
  themeMenu();
  $('meta-theme-title').textContent=theme.icon+' '+theme.title;
