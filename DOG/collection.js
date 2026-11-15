@@ -3,7 +3,7 @@ applyMotionMode(loadMotionMode());
 import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=13';
 import {loadAppearance,saveAppearance} from './appearance-registry.js?v=23';
 import {loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=2';
-import {isChristmasRewardLocked} from './christmas-reward-locks.js?v=2';
+import {isChristmasRewardLocked} from './christmas-reward-locks.js?v=3';
 import {CARD_EDITION,loadCardEdition,saveCardEdition,isCardEditionUnlocked} from './card-visuals.js?v=7';
 // The collection never grants event rewards. Cosmetic choices persist locally;
 // only an explicit avatar update in an active room uses the existing DOG API.
