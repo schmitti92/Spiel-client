@@ -346,7 +346,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
     <button class="top-btn" id="appearance-button" type="button">⚙ Einstellungen</button>
     <button class="top-btn" id="rules-button" type="button">❔ Regeln</button>
      <a class="top-btn" id="dog-christmas-event-link" href="christmas-event.html?return=index.html">🎄 Weihnachtsevent</a>
-    <a class="top-btn" id="back-link" href="../spielauswahl-lokal.html">👥 Zur Lobby</a>
+    <a class="top-btn" id="back-link" href="../hub-lobby.html?view=local">👥 Zur Lobby</a>
   </nav>
 </div>
 <main>
@@ -506,7 +506,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
     <div class="dog-victory-actions">
       <button id="dog-victory-close" class="dog-victory-action dog-victory-action-outline" type="button" autofocus>♟ Spielfeld ansehen</button>
       <button id="dog-victory-new" class="dog-victory-action dog-victory-action-gold" type="button">↻ Neue Partie</button>
-      <a id="dog-victory-lobby" class="dog-victory-action dog-victory-action-muted" href="../spielauswahl-lokal.html">⌂ Zur Lobby</a>
+      <a id="dog-victory-lobby" class="dog-victory-action dog-victory-action-muted" href="../hub-lobby.html?view=local">⌂ Zur Lobby</a>
     </div>
   </div>
 </dialog>
@@ -610,7 +610,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
  const params=new URLSearchParams(location.search);
  const room=String(params.get('room')||'').toUpperCase();
  const isOnline=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/.test(room);
- let destination='../spielauswahl-lokal.html';
+ let destination='../hub-lobby.html?view=local';
  if(isOnline){
   const back=new URLSearchParams({room,stage:'1'});
   const match=params.get('match');
