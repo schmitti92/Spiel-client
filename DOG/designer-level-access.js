@@ -46,7 +46,7 @@ export function guardDesignerLink(link,{target,lockedText,unlockedText,onStatus}
   link.classList.toggle('dog-designer-locked',!allowed);
   link.setAttribute('aria-disabled',allowed?'false':'true');
   link.tabIndex=allowed?0:-1;
-  if(allowed){link.href=targetHref;link.title='Brettdesigner geöffnet · Spielerlevel '+level;}
+  if(allowed){if(targetHref)link.href=targetHref;else link.removeAttribute('href');link.title='Brettdesigner geöffnet · Spielerlevel '+level;}
   else{
    link.removeAttribute('href');
    link.title=error==='LOGIN_REQUIRED'?'🔒 Bitte anmelden: Brettdesigner ab Level 2':
