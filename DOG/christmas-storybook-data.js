@@ -5,12 +5,12 @@ export const CHRISTMAS_STORY_CHAPTERS=Object.freeze([
   {
     "level": 1,
     "icon": "🏘️",
-    "title": "Der Weg nach Lichtertal",
+    "title": "Ein unerwarteter Besuch",
     "tree": "Junger Baum",
     "theme": "Hoffnung beginnt im Kleinen",
     "pages": [
       [
-        "Der erste Schnee",
+        "Ein unerwarteter Besuch",
         "Als der erste Schnee fiel, klingelte bei Chris das Telefon. Frau Berger aus Lichtertal klang erschöpft. Nach einem Sturm waren Fenster beschädigt und der Gemeinschaftsraum der Herberge blieb kalt. Für das Adventstreffen fehlten Helfer. Chris schrieb Vanessa und David. Noch am selben Abend beschlossen die drei, hinzufahren. Keiner wusste, wie viel sie schaffen würden. Aber sie wollten nicht nur gute Wünsche schicken."
       ],
       [
