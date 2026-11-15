@@ -1,0 +1,28 @@
+/* DOG personal statistics in the dedicated waiting room. */
+#dog-room-lobby .dog-room-bottom-actions{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:10px;margin:9px 0 0}
+#dog-room-lobby .dog-room-bottom-actions>.dog-room-utility{min-width:0;flex:1 1 160px;max-width:245px;min-height:44px;margin:0;border:1px solid #e5c78b;border-radius:12px;background:linear-gradient(155deg,#163d61,#0b2d49);box-shadow:0 4px 13px #001a3480;font-size:13px;font-weight:850;color:#fff0ce}
+#dog-room-lobby .dog-room-bottom-actions>.dog-room-utility:hover{background:linear-gradient(150deg,#255d80,#164462)}
+#dog-room-lobby .dog-room-stats-button{border-color:#ebcb89!important;background:linear-gradient(135deg,#204a59,#13413f)!important}
+#dog-room-lobby .dog-room-stats-dialog{width:min(92vw,600px);max-width:600px;max-height:min(88dvh,730px);padding:clamp(16px,3vw,27px)!important;overflow:auto;border:2px solid #d9b879!important;border-radius:22px!important;background:radial-gradient(ellipse at 20% 5%,#335669,#092538 65%,#071a2c)!important;color:#f6f2df;box-shadow:0 23px 80px #000c,0 0 0 1px #f8dfb32e inset}
+#dog-room-lobby .dog-room-stats-dialog::backdrop{background:#000c;backdrop-filter:blur(5px)}
+#dog-room-lobby .dog-room-stats-heading{display:flex;gap:14px;align-items:center;margin-bottom:9px}
+#dog-room-lobby .dog-room-stats-icon{display:grid;place-items:center;flex:none;width:53px;height:53px;border-radius:15px;border:1px solid #deb977;background:#214960;font-size:30px}
+#dog-room-lobby .dog-room-stats-eyebrow{display:block;color:#f2cf8c;font-size:10px;font-weight:950;letter-spacing:1.3px}
+#dog-room-lobby .dog-room-stats-heading h2{font:900 clamp(24px,3vw,32px) Georgia,serif;margin:4px 0 0;color:#ffe6b7}
+#dog-room-lobby .dog-room-stats-subtitle{font-size:12px;line-height:1.55;color:#cde2e9;margin:0 0 17px}
+#dog-room-lobby .dog-room-stats-feedback{font-size:12px;line-height:1.6;color:#d7e3ec;padding:10px 13px;border:1px solid #5e8a9999;border-radius:11px;background:#0c314299;margin:0 0 13px}
+#dog-room-lobby .dog-room-stats-feedback[data-status=error]{color:#ffe2ce;border-color:#ce8e77}
+#dog-room-lobby .dog-room-stats-feedback[hidden]{display:none}
+#dog-room-lobby .dog-room-stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:12px 0}
+#dog-room-lobby .dog-room-stats-grid[hidden]{display:none}
+#dog-room-lobby .dog-room-stats-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:135px;padding:12px 9px;text-align:center;border-radius:15px;border:1px solid #96afbd70;background:linear-gradient(155deg,#1a4561,#102d45)}
+#dog-room-lobby .dog-room-stats-tile>span{font-size:31px;line-height:1.15}
+#dog-room-lobby .dog-room-stats-tile strong{font:950 clamp(27px,4vw,38px)/1 Georgia,serif;color:#ffe4a5}
+#dog-room-lobby .dog-room-stats-tile small{font-size:11px;color:#daecf0;font-weight:850;line-height:1.5}
+#dog-room-lobby .dog-room-stats-tile-win{background:linear-gradient(160deg,#5c4b2b,#233e46);border-color:#e5c17e}
+#dog-room-lobby .dog-room-stats-note{margin:13px 0!important;padding:11px;border-left:3px solid #daba78;background:#0a2737a9;border-radius:8px;color:#cedde1;font-size:11px!important;line-height:1.65!important}
+#dog-room-lobby .dog-room-stats-footer{display:flex;gap:10px;margin:12px 0 0}
+#dog-room-lobby .dog-room-stats-footer>button{flex:1;margin:0!important;min-height:43px;padding:9px 13px;font-size:12px;border-radius:11px}
+#dog-room-lobby .dog-room-stats-footer .dog-room-utility{border:1px solid #abc4cb;background:#173d51;color:#ecf3fa}
+#dog-room-lobby .dog-room-stats-footer button:disabled{opacity:.65}
+@media(max-width:480px){#dog-room-lobby .dog-room-bottom-actions>.dog-room-utility{flex:1 1 45%;font-size:11px;padding:7px}#dog-room-lobby .dog-room-stats-tile{min-height:116px}#dog-room-lobby .dog-room-stats-grid{gap:8px}#dog-room-lobby .dog-room-stats-dialog{padding:13px!important}}
