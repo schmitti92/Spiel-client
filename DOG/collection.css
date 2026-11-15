@@ -287,3 +287,99 @@ button{touch-action:manipulation}
  .detail-image .nameframe-name{font-size:clamp(11px,3vw,18px)}
  .detail-image .nameframe-emblem{font-size:clamp(19px,4vw,26px)}
 }
+
+/* DOG Christmas turn-emblem previews. All designs are DOM/CSS only,
+   so adding them does not load images or communicate with the backend. */
+.collection-activeicon-preview{
+ position:absolute;z-index:1;inset:0;isolation:isolate;overflow:hidden;
+ display:flex;flex-direction:column;justify-content:center;align-items:center;
+ gap:clamp(2px,.5vw,10px);
+ background:var(--ai-scene);
+}
+.collection-activeicon-preview::before{
+ content:"";position:absolute;inset:0;pointer-events:none;
+ background:radial-gradient(circle at 50% 38%,var(--ai-glow) 0,transparent 58%),
+  radial-gradient(circle at 13% 18%,#fff5 1px,transparent 2px),
+  radial-gradient(circle at 83% 66%,#fff7 1px,transparent 2px),
+  radial-gradient(circle at 74% 12%,#fff9 1px,transparent 2px),
+  radial-gradient(circle at 20% 79%,#fff8 1px,transparent 2px);
+}
+.collection-activeicon-preview::after{
+ content:"";position:absolute;inset:5%;border:1px solid #ffffff3b;border-radius:12px;pointer-events:none;
+ box-shadow:inset 0 0 22px #ffffff15;
+}
+.activeicon-halo{
+ position:relative;z-index:1;display:grid;place-items:center;
+ width:clamp(68px,52%,180px);aspect-ratio:1;
+ border-radius:50%;background:radial-gradient(circle,var(--ai-halo) 18%,transparent 69%);
+}
+.activeicon-halo::before{
+ content:"";position:absolute;inset:2%;border:1px solid var(--ai-edge);
+ border-radius:50%;opacity:.75;box-shadow:0 0 25px var(--ai-glow),inset 0 0 17px var(--ai-glow);
+}
+.activeicon-medallion{
+ position:relative;display:grid;place-items:center;width:70%;aspect-ratio:1;border-radius:50%;
+ border:clamp(3px,.35vw,5px) solid transparent;
+ background:var(--ai-core) padding-box,var(--ai-metal) border-box;
+ box-shadow:0 5px 15px #0008,0 0 23px var(--ai-glow),inset 0 0 0 1px #ffffff70;
+}
+.activeicon-medallion::after{content:"";position:absolute;inset:7%;border-radius:50%;border:1px solid #ffffff55;pointer-events:none}
+.activeicon-motif{
+ position:relative;line-height:1;font-size:clamp(29px,4.1vw,63px);
+ filter:drop-shadow(0 4px 5px #0008);
+}
+.activeicon-spark{
+ position:absolute;z-index:2;font-size:clamp(14px,1.9vw,29px);
+ color:var(--ai-spark);text-shadow:0 0 12px var(--ai-glow);
+}
+.activeicon-spark-left{top:9%;left:-9%}
+.activeicon-spark-right{bottom:14%;right:-12%}
+.activeicon-preview-caption{
+ position:relative;z-index:1;font-size:clamp(7px,.65vw,11px);
+ font-weight:950;letter-spacing:.15em;white-space:nowrap;color:var(--ai-spark);
+ text-shadow:0 2px 5px #000c;
+}
+.activeicon-preview-note{font-size:11px;color:#e3c991;text-align:center;line-height:1.4}
+.detail-image .activeicon-halo{width:min(58%,215px)}
+.detail-image .activeicon-motif{font-size:clamp(43px,5.6vw,83px)}
+.detail-image .activeicon-spark{font-size:clamp(21px,2.8vw,35px)}
+.detail-image .activeicon-preview-caption{font-size:clamp(9px,.8vw,13px)}
+.collection-tile.is-locked .tile-art.has-activeicon-preview::after{background:#080c1937}
+.activeicon-star{
+ --ai-scene:radial-gradient(circle at 50% 23%,#a45e3f,transparent 57%),linear-gradient(140deg,#5f182c,#180d2e);
+ --ai-glow:#f8b944ba;--ai-halo:#ffdf85ac;
+ --ai-metal:linear-gradient(145deg,#fff8c4,#9c5a10 35%,#ffecaa 69%,#a57028);
+ --ai-core:linear-gradient(150deg,#9c2738,#502132);--ai-edge:#ffd881;--ai-spark:#ffebb9;
+}
+.activeicon-icecrown{
+ --ai-scene:radial-gradient(circle at 50% 25%,#7bdaf39e,transparent 57%),linear-gradient(140deg,#144d8a,#0a173b);
+ --ai-glow:#8cdefcce;--ai-halo:#cdf8ffbc;
+ --ai-metal:linear-gradient(135deg,#fcffff,#7ab5d7 40%,#e1ffff 72%,#6aa4ca);
+ --ai-core:linear-gradient(160deg,#276a96,#163f75);--ai-edge:#d3faff;--ai-spark:#e4fbff;
+}
+.activeicon-pinetree{
+ --ai-scene:radial-gradient(circle at 50% 24%,#8daa556c,transparent 57%),linear-gradient(140deg,#245339,#081e2b);
+ --ai-glow:#cbe48291;--ai-halo:#b6d86a9f;
+ --ai-metal:linear-gradient(135deg,#fff1ac,#657d42 39%,#ecc96f 70%,#98652a);
+ --ai-core:linear-gradient(155deg,#2d7850,#13452f);--ai-edge:#e4dd9b;--ai-spark:#f6e4b3;
+}
+.activeicon-bells{
+ --ai-scene:radial-gradient(circle at 50% 26%,#e0ad6777,transparent 58%),linear-gradient(135deg,#8e2d30,#250f29);
+ --ai-glow:#ffc774b2;--ai-halo:#ffe7a39b;
+ --ai-metal:linear-gradient(140deg,#fff4bc,#aa6524 37%,#fff1a4 72%,#ad4c32);
+ --ai-core:linear-gradient(155deg,#a13732,#6b1d36);--ai-edge:#fbe09c;--ai-spark:#fff0c3;
+}
+.activeicon-aurora{
+ --ai-scene:radial-gradient(ellipse at 30% 0%,#6ce8c19b,transparent 58%),linear-gradient(130deg,#172f66,#543187 58%,#063c63);
+ --ai-glow:#b4a3ffbe;--ai-halo:#70f9dab2;
+ --ai-metal:linear-gradient(135deg,#e7ffff,#89bff8 34%,#f3c5ff 63%,#7be5da);
+ --ai-core:linear-gradient(145deg,#39277e,#17586e);--ai-edge:#a9faee;--ai-spark:#edddff;
+}
+@media(max-width:540px){
+ .activeicon-halo{width:62%;min-width:60px}
+ .activeicon-motif{font-size:clamp(29px,9vw,44px)}
+ .activeicon-spark{font-size:clamp(13px,4vw,20px)}
+ .activeicon-preview-caption{font-size:7px;letter-spacing:.08em}
+ .detail-image .activeicon-halo{width:60%}
+ .detail-image .activeicon-motif{font-size:clamp(35px,11vw,66px)}
+}
