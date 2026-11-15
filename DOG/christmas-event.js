@@ -250,7 +250,7 @@ function treeLevel(){
 function buildingCard(entry){
  const root=document.createElement('article');root.className='building-card';
  root.innerHTML='<div class="building-card-head"><span class="building-card-icon" aria-hidden="true">'+entry.icon+'</span><div><h3>'+entry.title+'</h3><p>'+entry.summary+'</p></div></div>'
-   +'<div class="building-card-art" data-photo-state="loading" aria-label="Gebäudeansicht der gewählten Stufe"><span class="building-art-glow" aria-hidden="true"></span><img id="building-card-photo-'+entry.id+'" src="'+assetPath(entry.id,1)+'" alt="'+entry.title+' – Stufe 1" loading="lazy" decoding="async"><span class="building-art-plaque" data-building-art-level>STUFE 1 / 5</span><span class="building-art-error">Bild nicht verfügbar</span></div>'
+   +'<div class="building-card-art" data-photo-state="loading" aria-label="Gebäudeansicht der gewählten Stufe"><span class="building-art-glow" aria-hidden="true"></span><img id="building-card-photo-'+entry.id+'" src="'+assetPath(entry.id,1)+'" alt="'+entry.title+' – Stufe 1" loading="lazy" decoding="async"><span class="building-art-plaque" data-building-art-level>STUFE 1 / 5</span><span class="building-art-loading">✨ Gebäude wird geladen …</span><span class="building-art-error">Bild nicht verfügbar</span></div>'
    +'<div class="building-card-info"><strong data-building-effect></strong><span data-building-visual></span></div>'
    +'<div class="level-row"><label for="preview-'+entry.id+'">Entwicklungsstufe</label><output for="preview-'+entry.id+'" data-building-value></output></div>'
    +'<input id="preview-'+entry.id+'" type="range" min="1" max="5" step="1" value="1" aria-label="Vorschau der Entwicklungsstufe für '+entry.title+'">'
