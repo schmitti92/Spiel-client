@@ -8,7 +8,7 @@ import {createDogVisualFeedback} from './ui-animations.js?v=2';
 import {summarizeDogVictory} from './victory-summary.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
-import {DEFAULT_APPEARANCE,BOARD_STYLES,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=21';
+import {DEFAULT_APPEARANCE,BOARD_STYLES,isBoardUnlocked,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=22';
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=10';
 
 const $=id=>document.getElementById(id);
@@ -758,10 +758,13 @@ function prepareAppearanceUI(){
     select.replaceChildren();
     for(const [id,design] of Object.entries(registry)){
       const option=document.createElement('option');
-      option.value=id;option.textContent=design.label;
+      const locked=type==='board'&&!isBoardUnlocked(id);
+      option.value=id;option.textContent=locked?design.label+' · 🔒 Weihnachtsevent':design.label;
+      option.disabled=locked;
       select.appendChild(option);
     }
     select.addEventListener('change',()=>{
+      if(type==='board'&&!isBoardUnlocked(select.value)){select.value=appearance.board;return;}
       appearance=saveAppearance({...appearance,[type]:select.value});
       applyAppearance();
     });
