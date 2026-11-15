@@ -1,424 +1,169 @@
-:root{color-scheme:dark;--gold:#f0cf8e;--line:#b99959;--ink:#f8f1e7;--muted:#c6d4df}
-*{box-sizing:border-box}html{min-height:100%;background:#061426}
-body{margin:0;position:relative;isolation:isolate;min-height:100dvh;font:14px/1.5 Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#061426}
-body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:linear-gradient(135deg,#041728e0,#0417288b 48%,#061023cf),url("DealOrNoDeal/assets/weihnachts_event/winterlobby.png") center/cover no-repeat}
-body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 48% 0,#ffd78a26,transparent 57%)}
-button,a{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #fff8c6;outline-offset:3px}
-.meta-album-page{width:min(100%,1850px);min-height:100dvh;padding:clamp(10px,1.4vw,22px);margin:0 auto;display:flex;flex-direction:column;gap:13px}
-.meta-album-header{display:grid;grid-template-columns:minmax(145px,205px) minmax(0,1fr) minmax(210px,290px);align-items:center;gap:18px;min-height:118px}
-.meta-album-back{display:grid;place-items:center;min-height:52px;padding:10px 15px;border:2px solid var(--gold);border-radius:15px;color:#ffe5af;background:linear-gradient(130deg,#194367,#071b34);font-weight:900;text-decoration:none;text-align:center;box-shadow:0 5px 20px #0008}
-.meta-album-heading{text-align:center;min-width:0}.meta-eyebrow{margin:0;color:#ffe6ad;letter-spacing:.14em;font-weight:900;font-size:10px}
-.meta-album-heading h1{font-family:Georgia,serif;font-size:clamp(27px,4.1vw,56px);color:#ffe0a0;line-height:1.05;margin:5px 0 7px;text-shadow:0 3px 5px #000b,0 0 15px #f6cf8957}
-.meta-album-heading>p:last-child{font-size:clamp(11px,1vw,15px);font-weight:650;color:#e4e6df}
-.meta-album-overview{display:flex;flex-direction:column;gap:5px;padding:16px 17px;border:1.5px solid #d2ac70;border-radius:16px;background:linear-gradient(135deg,#081f3cee,#041222e8);box-shadow:0 9px 25px #0008}
-.meta-album-overview>span{font-weight:850;color:#fff3cd}
-.meta-album-overview strong{font-size:clamp(22px,2.4vw,36px);line-height:1;color:#8df9a8;font-variant-numeric:tabular-nums}
-.meta-album-overview small{color:#cad4db;font-size:10px}
-.meta-album-layout{flex:1;min-height:0;display:grid;grid-template-columns:minmax(205px,.8fr) minmax(0,3.5fr) minmax(265px,1.3fr);gap:12px}
-.meta-album-themes,.meta-album-gallery-panel,.meta-album-detail{min-width:0;border:1.5px solid #d4b273b3;border-radius:20px;background:linear-gradient(145deg,#072544ed,#06162ce9);box-shadow:inset 0 1px #ffffff21,0 10px 31px #0008;backdrop-filter:blur(10px)}
-.meta-album-themes{padding:17px 12px;display:flex;flex-direction:column;gap:16px}
-.meta-album-panel-head{display:flex;align-items:center;justify-content:center;gap:8px;border-bottom:1px solid #edc77f4c;padding:4px 0 13px}
-.meta-album-panel-head span{font-size:22px}.meta-album-panel-head h2{font-size:17px;color:#ffe2a4;margin:0}
-#meta-theme-list{display:flex;flex-direction:column;gap:9px;overflow:auto}
-.meta-theme-button{width:100%;display:flex;align-items:center;gap:8px;padding:13px 9px;text-align:left;min-height:75px;color:white;background:linear-gradient(130deg,#164367,#08223d);border:1px solid #d4b176;border-radius:13px}
-.meta-theme-button.selected{border:2px solid #ffe5a7;background:linear-gradient(140deg,#6d5026,#24503f 45%,#0b2e4d);box-shadow:0 0 14px #ffda7570}
-.meta-theme-icon{font-size:30px}.meta-theme-copy{min-width:0;display:flex;flex-direction:column;gap:3px;flex:1}.meta-theme-copy strong{font-weight:900;font-size:12px;line-height:1.2;overflow-wrap:anywhere}.meta-theme-copy small{font-size:10px;color:#cdd8e0}.meta-theme-count{font-weight:900;font-size:11px;color:#ffe4a4;white-space:nowrap}
-.meta-album-sidebar-foot{margin-top:auto;padding:14px 10px;border-radius:13px;border:1px dashed #d4ad6d76;background:#0a294855;font-size:11px;color:#d0dce5;line-height:1.55}
-.meta-album-sidebar-foot span{font-size:21px}.meta-album-sidebar-foot p{margin:6px 0 0}
-.meta-album-gallery-panel{display:flex;flex-direction:column;overflow:hidden}
-.meta-gallery-header{display:flex;align-items:center;justify-content:space-between;gap:13px;padding:17px 18px;border-bottom:1px solid #dab37755}
-.meta-gallery-header h2{font:900 clamp(20px,2vw,28px) Georgia,serif;color:#ffdea0;margin:3px 0}
-.meta-gallery-header p:last-child{font-size:12px;color:#c6d5df;max-width:470px;margin:0}
-.meta-progress-chip{flex:0 0 auto;color:#f9e7c4;border:1px solid #cfad75;background:#1d3a58;padding:6px 10px;border-radius:99px;font-size:11px;font-weight:900}
-.meta-gallery-notice{font-size:11px;color:#f3d9a1;background:#5b452527;border-bottom:1px solid #eac18242;padding:9px 16px}
-.meta-album-gallery-scroll{flex:1;min-height:0;max-height:calc(100dvh - 253px);overflow:auto;padding:16px;scrollbar-color:#bfa074 #0b2b49}
-.meta-picture-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,1.2vw,18px)}
-.meta-picture-card{min-width:0;display:flex;flex-direction:column;align-items:stretch;text-align:center;gap:5px;padding:8px 8px 11px;border:2px solid #b89565;border-radius:15px;color:#f9ead6;background:linear-gradient(150deg,#143858,#081d34);box-shadow:0 6px 16px #0008}
-.meta-picture-card:hover{filter:brightness(1.11);border-color:#f4d392}
-.meta-picture-card.selected{border-color:#ffe4a0;box-shadow:0 0 0 2px #ffdf8563,0 0 18px #eabb688a}
-.meta-picture-artwork{position:relative;display:block;aspect-ratio:4/4.4;background:linear-gradient(145deg,#20527c,#0a203d);border-radius:9px;overflow:hidden}
-.meta-picture-artwork img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(.87) brightness(.65)}
-.meta-picture-lock{position:absolute;inset:auto 0 0;min-height:40px;display:grid;place-items:center;font-size:25px;color:#f4e1bd;background:linear-gradient(transparent,#06182bc9)}
-.meta-picture-index{font-size:9px;font-weight:900;letter-spacing:.12em;color:#d3b27b}.meta-picture-name{font-size:clamp(11px,1.25vw,16px);overflow-wrap:anywhere;line-height:1.25}
-.meta-picture-status{align-self:center;border-radius:99px;padding:3px 8px;font-size:9px;font-weight:900;background:#576477;color:#ffedcf}
-.meta-album-detail{padding:14px;overflow:auto;max-height:calc(100dvh - 165px)}
-.meta-picture-detail{display:flex;flex-direction:column;align-items:stretch;gap:13px;min-height:100%}
-.meta-detail-overline{font-size:11px;font-weight:900;letter-spacing:.14em;color:#e7ce9f;text-align:center}
-.meta-detail-artwork{position:relative;overflow:hidden;border:3px solid #d3ad6d;border-radius:16px;aspect-ratio:4/4.7;background:#174066;box-shadow:0 8px 18px #0008}
-.meta-detail-artwork img{width:100%;height:100%;object-fit:cover;filter:grayscale(.64) brightness(.79)}
-.meta-detail-lock{position:absolute;bottom:0;left:0;right:0;text-align:center;background:linear-gradient(transparent,#081b35ee 30%);color:#ffe6b4;padding:20px 8px 9px;font-size:11px;font-weight:900;letter-spacing:.05em}
-.meta-detail-title{font:900 clamp(18px,2vw,25px) Georgia,serif;color:#ffe0a5;text-align:center;margin:0}
-.meta-detail-description{font-size:12px;color:#e0e4e4;text-align:center;margin:0}
-.meta-detail-message{font-size:12px;color:#e8d3a5;line-height:1.5;margin:0;text-align:center}
-.meta-detail-disabled{min-height:46px;margin-top:auto;border:1px solid #987a53;border-radius:12px;background:#43536c;color:#d6d7db;font-weight:900;opacity:.82;cursor:not-allowed}
-.meta-detail-footnote{font-size:10px;color:#aebfca;line-height:1.5;text-align:center}
-.meta-image-fallback{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:10px;color:#ffe8b8;background:#173e63;font-size:12px}
-.meta-album-footer{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:7px 10px;color:#d3dbe2;font-size:11px}
-.meta-album-footer a{color:#ffe2a6;font-weight:850;text-decoration:none}
-@media(max-width:1100px){.meta-album-layout{grid-template-columns:minmax(155px,.85fr) minmax(0,3fr) minmax(210px,1.3fr);gap:8px}.meta-album-header{grid-template-columns:minmax(120px,160px) minmax(0,1fr) minmax(160px,210px);gap:8px}.meta-album-page{padding:10px}.meta-album-themes,.meta-album-detail{padding:10px}.meta-picture-grid{gap:9px}.meta-album-gallery-scroll{padding:10px}}
-@media(max-width:760px){.meta-album-header{grid-template-columns:1fr auto}.meta-album-back{grid-column:1;grid-row:1;justify-self:start}.meta-album-heading{grid-column:1/-1;grid-row:2}.meta-album-overview{grid-column:2;grid-row:1;padding:9px 11px}.meta-album-overview>span,.meta-album-overview small{display:none}.meta-album-layout{display:flex;flex-direction:column}.meta-album-themes{gap:8px}.meta-album-panel-head{justify-content:flex-start}.meta-album-sidebar-foot{display:none}#meta-theme-list{flex-direction:row;overflow:auto}.meta-theme-button{flex:0 0 min(260px,90vw)}.meta-album-gallery-panel{min-height:380px}.meta-album-gallery-scroll{max-height:none}.meta-album-detail{max-height:none}.meta-picture-detail{display:grid;grid-template-columns:minmax(135px,38%) 1fr;gap:7px 12px;align-items:start}.meta-detail-artwork{grid-row:span 6}.meta-detail-title,.meta-detail-description,.meta-detail-message{text-align:left}.meta-detail-disabled{min-height:39px;margin-top:0}.meta-album-footer{flex-wrap:wrap}}
-@media(max-width:480px){.meta-album-heading h1{font-size:30px}.meta-picture-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.meta-gallery-header{flex-wrap:wrap}.meta-gallery-notice{font-size:10px}.meta-detail-title{font-size:17px}.meta-detail-message,.meta-detail-description{font-size:10px}.meta-picture-detail{grid-template-columns:minmax(108px,42%) 1fr}}
-@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
-
-.meta-picture-artwork img[hidden],.meta-detail-artwork img[hidden]{display:none!important}
-
-
-/* 2026 Christmas meta-album: a real paginated picture book.
-   Six picture positions are always visible on each leaf (3 columns x 2 rows).
-   The last leaf displays empty ornamental places, never fake unlocks. */
-.meta-album-gallery-scroll{padding:clamp(8px,1.1vw,16px);display:flex;flex-direction:column;gap:clamp(8px,1.2vw,15px);overflow:auto}
-.meta-book{position:relative;width:100%;padding:7px 9px 9px 24px;perspective:1500px;
- border-radius:13px 23px 23px 12px;
- background:linear-gradient(90deg,#4c2c1b 0,#936035 11px,#ebbc69 16px,#83522f 22px,#442718 25px,transparent 26px),
-  linear-gradient(135deg,#a46a3b,#53301c);
- box-shadow:0 14px 31px #000b,0 0 0 2px #c39153,inset -8px 0 13px #2b150f77;
-}
-.meta-book-spine{position:absolute;left:8px;top:5%;bottom:5%;width:12px;border-radius:12px;
- background:repeating-linear-gradient(180deg,#f3d19d 0 9px,#8e572f 10px 19px,#eec88a 20px 23px);
- box-shadow:inset -3px 0 #40271688,0 0 7px #1a130d}
-.meta-book-sheet{position:relative;overflow:hidden;isolation:isolate;
- display:flex;flex-direction:column;justify-content:space-between;gap:clamp(7px,1.2vw,14px);
- min-height:370px;padding:clamp(10px,1.35vw,21px) clamp(12px,1.6vw,26px);
- color:#573c27;border-radius:7px 19px 19px 5px;border:1px solid #ebd8b8;
- background:radial-gradient(circle at 60% 35%,#fff9e9 0,#f4e6ca 62%,#dbc69e 100%);
- box-shadow:inset 15px 0 22px #b38f5970,inset -2px 0 9px #a57a4955,0 1px 5px #0008;
-}
-.meta-book-sheet::before{content:"";position:absolute;z-index:0;inset:0;pointer-events:none;
- background:repeating-linear-gradient(0deg,transparent 0 28px,#9e775412 30px),
-  radial-gradient(ellipse at 30% 90%,#bd8e5040,transparent 67%);
- opacity:.55}
-.meta-book-page-head,.meta-book-page-foot{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;
- color:#8f632f;font-family:Georgia,serif;font-weight:900;letter-spacing:.09em}
-.meta-book-page-head{font-size:clamp(8px,.9vw,13px);border-bottom:1px solid #ba935eaa;padding-bottom:7px}
-.meta-book-ornament{font-size:17px}
-.meta-book-page-foot{font-size:clamp(9px,.85vw,12px);border-top:1px solid #ba935eaa;padding-top:7px}
-.meta-book-page-foot span:last-child{white-space:nowrap}
-.meta-book-sheet .meta-picture-grid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
- grid-template-rows:repeat(2,minmax(0,1fr));gap:clamp(6px,1vw,13px);flex:1;align-content:center}
-.meta-book-sheet .meta-picture-card{min-width:0;max-width:100%;gap:3px;padding:clamp(4px,.55vw,8px);
- background:linear-gradient(155deg,#fff7e5,#e5cfaa);border:1px solid #ac895b;border-radius:8px;
- color:#593b22;box-shadow:0 3px 7px #8b653a55,inset 0 0 0 1px #fffaf0}
-.meta-book-sheet .meta-picture-card.selected{border-color:#795220;box-shadow:0 0 0 2px #d49a2b9c,0 0 12px #d1a2519c}
-.meta-book-sheet .meta-picture-artwork{height:clamp(62px,10dvh,130px);aspect-ratio:auto;border:2px solid #d6b887;
- border-radius:5px;background:#d2b78d}
-.meta-book-sheet .meta-picture-artwork img{object-fit:cover}
-.meta-book-sheet .meta-picture-lock{min-height:25px;font-size:18px}
-.meta-book-sheet .meta-picture-index{color:#987246;font-size:clamp(8px,.65vw,10px)}
-.meta-book-sheet .meta-picture-name{color:#49301c;font-size:clamp(10px,1vw,14px);line-height:1.15}
-.meta-book-sheet .meta-picture-status{font-size:clamp(8px,.64vw,10px);padding:2px 5px;background:#77644c;color:#fff3dd}
-.meta-book-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
- min-height:clamp(98px,16dvh,165px);border:2px dashed #b69a71;border-radius:9px;
- color:#987c50;background:linear-gradient(145deg,#f3e3c45c,#dcc3984f);font-family:Georgia,serif}
-.meta-book-empty-ornament{font-size:30px;line-height:1;color:#b49b6e}
-.meta-book-empty small{font-size:clamp(9px,.8vw,12px);text-align:center;padding:0 3px}
-.meta-book-controls{display:grid;grid-template-columns:1fr minmax(116px,auto) 1fr;align-items:center;gap:10px;
- width:min(100%,650px);margin:0 auto;padding:0 3px}
-.meta-book-turn{min-height:43px;border-radius:13px;border:1.5px solid #e6c387;color:#ffe5ad;font-weight:900;
- background:linear-gradient(130deg,#194467,#092842);box-shadow:0 4px 13px #0006}
-.meta-book-turn:not(:disabled):hover{background:linear-gradient(130deg,#38668a,#123d5c);border-color:#fff4c2}
-.meta-book-turn:disabled{opacity:.42;cursor:not-allowed}
-#meta-book-position{text-align:center;color:#ffe4ae;font-size:clamp(11px,1vw,14px);font-weight:900;white-space:nowrap}
-.meta-turn-leaf{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;justify-content:space-between;
- gap:clamp(7px,1.2vw,14px);padding:inherit;color:#573c27;
- background:radial-gradient(circle at 65% 25%,#fff8e8,#f0dfbd 75%,#d9be8f 100%);
- border:1px solid #efdbb8;border-radius:7px 19px 19px 5px;backface-visibility:hidden;
- transform-style:preserve-3d;pointer-events:none;will-change:transform,opacity}
-.meta-turn-leaf .meta-picture-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
- grid-template-rows:repeat(2,minmax(0,1fr));gap:clamp(6px,1vw,13px);flex:1;align-content:center}
-.meta-turn-leaf.turn-next{transform-origin:left center;animation:meta-book-flip-next .68s ease-in-out forwards}
-.meta-turn-leaf.turn-prev{transform-origin:right center;animation:meta-book-flip-prev .68s ease-in-out forwards}
-@keyframes meta-book-flip-next{0%{transform:rotateY(0);opacity:1;filter:brightness(1)}
- 45%{transform:rotateY(-85deg);opacity:.95;filter:brightness(.82)}
- 100%{transform:rotateY(-176deg);opacity:0;filter:brightness(.9)}}
-@keyframes meta-book-flip-prev{0%{transform:rotateY(0);opacity:1;filter:brightness(1)}
- 45%{transform:rotateY(85deg);opacity:.95;filter:brightness(.82)}
- 100%{transform:rotateY(176deg);opacity:0;filter:brightness(.9)}}
-@media(max-width:1100px){.meta-book{padding-left:20px}.meta-book-sheet{min-height:345px;padding:10px 11px;gap:8px}.meta-book-sheet .meta-picture-artwork{height:clamp(65px,10dvh,104px)}
- .meta-book-sheet .meta-picture-status{font-size:9px}.meta-book-empty{min-height:100px}}
-@media(max-width:760px){.meta-book-sheet{min-height:345px;padding:12px}.meta-book-sheet .meta-picture-artwork{height:clamp(70px,16vw,126px)}
- .meta-book-sheet .meta-picture-name{font-size:clamp(10px,1.9vw,14px)}
- .meta-book-page-head{font-size:10px}
- .meta-book-sheet .meta-picture-grid{gap:9px}}
-@media(max-width:480px){.meta-book{padding:5px 6px 7px 17px}.meta-book-spine{left:5px;width:9px}
- .meta-book-sheet{min-height:310px;padding:9px 7px;gap:6px}
- .meta-book-page-head{font-size:7px;letter-spacing:.02em}
- .meta-book-sheet .meta-picture-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
- .meta-book-sheet .meta-picture-card{padding:3px;gap:2px}
- .meta-book-sheet .meta-picture-artwork{height:clamp(58px,18vw,86px);border-width:1px}
- .meta-book-sheet .meta-picture-lock{min-height:20px;font-size:14px}
- .meta-book-sheet .meta-picture-name{font-size:9px}
- .meta-book-sheet .meta-picture-status{font-size:7px;padding:1px 3px}
- .meta-book-sheet .meta-picture-index{font-size:7px}
- .meta-book-empty{min-height:95px}.meta-book-empty small{font-size:9px}
- .meta-book-controls{gap:6px;grid-template-columns:1fr auto 1fr}
- .meta-book-turn{font-size:11px;padding:8px 4px;min-height:38px}
- .meta-book-page-foot{font-size:8px;letter-spacing:0}}
-@media(prefers-reduced-motion:reduce){.meta-turn-leaf{display:none!important;animation:none!important}}
-
-
-/* 2026 Christmas album: overlay six event pictures precisely inside
-   the SIX gilded picture frames baked into the uploaded transparent PNG.
-   Keep the image at its native 3:2 ratio so positions never drift. */
+/* Meta-Sammelalbum, Variante B: only the book floats in the winter scene.
+   Six interactive cards sit over the six frames baked into the 1536×1024 PNG. */
+:root{color-scheme:dark;--gold:#f3d28f;--ink:#fff4db}
+*{box-sizing:border-box}
+html{min-height:100%;background:#061426}
+body{position:relative;isolation:isolate;margin:0;min-height:100dvh;
+ font:14px/1.4 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);
+ background:#061426}
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+ background:linear-gradient(180deg,#03102152,#07152c15 48%,#04102075),
+ url("DealOrNoDeal/assets/weihnachts_event/winterlobby.png") center/cover no-repeat}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+ background:radial-gradient(ellipse at center,#122d4420,transparent 73%)}
+button,a{font:inherit}button{cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #ffdf87;outline-offset:3px}
+[hidden]{display:none!important}
+.meta-visually-hidden{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;
+ border:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.meta-album-page{
+ width:100%;max-width:1800px;min-height:100dvh;height:100dvh;max-height:100dvh;
+ margin:0 auto;padding:clamp(6px,.8vw,14px);
+ display:flex;flex-direction:column;gap:clamp(4px,.75dvh,9px);overflow:hidden}
+.meta-album-header{
+ position:relative;z-index:20;display:grid;grid-template-columns:minmax(112px,190px) minmax(0,1fr) minmax(95px,160px);
+ align-items:center;gap:clamp(5px,1vw,14px);min-height:45px;flex:0 0 auto}
+.meta-album-back,.meta-theme-toggle,.meta-album-overview{
+ display:flex;justify-content:center;align-items:center;min-height:42px;
+ border:1.5px solid #dfbe7a;border-radius:13px;color:#ffe8b7;
+ background:#08223eb8;box-shadow:0 4px 17px #020c1b67;backdrop-filter:blur(8px)}
+.meta-album-back{padding:7px 10px;text-decoration:none;font-weight:900;text-align:center}
+.meta-theme-picker{position:relative;justify-self:center;max-width:100%;min-width:0}
+.meta-theme-toggle{gap:14px;max-width:100%;padding:7px 16px;font-weight:900;font-size:clamp(13px,1.3vw,18px);text-align:center}
+.meta-theme-toggle:hover,.meta-album-back:hover{background:#174265d9}
+.meta-theme-list{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);
+ z-index:30;width:min(310px,90vw);max-height:min(60dvh,420px);padding:9px;overflow:auto;
+ border:1px solid #eac37d;border-radius:15px;background:#071f37f2;box-shadow:0 14px 44px #000b}
+.meta-theme-button{width:100%;min-height:54px;display:flex;align-items:center;gap:10px;
+ padding:9px;text-align:left;color:#fff3d5;border:1px solid #957650;
+ border-radius:11px;background:#1a3b55}
+.meta-theme-button+.meta-theme-button{margin-top:7px}
+.meta-theme-button.selected{background:#305748;border-color:#f1d089}
+.meta-theme-icon{font-size:24px}
+.meta-theme-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+.meta-theme-copy strong{font-size:13px;line-height:1.2;overflow-wrap:anywhere}
+.meta-theme-copy small{font-size:10px;color:#c7dae3}
+.meta-theme-count{font-size:11px;font-weight:900;white-space:nowrap}
+.meta-album-overview{padding:6px 10px;justify-self:stretch}
+.meta-album-overview strong{font-size:clamp(18px,2.1vw,27px);color:#9cf7b5;font-variant-numeric:tabular-nums}
+.meta-album-layout{flex:1 1 auto;display:flex;justify-content:center;align-items:stretch;min-height:0}
+.meta-album-gallery-panel{width:100%;min-width:0;min-height:0;display:flex;justify-content:center;align-items:stretch}
+.meta-album-gallery-scroll{
+ width:100%;height:100%;min-height:0;max-height:none;display:flex;flex-direction:column;
+ justify-content:center;align-items:center;gap:clamp(5px,1dvh,12px);padding:0;overflow:hidden}
 .meta-book{
- width:100%;
- padding:0;
- border:0;
- border-radius:0;
- background:none;
- box-shadow:none;
- perspective:1600px;
-}
-.meta-book-spine{display:none}
+ position:relative;width:min(100%,calc((100dvh - 123px) * 1.5),1560px);
+ max-height:calc(100dvh - 123px);min-height:0;margin:auto auto 0;
+ flex:0 1 auto;perspective:1800px;filter:drop-shadow(0 12px 18px #0008)}
 .meta-book-sheet{
- display:block;
- position:relative;
- width:100%;
- height:auto;
- min-height:0;
- padding:0;
- aspect-ratio:3 / 2;
- overflow:hidden;
- border:0;
- border-radius:0;
- box-shadow:none;
- background:url("assets/meta-sammelalbum/weihnachts_sammelalbum_buch_transparent.png") center / 100% 100% no-repeat;
- --album-slots-left:10%;
- --album-slots-top:19.1%;
- --album-slots-width:81.2%;
- --album-slots-height:56.8%;
+ width:100%;height:auto;min-height:0;aspect-ratio:3/2;position:relative;
+ border:0;padding:0;overflow:hidden;isolation:isolate;border-radius:0;
+ background:url("assets/meta-sammelalbum/weihnachts_sammelalbum_buch_transparent.png") center/100% 100% no-repeat;
+ --album-slots-left:10%;--album-slots-top:19.1%;
+ --album-slots-width:81.2%;--album-slots-height:56.8%}
+.meta-picture-grid,.meta-turn-leaf .meta-picture-grid{
+ position:absolute;z-index:1;left:var(--album-slots-left);top:var(--album-slots-top);
+ width:var(--album-slots-width);height:var(--album-slots-height);
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));
+ gap:5.1% 3.6%}
+.meta-picture-card{
+ display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;
+ width:100%;height:100%;min-width:0;min-height:0;padding:4.5% 5.2% 4.1%;gap:2px;
+ background:transparent;color:#543313;border:1px solid transparent;border-radius:5px;
+ text-align:center;cursor:pointer}
+.meta-picture-card:hover{background:#fff7e526}
+.meta-picture-card.selected{border-color:#9a7228;box-shadow:inset 0 0 0 1px #cfa258,0 0 10px #e2b35f88}
+.meta-picture-artwork{position:relative;flex:1 1 auto;width:100%;min-height:0;height:0;
+ display:block;overflow:hidden;border:1px solid #b18c59;border-radius:5px;background:#edd7b1}
+.meta-picture-artwork img{display:block;width:100%;height:100%;object-fit:cover;
+ filter:grayscale(.85) brightness(.68)}
+.meta-picture-artwork img[hidden]{display:none!important}
+.meta-picture-lock{position:absolute;inset:auto 0 0;min-height:0;display:grid;place-items:center;
+ background:linear-gradient(transparent,#2416069f);padding:2px;font-size:clamp(12px,1.6vw,20px)}
+.meta-picture-index{font-size:clamp(7px,.65vw,11px);font-weight:900;color:#906d39;line-height:1.05}
+.meta-picture-name{font-size:clamp(9px,1vw,16px);font-weight:950;line-height:1.05;overflow-wrap:anywhere}
+.meta-picture-status{align-self:center;background:#65513ad9;color:#ffedcb;border-radius:20px;
+ padding:1px 5px;font-size:clamp(7px,.62vw,11px);font-weight:900;line-height:1.05}
+.meta-book-empty{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;
+ min-height:0;border:1px dashed #bd986963;border-radius:6px;background:#e1c79818;color:#96754b}
+.meta-book-empty-ornament{font-size:clamp(16px,2vw,29px)}
+.meta-book-empty small{font-size:clamp(8px,.72vw,11px)}
+.meta-image-fallback{position:absolute;inset:0;display:grid;place-items:center;text-align:center;
+ padding:8px;background:#ab865d;color:#3f260d;font-size:11px}
+.meta-book-controls{
+ display:grid;grid-template-columns:1fr minmax(105px,auto) 1fr;gap:9px;align-items:center;
+ width:min(100%,590px);margin:0 auto auto;padding:0 4px;flex:0 0 auto}
+.meta-book-turn{min-height:40px;border:1.5px solid #dec187;border-radius:12px;
+ background:#082747c7;color:#ffdda1;font-weight:900;padding:6px 10px;backdrop-filter:blur(6px)}
+.meta-book-turn:hover:not(:disabled){background:#24567bde}
+.meta-book-turn:disabled{opacity:.42;cursor:not-allowed}
+#meta-book-position{text-align:center;font-size:clamp(11px,1vw,14px);font-weight:900;
+ color:#fff0c7;text-shadow:0 2px 7px #000b}
+.meta-turn-leaf{
+ position:absolute;z-index:5;inset:0;background:url("assets/meta-sammelalbum/weihnachts_sammelalbum_buch_transparent.png") center/100% 100% no-repeat;
+ pointer-events:none;backface-visibility:hidden;transform-style:preserve-3d;will-change:transform,opacity}
+.meta-turn-leaf .meta-picture-grid{z-index:2}
+.meta-turn-leaf.turn-next{transform-origin:left center;animation:meta-flip-next .62s ease-in-out forwards}
+.meta-turn-leaf.turn-prev{transform-origin:right center;animation:meta-flip-prev .62s ease-in-out forwards}
+@keyframes meta-flip-next{0%{transform:rotateY(0);opacity:1}
+ 48%{transform:rotateY(-80deg);opacity:.92}
+ 100%{transform:rotateY(-178deg);opacity:0}}
+@keyframes meta-flip-prev{0%{transform:rotateY(0);opacity:1}
+ 48%{transform:rotateY(80deg);opacity:.92}
+ 100%{transform:rotateY(178deg);opacity:0}}
+.meta-picture-dialog{
+ width:min(94vw,720px);max-height:min(91dvh,800px);margin:auto;padding:clamp(16px,2vw,23px);
+ border:2px solid #edc986;border-radius:23px;
+ background:linear-gradient(150deg,#12354c,#071a30 85%);color:#fff1d8;
+ box-shadow:0 24px 85px #000d;overflow-y:auto}
+.meta-picture-dialog::backdrop{background:#020b18cd;backdrop-filter:blur(8px)}
+.meta-dialog-close{position:absolute;right:10px;top:10px;z-index:2;width:38px;height:38px;
+ display:grid;place-items:center;background:#153d59;border:1px solid #e4c88a;
+ border-radius:50%;color:#fff5d9;font-size:18px;font-weight:900}
+.meta-dialog-close:hover{background:#2c6077}
+.meta-picture-detail{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1fr);gap:clamp(12px,2vw,22px);
+ align-items:center;padding:12px 0 0}
+.meta-detail-artwork{position:relative;width:100%;aspect-ratio:4/4.8;overflow:hidden;
+ border:2px solid #d2a96b;border-radius:13px;background:#1b344e}
+.meta-detail-artwork img{width:100%;height:100%;display:block;object-fit:cover}
+.meta-detail-artwork img[hidden]{display:none!important}
+.meta-detail-lock{position:absolute;inset:auto 0 0;padding:18px 6px 9px;text-align:center;
+ background:linear-gradient(transparent,#051931f5);color:#ffdda4;font-size:11px;font-weight:900}
+.meta-detail-info{display:flex;flex-direction:column;align-items:stretch;gap:13px}
+.meta-detail-title{margin:0;color:#ffe0a1;font:900 clamp(22px,2.6vw,32px) Georgia,serif}
+.meta-detail-description,.meta-detail-message{margin:0;font-size:clamp(12px,1.1vw,15px);line-height:1.55;color:#e1dfda}
+.meta-detail-message{color:#ffdda4}
+.meta-detail-disabled{padding:11px;border:1px solid #bd9c6c;border-radius:11px;
+ background:#425268;color:#e0ded8;font-weight:850;cursor:not-allowed}
+.meta-detail-footnote{font-size:11px;color:#aebfcd}
+@media(max-width:700px){
+ .meta-album-header{grid-template-columns:minmax(80px,110px) minmax(0,1fr) minmax(65px,86px);min-height:40px;gap:5px}
+ .meta-album-page{padding:6px}
+ .meta-album-back,.meta-theme-toggle,.meta-album-overview{min-height:37px;padding:6px;font-size:11px}
+ .meta-theme-toggle{gap:5px}
+ .meta-album-overview strong{font-size:15px}
+ .meta-book{width:min(100%,calc((100dvh - 113px) * 1.5));max-height:calc(100dvh - 113px)}
+ .meta-book-controls{width:min(100%,430px);gap:5px}
+ .meta-book-turn{min-height:36px;padding:5px;font-size:11px}
+ .meta-picture-index,.meta-picture-status{display:none}
+ .meta-picture-name{font-size:clamp(7px,1.9vw,11px)}
+ .meta-picture-card{padding:3%}
 }
-.meta-book-sheet::before{display:none}
-.meta-book-page-head,.meta-book-page-foot{display:none!important}
-.meta-book-sheet .meta-picture-grid,
-.meta-book-sheet .meta-turn-leaf .meta-picture-grid{
- position:absolute;
- z-index:2;
- inset:auto;
- left:var(--album-slots-left);
- top:var(--album-slots-top);
- width:var(--album-slots-width);
- height:var(--album-slots-height);
- display:grid;
- grid-template-columns:repeat(3,minmax(0,1fr));
- grid-template-rows:repeat(2,minmax(0,1fr));
- column-gap:3.6%;
- row-gap:5.1%;
- align-content:stretch;
- gap:5.1% 3.6%;
- flex:none;
+@media(max-width:510px) and (orientation:portrait){
+ .meta-book{width:100%;max-height:none}
+ .meta-picture-name{font-size:clamp(7px,2.3vw,10px)}
+ .meta-picture-lock{font-size:12px;padding:0}
+ .meta-book-empty small{font-size:7px}
+ .meta-picture-detail{grid-template-columns:1fr}
+ .meta-detail-artwork{width:min(100%,240px);margin:auto;aspect-ratio:4/3.5}
+ .meta-detail-info{gap:9px;text-align:center}
 }
-.meta-book-sheet .meta-picture-card{
- display:flex;
- flex-direction:column;
- justify-content:space-between;
- min-width:0;
- min-height:0;
- width:100%;
- height:100%;
- padding:4.5% 5.2% 4.1%;
- gap:2px;
- border:1px solid transparent;
- border-radius:4px;
- background:transparent;
- box-shadow:none;
- color:#533719;
+@media(max-height:490px) and (orientation:landscape){
+ .meta-album-page{gap:3px}
+ .meta-album-header{min-height:32px}
+ .meta-album-back,.meta-theme-toggle,.meta-album-overview{min-height:30px;padding:4px 8px}
+ .meta-book{width:min(100%,calc((100dvh - 91px)*1.5));max-height:calc(100dvh - 91px)}
+ .meta-book-turn{min-height:30px}
+ .meta-book-controls{gap:4px}
 }
-.meta-book-sheet .meta-picture-card:hover{
- background:#fff7e51b;
- box-shadow:inset 0 0 0 1px #bb8e4e;
- border-color:transparent;
- filter:none;
-}
-.meta-book-sheet .meta-picture-card.selected{
- background:#ffeedc25;
- border-color:#92621b;
- box-shadow:inset 0 0 0 1px #bf923d,0 0 8px #ffcc839c;
-}
-.meta-book-sheet .meta-picture-artwork{
- display:block;
- flex:1 1 auto;
- width:100%;
- height:0;
- min-height:0;
- aspect-ratio:auto;
- overflow:hidden;
- border-radius:5px;
- border:1px solid #ac885e;
- background:#f1dfbd;
-}
-.meta-book-sheet .meta-picture-artwork img{width:100%;height:100%;object-fit:cover}
-.meta-book-sheet .meta-picture-lock{
- inset:auto 0 0;
- min-height:0;
- padding:2px;
- font-size:clamp(12px,1.5vw,19px);
- background:linear-gradient(transparent,#26180fab);
-}
-.meta-book-sheet .meta-picture-index{
- line-height:1.1;
- font-size:clamp(7px,.64vw,11px);
- color:#8e6336;
-}
-.meta-book-sheet .meta-picture-name{
- line-height:1.05;
- font-size:clamp(9px,.96vw,14px);
- font-weight:900;
- color:#543313;
-}
-.meta-book-sheet .meta-picture-status{
- padding:1px 5px;
- line-height:1.1;
- background:#67513dd9;
- color:#ffedcd;
- font-size:clamp(7px,.62vw,10px);
-}
-.meta-book-sheet .meta-book-empty{
- min-height:0;
- height:100%;
- width:100%;
- border:1px dashed #b48d5988;
- border-radius:5px;
- background:#e6ce9b1a;
- gap:4px;
-}
-.meta-book-sheet .meta-book-empty-ornament{font-size:clamp(12px,2vw,25px)}
-.meta-book-sheet .meta-book-empty small{font-size:clamp(7px,.73vw,11px);color:#886a47}
-.meta-book-sheet .meta-turn-leaf{
- position:absolute;
- inset:0;
- display:block;
- padding:0;
- border:0;
- border-radius:0;
- overflow:hidden;
- background:url("assets/meta-sammelalbum/weihnachts_sammelalbum_buch_transparent.png") center / 100% 100% no-repeat;
- box-shadow:0 3px 20px #0006;
- pointer-events:none;
-}
-.meta-book-sheet .meta-turn-leaf::before{display:none}
-/* A fixed book ratio remains valid on narrow screens; captions get smaller,
-   not an extra column or forced scroll, so the six frames stay aligned. */
-@media(max-width:760px){
- .meta-book-sheet{min-height:0;padding:0}
- .meta-book-sheet .meta-picture-grid{gap:5.1% 3.6%}
- .meta-book-sheet .meta-picture-artwork{height:0}
- .meta-book-sheet .meta-picture-card{gap:1px;padding:4%}
- .meta-book-sheet .meta-picture-index{font-size:clamp(6px,1.1vw,9px)}
- .meta-book-sheet .meta-picture-name{font-size:clamp(7px,1.8vw,12px)}
- .meta-book-sheet .meta-picture-status{font-size:clamp(6px,1vw,9px)}
-}
-@media(max-width:520px){
- .meta-book-sheet .meta-picture-card{padding:3% 3.5%}
- .meta-book-sheet .meta-picture-name{font-size:clamp(7px,2.3vw,10px)}
- .meta-book-sheet .meta-picture-index,.meta-book-sheet .meta-picture-status{display:none}
- .meta-book-sheet .meta-picture-lock{font-size:clamp(10px,3vw,15px)}
- .meta-book-sheet .meta-book-empty small{font-size:7px}
-}
-@media(prefers-reduced-motion:reduce){
- .meta-book-sheet .meta-turn-leaf{display:none!important}
-}
-
-
-/* Compact single-screen landscape layout (tablet / desktop).
-   Reserve space for the book AND page-turn controls in one dynamic viewport.
-   Older portrait/small-screen layouts retain safe, intentional scrolling. */
-.meta-visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
- clip:rect(0,0,0,0);white-space:nowrap;border:0}
-@media (min-width:900px) and (min-height:540px) and (orientation:landscape){
- html,body{height:100%;min-height:0;overflow:hidden}
- .meta-album-page{
-  height:100dvh;min-height:0;max-height:100dvh;
-  width:100%;padding:clamp(6px,.65vw,11px);
-  gap:clamp(6px,.65vw,10px);
-  overflow:hidden;
- }
- .meta-album-header{
-  display:grid;grid-template-columns:minmax(150px,190px) minmax(0,1fr) minmax(112px,160px);
-  align-items:center;gap:8px;min-height:0;height:clamp(48px,7dvh,64px);
-  flex:0 0 auto;
- }
- .meta-album-back{min-height:40px;padding:7px 9px;font-size:clamp(11px,.95vw,14px)}
- .meta-album-heading h1{
-  font-size:clamp(21px,2.3vw,32px);line-height:1.1;margin:0;
-  text-overflow:ellipsis;overflow:hidden;white-space:nowrap;
- }
- .meta-album-overview{padding:6px 10px;border-radius:12px;gap:0;align-items:center}
- .meta-album-overview>span,.meta-album-overview small{display:none}
- .meta-album-overview strong{font-size:clamp(20px,2vw,29px)}
- .meta-album-layout{
-  display:grid;grid-template-columns:minmax(150px,15.5%) minmax(0,1fr) minmax(200px,21%);
-  gap:clamp(6px,.7vw,11px);min-height:0;flex:1 1 auto;height:0;
- }
- .meta-album-themes,.meta-album-gallery-panel,.meta-album-detail{height:100%;min-height:0;overflow:hidden}
- .meta-album-themes{padding:10px;gap:9px}
- .meta-album-panel-head{padding:2px 0 8px}
- .meta-album-panel-head h2{font-size:15px}
- #meta-theme-list{overflow-y:auto;min-height:0}
- .meta-theme-button{min-height:56px;padding:8px 7px}
- .meta-theme-icon{font-size:23px}
- .meta-album-gallery-panel{display:flex;flex-direction:column}
- .meta-gallery-header{
-  padding:6px 11px;min-height:43px;gap:5px;flex:0 0 auto;
-  overflow:hidden;
- }
- .meta-gallery-header h2{font-size:clamp(17px,1.7vw,23px);line-height:1.1;margin:0}
- .meta-gallery-header .meta-progress-chip{font-size:10px;padding:4px 8px}
- .meta-gallery-header p:not(.meta-visually-hidden){display:none}
- .meta-album-gallery-scroll{
-  flex:1 1 auto;min-height:0;max-height:none;
-  padding:4px 6px 7px;gap:5px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  overflow:hidden;
- }
- /* 3:2 illustration, constrained by BOTH horizontal panel size and
-    height remaining once the header, page controls, and padding are counted. */
- .meta-book{
-  width:min(100%,calc((100dvh - 170px) * 1.5));
-  min-height:0;max-height:calc(100dvh - 170px);
-  flex:0 1 auto;margin:auto auto 0;
- }
- .meta-book-sheet{width:100%;min-height:0}
- .meta-book-controls{
-  flex:0 0 auto;width:min(100%,510px);
-  grid-template-columns:1fr minmax(95px,auto) 1fr;
-  padding:0 1px;gap:6px;margin:0 auto auto;
- }
- .meta-book-turn{min-height:35px;font-size:clamp(11px,.9vw,13px);padding:5px}
- #meta-book-position{font-size:clamp(10px,.9vw,13px)}
- .meta-album-detail{display:flex;padding:clamp(8px,.8vw,13px);max-height:none;overflow-y:auto}
- .meta-picture-detail{min-height:0;gap:clamp(5px,.6dvh,9px);width:100%}
- .meta-detail-overline{display:none}
- .meta-detail-artwork{
-  aspect-ratio:auto;
-  height:min(50dvh,390px);min-height:0;max-height:52%;
-  flex:0 1 auto;border-width:2px;border-radius:11px;
- }
- .meta-detail-title{font-size:clamp(17px,1.65vw,24px);line-height:1.1;margin:1px 0}
- .meta-detail-description{font-size:clamp(11px,.85vw,13px);line-height:1.35;margin:0}
- .meta-detail-message{font-size:clamp(10px,.85vw,12px);line-height:1.35;margin:0}
- .meta-detail-disabled{margin-top:0;min-height:36px;padding:6px 5px;font-size:clamp(10px,.83vw,12px)}
- .meta-detail-footnote{display:none}
- .meta-album-footer{display:none}
-}
-@media (min-width:900px) and (min-height:540px) and (max-height:730px) and (orientation:landscape){
- .meta-album-header{height:44px}
- .meta-gallery-header{min-height:35px}
- .meta-book{width:min(100%,calc((100dvh - 143px) * 1.5));max-height:calc(100dvh - 143px)}
- .meta-detail-artwork{height:44dvh}
- .meta-picture-detail{gap:4px}
- .meta-detail-description{display:none}
- .meta-book-turn{min-height:31px}
-}
-/* Portrait & narrow screens: eliminate redundant chrome, but preserve
-   scrollability rather than shrinking the nine illustrations unreadably. */
-@media (max-width:899px), (orientation:portrait){
- .meta-album-page{gap:8px;padding:8px}
- .meta-album-header{min-height:0;gap:7px}
- .meta-album-heading h1{font-size:clamp(23px,4.8vw,34px);margin:0}
- .meta-gallery-header{padding:9px 12px}
- .meta-gallery-header h2{font-size:20px}
- .meta-album-themes{padding:10px}
- .meta-book-controls{position:relative}
- .meta-detail-footnote{display:none}
- .meta-album-footer{padding:5px 8px}
-}
+@media(prefers-reduced-motion:reduce){.meta-turn-leaf{display:none!important;animation:none!important}}
