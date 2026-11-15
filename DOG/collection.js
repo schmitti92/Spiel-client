@@ -32,7 +32,7 @@ const available=item=>Boolean(item&&(
 // Secret Rubbellos/Event prizes are shown only after server-verified collection.
 // Never expose unrewarded artwork, names or details as gallery previews.
 const visibleCollectionItem=item=>Boolean(item&&(!item.unlockId||available(item)));
-const canEquip=item=>available(item)&&item.kind!=='nameFrame'&&item.kind!=='activeIcon'&&
+const canEquip=item=>available(item)&&['appearance','cardEdition','avatar','emoji'].includes(item.kind)&&
  !(item.kind==='avatar'&&item.avatar>15);
 const statsFor=group=>{
  const items=group.items.filter(visibleCollectionItem);
