@@ -371,3 +371,40 @@
 @media(prefers-reduced-motion:reduce){
   #panel-tree .tree-step{transition:none}
 }
+
+/* Statuskarten brauchen identische Innenabstände, unabhängig von älteren
+   "selected" / "ready" Regeln. Die gesamte Grafik bleibt textfrei. */
+#panel-tree .tree-step[data-progress=current],
+#panel-tree .tree-step[data-progress=passed],
+#panel-tree .tree-step[data-progress=future],
+#panel-tree .tree-step[data-status=ready],
+#panel-tree .tree-step.selected[data-progress=passed]{
+  padding:26px clamp(7px,.95vw,13px) 16px!important;
+}
+#panel-tree .tree-step.selected[data-progress=passed]{
+  background-image:url("./assets/lichtertal-winter-ui/04_karte_erreicht_gruen.png")!important;
+}
+#panel-tree .tree-step[data-status=ready].selected,
+#panel-tree .tree-step[data-status=ready][data-progress=current]{
+  background-image:url("./assets/lichtertal-winter-ui/05_karte_abholbereit.png")!important;
+}
+/* Die winterliche Sidebar erscheint ausschließlich im Baum-Reiter. */
+body:has(#panel-tree:not([hidden])) .event-sidebar{
+  background:
+    url("./assets/lichtertal-winter-ui/06_sidebar_winterdeko.png") center bottom / 100% 100% no-repeat,
+    linear-gradient(155deg,#063d36,#052e2a 53%,#072531);
+  border-color:#d9bb7b;
+}
+body:has(#panel-tree:not([hidden])) .event-tab[aria-selected=true]{
+  border-color:#ffe5ac;
+  box-shadow:inset 0 0 0 1px #fff5c485,0 0 12px #f0cb745e;
+}
+@media(max-width:760px){
+  #panel-tree .tree-step[data-progress=current],
+  #panel-tree .tree-step[data-progress=passed],
+  #panel-tree .tree-step[data-progress=future],
+  #panel-tree .tree-step[data-status=ready],
+  #panel-tree .tree-step.selected[data-progress=passed]{
+    padding:24px 8px 14px!important;
+  }
+}
