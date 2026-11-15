@@ -601,6 +601,7 @@ export function initChristmasScratch(){
  }
  function showTicket(result){
   ticket=result;finished=false;unifiedCover=null;initialOpaque=0;
+  stage.classList.remove('is-revealed');
   stage.hidden=false;reveal.classList.remove('revealed');results.hidden=true;
   $('scratch-ticket-finish').hidden=true;$('scratch-reveal-button').hidden=true;
   const conf=VARIANTS[result.board?.variantId],cells=result.board?.cells;
@@ -668,6 +669,7 @@ export function initChristmasScratch(){
  function finish(){
   if(!ticket||finished)return;
   finished=true;
+  stage.classList.add('is-revealed');
   if(unifiedCover)unifiedCover.hidden=true;
   for(const cell of board.querySelectorAll('.scratch-field'))cell.classList.add('uncovered');
   const wins=ticket.board?.wins||[];
