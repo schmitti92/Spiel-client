@@ -19,9 +19,13 @@ const online=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(params.get('room')||'');
 const hubCode=online?params.get('room'):null;
 const matchHint=params.get('match');
 const editorBack='index.html'+location.search;
+if(online){
+ const eventLink=$('dog-christmas-event-link');
+ if(eventLink)eventLink.href='christmas-event.html?'+new URLSearchParams({room:hubCode,return:editorBack}).toString();
+}
 document.querySelectorAll('[data-dog-editor]').forEach(link=>link.href='editor.html?return='+encodeURIComponent(editorBack)+'&v=10');
 const apiBase=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null,onlineDogAvatars=[],emojiSocketReady=false;
+let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null,onlineDogAvatars=[],onlineChristmas=null,emojiSocketReady=false;
 function user(){const s=window.SpielOnline?.state?.();return s?.status==='online'&&s.user?.getIdToken?s.user:null;}
 async function hubRequest(path,method='GET',payload){
  const person=user();if(!person)throw Error('Bitte melde dich mit deinem Online-Profil an.');
@@ -46,6 +50,7 @@ function acceptRemote(room){
    if(decision.clearSelection){selectedCard=null;selectedPiece=null;jokerAs=null;$('dog-joker-dialog').close();}
    game=decision.game;onlineSeat=decision.seat;acceptedMatchId=decision.matchId;
    onlineDogAvatars=Array.isArray(room.match?.dogAvatars)?room.match.dogAvatars:[];
+   onlineChristmas=room.match?.christmas?.enabled===true?room.match.christmas:null;
    render();
  }else if(game?.phase==='finished'){
    $('status').textContent='Partie beendet – du kannst in der Raum-Lobby ein neues Spiel auswählen.';
@@ -233,7 +238,7 @@ function drawBoard(){
   const matchIdentity=online?(acceptedMatchId||matchHint||'online'):'local';
   // Repeated room/presence updates and card UI changes must not interrupt an
   // ongoing pawn animation by replacing the entire SVG with identical content.
-  const boardKey=JSON.stringify([snapshot,appearance,selectedPiece,game.players?.map(p=>p.name)]);
+  const boardKey=JSON.stringify([snapshot,appearance,selectedPiece,game.players?.map(p=>p.name),onlineChristmas?.giftFields,onlineChristmas?.claimedFields]);
   if(boardKey===lastBoardKey && boardSvg.childElementCount){lastMotionDuration=0;return;}
   const canAnimate=!!lastBoardSnapshot && lastBoardMatch===matchIdentity &&
     Number.isInteger(game.revision) && game.revision===lastBoardRevision+1;
@@ -323,6 +328,16 @@ function drawBoard(){
     if(start){
       push('<circle cx="'+x+'" cy="'+y+'" r="10.4" fill="#07172b" fill-opacity=".18"/>');
       push('<path d="M '+(x-4)+' '+(y-7)+' L '+(x+5)+' '+y+' L '+(x-4)+' '+(y+7)+' Z" fill="#ffffff" opacity=".88"/>');
+    }
+  }
+  // 🎄 Server-selected gift fields are decorative overlays only. Landing rewards
+  // are verified by Render from the DOG engine, never by tapping these icons.
+  if(onlineChristmas?.enabled){
+    const claimed=new Set(onlineChristmas.claimedFields||[]);
+    for(const field of onlineChristmas.giftFields||[]){
+      if(!Number.isInteger(field)||field<0||field>=64||claimed.has(field))continue;
+      const p=boardPoint(field);
+      push('<text x="'+p.x+'" y="'+(p.y+5)+'" font-size="16" text-anchor="middle" pointer-events="none" aria-hidden="true">🎁</text>');
     }
   }
   // No move hints: destinations must be calculated by the player.
@@ -513,7 +528,7 @@ function render(){
   renderPlayers();
   available=[];
   renderHand();drawBoard();
-  $('status').textContent=online?'🌐 Online mit Freunden · Karten serverseitig geschützt · Raum '+hubCode:'Klassische Regeln • Teams Rot/Grün und Blau/Gelb • Spielstand wird lokal gesichert';
+  $('status').textContent=online?'🌐 Online mit Freunden · Raum '+hubCode+(onlineChristmas?' · 🎄 Geschenkfelder '+(onlineChristmas.claimedFields?.length||0)+'/'+(onlineChristmas.giftFields?.length||0)+' · '+(onlineChristmas.earnedTenths/10).toLocaleString('de-DE')+' ⭐ im Spiel verdient':' · Klassischer DOG-Modus'):'Klassische Regeln • Teams Rot/Grün und Blau/Gelb • Spielstand wird lokal gesichert';
   updateVictoryCeremony();
   visualFeedback.sync({game,matchKey:online?(acceptedMatchId||matchHint||'online'):'local',seat:online?onlineSeat:currentHuman(),handVisible:revealed,activeSeat:active});
   $('selected-info').textContent=selectedCard?'Karte ausgewählt: '+cardsLabel(game.hands[currentHuman()]?.find(c=>c.id===selectedCard)?.type||''):'';
