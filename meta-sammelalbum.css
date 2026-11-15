@@ -154,3 +154,166 @@ button,a{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible
  .meta-book-turn{font-size:11px;padding:8px 4px;min-height:38px}
  .meta-book-page-foot{font-size:8px;letter-spacing:0}}
 @media(prefers-reduced-motion:reduce){.meta-turn-leaf{display:none!important;animation:none!important}}
+
+
+/* 2026 Christmas album: overlay six event pictures precisely inside
+   the SIX gilded picture frames baked into the uploaded transparent PNG.
+   Keep the image at its native 3:2 ratio so positions never drift. */
+.meta-book{
+ width:100%;
+ padding:0;
+ border:0;
+ border-radius:0;
+ background:none;
+ box-shadow:none;
+ perspective:1600px;
+}
+.meta-book-spine{display:none}
+.meta-book-sheet{
+ display:block;
+ position:relative;
+ width:100%;
+ height:auto;
+ min-height:0;
+ padding:0;
+ aspect-ratio:3 / 2;
+ overflow:hidden;
+ border:0;
+ border-radius:0;
+ box-shadow:none;
+ background:url("assets/meta-sammelalbum/weihnachts_sammelalbum_buch_transparent.png") center / 100% 100% no-repeat;
+ --album-slots-left:10%;
+ --album-slots-top:19.1%;
+ --album-slots-width:81.2%;
+ --album-slots-height:56.8%;
+}
+.meta-book-sheet::before{display:none}
+.meta-book-page-head,.meta-book-page-foot{display:none!important}
+.meta-book-sheet .meta-picture-grid,
+.meta-book-sheet .meta-turn-leaf .meta-picture-grid{
+ position:absolute;
+ z-index:2;
+ inset:auto;
+ left:var(--album-slots-left);
+ top:var(--album-slots-top);
+ width:var(--album-slots-width);
+ height:var(--album-slots-height);
+ display:grid;
+ grid-template-columns:repeat(3,minmax(0,1fr));
+ grid-template-rows:repeat(2,minmax(0,1fr));
+ column-gap:3.6%;
+ row-gap:5.1%;
+ align-content:stretch;
+ gap:5.1% 3.6%;
+ flex:none;
+}
+.meta-book-sheet .meta-picture-card{
+ display:flex;
+ flex-direction:column;
+ justify-content:space-between;
+ min-width:0;
+ min-height:0;
+ width:100%;
+ height:100%;
+ padding:4.5% 5.2% 4.1%;
+ gap:2px;
+ border:1px solid transparent;
+ border-radius:4px;
+ background:transparent;
+ box-shadow:none;
+ color:#533719;
+}
+.meta-book-sheet .meta-picture-card:hover{
+ background:#fff7e51b;
+ box-shadow:inset 0 0 0 1px #bb8e4e;
+ border-color:transparent;
+ filter:none;
+}
+.meta-book-sheet .meta-picture-card.selected{
+ background:#ffeedc25;
+ border-color:#92621b;
+ box-shadow:inset 0 0 0 1px #bf923d,0 0 8px #ffcc839c;
+}
+.meta-book-sheet .meta-picture-artwork{
+ display:block;
+ flex:1 1 auto;
+ width:100%;
+ height:0;
+ min-height:0;
+ aspect-ratio:auto;
+ overflow:hidden;
+ border-radius:5px;
+ border:1px solid #ac885e;
+ background:#f1dfbd;
+}
+.meta-book-sheet .meta-picture-artwork img{width:100%;height:100%;object-fit:cover}
+.meta-book-sheet .meta-picture-lock{
+ inset:auto 0 0;
+ min-height:0;
+ padding:2px;
+ font-size:clamp(12px,1.5vw,19px);
+ background:linear-gradient(transparent,#26180fab);
+}
+.meta-book-sheet .meta-picture-index{
+ line-height:1.1;
+ font-size:clamp(7px,.64vw,11px);
+ color:#8e6336;
+}
+.meta-book-sheet .meta-picture-name{
+ line-height:1.05;
+ font-size:clamp(9px,.96vw,14px);
+ font-weight:900;
+ color:#543313;
+}
+.meta-book-sheet .meta-picture-status{
+ padding:1px 5px;
+ line-height:1.1;
+ background:#67513dd9;
+ color:#ffedcd;
+ font-size:clamp(7px,.62vw,10px);
+}
+.meta-book-sheet .meta-book-empty{
+ min-height:0;
+ height:100%;
+ width:100%;
+ border:1px dashed #b48d5988;
+ border-radius:5px;
+ background:#e6ce9b1a;
+ gap:4px;
+}
+.meta-book-sheet .meta-book-empty-ornament{font-size:clamp(12px,2vw,25px)}
+.meta-book-sheet .meta-book-empty small{font-size:clamp(7px,.73vw,11px);color:#886a47}
+.meta-book-sheet .meta-turn-leaf{
+ position:absolute;
+ inset:0;
+ display:block;
+ padding:0;
+ border:0;
+ border-radius:0;
+ overflow:hidden;
+ background:url("assets/meta-sammelalbum/weihnachts_sammelalbum_buch_transparent.png") center / 100% 100% no-repeat;
+ box-shadow:0 3px 20px #0006;
+ pointer-events:none;
+}
+.meta-book-sheet .meta-turn-leaf::before{display:none}
+/* A fixed book ratio remains valid on narrow screens; captions get smaller,
+   not an extra column or forced scroll, so the six frames stay aligned. */
+@media(max-width:760px){
+ .meta-book-sheet{min-height:0;padding:0}
+ .meta-book-sheet .meta-picture-grid{gap:5.1% 3.6%}
+ .meta-book-sheet .meta-picture-artwork{height:0}
+ .meta-book-sheet .meta-picture-card{gap:1px;padding:4%}
+ .meta-book-sheet .meta-picture-index{font-size:clamp(6px,1.1vw,9px)}
+ .meta-book-sheet .meta-picture-name{font-size:clamp(7px,1.8vw,12px)}
+ .meta-book-sheet .meta-picture-status{font-size:clamp(6px,1vw,9px)}
+}
+@media(max-width:520px){
+ .meta-book-sheet .meta-picture-card{padding:3% 3.5%}
+ .meta-book-sheet .meta-picture-name{font-size:clamp(7px,2.3vw,10px)}
+ .meta-book-sheet .meta-picture-index,.meta-book-sheet .meta-picture-status{display:none}
+ .meta-book-sheet .meta-picture-lock{font-size:clamp(10px,3vw,15px)}
+ .meta-book-sheet .meta-book-empty small{font-size:7px}
+}
+@media(prefers-reduced-motion:reduce){
+ .meta-book-sheet .meta-turn-leaf{display:none!important}
+}
