@@ -91,7 +91,7 @@ function startSocket(){
 async function initOnline(){
  // stayMatch tells the shared lobby to display the current room without
  // automatically launching the same active match again. It is navigation-only.
- const backParams=new URLSearchParams({room:hubCode,stage:'1'});
+ const backParams=new URLSearchParams({room:hubCode,stage:'1',dogLobby:'1'});
  if(matchHint)backParams.set('stayMatch',matchHint);
  $('back-link').href='../hub-lobby.html?'+backParams.toString();
  $('new-game').hidden=true;
