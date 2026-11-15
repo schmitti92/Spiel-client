@@ -311,9 +311,6 @@ function refreshPreview(){
  $('tree-world-stage-pill').textContent='STUFE '+tree+' / 10';
  $('tree-world-mode').textContent=villageLive?'✦ Echter Dorffortschritt':'✦ Gestaltungs-Vorschau';
  $('tree-world-mode').dataset.mode=villageLive?'live':'preview';
- $('tree-current-prize').textContent=TREE_PRIZE_PREVIEW[tree-1].icon+' '+TREE_PRIZE_PREVIEW[tree-1].title;
- const prizeState=treePrizeScreen?.getStatus()?.rewards?.find(item=>item.level===tree)?.state;
- $('tree-current-prize-status').textContent=prizeState==='collected'?'✅ Bereits abgeholt':prizeState==='ready'?'🎁 Jetzt abholbereit':prizeState==='locked'?'🔒 Noch nicht freigeschaltet':villageLive?'Status wird online geprüft':'In der Vorschau nicht abholbar';
  const nextLevel=Math.min(tree+1,10),nextPrize=TREE_PRIZE_PREVIEW[nextLevel-1];
  $('tree-next-stage').textContent=tree===10?'Alle Stufen gemeistert!':'Stufe '+nextLevel;
  $('tree-next-name').textContent=tree===10?'Das große Weihnachtslicht':treeNames[nextLevel-1];
