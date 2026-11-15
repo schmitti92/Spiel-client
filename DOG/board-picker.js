@@ -21,32 +21,36 @@ function renderActive(){
   if(status)status.textContent='Gewählt: '+(BOARD_STYLES[picked]?.label||BOARD_STYLES.studio.label);
  }
 }
-for(const picker of pickers){
- const area=picker.querySelector('[data-board-picker-options]');
- if(!area)continue;
- for(const id of ORDER){
-  const theme=BOARD_STYLES[id];if(!theme)continue;
-  const button=document.createElement('button');
-  const locked=!isBoardUnlocked(id);
-  button.type='button';button.className='dog-board-option';button.dataset.boardTheme=id;
-  if(locked){button.disabled=true;button.classList.add('is-locked');button.title='Wird im Weihnachtsevent freigeschaltet';}
-  button.setAttribute('aria-label',locked?'🔒 '+theme.label+' – im Weihnachtsevent freischaltbar':'DOG-Spielbrett '+theme.label+' auswählen');
-  const thumb=document.createElement('span');thumb.className='dog-board-thumb';thumb.setAttribute('aria-hidden','true');
-  const url=resolveBoardArt(theme);
-  const fallback=resolveBoardArt({image:theme.fallbackImage});
-  thumb.style.backgroundImage=(url?'url("'+url+'"), ':'')+(fallback?'url("'+fallback+'"), ':'')+FALLBACK;
-  const text=document.createElement('span');text.className='dog-board-option-name';text.textContent=theme.label;
-  button.append(thumb,text);
-  if(locked){const lock=document.createElement('span');lock.className='dog-board-lock';lock.textContent='🔒 Gesperrt';button.append(lock);}
-  button.addEventListener('click',()=>{
-   if(!isBoardUnlocked(id))return;
-   saveAppearance({...loadAppearance(),board:id});
-   renderActive();
-  });
-  area.appendChild(button);
+function renderOwnedBoards(){
+ for(const picker of pickers){
+  const area=picker.querySelector('[data-board-picker-options]');
+  if(!area)continue;
+  area.replaceChildren();
+  for(const id of ORDER){
+   const theme=BOARD_STYLES[id];
+   // Do not show a secret Rubbellos image or its name before it is won.
+   if(!theme||!isBoardUnlocked(id))continue;
+   const button=document.createElement('button');
+   button.type='button';button.className='dog-board-option';button.dataset.boardTheme=id;
+   button.setAttribute('aria-label','DOG-Spielbrett '+theme.label+' auswählen');
+   const thumb=document.createElement('span');thumb.className='dog-board-thumb';thumb.setAttribute('aria-hidden','true');
+   const url=resolveBoardArt(theme);
+   const fallback=resolveBoardArt({image:theme.fallbackImage});
+   thumb.style.backgroundImage=(url?'url("'+url+'"), ':'')+(fallback?'url("'+fallback+'"), ':'')+FALLBACK;
+   const text=document.createElement('span');text.className='dog-board-option-name';text.textContent=theme.label;
+   button.append(thumb,text);
+   button.addEventListener('click',()=>{
+    if(!isBoardUnlocked(id))return;
+    saveAppearance({...loadAppearance(),board:id});
+    renderActive();
+   });
+   area.appendChild(button);
+  }
  }
+ renderActive();
 }
-renderActive();
+renderOwnedBoards();
+window.addEventListener('dog-cosmetics-verified',renderOwnedBoards);
 // Keep the room code and stage in the return URL while editing locally.
 document.querySelectorAll('[data-dog-studio-link]').forEach(link=>{
  const caller='../'+location.pathname.split('/').pop()+location.search+location.hash;
