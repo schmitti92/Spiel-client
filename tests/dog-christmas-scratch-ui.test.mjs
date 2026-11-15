@@ -74,7 +74,8 @@ test('all scratch tiers expose three fixed cash symbols and a gift unlock legend
  const js=source('../DOG/christmas-scratch-ui.js');
  assert.match(html,/id="scratch-symbol-legend"/);
  assert.match(js,/symbolLegend\(c.id\)/);
- assert.match(js,/🎁 Freischaltung:/);
+ assert.match(js,/Freischaltung:/);
+ assert.match(js,/🎁 💝 🎀 🧧/);
  assert.match(js,/p\.symbol/);
- assert.match(js,/symbolVersion!==2/);
+ assert.match(js,/symbolVersion===3/);
 });
