@@ -10,17 +10,31 @@ Beschichtungen und Gewinne werden dynamisch aus dem validierten Render-Los erzeu
 - Vorbereitete Datei: **geschenkelinie-01.webp** (1086×1448 Pixel, ca. 414 KB).
 - Status: **Bild in GitHub hochgeladen und per CSS eingebunden**. Goldrahmen-Ausrichtung nachjustiert; echter Handytouch-Test noch offen.
 
-## Sechs aktive Spielarten (statt zehn)
-1. Geschenkelinie – 3×3 / 9 Felder (Bild hochgeladen)
-2. Schneeflocken-Bingo – 4×4 / 16 Felder (als Nächstes)
-3. Sternensammler – 3×4 / 12 Felder
-4. Wichtelpfad – 4×5 / 20 Felder
-5. Zuckerstangen-Duell – 3×2 / 6 Felder
-6. Weihnachtsbaum-Los – 5×3 / 15 Felder
+## Neues Ziel: vier unterschiedliche Rubbellose (2 Normal + 2 Premium)
 
-Vier frühere Varianten (Rentierglück, Lebkuchen-Memory, Diamantenjagd,
-Glocken-Jackpot) werden **nicht mehr für neue Lose ausgewählt**.
-Die Generator-/Auswertungslogik bleibt im Backend lesbar, damit
-bereits gekaufte alte Karten weiterhin korrekt wiederhergestellt werden können.
+1. **Normal 1 – Geschenkelinie**: 3×3 (9 Felder), bereits als
+   `geschenkelinie-01.webp` hochgeladen und mit Rubbeloberfläche eingebunden.
+2. **Normal 2 – Schneeflocken-Bingo**: 4×4 (16 Felder).
+   Designvorschlag Eisblau/Silber, Eis-Palast und Kristallrahmen.
+   Vier gleiche Symbole in einer Reihe ergeben einen Gewinn.
+   Zielbild: `schneeflocken-bingo-01.webp` (noch nicht erstellt).
+3. **Premium 1 – Magischer Wichtelpfad**: 4×5 (20 Felder).
+   Designvorschlag smaragdgrüner Weihnachtswald mit magischem Weg.
+   Ein zusammenhängender Pfad von links nach rechts gewinnt.
+   Zielbild: `wichtelpfad-01.webp` (noch nicht erstellt).
+4. **Premium 2 – Weihnachtsbaum-Geheimnis**: 5×3 (15 Felder).
+   Designvorschlag Violett/Gold mit funkelndem Sternenbaum.
+   ⭐🎄🎁 in genau dieser Reihenfolge gewinnt.
+   Zielbild: `weihnachtsbaum-geheimnis-01.webp` (noch nicht erstellt).
+
+Diese drei Bilder sind **Vorschläge**. Bestehende Gewinnregeln können
+weiterverwendet werden, sobald Motive und Einbindung fertig sind.
+
+**Wichtig zur Umstellung:** Die Live-Auswahl hat zurzeit noch sechs
+Spielarten und drei Preisstufen (Einfach/Mittel/Premium).
+Der Zwei-Klassen-Umstieg ist als eigene technische Phase geplant und
+darf keine bestehenden Gewinnlose, Entitlements oder Guthaben löschen.
+Frühere Spielfeldregeln bleiben für die Wiederherstellung alter Lose
+im Backend lesbar.
 
 Die Spielmechanik und 90%-Rubbelregel stehen im Frontend bereits bereit.
