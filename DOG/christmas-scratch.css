@@ -570,3 +570,9 @@
  #panel-scratch .scratch-chance{font-size:10px}
  #panel-scratch .scratch-icon{font-size:21px}
 }
+
+/* Scratch shop: persistent visible settings beside refresh, without redundant header */
+#panel-scratch .scratch-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+#panel-scratch .scratch-toolbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+#panel-scratch #scratch-host-settings{display:inline-flex!important;align-items:center;justify-content:center;visibility:visible!important;opacity:1!important;white-space:nowrap;min-height:39px}
+@media(max-width:760px){#panel-scratch .scratch-toolbar-actions{gap:5px}#panel-scratch #scratch-host-settings{padding:7px 9px;font-size:11px}#panel-scratch #scratch-refresh{padding:7px 9px;font-size:11px}}
