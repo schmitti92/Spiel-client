@@ -240,7 +240,7 @@ function drawBoard(){
   const matchIdentity=online?(acceptedMatchId||matchHint||'online'):'local';
   // Repeated room/presence updates and card UI changes must not interrupt an
   // ongoing pawn animation by replacing the entire SVG with identical content.
-  const boardKey=JSON.stringify([snapshot,appearance,selectedPiece,game.players?.map(p=>p.name),onlineChristmas?.giftFields,onlineChristmas?.claimedFields]);
+  const boardKey=JSON.stringify([snapshot,appearance,selectedPiece,game.players?.map(p=>p.name),onlineChristmas?.round,onlineChristmas?.roundGiftCollected,onlineChristmas?.roundScratchCollected]);
   if(boardKey===lastBoardKey && boardSvg.childElementCount){lastMotionDuration=0;return;}
   const canAnimate=!!lastBoardSnapshot && lastBoardMatch===matchIdentity &&
     Number.isInteger(game.revision) && game.revision===lastBoardRevision+1;
@@ -332,16 +332,9 @@ function drawBoard(){
       push('<path d="M '+(x-4)+' '+(y-7)+' L '+(x+5)+' '+y+' L '+(x-4)+' '+(y+7)+' Z" fill="#ffffff" opacity=".88"/>');
     }
   }
-  // 🎄 Server-selected gift fields are decorative overlays only. Landing rewards
-  // are verified by Render from the DOG engine, never by tapping these icons.
-  if(onlineChristmas?.enabled){
-    const claimed=new Set(onlineChristmas.claimedFields||[]);
-    for(const field of onlineChristmas.giftFields||[]){
-      if(!Number.isInteger(field)||field<0||field>=64||claimed.has(field))continue;
-      const p=boardPoint(field);
-      push('<text x="'+p.x+'" y="'+(p.y+5)+'" font-size="16" text-anchor="middle" pointer-events="none" aria-hidden="true">🎁</text>');
-    }
-  }
+  // 🎄 Hidden Christmas gifts and scratch spots intentionally have NO SVG
+  // overlay, title, class or pointer hints. Render checks each landing in the
+  // authoritative match; neither player's client receives the positions.
   // No move hints: destinations must be calculated by the player.
   // Pawns on top, always staying attached to their logical position.
   for(const piece of game.pieces){
@@ -530,7 +523,16 @@ function render(){
   renderPlayers();
   available=[];
   renderHand();drawBoard();
-  $('status').textContent=online?'🌐 Online mit Freunden · Raum '+hubCode+(onlineChristmas?' · 🎄 Geschenkfelder '+(onlineChristmas.claimedFields?.length||0)+'/'+(onlineChristmas.giftFields?.length||0)+' · '+(onlineChristmas.earnedTenths/10).toLocaleString('de-DE')+' ⭐ im Spiel verdient':' · Klassischer DOG-Modus'):'Klassische Regeln • Teams Rot/Grün und Blau/Gelb • Spielstand wird lokal gesichert';
+  const latestEvent=onlineChristmas?.activity?.at(-1);
+  const myScratch=latestEvent?.type==='scratch'&&latestEvent.seat===onlineSeat?
+   ' · 🎟️ '+({simple:'Einfaches',medium:'Mittleres',premium:'Premium-'}[latestEvent.tier]||'')+
+     ' Rubbellos gefunden! Im Weihnachtsevent einlösen.':'';
+  $('status').textContent=online?'🌐 Online mit Freunden · Raum '+hubCode+(onlineChristmas?
+    ' · 🎄 '+(onlineChristmas.roundGiftCollected||0)+'/'+(onlineChristmas.giftFieldCount||0)+' verdeckte Geschenke' +
+    ' · 🎟️ '+(onlineChristmas.roundScratchCollected||0)+'/8 Rubbellos-Felder entdeckt' +
+    ' · '+(onlineChristmas.earnedTenths/10).toLocaleString('de-DE')+' ⭐ gesammelt'+myScratch:
+    ' · Klassischer DOG-Modus'):
+    'Klassische Regeln • Teams Rot/Grün und Blau/Gelb • Spielstand wird lokal gesichert';
   updateVictoryCeremony();
   visualFeedback.sync({game,matchKey:online?(acceptedMatchId||matchHint||'online'):'local',seat:online?onlineSeat:currentHuman(),handVisible:revealed,activeSeat:active});
   $('selected-info').textContent=selectedCard?'Karte ausgewählt: '+cardsLabel(game.hands[currentHuman()]?.find(c=>c.id===selectedCard)?.type||''):'';
