@@ -207,6 +207,11 @@ export const CARD_STYLES=deepFreeze({
   }
 });
 
+// Only the fully illustrated card edition is published. Other CARD_STYLES
+// entries are unfinished color mockups, not collectible card decks.
+export const PUBLISHED_CARD_STYLE_IDS=Object.freeze(['classic']);
+export const isCardStylePublished=id=>PUBLISHED_CARD_STYLE_IDS.includes(id);
+
 /**
  * Future event content may add visuals, quests, rewards and UI in separate
  * modules. An event pack is opt-in and MUST NEVER mutate the classic engine.
@@ -255,7 +260,7 @@ export function normalizeAppearance(value){
   if(!value||typeof value!=='object'||Array.isArray(value))return next;
   for(const [category,registry] of Object.entries(APPEARANCE_CATEGORIES)){
     const id=value[category];
-    if(typeof id==='string' && Object.hasOwn(registry,id) && (category!=='board' || isBoardUnlocked(id)))next[category]=id;
+    if(typeof id==='string' && Object.hasOwn(registry,id) && (category!=='board' || isBoardUnlocked(id)) && (category!=='cards' || isCardStylePublished(id)))next[category]=id;
   }
   return next;
 }
@@ -266,7 +271,7 @@ export function resolveAppearance(value){
     ...picked,
     board:event.board&&Object.hasOwn(BOARD_STYLES,event.board)?event.board:picked.board,
     pieces:event.pieces&&Object.hasOwn(PIECE_STYLES,event.pieces)?event.pieces:picked.pieces,
-    cards:event.cards&&Object.hasOwn(CARD_STYLES,event.cards)?event.cards:picked.cards
+    cards:event.cards&&isCardStylePublished(event.cards)?event.cards:picked.cards
   };
   return {
     selected:picked,board:BOARD_STYLES[chosen.board],boardFrame:BOARD_FRAMES[picked.boardFrame],scene:SCENE_STYLES[picked.scene],sidebar:SIDEBAR_BACKGROUNDS[chosen.sidebar],
