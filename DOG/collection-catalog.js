@@ -5,7 +5,7 @@
 import {BOARD_STYLES,isBoardUnlocked,SCENE_STYLES,PIECE_STYLES,CARD_STYLES,HUD_TONES,HUD_LAYOUTS} from './appearance-registry.js?v=22';
 import {DOG_EMOJIS,DOG_EMOJI_STARTERS} from './dog-emojis.js?v=1';
 import {CHRISTMAS_AVATARS} from './christmas-avatar-catalog.js?v=1';
-import {buildDogCollection} from './collection-extensions.js?v=1';
+import {buildDogCollection} from './collection-extensions.js?v=2';
 const avail=(id,name,extra={})=>({id,name,status:'available',...extra});
 const BASE_COLLECTION_CATEGORIES=[
  {id:'backgrounds',icon:'🏞️',title:'Hintergründe',subtitle:'Landschaften für die gesamte DOG-Seite',items:[
