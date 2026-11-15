@@ -181,6 +181,7 @@ function updateCardImage(id,level){
  img.alt=(id==='tree'?'Weihnachtsbaum':definitions.find(def=>def.id===id)?.title||id)+' – Stufe '+level;
 }
 const preview={tower:1,workshop:1,bakery:1,inn:1};
+let villageLive=null,villageHost=false,villageMode=false,villageCanToggle=false,villageBusy=false;
 let lastPresentationKey=null;
 const sceneTitles=['Die Weihnachtsreise beginnt','Die ersten Laternen leuchten','Ein Hauch von Winter','Lichter über den Dächern','Das Dorf entdeckt Weihnachten','Die Weihnachtsvorbereitungen laufen','Ein Sternenglanz erscheint','Lichtertal wird zum Wintermärchen','Das Dorf wartet auf sein Wunder','Das große Weihnachtslicht'];
 const sceneDescriptions=[
@@ -207,9 +208,11 @@ function buildingCard(entry){
    +'<div class="level-row"><label for="preview-'+entry.id+'">Entwicklungsstufe</label><output for="preview-'+entry.id+'" data-building-value></output></div>'
    +'<input id="preview-'+entry.id+'" type="range" min="1" max="5" step="1" value="1" aria-label="Vorschau der Entwicklungsstufe für '+entry.title+'">'
    +'<div class="building-level-markers" aria-hidden="true">'+Array.from({length:5},()=>'<span></span>').join('')+'</div>'
-   +'<div class="building-upgrade-price" data-building-upgrade-price aria-live="polite"></div>';
+   +'<div class="building-upgrade-price" data-building-upgrade-price aria-live="polite"></div>'
+   +'<button type="button" class="button gold building-purchase" data-upgrade-building="'+entry.id+'" disabled>⭐ Online-Ausbau vorbereiten</button>';
  const range=root.querySelector('input');
- range.addEventListener('input',()=>{preview[entry.id]=Number(range.value);refreshPreview()});
+ range.addEventListener('input',()=>{if(villageLive)return;preview[entry.id]=Number(range.value);refreshPreview()});
+ root.querySelector('[data-upgrade-building]').addEventListener('click',()=>void purchaseBuilding(entry.id));
  return root;
 }
 const grid=$('building-grid');
@@ -242,13 +245,20 @@ function refreshPreview(){
  for(const d of definitions){
   const level=preview[d.id],card=$('preview-'+d.id).closest('.building-card');
   $('preview-'+d.id).value=String(level);
-  card.querySelector('[data-building-effect]').textContent=d.effects[level-1]+' · Vorschau';
+  card.querySelector('[data-building-effect]').textContent=d.effects[level-1]+(villageLive?' · Tatsächlicher Bonus':' · Vorschau');
   card.querySelector('[data-building-visual]').textContent=d.visuals[level-1];
   card.querySelector('[data-building-value]').textContent='Stufe '+level+' / '+CHRISTMAS_BUILDING_MAX_LEVEL;
+  $('preview-'+d.id).disabled=Boolean(villageLive);
+  const purchase=card.querySelector('[data-upgrade-building]');
+  if(purchase){const upgradeCost=christmasUpgradeCost(level),affordable=villageLive?.lightsTenths>=upgradeCost*10;
+   purchase.hidden=!villageLive;
+   purchase.disabled=!villageLive||!villageHost||villageBusy||upgradeCost===null||!affordable;
+   purchase.textContent=upgradeCost===null?'✓ Höchststufe erreicht':!villageHost?'🔒 Nur der Host kann ausbauen':affordable?'⭐ Für '+upgradeCost+' Lichter ausbauen':'⭐ Noch '+(upgradeCost-Math.floor((villageLive?.lightsTenths||0)/10))+' Lichter nötig';
+  }
   const nextCost=christmasUpgradeCost(level);
   card.querySelector('[data-building-upgrade-price]').textContent=nextCost===null
    ?'⭐ Maximalstufe erreicht · kein weiteres Upgrade'
-   :'⭐ Nächster Ausbau: Level '+level+' → '+(level+1)+' kostet '+nextCost+' Weihnachtslichter (Vorschau)';
+   :'⭐ Nächster Ausbau: Level '+level+' → '+(level+1)+' kostet '+nextCost+' Weihnachtslichter'+(villageLive?'':' (Vorschau)');
   card.querySelectorAll('.building-level-markers>span').forEach((dot,i)=>dot.classList.toggle('active',i<level));
   const art=$('art-'+d.id);
   if(art)art.dataset.level=String(level);
@@ -274,11 +284,13 @@ function refreshPreview(){
  updateCardImage('tree',tree);
  $('stat-building-levels').textContent=total+' / 20';
  $('stat-tree-level').textContent=tree+' / 10';
- $('village-stage-text').textContent=tree===1?'Anfangszustand · Vorschau':tree===10?'Prachtvolles Weihnachtsdorf · Vorschau':'Baum Stufe '+tree+' · Vorschau';
+ $('village-stage-text').textContent=(tree===1?'Anfangszustand':tree===10?'Prachtvolles Weihnachtsdorf':'Baum Stufe '+tree)+(villageLive?' · Live':' · Vorschau');
  $('village-scene-title').textContent=sceneTitles[tree-1];
  $('village-scene-caption').textContent=sceneDescriptions[tree-1];
- $('village-preview-count').textContent=(total-4)+' / 16 Ausbauschritte';
- $('village-preview-next').disabled=total>=20;
+ $('village-preview-count').textContent=(total-4)+' / 16 Ausbauschritte'+(villageLive?' · gespeichert':' · Vorschau');
+ $('village-preview-next').disabled=Boolean(villageLive)||total>=20;
+ $('village-preview-reset').disabled=Boolean(villageLive);
+ $('village-preview-full').disabled=Boolean(villageLive);
  $('tree-current-title').textContent='Stufe '+tree+' · '+treeNames[tree-1];
  $('tree-current-copy').textContent=treeDetails[tree-1];
  $('tree-progress-fill').style.width=(tree*10)+'%';
