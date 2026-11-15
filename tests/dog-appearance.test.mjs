@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
  APPEARANCE_STORAGE_KEY,DEFAULT_APPEARANCE,
- BOARD_STYLES,PIECE_STYLES,CARD_STYLES,EVENT_PACKS,
+ BOARD_STYLES,PIECE_STYLES,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,EVENT_PACKS,
  normalizeAppearance,resolveAppearance,loadAppearance,saveAppearance,validAssetPath,assetBackground
 } from '../DOG/appearance-registry.js';
 import {makeDefaultLayout} from '../DOG/board-layout.js';
@@ -10,7 +10,8 @@ import {makeDefaultLayout} from '../DOG/board-layout.js';
 test('DOG supports board backgrounds, multiple pawn palettes and five visual card themes',()=>{
  assert.ok(Object.keys(BOARD_STYLES).length>=4);
  assert.ok(Object.keys(PIECE_STYLES).length>=4);
- assert.equal(Object.keys(CARD_STYLES).length,5);
+ assert.equal(Object.keys(CARD_STYLES).length,5,'unpublished color mockups are kept for future development');
+ assert.deepEqual(PUBLISHED_CARD_STYLE_IDS,['classic'],'only one real deck is selectable');
  for(const [id,theme] of Object.entries(BOARD_STYLES)){
   assert.equal(typeof theme.page,'string',id);
   assert.equal(typeof theme.frame,'string',id);
@@ -32,7 +33,7 @@ test('invalid or unknown style selections safely fall back to classic defaults',
  assert.deepEqual(normalizeAppearance(null),DEFAULT_APPEARANCE);
  const selected=normalizeAppearance({board:'winter',cards:'royal',pieces:'pastel',other:'wrong'});
  assert.equal(selected.board,'winter');
- assert.equal(selected.cards,'royal');
+ assert.equal(selected.cards,'classic','unpublished royal mockup cannot be activated');
  assert.equal(selected.pieces,'pastel');
  assert.equal(selected.event,'none');
  assert.equal('other' in selected,false);
@@ -44,7 +45,7 @@ test('presentation registry options are immutable and event registry has safe ba
  const resolved=resolveAppearance({board:'forest',cards:'dark',pieces:'neon'});
  assert.equal(resolved.board,BOARD_STYLES.forest);
  assert.equal(resolved.pieces,PIECE_STYLES.neon);
- assert.equal(resolved.cards,CARD_STYLES.dark);
+ assert.equal(resolved.cards,CARD_STYLES.classic);
  assert.equal(resolved.event,EVENT_PACKS.none);
 });
 test('individual DOG cosmetic choice persists independently of game state',()=>{
