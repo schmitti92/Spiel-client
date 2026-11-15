@@ -1,5 +1,5 @@
-# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v12
-Stand: 15.11.2026. Status: KORRIGIERTE KLASSEN: 2 Einfach (200) + 1 Mittel (500) + 1 Premium (1000). Die vier Varianten sind serverseitig klassengenau zugeordnet; das dritte Los ist ein ausschließlich mittleres Rubbellos, kein Premiumlos. Das dritte Motiv ist als SVG integriert und der Gewinnweg wird hervorgehoben. Das zweite Eis-Palast-WebP und das vierte Motiv bleiben offene Grafikaufgaben.
+# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v13
+Stand: 15.11.2026. Status: KORRIGIERTE KLASSEN: 2 Einfach (200) + 1 Mittel (500) + 1 Premium (1000). Die vier Varianten sind serverseitig klassengenau zugeordnet; das dritte Los ist ein ausschließlich mittleres Rubbellos, kein Premiumlos. Das dritte Motiv ist als SVG integriert und der Gewinnweg wird hervorgehoben. Das zweite Eis-Palast-WebP liegt inzwischen korrekt auf GitHub. Das Premium-Motiv wurde vom Nutzer als **9×3 = 27 Felder** bestätigt; die WebP-Datei steht zum Upload bereit.
 Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 
 ## Fixierte Regeln
@@ -47,18 +47,18 @@ Spielarten werden nicht weiterverfolgt.
 | 1 | Einfach (200) | 🎁 Geschenkelinie | 3×3 (9) | Drei gleiche Symbole horizontal, vertikal oder diagonal | Rot/Gold, Weihnachtsmarkt, Geschenkband | [x] Grafik hochgeladen, technisches Layout vorhanden; Praxistest offen |
 | 2 | Einfach (200) | ❄️ Schneeflocken-Bingo (Sammellos) | 4×4 (16) | **Drei gleiche Gewinnsymbole irgendwo; pro Symboltyp ein Gewinn. 🧊 = Nietenfeld.** | Eisblau/Silber, Eispalast-Motiv | [x] Benutzerbild übernommen, WebP bereitgestellt, 4×4-CSS ausgerichtet, Serverprüfer aktiv; [ ] Upload und Mobil-Endtest |
 | 3 | Mittel (500) | 🧝 Magischer Wichtelpfad | 4×5 (20) | Durchgehender Pfad gleicher Symbole vom linken zum rechten Spielfeldrand (nur waagerecht/senkrecht) | Tiefgrün/Türkis, magischer Weihnachtswald, leuchtender Weg | [x] Eigenes SVG, 20 Felder, CSS-Ausrichtung, glühender Gewinnweg; Browsertest offen |
-| 4 | Premium (1000) | 🎄 Weihnachtsbaum-Geheimnis | 5×3 (15) | ⭐🎄🎁 in genau dieser Reihenfolge von links nach rechts | Violett/Gold, glanzvoller Sternenbaum und magisches Dorf | [ ] Neues Einzelmotiv + 5×3-Ausrichtung |
+| 4 | Premium (1000) | 🎅 Premium-Weihnachts-Rubbellos | **9×3 (27)** | 3 gleiche Symbole waagerecht = Gewinn; **20 Symbolfelder = Gold**; **24 Symbolfelder = zusätzliche Premium-Freischaltung** | Benutzerbild Rot/Gold mit Weihnachtsmann, Schneemann und 27 silbernen Feldern | [x] Motiv übernommen, 9×3-Geometrie, Generator, Prüfung, Gewinnanbindung vorbereitet; [ ] WebP auf GitHub hochladen und Handytouch testen |
 
 Dies sind **Gestaltungsvorschläge**, keine bereits vom Nutzer abgenommenen
 Endnamen oder finalisierten neuen Bilder. Die bestehende Spiellogik
-für `gifts`, `snow_collect`, `elf` und `tree` ist vorhanden und muss nur auf
+für `gifts`, `snow_collect`, `elf` und `premium_27` ist vorhanden und muss nur auf
 die gewählten Klassen, individuelle Bildflächen und Gewinnanzeige
 abgestimmt werden.
 
 ### Preis- und Gewinnklassen: Übergang bewusst absichern
-- **Verbindliches Modell:** Einfach = 200 Goldmünzen (Geschenkelinie oder Schneeflocken-Bingo); Mittel = 500 Goldmünzen (ausschließlich Magischer Wichtelpfad); Premium = 1.000 Goldmünzen (ausschließlich Weihnachtsbaum-Geheimnis).
+- **Verbindliches Modell:** Einfach = 200 Goldmünzen (Geschenkelinie oder Schneeflocken-Bingo); Mittel = 500 Goldmünzen (ausschließlich Magischer Wichtelpfad); Premium = 1.000 Goldmünzen (ausschließlich Premium-Weihnachts-Rubbellos mit 27 Feldern).
 - **Keine Entfernung einer Preisstufe.** Die bestehende drei-Klassen-Gewichtungsmatrix (20 % Niete je Stufe, 11 % ×2, seltene Hauptgewinnereignisse) bleibt unverändert.
-- Neue Lose werden ausschließlich aus den ihrem Preis zugeordneten Spielarten gezogen: `simple=['gifts','snow_collect']`, `medium=['elf']`, `premium=['tree']`.
+- Neue Lose werden ausschließlich aus den ihrem Preis zugeordneten Spielarten gezogen: `simple=['gifts','snow_collect']`, `medium=['elf']`, `premium=['premium_27']`.
 - Bereits erworbene Karten, Guthaben und Freischaltungen bleiben unverändert; altes Regelwerk bleibt auswertbar.
 - Weitere sechs frühere Regelprüfer dürfen als **Legacy-Kompatibilität**
   bestehen bleiben. Bereits erworbene Karten werden weiter
@@ -70,8 +70,7 @@ abgestimmt werden.
 2. **Mittel (einziges Los):** Magischer Wichtelpfad – 20 große Felder, der
    durchgehende Weg muss klar und ohne versteckte Zwischengewinne
    hervorgehoben werden.
-3. **Premium (einziges Los):** Weihnachtsbaum-Geheimnis – 15 Felder, exakte
-   Symbolfolge und sichtbare Gewinnzuordnung, keine erfundenen Preise.
+3. **Premium (einziges Los):** 27-Felder-Premium-Weihnachts-Rubbellos – neun Dreierreihen, 20 echte Symbole für Gold und 24 echte Symbole für eine zusätzliche Premium-Belohnung. Leerfelder zählen nicht.
 4. Den Shop mit **2 Einfach + 1 Mittel + 1 Premium** darstellen. Alle vier Lose auf Touch, Reload, 90-%-Aufdeckung, Nieten und 1–3 Treffer sowie Gewinnchancen testen; kein Preisstufen-Wechsel erforderlich.
 
 ## Phase 1 – Regelwerk und mathematische Gewichtung [ ]
@@ -99,7 +98,7 @@ Abnahme: Wahrscheinlichkeitsmatrix und Testfälle schriftlich freigegeben.
 - [ ] Spieleranleitungen und Spielbilder in der tatsächlichen UI anzeigen; Ausgabe der Gewinnbeträge an den zugehörigen Symbolen.
 - [ ] Zusätzliche Gewinnanzahl über 3 verhindern bzw. ausschließlich Varianten mit ausreichender Kapazität verwenden, bevor bestehende Echtgeld-/Eventmünzen-Auszahlung daran gebunden wird.
 - Generator erzeugt Nieten ohne gültige Kombination; Gewinne mit exakt zugeordneten Treffern.
-- 6/9/12/15/16/20 Felder auf Mobilgeräten gut bedienbar.
+- Aktive Losgrößen: 9/16/20/27 Felder; 27-Felder-Fingerbedienung noch auf Mobilgeräten prüfen.
 Abnahme: automatische Validierung der vier neuen aktiven Varianten, zugehörige Klassenbindung sowie Kompatibilität der sechs archivierten Altvarianten, auch 2–3 Gewinnkombinationen.
 
 ## Phase 3 – Serverseitige Auszahlung [INTEGRIERT; LIVE-ENDTEST OFFEN]
@@ -110,7 +109,7 @@ Abnahme: automatische Validierung der vier neuen aktiven Varianten, zugehörige 
 - [x] `lastResult` wird serverseitig gespeichert; die Oberfläche bietet das noch nicht als gesehen markierte Los nach Neuladen erneut an (nur UI-Marker lokal, keine Berechtigungsprüfung damit).
 Abnahme: Unit-/Integrationstests für Guthaben, Duplikate, Entitlements, Auth, Parallelkäufe.
 
-## Phase 4 – Grafiken [1/4 HOCHGELADEN; 2/4 VORBEREITET; 2 PREMIUMKARTEN OFFEN]
+## Phase 4 – Grafiken [3/4 HOCHGELADEN; PREMIUM-WEBP VORBEREITET]
 - [x] **Karte 1 „Geschenkelinie“** einzeln als hochwertiges Motiv (Rot/Gold, neun goldene Rubbelplätze) generiert.
 - [x] Optimierte WebP-Datei erstellt: `geschenkelinie-01.webp`, **1086×1448 Pixel**, ca. 414 KB. Download aus der aktuellen Unterhaltung.
 - [x] **Artwork-Feld-Ausrichtung im Frontend**: `christmas-event.html` enthält den neuen `scratch-card-art`-Wrapper; `christmas-scratch.css` positioniert das 3×3-Spielfeld auf den neun gedruckten goldenen Feldern.
@@ -123,12 +122,14 @@ Abnahme: Unit-/Integrationstests für Guthaben, Duplikate, Entitlements, Auth, P
 - [x] Bestehende Eispalast-CSS-Einbindung mit dem Originalbild abgeglichen: 4×4-Positionierung auf 16 Silberfeldern (left 15,5 %, top 27,8 %, width 66 %, height 44,2 %, grid gaps 3 % / 7,5 %). Helle Eisfarbe unter der entfernten Silberschicht erhöht den sichtbaren Kontrast.
 - [x] `snow_collect`-Gewinnregel im Backend: drei gleiche Symbole an beliebigen Positionen, je Symbolart maximal ein Preis, 4–6 🧊-Nietenfelder pro Los. Alte `snow`-Viererreihen-Regel bleibt für historische Belege bestehen. Testgenerator 300-mal je Gewinneranzahl 0–3 erfolgreich kontrolliert.
 - [ ] **Karte 2 hochladen** in `schmitti92/Spiel-client/DOG/assets/scratch/schneeflocken-bingo-01.webp`, anschließend Gerätetest (Bilder, 90-%-Rubbeln, Preiszuteilung).
-- [ ] **Zwei** weitere Einzelmotive erstellen, hochladen und einpassen: Magischer Wichtelpfad und Weihnachtsbaum-Geheimnis.
+- [x] **Premium-Rubbellos Nr. 4:** Nutzerbild mit 9×3 statt 10×3 Feldern bestätigt, als `premium-weihnachts-rubbellos-27.webp` (1152×1536, ca. 498 KB) aus `1000030733.png` umgewandelt.
+- [x] Exakte CSS-Feldabdeckung anhand visueller Kontrollgrafik auf die 27 silbernen Flächen gelegt (left 10,4 %, top 23,6 %, width 53,2 %, height 55,8 %; Spalten 3,3 %, Zeilen 2,7 % Zwischenraum).
+- [ ] Premium-WebP ins Frontend hochladen: `DOG/assets/scratch/premium-weihnachts-rubbellos-27.webp`; danach echtes Handy-Freirubbeln und 90-%-Automatik prüfen.
 - Gemeinsam genutzte Assets: Silbertextur, Emoji-Symbole, Gewinnleuchten, Qualitätsrahmen.
 Abnahme: Bilddatei öffentlich verfügbar, alle neun Rubbelstellen ausgerichtet, Gewinnreihen sichtbar und 90-%-Aufdeckung auf Touch-Geräten erfolgreich überprüft; danach drei weitere Motive fertigstellen.
 
 ## Phase 5 – Rubbeloberfläche [ECHTES FREIRUBBELN + 90-%-AUTOMATIK EINGEBAUT, HANDYTEST OFFEN]
-- [x] **Eine durchgehende Canvas-Beschichtung über dem gesamten Spielfeld** (6–20 Felder). Der Finger bzw. Mauszeiger darf ohne Absetzen über sämtliche Felder und Zwischenräume streichen; keine per-Zelle-Klick- oder Einzelwischpflicht mehr. Silbertextur wird im Fingerpfad transparent.
+- [x] **Eine durchgehende Canvas-Beschichtung über dem gesamten Spielfeld** (9, 16, 20 oder 27 Felder). Der Finger bzw. Mauszeiger darf ohne Absetzen über sämtliche Felder und Zwischenräume streichen; keine per-Zelle-Klick- oder Einzelwischpflicht mehr. Silbertextur wird im Fingerpfad transparent.
 - [x] Fortschritt wird anhand der **Alpha-Pixel der gemeinsamen Silberschicht** ermittelt: Zähler = tatsächlich entfernte beschichtete Bildpunkte, Nenner = alle anfänglich beschichteten Bildpunkte, transparente Lücken zwischen den Feldern zählen nicht. Kein Messen nach Wischstrecke oder Klickzahl.
 - [x] Ab **90 % der gesamten Beschichtungsfläche** gibt die UI automatisch alle restlichen Felder und Gewinnkombinationen frei; sichtbarer Prozentbalken.
 - [x] Keine pro-Feld-90-%-Abkürzung mehr; erst bei insgesamt 90 % der gemeinsam beschichteten Fläche wird die restliche Karte automatisch aufgedeckt.
@@ -188,3 +189,6 @@ Abnahme: echte Spielrunde über mehrere Geräte.
 - 15.11.2026: Verbindliche Nutzerkorrektur: Los 3 „Magischer Wichtelpfad“ ist die einzige **mittlere** Variante für **500 Goldmünzen**, nicht Premium. Server-Pool auf `simple: gifts/snow_collect`, `medium: elf`, `premium: tree` geändert. Das Motiv ist `wichtelpfad-mittel-01.svg`; Shop zeigt pro Preisklasse die zugehörigen Varianten. Preise, bestehende Lose und Wahrscheinlichkeitsmatrix unverändert. Echtes End-to-End noch offen.
 
 - 15.11.2026: Host-Wunsch für spätere Phase festgehalten: Rubbellos-Zahnrad oben rechts (nur Host), Schalter zum kostenfreien Eigenöffnen sowie je Los einzeln konfigurierbare Gewichtungen. Entwicklung ausdrücklich bis zur Fertigstellung aller vier Rubbellose zurückgestellt; keine aktuelle Funktionsänderung.
+
+- 15.11.2026: Premiumvariante `premium_27` statt altem `tree`-Los für neue Premiumkäufe aktiviert. **9 Reihen × 3 Felder**. Sichtbar auswertbare Ergebnisse: vollständige Dreierreihe; **20 oder mehr nichtleere Symbolfelder = Münzgewinn**; **24 oder mehr nichtleere Symbolfelder = zusätzliche einmalige Premium-Freischaltung** (und Gold wegen 20er-Schwelle). 🧊-Felder zählen nicht. Regelauswertung und Zuordnung der Preise erfolgen auf Render, Bild/90-%-Rubbeln im Frontend. Altlose mit `tree` bleiben auswertbar. 15.000 simulierte Kaufbelege (5.000 je Preisklasse) mit sichtbarer Gewinnzuordnung erfolgreich geprüft; echter Browser-Endtest offen.
+- 15.11.2026: Das bestätigte rot-goldene Premium-Bild (1152×1536) als WebP `premium-weihnachts-rubbellos-27.webp` exportiert und CSS-Feld-Geometrie anhand einer Pixelbild-Prüfung korrigiert. Datei noch nicht auf GitHub; Upload-Pfad steht im Bildordner-README.
