@@ -194,3 +194,9 @@ button{touch-action:manipulation}
 :root[data-dog-motion="off"] *,:root[data-dog-motion="off"] *::before,:root[data-dog-motion="off"] *::after{
  animation:none!important;transition-duration:0s!important;scroll-behavior:auto!important
 }
+
+/* Upcoming rewards show their actual previews in greyscale, without being equipable. */
+.collection-tile.is-locked .tile-art img,.detail-image.is-locked img{filter:grayscale(1) brightness(.57)}
+.collection-tile.is-locked .tile-art:after{background:#080c19a1}
+.collection-tile.is-locked{border-color:#677783;background:linear-gradient(#172635,#101a29)}
+.collection-tile.is-locked .tile-label.planned{background:#444d59;color:#e9d5aa}
