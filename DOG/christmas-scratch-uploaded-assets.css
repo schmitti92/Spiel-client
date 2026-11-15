@@ -1,0 +1,215 @@
+/* Lichtertal – echte Rubbellose-Wintergrafiken aus GitHub
+ * Visuelle Ergänzung zu christmas-scratch-winter-shop.css.
+ * Keine Änderungen an Gewinnregeln, Geldbeträgen, Statistiken oder Serverlogik.
+ * Alle Bilder aus DOG/assets/lichtertal-scratch-winter/.
+ */
+body:has(#panel-scratch:not([hidden])){
+  background-image:
+    linear-gradient(90deg,#031b26e0,#061d29d7 48%,#041721e3),
+    url("./assets/lichtertal-scratch-winter/17_winternacht_hintergrund.png");
+  background-size:cover,cover;
+  background-position:center,center;
+  background-attachment:scroll,fixed;
+}
+body:has(#panel-scratch:not([hidden])) .event-sidebar{
+  border:2px solid #e4c47d;
+  background:
+    linear-gradient(#032e2cd6,#0122242c 66%,#05242b52),
+    url("./assets/lichtertal-scratch-winter/18_sidebar_laterne_schnee.png") bottom center / 100% 100% no-repeat,
+    #042923;
+  box-shadow:inset 0 1px #ffeeae66,0 9px 26px #0009;
+}
+body:has(#panel-scratch:not([hidden])) .event-tab[aria-selected=true]{
+  border:1.5px solid #ffe7a6;
+  background:linear-gradient(135deg,#755225,#13493c);
+  box-shadow:inset 0 0 0 1px #fff0bd5a,0 0 14px #ffde9070;
+}
+#panel-scratch .scratch-toolbar{
+  background:
+    linear-gradient(90deg,#001e2aca,#002d3a64 50%,#001e2bd9),
+    url("./assets/lichtertal-scratch-winter/17_winternacht_hintergrund.png") center 27% / cover no-repeat,
+    #062b3a;
+}
+#panel-scratch .scratch-toolbar:before{
+  background-image:url("./assets/lichtertal-scratch-winter/16_obere_schneekante_eiszapfen.png");
+}
+#panel-scratch .scratch-winter-brand{
+  background-image:url("./assets/lichtertal-scratch-winter/13_header_holzschild_leer.png");
+  background-position:center;
+  background-size:100% 100%;
+  background-repeat:no-repeat;
+}
+#panel-scratch .scratch-toolbar>div:first-child{
+  position:relative;
+  padding:8px 12px 8px 20px;
+  border:0;
+  border-radius:12px;
+  background:
+    linear-gradient(90deg,#081e2c77,#0b293142),
+    url("./assets/lichtertal-scratch-winter/15_kontostand_holzschild_leer.png") center / 100% 100% no-repeat;
+}
+#panel-scratch .scratch-wallet{font-variant-numeric:tabular-nums}
+#panel-scratch .scratch-tier{
+  border:0!important;
+  border-radius:19px;
+  background-position:center!important;
+  background-size:100% 100%!important;
+  background-repeat:no-repeat!important;
+  background-color:#082a36!important;
+  box-shadow:0 8px 23px #00111b90!important;
+  padding:clamp(14px,1.2vw,18px) clamp(10px,1vw,16px) 15px!important;
+}
+#panel-scratch .scratch-tier.scratch-variant-gift{
+  background-image:url("./assets/lichtertal-scratch-winter/05_karte_geschenkelinie_leer.png")!important;
+}
+#panel-scratch .scratch-tier.scratch-variant-snow{
+  background-image:url("./assets/lichtertal-scratch-winter/06_karte_schneeflocken_leer.png")!important;
+}
+#panel-scratch .scratch-tier.scratch-variant-elf{
+  background-image:url("./assets/lichtertal-scratch-winter/07_karte_wichtelpfad_leer.png")!important;
+}
+#panel-scratch .scratch-tier.scratch-variant-gold{
+  background-image:url("./assets/lichtertal-scratch-winter/08_karte_premium_leer.png")!important;
+}
+/* Snow and stars are part of each illustrated frame, not a second opaque overlay. */
+#panel-scratch .scratch-tier:before,
+#panel-scratch .scratch-tier:after{content:none!important}
+#panel-scratch .scratch-card-heading{gap:2px;padding-top:13px}
+#panel-scratch .scratch-card-names{min-height:61px}
+#panel-scratch .scratch-card-class{
+  padding:3px 11px;
+  border:1px solid #fff0ca85;
+  border-radius:30px;
+  background:#072735c5;
+  color:#fff4d6;
+  font-size:10px;
+}
+#panel-scratch .scratch-tier h3{
+  font-size:clamp(17px,1.63vw,25px);
+  text-shadow:0 2px 8px #02161c,0 0 9px #ffce8554;
+}
+#panel-scratch .scratch-icon{
+  display:block;
+  position:relative;
+  flex:0 0 auto;
+  width:clamp(92px,8.6vw,133px);
+  height:clamp(84px,8vw,122px);
+  margin:0 auto;
+  background:radial-gradient(ellipse at 50% 50%,#ffedb92f,transparent 68%);
+  font-size:0!important; /* Emoji text stays accessible; picture replaces glyph visually */
+  line-height:0;
+  filter:none!important;
+}
+#panel-scratch .scratch-icon:after{
+  content:"";
+  position:absolute;inset:0;z-index:2;
+  background-image:var(--scratch-art,none);
+  background-size:contain;
+  background-repeat:no-repeat;
+  background-position:center;
+  filter:drop-shadow(0 4px 8px #00101cb0);
+}
+#panel-scratch .scratch-variant-gift{--scratch-art:url("./assets/lichtertal-scratch-winter/01_icon_geschenk.png")}
+#panel-scratch .scratch-variant-snow{--scratch-art:url("./assets/lichtertal-scratch-winter/02_icon_schneeflocke.png")}
+#panel-scratch .scratch-variant-elf{--scratch-art:url("./assets/lichtertal-scratch-winter/03_icon_wichtel.png")}
+#panel-scratch .scratch-variant-gold{--scratch-art:url("./assets/lichtertal-scratch-winter/04_icon_premiumkrone.png")}
+#panel-scratch .scratch-card-brief{min-height:47px;gap:5px}
+#panel-scratch .scratch-card-rule{max-width:100%;font-size:10px;line-height:1.2}
+#panel-scratch .scratch-card-chance{font-size:9px;line-height:1.2}
+#panel-scratch .scratch-card-payouts{
+  border:1px solid #ffd79881;
+  background:#062634bc;
+  box-shadow:inset 0 1px #fff6d123;
+}
+#panel-scratch .scratch-buy:not([hidden]),
+#panel-scratch .scratch-free:not([hidden]){
+  border:1px solid #e8eab8;
+  background:linear-gradient(180deg,#31975a 0%,#056431 64%,#054523 100%);
+  box-shadow:inset 0 1px #d7ffd366,0 4px 10px #001b20a8;
+  color:#eaffdf;
+}
+#panel-scratch .scratch-analytics{
+  background:
+    linear-gradient(180deg,#2d180ba0,#180c0db3),
+    url("./assets/lichtertal-scratch-winter/14_statistik_holzpanel_leer.png") center / 100% 100% no-repeat,
+    #39251b;
+  border:1.5px solid #ffda99;
+  box-shadow:inset 0 1px #fff5c561,0 7px 24px #00111d91;
+}
+#panel-scratch .scratch-analytics:before{
+  background-image:url("./assets/lichtertal-scratch-winter/16_obere_schneekante_eiszapfen.png");
+}
+#panel-scratch .scratch-analytics-kpi{
+  min-height:79px;
+  border:0;
+  border-radius:13px;
+  background-position:center!important;
+  background-size:100% 100%!important;
+  background-repeat:no-repeat!important;
+  box-shadow:0 3px 9px #0e08088c;
+}
+#panel-scratch .scratch-analytics-kpi:nth-child(1){
+  background-image:url("./assets/lichtertal-scratch-winter/26_statistik_kachel_los_geoeffnet.png")!important;
+}
+#panel-scratch .scratch-analytics-kpi:nth-child(2){
+  background-image:url("./assets/lichtertal-scratch-winter/27_statistik_kachel_gewinnlose.png")!important;
+}
+#panel-scratch .scratch-analytics-kpi:nth-child(3){
+  background-image:url("./assets/lichtertal-scratch-winter/28_statistik_kachel_freischaltungen.png")!important;
+}
+#panel-scratch .scratch-analytics-kpi:nth-child(4){
+  background-image:url("./assets/lichtertal-scratch-winter/29_statistik_kachel_muenzen_gewonnen.png")!important;
+}
+#panel-scratch .scratch-analytics-kpi:before{content:none!important}
+#panel-scratch .scratch-analytics-kpi-label{
+  position:relative;z-index:1;
+  color:#fff3d4;
+  font-size:11px;
+  text-shadow:0 1px 4px #061722a8;
+}
+#panel-scratch .scratch-analytics-kpi-value{
+  position:relative;z-index:1;
+  color:#fff0b5;
+  font-variant-numeric:tabular-nums;
+  text-shadow:0 2px 6px #25130b;
+}
+#panel-scratch .scratch-analytics-table-wrap{min-width:0}
+#panel-scratch .scratch-analytics-table{
+  border:1px solid #d5a96c;
+  border-radius:13px;
+  background:#061d2bc7;
+}
+#panel-scratch .scratch-analytics-table thead th{
+  color:#ffe6b4;
+  background:linear-gradient(#633e26,#362116);
+}
+#panel-scratch .scratch-analytics-heading{padding-top:8px}
+#panel-scratch .scratch-analytics-heading h3{color:#ffe4a0}
+@media(min-width:1200px){
+  #panel-scratch .scratch-tickets{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  #panel-scratch .scratch-tier{
+    min-height:343px;
+    gap:4px;
+  }
+}
+@media(min-width:800px) and (max-width:1199px){
+  #panel-scratch .scratch-tickets{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #panel-scratch .scratch-tier{min-height:327px}
+}
+@media(max-width:799px){
+  #panel-scratch .scratch-tickets{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #panel-scratch .scratch-tier{min-height:325px}
+  #panel-scratch .scratch-icon{width:82px;height:79px}
+  #panel-scratch .scratch-card-heading{padding-top:9px}
+  #panel-scratch .scratch-wallet{font-size:18px}
+}
+@media(max-width:480px){
+  #panel-scratch .scratch-tickets{grid-template-columns:1fr}
+  #panel-scratch .scratch-tier{min-height:322px}
+  #panel-scratch .scratch-icon{width:105px;height:100px}
+  #panel-scratch .scratch-card-names{min-height:58px}
+  #panel-scratch .scratch-wallet{white-space:normal}
+}
+@media(prefers-reduced-motion:reduce){
+  #panel-scratch .scratch-icon:after{filter:none}
+}
