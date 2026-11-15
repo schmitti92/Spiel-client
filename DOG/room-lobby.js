@@ -2,7 +2,7 @@
  * This module renders public room data and emits user actions. hub-lobby.js
  * remains the sole owner of authenticated HTTP/WS requests and game start.
  */
-import {renderDogRoomBoard} from './room-board-preview.js?v=1';
+import {renderDogRoomBoard} from './room-board-preview.js?v=2';
 import {summarizeDogRoomLobby} from './room-lobby-state.js?v=1';
 
 const $=id=>document.getElementById(id);
