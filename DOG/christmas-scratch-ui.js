@@ -231,9 +231,11 @@ export function initChristmasScratch(){
    const details=el('div','scratch-card-brief');
    details.append(el('span','scratch-card-rule',option.rule),
     el('span','scratch-card-chance','🎁 '+unlockChance+' % Freischaltung'));
+   const amounts=coinAmountsFor(option.tier,option.id);
    article.append(heading,details,
     el('strong','scratch-price',num(tier.price)+' 🪙'),
-    el('div','scratch-symbol-key',symbolLegend(option.tier,coinAmountsFor(option.tier,option.id))));
+    el('div','scratch-card-payouts','🪙 '+num(amounts[0])+' · 💵 '+num(amounts[1])+' · 💼 '+num(amounts[2])),
+    el('div','scratch-symbol-key',symbolLegend(option.tier,amounts)));
    const buyBtn=el('button','scratch-buy','🎟️ Für '+num(tier.price)+' Münzen öffnen');
    buyBtn.type='button';buyBtn.hidden=freeMode;
    buyBtn.disabled=busy||!!ticket||!account()||!status||status.coins<tier.price;
