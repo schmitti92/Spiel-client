@@ -88,6 +88,13 @@ function imageOf(item){
  image.alt=item.name+' – Vorschau des später freischaltbaren Weihnachtsbildes';
  image.loading='lazy';image.decoding='async';
  image.addEventListener('error',()=>{
+  // The custom collectible art replaces the temporary previews as soon
+  // as it is uploaded to GitHub Pages. Never hide the entire image slot.
+  if(item.fallbackImage&&image.dataset.fallbackUsed!=='1'){
+   image.dataset.fallbackUsed='1';
+   image.src=new URL(item.fallbackImage,here).href;
+   return;
+  }
   image.hidden=true;
   const parent=image.parentElement;
   if(parent&&!parent.querySelector('.meta-image-fallback')){
