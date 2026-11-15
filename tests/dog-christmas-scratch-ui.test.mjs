@@ -75,6 +75,6 @@ test('all scratch tiers expose three fixed cash symbols and a gift unlock legend
  assert.match(html,/id="scratch-symbol-legend"/);
  assert.match(js,/symbolLegend\(c.id\)/);
  assert.match(js,/🎁 Freischaltung:/);
- assert.match(js,/prize.symbol/);
+ assert.match(js,/p\.symbol/);
  assert.match(js,/symbolVersion!==2/);
 });
