@@ -28,11 +28,13 @@ on:
       - 'tests/dog-collection.test.mjs'
       - 'tests/dog-christmas-rewards.test.mjs'
       - 'tests/dog-christmas-building-costs.test.mjs'
+      - 'tests/dog-christmas-live-ui.test.mjs'
       - '.github/workflows/dog-board-check.yml'
   pull_request:
     paths:
       - 'tests/dog-christmas-rewards.test.mjs'
       - 'tests/dog-christmas-building-costs.test.mjs'
+      - 'tests/dog-christmas-live-ui.test.mjs'
       - 'DOG/**'
       - 'tests/dog-board-layout.test.mjs'
       - 'tests/dog-board-builder.test.mjs'
@@ -95,6 +97,7 @@ jobs:
       - run: node --test tests/dog-card-editions.test.mjs
       - run: node --check DOG/christmas-building-costs.js && node --check DOG/christmas-event.js
       - run: node --test tests/dog-christmas-building-costs.test.mjs
+      - run: node --test tests/dog-christmas-live-ui.test.mjs
       - run: node --test tests/dog-hand-gestures.test.mjs
       - run: node --test tests/dog-board-gestures.test.mjs
       - run: node --test tests/dog-piece-animations.test.mjs tests/dog-motion-settings.test.mjs tests/dog-ui-animations.test.mjs
