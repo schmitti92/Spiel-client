@@ -66,17 +66,20 @@ test('medium elf artwork contains twenty framed cells and a path-highlighting re
  assert.match(js,/line\.setAttribute\('points'/);
 });
 
-test('all scratch tiers expose three fixed cash symbols and a gift unlock legend',()=>{
+test('all scratch tiers expose three configurable cash symbols and a gift unlock legend',()=>{
  assert.deepEqual(SCRATCH_COIN_PRIZES,{
   simple:[10,40,100],medium:[100,300,800],premium:[200,800,2000]
  });
  const html=source('../DOG/christmas-event.html');
  const js=source('../DOG/christmas-scratch-ui.js');
  assert.match(html,/id="scratch-symbol-legend"/);
- assert.match(js,/symbolLegend\(c.id\)/);
+ assert.match(js,/shopMoneyLegend\(c.id\)/);
  assert.match(js,/Freischaltung:/);
  assert.match(js,/🎁 💝 🎀 🧧/);
  assert.match(js,/p\.symbol/);
+ assert.match(js,/coinAmountsFor\(tier,result\?\.board\?\.variantId\|\|null,result\)/);
+ assert.match(js,/symbolOddsSection\('moneySymbolWeights'/);
+ assert.match(js,/symbolOddsSection\('giftSymbolWeights'/);
  assert.match(js,/symbolVersion===3/);
 });
 
