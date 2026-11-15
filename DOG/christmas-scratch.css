@@ -1005,3 +1005,170 @@ body.scratch-ticket-open{overflow:hidden;overscroll-behavior:none}
  #panel-scratch .scratch-card-payouts{padding-block:3px}
  #panel-scratch .scratch-buy,#panel-scratch .scratch-free{min-height:29px;padding-block:3px}
 }
+
+
+/* ONE-VIEW SCRATCH CARD OVERRIDE v1
+   The opened ticket (NOT the shop) must fit on a single viewport,
+   including its win panel, progress and finish button. No modal scrolling.
+   Image artwork and 3x3/4x4/5x4/3x9 hitboxes scale together. */
+html:has(body.scratch-ticket-open),
+body.scratch-ticket-open{
+ overflow:hidden!important;overscroll-behavior:none!important;
+}
+.scratch-stage:not([hidden]){
+ width:min(960px,calc(100vw - 16px))!important;
+ height:min(690px,calc(100dvh - 16px))!important;
+ max-width:calc(100vw - 16px)!important;
+ max-height:calc(100dvh - 16px)!important;
+ overflow:hidden!important;
+ padding:8px!important;
+ column-gap:8px;row-gap:3px;
+ grid-template-columns:minmax(0,1fr) minmax(200px,30%);
+ grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto;
+}
+.scratch-stage:not([hidden]) > #scratch-ticket-title{
+ margin:0;line-height:1.1;font-size:clamp(13px,1.8vh,17px);
+}
+.scratch-stage:not([hidden]) > #scratch-variant-rule{
+ padding:3px 6px;margin:0;font-size:clamp(9px,1.35vh,11px);
+ line-height:1.15;
+}
+.scratch-stage:not([hidden]) > #scratch-symbol-legend{
+ padding:3px 5px;margin:0;font-size:10px;line-height:1.15;
+}
+.scratch-stage:not([hidden]) > #scratch-progress{
+ margin:0;line-height:1.15;font-size:10px;
+}
+.scratch-stage:not([hidden]) > #scratch-progress-meter{
+ margin:0;height:6px;
+}
+.scratch-stage:not([hidden]) > #scratch-reveal{
+ min-height:0;max-height:100%;height:100%;
+ overflow:hidden!important;
+ align-items:center;justify-content:center;
+}
+.scratch-stage:not([hidden]) > #scratch-reveal .scratch-card-art{
+ display:block;flex:0 1 auto;min-width:0;min-height:0;
+ width:auto!important;height:100%!important;
+ max-width:100%;max-height:100%;
+ aspect-ratio:3/4;
+ margin:0 auto;object-fit:contain;
+}
+.scratch-stage:not([hidden]) > .scratch-stage-actions{
+ min-height:0;justify-self:center;margin:0;
+}
+.scratch-stage:not([hidden]) > .scratch-stage-actions button{
+ min-height:30px;padding:4px 12px;font-size:11px;
+}
+.scratch-stage:not([hidden]) > .scratch-prize-sidebar{
+ min-height:0;max-height:100%;padding:6px!important;
+ gap:4px;overflow:hidden!important;
+}
+.scratch-stage:not([hidden]) .scratch-prize-sidebar h4{
+ font-size:12px;line-height:1;margin:1px 0;
+}
+.scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-prize-entry{
+ font-size:10px;line-height:1.12;min-height:0;padding:3px 2px;gap:4px;
+}
+.scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-prize-entry strong{
+ font-size:9px;white-space:normal;
+}
+.scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-prize-remaining{
+ font-size:9px;line-height:1.15;margin:0;
+}
+.scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-hidden-prize{
+ max-height:38%;min-height:0;padding:3px!important;
+ overflow:hidden!important;
+}
+.scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-hidden-prize strong{
+ font-size:clamp(10px,1.45vh,14px);
+ overflow-wrap:anywhere;
+}
+.scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-hidden-prize small{
+ font-size:9px;
+}
+.scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-winning-lines{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:2px;min-height:0;overflow:hidden;
+}
+.scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-prize-line{
+ font-size:9px;line-height:1.1;padding:3px;
+ overflow-wrap:anywhere;
+}
+.scratch-stage:not([hidden]) .scratch-premium-counter{
+ padding:5px;gap:3px;
+}
+.scratch-stage:not([hidden]) .scratch-premium-counter-header{font-size:10px}
+.scratch-stage:not([hidden]) .scratch-premium-counter-number{font-size:17px}
+.scratch-stage:not([hidden]) .scratch-premium-milestone{padding:4px}
+.scratch-stage:not([hidden]) .scratch-premium-milestone strong{font-size:10px}
+.scratch-stage:not([hidden]) .scratch-premium-milestone small{font-size:8px}
+@media(max-width:700px) and (min-height:501px){
+ /* Portrait mobile: card on top, compact win area at bottom. */
+ .scratch-stage:not([hidden]){
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:auto auto auto auto auto minmax(0,1fr) minmax(0,auto) auto;
+  column-gap:0;row-gap:3px;
+  width:calc(100vw - 10px)!important;max-width:calc(100vw - 10px)!important;
+  height:calc(100dvh - 10px)!important;max-height:calc(100dvh - 10px)!important;
+  padding:5px!important;
+ }
+ .scratch-stage:not([hidden]) > #scratch-reveal{
+  grid-column:1;grid-row:6;min-height:0;height:100%;
+ }
+ .scratch-stage:not([hidden]) > .scratch-prize-sidebar{
+  grid-column:1;grid-row:7;
+  display:grid;grid-template-columns:minmax(0,1fr);align-content:start;
+  gap:3px;width:100%!important;min-height:0;max-height:112px;
+  padding:4px!important;overflow:hidden!important;
+ }
+ .scratch-stage:not([hidden]) > .scratch-stage-actions{
+  grid-column:1;grid-row:8;align-self:center;margin:0;
+ }
+ .scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-prize-entry,
+ .scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-prize-remaining,
+ .scratch-stage:not([hidden]) .scratch-prize-sidebar h4{display:none}
+ .scratch-stage:not([hidden]) .scratch-premium-counter{
+  display:grid;grid-template-columns:minmax(0,1fr) repeat(2,minmax(0,1fr));
+  gap:3px;padding:3px;
+ }
+ .scratch-stage:not([hidden]) .scratch-premium-found{display:none}
+ .scratch-stage:not([hidden]) .scratch-premium-counter-header{
+  grid-column:1;flex-direction:column;align-items:start;
+ }
+ .scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-hidden-prize{
+  max-height:58px;padding:2px!important;
+ }
+ .scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-winning-lines{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  max-height:73px;
+ }
+}
+@media(max-height:500px){
+ /* Short/landscape screens: side-by-side even below 700px. */
+ .scratch-stage:not([hidden]){
+  grid-template-columns:minmax(0,1fr) minmax(150px,30%);
+  grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto;
+  width:calc(100vw - 8px)!important;
+  max-width:calc(100vw - 8px)!important;
+  height:calc(100dvh - 8px)!important;
+  max-height:calc(100dvh - 8px)!important;
+  padding:3px!important;column-gap:4px;row-gap:2px;
+ }
+ .scratch-stage:not([hidden]) > #scratch-reveal{grid-column:1;grid-row:6}
+ .scratch-stage:not([hidden]) > .scratch-prize-sidebar{
+  grid-column:2;grid-row:1/-1;display:flex;
+  max-height:100%;padding:3px!important;
+ }
+ .scratch-stage:not([hidden]) > .scratch-stage-actions{
+  grid-column:1;grid-row:7;
+ }
+ .scratch-stage:not([hidden]) > #scratch-variant-rule{display:none}
+ .scratch-stage:not([hidden]) > #scratch-symbol-legend{font-size:9px}
+ .scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-prize-entry,
+ .scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-prize-remaining,
+ .scratch-stage:not([hidden]) .scratch-prize-sidebar h4{display:none}
+ .scratch-stage:not([hidden]) .scratch-premium-counter{padding:2px}
+ .scratch-stage:not([hidden]) .scratch-premium-milestone{padding:2px}
+ .scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-prize-line{padding:2px;font-size:8px}
+}
