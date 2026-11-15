@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="./christmas-tree-rewards.css?v=2">
 <link rel="stylesheet" href="./christmas-tree-world.css?v=3">
 <link rel="stylesheet" href="./christmas-scratch.css?v=1">
-<link rel="stylesheet" href="./christmas-building-village.css?v=2">
+<link rel="stylesheet" href="./christmas-building-village.css?v=3">
 </head>
 <body>
 <div class="snow-sky" aria-hidden="true"></div>
@@ -200,31 +200,38 @@
       <div class="event-footer-row"><div><h3>Unser gemeinsames Ziel</h3><p>Vier Gebäude ausbauen, den Baum wachsen lassen und ganz Lichtertal auf Weihnachten vorbereiten.</p></div><button type="button" class="button gold" data-open-tab="buildings">🏠 Gebäude ansehen</button></div>
     </section>
     <section class="event-panel" id="panel-buildings" role="tabpanel" aria-labelledby="tab-buildings" hidden>
-      <div class="event-heading"><div><span class="eyebrow">DORFAUSBAU</span><h2>Die vier Weihnachtsgebäude</h2><p>Jedes Haus hat fünf Stufen. Seine Boni gelten während des Weihnachtsevents automatisch.</p></div><span class="soft-tag">4 × 5 Stufen</span></div>
-      <section class="building-village-wallet" id="building-village-wallet" aria-label="Gemeinsamer Weihnachtslichter-Vorrat">
+      <div class="event-heading"><div><span class="eyebrow">DORFAUSBAU</span><h2>Die vier Weihnachtsgebäude</h2><p>Vier Gebäude wachsen durch eure gemeinsam gesammelten Weihnachtslichter. Die Boni gelten während des Events automatisch für alle.</p></div><span class="soft-tag">4 × 5 Stufen</span></div>
+      <section class="building-village-wallet" id="building-village-wallet" aria-label="Gemeinsames DOG-Dorfkonto">
         <div class="village-treasury-heading">
-          <span class="eyebrow">✦ UNSER GEMEINSAMER DORFSCHATZ ✦</span>
-          <span class="village-wallet-badge" id="building-village-role">🎄 Dorf-Vorschau</span>
+          <div class="village-treasury-title"><span class="eyebrow">✦ LICHTERTALS GEMEINSAMER DORFSCHATZ ✦</span><strong>Ein Dorf. Ein gemeinsamer Vorrat.</strong></div>
+          <span class="village-wallet-badge" id="building-village-role" data-state="preview">🎄 Dorf-Vorschau</span>
         </div>
         <div class="village-treasury-main">
-          <div class="village-treasury-balance"><span aria-hidden="true" class="village-treasury-star">⭐</span><div>
-            <small>Weihnachtslichter · gemeinsame Meta-Währung</small>
-            <strong id="building-live-balance">Noch nicht verbunden</strong>
-            <span id="building-event-mode">Das gemeinsame Guthaben aller DOG-Spieler im selben Dorf</span>
-          </div></div>
+          <div class="village-treasury-balance">
+            <span aria-hidden="true" class="village-treasury-star">⭐</span>
+            <div class="village-treasury-balance-copy">
+              <small>Gemeinsame Weihnachtslichter</small>
+              <strong id="building-live-balance">Noch kein Online-Dorf geladen</strong>
+              <span id="building-event-mode">Alle sammeln zusammen · alle profitieren vom Ausbau.</span>
+            </div>
+          </div>
           <div class="village-treasury-actions">
-            <button class="button quiet" id="building-wallet-refresh" type="button">↻ Guthaben aktualisieren</button>
-            <a class="button gold" id="building-wallet-room" href="../hub-lobby.html">🎲 DOG-Onlineraum öffnen</a>
+            <button class="button quiet" id="building-wallet-refresh" type="button">↻ Dorfkonto aktualisieren</button>
+            <a class="button gold" id="building-wallet-room" href="../hub-lobby.html">🎲 Zum DOG-Onlineraum</a>
           </div>
         </div>
+        <div class="village-treasury-stats" aria-label="Fortschritt unseres Dorfes">
+          <div class="village-treasury-stat"><span>🏠 Gebäudestufen</span><strong id="building-village-counter">4 / 20</strong></div>
+          <div class="village-treasury-stat"><span>🎄 Weihnachtsbaum</span><strong id="building-village-tree">Stufe 1 / 10</strong></div>
+          <div class="village-treasury-stat"><span>🎁 Geschenke gesammelt</span><strong id="building-village-gifts">–</strong></div>
+        </div>
         <div class="village-treasury-foot">
-          <span id="building-live-notice" role="status" aria-live="polite">Die Vorschau ändert weder Guthaben noch Gebäudestufen. Das echte Dorf öffnest du aus dem DOG-Onlineraum.</span>
-          <span id="building-village-counter">4 / 20 Gebäudestufen</span>
+          <span id="building-live-notice" role="status" aria-live="polite">Vorschau ohne Käufe. Das gemeinsame Dorf öffnest du aus dem DOG-Onlineraum.</span>
         </div>
       </section>
       <div class="building-price-overview" id="building-price-overview" aria-label="Ausbaupreise pro Gebäude"></div>
       <div class="building-grid" id="building-grid"></div>
-      <div class="event-footer-row"><p>Der Weihnachtsbaum wächst automatisch, wenn die Gesamtstufen der vier Gebäude steigen.</p><button type="button" class="button gold" data-open-tab="village">🏘️ Dorf ansehen</button></div>
+      <div class="event-footer-row building-final-note"><p>✨ Jeder Ausbau lässt euer Dorf wachsen und bringt den Weihnachtsbaum seiner nächsten Stufe näher.</p><button type="button" class="button gold" data-open-tab="village">🏘️ Weihnachtsdorf ansehen</button></div>
     </section>
     <section class="event-panel" id="panel-tree" role="tabpanel" aria-labelledby="tab-tree" hidden>
       <div class="tree-world">
@@ -329,6 +336,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./christmas-event.js?v=23"></script>
+<script type="module" src="./christmas-event.js?v=24"></script>
 </body>
 </html>
