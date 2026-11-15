@@ -20,7 +20,7 @@ test('scratch UI has real silver canvas, a reveal alternative and no per-stroke 
  assert.match(html,/id="scratch-board"/);
  assert.match(html,/id="scratch-reveal-button"/);
  assert.match(html,/christmas-scratch\.css/);
- assert.match(html,/christmas-event\.js\?v=28/);
+ assert.match(html,/christmas-event\.js\?v=\d+/);
  assert.match(js,/ctx\.globalCompositeOperation='destination-out'/);
  assert.match(js,/canvas\.addEventListener\('pointermove',stroke\)/);
  assert.match(js,/query\('\/buy',pending\)/);
@@ -52,14 +52,14 @@ test('DOG gallery only trusts authenticated Render entitlements for scratch and 
  assert.match(js,/nameFrame/);
 });
 
-test('premium elf artwork contains twenty framed cells and a path-highlighting renderer',()=>{
+test('medium elf artwork contains twenty framed cells and a path-highlighting renderer',()=>{
  const css=source('../DOG/christmas-scratch.css');
- const svg=source('../DOG/assets/scratch/wichtelpfad-premium-01.svg');
+ const svg=source('../DOG/assets/scratch/wichtelpfad-mittel-01.svg');
  const js=source('../DOG/christmas-scratch-ui.js');
  assert.match(svg,/viewBox="0 0 1086 1448"/);
  assert.equal((svg.match(/fill="url\(#tile\)"/g)||[]).length,20);
  assert.match(css,/data-variant="elf"/);
- assert.match(css,/wichtelpfad-premium-01\.svg/);
+ assert.match(css,/wichtelpfad-mittel-01\.svg/);
  assert.match(css,/grid-template-columns:repeat\(5/);
  assert.match(js,/showWinningElfPaths\(wins\)/);
  assert.match(js,/win\.rule!=='path'/);
