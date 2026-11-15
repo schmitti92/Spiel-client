@@ -6,7 +6,7 @@
  */
 import {CHRISTMAS_PAGE_BACKGROUNDS} from './christmas-background-catalog.js?v=1';
 import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotalCost,christmasVillageTotalCost} from './christmas-building-costs.js?v=1';
-import {initChristmasTreeRewards} from './christmas-tree-rewards-ui.js?v=2';
+import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewards-ui.js?v=3';
 const $=id=>document.getElementById(id);
 const tabs=['village','buildings','tree','story','gifts','chapters'];
 const TREE_THRESHOLDS=[4,5,7,9,11,13,15,17,19,20];
@@ -236,9 +236,15 @@ if(priceOverview){
 }
 const steps=$('tree-steps');
 treeNames.forEach((name,i)=>{
- const box=document.createElement('div');
- box.className='tree-step';box.dataset.treeStep=String(i+1);
- box.innerHTML='<strong>✦ '+(i+1)+'</strong><span>'+name+'</span>';
+ const prize=TREE_PRIZE_PREVIEW[i],stage=i+1;
+ const box=document.createElement('article');
+ box.className='tree-step';box.dataset.treeStep=String(stage);
+ box.dataset.progress='future';box.dataset.status='unknown';
+ box.innerHTML='<div class="tree-step-point"><span>'+stage+'</span></div>'
+  +'<div class="tree-step-caption"><span class="tree-step-number">STUFE '+stage+'</span><strong class="tree-step-name">'+name+'</strong></div>'
+  +'<span class="tree-step-gift" data-tree-gift-icon aria-hidden="true">'+prize.icon+'</span>'
+  +'<strong class="tree-step-prize" data-tree-prize-title>'+prize.title+'</strong>'
+  +'<span class="tree-step-status" data-tree-status>Im Onlineraum prüfen</span>';
  steps.append(box);
 });
 function refreshPreview(){
@@ -294,9 +300,29 @@ function refreshPreview(){
  $('village-preview-full').disabled=Boolean(villageLive);
  $('tree-current-title').textContent='Stufe '+tree+' · '+treeNames[tree-1];
  $('tree-current-copy').textContent=treeDetails[tree-1];
+ $('tree-world-stage-pill').textContent='STUFE '+tree+' / 10';
+ $('tree-world-mode').textContent=villageLive?'✦ Echter Dorffortschritt':'✦ Gestaltungs-Vorschau';
+ $('tree-world-mode').dataset.mode=villageLive?'live':'preview';
+ $('tree-current-prize').textContent=TREE_PRIZE_PREVIEW[tree-1].icon+' '+TREE_PRIZE_PREVIEW[tree-1].title;
+ const prizeState=treePrizeScreen?.getStatus()?.rewards?.find(item=>item.level===tree)?.state;
+ $('tree-current-prize-status').textContent=prizeState==='collected'?'✅ Bereits abgeholt':prizeState==='ready'?'🎁 Jetzt abholbereit':prizeState==='locked'?'🔒 Noch nicht freigeschaltet':villageLive?'Status wird online geprüft':'In der Vorschau nicht abholbar';
+ const nextLevel=Math.min(tree+1,10),nextPrize=TREE_PRIZE_PREVIEW[nextLevel-1];
+ $('tree-next-stage').textContent=tree===10?'Alle Stufen gemeistert!':'Stufe '+nextLevel;
+ $('tree-next-name').textContent=tree===10?'Das große Weihnachtslicht':treeNames[nextLevel-1];
+ $('tree-next-gift-icon').textContent=tree===10?'🏆':nextPrize.icon;
+ $('tree-next-gift').textContent=tree===10?'Alle zehn Geschenke erreichbar':nextPrize.title;
+ const needed=tree===10?0:Math.max(0,TREE_THRESHOLDS[tree]-total);
+ $('tree-next-requirement').textContent=tree===10?'Alle vier Gebäude haben Stufe 5 erreicht.':
+  'Noch '+needed+' Gebäudeausbau'+(needed===1?'':'ten')+' bis zur nächsten Stufe';
  $('tree-progress-fill').style.width=(tree*10)+'%';
- $('tree-progress-label').textContent=tree+' von 10 Entwicklungsstufen · '+total+' von 20 Gebäudestufen';
- for(const item of steps.children)item.classList.toggle('selected',Number(item.dataset.treeStep)===tree);
+ $('tree-progress-label').textContent=tree+' / 10 Stufen · '+total+' / 20 Gebäudestufen';
+ document.querySelector('.tree-world-meter')?.setAttribute('aria-valuenow',String(tree));
+ for(const item of steps.children){
+  const stage=Number(item.dataset.treeStep);
+  item.classList.toggle('selected',stage===tree);
+  item.dataset.progress=stage===tree?'current':stage<tree?'passed':'future';
+  if(stage===tree)item.setAttribute('aria-current','step');else item.removeAttribute('aria-current');
+ }
 }
 $('village-preview-next').addEventListener('click',()=>{
   // Purely local visual demonstration: grow each building in turn.
