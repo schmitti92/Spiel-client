@@ -1,9 +1,10 @@
 import {applyMotionMode,loadMotionMode} from './motion-settings.js';
 applyMotionMode(loadMotionMode());
-import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=12';
+import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=13';
 import {loadAppearance,saveAppearance} from './appearance-registry.js?v=23';
 import {loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=2';
-import {isChristmasRewardLocked} from './christmas-reward-locks.js?v=1';
+import {isChristmasRewardLocked} from './christmas-reward-locks.js?v=2';
+import {CARD_EDITION,loadCardEdition,saveCardEdition,isCardEditionUnlocked} from './card-visuals.js?v=7';
 // The collection never grants event rewards. Cosmetic choices persist locally;
 // only an explicit avatar update in an active room uses the existing DOG API.
 const $=id=>document.getElementById(id),qs=new URLSearchParams(location.search),root=new URL('../',location.href);
@@ -28,7 +29,8 @@ function equipped(item){
  if(item.kind==='default')return true;
  if(item.kind==='avatar')return item.avatar===avatar();
  if(item.kind==='emoji')return loadEmojiSlots().includes(item.id);
- if(item.kind==='appearance')return loadAppearance()[item.field]===(item.value??item.id);
+ if(item.kind==='appearance')return loadAppearance()[item.field]===(item.value??item.id) && (item.field!=='cards'||loadCardEdition()===CARD_EDITION);
+ if(item.kind==='cardEdition')return isCardEditionUnlocked(item.cardEdition)&&loadCardEdition()===item.cardEdition;
  return false;
 }
 function art(item,big=false){
@@ -168,7 +170,13 @@ function equip(item,button){
   slots[slot]=item.id;saveEmojiSlots(slots);
   notify('✓ '+item.icon+' in Schnellplatz '+(slot+1)+' gespeichert.');draw();return;
  }
+ if(item.kind==='cardEdition'){
+  if(!isCardEditionUnlocked(item.cardEdition))return;
+  saveCardEdition(item.cardEdition);
+  notify('✓ '+item.name+' für DOG ausgewählt.');draw();return;
+ }
  if(item.kind==='appearance'){
+  if(item.field==='cards')saveCardEdition(CARD_EDITION);
   saveAppearance({...loadAppearance(),[item.field]:item.value??item.id});
   window.dispatchEvent(new Event('dog-appearance-changed'));
   notify('✓ '+item.name+' für DOG ausgewählt.');draw();return;
@@ -189,6 +197,7 @@ function drawDetails(){
    el('p','detail-description',item.description||'DOG-Design'));
  if(item.kind==='nameFrame')root.append(el('small','nameframe-preview-note','🎄 Musteransicht – jeder Rahmen kann später einzeln erspielt werden.'));
  if(item.kind==='activeIcon')root.append(el('small','activeicon-preview-note','🎄 Vorschau des Aktivsymbols – erst nach späterer Event-Freischaltung verwendbar.'));
+ if(item.kind==='cardEdition')root.append(el('small','detail-fine','🎄 Fertiger Kartensatz: 14 Motive und Rückseite. Wird erst als Weihnachtsbelohnung spielbar.'));
  if(item.kind==='avatar'&&local&&!locked){
   const label=el('label','detail-picker','Spielerplatz'),select=el('select');
   ['Rot','Blau','Grün','Gelb'].forEach((name,i)=>{const option=el('option','','Spieler '+(i+1)+' · '+name);option.value=String(i);option.selected=i===seat;select.append(option);});
