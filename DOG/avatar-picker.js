@@ -5,6 +5,8 @@
  const KEY='spielportal:dog:avatars:v1';
  const MAX=16;
  const ASSET_BASE=new URL('../',document.currentScript?.src||document.baseURI).href;
+ const DOG_ASSET_BASE=new URL('./',document.currentScript?.src||document.baseURI).href;
+ let christmasAvatars=[];
  const valid=n=>Number.isInteger(n)&&n>=0&&n<MAX;
  const profile=()=>window.SpielOnline?.state?.()?.profile||null;
  const uid=()=>String(window.SpielOnline?.state?.()?.user?.uid||'');
@@ -87,12 +89,42 @@
     });
     return btn;
    }));
+   // Upcoming Christmas rewards are shown as previews only; the server still
+   // accepts the original 0–15 IDs. No locked avatar can be persisted/sent.
+   if(christmasAvatars.length){
+    const heading=document.createElement('span');
+    heading.className='dog-avatar-event-heading';
+    heading.textContent='🎄 Weihnachtsevent · 20 Profilbilder zum Freischalten';
+    options.append(heading);
+    for(const item of christmasAvatars){
+     const btn=document.createElement('button');
+     btn.type='button';btn.className='dog-avatar-option dog-avatar-locked';
+     btn.disabled=true;
+     btn.setAttribute('aria-label',item.name+' – im Weihnachtsevent freischaltbar');
+     btn.setAttribute('aria-pressed','false');
+     btn.title=item.name+' · 🔒 Noch nicht freigeschaltet';
+     const picture=document.createElement('span');
+     picture.className='dog-avatar-face';
+     picture.style.backgroundImage='url("'+new URL(item.image,DOG_ASSET_BASE).href+'")';
+     picture.style.backgroundPosition='center';
+     picture.style.backgroundSize='cover';
+     const lock=document.createElement('span');lock.className='dog-avatar-lock-symbol';
+     lock.textContent='🔒';lock.setAttribute('aria-hidden','true');
+     btn.append(picture,lock);options.append(btn);
+    }
+   }
   }
   select?.addEventListener('change',()=>{seat=Number(select.value)||0;draw();notice.textContent='Wähle ein Profilbild für diesen Platz.';});
   window.addEventListener('spielonline-change',draw);
+  window.addEventListener('dog-christmas-avatars-ready',draw);
   draw();
  }
  window.DogAvatars={localAvatar,onlineAvatar,setLocal,setOnline,css};
  function init(){document.querySelectorAll('[data-dog-avatar-picker]').forEach(mount);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+ // Load the catalogue without delaying the existing avatar picker.
+ import('./christmas-avatar-catalog.js?v=1').then(module=>{
+  christmasAvatars=module.CHRISTMAS_AVATARS;
+  window.dispatchEvent(new Event('dog-christmas-avatars-ready'));
+ }).catch(error=>console.warn('[DOG] Weihnachtsprofilbilder konnten nicht geladen werden:',error));
 })();
