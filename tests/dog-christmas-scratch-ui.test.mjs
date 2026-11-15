@@ -187,7 +187,9 @@ test('all four distinct scratch tickets are visible together in compact non-scro
  assert.match(js,/buy\(option\.tier,false,option\.id\)/);
  assert.match(js,/buy\(option\.tier,true,option\.id\)/);
  assert.match(js,/pending\.variantId===variantId/);
- assert.match(js,/\{tier,variantId,free,commandId:/);
+ assert.match(js,/\{tier,variantId,free,voucher,commandId:/);
+ assert.match(js,/status\?\.vouchers\?\.\[option\.tier\]/);
+ assert.match(js,/Gesammeltes Los einlösen/);
  assert.match(css,/#panel-scratch \.scratch-tickets\{\s*display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
  assert.match(css,/@media\(min-width:1250px\)/);
  assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
