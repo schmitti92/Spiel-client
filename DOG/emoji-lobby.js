@@ -1,15 +1,16 @@
-import {DOG_EMOJIS,DOG_EMOJI_STARTERS,loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=1';
+import {DOG_EMOJIS,DOG_EMOJI_STARTERS,loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=2';
 /* One personal emoji editor in local and online DOG lobby. No network writes. */
 for(const root of document.querySelectorAll('[data-dog-emoji-editor]')){
  let draft=loadEmojiSlots(),selected=0,page=0;
- root.innerHTML=`<div class="dog-emoji-lobby-head"><h3>😄 Meine DOG-Emojis</h3><span>3 / 50 freigeschaltet</span></div>
+ const pageCount=Math.ceil(DOG_EMOJIS.length/10);
+ root.innerHTML=`<div class="dog-emoji-lobby-head"><h3>😄 Meine DOG-Emojis</h3><span>${DOG_EMOJI_STARTERS.length} / ${DOG_EMOJIS.length} freigeschaltet</span></div>
  <p class="dog-emoji-hint">Wähle einen der fünf Schnellplätze und anschließend ein freigeschaltetes Emoji.</p>
  <div class="dog-emoji-slot-list" data-emoji-slots role="group" aria-label="Fünf Emoji-Schnellplätze"></div>
  <div class="dog-emoji-lobby-actions"><button type="button" data-clear>Platz leeren</button><button type="button" data-save>✓ Schnelltasten speichern</button></div>
  <div class="dog-emoji-collection-head"><strong>Emoji-Sammlung</strong><span data-emoji-pages></span></div>
  <div class="dog-emoji-collection" data-emoji-gallery></div>
  <div class="dog-emoji-pages"><button type="button" data-prev aria-label="Vorherige Emojis">‹ Zurück</button><button type="button" data-next aria-label="Weitere Emojis">Weiter ›</button></div>
- <p class="dog-emoji-note" data-emoji-note role="status">47 Emojis kommen später durch Events und Erfolge hinzu.</p>`;
+ <p class="dog-emoji-note" data-emoji-note role="status">47 weitere Emojis und 10 Weihnachts-Emojis sind für spätere Freischaltungen gesperrt.</p>`;
  const by=s=>root.querySelector(s),slots=by('[data-emoji-slots]'),gallery=by('[data-emoji-gallery]'),notice=by('[data-emoji-note]');
  function draw(){
   slots.replaceChildren(...draft.map((id,i)=>{
@@ -22,10 +23,10 @@ for(const root of document.querySelectorAll('[data-dog-emoji-editor]')){
   gallery.replaceChildren(...DOG_EMOJIS.slice(page*10,page*10+10).map(item=>{
    const allowed=DOG_EMOJI_STARTERS.includes(item.id);
    const button=document.createElement('button');button.type='button';button.className='dog-emoji-option';
-   button.disabled=!allowed;button.title=allowed?item.name:item.name+' – später freischaltbar';
+   button.disabled=!allowed;button.title=allowed?item.name:item.unlockId?item.name+' – einzeln im Weihnachtsevent freischaltbar':item.name+' – später freischaltbar';
    button.setAttribute('aria-label',button.title);
    const glyph=document.createElement('span');glyph.className='dog-emoji-big';glyph.textContent=item.emoji;
-   const label=document.createElement('small');label.textContent=allowed?item.name:'🔒 '+item.name;
+   const label=document.createElement('small');label.textContent=allowed?item.name:item.unlockId?'🔒 🎄 '+item.name:'🔒 '+item.name;
    button.append(glyph,label);
    if(allowed)button.addEventListener('click',()=>{
     const index=draft.indexOf(item.id);
@@ -35,13 +36,13 @@ for(const root of document.querySelectorAll('[data-dog-emoji-editor]')){
     draw();
    });return button;
   }));
-  by('[data-emoji-pages]').textContent='Seite '+(page+1)+' / 5';
-  by('[data-prev]').disabled=page===0;by('[data-next]').disabled=page===4;
+  by('[data-emoji-pages]').textContent='Seite '+(page+1)+' / '+pageCount;
+  by('[data-prev]').disabled=page===0;by('[data-next]').disabled=page>=pageCount-1;
  }
  by('[data-clear]').addEventListener('click',()=>{draft[selected]=null;notice.textContent='Platz '+(selected+1)+' geleert. Speichern nicht vergessen.';draw();});
  by('[data-save]').addEventListener('click',()=>{draft=saveEmojiSlots(draft);notice.textContent='✓ Deine Schnelltasten sind auf diesem Gerät gespeichert.';draw();});
  by('[data-prev]').addEventListener('click',()=>{if(page>0){page--;draw();}});
- by('[data-next]').addEventListener('click',()=>{if(page<4){page++;draw();}});
+ by('[data-next]').addEventListener('click',()=>{if(page<pageCount-1){page++;draw();}});
  window.addEventListener('spielonline-change',()=>{draft=loadEmojiSlots();notice.textContent='Deine persönlichen Schnelltasten geladen.';draw();});
  draw();
 }
