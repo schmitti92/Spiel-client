@@ -1,4 +1,4 @@
-import {CARD_EDITIONS,CARD_EDITION,loadCardEdition,saveCardEdition,cardBackImage,cardMarkup,cardVisual} from './card-visuals.js?v=6';
+import {CARD_EDITIONS,CARD_EDITION,isCardEditionUnlocked,loadCardEdition,saveCardEdition,cardBackImage,cardMarkup,cardVisual} from './card-visuals.js?v=7';
 import {enableHandTouchGestures} from './hand-gestures.js?v=2';
 import {mountDogEmojiGame,showDogEmoji,showDogEmojiError} from './emoji-game.js?v=3';
 import {boardGestureTarget} from './board-gesture-math.js?v=1';
@@ -823,11 +823,18 @@ function prepareAppearanceUI(){
   const editionSelect=$('appearance-card-edition');
   editionSelect.replaceChildren();
   for(const [id,entry] of Object.entries(CARD_EDITIONS)){
-    const option=document.createElement('option');option.value=id;option.textContent=entry.label;
+    const option=document.createElement('option');
+    const locked=!isCardEditionUnlocked(id);
+    option.value=id;option.textContent=entry.label+(locked?' · 🔒 Weihnachtsevent':'');
+    option.disabled=locked;
     editionSelect.appendChild(option);
   }
   editionSelect.value=loadCardEdition();
   editionSelect.addEventListener('change',()=>{
+    if(!isCardEditionUnlocked(editionSelect.value)){
+      editionSelect.value=loadCardEdition();
+      return;
+    }
     saveCardEdition(editionSelect.value);
     applyAppearance();
     if(game)render(); // Purely local artwork choice. Never write card edition into online game state.
