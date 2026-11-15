@@ -29,6 +29,9 @@ function setPlayMode(next){
  render();
 }
 const stayInMatchId=new URL(location.href).searchParams.get('stayMatch');
+// An explicit return from the DOG game must display the new DOG waiting room,
+// even when the browser lacked the match ID. Never auto-launch it again.
+const returnToDogLobby=new URL(location.href).searchParams.get('dogLobby')==='1';
 let launchedMatchId=null,hubSocket=null,retrySocket=null,streamReady=false,streamLast=0,hubHeartbeat=null,pollInFlight=false,lastRoomPollAt=0;
 function stopWatch(){
  streamReady=false;
@@ -1023,7 +1026,7 @@ function render(){
     ?'👑 Du bist Host. Nur du kannst Spiel, Regeln und Teilnehmerplätze ändern. Jede Änderung setzt die Bereitmeldungen zurück.'
     :'🔒 Der Host legt Regeln und Teilnehmer fest. Du kannst dich selbst bereit melden, sobald du einen Spielplatz hast.';
  }
- if(room.phase==='playing'&&room.match?.participating&&room.match.id!==stayInMatchId&&room.match.id!==launchedMatchId){
+ if(room.phase==='playing'&&room.match?.participating&&room.match.id!==stayInMatchId&&room.match.id!==launchedMatchId&&!(returnToDogLobby&&room.game==='dog')){
    const matchId=room.match.id;
    try{enterCurrentMatch();launchedMatchId=matchId;}catch(e){showError(e);}
  }
