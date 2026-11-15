@@ -307,3 +307,21 @@ test('premium v5 guarantees four paid money rows in the UI and compact result li
  assert.match(css,/\.scratch-stage\[data-variant="premium_27"\]\.is-revealed:not\(\[hidden\]\) \.scratch-current-grid/);
  assert.match(css,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important/);
 });
+
+test('separate right-hand result window is removed while winning amounts stay inside the ticket',()=>{
+ const html=source('../DOG/christmas-event.html');
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const css=source('../DOG/christmas-scratch.css');
+ assert.match(html,/id="scratch-inline-results"/);
+ assert.match(html,/id="scratch-ticket-finish"/,'confirm button must stay usable');
+ assert.match(js,/function renderInlineResults\(result\)/);
+ assert.match(js,/renderInlineResults\(null\)/);
+ assert.match(js,/renderInlineResults\(current\)/);
+ assert.match(js,/prize\.milestone==='gold-20'/);
+ assert.match(js,/scratch-inline-chip/);
+ assert.match(css,/NO SEPARATE SCRATCH PRIZE WINDOW v1/);
+ assert.match(css,/\.scratch-stage:not\(\[hidden\]\) > \.scratch-prize-sidebar\{\s*display:none!important;/);
+ assert.match(css,/\.scratch-stage:not\(\[hidden\]\) > \.scratch-inline-results/);
+ assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+ assert.match(css,/\.scratch-stage:not\(\[hidden\]\) > \.scratch-stage-actions\{\s*grid-row:8!important/);
+});
