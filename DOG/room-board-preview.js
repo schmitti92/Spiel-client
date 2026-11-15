@@ -1,7 +1,7 @@
 /* Read-only DOG room preview. Uses the same approved/custom coordinates and
  * device appearance as the actual game, without creating game or room state. */
 import {currentBoardLayout,START_INDICES} from './board-layout.js?v=10';
-import {BOARD_STYLES,loadAppearance} from './appearance-registry.js?v=21';
+import {BOARD_STYLES,loadAppearance,validAssetPath} from './appearance-registry.js?v=21';
 
 const NS='http://www.w3.org/2000/svg';
 const COLORS=['#ff5e56','#4eaafb','#4bd887','#ffd056'];
@@ -27,20 +27,31 @@ export function renderDogRoomBoard(target){
  const appearance=loadAppearance();
  const theme=BOARD_STYLES[appearance.board]||BOARD_STYLES.studio;
  const svg=S('svg',{viewBox:'0 0 760 760','aria-hidden':'true',focusable:'false'});
+ const woodColors=Array.isArray(theme.wood)?theme.wood:['#5f422c','#cca471','#6e4930'];
  const defs=S('defs');
  const wood=S('linearGradient',{id:'dog-room-wood',x1:'0',x2:'1',y1:'0',y2:'1'});
- for(const [offset,color] of [['0%','#efd0a0'],['50%','#c18a51'],['100%','#88572d']]){
+ for(const [offset,color] of [['0%',woodColors[1]||'#efd0a0'],['50%',woodColors[3]||woodColors[1]||'#c18a51'],['100%',woodColors[0]||'#88572d']]){
   wood.append(S('stop',{offset,'stop-color':color}));
  }
  defs.append(wood);
+ const clip=S('clipPath',{id:'dog-room-board-clip'});
+ clip.append(S('rect',{x:21,y:21,width:718,height:718,rx:35}));defs.append(clip);
  const center=S('radialGradient',{id:'dog-room-center'});
  center.append(S('stop',{offset:'0%','stop-color':'#183e65'}),S('stop',{offset:'100%','stop-color':'#061627'}));defs.append(center);
  svg.append(defs);
  svg.append(
   S('rect',{x:9,y:9,width:742,height:742,rx:45,fill:'#42240d',stroke:'#e7bc74','stroke-width':7}),
-  S('rect',{x:21,y:21,width:718,height:718,rx:35,fill:'url(#dog-room-wood)',stroke:'#f1d8ae','stroke-width':3}),
-  S('rect',{x:40,y:40,width:680,height:680,rx:24,fill:'#ddad74','fill-opacity':'.3',stroke:'#7c4d21','stroke-width':3})
+  S('rect',{x:21,y:21,width:718,height:718,rx:35,fill:'url(#dog-room-wood)',stroke:'#f1d8ae','stroke-width':3})
  );
+ // Display the same user-selected board artwork behind the approved field
+ // coordinates. Visual customization never changes any playable positions.
+ const artwork=validAssetPath(theme.image)?theme.image:validAssetPath(theme.fallbackImage)?theme.fallbackImage:null;
+ if(artwork)svg.append(S('image',{
+  href:new URL(artwork,import.meta.url).href,
+  x:21,y:21,width:718,height:718,opacity:'.88',
+  preserveAspectRatio:'xMidYMid slice','clip-path':'url(#dog-room-board-clip)'
+ }));
+ svg.append(S('rect',{x:40,y:40,width:680,height:680,rx:24,fill:'none',stroke:'#fff2d0','stroke-width':2,opacity:'.58'}));
  const trackPath=layout.track.map((p,i)=>(i?'L':'M')+p.x+' '+p.y).join(' ')+' Z';
  svg.append(S('path',{d:trackPath,fill:'none',stroke:'#775334','stroke-width':17,opacity:'.36','stroke-linejoin':'round'}));
  svg.append(S('path',{d:trackPath,fill:'none',stroke:'#fff0d1','stroke-width':2,opacity:'.5'}));
