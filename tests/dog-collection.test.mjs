@@ -29,7 +29,8 @@ test('DOG collection distinguishes real selections from locked event previews',(
 test('Collection registers actual selectable designs without inventing past unlocks',()=>{
  const look=id=>dogCollectionCategory(id);
  assert.equal(look('boards').items.length,Object.keys(BOARD_STYLES).length-1,'missing royal-marmor art stays hidden');
- assert.equal(look('backgrounds').items.filter(x=>x.status==='available').length,Object.keys(SCENE_STYLES).length);
+ assert.equal(look('backgrounds').items.filter(x=>x.status==='available').length,2);
+ assert.equal(look('backgrounds').items.filter(x=>x.status==='planned').length,5);
  assert.equal(look('pieces').items.filter(x=>x.status==='available').length,Object.keys(PIECE_STYLES).length);
  assert.equal(look('cards').items.filter(x=>x.status==='available').length,1,'classic is the only immediately available edition');
  assert.equal(look('cards').items.filter(x=>x.status==='planned').length,2);
@@ -38,7 +39,8 @@ test('Collection registers actual selectable designs without inventing past unlo
  assert.ok(look('cards').items.filter(x=>x.status==='planned').every(x=>x.image?.endsWith('/normiert/9.png')));
  assert.match(look('cards').items[0].image,/kartendesign-01\/normiert\/9\.png$/);
  assert.ok(look('cards').items.every(x=>x.cardEdition),'each published deck must have real card artwork');
- assert.equal(look('hud').items.filter(x=>x.status==='available').length,Object.keys(HUD_TONES).length+Object.keys(HUD_LAYOUTS).length);
+ assert.equal(look('hud').items.filter(x=>x.status==='available').length,1+Object.keys(HUD_LAYOUTS).length);
+ assert.equal(look('hud').items.filter(x=>x.status==='planned').length,16);
  assert.equal(look('avatars').items.filter(x=>x.status==='available').length,16);
  assert.equal(look('emblems').items.filter(x=>x.status==='available').length,1);
  assert.equal(DOG_COLLECTION_CATEGORIES.some(x=>x.id==='effects'),false);
@@ -77,12 +79,13 @@ test('all HUD color tiles use real theme tokens and support large preview',()=>{
  assert.match(styles,/\.detail-image \.collection-hud-tone-preview/);
 });
 
-test('only three usable starter emojis appear in the gallery',()=>{
+test('three starter emojis stay free while 47 classic and 10 Christmas emojis require a reward',()=>{
  const entries=dogCollectionCategory('emojis').items;
  assert.ok(DOG_EMOJIS.length>=DOG_EMOJI_STARTERS.length+DOG_CHRISTMAS_EMOJIS.length);
  assert.equal(DOG_EMOJI_STARTERS.length,3);
- assert.equal(entries.length,DOG_EMOJI_STARTERS.length+DOG_CHRISTMAS_EMOJIS.length);
- assert.equal(entries.filter(x=>x.status==='planned').length,DOG_CHRISTMAS_EMOJIS.length);
+ assert.equal(entries.length,DOG_EMOJIS.length);
+ assert.equal(entries.filter(x=>x.status==='planned').length,DOG_EMOJIS.length-DOG_EMOJI_STARTERS.length);
+ assert.equal(entries.filter(x=>x.unlockId?.startsWith('christmas2026:standard-emoji:')).length,47);
  assert.deepEqual(entries.filter(x=>x.status==='available').map(x=>x.id),[...DOG_EMOJI_STARTERS]);
 });
 test('Lobby buttons and collection page remain navigable without changing DOG game rules',()=>{
@@ -97,7 +100,8 @@ test('Lobby buttons and collection page remain navigable without changing DOG ga
  assert.match(html,/data-filter="active"/);
  assert.match(js,/saveAppearance\(/);
  assert.match(js,/saveEmojiSlots\(/);
- assert.match(js,/if\(item\.status!=='available'\|\|isChristmasRewardLocked\(item\)\)return/);
+ assert.match(js,/if\(!canEquip\(item\)\)return/);
+ assert.match(js,/isVerifiedCosmeticUnlocked\(item\.unlockId\)/);
  assert.match(js,/returnPage\(/);
 });
 
