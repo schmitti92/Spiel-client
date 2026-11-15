@@ -171,8 +171,12 @@ export function initChristmasScratch(){
   ticket=result;finished=false;covered=0;erasedByCanvas.clear();
   stage.hidden=false;reveal.classList.remove('revealed');results.hidden=true;
   $('scratch-ticket-finish').hidden=true;$('scratch-reveal-button').hidden=true;
-  $('scratch-ticket-title').textContent='🎟️ '+(SCRATCH_TICKET_TYPES.find(t=>t.id===result.tier)?.label||'')+'-Rubbellos';
   const conf=VARIANTS[result.board?.variantId],cells=result.board?.cells;
+  stage.dataset.variant=result.board?.variantId||'legacy';
+  stage.dataset.tier=result.tier||'simple';
+  $('scratch-ticket-title').textContent=conf?
+   conf[0]+' · '+(SCRATCH_TICKET_TYPES.find(t=>t.id===result.tier)?.label||'')+'-Rubbellos':
+   '🎟️ Älteres Rubbellos';
   $('scratch-variant-rule').textContent=conf?conf[0]+' · Gewinnregel: '+conf[1]:
    'Älteres Los – dieses Ergebnis wurde vor dem neuen Spielfeldsystem gespeichert';
   board.replaceChildren();board.removeAttribute('style');
