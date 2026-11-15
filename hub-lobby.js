@@ -1091,14 +1091,17 @@ function render(){
   }
   return div;
  }));
- // Display all four lobby seats without inventing actual participants.
+ // Keep four DOG seats visible here in the shared room, not in a second lobby.
+ // Empty positions are only illustrative: never manufacture actual server players.
  const playersPanel=el('players');
  playersPanel.querySelectorAll('.seat-placeholder').forEach(node=>node.remove());
- if(room.game==='partychallenge'&&room.phase==='preparing'){
+ if((room.game==='partychallenge'||room.game==='dog')&&room.phase==='preparing'){
   const occupied=room.players.filter(p=>p.participating).length;
   for(let i=occupied;i<4;i++){
    const seat=document.createElement('div');seat.className='player seat-placeholder';
-   seat.innerHTML='<span class="avatar seat-plus" aria-hidden="true">＋</span><span class="name">Freier Platz</span>';
+   seat.innerHTML=room.game==='dog'
+     ?'<span class="avatar seat-plus" aria-hidden="true">🤖</span><span class="name">Freier DOG-Platz</span><span class="ready spectator">Bot beim Start</span>'
+     :'<span class="avatar seat-plus" aria-hidden="true">＋</span><span class="name">Freier Platz</span>';
    playersPanel.append(seat);
   }
  }
@@ -1114,7 +1117,7 @@ function render(){
  const playing=room.players.filter(p=>p.participating);
  const readyCount=playing.filter(p=>p.ready).length;
  const percent=playing.length?Math.round(readyCount/playing.length*100):0;
- el('ready-counter').textContent=room.phase==='playing'?'Partie läuft':room.game==='skyjo'&&playing.length!==3?'🌲 SKYJO Wald benötigt genau 3 Spieler ('+playing.length+'/3)':playing.length<2&&room.game!=='dog'?'Mindestens 2 Spieler benötigt':room.allReady?'Alle bereit!':'Warten auf Bereitmeldungen';
+ el('ready-counter').textContent=room.phase==='playing'?'Partie läuft':room.game==='skyjo'&&playing.length!==3?'🌲 SKYJO Wald benötigt genau 3 Spieler ('+playing.length+'/3)':playing.length<2&&room.game!=='dog'?'Mindestens 2 Spieler benötigt':room.game==='dog'&&playing.length===1?'🐾 Alleine mit Bots spielbar':room.allReady?'Alle bereit!':'Warten auf Bereitmeldungen';
  el('ready-fraction').textContent=readyCount+' / '+playing.length;
  el('ready-progress-fill').style.width=percent+'%';
  el('ready-progressbar').setAttribute('aria-valuenow',String(percent));
