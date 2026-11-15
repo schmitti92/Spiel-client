@@ -76,6 +76,14 @@ button[disabled]{opacity:.55;cursor:not-allowed}[hidden]{display:none!important}
 .level-row output{font-size:12px;color:#ffe1a2;font-weight:850}
 .level-row input{width:100%;accent-color:#eac072;cursor:pointer;margin-top:11px}
 .building-level-markers{display:flex;gap:4px;margin-top:9px}.building-level-markers span{flex:1;height:6px;border-radius:3px;background:#385365}.building-level-markers span.active{background:#e7bc71}
+
+/* Build prices are read-only until Christmas light rewards and purchases exist on Render. */
+.building-price-overview{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:13px 0 15px;padding:11px 12px;background:#092d37c7;border:1px solid #d0ad6c91;border-radius:14px;color:#f9e2b0}
+.building-price-step{padding:7px 10px;border:1px solid #d1ae7066;border-radius:9px;background:#051c26bd;font-size:12px;font-weight:800;white-space:nowrap}
+.building-price-total{width:100%;text-align:center;color:#ffe6a0;font-size:13px}
+.building-upgrade-price{margin-top:12px;padding:10px 12px;border:1px solid #e4c37b7d;border-radius:10px;background:linear-gradient(115deg,#3b3c28aa,#183d3bd0);color:#ffebb0;font-size:12px;font-weight:850;line-height:1.5}
+@media(max-width:760px){.building-price-overview{gap:6px}.building-price-step{font-size:11px;padding:6px 8px}.building-upgrade-price{font-size:11px}}
+
 .tree-feature{display:flex;align-items:center;gap:25px;background:radial-gradient(circle at 15% 50%,#3f644c6b,transparent 40%),linear-gradient(135deg,#173844,#0a1f31);border:1px solid #d3b27470;border-radius:18px;padding:27px;margin-bottom:16px}
 .tree-feature-icon{display:grid;place-items:center;flex:none;width:130px;height:130px;border-radius:24px;background:radial-gradient(circle,#627e5480,transparent 67%);font-size:92px}
 .tree-feature h3{color:#ffe3a8;font:900 clamp(21px,2.3vw,29px) Georgia,serif;margin:0 0 9px}.tree-feature p{color:#d0dce0;font-size:13px;line-height:1.6;margin:0 0 17px}.tree-feature>div:last-child{flex:1}
