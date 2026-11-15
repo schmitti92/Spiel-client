@@ -18,7 +18,8 @@ test('twelve distinct pictures, six per page and two complete leaves',()=>{
  for(const p of META_ALBUM_PICTURES){
   assert.equal(p.status,'locked');
   assert.match(p.unlockId,/^meta:christmas1:picture:\d{2}$/);
-  assert.ok(existsSync(new URL('../'+p.image,import.meta.url)),p.image);
+  assert.match(p.image,/^assets\/meta-sammelalbum\/bilder\/\d{2}_[a-z_]+\.png$/);
+  assert.ok(existsSync(new URL('../'+p.fallbackImage,import.meta.url)),p.fallbackImage);
  }
 });
 test('tree is only earned at level 10 and all four building pictures at level 5',()=>{
@@ -54,10 +55,18 @@ test('album remains book-only, with profile authentication, popup and zero clien
  assert.doesNotMatch(js,/method:'POST'|\.setItem\(|localStorage/);
  assert.match(js,/function changePage\(step\)/);
  assert.match(js,/pointerup/);
- assert.match(html,/meta-sammelalbum\.js\?v=8/);
+ assert.match(html,/meta-sammelalbum\.js\?v=9/);
  assert.match(html,/id="meta-picture-dialog"/);
  assert.match(html,/id="meta-album-feedback"/);
  assert.match(html,/profile-auth\.js/);
  assert.match(css,/weihnachts_sammelalbum_buch_transparent\.png/);
  assert.ok(existsSync(new URL('../assets/meta-sammelalbum/weihnachts_sammelalbum_buch_transparent.png',import.meta.url)));
+});
+
+test('new individual art uses verified upload names and old art as safe fallback',()=>{
+ const js=source('../meta-sammelalbum.js');
+ assert.deepEqual(META_ALBUM_PICTURES.map(p=>p.image.split('/').at(-1)),
+  ["01_weihnachtsbaum.png","02_weihnachtsbaeckerei.png","03_wichtelwerkstatt.png","04_weihnachtslichter_turm.png","05_friedensherberge.png","06_geschenkefabrik.png","07_weihnachtsmarkt.png","08_lebkuchenhaus.png","09_rentierstall.png","10_schneemannplatz.png","11_schlittenwerkstatt.png","12_weihnachtspostamt.png"]);
+ assert.match(js,/image\.dataset\.fallbackUsed/);
+ assert.match(js,/image\.src=new URL\(item\.fallbackImage,here\)\.href/);
 });
