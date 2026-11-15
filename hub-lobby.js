@@ -994,14 +994,11 @@ function render(){
  el('account-info').textContent=account?'Dein verifiziertes Online-Spielerprofil ist verbunden.':'Bitte anmelden oder ein Profil erstellen, um einen Raum zu betreten.';
  el('login-btn').textContent=account?'Profil ansehen':'Anmelden';
  const inside=!!room;
- if(inside&&room.phase==='lobby'&&!room.game&&new URL(location.href).searchParams.get('stage')==='1'){
-  location.replace('spielauswahl-online.html?room='+encodeURIComponent(room.code));
-  return;
- }
+ // The central Spielesammlung page also handles rooms without a selected game.
  el('entry-view').classList.toggle('hidden',inside);
  el('room-view').classList.toggle('hidden',!inside);
  el('create-btn').disabled=!account||operation;el('join-btn').disabled=!account||operation;
- if(!inside||playMode!=='online'){window.DOGRoomLobby?.update(null,operation);return;}
+ if(!inside||playMode!=='online'){el('dog-unified-tools')?.classList.add('hidden');return;}
  if(displayGame!==room.game){choosingGame=false;displayGame=room.game;}
  if(room.phase==='playing')choosingGame=false;
  const showStage=!!room.game&&!choosingGame;
@@ -1138,49 +1135,50 @@ function render(){
    :room.canLaunch
     ?room.game==='partychallenge'?'Alle bereit? Dann startet der Host die Challenge mit dem Startknopf.':'Alle ausgewählten Mitspieler melden sich bereit. Das Spiel startet automatisch.'
     :'Alle vier Spiele sind mit dem gemeinsamen Raum verbunden – Beta.';
- // DOG-only full-screen waiting room. Every action still uses this hub controller.
- window.DOGRoomLobby?.update(showStage&&room.game==='dog'?room:null,operation);
+ // DOG uses this shared room view, just like every other online game.
+ const dogTools=el('dog-unified-tools');
+ if(dogTools){
+  const visible=showStage&&room.game==='dog';
+  dogTools.classList.toggle('hidden',!visible);
+  if(visible&&!el('dog-unified-board-preview')?.firstElementChild)
+   requestAnimationFrame(()=>window.DOGUnifiedBoard?.refresh?.());
+  if(visible){
+   const returnUrl='hub-lobby.html?'+new URLSearchParams({room:room.code,stage:'1'}).toString();
+   for(const [id,path] of [
+    ['dog-unified-designer','DOG/design-studio.html'],
+    ['dog-unified-collection','DOG/sammlung.html'],
+    ['dog-unified-christmas','DOG/christmas-event.html'],
+    ['dog-unified-album','meta-sammelalbum.html']
+   ])el(id).href=path+'?return='+encodeURIComponent(path.startsWith('DOG/')?'../'+returnUrl:returnUrl);
+  }
+ }
+ if(room.game==='dog'){
+  el('ready-hint').textContent='🐾 Ein DOG-Spieler reicht. Sobald alle aktiven Spieler bereit sind, startet DOG mit Bots auf freien Plätzen automatisch.';
+  el('selected-game-host-note').textContent='🐾 Die vier DOG-Spielplätze sind für alle sichtbar. Der Host kann Spielplätze verwalten, jeder Mitspieler meldet sich selbst bereit.';
+ }else{
+  el('ready-hint').textContent='Alle aktiven Spieler melden sich bereit. Der Server startet die Partie automatisch (außer bei Spielen mit eigenem Startknopf).';
+ }
 }
 async function command(run){if(operation)return;operation=true;render();notice('');
  try{await run();pollErrors=0;}catch(e){showError(e);}finally{operation=false;render();}
 }
-window.addEventListener('dog-room-lobby-ready',render);
-window.addEventListener('dog-room-lobby-action',event=>{
- const kind=event.detail?.kind;
- if(!room||room.game!=='dog'||operation)return;
- if(kind==='refresh'){
-  void command(async()=>{const {room:r}=await request('/rooms/'+code);activateRoom(r);notice('Raum aktualisiert.');});
-  return;
- }
- if(!['ready','join','start'].includes(kind))return;
- if(room.phase==='playing'){
-  if(kind==='join')enterDog();
-  return;
- }
- if(room.phase!=='preparing')return;
- const player=room.players.find(p=>p.me);
- if(!player?.participating)return;
- if(kind==='start'&&(!room.host||player.ready||!room.players.filter(p=>p.participating&&!p.me).every(p=>p.ready)))return;
- if(kind==='join'&&player.ready)return;
- const next=kind==='ready'?!player.ready:true;
- void command(async()=>{
-  const {room:r}=await request('/rooms/'+code+'/ready','POST',{ready:next});
-  activateRoom(r);
- });
-});
 el('login-btn').addEventListener('click',()=>{if(activeProfile())location.assign('profile.html');else window.SpielOnline?.openLogin?.();});
 el('mode-local').addEventListener('click',()=>location.assign('spielauswahl-lokal.html'));
 el('mode-online').addEventListener('click',()=>setPlayMode('online'));
-el('change-game-btn').addEventListener('click',()=>{if(room?.host&&room.phase==='preparing')location.assign('spielauswahl-online.html?room='+encodeURIComponent(room.code)+'&choose=1');});
+el('change-game-btn').addEventListener('click',()=>{
+ if(!room?.host||room.phase!=='preparing')return;
+ choosingGame=true;render();
+ el('game-chooser').scrollIntoView({behavior:'smooth',block:'start'});
+});
 
 el('create-btn').addEventListener('click',()=>command(async()=>{
- const {room:r}=await request('/rooms','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
+ const {room:r}=await request('/rooms','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});activateRoom(r);pollStart();
 }));
 el('join-code').addEventListener('input',event=>{event.target.value=event.target.value.toUpperCase().replace(/[^0-9A-HJ-NP-Z]/g,'').slice(0,6);notice('');});
 el('join-code').addEventListener('keydown',e=>{if(e.key==='Enter')el('join-btn').click();});
 el('join-btn').addEventListener('click',()=>command(async()=>{
  const c=el('join-code').value.trim().toUpperCase();if(!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(c))throw Error('Bitte einen dreistelligen Zahlencode oder bisherigen sechsstelligen Raumcode eingeben.');
- const {room:r}=await request('/rooms/'+c+'/join','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
+ const {room:r}=await request('/rooms/'+c+'/join','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});activateRoom(r);pollStart();
 }));
 document.querySelectorAll('[data-game]').forEach(btn=>btn.addEventListener('click',()=>command(async()=>{
  if(!room?.host)return;const {room:r}=await request('/rooms/'+code+'/select','POST',{game:btn.dataset.game,...(btn.dataset.game==='dog'?{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0}:{})});choosingGame=false;activateRoom(r);
@@ -1228,7 +1226,7 @@ el('cancel-match-btn').addEventListener('click',()=>{
   const {room:r}=await request('/rooms/'+code+'/cancel','POST');
   launchedMatchId=null;
   activateRoom(r);
-  location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
+  // The shared room is already rendered here. No intermediate lobby.
  });
 });
 el('refresh-btn').addEventListener('click',()=>command(async()=>{const {room:r}=await request('/rooms/'+code);activateRoom(r);notice('Raum aktualisiert.');}));
@@ -1266,10 +1264,7 @@ async function boot(){
  }
  const fromUrl=params.get('room');
  if(!fromUrl||!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(fromUrl))return;
- if(new URL(location.href).searchParams.get('stage')!=='1'&&!stayInMatchId){
-   location.replace('spielauswahl-online.html?room='+encodeURIComponent(fromUrl.toUpperCase()));
-   return;
- }
+ // Old or new links always restore the room inside this same central hub.
  let elapsed=0;const timer=setInterval(async()=>{
   elapsed+=250;
   if(!activeProfile()&&elapsed<30000)return;
