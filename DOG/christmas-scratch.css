@@ -1270,7 +1270,8 @@ body.scratch-ticket-open{
    (Logo, Kapitel 1, Zurück) mitsamt ihrem Layout-Platz ausblenden.
    Die vorhandene scratch-ticket-open-Klasse wird beim Schließen,
    Profilwechsel und Abmelden wieder entfernt. */
-body.scratch-ticket-open > header.event-top{
+body.scratch-ticket-open > header.event-top,
+body.scratch-ticket-open > #event-return{
  display:none!important;
 }
 
