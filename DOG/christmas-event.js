@@ -264,6 +264,8 @@ $('tree-return-current').addEventListener('click',()=>{
 });
 function updateTreeChapter(){
  const current=treeLevel();
+ // If a local preview is reset, discard a memory stage that is no longer reached.
+ if(viewedTreeStage!==null&&viewedTreeStage>current)viewedTreeStage=null;
  const shown=Math.min(viewedTreeStage??current,current);
  const isMemory=shown<current;
  $('tree-current-title').textContent='Stufe '+shown+' · '+treeNames[shown-1];
