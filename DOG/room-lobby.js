@@ -4,7 +4,7 @@
  */
 import {renderDogRoomBoard} from './room-board-preview.js?v=2';
 import {summarizeDogRoomLobby} from './room-lobby-state.js?v=1';
-import {guardDesignerLink} from './designer-level-access.js?v=1';
+import {guardDesignerLink} from './designer-level-access.js?v=2';
 
 const $=id=>document.getElementById(id);
 const root=$('dog-room-lobby');
