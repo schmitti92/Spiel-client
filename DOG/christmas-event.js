@@ -644,7 +644,7 @@ if(villageRoomValid){
  });
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void reloadVillage();});
 }else{
- $('building-event-mode').textContent='Öffne dieses Weihnachtsdorf aus deiner Online-DOG-Raumlobby, damit echte Lichter und Gebäudestufen geladen werden.';
+ $('building-event-mode').textContent='🔒 Echtguthaben und Upgrades sind nur im DOG-Onlineraum verfügbar.';
 }
 
 refreshPreview();
