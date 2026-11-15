@@ -235,3 +235,14 @@ test('premium v4 shows every actual reward and its permanent 1000-coin threshold
  assert.match(css,/\.scratch-current-item\.is-unlock/);
  assert.match(css,/\.scratch-stage\.is-revealed:not\(\[hidden\]\) > \.scratch-prize-sidebar > :not\(\.scratch-current-awards\)/);
 });
+
+test('DOG Weihnachten top header is hidden only while a scratch ticket is open',()=>{
+ const html=source('../DOG/christmas-event.html');
+ const css=source('../DOG/christmas-scratch.css');
+ const js=source('../DOG/christmas-scratch-ui.js');
+ assert.match(html,/<header class="event-top">/);
+ assert.match(css,/body\.scratch-ticket-open > header\.event-top\s*\{\s*display:none!important;/);
+ assert.match(js,/document\.body\.classList\.add\('scratch-ticket-open'\)/);
+ // Upon finishing, signing out and switching profiles, normal page header returns.
+ assert.ok(js.match(/document\.body\.classList\.remove\('scratch-ticket-open'\)/g)?.length>=3);
+});
