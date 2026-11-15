@@ -23,3 +23,10 @@
 @media(prefers-reduced-motion:reduce){.dog-avatar-option{animation:none!important;transition:none!important}}
 
 :root[data-dog-motion="off"] .dog-avatar-option{animation:none!important;transition:none!important}
+
+/* Upcoming event avatars: actual artwork is visible but cannot be selected. */
+.dog-avatar-event-heading{grid-column:1/-1;display:block;margin:8px 0 0;padding:8px 6px 5px;border-top:1px solid #ccad725e;color:#ffe0a7;font:800 12px system-ui,sans-serif;text-align:left}
+.dog-avatar-option.dog-avatar-locked{position:relative;cursor:not-allowed;border-color:#6c777d;background:#202a32;box-shadow:none;opacity:1}
+.dog-avatar-option.dog-avatar-locked .dog-avatar-face{filter:grayscale(1) brightness(.53)}
+.dog-avatar-option.dog-avatar-locked:hover{border-color:#6c777d;transform:none}
+.dog-avatar-option.dog-avatar-locked .dog-avatar-lock-symbol{position:absolute;right:-2px;bottom:-2px;display:grid;place-items:center;width:clamp(15px,2vw,22px);height:clamp(15px,2vw,22px);border-radius:50%;background:#172635ed;border:1px solid #e1c487;color:#ffe2a0;font-size:clamp(9px,1.2vw,13px);line-height:1;box-shadow:0 1px 5px #000a;pointer-events:none}
