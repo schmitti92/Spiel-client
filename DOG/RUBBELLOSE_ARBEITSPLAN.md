@@ -37,14 +37,14 @@ Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 ## Varianten (Arbeitsentwurf; vor Implementierung formal spezifizieren)
 1. Geschenkelinie: 3×3, 3 gleiche in horizontaler/vertikaler/diagonaler Reihe.
 2. Schneeflocken-Bingo: 4×4, 4 gleiche in Reihe.
-3. Sternensammler: 12 Felder, 4 gleiche irgendwo.
+3. Sternensammler: 12 Felder, 4 gleiche **Sterne** beliebig auf dem Feld; pro vollständiger Vierergruppe ein Treffer.
 4. Wichtelpfad: 20 Felder, zusammenhängender Weg.
-5. Rentierglück: 12 Felder, 3 gleiche; 4 gleiche Zusatzchance.
+5. Rentierglück: 12 Felder, 3 gleiche Rentiere beliebig auf dem Feld; pro vollständiger Dreiergruppe ein Treffer. Ein eigenständiger Vierer-Bonus ist NICHT implementiert und vor Einführung separat zu gewichten.
 6. Zuckerstangen-Duell: 6 Felder, 3 Paare; jedes Paar möglicher Treffer.
-7. Weihnachtsbaum-Los: 15 Felder, definierte Symbolsequenz.
-8. Lebkuchen-Memory: 4×4, passende Paare.
+7. Weihnachtsbaum-Los: 15 Felder (5×3); jede waagerechte ⭐🎄🎁-Folge zählt.
+8. Lebkuchen-Memory: 4×4; jede 2×2-Gruppe mit zwei passenden waagerechten Paaren zählt.
 9. Diamantenjagd: 3×3, 3 Diamanten, ggf. Joker/Wildcard.
-10. Glocken-Jackpot: 4×5, 5 gleiche in Reihe oder Glockenmuster.
+10. Glocken-Jackpot: 4×5, 5 gleiche in waagerechter Reihe oder fünf Glocken auf den festen Diamant-Feldern 2/6/8/11/13 (0-basiert).
 Die Varianten dürfen nicht unbeabsichtigt die globalen Gewinnchancen verändern. Ergebnis serverseitig ziehen, Spielfeld passend dazu generieren, anschließend unabhängig validieren.
 
 ## Phase 1 – Regelwerk und mathematische Gewichtung [ ]
@@ -63,10 +63,14 @@ Abnahme: Wahrscheinlichkeitsmatrix und Testfälle schriftlich freigegeben.
 - **Technische Abnahme:** Für jede der 10 Varianten Generator und davon unabhängigen Regelprüfer bauen; generierte Ergebnisse vor Auszahlung serverseitig gegenprüfen. Keine Belohnung allein aus einer Anzeige oder einem clientseitigen Zufallswurf ableiten.
 - Serverseitiges Losergebnis und Spielfeld zusammen atomar persistieren, damit Neuladen/Verbindungsabbruch keine andere Karte erzeugt.
 
-## Phase 2 – Spielvarianten und Generator [IN ARBEIT]
-- [x] Basisgenerator und unabhängiger Regelprüfer für Geschenkelinie (3×3) und Schneeflocken-Bingo (4×4), derzeit exakt 0 oder 1 Gewinnreihe. Backend: `serverfinal/dog/christmas-scratch-grid.js`.
-- [x] 2.000 generierte Testfelder (je 500 Nieten und 500 Gewinnfelder pro Variante) erfolgreich validiert.
-- [ ] Jedes Los als Datenstruktur mit variantId, Feldlayout, Symbolen, Gewinnkombinationen und sichtbarer Anleitung.
+## Phase 2 – Spielvarianten und Generator [IN ARBEIT: 10/10 Generatoren]
+- [x] Für **alle 10 Varianten** Generatoren und unabhängige Regelprüfer implementiert: `serverfinal/dog/christmas-scratch-grid.js`.
+- [x] Pro Variante **0, 1, 2 oder 3** sichtbare, tatsächlich regelkonforme Gewinnkombinationen erzeugen; Nieten ohne gültige Gewinnkombination.
+- [x] Preis-Zuordnung je geprüfter Gewinnkombination vorbereitet (`attachScratchPrizes`); eine manipulierte Feldzuordnung wird erkannt (`verifyScratchPrizes`).
+- [x] Erste 10.000 Felder (10 Varianten × 4 Gewinnzahlen × 250 Durchläufe) mit Generator, Auswertung und Preisbindung erfolgreich getestet, zusätzlich ein eigener Testquelltext: `serverfinal/tests/christmas-scratch-grid.test.js`.
+- [ ] Tests in der echten Node-Testumgebung bzw. CI ausführen und dokumentieren; Prüfung der tatsächlichen Gewinnvergabe erfolgt in Phase 3.
+- [ ] Spieleranleitungen und Spielbilder in der tatsächlichen UI anzeigen; Ausgabe der Gewinnbeträge an den zugehörigen Symbolen.
+- [ ] Zusätzliche Gewinnanzahl über 3 verhindern bzw. ausschließlich Varianten mit ausreichender Kapazität verwenden, bevor bestehende Echtgeld-/Eventmünzen-Auszahlung daran gebunden wird.
 - Generator erzeugt Nieten ohne gültige Kombination; Gewinne mit exakt zugeordneten Treffern.
 - 6/9/12/15/16/20 Felder auf Mobilgeräten gut bedienbar.
 Abnahme: automatische Validierung aller 10 Varianten, auch 2–3 Gewinnkombinationen.
@@ -115,4 +119,5 @@ Abnahme: echte Spielrunde über mehrere Geräte.
 - 15.11.2026: Plan v2 – bestätigte Gewichtungen ergänzt und rechnerisch geprüft. Spielcode unverändert.
 - 15.11.2026: Sichtbarkeitsregel und Pflicht zu Generator + unabhängiger Regelprüfung für alle zehn Varianten verbindlich ergänzt. Umsetzung noch ausstehend.
 - 15.11.2026: Phase 2 begonnen. Backend-Grundmodul für 3×3 und 4×4 implementiert, 2.000 Generator-/Prüfungen bestanden. Noch nicht an Shop oder Auszahlung angebunden.
-- Nächster Schritt: Mehrere eindeutig zuordenbare Gewinnkombinationen, anschließend die acht übrigen Varianten und Integration.
+- 15.11.2026: Alle zehn Generatoren/Regelprüfer für 0–3 Gewinnkombinationen ergänzt; 10.000 erzeugte Spielfelder in einer isolierten JS-Prüfung erfolgreich kontrolliert; Node-Testdatei eingecheckt. Noch kein Live-Gameplay.
+- Nächster Schritt: Node-Testlauf und Anbindung der Ergebnisdaten an den bestehenden Render-Kaufprozess (unter Beachtung max. drei sichtbarer Gewinnkombinationen), danach UI und Grafiken.
