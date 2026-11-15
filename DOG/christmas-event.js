@@ -454,8 +454,11 @@ function showPanel(id,{updateHistory=true}={}){
  if(updateHistory&&location.hash!=='#'+id)history.replaceState(null,'','#'+id);
  if(id==='tree'){centerTreeMilestone();void treePrizeScreen?.load();}
  if(id==='buildings'){
-  requestAnimationFrame(()=>refreshBuildingPhotoLayouts());
-  if(villageRoomValid)void reloadVillage(); // GET only, no reward writes
+  // The initial tab can open before villageCode is initialized below.
+  requestAnimationFrame(()=>{
+   refreshBuildingPhotoLayouts();
+   if(villageRoomValid)void reloadVillage(); // GET only, no reward writes
+  });
  }
  if(id==='scratch')void scratchScreen?.load();
  if(window.scrollY>0)window.scrollTo({top:0,behavior:'instant'});
