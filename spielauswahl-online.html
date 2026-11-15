@@ -1,19 +1,641 @@
 <!doctype html>
 <html lang="de">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex">
-<meta http-equiv="refresh" content="0;url=hub-lobby.html">
-<title>Weiterleitung zur gemeinsamen Spielsammlung</title>
-<script>
-/* This legacy selection URL no longer hosts a second lobby.
- * Preserve room, invitation, chosen game and return hints in the new hub. */
-location.replace('hub-lobby.html'+location.search+location.hash);
-</script>
-<style>body{min-height:100dvh;margin:0;display:grid;place-items:center;background:#071e33;color:#f0e3bd;font:600 17px system-ui;text-align:center;padding:22px}a{color:#ffe09b}</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#070e1c">
+  <meta name="description" content="Wähle eines unserer vier Spiele: Barikade, SKYJO Action, KreuzKunter oder Das große Business.">
+  <title>Online-Spielauswahl · Spielauswahl | Unsere Spiele</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --text: #f5f7ff;
+      --muted: #c5cee2;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { min-height:100%; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #070e1c;
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 34% 30% at 101% 6%, rgba(159,89,31,.21), transparent 76%),
+        radial-gradient(ellipse 30% 38% at -5% 5%, rgba(134,62,29,.26), transparent 74%),
+        radial-gradient(ellipse 38% 40% at 77% 60%, rgba(14,60,108,.26), transparent 78%),
+        linear-gradient(120deg, #0b1122 0%, #070e1b 58%, #0a1426 100%);
+    }
+    a { -webkit-tap-highlight-color: transparent; }
+    a:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+    .container { width: min(1460px, calc(100% - 70px)); margin: 0 auto; padding: 44px 0 36px; }
+    .page-head { margin: 0 0 26px 20px; }
+    h1 { margin: 0; font-size: clamp(32px, 3.15vw, 47px); line-height: 1.13; font-weight: 850; letter-spacing: -.045em; }
+    .subtitle { font-size: clamp(18px, 1.95vw, 28px); color: #bbc8e4; margin: 6px 0 7px; line-height: 1.35; }
+    .hint { margin: 0; font-size: 14px; color: #acb9d1; line-height: 1.4; display: flex; gap: 8px; align-items: start; }
+    .hint-icon { display: inline-grid; place-items: center; flex: 0 0 19px; height: 19px; width: 19px; border: 1.5px solid currentColor; border-radius: 50%; font-size: 12px; font-weight: 800; }
+    .game-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px 20px; }
+    .game {
+      isolation: isolate;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(170,186,223,.22);
+      border-radius: 24px;
+      min-height: 344px;
+      display: flex;
+      flex-direction: column;
+      padding: 23px 26px 20px;
+      background: #0b1426;
+      box-shadow: 0 13px 35px rgba(0,0,0,.18), inset 0 1px rgba(255,255,255,.06);
+      transition: transform .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease);
+    }
+    .game::before {
+      content: '';
+      position: absolute;
+      z-index: -2;
+      inset: 0;
+      background-image: var(--scene);
+      background-size: cover;
+      background-position: center;
+      transform: scale(1.006);
+      transition: transform .55s var(--ease);
+    }
+    .game::after {
+      content: '';
+      position: absolute;
+      z-index: -1;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(5,9,19,.95) 0%, rgba(8,13,26,.86) 29%, rgba(7,13,23,.62) 61%, rgba(4,10,19,.10) 100%);
+      pointer-events: none;
+    }
+    .game:hover { transform: translateY(-2px); border-color: rgba(201,216,243,.48); box-shadow: 0 17px 40px rgba(0,0,0,.24); }
+    .game:hover::before { transform: scale(1.04); }
+    .barikade-card { --scene: url('Assets/game-backgrounds/Barikade_EXAKT_AUS_VORLAGE.webp'); border-color: rgba(180,130,79,.4); }
+    .skyjo-card { --scene: url('Assets/game-backgrounds/SKYJO_Action_EXAKT_AUS_VORLAGE.webp'); border-color: rgba(146,115,238,.42); }
+    .kreuzkunter-card { --scene: url('Assets/game-backgrounds/KreuzKunter_EXAKT_AUS_VORLAGE.webp'); border-color: rgba(28,164,228,.55); }
+    .kniffel-card { --scene: url('Assets/game-backgrounds/kniffel-kachel.webp'); border-color:#d6aa5c; padding:0; background:#24170e; }
+    .kniffel-card::before,.kniffel-card::after { display:none; }
+    .kniffel-card .actions { position:absolute; inset:0; margin:0; padding:0; z-index:2; }
+    .kniffel-card .image-card-button { position:absolute; inset:0; width:100%; height:100%; min-height:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
+    .kniffel-card .image-card-button:hover { background:rgba(255,255,255,.035); }
+    .kniffel-card .kniffel-art { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; pointer-events:none; }
+    .business-card { --scene: url('Assets/game-backgrounds/Das_grosse_Business_EXAKT_AUS_VORLAGE.webp'); border-color: rgba(199,149,54,.44); }
+    .game-title { display: flex; flex-wrap: wrap; align-items: center; gap: 9px 11px; margin-bottom: 12px; }
+    .game-title h2 { font-size: clamp(23px,2vw,30px); font-weight: 820; line-height: 1.13; letter-spacing: -.034em; margin:0; text-shadow: 0 1px 8px rgba(0,0,0,.35); }
+    .game p { max-width: 390px; margin: 0; color:#f0f2fa; line-height: 1.42; font-size: clamp(15px,1.18vw,18px); text-shadow: 0 1px 8px rgba(0,0,0,.4); }
+    .badge { font-size: 12px; line-height: 1.2; font-weight: 760; padding: 5px 11px; border-radius: 999px; white-space: nowrap; border: 1px solid rgba(255,255,255,.2); backdrop-filter: blur(7px); }
+    .badge.purple { color:#f2e4ff; background:rgba(84,25,126,.7); border-color:rgba(196,125,246,.36); }
+    .badge.green { color:#dafee6; background:rgba(18,91,45,.77); border-color:rgba(110,217,138,.36); }
+    .badge.gold { color:#fff1c6; background:rgba(147,96,15,.7); border-color:rgba(248,191,61,.42); }
+    .features { display: grid; gap: 5px; margin: 15px 0 0; padding: 0; list-style: none; font-size:14px; color:#e3e9fa; text-shadow: 0 1px 6px #000; }
+    .features li { display: flex; align-items:center; gap: 10px; }
+    .features svg { width: 17px; height:17px; flex-shrink:0; fill:none; stroke:#d5e4ff; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .features .fill-icon { fill:#d5e4ff; stroke: none; }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: auto; padding-top: 16px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 11px;
+      min-height: 56px;
+      min-width: 0;
+      padding: 9px 21px;
+      border-radius: 17px;
+      border: 1px solid rgba(255,255,255,.3);
+      font-size: clamp(16px,1.3vw,20px);
+      font-weight: 790;
+      color: white;
+      line-height:1.2;
+      text-decoration: none;
+      white-space: nowrap;
+      text-shadow: 0 1px 3px rgba(0,0,0,.24);
+      box-shadow: inset 0 1px rgba(255,255,255,.16), 0 7px 18px rgba(0,0,0,.23);
+      transition: transform .16s ease, filter .16s ease, box-shadow .16s ease;
+    }
+    .btn:hover { filter: brightness(1.13); box-shadow: inset 0 1px rgba(255,255,255,.26), 0 10px 22px rgba(0,0,0,.33); }
+    .btn:active { transform: translateY(1px) scale(.99); }
+    .btn svg { width:23px; height:23px; flex: 0 0 auto; }
+    .btn .chevron { margin-left: auto; width: 17px; height: 17px; }
+    .btn.primary { min-width: min(320px,100%); justify-content:flex-start; }
+    .btn.green { background: linear-gradient(145deg,#1f9c6a,#006b44); border-color: #28d292; }
+    .btn.purple { background: linear-gradient(125deg,#6535d1,#a223cd); border-color: #b97ee9; }
+    .btn.blue { background: linear-gradient(135deg,#14b5ec,#0274c7); border-color:#31c7ff; }
+    .btn.gold { background: linear-gradient(135deg,#e4a225,#b47209); border-color:#ffc555; }
+    .business-actions .btn, .skyjo-actions .btn { flex: 1 1 190px; }
+    .business-card .game-title h2 { font-size: clamp(22px,1.85vw,28px); }
+    .business-card p { max-width: 380px; }
+    @media (max-width: 1000px) and (min-width: 711px) {
+      .container { width: calc(100% - 36px); padding-top: 26px; }
+      .page-head { margin-left: 8px; }
+      .game { padding: 20px; min-height: 330px; }
+      .game::after { background:linear-gradient(90deg,rgba(4,8,17,.98) 0%,rgba(4,8,17,.9) 48%,rgba(4,8,17,.3) 100%); }
+      .game p { font-size: 15px; }
+      .features { font-size: 12px; }
+      .btn { min-height:50px; font-size:15px; padding:7px 14px; }
+      .btn.primary { min-width:0; }
+      .business-actions .btn, .skyjo-actions .btn { flex-basis: 150px; }
+    }
+    @media (max-width: 710px) {
+      .container { width: calc(100% - 24px); padding: 24px 0 30px; }
+      .page-head { margin:0 4px 18px; }
+      .subtitle { font-size:18px; }
+      .hint { font-size: 12px; }
+      .game-grid { grid-template-columns: 1fr; gap:14px; }
+      .game { min-height: 310px; padding: 20px 19px 18px; border-radius:21px; }
+      .game::after { background:linear-gradient(90deg,rgba(5,9,19,.97),rgba(5,9,19,.85) 58%,rgba(5,9,19,.34)); }
+      .game-title h2 { font-size:26px; }
+      .game p { font-size: 15px; max-width: 85%; }
+      .features { font-size:13px; margin-top:11px; }
+      .btn { min-height:51px; font-size:16px; }
+      .btn.primary { width: min(320px,100%); }
+      .business-card .game-title h2 { width: 100%; }
+      .business-card .game-title { gap: 5px 8px; }
+      .business-actions, .skyjo-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:8px; }
+      .business-actions .btn, .skyjo-actions .btn { min-width:0; width:100%; gap:7px; padding:7px 10px; font-size:14px; }
+      .business-actions .btn svg, .skyjo-actions .btn svg { width:19px; height:19px; }
+      .business-actions .btn .chevron, .skyjo-actions .btn .chevron { display:none; }
+    }
+    @media (max-width:370px) {
+      .game { min-height:310px; padding:17px 14px; }
+      .game-title h2 { font-size:23px; }
+      .game p { max-width:95%; }
+      .badge { font-size:11px; }
+      .business-actions, .skyjo-actions { grid-template-columns:1fr; gap:7px; }
+      .business-actions .btn, .skyjo-actions .btn { padding:8px 12px; font-size:14px; gap:9px; justify-content:center; }
+      .business-actions .btn svg, .skyjo-actions .btn svg { width:18px;height:18px; }
+    }
+    @media (prefers-reduced-motion:reduce) { .game,.game::before,.btn { transition:none; } }
+  
+/* Spielerportal – Profil in der rechten oberen Ecke */
+.sp-index-wrap{position:absolute;right:0;top:0;z-index:20;min-width:192px}
+.sp-profile-button{display:flex;align-items:center;gap:9px;background:linear-gradient(145deg,#182a49,#17223b);color:#fff;border:1px solid #435776;border-radius:999px;padding:7px 12px 7px 7px;font-weight:850;box-shadow:0 9px 26px #040c2499;max-width:260px;width:100%;cursor:pointer}
+.sp-profile-button .sp-person-name{flex:1;overflow:hidden;text-overflow:ellipsis;text-align:left;white-space:nowrap;font-size:13px}
+.sp-avatar{width:39px;height:39px;flex:none;border-radius:50%;background-color:#d2edff;border:2px solid #84ceff;box-shadow:0 0 0 2px #fff2}
+.sp-index-menu{position:absolute;top:calc(100% + 12px);right:0;width:min(340px,85vw);padding:13px;background:linear-gradient(175deg,#0d1932,#142c49);border-radius:20px;border:1px solid #3d6290;box-shadow:0 22px 55px #0009;color:white}
+.sp-index-menu [hidden]{display:none!important}.sp-index-menu[hidden]{display:none}.sp-menu-head{font-size:13px;font-weight:900;letter-spacing:.4px;margin:2px 2px 9px}
+.sp-options{max-height:245px;overflow-y:auto;display:grid;gap:6px}.sp-profile-choice{width:100%;padding:7px;display:flex;gap:11px;align-items:center;border:1px solid #294665;background:#112441;color:white;border-radius:12px;cursor:pointer;text-align:left}.sp-profile-choice:hover{background:#214169}.sp-profile-choice span:nth-child(2){flex:1;font-weight:800}.sp-profile-choice span:last-child{color:#4cf0b4}
+.sp-menu-actions{margin-top:10px;border-top:1px solid #365270;padding-top:10px;display:grid;gap:8px}.sp-menu-actions a,.sp-menu-actions button{background:#243b62;border:0;color:white;padding:12px;border-radius:12px;font-weight:800;font-size:13px;text-align:center;cursor:pointer}.sp-menu-actions button{background:linear-gradient(110deg,#1f85eb,#6557ed)}
+@media(max-width:700px){.page-head{padding-right:0!important;padding-top:72px}.sp-index-wrap{right:0;top:-3px}.sp-profile-button{max-width:220px}.sp-index-menu{width:min(330px,90vw)}}
+
+
+/* V3: Dropdown oberhalb der dunklen Spielauswahl im Profilseiten-Look */
+.sp-profile-button{border:1px solid rgba(189,222,255,.32)!important;box-shadow:0 10px 30px rgba(0,0,0,.30),inset 0 1px rgba(255,255,255,.1)!important}
+.sp-index-menu{background:linear-gradient(165deg,#ffffff,#f4f9ff)!important;color:#143760!important;border:1px solid #dfeafb!important;border-radius:21px!important;box-shadow:0 20px 58px #0008!important;padding:15px!important}
+.sp-index-menu .sp-menu-head{color:#244d7d!important}
+.sp-index-menu .sp-options .sp-menu-head{color:#718aa5!important}
+.sp-index-menu .sp-menu-actions{border-top:1px solid #e5edf8!important}
+.sp-index-menu .sp-menu-actions a,.sp-index-menu .sp-menu-actions button{color:#255b99!important;background:#e7f2ff!important;border:1px solid #d9e8f8!important;min-height:44px}
+.sp-index-menu .sp-menu-actions button.sp-new,.sp-index-menu .sp-menu-actions button.sp-login,.sp-index-menu .sp-menu-actions button.sp-resume{background:linear-gradient(110deg,#168be8,#366bea)!important;color:#fff!important;border-color:transparent!important;box-shadow:0 5px 15px #2879eb28}
+.sp-index-menu .sp-menu-actions a[hidden],.sp-index-menu .sp-menu-actions button[hidden]{display:none!important}
+.sp-index-menu .sp-menu-actions button:hover,.sp-index-menu .sp-menu-actions a:hover{filter:brightness(.98)}
+
+
+/* Spielauswahl V4 – cloud-profile dropdown, consistent with premium registration */
+.sp-index-wrap{z-index:10050!important}
+.sp-profile-button{border:1px solid rgba(186,216,247,.28)!important;box-shadow:0 13px 31px #0008,0 1px 0 #fff2 inset!important;min-height:49px;transition:transform .18s ease,box-shadow .18s ease}
+.sp-profile-button:hover{transform:translateY(-2px);box-shadow:0 17px 37px #0009!important}
+.sp-index-menu{width:min(365px,92vw)!important;background:radial-gradient(circle at 98% 0%,#e0efff 0%,transparent 35%),linear-gradient(145deg,#ffffff,#f6faff)!important;border:1px solid #dceafa!important;box-shadow:0 30px 70px #010f28a8!important;border-radius:23px!important;padding:18px!important}
+.sp-index-menu:before{content:'☁  ONLINE-SPIELERPROFIL';display:block;color:#6791b6;letter-spacing:1.1px;font-size:9px;font-weight:950;margin-bottom:11px}
+.sp-index-menu .sp-menu-head{font-size:13px!important;font-weight:950!important;color:#173c6b!important}
+.sp-index-menu .sp-menu-actions{gap:9px;padding-top:13px!important;margin-top:13px!important}
+.sp-index-menu .sp-menu-actions button,.sp-index-menu .sp-menu-actions a{border-radius:13px!important;font-weight:900!important;transition:transform .16s ease,box-shadow .16s ease}
+.sp-index-menu .sp-menu-actions button:hover,.sp-index-menu .sp-menu-actions a:hover{transform:translateY(-1px)}
+.sp-index-menu .sp-menu-actions button.sp-new,.sp-index-menu .sp-menu-actions button.sp-login,.sp-index-menu .sp-menu-actions button.sp-resume{background:linear-gradient(110deg,#129ceb,#316be9)!important;box-shadow:0 8px 20px #277ee735!important}
+
+/* Online-Spieleauswahl: Bildkarten, kurze Titel, kleine Buttons */
+.page-head{margin-bottom:14px}
+.game-grid{gap:17px}
+.game{min-height:clamp(275px,29vw,410px);padding:23px;justify-content:space-between}
+.game::after{background:linear-gradient(180deg,rgba(4,9,22,.54),transparent 43%,rgba(4,9,22,.67))!important}
+.game-title{position:relative;z-index:2}.game-title h2{font-size:clamp(25px,2.6vw,37px);text-shadow:0 3px 15px #000}
+.game .actions{margin-top:auto;padding-top:10px;position:relative;z-index:2}
+.game .actions .online-game-button,.game .actions .online-game-button.btn.primary{flex:0 1 auto!important;width:auto!important;min-width:0!important;min-height:42px!important;padding:9px 15px!important;font-size:13px!important;border-radius:13px!important;gap:8px}
+.game .actions .online-game-button .chevron{margin-left:9px!important}
+.online-room-notice{padding:9px 14px!important;margin-bottom:12px!important;font-size:12px!important}
+@media(max-width:700px){.game-grid{grid-template-columns:1fr;gap:13px}.game{min-height:250px;padding:18px}.game .actions .online-game-button{min-height:40px!important;padding:8px 11px!important;font-size:12px!important}}
+
+/* Cinematic boardgame-gallery: inspired by approved artwork */
+body{background:radial-gradient(ellipse at 50% 0%,#153e58 0%,#081827 43%,#050d17 100%)}
+.page-head{min-height:85px!important;padding-top:8px!important;margin-bottom:12px!important}
+.page-head h1{font-size:clamp(30px,3vw,46px);letter-spacing:-.035em}
+.online-head-actions{z-index:12}
+.game-grid{gap:16px 20px}
+.game{min-height:clamp(250px,25vw,355px)!important;border:2px solid rgba(246,198,116,.62)!important;border-radius:24px!important;box-shadow:0 15px 35px #0009,0 0 20px #e7b46719!important}
+.game:nth-child(2){border-color:#56c5ff!important}.game:nth-child(3){border-color:#90d57c!important}.game:nth-child(4){border-color:#ffd078!important}
+.game::after{background:linear-gradient(180deg,rgba(3,8,16,.18),transparent 40%,rgba(3,8,16,.4))!important}
+.game-title{align-self:center;text-align:center;margin:auto 0!important;width:100%}
+.game-title h2{font-size:clamp(30px,3.6vw,52px)!important;font-weight:950;letter-spacing:-.04em;color:#fff;text-shadow:0 4px 0 #402916,0 7px 12px #000,0 0 20px #000}
+.game .actions{align-self:flex-end;margin:0!important;padding:0!important}
+.game .actions .online-game-button{min-height:36px!important;padding:7px 12px!important;font-size:12px!important;opacity:.95}
+.online-room-notice{margin:0 0 10px!important}
+.online-room-notice:not(.error):not(.is-error){display:block}
+@media(max-width:700px){.page-head{min-height:65px!important}.game{min-height:230px!important}.game-title h2{font-size:clamp(27px,7vw,38px)!important}}
+
+/* Originalvorlage als komplette klickbare Spielkarte; Auswahl bleibt an vorhandener Spiellogik */
+.game.barikade-card,.game.skyjo-card,.game.kreuzkunter-card,.game.business-card{padding:0!important;aspect-ratio:696/320;min-height:0!important;display:block;cursor:pointer}
+.game.barikade-card::before,.game.skyjo-card::before,.game.kreuzkunter-card::before,.game.business-card::before{z-index:-1;background-position:center;background-size:cover}
+.game.barikade-card::after,.game.skyjo-card::after,.game.kreuzkunter-card::after,.game.business-card::after{display:none!important}
+.game .actions:has(.image-card-button){position:absolute!important;inset:0;z-index:3;margin:0!important;padding:0!important;display:block}
+.game .actions .image-card-button{position:absolute;inset:0;width:100%!important;height:100%!important;max-width:none!important;border:0!important;border-radius:inherit!important;background:transparent!important;box-shadow:none!important;opacity:1!important;color:transparent!important;cursor:pointer}
+.game .actions .image-card-button:focus-visible{outline:4px solid #fff;outline-offset:-6px}
+.game .actions .image-card-button:disabled{cursor:pointer;opacity:1!important;background:transparent!important}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:700px){.game.barikade-card,.game.skyjo-card,.game.kreuzkunter-card,.game.business-card{aspect-ratio:696/320;min-height:0!important}}
+
+/* Progressive enhancement: Spielname sichtbar, bis das Originalbild wirklich geladen ist */
+.game.barikade-card:not(.original-art-loaded) .game-title,.game.skyjo-card:not(.original-art-loaded) .game-title,.game.kreuzkunter-card:not(.original-art-loaded) .game-title,.game.business-card:not(.original-art-loaded) .game-title{display:flex!important;position:absolute;inset:0;align-items:center;justify-content:center;pointer-events:none;z-index:2}
+.game.barikade-card.original-art-loaded .game-title,.game.skyjo-card.original-art-loaded .game-title,.game.kreuzkunter-card.original-art-loaded .game-title,.game.business-card.original-art-loaded .game-title{display:none!important}
+.game.barikade-card:not(.original-art-loaded)::after,.game.skyjo-card:not(.original-art-loaded)::after,.game.kreuzkunter-card:not(.original-art-loaded)::after,.game.business-card:not(.original-art-loaded)::after{display:block!important;background:linear-gradient(180deg,#0004,#0008)!important}
+.game.barikade-card.original-art-loaded,.game.skyjo-card.original-art-loaded,.game.kreuzkunter-card.original-art-loaded,.game.business-card.original-art-loaded{background-size:cover}
+
+/* Party Challenge – premium illustrated tile using the four existing game artworks */
+.game.party-challenge-card{position:relative;display:flex!important;align-items:center;justify-content:center;overflow:hidden;isolation:isolate;padding:0!important;min-height:0!important;aspect-ratio:696/320;border:3px solid #f3c86c!important;border-radius:24px!important;background:radial-gradient(ellipse at 50% 55%,#6347a3 0%,#1b2c63 60%,#081327 100%)!important;box-shadow:0 12px 35px #0006,inset 0 0 0 2px #fff3!important}
+.game.party-challenge-card::before{content:'';position:absolute;inset:0;z-index:-2;transform:none!important;background-image:url('Assets/game-backgrounds/Barikade_EXAKT_AUS_VORLAGE.webp'),url('Assets/game-backgrounds/SKYJO_Action_EXAKT_AUS_VORLAGE.webp'),url('Assets/game-backgrounds/KreuzKunter_EXAKT_AUS_VORLAGE.webp'),url('Assets/game-backgrounds/Das_grosse_Business_EXAKT_AUS_VORLAGE.webp');background-size:50% 50%,50% 50%,50% 50%,50% 50%;background-position:left top,right top,left bottom,right bottom;background-repeat:no-repeat;filter:saturate(1.2) brightness(.78);transition:filter .25s ease,scale .35s ease}
+.game.party-challenge-card::after{content:'';display:block!important;position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at center,#101028d9 0%,#101028a0 28%,#0c10283b 65%,#0003 100%)!important}
+.game.party-challenge-card .game-title{position:relative!important;z-index:2;display:flex!important;justify-content:center;align-items:center;margin:0!important;width:100%;pointer-events:none;text-align:center}
+.game.party-challenge-card .game-title h2{font-size:clamp(28px,4.2vw,65px)!important;line-height:1.06!important;font-weight:1000!important;letter-spacing:-.035em!important;color:#fff3c3!important;-webkit-text-stroke:1px #663a13;text-shadow:0 3px 0 #a96723,0 6px 0 #653817,0 9px 14px #000,0 0 30px #ffcb66!important;padding:8px 16px;max-width:100%}
+.game.party-challenge-card .actions{position:absolute!important;inset:0;z-index:4;margin:0!important;padding:0!important;display:block!important}
+.game.party-challenge-card:hover::before{filter:saturate(1.35) brightness(.9);scale:1.035}
+.game.party-challenge-card:focus-within{outline:3px solid #fff;outline-offset:3px}
+@media(max-width:700px){.game.party-challenge-card{aspect-ratio:696/320!important;min-height:0!important}.game.party-challenge-card .game-title h2{font-size:clamp(24px,6vw,43px)!important}}
+
+/* New mini-game artwork: show once uploaded; keep collage as a fallback. */
+.game.party-challenge-card.mini-art-loaded::before{background-image:url('Assets/game-backgrounds/Mini-Spiele.png')!important;background-size:cover!important;background-position:center!important;filter:none!important}
+.game.party-challenge-card.mini-art-loaded::after{display:none!important}
+.game.party-challenge-card.mini-art-loaded .game-title{display:none!important}
+
+/* Mediterranean terrace theme, scalable catalog layout (2026-10-26). */
+:root{color-scheme:dark}
+body{background:#213b4b url('Assets/game-backgrounds/Spieleauswahl_Hintergrund.png') center center / cover fixed no-repeat!important}
+body::before{background:linear-gradient(180deg,rgba(5,20,33,.30),rgba(8,22,35,.38) 43%,rgba(5,17,29,.48))!important}
+.container{width:min(1536px,calc(100% - 64px));padding-top:30px}
+.page-head{background:rgba(12,32,50,.37);border:1px solid rgba(255,255,255,.16);border-radius:20px;padding:22px 260px 22px 24px!important;min-height:100px!important;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);margin:0 0 14px!important;box-shadow:0 12px 30px #071b2940}
+.page-head h1{font-size:clamp(27px,2.7vw,43px)!important;text-shadow:0 2px 12px #071a28b3}
+.online-room-notice{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);background:rgba(13,35,55,.76)!important;border:1px solid #ffffff40!important;color:#fff!important}
+.game-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:18px!important;align-items:start}
+.game.barikade-card,.game.skyjo-card,.game.kreuzkunter-card,.game.business-card,.game.party-challenge-card{width:100%;aspect-ratio:1.15!important;min-height:0!important;border-radius:19px!important;box-shadow:0 10px 24px #05121d80,0 0 0 1px #ffffff24!important}
+.game-grid .game::before{background-position:center!important}
+.game-grid .game:hover{transform:translateY(-4px)}
+.game-grid .game:focus-within{outline:3px solid #f9f0cb;outline-offset:3px}
+@media(max-width:1100px){.game-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}.page-head{padding-right:230px!important}}
+@media(max-width:760px){.game-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}.container{width:calc(100% - 24px);padding-top:16px}.page-head{padding:16px!important;padding-top:84px!important;min-height:0!important}.online-head-actions{top:12px;right:12px}.game.barikade-card,.game.skyjo-card,.game.kreuzkunter-card,.game.business-card,.game.party-challenge-card{aspect-ratio:1.2!important;border-radius:14px!important}}
+@media(max-width:420px){.game-grid{gap:9px!important}.game.barikade-card,.game.skyjo-card,.game.kreuzkunter-card,.game.business-card,.game.party-challenge-card{aspect-ratio:1.05!important}.page-head h1{font-size:25px!important}}
+@media(prefers-reduced-motion:reduce){body{background-attachment:scroll!important}}
+
+/* Tablet landscape: room dropdown must remain a compact anchored popover. */
+.online-room-dropdown[open]{z-index:100!important}
+.online-room-dropdown .online-room-dropdown-panel{position:absolute!important;top:calc(100% + 2px)!important;right:0!important;left:auto!important;width:min(350px,calc(100vw - 24px))!important;max-width:calc(100vw - 24px)!important;max-height:min(72dvh,540px)!important;overflow-y:auto!important;overscroll-behavior:contain!important;transform:none!important;font-size:14px!important;line-height:1.35!important}
+.online-room-dropdown .online-room-meta{font-size:13px!important;line-height:1.4!important}
+.online-room-dropdown .online-room-dropdown-panel button,.online-room-dropdown .online-room-dropdown-panel input{font-size:14px!important;max-width:100%!important}
+@media(max-width:1000px){.online-head-actions .online-room-dropdown-panel{right:0!important}}
+</style>
+
+<style>
+ .start-mode-banner{display:flex;gap:15px;align-items:center;justify-content:space-between;background:linear-gradient(120deg,#1a3f73,#1b5e98);border:1px solid #4a7ba7;padding:20px 23px;border-radius:19px;margin-bottom:22px;box-shadow:0 12px 28px #07183746;color:white}
+ .start-mode-banner .mode-icon{font-size:27px;flex:none}
+ .start-mode-banner .mode-details{flex:1;min-width:0}
+ .start-mode-banner strong{font-size:19px}
+ .start-mode-banner p{font-size:13px;color:#e4effd;margin:6px 0 0;line-height:1.5}
+ .start-mode-banner a{padding:10px 12px;border-radius:11px;background:#fff;color:#1b4c7f;text-decoration:none;font-size:13px;font-weight:800;flex:none}
+ .online-room-notice{color:#d7ebff;background:#214068;padding:10px 14px;border:1px solid #436c9d;border-radius:12px;font-size:13px;margin-bottom:18px;line-height:1.4}
+ .online-room-notice.error{color:#ffe4e4;border-color:#bb7070;background:#5d2a37}
+ .online-game-button{cursor:pointer;font-family:inherit}
+ .online-game-button:disabled{cursor:not-allowed;opacity:.43}
+ #online-room-code{white-space:nowrap;letter-spacing:1.5px;color:#ffd988}
+ #online-room-players{font-size:12px;margin-top:7px;color:#cce3ff}
+ .game .actions .online-game-button{flex:1}
+ .game .actions .online-game-button .chevron{margin-left:auto}
+ @media(max-width:710px){.start-mode-banner{flex-wrap:wrap;padding:15px;gap:9px}.start-mode-banner strong{font-size:16px}.start-mode-banner a{width:100%;text-align:center}.start-mode-banner .mode-icon{font-size:24px}}
+ </style>
+
+<style>
+.page-head{position:relative;padding-right:min(380px,38vw);min-height:148px}
+.online-head-actions{position:absolute;top:0;right:0;display:flex;align-items:center;gap:14px;z-index:4}
+.online-head-actions a{box-sizing:border-box;text-decoration:none;display:flex;align-items:center;justify-content:center;font-weight:800;transition:filter .16s,transform .16s}
+.online-room-manage{min-height:54px;padding:12px 18px;border-radius:16px;background:linear-gradient(125deg,#254f82,#1972aa);border:1px solid #75b8ec;color:#fff!important;box-shadow:0 6px 18px #020d2440;font-size:15px;white-space:nowrap}
+.online-profile-shortcut{flex-direction:column;gap:5px;color:#e8f2ff!important;font-size:12px}
+.online-profile-avatar{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#234b75 center/cover no-repeat;border:3px solid #f0c36f;box-shadow:0 4px 17px #0006;font-size:32px}
+.online-head-actions a:hover{filter:brightness(1.14)}.online-head-actions a:focus-visible{outline:3px solid #ffdb88;outline-offset:3px}
+@media(max-width:900px){.page-head{padding-right:0;min-height:0}.online-head-actions{position:static;justify-content:flex-end;margin:14px 0 8px}.online-profile-avatar{width:56px;height:56px}.online-room-manage{white-space:normal;text-align:center}}
+@media(max-width:480px){.online-head-actions{justify-content:space-between}.online-room-manage{font-size:13px;padding:10px}.online-profile-label{font-size:11px}}
+</style>
+<style>
+.page-head{padding-right:min(540px,51vw)}
+.online-head-actions{gap:12px}
+.online-quick-room{display:flex;gap:7px;align-items:center;padding:6px;border-radius:15px;background:#122d4b;border:1px solid #4779a4}
+.online-quick-room input{width:112px;min-width:0;background:#091b31;color:white;border:1px solid #6089ae;border-radius:9px;padding:10px 9px;text-transform:uppercase;letter-spacing:1px;font-weight:800}
+.online-quick-room button{border:0;border-radius:9px;padding:10px 11px;background:#2878bc;color:white;font:700 13px system-ui;cursor:pointer}
+.online-quick-room #online-quick-create{background:#176a5d}
+.online-quick-room button:disabled{opacity:.5;cursor:wait}
+.online-quick-room :focus-visible{outline:2px solid #ffe5a6;outline-offset:2px}
+.online-room-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#16345a;border:1px solid #335e8b;border-radius:12px;padding:10px 15px;margin:0 0 14px;color:#dbeeff;font-size:13px}
+.online-room-meta strong{color:#ffe2a4;letter-spacing:1px}
+.online-room-meta #online-room-status{color:#c3dbf2}
+.online-room-meta #online-room-players{margin:0}
+@media(max-width:1000px){.page-head{padding-right:0}.online-head-actions{position:static;justify-content:flex-end;margin:12px 0}.online-quick-room{flex-wrap:wrap}}
+@media(max-width:520px){.online-quick-room{flex:1}.online-quick-room input{flex:1;min-width:90px}.online-quick-room button{padding:9px}.online-profile-avatar{width:48px;height:48px}}
+</style><style>
+/* Compact, collapsible room controls in the top-right header */
+.page-head{padding-right:min(320px,34vw);min-height:115px}
+.online-head-actions{top:2px;right:0;align-items:flex-start}
+.online-room-dropdown{position:relative;z-index:10}
+.online-room-dropdown>summary{list-style:none;cursor:pointer;border:1px solid #5b8bb5;background:linear-gradient(120deg,#193d65,#236da0);color:#fff;border-radius:12px;padding:13px 16px;font:800 14px system-ui;box-shadow:0 5px 15px #0004;white-space:nowrap}
+.online-room-dropdown>summary::-webkit-details-marker{display:none}
+.online-room-dropdown[open]>summary{border-radius:12px 12px 0 0}
+.online-room-dropdown-panel{position:absolute;right:0;top:100%;width:min(350px,calc(100vw - 28px));box-sizing:border-box;padding:12px;background:#0e2641;border:1px solid #5b8bb5;border-radius:12px 0 12px 12px;box-shadow:0 14px 30px #0009}
+.online-room-dropdown .online-room-meta{margin:0 0 10px;padding:8px;display:flex;gap:5px;flex-direction:column;background:#183b61}
+.online-room-dropdown .online-quick-room{display:flex;flex-wrap:wrap;gap:8px}
+.online-room-dropdown .online-quick-room input{flex:1;min-width:110px}
+.online-room-dropdown .online-quick-room button{flex:1;min-width:95px}
+.online-room-dropdown>summary:focus-visible{outline:3px solid #ffdc8b;outline-offset:3px}
+@media(max-width:1000px){.page-head{padding-right:0}.online-head-actions{position:absolute;top:0;right:0;margin:0}.page-head{padding-top:0;padding-right:225px;min-height:132px}}
+@media(max-width:650px){.page-head{padding-right:0;padding-top:85px;min-height:0}.online-head-actions{top:0;right:0}.online-profile-avatar{width:48px;height:48px}.online-room-dropdown-panel{right:-62px}}
+
+/* Stable terrace background: fixed independent layer avoids Samsung browser scroll jitter. */
+html{background:#142c3d!important}
+body{background:transparent!important;isolation:isolate}
+body::before{content:''!important;position:fixed!important;inset:-2px!important;z-index:-2!important;background:#213b4b url('Assets/game-backgrounds/Spieleauswahl_Hintergrund.png') center center / cover no-repeat!important;transform:translateZ(0);pointer-events:none}
+body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(6,22,35,.32),rgba(7,25,38,.22) 50%,rgba(5,20,33,.4))}
+.container{width:min(1460px,calc(100% - 64px))!important;position:relative;z-index:1}
+.game-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:18px 22px!important}
+.game-grid>.game{aspect-ratio:696/320!important;min-height:0!important;width:100%;border-radius:23px!important}
+.game-grid>.game.party-challenge-card{grid-column:1/-1;aspect-ratio:696/210!important;max-width:100%}
+.page-head{background:rgba(12,32,50,.34)!important;border:1px solid #ffffff2b!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+@media(max-width:760px){.container{width:calc(100% - 24px)!important}.game-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}.game-grid>.game{aspect-ratio:696/400!important;border-radius:14px!important}.game-grid>.game.party-challenge-card{aspect-ratio:696/230!important}}
+@media(max-width:520px){.game-grid{grid-template-columns:1fr!important}.game-grid>.game{aspect-ratio:696/320!important}.game-grid>.game.party-challenge-card{grid-column:auto;aspect-ratio:696/320!important}}
+ .mini-new-card{background:linear-gradient(130deg,#102d42,#124a55)!important;border-color:#42b9b1!important}.mini-new-card::before{background-image:radial-gradient(circle at 75% 40%,#278e9b,#0d253e 65%)!important}.mini-new-card::after{background:linear-gradient(90deg,#061b30dd,transparent)!important}.mini-new-card .actions{position:relative;z-index:2}
+</style>
+<style>
+/* Accessible room dialog: independent of header and notice stacking contexts. */
+.online-room-dropdown-panel{display:none!important}
+.online-room-dropdown[open]>.online-room-dropdown-panel{display:none!important}
+.online-room-dialog{position:fixed;inset:0;z-index:2147483000;border:0;width:100%;max-width:none;height:100%;max-height:none;margin:0;padding:20px;background:transparent;color:#f5f8ff;overflow:auto;overscroll-behavior:contain}
+.online-room-dialog:not([open]){display:none}
+.online-room-dialog::backdrop{background:rgba(2,9,23,.77);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.online-room-dialog-card{width:min(440px,100%);max-height:calc(100dvh - 40px);overflow:auto;margin:min(7vh,55px) auto 0;padding:24px;border:1px solid #79aeec88;border-radius:24px;background:linear-gradient(150deg,#18395c,#0b1d36 75%);box-shadow:0 28px 90px #000b}
+.online-room-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px}
+.online-room-dialog-head h2{margin:0;font-size:23px;color:#fff}
+.online-room-dialog-close{width:40px;height:40px;flex:none;border-radius:50%;border:1px solid #88afd2;background:#294d70;color:white;font-size:24px;cursor:pointer}
+.online-room-dialog .online-room-meta{display:flex;flex-direction:column;align-items:stretch;gap:9px;padding:15px;background:#102b4c;border:1px solid #4b749d;border-radius:15px;color:#e5f2ff;font-size:14px;line-height:1.5}
+.online-room-dialog #online-room-code{font-size:21px;letter-spacing:2px}
+.online-room-dialog .online-quick-room{margin-top:14px;padding:13px;background:#102b4c;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.online-room-dialog .online-quick-room input{grid-column:1/-1;width:100%;min-width:0;font-size:16px}
+.online-room-dialog .online-quick-room button{min-height:44px;font-size:14px}
+.online-room-dialog .online-room-secondary{display:grid;gap:9px;margin-top:15px;padding-top:15px;border-top:1px solid #6385a377}
+.online-room-dialog .online-room-secondary button{width:100%;min-height:46px;border:1px solid #ce9a78;border-radius:13px;background:#57382d;color:#fff;font:750 15px system-ui;cursor:pointer}
+.online-room-dialog .online-room-secondary button:disabled{opacity:.5;cursor:not-allowed}
+.online-room-dialog .online-room-feedback{min-height:18px;margin:10px 0 0;color:#ffccaa;font-size:13px}
+@media(max-width:520px){.online-room-dialog{padding:12px}.online-room-dialog-card{margin:12px auto 0;max-height:calc(100dvh - 24px);padding:17px}.online-room-dialog-head h2{font-size:20px}}
+</style><style id="deal-card-style">
+/* Bildkachel wie Kniffel: komplettes Motiv anklickbar, Verbindung zur Deal-Lobby unverändert. */
+.deal-card{padding:0!important;background:#0b1022!important;border:2px solid #dcb15f!important;box-shadow:0 13px 35px #0006,0 0 0 1px #fff2 inset}
+.deal-card::before,.deal-card::after{display:none!important}
+.deal-card .deal-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;pointer-events:none;transition:transform .45s ease}
+.deal-card:hover .deal-art{transform:scale(1.035)}
+.deal-card .actions{position:absolute;inset:0;z-index:2;margin:0;padding:0}
+.deal-card .deal-image-card-button{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:flex-end;width:100%;height:100%;min-height:0;margin:0;padding:15px;border:0;border-radius:0;background:transparent!important;box-shadow:none!important;color:#2d1a0c;text-decoration:none}
+.deal-card .deal-entry-caption{display:inline-flex;align-items:center;justify-content:center;padding:11px 15px;border-radius:13px;background:linear-gradient(120deg,#ffe6a7,#e3b458 62%,#b57b2e);border:1px solid #ffefbb;box-shadow:0 5px 20px #0009,inset 0 1px #fff9;color:#2c1a0d;font-weight:800;font-size:clamp(12px,1.1vw,16px);line-height:1.2;text-shadow:none;white-space:nowrap;pointer-events:none;transition:transform .2s ease,box-shadow .2s ease}
+.deal-card .deal-image-card-button:hover .deal-entry-caption,.deal-card .deal-image-card-button:focus-visible .deal-entry-caption{transform:translateY(-2px);box-shadow:0 9px 24px #000b,0 0 0 2px #fff4}
+.deal-card .deal-image-card-button:focus-visible{outline:3px solid #fff1a5;outline-offset:-5px}
+@media(max-width:600px){.deal-card .deal-image-card-button{padding:10px}.deal-card .deal-entry-caption{padding:9px 12px;font-size:13px}}
+@media(prefers-reduced-motion:reduce){.deal-card .deal-art,.deal-card .deal-entry-caption{transition:none}}
+</style>
+<style>
+  .game.dog-online-card{background:radial-gradient(ellipse at 70% 24%,#d5a86685,transparent 35%),linear-gradient(125deg,#0e2837,#152536 75%)!important;border:2px solid #d9b676!important;position:relative;overflow:hidden;display:flex!important;align-items:center;justify-content:center;aspect-ratio:1.15!important;min-height:210px!important;padding:10px!important}
+  .game.dog-online-card::before{background:none!important}
+  .game.dog-online-card::after{background:linear-gradient(155deg,#0002,#0006)!important;display:block!important}
+  .dog-online-card .dog-hero{display:flex;flex-direction:column;align-items:center;gap:6px;z-index:2;pointer-events:none;text-align:center}
+  .dog-online-card .dog-paw{font-size:28px;filter:drop-shadow(0 0 12px #e1b16a55)}
+  .dog-online-card strong{font-weight:1000;letter-spacing:.13em;color:#ffe4b0;font-size:clamp(32px,4vw,54px);text-shadow:0 4px 10px #0007}
+  .dog-online-card span{font-size:clamp(13px,1.2vw,18px);color:#fff2d4;font-weight:800}
+  .dog-online-card small{font-size:12px;color:#d3dee6;font-weight:650}
+  .dog-online-card .actions{position:absolute!important;inset:0!important;margin:0!important;padding:0!important;z-index:8!important}
+  .dog-online-card .image-card-button{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;background:transparent!important;border:0!important;cursor:pointer}
+  @media(max-width:760px){.game.dog-online-card{aspect-ratio:1.2!important}}
+  </style>
 </head>
 <body>
-<main><h1>🎲 Eine gemeinsame Spielsammlung</h1><p>Die frühere Spielauswahl wurde abgeschaltet. Du wirst zur neuen Lobby weitergeleitet.</p><a href="hub-lobby.html">Zur neuen Spielsammlung</a></main>
+  <main class="container">
+    <header class="page-head">
+      <h1>🌐 Online-Spielauswahl</h1>
+
+      <nav class="online-head-actions" aria-label="Raum und Profil">
+        <button type="button" id="online-room-dialog-trigger" class="online-room-manage" aria-haspopup="dialog" aria-controls="online-room-dialog">🌐 Raum ▾</button>
+        <a class="online-profile-shortcut" href="profile.html" aria-label="Mein Spielerprofil öffnen" title="Mein Spielerprofil"><span class="online-profile-avatar" id="online-profile-avatar" aria-hidden="true">👤</span><span class="online-profile-label">Profil</span></a>
+      </nav>
+    </header>
+  <dialog id="online-room-dialog" class="online-room-dialog" aria-labelledby="online-room-dialog-title">
+    <div class="online-room-dialog-card">
+      <div class="online-room-dialog-head"><h2 id="online-room-dialog-title">🌐 Raumverwaltung</h2><button type="button" id="online-room-dialog-close" class="online-room-dialog-close" aria-label="Raummenü schließen">×</button></div>
+      <div class="online-room-meta" role="status"><span>Raumcode: <strong id="online-room-code">······</strong></span><span id="online-room-status">Verbindung wird geprüft …</span><span id="online-room-players"></span></div>
+      <form id="online-quick-room" class="online-quick-room" aria-label="Online-Raum verwalten"><input id="online-quick-code" aria-label="Raumcode eingeben" maxlength="6" placeholder="Raumcode" autocomplete="off" spellcheck="false" inputmode="text"><button type="submit" id="online-quick-join">Beitreten</button><button type="button" id="online-quick-create">＋ Erstellen</button></form>
+      <div class="online-room-secondary"><button type="button" id="online-room-leave" disabled>🚪 Raum verlassen</button></div>
+      <p class="online-room-feedback" id="online-room-feedback" role="alert"></p>
+    </div>
+  </dialog>
+ <p id="online-notice" class="online-room-notice" role="status">Bitte warten, bis dein Online-Profil verbunden ist.</p>
+<section class="game-grid" aria-label="Verfügbare Spiele">
+      <article class="game barikade-card">
+        
+        <div class="actions">
+          <button type="button" class="btn purple online-game-button image-card-button" aria-label="Barikade auswählen" data-select-game="barikade"><span class="visually-hidden">barikade auswählen</span></button>
+        </div>
+      </article>
+      <article class="game skyjo-card">
+        
+        <div class="actions skyjo-actions">
+          <button type="button" class="btn purple online-game-button image-card-button" aria-label="SKYJO Action auswählen" data-select-game="skyjo"><span class="visually-hidden">skyjo auswählen</span></button>
+          
+        </div>
+      </article>
+      <article class="game kreuzkunter-card">
+        
+        <div class="actions skyjo-actions kreuzkunter-actions">
+          <button type="button" class="btn purple online-game-button image-card-button" aria-label="KreuzKunter auswählen" data-select-game="kreuz"><span class="visually-hidden">kreuz auswählen</span></button>
+          
+        </div>
+      </article>
+      <article class="game business-card">
+        
+        <div class="actions business-actions">
+          <button type="button" class="btn purple online-game-button image-card-button" aria-label="Das große Business auswählen" data-select-game="business"><span class="visually-hidden">business auswählen</span></button>
+          
+        </div>
+      </article>
+      <article class="game kniffel-card">
+        <img class="kniffel-art" src="Assets/game-backgrounds/kniffel-kachel.webp" alt="Kniffel" loading="lazy">
+        <div class="actions"><button type="button" class="btn purple online-game-button image-card-button" aria-label="Kniffel online auswählen" data-select-game="kniffel"><span class="visually-hidden">Kniffel auswählen</span></button></div>
+      </article>
+      <article class="game dog-online-card"><div class="dog-hero"><div class="dog-paw">🐾</div><strong>DOG</strong><span>Das klassische Team-Brettspiel</span><small>Mit Freunden online oder Bots</small></div><div class="actions"><button type="button" class="btn gold online-game-button image-card-button" aria-label="DOG klassisch im Raum auswählen" data-select-game="dog"><span class="visually-hidden">DOG auswählen</span></button></div></article>
+      <article class="game deal-card">
+        <img class="deal-art" src="DealOrNoDeal/assets/file_0000000001f4821084eb39e6d210088e.png?v=20261110" alt="" loading="lazy" decoding="async">
+        <div class="actions"><a class="btn gold deal-image-card-button" id="deal-online-entry" href="DealOrNoDeal/lobby.html" aria-label="Deal or No Deal – Goldstudio-Lobby öffnen"><span class="deal-entry-caption">Goldstudio-Lobby öffnen ›</span></a></div>
+      </article>
+      <article class="game mini-new-card"><div class="game-title"><h2>🎮 Minispiele NEU</h2></div><div class="actions"><a class="btn green" href="MinispieleV2/lobby.html" id="mini-v2-entry" aria-label="Neue Minispiele-Lobby öffnen">Neue Lobby öffnen ›</a></div></article>
+    </section>
+  </main>
+
+<script src="profile-config.js"></script>
+<script src="profile-auth.js"></script>
+<script src="DOG/avatar-picker.js?v=3"></script>
+<script src="spielauswahl-online.js?v=restored-20261115-v2" defer></script>
+<script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script>
+<script>
+/* Bildtitel nur ausblenden, wenn die vier Originaldateien wirklich vorhanden sind. */
+(function(){
+ const images=[['barikade-card','Barikade_EXAKT_AUS_VORLAGE.webp'],['skyjo-card','SKYJO_Action_EXAKT_AUS_VORLAGE.webp'],['kreuzkunter-card','KreuzKunter_EXAKT_AUS_VORLAGE.webp'],['business-card','Das_grosse_Business_EXAKT_AUS_VORLAGE.webp']];
+ images.forEach(function(entry){const card=document.querySelector('.'+entry[0]);if(!card)return;const img=new Image();img.onload=function(){if(img.naturalWidth>100)card.classList.add('original-art-loaded')};img.src='Assets/game-backgrounds/'+entry[1]});
+})();
+</script>
+
+<script>
+(function(){const card=document.querySelector('.party-challenge-card');if(!card)return;const img=new Image();img.onload=function(){if(img.naturalWidth>100)card.classList.add('mini-art-loaded')};img.src='Assets/game-backgrounds/Mini-Spiele.png';})();
+</script>
+<script>
+(function(){
+  const entry=document.getElementById('mini-v2-entry');
+  if(!entry)return;
+  function syncLink(){
+    const code=new URLSearchParams(location.search).get('room');
+    entry.href='MinispieleV2/lobby.html'+(code&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(code)?'?room='+encodeURIComponent(code):'');
+  }
+  syncLink();
+  window.addEventListener('popstate',syncLink);
+  let busy=false;
+  entry.addEventListener('click',async event=>{
+    const current=new URL(entry.href,location.href);
+    if(current.searchParams.get('room'))return;
+    event.preventDefault();
+    if(busy)return;
+    const state=window.SpielOnline?.state?.();
+    const person=state?.status==='online'&&state?.profile?.setupComplete!==false?state.user:null;
+    const notice=document.getElementById('online-notice');
+    const show=msg=>{if(notice)notice.textContent=msg};
+    if(!person?.getIdToken){show('Bitte zuerst mit deinem Online-Profil anmelden.');return}
+    busy=true;entry.textContent='Raum wird erstellt …';
+    try{
+      const token=await person.getIdToken();
+      const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
+      const response=await fetch(base+'/api/hub/rooms',{method:'POST',mode:'cors',cache:'no-store',headers:{Authorization:'Bearer '+token}});
+      const data=await response.json();
+      if(!response.ok||data.ok!==true||!data.room?.code)throw Error(data.error||'ROOM_CREATE_FAILED');
+      const code=String(data.room.code);
+      try{localStorage.setItem('spielportal:last-room:'+person.uid,code)}catch(_){}
+      location.assign('MinispieleV2/lobby.html?room='+encodeURIComponent(code));
+    }catch(error){
+      show('Raum konnte nicht erstellt werden: '+(error.message||'Verbindungsfehler'));
+      busy=false;entry.textContent='Neue Lobby öffnen ›';
+    }
+  });
+})();
+</script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+ const dialog=document.getElementById('online-room-dialog');
+ const trigger=document.getElementById('online-room-dialog-trigger');
+ const close=document.getElementById('online-room-dialog-close');
+ trigger?.addEventListener('click',()=>{if(!dialog?.open)dialog.showModal();});
+ close?.addEventListener('click',()=>dialog?.close());
+ dialog?.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
+});
+</script>
+<script id="deal-entry-room-preserve">
+(function(){
+ 'use strict';
+ const entry=document.getElementById('deal-online-entry');
+ if(!entry)return;
+ const caption=entry.querySelector('.deal-entry-caption');
+ const valid=code=>/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/i.test(String(code||''));
+ const destination=code=>'DealOrNoDeal/lobby.html'+(valid(code)?'?room='+encodeURIComponent(code):'');
+ const suppliedRoom=()=>{
+   const room=new URLSearchParams(location.search).get('room');
+   return valid(room)?String(room).toUpperCase():'';
+ };
+ const person=()=>{
+   const state=window.SpielOnline?.state?.();
+   return state?.status==='online'&&state?.profile?.setupComplete!==false&&state?.user?.getIdToken?state.user:null;
+ };
+ const cachedRoom=user=>{
+   if(!user?.uid)return '';
+   try{
+     const code=localStorage.getItem('spielportal:last-room:'+user.uid)||'';
+     return valid(code)?code.toUpperCase():'';
+   }catch(_){return ''}
+ };
+ const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
+ const notice=document.getElementById('online-notice');
+ const show=message=>{if(notice){notice.textContent=message;notice.classList.add('error')}else alert(message)};
+ const label=message=>{if(caption)caption.textContent=message};
+ function sync(){
+   // Preserve the current multiplayer room even when the selection URL does not contain ?room=.
+   const code=suppliedRoom()||cachedRoom(person());
+   entry.href=destination(code);
+ }
+ sync();
+ window.addEventListener('popstate',sync);
+ window.addEventListener('spielonline-change',sync);
+ let busy=false;
+ entry.addEventListener('click',async event=>{
+   if(event.defaultPrevented||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+   // A room supplied in the URL is authoritative; normal navigation keeps all players together.
+   if(suppliedRoom())return;
+   const user=person();
+   if(!user){
+     // Never trap the click behind authentication; the lobby can display login/room guidance.
+     entry.href=destination('');
+     return;
+   }
+   event.preventDefault();
+   if(busy)return;
+   busy=true;label('Goldstudio wird geöffnet …');
+   try{
+     const token=await user.getIdToken();
+     const last=cachedRoom(user);
+     if(last){
+       // Reuse the existing room, but do not send the player to an expired/stale one.
+       const response=await fetch(base+'/api/hub/rooms/'+encodeURIComponent(last),{
+         headers:{Authorization:'Bearer '+token},cache:'no-store'
+       });
+       const data=await response.json();
+       if(response.ok&&data?.ok===true&&String(data.room?.code||'').toUpperCase()===last){
+         location.assign(destination(last));return;
+       }
+       if(!['ROOM_NOT_FOUND','NOT_A_MEMBER','ROOM_ACCESS_DENIED'].includes(String(data?.error||''))&&response.status!==404&&response.status!==403){
+         throw Error(data?.error||'ROOM_CHECK_FAILED');
+       }
+     }
+     label('Raum wird erstellt …');
+     const response=await fetch(base+'/api/hub/rooms',{
+       method:'POST',mode:'cors',cache:'no-store',headers:{Authorization:'Bearer '+token}
+     });
+     const data=await response.json();
+     if(!response.ok||data?.ok!==true||!valid(data.room?.code))throw Error(data?.error||'ROOM_CREATE_FAILED');
+     const code=String(data.room.code).toUpperCase();
+     try{localStorage.setItem('spielportal:last-room:'+user.uid,code)}catch(_){}
+     location.assign(destination(code));
+   }catch(error){
+     show('Deal or No Deal konnte nicht geöffnet werden: '+(error.message||'Verbindungsfehler')+'. Bitte erneut versuchen.');
+     busy=false;label('Goldstudio-Lobby öffnen ›');
+   }
+ });
+ // Fallback for a card hit outside the overlay link on touch devices.
+ entry.closest('.deal-card')?.addEventListener('click',event=>{
+   if(event.target.closest('a,button,input,select,textarea'))return;
+   entry.click();
+ });
+})();
+</script>
+<script src="site-global-controls.js?v=20261109-global-1"></script>
 </body>
 </html>
