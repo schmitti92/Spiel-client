@@ -1,4 +1,5 @@
 import {BOARD_STYLES,isBoardUnlocked,loadAppearance,saveAppearance} from './appearance-registry.js?v=22';
+import {guardDesignerLink} from './designer-level-access.js?v=1';
 
 const ORDER=['studio','schiefer','pergament','holz','bergsee','goldwellen','royalMarmor','maerchental','alpenland','kuestenabenteuer','royalKarten','zauberwald','weihnachtsdorf','lebkuchenwerkstatt','polarlichtpalast','winterlandschaft'];
 const FALLBACK='linear-gradient(140deg,#243e52,#081524)';
@@ -49,7 +50,11 @@ renderActive();
 // Keep the room code and stage in the return URL while editing locally.
 document.querySelectorAll('[data-dog-studio-link]').forEach(link=>{
  const caller='../'+location.pathname.split('/').pop()+location.search+location.hash;
- link.href='DOG/design-studio.html?return='+encodeURIComponent(caller);
+ const target='DOG/design-studio.html?return='+encodeURIComponent(caller);
+ const firstText=[...link.childNodes].find(n=>n.nodeType===3)?.textContent||'🎨 DOG Design-Studio öffnen ';
+ guardDesignerLink(link,{target,
+  lockedText:'🔒 DOG Design-Studio · ab Level 2 ',
+  unlockedText:firstText});
 });
 window.addEventListener('storage',event=>{
  if(event.key==='dog:appearance:v1')renderActive();
