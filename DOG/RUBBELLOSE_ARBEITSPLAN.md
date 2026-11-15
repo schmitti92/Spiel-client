@@ -1,4 +1,4 @@
-# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v11
+# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v12
 Stand: 15.11.2026. Status: KORRIGIERTE KLASSEN: 2 Einfach (200) + 1 Mittel (500) + 1 Premium (1000). Die vier Varianten sind serverseitig klassengenau zugeordnet; das dritte Los ist ein ausschließlich mittleres Rubbellos, kein Premiumlos. Das dritte Motiv ist als SVG integriert und der Gewinnweg wird hervorgehoben. Das zweite Eis-Palast-WebP und das vierte Motiv bleiben offene Grafikaufgaben.
 Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 
@@ -156,6 +156,17 @@ Abnahme: Testbericht mit erwarteten und beobachteten Werten.
 - Freigabe erst nach bestandenem End-to-End-Test; Rückfallplan.
 Abnahme: echte Spielrunde über mehrere Geräte.
 
+## Nach Abschluss aller vier Lose – Host-Einstellungen (bewusst zurückgestellt)
+**Status: GEPLANT, NICHT JETZT IMPLEMENTIEREN.** Nutzerwunsch vom 15.11.2026: Erst wenn alle vier Rubbellose fertig gestaltet, korrekt zugeordnet und getestet sind, wird die Host-Einstellungsfunktion entwickelt. Bis dahin keine Änderungen an Kauf-/Gewinnlogik und kein funktionsloser Einstellungen-Button.
+
+- Im Rubbellos-Tab ganz oben **rechts** erscheint nur für den authentifizierten **Spielhost** ein Zahnrad-Button „Einstellungen“; Gäste und normale Mitspieler sehen ihn nicht.
+- Ein Klick öffnet ein übersichtliches Host-Einstellungsfenster, ohne die Rubbellos-Seite zu verlassen.
+- **„Kostenlose Rubbellose für mich“**: vom Host aktivierbarer/deaktivierbarer Schalter; wenn aktiv, darf nur der berechtigte Host selbst Lose für 0 Goldmünzen öffnen. Alle anderen Spieler bezahlen unverändert den normalen Preis; bestehendes tägliches Gratislos bleibt separat.
+- Auch kostenlose Lose müssen **serverseitig** autorisiert, regelkonform erzeugt, gegen Missbrauch/Doppelbuchung geprüft und korrekt gutgeschrieben werden. Keine manipulierten Clientwerte und keine zusätzlichen Firestore-Schreibvorgänge beim eigentlichen Rubbeln.
+- **Spätere Einstellung der individuellen Gewinn-Gewichtung jedes der vier Lose**: jeweils separate Einstellungen für 🎁 Geschenkelinie (Einfach 200), ❄️ Schneeflocken-Bingo (Einfach 200), 🧝 Magischer Wichtelpfad (Mittel 500) und 🎄 Weihnachtsbaum-Geheimnis (Premium 1000). Nieten, Münzgewinne, Freischaltungen sowie Sonderereignisse als verständliche, servergeprüfte Prozent-/Gewichtungsfelder mit Standardwerten und „Zurücksetzen“. Nicht versehentlich die Häufigkeit der Losarten mit ihrer Gewinnauszahlung vermischen.
+- Vor Aktivierung die genauen einstellbaren Parameter und ihre Auswirkungen auf Spieler, Guthaben und Fairness gemeinsam festlegen. Einstellungen nur für **neue** Lose anwenden, nie bereits gekaufte oder verbuchte Lose nachträglich verändern; serverseitig persistieren und nur dem Host Bearbeitungsrechte geben.
+- **Abnahmereihenfolge:** zuerst alle vier Lose vollständig fertigstellen und mobil testen; danach Hostberechtigung und kostenloses Öffnen; zuletzt die individuelle Gewichtungsoberfläche samt Validierung, Simulation und Sicherheitstests. **Aktuell nur dokumentieren.**
+
 ## Statusprotokoll
 - 15.11.2026: Plan v1 erstellt und im Frontend-Repository hinterlegt. Keine Spielmechanik durch dieses Dokument geändert.
 - 15.11.2026: Plan v2 – bestätigte Gewichtungen ergänzt und rechnerisch geprüft. Spielcode unverändert.
@@ -175,3 +186,5 @@ Abnahme: echte Spielrunde über mehrere Geräte.
 - Nächster Schritt: `schneeflocken-bingo-01.webp` nach GitHub hochladen und mit dem normalen Konto testen; dann die zwei Premium-Motive nacheinander entwickeln.
 
 - 15.11.2026: Verbindliche Nutzerkorrektur: Los 3 „Magischer Wichtelpfad“ ist die einzige **mittlere** Variante für **500 Goldmünzen**, nicht Premium. Server-Pool auf `simple: gifts/snow_collect`, `medium: elf`, `premium: tree` geändert. Das Motiv ist `wichtelpfad-mittel-01.svg`; Shop zeigt pro Preisklasse die zugehörigen Varianten. Preise, bestehende Lose und Wahrscheinlichkeitsmatrix unverändert. Echtes End-to-End noch offen.
+
+- 15.11.2026: Host-Wunsch für spätere Phase festgehalten: Rubbellos-Zahnrad oben rechts (nur Host), Schalter zum kostenfreien Eigenöffnen sowie je Los einzeln konfigurierbare Gewichtungen. Entwicklung ausdrücklich bis zur Fertigstellung aller vier Rubbellose zurückgestellt; keine aktuelle Funktionsänderung.
