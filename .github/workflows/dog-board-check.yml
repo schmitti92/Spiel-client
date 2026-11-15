@@ -30,6 +30,7 @@ on:
       - '.github/workflows/dog-board-check.yml'
   pull_request:
     paths:
+      - 'tests/dog-christmas-rewards.test.mjs'
       - 'DOG/**'
       - 'tests/dog-board-layout.test.mjs'
       - 'tests/dog-board-builder.test.mjs'
