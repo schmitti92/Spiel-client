@@ -1,6 +1,6 @@
 :root{color-scheme:dark;--gold:#f0cf8e;--line:#b99959;--ink:#f8f1e7;--muted:#c6d4df}
 *{box-sizing:border-box}html{min-height:100%;background:#061426}
-body{margin:0;min-height:100dvh;font:14px/1.5 Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#061426}
+body{margin:0;position:relative;isolation:isolate;min-height:100dvh;font:14px/1.5 Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#061426}
 body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:linear-gradient(135deg,#041728e0,#0417288b 48%,#061023cf),url("DealOrNoDeal/assets/weihnachts_event/winterlobby.png") center/cover no-repeat}
 body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 48% 0,#ffd78a26,transparent 57%)}
 button,a{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #fff8c6;outline-offset:3px}
@@ -59,3 +59,5 @@ button,a{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible
 @media(max-width:760px){.meta-album-header{grid-template-columns:1fr auto}.meta-album-back{grid-column:1;grid-row:1;justify-self:start}.meta-album-heading{grid-column:1/-1;grid-row:2}.meta-album-overview{grid-column:2;grid-row:1;padding:9px 11px}.meta-album-overview>span,.meta-album-overview small{display:none}.meta-album-layout{display:flex;flex-direction:column}.meta-album-themes{gap:8px}.meta-album-panel-head{justify-content:flex-start}.meta-album-sidebar-foot{display:none}#meta-theme-list{flex-direction:row;overflow:auto}.meta-theme-button{flex:0 0 min(260px,90vw)}.meta-album-gallery-panel{min-height:380px}.meta-album-gallery-scroll{max-height:none}.meta-album-detail{max-height:none}.meta-picture-detail{display:grid;grid-template-columns:minmax(135px,38%) 1fr;gap:7px 12px;align-items:start}.meta-detail-artwork{grid-row:span 6}.meta-detail-title,.meta-detail-description,.meta-detail-message{text-align:left}.meta-detail-disabled{min-height:39px;margin-top:0}.meta-album-footer{flex-wrap:wrap}}
 @media(max-width:480px){.meta-album-heading h1{font-size:30px}.meta-picture-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.meta-gallery-header{flex-wrap:wrap}.meta-gallery-notice{font-size:10px}.meta-detail-title{font-size:17px}.meta-detail-message,.meta-detail-description{font-size:10px}.meta-picture-detail{grid-template-columns:minmax(108px,42%) 1fr}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+.meta-picture-artwork img[hidden],.meta-detail-artwork img[hidden]{display:none!important}
