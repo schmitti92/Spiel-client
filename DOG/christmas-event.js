@@ -252,7 +252,7 @@ treeNames.forEach((name,i)=>{
 function centerTreeMilestone(){
  const current=steps.querySelector('.tree-step.selected');
  if(!current||!steps.clientWidth)return;
- const center=current.offsetLeft-steps.offsetLeft+current.offsetWidth/2-steps.clientWidth/2;
+ const center=current.offsetLeft+current.offsetWidth/2-steps.clientWidth/2;
  steps.scrollTo({left:Math.max(0,center),behavior:'auto'});
 }
 function refreshPreview(){
