@@ -217,3 +217,22 @@ test('opened scratch tickets fit in a single viewport on tablet, phone and lands
  assert.match(js,/document\.body\.classList\.add\('scratch-ticket-open'\)/);
  assert.match(js,/document\.body\.classList\.remove\('scratch-ticket-open'\)/);
 });
+
+test('premium v4 shows every actual reward and its permanent 1000-coin threshold',()=>{
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const css=source('../DOG/christmas-scratch.css');
+ assert.match(js,/version===4/);
+ assert.match(js,/symbolVersion===4/);
+ assert.match(js,/20 Symbole = 1\.000/);
+ assert.match(js,/function drawPrizeTable\(result,entries=\[\]\)/);
+ assert.match(js,/if\(finished\)\{/);
+ assert.match(js,/Array\.isArray\(result\?\.winnings\)\?result\.winnings:entries/);
+ assert.match(js,/section=el\('section','scratch-current-awards'\)/);
+ assert.match(js,/scratch-current-value/);
+ assert.match(js,/scratch-current-summary/);
+ assert.match(js,/prize\.milestone\|\|win\?\.rule/);
+ assert.match(js,/\[3,4\]\.includes\(board\.symbolVersion\)/);
+ assert.match(css,/\.scratch-current-grid/);
+ assert.match(css,/\.scratch-current-item\.is-unlock/);
+ assert.match(css,/\.scratch-stage\.is-revealed:not\(\[hidden\]\) > \.scratch-prize-sidebar > :not\(\.scratch-current-awards\)/);
+});
