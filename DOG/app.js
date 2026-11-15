@@ -27,8 +27,10 @@ async function hubRequest(path,method='GET',payload){
  const person=user();if(!person)throw Error('Bitte melde dich mit deinem Online-Profil an.');
  const token=await person.getIdToken();
  const response=await fetch(apiBase+'/api/hub/rooms/'+hubCode+path,{method,headers:{Authorization:'Bearer '+token,...(payload?{'Content-Type':'application/json'}:{})},body:payload?JSON.stringify(payload):undefined,cache:'no-store'});
- const body=await response.json();
- if(!response.ok||!body.ok)throw Error(body.error||'SERVER_ERROR');
+ let body;
+ try{body=await response.json();}
+ catch{throw Error('Render liefert keine gültigen Spieldaten (HTTP '+response.status+'). Bitte Verbindung prüfen.');}
+ if(!response.ok||!body?.ok)throw Error(body?.error||'Server antwortet mit HTTP '+response.status);
  return body.room;
 }
 function acceptRemote(room){
