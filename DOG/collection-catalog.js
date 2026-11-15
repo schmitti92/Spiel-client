@@ -2,14 +2,14 @@
  * Registry entries are available cosmetic choices, NOT proof of event ownership.
  * Only available, already implemented items appear in the shipped collection.
  */
-import {BOARD_STYLES,isBoardUnlocked,SCENE_STYLES,PIECE_STYLES,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,HUD_TONES,HUD_LAYOUTS} from './appearance-registry.js?v=23';
-import {CARD_EDITION,CARD_EDITIONS,cardVisual,isCardEditionUnlocked} from './card-visuals.js?v=8';
-import {DOG_EMOJIS,DOG_EMOJI_STARTERS,DOG_CHRISTMAS_EMOJIS} from './dog-emojis.js?v=2';
+import {BOARD_STYLES,isBoardUnlocked,SCENE_STYLES,PIECE_STYLES,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,HUD_TONES,HUD_LAYOUTS} from './appearance-registry.js?v=24';
+import {CARD_EDITION,CARD_EDITIONS,cardVisual,isCardEditionUnlocked} from './card-visuals.js?v=9';
+import {DOG_EMOJIS,DOG_EMOJI_STARTERS,DOG_CHRISTMAS_EMOJIS} from './dog-emojis.js?v=3';
 import {CHRISTMAS_AVATARS} from './christmas-avatar-catalog.js?v=1';
 import {CHRISTMAS_NAME_FRAMES} from './christmas-nameframe-catalog.js?v=1';
 import {CHRISTMAS_ACTIVE_ICONS} from './christmas-activeicon-catalog.js?v=1';
 import {buildDogCollection} from './collection-extensions.js?v=2';
-import {isChristmasRewardLocked} from './christmas-reward-locks.js?v=2';
+import {isChristmasRewardLocked} from './christmas-reward-locks.js?v=4';
 const avail=(id,name,extra={})=>({id,name,status:'available',...extra});
 const BASE_COLLECTION_CATEGORIES=[
  {id:'backgrounds',icon:'🏞️',title:'Hintergründe',subtitle:'Landschaften für die gesamte DOG-Seite',items:[
