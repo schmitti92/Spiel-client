@@ -26,7 +26,7 @@ test('Meta gallery remains preview-only until verified server grants exist',()=>
  const html=source('../meta-sammelalbum.html');
  assert.match(frontend,/const unlocked=isMetaAlbumPictureUnlocked\(pic\)/);
  assert.match(frontend,/disabled\.disabled=true/);
- assert.doesNotMatch(frontend,/localStorage|sessionStorage|setItem|fetch\\s*\\(|\.post\(/);
+ assert.doesNotMatch(frontend,/localStorage|sessionStorage|setItem|fetch\s*\(|\.post\(/);
  assert.match(html,/id="meta-theme-list"/);
  assert.match(html,/id="meta-picture-grid"/);
  assert.match(html,/id="meta-picture-detail"/);
