@@ -10,8 +10,24 @@ export const CARD_EDITIONS=Object.freeze({
   label:'DOG Royal · Kartendesign 01',
   base:'./assets/karten/kartendesign-01/normiert/',
   width:700,height:980
+ }),
+ 'kartendesign-02':Object.freeze({
+  label:'❄️ Winterzauber · Blau',
+  base:'./assets/karten/kartendesign-02/normiert/',
+  width:1024,height:1536,
+  unlockId:'christmas2026:cards:kartendesign-02'
+ }),
+ 'kartendesign-03':Object.freeze({
+  label:'🎄 Weihnachtsglanz · Rot-Grün-Gold',
+  base:'./assets/karten/kartendesign-03/normiert/',
+  width:700,height:980,
+  unlockId:'christmas2026:cards:kartendesign-03'
  })
 });
+/** A registered upload is a preview, not proof of event ownership.
+ * Future activation requires an authenticated, per-user Render entitlement. */
+export const isCardEditionUnlocked=id=>Boolean(Object.hasOwn(CARD_EDITIONS,id)&&!CARD_EDITIONS[id].unlockId);
+
 export const CARD_FILE_NAMES=Object.freeze({
  '1/11':'1-11','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8',
  '9':'9','10':'10','12':'12','13':'13','swap':'tausch','joker':'joker'
@@ -19,16 +35,16 @@ export const CARD_FILE_NAMES=Object.freeze({
 export function loadCardEdition(storage=typeof localStorage==='undefined'?null:localStorage){
  try{
   const id=storage?.getItem(CARD_EDITION_STORAGE_KEY);
-  return id&&Object.hasOwn(CARD_EDITIONS,id)?id:CARD_EDITION;
+  return isCardEditionUnlocked(id)?id:CARD_EDITION;
  }catch{return CARD_EDITION;}
 }
 export function saveCardEdition(id,storage=typeof localStorage==='undefined'?null:localStorage){
- const selected=Object.hasOwn(CARD_EDITIONS,id)?id:CARD_EDITION;
+ const selected=isCardEditionUnlocked(id)?id:CARD_EDITION;
  try{storage?.setItem(CARD_EDITION_STORAGE_KEY,selected);}catch{}
  return selected;
 }
 export function cardBackImage(edition=loadCardEdition()){
- const item=CARD_EDITIONS[edition]||CARD_EDITIONS[CARD_EDITION];
+ const item=CARD_EDITIONS[isCardEditionUnlocked(edition)?edition:CARD_EDITION];
  return item.base+'rueckseite.png';
 }
 export const CARD_ASSET_BASE=CARD_EDITIONS[CARD_EDITION].base;
