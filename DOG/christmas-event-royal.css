@@ -402,3 +402,23 @@ dialog.village-building-dialog::backdrop{
   transition:none;
  }
 }
+
+
+/* The Christmas tree itself opens the existing tree stage/rewards view. */
+.village-hotspots .village-tree-hit{
+ position:absolute;left:41%;top:33%;width:19%;height:54%;
+ z-index:1;display:block;pointer-events:auto;
+ padding:0;min-width:0;min-height:0;
+ border:2px solid transparent;border-radius:46% 46% 18% 18%;
+ background:transparent;cursor:pointer;touch-action:manipulation;
+ transition:border-color .18s,background .18s,box-shadow .18s;
+}
+.village-hotspots .village-tree-hit:hover,
+.village-hotspots .village-tree-hit:focus-visible{
+ background:#ffe4a514;border-color:#ffe8b4b3;
+ box-shadow:0 0 25px #ffd67a55,inset 0 0 20px #ffe3ae27;
+ outline:2px solid #ffeec1;outline-offset:2px;
+}
+@media(prefers-reduced-motion:reduce){
+ .village-hotspots .village-tree-hit{transition:none}
+}
