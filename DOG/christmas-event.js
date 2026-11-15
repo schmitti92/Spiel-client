@@ -24,9 +24,9 @@ const definitions=[
   {id:'bakery',icon:'🍪',title:'Weihnachtsbäckerei',summary:'Mehr gemeinsame Weihnachtslichter aus gesammelten Geschenken.',
     visuals:['Ein schlichtes kleines Backhaus.','Die Fenster leuchten und ein erster Kranz erscheint.','Lebkuchenstand und warme Lichter im Schaufenster.','Größere Backstube, Schornstein und Lichtergirlanden.','Eine prächtige Zuckerbäckerei voller festlichem Glanz.'],
     effects:['Grundwert','+10 % Lichter','+20 % Lichter','+30 % Lichter','+40 % Lichter']},
-  {id:'inn',icon:'🕯️',title:'Friedensherberge',summary:'Gemeinschaftsbonus nach vollständig abgeschlossenen Partien.',
+  {id:'inn',icon:'🕯️',title:'Friedensherberge',summary:'Mehr versteckte Rubbellose auf dem DOG-Brett und Lichterbonus nach Partien.',
     visuals:['Eine kleine, einfache Herberge.','Kranz an der Tür und Kerzen in den Fenstern.','Laternen am Weg und mehr Zimmer für die Dorfbewohner.','Festlicher Dachaufbau und immer hellere Fenster.','Ein großes, warm leuchtendes Haus der Freundschaft.'],
-    effects:['Kein Rundenbonus','+1 Licht / Partie','+2 Lichter / Partie','+3 Lichter / Partie','+4 Lichter / Partie']}
+    effects:['8 Rubbellos-Felder · Kein Rundenbonus','10 Rubbellos-Felder · +1 Licht / Partie','12 Rubbellos-Felder · +2 Lichter / Partie','14 Rubbellos-Felder · +3 Lichter / Partie','16 Rubbellos-Felder · +4 Lichter / Partie']}
 ];
 const treeNames=[
   'Junger Baum','Erste Funken','Adventszauber','Erste Girlanden','Baum der Hoffnung',
