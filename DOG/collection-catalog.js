@@ -3,7 +3,7 @@
  * Only available, already implemented items appear in the shipped collection.
  */
 import {BOARD_STYLES,isBoardUnlocked,SCENE_STYLES,PIECE_STYLES,CARD_STYLES,HUD_TONES,HUD_LAYOUTS} from './appearance-registry.js?v=22';
-import {DOG_EMOJIS,DOG_EMOJI_STARTERS} from './dog-emojis.js?v=1';
+import {DOG_EMOJIS,DOG_EMOJI_STARTERS,DOG_CHRISTMAS_EMOJIS} from './dog-emojis.js?v=2';
 import {CHRISTMAS_AVATARS} from './christmas-avatar-catalog.js?v=1';
 import {buildDogCollection} from './collection-extensions.js?v=2';
 const avail=(id,name,extra={})=>({id,name,status:'available',...extra});
@@ -27,10 +27,16 @@ const BASE_COLLECTION_CATEGORIES=[
  {id:'emblems',icon:'👑',title:'Aktivsymbole',subtitle:'Das Symbol des Spielers, der gerade am Zug ist',items:[
   avail('emblem-crown','Goldene Krone',{kind:'default',icon:'👑',description:'Standardsymbol des aktiven Spielers.',artTone:'gold'}),
  ]},
- {id:'emojis',icon:'😄',title:'Emojis',subtitle:'Drei verfügbare Emojis · fünf Schnellplätze',items:DOG_EMOJIS.filter(item=>DOG_EMOJI_STARTERS.includes(item.id)).map(item=>({
-  id:item.id,name:item.name,icon:item.emoji,kind:'emoji',status:'available',
-  description:'Starter-Emoji: in deinen fünf Schnellplätzen verwendbar.',artTone:'azure'
- }))},
+ {id:'emojis',icon:'😄',title:'Emojis',subtitle:'3 verfügbar · 10 Weihnachts-Emojis noch gesperrt · fünf Schnellplätze',items:[
+  ...DOG_EMOJIS.filter(item=>DOG_EMOJI_STARTERS.includes(item.id)).map(item=>({
+   id:item.id,name:item.name,icon:item.emoji,kind:'emoji',status:'available',
+   description:'Starter-Emoji: in deinen fünf Schnellplätzen verwendbar.',artTone:'azure'
+  })),
+  ...DOG_CHRISTMAS_EMOJIS.map(item=>({
+   id:item.id,name:item.name,icon:item.emoji,kind:'emoji',status:'planned',unlockId:item.unlockId,
+   description:'Exklusives Weihnachts-Emoji: wird später einzeln als Eventbelohnung freigeschaltet.',artTone:'ember'
+  }))
+ ]},
  {id:'cards',icon:'🃏',title:'Kartendesigns',subtitle:'Kartenthemen unabhängig von den Spielregeln',items:[
   ...Object.entries(CARD_STYLES).map(([id,t])=>avail(id,t.label,{kind:'appearance',field:'cards',cardTheme:t,description:'Optische DOG-Kartengestaltung. Die Kartenwerte bleiben unverändert.',icon:t.emblem,artTone:'gold'})),
  ]},
