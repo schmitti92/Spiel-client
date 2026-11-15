@@ -1,4 +1,4 @@
-# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v1
+# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v2
 Stand: 15.11.2026. Status: PLAN GESICHERT, Umsetzung ausstehend.
 Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 
@@ -7,12 +7,32 @@ Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 - Münztreffer je Gewinn: Einfach 1–100, Mittel 1–800, Premium 1–2000.
 - 20 % vollständige Nieten; 80 % Lose mit mindestens einem Gewinn, für jede Klasse.
 - Münzen sind die häufigste Gewinnart. Mehrere Münztreffer auf einem Los sind möglich.
-- ×2-Ereignis 8 % aller Lose; Hauptgewinn-×2 0,1 % aller Lose und **innerhalb** der 8 %.
+- ×2-Ereignis 11 % aller Lose; Hauptgewinn-×2 0,1 % aller Lose und **innerhalb** der 11 %.
 - Zwei unterschiedliche Hauptgewinne auf einem Los: 0,1 % aller Lose.
 - Hauptgewinn = freischaltbarer Gegenstand, nicht Münztreffer. Keine Doppelvergabe einmaliger Entitlements.
 - Seltene Ereignisse können sich überlappen; exakte Interaktion und Auszahlungsregel vor Implementierung als Phase-1-Entscheidung dokumentieren.
 - Alle Gewinnchancen gelten **pro vollständigem Los**, nicht pro Rubbelzelle.
 - Freigeschaltete Baumstufen-Belohnungen bleiben exklusiv und sind nicht im Rubbellos-Pool.
+
+## Bestätigte Gewichtung (15.11.2026)
+
+| Kategorie / Sonderereignis | Einfach | Mittel | Premium |
+|---|---:|---:|---:|
+| Preis | 200 | 500 | 1000 |
+| Niete | 20 % | 20 % | 20 % |
+| Münz-Hauptkategorie | 68,9 % | 77 % | 76 % |
+| Freischaltungs-Hauptkategorie | 11,1 % | 3 % | 4 % |
+| **Summe Hauptkategorien** | **100 %** | **100 %** | **100 %** |
+| ×2 (pro Los) | 11 % | 11 % | 11 % |
+| ×2 auf Hauptgewinn (pro Los; innerhalb der 11 %) | 0,1 % | 0,1 % | 0,1 % |
+| Zwei Hauptgewinne (pro Los) | 0,1 % | 0,1 % | 0,1 % |
+| Zusätzlicher Münztreffer (nur auf Gewinnlosen) | 30 % | 40 % | 50 % |
+| Münzbetrag pro Treffer | 1–100 | 1–800 | 1–2000 |
+| Hauptpreise im Freischaltpool | 63 | 12 | 21 |
+
+**Mathematische Prüfung:** 20+68,9+11,1=100; 20+77+3=100; 20+76+4=100. Gewinnlosquote jeweils 80 %. Die zusätzlichen Münztreffer ergeben über **alle** Lose 0,8×30%=24 %, 0,8×40%=32 % bzw. 0,8×50%=40 %. Da ×2 keine Niete treffen darf, entsprechen 11 % aller Lose 13,75 % unter den Gewinnlosen. Die 0,1 % für Hauptgewinn-×2 sind in diesen 11 % enthalten; sie entsprechen bei Beschränkung auf reguläre Freischaltung 0,1/11,1≈0,901 %, 0,1/3≈3,333 % bzw. 0,1/4=2,5 % bedingt auf die jeweilige Freischaltungs-Hauptkategorie. Beide 0,1-%-Ereignisse sind Erwartungswerte von 1 je 1000 Losen, keine Garantie.
+
+**Noch in Phase 1 festzulegen:** Wie die Sonderereignisse überlappen, ob zusätzliche Münztreffer auch bei Freischaltungen vorkommen, ob mehr als zwei Münztreffer möglich sind, Münzbetragsverteilung, Verhalten bei erschöpften Freischaltpools. Die Zielwahrscheinlichkeiten sind **noch nicht im Live-Spiel implementiert**.
 
 ## Varianten (Arbeitsentwurf; vor Implementierung formal spezifizieren)
 1. Geschenkelinie: 3×3, 3 gleiche in horizontaler/vertikaler/diagonaler Reihe.
@@ -28,8 +48,8 @@ Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 Die Varianten dürfen nicht unbeabsichtigt die globalen Gewinnchancen verändern. Ergebnis serverseitig ziehen, Spielfeld passend dazu generieren, anschließend unabhängig validieren.
 
 ## Phase 1 – Regelwerk und mathematische Gewichtung [ ]
-- Festlegen: Basischancen Münzen vs Freischaltungen je Klasse; 1/2/3 Münztreffer; Verteilung Münzbeträge.
-- Festlegen: exakte Semantik 8 % ×2 und 0,1 % Hauptgewinn-×2; Überschneidung mit 0,1 % Doppel-Hauptgewinn.
+- Hauptkategorien mathematisch geprüft (siehe Tabelle); noch offen: 1/2/3 Münztreffer und Verteilung der Münzbeträge.
+- Exakte Semantik 11 % ×2 und 0,1 % Hauptgewinn-×2 sowie Überschneidung mit 0,1 % Doppel-Hauptgewinn klären.
 - Festlegen: bei bereits vollständigen Sammlungen fairer Ersatzpreis, bei Einmal-Freischaltungen ×2.
 - Prüfen: Gewinn-/Nietenwahrscheinlichkeit exakt 80/20 trotz ausverkaufter Pools.
 Abnahme: Wahrscheinlichkeitsmatrix und Testfälle schriftlich freigegeben.
@@ -68,7 +88,7 @@ Abnahme: Touch, Maus, Vollbild, Reload, kleine Displays.
 Abnahme: durchgängiger Kauf→Rubbeln→Anzeige→Sammlung-Flow.
 
 ## Phase 7 – Wahrscheinlichkeitstests und Balance [ ]
-- Deterministische Grenztests: 20 % Niete, 8 % ×2, 0,1 % Doppel-Hauptgewinn, 0,1 % Hauptgewinn-×2.
+- Deterministische Grenztests: 20 % Niete, 11 % ×2, 0,1 % Doppel-Hauptgewinn, 0,1 % Hauptgewinn-×2.
 - Simulation von mindestens 1 Million Losen pro Klasse; Konfidenzbereiche statt exakter Simulationsquote.
 - Fairness, erwartete Münzauszahlung, langfristige Münzquellen und Poolerschöpfung prüfen.
 Abnahme: Testbericht mit erwarteten und beobachteten Werten.
@@ -81,4 +101,5 @@ Abnahme: echte Spielrunde über mehrere Geräte.
 
 ## Statusprotokoll
 - 15.11.2026: Plan v1 erstellt und im Frontend-Repository hinterlegt. Keine Spielmechanik durch dieses Dokument geändert.
-- Nächster Schritt: Phase 1 – konkrete Gewichtungsmatrix und Überschneidungsregeln.
+- 15.11.2026: Plan v2 – bestätigte Gewichtungen ergänzt und rechnerisch geprüft. Spielcode unverändert.
+- Nächster Schritt: Phase 1 – Überschneidungsregeln und Münztreffer-Verteilung.
