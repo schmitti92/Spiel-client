@@ -30,7 +30,7 @@ test('Meta gallery remains preview-only until verified server grants exist',()=>
  assert.match(html,/id="meta-theme-list"/);
  assert.match(html,/id="meta-picture-grid"/);
  assert.match(html,/id="meta-picture-detail"/);
- assert.match(html,/Eventfreischaltung in Vorbereitung/);
+ assert.match(html,/id="meta-picture-dialog"/);
  assert.match(frontend,/safeBackUrl\(\)/);
 });
 test('Meta Sammelalbum is reachable from main, shared, local and DOG lobbies',()=>{
@@ -79,23 +79,33 @@ test('uploaded transparent Christmas book is the page artwork and all six frames
  assert.match(css,/--album-slots-top:19\.1%/);
  assert.match(css,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
  assert.match(css,/grid-template-rows:repeat\(2,minmax\(0,1fr\)\)/);
- assert.match(html,/meta-sammelalbum\.css\?v=5/);
- assert.match(js,/selected=theme\.pictures\[pageIndex\*6\]/);
+ assert.match(html,/meta-sammelalbum\.css\?v=6/);
+ assert.match(js,/let pageIndex=Number\.isInteger\(requestedPage\)/);
  assert.match(js,/const unlocked=isMetaAlbumPictureUnlocked\(pic\)/,'locked rewards remain enforced');
 });
 
-test('tablet viewport uses compact single-screen album without losing paging or lock controls',()=>{
+
+test('variant B shows only the standalone book and opens picture previews in a modal',()=>{
  const html=source('../meta-sammelalbum.html');
- const styles=source('../meta-sammelalbum.css');
- assert.match(styles,/@media \(min-width:900px\) and \(min-height:540px\) and \(orientation:landscape\)/);
- assert.match(styles,/height:100dvh;min-height:0;max-height:100dvh/);
- assert.match(styles,/width:min\(100%,calc\(\(100dvh - 170px\) \* 1\.5\)\)/);
- assert.match(styles,/\.meta-album-gallery-scroll\{[\s\S]*?overflow:hidden/);
- assert.match(html,/id="meta-book-prev"/);
- assert.match(html,/id="meta-book-next"/);
+ const css=source('../meta-sammelalbum.css');
+ const js=source('../meta-sammelalbum.js');
+ assert.match(html,/id="meta-picture-dialog"/);
+ assert.match(html,/id="meta-dialog-close"/);
+ assert.match(html,/id="meta-theme-toggle"/);
+ assert.match(html,/id="meta-theme-list"[^>]*hidden/);
  assert.match(html,/id="meta-picture-detail"/);
- assert.match(html,/meta-sammelalbum\.css\?v=5/);
- assert.match(html,/meta-sammelalbum\.js\?v=5/);
- const script=source('../meta-sammelalbum.js');
- assert.match(script,/disabled\.disabled=true/);
+ assert.doesNotMatch(html,/meta-album-detail glass-panel|meta-album-themes|meta-gallery-header/);
+ assert.match(js,/function closeThemeMenu\(\)/);
+ assert.match(js,/\$\('meta-picture-dialog'\)\.showModal\(\)/);
+ assert.match(js,/dialog\.close\(\)/);
+ assert.match(js,/dialog\.open\|\|event\.altKey/);
+ assert.match(js,/const unlocked=isMetaAlbumPictureUnlocked\(pic\)/);
+ assert.match(js,/disabled\.disabled=true/);
+ assert.match(css,/\.meta-picture-dialog::backdrop/);
+ assert.match(css,/\.meta-book-sheet/);
+ assert.match(css,/aspect-ratio:3\/2/);
+ assert.match(css,/meta-sammelalbum\/weihnachts_sammelalbum_buch_transparent\.png/);
+ assert.match(css,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+ assert.match(html,/meta-sammelalbum\.css\?v=6/);
+ assert.match(html,/meta-sammelalbum\.js\?v=6/);
 });
