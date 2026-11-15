@@ -81,6 +81,7 @@ function update(snapshot,busy=false){
  $('dog-room-back').href='spielauswahl-online.html?'+new URLSearchParams({room:roomCode,stay:'1'}).toString();
  $('dog-room-designer').href=roomLink('DOG/design-studio.html',roomCode);
  $('dog-room-unlocks').href=roomLink('DOG/sammlung.html',roomCode);
+ $('dog-room-christmas').href='DOG/christmas-event.html?'+new URLSearchParams({room:roomCode,return:'../hub-lobby.html?'+new URLSearchParams({room:roomCode,stage:'1'})}).toString();
  if(!previewVisible){
   renderDogRoomBoard($('dog-room-board-preview'));previewVisible=true;
  }
