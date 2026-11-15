@@ -18,6 +18,7 @@ footer{margin-top:24px;text-align:center;color:#8298af;font-size:12px}footer a{c
 @media(max-width:700px){.hero{display:block}.hero .pill{margin-top:14px}.cols{grid-template-columns:1fr}.shell{padding-top:15px}.panel{padding:17px;border-radius:18px}.room-code{font-size:25px}.game-grid{gap:8px}.game{padding:9px;min-height:76px}.game .emoji{font-size:22px}.row .btn{flex:1}}
 </style>
 <link rel="stylesheet" href="hub-lobby-v7.css?v=20261025-premium-42">
+<link rel="stylesheet" href="hub-unified-dog.css?v=1">
 <link rel="stylesheet" href="meta-album-entry.css?v=1">
 <style>
 .dog-portal-links{display:flex;align-items:stretch;flex-wrap:wrap;gap:10px;margin:8px 0 13px}
@@ -62,11 +63,13 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
     <div class="stack">
       <section id="game-chooser" class="panel" aria-labelledby="game-title">
         <div class="eyebrow">Euer Spieleabend · Spiele wählen</div><h2 id="game-title">Welches Spiel spielen wir?</h2>
-        <p class="subtle" id="select-help">Nur der Host kann das Spiel auswählen.</p>
+        <p class="subtle" id="select-help">Der Host bestimmt, welches Spiel ihr zusammen spielen möchtet.</p>
         <div class="game-grid" id="game-grid">
           <button class="game" type="button" data-game="dog"><span class="emoji">🐾</span><span><b>DOG Klassisch</b><small>1–4 Menschen + Bots</small></span></button>
+          <button class="game" type="button" data-game="kniffel"><span class="emoji">🎲</span><span><b>Kniffel Online</b><small>Eigene Spielansicht</small></span></button>
+          <button class="game" type="button" data-game="partychallenge"><span class="emoji">🏆</span><span><b>Party Challenge</b><small>Gemeinsame Minispiele</small></span></button>
       <button class="game" type="button" data-game="barikade"><span class="emoji">🎲</span><span><b>Barikade</b><small>2–4 Mitspieler</small></span></button>
-          <button class="game" type="button" data-game="skyjo"><span class="emoji">🃏</span><span><b>SKYJO Action</b><small>2–3 Personen</small></span></button>
+          <button class="game" type="button" data-game="skyjo"><span class="emoji">🃏</span><span><b>SKYJO Action</b><small>3 Mitspieler</small></span></button>
           <button class="game" type="button" data-game="kreuz"><span class="emoji">🎯</span><span><b>KreuzKunter</b><small>2–6 Personen</small></span></button>
           <button class="game" type="button" data-game="business"><span class="emoji">💼</span><span><b>Das große Business</b><small>2–5 Personen</small></span></button>
         </div>
@@ -201,6 +204,7 @@ import {renderDogRoomBoard} from './DOG/room-board-preview.js?v=1';
 const target=document.getElementById('dog-unified-board-preview');
 const render=()=>{if(target&&!target.closest('.hidden'))renderDogRoomBoard(target)};
 window.DOGUnifiedBoard={refresh:render};
+window.dispatchEvent(new Event('dog-unified-board-ready'));
 document.querySelectorAll('[data-board-theme]').forEach(button=>button.addEventListener('click',()=>requestAnimationFrame(render)));
 window.addEventListener('storage',event=>{if(event.key==='dog:appearance:v1')render()});
 window.addEventListener('pageshow',render);
