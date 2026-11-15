@@ -209,7 +209,7 @@ function drawDetails(){
  const detailArt=art(item,true);if(locked)detailArt.classList.add('is-locked');
  root.append(detailArt,el('h3','detail-title',item.name),el('div','detail-rule'),
    el('div','detail-state'+(locked?' is-locked':''),locked?'🔒 Noch nicht gewonnen':active?'✓ Aktiv / vorhanden':item.unlockId?'✅ In deiner Sammlung':'✓ Verfügbar'),
-   el('p','detail-description',item.description||'DOG-Design'));
+   el('p','detail-description',item.unlockId?'🎁 Gesammelt und für dein Spielerprofil freigeschaltet.':item.description||'DOG-Design'));
  if(item.kind==='nameFrame')root.append(el('small','nameframe-preview-note',locked?'🎄 Noch nicht freigeschaltet.':'✅ Gesammelt! Das Ausrüsten als Namensrahmen folgt.'));
  if(item.kind==='activeIcon')root.append(el('small','activeicon-preview-note',locked?'🎄 Noch nicht freigeschaltet.':'✅ Gesammelt! Das Ausrüsten als Aktivsymbol folgt.'));
  if(item.kind==='cardEdition')root.append(el('small','detail-fine',locked?'🎄 Erst als Eventgewinn erhältlich.':'✅ Kartensatz freigeschaltet: 14 Motive und Rückseite.'));
@@ -230,6 +230,7 @@ function drawDetails(){
   item.kind==='emoji'?'Emoji-Schnelltasten werden lokal nach Spielerprofil gespeichert.':
   item.kind==='avatar'?'Das Profilbild wird lokal und im aktiven DOG-Raum nach Möglichkeit synchronisiert.':
   item.kind==='default'?'Dieser Standardinhalt ist ohne Freischaltung vorhanden.':
+  !canEquip(item)?'🎁 Gesammelt. Die Ausrüstungsfunktion für diesen Inhalt wird später ergänzt.':
   'Die Auswahl ist rein optisch und wird ohne zusätzliche Firestore-Schreibvorgänge gespeichert.'));
 }
 function draw(){
