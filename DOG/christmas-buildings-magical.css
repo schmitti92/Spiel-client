@@ -1,0 +1,348 @@
+/* Lichtertal · Die vier Gebäude · Winterfest 2026
+   Uses the uploaded transparent UI decorations.
+   Scoped to the building tab: no changes to currency, bonuses or purchases. */
+
+body:has(#panel-buildings:not([hidden])){
+  background-color:#041b20;
+  background-image:
+    linear-gradient(110deg,rgba(3,20,27,.91),rgba(4,30,36,.91) 53%,rgba(4,24,32,.94)),
+    url("./weihnachtsevent-bilder/leere_winterdorf_plaza_im_mondlicht.png");
+  background-repeat:no-repeat;
+  background-size:cover;
+  background-position:center;
+  background-attachment:fixed;
+}
+body:has(#panel-buildings:not([hidden])) .snow-sky{opacity:.55}
+body:has(#panel-buildings:not([hidden])) .event-sidebar{
+  border-color:#e9c684;
+  background:linear-gradient(154deg,#0a3b30,#042920 56%,#031c20);
+  box-shadow:inset 0 1px #fff1c83f,0 14px 30px #0008;
+}
+body:has(#panel-buildings:not([hidden])) .sidebar-intro{
+  padding-right:54px;
+  background:radial-gradient(ellipse at 37% 0%,#d3a34e43,transparent 72%),linear-gradient(155deg,#123b2d,#062a27);
+}
+body:has(#panel-buildings:not([hidden])) .sidebar-intro::after{
+  content:"";position:absolute;z-index:1;right:1px;bottom:4px;
+  width:62px;height:78px;pointer-events:none;
+  background:url("./weihnachtsevent-bilder/ui-deko/02_weihnachtslaterne.png") center/contain no-repeat;
+  filter:drop-shadow(0 2px 10px #f6ba6366);
+}
+body:has(#panel-buildings:not([hidden])) .event-tab{
+  border-color:#a9b58e8a;
+  background:linear-gradient(140deg,#0b4639,#063027);
+}
+body:has(#panel-buildings:not([hidden])) .event-tab[aria-selected=true]{
+  background:linear-gradient(150deg,#745529,#374635 90%);
+  border-color:#ffdf94;
+  box-shadow:inset 0 1px #fff4c49b,0 0 13px #ebbc6466;
+}
+
+/* A single compact shared-currency bar, decorated with a real uploaded ribbon. */
+#panel-buildings .building-village-wallet{
+  display:block!important;
+  position:relative;
+  isolation:isolate;
+  min-height:0!important;
+  height:auto!important;
+  margin:0 0 13px!important;
+  padding:0!important;
+  border:1.5px solid #e9bf79;
+  border-radius:19px;
+  background:
+    radial-gradient(ellipse at 79% 0%,#f8d69f2b,transparent 50%),
+    linear-gradient(115deg,#113d37,#07302d 56%,#092e3b);
+  box-shadow:inset 0 1px #fff1bc52,0 9px 25px #0217169c;
+}
+#panel-buildings .building-village-wallet::before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  opacity:.44;
+  background:
+    radial-gradient(2px 2px at 13% 20%,#fff2c1 80%,transparent),
+    radial-gradient(1px 1px at 71% 43%,#fff 80%,transparent),
+    radial-gradient(1px 1px at 93% 17%,#fff9d9 80%,transparent);
+  background-size:230px 95px;
+}
+#panel-buildings .village-treasury-main{
+  display:grid!important;
+  grid-template-columns:minmax(125px,260px) minmax(0,1fr);
+  align-items:center;
+  justify-content:stretch;
+  gap:clamp(12px,2vw,28px);
+  padding:5px clamp(12px,2vw,23px)!important;
+  min-height:71px;
+  width:100%;
+}
+#panel-buildings .building-festival-ribbon{
+  display:block;align-self:center;justify-self:center;
+  width:100%;height:72px;max-width:260px;
+  object-fit:contain;
+  filter:drop-shadow(0 3px 6px #0008);
+}
+#panel-buildings .village-treasury-balance,
+#panel-buildings .village-treasury-balance-copy{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;min-width:0;
+}
+#panel-buildings #building-live-balance{
+  max-width:100%;
+  font:900 clamp(18px,2.15vw,29px)/1.14 Georgia,serif;
+  color:#fff0ba;
+  text-align:center;
+  letter-spacing:.2px;
+  text-shadow:0 2px 9px #01160f,0 0 12px #f2ce7954;
+  overflow-wrap:anywhere;
+}
+
+/* Compact 2×2 winter house cards, keeping each real building photograph in place. */
+#panel-buildings .building-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:stretch;
+  gap:clamp(12px,1.2vw,18px);
+}
+#panel-buildings .building-card{
+  position:relative;isolation:isolate;
+  display:grid;
+  grid-template-columns:minmax(135px,42%) minmax(0,1fr);
+  grid-template-rows:auto minmax(0,1fr) auto auto;
+  grid-template-areas:"art heading" "art bonus" "art level" "art action";
+  gap:8px clamp(11px,1.1vw,17px);
+  padding:13px;
+  min-height:272px;min-width:0;
+  overflow:hidden;
+  border:1.5px solid #e3be77;
+  border-radius:23px;
+  background:
+    radial-gradient(ellipse at 2% 2%,#9ed0b927,transparent 55%),
+    radial-gradient(ellipse at 94% 100%,#d39b4e20,transparent 52%),
+    linear-gradient(120deg,#0c453c,#092e2d 74%,#08282d);
+  box-shadow:inset 0 1px #fff5d64c,0 10px 28px #001416a8;
+  transition:box-shadow .2s ease,border-color .2s ease;
+}
+#panel-buildings .building-card::before{
+  content:"";position:absolute;z-index:0;top:-25px;right:-18px;
+  width:125px;height:82px;pointer-events:none;opacity:.37;
+  background:url("./weihnachtsevent-bilder/ui-deko/08_schneeband_glocke.png") center/contain no-repeat;
+}
+#panel-buildings .building-card::after{
+  content:"";position:absolute;z-index:0;inset:0;
+  border-radius:inherit;pointer-events:none;
+  background:linear-gradient(155deg,#fff6d516,transparent 21%,transparent 76%,#ffe9a20d);
+  box-shadow:inset 0 0 0 1px #ffe7a120;
+}
+#panel-buildings .building-card>*{position:relative;z-index:1}
+#panel-buildings .building-card:has(.building-purchase:not(:disabled)){
+  border-color:#ffdf98;
+  box-shadow:inset 0 1px #fff7d66e,0 9px 24px #0014169c,0 0 15px #e8b96834;
+}
+#panel-buildings .building-card-head{
+  grid-area:heading;display:flex;align-items:flex-start;gap:9px;min-height:0;
+}
+#panel-buildings .building-card-icon{
+  display:grid!important;place-items:center;
+  flex:0 0 33px;width:33px;height:33px;
+  padding:0;border-radius:10px;
+  border:1px solid #e8c88187;
+  background:radial-gradient(circle at 30% 20%,#e6cf864b,#144135b3 72%);
+  box-shadow:inset 0 1px #fff5d65b,0 2px 8px #0005;
+  font-size:20px;line-height:1;
+}
+#panel-buildings .building-card-head>div{min-width:0}
+#panel-buildings .building-card h3{
+  margin:0;
+  color:#ffe7b2;
+  font:900 clamp(17px,1.58vw,24px)/1.13 Georgia,serif;
+  letter-spacing:-.12px;
+  text-shadow:0 2px 4px #021613;
+}
+#panel-buildings .building-card-head p{
+  margin:5px 0 0;
+  color:#e3eee2;
+  font-size:clamp(10px,.78vw,11.5px);
+  line-height:1.38;
+}
+#panel-buildings .building-card-art{
+  grid-area:art;
+  width:100%;height:100%;min-height:223px;
+  border:1px solid #afc4be70;
+  border-radius:16px;
+  background:
+    linear-gradient(180deg,#051b34a6,#0b3944b2 47%,#25433b86),
+    url("./weihnachtsevent-bilder/leere_winterdorf_plaza_im_mondlicht.png") center/cover no-repeat,
+    linear-gradient(180deg,#0a2a3d,#2a5b5b);
+  box-shadow:inset 0 0 0 1px #fff6cf17,inset 0 -15px 26px #00182391,0 3px 8px #0005;
+}
+#panel-buildings .building-card-art::before{
+  background-image:
+    radial-gradient(1px 1px at 22% 17%,#fffef0 90%,transparent),
+    radial-gradient(2px 2px at 73% 30%,#ffebac 90%,transparent),
+    radial-gradient(1px 1px at 51% 60%,#fff 90%,transparent);
+  background-size:130px 130px;opacity:.55;
+}
+#panel-buildings .building-art-glow{
+  background:radial-gradient(ellipse,#fce3a18a,transparent 78%);
+  filter:blur(13px);
+}
+#panel-buildings .building-card-art::after{background:linear-gradient(0deg,#dbeed08f,transparent)}
+#panel-buildings .building-art-plaque{
+  left:9px;bottom:9px;
+  padding:5px 10px;
+  border:1px solid #ffe5a7;
+  border-radius:99px;
+  background:linear-gradient(130deg,#4d3f24ed,#113a32f2);
+  box-shadow:inset 0 1px #fff0c349,0 2px 7px #0007;
+  color:#ffe7b7;font-size:10px;letter-spacing:.35px;
+}
+#panel-buildings .building-card-info{
+  grid-area:bonus;
+  position:relative;
+  margin:0;min-height:0;
+  padding:11px 12px 10px 14px;
+  border:1px solid #bcac748c;
+  border-left:3px solid #efc87e;
+  border-radius:12px;
+  background:linear-gradient(150deg,#173c36d9,#072726c9);
+  box-shadow:inset 0 1px #fff0c21d;
+  gap:4px;
+}
+#panel-buildings .building-card-info strong{
+  color:#ffe09c;
+  font-size:clamp(10.5px,.84vw,12px);
+  line-height:1.3;
+}
+#panel-buildings .building-card-info span{
+  color:#f0ede2;
+  font-size:clamp(10px,.76vw,11px);
+  line-height:1.35;
+}
+#panel-buildings .building-stage-controls{grid-area:level;margin:0}
+#panel-buildings .level-row{margin:0 0 5px}
+#panel-buildings .level-row label{
+  color:#e2eadd;font-size:10px;font-weight:800;
+}
+#panel-buildings .level-row output{
+  color:#ffe2a0;font-size:11px;font-weight:900;
+}
+#panel-buildings .building-level-markers{gap:5px;margin:5px 0}
+#panel-buildings .building-level-markers span{
+  height:8px;border-radius:99px;
+  border:1px solid #91b7a233;
+  background:linear-gradient(180deg,#426b61,#29574f);
+  box-shadow:inset 0 1px 2px #00151399;
+}
+#panel-buildings .building-level-markers span.active{
+  border-color:#ffedb8;
+  background:linear-gradient(90deg,#e1a74c,#ffe39b);
+  box-shadow:inset 0 1px #fff4d1,0 0 9px #e9be6a3b;
+}
+#panel-buildings .building-upgrade-row{
+  grid-area:action;
+  display:flex;flex-direction:column;gap:6px;margin:0;
+}
+#panel-buildings .building-upgrade-price{
+  padding:0;margin:0;min-height:0;
+  background:none;border:0;
+  color:#ffe2a3;font-size:10.5px;line-height:1.3;
+}
+#panel-buildings .building-purchase{
+  width:100%;min-height:39px;
+  padding:8px 11px;
+  border:1px solid #fff0ba;
+  border-radius:99px;
+  background:linear-gradient(180deg,#ffedbf,#e9bd70 65%,#c88f44);
+  color:#352515;
+  font-size:11px;font-weight:950;
+  box-shadow:inset 0 1px #fffcee,0 3px 9px #07181699,0 0 11px #ffe1a34d;
+  text-shadow:none;
+}
+#panel-buildings .building-purchase:disabled{
+  opacity:1;
+  background:linear-gradient(180deg,#28584a,#123d34);
+  border-color:#b69e6b;
+  color:#e8ecda;
+  box-shadow:inset 0 1px #fff1c61d,0 3px 9px #061b1d;
+}
+#panel-buildings .building-purchase:hover:not(:disabled){
+  transform:translateY(-1px);
+  filter:brightness(1.07);
+  box-shadow:inset 0 1px #fffcee,0 5px 12px #071816aa,0 0 16px #ffe1a37d;
+}
+
+/* Christmas-lit fence and gifts: decoration stays out of the action area. */
+#panel-buildings .building-final-note{
+  position:relative;isolation:isolate;
+  min-height:63px;
+  margin-top:13px;
+  padding:10px 15px 10px clamp(108px,10vw,165px);
+  border:1px solid #e5bf78;
+  border-radius:17px;
+  background:linear-gradient(90deg,#0b352d,#123d35 58%,#0a2e32);
+  box-shadow:inset 0 1px #fff1bc36,0 5px 15px #001a1985;
+  overflow:hidden;
+}
+#panel-buildings .building-final-note::before{
+  content:"";position:absolute;z-index:-1;left:0;bottom:-9px;
+  width:clamp(105px,12vw,175px);height:85px;pointer-events:none;
+  background:url("./weihnachtsevent-bilder/ui-deko/12_lichterzaun.png") left bottom/contain no-repeat;
+  filter:drop-shadow(0 1px 8px #f2c66c3d);
+}
+#panel-buildings .building-final-note p{
+  min-width:0;
+  font-size:11px;line-height:1.4;
+  color:#efe9d6;
+}
+#panel-buildings .building-final-note .button{
+  min-height:40px;border-radius:12px;
+  border:1px solid #fff1bc;
+  background:linear-gradient(180deg,#ffedc3,#d7a254);
+  box-shadow:inset 0 1px #fffbdd,0 4px 9px #001a1977;
+  color:#332716;font-size:11px;white-space:nowrap;
+}
+
+/* Responsive: preserve the original single-column cards at narrower widths. */
+@media(max-width:1280px){
+  #panel-buildings .building-grid{grid-template-columns:1fr}
+  #panel-buildings .building-card{
+    grid-template-columns:minmax(155px,38%) minmax(0,1fr);
+    min-height:226px;
+  }
+  #panel-buildings .building-card-art{min-height:207px}
+}
+@media(max-width:760px){
+  body:has(#panel-buildings:not([hidden])) .sidebar-intro{padding-right:14px}
+  body:has(#panel-buildings:not([hidden])) .sidebar-intro::after{display:none}
+  #panel-buildings .village-treasury-main{
+    grid-template-columns:minmax(90px,26%) minmax(0,1fr);
+    gap:7px;padding:5px 10px!important;min-height:56px;
+  }
+  #panel-buildings .building-festival-ribbon{height:56px}
+  #panel-buildings #building-live-balance{font-size:clamp(15px,3.1vw,22px)}
+  #panel-buildings .building-card{padding:10px;border-radius:16px;gap:7px 10px}
+  #panel-buildings .building-card-art{min-height:194px}
+  #panel-buildings .building-card h3{font-size:clamp(17px,3vw,23px)}
+  #panel-buildings .building-card-icon{flex-basis:29px;width:29px;height:29px;font-size:18px}
+  #panel-buildings .building-final-note{padding:10px 11px 10px 90px}
+  #panel-buildings .building-final-note::before{width:94px;height:68px}
+  #panel-buildings .building-final-note .button{white-space:normal}
+}
+@media(max-width:540px){
+  #panel-buildings .building-card{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:auto auto auto auto auto;
+    grid-template-areas:"heading" "art" "bonus" "level" "action";
+    min-height:0;gap:8px;
+  }
+  #panel-buildings .building-card-art{height:220px;min-height:0}
+  #panel-buildings .building-card-head h3{font-size:21px}
+  #panel-buildings .building-final-note{
+    display:flex;flex-direction:column;align-items:stretch;gap:10px;
+    padding:12px;
+  }
+  #panel-buildings .building-final-note::before{opacity:.18;right:0;left:auto}
+  #panel-buildings .building-final-note .button{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  #panel-buildings .building-card,#panel-buildings .building-purchase{transition:none!important}
+  #panel-buildings .building-purchase:hover:not(:disabled){transform:none}
+}
