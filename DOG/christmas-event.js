@@ -5,6 +5,7 @@
  * server, or saves preview levels. Later live progression must be verified
  * by the authenticated Render backend and must not trust this preview.
  */
+import {CHRISTMAS_PAGE_BACKGROUNDS} from './christmas-background-catalog.js?v=1';
 const $=id=>document.getElementById(id);
 const tabs=['village','buildings','tree','story','gifts','chapters'];
 const COSTS=[0,20,40,65,95];
@@ -327,6 +328,31 @@ document.querySelectorAll('.building-card-art img, #tree-card-photo').forEach(im
   img.hidden=true;
  });
 });
+// Rewards are previews only: no button, no equip action, no local/remote unlock.
+const wallpaperGrid=$('christmas-wallpaper-grid');
+if(wallpaperGrid){
+  for(const entry of CHRISTMAS_PAGE_BACKGROUNDS){
+    const card=document.createElement('article');
+    card.className='christmas-wallpaper-card';
+    const preview=document.createElement('div');
+    preview.className='christmas-wallpaper-preview';
+    const image=document.createElement('img');
+    image.src=new URL(entry.image,location.href).href;
+    image.alt='Vorschau: '+entry.name;
+    image.loading='lazy';
+    image.decoding='async';
+    const lock=document.createElement('span');
+    lock.className='christmas-wallpaper-lock';
+    lock.textContent='🔒 Gesperrt';
+    preview.append(image,lock);
+    const title=document.createElement('strong');
+    title.textContent=entry.name;
+    const detail=document.createElement('small');
+    detail.textContent='Spätere Eventbelohnung';
+    card.append(preview,title,detail);
+    wallpaperGrid.append(card);
+  }
+}
 refreshPreview();
 // Load the high-resolution landscape separately: never block gameplay UI.
 // Its <svg:image> renders only once the same-origin PNG is confirmed available.
