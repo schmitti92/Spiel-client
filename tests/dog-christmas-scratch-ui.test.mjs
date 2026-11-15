@@ -291,8 +291,9 @@ test('DOG Weihnachten top header is hidden only while a scratch ticket is open',
  const html=source('../DOG/christmas-event.html');
  const css=source('../DOG/christmas-scratch.css');
  const js=source('../DOG/christmas-scratch-ui.js');
- assert.match(html,/<header class="event-top">/);
- assert.match(css,/body\.scratch-ticket-open > header\.event-top\s*\{\s*display:none!important;/);
+ assert.doesNotMatch(html,/<header class="event-top">/);
+ assert.match(html,/id="event-return"[^>]*class="top-action event-fixed-return"/);
+ assert.match(css,/body\.scratch-ticket-open > #event-return\s*\{\s*display:none!important;/);
  assert.match(js,/document\.body\.classList\.add\('scratch-ticket-open'\)/);
  // Upon finishing, signing out and switching profiles, normal page header returns.
  assert.ok(js.match(/document\.body\.classList\.remove\('scratch-ticket-open'\)/g)?.length>=3);
