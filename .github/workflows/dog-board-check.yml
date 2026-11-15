@@ -20,6 +20,7 @@ on:
       - 'tests/dog-victory-summary.test.mjs'
       - 'tests/dog-victory-screen.test.mjs'
       - 'tests/dog-game-lobby-return.test.mjs'
+      - 'tests/dog-room-lobby.test.mjs'
       - 'tests/dog-board-backdrops.test.mjs'
       - 'tests/dog-ui-shell.test.mjs'
       - 'tests/dog-official-rules.test.mjs'
@@ -45,6 +46,7 @@ on:
       - 'tests/dog-victory-summary.test.mjs'
       - 'tests/dog-victory-screen.test.mjs'
       - 'tests/dog-game-lobby-return.test.mjs'
+      - 'tests/dog-room-lobby.test.mjs'
       - 'tests/dog-board-backdrops.test.mjs'
       - 'tests/dog-ui-shell.test.mjs'
       - 'tests/dog-official-rules.test.mjs'
@@ -60,6 +62,9 @@ jobs:
         with:
           node-version: '22'
       - run: node --check DOG/app.js
+      - run: node --check DOG/room-board-preview.js
+      - run: node --check DOG/room-lobby.js
+      - run: node --check DOG/room-lobby-state.js
       - run: node --check DOG/piece-animations.js
       - run: node --check DOG/motion-settings.js
       - run: node --check DOG/ui-animations.js
@@ -80,7 +85,7 @@ jobs:
       - run: node --check DOG/collection-catalog.js
       - run: node --check DOG/collection.js
       - run: node --test tests/dog-board-backdrops.test.mjs
-      - run: node --test tests/dog-ui-shell.test.mjs tests/dog-premium-cockpit.test.mjs tests/dog-victory-summary.test.mjs tests/dog-victory-screen.test.mjs tests/dog-game-lobby-return.test.mjs
+      - run: node --test tests/dog-ui-shell.test.mjs tests/dog-premium-cockpit.test.mjs tests/dog-victory-summary.test.mjs tests/dog-victory-screen.test.mjs tests/dog-game-lobby-return.test.mjs tests/dog-room-lobby.test.mjs
       - run: node --test tests/dog-collection.test.mjs
       - run: node --test tests/dog-card-editions.test.mjs
       - run: node --test tests/dog-hand-gestures.test.mjs
