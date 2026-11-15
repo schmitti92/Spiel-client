@@ -180,7 +180,70 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
   <p class="status" id="main-status" aria-live="polite"></p>
   <footer><a href="hub-lobby.html">← Zum Spielmodus</a> · Online und Lokal · Vier Spiele</footer>
 </div>
+
+<!-- DOG-specific waiting room. The shared main lobby above remains unchanged.
+     All gameplay / room actions are delegated to the existing hub controller. -->
+<section id="dog-room-lobby" class="dog-room-lobby" aria-label="DOG Spiellobby" hidden>
+  <div class="dog-room-atmosphere" aria-hidden="true"></div>
+  <div class="dog-room-stage">
+    <header class="dog-room-top">
+      <a id="dog-room-back" class="dog-room-utility dog-room-back" href="spielauswahl-online.html">← Zur Hauptlobby</a>
+      <h1 class="dog-room-heading"><span aria-hidden="true">🐾</span> <span class="dog-room-brand">DOG</span> <span class="dog-room-heading-dot">·</span> SPIELLOBBY</h1>
+      <div class="dog-room-top-actions">
+        <button id="dog-room-fullscreen" class="dog-room-utility" type="button">⛶ Vollbild</button>
+        <button id="dog-room-refresh" class="dog-room-utility" type="button">↻ Aktualisieren</button>
+      </div>
+    </header>
+    <div class="dog-room-codebar">
+      <span class="dog-room-code-name">RAUM</span>
+      <strong id="dog-room-code" class="dog-room-code-value">———</strong>
+      <span class="dog-room-code-split" aria-hidden="true"></span>
+      <button id="dog-room-copy" type="button" class="dog-room-utility">▣ Code kopieren</button>
+    </div>
+    <div class="dog-room-grid">
+      <section class="dog-room-panel dog-room-players-panel" aria-labelledby="dog-room-players-title">
+        <h2 id="dog-room-players-title"><span aria-hidden="true">👥</span> Mitspieler</h2>
+        <div id="dog-room-roster" class="dog-room-roster" aria-label="Vier DOG-Spielplätze"></div>
+        <div class="dog-room-readiness" aria-live="polite">
+          <div class="dog-room-readiness-copy">
+            <span id="dog-room-count">0 Spieler im Raum</span>
+            <strong id="dog-room-ready-count">Bereit 0/0</strong>
+          </div>
+          <div class="dog-room-progress" role="progressbar" id="dog-room-progress" aria-label="Bereitschaft der aktiven Spieler" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <span id="dog-room-progress-fill"></span>
+          </div>
+          <p id="dog-room-readiness-note">Warte auf Mitspieler.</p>
+        </div>
+        <div class="dog-room-primary-actions">
+          <button id="dog-room-join" class="dog-room-action dog-room-action-blue" type="button">⇥ Spiel beitreten</button>
+          <button id="dog-room-ready" class="dog-room-action dog-room-action-green" type="button">✓ Ich bin bereit</button>
+          <button id="dog-room-start" class="dog-room-action dog-room-action-gold" type="button">▶ Partie starten</button>
+        </div>
+        <p id="dog-room-feedback" class="dog-room-feedback" role="status" aria-live="polite"></p>
+      </section>
+      <section class="dog-room-panel dog-room-board-panel" aria-labelledby="dog-room-board-title">
+        <h2 id="dog-room-board-title"><span aria-hidden="true">🎲</span> Aktuelles Spielbrett <small id="dog-room-board-name">– Klassisch</small></h2>
+        <div id="dog-room-board-preview" class="dog-room-board-preview" role="img" aria-label="Vorschau des ausgewählten DOG-Spielbretts"></div>
+        <div class="dog-room-board-actions">
+          <a id="dog-room-designer" class="dog-room-action dog-room-action-navy" href="DOG/design-studio.html">🎨 Brettdesigner</a>
+          <a id="dog-room-unlocks" class="dog-room-action dog-room-action-navy" href="DOG/sammlung.html">🏆 Freigeschaltet</a>
+        </div>
+        <button id="dog-room-rules-open" class="dog-room-utility dog-room-rules-button" type="button">▣ Spielregeln</button>
+      </section>
+    </div>
+  </div>
+  <dialog id="dog-room-rules" class="dog-room-rules-dialog" aria-labelledby="dog-room-rules-title">
+    <h2 id="dog-room-rules-title">🐾 DOG – Spielregeln</h2>
+    <p>Rot und Grün spielen gemeinsam gegen Blau und Gelb. Jede Person besitzt vier Spielfiguren. Gewonnen hat das Team, dessen acht Figuren im Ziel sind.</p>
+    <p>Zum Herauskommen benötigst du eine 1/11, 13 oder einen Joker. Mit der 4 ziehst du vorwärts oder rückwärts, mit der 7 verteilst du sieben Schritte, und die Tauschkarte tauscht ungeschützte Figuren.</p>
+    <p>Online startet DOG automatisch, sobald alle aktiven Mitspieler bereit sind. Freie Plätze übernehmen Computergegner.</p>
+    <button id="dog-room-rules-close" class="dog-room-action dog-room-action-gold" type="button">Verstanden</button>
+  </dialog>
+</section>
+
+<link rel="stylesheet" href="DOG/room-lobby.css?v=1">
 <script type="module" src="DOG/init-motion.js?v=1"></script><script src="DOG/avatar-picker.js?v=3"></script><script type="module" src="DOG/emoji-lobby.js?v=1"></script><script type="module" src="DOG/board-picker.js?v=8"></script>
+<script type="module" src="DOG/room-lobby.js?v=1"></script>
 <script src="profile-config.js"></script><script src="profile-auth.js"></script><script src="hub-lobby.js?v=20261114-dog-avatars-1" defer></script>
 <script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script><script src="site-global-controls.js?v=20261109-global-1"></script>
 <script>
