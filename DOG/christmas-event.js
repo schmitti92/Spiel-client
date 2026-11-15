@@ -6,7 +6,7 @@
  */
 import {CHRISTMAS_PAGE_BACKGROUNDS} from './christmas-background-catalog.js?v=1';
 import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotalCost,christmasVillageTotalCost} from './christmas-building-costs.js?v=1';
-import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewards-ui.js?v=3';
+import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewards-ui.js?v=4';
 import {initChristmasScratch} from './christmas-scratch-ui.js?v=1';
 const $=id=>document.getElementById(id);
 const tabs=['village','buildings','tree','story','gifts','scratch','chapters'];
