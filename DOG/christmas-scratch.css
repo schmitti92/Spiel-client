@@ -447,3 +447,9 @@
  }
  .scratch-stage[data-variant="premium_27"] .scratch-hidden-prize strong{font-size:11px}
 }
+
+/* One meaningful reward per icon (newly issued tickets, symbolVersion 2). */
+.scratch-symbol-key,.scratch-symbol-legend{margin:0;padding:9px 12px;background:#0a2932c7;border:1px solid #c8a65e88;border-radius:11px;color:#ffe4aa;line-height:1.65;font-size:clamp(12px,1.5vw,15px);font-weight:750;text-align:center;overflow-wrap:anywhere}
+.scratch-symbol-legend{background:#184d43;color:#fff5d9}
+.scratch-symbol-legend[hidden]{display:none!important}
+.scratch-tier .scratch-symbol-key{margin-bottom:2px;background:#081c2991}
