@@ -82,6 +82,15 @@ button[disabled]{opacity:.55;cursor:not-allowed}[hidden]{display:none!important}
 .building-price-step{padding:7px 10px;border:1px solid #d1ae7066;border-radius:9px;background:#051c26bd;font-size:12px;font-weight:800;white-space:nowrap}
 .building-price-total{width:100%;text-align:center;color:#ffe6a0;font-size:13px}
 .building-upgrade-price{margin-top:12px;padding:10px 12px;border:1px solid #e4c37b7d;border-radius:10px;background:linear-gradient(115deg,#3b3c28aa,#183d3bd0);color:#ffebb0;font-size:12px;font-weight:850;line-height:1.5}
+
+.building-village-wallet{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:14px 16px;border:1px solid #ebbd73;border-radius:14px;background:linear-gradient(125deg,#113d39,#152e41);color:#fff4d9}
+.building-village-wallet strong{font-size:clamp(14px,1.8vw,18px);color:#ffe3a2}
+.building-village-wallet span{flex:1 1 220px;color:#cde7d3;font-size:12px;line-height:1.45}
+.building-village-wallet button{flex:0 1 auto;min-height:40px}
+.building-purchase{width:100%;margin-top:10px;font-weight:800}
+.building-purchase:disabled{cursor:not-allowed;opacity:.55;filter:grayscale(.4)}
+@media(max-width:760px){.building-village-wallet{padding:10px}.building-village-wallet button{width:100%}}
+
 @media(max-width:760px){.building-price-overview{gap:6px}.building-price-step{font-size:11px;padding:6px 8px}.building-upgrade-price{font-size:11px}}
 
 .tree-feature{display:flex;align-items:center;gap:25px;background:radial-gradient(circle at 15% 50%,#3f644c6b,transparent 40%),linear-gradient(135deg,#173844,#0a1f31);border:1px solid #d3b27470;border-radius:18px;padding:27px;margin-bottom:16px}
