@@ -14,6 +14,25 @@ Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 - Alle Gewinnchancen gelten **pro vollständigem Los**, nicht pro Rubbelzelle.
 - Freigeschaltete Baumstufen-Belohnungen bleiben exklusiv und sind nicht im Rubbellos-Pool.
 
+## Fest zugeordnete Gewinnsymbole (ab neu ausgegebenen Losen)
+- **🪙 Geldmünze:** kleiner Geldgewinn
+- **💵 Geldschein:** mittlerer Geldgewinn
+- **💼 Geldkoffer:** großer Geldgewinn
+- **🎁 Geschenk:** ausschließlich eine **Freischaltung / einen Premium-Gewinn**, niemals Goldmünzen.
+- Drei **feste Grundbeträge je Kaufklasse**:
+
+  | Klasse | 🪙 Münze | 💵 Schein | 💼 Koffer |
+  |---|---:|---:|---:|
+  | Einfach (200 Goldmünzen) | 10 | 40 | 100 |
+  | Mittel (500 Goldmünzen) | 100 | 300 | 800 |
+  | Premium (1.000 Goldmünzen) | 200 | 800 | 2.000 |
+
+- Ein gesondert sichtbarer **×2-Multiplikator** verdoppelt den aufgedruckten Grundbetrag, ändert aber nicht die Symbolbedeutung.
+- **Gewinnchancen/Grundgewichtungen bleiben unverändert.** Spätere Host-Anpassungen der Gewichtungen erst nach Fertigstellung aller vier Lose.
+- Das Rubbelbrett und die Gewinnvergabe werden vom Server gemeinsam erstellt und unabhängig geprüft. Ein 🎁-Gewinn wird nur bei tatsächlicher Freischaltung eingetragen. Zwei Freischaltungen können als **zwei getrennte Geschenk-Gewinnkombinationen** erscheinen.
+- **Bestandsschutz:** Bereits gekaufte Rubbelkarten ohne `symbolVersion:2` werden nach ihren ursprünglichen Regeln angezeigt und nicht umgebucht.
+- Beim neuen 27-Felder-Premiumlos bleiben die Schwellen bei 20 (Geld) und 24 (Freischaltung) sichtbaren Symbolfeldern sowie waagerechte Dreierreihen erhalten. Der zugeschriebene Geldbetrag ist auch bei diesen Schwellen durch 🪙, 💵 oder 💼 gekennzeichnet; 🎁 bedeutet ausschließlich Freischaltung.
+
 ## Bestätigte Gewichtung (15.11.2026)
 
 | Kategorie / Sonderereignis | Einfach | Mittel | Premium |
@@ -192,3 +211,5 @@ Abnahme: echte Spielrunde über mehrere Geräte.
 
 - 15.11.2026: Premiumvariante `premium_27` statt altem `tree`-Los für neue Premiumkäufe aktiviert. **9 Reihen × 3 Felder**. Sichtbar auswertbare Ergebnisse: vollständige Dreierreihe; **20 oder mehr nichtleere Symbolfelder = Münzgewinn**; **24 oder mehr nichtleere Symbolfelder = zusätzliche einmalige Premium-Freischaltung** (und Gold wegen 20er-Schwelle). 🧊-Felder zählen nicht. Regelauswertung und Zuordnung der Preise erfolgen auf Render, Bild/90-%-Rubbeln im Frontend. Altlose mit `tree` bleiben auswertbar. 15.000 simulierte Kaufbelege (5.000 je Preisklasse) mit sichtbarer Gewinnzuordnung erfolgreich geprüft; echter Browser-Endtest offen.
 - 15.11.2026: Das bestätigte rot-goldene Premium-Bild (1152×1536) als WebP `premium-weihnachts-rubbellos-27.webp` exportiert und CSS-Feld-Geometrie anhand einer Pixelbild-Prüfung korrigiert. Datei noch nicht auf GitHub; Upload-Pfad steht im Bildordner-README.
+
+- 15.11.2026: Einheitliche Gewinnsymbol-Zuordnung umgesetzt (🪙 kleine Geldstufe, 💵 mittlere, 💼 große, 🎁 Freischaltung). Je Klasse drei feste Grundbeträge, ×2 als gekennzeichnete Ausnahme; alle vier aktuell aktiven Karten werden mit symbolVersion 2 serverseitig verbunden. Altlose unverändert. 6.000 Simulationen fehlerfrei, Browser-/Render-Endtest offen.
