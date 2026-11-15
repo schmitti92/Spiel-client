@@ -48,6 +48,7 @@ button{touch-action:manipulation}
 .collection-tile.is-selected{border-color:#ffe68c;box-shadow:0 0 0 2px #ffdb756e,0 0 17px #fbd363a8,0 8px 13px #0009}
 .tile-art{position:relative;aspect-ratio:1.34;display:grid;place-items:center;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#224467,#0d263c)}
 .tile-art img{width:100%;height:100%;object-fit:cover;display:block}
+.tile-art.has-card-edition img,.detail-image.has-card-edition>img{object-fit:contain;padding:6px;background:linear-gradient(135deg,#303954,#13243b);}
 .tile-fallback,.detail-fallback{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(145deg,#21496d,#071b37)}
 .tile-fallback span,.detail-fallback span{font-size:clamp(38px,4vw,70px);filter:drop-shadow(0 5px 8px #0009)}
 .tile-art img+.tile-fallback,.detail-image img+.detail-fallback{display:none}
