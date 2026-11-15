@@ -4,11 +4,21 @@
  */
 import {renderDogRoomBoard} from './room-board-preview.js?v=2';
 import {summarizeDogRoomLobby} from './room-lobby-state.js?v=1';
+import {guardDesignerLink} from './designer-level-access.js?v=1';
 
 const $=id=>document.getElementById(id);
 const root=$('dog-room-lobby');
 const COLORS=['#ff7770','#5ec6ff','#80dda6','#ffd56c'];
 let current=null,roomSignature='',previewVisible=false,wasOpen=false;
+const designerGate=guardDesignerLink($('dog-room-designer'),{
+ lockedText:'🔒 Brettdesigner · Level 2',unlockedText:'🎨 Brettdesigner',
+ onStatus:({allowed,level,error})=>{
+  const note=$('dog-room-designer-note');if(!note)return;
+  note.textContent=allowed?'✅ Für dich freigeschaltet':
+   level?'🔒 Dein Level '+level+' · Freigabe ab Level 2':
+   error==='LOGIN_REQUIRED'?'Bitte mit deinem Profil anmelden':'Levelprüfung aktuell nicht möglich';
+ }
+});
 function setText(id,value){
  const node=$(id),text=String(value);
  if(node && node.textContent!==text)node.textContent=text;
@@ -79,7 +89,7 @@ function update(snapshot,busy=false){
  const roomCode=state.code;
  setText('dog-room-code',roomCode);
  $('dog-room-back').href='spielauswahl-online.html?'+new URLSearchParams({room:roomCode,stay:'1'}).toString();
- $('dog-room-designer').href=roomLink('DOG/design-studio.html',roomCode);
+ designerGate.updateTarget(roomLink('DOG/design-studio.html',roomCode));
  $('dog-room-unlocks').href=roomLink('DOG/sammlung.html',roomCode);
  $('dog-room-christmas').href='DOG/christmas-event.html?'+new URLSearchParams({room:roomCode,return:'../hub-lobby.html?'+new URLSearchParams({room:roomCode,stage:'1'})}).toString();
  if(!previewVisible){
