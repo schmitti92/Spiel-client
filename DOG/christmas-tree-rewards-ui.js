@@ -33,13 +33,13 @@ export function initChristmasTreeRewards({request,roomValid,loggedIn}){
   counter.textContent=(status?.collected||0)+' / 10 abgeholt';
   const records=Array.isArray(status?.rewards)?status.rewards:TREE_PRIZE_PREVIEW;
   for(const item of records){
-   const state=item.state||'locked';
+   const state=status?(item.state||'locked'):'unknown';
    const wrap=make('article','tree-reward');
    wrap.dataset.status=state;
    wrap.append(make('span','tree-reward-level','LEVEL '+item.level));
    wrap.append(make('span','tree-reward-icon',item.prize?.icon||item.icon||'🎁'));
    wrap.append(make('strong','tree-reward-title',item.prize?.name||item.title));
-   const message=state==='collected'?'✅ Gesammelt':state==='ready'?'🎁 Abholbereit':'🔒 Gesperrt';
+   const message=state==='collected'?'✅ Gesammelt':state==='ready'?'🎁 Abholbereit':state==='locked'?'🔒 Gesperrt':'🔎 Online prüfen';
    wrap.append(make('span','tree-reward-status',message));
    if(state==='ready'){
     const button=make('button','tree-reward-claim',busy?'Wird geprüft …':'🎁 Abholen');
@@ -49,7 +49,30 @@ export function initChristmasTreeRewards({request,roomValid,loggedIn}){
     wrap.append(button);
    }
    grid.append(wrap);
+   // Mirror only Render-confirmed gift statuses into the milestone timeline.
+   const milestone=document.querySelector('#tree-steps [data-tree-step="'+item.level+'"]');
+   if(milestone){
+    milestone.dataset.status=state;
+    const icon=milestone.querySelector('[data-tree-gift-icon]');
+    const label=milestone.querySelector('[data-tree-prize-title]');
+    const badge=milestone.querySelector('[data-tree-status]');
+    if(icon)icon.textContent=item.prize?.icon||item.icon||'🎁';
+    if(label)label.textContent=item.prize?.name||item.title;
+    if(badge)badge.textContent=message;
+    milestone.querySelector('.tree-step-claim')?.remove();
+    if(state==='ready'){
+     const mini=make('button','tree-step-claim',busy?'Wird geprüft …':'🎁 Jetzt abholen');
+     mini.type='button';mini.disabled=busy;
+     mini.setAttribute('aria-label','Preis für Baumstufe '+item.level+' abholen');
+     mini.addEventListener('click',()=>void claim(item.level));
+     milestone.append(mini);
+    }
+   }
   }
+  const current=document.querySelector('#tree-steps .tree-step.selected');
+  const currentStatus=current?.querySelector('[data-tree-status]')?.textContent;
+  const heroStatus=document.getElementById('tree-current-prize-status');
+  if(heroStatus&&currentStatus)heroStatus.textContent=currentStatus;
  };
  const load=async()=>{
   const index=++callIndex;
