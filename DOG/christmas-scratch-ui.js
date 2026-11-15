@@ -75,8 +75,10 @@ export function premiumWinningRowIndices(wins=[]){
 export function initChristmasScratch(){
  const $=id=>document.getElementById(id);
  const root=$('scratch-tier-grid'),wallet=$('scratch-wallet'),stage=$('scratch-stage'),
-  board=$('scratch-board'),results=$('scratch-result-panel'),reveal=$('scratch-reveal');
- if(!root||!wallet||!stage||!board||!results||!reveal)throw Error('SCRATCH_UI_NOT_FOUND');
+  board=$('scratch-board'),results=$('scratch-result-panel'),
+  winningLines=$('scratch-winning-lines'),reveal=$('scratch-reveal');
+ if(!root||!wallet||!stage||!board||!results||!winningLines||!reveal)
+  throw Error('SCRATCH_UI_NOT_FOUND');
  let status=null,ticket=null,busy=false,pending=null,requestId=0,finished=false,canManageScratch=false;
  const hostDialog=$('scratch-host-dialog');
  const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
@@ -689,7 +691,9 @@ export function initChristmasScratch(){
    '🎁 Hauptgewinn-Bestand: derzeit nicht verfügbar'));
   // Keep the full card graphic untouched; award results belong to the
   // dedicated, compact right panel, not over the bottom three card rows.
-  panel.append(results,$('scratch-winning-lines'));
+  // Do not search for this node after replaceChildren(): that temporarily
+  // detaches it. append(null) would literally print "null" on screen.
+  panel.append(results,winningLines);
   updatePremiumCounter(finished&&result?.board?.variantId==='premium_27'?
    result.board.cells.map((_,i)=>i):[]);
  }
@@ -833,7 +837,7 @@ export function initChristmasScratch(){
    reveal.classList.add('revealed');
    if(stage.dataset.variant==='premium_27'&&Array.isArray(current.board?.cells))
     updatePremiumCounter(current.board.cells.map((_,i)=>i));
-   const list=$('scratch-winning-lines');
+   const list=winningLines;
    list.replaceChildren();
    for(const [i,win] of wins.entries()){
     const description=win.rule==='gold-20'?'20 Symbolfelder':win.rule==='premium-24'?
