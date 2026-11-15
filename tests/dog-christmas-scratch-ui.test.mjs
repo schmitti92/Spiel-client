@@ -194,3 +194,24 @@ test('all four distinct scratch tickets are visible together in compact non-scro
  assert.match(html,/id="scratch-tier-grid"/);
  assert.match(html,/id="scratch-analytics"/,'statistics remain available');
 });
+
+
+test('opened scratch tickets fit in a single viewport on tablet, phone and landscape',()=>{
+ const css=source('../DOG/christmas-scratch.css');
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const override=css.split('ONE-VIEW SCRATCH CARD OVERRIDE v1')[1];
+ assert.ok(override,'one-screen layout must be the final CSS override');
+ assert.match(override,/height:min\(690px,calc\(100dvh - 16px\)\)!important/);
+ assert.match(override,/overflow:hidden!important/);
+ assert.match(override,/body\.scratch-ticket-open/);
+ assert.match(override,/\.scratch-card-art\{/);
+ assert.match(override,/aspect-ratio:3\/4/);
+ assert.match(override,/@media\(max-width:700px\) and \(min-height:501px\)/);
+ assert.match(override,/@media\(max-height:500px\)/);
+ assert.match(override,/grid-row:6/);
+ assert.match(override,/grid-row:7/);
+ assert.match(override,/grid-row:8/);
+ assert.match(override,/scratch-stage\.is-revealed/);
+ assert.match(js,/document\.body\.classList\.add\('scratch-ticket-open'\)/);
+ assert.match(js,/document\.body\.classList\.remove\('scratch-ticket-open'\)/);
+});
