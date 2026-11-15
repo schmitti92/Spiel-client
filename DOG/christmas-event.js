@@ -40,8 +40,57 @@ const treeDetails=[
   'Der große Stern auf der Spitze wird sichtbar. Die ganze Stadt erwartet den großen Moment.',
   'Der prachtvolle Weihnachtsbaum erleuchtet das ganze Weihnachtsdorf.'
 ];
-// PNG filenames are verified in the GitHub event-assets directory.
-const towerAsset=level=>'weihnachtsevent-bilder/weihnachtslichter_turm_stufe_'+level+'.png';
+// All image filenames are checked against GitHub's actual event image folder.
+// Preload only the requested image, not the full 30-image collection.
+const eventImageRoot='weihnachtsevent-bilder/';
+const assetPath=(id,level)=>{
+ const stem={
+  tower:'weihnachtslichter_turm_stufe_',
+  workshop:'Wichtelwerkstatt_Stufe_',
+  bakery:'weihnachtsbaeckerei_stufe_',
+  inn:'Herberge_Stufe_',
+  tree:'weihnachtsbaum_stufe_'
+ }[id];
+ if(!stem||!Number.isInteger(level)||level<1||level>(id==='tree'?10:5))return '';
+ return eventImageRoot+stem+level+'.png';
+};
+const imageRequests=new Map();
+function waitForImage(path){
+ if(!path)return Promise.resolve(false);
+ if(!imageRequests.has(path)){
+  imageRequests.set(path,new Promise(resolve=>{
+   const image=new Image();
+   image.onload=()=>resolve(true);
+   image.onerror=()=>resolve(false);
+   image.src=path;
+  }));
+ }
+ return imageRequests.get(path);
+}
+function showStageImage(id,level){
+ const layer=$(id+'-stage-image'),fallback=$(id==='tree'?'art-tree':'art-'+id);
+ if(!layer||!fallback)return;
+ const path=assetPath(id,level);
+ layer.dataset.requested=path;
+ fallback.classList.remove('photo-ready','tower-photo-ready');
+ waitForImage(path).then(ok=>{
+  // An upgrade may have been requested while an earlier stage was loading.
+  if(layer.dataset.requested!==path)return;
+  if(!ok){layer.removeAttribute('href');return;}
+  layer.setAttribute('href',path);
+  fallback.classList.add('photo-ready');
+ });
+}
+function updateCardImage(id,level){
+ const img=$(id==='tree'?'tree-card-photo':'building-card-photo-'+id);
+ if(!img)return;
+ const path=assetPath(id,level);
+ if(img.getAttribute('src')!==path){
+  img.hidden=false;
+  img.src=path;
+ }
+ img.alt=(id==='tree'?'Weihnachtsbaum':definitions.find(def=>def.id===id)?.title||id)+' – Stufe '+level;
+}
 const preview={tower:1,workshop:1,bakery:1,inn:1};
 let lastPresentationKey=null;
 const sceneTitles=['Die Weihnachtsreise beginnt','Die ersten Laternen leuchten','Ein Hauch von Winter','Lichter über den Dächern','Das Dorf entdeckt Weihnachten','Die Weihnachtsvorbereitungen laufen','Ein Sternenglanz erscheint','Lichtertal wird zum Wintermärchen','Das Dorf wartet auf sein Wunder','Das große Weihnachtslicht'];
@@ -64,7 +113,7 @@ function treeLevel(){
 function buildingCard(entry){
  const root=document.createElement('article');root.className='building-card';
  root.innerHTML='<div class="building-card-head"><span class="building-card-icon" aria-hidden="true">'+entry.icon+'</span><div><h3>'+entry.title+'</h3><p>'+entry.summary+'</p></div></div>'
-   +(entry.id==='tower'?'<div class="building-card-art" aria-label="Aktuelles Turmbild der Vorschau"><img id="tower-card-photo" src="'+towerAsset(1)+'" alt="Weihnachtslichter-Turm – Stufe 1" loading="lazy" decoding="async"></div>':'')
+   +'<div class="building-card-art" aria-label="Gebäudeansicht der gewählten Stufe"><img id="building-card-photo-'+entry.id+'" src="'+assetPath(entry.id,1)+'" alt="'+entry.title+' – Stufe 1" loading="lazy" decoding="async"></div>'
    +'<div class="building-card-info"><strong data-building-effect></strong><span data-building-visual></span></div>'
    +'<div class="level-row"><label for="preview-'+entry.id+'">Entwicklungsstufe</label><output for="preview-'+entry.id+'" data-building-value></output></div>'
    +'<input id="preview-'+entry.id+'" type="range" min="1" max="5" step="1" value="1" aria-label="Vorschau der Entwicklungsstufe für '+entry.title+'">'
@@ -93,17 +142,8 @@ function refreshPreview(){
   card.querySelectorAll('.building-level-markers>span').forEach((dot,i)=>dot.classList.toggle('active',i<level));
   const art=$('art-'+d.id);
   if(art)art.dataset.level=String(level);
-  if(d.id==='tower'){
-    const asset=towerAsset(level);
-    const stageImage=$('tower-stage-image');
-    if(stageImage?.getAttribute('href')!==asset){
-      art?.classList.remove('tower-photo-ready');
-      stageImage?.setAttribute('href',asset);
-    }
-    const cardImage=$('tower-card-photo');
-    if(cardImage&&cardImage.getAttribute('src')!==asset)cardImage.src=asset;
-    if(cardImage)cardImage.alt='Weihnachtslichter-Turm – Stufe '+level;
-  }
+  showStageImage(d.id,level);
+  updateCardImage(d.id,level);
   const plaque=document.querySelector('[data-hotspot-level="'+d.id+'"]');
   if(plaque)plaque.textContent=level+' / 5';
  }
@@ -117,8 +157,11 @@ function refreshPreview(){
  lastPresentationKey=presentationKey;
  view.dataset.tree=String(tree);
  view.dataset.snow=String(tree<=2?1:tree<=4?2:tree<=6?3:tree<=8?4:5);
+ // The old vector tree remains visible until a valid tree PNG is available.
  const growth=.59+((tree-1)/9)*.41;
  $('art-tree').setAttribute('transform','translate(612 565) scale('+growth.toFixed(4)+') translate(0 -565)');
+ showStageImage('tree',tree);
+ updateCardImage('tree',tree);
  $('stat-building-levels').textContent=total+' / 20';
  $('stat-tree-level').textContent=tree+' / 10';
  $('village-stage-text').textContent=tree===1?'Anfangszustand · Vorschau':tree===10?'Prachtvolles Weihnachtsdorf · Vorschau':'Baum Stufe '+tree+' · Vorschau';
@@ -195,14 +238,17 @@ document.querySelectorAll('[data-open-building]').forEach(button=>{
 });
 window.addEventListener('hashchange',()=>showPanel(location.hash.slice(1),{updateHistory:false}));
 showPanel(tabs.includes(location.hash.slice(1))?location.hash.slice(1):'village',{updateHistory:false});
-// SVGImageElement has no reliable "complete" flag: attach before the first href.
-const towerStageImage=$('tower-stage-image');
-towerStageImage?.addEventListener('load',()=>{
-  if(towerStageImage.getAttribute('href')===towerAsset(preview.tower))$('art-tower')?.classList.add('tower-photo-ready');
-});
-towerStageImage?.addEventListener('error',()=>{$('art-tower')?.classList.remove('tower-photo-ready');});
-$('tower-card-photo')?.addEventListener('error',event=>{
-  event.currentTarget.alt='Turmbild vorübergehend nicht verfügbar';
-  event.currentTarget.hidden=true;
+// Keep the vector drawings as fallback if an uploaded image fails to render.
+for(const id of ['tower','workshop','bakery','inn','tree']){
+ $(id+'-stage-image')?.addEventListener('error',()=>{
+  const fallback=$(id==='tree'?'art-tree':'art-'+id);
+  fallback?.classList.remove('photo-ready');
+ });
+}
+document.querySelectorAll('.building-card-art img, #tree-card-photo').forEach(img=>{
+ img.addEventListener('error',()=>{
+  img.alt='Bild gerade nicht verfügbar';
+  img.hidden=true;
+ });
 });
 refreshPreview();
