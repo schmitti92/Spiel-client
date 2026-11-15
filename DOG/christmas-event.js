@@ -6,9 +6,9 @@
  * by the authenticated Render backend and must not trust this preview.
  */
 import {CHRISTMAS_PAGE_BACKGROUNDS} from './christmas-background-catalog.js?v=1';
+import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotalCost,christmasVillageTotalCost} from './christmas-building-costs.js?v=1';
 const $=id=>document.getElementById(id);
 const tabs=['village','buildings','tree','story','gifts','chapters'];
-const COSTS=[0,20,40,65,95];
 const TREE_THRESHOLDS=[4,5,7,9,11,13,15,17,19,20];
 const FIELDS=[10,12,15,18,20];
 const definitions=[
@@ -206,13 +206,30 @@ function buildingCard(entry){
    +'<div class="building-card-info"><strong data-building-effect></strong><span data-building-visual></span></div>'
    +'<div class="level-row"><label for="preview-'+entry.id+'">Entwicklungsstufe</label><output for="preview-'+entry.id+'" data-building-value></output></div>'
    +'<input id="preview-'+entry.id+'" type="range" min="1" max="5" step="1" value="1" aria-label="Vorschau der Entwicklungsstufe für '+entry.title+'">'
-   +'<div class="building-level-markers" aria-hidden="true">'+Array.from({length:5},()=>'<span></span>').join('')+'</div>';
+   +'<div class="building-level-markers" aria-hidden="true">'+Array.from({length:5},()=>'<span></span>').join('')+'</div>'
+   +'<div class="building-upgrade-price" data-building-upgrade-price aria-live="polite"></div>';
  const range=root.querySelector('input');
  range.addEventListener('input',()=>{preview[entry.id]=Number(range.value);refreshPreview()});
  return root;
 }
 const grid=$('building-grid');
 for(const item of definitions)grid.append(buildingCard(item));
+// Display the same cost formula used by the future backend, never a fake balance.
+const priceOverview=$('building-price-overview');
+if(priceOverview){
+ const rows=document.createDocumentFragment();
+ for(let level=1;level<CHRISTMAS_BUILDING_MAX_LEVEL;level++){
+  const step=document.createElement('span');
+  step.className='building-price-step';
+  step.textContent='Level '+level+' → '+(level+1)+' · '+christmasUpgradeCost(level)+' ⭐';
+  rows.append(step);
+ }
+ const total=document.createElement('strong');
+ total.className='building-price-total';
+ total.textContent='Pro Gebäude: '+christmasBuildingTotalCost(CHRISTMAS_BUILDING_MAX_LEVEL)+' ⭐ · Gesamtes Dorf: '+christmasVillageTotalCost({tower:5,workshop:5,bakery:5,inn:5})+' ⭐';
+ rows.append(total);
+ priceOverview.replaceChildren(rows);
+}
 const steps=$('tree-steps');
 treeNames.forEach((name,i)=>{
  const box=document.createElement('div');
@@ -227,7 +244,11 @@ function refreshPreview(){
   $('preview-'+d.id).value=String(level);
   card.querySelector('[data-building-effect]').textContent=d.effects[level-1]+' · Vorschau';
   card.querySelector('[data-building-visual]').textContent=d.visuals[level-1];
-  card.querySelector('[data-building-value]').textContent='Stufe '+level+' / 5';
+  card.querySelector('[data-building-value]').textContent='Stufe '+level+' / '+CHRISTMAS_BUILDING_MAX_LEVEL;
+  const nextCost=christmasUpgradeCost(level);
+  card.querySelector('[data-building-upgrade-price]').textContent=nextCost===null
+   ?'⭐ Maximalstufe erreicht · kein weiteres Upgrade'
+   :'⭐ Nächster Ausbau: Level '+level+' → '+(level+1)+' kostet '+nextCost+' Weihnachtslichter (Vorschau)';
   card.querySelectorAll('.building-level-markers>span').forEach((dot,i)=>dot.classList.toggle('active',i<level));
   const art=$('art-'+d.id);
   if(art)art.dataset.level=String(level);
