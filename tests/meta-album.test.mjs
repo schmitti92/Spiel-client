@@ -79,7 +79,23 @@ test('uploaded transparent Christmas book is the page artwork and all six frames
  assert.match(css,/--album-slots-top:19\.1%/);
  assert.match(css,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
  assert.match(css,/grid-template-rows:repeat\(2,minmax\(0,1fr\)\)/);
- assert.match(html,/meta-sammelalbum\.css\?v=4/);
+ assert.match(html,/meta-sammelalbum\.css\?v=5/);
  assert.match(js,/selected=theme\.pictures\[pageIndex\*6\]/);
  assert.match(js,/const unlocked=isMetaAlbumPictureUnlocked\(pic\)/,'locked rewards remain enforced');
+});
+
+test('tablet viewport uses compact single-screen album without losing paging or lock controls',()=>{
+ const html=source('../meta-sammelalbum.html');
+ const styles=source('../meta-sammelalbum.css');
+ assert.match(styles,/@media \(min-width:900px\) and \(min-height:540px\) and \(orientation:landscape\)/);
+ assert.match(styles,/height:100dvh;min-height:0;max-height:100dvh/);
+ assert.match(styles,/width:min\(100%,calc\(\(100dvh - 170px\) \* 1\.5\)\)/);
+ assert.match(styles,/\.meta-album-gallery-scroll\{[\s\S]*?overflow:hidden/);
+ assert.match(html,/id="meta-book-prev"/);
+ assert.match(html,/id="meta-book-next"/);
+ assert.match(html,/id="meta-picture-detail"/);
+ assert.match(html,/meta-sammelalbum\.css\?v=5/);
+ assert.match(html,/meta-sammelalbum\.js\?v=5/);
+ const script=source('../meta-sammelalbum.js');
+ assert.match(script,/disabled\.disabled=true/);
 });
