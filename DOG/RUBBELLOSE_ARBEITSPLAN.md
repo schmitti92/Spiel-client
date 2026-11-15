@@ -1,5 +1,5 @@
-# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v8
-Stand: 15.11.2026. Status: IN UMSETZUNG. Gewinnlogik, Varianten und funktionale Rubbeloberfläche ins Repository integriert; Artwork und echter Mehrspieler-Endtest noch offen.
+# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v9
+Stand: 15.11.2026. Status: KONZEPT AUF 4 SPIELARTEN ANGEPASST (2 Normal + 2 Premium), bestehende Live-Technik noch auf 3 Preisstufen und 6 auswählbaren Regeln. Die erste Grafik ist eingebunden; drei neue Motive und ihre Zuordnung müssen noch umgesetzt und getestet werden.
 Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 
 ## Fixierte Regeln
@@ -34,31 +34,59 @@ Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 
 **Technisch festgelegt (15.11.2026):** Die Hauptkategorien werden pro Los mit 1000 gleichgewichteten Positionen gezogen. Zwei-Hauptgewinne und Hauptgewinn-×2 sind bei ausreichendem unbesessenem Pool zwei unterschiedliche seltene Ereignisse innerhalb der Freischaltungskategorie (je 0,1 % aller Lose) und schließen sich gegenseitig aus. 11 % ×2 bestehen aus 10,9 % normalem Münz-×2 plus 0,1 % Hauptgewinn-×2. Normales ×2 auf Freischaltungs-Losen gibt einen klar sichtbaren zusätzlichen Münztreffer, auf den ×2 angewendet wird. Der Extra-Münztreffer wird mit 30/40/50 % unter Gewinnlosen gezogen; falls Platz ist, können bei 20 % dieser Treffer zwei zusätzliche Münzgewinne erscheinen. Maximal drei sichtbare Gewinnkombinationen pro Los. Sind weniger als zwei freischaltbare, noch nicht besessene Hauptpreise vorhanden, können die 0,1-%-Sonderereignisse nicht mehr als zwei neue einzigartige Hauptgewinne ausgezahlt werden; ausverkaufte reguläre Freischaltungen werden zu Münzgewinnen. **Die 20-%-Nietenquote bleibt trotzdem erhalten.** Beträge innerhalb der gewählten Spanne sind gleichverteilt. Diese Auslegung ist technische Implementierung der bestätigten Hauptquoten; späteres Fine-Tuning gesondert dokumentieren.
 
-## Sechs aktive Spielvarianten (Nutzerentscheidung 15.11.2026)
+## Verbindliches neues Ziel: vier unterschiedliche Rubbellose (2 Normal + 2 Premium)
 
-Ursprünglich waren zehn Spielarten geplant. **Neue Lose wählen ab sofort
-ausschließlich eine von sechs verschiedenen Spielarten**.
-Die vorherigen sechs Bildvorschläge waren keine sechs zusätzlichen
-Gestaltungen einer einzelnen Schneeflocken-Bingo-Karte.
+Nutzerentscheidung vom 15.11.2026: **Insgesamt vier** Spielarten, davon
+**zwei normale und zwei Premium-Rubbellose**. Das bisherige erste Los
+„Geschenkelinie“ bleibt erhalten. **Drei weitere Lose werden einzeln
+gestaltet**; die vorherigen Ideen mit sechs oder zehn aktiv beworbenen
+Spielarten werden nicht weiterverfolgt.
 
-| # | Variante | Felder | Sichtbare Gewinnregel |
-|---|---|---:|---|
-| 1 | Geschenkelinie | 9 (3×3) | 3 gleiche Symbole in waagerechter, senkrechter oder diagonaler Linie |
-| 2 | Schneeflocken-Bingo | 16 (4×4) | 4 gleiche Symbole in einer waagerechten, senkrechten oder diagonalen Linie |
-| 3 | Sternensammler | 12 (3×4) | 4 gleiche Sterne irgendwo auf dem Los |
-| 4 | Wichtelpfad | 20 (4×5) | Zusammenhängender Symbolpfad von links nach rechts |
-| 5 | Zuckerstangen-Duell | 6 (3×2) | Gleiche Symbolpaare innerhalb einer Zweierreihe |
-| 6 | Weihnachtsbaum-Los | 15 (5×3) | Symbolfolge ⭐🎄🎁 von links nach rechts |
+| Nr. | Klasse | Arbeitsname | Größe | Gewinnregel | Gestaltung | Zustand |
+|---|---|---|---|---|---|---|
+| 1 | Normal | 🎁 Geschenkelinie | 3×3 (9) | Drei gleiche Symbole horizontal, vertikal oder diagonal | Rot/Gold, Weihnachtsmarkt, Geschenkband | [x] Grafik hochgeladen, technisches Layout vorhanden; Praxistest offen |
+| 2 | Normal | ❄️ Schneeflocken-Bingo | 4×4 (16) | Vier gleiche Symbole horizontal, vertikal oder diagonal | Eisblau/Silber, Eis-Palast, Eiskristalle | [ ] Neues Einzelmotiv + 4×4-Ausrichtung |
+| 3 | Premium | 🧝 Magischer Wichtelpfad | 4×5 (20) | Durchgehender Pfad gleicher Symbole vom linken zum rechten Spielfeldrand | Tiefgrün/Türkis, magischer Weihnachtswald, leuchtender Weg | [ ] Neues Einzelmotiv + 4×5-Ausrichtung |
+| 4 | Premium | 🎄 Weihnachtsbaum-Geheimnis | 5×3 (15) | ⭐🎄🎁 in genau dieser Reihenfolge von links nach rechts | Violett/Gold, glanzvoller Sternenbaum und magisches Dorf | [ ] Neues Einzelmotiv + 5×3-Ausrichtung |
 
-**Archivierte, nicht mehr zufällig gezogene Varianten:** Rentierglück,
-Lebkuchen-Memory, Diamantenjagd und Glocken-Jackpot.
-Deren bestehende Generatoren/Regelprüfer bleiben nur aus Kompatibilitätsgründen
-vorhanden; zuvor gekaufte Lose dürfen nicht verloren gehen.
+Dies sind **Gestaltungsvorschläge**, keine bereits vom Nutzer abgenommenen
+Endnamen oder finalisierten neuen Bilder. Die bestehende Spiellogik
+für `gifts`, `snow`, `elf` und `tree` ist vorhanden und muss nur auf
+die gewählten Klassen, individuelle Bildflächen und Gewinnanzeige
+abgestimmt werden.
 
-Die sechs aktiven Varianten verwenden dieselben drei Losklassen und
-bestehenden Hauptgewichte und Bonuswahrscheinlichkeiten. Jede der sechs
-Varianten bekommt **genau ein individuelles Hauptmotiv**, nicht jeweils
-sechs Motive. Gewinnsymbole kommen weiter dynamisch vom Render-Server.
+### Preis- und Gewinnklassen: Übergang bewusst absichern
+- **Zielmodell:** 2 Normal-Spiele, 2 Premium-Spiele; die früheren
+  drei Kaufstufen (Einfach 200 / Mittel 500 / Premium 1000 Münzen)
+  existieren derzeit technisch weiterhin. **Keine Live-Preis- oder
+  Wahrscheinlichkeitsänderung durch dieses Planungspapier.**
+- Vorgeschlagene Abbildung bei späterer Umsetzung: Normal = bisherige
+  Einfach-Stufe (200 Münzen; 1–100 je Münztreffer);
+  Premium = bisherige Premium-Stufe (1000 Münzen; 1–2000 je Treffer).
+  Die bisherige Mittel-Stufe (500 Münzen; 1–800) erst nach gesonderter
+  Prüfung aus der Kaufoberfläche entfernen. Alte Lose und Freischaltungen
+  müssen lesbar bleiben; Guthaben/Ansprüche nicht löschen.
+- Die **ursprünglich bestätigte Wahrscheinlichkeitsmatrix** oben
+  bleibt historische/technische Basis, bis der Zwei-Klassen-Übergang
+  umgesetzt und nachgetestet ist (20 % Niete, 11 % ×2, zweimal 0,1 %
+  seltene Hauptgewinnereignisse bleiben Ziel).
+- Neue Lose müssen dann **nur** aus den zwei jeweils zur Preisklasse
+  gehörenden Spielarten gezogen werden; nicht zufällig aus allen vier.
+- Weitere sechs frühere Regelprüfer dürfen als **Legacy-Kompatibilität**
+  bestehen bleiben. Bereits erworbene Karten werden weiter
+  wiederhergestellt, auch wenn ihre Spielart nicht mehr neu erhältlich ist.
+
+### Reihenfolge der drei Neuentwicklungen
+1. **Normal 2:** Schneeflocken-Bingo – eigenständiges 16-Felder-Bild,
+   präzise 4×4-Koordinaten und durchgehende Rubbeloberfläche.
+2. **Premium 1:** Magischer Wichtelpfad – 20 große Felder, der
+   durchgehende Weg muss klar und ohne versteckte Zwischengewinne
+   hervorgehoben werden.
+3. **Premium 2:** Weihnachtsbaum-Geheimnis – 15 Felder, exakte
+   Symbolfolge und sichtbare Gewinnzuordnung, keine erfundenen Preise.
+4. Erst danach Shop auf **2 Normal + 2 Premium** umstellen, die
+   Mittel-Stufe bewusst migrieren, alle vier Lose auf Touch, Reload,
+   90-%-Aufdeckung, Nieten und 1–3 Treffer sowie Gewinnchancen testen.
 
 ## Phase 1 – Regelwerk und mathematische Gewichtung [ ]
 - Hauptkategorien mathematisch geprüft (siehe Tabelle); noch offen: 1/2/3 Münztreffer und Verteilung der Münzbeträge.
@@ -76,8 +104,8 @@ Abnahme: Wahrscheinlichkeitsmatrix und Testfälle schriftlich freigegeben.
 - **Technische Abnahme:** Für jede der 10 Varianten Generator und davon unabhängigen Regelprüfer bauen; generierte Ergebnisse vor Auszahlung serverseitig gegenprüfen. Keine Belohnung allein aus einer Anzeige oder einem clientseitigen Zufallswurf ableiten.
 - Serverseitiges Losergebnis und Spielfeld zusammen atomar persistieren, damit Neuladen/Verbindungsabbruch keine andere Karte erzeugt.
 
-## Phase 2 – Spielvarianten und Generator [6 AKTIV, 4 ARCHIVIERT; ENDTEST OFFEN]
-- [x] Für die **6 aktiven Varianten** sowie 4 archivierte Varianten Generatoren und unabhängige Regelprüfer vorhanden: `serverfinal/dog/christmas-scratch-grid.js`.
+## Phase 2 – Spielvarianten und Generator [ZIEL 4; LIVE DERZEIT 6; ENDTEST OFFEN]
+- [x] Generatoren und unabhängige Regelprüfer für die **4 künftig angebotenen Varianten** sowie die 6 früheren Varianten vorhanden: `serverfinal/dog/christmas-scratch-grid.js`.
 - [x] Pro Variante **0, 1, 2 oder 3** sichtbare, tatsächlich regelkonforme Gewinnkombinationen erzeugen; Nieten ohne gültige Gewinnkombination.
 - [x] Preis-Zuordnung je geprüfter Gewinnkombination vorbereitet (`attachScratchPrizes`); eine manipulierte Feldzuordnung wird erkannt (`verifyScratchPrizes`).
 - [x] Erste 10.000 Felder (10 Varianten × 4 Gewinnzahlen × 250 Durchläufe) mit Generator, Auswertung und Preisbindung erfolgreich getestet, zusätzlich ein eigener Testquelltext: `serverfinal/tests/christmas-scratch-grid.test.js`.
@@ -86,7 +114,7 @@ Abnahme: Wahrscheinlichkeitsmatrix und Testfälle schriftlich freigegeben.
 - [ ] Zusätzliche Gewinnanzahl über 3 verhindern bzw. ausschließlich Varianten mit ausreichender Kapazität verwenden, bevor bestehende Echtgeld-/Eventmünzen-Auszahlung daran gebunden wird.
 - Generator erzeugt Nieten ohne gültige Kombination; Gewinne mit exakt zugeordneten Treffern.
 - 6/9/12/15/16/20 Felder auf Mobilgeräten gut bedienbar.
-Abnahme: automatische Validierung aller 6 aktiven Varianten und der 4 archivierten Altvarianten, auch 2–3 Gewinnkombinationen.
+Abnahme: automatische Validierung der vier neuen aktiven Varianten, zugehörige Klassenbindung sowie Kompatibilität der sechs archivierten Altvarianten, auch 2–3 Gewinnkombinationen.
 
 ## Phase 3 – Serverseitige Auszahlung [INTEGRIERT; LIVE-ENDTEST OFFEN]
 - [x] Render-Kauflogik `serverfinal/dog/christmas-scratch.js` und vorhandene authentifizierte API-Routen geprüft.
@@ -96,7 +124,7 @@ Abnahme: automatische Validierung aller 6 aktiven Varianten und der 4 archiviert
 - [x] `lastResult` wird serverseitig gespeichert; die Oberfläche bietet das noch nicht als gesehen markierte Los nach Neuladen erneut an (nur UI-Marker lokal, keine Berechtigungsprüfung damit).
 Abnahme: Unit-/Integrationstests für Guthaben, Duplikate, Entitlements, Auth, Parallelkäufe.
 
-## Phase 4 – Grafiken [KARTE 1/6 HOCHGELADEN UND VERKNÜPFT]
+## Phase 4 – Grafiken [KARTE 1/4 HOCHGELADEN; DREI NEUE OFFEN]
 - [x] **Karte 1 „Geschenkelinie“** einzeln als hochwertiges Motiv (Rot/Gold, neun goldene Rubbelplätze) generiert.
 - [x] Optimierte WebP-Datei erstellt: `geschenkelinie-01.webp`, **1086×1448 Pixel**, ca. 414 KB. Download aus der aktuellen Unterhaltung.
 - [x] **Artwork-Feld-Ausrichtung im Frontend**: `christmas-event.html` enthält den neuen `scratch-card-art`-Wrapper; `christmas-scratch.css` positioniert das 3×3-Spielfeld auf den neun gedruckten goldenen Feldern.
@@ -105,9 +133,9 @@ Abnahme: Unit-/Integrationstests für Guthaben, Duplikate, Entitlements, Auth, P
 - [x] **Grafik in GitHub hochgeladen und geprüft:** Repository `schmitti92/Spiel-client`, Pfad `DOG/assets/scratch/geschenkelinie-01.webp`, Blob SHA `9a8f8e461630c5c095cc755a3f02db2cf0acd6ff` (identisch mit lokalem Original).
 - [x] **Statische Ausrichtung mit Originalbild überprüft und optimiert:** Die 3×3-Beschichtungen sitzen innerhalb der neun goldenen Rahmen (CSS: left 17 %, top 31,7 %, width 63,6 %, height 40,1 %, grössere Zwischenabstände). Stylesheet-Cache-Version aktualisiert.
 - [ ] **Live-Abnahme** im echten Browser und auf dem Smartphone: Bild aus GitHub Pages laden, Rubbelgefühl/Pointer-Touch, Gewinnsymbol-Highlight und 90-%-Automatik kontrollieren.
-- [ ] Karten 2–6 nacheinander als eigene Motive gestalten, exportieren und integrieren.
+- [ ] **Drei** zusätzliche Einzelmotive nacheinander gestalten, exportieren, in GitHub hochladen und einpassen: Schneeflocken-Bingo, Magischer Wichtelpfad, Weihnachtsbaum-Geheimnis.
 - Gemeinsam genutzte Assets: Silbertextur, Emoji-Symbole, Gewinnleuchten, Qualitätsrahmen.
-Abnahme: Bilddatei öffentlich verfügbar, alle neun Rubbelstellen ausgerichtet, Gewinnreihen sichtbar und 90-%-Aufdeckung auf Touch-Geräten erfolgreich überprüft; danach fünf weitere Motive erstellen.
+Abnahme: Bilddatei öffentlich verfügbar, alle neun Rubbelstellen ausgerichtet, Gewinnreihen sichtbar und 90-%-Aufdeckung auf Touch-Geräten erfolgreich überprüft; danach drei weitere Motive fertigstellen.
 
 ## Phase 5 – Rubbeloberfläche [ECHTES FREIRUBBELN + 90-%-AUTOMATIK EINGEBAUT, HANDYTEST OFFEN]
 - [x] **Eine durchgehende Canvas-Beschichtung über dem gesamten Spielfeld** (6–20 Felder). Der Finger bzw. Mauszeiger darf ohne Absetzen über sämtliche Felder und Zwischenräume streichen; keine per-Zelle-Klick- oder Einzelwischpflicht mehr. Silbertextur wird im Fingerpfad transparent.
@@ -121,7 +149,7 @@ Abnahme: Bilddatei öffentlich verfügbar, alle neun Rubbelstellen ausgerichtet,
 Abnahme: Touch, Maus, Vollbild, Reload, kleine Displays.
 
 ## Phase 6 – Integration [CODE EINGEBAUT, BROWSERTEST OFFEN]
-- [x] Drei Losklassen im bestehenden Weihnachts-Event-Tab mit aktueller Wahrscheinlichkeit und 10 zufälligen Spielvarianten.
+- [x] Vorhandene Kaufoberfläche mit drei Preisstufen und technisch sechs neu ziehbaren Varianten (IST-Stand); [ ] auf zwei Normal- und zwei Premium-Spiele samt Klassenbindung, unveränderten Freischaltungen und Altlosen migrieren.
 - Nur verifizierte, vom Server vergebene Freischaltungen im Sammlungssystem.
 - [x] Münzsaldo, aktueller letzter Losbeleg, tägliches Gratislos; [ ] vollständige Gewinnhistorie und Poolstatus sichtbar im UI.
 Abnahme: durchgängiger Kauf→Rubbeln→Anzeige→Sammlung-Flow.
@@ -152,4 +180,5 @@ Abnahme: echte Spielrunde über mehrere Geräte.
 - 15.11.2026: Nutzer hat Geschenkelinie-WebP hochgeladen. SHA/Dateidimensionen geprüft, 3×3-Feldgeometrie mit Bild verglichen und CSS-Abstände innerhalb der neun Goldrahmen nachjustiert. Bild ist in CSS verlinkt. Echter Mobilgeräte-Endtest offen.
 - 15.11.2026: Einheitlicher Canvas über dem gesamten Symbolraster implementiert. Ein einziger Pointer-Drag radiert quer über Zellen und Zwischenräume; pro-Zelle-Rubbelzwang entfernt. Gesamtfortschritt wird aus Alpha-Pixeln gemessen und die automatische Aufdeckung greift bei 90 % des gesamten Rasters. CSS-/JS-Cacheversionen angehoben; echter Smartphone-Test noch offen.
 - 15.11.2026: Anzahl der aktiven Rubbellos-Spielarten von zehn auf **sechs** korrigiert. Backend-Auswahl auf die sechs aktiven IDs eingeschränkt; alte vier Varianten bleiben für bereits ausgestellte Lose auswertbar. Testannahmen angepasst. Freischaltpools, Preise und Wahrscheinlichkeiten unverändert.
-- Nächster Schritt: Geschenkelinie live mit angemeldetem Profil testen, dann **einen** finalen Entwurf für Karte 2 „Schneeflocken-Bingo“ gestalten.
+- 15.11.2026: Ziel auf **vier Rubbellose, zwei Normal und zwei Premium**, neu festgelegt. Geschenkelinie bleibt Nr. 1; drei Neuentwicklungen vorgeschlagen (Schneeflocken-Bingo, Wichtelpfad, Weihnachtsbaum-Geheimnis). Plan angepasst, LIVE-Code noch mit sechs auswählbaren Spielarten und drei Preisstufen: Migration ausstehend, Altlose schützen.
+- Nächster Schritt: Ein finales Einzelmotiv für Normal-Los Nr. 2 „Schneeflocken-Bingo“ auswählen/erstellen; danach 20-Felder-Wichtelpfad und Weihnachtsbaum-Premiumlos.
