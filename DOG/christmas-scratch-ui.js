@@ -312,6 +312,25 @@ export function initChristmasScratch(){
    if(e.key==='Enter'||e.key===' '){e.preventDefault();finish()}
   });
  }
+ function drawPrizeTable(result,entries=[]){
+  let panel=stage.querySelector('.scratch-prize-sidebar');
+  if(!panel){panel=el('aside','scratch-prize-sidebar');stage.append(panel)}
+  panel.replaceChildren(el('h4','','Gewinntabelle'));
+  const tier=result?.tier||'simple';
+  const amounts=SCRATCH_COIN_PRIZES[tier]||SCRATCH_COIN_PRIZES.simple;
+  const awarded=new Set(entries.map(p=>p?.type==='coins'?p.symbol||'🪙':p?.type==='unlock'?'🎁':''));
+  const names=[['🪙',amounts[0]+' Münzen'],['💵',amounts[1]+' Münzen'],['💼',amounts[2]+' Münzen'],['🎁','Freischaltung']];
+  for(const [symbol,label] of names){
+   const line=el('div','scratch-prize-entry'+(awarded.has(symbol)?' is-won':''));
+   line.append(el('span','',symbol),el('span','',label));
+   if(awarded.has(symbol))line.append(el('strong','','✓ Gewinn'));
+   panel.append(line);
+  }
+  const remaining=status?.remainingMainPrizes;
+  panel.append(el('div','scratch-prize-remaining',Number.isInteger(remaining)?
+   '🎁 Noch verfügbare Hauptgewinne: '+remaining:
+   '🎁 Hauptgewinn-Bestand: derzeit nicht verfügbar'));
+ }
  function showTicket(result){
   ticket=result;finished=false;unifiedCover=null;initialOpaque=0;
   stage.hidden=false;reveal.classList.remove('revealed');results.hidden=true;
@@ -341,6 +360,7 @@ export function initChristmasScratch(){
    $('scratch-progress').textContent='Älteres Los – keine Rubbeltextur gespeichert';
    $('scratch-reveal-button').hidden=false;
   }
+  drawPrizeTable(result);
   drawShop();
   try{stage.scrollIntoView({behavior:'smooth',block:'nearest'})}catch{}
  }
@@ -405,6 +425,7 @@ export function initChristmasScratch(){
    if(win.prize?.x2)line.append(el('small','', ' · '+num(win.prize.baseAmount)+' × 2'));
    list.append(line);
   }
+  drawPrizeTable(ticket,entries);
   list.hidden=!wins.length;results.hidden=false;
   $('scratch-reveal-button').hidden=true;$('scratch-ticket-finish').hidden=false;
   notice(entries.length?'🎉 Gewinne sind bereits sicher auf deinem Profil gutgeschrieben.':

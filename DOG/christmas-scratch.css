@@ -492,3 +492,30 @@
 #scratch-host-save{background:linear-gradient(#edd091,#c3914f);color:#392515}
 .scratch-host-actions button:disabled{opacity:.6;cursor:wait}
 @media(max-width:650px){.scratch-host-variants{grid-template-columns:1fr}.scratch-host-dialog{max-width:calc(100vw - 12px);max-height:calc(100dvh - 12px)}.scratch-host-dialog form{padding:14px}.scratch-host-settings{font-size:13px}}
+
+/* Separate scratch ticket purchase modal; background artwork remains independent of controls. */
+.scratch-stage:not([hidden]){position:fixed!important;z-index:12000;left:50%;top:50%;transform:translate(-50%,-50%);margin:0!important;
+ width:min(1120px,calc(100vw - 24px));max-width:none;max-height:calc(100dvh - 24px);overflow:auto;
+ box-sizing:border-box;padding:clamp(12px,2vw,22px) clamp(12px,2vw,22px);
+ padding-right:clamp(260px,30vw,360px);background-color:#173c55;
+ background-position:center;background-size:cover;background-repeat:no-repeat;
+ box-shadow:0 0 0 100vmax #071624c9,0 22px 65px #000a;}
+.scratch-stage[data-variant="gifts"]{background-image:linear-gradient(#0d223c60,#0d223c70),url("../Assets/game-backgrounds/rubbellose/rubbellos-einfach.png")}
+.scratch-stage[data-variant="snow_collect"]{background-image:linear-gradient(#0d223c60,#0d223c70),url("../Assets/game-backgrounds/rubbellose/rubbellos-normal.png")}
+.scratch-stage[data-variant="elf"]{background-image:linear-gradient(#0d223c60,#0d223c70),url("../Assets/game-backgrounds/rubbellose/rubbellos-drittes.png")}
+.scratch-stage[data-variant="premium_27"]{background-image:linear-gradient(#0d223c60,#0d223c70),url("../Assets/game-backgrounds/rubbellose/rubbellos-premium.png")}
+.scratch-stage .scratch-prize-sidebar{position:absolute;right:14px;top:65px;width:clamp(220px,27%,320px);
+ background:#102a38e8;color:#fff4da;border:1px solid #e9c987;border-radius:13px;padding:12px;box-sizing:border-box}
+.scratch-prize-sidebar h4{margin:0 0 10px;font-size:18px;color:#ffe6a2}
+.scratch-prize-entry{display:flex;align-items:center;gap:9px;border-bottom:1px solid #ffffff28;padding:9px 3px;font-size:14px}
+.scratch-prize-entry span:nth-child(2){flex:1}
+.scratch-prize-entry.is-won{background:#256b47a8;border-radius:6px}
+.scratch-prize-entry strong{font-size:12px;color:#aef2b4}
+.scratch-prize-remaining{margin-top:12px;font-size:13px;font-weight:700;line-height:1.5}
+@media(max-width:700px){
+ .scratch-stage:not([hidden]){padding:12px;display:flex;flex-direction:column;align-items:stretch;gap:8px}
+ .scratch-stage .scratch-prize-sidebar{position:static;width:100%;order:4;padding:9px}
+ .scratch-prize-entry{display:inline-flex;width:48%;box-sizing:border-box;font-size:12px;padding:6px 2px}
+ .scratch-prize-sidebar h4{font-size:15px}
+ .scratch-stage .scratch-play{max-width:100%}
+}
