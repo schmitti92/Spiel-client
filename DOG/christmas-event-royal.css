@@ -422,3 +422,36 @@ dialog.village-building-dialog::backdrop{
 @media(prefers-reduced-motion:reduce){
  .village-hotspots .village-tree-hit{transition:none}
 }
+
+
+/* No full-width top bar: a compact Back link floats at the viewport edge.
+   Reserve its corner so tree status never overlaps it. */
+.event-layout{min-height:100dvh;padding-top:10px}
+.event-sidebar{max-height:calc(100dvh - 22px)}
+#event-return.event-fixed-return{
+ position:fixed;z-index:80;
+ top:max(8px,env(safe-area-inset-top));
+ right:max(10px,env(safe-area-inset-right));
+ min-height:31px;padding:5px 10px;
+ border:1px solid #edca86;border-radius:10px;
+ background:#0b3429ee;color:#ffedbe;
+ box-shadow:0 3px 12px #0009;
+ backdrop-filter:blur(6px);
+ font-size:11px;font-weight:850;line-height:1.1;
+ white-space:nowrap;
+}
+#event-return.event-fixed-return:hover,
+#event-return.event-fixed-return:focus-visible{
+ background:#25543c;border-color:#ffebb4;
+}
+#panel-tree .tree-world-heading{padding-right:clamp(104px,10vw,130px)}
+@media(max-width:760px){
+ .event-layout{min-height:100dvh;padding-top:8px}
+ .event-sidebar{max-height:none}
+ #event-return.event-fixed-return{
+  top:max(5px,env(safe-area-inset-top));
+  right:max(6px,env(safe-area-inset-right));
+  min-height:29px;padding:4px 9px;font-size:10px;
+ }
+ #panel-tree .tree-world-heading{padding-right:95px}
+}
