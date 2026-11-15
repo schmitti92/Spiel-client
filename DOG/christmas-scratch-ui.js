@@ -236,11 +236,20 @@ export function initChristmasScratch(){
     el('strong','scratch-price',num(tier.price)+' 🪙'),
     el('div','scratch-card-payouts','🪙 '+num(amounts[0])+' · 💵 '+num(amounts[1])+' · 💼 '+num(amounts[2])),
     el('div','scratch-symbol-key',symbolLegend(option.tier,amounts)));
+   const vouchers=Number(status?.vouchers?.[option.tier]||0);
    const buyBtn=el('button','scratch-buy','🎟️ Für '+num(tier.price)+' Münzen öffnen');
    buyBtn.type='button';buyBtn.hidden=freeMode;
    buyBtn.disabled=busy||!!ticket||!account()||!status||status.coins<tier.price;
    buyBtn.addEventListener('click',()=>void buy(option.tier,false,option.id));
    article.append(buyBtn);
+   if(vouchers>0){
+    const voucherBtn=el('button','scratch-free scratch-earned-voucher',
+     '🎟️ Gesammeltes Los einlösen · '+num(vouchers)+' vorhanden');
+    voucherBtn.type='button';
+    voucherBtn.disabled=busy||!!ticket||!account()||!status;
+    voucherBtn.addEventListener('click',()=>void buy(option.tier,false,option.id,true));
+    article.append(voucherBtn);
+   }
    if(freeMode||option.tier==='simple'){
     const free=el('button','scratch-free',freeMode?'🎁 Kostenlos öffnen':'🎁 Tagesfreilos öffnen');
     free.type='button';
@@ -738,12 +747,13 @@ export function initChristmasScratch(){
     '🎄 Wische ohne Absetzen über das gesamte Spielfeld. Bei 90 % wird automatisch aufgedeckt.');
   }catch(e){if(id!==requestId)return;status=null;canManageScratch=false;drawShop();notice('⚠️ '+(e.message||'Verbindung nicht verfügbar'))}
  }
- async function buy(tier,free,variantId){
+ async function buy(tier,free,variantId,voucher=false){
   if(!account()||busy||ticket)return;
   if(!SCRATCH_SHOP_VARIANTS.some(c=>c.id===variantId&&c.tier===tier))return;
   busy=true;drawShop();
-  pending=pending?.tier===tier&&pending.free===free&&pending.variantId===variantId?pending:
-   {tier,variantId,free,commandId:'scratch-'+crypto.randomUUID()};
+  pending=pending?.tier===tier&&pending.free===free&&pending.variantId===variantId&&
+   pending.voucher===voucher?pending:
+   {tier,variantId,free,voucher,commandId:'scratch-'+crypto.randomUUID()};
   notice('🎟️ Los wird auf Render gebucht und das Symbolfeld erstellt …');
   try{
    const r=await query('/buy',pending);
@@ -752,7 +762,8 @@ export function initChristmasScratch(){
    notice('❄️ Beginne irgendwo und rubbele in einer Bewegung über alle Felder. Bei 90 % öffnet das Los automatisch.');
   }catch(e){
    notice('⚠️ '+(e.message==='SCRATCH_NOT_ENOUGH_COINS'?'Nicht genügend Münzen.':
-    e.message==='SCRATCH_DAILY_ALREADY_USED'?'Gratis-Los heute bereits eingelöst.':e.message));
+    e.message==='SCRATCH_DAILY_ALREADY_USED'?'Gratis-Los heute bereits eingelöst.':
+    e.message==='SCRATCH_NO_VOUCHER'?'Kein gesammelter Rubbellos-Gutschein mehr vorhanden.':e.message));
   }finally{busy=false;drawShop()}
  }
  $('scratch-reveal-button').addEventListener('click',finish);
