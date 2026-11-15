@@ -1,4 +1,4 @@
-import {DOG_EMOJIS,DOG_EMOJI_STARTERS,loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=2';
+import {DOG_EMOJIS,DOG_EMOJI_STARTERS,isEmojiUnlocked,loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=3';
 /* One personal emoji editor in local and online DOG lobby. No network writes. */
 for(const root of document.querySelectorAll('[data-dog-emoji-editor]')){
  let draft=loadEmojiSlots(),selected=0,page=0;
@@ -13,6 +13,7 @@ for(const root of document.querySelectorAll('[data-dog-emoji-editor]')){
  <p class="dog-emoji-note" data-emoji-note role="status">47 weitere Emojis und 10 Weihnachts-Emojis sind für spätere Freischaltungen gesperrt.</p>`;
  const by=s=>root.querySelector(s),slots=by('[data-emoji-slots]'),gallery=by('[data-emoji-gallery]'),notice=by('[data-emoji-note]');
  function draw(){
+  root.querySelector('.dog-emoji-lobby-head span').textContent=DOG_EMOJIS.filter(e=>isEmojiUnlocked(e.id)).length+' / '+DOG_EMOJIS.length+' freigeschaltet';
   slots.replaceChildren(...draft.map((id,i)=>{
    const button=document.createElement('button');button.type='button';button.className='dog-emoji-slot'+(i===selected?' is-editing':'');
    button.setAttribute('aria-pressed',String(i===selected));button.setAttribute('aria-label','Schnellplatz '+(i+1)+': '+(emojiById(id)?.name||'leer'));
@@ -21,7 +22,7 @@ for(const root of document.querySelectorAll('[data-dog-emoji-editor]')){
    button.append(picture,label);button.addEventListener('click',()=>{selected=i;draw();});return button;
   }));
   gallery.replaceChildren(...DOG_EMOJIS.slice(page*10,page*10+10).map(item=>{
-   const allowed=DOG_EMOJI_STARTERS.includes(item.id);
+   const allowed=isEmojiUnlocked(item.id);
    const button=document.createElement('button');button.type='button';button.className='dog-emoji-option';
    button.disabled=!allowed;button.title=allowed?item.name:item.unlockId?item.name+' – einzeln im Weihnachtsevent freischaltbar':item.name+' – später freischaltbar';
    button.setAttribute('aria-label',button.title);
@@ -44,5 +45,6 @@ for(const root of document.querySelectorAll('[data-dog-emoji-editor]')){
  by('[data-prev]').addEventListener('click',()=>{if(page>0){page--;draw();}});
  by('[data-next]').addEventListener('click',()=>{if(page<pageCount-1){page++;draw();}});
  window.addEventListener('spielonline-change',()=>{draft=loadEmojiSlots();notice.textContent='Deine persönlichen Schnelltasten geladen.';draw();});
+ window.addEventListener('dog-cosmetics-verified',()=>{draft=loadEmojiSlots();draw();});
  draw();
 }
