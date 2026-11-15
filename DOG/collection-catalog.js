@@ -5,6 +5,7 @@
 import {BOARD_STYLES,isBoardUnlocked,SCENE_STYLES,PIECE_STYLES,CARD_STYLES,HUD_TONES,HUD_LAYOUTS} from './appearance-registry.js?v=22';
 import {DOG_EMOJIS,DOG_EMOJI_STARTERS,DOG_CHRISTMAS_EMOJIS} from './dog-emojis.js?v=2';
 import {CHRISTMAS_AVATARS} from './christmas-avatar-catalog.js?v=1';
+import {CHRISTMAS_NAME_FRAMES} from './christmas-nameframe-catalog.js?v=1';
 import {buildDogCollection} from './collection-extensions.js?v=2';
 const avail=(id,name,extra={})=>({id,name,status:'available',...extra});
 const BASE_COLLECTION_CATEGORIES=[
@@ -21,8 +22,11 @@ const BASE_COLLECTION_CATEGORIES=[
   ...Array.from({length:16},(_,i)=>avail('avatar-'+i,'Profilbild '+(i+1),{kind:'avatar',avatar:i,description:'Bereits verfügbares DOG-Profilbild, auswählbar in der Lobby.',icon:'👤'})),
   ...CHRISTMAS_AVATARS.map(item=>avail(item.id,item.name,{kind:'avatar',avatar:item.avatar,image:item.image,status:'planned',unlockId:item.unlockId,description:'Weihnachtsprofilbild – wird erst durch eine spätere Weihnachtsevent-Belohnung freigeschaltet.',icon:'🎄'})),
  ]},
- {id:'frames',icon:'🛡️',title:'Namensrahmen',subtitle:'Aktuell verwendeter Spielerrahmen',items:[
+ {id:'frames',icon:'🛡️',title:'Namensrahmen',subtitle:'Klassischer Rahmen und fünf festliche Weihnachtsvorschauen',items:[
   avail('frame-current','Klassischer Rahmen',{kind:'default',icon:'🛡️',description:'Der aktuell verwendete DOG-Spielerrahmen.',artTone:'gold'}),
+  ...CHRISTMAS_NAME_FRAMES.map(frame=>({
+   ...frame,kind:'nameFrame',icon:frame.frameIcon,status:'planned',artTone:'gold'
+  }))
  ]},
  {id:'emblems',icon:'👑',title:'Aktivsymbole',subtitle:'Das Symbol des Spielers, der gerade am Zug ist',items:[
   avail('emblem-crown','Goldene Krone',{kind:'default',icon:'👑',description:'Standardsymbol des aktiven Spielers.',artTone:'gold'}),
