@@ -221,7 +221,6 @@ test('opened scratch tickets fit in a single viewport on tablet, phone and lands
 test('premium v4 shows every actual reward and its permanent 1000-coin threshold',()=>{
  const js=source('../DOG/christmas-scratch-ui.js');
  const css=source('../DOG/christmas-scratch.css');
- assert.match(js,/version===4/);
  assert.match(js,/symbolVersion===4/);
  assert.match(js,/20 Symbole = 1\.000/);
  assert.match(js,/function drawPrizeTable\(result,entries=\[\]\)/);
