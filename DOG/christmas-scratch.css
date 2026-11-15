@@ -277,3 +277,80 @@
  .scratch-stage[data-variant="snow_collect"] .scratch-cell-dud-label{font-size:8px}
  .scratch-stage[data-variant="snow_collect"] .scratch-hidden-prize strong{font-size:11px}
 }
+
+
+/* Premium card 03 — Magischer Wichtelpfad. The artwork includes exactly
+   twenty unprinted, framed tiles. Symbols and payouts remain server-driven. */
+.scratch-stage[data-variant="elf"]{
+ border:3px solid #b7e5a0;
+ background:radial-gradient(ellipse at 50% 0%,#176451,#0b3539 53%,#081f29);
+ box-shadow:0 0 0 2px #f0c97b45,0 18px 48px #000a,inset 0 0 25px #69efad26;
+}
+.scratch-stage[data-variant="elf"] > h3{
+ position:absolute!important;width:1px!important;height:1px!important;
+ overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap;
+}
+.scratch-stage[data-variant="elf"] > .scratch-variant-rule{
+ padding:8px 11px;border-radius:10px;border:1px solid #94d8b2;
+ background:#072e2ddb;color:#e0ffe1;font-size:13px;line-height:1.45;
+}
+.scratch-stage[data-variant="elf"] .scratch-play{
+ display:flex;flex-direction:column;align-items:stretch;gap:7px;padding:0;
+ border:0;box-shadow:none;overflow:visible;background:transparent;min-height:0;
+}
+.scratch-stage[data-variant="elf"] .scratch-card-art{
+ display:block;position:relative;isolation:isolate;overflow:hidden;
+ width:100%;aspect-ratio:1086/1448;border-radius:12px;
+ background-image:url("./assets/scratch/wichtelpfad-premium-01.svg"),
+  radial-gradient(ellipse at 50% 40%,#31866b,#0a322e 65%,#071b28);
+ background-position:center;background-repeat:no-repeat;background-size:100% 100%,cover;
+}
+.scratch-stage[data-variant="elf"] .scratch-board{
+ position:absolute;left:13.26%;top:28.94%;width:73.48%;height:42.82%;
+ max-width:none;margin:0;padding:0;
+ grid-template-columns:repeat(5,minmax(0,1fr));
+ grid-template-rows:repeat(4,minmax(0,1fr));column-gap:2.82%;row-gap:2.21%;
+}
+.scratch-stage[data-variant="elf"] .scratch-field{
+ display:flex;justify-content:center;align-items:center;
+ min-width:0;min-height:0;width:100%;height:100%;aspect-ratio:auto;
+ border:0;border-radius:15%;background:transparent;box-shadow:none;overflow:hidden;
+}
+.scratch-stage[data-variant="elf"] .scratch-cell-symbol{
+ font-size:clamp(17px,3.8vw,40px);line-height:1;
+ text-shadow:0 1px 3px #ffffff,0 0 8px #caffda;
+}
+.scratch-stage[data-variant="elf"] .scratch-field.scratch-winning-cell{
+ border:0;outline:3px solid #fff2ab;outline-offset:-3px;
+ background:#f7ffbf40;box-shadow:inset 0 0 15px #f7ed8e88,0 0 16px #ffe886d9;
+}
+.scratch-stage[data-variant="elf"] .scratch-hidden-prize{
+ position:absolute;left:19%;top:85.2%;width:62%;height:9%;
+ padding:1%;margin:0;border:0;box-shadow:none;background:transparent;
+ display:flex;flex-direction:column;justify-content:center;align-items:center;
+ overflow-y:auto;text-align:center;color:#ffe9a7;text-shadow:0 1px 4px #000;
+ font-size:clamp(10px,1.7vw,17px);line-height:1.25;
+}
+.scratch-stage[data-variant="elf"] .scratch-hidden-prize strong{
+ font-size:clamp(11px,1.9vw,21px);
+}
+.scratch-stage[data-variant="elf"] .scratch-hidden-prize small{color:#e3ffdc}
+.scratch-stage[data-variant="elf"] .scratch-winning-lines{padding:10px}
+.scratch-stage[data-variant="elf"] .scratch-path-highlight{
+ position:absolute;inset:0;display:block;width:100%;height:100%;
+ z-index:3;pointer-events:none;overflow:visible;
+ filter:drop-shadow(0 0 6px #ffeb80);
+}
+.scratch-stage[data-variant="elf"] .scratch-path-highlight polyline{
+ fill:none;stroke:#fff2a3;stroke-width:11;stroke-linecap:round;
+ stroke-linejoin:round;stroke-dasharray:16 12;opacity:.96;
+}
+@media(max-width:480px){
+ .scratch-stage[data-variant="elf"]{padding:6px}
+ .scratch-stage[data-variant="elf"] .scratch-cell-symbol{font-size:clamp(17px,5vw,25px)}
+ .scratch-stage[data-variant="elf"] .scratch-path-highlight polyline{stroke-width:14}
+ .scratch-stage[data-variant="elf"] .scratch-hidden-prize strong{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+ .scratch-stage[data-variant="elf"] .scratch-path-highlight{filter:none}
+}
