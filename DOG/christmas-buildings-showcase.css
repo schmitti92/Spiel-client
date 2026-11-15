@@ -439,3 +439,68 @@ body:has(#panel-buildings:not([hidden])) .event-tab[aria-selected=true] strong{c
   #panel-buildings .building-purchase:hover:not(:disabled){transform:none}
   body:has(#panel-buildings:not([hidden])) .event-tab{transition:none}
 }
+
+/* 2026-11: nur das aktuelle gemeinsame Lichtguthaben über den Gebäuden.
+   Alle Live-IDs bleiben im DOM, damit Profil-, Statistik-, Refresh- und
+   Upgrade-Synchronisation nicht durch das Layout-Update beschädigt wird. */
+#panel-buildings .event-heading,
+#panel-buildings .village-treasury-heading,
+#panel-buildings .village-treasury-stats,
+#panel-buildings .village-treasury-foot,
+#panel-buildings .village-treasury-actions,
+#panel-buildings .village-treasury-star,
+#panel-buildings .village-treasury-balance-copy small,
+#panel-buildings #building-event-mode,
+#panel-buildings .building-price-disclosure{
+  display:none!important;
+}
+#panel-buildings .building-village-wallet{
+  display:flex!important;
+  align-items:center;
+  min-height:0!important;
+  height:auto!important;
+  margin:0 0 12px;
+  padding:0!important;
+  border:1px solid #d9b8799c;
+  border-radius:15px;
+  background:linear-gradient(95deg,#123f32,#0a2e2d);
+  box-shadow:inset 0 1px #ffe8b829,0 5px 12px #031c1870;
+}
+#panel-buildings .village-treasury-main{
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-width:0;
+  padding:9px 14px!important;
+  gap:0;
+}
+#panel-buildings .village-treasury-balance{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:0;
+  width:100%;
+  min-width:0;
+}
+#panel-buildings .village-treasury-balance-copy{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-width:0;
+}
+#panel-buildings #building-live-balance{
+  display:block;
+  margin:0;
+  color:#ffe4a4;
+  font:900 clamp(15px,1.65vw,22px)/1.25 Georgia,serif;
+  letter-spacing:.15px;
+  text-align:center;
+  overflow-wrap:anywhere;
+}
+@media(max-width:540px){
+  #panel-buildings .building-village-wallet{margin-bottom:10px;border-radius:12px}
+  #panel-buildings .village-treasury-main{padding:8px 10px!important}
+  #panel-buildings #building-live-balance{font-size:16px}
+}
