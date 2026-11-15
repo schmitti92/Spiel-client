@@ -7,7 +7,7 @@ const API=String(config.apiBase||'https://serverfinal-ynbe.onrender.com').replac
 const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge',dog:'DOG Klassisch',kniffel:'Kniffel Online'};
 let code=null,room=null,operation=false,poll=null,accountUid=null,pollErrors=0;
 let playMode=new URL(location.href).searchParams.get('view')==='local'?'local':'online';
-let choosingGame=false,displayGame=null;
+let choosingGame=new URL(location.href).searchParams.get('choose')==='1',displayGame=null;
 const GAME_ICON={barikade:'🎲',skyjo:'🃏',kreuz:'🎯',business:'💼',partychallenge:'🏆',dog:'🐾',kniffel:'🎲'};
 const GAME_DESCRIPTIONS={
  barikade:'Das Brettspiel mit Barikaden, Action-Regeln und optionalem Bossmodus.',
@@ -168,7 +168,16 @@ async function request(path,method='GET',data){
   const r=await response.json();if(!response.ok||r.ok!==true)throw Error(r.error||'SERVER_ERROR');return r;
  }finally{clearTimeout(timeout);}
 }
-function setRoomCode(next){code=next;const u=new URL(location.href);if(code)u.searchParams.set('room',code);else u.searchParams.delete('room');history.replaceState(null,'',u);}
+function setRoomCode(next){
+ code=next;
+ const u=new URL(location.href);
+ if(code)u.searchParams.set('room',code);
+ else{u.searchParams.delete('room');u.searchParams.delete('stage');u.searchParams.delete('stayMatch');u.searchParams.delete('choose');}
+ history.replaceState(null,'',u);
+ // All header/footer shortcuts stay within the same unified room.
+ const home='hub-lobby.html'+(code?'?'+new URLSearchParams({room:code,stage:'1',...(u.searchParams.get('stayMatch')?{stayMatch:u.searchParams.get('stayMatch')}:{})}).toString():'');
+ document.querySelectorAll('[data-hub-home]').forEach(a=>a.href=home);
+}
 let preisjaegerClockReceivedAt=Date.now();
 window.addEventListener('dog-avatar-room-sync',e=>{if(e.detail?.room?.code===code)acceptRoom(e.detail.room);});
 function acceptRoom(next){
@@ -1004,7 +1013,7 @@ function render(){
  el('room-view').classList.toggle('hidden',!inside);
  el('create-btn').disabled=!account||operation;el('join-btn').disabled=!account||operation;
  if(!inside||playMode!=='online'){el('dog-unified-tools')?.classList.add('hidden');return;}
- if(displayGame!==room.game){choosingGame=false;displayGame=room.game;}
+ if(displayGame!==room.game){if(displayGame!==null||new URL(location.href).searchParams.get('choose')!=='1')choosingGame=false;displayGame=room.game;}
  if(room.phase==='playing')choosingGame=false;
  const showStage=!!room.game&&!choosingGame;
  el('game-chooser').classList.toggle('hidden',showStage);
