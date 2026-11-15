@@ -7,8 +7,9 @@
 import {CHRISTMAS_PAGE_BACKGROUNDS} from './christmas-background-catalog.js?v=1';
 import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotalCost,christmasVillageTotalCost} from './christmas-building-costs.js?v=1';
 import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewards-ui.js?v=3';
+import {initChristmasScratch} from './christmas-scratch-ui.js?v=1';
 const $=id=>document.getElementById(id);
-const tabs=['village','buildings','tree','story','gifts','chapters'];
+const tabs=['village','buildings','tree','story','gifts','scratch','chapters'];
 const TREE_THRESHOLDS=[4,5,7,9,11,13,15,17,19,20];
 const FIELDS=[10,12,15,18,20];
 const definitions=[
@@ -183,6 +184,7 @@ function updateCardImage(id,level){
 const preview={tower:1,workshop:1,bakery:1,inn:1};
 let villageLive=null,villageHost=false,villageEventActive=false,villageCanUpgrade=true,villageBusy=false;
 let treePrizeScreen=null;
+let scratchScreen=null;
 let lastPresentationKey=null;
 const sceneTitles=['Die Weihnachtsreise beginnt','Die ersten Laternen leuchten','Ein Hauch von Winter','Lichter über den Dächern','Das Dorf entdeckt Weihnachten','Die Weihnachtsvorbereitungen laufen','Ein Sternenglanz erscheint','Lichtertal wird zum Wintermärchen','Das Dorf wartet auf sein Wunder','Das große Weihnachtslicht'];
 const sceneDescriptions=[
@@ -363,6 +365,7 @@ function showPanel(id,{updateHistory=true}={}){
  }
  if(updateHistory&&location.hash!=='#'+id)history.replaceState(null,'','#'+id);
  if(id==='tree')void treePrizeScreen?.load();
+ if(id==='scratch')void scratchScreen?.load();
  if(window.scrollY>0)window.scrollTo({top:0,behavior:'instant'});
 }
 for(const id of tabs){
@@ -451,6 +454,8 @@ async function villageRequest(endpoint='',method='GET',body=null){
  if(!response.ok||result?.ok!==true)throw Error(result?.error||'Serverfehler '+response.status);
  return result;
 }
+scratchScreen=initChristmasScratch();
+if($('tab-scratch').getAttribute('aria-selected')==='true')void scratchScreen.load();
 treePrizeScreen=initChristmasTreeRewards({
  request:villageRequest,roomValid:villageRoomValid,loggedIn:()=>Boolean(eventUser())
 });
