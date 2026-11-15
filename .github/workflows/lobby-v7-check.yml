@@ -4,6 +4,26 @@ on:
     branches:
       - feature/kreuzkunter-startmaske-v12
       - main
+    paths:
+      - 'hub-lobby.*'
+      - 'hub-game-bridge.js'
+      - 'spielauswahl-online.*'
+      - 'spielauswahl-lokal.html'
+      - 'DOG/index.html'
+      - 'DOG/room-lobby*'
+      - 'DOG/room-board-preview.js'
+      - 'Skyjo/skyjo_start.*'
+      - 'Barikade/barikade_start.*'
+      - 'Business/business_start.*'
+      - 'KreuzKunter/kreuzkunter_start.*'
+      - 'tests/dog-room-lobby.test.mjs'
+      - 'tests/lobby-v7.test.mjs'
+      - 'tests/spielauswahl-v8.test.mjs'
+      - 'tests/skyjo-start-v9.test.mjs'
+      - 'tests/barikade-start-v10.test.mjs'
+      - 'tests/business-start-v11.test.mjs'
+      - 'tests/kreuzkunter-start-v12.test.mjs'
+      - '.github/workflows/lobby-v7-check.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,7 +40,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
       - run: node --check hub-lobby.js
       - run: node --check DOG/room-lobby.js
       - run: node --check DOG/room-board-preview.js
