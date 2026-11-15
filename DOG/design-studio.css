@@ -467,3 +467,23 @@ dialog{color:#f5e9d6;background:#10283e;border:1px solid #ddb973;border-radius:1
 .choice.is-locked .choice-art,.choice.is-locked:hover .choice-art{filter:grayscale(1) brightness(.55)}
 .choice.is-locked .choice-copy small{color:#f1d7a3}
 .choice.is-locked .choice-check{opacity:.5}
+
+
+/* Server-verified personal level 2 required before studio initializes. */
+body:not([data-designer-access="allowed"]) .studio-page,
+body:not([data-designer-access="allowed"]) #save-dialog,
+body:not([data-designer-access="allowed"]) #save-top,
+body:not([data-designer-access="allowed"]) #apply-design{display:none!important}
+body[data-designer-access="allowed"] .studio-level-gate{display:none!important}
+.studio-level-gate{
+ width:min(650px,calc(100vw - 30px));margin:clamp(28px,7vh,80px) auto;
+ padding:clamp(22px,5vw,48px);text-align:center;
+ border:2px solid #e9c27a;border-radius:22px;
+ background:radial-gradient(circle at 50% 0%,#b58b4c46,transparent 55%),linear-gradient(135deg,#123c3a,#0a2839);
+ box-shadow:0 18px 48px #0009
+}
+.studio-level-gate-icon{font-size:56px;line-height:1.1;margin-bottom:14px}
+.studio-level-gate h2{font:900 clamp(24px,3.7vw,36px) Georgia,serif;color:#ffe3a4;margin:10px 0 15px}
+.studio-level-gate p{font-size:clamp(13px,1.5vw,16px);color:#d6e8e7;line-height:1.7;max-width:520px;margin:0 auto 20px}
+.studio-level-gate-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:10px}
+.studio-level-gate-actions .control{min-height:42px}
