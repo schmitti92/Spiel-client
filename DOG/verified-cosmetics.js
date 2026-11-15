@@ -10,14 +10,15 @@ export const verifiedCosmeticCount=()=>known.size;
 export async function refreshVerifiedCosmetics({force=false}={}){
  if(typeof window==='undefined')return false;
  const user=currentUser(),uid=user?.uid||'';
- if(!uid){
-  if(verifiedUid||known.size){verifiedUid='';known=new Set();checkedAt=0;epoch++;
-   window.dispatchEvent(new Event('dog-cosmetics-verified'));}
-  return false;
+ // Switching accounts must revoke the previous owner's images immediately.
+ // Never keep the old account's entitlements visible while the new GET runs.
+ if(uid!==verifiedUid){
+  verifiedUid=uid;known=new Set();checkedAt=0;inflight=null;epoch++;
+  window.dispatchEvent(new Event('dog-cosmetics-verified'));
  }
+ if(!uid)return false;
  if(!force&&verifiedUid===uid&&Date.now()-checkedAt<60000)return true;
  if(inflight&&verifiedUid===uid)return inflight;
- verifiedUid=uid;
  const token=++epoch;
  inflight=(async()=>{
   try{
