@@ -33,7 +33,7 @@ async function check(force=false){
   const level=await fetchDogPlayerLevel({force});
   if(attempt!==generation)return;
   if(level<DESIGNER_MIN_LEVEL){
-   lock('🔒 Du bist aktuell Level '+level+'. Ab Level 2 kannst du den Brettdesigner benutzen. Noch 100 EP bis Level 2 sind für neue Spieler nötig.');
+   lock('🔒 Du bist aktuell Level '+level+'. Der Brettdesigner wird ab Level 2 freigeschaltet. Sammle weitere Erfahrungspunkte in DOG-Partien.');
    return;
   }
   document.body.dataset.designerAccess='allowed';
