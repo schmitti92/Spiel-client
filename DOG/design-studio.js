@@ -1,12 +1,12 @@
 import {applyMotionMode,loadMotionMode} from './motion-settings.js';
 applyMotionMode(loadMotionMode());
-import {BOARD_STYLES,BOARD_FRAMES,SCENE_STYLES,HUD_LAYOUTS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,loadAppearance,saveAppearance,validAssetPath} from './appearance-registry.js?v=21';
+import {BOARD_STYLES,isBoardUnlocked,BOARD_FRAMES,SCENE_STYLES,HUD_LAYOUTS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,loadAppearance,saveAppearance,validAssetPath} from './appearance-registry.js?v=22';
 import {APPROVED_BOARD_LAYOUT as LAYOUT} from './approved-board.js';
 const $=id=>document.getElementById(id);
 const S='http://www.w3.org/2000/svg',KEY='dog:design-studio:presets:v1';
-const BOARDS=['studio','schiefer','holz','pergament','bergsee','goldwellen','royalMarmor','maerchental','alpenland','kuestenabenteuer','royalKarten','zauberwald','midnight','forest','winter'];
+const BOARDS=['studio','schiefer','holz','pergament','bergsee','goldwellen','royalMarmor','maerchental','alpenland','kuestenabenteuer','royalKarten','zauberwald','midnight','forest','winter','weihnachtsdorf','lebkuchenwerkstatt','polarlichtpalast','winterlandschaft'];
 const SCENES=['schloss','none'];
-const N={studio:'TV-Studio',schiefer:'Schiefer',holz:'Holz',pergament:'Pergament',bergsee:'Bergsee',goldwellen:'Goldwellen',royalMarmor:'Royal-Marmor',midnight:'Mitternacht',forest:'Waldlichtung',winter:'Winterabend',none:'Ohne Hintergrund',schloss:'Magisches Schloss am Nebelsee',maerchental:'Märchental',zauberwald:'Zauberwald',kuestenabenteuer:'Küstenabenteuer',alpenland:'Alpenland',royalKarten:'Royal-Karten'};
+const N={studio:'TV-Studio',schiefer:'Schiefer',holz:'Holz',pergament:'Pergament',bergsee:'Bergsee',goldwellen:'Goldwellen',royalMarmor:'Royal-Marmor',midnight:'Mitternacht',forest:'Waldlichtung',winter:'Winterabend',none:'Ohne Hintergrund',schloss:'Magisches Schloss am Nebelsee',maerchental:'Märchental',zauberwald:'Zauberwald',kuestenabenteuer:'Küstenabenteuer',alpenland:'Alpenland',royalKarten:'Royal-Karten',weihnachtsdorf:'Weihnachtsdorf',lebkuchenwerkstatt:'Lebkuchenwerkstatt',polarlichtpalast:'Polarlichtpalast',winterlandschaft:'Winterlandschaft'};
 const C=['#e75c59','#419ef0','#48c27c','#ffc94d'],name=id=>N[id]||id;
 const validBoard=id=>typeof id==='string'&&Object.hasOwn(BOARD_STYLES,id);
 const validFrame=id=>typeof id==='string'&&Object.hasOwn(BOARD_FRAMES,id);
@@ -21,7 +21,7 @@ const applied=()=>{const v=loadAppearance();return {board:validBoard(v.board)?v.
 const start=applied();
 let draft={...start};
 function loadPresets(){
- try{const a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a.slice(0,30).filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&validBoard(x.board)).map(x=>({id:x.id.slice(0,64),name:x.name.slice(0,40),scene:validScene(x.scene)?x.scene:'schloss',board:x.board,boardFrame:validFrame(x.boardFrame)?x.boardFrame:'classic',hudLayout:validHudLayout(x.hudLayout)?x.hudLayout:'classic',hudTone:validHudTone(x.hudTone)?x.hudTone:'classic',hudOpacity:normalizeHudOpacity(x.hudOpacity),favorite:x.favorite===true})):[]}
+ try{const a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a.slice(0,30).filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&validBoard(x.board)&&isBoardUnlocked(x.board)).map(x=>({id:x.id.slice(0,64),name:x.name.slice(0,40),scene:validScene(x.scene)?x.scene:'schloss',board:x.board,boardFrame:validFrame(x.boardFrame)?x.boardFrame:'classic',hudLayout:validHudLayout(x.hudLayout)?x.hudLayout:'classic',hudTone:validHudTone(x.hudTone)?x.hudTone:'classic',hudOpacity:normalizeHudOpacity(x.hudOpacity),favorite:x.favorite===true})):[]}
  catch{return []}
 }
 let presets=loadPresets();
@@ -148,7 +148,8 @@ function makeOption(list,id,t,kind){
  const a=document.createElement('span');a.className='choice-art';a.style.backgroundImage=bg(t);
  const c=document.createElement('span');c.className='choice-copy';
  const title=document.createElement('strong');title.textContent=name(id);
- const sub=document.createElement('small');sub.textContent=t.description||t.label||'DOG-Design';
+ const sub=document.createElement('small');sub.textContent=kind==='board'&&!isBoardUnlocked(id)?'🔒 Im Weihnachtsevent freischaltbar':(t.description||t.label||'DOG-Design');
+  if(kind==='board'&&!isBoardUnlocked(id)){b.disabled=true;b.classList.add('is-locked');b.title='Wird im Weihnachtsevent freigeschaltet';}
  c.append(title,sub);
  const dot=document.createElement('span');dot.className='choice-check';dot.setAttribute('aria-hidden','true');
  b.append(a,c,dot);b.addEventListener('click',()=>{draft[kind]=id;refresh();status('Vorschau geändert. Mit „Im Spiel verwenden“ übernimmst du diese Kombination.')});
@@ -222,6 +223,7 @@ for(const key of studioPanels){
 }
 showPanel('board');
 function apply(){
+ if(!isBoardUnlocked(draft.board)){status('🔒 Dieses Spielbrett wird erst im Weihnachtsevent freigeschaltet.');return false}
  try{saveAppearance({...loadAppearance(),board:draft.board,boardFrame:draft.boardFrame,scene:draft.scene,sidebar:draft.scene==='schloss'?'schloss':'none',hudLayout:draft.hudLayout,hudTone:draft.hudTone,hudOpacity:normalizeHudOpacity(draft.hudOpacity)});renderPresets();status('✓ '+name(draft.scene)+' + '+name(draft.board)+' · Rahmen '+BOARD_FRAMES[draft.boardFrame].label+' · Spielblock '+HUD_TONES[draft.hudTone].label+' für DOG aktiviert.');return true}
  catch{status('⚠️ Das Design konnte nicht im Browser gespeichert werden.');return false}
 }
@@ -265,6 +267,7 @@ $('save-top').addEventListener('click',()=>{
 $('cancel-save').addEventListener('click',()=>$('save-dialog').close());
 $('save-form').addEventListener('submit',e=>{
  e.preventDefault();const n=$('design-name').value.trim();if(!n)return;
+  if(!isBoardUnlocked(draft.board)){status('🔒 Dieses Event-Brett kann noch nicht gespeichert werden.');return;}
  const p={id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),name:n.slice(0,40),scene:draft.scene,board:draft.board,boardFrame:draft.boardFrame,hudLayout:draft.hudLayout,hudTone:draft.hudTone,hudOpacity:normalizeHudOpacity(draft.hudOpacity),favorite:false};
  presets.unshift(p);if(!persist()){presets.shift();return}
  $('save-dialog').close();refresh();if(apply())status('💾 „'+p.name+'“ gespeichert und für DOG aktiviert.');
