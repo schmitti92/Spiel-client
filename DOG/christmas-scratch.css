@@ -880,3 +880,31 @@ body.scratch-ticket-open{overflow:hidden;overscroll-behavior:none}
  .scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-prize-entry{padding:2px}
  .scratch-stage:not([hidden]) .scratch-premium-milestone{padding:3px}
 }
+
+
+/* Visual frames on the PREMIUM CARD'S existing right-side 20/24 illustrations.
+   Independent of row highlights: only the corresponding collected milestone
+   gets a luminous border. Never flash the 20/24 counted symbol cells. */
+.scratch-stage[data-variant="premium_27"] .scratch-card-art[data-premium-gold20="true"]::before,
+.scratch-stage[data-variant="premium_27"] .scratch-card-art[data-premium-gold24="true"]::after{
+ content:"";position:absolute;left:65%;width:31%;z-index:5;
+ border:3px solid #fff1a1;box-sizing:border-box;border-radius:12px;
+ background:linear-gradient(115deg,#ffe1711c,#ffd54e0a);
+ box-shadow:0 0 0 2px #e6a83f85,0 0 23px #ffe38abc,inset 0 0 19px #fff4a85a;
+ pointer-events:none;
+ animation:scratch-milestone-glow 1.8s ease-in-out infinite alternate;
+}
+.scratch-stage[data-variant="premium_27"] .scratch-card-art[data-premium-gold20="true"]::before{
+ top:43.3%;height:13.5%;
+}
+.scratch-stage[data-variant="premium_27"] .scratch-card-art[data-premium-gold24="true"]::after{
+ top:57.4%;height:13.5%;
+}
+@keyframes scratch-milestone-glow{
+ from{box-shadow:0 0 5px #ffe38a65,inset 0 0 9px #fff4a835}
+ to{box-shadow:0 0 21px #ffdc76dd,inset 0 0 22px #fff4a877}
+}
+@media(prefers-reduced-motion:reduce){
+ .scratch-stage[data-variant="premium_27"] .scratch-card-art::before,
+ .scratch-stage[data-variant="premium_27"] .scratch-card-art::after{animation:none}
+}
