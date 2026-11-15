@@ -333,3 +333,22 @@ body.dog-room-open{overflow:hidden!important}
 :root[data-dog-motion="off"] #dog-room-lobby *::after{
  animation:none!important;transition-duration:0s!important
 }
+
+
+/* DOG personal-level access: disabled designer remains discoverable. */
+#dog-room-lobby #dog-room-designer.dog-designer-locked{
+ opacity:.62;filter:grayscale(.85);cursor:not-allowed;
+ border-style:dashed;box-shadow:none;pointer-events:none;
+}
+#dog-room-lobby a#dog-room-designer.dog-designer-locked:hover{
+ transform:none;filter:grayscale(.85);box-shadow:none;
+}
+#dog-room-lobby .dog-room-designer-note{
+ display:block;font-size:clamp(10px,1vw,12px);line-height:1.3;
+ margin-top:3px;color:#fbdfb6;font-weight:600;
+}
+.dog-studio-cta.dog-designer-locked{
+ display:block;cursor:not-allowed;opacity:.58;
+ filter:grayscale(.7);border-style:dashed;
+}
+.dog-studio-cta.dog-designer-locked:hover{transform:none;filter:grayscale(.7)}
