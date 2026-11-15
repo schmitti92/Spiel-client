@@ -47,7 +47,7 @@ test('DOG event visibly quotes costs but still does not impersonate live purchas
  assert.ok(html.includes('src="./christmas-event.js?v='));
  assert.match(script,/christmasUpgradeCost\(level\)/);
  assert.match(script,/data-building-upgrade-price/);
- assert.match(html,/noch keine echten Gewinne oder Punktestände|keine echten Gewinne oder Punktestände/i);
+ assert.doesNotMatch(html,/id="panel-gifts"|id="tab-gifts"/,'obsolete gifts information tab stays removed');
  assert.match(script,/villageRequest\('village\/upgrade','POST'/);
  assert.doesNotMatch(script,/firebase\.firestore|localStorage\.setItem/);
 });
