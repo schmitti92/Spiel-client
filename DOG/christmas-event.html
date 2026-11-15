@@ -8,6 +8,7 @@
 <title>DOG Weihnachten · Das Weihnachtswunder von Lichtertal</title>
 <link rel="stylesheet" href="./christmas-event.css?v=4">
 <link rel="stylesheet" href="./christmas-event-royal.css?v=8">
+<link rel="stylesheet" href="./christmas-tree-rewards.css?v=1">
 </head>
 <body>
 <div class="snow-sky" aria-hidden="true"></div>
@@ -210,6 +211,15 @@
       <div class="event-heading"><div><span class="eyebrow">IM HERZEN DES DORFES</span><h2>Der große Weihnachtsbaum</h2><p>Zehn Entwicklungsstufen – vom kleinen Tannenbaum bis zum strahlenden Mittelpunkt des Dorfes.</p></div><span class="soft-tag">10 Stufen</span></div>
       <div class="tree-feature"><div class="tree-feature-icon"><img id="tree-card-photo" src="weihnachtsevent-bilder/weihnachtsbaum_stufe_1.png" alt="Weihnachtsbaum, Entwicklungsstufe 1" loading="lazy" decoding="async"></div><div><h3 id="tree-current-title">Stufe 1 · Junger Baum</h3><p id="tree-current-copy">Ein kleiner, noch ungeschmückter Baum steht mitten in Lichtertal.</p><div class="meter"><span id="tree-progress-fill" style="width:10%"></span></div><small id="tree-progress-label">1 von 10 Entwicklungsstufen</small></div></div>
       <div class="tree-steps" id="tree-steps"></div>
+      <section class="tree-rewards" aria-labelledby="tree-rewards-heading">
+       <div class="tree-rewards-head">
+        <div><h3 id="tree-rewards-heading">🎁 10 Weihnachtsbaum-Geschenke</h3>
+         <p>Jede Baumstufe bringt einen einmaligen Preis für deinen Spieler. Level 1 ist das Startgeschenk.</p></div>
+        <span id="tree-reward-counter" class="tree-reward-counter">0 / 10 abgeholt</span>
+       </div>
+       <div id="tree-reward-list" class="tree-reward-grid" aria-label="Weihnachtsbaum-Levelbelohnungen"></div>
+       <p id="tree-reward-feedback" class="tree-reward-feedback" role="status" aria-live="polite"></p>
+      </section>
       <div class="notice"><strong>✨ Das große Finale</strong> Sobald alle vier Gebäude auf Stufe 5 sind, erreicht der Baum Stufe 10. Dann bringt er in der späteren fertigen Eventfassung die ganze Stadt zum Leuchten.</div>
       <div class="event-footer-row"><p>Keine zusätzliche Baum-Währung: Entscheidend ist allein der gemeinsame Gebäudeausbau.</p><button type="button" class="button gold" data-open-tab="buildings">🏠 Gebäudestufen ansehen</button></div>
     </section>
@@ -254,6 +264,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./christmas-event.js?v=12"></script>
+<script type="module" src="./christmas-event.js?v=13"></script>
 </body>
 </html>
