@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="./christmas-event.css?v=4">
 <link rel="stylesheet" href="./christmas-event-royal.css?v=8">
 <link rel="stylesheet" href="./christmas-tree-rewards.css?v=2">
+<link rel="stylesheet" href="./christmas-story.css?v=1">
 <link rel="stylesheet" href="./christmas-tree-world.css?v=3">
 <link rel="stylesheet" href="./christmas-scratch.css?v=16">
 <link rel="stylesheet" href="./christmas-player-levels.css?v=1">
@@ -277,16 +278,24 @@
       <p id="tree-reward-feedback" class="tree-timeline-feedback" role="status" aria-live="polite" hidden></p>
     </section>
     <section class="event-panel" id="panel-story" role="tabpanel" aria-labelledby="tab-story" hidden>
-      <div class="event-heading"><div><span class="eyebrow">UNSERE WEIHNACHTSGESCHICHTE</span><h2>Ein Wunder beginnt</h2><p>Kapitel 1 begleitet Chris, Vanessa und David bei den Weihnachtsvorbereitungen in Lichtertal.</p></div><span class="soft-tag">📖 Erzählentwurf</span></div>
-      <div class="story-hero"><span>📜</span><div><h3>Das Weihnachtswunder von Lichtertal</h3><p>Eine Geschichte über Freundschaft, gegenseitige Hilfe, Hoffnung und die Vorfreude auf Weihnachten.</p></div></div>
-      <div class="story-list">
-        <article><span class="story-number">01</span><div><h3>Ein unerwarteter Besuch</h3><p>An einem kalten Abend kommen die drei Freunde in ein kleines Dorf. Der Baum auf dem Marktplatz ist noch dunkel, die Häuser sind ungeschmückt. Wichtel Pip braucht dringend Hilfe bei den Weihnachtsvorbereitungen.</p></div></article>
-        <article><span class="story-number">02</span><div><h3>Die ersten Lichter</h3><p>Die Dorfbewohner legen gemeinsam los. Überall wird gebaut, gelacht und manchmal geht etwas herrlich schief. Ein erster Hinweis erinnert an die biblische Hoffnung auf ein Licht in der Dunkelheit.</p></div></article>
-        <article><span class="story-number">03</span><div><h3>Weihnachtsvorbereitungen mit Hindernissen</h3><p>Die Werkstatt, die Bäckerei und die Herberge werden immer schöner. Ein überraschendes Ereignis stellt die Freunde vor die Frage, wie wichtig Zusammenhalt gerade dann ist, wenn nicht alles nach Plan läuft.</p></div></article>
-        <article><span class="story-number">04</span><div><h3>Das Licht über Lichtertal</h3><p>Der Baum wird prachtvoll geschmückt. Als sein Stern schließlich leuchtet, feiert das Dorf. Eine geheimnisvolle Nachricht deutet an, dass die Weihnachtsreise noch nicht zu Ende ist.</p></div></article>
+      <div class="event-heading story-heading">
+        <div><span class="eyebrow">✦ UNSERE FORTLAUFENDE WEIHNACHTSGESCHICHTE ✦</span><h2>Das Weihnachtswunder von Lichtertal</h2><p>Ein Baum, zehn Stufen, zehn Teile. Jedes echte Weihnachtsbaum-Upgrade erzählt die Geschichte weiter.</p></div>
+        <span class="story-progress-label" id="story-progress-label">1 von 10 Teilen freigeschaltet</span>
       </div>
+      <div class="story-progress-panel">
+        <div class="story-progress-top"><span>📖 Unsere gemeinsame Weihnachtsreise</span><strong>10 Teile</strong></div>
+        <div id="story-progress-meter" class="story-progress-meter" role="progressbar" aria-label="Freigeschaltete Geschichtsteile" aria-valuemin="1" aria-valuemax="10" aria-valuenow="1"><span id="story-progress-fill" style="width:10%"></span></div>
+        <p id="story-state-note" class="story-state-note" role="status">Die Einleitung ist frei. Weitere Teile werden durch echte Baumstufen freigeschaltet.</p>
+      </div>
+      <div id="story-upgrade-banner" class="story-upgrade-banner" role="status" aria-live="polite" hidden></div>
+      <div class="story-reader-layout">
+        <nav class="story-chapter-list" id="story-chapter-list" aria-label="Freigeschaltete Kapitel der Weihnachtsgeschichte"></nav>
+        <article class="story-reading" id="story-reading" aria-label="Aktueller Geschichtsabschnitt" aria-live="polite">
+          <h3>Ein unerwarteter Besuch</h3><p>Die Weihnachtsgeschichte wird geladen …</p>
+        </article>
+      </div>
+      <div class="story-actions"><button type="button" id="story-next-action" class="button gold">🏠 Zum Dorfausbau</button></div>
       <div class="scripture"><span>✦</span><p><strong>Leitgedanke aus Jesaja 9,1:</strong> Menschen in der Dunkelheit wird ein großes Licht verheißen. Dieser Gedanke begleitet die Weihnachtsvorbereitungen und führt später zur Weihnachtsgeschichte.</p></div>
-      <p class="subtle-note">Die Erzähltexte sind ein erster Entwurf. Persönliche gemeinsame Erlebnisse ergänzen wir sorgfältig, ohne belastende Erinnerungen vorauszusetzen.</p>
     </section>
     <section class="event-panel" id="panel-gifts" role="tabpanel" aria-labelledby="tab-gifts" hidden>
       <div class="event-heading"><div><span class="eyebrow">BELOHNUNGEN WÄHREND DOG-PARTIEN</span><h2>Geschenke &amp; Weihnachtslichter</h2><p>Das Herz des gemeinsamen Fortschritts: Sammeln, zusammenlegen und das Dorf ausbauen.</p></div><span class="soft-tag">🎁 In Vorbereitung</span></div>
