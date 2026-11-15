@@ -997,7 +997,7 @@ function render(){
  el('account-info').textContent=account?'Dein verifiziertes Online-Spielerprofil ist verbunden.':'Bitte anmelden oder ein Profil erstellen, um einen Raum zu betreten.';
  el('login-btn').textContent=account?'Profil ansehen':'Anmelden';
  const inside=!!room;
- if(inside&&room.phase==='lobby'&&!room.game&&new URL(location.href).searchParams.get('stage')==='1'){
+ if(inside&&room.phase==='lobby'&&!room.game&&!returnToDogLobby&&new URL(location.href).searchParams.get('stage')==='1'){
   location.replace('spielauswahl-online.html?room='+encodeURIComponent(room.code));
   return;
  }
@@ -1177,13 +1177,13 @@ el('mode-online').addEventListener('click',()=>setPlayMode('online'));
 el('change-game-btn').addEventListener('click',()=>{if(room?.host&&room.phase==='preparing')location.assign('spielauswahl-online.html?room='+encodeURIComponent(room.code)+'&choose=1');});
 
 el('create-btn').addEventListener('click',()=>command(async()=>{
- const {room:r}=await request('/rooms','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
+ const {room:r}=await request('/rooms','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});location.assign('spielauswahl-online.html?'+new URLSearchParams({room:r.code,stay:'1'}).toString());
 }));
 el('join-code').addEventListener('input',event=>{event.target.value=event.target.value.toUpperCase().replace(/[^0-9A-HJ-NP-Z]/g,'').slice(0,6);notice('');});
 el('join-code').addEventListener('keydown',e=>{if(e.key==='Enter')el('join-btn').click();});
 el('join-btn').addEventListener('click',()=>command(async()=>{
  const c=el('join-code').value.trim().toUpperCase();if(!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(c))throw Error('Bitte einen dreistelligen Zahlencode oder bisherigen sechsstelligen Raumcode eingeben.');
- const {room:r}=await request('/rooms/'+c+'/join','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
+ const {room:r}=await request('/rooms/'+c+'/join','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});location.assign('spielauswahl-online.html?'+new URLSearchParams({room:r.code,stay:'1'}).toString());
 }));
 document.querySelectorAll('[data-game]').forEach(btn=>btn.addEventListener('click',()=>command(async()=>{
  if(!room?.host)return;const {room:r}=await request('/rooms/'+code+'/select','POST',{game:btn.dataset.game,...(btn.dataset.game==='dog'?{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0}:{})});choosingGame=false;activateRoom(r);
@@ -1269,7 +1269,7 @@ async function boot(){
  }
  const fromUrl=params.get('room');
  if(!fromUrl||!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(fromUrl))return;
- if(new URL(location.href).searchParams.get('stage')!=='1'&&!stayInMatchId){
+ if(new URL(location.href).searchParams.get('stage')!=='1'&&!stayInMatchId&&!returnToDogLobby){
    location.replace('spielauswahl-online.html?room='+encodeURIComponent(fromUrl.toUpperCase()));
    return;
  }
