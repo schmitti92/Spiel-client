@@ -1,0 +1,138 @@
+/* Lichtertal: village overview's snowy surroundings and interactive progress plaques.
+   Purely presentational; existing live values and server state stay unchanged. */
+body:has(#panel-village:not([hidden])){
+  background-color:#051b21;
+  background-image:
+    radial-gradient(ellipse 67% 42% at 50% -12%,rgba(105,153,182,.24),transparent 72%),
+    linear-gradient(180deg,rgba(3,16,25,.83),rgba(3,24,29,.91) 70%,rgba(1,19,21,.96)),
+    url("./weihnachtsevent-bilder/leere_winterdorf_plaza_im_mondlicht.png");
+  background-position:center top,center,center center;
+  background-size:cover,cover,cover;
+  background-repeat:no-repeat;
+}
+body:has(#panel-village:not([hidden])) .snow-sky{opacity:.44}
+#panel-village .event-stat-grid{
+  position:relative;
+  isolation:isolate;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  margin-top:12px;
+  padding:10px;
+  border:1px solid rgba(234,200,137,.56);
+  border-radius:20px;
+  background:
+    radial-gradient(ellipse 55% 90% at 50% -35%,rgba(123,156,183,.22),transparent 85%),
+    linear-gradient(135deg,rgba(8,36,44,.96),rgba(7,31,41,.97) 54%,rgba(3,30,32,.97));
+  box-shadow:inset 0 1px rgba(255,236,187,.20),0 14px 32px rgba(0,9,19,.46);
+}
+#panel-village .event-stat-grid::before{
+  content:"";
+  position:absolute;inset:0;
+  z-index:-1;pointer-events:none;border-radius:inherit;opacity:.44;
+  background-image:
+    radial-gradient(2px 2px at 12% 22%,#e7f5ff 80%,transparent),
+    radial-gradient(2px 2px at 42% 76%,#e7f5ff 80%,transparent),
+    radial-gradient(1px 1px at 81% 35%,#fff1c9 85%,transparent),
+    radial-gradient(1px 1px at 94% 82%,#e7f5ff 85%,transparent);
+  background-size:270px 130px;
+}
+#panel-village .stat-card{
+  --stat-accent:#f4ca83;
+  --stat-glow:rgba(244,202,131,.23);
+  position:relative;
+  display:flex;justify-content:flex-start;align-items:center;
+  gap:12px;
+  min-width:0;min-height:112px;
+  padding:15px 12px;
+  border:1px solid rgba(234,201,135,.63);
+  border-radius:15px;
+  background:
+    radial-gradient(circle at 18% 2%,var(--stat-glow),transparent 58%),
+    linear-gradient(145deg,rgba(34,67,70,.96),rgba(8,37,43,.97) 69%,rgba(9,32,37,.96));
+  box-shadow:inset 0 1px rgba(255,245,209,.23),inset 0 -1px rgba(0,0,0,.24),0 5px 12px rgba(0,11,20,.37);
+  color:#fff1d5;
+  text-align:left;
+  appearance:none;
+  -webkit-tap-highlight-color:transparent;
+  overflow:hidden;
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background-color .18s ease;
+}
+#panel-village .stat-card::before{
+  content:"";
+  position:absolute;left:12px;right:12px;top:0;height:2px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,var(--stat-accent),transparent);
+  opacity:.74;
+}
+#panel-village .stat-card::after{
+  content:"✦";
+  position:absolute;top:7px;right:11px;
+  color:var(--stat-accent);opacity:.46;
+  font-size:12px;pointer-events:none;
+}
+#panel-village .stat-card--tree{--stat-accent:#addfbd;--stat-glow:rgba(90,173,117,.25)}
+#panel-village .stat-card--lights{--stat-accent:#ffe6a4;--stat-glow:rgba(250,198,91,.29)}
+#panel-village .stat-card--gifts{--stat-accent:#f3b6a8;--stat-glow:rgba(236,122,99,.19)}
+#panel-village .stat-card-icon{
+  display:grid;place-items:center;
+  flex:0 0 54px;width:54px;height:58px;
+  border:1px solid rgba(243,217,158,.37);border-radius:13px;
+  background:radial-gradient(circle at 50% 30%,var(--stat-glow),rgba(6,30,37,.60) 75%);
+  box-shadow:inset 0 1px rgba(255,248,224,.18),0 3px 10px rgba(0,0,0,.18);
+  font-size:31px;line-height:1;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.2));
+}
+#panel-village .stat-card-copy{
+  display:flex;flex-direction:column;align-items:flex-start;
+  flex:1;min-width:0;gap:3px;
+}
+#panel-village .stat-card strong{
+  display:block;
+  color:#ffdf9e;
+  font:900 clamp(21px,1.95vw,30px)/1.08 Georgia,serif;
+  letter-spacing:.2px;
+  text-shadow:0 2px 5px rgba(0,0,0,.66);
+  overflow-wrap:anywhere;
+  font-variant-numeric:tabular-nums;
+}
+#panel-village .stat-card small{
+  display:block;color:#fff4d9;
+  font:700 clamp(10px,.85vw,12px)/1.27 Georgia,serif;
+  margin:0;opacity:.96;
+}
+#panel-village .stat-card-link{
+  display:inline-flex;align-items:center;gap:5px;
+  color:var(--stat-accent);
+  font:750 10px/1.2 system-ui,-apple-system,Segoe UI,sans-serif;
+  margin-top:5px;
+}
+#panel-village .stat-card-link span{font-size:17px;line-height:.7;transition:transform .18s ease}
+#panel-village .stat-card:hover{
+  transform:translateY(-3px);
+  border-color:#ffebbb;
+  box-shadow:inset 0 1px rgba(255,245,209,.34),0 9px 20px rgba(0,11,20,.54),0 0 20px var(--stat-glow);
+}
+#panel-village .stat-card:hover .stat-card-link span{transform:translateX(3px)}
+#panel-village .stat-card:active{transform:translateY(0) scale(.99)}
+#panel-village .stat-card:focus-visible{outline:3px solid #fff0b5;outline-offset:3px}
+@media(max-width:1100px){
+  #panel-village .event-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  #panel-village .event-stat-grid{gap:8px;padding:8px;border-radius:15px}
+  #panel-village .stat-card{min-height:98px;padding:11px 10px;gap:9px;border-radius:12px}
+  #panel-village .stat-card-icon{flex-basis:43px;width:43px;height:48px;font-size:25px;border-radius:10px}
+  #panel-village .stat-card strong{font-size:clamp(18px,4.5vw,25px)}
+  #panel-village .stat-card small{font-size:10px}
+  #panel-village .stat-card-link{font-size:9px;margin-top:3px}
+}
+@media(max-width:390px){
+  #panel-village .stat-card{gap:6px;padding:10px 7px}
+  #panel-village .stat-card-icon{flex-basis:36px;width:36px;height:43px;font-size:22px}
+  #panel-village .stat-card strong{font-size:17px}
+  #panel-village .stat-card small{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  #panel-village .stat-card,#panel-village .stat-card-link span{transition:none}
+  #panel-village .stat-card:hover{transform:none}
+}
