@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from '../DOG/collection-catalog.js';
 import {BOARD_STYLES,SCENE_STYLES,PIECE_STYLES,CARD_STYLES,HUD_TONES,HUD_LAYOUTS} from '../DOG/appearance-registry.js';
-import {DOG_EMOJIS,DOG_EMOJI_STARTERS} from '../DOG/dog-emojis.js';
+import {DOG_EMOJIS,DOG_EMOJI_STARTERS,DOG_CHRISTMAS_EMOJIS} from '../DOG/dog-emojis.js';
 import {buildDogCollection} from '../DOG/collection-extensions.js';
 const text=path=>readFileSync(new URL(path,import.meta.url),'utf8');
 
-test('DOG collection lists only implemented categories with no invented locked items',()=>{
+test('DOG collection distinguishes real selections from locked event previews',()=>{
  assert.equal(DOG_COLLECTION_CATEGORIES.length,9);
  const names=DOG_COLLECTION_CATEGORIES.map(c=>c.id);
  assert.equal(new Set(names).size,names.length);
@@ -16,10 +16,10 @@ test('DOG collection lists only implemented categories with no invented locked i
   assert.ok(c.items.length,c.id);
   const s=dogCollectionStats(c);
   assert.equal(s.total,c.items.length);
-  assert.equal(s.available,s.total);
-  assert.equal(s.planned,0);
-  assert.ok(c.items.every(i=>i.status==='available'),c.id+' includes an unimplemented item');
-  assert.ok(c.items.every(i=>['appearance','avatar','emoji','default'].includes(i.kind)));
+  assert.equal(s.available+s.planned,s.total);
+  assert.ok(c.items.every(i=>['available','planned'].includes(i.status)));
+  assert.ok(c.items.every(i=>['appearance','avatar','emoji','default','nameFrame','activeIcon','event'].includes(i.kind)));
+  assert.ok(c.items.filter(i=>i.status==='planned').every(i=>i.unlockId),'locked previews must have a future entitlement ID');
  }
  const overall=dogCollectionStats();
  assert.equal(overall.total,DOG_COLLECTION_CATEGORIES.reduce((sum,c)=>sum+c.items.length,0));
@@ -38,8 +38,10 @@ test('Collection registers actual selectable designs without inventing past unlo
  assert.equal(look('avatars').items.filter(x=>x.status==='available').length,16);
  assert.equal(look('emblems').items.filter(x=>x.status==='available').length,1);
  assert.equal(DOG_COLLECTION_CATEGORIES.some(x=>x.id==='effects'),false);
- assert.deepEqual(look('frames').items.map(x=>x.id),['frame-current']);
- assert.deepEqual(look('emblems').items.map(x=>x.id),['emblem-crown']);
+ assert.equal(look('frames').items.filter(x=>x.status==='available').length,1);
+ assert.equal(look('emblems').items.filter(x=>x.status==='available').length,1);
+ assert.ok(look('frames').items.some(x=>x.status==='planned'));
+ assert.ok(look('emblems').items.some(x=>x.status==='planned'));
 });
 test('all HUD color tiles use real theme tokens and support large preview',()=>{
  const hud=dogCollectionCategory('hud').items;
@@ -63,9 +65,10 @@ test('all HUD color tiles use real theme tokens and support large preview',()=>{
 
 test('only three usable starter emojis appear in the gallery',()=>{
  const entries=dogCollectionCategory('emojis').items;
- assert.equal(DOG_EMOJIS.length,50);
+ assert.ok(DOG_EMOJIS.length>=DOG_EMOJI_STARTERS.length+DOG_CHRISTMAS_EMOJIS.length);
  assert.equal(DOG_EMOJI_STARTERS.length,3);
- assert.equal(entries.length,3);
+ assert.equal(entries.length,DOG_EMOJI_STARTERS.length+DOG_CHRISTMAS_EMOJIS.length);
+ assert.equal(entries.filter(x=>x.status==='planned').length,DOG_CHRISTMAS_EMOJIS.length);
  assert.deepEqual(entries.filter(x=>x.status==='available').map(x=>x.id),[...DOG_EMOJI_STARTERS]);
 });
 test('Lobby buttons and collection page remain navigable without changing DOG game rules',()=>{
@@ -75,7 +78,7 @@ test('Lobby buttons and collection page remain navigable without changing DOG ga
  assert.match(local,/data-dog-collection-link/);
  assert.match(html,/id="collection-grid"/);
  assert.match(html,/id="collection-detail-content"/);
- assert.match(html,/src="\.\/collection\.js\?v=4"/);
+ assert.match(html,/src="\.\/collection\.js\?v=\d+"/);
  assert.doesNotMatch(html,/data-filter="planned"/);
  assert.match(html,/data-filter="active"/);
  assert.match(js,/saveAppearance\(/);
