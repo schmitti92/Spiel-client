@@ -45,6 +45,31 @@ const symbolLegend=(tier,values=null)=>{
   SCRATCH_COIN_PRIZES[tier]||SCRATCH_COIN_PRIZES.simple;
  return '🪙 '+num(coin)+' · 💵 '+num(note)+' · 💼 '+num(bag)+' Münzen · 🎁 💝 🎀 🧧 (je 3 gleiche = Freischaltung)';
 };
+/**
+ * Premium milestone counters are purely visual. The server-issued board
+ * determines the prize: counting 🧊 never grants coins or collectibles.
+ * revealedIndices contains only cells the player has scratched or uncovered.
+ */
+export function premiumScratchProgress(board,revealedIndices=[]){
+ if(board?.variantId!=='premium_27'||!Array.isArray(board?.cells)||board.cells.length!==27)return null;
+ const visible=new Set(revealedIndices.filter(i=>Number.isInteger(i)&&i>=0&&i<27));
+ const count=board.cells.reduce((n,symbol,i)=>n+(visible.has(i)&&symbol!=='🧊'?1:0),0);
+ const wins=Array.isArray(board.wins)?board.wins:[];
+ return {count,total:board.cells.filter(symbol=>symbol!=='🧊').length,
+  goldAwarded:wins.some(win=>win.rule==='gold-20'),
+  premiumAwarded:wins.some(win=>win.rule==='premium-24'),
+  giftRowRequired:board.symbolVersion===3};
+}
+/** Gold belongs to a real winning three-in-a-row, never to all 20/24 counted tiles. */
+export function premiumWinningRowIndices(wins=[]){
+ return [...new Set(wins.filter(win=>(win.rule==='row-3'||
+   win.rule==='premium-24'&&win.indices?.length===3)&&
+   Array.isArray(win.indices)&&win.indices.length===3&&
+   win.indices.every(i=>Number.isInteger(i)&&i>=0&&i<27)&&
+   Math.floor(win.indices[0]/3)===Math.floor(win.indices[2]/3)&&
+   win.indices[1]===win.indices[0]+1&&win.indices[2]===win.indices[1]+1)
+  .flatMap(win=>win.indices))];
+}
 export function initChristmasScratch(){
  const $=id=>document.getElementById(id);
  const root=$('scratch-tier-grid'),wallet=$('scratch-wallet'),stage=$('scratch-stage'),
@@ -374,11 +399,35 @@ export function initChristmasScratch(){
   const meter=$('scratch-progress-meter');
   if(meter){meter.value=p;meter.setAttribute('aria-valuenow',String(p))}
  }
+ function revealedPremiumCells(canvas){
+  if(stage.dataset.variant!=='premium_27')return [];
+  const rect=board.getBoundingClientRect();
+  if(!rect.width||!rect.height)return [];
+  const pixels=canvas.getContext('2d',{willReadFrequently:true})
+   .getImageData(0,0,canvas.width,canvas.height).data;
+  const found=[];
+  // A 5 × 5 interior sample avoids borders and silver-free grid gaps.
+  // Only count tiles the user has substantially revealed, not unseen prizes.
+  for(const [i,cell] of [...board.querySelectorAll('.scratch-field')].entries()){
+   const r=cell.getBoundingClientRect();
+   let uncovered=0;
+   for(let y=0;y<5;y++)for(let x=0;x<5;x++){
+    const px=Math.max(0,Math.min(canvas.width-1,Math.floor(
+     (r.left-rect.left+r.width*(.2+.15*x))*canvas.width/rect.width)));
+    const py=Math.max(0,Math.min(canvas.height-1,Math.floor(
+     (r.top-rect.top+r.height*(.2+.15*y))*canvas.height/rect.height)));
+    if(pixels[(py*canvas.width+px)*4+3]<=SAMPLE_ALPHA_MIN)uncovered++;
+   }
+   if(uncovered>=13)found.push(i);
+  }
+  return found;
+ }
  function measureScratchCover(canvas){
   if(finished||unifiedCover!==canvas||!initialOpaque)return;
   const remaining=opaqueSamples(canvas);
   const fraction=Math.max(0,Math.min(1,1-remaining/initialOpaque));
   setScratchProgress(Math.floor(fraction*100));
+  if(stage.dataset.variant==='premium_27')updatePremiumCounter(revealedPremiumCells(canvas));
   if(fraction>=.9)finish();
  }
  function makeField(symbol){
@@ -471,10 +520,57 @@ export function initChristmasScratch(){
    if(e.key==='Enter'||e.key===' '){e.preventDefault();finish()}
   });
  }
+ function updatePremiumCounter(revealed=[]){
+  const progress=premiumScratchProgress(ticket?.board,revealed);
+  const counter=stage.querySelector('.scratch-premium-counter');
+  if(!progress||!counter)return;
+  counter.querySelector('[data-premium-symbol-count]').textContent=progress.count+' / 27';
+  counter.querySelector('[data-premium-found]').textContent=
+   progress.count+' von '+progress.total+' vorhandenen Symbolen freigerubbelt';
+  for(const [goal,awarded] of [[20,progress.goldAwarded],[24,progress.premiumAwarded]]){
+   const line=counter.querySelector('[data-premium-milestone="'+goal+'"]');
+   if(!line)continue;
+   const reached=progress.count>=goal&&awarded;
+   line.classList.toggle('is-earned',reached);
+   line.dataset.earned=String(reached);
+   line.querySelector('[data-milestone-progress]').textContent=
+    Math.min(progress.count,goal)+' / '+goal;
+   const state=line.querySelector('[data-milestone-state]');
+   state.textContent=reached?'✓ ERREICHT':goal===24&&progress.count>=24&&progress.giftRowRequired?
+    '3 gleiche Geschenke nötig':'Noch nicht erreicht';
+  }
+ }
  function drawPrizeTable(result,entries=[]){
   let panel=stage.querySelector('.scratch-prize-sidebar');
   if(!panel){panel=el('aside','scratch-prize-sidebar');stage.append(panel)}
-  panel.replaceChildren(el('h4','','Gewinntabelle'));
+  panel.replaceChildren();
+  if(result?.board?.variantId==='premium_27'){
+   const counter=el('section','scratch-premium-counter');
+   counter.setAttribute('aria-label','Premium-Symbolzähler und Belohnungsstufen');
+   const header=el('div','scratch-premium-counter-header');
+   header.append(el('span','','🔎 Symbole gesammelt'),
+    el('strong','scratch-premium-counter-number','0 / 27'));
+   header.querySelector('strong').dataset.premiumSymbolCount='';
+   counter.append(header);
+   const found=el('small','scratch-premium-found','0 Symbole freigerubbelt');
+   found.dataset.premiumFound='';counter.append(found);
+   for(const [goal,name,description] of [
+    [20,'🪙 Gold-Belohnung','20 Symbole'],
+    [24,'🎁 Premium-Belohnung',result.board.symbolVersion===3?
+     '24 Symbole + 3 gleiche Geschenke':'24 Symbole']
+   ]){
+    const line=el('div','scratch-premium-milestone');
+    line.dataset.premiumMilestone=String(goal);line.dataset.earned='false';
+    const left=el('span','');
+    left.append(el('strong','',name),el('small','',description));
+    const right=el('span','scratch-premium-milestone-status');
+    const amount=el('strong','', '0 / '+goal);amount.dataset.milestoneProgress='';
+    const state=el('small','','Noch nicht erreicht');state.dataset.milestoneState='';
+    right.append(amount,state);line.append(left,right);counter.append(line);
+   }
+   panel.append(counter);
+  }
+  panel.append(el('h4','','Gewinntabelle'));
   const tier=result?.tier||'simple';
   const amounts=coinAmountsFor(tier,result?.board?.variantId||null,result);
   const awarded=new Set(entries.map(p=>p?.type==='coins'?p.symbol||'🪙':p?.type==='unlock'?p.symbol||'🎁':''));
@@ -492,6 +588,11 @@ export function initChristmasScratch(){
   panel.append(el('div','scratch-prize-remaining',Number.isInteger(remaining)?
    '🎁 Noch verfügbare Hauptgewinne: '+remaining:
    '🎁 Hauptgewinn-Bestand: derzeit nicht verfügbar'));
+  // Keep the full card graphic untouched; award results belong to the
+  // dedicated, compact right panel, not over the bottom three card rows.
+  panel.append(results,$('scratch-winning-lines'));
+  updatePremiumCounter(finished&&result?.board?.variantId==='premium_27'?
+   result.board.cells.map((_,i)=>i):[]);
  }
  function showTicket(result){
   ticket=result;finished=false;unifiedCover=null;initialOpaque=0;
@@ -528,7 +629,9 @@ export function initChristmasScratch(){
   }
   drawPrizeTable(result);
   drawShop();
-  try{stage.scrollIntoView({behavior:'smooth',block:'nearest'})}catch{}
+  // The fixed ticket fills the viewport. Never scroll the underlying page
+  // when it opens; on resize its artwork remains within the window.
+  document.body.classList.add('scratch-ticket-open');
  }
  function showWinningElfPaths(wins){
   if(stage.dataset.variant!=='elf')return;
@@ -564,19 +667,16 @@ export function initChristmasScratch(){
   for(const cell of board.querySelectorAll('.scratch-field'))cell.classList.add('uncovered');
   const wins=ticket.board?.wins||[];
   const visibleCells=board.querySelectorAll('.scratch-field');
-  for(const w of wins)for(const i of w.indices||[])visibleCells[i]?.classList.add('scratch-winning-cell');
+  const goldIndices=stage.dataset.variant==='premium_27'?
+   premiumWinningRowIndices(wins):
+   [...new Set(wins.flatMap(win=>win.indices||[]))];
+  for(const i of goldIndices)visibleCells[i]?.classList.add('scratch-winning-cell');
   showWinningElfPaths(wins);
   reveal.classList.add('revealed');
   $('scratch-progress').textContent='100 % aufgedeckt ✓';
   const meter=$('scratch-progress-meter');if(meter){meter.value=100;meter.setAttribute('aria-valuenow','100')}
-  if(stage.dataset.variant==='premium_27'&&Array.isArray(ticket.board?.cells)){
-   const count=ticket.board.cells.filter(symbol=>symbol!=='🧊').length;
-   const note=el('div','scratch-premium-symbol-count',
-    '🔎 '+count+'/27 Symbolfelder · Geld ab 20 · '+(ticket.board?.symbolVersion===3?'Freischaltung ab 24 + 3 gleichen Geschenken':'🎁 Freischaltung ab 24'));
-   const old=board.parentElement.querySelector('.scratch-premium-symbol-count');
-   if(old)old.remove();
-   board.parentElement.append(note);
-  }
+  if(stage.dataset.variant==='premium_27'&&Array.isArray(ticket.board?.cells))
+   updatePremiumCounter(ticket.board.cells.map((_,i)=>i));
   const entries=Array.isArray(ticket.winnings)?ticket.winnings:
    ticket.type==='none'?[]:[ticket.type==='coins'?{type:'coins',amount:ticket.amount}:{type:'unlock',prize:ticket.prize}];
   $('scratch-result-value').textContent=entries.length?
@@ -606,7 +706,7 @@ export function initChristmasScratch(){
  }
  async function load(){
   const id=++requestId;
-  if(!account()){status=null;ticket=null;canManageScratch=false;stage.hidden=true;hostDialog?.close();drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
+  if(!account()){status=null;ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
   try{
    const r=await query('');
    if(id!==requestId)return;
@@ -638,6 +738,7 @@ export function initChristmasScratch(){
  $('scratch-ticket-finish').addEventListener('click',()=>{
   if(!ticket)return;
   acknowledge(ticket.commandId);ticket=null;finished=false;stage.hidden=true;
+  document.body.classList.remove('scratch-ticket-open');
   drawShop();notice('🎄 Bereit für dein nächstes Rubbellos.');
  });
  $('scratch-refresh').addEventListener('click',()=>void load());
@@ -673,7 +774,7 @@ export function initChristmasScratch(){
   finally{save.disabled=false;}
  });
  window.addEventListener('spielonline-change',()=>{
-  requestId++;status=null;ticket=null;canManageScratch=false;stage.hidden=true;hostDialog?.close();void load();
+  requestId++;status=null;ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();void load();
  });
  drawShop();return {load};
 }
