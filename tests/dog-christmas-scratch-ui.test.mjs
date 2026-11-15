@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {SCRATCH_TICKET_TYPES} from '../DOG/christmas-scratch-ui.js';
+import {SCRATCH_TICKET_TYPES,SCRATCH_COIN_PRIZES} from '../DOG/christmas-scratch-ui.js';
 import {DOG_COLLECTION_CATEGORIES} from '../DOG/collection-catalog.js';
 const source=path=>readFileSync(new URL(path,import.meta.url),'utf8');
 test('three scratch tickets show correct prices and unlock chances',()=>{
@@ -64,4 +64,17 @@ test('medium elf artwork contains twenty framed cells and a path-highlighting re
  assert.match(js,/showWinningElfPaths\(wins\)/);
  assert.match(js,/win\.rule!=='path'/);
  assert.match(js,/line\.setAttribute\('points'/);
+});
+
+test('all scratch tiers expose three fixed cash symbols and a gift unlock legend',()=>{
+ assert.deepEqual(SCRATCH_COIN_PRIZES,{
+  simple:[10,40,100],medium:[100,300,800],premium:[200,800,2000]
+ });
+ const html=source('../DOG/christmas-event.html');
+ const js=source('../DOG/christmas-scratch-ui.js');
+ assert.match(html,/id="scratch-symbol-legend"/);
+ assert.match(js,/symbolLegend\(c.id\)/);
+ assert.match(js,/🎁 Freischaltung:/);
+ assert.match(js,/prize.symbol/);
+ assert.match(js,/symbolVersion!==2/);
 });
