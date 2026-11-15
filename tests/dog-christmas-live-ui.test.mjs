@@ -87,3 +87,14 @@ test('building bonus values and explanations match server formulas',()=>{
  assert.match(js,/villageEventActive\?'🟢 Gemeinsamer Bonus aktiv'/);
  assert.doesNotMatch(js,/buildingDialog.*villageRequest\('village\/upgrade'/);
 });
+
+test('tapping the depicted Christmas tree opens the existing tree window',()=>{
+ const css=read('DOG/christmas-event-royal.css');
+ assert.match(page,/<button type="button" class="village-tree-hit" data-open-tab="tree"/);
+ assert.match(page,/aria-label="Weihnachtsbaum öffnen/);
+ assert.match(event,/document\.querySelectorAll\('\[data-open-tab\]'\)/);
+ assert.match(event,/button\.addEventListener\('click',\(\)=>showPanel\(button\.dataset\.openTab\)\)/);
+ assert.match(event,/if\(id==='tree'\)\{centerTreeMilestone\(\);void treePrizeScreen\?\.load\(\);\}/);
+ assert.match(css,/\.village-hotspots \.village-tree-hit\{/);
+ assert.match(css,/\.village-tree-hit:focus-visible/);
+});
