@@ -139,9 +139,9 @@ export function initChristmasScratch(){
   }
   body.replaceChildren();footer.replaceChildren();
   if(missing){
-   const row=el('tr');const cell=el('td','','🔐 Mit deinem DOG-Onlineprofil anmelden, um deine Statistik zu sehen.');
+   const row=el('tr');const cell=el('td','',status?'⌛ Die persönliche Statistik wird vom Render-Server noch nicht bereitgestellt.':'🔐 Mit deinem DOG-Onlineprofil anmelden, um deine Statistik zu sehen.');
    cell.colSpan=7;row.append(cell);body.append(row);
-   note.textContent='Die Übersicht wird direkt aus deinem angemeldeten Spielerprofil geladen.';
+   note.textContent=status?'Versuche „Kontostand aktualisieren“, sobald der Render-Server die neue Statistikversion übernommen hat.':'Die Übersicht wird direkt aus deinem angemeldeten Spielerprofil geladen.';
    return;
   }
   const headers=['Rubbellos','Geöffnet','Gewinnlose','Nieten','Gratis','🎁 Gewinne','🪙 Gewonnen'];
