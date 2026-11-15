@@ -7,6 +7,11 @@ export const SCRATCH_TICKET_TYPES=Object.freeze([
  {id:'medium',icon:'🔵',label:'Mittel',price:500,coinMax:800,unlockChance:'3',rewards:'5 Profilbilder · 4 Weihnachts-Emojis · Rahmen · Aktivsymbol · Spielbrett',odds:'20 % Nieten · 77 % Münzen · 3 % Freischaltungen'},
  {id:'premium',icon:'🟡',label:'Premium',price:1000,coinMax:2000,unlockChance:'4',rewards:'10 Profilbilder · 4 Weihnachts-Emojis · 2 Rahmen · 2 Aktivsymbole · 2 Hintergründe · Spielbrett',odds:'20 % Nieten · 76 % Münzen · 4 % Freischaltungen'}
 ]);
+const CURRENT_GAMES_BY_TIER=Object.freeze({
+ simple:'🎁 Geschenkelinie oder ❄️ Schneeflocken-Bingo',
+ medium:'🧝 Magischer Wichtelpfad – einziges mittleres Los',
+ premium:'🎄 Weihnachtsbaum-Geheimnis'
+});
 const VARIANTS={
  gifts:['🎁 Geschenkelinie','Drei gleiche Symbole in einer Reihe, Spalte oder Diagonale',3,3],
  snow:['❄️ Schneeflocken-Bingo (älteres Los)','Vier gleiche Symbole in einer Reihe, Spalte oder Diagonale',4,4],
@@ -68,6 +73,7 @@ export function initChristmasScratch(){
    const article=el('article','scratch-tier '+c.id);
    article.append(el('span','scratch-icon',c.icon),
     el('h3','',c.label+'-Rubbellos'),
+    el('div','scratch-game-selection',CURRENT_GAMES_BY_TIER[c.id]),
     el('strong','scratch-price',num(c.price)+' 🪙'),
     el('div','scratch-chance',c.unlockChance+' % Freischaltung · 1–'+num(c.coinMax)+' Münzen'),
     el('div','scratch-reward-list',c.rewards),
