@@ -32,7 +32,7 @@ Beschichtungen und Gewinne werden dynamisch aus dem validierten Render-Los erzeu
 3. **Premium 1 – Magischer Wichtelpfad**: 4×5 (20 Felder).
    Designvorschlag smaragdgrüner Weihnachtswald mit magischem Weg.
    Ein zusammenhängender Pfad von links nach rechts gewinnt.
-   Zielbild: `wichtelpfad-01.webp` (noch nicht erstellt).
+   Eingebundenes Motiv: `wichtelpfad-premium-01.svg` (1086×1448), eigenständiges tiefgrünes Weihnachtswald-Design mit 20 leeren Feldern. Server zeichnet auch gekrümmte Gewinnwege. Browser-/Handy-Endtest offen.
 4. **Premium 2 – Weihnachtsbaum-Geheimnis**: 5×3 (15 Felder).
    Designvorschlag Violett/Gold mit funkelndem Sternenbaum.
    ⭐🎄🎁 in genau dieser Reihenfolge gewinnt.
@@ -51,3 +51,8 @@ Frühere Spielfeldregeln bleiben für die Wiederherstellung alter Lose
 im Backend lesbar.
 
 Die Spielmechanik und 90%-Rubbelregel stehen im Frontend bereits bereit.
+
+## Implementierungsstatus 15.11.2026
+- Nr. 3 ist in GitHub unter `DOG/assets/scratch/wichtelpfad-premium-01.svg` vorhanden; Felder und Rubbeloberfläche sind eingebunden.
+- Der unabhängige Server-Prüfer verlangt für `elf` orthogonal zusammenhängende gleiche Symbole von links nach rechts und vergibt höchstens einen Preis je Symbolart. Diagonalen zählen nicht.
+- Das Premium-Los bleibt in der bestehenden Premium-Klasse (1000 Eventmünzen); die erste und zweite normale sowie die später geplante vierte Premium-Variante bleiben bestehen.
