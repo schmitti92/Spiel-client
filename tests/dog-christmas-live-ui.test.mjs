@@ -28,7 +28,7 @@ test('Christmas bonuses are automatic and cannot be toggled by the host or any p
  assert.match(event,/villageEventActive=data\.enabled===true/);
  assert.match(event,/Die Boni gelten für alle DOG-Partien/);
  assert.match(event,/Event beendet · Fortschritt bleibt gespeichert/);
- assert.match(event,/automatisch auf echten Geschenkfeldern vergeben/);
+ assert.doesNotMatch(page,/id="panel-gifts"|id="tab-gifts"/,'outdated gifts panel remains removed');
  assert.match(event,/data-upgrade-building/);
 });
 
