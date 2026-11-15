@@ -62,7 +62,7 @@ test('medium elf artwork contains twenty framed cells and a path-highlighting re
  assert.match(css,/wichtelpfad-mittel-01\.svg/);
  assert.match(css,/grid-template-columns:repeat\(5/);
  assert.match(js,/showWinningElfPaths\(wins\)/);
- assert.match(js,/win\.rule!=='path'/);
+ assert.match(js,/gift-three-connected/);
  assert.match(js,/line\.setAttribute\('points'/);
 });
 
@@ -78,4 +78,17 @@ test('all scratch tiers expose three fixed cash symbols and a gift unlock legend
  assert.match(js,/🎁 💝 🎀 🧧/);
  assert.match(js,/p\.symbol/);
  assert.match(js,/symbolVersion===3/);
+});
+
+test('saving global scratch settings works outside a DOG room and provides user feedback',()=>{
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const html=source('../DOG/christmas-event.html');
+ const submit=js.split("addEventListener('submit',async e=>{")[1]?.split("window.addEventListener('spielonline-change'")[0];
+ assert.ok(submit,'the settings form must have a submit listener');
+ assert.doesNotMatch(submit,/validRoom|canManageScratch/,'room and client permission flags must not silence saves');
+ assert.match(submit,/query\('\/settings',\{settings\}\)/,'send global settings without a room code');
+ assert.match(submit,/response\.settings/,'only report success after server confirmation');
+ assert.match(submit,/feedback\.textContent='⚠️ '/,'show save errors');
+ assert.match(js,/addEventListener\('invalid',/,'explain browser validation failures');
+ assert.match(html,/id="scratch-host-save"/);
 });
