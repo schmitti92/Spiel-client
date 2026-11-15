@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="./christmas-event-royal.css?v=8">
 <link rel="stylesheet" href="./christmas-tree-rewards.css?v=2">
 <link rel="stylesheet" href="./christmas-tree-world.css?v=3">
-<link rel="stylesheet" href="./christmas-scratch.css?v=8">
+<link rel="stylesheet" href="./christmas-scratch.css?v=9">
 <link rel="stylesheet" href="./christmas-building-village.css?v=4">
 </head>
 <body>
@@ -315,6 +315,7 @@
         <section id="scratch-stage" class="scratch-stage" aria-labelledby="scratch-ticket-title" hidden>
           <h3 id="scratch-ticket-title">🎟️ Rubbellos</h3>
           <p id="scratch-variant-rule" class="scratch-variant-rule">Rubble die Felder frei und finde die Gewinnkombination.</p>
+          <p id="scratch-symbol-legend" class="scratch-symbol-legend" hidden></p>
           <p id="scratch-progress" class="scratch-progress" aria-live="polite">0 % freigerubbelt · ab 90 % automatische Aufdeckung</p>
           <progress id="scratch-progress-meter" class="scratch-progress-meter" max="100" value="0" aria-label="Freigerubbelte Fläche in Prozent"></progress>
           <div id="scratch-reveal" class="scratch-play">
@@ -330,7 +331,7 @@
           </div>
         </section>
         <p id="scratch-status" class="scratch-message" role="status" aria-live="polite">Lade deine Rubbellose …</p>
-        <p class="scratch-info">Die Lose und Münzen gehören deinem angemeldeten Spielerprofil. Ein Startguthaben von 1.000 Münzen und täglich ein einfaches Gratis-Los ermöglichen den Einstieg. Je nach Losart sind Münztreffer von 1–100, 1–800 oder 1–2.000 Münzen möglich. Auf jeder Karte gelten eigene sichtbare Gewinnregeln. Bereits gewonnene Designs werden nicht doppelt vergeben.</p>
+        <p class="scratch-info">Die Lose und Münzen gehören deinem angemeldeten Spielerprofil. Ein Startguthaben von 1.000 Münzen und täglich ein einfaches Gratis-Los ermöglichen den Einstieg. Bei neuen Losen gilt: 🪙 Münze = kleiner Geldgewinn, 💵 Schein = mittlerer Geldgewinn, 💼 Geldkoffer = großer Geldgewinn und 🎁 Geschenk = Freischaltung. Die drei festen Geldwerte hängen von der Losklasse ab. Auf jeder Karte gelten eigene sichtbare Gewinnregeln. Bereits gewonnene Designs werden nicht doppelt vergeben.</p>
       </div>
     </section>
     <section class="event-panel" id="panel-chapters" role="tabpanel" aria-labelledby="tab-chapters" hidden>
@@ -344,6 +345,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./christmas-event.js?v=29"></script>
+<script type="module" src="./christmas-event.js?v=30"></script>
 </body>
 </html>
