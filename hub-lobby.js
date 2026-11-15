@@ -4,17 +4,18 @@
 const el=id=>document.getElementById(id);
 const config=window.SPIELPORTAL_CONFIG||{};
 const API=String(config.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge',dog:'DOG Klassisch'};
+const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge',dog:'DOG Klassisch',kniffel:'Kniffel Online'};
 let code=null,room=null,operation=false,poll=null,accountUid=null,pollErrors=0;
 let playMode=new URL(location.href).searchParams.get('view')==='local'?'local':'online';
 let choosingGame=false,displayGame=null;
-const GAME_ICON={barikade:'🎲',skyjo:'🃏',kreuz:'🎯',business:'💼',partychallenge:'🏆',dog:'🐾'};
+const GAME_ICON={barikade:'🎲',skyjo:'🃏',kreuz:'🎯',business:'💼',partychallenge:'🏆',dog:'🐾',kniffel:'🎲'};
 const GAME_DESCRIPTIONS={
  barikade:'Das Brettspiel mit Barikaden, Action-Regeln und optionalem Bossmodus.',
  skyjo:'Karten, Joker und spannende Runden. Der Host legt die Regeln fest.',
  kreuz:'Würfeln, Farben ankreuzen und gemeinsam Punkte sammeln.',
  business:'Unternehmen, Aktien und Branchen – mit 10, 20 oder 30 Runden.',
  dog:'Das klassische Team-Brettspiel mit Karten, Startfeldern, Jokern und Partnern.',
+ kniffel:'Würfelspaß mit eigenen Regeln und Spielraum-Vorbereitung.',
  partychallenge:'Elf Online-Minispiele in einem Raum – inklusive Preisjäger.'
 };
 function setPlayMode(next){
@@ -973,6 +974,10 @@ if(settingsNav){
  el('challenge-bots').textContent=room.players.some(p=>p.testBot)?'🤖 2 Testspieler entfernen':'🤖 2 Testspieler hinzufügen';
 }
 function render(){
+ if(room?.game==='kniffel'&&room.phase==='preparing'&&new URL(location.href).searchParams.get('stage')==='1'){
+  location.replace('Kniffel/lobby.html?room='+encodeURIComponent(room.code));
+  return;
+ }
  if(room?.game==='kreuz'&&room.phase==='preparing'&&new URL(location.href).searchParams.get('stage')==='1'){
   location.replace('KreuzKunter/kreuzkunter_start.html?room='+encodeURIComponent(room.code));
   return;
@@ -1162,6 +1167,7 @@ function render(){
 async function command(run){if(operation)return;operation=true;render();notice('');
  try{await run();pollErrors=0;}catch(e){showError(e);}finally{operation=false;render();}
 }
+window.addEventListener('dog-unified-board-ready',()=>window.DOGUnifiedBoard?.refresh?.());
 el('login-btn').addEventListener('click',()=>{if(activeProfile())location.assign('profile.html');else window.SpielOnline?.openLogin?.();});
 el('mode-local').addEventListener('click',()=>location.assign('spielauswahl-lokal.html'));
 el('mode-online').addEventListener('click',()=>setPlayMode('online'));
@@ -1182,6 +1188,7 @@ el('join-btn').addEventListener('click',()=>command(async()=>{
 }));
 document.querySelectorAll('[data-game]').forEach(btn=>btn.addEventListener('click',()=>command(async()=>{
  if(!room?.host)return;const {room:r}=await request('/rooms/'+code+'/select','POST',{game:btn.dataset.game,...(btn.dataset.game==='dog'?{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0}:{})});choosingGame=false;activateRoom(r);
+ if(r.game==='kniffel')location.assign('Kniffel/lobby.html?room='+encodeURIComponent(r.code));
 }))); 
 document.querySelectorAll('[data-barikade-setting]').forEach(field=>field.addEventListener('change',()=>command(async()=>{
  if(!room?.host||room.phase!=='preparing'||room.game!=='barikade')return;
