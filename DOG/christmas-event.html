@@ -8,7 +8,8 @@
 <title>DOG Weihnachten · Das Weihnachtswunder von Lichtertal</title>
 <link rel="stylesheet" href="./christmas-event.css?v=4">
 <link rel="stylesheet" href="./christmas-event-royal.css?v=8">
-<link rel="stylesheet" href="./christmas-tree-rewards.css?v=1">
+<link rel="stylesheet" href="./christmas-tree-rewards.css?v=2">
+<link rel="stylesheet" href="./christmas-tree-world.css?v=1">
 </head>
 <body>
 <div class="snow-sky" aria-hidden="true"></div>
@@ -207,20 +208,49 @@
       <div class="event-footer-row"><p>Der Weihnachtsbaum wächst automatisch, wenn die Gesamtstufen der vier Gebäude steigen.</p><button type="button" class="button gold" data-open-tab="village">🏘️ Dorf ansehen</button></div>
     </section>
     <section class="event-panel" id="panel-tree" role="tabpanel" aria-labelledby="tab-tree" hidden>
-      <div class="event-heading"><div><span class="eyebrow">IM HERZEN DES DORFES</span><h2>Der große Weihnachtsbaum</h2><p>Zehn Entwicklungsstufen – vom kleinen Tannenbaum bis zum strahlenden Mittelpunkt des Dorfes.</p></div><span class="soft-tag">10 Stufen</span></div>
-      <div class="tree-feature"><div class="tree-feature-icon"><img id="tree-card-photo" src="weihnachtsevent-bilder/weihnachtsbaum_stufe_1.png" alt="Weihnachtsbaum, Entwicklungsstufe 1" loading="lazy" decoding="async"></div><div><h3 id="tree-current-title">Stufe 1 · Junger Baum</h3><p id="tree-current-copy">Ein kleiner, noch ungeschmückter Baum steht mitten in Lichtertal.</p><div class="meter"><span id="tree-progress-fill" style="width:10%"></span></div><small id="tree-progress-label">1 von 10 Entwicklungsstufen</small></div></div>
-      <div class="tree-steps" id="tree-steps"></div>
-      <section class="tree-rewards" aria-labelledby="tree-rewards-heading">
-       <div class="tree-rewards-head">
-        <div><h3 id="tree-rewards-heading">🎁 10 Weihnachtsbaum-Geschenke</h3>
-         <p>Jede Baumstufe bringt einen einmaligen Preis für deinen Spieler. Level 1 ist das Startgeschenk.</p></div>
-        <span id="tree-reward-counter" class="tree-reward-counter">0 / 10 abgeholt</span>
-       </div>
-       <div id="tree-reward-list" class="tree-reward-grid" aria-label="Weihnachtsbaum-Levelbelohnungen"></div>
-       <p id="tree-reward-feedback" class="tree-reward-feedback" role="status" aria-live="polite"></p>
+      <div class="tree-world">
+        <div class="tree-world-heading">
+          <div><span class="eyebrow">✦ DAS HERZ VON LICHTERTAL ✦</span><h2>Unser Weihnachtsbaum</h2><p>Ein Baum. Zehn magische Stufen. Zehn persönliche Weihnachtsgeschenke.</p></div>
+          <span class="tree-world-mode" id="tree-world-mode">✦ Gestaltungs-Vorschau</span>
+        </div>
+        <div class="tree-world-scene">
+          <div class="tree-world-info">
+            <span class="tree-world-kicker">🎄 AKTUELLE STUFE</span>
+            <h3 id="tree-current-title">Stufe 1 · Junger Baum</h3>
+            <p id="tree-current-copy">Ein kleiner, noch ungeschmückter Tannenbaum steht mitten in Lichtertal.</p>
+            <div class="tree-world-current-prize"><span>🎁 PREIS DIESER STUFE</span><strong id="tree-current-prize">🏞️ Märchenhafter Weihnachtswald</strong><small id="tree-current-prize-status">Im Onlineraum abholen</small></div>
+          </div>
+          <div class="tree-world-tree" aria-label="Weihnachtsbaum in seiner aktuellen Entwicklungsstufe">
+            <span class="tree-world-light" aria-hidden="true"></span>
+            <img id="tree-card-photo" src="weihnachtsevent-bilder/weihnachtsbaum_stufe_1.png" alt="Weihnachtsbaum, Entwicklungsstufe 1" loading="eager" decoding="async">
+            <span class="tree-world-platform" aria-hidden="true"></span>
+            <span class="tree-world-stage-pill" id="tree-world-stage-pill">STUFE 1 / 10</span>
+          </div>
+          <div class="tree-world-next">
+            <span class="tree-world-kicker">✨ ALS NÄCHSTES</span>
+            <h3 id="tree-next-stage">Stufe 2</h3>
+            <p id="tree-next-name">Erste Funken</p>
+            <div class="tree-world-next-prize"><span id="tree-next-gift-icon" aria-hidden="true">🎅</span><strong id="tree-next-gift">Weihnachtsmann</strong></div>
+            <small id="tree-next-requirement">Noch 1 Gebäudeausbau bis zur nächsten Stufe</small>
+          </div>
+        </div>
+        <div class="tree-world-footer">
+          <div class="tree-world-progress-heading"><span>✨ Dein Weg zum großen Weihnachtslicht</span><strong id="tree-progress-label">1 von 10 Entwicklungsstufen</strong></div>
+          <div class="meter tree-world-meter" role="progressbar" aria-label="Fortschritt des Weihnachtsbaums" aria-valuemin="1" aria-valuemax="10" aria-valuenow="1"><span id="tree-progress-fill" style="width:10%"></span></div>
+        </div>
+      </div>
+      <section class="tree-timeline" aria-labelledby="tree-timeline-heading">
+        <div class="tree-timeline-heading"><div><span class="eyebrow">DER WEG ZUM WEIHNACHTSWUNDER</span><h3 id="tree-timeline-heading">Alle 10 Baumstufen &amp; Belohnungen</h3></div><span class="tree-timeline-hint">↔ Zum Entdecken wischen</span></div>
+        <div class="tree-steps" id="tree-steps" aria-label="Zeitleiste aller Weihnachtsbaum-Stufen"></div>
+        <div class="tree-timeline-legend"><span>● Erreichte Stufe</span><span>✦ Aktuelle Stufe</span><span>🔒 Noch gesperrt</span><span>🎁 Abholbereit</span></div>
       </section>
-      <div class="notice"><strong>✨ Das große Finale</strong> Sobald alle vier Gebäude Stufe 5 erreichen, wird der Weihnachtsbaum Stufe 10. Jede Baumstufe hat ein persönliches Geschenk, das du im DOG-Onlineraum einmalig abholen kannst.</div>
-      <div class="event-footer-row"><p>Keine zusätzliche Baum-Währung: Entscheidend ist allein der gemeinsame Gebäudeausbau.</p><button type="button" class="button gold" data-open-tab="buildings">🏠 Gebäudestufen ansehen</button></div>
+      <section class="tree-rewards" aria-labelledby="tree-rewards-heading">
+        <div class="tree-rewards-head"><div><h3 id="tree-rewards-heading">🎁 Deine Weihnachtsbaum-Geschenke</h3><p>Jede Stufe schaltet genau einen festgelegten Preis frei. Die Preise werden im DOG-Onlineraum einmalig abgeholt.</p></div><span id="tree-reward-counter" class="tree-reward-counter">0 / 10 abgeholt</span></div>
+        <div id="tree-reward-list" class="tree-reward-grid" aria-label="Weihnachtsbaum-Levelbelohnungen"></div>
+        <p id="tree-reward-feedback" class="tree-reward-feedback" role="status" aria-live="polite"></p>
+      </section>
+      <div class="notice tree-world-finale"><strong>✨ Das große Finale</strong> Sobald alle vier Gebäude Stufe 5 erreichen, wird der Weihnachtsbaum Stufe 10. Der gemeinsame Baumfortschritt wird im DOG-Onlineraum gespeichert; jedes Geschenk kann jeder Spieler persönlich genau einmal abholen.</div>
+      <div class="event-footer-row"><p>Keine zusätzliche Baum-Währung: Der gemeinsame Gebäudeausbau bestimmt die Baumstufe.</p><button type="button" class="button gold" data-open-tab="buildings">🏠 Gebäudestufen ansehen</button></div>
     </section>
     <section class="event-panel" id="panel-story" role="tabpanel" aria-labelledby="tab-story" hidden>
       <div class="event-heading"><div><span class="eyebrow">UNSERE WEIHNACHTSGESCHICHTE</span><h2>Ein Wunder beginnt</h2><p>Kapitel 1 begleitet Chris, Vanessa und David bei den Weihnachtsvorbereitungen in Lichtertal.</p></div><span class="soft-tag">📖 Erzählentwurf</span></div>
