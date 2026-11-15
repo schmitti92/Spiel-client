@@ -1,0 +1,40 @@
+/* Personal DOG player levels – lightweight read-only progression. */
+.dog-level-shell{display:flex;flex-direction:column;gap:16px}
+.dog-level-hero{border:2px solid #d4a75d;border-radius:18px;padding:clamp(16px,2.5vw,28px);background:radial-gradient(circle at 13% 9%,#8166354d,transparent 36%),linear-gradient(140deg,#0a4034,#09262a 65%,#1a2e38);box-shadow:0 12px 30px #0007}
+.dog-level-hero-head{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}
+.dog-level-hero h3{font:900 clamp(22px,3vw,32px) Georgia,serif;color:#ffe2a0;margin:6px 0}
+.dog-level-hero p{margin:0;color:#d6e4db;line-height:1.45;font-size:13px}
+.dog-level-refresh{background:#235143;border:1px solid #dbbd84;color:#fff0c6;border-radius:10px;padding:10px 14px;font-weight:850;cursor:pointer}
+.dog-level-refresh:disabled{opacity:.55}
+.dog-level-overview{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:clamp(16px,3vw,32px);margin-top:22px}
+.dog-level-medallion{width:clamp(95px,14vw,140px);height:clamp(95px,14vw,140px);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 23%,#fff0af,#e3bb69 55%,#88622c);border:5px ridge #ffe6a1;box-shadow:0 0 28px #eec5684c,inset 0 0 8px #5d3d28;color:#3e2a1c}
+.dog-level-medallion strong{font:900 clamp(43px,6vw,66px) Georgia,serif;line-height:1}
+.dog-level-medallion span{font-size:10px;letter-spacing:1.4px;font-weight:900}
+.dog-level-xp-data{min-width:0}
+.dog-level-xp-data>strong{display:block;color:#ffe8ad;font-size:clamp(18px,2vw,24px);margin-bottom:6px}
+.dog-level-xp-data>small{display:block;color:#c3e1d7;margin:8px 0}
+.dog-level-xp-meter{width:100%;height:18px;border-radius:999px;overflow:hidden;border:1px solid #e5c081;background:#142f34}
+.dog-level-xp-meter::-webkit-progress-bar{background:#102d32}
+.dog-level-xp-meter::-webkit-progress-value{background:linear-gradient(90deg,#4bc4ac,#c9b76f,#ffe3a0);border-radius:999px}
+.dog-level-xp-meter::-moz-progress-bar{background:linear-gradient(90deg,#4bc4ac,#c9b76f,#ffe3a0);border-radius:999px}
+.dog-level-info-grid{display:flex;gap:14px;flex-wrap:wrap;margin-top:15px;color:#e8ebd1;font-size:13px}
+.dog-level-info-grid>div{background:#ffffff10;border:1px solid #b8cba257;border-radius:9px;padding:9px 13px}
+.dog-level-info-grid strong{color:#ffe3a0}
+.dog-level-rules{border:1px solid #c2a87580;border-radius:14px;background:#153a35;padding:14px 17px;color:#e1e9d9}
+.dog-level-rules h3{margin:0 0 9px;font:800 18px Georgia,serif;color:#ffdf98}
+.dog-level-rules p{font-size:13px;line-height:1.55;margin:0}
+.dog-level-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.dog-level-tile{position:relative;min-width:0;border:1px solid #93a7a3;border-radius:15px;padding:15px 11px;background:linear-gradient(#183a39,#0c292b);opacity:.73}
+.dog-level-tile.reached{border-color:#f2cc7e;opacity:1;background:linear-gradient(#36513c,#15392e)}
+.dog-level-tile.current{box-shadow:0 0 0 2px #f8df8c,0 0 22px #e5bd6a45}
+.dog-level-badge{display:grid;place-items:center;width:39px;height:39px;border-radius:50%;background:#334854;color:#fff0cf;border:1px solid #adb7a3;font-weight:950}
+.dog-level-tile.reached .dog-level-badge{background:#d8ad5a;color:#342316;border-color:#ffe8a7}
+.dog-level-tile-head h4{font:800 16px Georgia,serif;color:#f6e5bc;margin:10px 0 3px}
+.dog-level-tile-head small{font-size:11px;color:#bcd7d0}
+.dog-level-threshold{font-size:11px;margin:13px 0 8px;color:#cddbd7}
+.dog-level-reward{font-size:12px;padding:9px 7px;border-radius:9px;border:1px dashed #b69e6c;background:#071f2566;color:#fce0b0;min-height:45px;display:flex;align-items:center}
+.dog-level-status{font-size:13px;color:#e8d69e;min-height:20px}
+.dog-level-status[data-error=true]{color:#ffb99c}
+@media(max-width:1100px){.dog-level-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:650px){.dog-level-overview{grid-template-columns:1fr;justify-items:center;text-align:center}.dog-level-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dog-level-shell{gap:12px}}
+@media(max-width:365px){.dog-level-grid{grid-template-columns:1fr}}
