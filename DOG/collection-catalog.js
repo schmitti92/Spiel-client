@@ -6,6 +6,7 @@ import {BOARD_STYLES,isBoardUnlocked,SCENE_STYLES,PIECE_STYLES,CARD_STYLES,HUD_T
 import {DOG_EMOJIS,DOG_EMOJI_STARTERS,DOG_CHRISTMAS_EMOJIS} from './dog-emojis.js?v=2';
 import {CHRISTMAS_AVATARS} from './christmas-avatar-catalog.js?v=1';
 import {CHRISTMAS_NAME_FRAMES} from './christmas-nameframe-catalog.js?v=1';
+import {CHRISTMAS_ACTIVE_ICONS} from './christmas-activeicon-catalog.js?v=1';
 import {buildDogCollection} from './collection-extensions.js?v=2';
 const avail=(id,name,extra={})=>({id,name,status:'available',...extra});
 const BASE_COLLECTION_CATEGORIES=[
@@ -28,8 +29,11 @@ const BASE_COLLECTION_CATEGORIES=[
    ...frame,kind:'nameFrame',icon:frame.frameIcon,status:'planned',artTone:'gold'
   }))
  ]},
- {id:'emblems',icon:'👑',title:'Aktivsymbole',subtitle:'Das Symbol des Spielers, der gerade am Zug ist',items:[
+ {id:'emblems',icon:'👑',title:'Aktivsymbole',subtitle:'Die goldene Krone und fünf exklusive Weihnachts-Vorschauen',items:[
   avail('emblem-crown','Goldene Krone',{kind:'default',icon:'👑',description:'Standardsymbol des aktiven Spielers.',artTone:'gold'}),
+  ...CHRISTMAS_ACTIVE_ICONS.map(entry=>({
+   ...entry,kind:'activeIcon',status:'planned',artTone:'gold'
+  }))
  ]},
  {id:'emojis',icon:'😄',title:'Emojis',subtitle:'3 verfügbar · 10 Weihnachts-Emojis noch gesperrt · fünf Schnellplätze',items:[
   ...DOG_EMOJIS.filter(item=>DOG_EMOJI_STARTERS.includes(item.id)).map(item=>({
