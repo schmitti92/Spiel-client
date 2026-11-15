@@ -1,4 +1,4 @@
-# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v6
+# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v7
 Stand: 15.11.2026. Status: IN UMSETZUNG. Gewinnlogik, Varianten und funktionale Rubbeloberfläche ins Repository integriert; Artwork und echter Mehrspieler-Endtest noch offen.
 Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 
@@ -97,12 +97,12 @@ Abnahme: Unit-/Integrationstests für Guthaben, Duplikate, Entitlements, Auth, P
 Abnahme: Bilddatei öffentlich verfügbar, alle neun Rubbelstellen ausgerichtet, Gewinnreihen sichtbar und 90-%-Aufdeckung auf Touch-Geräten erfolgreich überprüft.
 
 ## Phase 5 – Rubbeloberfläche [ECHTES FREIRUBBELN + 90-%-AUTOMATIK EINGEBAUT, HANDYTEST OFFEN]
-- [x] Individuelle Canvas-Rubbelfelder (6–20 pro Los) mit Silbertextur, die unter Finger/Maus tatsächlich transparent wird.
-- [x] Fortschritt wird aus dem **Alpha-Kanal der Rubbelbeschichtung** ermittelt (Abtastung pro Canvas), nicht aus Wischstrecke oder Anzahl von Tipps.
+- [x] **Eine durchgehende Canvas-Beschichtung über dem gesamten Spielfeld** (6–20 Felder). Der Finger bzw. Mauszeiger darf ohne Absetzen über sämtliche Felder und Zwischenräume streichen; keine per-Zelle-Klick- oder Einzelwischpflicht mehr. Silbertextur wird im Fingerpfad transparent.
+- [x] Fortschritt wird anhand der **Alpha-Pixel der gemeinsamen Silberschicht** ermittelt: Zähler = tatsächlich entfernte beschichtete Bildpunkte, Nenner = alle anfänglich beschichteten Bildpunkte, transparente Lücken zwischen den Feldern zählen nicht. Kein Messen nach Wischstrecke oder Klickzahl.
 - [x] Ab **90 % der gesamten Beschichtungsfläche** gibt die UI automatisch alle restlichen Felder und Gewinnkombinationen frei; sichtbarer Prozentbalken.
-- [x] Ab 90 % lokalem Rubbelanteil eines Felds verschwindet dessen Restbeschichtung; das zählt als aufgedeckte Fläche.
+- [x] Keine pro-Feld-90-%-Abkürzung mehr; erst bei insgesamt 90 % der gemeinsam beschichteten Fläche wird die restliche Karte automatisch aufgedeckt.
 - [x] Sofort-Aufdecken für neue Lose ausgeblendet; für Tastaturbedienung einzelne Felder per Enter/Leertaste freigebbar; Altlostickets behalten Kompatibilitätsbutton.
-- [ ] Auf Mobilgeräten prüfen, dass Touch/Pointer-Verhalten und tatsächliche 90-%-Schwelle sauber funktionieren.
+- [ ] Auf Mobilgeräten prüfen, dass ein durchgehender Touch-Drag über mehrere Zellen, Pointer Capture, Scroll-Unterdrückung nur auf der Rubbeloberfläche und die tatsächliche 90-%-Schwelle zuverlässig funktionieren.
 - [x] Gewinnkombinationen werden nach Freirubbeln gold markiert und ihre Preise separat ausgewiesen; ×2 und seltenes Hauptgewinn-×2 gekennzeichnet.
 - [x] Nieten werden nach dem Aufrubbeln ohne leuchtende Gewinnkombination und mit Nieten-Hinweis gezeigt.
 Abnahme: Touch, Maus, Vollbild, Reload, kleine Displays.
@@ -137,4 +137,5 @@ Abnahme: echte Spielrunde über mehrere Geräte.
 - 15.11.2026: Karte 1 „Geschenkelinie“ einzeln als Bildkonzept generiert und als WebP exportiert; eigenes Rot/Gold-CSS bereits im Frontend. WebP-Asset muss noch vom Nutzer in `DOG/assets/scratch/geschenkelinie-01.webp` hochgeladen und danach eingebunden werden.
 - 15.11.2026: Erstes Geschenkelinie-Finalbild exportiert und 3×3-Goldfelder im Frontend per separatem Artwork-Wrapper präzise positioniert. Cache-Version erhöht, restliche neun Varianten erhalten ihre generische Oberfläche.
 - 15.11.2026: Nutzer hat Geschenkelinie-WebP hochgeladen. SHA/Dateidimensionen geprüft, 3×3-Feldgeometrie mit Bild verglichen und CSS-Abstände innerhalb der neun Goldrahmen nachjustiert. Bild ist in CSS verlinkt. Echter Mobilgeräte-Endtest offen.
+- 15.11.2026: Einheitlicher Canvas über dem gesamten Symbolraster implementiert. Ein einziger Pointer-Drag radiert quer über Zellen und Zwischenräume; pro-Zelle-Rubbelzwang entfernt. Gesamtfortschritt wird aus Alpha-Pixeln gemessen und die automatische Aufdeckung greift bei 90 % des gesamten Rasters. CSS-/JS-Cacheversionen angehoben; echter Smartphone-Test noch offen.
 - Nächster Schritt: Geschenkelinie live mit angemeldetem Profil testen, dann Karte 2 „Schneeflocken-Bingo“ gestalten.
