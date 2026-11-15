@@ -26,6 +26,7 @@ on:
       - 'tests/dog-official-rules.test.mjs'
       - 'tests/dog-online-sync.test.mjs'
       - 'tests/dog-collection.test.mjs'
+      - 'tests/dog-christmas-rewards.test.mjs'
       - '.github/workflows/dog-board-check.yml'
   pull_request:
     paths:
@@ -82,11 +83,12 @@ jobs:
       - run: node --check DOG/board-picker.js
       - run: node --check DOG/ui-shell.js
       - run: node --check DOG/ui-features.js
+      - run: node --check DOG/christmas-reward-locks.js
       - run: node --check DOG/collection-catalog.js
       - run: node --check DOG/collection.js
       - run: node --test tests/dog-board-backdrops.test.mjs
       - run: node --test tests/dog-ui-shell.test.mjs tests/dog-premium-cockpit.test.mjs tests/dog-victory-summary.test.mjs tests/dog-victory-screen.test.mjs tests/dog-game-lobby-return.test.mjs tests/dog-room-lobby.test.mjs
-      - run: node --test tests/dog-collection.test.mjs
+      - run: node --test tests/dog-collection.test.mjs tests/dog-christmas-rewards.test.mjs
       - run: node --test tests/dog-card-editions.test.mjs
       - run: node --test tests/dog-hand-gestures.test.mjs
       - run: node --test tests/dog-board-gestures.test.mjs
