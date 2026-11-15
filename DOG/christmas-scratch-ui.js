@@ -455,6 +455,17 @@ export function initChristmasScratch(){
   const face=el('span','scratch-cell-symbol',symbol);
   face.setAttribute('aria-hidden','true');
   cell.append(face);
+  // Premium money symbols must show their actual payout directly IN the
+  // scratched square. Use the immutable ticket prices, not later host edits.
+  if(stage.dataset.variant==='premium_27'&&['🪙','💵','💼'].includes(symbol)){
+   const index=['🪙','💵','💼'].indexOf(symbol);
+   const amounts=coinAmountsFor(ticket?.tier||'premium','premium_27',ticket);
+   const amount=amounts[index];
+   cell.classList.add('scratch-money-field');
+   cell.append(el('span','scratch-cell-amount',num(amount)));
+   cell.setAttribute('aria-label',symbol+' '+num(amount)+' Münzen');
+   cell.title=symbol+' '+num(amount)+' Münzen – drei gleiche Symbole in einer Reihe gewinnen';
+  }
   if(symbol==='🧊'&&['snow_collect','premium_27'].includes(stage.dataset.variant)){
    cell.classList.add('scratch-dud');
    cell.append(el('small','scratch-cell-dud-label','Niete'));
