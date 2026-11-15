@@ -66,3 +66,7 @@
 @media(max-width:900px){#panel-tree .tree-world-scene{grid-template-columns:1fr 1fr;grid-template-areas:"tree tree" "info next";align-items:stretch;padding:12px;gap:11px}#panel-tree .tree-world-tree{grid-area:tree;height:320px}#panel-tree .tree-world-info{grid-area:info}#panel-tree .tree-world-next{grid-area:next}#panel-tree .tree-world-heading{padding:16px}#panel-tree .tree-world-info,#panel-tree .tree-world-next{align-self:stretch}}
 @media(max-width:530px){#panel-tree .tree-world-heading h2{font-size:26px}#panel-tree .tree-world-scene{grid-template-columns:minmax(0,1fr);grid-template-areas:"tree" "info" "next"}#panel-tree .tree-world-tree{height:315px}#panel-tree .tree-world-info,#panel-tree .tree-world-next{padding:15px}#panel-tree .tree-world-info h3,#panel-tree .tree-world-next h3{font-size:24px}#panel-tree .tree-timeline{padding:15px 9px 11px}#panel-tree .tree-timeline-heading{padding:0 4px}#panel-tree .tree-reward-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#panel-tree .tree-timeline-legend{gap:8px}#panel-tree .tree-world-progress-heading span{font-size:11px}}
 @media(prefers-reduced-motion:reduce){#panel-tree .tree-world-tree img,#panel-tree .tree-step{transition:none}}
+
+/* Compact milestone-only gift presentation. Status feedback is shown only for claims or errors. */
+#panel-tree .tree-step-status:empty{display:none}
+#panel-tree .tree-timeline-feedback{margin:11px 4px 2px;text-align:center;color:#fce1a9;font-size:12px;line-height:1.6;font-weight:750}
