@@ -12,7 +12,7 @@ const VARIANTS={
  snow:['❄️ Schneeflocken-Bingo (älteres Los)','Vier gleiche Symbole in einer Reihe, Spalte oder Diagonale',4,4],
  snow_collect:['❄️ Schneeflocken-Bingo','Drei gleiche Gewinnsymbole irgendwo auf dem Los zählen als Gewinn – unabhängig von der Position. 🧊 bedeutet Niete und zählt nicht.',4,4],
  stars:['⭐ Sternensammler','Vier gleiche Sterne beliebig auf dem Los',3,4],
- elf:['🧝 Wichtelpfad','Ein zusammenhängender Symbolweg von links nach rechts',4,5],
+ elf:['🧝 Magischer Wichtelpfad','Ein durchgehender Weg gleicher Symbole von links nach rechts. Nachbarfelder zählen nur waagerecht oder senkrecht, niemals diagonal.',4,5],
  reindeer:['🦌 Rentierglück','Drei gleiche Rentiere beliebig auf dem Los',3,4],
  candy:['🍬 Zuckerstangen-Duell','Jedes identische Paar in einer Zweierreihe gewinnt',3,2],
  tree:['🎄 Weihnachtsbaum-Los','Stern, Baum und Geschenk in genau dieser Reihenfolge: ⭐ 🎄 🎁',5,3],
@@ -225,6 +225,33 @@ export function initChristmasScratch(){
   drawShop();
   try{stage.scrollIntoView({behavior:'smooth',block:'nearest'})}catch{}
  }
+ function showWinningElfPaths(wins){
+  if(stage.dataset.variant!=='elf')return;
+  const fields=Array.from(board.querySelectorAll('.scratch-field'));
+  const rect=board.getBoundingClientRect();
+  if(!rect.width||!rect.height)return;
+  const namespace='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(namespace,'svg');
+  svg.classList.add('scratch-path-highlight');
+  svg.setAttribute('viewBox','0 0 1000 800');
+  svg.setAttribute('preserveAspectRatio','none');
+  svg.setAttribute('aria-hidden','true');
+  for(const win of wins){
+   if(win.rule!=='path'||!Array.isArray(win.indices)||win.indices.length<5)continue;
+   const points=win.indices.map(index=>{
+    const cell=fields[index];
+    if(!cell)return null;
+    const r=cell.getBoundingClientRect();
+    return [Math.round((r.left+r.width/2-rect.left)*1000/rect.width),
+            Math.round((r.top+r.height/2-rect.top)*800/rect.height)].join(',');
+   });
+   if(points.includes(null))continue;
+   const line=document.createElementNS(namespace,'polyline');
+   line.setAttribute('points',points.join(' '));
+   svg.append(line);
+  }
+  if(svg.childElementCount)board.append(svg);
+ }
  function finish(){
   if(!ticket||finished)return;
   finished=true;
@@ -233,6 +260,7 @@ export function initChristmasScratch(){
   const wins=ticket.board?.wins||[];
   const visibleCells=board.querySelectorAll('.scratch-field');
   for(const w of wins)for(const i of w.indices||[])visibleCells[i]?.classList.add('scratch-winning-cell');
+  showWinningElfPaths(wins);
   reveal.classList.add('revealed');
   $('scratch-progress').textContent='100 % aufgedeckt ✓';
   const meter=$('scratch-progress-meter');if(meter){meter.value=100;meter.setAttribute('aria-valuenow','100')}
