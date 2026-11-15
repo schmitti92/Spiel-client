@@ -246,3 +246,16 @@ test('DOG Weihnachten top header is hidden only while a scratch ticket is open',
  // Upon finishing, signing out and switching profiles, normal page header returns.
  assert.ok(js.match(/document\.body\.classList\.remove\('scratch-ticket-open'\)/g)?.length>=3);
 });
+
+
+test('premium scratch shows symbols AND saved coin amounts in each money square',()=>{
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const css=source('../DOG/christmas-scratch.css');
+ assert.match(js,/function makeField\(symbol\)/);
+ assert.match(js,/stage\.dataset\.variant==='premium_27'&&\['🪙','💵','💼'\]\.includes\(symbol\)/);
+ assert.match(js,/coinAmountsFor\(ticket\?\.tier\|\|'premium','premium_27',ticket\)/);
+ assert.match(js,/scratch-cell-amount/);
+ assert.match(js,/cell\.setAttribute\('aria-label',symbol\+' '\+num\(amount\)\+' Münzen'\)/);
+ assert.match(css,/\.scratch-money-field \.scratch-cell-amount/);
+ assert.match(css,/\.scratch-money-field\.scratch-winning-cell/);
+});
