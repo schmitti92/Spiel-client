@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1086 1448" width="1086" height="1448" role="img" aria-label="Magischer Wichtelpfad Premium Rubbellos, 20 leere Rubbelplätze im Weihnachtswald">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1086 1448" width="1086" height="1448" role="img" aria-label="Magischer Wichtelpfad mittleres Rubbellos, 20 leere Rubbelplätze im Weihnachtswald">
 <defs>
  <linearGradient id="night" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#091e29"/><stop offset=".46" stop-color="#064a46"/><stop offset="1" stop-color="#08222a"/></linearGradient>
  <radialGradient id="aura"><stop stop-color="#71dfaf" stop-opacity=".59"/><stop offset=".58" stop-color="#24a584" stop-opacity=".18"/><stop offset="1" stop-color="#002e2e" stop-opacity="0"/></radialGradient>
@@ -22,7 +22,7 @@
 <path d="M100 114Q543 69 986 114" fill="none" stroke="#b6f2b4" stroke-width="4" opacity=".63"/>
 <path d="M100 293Q543 325 986 293" fill="none" stroke="#f2d18e" stroke-width="5" opacity=".75"/>
 <rect x="103" y="108" width="880" height="183" rx="38" fill="#061c25" fill-opacity=".76" stroke="#bce9ab" stroke-opacity=".7" stroke-width="3"/>
-<text x="543" y="151" text-anchor="middle" font-size="25" font-weight="800" letter-spacing="11" fill="#fbdfa0" font-family="system-ui,Arial,sans-serif">PREMIUM · WEIHNACHTSGLÜCK</text>
+<text x="543" y="151" text-anchor="middle" font-size="25" font-weight="800" letter-spacing="11" fill="#fbdfa0" font-family="system-ui,Arial,sans-serif">MITTEL · WEIHNACHTSGLÜCK</text>
 <text x="543" y="207" text-anchor="middle" font-size="54" font-weight="900" letter-spacing="3" fill="#eaffcf" font-family="Georgia,serif">MAGISCHER</text>
 <text x="543" y="265" text-anchor="middle" font-size="70" font-weight="900" letter-spacing="2" fill="#f6d384" stroke="#275e45" stroke-width="1.5" paint-order="stroke" font-family="Georgia,serif">WICHTELPFAD</text>
 <g transform="translate(102 190)"><path d="M-12 49L22-58L65 49Z" fill="#ba2b44" stroke="#ffcf89" stroke-width="5"/><circle cx="23" cy="-59" r="10" fill="#f4da9b"/><path d="M-18 52H71" stroke="#fff2b8" stroke-width="16" stroke-linecap="round"/><circle cx="23" cy="83" r="23" fill="#ffd2a6"/><path d="M12 85q11 12 22 0" stroke="#4e3730" stroke-width="4" fill="none"/></g>
