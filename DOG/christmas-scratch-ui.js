@@ -49,8 +49,11 @@ export function initChristmasScratch(){
  const root=$('scratch-tier-grid'),wallet=$('scratch-wallet'),stage=$('scratch-stage'),
   board=$('scratch-board'),results=$('scratch-result-panel'),reveal=$('scratch-reveal');
  if(!root||!wallet||!stage||!board||!results||!reveal)throw Error('SCRATCH_UI_NOT_FOUND');
- let status=null,ticket=null,busy=false,pending=null,requestId=0,finished=false;
+ let status=null,ticket=null,busy=false,pending=null,requestId=0,finished=false,canManageScratch=false;
+ const hostDialog=$('scratch-host-dialog');
  const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
+ const room=String(new URLSearchParams(location.search).get('room')||'').toUpperCase();
+ const validRoom=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/.test(room);
  const account=()=>{
   const s=window.SpielOnline?.state?.();
   return s?.status==='online'&&s.user?.getIdToken?s.user:null;
@@ -65,7 +68,8 @@ export function initChristmasScratch(){
  async function query(path,payload){
   const u=account();if(!u)throw Error('LOGIN_REQUIRED');
   const token=await u.getIdToken();
-  const r=await fetch(base+'/api/hub/scratch'+path,{
+  const target=base+'/api/hub/scratch'+path+(!payload&&path===''&&validRoom?'?room='+encodeURIComponent(room):'');
+  const r=await fetch(target,{
    method:payload?'POST':'GET',cache:'no-store',
    headers:{Authorization:'Bearer '+token,...(payload?{'Content-Type':'application/json'}:{})},
    body:payload?JSON.stringify(payload):undefined
@@ -74,31 +78,123 @@ export function initChristmasScratch(){
   if(!r.ok||data.ok!==true)throw Error(data.error||'SERVER_UNAVAILABLE');
   return data;
  }
+ const VARIANT_LABELS=Object.freeze([
+  ['gifts','🎁 Geschenkelinie','Einfach · 200 🪙'],
+  ['snow_collect','❄️ Schneeflocken-Bingo','Einfach · 200 🪙'],
+  ['elf','🧝 Magischer Wichtelpfad','Mittel · 500 🪙'],
+  ['premium_27','🎅 Premium-Weihnachts-Rubbellos','Premium · 1.000 🪙']
+ ]);
+ const variantTiers=Object.freeze({simple:['gifts','snow_collect'],medium:['elf'],premium:['premium_27']});
+ const percent=n=>(Number(n)/10).toLocaleString('de-DE',{maximumFractionDigits:1});
+ function chanceRange(tier,key){
+  const counts=(variantTiers[tier]||[]).map(id=>status?.settings?.variants?.[id]?.weights?.[key]).filter(Number.isInteger);
+  if(!counts.length)return null;
+  return Math.min(...counts)===Math.max(...counts)?percent(counts[0]):
+   percent(Math.min(...counts))+'–'+percent(Math.max(...counts));
+ }
  function drawShop(){
   root.replaceChildren();
   wallet.textContent=status?num(status.coins)+' 🪙':'– 🪙';
-  $('scratch-daily-info').textContent=status?.dailyFreeAvailable?
-   '🎁 Heute ein einfaches Gratis-Los verfügbar':'Gratis-Los heute bereits benutzt';
+  const freeMode=status?.settings?.freeEnabled===true;
+  $('scratch-host-settings').hidden=!canManageScratch;
+  $('scratch-daily-info').textContent=freeMode?'🎁 Host hat kostenloses Rubbeln für alle aktiviert':
+   status?.dailyFreeAvailable?'🎁 Heute ein einfaches Gratis-Los verfügbar':'Gratis-Los heute bereits benutzt';
   for(const c of SCRATCH_TICKET_TYPES){
    const article=el('article','scratch-tier '+c.id);
+   const unlockChance=chanceRange(c.id,'unlock');
+   const noChance=chanceRange(c.id,'none');
+   const coinChance=chanceRange(c.id,'coins');
    article.append(el('span','scratch-icon',c.icon),
     el('h3','',c.label+'-Rubbellos'),
     el('div','scratch-game-selection',CURRENT_GAMES_BY_TIER[c.id]),
     el('strong','scratch-price',num(c.price)+' 🪙'),
-    el('div','scratch-chance',c.unlockChance+' % Freischaltung · drei feste Geldgewinne'),
+    el('div','scratch-chance',(unlockChance??c.unlockChance)+' % Freischaltung · drei feste Geldgewinne'),
     el('div','scratch-symbol-key',symbolLegend(c.id)),
     el('div','scratch-reward-list',c.rewards),
-    el('small','scratch-info',c.odds+' · 11 % ×2'));
+    el('small','scratch-info',noChance!==null?
+     noChance+' % Nieten · '+coinChance+' % Münzen · '+unlockChance+' % Freischaltungen · 11 % ×2':
+     c.odds+' · 11 % ×2'));
    const buyBtn=el('button','scratch-buy','🎟️ Für '+num(c.price)+' Münzen kaufen');
-   buyBtn.type='button';buyBtn.disabled=busy||!!ticket||!account()||!status||status.coins<c.price;
+   buyBtn.type='button';buyBtn.hidden=freeMode;
+   buyBtn.disabled=busy||!!ticket||!account()||!status||status.coins<c.price;
    buyBtn.addEventListener('click',()=>void buy(c.id,false));article.append(buyBtn);
-   if(c.id==='simple'){
-    const free=el('button','scratch-free','🎁 Tägliches Gratis-Los');
-    free.type='button';free.disabled=busy||!!ticket||!status?.dailyFreeAvailable||!account();
+   if(freeMode||c.id==='simple'){
+    const free=el('button','scratch-free',freeMode?'🎁 Kostenloses Rubbellos öffnen':'🎁 Tägliches Gratis-Los');
+    free.type='button';
+    free.disabled=busy||!!ticket||!account()||!status||(!freeMode&&!status.dailyFreeAvailable);
     free.addEventListener('click',()=>void buy(c.id,true));article.append(free);
    }
    root.append(article);
   }
+ }
+ function openSettings(){
+  if(!canManageScratch||!status?.settings||!hostDialog)return;
+  $('scratch-host-free-enabled').checked=status.settings.freeEnabled===true;
+  const root=$('scratch-host-variants');root.replaceChildren();
+  for(const [id,title,tier] of VARIANT_LABELS){
+   const settings=status.settings.variants[id];
+   if(!settings)continue;
+   const block=el('section','scratch-host-variant');
+   block.dataset.variant=id;
+   block.append(el('h5','',title),el('small','',tier));
+   const fields=el('div','scratch-host-fields');
+   for(const [key,label,value,step] of [
+    ['none','Niete (%)',settings.weights.none/10,'0.1'],
+    ['coins','Münzen (%)',settings.weights.coins/10,'0.1'],
+    ['unlock','Freischaltung (%)',settings.weights.unlock/10,'0.1'],
+    ['extraCoinChance','Zusatz-Münzchance (%)',settings.extraCoinChance,'1']
+   ]){
+    const field=el('label','scratch-host-field');
+    field.append(el('span','',label));
+    const input=el('input');input.type='number';input.min='0';input.max='100';input.step=step;
+    input.required=true;input.value=String(value);input.dataset.key=key;
+    field.append(input);fields.append(field);
+   }
+   const maxField=el('label','scratch-host-field');
+   maxField.append(el('span','','Max. gleichzeitige Gewinne'));
+   const select=el('select');select.dataset.key='maxPrizes';
+   for(const n of id==='premium_27'?[2,3]:[1,2,3]){
+    const option=el('option','',String(n));option.value=String(n);
+    option.selected=n===settings.maxPrizes;select.append(option);
+   }
+   maxField.append(select);fields.append(maxField);block.append(fields);
+   const summary=el('small','scratch-host-total');
+   const update=()=>{
+    const values=['none','coins','unlock'].map(k=>Number(block.querySelector('[data-key="'+k+'"]').value));
+    const total=values.reduce((a,b)=>a+b,0);
+    summary.textContent='Hauptkategorien: '+total.toLocaleString('de-DE',{maximumFractionDigits:1})+' % / 100 %';
+    summary.dataset.valid=Math.abs(total-100)<0.001?'true':'false';
+   };
+   fields.addEventListener('input',update);update();block.append(summary);root.append(block);
+  }
+  $('scratch-host-feedback').textContent='';
+  hostDialog.showModal();
+ }
+ function readSettings(){
+  const variants={};
+  const parsePercent=(input)=>{
+   const value=Number(input?.value);
+   if(!Number.isFinite(value)||value<0||value>100||Math.abs(value*10-Math.round(value*10))>0.000001)
+    throw Error('Gewichtungen müssen in Schritten von 0,1 % zwischen 0 und 100 liegen.');
+   return Math.round(value*10);
+  };
+  for(const [id] of VARIANT_LABELS){
+   const block=$('scratch-host-variants').querySelector('[data-variant="'+id+'"]');
+   if(!block)throw Error('Einstellungen für '+id+' fehlen.');
+   const input=key=>block.querySelector('[data-key="'+key+'"]');
+   const weights={none:parsePercent(input('none')),coins:parsePercent(input('coins')),
+    unlock:parsePercent(input('unlock'))};
+   if(weights.none+weights.coins+weights.unlock!==1000)
+    throw Error('Die drei Hauptchancen müssen bei jedem Los genau 100 % ergeben.');
+   const extraCoinChance=Number(input('extraCoinChance').value);
+   const maxPrizes=Number(input('maxPrizes').value);
+   if(!Number.isInteger(extraCoinChance)||extraCoinChance<0||extraCoinChance>100)
+    throw Error('Die zusätzliche Münzchance muss zwischen 0 und 100 % liegen.');
+   if(!Number.isInteger(maxPrizes)||maxPrizes<(id==='premium_27'?2:1)||maxPrizes>3)
+    throw Error('Ungültige Anzahl gleichzeitiger Gewinne.');
+   variants[id]={weights,extraCoinChance,maxPrizes};
+  }
+  return {version:1,freeEnabled:$('scratch-host-free-enabled').checked,variants};
  }
  // A SINGLE silver surface covers the entire playing grid. The player can
  // start anywhere and drag across every symbol without lifting the finger.
@@ -316,17 +412,17 @@ export function initChristmasScratch(){
  }
  async function load(){
   const id=++requestId;
-  if(!account()){status=null;ticket=null;stage.hidden=true;drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
+  if(!account()){status=null;ticket=null;canManageScratch=false;stage.hidden=true;hostDialog?.close();drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
   try{
    const r=await query('');
    if(id!==requestId)return;
-   status=r.scratch;
+   status=r.scratch;canManageScratch=r.canManageScratch===true;
    if(!ticket&&status?.lastResult?.board&&status.lastResult.commandId!==acknowledged())
     showTicket(status.lastResult);
    drawShop();
    notice(ticket?'❄️ Dein letztes Los wurde wiederhergestellt.':
     '🎄 Wische ohne Absetzen über das gesamte Spielfeld. Bei 90 % wird automatisch aufgedeckt.');
-  }catch(e){if(id!==requestId)return;status=null;drawShop();notice('⚠️ '+(e.message||'Verbindung nicht verfügbar'))}
+  }catch(e){if(id!==requestId)return;status=null;canManageScratch=false;drawShop();notice('⚠️ '+(e.message||'Verbindung nicht verfügbar'))}
  }
  async function buy(tier,free){
   if(!account()||busy||ticket)return;
@@ -351,8 +447,25 @@ export function initChristmasScratch(){
   drawShop();notice('🎄 Bereit für dein nächstes Rubbellos.');
  });
  $('scratch-refresh').addEventListener('click',()=>void load());
+ $('scratch-host-settings').addEventListener('click',openSettings);
+ $('scratch-host-close').addEventListener('click',()=>hostDialog.close());
+ $('scratch-host-cancel').addEventListener('click',()=>hostDialog.close());
+ hostDialog?.addEventListener('click',e=>{if(e.target===hostDialog)hostDialog.close()});
+ $('scratch-host-form').addEventListener('submit',async e=>{
+  e.preventDefault();if(!canManageScratch||!validRoom)return;
+  const feedback=$('scratch-host-feedback'),save=$('scratch-host-save');
+  try{
+   const settings=readSettings();save.disabled=true;feedback.textContent='💾 Speichere auf Render …';
+   const response=await query('/settings',{room,settings});
+   if(!status||!account())return;
+   status.settings=response.settings;
+   hostDialog.close();drawShop();
+   notice('✅ Host-Einstellungen gespeichert. Sie gelten für neu gekaufte Lose.');
+  }catch(error){feedback.textContent='⚠️ '+(error.message||'Speichern fehlgeschlagen');}
+  finally{save.disabled=false;}
+ });
  window.addEventListener('spielonline-change',()=>{
-  requestId++;status=null;ticket=null;stage.hidden=true;void load();
+  requestId++;status=null;ticket=null;canManageScratch=false;stage.hidden=true;hostDialog?.close();void load();
  });
  drawShop();return {load};
 }
