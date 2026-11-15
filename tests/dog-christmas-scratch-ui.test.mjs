@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {SCRATCH_TICKET_TYPES,SCRATCH_COIN_PRIZES,premiumScratchProgress,premiumWinningRowIndices} from '../DOG/christmas-scratch-ui.js';
+import {SCRATCH_TICKET_TYPES,SCRATCH_SHOP_VARIANTS,SCRATCH_COIN_PRIZES,premiumScratchProgress,premiumWinningRowIndices} from '../DOG/christmas-scratch-ui.js';
 import {DOG_COLLECTION_CATEGORIES} from '../DOG/collection-catalog.js';
 const source=path=>readFileSync(new URL(path,import.meta.url),'utf8');
 test('three scratch tickets show correct prices and unlock chances',()=>{
@@ -173,4 +173,24 @@ test('all premium artwork, payouts and counters fit in a viewport without intern
  assert.match(css,/@media\(max-width:700px\)/);
  const page=source('../DOG/christmas-event.html');
  assert.match(page,/christmas-scratch\.css\?v=\d+/);
+});
+
+test('all four distinct scratch tickets are visible together in compact non-scrolling selection',()=>{
+ assert.deepEqual(SCRATCH_SHOP_VARIANTS.map(x=>x.id),['gifts','snow_collect','elf','premium_27']);
+ assert.deepEqual(SCRATCH_SHOP_VARIANTS.map(x=>x.tier),['simple','simple','medium','premium']);
+ assert.equal(new Set(SCRATCH_SHOP_VARIANTS.map(x=>x.id)).size,4);
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const css=source('../DOG/christmas-scratch.css');
+ const html=source('../DOG/christmas-event.html');
+ assert.match(js,/for\(const option of SCRATCH_SHOP_VARIANTS\)/);
+ assert.match(js,/article\.dataset\.variant=option\.id/);
+ assert.match(js,/buy\(option\.tier,false,option\.id\)/);
+ assert.match(js,/buy\(option\.tier,true,option\.id\)/);
+ assert.match(js,/pending\.variantId===variantId/);
+ assert.match(js,/\{tier,variantId,free,commandId:/);
+ assert.match(css,/#panel-scratch \.scratch-tickets\{\s*display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+ assert.match(css,/@media\(min-width:1250px\)/);
+ assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+ assert.match(html,/id="scratch-tier-grid"/);
+ assert.match(html,/id="scratch-analytics"/,'statistics remain available');
 });
