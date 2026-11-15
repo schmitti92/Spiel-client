@@ -195,7 +195,7 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
     <p class="local-footer">💡 Lokale Spielstände werden je nach Spiel im Browser gespeichert. Sie gehören nicht zum Online-Spielerprofil.</p>
   </section>
   <p class="status" id="main-status" aria-live="polite"></p>
-  <footer><a data-hub-home href="hub-lobby.html">← Zum Spielmodus</a> · Online und Lokal · Vier Spiele</footer>
+  <footer><a data-hub-home href="hub-lobby.html">← Zum Spielmodus</a> · Online und Lokal · Eine gemeinsame Spielsammlung</footer>
 </div>
 
 <script type="module" src="DOG/init-motion.js?v=1"></script><script src="DOG/avatar-picker.js?v=5"></script><script type="module" src="DOG/emoji-lobby.js?v=2"></script><script type="module" src="DOG/board-picker.js?v=9"></script>
@@ -205,11 +205,11 @@ const target=document.getElementById('dog-unified-board-preview');
 const render=()=>{if(target&&!target.closest('.hidden'))renderDogRoomBoard(target)};
 window.DOGUnifiedBoard={refresh:render};
 window.dispatchEvent(new Event('dog-unified-board-ready'));
-document.querySelectorAll('[data-board-theme]').forEach(button=>button.addEventListener('click',()=>requestAnimationFrame(render)));
+document.addEventListener('click',event=>{if(event.target.closest('[data-board-theme]'))requestAnimationFrame(render)});
 window.addEventListener('storage',event=>{if(event.key==='dog:appearance:v1')render()});
 window.addEventListener('pageshow',render);
 </script>
-<script src="profile-config.js"></script><script src="profile-auth.js"></script><script src="hub-lobby.js?v=20261115-unified-dog-v4" defer></script>
+<script src="profile-config.js"></script><script src="profile-auth.js"></script><script src="hub-lobby.js?v=20261115-unified-dog-v5" defer></script>
 <script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script><script src="site-global-controls.js?v=20261109-global-1"></script>
 <script>
 (function(){const page='../hub-lobby.html'+location.search;
