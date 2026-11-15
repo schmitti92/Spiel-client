@@ -50,7 +50,8 @@ export function initDogPlayerLevels(){
    const thresholds=[0,100,250,450,700,1000,1350,1750,2200,2700];
    threshold.textContent= n===1?'Startlevel':'Ab '+format(thresholds[n-1])+' EP';
    const reward=document.createElement('div');reward.className='dog-level-reward';
-   reward.textContent=entry?.configured&&entry?.reward?'🎁 Belohnung vorbereitet':'🎁 Belohnung folgt';
+   reward.textContent=entry?.configured&&entry?.reward?
+    (reached?'✅ ':'🔒 ')+(entry.reward.title||'Belohnung'):'🎁 Belohnung folgt';
    card.append(badge,head,threshold,reward);
    grid.append(card);
   }
