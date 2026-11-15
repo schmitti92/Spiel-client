@@ -181,7 +181,7 @@ function updateCardImage(id,level){
  img.alt=(id==='tree'?'Weihnachtsbaum':definitions.find(def=>def.id===id)?.title||id)+' – Stufe '+level;
 }
 const preview={tower:1,workshop:1,bakery:1,inn:1};
-let villageLive=null,villageHost=false,villageMode=false,villageCanToggle=false,villageBusy=false;
+let villageLive=null,villageHost=false,villageMode=false,villageCanToggle=false,villageCanUpgrade=true,villageBusy=false;
 let lastPresentationKey=null;
 const sceneTitles=['Die Weihnachtsreise beginnt','Die ersten Laternen leuchten','Ein Hauch von Winter','Lichter über den Dächern','Das Dorf entdeckt Weihnachten','Die Weihnachtsvorbereitungen laufen','Ein Sternenglanz erscheint','Lichtertal wird zum Wintermärchen','Das Dorf wartet auf sein Wunder','Das große Weihnachtslicht'];
 const sceneDescriptions=[
@@ -252,8 +252,8 @@ function refreshPreview(){
   const purchase=card.querySelector('[data-upgrade-building]');
   if(purchase){const upgradeCost=christmasUpgradeCost(level),affordable=villageLive?.lightsTenths>=upgradeCost*10;
    purchase.hidden=!villageLive;
-   purchase.disabled=!villageLive||!villageHost||villageBusy||upgradeCost===null||!affordable;
-   purchase.textContent=upgradeCost===null?'✓ Höchststufe erreicht':!villageHost?'🔒 Nur der Host kann ausbauen':affordable?'⭐ Für '+upgradeCost+' Lichter ausbauen':'⭐ Noch '+(upgradeCost-Math.floor((villageLive?.lightsTenths||0)/10))+' Lichter nötig';
+   purchase.disabled=!villageLive||!villageHost||!villageCanUpgrade||villageBusy||upgradeCost===null||!affordable;
+   purchase.textContent=upgradeCost===null?'✓ Höchststufe erreicht':!villageHost?'🔒 Nur der Host kann ausbauen':!villageCanUpgrade?'⏳ Partie läuft – Ausbau danach':affordable?'⭐ Für '+upgradeCost+' Lichter ausbauen':'⭐ Noch '+(upgradeCost-Math.floor((villageLive?.lightsTenths||0)/10))+' Lichter nötig';
   }
   const nextCost=christmasUpgradeCost(level);
   card.querySelector('[data-building-upgrade-price]').textContent=nextCost===null
@@ -429,6 +429,7 @@ function showLiveVillage(data){
  villageHost=data.host===true;
  villageMode=data.enabled===true;
  villageCanToggle=data.canSetMode===true;
+ villageCanUpgrade=data.canUpgrade!==false;
  for(const id of ['tower','workshop','bakery','inn'])preview[id]=v.levels[id];
  $('building-live-balance').textContent='⭐ Gemeinsamer Vorrat: '+lightsLabel(v.lightsTenths)+' Weihnachtslichter · '+v.giftsCollected+' Geschenke gesammelt';
  const mode=$('building-event-mode-toggle');
@@ -454,7 +455,7 @@ async function reloadVillage(){
  catch(e){$('building-event-mode').textContent='⚠️ '+e.message;}
 }
 async function purchaseBuilding(id){
- if(!villageLive||!villageHost||villageBusy)return;
+ if(!villageLive||!villageHost||!villageCanUpgrade||villageBusy)return;
  const level=villageLive.levels[id],cost=christmasUpgradeCost(level);
  if(cost===null||villageLive.lightsTenths<cost*10)return;
  villageBusy=true;refreshPreview();
@@ -462,7 +463,7 @@ async function purchaseBuilding(id){
   const result=await villageRequest('village/upgrade','POST',{
    building:id,expectedLevel:level,commandId:'dog-village-'+crypto.randomUUID()
   });
-  showLiveVillage({village:result.village,host:villageHost,enabled:villageMode,canSetMode:villageCanToggle});
+  showLiveVillage({village:result.village,host:villageHost,enabled:villageMode,canSetMode:villageCanToggle,canUpgrade:villageCanUpgrade});
   $('building-event-mode').textContent='✅ '+definitions.find(entry=>entry.id===id).title+' wurde auf Stufe '+(level+1)+' ausgebaut. '+cost+' Lichter abgebucht.';
  }catch(err){$('building-event-mode').textContent='⚠️ Ausbau nicht möglich: '+err.message;await reloadVillage();}
  finally{villageBusy=false;$('building-event-mode-toggle').disabled=!villageHost||!villageCanToggle;refreshPreview();}
