@@ -1,4 +1,4 @@
-import {DOG_EMOJI_STARTERS,emojiById,loadEmojiSlots} from './dog-emojis.js?v=1';
+import {isEmojiUnlocked,emojiById,loadEmojiSlots} from './dog-emojis.js?v=3';
 /* DOG emoji quickbar lives in the shared extension panel.
    Only a small emoji ID travels over the existing Render hub socket. */
 let panelRoot=null,overlay=null,displayTimer=null,seenIds=new Set();
@@ -52,13 +52,13 @@ export function mountDogEmojiGame({send}){
   btnArea.replaceChildren(...slots.map((id,i)=>{
    const item=emojiById(id),button=document.createElement('button');button.type='button';
    button.className='dog-emoji-panel-tile';
-   button.disabled=!item||!DOG_EMOJI_STARTERS.includes(id);
+   button.disabled=!item||!isEmojiUnlocked(id);
    button.title=item?item.name:'Leer – in der Lobby belegen';
    button.setAttribute('aria-label',item?item.name:'Schnellplatz '+(i+1)+' leer');
    const icon=document.createElement('span');icon.className='dog-emoji-panel-icon';icon.textContent=item?.emoji||'＋';
    const caption=document.createElement('small');caption.textContent=item?.name||'Frei';
    button.append(icon,caption);
-   if(item&&DOG_EMOJI_STARTERS.includes(id))button.addEventListener('click',async()=>{
+   if(item&&isEmojiUnlocked(id))button.addEventListener('click',async()=>{
     const remaining=5000-(Date.now()-lastSend);
     if(remaining>0){status.textContent='Noch '+Math.ceil(remaining/1000)+' Sekunden bis zum nächsten Emoji.';return;}
     lastSend=Date.now();
@@ -83,5 +83,6 @@ export function mountDogEmojiGame({send}){
   }
  });
  window.addEventListener('dog-emojis-changed',renderSlots);
+ window.addEventListener('dog-cosmetics-verified',renderSlots);
  renderSlots();
 }
