@@ -1,6 +1,6 @@
 # DOG Weihnachts-Rubbellose – individuelle Kartenbilder
 
-Jede Variante bekommt **eine eigene WebP-Hintergrundgrafik**, die keinerlei zufällige
+Jede Variante bekommt **eine eigene WebP- oder SVG-Hintergrundgrafik**, die keinerlei zufällige
 Gewinnsymbole oder fest eingebrannte Münzpreise enthält. Alle Gewinnsymbole,
 Beschichtungen und Gewinne werden dynamisch aus dem validierten Render-Los erzeugt.
 
@@ -10,11 +10,11 @@ Beschichtungen und Gewinne werden dynamisch aus dem validierten Render-Los erzeu
 - Vorbereitete Datei: **geschenkelinie-01.webp** (1086×1448 Pixel, ca. 414 KB).
 - Status: **Bild in GitHub hochgeladen und per CSS eingebunden**. Goldrahmen-Ausrichtung nachjustiert; echter Handytouch-Test noch offen.
 
-## Neues Ziel: vier unterschiedliche Rubbellose (2 Normal + 2 Premium)
+## Vier Rubbellose: 2 Einfach (200), 1 Mittel (500), 1 Premium (1000)
 
-1. **Normal 1 – Geschenkelinie**: 3×3 (9 Felder), bereits als
+1. **Einfach 1 – Geschenkelinie**: 3×3 (9 Felder), bereits als
    `geschenkelinie-01.webp` hochgeladen und mit Rubbeloberfläche eingebunden.
-2. **Normal 2 – Schneeflocken-Bingo / Sammellos**: 4×4 (16 Felder).
+2. **Einfach 2 – Schneeflocken-Bingo / Sammellos**: 4×4 (16 Felder).
    Finale Grafik wurde aus dem vom Nutzer hochgeladenen Eispalast-Original
    `1000030731.png` als 1152×1536-WebP exportiert.
    **Download-Datei:** `schneeflocken-bingo-01.webp` (ca. 577 KB).
@@ -29,32 +29,26 @@ Beschichtungen und Gewinne werden dynamisch aus dem validierten Render-Los erzeu
    eine durchgehende Canvas-Rubbeloberfläche mit 90-%-Automatik.
    **Status:** WebP bereit zum Nutzer-Upload, CSS-Bildpfad bereits eingebunden.
    Nach Upload Bildladung und Touch/90-%-Gewinnanzeige auf Smartphone kontrollieren.
-3. **Premium 1 – Magischer Wichtelpfad**: 4×5 (20 Felder).
+3. **Mittel (einzige Variante) – Magischer Wichtelpfad (500 Goldmünzen)**: 4×5 (20 Felder).
    Designvorschlag smaragdgrüner Weihnachtswald mit magischem Weg.
    Ein zusammenhängender Pfad von links nach rechts gewinnt.
-   Eingebundenes Motiv: `wichtelpfad-premium-01.svg` (1086×1448), eigenständiges tiefgrünes Weihnachtswald-Design mit 20 leeren Feldern. Server zeichnet auch gekrümmte Gewinnwege. Browser-/Handy-Endtest offen.
-4. **Premium 2 – Weihnachtsbaum-Geheimnis**: 5×3 (15 Felder).
+   Eingebundenes Motiv: `wichtelpfad-mittel-01.svg` (1086×1448), eigenständiges tiefgrünes Weihnachtswald-Design mit 20 leeren Feldern. Server zeichnet auch gekrümmte Gewinnwege. Browser-/Handy-Endtest offen.
+4. **Premium (einzige Variante) – Weihnachtsbaum-Geheimnis (1000 Goldmünzen)**: 5×3 (15 Felder).
    Designvorschlag Violett/Gold mit funkelndem Sternenbaum.
    ⭐🎄🎁 in genau dieser Reihenfolge gewinnt.
    Zielbild: `weihnachtsbaum-geheimnis-01.webp` (noch nicht erstellt).
 
-Für Schneeflocken-Bingo ist die Gestaltung jetzt festgelegt und vorbereitet.
-Die beiden Premium-Motive bleiben noch Entwürfe.
+Das Schneeflocken-Bingo-Motiv ist vorbereitet, das mittlere Wichtelpfad-Motiv direkt eingebunden und das Weihnachtsbaum-Premiummotiv noch in Entwicklung.
 
-**Wichtig zur Umstellung:** Der Render-Code wählt für die Einfach-/Mittelklasse
-Geschenkelinie oder Schneeflocken-Sammellos und für Premium Wichtelpfad oder
-Weihnachtsbaum; die Kaufoberfläche hat aktuell noch drei Preisstufen
-(Einfach/Mittel/Premium). Der Zwei-Klassen-Umstieg ist als eigene
-technische Phase geplant und
-darf keine bestehenden Gewinnlose, Entitlements oder Guthaben löschen.
+**Aktuelle Serverzuordnung:** Einfach (200 Münzen): zufällig Geschenkelinie oder Schneeflocken-Bingo. Mittel (500 Münzen): **nur Magischer Wichtelpfad**. Premium (1.000 Münzen): **nur Weihnachtsbaum-Geheimnis**. Alle drei Kaufstufen bleiben erhalten; an Gewinnchancen, Guthaben oder älteren Losbelegen wird nichts gelöscht.
 Frühere Spielfeldregeln bleiben für die Wiederherstellung alter Lose
 im Backend lesbar.
 
 Die Spielmechanik und 90%-Rubbelregel stehen im Frontend bereits bereit.
 
 ## Implementierungsstatus 15.11.2026
-- Nr. 3 ist in GitHub unter `DOG/assets/scratch/wichtelpfad-premium-01.svg` vorhanden; Felder und Rubbeloberfläche sind eingebunden.
+- Nr. 3 ist in GitHub unter `DOG/assets/scratch/wichtelpfad-mittel-01.svg` vorhanden; Felder und Rubbeloberfläche sind eingebunden.
 - Der unabhängige Server-Prüfer verlangt für `elf` orthogonal zusammenhängende gleiche Symbole von links nach rechts und vergibt höchstens einen Preis je Symbolart. Diagonalen zählen nicht.
-- Das Premium-Los bleibt in der bestehenden Premium-Klasse (1000 Eventmünzen); die erste und zweite normale sowie die später geplante vierte Premium-Variante bleiben bestehen.
+- Der Wichtelpfad ist ausschließlich das mittlere Los für 500 Goldmünzen. Das Premiummotiv des vierten Loses ist weiterhin in Entwicklung.
 
 - 15.11.2026: Hochgeladenes Schneeflocken-Bingo-Bild von `schneeflocken-bingo-01(2).webp` in `schneeflocken-bingo-01.webp` umbenannt; Originaldaten unverändert. Browser-Test offen.
