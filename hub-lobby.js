@@ -1183,7 +1183,7 @@ el('join-code').addEventListener('input',event=>{event.target.value=event.target
 el('join-code').addEventListener('keydown',e=>{if(e.key==='Enter')el('join-btn').click();});
 el('join-btn').addEventListener('click',()=>command(async()=>{
  const c=el('join-code').value.trim().toUpperCase();if(!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(c))throw Error('Bitte einen dreistelligen Zahlencode oder bisherigen sechsstelligen Raumcode eingeben.');
- const {room:r}=await request('/rooms/'+c+'/join','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});location.assign('spielauswahl-online.html?'+new URLSearchParams({room:r.code,stay:'1'}).toString());
+ const {room:r}=await request('/rooms/'+c+'/join','POST',{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0});location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
 }));
 document.querySelectorAll('[data-game]').forEach(btn=>btn.addEventListener('click',()=>command(async()=>{
  if(!room?.host)return;const {room:r}=await request('/rooms/'+code+'/select','POST',{game:btn.dataset.game,...(btn.dataset.game==='dog'?{dogAvatar:window.DogAvatars?.onlineAvatar?.()??0}:{})});choosingGame=false;activateRoom(r);
