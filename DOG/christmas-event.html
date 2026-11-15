@@ -7,7 +7,7 @@
 <meta name="description" content="DOG Weihnachtsevent – Das Weihnachtswunder von Lichtertal, Kapitel 1.">
 <title>DOG Weihnachten · Das Weihnachtswunder von Lichtertal</title>
 <link rel="stylesheet" href="./christmas-event.css?v=1">
-<link rel="stylesheet" href="./christmas-event-royal.css?v=1">
+<link rel="stylesheet" href="./christmas-event-royal.css?v=2">
 </head>
 <body>
 <div class="snow-sky" aria-hidden="true"></div>
@@ -89,6 +89,11 @@
               <g class="decor-stage4"><rect x="74" y="-7" width="37" height="32" fill="#675143"/><path d="M69 -6 93 -40 119 -6Z" fill="#544046"/><use href="#win" x="79" y="-2" width="25" height="22"/></g>
               <g class="decor-stage5"><path d="M94 -70 102 -52 122 -48 108 -35 112 -14 94 -24 76 -14 80 -35 66 -48 86 -52Z" fill="#ffde79"/><circle cx="94" cy="-44" r="51" fill="url(#star-glow)"/></g>
             </g>
+            <!-- Turm PNG: ein transparentes Bild je Stufe, identischer Bodenpunkt.
+                 Die bisherige Vektorgrafik bleibt als Lade-/Fehler-Fallback darunter. -->
+            <image id="tower-stage-image" x="42" y="164" width="286" height="327"
+                   preserveAspectRatio="xMidYMax meet" aria-hidden="true"
+                   pointer-events="none" />
             <!-- WORKSHOP -->
             <g class="building" id="art-workshop" data-level="1" transform="translate(790 255)">
               <ellipse cx="92" cy="202" rx="120" ry="18" fill="#08212b" opacity=".34"/>
@@ -207,6 +212,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="./christmas-event.js?v=1"></script>
+<script type="module" src="./christmas-event.js?v=2"></script>
 </body>
 </html>
