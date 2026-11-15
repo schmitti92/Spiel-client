@@ -230,7 +230,7 @@ test('premium v4 shows every actual reward and its permanent 1000-coin threshold
  assert.match(js,/scratch-current-value/);
  assert.match(js,/scratch-current-hero/);
  assert.match(js,/prize\.milestone\|\|win\?\.rule/);
- assert.match(js,/\[3,4\]\.includes\(board\.symbolVersion\)/);
+ assert.match(js,/\[3,4,5\]\.includes\(board\.symbolVersion\)/);
  assert.match(css,/\.scratch-current-grid/);
  assert.match(css,/\.scratch-current-item\.is-unlock/);
  assert.match(css,/\.scratch-stage\.is-revealed:not\(\[hidden\]\) > \.scratch-prize-sidebar > :not\(\.scratch-current-awards\)/);
