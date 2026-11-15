@@ -59,6 +59,11 @@ on:
       - 'tests/dog-online-sync.test.mjs'
       - 'tests/dog-collection.test.mjs'
   workflow_dispatch:
+# Keep CI for the newest change instead of piling up redundant runs on main.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
 jobs:
   geometry:
     runs-on: ubuntu-latest
