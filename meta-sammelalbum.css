@@ -187,3 +187,13 @@ button:focus-visible,a:focus-visible{outline:3px solid #ffdf87;outline-offset:3p
  .meta-book{width:min(100%,calc((100dvh - 106px)*1.5));max-height:calc(100dvh - 106px)}
  .meta-album-auth-row{min-height:14px;font-size:10px}
 }
+
+
+.meta-picture-card:not(.locked) .meta-picture-artwork img{filter:none}
+.meta-picture-card:not(.locked) .meta-picture-status{background:#246b3aed;color:#e4ffdf}
+.meta-detail-artwork.unlocked img{filter:none}
+.meta-detail-owned{font-weight:850;color:#a8f5a8;font-size:15px}
+.meta-detail-event-link{display:inline-flex;align-items:center;justify-content:center;min-height:42px;
+ border:1px solid #f5d392;border-radius:11px;padding:7px 12px;background:#244e48;color:#ffe7b8;
+ font-weight:850;text-decoration:none}
+.meta-detail-event-link:hover{background:#336459}
