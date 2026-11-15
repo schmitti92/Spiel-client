@@ -1184,3 +1184,83 @@ body.scratch-ticket-open{
  .scratch-stage:not([hidden]) .scratch-premium-milestone{padding:2px}
  .scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-prize-line{padding:2px;font-size:8px}
 }
+
+
+/* Actual winnings: show every credited reward, not a long concatenated
+   tooltip or the old "null" placeholder. The reveal remains one screen. */
+.scratch-stage:not([hidden]) .scratch-current-awards{
+ display:flex;flex-direction:column;gap:6px;
+ flex:1 1 auto;min-height:0;min-width:0;
+ padding:7px;border:1px solid #f4d996a8;border-radius:11px;
+ background:linear-gradient(150deg,#253f39,#182b38 80%);
+ box-shadow:inset 0 1px #ffe5a226;overflow:hidden;
+}
+.scratch-stage:not([hidden]) .scratch-current-title{
+ margin:0;font:900 clamp(12px,1.7vh,16px) Georgia,serif;
+ color:#ffe5b1;line-height:1.15;
+}
+.scratch-stage:not([hidden]) .scratch-current-summary{
+ padding:4px 7px;border:1px solid #dfc78770;border-radius:7px;
+ color:#fff0b9;font-size:clamp(10px,1.3vh,12px);
+ font-weight:850;background:#6a542e66;line-height:1.15;
+}
+.scratch-stage:not([hidden]) .scratch-current-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ grid-auto-rows:minmax(0,auto);
+ align-content:start;gap:4px;
+ min-height:0;width:100%;overflow:hidden;
+}
+.scratch-stage:not([hidden]) .scratch-current-item{
+ display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+ gap:2px;min-height:0;padding:5px 6px;
+ border:1px solid #81af9188;border-radius:8px;
+ background:linear-gradient(125deg,#1d6045bb,#163b39d9);
+ overflow-wrap:anywhere;
+}
+.scratch-stage:not([hidden]) .scratch-current-item.is-unlock{
+ border-color:#eac677dd;
+ background:linear-gradient(125deg,#725024cd,#483653ec);
+}
+.scratch-stage:not([hidden]) .scratch-current-source{
+ color:#d4ebde;font-size:clamp(8px,1.1vh,10px);
+ line-height:1.15;font-weight:800;
+}
+.scratch-stage:not([hidden]) .scratch-current-value{
+ color:#fff5cc;font-size:clamp(10px,1.5vh,13px);
+ line-height:1.18;font-weight:950;
+}
+.scratch-stage:not([hidden]) .scratch-current-multiplier{
+ color:#ffe1a1;font-size:9px;font-weight:850;
+}
+.scratch-stage:not([hidden]) .scratch-current-empty{
+ color:#ffedc1;font-size:12px;line-height:1.35;padding:9px;
+}
+/* Everything from the old win table is redundant once the receipt has
+   been revealed. Hide it rather than clipping off current rewards. */
+.scratch-stage.is-revealed:not([hidden]) > .scratch-prize-sidebar > :not(.scratch-current-awards){
+ display:none!important;
+}
+.scratch-stage.is-revealed:not([hidden]) > .scratch-prize-sidebar{
+ display:flex;flex-direction:column;gap:0;
+ overflow:hidden!important;
+}
+@media(max-width:700px) and (min-height:501px){
+ .scratch-stage.is-revealed:not([hidden]) > .scratch-prize-sidebar{
+  display:flex;flex-direction:column;max-height:min(27dvh,208px);
+ }
+ .scratch-stage:not([hidden]) .scratch-current-awards{padding:4px;gap:3px}
+ .scratch-stage:not([hidden]) .scratch-current-grid{gap:3px}
+ .scratch-stage:not([hidden]) .scratch-current-item{padding:3px 4px;gap:1px}
+ .scratch-stage:not([hidden]) .scratch-current-source{font-size:8px}
+ .scratch-stage:not([hidden]) .scratch-current-value{font-size:10px;line-height:1.1}
+ .scratch-stage:not([hidden]) .scratch-current-title{font-size:11px}
+ .scratch-stage:not([hidden]) .scratch-current-summary{font-size:10px;padding:3px 5px}
+}
+@media(max-height:500px){
+ .scratch-stage:not([hidden]) .scratch-current-awards{padding:3px;gap:3px}
+ .scratch-stage:not([hidden]) .scratch-current-item{padding:2px 3px;gap:1px}
+ .scratch-stage:not([hidden]) .scratch-current-source{font-size:8px}
+ .scratch-stage:not([hidden]) .scratch-current-value{font-size:9px}
+ .scratch-stage:not([hidden]) .scratch-current-title{font-size:11px}
+ .scratch-stage:not([hidden]) .scratch-current-summary{font-size:9px;padding:2px 3px}
+}
