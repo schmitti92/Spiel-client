@@ -1,0 +1,30 @@
+name: DOG Christmas tree reward UI
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/christmas-tree-rewards-ui.js'
+      - 'DOG/christmas-tree-rewards.css'
+      - 'DOG/christmas-event.js'
+      - 'DOG/christmas-event.html'
+      - 'tests/dog-christmas-tree-prizes.test.mjs'
+      - '.github/workflows/dog-christmas-tree-prizes.yml'
+  pull_request:
+    paths:
+      - 'DOG/christmas-tree-rewards-ui.js'
+      - 'DOG/christmas-tree-rewards.css'
+      - 'DOG/christmas-event.js'
+      - 'DOG/christmas-event.html'
+      - 'tests/dog-christmas-tree-prizes.test.mjs'
+  workflow_dispatch:
+jobs:
+  christmas-tree:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/christmas-tree-rewards-ui.js
+      - run: node --check DOG/christmas-event.js
+      - run: node --test tests/dog-christmas-tree-prizes.test.mjs
