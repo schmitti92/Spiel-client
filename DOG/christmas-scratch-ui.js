@@ -527,6 +527,11 @@ export function initChristmasScratch(){
   counter.querySelector('[data-premium-symbol-count]').textContent=progress.count+' / 27';
   counter.querySelector('[data-premium-found]').textContent=
    progress.count+' von '+progress.total+' vorhandenen Symbolen freigerubbelt';
+  // Also frame the 20/24 reward illustrations already printed at the
+  // bottom-right of the premium artwork, without covering or changing art.
+  const artwork=$('scratch-card-art');
+  artwork.dataset.premiumGold20=String(progress.count>=20&&progress.goldAwarded);
+  artwork.dataset.premiumGold24=String(progress.count>=24&&progress.premiumAwarded);
   for(const [goal,awarded] of [[20,progress.goldAwarded],[24,progress.premiumAwarded]]){
    const line=counter.querySelector('[data-premium-milestone="'+goal+'"]');
    if(!line)continue;
