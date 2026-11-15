@@ -123,7 +123,7 @@
  function init(){document.querySelectorAll('[data-dog-avatar-picker]').forEach(mount);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
  // Load the catalogue without delaying the existing avatar picker.
- import('./christmas-avatar-catalog.js?v=1').then(module=>{
+ import(new URL('christmas-avatar-catalog.js?v=1',DOG_ASSET_BASE).href).then(module=>{
   christmasAvatars=module.CHRISTMAS_AVATARS;
   window.dispatchEvent(new Event('dog-christmas-avatars-ready'));
  }).catch(error=>console.warn('[DOG] Weihnachtsprofilbilder konnten nicht geladen werden:',error));
