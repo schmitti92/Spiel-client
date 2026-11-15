@@ -837,7 +837,7 @@ export function initChristmasScratch(){
  $('scratch-reveal-button').addEventListener('click',finish);
  $('scratch-ticket-finish').addEventListener('click',()=>{
   if(!ticket||!finished)return;
-  const won=Array.isArray(ticket.winnings)&&ticket.winnings.some(p=>p&&['coins','unlock'].includes(p.type));
+  const won=stage.dataset.result==='win';
   acknowledge(ticket.commandId);
   ticket=null;finished=false;stage.hidden=true;
   stage.classList.remove('is-revealed');stage.removeAttribute('data-result');
