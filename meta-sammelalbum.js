@@ -45,7 +45,8 @@ function themeMenu(){
   button.append(dom('span','meta-theme-icon',item.icon));
   const copy=dom('span','meta-theme-copy');
   copy.append(dom('strong','',item.title),dom('small','',item.subtitle));
-  button.append(copy,dom('span','meta-theme-count','0/'+item.pictures.length));
+  const unlocked=item.pictures.filter(pic=>isMetaAlbumPictureUnlocked(pic)).length;
+  button.append(copy,dom('span','meta-theme-count',unlocked+'/'+item.pictures.length));
   button.addEventListener('click',()=>{
    theme=item;selected=item.pictures[0]?.id||'';
    const url=new URL(location.href);url.searchParams.set('theme',item.id);
