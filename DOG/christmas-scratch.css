@@ -1490,3 +1490,115 @@ body.scratch-ticket-open > header.event-top{
   padding:3px!important;
  }
 }
+
+
+/* NO SEPARATE SCRATCH PRIZE WINDOW v1
+   Keep the actual ticket and confirmation, remove the duplicate right
+   "Gewinntabelle" panel. All credited prizes appear directly below the card. */
+.scratch-stage:not([hidden]){
+ display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+ grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto auto!important;
+ width:min(790px,calc(100vw - 12px))!important;
+ max-width:calc(100vw - 12px)!important;
+ height:min(820px,calc(100dvh - 12px))!important;
+ max-height:calc(100dvh - 12px)!important;
+ padding:7px!important;row-gap:3px!important;column-gap:0!important;
+ overflow:hidden!important;
+}
+.scratch-stage:not([hidden]) > .scratch-prize-sidebar{
+ display:none!important;
+}
+.scratch-stage:not([hidden]) > #scratch-ticket-title,
+.scratch-stage:not([hidden]) > #scratch-variant-rule,
+.scratch-stage:not([hidden]) > #scratch-symbol-legend,
+.scratch-stage:not([hidden]) > #scratch-progress,
+.scratch-stage:not([hidden]) > #scratch-progress-meter,
+.scratch-stage:not([hidden]) > #scratch-reveal,
+.scratch-stage:not([hidden]) > .scratch-stage-actions,
+.scratch-stage:not([hidden]) > .scratch-inline-results{
+ grid-column:1!important;min-width:0!important;
+}
+.scratch-stage:not([hidden]) > #scratch-reveal{
+ grid-row:6!important;min-height:0!important;height:100%!important;
+ overflow:hidden!important;
+}
+.scratch-stage:not([hidden]) > .scratch-inline-results{
+ grid-row:7!important;min-height:0;min-width:0;
+ display:flex;flex-direction:column;gap:4px;padding:5px 7px;
+ background:#0c2d33ed;border:1px solid #d9b7738e;border-radius:10px;
+ color:#fff0c8;overflow:hidden!important;
+}
+.scratch-stage:not([hidden]) > .scratch-inline-results[hidden]{display:none!important}
+.scratch-stage:not([hidden]) .scratch-inline-heading{
+ display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+ column-gap:8px;row-gap:3px;font-size:12px;line-height:1.2;
+}
+.scratch-stage:not([hidden]) .scratch-inline-total{
+ font-size:13px;color:#ffe5aa;font-variant-numeric:tabular-nums;
+}
+.scratch-stage:not([hidden]) .scratch-inline-chips{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+ align-content:start;gap:3px;min-height:0;overflow:hidden;
+}
+.scratch-stage:not([hidden]) .scratch-inline-chip{
+ display:flex;flex-direction:column;gap:1px;justify-content:center;
+ min-width:0;min-height:0;padding:4px 5px;
+ border:1px solid #8bbba56b;border-radius:6px;background:#1b4b40;
+ line-height:1.15;overflow-wrap:anywhere;
+}
+.scratch-stage:not([hidden]) .scratch-inline-chip.is-unlock{
+ background:#615033;border-color:#f0d28c9c;
+}
+.scratch-stage:not([hidden]) .scratch-inline-chip strong{
+ font-size:10px;line-height:1.2;font-weight:850;
+}
+.scratch-stage:not([hidden]) .scratch-inline-chip small{
+ font-size:9px;line-height:1.15;color:#d1e6d8;
+}
+.scratch-stage:not([hidden]) > .scratch-stage-actions{
+ grid-row:8!important;grid-column:1!important;
+ position:static!important;left:auto!important;right:auto!important;
+ top:auto!important;bottom:auto!important;
+ width:100%!important;max-width:none!important;min-width:0!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ gap:6px;margin:0!important;padding:0!important;
+}
+.scratch-stage:not([hidden]) > .scratch-stage-actions button:not([hidden]){
+ flex:0 1 290px!important;width:auto!important;
+ max-width:100%!important;min-height:36px!important;
+ padding:5px 12px!important;font-size:12px!important;
+}
+@media(max-width:700px){
+ .scratch-stage:not([hidden]){
+  width:calc(100vw - 8px)!important;max-width:calc(100vw - 8px)!important;
+  height:calc(100dvh - 8px)!important;max-height:calc(100dvh - 8px)!important;
+  padding:4px!important;gap:2px!important;
+ }
+ .scratch-stage:not([hidden]) .scratch-inline-chips{
+  grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;
+ }
+ .scratch-stage:not([hidden]) > .scratch-inline-results{
+  padding:3px 4px;gap:2px;
+ }
+ .scratch-stage:not([hidden]) .scratch-inline-chip{padding:2px 3px}
+ .scratch-stage:not([hidden]) .scratch-inline-chip strong{font-size:9px}
+ .scratch-stage:not([hidden]) .scratch-inline-chip small{font-size:8px}
+ .scratch-stage:not([hidden]) .scratch-inline-heading{font-size:10px}
+ .scratch-stage:not([hidden]) .scratch-inline-total{font-size:11px}
+ .scratch-stage:not([hidden]) > .scratch-stage-actions button:not([hidden]){
+  min-height:36px!important;font-size:12px!important;
+ }
+}
+@media(max-height:500px){
+ .scratch-stage:not([hidden]) > #scratch-variant-rule{display:none!important}
+ .scratch-stage:not([hidden]) > #scratch-symbol-legend{display:none!important}
+ .scratch-stage:not([hidden]) .scratch-inline-chips{
+  grid-template-columns:repeat(5,minmax(0,1fr));
+ }
+ .scratch-stage:not([hidden]) .scratch-inline-chip{padding:2px}
+ .scratch-stage:not([hidden]) .scratch-inline-chip strong{font-size:8px}
+ .scratch-stage:not([hidden]) .scratch-inline-chip small{font-size:7px}
+ .scratch-stage:not([hidden]) > .scratch-stage-actions button:not([hidden]){
+  min-height:30px!important;padding:3px 7px!important;
+ }
+}
