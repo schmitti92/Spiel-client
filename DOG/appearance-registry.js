@@ -81,8 +81,21 @@ export const BOARD_STYLES=deepFreeze({
   alpenland:{label:"Alpenland · Schloss",image:"./Bilder/Spielhintergrundbilder/alpenland.webp",fallbackImage:"./assets/boards/bergsee.svg",page:"radial-gradient(circle at 45% 18%,#183c3f,#06121c 85%)",frame:'linear-gradient(145deg,#253a47,#0b1f2a)',wood:["#455a49","#e2c19a","#50684f","#ad9870","#26382a"],surface:["#2a675e","#23584e","#0a2c31"],center:["#28534f","#0d2730"],edge:"#e3c888",route:"#b8af78"},
   kuestenabenteuer:{label:"Küstenabenteuer · Leuchtturm",image:"./Bilder/Spielhintergrundbilder/kuestenabenteuer.webp",fallbackImage:"./assets/boards/bergsee.svg",page:"radial-gradient(circle at 45% 18%,#0d263e,#06121c 85%)",frame:'linear-gradient(145deg,#253a47,#0b1f2a)',wood:["#203f5a","#e6bd83","#335e78","#a07b5b","#1d3148"],surface:["#17486a","#0d2c4b","#07182e"],center:["#103b58","#07223a"],edge:"#d8bb83",route:"#6aafca"},
   royalKarten:{label:"Royal-Karten · Sammleredition",image:"./Bilder/Spielhintergrundbilder/royal-karten.webp",fallbackImage:"./assets/boards/goldwellen.svg",page:"radial-gradient(circle at 45% 18%,#0b1c3c,#06121c 85%)",frame:'linear-gradient(145deg,#253a47,#0b1f2a)',wood:["#283e5c","#e7bd70","#1e3056","#ba9c61","#111c37"],surface:["#1b4677","#0f3060","#071939"],center:["#17345f","#071d3f"],edge:"#e9c480",route:"#81a9d7"},
-  zauberwald:{label:"Zauberwald · Wasserfälle",image:"./Bilder/Spielhintergrundbilder/zauberwald.webp",fallbackImage:"./assets/boards/pergament.svg",page:"radial-gradient(circle at 45% 18%,#102f26,#06121c 85%)",frame:'linear-gradient(145deg,#253a47,#0b1f2a)',wood:["#284a35","#e2c17b","#345b43","#8a8547","#153025"],surface:["#2a6951","#145445","#092a30"],center:["#245640","#082b2d"],edge:"#d4c18b",route:"#79bca3"}
+  zauberwald:{label:"Zauberwald · Wasserfälle",image:"./Bilder/Spielhintergrundbilder/zauberwald.webp",fallbackImage:"./assets/boards/pergament.svg",page:"radial-gradient(circle at 45% 18%,#102f26,#06121c 85%)",frame:'linear-gradient(145deg,#253a47,#0b1f2a)',wood:["#284a35","#e2c17b","#345b43","#8a8547","#153025"],surface:["#2a6951","#145445","#092a30"],center:["#245640","#082b2d"],edge:"#d4c18b",route:"#79bca3"},
+  weihnachtsdorf:{"label":"🎄 Weihnachtsdorf · Weihnachtsevent","image":"./Bilder/Spielhintergrundbilder/dog_weihnachten_01_weihnachtsdorf.webp","unlockId":"christmas2026:board:weihnachtsdorf","fallbackImage":"./assets/boards/bergsee.svg","page":"radial-gradient(circle at 45% 18%,#244961,#081e33 85%)","frame":"linear-gradient(145deg,#426982,#10283e)","wood":["#31566c","#d8e8e9","#4c7183","#aac8c8","#233d55"],"surface":["#5185a1","#305c7c","#102d4d"],"center":["#377086","#123e5b"],"edge":"#d5edf5","route":"#a5d3e4"},
+  lebkuchenwerkstatt:{"label":"🍪 Lebkuchenwerkstatt · Weihnachtsevent","image":"./Bilder/Spielhintergrundbilder/dog_weihnachten_02_lebkuchenwerkstatt.webp","unlockId":"christmas2026:board:lebkuchenwerkstatt","fallbackImage":"./assets/boards/holz.svg","page":"radial-gradient(circle at 45% 18%,#79431f,#27140e 85%)","frame":"linear-gradient(145deg,#794529,#2c1912)","wood":["#78431e","#e4be7a","#885327","#bb8850","#432310"],"surface":["#ac713e","#7c4627","#432414"],"center":["#b87a4b","#462413"],"edge":"#ffe2ab","route":"#e0ad6b"},
+  polarlichtpalast:{"label":"✨ Polarlichtpalast · Weihnachtsevent","image":"./Bilder/Spielhintergrundbilder/dog_weihnachten_03_polarlichtpalast.webp","unlockId":"christmas2026:board:polarlichtpalast","fallbackImage":"./assets/boards/bergsee.svg","page":"radial-gradient(circle at 45% 18%,#265b87,#0a1b40 85%)","frame":"linear-gradient(145deg,#3d648e,#141d4f)","wood":["#253d6a","#d3e7f4","#365986","#89add2","#172850"],"surface":["#397da2","#225479","#132c5b"],"center":["#346f8e","#182f63"],"edge":"#c8f2ff","route":"#9bd5f5"},
+  winterlandschaft:{"label":"❄️ Winterlandschaft · Weihnachtsevent","image":"./Bilder/Spielhintergrundbilder/a_highly_detailed_realistic_winter_landscape_scen.png","unlockId":"christmas2026:board:winterlandschaft","fallbackImage":"./assets/boards/bergsee.svg","page":"radial-gradient(circle at 45% 18%,#315a83,#152744 85%)","frame":"linear-gradient(145deg,#58718d,#23344e)","wood":["#465b70","#e4d7bf","#526d87","#c3b99f","#273e5c"],"surface":["#587c9b","#385877","#263950"],"center":["#47708d","#223b5e"],"edge":"#f5e6bf","route":"#bfddf4"}
 });
+/** Event board artwork is catalogued now but cannot be selected until the
+ * Weihnachtsevent awards ownership. Unlocks must come from validated event
+ * progress, never from a query parameter or an untrusted localStorage flag.
+ * Future event integration should connect its verified entitlements here.
+ */
+export function isBoardUnlocked(id){
+  const board=BOARD_STYLES[id];
+  return Boolean(board) && !board.unlockId;
+}
 /** Scenic page backgrounds are NOT board designs.
  * Only assets/backgrounds contains selectable page wallpapers.
  * Old scene IDs (the board pictures) safely normalize to 'schloss'.
@@ -242,7 +255,7 @@ export function normalizeAppearance(value){
   if(!value||typeof value!=='object'||Array.isArray(value))return next;
   for(const [category,registry] of Object.entries(APPEARANCE_CATEGORIES)){
     const id=value[category];
-    if(typeof id==='string' && Object.hasOwn(registry,id))next[category]=id;
+    if(typeof id==='string' && Object.hasOwn(registry,id) && (category!=='board' || isBoardUnlocked(id)))next[category]=id;
   }
   return next;
 }
