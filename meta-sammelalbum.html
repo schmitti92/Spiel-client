@@ -6,17 +6,15 @@
 <meta name="theme-color" content="#071a30">
 <meta name="description" content="Meta-Sammelalbum der Spielesammlung: besondere Bilder aus Weihnachtsevent 1 entdecken und später im Event freischalten.">
 <title>Meta-Sammelalbum · Spielesammlung</title>
-<link rel="stylesheet" href="meta-sammelalbum.css?v=4">
-<script type="module" src="meta-sammelalbum.js?v=4"></script>
+<link rel="stylesheet" href="meta-sammelalbum.css?v=5">
+<script type="module" src="meta-sammelalbum.js?v=5"></script>
 </head>
 <body>
 <div class="meta-album-page">
  <header class="meta-album-header">
   <a id="meta-back-top" class="meta-album-back" href="hub-lobby.html">← Zurück zur Spiellobby</a>
   <div class="meta-album-heading">
-   <p class="meta-eyebrow">SPIELESAMMLUNG · DEIN PERSÖNLICHES ALBUM</p>
    <h1>📖 Meta-Sammelalbum</h1>
-   <p>Entdecke Erinnerungsbilder aus deinen Events und vervollständige deine Sammlung.</p>
   </div>
   <div class="meta-album-overview" aria-label="Sammlungsfortschritt">
    <span>Gesammelte Bilder</span>
@@ -28,21 +26,15 @@
   <aside class="meta-album-themes" aria-label="Sammelalbum Themen">
    <div class="meta-album-panel-head"><span>📚</span><h2>Themen</h2></div>
    <nav id="meta-theme-list" aria-label="Themenübersicht"></nav>
-   <div class="meta-album-sidebar-foot">
-    <span aria-hidden="true">✨</span>
-    <p>Weitere Event-Themen werden hier später ergänzt. Bereits vorhandene Themen bleiben erhalten.</p>
-   </div>
   </aside>
   <section class="meta-album-gallery-panel" aria-labelledby="meta-theme-title">
    <header class="meta-gallery-header">
     <div>
-     <p class="meta-eyebrow">DEIN SAMMELALBUM</p>
      <h2 id="meta-theme-title">🎄 Weihnachtsevent 1</h2>
-     <p id="meta-theme-description">Neun Bilder für das Weihnachtsevent.</p>
+     <p id="meta-theme-description" class="meta-visually-hidden">Neun Bilder für das Weihnachtsevent.</p>
     </div>
     <span id="meta-theme-progress" class="meta-progress-chip">0 / 9 gesammelt</span>
    </header>
-   <div class="meta-gallery-notice" role="note">🔒 Alle neun Bilder sind derzeit gesperrt. Die spätere Freischaltung erfolgt ausschließlich durch das Weihnachtsevent.</div>
    <div class="meta-album-gallery-scroll">
     <div id="meta-book" class="meta-book" aria-label="Blätterbares Sammelbuch">
      <div class="meta-book-spine" aria-hidden="true"></div>
@@ -72,7 +64,6 @@
   </aside>
  </main>
  <footer class="meta-album-footer">
-  <span>🎄 Alle Sammlungsbilder bleiben bis zur echten Eventbelohnung gesperrt.</span>
   <a id="meta-back-bottom" href="hub-lobby.html">← Zurück zur Spiellobby</a>
  </footer>
 </div>
