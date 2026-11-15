@@ -578,6 +578,14 @@ export function initChristmasScratch(){
  hostDialog?.addEventListener('click',e=>{if(e.target===hostDialog)hostDialog.close()});
  // These settings apply globally across all DOG rooms. A missing or invalid
  // room code must not silently suppress saving them.
+ // Native number input validation can suppress "submit" entirely. Provide
+ // an explicit message instead of making the Save button seem unresponsive.
+ $('scratch-host-form').addEventListener('invalid',e=>{
+  const field=e.target;
+  const name=field.closest('label')?.querySelector('span')?.textContent||'Eingabe';
+  const feedback=$('scratch-host-feedback');
+  feedback.textContent='⚠️ Bitte „'+name+'“ überprüfen. Das Feld muss einen gültigen Wert enthalten.';
+ },true);
  $('scratch-host-form').addEventListener('submit',async e=>{
   e.preventDefault();
   const feedback=$('scratch-host-feedback'),save=$('scratch-host-save');
