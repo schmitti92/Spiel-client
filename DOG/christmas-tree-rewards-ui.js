@@ -30,7 +30,7 @@ export function initChristmasTreeRewards({request,roomValid,loggedIn}){
  const say=message=>{feedback.textContent=message};
  const render=()=>{
   grid.replaceChildren();
-  counter.textContent=(status?.collected||0)+' / 10 abgeholt';
+  counter.textContent=status?(status.collected||0)+' / 10 abgeholt':'🔎 Status online prüfen';
   const records=Array.isArray(status?.rewards)?status.rewards:TREE_PRIZE_PREVIEW;
   for(const item of records){
    const state=status?(item.state||'locked'):'unknown';
