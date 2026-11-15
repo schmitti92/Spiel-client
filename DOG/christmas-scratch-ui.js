@@ -97,7 +97,7 @@ export function initChristmasScratch(){
   wallet.textContent=status?num(status.coins)+' 🪙':'– 🪙';
   const freeMode=status?.settings?.freeEnabled===true;
   $('scratch-host-settings').hidden=false;
-  $('scratch-host-settings').title=canManageScratch?'Host-Einstellungen für Rubbellose':'Host-Berechtigung wird geprüft';
+  $('scratch-host-settings').title='Gemeinsame Rubbellos-Einstellungen';
   $('scratch-daily-info').textContent=freeMode?'🎁 Host hat kostenloses Rubbeln für alle aktiviert':
    status?.dailyFreeAvailable?'🎁 Heute ein einfaches Gratis-Los verfügbar':'Gratis-Los heute bereits benutzt';
   for(const c of SCRATCH_TICKET_TYPES){
@@ -129,7 +129,7 @@ export function initChristmasScratch(){
   }
  }
  function openSettings(){
-  if(!canManageScratch){notice('⚙️ Host-Einstellungen sind nur mit einer vom Render-Server bestätigten Host-Berechtigung verfügbar. Bitte im richtigen Raum als Host anmelden und aktualisieren.');return;}
+  
   if(!status?.settings||!hostDialog){notice('⚠️ Einstellungen konnten noch nicht geladen werden. Bitte Kontostand aktualisieren.');return;}
   $('scratch-host-free-enabled').checked=status.settings.freeEnabled===true;
   const root=$('scratch-host-variants');root.replaceChildren();
