@@ -465,7 +465,7 @@ async function purchaseBuilding(id){
   showLiveVillage({village:result.village,host:villageHost,enabled:villageMode,canSetMode:villageCanToggle});
   $('building-event-mode').textContent='✅ '+definitions.find(entry=>entry.id===id).title+' wurde auf Stufe '+(level+1)+' ausgebaut. '+cost+' Lichter abgebucht.';
  }catch(err){$('building-event-mode').textContent='⚠️ Ausbau nicht möglich: '+err.message;await reloadVillage();}
- finally{villageBusy=false;refreshPreview();}
+ finally{villageBusy=false;$('building-event-mode-toggle').disabled=!villageHost||!villageCanToggle;refreshPreview();}
 }
 $('building-event-mode-toggle').addEventListener('click',async()=>{
  if(!villageHost||!villageCanToggle||villageBusy)return;
@@ -474,7 +474,7 @@ $('building-event-mode-toggle').addEventListener('click',async()=>{
   await villageRequest('christmas-mode','POST',{enabled:!villageMode});
   await reloadVillage();
  }catch(e){$('building-event-mode').textContent='⚠️ '+e.message;}
- finally{villageBusy=false;refreshPreview();}
+ finally{villageBusy=false;$('building-event-mode-toggle').disabled=!villageHost||!villageCanToggle;refreshPreview();}
 });
 if(villageRoomValid){
  void reloadVillage();
