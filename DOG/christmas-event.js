@@ -58,27 +58,77 @@ const assetPath=(id,level)=>{
  // Scale their *visible* artwork at each fixed village footprint, so small
  // stage-one assets do not look tiny next to larger-stage buildings.
  // Pivot points are ground contact points measured in the SVG scene.
+/* Maximum VISIBLE footprint at the largest level, in the 1200 × 670 village.
+ * Back row and front row overlap only at the edges; the centre stays open.
+ * Exact visible alpha is measured once per requested PNG, not the padded PNG canvas.
+ * Each item's feet are pinned to a fixed spot regardless of its development level.
+ */
 const sceneLayouts=Object.freeze({
-  tower:{cx:185,ground:484,scale:[1.16,1.13,1.10,1.05,1.00]},
-  workshop:{cx:935,ground:463,scale:[1.00,1.02,1.02,1.00,1.00]},
-  bakery:{cx:309,ground:601,scale:[1.20,1.28,1.35,1.45,1.55]},
-  inn:{cx:1048,ground:611,scale:[1.06,1.06,1.04,1.02,1.00]},
-  tree:{cx:612,ground:554,scale:[1.55,1.55,1.55,1.50,1.45,1.30,1.25,1.20,1.20,1.20]}
+ tower:{cx:127,ground:385,w:239,h:283,growth:[.78,.83,.89,.95,1]},
+ workshop:{cx:1064,ground:385,w:258,h:280,growth:[.72,.79,.86,.93,1]},
+ bakery:{cx:322,ground:599,w:278,h:236,growth:[.69,.76,.85,.93,1]},
+ inn:{cx:934,ground:600,w:288,h:245,growth:[.70,.77,.85,.93,1]},
+ tree:{cx:610,ground:602,w:299,h:492,growth:[.54,.59,.65,.71,.76,.81,.86,.91,.96,1]}
 });
-function positionVillageSprite(layer,id,level){
- const model=sceneLayouts[id];
- if(!model)return;
- const scale=model.scale[level-1]??1;
- layer.setAttribute('transform','translate('+model.cx+' '+model.ground+') scale('+scale+') translate('+(-model.cx)+' '+(-model.ground)+')');
+function measureVisiblePixels(image){
+ const naturalWidth=image.naturalWidth||1,naturalHeight=image.naturalHeight||1;
+ const fallback={x0:0,y0:0,x1:naturalWidth,y1:naturalHeight};
+ try{
+  // Only a 320px thumbnail is examined, to stay responsive on tablets.
+  const factor=Math.min(1,320/Math.max(naturalWidth,naturalHeight));
+  const w=Math.max(1,Math.round(naturalWidth*factor));
+  const h=Math.max(1,Math.round(naturalHeight*factor));
+  const canvas=document.createElement('canvas');
+  canvas.width=w;canvas.height=h;
+  const context=canvas.getContext('2d',{willReadFrequently:true});
+  if(!context)return fallback;
+  context.clearRect(0,0,w,h);
+  context.drawImage(image,0,0,w,h);
+  const rgba=context.getImageData(0,0,w,h).data;
+  let minX=w,minY=h,maxX=-1,maxY=-1;
+  // Ignore nearly invisible glow or compression fringing around the cutout.
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+   if(rgba[(y*w+x)*4+3]<20)continue;
+   if(x<minX)minX=x;
+   if(x>maxX)maxX=x;
+   if(y<minY)minY=y;
+   if(y>maxY)maxY=y;
+  }
+  if(maxX<minX)return fallback;
+  return {x0:minX/factor,y0:minY/factor,x1:(maxX+1)/factor,y1:(maxY+1)/factor};
+ }catch{
+  // If pixel reading is unavailable, retain a usable image.
+  return fallback;
+ }
+}
+function positionVillageSprite(layer,id,level,loaded){
+ const slot=sceneLayouts[id];
+ if(!slot||!loaded?.ok)return;
+ const b=loaded.bounds;
+ const growth=slot.growth[level-1]??1;
+ const actualWidth=Math.max(1,b.x1-b.x0),actualHeight=Math.max(1,b.y1-b.y0);
+ const scale=Math.min(slot.w*growth/actualWidth,slot.h*growth/actualHeight);
+ // Image <svg:image> uses full bitmap dimensions; compensate transparent margins.
+ // Align visible centre horizontally and visible bottom edge to the permanent feet.
+ const left=slot.cx-(b.x0+b.x1)*.5*scale;
+ const top=slot.ground-b.y1*scale;
+ layer.removeAttribute('transform');
+ layer.setAttribute('x',left.toFixed(2));
+ layer.setAttribute('y',top.toFixed(2));
+ layer.setAttribute('width',(loaded.width*scale).toFixed(2));
+ layer.setAttribute('height',(loaded.height*scale).toFixed(2));
 }
 const imageRequests=new Map();
 function waitForImage(path){
- if(!path)return Promise.resolve(false);
+ if(!path)return Promise.resolve({ok:false});
  if(!imageRequests.has(path)){
   imageRequests.set(path,new Promise(resolve=>{
    const image=new Image();
-   image.onload=()=>resolve(true);
-   image.onerror=()=>resolve(false);
+   image.onload=()=>resolve({
+    ok:true,width:image.naturalWidth,height:image.naturalHeight,
+    bounds:measureVisiblePixels(image)
+   });
+   image.onerror=()=>resolve({ok:false});
    image.src=path;
   }));
  }
@@ -88,18 +138,16 @@ function showStageImage(id,level){
  const layer=$(id+'-stage-image'),fallback=$(id==='tree'?'art-tree':'art-'+id);
  if(!layer||!fallback)return;
  const path=assetPath(id,level);
- positionVillageSprite(layer,id,level);
- // Unchanged stage stays visible; avoid toggling images during unrelated upgrades.
- if(layer.dataset.requested===path&&fallback.classList.contains('photo-ready'))return;
- if(layer.dataset.requested===path&&layer.dataset.loading==='true')return;
+ if(layer.dataset.requested===path&&(fallback.classList.contains('photo-ready')||layer.dataset.loading==='true'))return;
  layer.dataset.requested=path;
  layer.dataset.loading='true';
- fallback.classList.remove('photo-ready','tower-photo-ready');
- waitForImage(path).then(ok=>{
-  // An upgrade may have been requested while an earlier stage was loading.
+ fallback.classList.remove('photo-ready');
+ waitForImage(path).then(loaded=>{
+  // Ignore an older stage's load after the user has already chosen a newer one.
   if(layer.dataset.requested!==path)return;
   layer.dataset.loading='false';
-  if(!ok){layer.removeAttribute('href');return;}
+  if(!loaded.ok){layer.removeAttribute('href');return;}
+  positionVillageSprite(layer,id,level,loaded);
   layer.setAttribute('href',path);
   fallback.classList.add('photo-ready');
  });
@@ -181,8 +229,8 @@ function refreshPreview(){
  view.dataset.tree=String(tree);
  view.dataset.snow=String(tree<=2?1:tree<=4?2:tree<=6?3:tree<=8?4:5);
  // The old vector tree remains visible until a valid tree PNG is available.
- const growth=.59+((tree-1)/9)*.41;
- $('art-tree').setAttribute('transform','translate(612 565) scale('+growth.toFixed(4)+') translate(0 -565)');
+ const growth=.51+((tree-1)/9)*.49;
+ $('art-tree').setAttribute('transform','translate(610 602) scale('+growth.toFixed(4)+') translate(0 -565)');
  showStageImage('tree',tree);
  updateCardImage('tree',tree);
  $('stat-building-levels').textContent=total+' / 20';
