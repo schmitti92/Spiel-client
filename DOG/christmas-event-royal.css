@@ -187,3 +187,12 @@ body{background:#071d1a;background-image:radial-gradient(ellipse 65% 35% at 52% 
  .building-hotspot{font-size:7px;line-height:1.12;max-width:28%}
  .building-hotspot small{font-size:7px}
 }
+
+/* User-uploaded Lichtertal night landscape is a dedicated background layer.
+   Keep the SVG vector valley as a fallback until the PNG has actually loaded.
+   The five upgradeable PNGs and their nameplates are always above this layer. */
+#village-background-image{opacity:0;transition:opacity .35s ease}
+.village-view.background-ready #village-background-image{opacity:1}
+@media(prefers-reduced-motion:reduce){
+ #village-background-image{transition:none!important}
+}
