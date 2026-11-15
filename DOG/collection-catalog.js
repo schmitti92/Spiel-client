@@ -2,7 +2,8 @@
  * Registry entries are available cosmetic choices, NOT proof of event ownership.
  * Only available, already implemented items appear in the shipped collection.
  */
-import {BOARD_STYLES,isBoardUnlocked,SCENE_STYLES,PIECE_STYLES,CARD_STYLES,HUD_TONES,HUD_LAYOUTS} from './appearance-registry.js?v=22';
+import {BOARD_STYLES,isBoardUnlocked,SCENE_STYLES,PIECE_STYLES,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,HUD_TONES,HUD_LAYOUTS} from './appearance-registry.js?v=23';
+import {CARD_EDITION,cardVisual} from './card-visuals.js?v=6';
 import {DOG_EMOJIS,DOG_EMOJI_STARTERS,DOG_CHRISTMAS_EMOJIS} from './dog-emojis.js?v=2';
 import {CHRISTMAS_AVATARS} from './christmas-avatar-catalog.js?v=1';
 import {CHRISTMAS_NAME_FRAMES} from './christmas-nameframe-catalog.js?v=1';
@@ -46,7 +47,7 @@ const BASE_COLLECTION_CATEGORIES=[
   }))
  ]},
  {id:'cards',icon:'🃏',title:'Kartendesigns',subtitle:'Kartenthemen unabhängig von den Spielregeln',items:[
-  ...Object.entries(CARD_STYLES).map(([id,t])=>avail(id,t.label,{kind:'appearance',field:'cards',cardTheme:t,description:'Optische DOG-Kartengestaltung. Die Kartenwerte bleiben unverändert.',icon:t.emblem,artTone:'gold'})),
+  ...PUBLISHED_CARD_STYLE_IDS.map(id=>{const t=CARD_STYLES[id];return avail(id,t.label,{kind:'appearance',field:'cards',cardEdition:CARD_EDITION,image:cardVisual('9',CARD_EDITION).image,description:'Fertiges Kartendesign mit allen 14 Kartenmotiven und eigener Rückseite. Die Spielregeln bleiben unverändert.',icon:t.emblem,artTone:'gold'});}),
  ]},
  {id:'hud',icon:'🎨',title:'Bedienoberfläche',subtitle:'Farbtöne und Anordnung der rechten Spielblöcke',items:[
   ...Object.entries(HUD_TONES).map(([id,t])=>avail('tone-'+id,t.label,{kind:'appearance',field:'hudTone',value:id,icon:'▤',hudTheme:t,description:'Originalfarben der DOG-Bedienoberfläche mit echten Flächen, Rahmen und Akzenten.',artTone:'azure'})),
