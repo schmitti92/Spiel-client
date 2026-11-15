@@ -40,7 +40,7 @@
 #panel-buildings .building-art-plaque{display:inline-block;position:absolute;z-index:3;bottom:12px;left:12px;padding:7px 11px;border-radius:99px;background:#0a292dc9;border:1px solid #f5db9d;color:#ffe5a0;font-weight:900;letter-spacing:.9px;font-size:10px;box-shadow:0 4px 12px #071217b0}
 #panel-buildings .building-art-error{display:none;position:absolute;z-index:4;left:0;right:0;top:47%;text-align:center;color:#f5dfc1;font-size:12px}
 #panel-buildings .building-card-art[data-photo-state=error] .building-art-error{display:block}
-#panel-buildings .building-card-art[data-photo-state=loading]:not(:has(img[complete])){background-color:#163a3a}
+#panel-buildings .building-card-art[data-photo-state=loading]{background-color:#163a3a}
 #panel-buildings .building-card-info{display:flex;flex-direction:column;gap:5px;min-height:77px;margin:0 0 11px;padding:12px 14px;border-radius:13px;background:#071f28c0;border:1px solid #9caa8580;color:#deefe3;font-size:12px}
 #panel-buildings .building-card-info strong{font-size:14px;color:#fce1a0}
 #panel-buildings .building-card-info span{line-height:1.5;color:#d0e5d8}
@@ -60,3 +60,7 @@
 @media(max-width:760px){#panel-buildings .building-grid{grid-template-columns:1fr}#panel-buildings .village-treasury-main{flex-direction:column;align-items:stretch;padding:16px}#panel-buildings .village-treasury-actions{flex-direction:row;flex:1 1 auto}#panel-buildings .village-treasury-actions .button{flex:1}#panel-buildings .building-card-art{height:290px}#panel-buildings .building-card-info{min-height:0}}
 @media(max-width:470px){#panel-buildings .building-card-art{height:240px}#panel-buildings .village-treasury-actions{flex-direction:column}#panel-buildings .village-treasury-heading,#panel-buildings .village-treasury-foot{padding:11px 13px}#panel-buildings .village-treasury-star{width:50px;height:50px;border-radius:14px;font-size:28px}#panel-buildings .building-card{padding:11px}}
 @media(prefers-reduced-motion:reduce){#panel-buildings .building-card-art img{transition:none!important}}
+
+#panel-buildings .building-art-loading{position:absolute;z-index:3;left:12px;right:12px;top:50%;transform:translateY(-50%);text-align:center;color:#eed7a9;font-size:12px;font-weight:750;text-shadow:0 2px 8px #071821}
+#panel-buildings .building-card-art[data-photo-state=ready] .building-art-loading,
+#panel-buildings .building-card-art[data-photo-state=error] .building-art-loading{display:none}
