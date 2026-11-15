@@ -40,6 +40,8 @@ const treeDetails=[
   'Der große Stern auf der Spitze wird sichtbar. Die ganze Stadt erwartet den großen Moment.',
   'Der prachtvolle Weihnachtsbaum erleuchtet das ganze Weihnachtsdorf.'
 ];
+// PNG filenames are verified in the GitHub event-assets directory.
+const towerAsset=level=>'weihnachtsevent-bilder/weihnachtslichter_turm_stufe_'+level+'.png';
 const preview={tower:1,workshop:1,bakery:1,inn:1};
 let lastPresentationKey=null;
 const sceneTitles=['Die Weihnachtsreise beginnt','Die ersten Laternen leuchten','Ein Hauch von Winter','Lichter über den Dächern','Das Dorf entdeckt Weihnachten','Die Weihnachtsvorbereitungen laufen','Ein Sternenglanz erscheint','Lichtertal wird zum Wintermärchen','Das Dorf wartet auf sein Wunder','Das große Weihnachtslicht'];
@@ -62,6 +64,7 @@ function treeLevel(){
 function buildingCard(entry){
  const root=document.createElement('article');root.className='building-card';
  root.innerHTML='<div class="building-card-head"><span class="building-card-icon" aria-hidden="true">'+entry.icon+'</span><div><h3>'+entry.title+'</h3><p>'+entry.summary+'</p></div></div>'
+   +(entry.id==='tower'?'<div class="building-card-art" aria-label="Aktuelles Turmbild der Vorschau"><img id="tower-card-photo" src="'+towerAsset(1)+'" alt="Weihnachtslichter-Turm – Stufe 1" loading="lazy" decoding="async"></div>':'')
    +'<div class="building-card-info"><strong data-building-effect></strong><span data-building-visual></span></div>'
    +'<div class="level-row"><label for="preview-'+entry.id+'">Entwicklungsstufe</label><output for="preview-'+entry.id+'" data-building-value></output></div>'
    +'<input id="preview-'+entry.id+'" type="range" min="1" max="5" step="1" value="1" aria-label="Vorschau der Entwicklungsstufe für '+entry.title+'">'
@@ -90,6 +93,17 @@ function refreshPreview(){
   card.querySelectorAll('.building-level-markers>span').forEach((dot,i)=>dot.classList.toggle('active',i<level));
   const art=$('art-'+d.id);
   if(art)art.dataset.level=String(level);
+  if(d.id==='tower'){
+    const asset=towerAsset(level);
+    const stageImage=$('tower-stage-image');
+    if(stageImage?.getAttribute('href')!==asset){
+      art?.classList.remove('tower-photo-ready');
+      stageImage?.setAttribute('href',asset);
+    }
+    const cardImage=$('tower-card-photo');
+    if(cardImage&&cardImage.getAttribute('src')!==asset)cardImage.src=asset;
+    if(cardImage)cardImage.alt='Weihnachtslichter-Turm – Stufe '+level;
+  }
   const plaque=document.querySelector('[data-hotspot-level="'+d.id+'"]');
   if(plaque)plaque.textContent=level+' / 5';
  }
@@ -181,4 +195,14 @@ document.querySelectorAll('[data-open-building]').forEach(button=>{
 });
 window.addEventListener('hashchange',()=>showPanel(location.hash.slice(1),{updateHistory:false}));
 showPanel(tabs.includes(location.hash.slice(1))?location.hash.slice(1):'village',{updateHistory:false});
+// SVGImageElement has no reliable "complete" flag: attach before the first href.
+const towerStageImage=$('tower-stage-image');
+towerStageImage?.addEventListener('load',()=>{
+  if(towerStageImage.getAttribute('href')===towerAsset(preview.tower))$('art-tower')?.classList.add('tower-photo-ready');
+});
+towerStageImage?.addEventListener('error',()=>{$('art-tower')?.classList.remove('tower-photo-ready');});
+$('tower-card-photo')?.addEventListener('error',event=>{
+  event.currentTarget.alt='Turmbild vorübergehend nicht verfügbar';
+  event.currentTarget.hidden=true;
+});
 refreshPreview();
