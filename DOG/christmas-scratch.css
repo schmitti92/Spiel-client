@@ -1264,3 +1264,12 @@ body.scratch-ticket-open{
  .scratch-stage:not([hidden]) .scratch-current-title{font-size:11px}
  .scratch-stage:not([hidden]) .scratch-current-summary{font-size:9px;padding:2px 3px}
 }
+
+
+/* Während ein Los offen ist, die gesamte DOG-Weihnachten-Kopfzeile
+   (Logo, Kapitel 1, Zurück) mitsamt ihrem Layout-Platz ausblenden.
+   Die vorhandene scratch-ticket-open-Klasse wird beim Schließen,
+   Profilwechsel und Abmelden wieder entfernt. */
+body.scratch-ticket-open > header.event-top{
+ display:none!important;
+}
