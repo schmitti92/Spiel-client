@@ -391,11 +391,11 @@
  background-repeat:no-repeat;background-size:100% 100%,cover;background-position:center;
 }
 .scratch-stage[data-variant="premium_27"] .scratch-board{
- position:absolute;left:9.1%;top:21.68%;width:49.9%;height:51.68%;
+ position:absolute;left:10.4%;top:23.6%;width:53.2%;height:55.8%;
  margin:0;padding:0;max-width:none;
  grid-template-columns:repeat(3,minmax(0,1fr));
  grid-template-rows:repeat(9,minmax(0,1fr));
- column-gap:2.6%;row-gap:1.35%;
+ column-gap:3.3%;row-gap:2.7%;
 }
 .scratch-stage[data-variant="premium_27"] .scratch-field{
  display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -419,7 +419,7 @@
  box-shadow:inset 0 0 12px #ffc64088,0 0 12px #fff075bb;border:0;
 }
 .scratch-stage[data-variant="premium_27"] .scratch-hidden-prize{
- position:absolute;left:9%;top:81%;width:50%;height:9%;
+ position:absolute;left:63.5%;top:75%;width:33%;height:9%;
  display:flex;align-items:center;justify-content:center;flex-direction:column;
  background:#4c0b1e99;border:1px solid #e8b968;border-radius:10px;
  box-shadow:none;padding:4px;overflow-y:auto;
@@ -430,7 +430,7 @@
 }
 .scratch-stage[data-variant="premium_27"] .scratch-hidden-prize small{color:#ffecc8}
 .scratch-stage[data-variant="premium_27"] .scratch-premium-symbol-count{
- position:absolute;left:8%;top:76.5%;width:53%;z-index:3;
+ position:absolute;left:63.5%;top:70.2%;width:33%;z-index:3;
  text-align:center;border-radius:8px;background:#330c1fe0;border:1px solid #eec677;
  color:#ffedbd;font-size:clamp(9px,1.25vw,13px);line-height:1.4;padding:4px 3px;
  pointer-events:none;
