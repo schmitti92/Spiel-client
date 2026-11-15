@@ -39,10 +39,10 @@ const el=(tag,cls,str)=>{
 };
 const num=v=>Number(v||0).toLocaleString('de-DE');
 const prizeLabel=p=>p?.type==='coins'?(p.bonus?'🎉 Zusatzgewinn · ':'')+(p.symbol||'🪙')+' '+num(p.amount)+' Münzen'+(p.x2?' (×2)':''):
- p?.type==='unlock'?'🎁 Freischaltung: '+(p.prize?.icon?p.prize.icon+' ':'')+(p.prize?.name||'Freischaltung'):'';
+ p?.type==='unlock'?(p.symbol||'🎁')+' Freischaltung: '+(p.prize?.icon?p.prize.icon+' ':'')+(p.prize?.name||'Freischaltung'):'';
 const symbolLegend=tier=>{
  const [coin,note,bag]=SCRATCH_COIN_PRIZES[tier]||SCRATCH_COIN_PRIZES.simple;
- return '🪙 '+num(coin)+' · 💵 '+num(note)+' · 💼 '+num(bag)+' Münzen · 🎁 Freischaltung';
+ return '🪙 '+num(coin)+' · 💵 '+num(note)+' · 💼 '+num(bag)+' Münzen · 🎁 💝 🎀 🧧 (je 3 gleiche = Freischaltung)';
 };
 export function initChristmasScratch(){
  const $=id=>document.getElementById(id);
@@ -320,12 +320,15 @@ export function initChristmasScratch(){
   panel.replaceChildren(el('h4','','Gewinntabelle'));
   const tier=result?.tier||'simple';
   const amounts=SCRATCH_COIN_PRIZES[tier]||SCRATCH_COIN_PRIZES.simple;
-  const awarded=new Set(entries.map(p=>p?.type==='coins'?p.symbol||'🪙':p?.type==='unlock'?'🎁':''));
-  const names=[['🪙',amounts[0]+' Münzen'],['💵',amounts[1]+' Münzen'],['💼',amounts[2]+' Münzen'],['🎁','Freischaltung']];
+  const awarded=new Set(entries.map(p=>p?.type==='coins'?p.symbol||'🪙':p?.type==='unlock'?p.symbol||'🎁':''));
+  const giftSymbols=result?.board?.symbolVersion===3?['🎁','💝','🎀','🧧']:['🎁'];
+  const giftWon=giftSymbols.find(symbol=>awarded.has(symbol));
+  const names=[['🪙',amounts[0]+' Münzen'],['💵',amounts[1]+' Münzen'],['💼',amounts[2]+' Münzen'],[giftSymbols.join(' '),'Freischaltung · 3 gleiche Geschenke']];
   for(const [symbol,label] of names){
-   const line=el('div','scratch-prize-entry'+(awarded.has(symbol)?' is-won':''));
+   const won=awarded.has(symbol)||(symbol===giftSymbols.join(' ')&&!!giftWon);
+   const line=el('div','scratch-prize-entry'+(won?' is-won':''));
    line.append(el('span','',symbol),el('span','',label));
-   if(awarded.has(symbol))line.append(el('strong','','✓ Gewinn'));
+   if(won)line.append(el('strong','',giftWon&&symbol===giftSymbols.join(' ')?giftWon+' ✓ Gewinn':'✓ Gewinn'));
    panel.append(line);
   }
   const remaining=status?.remainingMainPrizes;
@@ -343,13 +346,15 @@ export function initChristmasScratch(){
   $('scratch-ticket-title').textContent=conf?
    conf[0]+' · '+(SCRATCH_TICKET_TYPES.find(t=>t.id===result.tier)?.label||'')+'-Rubbellos':
    '🎟️ Älteres Rubbellos';
-  const payoutRule=result.board?.symbolVersion===2&&result.board?.variantId==='premium_27'?
+  const payoutRule=result.board?.variantId==='premium_27'&&result.board?.symbolVersion===3?
+   'Drei gleiche Gewinnsymbole waagerecht; Geld ab 20 Symbolfeldern; Freischaltung ab 24 Symbolfeldern UND 3 gleichen Geschenkzeichen in einer Reihe. 🧊 zählt nicht.':
+   result.board?.symbolVersion===2&&result.board?.variantId==='premium_27'?
    'Drei gleiche Gewinnsymbole waagerecht, Geld ab 20 Symbolfeldern, 🎁 Freischaltung ab 24 Symbolfeldern. 🧊 zählt nicht.':null;
   $('scratch-variant-rule').textContent=conf?conf[0]+' · Gewinnregel: '+(payoutRule||conf[1]):
    'Älteres Los – dieses Ergebnis wurde vor dem neuen Spielfeldsystem gespeichert';
   board.parentElement.querySelector('.scratch-premium-symbol-count')?.remove();
   const legend=$('scratch-symbol-legend');
-  if(legend){legend.hidden=result.board?.symbolVersion!==2;
+  if(legend){legend.hidden=![2,3].includes(result.board?.symbolVersion);
    legend.textContent=legend.hidden?'':symbolLegend(result.tier)}
   board.replaceChildren();board.removeAttribute('style');
   if(conf&&Array.isArray(cells)&&cells.length===conf[2]*conf[3]){
@@ -408,7 +413,7 @@ export function initChristmasScratch(){
   if(stage.dataset.variant==='premium_27'&&Array.isArray(ticket.board?.cells)){
    const count=ticket.board.cells.filter(symbol=>symbol!=='🧊').length;
    const note=el('div','scratch-premium-symbol-count',
-    '🔎 '+count+'/27 Symbolfelder · Geld ab 20 · 🎁 Freischaltung ab 24');
+    '🔎 '+count+'/27 Symbolfelder · Geld ab 20 · '+(ticket.board?.symbolVersion===3?'Freischaltung ab 24 + 3 gleichen Geschenken':'🎁 Freischaltung ab 24'));
    const old=board.parentElement.querySelector('.scratch-premium-symbol-count');
    if(old)old.remove();
    board.parentElement.append(note);
@@ -423,7 +428,7 @@ export function initChristmasScratch(){
     ticket.multiplier===2?' · ✨ ×2-Multiplikator':'');
   const list=$('scratch-winning-lines');list.replaceChildren();
   for(const [i,win] of wins.entries()){
-   const description=win.rule==='gold-20'?'20 Symbolfelder':win.rule==='premium-24'?'24 Symbolfelder':win.rule==='row-3'?'Dreierreihe':'Gewinn '+(i+1);
+   const description=win.rule==='gold-20'?'20 Symbolfelder':win.rule==='premium-24'?(ticket.board?.symbolVersion===3?'24 Symbolfelder + 3 gleiche Geschenkzeichen':'24 Symbolfelder'):win.rule==='row-3'?'Dreierreihe':'Gewinn '+(i+1);
    const line=el('div','scratch-prize-line',description+': '+prizeLabel(win.prize));
    if(win.prize?.x2)line.append(el('small','', ' · '+num(win.prize.baseAmount)+' × 2'));
    list.append(line);
