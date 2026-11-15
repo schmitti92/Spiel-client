@@ -2,10 +2,11 @@ import {applyMotionMode,loadMotionMode} from './motion-settings.js';
 applyMotionMode(loadMotionMode());
 import {BOARD_STYLES,isBoardUnlocked,BOARD_FRAMES,SCENE_STYLES,HUD_LAYOUTS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,loadAppearance,saveAppearance,validAssetPath} from './appearance-registry.js?v=22';
 import {APPROVED_BOARD_LAYOUT as LAYOUT} from './approved-board.js';
+import {isVerifiedCosmeticUnlocked} from './verified-cosmetics.js?v=2';
 const $=id=>document.getElementById(id);
 const S='http://www.w3.org/2000/svg',KEY='dog:design-studio:presets:v1';
 const BOARDS=['studio','schiefer','holz','pergament','bergsee','goldwellen','royalMarmor','maerchental','alpenland','kuestenabenteuer','royalKarten','zauberwald','midnight','forest','winter','weihnachtsdorf','lebkuchenwerkstatt','polarlichtpalast','winterlandschaft'];
-const SCENES=['schloss','none'];
+const SCENES=Object.keys(SCENE_STYLES);
 const N={studio:'TV-Studio',schiefer:'Schiefer',holz:'Holz',pergament:'Pergament',bergsee:'Bergsee',goldwellen:'Goldwellen',royalMarmor:'Royal-Marmor',midnight:'Mitternacht',forest:'Waldlichtung',winter:'Winterabend',none:'Ohne Hintergrund',schloss:'Magisches Schloss am Nebelsee',maerchental:'Märchental',zauberwald:'Zauberwald',kuestenabenteuer:'Küstenabenteuer',alpenland:'Alpenland',royalKarten:'Royal-Karten',weihnachtsdorf:'Weihnachtsdorf',lebkuchenwerkstatt:'Lebkuchenwerkstatt',polarlichtpalast:'Polarlichtpalast',winterlandschaft:'Winterlandschaft'};
 const C=['#e75c59','#419ef0','#48c27c','#ffc94d'],name=id=>N[id]||id;
 const validBoard=id=>typeof id==='string'&&Object.hasOwn(BOARD_STYLES,id);
@@ -13,6 +14,9 @@ const validFrame=id=>typeof id==='string'&&Object.hasOwn(BOARD_FRAMES,id);
 const validScene=id=>typeof id==='string'&&Object.hasOwn(SCENE_STYLES,id);
 const validHudLayout=id=>typeof id==='string'&&Object.hasOwn(HUD_LAYOUTS,id);
 const validHudTone=id=>typeof id==='string'&&Object.hasOwn(HUD_TONES,id);
+const unlockedScene=id=>validScene(id)&&(!SCENE_STYLES[id].unlockId||isVerifiedCosmeticUnlocked(SCENE_STYLES[id].unlockId));
+const unlockedTone=id=>validHudTone(id)&&(id==='classic'||isVerifiedCosmeticUnlocked('christmas2026:hud-tone:'+id));
+const unlockedPreset=p=>isBoardUnlocked(p.board)&&unlockedScene(p.scene)&&unlockedTone(p.hudTone||'classic');
 const safeUrl=p=>validAssetPath(p)?new URL(p,import.meta.url).href:null;
 const image=t=>safeUrl(t?.image)||safeUrl(t?.fallbackImage);
 const bg=t=>image(t)?'url("'+image(t)+'")':(t?.page||'linear-gradient(130deg,#28445d,#091b29)').replace(/,\s*(#[\da-f]{3,8})\s*$/i,(_,c)=>',linear-gradient('+c+','+c+')');
@@ -21,7 +25,7 @@ const applied=()=>{const v=loadAppearance();return {board:validBoard(v.board)?v.
 const start=applied();
 let draft={...start};
 function loadPresets(){
- try{const a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a.slice(0,30).filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&validBoard(x.board)&&isBoardUnlocked(x.board)).map(x=>({id:x.id.slice(0,64),name:x.name.slice(0,40),scene:validScene(x.scene)?x.scene:'schloss',board:x.board,boardFrame:validFrame(x.boardFrame)?x.boardFrame:'classic',hudLayout:validHudLayout(x.hudLayout)?x.hudLayout:'classic',hudTone:validHudTone(x.hudTone)?x.hudTone:'classic',hudOpacity:normalizeHudOpacity(x.hudOpacity),favorite:x.favorite===true})):[]}
+ try{const a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a.slice(0,30).filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&validBoard(x.board)&&unlockedPreset(x)).map(x=>({id:x.id.slice(0,64),name:x.name.slice(0,40),scene:unlockedScene(x.scene)?x.scene:'schloss',board:x.board,boardFrame:validFrame(x.boardFrame)?x.boardFrame:'classic',hudLayout:validHudLayout(x.hudLayout)?x.hudLayout:'classic',hudTone:unlockedTone(x.hudTone)?x.hudTone:'classic',hudOpacity:normalizeHudOpacity(x.hudOpacity),favorite:x.favorite===true})):[]}
  catch{return []}
 }
 let presets=loadPresets();
@@ -155,8 +159,14 @@ function makeOption(list,id,t,kind){
  b.append(a,c,dot);b.addEventListener('click',()=>{draft[kind]=id;refresh();status('Vorschau geändert. Mit „Im Spiel verwenden“ übernimmst du diese Kombination.')});
  list.append(b);
 }
-SCENES.filter(validScene).forEach(k=>makeOption($('scene-choices'),k,SCENE_STYLES[k],'scene'));
-BOARDS.filter(validBoard).forEach(k=>makeOption($('board-choices'),k,BOARD_STYLES[k],'board'));
+function renderOwnedOptions(){
+ // Unearned scratch prizes are secret, not grey preview cards.
+ const scenes=$('scene-choices'),boards=$('board-choices');
+ scenes.replaceChildren();boards.replaceChildren();
+ SCENES.filter(unlockedScene).forEach(k=>makeOption(scenes,k,SCENE_STYLES[k],'scene'));
+ BOARDS.filter(k=>validBoard(k)&&isBoardUnlocked(k)).forEach(k=>makeOption(boards,k,BOARD_STYLES[k],'board'));
+}
+renderOwnedOptions();
 // Frame options are styled swatches, not new SVG boards. The actual game
 // uses precisely these whitelisted styles on its outer .board-card.
 const frameList=$('frame-choices');
@@ -185,15 +195,20 @@ for(const [id,entry] of Object.entries(HUD_LAYOUTS)){
  box.append(icon,copy,checked);layoutTarget.append(box);
 }
 const toneList=$('hud-tone-choices');
-for(const [id,tone] of Object.entries(HUD_TONES)){
- const button=document.createElement('button');button.type='button';button.className='hud-tone-choice';button.dataset.hudTone=id;button.setAttribute('aria-pressed','false');
- const swatch=document.createElement('span');swatch.className='hud-tone-swatch';swatch.style.background=tone.swatch;
- const label=document.createElement('span');label.textContent=tone.label;
- const mark=document.createElement('span');mark.className='hud-tone-check';mark.textContent='✓';
- button.append(swatch,label,mark);
- button.addEventListener('click',()=>{draft.hudTone=id;refresh();status('Spielblock: '+tone.label+' · Layout: Klassisch. Speichern oder im Spiel verwenden.');});
- toneList.append(button);
+function renderOwnedTones(){
+ toneList.replaceChildren();
+ for(const [id,tone] of Object.entries(HUD_TONES)){
+  if(!unlockedTone(id))continue;
+  const button=document.createElement('button');button.type='button';button.className='hud-tone-choice';button.dataset.hudTone=id;button.setAttribute('aria-pressed','false');
+  const swatch=document.createElement('span');swatch.className='hud-tone-swatch';swatch.style.background=tone.swatch;
+  const label=document.createElement('span');label.textContent=tone.label;
+  const mark=document.createElement('span');mark.className='hud-tone-check';mark.textContent='✓';
+  button.append(swatch,label,mark);
+  button.addEventListener('click',()=>{draft.hudTone=id;refresh();status('Spielblock: '+tone.label+' · Layout: Klassisch. Speichern oder im Spiel verwenden.');});
+  toneList.append(button);
+ }
 }
+renderOwnedTones();
 // Keep all long design galleries in one compact left-side workspace.
 const studioPanels=['scene','board','frame','hud'];
 function showPanel(section){
@@ -223,7 +238,7 @@ for(const key of studioPanels){
 }
 showPanel('board');
 function apply(){
- if(!isBoardUnlocked(draft.board)){status('🔒 Dieses Spielbrett wird erst im Weihnachtsevent freigeschaltet.');return false}
+ if(!isBoardUnlocked(draft.board)||!unlockedScene(draft.scene)||!unlockedTone(draft.hudTone)){status('🔒 Dieses Design enthält einen noch nicht gesammelten Rubbellos-Gewinn.');return false}
  try{saveAppearance({...loadAppearance(),board:draft.board,boardFrame:draft.boardFrame,scene:draft.scene,sidebar:draft.scene==='schloss'?'schloss':'none',hudLayout:draft.hudLayout,hudTone:draft.hudTone,hudOpacity:normalizeHudOpacity(draft.hudOpacity)});renderPresets();status('✓ '+name(draft.scene)+' + '+name(draft.board)+' · Rahmen '+BOARD_FRAMES[draft.boardFrame].label+' · Spielblock '+HUD_TONES[draft.hudTone].label+' für DOG aktiviert.');return true}
  catch{status('⚠️ Das Design konnte nicht im Browser gespeichert werden.');return false}
 }
@@ -267,7 +282,7 @@ $('save-top').addEventListener('click',()=>{
 $('cancel-save').addEventListener('click',()=>$('save-dialog').close());
 $('save-form').addEventListener('submit',e=>{
  e.preventDefault();const n=$('design-name').value.trim();if(!n)return;
-  if(!isBoardUnlocked(draft.board)){status('🔒 Dieses Event-Brett kann noch nicht gespeichert werden.');return;}
+  if(!isBoardUnlocked(draft.board)||!unlockedScene(draft.scene)||!unlockedTone(draft.hudTone)){status('🔒 Dieses Design wurde noch nicht vollständig freigeschaltet.');return;}
  const p={id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),name:n.slice(0,40),scene:draft.scene,board:draft.board,boardFrame:draft.boardFrame,hudLayout:draft.hudLayout,hudTone:draft.hudTone,hudOpacity:normalizeHudOpacity(draft.hudOpacity),favorite:false};
  presets.unshift(p);if(!persist()){presets.shift();return}
  $('save-dialog').close();refresh();if(apply())status('💾 „'+p.name+'“ gespeichert und für DOG aktiviert.');
@@ -277,4 +292,9 @@ try{
  if(u&&u.origin===location.origin&&['hub-lobby.html','spielauswahl-lokal.html','index.html'].includes(u.pathname.split('/').pop()))$('back-link').href=u.href;
 }catch{}
 refresh();renderPresets();
-status('Gestalte Brett, Rahmen, Hintergrund und Transparenz der Spielblöcke – lokal ohne Firebase-Schreibvorgänge.');
+// Refresh on verified ownership changes or account switches, not on game ticks.
+window.addEventListener('dog-cosmetics-verified',()=>{
+ draft=applied();presets=loadPresets();
+ renderOwnedOptions();renderOwnedTones();renderPresets();refresh();
+});
+status('Gestalte mit deinen bereits gesammelten Brettern, Hintergründen und Blockfarben – lokal ohne zusätzliche Firebase-Schreibvorgänge.');
