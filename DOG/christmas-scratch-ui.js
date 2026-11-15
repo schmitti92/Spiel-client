@@ -290,7 +290,7 @@ export function initChristmasScratch(){
   if(stage.dataset.variant==='premium_27'&&Array.isArray(ticket.board?.cells)){
    const count=ticket.board.cells.filter(symbol=>symbol!=='🧊').length;
    const note=el('div','scratch-premium-symbol-count',
-    '🎁 '+count+'/27 Symbolfelder · Gold ab 20 · Premium ab 24');
+    '🔎 '+count+'/27 Symbolfelder · Geld ab 20 · 🎁 Freischaltung ab 24');
    const old=board.parentElement.querySelector('.scratch-premium-symbol-count');
    if(old)old.remove();
    board.parentElement.append(note);
