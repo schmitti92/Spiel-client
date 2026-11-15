@@ -19,7 +19,7 @@ test('DOG collection distinguishes real selections from locked event previews',(
   assert.equal(s.total,c.items.length);
   assert.equal(s.available+s.planned,s.total);
   assert.ok(c.items.every(i=>['available','planned'].includes(i.status)));
-  assert.ok(c.items.every(i=>['appearance','avatar','emoji','default','nameFrame','activeIcon','event'].includes(i.kind)));
+  assert.ok(c.items.every(i=>['appearance','avatar','emoji','default','nameFrame','activeIcon','event','cardEdition'].includes(i.kind)));
   assert.ok(c.items.filter(i=>i.status==='planned').every(i=>i.unlockId),'locked previews lack entitlement IDs: '+c.id+' '+c.items.filter(i=>i.status==='planned'&&!i.unlockId).map(i=>i.id).join(','));
  }
  const overall=dogCollectionStats();
