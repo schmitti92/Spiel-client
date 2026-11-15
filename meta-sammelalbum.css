@@ -61,3 +61,96 @@ button,a{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 
 .meta-picture-artwork img[hidden],.meta-detail-artwork img[hidden]{display:none!important}
+
+
+/* 2026 Christmas meta-album: a real paginated picture book.
+   Six picture positions are always visible on each leaf (3 columns x 2 rows).
+   The last leaf displays empty ornamental places, never fake unlocks. */
+.meta-album-gallery-scroll{padding:clamp(8px,1.1vw,16px);display:flex;flex-direction:column;gap:clamp(8px,1.2vw,15px);overflow:auto}
+.meta-book{position:relative;width:100%;padding:7px 9px 9px 24px;perspective:1500px;
+ border-radius:13px 23px 23px 12px;
+ background:linear-gradient(90deg,#4c2c1b 0,#936035 11px,#ebbc69 16px,#83522f 22px,#442718 25px,transparent 26px),
+  linear-gradient(135deg,#a46a3b,#53301c);
+ box-shadow:0 14px 31px #000b,0 0 0 2px #c39153,inset -8px 0 13px #2b150f77;
+}
+.meta-book-spine{position:absolute;left:8px;top:5%;bottom:5%;width:12px;border-radius:12px;
+ background:repeating-linear-gradient(180deg,#f3d19d 0 9px,#8e572f 10px 19px,#eec88a 20px 23px);
+ box-shadow:inset -3px 0 #40271688,0 0 7px #1a130d}
+.meta-book-sheet{position:relative;overflow:hidden;isolation:isolate;
+ display:flex;flex-direction:column;justify-content:space-between;gap:clamp(7px,1.2vw,14px);
+ min-height:370px;padding:clamp(10px,1.35vw,21px) clamp(12px,1.6vw,26px);
+ color:#573c27;border-radius:7px 19px 19px 5px;border:1px solid #ebd8b8;
+ background:radial-gradient(circle at 60% 35%,#fff9e9 0,#f4e6ca 62%,#dbc69e 100%);
+ box-shadow:inset 15px 0 22px #b38f5970,inset -2px 0 9px #a57a4955,0 1px 5px #0008;
+}
+.meta-book-sheet::before{content:"";position:absolute;z-index:0;inset:0;pointer-events:none;
+ background:repeating-linear-gradient(0deg,transparent 0 28px,#9e775412 30px),
+  radial-gradient(ellipse at 30% 90%,#bd8e5040,transparent 67%);
+ opacity:.55}
+.meta-book-page-head,.meta-book-page-foot{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;
+ color:#8f632f;font-family:Georgia,serif;font-weight:900;letter-spacing:.09em}
+.meta-book-page-head{font-size:clamp(8px,.9vw,13px);border-bottom:1px solid #ba935eaa;padding-bottom:7px}
+.meta-book-ornament{font-size:17px}
+.meta-book-page-foot{font-size:clamp(9px,.85vw,12px);border-top:1px solid #ba935eaa;padding-top:7px}
+.meta-book-page-foot span:last-child{white-space:nowrap}
+.meta-book-sheet .meta-picture-grid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ grid-template-rows:repeat(2,minmax(0,1fr));gap:clamp(6px,1vw,13px);flex:1;align-content:center}
+.meta-book-sheet .meta-picture-card{min-width:0;max-width:100%;gap:3px;padding:clamp(4px,.55vw,8px);
+ background:linear-gradient(155deg,#fff7e5,#e5cfaa);border:1px solid #ac895b;border-radius:8px;
+ color:#593b22;box-shadow:0 3px 7px #8b653a55,inset 0 0 0 1px #fffaf0}
+.meta-book-sheet .meta-picture-card.selected{border-color:#795220;box-shadow:0 0 0 2px #d49a2b9c,0 0 12px #d1a2519c}
+.meta-book-sheet .meta-picture-artwork{height:clamp(62px,10dvh,130px);aspect-ratio:auto;border:2px solid #d6b887;
+ border-radius:5px;background:#d2b78d}
+.meta-book-sheet .meta-picture-artwork img{object-fit:cover}
+.meta-book-sheet .meta-picture-lock{min-height:25px;font-size:18px}
+.meta-book-sheet .meta-picture-index{color:#987246;font-size:clamp(8px,.65vw,10px)}
+.meta-book-sheet .meta-picture-name{color:#49301c;font-size:clamp(10px,1vw,14px);line-height:1.15}
+.meta-book-sheet .meta-picture-status{font-size:clamp(8px,.64vw,10px);padding:2px 5px;background:#77644c;color:#fff3dd}
+.meta-book-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+ min-height:clamp(98px,16dvh,165px);border:2px dashed #b69a71;border-radius:9px;
+ color:#987c50;background:linear-gradient(145deg,#f3e3c45c,#dcc3984f);font-family:Georgia,serif}
+.meta-book-empty-ornament{font-size:30px;line-height:1;color:#b49b6e}
+.meta-book-empty small{font-size:clamp(9px,.8vw,12px);text-align:center;padding:0 3px}
+.meta-book-controls{display:grid;grid-template-columns:1fr minmax(116px,auto) 1fr;align-items:center;gap:10px;
+ width:min(100%,650px);margin:0 auto;padding:0 3px}
+.meta-book-turn{min-height:43px;border-radius:13px;border:1.5px solid #e6c387;color:#ffe5ad;font-weight:900;
+ background:linear-gradient(130deg,#194467,#092842);box-shadow:0 4px 13px #0006}
+.meta-book-turn:not(:disabled):hover{background:linear-gradient(130deg,#38668a,#123d5c);border-color:#fff4c2}
+.meta-book-turn:disabled{opacity:.42;cursor:not-allowed}
+#meta-book-position{text-align:center;color:#ffe4ae;font-size:clamp(11px,1vw,14px);font-weight:900;white-space:nowrap}
+.meta-turn-leaf{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;justify-content:space-between;
+ gap:clamp(7px,1.2vw,14px);padding:inherit;color:#573c27;
+ background:radial-gradient(circle at 65% 25%,#fff8e8,#f0dfbd 75%,#d9be8f 100%);
+ border:1px solid #efdbb8;border-radius:7px 19px 19px 5px;backface-visibility:hidden;
+ transform-style:preserve-3d;pointer-events:none;will-change:transform,opacity}
+.meta-turn-leaf .meta-picture-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ grid-template-rows:repeat(2,minmax(0,1fr));gap:clamp(6px,1vw,13px);flex:1;align-content:center}
+.meta-turn-leaf.turn-next{transform-origin:left center;animation:meta-book-flip-next .68s ease-in-out forwards}
+.meta-turn-leaf.turn-prev{transform-origin:right center;animation:meta-book-flip-prev .68s ease-in-out forwards}
+@keyframes meta-book-flip-next{0%{transform:rotateY(0);opacity:1;filter:brightness(1)}
+ 45%{transform:rotateY(-85deg);opacity:.95;filter:brightness(.82)}
+ 100%{transform:rotateY(-176deg);opacity:0;filter:brightness(.9)}}
+@keyframes meta-book-flip-prev{0%{transform:rotateY(0);opacity:1;filter:brightness(1)}
+ 45%{transform:rotateY(85deg);opacity:.95;filter:brightness(.82)}
+ 100%{transform:rotateY(176deg);opacity:0;filter:brightness(.9)}}
+@media(max-width:1100px){.meta-book{padding-left:20px}.meta-book-sheet{min-height:345px;padding:10px 11px;gap:8px}.meta-book-sheet .meta-picture-artwork{height:clamp(65px,10dvh,104px)}
+ .meta-book-sheet .meta-picture-status{font-size:9px}.meta-book-empty{min-height:100px}}
+@media(max-width:760px){.meta-book-sheet{min-height:345px;padding:12px}.meta-book-sheet .meta-picture-artwork{height:clamp(70px,16vw,126px)}
+ .meta-book-sheet .meta-picture-name{font-size:clamp(10px,1.9vw,14px)}
+ .meta-book-page-head{font-size:10px}
+ .meta-book-sheet .meta-picture-grid{gap:9px}}
+@media(max-width:480px){.meta-book{padding:5px 6px 7px 17px}.meta-book-spine{left:5px;width:9px}
+ .meta-book-sheet{min-height:310px;padding:9px 7px;gap:6px}
+ .meta-book-page-head{font-size:7px;letter-spacing:.02em}
+ .meta-book-sheet .meta-picture-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ .meta-book-sheet .meta-picture-card{padding:3px;gap:2px}
+ .meta-book-sheet .meta-picture-artwork{height:clamp(58px,18vw,86px);border-width:1px}
+ .meta-book-sheet .meta-picture-lock{min-height:20px;font-size:14px}
+ .meta-book-sheet .meta-picture-name{font-size:9px}
+ .meta-book-sheet .meta-picture-status{font-size:7px;padding:1px 3px}
+ .meta-book-sheet .meta-picture-index{font-size:7px}
+ .meta-book-empty{min-height:95px}.meta-book-empty small{font-size:9px}
+ .meta-book-controls{gap:6px;grid-template-columns:1fr auto 1fr}
+ .meta-book-turn{font-size:11px;padding:8px 4px;min-height:38px}
+ .meta-book-page-foot{font-size:8px;letter-spacing:0}}
+@media(prefers-reduced-motion:reduce){.meta-turn-leaf{display:none!important;animation:none!important}}
