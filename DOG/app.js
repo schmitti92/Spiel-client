@@ -39,6 +39,7 @@ function acceptRemote(room){
  if(!decision.accept)return;
  roomRevision=decision.roomRevision;
  if(decision.kind==='dog'){
+   if((decision.clearSelection||game?.revision!==decision.game?.revision)&&$('dog-move-choice-dialog')?.open)$('dog-move-choice-dialog').close();
    if(decision.hideHand)revealed=decision.seat!==null;
    if(decision.clearSelection){selectedCard=null;selectedPiece=null;jokerAs=null;$('dog-joker-dialog').close();}
    game=decision.game;onlineSeat=decision.seat;acceptedMatchId=decision.matchId;
@@ -581,6 +582,33 @@ $('dog-joker-grid').addEventListener('click',event=>{
 });
 $('dog-joker-close').addEventListener('click',()=>{jokerDialog.close();selectedCard=null;jokerAs=null;selectedPiece=null;render();});
 jokerDialog.addEventListener('cancel',()=>{selectedCard=null;jokerAs=null;selectedPiece=null;render();});
+// Resolve ambiguous legal routes with an accessible in-game dialog instead
+// of a browser prompt. The authoritative engine still checks each action.
+const moveChoiceDialog=$('dog-move-choice-dialog');
+const moveChoiceOptions=$('dog-move-choice-options');
+function chooseDogMove(choices,description){
+ if(!choices.length||moveChoiceDialog.open)return;
+ $('dog-move-choice-description').textContent=description;
+ moveChoiceOptions.replaceChildren(...choices.map(({m,i},choice)=>{
+  const button=document.createElement('button');
+  button.type='button';button.className='dog-move-choice-button';
+  const cardType=m.as==='swap'?'Tauschkarte':m.as==='1/11'?'1 oder 11':m.as||'Karte';
+  const route=m.type==='swap'?'Figuren tauschen':m.type==='start'?'Figur starten':m.steps!=null?m.steps+' Felder ziehen':'Figur ziehen';
+  button.textContent=(choice+1)+'. '+cardType+' · '+route+(m.viaGoal?' · ins Ziel':'');
+  button.addEventListener('click',()=>{
+   moveChoiceDialog.close();
+   // A new server snapshot must not turn this older choice into a different move.
+   if(onlineBusy||available[i]!==m){
+    $('status').textContent='Der Spielstand hat sich geändert. Bitte wähle den Zug erneut.';
+    return;
+   }
+   onMove(i);
+  });
+  return button;
+ }));
+ moveChoiceDialog.showModal();
+}
+$('dog-move-choice-cancel').addEventListener('click',()=>moveChoiceDialog.close());
 enableHandTouchGestures($('hand'),{status:$('dog-hand-zoom-status')});
 $('hand').addEventListener('click',e=>{const btn=e.target.closest('[data-card]');if(btn)onCard(Number(btn.dataset.card));});
 $('moves').addEventListener('click',e=>{const btn=e.target.closest('[data-special]');if(!btn)return;const index=available.findIndex(m=>m.type===btn.dataset.special&&(jokerAs===null||m.as===jokerAs));if(index>=0)onMove(index);});
@@ -599,10 +627,7 @@ $('board').addEventListener('click',e=>{
   const swapChoices=available.map((m,i)=>({m,i})).filter(({m})=>m.type==='swap'&&m.pieceId===selectedPiece&&m.targetId===targetId);
   if(swapChoices.length===1){onMove(swapChoices[0].i);return;}
   if(swapChoices.length>1){
-   const response=prompt('Welche Tauschvariante? '+swapChoices.map(({m},i)=>(i+1)+': '+(m.as||'Tausch')).join(' | '),'1');
-   if(response===null)return;
-   const choice=Number(response)-1;
-   if(Number.isInteger(choice)&&swapChoices[choice])onMove(swapChoices[choice].i);
+   chooseDogMove(swapChoices,'Wähle aus, wie du die beiden Figuren tauschen möchtest.');
    return;
   }
  }
@@ -622,11 +647,7 @@ $('board').addEventListener('click',e=>{
  });
  if(matches.length===1){onMove(matches[0].i);return;}
  if(matches.length>1){
-  const choices=matches.map(({m},i)=>(i+1)+': '+(m.as||m.steps||'Zug')+(m.viaGoal?' über Ziel':'')).join(' | ');
-  const response=prompt('Mehrere Wege führen hierher. Welche Variante? '+choices,'1');
-  if(response===null)return;
-  const selected=Number(response)-1;
-  if(Number.isInteger(selected)&&matches[selected])onMove(matches[selected].i);
+  chooseDogMove(matches,'Mehrere erlaubte Wege führen auf dieses Feld. Wähle die Variante.');
   return;
  }
  selectedPiece=null;drawBoard();visualFeedback.invalid();$('move-help').textContent='Zug nicht erlaubt. Bitte selbst erneut rechnen.';
