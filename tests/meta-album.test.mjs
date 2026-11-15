@@ -67,3 +67,19 @@ test('book pagination keeps six slots per page, nine real images and three empty
  assert.match(html,/id="meta-book-position"/);
  assert.match(css,/\.meta-turn-leaf/);
 });
+test('uploaded transparent Christmas book is the page artwork and all six frames are overlaid',()=>{
+ const book='assets/meta-sammelalbum/weihnachts_sammelalbum_buch_transparent.png';
+ assert.ok(existsSync(new URL('../'+book,import.meta.url)),'uploaded artwork must exist');
+ const css=source('../meta-sammelalbum.css');
+ const html=source('../meta-sammelalbum.html');
+ const js=source('../meta-sammelalbum.js');
+ assert.match(css,/url\("assets\/meta-sammelalbum\/weihnachts_sammelalbum_buch_transparent\.png"\)/);
+ assert.match(css,/aspect-ratio:3 \/ 2/);
+ assert.match(css,/--album-slots-left:10%/);
+ assert.match(css,/--album-slots-top:19\.1%/);
+ assert.match(css,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+ assert.match(css,/grid-template-rows:repeat\(2,minmax\(0,1fr\)\)/);
+ assert.match(html,/meta-sammelalbum\.css\?v=4/);
+ assert.match(js,/selected=theme\.pictures\[pageIndex\*6\]/);
+ assert.match(js,/const unlocked=isMetaAlbumPictureUnlocked\(pic\)/,'locked rewards remain enforced');
+});
