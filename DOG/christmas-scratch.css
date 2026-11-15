@@ -186,3 +186,17 @@
  .scratch-stage[data-variant="gifts"] .scratch-hidden-prize{font-size:10px;left:18%;width:64%}
  .scratch-stage[data-variant="gifts"] .scratch-hidden-prize strong{font-size:11px}
 }
+
+/* One continuous canvas across every card cell: finger/mouse can cross all
+   nine, sixteen or twenty squares without releasing. Only coated pixels count. */
+.scratch-board{position:relative}
+.scratch-unified-cover{
+ position:absolute;inset:0;width:100%;height:100%;display:block;
+ z-index:4;touch-action:none;cursor:crosshair;user-select:none;
+ -webkit-user-select:none;-webkit-touch-callout:none;overscroll-behavior:contain;
+}
+.scratch-unified-cover[hidden]{display:none!important}
+.scratch-unified-cover:focus-visible{outline:3px solid #ffe18b;outline-offset:2px}
+.scratch-stage[data-variant="gifts"] .scratch-unified-cover{
+ position:absolute;inset:0;width:100%;height:100%;border-radius:0;
+}
