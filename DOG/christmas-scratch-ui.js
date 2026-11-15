@@ -20,7 +20,7 @@ export const SCRATCH_SHOP_VARIANTS=Object.freeze([
  Object.freeze({id:'premium_27',tier:'premium',icon:'👑',name:'Premium-Weihnachtslos',subtitle:'Premium · 27 Felder',rule:'4 sichere Geld-Dreierreihen · 20 Symbole = 1.000 🪙 (30 %)',theme:'gold'})
 ]);
 const VARIANTS={
- premium_27:['🎅 Premium-Weihnachts-Rubbellos','Mindestens 4 Geld-Dreierreihen sind garantiert. Je 3 gleiche Geldsymbole waagerecht gewinnen. Bei 20 Symbolen kommen 1.000 Münzen dazu (30 %); ab 24 ist eine Freischaltung möglich.',9,3],
+ premium_27:['🎅 Premium-Weihnachts-Rubbellos','Mindestens 4 Geld-Dreierreihen sind garantiert. Je 3 gleiche Geldsymbole waagerecht gewinnen. 20 echte Symbole bringen 1.000 Zusatzmünzen; ab 24 ist eine Freischaltung möglich.',9,3],
  gifts:['🎁 Geschenkelinie','Drei gleiche Gewinnsymbole in einer Reihe, Spalte oder Diagonale',3,3],
  snow:['❄️ Schneeflocken-Bingo (älteres Los)','Vier gleiche Symbole in einer Reihe, Spalte oder Diagonale',4,4],
  snow_collect:['❄️ Schneeflocken-Bingo','Drei gleiche Gewinnsymbole irgendwo auf dem Los zählen als Gewinn – unabhängig von der Position. 🧊 bedeutet Niete und zählt nicht.',4,4],
@@ -774,9 +774,9 @@ export function initChristmasScratch(){
    conf[0]+' · '+(SCRATCH_TICKET_TYPES.find(t=>t.id===result.tier)?.label||'')+'-Rubbellos':
    '🎟️ Älteres Rubbellos';
   const payoutRule=result.board?.variantId==='premium_27'&&result.board?.symbolVersion===5?
-    'Vier echte Geld-Dreierreihen sind auf jedem Premiumlos garantiert: 🪙 💵 💼. Jede Dreierreihe gewinnt ihren Geldbetrag. Bei 20 echten Symbolen gibt es mit 30 % Chance zusätzliche 1.000 Münzen; ab 24 kann eine Freischaltung dazukommen. 🧊 zählt nicht.':
+    'Vier echte Geld-Dreierreihen sind auf jedem Premiumlos garantiert: 🪙 💵 💼. Jede Dreierreihe gewinnt ihren Geldbetrag. Bei 20 echten Symbolen gibt es zusätzliche 1.000 Münzen; ab 24 kann eine Freischaltung dazukommen. 🧊 zählt nicht.':
    result.board?.variantId==='premium_27'&&result.board?.symbolVersion===4?
-   'Drei gleiche Geldsymbole 🪙 💵 💼 in einer waagerechten Reihe gewinnen. 30 % der Lose erreichen 20 Symbolfelder: Dafür gibt es feste 1.000 Münzen. Ab 24 Symbolfeldern zusätzlich eine Freischaltung mit 3 gleichen Geschenken. 🧊 zählt nicht.':
+   'Drei gleiche Geldsymbole 🪙 💵 💼 in einer waagerechten Reihe gewinnen. Bei 20 echten Symbolfeldern gibt es feste 1.000 Münzen. Ab 24 Symbolfeldern zusätzlich eine Freischaltung mit 3 gleichen Geschenken. 🧊 zählt nicht.':
    result.board?.variantId==='elf'&&result.board?.symbolVersion===3?
    'Geld: durchgehender Weg gleicher Symbole von links nach rechts. Geschenk: 3 identische, waagerecht oder senkrecht verbundene Geschenkzeichen.':
    result.board?.variantId==='premium_27'&&result.board?.symbolVersion===3?
