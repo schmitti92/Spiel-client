@@ -1,4 +1,4 @@
-# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v9
+# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v10
 Stand: 15.11.2026. Status: KONZEPT AUF 4 SPIELARTEN ANGEPASST (2 Normal + 2 Premium), bestehende Live-Technik noch auf 3 Preisstufen und 6 auswählbaren Regeln. Die erste Grafik ist eingebunden; drei neue Motive und ihre Zuordnung müssen noch umgesetzt und getestet werden.
 Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 
@@ -45,13 +45,13 @@ Spielarten werden nicht weiterverfolgt.
 | Nr. | Klasse | Arbeitsname | Größe | Gewinnregel | Gestaltung | Zustand |
 |---|---|---|---|---|---|---|
 | 1 | Normal | 🎁 Geschenkelinie | 3×3 (9) | Drei gleiche Symbole horizontal, vertikal oder diagonal | Rot/Gold, Weihnachtsmarkt, Geschenkband | [x] Grafik hochgeladen, technisches Layout vorhanden; Praxistest offen |
-| 2 | Normal | ❄️ Schneeflocken-Bingo | 4×4 (16) | Vier gleiche Symbole horizontal, vertikal oder diagonal | Eisblau/Silber, Eis-Palast, Eiskristalle | [ ] Neues Einzelmotiv + 4×4-Ausrichtung |
+| 2 | Normal | ❄️ Schneeflocken-Bingo (Sammellos) | 4×4 (16) | **Drei gleiche Gewinnsymbole irgendwo; pro Symboltyp ein Gewinn. 🧊 = Nietenfeld.** | Eisblau/Silber, Eispalast-Motiv | [x] Benutzerbild übernommen, WebP bereitgestellt, 4×4-CSS ausgerichtet, Serverprüfer aktiv; [ ] Upload und Mobil-Endtest |
 | 3 | Premium | 🧝 Magischer Wichtelpfad | 4×5 (20) | Durchgehender Pfad gleicher Symbole vom linken zum rechten Spielfeldrand | Tiefgrün/Türkis, magischer Weihnachtswald, leuchtender Weg | [ ] Neues Einzelmotiv + 4×5-Ausrichtung |
 | 4 | Premium | 🎄 Weihnachtsbaum-Geheimnis | 5×3 (15) | ⭐🎄🎁 in genau dieser Reihenfolge von links nach rechts | Violett/Gold, glanzvoller Sternenbaum und magisches Dorf | [ ] Neues Einzelmotiv + 5×3-Ausrichtung |
 
 Dies sind **Gestaltungsvorschläge**, keine bereits vom Nutzer abgenommenen
 Endnamen oder finalisierten neuen Bilder. Die bestehende Spiellogik
-für `gifts`, `snow`, `elf` und `tree` ist vorhanden und muss nur auf
+für `gifts`, `snow_collect`, `elf` und `tree` ist vorhanden und muss nur auf
 die gewählten Klassen, individuelle Bildflächen und Gewinnanzeige
 abgestimmt werden.
 
@@ -124,7 +124,7 @@ Abnahme: automatische Validierung der vier neuen aktiven Varianten, zugehörige 
 - [x] `lastResult` wird serverseitig gespeichert; die Oberfläche bietet das noch nicht als gesehen markierte Los nach Neuladen erneut an (nur UI-Marker lokal, keine Berechtigungsprüfung damit).
 Abnahme: Unit-/Integrationstests für Guthaben, Duplikate, Entitlements, Auth, Parallelkäufe.
 
-## Phase 4 – Grafiken [KARTE 1/4 HOCHGELADEN; DREI NEUE OFFEN]
+## Phase 4 – Grafiken [1/4 HOCHGELADEN; 2/4 VORBEREITET; 2 PREMIUMKARTEN OFFEN]
 - [x] **Karte 1 „Geschenkelinie“** einzeln als hochwertiges Motiv (Rot/Gold, neun goldene Rubbelplätze) generiert.
 - [x] Optimierte WebP-Datei erstellt: `geschenkelinie-01.webp`, **1086×1448 Pixel**, ca. 414 KB. Download aus der aktuellen Unterhaltung.
 - [x] **Artwork-Feld-Ausrichtung im Frontend**: `christmas-event.html` enthält den neuen `scratch-card-art`-Wrapper; `christmas-scratch.css` positioniert das 3×3-Spielfeld auf den neun gedruckten goldenen Feldern.
@@ -133,7 +133,11 @@ Abnahme: Unit-/Integrationstests für Guthaben, Duplikate, Entitlements, Auth, P
 - [x] **Grafik in GitHub hochgeladen und geprüft:** Repository `schmitti92/Spiel-client`, Pfad `DOG/assets/scratch/geschenkelinie-01.webp`, Blob SHA `9a8f8e461630c5c095cc755a3f02db2cf0acd6ff` (identisch mit lokalem Original).
 - [x] **Statische Ausrichtung mit Originalbild überprüft und optimiert:** Die 3×3-Beschichtungen sitzen innerhalb der neun goldenen Rahmen (CSS: left 17 %, top 31,7 %, width 63,6 %, height 40,1 %, grössere Zwischenabstände). Stylesheet-Cache-Version aktualisiert.
 - [ ] **Live-Abnahme** im echten Browser und auf dem Smartphone: Bild aus GitHub Pages laden, Rubbelgefühl/Pointer-Touch, Gewinnsymbol-Highlight und 90-%-Automatik kontrollieren.
-- [ ] **Drei** zusätzliche Einzelmotive nacheinander gestalten, exportieren, in GitHub hochladen und einpassen: Schneeflocken-Bingo, Magischer Wichtelpfad, Weihnachtsbaum-Geheimnis.
+- [x] **Karte 2 „Schneeflocken-Bingo“**: fertiges Bild vom Nutzer bestätigt und als `schneeflocken-bingo-01.webp` (1152×1536 Pixel, ca. 577 KB) aus dessen hochgeladenem PNG exportiert. Download liegt in dieser Unterhaltung. Noch NICHT auf GitHub hochgeladen.
+- [x] Bestehende Eispalast-CSS-Einbindung mit dem Originalbild abgeglichen: 4×4-Positionierung auf 16 Silberfeldern (left 15,5 %, top 27,8 %, width 66 %, height 44,2 %, grid gaps 3 % / 7,5 %). Helle Eisfarbe unter der entfernten Silberschicht erhöht den sichtbaren Kontrast.
+- [x] `snow_collect`-Gewinnregel im Backend: drei gleiche Symbole an beliebigen Positionen, je Symbolart maximal ein Preis, 4–6 🧊-Nietenfelder pro Los. Alte `snow`-Viererreihen-Regel bleibt für historische Belege bestehen. Testgenerator 300-mal je Gewinneranzahl 0–3 erfolgreich kontrolliert.
+- [ ] **Karte 2 hochladen** in `schmitti92/Spiel-client/DOG/assets/scratch/schneeflocken-bingo-01.webp`, anschließend Gerätetest (Bilder, 90-%-Rubbeln, Preiszuteilung).
+- [ ] **Zwei** weitere Einzelmotive erstellen, hochladen und einpassen: Magischer Wichtelpfad und Weihnachtsbaum-Geheimnis.
 - Gemeinsam genutzte Assets: Silbertextur, Emoji-Symbole, Gewinnleuchten, Qualitätsrahmen.
 Abnahme: Bilddatei öffentlich verfügbar, alle neun Rubbelstellen ausgerichtet, Gewinnreihen sichtbar und 90-%-Aufdeckung auf Touch-Geräten erfolgreich überprüft; danach drei weitere Motive fertigstellen.
 
@@ -181,4 +185,5 @@ Abnahme: echte Spielrunde über mehrere Geräte.
 - 15.11.2026: Einheitlicher Canvas über dem gesamten Symbolraster implementiert. Ein einziger Pointer-Drag radiert quer über Zellen und Zwischenräume; pro-Zelle-Rubbelzwang entfernt. Gesamtfortschritt wird aus Alpha-Pixeln gemessen und die automatische Aufdeckung greift bei 90 % des gesamten Rasters. CSS-/JS-Cacheversionen angehoben; echter Smartphone-Test noch offen.
 - 15.11.2026: Anzahl der aktiven Rubbellos-Spielarten von zehn auf **sechs** korrigiert. Backend-Auswahl auf die sechs aktiven IDs eingeschränkt; alte vier Varianten bleiben für bereits ausgestellte Lose auswertbar. Testannahmen angepasst. Freischaltpools, Preise und Wahrscheinlichkeiten unverändert.
 - 15.11.2026: Ziel auf **vier Rubbellose, zwei Normal und zwei Premium**, neu festgelegt. Geschenkelinie bleibt Nr. 1; drei Neuentwicklungen vorgeschlagen (Schneeflocken-Bingo, Wichtelpfad, Weihnachtsbaum-Geheimnis). Plan angepasst, LIVE-Code noch mit sechs auswählbaren Spielarten und drei Preisstufen: Migration ausstehend, Altlose schützen.
-- Nächster Schritt: Ein finales Einzelmotiv für Normal-Los Nr. 2 „Schneeflocken-Bingo“ auswählen/erstellen; danach 20-Felder-Wichtelpfad und Weihnachtsbaum-Premiumlos.
+- 15.11.2026: Nutzer bestätigt das Eispalast-Bild als Rubbellos 2. Server-ID `snow_collect` aktiv, 3 gleiche irgendwo, 4–6 leere Nietenfelder und max. ein Treffer je Symbolart. Vom Nutzer hochgeladene 1152×1536-Vorlage als WebP exportiert; Rubbel-Zellen CSS-mäßig genau abgestimmt und Cache-Versionen erhöht. Backend war bei der letzten Render-Prüfung live; echter Browser-Endtest steht aus.
+- Nächster Schritt: `schneeflocken-bingo-01.webp` nach GitHub hochladen und mit dem normalen Konto testen; dann die zwei Premium-Motive nacheinander entwickeln.
