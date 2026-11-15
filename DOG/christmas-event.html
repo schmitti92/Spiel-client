@@ -7,7 +7,7 @@
 <meta name="description" content="DOG Weihnachtsevent – Das Weihnachtswunder von Lichtertal, Kapitel 1.">
 <title>DOG Weihnachten · Das Weihnachtswunder von Lichtertal</title>
 <link rel="stylesheet" href="./christmas-event.css?v=1">
-<link rel="stylesheet" href="./christmas-event-royal.css?v=5">
+<link rel="stylesheet" href="./christmas-event-royal.css?v=6">
 </head>
 <body>
 <div class="snow-sky" aria-hidden="true"></div>
@@ -76,6 +76,12 @@
             <g fill="#164538" stroke="#0a302b" stroke-width="2">
               <path d="M32 425 74 270 122 425ZM113 429 150 317 186 429ZM1037 439 1074 289 1118 439ZM1122 446 1161 326 1195 446Z"/>
             </g>
+            <!-- High-resolution Lichtertal night backdrop, over the old vector-landscape fallback.
+                 All five buildings/tree, labels and finale effects render above this layer. -->
+            <image id="village-background-image" x="0" y="0" width="1200" height="670"
+                   preserveAspectRatio="xMidYMid slice"
+                   href="weihnachtsevent-bilder/leere_winterdorf_plaza_im_mondlicht.png"
+                   aria-hidden="true" pointer-events="none" />
             <!-- LIGHTS TOWER: building 1 -->
             <g class="building" id="art-tower" data-level="1" transform="translate(32 137)">
               <ellipse cx="95" cy="251" rx="117" ry="19" fill="#091e27" opacity=".35"/>
@@ -222,6 +228,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="./christmas-event.js?v=5"></script>
+<script type="module" src="./christmas-event.js?v=6"></script>
 </body>
 </html>
