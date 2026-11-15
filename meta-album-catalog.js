@@ -11,15 +11,15 @@
  */
 const ASSET_ROOT='DealOrNoDeal/assets/weihnachts_event/';
 const christmasOne=Object.freeze([
- Object.freeze({id:'meta-christmas1-01',unlockId:'meta:christmas1:picture:01',number:1,name:'Winterdorf',icon:'🏘️',image:ASSET_ROOT+'01_winterdorf.png',description:'Das verschneite Dorf im warmen Lichterglanz.',status:'locked'}),
- Object.freeze({id:'meta-christmas1-02',unlockId:'meta:christmas1:picture:02',number:2,name:'Lebkuchenhaus',icon:'🍪',image:ASSET_ROOT+'02_lebkuchenhaus.png',description:'Ein süßes Weihnachtshaus voller festlicher Details.',status:'locked'}),
- Object.freeze({id:'meta-christmas1-03',unlockId:'meta:christmas1:picture:03',number:3,name:'Weihnachtsmann',icon:'🎅',image:ASSET_ROOT+'03_weihnachtsmann.png',description:'Der Weihnachtsmann macht sich für die Bescherung bereit.',status:'locked'}),
- Object.freeze({id:'meta-christmas1-04',unlockId:'meta:christmas1:picture:04',number:4,name:'Rentier Rudolf',icon:'🦌',image:ASSET_ROOT+'04_rentier.png',description:'Ein treuer Begleiter durch die Winternacht.',status:'locked'}),
- Object.freeze({id:'meta-christmas1-05',unlockId:'meta:christmas1:picture:05',number:5,name:'Weihnachtsbaum',icon:'🎄',image:ASSET_ROOT+'05_weihnachtsbaum.png',description:'Ein festlich geschmückter Baum als Herzstück der Weihnachtszeit.',status:'locked'}),
- Object.freeze({id:'meta-christmas1-06',unlockId:'meta:christmas1:picture:06',number:6,name:'Weihnachtszug',icon:'🚂',image:ASSET_ROOT+'06_weihnachtszug.png',description:'Eine magische Zugfahrt durch den Schnee.',status:'locked'}),
- Object.freeze({id:'meta-christmas1-07',unlockId:'meta:christmas1:picture:07',number:7,name:'Schneekugel',icon:'🔮',image:ASSET_ROOT+'07_schneekugel.png',description:'Ein kleines Weihnachtswunder hinter Glas.',status:'locked'}),
- Object.freeze({id:'meta-christmas1-08',unlockId:'meta:christmas1:picture:08',number:8,name:'Wichtelwerkstatt',icon:'🎁',image:ASSET_ROOT+'08_wichtelwerkstatt.png',description:'In der Werkstatt werden die Geschenke vorbereitet.',status:'locked'}),
- Object.freeze({id:'meta-christmas1-09',unlockId:'meta:christmas1:picture:09',number:9,name:'Polarlichter',icon:'🌌',image:ASSET_ROOT+'09_polarlichter.png',description:'Die funkelnden Lichter des winterlichen Himmels.',status:'locked'})
+ Object.freeze({requiredBingos:2,id:'meta-christmas1-01',unlockId:'meta:christmas1:picture:01',number:1,name:'Winterdorf',icon:'🏘️',image:ASSET_ROOT+'01_winterdorf.png',description:'Das verschneite Dorf im warmen Lichterglanz.',status:'locked'}),
+ Object.freeze({requiredBingos:4,id:'meta-christmas1-02',unlockId:'meta:christmas1:picture:02',number:2,name:'Lebkuchenhaus',icon:'🍪',image:ASSET_ROOT+'02_lebkuchenhaus.png',description:'Ein süßes Weihnachtshaus voller festlicher Details.',status:'locked'}),
+ Object.freeze({requiredBingos:6,id:'meta-christmas1-03',unlockId:'meta:christmas1:picture:03',number:3,name:'Weihnachtsmann',icon:'🎅',image:ASSET_ROOT+'03_weihnachtsmann.png',description:'Der Weihnachtsmann macht sich für die Bescherung bereit.',status:'locked'}),
+ Object.freeze({requiredBingos:8,id:'meta-christmas1-04',unlockId:'meta:christmas1:picture:04',number:4,name:'Rentier Rudolf',icon:'🦌',image:ASSET_ROOT+'04_rentier.png',description:'Ein treuer Begleiter durch die Winternacht.',status:'locked'}),
+ Object.freeze({requiredBingos:10,id:'meta-christmas1-05',unlockId:'meta:christmas1:picture:05',number:5,name:'Weihnachtsbaum',icon:'🎄',image:ASSET_ROOT+'05_weihnachtsbaum.png',description:'Ein festlich geschmückter Baum als Herzstück der Weihnachtszeit.',status:'locked'}),
+ Object.freeze({requiredBingos:12,id:'meta-christmas1-06',unlockId:'meta:christmas1:picture:06',number:6,name:'Weihnachtszug',icon:'🚂',image:ASSET_ROOT+'06_weihnachtszug.png',description:'Eine magische Zugfahrt durch den Schnee.',status:'locked'}),
+ Object.freeze({requiredBingos:14,id:'meta-christmas1-07',unlockId:'meta:christmas1:picture:07',number:7,name:'Schneekugel',icon:'🔮',image:ASSET_ROOT+'07_schneekugel.png',description:'Ein kleines Weihnachtswunder hinter Glas.',status:'locked'}),
+ Object.freeze({requiredBingos:16,id:'meta-christmas1-08',unlockId:'meta:christmas1:picture:08',number:8,name:'Wichtelwerkstatt',icon:'🎁',image:ASSET_ROOT+'08_wichtelwerkstatt.png',description:'In der Werkstatt werden die Geschenke vorbereitet.',status:'locked'}),
+ Object.freeze({requiredBingos:18,id:'meta-christmas1-09',unlockId:'meta:christmas1:picture:09',number:9,name:'Polarlichter',icon:'🌌',image:ASSET_ROOT+'09_polarlichter.png',description:'Die funkelnden Lichter des winterlichen Himmels.',status:'locked'})
 ]);
 export const META_ALBUM_THEMES=Object.freeze([
  Object.freeze({
@@ -48,7 +48,17 @@ export function metaAlbumPage(theme,requestedIndex=0){
  });
 }
 /** Secure default: no event-specific grant endpoint has been connected. */
-export const isMetaAlbumPictureUnlocked=()=>false;
+/**
+ * The only picture entitlement source is Render's authenticated /meta-album GET.
+ * Uploaded files and local variables are not server-side grants.
+ */
+export function isMetaAlbumPictureUnlocked(picture,status){
+ if(!picture||!status||status.eventId!=='weihnachtsevent-1'||
+   status.source!=='dog-season-2-bingo-rewards')return false;
+ const row=status.milestones?.find(entry=>entry?.unlockId===picture.unlockId);
+ return row?.state==='unlocked'&&Array.isArray(status.unlockedIds)&&
+   status.unlockedIds.includes(picture.unlockId);
+}
 const ids=new Set(META_ALBUM_PICTURES.map(item=>item.id));
 const unlockIds=new Set(META_ALBUM_PICTURES.map(item=>item.unlockId));
 if(ids.size!==META_ALBUM_PICTURES.length||unlockIds.size!==META_ALBUM_PICTURES.length||
