@@ -1,5 +1,5 @@
 # DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v10
-Stand: 15.11.2026. Status: KONZEPT AUF 4 SPIELARTEN ANGEPASST (2 Normal + 2 Premium), bestehende Live-Technik noch auf 3 Preisstufen und 6 auswählbaren Regeln. Die erste Grafik ist eingebunden; drei neue Motive und ihre Zuordnung müssen noch umgesetzt und getestet werden.
+Stand: 15.11.2026. Status: KONZEPT AUF 4 SPIELARTEN ANGEPASST (2 Normal + 2 Premium), bestehende Live-Technik noch auf 3 Preisstufen und 6 auswählbaren Regeln. Die erste Grafik ist eingebunden; das dritte Premium-Motiv ist als SVG direkt auf GitHub integriert und sein Gewinnweg visuell hervorgehoben. Das zweite Eis-Palast-WebP und das vierte Motiv bleiben offene Grafikaufgaben.
 Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 
 ## Fixierte Regeln
@@ -46,7 +46,7 @@ Spielarten werden nicht weiterverfolgt.
 |---|---|---|---|---|---|---|
 | 1 | Normal | 🎁 Geschenkelinie | 3×3 (9) | Drei gleiche Symbole horizontal, vertikal oder diagonal | Rot/Gold, Weihnachtsmarkt, Geschenkband | [x] Grafik hochgeladen, technisches Layout vorhanden; Praxistest offen |
 | 2 | Normal | ❄️ Schneeflocken-Bingo (Sammellos) | 4×4 (16) | **Drei gleiche Gewinnsymbole irgendwo; pro Symboltyp ein Gewinn. 🧊 = Nietenfeld.** | Eisblau/Silber, Eispalast-Motiv | [x] Benutzerbild übernommen, WebP bereitgestellt, 4×4-CSS ausgerichtet, Serverprüfer aktiv; [ ] Upload und Mobil-Endtest |
-| 3 | Premium | 🧝 Magischer Wichtelpfad | 4×5 (20) | Durchgehender Pfad gleicher Symbole vom linken zum rechten Spielfeldrand | Tiefgrün/Türkis, magischer Weihnachtswald, leuchtender Weg | [ ] Neues Einzelmotiv + 4×5-Ausrichtung |
+| 3 | Premium | 🧝 Magischer Wichtelpfad | 4×5 (20) | Durchgehender Pfad gleicher Symbole vom linken zum rechten Spielfeldrand (nur waagerecht/senkrecht) | Tiefgrün/Türkis, magischer Weihnachtswald, leuchtender Weg | [x] Eigenes SVG, 20 Felder, CSS-Ausrichtung, glühender Gewinnweg; Browsertest offen |
 | 4 | Premium | 🎄 Weihnachtsbaum-Geheimnis | 5×3 (15) | ⭐🎄🎁 in genau dieser Reihenfolge von links nach rechts | Violett/Gold, glanzvoller Sternenbaum und magisches Dorf | [ ] Neues Einzelmotiv + 5×3-Ausrichtung |
 
 Dies sind **Gestaltungsvorschläge**, keine bereits vom Nutzer abgenommenen
