@@ -1,0 +1,373 @@
+/* Lichtertal · Winterlicher Weihnachtsbaum-Belohnungsblock.
+ * Verwendet ausschließlich die vom Nutzer hochgeladenen PNGs im GitHub-Repo.
+ * Nur Präsentation: Levelstatus, Öffnen alter Stufen und Render-Abholung
+ * werden weiterhin von christmas-event.js / christmas-tree-rewards-ui.js gesteuert.
+ */
+#panel-tree{
+  --wui-dir:"./assets/lichtertal-winter-ui/";
+  --wui-night:#052b35;
+  --wui-snow:#f2f9ff;
+  --wui-gold:#ffdc86;
+}
+#panel-tree .tree-timeline{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  margin:17px 0 15px;
+  padding:clamp(12px,1.65vw,22px);
+  border:2px solid #d4b47d;
+  border-radius:23px;
+  background:
+    linear-gradient(180deg,#001a2499 0%,#062c35bc 48%,#011c27b8 100%),
+    url("./assets/lichtertal-winter-ui/01_hintergrund_winternacht.png") center 42% / cover no-repeat,
+    #082f38;
+  box-shadow:inset 0 1px #f8eccb99,0 14px 35px #00141f8c;
+  color:#fff3db;
+}
+#panel-tree .tree-timeline:before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  top:0;left:0;right:0;
+  height:clamp(16px,3vw,35px);
+  background:url("./assets/lichtertal-winter-ui/07_schnee_eiszapfen_oben.png") top center / 100% 100% no-repeat;
+  pointer-events:none;
+  opacity:.86;
+}
+#panel-tree .tree-timeline-heading{
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:clamp(83px,8.7vw,115px);
+  margin:0 0 clamp(12px,1.6vw,20px);
+  padding:clamp(20px,2.8vw,34px) 26px 16px;
+  border:0;
+  background:url("./assets/lichtertal-winter-ui/11_titeltafel_holz_ohne_text.png") center / 100% 100% no-repeat;
+  text-align:center;
+}
+#panel-tree .tree-timeline-heading>div{max-width:100%;min-width:0}
+#panel-tree .tree-timeline-heading .eyebrow{
+  display:block;
+  margin:0 0 4px;
+  font:900 clamp(8px,.76vw,11px)/1.2 system-ui,sans-serif;
+  letter-spacing:1.5px;
+  color:#ecd5a3;
+  text-shadow:0 2px 5px #110c0c;
+}
+#panel-tree .tree-timeline-heading h3{
+  margin:0;
+  color:#fff0c4;
+  font:900 clamp(18px,2.15vw,32px)/1.16 Georgia,serif;
+  letter-spacing:.1px;
+  text-wrap:balance;
+  text-shadow:0 3px 7px #100c0b,0 0 11px #a8773855;
+}
+#panel-tree .tree-steps{
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:clamp(13px,1.15vw,21px) clamp(9px,.95vw,16px);
+  align-items:stretch;
+  overflow:visible;
+  margin:0;
+  padding:17px 0 6px;
+  scrollbar-width:none;
+  scroll-snap-type:none;
+}
+#panel-tree .tree-steps:before{content:none}
+#panel-tree .tree-step{
+  position:relative;
+  isolation:isolate;
+  display:flex;
+  flex-direction:column;
+  flex:initial;
+  width:100%;
+  max-width:none;
+  min-width:0;
+  min-height:clamp(262px,23vw,300px);
+  height:auto;
+  margin:0;
+  padding:26px clamp(7px,.95vw,13px) 16px;
+  gap:0;
+  overflow:visible;
+  border:0!important;
+  border-radius:16px;
+  background:
+    url("./assets/lichtertal-winter-ui/02_karte_gesperrt.png") center / 100% 100% no-repeat!important;
+  opacity:1!important;
+  filter:none!important;
+  box-shadow:none!important;
+  color:#fcf0d7;
+  text-align:center;
+  transition:filter .2s,transform .2s;
+}
+#panel-tree .tree-step:before,
+#panel-tree .tree-step:after{content:none!important}
+#panel-tree .tree-step[data-progress=current]{
+  background-image:url("./assets/lichtertal-winter-ui/03_karte_aktuell_gold.png")!important;
+  box-shadow:none!important;
+}
+#panel-tree .tree-step[data-progress=passed]{
+  background-image:url("./assets/lichtertal-winter-ui/04_karte_erreicht_gruen.png")!important;
+  box-shadow:none!important;
+}
+#panel-tree .tree-step[data-status=ready]{
+  background-image:url("./assets/lichtertal-winter-ui/05_karte_abholbereit.png")!important;
+  box-shadow:none!important;
+}
+#panel-tree .tree-step.selected{transform:none!important}
+#panel-tree .tree-step-open{
+  display:flex;
+  flex:1 1 auto;
+  flex-direction:column;
+  justify-content:flex-start;
+  align-items:center;
+  width:100%;
+  height:100%;
+  min-height:0;
+  gap:5px;
+  padding:0;
+  margin:0;
+  border:0;
+  border-radius:12px;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  text-align:center;
+  cursor:pointer;
+}
+#panel-tree .tree-step-open:disabled{cursor:not-allowed;opacity:1}
+#panel-tree .tree-step-open:focus-visible{
+  outline:2px solid #ffeabd;
+  outline-offset:3px;
+}
+#panel-tree .tree-step[data-progress=passed] .tree-step-open:hover:not(:disabled),
+#panel-tree .tree-step[data-progress=current] .tree-step-open:hover:not(:disabled){
+  filter:brightness(1.09);
+}
+#panel-tree .tree-step-point{
+  display:grid;
+  place-items:center;
+  flex:0 0 auto;
+  position:relative;
+  z-index:2;
+  width:clamp(57px,5.2vw,78px);
+  height:clamp(57px,5.2vw,78px);
+  margin:-48px auto -7px;
+  border:0!important;
+  border-radius:50%;
+  background:
+    url("./assets/lichtertal-winter-ui/09_medaillon_gesperrt_leer.png") center / contain no-repeat!important;
+  box-shadow:none!important;
+  color:#e4e8e3!important;
+  font:900 clamp(20px,2vw,29px)/1 Georgia,serif;
+}
+#panel-tree .tree-step-point span{
+  display:block;
+  color:inherit!important;
+  font:inherit!important;
+  text-shadow:0 1px 3px #061315a0;
+}
+#panel-tree .tree-step[data-progress=current] .tree-step-point,
+#panel-tree .tree-step[data-status=ready] .tree-step-point{
+  background-image:url("./assets/lichtertal-winter-ui/08_medaillon_gold_leer.png")!important;
+  color:#fff1c9!important;
+}
+#panel-tree .tree-step[data-progress=passed]:not([data-status=ready]) .tree-step-point{
+  background-image:url("./assets/lichtertal-winter-ui/10_medaillon_erreicht_leer.png")!important;
+  color:#f4ffe4!important;
+}
+#panel-tree .tree-step-caption{
+  display:flex;
+  flex:0 0 auto;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:3px;
+  width:100%;
+  min-width:0;
+  min-height:45px;
+  margin:0;
+}
+#panel-tree .tree-step-number{
+  display:block;
+  color:#ffdea0!important;
+  font:900 clamp(10px,.75vw,11px)/1.2 system-ui,sans-serif;
+  letter-spacing:.95px;
+  text-shadow:0 2px 5px #001b20;
+}
+#panel-tree .tree-step-name{
+  display:block;
+  width:100%;
+  margin:0;
+  min-height:0;
+  color:#fff3d7!important;
+  font:850 clamp(11px,1vw,14px)/1.22 Georgia,serif;
+  text-shadow:0 2px 5px #001b1d;
+  overflow-wrap:anywhere;
+}
+#panel-tree .tree-step-gift{
+  display:grid;
+  flex:0 0 auto;
+  place-items:center;
+  width:clamp(60px,5.8vw,85px);
+  height:clamp(58px,5.8vw,82px);
+  margin:4px auto 3px;
+  border:1px solid #bce2e08e;
+  border-radius:17px;
+  background:radial-gradient(circle at 50% 35%,#246a8b99,#072a3eeb 75%);
+  box-shadow:0 0 15px #b5dcec24,inset 0 1px #ffffff5e;
+  color:#fff7da;
+  font-size:clamp(30px,3.2vw,44px);
+  line-height:1;
+  opacity:1;
+}
+#panel-tree .tree-step-gift img{display:block;max-width:90%;max-height:90%;object-fit:contain}
+#panel-tree .tree-step[data-progress=future] .tree-step-gift{
+  opacity:.82;
+  filter:grayscale(.5);
+}
+#panel-tree .tree-step[data-progress=current] .tree-step-gift,
+#panel-tree .tree-step[data-status=ready] .tree-step-gift{
+  border-color:#ffe5a3;
+  background:radial-gradient(circle at 50% 35%,#ad894781,#0d333fdb 80%);
+  box-shadow:0 0 18px #ffda7350,inset 0 1px #ffebbf8a;
+  filter:none;
+}
+#panel-tree .tree-step-prize{
+  display:flex;
+  flex:1 0 auto;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-width:0;
+  min-height:40px;
+  margin:0 0 4px;
+  padding:0;
+  color:#fff1d7!important;
+  font:850 clamp(10px,.9vw,13px)/1.25 system-ui,sans-serif;
+  text-shadow:0 2px 4px #001b20;
+  overflow-wrap:anywhere;
+}
+#panel-tree .tree-step-status{
+  display:inline-flex;
+  flex:0 0 auto;
+  align-items:center;
+  justify-content:center;
+  width:min(95%,155px);
+  max-width:100%;
+  min-height:29px;
+  margin:auto 0 0;
+  padding:4px 8px;
+  border:0;
+  border-radius:999px;
+  background:url("./assets/lichtertal-winter-ui/12_button_gesperrt_leer.png") center / 100% 100% no-repeat;
+  box-shadow:none;
+  color:#eef5f3!important;
+  font:850 10px/1.15 system-ui,sans-serif;
+  text-shadow:0 1px 2px #000a;
+  text-align:center;
+}
+#panel-tree .tree-step-status:empty{
+  display:inline-flex;
+  min-height:29px;
+  border:0;
+  padding:4px 8px;
+  background:url("./assets/lichtertal-winter-ui/12_button_gesperrt_leer.png") center / 100% 100% no-repeat;
+}
+#panel-tree .tree-step[data-status=locked] .tree-step-status{
+  background-image:url("./assets/lichtertal-winter-ui/12_button_gesperrt_leer.png");
+  color:#e6f2ef!important;
+}
+#panel-tree .tree-step[data-status=collected] .tree-step-status{
+  background-image:url("./assets/lichtertal-winter-ui/13_button_gesammelt_leer.png");
+  color:#f0ffed!important;
+}
+#panel-tree .tree-step[data-status=ready] .tree-step-status{
+  background-image:url("./assets/lichtertal-winter-ui/14_button_abholen_gold_leer.png");
+  color:#fff6d7!important;
+}
+#panel-tree .tree-step[data-progress=current] .tree-step-status:empty:after{content:"★ Aktuelle Stufe";color:#ffe2a1}
+#panel-tree .tree-step[data-progress=passed] .tree-step-status:empty:after{content:"✓ Erreicht";color:#c0ffce}
+#panel-tree .tree-step[data-progress=future] .tree-step-status:empty:after{content:"🔒 Gesperrt";color:#e6f2ef}
+#panel-tree .tree-step-claim{
+  display:flex;
+  flex:0 0 auto;
+  align-items:center;
+  justify-content:center;
+  width:min(95%,172px);
+  min-height:33px;
+  margin:6px auto 0;
+  padding:4px 10px;
+  border:0;
+  border-radius:999px;
+  background:url("./assets/lichtertal-winter-ui/14_button_abholen_gold_leer.png") center / 100% 100% no-repeat;
+  box-shadow:0 0 12px #ffd27f44;
+  color:#fff8dd;
+  font:900 11px/1.2 system-ui,sans-serif;
+  text-shadow:0 1px 3px #291804c9;
+  cursor:pointer;
+}
+#panel-tree .tree-step-claim:hover:not(:disabled){filter:brightness(1.14)}
+#panel-tree .tree-step-claim:focus-visible{outline:2px solid #fff4b9;outline-offset:2px}
+#panel-tree .tree-step-claim:disabled{opacity:.7;cursor:wait}
+#panel-tree .tree-timeline-legend{
+  position:relative;z-index:1;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:center;
+  gap:8px 18px;
+  margin:12px auto 0;
+  padding:10px 15px;
+  width:max-content;
+  max-width:100%;
+  border:1px solid #d2a95a8a;
+  border-radius:99px;
+  background:#051f2add;
+  box-shadow:inset 0 1px #f4d99432,0 3px 10px #00141aa6;
+  color:#f5eddf;
+  font:750 10px/1.35 system-ui,sans-serif;
+}
+#panel-tree .tree-timeline-legend span{white-space:nowrap}
+#panel-tree .tree-world-meter{
+  background:#041d28 url("./assets/lichtertal-winter-ui/15_fortschrittsleiste_leer.png") center / 100% 100% no-repeat;
+  border:0;
+  overflow:hidden;
+}
+#panel-tree .tree-world-meter>span{
+  background:url("./assets/lichtertal-winter-ui/16_fortschrittsfuellung.png") left center / 100% 100% no-repeat;
+  box-shadow:0 0 11px #fff0ae8c;
+}
+@media(min-width:1500px){
+  #panel-tree .tree-steps{gap:17px 15px}
+}
+@media(max-width:1250px){
+  #panel-tree .tree-steps{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:1050px){
+  #panel-tree .tree-steps{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  #panel-tree .tree-timeline{padding:10px 8px 15px;border-radius:15px}
+  #panel-tree .tree-timeline-heading{min-height:89px;padding:22px 15px 13px}
+  #panel-tree .tree-timeline-heading h3{font-size:clamp(17px,4.5vw,26px)}
+  #panel-tree .tree-steps{grid-template-columns:repeat(2,minmax(0,1fr));gap:15px 8px;padding-top:19px}
+  #panel-tree .tree-step{min-height:259px;padding:24px 8px 14px}
+  #panel-tree .tree-step-point{width:61px;height:61px;margin-top:-42px;font-size:24px}
+  #panel-tree .tree-step-gift{width:64px;height:61px;font-size:33px}
+  #panel-tree .tree-timeline-legend{border-radius:15px;gap:7px 12px}
+}
+@media(max-width:380px){
+  #panel-tree .tree-steps{grid-template-columns:repeat(2,minmax(0,1fr));gap:15px 5px}
+  #panel-tree .tree-step{min-height:266px;padding-left:5px;padding-right:5px}
+  #panel-tree .tree-step-name{font-size:11px}
+  #panel-tree .tree-step-prize{font-size:10px}
+  #panel-tree .tree-step-status{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  #panel-tree .tree-step{transition:none}
+}
