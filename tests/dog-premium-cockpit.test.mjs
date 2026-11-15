@@ -42,3 +42,17 @@ test('royal style has landscape/mobile and motion-off fallbacks',()=>{
  assert.match(styles, /data-dog-board-frame="classic"/);
  assert.equal((styles.match(/\{/g)||[]).length,(styles.match(/\}/g)||[]).length);
 });
+
+test('DOG ambiguous move selection stays touch-friendly and guards stale actions',()=>{
+ for(const id of ['dog-move-choice-dialog','dog-move-choice-title','dog-move-choice-description',
+  'dog-move-choice-options','dog-move-choice-cancel','dog-zoom-in','dog-zoom-out']){
+  assert.match(html,new RegExp('id="'+id+'"'));
+ }
+ assert.match(html,/\\.dog-move-choice-button\\{/);
+ assert.doesNotMatch(html,/#dog-zoom-in,#dog-zoom-out\\{display:none!important\\}/);
+ assert.match(app,/function chooseDogMove\\(/);
+ assert.match(app,/available\\[i\\]!==m/);
+ assert.match(app,/chooseDogMove\\(swapChoices/);
+ assert.match(app,/chooseDogMove\\(matches/);
+ assert.doesNotMatch(app,/\\bprompt\\(/);
+});
