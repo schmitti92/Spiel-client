@@ -64,10 +64,10 @@ const assetPath=(id,level)=>{
  * Each item's feet are pinned to a fixed spot regardless of its development level.
  */
 const sceneLayouts=Object.freeze({
- tower:{cx:127,ground:385,w:239,h:283,growth:[.78,.83,.89,.95,1]},
+ tower:{cx:127,ground:385,w:239,h:280,growth:[.78,.83,.89,.95,1]},
  workshop:{cx:1064,ground:385,w:258,h:280,growth:[.72,.79,.86,.93,1]},
- bakery:{cx:322,ground:599,w:278,h:236,growth:[.69,.76,.85,.93,1]},
- inn:{cx:934,ground:600,w:288,h:245,growth:[.70,.77,.85,.93,1]},
+ bakery:{cx:322,ground:599,w:274,h:205,growth:[.69,.76,.85,.93,1]},
+ inn:{cx:934,ground:600,w:288,h:205,growth:[.70,.77,.85,.93,1]},
  tree:{cx:610,ground:602,w:299,h:492,growth:[.54,.59,.65,.71,.76,.81,.86,.91,.96,1]}
 });
 function measureVisiblePixels(image){
