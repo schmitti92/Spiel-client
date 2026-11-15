@@ -33,6 +33,20 @@ export const META_ALBUM_THEMES=Object.freeze([
 ]);
 export const META_ALBUM_PICTURES=Object.freeze(META_ALBUM_THEMES.flatMap(theme=>theme.pictures));
 export const metaAlbumThemeById=id=>META_ALBUM_THEMES.find(theme=>theme.id===id)||META_ALBUM_THEMES[0];
+/** Exactly six picture slots on every book page, with empty decorative slots
+ * on the last page. New themes receive their own page counts automatically.
+ */
+export const META_ALBUM_PAGE_SIZE=6;
+export const metaAlbumPageCount=theme=>Math.max(1,Math.ceil((theme?.pictures?.length||0)/META_ALBUM_PAGE_SIZE));
+export function metaAlbumPage(theme,requestedIndex=0){
+ const count=metaAlbumPageCount(theme);
+ const index=Number.isFinite(requestedIndex)?Math.min(count-1,Math.max(0,Math.trunc(requestedIndex))):0;
+ const pictures=theme?.pictures?.slice(index*META_ALBUM_PAGE_SIZE,(index+1)*META_ALBUM_PAGE_SIZE)||[];
+ return Object.freeze({
+  index,count,pictures:Object.freeze(pictures),
+  emptySlots:META_ALBUM_PAGE_SIZE-pictures.length
+ });
+}
 /** Secure default: no event-specific grant endpoint has been connected. */
 export const isMetaAlbumPictureUnlocked=()=>false;
 const ids=new Set(META_ALBUM_PICTURES.map(item=>item.id));
