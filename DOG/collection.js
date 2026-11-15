@@ -1,6 +1,6 @@
 import {applyMotionMode,loadMotionMode} from './motion-settings.js';
 applyMotionMode(loadMotionMode());
-import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=8';
+import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=9';
 import {loadAppearance,saveAppearance} from './appearance-registry.js?v=22';
 import {loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=2';
 // The collection never grants event rewards. Cosmetic choices persist locally;
@@ -40,6 +40,20 @@ function art(item,big=false){
   img.src=new URL(item.image,import.meta.url).href;wrap.append(img);
  }
  wrap.append(placeholder);
+ // Draw a real sample player-name plaque in both gallery and large detail
+ // preview. This does not equip the locked frame or change the game HUD.
+ if(item.kind==='nameFrame' && item.frameTheme){
+  wrap.classList.add('has-nameframe-preview');
+  placeholder.replaceChildren();
+  const preview=el('div','collection-nameframe-preview nameframe-'+item.frameTheme);
+  preview.setAttribute('aria-hidden','true');
+  preview.append(el('span','nameframe-corner nameframe-corner-left',item.cornerIcon||'✦'));
+  const plaque=el('div','nameframe-plaque');
+  plaque.append(el('span','nameframe-emblem',item.frameIcon||'✨'),el('strong','nameframe-name','DEIN NAME'));
+  preview.append(plaque,el('span','nameframe-corner nameframe-corner-right',item.cornerIcon||'✦'));
+  preview.append(el('span','nameframe-bottom-caption','DOG · WEIHNACHTSEDITION'));
+  wrap.append(preview);
+ }
  // Color tones show a miniature DOG cockpit using their REAL saved HUD palette.
  // This is a pure local preview: it does not update the appearance or the server.
  if(item.hudTheme){
@@ -150,13 +164,14 @@ function drawDetails(){
  const item=cat.items.find(x=>x.id===picked);if(!item){root.append(el('p','collection-detail-loading','Bitte wähle einen Inhalt aus.'));return;}
  const locked=item.status==='planned',active=equipped(item),btn=el('button','detail-button'+(locked?' is-locked':active&&item.kind!=='emoji'?' is-active':''));
  btn.type='button';
- btn.textContent=locked?'🔒 Später freischaltbar':item.kind==='default'?'✓ Standardsymbol aktiv':active&&item.kind!=='emoji'?'✓ Aktiv':item.kind==='emoji'?'In Schnellleiste verwenden':'✓ Ausrüsten';
+ btn.textContent=locked?'🔒 Später freischaltbar':item.kind==='default'?(item.id==='frame-current'?'✓ Standardrahmen aktiv':'✓ Standardsymbol aktiv'):active&&item.kind!=='emoji'?'✓ Aktiv':item.kind==='emoji'?'In Schnellleiste verwenden':'✓ Ausrüsten';
  btn.disabled=locked||item.kind==='default'||(active&&item.kind!=='emoji');
  if(!btn.disabled)btn.onclick=()=>equip(item,btn);
  const detailArt=art(item,true);if(locked)detailArt.classList.add('is-locked');
  root.append(detailArt,el('h3','detail-title',item.name),el('div','detail-rule'),
    el('div','detail-state'+(locked?' is-locked':''),locked?'🔒 Geplantes Event':active?'✓ Aktiv / vorhanden':'✓ Verfügbar'),
    el('p','detail-description',item.description||'DOG-Design'));
+ if(item.kind==='nameFrame')root.append(el('small','nameframe-preview-note','🎄 Musteransicht – jeder Rahmen kann später einzeln erspielt werden.'));
  if(item.kind==='avatar'&&local&&!locked){
   const label=el('label','detail-picker','Spielerplatz'),select=el('select');
   ['Rot','Blau','Grün','Gelb'].forEach((name,i)=>{const option=el('option','','Spieler '+(i+1)+' · '+name);option.value=String(i);option.selected=i===seat;select.append(option);});
