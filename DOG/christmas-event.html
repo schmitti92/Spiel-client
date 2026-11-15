@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="./christmas-player-levels.css?v=1">
 <link rel="stylesheet" href="./christmas-building-village.css?v=4">
 <link rel="stylesheet" href="./christmas-buildings-showcase.css?v=1">
+<link rel="stylesheet" href="./christmas-village-overview.css?v=1">
 </head>
 <body>
 <div class="snow-sky" aria-hidden="true"></div>
@@ -227,11 +228,23 @@
           <button id="village-building-upgrade" type="button" class="button gold">🏠 Zum Gebäudeausbau</button>
         </div>
       </dialog>
-      <div class="event-stat-grid">
-        <article class="stat-card"><span>🏠</span><div><strong id="stat-building-levels">4 / 20</strong><small>Gebäudestufen zusammen</small></div></article>
-        <article class="stat-card"><span>🎄</span><div><strong id="stat-tree-level">1 / 10</strong><small>Weihnachtsbaum</small></div></article>
-        <article class="stat-card"><span>⭐</span><div><strong id="stat-village-lights">–</strong><small>Gemeinsame Weihnachtslichter</small></div></article>
-        <article class="stat-card"><span>🎁</span><div><strong id="stat-village-gifts">–</strong><small>Gesammelte Geschenke</small></div></article>
+      <div class="event-stat-grid" aria-label="Lichtertals gemeinsamer Fortschritt">
+        <button type="button" class="stat-card stat-card--buildings" data-open-tab="buildings" aria-label="Gebäudestufen ansehen und Gebäude ausbauen">
+          <span class="stat-card-icon" aria-hidden="true">🏘️</span>
+          <span class="stat-card-copy"><strong id="stat-building-levels">4 / 20</strong><small>Gebäudestufen zusammen</small><span class="stat-card-link">Gebäude ansehen <span aria-hidden="true">›</span></span></span>
+        </button>
+        <button type="button" class="stat-card stat-card--tree" data-open-tab="tree" aria-label="Weihnachtsbaum und Entwicklungsstufen ansehen">
+          <span class="stat-card-icon" aria-hidden="true">🎄</span>
+          <span class="stat-card-copy"><strong id="stat-tree-level">1 / 10</strong><small>Weihnachtsbaum</small><span class="stat-card-link">Stufen ansehen <span aria-hidden="true">›</span></span></span>
+        </button>
+        <button type="button" class="stat-card stat-card--lights" data-open-tab="buildings" aria-label="Gemeinsame Weihnachtslichter im Dorfkonto ansehen">
+          <span class="stat-card-icon" aria-hidden="true">⭐</span>
+          <span class="stat-card-copy"><strong id="stat-village-lights">–</strong><small>Gemeinsame Weihnachtslichter</small><span class="stat-card-link">Dorfkonto ansehen <span aria-hidden="true">›</span></span></span>
+        </button>
+        <button type="button" class="stat-card stat-card--gifts" data-open-tab="buildings" aria-label="Gesammelte Geschenke im Dorfkonto ansehen">
+          <span class="stat-card-icon" aria-hidden="true">🎁</span>
+          <span class="stat-card-copy"><strong id="stat-village-gifts">–</strong><small>Gesammelte Geschenke</small><span class="stat-card-link">Fortschritt ansehen <span aria-hidden="true">›</span></span></span>
+        </button>
       </div>
     </section>
     <section class="event-panel" id="panel-buildings" role="tabpanel" aria-labelledby="tab-buildings" hidden>
