@@ -97,11 +97,11 @@ test('village overview removes requested prose and preview controls but retains 
  const html=read('DOG/christmas-event.html');
  const js=read('DOG/christmas-event.js');
  const css=read('DOG/christmas-event-royal.css');
- const top=html.split('<header class="event-top">')[1]?.split('</header>')[0];
  const village=html.split('id="panel-village"')[1]?.split('id="panel-buildings"')[0];
- assert.ok(top&&village,'header and village panels exist');
- assert.match(top,/id="event-return"[^>]*>↩ Zurück<\/a>/);
- assert.doesNotMatch(top,/event-brand|KAPITEL 1|DOG <em>WEIHNACHTEN<\/em>/);
+ assert.ok(village,'village panel exists');
+ assert.doesNotMatch(html,/<header class="event-top">/,'old top bar takes no space');
+ assert.match(html,/id="event-return"[^>]*class="top-action event-fixed-return"[^>]*>↩ Zurück<\/a>/);
+ assert.doesNotMatch(html,/event-brand|KAPITEL 1|DOG <em>WEIHNACHTEN<\/em>/);
  assert.doesNotMatch(village,/royal-intro|village-storyline|village-caption|village-preview-actions|event-footer-row/);
  for(const phrase of ['Die Weihnachtsreise beginnt','Unser gemeinsames Ziel',
   'Vollausbau prüfen','Nächste Entwicklungsstufe','Gebäude ansehen',
@@ -111,9 +111,16 @@ test('village overview removes requested prose and preview controls but retains 
  for(const id of ['stat-building-levels','stat-tree-level','stat-village-lights','stat-village-gifts']){
   assert.match(village,new RegExp('id="'+id+'"'),'keep live progress tile '+id);
  }
- assert.match(css,/\.event-top-actions\{margin-left:auto/);
+ assert.match(css,/#event-return\.event-fixed-return\{/);
  assert.match(css,/#panel-village \.village-shell/);
  assert.doesNotMatch(js,/\$\('village-preview-(next|reset|full|count)'\)/);
  assert.doesNotMatch(js,/\$\('village-scene-(title|caption)'\)/);
  assert.match(js,/storyScreen\.render\(/,'the existing tree-based story unlock remains');
+ const tree=html.split('id="panel-tree"')[1]?.split('id="panel-story"')[0];
+ assert.ok(tree,'tree stage exists');
+ for(const text of ['DAS HERZ VON LICHTERTAL','Ein Baum. Zehn magische Stufen.',
+  '↔ Wischen · Erreichte Stufe antippen']){
+  assert.ok(!tree.includes(text),'remove redundant tree text: '+text);
+ }
+ assert.match(tree,/<h2>Unser Weihnachtsbaum<\/h2>/,'retain main title');
 });
