@@ -1,5 +1,6 @@
 /* The studio is not initialized until Render verifies level >= 2. */
 import {fetchDogPlayerLevel,dogLevelIdentity,DESIGNER_MIN_LEVEL} from './designer-level-access.js?v=2';
+import {refreshVerifiedCosmetics} from './verified-cosmetics.js?v=1';
 const $=id=>document.getElementById(id);
 const state=()=>window.SpielOnline?.state?.()||{};
 const message=$('studio-level-message');
@@ -36,10 +37,14 @@ async function check(force=false){
    lock('🔒 Du bist aktuell Level '+level+'. Der Brettdesigner wird ab Level 2 freigeschaltet. Sammle weitere Erfahrungspunkte in DOG-Partien.');
    return;
   }
+  // Collect the server-confirmed Rubbellos prizes before rendering any gallery.
+  // If the check fails, the studio can open, but only standard items show.
+  await refreshVerifiedCosmetics({force:true});
+  if(attempt!==generation||dogLevelIdentity()?.uid!==profile.user?.uid)return;
   document.body.dataset.designerAccess='allowed';
   if(!started){
    started=true;
-   try{await import('./design-studio.js?v=12');}
+   try{await import('./design-studio.js?v=13');}
    catch(error){
     started=false;lock('⚠️ Das Design-Studio konnte nicht geladen werden. Bitte aktualisiere die Seite.');
     console.error('DOG Design-Studio',error);
