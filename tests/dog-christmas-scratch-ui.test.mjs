@@ -154,6 +154,10 @@ test('premium gold highlights only genuine complete rows, never every milestone 
  assert.match(ui,/premiumWinningRowIndices\(wins\)/);
  assert.match(ui,/updatePremiumCounter\(revealedPremiumCells\(canvas\)\)/);
  assert.match(ui,/panel\.append\(results,\$\('scratch-winning-lines'\)\)/);
+ assert.match(ui,/stage\.classList\.add\('is-revealed'\)/);
+ assert.match(ui,/artwork\.dataset\.premiumGold20=String\(progress\.count>=20&&progress\.goldAwarded\)/);
+ assert.match(ui,/artwork\.dataset\.premiumGold24=String\(progress\.count>=24&&progress\.premiumAwarded\)/);
+ assert.match(ui,/finished\?[\s\S]*?progress\.total\+' echte Symbole insgesamt'/);
  assert.doesNotMatch(ui,/stage\.scrollIntoView\(/);
 });
 
