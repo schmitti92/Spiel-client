@@ -65,12 +65,27 @@ const assetPath=(id,level)=>{
  * Each item's feet are pinned to a fixed spot regardless of its development level.
  */
 const sceneLayouts=Object.freeze({
- tower:{cx:127,ground:385,w:239,h:280,growth:[.78,.83,.89,.95,1]},
- workshop:{cx:1064,ground:385,w:258,h:280,growth:[.72,.79,.86,.93,1]},
- bakery:{cx:322,ground:599,w:274,h:205,growth:[.69,.76,.85,.93,1]},
- inn:{cx:934,ground:600,w:288,h:205,growth:[.70,.77,.85,.93,1]},
+ // Ground anchors calibrated against the snow-covered terraces of Lichtertal
+ // (1200×670 SVG); each building keeps the same footing at all five stages.
+ // At level 5: >=18px horizontal clearance from the tree, >=9px row gap.
+ tower:{cx:165,ground:389,w:239,h:280,growth:[.82,.86,.91,.96,1]},
+ workshop:{cx:1036,ground:389,w:258,h:280,growth:[.78,.83,.89,.94,1]},
+ bakery:{cx:303,ground:603,w:274,h:205,growth:[.74,.80,.87,.94,1]},
+ inn:{cx:922,ground:603,w:288,h:205,growth:[.76,.81,.88,.94,1]},
  tree:{cx:610,ground:504,w:299,h:394,growth:[.54,.59,.65,.71,.76,.81,.86,.91,.96,1]}
 });
+/** Add a subdued contact shadow directly beneath the alpha-cropped building.
+ * Its width follows the visible image as it grows; no extra saved state. */
+function positionVillageGroundShadow(id,level,renderedWidth){
+ const shadow=$(id+'-ground-shadow'),slot=sceneLayouts[id];
+ if(!shadow||!slot)return;
+ const growth=slot.growth[level-1]??1;
+ const footprint=Math.min(slot.w,Math.max(1,renderedWidth||slot.w*growth));
+ shadow.setAttribute('cx',String(slot.cx));
+ shadow.setAttribute('cy',String(slot.ground-2));
+ shadow.setAttribute('rx',(footprint*.45).toFixed(2));
+ shadow.setAttribute('ry',(Math.max(8,footprint*.063)).toFixed(2));
+}
 function measureVisiblePixels(image){
  const naturalWidth=image.naturalWidth||1,naturalHeight=image.naturalHeight||1;
  const fallback={x0:0,y0:0,x1:naturalWidth,y1:naturalHeight};
@@ -118,6 +133,7 @@ function positionVillageSprite(layer,id,level,loaded){
  layer.setAttribute('y',top.toFixed(2));
  layer.setAttribute('width',(loaded.width*scale).toFixed(2));
  layer.setAttribute('height',(loaded.height*scale).toFixed(2));
+ positionVillageGroundShadow(id,level,actualWidth*scale);
 }
 const imageRequests=new Map();
 function waitForImage(path){
@@ -139,6 +155,7 @@ function showStageImage(id,level){
  const layer=$(id+'-stage-image'),fallback=$(id==='tree'?'art-tree':'art-'+id);
  if(!layer||!fallback)return;
  const path=assetPath(id,level);
+ if(id!=='tree')positionVillageGroundShadow(id,level);
  if(layer.dataset.requested===path&&(fallback.classList.contains('photo-ready')||layer.dataset.loading==='true'))return;
  layer.dataset.requested=path;
  layer.dataset.loading='true';
