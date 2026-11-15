@@ -140,10 +140,13 @@
  background-repeat:no-repeat;background-size:100% 100%,cover;
  background-position:center;border-radius:11px;
 }
-.scratch-stage[data-variant="gifts"] > h3,
-.scratch-stage[data-variant="gifts"] > .scratch-variant-rule{
+.scratch-stage[data-variant="gifts"] > h3{
  position:absolute!important;width:1px!important;height:1px!important;
  overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap;
+}
+.scratch-stage[data-variant="gifts"] > .scratch-variant-rule{
+ display:block;text-align:center;line-height:1.4;color:#ffe9ba;font-size:13px;
+ background:#50111daf;border:1px solid #dbad70;border-radius:10px;padding:7px 10px;
 }
 .scratch-stage[data-variant="gifts"] .scratch-board{
  position:absolute;left:16%;top:30.85%;width:65.4%;height:41.85%;
