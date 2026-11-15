@@ -3,13 +3,13 @@
  * Only available, already implemented items appear in the shipped collection.
  */
 import {BOARD_STYLES,isBoardUnlocked,SCENE_STYLES,PIECE_STYLES,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,HUD_TONES,HUD_LAYOUTS} from './appearance-registry.js?v=23';
-import {CARD_EDITION,cardVisual} from './card-visuals.js?v=6';
+import {CARD_EDITION,CARD_EDITIONS,cardVisual,isCardEditionUnlocked} from './card-visuals.js?v=7';
 import {DOG_EMOJIS,DOG_EMOJI_STARTERS,DOG_CHRISTMAS_EMOJIS} from './dog-emojis.js?v=2';
 import {CHRISTMAS_AVATARS} from './christmas-avatar-catalog.js?v=1';
 import {CHRISTMAS_NAME_FRAMES} from './christmas-nameframe-catalog.js?v=1';
 import {CHRISTMAS_ACTIVE_ICONS} from './christmas-activeicon-catalog.js?v=1';
 import {buildDogCollection} from './collection-extensions.js?v=2';
-import {isChristmasRewardLocked} from './christmas-reward-locks.js?v=1';
+import {isChristmasRewardLocked} from './christmas-reward-locks.js?v=2';
 const avail=(id,name,extra={})=>({id,name,status:'available',...extra});
 const BASE_COLLECTION_CATEGORIES=[
  {id:'backgrounds',icon:'🏞️',title:'Hintergründe',subtitle:'Landschaften für die gesamte DOG-Seite',items:[
@@ -47,8 +47,14 @@ const BASE_COLLECTION_CATEGORIES=[
    description:'Exklusives Weihnachts-Emoji: wird später einzeln als Eventbelohnung freigeschaltet.',artTone:'ember'
   }))
  ]},
- {id:'cards',icon:'🃏',title:'Kartendesigns',subtitle:'Kartenthemen unabhängig von den Spielregeln',items:[
+ {id:'cards',icon:'🃏',title:'Kartendesigns',subtitle:'1 klassisches Design verfügbar · 2 Weihnachtseditionen zum Freischalten',items:[
   ...PUBLISHED_CARD_STYLE_IDS.map(id=>{const t=CARD_STYLES[id];return avail(id,t.label,{kind:'appearance',field:'cards',cardEdition:CARD_EDITION,image:cardVisual('9',CARD_EDITION).image,description:'Fertiges Kartendesign mit allen 14 Kartenmotiven und eigener Rückseite. Die Spielregeln bleiben unverändert.',icon:t.emblem,artTone:'gold'});}),
+  ...Object.entries(CARD_EDITIONS).filter(([id])=>id!==CARD_EDITION).map(([id,entry])=>avail(id,entry.label,{
+   kind:'cardEdition',cardEdition:id,status:isCardEditionUnlocked(id)?'available':'planned',
+   unlockId:entry.unlockId,image:entry.base+'9.png',
+   description:'🎄 Weihnachtsedition mit allen 14 Kartenarten und eigener Rückseite. Noch gesperrt – später als Eventbelohnung freischaltbar. Nur das Aussehen der Karten ändert sich.',
+   icon:id==='kartendesign-02'?'❄️':'🎄',artTone:'gold'
+  }))
  ]},
  {id:'hud',icon:'🎨',title:'Bedienoberfläche',subtitle:'Farbtöne und Anordnung der rechten Spielblöcke',items:[
   ...Object.entries(HUD_TONES).map(([id,t])=>avail('tone-'+id,t.label,{kind:'appearance',field:'hudTone',value:id,icon:'▤',hudTheme:t,description:'Originalfarben der DOG-Bedienoberfläche mit echten Flächen, Rahmen und Akzenten.',artTone:'azure'})),
