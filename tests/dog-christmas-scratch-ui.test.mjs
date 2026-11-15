@@ -95,3 +95,24 @@ test('saving global scratch settings works outside a DOG room and provides user 
  assert.match(js,/addEventListener\('invalid',/,'explain browser validation failures');
  assert.match(html,/id="scratch-host-save"/);
 });
+
+test('scratch progress dashboard is personal, responsive and uses the existing wallet response',()=>{
+ const html=source('../DOG/christmas-event.html');
+ const css=source('../DOG/christmas-scratch.css');
+ const js=source('../DOG/christmas-scratch-ui.js');
+ for(const id of ['scratch-analytics','scratch-analytics-kpis','scratch-analytics-body',
+  'scratch-analytics-footer','scratch-analytics-note']){
+  assert.match(html,new RegExp('id="'+id+'"'));
+ }
+ assert.match(html,/Meine Rubbellos-Statistik/);
+ assert.match(js,/function drawScratchAnalytics\(\)/);
+ assert.match(js,/drawScratchAnalytics\(\)/);
+ assert.match(js,/status\?\.progress/);
+ assert.match(js,/olderUnclassified/);
+ assert.match(js,/byVariant\?\.\[id\]/);
+ assert.match(js,/Weitere ältere Losarten/);
+ assert.match(js,/Frühere Lose ohne Einzelstatistik/);
+ assert.match(css,/\.scratch-analytics-table/);
+ assert.match(css,/@media\(max-width:760px\)/);
+ assert.doesNotMatch(js,/query\('\/stats'/,'progress must not cause additional API calls');
+});
