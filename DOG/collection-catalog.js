@@ -9,6 +9,7 @@ import {CHRISTMAS_AVATARS} from './christmas-avatar-catalog.js?v=1';
 import {CHRISTMAS_NAME_FRAMES} from './christmas-nameframe-catalog.js?v=1';
 import {CHRISTMAS_ACTIVE_ICONS} from './christmas-activeicon-catalog.js?v=1';
 import {buildDogCollection} from './collection-extensions.js?v=2';
+import {isChristmasRewardLocked} from './christmas-reward-locks.js?v=1';
 const avail=(id,name,extra={})=>({id,name,status:'available',...extra});
 const BASE_COLLECTION_CATEGORIES=[
  {id:'backgrounds',icon:'🏞️',title:'Hintergründe',subtitle:'Landschaften für die gesamte DOG-Seite',items:[
@@ -56,7 +57,15 @@ const BASE_COLLECTION_CATEGORIES=[
 ];
 // The extension catalog is intentionally empty until new content is actually built.
 // Future content may be registered without changing the gallery.
-export const DOG_COLLECTION_CATEGORIES=buildDogCollection(BASE_COLLECTION_CATEGORIES);
+// A future collection edit must never accidentally mark an event item
+// 'available' before Render has verified the player's individual unlock.
+export const DOG_COLLECTION_CATEGORIES=Object.freeze(
+ buildDogCollection(BASE_COLLECTION_CATEGORIES).map(category=>Object.freeze({
+  ...category,
+  items:Object.freeze(category.items.map(item=>isChristmasRewardLocked(item)
+   ?Object.freeze({...item,status:'planned'}):item))
+ }))
+);
 export const dogCollectionStats=(category=null)=>{
  const entries=category?.items||DOG_COLLECTION_CATEGORIES.flatMap(x=>x.items);
  return {total:entries.length,available:entries.filter(x=>x.status==='available').length,
