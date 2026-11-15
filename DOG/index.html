@@ -17,9 +17,9 @@ main{width:min(1640px,calc(100% - 34px));margin:22px auto 48px}
 .layout{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(330px,.72fr);gap:20px;align-items:start}
 .board-card{padding:clamp(9px,2vw,20px);border-radius:24px;background:var(--dog-frame-bg,linear-gradient(145deg,#193b46,#0c1e2f));border:1px solid #e4c6924a;box-shadow:0 20px 60px #0005,inset 0 1px #ffffff17;position:relative}
 .dog-board-zoom{position:absolute;top:10px;right:10px;z-index:5;display:flex;align-items:center;gap:5px;padding:5px;border-radius:12px;background:#061624e8;border:1px solid #d4b57688;box-shadow:0 4px 14px #0007}
-.dog-board-zoom button{width:30px;height:30px;border-radius:8px;border:1px solid #d4b57666;background:#203b4e;color:#f6dfb2;font-size:19px;font-weight:800;touch-action:manipulation}
+.dog-board-zoom button{width:36px;height:36px;border-radius:8px;border:1px solid #d4b57666;background:#203b4e;color:#f6dfb2;font-size:19px;font-weight:800;touch-action:manipulation}
 .dog-board-zoom button:disabled{opacity:.35;cursor:default}
-#dog-zoom-in,#dog-zoom-out{display:none!important}
+@media(max-width:450px){.dog-board-zoom{top:6px;right:6px;gap:3px;padding:4px}.dog-board-zoom button{width:34px;height:34px}.dog-board-zoom span{min-width:36px}}
 .dog-board-zoom span{min-width:48px;text-align:center;font-size:11px;font-weight:800;color:#f6dfb2;font-variant-numeric:tabular-nums}
 .board-svg{touch-action:none;display:block;width:100%;height:auto;max-height:min(74vh,800px);margin:auto}
 .board-svg .can-pick{cursor:pointer}.board-svg .can-pick circle:first-of-type{filter:drop-shadow(0 0 9px #fff9)}
@@ -28,6 +28,11 @@ main{width:min(1640px,calc(100% - 34px));margin:22px auto 48px}
 .right{display:grid;gap:15px}.panel{border:1px solid var(--line);border-radius:20px;background:linear-gradient(150deg,#152b3eec,#0e1d2dea);padding:19px;box-shadow:0 15px 40px #0002}.panel h3{margin:0 0 12px;font-size:16px}.panel h3 small{display:inline-block;color:var(--gold);font-size:11px;margin-left:6px}
 .meta{display:flex;gap:9px;justify-content:space-between;align-items:center;padding:10px 12px;background:#040f1c88;border-radius:12px;margin-bottom:13px}.meta b{color:#ffe4b8}.meta span{font-size:12px;color:#b9c9d2}.turn{font-size:20px;font-weight:850;letter-spacing:-.5px;margin:7px 0 15px}
 .seat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.seat{display:grid;grid-template-columns:12px minmax(0,1fr) auto;align-items:center;gap:7px;background:#061a2a;border:1px solid #b6d8ea21;padding:10px;border-radius:13px}.seat.on{border-color:#edcd7e;box-shadow:inset 0 0 0 1px #edcd7e44}.seat-mark{height:11px;width:11px;border-radius:50%;background:var(--seat);box-shadow:0 0 13px var(--seat)}.seat-name{font-size:12px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seat b{font-size:13px}.seat-extra{grid-column:2/span 2;color:#a5bac7;font-size:10px}
+.dog-move-choice-dialog{max-width:500px;width:calc(100% - 28px)}
+.dog-move-choice-options{display:grid;gap:10px;margin:14px 0}
+.dog-move-choice-button{min-height:49px;padding:11px 13px;border:1px solid #e2bd76a6;border-radius:12px;background:linear-gradient(135deg,#304a5c,#173146);color:#fff0d4;text-align:left;font-weight:800;line-height:1.35}
+.dog-move-choice-button:hover,.dog-move-choice-button:focus-visible{background:linear-gradient(135deg,#516c7d,#264560)}
+.dog-move-choice-cancel{padding:10px 16px;border:1px solid #a7c2d077;border-radius:10px;background:#28445a;color:#fff}
 .dog-joker-dialog{max-width:650px;width:calc(100% - 28px)}.dog-joker-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(82px,1fr));gap:10px;margin:15px 0}.dog-joker-choice{min-height:105px;border:2px solid #e5c58b;border-radius:12px;background:linear-gradient(145deg,#f8e8c8,#c8d6df);color:#183044;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;font-size:12px;font-weight:800}.dog-joker-choice strong{font-size:28px}.dog-joker-choice:disabled{opacity:.35;cursor:not-allowed}.dog-joker-close{padding:10px 16px;border-radius:10px;background:#28445a;color:white;border:1px solid #a7c2d077}
 .dog-piles{display:flex;gap:12px;align-items:center;justify-content:center;margin:0 0 12px;padding:9px;border:1px solid #c6ab7350;border-radius:13px;background:#0617259e}
 .dog-pile{display:flex;align-items:center;gap:9px;min-width:0;flex:1;justify-content:center}
@@ -510,6 +515,12 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
   <p id="dog-extra-description">Dieser Bereich wird in einem späteren DOG-Update ergänzt.</p>
   <button id="dog-extra-close" type="button">Schließen</button>
 </dialog>
+<dialog id="dog-move-choice-dialog" class="dog-move-choice-dialog" aria-labelledby="dog-move-choice-title" aria-describedby="dog-move-choice-description">
+  <h2 id="dog-move-choice-title">🎯 Zugvariante auswählen</h2>
+  <p id="dog-move-choice-description">Wähle einen erlaubten Weg.</p>
+  <div id="dog-move-choice-options" class="dog-move-choice-options"></div>
+  <button type="button" id="dog-move-choice-cancel" class="dog-move-choice-cancel">Abbrechen</button>
+</dialog>
 <dialog id="dog-joker-dialog" class="dog-joker-dialog" aria-labelledby="dog-joker-title">
 <h2 id="dog-joker-title">🃏 Joker – Karte auswählen</h2>
 <p>Wähle, als welche Karte du den Joker spielen möchtest. Danach bestimmst du Figur und Zielfeld selbst.</p>
@@ -614,7 +625,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 </script>
 <script type="module">
 import('./ui-shell.js?v=5').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
-import('./app.js?v=52').catch(error=>{
+import('./app.js?v=53').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
