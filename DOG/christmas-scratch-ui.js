@@ -576,16 +576,22 @@ export function initChristmasScratch(){
  $('scratch-host-close').addEventListener('click',()=>hostDialog.close());
  $('scratch-host-cancel').addEventListener('click',()=>hostDialog.close());
  hostDialog?.addEventListener('click',e=>{if(e.target===hostDialog)hostDialog.close()});
+ // These settings apply globally across all DOG rooms. A missing or invalid
+ // room code must not silently suppress saving them.
  $('scratch-host-form').addEventListener('submit',async e=>{
-  e.preventDefault();if(!canManageScratch||!validRoom)return;
+  e.preventDefault();
   const feedback=$('scratch-host-feedback'),save=$('scratch-host-save');
+  if(save.disabled)return;
+  if(!account()){feedback.textContent='⚠️ Bitte zuerst mit deinem DOG-Onlineprofil anmelden.';return;}
   try{
-   const settings=readSettings();save.disabled=true;feedback.textContent='💾 Speichere auf Render …';
-   const response=await query('/settings',{room,settings});
-   if(!status||!account())return;
+   const settings=readSettings();
+   save.disabled=true;feedback.textContent='💾 Speichere auf Render …';
+   const response=await query('/settings',{settings});
+   if(!response.settings)throw Error('Speichern wurde vom Server nicht bestätigt.');
+   if(!status)status={};
    status.settings=response.settings;
    hostDialog.close();drawShop();
-   notice('✅ Host-Einstellungen gespeichert. Sie gelten für neu gekaufte Lose.');
+   notice('✅ Einstellungen gespeichert. Sie gelten für alle Spieler und künftig gekaufte Lose.');
   }catch(error){feedback.textContent='⚠️ '+(error.message||'Speichern fehlgeschlagen');}
   finally{save.disabled=false;}
  });
