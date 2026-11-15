@@ -54,6 +54,23 @@ const assetPath=(id,level)=>{
  if(!stem||!Number.isInteger(level)||level<1||level>(id==='tree'?10:5))return '';
  return eventImageRoot+stem+level+'.png';
 };
+// The uploaded sprites have intentionally different transparent margins.
+ // Scale their *visible* artwork at each fixed village footprint, so small
+ // stage-one assets do not look tiny next to larger-stage buildings.
+ // Pivot points are ground contact points measured in the SVG scene.
+const sceneLayouts=Object.freeze({
+  tower:{cx:185,ground:484,scale:[1.16,1.13,1.10,1.05,1.00]},
+  workshop:{cx:935,ground:463,scale:[1.00,1.02,1.02,1.00,1.00]},
+  bakery:{cx:309,ground:601,scale:[1.20,1.28,1.35,1.45,1.55]},
+  inn:{cx:1048,ground:611,scale:[1.06,1.06,1.04,1.02,1.00]},
+  tree:{cx:612,ground:554,scale:[1.55,1.55,1.55,1.50,1.45,1.30,1.25,1.20,1.20,1.20]}
+});
+function positionVillageSprite(layer,id,level){
+ const model=sceneLayouts[id];
+ if(!model)return;
+ const scale=model.scale[level-1]??1;
+ layer.setAttribute('transform','translate('+model.cx+' '+model.ground+') scale('+scale+') translate('+(-model.cx)+' '+(-model.ground)+')');
+}
 const imageRequests=new Map();
 function waitForImage(path){
  if(!path)return Promise.resolve(false);
@@ -71,6 +88,7 @@ function showStageImage(id,level){
  const layer=$(id+'-stage-image'),fallback=$(id==='tree'?'art-tree':'art-'+id);
  if(!layer||!fallback)return;
  const path=assetPath(id,level);
+ positionVillageSprite(layer,id,level);
  // Unchanged stage stays visible; avoid toggling images during unrelated upgrades.
  if(layer.dataset.requested===path&&fallback.classList.contains('photo-ready'))return;
  if(layer.dataset.requested===path&&layer.dataset.loading==='true')return;
