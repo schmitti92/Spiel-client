@@ -82,3 +82,10 @@
  #panel-story .story-actions button{width:100%}
 }
 @media(prefers-reduced-motion:reduce){#panel-story .story-progress-meter>span{transition:none}}
+
+#panel-story .story-heading-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+#panel-story .story-refresh{border:1px solid #b8ceaa77;border-radius:10px;
+ padding:8px 11px;background:#17443b;color:#f4e6b9;font-size:11px;font-weight:800;cursor:pointer}
+#panel-story .story-refresh:hover{border-color:#ffe4ae;background:#225447}
+#panel-story .story-refresh:disabled{opacity:.55;cursor:wait}
+@media(max-width:650px){#panel-story .story-heading-actions{justify-content:flex-start}}
