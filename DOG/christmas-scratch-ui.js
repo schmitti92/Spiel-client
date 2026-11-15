@@ -94,42 +94,83 @@ export function initChristmasScratch(){
   ctx.globalCompositeOperation='destination-out';
   return ctx;
  }
+ // Actual alpha coverage of the silver coating, not stroke distance or tap count.
+ // Each ticket opens automatically when 90% of ALL field coatings are erased.
+ const erasedByCanvas=new Map();
+ const SAMPLES_PER_FIELD=48*48;
+ function erasedSamples(canvas){
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  const data=ctx.getImageData(0,0,96,96).data;
+  let count=0;
+  for(let y=0;y<96;y+=2)for(let x=0;x<96;x+=2){
+   if(data[(y*96+x)*4+3]<=40)count++;
+  }
+  return count;
+ }
+ function updateScratchProgress(){
+  const total=erasedByCanvas.size*SAMPLES_PER_FIELD;
+  const done=[...erasedByCanvas.values()].reduce((sum,n)=>sum+n,0);
+  const ratio=total?done/total:0;
+  const percent=Math.min(100,Math.floor(ratio*100));
+  $('scratch-progress').textContent=percent+' % freigerubbelt · ab 90 % automatische Aufdeckung';
+  const meter=$('scratch-progress-meter');
+  if(meter){meter.value=percent;meter.setAttribute('aria-valuenow',String(percent))}
+  if(ratio>=.90&&!finished)finish();
+ }
  function uncover(cell,canvas){
-  if(cell.classList.contains('uncovered'))return;
+  if(cell.classList.contains('uncovered')||finished)return;
   cell.classList.add('uncovered');canvas.hidden=true;covered++;
-  $('scratch-progress').textContent=covered+' / '+board.children.length+' Felder aufgedeckt';
-  if(covered===board.children.length)finish();
+  erasedByCanvas.set(canvas,SAMPLES_PER_FIELD);
+  updateScratchProgress();
+ }
+ function measureCell(cell,canvas){
+  if(finished||cell.classList.contains('uncovered'))return;
+  const count=erasedSamples(canvas);
+  erasedByCanvas.set(canvas,count);
+  if(count/SAMPLES_PER_FIELD>=.90)uncover(cell,canvas);
+  else updateScratchProgress();
  }
  function makeField(symbol){
   const cell=el('div','scratch-field'),face=el('span','scratch-cell-symbol',symbol);
-  const canvas=el('canvas','scratch-field-cover');canvas.setAttribute('aria-label','Rubbelfeld');
+  const canvas=el('canvas','scratch-field-cover');
+  canvas.setAttribute('aria-label','Silberbeschichtung mit dem Finger wegrubbeln');
+  canvas.setAttribute('role','button');
+  canvas.setAttribute('tabindex','0');
+  canvas.setAttribute('title','Wische mit dem Finger oder der Maus über die silberne Fläche. Mit Enter ist das Feld auch per Tastatur zugänglich.');
   face.setAttribute('aria-hidden','true');cell.append(face,canvas);
-  const ctx=coat(canvas);let drawing=false,last=null,distance=0,taps=0;
+  const ctx=coat(canvas);erasedByCanvas.set(canvas,0);
+  let drawing=false,last=null,frames=0;
   const point=e=>{
    const r=canvas.getBoundingClientRect();
    return {x:(e.clientX-r.left)*96/r.width,y:(e.clientY-r.top)*96/r.height};
   };
   const move=e=>{
-   if(!drawing||finished)return;
+   if(!drawing||finished||cell.classList.contains('uncovered'))return;
    e.preventDefault();
-   const p=point(e);ctx.lineWidth=34;ctx.lineCap='round';ctx.lineJoin='round';
-   if(last){ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();distance+=Math.hypot(p.x-last.x,p.y-last.y)}
-   else{ctx.beginPath();ctx.arc(p.x,p.y,16,0,Math.PI*2);ctx.fill()}
-   last=p;if(distance>=65)uncover(cell,canvas);
+   const p=point(e);ctx.lineWidth=25;ctx.lineCap='round';ctx.lineJoin='round';
+   if(last){ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke()}
+   else{ctx.beginPath();ctx.arc(p.x,p.y,12.5,0,Math.PI*2);ctx.fill()}
+   last=p;
+   if(++frames%3===0)measureCell(cell,canvas);
   };
   canvas.addEventListener('pointerdown',e=>{
-   taps++;drawing=true;last=null;distance=0;canvas.setPointerCapture?.(e.pointerId);
-   move(e);if(taps>=3)uncover(cell,canvas);
+   if(finished||cell.classList.contains('uncovered'))return;
+   drawing=true;last=null;frames=0;canvas.setPointerCapture?.(e.pointerId);
+   move(e);
   });
   canvas.addEventListener('pointermove',move);
-  canvas.addEventListener('pointerup',()=>{drawing=false;last=null});
-  canvas.addEventListener('pointercancel',()=>{drawing=false;last=null});
+  const end=()=>{if(!drawing)return;drawing=false;last=null;measureCell(cell,canvas)};
+  canvas.addEventListener('pointerup',end);
+  canvas.addEventListener('pointercancel',end);
+  canvas.addEventListener('keydown',e=>{
+   if(e.key==='Enter'||e.key===' '){e.preventDefault();uncover(cell,canvas)}
+  });
   return cell;
  }
  function showTicket(result){
-  ticket=result;finished=false;covered=0;
+  ticket=result;finished=false;covered=0;erasedByCanvas.clear();
   stage.hidden=false;reveal.classList.remove('revealed');results.hidden=true;
-  $('scratch-ticket-finish').hidden=true;$('scratch-reveal-button').hidden=false;
+  $('scratch-ticket-finish').hidden=true;$('scratch-reveal-button').hidden=true;
   $('scratch-ticket-title').textContent='🎟️ '+(SCRATCH_TICKET_TYPES.find(t=>t.id===result.tier)?.label||'')+'-Rubbellos';
   const conf=VARIANTS[result.board?.variantId],cells=result.board?.cells;
   $('scratch-variant-rule').textContent=conf?conf[0]+' · Gewinnregel: '+conf[1]:
@@ -138,11 +179,12 @@ export function initChristmasScratch(){
   if(conf&&Array.isArray(cells)&&cells.length===conf[2]*conf[3]){
    board.style.setProperty('--scratch-cols',conf[3]);
    for(const symbol of cells)board.append(makeField(symbol));
-   $('scratch-progress').textContent='0 / '+cells.length+' Felder aufgedeckt';
+   updateScratchProgress();
   }else{
    // Never construct an invented matching combination for a legacy receipt.
    board.textContent='Älteres Rubbellos ohne gespeichertes Symbolfeld';
-   $('scratch-progress').textContent='Altes Los';
+   $('scratch-progress').textContent='Älteres Los – keine Rubbeltextur gespeichert';
+   $('scratch-reveal-button').hidden=false;
   }
   drawShop();
   try{stage.scrollIntoView({behavior:'smooth',block:'nearest'})}catch{}
@@ -157,7 +199,8 @@ export function initChristmasScratch(){
   const wins=ticket.board?.wins||[];
   for(const w of wins)for(const i of w.indices||[])board.children[i]?.classList.add('scratch-winning-cell');
   reveal.classList.add('revealed');
-  $('scratch-progress').textContent=board.children.length+' / '+board.children.length+' Felder aufgedeckt';
+  $('scratch-progress').textContent='100 % aufgedeckt ✓';
+  const meter=$('scratch-progress-meter');if(meter){meter.value=100;meter.setAttribute('aria-valuenow','100')}
   const entries=Array.isArray(ticket.winnings)?ticket.winnings:
    ticket.type==='none'?[]:[ticket.type==='coins'?{type:'coins',amount:ticket.amount}:{type:'unlock',prize:ticket.prize}];
   $('scratch-result-value').textContent=entries.length?
@@ -187,7 +230,7 @@ export function initChristmasScratch(){
     showTicket(status.lastResult);
    drawShop();
    notice(ticket?'❄️ Dein letztes Los wurde wiederhergestellt.':
-    '🎄 Rubble die einzelnen Felder und finde die Gewinnkombinationen.');
+    '🎄 Rubble die Felder mit Finger oder Maus. Bei 90 % wird das Ergebnis automatisch enthüllt.');
   }catch(e){if(id!==requestId)return;status=null;drawShop();notice('⚠️ '+(e.message||'Verbindung nicht verfügbar'))}
  }
  async function buy(tier,free){
@@ -200,7 +243,7 @@ export function initChristmasScratch(){
    const r=await query('/buy',pending);
    if(!r.result||!r.scratch)throw Error('INVALID_SCRATCH_RESULT');
    status=r.scratch;pending=null;showTicket(r.result);
-   notice('❄️ Jetzt die Felder freirubbeln oder alle Felder aufdecken.');
+   notice('❄️ Rubble mit Finger oder Maus über jedes Feld. Ab 90 % öffnet sich das Los automatisch.');
   }catch(e){
    notice('⚠️ '+(e.message==='SCRATCH_NOT_ENOUGH_COINS'?'Nicht genügend Münzen.':
     e.message==='SCRATCH_DAILY_ALREADY_USED'?'Gratis-Los heute bereits eingelöst.':e.message));
