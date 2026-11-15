@@ -196,6 +196,42 @@ export function initChristmasScratch(){
     field.append(input);moneyFields.append(field);
    }
    money.append(moneyFields);block.append(money);
+   // These are conditional chances within the winning category. The
+   // three money icons and the four collectible gift icons each total 100%.
+   function symbolOddsSection(key,title,description,symbols,defaults){
+    const wrap=el('div','scratch-host-odds-group');
+    wrap.dataset.oddsGroup=key;
+    wrap.append(el('h6','',title),el('small','',description));
+    const inputs=el('div','scratch-host-fields scratch-host-odds-fields');
+    const values=Array.isArray(settings[key])&&settings[key].length===symbols.length?
+     settings[key]:defaults;
+    for(const [i,symbol] of symbols.entries()){
+     const field=el('label','scratch-host-field');
+     field.append(el('span','',symbol+' (%)'));
+     const input=el('input');input.type='number';input.inputMode='decimal';
+     input.min='0';input.max='100';input.step='0.1';input.required=true;
+     input.value=String(values[i]/10);input.dataset.symbolIndex=String(i);
+     field.append(input);inputs.append(field);
+    }
+    wrap.append(inputs);
+    const total=el('small','scratch-host-odds-total');
+    function refreshTotal(){
+     const values=[...inputs.querySelectorAll('input')].map(n=>Number(n.value));
+     const sum=values.reduce((a,b)=>a+b,0);
+     total.textContent='Summe: '+sum.toLocaleString('de-DE',{maximumFractionDigits:1})+' % / 100 %';
+     total.dataset.valid=String(values.every(Number.isFinite)&&Math.abs(sum-100)<0.0001);
+    }
+    inputs.addEventListener('input',refreshTotal);refreshTotal();wrap.append(total);
+    return wrap;
+   }
+   block.append(
+    symbolOddsSection('moneySymbolWeights','🎲 Geldsymbol-Wahrscheinlichkeiten',
+     'Wie oft welches Geldsymbol erscheint, wenn ein Geldgewinn gezogen wurde.',
+     ['🪙 Münze','💵 Geldschein','💼 Geldkoffer'],[334,333,333]),
+    symbolOddsSection('giftSymbolWeights','🎁 Geschenk-Wahrscheinlichkeiten',
+     'Welches Geschenkzeichen eine gewonnene Freischaltung darstellt.',
+     ['🎁 Geschenk','💝 Herzgeschenk','🎀 Schleife','🧧 Roter Umschlag'],[250,250,250,250])
+   );
    const summary=el('small','scratch-host-total');
    const update=()=>{
     const values=['none','coins','unlock'].map(k=>Number(block.querySelector('[data-key="'+k+'"]').value));
@@ -235,7 +271,18 @@ export function initChristmasScratch(){
    if(!coinAmounts.every(amount=>Number.isSafeInteger(amount)&&amount>=1&&amount<=50000000)||
     coinAmounts[0]>=coinAmounts[1]||coinAmounts[1]>=coinAmounts[2])
     throw Error('Geldbeträge müssen ganze Münzen zwischen 1 und 50.000.000 sein: 🪙 kleiner als 💵, 💵 kleiner als 💼.');
-   variants[id]={weights,extraCoinChance,maxPrizes,coinAmounts};
+   const readSymbolWeights=(key,count)=>{
+    const section=block.querySelector('[data-odds-group="'+key+'"]');
+    const values=Array.from({length:count},(_,i)=>
+     parsePercent(section?.querySelector('[data-symbol-index="'+i+'"]')));
+    if(values.reduce((sum,value)=>sum+value,0)!==1000)
+     throw Error('Die Wahrscheinlichkeiten bei '+(key==='moneySymbolWeights'?'🪙 💵 💼':'🎁 💝 🎀 🧧')+
+      ' müssen zusammen genau 100 % ergeben.');
+    return values;
+   };
+   const moneySymbolWeights=readSymbolWeights('moneySymbolWeights',3);
+   const giftSymbolWeights=readSymbolWeights('giftSymbolWeights',4);
+   variants[id]={weights,extraCoinChance,maxPrizes,coinAmounts,moneySymbolWeights,giftSymbolWeights};
   }
   return {version:1,freeEnabled:$('scratch-host-free-enabled').checked,variants};
  }
