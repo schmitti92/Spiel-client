@@ -275,7 +275,7 @@ body:has(#panel-story:not([hidden])) .event-tab[aria-selected="true"]{
  font:800 clamp(10px,.85vw,12px)/1.2 Georgia,serif;
  color:#8a6138;text-align:center;
 }
-#panel-story .storybook-page-text{
+#panel-story .story-reading .storybook-page-text{
  flex:1 1 auto;
  min-height:0;
  overflow-y:auto;
@@ -390,7 +390,7 @@ body:has(#panel-story:not([hidden])) .event-tab[aria-selected="true"]{
  #panel-story .storybook-spread{min-height:405px;height:65dvh;padding:6px}
  #panel-story .storybook-paper{padding:18px 18px 10px}
  #panel-story .storybook-page-heading{font-size:clamp(20px,2.1vw,27px)}
- #panel-story .storybook-page-text{font-size:clamp(12px,1.15vw,15px);line-height:1.42}
+ #panel-story .story-reading .storybook-page-text{font-size:clamp(12px,1.15vw,15px);line-height:1.42}
  #panel-story .storybook-chapter{grid-template-columns:28px minmax(0,1fr);padding:4px 6px}
 }
 @media(max-width:920px){
@@ -406,7 +406,7 @@ body:has(#panel-story:not([hidden])) .event-tab[aria-selected="true"]{
  #panel-story .storybook-chapter-status{font-size:8px}
  #panel-story .storybook-spread{min-height:455px;height:min(70dvh,610px)}
  #panel-story .storybook-paper{padding:23px 22px 12px}
- #panel-story .storybook-page-text{font-size:clamp(13px,1.85vw,17px)}
+ #panel-story .story-reading .storybook-page-text{font-size:clamp(13px,1.85vw,17px)}
  #panel-story .storybook-topline{min-height:47px;padding-right:88px}
  #panel-story .storybook-shell::after{opacity:.25}
 }
@@ -423,7 +423,7 @@ body:has(#panel-story:not([hidden])) .event-tab[aria-selected="true"]{
  #panel-story .storybook-illustration{height:220px;border-radius:15px 15px 3px 3px;padding:12px}
  #panel-story .storybook-paper{min-height:350px;border-radius:3px 3px 14px 14px;padding:19px 19px 12px}
  #panel-story .storybook-page-heading{font-size:25px}
- #panel-story .storybook-page-text{font-size:15px;line-height:1.56}
+ #panel-story .story-reading .storybook-page-text{font-size:15px;line-height:1.56}
  #panel-story .storybook-turnbar{padding:4px;gap:8px}
  #panel-story .storybook-turn{min-height:40px;padding:6px 9px;font-size:10px}
  #panel-story .storybook-page-dots{gap:6px}
@@ -437,7 +437,7 @@ body:has(#panel-story:not([hidden])) .event-tab[aria-selected="true"]{
  #panel-story .story-chapter-list{max-height:69dvh;grid-template-rows:repeat(10,minmax(36px,1fr))}
  #panel-story .storybook-spread{min-height:390px;height:67dvh}
  #panel-story .storybook-paper{padding-top:14px}
- #panel-story .storybook-page-text{line-height:1.38}
+ #panel-story .story-reading .storybook-page-text{line-height:1.38}
 }
 @media(prefers-reduced-motion:reduce){
  #panel-story .storybook-spread,#panel-story .storybook-turn{animation:none!important;transition:none!important}
