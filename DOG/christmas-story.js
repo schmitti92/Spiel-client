@@ -10,19 +10,24 @@ export function unlockedStoryChapters(stage,verified){
   return Math.min(10,Math.max(1,Number.isInteger(stage)?stage:1));
 }
 
+// Curated real group photos from the existing Deal or No Deal ice-block gallery.
+// Existing originals stay untouched. The book loads only the currently visible photo.
+// The narrative is fictional; these photos are personal memories accompanying it.
 const villageScene='./weihnachtsevent-bilder/leere_winterdorf_plaza_im_mondlicht.png';
-const artSets=[
- [villageScene,'./weihnachtsevent-bilder/Herberge_Stufe_1.png','./weihnachtsevent-bilder/weihnachtsbaum_stufe_1.png'],
- ['./weihnachtsevent-bilder/Herberge_Stufe_2.png',villageScene,'./weihnachtsevent-bilder/weihnachtsbaum_stufe_2.png'],
- ['./weihnachtsevent-bilder/weihnachtsbaeckerei_stufe_2.png',villageScene,'./weihnachtsevent-bilder/weihnachtsbaum_stufe_3.png'],
- ['./weihnachtsevent-bilder/Wichtelwerkstatt_Stufe_2.png',villageScene,'./weihnachtsevent-bilder/weihnachtsbaum_stufe_4.png'],
- [villageScene,'./weihnachtsevent-bilder/Herberge_Stufe_3.png','./weihnachtsevent-bilder/weihnachtsbaum_stufe_5.png'],
- ['./weihnachtsevent-bilder/Herberge_Stufe_4.png',villageScene,'./weihnachtsevent-bilder/weihnachtsbaum_stufe_6.png'],
- ['./weihnachtsevent-bilder/Wichtelwerkstatt_Stufe_4.png',villageScene,'./weihnachtsevent-bilder/weihnachtsbaum_stufe_7.png'],
- [villageScene,'./weihnachtsevent-bilder/Herberge_Stufe_5.png','./weihnachtsevent-bilder/weihnachtsbaum_stufe_8.png'],
- ['./weihnachtsevent-bilder/weihnachtsbaeckerei_stufe_5.png',villageScene,'./weihnachtsevent-bilder/weihnachtsbaum_stufe_9.png'],
- [villageScene,'./weihnachtsevent-bilder/weihnachtslichter_turm_stufe_5.png','./weihnachtsevent-bilder/weihnachtsbaum_stufe_10.png']
+const galleryRoot='../DealOrNoDeal/Weihnachtsevent2/Weihnachtsbilder/';
+const galleryPages=[
+ ['IMG-20261108-WA0016.jpg','IMG-20261108-WA0011.jpg','IMG-20261108-WA0015.jpg','IMG-20261108-WA0012.jpg','IMG-20261108-WA0018.jpg','IMG-20261108-WA0023.jpg'],
+ ['IMG-20261108-WA0011.jpg','IMG-20261108-WA0006.jpg','IMG-20261108-WA0030.jpg','IMG-20261108-WA0023.jpg','IMG-20261108-WA0018.jpg','IMG-20261108-WA0015.jpg'],
+ ['IMG-20261108-WA0023.jpg','IMG-20261108-WA0006.jpg','IMG-20261108-WA0011.jpg','IMG-20261108-WA0018.jpg','IMG-20261108-WA0030.jpg','IMG-20261108-WA0016.jpg'],
+ ['IMG-20261108-WA0015.jpg','IMG-20261108-WA0012.jpg','IMG-20261108-WA0018.jpg','IMG-20261108-WA0011.jpg','IMG-20261108-WA0030.jpg','IMG-20261108-WA0023.jpg'],
+ ['IMG-20261108-WA0012.jpg','IMG-20261108-WA0016.jpg','IMG-20261108-WA0035.jpg','IMG-20261108-WA0011.jpg','IMG-20261108-WA0015.jpg','IMG-20261108-WA0018.jpg'],
+ ['IMG-20261108-WA0018.jpg','IMG-20261108-WA0011.jpg','IMG-20261108-WA0030.jpg','IMG-20261108-WA0006.jpg','IMG-20261108-WA0016.jpg','IMG-20261108-WA0012.jpg'],
+ ['IMG-20261108-WA0006.jpg','IMG-20261108-WA0023.jpg','IMG-20261108-WA0015.jpg','IMG-20261108-WA0018.jpg','IMG-20261108-WA0030.jpg','IMG-20261108-WA0011.jpg'],
+ ['IMG-20261108-WA0016.jpg','IMG-20261108-WA0011.jpg','IMG-20261108-WA0012.jpg','IMG-20261108-WA0035.jpg','IMG-20261108-WA0015.jpg','IMG-20261108-WA0018.jpg'],
+ ['IMG-20261108-WA0016.jpg','IMG-20261108-WA0015.jpg','IMG-20261108-WA0030.jpg','IMG-20261108-WA0012.jpg','IMG-20261108-WA0011.jpg','IMG-20261108-WA0018.jpg'],
+ ['IMG-20261108-WA0016.jpg','IMG-20261108-WA0023.jpg','IMG-20261108-WA0018.jpg','IMG-20261108-WA0007.jpg','IMG-20261108-WA0015.jpg','IMG-20261108-WA0011.jpg']
 ];
+
 function node(tag,className,txt){
  const n=document.createElement(tag);
  if(className)n.className=className;
@@ -73,22 +78,23 @@ export function initChristmasStory({openTab}){
   const illustration=node('figure','storybook-illustration');
   const image=node('img','storybook-scene');
   image.loading='lazy';image.decoding='async';
-  image.src=artSets[chapter-1][Math.floor((page-1)/2)%3];
-  image.alt='Winterliche Illustration zu '+current.title+', '+heading;
+  image.src=galleryRoot+galleryPages[chapter-1][page-1];
+  image.alt='Foto aus der Eisblock-Galerie als Begleitung zur Geschichte: '+current.title;
   image.addEventListener('error',()=>{
    if(!image.src.endsWith('leere_winterdorf_plaza_im_mondlicht.png'))image.src=villageScene;
   },{once:true});
-  const figcaption=node('figcaption','storybook-picture-caption','LICHTERTAL · '+current.tree.toUpperCase());
+  const figcaption=node('figcaption','storybook-picture-caption','✦ GEMEINSAME ERINNERUNGEN ✦');
   illustration.append(image,figcaption);
   const paper=node('div','storybook-paper');
   const edition=node('div','storybook-page-kicker','KAPITEL '+String(chapter).padStart(2,'0')+' · '+current.tree.toUpperCase());
-  const title=node('h3','storybook-page-heading',heading);
+  const title=node('h3','storybook-page-heading',current.title);
+  const subtitle=node('div','storybook-page-subtitle','Seite '+page+' von 6 · '+heading);
   const text=node('p','storybook-page-text',body);
   const theme=node('div','storybook-page-thought');
   theme.append(node('span','storybook-small-star','✧'),node('span','',current.theme));
   const footer=node('div','storybook-page-footer');
   footer.append(node('span','',current.icon+' '+current.title),node('strong','',''+((chapter-1)*6+page)));
-  paper.append(edition,title,text,theme,footer);
+  paper.append(edition,title,subtitle,text,theme,footer);
 
   frame.append(illustration,paper);
   const toolbar=node('div','storybook-turnbar');
@@ -120,14 +126,9 @@ export function initChristmasStory({openTab}){
   reader.setAttribute('aria-label','Kapitel '+chapter+' von 10, Seite '+page+' von 6: '+heading);
 
   // This last action is informational navigation, never a client-side upgrade.
-  if(page===6&&chapter===stage){
-   action.hidden=false;
-   action.textContent=stage<10?'🏠 Zum Dorfausbau – nächstes Kapitel freischalten':'🎄 Zum Weihnachtsbaum';
-   action.onclick=()=>openTab(stage<10?'buildings':'tree');
-  }else{
-   action.hidden=true;
-   action.onclick=null;
-  }
+  action.hidden=false;
+  action.textContent=stage<10?'🏘️ Zum Dorfausbau':'🎄 Zum Weihnachtsbaum';
+  action.onclick=()=>openTab(stage<10?'buildings':'tree');
  };
  const render=({treeLevel=1,isVerified=false,remaining=0}={})=>{
   const next=unlockedStoryChapters(treeLevel,isVerified);
@@ -154,6 +155,22 @@ export function initChristmasStory({openTab}){
   if(event.key==='ArrowRight'&&!(page===6&&chapter===stage)){event.preventDefault();go(1);}
   if(event.key==='ArrowLeft'&&!(page===1&&chapter===1)){event.preventDefault();go(-1);}
  });
+ // Swipe horizontally on the book to change pages; vertical reading scroll remains natural.
+ let touchX=null,touchY=null;
+ reader.addEventListener('touchstart',event=>{
+  if(event.touches.length!==1||!event.target.closest('.storybook-spread'))return;
+  touchX=event.touches[0].clientX;touchY=event.touches[0].clientY;
+ },{passive:true});
+ reader.addEventListener('touchend',event=>{
+  if(touchX===null||touchY===null||!event.changedTouches.length)return;
+  const dx=event.changedTouches[0].clientX-touchX;
+  const dy=event.changedTouches[0].clientY-touchY;
+  touchX=null;touchY=null;
+  if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.5){
+   if(dx<0&&!(page===6&&chapter===stage))go(1);
+   if(dx>0&&!(page===1&&chapter===1))go(-1);
+  }
+ },{passive:true});
  render();
  return {render,openLatest:()=>choose(stage,1)};
 }
