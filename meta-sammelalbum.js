@@ -93,7 +93,6 @@ function drawGallery(){
   button.append(dom('span','meta-picture-status',unlocked?'✓ Gesammelt':'🔒 Noch gesperrt'));
   button.addEventListener('click',()=>{
    selected=pic.id;
-   lastPictureTrigger=button;
    drawGallery();
    drawDetail();
    $('meta-picture-dialog').showModal();
@@ -112,7 +111,6 @@ function drawGallery(){
  $('meta-book-prev').disabled=page.index===0;
  $('meta-book-next').disabled=page.index===page.count-1;
 }
-let lastPictureTrigger=null;
 function drawDetail(){
  const root=$('meta-picture-detail');
  const pic=theme.pictures.find(p=>p.id===selected);
@@ -121,7 +119,9 @@ function drawDetail(){
  const artwork=dom('div','meta-detail-artwork');
  artwork.append(imageOf(pic),dom('span','meta-detail-lock','🔒 VORSCHAU · GESPERRT'));
  const info=dom('div','meta-detail-info');
- info.append(dom('h2','meta-detail-title',pic.icon+' '+pic.name));
+ const title=dom('h2','meta-detail-title',pic.icon+' '+pic.name);
+ title.id='meta-dialog-title';
+ info.append(title);
  info.append(dom('p','meta-detail-description',pic.description));
  info.append(dom('p','meta-detail-message','🎁 Später im Weihnachtsevent 1 freischaltbar.'));
  const disabled=dom('button','meta-detail-disabled','🔒 Noch nicht freigeschaltet');
