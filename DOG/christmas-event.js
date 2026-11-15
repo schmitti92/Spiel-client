@@ -246,7 +246,7 @@ treeNames.forEach((name,i)=>{
   +'<div class="tree-step-caption"><span class="tree-step-number">STUFE '+stage+'</span><strong class="tree-step-name">'+name+'</strong></div>'
   +'<span class="tree-step-gift" data-tree-gift-icon aria-hidden="true">'+prize.icon+'</span>'
   +'<strong class="tree-step-prize" data-tree-prize-title>'+prize.title+'</strong>'
-  +'<span class="tree-step-status" data-tree-status>Im Onlineraum prüfen</span>';
+  +'<span class="tree-step-status" data-tree-status></span>';
  steps.append(box);
 });
 function centerTreeMilestone(){
