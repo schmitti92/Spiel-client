@@ -6,8 +6,10 @@
 <meta name="theme-color" content="#071a30">
 <meta name="description" content="Meta-Sammelalbum: ein blätterbares Weihnachtsbuch mit neun später freischaltbaren Erinnerungsbildern.">
 <title>Meta-Sammelalbum · Spielesammlung</title>
-<link rel="stylesheet" href="meta-sammelalbum.css?v=6">
-<script type="module" src="meta-sammelalbum.js?v=6"></script>
+<link rel="stylesheet" href="meta-sammelalbum.css?v=7">
+<script src="profile-config.js"></script>
+<script src="profile-auth.js"></script>
+<script type="module" src="meta-sammelalbum.js?v=7"></script>
 </head>
 <body>
 <div class="meta-album-page">
@@ -39,6 +41,11 @@
      <span id="meta-book-position" role="status" aria-live="polite" aria-atomic="true">Seite 1 von 2</span>
      <button id="meta-book-next" class="meta-book-turn" type="button" aria-label="Nächste Buchseite">Weiter ❯</button>
     </nav>
+    <div class="meta-album-auth-row" aria-live="polite">
+     <span id="meta-album-feedback" role="status">⏳ Spielerprofil wird geprüft …</span>
+     <button id="meta-album-login" type="button" hidden>👤 Anmelden</button>
+     <button id="meta-album-refresh" type="button" hidden aria-label="Albumfreischaltungen prüfen">↻ Prüfen</button>
+    </div>
    </div>
   </section>
  </main>
