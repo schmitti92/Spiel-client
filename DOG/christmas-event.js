@@ -7,7 +7,7 @@
 import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotalCost,christmasVillageTotalCost} from './christmas-building-costs.js?v=1';
 import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewards-ui.js?v=5';
 import {initChristmasStory} from './christmas-story.js?v=1';
-import {initChristmasScratch} from './christmas-scratch-ui.js?v=23';
+import {initChristmasScratch} from './christmas-scratch-ui.js?v=24';
 import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=2';
 const $=id=>document.getElementById(id);
 const tabs=['village','buildings','tree','story','scratch','level','chapters'];
