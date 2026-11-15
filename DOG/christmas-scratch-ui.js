@@ -697,9 +697,41 @@ export function initChristmasScratch(){
   updatePremiumCounter(finished&&result?.board?.variantId==='premium_27'?
    result.board.cells.map((_,i)=>i):[]);
  }
+ // The separate right-side prize window was removed. Show the verified
+ // winnings as a small, non-scrolling strip within the ticket itself.
+ function renderInlineResults(result){
+  const outlet=$('scratch-inline-results');
+  if(!outlet)return;
+  outlet.replaceChildren();
+  outlet.hidden=!result;
+  if(!result)return;
+  const prizes=Array.isArray(result.winnings)?result.winnings.filter(p=>
+   p&&['coins','unlock'].includes(p.type)):[];
+  const amount=Number.isSafeInteger(result.totalCoins)&&result.totalCoins>=0?
+   result.totalCoins:prizes.reduce((sum,p)=>sum+(p.type==='coins'&&Number.isSafeInteger(p.amount)?p.amount:0),0);
+  const heading=el('div','scratch-inline-heading');
+  heading.append(el('strong','',prizes.length?'🏆 '+prizes.length+' Gewinne':'❄️ Niete'),
+   el('strong','scratch-inline-total','🪙 '+num(amount)+' erhalten'));
+  outlet.append(heading);
+  if(!prizes.length)return;
+  const list=el('div','scratch-inline-chips');
+  for(const prize of prizes){
+   const chip=el('div','scratch-inline-chip'+(prize.type==='unlock'?' is-unlock':''));
+   let label=prize.type==='coins'?
+    (prize.symbol||'🪙')+' '+num(prize.amount)+' Münzen':
+    (prize.symbol||'🎁')+' '+(prize.prize?.name||'Freischaltung');
+   const detail=prize.milestone==='gold-20'?'20er-Bonus':
+    prize.milestone==='premium-24'?'Premium-Freischaltung':
+    prize.bonus?'Zusatzgewinn':'Dreierreihe';
+   chip.append(el('strong','',label),el('small','',detail));
+   list.append(chip);
+  }
+  outlet.append(list);
+ }
  function showTicket(result){
   ticket=result;finished=false;unifiedCover=null;initialOpaque=0;
   stage.classList.remove('is-revealed');
+  renderInlineResults(null);
   stage.removeAttribute('data-result');
   stage.hidden=false;reveal.classList.remove('revealed');results.hidden=true;
   $('scratch-ticket-finish').hidden=true;
@@ -824,6 +856,7 @@ export function initChristmasScratch(){
     el('span','',winFlag?entries.map(prizeLabel).join(' · '):'Kein Gewinn · 0 Münzen'));
    summary.append(hero);panel.append(summary);
   }
+  renderInlineResults(current);
   // Optional gold highlights, paths and row descriptions cannot block the
   // confirmation or accidentally book any extra rewards.
   try{
