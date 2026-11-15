@@ -461,3 +461,9 @@ dialog{color:#f5e9d6;background:#10283e;border:1px solid #ddb973;border-radius:1
 :root[data-dog-motion="off"] *,:root[data-dog-motion="off"] *::before,:root[data-dog-motion="off"] *::after{
  animation:none!important;transition-duration:0s!important;scroll-behavior:auto!important
 }
+
+/* Christmas-event boards remain visible but cannot be chosen before their reward unlock. */
+.choice.is-locked,.choice.is-locked:hover{background:#14222c;border-color:#576775;color:#a8b7c0;cursor:not-allowed;box-shadow:none;transform:none}
+.choice.is-locked .choice-art,.choice.is-locked:hover .choice-art{filter:grayscale(1) brightness(.55)}
+.choice.is-locked .choice-copy small{color:#f1d7a3}
+.choice.is-locked .choice-check{opacity:.5}
