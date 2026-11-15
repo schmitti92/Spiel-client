@@ -403,6 +403,87 @@ if(wallpaperGrid){
     wallpaperGrid.append(card);
   }
 }
+
+/** A room code only locates an authenticated shared village. The server
+ * verifies membership, applies every light reward and deducts upgrades.
+ * Local preview slider positions can never become a purchased level. */
+const villageCode=String(new URLSearchParams(location.search).get('room')||'').toUpperCase();
+const villageRoomValid=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/.test(villageCode);
+const villageApi=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
+const lightsLabel=value=>new Intl.NumberFormat('de-DE',{maximumFractionDigits:1}).format(value/10);
+function eventUser(){const state=window.SpielOnline?.state?.();return state?.status==='online'&&state.user?.getIdToken?state.user:null;}
+async function villageRequest(endpoint='',method='GET',body=null){
+ const person=eventUser();if(!person)throw Error('Bitte mit dem Online-Profil anmelden.');
+ const response=await fetch(villageApi+'/api/hub/rooms/'+encodeURIComponent(villageCode)+'/dog/'+endpoint,{
+  method,headers:{Authorization:'Bearer '+await person.getIdToken(),...(body?{'Content-Type':'application/json'}:{})},
+  body:body?JSON.stringify(body):undefined,cache:'no-store'
+ });
+ let result;
+ try{result=await response.json();}catch{throw Error('Der DOG-Server antwortet gerade nicht korrekt.');}
+ if(!response.ok||result?.ok!==true)throw Error(result?.error||'Serverfehler '+response.status);
+ return result;
+}
+function showLiveVillage(data){
+ const v=data?.village;if(!v)return;
+ villageLive=v;
+ villageHost=data.host===true;
+ villageMode=data.enabled===true;
+ villageCanToggle=data.canSetMode===true;
+ for(const id of ['tower','workshop','bakery','inn'])preview[id]=v.levels[id];
+ $('building-live-balance').textContent='⭐ Gemeinsamer Vorrat: '+lightsLabel(v.lightsTenths)+' Weihnachtslichter · '+v.giftsCollected+' Geschenke gesammelt';
+ const mode=$('building-event-mode-toggle');
+ mode.hidden=!villageHost||!villageCanToggle;
+ mode.disabled=villageBusy;
+ mode.textContent=villageMode?'🎄 Weihnachtsmodus ausschalten':'🎄 Weihnachtsmodus für DOG aktivieren';
+ $('building-event-mode').textContent=data.matchEnabled?'🎁 Die aktuelle DOG-Partie sammelt Weihnachtslichter.'
+  :villageMode?'🎄 Weihnachtsmodus für die nächste DOG-Partie aktiviert.':'🔒 Weihnachtsmodus im DOG-Vorraum noch nicht aktiviert.';
+ $('building-live-notice').textContent='✅ Echter gemeinsamer Fortschritt – die Gebäude-Level und Lichter wurden auf dem Server überprüft. Nur der Host kann den Dorfvorrat für ein Upgrade verwenden.';
+ const label=document.querySelector('.village-caption > span');
+ if(label)label.textContent='⭐ Echter Dorffortschritt · '+lightsLabel(v.lightsTenths)+' Weihnachtslichter im gemeinsamen Vorrat';
+ const giftNotice=document.querySelector('#panel-gifts > .notice');
+ if(giftNotice)giftNotice.textContent='🎄 Weihnachtslichter werden nur in aktivierten Online-DOG-Partien auf echten Geschenkfeldern vergeben. Die Gutschriften und Gebäudeboni prüft Render; lokale Vorschau-Level zählen nicht.';
+ refreshPreview();
+}
+async function reloadVillage(){
+ if(!villageRoomValid)return;
+ if(!eventUser()){
+  $('building-event-mode').textContent='🔐 Melde dich mit deinem Online-Profil an, um das gemeinsame Dorf zu laden.';
+  return;
+ }
+ try{showLiveVillage(await villageRequest('village'));}
+ catch(e){$('building-event-mode').textContent='⚠️ '+e.message;}
+}
+async function purchaseBuilding(id){
+ if(!villageLive||!villageHost||villageBusy)return;
+ const level=villageLive.levels[id],cost=christmasUpgradeCost(level);
+ if(cost===null||villageLive.lightsTenths<cost*10)return;
+ villageBusy=true;refreshPreview();
+ try{
+  const result=await villageRequest('village/upgrade','POST',{
+   building:id,expectedLevel:level,commandId:'dog-village-'+crypto.randomUUID()
+  });
+  showLiveVillage({village:result.village,host:villageHost,enabled:villageMode,canSetMode:villageCanToggle});
+  $('building-event-mode').textContent='✅ '+definitions.find(entry=>entry.id===id).title+' wurde auf Stufe '+(level+1)+' ausgebaut. '+cost+' Lichter abgebucht.';
+ }catch(err){$('building-event-mode').textContent='⚠️ Ausbau nicht möglich: '+err.message;await reloadVillage();}
+ finally{villageBusy=false;refreshPreview();}
+}
+$('building-event-mode-toggle').addEventListener('click',async()=>{
+ if(!villageHost||!villageCanToggle||villageBusy)return;
+ villageBusy=true;$('building-event-mode-toggle').disabled=true;
+ try{
+  await villageRequest('christmas-mode','POST',{enabled:!villageMode});
+  await reloadVillage();
+ }catch(e){$('building-event-mode').textContent='⚠️ '+e.message;}
+ finally{villageBusy=false;refreshPreview();}
+});
+if(villageRoomValid){
+ void reloadVillage();
+ window.addEventListener('spielonline-change',()=>void reloadVillage());
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)void reloadVillage();});
+}else{
+ $('building-event-mode').textContent='Öffne dieses Weihnachtsdorf aus deiner Online-DOG-Raumlobby, damit echte Lichter und Gebäudestufen geladen werden.';
+}
+
 refreshPreview();
 // Load the high-resolution landscape separately: never block gameplay UI.
 // Its <svg:image> renders only once the same-origin PNG is confirmed available.
