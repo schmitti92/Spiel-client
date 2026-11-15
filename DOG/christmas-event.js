@@ -661,6 +661,10 @@ async function purchaseBuilding(id){
 }
 $('building-wallet-refresh').disabled=false;
 $('building-wallet-refresh').addEventListener('click',()=>void reloadVillage());
+$('story-refresh')?.addEventListener('click',async()=>{
+ const button=$('story-refresh');button.disabled=true;
+ try{await reloadVillage();}finally{button.disabled=false;}
+});
 // The village is tied to an online profile, not a room or host.
 $('building-village-role').textContent='⌛ Gemeinsames DOG-Dorf lädt';
 void reloadVillage();
