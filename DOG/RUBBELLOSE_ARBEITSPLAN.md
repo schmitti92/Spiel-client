@@ -63,8 +63,10 @@ Abnahme: Wahrscheinlichkeitsmatrix und Testfälle schriftlich freigegeben.
 - **Technische Abnahme:** Für jede der 10 Varianten Generator und davon unabhängigen Regelprüfer bauen; generierte Ergebnisse vor Auszahlung serverseitig gegenprüfen. Keine Belohnung allein aus einer Anzeige oder einem clientseitigen Zufallswurf ableiten.
 - Serverseitiges Losergebnis und Spielfeld zusammen atomar persistieren, damit Neuladen/Verbindungsabbruch keine andere Karte erzeugt.
 
-## Phase 2 – Spielvarianten und Generator [ ]
-- Jedes Los als Datenstruktur mit variantId, Feldlayout, Symbolen, Gewinnkombinationen und sichtbarer Anleitung.
+## Phase 2 – Spielvarianten und Generator [IN ARBEIT]
+- [x] Basisgenerator und unabhängiger Regelprüfer für Geschenkelinie (3×3) und Schneeflocken-Bingo (4×4), derzeit exakt 0 oder 1 Gewinnreihe. Backend: `serverfinal/dog/christmas-scratch-grid.js`.
+- [x] 2.000 generierte Testfelder (je 500 Nieten und 500 Gewinnfelder pro Variante) erfolgreich validiert.
+- [ ] Jedes Los als Datenstruktur mit variantId, Feldlayout, Symbolen, Gewinnkombinationen und sichtbarer Anleitung.
 - Generator erzeugt Nieten ohne gültige Kombination; Gewinne mit exakt zugeordneten Treffern.
 - 6/9/12/15/16/20 Felder auf Mobilgeräten gut bedienbar.
 Abnahme: automatische Validierung aller 10 Varianten, auch 2–3 Gewinnkombinationen.
@@ -112,4 +114,5 @@ Abnahme: echte Spielrunde über mehrere Geräte.
 - 15.11.2026: Plan v1 erstellt und im Frontend-Repository hinterlegt. Keine Spielmechanik durch dieses Dokument geändert.
 - 15.11.2026: Plan v2 – bestätigte Gewichtungen ergänzt und rechnerisch geprüft. Spielcode unverändert.
 - 15.11.2026: Sichtbarkeitsregel und Pflicht zu Generator + unabhängiger Regelprüfung für alle zehn Varianten verbindlich ergänzt. Umsetzung noch ausstehend.
-- Nächster Schritt: Phase 1 – Überschneidungsregeln und Münztreffer-Verteilung.
+- 15.11.2026: Phase 2 begonnen. Backend-Grundmodul für 3×3 und 4×4 implementiert, 2.000 Generator-/Prüfungen bestanden. Noch nicht an Shop oder Auszahlung angebunden.
+- Nächster Schritt: Mehrere eindeutig zuordenbare Gewinnkombinationen, anschließend die acht übrigen Varianten und Integration.
