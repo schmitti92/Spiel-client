@@ -29,10 +29,16 @@ const available=item=>Boolean(item&&(
  item.unlockId?isVerifiedCosmeticUnlocked(item.unlockId):
  item.status==='available'&&!isChristmasRewardLocked(item)
 ));
+// Secret Rubbellos/Event prizes are shown only after server-verified collection.
+// Never expose unrewarded artwork, names or details as gallery previews.
+const visibleCollectionItem=item=>Boolean(item&&(!item.unlockId||available(item)));
 const canEquip=item=>available(item)&&item.kind!=='nameFrame'&&item.kind!=='activeIcon'&&
  !(item.kind==='avatar'&&item.avatar>15);
-const statsFor=group=>({total:group.items.length,available:group.items.filter(available).length,
- planned:group.items.filter(x=>!available(x)).length});
+const statsFor=group=>{
+ const items=group.items.filter(visibleCollectionItem);
+ return {total:items.length,available:items.filter(available).length,
+  planned:items.filter(x=>!available(x)).length};
+};
 function equipped(item){
  if(!available(item))return false;
  if(item.kind==='default')return true;
@@ -136,11 +142,11 @@ function drawNavigation(){
 function drawFilters(){
  const s=statsFor(cat);
  $('collection-heading').textContent=cat.icon+' '+cat.title;$('collection-subheading').textContent=cat.subtitle;
- $('count-all').textContent='('+s.total+')';$('count-active').textContent='('+cat.items.filter(equipped).length+')';
+ $('count-all').textContent='('+s.total+')';$('count-active').textContent='('+cat.items.filter(x=>visibleCollectionItem(x)&&equipped(x)).length+')';
  document.querySelectorAll('[data-filter]').forEach(btn=>btn.setAttribute('aria-pressed',String(btn.dataset.filter===filter)));
 }
 function drawGrid(){
- const items=cat.items.filter(x=>filter==='all'||(filter==='active'&&equipped(x)));
+ const items=cat.items.filter(x=>visibleCollectionItem(x)&&(filter==='all'||equipped(x)));
  if(!items.some(x=>x.id===picked))picked=items.find(equipped)?.id||items[0]?.id||null;
  $('collection-empty').hidden=items.length>0;
  $('collection-grid').replaceChildren(...items.map(item=>{
@@ -194,8 +200,8 @@ function equip(item,button){
 }
 function drawDetails(){
  const root=$('collection-detail-content');root.replaceChildren();
- const item=cat.items.find(x=>x.id===picked);if(!item){root.append(el('p','collection-detail-loading','Bitte wähle einen Inhalt aus.'));return;}
- const locked=item.status==='planned'||isChristmasRewardLocked(item),active=equipped(item),btn=el('button','detail-button'+(locked?' is-locked':active&&item.kind!=='emoji'?' is-active':''));
+ const item=cat.items.find(x=>x.id===picked&&visibleCollectionItem(x));if(!item){root.append(el('p','collection-detail-loading','Wähle einen verfügbaren oder bereits gewonnenen Inhalt aus.'));return;}
+ const locked=!available(item),active=equipped(item),btn=el('button','detail-button'+(locked?' is-locked':active&&item.kind!=='emoji'?' is-active':''));
  btn.type='button';
  btn.textContent=locked?'🔒 Noch nicht gewonnen':!canEquip(item)?'✓ Gewonnen · Ausrüsten folgt':item.kind==='default'?(item.id==='frame-current'?'✓ Standardrahmen aktiv':'✓ Standardsymbol aktiv'):active&&item.kind!=='emoji'?'✓ Aktiv':item.kind==='emoji'?'In Schnellleiste verwenden':'✓ Ausrüsten';
  btn.disabled=!canEquip(item)||item.kind==='default'||(active&&item.kind!=='emoji');
@@ -227,11 +233,11 @@ function drawDetails(){
   'Die Auswahl ist rein optisch und wird ohne zusätzliche Firestore-Schreibvorgänge gespeichert.'));
 }
 function draw(){
- const all=DOG_COLLECTION_CATEGORIES.flatMap(c=>c.items);
+ const all=DOG_COLLECTION_CATEGORIES.flatMap(c=>c.items).filter(visibleCollectionItem);
  const stats={available:all.filter(available).length,planned:all.filter(x=>!available(x)).length};
  $('collection-total').textContent=String(stats.available);
  
- $('collection-progress-caption').textContent=stats.planned?stats.planned+' Event-Designs noch gesperrt.':'Nur tatsächlich verfügbare DOG-Inhalte';
+ $('collection-progress-caption').textContent='Neue Rubbellos-Gewinne erscheinen erst nach dem Einsammeln.';
  drawNavigation();drawFilters();drawGrid();drawDetails();
 }
 document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;picked=null;drawFilters();drawGrid();drawDetails();});
