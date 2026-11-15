@@ -149,9 +149,9 @@
  background:#50111daf;border:1px solid #dbad70;border-radius:10px;padding:7px 10px;
 }
 .scratch-stage[data-variant="gifts"] .scratch-board{
- position:absolute;left:16%;top:30.85%;width:65.4%;height:41.85%;
+ position:absolute;left:17%;top:31.7%;width:63.6%;height:40.1%;
  max-width:none;margin:0;padding:0;grid-template-columns:repeat(3,minmax(0,1fr));
- grid-template-rows:repeat(3,minmax(0,1fr));column-gap:2.8%;row-gap:3.1%;
+ grid-template-rows:repeat(3,minmax(0,1fr));column-gap:8.9%;row-gap:10.2%;
 }
 .scratch-stage[data-variant="gifts"] .scratch-field{
  aspect-ratio:auto;min-width:0;min-height:0;height:100%;width:100%;
@@ -181,7 +181,7 @@
 .scratch-stage[data-variant="gifts"] .scratch-winning-lines{padding:10px}
 @media(max-width:480px){
  .scratch-stage[data-variant="gifts"]{padding:6px}
- .scratch-stage[data-variant="gifts"] .scratch-board{column-gap:2.8%;row-gap:3.1%}
+ .scratch-stage[data-variant="gifts"] .scratch-board{column-gap:8.9%;row-gap:10.2%}
  .scratch-stage[data-variant="gifts"] .scratch-cell-symbol{font-size:clamp(17px,6vw,28px)}
  .scratch-stage[data-variant="gifts"] .scratch-hidden-prize{font-size:10px;left:18%;width:64%}
  .scratch-stage[data-variant="gifts"] .scratch-hidden-prize strong{font-size:11px}
