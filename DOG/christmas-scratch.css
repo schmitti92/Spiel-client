@@ -1119,7 +1119,7 @@ body.scratch-ticket-open{
  .scratch-stage:not([hidden]) > .scratch-prize-sidebar{
   grid-column:1;grid-row:7;
   display:grid;grid-template-columns:minmax(0,1fr);align-content:start;
-  gap:3px;width:100%!important;min-height:0;max-height:112px;
+  gap:3px;width:100%!important;min-height:0;max-height:min(23dvh,175px);
   padding:4px!important;overflow:hidden!important;
  }
  .scratch-stage:not([hidden]) > .scratch-stage-actions{
@@ -1141,7 +1141,19 @@ body.scratch-ticket-open{
  }
  .scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-winning-lines{
   grid-template-columns:repeat(2,minmax(0,1fr));
-  max-height:73px;
+  max-height:calc(23dvh - 55px);
+ }
+ /* On completion the 20/24 milestones are already reported in the winnings.
+    Make space for EVERY awarded line instead of keeping the redundant counter. */
+ .scratch-stage.is-revealed .scratch-prize-sidebar .scratch-premium-counter{
+  display:none!important;
+ }
+ .scratch-stage.is-revealed .scratch-prize-sidebar .scratch-hidden-prize{
+  max-height:48px;flex:0 0 auto;
+ }
+ .scratch-stage.is-revealed .scratch-prize-sidebar .scratch-winning-lines{
+  grid-template-columns:repeat(2,minmax(0,1fr));max-height:calc(23dvh - 55px);
+  overflow:hidden;align-content:start;
  }
 }
 @media(max-height:500px){
