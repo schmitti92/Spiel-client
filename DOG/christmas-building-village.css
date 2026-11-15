@@ -1,66 +1,106 @@
-/* Lichtertal: unified shared meta-currency and full-size building stage gallery.
-   Only server-confirmed village readings and upgrade receipts count as progress. */
-#panel-buildings{--v-gold:#f5d38a;--v-light:#e4f5e7;--v-stone:#adc8c2}
-#panel-buildings .event-heading{border-radius:22px;background:linear-gradient(118deg,#184a3d,#102b2b 70%);border:1px solid #d7b87587;box-shadow:inset 0 1px #fff6d71a}
-#panel-buildings .event-heading h2{font-size:clamp(26px,2.7vw,36px)}
-#panel-buildings .building-village-wallet{display:block!important;position:relative;overflow:hidden;margin:0 0 18px;padding:0;border:1px solid #edce86;border-radius:23px;background:radial-gradient(ellipse at 12% 0%,#ab9b4660,transparent 36%),linear-gradient(115deg,#133b32,#0e302d 55%,#112733);box-shadow:0 16px 40px #020e1490,inset 0 1px #fff6d634}
-#panel-buildings .building-village-wallet:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.33;background-image:radial-gradient(2px 2px at 13% 18%,#fff1b3 95%,transparent),radial-gradient(2px 2px at 88% 32%,#ecf6c7 95%,transparent),radial-gradient(2px 2px at 56% 15%,#fff 95%,transparent);background-size:280px 210px}
-#panel-buildings .village-treasury-heading{position:relative;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid #d9be8047}
-#panel-buildings .village-treasury-heading .eyebrow{color:#ffe3a3}
-#panel-buildings .village-wallet-badge{display:inline-block;padding:7px 12px;border-radius:100px;border:1px solid #e8c98493;background:#183c36;color:#ffe1a8;font-size:11px;font-weight:850}
-#panel-buildings .village-wallet-badge[data-state=online]{color:#baffd1;border-color:#7fc79a;background:#194c38}
-#panel-buildings .village-treasury-main{position:relative;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:20px clamp(16px,2.6vw,30px)}
-#panel-buildings .village-treasury-balance{display:flex;align-items:center;gap:16px;min-width:0}
-#panel-buildings .village-treasury-star{display:grid;place-items:center;flex:none;width:76px;height:76px;border:2px solid #ffe9b4;border-radius:23px;background:radial-gradient(circle,#fcebc180,#b67f3733 60%,#273c29);box-shadow:0 0 28px #ffd27a38;font-size:46px}
-#panel-buildings .village-treasury-balance>div{display:flex;flex-direction:column;min-width:0;gap:3px}
-#panel-buildings .village-treasury-balance small{font-size:clamp(11px,1vw,13px);font-weight:850;color:#d8e9da;line-height:1.45}
-#panel-buildings #building-live-balance{display:block;font:900 clamp(21px,2.6vw,36px)/1.16 Georgia,serif;color:#fff0b8;text-shadow:0 2px 12px #0d211e;letter-spacing:.3px}
-#panel-buildings #building-event-mode{display:block;font-size:11px;line-height:1.55;color:#c7e4d1;margin-top:4px}
-#panel-buildings .village-treasury-actions{display:flex;align-items:stretch;justify-content:center;flex-direction:column;gap:8px;flex:0 0 208px}
-#panel-buildings .village-treasury-actions .button{min-height:40px;padding:9px;font-size:11px;white-space:normal;text-align:center}
-#panel-buildings .village-treasury-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:13px 20px;border-top:1px solid #d4be804c;background:#061c2069}
-#panel-buildings #building-live-notice{display:block;flex:1 1 320px;line-height:1.5;color:#d6e7d8;font-size:11px}
-#panel-buildings #building-village-counter{font-size:11px;color:#ffe0a2;font-weight:900;white-space:nowrap}
-#panel-buildings .building-price-overview{margin:0 0 16px;padding:11px 14px;border-radius:14px;border-color:#baa9797d;background:#071e25c7;gap:8px}
-#panel-buildings .building-price-step{border-color:#dbc68d7d;border-radius:9px;background:#173b38;padding:7px 12px;font-size:11px;color:#fce7b9}
-#panel-buildings .building-price-total{font-size:12px;color:#e2cf9d;line-height:1.55}
-#panel-buildings .building-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(12px,1.7vw,22px)}
-#panel-buildings .building-card{position:relative;min-width:0;display:flex;flex-direction:column;padding:clamp(12px,1.5vw,19px);border:1px solid #bbad74a1;border-radius:22px;background:linear-gradient(160deg,#174d3e,#092e2d 65%,#0c2733);box-shadow:0 12px 35px #0005,inset 0 1px #fff3cb20}
-#panel-buildings .building-card:hover{border-color:#e8d28f}
-#panel-buildings .building-card-head{gap:12px;align-items:center;min-height:69px}
-#panel-buildings .building-card-icon{flex:none;width:56px;height:56px;border-radius:16px;background:linear-gradient(140deg,#4d6444,#275747);border-color:#d3b673bf;box-shadow:inset 0 1px #fff3c84b;font-size:28px}
-#panel-buildings .building-card h3{font-size:clamp(17px,1.55vw,23px);color:#ffeab5;line-height:1.2}
-#panel-buildings .building-card-head p{font-size:11px;line-height:1.5;margin:5px 0 0;color:#bed7ce}
-#panel-buildings .building-card-art{isolation:isolate;display:block;position:relative;flex:none;width:100%;height:clamp(230px,23vw,325px);min-height:230px;margin:12px 0 9px;padding:0;border-radius:17px;border:1px solid #cab989b0;background:radial-gradient(ellipse 72% 70% at 50% 58%,#64878472,transparent 72%),linear-gradient(180deg,#0a2435 4%,#1e4851 52%,#395e60 77%,#bad8c8 100%);overflow:hidden;box-shadow:inset 0 1px #f6e2ba4f,inset 0 -15px 35px #07191f70}
-#panel-buildings .building-card-art:before{content:"";position:absolute;z-index:0;inset:0;opacity:.55;pointer-events:none;background-image:radial-gradient(1px 1px at 20% 18%,#fff 99%,transparent),radial-gradient(2px 2px at 74% 33%,#ffe9b0 99%,transparent),radial-gradient(1px 1px at 45% 74%,#fff 99%,transparent);background-size:120px 130px}
-#panel-buildings .building-art-glow{position:absolute;z-index:0;left:16%;right:16%;bottom:0;height:40%;border-radius:50%;background:radial-gradient(ellipse,#f6e5b66e,transparent 73%);filter:blur(20px);pointer-events:none}
-#panel-buildings .building-card-art img{display:block;position:absolute;z-index:1;max-width:none!important;max-height:none!important;object-fit:fill;left:0;top:0;width:auto;height:auto;opacity:0;filter:drop-shadow(0 9px 13px #041519b0);transition:opacity .28s ease}
+/* Lichtertal / DOG: compact, shared, server-authoritative Christmas village.
+   Overrides legacy .building-village-wallet span { flex-basis: 220px } which
+   previously made the currency panel unnecessarily hundreds of pixels tall. */
+#panel-buildings{--christmas-gold:#f5d697;--christmas-green:#b5e3ca;--christmas-ink:#f5eee0}
+#panel-buildings .event-heading{padding:17px clamp(14px,2vw,23px);border:1px solid #ddc0808c;border-radius:18px;background:linear-gradient(115deg,#15483a,#092b2b)}
+#panel-buildings .event-heading h2{font-size:clamp(25px,2.45vw,34px)}
+#panel-buildings .event-heading p{max-width:72ch;color:#d2e4da}
+#panel-buildings .building-village-wallet{position:relative;display:block!important;min-height:0!important;height:auto!important;margin:0 0 13px;padding:0!important;gap:0;border:1px solid #e7ca85b3;border-radius:18px;overflow:hidden;background:radial-gradient(ellipse at 12% 0,#bda65b3c,transparent 45%),linear-gradient(115deg,#133c33,#0d2e2f 69%,#0d2934);box-shadow:0 9px 25px #02121887,inset 0 1px #f9efcc25}
+/* Critical: a legacy generic descendant span rule used 220px flex-basis on the
+   small status line. Remove that inherited flex size without touching other tabs. */
+#panel-buildings .building-village-wallet span{flex:0 1 auto!important;min-height:0;min-width:0}
+#panel-buildings .building-village-wallet button{width:auto;flex:0 0 auto;min-height:38px}
+#panel-buildings .village-treasury-heading{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:10px 17px;background:#081f2570;border-bottom:1px solid #ddba794c}
+#panel-buildings .village-treasury-title{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px 15px;min-width:0}
+#panel-buildings .village-treasury-title .eyebrow{color:#f0d292;font-size:10px;letter-spacing:.9px}
+#panel-buildings .village-treasury-title strong{font:850 13px/1.3 Georgia,serif;color:#fff0c7}
+#panel-buildings .village-wallet-badge{display:inline-flex;align-items:center;flex:none!important;border-radius:99px;border:1px solid #ceb47888;padding:6px 11px;background:#365138b8;color:#f6dfaa;font-size:11px;font-weight:900;white-space:nowrap}
+#panel-buildings .village-wallet-badge[data-state=online]{border-color:#71c88f;background:#1d513c;color:#c9f9d5}
+#panel-buildings .village-wallet-badge[data-state=preview]{border-color:#d9b77596;background:#3c4c3b;color:#f6dfaa}
+#panel-buildings .village-treasury-main{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:15px;min-height:0!important;padding:15px 18px}
+#panel-buildings .village-treasury-balance{display:flex;align-items:center;gap:13px;min-width:0}
+#panel-buildings .village-treasury-star{display:grid;place-items:center;flex:0 0 52px!important;width:52px;height:52px;border:1.5px solid #ffedb7;border-radius:16px;font-size:30px;background:radial-gradient(circle,#faf0b798,#be823446 58%,#294937);box-shadow:0 0 14px #f9d88c49}
+#panel-buildings .village-treasury-balance-copy{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;min-width:0;min-height:0}
+#panel-buildings .village-treasury-balance-copy small{display:block;color:#cce6d4;font-size:11px;font-weight:800;line-height:1.4}
+#panel-buildings #building-live-balance{display:block;overflow-wrap:anywhere;font:900 clamp(19px,2.3vw,30px)/1.18 Georgia,serif;letter-spacing:.2px;color:#ffe6aa}
+#panel-buildings #building-event-mode{display:block!important;flex:0 0 auto!important;margin:2px 0 0;font-size:11px;line-height:1.45;color:#cde1d5}
+#panel-buildings .village-treasury-actions{display:flex;align-items:center;justify-content:flex-end;flex-direction:row;gap:8px;flex:0 0 auto!important;min-width:0}
+#panel-buildings .village-treasury-actions .button{display:inline-flex;align-items:center;justify-content:center;min-width:0;width:auto;padding:8px 11px;min-height:40px;border-radius:10px;text-align:center;font-size:11px;font-weight:850;line-height:1.25;white-space:normal}
+#panel-buildings #building-wallet-refresh:disabled{opacity:.54}
+#panel-buildings .village-treasury-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:1px solid #d8b97559;border-bottom:1px solid #d8b97542;background:#071f2378}
+#panel-buildings .village-treasury-stat{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px 10px;padding:9px 12px;text-align:center;min-width:0}
+#panel-buildings .village-treasury-stat + .village-treasury-stat{border-left:1px solid #a6b89038}
+#panel-buildings .village-treasury-stat>span{font-size:11px;color:#d2e6d7;line-height:1.3}
+#panel-buildings .village-treasury-stat>strong{font-size:13px;color:#ffdfa2;font-weight:950;line-height:1.3;white-space:nowrap}
+#panel-buildings .village-treasury-foot{display:block!important;min-height:0;padding:8px 15px;background:#09232a6e}
+#panel-buildings #building-live-notice{display:block!important;flex:0 1 auto!important;font-size:10.5px;color:#cee4d4;line-height:1.45;margin:0}
+#panel-buildings .building-price-overview{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:6px;margin:0 0 14px;padding:8px 10px;background:#0c2930ad;border:1px solid #baa5737c;border-radius:12px}
+#panel-buildings .building-price-step{border:1px solid #c1b47e78;border-radius:8px;background:#1c3e36;color:#f7e2b4;padding:6px 9px;font-size:10.5px}
+#panel-buildings .building-price-total{flex:1 0 100%;width:auto;text-align:center;font-size:11px;line-height:1.3;color:#e3d2ae}
+#panel-buildings .building-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(10px,1.3vw,16px)}
+#panel-buildings .building-card{position:relative;display:flex;flex-direction:column;min-width:0;gap:0;padding:clamp(11px,1.3vw,16px);border:1px solid #c5ad7891;border-radius:18px;background:linear-gradient(153deg,#17483c,#0b302e 66%,#0c2933);box-shadow:0 9px 25px #020e1480,inset 0 1px #fff6cc1e}
+#panel-buildings .building-card:has(.building-purchase:not(:disabled)){border-color:#f4d389;box-shadow:0 0 16px #ffdb8538,inset 0 1px #fff4cf35}
+#panel-buildings .building-card-head{display:flex;align-items:center;gap:11px;min-height:54px}
+#panel-buildings .building-card-icon{display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;border:1px solid #cdb9869e;border-radius:12px;background:#315d46;font-size:24px}
+#panel-buildings .building-card h3{font:900 clamp(17px,1.55vw,21px)/1.18 Georgia,serif;color:#ffe4a9;margin:0}
+#panel-buildings .building-card-head p{font-size:11px;line-height:1.35;color:#c8ddcf;margin:4px 0 0}
+#panel-buildings .building-card-art{position:relative;isolation:isolate;display:block;flex:none;overflow:hidden;width:100%;min-height:200px;height:clamp(205px,19vw,260px);padding:0;margin:9px 0 8px;border:1px solid #bbad8888;border-radius:13px;background:radial-gradient(ellipse 65% 65% at 50% 64%,#698c8770,transparent 75%),linear-gradient(180deg,#0b293a 2%,#1a4750 55%,#7faaa4 100%);box-shadow:inset 0 -10px 24px #041a2270}
+#panel-buildings .building-card-art:before{content:"";position:absolute;inset:0;z-index:0;opacity:.45;background-image:radial-gradient(1px 1px at 24% 24%,#fff 98%,transparent),radial-gradient(2px 2px at 70% 18%,#fff0b9 98%,transparent);background-size:130px 125px;pointer-events:none}
+#panel-buildings .building-art-glow{position:absolute;z-index:0;bottom:0;left:15%;right:15%;height:35%;border-radius:50%;background:radial-gradient(ellipse,#f9e1ad6b,transparent 77%);filter:blur(14px)}
+#panel-buildings .building-card-art img{position:absolute;z-index:1;display:block;left:0;top:0;width:auto;height:auto;max-width:none!important;max-height:none!important;object-fit:fill;opacity:0;filter:drop-shadow(0 8px 11px #081f27c8);transition:opacity .2s ease}
 #panel-buildings .building-card-art[data-photo-state=ready] img{opacity:1}
-#panel-buildings .building-card-art::after{height:13%;z-index:2;opacity:.6}
-#panel-buildings .building-art-plaque{display:inline-block;position:absolute;z-index:3;bottom:12px;left:12px;padding:7px 11px;border-radius:99px;background:#0a292dc9;border:1px solid #f5db9d;color:#ffe5a0;font-weight:900;letter-spacing:.9px;font-size:10px;box-shadow:0 4px 12px #071217b0}
-#panel-buildings .building-art-error{display:none;position:absolute;z-index:4;left:0;right:0;top:47%;text-align:center;color:#f5dfc1;font-size:12px}
+#panel-buildings .building-card-art::after{content:"";position:absolute;z-index:2;left:0;right:0;bottom:0;height:12%;background:linear-gradient(0deg,#d6eee1a6,transparent);pointer-events:none}
+#panel-buildings .building-art-plaque{position:absolute;z-index:3;bottom:10px;left:10px;display:inline-block;padding:5px 9px;border-radius:20px;background:#0e2e31e6;border:1px solid #f5d797;color:#ffe4aa;font-size:10px;font-weight:900;letter-spacing:.7px}
+#panel-buildings .building-art-error,#panel-buildings .building-art-loading{position:absolute;z-index:3;top:49%;left:10px;right:10px;transform:translateY(-50%);text-align:center;font-size:11px;font-weight:800;color:#ffe2ac}
+#panel-buildings .building-art-error{display:none}
+#panel-buildings .building-card-art[data-photo-state=ready] .building-art-loading,#panel-buildings .building-card-art[data-photo-state=error] .building-art-loading{display:none}
 #panel-buildings .building-card-art[data-photo-state=error] .building-art-error{display:block}
-#panel-buildings .building-card-art[data-photo-state=loading]{background-color:#163a3a}
-#panel-buildings .building-card-info{display:flex;flex-direction:column;gap:5px;min-height:77px;margin:0 0 11px;padding:12px 14px;border-radius:13px;background:#071f28c0;border:1px solid #9caa8580;color:#deefe3;font-size:12px}
-#panel-buildings .building-card-info strong{font-size:14px;color:#fce1a0}
-#panel-buildings .building-card-info span{line-height:1.5;color:#d0e5d8}
-#panel-buildings .level-row{margin-top:auto}
-#panel-buildings .level-row label{font-size:11px;color:#d9e8d9}
-#panel-buildings .level-row output{font-size:12px;color:#ffe2a2}
-#panel-buildings input[type=range]{display:block;width:100%;accent-color:#eac579;margin:9px 0 0}
-#panel-buildings .building-level-markers{margin:7px 0 0;gap:5px}
-#panel-buildings .building-level-markers span{height:8px;background:#345d58}
-#panel-buildings .building-level-markers span.active{background:linear-gradient(90deg,#ca9b4f,#ffe0a1)}
-#panel-buildings .building-upgrade-price{margin:13px 0 0;padding:12px;border-radius:12px;background:linear-gradient(120deg,#2d3a30,#16433d);border:1px solid #e4c27d81;color:#ffe6b1;font-size:12px}
-#panel-buildings .building-purchase{margin-top:10px;min-height:44px;border-radius:12px;font-weight:900;font-size:12px}
-#panel-buildings .building-purchase:disabled{filter:none;opacity:.68;background:#173d35;color:#d0dcce;border-color:#a9bba273}
-#panel-buildings .building-card:has(.building-purchase:not(:disabled)) {border-color:#f1d188;box-shadow:0 0 18px #dab96c25,inset 0 1px #ffefbb35}
-#panel-buildings .event-footer-row{background:#123a33;border-color:#c1a46770}
-@media(max-width:1050px){#panel-buildings .village-treasury-actions{flex-basis:170px}#panel-buildings .village-treasury-star{width:56px;height:56px;font-size:32px}#panel-buildings .building-card-art{height:clamp(220px,25vw,290px)}}
-@media(max-width:760px){#panel-buildings .building-grid{grid-template-columns:1fr}#panel-buildings .village-treasury-main{flex-direction:column;align-items:stretch;padding:16px}#panel-buildings .village-treasury-actions{flex-direction:row;flex:1 1 auto}#panel-buildings .village-treasury-actions .button{flex:1}#panel-buildings .building-card-art{height:290px}#panel-buildings .building-card-info{min-height:0}}
-@media(max-width:470px){#panel-buildings .building-card-art{height:240px}#panel-buildings .village-treasury-actions{flex-direction:column}#panel-buildings .village-treasury-heading,#panel-buildings .village-treasury-foot{padding:11px 13px}#panel-buildings .village-treasury-star{width:50px;height:50px;border-radius:14px;font-size:28px}#panel-buildings .building-card{padding:11px}}
-@media(prefers-reduced-motion:reduce){#panel-buildings .building-card-art img{transition:none!important}}
-
-#panel-buildings .building-art-loading{position:absolute;z-index:3;left:12px;right:12px;top:50%;transform:translateY(-50%);text-align:center;color:#eed7a9;font-size:12px;font-weight:750;text-shadow:0 2px 8px #071821}
-#panel-buildings .building-card-art[data-photo-state=ready] .building-art-loading,
-#panel-buildings .building-card-art[data-photo-state=error] .building-art-loading{display:none}
+#panel-buildings .building-card-info{display:flex;flex-direction:column;gap:3px;justify-content:center;min-height:56px;margin:0 0 9px;padding:9px 11px;background:#09262eaa;border:1px solid #849f8e81;border-radius:10px;font-size:11px;line-height:1.4;color:#d0e1d6}
+#panel-buildings .building-card-info strong{font-size:12px;line-height:1.25;color:#ffdfa5}
+#panel-buildings .building-card-info span{font-size:11px;line-height:1.35;color:#d6e3d9}
+#panel-buildings .building-stage-controls{margin:0 0 8px}
+#panel-buildings .level-row{display:flex;justify-content:space-between;align-items:center;margin:0 0 4px;gap:9px}
+#panel-buildings .level-row label{font-size:10.5px;color:#d8e8db}
+#panel-buildings .level-row output{font-size:11px;font-weight:900;color:#ffdfa5}
+#panel-buildings .building-stage-controls input[type=range]{display:block;width:100%;margin:5px 0 2px;accent-color:#edc67b}
+#panel-buildings .building-level-markers{display:flex;gap:5px;margin:6px 0 4px}
+#panel-buildings .building-level-markers span{flex:1;height:7px;border-radius:5px;background:#355852}
+#panel-buildings .building-level-markers span.active{background:linear-gradient(90deg,#bd924f,#ffde95)}
+#panel-buildings .building-card[data-mode=preview] .building-level-markers{display:none}
+#panel-buildings .building-card[data-mode=live] .building-stage-controls input[type=range]{display:none}
+#panel-buildings .building-upgrade-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch;gap:8px;margin-top:auto}
+#panel-buildings .building-upgrade-price{display:flex;align-items:center;justify-content:flex-start;min-height:41px;margin:0;padding:7px 10px;background:#233d36;border:1px solid #beaa79a1;border-radius:10px;font-size:11px;font-weight:850;line-height:1.35;color:#ffe3ad}
+#panel-buildings .building-purchase{display:flex;align-items:center;justify-content:center;width:100%;min-height:41px;margin:0;padding:7px 9px;border-radius:10px;font-size:10.5px;font-weight:900;line-height:1.35;white-space:normal;text-align:center}
+#panel-buildings .building-purchase:disabled{opacity:1;filter:none;background:#174037;border-color:#819f8a;color:#c6d8c9;cursor:not-allowed}
+#panel-buildings .building-final-note{margin-top:11px;padding:11px 14px;border-radius:13px;background:#123a34;border-color:#bda47174;gap:11px}
+#panel-buildings .building-final-note p{font-size:11px}
+#panel-buildings .building-final-note .button{min-height:36px}
+@media(max-width:1300px){
+ #panel-buildings .village-treasury-actions{flex-direction:column;align-items:stretch}
+ #panel-buildings .village-treasury-actions .button{min-height:34px}
+}
+@media(max-width:1040px){
+ #panel-buildings .village-treasury-main{gap:10px;padding:12px}
+ #panel-buildings .village-treasury-star{flex-basis:44px!important;width:44px;height:44px;font-size:27px}
+ #panel-buildings .building-upgrade-row{grid-template-columns:1fr}
+ #panel-buildings .building-card-art{height:215px}
+}
+@media(max-width:760px){
+ #panel-buildings .building-grid{grid-template-columns:1fr}
+ #panel-buildings .village-treasury-main{grid-template-columns:1fr}
+ #panel-buildings .village-treasury-actions{flex-direction:row;justify-content:flex-start}
+ #panel-buildings .village-treasury-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #panel-buildings .village-treasury-stat{padding:8px 5px;flex-direction:column;gap:2px}
+ #panel-buildings .village-treasury-stat span{font-size:10px}
+ #panel-buildings .building-card-art{height:240px}
+ #panel-buildings .building-upgrade-row{grid-template-columns:1fr 1fr}
+}
+@media(max-width:460px){
+ #panel-buildings .village-treasury-title strong{display:none}
+ #panel-buildings .village-treasury-actions{flex-direction:column}
+ #panel-buildings .village-treasury-actions .button{width:100%}
+ #panel-buildings .building-card-art{height:225px}
+ #panel-buildings .building-upgrade-row{grid-template-columns:1fr}
+ #panel-buildings .building-final-note{align-items:stretch;flex-direction:column}
+}
+@media(prefers-reduced-motion:reduce){#panel-buildings .building-card-art img{transition:none}}
