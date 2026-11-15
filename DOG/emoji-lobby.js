@@ -2,18 +2,20 @@ import {DOG_EMOJIS,DOG_EMOJI_STARTERS,isEmojiUnlocked,loadEmojiSlots,saveEmojiSl
 /* One personal emoji editor in local and online DOG lobby. No network writes. */
 for(const root of document.querySelectorAll('[data-dog-emoji-editor]')){
  let draft=loadEmojiSlots(),selected=0,page=0;
- const pageCount=Math.ceil(DOG_EMOJIS.length/10);
- root.innerHTML=`<div class="dog-emoji-lobby-head"><h3>😄 Meine DOG-Emojis</h3><span>${DOG_EMOJI_STARTERS.length} / ${DOG_EMOJIS.length} freigeschaltet</span></div>
+ const visibleEmojis=()=>DOG_EMOJIS.filter(item=>isEmojiUnlocked(item.id));
+ const pageCount=()=>Math.max(1,Math.ceil(visibleEmojis().length/10));
+ root.innerHTML=`<div class="dog-emoji-lobby-head"><h3>😄 Meine DOG-Emojis</h3><span>${DOG_EMOJI_STARTERS.length} freigeschaltet</span></div>
  <p class="dog-emoji-hint">Wähle einen der fünf Schnellplätze und anschließend ein freigeschaltetes Emoji.</p>
  <div class="dog-emoji-slot-list" data-emoji-slots role="group" aria-label="Fünf Emoji-Schnellplätze"></div>
  <div class="dog-emoji-lobby-actions"><button type="button" data-clear>Platz leeren</button><button type="button" data-save>✓ Schnelltasten speichern</button></div>
  <div class="dog-emoji-collection-head"><strong>Emoji-Sammlung</strong><span data-emoji-pages></span></div>
  <div class="dog-emoji-collection" data-emoji-gallery></div>
  <div class="dog-emoji-pages"><button type="button" data-prev aria-label="Vorherige Emojis">‹ Zurück</button><button type="button" data-next aria-label="Weitere Emojis">Weiter ›</button></div>
- <p class="dog-emoji-note" data-emoji-note role="status">47 weitere Emojis und 10 Weihnachts-Emojis sind für spätere Freischaltungen gesperrt.</p>`;
+ <p class="dog-emoji-note" data-emoji-note role="status">Neue Emojis erscheinen hier, sobald du sie beim Rubbellos eingesammelt hast.</p>`;
  const by=s=>root.querySelector(s),slots=by('[data-emoji-slots]'),gallery=by('[data-emoji-gallery]'),notice=by('[data-emoji-note]');
  function draw(){
-  root.querySelector('.dog-emoji-lobby-head span').textContent=DOG_EMOJIS.filter(e=>isEmojiUnlocked(e.id)).length+' / '+DOG_EMOJIS.length+' freigeschaltet';
+  root.querySelector('.dog-emoji-lobby-head span').textContent=visibleEmojis().length+' freigeschaltet';
+  if(page>=pageCount())page=pageCount()-1;
   slots.replaceChildren(...draft.map((id,i)=>{
    const button=document.createElement('button');button.type='button';button.className='dog-emoji-slot'+(i===selected?' is-editing':'');
    button.setAttribute('aria-pressed',String(i===selected));button.setAttribute('aria-label','Schnellplatz '+(i+1)+': '+(emojiById(id)?.name||'leer'));
@@ -21,7 +23,7 @@ for(const root of document.querySelectorAll('[data-dog-emoji-editor]')){
    const label=document.createElement('small');label.textContent='Platz '+(i+1);
    button.append(picture,label);button.addEventListener('click',()=>{selected=i;draw();});return button;
   }));
-  gallery.replaceChildren(...DOG_EMOJIS.slice(page*10,page*10+10).map(item=>{
+  gallery.replaceChildren(...visibleEmojis().slice(page*10,page*10+10).map(item=>{
    const allowed=isEmojiUnlocked(item.id);
    const button=document.createElement('button');button.type='button';button.className='dog-emoji-option';
    button.disabled=!allowed;button.title=allowed?item.name:item.unlockId?item.name+' – einzeln im Weihnachtsevent freischaltbar':item.name+' – später freischaltbar';
@@ -37,13 +39,13 @@ for(const root of document.querySelectorAll('[data-dog-emoji-editor]')){
     draw();
    });return button;
   }));
-  by('[data-emoji-pages]').textContent='Seite '+(page+1)+' / '+pageCount;
-  by('[data-prev]').disabled=page===0;by('[data-next]').disabled=page>=pageCount-1;
+  by('[data-emoji-pages]').textContent='Seite '+(page+1)+' / '+pageCount();
+  by('[data-prev]').disabled=page===0;by('[data-next]').disabled=page>=pageCount()-1;
  }
  by('[data-clear]').addEventListener('click',()=>{draft[selected]=null;notice.textContent='Platz '+(selected+1)+' geleert. Speichern nicht vergessen.';draw();});
  by('[data-save]').addEventListener('click',()=>{draft=saveEmojiSlots(draft);notice.textContent='✓ Deine Schnelltasten sind auf diesem Gerät gespeichert.';draw();});
  by('[data-prev]').addEventListener('click',()=>{if(page>0){page--;draw();}});
- by('[data-next]').addEventListener('click',()=>{if(page<pageCount-1){page++;draw();}});
+ by('[data-next]').addEventListener('click',()=>{if(page<pageCount()-1){page++;draw();}});
  window.addEventListener('spielonline-change',()=>{draft=loadEmojiSlots();notice.textContent='Deine persönlichen Schnelltasten geladen.';draw();});
  window.addEventListener('dog-cosmetics-verified',()=>{draft=loadEmojiSlots();draw();});
  draw();
