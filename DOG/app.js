@@ -529,7 +529,7 @@ function render(){
      ' Rubbellos gefunden! Im Weihnachtsevent einlösen.':'';
   $('status').textContent=online?'🌐 Online mit Freunden · Raum '+hubCode+(onlineChristmas?
     ' · 🎄 '+(onlineChristmas.roundGiftCollected||0)+'/'+(onlineChristmas.giftFieldCount||0)+' verdeckte Geschenke' +
-    ' · 🎟️ '+(onlineChristmas.roundScratchCollected||0)+'/8 Rubbellos-Felder entdeckt' +
+    ' · 🎟️ '+(onlineChristmas.roundScratchCollected||0)+'/'+(onlineChristmas.scratchFieldCount??8)+' Rubbellos-Felder entdeckt' +
     ' · '+(onlineChristmas.earnedTenths/10).toLocaleString('de-DE')+' ⭐ gesammelt'+myScratch:
     ' · Klassischer DOG-Modus'):
     'Klassische Regeln • Teams Rot/Grün und Blau/Gelb • Spielstand wird lokal gesichert';
