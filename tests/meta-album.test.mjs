@@ -39,3 +39,31 @@ test('Meta Sammelalbum is reachable from main, shared, local and DOG lobbies',()
  assert.match(source('../index.html'),/meta-sammelalbum\.html\?return=index\.html/);
  assert.match(source('../hub-lobby.html'),/dog-room-meta-album/);
 });
+
+test('book pagination keeps six slots per page, nine real images and three empty places',async()=>{
+ const {META_ALBUM_PAGE_SIZE,metaAlbumPageCount,metaAlbumPage}=await import('../meta-album-catalog.js');
+ const event=META_ALBUM_THEMES[0];
+ assert.equal(META_ALBUM_PAGE_SIZE,6);
+ assert.equal(metaAlbumPageCount(event),2);
+ const first=metaAlbumPage(event,0);
+ assert.deepEqual([first.pictures.length,first.emptySlots,first.index,first.count],[6,0,0,2]);
+ const second=metaAlbumPage(event,1);
+ assert.deepEqual([second.pictures.length,second.emptySlots,second.index,second.count],[3,3,1,2]);
+ assert.deepEqual([...first.pictures,...second.pictures].map(p=>p.id),META_ALBUM_PICTURES.map(p=>p.id));
+ assert.equal(metaAlbumPage(event,20).index,1);
+ assert.equal(metaAlbumPage(event,-20).index,0);
+ assert.equal(metaAlbumPage({pictures:[]},0).emptySlots,6);
+ const script=source('../meta-sammelalbum.js');
+ const html=source('../meta-sammelalbum.html');
+ const css=source('../meta-sammelalbum.css');
+ assert.match(script,/metaAlbumPage\(theme,pageIndex\)/);
+ assert.match(script,/for\(let n=0;n<page.emptySlots;n\+\+\)/);
+ assert.match(script,/function changePage\(step\)/);
+ assert.match(script,/pointerup/);
+ assert.match(script,/prefers-reduced-motion: reduce/);
+ assert.match(html,/id="meta-book-sheet"/);
+ assert.match(html,/id="meta-book-prev"/);
+ assert.match(html,/id="meta-book-next"/);
+ assert.match(html,/id="meta-book-position"/);
+ assert.match(css,/\.meta-turn-leaf/);
+});
