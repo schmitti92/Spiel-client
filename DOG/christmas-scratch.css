@@ -1426,3 +1426,67 @@ body.scratch-ticket-open > header.event-top{
   min-height:39px!important;font-size:12px!important;
  }
 }
+
+
+/* Compact premium v5 results: four guaranteed money rows on one screen. */
+.scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) .scratch-current-awards{
+ overflow:hidden!important;gap:5px!important;padding:7px!important;
+}
+.scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) .scratch-current-grid{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ grid-auto-rows:minmax(0,auto);gap:4px!important;
+ overflow:hidden!important;align-content:start!important;
+}
+.scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) .scratch-current-item{
+ min-height:0!important;max-width:100%;padding:4px 5px!important;
+ gap:1px!important;
+}
+.scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) .scratch-current-source{
+ font-size:9px!important;line-height:1.1!important;
+}
+.scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) .scratch-current-value{
+ font-size:clamp(9px,1.45vh,12px)!important;line-height:1.15!important;
+}
+@media(max-width:700px){
+ .scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) > .scratch-prize-sidebar{
+  max-height:min(28dvh,220px)!important;
+ }
+ .scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) .scratch-current-awards{
+  padding:4px!important;gap:3px!important;
+ }
+ .scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) .scratch-result-kicker{display:none!important}
+ .scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) .scratch-current-title{
+  font-size:12px!important;line-height:1.05!important;
+ }
+ .scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) .scratch-current-hero{
+  padding:3px 5px!important;gap:0!important;flex-direction:row!important;
+  align-items:center;justify-content:space-between;
+ }
+ .scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) .scratch-current-hero small,
+ .scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) .scratch-current-hero span{
+  display:none!important;
+ }
+ .scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) .scratch-current-hero strong{
+  font-size:15px!important;
+ }
+ .scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) .scratch-current-item{
+  min-height:0!important;padding:2px 4px!important;
+ }
+ .scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) .scratch-current-source{
+  font-size:8px!important;
+ }
+ .scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) .scratch-current-value{
+  font-size:9px!important;
+ }
+}
+@media(max-height:500px){
+ .scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) > .scratch-prize-sidebar{
+  max-height:100%!important;
+ }
+ .scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) .scratch-current-awards{
+  padding:3px!important;gap:2px!important;
+ }
+ .scratch-stage[data-variant="premium_27"].is-revealed:not([hidden]) .scratch-current-hero{
+  padding:3px!important;
+ }
+}
