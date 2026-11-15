@@ -1,6 +1,6 @@
 import {applyMotionMode,loadMotionMode} from './motion-settings.js';
 applyMotionMode(loadMotionMode());
-import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=9';
+import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=10';
 import {loadAppearance,saveAppearance} from './appearance-registry.js?v=22';
 import {loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=2';
 // The collection never grants event rewards. Cosmetic choices persist locally;
@@ -53,6 +53,21 @@ function art(item,big=false){
   preview.append(plaque,el('span','nameframe-corner nameframe-corner-right',item.cornerIcon||'✦'));
   preview.append(el('span','nameframe-bottom-caption','DOG · WEIHNACHTSEDITION'));
   wrap.append(preview);
+ }
+ // Locked Christmas active-symbol prototypes: the actual visual motif is
+ // rendered in both the small gallery tile and the large detail pane.
+ // They cannot be equipped and do not change the live turn indicator.
+ if(item.kind==='activeIcon' && item.iconTheme){
+  wrap.classList.add('has-activeicon-preview');
+  const display=el('div','collection-activeicon-preview activeicon-'+item.iconTheme);
+  display.setAttribute('aria-hidden','true');
+  const halo=el('div','activeicon-halo');
+  halo.append(el('span','activeicon-spark activeicon-spark-left',item.accent||'✦'));
+  const medallion=el('span','activeicon-medallion');
+  medallion.append(el('span','activeicon-motif',item.icon||'⭐'));
+  halo.append(medallion,el('span','activeicon-spark activeicon-spark-right',item.accent||'✦'));
+  display.append(halo,el('span','activeicon-preview-caption','JETZT AM ZUG'));
+  wrap.append(display);
  }
  // Color tones show a miniature DOG cockpit using their REAL saved HUD palette.
  // This is a pure local preview: it does not update the appearance or the server.
@@ -172,6 +187,7 @@ function drawDetails(){
    el('div','detail-state'+(locked?' is-locked':''),locked?'🔒 Geplantes Event':active?'✓ Aktiv / vorhanden':'✓ Verfügbar'),
    el('p','detail-description',item.description||'DOG-Design'));
  if(item.kind==='nameFrame')root.append(el('small','nameframe-preview-note','🎄 Musteransicht – jeder Rahmen kann später einzeln erspielt werden.'));
+ if(item.kind==='activeIcon')root.append(el('small','activeicon-preview-note','🎄 Vorschau des Aktivsymbols – erst nach späterer Event-Freischaltung verwendbar.'));
  if(item.kind==='avatar'&&local&&!locked){
   const label=el('label','detail-picker','Spielerplatz'),select=el('select');
   ['Rot','Blau','Grün','Gelb'].forEach((name,i)=>{const option=el('option','','Spieler '+(i+1)+' · '+name);option.value=String(i);option.selected=i===seat;select.append(option);});
