@@ -14,3 +14,5 @@ a.meta-album-entry:hover,a.meta-album-entry:focus-visible{filter:brightness(1.15
 a.meta-album-entry.meta-album-main{width:min(100%,900px);margin:0 auto 18px;padding:16px 22px;justify-content:flex-start}
 a.meta-album-entry.meta-album-wide{width:100%;margin:12px 0}
 @media(max-width:580px){a.meta-album-entry{width:100%}.meta-album-entry small{font-size:10px}}
+
+.game-grid>a.meta-album-main{grid-column:1/-1;width:100%;max-width:none}
