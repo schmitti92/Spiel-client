@@ -587,3 +587,15 @@
 .scratch-host-money-fields input{padding:9px 7px;min-height:40px;font-size:13px}
 .scratch-symbol-key{white-space:pre-line}
 @media(max-width:560px){.scratch-host-money-fields{grid-template-columns:1fr}}
+
+
+/* Per-glyph drawing odds are separate from the three main ticket categories. */
+.scratch-host-odds-group{margin-top:14px;padding:12px;border:1px solid #cbb47a8c;border-radius:12px;background:#091e2b77}
+.scratch-host-odds-group h6{margin:0 0 4px;color:#ffe4ad;font-size:14px;font-weight:900}
+.scratch-host-odds-group>small{display:block;font-size:11px;line-height:1.55;color:#cfdfda;margin-bottom:9px}
+.scratch-host-odds-fields{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.scratch-host-odds-group[data-odds-group="giftSymbolWeights"] .scratch-host-odds-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+.scratch-host-odds-fields .scratch-host-field span{font-size:11px}
+.scratch-host-odds-total{display:block;margin-top:10px;color:#b6efd2;font-size:12px;font-weight:800}
+.scratch-host-odds-total[data-valid="false"]{color:#ffb7a4}
+@media(max-width:560px){.scratch-host-odds-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
