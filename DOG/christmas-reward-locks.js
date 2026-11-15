@@ -7,13 +7,13 @@
  * uploaded artwork, UI previews, URL parameters and progress sliders never
  * constitute proof of ownership.
  */
-import {BOARD_STYLES} from './appearance-registry.js?v=23';
+import {BOARD_STYLES} from './appearance-registry.js?v=24';
 import {CHRISTMAS_PAGE_BACKGROUNDS} from './christmas-background-catalog.js?v=1';
 import {CHRISTMAS_AVATARS} from './christmas-avatar-catalog.js?v=1';
 import {CHRISTMAS_NAME_FRAMES} from './christmas-nameframe-catalog.js?v=1';
 import {CHRISTMAS_ACTIVE_ICONS} from './christmas-activeicon-catalog.js?v=1';
-import {DOG_CHRISTMAS_EMOJIS} from './dog-emojis.js?v=2';
-import {CARD_EDITIONS} from './card-visuals.js?v=8';
+import {DOG_CHRISTMAS_EMOJIS} from './dog-emojis.js?v=3';
+import {CARD_EDITIONS} from './card-visuals.js?v=9';
 
 const PREFIX='christmas2026:';
 const reward=(category,id,name,unlockId)=>{
