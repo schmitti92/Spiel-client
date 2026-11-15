@@ -1,7 +1,7 @@
 import {applyMotionMode,loadMotionMode} from './motion-settings.js';
 applyMotionMode(loadMotionMode());
 import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=10';
-import {loadAppearance,saveAppearance} from './appearance-registry.js?v=22';
+import {loadAppearance,saveAppearance} from './appearance-registry.js?v=23';
 import {loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=2';
 // The collection never grants event rewards. Cosmetic choices persist locally;
 // only an explicit avatar update in an active room uses the existing DOG API.
@@ -31,7 +31,7 @@ function equipped(item){
  return false;
 }
 function art(item,big=false){
- const wrap=el('div',big?'detail-image':'tile-art'),placeholder=el('div',big?'detail-fallback':'tile-fallback');
+ const wrap=el('div',(big?'detail-image':'tile-art')+(item.cardEdition?' has-card-edition':'')),placeholder=el('div',big?'detail-fallback':'tile-fallback');
  placeholder.style.background=item.background||tones[item.artTone]||tones.azure;
  placeholder.append(el('span','',item.icon||'🐾'));
  if(item.image){
