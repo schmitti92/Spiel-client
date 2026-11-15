@@ -10,9 +10,10 @@ export const SCRATCH_TICKET_TYPES=Object.freeze([
 const CURRENT_GAMES_BY_TIER=Object.freeze({
  simple:'🎁 Geschenkelinie oder ❄️ Schneeflocken-Bingo',
  medium:'🧝 Magischer Wichtelpfad – einziges mittleres Los',
- premium:'🎄 Weihnachtsbaum-Geheimnis'
+ premium:'🎅 Premium-Weihnachts-Rubbellos · 27 Felder'
 });
 const VARIANTS={
+ premium_27:['🎅 Premium-Weihnachts-Rubbellos','3 gleiche Symbole in einer waagerechten Dreierreihe gewinnen. Ab 20 Symbolfeldern gibt es Gold; ab 24 zusätzlich einen Premium-Hauptgewinn. 🧊-Felder zählen nicht.',9,3],
  gifts:['🎁 Geschenkelinie','Drei gleiche Symbole in einer Reihe, Spalte oder Diagonale',3,3],
  snow:['❄️ Schneeflocken-Bingo (älteres Los)','Vier gleiche Symbole in einer Reihe, Spalte oder Diagonale',4,4],
  snow_collect:['❄️ Schneeflocken-Bingo','Drei gleiche Gewinnsymbole irgendwo auf dem Los zählen als Gewinn – unabhängig von der Position. 🧊 bedeutet Niete und zählt nicht.',4,4],
@@ -120,7 +121,7 @@ export function initChristmasScratch(){
   const face=el('span','scratch-cell-symbol',symbol);
   face.setAttribute('aria-hidden','true');
   cell.append(face);
-  if(symbol==='🧊'&&stage.dataset.variant==='snow_collect'){
+  if(symbol==='🧊'&&['snow_collect','premium_27'].includes(stage.dataset.variant)){
    cell.classList.add('scratch-dud');
    cell.append(el('small','scratch-cell-dud-label','Niete'));
   }
@@ -217,6 +218,7 @@ export function initChristmasScratch(){
    '🎟️ Älteres Rubbellos';
   $('scratch-variant-rule').textContent=conf?conf[0]+' · Gewinnregel: '+conf[1]:
    'Älteres Los – dieses Ergebnis wurde vor dem neuen Spielfeldsystem gespeichert';
+  board.parentElement.querySelector('.scratch-premium-symbol-count')?.remove();
   board.replaceChildren();board.removeAttribute('style');
   if(conf&&Array.isArray(cells)&&cells.length===conf[2]*conf[3]){
    board.style.setProperty('--scratch-cols',conf[3]);
@@ -270,6 +272,14 @@ export function initChristmasScratch(){
   reveal.classList.add('revealed');
   $('scratch-progress').textContent='100 % aufgedeckt ✓';
   const meter=$('scratch-progress-meter');if(meter){meter.value=100;meter.setAttribute('aria-valuenow','100')}
+  if(stage.dataset.variant==='premium_27'&&Array.isArray(ticket.board?.cells)){
+   const count=ticket.board.cells.filter(symbol=>symbol!=='🧊').length;
+   const note=el('div','scratch-premium-symbol-count',
+    '🎁 '+count+'/27 Symbolfelder · Gold ab 20 · Premium ab 24');
+   const old=board.parentElement.querySelector('.scratch-premium-symbol-count');
+   if(old)old.remove();
+   board.parentElement.append(note);
+  }
   const entries=Array.isArray(ticket.winnings)?ticket.winnings:
    ticket.type==='none'?[]:[ticket.type==='coins'?{type:'coins',amount:ticket.amount}:{type:'unlock',prize:ticket.prize}];
   $('scratch-result-value').textContent=entries.length?
@@ -279,7 +289,8 @@ export function initChristmasScratch(){
    entries.length>1?entries.length+' Gewinnkombinationen':'';
   const list=$('scratch-winning-lines');list.replaceChildren();
   for(const [i,win] of wins.entries()){
-   const line=el('div','scratch-prize-line','Gewinn '+(i+1)+': '+prizeLabel(win.prize));
+   const description=win.rule==='gold-20'?'🪙 20 Symbolfelder':win.rule==='premium-24'?'💎 24 Symbolfelder':win.rule==='row-3'?'🎁 Dreierreihe':'Gewinn '+(i+1);
+   const line=el('div','scratch-prize-line',description+': '+prizeLabel(win.prize));
    if(win.prize?.x2)line.append(el('small','', ' · '+num(win.prize.baseAmount)+' × 2'));
    list.append(line);
   }
