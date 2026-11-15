@@ -3,12 +3,11 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {TREE_PRIZE_PREVIEW} from '../DOG/christmas-tree-rewards-ui.js';
 const text=file=>readFileSync(new URL(file,import.meta.url),'utf8');
-test('ten Christmas gifts begin with full background, avatar, cards and board',()=>{
- assert.deepEqual(TREE_PRIZE_PREVIEW.slice(0,4).map(p=>p.title),
-  ['Vollbild-Hintergrund','Weihnachtsprofilbild','Kartendesign','Weihnachts-Spielbrett']);
- assert.equal(TREE_PRIZE_PREVIEW.length,10);
+test('all ten Christmas tree prizes are exact, distinct and visible before earning',()=>{
+ assert.deepEqual(TREE_PRIZE_PREVIEW.map(p=>p.title),["Märchenhafter Weihnachtswald","Weihnachtsmann","Winterzauber · Blau","Weihnachtsdorf","Weihnachtsplätzchen","Sternengold","Eiskrone","Weihnachtsglanz · Rot-Grün-Gold","Magischer Polarlicht-Fjord","Polarlichtpalast"]);
+ assert.deepEqual(TREE_PRIZE_PREVIEW.map(p=>p.unlockId),["christmas2026:scene:01","christmas2026:avatar:01","christmas2026:cards:kartendesign-02","christmas2026:board:weihnachtsdorf","christmas2026:emoji:05","christmas2026:nameframe:01","christmas2026:activeicon:02","christmas2026:cards:kartendesign-03","christmas2026:scene:05","christmas2026:board:polarlichtpalast"]);
  assert.deepEqual(TREE_PRIZE_PREVIEW.map(x=>x.level),[1,2,3,4,5,6,7,8,9,10]);
- assert.ok(TREE_PRIZE_PREVIEW.slice(4).every(x=>x.title==='Zufällige Überraschung'));
+ assert.equal(new Set(TREE_PRIZE_PREVIEW.map(x=>x.unlockId)).size,10);
 });
 test('tree stage UI uses authenticated existing village API and read-only load',()=>{
  const html=text('../DOG/christmas-event.html');
