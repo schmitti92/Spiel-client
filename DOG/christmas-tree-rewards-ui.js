@@ -16,10 +16,9 @@ export const TREE_PRIZE_PREVIEW=Object.freeze([
  Object.freeze({"level":10,"icon":"🏰","title":"Polarlichtpalast","unlockId":"christmas2026:board:polarlichtpalast"}),
 ]);
 export function initChristmasTreeRewards({request,roomValid,loggedIn}){
- const grid=document.getElementById('tree-reward-list');
  const feedback=document.getElementById('tree-reward-feedback');
- const counter=document.getElementById('tree-reward-counter');
- if(!grid||!feedback||!counter)throw Error('TREE_REWARD_UI_MISSING');
+ const timeline=document.getElementById('tree-steps');
+ if(!feedback||!timeline)throw Error('TREE_REWARD_UI_MISSING');
  let status=null,busy=false,callIndex=0;
  const make=(tag,cls,value)=>{
   const node=document.createElement(tag);
@@ -27,65 +26,45 @@ export function initChristmasTreeRewards({request,roomValid,loggedIn}){
   if(value!==undefined)node.textContent=String(value);
   return node;
  };
- const say=message=>{feedback.textContent=message};
+ const say=message=>{
+  feedback.textContent=message||'';
+  feedback.hidden=!message;
+ };
  const render=()=>{
-  grid.replaceChildren();
-  counter.textContent=status?(status.collected||0)+' / 10 abgeholt':'🔎 Status online prüfen';
   const records=Array.isArray(status?.rewards)?status.rewards:TREE_PRIZE_PREVIEW;
   for(const item of records){
    const state=status?(item.state||'locked'):'unknown';
-   const wrap=make('article','tree-reward');
-   wrap.dataset.status=state;
-   wrap.append(make('span','tree-reward-level','LEVEL '+item.level));
-   wrap.append(make('span','tree-reward-icon',item.prize?.icon||item.icon||'🎁'));
-   wrap.append(make('strong','tree-reward-title',item.prize?.name||item.title));
-   const message=state==='collected'?'✅ Gesammelt':state==='ready'?'🎁 Abholbereit':state==='locked'?'🔒 Gesperrt':'🔎 Online prüfen';
-   wrap.append(make('span','tree-reward-status',message));
+   const milestone=timeline.querySelector('[data-tree-step="'+item.level+'"]');
+   if(!milestone)continue;
+   milestone.dataset.status=state;
+   const icon=milestone.querySelector('[data-tree-gift-icon]');
+   const label=milestone.querySelector('[data-tree-prize-title]');
+   const badge=milestone.querySelector('[data-tree-status]');
+   if(icon)icon.textContent=item.prize?.icon||item.icon||'🎁';
+   if(label)label.textContent=item.prize?.name||item.title;
+   if(badge)badge.textContent=state==='collected'?'✅ Gesammelt':state==='ready'?'🎁 Abholbereit':state==='locked'?'🔒 Gesperrt':'';
+   milestone.querySelector('.tree-step-claim')?.remove();
    if(state==='ready'){
-    const button=make('button','tree-reward-claim',busy?'Wird geprüft …':'🎁 Abholen');
-    button.type='button';button.disabled=busy;
-    button.setAttribute('aria-label','Weihnachtsbaum Level '+item.level+' Preis abholen');
+    const button=make('button','tree-step-claim',busy?'Wird geprüft …':'🎁 Jetzt abholen');
+    button.type='button';
+    button.disabled=busy;
+    button.setAttribute('aria-label','Preis für Baumstufe '+item.level+' abholen');
     button.addEventListener('click',()=>void claim(item.level));
-    wrap.append(button);
-   }
-   grid.append(wrap);
-   // Mirror only Render-confirmed gift statuses into the milestone timeline.
-   const milestone=document.querySelector('#tree-steps [data-tree-step="'+item.level+'"]');
-   if(milestone){
-    milestone.dataset.status=state;
-    const icon=milestone.querySelector('[data-tree-gift-icon]');
-    const label=milestone.querySelector('[data-tree-prize-title]');
-    const badge=milestone.querySelector('[data-tree-status]');
-    if(icon)icon.textContent=item.prize?.icon||item.icon||'🎁';
-    if(label)label.textContent=item.prize?.name||item.title;
-    if(badge)badge.textContent=message;
-    milestone.querySelector('.tree-step-claim')?.remove();
-    if(state==='ready'){
-     const mini=make('button','tree-step-claim',busy?'Wird geprüft …':'🎁 Jetzt abholen');
-     mini.type='button';mini.disabled=busy;
-     mini.setAttribute('aria-label','Preis für Baumstufe '+item.level+' abholen');
-     mini.addEventListener('click',()=>void claim(item.level));
-     milestone.append(mini);
-    }
+    milestone.append(button);
    }
   }
-  const current=document.querySelector('#tree-steps .tree-step.selected');
-  const currentStatus=current?.querySelector('[data-tree-status]')?.textContent;
-  const heroStatus=document.getElementById('tree-current-prize-status');
-  if(heroStatus&&currentStatus)heroStatus.textContent=currentStatus;
  };
  const load=async()=>{
   const index=++callIndex;
-  if(!roomValid){status=null;render();say('Öffne das Weihnachtsdorf aus deinem Online-DOG-Raum, um echte Preise zu erhalten.');return}
-  if(!loggedIn()){status=null;render();say('🔐 Bitte mit deinem Online-Profil anmelden.');return}
+  if(!roomValid){status=null;render();say('');return}
+  if(!loggedIn()){status=null;render();say('');return}
   try{
    const result=await request('tree-rewards');
    if(index!==callIndex)return;
    if(!Array.isArray(result.treeRewards?.rewards)||result.treeRewards.rewards.length!==10)throw Error('TREE_REWARD_STATUS_INVALID');
    status=result.treeRewards;
    render();
-   say(status.available>0?'🎁 '+status.available+' Weihnachtsgeschenk(e) können abgeholt werden.':
-    'Alle erreichbaren Baumpreise sind bereits abgeholt.');
+   say('');
   }catch(error){
    if(index!==callIndex)return;
    status=null;render();say('⚠️ Baumpreise nicht abrufbar: '+(error?.message||'Serverfehler'));
