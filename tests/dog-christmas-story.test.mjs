@@ -92,3 +92,28 @@ test('unlocked story parts can be viewed and future chapter names are not render
   assert.equal(ids['story-upgrade-banner'].hidden,true);
  }finally{globalThis.document=old;}
 });
+
+test('village overview removes requested prose and preview controls but retains progress and Back',()=>{
+ const html=read('DOG/christmas-event.html');
+ const js=read('DOG/christmas-event.js');
+ const css=read('DOG/christmas-event-royal.css');
+ const top=html.split('<header class="event-top">')[1]?.split('</header>')[0];
+ const village=html.split('id="panel-village"')[1]?.split('id="panel-buildings"')[0];
+ assert.ok(top&&village,'header and village panels exist');
+ assert.match(top,/id="event-return"[^>]*>↩ Zurück<\/a>/);
+ assert.doesNotMatch(top,/event-brand|KAPITEL 1|DOG <em>WEIHNACHTEN<\/em>/);
+ assert.doesNotMatch(village,/royal-intro|village-storyline|village-caption|village-preview-actions|event-footer-row/);
+ for(const phrase of ['Die Weihnachtsreise beginnt','Unser gemeinsames Ziel',
+  'Vollausbau prüfen','Nächste Entwicklungsstufe','Gebäude ansehen',
+  'Gemeinsam bereiten wir das Dorf auf Weihnachten vor']){
+  assert.ok(!village.includes(phrase),'removed overview text: '+phrase);
+ }
+ for(const id of ['stat-building-levels','stat-tree-level','stat-village-lights','stat-village-gifts']){
+  assert.match(village,new RegExp('id="'+id+'"'),'keep live progress tile '+id);
+ }
+ assert.match(css,/\.event-top-actions\{margin-left:auto/);
+ assert.match(css,/#panel-village \.village-shell/);
+ assert.doesNotMatch(js,/\$\('village-preview-(next|reset|full|count)'\)/);
+ assert.doesNotMatch(js,/\$\('village-scene-(title|caption)'\)/);
+ assert.match(js,/storyScreen\.render\(/,'the existing tree-based story unlock remains');
+});
