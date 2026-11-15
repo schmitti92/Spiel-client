@@ -251,8 +251,72 @@ export const DOG_EMOJIS=Object.freeze([
   "id": "emoji_50",
   "emoji": "🎯",
   "name": "Volltreffer"
+ },
+ {
+   "id": "emoji_51",
+   "emoji": "🎅",
+   "name": "Weihnachtsmann",
+   "unlockId": "christmas2026:emoji:01"
+ },
+ {
+   "id": "emoji_52",
+   "emoji": "🤶",
+   "name": "Frau Weihnachtsmann",
+   "unlockId": "christmas2026:emoji:02"
+ },
+ {
+   "id": "emoji_53",
+   "emoji": "🦌",
+   "name": "Rentier Rudolf",
+   "unlockId": "christmas2026:emoji:03"
+ },
+ {
+   "id": "emoji_54",
+   "emoji": "🧝",
+   "name": "Weihnachtswichtel",
+   "unlockId": "christmas2026:emoji:04"
+ },
+ {
+   "id": "emoji_55",
+   "emoji": "🍪",
+   "name": "Weihnachtsplätzchen",
+   "unlockId": "christmas2026:emoji:05"
+ },
+ {
+   "id": "emoji_56",
+   "emoji": "🛷",
+   "name": "Weihnachtsschlitten",
+   "unlockId": "christmas2026:emoji:06"
+ },
+ {
+   "id": "emoji_57",
+   "emoji": "🔔",
+   "name": "Weihnachtsglocke",
+   "unlockId": "christmas2026:emoji:07"
+ },
+ {
+   "id": "emoji_58",
+   "emoji": "🧦",
+   "name": "Nikolausstiefel",
+   "unlockId": "christmas2026:emoji:08"
+ },
+ {
+   "id": "emoji_59",
+   "emoji": "🎀",
+   "name": "Geschenkeschleife",
+   "unlockId": "christmas2026:emoji:09"
+ },
+ {
+   "id": "emoji_60",
+   "emoji": "⭐",
+   "name": "Weihnachtsstern",
+   "unlockId": "christmas2026:emoji:10"
  }
 ].map(item=>Object.freeze(item)));
+/** Ten festive preview-only emojis, each with an independent future server-granted entitlement.
+ * Presence in the catalogue is NOT ownership; do not unlock via localStorage.
+ */
+export const DOG_CHRISTMAS_EMOJIS=Object.freeze(DOG_EMOJIS.filter(item=>Boolean(item.unlockId)));
 export const DOG_EMOJI_STARTERS=Object.freeze(['emoji_01','emoji_02','emoji_03']);
 export const DOG_EMOJI_SLOTS=5;
 const STORAGE_KEY='spielportal:dog:emoji-bar:v1';
