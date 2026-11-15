@@ -26,7 +26,7 @@ test('Christmas bonuses are automatic and cannot be toggled by the host or any p
  assert.doesNotMatch(page,/building-event-mode-toggle|Weihnachtsmodus aktivieren|Weihnachtsmodus ausschalten/);
  assert.doesNotMatch(event,/christmas-mode|villageCanToggle|enabled:!villageMode|building-event-mode-toggle/);
  assert.match(event,/villageEventActive=data\.enabled===true/);
- assert.match(event,/in allen Online-DOG-Partien gelten die Gebäude-Boni automatisch/);
+ assert.match(event,/In jeder Online-DOG-Partie gelten die Gebäude-Boni automatisch/);
  assert.match(event,/Weihnachtsevent beendet/);
  assert.match(event,/data-upgrade-building/);
 });
