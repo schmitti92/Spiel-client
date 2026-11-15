@@ -4,7 +4,7 @@
  */
 import {applyMotionMode,loadMotionMode} from './motion-settings.js';
 applyMotionMode(loadMotionMode());
-import {BOARD_STYLES,loadAppearance,saveAppearance} from './appearance-registry.js?v=21';
+import {BOARD_STYLES,isBoardUnlocked,loadAppearance,saveAppearance} from './appearance-registry.js?v=22';
 const plates=Object.entries(BOARD_STYLES);
 const sections=[];
 const browserUrl=path=>new URL(path,import.meta.url).href;
@@ -21,7 +21,9 @@ function buildPicker(target,mode){
  const cards=document.createElement('div');cards.className='dog-plate-choices';
  for(const [id,theme] of plates){
   const card=document.createElement('button');
+  const locked=!isBoardUnlocked(id);
   card.type='button';card.className='dog-plate-choice';card.dataset.board=id;
+  if(locked){card.disabled=true;card.classList.add('is-locked');card.title='Wird im Weihnachtsevent freigeschaltet';}
   const picture=theme.image?document.createElement('img'):document.createElement('div');
   if(theme.image){
    picture.loading='lazy';picture.alt='';
@@ -35,7 +37,9 @@ function buildPicker(target,mode){
   }
   const caption=document.createElement('span');caption.textContent=theme.label;
   card.append(picture,caption);
+  if(locked){const lock=document.createElement('span');lock.className='dog-plate-lock';lock.textContent='🔒 Weihnachtsevent';card.append(lock);}
   card.addEventListener('click',()=>{
+   if(!isBoardUnlocked(id))return;
    saveAppearance({...loadAppearance(),board:id});
    document.querySelectorAll('.dog-plate-choice').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.board===id)));
   });
