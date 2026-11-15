@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="./christmas-tree-rewards.css?v=2">
 <link rel="stylesheet" href="./christmas-tree-world.css?v=3">
 <link rel="stylesheet" href="./christmas-scratch.css?v=11">
+<link rel="stylesheet" href="./christmas-player-levels.css?v=1">
 <link rel="stylesheet" href="./christmas-building-village.css?v=4">
 </head>
 <body>
@@ -32,6 +33,7 @@
       <button type="button" id="tab-story" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-story" data-tab="story" tabindex="-1"><span>📖</span><strong>Die Geschichte</strong><small>Kapitel 1</small></button>
       <button type="button" id="tab-gifts" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-gifts" data-tab="gifts" tabindex="-1"><span>🎁</span><strong>Geschenke &amp; Lichter</strong><small>Gemeinsam sammeln</small></button>
       <button type="button" id="tab-scratch" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-scratch" data-tab="scratch" tabindex="-1"><span>🎟️</span><strong>Rubbellose</strong><small>Einfach · Mittel · Premium</small></button>
+      <button type="button" id="tab-level" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-level" data-tab="level" tabindex="-1"><span>🏅</span><strong>Mein Spielerlevel</strong><small>10 persönliche Level</small></button>
       <button type="button" id="tab-chapters" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-chapters" data-tab="chapters" tabindex="-1"><span>✨</span><strong>Kapitelübersicht</strong><small>Zwei Kapitel insgesamt</small></button>
     </nav>
     <div class="sidebar-bottom">
@@ -348,6 +350,28 @@
         </form>
       </dialog>
     </section>
+    <section class="event-panel" id="panel-level" role="tabpanel" aria-labelledby="tab-level" hidden>
+      <div class="event-heading"><div><span class="eyebrow">🏅 DEIN PERSÖNLICHER FORTSCHRITT</span><h2>Spielerlevel 1–10</h2><p>Spiele DOG, sammle Erfahrungspunkte und steige Stufe für Stufe auf. Die Level gehören nur deinem Profil.</p></div><span class="soft-tag">⭐ Erfahrung</span></div>
+      <div class="dog-level-shell">
+        <section class="dog-level-hero" aria-labelledby="dog-level-heading">
+          <div class="dog-level-hero-head"><div><span class="eyebrow">🏆 DEIN LEVEL</span><h3 id="dog-level-heading">Dein Fortschritt</h3><p>Nur abgeschlossene, vom Server bestätigte DOG-Onlinepartien zählen.</p></div>
+            <button type="button" id="dog-level-refresh" class="dog-level-refresh">↻ Level aktualisieren</button></div>
+          <div id="dog-level-summary" hidden>
+            <div class="dog-level-overview">
+              <div class="dog-level-medallion" aria-label="Aktuelles Spielerlevel"><span>LEVEL</span><strong id="dog-level-current">1</strong><span>VON 10</span></div>
+              <div class="dog-level-xp-data"><strong id="dog-level-xp-total">0 EP</strong><small id="dog-level-next">Level 2</small>
+                <progress id="dog-level-progress" class="dog-level-xp-meter" max="100" value="0" aria-label="Fortschritt zum nächsten Level"></progress>
+                <small id="dog-level-progress-text">0 / 100 EP zum nächsten Level</small></div>
+            </div>
+            <div class="dog-level-info-grid"><div>🎮 Gezählt: <strong id="dog-level-matches">0</strong> Partien</div><div>✨ Letzte Partie: <strong id="dog-level-last">Noch kein Fortschritt</strong></div></div>
+          </div>
+        </section>
+        <p id="dog-level-status" class="dog-level-status" role="status" aria-live="polite">Öffne den Bereich, um dein Spielerlevel zu laden.</p>
+        <section class="dog-level-rules"><h3>⭐ So verdienst du Erfahrungspunkte</h3><p>Abgeschlossene DOG-Partie: <strong>+50 EP</strong> · Sieg: <strong>+50 EP zusätzlich</strong> · Gegnerische Figur rauswerfen: <strong>+10 EP</strong> (maximal fünf pro Partie). Es zählen nur die Ergebnisse abgeschlossener Onlinepartien, nicht einzelne Spielzüge oder Rubbellos-Käufe.</p></section>
+        <div id="dog-level-rewards" class="dog-level-grid" aria-label="Die zehn Level und ihre künftigen Belohnungen"></div>
+        <p class="scratch-info">🎁 Für jedes Level gibt es bereits einen eigenen Belohnungsplatz. Die genauen Preise legen wir später gemeinsam fest. Aktuell werden keine Level-Belohnungen automatisch vergeben.</p>
+      </div>
+    </section>
     <section class="event-panel" id="panel-chapters" role="tabpanel" aria-labelledby="tab-chapters" hidden>
       <div class="event-heading"><div><span class="eyebrow">UNSERE WEIHNACHTSREISE</span><h2>Die zwei Kapitel</h2><p>Nur zwei Kapitel bilden zusammen das Weihnachtsabenteuer. Hier beginnt die Reise.</p></div></div>
       <div class="chapter-grid">
@@ -359,6 +383,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./christmas-event.js?v=31"></script>
+<script type="module" src="./christmas-event.js?v=32"></script>
 </body>
 </html>
