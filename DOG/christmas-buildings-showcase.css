@@ -1,0 +1,441 @@
+/* Lichtertal – Dorfgebäude im festlichen Kartenlayout (November 2026).
+   Rein visuelles Redesign: bestehende Serverboni, Stufen, Profilaktionen,
+   Vorschau-Regler und Upgrade-Buttons bleiben unverändert funktionsfähig. */
+
+body:has(#panel-buildings:not([hidden])){
+  background:
+    radial-gradient(ellipse 75% 35% at 61% -12%,#355d4d65,transparent 80%),
+    radial-gradient(ellipse 30% 50% at 0 100%,#174b3b70,transparent 80%),
+    linear-gradient(135deg,#041b18,#082d28 54%,#041e21);
+}
+body:has(#panel-buildings:not([hidden])) .event-layout{
+  grid-template-columns:clamp(220px,18.5vw,265px) minmax(0,1fr);
+  max-width:1850px;
+  gap:13px;
+  padding:12px;
+}
+body:has(#panel-buildings:not([hidden])) .event-sidebar{
+  border:1.5px solid #d9b978;
+  background:linear-gradient(160deg,#06392a,#05291f 56%,#052019);
+  box-shadow:inset 0 0 0 1px #f6dea922,0 8px 30px #00181188;
+}
+body:has(#panel-buildings:not([hidden])) .sidebar-intro{
+  position:relative;
+  border-bottom:1px solid #e4bc6970;
+  background:radial-gradient(ellipse at 50% 0,#bd8d3940,transparent 80%);
+}
+body:has(#panel-buildings:not([hidden])) .sidebar-intro h1{
+  font-size:clamp(29px,2.7vw,40px);
+  letter-spacing:.3px;
+  text-shadow:0 2px 10px #f7d27b2c;
+}
+body:has(#panel-buildings:not([hidden])) .event-menu{gap:7px;padding:12px 9px}
+body:has(#panel-buildings:not([hidden])) .event-tab{
+  min-height:57px;
+  border:1px solid #b8a96e68;
+  border-radius:13px;
+  background:linear-gradient(115deg,#0c4939,#07362e 85%);
+  transition:background .15s,border-color .15s;
+}
+body:has(#panel-buildings:not([hidden])) .event-tab:hover{border-color:#efcd8e;background:#1b5340}
+body:has(#panel-buildings:not([hidden])) .event-tab[aria-selected=true]{
+  border:1.5px solid #ffe2a1;
+  background:linear-gradient(115deg,#655027,#354a32 84%);
+  box-shadow:0 0 13px #f5cd7c50,inset 0 0 0 1px #fff3c447;
+}
+body:has(#panel-buildings:not([hidden])) .event-tab strong{color:#faeed5}
+body:has(#panel-buildings:not([hidden])) .event-tab small{color:#c9d7c7}
+body:has(#panel-buildings:not([hidden])) .event-tab[aria-selected=true] strong{color:#ffedb4}
+
+/* Winterlicher Seitenkopf – keine zusätzlichen interaktiven Ebenen. */
+#panel-buildings .event-heading{
+  position:relative;
+  isolation:isolate;
+  min-height:116px;
+  margin-bottom:12px;
+  padding:18px clamp(18px,3vw,38px);
+  border:1px solid #e9c5829e;
+  border-radius:22px;
+  overflow:hidden;
+  background:
+    linear-gradient(90deg,#062d29 0%,#0b3933ed 47%,#0e3534b5 72%,#0b3430bd),
+    url("./weihnachtsevent-bilder/leere_winterdorf_plaza_im_mondlicht.png") right 44% / 44% auto no-repeat,
+    linear-gradient(120deg,#072b28,#134b46);
+  box-shadow:inset 0 1px #ffebbc28,0 10px 28px #02100e56;
+}
+#panel-buildings .event-heading::before{
+  content:"✦";
+  position:absolute;
+  z-index:-1;
+  left:50%;
+  top:4px;
+  color:#ffe7a9;
+  font-size:24px;
+  opacity:.7;
+  text-shadow:0 0 14px #ffe1a6;
+}
+#panel-buildings .event-heading .eyebrow{
+  color:#edd39d;
+  letter-spacing:2px;
+}
+#panel-buildings .event-heading h2{
+  font:900 clamp(27px,3vw,43px)/1.13 Georgia,serif;
+  margin:5px 0 8px;
+  color:#ffebbf;
+  text-shadow:0 2px 8px #051b1b;
+}
+#panel-buildings .event-heading p{
+  max-width:72ch;
+  font-size:clamp(11px,1vw,13px);
+  line-height:1.45;
+  color:#eff2df;
+  text-shadow:0 2px 5px #031e1e;
+}
+#panel-buildings .event-heading>.soft-tag{
+  flex:0 0 auto;
+  border:1px solid #ffe2a384;
+  background:#133e31c9;
+  color:#ffe2a6;
+  border-radius:99px;
+}
+
+/* Dorfkonto kompakter, jedoch vollständig erreichbar und live-aktualisierbar. */
+#panel-buildings .building-village-wallet{
+  display:grid!important;
+  grid-template-areas:"title" "progress" "account" "notice";
+  margin:0 0 12px;
+  border:1.5px solid #d6b469;
+  border-radius:19px;
+  overflow:hidden;
+  background:linear-gradient(120deg,#052c28,#0e4338 54%,#062c30);
+  box-shadow:inset 0 1px #ffe1aa35,0 8px 24px #0018117d;
+}
+#panel-buildings .village-treasury-heading{
+  grid-area:title;
+  padding:7px 13px;
+  gap:8px;
+  background:#071d2070;
+  border-bottom:1px solid #e1bb7536;
+}
+#panel-buildings .village-treasury-title strong{font-size:11px}
+#panel-buildings .village-wallet-badge{padding:4px 9px;font-size:10px}
+#panel-buildings .village-treasury-stats{
+  grid-area:progress;
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  border-top:0;
+  border-bottom:1px solid #d6b87950;
+  background:linear-gradient(90deg,#0c3c31,#123e35,#0b302f);
+}
+#panel-buildings .village-treasury-stat{
+  display:flex;
+  min-width:0;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  padding:11px 6px;
+}
+#panel-buildings .village-treasury-stat>span{
+  font-size:10px;
+  color:#e5e2c5;
+  text-align:center;
+}
+#panel-buildings .village-treasury-stat>strong{
+  font:900 14px/1.2 Georgia,serif;
+  color:#ffe1a3;
+}
+#panel-buildings .village-treasury-main{
+  grid-area:account;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  min-height:0;
+  padding:10px 14px;
+  gap:10px;
+}
+#panel-buildings .village-treasury-star{
+  flex:0 0 37px!important;
+  width:37px;
+  height:37px;
+  font-size:23px;
+  border-radius:11px;
+}
+#panel-buildings #building-live-balance{
+  font:900 clamp(16px,1.55vw,21px)/1.17 Georgia,serif;
+}
+#panel-buildings .village-treasury-balance-copy small{font-size:10px}
+#panel-buildings #building-event-mode{font-size:10px}
+#panel-buildings .village-treasury-actions{
+  flex-direction:row;
+  gap:6px;
+  align-items:center;
+}
+#panel-buildings .village-treasury-actions .button{
+  width:auto;
+  min-height:32px;
+  padding:7px 10px;
+  font-size:10px;
+}
+#panel-buildings .village-treasury-foot{
+  grid-area:notice;
+  padding:5px 13px;
+  border-top:1px solid #e1bd7536;
+  background:#09252299;
+}
+#panel-buildings #building-live-notice{font-size:10px}
+
+/* Preistabelle einklappbar; der aktuelle Preis bleibt in jeder Karte sichtbar. */
+#panel-buildings .building-price-disclosure{
+  margin:0 0 11px;
+  color:#f8e4b4;
+  font-size:11px;
+}
+#panel-buildings .building-price-disclosure>summary{
+  display:inline-flex;
+  align-items:center;
+  padding:5px 12px;
+  min-height:29px;
+  border:1px solid #d2b57378;
+  border-radius:99px;
+  background:#143d32;
+  cursor:pointer;
+  font-weight:800;
+  list-style:none;
+}
+#panel-buildings .building-price-disclosure>summary::-webkit-details-marker{display:none}
+#panel-buildings .building-price-disclosure>summary:focus-visible{outline:2px solid #ffdc8b;outline-offset:3px}
+#panel-buildings .building-price-disclosure[open]>summary{margin-bottom:9px}
+#panel-buildings .building-price-overview{margin:0;padding:9px}
+
+/* Vier gleich große, quer geteilte Gebäude-Karten – Illustration links, Daten rechts. */
+#panel-buildings .building-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:stretch;
+  gap:clamp(11px,1.1vw,17px);
+}
+#panel-buildings .building-card{
+  display:grid;
+  grid-template-columns:minmax(135px,43%) minmax(0,1fr);
+  grid-template-rows:auto minmax(0,1fr) auto auto;
+  grid-template-areas:
+    "art heading"
+    "art bonus"
+    "art level"
+    "art action";
+  align-content:stretch;
+  gap:7px clamp(11px,1.4vw,18px);
+  min-height:252px;
+  padding:12px;
+  overflow:hidden;
+  border:1.5px solid #d6b675;
+  border-radius:20px;
+  background:
+    radial-gradient(ellipse at 15% 100%,#38796840,transparent 55%),
+    linear-gradient(125deg,#125043,#0a362f 70%,#0a2b2b);
+  box-shadow:0 9px 24px #00111085,inset 0 1px #fae3aa22;
+}
+#panel-buildings .building-card:has(.building-purchase:not(:disabled)){
+  border-color:#ffe0a0;
+  box-shadow:0 0 15px #fbd17c42,inset 0 1px #fff0c446;
+}
+#panel-buildings .building-card-head{
+  grid-area:heading;
+  min-height:0;
+  gap:0;
+  align-items:flex-start;
+}
+#panel-buildings .building-card-icon{display:none}
+#panel-buildings .building-card-head>div{min-width:0}
+#panel-buildings .building-card h3{
+  font:900 clamp(17px,1.75vw,25px)/1.14 Georgia,serif;
+  letter-spacing:-.15px;
+  color:#ffe9b5;
+  overflow-wrap:anywhere;
+}
+#panel-buildings .building-card-head p{
+  font-size:11px;
+  line-height:1.38;
+  margin:6px 0 0;
+  color:#e8eddd;
+}
+#panel-buildings .building-card-art{
+  grid-area:art;
+  align-self:stretch;
+  justify-self:stretch;
+  min-width:0;
+  width:100%;
+  height:100%;
+  min-height:222px;
+  margin:0;
+  border:0;
+  border-radius:12px;
+  background:
+    radial-gradient(ellipse 75% 65% at 52% 78%,#81b6a373,transparent 75%),
+    linear-gradient(180deg,#092d38,#164b4a 68%,#285850);
+  box-shadow:inset 0 -12px 26px #021e2078;
+}
+#panel-buildings .building-card-art::after{
+  background:linear-gradient(0deg,#d9e9d675,transparent);
+}
+#panel-buildings .building-art-plaque{
+  bottom:8px;
+  left:8px;
+  padding:4px 8px;
+  font-size:9px;
+  letter-spacing:.3px;
+  background:#092c2ccc;
+}
+#panel-buildings .building-card-info{
+  grid-area:bonus;
+  min-height:0;
+  margin:0;
+  padding:8px 10px;
+  border:1px solid #d0be7d59;
+  border-radius:11px;
+  background:#062c2b9a;
+  justify-content:flex-start;
+}
+#panel-buildings .building-card-info strong{
+  color:#ffe09b;
+  font-size:11px;
+}
+#panel-buildings .building-card-info span{
+  color:#dce8d8;
+  font-size:10.5px;
+}
+#panel-buildings .building-stage-controls{
+  grid-area:level;
+  min-width:0;
+  margin:0;
+}
+#panel-buildings .level-row{
+  margin:0 0 3px;
+  gap:6px;
+}
+#panel-buildings .level-row label{
+  font-size:10px;
+  color:#ebebd7;
+}
+#panel-buildings .level-row output{
+  font-size:10.5px;
+  color:#ffe4a7;
+}
+#panel-buildings .building-level-markers{gap:4px;margin:4px 0}
+#panel-buildings .building-level-markers span{height:7px;background:#3c6559}
+#panel-buildings .building-level-markers span.active{
+  background:linear-gradient(90deg,#c79548,#ffe39a);
+}
+#panel-buildings .building-upgrade-row{
+  grid-area:action;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  margin:0;
+}
+#panel-buildings .building-upgrade-price{
+  min-height:0;
+  margin:0;
+  padding:0;
+  border:0;
+  background:none;
+  font-size:10px;
+  line-height:1.3;
+  color:#f2d7a1;
+}
+#panel-buildings .building-purchase{
+  min-height:38px;
+  padding:8px 10px;
+  margin:0;
+  border:1px solid #f9de9f;
+  border-radius:99px;
+  background:linear-gradient(180deg,#fff0bd,#d9a453);
+  box-shadow:inset 0 1px #fff9d5,0 3px 9px #021d1a60;
+  color:#322513;
+  font-size:11px;
+  font-weight:950;
+}
+#panel-buildings .building-purchase:hover:not(:disabled){
+  filter:brightness(1.09);
+  transform:translateY(-1px);
+}
+#panel-buildings .building-purchase:disabled{
+  opacity:.85;
+  border-color:#769c89;
+  background:linear-gradient(180deg,#285747,#173d35);
+  box-shadow:none;
+  color:#d6e6d7;
+  cursor:not-allowed;
+}
+#panel-buildings .building-final-note{margin-top:12px}
+
+/* Kleine Laptops: Karten bekommen mehr Platz, zwei Spalten bleiben auf großen Tablets. */
+@media(max-width:1280px){
+  #panel-buildings .building-grid{grid-template-columns:1fr}
+  #panel-buildings .building-card{min-height:228px;grid-template-columns:minmax(180px,38%) minmax(0,1fr)}
+  #panel-buildings .building-card-art{min-height:215px}
+  #panel-buildings .village-treasury-actions{flex-direction:row;align-items:center}
+  #panel-buildings .village-treasury-stats{grid-template-columns:repeat(5,minmax(0,1fr))}
+}
+@media(max-width:960px){
+  body:has(#panel-buildings:not([hidden])) .event-layout{grid-template-columns:195px minmax(0,1fr)}
+  #panel-buildings .event-heading{padding:14px 18px;min-height:100px}
+  #panel-buildings .event-heading h2{font-size:26px}
+  #panel-buildings .village-treasury-main{grid-template-columns:1fr;gap:7px}
+  #panel-buildings .village-treasury-actions{justify-content:flex-start;flex-wrap:wrap}
+  #panel-buildings .village-treasury-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #panel-buildings .building-card{grid-template-columns:minmax(140px,39%) minmax(0,1fr)}
+}
+@media(max-width:760px){
+  body:has(#panel-buildings:not([hidden])) .event-layout{
+    display:flex;
+    flex-direction:column;
+    gap:9px;
+    padding:8px;
+  }
+  body:has(#panel-buildings:not([hidden])) .event-sidebar{
+    position:relative;
+    top:auto;
+    max-height:none;
+  }
+  body:has(#panel-buildings:not([hidden])) .event-menu{
+    display:flex;
+    overflow-x:auto;
+    gap:7px;
+    padding:8px;
+  }
+  body:has(#panel-buildings:not([hidden])) .event-tab{
+    flex:0 0 auto;
+    min-width:112px;
+    min-height:64px;
+  }
+  #panel-buildings .event-heading{
+    background:linear-gradient(90deg,#092d28e8,#0f4235ec),url("./weihnachtsevent-bilder/leere_winterdorf_plaza_im_mondlicht.png") center / cover;
+  }
+  #panel-buildings .building-grid{grid-template-columns:1fr}
+  #panel-buildings .building-card{min-height:215px;grid-template-columns:minmax(120px,38%) minmax(0,1fr)}
+  #panel-buildings .building-card-art{min-height:200px}
+  #panel-buildings .village-treasury-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:540px){
+  #panel-buildings .event-heading h2{font-size:clamp(24px,7vw,31px)}
+  #panel-buildings .event-heading>.soft-tag{display:none}
+  #panel-buildings .village-treasury-heading{align-items:flex-start}
+  #panel-buildings .village-treasury-title strong{display:none}
+  #panel-buildings .village-treasury-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #panel-buildings .village-treasury-stat:last-child{grid-column:1/-1}
+  #panel-buildings .building-card{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:auto auto auto auto auto;
+    grid-template-areas:"heading" "art" "bonus" "level" "action";
+    min-height:0;
+    gap:8px;
+  }
+  #panel-buildings .building-card-art{height:230px;min-height:0}
+  #panel-buildings .building-upgrade-row{gap:7px}
+  #panel-buildings .village-treasury-actions .button{flex:1 1 120px}
+}
+@media(prefers-reduced-motion:reduce){
+  #panel-buildings .building-purchase:hover:not(:disabled){transform:none}
+  body:has(#panel-buildings:not([hidden])) .event-tab{transition:none}
+}
