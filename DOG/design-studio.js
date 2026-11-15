@@ -8,7 +8,7 @@ const S='http://www.w3.org/2000/svg',KEY='dog:design-studio:presets:v1';
 const BOARDS=['studio','schiefer','holz','pergament','bergsee','goldwellen','royalMarmor','maerchental','alpenland','kuestenabenteuer','royalKarten','zauberwald','midnight','forest','winter','weihnachtsdorf','lebkuchenwerkstatt','polarlichtpalast','winterlandschaft'];
 const SCENES=Object.keys(SCENE_STYLES);
 const N={studio:'TV-Studio',schiefer:'Schiefer',holz:'Holz',pergament:'Pergament',bergsee:'Bergsee',goldwellen:'Goldwellen',royalMarmor:'Royal-Marmor',midnight:'Mitternacht',forest:'Waldlichtung',winter:'Winterabend',none:'Ohne Hintergrund',schloss:'Magisches Schloss am Nebelsee',maerchental:'Märchental',zauberwald:'Zauberwald',kuestenabenteuer:'Küstenabenteuer',alpenland:'Alpenland',royalKarten:'Royal-Karten',weihnachtsdorf:'Weihnachtsdorf',lebkuchenwerkstatt:'Lebkuchenwerkstatt',polarlichtpalast:'Polarlichtpalast',winterlandschaft:'Winterlandschaft'};
-const C=['#e75c59','#419ef0','#48c27c','#ffc94d'],name=id=>N[id]||id;
+const C=['#e75c59','#419ef0','#48c27c','#ffc94d'],name=id=>N[id]||SCENE_STYLES[id]?.label||BOARD_STYLES[id]?.label||id;
 const validBoard=id=>typeof id==='string'&&Object.hasOwn(BOARD_STYLES,id);
 const validFrame=id=>typeof id==='string'&&Object.hasOwn(BOARD_FRAMES,id);
 const validScene=id=>typeof id==='string'&&Object.hasOwn(SCENE_STYLES,id);
