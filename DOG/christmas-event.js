@@ -1,12 +1,12 @@
 /**
  * DOG Weihnachtsevent – Kapitel 1, visual design shell.
  *
- * This module NEVER awards currency, claims an unlocked item, posts to the
- * server, or saves preview levels. Later live progression must be verified
- * by the authenticated Render backend and must not trust this preview.
+ * Local building previews cannot grant Christmas prizes. Only real
+ * Render-verified village stages allow durable per-user reward claims.
  */
 import {CHRISTMAS_PAGE_BACKGROUNDS} from './christmas-background-catalog.js?v=1';
 import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotalCost,christmasVillageTotalCost} from './christmas-building-costs.js?v=1';
+import {initChristmasTreeRewards} from './christmas-tree-rewards-ui.js?v=1';
 const $=id=>document.getElementById(id);
 const tabs=['village','buildings','tree','story','gifts','chapters'];
 const TREE_THRESHOLDS=[4,5,7,9,11,13,15,17,19,20];
@@ -182,6 +182,7 @@ function updateCardImage(id,level){
 }
 const preview={tower:1,workshop:1,bakery:1,inn:1};
 let villageLive=null,villageHost=false,villageMode=false,villageCanToggle=false,villageCanUpgrade=true,villageBusy=false;
+let treePrizeScreen=null;
 let lastPresentationKey=null;
 const sceneTitles=['Die Weihnachtsreise beginnt','Die ersten Laternen leuchten','Ein Hauch von Winter','Lichter über den Dächern','Das Dorf entdeckt Weihnachten','Die Weihnachtsvorbereitungen laufen','Ein Sternenglanz erscheint','Lichtertal wird zum Wintermärchen','Das Dorf wartet auf sein Wunder','Das große Weihnachtslicht'];
 const sceneDescriptions=[
@@ -335,6 +336,7 @@ function showPanel(id,{updateHistory=true}={}){
   panel.hidden=!active;
  }
  if(updateHistory&&location.hash!=='#'+id)history.replaceState(null,'','#'+id);
+ if(id==='tree')void treePrizeScreen?.load();
  if(window.scrollY>0)window.scrollTo({top:0,behavior:'instant'});
 }
 for(const id of tabs){
@@ -423,8 +425,14 @@ async function villageRequest(endpoint='',method='GET',body=null){
  if(!response.ok||result?.ok!==true)throw Error(result?.error||'Serverfehler '+response.status);
  return result;
 }
+treePrizeScreen=initChristmasTreeRewards({
+ request:villageRequest,roomValid:villageRoomValid,loggedIn:()=>Boolean(eventUser())
+});
+if($('tab-tree').getAttribute('aria-selected')==='true')void treePrizeScreen.load();
 function showLiveVillage(data){
  const v=data?.village;if(!v)return;
+ const oldLevels=villageLive?.levels;
+ const oldTreeLevel=oldLevels?TREE_THRESHOLDS.filter(n=>Object.values(oldLevels).reduce((a,b)=>a+b,0)>=n).length:null;
  villageLive=v;
  villageHost=data.host===true;
  villageMode=data.enabled===true;
@@ -444,6 +452,9 @@ function showLiveVillage(data){
  const giftNotice=document.querySelector('#panel-gifts > .notice');
  if(giftNotice)giftNotice.textContent='🎄 Weihnachtslichter werden nur in aktivierten Online-DOG-Partien auf echten Geschenkfeldern vergeben. Die Gutschriften und Gebäudeboni prüft Render; lokale Vorschau-Level zählen nicht.';
  refreshPreview();
+ const newTreeLevel=TREE_THRESHOLDS.filter(n=>Object.values(v.levels).reduce((a,b)=>a+b,0)>=n).length;
+ if($('tab-tree').getAttribute('aria-selected')==='true'&&
+     (oldTreeLevel===null||newTreeLevel!==oldTreeLevel))void treePrizeScreen?.load();
 }
 async function reloadVillage(){
  if(!villageRoomValid)return;
@@ -479,7 +490,10 @@ $('building-event-mode-toggle').addEventListener('click',async()=>{
 });
 if(villageRoomValid){
  void reloadVillage();
- window.addEventListener('spielonline-change',()=>void reloadVillage());
+ window.addEventListener('spielonline-change',()=>{
+  void reloadVillage();
+  if($('tab-tree').getAttribute('aria-selected')==='true')void treePrizeScreen?.load();
+ });
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void reloadVillage();});
 }else{
  $('building-event-mode').textContent='Öffne dieses Weihnachtsdorf aus deiner Online-DOG-Raumlobby, damit echte Lichter und Gebäudestufen geladen werden.';
