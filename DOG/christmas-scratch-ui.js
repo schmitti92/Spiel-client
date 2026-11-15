@@ -33,7 +33,7 @@ export function initChristmasScratch(){
  const root=$('scratch-tier-grid'),wallet=$('scratch-wallet'),stage=$('scratch-stage'),
   board=$('scratch-board'),results=$('scratch-result-panel'),reveal=$('scratch-reveal');
  if(!root||!wallet||!stage||!board||!results||!reveal)throw Error('SCRATCH_UI_NOT_FOUND');
- let status=null,ticket=null,busy=false,pending=null,requestId=0,finished=false,covered=0;
+ let status=null,ticket=null,busy=false,pending=null,requestId=0,finished=false;
  const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
  const account=()=>{
   const s=window.SpielOnline?.state?.();
@@ -82,93 +82,120 @@ export function initChristmasScratch(){
    root.append(article);
   }
  }
- function coat(canvas){
-  const ctx=canvas.getContext('2d');canvas.width=96;canvas.height=96;
-  ctx.globalCompositeOperation='source-over';
-  const gradient=ctx.createLinearGradient(0,0,96,96);
-  gradient.addColorStop(0,'#8196a3');gradient.addColorStop(.45,'#edf1f0');gradient.addColorStop(1,'#899daa');
-  ctx.fillStyle=gradient;ctx.fillRect(0,0,96,96);
-  ctx.strokeStyle='#b9cbd0';ctx.lineWidth=1;
-  for(let d=-96;d<192;d+=12){ctx.beginPath();ctx.moveTo(d,0);ctx.lineTo(d+96,96);ctx.stroke()}
-  ctx.fillStyle='#365263';ctx.font='bold 15px system-ui';ctx.textAlign='center';ctx.fillText('❄ RUBBEL',48,53);
-  ctx.globalCompositeOperation='destination-out';
-  return ctx;
- }
- // Actual alpha coverage of the silver coating, not stroke distance or tap count.
- // Each ticket opens automatically when 90% of ALL field coatings are erased.
- const erasedByCanvas=new Map();
- const SAMPLES_PER_FIELD=48*48;
- function erasedSamples(canvas){
+ // A SINGLE silver surface covers the entire playing grid. The player can
+ // start anywhere and drag across every symbol without lifting the finger.
+ // Progress counts actual transparent silver pixels, not clicks or distance.
+ let unifiedCover=null,initialOpaque=0,moveNumber=0;
+ const SAMPLE_ALPHA_MIN=64;
+ function opaqueSamples(canvas){
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
-  const data=ctx.getImageData(0,0,96,96).data;
+  const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
   let count=0;
-  for(let y=0;y<96;y+=2)for(let x=0;x<96;x+=2){
-   if(data[(y*96+x)*4+3]<=40)count++;
-  }
+  // Uniformly sample the entire coating, including every cell, but not gaps.
+  for(let i=3;i<data.length;i+=12)if(data[i]>SAMPLE_ALPHA_MIN)count++;
   return count;
  }
- function updateScratchProgress(){
-  const total=erasedByCanvas.size*SAMPLES_PER_FIELD;
-  const done=[...erasedByCanvas.values()].reduce((sum,n)=>sum+n,0);
-  const ratio=total?done/total:0;
-  const percent=Math.min(100,Math.floor(ratio*100));
-  $('scratch-progress').textContent=percent+' % freigerubbelt · ab 90 % automatische Aufdeckung';
+ function setScratchProgress(percent){
+  const p=Math.max(0,Math.min(100,percent));
+  $('scratch-progress').textContent=p+' % freigerubbelt · ab 90 % automatische Aufdeckung';
   const meter=$('scratch-progress-meter');
-  if(meter){meter.value=percent;meter.setAttribute('aria-valuenow',String(percent))}
-  if(ratio>=.90&&!finished)finish();
+  if(meter){meter.value=p;meter.setAttribute('aria-valuenow',String(p))}
  }
- function uncover(cell,canvas){
-  if(cell.classList.contains('uncovered')||finished)return;
-  cell.classList.add('uncovered');canvas.hidden=true;covered++;
-  erasedByCanvas.set(canvas,SAMPLES_PER_FIELD);
-  updateScratchProgress();
- }
- function measureCell(cell,canvas){
-  if(finished||cell.classList.contains('uncovered'))return;
-  const count=erasedSamples(canvas);
-  erasedByCanvas.set(canvas,count);
-  if(count/SAMPLES_PER_FIELD>=.90)uncover(cell,canvas);
-  else updateScratchProgress();
+ function measureScratchCover(canvas){
+  if(finished||unifiedCover!==canvas||!initialOpaque)return;
+  const remaining=opaqueSamples(canvas);
+  const fraction=Math.max(0,Math.min(1,1-remaining/initialOpaque));
+  setScratchProgress(Math.floor(fraction*100));
+  if(fraction>=.9)finish();
  }
  function makeField(symbol){
-  const cell=el('div','scratch-field'),face=el('span','scratch-cell-symbol',symbol);
-  const canvas=el('canvas','scratch-field-cover');
-  canvas.setAttribute('aria-label','Silberbeschichtung mit dem Finger wegrubbeln');
-  canvas.setAttribute('role','button');
-  canvas.setAttribute('tabindex','0');
-  canvas.setAttribute('title','Wische mit dem Finger oder der Maus über die silberne Fläche. Mit Enter ist das Feld auch per Tastatur zugänglich.');
-  face.setAttribute('aria-hidden','true');cell.append(face,canvas);
-  const ctx=coat(canvas);erasedByCanvas.set(canvas,0);
-  let drawing=false,last=null,frames=0;
-  const point=e=>{
-   const r=canvas.getBoundingClientRect();
-   return {x:(e.clientX-r.left)*96/r.width,y:(e.clientY-r.top)*96/r.height};
-  };
-  const move=e=>{
-   if(!drawing||finished||cell.classList.contains('uncovered'))return;
-   e.preventDefault();
-   const p=point(e);ctx.lineWidth=25;ctx.lineCap='round';ctx.lineJoin='round';
-   if(last){ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke()}
-   else{ctx.beginPath();ctx.arc(p.x,p.y,12.5,0,Math.PI*2);ctx.fill()}
-   last=p;
-   if(++frames%3===0)measureCell(cell,canvas);
-  };
-  canvas.addEventListener('pointerdown',e=>{
-   if(finished||cell.classList.contains('uncovered'))return;
-   drawing=true;last=null;frames=0;canvas.setPointerCapture?.(e.pointerId);
-   move(e);
-  });
-  canvas.addEventListener('pointermove',move);
-  const end=()=>{if(!drawing)return;drawing=false;last=null;measureCell(cell,canvas)};
-  canvas.addEventListener('pointerup',end);
-  canvas.addEventListener('pointercancel',end);
-  canvas.addEventListener('keydown',e=>{
-   if(e.key==='Enter'||e.key===' '){e.preventDefault();uncover(cell,canvas)}
-  });
+  const cell=el('div','scratch-field');
+  const face=el('span','scratch-cell-symbol',symbol);
+  face.setAttribute('aria-hidden','true');
+  cell.append(face);
   return cell;
  }
+ function attachUnifiedCover(){
+  const cells=Array.from(board.querySelectorAll('.scratch-field'));
+  if(!cells.length)return;
+  const boardRect=board.getBoundingClientRect();
+  if(boardRect.width<1||boardRect.height<1)throw Error('SCRATCH_BOARD_LAYOUT_INVALID');
+  const canvas=el('canvas','scratch-unified-cover');
+  canvas.setAttribute('aria-label','Gesamtes Rubbellos mit Finger oder Maus ohne Absetzen freirubbeln');
+  canvas.setAttribute('role','button');
+  canvas.setAttribute('tabindex','0');
+  canvas.setAttribute('title','Beginne irgendwo und wische über das komplette Spielfeld. Ab 90 Prozent wird es automatisch geöffnet.');
+  canvas.width=Math.round(boardRect.width);
+  canvas.height=Math.round(boardRect.height);
+  board.append(canvas);
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  ctx.globalCompositeOperation='source-over';
+  for(const cell of cells){
+   const r=cell.getBoundingClientRect();
+   const inset=2;
+   const x=r.left-boardRect.left+inset,y=r.top-boardRect.top+inset;
+   const w=Math.max(1,r.width-inset*2),h=Math.max(1,r.height-inset*2);
+   ctx.save();
+   ctx.beginPath();
+   if(typeof ctx.roundRect==='function')ctx.roundRect(x,y,w,h,Math.min(w,h)*.09);
+   else ctx.rect(x,y,w,h);
+   ctx.clip();
+   const g=ctx.createLinearGradient(x,y,x+w,y+h);
+   g.addColorStop(0,'#8095a2');g.addColorStop(.45,'#ebf1f0');g.addColorStop(1,'#8b9faa');
+   ctx.fillStyle=g;ctx.fillRect(x,y,w,h);
+   ctx.strokeStyle='#c2d6d8';ctx.lineWidth=1;
+   for(let d=-h;d<w+h;d+=12){
+    ctx.beginPath();ctx.moveTo(x+d,y);ctx.lineTo(x+d+h,y+h);ctx.stroke();
+   }
+   ctx.fillStyle='#496171';
+   ctx.font='700 '+Math.max(9,Math.min(15,h*.20))+'px system-ui';
+   ctx.textAlign='center';
+   ctx.fillText('❄',x+w/2,y+h/2+4);
+   ctx.restore();
+  }
+  unifiedCover=canvas;
+  initialOpaque=opaqueSamples(canvas);
+  moveNumber=0;
+  setScratchProgress(0);
+  ctx.globalCompositeOperation='destination-out';
+  let activePointer=null,last=null;
+  const point=e=>{
+   const r=canvas.getBoundingClientRect();
+   return {x:(e.clientX-r.left)*canvas.width/r.width,
+           y:(e.clientY-r.top)*canvas.height/r.height};
+  };
+  const stroke=e=>{
+   if(activePointer!==e.pointerId||finished||unifiedCover!==canvas)return;
+   e.preventDefault();
+   const p=point(e);
+   const brush=Math.max(20,Math.min(55,Math.min(boardRect.width/parseInt(board.style.getPropertyValue('--scratch-cols')||'3',10),boardRect.height/Math.ceil(cells.length/parseInt(board.style.getPropertyValue('--scratch-cols')||'3',10)))*.55));
+   ctx.lineWidth=brush;ctx.lineCap='round';ctx.lineJoin='round';
+   if(last){ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke()}
+   else{ctx.beginPath();ctx.arc(p.x,p.y,brush/2,0,Math.PI*2);ctx.fill()}
+   last=p;
+   if(++moveNumber%4===0)measureScratchCover(canvas);
+  };
+  canvas.addEventListener('pointerdown',e=>{
+   if(finished||activePointer!==null)return;
+   activePointer=e.pointerId;last=null;
+   canvas.setPointerCapture?.(e.pointerId);
+   stroke(e);
+  });
+  canvas.addEventListener('pointermove',stroke);
+  const stop=e=>{
+   if(e.pointerId!==activePointer)return;
+   activePointer=null;last=null;
+   measureScratchCover(canvas);
+  };
+  canvas.addEventListener('pointerup',stop);
+  canvas.addEventListener('pointercancel',stop);
+  // Keyboard-only access stays possible without restoring per-cell clicks.
+  canvas.addEventListener('keydown',e=>{
+   if(e.key==='Enter'||e.key===' '){e.preventDefault();finish()}
+  });
+ }
  function showTicket(result){
-  ticket=result;finished=false;covered=0;erasedByCanvas.clear();
+  ticket=result;finished=false;unifiedCover=null;initialOpaque=0;
   stage.hidden=false;reveal.classList.remove('revealed');results.hidden=true;
   $('scratch-ticket-finish').hidden=true;$('scratch-reveal-button').hidden=true;
   const conf=VARIANTS[result.board?.variantId],cells=result.board?.cells;
@@ -183,7 +210,7 @@ export function initChristmasScratch(){
   if(conf&&Array.isArray(cells)&&cells.length===conf[2]*conf[3]){
    board.style.setProperty('--scratch-cols',conf[3]);
    for(const symbol of cells)board.append(makeField(symbol));
-   updateScratchProgress();
+   attachUnifiedCover();
   }else{
    // Never construct an invented matching combination for a legacy receipt.
    board.textContent='Älteres Rubbellos ohne gespeichertes Symbolfeld';
@@ -196,12 +223,11 @@ export function initChristmasScratch(){
  function finish(){
   if(!ticket||finished)return;
   finished=true;
-  for(const cell of board.children){
-   cell.classList.add('uncovered');
-   const cover=cell.querySelector('canvas');if(cover)cover.hidden=true;
-  }
+  if(unifiedCover)unifiedCover.hidden=true;
+  for(const cell of board.querySelectorAll('.scratch-field'))cell.classList.add('uncovered');
   const wins=ticket.board?.wins||[];
-  for(const w of wins)for(const i of w.indices||[])board.children[i]?.classList.add('scratch-winning-cell');
+  const visibleCells=board.querySelectorAll('.scratch-field');
+  for(const w of wins)for(const i of w.indices||[])visibleCells[i]?.classList.add('scratch-winning-cell');
   reveal.classList.add('revealed');
   $('scratch-progress').textContent='100 % aufgedeckt ✓';
   const meter=$('scratch-progress-meter');if(meter){meter.value=100;meter.setAttribute('aria-valuenow','100')}
@@ -234,7 +260,7 @@ export function initChristmasScratch(){
     showTicket(status.lastResult);
    drawShop();
    notice(ticket?'❄️ Dein letztes Los wurde wiederhergestellt.':
-    '🎄 Rubble die Felder mit Finger oder Maus. Bei 90 % wird das Ergebnis automatisch enthüllt.');
+    '🎄 Wische ohne Absetzen über das gesamte Spielfeld. Bei 90 % wird automatisch aufgedeckt.');
   }catch(e){if(id!==requestId)return;status=null;drawShop();notice('⚠️ '+(e.message||'Verbindung nicht verfügbar'))}
  }
  async function buy(tier,free){
@@ -247,7 +273,7 @@ export function initChristmasScratch(){
    const r=await query('/buy',pending);
    if(!r.result||!r.scratch)throw Error('INVALID_SCRATCH_RESULT');
    status=r.scratch;pending=null;showTicket(r.result);
-   notice('❄️ Rubble mit Finger oder Maus über jedes Feld. Ab 90 % öffnet sich das Los automatisch.');
+   notice('❄️ Beginne irgendwo und rubbele in einer Bewegung über alle Felder. Bei 90 % öffnet das Los automatisch.');
   }catch(e){
    notice('⚠️ '+(e.message==='SCRATCH_NOT_ENOUGH_COINS'?'Nicht genügend Münzen.':
     e.message==='SCRATCH_DAILY_ALREADY_USED'?'Gratis-Los heute bereits eingelöst.':e.message));
