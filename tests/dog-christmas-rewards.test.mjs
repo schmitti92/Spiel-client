@@ -45,6 +45,7 @@ test('the existing player choices remain locked down',()=>{
  assert.match(lobby,/button\.disabled=!allowed/,'Christmas emojis stay disabled');
  const collection=source('../DOG/collection.js');
  assert.match(collection,/isChristmasRewardLocked\(item\)/,'collection has a second lock guard');
- assert.match(collection,/btn\.disabled=locked/);
- assert.match(collection,/if\(item\.status!=='available'\|\|isChristmasRewardLocked\(item\)\)return/);
+ assert.match(collection,/btn\.disabled=!canEquip\(item\)/);
+ assert.match(collection,/if\(!canEquip\(item\)\)return/);
+ assert.match(collection,/isVerifiedCosmeticUnlocked\(item\.unlockId\)/);
 });
