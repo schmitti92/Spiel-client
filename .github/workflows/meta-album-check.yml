@@ -1,0 +1,33 @@
+name: Meta-Sammelalbum – Christmas picture integrity
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'meta-album-*'
+      - 'meta-sammelalbum.*'
+      - 'hub-lobby.html'
+      - 'spielauswahl-lokal.html'
+      - 'index.html'
+      - 'tests/meta-album.test.mjs'
+      - '.github/workflows/meta-album-check.yml'
+  pull_request:
+    paths:
+      - 'meta-album-*'
+      - 'meta-sammelalbum.*'
+      - 'hub-lobby.html'
+      - 'spielauswahl-lokal.html'
+      - 'index.html'
+      - 'tests/meta-album.test.mjs'
+      - '.github/workflows/meta-album-check.yml'
+  workflow_dispatch:
+jobs:
+  album:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check meta-album-catalog.js
+      - run: node --check meta-sammelalbum.js
+      - run: node --test tests/meta-album.test.mjs
