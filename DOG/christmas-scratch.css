@@ -280,7 +280,7 @@
 }
 
 
-/* Premium card 03 — Magischer Wichtelpfad. The artwork includes exactly
+/* Medium card 03 — Magischer Wichtelpfad. The artwork includes exactly
    twenty unprinted, framed tiles. Symbols and payouts remain server-driven. */
 .scratch-stage[data-variant="elf"]{
  border:3px solid #b7e5a0;
@@ -302,7 +302,7 @@
 .scratch-stage[data-variant="elf"] .scratch-card-art{
  display:block;position:relative;isolation:isolate;overflow:hidden;
  width:100%;aspect-ratio:1086/1448;border-radius:12px;
- background-image:url("./assets/scratch/wichtelpfad-premium-01.svg"),
+ background-image:url("./assets/scratch/wichtelpfad-mittel-01.svg"),
   radial-gradient(ellipse at 50% 40%,#31866b,#0a322e 65%,#071b28);
  background-position:center;background-repeat:no-repeat;background-size:100% 100%,cover;
 }
