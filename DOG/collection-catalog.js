@@ -13,7 +13,8 @@ import {isChristmasRewardLocked} from './christmas-reward-locks.js?v=2';
 const avail=(id,name,extra={})=>({id,name,status:'available',...extra});
 const BASE_COLLECTION_CATEGORIES=[
  {id:'backgrounds',icon:'🏞️',title:'Hintergründe',subtitle:'Landschaften für die gesamte DOG-Seite',items:[
-  ...Object.entries(SCENE_STYLES).map(([id,t])=>avail(id,t.label,{kind:'appearance',field:'scene',image:t.image||null,description:t.description||'Seitenhintergrund für DOG',icon:id==='none'?'🌑':'🏰',artTone:'azure'})),
+  ...Object.entries(SCENE_STYLES).map(([id,t])=>avail(id,t.label,{kind:'appearance',field:'scene',image:t.image||null,description:t.description||'Seitenhintergrund für DOG',icon:id==='none'?'🌑':'🏰',artTone:'azure',
+    unlockId:t.unlockId||null,status:t.unlockId?'planned':'available'})),
  ]},
  {id:'boards',icon:'🎲',title:'Spielbretter',subtitle:'Vorhandene DOG-Spielbrettdesigns',items:[
   ...Object.entries(BOARD_STYLES).filter(([id])=>id!=='royalMarmor').map(([id,t])=>avail(id,t.label,{kind:'appearance',field:'board',image:t.image||null,fallbackImage:t.fallbackImage||null,background:t.page||'',unlockId:t.unlockId||null,status:isBoardUnlocked(id)?'available':'planned',description:isBoardUnlocked(id)?'Brettmotiv. Die offiziellen DOG-Felder bleiben unverändert.':'🔒 Exklusives Weihnachts-Spielbrett. Wird später durch das Weihnachtsevent freigeschaltet.',icon:'🐾',artTone:'wood'})),
@@ -37,10 +38,15 @@ const BASE_COLLECTION_CATEGORIES=[
    ...entry,kind:'activeIcon',status:'planned',artTone:'gold'
   }))
  ]},
- {id:'emojis',icon:'😄',title:'Emojis',subtitle:'3 verfügbar · 10 Weihnachts-Emojis noch gesperrt · fünf Schnellplätze',items:[
+ {id:'emojis',icon:'😄',title:'Emojis',subtitle:'3 Starter · 47 klassische Emojis und 10 Weihnachts-Emojis zum Freischalten',items:[
   ...DOG_EMOJIS.filter(item=>DOG_EMOJI_STARTERS.includes(item.id)).map(item=>({
    id:item.id,name:item.name,icon:item.emoji,kind:'emoji',status:'available',
    description:'Starter-Emoji: in deinen fünf Schnellplätzen verwendbar.',artTone:'azure'
+  })),
+  ...DOG_EMOJIS.filter(item=>!DOG_EMOJI_STARTERS.includes(item.id)&&!item.unlockId).map(item=>({
+   id:item.id,name:item.name,icon:item.emoji,kind:'emoji',status:'planned',
+   unlockId:'christmas2026:standard-emoji:'+item.id,
+   description:'Klassisches DOG-Emoji, das beim einfachen Rubbellos gewonnen werden kann.',artTone:'azure'
   })),
   ...DOG_CHRISTMAS_EMOJIS.map(item=>({
    id:item.id,name:item.name,icon:item.emoji,kind:'emoji',status:'planned',unlockId:item.unlockId,
@@ -57,7 +63,8 @@ const BASE_COLLECTION_CATEGORIES=[
   }))
  ]},
  {id:'hud',icon:'🎨',title:'Bedienoberfläche',subtitle:'Farbtöne und Anordnung der rechten Spielblöcke',items:[
-  ...Object.entries(HUD_TONES).map(([id,t])=>avail('tone-'+id,t.label,{kind:'appearance',field:'hudTone',value:id,icon:'▤',hudTheme:t,description:'Originalfarben der DOG-Bedienoberfläche mit echten Flächen, Rahmen und Akzenten.',artTone:'azure'})),
+  ...Object.entries(HUD_TONES).map(([id,t])=>avail('tone-'+id,t.label,{kind:'appearance',field:'hudTone',value:id,icon:'▤',hudTheme:t,description:'Farben der rechten DOG-Spielblöcke. Außer dem Standard können diese Farben beim einfachen Rubbellos freigeschaltet werden.',artTone:'azure',
+    status:id==='classic'?'available':'planned',unlockId:id==='classic'?null:'christmas2026:hud-tone:'+id})),
   ...Object.entries(HUD_LAYOUTS).map(([id,t])=>avail('layout-'+id,t.label+' · Anordnung',{kind:'appearance',field:'hudLayout',value:id,icon:'☷',description:t.description,artTone:'azure'})),
  ]}
 ];
