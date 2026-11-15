@@ -122,3 +122,64 @@
  border:3px solid #ffda55;background:#fff4b3;
  box-shadow:0 0 0 2px #ffdb7180,0 0 20px #ffd452b2;
 }
+
+/* Card art wrapper: ordinary game modes remain in the existing flexible layout.
+   The first bespoke card uses the 1086×1448 uploaded illustration as a complete
+   playing surface. Only symbols, silver overlays and prizes are dynamic. */
+.scratch-card-art{display:contents}
+.scratch-stage[data-variant="gifts"] .scratch-play{
+ display:flex;flex-direction:column;align-items:stretch;padding:0;gap:7px;
+ min-height:0;background:#671c24;border:0;overflow:visible;
+ box-shadow:0 10px 25px #0006;
+}
+.scratch-stage[data-variant="gifts"] .scratch-card-art{
+ display:block;position:relative;isolation:isolate;overflow:hidden;
+ width:100%;max-width:100%;aspect-ratio:1086/1448;
+ background-image:url("./assets/scratch/geschenkelinie-01.webp"),
+   radial-gradient(ellipse at 50% 45%,#f9e1ac 20%,#bd793b 72%,#701927 90%);
+ background-repeat:no-repeat;background-size:100% 100%,cover;
+ background-position:center;border-radius:11px;
+}
+.scratch-stage[data-variant="gifts"] > h3,
+.scratch-stage[data-variant="gifts"] > .scratch-variant-rule{
+ position:absolute!important;width:1px!important;height:1px!important;
+ overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap;
+}
+.scratch-stage[data-variant="gifts"] .scratch-board{
+ position:absolute;left:16%;top:30.85%;width:65.4%;height:41.85%;
+ max-width:none;margin:0;padding:0;grid-template-columns:repeat(3,minmax(0,1fr));
+ grid-template-rows:repeat(3,minmax(0,1fr));column-gap:2.8%;row-gap:3.1%;
+}
+.scratch-stage[data-variant="gifts"] .scratch-field{
+ aspect-ratio:auto;min-width:0;min-height:0;height:100%;width:100%;
+ border:0;border-radius:17%;background:transparent;box-shadow:none;
+}
+.scratch-stage[data-variant="gifts"] .scratch-field-cover{
+ position:absolute;inset:0;height:100%;width:100%;border-radius:17%;
+}
+.scratch-stage[data-variant="gifts"] .scratch-cell-symbol{
+ font-size:clamp(20px,5.2vw,48px);text-shadow:0 2px 2px #fff7d6;
+}
+.scratch-stage[data-variant="gifts"] .scratch-field.scratch-winning-cell{
+ border:0;background:transparent;outline:3px solid #ffed83;outline-offset:-3px;
+ box-shadow:inset 0 0 18px #ffe24cb0,0 0 18px #ffe376ad;
+}
+.scratch-stage[data-variant="gifts"] .scratch-hidden-prize{
+ display:flex;flex-direction:column;justify-content:center;align-items:center;
+ position:absolute;left:20%;top:81%;width:60%;height:11.2%;
+ padding:1%;margin:0;border:0;box-shadow:none;background:transparent;
+ color:#5d281c;font-size:clamp(10px,1.8vw,18px);line-height:1.25;
+ text-shadow:0 1px 2px #ffecac;overflow-y:auto;
+}
+.scratch-stage[data-variant="gifts"] .scratch-hidden-prize strong{
+ font-size:clamp(11px,1.8vw,22px);line-height:1.25;
+}
+.scratch-stage[data-variant="gifts"] .scratch-hidden-prize small{color:#7e2619}
+.scratch-stage[data-variant="gifts"] .scratch-winning-lines{padding:10px}
+@media(max-width:480px){
+ .scratch-stage[data-variant="gifts"]{padding:6px}
+ .scratch-stage[data-variant="gifts"] .scratch-board{column-gap:2.8%;row-gap:3.1%}
+ .scratch-stage[data-variant="gifts"] .scratch-cell-symbol{font-size:clamp(17px,6vw,28px)}
+ .scratch-stage[data-variant="gifts"] .scratch-hidden-prize{font-size:10px;left:18%;width:64%}
+ .scratch-stage[data-variant="gifts"] .scratch-hidden-prize strong{font-size:11px}
+}
