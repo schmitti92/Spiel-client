@@ -4,50 +4,34 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#071a30">
-<meta name="description" content="Meta-Sammelalbum der Spielesammlung: besondere Bilder aus Weihnachtsevent 1 entdecken und später im Event freischalten.">
+<meta name="description" content="Meta-Sammelalbum: ein blätterbares Weihnachtsbuch mit neun später freischaltbaren Erinnerungsbildern.">
 <title>Meta-Sammelalbum · Spielesammlung</title>
-<link rel="stylesheet" href="meta-sammelalbum.css?v=5">
-<script type="module" src="meta-sammelalbum.js?v=5"></script>
+<link rel="stylesheet" href="meta-sammelalbum.css?v=6">
+<script type="module" src="meta-sammelalbum.js?v=6"></script>
 </head>
 <body>
 <div class="meta-album-page">
  <header class="meta-album-header">
-  <a id="meta-back-top" class="meta-album-back" href="hub-lobby.html">← Zurück zur Spiellobby</a>
-  <div class="meta-album-heading">
-   <h1>📖 Meta-Sammelalbum</h1>
+  <a id="meta-back-top" class="meta-album-back" href="hub-lobby.html">← Spiellobby</a>
+  <div class="meta-theme-picker">
+   <button id="meta-theme-toggle" class="meta-theme-toggle" type="button"
+     aria-controls="meta-theme-list" aria-expanded="false">🎄 Weihnachtsevent 1 <span aria-hidden="true">▾</span></button>
+   <nav id="meta-theme-list" class="meta-theme-list" aria-label="Sammelalbum-Themen" hidden></nav>
   </div>
-  <div class="meta-album-overview" aria-label="Sammlungsfortschritt">
-   <span>Gesammelte Bilder</span>
-   <strong id="meta-overall-count">0 / 9</strong>
-   <small>🎁 Eventfreischaltung in Vorbereitung</small>
+  <div class="meta-album-overview" aria-label="Gesammelte Bilder">
+   <span class="meta-visually-hidden">Gesammelt:</span><strong id="meta-overall-count">0 / 9</strong>
   </div>
  </header>
  <main class="meta-album-layout">
-  <aside class="meta-album-themes" aria-label="Sammelalbum Themen">
-   <div class="meta-album-panel-head"><span>📚</span><h2>Themen</h2></div>
-   <nav id="meta-theme-list" aria-label="Themenübersicht"></nav>
-  </aside>
   <section class="meta-album-gallery-panel" aria-labelledby="meta-theme-title">
-   <header class="meta-gallery-header">
-    <div>
-     <h2 id="meta-theme-title">🎄 Weihnachtsevent 1</h2>
-     <p id="meta-theme-description" class="meta-visually-hidden">Neun Bilder für das Weihnachtsevent.</p>
-    </div>
-    <span id="meta-theme-progress" class="meta-progress-chip">0 / 9 gesammelt</span>
-   </header>
+   <h1 id="meta-theme-title" class="meta-visually-hidden">🎄 Weihnachtsevent 1</h1>
+   <p id="meta-theme-description" class="meta-visually-hidden">Neun Weihnachtsbilder sammeln.</p>
+   <span id="meta-theme-progress" class="meta-visually-hidden">0 / 9 gesammelt</span>
    <div class="meta-album-gallery-scroll">
-    <div id="meta-book" class="meta-book" aria-label="Blätterbares Sammelbuch">
-     <div class="meta-book-spine" aria-hidden="true"></div>
+    <div id="meta-book" class="meta-book" aria-label="Blätterbares Weihnachts-Sammelbuch">
      <div id="meta-book-sheet" class="meta-book-sheet">
-      <div class="meta-book-page-head" aria-hidden="true">
-       <span>✦ MAGISCHE WEIHNACHTSERINNERUNGEN ✦</span>
-       <span class="meta-book-ornament">❄</span>
-      </div>
-      <div id="meta-picture-grid" class="meta-picture-grid" role="group" aria-label="Sechs Sammelbildplätze auf dieser Buchseite"></div>
-      <div class="meta-book-page-foot" aria-hidden="true">
-       <span>✧ Ein Bild nach dem anderen ✧</span>
-       <span id="meta-book-page-mark">SEITE 1</span>
-      </div>
+      <div id="meta-picture-grid" class="meta-picture-grid" role="group"
+        aria-label="Sechs Bildplätze auf dieser Buchseite"></div>
      </div>
     </div>
     <nav class="meta-book-controls" aria-label="Buchseiten durchblättern">
@@ -57,15 +41,13 @@
     </nav>
    </div>
   </section>
-  <aside class="meta-album-detail" aria-label="Ausgewähltes Sammelbild">
-   <div id="meta-picture-detail" class="meta-picture-detail" aria-live="polite">
-    <p>Wähle eines der neun Sammelbilder aus.</p>
-   </div>
-  </aside>
  </main>
- <footer class="meta-album-footer">
-  <a id="meta-back-bottom" href="hub-lobby.html">← Zurück zur Spiellobby</a>
- </footer>
+ <dialog id="meta-picture-dialog" class="meta-picture-dialog" aria-labelledby="meta-dialog-title">
+  <button id="meta-dialog-close" class="meta-dialog-close" type="button" aria-label="Vorschau schließen">✕</button>
+  <div id="meta-picture-detail" class="meta-picture-detail">
+   <p>Wähle ein Bild im Buch aus.</p>
+  </div>
+ </dialog>
 </div>
 </body>
 </html>
