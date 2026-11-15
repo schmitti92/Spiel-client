@@ -171,6 +171,31 @@ function showStageImage(id,level){
   fallback.classList.add('photo-ready');
  });
 }
+/* Fit the visible alpha of the real image, not its transparent PNG padding. */
+const buildingImageLayouts=new Map();
+function positionBuildingCardPhoto(img,loaded){
+ if(!img||!img.isConnected||!loaded?.ok)return;
+ const frame=img.closest('.building-card-art');
+ if(!frame)return;
+ const frameW=frame.clientWidth,frameH=frame.clientHeight;
+ if(frameW<30||frameH<30)return;
+ const b=loaded.bounds||{x0:0,y0:0,x1:loaded.width,y1:loaded.height};
+ const visibleW=Math.max(1,b.x1-b.x0),visibleH=Math.max(1,b.y1-b.y0);
+ const scale=Math.min(frameW*.88/visibleW,frameH*.83/visibleH);
+ const x=(frameW-(b.x0+b.x1)*scale)/2;
+ const y=frameH-18-b.y1*scale;
+ img.style.width=(loaded.width*scale).toFixed(1)+'px';
+ img.style.height=(loaded.height*scale).toFixed(1)+'px';
+ img.style.left=x.toFixed(1)+'px';
+ img.style.top=y.toFixed(1)+'px';
+ frame.dataset.photoState='ready';
+}
+function refreshBuildingPhotoLayouts(){
+ for(const [id,loaded] of buildingImageLayouts){
+  const img=$('building-card-photo-'+id);
+  if(img?.dataset.requested===assetPath(id,preview[id]))positionBuildingCardPhoto(img,loaded);
+ }
+}
 function updateCardImage(id,level){
  const img=$(id==='tree'?'tree-card-photo':'building-card-photo-'+id);
  if(!img)return;
@@ -180,6 +205,25 @@ function updateCardImage(id,level){
   img.src=path;
  }
  img.alt=(id==='tree'?'Weihnachtsbaum':definitions.find(def=>def.id===id)?.title||id)+' – Stufe '+level;
+ if(id==='tree')return;
+ if(img.dataset.requested===path){
+  const loaded=buildingImageLayouts.get(id);
+  if(loaded)positionBuildingCardPhoto(img,loaded);
+  return;
+ }
+ img.dataset.requested=path;
+ const frame=img.closest('.building-card-art');
+ if(frame)frame.dataset.photoState='loading';
+ waitForImage(path).then(loaded=>{
+  if(img.dataset.requested!==path)return;
+  if(!loaded.ok){
+   if(frame)frame.dataset.photoState='error';
+   buildingImageLayouts.delete(id);
+   return;
+  }
+  buildingImageLayouts.set(id,loaded);
+  positionBuildingCardPhoto(img,loaded);
+ });
 }
 const preview={tower:1,workshop:1,bakery:1,inn:1};
 let villageLive=null,villageHost=false,villageEventActive=false,villageCanUpgrade=true,villageBusy=false;
@@ -206,7 +250,7 @@ function treeLevel(){
 function buildingCard(entry){
  const root=document.createElement('article');root.className='building-card';
  root.innerHTML='<div class="building-card-head"><span class="building-card-icon" aria-hidden="true">'+entry.icon+'</span><div><h3>'+entry.title+'</h3><p>'+entry.summary+'</p></div></div>'
-   +'<div class="building-card-art" aria-label="Gebäudeansicht der gewählten Stufe"><img id="building-card-photo-'+entry.id+'" src="'+assetPath(entry.id,1)+'" alt="'+entry.title+' – Stufe 1" loading="lazy" decoding="async"></div>'
+   +'<div class="building-card-art" data-photo-state="loading" aria-label="Gebäudeansicht der gewählten Stufe"><span class="building-art-glow" aria-hidden="true"></span><img id="building-card-photo-'+entry.id+'" src="'+assetPath(entry.id,1)+'" alt="'+entry.title+' – Stufe 1" loading="lazy" decoding="async"><span class="building-art-plaque" data-building-art-level>STUFE 1 / 5</span><span class="building-art-error">Bild nicht verfügbar</span></div>'
    +'<div class="building-card-info"><strong data-building-effect></strong><span data-building-visual></span></div>'
    +'<div class="level-row"><label for="preview-'+entry.id+'">Entwicklungsstufe</label><output for="preview-'+entry.id+'" data-building-value></output></div>'
    +'<input id="preview-'+entry.id+'" type="range" min="1" max="5" step="1" value="1" aria-label="Vorschau der Entwicklungsstufe für '+entry.title+'">'
@@ -220,6 +264,10 @@ function buildingCard(entry){
 }
 const grid=$('building-grid');
 for(const item of definitions)grid.append(buildingCard(item));
+if(typeof ResizeObserver==='function'){
+ new ResizeObserver(()=>refreshBuildingPhotoLayouts()).observe(grid);
+}
+window.addEventListener('resize',refreshBuildingPhotoLayouts,{passive:true});
 // Display the same cost formula used by the future backend, never a fake balance.
 const priceOverview=$('building-price-overview');
 if(priceOverview){
@@ -306,12 +354,13 @@ function refreshPreview(){
   card.querySelector('[data-building-effect]').textContent=d.effects[level-1]+(villageLive?' · Tatsächlicher Bonus':' · Vorschau');
   card.querySelector('[data-building-visual]').textContent=d.visuals[level-1];
   card.querySelector('[data-building-value]').textContent='Stufe '+level+' / '+CHRISTMAS_BUILDING_MAX_LEVEL;
+  card.querySelector('[data-building-art-level]').textContent='STUFE '+level+' / '+CHRISTMAS_BUILDING_MAX_LEVEL;
   $('preview-'+d.id).disabled=Boolean(villageLive);
   const purchase=card.querySelector('[data-upgrade-building]');
   if(purchase){const upgradeCost=christmasUpgradeCost(level),affordable=villageLive?.lightsTenths>=upgradeCost*10;
-   purchase.hidden=!villageLive;
+   purchase.hidden=false;
    purchase.disabled=!villageLive||!villageHost||!villageCanUpgrade||villageBusy||upgradeCost===null||!affordable;
-   purchase.textContent=upgradeCost===null?'✓ Höchststufe erreicht':!villageHost?'🔒 Nur der Host kann ausbauen':!villageCanUpgrade?'⏳ Partie läuft – Ausbau danach':affordable?'⭐ Für '+upgradeCost+' Lichter ausbauen':'⭐ Noch '+(upgradeCost-Math.floor((villageLive?.lightsTenths||0)/10))+' Lichter nötig';
+   purchase.textContent=!villageLive?'🔒 Im DOG-Onlineraum ausbauen':upgradeCost===null?'✓ Höchststufe erreicht':!villageHost?'🔒 Ausbau durch den Host':!villageCanUpgrade?'⏳ Ausbau nach der laufenden Partie':affordable?'⭐ Jetzt für '+upgradeCost+' Lichter ausbauen':'⭐ Es fehlen '+Math.ceil((upgradeCost*10-(villageLive?.lightsTenths||0))/10)+' Lichter';
   }
   const nextCost=christmasUpgradeCost(level);
   card.querySelector('[data-building-upgrade-price]').textContent=nextCost===null
