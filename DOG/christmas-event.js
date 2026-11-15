@@ -652,7 +652,7 @@ async function purchaseBuilding(id){
  villageBusy=true;refreshPreview();
  try{
   const result=await villageRequest('village/upgrade','POST',{
-   building:id,expectedLevel:level,commandId:'dog-village-'+crypto.randomUUID()
+   building:id,expectedLevel:level,roomCode:villageRoomValid?villageCode:null,commandId:'dog-village-'+crypto.randomUUID()
   });
   showLiveVillage({village:result.village,shared:true,enabled:villageEventActive,canUpgrade:villageCanUpgrade});
   $('building-event-mode').textContent='✅ '+definitions.find(entry=>entry.id===id).title+' wurde auf Stufe '+(level+1)+' ausgebaut. '+cost+' Lichter abgebucht.';
