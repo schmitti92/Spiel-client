@@ -2,7 +2,7 @@
  * Registry entries are available cosmetic choices, NOT proof of event ownership.
  * Only available, already implemented items appear in the shipped collection.
  */
-import {BOARD_STYLES,SCENE_STYLES,PIECE_STYLES,CARD_STYLES,HUD_TONES,HUD_LAYOUTS} from './appearance-registry.js?v=18';
+import {BOARD_STYLES,isBoardUnlocked,SCENE_STYLES,PIECE_STYLES,CARD_STYLES,HUD_TONES,HUD_LAYOUTS} from './appearance-registry.js?v=22';
 import {DOG_EMOJIS,DOG_EMOJI_STARTERS} from './dog-emojis.js?v=1';
 import {buildDogCollection} from './collection-extensions.js?v=1';
 const avail=(id,name,extra={})=>({id,name,status:'available',...extra});
@@ -11,7 +11,7 @@ const BASE_COLLECTION_CATEGORIES=[
   ...Object.entries(SCENE_STYLES).map(([id,t])=>avail(id,t.label,{kind:'appearance',field:'scene',image:t.image||null,description:t.description||'Seitenhintergrund für DOG',icon:id==='none'?'🌑':'🏰',artTone:'azure'})),
  ]},
  {id:'boards',icon:'🎲',title:'Spielbretter',subtitle:'Vorhandene DOG-Spielbrettdesigns',items:[
-  ...Object.entries(BOARD_STYLES).filter(([id])=>id!=='royalMarmor').map(([id,t])=>avail(id,t.label,{kind:'appearance',field:'board',image:t.image||null,fallbackImage:t.fallbackImage||null,background:t.page||'',description:'Brettmotiv. Die offiziellen DOG-Felder bleiben unverändert.',icon:'🐾',artTone:'wood'})),
+  ...Object.entries(BOARD_STYLES).filter(([id])=>id!=='royalMarmor').map(([id,t])=>avail(id,t.label,{kind:'appearance',field:'board',image:t.image||null,fallbackImage:t.fallbackImage||null,background:t.page||'',status:isBoardUnlocked(id)?'available':'planned',description:isBoardUnlocked(id)?'Brettmotiv. Die offiziellen DOG-Felder bleiben unverändert.':'🔒 Exklusives Weihnachts-Spielbrett. Wird später durch das Weihnachtsevent freigeschaltet.',icon:'🐾',artTone:'wood'})),
  ]},
  {id:'pieces',icon:'♟️',title:'Spielfiguren',subtitle:'Vorhandene Spielfiguren-Farbsätze',items:[
   ...Object.entries(PIECE_STYLES).map(([id,t])=>avail(id,t.label,{kind:'appearance',field:'pieces',palette:t.colors,description:'Aktueller Farbstil für die Spielfiguren; noch keine neue Figurenform.',icon:'♟️',artTone:'azure'})),
