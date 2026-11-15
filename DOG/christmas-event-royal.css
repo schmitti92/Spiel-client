@@ -196,3 +196,24 @@ body{background:#071d1a;background-image:radial-gradient(ellipse 65% 35% at 52% 
 @media(prefers-reduced-motion:reduce){
  #village-background-image{transition:none!important}
 }
+
+
+/* Uploaded Christmas page wallpapers: collection previews, NOT selectable yet. */
+.christmas-wallpaper-rewards{margin:20px 0 16px;border:1px solid #c6a262;border-radius:17px;background:linear-gradient(135deg,#133c32,#061f24);overflow:hidden;box-shadow:0 9px 23px #0005}
+.christmas-wallpaper-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:18px 19px 13px}
+.christmas-wallpaper-heading h3{font:900 clamp(18px,2vw,25px) Georgia,serif;color:#ffe1a0;margin:7px 0 6px}
+.christmas-wallpaper-heading p{font-size:12px;color:#cdd9d7;line-height:1.6;margin:0;max-width:720px}
+.christmas-wallpaper-heading .chapter-soon{font-size:11px;background:#263f37;border:1px solid #cdb273;border-radius:30px;padding:7px 11px;color:#f8d7a0;white-space:nowrap}
+.christmas-wallpaper-grid{padding:0 15px 15px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.christmas-wallpaper-card{min-width:0;overflow:hidden;border:1px solid #978d6d;border-radius:12px;background:linear-gradient(145deg,#193c3b,#10272b);padding:6px;display:flex;flex-direction:column;gap:5px}
+.christmas-wallpaper-card strong{font:800 12px/1.3 Georgia,serif;color:#ffe8b7;margin:4px 5px 0}
+.christmas-wallpaper-card small{font-size:10px;color:#c2bcae;margin:0 5px 5px}
+.christmas-wallpaper-preview{position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:8px;background:#15283c;isolation:isolate}
+.christmas-wallpaper-preview img{display:block;width:100%;height:100%;object-fit:cover;filter:grayscale(.87) brightness(.55);opacity:.93}
+.christmas-wallpaper-preview::after{content:"";position:absolute;inset:0;background:#06172145;pointer-events:none}
+.christmas-wallpaper-lock{position:absolute;z-index:2;bottom:6px;right:6px;padding:4px 6px;border:1px solid #d3bc8570;background:#091e23d9;border-radius:7px;color:#fff3d6;font-size:10px;font-weight:800}
+.christmas-wallpaper-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 18px;background:#071e22;border-top:1px solid #e0bb7e47}
+.christmas-wallpaper-footer>span{font-size:11px;color:#d9d4c4;line-height:1.5;flex:1}
+.christmas-wallpaper-footer a{font-size:11px}
+@media(max-width:1050px){.christmas-wallpaper-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){.christmas-wallpaper-heading{padding:13px}.christmas-wallpaper-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:0 9px 10px;gap:8px}.christmas-wallpaper-card strong{font-size:11px}.christmas-wallpaper-footer{padding:12px}.christmas-wallpaper-footer a{width:100%}}
