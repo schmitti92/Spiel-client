@@ -1,15 +1,19 @@
 /**
- * Lichtertal Christmas tree personal prize board.
- * The server owns every level, eligible action, random outcome and receipt.
- * We request status only upon opening the tree area or after an upgrade;
- * no Firebase polling, localStorage grants or client random numbers.
+ * Lichtertal Christmas tree: ten predetermined prizes, visible before earning.
+ * The server decides whether the stage is reached and writes the one-time
+ * receipt; this module only displays and requests the predefined prize.
  */
 export const TREE_PRIZE_PREVIEW=Object.freeze([
- {level:1,icon:'🏞️',title:'Vollbild-Hintergrund'},
- {level:2,icon:'👤',title:'Weihnachtsprofilbild'},
- {level:3,icon:'🃏',title:'Kartendesign'},
- {level:4,icon:'🎲',title:'Weihnachts-Spielbrett'},
- ...Array.from({length:6},(_,i)=>({level:i+5,icon:'🎁',title:'Zufällige Überraschung'}))
+ Object.freeze({"level":1,"icon":"🏞️","title":"Märchenhafter Weihnachtswald","unlockId":"christmas2026:scene:01"}),
+ Object.freeze({"level":2,"icon":"🎅","title":"Weihnachtsmann","unlockId":"christmas2026:avatar:01"}),
+ Object.freeze({"level":3,"icon":"🃏","title":"Winterzauber · Blau","unlockId":"christmas2026:cards:kartendesign-02"}),
+ Object.freeze({"level":4,"icon":"🎲","title":"Weihnachtsdorf","unlockId":"christmas2026:board:weihnachtsdorf"}),
+ Object.freeze({"level":5,"icon":"🍪","title":"Weihnachtsplätzchen","unlockId":"christmas2026:emoji:05"}),
+ Object.freeze({"level":6,"icon":"🛡️","title":"Sternengold","unlockId":"christmas2026:nameframe:01"}),
+ Object.freeze({"level":7,"icon":"👑","title":"Eiskrone","unlockId":"christmas2026:activeicon:02"}),
+ Object.freeze({"level":8,"icon":"🃏","title":"Weihnachtsglanz · Rot-Grün-Gold","unlockId":"christmas2026:cards:kartendesign-03"}),
+ Object.freeze({"level":9,"icon":"🌌","title":"Magischer Polarlicht-Fjord","unlockId":"christmas2026:scene:05"}),
+ Object.freeze({"level":10,"icon":"🏰","title":"Polarlichtpalast","unlockId":"christmas2026:board:polarlichtpalast"}),
 ]);
 export function initChristmasTreeRewards({request,roomValid,loggedIn}){
  const grid=document.getElementById('tree-reward-list');
@@ -66,7 +70,7 @@ export function initChristmasTreeRewards({request,roomValid,loggedIn}){
  };
  const claim=async level=>{
   if(busy||!roomValid||!loggedIn()||!Number.isInteger(level))return;
-  busy=true;render();say('🎄 Dein Preis wird auf Render ausgelost und gespeichert …');
+  busy=true;render();say('🎄 Dein festgelegter Preis wird auf Render geprüft und gutgeschrieben …');
   try{
    const result=await request('tree-rewards/claim','POST',{level});
    if(!result?.prize||result?.treeRewards?.rewards?.length!==10)throw Error('TREE_REWARD_CLAIM_INVALID');
