@@ -60,7 +60,7 @@ export function premiumScratchProgress(board,revealedIndices=[]){
  return {count,total:board.cells.filter(symbol=>symbol!=='🧊').length,
   goldAwarded:wins.some(win=>win.rule==='gold-20'),
   premiumAwarded:wins.some(win=>win.rule==='premium-24'),
-  giftRowRequired:board.symbolVersion===3};
+  giftRowRequired:[3,4].includes(board.symbolVersion)};
 }
 /** Gold belongs to a real winning three-in-a-row, never to all 20/24 counted tiles. */
 export function premiumWinningRowIndices(wins=[]){
