@@ -2,7 +2,7 @@ import {applyMotionMode,loadMotionMode} from './motion-settings.js';
 applyMotionMode(loadMotionMode());
 import {BOARD_STYLES,isBoardUnlocked,BOARD_FRAMES,SCENE_STYLES,HUD_LAYOUTS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,loadAppearance,saveAppearance,validAssetPath} from './appearance-registry.js?v=22';
 import {APPROVED_BOARD_LAYOUT as LAYOUT} from './approved-board.js';
-import {isVerifiedCosmeticUnlocked} from './verified-cosmetics.js?v=2';
+import {isVerifiedCosmeticUnlocked} from './verified-cosmetics.js?v=1';
 const $=id=>document.getElementById(id);
 const S='http://www.w3.org/2000/svg',KEY='dog:design-studio:presets:v1';
 const BOARDS=['studio','schiefer','holz','pergament','bergsee','goldwellen','royalMarmor','maerchental','alpenland','kuestenabenteuer','royalKarten','zauberwald','midnight','forest','winter','weihnachtsdorf','lebkuchenwerkstatt','polarlichtpalast','winterlandschaft'];
