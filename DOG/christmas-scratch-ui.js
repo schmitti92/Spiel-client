@@ -608,25 +608,35 @@ export function initChristmasScratch(){
    }
    panel.append(counter);
   }
-  // Rebuild an explicit list of CURRENT prizes from the verified Render receipt.
-  // Each amount and unlock remains readable, including additional coin awards.
-  if(finished){
-   const prizes=Array.isArray(result?.winnings)?result.winnings:entries;
+  // Always provide a meaningful result card. The ticket is bought and paid
+  // server-side already; confirming only dismisses the verified receipt.
+  const section=el('section','scratch-current-awards');
+  section.setAttribute('aria-label','Ergebnis deines Rubbelloses');
+  section.append(el('small','scratch-result-kicker','✦ DEIN RUBBELLOS'));
+  if(!finished){
+   section.append(el('h4','scratch-current-title','🎟️ Noch nicht aufgedeckt'));
+   section.append(el('p','scratch-current-hint',
+    'Rubbele das Los zu mindestens 90 % frei. Danach erscheinen hier deine tatsächlichen Gewinne und die Bestätigung.'));
+  }else{
+   const prizes=(Array.isArray(result?.winnings)?result.winnings:entries)
+    .filter(p=>p&&['coins','unlock'].includes(p.type));
    const sourceWins=Array.isArray(result?.board?.wins)?result.board.wins:[];
-   const section=el('section','scratch-current-awards');
-   section.setAttribute('aria-label','Aktuell gewonnene Belohnungen');
+   const total=Number.isSafeInteger(result?.totalCoins)&&result.totalCoins>=0?result.totalCoins:
+    prizes.filter(p=>p.type==='coins').reduce((sum,p)=>sum+(Number.isSafeInteger(p.amount)?p.amount:0),0);
+   const unlocks=prizes.filter(p=>p.type==='unlock').length;
    section.append(el('h4','scratch-current-title',prizes.length?
-    '🏆 Jetzt gewonnen · '+prizes.length+(prizes.length===1?' Belohnung':' Belohnungen'):
-    '❄️ Dieses Los ist eine Niete'));
-   const total=Number.isSafeInteger(result?.totalCoins)?result.totalCoins:
-    prizes.filter(p=>p?.type==='coins').reduce((a,p)=>a+(p.amount||0),0);
-   const unlocks=prizes.filter(p=>p?.type==='unlock').length;
-   section.append(el('div','scratch-current-summary',
-    '🪙 '+num(total)+' Münzen erhalten'+(unlocks?' · 🎁 '+unlocks+' Freischaltung'+(unlocks===1?'':'en'):'')));
+    '🎉 Dein Gewinn':'❄️ Dieses Los ist eine Niete'));
+   const hero=el('div','scratch-current-hero'+(prizes.length?' is-win':' is-empty'));
+   hero.append(el('small','','Gutgeschriebene Münzen'),
+    el('strong','',num(total)+' 🪙'));
+   hero.append(el('span','',unlocks?
+    '🎁 '+unlocks+' Freischaltung'+(unlocks===1?'':'en'):
+    prizes.length?'✓ Ergebnis ermittelt':'Kein Gewinn · 0 Münzen'));
+   section.append(hero);
    if(prizes.length){
     const list=el('div','scratch-current-grid');
     prizes.forEach((prize,i)=>{
-     const win=sourceWins[i];
+     const win=sourceWins[Number.isInteger(prize.sourceWin)?prize.sourceWin:i];
      const rule=prize.milestone||win?.rule||(prize.bonus?'bonus':'row-3');
      const where=prize.bonus?'🎉 Zusatzgewinn':
       rule==='gold-20'?'⭐ 20 Symbole':
@@ -642,9 +652,12 @@ export function initChristmasScratch(){
      list.append(entry);
     });
     section.append(list);
-   }else section.append(el('div','scratch-current-empty','Keine Gewinnkombination – versuche es mit einem weiteren Rubbellos.'));
-   panel.append(section);
+   }else{
+    section.append(el('p','scratch-current-empty',
+     'Diesmal keine gültige Gewinnkombination. Bestätige auch dieses Ergebnis, um das nächste Los zu öffnen.'));
+   }
   }
+  panel.append(section);
   panel.append(el('h4','','Gewinntabelle'));
   const tier=result?.tier||'simple';
   const amounts=coinAmountsFor(tier,result?.board?.variantId||null,result);
@@ -672,8 +685,10 @@ export function initChristmasScratch(){
  function showTicket(result){
   ticket=result;finished=false;unifiedCover=null;initialOpaque=0;
   stage.classList.remove('is-revealed');
+  stage.removeAttribute('data-result');
   stage.hidden=false;reveal.classList.remove('revealed');results.hidden=true;
   $('scratch-ticket-finish').hidden=true;$('scratch-reveal-button').hidden=true;
+  $('scratch-ticket-finish').textContent='✓ Ergebnis bestätigen';
   const conf=VARIANTS[result.board?.variantId],cells=result.board?.cells;
   stage.dataset.variant=result.board?.variantId||'legacy';
   stage.dataset.tier=result.tier||'simple';
@@ -756,10 +771,12 @@ export function initChristmasScratch(){
   const meter=$('scratch-progress-meter');if(meter){meter.value=100;meter.setAttribute('aria-valuenow','100')}
   if(stage.dataset.variant==='premium_27'&&Array.isArray(ticket.board?.cells))
    updatePremiumCounter(ticket.board.cells.map((_,i)=>i));
-  const entries=Array.isArray(ticket.winnings)?ticket.winnings:
-   ticket.type==='none'?[]:[ticket.type==='coins'?{type:'coins',amount:ticket.amount}:{type:'unlock',prize:ticket.prize}];
+  const entries=(Array.isArray(ticket.winnings)?ticket.winnings:
+   ticket.type==='none'?[]:[ticket.type==='coins'?{type:'coins',amount:ticket.amount}:{type:'unlock',prize:ticket.prize}])
+   .filter(p=>p&&['coins','unlock'].includes(p.type));
+  stage.dataset.result=entries.length?'win':'none';
   $('scratch-result-value').textContent=entries.length?
-   entries.map(prizeLabel).join(' · '):'❌ Niete – keine gültige Gewinnkombination';
+   entries.map(prizeLabel).join(' · '):'❄️ Niete · 0 Münzen';
   $('scratch-result-kind').textContent=
    (entries.length?entries.length+' Gewinne insgesamt':'')+
    (ticket.rareMainMultiplier?' · 💎 Ultra-selten: Hauptgewinn ×2':
@@ -780,6 +797,7 @@ export function initChristmasScratch(){
   drawPrizeTable(ticket,entries);
   list.hidden=!entries.length;results.hidden=false;
   $('scratch-reveal-button').hidden=true;$('scratch-ticket-finish').hidden=false;
+  $('scratch-ticket-finish').textContent='✓ Ergebnis bestätigen';
   notice(entries.length?'🎉 Gewinne sind bereits sicher auf deinem Profil gutgeschrieben.':
    '❄️ Niete – auf dieser Karte gibt es keine gültige Gewinnkombination.');
  }
@@ -818,10 +836,14 @@ export function initChristmasScratch(){
  }
  $('scratch-reveal-button').addEventListener('click',finish);
  $('scratch-ticket-finish').addEventListener('click',()=>{
-  if(!ticket)return;
-  acknowledge(ticket.commandId);ticket=null;finished=false;stage.hidden=true;
+  if(!ticket||!finished)return;
+  const won=Array.isArray(ticket.winnings)&&ticket.winnings.some(p=>p&&['coins','unlock'].includes(p.type));
+  acknowledge(ticket.commandId);
+  ticket=null;finished=false;stage.hidden=true;
+  stage.classList.remove('is-revealed');stage.removeAttribute('data-result');
   document.body.classList.remove('scratch-ticket-open');
-  drawShop();notice('🎄 Bereit für dein nächstes Rubbellos.');
+  drawShop();notice(won?'✅ Gewinn bestätigt. Dein Preis ist gutgeschrieben – das nächste Los kann geöffnet werden.':
+   '✅ Ergebnis bestätigt: Niete · 0 Münzen. Du kannst das nächste Los öffnen.');
  });
  $('scratch-refresh').addEventListener('click',()=>void load());
  $('scratch-host-settings').addEventListener('click',openSettings);
