@@ -47,3 +47,41 @@
 .scratch-info{font-size:12px;color:#c1d4d0;line-height:1.6}
 @media(max-width:960px){.scratch-tickets{grid-template-columns:1fr}.scratch-tier{min-height:0}.scratch-reward-list{min-height:0}}
 @media(prefers-reduced-motion:reduce){.scratch-tier,.scratch-play{animation:none!important}}
+
+/* Individual 6–20-cell scratching board. Ticket stays fully responsive. */
+.scratch-stage[hidden],.scratch-hidden-prize[hidden],.scratch-winning-lines[hidden],
+.scratch-field-cover[hidden],.scratch-stage-actions button[hidden]{display:none!important}
+.scratch-play{display:flex;flex-direction:column;align-items:stretch;justify-content:center;
+ min-height:0;padding:clamp(10px,2vw,20px);gap:12px;overflow:visible}
+.scratch-board{--scratch-cols:3;display:grid;grid-template-columns:repeat(var(--scratch-cols),minmax(0,1fr));
+ gap:clamp(5px,1vw,12px);width:100%;margin-inline:auto;max-width:550px}
+.scratch-field{position:relative;aspect-ratio:1;display:flex;justify-content:center;align-items:center;
+ border:2px solid #d0a45c;border-radius:12px;background:linear-gradient(135deg,#fff3d1,#e7ba75);
+ overflow:hidden;box-shadow:inset 0 0 13px #a56b3370,0 2px 7px #12252b3d}
+.scratch-cell-symbol{font-size:clamp(22px,4vw,44px);line-height:1;user-select:none;pointer-events:none}
+.scratch-field-cover{position:absolute;inset:0;width:100%;height:100%;
+ cursor:crosshair;touch-action:none;display:block}
+.scratch-field.uncovered{border-color:#b5c5ba}
+.scratch-field.scratch-winning-cell{border:3px solid #ffda55;background:linear-gradient(150deg,#fff6c6,#e4ab42);
+ box-shadow:0 0 0 2px #ffda5570,0 0 20px #ffe3758e;animation:scratch-win-glow 1.6s ease-in-out infinite alternate}
+.scratch-variant-rule{margin:0;font-size:clamp(13px,1.5vw,16px);color:#fff0c5;
+ line-height:1.45;text-align:center;font-weight:800}
+.scratch-progress{margin:0;color:#c0e6ef;text-align:center;font-size:12px}
+.scratch-hidden-prize{border-radius:13px;background:#17363cbf;border:1px solid #e6c886;
+ color:#ffe8b1;font-size:clamp(14px,2.1vw,22px);padding:13px;line-height:1.45}
+.scratch-hidden-prize strong{font-size:clamp(16px,2.4vw,27px)}
+.scratch-hidden-prize small{color:#ddf6dd}
+.scratch-winning-lines{display:flex;flex-direction:column;gap:6px}
+.scratch-prize-line{background:#12343bdc;color:#ffebbb;border:1px solid #e5c58d;
+ padding:8px 12px;border-radius:9px;font-size:14px;line-height:1.4;font-weight:800}
+.scratch-prize-line small{font-weight:500}
+@keyframes scratch-win-glow{from{box-shadow:0 0 3px #ffe37565}to{box-shadow:0 0 19px #ffe375af}}
+@media(max-width:480px){
+ .scratch-stage{padding:10px;gap:8px}
+ .scratch-play{padding:8px;gap:10px}
+ .scratch-board{gap:4px}
+ .scratch-field{border-radius:7px;border-width:1px}
+ .scratch-cell-symbol{font-size:clamp(20px,6vw,28px)}
+ .scratch-prize-line{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){.scratch-field.scratch-winning-cell{animation:none}}
