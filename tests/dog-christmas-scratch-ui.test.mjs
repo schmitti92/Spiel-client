@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {SCRATCH_TICKET_TYPES,SCRATCH_COIN_PRIZES} from '../DOG/christmas-scratch-ui.js';
+import {SCRATCH_TICKET_TYPES,SCRATCH_COIN_PRIZES,premiumScratchProgress,premiumWinningRowIndices} from '../DOG/christmas-scratch-ui.js';
 import {DOG_COLLECTION_CATEGORIES} from '../DOG/collection-catalog.js';
 const source=path=>readFileSync(new URL(path,import.meta.url),'utf8');
 test('three scratch tickets show correct prices and unlock chances',()=>{
@@ -115,4 +115,57 @@ test('scratch progress dashboard is personal, responsive and uses the existing w
  assert.match(css,/\.scratch-analytics-table/);
  assert.match(css,/@media\(max-width:760px\)/);
  assert.doesNotMatch(js,/query\('\/stats'/,'progress must not cause additional API calls');
+});
+
+test('premium counts only uncovered non-ice symbols and lights 20/24 only for earned milestones',()=>{
+ const cells=[...Array(20).fill('🎄'),...Array(7).fill('🧊')];
+ const board={variantId:'premium_27',symbolVersion:3,cells,
+  wins:[{rule:'gold-20',indices:Array.from({length:20},(_,i)=>i),prize:{type:'coins'}}]};
+ const untouched=premiumScratchProgress(board);
+ assert.deepEqual({count:untouched.count,total:untouched.total,goldAwarded:untouched.goldAwarded,
+  premiumAwarded:untouched.premiumAwarded},{count:0,total:20,goldAwarded:true,premiumAwarded:false});
+ const partial=premiumScratchProgress(board,Array.from({length:19},(_,i)=>i));
+ assert.equal(partial.count,19);
+ const done=premiumScratchProgress(board,cells.map((_,i)=>i));
+ assert.equal(done.count,20);
+ assert.equal(done.premiumAwarded,false);
+ assert.deepEqual(premiumWinningRowIndices(board.wins),[],
+  '20-symbol milestone must not light the twenty counted cells');
+ const premiumBoard={...board,
+  cells:[...Array(24).fill('🎄'),...Array(3).fill('🧊')],
+  wins:[...board.wins,{rule:'premium-24',indices:[12,13,14],prize:{type:'unlock'}}]};
+ const full=premiumScratchProgress(premiumBoard,premiumBoard.cells.map((_,i)=>i));
+ assert.equal(full.count,24);
+ assert.equal(full.premiumAwarded,true);
+ assert.equal(full.giftRowRequired,true);
+ assert.equal(premiumScratchProgress({variantId:'gifts',cells},[]),null);
+});
+
+test('premium gold highlights only genuine complete rows, never every milestone cell',()=>{
+ const wins=[
+  {rule:'gold-20',indices:Array.from({length:20},(_,i)=>i)},
+  {rule:'premium-24',indices:[12,13,14]},
+  {rule:'row-3',indices:[21,22,23]},
+  {rule:'row-3',indices:[3,5,6]}, // not a contiguous row
+  {rule:'row-3',indices:[25,26,27]}, // invalid index
+ ];
+ assert.deepEqual(premiumWinningRowIndices(wins),[12,13,14,21,22,23]);
+ const ui=source('../DOG/christmas-scratch-ui.js');
+ assert.match(ui,/premiumWinningRowIndices\(wins\)/);
+ assert.match(ui,/updatePremiumCounter\(revealedPremiumCells\(canvas\)\)/);
+ assert.match(ui,/panel\.append\(results,\$\('scratch-winning-lines'\)\)/);
+ assert.doesNotMatch(ui,/stage\.scrollIntoView\(/);
+});
+
+test('all premium artwork, payouts and counters fit in a viewport without internal page scrolling',()=>{
+ const css=source('../DOG/christmas-scratch.css');
+ assert.match(css,/height:min\(850px,calc\(100dvh - 16px\)\)/);
+ assert.match(css,/overflow:hidden!important;align-items:stretch/);
+ assert.match(css,/grid-template-rows:auto auto auto auto auto minmax\(0,1fr\) auto/);
+ assert.match(css,/\.scratch-premium-milestone\.is-earned\{/);
+ assert.match(css,/\.scratch-stage\[data-variant="premium_27"\] \.scratch-field:not\(\.scratch-winning-cell\)/);
+ assert.match(css,/\.scratch-stage:not\(\[hidden\]\) \.scratch-card-art/);
+ assert.match(css,/@media\(max-width:700px\)/);
+ const page=source('../DOG/christmas-event.html');
+ assert.match(page,/christmas-scratch\.css\?v=\d+/);
 });
