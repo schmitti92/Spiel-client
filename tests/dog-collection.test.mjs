@@ -83,7 +83,7 @@ test('Lobby buttons and collection page remain navigable without changing DOG ga
  assert.match(html,/data-filter="active"/);
  assert.match(js,/saveAppearance\(/);
  assert.match(js,/saveEmojiSlots\(/);
- assert.match(js,/if\(item\.status!=='available'\)return/);
+ assert.match(js,/if\(item\.status!=='available'\|\|isChristmasRewardLocked\(item\)\)return/);
  assert.match(js,/returnPage\(/);
 });
 
