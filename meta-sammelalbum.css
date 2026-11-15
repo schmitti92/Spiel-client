@@ -167,3 +167,23 @@ button:focus-visible,a:focus-visible{outline:3px solid #ffdf87;outline-offset:3p
  .meta-book-controls{gap:4px}
 }
 @media(prefers-reduced-motion:reduce){.meta-turn-leaf{display:none!important;animation:none!important}}
+
+/* Authenticated event rewards without altering the transparent book layout. */
+.meta-picture-card:not(.locked) .meta-picture-artwork img{filter:none}
+.meta-picture-card:not(.locked) .meta-picture-status{background:#246c32e6;color:#e1ffe0}
+.meta-detail-artwork.unlocked img{filter:none}
+.meta-detail-owned{color:#a8f7ae;font-size:15px;font-weight:900;margin:0}
+.meta-detail-event-link{display:inline-flex;justify-content:center;align-items:center;min-height:43px;
+ padding:8px 11px;border:1px solid #f1cb88;border-radius:10px;background:#234b4c;
+ color:#ffe3aa;text-decoration:none;font-weight:900;text-align:center}
+.meta-detail-event-link:hover{background:#326a59}
+.meta-album-auth-row{display:flex;align-items:center;justify-content:center;gap:7px;min-height:19px;
+ flex:0 0 auto;text-align:center;color:#f7e4bd;font-size:clamp(10px,.9vw,13px);text-shadow:0 1px 6px #000d}
+.meta-album-auth-row button{padding:3px 8px;min-height:25px;border-radius:9px;border:1px solid #e0c28a;
+ background:#0e3452c9;color:#ffe7b7;font-size:11px;font-weight:800}
+.meta-book{width:min(100%,calc((100dvh - 149px)*1.5),1560px);max-height:calc(100dvh - 149px)}
+@media(max-width:700px){.meta-book{width:min(100%,calc((100dvh - 134px)*1.5));max-height:calc(100dvh - 134px)}}
+@media(max-height:490px) and (orientation:landscape){
+ .meta-book{width:min(100%,calc((100dvh - 106px)*1.5));max-height:calc(100dvh - 106px)}
+ .meta-album-auth-row{min-height:14px;font-size:10px}
+}
