@@ -1,5 +1,5 @@
 import {BOARD_STYLES,isBoardUnlocked,loadAppearance,saveAppearance} from './appearance-registry.js?v=22';
-import {guardDesignerLink} from './designer-level-access.js?v=1';
+import {guardDesignerLink} from './designer-level-access.js?v=2';
 
 const ORDER=['studio','schiefer','pergament','holz','bergsee','goldwellen','royalMarmor','maerchental','alpenland','kuestenabenteuer','royalKarten','zauberwald','weihnachtsdorf','lebkuchenwerkstatt','polarlichtpalast','winterlandschaft'];
 const FALLBACK='linear-gradient(140deg,#243e52,#081524)';
