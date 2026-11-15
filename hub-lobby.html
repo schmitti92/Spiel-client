@@ -37,7 +37,7 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
 </head>
 <body>
 <div class="shell">
-  <header><a class="brand" href="index.html"><span class="logo">🎲</span><span>SPIELESAMMLUNG<br><span class="edition">Gemeinsam online spielen</span></span></a><nav class="premium-nav" aria-label="Hauptnavigation"><a href="index.html">⌂ <span>Spiele</span></a><a href="#room-view">♟ <span>Raum</span></a><a href="profil.html">◉ <span>Profil</span></a><a href="#ready-panel" data-lobby-settings aria-label="Spiel-Einstellungen und Bereitschaft öffnen">⚙ <span>Einstellungen</span></a></nav><span class="pill">● Raum-Lobby · Beta</span></header>
+  <header><a class="brand" href="hub-lobby.html"><span class="logo">🎲</span><span>SPIELESAMMLUNG<br><span class="edition">Gemeinsam online spielen</span></span></a><nav class="premium-nav" aria-label="Hauptnavigation"><a href="hub-lobby.html">⌂ <span>Spiele</span></a><a href="#room-view">♟ <span>Raum</span></a><a href="profile.html">◉ <span>Profil</span></a><a href="#ready-panel" data-lobby-settings aria-label="Spiel-Einstellungen und Bereitschaft öffnen">⚙ <span>Einstellungen</span></a></nav><span class="pill">● Raum-Lobby · Beta</span></header>
   <div class="hero"><div><div class="eyebrow">Dein gemeinsamer Spieleabend</div><h1>Ein Raum. Alle Spiele.</h1><p class="lead">Einmal mit dem Online-Profil anmelden, Raum erstellen oder beitreten und als Gruppe zusammenbleiben.</p></div></div>
   <nav class="mode-chooser" aria-label="Spielmodus wählen">
     <button type="button" id="mode-online" class="mode-option active" aria-pressed="true"><span class="mode-symbol">🌐</span><span><strong>Online mit Freunden</strong><small>Ein Raum für alle Spiele · gemeinsame Lobby</small></span></button>
@@ -55,13 +55,13 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
     <button type="button" class="btn blue" id="login-btn">Anmelden</button>
   </section>
   <section id="entry-view" class="panel" aria-labelledby="entry-title">
-    <h2 id="entry-title">Deinem Spieleabend beitreten</h2><p class="subtle">Ein Raumcode für Barikade, SKYJO Action, KreuzKunter und Business.</p>
+    <h2 id="entry-title">Deinem Spieleabend beitreten</h2><p class="subtle">Ein einziger Raumcode für DOG und alle anderen gemeinsamen Spiele.</p>
     <div class="entry-action"><button type="button" class="btn blue" id="create-btn">＋ Neuen Raum erstellen</button><span class="subtle join-separator">oder einem Raum beitreten</span><input class="text-field" id="join-code" aria-label="Raumcode" maxlength="6" inputmode="numeric" placeholder="123" autocomplete="off" spellcheck="false"><button type="button" class="btn light" id="join-btn">Beitreten</button></div>
   </section>
   <div id="room-view" class="cols hidden">
     <div class="stack">
       <section id="game-chooser" class="panel" aria-labelledby="game-title">
-        <div class="eyebrow">Spielauswahl · Nur der Host</div><h2 id="game-title">Welches Spiel spielen wir?</h2>
+        <div class="eyebrow">Euer Spieleabend · Spiele wählen</div><h2 id="game-title">Welches Spiel spielen wir?</h2>
         <p class="subtle" id="select-help">Nur der Host kann das Spiel auswählen.</p>
         <div class="game-grid" id="game-grid">
           <button class="game" type="button" data-game="dog"><span class="emoji">🐾</span><span><b>DOG Klassisch</b><small>1–4 Menschen + Bots</small></span></button>
@@ -70,7 +70,7 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
           <button class="game" type="button" data-game="kreuz"><span class="emoji">🎯</span><span><b>KreuzKunter</b><small>2–6 Personen</small></span></button>
           <button class="game" type="button" data-game="business"><span class="emoji">💼</span><span><b>Das große Business</b><small>2–5 Personen</small></span></button>
         </div>
-        <p class="chooser-note">👑 Der Host wählt das Spiel. Danach öffnet sich der passende Online-Vorraum für alle.</p>
+        <p class="chooser-note">👑 Der Host wählt das Spiel. DOG bleibt in dieser gemeinsamen Lobby; die übrigen Spiele öffnen ihre Spielansichten.</p>
       </section>
       <section class="panel dog-avatar-picker" data-dog-avatar-picker data-mode="online" aria-label="DOG-Profilbild wählen">
         <h3>🐾 Mein DOG-Profilbild</h3>
@@ -85,6 +85,17 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
        <div data-board-picker-options></div>
        <div data-board-picked-label></div>
        <a class="dog-studio-cta" data-dog-studio-link href="DOG/design-studio.html?return=../hub-lobby.html">🎨 Im Design-Studio kombinieren <span>Live-Vorschau & gespeicherte Designs</span></a>
+      </section>
+      <section id="dog-unified-tools" class="panel dog-unified-tools hidden" aria-label="DOG im gemeinsamen Raum">
+        <div class="dog-unified-heading"><div><span class="eyebrow">🐾 DOG IM GEMEINSAMEN SPIELRAUM</span><h2>Dein DOG-Spielbrett</h2><p class="subtle">Vorschau deines ausgewählten Bretts. Die Spiellobby bleibt die gemeinsame Spielsamm­lung.</p></div><span class="dog-unified-bot">🤖 Freie Plätze: Computergegner</span></div>
+        <div id="dog-unified-board-preview" class="dog-unified-board-preview" role="img" aria-label="Vorschau des aktuell ausgewählten DOG-Spielbretts"></div>
+        <div class="dog-unified-links">
+          <a id="dog-unified-designer" class="btn light" href="DOG/design-studio.html">🎨 Brettdesigner</a>
+          <a id="dog-unified-collection" class="btn light" href="DOG/sammlung.html">🏆 Freigeschaltet</a>
+          <a id="dog-unified-christmas" class="btn light" href="DOG/christmas-event.html">🎄 Weihnachtsdorf</a>
+          <a id="dog-unified-album" class="btn light" href="meta-sammelalbum.html">📖 Meta-Sammelalbum</a>
+        </div>
+        <details class="dog-unified-rules"><summary>▣ DOG-Spielregeln ansehen</summary><p>Rot und Grün spielen gemeinsam gegen Blau und Gelb. Das Team gewinnt, sobald alle acht Figuren im Ziel stehen. 4 bedeutet vorwärts oder rückwärts, 7 kann aufgeteilt werden und Tauschkarten tauschen ungeschützte Figuren.</p></details>
       </section>
       <section id="game-stage-hero" class="panel hidden" data-game="barikade" aria-labelledby="selected-game-title">
         <div class="game-stage-cover">
@@ -156,7 +167,7 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
         <div class="ready-bar" role="progressbar" aria-label="Bereitmeldungen" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="ready-progressbar"><span id="ready-progress-fill"></span></div>
         <p class="status" id="ready-status" aria-live="polite"></p>
         <p class="notice" id="integration-note">Die vier Spiele sind mit dem gemeinsamen Raum verbunden.</p>
-        <p class="ready-hint">Sobald mindestens zwei und alle ausgewählten Mitspieler bereit sind, startet der Server die Partie automatisch.</p>
+        <p class="ready-hint" id="ready-hint">Alle aktiven Mitspieler melden sich bereit. Bei DOG reicht auch ein Spieler – freie Plätze übernehmen Bots.</p>
       </section>
         <div id="challenge-host-launch" class="challenge-host-launch hidden" aria-label="Challenge starten"></div>
         <div class="row" style="margin-top:20px"><button type="button" class="btn ghost" id="refresh-btn">↻ Aktualisieren</button><button type="button" class="btn danger" id="leave-btn">Raum verlassen</button></div>
@@ -184,72 +195,17 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
   <footer><a href="hub-lobby.html">← Zum Spielmodus</a> · Online und Lokal · Vier Spiele</footer>
 </div>
 
-<!-- DOG-specific waiting room. The shared main lobby above remains unchanged.
-     All gameplay / room actions are delegated to the existing hub controller. -->
-<section id="dog-room-lobby" class="dog-room-lobby" aria-label="DOG Spiellobby" hidden>
-  <div class="dog-room-atmosphere" aria-hidden="true"></div>
-  <div class="dog-room-stage">
-    <header class="dog-room-top">
-      <a id="dog-room-back" class="dog-room-utility dog-room-back" href="spielauswahl-online.html">← Zur Hauptlobby</a>
-      <h1 class="dog-room-heading"><span aria-hidden="true">🐾</span> <span class="dog-room-brand">DOG</span> <span class="dog-room-heading-dot">·</span> SPIELLOBBY</h1>
-      <div class="dog-room-top-actions">
-        <button id="dog-room-fullscreen" class="dog-room-utility" type="button">⛶ Vollbild</button>
-        <button id="dog-room-refresh" class="dog-room-utility" type="button">↻ Aktualisieren</button>
-      </div>
-    </header>
-    <div class="dog-room-codebar">
-      <span class="dog-room-code-name">RAUM</span>
-      <strong id="dog-room-code" class="dog-room-code-value">———</strong>
-      <span class="dog-room-code-split" aria-hidden="true"></span>
-      <button id="dog-room-copy" type="button" class="dog-room-utility">▣ Code kopieren</button>
-    </div>
-    <div class="dog-room-grid">
-      <section class="dog-room-panel dog-room-players-panel" aria-labelledby="dog-room-players-title">
-        <h2 id="dog-room-players-title"><span aria-hidden="true">👥</span> Mitspieler</h2>
-        <div id="dog-room-roster" class="dog-room-roster" aria-label="Vier DOG-Spielplätze"></div>
-        <div class="dog-room-readiness" aria-live="polite">
-          <div class="dog-room-readiness-copy">
-            <span id="dog-room-count">0 Spieler im Raum</span>
-            <strong id="dog-room-ready-count">Bereit 0/0</strong>
-          </div>
-          <div class="dog-room-progress" role="progressbar" id="dog-room-progress" aria-label="Bereitschaft der aktiven Spieler" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-            <span id="dog-room-progress-fill"></span>
-          </div>
-          <p id="dog-room-readiness-note">Warte auf Mitspieler.</p>
-        </div>
-        <div class="dog-room-primary-actions">
-          <button id="dog-room-join" class="dog-room-action dog-room-action-blue" type="button">⇥ Spiel beitreten</button>
-          <button id="dog-room-ready" class="dog-room-action dog-room-action-green" type="button">✓ Ich bin bereit</button>
-          <button id="dog-room-start" class="dog-room-action dog-room-action-gold" type="button">▶ Partie starten</button>
-        </div>
-        <p id="dog-room-feedback" class="dog-room-feedback" role="status" aria-live="polite"></p>
-      </section>
-      <section class="dog-room-panel dog-room-board-panel" aria-labelledby="dog-room-board-title">
-        <h2 id="dog-room-board-title"><span aria-hidden="true">🎲</span> Aktuelles Spielbrett <small id="dog-room-board-name">– Klassisch</small></h2>
-        <div id="dog-room-board-preview" class="dog-room-board-preview" role="img" aria-label="Vorschau des ausgewählten DOG-Spielbretts"></div>
-        <div class="dog-room-board-actions">
-          <a id="dog-room-designer" class="dog-room-action dog-room-action-navy" href="DOG/design-studio.html">🎨 Brettdesigner</a>
-          <a id="dog-room-unlocks" class="dog-room-action dog-room-action-navy" href="DOG/sammlung.html">🏆 Freigeschaltet</a>
-          <a id="dog-room-christmas" class="dog-room-action dog-room-action-navy" href="DOG/christmas-event.html">🎄 Weihnachtsdorf & Gebäude</a>
-          <a id="dog-room-meta-album" class="dog-room-action dog-room-action-navy" data-meta-album-link href="meta-sammelalbum.html?return=hub-lobby.html">📖 Meta-Sammelalbum</a>
-        </div>
-        <button id="dog-room-rules-open" class="dog-room-utility dog-room-rules-button" type="button">▣ Spielregeln</button>
-      </section>
-    </div>
-  </div>
-  <dialog id="dog-room-rules" class="dog-room-rules-dialog" aria-labelledby="dog-room-rules-title">
-    <h2 id="dog-room-rules-title">🐾 DOG – Spielregeln</h2>
-    <p>Rot und Grün spielen gemeinsam gegen Blau und Gelb. Jede Person besitzt vier Spielfiguren. Gewonnen hat das Team, dessen acht Figuren im Ziel sind.</p>
-    <p>Zum Herauskommen benötigst du eine 1/11, 13 oder einen Joker. Mit der 4 ziehst du vorwärts oder rückwärts, mit der 7 verteilst du sieben Schritte, und die Tauschkarte tauscht ungeschützte Figuren.</p>
-    <p>Online startet DOG automatisch, sobald alle aktiven Mitspieler bereit sind. Freie Plätze übernehmen Computergegner.</p>
-    <button id="dog-room-rules-close" class="dog-room-action dog-room-action-gold" type="button">Verstanden</button>
-  </dialog>
-</section>
-
-<link rel="stylesheet" href="DOG/room-lobby.css?v=1">
 <script type="module" src="DOG/init-motion.js?v=1"></script><script src="DOG/avatar-picker.js?v=5"></script><script type="module" src="DOG/emoji-lobby.js?v=2"></script><script type="module" src="DOG/board-picker.js?v=9"></script>
-<script type="module" src="DOG/room-lobby.js?v=3"></script>
-<script src="profile-config.js"></script><script src="profile-auth.js"></script><script src="hub-lobby.js?v=20261115-dog-room-v1" defer></script>
+<script type="module">
+import {renderDogRoomBoard} from './DOG/room-board-preview.js?v=1';
+const target=document.getElementById('dog-unified-board-preview');
+const render=()=>{if(target&&!target.closest('.hidden'))renderDogRoomBoard(target)};
+window.DOGUnifiedBoard={refresh:render};
+document.querySelectorAll('[data-board-theme]').forEach(button=>button.addEventListener('click',()=>requestAnimationFrame(render)));
+window.addEventListener('storage',event=>{if(event.key==='dog:appearance:v1')render()});
+window.addEventListener('pageshow',render);
+</script>
+<script src="profile-config.js"></script><script src="profile-auth.js"></script><script src="hub-lobby.js?v=20261115-unified-dog-v2" defer></script>
 <script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script><script src="site-global-controls.js?v=20261109-global-1"></script>
 <script>
 (function(){const page='../hub-lobby.html'+location.search;
