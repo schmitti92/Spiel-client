@@ -12,11 +12,13 @@ export const SCRATCH_COIN_PRIZES=Object.freeze({
  medium:Object.freeze([100,300,800]),
  premium:Object.freeze([200,800,2000])
 });
-const CURRENT_GAMES_BY_TIER=Object.freeze({
- simple:'🎁 Geschenkelinie oder ❄️ Schneeflocken-Bingo',
- medium:'🧝 Magischer Wichtelpfad – einziges mittleres Los',
- premium:'🎅 Premium-Weihnachts-Rubbellos · 27 Felder'
-});
+// Four distinct and directly selectable cards; three price classes stay unchanged.
+export const SCRATCH_SHOP_VARIANTS=Object.freeze([
+ Object.freeze({id:'gifts',tier:'simple',icon:'🎁',name:'Geschenkelinie',subtitle:'Einfach · 9 Felder',rule:'3 gleiche in einer Linie',theme:'gift'}),
+ Object.freeze({id:'snow_collect',tier:'simple',icon:'❄️',name:'Schneeflocken-Bingo',subtitle:'Einfach · 16 Felder',rule:'3 gleiche irgendwo',theme:'snow'}),
+ Object.freeze({id:'elf',tier:'medium',icon:'🧝',name:'Magischer Wichtelpfad',subtitle:'Mittel · 20 Felder',rule:'Geld: durchgehender Pfad',theme:'elf'}),
+ Object.freeze({id:'premium_27',tier:'premium',icon:'👑',name:'Premium-Weihnachtslos',subtitle:'Premium · 27 Felder',rule:'Dreierreihen · 20/24 Bonus',theme:'gold'})
+]);
 const VARIANTS={
  premium_27:['🎅 Premium-Weihnachts-Rubbellos','3 gleiche Symbole in einer waagerechten Dreierreihe gewinnen. Ab 20 Symbolfeldern gibt es Gold; ab 24 zusätzlich einen Premium-Hauptgewinn. 🧊-Felder zählen nicht.',9,3],
  gifts:['🎁 Geschenkelinie','Drei gleiche Symbole in einer Reihe, Spalte oder Diagonale',3,3],
@@ -210,32 +212,39 @@ export function initChristmasScratch(){
   const freeMode=status?.settings?.freeEnabled===true;
   $('scratch-host-settings').hidden=false;
   $('scratch-host-settings').title='Gemeinsame Rubbellos-Einstellungen';
-  $('scratch-daily-info').textContent=freeMode?'🎁 Host hat kostenloses Rubbeln für alle aktiviert':
+  $('scratch-daily-info').textContent=freeMode?'🎁 Kostenloses Rubbeln für alle aktiviert':
    status?.dailyFreeAvailable?'🎁 Heute ein einfaches Gratis-Los verfügbar':'Gratis-Los heute bereits benutzt';
-  for(const c of SCRATCH_TICKET_TYPES){
-   const article=el('article','scratch-tier '+c.id);
-   const unlockChance=chanceRange(c.id,'unlock');
-   const noChance=chanceRange(c.id,'none');
-   const coinChance=chanceRange(c.id,'coins');
-   article.append(el('span','scratch-icon',c.icon),
-    el('h3','',c.label+'-Rubbellos'),
-    el('div','scratch-game-selection',CURRENT_GAMES_BY_TIER[c.id]),
-    el('strong','scratch-price',num(c.price)+' 🪙'),
-    el('div','scratch-chance',(unlockChance??c.unlockChance)+' % Freischaltung · drei feste Geldgewinne'),
-    el('div','scratch-symbol-key',shopMoneyLegend(c.id)),
-    el('div','scratch-reward-list',c.rewards),
-    el('small','scratch-info',noChance!==null?
-     noChance+' % Nieten · '+coinChance+' % Münzen · '+unlockChance+' % Freischaltungen · 11 % ×2':
-     c.odds+' · 11 % ×2'));
-   const buyBtn=el('button','scratch-buy','🎟️ Für '+num(c.price)+' Münzen kaufen');
+  // All four variants are visible simultaneously; no hidden two-card
+  // selector and no random result when one specific card was chosen.
+  for(const option of SCRATCH_SHOP_VARIANTS){
+   const tier=SCRATCH_TICKET_TYPES.find(c=>c.id===option.tier);
+   const variantConfig=status?.settings?.variants?.[option.id];
+   const unlockChance=Number.isInteger(variantConfig?.weights?.unlock)?
+    percent(variantConfig.weights.unlock):tier.unlockChance;
+   const article=el('article','scratch-tier '+option.tier+' scratch-variant-'+option.theme);
+   article.dataset.variant=option.id;
+   const heading=el('div','scratch-card-heading');
+   heading.append(el('span','scratch-icon',option.icon));
+   const names=el('div','scratch-card-names');
+   names.append(el('small','scratch-card-class',option.subtitle),
+    el('h3','',option.name));heading.append(names);
+   const details=el('div','scratch-card-brief');
+   details.append(el('span','scratch-card-rule',option.rule),
+    el('span','scratch-card-chance','🎁 '+unlockChance+' % Freischaltung'));
+   article.append(heading,details,
+    el('strong','scratch-price',num(tier.price)+' 🪙'),
+    el('div','scratch-symbol-key',symbolLegend(option.tier,coinAmountsFor(option.tier,option.id))));
+   const buyBtn=el('button','scratch-buy','🎟️ Für '+num(tier.price)+' Münzen öffnen');
    buyBtn.type='button';buyBtn.hidden=freeMode;
-   buyBtn.disabled=busy||!!ticket||!account()||!status||status.coins<c.price;
-   buyBtn.addEventListener('click',()=>void buy(c.id,false));article.append(buyBtn);
-   if(freeMode||c.id==='simple'){
-    const free=el('button','scratch-free',freeMode?'🎁 Kostenloses Rubbellos öffnen':'🎁 Tägliches Gratis-Los');
+   buyBtn.disabled=busy||!!ticket||!account()||!status||status.coins<tier.price;
+   buyBtn.addEventListener('click',()=>void buy(option.tier,false,option.id));
+   article.append(buyBtn);
+   if(freeMode||option.tier==='simple'){
+    const free=el('button','scratch-free',freeMode?'🎁 Kostenlos öffnen':'🎁 Tagesfreilos öffnen');
     free.type='button';
     free.disabled=busy||!!ticket||!account()||!status||(!freeMode&&!status.dailyFreeAvailable);
-    free.addEventListener('click',()=>void buy(c.id,true));article.append(free);
+    free.addEventListener('click',()=>void buy(option.tier,true,option.id));
+    article.append(free);
    }
    root.append(article);
   }
@@ -727,11 +736,12 @@ export function initChristmasScratch(){
     '🎄 Wische ohne Absetzen über das gesamte Spielfeld. Bei 90 % wird automatisch aufgedeckt.');
   }catch(e){if(id!==requestId)return;status=null;canManageScratch=false;drawShop();notice('⚠️ '+(e.message||'Verbindung nicht verfügbar'))}
  }
- async function buy(tier,free){
+ async function buy(tier,free,variantId){
   if(!account()||busy||ticket)return;
+  if(!SCRATCH_SHOP_VARIANTS.some(c=>c.id===variantId&&c.tier===tier))return;
   busy=true;drawShop();
-  pending=pending?.tier===tier&&pending.free===free?pending:
-   {tier,free,commandId:'scratch-'+crypto.randomUUID()};
+  pending=pending?.tier===tier&&pending.free===free&&pending.variantId===variantId?pending:
+   {tier,variantId,free,commandId:'scratch-'+crypto.randomUUID()};
   notice('🎟️ Los wird auf Render gebucht und das Symbolfeld erstellt …');
   try{
    const r=await query('/buy',pending);
