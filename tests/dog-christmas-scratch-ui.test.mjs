@@ -242,7 +242,7 @@ test('scratch win and zero-coin losing ticket both require result confirmation',
  const html=source('../DOG/christmas-event.html');
  const css=source('../DOG/christmas-scratch.css');
  assert.match(html,/id="scratch-ticket-finish"[^>]*hidden>✓ Ergebnis bestätigen<\/button>/);
- assert.match(js,/stage\.dataset\.result=entries\.length\?'win':'none'/);
+ assert.match(js,/stage\.dataset\.result=winFlag\?'win':'none'/);
  assert.match(js,/Niete · 0 Münzen/);
  assert.match(js,/if\(!ticket\|\|!finished\)return/);
  assert.match(js,/acknowledge\(ticket\.commandId\)/);
