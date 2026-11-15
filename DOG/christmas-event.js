@@ -257,6 +257,11 @@ $('village-preview-reset').addEventListener('click',()=>{
  for(const d of definitions)preview[d.id]=1;
  refreshPreview();
 });
+$('village-preview-full').addEventListener('click',()=>{
+ // Preview only. No player rewards, no currency, no shared saved changes.
+ for(const d of definitions)preview[d.id]=5;
+ refreshPreview();
+});
 function validReturn(){
  const raw=new URLSearchParams(location.search).get('return');
  if(!raw)return null;
