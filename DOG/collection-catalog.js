@@ -26,19 +26,19 @@ const BASE_COLLECTION_CATEGORIES=[
   ...Array.from({length:16},(_,i)=>avail('avatar-'+i,'Profilbild '+(i+1),{kind:'avatar',avatar:i,description:'Bereits verfügbares DOG-Profilbild, auswählbar in der Lobby.',icon:'👤'})),
   ...CHRISTMAS_AVATARS.map(item=>avail(item.id,item.name,{kind:'avatar',avatar:item.avatar,image:item.image,status:'planned',unlockId:item.unlockId,description:'Weihnachtsprofilbild – wird erst durch eine spätere Weihnachtsevent-Belohnung freigeschaltet.',icon:'🎄'})),
  ]},
- {id:'frames',icon:'🛡️',title:'Namensrahmen',subtitle:'Klassischer Rahmen und fünf festliche Weihnachtsvorschauen',items:[
+ {id:'frames',icon:'🛡️',title:'Namensrahmen',subtitle:'Deine bereits gesammelten Namensrahmen',items:[
   avail('frame-current','Klassischer Rahmen',{kind:'default',icon:'🛡️',description:'Der aktuell verwendete DOG-Spielerrahmen.',artTone:'gold'}),
   ...CHRISTMAS_NAME_FRAMES.map(frame=>({
    ...frame,kind:'nameFrame',icon:frame.frameIcon,status:'planned',artTone:'gold'
   }))
  ]},
- {id:'emblems',icon:'👑',title:'Aktivsymbole',subtitle:'Die goldene Krone und fünf exklusive Weihnachts-Vorschauen',items:[
+ {id:'emblems',icon:'👑',title:'Aktivsymbole',subtitle:'Deine gesammelten Aktivsymbole',items:[
   avail('emblem-crown','Goldene Krone',{kind:'default',icon:'👑',description:'Standardsymbol des aktiven Spielers.',artTone:'gold'}),
   ...CHRISTMAS_ACTIVE_ICONS.map(entry=>({
    ...entry,kind:'activeIcon',status:'planned',artTone:'gold'
   }))
  ]},
- {id:'emojis',icon:'😄',title:'Emojis',subtitle:'3 Starter · 47 klassische Emojis und 10 Weihnachts-Emojis zum Freischalten',items:[
+ {id:'emojis',icon:'😄',title:'Emojis',subtitle:'Nur bereits gesammelte Emojis',items:[
   ...DOG_EMOJIS.filter(item=>DOG_EMOJI_STARTERS.includes(item.id)).map(item=>({
    id:item.id,name:item.name,icon:item.emoji,kind:'emoji',status:'available',
    description:'Starter-Emoji: in deinen fünf Schnellplätzen verwendbar.',artTone:'azure'
@@ -53,7 +53,7 @@ const BASE_COLLECTION_CATEGORIES=[
    description:'Exklusives Weihnachts-Emoji: wird später einzeln als Eventbelohnung freigeschaltet.',artTone:'ember'
   }))
  ]},
- {id:'cards',icon:'🃏',title:'Kartendesigns',subtitle:'1 klassisches Design verfügbar · 2 Weihnachtseditionen zum Freischalten',items:[
+ {id:'cards',icon:'🃏',title:'Kartendesigns',subtitle:'Deine verfügbaren Kartendesigns',items:[
   ...PUBLISHED_CARD_STYLE_IDS.map(id=>{const t=CARD_STYLES[id];return avail(id,t.label,{kind:'appearance',field:'cards',cardEdition:CARD_EDITION,image:cardVisual('9',CARD_EDITION).image,description:'Fertiges Kartendesign mit allen 14 Kartenmotiven und eigener Rückseite. Die Spielregeln bleiben unverändert.',icon:t.emblem,artTone:'gold'});}),
   ...Object.entries(CARD_EDITIONS).filter(([id])=>id!==CARD_EDITION).map(([id,entry])=>avail(id,entry.label,{
    kind:'cardEdition',cardEdition:id,status:isCardEditionUnlocked(id)?'available':'planned',
