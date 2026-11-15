@@ -30,7 +30,7 @@ test('Collection registers actual selectable designs without inventing past unlo
  const look=id=>dogCollectionCategory(id);
  assert.equal(look('boards').items.length,Object.keys(BOARD_STYLES).length-1,'missing royal-marmor art stays hidden');
  assert.equal(look('backgrounds').items.filter(x=>x.status==='available').length,2);
- assert.equal(look('backgrounds').items.filter(x=>x.status==='planned').length,5);
+ assert.equal(look('backgrounds').items.filter(x=>x.status==='planned').length,10);
  assert.equal(look('pieces').items.filter(x=>x.status==='available').length,Object.keys(PIECE_STYLES).length);
  assert.equal(look('cards').items.filter(x=>x.status==='available').length,1,'classic is the only immediately available edition');
  assert.equal(look('cards').items.filter(x=>x.status==='planned').length,2);
