@@ -30,8 +30,12 @@ test('Online game selection uses four server-protected game buttons, not indepen
  assert.match(controller,/\/rooms\/'.*?\+code\+'\/select'/s);
 });
 test('Entering or creating a room navigates to online game-selection home',()=>{
- assert.match(hub,/request\('\/rooms','POST'\);location\.assign\('spielauswahl-online\.html\?room='/);
- assert.match(hub,/request\('\/rooms\/'\+c\+'\/join','POST'\);location\.assign\('spielauswahl-online\.html\?room='/);
+ // A newly created room retains its code and avoids automatically relaunching DOG.
+ assert.match(hub,/request\('\/rooms','POST',\{dogAvatar:/);
+ assert.match(hub,/location\.assign\('spielauswahl-online\.html\?'\+new URLSearchParams\(\{room:r\.code,stay:'1'\}\)\.toString\(\)\)/);
+ // Joining an existing room keeps the existing room code.
+ assert.match(hub,/request\('\/rooms\/'\+c\+'\/join','POST',\{dogAvatar:/);
+ assert.match(hub,/location\.assign\('spielauswahl-online\.html\?room='\+encodeURIComponent\(r\.code\)\)/);
  assert.match(hub,/location\.assign\('spielauswahl-lokal\.html'\)/);
  assert.match(bridge,/spielauswahl-online\.html\?room=/);
 });
