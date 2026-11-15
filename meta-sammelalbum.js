@@ -20,6 +20,8 @@ let theme=first,selected=first.pictures[0]?.id||'';
 const requestedPage=Number(params.get('page'));
 let pageIndex=Number.isInteger(requestedPage)&&requestedPage>=1?
  Math.min(metaAlbumPageCount(theme)-1,requestedPage-1):0;
+// Deep-linking to page 2 must highlight an image actually visible on that page.
+selected=theme.pictures[pageIndex*6]?.id||selected;
 function dom(tag,className='',value){
  const node=document.createElement(tag);
  if(className)node.className=className;
