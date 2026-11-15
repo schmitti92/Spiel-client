@@ -1,6 +1,6 @@
-import {META_ALBUM_THEMES,metaAlbumThemeById,isMetaAlbumPictureUnlocked,metaAlbumPage,metaAlbumPageCount} from './meta-album-catalog.js?v=2';
-// Preview-only. Absolutely no local grants, inventory writes, Firestore reads,
-// background timers or fake progress are allowed in this first version.
+import {META_ALBUM_THEMES,metaAlbumThemeById,isMetaAlbumPictureUnlocked,metaAlbumPage,metaAlbumPageCount} from './meta-album-catalog.js?v=3';
+// Event entitlements are read once from authenticated Render on load, never written here.
+// The stage sliders in DOG/christmas-event.js are PREVIEWS and never grant prizes.
 const $=id=>document.getElementById(id);
 const params=new URLSearchParams(location.search);
 const here=new URL('./',import.meta.url);
@@ -17,6 +17,60 @@ function safeBackUrl(){
 $('meta-back-top').href=safeBackUrl();
 const first=metaAlbumThemeById(params.get('theme'));
 let theme=first,selected='';
+let serverStatus=null,loadedUid='',requestGeneration=0;
+const isUnlocked=pic=>isMetaAlbumPictureUnlocked(pic,serverStatus);
+const eventStatus=pic=>serverStatus?.milestones?.find(m=>m?.id===pic.id);
+const apiBase=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
+function showConnection(message,needsLogin=false,canRetry=false){
+ $('meta-album-feedback').textContent=message;
+ $('meta-album-login').hidden=!needsLogin;
+ $('meta-album-refresh').hidden=!canRetry;
+}
+async function refreshOwnership(user,uid){
+ const generation=++requestGeneration;
+ showConnection('⏳ Eventbelohnungen werden geprüft …');
+ const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),35000);
+ try{
+  const token=await user.getIdToken();
+  const response=await fetch(apiBase+'/api/deal-or-no-deal/christmas/season2/meta-album',{
+   method:'GET',headers:{Authorization:'Bearer '+token},cache:'no-store',signal:abort.signal});
+  const json=await response.json();
+  const meta=json?.metaAlbum;
+  if(!response.ok||json.ok!==true||meta?.version!==2||
+      meta?.source!=='dog-lichtertal-event'||meta?.eventId!=='weihnachtsevent-1'||
+      !Array.isArray(meta.milestones)||meta.milestones.length!==12||
+      !Array.isArray(meta.unlockedIds))throw Error('INVALID_LICHTERTAL_STATUS');
+  if(generation!==requestGeneration||window.SpielOnline?.state?.()?.user?.uid!==uid)return;
+  serverStatus=meta;
+  render();
+  if(dialog.open)drawDetail();
+  showConnection('✅ '+meta.unlockedCount+' / 12 Bilder gesammelt');
+ }catch(error){
+  if(generation!==requestGeneration)return;
+  serverStatus=null;render();
+  showConnection('⚠️ Eventstatus nicht erreichbar – erneut prüfen.',false,true);
+ }finally{clearTimeout(timer)}
+}
+function syncAccount(){
+ const auth=window.SpielOnline?.state?.();
+ const user=auth?.status==='online'?auth.user:null;
+ if(user?.uid&&typeof user.getIdToken==='function'){
+  if(loadedUid!==user.uid){
+   loadedUid=user.uid;serverStatus=null;render();void refreshOwnership(user,user.uid);
+  }
+  return;
+ }
+ if(loadedUid){loadedUid='';serverStatus=null;++requestGeneration;render()}
+ if(auth?.status==='guest'||auth?.status==='unconfigured'||auth?.status==='error')
+  showConnection('🔐 Anmeldung für Sammelbilder erforderlich.',true);
+ else showConnection('⏳ Spielerprofil wird geladen …');
+}
+$('meta-album-login').addEventListener('click',()=>window.SpielOnline?.openLogin?.());
+$('meta-album-refresh').addEventListener('click',()=>{
+ const auth=window.SpielOnline?.state?.();
+ if(auth?.status==='online'&&auth.user?.uid)void refreshOwnership(auth.user,auth.user.uid);
+});
+window.addEventListener('spielonline-change',syncAccount);
 const requestedPage=Number(params.get('page'));
 let pageIndex=Number.isInteger(requestedPage)&&requestedPage>=1?
  Math.min(metaAlbumPageCount(theme)-1,requestedPage-1):0;
@@ -63,7 +117,7 @@ function themeMenu(){
   button.append(dom('span','meta-theme-icon',item.icon));
   const copy=dom('span','meta-theme-copy');
   copy.append(dom('strong','',item.title),dom('small','',item.subtitle));
-  const unlocked=item.pictures.filter(pic=>isMetaAlbumPictureUnlocked(pic)).length;
+  const unlocked=item.pictures.filter(isUnlocked).length;
   button.append(copy,dom('span','meta-theme-count',unlocked+'/'+item.pictures.length));
   button.addEventListener('click',()=>{
    theme=item;selected='';pageIndex=0;closeThemeMenu();
@@ -80,7 +134,7 @@ function drawGallery(){
  pageIndex=page.index;
  for(const pic of page.pictures){
   // This method must stay fail-closed until real verified server grants exist.
-  const unlocked=isMetaAlbumPictureUnlocked(pic);
+  const unlocked=isUnlocked(pic);
   const button=dom('button','meta-picture-card'+(pic.id===selected?' selected':'')+(!unlocked?' locked':''));
   button.type='button';button.setAttribute('aria-pressed',String(pic.id===selected));
   button.setAttribute('aria-label',pic.name+' – '+(unlocked?'Gesammelt':'Gesperrt – Vorschau ansehen'));
@@ -90,7 +144,9 @@ function drawGallery(){
   button.append(artwork);
   button.append(dom('span','meta-picture-index','BILD '+String(pic.number).padStart(2,'0')+' / '+String(theme.pictures.length).padStart(2,'0')));
   button.append(dom('strong','meta-picture-name',pic.name));
-  button.append(dom('span','meta-picture-status',unlocked?'✓ Gesammelt':'🔒 Noch gesperrt'));
+  const progress=eventStatus(pic);
+  const lockLabel=pic.kind==='tree'?'🔒 Baum Level 10':pic.kind==='building'?'🔒 Gebäude Level 5':'🔒 Eventbelohnung';
+  button.append(dom('span','meta-picture-status',unlocked?'✓ Gesammelt':lockLabel));
   button.addEventListener('click',()=>{
    selected=pic.id;
    drawGallery();
@@ -116,17 +172,27 @@ function drawDetail(){
  const pic=theme.pictures.find(p=>p.id===selected);
  root.replaceChildren();
  if(!pic){root.append(dom('p','','Kein Bild ausgewählt.'));return;}
+ const unlocked=isUnlocked(pic);
  const artwork=dom('div','meta-detail-artwork');
- artwork.append(imageOf(pic),dom('span','meta-detail-lock','🔒 VORSCHAU · GESPERRT'));
+ artwork.append(imageOf(pic));
+ if(!unlocked)artwork.append(dom('span','meta-detail-lock','🔒 VORSCHAU · GESPERRT'));
+ else artwork.classList.add('unlocked');
  const info=dom('div','meta-detail-info');
  const title=dom('h2','meta-detail-title',pic.icon+' '+pic.name);
  title.id='meta-dialog-title';
  info.append(title);
  info.append(dom('p','meta-detail-description',pic.description));
- info.append(dom('p','meta-detail-message','🎁 Später im Weihnachtsevent 1 freischaltbar.'));
- const disabled=dom('button','meta-detail-disabled','🔒 Noch nicht freigeschaltet');
- disabled.type='button';disabled.disabled=true;
- info.append(disabled,dom('small','meta-detail-footnote','Nur Vorschau – keine Freischaltung.'));
+ const condition=pic.kind==='tree'?'Weihnachtsbaum Level 10':
+   pic.kind==='building'?pic.name+' Level 5':null;
+ info.append(dom('p','meta-detail-message',unlocked
+  ?'✅ Dieses Bild gehört zu deiner Sammlung.'
+  :condition?'🎁 Freischaltung: '+condition+'.':'🎁 Freischaltziel wird später festgelegt.'));
+ if(unlocked)info.append(dom('p','meta-detail-owned','✓ Dauerhaft freigeschaltet'));
+ else{
+  const eventLink=dom('a','meta-detail-event-link','🎄 Lichtertal ansehen');
+  eventLink.href=new URL('DOG/christmas-event.html',here).href;
+  info.append(eventLink,dom('small','meta-detail-footnote','Vorschau-Level allein schalten nichts frei.'));
+ }
  root.append(artwork,info);
 }
 const dialog=$('meta-picture-dialog');
@@ -195,11 +261,12 @@ function render(){
  themeMenu();
  $('meta-theme-title').textContent=theme.icon+' '+theme.title;
  $('meta-theme-description').textContent=theme.description;
- const collected=theme.pictures.filter(pic=>isMetaAlbumPictureUnlocked(pic)).length;
+ const collected=theme.pictures.filter(isUnlocked).length;
  $('meta-theme-progress').textContent=collected+' / '+theme.pictures.length+' gesammelt';
  const total=META_ALBUM_THEMES.reduce((n,item)=>n+item.pictures.length,0);
- const owned=META_ALBUM_THEMES.reduce((n,item)=>n+item.pictures.filter(pic=>isMetaAlbumPictureUnlocked(pic)).length,0);
+ const owned=META_ALBUM_THEMES.reduce((n,item)=>n+item.pictures.filter(isUnlocked).length,0);
  $('meta-overall-count').textContent=owned+' / '+total;
  drawGallery();
 }
 render();
+syncAccount();
