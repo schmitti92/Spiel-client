@@ -45,3 +45,45 @@ test('online DOG keeps all hidden gift and scratch positions secret and preserve
  assert.match(room,/dog-room-christmas/);
  assert.match(room,/room:roomCode,return:/);
 });
+
+test('tapping a village house or nameplate opens its live building bonus dialog',()=>{
+ const css=read('DOG/christmas-event-royal.css');
+ for(const id of ['tower','workshop','bakery','inn']){
+  const match=page.match(new RegExp('data-open-building="'+id+'"','g'))||[];
+  assert.equal(match.length,2,'both image and nameplate should be clickable: '+id);
+  assert.match(css,new RegExp('\\.hit-'+id+'\\{'),'building hit area exists for '+id);
+ }
+ for(const id of [
+  'village-building-dialog','village-building-title','village-building-icon',
+  'village-building-mode','village-building-image','village-building-stage',
+  'village-building-progress','village-building-current-bonus',
+  'village-building-description','village-building-bonus-explanation',
+  'village-building-next-bonus','village-building-next-cost',
+  'village-building-close','village-building-dismiss','village-building-upgrade'
+ ]){
+  assert.match(page,new RegExp('id="'+id+'"'));
+ }
+ assert.match(event,/button\.addEventListener\('click',\(\)=>openVillageBuildingDialog\(button\.dataset\.openBuilding\)\)/);
+ assert.match(event,/buildingDialog\.showModal\(\)/);
+ assert.match(event,/buildingDialog\.close\(\)/);
+ assert.match(event,/villageLive\?\.bonus/,'actual bonus must come from server village status');
+ assert.match(event,/openedBuildingId&&buildingDialog\.open/,'modal refreshes when the shared village upgrades');
+ assert.match(event,/if\(eventUser\(\)&&!villageLive\)void reloadVillage\(\)/);
+ assert.match(css,/dialog\.village-building-dialog::backdrop/);
+ assert.match(css,/@media\(max-width:680px\)/);
+ assert.match(event,/jumpToVillageBuilding/,'building detail shortcut stays available');
+});
+test('building bonus values and explanations match server formulas',()=>{
+ const js=event;
+ assert.match(js,/bonus\.towerFields/);
+ assert.match(js,/bonus\.workshopExtraChancePercent/);
+ assert.match(js,/bonus\.bakeryExtraPercent/);
+ assert.match(js,/bonus\.innScratchFields/);
+ assert.match(js,/bonus\.innPerFinishedGame/);
+ assert.match(js,/5\*level/);
+ assert.match(js,/10\*\(level-1\)/);
+ assert.match(js,/8\+2\*\(level-1\)/);
+ assert.match(js,/christmasUpgradeCost\(level\)/);
+ assert.match(js,/villageEventActive\?'🟢 Gemeinsamer Bonus aktiv'/);
+ assert.doesNotMatch(js,/buildingDialog.*villageRequest\('village\/upgrade'/);
+});
