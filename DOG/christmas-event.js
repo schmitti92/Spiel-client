@@ -10,7 +10,7 @@ import {initChristmasStory} from './christmas-story.js?v=1';
 import {initChristmasScratch} from './christmas-scratch-ui.js?v=29';
 import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=2';
 const $=id=>document.getElementById(id);
-const tabs=['village','buildings','tree','story','scratch','level','chapters'];
+const tabs=['village','buildings','tree','story','scratch','level'];
 const TREE_THRESHOLDS=[4,5,7,9,11,13,15,17,19,20];
 const FIELDS=[10,12,15,18,20];
 const definitions=[
