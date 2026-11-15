@@ -236,6 +236,23 @@ test('premium v4 shows every actual reward and its permanent 1000-coin threshold
  assert.match(css,/\.scratch-stage\.is-revealed:not\(\[hidden\]\) > \.scratch-prize-sidebar > :not\(\.scratch-current-awards\)/);
 });
 
+test('scratch win and zero-coin losing ticket both require result confirmation',()=>{
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const html=source('../DOG/christmas-event.html');
+ const css=source('../DOG/christmas-scratch.css');
+ assert.match(html,/id="scratch-ticket-finish"[^>]*hidden>✓ Ergebnis bestätigen<\/button>/);
+ assert.match(js,/stage\.dataset\.result=entries\.length\?'win':'none'/);
+ assert.match(js,/Niete · 0 Münzen/);
+ assert.match(js,/if\(!ticket\|\|!finished\)return/);
+ assert.match(js,/acknowledge\(ticket\.commandId\)/);
+ assert.match(js,/const won=stage\.dataset\.result==='win'/);
+ assert.match(js,/Gewinn bestätigt/);
+ assert.match(js,/Ergebnis bestätigt: Niete · 0 Münzen/);
+ assert.match(css,/Scratch result \/ confirmation v2/);
+ assert.match(css,/position:absolute!important;z-index:30/);
+ assert.match(css,/button:not\(\[hidden\]\)/);
+});
+
 test('DOG Weihnachten top header is hidden only while a scratch ticket is open',()=>{
  const html=source('../DOG/christmas-event.html');
  const css=source('../DOG/christmas-scratch.css');
