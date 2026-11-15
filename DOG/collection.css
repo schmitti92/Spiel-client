@@ -49,6 +49,8 @@ button{touch-action:manipulation}
 .tile-art{position:relative;aspect-ratio:1.34;display:grid;place-items:center;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#224467,#0d263c)}
 .tile-art img{width:100%;height:100%;object-fit:cover;display:block}
 .tile-art.has-card-edition img,.detail-image.has-card-edition>img{object-fit:contain;padding:6px;background:linear-gradient(135deg,#303954,#13243b);}
+/* Completed but not yet earned Christmas decks are visible only as dimmed previews. */
+.collection-tile.is-locked .tile-art.has-card-edition>img,.detail-image.is-locked.has-card-edition>img{filter:grayscale(.95) brightness(.75)}
 .tile-fallback,.detail-fallback{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(145deg,#21496d,#071b37)}
 .tile-fallback span,.detail-fallback span{font-size:clamp(38px,4vw,70px);filter:drop-shadow(0 5px 8px #0009)}
 .tile-art img+.tile-fallback,.detail-image img+.detail-fallback{display:none}
