@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="./christmas-tree-level-path.css?v=1">
 <link rel="stylesheet" href="./christmas-buildings-magical.css?v=1">
 <link rel="stylesheet" href="./christmas-tree-winter-skin.css?v=2">
+<link rel="stylesheet" href="./christmas-storybook.css?v=1">
 </head>
 <body>
 <div class="snow-sky" aria-hidden="true"></div>
@@ -329,24 +330,19 @@
       <p id="tree-reward-feedback" class="tree-timeline-feedback" role="status" aria-live="polite" hidden></p>
     </section>
     <section class="event-panel" id="panel-story" role="tabpanel" aria-labelledby="tab-story" hidden>
-      <div class="event-heading story-heading">
-        <div><span class="eyebrow">✦ UNSERE FORTLAUFENDE WEIHNACHTSGESCHICHTE ✦</span><h2>Das Weihnachtswunder von Lichtertal</h2><p>Ein Baum, zehn Stufen, zehn Teile. Jedes echte Weihnachtsbaum-Upgrade erzählt die Geschichte weiter.</p></div>
-        <div class="story-heading-actions"><span class="story-progress-label" id="story-progress-label">1 von 10 Teilen freigeschaltet</span><button type="button" class="story-refresh" id="story-refresh">↻ Fortschritt aktualisieren</button></div>
+      <div class="storybook-shell">
+        <div class="storybook-topline">
+          <span id="story-book-unlocked" aria-live="polite">📖 1 / 10 Kapitel · 6 / 60 Seiten frei</span>
+        </div>
+        <div id="story-upgrade-banner" class="story-upgrade-banner" role="status" aria-live="polite" hidden></div>
+        <div class="storybook-content">
+          <nav class="story-chapter-list" id="story-chapter-list" aria-label="Kapitel des Weihnachtsgeschichtsbuchs"></nav>
+          <article class="story-reading" id="story-reading" aria-label="Geschichtsbuch" tabindex="0">
+            <p>📖 Das Geschichtsbuch wird geöffnet …</p>
+          </article>
+        </div>
+        <div class="story-actions"><button type="button" class="button gold" id="story-next-action" hidden>🏠 Zum Dorfausbau</button></div>
       </div>
-      <div class="story-progress-panel">
-        <div class="story-progress-top"><span>📖 Unsere gemeinsame Weihnachtsreise</span><strong>10 Teile</strong></div>
-        <div id="story-progress-meter" class="story-progress-meter" role="progressbar" aria-label="Freigeschaltete Geschichtsteile" aria-valuemin="1" aria-valuemax="10" aria-valuenow="1"><span id="story-progress-fill" style="width:10%"></span></div>
-        <p id="story-state-note" class="story-state-note" role="status">Die Einleitung ist frei. Weitere Teile werden durch echte Baumstufen freigeschaltet.</p>
-      </div>
-      <div id="story-upgrade-banner" class="story-upgrade-banner" role="status" aria-live="polite" hidden></div>
-      <div class="story-reader-layout">
-        <nav class="story-chapter-list" id="story-chapter-list" aria-label="Freigeschaltete Kapitel der Weihnachtsgeschichte"></nav>
-        <article class="story-reading" id="story-reading" aria-label="Aktueller Geschichtsabschnitt" aria-live="polite">
-          <h3>Ein unerwarteter Besuch</h3><p>Die Weihnachtsgeschichte wird geladen …</p>
-        </article>
-      </div>
-      <div class="story-actions"><button type="button" id="story-next-action" class="button gold">🏠 Zum Dorfausbau</button></div>
-      <div class="scripture"><span>✦</span><p><strong>Leitgedanke aus Jesaja 9,1:</strong> Menschen in der Dunkelheit wird ein großes Licht verheißen. Dieser Gedanke begleitet die Weihnachtsvorbereitungen und führt später zur Weihnachtsgeschichte.</p></div>
     </section>
     <section class="event-panel" id="panel-scratch" role="tabpanel" aria-labelledby="tab-scratch" hidden>
       
@@ -439,6 +435,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./christmas-event.js?v=56"></script>
+<script type="module" src="./christmas-event.js?v=57"></script>
 </body>
 </html>
