@@ -3,6 +3,7 @@
  * remains the sole owner of authenticated HTTP/WS requests and game start.
  */
 import {renderDogRoomBoard} from './room-board-preview.js?v=1';
+import {summarizeDogRoomLobby} from './room-lobby-state.js?v=1';
 
 const $=id=>document.getElementById(id);
 const root=$('dog-room-lobby');
@@ -62,7 +63,8 @@ function roomLink(path,roomCode){
  return path+'?return='+encodeURIComponent(returnPath);
 }
 function update(snapshot,busy=false){
- const active=!!snapshot&&snapshot.game==='dog'&&['preparing','playing'].includes(snapshot.phase);
+ const state=summarizeDogRoomLobby(snapshot,busy);
+ const active=!!state;
  root.hidden=!active;
  document.body.classList.toggle('dog-room-open',active);
  const shell=document.querySelector('.shell');
@@ -74,7 +76,7 @@ function update(snapshot,busy=false){
  }
  current=snapshot;
  if(!wasOpen){wasOpen=true;feedback('');}
- const roomCode=String(snapshot.code||'').toUpperCase();
+ const roomCode=state.code;
  setText('dog-room-code',roomCode);
  $('dog-room-back').href='spielauswahl-online.html?'+new URLSearchParams({room:roomCode,stay:'1'}).toString();
  $('dog-room-designer').href=roomLink('DOG/design-studio.html',roomCode);
@@ -83,16 +85,15 @@ function update(snapshot,busy=false){
   renderDogRoomBoard($('dog-room-board-preview'));previewVisible=true;
  }
  const players=Array.isArray(snapshot.players)?snapshot.players:[];
- const participating=players.filter(p=>p.participating);
- const me=players.find(p=>p.me);
- const ready=participating.filter(p=>p.ready).length;
- const spectatorCount=players.length-participating.length;
- const playing=snapshot.phase==='playing';
- const total=participating.length;
+ const me=state.me;
+ const ready=state.readyCount;
+ const spectatorCount=state.spectatorCount;
+ const playing=state.playing;
+ const total=state.activeCount;
  renderRoster(players);
- setText('dog-room-count',total+' '+(total===1?'Spieler':'Spieler')+' im Raum');
+ setText('dog-room-count',total+' Spieler im Raum');
  setText('dog-room-ready-count',playing?'Partie läuft':'Bereit '+ready+'/'+total);
- const percent=total?Math.round(ready/total*100):0;
+ const percent=state.readyPercent;
  $('dog-room-progress-fill').style.width=percent+'%';
  $('dog-room-progress').setAttribute('aria-valuenow',String(percent));
  const note=playing?'Die Partie ist gestartet. Du kannst jederzeit ins Spiel zurückkehren.'
@@ -105,26 +106,22 @@ function update(snapshot,busy=false){
  const canPlay=!!me?.participating;
  if(playing){
   join.textContent=snapshot.match?.participating?'▶ Zur laufenden Partie':'Zuschauer';
-  join.disabled=busy||!snapshot.match?.participating;
+  join.disabled=!state.joinEnabled;
   readyButton.hidden=true;
   start.hidden=true;
  }else{
   readyButton.hidden=false;
   readyButton.textContent=me?.ready?'✓ Bereitschaft zurücknehmen':'✓ Ich bin bereit';
-  readyButton.disabled=busy||!canPlay;
+  readyButton.disabled=!state.readyEnabled;
   join.textContent=canPlay?(me.ready?'✓ Spiel beigetreten':'⇥ Spiel beitreten'):'Spielplatz vom Host';
-  join.disabled=busy||!canPlay||!!me?.ready;
+  join.disabled=!state.joinEnabled;
   // The existing server starts DOG automatically on the final ready action.
   // Host Start is a convenience that submits the host's own readiness once
   // everybody else is ready; it does NOT call the Challenge-only /start route.
-  const otherPlayersReady=participating.filter(p=>!p.me).every(p=>p.ready);
-  start.hidden=!snapshot.host;
+  start.hidden=!state.hostStartVisible;
   start.textContent='▶ Partie starten';
-  start.disabled=busy||!canPlay||!!me?.ready||!otherPlayersReady;
-  start.title=!snapshot.host?'Nur der Host kann starten.'
-    :me?.ready?'Du bist bereit. Der Server startet automatisch, sobald alle bereit sind.'
-    :otherPlayersReady?'Damit meldest du dich bereit. DOG startet sofort, wenn alle bereit sind.'
-    :'Die anderen aktiven Mitspieler müssen zuerst bereit sein.';
+  start.disabled=!state.hostStartEnabled;
+  start.title=state.hostStartHint;
  }
  if(busy)feedback('Aktion wird vom Server bestätigt …');
 }
