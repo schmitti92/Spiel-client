@@ -22,6 +22,8 @@ const editorBack='index.html'+location.search;
 if(online){
  const eventLink=$('dog-christmas-event-link');
  if(eventLink)eventLink.href='christmas-event.html?'+new URLSearchParams({room:hubCode,return:editorBack}).toString();
+ const levelLink=$('dog-player-level-link');
+ if(levelLink)levelLink.href='christmas-event.html?'+new URLSearchParams({room:hubCode,return:editorBack}).toString()+'#level';
 }
 document.querySelectorAll('[data-dog-editor]').forEach(link=>link.href='editor.html?return='+encodeURIComponent(editorBack)+'&v=10');
 const apiBase=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
