@@ -6,14 +6,25 @@
 <meta name="theme-color" content="#071525">
 <meta name="description" content="DOG Design-Studio: Spielwelten und Spielbretter kombinieren, live ansehen und eigene Designs speichern.">
 <title>DOG Design-Studio</title>
-<link rel="stylesheet" href="./design-studio.css?v=12">
+<link rel="stylesheet" href="./design-studio.css?v=13">
 <script type="module" src="./init-motion.js?v=1"></script>
 </head>
-<body>
+<body data-designer-access="pending">
 <header class="studio-top">
   <div class="studio-brand"><span class="studio-logo" aria-hidden="true">D</span><div><h1>DOG <span>Design-Studio</span></h1><p>Gestalte Spielbrett, Hintergrund und rechten Spielblock</p></div></div>
   <div class="top-actions"><a href="../hub-lobby.html" id="back-link" class="control secondary">← Zur Lobby</a><button id="save-top" class="control gold" type="button">💾 Speichern</button><button id="apply-design" class="control green" type="button">✓ Übernehmen</button></div>
 </header>
+<section class="studio-level-gate" id="studio-level-gate" aria-labelledby="studio-level-title" role="status">
+  <div class="studio-level-gate-icon" aria-hidden="true">🔒</div>
+  <span class="eyebrow">🏅 DOG SPIELERLEVEL</span>
+  <h2 id="studio-level-title">Brettdesigner ab Level 2</h2>
+  <p id="studio-level-message">Dein Spielerlevel wird überprüft …</p>
+  <div class="studio-level-gate-actions">
+    <button type="button" id="studio-level-login" class="control gold" hidden>🔑 Mit Spielerprofil anmelden</button>
+    <a class="control secondary" href="./christmas-event.html#level">🏅 Meine Level ansehen</a>
+    <a class="control secondary" href="../hub-lobby.html">← Zur Spiellobby</a>
+  </div>
+</section>
 <main class="studio-page">
   <div class="studio-columns">
     <aside class="studio-tools panel" aria-labelledby="studio-tools-heading">
@@ -120,6 +131,8 @@
     <div class="dialog-actions"><button type="button" class="control secondary" id="cancel-save">Abbrechen</button><button type="submit" class="control gold">Speichern & verwenden</button></div>
   </form>
 </dialog>
-<script type="module" src="./design-studio.js?v=12"></script>
+<script src="../profile-config.js"></script>
+<script src="../profile-auth.js"></script>
+<script type="module" src="./design-studio-entry.js?v=1"></script>
 </body>
 </html>
