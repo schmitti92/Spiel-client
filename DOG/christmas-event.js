@@ -7,6 +7,7 @@
 import {CHRISTMAS_PAGE_BACKGROUNDS} from './christmas-background-catalog.js?v=1';
 import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotalCost,christmasVillageTotalCost} from './christmas-building-costs.js?v=1';
 import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewards-ui.js?v=5';
+import {initChristmasStory} from './christmas-story.js?v=1';
 import {initChristmasScratch} from './christmas-scratch-ui.js?v=17';
 import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=2';
 const $=id=>document.getElementById(id);
@@ -229,6 +230,7 @@ function updateCardImage(id,level){
 const preview={tower:1,workshop:1,bakery:1,inn:1};
 let villageLive=null,villageHost=false,villageEventActive=false,villageCanUpgrade=true,villageBusy=false;
 let treePrizeScreen=null;
+const storyScreen=initChristmasStory({openTab:id=>showPanel(id)});
 let scratchScreen=null;
 let levelScreen=null;
 let lastPresentationKey=null;
@@ -413,6 +415,9 @@ function refreshPreview(){
  $('tree-next-gift-icon').textContent=tree===10?'🏆':nextPrize.icon;
  $('tree-next-gift').textContent=tree===10?'Alle zehn Geschenke erreichbar':nextPrize.title;
  const needed=tree===10?0:Math.max(0,TREE_THRESHOLDS[tree]-total);
+ // Story chapters unlock ONLY from the server-verified shared village.
+ // Local preview buttons may animate the tree but never reveal future text.
+ storyScreen.render({treeLevel:villageLive?tree:1,isVerified:Boolean(villageLive),remaining:villageLive?needed:0});
  $('tree-next-requirement').textContent=tree===10?'Alle vier Gebäude haben Stufe 5 erreicht.':
   'Noch '+needed+' Gebäudeausbau'+(needed===1?'':'ten')+' bis zur nächsten Stufe';
  $('tree-progress-fill').style.width=(tree*10)+'%';
@@ -459,6 +464,11 @@ function showPanel(id,{updateHistory=true}={}){
  }
  if(updateHistory&&location.hash!=='#'+id)history.replaceState(null,'','#'+id);
  if(id==='tree'){centerTreeMilestone();void treePrizeScreen?.load();}
+ if(id==='story'){
+  storyScreen.openLatest();
+  // Avoid reading the uninitialized village API on initial #story navigation.
+  requestAnimationFrame(()=>void reloadVillage());
+ }
  if(id==='buildings'){
   // The initial tab can open before villageCode is initialized below.
   requestAnimationFrame(()=>{
@@ -609,6 +619,9 @@ async function ensureVillageImport(){
 let pendingVillageRead=null;
 async function reloadVillage(){
  if(!eventUser()){
+  villageLive=null;villageHost=false;
+  for(const id of ['tower','workshop','bakery','inn'])preview[id]=1;
+  refreshPreview(); // Clear old player's unlocked chapters on logout.
   $('building-live-balance').textContent='Online-Profil anmelden';
   $('building-village-earned').textContent='–';
   $('building-village-spent').textContent='–';
