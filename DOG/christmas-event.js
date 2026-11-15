@@ -397,6 +397,7 @@ function refreshPreview(){
  $('village-preview-next').disabled=Boolean(villageLive)||total>=20;
  $('village-preview-reset').disabled=Boolean(villageLive);
  $('village-preview-full').disabled=Boolean(villageLive);
+ if(!villageLive)$('building-village-counter').textContent=total+' / 20 Gebäudestufen · Vorschau';
  updateTreeChapter();
  $('tree-world-mode').textContent=villageLive?'✦ Echter Dorffortschritt':'✦ Gestaltungs-Vorschau';
  $('tree-world-mode').dataset.mode=villageLive?'live':'preview';
@@ -452,6 +453,10 @@ function showPanel(id,{updateHistory=true}={}){
  }
  if(updateHistory&&location.hash!=='#'+id)history.replaceState(null,'','#'+id);
  if(id==='tree'){centerTreeMilestone();void treePrizeScreen?.load();}
+ if(id==='buildings'){
+  requestAnimationFrame(()=>refreshBuildingPhotoLayouts());
+  if(villageRoomValid)void reloadVillage(); // GET only, no reward writes
+ }
  if(id==='scratch')void scratchScreen?.load();
  if(window.scrollY>0)window.scrollTo({top:0,behavior:'instant'});
 }
@@ -556,11 +561,18 @@ function showLiveVillage(data){
  villageEventActive=data.enabled===true;
  villageCanUpgrade=data.canUpgrade!==false;
  for(const id of ['tower','workshop','bakery','inn'])preview[id]=v.levels[id];
- $('building-live-balance').textContent='⭐ Gemeinsamer Vorrat: '+lightsLabel(v.lightsTenths)+' Weihnachtslichter · '+v.giftsCollected+' Geschenke gesammelt';
+ $('building-live-balance').textContent=lightsLabel(v.lightsTenths)+' ⭐ Weihnachtslichter';
+ $('building-village-role').textContent=villageHost?'👑 Gemeinsames Dorf · Host':'🤝 Gemeinsames Dorf · Mitspieler';
+ $('building-village-role').dataset.state='online';
+ $('building-village-counter').textContent=Object.values(v.levels).reduce((a,b)=>a+b,0)+' / 20 Gebäudestufen';
+ $('stat-village-lights').textContent=lightsLabel(v.lightsTenths)+' ⭐';
+ $('stat-village-gifts').textContent=String(v.giftsCollected);
  $('building-event-mode').textContent=!villageEventActive?'🏁 Weihnachtsevent beendet – die Gebäude-Boni sind pausiert. Der gesammelte Fortschritt bleibt erhalten.'
   :data.matchEnabled?'🎁 Die laufende DOG-Partie sammelt automatisch Weihnachtslichter.'
   :'🎄 Weihnachtsevent aktiv: In jeder Online-DOG-Partie gelten die Gebäude-Boni automatisch.';
- $('building-live-notice').textContent='✅ Echter gemeinsamer Fortschritt – die Gebäude-Level und Lichter wurden auf dem Server überprüft. Nur der Host kann den Dorfvorrat für ein Upgrade verwenden.';
+ $('building-live-notice').textContent=villageHost
+  ?'✅ Dieser Vorrat gehört dem gesamten DOG-Dorf. Alle sammeln gemeinsam; als Host kannst du Gebäude ausbauen.'
+  :'✅ Ihr sammelt auf demselben Dorfkonto. Der Host kann die gemeinsam verdienten Lichter für Ausbauten verwenden.';
  const label=document.querySelector('.village-caption > span');
  if(label)label.textContent='⭐ Echter Dorffortschritt · '+lightsLabel(v.lightsTenths)+' Weihnachtslichter im gemeinsamen Vorrat';
  const giftNotice=document.querySelector('#panel-gifts > .notice');
@@ -571,13 +583,23 @@ function showLiveVillage(data){
      (oldTreeLevel===null||newTreeLevel!==oldTreeLevel))void treePrizeScreen?.load();
 }
 async function reloadVillage(){
- if(!villageRoomValid)return;
- if(!eventUser()){
-  $('building-event-mode').textContent='🔐 Melde dich mit deinem Online-Profil an, um das gemeinsame Dorf zu laden.';
+ if(!villageRoomValid){
+  $('building-village-role').textContent='🔎 Dorf-Vorschau';
+  $('building-live-notice').textContent='Für den echten gemeinsamen Kontostand bitte das Weihnachtsdorf aus der DOG-Onlineraumlobby öffnen.';
   return;
  }
+ if(!eventUser()){
+  $('building-live-balance').textContent='Anmeldung erforderlich';
+  $('building-event-mode').textContent='🔐 Bitte im DOG-Onlineraum mit deinem Profil anmelden.';
+  return;
+ }
+ const button=$('building-wallet-refresh');
+ if(button)button.disabled=true;
  try{showLiveVillage(await villageRequest('village'));}
- catch(e){$('building-event-mode').textContent='⚠️ '+e.message;}
+ catch(e){
+  $('building-event-mode').textContent='⚠️ Dorfguthaben nicht abrufbar: '+e.message;
+  $('building-live-notice').textContent='Keine lokale Schätzung: Der Vorrat wird erst nach Bestätigung durch den Server angezeigt.';
+ }finally{if(button)button.disabled=false;}
 }
 async function purchaseBuilding(id){
  if(!villageLive||!villageHost||!villageCanUpgrade||villageBusy)return;
@@ -593,7 +615,12 @@ async function purchaseBuilding(id){
  }catch(err){$('building-event-mode').textContent='⚠️ Ausbau nicht möglich: '+err.message;await reloadVillage();}
  finally{villageBusy=false;refreshPreview();}
 }
+$('building-wallet-refresh').disabled=!villageRoomValid;
+$('building-wallet-refresh').addEventListener('click',()=>void reloadVillage());
 if(villageRoomValid){
+ $('building-wallet-room').href='../hub-lobby.html?'+new URLSearchParams({room:villageCode,stage:'1'}).toString();
+ $('building-village-role').textContent='⌛ Gemeinsames Dorf wird geladen';
+ $('building-village-role').dataset.state='online';
  void reloadVillage();
  window.addEventListener('spielonline-change',()=>{
   void reloadVillage();
