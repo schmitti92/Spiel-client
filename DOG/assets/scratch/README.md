@@ -56,3 +56,5 @@ Die Spielmechanik und 90%-Rubbelregel stehen im Frontend bereits bereit.
 - Nr. 3 ist in GitHub unter `DOG/assets/scratch/wichtelpfad-premium-01.svg` vorhanden; Felder und Rubbeloberfläche sind eingebunden.
 - Der unabhängige Server-Prüfer verlangt für `elf` orthogonal zusammenhängende gleiche Symbole von links nach rechts und vergibt höchstens einen Preis je Symbolart. Diagonalen zählen nicht.
 - Das Premium-Los bleibt in der bestehenden Premium-Klasse (1000 Eventmünzen); die erste und zweite normale sowie die später geplante vierte Premium-Variante bleiben bestehen.
+
+- 15.11.2026: Hochgeladenes Schneeflocken-Bingo-Bild von `schneeflocken-bingo-01(2).webp` in `schneeflocken-bingo-01.webp` umbenannt; Originaldaten unverändert. Browser-Test offen.
