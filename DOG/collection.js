@@ -1,6 +1,6 @@
 import {applyMotionMode,loadMotionMode} from './motion-settings.js';
 applyMotionMode(loadMotionMode());
-import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=5';
+import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=6';
 import {loadAppearance,saveAppearance} from './appearance-registry.js?v=22';
 import {loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=1';
 // The collection never grants event rewards. Cosmetic choices persist locally;
