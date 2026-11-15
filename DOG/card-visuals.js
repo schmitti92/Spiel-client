@@ -68,7 +68,7 @@ export const CARD_VISUALS=Object.freeze({
 /** Can later be replaced by a registered edition with per-card asset paths. */
 export function cardVisual(type,edition=loadCardEdition()){
  const item=CARD_VISUALS[type]||{kind:'number',symbol:'🐾',caption:'KARTE'};
- const selected=Object.hasOwn(CARD_EDITIONS,edition)?edition:CARD_EDITION;
+ const selected=isCardEditionUnlocked(edition)?edition:CARD_EDITION;
  const file=CARD_FILE_NAMES[type];
  return {...item,edition:selected,image:file?CARD_EDITIONS[selected].base+file+'.png':null};
 }
