@@ -1,8 +1,9 @@
 import {applyMotionMode,loadMotionMode} from './motion-settings.js';
 applyMotionMode(loadMotionMode());
-import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=11';
+import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=12';
 import {loadAppearance,saveAppearance} from './appearance-registry.js?v=23';
 import {loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=2';
+import {isChristmasRewardLocked} from './christmas-reward-locks.js?v=1';
 // The collection never grants event rewards. Cosmetic choices persist locally;
 // only an explicit avatar update in an active room uses the existing DOG API.
 const $=id=>document.getElementById(id),qs=new URLSearchParams(location.search),root=new URL('../',location.href);
@@ -23,7 +24,7 @@ function notify(message){const box=$('collection-toast');box.textContent=message
  clearTimeout(toastTimer);toastTimer=setTimeout(()=>{box.hidden=true;},3500);}
 const avatar=()=>local?(window.DogAvatars?.localAvatar?.(seat)??seat):(window.DogAvatars?.onlineAvatar?.()??0);
 function equipped(item){
- if(item.status!=='available')return false;
+ if(item.status!=='available'||isChristmasRewardLocked(item))return false;
  if(item.kind==='default')return true;
  if(item.kind==='avatar')return item.avatar===avatar();
  if(item.kind==='emoji')return loadEmojiSlots().includes(item.id);
@@ -132,7 +133,7 @@ function drawGrid(){
  if(!items.some(x=>x.id===picked))picked=items.find(equipped)?.id||items[0]?.id||null;
  $('collection-empty').hidden=items.length>0;
  $('collection-grid').replaceChildren(...items.map(item=>{
-  const locked=item.status==='planned',active=equipped(item),btn=el('button','collection-tile'+(locked?' is-locked':'')+(item.id===picked?' is-selected':''));
+  const locked=item.status==='planned'||isChristmasRewardLocked(item),active=equipped(item),btn=el('button','collection-tile'+(locked?' is-locked':'')+(item.id===picked?' is-selected':''));
   btn.type='button';btn.setAttribute('aria-pressed',String(item.id===picked));btn.setAttribute('aria-label',item.name+' · '+(locked?'gesperrt':active?'aktiv':'verfügbar'));
   const image=art(item);image.append(el('span','tile-status-icon'+(locked?' lock':''),locked?'🔒':'✓'));
   btn.append(image,el('div','tile-title',item.name),el('span','tile-label'+(locked?' planned':active?' active':''),locked?'Späteres Event':active?'✓ Aktiv':'Verfügbar'));
@@ -159,7 +160,7 @@ async function equipAvatar(item,button){
  draw();
 }
 function equip(item,button){
- if(item.status!=='available')return;
+ if(item.status!=='available'||isChristmasRewardLocked(item))return;
  if(item.kind==='avatar'){void equipAvatar(item,button);return;}
  if(item.kind==='emoji'){
   const slots=loadEmojiSlots(),previous=slots.indexOf(item.id);
@@ -177,7 +178,7 @@ function equip(item,button){
 function drawDetails(){
  const root=$('collection-detail-content');root.replaceChildren();
  const item=cat.items.find(x=>x.id===picked);if(!item){root.append(el('p','collection-detail-loading','Bitte wähle einen Inhalt aus.'));return;}
- const locked=item.status==='planned',active=equipped(item),btn=el('button','detail-button'+(locked?' is-locked':active&&item.kind!=='emoji'?' is-active':''));
+ const locked=item.status==='planned'||isChristmasRewardLocked(item),active=equipped(item),btn=el('button','detail-button'+(locked?' is-locked':active&&item.kind!=='emoji'?' is-active':''));
  btn.type='button';
  btn.textContent=locked?'🔒 Später freischaltbar':item.kind==='default'?(item.id==='frame-current'?'✓ Standardrahmen aktiv':'✓ Standardsymbol aktiv'):active&&item.kind!=='emoji'?'✓ Aktiv':item.kind==='emoji'?'In Schnellleiste verwenden':'✓ Ausrüsten';
  btn.disabled=locked||item.kind==='default'||(active&&item.kind!=='emoji');
