@@ -1,3 +1,4 @@
+import {isVerifiedCosmeticUnlocked} from './verified-cosmetics.js?v=1';
 /* DOG emoji catalog & personal quickbar; visual preferences only.
    3 starter emojis, 50 stable slots reserved for future event rewards.
    No Firestore writes, sockets, or recurring reads in this module. */
@@ -324,14 +325,19 @@ const cleanSlots=slots=>{
  const used=new Set();
  return Array.from({length:DOG_EMOJI_SLOTS},(_,i)=>{
   const id=Array.isArray(slots)?slots[i]:null;
-  if(!DOG_EMOJI_STARTERS.includes(id)||used.has(id))return null;
+  if(!isEmojiUnlocked(id)||used.has(id))return null;
   used.add(id);return id;
  });
 };
 const storage=()=>{try{return localStorage;}catch{return null;}};
 const accountKey=()=>String(window.SpielOnline?.state?.()?.user?.uid||'local').slice(0,180);
 export const emojiById=id=>DOG_EMOJIS.find(item=>item.id===id)||null;
-export const isEmojiUnlocked=id=>DOG_EMOJI_STARTERS.includes(id);
+export const isEmojiUnlocked=id=>{
+ if(DOG_EMOJI_STARTERS.includes(id))return true;
+ const emoji=DOG_EMOJIS.find(item=>item.id===id);
+ if(!emoji)return false;
+ return isVerifiedCosmeticUnlocked(emoji.unlockId||'christmas2026:standard-emoji:'+id);
+};
 export function loadEmojiSlots(){
  try{
   const raw=storage()?.getItem(STORAGE_KEY),data=JSON.parse(raw||'{}');
