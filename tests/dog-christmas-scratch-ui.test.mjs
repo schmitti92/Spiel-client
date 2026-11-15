@@ -276,3 +276,16 @@ test('premium scratch shows symbols AND saved coin amounts in each money square'
  assert.match(css,/\.scratch-money-field \.scratch-cell-amount/);
  assert.match(css,/\.scratch-money-field\.scratch-winning-cell/);
 });
+
+test('premium v5 guarantees four paid money rows in the UI and compact result list',()=>{
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const css=source('../DOG/christmas-scratch.css');
+ assert.match(js,/symbolVersion===5/);
+ assert.match(js,/Vier echte Geld-Dreierreihen/);
+ assert.match(js,/Mindestens sechs Gewinnplätze/);
+ assert.match(js,/\[3,4,5\]\.includes\(board\.symbolVersion\)/);
+ assert.match(js,/Math\.max\(6,settings\.maxPrizes\)|id==='premium_27'\?6:1/);
+ assert.match(css,/Compact premium v5 results/);
+ assert.match(css,/\.scratch-stage\[data-variant="premium_27"\]\.is-revealed:not\(\[hidden\]\) \.scratch-current-grid/);
+ assert.match(css,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important/);
+});
