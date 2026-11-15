@@ -71,11 +71,16 @@ function showStageImage(id,level){
  const layer=$(id+'-stage-image'),fallback=$(id==='tree'?'art-tree':'art-'+id);
  if(!layer||!fallback)return;
  const path=assetPath(id,level);
+ // Unchanged stage stays visible; avoid toggling images during unrelated upgrades.
+ if(layer.dataset.requested===path&&fallback.classList.contains('photo-ready'))return;
+ if(layer.dataset.requested===path&&layer.dataset.loading==='true')return;
  layer.dataset.requested=path;
+ layer.dataset.loading='true';
  fallback.classList.remove('photo-ready','tower-photo-ready');
  waitForImage(path).then(ok=>{
   // An upgrade may have been requested while an earlier stage was loading.
   if(layer.dataset.requested!==path)return;
+  layer.dataset.loading='false';
   if(!ok){layer.removeAttribute('href');return;}
   layer.setAttribute('href',path);
   fallback.classList.add('photo-ready');
