@@ -908,3 +908,100 @@ body.scratch-ticket-open{overflow:hidden;overscroll-behavior:none}
  .scratch-stage[data-variant="premium_27"] .scratch-card-art::before,
  .scratch-stage[data-variant="premium_27"] .scratch-card-art::after{animation:none}
 }
+
+
+/* Rubbellos shop v4: FOUR separate ticket types visible without scrolling
+   within the ticket selection. Tablet = 2x2; wide screens = 4x1. */
+#panel-scratch .scratch-shell{gap:7px}
+#panel-scratch .scratch-tickets{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:9px;width:100%;align-content:start;align-items:stretch;min-width:0;
+}
+#panel-scratch .scratch-tier{
+ min-width:0;min-height:0;padding:11px 13px;gap:6px;
+ display:flex;flex-direction:column;overflow:hidden;border-radius:14px;
+ box-sizing:border-box;
+}
+#panel-scratch .scratch-tier.scratch-variant-gift{
+ --ticket-edge:#e7b77b;--ticket-bg:linear-gradient(145deg,#704232,#3c3637 60%,#192f34);--ticket-text:#ffdfa9;
+}
+#panel-scratch .scratch-tier.scratch-variant-snow{
+ --ticket-edge:#95e5e0;--ticket-bg:linear-gradient(145deg,#235960,#164449 60%,#10303c);--ticket-text:#e0fff7;
+}
+#panel-scratch .scratch-tier.scratch-variant-elf{
+ --ticket-edge:#9fc5ff;--ticket-bg:linear-gradient(145deg,#1d4b82,#142e5c 60%,#122e41);--ticket-text:#deecff;
+}
+#panel-scratch .scratch-tier.scratch-variant-gold{
+ --ticket-edge:#edce83;--ticket-bg:linear-gradient(145deg,#68457e,#46345d 60%,#463247);--ticket-text:#ffe5ab;
+}
+#panel-scratch .scratch-card-heading{
+ display:flex;align-items:center;gap:9px;min-width:0;min-height:40px;
+}
+#panel-scratch .scratch-card-names{min-width:0;display:flex;flex-direction:column;gap:3px}
+#panel-scratch .scratch-card-class{
+ color:#f5e5c4;font-size:10px;line-height:1.1;font-weight:750;letter-spacing:.02em;
+}
+#panel-scratch .scratch-icon{font-size:27px;line-height:1;flex:0 0 29px;text-align:center}
+#panel-scratch .scratch-tier h3{font-size:clamp(15px,1.7vw,21px);line-height:1.1;margin:0;overflow-wrap:anywhere}
+#panel-scratch .scratch-card-brief{
+ display:flex;gap:5px;flex-wrap:wrap;align-items:center;justify-content:space-between;
+ min-height:23px;font-size:11px;line-height:1.2;color:#e8eee6;
+}
+#panel-scratch .scratch-card-rule{color:#f3f2e5;font-weight:750}
+#panel-scratch .scratch-card-chance{
+ padding:3px 6px;border:1px solid #dec69055;background:#061f2c70;
+ color:#f6e6b2;border-radius:7px;font-size:10px;white-space:nowrap;
+}
+#panel-scratch .scratch-price{font-size:19px;line-height:1;color:#fff2c5}
+#panel-scratch .scratch-card-payouts{
+ font-size:10px;color:#d9e9dc;background:#071d2688;
+ border:1px solid #d2c49744;border-radius:7px;padding:5px 7px;
+ overflow-wrap:anywhere;line-height:1.3;
+}
+#panel-scratch .scratch-tier .scratch-symbol-key,
+#panel-scratch .scratch-tier .scratch-game-selection,
+#panel-scratch .scratch-tier .scratch-chance,
+#panel-scratch .scratch-tier .scratch-reward-list,
+#panel-scratch .scratch-tier .scratch-info{display:none}
+#panel-scratch .scratch-buy,#panel-scratch .scratch-free{
+ margin-top:auto;min-height:34px;padding:6px 8px;font-size:11px;
+ line-height:1.15;white-space:normal;overflow-wrap:anywhere;
+}
+#panel-scratch .scratch-free{margin-top:0}
+#panel-scratch .scratch-buy[hidden],#panel-scratch .scratch-free[hidden]{display:none!important}
+@media(min-width:1250px){
+ #panel-scratch .scratch-tickets{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+ #panel-scratch .scratch-tier{padding:11px;gap:7px}
+ #panel-scratch .scratch-tier h3{font-size:clamp(15px,1.6vw,19px)}
+ #panel-scratch .scratch-card-brief{min-height:45px;align-items:flex-start}
+}
+@media(max-width:760px){
+ #panel-scratch .scratch-tickets{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ #panel-scratch .scratch-tier{padding:8px 7px;gap:5px;border-radius:11px}
+ #panel-scratch .scratch-card-heading{gap:5px;min-height:40px;align-items:start}
+ #panel-scratch .scratch-icon{font-size:22px;flex-basis:24px}
+ #panel-scratch .scratch-tier h3{font-size:clamp(12px,2.7vw,16px);line-height:1.1}
+ #panel-scratch .scratch-card-class{font-size:9px}
+ #panel-scratch .scratch-card-brief{display:block;font-size:10px;min-height:0}
+ #panel-scratch .scratch-card-rule{display:block}
+ #panel-scratch .scratch-card-chance{display:block;width:max-content;max-width:100%;margin-top:4px}
+ #panel-scratch .scratch-price{font-size:16px}
+ #panel-scratch .scratch-card-payouts{font-size:9px;padding:4px 5px}
+ #panel-scratch .scratch-buy,#panel-scratch .scratch-free{
+  font-size:10px;min-height:33px;padding:6px 3px
+ }
+}
+@media(max-width:400px){
+ #panel-scratch .scratch-tickets{gap:5px}
+ #panel-scratch .scratch-tier{padding:7px 5px;gap:4px}
+ #panel-scratch .scratch-card-heading{gap:3px}
+ #panel-scratch .scratch-tier h3{font-size:12px}
+ #panel-scratch .scratch-icon{font-size:20px;flex-basis:20px}
+ #panel-scratch .scratch-card-payouts{font-size:8.5px}
+}
+@media(max-height:650px){
+ #panel-scratch .scratch-tier{padding-block:6px;gap:4px}
+ #panel-scratch .scratch-card-heading{min-height:32px}
+ #panel-scratch .scratch-card-payouts{padding-block:3px}
+ #panel-scratch .scratch-buy,#panel-scratch .scratch-free{min-height:29px;padding-block:3px}
+}
