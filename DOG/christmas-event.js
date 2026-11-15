@@ -10,6 +10,10 @@ import {initChristmasStory} from './christmas-story.js?v=1';
 import {initChristmasScratch} from './christmas-scratch-ui.js?v=29';
 import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=2';
 const $=id=>document.getElementById(id);
+// Older browser caches may pair outdated chapter markup with the new module.
+// Remove those obsolete nodes before setting up event navigation.
+$('tab-chapters')?.remove();
+$('panel-chapters')?.remove();
 const tabs=['village','buildings','tree','story','scratch','level'];
 const TREE_THRESHOLDS=[4,5,7,9,11,13,15,17,19,20];
 const FIELDS=[10,12,15,18,20];
