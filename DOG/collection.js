@@ -64,7 +64,7 @@ function art(item,big=false){
   preview.append(top,seats,controls);
   wrap.append(preview);
  }
- if(item.kind==='avatar'){
+ if(item.kind==='avatar'&&item.avatar<16){
   const sprite=el('span','portrait-sprite'),index=item.avatar%8;
   sprite.style.backgroundImage="url('"+new URL(item.avatar<8?'../profile-avatars.webp':'../profile-avatars-extra.webp',import.meta.url).href+"')";
   sprite.style.backgroundSize='400% 200%';sprite.style.backgroundPosition=(index%4*100/3)+'% '+(Math.floor(index/4)*100)+'%';wrap.append(sprite);
