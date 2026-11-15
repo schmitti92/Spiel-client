@@ -93,6 +93,15 @@ export function initChristmasScratch(){
  const acknowledge=commandId=>{
   try{localStorage.setItem('dog-scratch-seen:'+account()?.uid,commandId)}catch{}
  };
+ // Keep only the last safely revealed receipt, never invent wins or rebook
+ // credits. A refresh may reopen the receipt but must not require rescratching.
+ const revealedReceipt=()=>{
+  try{return localStorage.getItem('dog-scratch-revealed:'+account()?.uid)}catch{return null}
+ };
+ const rememberReveal=commandId=>{
+  if(typeof commandId!=='string'||!commandId)return;
+  try{localStorage.setItem('dog-scratch-revealed:'+account()?.uid,commandId)}catch{}
+ };
  async function query(path,payload){
   const u=account();if(!u)throw Error('LOGIN_REQUIRED');
   const token=await u.getIdToken();
@@ -689,7 +698,11 @@ export function initChristmasScratch(){
   stage.classList.remove('is-revealed');
   stage.removeAttribute('data-result');
   stage.hidden=false;reveal.classList.remove('revealed');results.hidden=true;
-  $('scratch-ticket-finish').hidden=true;$('scratch-reveal-button').hidden=true;
+  $('scratch-ticket-finish').hidden=true;
+  // Always offer an explicit reveal action. Dragging the canvas still
+  // automatically opens the result at 90 percent, including a losing ticket.
+  $('scratch-reveal-button').hidden=false;
+  $('scratch-reveal-button').textContent='✨ Ergebnis jetzt aufdecken';
   $('scratch-ticket-finish').textContent='✓ Ergebnis bestätigen';
   const conf=VARIANTS[result.board?.variantId],cells=result.board?.cells;
   stage.dataset.variant=result.board?.variantId||'legacy';
@@ -722,13 +735,13 @@ export function initChristmasScratch(){
    // Never construct an invented matching combination for a legacy receipt.
    board.textContent='Älteres Rubbellos ohne gespeichertes Symbolfeld';
    $('scratch-progress').textContent='Älteres Los – keine Rubbeltextur gespeichert';
-   $('scratch-reveal-button').hidden=false;
   }
   drawPrizeTable(result);
   drawShop();
   // The fixed ticket fills the viewport. Never scroll the underlying page
   // when it opens; on resize its artwork remains within the window.
   document.body.classList.add('scratch-ticket-open');
+  if(result.commandId&&result.commandId===revealedReceipt())finish();
  }
  function showWinningElfPaths(wins){
   if(stage.dataset.variant!=='elf')return;
@@ -759,50 +772,90 @@ export function initChristmasScratch(){
  }
  function finish(){
   if(!ticket||finished)return;
+  const current=ticket;
+  const wins=Array.isArray(current.board?.wins)?current.board.wins:[];
+  const entries=(Array.isArray(current.winnings)?current.winnings:
+   current.type==='none'?[]:[current.type==='coins'?
+    {type:'coins',amount:current.amount}:{type:'unlock',prize:current.prize}])
+   .filter(prize=>prize&&['coins','unlock'].includes(prize.type));
+  const earnedCoins=Number.isSafeInteger(current.totalCoins)&&current.totalCoins>=0?
+   current.totalCoins:entries.filter(p=>p.type==='coins').reduce(
+    (sum,p)=>sum+(Number.isSafeInteger(p.amount)?p.amount:0),0);
+  const winFlag=entries.length>0;
+  // Finalize the user interaction FIRST. Any broken decorative reveal must
+  // never prevent confirming a prize or a zero-coin losing ticket.
   finished=true;
+  stage.dataset.result=winFlag?'win':'none';
   stage.classList.add('is-revealed');
+  rememberReveal(current.commandId);
+  const confirm=$('scratch-ticket-finish');
+  confirm.hidden=false;
+  confirm.textContent='✓ Ergebnis bestätigen';
+  $('scratch-reveal-button').hidden=true;
   if(unifiedCover)unifiedCover.hidden=true;
-  for(const cell of board.querySelectorAll('.scratch-field'))cell.classList.add('uncovered');
-  const wins=ticket.board?.wins||[];
-  const visibleCells=board.querySelectorAll('.scratch-field');
-  const goldIndices=stage.dataset.variant==='premium_27'?
-   premiumWinningRowIndices(wins):
-   [...new Set(wins.flatMap(win=>win.indices||[]))];
-  for(const i of goldIndices)visibleCells[i]?.classList.add('scratch-winning-cell');
-  showWinningElfPaths(wins);
-  reveal.classList.add('revealed');
   $('scratch-progress').textContent='100 % aufgedeckt ✓';
-  const meter=$('scratch-progress-meter');if(meter){meter.value=100;meter.setAttribute('aria-valuenow','100')}
-  if(stage.dataset.variant==='premium_27'&&Array.isArray(ticket.board?.cells))
-   updatePremiumCounter(ticket.board.cells.map((_,i)=>i));
-  const entries=(Array.isArray(ticket.winnings)?ticket.winnings:
-   ticket.type==='none'?[]:[ticket.type==='coins'?{type:'coins',amount:ticket.amount}:{type:'unlock',prize:ticket.prize}])
-   .filter(p=>p&&['coins','unlock'].includes(p.type));
-  stage.dataset.result=entries.length?'win':'none';
-  $('scratch-result-value').textContent=entries.length?
+  const meter=$('scratch-progress-meter');
+  if(meter){meter.value=100;meter.setAttribute('aria-valuenow','100')}
+  $('scratch-result-value').textContent=winFlag?
    entries.map(prizeLabel).join(' · '):'❄️ Niete · 0 Münzen';
   $('scratch-result-kind').textContent=
-   (entries.length?entries.length+' Gewinne insgesamt':'')+
-   (ticket.rareMainMultiplier?' · 💎 Ultra-selten: Hauptgewinn ×2':
-    ticket.multiplier===2?' · ✨ ×2-Multiplikator':'');
-  const list=$('scratch-winning-lines');list.replaceChildren();
-  for(const [i,win] of wins.entries()){
-   const description=win.rule==='gold-20'?'20 Symbolfelder':win.rule==='premium-24'?([3,4,5].includes(ticket.board?.symbolVersion)?'24 Symbolfelder + 3 gleiche Geschenkzeichen':'24 Symbolfelder'):win.rule==='row-3'?'Dreierreihe':win.rule==='gift-three-connected'?'3 verbundene Geschenkzeichen':'Gewinn '+(i+1);
-   const line=el('div','scratch-prize-line',description+': '+prizeLabel(win.prize));
-   if(win.prize?.x2)line.append(el('small','', ' · '+num(win.prize.baseAmount)+' × 2'));
-   list.append(line);
+   (winFlag?entries.length+' Gewinne insgesamt':'0 Münzen')+
+   (current.rareMainMultiplier?' · 💎 Ultra-selten: Hauptgewinn ×2':
+    current.multiplier===2?' · ✨ ×2-Multiplikator':'');
+  // Render the authoritative result separately from board highlighting.
+  // Fallback also works when a legacy receipt has an unusual win structure.
+  try{
+   drawPrizeTable(current,entries);
+  }catch(err){
+   console.error('[DOG scratch] Ergebnisanzeige:',err);
+   let panel=stage.querySelector('.scratch-prize-sidebar');
+   if(!panel){panel=el('aside','scratch-prize-sidebar');stage.append(panel)}
+   panel.replaceChildren();
+   const summary=el('section','scratch-current-awards');
+   summary.append(el('small','scratch-result-kicker','✦ DEIN RUBBELLOS'),
+    el('h4','scratch-current-title',winFlag?'🎉 Dein Gewinn':'❄️ Dieses Los ist eine Niete'));
+   const hero=el('div','scratch-current-hero'+(winFlag?' is-win':' is-empty'));
+   hero.append(el('small','','Gutgeschriebene Münzen'),
+    el('strong','',num(earnedCoins)+' 🪙'),
+    el('span','',winFlag?entries.map(prizeLabel).join(' · '):'Kein Gewinn · 0 Münzen'));
+   summary.append(hero);panel.append(summary);
   }
-  for(const prize of entries.filter(p=>p?.bonus===true)){
-   const source=Number.isInteger(prize.sourceWin)?wins[prize.sourceWin]:null;
-   if(!source)continue;
-   list.append(el('div','scratch-prize-line scratch-prize-bonus',
-    '🎉 Zusatzgewinn zur Gewinnkombination '+(prize.sourceWin+1)+': '+prizeLabel(prize)));
-  }
-  drawPrizeTable(ticket,entries);
-  list.hidden=!entries.length;results.hidden=false;
-  $('scratch-reveal-button').hidden=true;$('scratch-ticket-finish').hidden=false;
-  $('scratch-ticket-finish').textContent='✓ Ergebnis bestätigen';
-  notice(entries.length?'🎉 Gewinne sind bereits sicher auf deinem Profil gutgeschrieben.':
+  // Optional gold highlights, paths and row descriptions cannot block the
+  // confirmation or accidentally book any extra rewards.
+  try{
+   for(const cell of board.querySelectorAll('.scratch-field'))cell.classList.add('uncovered');
+   const visibleCells=board.querySelectorAll('.scratch-field');
+   const goldIndices=stage.dataset.variant==='premium_27'?
+    premiumWinningRowIndices(wins):
+    [...new Set(wins.flatMap(win=>Array.isArray(win?.indices)?win.indices:[]))];
+   for(const i of goldIndices)visibleCells[i]?.classList.add('scratch-winning-cell');
+   showWinningElfPaths(wins);
+   reveal.classList.add('revealed');
+   if(stage.dataset.variant==='premium_27'&&Array.isArray(current.board?.cells))
+    updatePremiumCounter(current.board.cells.map((_,i)=>i));
+   const list=$('scratch-winning-lines');
+   list.replaceChildren();
+   for(const [i,win] of wins.entries()){
+    const description=win.rule==='gold-20'?'20 Symbolfelder':win.rule==='premium-24'?
+     ([3,4,5].includes(current.board?.symbolVersion)?'24 Symbolfelder + 3 gleiche Geschenkzeichen':'24 Symbolfelder'):
+     win.rule==='row-3'?'Dreierreihe':win.rule==='gift-three-connected'?
+     '3 verbundene Geschenkzeichen':'Gewinn '+(i+1);
+    const line=el('div','scratch-prize-line',description+': '+prizeLabel(win.prize));
+    if(win.prize?.x2)line.append(el('small','',' · '+num(win.prize.baseAmount)+' × 2'));
+    list.append(line);
+   }
+   for(const prize of entries.filter(p=>p.bonus===true)){
+    const source=Number.isInteger(prize.sourceWin)?wins[prize.sourceWin]:null;
+    if(!source)continue;
+    list.append(el('div','scratch-prize-line scratch-prize-bonus',
+     '🎉 Zusatzgewinn zur Gewinnkombination '+(prize.sourceWin+1)+': '+prizeLabel(prize)));
+   }
+   list.hidden=!winFlag;
+  }catch(err){console.error('[DOG scratch] Hervorhebung:',err)}
+  // Keep obsolete overlaid labels out of view. The sidebar above is the
+  // single source of displayed winnings, for both zero and positive receipts.
+  results.hidden=true;
+  notice(winFlag?'🎉 Gewinne sind bereits sicher auf deinem Profil gutgeschrieben.':
    '❄️ Niete – auf dieser Karte gibt es keine gültige Gewinnkombination.');
  }
  async function load(){
