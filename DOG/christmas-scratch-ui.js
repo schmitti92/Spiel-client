@@ -5,7 +5,7 @@
 export const SCRATCH_TICKET_TYPES=Object.freeze([
  {id:'simple',icon:'🟤',label:'Einfach',price:200,coinMax:100,unlockChance:'11,1',rewards:'47 klassische Emojis · 16 Blockfarben',odds:'20 % Nieten · 68,9 % Münzen · 11,1 % Freischaltungen'},
  {id:'medium',icon:'🔵',label:'Mittel',price:500,coinMax:800,unlockChance:'3',rewards:'5 Profilbilder · 4 Weihnachts-Emojis · Rahmen · Aktivsymbol · Spielbrett',odds:'20 % Nieten · 77 % Münzen · 3 % Freischaltungen'},
- {id:'premium',icon:'🟡',label:'Premium',price:1000,coinMax:2000,unlockChance:'4',rewards:'10 Profilbilder · 4 Weihnachts-Emojis · 2 Rahmen · 2 Aktivsymbole · 2 Hintergründe · Spielbrett',odds:'20 % Nieten · 76 % Münzen · 4 % Freischaltungen'}
+ {id:'premium',icon:'🟡',label:'Premium',price:1000,coinMax:2000,unlockChance:'4',rewards:'10 Profilbilder · 4 Weihnachts-Emojis · 2 Rahmen · 2 Aktivsymbole · 2 Hintergründe · Spielbrett',odds:'4 Geld-Dreierreihen garantiert · 30 % Chance auf +1.000 Münzen · 4 % Freischaltungen'}
 ]);
 export const SCRATCH_COIN_PRIZES=Object.freeze({
  simple:Object.freeze([10,40,100]),
