@@ -573,6 +573,8 @@ function showLiveVillage(data){
  $('building-village-counter').textContent=Object.values(v.levels).reduce((a,b)=>a+b,0)+' / 20';
  $('building-village-tree').textContent='Stufe '+TREE_THRESHOLDS.filter(t=>Object.values(v.levels).reduce((a,b)=>a+b,0)>=t).length+' / 10';
  $('building-village-gifts').textContent=String(v.giftsCollected);
+ $('building-village-earned').textContent=lightsLabel(v.totalEarnedTenths??0)+' ⭐';
+ $('building-village-spent').textContent=lightsLabel(v.totalSpentTenths??0)+' ⭐';
  $('stat-village-lights').textContent=lightsLabel(v.lightsTenths)+' ⭐';
  $('stat-village-gifts').textContent=String(v.giftsCollected);
  $('building-event-mode').textContent=!villageEventActive?'🏁 Event beendet · Fortschritt bleibt gespeichert.'
@@ -602,7 +604,9 @@ async function ensureVillageImport(){
 let pendingVillageRead=null;
 async function reloadVillage(){
  if(!eventUser()){
-  $('building-live-balance').textContent='Anmeldung erforderlich';
+  $('building-live-balance').textContent='Online-Profil anmelden';
+  $('building-village-earned').textContent='–';
+  $('building-village-spent').textContent='–';
   $('building-village-role').textContent='🔐 Online-Profil nötig';
   $('building-village-role').dataset.state='preview';
   $('building-event-mode').textContent='🔐 Mit deinem Online-Spielerprofil anmelden – ein Raumcode ist nicht erforderlich.';
@@ -639,9 +643,8 @@ async function purchaseBuilding(id){
 }
 $('building-wallet-refresh').disabled=false;
 $('building-wallet-refresh').addEventListener('click',()=>void reloadVillage());
-if(villageRoomValid)
- $('building-wallet-room').href='../hub-lobby.html?'+new URLSearchParams({room:villageCode,stage:'1'}).toString();
-$('building-village-role').textContent='⌛ Gemeinsames Dorf wird geladen';
+// The village is tied to an online profile, not a room or host.
+$('building-village-role').textContent='⌛ Gemeinsames DOG-Dorf lädt';
 void reloadVillage();
 window.addEventListener('spielonline-change',()=>{
  void reloadVillage();
