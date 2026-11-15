@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="./christmas-event-royal.css?v=8">
 <link rel="stylesheet" href="./christmas-tree-rewards.css?v=2">
 <link rel="stylesheet" href="./christmas-tree-world.css?v=3">
-<link rel="stylesheet" href="./christmas-scratch.css?v=1">
+<link rel="stylesheet" href="./christmas-scratch.css?v=2">
 <link rel="stylesheet" href="./christmas-building-village.css?v=3">
 </head>
 <body>
@@ -312,17 +312,20 @@
         <div id="scratch-tier-grid" class="scratch-tickets" aria-label="Drei Rubbellos-Arten"></div>
         <section id="scratch-stage" class="scratch-stage" aria-labelledby="scratch-ticket-title" hidden>
           <h3 id="scratch-ticket-title">🎟️ Rubbellos</h3>
+          <p id="scratch-variant-rule" class="scratch-variant-rule">Rubble die Felder frei und finde die Gewinnkombination.</p>
+          <p id="scratch-progress" class="scratch-progress" aria-live="polite">0 / 9 Felder aufgedeckt</p>
           <div id="scratch-reveal" class="scratch-play">
-            <div class="scratch-hidden-prize" aria-live="off"><strong id="scratch-result-value"></strong><small id="scratch-result-kind"></small></div>
-            <canvas id="scratch-canvas" class="scratch-canvas" aria-label="Silberne Fläche mit Finger oder Maus freirubbeln" width="640" height="190"></canvas>
+            <div id="scratch-board" class="scratch-board" aria-label="Rubbelfelder"></div>
+            <div id="scratch-result-panel" class="scratch-hidden-prize" hidden aria-live="polite"><strong id="scratch-result-value"></strong><small id="scratch-result-kind"></small></div>
+            <div id="scratch-winning-lines" class="scratch-winning-lines" hidden></div>
           </div>
           <div class="scratch-stage-actions">
-            <button id="scratch-reveal-button" type="button">🎁 Gewinn enthüllen</button>
+            <button id="scratch-reveal-button" type="button">✨ Alle Felder aufdecken</button>
             <button id="scratch-ticket-finish" type="button" hidden>Weiteres Los wählen</button>
           </div>
         </section>
         <p id="scratch-status" class="scratch-message" role="status" aria-live="polite">Lade deine Rubbellose …</p>
-        <p class="scratch-info">Die Lose und Münzen gehören deinem angemeldeten Spielerprofil. Ein Startguthaben von 1.000 Münzen und täglich ein einfaches Gratis-Los ermöglichen den Einstieg. Ein Münzgewinn beträgt zufällig 1 bis 100 Münzen. Bereits gewonnene Designs werden nicht doppelt vergeben.</p>
+        <p class="scratch-info">Die Lose und Münzen gehören deinem angemeldeten Spielerprofil. Ein Startguthaben von 1.000 Münzen und täglich ein einfaches Gratis-Los ermöglichen den Einstieg. Je nach Losart sind Münztreffer von 1–100, 1–800 oder 1–2.000 Münzen möglich. Auf jeder Karte gelten eigene sichtbare Gewinnregeln. Bereits gewonnene Designs werden nicht doppelt vergeben.</p>
       </div>
     </section>
     <section class="event-panel" id="panel-chapters" role="tabpanel" aria-labelledby="tab-chapters" hidden>
@@ -336,6 +339,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./christmas-event.js?v=24"></script>
+<script type="module" src="./christmas-event.js?v=25"></script>
 </body>
 </html>
