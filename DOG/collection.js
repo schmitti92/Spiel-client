@@ -1,7 +1,7 @@
 import {applyMotionMode,loadMotionMode} from './motion-settings.js';
 applyMotionMode(loadMotionMode());
-import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=4';
-import {loadAppearance,saveAppearance} from './appearance-registry.js?v=18';
+import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=5';
+import {loadAppearance,saveAppearance} from './appearance-registry.js?v=22';
 import {loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=1';
 // The collection never grants event rewards. Cosmetic choices persist locally;
 // only an explicit avatar update in an active room uses the existing DOG API.
@@ -153,7 +153,8 @@ function drawDetails(){
  btn.textContent=locked?'🔒 Später freischaltbar':item.kind==='default'?'✓ Standardsymbol aktiv':active&&item.kind!=='emoji'?'✓ Aktiv':item.kind==='emoji'?'In Schnellleiste verwenden':'✓ Ausrüsten';
  btn.disabled=locked||item.kind==='default'||(active&&item.kind!=='emoji');
  if(!btn.disabled)btn.onclick=()=>equip(item,btn);
- root.append(art(item,true),el('h3','detail-title',item.name),el('div','detail-rule'),
+ const detailArt=art(item,true);if(locked)detailArt.classList.add('is-locked');
+ root.append(detailArt,el('h3','detail-title',item.name),el('div','detail-rule'),
    el('div','detail-state'+(locked?' is-locked':''),locked?'🔒 Geplantes Event':active?'✓ Aktiv / vorhanden':'✓ Verfügbar'),
    el('p','detail-description',item.description||'DOG-Design'));
  if(item.kind==='avatar'&&local&&!locked){
@@ -179,7 +180,7 @@ function draw(){
  const stats=dogCollectionStats();
  $('collection-total').textContent=String(stats.available);
  
- $('collection-progress-caption').textContent='Alle angezeigten Gegenstände sind bereits vorhanden.';
+ $('collection-progress-caption').textContent=stats.planned?stats.planned+' Event-Designs noch gesperrt.':'Nur tatsächlich verfügbare DOG-Inhalte';
  drawNavigation();drawFilters();drawGrid();drawDetails();
 }
 document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;picked=null;drawFilters();drawGrid();drawDetails();});
