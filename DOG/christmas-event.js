@@ -68,7 +68,7 @@ const sceneLayouts=Object.freeze({
  workshop:{cx:1064,ground:385,w:258,h:280,growth:[.72,.79,.86,.93,1]},
  bakery:{cx:322,ground:599,w:274,h:205,growth:[.69,.76,.85,.93,1]},
  inn:{cx:934,ground:600,w:288,h:205,growth:[.70,.77,.85,.93,1]},
- tree:{cx:610,ground:602,w:299,h:492,growth:[.54,.59,.65,.71,.76,.81,.86,.91,.96,1]}
+ tree:{cx:610,ground:504,w:299,h:394,growth:[.54,.59,.65,.71,.76,.81,.86,.91,.96,1]}
 });
 function measureVisiblePixels(image){
  const naturalWidth=image.naturalWidth||1,naturalHeight=image.naturalHeight||1;
@@ -230,7 +230,7 @@ function refreshPreview(){
  view.dataset.snow=String(tree<=2?1:tree<=4?2:tree<=6?3:tree<=8?4:5);
  // The old vector tree remains visible until a valid tree PNG is available.
  const growth=.51+((tree-1)/9)*.49;
- $('art-tree').setAttribute('transform','translate(610 602) scale('+growth.toFixed(4)+') translate(0 -565)');
+ $('art-tree').setAttribute('transform','translate(610 504) scale('+growth.toFixed(4)+') translate(0 -565)');
  showStageImage('tree',tree);
  updateCardImage('tree',tree);
  $('stat-building-levels').textContent=total+' / 20';
@@ -328,3 +328,18 @@ document.querySelectorAll('.building-card-art img, #tree-card-photo').forEach(im
  });
 });
 refreshPreview();
+// Load the high-resolution landscape separately: never block gameplay UI.
+// Its <svg:image> renders only once the same-origin PNG is confirmed available.
+const landscape=$('village-background-image');
+if(landscape){
+ const source=landscape.getAttribute('href');
+ const preload=new Image();
+ preload.onload=()=>{
+  if(landscape.getAttribute('href')===source)$('village-view')?.classList.add('background-ready');
+ };
+ preload.onerror=()=>{
+  // Intentionally keep the old SVG mountains/paths as a visible fallback.
+  $('village-view')?.classList.remove('background-ready');
+ };
+ preload.src=source;
+}
