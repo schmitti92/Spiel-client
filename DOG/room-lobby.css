@@ -1,0 +1,335 @@
+/* The DOG-specific online waiting room only.
+ * Scoped to #dog-room-lobby: no visual or layout changes to the main lobby.
+ * Original hub controller still handles all room actions and game start.
+ */
+#dog-room-lobby[hidden]{display:none!important}
+body.dog-room-open{overflow:hidden!important}
+#dog-room-lobby{
+ --dog-ink:#07182c;--dog-panel:#06223bdd;--dog-gold:#f3c777;
+ --dog-gold-dark:#9f6b2b;--dog-blue:#32caff;--dog-surface:#0b2d4b;
+ position:fixed;inset:0;z-index:2147483200;
+ display:block;box-sizing:border-box;overflow-y:auto;overflow-x:hidden;
+ overscroll-behavior:contain;isolation:isolate;
+ padding:clamp(6px,1.5dvh,18px) clamp(8px,2vw,32px);
+ color:#fff5e3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+ background:#07192c;
+ scrollbar-width:thin;scrollbar-color:#b18b56 #07192c;
+}
+#dog-room-lobby *,#dog-room-lobby *::before,#dog-room-lobby *::after{box-sizing:border-box}
+#dog-room-lobby .dog-room-atmosphere{
+ position:fixed;inset:0;pointer-events:none;z-index:-1;
+ background:
+  radial-gradient(ellipse at 11% 56%,rgba(239,122,35,.36),transparent 33%),
+  radial-gradient(ellipse at 87% 25%,rgba(253,181,70,.22),transparent 37%),
+  linear-gradient(180deg,rgba(3,11,25,.43),rgba(6,19,35,.6) 66%,rgba(18,12,10,.67)),
+  url("assets/backgrounds/dog-hintergrund-magisches-schloss.png") center/cover no-repeat;
+ filter:saturate(1.13);
+}
+#dog-room-lobby .dog-room-atmosphere::after{
+ content:"";position:absolute;inset:60% 0 0;
+ background:
+  repeating-linear-gradient(1deg,transparent 0 22px,rgba(7,8,14,.11) 23px 25px,transparent 26px 74px),
+  linear-gradient(0deg,rgba(58,27,15,.75),transparent 92%);
+}
+#dog-room-lobby .dog-room-stage{
+ width:min(1690px,100%);min-height:min-content;max-width:100%;margin:0 auto;
+ display:flex;flex-direction:column;gap:clamp(8px,1.4dvh,16px);
+}
+#dog-room-lobby button,#dog-room-lobby a{
+ -webkit-tap-highlight-color:transparent;
+ font-family:inherit;
+}
+#dog-room-lobby button:focus-visible,#dog-room-lobby a:focus-visible{
+ outline:3px solid #fff4bb;outline-offset:3px;
+}
+#dog-room-lobby .dog-room-top{
+ display:grid;grid-template-columns:minmax(175px,1fr) auto minmax(210px,1fr);
+ align-items:center;gap:10px;min-height:clamp(66px,10dvh,104px);
+ padding:10px clamp(8px,1.2vw,20px);
+ border-radius:19px;border:1.5px solid #ebc987;
+ background:
+  linear-gradient(90deg,rgba(8,26,45,.97),rgba(8,40,74,.94) 50%,rgba(8,26,45,.97));
+ box-shadow:0 10px 30px #0009,inset 0 1px #fff4,inset 0 -3px #9e6e275a;
+}
+#dog-room-lobby .dog-room-heading{
+ display:flex;align-items:center;justify-content:center;gap:.2em;
+ color:#f8f4e9;margin:0;white-space:nowrap;
+ font-size:clamp(23px,3.05vw,50px);font-weight:950;letter-spacing:-.03em;line-height:1.02;
+ text-shadow:0 3px 8px #0009;
+}
+#dog-room-lobby .dog-room-heading>span:first-child{font-size:.8em;filter:drop-shadow(0 1px 6px #f5c17b)}
+#dog-room-lobby .dog-room-brand{
+ font-family:Georgia,serif;font-size:1.12em;
+ background:linear-gradient(#fff4c9 4%,#f7d483 41%,#c78627 78%,#fff0ba);
+ background-clip:text;-webkit-background-clip:text;color:transparent;
+ filter:drop-shadow(0 3px 1px rgba(70,37,7,.7));
+}
+#dog-room-lobby .dog-room-heading-dot{color:#f8c875;padding:0 3px}
+#dog-room-lobby .dog-room-utility{
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ min-height:43px;padding:8px 14px;border-radius:13px;
+ border:1.5px solid #d0a46d;
+ color:#fff0d4;font-size:clamp(11px,1.02vw,15px);font-weight:850;text-decoration:none;
+ background:linear-gradient(155deg,#174269,#07192f);
+ box-shadow:inset 0 1px #ffffff4f,0 4px 12px #0009;
+ cursor:pointer;white-space:nowrap;
+ transition:background .19s,box-shadow .19s,transform .18s,filter .18s;
+}
+#dog-room-lobby .dog-room-utility:hover:not(:disabled){
+ filter:brightness(1.14);box-shadow:0 5px 16px #000b,0 0 10px #f6d08477;
+ transform:translateY(-1px);
+}
+#dog-room-lobby .dog-room-top-actions{
+ display:flex;justify-content:flex-end;gap:8px;min-width:0;
+}
+#dog-room-lobby .dog-room-codebar{
+ width:min(720px,90%);min-height:clamp(68px,11dvh,104px);
+ display:flex;justify-content:center;align-items:center;gap:clamp(10px,2vw,30px);
+ margin:0 auto;padding:8px 22px;border-radius:999px;
+ border:2px solid #ffe19f;
+ background:linear-gradient(105deg,rgba(3,18,36,.97),rgba(14,43,70,.95),rgba(5,17,34,.96));
+ box-shadow:0 0 0 3px #c3812a2b,0 0 23px #ffb24977,inset 0 2px #fff6,
+ inset 0 -2px #8f5c2b7e,0 11px 28px #000a;
+}
+#dog-room-lobby .dog-room-code-name{
+ font-size:clamp(14px,1.8vw,24px);font-weight:950;letter-spacing:.045em;color:#fff6e6;
+}
+#dog-room-lobby .dog-room-code-value{
+ font-size:clamp(30px,4vw,59px);font-weight:1000;line-height:1;
+ color:#ffdf83;letter-spacing:.04em;font-variant-numeric:tabular-nums;
+ text-shadow:0 2px 2px #6c4208,0 0 13px #ffcd6fa8;
+}
+#dog-room-lobby .dog-room-code-split{
+ width:1px;height:44px;flex:none;background:linear-gradient(transparent,#f9dba7,transparent);opacity:.8;
+}
+#dog-room-lobby .dog-room-grid{
+ display:grid;grid-template-columns:minmax(0,1.64fr) minmax(320px,1fr);
+ align-items:stretch;gap:clamp(10px,1.2vw,18px);min-height:0;
+}
+#dog-room-lobby .dog-room-panel{
+ display:flex;flex-direction:column;min-width:0;padding:clamp(14px,1.9vw,25px);
+ border:1.5px solid #ddae64;border-radius:23px;
+ background:linear-gradient(160deg,rgba(8,40,70,.95),rgba(4,22,41,.97));
+ box-shadow:inset 0 2px #c7eaff25,inset 0 -2px #f4d69a18,0 15px 39px #000a;
+ position:relative;overflow:hidden;
+}
+#dog-room-lobby .dog-room-panel::before{
+ content:"";position:absolute;inset:4px;pointer-events:none;
+ border:1px solid rgba(255,232,167,.17);border-radius:19px;
+}
+#dog-room-lobby .dog-room-panel h2{
+ margin:0 0 clamp(10px,1.5dvh,19px);
+ color:#f9f1df;line-height:1.2;font-size:clamp(18px,1.7vw,30px);font-weight:900;
+ text-shadow:0 2px 6px #0007;
+}
+#dog-room-lobby .dog-room-board-panel h2{font-size:clamp(16px,1.38vw,24px)}
+#dog-room-lobby .dog-room-board-panel h2 small{font-size:.76em;color:#e1cfac;font-weight:650}
+#dog-room-lobby .dog-room-roster{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(7px,.9vw,15px);
+ flex:1;min-height:clamp(170px,23dvh,275px);
+}
+#dog-room-lobby .dog-room-player{
+ --seat-color:#8facc4;
+ display:flex;align-items:center;justify-content:center;flex-direction:column;
+ gap:clamp(3px,.8dvh,9px);min-width:0;min-height:clamp(155px,23dvh,260px);
+ padding:10px 6px;border:1.8px solid var(--seat-color);border-radius:18px;
+ background:linear-gradient(180deg,rgba(17,55,88,.94),rgba(4,23,43,.93));
+ box-shadow:inset 0 2px #ffffff32,0 4px 15px #0007;
+ text-align:center;
+ animation:dog-room-seat-enter .36s ease-out both;
+}
+#dog-room-lobby .dog-room-player[data-seat="0"]{--seat-color:#ff7770}
+#dog-room-lobby .dog-room-player[data-seat="1"]{--seat-color:#5ec6ff;animation-delay:.04s}
+#dog-room-lobby .dog-room-player[data-seat="2"]{--seat-color:#80dda6;animation-delay:.08s}
+#dog-room-lobby .dog-room-player[data-seat="3"]{--seat-color:#ffd56c;animation-delay:.12s}
+#dog-room-lobby .dog-room-player.is-host{
+ border-color:var(--seat-color);
+ box-shadow:0 0 0 1px var(--seat-color),0 0 17px color-mix(in srgb,var(--seat-color) 40%,transparent),inset 0 1px #ffffff54;
+}
+#dog-room-lobby .dog-room-player.is-free{border-color:#63829c;background:linear-gradient(#13334f,#0b273e);opacity:.83}
+#dog-room-lobby .dog-room-player.is-spectator{border-style:dashed}
+#dog-room-lobby .dog-room-player-avatar{
+ display:grid;place-items:center;width:clamp(48px,6.5vw,92px);height:clamp(54px,8.3dvh,104px);
+ background-repeat:no-repeat;background-position:center;background-size:contain;
+ font-size:clamp(43px,5.7vw,72px);line-height:1;
+ filter:drop-shadow(0 4px 5px #000c);
+}
+#dog-room-lobby .dog-room-player-avatar.is-picture{
+ border-radius:50%;width:clamp(52px,6.8vw,93px);height:clamp(52px,6.8vw,93px);
+ border:3px solid var(--seat-color);box-shadow:0 2px 10px #0009;
+}
+#dog-room-lobby .dog-room-player-name{
+ max-width:100%;min-height:23px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+ color:#fff9f0;font-size:clamp(12px,1.42vw,22px);font-weight:950;
+ text-shadow:0 2px 5px #000a;
+}
+#dog-room-lobby .dog-room-player-status{
+ display:inline-flex;align-items:center;justify-content:center;
+ min-height:26px;max-width:100%;padding:5px 9px;border-radius:999px;
+ font-size:clamp(10px,1.04vw,14px);font-weight:900;
+ color:#dfdfe5;background:#203d57;border:1px solid #607d93;
+}
+#dog-room-lobby .dog-room-player-status.is-ready{
+ color:#e9fff0;background:linear-gradient(#188b51,#086634);border-color:#4bdd85;
+ box-shadow:0 2px 9px #02562c66;
+}
+#dog-room-lobby .dog-room-player-status.is-host-tag{border-color:#e6b76c;color:#ffe0a3;background:#553817}
+#dog-room-lobby .dog-room-player-meta{font-size:11px;color:#e0c79c;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#dog-room-lobby .dog-room-readiness{
+ margin-top:clamp(10px,2dvh,25px);padding:clamp(12px,1.3vw,17px);
+ background:linear-gradient(100deg,rgba(4,22,40,.94),rgba(12,44,71,.85));
+ border:1px solid #2a5980;border-radius:15px;box-shadow:inset 0 1px #ffffff1a;
+}
+#dog-room-lobby .dog-room-readiness-copy{
+ display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;
+ font-size:clamp(12px,1.27vw,18px);font-weight:820;
+}
+#dog-room-lobby #dog-room-ready-count{color:#8cffb6;text-shadow:0 0 11px #28ff7159}
+#dog-room-lobby .dog-room-progress{
+ height:clamp(12px,2dvh,23px);margin:11px 0 5px;padding:2px;border-radius:99px;
+ border:1px solid #74d5a0;background:#133f40;overflow:hidden;
+ box-shadow:inset 0 1px 7px #0006,0 2px 5px #0005;
+}
+#dog-room-lobby .dog-room-progress>span{
+ display:block;width:0%;height:100%;border-radius:99px;
+ background:linear-gradient(180deg,#a8ff8a,#27d662 52%,#0c9e44);
+ box-shadow:inset 0 1px #ffffff8a,0 0 14px #39ff7a77;
+ transition:width .3s ease;
+}
+#dog-room-lobby #dog-room-readiness-note{margin:7px 0 0;color:#c7deed;font-size:clamp(10px,1vw,13px);line-height:1.35}
+#dog-room-lobby .dog-room-primary-actions{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(7px,1vw,14px);
+ margin-top:clamp(10px,2dvh,24px);
+}
+#dog-room-lobby .dog-room-action{
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ min-height:clamp(49px,7dvh,76px);padding:10px 12px;
+ border:2px solid #d6ae71;border-radius:15px;
+ color:#fffaf0;text-decoration:none;text-align:center;
+ font-size:clamp(11px,1.4vw,20px);font-weight:950;line-height:1.16;
+ white-space:normal;cursor:pointer;
+ box-shadow:inset 0 2px #ffffff56,0 5px 13px #000b;
+ transition:transform .17s ease,filter .17s ease,box-shadow .17s ease;
+}
+#dog-room-lobby .dog-room-action:hover:not(:disabled),
+#dog-room-lobby a.dog-room-action:hover{filter:brightness(1.12);transform:translateY(-2px);box-shadow:0 6px 17px #000b,0 0 10px #ffd48b82}
+#dog-room-lobby .dog-room-action:active:not(:disabled){transform:scale(.975)}
+#dog-room-lobby .dog-room-action-blue{background:linear-gradient(160deg,#2687c2,#0a3c72);border-color:#c3deff}
+#dog-room-lobby .dog-room-action-green{background:linear-gradient(160deg,#25c455,#087437);border-color:#bafac5}
+#dog-room-lobby .dog-room-action-gold{color:#1a2630;background:linear-gradient(155deg,#ffe8a1,#f9c35e 55%,#ba7925);border-color:#fff1c7}
+#dog-room-lobby .dog-room-action-navy{background:linear-gradient(150deg,#1a527c,#08294a);border-color:#e3b970}
+#dog-room-lobby .dog-room-action:disabled{
+ cursor:not-allowed;filter:saturate(.57) brightness(.73);box-shadow:inset 0 1px #ffffff28;opacity:.72
+}
+#dog-room-lobby .dog-room-feedback{
+ min-height:1.5em;margin:9px 0 0;text-align:center;color:#d5dfeb;
+ font-size:clamp(11px,1vw,13px);line-height:1.3;
+}
+#dog-room-lobby .dog-room-board-panel{align-items:stretch}
+#dog-room-lobby .dog-room-board-preview{
+ flex:1;display:flex;align-items:center;justify-content:center;
+ min-height:clamp(245px,42dvh,474px);overflow:hidden;
+ padding:10px;border:1px solid #e9b972;border-radius:17px;
+ background:radial-gradient(circle at 50% 35%,#ac774d,#50331f 70%,#1b1824);
+ box-shadow:inset 0 0 25px #0009,0 4px 13px #0007;
+}
+#dog-room-lobby .dog-room-board-preview svg{
+ width:min(100%,470px);height:100%;max-height:clamp(230px,40dvh,450px);
+ aspect-ratio:1;object-fit:contain;border-radius:10px;filter:drop-shadow(0 5px 12px #000a);
+}
+#dog-room-lobby .dog-room-board-actions{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:clamp(10px,1.7dvh,18px) 0;
+}
+#dog-room-lobby .dog-room-board-actions .dog-room-action{min-height:clamp(51px,7dvh,76px)}
+#dog-room-lobby .dog-room-rules-button{align-self:center;min-width:205px}
+#dog-room-lobby .dog-room-rules-dialog{
+ position:fixed;inset:0;width:min(560px,calc(100vw - 30px));max-height:85dvh;overflow:auto;
+ margin:auto;padding:26px;border:2px solid #f7ce80;border-radius:18px;
+ background:linear-gradient(145deg,#123c60,#061d37);color:#f7f0df;
+ box-shadow:0 20px 70px #000c;
+}
+#dog-room-lobby .dog-room-rules-dialog::backdrop{background:rgba(0,8,20,.78);backdrop-filter:blur(4px)}
+#dog-room-lobby .dog-room-rules-dialog h2{color:#ffe0a2;font-size:23px}
+#dog-room-lobby .dog-room-rules-dialog p{line-height:1.55;font-size:15px;color:#e1edf5}
+#dog-room-lobby .dog-room-rules-dialog button{width:100%;margin-top:12px}
+@keyframes dog-room-seat-enter{
+ from{opacity:.6;transform:translateY(10px) scale(.97)}
+ to{opacity:1;transform:translateY(0) scale(1)}
+}
+@media(max-width:1160px){
+ #dog-room-lobby .dog-room-top{grid-template-columns:minmax(115px,1fr) auto minmax(145px,1fr)}
+ #dog-room-lobby .dog-room-grid{grid-template-columns:minmax(0,1.3fr) minmax(295px,1fr)}
+ #dog-room-lobby .dog-room-utility{padding:8px 10px;font-size:11px}
+ #dog-room-lobby .dog-room-player-avatar{font-size:43px}
+}
+@media(max-width:910px),(orientation:portrait){
+ #dog-room-lobby{padding:8px}
+ #dog-room-lobby .dog-room-grid{grid-template-columns:minmax(0,1fr)}
+ #dog-room-lobby .dog-room-roster{min-height:120px}
+ #dog-room-lobby .dog-room-player{min-height:160px}
+ #dog-room-lobby .dog-room-board-preview{min-height:290px}
+ #dog-room-lobby .dog-room-board-preview svg{max-height:355px}
+}
+@media(max-width:670px){
+ #dog-room-lobby .dog-room-top{grid-template-columns:1fr auto;gap:6px;padding:7px 9px}
+ #dog-room-lobby .dog-room-back{grid-column:1;grid-row:1;justify-self:start}
+ #dog-room-lobby .dog-room-heading{grid-column:1/-1;grid-row:2;font-size:clamp(23px,5vw,35px);margin:2px 0 5px}
+ #dog-room-lobby .dog-room-top-actions{grid-column:2;grid-row:1}
+ #dog-room-lobby .dog-room-top-actions .dog-room-utility{min-height:37px;font-size:10px;padding:6px 8px}
+ #dog-room-lobby .dog-room-codebar{width:100%;min-height:72px;padding:8px 10px;gap:10px}
+ #dog-room-lobby .dog-room-code-value{font-size:34px}
+ #dog-room-lobby .dog-room-code-split{height:33px}
+ #dog-room-lobby .dog-room-roster{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ #dog-room-lobby .dog-room-player{min-height:117px;padding:8px}
+ #dog-room-lobby .dog-room-player-avatar{height:45px;width:45px;font-size:37px}
+ #dog-room-lobby .dog-room-player-avatar.is-picture{height:45px;width:45px}
+ #dog-room-lobby .dog-room-player-name{font-size:14px}
+ #dog-room-lobby .dog-room-primary-actions{grid-template-columns:1fr 1fr}
+ #dog-room-lobby .dog-room-primary-actions button:last-child{grid-column:1/-1}
+ #dog-room-lobby .dog-room-action{min-height:47px;font-size:13px}
+ #dog-room-lobby .dog-room-panel{padding:12px}
+ #dog-room-lobby .dog-room-board-preview{min-height:260px}
+}
+@media(max-width:410px){
+ #dog-room-lobby .dog-room-top-actions{gap:4px}
+ #dog-room-lobby .dog-room-top-actions .dog-room-utility{font-size:9px;padding:5px 6px}
+ #dog-room-lobby .dog-room-heading{font-size:24px}
+ #dog-room-lobby .dog-room-codebar .dog-room-utility{font-size:10px;min-height:36px}
+ #dog-room-lobby .dog-room-code-name{font-size:13px}
+ #dog-room-lobby .dog-room-code-value{font-size:30px}
+ #dog-room-lobby .dog-room-board-actions{gap:6px}
+ #dog-room-lobby .dog-room-board-actions .dog-room-action{font-size:11px;padding:8px 6px}
+}
+@media(min-width:920px) and (orientation:landscape) and (max-height:775px){
+ #dog-room-lobby{padding:6px 12px}
+ #dog-room-lobby .dog-room-top{min-height:59px;padding:6px 10px}
+ #dog-room-lobby .dog-room-heading{font-size:clamp(21px,2.4vw,32px)}
+ #dog-room-lobby .dog-room-codebar{min-height:53px;padding:5px 14px}
+ #dog-room-lobby .dog-room-code-value{font-size:34px}
+ #dog-room-lobby .dog-room-code-split{height:31px}
+ #dog-room-lobby .dog-room-panel{padding:11px 13px}
+ #dog-room-lobby .dog-room-panel h2{font-size:19px;margin-bottom:9px}
+ #dog-room-lobby .dog-room-player{min-height:clamp(115px,20dvh,153px)}
+ #dog-room-lobby .dog-room-roster{min-height:115px}
+ #dog-room-lobby .dog-room-player-avatar{height:clamp(40px,7dvh,62px);width:clamp(40px,7dvh,62px);font-size:38px}
+ #dog-room-lobby .dog-room-player-name{font-size:14px}
+ #dog-room-lobby .dog-room-player-status{min-height:23px;font-size:10px}
+ #dog-room-lobby .dog-room-readiness{margin-top:10px;padding:9px}
+ #dog-room-lobby .dog-room-progress{height:12px;margin:8px 0 4px}
+ #dog-room-lobby .dog-room-primary-actions{margin-top:11px}
+ #dog-room-lobby .dog-room-action{min-height:48px;font-size:13px;padding:8px}
+ #dog-room-lobby .dog-room-board-preview{min-height:235px}
+ #dog-room-lobby .dog-room-board-preview svg{max-height:46dvh}
+ #dog-room-lobby .dog-room-board-actions{margin:8px 0}
+ #dog-room-lobby .dog-room-board-actions .dog-room-action{min-height:48px}
+}
+@media(prefers-reduced-motion:reduce){
+ #dog-room-lobby *,#dog-room-lobby *::before,#dog-room-lobby *::after{
+  animation:none!important;transition-duration:0s!important;scroll-behavior:auto!important;
+ }
+}
+:root[data-dog-motion="off"] #dog-room-lobby *,
+:root[data-dog-motion="off"] #dog-room-lobby *::before,
+:root[data-dog-motion="off"] #dog-room-lobby *::after{
+ animation:none!important;transition-duration:0s!important
+}
