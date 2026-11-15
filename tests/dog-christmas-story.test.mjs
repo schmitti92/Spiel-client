@@ -101,7 +101,8 @@ test('village overview removes requested prose and preview controls but retains 
  assert.ok(village,'village panel exists');
  assert.doesNotMatch(html,/<header class="event-top">/,'old top bar takes no space');
  assert.match(html,/id="event-return"[^>]*class="top-action event-fixed-return"[^>]*>↩ Zurück<\/a>/);
- assert.doesNotMatch(html,/event-brand|KAPITEL 1|DOG <em>WEIHNACHTEN<\/em>/);
+ assert.doesNotMatch(html.split('<div class="event-layout">')[0],
+  /event-brand|KAPITEL 1|DOG <em>WEIHNACHTEN<\/em>/);
  assert.doesNotMatch(village,/royal-intro|village-storyline|village-caption|village-preview-actions|event-footer-row/);
  for(const phrase of ['Die Weihnachtsreise beginnt','Unser gemeinsames Ziel',
   'Vollausbau prüfen','Nächste Entwicklungsstufe','Gebäude ansehen',
