@@ -3,7 +3,7 @@
  * Only available, already implemented items appear in the shipped collection.
  */
 import {BOARD_STYLES,isBoardUnlocked,SCENE_STYLES,PIECE_STYLES,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,HUD_TONES,HUD_LAYOUTS} from './appearance-registry.js?v=23';
-import {CARD_EDITION,CARD_EDITIONS,cardVisual,isCardEditionUnlocked} from './card-visuals.js?v=7';
+import {CARD_EDITION,CARD_EDITIONS,cardVisual,isCardEditionUnlocked} from './card-visuals.js?v=8';
 import {DOG_EMOJIS,DOG_EMOJI_STARTERS,DOG_CHRISTMAS_EMOJIS} from './dog-emojis.js?v=2';
 import {CHRISTMAS_AVATARS} from './christmas-avatar-catalog.js?v=1';
 import {CHRISTMAS_NAME_FRAMES} from './christmas-nameframe-catalog.js?v=1';
