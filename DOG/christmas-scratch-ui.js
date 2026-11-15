@@ -525,8 +525,10 @@ export function initChristmasScratch(){
   const counter=stage.querySelector('.scratch-premium-counter');
   if(!progress||!counter)return;
   counter.querySelector('[data-premium-symbol-count]').textContent=progress.count+' / 27';
-  counter.querySelector('[data-premium-found]').textContent=
-   progress.count+' von '+progress.total+' vorhandenen Symbolen freigerubbelt';
+  // Never disclose the ticket's unseen total before the silver is removed.
+  counter.querySelector('[data-premium-found]').textContent=finished?
+   progress.total+' echte Symbole insgesamt · 🧊 zählt nicht':
+   progress.count+' echte Symbole entdeckt · 🧊 zählt nicht';
   // Also frame the 20/24 reward illustrations already printed at the
   // bottom-right of the premium artwork, without covering or changing art.
   const artwork=$('scratch-card-art');
