@@ -155,3 +155,35 @@ body{background:#071d1a;background-image:radial-gradient(ellipse 65% 35% at 52% 
  .hotspot-inn{left:87%;top:93%}
  .building-hotspot{font-size:8px;max-width:30%}
 }
+
+/* Level-five-safe placements (1200x670 scene). The nameplate sits BELOW
+   its building footprint, not across the roof, windows, or entrance.
+   Maximal alpha bounds are fitted by christmas-event.js within disjoint slots. */
+.hotspot-tower{left:10.6%;top:61.6%}
+.hotspot-workshop{left:88.7%;top:61.6%}
+.hotspot-bakery{left:26.8%;top:94.3%}
+.hotspot-inn{left:77.8%;top:94.3%}
+.building-hotspot{font-size:clamp(10px,.9vw,13px);padding:6px 9px;max-width:27%;border-radius:8px}
+.building-hotspot small{top:-9px;right:-8px}
+.village-storyline{display:flex;align-items:center;gap:12px;min-height:52px;padding:10px 16px;background:linear-gradient(95deg,#164033,#0b2d28);border-top:1px solid #dab975a0;position:relative}
+.village-storyline .storyline-icon{font-size:24px;line-height:1;flex:none}
+.village-storyline strong{display:block;font:800 16px Georgia,serif;color:#ffe0a2;line-height:1.2}
+.village-storyline small{display:block;color:#e0e7d9;line-height:1.35;font-size:11px;margin-top:2px}
+.village-caption{min-height:47px}
+.village-preview-actions .button{white-space:nowrap}
+@media(max-width:760px){
+ .hotspot-tower{left:10.6%;top:61.6%}
+ .hotspot-workshop{left:88.7%;top:61.6%}
+ .hotspot-bakery{left:26.8%;top:94.3%}
+ .hotspot-inn{left:77.8%;top:94.3%}
+ .building-hotspot{padding:4px 5px;font-size:8px;max-width:29%}
+ .village-storyline{min-height:45px;padding:7px 10px;gap:8px}
+ .village-storyline .storyline-icon{font-size:18px}
+ .village-storyline strong{font-size:13px}
+ .village-storyline small{font-size:10px}
+ .village-preview-actions .button{flex:1 1 auto;white-space:normal;font-size:11px}
+}
+@media(max-width:480px){
+ .building-hotspot{font-size:7px;line-height:1.12;max-width:28%}
+ .building-hotspot small{font-size:7px}
+}
