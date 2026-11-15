@@ -114,3 +114,44 @@ body{background:#071d1a;background-image:radial-gradient(ellipse 65% 35% at 52% 
 @media(max-width:760px){.building-card-art{height:210px}}
 
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important}#christmas-light-finale,.village-view svg,.building-hotspot,#art-tower,#art-workshop,#art-bakery,#art-inn,#art-tree,#tower-stage-image,.building-stage-image,#tree-stage-image{transition:none!important}}
+
+
+/* Village layout review after the first real tablet screenshot (Nov 2026).
+   Match the visible scale of all five imported graphic families. */
+.chapter-label{position:static!important;left:auto!important;top:auto!important;transform:none!important;flex:none}
+@media (min-width:1050px){
+ .sidebar-intro{padding:15px 16px 12px}
+ .sidebar-intro h1{font-size:31px;margin:5px 0 2px}
+ .sidebar-intro p{font-size:10px;line-height:1.35}
+ .event-menu{padding:10px 10px;gap:7px}
+ .event-tab{min-height:55px;grid-template-columns:38px minmax(0,1fr);padding:7px 9px}
+ .event-tab>span{font-size:23px}
+ .event-tab strong{font-size:14px}
+ .event-tab small{font-size:10px}
+ .sidebar-bottom{padding:9px 12px 10px}
+ .sidebar-bottom p{font-size:10px;line-height:1.35;margin-top:5px}
+ .royal-intro{min-height:110px;padding:12px 12px 10px}
+ .royal-intro h2{font-size:clamp(26px,3vw,41px)}
+ .royal-intro p{font-size:13px}
+}
+@media (min-width:761px) and (max-height:880px){
+ .event-sidebar{max-height:calc(100dvh - 98px)}
+ .sidebar-bottom p{display:none}
+ .sidebar-bottom{padding:9px}
+ .event-menu{gap:5px}
+ .event-tab{min-height:49px}
+}
+/* Put building name plates immediately below each asset, not across its windows. */
+.hotspot-tower{left:15.3%;top:76%}
+.hotspot-workshop{left:78%;top:75%}
+.hotspot-bakery{left:25.7%;top:89%}
+.hotspot-inn{left:87%;top:94%}
+.building-hotspot{z-index:3;background:linear-gradient(180deg,#593b22e8,#2e241be0);border-color:#ebbf72;box-shadow:inset 0 1px #ffe1aa50,0 3px 10px #000b}
+.village-view[data-tree="10"] .village-lamp-glow{opacity:1}
+@media(max-width:760px){
+ .hotspot-tower{left:15%;top:76%}
+ .hotspot-workshop{left:78%;top:75%}
+ .hotspot-bakery{left:26%;top:89%}
+ .hotspot-inn{left:87%;top:93%}
+ .building-hotspot{font-size:8px;max-width:30%}
+}
