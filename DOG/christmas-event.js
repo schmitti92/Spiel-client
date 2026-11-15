@@ -31,16 +31,16 @@ const treeNames=[
   'Sternenzauber','Weihnachtswunder','Glanz der Weihnacht','Der strahlende Stern','Das große Weihnachtslicht'
 ];
 const treeDetails=[
-  'Ein kleiner, noch ungeschmückter Tannenbaum steht mitten in Lichtertal.',
-  'Die ersten kleinen Weihnachtslichter erscheinen zwischen den Zweigen.',
-  'Bunte Kugeln und ein erster Weihnachtsschmuck machen den Baum lebendiger.',
-  'Goldene Girlanden kommen hinzu und der Baum ist deutlich gewachsen.',
-  'Der Baum wird voller und die Lichter verbreiten eine warme Atmosphäre.',
-  'Immer mehr glitzernde Dekorationen und Sterne lassen den Baum strahlen.',
-  'Die Weihnachtsbeleuchtung wird dichter und der Baum überragt den Dorfplatz.',
-  'Leuchtende Girlanden erhellen nun auch die Straßen des Dorfes.',
-  'Der große Stern auf der Spitze wird sichtbar. Die ganze Stadt erwartet den großen Moment.',
-  'Der prachtvolle Weihnachtsbaum erleuchtet das ganze Weihnachtsdorf.'
+ 'Als der erste Schnee fiel, stellte Wichtel Pip einen kleinen Tannenbaum auf den Dorfplatz. Noch ahnte niemand, welches Wunder in ihm schlummerte.',
+ 'Am nächsten Abend entdeckte Pip einen winzigen Lichtfunken. Chris, Vanessa und David versprachen, gemeinsam auf den Baum aufzupassen.',
+ 'Die Freunde schmückten seine Zweige mit bunten Kugeln. Bei jedem fröhlichen Lachen leuchtete der kleine Funke etwas heller.',
+ 'Bald half das ganze Dorf und hängte goldene Girlanden auf. Der stille Platz wurde zu einem Ort, an dem sich jeder willkommen fühlte.',
+ 'Ein Schneesturm verdunkelte Lichtertal. Doch der Baum blieb hell und erinnerte die Freunde daran, die Hoffnung nicht zu verlieren.',
+ 'In einer sternklaren Nacht landete eine glitzernde Flocke auf seiner Spitze. Pip wusste: Der Weihnachtszauber begann zu erwachen.',
+ 'Aus einem Funken wurden Hunderte Lichter. Weil alle zusammenhalfen, leuchtete sogar das kleinste Haus am Dorfrand.',
+ 'Der Glanz wanderte vom Baum durch alle Gassen. Kinder brachten ihre Weihnachtswünsche, und jeder durfte einen Stern aufhängen.',
+ 'Über dem Baum erschien ein strahlender Stern. Alle spürten: Ein letztes gemeinsames Wunder wartete noch auf das Dorf.',
+ 'Als die vier Häuser im Lichterglanz erstrahlten, leuchtete der Baum bis zu den Bergen. Lichtertal hatte gelernt: Das größte Wunder ist Zusammenhalt.'
 ];
 // All image filenames are checked against GitHub's actual event image folder.
 // Preload only the requested image, not the full 30-image collection.
@@ -237,18 +237,59 @@ if(priceOverview){
  priceOverview.replaceChildren(rows);
 }
 const steps=$('tree-steps');
+let viewedTreeStage=null; // null means always follow the real current stage.
 treeNames.forEach((name,i)=>{
  const prize=TREE_PRIZE_PREVIEW[i],stage=i+1;
  const box=document.createElement('article');
  box.className='tree-step';box.dataset.treeStep=String(stage);
  box.dataset.progress='future';box.dataset.status='unknown';
- box.innerHTML='<div class="tree-step-point"><span>'+stage+'</span></div>'
-  +'<div class="tree-step-caption"><span class="tree-step-number">STUFE '+stage+'</span><strong class="tree-step-name">'+name+'</strong></div>'
+ box.innerHTML='<button type="button" class="tree-step-open" data-tree-open aria-label="Baumstufe '+stage+': '+name+' ansehen">'
+  +'<span class="tree-step-point"><span>'+stage+'</span></span>'
+  +'<span class="tree-step-caption"><span class="tree-step-number">STUFE '+stage+'</span><strong class="tree-step-name">'+name+'</strong></span>'
   +'<span class="tree-step-gift" data-tree-gift-icon aria-hidden="true">'+prize.icon+'</span>'
   +'<strong class="tree-step-prize" data-tree-prize-title>'+prize.title+'</strong>'
-  +'<span class="tree-step-status" data-tree-status></span>';
+  +'<span class="tree-step-status" data-tree-status></span></button>';
+ const open=box.querySelector('[data-tree-open]');
+ open.addEventListener('click',()=>{
+  if(stage>treeLevel())return; // Never reveal future tree images/stories.
+  viewedTreeStage=stage===treeLevel()?null:stage;
+  updateTreeChapter();
+ });
  steps.append(box);
 });
+$('tree-return-current').addEventListener('click',()=>{
+ viewedTreeStage=null;
+ updateTreeChapter();
+ centerTreeMilestone();
+});
+function updateTreeChapter(){
+ const current=treeLevel();
+ const shown=Math.min(viewedTreeStage??current,current);
+ const isMemory=shown<current;
+ $('tree-current-title').textContent='Stufe '+shown+' · '+treeNames[shown-1];
+ $('tree-current-copy').textContent=treeDetails[shown-1];
+ $('tree-view-kicker').textContent=(isMemory?'📖 RÜCKBLICK':'📖 AKTUELLE STUFE')+' · KAPITEL '+shown+' VON 10';
+ $('tree-return-current').hidden=!isMemory;
+ $('tree-world-stage-pill').textContent='STUFE '+shown+' / 10'+(isMemory?' · RÜCKBLICK':'');
+ $('tree-card-photo').parentElement.style.setProperty('--tree-art-scale',String([1.63,1.54,1.47,1.39,1.33,1.26,1.2,1.16,1.11,1.06][shown-1]));
+ updateCardImage('tree',shown);
+ const verifiedStatus=treePrizeScreen?.getStatus();
+ for(const item of steps.children){
+  const stage=Number(item.dataset.treeStep);
+  const open=item.querySelector('[data-tree-open]');
+  const active=stage===shown,unlocked=stage<=current;
+  item.classList.toggle('selected',active);
+  item.dataset.progress=stage===current?'current':stage<current?'passed':'future';
+  if(stage===current)item.setAttribute('aria-current','step');else item.removeAttribute('aria-current');
+  open.disabled=!unlocked;
+  open.setAttribute('aria-pressed',String(active));
+  open.title=unlocked?(active?'Diese Stufe wird angezeigt':'Diese erreichte Stufe ansehen'):'🔒 Diese Stufe ist noch gesperrt';
+  if(!verifiedStatus){
+   const badge=item.querySelector('[data-tree-status]');
+   if(badge)badge.textContent=unlocked?'':'🔒 Gesperrt';
+  }
+ }
+}
 function centerTreeMilestone(){
  const current=steps.querySelector('.tree-step.selected');
  if(!current||!steps.clientWidth)return;
@@ -296,7 +337,6 @@ function refreshPreview(){
  const growth=.51+((tree-1)/9)*.49;
  $('art-tree').setAttribute('transform','translate(610 504) scale('+growth.toFixed(4)+') translate(0 -565)');
  showStageImage('tree',tree);
- updateCardImage('tree',tree);
  $('stat-building-levels').textContent=total+' / 20';
  $('stat-tree-level').textContent=tree+' / 10';
  $('village-stage-text').textContent=(tree===1?'Anfangszustand':tree===10?'Prachtvolles Weihnachtsdorf':'Baum Stufe '+tree)+(villageLive?' · Live':' · Vorschau');
@@ -306,9 +346,7 @@ function refreshPreview(){
  $('village-preview-next').disabled=Boolean(villageLive)||total>=20;
  $('village-preview-reset').disabled=Boolean(villageLive);
  $('village-preview-full').disabled=Boolean(villageLive);
- $('tree-current-title').textContent='Stufe '+tree+' · '+treeNames[tree-1];
- $('tree-current-copy').textContent=treeDetails[tree-1];
- $('tree-world-stage-pill').textContent='STUFE '+tree+' / 10';
+ updateTreeChapter();
  $('tree-world-mode').textContent=villageLive?'✦ Echter Dorffortschritt':'✦ Gestaltungs-Vorschau';
  $('tree-world-mode').dataset.mode=villageLive?'live':'preview';
  const nextLevel=Math.min(tree+1,10),nextPrize=TREE_PRIZE_PREVIEW[nextLevel-1];
@@ -322,12 +360,6 @@ function refreshPreview(){
  $('tree-progress-fill').style.width=(tree*10)+'%';
  $('tree-progress-label').textContent=tree+' / 10 Stufen · '+total+' / 20 Gebäudestufen';
  document.querySelector('.tree-world-meter')?.setAttribute('aria-valuenow',String(tree));
- for(const item of steps.children){
-  const stage=Number(item.dataset.treeStep);
-  item.classList.toggle('selected',stage===tree);
-  item.dataset.progress=stage===tree?'current':stage<tree?'passed':'future';
-  if(stage===tree)item.setAttribute('aria-current','step');else item.removeAttribute('aria-current');
- }
  if($('tab-tree').getAttribute('aria-selected')==='true')centerTreeMilestone();
 }
 $('village-preview-next').addEventListener('click',()=>{
