@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#071a30">
 <meta name="description" content="Meta-Sammelalbum der Spielesammlung: besondere Bilder aus Weihnachtsevent 1 entdecken und später im Event freischalten.">
 <title>Meta-Sammelalbum · Spielesammlung</title>
-<link rel="stylesheet" href="meta-sammelalbum.css?v=2">
-<script type="module" src="meta-sammelalbum.js?v=2"></script>
+<link rel="stylesheet" href="meta-sammelalbum.css?v=3">
+<script type="module" src="meta-sammelalbum.js?v=3"></script>
 </head>
 <body>
 <div class="meta-album-page">
@@ -44,7 +44,25 @@
    </header>
    <div class="meta-gallery-notice" role="note">🔒 Alle neun Bilder sind derzeit gesperrt. Die spätere Freischaltung erfolgt ausschließlich durch das Weihnachtsevent.</div>
    <div class="meta-album-gallery-scroll">
-    <div id="meta-picture-grid" class="meta-picture-grid" role="group" aria-label="Neun Bilder im Weihnachtsevent 1"></div>
+    <div id="meta-book" class="meta-book" aria-label="Blätterbares Sammelbuch">
+     <div class="meta-book-spine" aria-hidden="true"></div>
+     <div id="meta-book-sheet" class="meta-book-sheet">
+      <div class="meta-book-page-head" aria-hidden="true">
+       <span>✦ MAGISCHE WEIHNACHTSERINNERUNGEN ✦</span>
+       <span class="meta-book-ornament">❄</span>
+      </div>
+      <div id="meta-picture-grid" class="meta-picture-grid" role="group" aria-label="Sechs Sammelbildplätze auf dieser Buchseite"></div>
+      <div class="meta-book-page-foot" aria-hidden="true">
+       <span>✧ Ein Bild nach dem anderen ✧</span>
+       <span id="meta-book-page-mark">SEITE 1</span>
+      </div>
+     </div>
+    </div>
+    <nav class="meta-book-controls" aria-label="Buchseiten durchblättern">
+     <button id="meta-book-prev" class="meta-book-turn" type="button" aria-label="Vorherige Buchseite">❮ Zurück</button>
+     <span id="meta-book-position" role="status" aria-live="polite" aria-atomic="true">Seite 1 von 2</span>
+     <button id="meta-book-next" class="meta-book-turn" type="button" aria-label="Nächste Buchseite">Weiter ❯</button>
+    </nav>
    </div>
   </section>
   <aside class="meta-album-detail" aria-label="Ausgewähltes Sammelbild">
