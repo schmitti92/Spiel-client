@@ -154,7 +154,8 @@ test('premium gold highlights only genuine complete rows, never every milestone 
  const ui=source('../DOG/christmas-scratch-ui.js');
  assert.match(ui,/premiumWinningRowIndices\(wins\)/);
  assert.match(ui,/updatePremiumCounter\(revealedPremiumCells\(canvas\)\)/);
- assert.match(ui,/panel\.append\(results,\$\('scratch-winning-lines'\)\)/);
+ assert.match(ui,/panel\.append\(results,winningLines\)/,
+  'the win list reference must survive sidebar redraw without appending a literal null');
  assert.match(ui,/stage\.classList\.add\('is-revealed'\)/);
  assert.match(ui,/artwork\.dataset\.premiumGold20=String\(progress\.count>=20&&progress\.goldAwarded\)/);
  assert.match(ui,/artwork\.dataset\.premiumGold24=String\(progress\.count>=24&&progress\.premiumAwarded\)/);
@@ -251,6 +252,23 @@ test('scratch win and zero-coin losing ticket both require result confirmation',
  assert.match(css,/Scratch result \/ confirmation v2/);
  assert.match(css,/position:absolute!important;z-index:30/);
  assert.match(css,/button:not\(\[hidden\]\)/);
+});
+
+test('scratch reveal never leaves an uncovered card stuck or writes literal null',()=>{
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const css=source('../DOG/christmas-scratch.css');
+ assert.match(js,/winningLines=\$\('scratch-winning-lines'\)/);
+ assert.match(js,/panel\.append\(results,winningLines\)/);
+ assert.doesNotMatch(js,/panel\.append\(results,\$\('scratch-winning-lines'\)\)/);
+ assert.match(js,/rememberReveal\(current\.commandId\)/);
+ assert.match(js,/result\.commandId===revealedReceipt\(\)\)finish\(\)/);
+ assert.match(js,/finish\(\);/);
+ assert.match(js,/confirm\.hidden=false/);
+ assert.match(js,/\$\('scratch-reveal-button'\)\.hidden=false/);
+ assert.match(js,/\$\('scratch-reveal-button'\)\.textContent='✨ Ergebnis jetzt aufdecken'/);
+ assert.match(js,/drawPrizeTable\(current,entries\)/);
+ assert.match(js,/catch\(err\)\{[\s\S]*?Ergebnisanzeige/);
+ assert.match(css,/\.scratch-stage:not\(\[hidden\]\) > \.scratch-stage-actions button:not\(\[hidden\]\)/);
 });
 
 test('DOG Weihnachten top header is hidden only while a scratch ticket is open',()=>{
