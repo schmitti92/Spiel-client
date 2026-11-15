@@ -30,8 +30,8 @@ button{touch-action:manipulation}
 .category-button:hover{filter:brightness(1.13)}
 .category-button.is-active{border:2px solid #ffdd79;background:linear-gradient(120deg,#66501f,#17375a 35%,#092640);box-shadow:inset 0 1px #ffe4a955,0 0 11px #ffcc55b3}
 .category-icon{font-size:clamp(21px,2.15vw,32px);line-height:1}
-.category-button strong{font-size:clamp(11px,1.03vw,14px);min-width:0;flex:1}
-.category-count{font-size:11px;white-space:nowrap;font-variant-numeric:tabular-nums;color:#ffe4ac}
+.category-button strong{font-size:clamp(11px,1.03vw,14px);min-width:0;flex:1;overflow-wrap:anywhere;line-height:1.15}
+.category-count{flex:0 0 auto;margin-left:auto;font-size:11px;white-space:nowrap;font-variant-numeric:tabular-nums;color:#ffe4ac}
 .collection-sidebar-note{font-size:10px;line-height:1.45;color:#d2d5df;margin:auto 4px 4px}
 .collection-gallery{min-width:0;display:flex;flex-direction:column;overflow:hidden}
 .gallery-header{display:flex;gap:12px;align-items:center;justify-content:space-between;border-bottom:1px solid #cb9b575a;padding:14px 15px 12px;min-height:80px}
@@ -200,3 +200,90 @@ button{touch-action:manipulation}
 .collection-tile.is-locked .tile-art:after{background:#080c19a1}
 .collection-tile.is-locked{border-color:#677783;background:linear-gradient(#172635,#101a29)}
 .collection-tile.is-locked .tile-label.planned{background:#444d59;color:#e9d5aa}
+
+/* Five distinct, CSS-drawn Christmas name-frame previews; no extra image
+   downloads, no network reads and no premature event equip path. */
+.collection-nameframe-preview{
+ position:absolute;inset:0;z-index:1;overflow:hidden;isolation:isolate;
+ display:flex;align-items:center;justify-content:center;
+ background:var(--nf-scene);
+}
+.collection-nameframe-preview::before{
+ content:"";position:absolute;inset:0;pointer-events:none;
+ background:radial-gradient(ellipse at 50% 50%,#ffffff20,transparent 60%),
+  repeating-linear-gradient(118deg,transparent 0 21px,#ffffff07 22px 23px,transparent 25px 44px);
+}
+.collection-nameframe-preview::after{
+ content:"";position:absolute;inset:5%;border:1px solid #ffffff30;border-radius:11px;
+ pointer-events:none;box-shadow:inset 0 0 20px #ffffff0d;
+}
+.nameframe-plaque{
+ width:min(88%,370px);min-height:30%;position:relative;z-index:1;
+ display:flex;align-items:center;justify-content:center;gap:clamp(5px,.75vw,12px);
+ padding:clamp(7px,1.15vw,17px) clamp(8px,1.3vw,19px);
+ border:clamp(3px,.32vw,5px) solid transparent;border-radius:clamp(12px,1.8vw,24px);
+ background:var(--nf-inner) padding-box,var(--nf-metal) border-box;
+ box-shadow:0 7px 19px #000b,0 0 20px var(--nf-glow),inset 0 0 0 1px #ffffff64,
+  inset 0 0 20px #ffffff1b;
+}
+.nameframe-plaque::before{content:"";position:absolute;inset:4px;border:1px solid var(--nf-line);
+ border-radius:inherit;pointer-events:none;opacity:.85}
+.nameframe-emblem{font-size:clamp(17px,2vw,33px);line-height:1;filter:drop-shadow(0 2px 4px #000a)}
+.nameframe-name{position:relative;min-width:0;white-space:nowrap;font-size:clamp(10px,1.1vw,19px);
+ line-height:1.15;letter-spacing:.06em;font-weight:950;text-shadow:0 2px 5px #000b;
+ color:var(--nf-text,#fff5d8)}
+.nameframe-corner{position:absolute;z-index:1;top:10%;font-family:Georgia,serif;
+ font-size:clamp(19px,2.1vw,33px);color:var(--nf-highlight,#ffe4ab);text-shadow:0 0 12px var(--nf-glow),0 2px 4px #000b}
+.nameframe-corner-left{left:11%}
+.nameframe-corner-right{right:11%}
+.nameframe-bottom-caption{position:absolute;bottom:10%;z-index:1;
+ font-size:clamp(7px,.65vw,11px);font-weight:850;letter-spacing:.16em;
+ color:var(--nf-highlight,#ffe4ab);text-shadow:0 1px 5px #000c}
+.detail-image .nameframe-plaque{min-height:36%;width:88%}
+.detail-image .nameframe-name{font-size:clamp(15px,1.45vw,24px)}
+.detail-image .nameframe-emblem{font-size:clamp(25px,3vw,41px)}
+.detail-image .nameframe-corner{font-size:clamp(27px,3vw,44px)}
+.detail-image .nameframe-bottom-caption{font-size:clamp(9px,.85vw,13px)}
+.collection-tile.is-locked .tile-art.has-nameframe-preview::after{background:#080c1930}
+.nameframe-preview-note{font-size:11px;color:#e3c991;text-align:center;line-height:1.4}
+.nameframe-sternengold{
+ --nf-scene:radial-gradient(circle at 50% 20%,#e7a94385,transparent 60%),linear-gradient(140deg,#75182b,#3a071f 55%,#160f2b);
+ --nf-metal:linear-gradient(135deg,#fff4b8,#b97e25 24%,#ffe6a0 44%,#905018 74%,#fff3b0);
+ --nf-inner:linear-gradient(165deg,#9f2731,#55102e 63%,#37102b);
+ --nf-glow:#ffd574b3;--nf-line:#ffe6a0;--nf-highlight:#ffedaa;--nf-text:#fff9df;
+}
+.nameframe-frostkristall{
+ --nf-scene:radial-gradient(circle at 52% 22%,#d8f8ff86,transparent 60%),linear-gradient(140deg,#1c6a94,#112d6a 55%,#071b43);
+ --nf-metal:linear-gradient(145deg,#ffffff,#89d9f3 30%,#d8faff 53%,#6795d2 81%,#f6ffff);
+ --nf-inner:linear-gradient(150deg,#225982,#143d7d 62%,#0e2858);
+ --nf-glow:#95efffd6;--nf-line:#bceeff;--nf-highlight:#e8fdff;--nf-text:#efffff;
+}
+.nameframe-tannenzauber{
+ --nf-scene:radial-gradient(circle at 50% 16%,#c6dc6a5c,transparent 60%),linear-gradient(140deg,#1e613c,#102e2c 55%,#0a1b22);
+ --nf-metal:linear-gradient(120deg,#e7cf7d,#567b44 28%,#e3c770 54%,#9e3335 78%,#fff1aa);
+ --nf-inner:linear-gradient(145deg,#1a6e4a,#174833 55%,#103226);
+ --nf-glow:#b8e08388;--nf-line:#e9d88c;--nf-highlight:#ffe6a4;--nf-text:#f8ffe3;
+}
+.nameframe-lebkuchen{
+ --nf-scene:radial-gradient(circle at 50% 20%,#f9d38a70,transparent 65%),linear-gradient(145deg,#a5542c,#6d3422 60%,#2c1c24);
+ --nf-metal:linear-gradient(135deg,#fff9ea,#e7b977 25%,#fffdf2 49%,#d49362 76%,#fff8e5);
+ --nf-inner:linear-gradient(140deg,#af5d33,#8c3b28 60%,#5b3026);
+ --nf-glow:#ffc77e99;--nf-line:#fff4e3;--nf-highlight:#fff4de;--nf-text:#fff4db;
+}
+.nameframe-lebkuchen .nameframe-plaque{border-radius:20px 20px 13px 13px}
+.nameframe-polarlicht{
+ --nf-scene:radial-gradient(ellipse at 54% 15%,#65e4c992,transparent 58%),linear-gradient(135deg,#17275f,#61327e 57%,#112848);
+ --nf-metal:linear-gradient(130deg,#b4fbed,#82a8ff 30%,#f3c4ff 58%,#55dec6 85%,#e8ffff);
+ --nf-inner:linear-gradient(125deg,#322977,#53377b 50%,#126b7a);
+ --nf-glow:#a4a9ffbd;--nf-line:#aefff0;--nf-highlight:#ecedff;--nf-text:#fff6ff;
+}
+@media(max-width:540px){
+ .nameframe-corner{font-size:15px}
+ .nameframe-plaque{width:91%;padding:6px 5px;gap:3px}
+ .nameframe-emblem{font-size:17px}
+ .nameframe-name{font-size:10px;letter-spacing:0}
+ .nameframe-bottom-caption{font-size:6px;letter-spacing:.09em}
+ .detail-image .nameframe-plaque{padding:9px 6px}
+ .detail-image .nameframe-name{font-size:clamp(11px,3vw,18px)}
+ .detail-image .nameframe-emblem{font-size:clamp(19px,4vw,26px)}
+}
