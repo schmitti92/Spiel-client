@@ -317,3 +317,108 @@ button,a{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible
 @media(prefers-reduced-motion:reduce){
  .meta-book-sheet .meta-turn-leaf{display:none!important}
 }
+
+
+/* Compact single-screen landscape layout (tablet / desktop).
+   Reserve space for the book AND page-turn controls in one dynamic viewport.
+   Older portrait/small-screen layouts retain safe, intentional scrolling. */
+.meta-visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+ clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media (min-width:900px) and (min-height:540px) and (orientation:landscape){
+ html,body{height:100%;min-height:0;overflow:hidden}
+ .meta-album-page{
+  height:100dvh;min-height:0;max-height:100dvh;
+  width:100%;padding:clamp(6px,.65vw,11px);
+  gap:clamp(6px,.65vw,10px);
+  overflow:hidden;
+ }
+ .meta-album-header{
+  display:grid;grid-template-columns:minmax(150px,190px) minmax(0,1fr) minmax(112px,160px);
+  align-items:center;gap:8px;min-height:0;height:clamp(48px,7dvh,64px);
+  flex:0 0 auto;
+ }
+ .meta-album-back{min-height:40px;padding:7px 9px;font-size:clamp(11px,.95vw,14px)}
+ .meta-album-heading h1{
+  font-size:clamp(21px,2.3vw,32px);line-height:1.1;margin:0;
+  text-overflow:ellipsis;overflow:hidden;white-space:nowrap;
+ }
+ .meta-album-overview{padding:6px 10px;border-radius:12px;gap:0;align-items:center}
+ .meta-album-overview>span,.meta-album-overview small{display:none}
+ .meta-album-overview strong{font-size:clamp(20px,2vw,29px)}
+ .meta-album-layout{
+  display:grid;grid-template-columns:minmax(150px,15.5%) minmax(0,1fr) minmax(200px,21%);
+  gap:clamp(6px,.7vw,11px);min-height:0;flex:1 1 auto;height:0;
+ }
+ .meta-album-themes,.meta-album-gallery-panel,.meta-album-detail{height:100%;min-height:0;overflow:hidden}
+ .meta-album-themes{padding:10px;gap:9px}
+ .meta-album-panel-head{padding:2px 0 8px}
+ .meta-album-panel-head h2{font-size:15px}
+ #meta-theme-list{overflow-y:auto;min-height:0}
+ .meta-theme-button{min-height:56px;padding:8px 7px}
+ .meta-theme-icon{font-size:23px}
+ .meta-album-gallery-panel{display:flex;flex-direction:column}
+ .meta-gallery-header{
+  padding:6px 11px;min-height:43px;gap:5px;flex:0 0 auto;
+  overflow:hidden;
+ }
+ .meta-gallery-header h2{font-size:clamp(17px,1.7vw,23px);line-height:1.1;margin:0}
+ .meta-gallery-header .meta-progress-chip{font-size:10px;padding:4px 8px}
+ .meta-gallery-header p:not(.meta-visually-hidden){display:none}
+ .meta-album-gallery-scroll{
+  flex:1 1 auto;min-height:0;max-height:none;
+  padding:4px 6px 7px;gap:5px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  overflow:hidden;
+ }
+ /* 3:2 illustration, constrained by BOTH horizontal panel size and
+    height remaining once the header, page controls, and padding are counted. */
+ .meta-book{
+  width:min(100%,calc((100dvh - 170px) * 1.5));
+  min-height:0;max-height:calc(100dvh - 170px);
+  flex:0 1 auto;margin:auto auto 0;
+ }
+ .meta-book-sheet{width:100%;min-height:0}
+ .meta-book-controls{
+  flex:0 0 auto;width:min(100%,510px);
+  grid-template-columns:1fr minmax(95px,auto) 1fr;
+  padding:0 1px;gap:6px;margin:0 auto auto;
+ }
+ .meta-book-turn{min-height:35px;font-size:clamp(11px,.9vw,13px);padding:5px}
+ #meta-book-position{font-size:clamp(10px,.9vw,13px)}
+ .meta-album-detail{display:flex;padding:clamp(8px,.8vw,13px);max-height:none;overflow-y:auto}
+ .meta-picture-detail{min-height:0;gap:clamp(5px,.6dvh,9px);width:100%}
+ .meta-detail-overline{display:none}
+ .meta-detail-artwork{
+  aspect-ratio:auto;
+  height:min(50dvh,390px);min-height:0;max-height:52%;
+  flex:0 1 auto;border-width:2px;border-radius:11px;
+ }
+ .meta-detail-title{font-size:clamp(17px,1.65vw,24px);line-height:1.1;margin:1px 0}
+ .meta-detail-description{font-size:clamp(11px,.85vw,13px);line-height:1.35;margin:0}
+ .meta-detail-message{font-size:clamp(10px,.85vw,12px);line-height:1.35;margin:0}
+ .meta-detail-disabled{margin-top:0;min-height:36px;padding:6px 5px;font-size:clamp(10px,.83vw,12px)}
+ .meta-detail-footnote{display:none}
+ .meta-album-footer{display:none}
+}
+@media (min-width:900px) and (min-height:540px) and (max-height:730px) and (orientation:landscape){
+ .meta-album-header{height:44px}
+ .meta-gallery-header{min-height:35px}
+ .meta-book{width:min(100%,calc((100dvh - 143px) * 1.5));max-height:calc(100dvh - 143px)}
+ .meta-detail-artwork{height:44dvh}
+ .meta-picture-detail{gap:4px}
+ .meta-detail-description{display:none}
+ .meta-book-turn{min-height:31px}
+}
+/* Portrait & narrow screens: eliminate redundant chrome, but preserve
+   scrollability rather than shrinking the nine illustrations unreadably. */
+@media (max-width:899px), (orientation:portrait){
+ .meta-album-page{gap:8px;padding:8px}
+ .meta-album-header{min-height:0;gap:7px}
+ .meta-album-heading h1{font-size:clamp(23px,4.8vw,34px);margin:0}
+ .meta-gallery-header{padding:9px 12px}
+ .meta-gallery-header h2{font-size:20px}
+ .meta-album-themes{padding:10px}
+ .meta-book-controls{position:relative}
+ .meta-detail-footnote{display:none}
+ .meta-album-footer{padding:5px 8px}
+}
