@@ -576,3 +576,14 @@
 #panel-scratch .scratch-toolbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}
 #panel-scratch #scratch-host-settings{display:inline-flex!important;align-items:center;justify-content:center;visibility:visible!important;opacity:1!important;white-space:nowrap;min-height:39px}
 @media(max-width:760px){#panel-scratch .scratch-toolbar-actions{gap:5px}#panel-scratch #scratch-host-settings{padding:7px 9px;font-size:11px}#panel-scratch #scratch-refresh{padding:7px 9px;font-size:11px}}
+
+
+/* Independent money payouts for each of the four scratch variants. */
+.scratch-host-money{margin-top:14px;padding:12px;border:1px solid #cfad6c91;border-radius:12px;background:#081c264f}
+.scratch-host-money h6{font-size:14px;color:#ffe0a3;margin:0 0 4px;font-weight:900}
+.scratch-host-money>small{display:block;color:#d5dfd2;font-size:11px;line-height:1.5;margin-bottom:10px}
+.scratch-host-money-fields{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.scratch-host-money-fields .scratch-host-field span{font-size:11px}
+.scratch-host-money-fields input{padding:9px 7px;min-height:40px;font-size:13px}
+.scratch-symbol-key{white-space:pre-line}
+@media(max-width:560px){.scratch-host-money-fields{grid-template-columns:1fr}}
