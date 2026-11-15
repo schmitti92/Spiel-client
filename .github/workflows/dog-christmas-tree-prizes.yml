@@ -17,6 +17,11 @@ on:
       - 'DOG/christmas-event.html'
       - 'tests/dog-christmas-tree-prizes.test.mjs'
   workflow_dispatch:
+# Keep CI for the newest change instead of piling up redundant runs on main.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
 jobs:
   christmas-tree:
     runs-on: ubuntu-latest
