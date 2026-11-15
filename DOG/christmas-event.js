@@ -249,6 +249,12 @@ treeNames.forEach((name,i)=>{
   +'<span class="tree-step-status" data-tree-status>Im Onlineraum prüfen</span>';
  steps.append(box);
 });
+function centerTreeMilestone(){
+ const current=steps.querySelector('.tree-step.selected');
+ if(!current||!steps.clientWidth)return;
+ const center=current.offsetLeft-steps.offsetLeft+current.offsetWidth/2-steps.clientWidth/2;
+ steps.scrollTo({left:Math.max(0,center),behavior:'auto'});
+}
 function refreshPreview(){
  const total=Object.values(preview).reduce((a,b)=>a+b,0),tree=treeLevel();
  for(const d of definitions){
@@ -325,6 +331,7 @@ function refreshPreview(){
   item.dataset.progress=stage===tree?'current':stage<tree?'passed':'future';
   if(stage===tree)item.setAttribute('aria-current','step');else item.removeAttribute('aria-current');
  }
+ if($('tab-tree').getAttribute('aria-selected')==='true')centerTreeMilestone();
 }
 $('village-preview-next').addEventListener('click',()=>{
   // Purely local visual demonstration: grow each building in turn.
@@ -364,7 +371,7 @@ function showPanel(id,{updateHistory=true}={}){
   panel.hidden=!active;
  }
  if(updateHistory&&location.hash!=='#'+id)history.replaceState(null,'','#'+id);
- if(id==='tree')void treePrizeScreen?.load();
+ if(id==='tree'){centerTreeMilestone();void treePrizeScreen?.load();}
  if(id==='scratch')void scratchScreen?.load();
  if(window.scrollY>0)window.scrollTo({top:0,behavior:'instant'});
 }
