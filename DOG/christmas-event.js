@@ -181,7 +181,7 @@ function updateCardImage(id,level){
  img.alt=(id==='tree'?'Weihnachtsbaum':definitions.find(def=>def.id===id)?.title||id)+' – Stufe '+level;
 }
 const preview={tower:1,workshop:1,bakery:1,inn:1};
-let villageLive=null,villageHost=false,villageMode=false,villageCanToggle=false,villageCanUpgrade=true,villageBusy=false;
+let villageLive=null,villageHost=false,villageEventActive=false,villageCanUpgrade=true,villageBusy=false;
 let treePrizeScreen=null;
 let lastPresentationKey=null;
 const sceneTitles=['Die Weihnachtsreise beginnt','Die ersten Laternen leuchten','Ein Hauch von Winter','Lichter über den Dächern','Das Dorf entdeckt Weihnachten','Die Weihnachtsvorbereitungen laufen','Ein Sternenglanz erscheint','Lichtertal wird zum Wintermärchen','Das Dorf wartet auf sein Wunder','Das große Weihnachtslicht'];
@@ -435,22 +435,18 @@ function showLiveVillage(data){
  const oldTreeLevel=oldLevels?TREE_THRESHOLDS.filter(n=>Object.values(oldLevels).reduce((a,b)=>a+b,0)>=n).length:null;
  villageLive=v;
  villageHost=data.host===true;
- villageMode=data.enabled===true;
- villageCanToggle=data.canSetMode===true;
+ villageEventActive=data.enabled===true;
  villageCanUpgrade=data.canUpgrade!==false;
  for(const id of ['tower','workshop','bakery','inn'])preview[id]=v.levels[id];
  $('building-live-balance').textContent='⭐ Gemeinsamer Vorrat: '+lightsLabel(v.lightsTenths)+' Weihnachtslichter · '+v.giftsCollected+' Geschenke gesammelt';
- const mode=$('building-event-mode-toggle');
- mode.hidden=!villageHost||!villageCanToggle;
- mode.disabled=villageBusy;
- mode.textContent=villageMode?'🎄 Weihnachtsmodus ausschalten':'🎄 Weihnachtsmodus für DOG aktivieren';
- $('building-event-mode').textContent=data.matchEnabled?'🎁 Die aktuelle DOG-Partie sammelt Weihnachtslichter.'
-  :villageMode?'🎄 Weihnachtsmodus für die nächste DOG-Partie aktiviert.':'🔒 Weihnachtsmodus im DOG-Vorraum noch nicht aktiviert.';
+ $('building-event-mode').textContent=!villageEventActive?'🏁 Weihnachtsevent beendet – die Gebäude-Boni sind pausiert. Der gesammelte Fortschritt bleibt erhalten.'
+  :data.matchEnabled?'🎁 Die laufende DOG-Partie sammelt automatisch Weihnachtslichter.'
+  :'🎄 Weihnachtsevent aktiv: In jeder Online-DOG-Partie gelten die Gebäude-Boni automatisch.';
  $('building-live-notice').textContent='✅ Echter gemeinsamer Fortschritt – die Gebäude-Level und Lichter wurden auf dem Server überprüft. Nur der Host kann den Dorfvorrat für ein Upgrade verwenden.';
  const label=document.querySelector('.village-caption > span');
  if(label)label.textContent='⭐ Echter Dorffortschritt · '+lightsLabel(v.lightsTenths)+' Weihnachtslichter im gemeinsamen Vorrat';
  const giftNotice=document.querySelector('#panel-gifts > .notice');
- if(giftNotice)giftNotice.textContent='🎄 Weihnachtslichter werden nur in aktivierten Online-DOG-Partien auf echten Geschenkfeldern vergeben. Die Gutschriften und Gebäudeboni prüft Render; lokale Vorschau-Level zählen nicht.';
+ if(giftNotice)giftNotice.textContent='🎄 Solange das Weihnachtsevent läuft, werden Weihnachtslichter in allen Online-DOG-Partien automatisch auf echten Geschenkfeldern vergeben. Render prüft die Boni; lokale Vorschau-Level zählen nicht.';
  refreshPreview();
  const newTreeLevel=TREE_THRESHOLDS.filter(n=>Object.values(v.levels).reduce((a,b)=>a+b,0)>=n).length;
  if($('tab-tree').getAttribute('aria-selected')==='true'&&
@@ -474,20 +470,11 @@ async function purchaseBuilding(id){
   const result=await villageRequest('village/upgrade','POST',{
    building:id,expectedLevel:level,commandId:'dog-village-'+crypto.randomUUID()
   });
-  showLiveVillage({village:result.village,host:villageHost,enabled:villageMode,canSetMode:villageCanToggle,canUpgrade:villageCanUpgrade});
+  showLiveVillage({village:result.village,host:villageHost,enabled:villageEventActive,canUpgrade:villageCanUpgrade});
   $('building-event-mode').textContent='✅ '+definitions.find(entry=>entry.id===id).title+' wurde auf Stufe '+(level+1)+' ausgebaut. '+cost+' Lichter abgebucht.';
  }catch(err){$('building-event-mode').textContent='⚠️ Ausbau nicht möglich: '+err.message;await reloadVillage();}
- finally{villageBusy=false;$('building-event-mode-toggle').disabled=!villageHost||!villageCanToggle;refreshPreview();}
+ finally{villageBusy=false;refreshPreview();}
 }
-$('building-event-mode-toggle').addEventListener('click',async()=>{
- if(!villageHost||!villageCanToggle||villageBusy)return;
- villageBusy=true;$('building-event-mode-toggle').disabled=true;
- try{
-  await villageRequest('christmas-mode','POST',{enabled:!villageMode});
-  await reloadVillage();
- }catch(e){$('building-event-mode').textContent='⚠️ '+e.message;}
- finally{villageBusy=false;$('building-event-mode-toggle').disabled=!villageHost||!villageCanToggle;refreshPreview();}
-});
 if(villageRoomValid){
  void reloadVillage();
  window.addEventListener('spielonline-change',()=>{
