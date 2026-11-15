@@ -1,13 +1,25 @@
-# DOG – Hintergrundbilder für das Design-Studio
+# DOG – Vollbild-Seitenhintergründe
 
-Dieser Ordner enthält ausschließlich echte **Seiten- und Bühnenhintergründe**. Spielbrett-Oberflächen und feldfreie Spielplatten-Grafiken gehören ausdrücklich **nicht** in diese Galerie.
+Dieser Ordner enthält **Vollbildhintergründe für die DOG-Seite**, keine Spielbretter, Spielfelder oder Dorf-Gebäude. Das eigentliche Weihnachtsdorf in `DOG/christmas-event.html` besitzt einen separaten Hintergrund im Ordner `DOG/weihnachtsevent-bilder/`.
 
-Aktuell ist genau **ein Motiv** vorhanden:
+## Standardhintergrund
 
-- `dog-hintergrund-magisches-schloss.png` – Magisches Schloss am Nebelsee
+- `dog-hintergrund-magisches-schloss.png` – Magisches Schloss am Nebelsee, normal auswählbar
 
-Im DOG Design-Studio kann links dieses Bild oder »Ohne Hintergrundbild« gewählt werden. Rechts liegen alle Brettdesigns aus `BOARD_STYLES` (unter anderem Zauberwald, Märchental, Küstenabenteuer, Alpenland, Royal-Karten, Goldwellen, Holz und Schiefer).
+## Lichtertal-Weihnachtsevent – fünf gesperrte Belohnungen
 
-Neue Hintergrundmotive bitte hier als PNG, JPG oder WebP mit kleingeschriebenem Dateinamen ohne Leerzeichen hochladen und dann in `DOG/appearance-registry.js` unter `SCENE_STYLES` registrieren. Wenn das Bild auch in den separaten Spieleinstellungen für den rechten Seitenbereich erscheinen soll, zusätzlich unter `SIDEBAR_BACKGROUNDS` registrieren. Die Auswahl und gespeicherte Kombinationen werden lokal gespeichert und erzeugen keine zusätzlichen Firebase-Schreibvorgänge.
+Die folgenden Dateien sind bereits vorhanden und als **geplante, gesperrte** Sammlungsinhalte registriert:
 
-Die eigentlichen Spielbretter befinden sich unter `DOG/assets/boards/` und `DOG/Bilder/Spielhintergrundbilder/`. Deren Dateien werden nicht als Seitenhintergründe gelistet.
+- `Lichtertal_Vollbild_Neu_01_Maerchenwald.webp` – Märchenhafter Weihnachtswald
+- `Lichtertal_Vollbild_Neu_02_Realistische_Mondnacht.webp` – Realistische Mondnacht
+- `Lichtertal_Vollbild_Neu_03_Weihnachtskarte_Aquarell.webp` – Aquarell-Weihnachtskarte
+- `Lichtertal_Vollbild_Neu_04_Low_Poly_3D.webp` – Winterwelt in Low-Poly-3D
+- `Lichtertal_Vollbild_Neu_05_Magischer_Polarlicht_Fjord.webp` – Magischer Polarlicht-Fjord
+
+Die Metadaten und zukünftigen Belohnungs-IDs stehen in `DOG/christmas-background-catalog.js`. Angezeigt werden sie unter **Meine Sammlung → Hintergründe** sowie in **Weihnachtsevent → Geschenke & Lichter**.
+
+**Wichtig:** Die fünf Motive sind derzeit nicht freischaltbar und nicht ausrüstbar. Die spätere Vergabe braucht nachweislich serverseitig überprüfte Eventbelohnungen für den jeweiligen Spieler. Ein lokaler Flag oder das Vorhandensein einer Bilddatei ist kein Eigentumsnachweis. Zeitpunkt und konkrete Freischaltbedingungen stehen noch nicht fest.
+
+Die normalen wählbaren Seitenhintergründe werden separat in `DOG/appearance-registry.js` unter `SCENE_STYLES` geführt. Erst mit einer sicheren serverseitigen Freischaltprüfung dürfen diese Eventmotive zusätzlich als auswählbare Hintergrunddesigns registriert werden.
+
+Die Gestaltung ändert keine DOG-Spielregeln und erzeugt keine zusätzlichen Firebase-Schreibvorgänge.
