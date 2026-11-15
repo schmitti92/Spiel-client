@@ -181,6 +181,10 @@
           </svg>
           <div class="view-vignette" aria-hidden="true"></div>
           <div class="village-hotspots" aria-label="Gebäude auf dem Weihnachtsdorf">
+            <button type="button" class="building-image-hit hit-tower" data-open-building="tower" aria-label="Weihnachtslichter-Turm: Stufe und Bonus ansehen" title="Weihnachtslichter-Turm · Bonus ansehen"></button>
+            <button type="button" class="building-image-hit hit-workshop" data-open-building="workshop" aria-label="Wichtelwerkstatt: Stufe und Bonus ansehen" title="Wichtelwerkstatt · Bonus ansehen"></button>
+            <button type="button" class="building-image-hit hit-bakery" data-open-building="bakery" aria-label="Weihnachtsbäckerei: Stufe und Bonus ansehen" title="Weihnachtsbäckerei · Bonus ansehen"></button>
+            <button type="button" class="building-image-hit hit-inn" data-open-building="inn" aria-label="Friedensherberge: Stufe und Bonus ansehen" title="Friedensherberge · Bonus ansehen"></button>
             <button type="button" class="building-hotspot hotspot-tower" data-open-building="tower" title="Weihnachtslichter-Turm ansehen">⭐ <span>Weihnachtslichter-Turm</span><small data-hotspot-level="tower">1/5</small></button>
             <button type="button" class="building-hotspot hotspot-workshop" data-open-building="workshop" title="Wichtelwerkstatt ansehen">🎁 <span>Wichtelwerkstatt</span><small data-hotspot-level="workshop">1/5</small></button>
             <button type="button" class="building-hotspot hotspot-bakery" data-open-building="bakery" title="Weihnachtsbäckerei ansehen">🍪 <span>Weihnachtsbäckerei</span><small data-hotspot-level="bakery">1/5</small></button>
@@ -188,6 +192,44 @@
           </div>
           </div>
       </div>
+      <dialog id="village-building-dialog" class="village-building-dialog" aria-labelledby="village-building-title" aria-describedby="village-building-description">
+        <div class="village-building-modal-head">
+          <div class="village-building-modal-heading">
+            <span id="village-building-icon" class="village-building-modal-icon" aria-hidden="true">🏠</span>
+            <div><span class="village-building-eyebrow">✦ DEIN WEIHNACHTSGEBÄUDE ✦</span>
+              <h2 id="village-building-title">Weihnachtsgebäude</h2>
+              <span id="village-building-mode" class="village-building-mode">Dorf-Fortschritt wird geladen</span>
+            </div>
+          </div>
+          <button id="village-building-close" type="button" class="village-building-close" aria-label="Gebäudefenster schließen">✕</button>
+        </div>
+        <div class="village-building-modal-content">
+          <div class="village-building-image-wrap">
+            <img id="village-building-image" alt="" decoding="async" loading="lazy">
+            <div class="village-building-level">
+              <strong id="village-building-stage">Stufe 1 / 5</strong>
+              <div class="village-building-meter" aria-hidden="true"><span id="village-building-progress"></span></div>
+            </div>
+          </div>
+          <div class="village-building-facts">
+            <p id="village-building-description" class="village-building-description"></p>
+            <section class="village-building-bonus-card" aria-label="Aktueller Bonus">
+              <span>✨ Aktueller Bonus</span>
+              <strong id="village-building-current-bonus"></strong>
+              <p id="village-building-bonus-explanation"></p>
+            </section>
+            <div class="village-building-next">
+              <span>🌟 Nächste Ausbaustufe</span>
+              <strong id="village-building-next-bonus"></strong>
+              <small id="village-building-next-cost"></small>
+            </div>
+          </div>
+        </div>
+        <div class="village-building-modal-actions">
+          <button id="village-building-dismiss" type="button" class="button quiet">Schließen</button>
+          <button id="village-building-upgrade" type="button" class="button gold">🏠 Zum Gebäudeausbau</button>
+        </div>
+      </dialog>
       <div class="event-stat-grid">
         <article class="stat-card"><span>🏠</span><div><strong id="stat-building-levels">4 / 20</strong><small>Gebäudestufen zusammen</small></div></article>
         <article class="stat-card"><span>🎄</span><div><strong id="stat-tree-level">1 / 10</strong><small>Weihnachtsbaum</small></div></article>
