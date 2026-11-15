@@ -763,7 +763,10 @@ body.scratch-ticket-open{overflow:hidden;overscroll-behavior:none}
 .scratch-stage:not([hidden]) .scratch-stage-actions button{min-height:32px;padding:5px 12px}
 .scratch-stage:not([hidden]) .scratch-card-art{
  position:relative;height:100%;width:auto;max-width:100%;max-height:100%;
- min-height:0;aspect-ratio:1152/1536;flex:0 1 auto;
+ min-height:0;flex:0 1 auto;
+}
+.scratch-stage[data-variant="premium_27"]:not([hidden]) .scratch-card-art{
+ aspect-ratio:1152/1536;
 }
 .scratch-stage:not([hidden]) > .scratch-prize-sidebar{
  grid-column:2;grid-row:1/-1;position:static!important;
