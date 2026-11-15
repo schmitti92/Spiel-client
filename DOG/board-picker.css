@@ -9,6 +9,11 @@
 .dog-board-option.is-picked{border-color:#f3d385;background:#48371c;box-shadow:0 0 0 1px #f6dfaa,0 0 17px #eab86a77}
 .dog-board-thumb{display:block;width:100%;aspect-ratio:1;background-color:#142a3b;background-size:cover;background-position:center;border:1px solid #ae945d99;border-radius:7px}
 .dog-board-option-name{font-size:11px;line-height:1.25;font-weight:750;overflow-wrap:anywhere}
+.dog-board-option.is-locked{border-color:#66717a;background:#101c2a;color:#b6bec9;cursor:not-allowed;box-shadow:none}
+.dog-board-option.is-locked .dog-board-thumb{filter:grayscale(1) brightness(.57)}
+.dog-board-lock{display:block;font-size:10px;font-weight:850;color:#f3d6a0;line-height:1.2}
+.dog-board-option.is-locked:hover{transform:none;border-color:#66717a;box-shadow:none}
+.dog-board-option.is-locked:hover .dog-board-thumb{filter:grayscale(1) brightness(.57);transform:none}
 [data-board-picked-label]{margin-top:10px;color:#f3d38c;font-size:12px;font-weight:800}
 @media(max-width:600px){[data-dog-board-picker]{padding:11px}[data-board-picker-options]{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.dog-board-option{padding:3px}.dog-board-option-name{font-size:10px}}
 
