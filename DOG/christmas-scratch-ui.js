@@ -14,14 +14,14 @@ export const SCRATCH_COIN_PRIZES=Object.freeze({
 });
 // Four distinct and directly selectable cards; three price classes stay unchanged.
 export const SCRATCH_SHOP_VARIANTS=Object.freeze([
- Object.freeze({id:'gifts',tier:'simple',icon:'🎁',name:'Geschenkelinie',subtitle:'Einfach · 9 Felder',rule:'3 gleiche in einer Linie',theme:'gift'}),
- Object.freeze({id:'snow_collect',tier:'simple',icon:'❄️',name:'Schneeflocken-Bingo',subtitle:'Einfach · 16 Felder',rule:'3 gleiche irgendwo',theme:'snow'}),
- Object.freeze({id:'elf',tier:'medium',icon:'🧝',name:'Magischer Wichtelpfad',subtitle:'Mittel · 20 Felder',rule:'Geld: durchgehender Pfad',theme:'elf'}),
+ Object.freeze({id:'gifts',tier:'simple',icon:'🎁',name:'Geschenkelinie',subtitle:'Einfach · 9 Felder',rule:'3 gleiche Gewinnzeichen in einer Linie',theme:'gift'}),
+ Object.freeze({id:'snow_collect',tier:'simple',icon:'❄️',name:'Schneeflocken-Bingo',subtitle:'Einfach · 16 Felder',rule:'3 gleiche Gewinnzeichen irgendwo',theme:'snow'}),
+ Object.freeze({id:'elf',tier:'medium',icon:'🧝',name:'Magischer Wichtelpfad',subtitle:'Mittel · 20 Felder',rule:'Geld: Pfad · Geschenke: 3 verbunden',theme:'elf'}),
  Object.freeze({id:'premium_27',tier:'premium',icon:'👑',name:'Premium-Weihnachtslos',subtitle:'Premium · 27 Felder',rule:'4 sichere Geld-Dreierreihen · 20 Symbole = 1.000 🪙 (30 %)',theme:'gold'})
 ]);
 const VARIANTS={
  premium_27:['🎅 Premium-Weihnachts-Rubbellos','Mindestens 4 Geld-Dreierreihen sind garantiert. Je 3 gleiche Geldsymbole waagerecht gewinnen. Bei 20 Symbolen kommen 1.000 Münzen dazu (30 %); ab 24 ist eine Freischaltung möglich.',9,3],
- gifts:['🎁 Geschenkelinie','Drei gleiche Symbole in einer Reihe, Spalte oder Diagonale',3,3],
+ gifts:['🎁 Geschenkelinie','Drei gleiche Gewinnsymbole in einer Reihe, Spalte oder Diagonale',3,3],
  snow:['❄️ Schneeflocken-Bingo (älteres Los)','Vier gleiche Symbole in einer Reihe, Spalte oder Diagonale',4,4],
  snow_collect:['❄️ Schneeflocken-Bingo','Drei gleiche Gewinnsymbole irgendwo auf dem Los zählen als Gewinn – unabhängig von der Position. 🧊 bedeutet Niete und zählt nicht.',4,4],
  stars:['⭐ Sternensammler','Vier gleiche Sterne beliebig auf dem Los',3,4],
@@ -232,6 +232,16 @@ export function initChristmasScratch(){
    const variantConfig=status?.settings?.variants?.[option.id];
    const unlockChance=Number.isInteger(variantConfig?.weights?.unlock)?
     percent(variantConfig.weights.unlock):tier.unlockChance;
+   const unlocksLeft=status?.pools?.[option.tier]?.remaining;
+   const chanceText=unlocksLeft===0?'🎁 Alle Freischaltungen gesammelt':
+    '🎁 bis zu '+unlockChance+' % Freischaltung';
+   const chanceWeights=variantConfig?.weights;
+   const premiumMilestoneChance=chanceWeights&&Number.isInteger(chanceWeights.coins)&&
+    Number.isInteger(chanceWeights.unlock)?
+    (chanceWeights.unlock+Math.min(chanceWeights.coins,Math.max(0,300-chanceWeights.unlock)))/10:30;
+   const visibleRule=option.id==='premium_27'?
+    '4 sichere Geld-Dreierreihen · '+premiumMilestoneChance.toLocaleString('de-DE')+
+    ' % Chance auf +1.000 🪙':option.rule;
    const article=el('article','scratch-tier '+option.tier+' scratch-variant-'+option.theme);
    article.dataset.variant=option.id;
    const heading=el('div','scratch-card-heading');
@@ -240,8 +250,8 @@ export function initChristmasScratch(){
    names.append(el('small','scratch-card-class',option.subtitle),
     el('h3','',option.name));heading.append(names);
    const details=el('div','scratch-card-brief');
-   details.append(el('span','scratch-card-rule',option.rule),
-    el('span','scratch-card-chance','🎁 '+unlockChance+' % Freischaltung'));
+   details.append(el('span','scratch-card-rule',visibleRule),
+    el('span','scratch-card-chance',chanceText));
    const amounts=coinAmountsFor(option.tier,option.id);
    article.append(heading,details,
     el('strong','scratch-price',num(tier.price)+' 🪙'),
@@ -353,7 +363,7 @@ export function initChristmasScratch(){
    }
    block.append(
     symbolOddsSection('moneySymbolWeights','🎲 Geldsymbol-Wahrscheinlichkeiten',
-     'Wie oft welches Geldsymbol erscheint, wenn ein Geldgewinn gezogen wurde.',
+     id==='premium_27'?'Premium: 🪙 💵 💼 erscheinen jeweils mindestens einmal garantiert. Diese Gewichtung entscheidet nur über die vierte Geld-Dreierreihe und zusätzliche Geldgewinne.':'Wie oft welches Geldsymbol erscheint, wenn ein Geldgewinn gezogen wurde.',
      ['🪙 Münze','💵 Geldschein','💼 Geldkoffer'],[334,333,333]),
     symbolOddsSection('giftSymbolWeights','🎁 Geschenk-Wahrscheinlichkeiten',
      'Welches Geschenkzeichen eine gewonnene Freischaltung darstellt.',
@@ -705,25 +715,42 @@ export function initChristmasScratch(){
   outlet.replaceChildren();
   outlet.hidden=!result;
   if(!result)return;
-  const prizes=Array.isArray(result.winnings)?result.winnings.filter(p=>
-   p&&['coins','unlock'].includes(p.type)):[];
+  const raw=Array.isArray(result.winnings)?result.winnings:
+   result.type==='coins'?[{type:'coins',symbol:'🪙',amount:result.amount}]:
+   result.type==='unlock'?[{type:'unlock',symbol:'🎁',prize:result.prize}]:[];
+  const prizes=raw.filter(p=>p&&['coins','unlock'].includes(p.type));
+  const wins=Array.isArray(result.board?.wins)?result.board.wins:[];
   const amount=Number.isSafeInteger(result.totalCoins)&&result.totalCoins>=0?
-   result.totalCoins:prizes.reduce((sum,p)=>sum+(p.type==='coins'&&Number.isSafeInteger(p.amount)?p.amount:0),0);
+   result.totalCoins:prizes.reduce((sum,p)=>
+    sum+(p.type==='coins'&&Number.isSafeInteger(p.amount)?p.amount:0),0);
   const heading=el('div','scratch-inline-heading');
   heading.append(el('strong','',prizes.length?'🏆 '+prizes.length+' Gewinne':'❄️ Niete'),
    el('strong','scratch-inline-total','🪙 '+num(amount)+' erhalten'));
   outlet.append(heading);
   if(!prizes.length)return;
   const list=el('div','scratch-inline-chips');
-  for(const prize of prizes){
+  const samePrize=(win,prize)=>win?.symbol===prize.symbol&&
+   win.prize?.type===prize.type&&
+   (prize.type==='coins'?win.prize?.amount===prize.amount:
+    win.prize?.prize?.unlockId===prize.prize?.unlockId);
+  for(const [i,prize] of prizes.entries()){
    const chip=el('div','scratch-inline-chip'+(prize.type==='unlock'?' is-unlock':''));
-   let label=prize.type==='coins'?
+   const label=prize.type==='coins'?
     (prize.symbol||'🪙')+' '+num(prize.amount)+' Münzen':
     (prize.symbol||'🎁')+' '+(prize.prize?.name||'Freischaltung');
-   const detail=prize.milestone==='gold-20'?'20er-Bonus':
-    prize.milestone==='premium-24'?'Premium-Freischaltung':
-    prize.bonus?'Zusatzgewinn':'Dreierreihe';
-   chip.append(el('strong','',label),el('small','',detail));
+   const source=prize.bonus?null:
+    samePrize(wins[i],prize)?wins[i]:wins.find(win=>samePrize(win,prize));
+   const rule=prize.milestone||source?.rule;
+   const detail=prize.milestone==='gold-20'?'20 Symbole · +1.000':
+    rule==='premium-24'?'24 Symbole · Freischaltung':
+    prize.bonus?'🎉 Bonus zu Gewinn '+(Number.isInteger(prize.sourceWin)?prize.sourceWin+1:'?'):
+    rule==='three-anywhere'?'3 gleiche beliebig':
+    rule==='gift-three-connected'?'3 verbundene Geschenke':
+    rule==='path'?'Pfad links → rechts':
+    rule==='line'?'Dreierlinie':
+    rule==='row-3'?'Geld-Dreierreihe':
+    'Gewinnkombination';
+   chip.append(el('strong','',label),el('small','',detail+(prize.x2?' · ✨ ×2':'') ));
    list.append(chip);
   }
   outlet.append(list);
