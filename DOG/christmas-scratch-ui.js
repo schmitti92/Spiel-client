@@ -38,7 +38,7 @@ const el=(tag,cls,str)=>{
  return n;
 };
 const num=v=>Number(v||0).toLocaleString('de-DE');
-const prizeLabel=p=>p?.type==='coins'?(p.symbol||'🪙')+' '+num(p.amount)+' Münzen'+(p.x2?' (×2)':''):
+const prizeLabel=p=>p?.type==='coins'?(p.bonus?'🎉 Zusatzgewinn · ':'')+(p.symbol||'🪙')+' '+num(p.amount)+' Münzen'+(p.x2?' (×2)':''):
  p?.type==='unlock'?'🎁 Freischaltung: '+(p.prize?.icon?p.prize.icon+' ':'')+(p.prize?.name||'Freischaltung'):'';
 const symbolLegend=tier=>{
  const [coin,note,bag]=SCRATCH_COIN_PRIZES[tier]||SCRATCH_COIN_PRIZES.simple;
@@ -155,7 +155,7 @@ export function initChristmasScratch(){
    const maxField=el('label','scratch-host-field');
    maxField.append(el('span','','Max. gleichzeitige Gewinne'));
    const select=el('select');select.dataset.key='maxPrizes';
-   for(const n of id==='premium_27'?[2,3]:[1,2,3]){
+   for(let n=1;n<=10;n++){
     const option=el('option','',String(n));option.value=String(n);
     option.selected=n===settings.maxPrizes;select.append(option);
    }
@@ -192,7 +192,7 @@ export function initChristmasScratch(){
    const maxPrizes=Number(input('maxPrizes').value);
    if(!Number.isInteger(extraCoinChance)||extraCoinChance<0||extraCoinChance>100)
     throw Error('Die zusätzliche Münzchance muss zwischen 0 und 100 % liegen.');
-   if(!Number.isInteger(maxPrizes)||maxPrizes<(id==='premium_27'?2:1)||maxPrizes>3)
+   if(!Number.isInteger(maxPrizes)||maxPrizes<1||maxPrizes>10)
     throw Error('Ungültige Anzahl gleichzeitiger Gewinne.');
    variants[id]={weights,extraCoinChance,maxPrizes};
   }
@@ -417,9 +417,10 @@ export function initChristmasScratch(){
    ticket.type==='none'?[]:[ticket.type==='coins'?{type:'coins',amount:ticket.amount}:{type:'unlock',prize:ticket.prize}];
   $('scratch-result-value').textContent=entries.length?
    entries.map(prizeLabel).join(' · '):'❌ Niete – keine gültige Gewinnkombination';
-  $('scratch-result-kind').textContent=ticket.rareMainMultiplier?'💎 Ultra-selten: Hauptgewinn ×2':
-   ticket.multiplier===2?'✨ ×2-Multiplikator':
-   entries.length>1?entries.length+' Gewinnkombinationen':'';
+  $('scratch-result-kind').textContent=
+   (entries.length?entries.length+' Gewinne insgesamt':'')+
+   (ticket.rareMainMultiplier?' · 💎 Ultra-selten: Hauptgewinn ×2':
+    ticket.multiplier===2?' · ✨ ×2-Multiplikator':'');
   const list=$('scratch-winning-lines');list.replaceChildren();
   for(const [i,win] of wins.entries()){
    const description=win.rule==='gold-20'?'20 Symbolfelder':win.rule==='premium-24'?'24 Symbolfelder':win.rule==='row-3'?'Dreierreihe':'Gewinn '+(i+1);
@@ -427,8 +428,14 @@ export function initChristmasScratch(){
    if(win.prize?.x2)line.append(el('small','', ' · '+num(win.prize.baseAmount)+' × 2'));
    list.append(line);
   }
+  for(const prize of entries.filter(p=>p?.bonus===true)){
+   const source=Number.isInteger(prize.sourceWin)?wins[prize.sourceWin]:null;
+   if(!source)continue;
+   list.append(el('div','scratch-prize-line scratch-prize-bonus',
+    '🎉 Zusatzgewinn zur Gewinnkombination '+(prize.sourceWin+1)+': '+prizeLabel(prize)));
+  }
   drawPrizeTable(ticket,entries);
-  list.hidden=!wins.length;results.hidden=false;
+  list.hidden=!entries.length;results.hidden=false;
   $('scratch-reveal-button').hidden=true;$('scratch-ticket-finish').hidden=false;
   notice(entries.length?'🎉 Gewinne sind bereits sicher auf deinem Profil gutgeschrieben.':
    '❄️ Niete – auf dieser Karte gibt es keine gültige Gewinnkombination.');
