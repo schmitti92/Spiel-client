@@ -1,0 +1,35 @@
+{
+  "total": 20,
+  "sprite_columns": 4,
+  "sprite_rows": 5,
+  "sprite_size": [
+    1024,
+    1280
+  ],
+  "avatar_ids_if_appended_after_current_16": [
+    16,
+    35
+  ],
+  "names": [
+    "weihnachtsmann",
+    "frau_weihnachtsmann",
+    "rentier_rudolf",
+    "schneemann",
+    "weihnachtswichtel",
+    "wichtelin",
+    "eisbaer",
+    "weihnachtspinguin",
+    "lebkuchenmann",
+    "nussknacker",
+    "weihnachtskatze",
+    "weihnachtshund",
+    "schneeeule",
+    "weihnachtskrippe",
+    "schneekugel",
+    "adventskranz",
+    "weihnachtsbaum",
+    "weihnachtskamin",
+    "geschenkesack",
+    "weihnachtsschlitten"
+  ]
+}
