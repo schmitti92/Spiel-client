@@ -365,6 +365,7 @@ function refreshPreview(){
   const plaque=document.querySelector('[data-hotspot-level="'+d.id+'"]');
   if(plaque)plaque.textContent=level+' / 5';
  }
+ if(openedBuildingId&&buildingDialog.open)renderVillageBuildingDialog(openedBuildingId);
  const view=$('village-view');
  const presentationKey=JSON.stringify([preview.tower,preview.workshop,preview.bakery,preview.inn]);
  if(lastPresentationKey!==null&&presentationKey!==lastPresentationKey&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
@@ -458,17 +459,105 @@ for(const id of tabs){
 document.querySelectorAll('[data-open-tab]').forEach(button=>{
  button.addEventListener('click',()=>showPanel(button.dataset.openTab));
 });
-document.querySelectorAll('[data-open-building]').forEach(button=>{
- button.addEventListener('click',()=>{
-  const id=button.dataset.openBuilding;
-  if(!definitions.some(def=>def.id===id))return;
-  showPanel('buildings');
-  const input=$('preview-'+id);
-  if(input){
-   input.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'center'});
-   input.focus({preventScroll:true});
-  }
+// Read-only building information: no separate database fetch or client-written
+// bonus values. The server's public village.bonus is authoritative.
+const buildingDialog=$('village-building-dialog');
+let openedBuildingId=null;
+const buildingDescriptions=Object.freeze({
+ tower:'Der Weihnachtslichter-Turm wacht über den Dorfplatz. Mit jedem Ausbau werden in einer DOG-Runde mehr verborgene Geschenkfelder auf dem Spielbrett verteilt.',
+ workshop:'In der Wichtelwerkstatt entstehen kleine Überraschungen. Beim Einsammeln eines versteckten Geschenkfeldes kann ein zusätzliches Geschenk entstehen.',
+ bakery:'Die Weihnachtsbäckerei versorgt Lichtertal mit Wärme und Gebäck. Gesammelte Geschenke bringen dem gemeinsamen Dorfkonto Weihnachtslichter; die Bäckerei erhöht diesen Ertrag.',
+ inn:'Die Friedensherberge bietet den Bewohnern einen warmen Platz. Sie erhöht die versteckten Rubbellos-Felder auf dem DOG-Brett und schenkt dem Dorf Weihnachtslichter nach abgeschlossenen Partien.'
+});
+const bonusExplainers=Object.freeze({
+ tower:'So viele Geschenkfelder werden zu Beginn einer DOG-Runde verdeckt und zufällig auf dem Brett verteilt. Trifft eine Spielfigur ein noch nicht eingesammeltes Feld, kann sie ein Geschenk erhalten.',
+ workshop:'Die Prozentchance gilt für jedes tatsächlich eingesammelte Geschenkfeld im DOG-Spiel. Bei Erfolg gibt es ein zweites Geschenk und entsprechend zusätzliche Weihnachtslichter.',
+ bakery:'Jedes gesammelte Geschenk ist grundsätzlich 1 Weihnachtslicht wert. Der aktuelle Prozentsatz wird zusätzlich gutgeschrieben. Die Lichter gehören dem gemeinsamen Dorfkonto.',
+ inn:'Die Rubbellose liegen verborgen auf zufälligen DOG-Feldern. Der zusätzliche Lichterbonus wird einmal nach jeder serverseitig abgeschlossenen DOG-Partie dem Dorfkonto gutgeschrieben.'
+});
+function villageBuildingBonus(id,level){
+ const bonus=villageLive?.bonus;
+ if(id==='tower'){
+  const value=bonus&&Number.isInteger(bonus.towerFields)?bonus.towerFields:FIELDS[level-1];
+  return value+' versteckte Geschenkfelder pro Runde';
+ }
+ if(id==='workshop'){
+  const value=bonus&&Number.isInteger(bonus.workshopExtraChancePercent)?bonus.workshopExtraChancePercent:5*level;
+  return value+' % Chance auf ein zusätzliches Geschenk';
+ }
+ if(id==='bakery'){
+  const value=bonus&&Number.isInteger(bonus.bakeryExtraPercent)?bonus.bakeryExtraPercent:10*(level-1);
+  return value?'+ '+value+' % Weihnachtslichter pro Geschenk':'1 Weihnachtslicht pro Geschenk (Grundwert)';
+ }
+ if(id==='inn'){
+  const fields=bonus&&Number.isInteger(bonus.innScratchFields)?bonus.innScratchFields:8+2*(level-1);
+  const games=bonus&&Number.isInteger(bonus.innPerFinishedGame)?bonus.innPerFinishedGame:level-1;
+  return fields+' versteckte Rubbellos-Felder pro Runde · '+games+' zusätzliche Lichter pro abgeschlossener Partie';
+ }
+ return '';
+}
+function renderVillageBuildingDialog(id){
+ const definition=definitions.find(d=>d.id===id);
+ if(!definition)return;
+ const confirmed=Boolean(villageLive?.levels&&Number.isInteger(villageLive.levels[id]));
+ const level=confirmed?villageLive.levels[id]:preview[id];
+ $('village-building-title').textContent=definition.title;
+ $('village-building-icon').textContent=definition.icon;
+ $('village-building-description').textContent=buildingDescriptions[id];
+ $('village-building-mode').textContent=!confirmed?
+  '👁️ Vorschau · Gemeinsamer Online-Fortschritt noch nicht bestätigt':
+  villageEventActive?'🟢 Gemeinsamer Bonus aktiv':'⏸️ Event beendet · Bonus derzeit nicht aktiv';
+ $('village-building-stage').textContent='Stufe '+level+' / '+CHRISTMAS_BUILDING_MAX_LEVEL;
+ $('village-building-progress').style.width=(100*level/CHRISTMAS_BUILDING_MAX_LEVEL)+'%';
+ const current=$('village-building-current-bonus');
+ current.textContent=villageBuildingBonus(id,level);
+ $('village-building-bonus-explanation').textContent=bonusExplainers[id];
+ const next=level<CHRISTMAS_BUILDING_MAX_LEVEL?level+1:null;
+ $('village-building-next-bonus').textContent=next?
+  'Stufe '+next+': '+(
+   id==='tower'?FIELDS[next-1]+' Geschenkfelder':
+   id==='workshop'?(5*next)+' % Zusatzchance':
+   id==='bakery'?'+'+(10*(next-1))+' % Weihnachtslichter':
+   (8+2*(next-1))+' Rubbellos-Felder · +'+(next-1)+' Lichter/Partie'):
+  '🏆 Maximalstufe erreicht';
+ const cost=christmasUpgradeCost(level);
+ $('village-building-next-cost').textContent=cost===null?'Alle fünf Gebäudestufen wurden erreicht.':
+  'Ausbaukosten: '+cost+' ⭐ aus dem gemeinsamen Dorfvorrat';
+ const photo=$('village-building-image');
+ photo.alt=definition.title+' auf Stufe '+level;
+ photo.src=assetPath(id,level);
+ const upgrade=$('village-building-upgrade');
+ upgrade.textContent=next?'🏠 Zum Gebäudeausbau':'🏠 Gebäudedetails ansehen';
+}
+function openVillageBuildingDialog(id){
+ if(!definitions.some(d=>d.id===id))return;
+ openedBuildingId=id;
+ renderVillageBuildingDialog(id);
+ if(!buildingDialog.open)buildingDialog.showModal();
+ // On initial page load the existing village request can still be pending.
+ // Reuse its coalesced GET, never request a separate bonus service.
+ if(eventUser()&&!villageLive)void reloadVillage();
+}
+function jumpToVillageBuilding(){
+ const id=openedBuildingId;
+ buildingDialog.close();
+ if(!id)return;
+ showPanel('buildings');
+ requestAnimationFrame(()=>{
+  const target=$('preview-'+id);
+  target?.scrollIntoView({behavior:'smooth',block:'center'});
+  target?.focus({preventScroll:true});
  });
+}
+$('village-building-close').addEventListener('click',()=>buildingDialog.close());
+$('village-building-dismiss').addEventListener('click',()=>buildingDialog.close());
+$('village-building-upgrade').addEventListener('click',jumpToVillageBuilding);
+buildingDialog.addEventListener('click',event=>{
+ if(event.target===buildingDialog)buildingDialog.close();
+});
+buildingDialog.addEventListener('close',()=>{openedBuildingId=null;});
+document.querySelectorAll('[data-open-building]').forEach(button=>{
+ button.addEventListener('click',()=>openVillageBuildingDialog(button.dataset.openBuilding));
 });
 window.addEventListener('hashchange',()=>showPanel(tabs.includes(location.hash.slice(1))?location.hash.slice(1):'village',{updateHistory:false}));
 showPanel(tabs.includes(location.hash.slice(1))?location.hash.slice(1):'village',{updateHistory:false});
