@@ -1,0 +1,43 @@
+{
+  "project": "Lichtertal DOG Christmas Scratch",
+  "target_dir": "DOG/assets/lichtertal-scratch-winter",
+  "hero_images": [
+    "01_icon_geschenk.png",
+    "02_icon_schneeflocke.png",
+    "03_icon_wichtel.png",
+    "04_icon_premiumkrone.png"
+  ],
+  "files": [
+    "00_REFERENZ_DESIGN.png",
+    "01_icon_geschenk.png",
+    "02_icon_schneeflocke.png",
+    "03_icon_wichtel.png",
+    "04_icon_premiumkrone.png",
+    "05_karte_geschenkelinie_leer.png",
+    "06_karte_schneeflocken_leer.png",
+    "07_karte_wichtelpfad_leer.png",
+    "08_karte_premium_leer.png",
+    "09_motiv_geschenkelinie_glow.png",
+    "10_motiv_schneeflocken_glow.png",
+    "11_motiv_wichtelpfad_glow.png",
+    "12_motiv_premium_glow.png",
+    "13_header_holzschild_leer.png",
+    "14_statistik_holzpanel_leer.png",
+    "15_kontostand_holzschild_leer.png",
+    "16_obere_schneekante_eiszapfen.png",
+    "17_winternacht_hintergrund.png",
+    "18_sidebar_laterne_schnee.png",
+    "19_fortschrittsbalken_leer.png",
+    "20_fortschrittsbalken_fuellen.png",
+    "21_schneeflocken_glitzer_overlay.png",
+    "22_gold_trennlinie.png",
+    "23_button_gesperrt_leer.png",
+    "24_button_gesammelt_leer.png",
+    "25_button_abholbereit_leer.png",
+    "26_statistik_kachel_los_geoeffnet.png",
+    "27_statistik_kachel_gewinnlose.png",
+    "28_statistik_kachel_freischaltungen.png",
+    "29_statistik_kachel_muenzen_gewonnen.png",
+    "31_GRAFIKEN_VORSCHAU.jpg"
+  ]
+}
