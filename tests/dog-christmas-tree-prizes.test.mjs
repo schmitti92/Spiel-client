@@ -13,7 +13,7 @@ test('tree stage UI uses authenticated existing village API and read-only load',
  const html=text('../DOG/christmas-event.html');
  const client=text('../DOG/christmas-event.js');
  const board=text('../DOG/christmas-tree-rewards-ui.js');
- assert.match(html,/id="tree-reward-list"/);
+ assert.match(html,/id="tree-steps"/);
  assert.match(html,/id="tree-reward-feedback"/);
  assert.match(html,/christmas-tree-rewards\.css/);
  assert.match(client,/initChristmasTreeRewards/);
