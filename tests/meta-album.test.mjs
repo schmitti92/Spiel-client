@@ -98,6 +98,7 @@ test('variant B shows only the standalone book and opens picture previews in a m
  assert.match(js,/function closeThemeMenu\(\)/);
  assert.match(js,/\$\('meta-picture-dialog'\)\.showModal\(\)/);
  assert.match(js,/dialog\.close\(\)/);
+ assert.match(js,/title\.id='meta-dialog-title'/);
  assert.match(js,/dialog\.open\|\|event\.altKey/);
  assert.match(js,/const unlocked=isMetaAlbumPictureUnlocked\(pic\)/);
  assert.match(js,/disabled\.disabled=true/);
