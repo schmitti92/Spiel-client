@@ -8,7 +8,7 @@ import {createDogVisualFeedback} from './ui-animations.js?v=2';
 import {summarizeDogVictory} from './victory-summary.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
-import {DEFAULT_APPEARANCE,BOARD_STYLES,isBoardUnlocked,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,CARD_STYLES,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=22';
+import {DEFAULT_APPEARANCE,BOARD_STYLES,isBoardUnlocked,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=23';
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=10';
 
 const $=id=>document.getElementById(id);
@@ -775,7 +775,7 @@ function applyAppearance(){
   if(game)render();
 }
 function prepareAppearanceUI(){
-  const groups={board:BOARD_STYLES,boardFrame:BOARD_FRAMES,sidebar:SIDEBAR_BACKGROUNDS,hudTone:HUD_TONES,pieces:PIECE_STYLES,cards:CARD_STYLES};
+  const groups={board:BOARD_STYLES,boardFrame:BOARD_FRAMES,sidebar:SIDEBAR_BACKGROUNDS,hudTone:HUD_TONES,pieces:PIECE_STYLES,cards:Object.fromEntries(PUBLISHED_CARD_STYLE_IDS.map(id=>[id,CARD_STYLES[id]]))};
   for(const [type,registry] of Object.entries(groups)){
     const select=$('appearance-'+type);
     select.replaceChildren();
