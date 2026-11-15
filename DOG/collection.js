@@ -1,8 +1,8 @@
 import {applyMotionMode,loadMotionMode} from './motion-settings.js';
 applyMotionMode(loadMotionMode());
-import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=7';
+import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory,dogCollectionStats} from './collection-catalog.js?v=8';
 import {loadAppearance,saveAppearance} from './appearance-registry.js?v=22';
-import {loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=1';
+import {loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=2';
 // The collection never grants event rewards. Cosmetic choices persist locally;
 // only an explicit avatar update in an active room uses the existing DOG API.
 const $=id=>document.getElementById(id),qs=new URLSearchParams(location.search),root=new URL('../',location.href);
