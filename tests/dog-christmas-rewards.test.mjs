@@ -8,13 +8,13 @@ import {DOG_EMOJI_STARTERS,loadEmojiSlots,isEmojiUnlocked,DOG_CHRISTMAS_EMOJIS} 
 import {isChristmasAvatarUnlocked} from '../DOG/christmas-avatar-catalog.js';
 const source=path=>readFileSync(new URL(path,import.meta.url),'utf8');
 
-test('all 49 newly added DOG Christmas cosmetics have independent locked rewards',()=>{
+test('all 51 registered DOG Christmas cosmetics have independent locked rewards',()=>{
  assert.deepEqual(DOG_CHRISTMAS_REWARD_COUNTS,{
-  boards:4,backgrounds:5,avatars:20,frames:5,emblems:5,emojis:10
+  boards:4,backgrounds:5,avatars:20,frames:5,emblems:5,emojis:10,cards:2
  });
- assert.equal(DOG_CHRISTMAS_REWARDS.length,49);
- assert.equal(new Set(DOG_CHRISTMAS_REWARDS.map(item=>item.id)).size,49);
- assert.equal(new Set(DOG_CHRISTMAS_REWARDS.map(item=>item.unlockId)).size,49);
+ assert.equal(DOG_CHRISTMAS_REWARDS.length,51);
+ assert.equal(new Set(DOG_CHRISTMAS_REWARDS.map(item=>item.id)).size,51);
+ assert.equal(new Set(DOG_CHRISTMAS_REWARDS.map(item=>item.unlockId)).size,51);
  for(const item of DOG_CHRISTMAS_REWARDS){
   assert.equal(item.status,'planned',item.name);
   assert.ok(isChristmasRewardLocked(item),item.name);
