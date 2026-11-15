@@ -1,5 +1,5 @@
-# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v2
-Stand: 15.11.2026. Status: PLAN GESICHERT, Umsetzung ausstehend.
+# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v3
+Stand: 15.11.2026. Status: IN UMSETZUNG. Gewinnlogik, Varianten und funktionale Rubbeloberfläche ins Repository integriert; Artwork und echter Mehrspieler-Endtest noch offen.
 Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 
 ## Fixierte Regeln
@@ -32,7 +32,7 @@ Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 
 **Mathematische Prüfung:** 20+68,9+11,1=100; 20+77+3=100; 20+76+4=100. Gewinnlosquote jeweils 80 %. Die zusätzlichen Münztreffer ergeben über **alle** Lose 0,8×30%=24 %, 0,8×40%=32 % bzw. 0,8×50%=40 %. Da ×2 keine Niete treffen darf, entsprechen 11 % aller Lose 13,75 % unter den Gewinnlosen. Die 0,1 % für Hauptgewinn-×2 sind in diesen 11 % enthalten; sie entsprechen bei Beschränkung auf reguläre Freischaltung 0,1/11,1≈0,901 %, 0,1/3≈3,333 % bzw. 0,1/4=2,5 % bedingt auf die jeweilige Freischaltungs-Hauptkategorie. Beide 0,1-%-Ereignisse sind Erwartungswerte von 1 je 1000 Losen, keine Garantie.
 
-**Noch in Phase 1 festzulegen:** Wie die Sonderereignisse überlappen, ob zusätzliche Münztreffer auch bei Freischaltungen vorkommen, ob mehr als zwei Münztreffer möglich sind, Münzbetragsverteilung, Verhalten bei erschöpften Freischaltpools. Die Zielwahrscheinlichkeiten sind **noch nicht im Live-Spiel implementiert**.
+**Technisch festgelegt (15.11.2026):** Die Hauptkategorien werden pro Los mit 1000 gleichgewichteten Positionen gezogen. Zwei-Hauptgewinne und Hauptgewinn-×2 sind bei ausreichendem unbesessenem Pool zwei unterschiedliche seltene Ereignisse innerhalb der Freischaltungskategorie (je 0,1 % aller Lose) und schließen sich gegenseitig aus. 11 % ×2 bestehen aus 10,9 % normalem Münz-×2 plus 0,1 % Hauptgewinn-×2. Normales ×2 auf Freischaltungs-Losen gibt einen klar sichtbaren zusätzlichen Münztreffer, auf den ×2 angewendet wird. Der Extra-Münztreffer wird mit 30/40/50 % unter Gewinnlosen gezogen; falls Platz ist, können bei 20 % dieser Treffer zwei zusätzliche Münzgewinne erscheinen. Maximal drei sichtbare Gewinnkombinationen pro Los. Sind weniger als zwei freischaltbare, noch nicht besessene Hauptpreise vorhanden, können die 0,1-%-Sonderereignisse nicht mehr als zwei neue einzigartige Hauptgewinne ausgezahlt werden; ausverkaufte reguläre Freischaltungen werden zu Münzgewinnen. **Die 20-%-Nietenquote bleibt trotzdem erhalten.** Beträge innerhalb der gewählten Spanne sind gleichverteilt. Diese Auslegung ist technische Implementierung der bestätigten Hauptquoten; späteres Fine-Tuning gesondert dokumentieren.
 
 ## Varianten (Arbeitsentwurf; vor Implementierung formal spezifizieren)
 1. Geschenkelinie: 3×3, 3 gleiche in horizontaler/vertikaler/diagonaler Reihe.
@@ -63,7 +63,7 @@ Abnahme: Wahrscheinlichkeitsmatrix und Testfälle schriftlich freigegeben.
 - **Technische Abnahme:** Für jede der 10 Varianten Generator und davon unabhängigen Regelprüfer bauen; generierte Ergebnisse vor Auszahlung serverseitig gegenprüfen. Keine Belohnung allein aus einer Anzeige oder einem clientseitigen Zufallswurf ableiten.
 - Serverseitiges Losergebnis und Spielfeld zusammen atomar persistieren, damit Neuladen/Verbindungsabbruch keine andere Karte erzeugt.
 
-## Phase 2 – Spielvarianten und Generator [IN ARBEIT: 10/10 Generatoren]
+## Phase 2 – Spielvarianten und Generator [GRUNDLOGIK FERTIG; ENDTETST OFFEN]
 - [x] Für **alle 10 Varianten** Generatoren und unabhängige Regelprüfer implementiert: `serverfinal/dog/christmas-scratch-grid.js`.
 - [x] Pro Variante **0, 1, 2 oder 3** sichtbare, tatsächlich regelkonforme Gewinnkombinationen erzeugen; Nieten ohne gültige Gewinnkombination.
 - [x] Preis-Zuordnung je geprüfter Gewinnkombination vorbereitet (`attachScratchPrizes`); eine manipulierte Feldzuordnung wird erkannt (`verifyScratchPrizes`).
@@ -75,12 +75,12 @@ Abnahme: Wahrscheinlichkeitsmatrix und Testfälle schriftlich freigegeben.
 - 6/9/12/15/16/20 Felder auf Mobilgeräten gut bedienbar.
 Abnahme: automatische Validierung aller 10 Varianten, auch 2–3 Gewinnkombinationen.
 
-## Phase 3 – Serverseitige Auszahlung [ ]
-- Bestehende Render-Implementierung dog/christmas-scratch.js und API-Routen zuerst prüfen.
-- Sichere, atomare Käufe, einmalige commandId, Wiederholung idempotent.
-- Neue Ergebnisstruktur für mehrere Münztreffer, seltene Hauptgewinne, ×2, Nieten und variantId.
-- Gewinn sofort dauerhaft speichern; Firebase nicht pro Rubbelbewegung schreiben.
-- Reconnect/Reload: nicht fertig aufgedecktes Los erneut anzeigen.
+## Phase 3 – Serverseitige Auszahlung [INTEGRIERT; LIVE-ENDTEST OFFEN]
+- [x] Render-Kauflogik `serverfinal/dog/christmas-scratch.js` und vorhandene authentifizierte API-Routen geprüft.
+- [x] Atomare Firestore-Transaktion, Wiederholungen über commandId idempotent, auch bei Unterbrechung.
+- [x] Neue Ergebnisstruktur inklusive alle Gewinnkombinationen, sichtbarem `board` und `variantId`, auch für Nieten und ×2.
+- [x] Gewinn und validiertes Spielfeld im selben Transaktionsbeleg gespeichert; keine Datenbankwrites beim Freirubbeln.
+- [x] `lastResult` wird serverseitig gespeichert; die Oberfläche bietet das noch nicht als gesehen markierte Los nach Neuladen erneut an (nur UI-Marker lokal, keine Berechtigungsprüfung damit).
 Abnahme: Unit-/Integrationstests für Guthaben, Duplikate, Entitlements, Auth, Parallelkäufe.
 
 ## Phase 4 – Grafiken [ ]
@@ -90,21 +90,21 @@ Abnahme: Unit-/Integrationstests für Guthaben, Duplikate, Entitlements, Auth, P
 - Assets in DOG-Verzeichnis des Frontend-Repos hochladen; Pfade dokumentieren.
 Abnahme: alle 10 auf Desktop und Smartphone ohne Überdeckung.
 
-## Phase 5 – Rubbeloberfläche [ ]
-- Canvas/Pointer/Touch; Fortschritt, klare Anleitung, barrierearme Alternative zum Rubbeln.
-- Mehrere Gewinne klar hervorheben, ×2 besonders inszenieren.
-- Nieten freundlich, aber eindeutig anzeigen.
+## Phase 5 – Rubbeloberfläche [FUNKTIONSSTAND EINGEBAUT, VISUELLE ABNAHME OFFEN]
+- [x] Individuelle Canvas-Rubbelfelder (6–20 pro Los), Pointer/Touch, Fortschritt, Kurzregel; Button „Alle Felder aufdecken“ als Alternative.
+- [x] Gewinnkombinationen werden nach Freirubbeln gold markiert und ihre Preise separat ausgewiesen; ×2 und seltenes Hauptgewinn-×2 gekennzeichnet.
+- [x] Nieten werden nach dem Aufrubbeln ohne leuchtende Gewinnkombination und mit Nieten-Hinweis gezeigt.
 Abnahme: Touch, Maus, Vollbild, Reload, kleine Displays.
 
-## Phase 6 – Integration [ ]
-- 3 Losklassen im bestehenden Weihnachts-Event-Tab.
+## Phase 6 – Integration [CODE EINGEBAUT, BROWSERTEST OFFEN]
+- [x] Drei Losklassen im bestehenden Weihnachts-Event-Tab mit aktueller Wahrscheinlichkeit und 10 zufälligen Spielvarianten.
 - Nur verifizierte, vom Server vergebene Freischaltungen im Sammlungssystem.
-- Münzsaldo, Gewinnhistorie, tägliches Gratislos und Poolstatus.
+- [x] Münzsaldo, aktueller letzter Losbeleg, tägliches Gratislos; [ ] vollständige Gewinnhistorie und Poolstatus sichtbar im UI.
 Abnahme: durchgängiger Kauf→Rubbeln→Anzeige→Sammlung-Flow.
 
 ## Phase 7 – Wahrscheinlichkeitstests und Balance [ ]
 - Deterministische Grenztests: 20 % Niete, 11 % ×2, 0,1 % Doppel-Hauptgewinn, 0,1 % Hauptgewinn-×2.
-- Simulation von mindestens 1 Million Losen pro Klasse; Konfidenzbereiche statt exakter Simulationsquote.
+- [x] 12.000 unabhängige Testkäufe (4.000 je Klasse) mit passender Symbolprüfung in der Entwicklungsumgebung; [ ] 1 Million Losen je Klasse mit Konfidenzbereichen und produktionsnahem Testsystem.
 - Fairness, erwartete Münzauszahlung, langfristige Münzquellen und Poolerschöpfung prüfen.
 Abnahme: Testbericht mit erwarteten und beobachteten Werten.
 
@@ -120,4 +120,6 @@ Abnahme: echte Spielrunde über mehrere Geräte.
 - 15.11.2026: Sichtbarkeitsregel und Pflicht zu Generator + unabhängiger Regelprüfung für alle zehn Varianten verbindlich ergänzt. Umsetzung noch ausstehend.
 - 15.11.2026: Phase 2 begonnen. Backend-Grundmodul für 3×3 und 4×4 implementiert, 2.000 Generator-/Prüfungen bestanden. Noch nicht an Shop oder Auszahlung angebunden.
 - 15.11.2026: Alle zehn Generatoren/Regelprüfer für 0–3 Gewinnkombinationen ergänzt; 10.000 erzeugte Spielfelder in einer isolierten JS-Prüfung erfolgreich kontrolliert; Node-Testdatei eingecheckt. Noch kein Live-Gameplay.
-- Nächster Schritt: Node-Testlauf und Anbindung der Ergebnisdaten an den bestehenden Render-Kaufprozess (unter Beachtung max. drei sichtbarer Gewinnkombinationen), danach UI und Grafiken.
+- 15.11.2026: Phase 3: Gewinnlogik mit exakt gewichteten drei Hauptkategorien und Sonderregeln mit dem 10-Varianten-Generator verbunden; Spielfeld und Gewinn werden zusammen im Kaufbeleg gespeichert. 12.000 simulierte Testkäufe mit erfolgreichen Feld-Prüfungen; dauerhafter Node-Test in `serverfinal/tests/christmas-scratch-purchase.test.js` angelegt.
+- 15.11.2026: Phase 5/6: 6–20 einzelne Rubbel-Felder, Anleitung, Gewinnreihe, Niete, ×2, Mehrfachgewinn und Reload-Wiederherstellung im Frontend eingecheckt. Render rollt Backend via AutoDeploy aus. Browser-Endtest und Artwork stehen noch aus.
+- Nächster Schritt: Render-/GitHub-Pages-Endtest mit signiertem Profil auf Handy und Desktop; anschließend individuell gestaltete Hintergrundbilder für die 10 Varianten.
