@@ -99,15 +99,15 @@ function drawDetail(){
  const pic=theme.pictures.find(p=>p.id===selected);
  root.replaceChildren();
  if(!pic){root.append(dom('p','', 'Noch kein Bild ausgewählt.'));return;}
- root.append(dom('span','meta-detail-overline','Sammelbild '+String(pic.number).padStart(2,'0')+' von '+theme.pictures.length));
+ // Compact detail panel: the album itself already shows numbering and progress.
  const artwork=dom('div','meta-detail-artwork');
  artwork.append(imageOf(pic),dom('span','meta-detail-lock','🔒 VORSCHAU · GESPERRT'));
  root.append(artwork,dom('h3','meta-detail-title',pic.icon+' '+pic.name),dom('p','meta-detail-description',pic.description));
- root.append(dom('p','meta-detail-message','🎁 Dieses Bild kannst du später als Einzelbelohnung beim Weihnachtsevent 1 freischalten.'));
+ root.append(dom('p','meta-detail-message','🎁 Später im Weihnachtsevent 1 freischaltbar.'));
  const disabled=dom('button','meta-detail-disabled','🔒 Noch nicht freigeschaltet');
  disabled.type='button';disabled.disabled=true;
  root.append(disabled);
- root.append(dom('small','meta-detail-footnote','Dein Eventfortschritt ist noch nicht mit dem Meta-Sammelalbum verbunden. Die Vorschau vergibt keine Gewinne.'));
+ root.append(dom('small','meta-detail-footnote','Nur Vorschau – keine Freischaltung.'));
 }
 /** Clone the currently visible sheet as a temporary turning leaf.
  * Old content rotates away and the next page is rendered underneath.
