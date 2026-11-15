@@ -73,7 +73,8 @@ test('all scratch tiers expose three configurable cash symbols and a gift unlock
  const html=source('../DOG/christmas-event.html');
  const js=source('../DOG/christmas-scratch-ui.js');
  assert.match(html,/id="scratch-symbol-legend"/);
- assert.match(js,/shopMoneyLegend\(c.id\)/);
+ assert.match(js,/symbolLegend\(option.tier,amounts\)/);
+ assert.match(js,/for\(const option of SCRATCH_SHOP_VARIANTS\)/,'four separately selectable scratch variants');
  assert.match(js,/Freischaltung:/);
  assert.match(js,/🎁 💝 🎀 🧧/);
  assert.match(js,/p\.symbol/);
