@@ -9,6 +9,11 @@
 .dog-plate-choice[aria-pressed=true]{border-color:#ffdc86;box-shadow:0 0 0 2px #c9953e,0 0 17px #f4bb5d66}
 .dog-plate-choice img,.dog-plate-placeholder{display:block;aspect-ratio:1/1;width:100%;height:auto;object-fit:cover;border-radius:6px;background:radial-gradient(circle at 50% 30%,#1c6699,#071b35)}
 .dog-plate-choice span{font:750 11px system-ui,sans-serif;line-height:1.25;overflow-wrap:anywhere}
+.dog-plate-choice.is-locked{background:#18232c;border-color:#626b72;color:#b2bdc7;cursor:not-allowed;box-shadow:none}
+.dog-plate-choice.is-locked img{filter:grayscale(1) brightness(.55)}
+.dog-plate-choice.is-locked:hover{transform:none;border-color:#626b72}
+.dog-plate-choice.is-locked:hover img{filter:grayscale(1) brightness(.55);transform:none}
+.dog-plate-choice.is-locked .dog-plate-lock{font-size:10px;font-weight:850;color:#e9d1a5}
 .dog-plate-choice:focus-visible{outline:3px solid #fff2b1;outline-offset:2px}
 .dog-plate-footnote{font:500 11px system-ui,sans-serif!important;margin:10px 0 0!important;color:#bed3d9!important}
 @media(max-width:720px){.dog-plate-choices{grid-template-columns:repeat(3,minmax(0,1fr))}.dog-plate-select{padding:10px}}
