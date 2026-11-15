@@ -16,7 +16,7 @@ const BASE_COLLECTION_CATEGORIES=[
   ...Object.entries(SCENE_STYLES).map(([id,t])=>avail(id,t.label,{kind:'appearance',field:'scene',image:t.image||null,description:t.description||'Seitenhintergrund für DOG',icon:id==='none'?'🌑':'🏰',artTone:'azure'})),
  ]},
  {id:'boards',icon:'🎲',title:'Spielbretter',subtitle:'Vorhandene DOG-Spielbrettdesigns',items:[
-  ...Object.entries(BOARD_STYLES).filter(([id])=>id!=='royalMarmor').map(([id,t])=>avail(id,t.label,{kind:'appearance',field:'board',image:t.image||null,fallbackImage:t.fallbackImage||null,background:t.page||'',status:isBoardUnlocked(id)?'available':'planned',description:isBoardUnlocked(id)?'Brettmotiv. Die offiziellen DOG-Felder bleiben unverändert.':'🔒 Exklusives Weihnachts-Spielbrett. Wird später durch das Weihnachtsevent freigeschaltet.',icon:'🐾',artTone:'wood'})),
+  ...Object.entries(BOARD_STYLES).filter(([id])=>id!=='royalMarmor').map(([id,t])=>avail(id,t.label,{kind:'appearance',field:'board',image:t.image||null,fallbackImage:t.fallbackImage||null,background:t.page||'',unlockId:t.unlockId||null,status:isBoardUnlocked(id)?'available':'planned',description:isBoardUnlocked(id)?'Brettmotiv. Die offiziellen DOG-Felder bleiben unverändert.':'🔒 Exklusives Weihnachts-Spielbrett. Wird später durch das Weihnachtsevent freigeschaltet.',icon:'🐾',artTone:'wood'})),
  ]},
  {id:'pieces',icon:'♟️',title:'Spielfiguren',subtitle:'Vorhandene Spielfiguren-Farbsätze',items:[
   ...Object.entries(PIECE_STYLES).map(([id,t])=>avail(id,t.label,{kind:'appearance',field:'pieces',palette:t.colors,description:'Aktueller Farbstil für die Spielfiguren; noch keine neue Figurenform.',icon:'♟️',artTone:'azure'})),
