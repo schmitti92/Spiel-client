@@ -233,19 +233,6 @@ const storyScreen=initChristmasStory({openTab:id=>showPanel(id)});
 let scratchScreen=null;
 let levelScreen=null;
 let lastPresentationKey=null;
-const sceneTitles=['Die Weihnachtsreise beginnt','Die ersten Laternen leuchten','Ein Hauch von Winter','Lichter über den Dächern','Das Dorf entdeckt Weihnachten','Die Weihnachtsvorbereitungen laufen','Ein Sternenglanz erscheint','Lichtertal wird zum Wintermärchen','Das Dorf wartet auf sein Wunder','Das große Weihnachtslicht'];
-const sceneDescriptions=[
- 'Noch ist Lichtertal ein ruhiges, einfaches Dorf.',
- 'Das erste Haus wurde verändert – die Vorbereitungen beginnen!',
- 'Die ersten Schneeflocken bedecken die Dächer.',
- 'Die vier Freunde bringen Wärme und Licht in die Straßen.',
- 'Der Weihnachtsbaum wächst, und die Stadt wird festlicher.',
- 'Überall entstehen Girlanden, Kränze und kleine Überraschungen.',
- 'Die Häuser strahlen immer heller im winterlichen Dorf.',
- 'Ein großer Baum und viele Laternen begleiten den Winterabend.',
- 'Nur noch wenige Schritte bis zum großen Weihnachtsfest!',
- 'Alle Gebäude sind vollendet: Der Weihnachtsbaum erleuchtet ganz Lichtertal!'
-];
 function treeLevel(){
   const points=Object.values(preview).reduce((a,b)=>a+b,0);
   return TREE_THRESHOLDS.filter(t=>points>=t).length;
@@ -395,12 +382,6 @@ function refreshPreview(){
  $('stat-building-levels').textContent=total+' / 20';
  $('stat-tree-level').textContent=tree+' / 10';
  $('village-stage-text').textContent=(tree===1?'Anfangszustand':tree===10?'Prachtvolles Weihnachtsdorf':'Baum Stufe '+tree)+(villageLive?' · Live':' · Vorschau');
- $('village-scene-title').textContent=sceneTitles[tree-1];
- $('village-scene-caption').textContent=sceneDescriptions[tree-1];
- $('village-preview-count').textContent=(total-4)+' / 16 Ausbauschritte'+(villageLive?' · gespeichert':' · Vorschau');
- $('village-preview-next').disabled=Boolean(villageLive)||total>=20;
- $('village-preview-reset').disabled=Boolean(villageLive);
- $('village-preview-full').disabled=Boolean(villageLive);
  if(!villageLive){
   $('building-village-counter').textContent=total+' / 20';
   $('building-village-tree').textContent='Stufe '+tree+' / 10';
@@ -424,22 +405,6 @@ function refreshPreview(){
  document.querySelector('.tree-world-meter')?.setAttribute('aria-valuenow',String(tree));
  if($('tab-tree').getAttribute('aria-selected')==='true')centerTreeMilestone();
 }
-$('village-preview-next').addEventListener('click',()=>{
-  // Purely local visual demonstration: grow each building in turn.
-  const lowest=Math.min(...Object.values(preview));
-  const next=['tower','workshop','bakery','inn'].find(id=>preview[id]===lowest&&preview[id]<5);
-  if(next)preview[next]++;
-  refreshPreview();
-});
-$('village-preview-reset').addEventListener('click',()=>{
- for(const d of definitions)preview[d.id]=1;
- refreshPreview();
-});
-$('village-preview-full').addEventListener('click',()=>{
- // Preview only. No player rewards, no currency, no shared saved changes.
- for(const d of definitions)preview[d.id]=5;
- refreshPreview();
-});
 function validReturn(){
  const raw=new URLSearchParams(location.search).get('return');
  if(!raw)return null;
@@ -569,8 +534,6 @@ function showLiveVillage(data){
  $('building-event-mode').textContent=!villageEventActive?'🏁 Event beendet · Fortschritt bleibt gespeichert.'
   :'🎄 Raumunabhängig: Jeder sammelt und kann ausbauen. Die Boni gelten für alle DOG-Partien.';
  $('building-live-notice').textContent='✅ Alle DOG-Spieler sammeln gemeinsam. Jeder kann mit dem gemeinsamen Vorrat Gebäude ausbauen.';
- const label=document.querySelector('.village-caption > span');
- if(label)label.textContent='⭐ Echter Dorffortschritt · '+lightsLabel(v.lightsTenths)+' Weihnachtslichter im gemeinsamen Vorrat';
  refreshPreview();
  const newTreeLevel=TREE_THRESHOLDS.filter(n=>Object.values(v.levels).reduce((a,b)=>a+b,0)>=n).length;
  if($('tab-tree').getAttribute('aria-selected')==='true'&&
