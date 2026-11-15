@@ -1538,7 +1538,9 @@ body.scratch-ticket-open > header.event-top{
 }
 .scratch-stage:not([hidden]) .scratch-inline-chips{
  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
- align-content:start;gap:3px;min-height:0;overflow:hidden;
+ align-content:start;gap:3px;min-height:0;
+ overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+ scrollbar-width:thin;scrollbar-color:#c9a85e #163c38;
 }
 .scratch-stage:not([hidden]) .scratch-inline-chip{
  display:flex;flex-direction:column;gap:1px;justify-content:center;
