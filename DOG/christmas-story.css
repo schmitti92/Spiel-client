@@ -1,0 +1,84 @@
+/* Fortlaufende Lichtertal-Geschichte: verified tree stages only. */
+#panel-story .story-heading{gap:14px;align-items:center}
+#panel-story .story-heading h2{font-size:clamp(23px,2.2vw,34px)}
+#panel-story .story-progress-label{flex:none;display:inline-flex;align-items:center;
+ border:1px solid #efd49384;border-radius:999px;background:#fff0bd12;
+ color:#ffe0a2;padding:8px 12px;font-size:12px;font-weight:850}
+#panel-story .story-progress-panel{padding:16px 19px;margin-bottom:14px;
+ border:1px solid #caa66c90;border-radius:16px;
+ background:linear-gradient(110deg,#133b35,#0a282b 65%,#163947)}
+#panel-story .story-progress-top{display:flex;align-items:center;justify-content:space-between;
+ gap:10px;color:#f9e2aa;font-size:13px;font-weight:850;margin-bottom:10px}
+#panel-story .story-progress-top strong{font-size:11px;color:#a9d8c5}
+#panel-story .story-progress-meter{height:9px;overflow:hidden;position:relative;border-radius:999px;
+ background:#021c25;border:1px solid #d3bd7e77;box-shadow:inset 0 2px 4px #0008}
+#panel-story .story-progress-meter>span{display:block;height:100%;
+ background:linear-gradient(90deg,#4cae94,#b6d3a0,#ffe39b);
+ box-shadow:0 0 9px #eddd91a0;transition:width .4s ease}
+#panel-story .story-state-note{font-size:12px;line-height:1.55;color:#d9e8df;margin:10px 0 0}
+#panel-story .story-upgrade-banner{padding:12px 16px;margin-bottom:12px;
+ border:1px solid #efd58b;border-radius:13px;
+ color:#ffe8b5;background:linear-gradient(90deg,#725a2a,#315b43);
+ font-weight:900;font-size:14px;box-shadow:0 0 16px #dcb35f38}
+#panel-story .story-upgrade-banner[hidden]{display:none!important}
+#panel-story .story-reader-layout{display:grid;grid-template-columns:minmax(215px,29%) minmax(0,1fr);
+ gap:13px;align-items:start;min-width:0}
+#panel-story .story-chapter-list{display:grid;gap:6px;padding:10px;border:1px solid #b49d7378;
+ border-radius:15px;background:#071e24c2;min-width:0}
+#panel-story .story-chapter{display:grid;grid-template-columns:36px minmax(0,1fr);
+ grid-template-rows:auto auto;align-items:center;gap:2px 9px;min-width:0;cursor:pointer;
+ border:1px solid #6d9c8866;background:linear-gradient(125deg,#174037,#0c2931);
+ border-radius:10px;padding:9px 10px;text-align:left;color:#dcefe3;transition:border-color .15s,background .15s}
+#panel-story .story-chapter:hover:not(:disabled){background:#1c5141;border-color:#d9c083}
+#panel-story .story-chapter:focus-visible{outline:2px solid #ffe095;outline-offset:2px}
+#panel-story .story-chapter.is-current{border-color:#ffe19a;background:linear-gradient(120deg,#6d5835,#23443c);
+ box-shadow:inset 0 0 0 1px #f5d89455,0 0 11px #ffcf7450}
+#panel-story .story-chapter.is-locked{opacity:.63;cursor:not-allowed;filter:saturate(.55)}
+#panel-story .story-chapter-number{grid-row:1/3;color:#f4d69c;font:900 24px Georgia,serif;line-height:1.2}
+#panel-story .story-chapter-name{font:800 13px Georgia,serif;color:#fff1d0;
+ white-space:normal;overflow-wrap:anywhere;line-height:1.2}
+#panel-story .story-chapter-status{font-size:10px;color:#b7d4ca}
+#panel-story .story-chapter.is-locked .story-chapter-name{color:#d2d7d1}
+#panel-story .story-reading{position:relative;min-height:530px;
+ border:1px solid #c8a6718a;border-radius:17px;padding:clamp(17px,2.3vw,32px);
+ background:radial-gradient(circle at 95% 4%,#6c60352d,transparent 35%),
+ linear-gradient(150deg,#204737,#0c302f 72%,#0b2530);box-shadow:0 9px 23px #0005}
+#panel-story .story-reading:before{content:"❄ ✦ ❄";
+ position:absolute;right:23px;top:16px;font-size:22px;opacity:.16;letter-spacing:11px;
+ pointer-events:none}
+#panel-story .story-reading-eyebrow{color:#b7d3be;font-size:10px;
+ font-weight:900;letter-spacing:.14em;text-transform:uppercase;padding-right:40px}
+#panel-story .story-reading-title{margin:9px 0 19px;color:#ffe1a6;
+ font:900 clamp(22px,2.5vw,34px)/1.15 Georgia,serif}
+#panel-story .story-reading-paragraphs{max-width:76ch}
+#panel-story .story-reading p{font-size:clamp(13px,1.15vw,16px);line-height:1.85;
+ color:#e0ebe4;margin:0 0 17px;text-wrap:pretty}
+#panel-story .story-reading p:last-child{margin-bottom:0}
+#panel-story .story-actions{display:flex;justify-content:flex-end;margin-top:14px}
+#panel-story .story-actions button{min-height:42px;padding:10px 20px;cursor:pointer}
+#panel-story .scripture{margin-top:15px}
+@media(max-width:1180px){
+ #panel-story .story-reader-layout{grid-template-columns:1fr}
+ #panel-story .story-chapter-list{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;padding:7px}
+ #panel-story .story-chapter{display:flex;flex-direction:column;gap:5px;align-items:center;
+  padding:9px 5px;text-align:center;min-height:67px}
+ #panel-story .story-chapter-number{font-size:18px}
+ #panel-story .story-chapter-name{font-size:11px}
+ #panel-story .story-chapter-status{font-size:9px}
+ #panel-story .story-reading{min-height:0}
+}
+@media(max-width:650px){
+ #panel-story .story-heading{align-items:flex-start}
+ #panel-story .story-progress-label{font-size:10px;padding:6px 9px}
+ #panel-story .story-progress-panel{padding:12px}
+ #panel-story .story-chapter-list{grid-template-columns:repeat(2,minmax(0,1fr));padding:7px}
+ #panel-story .story-chapter{display:grid;grid-template-columns:30px 1fr;text-align:left;align-items:center;
+  gap:1px 7px;min-height:46px;padding:7px}
+ #panel-story .story-chapter-number{grid-row:1/3;font-size:18px}
+ #panel-story .story-chapter-name{font-size:11px}
+ #panel-story .story-reading{padding:17px}
+ #panel-story .story-reading-title{font-size:24px}
+ #panel-story .story-reading p{font-size:14px;line-height:1.8}
+ #panel-story .story-actions button{width:100%}
+}
+@media(prefers-reduced-motion:reduce){#panel-story .story-progress-meter>span{transition:none}}
