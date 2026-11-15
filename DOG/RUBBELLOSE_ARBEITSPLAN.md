@@ -1,5 +1,5 @@
-# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v10
-Stand: 15.11.2026. Status: KONZEPT AUF 4 SPIELARTEN ANGEPASST (2 Normal + 2 Premium), bestehende Live-Technik noch auf 3 Preisstufen und 6 auswählbaren Regeln. Die erste Grafik ist eingebunden; das dritte Premium-Motiv ist als SVG direkt auf GitHub integriert und sein Gewinnweg visuell hervorgehoben. Das zweite Eis-Palast-WebP und das vierte Motiv bleiben offene Grafikaufgaben.
+# DOG Weihnachts-Event – Rubbellose: verbindlicher Arbeitsplan v11
+Stand: 15.11.2026. Status: KORRIGIERTE KLASSEN: 2 Einfach (200) + 1 Mittel (500) + 1 Premium (1000). Die vier Varianten sind serverseitig klassengenau zugeordnet; das dritte Los ist ein ausschließlich mittleres Rubbellos, kein Premiumlos. Das dritte Motiv ist als SVG integriert und der Gewinnweg wird hervorgehoben. Das zweite Eis-Palast-WebP und das vierte Motiv bleiben offene Grafikaufgaben.
 Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 
 ## Fixierte Regeln
@@ -34,20 +34,20 @@ Dieses Dokument ist die Arbeitsgrundlage; Änderungen nur bewusst dokumentieren.
 
 **Technisch festgelegt (15.11.2026):** Die Hauptkategorien werden pro Los mit 1000 gleichgewichteten Positionen gezogen. Zwei-Hauptgewinne und Hauptgewinn-×2 sind bei ausreichendem unbesessenem Pool zwei unterschiedliche seltene Ereignisse innerhalb der Freischaltungskategorie (je 0,1 % aller Lose) und schließen sich gegenseitig aus. 11 % ×2 bestehen aus 10,9 % normalem Münz-×2 plus 0,1 % Hauptgewinn-×2. Normales ×2 auf Freischaltungs-Losen gibt einen klar sichtbaren zusätzlichen Münztreffer, auf den ×2 angewendet wird. Der Extra-Münztreffer wird mit 30/40/50 % unter Gewinnlosen gezogen; falls Platz ist, können bei 20 % dieser Treffer zwei zusätzliche Münzgewinne erscheinen. Maximal drei sichtbare Gewinnkombinationen pro Los. Sind weniger als zwei freischaltbare, noch nicht besessene Hauptpreise vorhanden, können die 0,1-%-Sonderereignisse nicht mehr als zwei neue einzigartige Hauptgewinne ausgezahlt werden; ausverkaufte reguläre Freischaltungen werden zu Münzgewinnen. **Die 20-%-Nietenquote bleibt trotzdem erhalten.** Beträge innerhalb der gewählten Spanne sind gleichverteilt. Diese Auslegung ist technische Implementierung der bestätigten Hauptquoten; späteres Fine-Tuning gesondert dokumentieren.
 
-## Verbindliches neues Ziel: vier unterschiedliche Rubbellose (2 Normal + 2 Premium)
+## Verbindliche Aufteilung: vier Rubbellose (2 Einfach + 1 Mittel + 1 Premium)
 
-Nutzerentscheidung vom 15.11.2026: **Insgesamt vier** Spielarten, davon
-**zwei normale und zwei Premium-Rubbellose**. Das bisherige erste Los
+Nutzerentscheidung vom 15.11.2026 (zuletzt korrigiert): **Insgesamt vier** Spielarten, davon
+**zwei einfache, ein mittleres und ein Premium-Rubbellos**. Das bisherige erste Los
 „Geschenkelinie“ bleibt erhalten. **Drei weitere Lose werden einzeln
 gestaltet**; die vorherigen Ideen mit sechs oder zehn aktiv beworbenen
 Spielarten werden nicht weiterverfolgt.
 
 | Nr. | Klasse | Arbeitsname | Größe | Gewinnregel | Gestaltung | Zustand |
 |---|---|---|---|---|---|---|
-| 1 | Normal | 🎁 Geschenkelinie | 3×3 (9) | Drei gleiche Symbole horizontal, vertikal oder diagonal | Rot/Gold, Weihnachtsmarkt, Geschenkband | [x] Grafik hochgeladen, technisches Layout vorhanden; Praxistest offen |
-| 2 | Normal | ❄️ Schneeflocken-Bingo (Sammellos) | 4×4 (16) | **Drei gleiche Gewinnsymbole irgendwo; pro Symboltyp ein Gewinn. 🧊 = Nietenfeld.** | Eisblau/Silber, Eispalast-Motiv | [x] Benutzerbild übernommen, WebP bereitgestellt, 4×4-CSS ausgerichtet, Serverprüfer aktiv; [ ] Upload und Mobil-Endtest |
-| 3 | Premium | 🧝 Magischer Wichtelpfad | 4×5 (20) | Durchgehender Pfad gleicher Symbole vom linken zum rechten Spielfeldrand (nur waagerecht/senkrecht) | Tiefgrün/Türkis, magischer Weihnachtswald, leuchtender Weg | [x] Eigenes SVG, 20 Felder, CSS-Ausrichtung, glühender Gewinnweg; Browsertest offen |
-| 4 | Premium | 🎄 Weihnachtsbaum-Geheimnis | 5×3 (15) | ⭐🎄🎁 in genau dieser Reihenfolge von links nach rechts | Violett/Gold, glanzvoller Sternenbaum und magisches Dorf | [ ] Neues Einzelmotiv + 5×3-Ausrichtung |
+| 1 | Einfach (200) | 🎁 Geschenkelinie | 3×3 (9) | Drei gleiche Symbole horizontal, vertikal oder diagonal | Rot/Gold, Weihnachtsmarkt, Geschenkband | [x] Grafik hochgeladen, technisches Layout vorhanden; Praxistest offen |
+| 2 | Einfach (200) | ❄️ Schneeflocken-Bingo (Sammellos) | 4×4 (16) | **Drei gleiche Gewinnsymbole irgendwo; pro Symboltyp ein Gewinn. 🧊 = Nietenfeld.** | Eisblau/Silber, Eispalast-Motiv | [x] Benutzerbild übernommen, WebP bereitgestellt, 4×4-CSS ausgerichtet, Serverprüfer aktiv; [ ] Upload und Mobil-Endtest |
+| 3 | Mittel (500) | 🧝 Magischer Wichtelpfad | 4×5 (20) | Durchgehender Pfad gleicher Symbole vom linken zum rechten Spielfeldrand (nur waagerecht/senkrecht) | Tiefgrün/Türkis, magischer Weihnachtswald, leuchtender Weg | [x] Eigenes SVG, 20 Felder, CSS-Ausrichtung, glühender Gewinnweg; Browsertest offen |
+| 4 | Premium (1000) | 🎄 Weihnachtsbaum-Geheimnis | 5×3 (15) | ⭐🎄🎁 in genau dieser Reihenfolge von links nach rechts | Violett/Gold, glanzvoller Sternenbaum und magisches Dorf | [ ] Neues Einzelmotiv + 5×3-Ausrichtung |
 
 Dies sind **Gestaltungsvorschläge**, keine bereits vom Nutzer abgenommenen
 Endnamen oder finalisierten neuen Bilder. Die bestehende Spiellogik
@@ -56,22 +56,10 @@ die gewählten Klassen, individuelle Bildflächen und Gewinnanzeige
 abgestimmt werden.
 
 ### Preis- und Gewinnklassen: Übergang bewusst absichern
-- **Zielmodell:** 2 Normal-Spiele, 2 Premium-Spiele; die früheren
-  drei Kaufstufen (Einfach 200 / Mittel 500 / Premium 1000 Münzen)
-  existieren derzeit technisch weiterhin. **Keine Live-Preis- oder
-  Wahrscheinlichkeitsänderung durch dieses Planungspapier.**
-- Vorgeschlagene Abbildung bei späterer Umsetzung: Normal = bisherige
-  Einfach-Stufe (200 Münzen; 1–100 je Münztreffer);
-  Premium = bisherige Premium-Stufe (1000 Münzen; 1–2000 je Treffer).
-  Die bisherige Mittel-Stufe (500 Münzen; 1–800) erst nach gesonderter
-  Prüfung aus der Kaufoberfläche entfernen. Alte Lose und Freischaltungen
-  müssen lesbar bleiben; Guthaben/Ansprüche nicht löschen.
-- Die **ursprünglich bestätigte Wahrscheinlichkeitsmatrix** oben
-  bleibt historische/technische Basis, bis der Zwei-Klassen-Übergang
-  umgesetzt und nachgetestet ist (20 % Niete, 11 % ×2, zweimal 0,1 %
-  seltene Hauptgewinnereignisse bleiben Ziel).
-- Neue Lose müssen dann **nur** aus den zwei jeweils zur Preisklasse
-  gehörenden Spielarten gezogen werden; nicht zufällig aus allen vier.
+- **Verbindliches Modell:** Einfach = 200 Goldmünzen (Geschenkelinie oder Schneeflocken-Bingo); Mittel = 500 Goldmünzen (ausschließlich Magischer Wichtelpfad); Premium = 1.000 Goldmünzen (ausschließlich Weihnachtsbaum-Geheimnis).
+- **Keine Entfernung einer Preisstufe.** Die bestehende drei-Klassen-Gewichtungsmatrix (20 % Niete je Stufe, 11 % ×2, seltene Hauptgewinnereignisse) bleibt unverändert.
+- Neue Lose werden ausschließlich aus den ihrem Preis zugeordneten Spielarten gezogen: `simple=['gifts','snow_collect']`, `medium=['elf']`, `premium=['tree']`.
+- Bereits erworbene Karten, Guthaben und Freischaltungen bleiben unverändert; altes Regelwerk bleibt auswertbar.
 - Weitere sechs frühere Regelprüfer dürfen als **Legacy-Kompatibilität**
   bestehen bleiben. Bereits erworbene Karten werden weiter
   wiederhergestellt, auch wenn ihre Spielart nicht mehr neu erhältlich ist.
@@ -79,14 +67,12 @@ abgestimmt werden.
 ### Reihenfolge der drei Neuentwicklungen
 1. **Normal 2:** Schneeflocken-Bingo – eigenständiges 16-Felder-Bild,
    präzise 4×4-Koordinaten und durchgehende Rubbeloberfläche.
-2. **Premium 1:** Magischer Wichtelpfad – 20 große Felder, der
+2. **Mittel (einziges Los):** Magischer Wichtelpfad – 20 große Felder, der
    durchgehende Weg muss klar und ohne versteckte Zwischengewinne
    hervorgehoben werden.
-3. **Premium 2:** Weihnachtsbaum-Geheimnis – 15 Felder, exakte
+3. **Premium (einziges Los):** Weihnachtsbaum-Geheimnis – 15 Felder, exakte
    Symbolfolge und sichtbare Gewinnzuordnung, keine erfundenen Preise.
-4. Erst danach Shop auf **2 Normal + 2 Premium** umstellen, die
-   Mittel-Stufe bewusst migrieren, alle vier Lose auf Touch, Reload,
-   90-%-Aufdeckung, Nieten und 1–3 Treffer sowie Gewinnchancen testen.
+4. Den Shop mit **2 Einfach + 1 Mittel + 1 Premium** darstellen. Alle vier Lose auf Touch, Reload, 90-%-Aufdeckung, Nieten und 1–3 Treffer sowie Gewinnchancen testen; kein Preisstufen-Wechsel erforderlich.
 
 ## Phase 1 – Regelwerk und mathematische Gewichtung [ ]
 - Hauptkategorien mathematisch geprüft (siehe Tabelle); noch offen: 1/2/3 Münztreffer und Verteilung der Münzbeträge.
@@ -187,3 +173,5 @@ Abnahme: echte Spielrunde über mehrere Geräte.
 - 15.11.2026: Ziel auf **vier Rubbellose, zwei Normal und zwei Premium**, neu festgelegt. Geschenkelinie bleibt Nr. 1; drei Neuentwicklungen vorgeschlagen (Schneeflocken-Bingo, Wichtelpfad, Weihnachtsbaum-Geheimnis). Plan angepasst, LIVE-Code noch mit sechs auswählbaren Spielarten und drei Preisstufen: Migration ausstehend, Altlose schützen.
 - 15.11.2026: Nutzer bestätigt das Eispalast-Bild als Rubbellos 2. Server-ID `snow_collect` aktiv, 3 gleiche irgendwo, 4–6 leere Nietenfelder und max. ein Treffer je Symbolart. Vom Nutzer hochgeladene 1152×1536-Vorlage als WebP exportiert; Rubbel-Zellen CSS-mäßig genau abgestimmt und Cache-Versionen erhöht. Backend war bei der letzten Render-Prüfung live; echter Browser-Endtest steht aus.
 - Nächster Schritt: `schneeflocken-bingo-01.webp` nach GitHub hochladen und mit dem normalen Konto testen; dann die zwei Premium-Motive nacheinander entwickeln.
+
+- 15.11.2026: Verbindliche Nutzerkorrektur: Los 3 „Magischer Wichtelpfad“ ist die einzige **mittlere** Variante für **500 Goldmünzen**, nicht Premium. Server-Pool auf `simple: gifts/snow_collect`, `medium: elf`, `premium: tree` geändert. Das Motiv ist `wichtelpfad-mittel-01.svg`; Shop zeigt pro Preisklasse die zugehörigen Varianten. Preise, bestehende Lose und Wahrscheinlichkeitsmatrix unverändert. Echtes End-to-End noch offen.
