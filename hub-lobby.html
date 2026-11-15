@@ -18,6 +18,7 @@ footer{margin-top:24px;text-align:center;color:#8298af;font-size:12px}footer a{c
 @media(max-width:700px){.hero{display:block}.hero .pill{margin-top:14px}.cols{grid-template-columns:1fr}.shell{padding-top:15px}.panel{padding:17px;border-radius:18px}.room-code{font-size:25px}.game-grid{gap:8px}.game{padding:9px;min-height:76px}.game .emoji{font-size:22px}.row .btn{flex:1}}
 </style>
 <link rel="stylesheet" href="hub-lobby-v7.css?v=20261025-premium-42">
+<link rel="stylesheet" href="meta-album-entry.css?v=1">
 <style>
 .dog-portal-links{display:flex;align-items:stretch;flex-wrap:wrap;gap:10px;margin:8px 0 13px}
 .dog-portal-links>a{flex:1 1 260px}
@@ -46,6 +47,7 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
   <a class="dog-studio-cta" data-dog-studio-link href="DOG/design-studio.html?return=../hub-lobby.html">🎨 DOG Design-Studio öffnen <span>Hintergründe kombinieren · Designs speichern</span></a>
   <a class="dog-collection-entry" data-dog-collection-link href="DOG/sammlung.html?return=../hub-lobby.html">🏆 Freigeschaltet <span>Meine DOG-Sammlung · Vorhandene Designs &amp; Emojis</span></a>
    <a class="dog-christmas-entry" data-dog-event-link href="DOG/christmas-event.html?return=../hub-lobby.html">🎄 DOG-Weihnachtsevent <span>Lichtertal · Dorf, Gebäude und Weihnachtsbaum</span></a>
+   <a class="meta-album-entry" data-meta-album-link href="meta-sammelalbum.html?return=hub-lobby.html"><span class="meta-album-entry-icon">📖</span><span><strong>Meta-Sammelalbum</strong><small>Weihnachtsevent 1 · 9 Sammelbilder entdecken</small></span></a>
   </div>
   <div id="online-area">
   <section class="panel account" aria-label="Online-Spielerprofil">
@@ -175,6 +177,7 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
     </div>
     <a class="dog-collection-entry dog-collection-local" data-dog-collection-link href="DOG/sammlung.html?return=../hub-lobby.html">🏆 DOG – Meine Sammlung öffnen <span>Profilbilder, Hintergründe, Spielfiguren und Emojis ansehen</span></a>
     <a class="dog-christmas-entry dog-collection-local" data-dog-event-link href="DOG/christmas-event.html?return=../hub-lobby.html">🎄 DOG – Weihnachtsdorf Lichtertal <span>Kapitel 1 · Eventseite ansehen</span></a>
+    <a class="meta-album-entry meta-album-wide" data-meta-album-link href="meta-sammelalbum.html?return=hub-lobby.html"><span class="meta-album-entry-icon">📖</span><span><strong>Meta-Sammelalbum</strong><small>Weihnachtsevent 1 · 9 Bilder zum Freischalten</small></span></a>
     <p class="local-footer">💡 Lokale Spielstände werden je nach Spiel im Browser gespeichert. Sie gehören nicht zum Online-Spielerprofil.</p>
   </section>
   <p class="status" id="main-status" aria-live="polite"></p>
@@ -227,6 +230,7 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
         <div class="dog-room-board-actions">
           <a id="dog-room-designer" class="dog-room-action dog-room-action-navy" href="DOG/design-studio.html">🎨 Brettdesigner</a>
           <a id="dog-room-unlocks" class="dog-room-action dog-room-action-navy" href="DOG/sammlung.html">🏆 Freigeschaltet</a>
+          <a id="dog-room-meta-album" class="dog-room-action dog-room-action-navy" data-meta-album-link href="meta-sammelalbum.html?return=hub-lobby.html">📖 Meta-Sammelalbum</a>
         </div>
         <button id="dog-room-rules-open" class="dog-room-utility dog-room-rules-button" type="button">▣ Spielregeln</button>
       </section>
@@ -252,6 +256,8 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
  document.querySelectorAll('[data-dog-collection-link]').forEach(link=>link.href=dest);
  const christmas='DOG/christmas-event.html?return='+encodeURIComponent(page);
  document.querySelectorAll('[data-dog-event-link]').forEach(link=>link.href=christmas);
+ const meta='meta-sammelalbum.html?return='+encodeURIComponent('hub-lobby.html'+location.search);
+ document.querySelectorAll('[data-meta-album-link]').forEach(link=>link.href=meta);
 })();
 </script>
 </body>
