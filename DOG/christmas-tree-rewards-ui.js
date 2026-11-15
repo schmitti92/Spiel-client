@@ -73,7 +73,14 @@ export function initChristmasTreeRewards({request,roomValid,loggedIn}){
    status=result.treeRewards;
    say((result.replayed?'✅ Bereits gewonnen: ':'🎉 Neu gewonnen: ')+result.prize.icon+' '+result.prize.name+' ('+result.prize.label+').');
   }catch(error){
-   say('⚠️ Preis konnte nicht abgeholt werden: '+(error?.message||'Serverfehler'));
+   const messages={
+    JOIN_DOG_FIRST:'Bitte zuerst in der Spiellobby bei DOG auf „Beitreten“ drücken.',
+    DOG_NOT_SELECTED:'Bitte zuerst DOG in der Spiellobby auswählen.',
+    TREE_LEVEL_NOT_REACHED:'Der gemeinsame Weihnachtsbaum hat diese Stufe noch nicht erreicht.',
+    LOGIN_REQUIRED:'Bitte zuerst mit deinem Online-Spielerprofil anmelden.',
+    NOT_A_MEMBER:'Bitte aus deinem gemeinsamen DOG-Raum ins Event wechseln.'
+   };
+   say('⚠️ '+(messages[error?.message]||('Preis konnte nicht abgeholt werden: '+(error?.message||'Serverfehler'))));
   }finally{busy=false;render()}
  };
  render();
