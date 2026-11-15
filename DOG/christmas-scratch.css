@@ -728,3 +728,152 @@
  #panel-scratch .scratch-analytics-table .scratch-analytics-name strong{font-size:12px}
  #panel-scratch .scratch-analytics-table td[colspan]{grid-column:1/-1!important}
 }
+
+
+/* Full-screen scratch ticket: the entire artwork AND controls remain on screen.
+   The 3:4 premium image is sized from available HEIGHT, never from page width. */
+body.scratch-ticket-open{overflow:hidden;overscroll-behavior:none}
+.scratch-stage:not([hidden]){
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) minmax(235px,29%);
+ grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto;
+ column-gap:10px;row-gap:5px;
+ width:min(1120px,calc(100vw - 16px));height:min(850px,calc(100dvh - 16px));
+ max-width:none;max-height:none;box-sizing:border-box;
+ padding:10px!important;margin:0!important;overflow:hidden!important;align-items:stretch;
+}
+.scratch-stage:not([hidden]) > #scratch-ticket-title,
+.scratch-stage:not([hidden]) > #scratch-variant-rule,
+.scratch-stage:not([hidden]) > #scratch-symbol-legend,
+.scratch-stage:not([hidden]) > #scratch-progress,
+.scratch-stage:not([hidden]) > #scratch-progress-meter,
+.scratch-stage:not([hidden]) > #scratch-reveal,
+.scratch-stage:not([hidden]) > .scratch-stage-actions{grid-column:1;min-width:0}
+.scratch-stage:not([hidden]) > #scratch-ticket-title{grid-row:1;font-size:clamp(14px,2vh,20px);line-height:1.1}
+.scratch-stage:not([hidden]) > #scratch-variant-rule{grid-row:2;font-size:clamp(10px,1.5vh,12px);padding:4px 7px;line-height:1.2}
+.scratch-stage:not([hidden]) > #scratch-symbol-legend{grid-row:3;padding:4px 6px;font-size:11px;line-height:1.25}
+.scratch-stage:not([hidden]) > #scratch-progress{grid-row:4;min-height:0;font-size:11px;line-height:1.2}
+.scratch-stage:not([hidden]) > #scratch-progress-meter{grid-row:5;height:8px;min-height:0}
+.scratch-stage:not([hidden]) > #scratch-reveal{
+ grid-row:6;min-height:0;min-width:0;height:100%;width:100%;
+ display:flex;align-items:center;justify-content:center;overflow:hidden;
+ padding:0;gap:0;background:transparent;
+}
+.scratch-stage:not([hidden]) > .scratch-stage-actions{grid-row:7;align-self:center}
+.scratch-stage:not([hidden]) .scratch-stage-actions button{min-height:32px;padding:5px 12px}
+.scratch-stage:not([hidden]) .scratch-card-art{
+ position:relative;height:100%;width:auto;max-width:100%;max-height:100%;
+ min-height:0;aspect-ratio:1152/1536;flex:0 1 auto;
+}
+.scratch-stage:not([hidden]) > .scratch-prize-sidebar{
+ grid-column:2;grid-row:1/-1;position:static!important;
+ display:flex;flex-direction:column;align-self:stretch;gap:5px;
+ width:auto;max-width:none;max-height:100%;min-height:0;min-width:0;
+ margin:0;padding:8px;overflow:hidden;
+ background:#102a38ef;
+}
+.scratch-stage .scratch-prize-sidebar h4{font-size:14px;margin:1px 0 2px}
+.scratch-stage .scratch-prize-sidebar .scratch-prize-entry{
+ font-size:11px;line-height:1.15;padding:5px 3px;min-height:0;gap:6px;
+}
+.scratch-stage .scratch-prize-sidebar .scratch-prize-entry strong{font-size:10px}
+.scratch-stage .scratch-prize-sidebar .scratch-prize-remaining{
+ margin-top:1px;font-size:10px;line-height:1.25;
+}
+.scratch-stage .scratch-prize-sidebar .scratch-hidden-prize{
+ position:static!important;inset:auto!important;width:100%!important;height:auto!important;
+ max-width:100%;min-height:0;flex:0 0 auto;
+ padding:6px!important;overflow:visible;font-size:12px;line-height:1.2;
+ border:1px solid #f1cb7c;background:#563219e3;
+}
+.scratch-stage .scratch-prize-sidebar .scratch-hidden-prize strong{
+ font-size:clamp(11px,1.4vh,15px);line-height:1.3;
+}
+.scratch-stage .scratch-prize-sidebar .scratch-winning-lines{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:3px;padding:0!important;margin:0;align-content:start;min-height:0;
+}
+.scratch-stage .scratch-prize-sidebar .scratch-prize-line{
+ padding:4px 5px;font-size:10px;line-height:1.2;
+ overflow-wrap:anywhere;
+}
+.scratch-stage.is-revealed .scratch-prize-sidebar .scratch-prize-entry,
+.scratch-stage.is-revealed .scratch-prize-sidebar .scratch-prize-remaining{display:none}
+/* The premium ticket's ordinary 27 backgrounds are pale silver.
+   ONLY server-confirmed horizontal winning triplets have a bright gold fill. */
+.scratch-stage[data-variant="premium_27"] .scratch-field:not(.scratch-winning-cell){
+ background:radial-gradient(ellipse at 45% 30%,#f4f7fc,#d4dae5 78%,#acb8c9);
+ border:1px solid #8e9fae;
+ box-shadow:inset 0 1px 4px #aebbdc88;
+}
+.scratch-stage[data-variant="premium_27"] .scratch-field.scratch-winning-cell{
+ background:radial-gradient(ellipse at center,#fff6b0,#ffd257 72%,#d89429);
+ outline:2px solid #fff0a1;box-shadow:inset 0 0 14px #ffe66fa6,0 0 12px #ffdc5d;
+ filter:drop-shadow(0 0 3px #ffe37e);
+}
+.scratch-stage[data-variant="premium_27"] .scratch-premium-counter{
+ display:grid;gap:5px;flex:0 0 auto;padding:8px;border-radius:10px;
+ border:1px solid #e1c687;background:#0b2635df;color:#f1f6ef;
+}
+.scratch-premium-counter-header{display:flex;align-items:center;justify-content:space-between;gap:6px;
+ font-size:12px;font-weight:850;color:#fff0c4}
+.scratch-premium-counter-number{font-size:22px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.scratch-premium-found{font-size:10px;color:#bbd9e1;line-height:1.2}
+.scratch-premium-milestone{
+ display:flex;align-items:center;justify-content:space-between;gap:5px;padding:7px 8px;
+ border:1px solid #8c9da99e;border-radius:8px;
+ background:#1b303fe0;color:#d6e3e9;transition:background .2s,border-color .2s,box-shadow .2s;
+}
+.scratch-premium-milestone>span{display:grid;gap:2px}
+.scratch-premium-milestone strong{font-size:12px;line-height:1.15}
+.scratch-premium-milestone small{font-size:9px;color:#b5c9d0;line-height:1.15}
+.scratch-premium-milestone-status{text-align:right;white-space:nowrap}
+.scratch-premium-milestone.is-earned{
+ background:linear-gradient(115deg,#8f4b12,#ce9235 62%,#62400e);
+ border:2px solid #ffe485;color:#fff8d5;
+ box-shadow:0 0 13px #ffd8668a,inset 0 0 11px #fce4a544;
+}
+.scratch-premium-milestone.is-earned small{color:#fff1bd}
+.scratch-stage[data-variant="premium_27"] .scratch-premium-symbol-count{display:none!important}
+@media(max-width:700px){
+ .scratch-stage:not([hidden]){
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto auto;
+  row-gap:3px;column-gap:0;padding:5px!important;
+ }
+ .scratch-stage:not([hidden]) > #scratch-reveal{grid-row:6}
+ .scratch-stage:not([hidden]) > .scratch-prize-sidebar{
+  grid-column:1;grid-row:7;position:static!important;width:100%;
+  display:grid;grid-template-columns:1fr;gap:3px;padding:4px;
+  align-content:start;max-height:100%;overflow:hidden;
+ }
+ .scratch-stage:not([hidden]) > .scratch-stage-actions{grid-row:8;margin:0}
+ .scratch-stage:not([hidden]) .scratch-prize-sidebar h4,
+ .scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-prize-entry,
+ .scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-prize-remaining{display:none}
+ .scratch-stage:not([hidden]) .scratch-premium-counter{
+  display:grid;grid-template-columns:minmax(0,1fr) repeat(2,minmax(0,1fr));
+  column-gap:4px;row-gap:0;padding:4px;
+ }
+ .scratch-stage:not([hidden]) .scratch-premium-counter-header{grid-column:1;align-items:start;flex-direction:column;gap:0;font-size:10px}
+ .scratch-stage:not([hidden]) .scratch-premium-counter-number{font-size:17px}
+ .scratch-stage:not([hidden]) .scratch-premium-found{display:none}
+ .scratch-stage:not([hidden]) .scratch-premium-milestone{padding:4px 3px;min-width:0;display:grid;gap:2px}
+ .scratch-stage:not([hidden]) .scratch-premium-milestone strong{font-size:10px}
+ .scratch-stage:not([hidden]) .scratch-premium-milestone small{font-size:8px}
+ .scratch-stage:not([hidden]) .scratch-premium-milestone-status{text-align:left}
+ .scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-winning-lines{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-prize-line{font-size:9px;padding:2px 4px}
+ .scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-hidden-prize{padding:3px!important}
+ .scratch-stage:not([hidden]) .scratch-stage-actions button{min-height:30px;font-size:11px;padding:4px 9px}
+ .scratch-stage:not([hidden]) > #scratch-variant-rule,
+ .scratch-stage:not([hidden]) > #scratch-symbol-legend{font-size:10px;line-height:1.15}
+}
+@media(max-height:540px){
+ .scratch-stage:not([hidden]){padding:4px!important;gap:2px}
+ .scratch-stage:not([hidden]) > #scratch-variant-rule{display:none}
+ .scratch-stage:not([hidden]) > #scratch-symbol-legend{font-size:9px;padding:1px 3px}
+ .scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-prize-remaining{display:none}
+ .scratch-stage:not([hidden]) .scratch-prize-sidebar .scratch-prize-entry{padding:2px}
+ .scratch-stage:not([hidden]) .scratch-premium-milestone{padding:3px}
+}
