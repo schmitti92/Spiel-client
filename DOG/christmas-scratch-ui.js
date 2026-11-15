@@ -40,8 +40,9 @@ const el=(tag,cls,str)=>{
 const num=v=>Number(v||0).toLocaleString('de-DE');
 const prizeLabel=p=>p?.type==='coins'?(p.bonus?'🎉 Zusatzgewinn · ':'')+(p.symbol||'🪙')+' '+num(p.amount)+' Münzen'+(p.x2?' (×2)':''):
  p?.type==='unlock'?(p.symbol||'🎁')+' Freischaltung: '+(p.prize?.icon?p.prize.icon+' ':'')+(p.prize?.name||'Freischaltung'):'';
-const symbolLegend=tier=>{
- const [coin,note,bag]=SCRATCH_COIN_PRIZES[tier]||SCRATCH_COIN_PRIZES.simple;
+const symbolLegend=(tier,values=null)=>{
+ const [coin,note,bag]=Array.isArray(values)&&values.length===3?values:
+  SCRATCH_COIN_PRIZES[tier]||SCRATCH_COIN_PRIZES.simple;
  return '🪙 '+num(coin)+' · 💵 '+num(note)+' · 💼 '+num(bag)+' Münzen · 🎁 💝 🎀 🧧 (je 3 gleiche = Freischaltung)';
 };
 export function initChristmasScratch(){
@@ -92,6 +93,24 @@ export function initChristmasScratch(){
   return Math.min(...counts)===Math.max(...counts)?percent(counts[0]):
    percent(Math.min(...counts))+'–'+percent(Math.max(...counts));
  }
+ function coinAmountsFor(tier,variantId=null,result=null){
+  // A previously bought ticket always displays its original configured
+  // money values, even if the host has changed them since purchase.
+  if(Array.isArray(result?.coinAmounts)&&result.coinAmounts.length===3)
+   return result.coinAmounts;
+  if(result)return SCRATCH_COIN_PRIZES[tier]||SCRATCH_COIN_PRIZES.simple;
+  const saved=status?.settings?.variants?.[variantId]?.coinAmounts;
+  return Array.isArray(saved)&&saved.length===3?saved:
+   SCRATCH_COIN_PRIZES[tier]||SCRATCH_COIN_PRIZES.simple;
+ }
+ function shopMoneyLegend(tier){
+  const ids=variantTiers[tier]||[];
+  return ids.map(id=>{
+   const label=id==='gifts'?'🎁 Geschenkelinie: ':
+    id==='snow_collect'?'❄️ Schneeflocken-Bingo: ':'';
+   return label+symbolLegend(tier,coinAmountsFor(tier,id));
+  }).join('\n');
+ }
  function drawShop(){
   root.replaceChildren();
   wallet.textContent=status?num(status.coins)+' 🪙':'– 🪙';
@@ -110,7 +129,7 @@ export function initChristmasScratch(){
     el('div','scratch-game-selection',CURRENT_GAMES_BY_TIER[c.id]),
     el('strong','scratch-price',num(c.price)+' 🪙'),
     el('div','scratch-chance',(unlockChance??c.unlockChance)+' % Freischaltung · drei feste Geldgewinne'),
-    el('div','scratch-symbol-key',symbolLegend(c.id)),
+    el('div','scratch-symbol-key',shopMoneyLegend(c.id)),
     el('div','scratch-reward-list',c.rewards),
     el('small','scratch-info',noChance!==null?
      noChance+' % Nieten · '+coinChance+' % Münzen · '+unlockChance+' % Freischaltungen · 11 % ×2':
@@ -160,6 +179,23 @@ export function initChristmasScratch(){
     option.selected=n===settings.maxPrizes;select.append(option);
    }
    maxField.append(select);fields.append(maxField);block.append(fields);
+   // Each money icon has a different coin payout, separately set for
+   // Geschenkelinie, Schneeflocken-Bingo, Wichtelpfad and Premium.
+   const money=el('div','scratch-host-money');
+   money.append(el('h6','','💰 Geldgewinne je Symbol'),
+    el('small','','Münzbeträge für ein gültiges Gewinnsymbol; zwischen 1 und 50.000.000. Der Geldkoffer muss mehr als der Schein und der Schein mehr als die Münze auszahlen.'));
+   const values=Array.isArray(settings.coinAmounts)&&settings.coinAmounts.length===3?
+    settings.coinAmounts:SCRATCH_COIN_PRIZES[id==='elf'?'medium':id==='premium_27'?'premium':'simple'];
+   const moneyFields=el('div','scratch-host-fields scratch-host-money-fields');
+   for(const [i,label] of ['🪙 Münze · klein','💵 Geldschein · mittel','💼 Geldkoffer · groß'].entries()){
+    const field=el('label','scratch-host-field');
+    field.append(el('span','',label));
+    const input=el('input');input.type='number';input.inputMode='numeric';
+    input.min='1';input.max='50000000';input.step='1';input.required=true;
+    input.value=String(values[i]);input.dataset.coinIndex=String(i);
+    field.append(input);moneyFields.append(field);
+   }
+   money.append(moneyFields);block.append(money);
    const summary=el('small','scratch-host-total');
    const update=()=>{
     const values=['none','coins','unlock'].map(k=>Number(block.querySelector('[data-key="'+k+'"]').value));
@@ -194,7 +230,12 @@ export function initChristmasScratch(){
     throw Error('Die zusätzliche Münzchance muss zwischen 0 und 100 % liegen.');
    if(!Number.isInteger(maxPrizes)||maxPrizes<1||maxPrizes>10)
     throw Error('Ungültige Anzahl gleichzeitiger Gewinne.');
-   variants[id]={weights,extraCoinChance,maxPrizes};
+   const coinAmounts=Array.from({length:3},(_,i)=>Number(
+    block.querySelector('[data-coin-index="'+i+'"]')?.value));
+   if(!coinAmounts.every(amount=>Number.isSafeInteger(amount)&&amount>=1&&amount<=50000000)||
+    coinAmounts[0]>=coinAmounts[1]||coinAmounts[1]>=coinAmounts[2])
+    throw Error('Geldbeträge müssen ganze Münzen zwischen 1 und 50.000.000 sein: 🪙 kleiner als 💵, 💵 kleiner als 💼.');
+   variants[id]={weights,extraCoinChance,maxPrizes,coinAmounts};
   }
   return {version:1,freeEnabled:$('scratch-host-free-enabled').checked,variants};
  }
@@ -319,7 +360,7 @@ export function initChristmasScratch(){
   if(!panel){panel=el('aside','scratch-prize-sidebar');stage.append(panel)}
   panel.replaceChildren(el('h4','','Gewinntabelle'));
   const tier=result?.tier||'simple';
-  const amounts=SCRATCH_COIN_PRIZES[tier]||SCRATCH_COIN_PRIZES.simple;
+  const amounts=coinAmountsFor(tier,result?.board?.variantId||null,result);
   const awarded=new Set(entries.map(p=>p?.type==='coins'?p.symbol||'🪙':p?.type==='unlock'?p.symbol||'🎁':''));
   const giftSymbols=result?.board?.symbolVersion===3?['🎁','💝','🎀','🧧']:['🎁'];
   const giftWon=giftSymbols.find(symbol=>awarded.has(symbol));
@@ -355,7 +396,7 @@ export function initChristmasScratch(){
   board.parentElement.querySelector('.scratch-premium-symbol-count')?.remove();
   const legend=$('scratch-symbol-legend');
   if(legend){legend.hidden=![2,3].includes(result.board?.symbolVersion);
-   legend.textContent=legend.hidden?'':symbolLegend(result.tier)}
+   legend.textContent=legend.hidden?'':symbolLegend(result.tier,coinAmountsFor(result.tier,result.board?.variantId,result))}
   board.replaceChildren();board.removeAttribute('style');
   if(conf&&Array.isArray(cells)&&cells.length===conf[2]*conf[3]){
    board.style.setProperty('--scratch-cols',conf[3]);
