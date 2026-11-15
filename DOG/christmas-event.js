@@ -4,14 +4,13 @@
  * Local building previews cannot grant Christmas prizes. Only real
  * Render-verified village stages allow durable per-user reward claims.
  */
-import {CHRISTMAS_PAGE_BACKGROUNDS} from './christmas-background-catalog.js?v=1';
 import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotalCost,christmasVillageTotalCost} from './christmas-building-costs.js?v=1';
 import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewards-ui.js?v=5';
 import {initChristmasStory} from './christmas-story.js?v=1';
 import {initChristmasScratch} from './christmas-scratch-ui.js?v=23';
 import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=2';
 const $=id=>document.getElementById(id);
-const tabs=['village','buildings','tree','story','gifts','scratch','level','chapters'];
+const tabs=['village','buildings','tree','story','scratch','level','chapters'];
 const TREE_THRESHOLDS=[4,5,7,9,11,13,15,17,19,20];
 const FIELDS=[10,12,15,18,20];
 const definitions=[
@@ -506,7 +505,7 @@ document.querySelectorAll('[data-open-building]').forEach(button=>{
   }
  });
 });
-window.addEventListener('hashchange',()=>showPanel(location.hash.slice(1),{updateHistory:false}));
+window.addEventListener('hashchange',()=>showPanel(tabs.includes(location.hash.slice(1))?location.hash.slice(1):'village',{updateHistory:false}));
 showPanel(tabs.includes(location.hash.slice(1))?location.hash.slice(1):'village',{updateHistory:false});
 // Keep the vector drawings as fallback if an uploaded image fails to render.
 for(const id of ['tower','workshop','bakery','inn','tree']){
@@ -521,31 +520,6 @@ document.querySelectorAll('.building-card-art img, #tree-card-photo').forEach(im
   img.hidden=true;
  });
 });
-// Rewards are previews only: no button, no equip action, no local/remote unlock.
-const wallpaperGrid=$('christmas-wallpaper-grid');
-if(wallpaperGrid){
-  for(const entry of CHRISTMAS_PAGE_BACKGROUNDS){
-    const card=document.createElement('article');
-    card.className='christmas-wallpaper-card';
-    const preview=document.createElement('div');
-    preview.className='christmas-wallpaper-preview';
-    const image=document.createElement('img');
-    image.src=new URL(entry.image,location.href).href;
-    image.alt='Vorschau: '+entry.name;
-    image.loading='lazy';
-    image.decoding='async';
-    const lock=document.createElement('span');
-    lock.className='christmas-wallpaper-lock';
-    lock.textContent='🔒 Gesperrt';
-    preview.append(image,lock);
-    const title=document.createElement('strong');
-    title.textContent=entry.name;
-    const detail=document.createElement('small');
-    detail.textContent='Spätere Eventbelohnung';
-    card.append(preview,title,detail);
-    wallpaperGrid.append(card);
-  }
-}
 
 /** Meta-village for all signed-in DOG players. A room code is ONLY an
  * optional return-navigation hint; the wallet and buildings never use it. */
@@ -597,8 +571,6 @@ function showLiveVillage(data){
  $('building-live-notice').textContent='✅ Alle DOG-Spieler sammeln gemeinsam. Jeder kann mit dem gemeinsamen Vorrat Gebäude ausbauen.';
  const label=document.querySelector('.village-caption > span');
  if(label)label.textContent='⭐ Echter Dorffortschritt · '+lightsLabel(v.lightsTenths)+' Weihnachtslichter im gemeinsamen Vorrat';
- const giftNotice=document.querySelector('#panel-gifts > .notice');
- if(giftNotice)giftNotice.textContent='🎄 Solange das Weihnachtsevent läuft, werden Weihnachtslichter in allen Online-DOG-Partien automatisch auf echten Geschenkfeldern vergeben. Render prüft die Boni; lokale Vorschau-Level zählen nicht.';
  refreshPreview();
  const newTreeLevel=TREE_THRESHOLDS.filter(n=>Object.values(v.levels).reduce((a,b)=>a+b,0)>=n).length;
  if($('tab-tree').getAttribute('aria-selected')==='true'&&
