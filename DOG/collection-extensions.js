@@ -1,7 +1,7 @@
 /**
  * DOG collection extension point.
  *
- * When adding a future event, append plain metadata to DOG_EXTRA_ITEMS below;
+ * Seasonal upload assets are registered below as locked-only metadata;
  * add a new left-hand category through DOG_EXTRA_CATEGORIES if required.
  * The gallery, counts, filters and locked details are built automatically.
  *
@@ -14,8 +14,12 @@
  *  icon:'❄️',image:'./assets/events/winter-2027/ice-frame.webp',
  *  description:'Winterevent 2027',artTone:'cyan',status:'planned'}
  */
+import {CHRISTMAS_PAGE_BACKGROUNDS} from './christmas-background-catalog.js?v=1';
 export const DOG_EXTRA_CATEGORIES=Object.freeze([]);
-export const DOG_EXTRA_ITEMS=Object.freeze([]);
+export const DOG_EXTRA_ITEMS=Object.freeze(CHRISTMAS_PAGE_BACKGROUNDS.map(item=>Object.freeze({
+  ...item,
+  category:'backgrounds'
+})));
 
 const validId=id=>typeof id==='string'&&/^[a-z][a-z0-9_-]{1,79}$/.test(id);
 const validArt=image=>image==null||(typeof image==='string'&&
