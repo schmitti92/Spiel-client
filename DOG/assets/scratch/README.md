@@ -6,11 +6,9 @@ Beschichtungen und Gewinne werden dynamisch aus dem validierten Render-Los erzeu
 
 ## 01 Geschenkelinie
 - Zielpfad: `DOG/assets/scratch/geschenkelinie-01.webp`
-- Erstes Bild: Lichtertal-Weihnachtsmarkt in Rot/Gold, freier zentraler Bereich
-  für ein dynamisches **3×3**-Feld.
-- Empfohlene Dateigröße: WebP (derzeitiger Export: 1086×1448 Pixel, ca. 318 KB).
-- Status: Grafik erstellt; muss noch hier hochgeladen und anschließend im
-  Browser mit dem dynamischen 3×3-Spielfeld ausgerichtet werden.
+- Erstes fertiges Motiv: Rot-Gold-Geschenkelinie mit **neun bereits goldgerahmten Feldern**. Unter diesen Feldern liegen dynamische Symbole, darüber die interaktive Silberbeschichtung.
+- Vorbereitete Datei: **geschenkelinie-01.webp** (1086×1448 Pixel, ca. 414 KB).
+- Status: CSS-Layout und 3×3-Feldpositionierung im Spiel eingebaut. Grafik muss noch hier als \`geschenkelinie-01.webp\` hochgeladen werden. Anschließend Browser- und Smartphone-Prüfung, insbesondere Position der 9 Rubbelbereiche.
 
 ## Nächste Karten
 02 Schneeflocken-Bingo – 4×4; 03 Sternensammler – 3×4;
