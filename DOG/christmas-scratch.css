@@ -362,3 +362,88 @@
    16 silver interiors correspond to left 15.5%, top 27.8%, width 66%,
    height 44.2%, with 3% horizontal and 7.5% vertical grid gaps.
    A pale icy undercoat makes the silver genuinely disappear when rubbed. */
+
+/* Premium card 04 — user's exact Christmas illustration, 9×3 = 27 fields.
+   Three equal symbols in one horizontal row win. Gold at 20 real symbols;
+   premium reward at 24 real symbols. Duds (🧊) never count. */
+.scratch-stage[data-variant="premium_27"]{
+ border:3px solid #e6b35a;
+ background:linear-gradient(150deg,#6b091f,#3f091f 70%,#200a20);
+ box-shadow:0 0 0 2px #f5d07b55,0 16px 46px #0009,inset 0 0 24px #f2c05e1f;
+}
+.scratch-stage[data-variant="premium_27"]>h3{
+ position:absolute!important;width:1px!important;height:1px!important;
+ overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap;
+}
+.scratch-stage[data-variant="premium_27"]>.scratch-variant-rule{
+ background:#540a20d9;border:1px solid #e9b85e;border-radius:9px;
+ color:#ffedc4;text-align:center;line-height:1.4;padding:8px 10px;font-size:13px;
+}
+.scratch-stage[data-variant="premium_27"] .scratch-play{
+ padding:0;gap:7px;border:0;background:transparent;box-shadow:none;
+ overflow:visible;min-height:0;display:flex;flex-direction:column;align-items:stretch;
+}
+.scratch-stage[data-variant="premium_27"] .scratch-card-art{
+ display:block;position:relative;isolation:isolate;overflow:hidden;width:100%;
+ aspect-ratio:1152/1536;border-radius:11px;
+ background-image:url("./assets/scratch/premium-weihnachts-rubbellos-27.webp"),
+   radial-gradient(ellipse at center,#cd322b,#69091e 65%,#260b24);
+ background-repeat:no-repeat;background-size:100% 100%,cover;background-position:center;
+}
+.scratch-stage[data-variant="premium_27"] .scratch-board{
+ position:absolute;left:9.1%;top:21.68%;width:49.9%;height:51.68%;
+ margin:0;padding:0;max-width:none;
+ grid-template-columns:repeat(3,minmax(0,1fr));
+ grid-template-rows:repeat(9,minmax(0,1fr));
+ column-gap:2.6%;row-gap:1.35%;
+}
+.scratch-stage[data-variant="premium_27"] .scratch-field{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ width:100%;height:100%;min-width:0;min-height:0;aspect-ratio:auto;
+ border:0;border-radius:12%;box-shadow:none;overflow:hidden;gap:1px;
+ background:radial-gradient(ellipse at 40% 30%,#fff8db,#f0cc98 82%,#ce9c61);
+}
+.scratch-stage[data-variant="premium_27"] .scratch-cell-symbol{
+ line-height:1;font-size:clamp(12px,2.8vw,32px);
+ text-shadow:0 1px 2px #fff0cd,0 0 7px #fce79b;
+}
+.scratch-stage[data-variant="premium_27"] .scratch-field.scratch-dud .scratch-cell-symbol{
+ opacity:.62;filter:grayscale(.25);
+}
+.scratch-stage[data-variant="premium_27"] .scratch-cell-dud-label{
+ color:#8d5f51;font-weight:700;line-height:1;font-size:clamp(6px,.85vw,9px);
+}
+.scratch-stage[data-variant="premium_27"] .scratch-field.scratch-winning-cell{
+ outline:2px solid #ffe46c;outline-offset:-2px;
+ background:radial-gradient(circle at center,#fff8b9,#f8ce6e);
+ box-shadow:inset 0 0 12px #ffc64088,0 0 12px #fff075bb;border:0;
+}
+.scratch-stage[data-variant="premium_27"] .scratch-hidden-prize{
+ position:absolute;left:9%;top:81%;width:50%;height:9%;
+ display:flex;align-items:center;justify-content:center;flex-direction:column;
+ background:#4c0b1e99;border:1px solid #e8b968;border-radius:10px;
+ box-shadow:none;padding:4px;overflow-y:auto;
+ color:#ffefb7;text-align:center;font-size:clamp(10px,1.6vw,17px);line-height:1.25;
+}
+.scratch-stage[data-variant="premium_27"] .scratch-hidden-prize strong{
+ color:#fff3b7;font-size:clamp(10px,1.7vw,19px);
+}
+.scratch-stage[data-variant="premium_27"] .scratch-hidden-prize small{color:#ffecc8}
+.scratch-stage[data-variant="premium_27"] .scratch-premium-symbol-count{
+ position:absolute;left:8%;top:76.5%;width:53%;z-index:3;
+ text-align:center;border-radius:8px;background:#330c1fe0;border:1px solid #eec677;
+ color:#ffedbd;font-size:clamp(9px,1.25vw,13px);line-height:1.4;padding:4px 3px;
+ pointer-events:none;
+}
+.scratch-stage[data-variant="premium_27"] .scratch-winning-lines{padding:10px}
+@media(max-width:480px){
+ .scratch-stage[data-variant="premium_27"]{padding:5px}
+ .scratch-stage[data-variant="premium_27"] .scratch-cell-symbol{
+  font-size:clamp(12px,3.3vw,19px);
+ }
+ .scratch-stage[data-variant="premium_27"] .scratch-cell-dud-label{display:none}
+ .scratch-stage[data-variant="premium_27"] .scratch-premium-symbol-count{
+  font-size:9px;padding:2px 1px;
+ }
+ .scratch-stage[data-variant="premium_27"] .scratch-hidden-prize strong{font-size:11px}
+}
