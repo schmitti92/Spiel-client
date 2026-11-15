@@ -7,6 +7,11 @@ export const SCRATCH_TICKET_TYPES=Object.freeze([
  {id:'medium',icon:'🔵',label:'Mittel',price:500,coinMax:800,unlockChance:'3',rewards:'5 Profilbilder · 4 Weihnachts-Emojis · Rahmen · Aktivsymbol · Spielbrett',odds:'20 % Nieten · 77 % Münzen · 3 % Freischaltungen'},
  {id:'premium',icon:'🟡',label:'Premium',price:1000,coinMax:2000,unlockChance:'4',rewards:'10 Profilbilder · 4 Weihnachts-Emojis · 2 Rahmen · 2 Aktivsymbole · 2 Hintergründe · Spielbrett',odds:'20 % Nieten · 76 % Münzen · 4 % Freischaltungen'}
 ]);
+export const SCRATCH_COIN_PRIZES=Object.freeze({
+ simple:Object.freeze([10,40,100]),
+ medium:Object.freeze([100,300,800]),
+ premium:Object.freeze([200,800,2000])
+});
 const CURRENT_GAMES_BY_TIER=Object.freeze({
  simple:'🎁 Geschenkelinie oder ❄️ Schneeflocken-Bingo',
  medium:'🧝 Magischer Wichtelpfad – einziges mittleres Los',
@@ -33,8 +38,12 @@ const el=(tag,cls,str)=>{
  return n;
 };
 const num=v=>Number(v||0).toLocaleString('de-DE');
-const prizeLabel=p=>p?.type==='coins'?'🪙 '+num(p.amount)+' Münzen'+(p.x2?' (×2)':''):
- p?.type==='unlock'?(p.prize?.icon||'🎁')+' '+(p.prize?.name||'Freischaltung'):'';
+const prizeLabel=p=>p?.type==='coins'?(p.symbol||'🪙')+' '+num(p.amount)+' Münzen'+(p.x2?' (×2)':''):
+ p?.type==='unlock'?'🎁 Freischaltung: '+(p.prize?.icon?p.prize.icon+' ':'')+(p.prize?.name||'Freischaltung'):'';
+const symbolLegend=tier=>{
+ const [coin,note,bag]=SCRATCH_COIN_PRIZES[tier]||SCRATCH_COIN_PRIZES.simple;
+ return '🪙 '+num(coin)+' · 💵 '+num(note)+' · 💼 '+num(bag)+' Münzen · 🎁 Freischaltung';
+};
 export function initChristmasScratch(){
  const $=id=>document.getElementById(id);
  const root=$('scratch-tier-grid'),wallet=$('scratch-wallet'),stage=$('scratch-stage'),
@@ -76,7 +85,8 @@ export function initChristmasScratch(){
     el('h3','',c.label+'-Rubbellos'),
     el('div','scratch-game-selection',CURRENT_GAMES_BY_TIER[c.id]),
     el('strong','scratch-price',num(c.price)+' 🪙'),
-    el('div','scratch-chance',c.unlockChance+' % Freischaltung · 1–'+num(c.coinMax)+' Münzen'),
+    el('div','scratch-chance',c.unlockChance+' % Freischaltung · drei feste Geldgewinne'),
+    el('div','scratch-symbol-key',symbolLegend(c.id)),
     el('div','scratch-reward-list',c.rewards),
     el('small','scratch-info',c.odds+' · 11 % ×2'));
    const buyBtn=el('button','scratch-buy','🎟️ Für '+num(c.price)+' Münzen kaufen');
@@ -216,9 +226,14 @@ export function initChristmasScratch(){
   $('scratch-ticket-title').textContent=conf?
    conf[0]+' · '+(SCRATCH_TICKET_TYPES.find(t=>t.id===result.tier)?.label||'')+'-Rubbellos':
    '🎟️ Älteres Rubbellos';
-  $('scratch-variant-rule').textContent=conf?conf[0]+' · Gewinnregel: '+conf[1]:
+  const payoutRule=result.board?.symbolVersion===2&&result.board?.variantId==='premium_27'?
+   'Drei gleiche Gewinnsymbole waagerecht, Geld ab 20 Symbolfeldern, 🎁 Freischaltung ab 24 Symbolfeldern. 🧊 zählt nicht.':null;
+  $('scratch-variant-rule').textContent=conf?conf[0]+' · Gewinnregel: '+(payoutRule||conf[1]):
    'Älteres Los – dieses Ergebnis wurde vor dem neuen Spielfeldsystem gespeichert';
   board.parentElement.querySelector('.scratch-premium-symbol-count')?.remove();
+  const legend=$('scratch-symbol-legend');
+  if(legend){legend.hidden=result.board?.symbolVersion!==2;
+   legend.textContent=legend.hidden?'':symbolLegend(result.tier)}
   board.replaceChildren();board.removeAttribute('style');
   if(conf&&Array.isArray(cells)&&cells.length===conf[2]*conf[3]){
    board.style.setProperty('--scratch-cols',conf[3]);
@@ -289,7 +304,7 @@ export function initChristmasScratch(){
    entries.length>1?entries.length+' Gewinnkombinationen':'';
   const list=$('scratch-winning-lines');list.replaceChildren();
   for(const [i,win] of wins.entries()){
-   const description=win.rule==='gold-20'?'🪙 20 Symbolfelder':win.rule==='premium-24'?'💎 24 Symbolfelder':win.rule==='row-3'?'🎁 Dreierreihe':'Gewinn '+(i+1);
+   const description=win.rule==='gold-20'?'20 Symbolfelder':win.rule==='premium-24'?'24 Symbolfelder':win.rule==='row-3'?'Dreierreihe':'Gewinn '+(i+1);
    const line=el('div','scratch-prize-line',description+': '+prizeLabel(win.prize));
    if(win.prize?.x2)line.append(el('small','', ' · '+num(win.prize.baseAmount)+' × 2'));
    list.append(line);
