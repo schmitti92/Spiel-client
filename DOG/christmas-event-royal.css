@@ -93,4 +93,17 @@ body{background:#071d1a;background-image:radial-gradient(ellipse 65% 35% at 52% 
 @keyframes plaque-awakening{0%{filter:brightness(1)}45%{filter:brightness(1.5)}100%{filter:brightness(1)}}
 .village-view[data-tree="10"] #christmas-light-finale g{animation:finale-glow 3.2s ease-in-out infinite alternate;transform-origin:612px 400px}
 @keyframes finale-glow{0%{opacity:.65;transform:scale(.97)}100%{opacity:1;transform:scale(1.02)}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important}#christmas-light-finale,.village-view svg,.building-hotspot{transition:none!important}}
+
+/* Upgrade stages: one real transparent PNG at a time, fixed footprint & baseline.
+ * Keep the SVG tower visible unless the selected PNG finished loading. */
+#art-tower{transition:opacity .22s ease}
+#tower-stage-image{opacity:0;transition:opacity .25s ease;filter:drop-shadow(0 7px 9px #071d2ba8)}
+#art-tower.tower-photo-ready{opacity:0}
+#art-tower.tower-photo-ready + #tower-stage-image{opacity:1}
+/* Show the exact same uploaded image in the building-details preview. */
+.building-card-art{display:grid;place-items:center;position:relative;min-height:190px;height:clamp(190px,22vw,240px);padding:9px;margin:12px 0 5px;border:1px solid #cdb17663;border-radius:14px;overflow:hidden;background:radial-gradient(ellipse 65% 65% at 50% 65%,#4b755c82,transparent),linear-gradient(180deg,#192d46,#0b2830 75%,#364a42)}
+.building-card-art::after{content:"";pointer-events:none;position:absolute;bottom:0;left:0;right:0;height:16%;background:linear-gradient(0deg,#d3e6e0bd,#c9e1dc00);border-radius:0 0 14px 14px}
+.building-card-art img{display:block;position:relative;z-index:1;max-height:100%;max-width:100%;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 5px 5px #0008)}
+@media(max-width:760px){.building-card-art{height:210px}}
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important}#christmas-light-finale,.village-view svg,.building-hotspot,#art-tower,#tower-stage-image{transition:none!important}}
