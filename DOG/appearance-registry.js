@@ -1,3 +1,4 @@
+import {isVerifiedCosmeticUnlocked} from './verified-cosmetics.js?v=1';
 /**
  * DOG presentation/content registry.
  *
@@ -94,7 +95,7 @@ export const BOARD_STYLES=deepFreeze({
  */
 export function isBoardUnlocked(id){
   const board=BOARD_STYLES[id];
-  return Boolean(board) && !board.unlockId;
+  return Boolean(board) && (!board.unlockId||isVerifiedCosmeticUnlocked(board.unlockId));
 }
 /** Scenic page backgrounds are NOT board designs.
  * Only assets/backgrounds contains selectable page wallpapers.
@@ -126,7 +127,12 @@ export const SCENE_STYLES=deepFreeze({
     description:'Neutraler Hintergrund ohne Motiv',
     image:null,
     page:'linear-gradient(145deg,#173344,#071521)'
-  }
+  },
+  winterwald:{label:'Märchenhafter Weihnachtswald',description:'Exklusiver Lichtertal-Vollbild-Hintergrund',image:'./assets/backgrounds/Lichtertal_Vollbild_Neu_01_Maerchenwald.webp',unlockId:'christmas2026:scene:01'},
+  mondnacht:{label:'Realistische Mondnacht',description:'Exklusiver Lichtertal-Vollbild-Hintergrund',image:'./assets/backgrounds/Lichtertal_Vollbild_Neu_02_Realistische_Mondnacht.webp',unlockId:'christmas2026:scene:02'},
+  weihnachtskarte:{label:'Aquarell-Weihnachtskarte',description:'Exklusiver Lichtertal-Vollbild-Hintergrund',image:'./assets/backgrounds/Lichtertal_Vollbild_Neu_03_Weihnachtskarte_Aquarell.webp',unlockId:'christmas2026:scene:03'},
+  lowpoly:{label:'Winterwelt in Low-Poly-3D',description:'Exklusiver Lichtertal-Vollbild-Hintergrund',image:'./assets/backgrounds/Lichtertal_Vollbild_Neu_04_Low_Poly_3D.webp',unlockId:'christmas2026:scene:04'},
+  polarlichtfjord:{label:'Magischer Polarlicht-Fjord',description:'Exklusiver Lichtertal-Vollbild-Hintergrund',image:'./assets/backgrounds/Lichtertal_Vollbild_Neu_05_Magischer_Polarlicht_Fjord.webp',unlockId:'christmas2026:scene:05'}
 });
 /* Right-hand cockpit backgrounds are deliberately independent of board art.
    Add a verified repo-owned image here to offer another choice in Settings. */
@@ -260,7 +266,9 @@ export function normalizeAppearance(value){
   if(!value||typeof value!=='object'||Array.isArray(value))return next;
   for(const [category,registry] of Object.entries(APPEARANCE_CATEGORIES)){
     const id=value[category];
-    if(typeof id==='string' && Object.hasOwn(registry,id) && (category!=='board' || isBoardUnlocked(id)) && (category!=='cards' || isCardStylePublished(id)))next[category]=id;
+    if(typeof id==='string' && Object.hasOwn(registry,id) && (category!=='board' || isBoardUnlocked(id)) && (category!=='cards' || isCardStylePublished(id)) &&
+      (category!=='hudTone'||id==='classic'||isVerifiedCosmeticUnlocked('christmas2026:hud-tone:'+id)) &&
+      (category!=='scene'||!registry[id].unlockId||isVerifiedCosmeticUnlocked(registry[id].unlockId)))next[category]=id;
   }
   return next;
 }
