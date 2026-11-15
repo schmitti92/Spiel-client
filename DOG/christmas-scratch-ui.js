@@ -111,6 +111,74 @@ export function initChristmasScratch(){
    return label+symbolLegend(tier,coinAmountsFor(tier,id));
   }).join('\n');
  }
+ // User-specific counters come with the existing authenticated scratch status.
+ // No polling, extra Firebase read or per-stroke writes are necessary.
+ function drawScratchAnalytics(){
+  const root=$('scratch-analytics');
+  if(!root)return;
+  const body=$('scratch-analytics-body'),footer=$('scratch-analytics-footer'),
+   kpis=$('scratch-analytics-kpis'),note=$('scratch-analytics-note');
+  const p=status?.progress;
+  const stat=value=>Number.isSafeInteger(value)&&value>=0?value:0;
+  const missing=!p;
+  const opened=stat(p?.opened),tracked=stat(p?.tracked);
+  const older=stat(p?.olderUnclassified);
+  const incomplete=older>0;
+  const cards=[
+   ['🎟️','Lose geöffnet',opened],
+   ['🏆',incomplete?'Gewinnlose (erfasst)':'Gewinnlose',stat(p?.winTickets)],
+   ['🎁',incomplete?'Freischaltungen (erfasst)':'Freischaltungen',stat(p?.unlocks)],
+   ['🪙',incomplete?'Münzen gewonnen (erfasst)':'Münzen gewonnen',stat(p?.coinsWon)]
+  ];
+  kpis.replaceChildren();
+  for(const [icon,label,value] of cards){
+   const item=el('div','scratch-analytics-kpi');
+   item.append(el('span','scratch-analytics-kpi-label',icon+' '+label),
+    el('strong','scratch-analytics-kpi-value',missing?'–':num(value)));
+   kpis.append(item);
+  }
+  body.replaceChildren();footer.replaceChildren();
+  if(missing){
+   const row=el('tr');const cell=el('td','','🔐 Mit deinem DOG-Onlineprofil anmelden, um deine Statistik zu sehen.');
+   cell.colSpan=7;row.append(cell);body.append(row);
+   note.textContent='Die Übersicht wird direkt aus deinem angemeldeten Spielerprofil geladen.';
+   return;
+  }
+  const headers=['Rubbellos','Geöffnet','Gewinnlose','Nieten','Gratis','🎁 Gewinne','🪙 Gewonnen'];
+  const addRow=(target,label,data,{total=false,unknown=false,share=true}={})=>{
+   const row=el('tr',total?'scratch-analytics-sum':unknown?'scratch-analytics-unknown':'');
+   const labelCell=el(total?'th':'td','scratch-analytics-name');
+   if(total)labelCell.scope='row';
+   labelCell.append(el('strong','',label));
+   if(share&&tracked>0&&stat(data?.opened)>0){
+    const track=el('span','scratch-analytics-bar');
+    const fill=el('i','scratch-analytics-bar-fill');
+    fill.style.width=Math.min(100,stat(data?.opened)/tracked*100)+'%';
+    track.append(fill);labelCell.append(track);
+   }
+   row.append(labelCell);
+   const numbers=[data?.opened,data?.winTickets,data?.duds,data?.free,data?.unlocks,data?.coinsWon];
+   for(let i=0;i<numbers.length;i++){
+    const cell=el('td','',unknown&&i>0?'–':num(stat(numbers[i])));
+    cell.dataset.label=headers[i+1];
+    row.append(cell);
+   }
+   target.append(row);
+  };
+  for(const [id,title,tier] of VARIANT_LABELS){
+   const value=p.byVariant?.[id]||{};
+   addRow(body,title+' · '+tier,value);
+  }
+  if(stat(p.other?.opened)>0)addRow(body,'🗂️ Weitere ältere Losarten',p.other);
+  if(older>0)addRow(body,'📜 Frühere Lose ohne Einzelstatistik',{opened:older},{unknown:true,share:false});
+  addRow(footer,'GESAMT',{
+   opened,winTickets:p.winTickets,duds:p.duds,free:p.free,
+   unlocks:p.unlocks,coinsWon:p.coinsWon
+  },{total:true,share:false});
+  note.textContent=incomplete?
+   'ℹ️ Für '+num(older)+' ältere Lose liegt nur die Gesamtzahl vor. Die Aufteilung, Gewinne und Münzen berücksichtigen '+num(tracked)+' nachvollziehbare Lose; neue Lose werden dauerhaft mitgezählt.':
+   '✓ Dein persönlicher Fortschritt wird bei jedem auf Render erzeugten Los gespeichert – ohne zusätzliche Schreibvorgänge beim Rubbeln.';
+ }
  function drawShop(){
   root.replaceChildren();
   wallet.textContent=status?num(status.coins)+' 🪙':'– 🪙';
@@ -146,6 +214,7 @@ export function initChristmasScratch(){
    }
    root.append(article);
   }
+  drawScratchAnalytics();
  }
  function openSettings(){
   
