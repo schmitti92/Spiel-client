@@ -1,3 +1,4 @@
+import {isVerifiedCosmeticUnlocked} from './verified-cosmetics.js?v=1';
 /** DOG card visuals only. Add future editions here without changing rules, card IDs or online state. */
 export const CARD_EDITION='kartendesign-01';
 export const CARD_EDITION_STORAGE_KEY='dog:card-edition:v1';
@@ -26,7 +27,7 @@ export const CARD_EDITIONS=Object.freeze({
 });
 /** A registered upload is a preview, not proof of event ownership.
  * Future activation requires an authenticated, per-user Render entitlement. */
-export const isCardEditionUnlocked=id=>Boolean(Object.hasOwn(CARD_EDITIONS,id)&&!CARD_EDITIONS[id].unlockId);
+export const isCardEditionUnlocked=id=>Boolean(Object.hasOwn(CARD_EDITIONS,id)&&(!CARD_EDITIONS[id].unlockId||isVerifiedCosmeticUnlocked(CARD_EDITIONS[id].unlockId)));
 
 export const CARD_FILE_NAMES=Object.freeze({
  '1/11':'1-11','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8',
