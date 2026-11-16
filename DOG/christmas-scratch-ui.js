@@ -1010,6 +1010,7 @@ export function initChristmasScratch(){
   stage.dataset.variant=result.board?.variantId||'legacy';
   stage.dataset.tier=result.tier||'simple';
   renderNumberLottery(result);
+  $('scratch-lotto-back').hidden=stage.dataset.variant!=='number_one_20';
   $('scratch-ticket-title').textContent=conf?
    conf[0]+' · '+(SCRATCH_TICKET_TYPES.find(t=>t.id===result.tier)?.label||'')+'-Rubbellos':
    '🎟️ Älteres Rubbellos';
@@ -1261,6 +1262,13 @@ export function initChristmasScratch(){
    showAlert(scratchBuyError(e?.message),variantId);
   }finally{busy=false;drawShop()}
  }
+ $('scratch-lotto-back').addEventListener('click',()=>{
+  // The paid ticket receipt remains in memory and Render. Going back cannot
+  // trigger another purchase, and the matching card offers Reopen.
+  if(!ticket)return;
+  stage.hidden=true;document.body.classList.remove('scratch-ticket-open');
+  drawShop();notice('🎟️ Dein Glückszahl-Los bleibt gespeichert. Du kannst es über „Vorheriges Los anzeigen“ wieder öffnen.');
+ });
  $('scratch-reveal-button').addEventListener('click',finish);
  $('scratch-ticket-finish').addEventListener('click',()=>{
   if(!ticket||!finished)return;
