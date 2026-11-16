@@ -553,7 +553,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 </dialog>
 <dialog id="appearance-dialog" aria-labelledby="appearance-title">
   <h2 id="appearance-title">🎨 DOG-Designstudio</h2>
-  <p>Ändere Hintergrund, den Farbton des rechten Spielblocks, Figurenfarben und Kartenmotiv, ohne die Partie zu verändern. Die Auswahl wird auf deinem Gerät gespeichert.</p>
+  <p>Ändere Hintergrund, den Farbton des rechten Spielblocks, Figurenform, Figurenfarben und Kartenmotiv, ohne die Partie zu verändern. Die Auswahl wird auf deinem Gerät gespeichert.</p>
   <div class="dog-appearance-layout">
     <label for="appearance-board">🌄 Spielbrett-Design
       <select id="appearance-board"></select>
@@ -577,6 +577,9 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
     </section>
     <label for="appearance-pieces">🔴 Figurenfarben
       <select id="appearance-pieces"></select>
+    </label>
+    <label for="appearance-pieceShape">⚪ Spielfiguren-Design
+      <select id="appearance-pieceShape"></select>
     </label>
     <label for="appearance-cards">🃏 Kartenmotiv
       <select id="appearance-cards"></select>
@@ -649,7 +652,7 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 </script>
 <script type="module">
 import('./ui-shell.js?v=5').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
-import('./app.js?v=66').catch(error=>{
+import('./app.js?v=67').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
