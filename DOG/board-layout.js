@@ -5,7 +5,7 @@
  *
  * No client-supplied coordinates are ever used by the rules engine.
  */
-import {APPROVED_BOARD_ID,APPROVED_BOARD_LAYOUT} from './approved-board.js';
+import {APPROVED_BOARD_ID,APPROVED_BOARD_LAYOUT,spacedDogBoardLayout} from './approved-board.js';
 export const BOARD_LAYOUT_ID=APPROVED_BOARD_ID;
 export const BOARD_VIEWBOX=760;
 // A new key activates the newly approved common standard on all devices.
@@ -88,7 +88,21 @@ export function loadSavedBoardLayout(storage=typeof window!=='undefined'?window.
  try{
   const item=storage.getItem(CUSTOM_BOARD_KEY);
   if(!item)return false;
-  setBoardLayout(JSON.parse(item));
+  const saved=JSON.parse(item);
+  // Existing player-made designs from the original board remain available.
+  // Safely migrate the old 32-unit spacing only once; retain the old file
+  // untouched if a custom design cannot fit the new expanded geometry.
+  if(saved?.preset==='dog-approved-board-v1'){
+   const spaced={...spacedDogBoardLayout(saved),preset:BOARD_LAYOUT_ID};
+   try{
+    setBoardLayout(spaced);
+    storage.setItem(CUSTOM_BOARD_KEY,JSON.stringify(spaced));
+    return true;
+   }catch(migrationError){
+    console.warn('[DOG] Eigenes Brett kann nicht automatisch verbreitert werden; ursprüngliche Positionen bleiben erhalten.',migrationError);
+   }
+  }
+  setBoardLayout(saved);
   return true;
  }catch(err){
   console.warn('[DOG] Eigener Spielfeldplan konnte nicht geladen werden:',err);
