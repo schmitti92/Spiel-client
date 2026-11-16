@@ -258,6 +258,78 @@ export function initChristmasScratch(){
    'ℹ️ Für '+num(older)+' ältere Lose liegt nur die Gesamtzahl vor. Die Aufteilung, Gewinne und Münzen berücksichtigen '+num(tracked)+' nachvollziehbare Lose; neue Lose werden dauerhaft mitgezählt.':
    '✓ Dein persönlicher Fortschritt wird bei jedem auf Render erzeugten Los gespeichert – ohne zusätzliche Schreibvorgänge beim Rubbeln.';
  }
+ function renderNumberLottery(receipt){
+  const active=receipt?.board?.variantId==='number_one_20';
+  for(const id of ['scratch-lotto-header','scratch-lotto-left','scratch-lotto-right']){
+   const node=$(id);if(node)node.hidden=!active;
+  }
+  if(!active)return;
+  const cfg=status?.settings?.numberOne20||{};
+  const amounts=Array.isArray(receipt.board.coinAmounts)?receipt.board.coinAmounts:
+   Array.isArray(receipt.coinAmounts)?receipt.coinAmounts:[100,300,800];
+  const weights=Array.isArray(receipt.board.symbolWeights)?receipt.board.symbolWeights:
+   Array.isArray(cfg.symbolWeights)?cfg.symbolWeights:[650,280,60,10];
+  const chance=Number.isInteger(receipt.board.hitPer1000)?receipt.board.hitPer1000:
+   Number.isInteger(cfg.hitPer1000)?cfg.hitPer1000:100;
+  const hit=chance/1000;
+  const price=Number.isInteger(receipt.price)?receipt.price:Number(cfg.price||500);
+  const percent=value=>Number(value).toLocaleString('de-DE',{maximumFractionDigits:1})+' %';
+  const card=(heading,rows,cls='')=>{
+   const shell=el('section','lotto-panel '+cls);
+   shell.append(el('h3','lotto-panel-title',heading));
+   const container=el('div','lotto-panel-content');
+   for(const row of rows){
+    const line=el('div','lotto-panel-line');
+    line.append(el('span','lotto-panel-line-label',row[0]),
+     el('strong','lotto-panel-line-value',row[1]));
+    container.append(line);
+   }
+   shell.append(container);return shell;
+  };
+  const left=$('scratch-lotto-left'),right=$('scratch-lotto-right');
+  left.replaceChildren();right.replaceChildren();
+  const intro=el('section','lotto-panel lotto-steps');
+  intro.append(el('h3','lotto-panel-title','🐾 SPIELERKLÄRUNG'));
+  for(const [i,description] of [
+   'Rubbele in jeder der 20 Reihen beide Felder frei.',
+   'Links erscheint ein Gewinnsymbol, rechts eine Zahl von 1 bis 10.',
+   'Ist die rechte Zahl eine 1, gewinnst du den Preis links in derselben Reihe.'
+  ].entries()){
+   const step=el('div','lotto-step');
+   step.append(el('strong','lotto-step-number',String(i+1)),el('span','lotto-step-text',description));
+   intro.append(step);
+  }
+  left.append(intro,
+   card('🎁 GEWINNSYMBOLE',[
+    ['🪙 Münze',num(amounts[0])+' Münzen'],
+    ['💵 Schein',num(amounts[1])+' Münzen'],
+    ['💼 Koffer',num(amounts[2])+' Münzen'],
+    ['🎁 Geschenk','Neue Freischaltung']
+   ],'lotto-symbols'));
+  const chanceOfAny=100*(1-Math.pow(1-hit,20));
+  right.append(
+   card('🎯 GEWINNCHANCEN',[
+    ['Gewinn je Reihe',percent(hit*100)],
+    ['Mindestens 1 Treffer',percent(chanceOfAny)],
+    ['Kein Treffer',percent(100-chanceOfAny)],
+    ['Erwartete Treffer',String((20*hit).toLocaleString('de-DE',{maximumFractionDigits:1}))]
+   ],'lotto-chances'),
+   card('🏆 MAXIMAL MÖGLICH',[
+    ['Treffer pro Los',String(chance>0?20:0)],
+    ['20 Koffer-Treffer',num(chance>0?20*amounts[2]:0)+' 🪙'],
+    ['Neue Freischaltung','höchstens 1 je Los'],
+    ['Lospreis',num(price)+' 🪙']
+   ],'lotto-max'),
+   card('🎲 SYMBOLVERTEILUNG',[
+    ['🪙 Münze',percent(weights[0]/10)],
+    ['💵 Schein',percent(weights[1]/10)],
+    ['💼 Koffer',percent(weights[2]/10)],
+    ['🎁 Geschenk',percent(weights[3]/10)]
+   ],'lotto-symbol-odds')
+  );
+  $('scratch-lotto-headline').textContent=
+   '20 REIHEN  •  '+percent(hit*100)+' TREFFERCHANCE PRO REIHE  •  LOSPREIS '+num(price)+' 🪙';
+ }
  function drawShop(){
   root.replaceChildren();
   wallet.textContent=status?num(status.coins)+' 🪙':'– 🪙';
@@ -270,11 +342,13 @@ export function initChristmasScratch(){
   // selector and no random result when one specific card was chosen.
   for(const option of SCRATCH_SHOP_VARIANTS){
    const tier=SCRATCH_TICKET_TYPES.find(c=>c.id===option.tier);
+   const lucky=status?.settings?.numberOne20;
+   const ticketCost=option.id==='number_one_20'?(lucky?.price??tier.price):tier.price;
    const variantConfig=status?.settings?.variants?.[option.id];
    const unlockChance=Number.isInteger(variantConfig?.weights?.unlock)?
     percent(variantConfig.weights.unlock):tier.unlockChance;
    const unlocksLeft=status?.pools?.[option.tier]?.remaining;
-   const chanceText=option.id==='number_one_20'?'🔢 10 % Trefferchance pro Reihe':
+   const chanceText=option.id==='number_one_20'?'🔢 '+Number((lucky?.hitPer1000??100)/10).toLocaleString('de-DE')+' % Trefferchance pro Reihe':
     option.id==='dog_jackpot_9'?'🐾 35 % Chance auf alle Preise':
     option.id==='tic_tac_toe'?'🎁 Drei gleiche Geschenke = Premium · 4 % pro Feld':
     unlocksLeft===0?'🎁 Alle Freischaltungen gesammelt':
@@ -297,18 +371,19 @@ export function initChristmasScratch(){
    details.append(el('span','scratch-card-rule',visibleRule),
     el('span','scratch-card-chance',chanceText));
    const amounts=option.id==='tic_tac_toe'?[200,450,800]:
-    ['number_one_20','dog_jackpot_9'].includes(option.id)?[100,300,800]:
+    option.id==='number_one_20'?(lucky?.coinAmounts??[100,300,800]):
+    option.id==='dog_jackpot_9'?[100,300,800]:
     coinAmountsFor(option.tier,option.id);
    article.append(heading,details,
-    el('strong','scratch-price',num(tier.price)+' 🪙'),
+    el('strong','scratch-price',num(ticketCost)+' 🪙'),
     el('div','scratch-card-payouts','🪙 '+num(amounts[0])+' · 💵 '+num(amounts[1])+' · 💼 '+num(amounts[2])),
     el('div','scratch-symbol-key',option.id==='number_one_20'?
-     '🪙 100 · 💵 300 · 💼 800 · 🎁 Freischaltung · jede 1 gewinnt':
+     '🪙 '+num(amounts[0])+' · 💵 '+num(amounts[1])+' · 💼 '+num(amounts[2])+' · 🎁 Freischaltung · jede 1 gewinnt':
      option.id==='dog_jackpot_9'?'🐾 DOG = alle 8 Preise · 🎁 Freischaltung':
      option.id==='tic_tac_toe'?
      '🪙 200 · 💵 450 · 💼 800 · 🎁 Premium':symbolLegend(option.tier,amounts)));
    const vouchers=Number(status?.vouchers?.[option.tier]||0)+Number(status?.variantVouchers?.[option.id]||0);
-   const buyBtn=el('button','scratch-buy','🎟️ Für '+num(tier.price)+' Münzen öffnen');
+   const buyBtn=el('button','scratch-buy','🎟️ Für '+num(ticketCost)+' Münzen öffnen');
    buyBtn.type='button';buyBtn.hidden=freeMode;
    // Keep taps informative. Disabled purchases previously looked like dead
    // buttons when the wallet or an older unacknowledged ticket blocked them.
