@@ -18,14 +18,14 @@ export const SCRATCH_SHOP_VARIANTS=Object.freeze([
  Object.freeze({id:'snow_collect',tier:'simple',icon:'❄️',name:'Schneeflocken-Bingo',subtitle:'Einfach · 16 Felder',rule:'3 gleiche Gewinnzeichen irgendwo',theme:'snow'}),
  Object.freeze({id:'elf',tier:'medium',icon:'🧝',name:'Magischer Wichtelpfad',subtitle:'Mittel · 20 Felder',rule:'Geld: Pfad · Geschenke: 3 verbunden',theme:'elf'}),
  Object.freeze({id:'premium_27',tier:'premium',icon:'👑',name:'Premium-Weihnachtslos',subtitle:'Premium · 27 Felder',rule:'4 sichere Geld-Dreierreihen · 20 Symbole = 1.000 🪙 (30 %)',theme:'gold'}),
-  Object.freeze({id:'tic_tac_toe',tier:'medium',icon:'🎯',name:'DOG Tic-Tac-Toe',subtitle:'Spezial · 9 Felder',rule:'3 gleiche Symbole in einer Linie · 8 Wege · 7 Boni',theme:'tictac'}),
+  Object.freeze({id:'tic_tac_toe',tier:'medium',icon:'⭕',name:'DOG Tic-Tac-Toe',subtitle:'Duell · 9 Felder',rule:'Zuerst 1×–5×, dann Kreis oder Kreuz, danach 3×3-Duell',theme:'tictac'}),
   Object.freeze({id:'number_one_20',tier:'medium',icon:'🔢',name:'Glückszahl 1',subtitle:'Zahlenlos · 20 × 2',rule:'Beide Spalten rubbeln · jede 1 gewinnt links',theme:'number20'}),
   Object.freeze({id:'dog_jackpot_9',tier:'premium',icon:'🐾',name:'Finde DOG!',subtitle:'DOG-Jackpot · 9 Felder',rule:'DOG finden = alle 8 Preisfelder gewinnen',theme:'dogjackpot'})
 ]);
 const VARIANTS={
   number_one_20:['🔢 Die Glückszahl 1','20 Reihen mit zwei Rubbelspalten. Links das verdeckte Gewinnsymbol, rechts die verdeckte Zahl. Nur eine 1 gewinnt den Preis derselben Reihe.',20,2],
   dog_jackpot_9:['🐾 Finde DOG!','Neun verdeckte Felder. Ein DOG-Symbol gewinnt alle acht übrigen Preise, ohne DOG ist das Los eine Niete.',3,3],
-  tic_tac_toe:['🎯 DOG Tic-Tac-Toe','Drei gleiche Symbole in einer der acht Reihen, Spalten oder Diagonalen. Alle passenden Reihen und Boni zählen.',3,3],
+  tic_tac_toe:['🎯 DOG Tic-Tac-Toe','Zuerst Multiplikator (1–5×), dann Kreis oder Kreuz aufrubbeln. Eine passende Dreierlinie gewinnt einen Symbolpreis × Multiplikator.',3,3],
  premium_27:['🎅 Premium-Weihnachts-Rubbellos','Mindestens 4 Geld-Dreierreihen sind garantiert. Je 3 gleiche Geldsymbole waagerecht gewinnen. 20 echte Symbole bringen 1.000 Zusatzmünzen; ab 24 ist eine Freischaltung möglich.',9,3],
  gifts:['🎁 Geschenkelinie','Drei gleiche Gewinnsymbole in einer Reihe, Spalte oder Diagonale',3,3],
  snow:['❄️ Schneeflocken-Bingo (älteres Los)','Vier gleiche Symbole in einer Reihe, Spalte oder Diagonale',4,4],
@@ -371,7 +371,7 @@ export function initChristmasScratch(){
    const unlocksLeft=status?.pools?.[option.tier]?.remaining;
    const chanceText=option.id==='number_one_20'?'🔢 '+Number((lucky?.hitPer1000??100)/10).toLocaleString('de-DE')+' % Trefferchance pro Reihe':
     option.id==='dog_jackpot_9'?'🐾 35 % Chance auf alle Preise':
-    option.id==='tic_tac_toe'?'🎁 Drei gleiche Geschenke = Premium · 4 % pro Feld':
+    option.id==='tic_tac_toe'?'◯ oder ✕ · 1× bis 5× · 8 Gewinnlinien':
     unlocksLeft===0?'🎁 Alle Freischaltungen gesammelt':
     '🎁 bis zu '+unlockChance+' % Freischaltung';
    const chanceWeights=variantConfig?.weights;
@@ -402,7 +402,7 @@ export function initChristmasScratch(){
      '🪙 '+num(amounts[0])+' · 💵 '+num(amounts[1])+' · 💼 '+num(amounts[2])+' · 🎁 Freischaltung · jede 1 gewinnt':
      option.id==='dog_jackpot_9'?'🐾 DOG = alle 8 Preise · 🎁 Freischaltung':
      option.id==='tic_tac_toe'?
-     '🪙 200 · 💵 450 · 💼 800 · 🎁 Premium':symbolLegend(option.tier,amounts)));
+     '◯ / ✕ · 1–5× · 🪙 200 · 💵 450 · 💼 800 · 🎁 Freischaltung':symbolLegend(option.tier,amounts)));
    const vouchers=Number(status?.vouchers?.[option.tier]||0)+Number(status?.variantVouchers?.[option.id]||0);
    const buyBtn=el('button','scratch-buy','🎟️ Für '+num(ticketCost)+' Münzen öffnen');
    buyBtn.type='button';buyBtn.hidden=freeMode;
@@ -938,6 +938,7 @@ export function initChristmasScratch(){
      const where=prize.bonus?'🎉 Zusatzgewinn':
       rule==='number-one'?'🔢 Glückszahl 1':
       rule==='dog-all'?'🐾 DOG-Jackpot':
+      rule==='tic-duel-line'?'⭕ Tic-Tac-Toe Duell':
       rule==='gold-20'?'⭐ 20 Symbole':
       rule==='premium-24'?'🎁 24 Symbole':
       rule==='row-3'?'🎟️ Dreierreihe':
@@ -969,7 +970,7 @@ export function initChristmasScratch(){
    '🔢 Jede der 20 Reihen hat zwei eigene Rubbelstellen. Links das Symbol, rechts die Zahl: Nur eine 1 gewinnt den Symbolpreis derselben Reihe. Alle Treffer werden addiert.'));
   if(result?.board?.variantId==='dog_jackpot_9')panel.append(el('div','scratch-special-rule-note',
    '🐾 Ein DOG-Symbol gewinnt sämtliche acht übrigen Preise auf dem Los. Ohne DOG gibt es 0 Münzen.'));
-  if(result?.board?.variantId==='tic_tac_toe'){
+  if(result?.board?.variantId==='tic_tac_toe'&&result.board?.symbolVersion!==8){
    panel.append(el('div','scratch-tictac-bonus-note',
     '🎯 8 Linien · 2 Linien +250 · 3+ +800 · Mitte +300 · X +1.000 · Ecken +400 · 9 gleiche +20.000'));
   }
@@ -1014,7 +1015,7 @@ export function initChristmasScratch(){
    result.giftSparksEarned?'🎁 Geschenkfunke':'❄️ Niete'),
    el('strong','scratch-inline-total','🪙 '+num(amount)+' erhalten'));
   outlet.append(heading);
-  if(result.board?.variantId==='tic_tac_toe'){
+  if(result.board?.variantId==='tic_tac_toe'&&result.board?.symbolVersion!==8){
    const text=result.giftSparksEarned?
     '🎁 +1 Geschenkfunke · '+(status?.giftSparks??0)+'/5 bis zum Gratis-Tic-Tac-Toe-Los':
     '🎁 2 Geschenke auf einem Los geben einen Geschenkfunken';
@@ -1046,6 +1047,7 @@ export function initChristmasScratch(){
     prize.bonus?'🎉 Bonus zu Gewinn '+(Number.isInteger(prize.sourceWin)?prize.sourceWin+1:'?'):
     rule==='number-one'?'Zahl 1 · Preis der Reihe':
     rule==='dog-all'?'DOG gefunden · alle Preise':
+    rule==='tic-duel-line'?'Gewinnsymbol in einer Dreierlinie':
     rule==='three-anywhere'?'3 gleiche beliebig':
     rule==='gift-three-connected'?'3 verbundene Geschenke':
     rule==='path'?'Pfad links → rechts':
@@ -1072,8 +1074,9 @@ export function initChristmasScratch(){
   const conf=VARIANTS[result.board?.variantId],cells=result.board?.cells;
   stage.dataset.variant=result.board?.variantId||'legacy';
   stage.dataset.tier=result.tier||'simple';
+  stage.dataset.duelVersion=String(result.board?.variantId==='tic_tac_toe'?result.board?.symbolVersion||0:0);
   renderNumberLottery(result);
-  $('scratch-lotto-back').hidden=stage.dataset.variant!=='number_one_20';
+  $('scratch-lotto-back').hidden=stage.dataset.variant!=='number_one_20'&&stage.dataset.duelVersion!=='8';
   $('scratch-ticket-title').textContent=conf?
    conf[0]+' · '+(SCRATCH_TICKET_TYPES.find(t=>t.id===result.tier)?.label||'')+'-Rubbellos':
    '🎟️ Älteres Rubbellos';
@@ -1081,6 +1084,8 @@ export function initChristmasScratch(){
     '20 Reihen × 2 separat freirubbelbare Felder. Jede Zahl 1 gewinnt das Symbol links. Die Auszahlungen dieses Loses: 🪙 '+num((result.coinAmounts||[100,300,800])[0])+' · 💵 '+num((result.coinAmounts||[100,300,800])[1])+' · 💼 '+num((result.coinAmounts||[100,300,800])[2])+' · 🎁 Freischaltung.':
    result.board?.variantId==='dog_jackpot_9'?
     'Neun Felder: Wird DOG aufgedeckt, gehören dir die Preise aller acht übrigen Felder. 🪙 100 · 💵 300 · 💼 800 · 🎁 Freischaltung. Ohne DOG: Niete.':
+   result.board?.variantId==='tic_tac_toe'&&result.board?.symbolVersion===8?
+    'Zuerst 1×–5× aufrubbeln, dann ◯ oder ✕. Danach alle neun Felder öffnen. Eine Dreierlinie aus dem Gewinnsymbol gewinnt EINEN zufälligen Symbolpreis × Multiplikator; Geschenke geben höchstens eine Freischaltung, sonst 1.500 Münzen × Multiplikator.':
    result.board?.variantId==='tic_tac_toe'?
     '🪙 200 · 💵 450 · 💼 800 Münzen je Dreierreihe · 🎁 Premium-Freischaltung. 2 Linien +250 · 3+ Linien +800 · Koffer in der Mitte +300 · Goldenes X +1.000 · 4 gleiche Ecken +400 · 9 gleiche Felder +20.000. Zwei Geschenke ergeben einen Geschenkfunken.':
    result.board?.variantId==='premium_27'&&result.board?.symbolVersion===5?
@@ -1097,11 +1102,13 @@ export function initChristmasScratch(){
    'Älteres Los – dieses Ergebnis wurde vor dem neuen Spielfeldsystem gespeichert';
   board.parentElement.querySelector('.scratch-premium-symbol-count')?.remove();
   const legend=$('scratch-symbol-legend');
-  if(legend){legend.hidden=![2,3,4,5,6,7].includes(result.board?.symbolVersion);
+  if(legend){legend.hidden=![2,3,4,5,6,7,8].includes(result.board?.symbolVersion);
    legend.textContent=legend.hidden?'':result.board?.variantId==='number_one_20'?
     '🔢 Links Gewinnsymbol aufrubbeln · rechts Zahl aufrubbeln · jede 1 gewinnt · 🪙 '+num((result.coinAmounts||[100,300,800])[0])+' · 💵 '+num((result.coinAmounts||[100,300,800])[1])+' · 💼 '+num((result.coinAmounts||[100,300,800])[2])+' · 🎁 Freischaltung':
     result.board?.variantId==='dog_jackpot_9'?
     '🐾 DOG = alle acht Preise · 🪙 100 · 💵 300 · 💼 800 · 🎁 Freischaltung':
+    result.board?.variantId==='tic_tac_toe'&&result.board?.symbolVersion===8?
+    '◯ oder ✕ · 1×–5× · 8 mögliche Linien · EIN Symbolgewinn × Multiplikator':
     result.board?.variantId==='tic_tac_toe'?
     '🪙 200 · 💵 450 · 💼 800 · 🎁 Premium · 8 mögliche Gewinnlinien':
     symbolLegend(result.tier,coinAmountsFor(result.tier,result.board?.variantId,result))}
@@ -1190,6 +1197,7 @@ export function initChristmasScratch(){
   confirm.textContent='✓ Ergebnis bestätigen';
   $('scratch-reveal-button').hidden=true;
   if(unifiedCover)unifiedCover.hidden=true;
+  for(const cover of board.querySelectorAll('.scratch-duel-cover'))cover.hidden=true;
   $('scratch-progress').textContent='100 % aufgedeckt ✓';
   const meter=$('scratch-progress-meter');
   if(meter){meter.value=100;meter.setAttribute('aria-valuenow','100')}
@@ -1226,7 +1234,8 @@ export function initChristmasScratch(){
    const goldIndices=stage.dataset.variant==='premium_27'?
     premiumWinningRowIndices(wins):
     [...new Set(wins.flatMap(win=>Array.isArray(win?.indices)?win.indices:[]))];
-   for(const i of goldIndices)visibleCells[i]?.classList.add('scratch-winning-cell');
+   const duelOffset=stage.dataset.duelVersion==='8'?2:0;
+   for(const i of goldIndices)visibleCells[i+duelOffset]?.classList.add('scratch-winning-cell');
    if(stage.dataset.variant==='dog_jackpot_9'&&wins.length){
     const dogIndex=current.board.cells.indexOf('DOG');
     if(dogIndex>=0)visibleCells[dogIndex]?.classList.add('scratch-winning-cell','scratch-dog-winner');
@@ -1240,6 +1249,7 @@ export function initChristmasScratch(){
    for(const [i,win] of wins.entries()){
     const description=win.rule==='number-one'?'Zahl 1 · Reihe '+(Math.floor(win.indices[0]/2)+1):
      win.rule==='dog-all'?'DOG-Jackpot · Feld '+(win.indices[0]+1):
+     win.rule==='tic-duel-line'?'Duell · '+current.board.winningSymbol+' · '+current.board.multiplier+'×':
      win.rule==='tic-line'?'Tic-Tac-Toe-Dreierreihe':
      win.rule==='gold-20'?'20 Symbolfelder':win.rule==='premium-24'?
      ([3,4,5].includes(current.board?.symbolVersion)?'24 Symbolfelder + 3 gleiche Geschenkzeichen':'24 Symbolfelder'):
