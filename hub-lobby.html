@@ -189,20 +189,31 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
 <section id="dog-room-lobby" class="dog-room-lobby" aria-label="DOG Spiellobby" hidden>
   <div class="dog-room-atmosphere" aria-hidden="true"></div>
   <div class="dog-room-stage">
-    <header class="dog-room-top">
-      <a id="dog-room-back" class="dog-room-utility dog-room-back" href="spielauswahl-online.html">← Zur Spielauswahl</a>
-      <h1 class="dog-room-heading"><span aria-hidden="true">🐾</span> <span class="dog-room-brand">DOG</span> <span class="dog-room-heading-dot">·</span> SPIELLOBBY</h1>
-      <div class="dog-room-top-actions">
-        <button id="dog-room-fullscreen" class="dog-room-utility" type="button">⛶ Vollbild</button>
-        <button id="dog-room-refresh" class="dog-room-utility" type="button">↻ Aktualisieren</button>
+    <header class="dog-room-top dog-room-reference-top">
+      <h1 class="dog-room-heading dog-room-logo">
+        <span class="dog-room-logo-paw" aria-hidden="true">🐾</span>
+        <span class="dog-room-logo-copy"><span class="dog-room-brand">DOG</span><small>SPIELLOBBY</small></span>
+      </h1>
+      <div class="dog-room-central-header">
+        <a id="dog-room-back" class="dog-room-utility dog-room-back" href="spielauswahl-online.html">← Zur Spielauswahl</a>
+        <div class="dog-room-codebar">
+          <span class="dog-room-code-name">RAUM</span>
+          <strong id="dog-room-code" class="dog-room-code-value">———</strong>
+          <span class="dog-room-code-split" aria-hidden="true"></span>
+          <button id="dog-room-copy" type="button" class="dog-room-utility">▣ Code kopieren</button>
+        </div>
+      </div>
+      <div class="dog-room-header-right">
+        <div class="dog-room-profile" aria-label="Dein DOG-Spielerprofil">
+          <span id="dog-room-profile-avatar" class="dog-room-profile-avatar" aria-hidden="true">♟</span>
+          <span class="dog-room-profile-details"><strong id="dog-room-profile-name">Spielerprofil</strong><small id="dog-room-profile-level">Level wird geprüft</small></span>
+        </div>
+        <div class="dog-room-top-actions">
+          <button id="dog-room-fullscreen" class="dog-room-utility" type="button">⛶ Vollbild</button>
+          <button id="dog-room-refresh" class="dog-room-utility" type="button">↻ Aktualisieren</button>
+        </div>
       </div>
     </header>
-    <div class="dog-room-codebar">
-      <span class="dog-room-code-name">RAUM</span>
-      <strong id="dog-room-code" class="dog-room-code-value">———</strong>
-      <span class="dog-room-code-split" aria-hidden="true"></span>
-      <button id="dog-room-copy" type="button" class="dog-room-utility">▣ Code kopieren</button>
-    </div>
     <div class="dog-room-grid">
       <section class="dog-room-panel dog-room-players-panel" aria-labelledby="dog-room-players-title">
         <h2 id="dog-room-players-title"><span aria-hidden="true">👥</span> Mitspieler</h2>
@@ -270,8 +281,9 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
 <link rel="stylesheet" href="DOG/room-lobby.css?v=2">
 <link rel="stylesheet" href="DOG/room-statistics.css?v=1">
 <link rel="stylesheet" href="DOG/room-lobby-art.css?v=1">
+<link rel="stylesheet" href="DOG/room-lobby-reference.css?v=1">
 <script type="module" src="DOG/init-motion.js?v=1"></script><script src="DOG/avatar-picker.js?v=5"></script><script type="module" src="DOG/emoji-lobby.js?v=3"></script><script type="module" src="DOG/board-picker.js?v=12"></script>
-<script type="module" src="DOG/room-lobby.js?v=7"></script>
+<script type="module" src="DOG/room-lobby.js?v=8"></script>
 <script type="module" src="DOG/room-statistics.js?v=1"></script>
 <script src="profile-config.js"></script><script src="profile-auth.js"></script><script src="hub-lobby.js?v=20261115-dog-route-fixed-v4" defer></script>
 <script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script><script src="site-global-controls.js?v=20261109-global-1"></script>
