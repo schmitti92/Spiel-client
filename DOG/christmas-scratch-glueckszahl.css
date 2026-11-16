@@ -1,0 +1,108 @@
+/* Glückszahl 1 – photo-accurate board over the user's 1152x1536 artwork.
+   Upload the original PNG to DOG/assets/scratch/glueckszahl-1-design.png.
+   Both sides of all 20 rows have independently coated scratch rectangles.
+   Image decorations, title, row numbers and legend stay in the artwork.
+   The actual symbols/numbers always come from the server's immutable receipt. */
+
+#panel-scratch .scratch-tier.scratch-variant-number20 {
+ --ticket-edge:#ebc16d;
+ --ticket-text:#fff0b6;
+ background:linear-gradient(145deg,#361622bb,#092c24ca),
+  url("./assets/scratch/glueckszahl-1-design.png") center 43%/cover no-repeat,
+  linear-gradient(135deg,#9b2439,#173b32)!important;
+}
+#panel-scratch .scratch-tier.scratch-variant-number20 .scratch-buy {
+ background:linear-gradient(#fff0be,#c8953c)!important;color:#3e2417!important;
+}
+
+/* Artwork alone renders all card ornament, dog mascot, headings and the
+   twenty printed row numbers. Do not cover it with synthetic titles. */
+.scratch-stage[data-variant="number_one_20"] #scratch-card-art {
+ aspect-ratio:1152/1536!important;
+ position:relative!important;display:block!important;
+ background:#052d25 url("./assets/scratch/glueckszahl-1-design.png") center/100% 100% no-repeat!important;
+ border:0!important;border-radius:10px!important;
+ box-shadow:0 5px 24px #0009!important;
+ isolation:isolate!important;overflow:hidden!important;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-card-art::before,
+.scratch-stage[data-variant="number_one_20"] #scratch-card-art::after {
+ content:none!important;display:none!important;
+}
+
+/* The two columns align with the silver fields PRINTED in the PNG,
+   leaving the printed row badges on the left untouched. */
+.scratch-stage[data-variant="number_one_20"] #scratch-board {
+ position:absolute!important;
+ left:24.7%!important;top:22.03%!important;
+ width:50.8%!important;height:57.05%!important;
+ max-width:none!important;margin:0!important;padding:0!important;
+ box-sizing:border-box!important;
+ display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ grid-template-rows:repeat(20,minmax(0,1fr))!important;
+ column-gap:2.7%!important;row-gap:0.8%!important;
+ border:0!important;border-radius:0!important;
+ background:transparent!important;
+}
+
+/* Each hitbox is a single tightly fitted, separate scratch field. The PNG
+   has dark prize pictograms on silver; these are concealed under the real
+   scratch coating and are replaced by random server-generated results. */
+.scratch-stage[data-variant="number_one_20"] #scratch-board .scratch-field {
+ width:100%!important;height:100%!important;min-height:0!important;min-width:0!important;
+ aspect-ratio:auto!important;box-sizing:border-box!important;
+ border:0!important;border-radius:9px!important;
+ padding:0 2px!important;gap:3px!important;margin:0!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ overflow:hidden!important;
+ box-shadow:inset 0 0 5px #092f2382!important;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-board .scratch-number-prize{
+ color:#fff5d9!important;
+ background:linear-gradient(90deg,#0c3d2b,#15553b)!important;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-board .scratch-number-target{
+ background:linear-gradient(125deg,#f8e7b1,#d9bc7a)!important;
+ color:#393126!important;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-board .scratch-cell-symbol {
+ font-size:clamp(10px,2.2vh,17px)!important;line-height:1!important;
+ font-weight:900!important;white-space:nowrap!important;
+ text-shadow:0 1px 2px #0006;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-board .scratch-number-target .scratch-cell-symbol{
+ font-size:clamp(9px,2.2vh,16px)!important;
+ text-shadow:none!important;color:#332d28!important;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-board .scratch-number-payout{
+ font:900 clamp(8px,1.55vh,12px)/1 system-ui,sans-serif!important;
+ white-space:nowrap!important;color:#ffebac!important;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-board .scratch-field.scratch-winning-cell {
+ outline:2px solid #ffe977!important;outline-offset:-2px!important;
+ box-shadow:inset 0 0 10px #f8d76b90,0 0 8px #ffe988c5!important;
+ background:linear-gradient(#ffeaa0,#e7bc52)!important;color:#34220c!important;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-board
+ .scratch-field.scratch-winning-cell .scratch-number-payout {
+ color:#302117!important;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-board .scratch-unified-cover {
+ position:absolute!important;inset:0!important;
+ width:100%!important;height:100%!important;z-index:4!important;
+ touch-action:none!important;
+}
+/* The existing 90% swipe detector still applies. The silver coating
+   is painted independently into EACH of the 40 printed rectangles. */
+@media(max-width:520px){
+ .scratch-stage[data-variant="number_one_20"] #scratch-board .scratch-field{
+  padding:0 1px!important;gap:1px!important;border-radius:4px!important;
+ }
+ .scratch-stage[data-variant="number_one_20"] #scratch-board .scratch-cell-symbol{
+  font-size:clamp(8px,1.65vh,13px)!important;
+ }
+ .scratch-stage[data-variant="number_one_20"] #scratch-board .scratch-number-payout{
+  font-size:clamp(7px,1.4vh,10px)!important;
+ }
+}
