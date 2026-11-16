@@ -9,7 +9,7 @@ import {createDogVisualFeedback} from './ui-animations.js?v=2';
 import {summarizeDogVictory} from './victory-summary.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
-import {DEFAULT_APPEARANCE,BOARD_STYLES,isBoardUnlocked,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,PIECE_SHAPES,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=26';
+import {DEFAULT_APPEARANCE,BOARD_STYLES,isBoardUnlocked,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,PIECE_SHAPES,isPieceShapeUnlocked,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,loadAppearance,saveAppearance,normalizeAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=27';
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=11';
 
 const $=id=>document.getElementById(id);
@@ -815,13 +815,15 @@ function prepareAppearanceUI(){
     select.replaceChildren();
     for(const [id,design] of Object.entries(registry)){
       const option=document.createElement('option');
-      const locked=type==='board'&&!isBoardUnlocked(id);
-      option.value=id;option.textContent=locked?design.label+' · 🔒 Weihnachtsevent':design.label;
+      const locked=type==='board'?!isBoardUnlocked(id):type==='pieceShape'?!isPieceShapeUnlocked(id):false;
+      const lockLabel=type==='pieceShape'?' · 🔒 Spielerlevel '+design.minPlayerLevel:' · 🔒 Weihnachtsevent';
+      option.value=id;option.textContent=design.label+(locked?lockLabel:'');
       option.disabled=locked;
       select.appendChild(option);
     }
     select.addEventListener('change',()=>{
       if(type==='board'&&!isBoardUnlocked(select.value)){select.value=appearance.board;return;}
+      if(type==='pieceShape'&&!isPieceShapeUnlocked(select.value)){select.value=appearance.pieceShape;return;}
       appearance=saveAppearance({...appearance,[type]:select.value});
       applyAppearance();
     });
@@ -867,6 +869,16 @@ function prepareAppearanceUI(){
   // Authenticated level data arrives asynchronously. Recheck without rebuilding
   // the game or altering any server-side online state.
   window.addEventListener('dog-cosmetics-verified',()=>{
+   // Server-verified player XP governs the 3D reward, including account switches.
+   appearance=normalizeAppearance(appearance);
+   const shapeSelect=$('appearance-pieceShape');
+   for(const option of shapeSelect.options){
+    const design=PIECE_SHAPES[option.value];
+    const locked=!isPieceShapeUnlocked(option.value);
+    option.disabled=locked;
+    option.textContent=design.label+(locked?' · 🔒 Spielerlevel '+design.minPlayerLevel:'');
+   }
+   shapeSelect.value=appearance.pieceShape;
    for(const option of editionSelect.options){
     const entry=CARD_EDITIONS[option.value];
     const locked=!isCardEditionUnlocked(option.value);
@@ -885,7 +897,7 @@ function prepareAppearanceUI(){
     applyAppearance();
     if(game)render(); // Purely local artwork choice. Never write card edition into online game state.
   });
-  $('appearance-button').addEventListener('click',()=>{$('appearance-dialog').showModal();void refreshVerifiedCosmetics();});
+  $('appearance-button').addEventListener('click',()=>{$('appearance-dialog').showModal();void refreshVerifiedCosmetics({force:true});});
   $('appearance-close').addEventListener('click',()=>{$('appearance-dialog').close();});
   $('appearance-reset').addEventListener('click',()=>{
     appearance=saveAppearance(DEFAULT_APPEARANCE);
