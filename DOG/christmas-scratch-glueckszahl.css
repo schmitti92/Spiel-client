@@ -106,3 +106,48 @@
   font-size:clamp(7px,1.4vh,10px)!important;
  }
 }
+
+
+/* Visible purchase feedback for all DOG scratch cards. Previously server
+   failures were written below the multi-card grid and were easy to miss. */
+.scratch-action-toast:not([hidden]){
+ position:fixed!important;
+ z-index:13010!important;
+ display:flex!important;align-items:flex-start;gap:12px;
+ bottom:calc(18px + env(safe-area-inset-bottom, 0px));
+ right:16px;left:auto;
+ box-sizing:border-box;
+ width:min(480px,calc(100vw - 24px));
+ max-height:min(40dvh,220px);overflow:auto;
+ padding:14px 16px;border-radius:13px;
+ background:#451a1f;color:#fff5db;
+ border:2px solid #f2c985;
+ box-shadow:0 8px 34px #000c;
+ font:750 14px/1.4 system-ui,sans-serif;
+}
+.scratch-action-toast-message{flex:1;min-width:0;overflow-wrap:anywhere}
+.scratch-action-toast-dismiss{
+ flex:0 0 auto;min-width:28px;min-height:28px;padding:2px 5px;
+ background:#fff3d724;color:#fff1cf;
+ border:1px solid #efcf98;border-radius:7px;
+ font:900 18px system-ui,sans-serif;cursor:pointer;
+}
+#panel-scratch .scratch-card-open-error{
+ padding:9px;margin:4px 0 0;
+ background:#631d23df!important;color:#fff4d9!important;
+ border:1px solid #f6cd8e!important;border-radius:8px;
+ font:750 12px/1.35 system-ui,sans-serif;
+ overflow-wrap:anywhere;
+}
+#panel-scratch .scratch-reopen-ticket{
+ width:100%;min-height:36px;margin-top:4px;
+ border:1px solid #f2d697;border-radius:9px;
+ background:linear-gradient(#ffeab3,#caa160);
+ color:#332312;font-weight:850;cursor:pointer;
+}
+@media(max-width:760px){
+ .scratch-action-toast:not([hidden]){
+  left:12px;right:12px;bottom:calc(16px + env(safe-area-inset-bottom, 0px));
+  width:auto;padding:12px;font-size:12px;
+ }
+}
