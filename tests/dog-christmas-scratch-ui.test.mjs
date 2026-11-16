@@ -406,7 +406,7 @@ test('Glückszahl 1 lottery renders editable values instead of fixed image label
  assert.match(js,/receipt\.board\.symbolWeights/);
  assert.match(js,/receipt\.board\.coinAmounts/);
  assert.match(js,/scratch-host-lucky/);
- assert.match(js,/data\.luckyKey/);
+ assert.match(js,/dataset\.luckyKey/);
  assert.match(js,/numberOne20=\{price,hitPer1000,coinAmounts,symbolWeights\}/);
  assert.match(js,/const ticketCost=option\.id==='number_one_20'/);
  assert.match(js,/scratch-lotto-back/);
