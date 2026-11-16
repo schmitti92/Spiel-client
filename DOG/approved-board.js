@@ -5,8 +5,8 @@
  * 64 Ringfelder (0..63), je vier Ziel- und Startfelder pro Spielerfarbe.
  * Spiellogik und Feldnummerierung werden nicht verändert.
  */
-export const APPROVED_BOARD_ID='dog-approved-board-v1';
-export const APPROVED_BOARD_LAYOUT={
+export const APPROVED_BOARD_ID='dog-approved-board-v2-spaced';
+const ORIGINAL_APPROVED_BOARD_LAYOUT={
   "schemaVersion": 1,
   "preset": "dog-approved-board-v1",
   "title": "DOG · Gemeinsamer Spielplan",
@@ -416,4 +416,37 @@ export const APPROVED_BOARD_LAYOUT={
       }
     ]
   ]
+};
+
+/**
+ * Official 96 positions remain in exactly the same logical order.
+ * Expand track/goal spacing around the fixed 760×760 board centre and
+ * expand each 2×2 home cluster locally to keep it away from the frame.
+ * This affects ONLY screen geometry; cards, teams, turns and field IDs
+ * remain unchanged. Original v1 geometry is retained above for migration.
+ */
+export const DOG_BOARD_SPACING_SCALE=1.16;
+const roundPosition=n=>Math.round(n*100)/100;
+const spreadAround=(point,cx,cy,scale=DOG_BOARD_SPACING_SCALE)=>({
+  x:roundPosition(cx+(point.x-cx)*scale),
+  y:roundPosition(cy+(point.y-cy)*scale)
+});
+export function spacedDogBoardLayout(layout){
+ const center=380;
+ const homes=layout.homes.map(group=>{
+  const cx=group.reduce((sum,p)=>sum+p.x,0)/group.length;
+  const cy=group.reduce((sum,p)=>sum+p.y,0)/group.length;
+  return group.map(p=>spreadAround(p,cx,cy));
+ });
+ return {
+  ...layout,
+  track:layout.track.map(p=>spreadAround(p,center,center)),
+  goals:layout.goals.map(group=>group.map(p=>spreadAround(p,center,center))),
+  homes
+ };
+}
+export const APPROVED_BOARD_LAYOUT={
+ ...spacedDogBoardLayout(ORIGINAL_APPROVED_BOARD_LAYOUT),
+ preset:APPROVED_BOARD_ID,
+ title:'DOG · Gemeinsamer Spielplan mit Feldabstand'
 };
