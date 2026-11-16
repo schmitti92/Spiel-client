@@ -285,15 +285,15 @@ function drawBoard(){
   // The course makes a single uninterrupted 64-step circuit. Start indices are
   // 0/16/32/48; the correct corner is independent of future cosmetic themes.
   const path=TRACK_POINTS.map((p,i)=>(i===0?'M ':'L ')+coord(p)).join(' ')+' Z';
-  push('<path d="'+path+'" fill="none" stroke="#03152a" stroke-width="32" stroke-linejoin="round" stroke-linecap="round" opacity=".52"/>');
+  push('<path d="'+path+'" fill="none" stroke="#03152a" stroke-width="16" stroke-linejoin="round" stroke-linecap="round" opacity=".44"/>');
   push('<path d="'+path+'" fill="none" stroke="'+skin.route+'" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity=".55"/>');
   // All goal and reserve holes follow the draggable editor coordinates.
   for(let seat=0;seat<4;seat++){
     const c=safeColor(seat),start=boardPoint(seat*16);
     const goal=GOAL_POINTS[seat],home=HOME_POINTS[seat];
     const gps=goal.map(coord).join(' '),hps=home.map(coord).join(' ');
-    push('<polyline points="'+gps+'" fill="none" stroke="'+c+'" stroke-opacity=".23" stroke-width="39" stroke-linecap="round" stroke-linejoin="round"/>');
-    push('<polyline points="'+hps+'" fill="none" stroke="'+c+'" stroke-opacity=".15" stroke-width="37" stroke-linecap="round" stroke-linejoin="round"/>');
+    push('<polyline points="'+gps+'" fill="none" stroke="'+c+'" stroke-opacity=".23" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>');
+    push('<polyline points="'+hps+'" fill="none" stroke="'+c+'" stroke-opacity=".15" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>');
     push('<polyline points="'+gps+'" fill="none" stroke="'+c+'" stroke-opacity=".66" stroke-width="2.5" stroke-linecap="round"/>');
     push('<polyline points="'+hps+'" fill="none" stroke="'+c+'" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/>');
     // Zielbahn beginnt am farbigen Startfeld, nicht am Ringfeld davor.
@@ -303,15 +303,15 @@ function drawBoard(){
     push('<path d="M '+coord(start)+' L '+coord(home[0])+'" stroke="'+c+'" stroke-width="2.1" stroke-dasharray="3 7" opacity=".62"/>');
     for(let j=0;j<4;j++){
       const p=home[j];
-      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="16.7" fill="#041629" stroke="'+c+'" stroke-opacity=".7" stroke-width="2.4"/>');
-      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="11.4" fill="#164066" opacity=".6"/>');
+      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="17.1" fill="#041629" stroke="'+c+'" stroke-opacity=".7" stroke-width="1.5"/>');
+      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="11.7" fill="#164066" opacity=".6"/>');
     }
     // White goal holes with a prominent outline in the owner's player color.
     // Keep the approved coordinates and hit areas unchanged.
     for(let j=0;j<4;j++){
       const p=goal[j];
-      push('<circle cx="'+p.x+'" cy="'+(p.y+2.1)+'" r="18.5" fill="#061423" fill-opacity=".8" pointer-events="none"/>');
-      push('<circle class="dog-goal-hole" cx="'+p.x+'" cy="'+p.y+'" r="17.3" fill="url(#dog-hole)" stroke="'+c+'" stroke-width="3.6" pointer-events="none"/>');
+      push('<circle cx="'+p.x+'" cy="'+(p.y+2.1)+'" r="17.45" fill="#061423" fill-opacity=".78" pointer-events="none"/>');
+      push('<circle class="dog-goal-hole" cx="'+p.x+'" cy="'+p.y+'" r="17.1" fill="url(#dog-hole)" stroke="'+c+'" stroke-width="1.9" pointer-events="none"/>');
       push('<circle cx="'+(p.x-4)+'" cy="'+(p.y-5)+'" r="4.4" fill="#ffffff" fill-opacity=".66" pointer-events="none"/>');
     }
     const labelGoal=goal[2],labelHome=home[2];
@@ -325,8 +325,8 @@ function drawBoard(){
   for(let i=0;i<64;i++){
     const {x,y}=boardPoint(i),start=isStartField(i),seat=i/16|0;
     const c=safeColor(seat);
-    push('<circle cx="'+x+'" cy="'+(y+2.1)+'" r="18.7" fill="#020f22" opacity=".75"/>');
-    push('<circle cx="'+x+'" cy="'+y+'" r="'+(start?18.2:16.5)+'" fill="'+(start?c:'url(#dog-hole)')+'" stroke="'+(start?'#f5e1b7':'#143c58')+'" stroke-width="'+(start?3.5:2)+'"/>');
+    push('<circle cx="'+x+'" cy="'+(y+2.1)+'" r="17.3" fill="#020f22" opacity=".66"/>');
+    push('<circle cx="'+x+'" cy="'+y+'" r="'+(start?17.3:17.1)+'" fill="'+(start?c:'url(#dog-hole)')+'" stroke="'+(start?'#f5e1b7':'#143c58')+'" stroke-width="'+(start?1.7:1.3)+'"/>');
     push('<circle cx="'+(x-4)+'" cy="'+(y-5)+'" r="'+(start?5.5:4.4)+'" fill="#ffffff" opacity="'+(start?'.30':'.62')+'"/>');
     if(start){
       push('<circle cx="'+x+'" cy="'+y+'" r="10.4" fill="#07172b" fill-opacity=".18"/>');
@@ -348,7 +348,7 @@ function drawBoard(){
     push('<circle cx="'+p.x+'" cy="'+(p.y-7)+'" r="9.1" fill="url(#dog-pawn-'+piece.owner+')" stroke="#ffffff" stroke-opacity=".42" stroke-width="1.4"/>');
     push('<circle cx="'+(p.x-2.8)+'" cy="'+(p.y-10.8)+'" r="2.3" fill="#fff" opacity=".68"/>');
     // Transparent large target for touch and keyboard focus via the move buttons.
-    push('<circle cx="'+p.x+'" cy="'+p.y+'" r="22" fill="transparent"/>');
+    push('<circle cx="'+p.x+'" cy="'+p.y+'" r="18.3" fill="transparent"/>');
     push('</g>');
   }
   boardSvg.innerHTML=board.join('');
