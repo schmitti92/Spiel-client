@@ -1,0 +1,15 @@
+DOG WEIHNACHTSEVENT – GLÜCKSZAHL 1 LOTTERIE-GRAFIKPAKET
+
+GITHUB UPLOAD ORDNER:
+https://github.com/schmitti92/Spiel-client/upload/main/DOG/assets/scratch
+
+Alle 8 PNG-Dateien aus diesem ZIP in genau diesen Ordner hochladen und Commit changes wählen.
+Keine Unterordner mit hochladen, sondern die PNG-Dateien direkt in DOG/assets/scratch.
+
+Hauptdatei für das neue Layout: lotto-fenster-hintergrund.png
+Bereits vorhandene Losgrafik: glueckszahl-1-design.png
+Zusätzliche grafische Einzelelemente: Header- und Panel-Rahmen.
+
+WICHTIG: Zahlen, Gewinnwerte, Symbolwahrscheinlichkeiten und Lospreis dürfen nicht als Text in die Hintergrundgrafik eingebrannt werden. Sie werden dynamisch im DOG-Spiel gerendert und sind unter Rubbellose > Einstellungen > Glückszahl 1 änderbar. Die 40 Rubbelstellen basieren auf der Original-Losgrafik.
+
+Einbau: Bilder einfach hochladen, nicht als CSS- oder HTML-Dateien umbenennen.
