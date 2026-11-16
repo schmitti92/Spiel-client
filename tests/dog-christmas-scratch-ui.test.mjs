@@ -431,3 +431,23 @@ test('dynamic lottery footer masks old raster money labels and follows the saved
  assert.match(css,/background:linear-gradient\(180deg,#0b6944,#073d32/);
  assert.match(html,/id="scratch-lotto-ticket-prizes"/);
 });
+
+
+test('Glückszahl lottery rules and probabilities render without TDZ initialization errors',()=>{
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const render=js.slice(js.indexOf('function renderNumberLottery(receipt){'),
+  js.indexOf('function drawShop(){'));
+ assert.ok(render.length>1000,'lottery renderer should be present');
+ const declared=render.indexOf('const giftReplacement=');
+ const used=render.indexOf("num(giftReplacement)");
+ assert.ok(declared>=0&&used>=0&&declared<used,
+  'giftReplacement must be initialized before drawing the left prize panel');
+ assert.match(render,/left\.append\(intro,/);
+ assert.match(render,/right\.append\(/);
+ assert.match(render,/Math\.pow\(1-hit,20\)/);
+ assert.match(js,/renderNumberLottery\(result\)/);
+ const html=source('../DOG/christmas-event.html');
+ for(const id of ['scratch-lotto-left','scratch-lotto-right','scratch-lotto-header']){
+  assert.match(html,new RegExp('id="'+id+'"'));
+ }
+});
