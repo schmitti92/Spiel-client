@@ -129,6 +129,12 @@ export function initChristmasScratch(){
   ['elf','🧝 Magischer Wichtelpfad','Mittel · 500 🪙'],
   ['premium_27','🎅 Premium-Weihnachts-Rubbellos','Premium · 1.000 🪙']
  ]);
+ const STATS_VARIANT_LABELS=Object.freeze([
+  ...VARIANT_LABELS,
+  ['tic_tac_toe','🎯 DOG Tic-Tac-Toe','Spezial · 500 🪙'],
+  ['number_one_20','🔢 Glückszahl 1','Zahlenlos · 500 🪙'],
+  ['dog_jackpot_9','🐾 Finde DOG!','Jackpot · 1.000 🪙']
+ ]);
  const variantTiers=Object.freeze({simple:['gifts','snow_collect'],medium:['elf'],premium:['premium_27']});
  const percent=n=>(Number(n)/10).toLocaleString('de-DE',{maximumFractionDigits:1});
  function chanceRange(tier,key){
@@ -209,7 +215,7 @@ export function initChristmasScratch(){
    }
    target.append(row);
   };
-  for(const [id,title,tier] of VARIANT_LABELS){
+  for(const [id,title,tier] of STATS_VARIANT_LABELS){
    const value=p.byVariant?.[id]||{};
    addRow(body,title+' · '+tier,value);
   }
