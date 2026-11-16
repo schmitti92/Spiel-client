@@ -1,7 +1,7 @@
 import {
  BOARD_LAYOUT_ID,CUSTOM_BOARD_KEY,COLORS_CLASSIC,START_INDICES,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,
  makeDefaultLayout,currentBoardLayout,validateBoardLayout,saveBoardLayout,resetBoardLayout,rotatePoint
-} from './board-layout.js?v=10';
+} from './board-layout.js?v=11';
 
 const $=id=>document.getElementById(id);
 const svg=$('editor-board');
