@@ -765,8 +765,8 @@ export function initChristmasScratch(){
   ];
   const update=()=>{
    if(finished)return;
-   $('scratch-progress').textContent=instructions[Math.min(phase,2)]+' · '+uncovered+'/11';
    setScratchProgress(Math.round(uncovered/11*100));
+   $('scratch-progress').textContent=instructions[Math.min(phase,2)]+' · '+uncovered+'/11';
    for(const [i,cv] of canvases.entries()){
     const allowed=!cells[i].classList.contains('uncovered')&&
      (phase===0?i===0:phase===1?i===1:i>=2);
