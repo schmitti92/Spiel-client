@@ -1,0 +1,56 @@
+{
+  "pack": "DOG-Lobby Premium-Menübuttons",
+  "version": "2.0",
+  "authoring_reference": "letzter abgestimmter DOG-Spiellobby-Entwurf",
+  "target_path": "DOG/assets/lobby-buttons/",
+  "buttons": {
+    "brettdesigner": {
+      "label": "Brettdesigner · Level 2",
+      "file": "brettdesigner.webp",
+      "hover": "brettdesigner-hover.webp",
+      "fallback": "brettdesigner.png",
+      "width": 640,
+      "height": 214
+    },
+    "freigeschaltet": {
+      "label": "Freigeschaltet",
+      "file": "freigeschaltet.webp",
+      "hover": "freigeschaltet-hover.webp",
+      "fallback": "freigeschaltet.png",
+      "width": 640,
+      "height": 214
+    },
+    "weihnachtsdorf": {
+      "label": "Weihnachtsdorf & Gebäude",
+      "file": "weihnachtsdorf.webp",
+      "hover": "weihnachtsdorf-hover.webp",
+      "fallback": "weihnachtsdorf.png",
+      "width": 640,
+      "height": 214
+    },
+    "meta-sammelalbum": {
+      "label": "Meta-Sammelalbum",
+      "file": "meta-sammelalbum.webp",
+      "hover": "meta-sammelalbum-hover.webp",
+      "fallback": "meta-sammelalbum.png",
+      "width": 640,
+      "height": 214
+    },
+    "spielregeln": {
+      "label": "Spielregeln",
+      "file": "spielregeln.webp",
+      "hover": "spielregeln-hover.webp",
+      "fallback": "spielregeln.png",
+      "width": 640,
+      "height": 214
+    },
+    "spielstatistik": {
+      "label": "Spielstatistik",
+      "file": "spielstatistik.webp",
+      "hover": "spielstatistik-hover.webp",
+      "fallback": "spielstatistik.png",
+      "width": 640,
+      "height": 214
+    }
+  }
+}
