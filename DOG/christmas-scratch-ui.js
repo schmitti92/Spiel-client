@@ -1242,8 +1242,23 @@ export function initChristmasScratch(){
   }
   if(conf&&Array.isArray(cells)&&cells.length===conf[2]*conf[3]){
    board.style.setProperty('--scratch-cols',conf[3]);
+   if(stage.dataset.duelVersion==='8'){
+    // Force full-art coordinates, independent of the older 3×3 CSS grid.
+    for(const [name,value] of Object.entries({
+     position:'absolute',inset:'0',left:'0',top:'0',
+     width:'100%',height:'100%',display:'block',
+     'max-width':'none','max-height':'none',
+     margin:'0',padding:'0',gap:'0',
+     'grid-template-columns':'none','grid-template-rows':'none'
+    }))board.style.setProperty(name,value,'important');
+    board.append(makeDuelTile(String(result.board.multiplier)+'×',0),
+     makeDuelTile(result.board.winningSymbol,1));
+   }
    for(const [index,symbol] of cells.entries())board.append(makeField(symbol,index));
-   try{attachUnifiedCover()}
+   try{
+    if(stage.dataset.duelVersion==='8')attachDuelCovers();
+    else attachUnifiedCover();
+   }
    catch(error){
     console.error('[DOG scratch] Rubbelfläche konnte nicht aufgebaut werden:',error);
     $('scratch-progress').textContent='Die Rubbeltextur ist nicht verfügbar. Du kannst das bereits gebuchte Los über „Ergebnis jetzt aufdecken“ abschließen.';
