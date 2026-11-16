@@ -417,3 +417,17 @@ test('Glückszahl 1 lottery renders editable values instead of fixed image label
  assert.match(html,/scratch-lotto-right/);
  assert.match(html,/christmas-scratch-lotto\.css/);
 });
+
+test('dynamic lottery footer masks old raster money labels and follows the saved receipt',()=>{
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const css=source('../DOG/christmas-scratch-lotto.css');
+ const html=source('../DOG/christmas-event.html');
+ assert.match(js,/scratch-lotto-ticket-prizes/);
+ assert.match(js,/prizeStrip\.replaceChildren\(\)/);
+ assert.match(js,/num\(amounts\[0\]\)/);
+ assert.match(js,/num\(amounts\[2\]\)/);
+ assert.match(js,/giftFallbackCoins/);
+ assert.match(css,/lotto-ticket-prize-label/);
+ assert.match(css,/background:linear-gradient\(180deg,#0b6944,#073d32/);
+ assert.match(html,/id="scratch-lotto-ticket-prizes"/);
+});
