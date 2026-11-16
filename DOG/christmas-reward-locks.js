@@ -7,7 +7,7 @@
  * uploaded artwork, UI previews, URL parameters and progress sliders never
  * constitute proof of ownership.
  */
-import {BOARD_STYLES} from './appearance-registry.js?v=24';
+import {BOARD_STYLES} from './appearance-registry.js?v=25';
 import {CHRISTMAS_PAGE_BACKGROUNDS} from './christmas-background-catalog.js?v=1';
 import {CHRISTMAS_AVATARS} from './christmas-avatar-catalog.js?v=1';
 import {CHRISTMAS_NAME_FRAMES} from './christmas-nameframe-catalog.js?v=1';

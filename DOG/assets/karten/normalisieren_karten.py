@@ -28,7 +28,9 @@ def normalize(edition):
                 raise ValueError(f'Bild zu klein: {edition}/{name}.png')
             # Legacy collage crops have varying proportions; one-time resize.
             # Future editions should be created natively at 700x980.
-            card = ImageOps.exif_transpose(img).convert('RGB').resize(SIZE, Image.Resampling.LANCZOS)
+            source = ImageOps.exif_transpose(img)
+            has_alpha = 'A' in source.getbands() or 'transparency' in source.info
+            card = source.convert('RGBA' if has_alpha else 'RGB').resize(SIZE, Image.Resampling.LANCZOS)
             card.save(output / (name + '.png'), format='PNG', optimize=True)
     for name in CARDS:
         with Image.open(output / (name + '.png')) as img:
@@ -49,4 +51,9 @@ if __name__ == '__main__':
     if not editions:
         raise SystemExit('Keine Karteneditionen gefunden')
     for edition in editions:
+        if args.all:
+            folder = ROOT / edition
+            if any(not (folder / (name + '.png')).is_file() for name in CARDS):
+                print(f'{edition}: noch nicht alle 15 PNGs vorhanden; übersprungen')
+                continue
         normalize(edition)

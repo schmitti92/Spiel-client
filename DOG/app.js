@@ -1,4 +1,5 @@
-import {CARD_EDITIONS,CARD_EDITION,isCardEditionUnlocked,loadCardEdition,saveCardEdition,cardBackImage,cardMarkup,cardVisual} from './card-visuals.js?v=10';
+import {refreshVerifiedCosmetics} from './verified-cosmetics.js?v=2';
+import {CARD_EDITIONS,CARD_EDITION,isCardEditionUnlocked,loadCardEdition,saveCardEdition,cardBackBackground,cardMarkup,cardVisual} from './card-visuals.js?v=11';
 import {enableHandTouchGestures} from './hand-gestures.js?v=2';
 import {mountDogEmojiGame,showDogEmoji,showDogEmojiError} from './emoji-game.js?v=4';
 import {boardGestureTarget} from './board-gesture-math.js?v=1';
@@ -8,7 +9,7 @@ import {createDogVisualFeedback} from './ui-animations.js?v=2';
 import {summarizeDogVictory} from './victory-summary.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
-import {DEFAULT_APPEARANCE,BOARD_STYLES,isBoardUnlocked,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=24';
+import {DEFAULT_APPEARANCE,BOARD_STYLES,isBoardUnlocked,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=25';
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=10';
 
 const $=id=>document.getElementById(id);
@@ -427,7 +428,7 @@ function renderHand(){
   $('move-help').textContent=jokerAs!==null?'Joker als '+(jokerAs==='swap'?'Tauschkarte':jokerAs)+' gewählt. Figur und Ziel selbst antippen.':game.phase==='exchange'?'Wähle die Karte für deinen Partner.':game.phase==='seven'?'Figur und Zielfeld selbst wählen. Noch '+(7-game.seven.spent)+' Schritte.':selectedCard===null?'Wähle eine Karte.':'Figur und Zielfeld selbst antippen – ohne Zugvorschläge.';
 }
 function renderCardPiles(){
- $('dog-deck-art').style.backgroundImage='url("'+cardBackImage()+'")';
+ $('dog-deck-art').style.backgroundImage=cardBackBackground();
  const deck=Array.isArray(game.deck)?game.deck:null;
  const discard=Array.isArray(game.discard)?game.discard:null;
  $('dog-deck-count').textContent=deck?deck.length+' Karten':'Verdeckt';
@@ -436,9 +437,10 @@ function renderCardPiles(){
  // the viewer's own cards. Never infer it from another player's hidden hand.
  const last=game.lastPlayedCard||discard?.at(-1)||null;
  const discardArt=$('dog-discard-art');
- const art=last?cardVisual(last.type).image:null;
+ const artwork=last?cardVisual(last.type):null;
+ const art=artwork?.image||null;
  discardArt.classList.toggle('has-card',!!art);
- discardArt.style.backgroundImage=art?'url("'+art+'")':'';
+ discardArt.style.backgroundImage=art?'url("'+art+'")'+(artwork.fallbackImage?',url("'+artwork.fallbackImage+'")':''):'';
  discardArt.textContent=art?'':last?cardsLabel(last.type):'—';
  discardArt.title=last?'Zuletzt gespielt: '+last.type+(Number.isInteger(last.seat)?' · '+(game.players?.[last.seat]?.name||'Spieler'):''):'Noch keine Karte gespielt';
 }
@@ -768,7 +770,10 @@ function applyAppearance(){
   const edition=loadCardEdition();
   const backPreview=$('appearance-preview-back');
   backPreview.textContent='';
-  backPreview.style.background='url("'+cardBackImage(edition)+'") center / contain no-repeat';
+  backPreview.style.backgroundImage=cardBackBackground(edition);
+  backPreview.style.backgroundPosition='center';
+  backPreview.style.backgroundSize='contain';
+  backPreview.style.backgroundRepeat='no-repeat';
   $('appearance-preview-face').innerHTML=cardMarkup('7',{tag:'div'});
   $('appearance-card-edition').value=edition;
   for(const field of ['board','boardFrame','sidebar','pieces','cards','hudTone']){
@@ -844,11 +849,23 @@ function prepareAppearanceUI(){
   for(const [id,entry] of Object.entries(CARD_EDITIONS)){
     const option=document.createElement('option');
     const locked=!isCardEditionUnlocked(id);
-    option.value=id;option.textContent=entry.label+(locked?' · 🔒 Weihnachtsevent':'');
+    option.value=id;option.textContent=entry.label+(locked?(entry.minPlayerLevel?' · 🔒 Level '+entry.minPlayerLevel:' · 🔒 Weihnachtsevent'):'');
     option.disabled=locked;
     editionSelect.appendChild(option);
   }
   editionSelect.value=loadCardEdition();
+  // Authenticated level data arrives asynchronously. Recheck without rebuilding
+  // the game or altering any server-side online state.
+  window.addEventListener('dog-cosmetics-verified',()=>{
+   for(const option of editionSelect.options){
+    const entry=CARD_EDITIONS[option.value];
+    const locked=!isCardEditionUnlocked(option.value);
+    option.disabled=locked;
+    option.textContent=entry.label+(locked?(entry.minPlayerLevel?' · 🔒 Level '+entry.minPlayerLevel:' · 🔒 Weihnachtsevent'):'');
+   }
+   editionSelect.value=loadCardEdition();
+   applyAppearance();
+  });
   editionSelect.addEventListener('change',()=>{
     if(!isCardEditionUnlocked(editionSelect.value)){
       editionSelect.value=loadCardEdition();
@@ -858,7 +875,7 @@ function prepareAppearanceUI(){
     applyAppearance();
     if(game)render(); // Purely local artwork choice. Never write card edition into online game state.
   });
-  $('appearance-button').addEventListener('click',()=>{$('appearance-dialog').showModal();});
+  $('appearance-button').addEventListener('click',()=>{$('appearance-dialog').showModal();void refreshVerifiedCosmetics();});
   $('appearance-close').addEventListener('click',()=>{$('appearance-dialog').close();});
   $('appearance-reset').addEventListener('click',()=>{
     appearance=saveAppearance(DEFAULT_APPEARANCE);

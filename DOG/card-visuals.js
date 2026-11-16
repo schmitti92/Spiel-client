@@ -1,4 +1,4 @@
-import {isVerifiedCosmeticUnlocked} from './verified-cosmetics.js?v=1';
+import {isVerifiedCosmeticUnlocked,isVerifiedDogPlayerLevelAtLeast} from './verified-cosmetics.js?v=2';
 /** DOG card visuals only. Add future editions here without changing rules, card IDs or online state. */
 export const CARD_EDITION='kartendesign-01';
 export const CARD_EDITION_STORAGE_KEY='dog:card-edition:v1';
@@ -31,13 +31,18 @@ export const CARD_EDITIONS=Object.freeze({
  }),
  'kartendesign-05':Object.freeze({
   label:'🎅 Sankt Nikolaus · Rot & Gold',
-  base:'./assets/karten/kartendesign-05/vektoren/',
-  width:700,height:980,extension:'svg'
+  base:'./assets/karten/kartendesign-05/normiert/',
+  width:700,height:980,extension:'png',minPlayerLevel:3,
+  fallbackBase:'./assets/karten/kartendesign-05/vektoren/',fallbackExtension:'svg'
  })
 });
 /** A registered upload is a preview, not proof of event ownership.
  * Future activation requires an authenticated, per-user Render entitlement. */
-export const isCardEditionUnlocked=id=>Boolean(Object.hasOwn(CARD_EDITIONS,id)&&(!CARD_EDITIONS[id].unlockId||isVerifiedCosmeticUnlocked(CARD_EDITIONS[id].unlockId)));
+export const isCardEditionUnlocked=id=>{
+ const entry=CARD_EDITIONS[id];
+ return Boolean(entry&&(!entry.unlockId||isVerifiedCosmeticUnlocked(entry.unlockId))&&
+  (!entry.minPlayerLevel||isVerifiedDogPlayerLevelAtLeast(entry.minPlayerLevel)));
+};
 
 export const CARD_FILE_NAMES=Object.freeze({
  '1/11':'1-11','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8',
@@ -57,6 +62,12 @@ export function saveCardEdition(id,storage=typeof localStorage==='undefined'?nul
 export function cardBackImage(edition=loadCardEdition()){
  const item=CARD_EDITIONS[isCardEditionUnlocked(edition)?edition:CARD_EDITION];
  return item.base+'rueckseite.'+(item.extension||'png');
+}
+/** CSS image layers: uploaded premium PNG on top, original SVG beneath as fallback. */
+export function cardBackBackground(edition=loadCardEdition()){
+ const item=CARD_EDITIONS[isCardEditionUnlocked(edition)?edition:CARD_EDITION];
+ const main='url("'+item.base+'rueckseite.'+(item.extension||'png')+'")';
+ return item.fallbackBase?main+', url("'+item.fallbackBase+'rueckseite.'+(item.fallbackExtension||'svg')+'")':main;
 }
 export const CARD_ASSET_BASE=CARD_EDITIONS[CARD_EDITION].base;
 export const CARD_ASSETS=Object.freeze(Object.fromEntries(Object.entries(CARD_FILE_NAMES).map(([type,file])=>[type,CARD_ASSET_BASE+file+'.png'])));
@@ -81,13 +92,17 @@ export function cardVisual(type,edition=loadCardEdition()){
  const item=CARD_VISUALS[type]||{kind:'number',symbol:'🐾',caption:'KARTE'};
  const selected=isCardEditionUnlocked(edition)?edition:CARD_EDITION;
  const file=CARD_FILE_NAMES[type];
- return {...item,edition:selected,image:file?CARD_EDITIONS[selected].base+file+'.'+(CARD_EDITIONS[selected].extension||'png'):null};
+ const entry=CARD_EDITIONS[selected];
+ return {...item,edition:selected,
+  image:file?entry.base+file+'.'+(entry.extension||'png'):null,
+  fallbackImage:file&&entry.fallbackBase?entry.fallbackBase+file+'.'+(entry.fallbackExtension||'svg'):null};
 }
 export function cardMarkup(type,{tag='button',selected=false,extraClass='',attrs='',footer=null}={}){
  const c=cardVisual(type);
  const value=type==='swap'?'⇄':type==='joker'?'★':type;
  const safe=x=>String(x).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
- const art=c.image?'<img class="dog-card-art" src="'+safe(c.image)+'" alt="" loading="eager" onload="this.parentNode.classList.add(&quot;has-dog-art&quot;)" onerror="this.remove()">':'';
+ const fallback=c.fallbackImage?' data-fallback="'+safe(c.fallbackImage)+'"':'';
+ const art=c.image?'<img class="dog-card-art" src="'+safe(c.image)+'"'+fallback+' alt="" loading="eager" onload="this.parentNode.classList.add(&quot;has-dog-art&quot;)" onerror="if(this.dataset.fallback){const path=this.dataset.fallback;delete this.dataset.fallback;this.src=path;}else this.remove()">':'';
  const inner=art+'<span class="dog-card-top"><span>'+safe(value)+'</span><span>✦</span></span><span class="dog-card-main"><span class="dog-card-value">'+safe(value)+'</span><span class="dog-card-symbol">'+safe(c.symbol)+'</span></span><span class="dog-card-footer">'+safe(footer||c.caption)+'</span>';
  return '<'+tag+' class="playing-card dog-designed '+(selected?'picked ':'')+safe(extraClass)+'" data-card-kind="'+safe(c.kind)+'" data-card-edition="'+safe(c.edition)+'" '+attrs+'>'+inner+'</'+tag+'>';
 }

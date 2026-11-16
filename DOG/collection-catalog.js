@@ -2,8 +2,8 @@
  * Registry entries are available cosmetic choices, NOT proof of event ownership.
  * Only available, already implemented items appear in the shipped collection.
  */
-import {BOARD_STYLES,isBoardUnlocked,SCENE_STYLES,PIECE_STYLES,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,HUD_TONES,HUD_LAYOUTS} from './appearance-registry.js?v=24';
-import {CARD_EDITION,CARD_EDITIONS,cardVisual,isCardEditionUnlocked} from './card-visuals.js?v=10';
+import {BOARD_STYLES,isBoardUnlocked,SCENE_STYLES,PIECE_STYLES,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,HUD_TONES,HUD_LAYOUTS} from './appearance-registry.js?v=25';
+import {CARD_EDITION,CARD_EDITIONS,cardVisual,isCardEditionUnlocked} from './card-visuals.js?v=11';
 import {DOG_EMOJIS,DOG_EMOJI_STARTERS,DOG_CHRISTMAS_EMOJIS} from './dog-emojis.js?v=3';
 import {CHRISTMAS_AVATARS} from './christmas-avatar-catalog.js?v=1';
 import {CHRISTMAS_NAME_FRAMES} from './christmas-nameframe-catalog.js?v=1';
@@ -57,8 +57,10 @@ const BASE_COLLECTION_CATEGORIES=[
   ...PUBLISHED_CARD_STYLE_IDS.map(id=>{const t=CARD_STYLES[id];return avail(id,t.label,{kind:'appearance',field:'cards',cardEdition:CARD_EDITION,image:cardVisual('9',CARD_EDITION).image,description:'Fertiges Kartendesign mit allen 14 Kartenmotiven und eigener Rückseite. Die Spielregeln bleiben unverändert.',icon:t.emblem,artTone:'gold'});}),
   ...Object.entries(CARD_EDITIONS).filter(([id])=>id!==CARD_EDITION).map(([id,entry])=>avail(id,entry.label,{
    kind:'cardEdition',cardEdition:id,status:isCardEditionUnlocked(id)?'available':'planned',
+   minPlayerLevel:entry.minPlayerLevel||0,
    unlockId:entry.unlockId,image:entry.base+'9.'+(entry.extension||'png'),
-   description:id==='kartendesign-05'?'🎅 Nikolaus-Edition mit roten, goldenen, winterlichen Vektorkarten. Transparent abgerundete Ecken, 14 Kartenmotive und Rückseite. Direkt auswählbar; reine Optik.':id==='kartendesign-04'?'Zusätzliche Edition aus transparentem Astralglas. Mit allen Kartenmotiven und eigener Rückseite. Direkt auswählbar; Spielregeln bleiben unverändert.':'🎄 Weihnachtsedition mit allen 14 Kartenarten und eigener Rückseite. Noch gesperrt – später als Eventbelohnung freischaltbar. Nur das Aussehen der Karten ändert sich.',
+   fallbackImage:entry.fallbackBase?entry.fallbackBase+'9.'+(entry.fallbackExtension||'svg'):null,
+   description:id==='kartendesign-05'?'🎅 Nikolaus Deluxe – besondere Level-3-Belohnung ab 250 EP. Mit 14 festlichen Kartenmotiven und eigener Rückseite; keine Änderung der Spielregeln.':id==='kartendesign-04'?'Zusätzliche Edition aus transparentem Astralglas. Mit allen Kartenmotiven und eigener Rückseite. Direkt auswählbar; Spielregeln bleiben unverändert.':'🎄 Weihnachtsedition mit allen 14 Kartenarten und eigener Rückseite. Noch gesperrt – später als Eventbelohnung freischaltbar. Nur das Aussehen der Karten ändert sich.',
    icon:id==='kartendesign-02'?'❄️':id==='kartendesign-04'?'✨':id==='kartendesign-05'?'🎅':'🎄',artTone:'gold'
   }))
  ]},

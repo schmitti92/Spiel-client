@@ -1,4 +1,4 @@
-import {isVerifiedCosmeticUnlocked} from './verified-cosmetics.js?v=1';
+import {isVerifiedCosmeticUnlocked} from './verified-cosmetics.js?v=2';
 /**
  * DOG presentation/content registry.
  *

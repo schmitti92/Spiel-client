@@ -1,11 +1,11 @@
 import {applyMotionMode,loadMotionMode} from './motion-settings.js';
 applyMotionMode(loadMotionMode());
-import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory} from './collection-catalog.js?v=18';
-import {loadAppearance,saveAppearance} from './appearance-registry.js?v=24';
+import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory} from './collection-catalog.js?v=19';
+import {loadAppearance,saveAppearance} from './appearance-registry.js?v=25';
 import {loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=3';
 import {isChristmasRewardLocked} from './christmas-reward-locks.js?v=4';
-import {isVerifiedCosmeticUnlocked,refreshVerifiedCosmetics} from './verified-cosmetics.js?v=1';
-import {CARD_EDITION,loadCardEdition,saveCardEdition,isCardEditionUnlocked} from './card-visuals.js?v=10';
+import {isVerifiedCosmeticUnlocked,isVerifiedDogPlayerLevelAtLeast,refreshVerifiedCosmetics} from './verified-cosmetics.js?v=2';
+import {CARD_EDITION,loadCardEdition,saveCardEdition,isCardEditionUnlocked} from './card-visuals.js?v=11';
 // The collection never grants event rewards. Cosmetic choices persist locally;
 // only an explicit avatar update in an active room uses the existing DOG API.
 const $=id=>document.getElementById(id),qs=new URLSearchParams(location.search),root=new URL('../',location.href);
@@ -27,6 +27,7 @@ function notify(message){const box=$('collection-toast');box.textContent=message
 const avatar=()=>local?(window.DogAvatars?.localAvatar?.(seat)??seat):(window.DogAvatars?.onlineAvatar?.()??0);
 const available=item=>Boolean(item&&(
  item.unlockId?isVerifiedCosmeticUnlocked(item.unlockId):
+ item.minPlayerLevel?isVerifiedDogPlayerLevelAtLeast(item.minPlayerLevel):
  item.status==='available'&&!isChristmasRewardLocked(item)
 ));
 // Secret Rubbellos/Event prizes are shown only after server-verified collection.
@@ -212,7 +213,7 @@ function drawDetails(){
    el('p','detail-description',item.unlockId?'🎁 Gesammelt und für dein Spielerprofil freigeschaltet.':item.description||'DOG-Design'));
  if(item.kind==='nameFrame')root.append(el('small','nameframe-preview-note',locked?'🎄 Noch nicht freigeschaltet.':'✅ Gesammelt! Das Ausrüsten als Namensrahmen folgt.'));
  if(item.kind==='activeIcon')root.append(el('small','activeicon-preview-note',locked?'🎄 Noch nicht freigeschaltet.':'✅ Gesammelt! Das Ausrüsten als Aktivsymbol folgt.'));
- if(item.kind==='cardEdition')root.append(el('small','detail-fine',locked?'🎄 Erst als Eventgewinn erhältlich.':'✅ Kartensatz freigeschaltet: 14 Motive und Rückseite.'));
+ if(item.kind==='cardEdition')root.append(el('small','detail-fine',locked?(item.minPlayerLevel?'🔒 Freischaltung ab Spielerlevel '+item.minPlayerLevel+'.':'🎄 Erst als Eventgewinn erhältlich.'):'✅ Kartensatz freigeschaltet: 14 Motive und Rückseite.'));
  if(item.kind==='avatar'&&local&&!locked){
   const label=el('label','detail-picker','Spielerplatz'),select=el('select');
   ['Rot','Blau','Grün','Gelb'].forEach((name,i)=>{const option=el('option','','Spieler '+(i+1)+' · '+name);option.value=String(i);option.selected=i===seat;select.append(option);});
@@ -226,7 +227,7 @@ function drawDetails(){
    select.onchange=()=>{slot=Number(select.value)||0;};label.append(select);root.append(label);
   }
  }
- root.append(btn,el('small','detail-fine',locked?'Vorschau: Diese Belohnung ist noch nicht im Spiel freischaltbar.':
+ root.append(btn,el('small','detail-fine',locked?(item.minPlayerLevel?'Ab DOG-Spielerlevel '+item.minPlayerLevel+' automatisch freigeschaltet.':'Vorschau: Diese Belohnung ist noch nicht im Spiel freischaltbar.'):
   item.kind==='emoji'?'Emoji-Schnelltasten werden lokal nach Spielerprofil gespeichert.':
   item.kind==='avatar'?'Das Profilbild wird lokal und im aktiven DOG-Raum nach Möglichkeit synchronisiert.':
   item.kind==='default'?'Dieser Standardinhalt ist ohne Freischaltung vorhanden.':

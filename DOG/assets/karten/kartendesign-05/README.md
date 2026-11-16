@@ -1,9 +1,14 @@
-# DOG Kartendesign 05 – Sankt Nikolaus 🎅
+# DOG Kartendesign 05 – 🎅 Nikolaus Deluxe (Spielerlevel 3)
 
-15 originale SVG-Vektorkarten in **700 × 980 px** (5:7) mit **echter Transparenz außerhalb der gerundeten Kartenecken**. Rot-goldener Bischofsstil, Schnee, Stechpalmen und der heilige Nikolaus mit Mitra und Bischofsstab; keine bestehenden Kartengrafiken überschrieben.
+**Upload:** Die 15 fertigen PNG-Karten direkt in **diesen Ordner** hochladen:
+https://github.com/schmitti92/Spiel-client/upload/main/DOG/assets/karten/kartendesign-05
 
-Enthält: 1-11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, tausch, joker und rueckseite.
+Dateinamen exakt: `1-11.png`, `2.png`, `3.png`, `4.png`, `5.png`, `6.png`, `7.png`, `8.png`, `9.png`, `10.png`, `12.png`, `13.png`, `tausch.png`, `joker.png`, `rueckseite.png`.
 
-Funktionen korrekt: 1/11 und 13 sind Startkarten; 12 ist eine normale Zahlenkarte; 4 ermöglicht rückwärts; 7 ist teilbar; Tausch und Joker sind gesondert markiert. Rein visuelle Änderung, keine Anpassung der Spiellogik oder des Render-Servers.
+Alle Karten: **700 × 980 Pixel (5:7)**, PNG mit transparenten Ecken. Wenn eine Karte fehlt, wird die Normalisierung zunächst übersprungen, statt den GitHub-Workflow scheitern zu lassen. Sobald alle 15 vorliegen, erzeugt der bestehende GitHub-Workflow `normiert/*.png`. Dabei wird der Alpha-Kanal erhalten.
 
-Vorschau: `vorschau.html`, lokal oder im GitHub-Pages-Frontend. SVG kann bei Bedarf als PNG (700×980, RGBA) exportiert werden.
+Während PNGs noch fehlen, zeigt DOG für diese Edition die bisherigen Illustrationen aus `vektoren/*.svg` als Fallback an. Die Originaldateien bleiben erhalten.
+
+**Freischaltung:** ab persönlichem DOG-Spielerlevel **3** (250 Erfahrungspunkte). Das Level wird ausschließlich aus echten abgeschlossenen DOG-Onlinepartien durch den angemeldeten Render-Server ermittelt. Niemand kann das Deck durch Ändern des lokalen Speichers oder der UI freigeben.
+
+Die Belohnung verändert nur die Optik – keine Spielregeln oder Serverzustände.
