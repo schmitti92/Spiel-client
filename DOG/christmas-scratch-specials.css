@@ -1,0 +1,209 @@
+/* DOG winter scratch extension: Glückszahl 1 (20 × 2), Finde DOG (3 × 3).
+ * Every visual payout originates in a signed Render receipt. No text beneath
+ * the silver coating changes the recorded lottery result.
+ * Both full tickets must remain visible without a second scroll container.
+ */
+#panel-scratch .scratch-tier.scratch-variant-number20,
+#panel-scratch .scratch-tier.scratch-variant-dogjackpot{
+ border:2px solid #e6c17b!important;
+ color:#fdf0d2;
+ background-image:
+   linear-gradient(140deg,#3d1431da,#173c3cbd 55%,#0d1b32e3),
+   url("./assets/lichtertal-scratch-winter/17_winternacht_hintergrund.png")!important;
+ background-size:cover!important;background-position:center!important;
+ box-shadow:inset 0 0 0 1px #f6e3ae8c,0 10px 25px #0007!important;
+}
+#panel-scratch .scratch-variant-number20{--ticket-text:#f5dc9b}
+#panel-scratch .scratch-variant-dogjackpot{--ticket-text:#fff0c6}
+#panel-scratch .scratch-variant-number20 .scratch-icon,
+#panel-scratch .scratch-variant-dogjackpot .scratch-icon{
+ display:grid;place-items:center;flex:0 0 45px;width:45px;height:45px;
+ border:1px solid #ffe2aa;border-radius:9px;
+ background:linear-gradient(135deg,#fff3c5,#bd8133);color:#441b28;
+ text-shadow:none;font-size:27px!important;
+}
+#panel-scratch .scratch-variant-dogjackpot .scratch-icon{
+ background:linear-gradient(135deg,#d8f4d0,#77ac75);
+}
+#panel-scratch .scratch-variant-number20 .scratch-buy,
+#panel-scratch .scratch-variant-dogjackpot .scratch-buy{
+ background:linear-gradient(180deg,#fae3a4,#b98239)!important;
+ color:#251b14!important;
+}
+/* New cards share the standard viewport-fitting scratch modal. */
+.scratch-stage[data-variant="number_one_20"],
+.scratch-stage[data-variant="dog_jackpot_9"]{
+ background:
+  radial-gradient(circle at 80% 8%,#ffc96e37,transparent 38%),
+  linear-gradient(130deg,#61192d,#0b4035 55%,#082a3c)!important;
+ border:2px solid #dcb365!important;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-reveal,
+.scratch-stage[data-variant="dog_jackpot_9"] #scratch-reveal{
+ border:none;background:transparent;box-shadow:none;overflow:hidden!important;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-card-art,
+.scratch-stage[data-variant="dog_jackpot_9"] #scratch-card-art{
+ display:block!important;position:relative!important;isolation:isolate;
+ width:auto!important;height:100%!important;max-width:100%;max-height:100%;
+ aspect-ratio:3/4!important;overflow:hidden;border-radius:14px;
+ border:2px solid #f0c57f;box-sizing:border-box;
+ background:
+   linear-gradient(115deg,#00231a9c,#14514192),
+   url("./assets/lichtertal-scratch-winter/17_winternacht_hintergrund.png") center/cover,
+   #063829;
+ box-shadow:inset 0 0 0 3px #ffe4a95b,0 7px 24px #001315aa;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-card-art::before,
+.scratch-stage[data-variant="dog_jackpot_9"] #scratch-card-art::before{
+ position:absolute;display:grid;place-items:center;text-align:center;
+ left:5%;width:90%;top:3%;height:11%;z-index:1;
+ border:2px solid #efc87b;border-radius:12px;
+ background:linear-gradient(135deg,#982a38,#5f1527);
+ box-shadow:0 4px 14px #001b19c9;
+ font:900 clamp(13px,2.6vh,24px) Georgia,serif;
+ color:#ffe6a9;text-shadow:0 2px 3px #371116;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-card-art::before{content:"GLÜCKSZAHL 1"}
+.scratch-stage[data-variant="dog_jackpot_9"] #scratch-card-art::before{content:"FINDE DOG!"}
+.scratch-stage[data-variant="number_one_20"] #scratch-card-art::after,
+.scratch-stage[data-variant="dog_jackpot_9"] #scratch-card-art::after{
+ position:absolute;display:grid;place-items:center;text-align:center;
+ left:7%;width:86%;z-index:1;
+ font:900 clamp(9px,1.6vh,14px) system-ui,sans-serif;
+ color:#392119;letter-spacing:.04em;
+ background:linear-gradient(#f8ebbf,#d9aa69);
+ border:1px solid #fff3cb;border-radius:8px;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-card-art::after{
+ content:"GEWINN                                  ZAHL";
+ top:16%;height:5%;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] #scratch-card-art::after{
+ content:"1 × DOG = ALLE 8 PREISE";
+ top:89%;height:8%;
+}
+/* Twenty tightly spaced pairs: prize left is permanently uncovered; the
+ * right-number column alone has a continuous silver scratch layer. */
+.scratch-stage[data-variant="number_one_20"] #scratch-board{
+ position:absolute!important;top:22%;left:9%;width:82%;height:74%;
+ max-width:none!important;margin:0!important;padding:0!important;
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+ grid-template-rows:repeat(20,minmax(0,1fr));gap:1px 5px;
+ box-sizing:border-box;background:#06231f70;
+}
+.scratch-stage[data-variant="number_one_20"] .scratch-field{
+ width:100%;height:100%;min-width:0;min-height:0;aspect-ratio:auto!important;
+ display:flex;gap:4px;align-items:center;justify-content:center;
+ border:1px solid #a97b35;border-radius:3px;
+ background:linear-gradient(130deg,#f6e9c8,#d9bc81);
+ box-shadow:none;margin:0;padding:0;
+}
+.scratch-stage[data-variant="number_one_20"] .scratch-number-prize{
+ background:linear-gradient(90deg,#1b5841,#0a3b32);
+ border-color:#cfab64;color:#fff1c6;
+}
+.scratch-stage[data-variant="number_one_20"] .scratch-number-target{
+ background:linear-gradient(90deg,#f8e8b6,#d8b66a);
+}
+.scratch-stage[data-variant="number_one_20"] .scratch-field .scratch-cell-symbol{
+ font-size:clamp(11px,2.5vh,18px)!important;line-height:1!important;
+ text-shadow:0 1px 2px #0004;
+}
+.scratch-stage[data-variant="number_one_20"] .scratch-number-target .scratch-cell-symbol{
+ font-size:clamp(10px,2.4vh,18px)!important;color:#2f3028;text-shadow:none;
+}
+.scratch-stage[data-variant="number_one_20"] .scratch-number-payout{
+ font:850 clamp(9px,1.9vh,13px) system-ui,sans-serif;
+ color:#fff0bf;white-space:nowrap;
+}
+.scratch-stage[data-variant="number_one_20"] .scratch-field.scratch-winning-cell{
+ outline:1px solid #ffe45e;outline-offset:-1px;border-color:#ffdf6b;
+ background:linear-gradient(90deg,#f4c84c,#fff1ab);
+ box-shadow:inset 0 0 7px #ffdc55a6!important;
+}
+.scratch-stage[data-variant="number_one_20"] .scratch-number-prize.scratch-winning-cell,
+.scratch-stage[data-variant="number_one_20"] .scratch-number-prize.scratch-winning-cell .scratch-number-payout{
+ color:#342616;
+}
+/* The board overlay is still one canvas; only right-hand boxes are coated. */
+.scratch-stage[data-variant="number_one_20"] .scratch-unified-cover{
+ position:absolute;inset:0;width:100%;height:100%;z-index:4;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] #scratch-board{
+ position:absolute!important;top:22%;left:9%;width:82%;height:62%;
+ max-width:none!important;margin:0!important;padding:0!important;
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ grid-template-rows:repeat(3,minmax(0,1fr));gap:2.5%;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-field{
+ display:flex;flex-direction:column;gap:0;justify-content:center;align-items:center;
+ aspect-ratio:auto!important;min-width:0;min-height:0;
+ border:2px solid #dab970;border-radius:9px;
+ background:linear-gradient(150deg,#fff3d4,#e8c68f);
+ box-shadow:inset 0 0 10px #f9e5ad5f,0 2px 7px #001a1588;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-cell-symbol{
+ font-size:clamp(18px,4vh,42px);line-height:1.05;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-dog-payout{
+ font:900 clamp(10px,1.6vh,14px) system-ui,sans-serif;
+ color:#65431a;white-space:nowrap;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-dog-trigger{
+ background:linear-gradient(140deg,#fbeaa7,#a77727);
+ border:2px solid #ffe979;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-dog-trigger .scratch-cell-symbol{
+ font:bold clamp(14px,3vh,24px) Georgia,serif!important;
+ color:#4e1b16;text-shadow:0 1px 1px #fff6c6;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-field.scratch-winning-cell{
+ border:2px solid #ffe461!important;
+ background:linear-gradient(145deg,#fff1ab,#dfaa3e)!important;
+ box-shadow:0 0 13px #ffdf64bb,inset 0 0 12px #ffe9a38e!important;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-field.scratch-dog-winner{
+ box-shadow:0 0 0 2px #fdf0b3,0 0 20px #ffc658dd!important;
+}
+.scratch-stage[data-variant="number_one_20"] .scratch-prize-sidebar,
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-prize-sidebar{
+ background:linear-gradient(160deg,#0a3e31,#062c30)!important;
+ border-color:#dfbd7c!important;
+}
+.scratch-special-rule-note{
+ padding:6px;border:1px solid #e4c17b7a;border-radius:7px;
+ font-size:10px;line-height:1.25;color:#fff0d1;
+}
+/* Limit prize-card density when all eight DOG symbols pay out. The full
+ * prize total is always visible and each awarded symbol remains highlighted. */
+.scratch-stage[data-variant="dog_jackpot_9"].is-revealed .scratch-current-grid{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:3px!important;max-height:100%;overflow:hidden!important;
+}
+.scratch-stage[data-variant="dog_jackpot_9"].is-revealed .scratch-current-item{
+ padding:3px!important;min-width:0!important;
+}
+.scratch-stage[data-variant="dog_jackpot_9"].is-revealed .scratch-current-value{
+ font-size:10px!important;line-height:1.1!important;
+}
+@media(max-width:520px){
+ #panel-scratch .scratch-variant-number20 .scratch-icon,
+ #panel-scratch .scratch-variant-dogjackpot .scratch-icon{
+  width:29px;height:29px;flex-basis:29px;font-size:17px!important;
+ }
+ .scratch-stage[data-variant="number_one_20"] .scratch-number-payout{
+  font-size:clamp(8px,1.55vh,11px);
+ }
+ .scratch-stage[data-variant="number_one_20"] #scratch-card-art::after{
+  font-size:9px;letter-spacing:0;
+ }
+ .scratch-stage[data-variant="number_one_20"] #scratch-board{gap:0px 3px}
+ .scratch-stage[data-variant="number_one_20"] .scratch-number-prize .scratch-cell-symbol{
+  font-size:12px!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ .scratch-stage[data-variant="number_one_20"] .scratch-field.scratch-winning-cell,
+ .scratch-stage[data-variant="dog_jackpot_9"] .scratch-field.scratch-winning-cell{animation:none!important}
+}
