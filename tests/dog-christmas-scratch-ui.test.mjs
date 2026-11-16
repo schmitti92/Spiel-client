@@ -366,8 +366,12 @@ test('20 by 2 number scratch hides BOTH prize symbols and numbers in 40 separate
  assert.match(js,/Verdecktes Gewinnsymbol in Reihe/);
  assert.match(js,/Verdeckte Zahl in Reihe/);
  assert.match(art,/glueckszahl-1-design\.png/);
- assert.match(art,/grid-template-rows:repeat\(20,minmax\(0,1fr\)\)/);
- assert.match(art,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+ // The old 20x2 grid covered only 50.8% of the artwork, leaving the last
+ // two printed rows without scratch overlays. Full-image positioning is required.
+ assert.match(art,/width:100%!important;height:100%!important/);
+ assert.match(art,/grid-template-columns:none!important/);
+ assert.doesNotMatch(art,/width:50\.8%!important/);
+ assert.doesNotMatch(art,/left:24\.7%!important/);
  assert.match(art,/\.scratch-stage\[data-variant="number_one_20"\]/);
  assert.match(html,/christmas-scratch-glueckszahl\.css\?v=\d+/);
 });
@@ -480,4 +484,24 @@ test('Glückszahl native artwork uses 40 pixel-aligned independent hitboxes inst
  assert.match(lottoCss,/width:var\(--lucky-width\)!important/);
  assert.match(lottoCss,/height:var\(--lucky-height\)!important/);
  assert.match(js,/const coated=cells;/);
+});
+
+
+test('Lucky Number uses full-art scratch hitboxes even when older CSS is cached',()=>{
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const specials=source('../DOG/christmas-scratch-specials.css');
+ const glueck=source('../DOG/christmas-scratch-glueckszahl.css');
+ const lotto=source('../DOG/christmas-scratch-lotto.css');
+ const html=source('../DOG/christmas-event.html');
+ assert.match(js,/cell\.style\.setProperty\('position','absolute','important'\)/);
+ assert.match(js,/cell\.style\.setProperty\(key,value,'important'\)/);
+ assert.match(js,/board\.style\.setProperty\(key,value,'important'\)/);
+ assert.match(js,/width:'100%',height:'100%'/);
+ assert.match(js,/LUCKY_ROW_TOPS=Object\.freeze/);
+ for(const css of [specials,glueck,lotto]){
+  assert.match(css,/grid-template-columns:none!important/);
+  assert.doesNotMatch(css,/left:24\.7%!important/);
+  assert.doesNotMatch(css,/width:50\.8%!important/);
+ }
+ assert.match(html,/christmas-scratch-lotto\.css\?v=\d+/);
 });
