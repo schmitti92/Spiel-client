@@ -856,7 +856,10 @@ export function initChristmasScratch(){
    }
    return cell;
   }
-  if(stage.dataset.variant==='dog_jackpot_9'&&symbol==='DOG')cell.classList.add('scratch-dog-trigger');
+  if(stage.dataset.variant==='dog_jackpot_9'){
+   cell.dataset.dogSlot=String(index+1);
+   if(symbol==='DOG')cell.classList.add('scratch-dog-trigger');
+  }
   const face=el('span','scratch-cell-symbol',symbol);
   face.setAttribute('aria-hidden','true');
   cell.append(face);
@@ -912,14 +915,22 @@ export function initChristmasScratch(){
    const g=ctx.createLinearGradient(x,y,x+w,y+h);
    g.addColorStop(0,'#8095a2');g.addColorStop(.45,'#ebf1f0');g.addColorStop(1,'#8b9faa');
    ctx.fillStyle=g;ctx.fillRect(x,y,w,h);
+   if(stage.dataset.variant==='dog_jackpot_9'){
+    // The same embossed foil covers ALL nine spots, never signaling DOG's location.
+    const metallic=ctx.createLinearGradient(x,y,x+w,y+h);
+    metallic.addColorStop(0,'#94754e');metallic.addColorStop(.25,'#e9d9b4');
+    metallic.addColorStop(.53,'#eaf0ec');metallic.addColorStop(.79,'#cab187');
+    metallic.addColorStop(1,'#8c6d4c');
+    ctx.fillStyle=metallic;ctx.fillRect(x,y,w,h);
+   }
    ctx.strokeStyle='#c2d6d8';ctx.lineWidth=1;
    for(let d=-h;d<w+h;d+=12){
     ctx.beginPath();ctx.moveTo(x+d,y);ctx.lineTo(x+d+h,y+h);ctx.stroke();
    }
-   ctx.fillStyle='#496171';
+   ctx.fillStyle=stage.dataset.variant==='dog_jackpot_9'?'#6b4b28':'#496171';
    ctx.font='700 '+Math.max(9,Math.min(15,h*.20))+'px system-ui';
    ctx.textAlign='center';
-   ctx.fillText('❄',x+w/2,y+h/2+4);
+   ctx.fillText(stage.dataset.variant==='dog_jackpot_9'?'🐾':'❄',x+w/2,y+h/2+4);
    ctx.restore();
   }
   unifiedCover=canvas;
@@ -1085,8 +1096,8 @@ export function initChristmasScratch(){
   const wonGifts=giftSymbols.filter(symbol=>awarded.has(symbol));
   if(result?.board?.variantId==='number_one_20')panel.append(el('div','scratch-special-rule-note',
    '🔢 Jede der 20 Reihen hat zwei eigene Rubbelstellen. Links das Symbol, rechts die Zahl: Nur eine 1 gewinnt den Symbolpreis derselben Reihe. Alle Treffer werden addiert.'));
-  if(result?.board?.variantId==='dog_jackpot_9')panel.append(el('div','scratch-special-rule-note',
-   '🐾 Ein DOG-Symbol gewinnt sämtliche acht übrigen Preise auf dem Los. Ohne DOG gibt es 0 Münzen.'));
+  if(result?.board?.variantId==='dog_jackpot_9')panel.append(el('div','scratch-special-rule-note scratch-dog-odds',
+   '🐾 35 % Jackpotchance · Ein DOG gewinnt alle 8 anderen Felder inklusive möglicher Freischaltungen. Ohne DOG ist das Los eine Niete.'));
   if(result?.board?.variantId==='tic_tac_toe'&&result.board?.symbolVersion===8){
    panel.append(el('div','scratch-tictac-bonus-note',
     '◯ / ✕ · Gewinnzeichen: '+result.board.winningSymbol+' · '+result.board.multiplier+
@@ -1197,6 +1208,14 @@ export function initChristmasScratch(){
   stage.dataset.variant=result.board?.variantId||'legacy';
   stage.dataset.tier=result.tier||'simple';
   stage.dataset.duelVersion=String(result.board?.variantId==='tic_tac_toe'?result.board?.symbolVersion||0:0);
+  // The ticket banner stays outside the scratchable 3 × 3 region.
+  const dogArt=$('scratch-card-art');
+  dogArt.querySelector('.scratch-dog-ribbon')?.remove();
+  if(stage.dataset.variant==='dog_jackpot_9'){
+   const ribbon=el('div','scratch-dog-ribbon','🐾 35 % JACKPOT-CHANCE · 9 GEHEIME FELDER');
+   ribbon.setAttribute('aria-hidden','true');
+   dogArt.append(ribbon);
+  }
   renderNumberLottery(result);
   $('scratch-lotto-back').hidden=stage.dataset.variant!=='number_one_20'&&stage.dataset.duelVersion!=='8';
   $('scratch-ticket-title').textContent=conf?
