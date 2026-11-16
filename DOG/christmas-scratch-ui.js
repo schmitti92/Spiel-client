@@ -18,9 +18,13 @@ export const SCRATCH_SHOP_VARIANTS=Object.freeze([
  Object.freeze({id:'snow_collect',tier:'simple',icon:'❄️',name:'Schneeflocken-Bingo',subtitle:'Einfach · 16 Felder',rule:'3 gleiche Gewinnzeichen irgendwo',theme:'snow'}),
  Object.freeze({id:'elf',tier:'medium',icon:'🧝',name:'Magischer Wichtelpfad',subtitle:'Mittel · 20 Felder',rule:'Geld: Pfad · Geschenke: 3 verbunden',theme:'elf'}),
  Object.freeze({id:'premium_27',tier:'premium',icon:'👑',name:'Premium-Weihnachtslos',subtitle:'Premium · 27 Felder',rule:'4 sichere Geld-Dreierreihen · 20 Symbole = 1.000 🪙 (30 %)',theme:'gold'}),
-  Object.freeze({id:'tic_tac_toe',tier:'medium',icon:'🎯',name:'DOG Tic-Tac-Toe',subtitle:'Spezial · 9 Felder',rule:'3 gleiche Symbole in einer Linie · 8 Wege · 7 Boni',theme:'tictac'})
+  Object.freeze({id:'tic_tac_toe',tier:'medium',icon:'🎯',name:'DOG Tic-Tac-Toe',subtitle:'Spezial · 9 Felder',rule:'3 gleiche Symbole in einer Linie · 8 Wege · 7 Boni',theme:'tictac'}),
+  Object.freeze({id:'number_one_20',tier:'medium',icon:'🔢',name:'Glückszahl 1',subtitle:'Zahlenlos · 20 × 2',rule:'Gewinn links · Zahl rechts · jede 1 gewinnt',theme:'number20'}),
+  Object.freeze({id:'dog_jackpot_9',tier:'premium',icon:'🐾',name:'Finde DOG!',subtitle:'DOG-Jackpot · 9 Felder',rule:'DOG finden = alle 8 Preisfelder gewinnen',theme:'dogjackpot'})
 ]);
 const VARIANTS={
+  number_one_20:['🔢 Die Glückszahl 1','20 Reihen mit zwei Spalten. Links steht dein Preis, rechts eine verdeckte Zahl. Jede 1 gewinnt den Preis der Reihe.',20,2],
+  dog_jackpot_9:['🐾 Finde DOG!','Neun verdeckte Felder. Ein DOG-Symbol gewinnt alle acht übrigen Preise, ohne DOG ist das Los eine Niete.',3,3],
   tic_tac_toe:['🎯 DOG Tic-Tac-Toe','Drei gleiche Symbole in einer der acht Reihen, Spalten oder Diagonalen. Alle passenden Reihen und Boni zählen.',3,3],
  premium_27:['🎅 Premium-Weihnachts-Rubbellos','Mindestens 4 Geld-Dreierreihen sind garantiert. Je 3 gleiche Geldsymbole waagerecht gewinnen. 20 echte Symbole bringen 1.000 Zusatzmünzen; ab 24 ist eine Freischaltung möglich.',9,3],
  gifts:['🎁 Geschenkelinie','Drei gleiche Gewinnsymbole in einer Reihe, Spalte oder Diagonale',3,3],
@@ -235,7 +239,9 @@ export function initChristmasScratch(){
    const unlockChance=Number.isInteger(variantConfig?.weights?.unlock)?
     percent(variantConfig.weights.unlock):tier.unlockChance;
    const unlocksLeft=status?.pools?.[option.tier]?.remaining;
-   const chanceText=option.id==='tic_tac_toe'?'🎁 Drei gleiche Geschenke = Premium · 4 % pro Feld':
+   const chanceText=option.id==='number_one_20'?'🔢 10 % Trefferchance pro Reihe':
+    option.id==='dog_jackpot_9'?'🐾 35 % Chance auf alle Preise':
+    option.id==='tic_tac_toe'?'🎁 Drei gleiche Geschenke = Premium · 4 % pro Feld':
     unlocksLeft===0?'🎁 Alle Freischaltungen gesammelt':
     '🎁 bis zu '+unlockChance+' % Freischaltung';
    const chanceWeights=variantConfig?.weights;
@@ -255,11 +261,16 @@ export function initChristmasScratch(){
    const details=el('div','scratch-card-brief');
    details.append(el('span','scratch-card-rule',visibleRule),
     el('span','scratch-card-chance',chanceText));
-   const amounts=option.id==='tic_tac_toe'?[200,450,800]:coinAmountsFor(option.tier,option.id);
+   const amounts=option.id==='tic_tac_toe'?[200,450,800]:
+    ['number_one_20','dog_jackpot_9'].includes(option.id)?[100,300,800]:
+    coinAmountsFor(option.tier,option.id);
    article.append(heading,details,
     el('strong','scratch-price',num(tier.price)+' 🪙'),
     el('div','scratch-card-payouts','🪙 '+num(amounts[0])+' · 💵 '+num(amounts[1])+' · 💼 '+num(amounts[2])),
-    el('div','scratch-symbol-key',option.id==='tic_tac_toe'?
+    el('div','scratch-symbol-key',option.id==='number_one_20'?
+     '🪙 100 · 💵 300 · 💼 800 · 🎁 Freischaltung · jede 1 gewinnt':
+     option.id==='dog_jackpot_9'?'🐾 DOG = alle 8 Preise · 🎁 Freischaltung':
+     option.id==='tic_tac_toe'?
      '🪙 200 · 💵 450 · 💼 800 · 🎁 Premium':symbolLegend(option.tier,amounts)));
    const vouchers=Number(status?.vouchers?.[option.tier]||0)+Number(status?.variantVouchers?.[option.id]||0);
    const buyBtn=el('button','scratch-buy','🎟️ Für '+num(tier.price)+' Münzen öffnen');
