@@ -725,7 +725,122 @@ export function initChristmasScratch(){
   cell.style.setProperty('margin','0','important');
   cell.style.setProperty('box-sizing','border-box','important');
  }
+ // Pixel coordinates calibrated on the approved 1086 × 1448 DOG artwork.
+ // First two fields are multiplier + winning sign, followed by nine cells.
+ // Every hitbox is independent, never an approximate 3x3 CSS grid.
+ const DUEL_ART_W=1086,DUEL_ART_H=1448;
+ const DUEL_HITBOXES=Object.freeze([
+  [325,290,412,85], // 1x–5x multiplier
+  [434,482,192,88], // winning Circle/Cross
+  [262,647,137,150],[414,647,137,150],[568,647,134,150],
+  [262,811,137,154],[414,811,137,154],[568,811,134,154],
+  [262,974,137,150],[414,974,137,150],[568,974,134,150]
+ ].map(coords=>Object.freeze(coords)));
+ function applyDuelArtGeometry(cell,index){
+  const coords=DUEL_HITBOXES[index];
+  if(!coords)throw Error('TIC_DUEL_GEOMETRY_INVALID');
+  for(const [name,value,base] of [
+   ['--duel-x',coords[0],DUEL_ART_W],['--duel-y',coords[1],DUEL_ART_H],
+   ['--duel-w',coords[2],DUEL_ART_W],['--duel-h',coords[3],DUEL_ART_H]
+  ])cell.style.setProperty(name,(value/base*100).toFixed(5)+'%');
+ }
+ function makeDuelTile(value,index){
+  const cell=el('div','scratch-field scratch-duel-tile '+(index===0?'scratch-duel-multiplier':
+   index===1?'scratch-duel-winning-symbol':'scratch-duel-board-cell'));
+  applyDuelArtGeometry(cell,index);
+  cell.append(el('span','scratch-cell-symbol',value));
+  cell.setAttribute('aria-label',index===0?'Multiplikator aufrubbeln':
+   index===1?'Gewinnsymbol aufrubbeln':'Spielfeld '+(index-1)+' aufrubbeln');
+  return cell;
+ }
+ function attachDuelCovers(){
+  const cells=[...board.querySelectorAll('.scratch-duel-tile')];
+  if(cells.length!==11)throw Error('TIC_DUEL_FIELDS_MISSING');
+  let phase=0,uncovered=0;
+  const canvases=[];
+  const instructions=[
+   '① Rubbele den Gewinnmultiplikator oben frei (1× bis 5×)',
+   '② Rubbele Kreis oder Kreuz als Gewinnsymbol frei',
+   '③ Rubbele die neun Spielfelder frei. Drei passende Zeichen in einer Linie gewinnen!'
+  ];
+  const update=()=>{
+   if(finished)return;
+   $('scratch-progress').textContent=instructions[Math.min(phase,2)]+' · '+uncovered+'/11';
+   setScratchProgress(Math.round(uncovered/11*100));
+   for(const [i,cv] of canvases.entries()){
+    const allowed=!cells[i].classList.contains('uncovered')&&
+     (phase===0?i===0:phase===1?i===1:i>=2);
+    cv.style.pointerEvents=allowed?'auto':'none';
+    cv.tabIndex=allowed?0:-1;
+    cv.setAttribute('aria-disabled',String(!allowed));
+   }
+  };
+  const revealOne=i=>{
+   if(finished||cells[i].classList.contains('uncovered')||
+    (phase===0&&i!==0)||(phase===1&&i!==1)||(phase===2&&i<2))return;
+   const cv=canvases[i];cv.getContext('2d').clearRect(0,0,cv.width,cv.height);
+   cv.hidden=true;cells[i].classList.add('uncovered');uncovered++;
+   if(i===0)phase=1;else if(i===1)phase=2;
+   update();
+   if(uncovered===11)finish();
+  };
+  for(const [i,cell] of cells.entries()){
+   const rect=cell.getBoundingClientRect();
+   if(rect.width<1||rect.height<1)throw Error('TIC_DUEL_LAYOUT_INVALID');
+   const cv=el('canvas','scratch-duel-cover');
+   cv.width=Math.max(2,Math.round(rect.width));cv.height=Math.max(2,Math.round(rect.height));
+   cv.setAttribute('role','button');cv.setAttribute('aria-label',cell.getAttribute('aria-label'));
+   const ctx=cv.getContext('2d',{willReadFrequently:true});
+   if(!ctx)throw Error('TIC_DUEL_CANVAS_INVALID');
+   const fill=ctx.createLinearGradient(0,0,cv.width,cv.height);
+   fill.addColorStop(0,'#9faeb9');fill.addColorStop(.44,'#e7eced');fill.addColorStop(1,'#96a6b4');
+   ctx.fillStyle=fill;ctx.fillRect(0,0,cv.width,cv.height);
+   ctx.strokeStyle='#f6fcff7d';ctx.lineWidth=1;
+   for(let x=-cv.height;x<cv.width+cv.height;x+=14){
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+cv.height,cv.height);ctx.stroke();
+   }
+   ctx.globalCompositeOperation='destination-out';
+   let active=null,last=null;
+   const point=e=>{
+    const r=cv.getBoundingClientRect();
+    return [(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height];
+   };
+   const stroke=e=>{
+    if(active!==e.pointerId)return;
+    e.preventDefault();
+    const [x,y]=point(e);
+    const brush=Math.max(12,Math.min(cv.width,cv.height)*.34);
+    ctx.lineWidth=brush;ctx.lineJoin='round';ctx.lineCap='round';
+    if(last){ctx.beginPath();ctx.moveTo(last[0],last[1]);ctx.lineTo(x,y);ctx.stroke()}
+    else{ctx.beginPath();ctx.arc(x,y,brush/2,0,Math.PI*2);ctx.fill()}
+    last=[x,y];
+   };
+   const check=()=>{
+    const pixels=ctx.getImageData(0,0,cv.width,cv.height).data;
+    let total=0,clear=0;
+    for(let offset=3;offset<pixels.length;offset+=48){
+     total++;if(pixels[offset]<70)clear++;
+    }
+    if(total&&clear/total>=.58)revealOne(i);
+   };
+   cv.addEventListener('pointerdown',e=>{
+    if(finished||(phase===0&&i!==0)||(phase===1&&i!==1)||(phase===2&&i<2))return;
+    active=e.pointerId;last=null;cv.setPointerCapture?.(e.pointerId);stroke(e);
+   });
+   cv.addEventListener('pointermove',stroke);
+   cv.addEventListener('pointerup',e=>{
+    if(active!==e.pointerId)return;stroke(e);active=null;last=null;check();
+   });
+   cv.addEventListener('pointercancel',()=>{active=null;last=null;check()});
+   cv.addEventListener('keydown',e=>{
+    if(e.key==='Enter'||e.key===' '){e.preventDefault();revealOne(i)}
+   });
+   cell.append(cv);canvases.push(cv);
+  }
+  update();
+ }
  function makeField(symbol,index=0){
+  if(stage.dataset.duelVersion==='8')return makeDuelTile(symbol,index+2);
   const cell=el('div','scratch-field');
   if(stage.dataset.variant==='number_one_20'){
    const numberField=index%2===1;
