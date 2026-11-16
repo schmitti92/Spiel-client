@@ -1028,6 +1028,8 @@ export function initChristmasScratch(){
   if(!finished){
    section.append(el('h4','scratch-current-title','🎟️ Noch nicht aufgedeckt'));
    section.append(el('p','scratch-current-hint',
+    result?.board?.symbolVersion===8&&result?.board?.variantId==='tic_tac_toe'?
+    'Rubbele zuerst den Multiplikator, danach das Gewinnsymbol und zuletzt die neun Spielfelder frei. Die Gewinnprüfung erfolgt automatisch.':
     'Rubbele das Los zu mindestens 90 % frei. Danach erscheinen hier deine tatsächlichen Gewinne und die Bestätigung.'));
   }else{
    const prizes=(Array.isArray(result?.winnings)?result.winnings:entries)
@@ -1481,7 +1483,9 @@ export function initChristmasScratch(){
    ticket=r.result;
    showTicket(r.result);
    clearAlert();
-   notice('❄️ Beginne irgendwo und rubbele in einer Bewegung über alle Felder. Bei 90 % öffnet das Los automatisch.');
+   notice(r.result.board?.variantId==='tic_tac_toe'&&r.result.board?.symbolVersion===8?
+    '🎯 Zuerst den Multiplikator, dann Kreis oder Kreuz und anschließend alle neun Felder einzeln freirubbeln.':
+    '❄️ Beginne irgendwo und rubbele in einer Bewegung über alle Felder. Bei 90 % öffnet das Los automatisch.');
   }catch(e){
    console.error('[DOG scratch] Öffnen fehlgeschlagen:',e);
    showAlert(scratchBuyError(e?.message),variantId);
