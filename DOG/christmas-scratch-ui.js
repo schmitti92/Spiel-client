@@ -672,8 +672,8 @@ export function initChristmasScratch(){
    face.setAttribute('aria-hidden','true');cell.append(face);
    if(numberField)cell.setAttribute('aria-label','Verdeckte Zahl in Reihe '+(Math.floor(index/2)+1));
    else{
-    const amount={'🪙':100,'💵':300,'💼':800}[symbol];
-    cell.append(el('small','scratch-number-payout',amount?num(amount):'Geschenk'));
+    // Only reveal the symbol in this rectangle; the payout legend in the
+    // lottery side panel is dynamic and never printed inside the scratch grid.
     cell.setAttribute('aria-label','Verdecktes Gewinnsymbol in Reihe '+(Math.floor(index/2)+1));
    }
    return cell;
@@ -1009,11 +1009,12 @@ export function initChristmasScratch(){
   const conf=VARIANTS[result.board?.variantId],cells=result.board?.cells;
   stage.dataset.variant=result.board?.variantId||'legacy';
   stage.dataset.tier=result.tier||'simple';
+  renderNumberLottery(result);
   $('scratch-ticket-title').textContent=conf?
    conf[0]+' · '+(SCRATCH_TICKET_TYPES.find(t=>t.id===result.tier)?.label||'')+'-Rubbellos':
    '🎟️ Älteres Rubbellos';
   const payoutRule=result.board?.variantId==='number_one_20'?
-    '20 Reihen × 2 separat freirubbelbare Felder: links ein verdecktes Gewinnsymbol, rechts eine verdeckte Zahl von 1 bis 10. Jede 1 zahlt den Preis links in derselben Reihe aus. 🪙 100 · 💵 300 · 💼 800 · 🎁 Freischaltung.':
+    '20 Reihen × 2 separat freirubbelbare Felder. Jede Zahl 1 gewinnt das Symbol links. Die Auszahlungen dieses Loses: 🪙 '+num((result.coinAmounts||[100,300,800])[0])+' · 💵 '+num((result.coinAmounts||[100,300,800])[1])+' · 💼 '+num((result.coinAmounts||[100,300,800])[2])+' · 🎁 Freischaltung.':
    result.board?.variantId==='dog_jackpot_9'?
     'Neun Felder: Wird DOG aufgedeckt, gehören dir die Preise aller acht übrigen Felder. 🪙 100 · 💵 300 · 💼 800 · 🎁 Freischaltung. Ohne DOG: Niete.':
    result.board?.variantId==='tic_tac_toe'?
@@ -1034,7 +1035,7 @@ export function initChristmasScratch(){
   const legend=$('scratch-symbol-legend');
   if(legend){legend.hidden=![2,3,4,5,6,7].includes(result.board?.symbolVersion);
    legend.textContent=legend.hidden?'':result.board?.variantId==='number_one_20'?
-    '🔢 Links Gewinnsymbol aufrubbeln · rechts Zahl aufrubbeln · jede 1 gewinnt · 🪙 100 · 💵 300 · 💼 800 · 🎁 Freischaltung':
+    '🔢 Links Gewinnsymbol aufrubbeln · rechts Zahl aufrubbeln · jede 1 gewinnt · 🪙 '+num((result.coinAmounts||[100,300,800])[0])+' · 💵 '+num((result.coinAmounts||[100,300,800])[1])+' · 💼 '+num((result.coinAmounts||[100,300,800])[2])+' · 🎁 Freischaltung':
     result.board?.variantId==='dog_jackpot_9'?
     '🐾 DOG = alle acht Preise · 🪙 100 · 💵 300 · 💼 800 · 🎁 Freischaltung':
     result.board?.variantId==='tic_tac_toe'?
@@ -1232,7 +1233,10 @@ export function initChristmasScratch(){
   if(!SCRATCH_SHOP_VARIANTS.some(c=>c.id===variantId&&c.tier===tier)){
    showAlert('⚠️ Diese Losvariante ist noch nicht im Spiel freigeschaltet.',variantId);drawShop();return;
   }
-  if(!free&&!voucher&&status.coins<(SCRATCH_TICKET_TYPES.find(c=>c.id===tier)?.price||0)){
+  const chosenPrice=variantId==='number_one_20'?
+   Number(status.settings?.numberOne20?.price??500):
+   Number(SCRATCH_TICKET_TYPES.find(c=>c.id===tier)?.price||0);
+  if(!free&&!voucher&&status.coins<chosenPrice){
    showAlert('⚠️ Nicht genügend Münzen für dieses Los.',variantId);drawShop();return;
   }
   clearAlert();busy=true;drawShop();
