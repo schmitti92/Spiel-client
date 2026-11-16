@@ -103,11 +103,11 @@ function circleMarkup(p,color,stroke,selectedHere,text,kind,index,owner){
  const contrast=isLight?'#102a45':'#eaf5ff';
  return '<g data-kind="'+kind+'" data-index="'+index+'" data-owner="'+owner+'" aria-label="'+kind+' '+index+'" role="button">'+
    (selectedHere?'<circle cx="'+p.x+'" cy="'+p.y+'" r="23" fill="none" stroke="#ffe69e" stroke-width="3" stroke-dasharray="4 3"/>':'')+
-   '<circle cx="'+p.x+'" cy="'+(p.y+1.8)+'" r="16.3" fill="#010e1a" opacity=".8"/>'+
-   '<circle class="editor-point" cx="'+p.x+'" cy="'+p.y+'" r="14.5" fill="'+fill+'" stroke="'+(selectedHere?'#ffeab6':stroke)+'" stroke-width="'+(selectedHere?3.3:2)+'"/>'+
+   '<circle cx="'+p.x+'" cy="'+(p.y+1.8)+'" r="17.2" fill="#010e1a" opacity=".73"/>'+
+   '<circle class="editor-point" cx="'+p.x+'" cy="'+p.y+'" r="17.0" fill="'+fill+'" stroke="'+(selectedHere?'#ffeab6':stroke)+'" stroke-width="'+(selectedHere?2.2:1.3)+'"/>'+
    '<circle cx="'+(p.x-3.6)+'" cy="'+(p.y-4.5)+'" r="3.6" fill="#fff" opacity="'+(isLight?'.65':'.21')+'" pointer-events="none"/>'+
    ($('show-numbers').checked?'<text x="'+p.x+'" y="'+(p.y+4)+'" font-size="'+(kind==='track'?9:10)+'" font-weight="900" text-anchor="middle" fill="'+contrast+'" pointer-events="none">'+(kind==='track'?index:index+1)+'</text>':'')+
-   '<circle cx="'+p.x+'" cy="'+p.y+'" r="21" fill="transparent"/></g>';
+   '<circle cx="'+p.x+'" cy="'+p.y+'" r="18.3" fill="transparent"/></g>';
 }
 function renderBoard(){
  if(!svg)return;
