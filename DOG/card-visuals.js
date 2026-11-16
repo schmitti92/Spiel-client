@@ -23,6 +23,11 @@ export const CARD_EDITIONS=Object.freeze({
   base:'./assets/karten/kartendesign-03/normiert/',
   width:700,height:980,
   unlockId:'christmas2026:cards:kartendesign-03'
+ }),
+ 'kartendesign-04':Object.freeze({
+  label:'✨ Sternenportal · Astralglas',
+  base:'./assets/karten/kartendesign-04/vektoren/',
+  width:700,height:980,extension:'svg'
  })
 });
 /** A registered upload is a preview, not proof of event ownership.
@@ -46,7 +51,7 @@ export function saveCardEdition(id,storage=typeof localStorage==='undefined'?nul
 }
 export function cardBackImage(edition=loadCardEdition()){
  const item=CARD_EDITIONS[isCardEditionUnlocked(edition)?edition:CARD_EDITION];
- return item.base+'rueckseite.png';
+ return item.base+'rueckseite.'+(item.extension||'png');
 }
 export const CARD_ASSET_BASE=CARD_EDITIONS[CARD_EDITION].base;
 export const CARD_ASSETS=Object.freeze(Object.fromEntries(Object.entries(CARD_FILE_NAMES).map(([type,file])=>[type,CARD_ASSET_BASE+file+'.png'])));
@@ -71,7 +76,7 @@ export function cardVisual(type,edition=loadCardEdition()){
  const item=CARD_VISUALS[type]||{kind:'number',symbol:'🐾',caption:'KARTE'};
  const selected=isCardEditionUnlocked(edition)?edition:CARD_EDITION;
  const file=CARD_FILE_NAMES[type];
- return {...item,edition:selected,image:file?CARD_EDITIONS[selected].base+file+'.png':null};
+ return {...item,edition:selected,image:file?CARD_EDITIONS[selected].base+file+'.'+(CARD_EDITIONS[selected].extension||'png'):null};
 }
 export function cardMarkup(type,{tag='button',selected=false,extraClass='',attrs='',footer=null}={}){
  const c=cardVisual(type);
@@ -79,5 +84,5 @@ export function cardMarkup(type,{tag='button',selected=false,extraClass='',attrs
  const safe=x=>String(x).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
  const art=c.image?'<img class="dog-card-art" src="'+safe(c.image)+'" alt="" loading="eager" onload="this.parentNode.classList.add(&quot;has-dog-art&quot;)" onerror="this.remove()">':'';
  const inner=art+'<span class="dog-card-top"><span>'+safe(value)+'</span><span>✦</span></span><span class="dog-card-main"><span class="dog-card-value">'+safe(value)+'</span><span class="dog-card-symbol">'+safe(c.symbol)+'</span></span><span class="dog-card-footer">'+safe(footer||c.caption)+'</span>';
- return '<'+tag+' class="playing-card dog-designed '+(selected?'picked ':'')+safe(extraClass)+'" data-card-kind="'+safe(c.kind)+'" '+attrs+'>'+inner+'</'+tag+'>';
+ return '<'+tag+' class="playing-card dog-designed '+(selected?'picked ':'')+safe(extraClass)+'" data-card-kind="'+safe(c.kind)+'" data-card-edition="'+safe(c.edition)+'" '+attrs+'>'+inner+'</'+tag+'>';
 }

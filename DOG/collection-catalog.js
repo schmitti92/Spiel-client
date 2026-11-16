@@ -57,9 +57,9 @@ const BASE_COLLECTION_CATEGORIES=[
   ...PUBLISHED_CARD_STYLE_IDS.map(id=>{const t=CARD_STYLES[id];return avail(id,t.label,{kind:'appearance',field:'cards',cardEdition:CARD_EDITION,image:cardVisual('9',CARD_EDITION).image,description:'Fertiges Kartendesign mit allen 14 Kartenmotiven und eigener Rückseite. Die Spielregeln bleiben unverändert.',icon:t.emblem,artTone:'gold'});}),
   ...Object.entries(CARD_EDITIONS).filter(([id])=>id!==CARD_EDITION).map(([id,entry])=>avail(id,entry.label,{
    kind:'cardEdition',cardEdition:id,status:isCardEditionUnlocked(id)?'available':'planned',
-   unlockId:entry.unlockId,image:entry.base+'9.png',
-   description:'🎄 Weihnachtsedition mit allen 14 Kartenarten und eigener Rückseite. Noch gesperrt – später als Eventbelohnung freischaltbar. Nur das Aussehen der Karten ändert sich.',
-   icon:id==='kartendesign-02'?'❄️':'🎄',artTone:'gold'
+   unlockId:entry.unlockId,image:entry.base+'9.'+(entry.extension||'png'),
+   description:id==='kartendesign-04'?'Zusätzliche Edition aus transparentem Astralglas. Mit allen Kartenmotiven und eigener Rückseite. Direkt auswählbar; Spielregeln bleiben unverändert.':'🎄 Weihnachtsedition mit allen 14 Kartenarten und eigener Rückseite. Noch gesperrt – später als Eventbelohnung freischaltbar. Nur das Aussehen der Karten ändert sich.',
+   icon:id==='kartendesign-02'?'❄️':id==='kartendesign-04'?'✨':'🎄',artTone:'gold'
   }))
  ]},
  {id:'hud',icon:'🎨',title:'Bedienoberfläche',subtitle:'Farbtöne und Anordnung der rechten Spielblöcke',items:[

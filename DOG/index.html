@@ -330,6 +330,15 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 .hand .playing-card.dog-designed{width:var(--dog-hand-card-base)!important}
 </style>
 <link rel="stylesheet" href="./ui-shell.css?v=20"><link rel="stylesheet" href="./emoji-ui.css?v=4"><link rel="stylesheet" href="./motion.css?v=3"><link rel="stylesheet" href="./premium-cockpit.css?v=1"><link rel="stylesheet" href="./victory-ceremony.css?v=1">
+
+<!-- Sternenportal: Transparenz der Kartenillustration erhalten -->
+<style id="dog-card-edition-04-style">
+.playing-card.dog-designed[data-card-edition="kartendesign-04"].has-dog-art,
+.dog-joker-choice.dog-designed[data-card-edition="kartendesign-04"].has-dog-art{background:transparent!important;border-color:transparent!important;box-shadow:0 8px 15px #030b23a8!important}
+.playing-card.dog-designed[data-card-edition="kartendesign-04"].has-dog-art .dog-card-art,
+.dog-joker-choice.dog-designed[data-card-edition="kartendesign-04"].has-dog-art .dog-card-art{border-radius:0}
+.playing-card.dog-designed[data-card-edition="kartendesign-04"].picked{filter:drop-shadow(0 0 5px #fce49d)}
+</style>
 </head>
 <body>
 <!-- One floating menu replaces the large heading/nav and frees board height. -->
