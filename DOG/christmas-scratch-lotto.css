@@ -250,3 +250,33 @@
   left:5%!important;right:5%!important;top:16%!important;bottom:19%!important;
  }
 }
+
+/* The lucky-number configurator is deliberately prominent and independent of
+   the four original ticket editors. All 10 controls persist to shared Render
+   settings and update the lottery panel for newly purchased tickets. */
+#scratch-host-variants .scratch-host-lucky{
+ grid-column:1/-1!important;
+ background:linear-gradient(135deg,#103f2e,#142c35 55%,#501827)!important;
+ border:2px solid #edcc83!important;
+ box-shadow:inset 0 0 0 2px #ffffc71f,0 5px 18px #0007!important;
+ color:#fff1d3!important;
+ border-radius:14px!important;
+}
+#scratch-host-variants .scratch-host-lucky h5{
+ color:#ffdf8e!important;
+ text-shadow:0 2px 4px #0009;
+ font:900 clamp(16px,1.65vw,22px) Georgia,serif!important;
+}
+#scratch-host-variants .scratch-host-lucky .scratch-host-fields{
+ display:grid!important;grid-template-columns:repeat(auto-fit,minmax(165px,1fr))!important;
+ gap:8px!important;
+}
+#scratch-host-variants .scratch-host-lucky input{
+ width:100%!important;min-width:0!important;box-sizing:border-box!important;
+ border:1px solid #d4ac61!important;border-radius:8px!important;
+ background:#fffaf0!important;color:#222018!important;
+ font:750 15px system-ui,sans-serif!important;padding:6px!important;
+}
+#scratch-host-variants .scratch-host-lucky .scratch-host-odds-total[data-valid="false"]{
+ color:#ffd0c7!important;
+}
