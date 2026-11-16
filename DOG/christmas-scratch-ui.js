@@ -307,6 +307,8 @@ export function initChristmasScratch(){
     ['🎁 Geschenk','Neue Freischaltung']
    ],'lotto-symbols'));
   const chanceOfAny=100*(1-Math.pow(1-hit,20));
+  const bestCash=Math.max(0,...amounts.filter((_,i)=>weights[i]>0));
+  const theoreticalMax=chance>0?20*Math.max(bestCash,weights[3]>0?1500:0):0;
   right.append(
    card('🎯 GEWINNCHANCEN',[
     ['Gewinn je Reihe',percent(hit*100)],
@@ -316,7 +318,7 @@ export function initChristmasScratch(){
    ],'lotto-chances'),
    card('🏆 MAXIMAL MÖGLICH',[
     ['Treffer pro Los',String(chance>0?20:0)],
-    ['20 Koffer-Treffer',num(chance>0?20*amounts[2]:0)+' 🪙'],
+    ['Theoretisch Münzen',num(theoreticalMax)+' 🪙'],
     ['Neue Freischaltung','höchstens 1 je Los'],
     ['Lospreis',num(price)+' 🪙']
    ],'lotto-max'),
