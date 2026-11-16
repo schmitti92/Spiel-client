@@ -32,18 +32,15 @@
 
 /* The two columns align with the silver fields PRINTED in the PNG,
    leaving the printed row badges on the left untouched. */
-.scratch-stage[data-variant="number_one_20"] #scratch-board {
- position:absolute!important;
- left:24.7%!important;top:22.03%!important;
- width:50.8%!important;height:57.05%!important;
- max-width:none!important;margin:0!important;padding:0!important;
- box-sizing:border-box!important;
- display:grid!important;
- grid-template-columns:repeat(2,minmax(0,1fr))!important;
- grid-template-rows:repeat(20,minmax(0,1fr))!important;
- column-gap:2.7%!important;row-gap:0.8%!important;
- border:0!important;border-radius:0!important;
- background:transparent!important;
+.scratch-stage[data-variant="number_one_20"] #scratch-board{
+ position:absolute!important;inset:0!important;
+ left:0!important;top:0!important;width:100%!important;height:100%!important;
+ max-width:none!important;max-height:none!important;
+ padding:0!important;margin:0!important;
+ display:block!important;box-sizing:border-box!important;
+ grid-template-columns:none!important;grid-template-rows:none!important;
+ column-gap:0!important;row-gap:0!important;gap:0!important;
+ background:transparent!important;overflow:visible!important;
 }
 
 /* Each hitbox is a single tightly fitted, separate scratch field. The PNG
