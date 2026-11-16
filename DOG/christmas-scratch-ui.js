@@ -652,13 +652,13 @@ export function initChristmasScratch(){
     prizes.filter(p=>p.type==='coins').reduce((sum,p)=>sum+(Number.isSafeInteger(p.amount)?p.amount:0),0);
    const unlocks=prizes.filter(p=>p.type==='unlock').length;
    section.append(el('h4','scratch-current-title',prizes.length?
-    '🎉 Dein Gewinn':'❄️ Dieses Los ist eine Niete'));
-   const hero=el('div','scratch-current-hero'+(prizes.length?' is-win':' is-empty'));
+    '🎉 Dein Gewinn':result?.giftSparksEarned?'🎁 Geschenkfunke gesammelt':'❄️ Dieses Los ist eine Niete'));
+   const hero=el('div','scratch-current-hero'+(prizes.length||result?.giftSparksEarned?' is-win':' is-empty'));
    hero.append(el('small','','Gutgeschriebene Münzen'),
     el('strong','',num(total)+' 🪙'));
    hero.append(el('span','',unlocks?
     '🎁 '+unlocks+' Freischaltung'+(unlocks===1?'':'en'):
-    prizes.length?'✓ Ergebnis ermittelt':'Kein Gewinn · 0 Münzen'));
+    prizes.length?'✓ Ergebnis ermittelt':result?.giftSparksEarned?'🎁 +1 Geschenkfunke':'Kein Gewinn · 0 Münzen'));
    section.append(hero);
    if(prizes.length){
     const list=el('div','scratch-current-grid');
@@ -681,6 +681,8 @@ export function initChristmasScratch(){
     section.append(list);
    }else{
     section.append(el('p','scratch-current-empty',
+     result?.giftSparksEarned?
+     'Keine Münzreihe, aber ein Geschenkfunke wurde gutgeschrieben. Bestätige das Ergebnis.':
      'Diesmal keine gültige Gewinnkombination. Bestätige auch dieses Ergebnis, um das nächste Los zu öffnen.'));
    }
   }
@@ -732,7 +734,8 @@ export function initChristmasScratch(){
    result.totalCoins:prizes.reduce((sum,p)=>
     sum+(p.type==='coins'&&Number.isSafeInteger(p.amount)?p.amount:0),0);
   const heading=el('div','scratch-inline-heading');
-  heading.append(el('strong','',prizes.length?'🏆 '+prizes.length+' Gewinne':'❄️ Niete'),
+  heading.append(el('strong','',prizes.length?'🏆 '+prizes.length+' Gewinne':
+   result.giftSparksEarned?'🎁 Geschenkfunke':'❄️ Niete'),
    el('strong','scratch-inline-total','🪙 '+num(amount)+' erhalten'));
   outlet.append(heading);
   if(result.board?.variantId==='tic_tac_toe'){
@@ -869,7 +872,7 @@ export function initChristmasScratch(){
   const earnedCoins=Number.isSafeInteger(current.totalCoins)&&current.totalCoins>=0?
    current.totalCoins:entries.filter(p=>p.type==='coins').reduce(
     (sum,p)=>sum+(Number.isSafeInteger(p.amount)?p.amount:0),0);
-  const winFlag=entries.length>0;
+  const winFlag=entries.length>0||Number(current.giftSparksEarned)>0;
   // Finalize the user interaction FIRST. Any broken decorative reveal must
   // never prevent confirming a prize or a zero-coin losing ticket.
   finished=true;
@@ -885,9 +888,9 @@ export function initChristmasScratch(){
   const meter=$('scratch-progress-meter');
   if(meter){meter.value=100;meter.setAttribute('aria-valuenow','100')}
   $('scratch-result-value').textContent=winFlag?
-   entries.map(prizeLabel).join(' · '):'❄️ Niete · 0 Münzen';
+   entries.length?entries.map(prizeLabel).join(' · '):'🎁 1 Geschenkfunke':'❄️ Niete · 0 Münzen';
   $('scratch-result-kind').textContent=
-   (winFlag?entries.length+' Gewinne insgesamt':'0 Münzen')+
+   (winFlag?(entries.length?entries.length+' Gewinne insgesamt':'1 Geschenkfunke'):'0 Münzen')+
    (current.rareMainMultiplier?' · 💎 Ultra-selten: Hauptgewinn ×2':
     current.multiplier===2?' · ✨ ×2-Multiplikator':'');
   // Render the authoritative result separately from board highlighting.
@@ -905,7 +908,7 @@ export function initChristmasScratch(){
    const hero=el('div','scratch-current-hero'+(winFlag?' is-win':' is-empty'));
    hero.append(el('small','','Gutgeschriebene Münzen'),
     el('strong','',num(earnedCoins)+' 🪙'),
-    el('span','',winFlag?entries.map(prizeLabel).join(' · '):'Kein Gewinn · 0 Münzen'));
+    el('span','',winFlag?(entries.length?entries.map(prizeLabel).join(' · '):'🎁 1 Geschenkfunke'):'Kein Gewinn · 0 Münzen'));
    summary.append(hero);panel.append(summary);
   }
   renderInlineResults(current);
@@ -945,7 +948,7 @@ export function initChristmasScratch(){
   // Keep obsolete overlaid labels out of view. The sidebar above is the
   // single source of displayed winnings, for both zero and positive receipts.
   results.hidden=true;
-  notice(winFlag?'🎉 Gewinne sind bereits sicher auf deinem Profil gutgeschrieben.':
+  notice(winFlag?'🎉 Gewinne und Geschenkfunken sind bereits sicher auf deinem Profil gutgeschrieben.':
    '❄️ Niete – auf dieser Karte gibt es keine gültige Gewinnkombination.');
  }
  async function load(){
