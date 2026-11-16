@@ -1085,6 +1085,11 @@ export function initChristmasScratch(){
    '🔢 Jede der 20 Reihen hat zwei eigene Rubbelstellen. Links das Symbol, rechts die Zahl: Nur eine 1 gewinnt den Symbolpreis derselben Reihe. Alle Treffer werden addiert.'));
   if(result?.board?.variantId==='dog_jackpot_9')panel.append(el('div','scratch-special-rule-note',
    '🐾 Ein DOG-Symbol gewinnt sämtliche acht übrigen Preise auf dem Los. Ohne DOG gibt es 0 Münzen.'));
+  if(result?.board?.variantId==='tic_tac_toe'&&result.board?.symbolVersion===8){
+   panel.append(el('div','scratch-tictac-bonus-note',
+    '◯ / ✕ · Gewinnzeichen: '+result.board.winningSymbol+' · '+result.board.multiplier+
+    '× Multiplikator. Eine passende Dreierlinie gewinnt einen Symbolpreis genau einmal.'));
+  }
   if(result?.board?.variantId==='tic_tac_toe'&&result.board?.symbolVersion!==8){
    panel.append(el('div','scratch-tictac-bonus-note',
     '🎯 8 Linien · 2 Linien +250 · 3+ +800 · Mitte +300 · X +1.000 · Ecken +400 · 9 gleiche +20.000'));
@@ -1376,7 +1381,12 @@ export function initChristmasScratch(){
     updatePremiumCounter(current.board.cells.map((_,i)=>i));
    const list=winningLines;
    list.replaceChildren();
-   for(const [i,win] of wins.entries()){
+   if(current.board?.variantId==='tic_tac_toe'&&current.board?.symbolVersion===8){
+    list.append(el('div','scratch-prize-line',wins.length?
+     '✓ '+wins.length+' gültige '+current.board.winningSymbol+'-Gewinnlinien · einmaliger Preis: '+
+      (entries[0]?prizeLabel(entries[0]):'0 Münzen'):
+     'Keine passende '+current.board.winningSymbol+'-Dreierlinie · 0 Münzen'));
+   }else for(const [i,win] of wins.entries()){
     const description=win.rule==='number-one'?'Zahl 1 · Reihe '+(Math.floor(win.indices[0]/2)+1):
      win.rule==='dog-all'?'DOG-Jackpot · Feld '+(win.indices[0]+1):
      win.rule==='tic-duel-line'?'Duell · '+current.board.winningSymbol+' · '+current.board.multiplier+'×':
