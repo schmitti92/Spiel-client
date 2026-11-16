@@ -310,7 +310,9 @@ export function initChristmasScratch(){
    const vouchers=Number(status?.vouchers?.[option.tier]||0)+Number(status?.variantVouchers?.[option.id]||0);
    const buyBtn=el('button','scratch-buy','🎟️ Für '+num(tier.price)+' Münzen öffnen');
    buyBtn.type='button';buyBtn.hidden=freeMode;
-   buyBtn.disabled=busy||!!ticket||!account()||!status||status.coins<tier.price;
+   // Keep taps informative. Disabled purchases previously looked like dead
+   // buttons when the wallet or an older unacknowledged ticket blocked them.
+   buyBtn.disabled=busy;
    buyBtn.addEventListener('click',()=>void buy(option.tier,false,option.id));
    article.append(buyBtn);
    if(actionError?.variantId===option.id){
@@ -329,14 +331,14 @@ export function initChristmasScratch(){
     const voucherBtn=el('button','scratch-free scratch-earned-voucher',
      '🎟️ Gesammeltes Los einlösen · '+num(vouchers)+' vorhanden');
     voucherBtn.type='button';
-    voucherBtn.disabled=busy||!!ticket||!account()||!status;
+    voucherBtn.disabled=busy;
     voucherBtn.addEventListener('click',()=>void buy(option.tier,false,option.id,true));
     article.append(voucherBtn);
    }
    if(freeMode||option.tier==='simple'){
     const free=el('button','scratch-free',freeMode?'🎁 Kostenlos öffnen':'🎁 Tagesfreilos öffnen');
     free.type='button';
-    free.disabled=busy||!!ticket||!account()||!status||(!freeMode&&!status.dailyFreeAvailable);
+    free.disabled=busy;
     free.addEventListener('click',()=>void buy(option.tier,true,option.id));
     article.append(free);
    }
@@ -1095,7 +1097,8 @@ export function initChristmasScratch(){
  }
  async function buy(tier,free,variantId,voucher=false){
   if(!account()){showAlert('🔐 Bitte melde dich zuerst mit deinem DOG-Onlineprofil an.',variantId);drawShop();return;}
-  if(busy)return;
+  if(busy){alertMessage.textContent='⏳ Ein Los wird bereits auf Render geöffnet.';alertToast.hidden=false;return;}
+  if(!status){showAlert('🔄 Dein Rubbellos-Konto ist noch nicht geladen. Bitte „Kontostand aktualisieren“ auswählen.',variantId);drawShop();return;}
   if(ticket){
    try{showTicket(ticket)}catch(e){showAlert('⚠️ Dein offenes Los konnte nicht angezeigt werden: '+e.message,variantId)}
    return;
@@ -1103,7 +1106,12 @@ export function initChristmasScratch(){
   if(!SCRATCH_SHOP_VARIANTS.some(c=>c.id===variantId&&c.tier===tier)){
    showAlert('⚠️ Diese Losvariante ist noch nicht im Spiel freigeschaltet.',variantId);drawShop();return;
   }
+  if(!free&&!voucher&&status.coins<(SCRATCH_TICKET_TYPES.find(c=>c.id===tier)?.price||0)){
+   showAlert('⚠️ Nicht genügend Münzen für dieses Los.',variantId);drawShop();return;
+  }
   clearAlert();busy=true;drawShop();
+  alertMessage.textContent='⏳ Das Los wird auf Render erstellt. Die Abbuchung erfolgt nur einmal.';
+  alertToast.hidden=false;
   pending=pending?.tier===tier&&pending.free===free&&pending.variantId===variantId&&
    pending.voucher===voucher?pending:
    {tier,variantId,free,voucher,commandId:'scratch-'+crypto.randomUUID()};
@@ -1116,6 +1124,7 @@ export function initChristmasScratch(){
    // local animation fails, so it is always reopenable without a second buy.
    ticket=r.result;
    showTicket(r.result);
+   clearAlert();
    notice('❄️ Beginne irgendwo und rubbele in einer Bewegung über alle Felder. Bei 90 % öffnet das Los automatisch.');
   }catch(e){
    console.error('[DOG scratch] Öffnen fehlgeschlagen:',e);
