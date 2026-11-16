@@ -177,9 +177,11 @@ export const PIECE_STYLES=deepFreeze({
   contrast:{label:'Hoher Kontrast',colors:['#ff493a','#2b87ff','#00c778','#ffdf00']}
 });
 // Shape and color palette can be selected independently.
+// Use a new ID for the gated 3D edition: old "classic" preferences migrate
+// naturally to the new solid default rather than preselecting a level reward.
 export const PIECE_SHAPES=deepFreeze({
-  classic:{label:'Klassische 3D-Figuren',minPlayerLevel:4},
-  solid:{label:'Vollflächige Farb-Spielsteine'}
+  solid:{label:'Vollflächige Farb-Spielsteine'},
+  classic3d:{label:'Klassische 3D-Figuren',minPlayerLevel:4}
 });
 export const isPieceShapeUnlocked=id=>{
   const shape=PIECE_SHAPES[id];
