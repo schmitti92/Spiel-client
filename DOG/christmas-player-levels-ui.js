@@ -1,7 +1,4 @@
-/**
- * Personal DOG levels. Rewards are deliberately placeholders: no claims,
- * credits or unlocks can be triggered by this view.
- */
+/** Personal DOG level UI. Level-1 starter redemption is verified on Render. */
 export function initDogPlayerLevels(){
  const $=id=>document.getElementById(id);
  const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
@@ -11,7 +8,7 @@ export function initDogPlayerLevels(){
   return s?.status==='online'&&s?.user?.getIdToken?s.user:null;
  };
  const format=n=>Number(n||0).toLocaleString('de-DE');
- let pending=null,requestId=0;
+ let pending=null,requestId=0,levelData=null,claimPending=false;
  function message(text,error=false){
   status.textContent=text;
   status.dataset.error=String(error);
@@ -50,11 +47,45 @@ export function initDogPlayerLevels(){
    const thresholds=[0,100,250,450,700,1000,1350,1750,2200,2700];
    threshold.textContent= n===1?'Startlevel':'Ab '+format(thresholds[n-1])+' EP';
    const reward=document.createElement('div');reward.className='dog-level-reward';
+   const claimed=Boolean(data.levelRewardClaims?.[1]);
    reward.textContent=entry?.configured&&entry?.reward?
-    (reached?'✅ ':'🔒 ')+(entry.reward.title||'Belohnung'):'🎁 Belohnung folgt';
+    (n===1?(claimed?'✅ ':'🎁 '):(reached?'✅ ':'🔒 '))+(entry.reward.title||'Belohnung'):'🎁 Belohnung folgt';
    card.append(badge,head,threshold,reward);
+   if(n===1){
+    const detail=document.createElement('small');
+    detail.textContent=claimed?'✅ Startgutscheine bereits abgeholt · in Rubbellose einlösbar':
+     '🎁 1× Geschenkelinie · 1× Schneeflocken-Bingo · 1× Wichtelpfad · 1× Premium';
+    card.append(detail);
+    if(!claimed){
+     const button=document.createElement('button');
+     button.type='button';button.className='dog-level-starter-claim';
+     button.textContent='🎟️ Vier Startgutscheine abholen';
+     button.disabled=claimPending;button.addEventListener('click',()=>void claimStarter(button));
+     card.append(button);
+    }
+   }
    grid.append(card);
   }
+ }
+ async function claimStarter(button){
+  if(claimPending||!user())return;
+  const current=user(),identity=current.uid;
+  claimPending=true;if(button)button.disabled=true;
+  try{
+   const token=await current.getIdToken();
+   if(user()?.uid!==identity)return;
+   const res=await fetch(base+'/api/hub/dog/level/rewards/claim',{
+    method:'POST',mode:'cors',cache:'no-store',
+    headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+    body:JSON.stringify({level:1})
+   });
+   const data=await res.json().catch(()=>({}));
+   if(!res.ok||data.ok!==true||data.levelRewardClaims?.[1]!==true)throw Error(data.error||'STARTER_REWARD_FAILED');
+   if(user()?.uid!==identity)return;
+   if(levelData){levelData={...levelData,levelRewardClaims:{...levelData.levelRewardClaims,1:true}};render(levelData)}
+   message('🎉 Je ein Gutschein für alle vier Rubbellose ist deinem Profil gutgeschrieben.');
+  }catch(error){message('⚠️ Startgutscheine konnten nicht abgeholt werden: '+(error.message||'Verbindung prüfen'),true)}
+  finally{claimPending=false;if(button)button.disabled=false}
  }
  async function load(){
   if(pending)return pending;
@@ -75,6 +106,7 @@ export function initDogPlayerLevels(){
    const result=await response.json().catch(()=>({}));
    if(!response.ok||result.ok!==true)throw Error(result.error||'LEVEL_SERVER_ERROR');
    if(tokenId!==requestId||user()?.uid!==current.uid)return;
+   levelData=result;
    render(result);
    $('dog-level-summary').hidden=false;
    message('🎄 Level und Erfahrungspunkte sind mit deinem persönlichen Profil verknüpft.');
@@ -88,7 +120,7 @@ export function initDogPlayerLevels(){
  }
  refresh.addEventListener('click',()=>void load());
  window.addEventListener('spielonline-change',()=>{
-  requestId++;$('dog-level-summary').hidden=true;grid.replaceChildren();
+  requestId++;levelData=null;$('dog-level-summary').hidden=true;grid.replaceChildren();
   message('Profil gewechselt – bitte Level neu laden.');
   if($('tab-level')?.getAttribute('aria-selected')==='true')void load();
  });

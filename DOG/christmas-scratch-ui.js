@@ -257,7 +257,7 @@ export function initChristmasScratch(){
     el('strong','scratch-price',num(tier.price)+' 🪙'),
     el('div','scratch-card-payouts','🪙 '+num(amounts[0])+' · 💵 '+num(amounts[1])+' · 💼 '+num(amounts[2])),
     el('div','scratch-symbol-key',symbolLegend(option.tier,amounts)));
-   const vouchers=Number(status?.vouchers?.[option.tier]||0);
+   const vouchers=Number(status?.vouchers?.[option.tier]||0)+Number(status?.variantVouchers?.[option.id]||0);
    const buyBtn=el('button','scratch-buy','🎟️ Für '+num(tier.price)+' Münzen öffnen');
    buyBtn.type='button';buyBtn.hidden=freeMode;
    buyBtn.disabled=busy||!!ticket||!account()||!status||status.coins<tier.price;
@@ -929,6 +929,21 @@ export function initChristmasScratch(){
    const r=await query('');
    if(id!==requestId)return;
    status=r.scratch;canManageScratch=r.canManageScratch===true;
+   // Four distinct starter vouchers, credited once to the signed-in player.
+   if(status&&!status.levelOneStarterClaimed){
+    try{
+     const profile=account(),token=await profile.getIdToken();
+     const reply=await fetch(base+'/api/hub/dog/level/rewards/claim',{
+      method:'POST',cache:'no-store',
+      headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+      body:JSON.stringify({level:1})
+     });
+     const starter=await reply.json().catch(()=>({}));
+     if(reply.ok&&starter.ok===true&&starter.scratch&&id===requestId&&account()?.uid===profile.uid)
+      status={...status,...starter.scratch};
+    }catch(error){console.warn('[DOG] Startergutscheine nicht abgerufen:',error)}
+   }
+   if(id!==requestId)return;
    if(!ticket&&status?.lastResult?.board&&status.lastResult.commandId!==acknowledged())
     showTicket(status.lastResult);
    drawShop();
