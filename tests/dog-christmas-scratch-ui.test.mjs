@@ -176,10 +176,10 @@ test('all premium artwork, payouts and counters fit in a viewport without intern
  assert.match(page,/christmas-scratch\.css\?v=\d+/);
 });
 
-test('all four distinct scratch tickets are visible together in compact non-scrolling selection',()=>{
- assert.deepEqual(SCRATCH_SHOP_VARIANTS.map(x=>x.id),['gifts','snow_collect','elf','premium_27']);
- assert.deepEqual(SCRATCH_SHOP_VARIANTS.map(x=>x.tier),['simple','simple','medium','premium']);
- assert.equal(new Set(SCRATCH_SHOP_VARIANTS.map(x=>x.id)).size,4);
+test('all five scratch tickets are visible together in compact selection',()=>{
+ assert.deepEqual(SCRATCH_SHOP_VARIANTS.map(x=>x.id),['gifts','snow_collect','elf','premium_27','tic_tac_toe']);
+ assert.deepEqual(SCRATCH_SHOP_VARIANTS.map(x=>x.tier),['simple','simple','medium','premium','medium']);
+ assert.equal(new Set(SCRATCH_SHOP_VARIANTS.map(x=>x.id)).size,5);
  const js=source('../DOG/christmas-scratch-ui.js');
  const css=source('../DOG/christmas-scratch.css');
  const html=source('../DOG/christmas-event.html');
