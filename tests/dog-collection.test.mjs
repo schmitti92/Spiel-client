@@ -20,7 +20,7 @@ test('DOG collection distinguishes real selections from locked event previews',(
   assert.equal(s.available+s.planned,s.total);
   assert.ok(c.items.every(i=>['available','planned'].includes(i.status)));
   assert.ok(c.items.every(i=>['appearance','avatar','emoji','default','nameFrame','activeIcon','event','cardEdition'].includes(i.kind)));
-  assert.ok(c.items.filter(i=>i.status==='planned').every(i=>i.unlockId),'locked previews lack entitlement IDs: '+c.id+' '+c.items.filter(i=>i.status==='planned'&&!i.unlockId).map(i=>i.id).join(','));
+  assert.ok(c.items.filter(i=>i.status==='planned').every(i=>i.unlockId||i.minPlayerLevel>=1),'locked previews lack entitlement IDs: '+c.id+' '+c.items.filter(i=>i.status==='planned'&&!i.unlockId).map(i=>i.id).join(','));
  }
  const overall=dogCollectionStats();
  assert.equal(overall.total,DOG_COLLECTION_CATEGORIES.reduce((sum,c)=>sum+c.items.length,0));
@@ -32,10 +32,11 @@ test('Collection registers actual selectable designs without inventing past unlo
  assert.equal(look('backgrounds').items.filter(x=>x.status==='available').length,2);
  assert.equal(look('backgrounds').items.filter(x=>x.status==='planned').length,10);
  assert.equal(look('pieces').items.filter(x=>x.status==='available').length,Object.keys(PIECE_STYLES).length);
- assert.equal(look('cards').items.filter(x=>x.status==='available').length,1,'classic is the only immediately available edition');
- assert.equal(look('cards').items.filter(x=>x.status==='planned').length,2);
- assert.deepEqual(look('cards').items.map(x=>x.id),['classic','kartendesign-02','kartendesign-03']);
- assert.ok(look('cards').items.filter(x=>x.status==='planned').every(x=>x.kind==='cardEdition'&&x.unlockId?.startsWith('christmas2026:cards:')));
+ assert.equal(look('cards').items.filter(x=>x.status==='available').length,2,'classic and Sternenportal are available');
+ assert.equal(look('cards').items.filter(x=>x.status==='planned').length,3);
+ assert.deepEqual(look('cards').items.map(x=>x.id),['classic','kartendesign-02','kartendesign-03','kartendesign-04','kartendesign-05']);
+ assert.ok(look('cards').items.filter(x=>x.status==='planned').every(x=>x.kind==='cardEdition'&&(x.unlockId?.startsWith('christmas2026:cards:')||x.minPlayerLevel===3)));
+ assert.equal(look('cards').items.find(x=>x.id==='kartendesign-05').minPlayerLevel,3);
  assert.ok(look('cards').items.filter(x=>x.status==='planned').every(x=>x.image?.endsWith('/normiert/9.png')));
  assert.match(look('cards').items[0].image,/kartendesign-01\/normiert\/9\.png$/);
  assert.ok(look('cards').items.every(x=>x.cardEdition),'each published deck must have real card artwork');
@@ -53,7 +54,7 @@ test('Christmas card editions are registered as verified-only reward previews',(
  const rewardEntries=DOG_CHRISTMAS_REWARDS.filter(x=>x.category==='cards');
  assert.equal(rewardEntries.length,2);
  assert.equal(DOG_CHRISTMAS_REWARD_COUNTS.cards,2);
- for(const card of dogCollectionCategory('cards').items.filter(x=>x.status==='planned')){
+ for(const card of dogCollectionCategory('cards').items.filter(x=>x.status==='planned'&&x.unlockId)){
   assert.ok(isChristmasRewardLocked(card));
   assert.ok(rewardEntries.some(r=>r.id===card.id&&r.unlockId===card.unlockId));
  }

@@ -342,3 +342,13 @@ test('separate right-hand result window is removed while winning amounts stay in
  assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
  assert.match(css,/\.scratch-stage:not\(\[hidden\]\) > \.scratch-stage-actions\{\s*grid-row:8!important/);
 });
+
+test('every one of four scratch cards shows its own Level-1 voucher balance',()=>{
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const levels=source('../DOG/christmas-player-levels-ui.js');
+ assert.match(js,/status\?\.variantVouchers\?\.\[option\.id\]/);
+ assert.match(js,/api\/hub\/dog\/level\/rewards\/claim/);
+ assert.match(js,/status\.levelOneStarterClaimed/);
+ assert.match(levels,/Vier Startgutscheine abholen/);
+ assert.match(levels,/levelRewardClaims/);
+});
