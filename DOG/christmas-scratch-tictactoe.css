@@ -1,0 +1,121 @@
+/* DOG Tic-Tac-Toe – compact illustrated winter card. The optional artwork
+ * DOG/assets/scratch/tic-tac-toe-konzept.png can be uploaded later without
+ * blocking gameplay; the complete card remains styled with CSS alone. */
+#panel-scratch .scratch-tickets{grid-template-columns:repeat(3,minmax(0,1fr));}
+#panel-scratch .scratch-tier.scratch-variant-tictac{
+ --ticket-edge:#f0c978;
+ --ticket-text:#fff0bb;
+ background:
+  linear-gradient(125deg,#391020dc,#102d27d8 56%,#04252bdc),
+  url("./assets/scratch/tic-tac-toe-konzept.png") center 35% / cover no-repeat,
+  linear-gradient(145deg,#7a1726,#123d2d 70%,#071c29)!important;
+ border:2px solid #e7bf72!important;
+ box-shadow:inset 0 0 0 1px #fff3c16b,0 9px 28px #06161baa!important;
+}
+#panel-scratch .scratch-variant-tictac .scratch-icon{
+ display:grid;place-items:center;border-radius:10px;
+ background:linear-gradient(135deg,#fff0bc,#bd8737);
+ color:#4c1822;text-shadow:none;font-size:27px!important;
+ width:48px;min-width:48px;height:48px;
+}
+#panel-scratch .scratch-variant-tictac .scratch-card-class{color:#ffe0a4}
+#panel-scratch .scratch-variant-tictac .scratch-card-chance{white-space:normal}
+#panel-scratch .scratch-variant-tictac .scratch-buy{
+ background:linear-gradient(#fff0ba,#c79a4e);color:#32231e;
+}
+.scratch-stage[data-variant="tic_tac_toe"]{
+ border:3px solid #d9af5b!important;
+ background:
+  radial-gradient(circle at 85% 12%,#f9d16b35,transparent 32%),
+  linear-gradient(135deg,#841a2c,#351226 39%,#093a2f 78%,#061f27)!important;
+ color:#fff3d2;
+}
+.scratch-stage[data-variant="tic_tac_toe"] > #scratch-ticket-title{
+ color:#ffe4a6;text-shadow:0 2px 7px #0009;
+}
+.scratch-stage[data-variant="tic_tac_toe"] > #scratch-variant-rule{
+ color:#fff2d5;border-radius:9px;
+ background:#102e2cc9;border:1px solid #dcb56d7a;
+}
+.scratch-stage[data-variant="tic_tac_toe"] > #scratch-symbol-legend{
+ background:#0b352b;border:1px solid #d9b572;color:#fff0c5;
+}
+.scratch-stage[data-variant="tic_tac_toe"] #scratch-reveal{
+ border:0;background:transparent;box-shadow:none;
+}
+.scratch-stage[data-variant="tic_tac_toe"] #scratch-card-art{
+ display:block;position:relative;isolation:isolate;
+ width:100%;height:100%;aspect-ratio:3/4;
+ overflow:hidden;border-radius:15px;
+ border:2px solid #d8af64;
+ box-shadow:inset 0 0 0 3px #f9dc9973,0 10px 27px #0008;
+ background:
+  radial-gradient(ellipse at 50% 50%,#0e5141,#052920 70%),
+  url("./assets/lichtertal-scratch-winter/17_winternacht_hintergrund.png") center/cover,
+  #082c27;
+}
+.scratch-stage[data-variant="tic_tac_toe"] #scratch-card-art::before{
+ content:"DOG TIC-TAC-TOE";
+ display:flex;justify-content:center;align-items:center;
+ position:absolute;z-index:1;top:3%;left:5%;width:90%;height:14%;
+ border:2px solid #f7d98b;border-radius:13px;
+ background:linear-gradient(135deg,#8d1b2b,#520e20);
+ color:#ffe2a1;font:900 clamp(13px,2.7vh,25px) Georgia,serif;
+ text-align:center;letter-spacing:.04em;
+ text-shadow:0 2px 5px #24050a;
+ box-shadow:0 5px 12px #0007;
+}
+.scratch-stage[data-variant="tic_tac_toe"] #scratch-card-art::after{
+ content:"8 GEWINNLINIEN  ·  🪙  💵  💼  🎁";
+ position:absolute;bottom:3%;left:6%;width:88%;height:9%;
+ display:flex;align-items:center;justify-content:center;
+ z-index:1;box-sizing:border-box;
+ background:linear-gradient(#f7e3ab,#c99d52);
+ border:2px solid #fff0c4;border-radius:10px;
+ color:#3a2220;font:900 clamp(9px,1.7vh,15px) system-ui,sans-serif;
+ text-align:center;
+}
+.scratch-stage[data-variant="tic_tac_toe"] #scratch-board{
+ position:absolute!important;
+ top:21%;left:10%;width:80%;height:60%;
+ max-width:none!important;margin:0!important;padding:0!important;
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ grid-template-rows:repeat(3,minmax(0,1fr));
+ gap:2.2%;background:transparent;
+}
+.scratch-stage[data-variant="tic_tac_toe"] .scratch-field{
+ aspect-ratio:auto!important;min-width:0;min-height:0;
+ border:2px solid #c89e50;border-radius:11px;
+ background:linear-gradient(145deg,#ffedc9,#e1c18a);
+ box-shadow:inset 0 1px 9px #86613455,0 2px 7px #0005;
+}
+.scratch-stage[data-variant="tic_tac_toe"] .scratch-cell-symbol{
+ font-size:clamp(18px,4vh,42px);text-shadow:0 2px 3px #fff8e8;
+}
+.scratch-stage[data-variant="tic_tac_toe"] .scratch-field.scratch-winning-cell{
+ border:3px solid #ffda4e;background:linear-gradient(140deg,#fff4b5,#deb547);
+ box-shadow:inset 0 0 17px #f9d94b85,0 0 16px #ffe68ac7;
+}
+.scratch-stage[data-variant="tic_tac_toe"] .scratch-prize-sidebar{
+ background:linear-gradient(160deg,#083a30,#05261f)!important;
+ border-color:#e4c381!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"] .scratch-tictac-bonus-note{
+ padding:6px;border:1px solid #e9c88288;border-radius:8px;
+ font-size:10px;line-height:1.35;color:#ffedc4;
+}
+.scratch-tictac-sparks{display:block;color:#ffe4a5;font-size:11px}
+.scratch-tictac-voucher{display:block;color:#b5f3c3;font-size:11px}
+@media(min-width:1450px){
+ #panel-scratch .scratch-tickets{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+}
+@media(min-width:1050px) and (max-width:1449px){
+ #panel-scratch .scratch-tickets{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:1049px){
+ #panel-scratch .scratch-tickets{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:380px){
+ #panel-scratch .scratch-variant-tictac .scratch-icon{width:30px;min-width:30px;height:30px;font-size:18px!important}
+ .scratch-stage[data-variant="tic_tac_toe"] #scratch-card-art::after{font-size:8px}
+}
