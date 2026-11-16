@@ -261,14 +261,10 @@ function drawBoard(){
     '<radialGradient id="dog-blue" cx=".42" cy=".34" r=".88"><stop stop-color="'+skin.surface[0]+'"/><stop offset=".56" stop-color="'+skin.surface[1]+'"/><stop offset="1" stop-color="'+skin.surface[2]+'"/></radialGradient>'+
     '<linearGradient id="dog-hole" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff"/><stop offset=".52" stop-color="#ecf1f4"/><stop offset="1" stop-color="#b6c4d0"/></linearGradient>'+
     '<linearGradient id="dog-center" x1="0" y1="0" x2="0" y2="1"><stop stop-color="'+skin.center[0]+'"/><stop offset="1" stop-color="'+skin.center[1]+'"/></linearGradient>'+
-    '<filter id="dog-pawn-shadow" x="-60%" y="-60%" width="220%" height="220%"><feDropShadow dx="0" dy="3" stdDeviation="2.8" flood-color="#000" flood-opacity=".65"/></filter>'+
+    '<filter id="dog-pawn-shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.3" flood-color="#000" flood-opacity=".42"/></filter>'+
     '<filter id="dog-halo" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4"/></filter>'+
     '<pattern id="dog-speckle" x="0" y="0" width="31" height="43" patternUnits="userSpaceOnUse"><circle cx="5" cy="11" r=".8" fill="#ffffff" opacity=".09"/><circle cx="22" cy="34" r=".65" fill="#ffffff" opacity=".12"/><circle cx="16" cy="6" r=".55" fill="#06172f" opacity=".38"/></pattern>'
   );
-  for(let seat=0;seat<4;seat++){
-    const c=safeColor(seat);
-    push('<linearGradient id="dog-pawn-'+seat+'" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff" stop-opacity=".68"/><stop offset=".3" stop-color="'+c+'"/><stop offset=".83" stop-color="'+c+'"/><stop offset="1" stop-color="#172431" stop-opacity=".9"/></linearGradient>');
-  }
   push('</defs>');
   push('<rect x="8" y="8" width="744" height="744" rx="44" fill="url(#dog-wood)" stroke="#2c1b13" stroke-width="7"/>');
   push('<rect x="27" y="27" width="706" height="706" rx="30" fill="#051323" stroke="#ead4a4" stroke-opacity=".66" stroke-width="2"/>');
@@ -337,17 +333,19 @@ function drawBoard(){
   // overlay, title, class or pointer hints. Render checks each landing in the
   // authoritative match; neither player's client receives the positions.
   // No move hints: destinations must be calculated by the player.
-  // Pawns on top, always staying attached to their logical position.
+  // Full-field, solid-color DOG counters. The board holes have radii
+  // 17.1–17.3 SVG units; each piece fills its reserve, track or goal field.
   for(const piece of game.pieces){
     const p=piecePoint(piece),color=safeColor(piece.owner),hi=selectedPiece===piece.id;
     if(!p)continue;
     if(hi)push('<circle class="dog-move-halo" cx="'+p.x+'" cy="'+p.y+'" r="28" fill="'+color+'" fill-opacity=".5" filter="url(#dog-halo)" pointer-events="none"/>');
     push('<g data-piece="'+piece.id+'" class="dog-pawn '+(hi?'can-pick dog-pawn-selected':'')+'" aria-label="Figur '+(piece.id%4+1)+' '+(game.players[piece.owner]?.name||'')+'">');
-    push('<ellipse cx="'+p.x+'" cy="'+(p.y+10)+'" rx="14.6" ry="6.8" fill="#020b15" opacity=".63"/>');
-    push('<path d="M '+(p.x-10)+' '+(p.y+5)+' Q '+(p.x-11)+' '+(p.y-3)+' '+(p.x-5)+' '+(p.y-7)+' Q '+p.x+' '+(p.y-13)+' '+(p.x+5)+' '+(p.y-7)+' Q '+(p.x+11)+' '+(p.y-3)+' '+(p.x+10)+' '+(p.y+5)+' Q '+p.x+' '+(p.y+14)+' '+(p.x-10)+' '+(p.y+5)+' Z" fill="url(#dog-pawn-'+piece.owner+')" stroke="'+(hi?'#ffffff':'#061b2c')+'" stroke-width="'+(hi?'3':'1.5')+'" filter="url(#dog-pawn-shadow)"/>');
-    push('<circle cx="'+p.x+'" cy="'+(p.y-7)+'" r="9.1" fill="url(#dog-pawn-'+piece.owner+')" stroke="#ffffff" stroke-opacity=".42" stroke-width="1.4"/>');
-    push('<circle cx="'+(p.x-2.8)+'" cy="'+(p.y-10.8)+'" r="2.3" fill="#fff" opacity=".68"/>');
-    // Transparent large target for touch and keyboard focus via the move buttons.
+    // Opaque, precisely centered player-color disc covers the original hole.
+    push('<circle cx="'+p.x+'" cy="'+p.y+'" r="17.3" fill="'+color+'" stroke="'+(hi?'#fffaf0':'#112536')+'" stroke-width="'+(hi?'2.4':'1.1')+'" filter="url(#dog-pawn-shadow)"/>');
+    // Subtle inner engraving: no white hole visible around the piece.
+    push('<circle cx="'+p.x+'" cy="'+p.y+'" r="14.7" fill="none" stroke="#ffffff" stroke-opacity=".26" stroke-width=".9" pointer-events="none"/>');
+    push('<path d="M '+(p.x-10)+' '+(p.y-6)+' Q '+(p.x-3)+' '+(p.y-13)+' '+(p.x+5)+' '+(p.y-10)+'" fill="none" stroke="#ffffff" stroke-opacity=".30" stroke-width="1.8" stroke-linecap="round" pointer-events="none"/>');
+    // Preserve a generous transparent touch target for mobile/desktop.
     push('<circle cx="'+p.x+'" cy="'+p.y+'" r="18.3" fill="transparent"/>');
     push('</g>');
   }
