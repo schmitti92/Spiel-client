@@ -396,3 +396,24 @@ test('failed Render scratch purchases remain visible near the tapped card',()=>{
  assert.match(css,/\.scratch-action-toast:not\(\[hidden\]\)/);
  assert.match(css,/#panel-scratch \.scratch-card-open-error/);
 });
+
+test('Glückszahl 1 lottery renders editable values instead of fixed image labels',()=>{
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const css=source('../DOG/christmas-scratch-lotto.css');
+ const html=source('../DOG/christmas-event.html');
+ assert.match(js,/function renderNumberLottery\(receipt\)/);
+ assert.match(js,/receipt\.board\.hitPer1000/);
+ assert.match(js,/receipt\.board\.symbolWeights/);
+ assert.match(js,/receipt\.board\.coinAmounts/);
+ assert.match(js,/scratch-host-lucky/);
+ assert.match(js,/data\.luckyKey/);
+ assert.match(js,/numberOne20=\{price,hitPer1000,coinAmounts,symbolWeights\}/);
+ assert.match(js,/const ticketCost=option\.id==='number_one_20'/);
+ assert.match(js,/scratch-lotto-back/);
+ assert.doesNotMatch(js,/scratch-number-payout',amount\?num\(amount\)/);
+ assert.match(css,/lotto-fenster-hintergrund\.png/);
+ assert.match(css,/grid-template-columns:minmax\(0,27%\) minmax\(0,43%\) minmax\(0,28%\)/);
+ assert.match(html,/scratch-lotto-left/);
+ assert.match(html,/scratch-lotto-right/);
+ assert.match(html,/christmas-scratch-lotto\.css/);
+});
