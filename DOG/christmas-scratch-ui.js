@@ -263,6 +263,8 @@ export function initChristmasScratch(){
   for(const id of ['scratch-lotto-header','scratch-lotto-left','scratch-lotto-right']){
    const node=$(id);if(node)node.hidden=!active;
   }
+  const prizeStrip=$('scratch-lotto-ticket-prizes');
+  if(prizeStrip)prizeStrip.hidden=!active;
   if(!active)return;
   const cfg=status?.settings?.numberOne20||{};
   const amounts=Array.isArray(receipt.board.coinAmounts)?receipt.board.coinAmounts:
@@ -288,6 +290,20 @@ export function initChristmasScratch(){
   };
   const left=$('scratch-lotto-left'),right=$('scratch-lotto-right');
   left.replaceChildren();right.replaceChildren();
+  if(prizeStrip){
+   prizeStrip.replaceChildren();
+   for(const [icon,label] of [
+    ['🪙',num(amounts[0])],
+    ['💵',num(amounts[1])],
+    ['💼',num(amounts[2])],
+    ['🎁','Freischaltung']
+   ]){
+    const entry=el('span','lotto-ticket-prize');
+    entry.append(el('span','lotto-ticket-prize-icon',icon),
+     el('strong','lotto-ticket-prize-label',label));
+    prizeStrip.append(entry);
+   }
+  }
   const intro=el('section','lotto-panel lotto-steps');
   intro.append(el('h3','lotto-panel-title','🐾 SPIELERKLÄRUNG'));
   for(const [i,description] of [
