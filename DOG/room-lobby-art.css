@@ -1,0 +1,173 @@
+/* DOG premium room-lobby artwork. Visual-only: all existing click handlers, links,
+ * designer access gate and modal controls remain on their original elements.
+ * Artwork lives in DOG/assets/lobby-buttons/. If an image fails, the underlying
+ * German text on each button remains visible instead of a broken/blank link.
+ */
+#dog-room-lobby .dog-room-board-actions {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:clamp(6px,.8vw,10px);
+  margin:clamp(7px,1dvh,11px) 0 0;
+}
+#dog-room-lobby .dog-room-board-actions .dog-room-menu-tile {
+  position:relative;
+  isolation:isolate;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  min-width:0;
+  width:100%;
+  min-height:0;
+  height:clamp(52px,8.5dvh,90px);
+  align-self:stretch;
+  padding:7px 10px;
+  border:0;
+  border-radius:13px;
+  font-size:clamp(11px,1.03vw,15px);
+  line-height:1.2;
+  font-weight:900;
+  text-align:center;
+  text-shadow:0 2px 4px #000e;
+  color:#fff1d2;
+  background:linear-gradient(140deg,#1d5279,#061d37);
+  box-shadow:0 4px 12px #0008,0 0 0 1px #ecbb7099;
+  cursor:pointer;
+  text-decoration:none;
+  white-space:normal;
+  transition:transform .18s ease,filter .18s ease,box-shadow .18s ease;
+}
+#dog-room-lobby .dog-room-menu-tile::before {
+  content:"";
+  display:block;
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  border-radius:inherit;
+  background-image:var(--dog-menu-image);
+  background-size:100% 100%;
+  background-position:center;
+  background-repeat:no-repeat;
+}
+#dog-room-lobby .dog-room-board-actions .dog-room-menu-tile:hover:not(:disabled):not(.dog-designer-locked),
+#dog-room-lobby .dog-room-board-actions a.dog-room-menu-tile:hover:not(.dog-designer-locked) {
+  transform:translateY(-2px);
+  filter:brightness(1.08);
+  box-shadow:0 5px 15px #000b,0 0 11px #f9d27c9c;
+}
+#dog-room-lobby .dog-room-menu-tile:hover:not(.dog-designer-locked)::before,
+#dog-room-lobby .dog-room-menu-tile:focus-visible:not(.dog-designer-locked)::before {
+  background-image:var(--dog-menu-hover);
+}
+#dog-room-lobby .dog-room-menu-tile:active:not(:disabled){transform:scale(.985)}
+#dog-room-lobby .dog-room-menu-tile:focus-visible{outline:3px solid #fff0ac;outline-offset:2px}
+#dog-room-lobby .dog-room-menu-tile .dog-room-designer-note{
+  /* Level information stays available to assistive technology; the tile art
+     already contains its visual label. Guard still updates the text and title. */
+  position:absolute;overflow:hidden;width:1px;height:1px;padding:0;margin:-1px;
+  white-space:nowrap;clip:rect(0,0,0,0);clip-path:inset(50%);border:0;
+}
+#dog-room-lobby .dog-room-menu-designer {
+  --dog-menu-image:url("assets/lobby-buttons/brettdesigner.webp");
+  --dog-menu-hover:url("assets/lobby-buttons/brettdesigner-hover.webp");
+}
+#dog-room-lobby .dog-room-menu-unlocks {
+  --dog-menu-image:url("assets/lobby-buttons/freigeschaltet.webp");
+  --dog-menu-hover:url("assets/lobby-buttons/freigeschaltet-hover.webp");
+}
+#dog-room-lobby .dog-room-menu-christmas {
+  --dog-menu-image:url("assets/lobby-buttons/weihnachtsdorf.webp");
+  --dog-menu-hover:url("assets/lobby-buttons/weihnachtsdorf-hover.webp");
+}
+#dog-room-lobby .dog-room-menu-meta {
+  --dog-menu-image:url("assets/lobby-buttons/meta-sammelalbum.webp");
+  --dog-menu-hover:url("assets/lobby-buttons/meta-sammelalbum-hover.webp");
+}
+#dog-room-lobby .dog-room-menu-rules {
+  --dog-menu-image:url("assets/lobby-buttons/spielregeln.webp");
+  --dog-menu-hover:url("assets/lobby-buttons/spielregeln-hover.webp");
+}
+#dog-room-lobby .dog-room-menu-stats {
+  --dog-menu-image:url("assets/lobby-buttons/spielstatistik.webp");
+  --dog-menu-hover:url("assets/lobby-buttons/spielstatistik-hover.webp");
+}
+#dog-room-lobby #dog-room-designer.dog-designer-locked {
+  opacity:1;
+  filter:none;
+  border-style:solid;
+  box-shadow:0 2px 10px #0008;
+  pointer-events:none;
+}
+#dog-room-lobby #dog-room-designer.dog-designer-locked::before {
+  background-image:url("assets/lobby-buttons/brettdesigner-gesperrt.webp");
+}
+#dog-room-lobby .dog-room-board-actions .dog-room-rules-button {
+  min-width:0;
+  align-self:stretch;
+}
+@media (min-width:1000px) and (min-height:600px) and (orientation:landscape) {
+  /* Fit the full waiting room, including the illustrated 2x3 menu, into the
+     available fullscreen viewport on common desktop/laptop displays. */
+  #dog-room-lobby {overflow:hidden;padding:clamp(4px,.8dvh,10px) clamp(8px,1.7vw,24px)}
+  #dog-room-lobby .dog-room-stage {
+    height:100%;min-height:0;
+    display:grid;grid-template-rows:auto auto minmax(0,1fr);
+    gap:clamp(5px,.9dvh,10px);
+  }
+  #dog-room-lobby .dog-room-top {
+    min-height:0;height:clamp(48px,7.7dvh,76px);
+    padding:5px 12px;
+  }
+  #dog-room-lobby .dog-room-heading{font-size:clamp(23px,2.8vw,42px)}
+  #dog-room-lobby .dog-room-codebar {
+    min-height:0;height:clamp(49px,8.1dvh,76px);padding:5px 15px;
+  }
+  #dog-room-lobby .dog-room-code-value{font-size:clamp(29px,3.6vw,52px)}
+  #dog-room-lobby .dog-room-code-split{height:32px}
+  #dog-room-lobby .dog-room-grid{height:100%;min-height:0;align-items:stretch}
+  #dog-room-lobby .dog-room-panel{
+    min-height:0;padding:clamp(7px,1.2dvh,16px);
+  }
+  #dog-room-lobby .dog-room-panel h2 {
+    margin-bottom:clamp(5px,.85dvh,11px);
+    font-size:clamp(16px,1.5vw,22px);
+  }
+  #dog-room-lobby .dog-room-roster {flex:1 1 auto;min-height:0}
+  #dog-room-lobby .dog-room-player {min-height:0;padding:4px}
+  #dog-room-lobby .dog-room-readiness {
+    flex-shrink:0;margin-top:clamp(5px,.9dvh,10px);
+    padding:clamp(6px,1dvh,11px);
+  }
+  #dog-room-lobby .dog-room-progress{height:clamp(10px,1.7dvh,16px);margin:6px 0 3px}
+  #dog-room-lobby .dog-room-primary-actions {
+    flex-shrink:0;margin-top:clamp(5px,.9dvh,10px);
+  }
+  #dog-room-lobby .dog-room-primary-actions .dog-room-action {
+    min-height:clamp(42px,6.4dvh,60px);padding:6px;
+  }
+  #dog-room-lobby .dog-room-feedback {
+    flex-shrink:0;min-height:1em;margin:4px 0 0;
+  }
+  #dog-room-lobby .dog-room-board-preview {
+    flex:1 1 auto;min-height:0;padding:5px;
+  }
+  #dog-room-lobby .dog-room-board-preview svg{
+    height:100%;width:auto;max-height:100%;max-width:100%;
+  }
+  #dog-room-lobby .dog-room-board-actions {
+    flex-shrink:0;gap:clamp(5px,.8dvh,9px);
+    margin:clamp(5px,.8dvh,9px) 0 0;
+  }
+  #dog-room-lobby .dog-room-board-actions .dog-room-menu-tile{
+    height:clamp(42px,8.5dvh,80px);
+  }
+}
+@media (max-width:670px) {
+  #dog-room-lobby .dog-room-board-actions .dog-room-menu-tile {
+    height:clamp(53px,14vw,76px);
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #dog-room-lobby .dog-room-menu-tile{transition:none!important}
+}
