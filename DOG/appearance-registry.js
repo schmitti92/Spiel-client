@@ -26,6 +26,7 @@ export const DEFAULT_APPEARANCE=Object.freeze({
   boardFrame:'classic',
   scene:'schloss',
   pieces:'classic',
+  pieceShape:'classic',
   cards:'classic',
   sidebar:'schloss',
   hudLayout:'classic',
@@ -175,6 +176,11 @@ export const PIECE_STYLES=deepFreeze({
   neon:{label:'Neon',colors:['#ff5366','#40c7ff','#40e6a4','#ffd050']},
   contrast:{label:'Hoher Kontrast',colors:['#ff493a','#2b87ff','#00c778','#ffdf00']}
 });
+// Shape and color palette can be selected independently.
+export const PIECE_SHAPES=deepFreeze({
+  classic:{label:'Klassische 3D-Figuren'},
+  solid:{label:'Vollflächige Farb-Spielsteine'}
+});
 export const CARD_STYLES=deepFreeze({
   classic:{
     label:'Klassische DOG-Karten',
@@ -234,6 +240,7 @@ export const APPEARANCE_CATEGORIES=deepFreeze({
   hudLayout:HUD_LAYOUTS,
   hudTone:HUD_TONES,
   pieces:PIECE_STYLES,
+  pieceShape:PIECE_SHAPES,
   cards:CARD_STYLES,
   event:EVENT_PACKS
 });
@@ -284,7 +291,7 @@ export function resolveAppearance(value){
   return {
     selected:picked,board:BOARD_STYLES[chosen.board],boardFrame:BOARD_FRAMES[picked.boardFrame],scene:SCENE_STYLES[picked.scene],sidebar:SIDEBAR_BACKGROUNDS[chosen.sidebar],
     hudLayout:HUD_LAYOUTS[picked.hudLayout],hudTone:HUD_TONES[picked.hudTone],
-    pieces:PIECE_STYLES[chosen.pieces],cards:CARD_STYLES[chosen.cards],
+    pieces:PIECE_STYLES[chosen.pieces],pieceShape:chosen.pieceShape,cards:CARD_STYLES[chosen.cards],
     event
   };
 }
