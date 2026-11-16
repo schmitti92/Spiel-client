@@ -48,7 +48,10 @@
  max-width:min(98%,calc(98dvh * 1086 / 1448))!important;
  max-height:98%!important;
  margin:0 auto!important;
- border:2px solid #f6dc97!important;
+ /* No inner border: the artwork pixels and overlay percentages must
+    share the SAME content box on every tablet zoom level. */
+ border:0!important;
+ outline:2px solid #f6dc97!important;
  border-radius:10px!important;
  overflow:hidden!important;
  background:#5f1626 url('./assets/scratch/tic-tac-toe-duell.webp') center/100% 100% no-repeat!important;
