@@ -708,10 +708,22 @@ export function initChristmasScratch(){
   const x=right?644:314, width=right?301:307;
   const y=LUCKY_ROW_TOPS[row],height=LUCKY_ROW_HEIGHTS[row];
   if(!Number.isFinite(y)||!Number.isFinite(height))throw Error('SCRATCH_LUCKY_ROW_INVALID');
-  for(const [key,value,denom] of [
-   ['--lucky-x',x,LUCKY_ART_WIDTH],['--lucky-y',y,LUCKY_ART_HEIGHT],
-   ['--lucky-width',width,LUCKY_ART_WIDTH],['--lucky-height',height,LUCKY_ART_HEIGHT]
-  ])cell.style.setProperty(key,(value/denom*100).toFixed(5)+'%');
+  // Apply the pixel-calibrated 1152x1536 artwork geometry directly.
+  // Important inline geometry overrides older, cached 20x2 grid styles.
+  // Percentage units keep every row aligned when the artwork scales.
+  const geometry={
+   left:(x/LUCKY_ART_WIDTH*100).toFixed(5)+'%',
+   top:(y/LUCKY_ART_HEIGHT*100).toFixed(5)+'%',
+   width:(width/LUCKY_ART_WIDTH*100).toFixed(5)+'%',
+   height:(height/LUCKY_ART_HEIGHT*100).toFixed(5)+'%'
+  };
+  cell.style.setProperty('position','absolute','important');
+  for(const [key,value] of Object.entries(geometry)){
+   cell.style.setProperty(key,value,'important');
+   cell.style.setProperty('--lucky-'+(key==='left'?'x':key==='top'?'y':key),''+value);
+  }
+  cell.style.setProperty('margin','0','important');
+  cell.style.setProperty('box-sizing','border-box','important');
  }
  function makeField(symbol,index=0){
   const cell=el('div','scratch-field');
@@ -1094,6 +1106,18 @@ export function initChristmasScratch(){
     '🪙 200 · 💵 450 · 💼 800 · 🎁 Premium · 8 mögliche Gewinnlinien':
     symbolLegend(result.tier,coinAmountsFor(result.tier,result.board?.variantId,result))}
   board.replaceChildren();board.removeAttribute('style');
+  if(stage.dataset.variant==='number_one_20'){
+   // The old left:24.7% / width:50.8% board made the scratch coating
+   // land on only the first 18 rows. Force the layer to the ENTIRE
+   // native ticket surface before calculating canvas paint coordinates.
+   for(const [key,value] of Object.entries({
+    position:'absolute',left:'0',top:'0',width:'100%',height:'100%',
+    display:'block',margin:'0',padding:'0',
+    'max-width':'none','max-height':'none',
+    'grid-template-columns':'none','grid-template-rows':'none',
+    'column-gap':'0','row-gap':'0',gap:'0'
+   }))board.style.setProperty(key,value,'important');
+  }
   if(conf&&Array.isArray(cells)&&cells.length===conf[2]*conf[3]){
    board.style.setProperty('--scratch-cols',conf[3]);
    for(const [index,symbol] of cells.entries())board.append(makeField(symbol,index));
