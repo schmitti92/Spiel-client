@@ -381,3 +381,18 @@ test('nine field DOG trigger uses authoritative server wins and highlights DOG',
  assert.match(css,/grid-template-rows:repeat\(3,minmax\(0,1fr\)\)/);
  assert.match(html,/christmas-scratch-specials\.css\?v=\d+/);
 });
+
+test('failed Render scratch purchases remain visible near the tapped card',()=>{
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const css=source('../DOG/christmas-scratch-glueckszahl.css');
+ assert.match(js,/scratch-action-toast/);
+ assert.match(js,/scratch-card-open-error/);
+ assert.match(js,/scratchBuyError/);
+ assert.match(js,/SCRATCH_INVALID_VARIANT/);
+ assert.match(js,/showAlert\(scratchBuyError\(e\?\.message\),variantId\)/);
+ assert.match(js,/ticket=r\.result;/);
+ assert.match(js,/try\{attachUnifiedCover\(\)\}/);
+ assert.match(js,/scratch-reopen-ticket/);
+ assert.match(css,/\.scratch-action-toast:not\(\[hidden\]\)/);
+ assert.match(css,/#panel-scratch \.scratch-card-open-error/);
+});
