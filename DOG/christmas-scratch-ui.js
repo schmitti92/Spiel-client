@@ -17,9 +17,11 @@ export const SCRATCH_SHOP_VARIANTS=Object.freeze([
  Object.freeze({id:'gifts',tier:'simple',icon:'🎁',name:'Geschenkelinie',subtitle:'Einfach · 9 Felder',rule:'3 gleiche Gewinnzeichen in einer Linie',theme:'gift'}),
  Object.freeze({id:'snow_collect',tier:'simple',icon:'❄️',name:'Schneeflocken-Bingo',subtitle:'Einfach · 16 Felder',rule:'3 gleiche Gewinnzeichen irgendwo',theme:'snow'}),
  Object.freeze({id:'elf',tier:'medium',icon:'🧝',name:'Magischer Wichtelpfad',subtitle:'Mittel · 20 Felder',rule:'Geld: Pfad · Geschenke: 3 verbunden',theme:'elf'}),
- Object.freeze({id:'premium_27',tier:'premium',icon:'👑',name:'Premium-Weihnachtslos',subtitle:'Premium · 27 Felder',rule:'4 sichere Geld-Dreierreihen · 20 Symbole = 1.000 🪙 (30 %)',theme:'gold'})
+ Object.freeze({id:'premium_27',tier:'premium',icon:'👑',name:'Premium-Weihnachtslos',subtitle:'Premium · 27 Felder',rule:'4 sichere Geld-Dreierreihen · 20 Symbole = 1.000 🪙 (30 %)',theme:'gold'}),
+  Object.freeze({id:'tic_tac_toe',tier:'medium',icon:'🎯',name:'DOG Tic-Tac-Toe',subtitle:'Spezial · 9 Felder',rule:'3 gleiche Symbole in einer Linie · 8 Wege · 7 Boni',theme:'tictac'})
 ]);
 const VARIANTS={
+  tic_tac_toe:['🎯 DOG Tic-Tac-Toe','Drei gleiche Symbole in einer der acht Reihen, Spalten oder Diagonalen. Alle passenden Reihen und Boni zählen.',3,3],
  premium_27:['🎅 Premium-Weihnachts-Rubbellos','Mindestens 4 Geld-Dreierreihen sind garantiert. Je 3 gleiche Geldsymbole waagerecht gewinnen. 20 echte Symbole bringen 1.000 Zusatzmünzen; ab 24 ist eine Freischaltung möglich.',9,3],
  gifts:['🎁 Geschenkelinie','Drei gleiche Gewinnsymbole in einer Reihe, Spalte oder Diagonale',3,3],
  snow:['❄️ Schneeflocken-Bingo (älteres Los)','Vier gleiche Symbole in einer Reihe, Spalte oder Diagonale',4,4],
@@ -233,7 +235,8 @@ export function initChristmasScratch(){
    const unlockChance=Number.isInteger(variantConfig?.weights?.unlock)?
     percent(variantConfig.weights.unlock):tier.unlockChance;
    const unlocksLeft=status?.pools?.[option.tier]?.remaining;
-   const chanceText=unlocksLeft===0?'🎁 Alle Freischaltungen gesammelt':
+   const chanceText=option.id==='tic_tac_toe'?'🎁 Drei gleiche Geschenke = Premium · 4 % pro Feld':
+    unlocksLeft===0?'🎁 Alle Freischaltungen gesammelt':
     '🎁 bis zu '+unlockChance+' % Freischaltung';
    const chanceWeights=variantConfig?.weights;
    const premiumMilestoneChance=chanceWeights&&Number.isInteger(chanceWeights.coins)&&
@@ -252,11 +255,12 @@ export function initChristmasScratch(){
    const details=el('div','scratch-card-brief');
    details.append(el('span','scratch-card-rule',visibleRule),
     el('span','scratch-card-chance',chanceText));
-   const amounts=coinAmountsFor(option.tier,option.id);
+   const amounts=option.id==='tic_tac_toe'?[200,450,800]:coinAmountsFor(option.tier,option.id);
    article.append(heading,details,
     el('strong','scratch-price',num(tier.price)+' 🪙'),
     el('div','scratch-card-payouts','🪙 '+num(amounts[0])+' · 💵 '+num(amounts[1])+' · 💼 '+num(amounts[2])),
-    el('div','scratch-symbol-key',symbolLegend(option.tier,amounts)));
+    el('div','scratch-symbol-key',option.id==='tic_tac_toe'?
+     '🪙 200 · 💵 450 · 💼 800 · 🎁 Premium':symbolLegend(option.tier,amounts)));
    const vouchers=Number(status?.vouchers?.[option.tier]||0)+Number(status?.variantVouchers?.[option.id]||0);
    const buyBtn=el('button','scratch-buy','🎟️ Für '+num(tier.price)+' Münzen öffnen');
    buyBtn.type='button';buyBtn.hidden=freeMode;
@@ -687,6 +691,10 @@ export function initChristmasScratch(){
   const awarded=new Set(entries.map(p=>p?.type==='coins'?p.symbol||'🪙':p?.type==='unlock'?p.symbol||'🎁':''));
   const giftSymbols=[3,4,5].includes(result?.board?.symbolVersion)?['🎁','💝','🎀','🧧']:['🎁'];
   const wonGifts=giftSymbols.filter(symbol=>awarded.has(symbol));
+  if(result?.board?.variantId==='tic_tac_toe'){
+   panel.append(el('div','scratch-tictac-bonus-note',
+    '🎯 8 Linien · 2 Linien +250 · 3+ +800 · Mitte +300 · X +1.000 · Ecken +400 · 9 gleiche +20.000'));
+  }
   const names=[['🪙',amounts[0]+' Münzen'],['💵',amounts[1]+' Münzen'],['💼',amounts[2]+' Münzen'],[giftSymbols.join(' '),[3,4,5].includes(result?.board?.symbolVersion)?'Freischaltung · 3 gleiche Geschenke':'Freischaltung']];
   for(const [symbol,label] of names){
    const won=awarded.has(symbol)||(symbol===giftSymbols.join(' ')&&wonGifts.length>0);
@@ -727,6 +735,14 @@ export function initChristmasScratch(){
   heading.append(el('strong','',prizes.length?'🏆 '+prizes.length+' Gewinne':'❄️ Niete'),
    el('strong','scratch-inline-total','🪙 '+num(amount)+' erhalten'));
   outlet.append(heading);
+  if(result.board?.variantId==='tic_tac_toe'){
+   const text=result.giftSparksEarned?
+    '🎁 +1 Geschenkfunke · '+(status?.giftSparks??0)+'/5 bis zum Gratis-Tic-Tac-Toe-Los':
+    '🎁 2 Geschenke auf einem Los geben einen Geschenkfunken';
+   outlet.append(el('small','scratch-tictac-sparks',text));
+   if(result.giftVoucherEarned)outlet.append(el('strong','scratch-tictac-voucher',
+    '🎟️ Fünf Geschenkfunken gesammelt: +1 Gratislos!'));
+  }
   if(!prizes.length)return;
   const list=el('div','scratch-inline-chips');
   const samePrize=(win,prize)=>win?.symbol===prize.symbol&&
@@ -741,7 +757,12 @@ export function initChristmasScratch(){
    const source=prize.bonus?null:
     samePrize(wins[i],prize)?wins[i]:wins.find(win=>samePrize(win,prize));
    const rule=prize.milestone||source?.rule;
-   const detail=prize.milestone==='gold-20'?'20 Symbole · +1.000':
+   const detail=prize.milestone?.startsWith('tic-')?({
+    'tic-double':'2 Gewinnlinien','tic-multi':'3+ Gewinnlinien',
+    'tic-center':'Koffer in der Mitte','tic-x':'Goldenes X',
+    'tic-corners':'4 gleiche Ecken','tic-jackpot':'9 gleiche Felder – Jackpot'
+   }[prize.milestone]||'Tic-Tac-Toe-Bonus'):
+    prize.milestone==='gold-20'?'20 Symbole · +1.000':
     rule==='premium-24'?'24 Symbole · Freischaltung':
     prize.bonus?'🎉 Bonus zu Gewinn '+(Number.isInteger(prize.sourceWin)?prize.sourceWin+1:'?'):
     rule==='three-anywhere'?'3 gleiche beliebig':
@@ -773,7 +794,9 @@ export function initChristmasScratch(){
   $('scratch-ticket-title').textContent=conf?
    conf[0]+' · '+(SCRATCH_TICKET_TYPES.find(t=>t.id===result.tier)?.label||'')+'-Rubbellos':
    '🎟️ Älteres Rubbellos';
-  const payoutRule=result.board?.variantId==='premium_27'&&result.board?.symbolVersion===5?
+  const payoutRule=result.board?.variantId==='tic_tac_toe'?
+    '🪙 200 · 💵 450 · 💼 800 Münzen je Dreierreihe · 🎁 Premium-Freischaltung. 2 Linien +250 · 3+ Linien +800 · Koffer in der Mitte +300 · Goldenes X +1.000 · 4 gleiche Ecken +400 · 9 gleiche Felder +20.000. Zwei Geschenke ergeben einen Geschenkfunken.':
+   result.board?.variantId==='premium_27'&&result.board?.symbolVersion===5?
     'Vier echte Geld-Dreierreihen sind auf jedem Premiumlos garantiert: 🪙 💵 💼. Jede Dreierreihe gewinnt ihren Geldbetrag. Bei 20 echten Symbolen gibt es zusätzliche 1.000 Münzen; ab 24 kann eine Freischaltung dazukommen. 🧊 zählt nicht.':
    result.board?.variantId==='premium_27'&&result.board?.symbolVersion===4?
    'Drei gleiche Geldsymbole 🪙 💵 💼 in einer waagerechten Reihe gewinnen. Bei 20 echten Symbolfeldern gibt es feste 1.000 Münzen. Ab 24 Symbolfeldern zusätzlich eine Freischaltung mit 3 gleichen Geschenken. 🧊 zählt nicht.':
@@ -787,8 +810,10 @@ export function initChristmasScratch(){
    'Älteres Los – dieses Ergebnis wurde vor dem neuen Spielfeldsystem gespeichert';
   board.parentElement.querySelector('.scratch-premium-symbol-count')?.remove();
   const legend=$('scratch-symbol-legend');
-  if(legend){legend.hidden=![2,3,4,5].includes(result.board?.symbolVersion);
-   legend.textContent=legend.hidden?'':symbolLegend(result.tier,coinAmountsFor(result.tier,result.board?.variantId,result))}
+  if(legend){legend.hidden=![2,3,4,5,6].includes(result.board?.symbolVersion);
+   legend.textContent=legend.hidden?'':result.board?.variantId==='tic_tac_toe'?
+    '🪙 200 · 💵 450 · 💼 800 · 🎁 Premium · 8 mögliche Gewinnlinien':
+    symbolLegend(result.tier,coinAmountsFor(result.tier,result.board?.variantId,result))}
   board.replaceChildren();board.removeAttribute('style');
   if(conf&&Array.isArray(cells)&&cells.length===conf[2]*conf[3]){
    board.style.setProperty('--scratch-cols',conf[3]);
@@ -900,7 +925,8 @@ export function initChristmasScratch(){
    const list=winningLines;
    list.replaceChildren();
    for(const [i,win] of wins.entries()){
-    const description=win.rule==='gold-20'?'20 Symbolfelder':win.rule==='premium-24'?
+    const description=win.rule==='tic-line'?'Tic-Tac-Toe-Dreierreihe':
+     win.rule==='gold-20'?'20 Symbolfelder':win.rule==='premium-24'?
      ([3,4,5].includes(current.board?.symbolVersion)?'24 Symbolfelder + 3 gleiche Geschenkzeichen':'24 Symbolfelder'):
      win.rule==='row-3'?'Dreierreihe':win.rule==='gift-three-connected'?
      '3 verbundene Geschenkzeichen':'Gewinn '+(i+1);
