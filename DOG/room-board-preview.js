@@ -1,6 +1,6 @@
 /* Read-only DOG room preview. Uses the same approved/custom coordinates and
  * device appearance as the actual game, without creating game or room state. */
-import {currentBoardLayout,START_INDICES} from './board-layout.js?v=10';
+import {currentBoardLayout,START_INDICES} from './board-layout.js?v=11';
 import {BOARD_STYLES,loadAppearance,validAssetPath} from './appearance-registry.js?v=22';
 
 const NS='http://www.w3.org/2000/svg';
@@ -53,22 +53,22 @@ export function renderDogRoomBoard(target){
  }));
  svg.append(S('rect',{x:40,y:40,width:680,height:680,rx:24,fill:'none',stroke:'#fff2d0','stroke-width':2,opacity:'.58'}));
  const trackPath=layout.track.map((p,i)=>(i?'L':'M')+p.x+' '+p.y).join(' ')+' Z';
- svg.append(S('path',{d:trackPath,fill:'none',stroke:'#775334','stroke-width':17,opacity:'.36','stroke-linejoin':'round'}));
+ svg.append(S('path',{d:trackPath,fill:'none',stroke:'#775334','stroke-width':15,opacity:'.30','stroke-linejoin':'round'}));
  svg.append(S('path',{d:trackPath,fill:'none',stroke:'#fff0d1','stroke-width':2,opacity:'.5'}));
  for(let i=0;i<layout.track.length;i++){
   const p=layout.track[i];
   const owner=START_INDICES.indexOf(i);
   const fill=owner!==-1?COLORS[owner]:'#f9f7ee';
-  svg.append(S('circle',{cx:p.x,cy:p.y,r:owner!==-1?17:14.5,fill,stroke:'#2f3540','stroke-width':2.8}));
+  svg.append(S('circle',{cx:p.x,cy:p.y,r:owner!==-1?17.2:17,fill,stroke:'#2f3540','stroke-width':1.4}));
   if(owner!==-1)svg.append(S('circle',{cx:p.x,cy:p.y,r:7,fill:'#fff8'}));
  }
  for(let owner=0;owner<4;owner++){
   for(const p of layout.goals[owner]){
-   svg.append(S('circle',{cx:p.x,cy:p.y,r:15.5,fill:COLORS[owner],stroke:'#20303d','stroke-width':2.5}));
+   svg.append(S('circle',{cx:p.x,cy:p.y,r:17.0,fill:COLORS[owner],stroke:'#20303d','stroke-width':1.7}));
    svg.append(S('circle',{cx:p.x,cy:p.y,r:6.5,fill:'#ffffff3d'}));
   }
   const homes=layout.homes[owner];
-  for(const p of homes)svg.append(S('circle',{cx:p.x,cy:p.y,r:20.5,fill:COLORS[owner],opacity:'.76',stroke:'#fbead0','stroke-width':3}));
+  for(const p of homes)svg.append(S('circle',{cx:p.x,cy:p.y,r:17.1,fill:COLORS[owner],opacity:'.76',stroke:'#fbead0','stroke-width':1.5}));
   for(const p of homes)pawn(svg,p,COLORS[owner]);
  }
  svg.append(S('circle',{cx:380,cy:380,r:58,fill:'url(#dog-room-center)',stroke:'#f8d78b','stroke-width':7}));
