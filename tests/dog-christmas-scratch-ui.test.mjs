@@ -354,16 +354,22 @@ test('every one of four scratch cards shows its own Level-1 voucher balance',()=
 });
 
 
-test('20 by 2 number scratch reveals only the right numbers and keeps all prizes visible',()=>{
+test('20 by 2 number scratch hides BOTH prize symbols and numbers in 40 separate panels',()=>{
  const js=source('../DOG/christmas-scratch-ui.js');
- const css=source('../DOG/christmas-scratch-specials.css');
+ const art=source('../DOG/christmas-scratch-glueckszahl.css');
+ const html=source('../DOG/christmas-event.html');
  assert.match(js,/number_one_20:\['🔢 Die Glückszahl 1'/);
  assert.match(js,/scratch-number-target/);
  assert.match(js,/scratch-number-prize/);
- assert.match(js,/cells\.filter\(cell=>cell\.classList\.contains\('scratch-number-target'\)\)/);
- assert.match(js,/const coated=/);
- assert.match(css,/grid-template-rows:repeat\(20,minmax\(0,1fr\)\)/);
- assert.match(css,/\.scratch-stage\[data-variant="number_one_20"\]/);
+ assert.match(js,/const coated=cells;/);
+ assert.match(js,/for\(const cell of coated\)/);
+ assert.match(js,/Verdecktes Gewinnsymbol in Reihe/);
+ assert.match(js,/Verdeckte Zahl in Reihe/);
+ assert.match(art,/glueckszahl-1-design\.png/);
+ assert.match(art,/grid-template-rows:repeat\(20,minmax\(0,1fr\)\)/);
+ assert.match(art,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+ assert.match(art,/\.scratch-stage\[data-variant="number_one_20"\]/);
+ assert.match(html,/christmas-scratch-glueckszahl\.css\?v=\d+/);
 });
 test('nine field DOG trigger uses authoritative server wins and highlights DOG',()=>{
  const js=source('../DOG/christmas-scratch-ui.js');
