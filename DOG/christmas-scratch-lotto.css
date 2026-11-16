@@ -280,3 +280,39 @@
 #scratch-host-variants .scratch-host-lucky .scratch-host-odds-total[data-valid="false"]{
  color:#ffd0c7!important;
 }
+
+/* Cover the old fixed 100/300/800 labels baked into the original PNG.
+   Amounts are instead rendered from THIS ticket's immutable server receipt. */
+.scratch-stage[data-variant="number_one_20"] #scratch-lotto-ticket-prizes:not([hidden]){
+ position:absolute!important;
+ left:3%!important;bottom:2.4%!important;
+ width:94%!important;height:8.2%!important;
+ z-index:3!important;box-sizing:border-box!important;
+ display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ align-items:center!important;gap:1%!important;padding:1% 2%!important;
+ pointer-events:none!important;
+ border:2px solid #ffcf73!important;
+ border-radius:13px!important;
+ background:linear-gradient(180deg,#0b6944,#073d32 58%,#013427)!important;
+ box-shadow:0 1px 7px #071a16ad,inset 0 0 9px #e6c1756b;
+}
+.scratch-stage[data-variant="number_one_20"] .lotto-ticket-prize{
+ display:flex;align-items:center;justify-content:center;
+ min-width:0;gap:4px;height:100%;
+ border-right:1px solid #e4b868;
+ color:#ffe7a6;font:900 clamp(9px,1vw,15px)/1.05 Georgia,serif!important;
+ white-space:nowrap!important;text-shadow:0 1px 4px #000b;
+}
+.scratch-stage[data-variant="number_one_20"] .lotto-ticket-prize:last-child{border-right:0}
+.scratch-stage[data-variant="number_one_20"] .lotto-ticket-prize-icon{
+ font-size:clamp(14px,1.4vw,25px);flex:0 0 auto;
+}
+.scratch-stage[data-variant="number_one_20"] .lotto-ticket-prize-label{
+ overflow:hidden;text-overflow:ellipsis;
+}
+@media(max-width:750px){
+ .scratch-stage[data-variant="number_one_20"] .lotto-ticket-prize{
+  font-size:clamp(7px,1.4vw,11px)!important;gap:1px!important;
+ }
+ .scratch-stage[data-variant="number_one_20"] .lotto-ticket-prize-icon{font-size:12px!important}
+}
