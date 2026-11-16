@@ -304,11 +304,13 @@ export function initChristmasScratch(){
     ['🪙 Münze',num(amounts[0])+' Münzen'],
     ['💵 Schein',num(amounts[1])+' Münzen'],
     ['💼 Koffer',num(amounts[2])+' Münzen'],
-    ['🎁 Geschenk','Neue Freischaltung']
+    ['🎁 Geschenk','Freischaltung / '+num(giftReplacement)+' 🪙 Ersatz']
    ],'lotto-symbols'));
   const chanceOfAny=100*(1-Math.pow(1-hit,20));
   const bestCash=Math.max(0,...amounts.filter((_,i)=>weights[i]>0));
-  const theoreticalMax=chance>0?20*Math.max(bestCash,weights[3]>0?1500:0):0;
+  const giftReplacement=Number.isInteger(receipt.board.giftFallbackCoins)?receipt.board.giftFallbackCoins:
+   Number.isInteger(cfg.giftFallbackCoins)?cfg.giftFallbackCoins:1500;
+  const theoreticalMax=chance>0?20*Math.max(bestCash,weights[3]>0?giftReplacement:0):0;
   right.append(
    card('🎯 GEWINNCHANCEN',[
     ['Gewinn je Reihe',percent(hit*100)],
@@ -522,7 +524,7 @@ export function initChristmasScratch(){
   // Independent settings for the 20-row number lottery. These values are
   // saved to Firestore and used for future receipts only.
   const lucky=status.settings.numberOne20||{price:500,hitPer1000:100,
-   coinAmounts:[100,300,800],symbolWeights:[650,280,60,10]};
+   coinAmounts:[100,300,800],symbolWeights:[650,280,60,10],giftFallbackCoins:1500};
   const special=el('section','scratch-host-variant scratch-host-lucky');
   special.dataset.variant='number_one_20';
   special.append(el('h5','','🔢 GLÜCKSZAHL 1 · LOTTERIE-EINSTELLUNGEN'),
@@ -539,6 +541,7 @@ export function initChristmasScratch(){
   fields.append(
    luckyField('🎟️ Lospreis (Münzen)','price',lucky.price,1,1000000,1),
    luckyField('🎯 Zahl 1 je Reihe (%)','hit',lucky.hitPer1000/10,0,100,0.1));
+  fields.append(luckyField('🎁 Ersatzmünzen für Geschenk','giftFallback',lucky.giftFallbackCoins??1500,0,50000000,1));
   for(const [i,label] of ['🪙 Münze','💵 Geldschein','💼 Koffer'].entries())
    fields.append(luckyField(label+' · Auszahlung','coin-'+i,lucky.coinAmounts[i],1,50000000,1));
   for(const [i,label] of ['🪙 Münze','💵 Geldschein','💼 Koffer','🎁 Geschenk'].entries())
@@ -602,8 +605,11 @@ export function initChristmasScratch(){
   const getLucky=key=>special.querySelector('[data-lucky-key="'+key+'"]');
   const price=Number(getLucky('price')?.value);
   const hitPer1000=parsePercent(getLucky('hit'));
+  const giftFallbackCoins=Number(getLucky('giftFallback')?.value);
   const coinAmounts=Array.from({length:3},(_,i)=>Number(getLucky('coin-'+i)?.value));
   const symbolWeights=Array.from({length:4},(_,i)=>parsePercent(getLucky('weight-'+i)));
+  if(!Number.isInteger(giftFallbackCoins)||giftFallbackCoins<0||giftFallbackCoins>50000000)
+   throw Error('Glückszahl-Ersatzgewinn muss zwischen 0 und 50.000.000 Münzen liegen.');
   if(!Number.isInteger(price)||price<1||price>1000000)
    throw Error('Der Glückszahl-Lospreis muss zwischen 1 und 1.000.000 Münzen liegen.');
   if(coinAmounts.some(n=>!Number.isInteger(n)||n<1||n>50000000)||
@@ -611,7 +617,7 @@ export function initChristmasScratch(){
    throw Error('Glückszahl-Geldbeträge müssen aufsteigend sein: 🪙 kleiner 💵 kleiner 💼.');
   if(symbolWeights.reduce((a,b)=>a+b,0)!==1000)
    throw Error('Die vier Glückszahl-Symbolchancen müssen zusammen 100 % ergeben.');
-  const numberOne20={price,hitPer1000,coinAmounts,symbolWeights};
+  const numberOne20={price,hitPer1000,giftFallbackCoins,coinAmounts,symbolWeights};
   return {version:1,freeEnabled:$('scratch-host-free-enabled').checked,
    variants,numberOne20};
  }
