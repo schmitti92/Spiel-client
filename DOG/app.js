@@ -9,7 +9,7 @@ import {createDogVisualFeedback} from './ui-animations.js?v=2';
 import {summarizeDogVictory} from './victory-summary.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
-import {DEFAULT_APPEARANCE,BOARD_STYLES,isBoardUnlocked,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=25';
+import {DEFAULT_APPEARANCE,BOARD_STYLES,isBoardUnlocked,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,PIECE_SHAPES,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,loadAppearance,saveAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=26';
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=11';
 
 const $=id=>document.getElementById(id);
@@ -265,6 +265,11 @@ function drawBoard(){
     '<filter id="dog-halo" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4"/></filter>'+
     '<pattern id="dog-speckle" x="0" y="0" width="31" height="43" patternUnits="userSpaceOnUse"><circle cx="5" cy="11" r=".8" fill="#ffffff" opacity=".09"/><circle cx="22" cy="34" r=".65" fill="#ffffff" opacity=".12"/><circle cx="16" cy="6" r=".55" fill="#06172f" opacity=".38"/></pattern>'
   );
+  // Classic figure gradients remain available beside the optional full-field discs.
+  for(let seat=0;seat<4;seat++){
+    const color=safeColor(seat);
+    push('<linearGradient id="dog-pawn-'+seat+'" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff" stop-opacity=".68"/><stop offset=".3" stop-color="'+color+'"/><stop offset=".83" stop-color="'+color+'"/><stop offset="1" stop-color="#172431" stop-opacity=".9"/></linearGradient>');
+  }
   push('</defs>');
   push('<rect x="8" y="8" width="744" height="744" rx="44" fill="url(#dog-wood)" stroke="#2c1b13" stroke-width="7"/>');
   push('<rect x="27" y="27" width="706" height="706" rx="30" fill="#051323" stroke="#ead4a4" stroke-opacity=".66" stroke-width="2"/>');
@@ -340,11 +345,18 @@ function drawBoard(){
     if(!p)continue;
     if(hi)push('<circle class="dog-move-halo" cx="'+p.x+'" cy="'+p.y+'" r="28" fill="'+color+'" fill-opacity=".5" filter="url(#dog-halo)" pointer-events="none"/>');
     push('<g data-piece="'+piece.id+'" class="dog-pawn '+(hi?'can-pick dog-pawn-selected':'')+'" aria-label="Figur '+(piece.id%4+1)+' '+(game.players[piece.owner]?.name||'')+'">');
-    // Opaque, precisely centered player-color disc covers the original hole.
-    push('<circle cx="'+p.x+'" cy="'+p.y+'" r="17.3" fill="'+color+'" stroke="'+(hi?'#fffaf0':'#112536')+'" stroke-width="'+(hi?'2.4':'1.1')+'" filter="url(#dog-pawn-shadow)"/>');
-    // Subtle inner engraving: no white hole visible around the piece.
-    push('<circle cx="'+p.x+'" cy="'+p.y+'" r="14.7" fill="none" stroke="#ffffff" stroke-opacity=".26" stroke-width=".9" pointer-events="none"/>');
-    push('<path d="M '+(p.x-10)+' '+(p.y-6)+' Q '+(p.x-3)+' '+(p.y-13)+' '+(p.x+5)+' '+(p.y-10)+'" fill="none" stroke="#ffffff" stroke-opacity=".30" stroke-width="1.8" stroke-linecap="round" pointer-events="none"/>');
+    if(look.pieceShape==='solid'){
+      // New option: opaque color disc covers the underlying white field.
+      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="17.3" fill="'+color+'" stroke="'+(hi?'#fffaf0':'#112536')+'" stroke-width="'+(hi?'2.4':'1.1')+'" filter="url(#dog-pawn-shadow)"/>');
+      push('<circle cx="'+p.x+'" cy="'+p.y+'" r="14.7" fill="none" stroke="#ffffff" stroke-opacity=".26" stroke-width=".9" pointer-events="none"/>');
+      push('<path d="M '+(p.x-10)+' '+(p.y-6)+' Q '+(p.x-3)+' '+(p.y-13)+' '+(p.x+5)+' '+(p.y-10)+'" fill="none" stroke="#ffffff" stroke-opacity=".30" stroke-width="1.8" stroke-linecap="round" pointer-events="none"/>');
+    }else{
+      // Original DOG pawn design, restored as the default.
+      push('<ellipse cx="'+p.x+'" cy="'+(p.y+10)+'" rx="14.6" ry="6.8" fill="#020b15" opacity=".63"/>');
+      push('<path d="M '+(p.x-10)+' '+(p.y+5)+' Q '+(p.x-11)+' '+(p.y-3)+' '+(p.x-5)+' '+(p.y-7)+' Q '+p.x+' '+(p.y-13)+' '+(p.x+5)+' '+(p.y-7)+' Q '+(p.x+11)+' '+(p.y-3)+' '+(p.x+10)+' '+(p.y+5)+' Q '+p.x+' '+(p.y+14)+' '+(p.x-10)+' '+(p.y+5)+' Z" fill="url(#dog-pawn-'+piece.owner+')" stroke="'+(hi?'#ffffff':'#061b2c')+'" stroke-width="'+(hi?'3':'1.5')+'" filter="url(#dog-pawn-shadow)"/>');
+      push('<circle cx="'+p.x+'" cy="'+(p.y-7)+'" r="9.1" fill="url(#dog-pawn-'+piece.owner+')" stroke="#ffffff" stroke-opacity=".42" stroke-width="1.4"/>');
+      push('<circle cx="'+(p.x-2.8)+'" cy="'+(p.y-10.8)+'" r="2.3" fill="#fff" opacity=".68"/>');
+    }
     // Preserve a generous transparent touch target for mobile/desktop.
     push('<circle cx="'+p.x+'" cy="'+p.y+'" r="18.3" fill="transparent"/>');
     push('</g>');
@@ -774,7 +786,7 @@ function applyAppearance(){
   backPreview.style.backgroundRepeat='no-repeat';
   $('appearance-preview-face').innerHTML=cardMarkup('7',{tag:'div'});
   $('appearance-card-edition').value=edition;
-  for(const field of ['board','boardFrame','sidebar','pieces','cards','hudTone']){
+  for(const field of ['board','boardFrame','sidebar','pieces','pieceShape','cards','hudTone']){
     const select=$('appearance-'+field);
     if(select)select.value=appearance[field];
   }
@@ -797,7 +809,7 @@ function applyAppearance(){
   if(game)render();
 }
 function prepareAppearanceUI(){
-  const groups={board:BOARD_STYLES,boardFrame:BOARD_FRAMES,sidebar:SIDEBAR_BACKGROUNDS,hudTone:HUD_TONES,pieces:PIECE_STYLES,cards:Object.fromEntries(PUBLISHED_CARD_STYLE_IDS.map(id=>[id,CARD_STYLES[id]]))};
+  const groups={board:BOARD_STYLES,boardFrame:BOARD_FRAMES,sidebar:SIDEBAR_BACKGROUNDS,hudTone:HUD_TONES,pieces:PIECE_STYLES,pieceShape:PIECE_SHAPES,cards:Object.fromEntries(PUBLISHED_CARD_STYLE_IDS.map(id=>[id,CARD_STYLES[id]]))};
   for(const [type,registry] of Object.entries(groups)){
     const select=$('appearance-'+type);
     select.replaceChildren();
