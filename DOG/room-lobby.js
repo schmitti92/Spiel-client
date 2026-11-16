@@ -93,22 +93,27 @@ function renderRoster(players,busy=false,playing=false){
   if(player?.host)card.append(make('small','dog-room-player-meta','👑 Host'+(player.me?' (Du)':'')));
   else if(player?.me)card.append(make('small','dog-room-player-meta','Du'));
 
-  if(player?.me&&player.participating&&!playing){
+  if(player?.me&&player.participating){
    const picker=make('div','dog-room-color-picker');
-   picker.setAttribute('role','group');picker.setAttribute('aria-label','Deine DOG-Spielfarbe wählen');
+   picker.setAttribute('role','group');
+   picker.setAttribute('aria-label',playing?'DOG-Farbe für die nächste Partie wählen':'Deine DOG-Spielfarbe wählen');
+   const selected=player.colorPref||assigned;
    for(let i=0;i<4;i++){
-    const key=COLOR_KEYS[i],chosen=player.colorPref===key,taken=used.has(key)&&!chosen;
+    const key=COLOR_KEYS[i],chosen=selected===key,taken=used.has(key)&&!chosen;
     const button=make('button','dog-room-color-dot'+(chosen?' is-selected':''));button.type='button';
     button.dataset.dogColorChoice=key;
     button.style.setProperty('--choice-color',COLORS[i]);
     button.disabled=busy||taken;
-    button.setAttribute('aria-label',COLOR_NAMES[i]+(taken?' – bereits vergeben':chosen?' – ausgewählt':' wählen'));
+    button.setAttribute('aria-label',COLOR_NAMES[i]+(taken?' – bereits vergeben':chosen?' – ausgewählt':playing?' für die nächste Partie wählen':' wählen'));
     button.setAttribute('aria-pressed',String(chosen));
-    button.title=COLOR_NAMES[i]+(taken?' · belegt':chosen?' · erneut antippen für automatische Zuweisung':' wählen');
+    button.title=COLOR_NAMES[i]+(taken?' · belegt':chosen?' · erneut antippen für automatische Zuweisung':playing?' · nächste Partie':' wählen');
     picker.append(button);
    }
    card.append(picker);
-   card.append(make('small','dog-room-color-hint',assigned?'Farbe: '+COLOR_NAMES[colorIndex]:'🎨 Spielfarbe wählen'));
+   const nextIndex=COLOR_KEYS.indexOf(player.colorPref);
+   card.append(make('small','dog-room-color-hint',playing?
+    'Jetzt: '+(colorIndex<0?'–':COLOR_NAMES[colorIndex])+' · Nächste: '+(nextIndex<0?'Automatisch':COLOR_NAMES[nextIndex]):
+    assigned?'Farbe: '+COLOR_NAMES[colorIndex]:'🎨 Spielfarbe wählen'));
   }else if(player){
    const status=make('small','dog-room-color-hint',assigned?'● '+COLOR_NAMES[colorIndex]:'Farbe automatisch');
    if(assigned)status.style.color=COLORS[colorIndex];
@@ -200,7 +205,7 @@ function update(snapshot,busy=false){
 }
 $('dog-room-roster').addEventListener('click',event=>{
  const button=event.target.closest('button[data-dog-color-choice]');
- if(!button||button.disabled||current?.phase!=='preparing')return;
+ if(!button||button.disabled||!['preparing','playing'].includes(current?.phase))return;
  const mine=current?.players?.find(p=>p.me&&p.participating);
  if(!mine)return;
  const color=button.dataset.dogColorChoice;
