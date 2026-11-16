@@ -1,0 +1,189 @@
+/* Approved DOG winter Tic-Tac-Toe Duell image: native 1086 × 1448.
+ * Upload to DOG/assets/scratch/tic-tac-toe-duell.webp
+ * Eleven individual fields use pixel-calibrated CSS custom properties
+ * from the same native image coordinate system. No grid approximations. */
+#panel-scratch .scratch-tier.scratch-variant-tictac{
+ border:2px solid #f3c677!important;
+ background:
+   linear-gradient(145deg,#36061999,#093c35a4),
+   url('./assets/scratch/tic-tac-toe-duell.webp') center 37%/cover no-repeat,
+   linear-gradient(#782130,#113a37)!important;
+ box-shadow:0 8px 22px #0007,inset 0 0 0 1px #ffe5b0!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"]:not([hidden]){
+ position:fixed!important;z-index:12000!important;
+ left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;
+ width:calc(100vw - 12px)!important;height:calc(100dvh - 10px)!important;
+ max-width:none!important;max-height:none!important;box-sizing:border-box!important;
+ padding:6px!important;margin:0!important;overflow:hidden!important;
+ display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+ grid-template-rows:minmax(0,1fr) minmax(54px,9%)!important;
+ align-items:stretch!important;justify-items:center!important;
+ gap:3px!important;
+ border:2px solid #f4cc7c!important;border-radius:15px!important;
+ background:
+   radial-gradient(ellipse at 50% 40%,#5a1d2e,#112c34 67%,#08151c)!important;
+ box-shadow:0 0 0 100vmax #000b,0 10px 40px #000c,inset 0 0 11px #f4cb85!important;
+ color:#ffe9bd!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] > #scratch-ticket-title,
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] > #scratch-variant-rule,
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] > #scratch-symbol-legend,
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] > #scratch-inline-results{
+ display:none!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] > #scratch-reveal{
+ grid-column:1!important;grid-row:1!important;
+ display:flex!important;justify-content:center!important;align-items:center!important;
+ width:100%!important;height:100%!important;
+ min-height:0!important;min-width:0!important;
+ overflow:hidden!important;padding:0!important;margin:0!important;
+ background:transparent!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] #scratch-card-art{
+ display:block!important;position:relative!important;isolation:isolate!important;
+ flex:0 1 auto!important;box-sizing:border-box!important;
+ aspect-ratio:1086/1448!important;
+ width:auto!important;height:98%!important;
+ max-width:min(98%,calc(98dvh * 1086 / 1448))!important;
+ max-height:98%!important;
+ margin:0 auto!important;
+ border:2px solid #f6dc97!important;
+ border-radius:10px!important;
+ overflow:hidden!important;
+ background:#5f1626 url('./assets/scratch/tic-tac-toe-duell.webp') center/100% 100% no-repeat!important;
+ box-shadow:0 0 0 2px #522718,0 0 22px #f3d07887,0 7px 24px #000c!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] #scratch-card-art::before,
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] #scratch-card-art::after{
+ display:none!important;content:none!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] #scratch-board{
+ position:absolute!important;
+ inset:0!important;left:0!important;top:0!important;
+ width:100%!important;height:100%!important;
+ max-width:none!important;max-height:none!important;
+ margin:0!important;padding:0!important;
+ border:0!important;border-radius:0!important;
+ display:block!important;
+ grid-template-columns:none!important;grid-template-rows:none!important;
+ column-gap:0!important;row-gap:0!important;gap:0!important;
+ background:transparent!important;overflow:visible!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] #scratch-board .scratch-duel-tile{
+ position:absolute!important;
+ left:var(--duel-x)!important;top:var(--duel-y)!important;
+ width:var(--duel-w)!important;height:var(--duel-h)!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ flex-direction:column!important;box-sizing:border-box!important;
+ min-height:0!important;min-width:0!important;max-width:none!important;
+ margin:0!important;padding:0!important;gap:0!important;
+ border:1px solid #d4a959!important;
+ border-radius:8px!important;aspect-ratio:auto!important;
+ overflow:hidden!important;
+ background:linear-gradient(140deg,#fff1cf,#f4d2a2 56%,#e6b979)!important;
+ box-shadow:inset 0 0 7px #9d572d5a!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] #scratch-board .scratch-duel-multiplier{
+ border-radius:18px!important;
+ background:linear-gradient(110deg,#671d2c,#9a2538,#641d2d)!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] #scratch-board .scratch-duel-winning-symbol{
+ background:linear-gradient(120deg,#5b1e2d,#89242c,#5b1e2d)!important;
+ border-radius:17px!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] .scratch-duel-multiplier .scratch-cell-symbol{
+ color:#ffe3a0!important;
+ font:900 clamp(18px,3.2vw,49px)/1 Georgia,serif!important;
+ text-shadow:0 3px 7px #250505,0 0 10px #ffe99e!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] .scratch-duel-winning-symbol .scratch-cell-symbol{
+ color:#fff0ab!important;
+ font:900 clamp(22px,3.9vw,65px)/1 system-ui,sans-serif!important;
+ text-shadow:0 2px 9px #150509,0 0 10px #ffe18b!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] .scratch-duel-board-cell .scratch-cell-symbol{
+ color:#7b2731!important;
+ font:900 clamp(28px,5vw,76px)/1 Georgia,serif!important;
+ text-shadow:0 1px 2px #fff3c2!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] .scratch-duel-tile.scratch-winning-cell{
+ border:3px solid #ffe579!important;
+ background:linear-gradient(145deg,#fff4bf,#dfaf49)!important;
+ box-shadow:inset 0 0 9px #fff3b8,0 0 16px #ffed9c!important;
+ animation:none!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] .scratch-duel-cover:not([hidden]){
+ display:block!important;position:absolute!important;inset:0!important;
+ width:100%!important;height:100%!important;box-sizing:border-box!important;
+ cursor:crosshair;touch-action:none;user-select:none;
+ border:0;border-radius:inherit;z-index:4;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] .scratch-duel-cover[hidden]{
+ display:none!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] > #scratch-progress{
+ grid-column:1!important;grid-row:2!important;
+ position:absolute!important;bottom:51px!important;
+ left:0!important;right:0!important;z-index:4!important;
+ color:#ffe9b4!important;text-align:center!important;
+ font:850 clamp(10px,1vw,16px)/1.15 system-ui,sans-serif!important;
+ text-shadow:0 2px 4px #000b!important;pointer-events:none!important;
+ margin:0!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] > #scratch-progress-meter{
+ position:absolute!important;bottom:49px!important;left:38%!important;
+ width:24%!important;height:4px!important;z-index:4!important;margin:0!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] > .scratch-stage-actions{
+ display:flex!important;grid-column:1!important;grid-row:2!important;
+ position:relative!important;
+ width:100%!important;min-height:0!important;
+ align-self:end!important;justify-self:center!important;
+ align-items:center!important;justify-content:center!important;gap:10px!important;
+ padding:4px!important;margin:0!important;z-index:5!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] .scratch-stage-actions button:not([hidden]){
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ min-height:40px!important;
+ border:2px solid #ffe4a7!important;border-radius:999px!important;
+ background:linear-gradient(#fff1b5,#c48b36)!important;color:#351c14!important;
+ font:850 clamp(12px,1.2vw,18px)/1.2 Georgia,serif!important;
+ padding:7px 18px!important;
+ box-shadow:0 4px 12px #0009!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] > .scratch-prize-sidebar{
+ display:none!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"].is-revealed > .scratch-prize-sidebar{
+ display:flex!important;position:absolute!important;z-index:12!important;
+ right:1%!important;top:15%!important;
+ width:min(370px,32%)!important;height:auto!important;
+ max-height:75%!important;min-width:0!important;
+ overflow:auto!important;
+ border:2px solid #ffe5a7!important;border-radius:15px!important;
+ background:linear-gradient(#0c4538fa,#441729fa)!important;
+ box-shadow:0 8px 28px #000a!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] .scratch-prize-sidebar .scratch-current-awards{
+ padding:8px!important;gap:4px!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] .scratch-prize-sidebar .scratch-prize-entry{
+ font-size:12px!important;
+}
+@media(max-width:700px) and (orientation:portrait){
+ .scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] #scratch-card-art{
+  max-width:100%!important;height:auto!important;width:100%!important;
+  max-height:100%!important;
+ }
+ .scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] > .scratch-prize-sidebar{
+  width:94%!important;right:3%!important;left:3%!important;top:26%!important;
+  max-height:56%!important;
+ }
+ .scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] .scratch-stage-actions button:not([hidden]){
+  min-height:44px!important;font-size:12px!important;padding:6px 10px!important;
+ }
+ .scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] > #scratch-progress{
+  bottom:54px!important;font-size:10px!important;
+ }
+}
