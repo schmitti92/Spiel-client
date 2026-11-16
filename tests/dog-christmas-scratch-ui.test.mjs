@@ -395,7 +395,8 @@ test('failed Render scratch purchases remain visible near the tapped card',()=>{
  assert.match(js,/SCRATCH_INVALID_VARIANT/);
  assert.match(js,/showAlert\(scratchBuyError\(e\?\.message\),variantId\)/);
  assert.match(js,/ticket=r\.result;/);
- assert.match(js,/try\{attachUnifiedCover\(\)\}/);
+ assert.match(js,/if\(stage\.dataset\.duelVersion==='8'\)attachDuelCovers\(\)/);
+ assert.match(js,/else attachUnifiedCover\(\)/);
  assert.match(js,/scratch-reopen-ticket/);
  assert.match(css,/\.scratch-action-toast:not\(\[hidden\]\)/);
  assert.match(css,/#panel-scratch \.scratch-card-open-error/);
@@ -539,6 +540,6 @@ test('Tic-Tac-Toe Duell forces multiplier then sign then all nine board cells',(
  assert.match(js,/board\.append\(makeDuelTile\(String\(result\.board\.multiplier\)\+'×',0\)/);
  assert.match(js,/makeDuelTile\(result\.board\.winningSymbol,1\)/);
  assert.match(js,/const duelOffset=stage\.dataset\.duelVersion==='8'\?2:0/);
- assert.match(js,/Eine passende Dreierlinie aus dem Gewinnsymbol gewinnt EINEN/);
+ assert.match(js,/Eine Dreierlinie aus dem Gewinnsymbol gewinnt EINEN/);
  assert.match(js,/board\.querySelectorAll\('\.scratch-duel-cover'\)/);
 });
