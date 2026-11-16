@@ -1,4 +1,4 @@
-import {isVerifiedCosmeticUnlocked} from './verified-cosmetics.js?v=2';
+import {isVerifiedCosmeticUnlocked,isVerifiedDogPlayerLevelAtLeast} from './verified-cosmetics.js?v=2';
 /**
  * DOG presentation/content registry.
  *
@@ -26,7 +26,7 @@ export const DEFAULT_APPEARANCE=Object.freeze({
   boardFrame:'classic',
   scene:'schloss',
   pieces:'classic',
-  pieceShape:'classic',
+  pieceShape:'solid',
   cards:'classic',
   sidebar:'schloss',
   hudLayout:'classic',
@@ -178,9 +178,13 @@ export const PIECE_STYLES=deepFreeze({
 });
 // Shape and color palette can be selected independently.
 export const PIECE_SHAPES=deepFreeze({
-  classic:{label:'Klassische 3D-Figuren'},
+  classic:{label:'Klassische 3D-Figuren',minPlayerLevel:4},
   solid:{label:'Vollflächige Farb-Spielsteine'}
 });
+export const isPieceShapeUnlocked=id=>{
+  const shape=PIECE_SHAPES[id];
+  return Boolean(shape&&(!shape.minPlayerLevel||isVerifiedDogPlayerLevelAtLeast(shape.minPlayerLevel)));
+};
 export const CARD_STYLES=deepFreeze({
   classic:{
     label:'Klassische DOG-Karten',
@@ -273,7 +277,7 @@ export function normalizeAppearance(value){
   if(!value||typeof value!=='object'||Array.isArray(value))return next;
   for(const [category,registry] of Object.entries(APPEARANCE_CATEGORIES)){
     const id=value[category];
-    if(typeof id==='string' && Object.hasOwn(registry,id) && (category!=='board' || isBoardUnlocked(id)) && (category!=='cards' || isCardStylePublished(id)) &&
+    if(typeof id==='string' && Object.hasOwn(registry,id) && (category!=='board' || isBoardUnlocked(id)) && (category!=='pieceShape' || isPieceShapeUnlocked(id)) && (category!=='cards' || isCardStylePublished(id)) &&
       (category!=='hudTone'||id==='classic'||isVerifiedCosmeticUnlocked('christmas2026:hud-tone:'+id)) &&
       (category!=='scene'||!registry[id].unlockId||isVerifiedCosmeticUnlocked(registry[id].unlockId)))next[category]=id;
   }
