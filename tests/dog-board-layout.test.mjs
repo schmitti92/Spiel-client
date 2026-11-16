@@ -37,7 +37,8 @@ test('every private goal and reserve hole is separate from main circuit',()=>{
 test('approved DOG course uses exact uploaded field positions on all four sides',()=>{
  const starts=START_INDICES.map(i=>trackPoint(i));
  assert.deepEqual(starts,[{x:305.06,y:708.4},{x:51.72,y:306.57},{x:453.54,y:53.23},{x:706.89,y:455.05}]);
- const inner=TRACK_POINTS.filter(p=>p.x>240&&p.x<520&&p.y>240&&p.y<520);
+ // The expanded v2 cross reaches beyond the original 240..520 box.
+ const inner=TRACK_POINTS.filter(p=>p.x>220&&p.x<540&&p.y>220&&p.y<540);
  assert.ok(inner.length>=8,'The inner cross arms must remain intact');
 });
 test('DOG editor rejects overlapping fields and ruptured path sections',()=>{
