@@ -303,7 +303,7 @@ test('DOG Weihnachten top header is hidden only while a scratch ticket is open',
 test('premium scratch shows symbols AND saved coin amounts in each money square',()=>{
  const js=source('../DOG/christmas-scratch-ui.js');
  const css=source('../DOG/christmas-scratch.css');
- assert.match(js,/function makeField\(symbol\)/);
+ assert.match(js,/function makeField\(symbol,index=0\)/);
  assert.match(js,/stage\.dataset\.variant==='premium_27'&&\['🪙','💵','💼'\]\.includes\(symbol\)/);
  assert.match(js,/coinAmountsFor\(ticket\?\.tier\|\|'premium','premium_27',ticket\)/);
  assert.match(js,/scratch-cell-amount/);
