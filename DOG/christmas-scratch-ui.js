@@ -19,11 +19,11 @@ export const SCRATCH_SHOP_VARIANTS=Object.freeze([
  Object.freeze({id:'elf',tier:'medium',icon:'🧝',name:'Magischer Wichtelpfad',subtitle:'Mittel · 20 Felder',rule:'Geld: Pfad · Geschenke: 3 verbunden',theme:'elf'}),
  Object.freeze({id:'premium_27',tier:'premium',icon:'👑',name:'Premium-Weihnachtslos',subtitle:'Premium · 27 Felder',rule:'4 sichere Geld-Dreierreihen · 20 Symbole = 1.000 🪙 (30 %)',theme:'gold'}),
   Object.freeze({id:'tic_tac_toe',tier:'medium',icon:'🎯',name:'DOG Tic-Tac-Toe',subtitle:'Spezial · 9 Felder',rule:'3 gleiche Symbole in einer Linie · 8 Wege · 7 Boni',theme:'tictac'}),
-  Object.freeze({id:'number_one_20',tier:'medium',icon:'🔢',name:'Glückszahl 1',subtitle:'Zahlenlos · 20 × 2',rule:'Gewinn links · Zahl rechts · jede 1 gewinnt',theme:'number20'}),
+  Object.freeze({id:'number_one_20',tier:'medium',icon:'🔢',name:'Glückszahl 1',subtitle:'Zahlenlos · 20 × 2',rule:'Beide Spalten rubbeln · jede 1 gewinnt links',theme:'number20'}),
   Object.freeze({id:'dog_jackpot_9',tier:'premium',icon:'🐾',name:'Finde DOG!',subtitle:'DOG-Jackpot · 9 Felder',rule:'DOG finden = alle 8 Preisfelder gewinnen',theme:'dogjackpot'})
 ]);
 const VARIANTS={
-  number_one_20:['🔢 Die Glückszahl 1','20 Reihen mit zwei Spalten. Links steht dein Preis, rechts eine verdeckte Zahl. Jede 1 gewinnt den Preis der Reihe.',20,2],
+  number_one_20:['🔢 Die Glückszahl 1','20 Reihen mit zwei Rubbelspalten. Links das verdeckte Gewinnsymbol, rechts die verdeckte Zahl. Nur eine 1 gewinnt den Preis derselben Reihe.',20,2],
   dog_jackpot_9:['🐾 Finde DOG!','Neun verdeckte Felder. Ein DOG-Symbol gewinnt alle acht übrigen Preise, ohne DOG ist das Los eine Niete.',3,3],
   tic_tac_toe:['🎯 DOG Tic-Tac-Toe','Drei gleiche Symbole in einer der acht Reihen, Spalten oder Diagonalen. Alle passenden Reihen und Boni zählen.',3,3],
  premium_27:['🎅 Premium-Weihnachts-Rubbellos','Mindestens 4 Geld-Dreierreihen sind garantiert. Je 3 gleiche Geldsymbole waagerecht gewinnen. 20 echte Symbole bringen 1.000 Zusatzmünzen; ab 24 ist eine Freischaltung möglich.',9,3],
@@ -501,11 +501,11 @@ export function initChristmasScratch(){
    cell.classList.add(numberField?'scratch-number-target':'scratch-number-prize');
    const face=el('span','scratch-cell-symbol',String(symbol));
    face.setAttribute('aria-hidden','true');cell.append(face);
-   if(numberField)cell.setAttribute('aria-label','Zahl in Reihe '+(Math.floor(index/2)+1)+' verdeckt');
+   if(numberField)cell.setAttribute('aria-label','Verdeckte Zahl in Reihe '+(Math.floor(index/2)+1));
    else{
     const amount={'🪙':100,'💵':300,'💼':800}[symbol];
     cell.append(el('small','scratch-number-payout',amount?num(amount):'Geschenk'));
-    cell.setAttribute('aria-label','Gewinnsymbol in Reihe '+(Math.floor(index/2)+1)+': '+symbol+(amount?' '+amount+' Münzen':''));
+    cell.setAttribute('aria-label','Verdecktes Gewinnsymbol in Reihe '+(Math.floor(index/2)+1));
    }
    return cell;
   }
@@ -549,13 +549,12 @@ export function initChristmasScratch(){
   board.append(canvas);
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
   ctx.globalCompositeOperation='source-over';
-  // The left column of the twenty-row ticket always displays its prizes.
-  // Only the twenty right-hand numbers receive the silver coating.
-  const coated=stage.dataset.variant==='number_one_20'?
-   cells.filter(cell=>cell.classList.contains('scratch-number-target')):cells;
+  // Every pair of the 20-row card is independently coated: left prize,
+  // right number. The positions and results originate from the server receipt.
+  const coated=cells;
   for(const cell of coated){
    const r=cell.getBoundingClientRect();
-   const inset=stage.dataset.variant==='number_one_20'?0:2;
+   const inset=stage.dataset.variant==='number_one_20'?1:2;
    const x=r.left-boardRect.left+inset,y=r.top-boardRect.top+inset;
    const w=Math.max(1,r.width-inset*2),h=Math.max(1,r.height-inset*2);
    ctx.save();
@@ -735,7 +734,7 @@ export function initChristmasScratch(){
   const giftSymbols=[3,4,5].includes(result?.board?.symbolVersion)?['🎁','💝','🎀','🧧']:['🎁'];
   const wonGifts=giftSymbols.filter(symbol=>awarded.has(symbol));
   if(result?.board?.variantId==='number_one_20')panel.append(el('div','scratch-special-rule-note',
-   '🔢 In jeder der 20 Reihen gewinnt nur eine aufgedeckte 1 den Preis links daneben. Alle Treffer werden addiert.'));
+   '🔢 Jede der 20 Reihen hat zwei eigene Rubbelstellen. Links das Symbol, rechts die Zahl: Nur eine 1 gewinnt den Symbolpreis derselben Reihe. Alle Treffer werden addiert.'));
   if(result?.board?.variantId==='dog_jackpot_9')panel.append(el('div','scratch-special-rule-note',
    '🐾 Ein DOG-Symbol gewinnt sämtliche acht übrigen Preise auf dem Los. Ohne DOG gibt es 0 Münzen.'));
   if(result?.board?.variantId==='tic_tac_toe'){
@@ -845,7 +844,7 @@ export function initChristmasScratch(){
    conf[0]+' · '+(SCRATCH_TICKET_TYPES.find(t=>t.id===result.tier)?.label||'')+'-Rubbellos':
    '🎟️ Älteres Rubbellos';
   const payoutRule=result.board?.variantId==='number_one_20'?
-    '20 Reihen: links Gewinn, rechts eine Zahl von 1 bis 10. Jede Zahl 1 zahlt genau den zugehörigen Gewinn aus. 🪙 100 · 💵 300 · 💼 800 · 🎁 Freischaltung.':
+    '20 Reihen × 2 separat freirubbelbare Felder: links ein verdecktes Gewinnsymbol, rechts eine verdeckte Zahl von 1 bis 10. Jede 1 zahlt den Preis links in derselben Reihe aus. 🪙 100 · 💵 300 · 💼 800 · 🎁 Freischaltung.':
    result.board?.variantId==='dog_jackpot_9'?
     'Neun Felder: Wird DOG aufgedeckt, gehören dir die Preise aller acht übrigen Felder. 🪙 100 · 💵 300 · 💼 800 · 🎁 Freischaltung. Ohne DOG: Niete.':
    result.board?.variantId==='tic_tac_toe'?
@@ -866,7 +865,7 @@ export function initChristmasScratch(){
   const legend=$('scratch-symbol-legend');
   if(legend){legend.hidden=![2,3,4,5,6,7].includes(result.board?.symbolVersion);
    legend.textContent=legend.hidden?'':result.board?.variantId==='number_one_20'?
-    '🔢 Gewinn links · Zahl rechts · nur 1 gewinnt · 🪙 100 · 💵 300 · 💼 800 · 🎁 Freischaltung':
+    '🔢 Links Gewinnsymbol aufrubbeln · rechts Zahl aufrubbeln · jede 1 gewinnt · 🪙 100 · 💵 300 · 💼 800 · 🎁 Freischaltung':
     result.board?.variantId==='dog_jackpot_9'?
     '🐾 DOG = alle acht Preise · 🪙 100 · 💵 300 · 💼 800 · 🎁 Freischaltung':
     result.board?.variantId==='tic_tac_toe'?
