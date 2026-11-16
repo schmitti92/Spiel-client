@@ -451,3 +451,33 @@ test('Glückszahl lottery rules and probabilities render without TDZ initializat
   assert.match(html,new RegExp('id="'+id+'"'));
  }
 });
+
+
+test('Glückszahl native artwork uses 40 pixel-aligned independent hitboxes instead of a CSS grid',()=>{
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const lottoCss=source('../DOG/christmas-scratch-lotto.css');
+ assert.match(js,/const LUCKY_ART_WIDTH=1152,LUCKY_ART_HEIGHT=1536/);
+ assert.match(js,/applyLuckyArtGeometry\(cell,index\)/);
+ assert.match(js,/const x=right\?644:314, width=right\?301:307/);
+ const tops=js.match(/const LUCKY_ROW_TOPS=Object\.freeze\(\[([\s\S]*?)\]\);/);
+ const heights=js.match(/const LUCKY_ROW_HEIGHTS=Object\.freeze\(\[([\s\S]*?)\]\);/);
+ assert.ok(tops&&heights,'Native PNG positions must be defined for all rows');
+ const getNumbers=match=>match[1].match(/\d+/g).map(Number);
+ const ys=getNumbers(tops),hs=getNumbers(heights);
+ assert.equal(ys.length,20);
+ assert.equal(hs.length,20);
+ assert.equal(ys[0],371);
+ assert.equal(ys[19],1285);
+ for(let i=0;i<20;i++){
+  assert.ok(ys[i]>=370&&ys[i]+hs[i]<=1325,'row '+i+' must stay inside printed area');
+  assert.ok(hs[i]>=35&&hs[i]<=40,'row '+i+' height matches source artwork');
+  if(i>0)assert.ok(ys[i-1]+hs[i-1]<ys[i],'no scratch fields may overlap adjacent rows');
+ }
+ assert.match(lottoCss,/ARTWORK-ALIGNED SCRATCH RECTANGLES/);
+ assert.match(lottoCss,/grid-template-columns:none!important/);
+ assert.match(lottoCss,/position:absolute!important;\s*left:var\(--lucky-x\)!important/);
+ assert.match(lottoCss,/top:var\(--lucky-y\)!important/);
+ assert.match(lottoCss,/width:var\(--lucky-width\)!important/);
+ assert.match(lottoCss,/height:var\(--lucky-height\)!important/);
+ assert.match(js,/const coated=cells;/);
+});
