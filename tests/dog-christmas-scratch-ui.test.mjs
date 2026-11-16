@@ -352,3 +352,26 @@ test('every one of four scratch cards shows its own Level-1 voucher balance',()=
  assert.match(levels,/Vier Startgutscheine abholen/);
  assert.match(levels,/levelRewardClaims/);
 });
+
+
+test('20 by 2 number scratch reveals only the right numbers and keeps all prizes visible',()=>{
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const css=source('../DOG/christmas-scratch-specials.css');
+ assert.match(js,/number_one_20:\['🔢 Die Glückszahl 1'/);
+ assert.match(js,/scratch-number-target/);
+ assert.match(js,/scratch-number-prize/);
+ assert.match(js,/cells\.filter\(cell=>cell\.classList\.contains\('scratch-number-target'\)\)/);
+ assert.match(js,/const coated=/);
+ assert.match(css,/grid-template-rows:repeat\(20,minmax\(0,1fr\)\)/);
+ assert.match(css,/\.scratch-stage\[data-variant="number_one_20"\]/);
+});
+test('nine field DOG trigger uses authoritative server wins and highlights DOG',()=>{
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const css=source('../DOG/christmas-scratch-specials.css');
+ const html=source('../DOG/christmas-event.html');
+ assert.match(js,/dog_jackpot_9:\['🐾 Finde DOG!'/);
+ assert.match(js,/scratch-dog-trigger/);
+ assert.match(js,/visibleCells\[dogIndex\]\?\.classList\.add\('scratch-winning-cell','scratch-dog-winner'\)/);
+ assert.match(css,/grid-template-rows:repeat\(3,minmax\(0,1fr\)\)/);
+ assert.match(html,/christmas-scratch-specials\.css\?v=\d+/);
+});
