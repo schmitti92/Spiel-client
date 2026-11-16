@@ -317,7 +317,7 @@ export function initChristmasScratch(){
     const inline=el('div','scratch-card-open-error',actionError.message);
     inline.setAttribute('role','alert');article.append(inline);
    }
-   if(ticket){
+   if(ticket&&ticket.board?.variantId===option.id){
     const reopen=el('button','scratch-reopen-ticket','🎟️ Vorheriges Los anzeigen');
     reopen.type='button';reopen.disabled=busy;
     reopen.addEventListener('click',()=>{
