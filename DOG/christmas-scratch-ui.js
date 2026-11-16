@@ -288,6 +288,8 @@ export function initChristmasScratch(){
    }
    shell.append(container);return shell;
   };
+  const giftReplacement=Number.isInteger(receipt.board.giftFallbackCoins)?receipt.board.giftFallbackCoins:
+   Number.isInteger(cfg.giftFallbackCoins)?cfg.giftFallbackCoins:1500;
   const left=$('scratch-lotto-left'),right=$('scratch-lotto-right');
   left.replaceChildren();right.replaceChildren();
   if(prizeStrip){
@@ -324,8 +326,7 @@ export function initChristmasScratch(){
    ],'lotto-symbols'));
   const chanceOfAny=100*(1-Math.pow(1-hit,20));
   const bestCash=Math.max(0,...amounts.filter((_,i)=>weights[i]>0));
-  const giftReplacement=Number.isInteger(receipt.board.giftFallbackCoins)?receipt.board.giftFallbackCoins:
-   Number.isInteger(cfg.giftFallbackCoins)?cfg.giftFallbackCoins:1500;
+
   const theoreticalMax=chance>0?20*Math.max(bestCash,weights[3]>0?giftReplacement:0):0;
   right.append(
    card('🎯 GEWINNCHANCEN',[
