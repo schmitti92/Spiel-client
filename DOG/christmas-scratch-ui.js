@@ -517,6 +517,41 @@ export function initChristmasScratch(){
    };
    fields.addEventListener('input',update);update();block.append(summary);root.append(block);
   }
+  // Independent settings for the 20-row number lottery. These values are
+  // saved to Firestore and used for future receipts only.
+  const lucky=status.settings.numberOne20||{price:500,hitPer1000:100,
+   coinAmounts:[100,300,800],symbolWeights:[650,280,60,10]};
+  const special=el('section','scratch-host-variant scratch-host-lucky');
+  special.dataset.variant='number_one_20';
+  special.append(el('h5','','🔢 GLÜCKSZAHL 1 · LOTTERIE-EINSTELLUNGEN'),
+   el('small','','Lospreis, Trefferchance, drei Geldbeträge und alle vier Symbolchancen jederzeit anpassen. Diese Werte gelten für alle Spieler und neue Lose; ältere Gewinne bleiben unverändert.'));
+  const fields=el('div','scratch-host-fields');
+  const luckyField=(label,key,value,min,max,step)=>{
+   const field=el('label','scratch-host-field');
+   field.append(el('span','',label));
+   const input=el('input');input.type='number';input.inputMode='decimal';
+   input.value=String(value);input.min=String(min);input.max=String(max);
+   input.step=String(step);input.required=true;input.dataset.luckyKey=key;
+   field.append(input);return field;
+  };
+  fields.append(
+   luckyField('🎟️ Lospreis (Münzen)','price',lucky.price,1,1000000,1),
+   luckyField('🎯 Zahl 1 je Reihe (%)','hit',lucky.hitPer1000/10,0,100,0.1));
+  for(const [i,label] of ['🪙 Münze','💵 Geldschein','💼 Koffer'].entries())
+   fields.append(luckyField(label+' · Auszahlung','coin-'+i,lucky.coinAmounts[i],1,50000000,1));
+  for(const [i,label] of ['🪙 Münze','💵 Geldschein','💼 Koffer','🎁 Geschenk'].entries())
+   fields.append(luckyField(label+' · Symbolanteil (%)','weight-'+i,lucky.symbolWeights[i]/10,0,100,0.1));
+  special.append(fields);
+  const sum=el('div','scratch-host-odds-total');
+  const update=()=>{
+   const inputs=[...fields.querySelectorAll('[data-lucky-key^="weight-"]')];
+   const total=inputs.reduce((v,n)=>v+Number(n.value),0);
+   sum.textContent='Symbolverteilung: '+total.toLocaleString('de-DE',{maximumFractionDigits:1})+
+    ' % / 100 % · Jedes Feld hat höchstens einen Gewinn · 20 Reihen pro Los.';
+   sum.dataset.valid=String(Math.abs(total-100)<0.00001);
+  };
+  fields.addEventListener('input',update);update();
+  special.append(sum);root.prepend(special);
   $('scratch-host-feedback').textContent='';
   hostDialog.showModal();
  }
@@ -560,7 +595,23 @@ export function initChristmasScratch(){
    const giftSymbolWeights=readSymbolWeights('giftSymbolWeights',4);
    variants[id]={weights,extraCoinChance,maxPrizes,coinAmounts,moneySymbolWeights,giftSymbolWeights};
   }
-  return {version:1,freeEnabled:$('scratch-host-free-enabled').checked,variants};
+  const special=$('scratch-host-variants').querySelector('[data-variant="number_one_20"]');
+  if(!special)throw Error('Glückszahl-1-Einstellungen fehlen.');
+  const getLucky=key=>special.querySelector('[data-lucky-key="'+key+'"]');
+  const price=Number(getLucky('price')?.value);
+  const hitPer1000=parsePercent(getLucky('hit'));
+  const coinAmounts=Array.from({length:3},(_,i)=>Number(getLucky('coin-'+i)?.value));
+  const symbolWeights=Array.from({length:4},(_,i)=>parsePercent(getLucky('weight-'+i)));
+  if(!Number.isInteger(price)||price<1||price>1000000)
+   throw Error('Der Glückszahl-Lospreis muss zwischen 1 und 1.000.000 Münzen liegen.');
+  if(coinAmounts.some(n=>!Number.isInteger(n)||n<1||n>50000000)||
+   !(coinAmounts[0]<coinAmounts[1]&&coinAmounts[1]<coinAmounts[2]))
+   throw Error('Glückszahl-Geldbeträge müssen aufsteigend sein: 🪙 kleiner 💵 kleiner 💼.');
+  if(symbolWeights.reduce((a,b)=>a+b,0)!==1000)
+   throw Error('Die vier Glückszahl-Symbolchancen müssen zusammen 100 % ergeben.');
+  const numberOne20={price,hitPer1000,coinAmounts,symbolWeights};
+  return {version:1,freeEnabled:$('scratch-host-free-enabled').checked,
+   variants,numberOne20};
  }
  // A SINGLE silver surface covers the entire playing grid. The player can
  // start anywhere and drag across every symbol without lifting the finger.
