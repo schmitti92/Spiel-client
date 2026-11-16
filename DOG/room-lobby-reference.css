@@ -335,3 +335,92 @@
  #dog-room-lobby .dog-room-board-actions .dog-room-menu-tile{height:clamp(62px,18vw,100px)}
  #dog-room-lobby .dog-room-player{min-height:170px}
 }
+
+/* Tablet landscape fine-tuning, based on the 1536×960 DOG lobby screenshot.
+ * The source images are 640×214 (2.99:1). Never stretch those images into
+ * tall 2:1 slots: the previous 100%×100% background was distorting text.
+ */
+#dog-room-lobby .dog-room-board-actions .dog-room-menu-tile{
+ aspect-ratio:640 / 214;
+ height:auto;
+ min-height:0;
+}
+#dog-room-lobby .dog-room-menu-tile::before{
+ background-size:contain;
+}
+@media(min-width:1100px) and (min-height:830px) and (orientation:landscape){
+ #dog-room-lobby .dog-room-stage{
+  grid-template-rows:clamp(83px,11dvh,112px) minmax(0,1fr);
+  align-content:start;
+ }
+ #dog-room-lobby .dog-room-grid{
+  height:min(745px,calc(100dvh - 155px));
+  align-self:start;
+  align-items:stretch;
+ }
+ #dog-room-lobby .dog-room-players-panel{
+  justify-content:flex-start;
+ }
+ #dog-room-lobby .dog-room-roster{
+  flex:0 0 auto;
+  height:clamp(305px,36dvh,370px);
+  min-height:0;
+ }
+ #dog-room-lobby .dog-room-player{
+  justify-content:flex-start;
+  min-height:0;
+ }
+ #dog-room-lobby .dog-room-player-avatar{
+  margin-top:clamp(5px,1.2dvh,13px);
+ }
+ #dog-room-lobby .dog-room-player .dog-room-free-colors{
+  margin-top:auto;
+ }
+ #dog-room-lobby .dog-room-readiness{
+  flex-shrink:0;
+  margin-top:clamp(12px,2.2dvh,25px);
+ }
+ #dog-room-lobby .dog-room-primary-actions{
+  margin-top:auto;
+ }
+ #dog-room-lobby .dog-room-board-panel{
+  justify-content:flex-start;
+ }
+ #dog-room-lobby .dog-room-board-preview{
+  flex:0 1 auto;
+  width:100%;
+  height:clamp(350px,45dvh,455px);
+  min-height:0;
+ }
+ #dog-room-lobby .dog-room-board-preview svg{
+  display:block;
+  height:100%;
+  width:auto;
+  max-width:100%;
+  max-height:100%;
+ }
+ #dog-room-lobby .dog-room-board-actions{
+  margin-top:auto;
+  flex:0 0 auto;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  grid-template-rows:repeat(2,auto);
+  gap:clamp(5px,.65vw,9px);
+ }
+ #dog-room-lobby .dog-room-board-actions .dog-room-menu-tile{
+  width:100%;
+  min-height:0;
+  height:auto;
+  max-height:none;
+  aspect-ratio:640 / 214;
+  border-radius:11px;
+ }
+}
+/* A small landscape viewport still keeps its buttons intact and lets the
+ * layout adapt rather than cropping links or the bottom action row. */
+@media(min-width:920px) and (max-height:829px) and (orientation:landscape){
+ #dog-room-lobby .dog-room-board-actions .dog-room-menu-tile{
+  min-height:0;
+  height:auto;
+  aspect-ratio:640 / 214;
+ }
+}
