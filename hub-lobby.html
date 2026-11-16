@@ -228,14 +228,12 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
         <h2 id="dog-room-board-title"><span aria-hidden="true">🎲</span> Aktuelles Spielbrett <small id="dog-room-board-name">– Klassisch</small></h2>
         <div id="dog-room-board-preview" class="dog-room-board-preview" role="img" aria-label="Vorschau des ausgewählten DOG-Spielbretts"></div>
         <div class="dog-room-board-actions">
-          <a id="dog-room-designer" class="dog-room-action dog-room-action-navy dog-designer-locked" aria-disabled="true" data-level-locked="true">🔒 Brettdesigner · Level 2<small id="dog-room-designer-note" class="dog-room-designer-note">Spielerlevel wird geprüft</small></a>
-          <a id="dog-room-unlocks" class="dog-room-action dog-room-action-navy" href="DOG/sammlung.html">🏆 Freigeschaltet</a>
-          <a id="dog-room-christmas" class="dog-room-action dog-room-action-navy" href="DOG/christmas-event.html">🎄 Weihnachtsdorf & Gebäude</a>
-          <a id="dog-room-meta-album" class="dog-room-action dog-room-action-navy" data-meta-album-link href="meta-sammelalbum.html?return=hub-lobby.html">📖 Meta-Sammelalbum</a>
-        </div>
-        <div class="dog-room-bottom-actions">
-          <button id="dog-room-rules-open" class="dog-room-utility dog-room-rules-button" type="button">▣ Spielregeln</button>
-          <button id="dog-room-stats-open" class="dog-room-utility dog-room-stats-button" type="button">📊 Spielstatistik</button>
+          <a id="dog-room-designer" class="dog-room-action dog-room-action-navy dog-room-menu-tile dog-room-menu-designer dog-designer-locked" aria-disabled="true" data-level-locked="true">🔒 Brettdesigner · Level 2<small id="dog-room-designer-note" class="dog-room-designer-note">Spielerlevel wird geprüft</small></a>
+          <a id="dog-room-unlocks" class="dog-room-action dog-room-action-navy dog-room-menu-tile dog-room-menu-unlocks" href="DOG/sammlung.html">🏆 Freigeschaltet</a>
+          <a id="dog-room-christmas" class="dog-room-action dog-room-action-navy dog-room-menu-tile dog-room-menu-christmas" href="DOG/christmas-event.html">🎄 Weihnachtsdorf & Gebäude</a>
+          <a id="dog-room-meta-album" class="dog-room-action dog-room-action-navy dog-room-menu-tile dog-room-menu-meta" data-meta-album-link href="meta-sammelalbum.html?return=hub-lobby.html">📖 Meta-Sammelalbum</a>
+          <button id="dog-room-rules-open" class="dog-room-action dog-room-action-navy dog-room-menu-tile dog-room-menu-rules dog-room-rules-button" type="button">▣ Spielregeln</button>
+          <button id="dog-room-stats-open" class="dog-room-action dog-room-action-navy dog-room-menu-tile dog-room-menu-stats dog-room-stats-button" type="button">📊 Spielstatistik</button>
         </div>
       </section>
     </div>
@@ -271,6 +269,7 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
 
 <link rel="stylesheet" href="DOG/room-lobby.css?v=2">
 <link rel="stylesheet" href="DOG/room-statistics.css?v=1">
+<link rel="stylesheet" href="DOG/room-lobby-art.css?v=1">
 <script type="module" src="DOG/init-motion.js?v=1"></script><script src="DOG/avatar-picker.js?v=5"></script><script type="module" src="DOG/emoji-lobby.js?v=3"></script><script type="module" src="DOG/board-picker.js?v=12"></script>
 <script type="module" src="DOG/room-lobby.js?v=7"></script>
 <script type="module" src="DOG/room-statistics.js?v=1"></script>
