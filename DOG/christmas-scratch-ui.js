@@ -688,11 +688,37 @@ export function initChristmasScratch(){
   if(stage.dataset.variant==='premium_27')updatePremiumCounter(revealedPremiumCells(canvas));
   if(fraction>=.9)finish();
  }
+ // Original 1152 × 1536 print: each silver rectangle is not on a perfectly
+ // uniform 20-row grid. The last rows are slightly closer together than the
+ // first. Pixel measurements on the uploaded artwork are the source of truth.
+ // Render 40 absolutely positioned fields in native-art coordinates, then
+ // scale each value proportionally so mobile/desktop use identical hitboxes.
+ const LUCKY_ART_WIDTH=1152,LUCKY_ART_HEIGHT=1536;
+ const LUCKY_ROW_TOPS=Object.freeze([
+  371,420,470,518,568,617,667,717,767,816,
+  865,915,963,1011,1057,1102,1148,1193,1239,1285
+ ]);
+ const LUCKY_ROW_HEIGHTS=Object.freeze([
+  38,38,38,39,39,39,38,38,38,38,
+  38,38,37,37,36,36,35,35,36,39
+ ]);
+ function applyLuckyArtGeometry(cell,index){
+  const row=Math.floor(index/2);
+  const right=index%2===1;
+  const x=right?644:314, width=right?301:307;
+  const y=LUCKY_ROW_TOPS[row],height=LUCKY_ROW_HEIGHTS[row];
+  if(!Number.isFinite(y)||!Number.isFinite(height))throw Error('SCRATCH_LUCKY_ROW_INVALID');
+  for(const [key,value,denom] of [
+   ['--lucky-x',x,LUCKY_ART_WIDTH],['--lucky-y',y,LUCKY_ART_HEIGHT],
+   ['--lucky-width',width,LUCKY_ART_WIDTH],['--lucky-height',height,LUCKY_ART_HEIGHT]
+  ])cell.style.setProperty(key,(value/denom*100).toFixed(5)+'%');
+ }
  function makeField(symbol,index=0){
   const cell=el('div','scratch-field');
   if(stage.dataset.variant==='number_one_20'){
    const numberField=index%2===1;
    cell.classList.add(numberField?'scratch-number-target':'scratch-number-prize');
+   applyLuckyArtGeometry(cell,index);
    const face=el('span','scratch-cell-symbol',String(symbol));
    face.setAttribute('aria-hidden','true');cell.append(face);
    if(numberField)cell.setAttribute('aria-label','Verdeckte Zahl in Reihe '+(Math.floor(index/2)+1));
