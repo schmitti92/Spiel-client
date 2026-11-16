@@ -1,0 +1,206 @@
+/* DOG · Finde DOG! · collector's winter lottery.
+   Visual-only skin. The 3×3 canvas, result and award calculation stay untouched. */
+#panel-scratch .scratch-tier.scratch-variant-dogjackpot{
+  --ticket-edge:#f4d999;--ticket-text:#fff6d5;
+  border:2px solid #efce88!important;
+  border-radius:19px!important;
+  background:
+    radial-gradient(ellipse at 100% 0%,rgba(251,217,127,.28),transparent 45%),
+    radial-gradient(ellipse at 0% 90%,rgba(26,157,115,.32),transparent 52%),
+    linear-gradient(145deg,rgba(4,56,55,.90),rgba(6,30,42,.92) 54%,rgba(64,23,35,.91)),
+    url('./assets/lichtertal-scratch-winter/17_winternacht_hintergrund.png') center/cover!important;
+  box-shadow:inset 0 0 0 2px rgba(255,243,195,.36),0 4px 0 #7d5129,0 13px 30px #0008!important;
+}
+#panel-scratch .scratch-variant-dogjackpot::before{
+  content:"✦  ·  🐾  ·  ✦";position:absolute;right:-14px;top:15px;
+  font-size:34px;letter-spacing:4px;line-height:1.5;opacity:.11;transform:rotate(-18deg);
+  color:#fff7cd;pointer-events:none;
+}
+#panel-scratch .scratch-variant-dogjackpot .scratch-icon{
+  width:53px;height:53px;flex-basis:53px;
+  border-radius:50%!important;
+  border:2px solid #fff0b7!important;
+  color:#1b4936!important;
+  background:radial-gradient(circle at 35% 28%,#fff9d1,#e9be63 55%,#a96f30)!important;
+  box-shadow:inset 0 0 0 3px #145243,0 3px 10px #07150dcc;
+  font-size:28px!important;text-shadow:0 1px 1px #fff8d7!important;
+}
+#panel-scratch .scratch-variant-dogjackpot h3{
+  color:#fff1bf!important;font-family:Georgia,serif!important;
+  letter-spacing:.035em;text-shadow:0 2px 5px #061a15;
+}
+#panel-scratch .scratch-variant-dogjackpot .scratch-card-class{
+  color:#b6e9d3;font-weight:900;letter-spacing:.08em;
+}
+#panel-scratch .scratch-variant-dogjackpot .scratch-card-rule{color:#ffedc9}
+#panel-scratch .scratch-variant-dogjackpot .scratch-card-chance{
+  background:linear-gradient(130deg,#e8cf83,#fff2b2)!important;
+  color:#3b2e15!important;font-weight:900;border-color:#fff5ca!important;
+  border-radius:99px;padding:5px 9px;
+}
+#panel-scratch .scratch-variant-dogjackpot .scratch-price{color:#ffe99c!important}
+#panel-scratch .scratch-variant-dogjackpot .scratch-card-payouts,
+#panel-scratch .scratch-variant-dogjackpot .scratch-symbol-key{color:#ffebce}
+#panel-scratch .scratch-variant-dogjackpot .scratch-buy{
+  border:1px solid #fff2c5!important;border-radius:11px!important;
+  background:linear-gradient(180deg,#fff4c7,#e9bc68 59%,#b87c37)!important;
+  color:#332415!important;font-weight:950;box-shadow:0 3px 0 #71481f,0 5px 12px #0006;
+}
+#panel-scratch .scratch-variant-dogjackpot .scratch-buy:focus-visible{
+  outline:3px solid #fff;outline-offset:3px;
+}
+/* Full-window ticket frame: jewel green, mulled red and luminous old gold. */
+.scratch-stage[data-variant="dog_jackpot_9"]:not([hidden]){
+  border:3px solid #e8c67f!important;border-radius:20px!important;
+  background:
+    radial-gradient(ellipse at 15% 0%,#d5aa693d,transparent 40%),
+    radial-gradient(ellipse at 95% 85%,#0db08b2a,transparent 42%),
+    linear-gradient(135deg,#143e36,#082a33 59%,#451d31)!important;
+  box-shadow:inset 0 0 0 2px #fff0b847,0 24px 65px #000a!important;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] > #scratch-ticket-title{
+  color:#ffeebd!important;text-shadow:0 2px 8px #0006;letter-spacing:.035em;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] > #scratch-variant-rule,
+.scratch-stage[data-variant="dog_jackpot_9"] > #scratch-symbol-legend{
+  color:#f7eacb;background:#ffffff0b;border:1px solid #efcc8036;
+  border-radius:8px;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] > #scratch-progress{color:#d9f1e7}
+.scratch-stage[data-variant="dog_jackpot_9"] #scratch-progress-meter{accent-color:#efc674}
+.scratch-stage[data-variant="dog_jackpot_9"] #scratch-reveal{
+  border:0!important;background:transparent!important;box-shadow:none!important;
+}
+/* The artwork is a responsive portrait ticket; don't alter its children dimensions
+   after the silver canvas has been measured and painted. */
+.scratch-stage[data-variant="dog_jackpot_9"] #scratch-card-art{
+  isolation:isolate;overflow:hidden!important;
+  box-sizing:border-box;border:3px solid #fae1aa!important;border-radius:18px!important;
+  background:
+    radial-gradient(circle at 15% 14%,#fff3ae24 0 3px,transparent 4px),
+    radial-gradient(circle at 82% 23%,#fff6c72b 0 2px,transparent 3px),
+    radial-gradient(circle at 90% 66%,#fff6cd1e 0 2px,transparent 4px),
+    radial-gradient(ellipse at 50% 38%,#2f745c88,transparent 64%),
+    linear-gradient(110deg,#041e26b8,#0b4238c4 55%,#0e2435c9),
+    url('./assets/lichtertal-scratch-winter/17_winternacht_hintergrund.png') center/cover,
+    #0d382e!important;
+  box-shadow:inset 0 0 0 3px #7b4a28,inset 0 0 0 6px #e6bb6b91,
+    inset 0 0 28px #020e19b3,0 9px 28px #0008!important;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] #scratch-card-art::before{
+  content:"🐾  FINDE DOG!  🐾"!important;
+  top:3%!important;left:5%!important;width:90%!important;height:12%!important;
+  display:grid!important;place-items:center;
+  border:2px solid #fae2a5!important;border-radius:11px!important;
+  background:linear-gradient(180deg,#92283c,#551a29 56%,#341426)!important;
+  box-shadow:inset 0 0 0 2px #e0ac5973,0 4px 14px #00140fc9!important;
+  color:#ffedbd!important;font:900 clamp(17px,3vh,30px) Georgia,serif!important;
+  letter-spacing:.035em!important;text-shadow:0 2px 4px #220b17!important;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-dog-ribbon{
+  position:absolute;top:17%;left:9%;width:82%;height:5.5%;
+  z-index:2;pointer-events:none;display:flex;align-items:center;justify-content:center;
+  text-align:center;border:1px solid #f3dba1;border-radius:100px;
+  background:linear-gradient(90deg,#e2c17a,#fff3c6 43%,#e0b56a);
+  color:#3e2b16;box-shadow:0 2px 8px #001e1ab8;
+  font:900 clamp(7px,1.25vh,12px) system-ui,sans-serif;letter-spacing:.04em;
+  white-space:nowrap;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] #scratch-board{
+  position:absolute!important;left:9%!important;top:25%!important;
+  width:82%!important;height:59%!important;max-width:none!important;
+  margin:0!important;padding:0!important;display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-template-rows:repeat(3,minmax(0,1fr))!important;
+  gap:2.3%!important;box-sizing:border-box!important;
+  border:2px solid #e9cd8a;border-radius:12px;
+  background:linear-gradient(140deg,#3e251e,#77502d);
+  outline:3px solid #704226;outline-offset:0;
+  box-shadow:0 0 0 5px #e2ba6b8c,0 10px 22px #04160fc7;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-field{
+  position:relative;aspect-ratio:auto!important;
+  min-width:0;min-height:0;overflow:hidden;
+  border:1.5px solid #d6b679!important;border-radius:8px!important;
+  background:
+    radial-gradient(ellipse at 30% 14%,#ffffffd4,transparent 58%),
+    linear-gradient(145deg,#fff2ce,#e5be80)!important;
+  box-shadow:inset 0 0 0 2px #fff9df69,inset 0 -5px 12px #ab774c24!important;
+  color:#543b21;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-field::before{
+  content:attr(data-dog-slot);position:absolute;left:5px;top:3px;
+  font:800 clamp(8px,1.2vh,12px) system-ui,sans-serif;color:#8d6c42;
+  pointer-events:none;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-cell-symbol{
+  font-size:clamp(18px,4.9vh,43px)!important;line-height:1!important;
+  filter:drop-shadow(0 2px 1px #5a2f1a35);
+}
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-dog-payout{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:40%;padding:2px 5px;
+  font:950 clamp(9px,1.45vh,14px) system-ui,sans-serif!important;
+  border:1px solid #c9a265;border-radius:6px;
+  background:#fdf0c7;color:#553615!important;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-dog-trigger{
+  background:radial-gradient(ellipse at 35% 18%,#fffae6,#ffe18d 52%,#c79435)!important;
+  border-color:#fff3a0!important;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-dog-trigger .scratch-cell-symbol{
+  font:900 clamp(16px,3.7vh,31px) Georgia,serif!important;
+  letter-spacing:-.06em;color:#4d2425!important;text-shadow:0 1px 2px #fff8dc;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] #scratch-card-art::after{
+  content:"✦  1 × DOG = ALLE 8 PREISE  ✦"!important;
+  position:absolute;top:87.8%!important;left:7%!important;width:86%!important;
+  height:8.5%!important;display:grid;place-items:center;text-align:center;
+  border:2px solid #fff0b9!important;border-radius:9px!important;
+  background:linear-gradient(160deg,#f6df9c,#d8a75b)!important;
+  color:#533015!important;font:950 clamp(10px,1.6vh,15px) Georgia,serif!important;
+  letter-spacing:.01em!important;box-shadow:0 3px 9px #071c16a1;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-field.scratch-winning-cell{
+  background:radial-gradient(ellipse at 35% 16%,#fffbd5,#f7d171 60%,#d99a32)!important;
+  border-color:#fff5b9!important;
+  box-shadow:inset 0 0 0 2px #fff3acbb,0 0 11px #ffdc6bbb!important;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-field.scratch-dog-winner{
+  box-shadow:inset 0 0 0 2px #fff8c9,0 0 0 2px #fff5a9,0 0 20px #fff2a2!important;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] > .scratch-prize-sidebar{
+  border:1px solid #f2d799!important;border-radius:14px!important;
+  background:linear-gradient(160deg,#123d36,#09262f 64%,#291b2b)!important;
+  box-shadow:inset 0 0 0 1px #f7dc9b45;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-dog-odds{
+  color:#fff1d6;background:linear-gradient(120deg,#75402c,#214b39)!important;
+  border-color:#eac784!important;font-weight:750;
+}
+.scratch-stage[data-variant="dog_jackpot_9"] .scratch-stage-actions button:not([hidden]){
+  background:linear-gradient(180deg,#f7e8ba,#d6a85f)!important;
+  color:#342615!important;border-color:#fff0bd!important;font-weight:950;
+}
+@media(max-width:520px){
+  #panel-scratch .scratch-variant-dogjackpot .scratch-icon{
+    width:30px;height:30px;flex-basis:30px;font-size:17px!important;
+  }
+  .scratch-stage[data-variant="dog_jackpot_9"] .scratch-dog-ribbon{
+    font-size:clamp(6px,1.05vh,9px);letter-spacing:0;
+  }
+  .scratch-stage[data-variant="dog_jackpot_9"] #scratch-card-art::before{
+    font-size:clamp(14px,2.5vh,20px)!important;
+  }
+  .scratch-stage[data-variant="dog_jackpot_9"] #scratch-card-art::after{
+    font-size:clamp(9px,1.32vh,12px)!important;
+  }
+  .scratch-stage[data-variant="dog_jackpot_9"] #scratch-board{gap:2%!important}
+  .scratch-stage[data-variant="dog_jackpot_9"] .scratch-field{
+    border-radius:5px!important;
+  }
+  .scratch-stage[data-variant="dog_jackpot_9"] .scratch-field::before{left:3px;top:2px;font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+  .scratch-stage[data-variant="dog_jackpot_9"] .scratch-field{animation:none!important}
+}
