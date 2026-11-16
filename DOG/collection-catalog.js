@@ -9,7 +9,7 @@ import {CHRISTMAS_AVATARS} from './christmas-avatar-catalog.js?v=1';
 import {CHRISTMAS_NAME_FRAMES} from './christmas-nameframe-catalog.js?v=1';
 import {CHRISTMAS_ACTIVE_ICONS} from './christmas-activeicon-catalog.js?v=1';
 import {buildDogCollection} from './collection-extensions.js?v=2';
-import {isChristmasRewardLocked} from './christmas-reward-locks.js?v=4';
+import {isChristmasRewardLocked} from './christmas-reward-locks.js?v=5';
 const avail=(id,name,extra={})=>({id,name,status:'available',...extra});
 const BASE_COLLECTION_CATEGORIES=[
  {id:'backgrounds',icon:'🏞️',title:'Hintergründe',subtitle:'Landschaften für die gesamte DOG-Seite',items:[

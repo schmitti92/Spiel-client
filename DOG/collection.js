@@ -1,6 +1,6 @@
 import {applyMotionMode,loadMotionMode} from './motion-settings.js';
 applyMotionMode(loadMotionMode());
-import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory} from './collection-catalog.js?v=19';
+import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory} from './collection-catalog.js?v=20';
 import {loadAppearance,saveAppearance} from './appearance-registry.js?v=25';
 import {loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=3';
 import {isChristmasRewardLocked} from './christmas-reward-locks.js?v=4';
