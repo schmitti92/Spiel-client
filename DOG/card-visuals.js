@@ -3,8 +3,8 @@ import {isVerifiedCosmeticUnlocked} from './verified-cosmetics.js?v=1';
 export const CARD_EDITION='kartendesign-01';
 export const CARD_EDITION_STORAGE_KEY='dog:card-edition:v1';
 /**
- * Visual-only card editions: to add Kartendesign 02, create a new folder of
- * 15 normalized PNGs and register ONE new entry here. No engine/network edits.
+ * Visual-only card editions: register 15 consistently named PNG or SVG cards
+ * including the back for each edition. No engine/network changes.
  */
 export const CARD_EDITIONS=Object.freeze({
  'kartendesign-01':Object.freeze({
@@ -27,6 +27,11 @@ export const CARD_EDITIONS=Object.freeze({
  'kartendesign-04':Object.freeze({
   label:'✨ Sternenportal · Astralglas',
   base:'./assets/karten/kartendesign-04/vektoren/',
+  width:700,height:980,extension:'svg'
+ }),
+ 'kartendesign-05':Object.freeze({
+  label:'🎅 Sankt Nikolaus · Rot & Gold',
+  base:'./assets/karten/kartendesign-05/vektoren/',
   width:700,height:980,extension:'svg'
  })
 });
