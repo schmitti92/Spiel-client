@@ -505,3 +505,40 @@ test('Lucky Number uses full-art scratch hitboxes even when older CSS is cached'
  }
  assert.match(html,/christmas-scratch-lotto\.css\?v=\d+/);
 });
+
+
+test('Tic-Tac-Toe Duell has exactly eleven pixel-anchored scratch targets',()=>{
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const css=source('../DOG/christmas-scratch-duel.css');
+ const html=source('../DOG/christmas-event.html');
+ assert.match(js,/const DUEL_ART_W=1086,DUEL_ART_H=1448/);
+ const zone=js.match(/const DUEL_HITBOXES=Object\.freeze\(\[([\s\S]*?)\]\.map\(coords/);
+ assert.ok(zone,'Duell hitboxes must be defined');
+ const boxes=[...zone[1].matchAll(/\[(\d+),(\d+),(\d+),(\d+)\]/g)]
+  .map(m=>m.slice(1).map(Number));
+ assert.equal(boxes.length,11,'Multiplier, winning sign and nine board tiles');
+ for(const [x,y,w,h] of boxes){
+  assert.ok(x>=0&&y>=0&&w>0&&h>0&&x+w<=1086&&y+h<=1448);
+ }
+ assert.deepEqual(boxes[0],[325,290,412,85]);
+ assert.deepEqual(boxes[1],[434,482,192,88]);
+ assert.match(css,/tic-tac-toe-duell\.webp/);
+ assert.match(css,/width:var\(--duel-w\)!important/);
+ assert.match(css,/height:var\(--duel-h\)!important/);
+ assert.match(html,/christmas-scratch-duel\.css\?v=\d+/);
+});
+test('Tic-Tac-Toe Duell forces multiplier then sign then all nine board cells',()=>{
+ const js=source('../DOG/christmas-scratch-ui.js');
+ assert.match(js,/function attachDuelCovers\(\)/);
+ assert.match(js,/cells\.length!==11/);
+ assert.match(js,/phase===0\?i===0:phase===1\?i===1:i>=2/);
+ assert.match(js,/if\(i===0\)phase=1;else if\(i===1\)phase=2/);
+ assert.match(js,/if\(uncovered===11\)finish\(\)/);
+ assert.match(js,/if\(stage\.dataset\.duelVersion==='8'\)attachDuelCovers\(\)/);
+ assert.match(js,/applyDuelArtGeometry\(cell,index\)/);
+ assert.match(js,/board\.append\(makeDuelTile\(String\(result\.board\.multiplier\)\+'×',0\)/);
+ assert.match(js,/makeDuelTile\(result\.board\.winningSymbol,1\)/);
+ assert.match(js,/const duelOffset=stage\.dataset\.duelVersion==='8'\?2:0/);
+ assert.match(js,/Eine passende Dreierlinie aus dem Gewinnsymbol gewinnt EINEN/);
+ assert.match(js,/board\.querySelectorAll\('\.scratch-duel-cover'\)/);
+});
