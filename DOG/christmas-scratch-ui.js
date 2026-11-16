@@ -496,13 +496,21 @@ export function initChristmasScratch(){
    const face=el('span','scratch-cell-symbol',String(symbol));
    face.setAttribute('aria-hidden','true');cell.append(face);
    if(numberField)cell.setAttribute('aria-label','Zahl in Reihe '+(Math.floor(index/2)+1)+' verdeckt');
-   else cell.setAttribute('aria-label','Gewinnsymbol in Reihe '+(Math.floor(index/2)+1)+': '+symbol);
+   else{
+    const amount={'🪙':100,'💵':300,'💼':800}[symbol];
+    cell.append(el('small','scratch-number-payout',amount?num(amount):'Geschenk'));
+    cell.setAttribute('aria-label','Gewinnsymbol in Reihe '+(Math.floor(index/2)+1)+': '+symbol+(amount?' '+amount+' Münzen':''));
+   }
    return cell;
   }
   if(stage.dataset.variant==='dog_jackpot_9'&&symbol==='DOG')cell.classList.add('scratch-dog-trigger');
   const face=el('span','scratch-cell-symbol',symbol);
   face.setAttribute('aria-hidden','true');
   cell.append(face);
+  if(stage.dataset.variant==='dog_jackpot_9'&&symbol!=='DOG'){
+   const amount={'🪙':100,'💵':300,'💼':800}[symbol];
+   cell.append(el('small','scratch-dog-payout',amount?num(amount):'Geschenk'));
+  }
   // Premium money symbols must show their actual payout directly IN the
   // scratched square. Use the immutable ticket prices, not later host edits.
   if(stage.dataset.variant==='premium_27'&&['🪙','💵','💼'].includes(symbol)){
