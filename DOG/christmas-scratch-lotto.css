@@ -1,0 +1,252 @@
+/* DOG – Glückszahl 1: image-rich, editable, three-column Christmas lottery.
+   Artwork: DOG/assets/scratch/lotto-fenster-hintergrund.png
+   All odds, amounts and price are ordinary DOM text, never inside a PNG.
+   Existing ticket artwork and receipt-based 40-cell scratch remain intact. */
+
+.scratch-stage[data-variant="number_one_20"]:not([hidden]){
+ position:fixed!important;z-index:12000!important;
+ left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;
+ width:calc(100vw - 10px)!important;height:calc(100dvh - 10px)!important;
+ max-width:none!important;max-height:none!important;
+ display:grid!important;
+ grid-template-columns:minmax(0,27%) minmax(0,43%) minmax(0,28%)!important;
+ grid-template-rows:minmax(0,16%) minmax(0,73%) minmax(0,11%)!important;
+ column-gap:1%!important;row-gap:0!important;
+ padding:0.5% 1.5% 0.3%!important;box-sizing:border-box!important;
+ overflow:hidden!important;align-items:stretch!important;
+ border:2px solid #ffdb83!important;border-radius:16px!important;
+ color:#fff3ce!important;
+ background:
+   url('./assets/scratch/lotto-fenster-hintergrund.png') center/100% 100% no-repeat,
+   radial-gradient(ellipse at center,#6c192a,#002c24 68%,#32031d)!important;
+ box-shadow:0 0 0 100vmax #001618b6,inset 0 0 5px #fff8c5,0 10px 45px #000c!important;
+}
+/* The artwork has gold-bordered decorative panels already. Actual words
+   and numbers are layered onto the blank regions using semantic HTML. */
+.scratch-stage[data-variant="number_one_20"] > #scratch-ticket-title,
+.scratch-stage[data-variant="number_one_20"] > #scratch-variant-rule,
+.scratch-stage[data-variant="number_one_20"] > #scratch-symbol-legend{
+ display:none!important;
+}
+.scratch-stage[data-variant="number_one_20"] > .scratch-lotto-header:not([hidden]){
+ display:flex!important;flex-direction:column!important;
+ justify-content:center;align-items:center;text-align:center;gap:0!important;
+ grid-column:1/-1!important;grid-row:1!important;z-index:2!important;
+ padding:0 12%!important;min-height:0!important;
+ pointer-events:none;
+}
+.scratch-stage[data-variant="number_one_20"] .scratch-lotto-header .scratch-lotto-brand{
+ font:900 clamp(9px,1.45vw,17px)/1.05 Georgia,serif;
+ letter-spacing:.12em;color:#fff2b8;text-shadow:1px 2px 3px #310b0b;
+}
+.scratch-stage[data-variant="number_one_20"] .scratch-lotto-header h2{
+ margin:0!important;font:900 clamp(24px,4.2vw,70px)/1.02 Georgia,serif;
+ color:#ffe8a4;-webkit-text-stroke:.5px #6e2c0b;
+ text-shadow:0 3px 0 #6f280c,0 5px 6px #270707,0 0 14px #ffe175b3;
+}
+.scratch-stage[data-variant="number_one_20"] .scratch-lotto-header p{
+ margin:0;font:850 clamp(9px,1.12vw,16px)/1.15 system-ui,sans-serif;
+ color:#fff6d1;text-shadow:0 2px 3px #140703;
+}
+/* Original ticket artwork is inside the large middle frame. */
+.scratch-stage[data-variant="number_one_20"]:not([hidden]) > #scratch-reveal{
+ grid-column:2!important;grid-row:2!important;min-width:0!important;min-height:0!important;
+ width:100%!important;height:100%!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ overflow:hidden!important;background:transparent!important;
+ padding:0!important;margin:0!important;align-self:stretch!important;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-card-art{
+ height:98%!important;width:auto!important;max-width:96%!important;
+ max-height:98%!important;aspect-ratio:1152/1536!important;
+ flex:0 1 auto!important;object-fit:contain!important;
+ border:2px solid #ffe3a0!important;border-radius:10px!important;
+ box-shadow:0 0 0 2px #47230c,0 0 18px #ffe78b9e,0 8px 18px #000c!important;
+}
+/* Exact 40 cell positions on the already uploaded 1152x1536 ticket art. */
+.scratch-stage[data-variant="number_one_20"] #scratch-board{
+ left:24.7%!important;top:22.03%!important;width:50.8%!important;height:57.05%!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ grid-template-rows:repeat(20,minmax(0,1fr))!important;
+}
+.scratch-stage[data-variant="number_one_20"] .scratch-number-prize{
+ justify-content:center!important;
+}
+.scratch-stage[data-variant="number_one_20"] .scratch-number-prize .scratch-number-payout{
+ display:none!important;
+}
+.scratch-stage[data-variant="number_one_20"] .scratch-field .scratch-cell-symbol{
+ font-size:clamp(11px,1.45vw,21px)!important;
+}
+.scratch-stage[data-variant="number_one_20"] .scratch-number-target .scratch-cell-symbol{
+ font-size:clamp(11px,1.35vw,20px)!important;
+}
+/* Fine floating scratch progress sits just below the title in the center,
+   never over printed numbers in the ticket. */
+.scratch-stage[data-variant="number_one_20"] > #scratch-progress{
+ position:absolute!important;top:14%!important;left:34%!important;width:32%!important;
+ display:block!important;text-align:center!important;
+ font:750 clamp(8px,.85vw,12px)/1.1 system-ui,sans-serif!important;
+ color:#ffeac4!important;text-shadow:0 2px 4px #000a!important;
+ z-index:4!important;margin:0!important;
+}
+.scratch-stage[data-variant="number_one_20"] > #scratch-progress-meter{
+ position:absolute!important;top:15.8%!important;left:39%!important;width:22%!important;
+ display:block!important;height:5px!important;z-index:4!important;
+ margin:0!important;
+}
+/* Left/right explanations are text, not raster artwork. */
+.scratch-stage[data-variant="number_one_20"] > .scratch-lotto-left:not([hidden]){
+ grid-column:1!important;grid-row:2!important;
+ display:flex!important;flex-direction:column;gap:2.3%!important;
+ padding:2.5% 8% 9% 6%!important;
+ min-height:0!important;min-width:0!important;align-self:stretch;
+}
+.scratch-stage[data-variant="number_one_20"] > .scratch-lotto-right:not([hidden]){
+ grid-column:3!important;grid-row:2!important;
+ display:flex!important;flex-direction:column;gap:2.3%!important;
+ padding:2% 5% 9% 6%!important;
+ min-height:0!important;min-width:0!important;align-self:stretch;
+}
+.scratch-stage[data-variant="number_one_20"] .lotto-panel{
+ display:flex!important;flex-direction:column;gap:2px;min-width:0;min-height:0;
+ background:linear-gradient(#00502c35,#00231d6a)!important;
+ border:0!important;border-radius:10px!important;
+ padding:1.6% 4% 2%!important;
+ box-sizing:border-box!important;
+ color:#fff9de!important;
+ text-shadow:0 1px 3px #001c15;
+}
+.scratch-stage[data-variant="number_one_20"] .lotto-steps{flex:1 1 49%!important}
+.scratch-stage[data-variant="number_one_20"] .lotto-symbols{flex:1 1 48%!important}
+.scratch-stage[data-variant="number_one_20"] .lotto-chances{flex:1 1 33%!important}
+.scratch-stage[data-variant="number_one_20"] .lotto-max{flex:1 1 33%!important}
+.scratch-stage[data-variant="number_one_20"] .lotto-symbol-odds{flex:1 1 31%!important}
+.scratch-stage[data-variant="number_one_20"] .lotto-panel-title{
+ display:block!important;text-align:center;
+ margin:0 0 3% !important;padding:3% 1% 2.3%!important;
+ border:1px solid #ffe0a4;border-radius:50% / 32%;
+ background:linear-gradient(170deg,#951b26,#51121b 74%)!important;
+ box-shadow:0 3px 5px #0007,inset 0 1px 3px #fff6c6bd;
+ color:#ffe6a5!important;
+ font:900 clamp(13px,1.35vw,23px)/1.05 Georgia,serif!important;
+ text-shadow:0 2px 2px #310606!important;
+}
+.scratch-stage[data-variant="number_one_20"] .lotto-step{
+ display:flex;align-items:center;gap:4%;margin:2% 0;
+ min-height:0;font:750 clamp(11px,1.03vw,18px)/1.24 system-ui,sans-serif;
+}
+.scratch-stage[data-variant="number_one_20"] .lotto-step-number{
+ display:grid;place-items:center;flex:0 0 clamp(24px,2.3vw,43px);
+ width:clamp(24px,2.3vw,43px);aspect-ratio:1;
+ border-radius:50%;color:#4d2606;font:900 clamp(14px,1.5vw,24px) Georgia,serif;
+ background:radial-gradient(circle at 40% 30%,#fffec9,#e6ac30 75%,#a76b13);
+ border:2px solid #fff4bc;box-shadow:0 2px 5px #000a;
+ text-shadow:none;
+}
+.scratch-stage[data-variant="number_one_20"] .lotto-panel-content{
+ flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:1%;
+ min-height:0;
+}
+.scratch-stage[data-variant="number_one_20"] .lotto-panel-line{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:6px;min-height:0;padding:3px 2%;box-sizing:border-box;
+ border-bottom:1px solid #efd08460;
+ font:750 clamp(10px,1vw,16px)/1.15 system-ui,sans-serif;
+}
+.scratch-stage[data-variant="number_one_20"] .lotto-panel-line:last-child{border-bottom:0}
+.scratch-stage[data-variant="number_one_20"] .lotto-panel-line-value{
+ flex:0 0 auto;color:#ffde89;text-align:right;
+ font-size:clamp(10px,.98vw,16px);overflow-wrap:anywhere;
+}
+.scratch-stage[data-variant="number_one_20"] > .scratch-stage-actions{
+ grid-column:1/-1!important;grid-row:3!important;
+ display:flex!important;align-self:stretch!important;align-items:center!important;
+ justify-content:center!important;gap:2%!important;
+ margin:0!important;padding:0!important;z-index:3;
+}
+.scratch-stage[data-variant="number_one_20"] .scratch-stage-actions button{
+ min-height:clamp(35px,5.5vh,65px)!important;
+ padding:5px 4%!important;
+ border:2px solid #fff2ba!important;
+ border-radius:999px!important;
+ background:linear-gradient(#ffeab1 0%,#e9bb52 53%,#a76c19 100%)!important;
+ color:#4b2508!important;
+ box-shadow:inset 0 1px 5px #fffae4,0 3px 10px #120904b8!important;
+ font:900 clamp(14px,1.6vw,25px) Georgia,serif!important;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-reveal-button{
+ width:min(47%,560px)!important;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-lotto-back{
+ min-width:15%!important;background:linear-gradient(#246d40,#083522)!important;
+ color:#fff4c8!important;
+}
+.scratch-stage[data-variant="number_one_20"] > .scratch-prize-sidebar{
+ display:none!important;
+}
+/* Once revealed, the verified receipt is overlaid on the middle ticket. */
+.scratch-stage[data-variant="number_one_20"].is-revealed > .scratch-prize-sidebar{
+ display:flex!important;position:absolute!important;z-index:14!important;
+ left:29%!important;right:27%!important;top:19%!important;bottom:13%!important;
+ height:auto!important;max-height:none!important;overflow:auto!important;
+ background:linear-gradient(#0b4636f6,#3c1527f6)!important;
+ border:2px solid #ffe6a3!important;border-radius:14px!important;
+ box-shadow:0 8px 25px #000b!important;
+}
+.scratch-stage[data-variant="number_one_20"] > #scratch-inline-results{
+ display:none!important;
+}
+.scratch-stage[data-variant="number_one_20"].is-revealed .scratch-prize-sidebar .scratch-current-grid{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:4px!important;
+}
+.scratch-stage[data-variant="number_one_20"].is-revealed .scratch-prize-sidebar .scratch-current-item{
+ padding:4px!important;font-size:11px!important;
+}
+@media(max-width:1050px){
+ .scratch-stage[data-variant="number_one_20"]:not([hidden]){
+  grid-template-columns:minmax(0,29%) minmax(0,42%) minmax(0,27%)!important;
+  padding:0 .8%!important;column-gap:1%!important;
+ }
+ .scratch-stage[data-variant="number_one_20"] .lotto-panel-line{
+  font-size:clamp(9px,1vw,13px)!important;
+ }
+ .scratch-stage[data-variant="number_one_20"] .lotto-panel-title{
+  font-size:clamp(11px,1.32vw,17px)!important;
+ }
+}
+@media(max-width:720px) and (orientation:portrait){
+ .scratch-stage[data-variant="number_one_20"]:not([hidden]){
+  grid-template-columns:minmax(0,59%) minmax(0,41%)!important;
+  grid-template-rows:12% 71% 17%!important;
+  background-size:cover!important;
+ }
+ .scratch-stage[data-variant="number_one_20"] > .scratch-lotto-header:not([hidden]){
+  grid-column:1/-1!important;grid-row:1!important;
+ }
+ .scratch-stage[data-variant="number_one_20"] > #scratch-reveal{
+  grid-column:1!important;grid-row:2!important;
+ }
+ .scratch-stage[data-variant="number_one_20"] > .scratch-lotto-left:not([hidden]){
+  display:none!important;
+ }
+ .scratch-stage[data-variant="number_one_20"] > .scratch-lotto-right:not([hidden]){
+  grid-column:2!important;grid-row:2!important;
+ }
+ .scratch-stage[data-variant="number_one_20"] .lotto-panel-title{
+  font-size:10px!important;
+ }
+ .scratch-stage[data-variant="number_one_20"] .lotto-panel-line{
+  font-size:9px!important;gap:1px!important;
+ }
+ .scratch-stage[data-variant="number_one_20"] .lotto-panel-line-value{
+  font-size:9px!important;
+ }
+ .scratch-stage[data-variant="number_one_20"] .scratch-stage-actions button{
+  font-size:12px!important;
+ }
+ .scratch-stage[data-variant="number_one_20"].is-revealed > .scratch-prize-sidebar{
+  left:5%!important;right:5%!important;top:16%!important;bottom:19%!important;
+ }
+}
