@@ -5,7 +5,7 @@
  */
 import {
   BOARD_LAYOUT_ID,currentBoardLayout,saveBoardLayout,validateBoardLayout
-} from './board-layout.js?v=10';
+} from './board-layout.js?v=11';
 import {
   EDITOR_DRAFT_KEY,clone,emptyDraft,fromCrossPreset,fromLayout,placedCount,
   fieldOf,selectedValid,snapXY,putField,eraseField,nextSlot,inspectDraft,asGameLayout,
