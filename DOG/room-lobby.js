@@ -9,10 +9,13 @@ import {guardDesignerLink} from './designer-level-access.js?v=2';
 const $=id=>document.getElementById(id);
 const root=$('dog-room-lobby');
 const COLORS=['#ff7770','#5ec6ff','#80dda6','#ffd56c'];
+const COLOR_NAMES=['Rot','Blau','Grün','Gelb'];
+const COLOR_KEYS=['red','blue','green','yellow'];
 let current=null,roomSignature='',previewVisible=false,wasOpen=false;
 const designerGate=guardDesignerLink($('dog-room-designer'),{
  lockedText:'🔒 Brettdesigner · Level 2',unlockedText:'🎨 Brettdesigner',
  onStatus:({allowed,level,error})=>{
+  setText('dog-room-profile-level',Number.isInteger(level)?'Level '+level:error==='LOGIN_REQUIRED'?'Bitte anmelden':'Level nicht verfügbar');
   const note=$('dog-room-designer-note');if(!note)return;
   note.textContent=allowed?'✅ Für dich freigeschaltet':
    level?'🔒 Dein Level '+level+' · Freigabe ab Level 2':
@@ -35,19 +38,47 @@ function make(tag,cls,text){
  if(text!==undefined)node.textContent=String(text);
  return node;
 }
-function renderRoster(players){
+function roomSeatColor(player,active,playing){
+ if(playing){
+  const roster=current?.match?.dog?.players;
+  if(Array.isArray(roster)){
+   const matchPlayer=roster.find(p=>p.uid===player.uid);
+   if(Number.isInteger(matchPlayer?.seat))return COLOR_KEYS[matchPlayer.seat]||null;
+  }
+  if(player.me&&Number.isInteger(current?.match?.dogSeat))return COLOR_KEYS[current.match.dogSeat]||null;
+ }
+ return COLOR_KEYS.includes(player.colorPref)?player.colorPref:null;
+}
+function paintProfile(me){
+ if(!me){setText('dog-room-profile-name','Spielerprofil');return;}
+ setText('dog-room-profile-name',me.name);
+ const avatar=$('dog-room-profile-avatar');
+ const picture=window.DogAvatars?.css?.(me.dogAvatar);
+ avatar.classList.toggle('is-picture',typeof picture==='string'&&!!picture);
+ avatar.style.cssText=typeof picture==='string'?picture:'';
+ if(!picture)avatar.textContent='♟';
+}
+function renderRoster(players,busy=false,playing=false){
  const active=players.filter(p=>p.participating);
- const signature=JSON.stringify([active.map(p=>[p.uid,p.name,p.ready,p.host,p.me,p.dogAvatar]),players.filter(p=>!p.participating).map(p=>p.name)]);
+ const signature=JSON.stringify([
+  active.map(p=>[p.uid,p.name,p.ready,p.host,p.me,p.dogAvatar,p.colorPref]),
+  players.filter(p=>!p.participating).map(p=>p.name),
+  busy,playing,current?.match?.dogSeat
+ ]);
  if(signature===roomSignature)return;
  roomSignature=signature;
+ const used=new Set(active.map(p=>p.colorPref).filter(key=>COLOR_KEYS.includes(key)));
  const cards=[];
  for(let seat=0;seat<4;seat++){
   const player=active[seat];
-  const card=make('div','dog-room-player'+(player?.host?' is-host':'')+(!player?' is-free':''));
+  const assigned=player?roomSeatColor(player,active,playing):null;
+  const colorIndex=COLOR_KEYS.indexOf(assigned);
+  const card=make('div','dog-room-player'+(player?.host?' is-host':'')+(!player?' is-free':'')+(player?.me?' is-me':''));
   card.dataset.seat=String(seat);
+  if(assigned)card.style.setProperty('--seat-color',COLORS[colorIndex]);
   const avatar=make('span','dog-room-player-avatar'+(player?'':' is-empty'));
   avatar.setAttribute('aria-hidden','true');
-  avatar.style.color=COLORS[seat];
+  avatar.style.color=assigned?COLORS[colorIndex]:COLORS[seat];
   if(player){
    const art=window.DogAvatars?.css?.(player.dogAvatar);
    if(typeof art==='string'&&art){
@@ -61,12 +92,42 @@ function renderRoster(players){
   card.append(avatar,name,state);
   if(player?.host)card.append(make('small','dog-room-player-meta','👑 Host'+(player.me?' (Du)':'')));
   else if(player?.me)card.append(make('small','dog-room-player-meta','Du'));
+
+  if(player?.me&&player.participating&&!playing){
+   const picker=make('div','dog-room-color-picker');
+   picker.setAttribute('role','group');picker.setAttribute('aria-label','Deine DOG-Spielfarbe wählen');
+   for(let i=0;i<4;i++){
+    const key=COLOR_KEYS[i],chosen=player.colorPref===key,taken=used.has(key)&&!chosen;
+    const button=make('button','dog-room-color-dot'+(chosen?' is-selected':''));button.type='button';
+    button.dataset.dogColorChoice=key;
+    button.style.setProperty('--choice-color',COLORS[i]);
+    button.disabled=busy||taken;
+    button.setAttribute('aria-label',COLOR_NAMES[i]+(taken?' – bereits vergeben':chosen?' – ausgewählt':' wählen'));
+    button.setAttribute('aria-pressed',String(chosen));
+    button.title=COLOR_NAMES[i]+(taken?' · belegt':chosen?' · erneut antippen für automatische Zuweisung':' wählen');
+    picker.append(button);
+   }
+   card.append(picker);
+   card.append(make('small','dog-room-color-hint',assigned?'Farbe: '+COLOR_NAMES[colorIndex]:'🎨 Spielfarbe wählen'));
+  }else if(player){
+   const status=make('small','dog-room-color-hint',assigned?'● '+COLOR_NAMES[colorIndex]:'Farbe automatisch');
+   if(assigned)status.style.color=COLORS[colorIndex];
+   card.append(status);
+  }else{
+   const dots=make('div','dog-room-free-colors');
+   dots.setAttribute('aria-hidden','true');
+   for(let i=0;i<4;i++){
+    const dot=make('span','dog-room-free-color');
+    dot.style.background=COLORS[i];dots.append(dot);
+   }
+   card.append(dots);
+  }
   cards.push(card);
  }
  $('dog-room-roster').replaceChildren(...cards);
 }
-function send(kind){
- window.dispatchEvent(new CustomEvent('dog-room-lobby-action',{detail:{kind}}));
+function send(kind,extra={}){
+ window.dispatchEvent(new CustomEvent('dog-room-lobby-action',{detail:{kind,...extra}}));
 }
 function roomLink(path,roomCode){
  const returnPath='../hub-lobby.html?'+new URLSearchParams({room:roomCode,stage:'1'}).toString();
@@ -101,7 +162,8 @@ function update(snapshot,busy=false){
  const spectatorCount=state.spectatorCount;
  const playing=state.playing;
  const total=state.activeCount;
- renderRoster(players);
+ paintProfile(me);
+ renderRoster(players,busy,playing);
  setText('dog-room-count',total+' Spieler im Raum');
  setText('dog-room-ready-count',playing?'Partie läuft':'Bereit '+ready+'/'+total);
  const percent=state.readyPercent;
@@ -136,6 +198,15 @@ function update(snapshot,busy=false){
  }
  if(busy)feedback('Aktion wird vom Server bestätigt …');
 }
+$('dog-room-roster').addEventListener('click',event=>{
+ const button=event.target.closest('button[data-dog-color-choice]');
+ if(!button||button.disabled||current?.phase!=='preparing')return;
+ const mine=current?.players?.find(p=>p.me&&p.participating);
+ if(!mine)return;
+ const color=button.dataset.dogColorChoice;
+ if(!COLOR_KEYS.includes(color))return;
+ send('color',{color:mine.colorPref===color?null:color});
+});
 function handleAction(event){
  const button=event.currentTarget,kind=button.dataset.dogRoomAction;
  if(kind)send(kind);
