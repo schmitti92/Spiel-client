@@ -86,6 +86,7 @@ export function initChristmasScratch(){
  if(!root||!wallet||!stage||!board||!results||!winningLines||!reveal)
   throw Error('SCRATCH_UI_NOT_FOUND');
  let status=null,ticket=null,busy=false,pending=null,requestId=0,finished=false,canManageScratch=false;
+ const editionPrices={};
  let actionError=null;
  const alertToast=el('div','scratch-action-toast');
  alertToast.setAttribute('role','alert');alertToast.setAttribute('aria-live','assertive');
@@ -364,7 +365,10 @@ export function initChristmasScratch(){
   for(const option of SCRATCH_SHOP_VARIANTS){
    const tier=SCRATCH_TICKET_TYPES.find(c=>c.id===option.tier);
    const lucky=status?.settings?.numberOne20;
-   const ticketCost=option.id==='number_one_20'?(lucky?.price??tier.price):tier.price;
+   const activeEdition=editionPrices[option.id];
+   const ticketCost=activeEdition?.remaining>0&&Number.isSafeInteger(activeEdition.config?.ticketPrice)?
+    activeEdition.config.ticketPrice:
+    option.id==='number_one_20'?(lucky?.price??tier.price):tier.price;
    const variantConfig=status?.settings?.variants?.[option.id];
    const unlockChance=Number.isInteger(variantConfig?.weights?.unlock)?
     percent(variantConfig.weights.unlock):tier.unlockChance;
@@ -411,6 +415,9 @@ export function initChristmasScratch(){
    buyBtn.disabled=busy;
    buyBtn.addEventListener('click',()=>void buy(option.tier,false,option.id));
    article.append(buyBtn);
+   if(activeEdition?.remaining>0)
+    article.append(el('div','scratch-edition-badge','🖨️ Edition: '+activeEdition.title+
+     ' · '+num(activeEdition.remaining)+'/500 Losen übrig'));
    if(actionError?.variantId===option.id){
     const inline=el('div','scratch-card-open-error',actionError.message);
     inline.setAttribute('role','alert');article.append(inline);
@@ -1436,11 +1443,18 @@ export function initChristmasScratch(){
  }
  async function load(){
   const id=++requestId;
-  if(!account()){status=null;ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
+  if(!account()){for(const id of Object.keys(editionPrices))delete editionPrices[id];status=null;ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
   try{
    const r=await query('');
    if(id!==requestId)return;
    status=r.scratch;canManageScratch=r.canManageScratch===true;
+   // One read when the shop opens, not on every scratch gesture or purchase.
+   // An older server without the editions endpoint still uses regular prices.
+   try{
+    const editions=await query('/editions');
+    if(id!==requestId)return;
+    for(const item of editions.editions||[])editionPrices[item.variantId]=item.active;
+   }catch(error){console.warn('[DOG scratch] Auflagenpreise derzeit nicht verfügbar:',error)}
    clearAlert();
    // Four distinct starter vouchers, credited once to the signed-in player.
    if(status&&!status.levelOneStarterClaimed){
@@ -1480,7 +1494,9 @@ export function initChristmasScratch(){
   if(!SCRATCH_SHOP_VARIANTS.some(c=>c.id===variantId&&c.tier===tier)){
    showAlert('⚠️ Diese Losvariante ist noch nicht im Spiel freigeschaltet.',variantId);drawShop();return;
   }
-  const chosenPrice=variantId==='number_one_20'?
+  const activeEdition=editionPrices[variantId];
+  const chosenPrice=activeEdition?.remaining>0&&Number.isSafeInteger(activeEdition.config?.ticketPrice)?
+   activeEdition.config.ticketPrice:variantId==='number_one_20'?
    Number(status.settings?.numberOne20?.price??500):
    Number(SCRATCH_TICKET_TYPES.find(c=>c.id===tier)?.price||0);
   if(!free&&!voucher&&status.coins<chosenPrice){
