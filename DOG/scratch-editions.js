@@ -98,6 +98,8 @@ const labelFor=error=>({
 }[error]||String(error||'Unbekannter Fehler'));
 function showMessage(value,kind=''){
  const el=$('preview-message');el.textContent=value;el.className='preview-message '+kind;
+ const global=$('studio-global-message');
+ if(global){global.textContent=value;global.hidden=!value;global.className='studio-global-message '+kind}
 }
 function readForm(){
  const old=drafts[current.id];
@@ -888,6 +890,14 @@ $('ed-import-file').addEventListener('change',async()=>{
    throw Error('Diese Datei gehört zu einer anderen Losart: '+
     (VARIANTS.find(v=>v.id===config.variantId)?.name||config.variantId)+
     '. Bitte zuerst diese Losart auswählen.');
+  if(config.quotas!==undefined&&(!config.quotas||typeof config.quotas!=='object'||
+    Array.isArray(config.quotas)))throw Error('Ungültige Gewinnverteilung.');
+  if(config.symbolBudgets!==undefined&&(!config.symbolBudgets||
+    typeof config.symbolBudgets!=='object'||Array.isArray(config.symbolBudgets)))
+    throw Error('Ungültige Symbolbudgets.');
+  if(config.doubleWin!==undefined&&(!config.doubleWin||
+    typeof config.doubleWin!=='object'||Array.isArray(config.doubleWin)))
+    throw Error('Ungültige ✖️2-Einstellungen.');
   const fresh=baseDraft(current);
   for(const id of ['title','ticketPrice','maxTotalCoins','targetTotalCoins',
    'targetTolerancePercent','premiumFull27Tickets','volatility','maxPerTicketCoins',
