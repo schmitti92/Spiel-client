@@ -778,6 +778,7 @@ function activateView(name,scroll=true){
  const advanced=name!=='overview';
  $('advanced-studio').hidden=!advanced;
  document.body.classList.toggle('studio-expert',advanced);
+ if(!advanced)syncSimpleInputs();
  for(const button of document.querySelectorAll('.subtab')){
   const active=button.dataset.view===name;
   button.classList.toggle('active',active);
@@ -887,7 +888,8 @@ async function load(){
   if(current.id==='number_one_20'&&drafts.number_one_20.ticketPrice===500)
    drafts.number_one_20.ticketPrice=catalog.number_one_20?.standardPrice??500;
   $('ed-price').value=drafts[current.id].ticketPrice;
-  renderRules();renderSpec();updateSide();renderLive();showMessage('✓ Render verbunden. Einstellungen und aktuelle Auflagen geladen.','good');
+  renderRules();renderSpec();updateSide();renderLive();syncSimpleInputs();
+  showMessage('✓ Einstellungen und aktuelle Auflagen geladen.','good');
  }catch(e){showMessage('⚠️ '+labelFor(e.message)+' Falls der neue Server gerade bereitgestellt wird, versuche es später erneut.','error')}
 }
 async function loadHistory(){
