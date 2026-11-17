@@ -88,6 +88,8 @@ export function initChristmasScratch(){
   throw Error('SCRATCH_UI_NOT_FOUND');
  let status=null,ticket=null,busy=false,pending=null,requestId=0,finished=false,canManageScratch=false;
  const editionPrices={};
+ const villageDiscount=()=>Number.isInteger(status?.discountPercent)?Math.max(0,Math.min(20,status.discountPercent)):0;
+ const discountedPrice=price=>Math.max(0,Math.ceil(price*(100-villageDiscount())/100));
  let actionError=null;
  const alertToast=el('div','scratch-action-toast');
  alertToast.setAttribute('role','alert');alertToast.setAttribute('aria-live','assertive');
@@ -373,6 +375,7 @@ export function initChristmasScratch(){
    const onSale=activeEdition?.status==='active'&&activeEdition.remaining>0;
    const salePrice=onSale&&Number.isSafeInteger(activeEdition.config?.ticketPrice)?
     activeEdition.config.ticketPrice:ticketCost;
+   const actualPrice=discountedPrice(salePrice);
    const variantConfig=status?.settings?.variants?.[option.id];
    const unlockChance=Number.isInteger(variantConfig?.weights?.unlock)?
     percent(variantConfig.weights.unlock):tier.unlockChance;
@@ -417,7 +420,7 @@ export function initChristmasScratch(){
      '⭐ Weihnachtslichter als möglicher Gewinn in besonderen Auflagen'));
    }
    article.append(heading,details,
-    el('strong','scratch-price',onSale?num(salePrice)+' 🪙':'Nicht erhältlich'),
+    el('strong','scratch-price',onSale?num(actualPrice)+' 🪙'+(villageDiscount()?' · ⭐ −'+villageDiscount()+' % Dorfbonus':''):'Nicht erhältlich'),
     el('div','scratch-card-payouts','🪙 '+moneyRange('coin',0)+' · 💵 '+
      moneyRange('note',1)+' · 💼 '+moneyRange('case',2)),
     el('div','scratch-symbol-key',option.id==='number_one_20'?
@@ -432,7 +435,7 @@ export function initChristmasScratch(){
      num(activeEdition.config.doubleWin.chancePer1000/10)+' % · höchstens '+
      num(activeEdition.config.doubleWin.maxTickets)+' von 500 Losen'));
    const vouchers=Number(status?.vouchers?.[option.tier]||0)+Number(status?.variantVouchers?.[option.id]||0);
-   const buyBtn=el('button','scratch-buy','🎟️ Für '+num(salePrice)+' Münzen öffnen');
+   const buyBtn=el('button','scratch-buy','🎟️ Für '+num(actualPrice)+' Münzen öffnen');
    buyBtn.type='button';buyBtn.hidden=freeMode;
    // Keep taps informative. Disabled purchases previously looked like dead
    // buttons when the wallet or an older unacknowledged ticket blocked them.
@@ -1526,7 +1529,7 @@ export function initChristmasScratch(){
   try{
    const r=await query('');
    if(id!==requestId)return;
-   status=r.scratch;canManageScratch=r.canManageScratch===true;
+   status={...r.scratch,discountPercent:r.discountPercent??0};canManageScratch=r.canManageScratch===true;
    // One read when the shop opens, not on every scratch gesture or purchase.
    // An older server without the editions endpoint still uses regular prices.
    try{
@@ -1582,7 +1585,7 @@ export function initChristmasScratch(){
    activeEdition.config.ticketPrice:variantId==='number_one_20'?
    Number(status.settings?.numberOne20?.price??500):
    Number(SCRATCH_TICKET_TYPES.find(c=>c.id===tier)?.price||0);
-  if(!free&&!voucher&&status.coins<chosenPrice){
+  if(!free&&!voucher&&status.coins<discountedPrice(chosenPrice)){
    showAlert('⚠️ Nicht genügend Münzen für dieses Los.',variantId);drawShop();return;
   }
   clearAlert();busy=true;drawShop();
