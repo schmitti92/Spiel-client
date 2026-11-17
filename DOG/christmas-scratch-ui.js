@@ -209,7 +209,8 @@ export function initChristmasScratch(){
    ['🎟️','Lose geöffnet',opened],
    ['🏆',incomplete?'Gewinnlose (erfasst)':'Gewinnlose',stat(p?.winTickets)],
    ['🎁',incomplete?'Freischaltungen (erfasst)':'Freischaltungen',stat(p?.unlocks)],
-   ['🪙',incomplete?'Münzen gewonnen (erfasst)':'Münzen gewonnen',stat(p?.coinsWon)]
+   ['🪙',incomplete?'Münzen gewonnen (erfasst)':'Münzen gewonnen',stat(p?.coinsWon)],
+   ['⭐',incomplete?'Weihnachtslichter (erfasst)':'Weihnachtslichter gewonnen',stat(p?.lightsWon)]
   ];
   kpis.replaceChildren();
   for(const [icon,label,value] of cards){
@@ -221,11 +222,11 @@ export function initChristmasScratch(){
   body.replaceChildren();footer.replaceChildren();
   if(missing){
    const row=el('tr');const cell=el('td','',status?'⌛ Die persönliche Statistik wird vom Render-Server noch nicht bereitgestellt.':'🔐 Mit deinem DOG-Onlineprofil anmelden, um deine Statistik zu sehen.');
-   cell.colSpan=7;row.append(cell);body.append(row);
+   cell.colSpan=8;row.append(cell);body.append(row);
    note.textContent=status?'Versuche „Kontostand aktualisieren“, sobald der Render-Server die neue Statistikversion übernommen hat.':'Die Übersicht wird direkt aus deinem angemeldeten Spielerprofil geladen.';
    return;
   }
-  const headers=['Rubbellos','Geöffnet','Gewinnlose','Nieten','Gratis','🎁 Gewinne','🪙 Gewonnen'];
+  const headers=['Rubbellos','Geöffnet','Gewinnlose','Nieten','Gratis','🎁 Gewinne','🪙 Gewonnen','⭐ Lichter'];
   const addRow=(target,label,data,{total=false,unknown=false,share=true}={})=>{
    const row=el('tr',total?'scratch-analytics-sum':unknown?'scratch-analytics-unknown':'');
    const labelCell=el(total?'th':'td','scratch-analytics-name');
@@ -238,7 +239,7 @@ export function initChristmasScratch(){
     track.append(fill);labelCell.append(track);
    }
    row.append(labelCell);
-   const numbers=[data?.opened,data?.winTickets,data?.duds,data?.free,data?.unlocks,data?.coinsWon];
+   const numbers=[data?.opened,data?.winTickets,data?.duds,data?.free,data?.unlocks,data?.coinsWon,data?.lightsWon];
    for(let i=0;i<numbers.length;i++){
     const cell=el('td','',unknown&&i>0?'–':num(stat(numbers[i])));
     cell.dataset.label=headers[i+1];
