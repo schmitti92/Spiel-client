@@ -83,14 +83,15 @@ const assetPath=(id,level)=>{
 const sceneLayouts=Object.freeze({
  // Ground anchors calibrated against the snow-covered terraces of Lichtertal
  // (1200×670 SVG); each building keeps the same footing at all five stages.
- // At level 5: >=18px horizontal clearance from the tree, >=9px row gap.
- tower:{cx:165,ground:389,w:239,h:280,growth:[.82,.86,.91,.96,1]},
- workshop:{cx:1036,ground:389,w:258,h:280,growth:[.78,.83,.89,.94,1]},
+ // At level 5 all seven maximum alpha bounding boxes are disjoint.
+ // Front row begins 3px below the middle row; the full tree has at least 8px horizontal clearance.
+ tower:{cx:145,ground:389,w:239,h:280,growth:[.82,.86,.91,.96,1]},
+ workshop:{cx:1058,ground:389,w:258,h:280,growth:[.78,.83,.89,.94,1]},
  // New houses share the raised midground terrace: distinct from the four corner houses.
- luckhouse:{cx:408,ground:401,w:190,h:190,growth:[.65,.74,.82,.91,1]},
- academy:{cx:802,ground:401,w:190,h:190,growth:[.65,.74,.82,.91,1]},
- bakery:{cx:303,ground:603,w:274,h:205,growth:[.74,.80,.87,.94,1]},
- inn:{cx:922,ground:603,w:288,h:205,growth:[.76,.81,.88,.94,1]},
+ luckhouse:{cx:366,ground:401,w:172,h:190,growth:[.65,.74,.82,.91,1]},
+ academy:{cx:844,ground:401,w:150,h:190,growth:[.65,.74,.82,.91,1]},
+ bakery:{cx:303,ground:609,w:274,h:205,growth:[.74,.80,.87,.94,1]},
+ inn:{cx:922,ground:609,w:288,h:205,growth:[.76,.81,.88,.94,1]},
  tree:{cx:610,ground:504,w:299,h:394,growth:[.54,.59,.65,.71,.76,.81,.86,.91,.96,1]}
 });
 /** Add a subdued contact shadow directly beneath the alpha-cropped building.
@@ -244,6 +245,8 @@ function updateCardImage(id,level){
  });
 }
 const preview={tower:1,workshop:1,bakery:1,inn:1,luckhouse:1,academy:1};
+// Purely visual, page-local inspection mode. Never written to villageLive or the server.
+let villageMaxPreview=false;
 let villageLive=null,villageHost=false,villageEventActive=false,villageCanUpgrade=true,villageBusy=false;
 let treePrizeScreen=null;
 const storyScreen=initChristmasStory({openTab:id=>showPanel(id)});
@@ -355,8 +358,9 @@ function centerTreeMilestone(){
 }
 function refreshPreview(){
  const total=Object.values(preview).reduce((a,b)=>a+b,0),treePoints=originalTreePoints(preview),tree=treeLevel();
+ const sceneTree=villageMaxPreview?10:tree;
  for(const d of definitions){
-  const level=preview[d.id],card=$('preview-'+d.id).closest('.building-card');
+  const level=preview[d.id],sceneLevel=villageMaxPreview?5:level,card=$('preview-'+d.id).closest('.building-card');
   $('preview-'+d.id).value=String(level);
   card.querySelector('[data-building-effect]').textContent=d.effects[level-1]+(villageLive?' · Tatsächlicher Bonus':' · Vorschau');
   card.querySelector('[data-building-visual]').textContent=d.visuals[level-1];
@@ -376,30 +380,39 @@ function refreshPreview(){
    :'Nächste Stufe '+level+' → '+(level+1)+' · '+nextCost+' ⭐'+(villageLive?'':' · Vorschau');
   card.querySelectorAll('.building-level-markers>span').forEach((dot,i)=>dot.classList.toggle('active',i<level));
   const art=$('art-'+d.id);
-  if(art)art.dataset.level=String(level);
-  showStageImage(d.id,level);
+  if(art)art.dataset.level=String(sceneLevel);
+  showStageImage(d.id,sceneLevel);
+  // Building cards and real upgrade controls always reflect the verified level.
   updateCardImage(d.id,level);
   const plaque=document.querySelector('[data-hotspot-level="'+d.id+'"]');
-  if(plaque)plaque.textContent=level+' / 5';
+  if(plaque)plaque.textContent=sceneLevel+' / 5';
  }
  if(openedBuildingId&&buildingDialog.open)renderVillageBuildingDialog(openedBuildingId);
  const view=$('village-view');
- const presentationKey=JSON.stringify(definitions.map(d=>preview[d.id]));
+ const presentationKey=JSON.stringify([villageMaxPreview,...definitions.map(d=>villageMaxPreview?5:preview[d.id])]);
  if(lastPresentationKey!==null&&presentationKey!==lastPresentationKey&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
    view.classList.remove('is-upgrading');
    void view.offsetWidth; // restart only on an actual preview upgrade
    view.classList.add('is-upgrading');
  }
  lastPresentationKey=presentationKey;
- view.dataset.tree=String(tree);
- view.dataset.snow=String(tree<=2?1:tree<=4?2:tree<=6?3:tree<=8?4:5);
+ view.dataset.tree=String(sceneTree);
+ view.dataset.snow=String(sceneTree<=2?1:sceneTree<=4?2:sceneTree<=6?3:sceneTree<=8?4:5);
+ view.dataset.visualPreview=villageMaxPreview?'max':'live';
  // The old vector tree remains visible until a valid tree PNG is available.
- const growth=.51+((tree-1)/9)*.49;
+ const growth=.51+((sceneTree-1)/9)*.49;
  $('art-tree').setAttribute('transform','translate(610 504) scale('+growth.toFixed(4)+') translate(0 -565)');
- showStageImage('tree',tree);
+ showStageImage('tree',sceneTree);
  $('stat-building-levels').textContent=total+' / 30';
  $('stat-tree-level').textContent=tree+' / 10';
- $('village-stage-text').textContent=(tree===1?'Anfangszustand':tree===10?'Prachtvolles Weihnachtsdorf':'Baum Stufe '+tree)+(villageLive?' · Live':' · Vorschau');
+ $('village-stage-text').textContent=villageMaxPreview?'🔍 Vollausbau-Simulation · keine Änderung am Fortschritt':
+  (tree===1?'Anfangszustand':tree===10?'Prachtvolles Weihnachtsdorf':'Baum Stufe '+tree)+(villageLive?' · Live':' · Vorschau');
+ const maxTestButton=$('village-max-test'),maxTestNote=$('village-max-note');
+ if(maxTestButton){
+  maxTestButton.textContent=villageMaxPreview?'↩ Echte Dorfansicht':'🔍 Vollausbau testen';
+  maxTestButton.setAttribute('aria-pressed',String(villageMaxPreview));
+ }
+ if(maxTestNote)maxTestNote.hidden=!villageMaxPreview;
  if(!villageLive){
   $('building-village-counter').textContent=total+' / 30';
   $('building-village-tree').textContent='Stufe '+tree+' / 10';
@@ -476,6 +489,10 @@ for(const id of tabs){
 document.querySelectorAll('[data-open-tab]').forEach(button=>{
  button.addEventListener('click',()=>showPanel(button.dataset.openTab));
 });
+$('village-max-test')?.addEventListener('click',()=>{
+ villageMaxPreview=!villageMaxPreview;
+ refreshPreview(); // Only SVG artwork, labels and decorations are simulated.
+});
 // Read-only building information: no separate database fetch or client-written
 // bonus values. The server's public village.bonus is authoritative.
 const buildingDialog=$('village-building-dialog');
@@ -527,8 +544,9 @@ function renderVillageBuildingDialog(id){
  $('village-building-title').textContent=definition.title;
  $('village-building-icon').textContent=definition.icon;
  $('village-building-description').textContent=buildingDescriptions[id];
- $('village-building-mode').textContent=!confirmed?
-  '👁️ Vorschau · Gemeinsamer Online-Fortschritt noch nicht bestätigt':
+ $('village-building-mode').textContent=villageMaxPreview?
+  '🔍 Auf der Dorfkarte nur simuliert · tatsächliche Stufe: '+level+' / 5':
+  !confirmed?'👁️ Vorschau · Gemeinsamer Online-Fortschritt noch nicht bestätigt':
   villageEventActive?'🟢 Gemeinsamer Bonus aktiv':'⏸️ Event beendet · Bonus derzeit nicht aktiv';
  $('village-building-stage').textContent='Stufe '+level+' / '+CHRISTMAS_BUILDING_MAX_LEVEL;
  $('village-building-progress').style.width=(100*level/CHRISTMAS_BUILDING_MAX_LEVEL)+'%';
