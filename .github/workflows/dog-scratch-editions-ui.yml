@@ -6,6 +6,7 @@ on:
       - 'DOG/scratch-editions.js'
       - 'DOG/scratch-odds.mjs'
       - 'tests/dog-scratch-odds.test.mjs'
+      - 'tests/dog-scratch-studio-layout.test.mjs'
       - 'DOG/scratch-editions.css'
       - 'DOG/christmas-event.html'
       - '.github/workflows/dog-scratch-editions-ui.yml'
@@ -15,6 +16,7 @@ on:
       - 'DOG/scratch-editions.js'
       - 'DOG/scratch-odds.mjs'
       - 'tests/dog-scratch-odds.test.mjs'
+      - 'tests/dog-scratch-studio-layout.test.mjs'
       - 'DOG/scratch-editions.css'
       - 'DOG/christmas-event.html'
       - '.github/workflows/dog-scratch-editions-ui.yml'
@@ -32,7 +34,7 @@ jobs:
           node --check DOG/scratch-editions.js
           node --check DOG/scratch-odds.mjs
       - name: Verify automatically balanced 100 percent chance settings
-        run: node --test tests/dog-scratch-odds.test.mjs
+        run: node --test tests/dog-scratch-odds.test.mjs tests/dog-scratch-studio-layout.test.mjs
       - name: Verify link and assets
         run: |
           test -f DOG/scratch-editions.html
