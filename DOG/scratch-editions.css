@@ -575,3 +575,7 @@ body.studio-expert .studio-sidebar{display:flex}
 .simple-symbol-lock{align-self:center;flex:0 0 auto;min-height:38px;border:1px solid #a98a52;border-radius:9px;background:#253e5d;color:#f4dfba;padding:6px 9px;cursor:pointer;font-size:.77rem}
 .simple-symbol-lock[aria-pressed="true"]{background:#71501d;border-color:#f0c679}
 @media(max-width:650px){.simple-symbol-section{padding:10px}.simple-symbol-row{gap:6px}.simple-symbol-name{flex-basis:100%}.simple-symbol-field{flex:1 1 76px}.simple-symbol-lock{flex:1 0 auto}}
+
+/* Simplified studio: automatic symbol mixture, no manual weighting controls. */
+.simple-symbol-auto-info{grid-column:1/-1;margin:1px 0 3px;padding:10px 12px;border-radius:10px;background:#153b4a;border:1px solid #64939c;color:#e2f4eb;font-size:.86rem;line-height:1.45}
+.simple-symbol-automatic{font-weight:750;font-size:.86rem;color:#a6eac8;background:#1d4538;border:1px solid #4b9b75;border-radius:8px;padding:7px 10px;white-space:nowrap}
