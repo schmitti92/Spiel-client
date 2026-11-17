@@ -1077,7 +1077,7 @@ export function initChristmasScratch(){
    section.append(el('h4','scratch-current-title','🎟️ Noch nicht aufgedeckt'));
    section.append(el('p','scratch-current-hint',
     result?.board?.symbolVersion===8&&result?.board?.variantId==='tic_tac_toe'?
-    'Rubbele zuerst den Multiplikator, danach das Gewinnsymbol und zuletzt die neun Spielfelder frei. Die Gewinnprüfung erfolgt automatisch.':
+    'Rubbele zuerst den Multiplikator, danach Gewinnzeichen und Gewinnsymbol gemeinsam frei und zuletzt die neun Spielfelder. ✖️2 erscheint gegebenenfalls im selben Feld.':
     'Rubbele das Los zu mindestens 90 % frei. Danach erscheinen hier deine tatsächlichen Gewinne und die Bestätigung.'));
   }else{
    const prizes=(Array.isArray(result?.winnings)?result.winnings:entries)
@@ -1343,8 +1343,23 @@ export function initChristmasScratch(){
      margin:'0',padding:'0',gap:'0',
      'grid-template-columns':'none','grid-template-rows':'none'
     }))board.style.setProperty(name,value,'important');
-    board.append(makeDuelTile(String(result.board.multiplier)+'×',0),
-     makeDuelTile(result.board.winningSymbol,1));
+    // The extra ✖️2 badge and prize symbol share the winning-sign field.
+    // Neither bonus is printed on an unrelated 3×3 circle/cross tile.
+    const winningTile=makeDuelTile(result.board.winningSymbol,1);
+    if(result.board.prizeSymbol){
+     const prizeIcon=el('span','scratch-duel-prize-symbol',result.board.prizeSymbol);
+     prizeIcon.setAttribute('title','Möglicher Gewinn bei passender Dreierlinie');
+     prizeIcon.setAttribute('aria-label','Gewinnsymbol: '+result.board.prizeSymbol);
+     winningTile.append(prizeIcon);
+    }
+    if(result.doubleWin){
+     winningTile.classList.add('scratch-has-double-award');
+     const doubleIcon=el('span','scratch-duel-double-badge','✖️2');
+     doubleIcon.setAttribute('title','Dieser Gewinn wird zusätzlich verdoppelt');
+     doubleIcon.setAttribute('aria-label','Zusätzlicher Gewinn mal zwei');
+     winningTile.append(doubleIcon);
+    }
+    board.append(makeDuelTile(String(result.board.multiplier)+'×',0),winningTile);
    }
    for(const [index,symbol] of cells.entries()){
     const field=makeField(symbol,index);
@@ -1359,8 +1374,8 @@ export function initChristmasScratch(){
      lightValue.setAttribute('aria-label',num(result.totalLights)+' gewonnene Weihnachtslichter');
      field.append(lightValue);
     }
-    if(Number.isSafeInteger(result.doubleBadgeIndex)&&index===result.doubleBadgeIndex&&
-       result.doubleWin){
+    if(stage.dataset.duelVersion!=='8'&&Number.isSafeInteger(result.doubleBadgeIndex)&&
+       index===result.doubleBadgeIndex&&result.doubleWin){
      field.classList.add('scratch-has-double-award');
      const double=el('span','scratch-double-field-badge','✖️2');
      double.setAttribute('title','Gewinn verdoppelt: Münzen und Weihnachtslichter');
