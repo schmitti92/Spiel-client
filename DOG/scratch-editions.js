@@ -159,6 +159,98 @@ function renderDashboard(){
  $('tips-variant-title').textContent=current.icon+' '+current.name;
  $('tips-variant-rule').textContent=current.rule;
 }
+function simpleWinRule(){
+ const draft=drafts[current.id],cfg=draft.gameSettings;
+ if(current.id==='premium_27')return {shown:false,label:'Vier Geldreihen garantiert',
+  explanation:'Bei diesem Premiumlos sind vier Geldreihen fest eingebaut. Die Hauptgewinn-Chancen können unter „Weitere Einstellungen“ geändert werden.'};
+ if(current.id==='tic_tac_toe')return {shown:false,label:'Tic-Tac-Toe entscheidet',
+  explanation:'Hier entscheidet die Dreierlinie über den Gewinn. Die genaue Symbolverteilung findest du in den optionalen Einstellungen.'};
+ if(current.id==='number_one_20')return {shown:true,label:'🔢 Zahl-1-Chance je Reihe',
+  explanation:'Jede der 20 Reihen hat ihre eigene Trefferchance. 10 % bedeutet etwa 1 Treffer je 10 Reihen.',
+  value:(cfg?.hitPer1000??100)/10};
+ if(current.id==='dog_jackpot_9')return {shown:true,label:'🐾 Chance auf DOG',
+  explanation:'Wenn DOG erscheint, gewinnen alle acht weiteren Felder. Sonst ist das Los eine Niete.',
+  value:(cfg?.dogChancePer1000??350)/10};
+ return {shown:true,label:'🏆 Basis-Gewinnchance',
+  explanation:'Anteil von Geld- oder Geschenkgewinnen. Die genaue Zahl der Gewinner wird im Probedruck berechnet.',
+  value:(1000-(cfg?.weights?.none??200))/10};
+}
+function syncSimpleInputs(){
+ const draft=drafts[current.id];
+ $('simple-variant').value=current.id;
+ $('simple-price').value=String(draft.ticketPrice);
+ $('simple-budget').value=String(draft.maxTotalCoins);
+ $('simple-double').value=String((draft.doubleWin?.chancePer1000??0)/10);
+ $('simple-lights').value=String((draft.symbolBudgets.lights?.chancePer1000??0)/10);
+ const rule=simpleWinRule();
+ $('simple-win-field').hidden=!rule.shown;
+ $('simple-win-label').textContent=rule.label;
+ $('simple-win-explanation').textContent=rule.explanation;
+ $('simple-win-chance').value=rule.shown?String(rule.value):'';
+ updateSimpleSummary();
+}
+function updateSimpleSummary(){
+ const draft=drafts[current.id],active=live[current.id];
+ $('simple-sales').textContent=fmt(draft.ticketPrice*500)+' 🪙';
+ $('simple-payout').textContent=fmt(draft.targetTotalCoins)+' 🪙';
+ $('simple-availability').textContent=active?.status==='active'&&active.remaining>0?
+  '🟢 '+fmt(active.remaining)+' von 500 Losen verfügbar':
+  '🔒 Keine aktive Auflage';
+}
+function setSimpleNumber(field,value){
+ const target=$(field);target.value=String(value);
+ readForm();updateSide();invalidatePreview();
+}
+function changeSimpleWin(value){
+ const draft=drafts[current.id],cfg=draft.gameSettings;
+ if(!cfg||!Number.isFinite(value)||value<0||value>100)return;
+ const n=Math.round(value*10);
+ if(current.id==='number_one_20')cfg.hitPer1000=n;
+ else if(current.id==='dog_jackpot_9')cfg.dogChancePer1000=n;
+ else if(cfg.weights&&current.id!=='premium_27'){
+  const currentWeights=['none','coins','unlock'].map(id=>cfg.weights[id]??0);
+  const next=rebalanceOdds(currentWeights,0,1000-n);
+  ['none','coins','unlock'].forEach((id,i)=>{cfg.weights[id]=next[i]});
+ }else return;
+ // The established server quotas remain untouched; simple mode changes
+ // probabilities only. Any exact manual quotas still apply if configured.
+ updateSide();invalidatePreview();
+}
+function setupSimpleEditor(){
+ $('simple-variant').addEventListener('change',()=>switchVariant($('simple-variant').value));
+ $('simple-price').addEventListener('change',()=>{
+  const n=Number($('simple-price').value);
+  if(Number.isSafeInteger(n)&&n>=0&&n<=1000000)setSimpleNumber('ed-price',n);
+  else syncSimpleInputs();
+ });
+ $('simple-budget').addEventListener('change',()=>{
+  const n=Number($('simple-budget').value);
+  if(!Number.isSafeInteger(n)||n<0||n>1000000000000){syncSimpleInputs();return}
+  const draft=drafts[current.id],ratio=draft.maxTotalCoins>0?
+   draft.targetTotalCoins/draft.maxTotalCoins:0.55;
+  const target=Math.min(n,Math.round(n*ratio));
+  $('ed-budget').value=String(n);$('ed-target').value=String(target);
+  readForm();updateSide();invalidatePreview();
+ });
+ $('simple-win-chance').addEventListener('change',()=>{
+  const n=Number($('simple-win-chance').value);
+  if(!Number.isFinite(n)||n<0||n>100){syncSimpleInputs();return}
+  changeSimpleWin(n);
+ });
+ $('simple-double').addEventListener('change',()=>{
+  const n=Number($('simple-double').value);
+  if(!Number.isFinite(n)||n<0||n>100){syncSimpleInputs();return}
+  setSimpleNumber('ed-double-chance',Math.round(n*10)/10);
+ });
+ $('simple-lights').addEventListener('change',()=>{
+  const n=Number($('simple-lights').value);
+  if(!Number.isFinite(n)||n<0||n>100){syncSimpleInputs();return}
+  drafts[current.id].symbolBudgets.lights.chancePer1000=Math.round(n*10);
+  renderCurrency();updateSide();invalidatePreview();
+ });
+ $('simple-open-advanced').addEventListener('click',()=>activateView('currency'));
+ $('simple-return').addEventListener('click',()=>activateView('overview'));
+}
 function validateDraftLocally(){
  const draft=drafts[current.id],errors=[];
  if(!draft.title||draft.title.length>70)errors.push({view:'plan',message:'Bitte einen gültigen Auflagennamen eingeben.'});
@@ -220,6 +312,17 @@ function renderPlanChecks(){
   li.append(btn);root.append(li);
  }
  $('ed-preview').disabled=busy||errors.length>0;
+ const simple=$('simple-validation');
+ if(simple){
+  simple.replaceChildren();
+  if(!errors.length)simple.append(node('span','is-valid','✓ Die Grundeinstellungen sind bereit für den Probedruck.'));
+  else{
+   simple.append(node('span','is-invalid','⚠️ '+errors[0].message));
+   const action=node('button','simple-fix','Einstellung korrigieren');
+   action.type='button';action.addEventListener('click',()=>activateView(errors[0].view));
+   simple.append(action);
+  }
+ }
 }
 function updateSide(){
  const draft=drafts[current.id],nums=Object.values(draft.quotas);
@@ -251,7 +354,7 @@ function updateSide(){
   'Alle 500 Lose werden intelligent anhand des Ziel-Gesamtgewinns verteilt.';
  $('premium-quantity').textContent=fmt(draft.premiumFull27Tickets)+' / 500';
  $('ed-full27-range').value=String(Math.min(100,Math.max(0,draft.premiumFull27Tickets)));
- renderDashboard();renderPlanChecks();
+ renderDashboard();renderPlanChecks();updateSimpleSummary();
 }
 
 function renderCurrency(){
@@ -649,7 +752,7 @@ function renderLive(){
   root.append(description);
  }
  $('ed-retire').hidden=!doc||doc.status!=='active'||doc.remaining<=0;
- renderDashboard();
+ renderDashboard();updateSimpleSummary();
  $('ed-publish').disabled=busy||!preview?.previewId||previewKey!==draftKey(drafts[current.id])||
   Boolean(doc&&doc.status==='active'&&doc.remaining>0);
 }
@@ -662,10 +765,19 @@ function renderTabs(){
   btn.addEventListener('click',()=>switchVariant(v.id));
   root.append(btn);
  }
+ const select=$('simple-variant');
+ select.replaceChildren(...VARIANTS.map(v=>{
+  const option=node('option','',v.icon+' '+v.name);
+  option.value=v.id;return option;
+ }));
+ select.value=current.id;
 }
 function activateView(name,scroll=true){
  if(!stepLabels[name])return;
  view=name;
+ const advanced=name!=='overview';
+ $('advanced-studio').hidden=!advanced;
+ document.body.classList.toggle('studio-expert',advanced);
  for(const button of document.querySelectorAll('.subtab')){
   const active=button.dataset.view===name;
   button.classList.toggle('active',active);
@@ -678,7 +790,8 @@ function activateView(name,scroll=true){
  $('wizard-progress-label').textContent=stepLabels[name];
  if(name==='plan')renderPlanChecks();
  if(name==='history')void loadHistory();
- if(scroll)document.querySelector('.wizard-heading')?.scrollIntoView({
+ if(scroll)(advanced?document.querySelector('.wizard-heading'):
+  document.querySelector('.simple-studio'))?.scrollIntoView({
   behavior:'smooth',block:'start'});
 }
 function switchVariant(id){
@@ -704,6 +817,7 @@ function switchVariant(id){
  $('ed-max-prizes').value=d.maxPrizesPerTicket;
  $('ed-max-unlocks').value=d.maxUnlocks;
  renderTabs();renderQuota();renderCurrency();renderRules();renderSpec();renderLive();updateSide();invalidatePreview();
+ syncSimpleInputs();
  activateView('overview',false);
 }
 function showPreview(data){
@@ -829,6 +943,7 @@ $('ed-preview').addEventListener('click',async()=>{
  try{
   const result=await api('/editions/preview',{config:draft});
   showPreview(result);
+  document.querySelector('.preview-section')?.scrollIntoView({behavior:'smooth',block:'start'});
  }catch(e){invalidatePreview();showMessage('⚠️ Die Auflage ist so nicht druckbar: '+labelFor(e.message)+
   '. Passe Budget, exakte Gewinnzahlen oder die allgemeinen Spielchancen an.','error')}
  finally{setBusy(false)}
@@ -1012,6 +1127,7 @@ function organizeBudgetFields(){
  main.after(panel);
 }
 organizeBudgetFields();
+setupSimpleEditor();
 window.addEventListener('spielonline-change',()=>void load());
 switchVariant(current.id);
 void load();
