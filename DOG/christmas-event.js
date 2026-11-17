@@ -59,6 +59,8 @@ const treeDetails=[
 // Preload only the requested image, not the full 30-image collection.
 const eventImageRoot='weihnachtsevent-bilder/';
 const assetPath=(id,level)=>{
+ if(id==='grinch'&&Number.isInteger(level)&&level>=1&&level<=5)
+  return eventImageRoot+'grinchhoehle_stufe_'+level+'.png';
  if(id==='academy'&&Number.isInteger(level)&&level>=1&&level<=5)return '../xp_akademie_stufe_'+level+'.png';
  if(id==='luckhouse'&&Number.isInteger(level)&&level>=1&&level<=5)return 'weihnachtsevent-bilder/glueckshaus_stufe_'+level+'.png';
  const stem={
@@ -92,7 +94,9 @@ const sceneLayouts=Object.freeze({
  academy:{cx:844,ground:401,w:150,h:190,growth:[.65,.74,.82,.91,1]},
  bakery:{cx:303,ground:609,w:274,h:205,growth:[.74,.80,.87,.94,1]},
  inn:{cx:922,ground:609,w:288,h:205,growth:[.76,.81,.88,.94,1]},
- tree:{cx:610,ground:504,w:299,h:394,growth:[.54,.59,.65,.71,.76,.81,.86,.91,.96,1]}
+ tree:{cx:610,ground:504,w:299,h:394,growth:[.54,.59,.65,.71,.76,.81,.86,.91,.96,1]},
+ // Independent cave at the left village edge. Gradually shrinks as weakened.
+ grinch:{cx:84,ground:597,w:164,h:195,growth:[1,.97,.94,.9,.85]}
 });
 /** Add a subdued contact shadow directly beneath the alpha-cropped building.
  * Its width follows the visible image as it grows; no extra saved state. */
@@ -253,6 +257,39 @@ const storyScreen=initChristmasStory({openTab:id=>showPanel(id)});
 let scratchScreen=null;
 let levelScreen=null;
 let lastPresentationKey=null;
+// Grinch stages are temporary visual previews until real Part 2 missions exist.
+let grinchVisualStage=1;
+const grinchDialog=$('grinch-cave-dialog');
+const grinchStageDescriptions=[
+ 'Ankunft: Der Grinch ist auf dem Höhepunkt seiner Macht. Die Höhle ist vollständig intakt.',
+ 'Erster Widerstand: Die Freunde setzen dem Grinch zu. Erste Schäden sind sichtbar.',
+ 'Die Macht schwindet: Die Höhle verliert einen Teil ihres bedrohlichen Zaubers.',
+ 'Kurz vor der Niederlage: Die Höhle ist deutlich beschädigt und geschwächt.',
+ 'Letzte Stufe: Die Höhle ist stark angeschlagen – der Grinch wurde zurückgedrängt.'
+];
+function renderGrinchCave(){
+ const stage=grinchVisualStage;
+ const source=assetPath('grinch',stage);
+ const art=$('grinch-cave-preview-image');
+ if(art&&art.getAttribute('src')!==source)art.src=source;
+ if(art)art.alt='Grinchhöhle – Zustand '+stage+' von 5';
+ const slider=$('grinch-cave-stage-range');
+ if(slider)slider.value=String(stage);
+ const output=$('grinch-cave-stage-output');
+ if(output)output.textContent='Stufe '+stage+' / 5';
+ const description=$('grinch-cave-stage-description');
+ if(description)description.textContent=grinchStageDescriptions[stage-1];
+ const status=$('grinch-cave-lock-message');
+ if(status){
+  const verifiedTree=villageLive?treeLevel():0;
+  status.textContent=verifiedTree>=10
+   ?'✨ Baumstufe 10 erreicht · Grinch-Missionen werden vorbereitet.'
+   :'🔒 Teil 2 startet nach der echten gemeinsamen Weihnachtsbaum-Stufe 10.'
+ }
+ const plaque=document.querySelector('.hotspot-grinch small');
+ if(plaque)plaque.textContent=(stage===1?'':'TEST ')+stage+' / 5';
+ showStageImage('grinch',stage);
+}
 function treeLevel(){
   const points=originalTreePoints(preview);
   return TREE_THRESHOLDS.filter(t=>points>=t).length;
@@ -403,6 +440,7 @@ function refreshPreview(){
  const growth=.51+((sceneTree-1)/9)*.49;
  $('art-tree').setAttribute('transform','translate(610 504) scale('+growth.toFixed(4)+') translate(0 -565)');
  showStageImage('tree',sceneTree);
+ renderGrinchCave();
  $('stat-building-levels').textContent=total+' / 30';
  $('stat-tree-level').textContent=tree+' / 10';
  $('village-stage-text').textContent=villageMaxPreview?'🔍 Vollausbau-Simulation · keine Änderung am Fortschritt':
@@ -602,10 +640,29 @@ buildingDialog.addEventListener('close',()=>{openedBuildingId=null;});
 document.querySelectorAll('[data-open-building]').forEach(button=>{
  button.addEventListener('click',()=>openVillageBuildingDialog(button.dataset.openBuilding));
 });
+// Cave viewing is always available; the slider never grants mission progress.
+document.querySelectorAll('[data-open-grinch]').forEach(button=>{
+ button.addEventListener('click',()=>{
+  renderGrinchCave();
+  if(grinchDialog&&!grinchDialog.open)grinchDialog.showModal();
+ });
+});
+$('grinch-cave-close')?.addEventListener('click',()=>grinchDialog?.close());
+$('grinch-cave-stage-range')?.addEventListener('input',event=>{
+ grinchVisualStage=Math.min(5,Math.max(1,Number(event.target.value)||1));
+ renderGrinchCave();
+});
+grinchDialog?.addEventListener('click',event=>{
+ if(event.target===grinchDialog)grinchDialog.close();
+});
+grinchDialog?.addEventListener('close',()=>{
+ grinchVisualStage=1;
+ renderGrinchCave();
+});
 window.addEventListener('hashchange',()=>showPanel(tabs.includes(location.hash.slice(1))?location.hash.slice(1):'village',{updateHistory:false}));
 showPanel(tabs.includes(location.hash.slice(1))?location.hash.slice(1):'village',{updateHistory:false});
 // Keep the vector drawings as fallback if an uploaded image fails to render.
-for(const id of ['tower','workshop','luckhouse','academy','bakery','inn','tree']){
+for(const id of ['tower','workshop','luckhouse','academy','bakery','inn','tree','grinch']){
  $(id+'-stage-image')?.addEventListener('error',()=>{
   const fallback=$(id==='tree'?'art-tree':'art-'+id);
   fallback?.classList.remove('photo-ready');
