@@ -112,10 +112,10 @@ const labelFor=error=>{
     code.startsWith('EDITION_DISTRIBUTION_IMPOSSIBLE_SLOT_')){
   const count=code.match(/_WINS_(\d+)/)?.[1];
   const slot=code.match(/_SLOT_(\d+)/)?.[1];
-  return (slot?'Bei Los '+slot+' von 500: ':'')+
+  return (slot?'Bei Los '+slot+' von '+fmt(sizeOf())+': ':'')+
    (count?'Für genau '+count+' Gewinne':'Für diese Gewinnzahl')+
    ' wurde noch keine gültige Kombination gefunden. Die feste Vorgabe bleibt bestehen. '+
-   'Bitte zuerst „500 Lose berechnen“ erneut versuchen. Falls es wieder passiert: '+
+   'Bitte zuerst den Probedruck erneut versuchen. Falls es wieder passiert: '+
    'Gewinnbeträge senken oder Gesamtbudget, Symbolbudgets und Höchstgewinn je Los prüfen. '+
    'Auch ✖️2 benötigt zusätzliches Budget.';
  }
@@ -126,6 +126,8 @@ const labelFor=error=>{
  return ({
  EDITION_STILL_ACTIVE:'Eine bestehende Auflage hat noch Restlose. Beende sie zuerst oder verkaufe sie vollständig.',
  EDITION_QUOTAS_OVER_500:'Mehr als 500 Lose sind fest eingeplant.',
+ EDITION_QUOTAS_OVER_PRINT_SIZE:'Die festen Gewinnzahlen überschreiten die Auflagengröße.',
+ EDITION_PRINT_SIZE_INVALID:'Bitte eine ganze Anzahl von 1 bis 500 Losen wählen.',
  EDITION_INVALID_LIMITS:'Bitte prüfe die Budget-, Gewinn- und Freischaltungsgrenzen.',
  EDITION_TICKET_PRICE_INVALID:'Der Preis muss eine ganze Zahl zwischen 0 und 1.000.000 Münzen sein.',
  EDITION_SOLD_OUT:'Diese Auflage ist ausverkauft.',
@@ -182,14 +184,14 @@ function invalidatePreview(){
  if(samples)samples.replaceChildren();
  $('preview-state').textContent='Nach Änderungen neu berechnen';
  $('ed-publish').disabled=true;
- $('preview-chart').replaceChildren(node('p','','Die Einstellungen wurden geändert. Berechne die 500 Lose erneut.'));
+ $('preview-chart').replaceChildren(node('p','','Die Einstellungen wurden geändert. Berechne die Auflage erneut.'));
  $('preview-target').hidden=true;
  $('preview-economy').hidden=true;
  $('preview-currencies').hidden=true;
  $('preview-double').hidden=true;
  $('simple-prize-confirmed').hidden=true;
  $('preview-metrics').replaceChildren(...[
-  ['🎟️ Lose','500'],['🏆 Gewinnlose','–'],['❄️ Nieten','–'],['🪙 Gesamtauszahlung','–']
+  ['🎟️ Lose',fmt(sizeOf())],['🏆 Gewinnlose','–'],['❄️ Nieten','–'],['🪙 Gesamtauszahlung','–']
  ].map(([name,value])=>metric(name,value)));
  showMessage('');
 }
@@ -275,12 +277,12 @@ function renderSimplePrizeCounts(){
    '🏆 '+count+' '+(count===1?'Gewinn':'Gewinne')+' pro Los'));
   const quantity=node('label','simple-prize-row-qty');
   quantity.append(node('span','','Anzahl Lose'));
-  const input=node('input');input.type='number';input.min='0';input.max='500';
+  const input=node('input');input.type='number';input.min='0';input.max=String(sizeOf());
   input.step='1';input.value=String(tickets);input.inputMode='numeric';
   input.setAttribute('aria-label','Wie viele Lose haben '+count+' Gewinne?');
   input.addEventListener('change',()=>{
    const n=Number(input.value);
-   if(!Number.isSafeInteger(n)||n<0||n>500){
+   if(!Number.isSafeInteger(n)||n<0||n>sizeOf()){
     input.value=String(drafts[current.id].quotas[count]);return;
    }
    updateFixedPrizes(count,n);
@@ -293,10 +295,10 @@ function renderSimplePrizeCounts(){
   row.append(remove);root.append(row);
  }
  if(!pairs.length)root.append(node('p','simple-prize-empty',
-  'Noch keine feste Anzahl. Alle 500 Lose werden automatisch zusammengestellt.'));
- $('simple-prize-fixed').textContent=fmt(fixed)+' von 500 fest';
- $('simple-prize-remaining').textContent=fmt(Math.max(0,500-fixed))+' automatisch';
- $('simple-prize-bar-fill').style.width=Math.min(100,fixed/5)+'%';
+  'Noch keine feste Anzahl. Die Lose werden automatisch zusammengestellt.'));
+ $('simple-prize-fixed').textContent=fmt(fixed)+' von '+fmt(sizeOf())+' fest';
+ $('simple-prize-remaining').textContent=fmt(Math.max(0,sizeOf()-fixed))+' automatisch';
+ $('simple-prize-bar-fill').style.width=Math.min(100,100*fixed/sizeOf())+'%';
  $('simple-prize-clear').hidden=!pairs.length;
  const winset=current.id==='premium_27'?'Bei Premium sind mindestens 4 Gewinne pro Los garantiert.':
   current.id==='tic_tac_toe'?'Tic-Tac-Toe erlaubt 0 oder 1 Einzelgewinn pro Los.':
@@ -308,14 +310,14 @@ function renderSimplePrizeCounts(){
 }
 function updateFixedPrizes(count,tickets){
  if(!possibleWinCounts().includes(count)||!Number.isSafeInteger(tickets)||
-  tickets<0||tickets>500)return;
+  tickets<0||tickets>sizeOf())return;
  const draft=drafts[current.id],quotas={...(draft.quotas||{})};
  if(!tickets)delete quotas[count];
  else quotas[count]=tickets;
  const fixed=Object.values(quotas).reduce((sum,n)=>sum+Number(n||0),0);
- if(fixed>500){
+ if(fixed>sizeOf()){
   renderSimplePrizeCounts();
-  $('simple-prize-hint').textContent='⚠️ Höchstens 500 Lose möglich. '+
+  $('simple-prize-hint').textContent='⚠️ Höchstens '+fmt(sizeOf())+' Lose möglich. '+
    'Reduziere die Anzahl oder entferne eine andere feste Vorgabe.';
   $('simple-prize-hint').classList.add('has-error');
   return;
@@ -334,18 +336,18 @@ function updateFixedPrizes(count,tickets){
 function addFixedPrizeRow(){
  const count=Number($('simple-prize-count').value);
  const tickets=Number($('simple-prize-tickets').value);
- if(!Number.isSafeInteger(tickets)||tickets<1||tickets>500){
-  $('simple-prize-hint').textContent='Bitte eine ganze Zahl zwischen 1 und 500 Losen eingeben.';
+ if(!Number.isSafeInteger(tickets)||tickets<1||tickets>sizeOf()){
+  $('simple-prize-hint').textContent='Bitte eine ganze Zahl zwischen 1 und '+fmt(sizeOf())+' Losen eingeben.';
   $('simple-prize-hint').classList.add('has-error');return;
  }
  updateFixedPrizes(count,(Number(drafts[current.id].quotas[count])||0)+tickets);
 }
 function updateSimpleSummary(){
  const draft=drafts[current.id],active=live[current.id];
- $('simple-sales').textContent=fmt(draft.ticketPrice*500)+' 🪙';
+ $('simple-sales').textContent=fmt(draft.ticketPrice*draft.printSize)+' 🪙';
  $('simple-payout').textContent=fmt(draft.targetTotalCoins)+' 🪙';
  $('simple-availability').textContent=active?.status==='active'&&active.remaining>0?
-  '🟢 '+fmt(active.remaining)+' von 500 Losen verfügbar':
+  '🟢 '+fmt(active.remaining)+' von '+fmt(active.config?.printSize??500)+' Losen verfügbar':
   '🔒 Keine aktive Auflage';
 }
 function setSimpleNumber(field,value){
@@ -442,15 +444,15 @@ function validateDraftLocally(){
    draft.targetTotalCoins<0||draft.targetTotalCoins>draft.maxTotalCoins||
    !Number.isSafeInteger(draft.targetTotalCoins))
   errors.push({view:'plan',message:'Die Zielauszahlung darf das Münz-Gesamtbudget nicht überschreiten.'});
- if(draft.targetTotalCoins>draft.maxPerTicketCoins*500)
-  errors.push({view:'plan',message:'Die Zielauszahlung ist höher als der maximal mögliche Gewinn aller 500 Lose.'});
+ if(draft.targetTotalCoins>draft.maxPerTicketCoins*draft.printSize)
+  errors.push({view:'plan',message:'Die Zielauszahlung ist höher als der maximal mögliche Gewinn dieser Auflage.'});
  if(draft.maxPerTicketCoins<0||draft.maxPrizesPerTicket<1||draft.maxUnlocks<0||
   ![draft.maxPerTicketCoins,draft.maxPrizesPerTicket,draft.maxUnlocks,draft.targetTolerancePercent]
     .every(Number.isSafeInteger))
   errors.push({view:'plan',message:'Die Auflagengrenzen müssen gültige ganze Zahlen sein.'});
  const quotient=Object.values(draft.quotas).reduce((a,b)=>a+Number(b||0),0);
- if(quotient>500||Object.values(draft.quotas).some(n=>!Number.isInteger(n)||n<0||n>500))
-  errors.push({view:'quotas',message:'Höchstens 500 Lose können mit festen Gewinnzahlen verplant werden.'});
+ if(quotient>sizeOf()||Object.values(draft.quotas).some(n=>!Number.isInteger(n)||n<0||n>sizeOf()))
+  errors.push({view:'quotas',message:'Die festgelegten Gewinnzahlen dürfen die Auflagengröße nicht überschreiten.'});
  if(current.id==='premium_27'&&draft.quotas[0]>0)
   errors.push({view:'quotas',message:'Beim Premiumlos sind Nieten aufgrund der garantierten Geldreihen nicht möglich.'});
  if(Object.entries(draft.quotas).some(([win,n])=>Number(n)>0&&!possibleWinCounts().includes(Number(win))))
@@ -460,7 +462,7 @@ function validateDraftLocally(){
  if(draft.doubleWin.minTickets>draft.doubleWin.maxTickets||
     ![draft.doubleWin.minTickets,draft.doubleWin.maxTickets,draft.doubleWin.chancePer1000]
       .every(Number.isSafeInteger)||
-    draft.doubleWin.minTickets<0||draft.doubleWin.maxTickets>500||
+    draft.doubleWin.minTickets<0||draft.doubleWin.maxTickets>draft.printSize||
     draft.doubleWin.chancePer1000<0||draft.doubleWin.chancePer1000>1000)
   errors.push({view:'currency',message:'Bitte die ✖️2-Chance und das Minimum/Maximum prüfen.'});
  const budgets=draft.symbolBudgets;
@@ -524,21 +526,21 @@ function updateSide(){
  $('volatility-value').textContent=fmt(draft.volatility)+' %';
  $('side-max').textContent=fmt(draft.maxPerTicketCoins)+' 🪙';
  const sum=nums.reduce((n,x)=>n+(Number(x)||0),0);
- $('side-quotas').textContent=sum?fmt(sum)+' von 500 fest':'Automatisch';
- $('quota-sum').textContent=fmt(sum)+' von 500 fest eingeplant · '+fmt(Math.max(0,500-sum))+' automatisch';
- $('quota-sum').style.color=sum>500?'#ff9999':'#f3daae';
+ $('side-quotas').textContent=sum?fmt(sum)+' von '+fmt(draft.printSize)+' fest':'Automatisch';
+ $('quota-sum').textContent=fmt(sum)+' von '+fmt(draft.printSize)+' fest eingeplant · '+fmt(Math.max(0,draft.printSize-sum))+' automatisch';
+ $('quota-sum').style.color=sum>draft.printSize?'#ff9999':'#f3daae';
  const known=Object.entries(draft.quotas);
  const duds=Number(draft.quotas[0]||0);
  const rare=known.reduce((n,[count,v])=>n+(Number(count)>=8?Number(v):0),0);
  const regular=Math.max(0,sum-duds-rare);
- $('quota-meter-duds').style.width=(duds/5)+'%';
- $('quota-meter-normal').style.width=(regular/5)+'%';
- $('quota-meter-jackpots').style.width=(rare/5)+'%';
+ $('quota-meter-duds').style.width=(100*duds/draft.printSize)+'%';
+ $('quota-meter-normal').style.width=(100*regular/draft.printSize)+'%';
+ $('quota-meter-jackpots').style.width=(100*rare/draft.printSize)+'%';
  $('quota-description').textContent= sum?
   'Fest verplant: '+fmt(duds)+' Nieten · '+fmt(regular)+' normale Gewinnlose · '+
-   fmt(rare)+' große Mehrfachgewinn-Lose. Rest frei: '+fmt(Math.max(0,500-sum))+' Lose.':
-  'Alle 500 Lose werden intelligent anhand des Ziel-Gesamtgewinns verteilt.';
- $('premium-quantity').textContent=fmt(draft.premiumFull27Tickets)+' / 500';
+   fmt(rare)+' große Mehrfachgewinn-Lose. Rest frei: '+fmt(Math.max(0,draft.printSize-sum))+' Lose.':
+  'Alle '+fmt(draft.printSize)+' Lose werden anhand der Gewinnregeln und des Budgets verteilt.';
+ $('premium-quantity').textContent=fmt(draft.premiumFull27Tickets)+' / '+fmt(draft.printSize);
  $('ed-full27-range').value=String(Math.min(100,Math.max(0,draft.premiumFull27Tickets)));
  renderDashboard();renderPlanChecks();updateSimpleSummary();renderSimplePrizeCounts();
 }
@@ -919,11 +921,11 @@ function renderLive(){
  root.replaceChildren();
  if(!doc){
   label.textContent='Noch keine Auflage';label.classList.remove('live');
-  root.append(node('p','live-detail','🔒 Aktuell keine Auflage vorhanden. Neue Lose sind im Spiel gesperrt, bis du eine neue 500er-Auflage veröffentlichst.'));
+  root.append(node('p','live-detail','🔒 Keine aktive Auflage. Veröffentliche zuerst eine neue Serie.'));
  }else{
-  label.textContent=doc.remaining>0?doc.remaining+' von 500 übrig':'🔒 Aktuell keine Auflage vorhanden';
+  label.textContent=doc.remaining>0?doc.remaining+' von '+fmt(doc.config?.printSize??500)+' übrig':'🔒 Aktuell keine Auflage vorhanden';
   label.classList.toggle('live',doc.remaining>0);
-  root.append(node('div','live-total',fmt(doc.remaining)+' / 500'));
+  root.append(node('div','live-total',fmt(doc.remaining)+' / '+fmt(doc.config?.printSize??500)));
   const track=node('div','live-progress'),bar=node('i');
   bar.style.width=(doc.issued/5)+'%';track.append(bar);root.append(track);
   const description=node('div','live-detail');
@@ -1042,11 +1044,11 @@ function showPreview(data){
   '. Alle festen Gewinnzahlen wurden serverseitig geprüft.';
  $('preview-double').hidden=false;
  $('preview-double').textContent='✖️2-Verteilung: '+fmt(s.doubleWinTickets||0)+
-  ' von 500 Losen haben einen sichtbaren Verdopplungsbonus. Zusätzlich verteilt: '+
+  ' von '+fmt(s.tickets)+' Losen haben einen sichtbaren Verdopplungsbonus. Zusätzlich verteilt: '+
   fmt(s.doubleExtraCoins||0)+' 🪙 und '+fmt(s.doubleExtraLights||0)+
   ' ⭐. Diese Beträge sind in den jeweiligen Gesamtbudgets enthalten.';
  $('preview-economy').hidden=false;
- $('preview-income').textContent=fmt(s.projectedGrossRevenue??s.ticketPrice*500)+' 🪙';
+ $('preview-income').textContent=fmt(s.projectedGrossRevenue??s.ticketPrice*s.tickets)+' 🪙';
  $('preview-expense').textContent=fmt(s.totalCoins)+' 🪙';
  const net=s.projectedNetCoins??(s.projectedGrossRevenue-s.totalCoins);
  $('preview-profit').textContent=(net<0?'−':'')+fmt(Math.abs(net))+' 🪙';
@@ -1210,8 +1212,8 @@ $('ed-inspect').addEventListener('click',async()=>{
 $('ed-publish').addEventListener('click',async()=>{
  const draft=readForm();
  if(!preview?.previewId||previewKey!==draftKey(draft))return;
- if(!window.confirm('500 neue '+current.name+'-Lose jetzt serverseitig drucken und im Spiel aktivieren? Eine bestehende Auflage darf nicht noch offene Lose haben.'))return;
- setBusy(true);showMessage('🖨️ Render aktiviert exakt die 500 zuvor geprüften Lose – ohne neue Ziehung …');
+ if(!window.confirm(fmt(sizeOf())+' neue '+current.name+'-Lose jetzt serverseitig drucken und im Spiel aktivieren? Eine bestehende Auflage darf nicht noch offene Lose haben.'))return;
+ setBusy(true);showMessage('🖨️ Render aktiviert die bereits geprüften Lose – ohne neue Ziehung …');
  try{
   const published=await api('/editions/publish',{config:draft,previewId:preview.previewId});
   if(!published.edition||!published.published)throw Error('Auflage nicht bestätigt');
@@ -1219,7 +1221,7 @@ $('ed-publish').addEventListener('click',async()=>{
    throw Error('Die veröffentlichte Verteilung weicht von der geprüften Vorschau ab.');
   live[current.id]=published.edition;
   showMessage('✅ Edition veröffentlicht: '+fmt(published.edition.summary.totalCoins)+
-   ' Münzen in 500 servergeprüften Losen · ID '+published.edition.id,'good');
+   ' Münzen in '+fmt(published.edition.summary.tickets)+' servergeprüften Losen · ID '+published.edition.id,'good');
   renderLive();await loadHistoryIfOpen();
  }catch(e){showMessage('⚠️ Veröffentlichung fehlgeschlagen: '+labelFor(e.message),'error')}
  finally{setBusy(false)}
@@ -1348,7 +1350,7 @@ function usePreset(id){
 document.querySelectorAll('[data-preset]').forEach(button=>
  button.addEventListener('click',()=>usePreset(button.dataset.preset)));
 function changeFull27(value){
- const count=Math.max(0,Math.min(500,Math.round(Number(value)||0)));
+ const count=Math.max(0,Math.min(sizeOf(),Math.round(Number(value)||0)));
  $('ed-full27').value=String(count);
  $('ed-full27-range').value=String(Math.min(100,count));
  const currentQuotas=drafts[current.id].quotas;
