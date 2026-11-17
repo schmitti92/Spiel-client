@@ -62,6 +62,11 @@
        <div class="premium-achievements"><span>🪙 Vier sichere Geldreihen</span><span>⭐ Bonus ab 20 Symbolen</span><span>🎁 Freischaltung ab 24 Symbolen</span><span>🏆 Bis zu 10 Einzelgewinne</span></div></div></div>
      </div>
     <div class="info-panel"><strong>So funktioniert die Auflage</strong><p>Der Render-Server erzeugt alle 500 Lose aus den echten Spielregeln, prüft die Gewinnfelder und mischt sie. Erst nach deiner Veröffentlichung werden diese gedruckten Ergebnisse im Spiel ausgegeben. Eine Änderung der allgemeinen Gewinnwerte verändert keine bereits gedruckten Lose.</p></div>
+    <div class="volatility-control">
+     <div class="volatility-heading"><div><span class="eyebrow">✦ GLÜCKS- &amp; RISIKOSTEUERUNG ✦</span><h3>🎲 Wie unterschiedlich sollen die Lose sein?</h3><p>Höhere Werte erzeugen mehr Kontraste: wenige außergewöhnliche Gewinnlose und entsprechend mehr kleine Gewinne oder Nieten, damit die 500er-Gesamtauszahlung im Rahmen bleibt.</p></div><strong id="volatility-value">70 %</strong></div>
+     <div class="volatility-track"><span>⚖️ Ruhig</span><input id="ed-volatility" type="range" min="0" max="100" value="70" step="5"><span>💥 Wild</span></div>
+     <div class="volatility-levels"><span>Viele ähnliche Gewinne</span><span>Mehr unterschiedliche Auszahlungen</span><span>Jackpot-Schwankungen</span></div>
+    </div>
     <div class="budget-track"><div class="budget-track-info"><span>Geplante Zielausschüttung</span><strong id="target-progress-label">–</strong></div><div class="budget-track-rail"><i id="target-progress-fill" style="width:0%"></i></div></div>
     <p class="fine-print">⚠️ Gewinnwerte sind diskret: Eine exakte Zielsumme ist nicht immer mathematisch möglich. Abweichungen über deiner Toleranz werden vor Veröffentlichung abgelehnt. Die tatsächliche Auszahlung steht im Probedruck.</p>
    </section>
