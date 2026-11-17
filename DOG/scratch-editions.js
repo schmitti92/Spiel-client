@@ -466,7 +466,9 @@ function changeSimpleWin(value){
  else if(current.id==='dog_jackpot_9')cfg.dogChancePer1000=n;
  else if(cfg.weights&&current.id!=='premium_27'){
   const currentWeights=['none','coins','unlock'].map(id=>cfg.weights[id]??0);
-  const next=rebalanceOdds(currentWeights,0,1000-n);
+  const next=rebalanceLockedOdds(currentWeights,0,(1000-n)/10,
+   [false,false,Boolean(draft.oddsLocks?.gift)]);
+  if(!next){showMessage('🔒 Die fixierte Hauptgewinnchance lässt diese Quote nicht zu. Entsperre zuerst den Hauptgewinn.','error');syncSimpleInputs();return;}
   ['none','coins','unlock'].forEach((id,i)=>{cfg.weights[id]=next[i]});
  }else return;
  // The established server quotas remain untouched; simple mode changes
