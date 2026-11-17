@@ -72,7 +72,7 @@ const baseDraft=variant=>({
 const drafts=Object.fromEntries(VARIANTS.map(v=>[v.id,baseDraft(v)]));
 const live={};
 const catalog={};
-let current=VARIANTS[0],view='currency',settings=null,preview=null,previewKey=null,busy=false;
+let current=VARIANTS[0],view='overview',settings=null,preview=null,previewKey=null,busy=false;
 let formInitialized=false;
 const labelFor=error=>({
  EDITION_STILL_ACTIVE:'Eine bestehende Auflage hat noch Restlose. Beende sie zuerst oder verkaufe sie vollständig.',
@@ -138,6 +138,87 @@ function invalidatePreview(){
 function metric(label,value){
  const div=node('div');div.append(node('span','',label),node('strong','',value));return div;
 }
+const stepLabels={overview:'Übersicht · Start',currency:'Schritt 1/4 · Gewinne & ✖️2',
+ mechanic:'Schritt 2/4 · Gewinnchancen',quotas:'Schritt 3/4 · Gewinnverteilung',
+ plan:'Schritt 4/4 · Prüfen & veröffentlichen',history:'Archiv · Historie'};
+function renderDashboard(){
+ const draft=drafts[current.id],doc=live[current.id];
+ $('quick-price').textContent=fmt(draft.ticketPrice)+' 🪙';
+ $('quick-target').textContent=fmt(draft.targetTotalCoins)+' 🪙';
+ $('quick-double').textContent=fmt((draft.doubleWin?.chancePer1000||0)/10)+' %';
+ $('quick-stock').textContent=doc?.status==='active'&&doc.remaining>0?
+  fmt(doc.remaining)+' Lose übrig':signedIn()?'Keine aktive Auflage':'Anmeldung erforderlich';
+ $('overview-current-title').textContent=current.icon+' '+current.name;
+ $('overview-current-rule').textContent=current.rule;
+ $('overview-budget').textContent=fmt(draft.maxTotalCoins)+' 🪙 max.';
+ $('overview-target').textContent=fmt(draft.targetTotalCoins)+' 🪙';
+ $('overview-active').textContent=doc?.status==='active'&&doc.remaining>0?
+  fmt(doc.issued)+' verkauft · '+fmt(doc.remaining)+' übrig':'Keine aktive Auflage';
+ $('tips-variant-title').textContent=current.icon+' '+current.name;
+ $('tips-variant-rule').textContent=current.rule;
+}
+function validateDraftLocally(){
+ const draft=drafts[current.id],errors=[];
+ if(!draft.title||draft.title.length>70)errors.push({view:'plan',message:'Bitte einen gültigen Auflagennamen eingeben.'});
+ if(!Number.isSafeInteger(draft.ticketPrice)||draft.ticketPrice<0||draft.ticketPrice>1000000)
+  errors.push({view:'plan',message:'Der Lospreis muss zwischen 0 und 1.000.000 liegen.'});
+ if(!Number.isSafeInteger(draft.maxTotalCoins)||draft.maxTotalCoins<0||
+   draft.targetTotalCoins<0||draft.targetTotalCoins>draft.maxTotalCoins||
+   !Number.isSafeInteger(draft.targetTotalCoins))
+  errors.push({view:'plan',message:'Die Zielauszahlung darf das Münz-Gesamtbudget nicht überschreiten.'});
+ if(draft.targetTotalCoins>draft.maxPerTicketCoins*500)
+  errors.push({view:'plan',message:'Die Zielauszahlung ist höher als der maximal mögliche Gewinn aller 500 Lose.'});
+ if(draft.maxPerTicketCoins<0||draft.maxPrizesPerTicket<1||draft.maxUnlocks<0||
+  ![draft.maxPerTicketCoins,draft.maxPrizesPerTicket,draft.maxUnlocks,draft.targetTolerancePercent]
+    .every(Number.isSafeInteger))
+  errors.push({view:'plan',message:'Die Auflagengrenzen müssen gültige ganze Zahlen sein.'});
+ const quotient=Object.values(draft.quotas).reduce((a,b)=>a+Number(b||0),0);
+ if(quotient>500||Object.values(draft.quotas).some(n=>!Number.isInteger(n)||n<0||n>500))
+  errors.push({view:'quotas',message:'Höchstens 500 Lose können mit festen Gewinnzahlen verplant werden.'});
+ if(current.id==='premium_27'&&draft.quotas[0]>0)
+  errors.push({view:'quotas',message:'Beim Premiumlos sind Nieten aufgrund der garantierten Geldreihen nicht möglich.'});
+ if(draft.doubleWin.minTickets>draft.doubleWin.maxTickets||
+    ![draft.doubleWin.minTickets,draft.doubleWin.maxTickets,draft.doubleWin.chancePer1000]
+      .every(Number.isSafeInteger)||
+    draft.doubleWin.minTickets<0||draft.doubleWin.maxTickets>500||
+    draft.doubleWin.chancePer1000<0||draft.doubleWin.chancePer1000>1000)
+  errors.push({view:'currency',message:'Bitte die ✖️2-Chance und das Minimum/Maximum prüfen.'});
+ const budgets=draft.symbolBudgets;
+ for(const [id,row] of Object.entries(budgets)){
+  if(![row.min,row.max,row.minTotal,row.maxTotal].every(Number.isSafeInteger)||
+    row.min>row.max||row.minTotal>row.maxTotal||
+    row.min<0||row.maxTotal<0)
+   errors.push({view:'currency',message:'Beim Gewinnsymbol '+id+' stimmt eine Mindest-/Höchstgrenze nicht.'});
+ }
+ const odds=draft.gameSettings||{},groups=[
+  ['Gewinnarten',odds.weights&&Object.values(odds.weights)],
+  ['Geldsymbole',odds.moneySymbolWeights],['Geschenke',odds.giftSymbolWeights],
+  ['Symbolanteile',odds.symbolWeights]
+ ];
+ for(const [label,group] of groups){
+  if(Array.isArray(group)&&group.some(n=>!Number.isInteger(n)||n<0||n>1000)||
+     Array.isArray(group)&&group.reduce((a,b)=>a+b,0)!==1000)
+   errors.push({view:'mechanic',message:label+': zusammen müssen genau 100 % erreicht werden.'});
+ }
+ if(draft.premiumFull27Tickets>0&&(draft.maxPrizesPerTicket<10||
+    draft.maxUnlocks<draft.premiumFull27Tickets))
+  errors.push({view:'plan',message:'27er-Premium-Jackpots benötigen 10 Gewinne und genügend Freischaltungen.'});
+ return errors;
+}
+function renderPlanChecks(){
+ const root=$('plan-checks');if(!root)return;
+ const errors=validateDraftLocally();
+ root.replaceChildren();
+ if(!errors.length)root.append(node('li','check-good',
+  '✅ Grundangaben und Prozentverteilungen sind schlüssig. Jetzt den echten Probedruck starten.'));
+ for(const error of errors){
+  const li=node('li','check-warning');
+  const btn=node('button','', '⚠️ '+error.message+' · Einstellung öffnen');
+  btn.type='button';btn.addEventListener('click',()=>activateView(error.view));
+  li.append(btn);root.append(li);
+ }
+ $('ed-preview').disabled=busy||errors.length>0;
+}
 function updateSide(){
  const draft=drafts[current.id],nums=Object.values(draft.quotas);
  $('side-budget').textContent=fmt(draft.maxTotalCoins)+' 🪙';
@@ -168,6 +249,7 @@ function updateSide(){
   'Alle 500 Lose werden intelligent anhand des Ziel-Gesamtgewinns verteilt.';
  $('premium-quantity').textContent=fmt(draft.premiumFull27Tickets)+' / 500';
  $('ed-full27-range').value=String(Math.min(100,Math.max(0,draft.premiumFull27Tickets)));
+ renderDashboard();renderPlanChecks();
 }
 
 function renderCurrency(){
@@ -208,7 +290,21 @@ function renderCurrency(){
   build('maxTotal',meta.id==='gift'?'Maximal 🎁 auf 500 Losen':
    meta.id==='lights'?'Maximal ⭐ in allen 500 Losen':'Gesamtbudget dieser Symbolart',
    meta.id==='gift'?500:1000000000000);
-  if(meta.id==='lights')build('chancePer1000','Trefferchance in ‰ (200 = 20 %)',1000);
+  if(meta.id==='lights'){
+   const field=node('label','currency-field');
+   field.append(node('span','','⭐ Lichtgewinn-Chance pro Los'));
+   const wrapper=node('div','currency-percent-inline');
+   const input=node('input');input.type='number';input.min='0';input.max='100';input.step='0.1';
+   input.inputMode='decimal';input.value=String(range.chancePer1000/10);
+   input.addEventListener('input',()=>{
+    const n=Number(input.value);
+    range.chancePer1000=Math.round(n*10);
+    updateSide();renderSymbolOverview();invalidatePreview();
+   });
+   wrapper.append(input,node('b','','%'));field.append(wrapper,
+    node('small','','20 % bedeutet: bei jedem Los etwa eine Chance von 1 zu 5 auf Lichter.'));
+   fields.append(field);
+  }
   card.append(fields);
   const badge=node('div','currency-card-foot',
    meta.id==='lights'?'⭐ Gewinner erhalten Lichter sofort auf das gemeinsame Dorfkonto.':
@@ -262,9 +358,15 @@ function renderPreviewCurrencies(s){
 }
 function renderQuota(){
  const parent=$('quota-grid');parent.replaceChildren();
- for(let count=0;count<=20;count++){
+ const allowed=current.id==='premium_27'?
+  Array.from({length:7},(_,i)=>i+4):
+  current.id==='tic_tac_toe'?[0,1]:
+  current.id==='dog_jackpot_9'?[0,8]:
+  Array.from({length:current.id==='number_one_20'?21:11},(_,i)=>i);
+ for(const count of allowed){
   const line=node('div','quota-row');line.dataset.count=String(count);
-  const heading=node('strong','',count===0?'❄️ Niete – 0 Gewinne':count+' '+(count===1?'Gewinn':'Gewinne')+' auf dem Los');
+  const heading=node('strong','',count===0?'❄️ Niete · 0 Gewinne':
+   '🏆 '+count+' '+(count===1?'Gewinn':'Gewinne'));
   const field=node('input');
   field.type='number';field.min='0';field.max='500';field.step='1';
   field.inputMode='numeric';field.dataset.count=String(count);
@@ -272,14 +374,10 @@ function renderQuota(){
   const quota=drafts[current.id].quotas[count];
   field.value=Number.isInteger(quota)?String(quota):'';
   field.setAttribute('aria-label','Anzahl Lose mit '+count+' Gewinnen');
-  const description=node('small','',count>current.wins?'Nur bei angepassten Spielregeln':count===0?
-  (current.id==='premium_27'?'Premium hat keine Nieten':'Exakte Nieten-Zahl'):count===10&&current.id==='premium_27'?
-  'Davon volle 27-Felder-Lose möglich':count===10?'Zehn Einzelgewinne':'Exakte Losanzahl');
-  if(current.id==='premium_27'&&count===0){field.disabled=true;field.placeholder='Nicht möglich';}
-  if(current.id==='tic_tac_toe'&&count>1){field.disabled=true;field.placeholder='Nicht möglich';}
-  if(current.id==='dog_jackpot_9'&&count!==0&&count!==8){field.disabled=true;field.placeholder='Nicht möglich';}
-  line.append(heading,field,description);
-  parent.append(line);
+  const description=node('small','',count===0?'Ohne Preis':count===10&&current.id==='premium_27'?
+   '10 Gewinne · 27-Felder-Bonus möglich':count>current.wins?'Nur wenn höhere Gewinnzahl erlaubt':
+   'Genau '+count+' Treffer');
+  line.append(heading,field,description);parent.append(line);
  }
 }
 function defaultGameSettings(v){
@@ -304,9 +402,9 @@ function renderGameSettings(root){
  }
  if(!cfg)return;
  const section=node('div','mechanic-card');
- section.append(node('h4','','🎛️ Eigene Einstellungen für diese 500er-Auflage'),
-  node('p','','Hier stellst du die Geldwerte, Symbolanteile und Spielregeln für diesen Druck ein. '+
-   'Chancen werden in Promille angegeben: 1000 = 100 %, 100 = 10 %. Änderungen betreffen ausschließlich die neue Auflage.'));
+ section.append(node('h4','','⚙️ Zusätzliche Spieleinstellungen'),
+  node('p','','Hier kannst du seltene Treffer und Sonderregeln für diese Auflage fein einstellen. '+
+   'Hauptchancen darunter stehen direkt in Prozent; du brauchst keine Promille umzurechnen.'));
  const grid=node('div','field-layout');grid.style.marginTop='15px';
  const field=(label,property,index=null,min=0,max=50000000)=>{
   const item=node('label','field');item.append(node('span','',label));
@@ -316,7 +414,7 @@ function renderGameSettings(root){
    const n=Number(input.value);
    if(index===null)cfg[property]=n;
    else cfg[property][index]=n;
-   invalidatePreview();
+   invalidatePreview();updateSide();
   });
   item.append(input);grid.append(item);
  };
@@ -352,7 +450,7 @@ function renderGameSettings(root){
     const current=inputs.map(n=>Math.max(0,Math.min(1000,Math.round(Number(n.value)*10))));
     const next=$('ed-auto-percent').checked?
      rebalanceOdds(current,i,entered*10):current;
-    initial=[...next];save(next);render(next);invalidatePreview();
+    initial=[...next];save(next);render(next);invalidatePreview();updateSide();updateSide();
    });
   }
   const actions=node('div','odds-group-actions'),equal=node('button','odds-equal','⚖️ Gleichmäßig aufteilen');
@@ -368,12 +466,25 @@ function renderGameSettings(root){
   field('🎉 Zusatzmünzen (%)','extraCoinChance',null,0,100);
   field('🏆 Maximalgewinne der Spielmechanik','maxPrizes',null,v.id==='premium_27'?6:1,10);
  }
- if(v.id==='number_one_20'){
-  // This edition's sale price is managed centrally in Auflagenplan.
-  field('🎯 Chance auf Zahl 1 je Reihe (‰)','hitPer1000',null,0,1000);
- }
+ const singlePercent=(label,key,description)=>{
+  const item=node('label','field');
+  item.append(node('span','',label));
+  const wrapper=node('div','currency-percent-inline'),input=node('input');
+  input.type='number';input.min='0';input.max='100';input.step='0.1';
+  input.inputMode='decimal';input.value=String((cfg[key]||0)/10);
+  input.addEventListener('input',()=>{
+   cfg[key]=Math.round(Number(input.value)*10);
+   invalidatePreview();updateSide();
+  });
+  wrapper.append(input,node('b','','%'));
+  item.append(wrapper,node('small','',description));grid.append(item);
+ };
+ if(v.id==='number_one_20')
+  singlePercent('🎯 Chance auf Zahl 1 je Reihe','hitPer1000',
+   'Bei 20 Reihen wird für jede Reihe einzeln geprüft. 10 % bedeutet eine 1-in-10-Chance pro Reihe.');
  if(v.id==='tic_tac_toe')field('🎰 Höchster Multiplikator','maxMultiplier',null,1,5);
- if(v.id==='dog_jackpot_9')field('🐾 DOG-Trefferwahrscheinlichkeit (‰)','dogChancePer1000',null,0,1000);
+ if(v.id==='dog_jackpot_9')singlePercent('🐾 DOG-Trefferchance','dogChancePer1000',
+  'Wie oft erscheint DOG? Nur wenn DOG aufgedeckt wird, werden die acht weiteren Felder ausgezahlt.');
  if(cfg.giftFallbackCoins!==undefined)
   field('🎁 Münzen statt Freischaltung','giftFallbackCoins',null,0,50000000);
  section.append(grid);
@@ -408,10 +519,13 @@ function renderGameSettings(root){
 function renderRules(){
  const root=$('mechanic-content');root.replaceChildren();
  const v=current,classic=settings?.variants?.[v.id],numberSettings=settings?.numberOne20;
+ renderGameSettings(root);
+ const details=node('details','rule-disclosure');details.append(node('summary','',
+  '📖 Vollständige Regeln und momentane Serverwerte ansehen'));
  const one=node('div','mechanic-card');
  one.append(node('h4','',v.icon+' '+v.name+' · '+v.short),
   node('p','',v.rule));
- root.append(one);
+ details.append(one);
  const note=node('div','mechanic-card');note.append(node('h4','','🎯 Was wird beim Druck berücksichtigt?'));
  if(classic){
   const weights=classic.weights||{};
@@ -436,12 +550,11 @@ function renderRules(){
  }else if(v.id==='dog_jackpot_9'){
   note.append(node('p','','Der Treffer auf DOG liegt in der aktuellen Serverregel bei 35 %. Bei Erfolg gibt es acht Symbolfelder als Gewinn; ohne DOG keine Auszahlungen. Ein zehnfacher Gewinn ist deshalb bei diesem Los nicht möglich.'));
  }
- root.append(note);
+ details.append(note);
  const caveat=node('div','mechanic-card');
  caveat.append(node('h4','','🛡️ Gewinnprüfung'),
   node('p','','Jedes vorgedruckte Los wird vom vorhandenen Gewinnmotor erstellt. Das Studio darf die ausgezahlte Münzsumme nur durch Auswahl passender, tatsächlich gewinnender Spielbretter steuern – nicht durch verdeckte Zusatzbeträge. Hauptgewinne, die der Spieler bereits besitzt, werden bei der Einlösung nach Möglichkeit durch andere noch freie Freischaltungen ersetzt.'));
- root.append(caveat);
- renderGameSettings(root);
+ details.append(caveat);root.append(details);
 }
 
 function renderSpec(){
@@ -534,6 +647,7 @@ function renderLive(){
   root.append(description);
  }
  $('ed-retire').hidden=!doc||doc.status!=='active'||doc.remaining<=0;
+ renderDashboard();
  $('ed-publish').disabled=busy||!preview?.previewId||previewKey!==draftKey(drafts[current.id])||
   Boolean(doc&&doc.status==='active'&&doc.remaining>0);
 }
@@ -547,15 +661,23 @@ function renderTabs(){
   root.append(btn);
  }
 }
-function activateView(name){
+function activateView(name,scroll=true){
+ if(!stepLabels[name])return;
  view=name;
  for(const button of document.querySelectorAll('.subtab')){
   const active=button.dataset.view===name;
-  button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));
+  button.classList.toggle('active',active);
+  button.setAttribute('aria-selected',String(active));
+  if(active)button.setAttribute('aria-current','step');
+  else button.removeAttribute('aria-current');
  }
  for(const section of document.querySelectorAll('.inner-view'))
   section.hidden=section.id!=='view-'+name;
+ $('wizard-progress-label').textContent=stepLabels[name];
+ if(name==='plan')renderPlanChecks();
  if(name==='history')void loadHistory();
+ if(scroll)document.querySelector('.wizard-heading')?.scrollIntoView({
+  behavior:'smooth',block:'start'});
 }
 function switchVariant(id){
  const variant=VARIANTS.find(x=>x.id===id);if(!variant)return;
@@ -580,7 +702,7 @@ function switchVariant(id){
  $('ed-max-prizes').value=d.maxPrizesPerTicket;
  $('ed-max-unlocks').value=d.maxUnlocks;
  renderTabs();renderQuota();renderCurrency();renderRules();renderSpec();renderLive();updateSide();invalidatePreview();
- activateView('currency');
+ activateView('overview',false);
 }
 function showPreview(data){
  preview=data;previewKey=draftKey(drafts[current.id]);
@@ -675,11 +797,13 @@ function setBusy(value){
  busy=value;
  $('ed-preview').disabled=value;
  $('ed-export').disabled=value;
- renderLive();
+ renderLive();renderPlanChecks();
 }
 $('edition-tabs').addEventListener('change',()=>{});
 document.querySelectorAll('.subtab').forEach(button=>
  button.addEventListener('click',()=>activateView(button.dataset.view)));
+document.querySelectorAll('[data-go]').forEach(button=>
+ button.addEventListener('click',()=>activateView(button.dataset.go)));
 $('quota-clear').addEventListener('click',()=>{
  $('quota-grid').querySelectorAll('input').forEach(input=>input.value='');
  readForm();updateSide();invalidatePreview();
@@ -690,7 +814,7 @@ for(const id of ['ed-name','ed-price','ed-budget','ed-target','ed-tolerance',
 }
 $('quota-grid').addEventListener('input',()=>{readForm();updateSide();invalidatePreview()});
 $('ed-volatility').addEventListener('input',()=>{readForm();updateSide();invalidatePreview()});
-$('ed-symbol-next').addEventListener('click',()=>activateView('plan'));
+$('ed-symbol-next').addEventListener('click',()=>activateView('mechanic'));
 $('ed-chance-shortcut').addEventListener('click',()=>activateView('mechanic'));
 $('ed-advanced-limits').addEventListener('change',()=>{
  for(const field of $('currency-grid').querySelectorAll('[data-advanced]'))
@@ -787,6 +911,7 @@ function usePreset(id){
  $('ed-max-prizes').value=draft.maxPrizesPerTicket;
  $('ed-max-unlocks').value=draft.maxUnlocks;
  $('ed-full27').value=full27;
+ $('quota-advanced').open=id!=='auto';
  renderQuota();renderRules();updateSide();invalidatePreview();
  showMessage('✨ Gewinnverteilung „'+id+'“ vorbereitet. Passe sie nach Wunsch an und berechne deinen Probedruck.','good');
 }
