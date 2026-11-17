@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {rebalanceOdds} from '../DOG/scratch-odds.mjs';
+import {rebalanceOdds,rebalanceLockedOdds} from '../DOG/scratch-odds.mjs';
 
 test('changing one of three symbol chances always updates the others to 100%',()=>{
  const first=rebalanceOdds([200,500,300],2,620);
@@ -32,5 +32,25 @@ test('100%-normalizer avoids hidden rounding drift after repeated edits',()=>{
   values=rebalanceOdds(values,slot,weight);
   assert.equal(values[slot],weight);
   assert.equal(values.reduce((a,b)=>a+b,0),1000);
+ }
+});
+
+test('locked odds remain exactly fixed as other odds are modified',()=>{
+ const fixed=rebalanceLockedOdds([200,500,300],0,45,[false,true,false]);
+ assert.deepEqual(fixed,[450,500,50]);
+ assert.equal(fixed.reduce((a,b)=>a+b,0),1000);
+ assert.equal(rebalanceLockedOdds([200,500,300],0,60,[false,true,false]),null);
+ assert.deepEqual(rebalanceLockedOdds([200,500,300],1,40,[true,false,true]),[200,400,300] .map((x,i)=>i===1?400:x)); 
+});
+test('locked normalization distributes integer tenths with no drifting or negatives',()=>{
+ let values=[100,200,300,400];
+ for(let n=0;n<60;n++){
+  const result=rebalanceLockedOdds(values,0,(n*7)%31,[false,false,true,true]);
+  if(result===null)continue;
+  assert.equal(result[2],300);
+  assert.equal(result[3],400);
+  assert.equal(result.reduce((sum,v)=>sum+v,0),1000);
+  assert.ok(result.every(v=>Number.isSafeInteger(v)&&v>=0));
+  values=result;
  }
 });
