@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#101d31">
 <title>DOG · Rubbellos-Auflagenstudio</title>
-<link rel="stylesheet" href="./scratch-editions.css?v=12">
+<link rel="stylesheet" href="./scratch-editions.css?v=13">
 </head>
 <body>
 <div class="snow-glow" aria-hidden="true"></div>
@@ -104,9 +104,6 @@
       <span>Aktive Ausgabe: <strong id="overview-active">–</strong></span>
      </div>
     </div>
-    <div class="draft-tools"><div><strong>🗂️ Dein Entwurf</strong><small>Du kannst Einstellungen als Datei sichern, später wieder einlesen oder nur den aktuellen Entwurf zurücksetzen. Eine bereits veröffentlichte Auflage wird dadurch nicht verändert.</small></div>
-     <div class="draft-tool-buttons"><button type="button" class="ghost" id="ed-import-draft">↑ Entwurf laden</button><button type="button" class="ghost" id="ed-reset-draft">↶ Standardwerte</button></div>
-     <input type="file" id="ed-import-file" accept=".json,application/json" hidden aria-label="Gespeicherte Rubbellos-Einstellungen laden"></div>
     <details class="spec-fold"><summary>📖 Spielregel, Gewinnfelder und technische Informationen <span>Aufklappen</span></summary>
 <section class="spec-hero" aria-label="Technischer Los-Steckbrief">
      <div class="spec-hero-heading"><div><span class="eyebrow">✦ AKTUELLE SPIELREGELN ✦</span><h3 id="spec-hero-title">🎟️ Los-Steckbrief</h3><p id="spec-hero-description">Informationen aus dem Gewinnmotor des Render-Servers</p></div><span id="spec-live-price" class="spec-live-price">– 🪙 Standard</span></div>
@@ -146,10 +143,15 @@
    <div class="action-bar">
     <button id="ed-preview" type="button" class="primary">🎲 500 Lose berechnen</button>
     <button id="ed-publish" type="button" class="gold" disabled>🚀 Auflage veröffentlichen</button>
-    <button id="ed-export" type="button" class="ghost">↓ Konfiguration sichern</button>
+    
    </div>
    </section>
    <div id="advanced-studio" class="advanced-studio" hidden>
+    <div class="simple-expert-head"><button type="button" id="simple-return" class="ghost">‹ Zur einfachen Ansicht</button><div><strong>⚙️ Weitere Einstellungen</strong><small>Nur bei Bedarf: Preise pro Symbol, Sonderregeln, exakte Gewinnzahlen und Auflagenhistorie.</small></div></div>
+    <div class="draft-tools"><div><strong>🗂️ Dein Entwurf</strong><small>Du kannst Einstellungen als Datei sichern, später wieder einlesen oder nur den aktuellen Entwurf zurücksetzen. Eine bereits veröffentlichte Auflage wird dadurch nicht verändert.</small></div>
+     <div class="draft-tool-buttons"><button type="button" class="ghost" id="ed-import-draft">↑ Entwurf laden</button><button type="button" class="ghost" id="ed-reset-draft">↶ Standardwerte</button><button id="ed-export" type="button" class="ghost">↓ Konfiguration sichern</button></div>
+     <input type="file" id="ed-import-file" accept=".json,application/json" hidden aria-label="Gespeicherte Rubbellos-Einstellungen laden"></div>
+
    <div class="wizard-heading"><div><span class="eyebrow">✦ SCHRITT FÜR SCHRITT ✦</span><h3>Deine nächste Rubbellos-Auflage</h3><p>Einfach links nach rechts durchgehen. Alle Angaben gelten nur für die ausgewählte Losart.</p></div><span class="wizard-progress-label" id="wizard-progress-label">Übersicht · Start</span></div>
    <div class="subtabs" role="tablist" aria-label="Auflagen-Assistent">
     <button type="button" class="subtab active" data-view="overview" aria-selected="true"><span>Start</span><b>🏠 Übersicht</b></button>
@@ -280,6 +282,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./scratch-editions.js?v=18"></script>
+<script type="module" src="./scratch-editions.js?v=19"></script>
 </body>
 </html>
