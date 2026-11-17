@@ -74,7 +74,17 @@ const live={};
 const catalog={};
 let current=VARIANTS[0],view='overview',settings=null,preview=null,previewKey=null,busy=false;
 let formInitialized=false;
-const labelFor=error=>({
+const labelFor=error=>{
+ const code=String(error||'');
+ if(code.startsWith('EDITION_DISTRIBUTION_IMPOSSIBLE_SLOT_')){
+  const count=code.match(/_WINS_(\\d+)/)?.[1];
+  return 'Diese feste Vorgabe'+(count?' mit '+count+' Gewinnen pro Los':'')+
+   ' lässt sich mit den bisherigen Gewinnwerten und Budgets nicht drucken. '+
+   'Versuche weniger solcher Lose oder erhöhe das Gesamtbudget.';
+ }
+ if(code.startsWith('EDITION_QUOTA_ABOVE_MAX_'))
+  return 'Die ausgewählte Anzahl an Gewinnen ist für dieses Los zu hoch.';
+ return ({
  EDITION_STILL_ACTIVE:'Eine bestehende Auflage hat noch Restlose. Beende sie zuerst oder verkaufe sie vollständig.',
  EDITION_QUOTAS_OVER_500:'Mehr als 500 Lose sind fest eingeplant.',
  EDITION_INVALID_LIMITS:'Bitte prüfe die Budget-, Gewinn- und Freischaltungsgrenzen.',
@@ -95,7 +105,7 @@ const labelFor=error=>({
  EDITION_DUEL_ONE_WIN_MAX:'Tic-Tac-Toe kann pro Los höchstens einen Einzelgewinn ausschütten.',
  EDITION_NO_AVAILABLE_UNLOCK:'Kein zu diesem Profil passender Freischaltpreis ist mehr in der Auflage vorhanden.',
  LOGIN_REQUIRED:'Bitte zuerst mit deinem DOG-Spielerprofil anmelden.'
-}[error]||String(error||'Unbekannter Fehler'));
+})[error]||String(error||'Unbekannter Fehler');};
 function showMessage(value,kind=''){
  const el=$('preview-message');el.textContent=value;el.className='preview-message '+kind;
  const global=$('studio-global-message');
@@ -254,10 +264,11 @@ function updateFixedPrizes(count,tickets){
  else quotas[count]=tickets;
  const fixed=Object.values(quotas).reduce((sum,n)=>sum+Number(n||0),0);
  if(fixed>500){
-  $('simple-prize-hint').textContent='⚠️ Die 500 Lose sind bereits verplant. Es sind nur '+
-   fmt(Math.max(0,500-(fixed-tickets)))+' weitere Lose möglich.';
+  renderSimplePrizeCounts();
+  $('simple-prize-hint').textContent='⚠️ Höchstens 500 Lose möglich. '+
+   'Reduziere die Anzahl oder entferne eine andere feste Vorgabe.';
   $('simple-prize-hint').classList.add('has-error');
-  renderSimplePrizeCounts();return;
+  return;
  }
  $('simple-prize-hint').classList.remove('has-error');
  draft.quotas=quotas;
@@ -277,7 +288,7 @@ function addFixedPrizeRow(){
   $('simple-prize-hint').textContent='Bitte eine ganze Zahl zwischen 1 und 500 Losen eingeben.';
   $('simple-prize-hint').classList.add('has-error');return;
  }
- updateFixedPrizes(count,tickets);
+ updateFixedPrizes(count,(Number(drafts[current.id].quotas[count])||0)+tickets);
 }
 function updateSimpleSummary(){
  const draft=drafts[current.id],active=live[current.id];
