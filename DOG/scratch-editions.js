@@ -65,6 +65,7 @@ const baseDraft=variant=>({
  ticketPrice:variant.price,maxPerTicketCoins:variant.one,
  maxPrizesPerTicket:variant.wins,
  maxUnlocks:variant.tier==='simple'?25:variant.tier==='medium'?20:25,quotas:{},
+ doubleWin:{chancePer1000:110,minTickets:0,maxTickets:80},
  symbolBudgets:defaultSymbolBudgets(variant)
 });
 const drafts=Object.fromEntries(VARIANTS.map(v=>[v.id,baseDraft(v)]));
@@ -82,6 +83,8 @@ const labelFor=error=>({
  EDITION_PREVIEW_EXPIRED:'Der geprüfte Probedruck ist abgelaufen. Bitte die 500 Lose erneut berechnen.',
  EDITION_PREVIEW_CHANGED:'Die Einstellungen wurden nach der Vorschau geändert. Bitte erneut berechnen.',
  EDITION_SYMBOL_BUDGET_INVALID:'Bitte prüfe die Beträge für die fünf Gewinnkategorien.',
+ EDITION_DOUBLE_INVALID:'Prüfe ✖️2: Chance 0–100 %, mindestens 0–500 Lose und Maximalzahl mindestens so hoch wie die Mindestzahl.',
+ EDITION_DOUBLE_MIN_UNREACHABLE:'So viele ✖️2-Lose sind mit Nieten und Budgets nicht erreichbar. Reduziere die Mindestzahl.',
  EDITION_FULL27_INVALID:'Die vollständigen 27-Felder-Premiumlose lassen sich nur beim Premium-Weihnachtslos einstellen.',
  EDITION_FULL27_NEEDS_TEN_WINS_AND_UNLOCKS:'Für volle 27-Felder-Premiumlose müssen 10 Einzelgewinne erlaubt sein, mindestens gleich viele Freischaltungen im Budget stehen und die Quote „10 Gewinne“ groß genug sein.',
  EDITION_TARGET_INVALID:'Der Ziel-Gesamtgewinn darf die Budgetobergrenze bzw. die Summe aller erlaubten Einzelhöchstgewinne nicht überschreiten.',
@@ -110,7 +113,10 @@ function readForm(){
   premiumFull27Tickets:current.id==='premium_27'?number('ed-full27'):0,
   maxPerTicketCoins:number('ed-max-coins'),
   maxPrizesPerTicket:number('ed-max-prizes'),maxUnlocks:number('ed-max-unlocks'),
-  quotas,symbolBudgets:old.symbolBudgets,gameSettings:old.gameSettings??null};
+  quotas,doubleWin:{
+   chancePer1000:Math.round(number('ed-double-chance')*10),
+   minTickets:number('ed-double-min'),maxTickets:number('ed-double-max')
+  },symbolBudgets:old.symbolBudgets,gameSettings:old.gameSettings??null};
  return drafts[current.id];
 }
 function draftKey(value){return JSON.stringify(value)}
@@ -122,6 +128,7 @@ function invalidatePreview(){
  $('preview-target').hidden=true;
  $('preview-economy').hidden=true;
  $('preview-currencies').hidden=true;
+ $('preview-double').hidden=true;
  $('preview-metrics').replaceChildren(...[
   ['🎟️ Lose','500'],['🏆 Gewinnlose','–'],['❄️ Nieten','–'],['🪙 Gesamtauszahlung','–']
  ].map(([name,value])=>metric(name,value)));
@@ -501,6 +508,9 @@ function switchVariant(id){
  $('ed-name').value=d.title;
  $('ed-budget').value=d.maxTotalCoins;
  $('ed-price').value=d.ticketPrice;
+ $('ed-double-chance').value=(d.doubleWin?.chancePer1000??0)/10;
+ $('ed-double-min').value=d.doubleWin?.minTickets??0;
+ $('ed-double-max').value=d.doubleWin?.maxTickets??0;
  $('ed-target').value=d.targetTotalCoins;
  $('ed-tolerance').value=d.targetTolerancePercent;
  $('ed-volatility').value=d.volatility;
@@ -535,6 +545,11 @@ function showPreview(data){
   track.append(progress);summaryTarget.append(track);
  }
  renderPreviewCurrencies(s);
+ $('preview-double').hidden=false;
+ $('preview-double').textContent='✖️2-Verteilung: '+fmt(s.doubleWinTickets||0)+
+  ' von 500 Losen haben einen sichtbaren Verdopplungsbonus. Zusätzlich verteilt: '+
+  fmt(s.doubleExtraCoins||0)+' 🪙 und '+fmt(s.doubleExtraLights||0)+
+  ' ⭐. Diese Beträge sind in den jeweiligen Gesamtbudgets enthalten.';
  $('preview-economy').hidden=false;
  $('preview-income').textContent=fmt(s.projectedGrossRevenue??s.ticketPrice*500)+' 🪙';
  $('preview-expense').textContent=fmt(s.totalCoins)+' 🪙';
@@ -610,7 +625,8 @@ $('quota-clear').addEventListener('click',()=>{
  $('quota-grid').querySelectorAll('input').forEach(input=>input.value='');
  readForm();updateSide();invalidatePreview();
 });
-for(const id of ['ed-name','ed-price','ed-budget','ed-target','ed-tolerance','ed-max-coins','ed-max-prizes','ed-max-unlocks']){
+for(const id of ['ed-name','ed-price','ed-budget','ed-target','ed-tolerance',
+ 'ed-max-coins','ed-max-prizes','ed-max-unlocks','ed-double-chance','ed-double-min','ed-double-max']){
  $(id).addEventListener('input',()=>{readForm();updateSide();invalidatePreview()});
 }
 $('quota-grid').addEventListener('input',()=>{readForm();updateSide();invalidatePreview()});
