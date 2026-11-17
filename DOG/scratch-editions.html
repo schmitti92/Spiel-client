@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#101d31">
 <title>DOG · Rubbellos-Auflagenstudio</title>
-<link rel="stylesheet" href="./scratch-editions.css?v=8">
+<link rel="stylesheet" href="./scratch-editions.css?v=9">
 </head>
 <body>
 <div class="snow-glow" aria-hidden="true"></div>
@@ -36,7 +36,46 @@
     </div>
     <div id="edition-availability" class="edition-availability">Lade …</div>
    </section>
-   <section class="spec-hero" aria-label="Technischer Los-Steckbrief">
+   <div class="studio-quick-stats" aria-label="Die wichtigsten Daten auf einen Blick">
+    <div><span>🎟️ Lospreis</span><strong id="quick-price">–</strong></div>
+    <div><span>🪙 Zielauszahlung</span><strong id="quick-target">–</strong></div>
+    <div><span>✖️2 Verdopplung</span><strong id="quick-double">–</strong></div>
+    <div><span>🖨️ Verkauf / Bestand</span><strong id="quick-stock">–</strong></div>
+   </div>
+   <div class="wizard-heading"><div><span class="eyebrow">✦ SCHRITT FÜR SCHRITT ✦</span><h3>Deine nächste Rubbellos-Auflage</h3><p>Einfach links nach rechts durchgehen. Alle Angaben gelten nur für die ausgewählte Losart.</p></div><span class="wizard-progress-label" id="wizard-progress-label">Übersicht · Start</span></div>
+   <div class="subtabs" role="tablist" aria-label="Auflagen-Assistent">
+    <button type="button" class="subtab active" data-view="overview" aria-selected="true"><span>Start</span><b>🏠 Übersicht</b></button>
+    <button type="button" class="subtab" data-view="currency" aria-selected="false"><span>01</span><b>🪙 Gewinne &amp; ✖️2</b></button>
+    <button type="button" class="subtab" data-view="mechanic" aria-selected="false"><span>02</span><b>🎯 Chancen</b></button>
+    <button type="button" class="subtab" data-view="quotas" aria-selected="false"><span>03</span><b>🎰 Verteilung</b></button>
+    <button type="button" class="subtab" data-view="plan" aria-selected="false"><span>04</span><b>🖨️ Budget &amp; Druck</b></button>
+    <button type="button" class="subtab subtab-history" data-view="history" aria-selected="false"><span>Info</span><b>🗃️ Historie</b></button>
+   </div>
+   <section id="view-overview" class="inner-view">
+    <div class="welcome-hero">
+     <div class="welcome-illustration" aria-hidden="true">🎟️<span>500</span>✨</div>
+     <div><span class="eyebrow">✦ WILLKOMMEN IN DEINER LOSWERKSTATT ✦</span>
+      <h3>500 Lose gestalten. Einfach und sicher.</h3>
+      <p>Du wählst die Gewinne, stellst ihre Chancen ein und bestimmst, wie viel die gesamte Auflage kosten darf. Der Server prüft vor dem Druck jedes einzelne Los.</p>
+      <button type="button" class="primary wizard-main-cta" data-go="currency">Jetzt Auflage einstellen <span aria-hidden="true">›</span></button>
+     </div>
+    </div>
+    <div class="overview-plan">
+     <div class="overview-plan-card"><span>01 · 💰</span><strong>Gewinnsymbole</strong><p>Münze, Schein, Koffer, Weihnachtslichter, fünf Hauptgewinnsymbole und ✖️2</p></div>
+     <div class="overview-plan-card"><span>02 · 🎯</span><strong>Gewinnchancen</strong><p>Prozentwerte ändern – andere Symbole automatisch auf 100 % anpassen</p></div>
+     <div class="overview-plan-card"><span>03 · 🎰</span><strong>Verteilung</strong><p>Automatische Losmischung oder genaue Stückzahlen für Nieten und Gewinne</p></div>
+     <div class="overview-plan-card"><span>04 · 🖨️</span><strong>Probedruck</strong><p>Lospreis, Budget, Auszahlung und vollständige Vorschau prüfen – erst dann veröffentlichen</p></div>
+    </div>
+    <div class="overview-status">
+     <div><span class="eyebrow">✦ AKTUELLER ENTWURF ✦</span><h4 id="overview-current-title">Dein Winterlos</h4><p id="overview-current-rule">Die Regeln deiner Losart</p></div>
+     <div class="overview-status-values">
+      <span>Geplant: <strong id="overview-budget">–</strong></span>
+      <span>Auszahlung: <strong id="overview-target">–</strong></span>
+      <span>Aktive Ausgabe: <strong id="overview-active">–</strong></span>
+     </div>
+    </div>
+    <details class="spec-fold"><summary>📖 Spielregel, Gewinnfelder und technische Informationen <span>Aufklappen</span></summary>
+<section class="spec-hero" aria-label="Technischer Los-Steckbrief">
      <div class="spec-hero-heading"><div><span class="eyebrow">✦ AKTUELLE SPIELREGELN ✦</span><h3 id="spec-hero-title">🎟️ Los-Steckbrief</h3><p id="spec-hero-description">Informationen aus dem Gewinnmotor des Render-Servers</p></div><span id="spec-live-price" class="spec-live-price">– 🪙 Standard</span></div>
      <div id="spec-kpis" class="spec-kpis">
       <div><span>🔲 Spielfelder</span><strong>–</strong></div>
@@ -51,20 +90,16 @@
       <div id="spec-detail" class="spec-detail"></div>
      </div>
    </section>
-   <div class="subtabs" role="tablist" aria-label="Werkzeuge">
-    <button type="button" class="subtab" data-view="plan" aria-selected="false">② 🎛️ Auflagenplan</button>
-    <button type="button" class="subtab" data-view="quotas" aria-selected="false">③ 🎰 Gewinnverteilung</button>
-    <button type="button" class="subtab active" data-view="currency" aria-selected="true">① 🪙 Gewinnsymbole & Werte</button>
-    <button type="button" class="subtab" data-view="mechanic" aria-selected="false">📜 Gewinnregeln</button>
-    <button type="button" class="subtab" data-view="history" aria-selected="false">🗃️ Historie</button>
-   </div>
-   <section id="view-currency" class="inner-view">
+    </details>
+    <div class="wizard-footer"><span>Wähle oben eine Losart und beginne mit den Gewinnsymbolen.</span><button type="button" class="primary" data-go="currency">Weiter zu Gewinnsymbolen <span aria-hidden="true">›</span></button></div>
+   </section>
+   <section id="view-currency" class="inner-view" hidden>
     <div class="currency-headline"><div><span class="eyebrow">✦ GEWINNWERKSTATT LICHTERTAL ✦</span><h3>🎟️ Gewinnsymbole und ihre Werte</h3><p>Stelle für jedes Symbol den kleinsten Einzelgewinn, den höchsten Einzelgewinn und den maximalen Gesamtbetrag innerhalb von 500 Losen ein. Der Server verteilt echte Beträge innerhalb dieser Grenzen.</p></div><div class="currency-medallion">⭐</div></div>
     <div class="simple-controls-row">
      <span><strong>✨ Einfacher Modus</strong><small>Wähle zuerst die Gewinnwerte; zusätzliche Untergrenzen kannst du bei Bedarf aufklappen.</small></span>
      <label class="advanced-limits-toggle"><input type="checkbox" id="ed-advanced-limits"><span>Weitere Grenzen anzeigen</span></label>
     </div>
-    <div class="symbol-intro" role="note"><span class="symbol-intro-step">SCHRITT 1 VON 3</span>
+    <div class="symbol-intro" role="note"><span class="symbol-intro-step">SCHRITT 1 VON 4</span>
 <strong>Welche Symbole gibt es – und was gewinnen sie?</strong>
 <p>Bestimme zuerst die Werte jedes Gewinnsymbols. Auf dem Rubbellos erscheinen Münze, Schein, Koffer, Stern und Geschenk mit den hier hinterlegten Preisen bzw. Gewinnarten. Jeder Betrag ist Teil der realen serverseitigen Auflage.</p></div>
     <div id="symbol-overview" class="symbol-overview" aria-label="Aktuelle Gewinnsymbole und Preisbereiche"></div>
@@ -80,9 +115,10 @@
     <div class="currency-grid" id="currency-grid"></div>
     <div class="currency-total"><span>🪙 Alle Geldsymbole zusammen unterliegen zusätzlich deinem Münz-Gesamtbudget.</span><strong id="currency-budget-remaining">–</strong></div>
     <div class="chance-shortcut"><div><strong>🎯 Gewinnchancen auf 100 % einstellen</strong><p>Beispiel: 20 % Nieten + 70 % Geld + 10 % Hauptgewinn. Wenn du eine Zahl änderst, verteilt die Automatik den Rest selbst.</p></div><button type="button" class="ghost" id="ed-chance-shortcut">Chancen bearbeiten</button></div>
-    <button type="button" class="currency-next primary" id="ed-symbol-next">Weiter zu Schritt 2: Auflagenplan</button><div class="currency-explainer">🎁 Geschenk-Freischaltungen sind Stückpreise. Ihre Gesamtzahl kannst du hier und zusätzlich im Auflagenplan begrenzen. ⭐ Weihnachtslichter werden unabhängig von Goldmünzen direkt auf das gemeinsame Dorfkonto gebucht.</div>
+    <div class="wizard-footer"><button type="button" class="ghost" data-go="overview">‹ Übersicht</button><button type="button" class="currency-next primary" id="ed-symbol-next">Weiter zu Schritt 2: Gewinnchancen ›</button></div><div class="currency-explainer">🎁 Geschenk-Freischaltungen sind Stückpreise. Ihre Gesamtzahl kannst du hier und zusätzlich im Auflagenplan begrenzen. ⭐ Weihnachtslichter werden unabhängig von Goldmünzen direkt auf das gemeinsame Dorfkonto gebucht.</div>
    </section>
    <section id="view-plan" class="inner-view" hidden>
+    <div class="step-context"><span>04 / 04</span><strong>🖨️ Budget festlegen und Lose drucken</strong><p>Die tatsächlichen Gewinne werden erst durch den Probedruck überprüft. Ohne gültige Vorschau ist das Veröffentlichen nicht möglich.</p></div>
     <div class="view-heading"><div><h3>Neue 500er-Auflage konfigurieren</h3><p>Alle Grenzen gelten für die komplette Auflage. Kein Gewinn darf das festgelegte Budget überschreiten.</p></div></div>
     <div class="field-layout">
      <label class="field field-wide"><span>🏷️ Auflagenname</span><input id="ed-name" type="text" maxlength="70" autocomplete="off" placeholder="z. B. Winterglück · Edition 1"></label>
@@ -111,27 +147,11 @@
     </div>
     <div class="budget-track"><div class="budget-track-info"><span>Geplante Zielausschüttung</span><strong id="target-progress-label">–</strong></div><div class="budget-track-rail"><i id="target-progress-fill" style="width:0%"></i></div></div>
     <p class="fine-print">⚠️ Gewinnwerte sind diskret: Eine exakte Zielsumme ist nicht immer mathematisch möglich. Abweichungen über deiner Toleranz werden vor Veröffentlichung abgelehnt. Die tatsächliche Auszahlung steht im Probedruck.</p>
-   </section>
-   <section id="view-quotas" class="inner-view" hidden>
-    <div class="view-heading"><h3>Wieviele Lose gewinnen wie oft?</h3><p>Trage die <b>exakte Anzahl an Losen</b> ein. Ein leeres Feld bedeutet „vom Server frei berechnen“. Null bedeutet „diese Gewinnklasse ausschließen“.</p></div>
-    <div class="quota-presets"><span>⚡ Schnellverteilung:</span><button type="button" class="preset" data-preset="auto">✨ Automatisch</button><button type="button" class="preset" data-preset="balanced">⚖️ Ausgewogen</button><button type="button" class="preset" data-preset="rare">❄️ Wenige Großgewinne</button><button type="button" class="preset" data-preset="jackpot">👑 Jackpot-Serie</button></div>
-    <div class="quota-summary-visual"><span id="quota-meter-duds" class="quota-color-duds"></span><span id="quota-meter-normal" class="quota-color-normal"></span><span id="quota-meter-jackpots" class="quota-color-jackpots"></span></div>
-    <p class="quota-summary-note" id="quota-description">Nicht festgelegte Lose werden intelligent aus dem verbleibenden Gewinnbudget berechnet.</p>
-    <div class="quota-heading"><strong>Gewinnklasse</strong><strong>Anzahl Lose in der Auflage</strong><strong>Hinweis</strong></div>
-    <div id="quota-grid" class="quota-grid"></div>
-    <div class="quota-footer"><span id="quota-sum">0 von 500 fest eingeplant</span><button id="quota-clear" type="button" class="ghost small">↶ Alle Vorgaben löschen</button></div>
-   </section>
-   <section id="view-mechanic" class="inner-view" hidden>
-    <div class="view-heading"><h3>Spielregeln & Gewinnchancen</h3><p>Die Gewinnart bleibt unverändert. Bei den Prozentreglern passt das Studio auf Wunsch alle übrigen Werte so an, dass ihre Summe genau 100 % beträgt.</p></div>
-    <label class="auto-percent-control"><input type="checkbox" id="ed-auto-percent" checked><span><strong>✨ Automatisch auf 100 % ausgleichen</strong><small>Du veränderst eine Chance; die anderen werden proportional angepasst. Ohne Automatik müssen die Anteile selbst zusammen 100 % ergeben.</small></span></label>
-    <div id="mechanic-content" class="mechanic-content"></div>
-    <a class="inline-link" href="./christmas-event.html">⚙️ Allgemeine Rubbellos-Einstellungen im Weihnachtsevent ändern</a>
-   </section>
-   <section id="view-history" class="inner-view" hidden>
-    <div class="view-heading"><h3>Frühere Auflagen</h3><p>Jede Ausgabe bleibt mit Seriennummer, Gesamtgewinn und Verkaufsstand erhalten.</p></div>
-    <button id="history-refresh" type="button" class="ghost">↻ Historie laden</button>
-    <div id="history-entries" class="history-list"><p>Noch keine Historie geladen.</p></div>
-   </section>
+    <div class="plan-preflight">
+     <div><strong>🛡️ Vor dem Probedruck</strong><p>Diese Prüfung erkennt offensichtliche Eingabefehler. Die verbindliche Gewinnprüfung übernimmt anschließend der Render-Server.</p></div>
+     <ul id="plan-checks"><li>Plane die Geldbudgets und Gewinnchancen.</li></ul>
+    </div>
+    <div class="wizard-footer"><button type="button" class="ghost" data-go="quotas">‹ Gewinnverteilung</button><span>Letzter Schritt: 500 Lose prüfen und veröffentlichen.</span></div>
    <section class="preview-section">
     <div class="preview-heading"><div><span class="eyebrow">✦ PROBEDRUCK ✦</span><h3>Serverberechnung für 500 Lose</h3></div><span id="preview-state" class="preview-state">Noch kein Probedruck</span></div>
     <div id="preview-metrics" class="preview-metrics">
@@ -154,6 +174,35 @@
     <button id="ed-publish" type="button" class="gold" disabled>🚀 Auflage veröffentlichen</button>
     <button id="ed-export" type="button" class="ghost">↓ Konfiguration sichern</button>
    </div>
+   </section>
+   <section id="view-quotas" class="inner-view" hidden>
+    <div class="step-context"><span>03 / 04</span><strong>🎰 Wie viele Lose gewinnen?</strong><p>Einfachste Einstellung: „Automatisch“. Nur wenn du bestimmte Anzahlen willst, musst du exakte Stückzahlen vorgeben.</p></div>
+    <div class="view-heading"><h3>Wieviele Lose gewinnen wie oft?</h3><p>Trage die <b>exakte Anzahl an Losen</b> ein. Ein leeres Feld bedeutet „vom Server frei berechnen“. Null bedeutet „diese Gewinnklasse ausschließen“.</p></div>
+    <div class="quota-presets"><span>⚡ Schnellverteilung:</span><button type="button" class="preset" data-preset="auto">✨ Automatisch</button><button type="button" class="preset" data-preset="balanced">⚖️ Ausgewogen</button><button type="button" class="preset" data-preset="rare">❄️ Wenige Großgewinne</button><button type="button" class="preset" data-preset="jackpot">👑 Jackpot-Serie</button></div>
+    <div class="quota-summary-visual"><span id="quota-meter-duds" class="quota-color-duds"></span><span id="quota-meter-normal" class="quota-color-normal"></span><span id="quota-meter-jackpots" class="quota-color-jackpots"></span></div>
+    <p class="quota-summary-note" id="quota-description">Nicht festgelegte Lose werden intelligent aus dem verbleibenden Gewinnbudget berechnet.</p>
+    <details id="quota-advanced" class="quota-advanced"><summary>⚙️ Exakte Gewinnanzahlen einstellen <span>Optional – aufklappen</span></summary>
+     <p>Ein leeres Feld wird automatisch berechnet. Eine Zahl reserviert genau so viele Lose für diese Gewinnklasse. Du musst nicht alle 500 festlegen.</p>
+     <div class="quota-heading"><strong>Gewinnklasse</strong><strong>Anzahl Lose</strong><strong>Hinweis</strong></div>
+     <div id="quota-grid" class="quota-grid"></div>
+     <div class="quota-footer"><span id="quota-sum">0 von 500 fest eingeplant</span><button id="quota-clear" type="button" class="ghost small">↶ Alle Vorgaben löschen</button></div>
+    </details>
+    <div class="wizard-footer"><button type="button" class="ghost" data-go="mechanic">‹ Gewinnchancen</button><button type="button" class="primary" data-go="plan">Weiter zu Budget &amp; Druck ›</button></div>
+   </section>
+   <section id="view-mechanic" class="inner-view" hidden>
+    <div class="step-context"><span>02 / 04</span><strong>🎯 Gewinne in Prozent einstellen</strong><p>Die 100-%-Automatik verteilt die übrigen Chancen direkt für dich.</p></div>
+    <div class="view-heading"><h3>Spielregeln & Gewinnchancen</h3><p>Die Gewinnart bleibt unverändert. Bei den Prozentreglern passt das Studio auf Wunsch alle übrigen Werte so an, dass ihre Summe genau 100 % beträgt.</p></div>
+    <label class="auto-percent-control"><input type="checkbox" id="ed-auto-percent" checked><span><strong>✨ Automatisch auf 100 % ausgleichen</strong><small>Du veränderst eine Chance; die anderen werden proportional angepasst. Ohne Automatik müssen die Anteile selbst zusammen 100 % ergeben.</small></span></label>
+    <div id="mechanic-content" class="mechanic-content"></div>
+    <details class="external-settings"><summary>⚙️ Einstellungen außerhalb dieser Auflage</summary><p>Allgemeine Einstellungen im Weihnachtsevent gelten für zukünftige, noch nicht gedruckte Lose. Einstellungen dieser Ausgabe werden beim Druck gespeichert.</p><a class="inline-link" href="./christmas-event.html">Allgemeine Rubbellos-Einstellungen öffnen</a></details>
+    <div class="wizard-footer"><button type="button" class="ghost" data-go="currency">‹ Gewinne &amp; ✖️2</button><button type="button" class="primary" data-go="quotas">Weiter zur Verteilung ›</button></div>
+   </section>
+   <section id="view-history" class="inner-view" hidden>
+    <div class="step-context"><span>ARCHIV</span><strong>🗃️ Gedruckte Auflagen</strong><p>Hier siehst du deine bisherigen Editionen. Neue Auflagen sind nur möglich, wenn die alte Ausgabe verkauft oder beendet ist.</p></div>
+    <div class="view-heading"><h3>Frühere Auflagen</h3><p>Jede Ausgabe bleibt mit Seriennummer, Gesamtgewinn und Verkaufsstand erhalten.</p></div>
+    <button id="history-refresh" type="button" class="ghost">↻ Historie laden</button>
+    <div id="history-entries" class="history-list"><p>Noch keine Historie geladen.</p></div>
+   </section>
   </main>
   <aside class="studio-sidebar">
    <section class="side-panel">
@@ -171,11 +220,13 @@
     <div class="side-stat"><span>Geplante Quoten</span><strong id="side-quotas">Automatisch</strong></div>
     <p class="side-note">Der Server entscheidet über alle echten Spielausgänge. Kein Browser kann Rubbelgewinne selbst festlegen oder nachträglich erhöhen.</p>
    </section>
-   <section class="side-panel tips">
-    <h3>🎄 Gut zu wissen</h3>
-    <p><b>Premium-Weihnachtslos:</b> Vier Geld-Dreierreihen sind garantiert. Null Gewinne sind derzeit nicht möglich.</p>
-    <p><b>Glückszahl 1:</b> Bis zu 20 gewinnende Reihen, sofern die Trefferwahrscheinlichkeit hoch genug ist.</p>
-    <p><b>Finde DOG!:</b> Bei einem Treffer gewinnen die anderen acht Felder, ohne DOG ist das Los eine Niete.</p>
+   <section class="side-panel tips"><span class="eyebrow">✦ HILFE ZU DEINER LOSART ✦</span><h3 id="tips-variant-title">🎟️ Spielregel</h3><p id="tips-variant-rule">Die jeweilige Gewinnkombination wird vom Server geprüft.</p>
+    <div class="sidebar-help"><strong>Was bedeuten diese Begriffe?</strong>
+     <p><b>Lospreis:</b> So viele Goldmünzen zahlt ein Spieler.</p>
+     <p><b>Zielauszahlung:</b> So viele Goldmünzen sollen zusammen in den 500 Losen liegen.</p>
+     <p><b>Budgetgrenze:</b> Mehr Goldmünzen werden niemals gedruckt.</p>
+     <p><b>✖️2:</b> Verdoppelt Münzen und Lichter auf dem Los, nicht die Anzahl der Hauptpreise.</p>
+    </div>
    </section>
   </aside>
  </div>
@@ -184,6 +235,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./scratch-editions.js?v=14"></script>
+<script type="module" src="./scratch-editions.js?v=15"></script>
 </body>
 </html>
