@@ -78,9 +78,13 @@ const labelFor=error=>{
  const code=String(error||'');
  if(code.startsWith('EDITION_DISTRIBUTION_IMPOSSIBLE_SLOT_')){
   const count=code.match(/_WINS_(\d+)/)?.[1];
-  return 'Diese feste Vorgabe'+(count?' mit '+count+' Gewinnen pro Los':'')+
-   ' lässt sich mit den bisherigen Gewinnwerten und Budgets nicht drucken. '+
-   'Versuche weniger solcher Lose oder erhöhe das Gesamtbudget.';
+  const slot=code.match(/_SLOT_(\d+)/)?.[1];
+  return (slot?'Bei Los '+slot+' von 500: ':'')+
+   (count?'Für genau '+count+' Gewinne':'Für diese Gewinnzahl')+
+   ' wurde noch keine gültige Kombination gefunden. Die feste Vorgabe bleibt bestehen. '+
+   'Bitte zuerst „500 Lose berechnen“ erneut versuchen. Falls es wieder passiert: '+
+   'Gewinnbeträge senken oder Gesamtbudget, Symbolbudgets und Höchstgewinn je Los prüfen. '+
+   'Auch ✖️2 benötigt zusätzliches Budget.';
  }
  if(code.startsWith('EDITION_QUOTA_ABOVE_MAX_'))
   return 'Die ausgewählte Anzahl an Gewinnen ist für dieses Los zu hoch.';
@@ -1070,8 +1074,11 @@ $('ed-preview').addEventListener('click',async()=>{
   const result=await api('/editions/preview',{config:draft});
   showPreview(result);
   document.querySelector('.preview-section')?.scrollIntoView({behavior:'smooth',block:'start'});
- }catch(e){invalidatePreview();showMessage('⚠️ Die Auflage ist so nicht druckbar: '+labelFor(e.message)+
-  '. Passe Budget, exakte Gewinnzahlen oder die allgemeinen Spielchancen an.','error')}
+ }catch(e){
+  invalidatePreview();
+  const quotaProblem=String(e.message||'').startsWith('EDITION_DISTRIBUTION_IMPOSSIBLE_SLOT_');
+  showMessage('⚠️ '+labelFor(e.message)+(quotaProblem?'':'. Prüfe Budget, Gewinnzahlen und Spielchancen.'),'error');
+ }
  finally{setBusy(false)}
 });
 $('ed-publish').addEventListener('click',async()=>{
