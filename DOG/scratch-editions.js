@@ -939,6 +939,23 @@ function changeFull27(value){
 $('ed-full27').addEventListener('input',()=>changeFull27($('ed-full27').value));
 $('ed-full27-range').addEventListener('input',()=>changeFull27($('ed-full27-range').value));
 
+// The budget step shows only essential controls first; advanced caps are
+// still live, saved and verified when their panel is collapsed.
+function organizeBudgetFields(){
+ const main=$('view-plan').querySelector('.field-layout');
+ if(!main)return;
+ const panel=node('details','advanced-plan');
+ const summary=node('summary','', '⚙️ Weitere Budgetgrenzen & Sicherheitslimits');
+ const note=node('p','', 'Optional: Zielabweichung, maximaler Gewinn pro Los, Anzahl Einzelgewinne und Freischaltungen. Die vorhandenen Werte bleiben aktiv, auch wenn dieser Bereich zugeklappt ist.');
+ const grid=node('div','field-layout');
+ for(const id of ['ed-tolerance','ed-max-coins','ed-max-prizes','ed-max-unlocks']){
+  const wrapper=$(id)?.closest('.field');
+  if(wrapper)grid.append(wrapper);
+ }
+ panel.append(summary,note,grid);
+ main.after(panel);
+}
+organizeBudgetFields();
 window.addEventListener('spielonline-change',()=>void load());
 switchVariant(current.id);
 void load();
