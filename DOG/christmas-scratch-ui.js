@@ -365,10 +365,11 @@ export function initChristmasScratch(){
   for(const option of SCRATCH_SHOP_VARIANTS){
    const tier=SCRATCH_TICKET_TYPES.find(c=>c.id===option.tier);
    const lucky=status?.settings?.numberOne20;
+   // Preserve the independent configured number lottery base price.
+   const ticketCost=option.id==='number_one_20'?(lucky?.price??tier.price):tier.price;
    const activeEdition=editionPrices[option.id];
-   const ticketCost=activeEdition?.remaining>0&&Number.isSafeInteger(activeEdition.config?.ticketPrice)?
-    activeEdition.config.ticketPrice:
-    option.id==='number_one_20'?(lucky?.price??tier.price):tier.price;
+   const salePrice=activeEdition?.remaining>0&&Number.isSafeInteger(activeEdition.config?.ticketPrice)?
+    activeEdition.config.ticketPrice:ticketCost;
    const variantConfig=status?.settings?.variants?.[option.id];
    const unlockChance=Number.isInteger(variantConfig?.weights?.unlock)?
     percent(variantConfig.weights.unlock):tier.unlockChance;
@@ -400,7 +401,7 @@ export function initChristmasScratch(){
     option.id==='dog_jackpot_9'?[100,300,800]:
     coinAmountsFor(option.tier,option.id);
    article.append(heading,details,
-    el('strong','scratch-price',num(ticketCost)+' 🪙'),
+    el('strong','scratch-price',num(salePrice)+' 🪙'),
     el('div','scratch-card-payouts','🪙 '+num(amounts[0])+' · 💵 '+num(amounts[1])+' · 💼 '+num(amounts[2])),
     el('div','scratch-symbol-key',option.id==='number_one_20'?
      '🪙 '+num(amounts[0])+' · 💵 '+num(amounts[1])+' · 💼 '+num(amounts[2])+' · 🎁 Freischaltung · jede 1 gewinnt':
@@ -408,7 +409,7 @@ export function initChristmasScratch(){
      option.id==='tic_tac_toe'?
      '◯ / ✕ · 1–5× · 🪙 200 · 💵 450 · 💼 800 · 🎁 Freischaltung':symbolLegend(option.tier,amounts)));
    const vouchers=Number(status?.vouchers?.[option.tier]||0)+Number(status?.variantVouchers?.[option.id]||0);
-   const buyBtn=el('button','scratch-buy','🎟️ Für '+num(ticketCost)+' Münzen öffnen');
+   const buyBtn=el('button','scratch-buy','🎟️ Für '+num(salePrice)+' Münzen öffnen');
    buyBtn.type='button';buyBtn.hidden=freeMode;
    // Keep taps informative. Disabled purchases previously looked like dead
    // buttons when the wallet or an older unacknowledged ticket blocked them.
