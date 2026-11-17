@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#101d31">
 <title>DOG · Rubbellos-Auflagenstudio</title>
-<link rel="stylesheet" href="./scratch-editions.css?v=9">
+<link rel="stylesheet" href="./scratch-editions.css?v=10">
 </head>
 <body>
 <div class="snow-glow" aria-hidden="true"></div>
@@ -74,6 +74,9 @@
       <span>Aktive Ausgabe: <strong id="overview-active">–</strong></span>
      </div>
     </div>
+    <div class="draft-tools"><div><strong>🗂️ Dein Entwurf</strong><small>Du kannst Einstellungen als Datei sichern, später wieder einlesen oder nur den aktuellen Entwurf zurücksetzen. Eine bereits veröffentlichte Auflage wird dadurch nicht verändert.</small></div>
+     <div class="draft-tool-buttons"><button type="button" class="ghost" id="ed-import-draft">↑ Entwurf laden</button><button type="button" class="ghost" id="ed-reset-draft">↶ Standardwerte</button></div>
+     <input type="file" id="ed-import-file" accept=".json,application/json" hidden aria-label="Gespeicherte Rubbellos-Einstellungen laden"></div>
     <details class="spec-fold"><summary>📖 Spielregel, Gewinnfelder und technische Informationen <span>Aufklappen</span></summary>
 <section class="spec-hero" aria-label="Technischer Los-Steckbrief">
      <div class="spec-hero-heading"><div><span class="eyebrow">✦ AKTUELLE SPIELREGELN ✦</span><h3 id="spec-hero-title">🎟️ Los-Steckbrief</h3><p id="spec-hero-description">Informationen aus dem Gewinnmotor des Render-Servers</p></div><span id="spec-live-price" class="spec-live-price">– 🪙 Standard</span></div>
@@ -235,6 +238,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./scratch-editions.js?v=15"></script>
+<script type="module" src="./scratch-editions.js?v=16"></script>
 </body>
 </html>
