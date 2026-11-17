@@ -80,3 +80,30 @@ button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;curso
 .volatility-track input{width:100%;accent-color:#d9aa68;cursor:pointer}
 .volatility-levels{display:flex;justify-content:space-between;gap:6px;margin-top:8px;color:#8ea6be;font-size:10px;text-align:center}
 @media(max-width:510px){.volatility-control{padding:14px}.volatility-heading{align-items:start}.volatility-heading strong{font-size:20px}.volatility-track{gap:6px}.volatility-track span{font-size:11px}.volatility-levels{font-size:9px}}
+
+/* Scratch-lottery information dossier & 500-ticket economics */
+.spec-hero{border-bottom:1px solid #465b71;background:radial-gradient(circle at 84% 0,#b28a4833,transparent 43%),linear-gradient(130deg,#1c354e,#14253b);padding:20px 19px 17px}
+.spec-hero-heading{display:flex;align-items:start;justify-content:space-between;gap:13px}
+.spec-hero-heading h3{margin:7px 0 6px;color:#ffe8b7;font:700 25px Georgia,serif}
+.spec-hero-heading p{font-size:12px;line-height:1.55;color:#b3ccdf;margin:0}
+.spec-live-price{display:inline-flex;border:1px solid #d3a45e;padding:8px 10px;border-radius:50px;white-space:nowrap;color:#ffe7b1;background:#463a30;font-size:11px;font-weight:800}
+.spec-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:15px}
+.spec-kpis>div{background:#102034;border:1px solid #405972;padding:13px 10px;border-radius:12px;min-width:0}
+.spec-kpis span{display:block;font-size:11px;color:#9cbdd4;line-height:1.35}
+.spec-kpis strong{display:block;font-size:clamp(15px,1.7vw,21px);font-weight:850;color:#ffdfae;margin-top:6px;overflow-wrap:anywhere}
+.spec-detail{border-top:1px dashed #4d657b;margin-top:14px;padding-top:11px;display:grid;gap:6px}
+.spec-detail p{margin:0;font-size:12px;color:#c8dae9;line-height:1.6}
+.spec-detail b{color:#f7d49e}
+.price-field{border:1px solid #bd9459;border-radius:12px;padding:12px;background:linear-gradient(145deg,#392f29,#211f2c)}
+.price-field>span{font-weight:850;color:#ffdeaa}
+.price-field input{border-color:#bc8e4f;color:#fff1c1;font-size:22px;font-weight:900}
+.price-live-card{display:flex;flex-direction:column;justify-content:center;gap:6px;padding:14px;background:linear-gradient(145deg,#1f3e42,#17323a);border:1px solid #51958c;border-radius:12px}
+.price-live-card>span{font-size:12px;color:#bce9df}.price-live-card strong{font-size:clamp(21px,2vw,28px);color:#e1ffdf;white-space:normal;overflow-wrap:anywhere}
+.price-live-card small{font-size:11px;color:#a4c5ba;line-height:1.55}
+.preview-economy{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:13px 0}
+.preview-economy>div{display:flex;flex-direction:column;gap:6px;background:#122e35;border:1px solid #427b7d;border-radius:10px;padding:12px}
+.preview-economy span{font-size:11px;color:#b9d5d9}
+.preview-economy strong{color:#e6f9e5;font-size:clamp(15px,2vw,19px);overflow-wrap:anywhere}
+.preview-economy>div:nth-child(3){background:#2e2e28;border-color:#aa9457}
+.preview-economy>div:nth-child(3) strong{color:#ffdf9b}
+@media(max-width:620px){.spec-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.spec-hero-heading{flex-wrap:wrap}.spec-hero-heading h3{font-size:21px}.price-live-card strong{font-size:19px}}
