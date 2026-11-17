@@ -1775,6 +1775,38 @@ export function initChristmasScratch(){
   }catch(error){feedback.textContent='⚠️ '+(error.message||'Speichern fehlgeschlagen');}
   finally{save.disabled=false}
  });
+ // 500-ticket publisher. One click writes the form values AND the immutable
+ // run budget in one Firestore transaction. It never draws 500 tickets at once.
+ for(const id of ['gs-price','gs-edition-budget'])
+  $(id).addEventListener('input',updateGiftsEditionPreview);
+ $('gs-edition-create').addEventListener('click',async()=>{
+  const feedback=$('gs-edition-feedback'),button=$('gs-edition-create');
+  if(button.disabled)return;
+  if(!account()){feedback.textContent='🔐 Bitte zuerst mit deinem DOG-Profil anmelden.';return;}
+  try{
+   const gifts=readGiftsSettings(),raw=$('gs-edition-budget').value.trim();
+   const maxTotalCoins=Number(raw);
+   if(!raw||!Number.isSafeInteger(maxTotalCoins)||maxTotalCoins<0||maxTotalCoins>1000000000000)
+    throw Error('Bitte ein Gesamtbudget von 0 bis 1.000.000.000.000 Münzen eingeben.');
+   if(giftsEdition?.remaining>0)
+    throw Error('Es läuft bereits eine 500er-Auflage mit '+giftsEdition.remaining+' Restlosen.');
+   const yes=window.confirm('Eine Auflage mit 500 Geschenkelinie-Losen erstellen?\\n'+
+    'Maximal '+num(maxTotalCoins)+' 🪙 Auszahlungen insgesamt.\\n'+
+    'Die Einstellungen und das Budget dieser Serie können später nicht mehr geändert werden.');
+   if(!yes)return;
+   button.disabled=true;
+   feedback.textContent='📦 Veröffentliche die 500er-Auflage sicher auf Render …';
+   const response=await query('/editions/gifts',{gifts,maxTotalCoins});
+   if(!response.giftsEdition||!response.settings?.variants?.gifts)
+    throw Error('Der Server hat die Auflage nicht bestätigt.');
+   giftsEdition=response.giftsEdition;
+   status.settings=response.settings;
+   feedback.textContent='✅ Auflage erstellt: 500 Lose, maximal '+num(maxTotalCoins)+
+    ' 🪙 Geldgewinne für alle Spieler zusammen.';
+   updateGiftsEditionPreview();drawShop();
+  }catch(e){feedback.textContent='⚠️ '+scratchBuyError(e?.message||'Serverfehler');}
+  finally{updateGiftsEditionPreview()}
+ });
  $('scratch-host-settings').addEventListener('click',openSettings);
  $('scratch-host-close').addEventListener('click',()=>hostDialog.close());
  $('scratch-host-cancel').addEventListener('click',()=>hostDialog.close());
