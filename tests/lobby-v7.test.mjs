@@ -158,8 +158,9 @@ test('Stuck WebSocket handshakes time out and release reconnect fallback',()=>{
 test('Lobby boot preserves room links on authentication and temporary network errors',()=>{
  assert.match(js,/Bitte melde dich an, um deinen bestehenden Raum wiederherzustellen/);
  assert.match(js,/const requestedCode=fromUrl\.toUpperCase\(\)/);
- assert.match(js,/if\(r\?\.code!==requestedCode\)return;activateRoom\(r\);pollStart\(\)/);
- assert.match(js,/Raum vorübergehend nicht erreichbar\. Aktualisiere die Seite/);
+ assert.match(js,/pendingRoomRecovery=requestedCode/,'room is retained while authentication initializes');
+ assert.match(js,/void recoverPendingRoom\(\)/,'initial navigation uses the retryable room recovery');
+ assert.match(js,/Automatischer Wiederverbindungsversuch/,'transient failures visibly trigger a retry');
 });
 
 test('Room recovery tolerates delayed Firebase authentication initialization',()=>{
