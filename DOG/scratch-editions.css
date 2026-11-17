@@ -542,3 +542,6 @@ body.studio-expert .studio-sidebar{display:flex}
  .simple-prize-head h4{font-size:20px}
  .simple-prize-distribution{padding:12px}
  .simple-prize-row-label{font-size:12px}}
+
+.simple-prize-confirmed{margin:14px 0 8px;border:1px solid #6a9b79;background:#1b4337;
+ border-radius:12px;padding:13px 15px;color:#ddf5d1;font-size:13px;font-weight:750;line-height:1.6}
