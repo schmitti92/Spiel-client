@@ -64,6 +64,15 @@
 <strong>Welche Symbole gibt es – und was gewinnen sie?</strong>
 <p>Bestimme zuerst die Werte jedes Gewinnsymbols. Auf dem Rubbellos erscheinen Münze, Schein, Koffer, Stern und Geschenk mit den hier hinterlegten Preisen bzw. Gewinnarten. Jeder Betrag ist Teil der realen serverseitigen Auflage.</p></div>
     <div id="symbol-overview" class="symbol-overview" aria-label="Aktuelle Gewinnsymbole und Preisbereiche"></div>
+    <section class="double-studio">
+      <div class="double-head"><div class="double-emblem">✖️2</div><div><span class="eyebrow">✦ EXTRA-SYMBOL FÜR ALLE SIEBEN LOSE ✦</span><h3>Gewinn verdoppeln</h3><p>Erscheint das ✖️2 auf einem Gewinnlos, werden sämtliche Münzen und Weihnachtslichter dieses Loses verdoppelt. Geschenke bleiben genau eine Freischaltung. Der Server rechnet die Verdopplung bereits in alle 500er-Gewinnbudgets ein.</p></div></div>
+      <div class="double-controls">
+       <label class="field"><span>🎯 ✖️2-Chance bei einer Ziehung</span><div class="double-percent"><input type="number" id="ed-double-chance" min="0" max="100" step="0.1" value="11"><span>%</span></div><small>11 % bedeutet eine Zielchance von 110 pro 1.000 Losen. Tatsächlich können nur Lose mit Münz- oder Lichtgewinnen ✖️2 erhalten.</small></label>
+       <label class="field"><span>🎟️ Mindestens ✖️2-Lose</span><input type="number" id="ed-double-min" min="0" max="500" step="1" value="0"><small>0 lässt die Anzahl frei. Ein garantierter Mindestwert kann die Druckbarkeit einschränken.</small></label>
+       <label class="field"><span>🛑 Maximal ✖️2-Lose von 500</span><input type="number" id="ed-double-max" min="0" max="500" step="1" value="80"><small>Harte Obergrenze. Auch nach einer Verdopplung dürfen Geld- und Lichtbudgets nie überschritten werden.</small></label>
+      </div>
+      <div class="double-note"><span>🪙 ×2 Münzen</span><span>⭐ ×2 Weihnachtslichter</span><span>🎁 1 Freischaltung bleibt 1</span></div>
+    </section>
     <div class="currency-grid" id="currency-grid"></div>
     <div class="currency-total"><span>🪙 Alle Geldsymbole zusammen unterliegen zusätzlich deinem Münz-Gesamtbudget.</span><strong id="currency-budget-remaining">–</strong></div>
     <button type="button" class="currency-next primary" id="ed-symbol-next">Weiter zu Schritt 2: Auflagenplan</button><div class="currency-explainer">🎁 Geschenk-Freischaltungen sind Stückpreise. Ihre Gesamtzahl kannst du hier und zusätzlich im Auflagenplan begrenzen. ⭐ Weihnachtslichter werden unabhängig von Goldmünzen direkt auf das gemeinsame Dorfkonto gebucht.</div>
@@ -108,7 +117,8 @@
     <div class="quota-footer"><span id="quota-sum">0 von 500 fest eingeplant</span><button id="quota-clear" type="button" class="ghost small">↶ Alle Vorgaben löschen</button></div>
    </section>
    <section id="view-mechanic" class="inner-view" hidden>
-    <div class="view-heading"><h3>Gewinnmechanik & momentane Einstellungen</h3><p>Hier siehst du, wie der Live-Server für diese Losart Gewinne erzeugt. Die Werte dieser Ausgabe werden beim Druck gespeichert.</p></div>
+    <div class="view-heading"><h3>Spielregeln & Gewinnchancen</h3><p>Die Gewinnart bleibt unverändert. Bei den Prozentreglern passt das Studio auf Wunsch alle übrigen Werte so an, dass ihre Summe genau 100 % beträgt.</p></div>
+    <label class="auto-percent-control"><input type="checkbox" id="ed-auto-percent" checked><span><strong>✨ Automatisch auf 100 % ausgleichen</strong><small>Du veränderst eine Chance; die anderen werden proportional angepasst. Ohne Automatik müssen die Anteile selbst zusammen 100 % ergeben.</small></span></label>
     <div id="mechanic-content" class="mechanic-content"></div>
     <a class="inline-link" href="./christmas-event.html">⚙️ Allgemeine Rubbellos-Einstellungen im Weihnachtsevent ändern</a>
    </section>
@@ -124,6 +134,7 @@
     </div>
     <div id="preview-target" class="preview-target" hidden></div>
     <div id="preview-currencies" class="preview-currencies" hidden></div>
+    <div id="preview-double" class="preview-double" hidden></div>
     <div id="preview-economy" class="preview-economy" hidden>
      <div><span>💳 Gesamteinnahmen (500 × Lospreis)</span><strong id="preview-income">–</strong></div>
      <div><span>🪙 Gedruckte Gewinnauszahlung</span><strong id="preview-expense">–</strong></div>
@@ -168,6 +179,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./scratch-editions.js?v=11"></script>
+<script type="module" src="./scratch-editions.js?v=12"></script>
 </body>
 </html>
