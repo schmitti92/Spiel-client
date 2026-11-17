@@ -490,6 +490,35 @@ export function initChristmasScratch(){
   box?.classList.toggle('is-invalid',!ok);
   return ok;
  }
+ function updateGiftsEditionPreview(){
+  const price=Number($('gs-price').value||0),budget=$('gs-edition-budget');
+  const max=Number(budget?.value||0);
+  $('gs-edition-revenue').textContent=Number.isSafeInteger(price)&&price>=0?
+   num(price*500)+' 🪙':'– 🪙';
+  const display=$('gs-edition-status'),button=$('gs-edition-create');
+  const active=Boolean(giftsEdition&&giftsEdition.remaining>0);
+  const soldOut=Boolean(giftsEdition&&giftsEdition.remaining===0);
+  if(display){
+   display.dataset.state=active?'active':soldOut?'sold_out':'none';
+   display.textContent=active?
+    '🟢 Aktive Auflage: '+num(giftsEdition.issued)+'/500 Lose ausgegeben · '+
+    num(giftsEdition.paidCoins)+' von maximal '+num(giftsEdition.maxTotalCoins)+
+    ' 🪙 ausgezahlt · '+num(giftsEdition.remainingCoins)+' 🪙 Budget übrig. '+
+    'Diese Auflage behält ihre Einstellungen bis zum letzten Los.':
+    soldOut?'🏁 Alle 500 Lose der bisherigen Auflage wurden vergeben. Du kannst nun eine neue Serie erstellen.':
+    '📦 Noch keine 500er-Auflage erstellt. Bis zur ersten Veröffentlichung werden die Lose wie bisher angeboten.';
+  }
+  if(button){
+   button.disabled=active;
+   button.title=active?'Eine neue Auflage ist erst nach den 500 vergebenen Losen möglich.':'';
+  }
+  if(budget){
+   budget.disabled=active;
+   budget.setCustomValidity(!active&&(!budget.value.trim()||
+    !Number.isSafeInteger(max)||max<0||max>1000000000000)?
+    'Bitte ein ganzzahliges Gesamtbudget zwischen 0 und 1.000.000.000.000 Münzen eingeben.':'');
+  }
+ }
  function openGiftsSettings(){
   const cfg=status?.settings?.variants?.gifts;
   if(!cfg||!giftsDialog){
@@ -507,8 +536,11 @@ export function initChristmasScratch(){
   set('gs-light-chance',(cfg.lightChancePer1000??100)/10);
   set('gs-light-min',cfg.lightMin??1);
   set('gs-light-max',cfg.lightMax??10);
+  set('gs-edition-budget',giftsEdition?.maxTotalCoins??
+   Math.round((cfg.price??200)*500*.6));
   $('scratch-gifts-settings-feedback').textContent='';
-  updateGiftsMoneyPreview();
+  $('gs-edition-feedback').textContent='';
+  updateGiftsMoneyPreview();updateGiftsEditionPreview();
   giftsDialog.showModal();
  }
  function readGiftsSettings(){
@@ -1614,11 +1646,13 @@ export function initChristmasScratch(){
  }
  async function load(){
   const id=++requestId;
-  if(!account()){status=null;ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();giftsDialog?.close();drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
+  if(!account()){status=null;giftsEdition=null;ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();giftsDialog?.close();drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
   try{
    const r=await query('');
    if(id!==requestId)return;
-   status={...r.scratch,discountPercent:r.discountPercent??0};canManageScratch=r.canManageScratch===true;
+   status={...r.scratch,discountPercent:r.discountPercent??0};
+   giftsEdition=r.giftsEdition??null;
+   canManageScratch=r.canManageScratch===true;
    clearAlert();
    // Four distinct starter vouchers, credited once to the signed-in player.
    if(status&&!status.levelOneStarterClaimed){
@@ -1658,9 +1692,12 @@ export function initChristmasScratch(){
   if(!SCRATCH_SHOP_VARIANTS.some(c=>c.id===variantId&&c.tier===tier)){
    showAlert('⚠️ Diese Losvariante ist noch nicht im Spiel freigeschaltet.',variantId);drawShop();return;
   }
+  if(variantId==='gifts'&&giftsEdition?.remaining===0){
+   showAlert(scratchBuyError('SCRATCH_GIFTS_EDITION_SOLD_OUT'),variantId);drawShop();return;
+  }
   const chosenPrice=variantId==='number_one_20'?
    Number(status.settings?.numberOne20?.price??500):
-   variantId==='gifts'?Number(status.settings?.variants?.gifts?.price??200):
+   variantId==='gifts'?Number(giftsEdition?.config?.price??status.settings?.variants?.gifts?.price??200):
    Number(SCRATCH_TICKET_TYPES.find(c=>c.id===tier)?.price||0);
   if(!free&&!voucher&&status.coins<discountedPrice(chosenPrice)){
    showAlert('⚠️ Nicht genügend Münzen für dieses Los.',variantId);drawShop();return;
@@ -1675,7 +1712,9 @@ export function initChristmasScratch(){
   try{
    const r=await query('/buy',pending);
    if(!r.result||!r.scratch)throw Error('INVALID_SCRATCH_RESULT');
-   status=r.scratch;pending=null;
+   status=r.scratch;
+   if(Object.hasOwn(r,'giftsEdition'))giftsEdition=r.giftsEdition;
+   pending=null;
    // Server has already committed the ticket; keep its receipt even if the
    // local animation fails, so it is always reopenable without a second buy.
    ticket=r.result;
