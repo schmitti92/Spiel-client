@@ -51,3 +51,22 @@ test('DOG event visibly quotes costs but still does not impersonate live purchas
  assert.match(script,/villageRequest\('village\/upgrade','POST'/);
  assert.doesNotMatch(script,/firebase\.firestore|localStorage\.setItem/);
 });
+
+test('six clickable buildings share the same SVG landscape without a separate district',()=>{
+ const html=readFileSync(new URL('../DOG/christmas-event.html',import.meta.url),'utf8');
+ const script=readFileSync(new URL('../DOG/christmas-event.js',import.meta.url),'utf8');
+ const styles=readFileSync(new URL('../DOG/christmas-expansion.css',import.meta.url),'utf8');
+ for(const id of ['tower','workshop','luckhouse','academy','bakery','inn']){
+  assert.match(html,new RegExp('id="'+id+'-stage-image"'));
+  assert.match(html,new RegExp('data-open-building="'+id+'"'));
+ }
+ for(const id of ['luckhouse','academy']){
+  assert.match(html,new RegExp('id="'+id+'-ground-shadow"'));
+  assert.match(html,new RegExp('class="building-hotspot hotspot-'+id+'"'));
+  assert.match(script,new RegExp(id+':\\{cx:'));
+  assert.match(styles,new RegExp('\\.hit-'+id));
+ }
+ assert.doesNotMatch(html,/class="village-expansion"/);
+ assert.doesNotMatch(html,/class="village-expansion-building"/);
+ assert.doesNotMatch(script,/village-expansion-img-/);
+});

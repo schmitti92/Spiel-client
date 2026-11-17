@@ -1,17 +1,43 @@
-/* New Lichtertal street: separate from the original 1200x670 panorama to avoid overlap. */
-.village-expansion{padding:14px clamp(10px,2vw,23px) 18px;background:linear-gradient(180deg,#0a2530,#173b40);border-top:1px solid #ddb66a73}
-.village-expansion-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 10px;color:#f7d795;font:900 12px/1.4 Georgia,serif;letter-spacing:.5px}
-.village-expansion-heading span{font:700 11px/1.35 system-ui,sans-serif;color:#bddbcc;letter-spacing:0}
-.village-expansion-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.village-expansion-building{display:flex;align-items:center;gap:13px;min-width:0;padding:8px 12px;border:1px solid #dfc27b80;border-radius:14px;background:linear-gradient(120deg,#194b42,#0b2b36);color:#fff1ce;text-align:left;transition:background .2s,border-color .2s}
-.village-expansion-building:hover,.village-expansion-building:focus-visible{border-color:#ffe3a8;background:#225d4e}
-.village-expansion-art{position:relative;display:grid;place-items:center;width:clamp(95px,17vw,165px);height:clamp(95px,17vw,155px);flex:none;background:radial-gradient(circle at 50% 70%,#b1d0bf39,transparent 74%)}
-.village-expansion-art img{position:relative;z-index:1;display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 6px #020f12a8)}
-.village-expansion-placeholder{position:absolute;z-index:0;font-size:65px;opacity:.72}
-.village-expansion-art img:not([hidden])+.village-expansion-placeholder{opacity:.05}
-.village-expansion-art img[hidden]+.village-expansion-placeholder{opacity:1}
-.village-expansion-info{display:flex;flex-direction:column;gap:6px;min-width:0}
-.village-expansion-info strong{font:900 clamp(14px,1.6vw,21px)/1.2 Georgia,serif;color:#ffe0a0}
-.village-expansion-info small{font-size:12px;color:#cfebd9}
-.village-expansion-info em{width:max-content;max-width:100%;font:900 11px/1.3 system-ui,sans-serif;border-radius:999px;padding:5px 9px;color:#17342e;background:#f3d58e}
-@media(max-width:650px){.village-expansion-grid{grid-template-columns:1fr}.village-expansion-art{width:120px;height:110px}.village-expansion-building{padding:8px}}
+/* All six buildings now live INSIDE the 1200×670 Christmas landscape.
+   No separate cards or scrolling district. New houses occupy the open raised
+   terrace between the corner buildings, behind the central Christmas tree. */
+#art-luckhouse,#art-academy{transition:opacity .22s ease}
+#luckhouse-stage-image,#academy-stage-image{
+  opacity:0;transition:opacity .25s ease;
+  filter:drop-shadow(0 7px 9px #071d2ba8);
+}
+#art-luckhouse.photo-ready,#art-academy.photo-ready{opacity:0}
+#art-luckhouse.photo-ready + #luckhouse-stage-image,
+#art-academy.photo-ready + #academy-stage-image{opacity:1}
+.village-hotspots .hit-luckhouse{
+  left:27.3%;top:31.2%;width:15%;height:30.5%;z-index:2;
+}
+.village-hotspots .hit-academy{
+  left:59.2%;top:31.2%;width:15%;height:30.5%;z-index:2;
+}
+.village-hotspots .hotspot-luckhouse{left:34%;top:62.5%}
+.village-hotspots .hotspot-academy{left:66.83%;top:62.5%}
+.village-hotspots .hotspot-luckhouse,
+.village-hotspots .hotspot-academy{
+  z-index:3;border-color:#f4d995;background:linear-gradient(180deg,#69442b,#34271d);
+  overflow-wrap:anywhere;
+}
+/* On narrow screens six labels must not collide; tapping the buildings
+   themselves still opens the same modal with an accessible 5-stage description. */
+@media(max-width:760px){
+  .village-hotspots .building-hotspot{
+    min-width:0;width:17%;max-width:none;padding:4px 2px;
+    font-size:clamp(7px,1.35vw,10px);
+    line-height:1.13;overflow-wrap:anywhere;white-space:normal;
+  }
+  .village-hotspots .building-hotspot small{font-size:7px;right:-3px;top:-8px}
+}
+@media(max-width:500px){
+  .village-hotspots .building-hotspot{
+    font-size:7px;line-height:1.08;padding:3px 2px;
+  }
+  .village-hotspots .building-hotspot small{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  #art-luckhouse,#art-academy,#luckhouse-stage-image,#academy-stage-image{transition:none}
+}

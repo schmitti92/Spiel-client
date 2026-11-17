@@ -26,7 +26,7 @@
 <link rel="stylesheet" href="./christmas-village-overview.css?v=1">
 <link rel="stylesheet" href="./christmas-tree-level-path.css?v=1">
 <link rel="stylesheet" href="./christmas-buildings-magical.css?v=1">
-<link rel="stylesheet" href="./christmas-expansion.css?v=1">
+<link rel="stylesheet" href="./christmas-expansion.css?v=2">
 <link rel="stylesheet" href="./christmas-tree-winter-skin.css?v=2">
 <link rel="stylesheet" href="./christmas-storybook.css?v=2">
 <link rel="stylesheet" href="./christmas-storybook-graphics.css?v=1">
@@ -57,7 +57,7 @@
         <div class="village-view" id="village-view" data-snow="1" data-tree="1">
           <svg viewBox="0 0 1200 670" role="img" aria-labelledby="village-title village-desc" preserveAspectRatio="xMidYMid meet">
             <title id="village-title">Illustration des Weihnachtsdorfes Lichtertal</title>
-            <desc id="village-desc">Die vier ausbaubaren Gebäude, Weihnachtslichter-Turm, Wichtelwerkstatt, Weihnachtsbäckerei und Friedensherberge, umgeben einen Weihnachtsbaum mit zehn Entwicklungsstufen. Schnee, Lichter und Dekoration entwickeln sich im gemeinsamen Dorf.</desc>
+            <desc id="village-desc">Sechs ausbaubare Gebäude – Weihnachtslichter-Turm, Wichtelwerkstatt, Weihnachts-Glückshaus, XP-Wichtel-Akademie, Weihnachtsbäckerei und Friedensherberge – umgeben den Weihnachtsbaum mit zehn Entwicklungsstufen. Jedes Gebäude kann direkt in der Landschaft ausgewählt werden.</desc>
             <defs>
               <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#041126"/><stop offset=".40" stop-color="#172d53"/><stop offset=".76" stop-color="#94678a"/><stop offset="1" stop-color="#c6988f"/></linearGradient>
               <radialGradient id="horizon-gold" cx="50%" cy="100%" r="80%"><stop stop-color="#f8c991" stop-opacity=".50"/><stop offset="1" stop-color="#f3bd8a" stop-opacity="0"/></radialGradient>
@@ -104,6 +104,8 @@
                fill="#07171b" opacity=".48" filter="url(#village-contact-soft)">
               <ellipse id="tower-ground-shadow" cx="165" cy="387" rx="88" ry="12"/>
               <ellipse id="workshop-ground-shadow" cx="1036" cy="387" rx="91" ry="13"/>
+              <ellipse id="luckhouse-ground-shadow" cx="408" cy="399" rx="75" ry="11"/>
+              <ellipse id="academy-ground-shadow" cx="802" cy="399" rx="75" ry="11"/>
               <ellipse id="bakery-ground-shadow" cx="303" cy="601" rx="91" ry="13"/>
               <ellipse id="inn-ground-shadow" cx="922" cy="601" rx="98" ry="14"/>
             </g>
@@ -139,6 +141,32 @@
             </g>
             <!-- Wichtelwerkstatt: eigener PNG-Satz je Stufe, Bodenlinie y=389 -->
             <image id="workshop-stage-image" class="building-stage-image" x="782" y="147" width="306" height="322" preserveAspectRatio="xMidYMax meet" aria-hidden="true" pointer-events="none"/>
+            <!-- MIDGROUND STREET: two bonus buildings, behind the front row and the tree.
+                 Both PNG sets use the same exact alpha-aware positioning as the four originals. -->
+            <g class="building" id="art-luckhouse" data-level="1" transform="translate(343 210)" aria-hidden="true">
+              <rect x="3" y="99" width="133" height="89" rx="8" fill="#ac7659" stroke="#6a4a37" stroke-width="4"/>
+              <path d="M-9 105 68 35 151 105Z" fill="url(#roof)" stroke="#5b3532" stroke-width="5"/>
+              <path d="M-9 103 68 35 151 103 139 102 68 52 5 110Z" fill="#f0f5ee"/>
+              <use href="#win" x="14" y="122" width="27" height="35"/>
+              <use href="#win" x="97" y="122" width="27" height="35"/>
+              <rect x="55" y="139" width="29" height="48" rx="4" fill="#684b34" stroke="#e7bf76" stroke-width="3"/>
+              <rect x="43" y="102" width="51" height="25" rx="7" fill="#a72d35" stroke="#f5ca73" stroke-width="3"/>
+              <text x="68" y="120" text-anchor="middle" fill="#fff1b8" font-size="21" font-weight="900">★</text>
+            </g>
+            <image id="luckhouse-stage-image" class="building-stage-image" x="313" y="196" width="190" height="205"
+                   preserveAspectRatio="xMidYMax meet" aria-hidden="true" pointer-events="none"/>
+            <g class="building" id="art-academy" data-level="1" transform="translate(735 209)" aria-hidden="true">
+              <rect x="3" y="99" width="133" height="89" rx="8" fill="#bc9680" stroke="#6a5748" stroke-width="4"/>
+              <path d="M-9 105 68 30 151 105Z" fill="#236358" stroke="#bc9a61" stroke-width="5"/>
+              <path d="M-9 104 68 30 151 104 139 104 68 50 5 112Z" fill="#edf5f2"/>
+              <use href="#win" x="14" y="122" width="27" height="35"/>
+              <use href="#win" x="97" y="122" width="27" height="35"/>
+              <rect x="55" y="139" width="29" height="48" rx="4" fill="#684b34" stroke="#e7bf76" stroke-width="3"/>
+              <rect x="37" y="105" width="61" height="25" rx="7" fill="#9d2731" stroke="#f5ca73" stroke-width="3"/>
+              <text x="68" y="123" text-anchor="middle" fill="#fff1b8" font-size="22" font-weight="900">XP</text>
+            </g>
+            <image id="academy-stage-image" class="building-stage-image" x="707" y="197" width="190" height="205"
+                   preserveAspectRatio="xMidYMax meet" aria-hidden="true" pointer-events="none"/>
             <!-- BAKERY -->
             <g class="building" id="art-bakery" data-level="1" transform="translate(208 405)">
               <ellipse cx="95" cy="198" rx="122" ry="18" fill="#08212b" opacity=".34"/>
@@ -195,27 +223,18 @@
             <button type="button" class="village-tree-hit" data-open-tab="tree" aria-label="Weihnachtsbaum öffnen – Entwicklungsstufe und Belohnungen ansehen" title="🎄 Weihnachtsbaum ansehen"></button>
             <button type="button" class="building-image-hit hit-tower" data-open-building="tower" aria-label="Weihnachtslichter-Turm: Stufe und Bonus ansehen" title="Weihnachtslichter-Turm · Bonus ansehen"></button>
             <button type="button" class="building-image-hit hit-workshop" data-open-building="workshop" aria-label="Wichtelwerkstatt: Stufe und Bonus ansehen" title="Wichtelwerkstatt · Bonus ansehen"></button>
+            <button type="button" class="building-image-hit hit-luckhouse" data-open-building="luckhouse" aria-label="Weihnachts-Glückshaus: Stufe und Rubbellos-Rabatt ansehen" title="🎟️ Weihnachts-Glückshaus · Rabatt ansehen"></button>
+            <button type="button" class="building-image-hit hit-academy" data-open-building="academy" aria-label="XP-Wichtel-Akademie: Stufe und XP-Bonus ansehen" title="📚 XP-Wichtel-Akademie · Bonus ansehen"></button>
             <button type="button" class="building-image-hit hit-bakery" data-open-building="bakery" aria-label="Weihnachtsbäckerei: Stufe und Bonus ansehen" title="Weihnachtsbäckerei · Bonus ansehen"></button>
             <button type="button" class="building-image-hit hit-inn" data-open-building="inn" aria-label="Friedensherberge: Stufe und Bonus ansehen" title="Friedensherberge · Bonus ansehen"></button>
             <button type="button" class="building-hotspot hotspot-tower" data-open-building="tower" title="Weihnachtslichter-Turm ansehen">⭐ <span>Weihnachtslichter-Turm</span><small data-hotspot-level="tower">1/5</small></button>
             <button type="button" class="building-hotspot hotspot-workshop" data-open-building="workshop" title="Wichtelwerkstatt ansehen">🎁 <span>Wichtelwerkstatt</span><small data-hotspot-level="workshop">1/5</small></button>
+            <button type="button" class="building-hotspot hotspot-luckhouse" data-open-building="luckhouse" title="Weihnachts-Glückshaus: Rubbellos-Rabatt ansehen">🎟️ <span>Weihnachts-Glückshaus</span><small data-hotspot-level="luckhouse">1/5</small></button>
+            <button type="button" class="building-hotspot hotspot-academy" data-open-building="academy" title="XP-Wichtel-Akademie: Mehr Erfahrungspunkte ansehen">📚 <span>XP-Wichtel-Akademie</span><small data-hotspot-level="academy">1/5</small></button>
             <button type="button" class="building-hotspot hotspot-bakery" data-open-building="bakery" title="Weihnachtsbäckerei ansehen">🍪 <span>Weihnachtsbäckerei</span><small data-hotspot-level="bakery">1/5</small></button>
             <button type="button" class="building-hotspot hotspot-inn" data-open-building="inn" title="Friedensherberge ansehen">🕯️ <span>Friedensherberge</span><small data-hotspot-level="inn">1/5</small></button>
           </div>
           </div>
-          <section class="village-expansion" aria-label="Neues Stadtviertel von Lichtertal">
-            <div class="village-expansion-heading">✨ NEUES STADTVIERTEL <span>Gemeinsame Boni · 5 Ausbaustufen</span></div>
-            <div class="village-expansion-grid">
-              <button type="button" class="village-expansion-building" data-open-building="luckhouse" aria-label="Weihnachts-Glückshaus: Stufe und Bonus ansehen">
-                <span class="village-expansion-art"><img id="village-expansion-img-luckhouse" src="./weihnachtsevent-bilder/glueckshaus_stufe_1.png" alt="" loading="lazy" decoding="async"><span class="village-expansion-placeholder" aria-hidden="true">🎟️</span></span>
-                <span class="village-expansion-info"><strong>Weihnachts-Glückshaus</strong><small>🎟️ Günstigere Rubbellose</small><em>Stufe <span data-hotspot-level="luckhouse">1 / 5</span></em></span>
-              </button>
-              <button type="button" class="village-expansion-building" data-open-building="academy" aria-label="XP-Wichtel-Akademie: Stufe und Bonus ansehen">
-                <span class="village-expansion-art"><img id="village-expansion-img-academy" src="../xp_akademie_stufe_1.png" alt="" loading="lazy" decoding="async"><span class="village-expansion-placeholder" aria-hidden="true">📚</span></span>
-                <span class="village-expansion-info"><strong>XP-Wichtel-Akademie</strong><small>📚 Mehr DOG-Erfahrungspunkte</small><em>Stufe <span data-hotspot-level="academy">1 / 5</span></em></span>
-              </button>
-            </div>
-          </section>
       </div>
       <dialog id="village-building-dialog" class="village-building-dialog" aria-labelledby="village-building-title" aria-describedby="village-building-description">
         <div class="village-building-modal-head">
@@ -469,6 +488,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./christmas-event.js?v=86"></script>
+<script type="module" src="./christmas-event.js?v=87"></script>
 </body>
 </html>

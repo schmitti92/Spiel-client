@@ -86,6 +86,9 @@ const sceneLayouts=Object.freeze({
  // At level 5: >=18px horizontal clearance from the tree, >=9px row gap.
  tower:{cx:165,ground:389,w:239,h:280,growth:[.82,.86,.91,.96,1]},
  workshop:{cx:1036,ground:389,w:258,h:280,growth:[.78,.83,.89,.94,1]},
+ // New houses share the raised midground terrace: distinct from the four corner houses.
+ luckhouse:{cx:408,ground:401,w:190,h:190,growth:[.65,.74,.82,.91,1]},
+ academy:{cx:802,ground:401,w:190,h:190,growth:[.65,.74,.82,.91,1]},
  bakery:{cx:303,ground:603,w:274,h:205,growth:[.74,.80,.87,.94,1]},
  inn:{cx:922,ground:603,w:288,h:205,growth:[.76,.81,.88,.94,1]},
  tree:{cx:610,ground:504,w:299,h:394,growth:[.54,.59,.65,.71,.76,.81,.86,.91,.96,1]}
@@ -266,7 +269,6 @@ function buildingCard(entry){
  root.querySelector('[data-upgrade-building]').addEventListener('click',()=>void purchaseBuilding(entry.id));
  return root;
 }
-for(const id of ['luckhouse','academy']){const img=$('village-expansion-img-'+id);img?.addEventListener('error',()=>{img.hidden=true});img?.addEventListener('load',()=>{img.hidden=false});}
 const grid=$('building-grid');
 for(const item of definitions)grid.append(buildingCard(item));
 if(typeof ResizeObserver==='function'){
@@ -377,8 +379,6 @@ function refreshPreview(){
   if(art)art.dataset.level=String(level);
   showStageImage(d.id,level);
   updateCardImage(d.id,level);
-  const expansionImage=$('village-expansion-img-'+d.id);
-  if(expansionImage){const path=assetPath(d.id,level);if(expansionImage.dataset.source!==path){expansionImage.dataset.source=path;expansionImage.hidden=false;expansionImage.src=path;}}
   const plaque=document.querySelector('[data-hotspot-level="'+d.id+'"]');
   if(plaque)plaque.textContent=level+' / 5';
  }
@@ -587,7 +587,7 @@ document.querySelectorAll('[data-open-building]').forEach(button=>{
 window.addEventListener('hashchange',()=>showPanel(tabs.includes(location.hash.slice(1))?location.hash.slice(1):'village',{updateHistory:false}));
 showPanel(tabs.includes(location.hash.slice(1))?location.hash.slice(1):'village',{updateHistory:false});
 // Keep the vector drawings as fallback if an uploaded image fails to render.
-for(const id of ['tower','workshop','bakery','inn','tree']){
+for(const id of ['tower','workshop','luckhouse','academy','bakery','inn','tree']){
  $(id+'-stage-image')?.addEventListener('error',()=>{
   const fallback=$(id==='tree'?'art-tree':'art-'+id);
   fallback?.classList.remove('photo-ready');
