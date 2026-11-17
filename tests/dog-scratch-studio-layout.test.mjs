@@ -6,7 +6,7 @@ const html=readFileSync(new URL('../DOG/scratch-editions.html',import.meta.url),
 const js=readFileSync(new URL('../DOG/scratch-editions.js',import.meta.url),'utf8');
 const css=readFileSync(new URL('../DOG/scratch-editions.css',import.meta.url),'utf8');
 const steps=['overview','currency','mechanic','quotas','plan','history'];
-const ids=[...html.matchAll(/\\bid="([^"]+)"/g)].map(m=>m[1]);
+const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const viewIndex=id=>html.indexOf('id="view-'+id+'"');
 
 test('studio has unique controls and an easy six-tab workflow',()=>{
@@ -14,7 +14,7 @@ test('studio has unique controls and an easy six-tab workflow',()=>{
  for(const step of steps){
   assert.ok(viewIndex(step)>0,step+' view must exist');
   assert.match(html,new RegExp('data-view="'+step+'"'));
-  assert.match(js,/function activateView\\(name/);
+  assert.match(js,/function activateView\(name/);
  }
  assert.equal(steps.length,6);
  assert.ok(viewIndex('overview')<viewIndex('currency'));
@@ -30,8 +30,8 @@ test('the print check and publish button appear only within the budget/final ste
   assert.ok(index>plan&&index<quotas,value+' must be in final budget step');
  }
  assert.match(js,/previewKey!==draftKey/);
- assert.match(js,/api\\('\\/editions\\/preview'/);
- assert.match(js,/api\\('\\/editions\\/publish'/);
+ assert.match(js,/api\('\/editions\/preview'/);
+ assert.match(js,/api\('\/editions\/publish'/);
 });
 test('all core prize, percent, x2 and 500-ticket controls remain wired',()=>{
  for(const value of ['edition-tabs','currency-grid','symbol-overview','quota-grid',
@@ -47,10 +47,10 @@ test('all core prize, percent, x2 and 500-ticket controls remain wired',()=>{
  assert.match(js,/function renderPlanChecks/);
 });
 test('mobile presentation and saved configurations are supported',()=>{
- assert.match(css,/\\.studio-quick-stats/);
- assert.match(css,/\\.wizard-footer/);
- assert.match(css,/@media\\(max-width:660px\\)/);
+ assert.match(css,/\.studio-quick-stats/);
+ assert.match(css,/\.wizard-footer/);
+ assert.match(css,/@media\(max-width:660px\)/);
  assert.match(js,/function replaceCurrentDraft/);
- assert.match(js,/file\\.text\\(\\)/);
+ assert.match(js,/file\.text\(\)/);
  assert.match(html,/id="studio-global-message"/);
 });
