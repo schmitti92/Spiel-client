@@ -47,16 +47,29 @@
     <div class="field-layout">
      <label class="field field-wide"><span>🏷️ Auflagenname</span><input id="ed-name" type="text" maxlength="70" autocomplete="off" placeholder="z. B. Winterglück · Edition 1"></label>
      <div class="field"><span>🎟️ Anzahl Lose</span><div class="readonly-field">500 <small>fest</small></div></div>
-     <label class="field"><span>💰 Maximaler Gesamtgewinn (Münzen)</span><input id="ed-budget" type="number" min="0" max="1000000000000" step="1"></label>
+     <label class="field"><span>🎯 Ziel-Gesamtauszahlung für alle 500 Lose</span><input id="ed-target" type="number" min="0" max="1000000000000" step="1"><small>Der Server versucht, diese Summe mit abwechslungsreichen Gewinnen zu erreichen.</small></label>
+     <label class="field"><span>🪙 Absolute Gesamtobergrenze</span><input id="ed-budget" type="number" min="0" max="1000000000000" step="1"><small>Dieser Gesamtbetrag wird niemals überschritten.</small></label>
+     <label class="field"><span>📏 Erlaubte Zielabweichung (%)</span><input id="ed-tolerance" type="number" min="0" max="30" step="1"><small>Zum Beispiel ±5 %; bei 0 % nur exakt erreichbare Beträge.</small></label>
      <label class="field"><span>💎 Max. Münzgewinn pro Los</span><input id="ed-max-coins" type="number" min="0" max="1000000000" step="1"></label>
      <label class="field"><span>🏆 Max. Einzelgewinne auf einem Los</span><input id="ed-max-prizes" type="number" min="1" max="20" step="1"></label>
      <label class="field"><span>🎁 Max. Freischaltungen in 500 Losen</span><input id="ed-max-unlocks" type="number" min="0" max="500" step="1"></label>
     </div>
+    <div id="premium-highlight" class="premium-highlight" hidden>
+      <div class="premium-highlight-head"><div><span class="eyebrow">✦ PREMIUM-JACKPOTSTEUERUNG ✦</span><h3>👑 Alle 27 Felder gefüllt</h3><p>Bestimme exakt, wie viele der 500 Premiumlose das große Feld-Finale enthalten. Diese Tickets bekommen zehn verifizierte Einzelgewinne – inklusive der 20er- und 24er-Belohnung.</p></div><span class="premium-highlight-value" id="premium-quantity">0 / 500</span></div>
+      <div class="premium-highlight-body"><div id="premium-board-preview" class="premium-board-preview" aria-label="Illustration eines Premiumloses mit 27 Symbolfeldern und Gewinnreihen"></div><div class="premium-highlight-controls"><label class="field"><span>✨ Anzahl volle 27-Felder-Lose in dieser Auflage</span><input type="number" id="ed-full27" min="0" max="500" step="1" value="0"></label>
+       <div class="premium-scale"><input type="range" id="ed-full27-range" min="0" max="100" step="1" value="0"><span>0 bis 500 Stück möglich</span></div>
+       <p class="premium-guardrail">Voraussetzung: mindestens 10 Gewinne pro Premiumlos sowie genügend verfügbare Freischaltungen in der Auflage. Alle anderen Premiumlose bleiben unter 27 vollen Symbolfeldern.</p>
+       <div class="premium-achievements"><span>🪙 Vier sichere Geldreihen</span><span>⭐ Bonus ab 20 Symbolen</span><span>🎁 Freischaltung ab 24 Symbolen</span><span>🏆 Bis zu 10 Einzelgewinne</span></div></div></div>
+     </div>
     <div class="info-panel"><strong>So funktioniert die Auflage</strong><p>Der Render-Server erzeugt alle 500 Lose aus den echten Spielregeln, prüft die Gewinnfelder und mischt sie. Erst nach deiner Veröffentlichung werden diese gedruckten Ergebnisse im Spiel ausgegeben. Eine Änderung der allgemeinen Gewinnwerte verändert keine bereits gedruckten Lose.</p></div>
-    <p class="fine-print">⚠️ Eine Gewinnobergrenze ist kein Gewinnziel: Der tatsächlich gedruckte Gesamtgewinn kann darunter liegen. Unerfüllbare Kombinationen werden vor Veröffentlichung abgelehnt.</p>
+    <div class="budget-track"><div class="budget-track-info"><span>Geplante Zielausschüttung</span><strong id="target-progress-label">–</strong></div><div class="budget-track-rail"><i id="target-progress-fill" style="width:0%"></i></div></div>
+    <p class="fine-print">⚠️ Gewinnwerte sind diskret: Eine exakte Zielsumme ist nicht immer mathematisch möglich. Abweichungen über deiner Toleranz werden vor Veröffentlichung abgelehnt. Die tatsächliche Auszahlung steht im Probedruck.</p>
    </section>
    <section id="view-quotas" class="inner-view" hidden>
     <div class="view-heading"><h3>Wieviele Lose gewinnen wie oft?</h3><p>Trage die <b>exakte Anzahl an Losen</b> ein. Ein leeres Feld bedeutet „vom Server frei berechnen“. Null bedeutet „diese Gewinnklasse ausschließen“.</p></div>
+    <div class="quota-presets"><span>⚡ Schnellverteilung:</span><button type="button" class="preset" data-preset="auto">✨ Automatisch</button><button type="button" class="preset" data-preset="balanced">⚖️ Ausgewogen</button><button type="button" class="preset" data-preset="rare">❄️ Wenige Großgewinne</button><button type="button" class="preset" data-preset="jackpot">👑 Jackpot-Serie</button></div>
+    <div class="quota-summary-visual"><span id="quota-meter-duds" class="quota-color-duds"></span><span id="quota-meter-normal" class="quota-color-normal"></span><span id="quota-meter-jackpots" class="quota-color-jackpots"></span></div>
+    <p class="quota-summary-note" id="quota-description">Nicht festgelegte Lose werden intelligent aus dem verbleibenden Gewinnbudget berechnet.</p>
     <div class="quota-heading"><strong>Gewinnklasse</strong><strong>Anzahl Lose in der Auflage</strong><strong>Hinweis</strong></div>
     <div id="quota-grid" class="quota-grid"></div>
     <div class="quota-footer"><span id="quota-sum">0 von 500 fest eingeplant</span><button id="quota-clear" type="button" class="ghost small">↶ Alle Vorgaben löschen</button></div>
@@ -76,6 +89,7 @@
     <div id="preview-metrics" class="preview-metrics">
      <div><span>🎟️ Lose</span><strong>500</strong></div><div><span>🏆 Gewinnlose</span><strong>–</strong></div><div><span>❄️ Nieten</span><strong>–</strong></div><div><span>🪙 Gesamtauszahlung</span><strong>–</strong></div>
     </div>
+    <div id="preview-target" class="preview-target" hidden></div>
     <div id="preview-chart" class="preview-chart"><p>Erstelle einen Probedruck, um die tatsächliche Verteilung und das Gesamtbudget zu sehen.</p></div>
     <div id="preview-message" class="preview-message" role="status" aria-live="polite"></div>
    </section>
@@ -94,7 +108,7 @@
    <section class="side-panel">
     <span class="eyebrow">✦ DAS GESAMTBUDGET ✦</span><h3>Deine Vorgaben</h3>
     <div class="side-stat"><span>Losauflage</span><strong>500 Stück</strong></div>
-    <div class="side-stat"><span>Gewinnbudget</span><strong id="side-budget">–</strong></div>
+    <div class="side-stat"><span>Zielauszahlung</span><strong id="side-target">–</strong></div><div class="side-stat"><span>Budgetobergrenze</span><strong id="side-budget">–</strong></div>
     <div class="side-stat"><span>Obergrenze je Los</span><strong id="side-max">–</strong></div>
     <div class="side-stat"><span>Geplante Quoten</span><strong id="side-quotas">Automatisch</strong></div>
     <p class="side-note">Der Server entscheidet über alle echten Spielausgänge. Kein Browser kann Rubbelgewinne selbst festlegen oder nachträglich erhöhen.</p>
@@ -112,6 +126,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./scratch-editions.js?v=1"></script>
+<script type="module" src="./scratch-editions.js?v=2"></script>
 </body>
 </html>
