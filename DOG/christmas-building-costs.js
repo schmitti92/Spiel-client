@@ -5,7 +5,8 @@
  * verwalteten Dorfvorrat. Diese reine Berechnung bucht selbst nichts ab
  * und darf kein Event freischalten oder lokale Vorschau als Besitz werten.
  */
-export const CHRISTMAS_BUILDING_IDS=Object.freeze(['tower','workshop','bakery','inn']);
+export const CHRISTMAS_TREE_BUILDING_IDS=Object.freeze(['tower','workshop','bakery','inn']);
+export const CHRISTMAS_BUILDING_IDS=Object.freeze([...CHRISTMAS_TREE_BUILDING_IDS,'luckhouse','academy']);
 export const CHRISTMAS_BUILDING_MIN_LEVEL=1;
 export const CHRISTMAS_BUILDING_MAX_LEVEL=5;
 export const CHRISTMAS_BASE_UPGRADE_COST=15;
@@ -35,7 +36,7 @@ export function christmasUpgradeQuote(level,availableLights){
  });
 }
 
-/** Vier Gebäudestufen müssen vollständig und gültig sein. */
+/** Sechs Gebäudestufen müssen vollständig und gültig sein. */
 export function christmasVillageTotalCost(levels){
  if(!levels||typeof levels!=='object'||Array.isArray(levels)||
     Object.keys(levels).length!==CHRISTMAS_BUILDING_IDS.length||
