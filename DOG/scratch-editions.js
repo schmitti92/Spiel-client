@@ -281,6 +281,25 @@ function renderSpec(){
  for(const [title,value] of metrics){
   const card=node('div');card.append(node('span','',title),node('strong','',value));holder.append(card);
  }
+ const diagram=$('spec-board-preview');diagram.replaceChildren();
+ const rows=rules.boardRows??(v.id==='premium_27'?9:v.id==='number_one_20'?20:
+  v.id==='elf'?4:v.id==='snow_collect'?4:3);
+ const cols=rules.boardCols??(v.id==='number_one_20'?2:v.id==='elf'?5:
+  v.id==='snow_collect'?4:3);
+ diagram.style.gridTemplateColumns='repeat('+cols+',minmax(0,1fr))';
+ diagram.style.setProperty('--spec-cell-height',rows>10?'13px':rows>8?'19px':'24px');
+ const glyphs=['🪙','💵','💼','🎁','❄️','🎄','🪙','⭐','💵','💼','🎁','🎀'];
+ for(let i=0;i<rows*cols;i++){
+  const symbol=v.id==='tic_tac_toe'?((i%4===0)?'◯':'✕'):
+   v.id==='number_one_20'?(i%2===0?glyphs[Math.floor(i/2)%4]:(i%7===1?'1':String(i%9+2))):
+   v.id==='dog_jackpot_9'?(i===4?'🐾':glyphs[i%4]):
+   v.id==='premium_27'?(i<12?['🪙','💵','💼','🪙'][Math.floor(i/3)]:
+     glyphs[(i-12)%glyphs.length]):glyphs[i%glyphs.length];
+  const cell=node('span','spec-mini-cell',symbol);
+  if(v.id==='premium_27'&&i<12||v.id==='dog_jackpot_9'&&i===4||
+   v.id==='number_one_20'&&symbol==='1')cell.classList.add('is-highlight');
+  diagram.append(cell);
+ }
  const detail=$('spec-detail');detail.replaceChildren();
  const line=(label,value)=>{
   const item=node('p');item.append(node('b','',label+' '),document.createTextNode(String(value)));
