@@ -1444,6 +1444,17 @@ function usePreset(id){
    id==='rare'?{0:300,1:130,2:40,3:20,5:8,10:2}:
    {0:50,1:80,2:100,3:120,5:100,10:50};
  }
+ // Scale presets to a custom print size while keeping the exact sum.
+ if(draft.printSize!==500&&Object.keys(set).length){
+  const rows=Object.entries(set).map(([count,n])=>({
+   count,raw:n*draft.printSize/500,base:Math.floor(n*draft.printSize/500)
+  }));
+  let remaining=draft.printSize-rows.reduce((n,r)=>n+r.base,0);
+  rows.sort((a,b)=>(b.raw-b.base)-(a.raw-a.base));
+  for(let i=0;i<remaining;i++)rows[i%rows.length].base++;
+  set=Object.fromEntries(rows.filter(r=>r.base>0).map(r=>[r.count,r.base]));
+  full27=Math.min(set[10]||0,Math.round(full27*draft.printSize/500));
+ }
  draft.quotas=set;
  draft.premiumFull27Tickets=full27;
  if(full27){
