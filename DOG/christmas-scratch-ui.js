@@ -414,7 +414,7 @@ export function initChristmasScratch(){
    if(lightRules){
     details.append(el('span','scratch-card-chance',
      '⭐ Weihnachtslichter: '+num(lightRules.min)+'–'+num(lightRules.max)+
-     ' pro Treffer · maximal '+num(lightRules.maxTotal)+' ⭐ pro 500 Lose'));
+     ' pro Treffer · maximal '+num(lightRules.maxTotal)+' ⭐ pro '+num(activeEdition?.config?.printSize??500)+' Lose'));
    }else{
     details.append(el('span','scratch-card-chance',
      '⭐ Weihnachtslichter als möglicher Gewinn in besonderen Auflagen'));
@@ -433,7 +433,7 @@ export function initChristmasScratch(){
       activeEdition.config.doubleWin.maxTickets>0)
     article.append(el('div','scratch-double-legend','✖️2 Bonus möglich · Zielchance '+
      num(activeEdition.config.doubleWin.chancePer1000/10)+' % · höchstens '+
-     num(activeEdition.config.doubleWin.maxTickets)+' von 500 Losen'));
+     num(activeEdition.config.doubleWin.maxTickets)+' von '+num(activeEdition.config.printSize??500)+' Losen'));
    const vouchers=Number(status?.vouchers?.[option.tier]||0)+Number(status?.variantVouchers?.[option.id]||0);
    const buyBtn=el('button','scratch-buy','🎟️ Für '+num(actualPrice)+' Münzen öffnen');
    buyBtn.type='button';buyBtn.hidden=freeMode;
@@ -445,8 +445,8 @@ export function initChristmasScratch(){
    article.append(buyBtn);
    if(onSale)
     article.append(el('div','scratch-edition-badge','🖨️ Edition: '+activeEdition.title+
-     ' · '+num(activeEdition.remaining)+'/500 Losen übrig'));
-   else article.append(el('div','scratch-edition-unavailable','🔒 Aktuell keine Auflage vorhanden · Eine neue 500er-Serie muss veröffentlicht werden.'));
+     ' · '+num(activeEdition.remaining)+'/'+num(activeEdition.config?.printSize??500)+' Losen übrig'));
+   else article.append(el('div','scratch-edition-unavailable','🔒 Aktuell keine Auflage vorhanden · Bitte eine neue Serie veröffentlichen.'));
    if(actionError?.variantId===option.id){
     const inline=el('div','scratch-card-open-error',actionError.message);
     inline.setAttribute('role','alert');article.append(inline);
@@ -1589,7 +1589,7 @@ export function initChristmasScratch(){
    return;
   }
   if(!(editionPrices[variantId]?.status==='active'&&editionPrices[variantId].remaining>0)){
-   showAlert('🔒 Aktuell keine Auflage vorhanden. Bitte eine neue 500er-Serie im Auflagenstudio veröffentlichen.',variantId);
+   showAlert('🔒 Aktuell keine Auflage vorhanden. Bitte eine neue Serie im Auflagenstudio veröffentlichen.',variantId);
    drawShop();return;
   }
   if(!SCRATCH_SHOP_VARIANTS.some(c=>c.id===variantId&&c.tier===tier)){

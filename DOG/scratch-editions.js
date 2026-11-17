@@ -1,4 +1,4 @@
-import {rebalanceOdds} from './scratch-odds.mjs?v=1';
+import {rebalanceOdds,rebalanceLockedOdds} from './scratch-odds.mjs?v=2';
 /**
  * DOG print-run studio – an authenticated companion screen to the existing
  * Christmas scratch shop. The browser edits only configuration, never prizes.
@@ -61,13 +61,14 @@ function defaultSymbolBudgets(variant){
 }
 const baseDraft=variant=>({
  variantId:variant.id,title:variant.name+' · Winteredition 1',
- maxTotalCoins:variant.budget,targetTotalCoins:Math.round(variant.budget*.55),
+ printSize:500,maxTotalCoins:variant.budget,targetTotalCoins:Math.round(variant.budget*.55),
  targetTolerancePercent:5,premiumFull27Tickets:0,volatility:70,
  ticketPrice:variant.price,maxPerTicketCoins:variant.one,
  maxPrizesPerTicket:variant.wins,
  maxUnlocks:variant.tier==='simple'?25:variant.tier==='medium'?20:25,quotas:{},
  doubleWin:{chancePer1000:110,minTickets:0,maxTickets:80},
- symbolBudgets:defaultSymbolBudgets(variant)
+ symbolBudgets:defaultSymbolBudgets(variant),
+ oddsLocks:{money:[false,false,false],symbols:[false,false,false,false],gift:false}
 });
 const DRAFT_STORAGE_KEY='dog-scratch-edition-drafts-v2';
 const drafts=Object.fromEntries(VARIANTS.map(v=>[v.id,baseDraft(v)]));
@@ -78,9 +79,9 @@ try{
   const row=saved?.[variant.id];
   if(!row||row.variantId!==variant.id||typeof row!=='object')continue;
   const fresh=baseDraft(variant);
-  for(const key of ['title','ticketPrice','maxTotalCoins','targetTotalCoins',
+  for(const key of ['title','ticketPrice','printSize','maxTotalCoins','targetTotalCoins',
    'targetTolerancePercent','premiumFull27Tickets','volatility','maxPerTicketCoins',
-   'maxPrizesPerTicket','maxUnlocks','quotas','doubleWin','gameSettings'])
+   'maxPrizesPerTicket','maxUnlocks','quotas','doubleWin','gameSettings','oddsLocks'])
    if(Object.hasOwn(row,key))fresh[key]=structuredClone(row[key]);
   for(const key of Object.keys(fresh.symbolBudgets))if(row.symbolBudgets?.[key])
    fresh.symbolBudgets[key]={...fresh.symbolBudgets[key],...row.symbolBudgets[key]};
@@ -92,6 +93,7 @@ function persistDrafts(){
 }
 const live={};
 const catalog={};
+const sizeOf=()=>Number(drafts[current.id]?.printSize??500);
 let current=VARIANTS[0],view='overview',settings=null,preview=null,previewKey=null,busy=false;
 let formInitialized=false;
 const labelFor=error=>{
@@ -111,10 +113,10 @@ const labelFor=error=>{
     code.startsWith('EDITION_DISTRIBUTION_IMPOSSIBLE_SLOT_')){
   const count=code.match(/_WINS_(\d+)/)?.[1];
   const slot=code.match(/_SLOT_(\d+)/)?.[1];
-  return (slot?'Bei Los '+slot+' von 500: ':'')+
+  return (slot?'Bei Los '+slot+' von '+fmt(sizeOf())+': ':'')+
    (count?'Für genau '+count+' Gewinne':'Für diese Gewinnzahl')+
    ' wurde noch keine gültige Kombination gefunden. Die feste Vorgabe bleibt bestehen. '+
-   'Bitte zuerst „500 Lose berechnen“ erneut versuchen. Falls es wieder passiert: '+
+   'Bitte zuerst den Probedruck erneut versuchen. Falls es wieder passiert: '+
    'Gewinnbeträge senken oder Gesamtbudget, Symbolbudgets und Höchstgewinn je Los prüfen. '+
    'Auch ✖️2 benötigt zusätzliches Budget.';
  }
@@ -125,6 +127,8 @@ const labelFor=error=>{
  return ({
  EDITION_STILL_ACTIVE:'Eine bestehende Auflage hat noch Restlose. Beende sie zuerst oder verkaufe sie vollständig.',
  EDITION_QUOTAS_OVER_500:'Mehr als 500 Lose sind fest eingeplant.',
+ EDITION_QUOTAS_OVER_PRINT_SIZE:'Die festen Gewinnzahlen überschreiten die Auflagengröße.',
+ EDITION_PRINT_SIZE_INVALID:'Bitte eine ganze Anzahl von 1 bis 500 Losen wählen.',
  EDITION_INVALID_LIMITS:'Bitte prüfe die Budget-, Gewinn- und Freischaltungsgrenzen.',
  EDITION_TICKET_PRICE_INVALID:'Der Preis muss eine ganze Zahl zwischen 0 und 1.000.000 Münzen sein.',
  EDITION_SOLD_OUT:'Diese Auflage ist ausverkauft.',
@@ -160,6 +164,7 @@ function readForm(){
  }
  const number=id=>{const v=Number(value(id));return Number.isFinite(v)?v:NaN};
  drafts[current.id]={variantId:current.id,title:value('ed-name').trim(),
+  printSize:number('ed-print-size'),
   ticketPrice:number('ed-price'),maxTotalCoins:number('ed-budget'),targetTotalCoins:number('ed-target'),
   targetTolerancePercent:number('ed-tolerance'),volatility:number('ed-volatility'),
   premiumFull27Tickets:current.id==='premium_27'?number('ed-full27'):0,
@@ -168,7 +173,8 @@ function readForm(){
   quotas,doubleWin:{
    chancePer1000:Math.round(number('ed-double-chance')*10),
    minTickets:number('ed-double-min'),maxTickets:number('ed-double-max')
-  },symbolBudgets:old.symbolBudgets,gameSettings:old.gameSettings??null};
+  },symbolBudgets:old.symbolBudgets,gameSettings:old.gameSettings??null,
+ oddsLocks:old.oddsLocks??{money:[false,false,false],symbols:[false,false,false,false],gift:false}};
  return drafts[current.id];
 }
 function draftKey(value){return JSON.stringify(value)}
@@ -180,14 +186,14 @@ function invalidatePreview(){
  if(samples)samples.replaceChildren();
  $('preview-state').textContent='Nach Änderungen neu berechnen';
  $('ed-publish').disabled=true;
- $('preview-chart').replaceChildren(node('p','','Die Einstellungen wurden geändert. Berechne die 500 Lose erneut.'));
+ $('preview-chart').replaceChildren(node('p','','Die Einstellungen wurden geändert. Berechne die Auflage erneut.'));
  $('preview-target').hidden=true;
  $('preview-economy').hidden=true;
  $('preview-currencies').hidden=true;
  $('preview-double').hidden=true;
  $('simple-prize-confirmed').hidden=true;
  $('preview-metrics').replaceChildren(...[
-  ['🎟️ Lose','500'],['🏆 Gewinnlose','–'],['❄️ Nieten','–'],['🪙 Gesamtauszahlung','–']
+  ['🎟️ Lose',fmt(sizeOf())],['🏆 Gewinnlose','–'],['❄️ Nieten','–'],['🪙 Gesamtauszahlung','–']
  ].map(([name,value])=>metric(name,value)));
  showMessage('');
 }
@@ -233,6 +239,9 @@ function syncSimpleInputs(){
  const draft=drafts[current.id];
  $('simple-variant').value=current.id;
  $('simple-price').value=String(draft.ticketPrice);
+ $('simple-print-size').value=String(draft.printSize);
+ $('simple-light-budget').value=String(draft.symbolBudgets.lights?.maxTotal??0);
+ $('simple-unlock-cap').value=String(draft.maxUnlocks);
  $('simple-budget').value=String(draft.maxTotalCoins);
  $('simple-double').value=String((draft.doubleWin?.chancePer1000??0)/10);
  $('simple-lights').value=String((draft.symbolBudgets.lights?.chancePer1000??0)/10);
@@ -242,7 +251,87 @@ function syncSimpleInputs(){
  $('simple-win-explanation').textContent=rule.explanation;
  $('simple-win-chance').value=rule.shown?String(rule.value):'';
  renderSimplePrizeCounts();
+ renderSimpleSymbols();
  updateSimpleSummary();
+}
+/** Redistribute an exact 100% across unlocked symbol odds. */
+function renderSimpleSymbols(){
+ const root=$('simple-symbol-grid');if(!root)return;
+ root.replaceChildren();
+ const draft=drafts[current.id],cfg=draft.gameSettings||{};
+ const locks=draft.oddsLocks??{money:[false,false,false],symbols:[false,false,false,false],gift:false};
+ draft.oddsLocks=locks;
+ const classic=Array.isArray(cfg.moneySymbolWeights);
+ const weights=classic?cfg.moneySymbolWeights:cfg.symbolWeights;
+ const applyOdds=(i,percent)=>{
+  if(!Array.isArray(weights))return false;
+  const group=classic?'money':'symbols',locked=locks[group]||[];
+  const next=rebalanceLockedOdds(weights,i,percent,locked);
+  if(!next)return false;
+  if(classic)cfg.moneySymbolWeights=next;
+  else cfg.symbolWeights=next;
+  return true;
+ };
+ for(const [index,meta] of CURRENCIES.entries()){
+  const range=draft.symbolBudgets[meta.id],row=node('div','simple-symbol-row');
+  const head=node('div','simple-symbol-name');
+  head.append(node('strong','',meta.icon+' '+meta.name),
+   node('small','',meta.id==='lights'?'⭐-Chance unabhängig von anderen Gewinnarten':
+    meta.id==='gift'?'🎁 💝 🎀 🧧 🛍️ – jedes Symbol kann eine Freischaltung auslösen':
+    classic?'Anteil der Geldtreffer; vier Premium-Geldreihen sind Pflicht':'Anteil der Gewinnsymbole'));
+  row.append(head);
+  const field=(name,initial,minimum,maximum,action,step='1')=>{
+   const label=node('label','simple-symbol-field');
+   label.append(node('span','',name));
+   const input=node('input');input.type='number';input.min=String(minimum);
+   input.max=String(maximum);input.step=step;input.value=String(initial??0);
+   input.inputMode='decimal';label.append(input);
+   input.addEventListener('change',()=>{
+    const n=Number(input.value);
+    if(!Number.isFinite(n)||n<minimum||n>maximum||
+       (step==='1'&&!Number.isSafeInteger(n))){renderSimpleSymbols();return}
+    if(action(n)===false){showMessage('🔒 Die fixierten Chancen lassen keine 100-%-Verteilung zu. Bitte eine Chance entsperren.','error');renderSimpleSymbols();return}
+    renderCurrency();updateSide();invalidatePreview();
+   });
+   row.append(label);
+  };
+  if(meta.id!=='gift'){
+   field('Min.',range.min,1,50000000,n=>{range.min=n});
+   field('Max.',range.max,1,50000000,n=>{range.max=n});
+  }
+  if(meta.id==='lights'){
+   field('Chance %',(range.chancePer1000||0)/10,0,100,n=>{
+    range.chancePer1000=Math.round(n*10);$('simple-lights').value=String(n);
+   },'0.1');
+  }else if(meta.id==='gift'){
+   const giftChance=classic?cfg.weights?.unlock:cfg.symbolWeights?.[3];
+   if(giftChance!==undefined)field('Chance %',giftChance/10,0,100,n=>{
+    if(!classic)return applyOdds(3,n);
+    const want=Math.round(n*10),none=cfg.weights.none;
+    if(want>1000-none)return false;
+    cfg.weights.coins=1000-none-want;cfg.weights.unlock=want;
+   },'0.1');
+  }else if(Array.isArray(weights)){
+   field('Anteil %',(weights[index]||0)/10,0,100,n=>applyOdds(index,n),'0.1');
+  }
+  const group=classic?'money':'symbols',lockIndex=meta.id==='gift'?3:index;
+  if(meta.id==='gift'&&classic||meta.id!=='lights'&&Array.isArray(weights)){
+   const lock=node('button','simple-symbol-lock');
+   lock.type='button';
+   const isLocked=meta.id==='gift'&&classic?locks.gift:Boolean(locks[group]?.[lockIndex]);
+   lock.textContent=isLocked?'🔒 Fixiert':'🔓 Fixieren';
+   lock.title=isLocked?'Chance entsperren':'Chance bei anderen Änderungen festhalten';
+   lock.setAttribute('aria-pressed',String(Boolean(isLocked)));
+   lock.addEventListener('click',()=>{
+    if(meta.id==='gift'&&classic)locks.gift=!locks.gift;
+    else{if(!Array.isArray(locks[group]))locks[group]=[];
+     locks[group][lockIndex]=!locks[group][lockIndex]}
+    updateSide();invalidatePreview();
+   });
+   row.append(lock);
+  }
+  root.append(row);
+ }
 }
 function possibleWinCounts(){
  if(current.id==='tic_tac_toe')return [0,1];
@@ -270,12 +359,12 @@ function renderSimplePrizeCounts(){
    '🏆 '+count+' '+(count===1?'Gewinn':'Gewinne')+' pro Los'));
   const quantity=node('label','simple-prize-row-qty');
   quantity.append(node('span','','Anzahl Lose'));
-  const input=node('input');input.type='number';input.min='0';input.max='500';
+  const input=node('input');input.type='number';input.min='0';input.max=String(sizeOf());
   input.step='1';input.value=String(tickets);input.inputMode='numeric';
   input.setAttribute('aria-label','Wie viele Lose haben '+count+' Gewinne?');
   input.addEventListener('change',()=>{
    const n=Number(input.value);
-   if(!Number.isSafeInteger(n)||n<0||n>500){
+   if(!Number.isSafeInteger(n)||n<0||n>sizeOf()){
     input.value=String(drafts[current.id].quotas[count]);return;
    }
    updateFixedPrizes(count,n);
@@ -288,10 +377,10 @@ function renderSimplePrizeCounts(){
   row.append(remove);root.append(row);
  }
  if(!pairs.length)root.append(node('p','simple-prize-empty',
-  'Noch keine feste Anzahl. Alle 500 Lose werden automatisch zusammengestellt.'));
- $('simple-prize-fixed').textContent=fmt(fixed)+' von 500 fest';
- $('simple-prize-remaining').textContent=fmt(Math.max(0,500-fixed))+' automatisch';
- $('simple-prize-bar-fill').style.width=Math.min(100,fixed/5)+'%';
+  'Noch keine feste Anzahl. Die Lose werden automatisch zusammengestellt.'));
+ $('simple-prize-fixed').textContent=fmt(fixed)+' von '+fmt(sizeOf())+' fest';
+ $('simple-prize-remaining').textContent=fmt(Math.max(0,sizeOf()-fixed))+' automatisch';
+ $('simple-prize-bar-fill').style.width=Math.min(100,100*fixed/sizeOf())+'%';
  $('simple-prize-clear').hidden=!pairs.length;
  const winset=current.id==='premium_27'?'Bei Premium sind mindestens 4 Gewinne pro Los garantiert.':
   current.id==='tic_tac_toe'?'Tic-Tac-Toe erlaubt 0 oder 1 Einzelgewinn pro Los.':
@@ -303,14 +392,14 @@ function renderSimplePrizeCounts(){
 }
 function updateFixedPrizes(count,tickets){
  if(!possibleWinCounts().includes(count)||!Number.isSafeInteger(tickets)||
-  tickets<0||tickets>500)return;
+  tickets<0||tickets>sizeOf())return;
  const draft=drafts[current.id],quotas={...(draft.quotas||{})};
  if(!tickets)delete quotas[count];
  else quotas[count]=tickets;
  const fixed=Object.values(quotas).reduce((sum,n)=>sum+Number(n||0),0);
- if(fixed>500){
+ if(fixed>sizeOf()){
   renderSimplePrizeCounts();
-  $('simple-prize-hint').textContent='⚠️ Höchstens 500 Lose möglich. '+
+  $('simple-prize-hint').textContent='⚠️ Höchstens '+fmt(sizeOf())+' Lose möglich. '+
    'Reduziere die Anzahl oder entferne eine andere feste Vorgabe.';
   $('simple-prize-hint').classList.add('has-error');
   return;
@@ -329,18 +418,18 @@ function updateFixedPrizes(count,tickets){
 function addFixedPrizeRow(){
  const count=Number($('simple-prize-count').value);
  const tickets=Number($('simple-prize-tickets').value);
- if(!Number.isSafeInteger(tickets)||tickets<1||tickets>500){
-  $('simple-prize-hint').textContent='Bitte eine ganze Zahl zwischen 1 und 500 Losen eingeben.';
+ if(!Number.isSafeInteger(tickets)||tickets<1||tickets>sizeOf()){
+  $('simple-prize-hint').textContent='Bitte eine ganze Zahl zwischen 1 und '+fmt(sizeOf())+' Losen eingeben.';
   $('simple-prize-hint').classList.add('has-error');return;
  }
  updateFixedPrizes(count,(Number(drafts[current.id].quotas[count])||0)+tickets);
 }
 function updateSimpleSummary(){
  const draft=drafts[current.id],active=live[current.id];
- $('simple-sales').textContent=fmt(draft.ticketPrice*500)+' 🪙';
+ $('simple-sales').textContent=fmt(draft.ticketPrice*draft.printSize)+' 🪙';
  $('simple-payout').textContent=fmt(draft.targetTotalCoins)+' 🪙';
  $('simple-availability').textContent=active?.status==='active'&&active.remaining>0?
-  '🟢 '+fmt(active.remaining)+' von 500 Losen verfügbar':
+  '🟢 '+fmt(active.remaining)+' von '+fmt(active.config?.printSize??500)+' Losen verfügbar':
   '🔒 Keine aktive Auflage';
 }
 function setSimpleNumber(field,value){
@@ -355,7 +444,9 @@ function changeSimpleWin(value){
  else if(current.id==='dog_jackpot_9')cfg.dogChancePer1000=n;
  else if(cfg.weights&&current.id!=='premium_27'){
   const currentWeights=['none','coins','unlock'].map(id=>cfg.weights[id]??0);
-  const next=rebalanceOdds(currentWeights,0,1000-n);
+  const next=rebalanceLockedOdds(currentWeights,0,(1000-n)/10,
+   [false,false,Boolean(draft.oddsLocks?.gift)]);
+  if(!next){showMessage('🔒 Die fixierte Hauptgewinnchance lässt diese Quote nicht zu. Entsperre zuerst den Hauptgewinn.','error');syncSimpleInputs();return;}
   ['none','coins','unlock'].forEach((id,i)=>{cfg.weights[id]=next[i]});
  }else return;
  // The established server quotas remain untouched; simple mode changes
@@ -372,6 +463,28 @@ function setupSimpleEditor(){
   const draft=drafts[current.id];
   draft.quotas={};
   renderQuota();readForm();updateSide();invalidatePreview();
+ });
+ $('simple-print-size').addEventListener('change',()=>{
+  const n=Number($('simple-print-size').value);
+  if(!Number.isSafeInteger(n)||n<1||n>500){syncSimpleInputs();return}
+  const draft=drafts[current.id];
+  $('ed-print-size').value=String(n);
+  $('ed-target').value=String(Math.min(draft.targetTotalCoins,draft.maxTotalCoins,n*draft.maxPerTicketCoins));
+  if(Number($('ed-double-max').value)>n)$('ed-double-max').value=String(n);
+  if(Number($('ed-double-min').value)>n)$('ed-double-min').value=String(n);
+  if(Number($('ed-max-unlocks').value)>n)$('ed-max-unlocks').value=String(n);
+  readForm();updateSide();invalidatePreview();
+ });
+ $('simple-light-budget').addEventListener('change',()=>{
+  const n=Number($('simple-light-budget').value);
+  if(!Number.isSafeInteger(n)||n<0||n>1000000000000){syncSimpleInputs();return}
+  drafts[current.id].symbolBudgets.lights.maxTotal=n;
+  renderCurrency();updateSide();invalidatePreview();
+ });
+ $('simple-unlock-cap').addEventListener('change',()=>{
+  const n=Number($('simple-unlock-cap').value);
+  if(!Number.isSafeInteger(n)||n<0||n>500){syncSimpleInputs();return}
+  setSimpleNumber('ed-max-unlocks',n);
  });
  $('simple-price').addEventListener('change',()=>{
   const n=Number($('simple-price').value);
@@ -408,6 +521,10 @@ function setupSimpleEditor(){
 }
 function validateDraftLocally(){
  const draft=drafts[current.id],errors=[];
+ if(!Number.isSafeInteger(draft.printSize)||draft.printSize<1||draft.printSize>500)
+  errors.push({view:'plan',message:'Wähle eine Auflagengröße zwischen 1 und 500 Losen.'});
+ if(draft.maxUnlocks>draft.printSize||draft.doubleWin.minTickets>draft.printSize)
+  errors.push({view:'plan',message:'Hauptgewinn- oder ✖️2-Stückzahlen überschreiten die Anzahl der Lose.'});
  if(!draft.title||draft.title.length>70)errors.push({view:'plan',message:'Bitte einen gültigen Auflagennamen eingeben.'});
  if(!Number.isSafeInteger(draft.ticketPrice)||draft.ticketPrice<0||draft.ticketPrice>1000000)
   errors.push({view:'plan',message:'Der Lospreis muss zwischen 0 und 1.000.000 liegen.'});
@@ -415,15 +532,15 @@ function validateDraftLocally(){
    draft.targetTotalCoins<0||draft.targetTotalCoins>draft.maxTotalCoins||
    !Number.isSafeInteger(draft.targetTotalCoins))
   errors.push({view:'plan',message:'Die Zielauszahlung darf das Münz-Gesamtbudget nicht überschreiten.'});
- if(draft.targetTotalCoins>draft.maxPerTicketCoins*500)
-  errors.push({view:'plan',message:'Die Zielauszahlung ist höher als der maximal mögliche Gewinn aller 500 Lose.'});
+ if(draft.targetTotalCoins>draft.maxPerTicketCoins*draft.printSize)
+  errors.push({view:'plan',message:'Die Zielauszahlung ist höher als der maximal mögliche Gewinn dieser Auflage.'});
  if(draft.maxPerTicketCoins<0||draft.maxPrizesPerTicket<1||draft.maxUnlocks<0||
   ![draft.maxPerTicketCoins,draft.maxPrizesPerTicket,draft.maxUnlocks,draft.targetTolerancePercent]
     .every(Number.isSafeInteger))
   errors.push({view:'plan',message:'Die Auflagengrenzen müssen gültige ganze Zahlen sein.'});
  const quotient=Object.values(draft.quotas).reduce((a,b)=>a+Number(b||0),0);
- if(quotient>500||Object.values(draft.quotas).some(n=>!Number.isInteger(n)||n<0||n>500))
-  errors.push({view:'quotas',message:'Höchstens 500 Lose können mit festen Gewinnzahlen verplant werden.'});
+ if(quotient>sizeOf()||Object.values(draft.quotas).some(n=>!Number.isInteger(n)||n<0||n>sizeOf()))
+  errors.push({view:'quotas',message:'Die festgelegten Gewinnzahlen dürfen die Auflagengröße nicht überschreiten.'});
  if(current.id==='premium_27'&&draft.quotas[0]>0)
   errors.push({view:'quotas',message:'Beim Premiumlos sind Nieten aufgrund der garantierten Geldreihen nicht möglich.'});
  if(Object.entries(draft.quotas).some(([win,n])=>Number(n)>0&&!possibleWinCounts().includes(Number(win))))
@@ -433,7 +550,7 @@ function validateDraftLocally(){
  if(draft.doubleWin.minTickets>draft.doubleWin.maxTickets||
     ![draft.doubleWin.minTickets,draft.doubleWin.maxTickets,draft.doubleWin.chancePer1000]
       .every(Number.isSafeInteger)||
-    draft.doubleWin.minTickets<0||draft.doubleWin.maxTickets>500||
+    draft.doubleWin.minTickets<0||draft.doubleWin.maxTickets>draft.printSize||
     draft.doubleWin.chancePer1000<0||draft.doubleWin.chancePer1000>1000)
   errors.push({view:'currency',message:'Bitte die ✖️2-Chance und das Minimum/Maximum prüfen.'});
  const budgets=draft.symbolBudgets;
@@ -488,32 +605,32 @@ function updateSide(){
  $('side-budget').textContent=fmt(draft.maxTotalCoins)+' 🪙';
  $('side-target').textContent=fmt(draft.targetTotalCoins)+' 🪙';
  $('side-price').textContent=fmt(draft.ticketPrice)+' 🪙';
- $('side-sales').textContent=fmt(draft.ticketPrice*500)+' 🪙';
+ $('side-sales').textContent=fmt(draft.ticketPrice*draft.printSize)+' 🪙';
  $('side-lights').textContent=fmt(draft.symbolBudgets?.lights?.maxTotal||0)+' ⭐';
- $('ed-sales-projection').textContent=fmt(draft.ticketPrice*500)+' 🪙';
+ $('ed-sales-projection').textContent=fmt(draft.ticketPrice*draft.printSize)+' 🪙';
  const portion=draft.maxTotalCoins>0?Math.min(100,draft.targetTotalCoins/draft.maxTotalCoins*100):0;
  $('target-progress-fill').style.width=portion.toFixed(1)+'%';
  $('target-progress-label').textContent=fmt(draft.targetTotalCoins)+' von '+fmt(draft.maxTotalCoins)+' 🪙';
  $('volatility-value').textContent=fmt(draft.volatility)+' %';
  $('side-max').textContent=fmt(draft.maxPerTicketCoins)+' 🪙';
  const sum=nums.reduce((n,x)=>n+(Number(x)||0),0);
- $('side-quotas').textContent=sum?fmt(sum)+' von 500 fest':'Automatisch';
- $('quota-sum').textContent=fmt(sum)+' von 500 fest eingeplant · '+fmt(Math.max(0,500-sum))+' automatisch';
- $('quota-sum').style.color=sum>500?'#ff9999':'#f3daae';
+ $('side-quotas').textContent=sum?fmt(sum)+' von '+fmt(draft.printSize)+' fest':'Automatisch';
+ $('quota-sum').textContent=fmt(sum)+' von '+fmt(draft.printSize)+' fest eingeplant · '+fmt(Math.max(0,draft.printSize-sum))+' automatisch';
+ $('quota-sum').style.color=sum>draft.printSize?'#ff9999':'#f3daae';
  const known=Object.entries(draft.quotas);
  const duds=Number(draft.quotas[0]||0);
  const rare=known.reduce((n,[count,v])=>n+(Number(count)>=8?Number(v):0),0);
  const regular=Math.max(0,sum-duds-rare);
- $('quota-meter-duds').style.width=(duds/5)+'%';
- $('quota-meter-normal').style.width=(regular/5)+'%';
- $('quota-meter-jackpots').style.width=(rare/5)+'%';
+ $('quota-meter-duds').style.width=(100*duds/draft.printSize)+'%';
+ $('quota-meter-normal').style.width=(100*regular/draft.printSize)+'%';
+ $('quota-meter-jackpots').style.width=(100*rare/draft.printSize)+'%';
  $('quota-description').textContent= sum?
   'Fest verplant: '+fmt(duds)+' Nieten · '+fmt(regular)+' normale Gewinnlose · '+
-   fmt(rare)+' große Mehrfachgewinn-Lose. Rest frei: '+fmt(Math.max(0,500-sum))+' Lose.':
-  'Alle 500 Lose werden intelligent anhand des Ziel-Gesamtgewinns verteilt.';
- $('premium-quantity').textContent=fmt(draft.premiumFull27Tickets)+' / 500';
+   fmt(rare)+' große Mehrfachgewinn-Lose. Rest frei: '+fmt(Math.max(0,draft.printSize-sum))+' Lose.':
+  'Alle '+fmt(draft.printSize)+' Lose werden anhand der Gewinnregeln und des Budgets verteilt.';
+ $('premium-quantity').textContent=fmt(draft.premiumFull27Tickets)+' / '+fmt(draft.printSize);
  $('ed-full27-range').value=String(Math.min(100,Math.max(0,draft.premiumFull27Tickets)));
- renderDashboard();renderPlanChecks();updateSimpleSummary();renderSimplePrizeCounts();
+ renderDashboard();renderPlanChecks();updateSimpleSummary();renderSimplePrizeCounts();renderSimpleSymbols();
 }
 
 function renderCurrency(){
@@ -549,10 +666,10 @@ function renderCurrency(){
    meta.id==='gift'?20:50000000);
   build('max',meta.id==='gift'?'Max. Freischaltungen auf einem Los':'Höchstgewinn pro Treffer',
    meta.id==='gift'?20:50000000);
-  build('minTotal',meta.id==='gift'?'Mindestens 🎁 auf 500 Losen':'Mindestbetrag in allen 500 Losen',
+  build('minTotal',meta.id==='gift'?'Mindestens 🎁 in der Auflage':'Mindestbetrag dieser Auflage',
    meta.id==='gift'?500:1000000000000);
-  build('maxTotal',meta.id==='gift'?'Maximal 🎁 auf 500 Losen':
-   meta.id==='lights'?'Maximal ⭐ in allen 500 Losen':'Gesamtbudget dieser Symbolart',
+  build('maxTotal',meta.id==='gift'?'Maximal 🎁 in der Auflage':
+   meta.id==='lights'?'Maximal ⭐ in der Auflage':'Gesamtbudget dieser Symbolart',
    meta.id==='gift'?500:1000000000000);
   if(meta.id==='lights'){
    const field=node('label','currency-field');
@@ -632,7 +749,7 @@ function renderQuota(){
   const heading=node('strong','',count===0?'❄️ Niete · 0 Gewinne':
    '🏆 '+count+' '+(count===1?'Gewinn':'Gewinne'));
   const field=node('input');
-  field.type='number';field.min='0';field.max='500';field.step='1';
+  field.type='number';field.min='0';field.max=String(sizeOf());field.step='1';
   field.inputMode='numeric';field.dataset.count=String(count);
   field.placeholder='Automatisch';
   const quota=drafts[current.id].quotas[count];
@@ -892,11 +1009,11 @@ function renderLive(){
  root.replaceChildren();
  if(!doc){
   label.textContent='Noch keine Auflage';label.classList.remove('live');
-  root.append(node('p','live-detail','🔒 Aktuell keine Auflage vorhanden. Neue Lose sind im Spiel gesperrt, bis du eine neue 500er-Auflage veröffentlichst.'));
+  root.append(node('p','live-detail','🔒 Keine aktive Auflage. Veröffentliche zuerst eine neue Serie.'));
  }else{
-  label.textContent=doc.remaining>0?doc.remaining+' von 500 übrig':'🔒 Aktuell keine Auflage vorhanden';
+  label.textContent=doc.remaining>0?doc.remaining+' von '+fmt(doc.config?.printSize??500)+' übrig':'🔒 Aktuell keine Auflage vorhanden';
   label.classList.toggle('live',doc.remaining>0);
-  root.append(node('div','live-total',fmt(doc.remaining)+' / 500'));
+  root.append(node('div','live-total',fmt(doc.remaining)+' / '+fmt(doc.config?.printSize??500)));
   const track=node('div','live-progress'),bar=node('i');
   bar.style.width=(doc.issued/5)+'%';track.append(bar);root.append(track);
   const description=node('div','live-detail');
@@ -963,6 +1080,7 @@ function switchVariant(id){
  const d=drafts[variant.id];
  $('ed-name').value=d.title;
  $('ed-budget').value=d.maxTotalCoins;
+ $('ed-print-size').value=d.printSize??500;
  $('ed-price').value=d.ticketPrice;
  $('ed-double-chance').value=(d.doubleWin?.chancePer1000??0)/10;
  $('ed-double-min').value=d.doubleWin?.minTickets??0;
@@ -1014,11 +1132,11 @@ function showPreview(data){
   '. Alle festen Gewinnzahlen wurden serverseitig geprüft.';
  $('preview-double').hidden=false;
  $('preview-double').textContent='✖️2-Verteilung: '+fmt(s.doubleWinTickets||0)+
-  ' von 500 Losen haben einen sichtbaren Verdopplungsbonus. Zusätzlich verteilt: '+
+  ' von '+fmt(s.tickets)+' Losen haben einen sichtbaren Verdopplungsbonus. Zusätzlich verteilt: '+
   fmt(s.doubleExtraCoins||0)+' 🪙 und '+fmt(s.doubleExtraLights||0)+
   ' ⭐. Diese Beträge sind in den jeweiligen Gesamtbudgets enthalten.';
  $('preview-economy').hidden=false;
- $('preview-income').textContent=fmt(s.projectedGrossRevenue??s.ticketPrice*500)+' 🪙';
+ $('preview-income').textContent=fmt(s.projectedGrossRevenue??s.ticketPrice*s.tickets)+' 🪙';
  $('preview-expense').textContent=fmt(s.totalCoins)+' 🪙';
  const net=s.projectedNetCoins??(s.projectedGrossRevenue-s.totalCoins);
  $('preview-profit').textContent=(net<0?'−':'')+fmt(Math.abs(net))+' 🪙';
@@ -1073,7 +1191,7 @@ async function loadHistory(){
    const row=node('div','history-row');
    row.append(node('strong','',doc.title||doc.id),
     node('small','',new Date(doc.createdAt).toLocaleString('de-DE')+
-     ' · '+doc.status+' · '+fmt(doc.issued)+'/500 ausgegeben · '+
+     ' · '+doc.status+' · '+fmt(doc.issued)+'/'+fmt(doc.config?.printSize??500)+' ausgegeben · '+
      fmt(doc.summary?.totalCoins)+' 🪙 verplant · '+fmt(doc.issuedCoins)+' 🪙 ausgezahlt'));
    root.append(row);
   }
@@ -1095,7 +1213,7 @@ $('quota-clear').addEventListener('click',()=>{
  $('quota-grid').querySelectorAll('input').forEach(input=>input.value='');
  readForm();updateSide();invalidatePreview();
 });
-for(const id of ['ed-name','ed-price','ed-budget','ed-target','ed-tolerance',
+for(const id of ['ed-name','ed-price','ed-print-size','ed-budget','ed-target','ed-tolerance',
  'ed-max-coins','ed-max-prizes','ed-max-unlocks','ed-double-chance','ed-double-min','ed-double-max']){
  $(id).addEventListener('input',()=>{readForm();updateSide();invalidatePreview()});
 }
@@ -1110,7 +1228,7 @@ $('ed-advanced-limits').addEventListener('change',()=>{
 $('ed-preview').addEventListener('click',async()=>{
  const draft=readForm();
  if(!signedIn()){showMessage('Bitte zuerst mit deinem DOG-Profil anmelden.','error');return}
- setBusy(true);showMessage('🎲 Render berechnet die 500 Lose und prüft alle Gewinnlimits …');
+ setBusy(true);showMessage('🎲 Render berechnet '+fmt(sizeOf())+' Lose und prüft alle Gewinnlimits …');
  try{
   const result=await api('/editions/preview',{config:draft});
   showPreview(result);
@@ -1182,8 +1300,8 @@ $('ed-inspect').addEventListener('click',async()=>{
 $('ed-publish').addEventListener('click',async()=>{
  const draft=readForm();
  if(!preview?.previewId||previewKey!==draftKey(draft))return;
- if(!window.confirm('500 neue '+current.name+'-Lose jetzt serverseitig drucken und im Spiel aktivieren? Eine bestehende Auflage darf nicht noch offene Lose haben.'))return;
- setBusy(true);showMessage('🖨️ Render aktiviert exakt die 500 zuvor geprüften Lose – ohne neue Ziehung …');
+ if(!window.confirm(fmt(sizeOf())+' neue '+current.name+'-Lose jetzt serverseitig drucken und im Spiel aktivieren? Eine bestehende Auflage darf nicht noch offene Lose haben.'))return;
+ setBusy(true);showMessage('🖨️ Render aktiviert die bereits geprüften Lose – ohne neue Ziehung …');
  try{
   const published=await api('/editions/publish',{config:draft,previewId:preview.previewId});
   if(!published.edition||!published.published)throw Error('Auflage nicht bestätigt');
@@ -1191,7 +1309,7 @@ $('ed-publish').addEventListener('click',async()=>{
    throw Error('Die veröffentlichte Verteilung weicht von der geprüften Vorschau ab.');
   live[current.id]=published.edition;
   showMessage('✅ Edition veröffentlicht: '+fmt(published.edition.summary.totalCoins)+
-   ' Münzen in 500 servergeprüften Losen · ID '+published.edition.id,'good');
+   ' Münzen in '+fmt(published.edition.summary.tickets)+' servergeprüften Losen · ID '+published.edition.id,'good');
   renderLive();await loadHistoryIfOpen();
  }catch(e){showMessage('⚠️ Veröffentlichung fehlgeschlagen: '+labelFor(e.message),'error')}
  finally{setBusy(false)}
@@ -1245,9 +1363,9 @@ $('ed-import-file').addEventListener('change',async()=>{
     typeof config.doubleWin!=='object'||Array.isArray(config.doubleWin)))
     throw Error('Ungültige ✖️2-Einstellungen.');
   const fresh=baseDraft(current);
-  for(const id of ['title','ticketPrice','maxTotalCoins','targetTotalCoins',
+  for(const id of ['title','ticketPrice','printSize','maxTotalCoins','targetTotalCoins',
    'targetTolerancePercent','premiumFull27Tickets','volatility','maxPerTicketCoins',
-   'maxPrizesPerTicket','maxUnlocks','quotas','doubleWin','gameSettings']){
+   'maxPrizesPerTicket','maxUnlocks','quotas','doubleWin','gameSettings','oddsLocks']){
    if(Object.hasOwn(config,id))fresh[id]=structuredClone(config[id]);
   }
   const defaults=defaultSymbolBudgets(current);
@@ -1304,6 +1422,17 @@ function usePreset(id){
    id==='rare'?{0:300,1:130,2:40,3:20,5:8,10:2}:
    {0:50,1:80,2:100,3:120,5:100,10:50};
  }
+ // Scale presets to a custom print size while keeping the exact sum.
+ if(draft.printSize!==500&&Object.keys(set).length){
+  const rows=Object.entries(set).map(([count,n])=>({
+   count,raw:n*draft.printSize/500,base:Math.floor(n*draft.printSize/500)
+  }));
+  let remaining=draft.printSize-rows.reduce((n,r)=>n+r.base,0);
+  rows.sort((a,b)=>(b.raw-b.base)-(a.raw-a.base));
+  for(let i=0;i<remaining;i++)rows[i%rows.length].base++;
+  set=Object.fromEntries(rows.filter(r=>r.base>0).map(r=>[r.count,r.base]));
+  full27=Math.min(set[10]||0,Math.round(full27*draft.printSize/500));
+ }
  draft.quotas=set;
  draft.premiumFull27Tickets=full27;
  if(full27){
@@ -1320,7 +1449,7 @@ function usePreset(id){
 document.querySelectorAll('[data-preset]').forEach(button=>
  button.addEventListener('click',()=>usePreset(button.dataset.preset)));
 function changeFull27(value){
- const count=Math.max(0,Math.min(500,Math.round(Number(value)||0)));
+ const count=Math.max(0,Math.min(sizeOf(),Math.round(Number(value)||0)));
  $('ed-full27').value=String(count);
  $('ed-full27-range').value=String(Math.min(100,count));
  const currentQuotas=drafts[current.id].quotas;
