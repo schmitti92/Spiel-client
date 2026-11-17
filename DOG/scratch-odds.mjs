@@ -17,3 +17,26 @@ export function rebalanceOdds(source,selected,desired){
  for(let k=0;k<missing;k++)next[pieces[k%pieces.length].i]++;
  return next;
 }
+
+export function rebalanceLockedOdds(values,index,percentage,locks=[]){
+ const target=Math.round(percentage*10);
+ if(!Number.isInteger(target)||target<0||target>1000)return null;
+ const next=[...values],free=[];let used=target;
+ for(let i=0;i<values.length;i++){
+  if(i===index)continue;
+  if(locks[i])used+=values[i];
+  else free.push(i);
+ }
+ const remaining=1000-used;
+ if(remaining<0||(!free.length&&remaining!==0))return null;
+ next[index]=target;
+ if(!free.length)return next;
+ const weights=free.map(i=>Math.max(0,values[i]));
+ const weightSum=weights.reduce((a,b)=>a+b,0);
+ const exact=free.map((i,j)=>({i,value:remaining*(weightSum?weights[j]/weightSum:1/free.length)}));
+ let assigned=0;
+ for(const row of exact){next[row.i]=Math.floor(row.value);assigned+=next[row.i]}
+ exact.sort((a,b)=>(b.value%1)-(a.value%1));
+ for(let j=0;j<remaining-assigned;j++)next[exact[j%exact.length].i]++;
+ return next;
+}
