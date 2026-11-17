@@ -52,13 +52,23 @@
      </div>
    </section>
    <div class="subtabs" role="tablist" aria-label="Werkzeuge">
-    <button type="button" class="subtab active" data-view="plan" aria-selected="true">🎛️ Auflagenplan</button>
-    <button type="button" class="subtab" data-view="quotas" aria-selected="false">🎰 Gewinnverteilung</button>
-    <button type="button" class="subtab" data-view="currency" aria-selected="false">⭐ Währungen & Budgets</button>
+    <button type="button" class="subtab" data-view="plan" aria-selected="false">② 🎛️ Auflagenplan</button>
+    <button type="button" class="subtab" data-view="quotas" aria-selected="false">③ 🎰 Gewinnverteilung</button>
+    <button type="button" class="subtab active" data-view="currency" aria-selected="true">① 🪙 Gewinnsymbole & Werte</button>
     <button type="button" class="subtab" data-view="mechanic" aria-selected="false">📜 Gewinnregeln</button>
     <button type="button" class="subtab" data-view="history" aria-selected="false">🗃️ Historie</button>
    </div>
-   <section id="view-plan" class="inner-view">
+   <section id="view-currency" class="inner-view">
+    <div class="currency-headline"><div><span class="eyebrow">✦ GEWINNWERKSTATT LICHTERTAL ✦</span><h3>🎟️ Gewinnsymbole und ihre Werte</h3><p>Stelle für jedes Symbol den kleinsten Einzelgewinn, den höchsten Einzelgewinn und den maximalen Gesamtbetrag innerhalb von 500 Losen ein. Der Server verteilt echte Beträge innerhalb dieser Grenzen.</p></div><div class="currency-medallion">⭐</div></div>
+    <div class="symbol-intro" role="note"><span class="symbol-intro-step">SCHRITT 1 VON 3</span>
+<strong>Welche Symbole gibt es – und was gewinnen sie?</strong>
+<p>Bestimme zuerst die Werte jedes Gewinnsymbols. Auf dem Rubbellos erscheinen Münze, Schein, Koffer, Stern und Geschenk mit den hier hinterlegten Preisen bzw. Gewinnarten. Jeder Betrag ist Teil der realen serverseitigen Auflage.</p></div>
+    <div id="symbol-overview" class="symbol-overview" aria-label="Aktuelle Gewinnsymbole und Preisbereiche"></div>
+    <div class="currency-grid" id="currency-grid"></div>
+    <div class="currency-total"><span>🪙 Alle Geldsymbole zusammen unterliegen zusätzlich deinem Münz-Gesamtbudget.</span><strong id="currency-budget-remaining">–</strong></div>
+    <button type="button" class="currency-next primary" id="ed-symbol-next">Weiter zu Schritt 2: Auflagenplan</button><div class="currency-explainer">🎁 Geschenk-Freischaltungen sind Stückpreise. Ihre Gesamtzahl kannst du hier und zusätzlich im Auflagenplan begrenzen. ⭐ Weihnachtslichter werden unabhängig von Goldmünzen direkt auf das gemeinsame Dorfkonto gebucht.</div>
+   </section>
+   <section id="view-plan" class="inner-view" hidden>
     <div class="view-heading"><div><h3>Neue 500er-Auflage konfigurieren</h3><p>Alle Grenzen gelten für die komplette Auflage. Kein Gewinn darf das festgelegte Budget überschreiten.</p></div></div>
     <div class="field-layout">
      <label class="field field-wide"><span>🏷️ Auflagenname</span><input id="ed-name" type="text" maxlength="70" autocomplete="off" placeholder="z. B. Winterglück · Edition 1"></label>
@@ -96,12 +106,6 @@
     <div class="quota-heading"><strong>Gewinnklasse</strong><strong>Anzahl Lose in der Auflage</strong><strong>Hinweis</strong></div>
     <div id="quota-grid" class="quota-grid"></div>
     <div class="quota-footer"><span id="quota-sum">0 von 500 fest eingeplant</span><button id="quota-clear" type="button" class="ghost small">↶ Alle Vorgaben löschen</button></div>
-   </section>
-   <section id="view-currency" class="inner-view" hidden>
-    <div class="currency-headline"><div><span class="eyebrow">✦ GEWINNWERKSTATT LICHTERTAL ✦</span><h3>⭐ Fünf Gewinnarten – eine kontrollierte Auflage</h3><p>Stelle für jedes Symbol den kleinsten Einzelgewinn, den höchsten Einzelgewinn und den maximalen Gesamtbetrag innerhalb von 500 Losen ein. Der Server verteilt echte Beträge innerhalb dieser Grenzen.</p></div><div class="currency-medallion">⭐</div></div>
-    <div class="currency-grid" id="currency-grid"></div>
-    <div class="currency-total"><span>🪙 Alle Geldsymbole zusammen unterliegen zusätzlich deinem Münz-Gesamtbudget.</span><strong id="currency-budget-remaining">–</strong></div>
-    <div class="currency-explainer">🎁 Geschenk-Freischaltungen sind Stückpreise. Ihre Gesamtzahl kannst du hier und zusätzlich im Auflagenplan begrenzen. ⭐ Weihnachtslichter werden unabhängig von Goldmünzen direkt auf das gemeinsame Dorfkonto gebucht.</div>
    </section>
    <section id="view-mechanic" class="inner-view" hidden>
     <div class="view-heading"><h3>Gewinnmechanik & momentane Einstellungen</h3><p>Hier siehst du, wie der Live-Server für diese Losart Gewinne erzeugt. Die Werte dieser Ausgabe werden beim Druck gespeichert.</p></div>
@@ -164,6 +168,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./scratch-editions.js?v=7"></script>
+<script type="module" src="./scratch-editions.js?v=8"></script>
 </body>
 </html>
