@@ -493,3 +493,52 @@ body.studio-expert .studio-sidebar{display:flex}
  .simple-print-icon{width:46px;height:46px;font-size:24px}
  .simple-field{padding:12px 13px}
  .simple-expert-head{align-items:flex-start}}
+
+/* Simple exact-quota editor: "5 tickets with 8 wins each", not five total wins. */
+.simple-prize-distribution{margin:18px 0 14px;border:1px solid #be9d61;border-radius:16px;
+ background:linear-gradient(140deg,#263341,#1b2f3f 65%,#2b302d);
+ padding:clamp(14px,2.6vw,22px);box-shadow:inset 0 1px #fff2c31f}
+.simple-prize-head h4{margin:7px 0 6px;color:#ffe4af;font:700 clamp(20px,2.6vw,25px) Georgia,serif}
+.simple-prize-head p{margin:0 0 15px;color:#c1d3df;line-height:1.65;font-size:12px;max-width:790px}
+.simple-prize-head p strong{color:#f9d99e}
+.simple-prize-add{display:grid;grid-template-columns:minmax(0,1.1fr) 22px minmax(0,.9fr) auto;
+ align-items:end;gap:12px;padding:13px;border-radius:12px;border:1px solid #526a76;background:#102438}
+.simple-prize-add label{display:grid;gap:7px;min-width:0}
+.simple-prize-add label>span{color:#f4dfb9;font-size:12px;font-weight:800}
+.simple-prize-add select,.simple-prize-add input{width:100%;min-width:0;border:1px solid #7190a0;
+ border-radius:9px;background:#182f43;color:#fff3d6;padding:11px 12px;font-weight:800;font-size:16px;
+ outline:none}
+.simple-prize-add select:focus,.simple-prize-add input:focus{border-color:#ead08f;box-shadow:0 0 0 2px #e8c27c33}
+.simple-prize-times{font:900 23px Georgia,serif;text-align:center;color:#f1c47f;padding-bottom:10px}
+.simple-prize-add button{padding:13px 16px;white-space:nowrap}
+.simple-prize-hint{margin-top:12px;color:#b0c7d8;font-size:12px;line-height:1.55}
+.simple-prize-hint.has-error{color:#ffd0a8}
+.simple-prize-rows{margin-top:10px;display:grid;gap:7px}
+.simple-prize-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(110px,165px) auto;
+ gap:12px;align-items:center;border:1px solid #5e886e;background:#1e403c;
+ border-radius:10px;padding:10px 12px}
+.simple-prize-row-label{font-size:14px;font-weight:850;color:#f6e8bd}
+.simple-prize-row-qty{display:grid;gap:4px;color:#bcd9d4;font-size:10px;font-weight:700}
+.simple-prize-row-qty input{width:100%;background:#133431;color:#f6f7d3;
+ font:800 16px system-ui;border:1px solid #638f84;padding:8px 10px;border-radius:8px}
+.simple-prize-remove{border:1px solid #a57570;background:#3e2d30;color:#ffdad6;
+ padding:10px 12px;border-radius:8px;font-size:11px;font-weight:800}
+.simple-prize-empty{color:#91b4c9;font-size:12px;margin:2px 0 5px;padding:11px 0}
+.simple-prize-meter{margin-top:13px}
+.simple-prize-meter>div:first-child{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
+ color:#b8d5cb;font-size:12px}
+.simple-prize-meter strong{color:#e2efc3}
+.simple-prize-bar{height:9px;border-radius:15px;background:#101d2d;
+ overflow:hidden;margin-top:9px;border:1px solid #456270}
+.simple-prize-bar i{display:block;background:linear-gradient(90deg,#8cbc97,#e1c67a);height:100%;border-radius:12px}
+.simple-prize-clear{margin-top:10px;padding:8px 0;border:0;background:transparent;color:#d6bba8;
+ text-decoration:underline;text-underline-offset:3px;text-decoration-color:#967262;font-size:11px;cursor:pointer}
+@media(max-width:720px){.simple-prize-add{grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr)}
+ .simple-prize-add button{grid-column:1/-1}
+ .simple-prize-row{grid-template-columns:minmax(0,1fr) 100px}
+ .simple-prize-remove{grid-column:1/-1;justify-self:end;padding:5px 10px}}
+@media(max-width:460px){.simple-prize-add{gap:7px;padding:9px}
+ .simple-prize-add select,.simple-prize-add input{font-size:14px;padding:10px 7px}
+ .simple-prize-head h4{font-size:20px}
+ .simple-prize-distribution{padding:12px}
+ .simple-prize-row-label{font-size:12px}}
