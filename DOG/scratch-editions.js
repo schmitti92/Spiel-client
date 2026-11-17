@@ -78,6 +78,10 @@ const labelFor=error=>({
  EDITION_INVALID_LIMITS:'Bitte prüfe die Budget-, Gewinn- und Freischaltungsgrenzen.',
  EDITION_TICKET_PRICE_INVALID:'Der Preis muss eine ganze Zahl zwischen 0 und 1.000.000 Münzen sein.',
  EDITION_SOLD_OUT:'Diese Auflage ist ausverkauft.',
+ EDITION_PREVIEW_REQUIRED:'Du musst zuerst einen Probedruck erstellen.',
+ EDITION_PREVIEW_EXPIRED:'Der geprüfte Probedruck ist abgelaufen. Bitte die 500 Lose erneut berechnen.',
+ EDITION_PREVIEW_CHANGED:'Die Einstellungen wurden nach der Vorschau geändert. Bitte erneut berechnen.',
+ EDITION_SYMBOL_BUDGET_INVALID:'Bitte prüfe die Beträge für die fünf Gewinnkategorien.',
  EDITION_FULL27_INVALID:'Die vollständigen 27-Felder-Premiumlose lassen sich nur beim Premium-Weihnachtslos einstellen.',
  EDITION_FULL27_NEEDS_TEN_WINS_AND_UNLOCKS:'Für volle 27-Felder-Premiumlose müssen 10 Einzelgewinne erlaubt sein, mindestens gleich viele Freischaltungen im Budget stehen und die Quote „10 Gewinne“ groß genug sein.',
  EDITION_TARGET_INVALID:'Der Ziel-Gesamtgewinn darf die Budgetobergrenze bzw. die Summe aller erlaubten Einzelhöchstgewinne nicht überschreiten.',
@@ -431,7 +435,7 @@ function renderLive(){
   root.append(description);
  }
  $('ed-retire').hidden=!doc||doc.status!=='active'||doc.remaining<=0;
- $('ed-publish').disabled=busy||!preview||previewKey!==draftKey(drafts[current.id])||
+ $('ed-publish').disabled=busy||!preview?.previewId||previewKey!==draftKey(drafts[current.id])||
   Boolean(doc&&doc.status==='active'&&doc.remaining>0);
 }
 function renderTabs(){
@@ -591,12 +595,14 @@ $('ed-preview').addEventListener('click',async()=>{
 });
 $('ed-publish').addEventListener('click',async()=>{
  const draft=readForm();
- if(!preview||previewKey!==draftKey(draft))return;
+ if(!preview?.previewId||previewKey!==draftKey(draft))return;
  if(!window.confirm('500 neue '+current.name+'-Lose jetzt serverseitig drucken und im Spiel aktivieren? Eine bestehende Auflage darf nicht noch offene Lose haben.'))return;
- setBusy(true);showMessage('🖨️ Render erstellt und veröffentlicht die neue 500er-Serie …');
+ setBusy(true);showMessage('🖨️ Render aktiviert exakt die 500 zuvor geprüften Lose – ohne neue Ziehung …');
  try{
-  const published=await api('/editions/publish',{config:draft});
+  const published=await api('/editions/publish',{config:draft,previewId:preview.previewId});
   if(!published.edition||!published.published)throw Error('Auflage nicht bestätigt');
+  if(JSON.stringify(published.edition.summary)!==JSON.stringify(preview.summary))
+   throw Error('Die veröffentlichte Verteilung weicht von der geprüften Vorschau ab.');
   live[current.id]=published.edition;
   showMessage('✅ Edition veröffentlicht: '+fmt(published.edition.summary.totalCoins)+
    ' Münzen in 500 servergeprüften Losen · ID '+published.edition.id,'good');
