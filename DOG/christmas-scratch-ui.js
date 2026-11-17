@@ -47,7 +47,7 @@ const el=(tag,cls,str)=>{
 };
 const num=v=>Number(v||0).toLocaleString('de-DE');
 const prizeLabel=p=>p?.type==='coins'?(p.bonus?'🎉 Zusatzgewinn · ':'')+(p.symbol||'🪙')+' '+num(p.amount)+' Münzen'+(p.x2?' (×2)':''):
- p?.type==='lights'?'⭐ '+num(p.amount)+' Weihnachtslichter für Lichtertal':
+ p?.type==='lights'?'⭐ '+num(p.amount)+' Weihnachtslichter für Lichtertal'+(p.x2?' (✖️2)':''):
  p?.type==='unlock'?(p.symbol||'🎁')+' Freischaltung: '+(p.prize?.icon?p.prize.icon+' ':'')+(p.prize?.name||'Freischaltung'):'';
 const symbolLegend=(tier,values=null)=>{
  const [coin,note,bag]=Array.isArray(values)&&values.length===3?values:
@@ -1098,6 +1098,15 @@ export function initChristmasScratch(){
     'Dieses Los enthält keinen zusätzlichen Lichtgewinn'));
    lightCard.append(lightText);
    section.append(lightCard);
+   if(result?.doubleWin){
+    const bonus=el('div','scratch-double-win-panel');
+    bonus.append(el('span','scratch-double-win-icon','✖️2'));
+    const text=el('div','scratch-double-win-copy');
+    text.append(el('strong','','Gewinn verdoppelt!'),
+     el('small','','Zusätzlich '+num(result.doubleWin.extraCoins||0)+' 🪙 und '+
+      num(result.doubleWin.extraLights||0)+' ⭐ – bereits gutgeschrieben.'));
+    bonus.append(text);section.append(bonus);
+   }
    if(prizes.length){
     const list=el('div','scratch-current-grid');
     prizes.forEach((prize,i)=>{
@@ -1189,6 +1198,11 @@ export function initChristmasScratch(){
    result.giftSparksEarned?'🎁 Geschenkfunke':'❄️ Niete'),
    el('strong','scratch-inline-total','🪙 '+num(amount)+' erhalten'));
   outlet.append(heading);
+  if(result.doubleWin){
+   outlet.append(el('div','scratch-double-win-inline',
+    '✖️2 Gewinnmultiplikator: +'+num(result.doubleWin.extraCoins||0)+' 🪙 und +'+
+    num(result.doubleWin.extraLights||0)+' ⭐ bereits im Gesamtgewinn enthalten'));
+  }
   if(result.board?.variantId==='tic_tac_toe'&&result.board?.symbolVersion!==8){
    const text=result.giftSparksEarned?
     '🎁 +1 Geschenkfunke · '+(status?.giftSparks??0)+'/5 bis zum Gratis-Tic-Tac-Toe-Los':
@@ -1201,7 +1215,7 @@ export function initChristmasScratch(){
   const list=el('div','scratch-inline-chips');
   const samePrize=(win,prize)=>win?.symbol===prize.symbol&&
    win.prize?.type===prize.type&&
-   (prize.type==='coins'?win.prize?.amount===prize.amount:
+   (prize.type==='coins'?win.prize?.amount===(prize.baseAmount??prize.amount):
     win.prize?.prize?.unlockId===prize.prize?.unlockId);
   for(const [i,prize] of prizes.entries()){
    const chip=el('div','scratch-inline-chip'+(prize.type==='unlock'?' is-unlock':''));
@@ -1337,6 +1351,14 @@ export function initChristmasScratch(){
      lightValue.setAttribute('aria-label',num(result.totalLights)+' gewonnene Weihnachtslichter');
      field.append(lightValue);
     }
+    if(Number.isSafeInteger(result.doubleBadgeIndex)&&index===result.doubleBadgeIndex&&
+       result.doubleWin){
+     field.classList.add('scratch-has-double-award');
+     const double=el('span','scratch-double-field-badge','✖️2');
+     double.setAttribute('title','Gewinn verdoppelt: Münzen und Weihnachtslichter');
+     double.setAttribute('aria-label','Gewinn mal zwei');
+     field.append(double);
+    }
     board.append(field);
    }
    try{
@@ -1419,7 +1441,8 @@ export function initChristmasScratch(){
    entries.length?entries.map(prizeLabel).join(' · '):'🎁 1 Geschenkfunke':'❄️ Niete · 0 Münzen';
   $('scratch-result-kind').textContent=
    (winFlag?(entries.length?entries.length+' Gewinne insgesamt':'1 Geschenkfunke'):'0 Münzen')+
-   (current.rareMainMultiplier?' · 💎 Ultra-selten: Hauptgewinn ×2':
+   (current.doubleWin?' · ✖️2 Bonus':
+    current.rareMainMultiplier?' · 💎 Ultra-selten: Hauptgewinn ×2':
     current.multiplier===2?' · ✨ ×2-Multiplikator':'');
   // Render the authoritative result separately from board highlighting.
   // Fallback also works when a legacy receipt has an unusual win structure.
