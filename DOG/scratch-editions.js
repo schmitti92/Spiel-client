@@ -3,13 +3,13 @@
  * Christmas scratch shop. The browser edits only configuration, never prizes.
  */
 const VARIANTS=[
- {id:'gifts',tier:'simple',icon:'🎁',name:'Geschenkelinie',short:'9 Felder',rule:'Drei gleiche Gewinnsymbole in einer Linie. Geld, Geschenke und Zusatztreffer.',budget:350000,one:1500,wins:10},
- {id:'snow_collect',tier:'simple',icon:'❄️',name:'Schneeflocken-Bingo',short:'16 Felder',rule:'Drei gleiche Gewinnsymbole irgendwo auf dem Los zählen als Gewinn.',budget:350000,one:1500,wins:10},
- {id:'elf',tier:'medium',icon:'🧝',name:'Magischer Wichtelpfad',short:'20 Felder',rule:'Geldsymbole bilden einen verbundenen Weg. Geschenke gewinnen über drei verbundene Felder.',budget:850000,one:12000,wins:10},
- {id:'premium_27',tier:'premium',icon:'👑',name:'Premium-Weihnachtslos',short:'9 × 3 Felder',rule:'Vier Geld-Dreierreihen auf jedem Los garantiert. Ab 20 Symbolen +1.000 Münzen; 24 Symbole können ein Geschenk freischalten.',budget:7000000,one:40000,wins:10},
- {id:'tic_tac_toe',tier:'medium',icon:'⭕',name:'DOG Tic-Tac-Toe',short:'1×–5× Duell',rule:'Zuerst Multiplikator, dann Gewinnzeichen (Kreis oder Kreuz). Eine passende Dreierlinie gewinnt einen Preis × Multiplikator.',budget:1600000,one:30000,wins:1},
- {id:'number_one_20',tier:'medium',icon:'🔢',name:'Glückszahl 1',short:'20 Zahlenreihen',rule:'Jede Zahl 1 gewinnt den linken Symbolpreis ihrer Reihe. Bis zu 20 Einzelgewinne möglich.',budget:3000000,one:25000,wins:20},
- {id:'dog_jackpot_9',tier:'premium',icon:'🐾',name:'Finde DOG!',short:'9 Felder',rule:'Wenn DOG erscheint, gewinnen alle acht übrigen Felder. Sonst ist das Los eine Niete.',budget:1900000,one:20000,wins:8}
+ {id:'gifts',tier:'simple',price:200,icon:'🎁',name:'Geschenkelinie',short:'9 Felder',rule:'Drei gleiche Gewinnsymbole in einer Linie. Geld, Geschenke und Zusatztreffer.',budget:350000,one:1500,wins:10},
+ {id:'snow_collect',tier:'simple',price:200,icon:'❄️',name:'Schneeflocken-Bingo',short:'16 Felder',rule:'Drei gleiche Gewinnsymbole irgendwo auf dem Los zählen als Gewinn.',budget:350000,one:1500,wins:10},
+ {id:'elf',tier:'medium',price:500,icon:'🧝',name:'Magischer Wichtelpfad',short:'20 Felder',rule:'Geldsymbole bilden einen verbundenen Weg. Geschenke gewinnen über drei verbundene Felder.',budget:850000,one:12000,wins:10},
+ {id:'premium_27',tier:'premium',price:1000,icon:'👑',name:'Premium-Weihnachtslos',short:'9 × 3 Felder',rule:'Vier Geld-Dreierreihen auf jedem Los garantiert. Ab 20 Symbolen +1.000 Münzen; 24 Symbole können ein Geschenk freischalten.',budget:7000000,one:40000,wins:10},
+ {id:'tic_tac_toe',tier:'medium',price:500,icon:'⭕',name:'DOG Tic-Tac-Toe',short:'1×–5× Duell',rule:'Zuerst Multiplikator, dann Gewinnzeichen (Kreis oder Kreuz). Eine passende Dreierlinie gewinnt einen Preis × Multiplikator.',budget:1600000,one:30000,wins:1},
+ {id:'number_one_20',tier:'medium',price:500,icon:'🔢',name:'Glückszahl 1',short:'20 Zahlenreihen',rule:'Jede Zahl 1 gewinnt den linken Symbolpreis ihrer Reihe. Bis zu 20 Einzelgewinne möglich.',budget:3000000,one:25000,wins:20},
+ {id:'dog_jackpot_9',tier:'premium',price:1000,icon:'🐾',name:'Finde DOG!',short:'9 Felder',rule:'Wenn DOG erscheint, gewinnen alle acht übrigen Felder. Sonst ist das Los eine Niete.',budget:1900000,one:20000,wins:8}
 ];
 const $=id=>document.getElementById(id);
 const fmt=value=>Number(value||0).toLocaleString('de-DE');
@@ -38,17 +38,19 @@ const baseDraft=variant=>({
  variantId:variant.id,title:variant.name+' · Winteredition 1',
  maxTotalCoins:variant.budget,targetTotalCoins:Math.round(variant.budget*.55),
  targetTolerancePercent:5,premiumFull27Tickets:0,volatility:70,
- maxPerTicketCoins:variant.one,
+ ticketPrice:variant.price,maxPerTicketCoins:variant.one,
  maxPrizesPerTicket:variant.wins,maxUnlocks:variant.id==='premium_27'?25:0,quotas:{}
 });
 const drafts=Object.fromEntries(VARIANTS.map(v=>[v.id,baseDraft(v)]));
 const live={};
+const catalog={};
 let current=VARIANTS[0],view='plan',settings=null,preview=null,previewKey=null,busy=false;
 let formInitialized=false;
 const labelFor=error=>({
  EDITION_STILL_ACTIVE:'Eine bestehende Auflage hat noch Restlose. Beende sie zuerst oder verkaufe sie vollständig.',
  EDITION_QUOTAS_OVER_500:'Mehr als 500 Lose sind fest eingeplant.',
  EDITION_INVALID_LIMITS:'Bitte prüfe die Budget-, Gewinn- und Freischaltungsgrenzen.',
+ EDITION_TICKET_PRICE_INVALID:'Der Preis muss eine ganze Zahl zwischen 0 und 1.000.000 Münzen sein.',
  EDITION_SOLD_OUT:'Diese Auflage ist ausverkauft.',
  EDITION_FULL27_INVALID:'Die vollständigen 27-Felder-Premiumlose lassen sich nur beim Premium-Weihnachtslos einstellen.',
  EDITION_FULL27_NEEDS_TEN_WINS_AND_UNLOCKS:'Für volle 27-Felder-Premiumlose müssen 10 Einzelgewinne erlaubt sein, mindestens gleich viele Freischaltungen im Budget stehen und die Quote „10 Gewinne“ groß genug sein.',
@@ -73,7 +75,7 @@ function readForm(){
  }
  const number=id=>{const v=Number(value(id));return Number.isFinite(v)?v:NaN};
  drafts[current.id]={variantId:current.id,title:value('ed-name').trim(),
-  maxTotalCoins:number('ed-budget'),targetTotalCoins:number('ed-target'),
+  ticketPrice:number('ed-price'),maxTotalCoins:number('ed-budget'),targetTotalCoins:number('ed-target'),
   targetTolerancePercent:number('ed-tolerance'),volatility:number('ed-volatility'),
   premiumFull27Tickets:current.id==='premium_27'?number('ed-full27'):0,
   maxPerTicketCoins:number('ed-max-coins'),
@@ -88,6 +90,7 @@ function invalidatePreview(){
  $('ed-publish').disabled=true;
  $('preview-chart').replaceChildren(node('p','','Die Einstellungen wurden geändert. Berechne die 500 Lose erneut.'));
  $('preview-target').hidden=true;
+ $('preview-economy').hidden=true;
  $('preview-metrics').replaceChildren(...[
   ['🎟️ Lose','500'],['🏆 Gewinnlose','–'],['❄️ Nieten','–'],['🪙 Gesamtauszahlung','–']
  ].map(([name,value])=>metric(name,value)));
@@ -100,6 +103,9 @@ function updateSide(){
  const draft=drafts[current.id],nums=Object.values(draft.quotas);
  $('side-budget').textContent=fmt(draft.maxTotalCoins)+' 🪙';
  $('side-target').textContent=fmt(draft.targetTotalCoins)+' 🪙';
+ $('side-price').textContent=fmt(draft.ticketPrice)+' 🪙';
+ $('side-sales').textContent=fmt(draft.ticketPrice*500)+' 🪙';
+ $('ed-sales-projection').textContent=fmt(draft.ticketPrice*500)+' 🪙';
  const portion=draft.maxTotalCoins>0?Math.min(100,draft.targetTotalCoins/draft.maxTotalCoins*100):0;
  $('target-progress-fill').style.width=portion.toFixed(1)+'%';
  $('target-progress-label').textContent=fmt(draft.targetTotalCoins)+' von '+fmt(draft.maxTotalCoins)+' 🪙';
@@ -248,6 +254,50 @@ function renderRules(){
  root.append(caveat);
  renderGameSettings(root);
 }
+
+function renderSpec(){
+ const v=current,c=catalog[v.id];
+ const rules=c||{
+  fields:v.id==='premium_27'?27:v.id==='number_one_20'?40:
+   v.id==='elf'?20:v.id==='snow_collect'?16:9,
+  scratchFields:v.id==='tic_tac_toe'?11:(v.id==='number_one_20'?40:
+   v.id==='premium_27'?27:v.id==='elf'?20:v.id==='snow_collect'?16:9),
+  lineLabel:v.id==='premium_27'?'9 Reihen':v.id==='number_one_20'?'20 Gewinnreihen':
+   v.id==='dog_jackpot_9'?'1 DOG-Auslöser':v.id==='snow_collect'?'3 gleiche irgendwo':
+   v.id==='elf'?'Variable Gewinnpfade':'8 geometrische Linien',
+  maxWins:v.wins,minWins:v.id==='premium_27'?4:0,standardPrice:v.price,
+  mechanic:v.rule,extras:'Der Server bestätigt Gewinne anhand der echten Rubbelregel.'
+ };
+ $('spec-hero-title').textContent=v.icon+' '+v.name+' · Los-Steckbrief';
+ $('spec-hero-description').textContent=c?'Aktueller Render-Gewinnmotor':'Grundregeln – Serverdaten werden geladen';
+ $('spec-live-price').textContent=fmt(live[v.id]?.config?.ticketPrice??rules.standardPrice??v.price)+' 🪙 aktuell';
+ const metrics=[
+  ['🔲 Spielfelder',fmt(rules.fields)],
+  ['🎯 Gewinnlinien',rules.lineCount===null?'Variabel':rules.lineCount===0?'Keine':fmt(rules.lineCount)],
+  ['🏆 Max. Gewinne',fmt(rules.maxWins)],
+  ['🪙 Normalpreis',fmt(rules.standardPrice??v.price)]
+ ];
+ const holder=$('spec-kpis');holder.replaceChildren();
+ for(const [title,value] of metrics){
+  const card=node('div');card.append(node('span','',title),node('strong','',value));holder.append(card);
+ }
+ const detail=$('spec-detail');detail.replaceChildren();
+ const line=(label,value)=>{
+  const item=node('p');item.append(node('b','',label+' '),document.createTextNode(String(value)));
+  detail.append(item);
+ };
+ line('Gewinnmöglichkeiten:',rules.lineLabel||'Variabel');
+ line('Maximal gleichzeitig:',fmt(rules.maxWins)+' Einzelpreise · Mindestens: '+fmt(rules.minWins||0));
+ line('Rubbelstellen:',fmt(rules.scratchFields||rules.fields));
+ line('Grundregel:',rules.mechanic||v.rule);
+ if(rules.baseMatches)line('Echte Basis-Treffer:',rules.baseMatches);
+ if(rules.extras)line('Besonderheit:',rules.extras);
+ if(c?.configuredMaxPrizes!==undefined)
+  line('Aktueller regulärer Shop:',fmt(c.configuredMaxPrizes)+' eingestellte maximale Einzelgewinne');
+ if(c?.coinAmounts?.length===3)
+  line('Momentane Geldwerte:','🪙 '+fmt(c.coinAmounts[0])+' · 💵 '+fmt(c.coinAmounts[1])+
+   ' · 💼 '+fmt(c.coinAmounts[2])+' Münzen');
+}
 function renderLive(){
  const doc=live[current.id];
  const label=$('edition-availability'),root=$('live-edition');
@@ -303,6 +353,7 @@ function switchVariant(id){
  const d=drafts[variant.id];
  $('ed-name').value=d.title;
  $('ed-budget').value=d.maxTotalCoins;
+ $('ed-price').value=d.ticketPrice;
  $('ed-target').value=d.targetTotalCoins;
  $('ed-tolerance').value=d.targetTolerancePercent;
  $('ed-volatility').value=d.volatility;
@@ -312,7 +363,7 @@ function switchVariant(id){
  $('ed-max-coins').value=d.maxPerTicketCoins;
  $('ed-max-prizes').value=d.maxPrizesPerTicket;
  $('ed-max-unlocks').value=d.maxUnlocks;
- renderTabs();renderQuota();renderRules();renderLive();updateSide();invalidatePreview();
+ renderTabs();renderQuota();renderRules();renderSpec();renderLive();updateSide();invalidatePreview();
  activateView('plan');
 }
 function showPreview(data){
@@ -336,6 +387,12 @@ function showPreview(data){
   progress.style.width=(target?Math.min(100,s.totalCoins/target*100):100)+'%';
   track.append(progress);summaryTarget.append(track);
  }
+ $('preview-economy').hidden=false;
+ $('preview-income').textContent=fmt(s.projectedGrossRevenue??s.ticketPrice*500)+' 🪙';
+ $('preview-expense').textContent=fmt(s.totalCoins)+' 🪙';
+ const net=s.projectedNetCoins??(s.projectedGrossRevenue-s.totalCoins);
+ $('preview-profit').textContent=(net<0?'−':'')+fmt(Math.abs(net))+' 🪙';
+ $('preview-ratio').textContent=s.payoutRatioPercent===null?'Kein Verkaufserlös':fmt(s.payoutRatioPercent)+' %';
  $('preview-metrics').replaceChildren(...[
   ['🎟️ Lose',fmt(s.tickets)],['🏆 Gewinnlose',fmt(s.winners)],
   ['❄️ Nieten',fmt(s.duds)],['🪙 Gesamtauszahlung',fmt(s.totalCoins)]
@@ -366,7 +423,11 @@ async function load(){
    if(!drafts[variant.id].gameSettings)drafts[variant.id].gameSettings=defaultGameSettings(variant);
   }
   for(const item of editions.editions||[])live[item.variantId]=item.active;
-  renderRules();renderLive();showMessage('✓ Render verbunden. Einstellungen und aktuelle Auflagen geladen.','good');
+  for(const item of editions.catalog||[])catalog[item.variantId]=item;
+  if(current.id==='number_one_20'&&drafts.number_one_20.ticketPrice===500)
+   drafts.number_one_20.ticketPrice=catalog.number_one_20?.standardPrice??500;
+  $('ed-price').value=drafts[current.id].ticketPrice;
+  renderRules();renderSpec();updateSide();renderLive();showMessage('✓ Render verbunden. Einstellungen und aktuelle Auflagen geladen.','good');
  }catch(e){showMessage('⚠️ '+labelFor(e.message)+' Falls der neue Server gerade bereitgestellt wird, versuche es später erneut.','error')}
 }
 async function loadHistory(){
@@ -401,7 +462,7 @@ $('quota-clear').addEventListener('click',()=>{
  $('quota-grid').querySelectorAll('input').forEach(input=>input.value='');
  readForm();updateSide();invalidatePreview();
 });
-for(const id of ['ed-name','ed-budget','ed-target','ed-tolerance','ed-max-coins','ed-max-prizes','ed-max-unlocks']){
+for(const id of ['ed-name','ed-price','ed-budget','ed-target','ed-tolerance','ed-max-coins','ed-max-prizes','ed-max-unlocks']){
  $(id).addEventListener('input',()=>{readForm();updateSide();invalidatePreview()});
 }
 $('quota-grid').addEventListener('input',()=>{readForm();updateSide();invalidatePreview()});
