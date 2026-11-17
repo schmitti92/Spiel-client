@@ -1065,7 +1065,7 @@ export function initChristmasScratch(){
     'Rubbele das Los zu mindestens 90 % frei. Danach erscheinen hier deine tatsächlichen Gewinne und die Bestätigung.'));
   }else{
    const prizes=(Array.isArray(result?.winnings)?result.winnings:entries)
-    .filter(p=>p&&['coins','unlock'].includes(p.type));
+    .filter(p=>p&&['coins','unlock','lights'].includes(p.type));
    const sourceWins=Array.isArray(result?.board?.wins)?result.board.wins:[];
    const total=Number.isSafeInteger(result?.totalCoins)&&result.totalCoins>=0?result.totalCoins:
     prizes.filter(p=>p.type==='coins').reduce((sum,p)=>sum+(Number.isSafeInteger(p.amount)?p.amount:0),0);
@@ -1079,6 +1079,17 @@ export function initChristmasScratch(){
     '🎁 '+unlocks+' Freischaltung'+(unlocks===1?'':'en'):
     prizes.length?'✓ Ergebnis ermittelt':result?.giftSparksEarned?'🎁 +1 Geschenkfunke':'Kein Gewinn · 0 Münzen'));
    section.append(hero);
+   const lightTotal=Number.isSafeInteger(result?.totalLights)?result.totalLights:0;
+   const lightCard=el('div','scratch-light-reward');
+   lightCard.append(el('span','scratch-light-reward-icon','⭐'));
+   const lightText=el('div','scratch-light-reward-text');
+   lightText.append(el('strong','',lightTotal>0?
+    '+'+num(lightTotal)+' Weihnachtslichter':'Weihnachtslichter'));
+   lightText.append(el('small','',lightTotal>0?
+    'Für das gemeinsame Dorf Lichtertal gutgeschrieben':
+    'Dieses Los enthält keinen zusätzlichen Lichtgewinn'));
+   lightCard.append(lightText);
+   section.append(lightCard);
    if(prizes.length){
     const list=el('div','scratch-current-grid');
     prizes.forEach((prize,i)=>{
@@ -1096,6 +1107,7 @@ export function initChristmasScratch(){
      entry.append(el('small','scratch-current-source',where));
      entry.append(el('strong','scratch-current-value',prize.type==='coins'?
       (prize.symbol||'🪙')+' '+num(prize.amount)+' Münzen':
+      prize.type==='lights'?'⭐ '+num(prize.amount)+' Weihnachtslichter':
       (prize.symbol||'🎁')+' '+(prize.prize?.name||'Neue Freischaltung')));
      if(prize.x2)entry.append(el('small','scratch-current-multiplier','✨ ×2 Gewinn'));
      list.append(entry);
@@ -1159,7 +1171,7 @@ export function initChristmasScratch(){
   const raw=Array.isArray(result.winnings)?result.winnings:
    result.type==='coins'?[{type:'coins',symbol:'🪙',amount:result.amount}]:
    result.type==='unlock'?[{type:'unlock',symbol:'🎁',prize:result.prize}]:[];
-  const prizes=raw.filter(p=>p&&['coins','unlock'].includes(p.type));
+  const prizes=raw.filter(p=>p&&['coins','unlock','lights'].includes(p.type));
   const wins=Array.isArray(result.board?.wins)?result.board.wins:[];
   const amount=Number.isSafeInteger(result.totalCoins)&&result.totalCoins>=0?
    result.totalCoins:prizes.reduce((sum,p)=>
@@ -1187,11 +1199,14 @@ export function initChristmasScratch(){
    const chip=el('div','scratch-inline-chip'+(prize.type==='unlock'?' is-unlock':''));
    const label=prize.type==='coins'?
     (prize.symbol||'🪙')+' '+num(prize.amount)+' Münzen':
+    prize.type==='lights'?'⭐ '+num(prize.amount)+' Weihnachtslichter':
     (prize.symbol||'🎁')+' '+(prize.prize?.name||'Freischaltung');
    const source=prize.bonus?null:
     samePrize(wins[i],prize)?wins[i]:wins.find(win=>samePrize(win,prize));
    const rule=prize.milestone||source?.rule;
-   const detail=prize.milestone?.startsWith('tic-')?({
+   const detail=prize.type==='lights'?
+    '⭐ Sofort für den Ausbau der vier Lichtertal-Gebäude gutgeschrieben':
+    prize.milestone?.startsWith('tic-')?({
     'tic-double':'2 Gewinnlinien','tic-multi':'3+ Gewinnlinien',
     'tic-center':'Koffer in der Mitte','tic-x':'Goldenes X',
     'tic-corners':'4 gleiche Ecken','tic-jackpot':'9 gleiche Felder – Jackpot'
@@ -1358,7 +1373,7 @@ export function initChristmasScratch(){
   const entries=(Array.isArray(current.winnings)?current.winnings:
    current.type==='none'?[]:[current.type==='coins'?
     {type:'coins',amount:current.amount}:{type:'unlock',prize:current.prize}])
-   .filter(prize=>prize&&['coins','unlock'].includes(prize.type));
+   .filter(prize=>prize&&['coins','unlock','lights'].includes(prize.type));
   const earnedCoins=Number.isSafeInteger(current.totalCoins)&&current.totalCoins>=0?
    current.totalCoins:entries.filter(p=>p.type==='coins').reduce(
     (sum,p)=>sum+(Number.isSafeInteger(p.amount)?p.amount:0),0);
