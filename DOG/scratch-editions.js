@@ -38,7 +38,8 @@ const CURRENCIES=[
  {id:'coin',icon:'🪙',name:'Geldmünze',description:'Kleinere Münzgewinne und Münz-Sondertreffer'},
  {id:'note',icon:'💵',name:'Geldschein',description:'Mittlere Geldgewinne in dieser Auflage'},
  {id:'case',icon:'💼',name:'Geldkoffer',description:'Hohe Geldgewinne und Jackpot-Preise'},
- {id:'lights',icon:'⭐',name:'Weihnachtslichter',description:'Gemeinsame Dorfwährung für die vier Gebäude'}
+ {id:'lights',icon:'⭐',name:'Weihnachtslichter',description:'Gemeinsame Dorfwährung für die vier Gebäude'},
+ {id:'gift',icon:'🎁',name:'Freischaltungen',description:'Designs, Avatare, Rahmen und Emotes – gezählt in Stück'}
 ];
 function defaultSymbolBudgets(variant){
  const amounts=variant.tier==='simple'?[10,40,100]:
@@ -50,9 +51,10 @@ function defaultSymbolBudgets(variant){
   const value=amounts[i];
   result[id]={min:Math.max(1,Math.floor(value*.7)),
    max:Math.max(Math.round(value*3),variant.id==='premium_27'&&i===0?1000:value),
-   maxTotal:Math.max(10000,Math.round(variant.budget*(i+2)/5))};
+   minTotal:0,maxTotal:Math.max(10000,Math.round(variant.budget*(i+2)/5))};
  });
- result.lights={min:1,max:10,maxTotal:400,chancePer1000:200};
+ result.lights={min:1,max:10,minTotal:0,maxTotal:400,chancePer1000:200};
+ result.gift={min:0,max:3,minTotal:0,maxTotal:variant.id==='premium_27'?25:0};
  return result;
 }
 const baseDraft=variant=>({
@@ -168,7 +170,7 @@ function renderCurrency(){
   const fields=node('div','currency-fields');
   const build=(prop,label,max)=>{
    const field=node('label','currency-field');field.append(node('span','',label));
-   const input=node('input');input.type='number';input.min=prop==='chancePer1000'?'0':prop==='min'?'1':'0';
+   const input=node('input');input.type='number';input.min=prop==='chancePer1000'||meta.id==='gift'?'0':prop==='min'?'1':'0';
    input.max=String(max);input.step='1';input.inputMode='numeric';input.value=String(range[prop]);
    input.dataset.category=meta.id;input.dataset.property=prop;
    input.addEventListener('input',()=>{
@@ -178,13 +180,20 @@ function renderCurrency(){
    });
    field.append(input);fields.append(field);
   };
-  build('min','Mindestgewinn pro Treffer',50000000);
-  build('max','Höchstgewinn pro Treffer',50000000);
-  build('maxTotal',meta.id==='lights'?'Maximal ⭐ in allen 500 Losen':'Gesamtbudget dieser Symbolart',1000000000000);
+  build('min',meta.id==='gift'?'Min. Freischaltungen auf einem Los':'Mindestgewinn pro Treffer',
+   meta.id==='gift'?20:50000000);
+  build('max',meta.id==='gift'?'Max. Freischaltungen auf einem Los':'Höchstgewinn pro Treffer',
+   meta.id==='gift'?20:50000000);
+  build('minTotal',meta.id==='gift'?'Mindestens 🎁 auf 500 Losen':'Mindestbetrag in allen 500 Losen',
+   meta.id==='gift'?500:1000000000000);
+  build('maxTotal',meta.id==='gift'?'Maximal 🎁 auf 500 Losen':
+   meta.id==='lights'?'Maximal ⭐ in allen 500 Losen':'Gesamtbudget dieser Symbolart',
+   meta.id==='gift'?500:1000000000000);
   if(meta.id==='lights')build('chancePer1000','Trefferchance in ‰ (200 = 20 %)',1000);
   card.append(fields);
   const badge=node('div','currency-card-foot',
    meta.id==='lights'?'⭐ Gewinner erhalten Lichter sofort auf das gemeinsame Dorfkonto.':
+   meta.id==='gift'?'🎁 Hier werden echte Freischaltungen pro Los und pro Auflage gezählt.':
     '🪙 Diese Kategorie zählt zusätzlich zum Münzgesamtbudget.');
   card.append(badge);root.append(card);
  }
@@ -201,7 +210,8 @@ function renderPreviewCurrencies(s){
   const item=node('div','currency-result-row');
   item.append(node('span','',category.icon+' '+category.name+
    ' · '+fmt(counts[category.id]||0)+' Einzelgewinne'),
-   node('strong','',fmt(earned)+' / '+fmt(cap)+(category.id==='lights'?' ⭐':' 🪙')));
+   node('strong','',fmt(earned)+' / '+fmt(cap)+(category.id==='lights'?' ⭐':
+    category.id==='gift'?' 🎁':' 🪙')));
   const meter=node('div','currency-result-meter'),fill=node('i');
   fill.style.width=(cap>0?Math.min(100,100*earned/cap):0)+'%';
   meter.append(fill);item.append(meter);root.append(item);
