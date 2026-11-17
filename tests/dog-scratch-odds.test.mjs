@@ -40,7 +40,7 @@ test('locked odds remain exactly fixed as other odds are modified',()=>{
  assert.deepEqual(fixed,[450,500,50]);
  assert.equal(fixed.reduce((a,b)=>a+b,0),1000);
  assert.equal(rebalanceLockedOdds([200,500,300],0,60,[false,true,false]),null);
- assert.deepEqual(rebalanceLockedOdds([200,500,300],1,40,[true,false,true]),[200,400,300] .map((x,i)=>i===1?400:x)); 
+ assert.deepEqual(rebalanceLockedOdds([200,500,300],1,40,[false,false,true]),[300,400,300]); 
 });
 test('locked normalization distributes integer tenths with no drifting or negatives',()=>{
  let values=[100,200,300,400];
