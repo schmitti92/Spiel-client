@@ -1605,3 +1605,14 @@ body.scratch-ticket-open > #event-return{
   min-height:30px!important;padding:3px 7px!important;
  }
 }
+
+/* Lichtertal 500er-Auflagen: real shared light prizes and sold-out state */
+.scratch-edition-unavailable{display:flex;align-items:center;gap:5px;background:linear-gradient(145deg,#2d2b37,#1b2333);color:#f6d5c2;border:1px solid #965d66;border-radius:9px;padding:9px 11px;font-size:12px;font-weight:750;line-height:1.5;margin-top:7px}
+.scratch-tier .scratch-buy:disabled{opacity:.85}
+.scratch-tier .scratch-buy:disabled:not([hidden]){background:#35404c;border-color:#69717e;color:#d8dce5}
+.scratch-light-reward{display:flex;align-items:center;gap:9px;border:1px solid #c8a354;border-radius:9px;background:radial-gradient(circle at 97% 12%,#f6d98246,transparent 75%),linear-gradient(135deg,#3c3025,#243241);padding:8px 10px;margin:6px 0}
+.scratch-light-reward-icon{display:grid;place-items:center;flex:none;width:34px;height:34px;border:1px solid #d8b46a;border-radius:8px;background:#725328;font-size:22px;box-shadow:0 0 15px #ffe09a52}
+.scratch-light-reward-text{display:grid;gap:2px;min-width:0}
+.scratch-light-reward-text strong{color:#fce4a8;font-size:13px;font-weight:850;line-height:1.2}
+.scratch-light-reward-text small{color:#d7cfbd;font-size:10px;line-height:1.3}
+.scratch-inline-chip:has(strong:first-child){max-width:100%}
