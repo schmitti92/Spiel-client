@@ -4,6 +4,8 @@ on:
     paths:
       - 'DOG/scratch-editions.html'
       - 'DOG/scratch-editions.js'
+      - 'DOG/scratch-odds.mjs'
+      - 'tests/dog-scratch-odds.test.mjs'
       - 'DOG/scratch-editions.css'
       - 'DOG/christmas-event.html'
       - '.github/workflows/dog-scratch-editions-ui.yml'
@@ -11,6 +13,8 @@ on:
     paths:
       - 'DOG/scratch-editions.html'
       - 'DOG/scratch-editions.js'
+      - 'DOG/scratch-odds.mjs'
+      - 'tests/dog-scratch-odds.test.mjs'
       - 'DOG/scratch-editions.css'
       - 'DOG/christmas-event.html'
       - '.github/workflows/dog-scratch-editions-ui.yml'
@@ -24,7 +28,11 @@ jobs:
         with:
           node-version: '22'
       - name: Syntax validation
-        run: node --check DOG/scratch-editions.js
+        run: |
+          node --check DOG/scratch-editions.js
+          node --check DOG/scratch-odds.mjs
+      - name: Verify automatically balanced 100 percent chance settings
+        run: node --test tests/dog-scratch-odds.test.mjs
       - name: Verify link and assets
         run: |
           test -f DOG/scratch-editions.html
