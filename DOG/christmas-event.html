@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="./christmas-tree-rewards.css?v=2">
 <link rel="stylesheet" href="./christmas-story.css?v=1">
 <link rel="stylesheet" href="./christmas-tree-world.css?v=3">
-<link rel="stylesheet" href="./christmas-scratch.css?v=33">
+<link rel="stylesheet" href="./christmas-scratch.css?v=34">
 <link rel="stylesheet" href="./christmas-scratch-winter-shop.css?v=1">
 <link rel="stylesheet" href="./christmas-scratch-uploaded-assets.css?v=1">
 <link rel="stylesheet" href="./christmas-scratch-tictactoe.css?v=1">
@@ -457,6 +457,7 @@
           <p id="scratch-analytics-note" class="scratch-analytics-note">Die Statistik aktualisiert sich automatisch bei jedem neuen Los.</p>
         </section>
         <section id="scratch-stage" class="scratch-stage" aria-labelledby="scratch-ticket-title" hidden>
+          <button id="scratch-gifts-settings-open" type="button" class="scratch-gifts-settings-open" aria-label="Geschenkelinie einstellen" aria-controls="scratch-gifts-settings-dialog" aria-haspopup="dialog" hidden>⚙️ Einstellungen</button>
           <header id="scratch-lotto-header" class="scratch-lotto-header" hidden aria-label="Glückszahl-1-Lotterie">
             <span class="scratch-lotto-brand">🐾 DOG · WINTER-RUBBELLOSE 🐾</span>
             <h2>GLÜCKSZAHL 1</h2>
@@ -501,6 +502,26 @@
           <div class="scratch-host-actions"><button type="button" id="scratch-host-cancel">Abbrechen</button><button type="submit" id="scratch-host-save">💾 Einstellungen speichern</button></div>
         </form>
       </dialog>
+
+      <dialog id="scratch-gifts-settings-dialog" class="scratch-gifts-settings-dialog" aria-labelledby="scratch-gifts-settings-title">
+        <form id="scratch-gifts-settings-form">
+          <div class="scratch-gifts-settings-head">
+            <div><span class="scratch-gifts-eyebrow">🎁 NUR DIE GESCHENKELINIE</span><h3 id="scratch-gifts-settings-title">⚙️ Geschenkelinie einstellen</h3>
+              <p>Diese Einstellungen gelten für alle Spieler, aber ausschließlich für neu geöffnete Geschenkelinie-Lose. Bereits gekaufte Lose behalten ihre ursprünglichen Gewinne.</p>
+            </div><button type="button" id="scratch-gifts-settings-close" aria-label="Schließen">✕</button>
+          </div>
+          <section class="scratch-gifts-settings-section"><h4>🎟️ 1 · Lospreis</h4><p class="scratch-gifts-help">Du bestimmst, was ein regulärer Kauf kostet. Gutscheine und erlaubte Gratislose bleiben kostenlos.</p><div class="scratch-gifts-settings-grid"><label class="scratch-gifts-field"><span>Preis pro Los (🪙 Münzen)</span><input id="gs-price" type="number" min="0" max="1000000" step="1" inputmode="numeric" required><small>Beispiel: 200 Münzen.</small></label></div></section>
+          <section class="scratch-gifts-settings-section"><h4>🎯 2 · Gewinnchancen</h4><p class="scratch-gifts-help">Stelle nur die Nieten- und Hauptgewinnchance ein. Geldgewinne übernimmt die Automatik. Die echten Ergebnisse bleiben zufällig.</p><div class="scratch-gifts-settings-grid"><label class="scratch-gifts-field"><span>❄️ Nieten (%)</span><input id="gs-none" type="number" min="0" max="100" step="0.1" inputmode="decimal" required><small>20 % bedeuten langfristig ungefähr 20 Nieten bei 100 Losen.</small></label><label class="scratch-gifts-field"><span>🎁 Freischaltung (%)</span><input id="gs-unlock" type="number" min="0" max="100" step="0.1" inputmode="decimal" required><small>Chance auf einen noch nicht erhaltenen Design- oder Geschenkpreis.</small></label><div class="scratch-gifts-auto">🪙 Automatischer Geldgewinn-Anteil: <strong id="gs-money-auto">– %</strong><small>100 % minus Nieten minus Hauptgewinn-Kategorie.</small></div></div></section>
+          <section class="scratch-gifts-settings-section"><h4>💰 3 · Geldwerte der Symbole</h4><p class="scratch-gifts-help">Drei gleiche Symbole in Reihe, Spalte oder Diagonale gewinnen. Du legst den Betrag für jedes Symbol fest. 🪙 muss kleiner als 💵 und 💵 kleiner als 💼 sein.</p><div class="scratch-gifts-settings-grid"><label class="scratch-gifts-field"><span>🪙 Geldmünze</span><input id="gs-coin-0" type="number" min="1" max="50000000" step="1" inputmode="numeric" required><small>Kleiner Einzelgewinn, z. B. 30.</small></label><label class="scratch-gifts-field"><span>💵 Geldschein</span><input id="gs-coin-1" type="number" min="1" max="50000000" step="1" inputmode="numeric" required><small>Mittlerer Einzelgewinn, z. B. 100.</small></label><label class="scratch-gifts-field"><span>💼 Geldkoffer</span><input id="gs-coin-2" type="number" min="1" max="50000000" step="1" inputmode="numeric" required><small>Größerer Einzelgewinn, z. B. 200.</small></label></div></section>
+          <section class="scratch-gifts-settings-section"><h4>✨ 4 · Mehrfachgewinne & ✖️2</h4><p class="scratch-gifts-help">Auf einem Los sind bis zu drei sichtbare Kombinationen möglich. Weitere echte Münzboni sind an solche Kombinationen gebunden.</p><div class="scratch-gifts-settings-grid"><label class="scratch-gifts-field"><span>🏆 Höchstens Gewinne pro Los</span><input id="gs-max-prizes" type="number" min="1" max="10" step="1" inputmode="numeric" required><small>1 bis 10 Geld- oder Geschenkgewinne. Eine Obergrenze, keine garantierte Anzahl.</small></label><label class="scratch-gifts-field"><span>🎉 Chance auf weitere Münzboni (%)</span><input id="gs-extra" type="number" min="0" max="100" step="1" inputmode="numeric" required><small>Bei einer gültigen Gewinnkombination wird versucht, zusätzliche Geldgewinne zu vergeben.</small></label><label class="scratch-gifts-field"><span>✖️2 · Verdoppler-Chance (%)</span><input id="gs-double" type="number" min="0" max="100" step="0.1" inputmode="decimal" required><small>Chance bei Gewinnlosen auf doppelte Münzen; ein Geschenk wird nicht zweimal freigeschaltet.</small></label></div></section>
+          <section class="scratch-gifts-settings-section"><h4>⭐ 5 · Weihnachtslichter</h4><p class="scratch-gifts-help">Lichter sind ein unabhängiger Bonus zum Los. Sie werden vom Server vergeben, nach dem Rubbeln angezeigt und im Dorfkonto gutgeschrieben. Mit ✖️2 verdoppelt sich auch der Lichtbonus.</p><div class="scratch-gifts-settings-grid"><label class="scratch-gifts-field"><span>⭐ Bonus-Chance (%)</span><input id="gs-light-chance" type="number" min="0" max="100" step="0.1" inputmode="decimal" required><small>10 % entspricht ungefähr einem Lichtbonus je zehn Lose.</small></label><label class="scratch-gifts-field"><span>⭐ Kleinster Lichtbonus</span><input id="gs-light-min" type="number" min="1" max="100" step="1" inputmode="numeric" required><small>Anzahl Weihnachtslichter beim kleinsten Bonustreffer.</small></label><label class="scratch-gifts-field"><span>⭐ Größter Lichtbonus</span><input id="gs-light-max" type="number" min="1" max="100" step="1" inputmode="numeric" required><small>Obergrenze vor einem möglichen ✖️2-Bonus.</small></label></div></section>
+          <p class="scratch-gifts-settings-feedback" id="scratch-gifts-settings-feedback" role="status" aria-live="polite"></p>
+          <div class="scratch-gifts-settings-actions">
+            <button id="scratch-gifts-settings-cancel" type="button">Abbrechen</button>
+            <button id="scratch-gifts-settings-save" type="submit">💾 Geschenkelinie speichern</button>
+          </div>
+        </form>
+      </dialog>
     </section>
     <section class="event-panel" id="panel-level" role="tabpanel" aria-labelledby="tab-level" hidden>
       <div class="event-heading"><div><span class="eyebrow">🏅 DEIN PERSÖNLICHER FORTSCHRITT</span><h2>Spielerlevel 1–10</h2><p>Spiele DOG, sammle Erfahrungspunkte und steige Stufe für Stufe auf. Die Level gehören nur deinem Profil.</p></div><span class="soft-tag">⭐ Erfahrung</span></div>
@@ -528,6 +549,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./christmas-event.js?v=90"></script>
+<script type="module" src="./christmas-event.js?v=91"></script>
 </body>
 </html>
