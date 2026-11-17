@@ -1309,7 +1309,7 @@ async function boot(){
   if(!activeProfile()&&elapsed<30000)return;
   clearInterval(timer);
   if(!activeProfile()){
-   notice('Bitte melde dich an, um Raum '+requestedCode+' wiederherzustellen.');
+   notice('Bitte melde dich an, um deinen bestehenden Raum wiederherzustellen (Raum '+requestedCode+').');
    return;
   }
   void recoverPendingRoom();
