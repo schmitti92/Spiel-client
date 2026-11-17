@@ -380,3 +380,19 @@ test('Recheninsel finale replaces generic Party Challenge ending with full-scree
  assert.match(js,/rechen-finale-podium/);
  assert.match(js,/#challenge-progress\.rechen-finale:not\(\.hidden\)/);
 });
+
+test('DOG selection restores the existing room with automatic retry and visible recovery status',()=>{
+ const selection=text('spielauswahl-online.js');
+ assert.match(selection,/&stage=1&dogLobby=1/,'DOG selection keeps the room route');
+ const boot=js.slice(js.indexOf('async function boot(){'));
+ assert.match(boot,/pendingRoomRecovery=requestedCode/,'remember the selected room before authenticating');
+ assert.match(boot,/void recoverPendingRoom\(\)/,'initial navigation must use the retryable recovery path');
+ assert.doesNotMatch(boot,/await request\('\/rooms\/'/,'do not bypass recovery with a one-shot request');
+ assert.match(js,/const recovering=!inside&&!!pendingRoomRecovery/);
+ assert.match(js,/el\('entry-view'\)\.classList\.toggle\('hidden',inside\|\|recovering\)/);
+ for(const id of ['room-recovery','room-recovery-title','room-recovery-code','room-recovery-feedback','room-recovery-retry','room-recovery-back'])
+  assert.equal(ids.filter(x=>x===id).length,1,id);
+ assert.match(js,/el\('room-recovery-retry'\)\.addEventListener\('click'/);
+ assert.match(js,/scheduleRecoveryRetry\(\)/);
+ assert.match(html,/hub-lobby\.js\?v=20261117-dog-entry-recovery-v1/);
+});
