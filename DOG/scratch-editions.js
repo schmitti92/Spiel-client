@@ -34,12 +34,34 @@ async function api(path='',payload){
  if(!response.ok||data.ok!==true)throw Error(data.error||'Render ist derzeit nicht erreichbar.');
  return data;
 }
+const CURRENCIES=[
+ {id:'coin',icon:'🪙',name:'Geldmünze',description:'Kleinere Münzgewinne und Münz-Sondertreffer'},
+ {id:'note',icon:'💵',name:'Geldschein',description:'Mittlere Geldgewinne in dieser Auflage'},
+ {id:'case',icon:'💼',name:'Geldkoffer',description:'Hohe Geldgewinne und Jackpot-Preise'},
+ {id:'lights',icon:'⭐',name:'Weihnachtslichter',description:'Gemeinsame Dorfwährung für die vier Gebäude'}
+];
+function defaultSymbolBudgets(variant){
+ const amounts=variant.tier==='simple'?[10,40,100]:
+  variant.id==='tic_tac_toe'?[200,450,800]:
+  variant.id==='dog_jackpot_9'?[100,300,800]:
+  variant.tier==='premium'?[200,800,2000]:[100,300,800];
+ const result={};
+ ['coin','note','case'].forEach((id,i)=>{
+  const value=amounts[i];
+  result[id]={min:Math.max(1,Math.floor(value*.7)),
+   max:Math.max(Math.round(value*3),variant.id==='premium_27'&&i===0?1000:value),
+   maxTotal:Math.max(10000,Math.round(variant.budget*(i+2)/5))};
+ });
+ result.lights={min:1,max:10,maxTotal:400,chancePer1000:200};
+ return result;
+}
 const baseDraft=variant=>({
  variantId:variant.id,title:variant.name+' · Winteredition 1',
  maxTotalCoins:variant.budget,targetTotalCoins:Math.round(variant.budget*.55),
  targetTolerancePercent:5,premiumFull27Tickets:0,volatility:70,
  ticketPrice:variant.price,maxPerTicketCoins:variant.one,
- maxPrizesPerTicket:variant.wins,maxUnlocks:variant.id==='premium_27'?25:0,quotas:{}
+ maxPrizesPerTicket:variant.wins,maxUnlocks:variant.id==='premium_27'?25:0,quotas:{},
+ symbolBudgets:defaultSymbolBudgets(variant)
 });
 const drafts=Object.fromEntries(VARIANTS.map(v=>[v.id,baseDraft(v)]));
 const live={};
@@ -80,7 +102,7 @@ function readForm(){
   premiumFull27Tickets:current.id==='premium_27'?number('ed-full27'):0,
   maxPerTicketCoins:number('ed-max-coins'),
   maxPrizesPerTicket:number('ed-max-prizes'),maxUnlocks:number('ed-max-unlocks'),
-  quotas,gameSettings:old.gameSettings??null};
+  quotas,symbolBudgets:old.symbolBudgets,gameSettings:old.gameSettings??null};
  return drafts[current.id];
 }
 function draftKey(value){return JSON.stringify(value)}
@@ -91,6 +113,7 @@ function invalidatePreview(){
  $('preview-chart').replaceChildren(node('p','','Die Einstellungen wurden geändert. Berechne die 500 Lose erneut.'));
  $('preview-target').hidden=true;
  $('preview-economy').hidden=true;
+ $('preview-currencies').hidden=true;
  $('preview-metrics').replaceChildren(...[
   ['🎟️ Lose','500'],['🏆 Gewinnlose','–'],['❄️ Nieten','–'],['🪙 Gesamtauszahlung','–']
  ].map(([name,value])=>metric(name,value)));
@@ -105,6 +128,7 @@ function updateSide(){
  $('side-target').textContent=fmt(draft.targetTotalCoins)+' 🪙';
  $('side-price').textContent=fmt(draft.ticketPrice)+' 🪙';
  $('side-sales').textContent=fmt(draft.ticketPrice*500)+' 🪙';
+ $('side-lights').textContent=fmt(draft.symbolBudgets?.lights?.maxTotal||0)+' ⭐';
  $('ed-sales-projection').textContent=fmt(draft.ticketPrice*500)+' 🪙';
  const portion=draft.maxTotalCoins>0?Math.min(100,draft.targetTotalCoins/draft.maxTotalCoins*100):0;
  $('target-progress-fill').style.width=portion.toFixed(1)+'%';
@@ -128,6 +152,60 @@ function updateSide(){
   'Alle 500 Lose werden intelligent anhand des Ziel-Gesamtgewinns verteilt.';
  $('premium-quantity').textContent=fmt(draft.premiumFull27Tickets)+' / 500';
  $('ed-full27-range').value=String(Math.min(100,Math.max(0,draft.premiumFull27Tickets)));
+}
+
+function renderCurrency(){
+ const root=$('currency-grid');root.replaceChildren();
+ const draft=drafts[current.id],budgets=draft.symbolBudgets;
+ for(const meta of CURRENCIES){
+  const range=budgets[meta.id];
+  const card=node('section','currency-card currency-'+meta.id);
+  const heading=node('div','currency-card-heading'),
+   icon=node('span','currency-card-icon',meta.icon),
+   title=node('div');
+  title.append(node('strong','',meta.name),node('small','',meta.description));
+  heading.append(icon,title);card.append(heading);
+  const fields=node('div','currency-fields');
+  const build=(prop,label,max)=>{
+   const field=node('label','currency-field');field.append(node('span','',label));
+   const input=node('input');input.type='number';input.min=prop==='chancePer1000'?'0':prop==='min'?'1':'0';
+   input.max=String(max);input.step='1';input.inputMode='numeric';input.value=String(range[prop]);
+   input.dataset.category=meta.id;input.dataset.property=prop;
+   input.addEventListener('input',()=>{
+    const n=Number(input.value);
+    range[prop]=Number.isFinite(n)?n:NaN;
+    updateSide();invalidatePreview();
+   });
+   field.append(input);fields.append(field);
+  };
+  build('min','Mindestgewinn pro Treffer',50000000);
+  build('max','Höchstgewinn pro Treffer',50000000);
+  build('maxTotal',meta.id==='lights'?'Maximal ⭐ in allen 500 Losen':'Gesamtbudget dieser Symbolart',1000000000000);
+  if(meta.id==='lights')build('chancePer1000','Trefferchance in ‰ (200 = 20 %)',1000);
+  card.append(fields);
+  const badge=node('div','currency-card-foot',
+   meta.id==='lights'?'⭐ Gewinner erhalten Lichter sofort auf das gemeinsame Dorfkonto.':
+    '🪙 Diese Kategorie zählt zusätzlich zum Münzgesamtbudget.');
+  card.append(badge);root.append(card);
+ }
+ $('currency-budget-remaining').textContent=fmt(draft.maxTotalCoins)+' 🪙 Gesamtobergrenze';
+}
+function renderPreviewCurrencies(s){
+ const root=$('preview-currencies');root.replaceChildren();
+ root.hidden=false;
+ const totals=s.symbolTotals||{},counts=s.symbolHitCounts||{};
+ root.append(node('h4','','⭐ Tatsächliche Ausschüttung je Gewinnsymbol'));
+ for(const category of CURRENCIES){
+  const cap=drafts[current.id].symbolBudgets?.[category.id]?.maxTotal??0;
+  const earned=totals[category.id]||0;
+  const item=node('div','currency-result-row');
+  item.append(node('span','',category.icon+' '+category.name+
+   ' · '+fmt(counts[category.id]||0)+' Einzelgewinne'),
+   node('strong','',fmt(earned)+' / '+fmt(cap)+(category.id==='lights'?' ⭐':' 🪙')));
+  const meter=node('div','currency-result-meter'),fill=node('i');
+  fill.style.width=(cap>0?Math.min(100,100*earned/cap):0)+'%';
+  meter.append(fill);item.append(meter);root.append(item);
+ }
 }
 function renderQuota(){
  const parent=$('quota-grid');parent.replaceChildren();
@@ -335,6 +413,7 @@ function renderLive(){
    'Druck: '+new Date(doc.createdAt).toLocaleString('de-DE')+' · Ausgabe '+doc.id),
    node('div','','Ausgegeben: '+fmt(doc.issued)+' Lose'),
    node('div','','Ausgezahlt: '+fmt(doc.issuedCoins)+' 🪙'),
+   node('div','','Weihnachtslichter: '+fmt(doc.issuedLights)+' ⭐'),
    node('div','','Gesamtdruck: '+fmt(doc.summary?.totalCoins)+' 🪙'),
    node('div','','Gewinnlose: '+fmt(doc.summary?.winners)+' · Nieten: '+fmt(doc.summary?.duds)));
   root.append(description);
@@ -382,7 +461,7 @@ function switchVariant(id){
  $('ed-max-coins').value=d.maxPerTicketCoins;
  $('ed-max-prizes').value=d.maxPrizesPerTicket;
  $('ed-max-unlocks').value=d.maxUnlocks;
- renderTabs();renderQuota();renderRules();renderSpec();renderLive();updateSide();invalidatePreview();
+ renderTabs();renderQuota();renderCurrency();renderRules();renderSpec();renderLive();updateSide();invalidatePreview();
  activateView('plan');
 }
 function showPreview(data){
@@ -406,6 +485,7 @@ function showPreview(data){
   progress.style.width=(target?Math.min(100,s.totalCoins/target*100):100)+'%';
   track.append(progress);summaryTarget.append(track);
  }
+ renderPreviewCurrencies(s);
  $('preview-economy').hidden=false;
  $('preview-income').textContent=fmt(s.projectedGrossRevenue??s.ticketPrice*500)+' 🪙';
  $('preview-expense').textContent=fmt(s.totalCoins)+' 🪙';
