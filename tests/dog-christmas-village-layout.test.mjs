@@ -5,7 +5,7 @@ test('all eight Lichtertal structures stay separate at every mixed stage',()=>{
  const errors=verifyVillageSpriteLayout();
  assert.deepEqual(errors,[],errors.join('\n'));
  assert.equal(Object.keys(sceneLayouts).length,8);
- assert.equal(VILLAGE_MIN_CLEARANCE,12);
+ assert.equal(VILLAGE_MIN_CLEARANCE,16);
 });
 test('the Grinch cave shrinks from full power to a defeated cave without changing its ground',()=>{
  const first=villageSpriteBounds('grinch',1),last=villageSpriteBounds('grinch',5);
@@ -21,7 +21,7 @@ test('sprite bounds reject unknown stages and names',()=>{
  assert.throws(()=>villageSpriteBounds('academy',0),RangeError);
  assert.throws(()=>villageSpriteBounds('not-a-building',1),RangeError);
 });
-test('all worst-case envelopes have at least 12px of separation',()=>{
+test('all worst-case envelopes have at least 16px of separation',()=>{
  const ids=Object.keys(sceneLayouts);
  let minimum=Infinity;
  for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){
@@ -29,5 +29,5 @@ test('all worst-case envelopes have at least 12px of separation',()=>{
    for(let y=1;y<=sceneLayouts[ids[j]].growth.length;y++)
     minimum=Math.min(minimum,villageSpriteClearance(villageSpriteBounds(ids[i],x),villageSpriteBounds(ids[j],y)));
  }
- assert.ok(minimum>=12-1e-8,'minimum reserved spacing: '+minimum.toFixed(2));
+ assert.ok(minimum>=16-1e-8,'minimum reserved spacing: '+minimum.toFixed(2));
 });
