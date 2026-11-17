@@ -402,7 +402,11 @@ export function initChristmasScratch(){
     option.id==='number_one_20'?(lucky?.coinAmounts??[100,300,800]):
     option.id==='dog_jackpot_9'?[100,300,800]:
     coinAmountsFor(option.tier,option.id);
-   const lightRules=activeEdition?.config?.symbolBudgets?.lights;
+   const budget=activeEdition?.config?.symbolBudgets||{};
+   const moneyRange=(id,index)=>budget[id]?
+    num(budget[id].min)+'–'+num(budget[id].max):
+    num(amounts[index]);
+   const lightRules=budget.lights;
    if(lightRules){
     details.append(el('span','scratch-card-chance',
      '⭐ Weihnachtslichter: '+num(lightRules.min)+'–'+num(lightRules.max)+
@@ -413,12 +417,14 @@ export function initChristmasScratch(){
    }
    article.append(heading,details,
     el('strong','scratch-price',onSale?num(salePrice)+' 🪙':'Nicht erhältlich'),
-    el('div','scratch-card-payouts','🪙 '+num(amounts[0])+' · 💵 '+num(amounts[1])+' · 💼 '+num(amounts[2])),
+    el('div','scratch-card-payouts','🪙 '+moneyRange('coin',0)+' · 💵 '+
+     moneyRange('note',1)+' · 💼 '+moneyRange('case',2)),
     el('div','scratch-symbol-key',option.id==='number_one_20'?
      '🪙 '+num(amounts[0])+' · 💵 '+num(amounts[1])+' · 💼 '+num(amounts[2])+' · 🎁 Freischaltung · jede 1 gewinnt':
      option.id==='dog_jackpot_9'?'🐾 DOG = alle 8 Preise · 🎁 Freischaltung':
      option.id==='tic_tac_toe'?
      '◯ / ✕ · 1–5× · 🪙 200 · 💵 450 · 💼 800 · 🎁 Freischaltung':symbolLegend(option.tier,amounts)));
+   article.append(el('div','scratch-light-legend','⭐ Lichtertal-Lichtfeld · Bonus für den gemeinsamen Dorfausbau'));
    const vouchers=Number(status?.vouchers?.[option.tier]||0)+Number(status?.variantVouchers?.[option.id]||0);
    const buyBtn=el('button','scratch-buy','🎟️ Für '+num(salePrice)+' Münzen öffnen');
    buyBtn.type='button';buyBtn.hidden=freeMode;
