@@ -67,7 +67,8 @@ const baseDraft=variant=>({
  maxPrizesPerTicket:variant.wins,
  maxUnlocks:variant.tier==='simple'?25:variant.tier==='medium'?20:25,quotas:{},
  doubleWin:{chancePer1000:110,minTickets:0,maxTickets:80},
- symbolBudgets:defaultSymbolBudgets(variant)
+ symbolBudgets:defaultSymbolBudgets(variant),
+ oddsLocks:{money:[false,false,false],symbols:[false,false,false,false],gift:false}
 });
 const DRAFT_STORAGE_KEY='dog-scratch-edition-drafts-v2';
 const drafts=Object.fromEntries(VARIANTS.map(v=>[v.id,baseDraft(v)]));
@@ -80,7 +81,7 @@ try{
   const fresh=baseDraft(variant);
   for(const key of ['title','ticketPrice','printSize','maxTotalCoins','targetTotalCoins',
    'targetTolerancePercent','premiumFull27Tickets','volatility','maxPerTicketCoins',
-   'maxPrizesPerTicket','maxUnlocks','quotas','doubleWin','gameSettings'])
+   'maxPrizesPerTicket','maxUnlocks','quotas','doubleWin','gameSettings','oddsLocks'])
    if(Object.hasOwn(row,key))fresh[key]=structuredClone(row[key]);
   for(const key of Object.keys(fresh.symbolBudgets))if(row.symbolBudgets?.[key])
    fresh.symbolBudgets[key]={...fresh.symbolBudgets[key],...row.symbolBudgets[key]};
@@ -172,7 +173,8 @@ function readForm(){
   quotas,doubleWin:{
    chancePer1000:Math.round(number('ed-double-chance')*10),
    minTickets:number('ed-double-min'),maxTickets:number('ed-double-max')
-  },symbolBudgets:old.symbolBudgets,gameSettings:old.gameSettings??null};
+  },symbolBudgets:old.symbolBudgets,gameSettings:old.gameSettings??null,
+ oddsLocks:old.oddsLocks??{money:[false,false,false],symbols:[false,false,false,false],gift:false}};
  return drafts[current.id];
 }
 function draftKey(value){return JSON.stringify(value)}
@@ -249,6 +251,7 @@ function syncSimpleInputs(){
  $('simple-win-explanation').textContent=rule.explanation;
  $('simple-win-chance').value=rule.shown?String(rule.value):'';
  renderSimplePrizeCounts();
+ renderSimpleSymbols();
  updateSimpleSummary();
 }
 function possibleWinCounts(){
@@ -546,7 +549,7 @@ function updateSide(){
   'Alle '+fmt(draft.printSize)+' Lose werden anhand der Gewinnregeln und des Budgets verteilt.';
  $('premium-quantity').textContent=fmt(draft.premiumFull27Tickets)+' / '+fmt(draft.printSize);
  $('ed-full27-range').value=String(Math.min(100,Math.max(0,draft.premiumFull27Tickets)));
- renderDashboard();renderPlanChecks();updateSimpleSummary();renderSimplePrizeCounts();
+ renderDashboard();renderPlanChecks();updateSimpleSummary();renderSimplePrizeCounts();renderSimpleSymbols();
 }
 
 function renderCurrency(){
@@ -1281,7 +1284,7 @@ $('ed-import-file').addEventListener('change',async()=>{
   const fresh=baseDraft(current);
   for(const id of ['title','ticketPrice','printSize','maxTotalCoins','targetTotalCoins',
    'targetTolerancePercent','premiumFull27Tickets','volatility','maxPerTicketCoins',
-   'maxPrizesPerTicket','maxUnlocks','quotas','doubleWin','gameSettings']){
+   'maxPrizesPerTicket','maxUnlocks','quotas','doubleWin','gameSettings','oddsLocks']){
    if(Object.hasOwn(config,id))fresh[id]=structuredClone(config[id]);
   }
   const defaults=defaultSymbolBudgets(current);
