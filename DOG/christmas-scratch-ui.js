@@ -119,6 +119,7 @@ export function initChristmasScratch(){
   SERVER_UNAVAILABLE:'⚠️ Render ist momentan nicht erreichbar. Bitte erneut versuchen.'
  }[code]||'⚠️ Los konnte nicht geöffnet werden: '+String(code||'Serverfehler'));
  const hostDialog=$('scratch-host-dialog');
+ const giftsDialog=$('scratch-gifts-settings-dialog');
  const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
  const room=String(new URLSearchParams(location.search).get('room')||'').toUpperCase();
  const validRoom=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/.test(room);
@@ -369,7 +370,8 @@ export function initChristmasScratch(){
    const tier=SCRATCH_TICKET_TYPES.find(c=>c.id===option.tier);
    const lucky=status?.settings?.numberOne20;
    // Preserve the independent configured number lottery base price.
-   const ticketCost=option.id==='number_one_20'?(lucky?.price??tier.price):tier.price;
+   const ticketCost=option.id==='number_one_20'?(lucky?.price??tier.price):
+    option.id==='gifts'?(status?.settings?.variants?.gifts?.price??tier.price):tier.price;
    const actualPrice=discountedPrice(ticketCost);
    const variantConfig=status?.settings?.variants?.[option.id];
    const unlockChance=Number.isInteger(variantConfig?.weights?.unlock)?
@@ -389,6 +391,13 @@ export function initChristmasScratch(){
     ' % Chance auf +1.000 🪙':option.rule;
    const article=el('article','scratch-tier '+option.tier+' scratch-variant-'+option.theme);
    article.dataset.variant=option.id;
+   if(option.id==='gifts'){
+    const gear=el('button','scratch-gifts-card-settings','⚙️ Einstellungen');
+    gear.type='button';gear.title='Nur die Geschenkelinie einstellen';
+    gear.setAttribute('aria-label','Geschenkelinie-Einstellungen öffnen');
+    gear.addEventListener('click',event=>{event.stopPropagation();openGiftsSettings()});
+    article.append(gear);
+   }
    const heading=el('div','scratch-card-heading');
    heading.append(el('span','scratch-icon',option.icon));
    const names=el('div','scratch-card-names');
@@ -1172,10 +1181,13 @@ export function initChristmasScratch(){
    result.totalCoins:prizes.reduce((sum,p)=>
     sum+(p.type==='coins'&&Number.isSafeInteger(p.amount)?p.amount:0),0);
   const heading=el('div','scratch-inline-heading');
+  const lightBonus=Number.isSafeInteger(result.totalLights)&&result.totalLights>0?result.totalLights:0;
   heading.append(el('strong','',prizes.length?'🏆 '+prizes.length+' Gewinne':
-   result.giftSparksEarned?'🎁 Geschenkfunke':'❄️ Niete'),
+   lightBonus?'⭐ Lichtgewinn':result.giftSparksEarned?'🎁 Geschenkfunke':'❄️ Niete'),
    el('strong','scratch-inline-total','🪙 '+num(amount)+' erhalten'));
   outlet.append(heading);
+  if(lightBonus)outlet.append(el('div','scratch-light-reward',
+   '⭐ +'+num(lightBonus)+' Weihnachtslichter · Lichtertal gutgeschrieben'));
   if(result.doubleWin){
    outlet.append(el('div','scratch-double-win-inline',
     '✖️2 Gewinnmultiplikator: +'+num(result.doubleWin.extraCoins||0)+' 🪙 und +'+
@@ -1242,6 +1254,7 @@ export function initChristmasScratch(){
   $('scratch-ticket-finish').textContent='✓ Ergebnis bestätigen';
   const conf=VARIANTS[result.board?.variantId],cells=result.board?.cells;
   stage.dataset.variant=result.board?.variantId||'legacy';
+  $('scratch-gifts-settings-open').hidden=stage.dataset.variant!=='gifts';
   stage.dataset.tier=result.tier||'simple';
   stage.dataset.duelVersion=String(result.board?.variantId==='tic_tac_toe'?result.board?.symbolVersion||0:0);
   // The ticket banner stays outside the scratchable 3 × 3 region.
@@ -1414,7 +1427,7 @@ export function initChristmasScratch(){
   const earnedCoins=Number.isSafeInteger(current.totalCoins)&&current.totalCoins>=0?
    current.totalCoins:entries.filter(p=>p.type==='coins').reduce(
     (sum,p)=>sum+(Number.isSafeInteger(p.amount)?p.amount:0),0);
-  const winFlag=entries.length>0||Number(current.giftSparksEarned)>0;
+  const winFlag=entries.length>0||Number(current.giftSparksEarned)>0||Number(current.totalLights)>0;
   // Finalize the user interaction FIRST. Any broken decorative reveal must
   // never prevent confirming a prize or a zero-coin losing ticket.
   finished=true;
@@ -1510,7 +1523,7 @@ export function initChristmasScratch(){
  }
  async function load(){
   const id=++requestId;
-  if(!account()){status=null;ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
+  if(!account()){status=null;ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();giftsDialog?.close();drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
   try{
    const r=await query('');
    if(id!==requestId)return;
@@ -1556,6 +1569,7 @@ export function initChristmasScratch(){
   }
   const chosenPrice=variantId==='number_one_20'?
    Number(status.settings?.numberOne20?.price??500):
+   variantId==='gifts'?Number(status.settings?.variants?.gifts?.price??200):
    Number(SCRATCH_TICKET_TYPES.find(c=>c.id===tier)?.price||0);
   if(!free&&!voucher&&status.coins<discountedPrice(chosenPrice)){
    showAlert('⚠️ Nicht genügend Münzen für dieses Los.',variantId);drawShop();return;
@@ -1635,7 +1649,7 @@ export function initChristmasScratch(){
   finally{save.disabled=false;}
  });
  window.addEventListener('spielonline-change',()=>{
-  requestId++;status=null;ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();void load();
+  requestId++;status=null;ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();giftsDialog?.close();void load();
  });
  drawShop();return {load};
 }
