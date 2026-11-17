@@ -1623,3 +1623,9 @@ body.scratch-ticket-open > #event-return{
  background:radial-gradient(circle,#fff9ce,#e0b659);border:1px solid #c48b38;box-shadow:0 0 6px #ffda58cc;
  font-size:clamp(9px,1.1vw,15px);line-height:1;pointer-events:none}
 .scratch-number-target .scratch-light-field-star,.scratch-number-prize .scratch-light-field-star{top:2px;right:2px}
+
+.scratch-analytics-kpis{grid-template-columns:repeat(5,minmax(0,1fr))}
+.scratch-light-legend{font-size:11px;font-weight:750;line-height:1.4;padding:8px 11px;margin-top:7px;border-radius:9px;color:#ffe0a1;background:#493b26;border:1px solid #a68d57}
+.scratch-analytics-table th:last-child,.scratch-analytics-table td:last-child{color:#efd29a}
+@media(max-width:950px){.scratch-analytics-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:570px){.scratch-analytics-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
