@@ -47,6 +47,7 @@ const el=(tag,cls,str)=>{
 };
 const num=v=>Number(v||0).toLocaleString('de-DE');
 const prizeLabel=p=>p?.type==='coins'?(p.bonus?'🎉 Zusatzgewinn · ':'')+(p.symbol||'🪙')+' '+num(p.amount)+' Münzen'+(p.x2?' (×2)':''):
+ p?.type==='lights'?'⭐ '+num(p.amount)+' Weihnachtslichter für Lichtertal':
  p?.type==='unlock'?(p.symbol||'🎁')+' Freischaltung: '+(p.prize?.icon?p.prize.icon+' ':'')+(p.prize?.name||'Freischaltung'):'';
 const symbolLegend=(tier,values=null)=>{
  const [coin,note,bag]=Array.isArray(values)&&values.length===3?values:
@@ -368,7 +369,8 @@ export function initChristmasScratch(){
    // Preserve the independent configured number lottery base price.
    const ticketCost=option.id==='number_one_20'?(lucky?.price??tier.price):tier.price;
    const activeEdition=editionPrices[option.id];
-   const salePrice=activeEdition?.remaining>0&&Number.isSafeInteger(activeEdition.config?.ticketPrice)?
+   const onSale=activeEdition?.status==='active'&&activeEdition.remaining>0;
+   const salePrice=onSale&&Number.isSafeInteger(activeEdition.config?.ticketPrice)?
     activeEdition.config.ticketPrice:ticketCost;
    const variantConfig=status?.settings?.variants?.[option.id];
    const unlockChance=Number.isInteger(variantConfig?.weights?.unlock)?
@@ -400,8 +402,17 @@ export function initChristmasScratch(){
     option.id==='number_one_20'?(lucky?.coinAmounts??[100,300,800]):
     option.id==='dog_jackpot_9'?[100,300,800]:
     coinAmountsFor(option.tier,option.id);
+   const lightRules=activeEdition?.config?.symbolBudgets?.lights;
+   if(lightRules){
+    details.append(el('span','scratch-card-chance',
+     '⭐ Weihnachtslichter: '+num(lightRules.min)+'–'+num(lightRules.max)+
+     ' pro Treffer · maximal '+num(lightRules.maxTotal)+' ⭐ pro 500 Lose'));
+   }else{
+    details.append(el('span','scratch-card-chance',
+     '⭐ Weihnachtslichter als möglicher Gewinn in besonderen Auflagen'));
+   }
    article.append(heading,details,
-    el('strong','scratch-price',num(salePrice)+' 🪙'),
+    el('strong','scratch-price',onSale?num(salePrice)+' 🪙':'Nicht erhältlich'),
     el('div','scratch-card-payouts','🪙 '+num(amounts[0])+' · 💵 '+num(amounts[1])+' · 💼 '+num(amounts[2])),
     el('div','scratch-symbol-key',option.id==='number_one_20'?
      '🪙 '+num(amounts[0])+' · 💵 '+num(amounts[1])+' · 💼 '+num(amounts[2])+' · 🎁 Freischaltung · jede 1 gewinnt':
@@ -413,12 +424,14 @@ export function initChristmasScratch(){
    buyBtn.type='button';buyBtn.hidden=freeMode;
    // Keep taps informative. Disabled purchases previously looked like dead
    // buttons when the wallet or an older unacknowledged ticket blocked them.
-   buyBtn.disabled=busy;
+   buyBtn.disabled=busy||!onSale;
+   if(!onSale)buyBtn.textContent='🔒 Aktuell keine Auflage vorhanden';
    buyBtn.addEventListener('click',()=>void buy(option.tier,false,option.id));
    article.append(buyBtn);
-   if(activeEdition?.remaining>0)
+   if(onSale)
     article.append(el('div','scratch-edition-badge','🖨️ Edition: '+activeEdition.title+
      ' · '+num(activeEdition.remaining)+'/500 Losen übrig'));
+   else article.append(el('div','scratch-edition-unavailable','🔒 Aktuell keine Auflage vorhanden · Eine neue 500er-Serie muss veröffentlicht werden.'));
    if(actionError?.variantId===option.id){
     const inline=el('div','scratch-card-open-error',actionError.message);
     inline.setAttribute('role','alert');article.append(inline);
@@ -435,14 +448,14 @@ export function initChristmasScratch(){
     const voucherBtn=el('button','scratch-free scratch-earned-voucher',
      '🎟️ Gesammeltes Los einlösen · '+num(vouchers)+' vorhanden');
     voucherBtn.type='button';
-    voucherBtn.disabled=busy;
+    voucherBtn.disabled=busy||!onSale;
     voucherBtn.addEventListener('click',()=>void buy(option.tier,false,option.id,true));
     article.append(voucherBtn);
    }
    if(freeMode||option.tier==='simple'){
     const free=el('button','scratch-free',freeMode?'🎁 Kostenlos öffnen':'🎁 Tagesfreilos öffnen');
     free.type='button';
-    free.disabled=busy;
+    free.disabled=busy||!onSale;
     free.addEventListener('click',()=>void buy(option.tier,true,option.id));
     article.append(free);
    }
@@ -1492,6 +1505,10 @@ export function initChristmasScratch(){
    try{showTicket(ticket)}catch(e){showAlert('⚠️ Dein offenes Los konnte nicht angezeigt werden: '+e.message,variantId)}
    return;
   }
+  if(!(editionPrices[variantId]?.status==='active'&&editionPrices[variantId].remaining>0)){
+   showAlert('🔒 Aktuell keine Auflage vorhanden. Bitte eine neue 500er-Serie im Auflagenstudio veröffentlichen.',variantId);
+   drawShop();return;
+  }
   if(!SCRATCH_SHOP_VARIANTS.some(c=>c.id===variantId&&c.tier===tier)){
    showAlert('⚠️ Diese Losvariante ist noch nicht im Spiel freigeschaltet.',variantId);drawShop();return;
   }
@@ -1514,6 +1531,9 @@ export function initChristmasScratch(){
    const r=await query('/buy',pending);
    if(!r.result||!r.scratch)throw Error('INVALID_SCRATCH_RESULT');
    status=r.scratch;pending=null;
+   if(r.edition&&editionPrices[variantId]&&r.edition.id===editionPrices[variantId].id){
+    editionPrices[variantId].remaining=r.edition.remaining;
+   }
    // Server has already committed the ticket; keep its receipt even if the
    // local animation fails, so it is always reopenable without a second buy.
    ticket=r.result;
