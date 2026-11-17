@@ -1629,3 +1629,9 @@ body.scratch-ticket-open > #event-return{
 .scratch-analytics-table th:last-child,.scratch-analytics-table td:last-child{color:#efd29a}
 @media(max-width:950px){.scratch-analytics-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:570px){.scratch-analytics-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.scratch-light-field-value{position:absolute;right:1px;bottom:1px;z-index:3;
+ padding:1px 3px;border-radius:5px;max-width:96%;font-size:clamp(7px,.75vw,11px);font-weight:900;
+ color:#392614;background:#fff0b5;border:1px solid #c6953c;pointer-events:none;
+ line-height:1.1;box-shadow:0 1px 4px #0005;white-space:nowrap}
+.scratch-number-prize .scratch-light-field-value,.scratch-number-target .scratch-light-field-value{bottom:2px;right:2px}
