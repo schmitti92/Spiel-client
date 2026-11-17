@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#101d31">
 <title>DOG · Rubbellos-Auflagenstudio</title>
-<link rel="stylesheet" href="./scratch-editions.css?v=15">
+<link rel="stylesheet" href="./scratch-editions.css?v=16">
 </head>
 <body>
 <div class="snow-glow" aria-hidden="true"></div>
@@ -93,7 +93,8 @@
        <div><span>🎁 Hauptgewinn-Symbole</span><strong>🎁 💝 🎀 🧧 🛍️</strong></div>
       </div>
       <div id="simple-validation" class="simple-validation" role="status" aria-live="polite"></div>
-      <button type="button" id="simple-open-advanced" class="simple-advanced-link">⚙️ Mehr Einstellungen <span>(optional: Gewinnwerte, Quoten, Sonderregeln)</span></button>
+      <p class="draft-autosave-note">💾 Deine Einstellungen werden für jede Losart getrennt auf diesem Gerät gespeichert.</p>
+       <button type="button" id="simple-open-advanced" class="simple-advanced-link">⚙️ Mehr Einstellungen <span>(optional: Gewinnwerte, Quoten, Sonderregeln)</span></button>
     </div>
     <div class="simple-print-heading"><div><span class="eyebrow">✦ VOR DER VERÖFFENTLICHUNG ✦</span><h3>500 Lose prüfen &amp; freigeben</h3>
      <p>Die Gewinne werden erst auf dem Server berechnet und kontrolliert. Eine Auflage wird nicht automatisch veröffentlicht.</p></div></div>
@@ -157,6 +158,8 @@
      <div><span>📊 Ausschüttungsquote</span><strong id="preview-ratio">–</strong></div>
     </div>
     <div id="preview-chart" class="preview-chart"><p>Erstelle einen Probedruck, um die tatsächliche Verteilung und das Gesamtbudget zu sehen.</p></div>
+     <button type="button" class="ghost printed-ticket-open" id="ed-inspect" hidden>🔍 Acht echte Musterlose im Probedruck ansehen</button>
+     <div id="preview-samples" class="preview-samples" aria-live="polite"></div>
     <div id="preview-message" class="preview-message" role="status" aria-live="polite"></div>
    </section>
    <div class="action-bar">
