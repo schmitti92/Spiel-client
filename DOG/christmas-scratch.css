@@ -1720,3 +1720,18 @@ body.scratch-ticket-open > #event-return{
  .scratch-gifts-settings-open{font-size:11px;min-height:30px;top:5px;right:5px;padding:5px 8px}
  .scratch-gifts-card-settings{font-size:11px}
 }
+
+/* Geschenkelinie: transparent 500-ticket edition controls. */
+.scratch-gifts-edition-section{border-color:#e3bd70aa;background:linear-gradient(145deg,#18394a,#183d34)}
+.scratch-gifts-edition-status{margin:12px 0;border:1px solid #c9a86c8c;background:#182f3d;
+ color:#fff0ce;padding:12px 14px;border-radius:12px;font-size:13px;line-height:1.6}
+.scratch-gifts-edition-status[data-state="active"]{border-color:#71bc96;background:#17483b;color:#e4ffee}
+.scratch-gifts-edition-status[data-state="sold_out"]{border-color:#e6a78a;background:#453126}
+.scratch-gifts-edition-create{display:block;width:100%;min-height:48px;padding:9px 12px;
+ color:#322315;background:linear-gradient(#ffdf98,#cc934d);border:2px solid #fff0c4;
+ border-radius:12px;font-size:clamp(14px,1.65vw,17px);font-weight:900;cursor:pointer}
+.scratch-gifts-edition-create:hover:not(:disabled){filter:brightness(1.09)}
+.scratch-gifts-edition-create:disabled{opacity:.56;cursor:not-allowed;filter:grayscale(.4)}
+.scratch-gifts-edition-chip{margin-top:6px;background:#214536;border:1px solid #b6cf8f;
+ color:#f3ffe3;padding:7px 9px;border-radius:9px;font-size:12px;font-weight:800;line-height:1.4}
+.scratch-gifts-edition-chip[data-state="sold_out"]{background:#57312c;border-color:#f2b28e}
