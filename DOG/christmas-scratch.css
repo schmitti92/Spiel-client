@@ -1616,3 +1616,10 @@ body.scratch-ticket-open > #event-return{
 .scratch-light-reward-text strong{color:#fce4a8;font-size:13px;font-weight:850;line-height:1.2}
 .scratch-light-reward-text small{color:#d7cfbd;font-size:10px;line-height:1.3}
 .scratch-inline-chip:has(strong:first-child){max-width:100%}
+
+.scratch-has-light-award{position:relative}
+.scratch-light-field-star{position:absolute;top:1px;right:1px;z-index:3;display:grid;place-items:center;
+ width:clamp(11px,1.4vw,19px);height:clamp(11px,1.4vw,19px);border-radius:50%;
+ background:radial-gradient(circle,#fff9ce,#e0b659);border:1px solid #c48b38;box-shadow:0 0 6px #ffda58cc;
+ font-size:clamp(9px,1.1vw,15px);line-height:1;pointer-events:none}
+.scratch-number-target .scratch-light-field-star,.scratch-number-prize .scratch-light-field-star{top:2px;right:2px}
