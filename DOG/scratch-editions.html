@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#101d31">
 <title>DOG · Rubbellos-Auflagenstudio</title>
-<link rel="stylesheet" href="./scratch-editions.css?v=11">
+<link rel="stylesheet" href="./scratch-editions.css?v=12">
 </head>
 <body>
 <div class="snow-glow" aria-hidden="true"></div>
@@ -13,9 +13,9 @@
 <header class="studio-header">
  <a href="./christmas-event.html" class="back-link">‹ Zurück zu Lichtertal</a>
  <div class="studio-header-top">
-  <div><span class="eyebrow">✦ DOG WEIHNACHTSLOTTERIE · RENDER EDITION ENGINE ✦</span>
-    <h1>🎟️ Das Auflagenstudio</h1>
-    <p>Sieben Losarten. Eigene Druckauflagen. Ein kontrollierter Gewinnplan für jeweils 500 Lose.</p>
+  <div><span class="eyebrow">✦ DOG WEIHNACHTSLOTTERIE ✦</span>
+    <h1>🎟️ Deine Rubbellose</h1>
+    <p>Losart wählen, Gewinne einstellen, 500 Lose prüfen und veröffentlichen.</p>
   </div>
   <div class="header-ornament" aria-hidden="true">❄️<span>500</span>✨</div>
  </div>
@@ -26,7 +26,8 @@
 </header>
 <section class="studio-content">
  <div class="section-label"><span>DEINE RUBBELLOSE</span><small>Wähle eine Sorte aus, um ihre nächste Auflage zu bearbeiten.</small></div>
- <div id="edition-tabs" class="edition-tabs" role="tablist" aria-label="Rubbellos-Varianten"></div>
+ <div class="simple-variant-picker"><label for="simple-variant">🎟️ Rubbellos auswählen</label><select id="simple-variant" aria-label="Rubbellos-Auswahl"></select><span id="simple-availability">Auflage wird geladen …</span></div>
+ <div id="edition-tabs" class="edition-tabs" role="tablist" aria-label="Rubbellos-Varianten" hidden></div>
  <div class="studio-columns">
   <main class="studio-main">
    <section class="editor-banner">
@@ -43,16 +44,44 @@
     <div><span>✖️2 Verdopplung</span><strong id="quick-double">–</strong></div>
     <div><span>🖨️ Verkauf / Bestand</span><strong id="quick-stock">–</strong></div>
    </div>
-   <div class="wizard-heading"><div><span class="eyebrow">✦ SCHRITT FÜR SCHRITT ✦</span><h3>Deine nächste Rubbellos-Auflage</h3><p>Einfach links nach rechts durchgehen. Alle Angaben gelten nur für die ausgewählte Losart.</p></div><span class="wizard-progress-label" id="wizard-progress-label">Übersicht · Start</span></div>
-   <div class="subtabs" role="tablist" aria-label="Auflagen-Assistent">
-    <button type="button" class="subtab active" data-view="overview" aria-selected="true"><span>Start</span><b>🏠 Übersicht</b></button>
-    <button type="button" class="subtab" data-view="currency" aria-selected="false"><span>01</span><b>🪙 Gewinne &amp; ✖️2</b></button>
-    <button type="button" class="subtab" data-view="mechanic" aria-selected="false"><span>02</span><b>🎯 Chancen</b></button>
-    <button type="button" class="subtab" data-view="quotas" aria-selected="false"><span>03</span><b>🎰 Verteilung</b></button>
-    <button type="button" class="subtab" data-view="plan" aria-selected="false"><span>04</span><b>🖨️ Budget &amp; Druck</b></button>
-    <button type="button" class="subtab subtab-history" data-view="history" aria-selected="false"><span>Info</span><b>🗃️ Historie</b></button>
-   </div>
    <section id="view-overview" class="inner-view">
+    <div class="simple-studio" aria-label="Einfache Einstellungen für 500 Rubbellose">
+      <div class="simple-studio-head">
+       <div><span class="eyebrow">✦ DEINE NÄCHSTE AUFLAGE ✦</span>
+        <h3>500 Lose mit wenigen Einstellungen</h3>
+        <p>Die wichtigsten Werte auswählen, Gewinne vom Server prüfen lassen und die Auflage veröffentlichen. Alles andere übernimmt die Automatik.</p></div>
+       <span class="simple-print-icon" aria-hidden="true">🎟️</span>
+      </div>
+      <div class="simple-editor-grid">
+       <label class="simple-field"><span>🎟️ Preis pro Los</span>
+        <div class="simple-input"><input id="simple-price" type="number" min="0" max="1000000" step="1" inputmode="numeric"><b>🪙</b></div>
+        <small>Was ein Spieler für ein Los bezahlt.</small></label>
+       <label class="simple-field"><span>🪙 Geldbudget für 500 Lose</span>
+        <div class="simple-input"><input id="simple-budget" type="number" min="0" max="1000000000000" step="1" inputmode="numeric"><b>🪙</b></div>
+        <small>Höchstens dieser Gesamtbetrag wird ausgezahlt. Die Zielsumme passt sich automatisch an.</small></label>
+       <label class="simple-field" id="simple-win-field"><span id="simple-win-label">🏆 Gewinnchance</span>
+        <div class="simple-input"><input id="simple-win-chance" type="number" min="0" max="100" step="0.1" inputmode="decimal"><b>%</b></div>
+        <small id="simple-win-explanation">Wie häufig ein Los einen Gewinn erhalten soll.</small></label>
+       <label class="simple-field"><span>✖️2 Gewinn verdoppeln</span>
+        <div class="simple-input"><input id="simple-double" type="number" min="0" max="100" step="0.1" inputmode="decimal"><b>%</b></div>
+        <small>Zusätzliche Chance auf doppelte Münzen und Lichter. Geschenke werden nicht verdoppelt.</small></label>
+       <label class="simple-field"><span>⭐ Weihnachtslichter</span>
+        <div class="simple-input"><input id="simple-lights" type="number" min="0" max="100" step="0.1" inputmode="decimal"><b>%</b></div>
+        <small>Chance, dass ein Los zusätzlich Lichter für Lichtertal bringt.</small></label>
+      </div>
+      <div class="simple-money-summary" aria-live="polite">
+       <div><span>🧾 Einnahmen, wenn alle 500 Lose bezahlt werden</span><strong id="simple-sales">–</strong></div>
+       <div><span>🎯 Angestrebte Gewinnauszahlung</span><strong id="simple-payout">–</strong></div>
+       <div><span>🎁 Hauptgewinn-Symbole</span><strong>🎁 💝 🎀 🧧 🛍️</strong></div>
+      </div>
+      <div id="simple-validation" class="simple-validation" role="status" aria-live="polite"></div>
+      <button type="button" id="simple-open-advanced" class="simple-advanced-link">⚙️ Mehr Einstellungen <span>(optional: Gewinnwerte, Quoten, Sonderregeln)</span></button>
+    </div>
+    <div class="simple-print-heading"><div><span class="eyebrow">✦ VOR DER VERÖFFENTLICHUNG ✦</span><h3>500 Lose prüfen &amp; freigeben</h3>
+     <p>Die Gewinne werden erst auf dem Server berechnet und kontrolliert. Eine Auflage wird nicht automatisch veröffentlicht.</p></div></div>
+   </section>
+
+    <div class="simple-legacy" hidden>
     <div class="welcome-hero">
      <div class="welcome-illustration" aria-hidden="true">🎟️<span>500</span>✨</div>
      <div><span class="eyebrow">✦ WILLKOMMEN IN DEINER LOSWERKSTATT ✦</span>
@@ -96,7 +125,40 @@
    </section>
     </details>
     <div class="wizard-footer"><span>Wähle oben eine Losart und beginne mit den Gewinnsymbolen.</span><button type="button" class="primary" data-go="currency">Weiter zu Gewinnsymbolen <span aria-hidden="true">›</span></button></div>
+    </div>
+   <section class="preview-section">
+    <div class="preview-heading"><div><span class="eyebrow">✦ PROBEDRUCK ✦</span><h3>Serverberechnung für 500 Lose</h3></div><span id="preview-state" class="preview-state">Noch kein Probedruck</span></div>
+    <div id="preview-metrics" class="preview-metrics">
+     <div><span>🎟️ Lose</span><strong>500</strong></div><div><span>🏆 Gewinnlose</span><strong>–</strong></div><div><span>❄️ Nieten</span><strong>–</strong></div><div><span>🪙 Gesamtauszahlung</span><strong>–</strong></div>
+    </div>
+    <div id="preview-target" class="preview-target" hidden></div>
+    <div id="preview-currencies" class="preview-currencies" hidden></div>
+    <div id="preview-double" class="preview-double" hidden></div>
+    <div id="preview-economy" class="preview-economy" hidden>
+     <div><span>💳 Gesamteinnahmen (500 × Lospreis)</span><strong id="preview-income">–</strong></div>
+     <div><span>🪙 Gedruckte Gewinnauszahlung</span><strong id="preview-expense">–</strong></div>
+     <div><span>⚖️ Theoretische Münzbilanz</span><strong id="preview-profit">–</strong></div>
+     <div><span>📊 Ausschüttungsquote</span><strong id="preview-ratio">–</strong></div>
+    </div>
+    <div id="preview-chart" class="preview-chart"><p>Erstelle einen Probedruck, um die tatsächliche Verteilung und das Gesamtbudget zu sehen.</p></div>
+    <div id="preview-message" class="preview-message" role="status" aria-live="polite"></div>
    </section>
+   <div class="action-bar">
+    <button id="ed-preview" type="button" class="primary">🎲 500 Lose berechnen</button>
+    <button id="ed-publish" type="button" class="gold" disabled>🚀 Auflage veröffentlichen</button>
+    <button id="ed-export" type="button" class="ghost">↓ Konfiguration sichern</button>
+   </div>
+   </section>
+   <div id="advanced-studio" class="advanced-studio" hidden>
+   <div class="wizard-heading"><div><span class="eyebrow">✦ SCHRITT FÜR SCHRITT ✦</span><h3>Deine nächste Rubbellos-Auflage</h3><p>Einfach links nach rechts durchgehen. Alle Angaben gelten nur für die ausgewählte Losart.</p></div><span class="wizard-progress-label" id="wizard-progress-label">Übersicht · Start</span></div>
+   <div class="subtabs" role="tablist" aria-label="Auflagen-Assistent">
+    <button type="button" class="subtab active" data-view="overview" aria-selected="true"><span>Start</span><b>🏠 Übersicht</b></button>
+    <button type="button" class="subtab" data-view="currency" aria-selected="false"><span>01</span><b>🪙 Gewinne &amp; ✖️2</b></button>
+    <button type="button" class="subtab" data-view="mechanic" aria-selected="false"><span>02</span><b>🎯 Chancen</b></button>
+    <button type="button" class="subtab" data-view="quotas" aria-selected="false"><span>03</span><b>🎰 Verteilung</b></button>
+    <button type="button" class="subtab" data-view="plan" aria-selected="false"><span>04</span><b>🖨️ Budget &amp; Druck</b></button>
+    <button type="button" class="subtab subtab-history" data-view="history" aria-selected="false"><span>Info</span><b>🗃️ Historie</b></button>
+   </div>
    <section id="view-currency" class="inner-view" hidden>
     <div class="currency-headline"><div><span class="eyebrow">✦ GEWINNWERKSTATT LICHTERTAL ✦</span><h3>🎟️ Gewinnsymbole und ihre Werte</h3><p>Stelle für jedes Symbol den kleinsten Einzelgewinn, den höchsten Einzelgewinn und den maximalen Gesamtbetrag innerhalb von 500 Losen ein. Der Server verteilt echte Beträge innerhalb dieser Grenzen.</p></div><div class="currency-medallion">⭐</div></div>
     <div class="simple-controls-row">
@@ -156,28 +218,6 @@
      <ul id="plan-checks"><li>Plane die Geldbudgets und Gewinnchancen.</li></ul>
     </div>
     <div class="wizard-footer"><button type="button" class="ghost" data-go="quotas">‹ Gewinnverteilung</button><span>Letzter Schritt: 500 Lose prüfen und veröffentlichen.</span></div>
-   <section class="preview-section">
-    <div class="preview-heading"><div><span class="eyebrow">✦ PROBEDRUCK ✦</span><h3>Serverberechnung für 500 Lose</h3></div><span id="preview-state" class="preview-state">Noch kein Probedruck</span></div>
-    <div id="preview-metrics" class="preview-metrics">
-     <div><span>🎟️ Lose</span><strong>500</strong></div><div><span>🏆 Gewinnlose</span><strong>–</strong></div><div><span>❄️ Nieten</span><strong>–</strong></div><div><span>🪙 Gesamtauszahlung</span><strong>–</strong></div>
-    </div>
-    <div id="preview-target" class="preview-target" hidden></div>
-    <div id="preview-currencies" class="preview-currencies" hidden></div>
-    <div id="preview-double" class="preview-double" hidden></div>
-    <div id="preview-economy" class="preview-economy" hidden>
-     <div><span>💳 Gesamteinnahmen (500 × Lospreis)</span><strong id="preview-income">–</strong></div>
-     <div><span>🪙 Gedruckte Gewinnauszahlung</span><strong id="preview-expense">–</strong></div>
-     <div><span>⚖️ Theoretische Münzbilanz</span><strong id="preview-profit">–</strong></div>
-     <div><span>📊 Ausschüttungsquote</span><strong id="preview-ratio">–</strong></div>
-    </div>
-    <div id="preview-chart" class="preview-chart"><p>Erstelle einen Probedruck, um die tatsächliche Verteilung und das Gesamtbudget zu sehen.</p></div>
-    <div id="preview-message" class="preview-message" role="status" aria-live="polite"></div>
-   </section>
-   <div class="action-bar">
-    <button id="ed-preview" type="button" class="primary">🎲 500 Lose berechnen</button>
-    <button id="ed-publish" type="button" class="gold" disabled>🚀 Auflage veröffentlichen</button>
-    <button id="ed-export" type="button" class="ghost">↓ Konfiguration sichern</button>
-   </div>
    </section>
    <section id="view-quotas" class="inner-view" hidden>
     <div class="step-context"><span>03 / 04</span><strong>🎰 Wie viele Lose gewinnen?</strong><p>Einfachste Einstellung: „Automatisch“. Nur wenn du bestimmte Anzahlen willst, musst du exakte Stückzahlen vorgeben.</p></div>
@@ -207,6 +247,7 @@
     <button id="history-refresh" type="button" class="ghost">↻ Historie laden</button>
     <div id="history-entries" class="history-list"><p>Noch keine Historie geladen.</p></div>
    </section>
+   </div>
   </main>
   <aside class="studio-sidebar">
    <section class="side-panel">
@@ -239,6 +280,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./scratch-editions.js?v=17"></script>
+<script type="module" src="./scratch-editions.js?v=18"></script>
 </body>
 </html>
