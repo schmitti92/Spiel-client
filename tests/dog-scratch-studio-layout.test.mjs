@@ -76,7 +76,7 @@ test('simple screen directly supports five tickets each with eight prize payouts
  assert.match(js,/function addFixedPrizeRow\(\)/);
  assert.match(js,/renderQuota\(\);\s*readForm\(\);updateSide\(\);invalidatePreview\(\)/);
  assert.match(js,/draft\.quotas=quotas/);
- assert.match(js,/if\(fixed>500\)/);
+ assert.match(js,/if\(fixed>sizeOf\(\)\)/);
  assert.match(css,/\.simple-prize-distribution/);
  assert.match(css,/\.simple-prize-row/);
 });
@@ -104,5 +104,21 @@ test('the real preview can inspect server-checked scratch boards without sale nu
  assert.match(js,/\/editions\/preview\/.*\/tickets/);
  assert.match(js,/printed-ticket-board/);
  assert.match(css,/\.printed-ticket-sample/);
- assert.match(html,/scratch-editions\.js\?v=22/);
+ assert.match(html,/scratch-editions\.js\?v=23/);
+});
+
+test('new editions may contain fewer than 500 tickets without changing historical stock',()=>{
+ for(const id of ['simple-print-size','ed-print-size','simple-light-budget','simple-unlock-cap','simple-symbol-grid'])
+  assert.ok(ids.includes(id),id+' must be a real editable control');
+ assert.match(js,/printSize:number\('ed-print-size'\)/);
+ assert.match(js,/function rebalanceLockedOdds/);
+ assert.match(js,/function renderSimpleSymbols/);
+ assert.match(js,/draft\.printSize/);
+ assert.match(js,/\(doc\.config\?\.printSize\?\?500\)/);
+ assert.match(js,/if\(fixed>sizeOf\(\)\)/);
+ assert.match(html,/01 · Los und Budget/);
+ assert.match(html,/02 · Exakte Gewinne/);
+ assert.match(html,/03 · Gewinnsymbole/);
+ assert.match(html,/04 · Probedruck/);
+ assert.match(css,/\.simple-symbol-section/);
 });
