@@ -437,6 +437,10 @@ function setupSimpleEditor(){
 }
 function validateDraftLocally(){
  const draft=drafts[current.id],errors=[];
+ if(!Number.isSafeInteger(draft.printSize)||draft.printSize<1||draft.printSize>500)
+  errors.push({view:'plan',message:'Wähle eine Auflagengröße zwischen 1 und 500 Losen.'});
+ if(draft.maxUnlocks>draft.printSize||draft.doubleWin.minTickets>draft.printSize)
+  errors.push({view:'plan',message:'Hauptgewinn- oder ✖️2-Stückzahlen überschreiten die Anzahl der Lose.'});
  if(!draft.title||draft.title.length>70)errors.push({view:'plan',message:'Bitte einen gültigen Auflagennamen eingeben.'});
  if(!Number.isSafeInteger(draft.ticketPrice)||draft.ticketPrice<0||draft.ticketPrice>1000000)
   errors.push({view:'plan',message:'Der Lospreis muss zwischen 0 und 1.000.000 liegen.'});
@@ -517,9 +521,9 @@ function updateSide(){
  $('side-budget').textContent=fmt(draft.maxTotalCoins)+' 🪙';
  $('side-target').textContent=fmt(draft.targetTotalCoins)+' 🪙';
  $('side-price').textContent=fmt(draft.ticketPrice)+' 🪙';
- $('side-sales').textContent=fmt(draft.ticketPrice*500)+' 🪙';
+ $('side-sales').textContent=fmt(draft.ticketPrice*draft.printSize)+' 🪙';
  $('side-lights').textContent=fmt(draft.symbolBudgets?.lights?.maxTotal||0)+' ⭐';
- $('ed-sales-projection').textContent=fmt(draft.ticketPrice*500)+' 🪙';
+ $('ed-sales-projection').textContent=fmt(draft.ticketPrice*draft.printSize)+' 🪙';
  const portion=draft.maxTotalCoins>0?Math.min(100,draft.targetTotalCoins/draft.maxTotalCoins*100):0;
  $('target-progress-fill').style.width=portion.toFixed(1)+'%';
  $('target-progress-label').textContent=fmt(draft.targetTotalCoins)+' von '+fmt(draft.maxTotalCoins)+' 🪙';
@@ -578,10 +582,10 @@ function renderCurrency(){
    meta.id==='gift'?20:50000000);
   build('max',meta.id==='gift'?'Max. Freischaltungen auf einem Los':'Höchstgewinn pro Treffer',
    meta.id==='gift'?20:50000000);
-  build('minTotal',meta.id==='gift'?'Mindestens 🎁 auf 500 Losen':'Mindestbetrag in allen 500 Losen',
+  build('minTotal',meta.id==='gift'?'Mindestens 🎁 in der Auflage':'Mindestbetrag dieser Auflage',
    meta.id==='gift'?500:1000000000000);
-  build('maxTotal',meta.id==='gift'?'Maximal 🎁 auf 500 Losen':
-   meta.id==='lights'?'Maximal ⭐ in allen 500 Losen':'Gesamtbudget dieser Symbolart',
+  build('maxTotal',meta.id==='gift'?'Maximal 🎁 in der Auflage':
+   meta.id==='lights'?'Maximal ⭐ in der Auflage':'Gesamtbudget dieser Symbolart',
    meta.id==='gift'?500:1000000000000);
   if(meta.id==='lights'){
    const field=node('label','currency-field');
@@ -661,7 +665,7 @@ function renderQuota(){
   const heading=node('strong','',count===0?'❄️ Niete · 0 Gewinne':
    '🏆 '+count+' '+(count===1?'Gewinn':'Gewinne'));
   const field=node('input');
-  field.type='number';field.min='0';field.max='500';field.step='1';
+  field.type='number';field.min='0';field.max=String(sizeOf());field.step='1';
   field.inputMode='numeric';field.dataset.count=String(count);
   field.placeholder='Automatisch';
   const quota=drafts[current.id].quotas[count];
@@ -1103,7 +1107,7 @@ async function loadHistory(){
    const row=node('div','history-row');
    row.append(node('strong','',doc.title||doc.id),
     node('small','',new Date(doc.createdAt).toLocaleString('de-DE')+
-     ' · '+doc.status+' · '+fmt(doc.issued)+'/500 ausgegeben · '+
+     ' · '+doc.status+' · '+fmt(doc.issued)+'/'+fmt(doc.config?.printSize??500)+' ausgegeben · '+
      fmt(doc.summary?.totalCoins)+' 🪙 verplant · '+fmt(doc.issuedCoins)+' 🪙 ausgezahlt'));
    root.append(row);
   }
@@ -1140,7 +1144,7 @@ $('ed-advanced-limits').addEventListener('change',()=>{
 $('ed-preview').addEventListener('click',async()=>{
  const draft=readForm();
  if(!signedIn()){showMessage('Bitte zuerst mit deinem DOG-Profil anmelden.','error');return}
- setBusy(true);showMessage('🎲 Render berechnet die 500 Lose und prüft alle Gewinnlimits …');
+ setBusy(true);showMessage('🎲 Render berechnet '+fmt(sizeOf())+' Lose und prüft alle Gewinnlimits …');
  try{
   const result=await api('/editions/preview',{config:draft});
   showPreview(result);
