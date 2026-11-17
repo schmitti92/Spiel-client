@@ -532,7 +532,7 @@ export function initChristmasScratch(){
   set('gs-none',(cfg.weights?.none??200)/10);
   set('gs-unlock',(cfg.weights?.unlock??111)/10);
   for(let i=0;i<3;i++)set('gs-coin-'+i,cfg.coinAmounts?.[i]??[10,40,100][i]);
-  set('gs-max-prizes',cfg.maxPrizes??3);
+  set('gs-max-prizes',Math.min(3,cfg.maxPrizes??3));
   set('gs-extra',cfg.extraCoinChance??30);
   set('gs-double',(cfg.doubleChancePer1000??110)/10);
   set('gs-light-chance',(cfg.lightChancePer1000??100)/10);
@@ -570,7 +570,7 @@ export function initChristmasScratch(){
   if(lightMin>lightMax)throw Error('Der kleinste Lichtbonus darf nicht höher als der größte sein.');
   return {
    price:safeInt('gs-price',0,1000000),nonePer1000,unlockPer1000,
-   coinAmounts,maxPrizes:safeInt('gs-max-prizes',1,10),
+   coinAmounts,maxPrizes:safeInt('gs-max-prizes',1,3),
    extraCoinChance:safeInt('gs-extra',0,100),
    doubleChancePer1000:percent('gs-double'),
    lightChancePer1000:percent('gs-light-chance'),lightMin,lightMax
@@ -592,7 +592,7 @@ export function initChristmasScratch(){
     ['none',id==='premium_27'?'Kein zusätzlicher Sondergewinn (%)':'Niete (%)',settings.weights.none/10,'0.1'],
     ['coins',id==='premium_27'?'Münz-Bonuskategorie (%)':'Münzen (%)',settings.weights.coins/10,'0.1'],
     ['unlock','Freischaltung (%)',settings.weights.unlock/10,'0.1'],
-    ['extraCoinChance','Zusatz-Münzchance (%)',settings.extraCoinChance,'1']
+    ['extraCoinChance',id==='gifts'?'Zusätzliche echte Dreierreihen (%)':'Zusatz-Münzchance (%)',settings.extraCoinChance,'1']
    ]){
     const field=el('label','scratch-host-field');
     field.append(el('span','',label));
@@ -601,13 +601,15 @@ export function initChristmasScratch(){
     field.append(input);fields.append(field);
    }
    const maxField=el('label','scratch-host-field');
-   maxField.append(el('span','','Max. gleichzeitige Gewinne'));
+   maxField.append(el('span','',id==='gifts'?'Max. gleiche Dreierlinien':'Max. gleichzeitige Gewinne'));
    const select=el('select');select.dataset.key='maxPrizes';
-   for(let n=(id==='premium_27'?6:1);n<=10;n++){
+   for(let n=(id==='premium_27'?6:1);n<=(id==='gifts'?3:10);n++){
     const option=el('option','',String(n));option.value=String(n);
     option.selected=n===settings.maxPrizes;select.append(option);
    }
    maxField.append(select);fields.append(maxField);block.append(fields);
+   if(id==='gifts')block.append(el('small','scratch-host-premium-minimum',
+    '🎁 Geschenkelinie: Jeder Geld- und Hauptgewinn braucht eine eigene echte Dreierlinie aus exakt gleichen Zeichen. Maximal 3 sichtbare Gewinne; kein unsichtbarer Zusatzgewinn.'));
    if(id==='premium_27')block.append(el('small','scratch-host-premium-minimum',
     '🎟️ Premium: Vier Geldreihen sind immer garantiert. Mindestens sechs Gewinnplätze für Geldreihen, 1.000er-Bonus und eine mögliche Freischaltung. Die Nieten-Kategorie bedeutet hier nur: kein zusätzlicher Sondergewinn.'));
    // Each money icon has a different coin payout, separately set for
@@ -731,7 +733,7 @@ export function initChristmasScratch(){
    const maxPrizes=Number(input('maxPrizes').value);
    if(!Number.isInteger(extraCoinChance)||extraCoinChance<0||extraCoinChance>100)
     throw Error('Die zusätzliche Münzchance muss zwischen 0 und 100 % liegen.');
-   if(!Number.isInteger(maxPrizes)||maxPrizes<(id==='premium_27'?6:1)||maxPrizes>10)
+   if(!Number.isInteger(maxPrizes)||maxPrizes<(id==='premium_27'?6:1)||maxPrizes>(id==='gifts'?3:10))
     throw Error('Ungültige Anzahl gleichzeitiger Gewinne.');
    const coinAmounts=Array.from({length:3},(_,i)=>Number(
     block.querySelector('[data-coin-index="'+i+'"]')?.value));
