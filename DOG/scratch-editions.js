@@ -1140,7 +1140,16 @@ $('ed-advanced-limits').addEventListener('change',()=>{
 });
 $('ed-preview').addEventListener('click',async()=>{
  const draft=readForm();
- if(!signedIn()){showMessage('Bitte zuerst mit deinem DOG-Profil anmelden.','error');return}
+ // A failed profile refresh must not be mistaken for a manual sign-out.
+ // Recover an existing Firebase session before starting a long print run.
+ if(!signedIn()&&window.SpielOnline?.state?.()?.user){
+  try{await window.SpielOnline.refresh()}catch{}
+ }
+ if(!signedIn()){
+  showMessage(window.SpielOnline?.state?.()?.user?
+   '⚠️ Dein Firebase-Konto ist weiterhin angemeldet, aber die Profilverbindung zu Render ist unterbrochen. Prüfe die Internetverbindung und versuche es erneut.':
+   'Bitte zuerst mit deinem DOG-Profil anmelden.','error');return;
+ }
  setBusy(true);showMessage('🎲 Render berechnet '+fmt(sizeOf())+' Lose und prüft alle Gewinnlimits …');
  try{
   const result=await api('/editions/preview',{config:draft});
