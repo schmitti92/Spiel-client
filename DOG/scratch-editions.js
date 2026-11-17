@@ -444,7 +444,7 @@ function renderLive(){
   label.textContent='Noch keine Auflage';label.classList.remove('live');
   root.append(node('p','live-detail','🔒 Aktuell keine Auflage vorhanden. Neue Lose sind im Spiel gesperrt, bis du eine neue 500er-Auflage veröffentlichst.'));
  }else{
-  label.textContent=doc.remaining>0?doc.remaining+' von 500 übrig':'Ausverkauft';
+  label.textContent=doc.remaining>0?doc.remaining+' von 500 übrig':'🔒 Aktuell keine Auflage vorhanden';
   label.classList.toggle('live',doc.remaining>0);
   root.append(node('div','live-total',fmt(doc.remaining)+' / 500'));
   const track=node('div','live-progress'),bar=node('i');
@@ -453,6 +453,7 @@ function renderLive(){
   description.append(node('b','',doc.title),node('div','',
    'Druck: '+new Date(doc.createdAt).toLocaleString('de-DE')+' · Ausgabe '+doc.id),
    node('div','','Ausgegeben: '+fmt(doc.issued)+' Lose'),
+   ...(doc.remaining===0?[node('div','','🔒 Serie ausverkauft · Neue Auflage erforderlich')]:[]),
    node('div','','Ausgezahlt: '+fmt(doc.issuedCoins)+' 🪙'),
    node('div','','Weihnachtslichter: '+fmt(doc.issuedLights)+' ⭐'),
    node('div','','Gesamtdruck: '+fmt(doc.summary?.totalCoins)+' 🪙'),
