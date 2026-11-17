@@ -457,6 +457,71 @@ export function initChristmasScratch(){
   }
   drawScratchAnalytics();
  }
+ // Settings are scoped to the displayed Geschenkelinie, not to 500-card
+ // editions or other scratch types. The server writes them atomically.
+ function updateGiftsMoneyPreview(){
+  const none=Number($('gs-none').value),unlock=Number($('gs-unlock').value);
+  const value=$('gs-money-auto');
+  const box=value?.closest('.scratch-gifts-auto');
+  const ok=Number.isFinite(none)&&Number.isFinite(unlock)&&
+   none>=0&&unlock>=0&&none+unlock<=100;
+  if(value)value.textContent=ok?(100-none-unlock).toLocaleString('de-DE',{
+   maximumFractionDigits:1})+' %':'Eingaben über 100 %';
+  box?.classList.toggle('is-invalid',!ok);
+  return ok;
+ }
+ function openGiftsSettings(){
+  const cfg=status?.settings?.variants?.gifts;
+  if(!cfg||!giftsDialog){
+   showAlert('⚠️ Geschenkelinie-Einstellungen noch nicht geladen. Bitte Kontostand aktualisieren.','gifts');
+   return;
+  }
+  const set=(id,value)=>{$(id).value=String(value)};
+  set('gs-price',cfg.price??200);
+  set('gs-none',(cfg.weights?.none??200)/10);
+  set('gs-unlock',(cfg.weights?.unlock??111)/10);
+  for(let i=0;i<3;i++)set('gs-coin-'+i,cfg.coinAmounts?.[i]??[10,40,100][i]);
+  set('gs-max-prizes',cfg.maxPrizes??3);
+  set('gs-extra',cfg.extraCoinChance??30);
+  set('gs-double',(cfg.doubleChancePer1000??110)/10);
+  set('gs-light-chance',(cfg.lightChancePer1000??100)/10);
+  set('gs-light-min',cfg.lightMin??1);
+  set('gs-light-max',cfg.lightMax??10);
+  $('scratch-gifts-settings-feedback').textContent='';
+  updateGiftsMoneyPreview();
+  giftsDialog.showModal();
+ }
+ function readGiftsSettings(){
+  const safeInt=(id,min,max)=>{
+   const input=$(id),n=Number(input.value);
+   if(!input.value.trim()||!Number.isSafeInteger(n)||n<min||n>max)
+    throw Error('Bitte „'+(input.closest('label')?.querySelector('span')?.textContent||id)+'“ prüfen.');
+   return n;
+  };
+  const percent=(id)=>{
+   const input=$(id),n=Number(input.value);
+   if(!input.value.trim()||!Number.isFinite(n)||n<0||n>100||
+      Math.abs(n*10-Math.round(n*10))>0.000001)
+    throw Error('„'+(input.closest('label')?.querySelector('span')?.textContent||id)+
+     '“: Bitte eine Zahl von 0 bis 100 in Schritten von 0,1 % eingeben.');
+   return Math.round(n*10);
+  };
+  const nonePer1000=percent('gs-none'),unlockPer1000=percent('gs-unlock');
+  if(nonePer1000+unlockPer1000>1000)
+   throw Error('Nieten und Freischaltungen dürfen zusammen höchstens 100 % ergeben.');
+  const coinAmounts=[0,1,2].map(i=>safeInt('gs-coin-'+i,1,50000000));
+  if(!(coinAmounts[0]<coinAmounts[1]&&coinAmounts[1]<coinAmounts[2]))
+   throw Error('Die Geldwerte müssen steigen: 🪙 kleiner als 💵 und 💵 kleiner als 💼.');
+  const lightMin=safeInt('gs-light-min',1,100),lightMax=safeInt('gs-light-max',1,100);
+  if(lightMin>lightMax)throw Error('Der kleinste Lichtbonus darf nicht höher als der größte sein.');
+  return {
+   price:safeInt('gs-price',0,1000000),nonePer1000,unlockPer1000,
+   coinAmounts,maxPrizes:safeInt('gs-max-prizes',1,10),
+   extraCoinChance:safeInt('gs-extra',0,100),
+   doubleChancePer1000:percent('gs-double'),
+   lightChancePer1000:percent('gs-light-chance'),lightMin,lightMax
+  };
+ }
  function openSettings(){
   
   if(!status?.settings||!hostDialog){notice('⚠️ Einstellungen konnten noch nicht geladen werden. Bitte Kontostand aktualisieren.');return;}
@@ -1617,6 +1682,34 @@ export function initChristmasScratch(){
    '✅ Ergebnis bestätigt: Niete · 0 Münzen. Du kannst das nächste Los öffnen.');
  });
  $('scratch-refresh').addEventListener('click',()=>void load());
+ $('scratch-gifts-settings-open').addEventListener('click',openGiftsSettings);
+ $('scratch-gifts-settings-close').addEventListener('click',()=>giftsDialog.close());
+ $('scratch-gifts-settings-cancel').addEventListener('click',()=>giftsDialog.close());
+ giftsDialog?.addEventListener('click',e=>{if(e.target===giftsDialog)giftsDialog.close()});
+ for(const id of ['gs-none','gs-unlock'])
+  $(id).addEventListener('input',updateGiftsMoneyPreview);
+ $('scratch-gifts-settings-form').addEventListener('invalid',e=>{
+  const field=e.target;
+  $('scratch-gifts-settings-feedback').textContent='⚠️ Bitte „'+
+   (field.closest('label')?.querySelector('span')?.textContent||'Eingabe')+'“ prüfen.';
+ },true);
+ $('scratch-gifts-settings-form').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const feedback=$('scratch-gifts-settings-feedback'),save=$('scratch-gifts-settings-save');
+  if(save.disabled)return;
+  if(!account()){feedback.textContent='⚠️ Bitte zuerst mit deinem DOG-Profil anmelden.';return}
+  try{
+   const gifts=readGiftsSettings();
+   save.disabled=true;feedback.textContent='💾 Geschenkelinie-Einstellungen werden gespeichert …';
+   const response=await query('/settings/gifts',{gifts});
+   if(!response.settings?.variants?.gifts)throw Error('Der Server hat die Einstellungen nicht bestätigt.');
+   if(!status)status={};
+   status.settings=response.settings;
+   giftsDialog.close();drawShop();
+   notice('✅ Geschenkelinie gespeichert. Alle neuen Geschenkelinie-Lose verwenden diese Werte. Bereits geöffnete Lose bleiben unverändert.');
+  }catch(error){feedback.textContent='⚠️ '+(error.message||'Speichern fehlgeschlagen');}
+  finally{save.disabled=false}
+ });
  $('scratch-host-settings').addEventListener('click',openSettings);
  $('scratch-host-close').addEventListener('click',()=>hostDialog.close());
  $('scratch-host-cancel').addEventListener('click',()=>hostDialog.close());
