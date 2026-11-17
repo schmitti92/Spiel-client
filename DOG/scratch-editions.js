@@ -765,15 +765,11 @@ function renderGameSettings(root){
  const v=current,draft=drafts[v.id];
  if(!draft.gameSettings)draft.gameSettings=defaultGameSettings(v);
  const cfg=draft.gameSettings;
- if(Array.isArray(cfg?.giftSymbolWeights)&&cfg.giftSymbolWeights.length===4){
-  const scaled=cfg.giftSymbolWeights.map(weight=>Math.floor(weight*0.9));
-  cfg.giftSymbolWeights=[...scaled,1000-scaled.reduce((sum,x)=>sum+x,0)];
- }
  if(!cfg)return;
+ applyAutomaticSymbolMix(draft,v);
  const section=node('div','mechanic-card');
- section.append(node('h4','','⚙️ Zusätzliche Spieleinstellungen'),
-  node('p','','Hier kannst du seltene Treffer und Sonderregeln für diese Auflage fein einstellen. '+
-   'Hauptchancen darunter stehen direkt in Prozent; du brauchst keine Promille umzurechnen.'));
+ section.append(node('h4','','⚙️ Zusätzliche Spielregeln'),
+  node('p','','Nur besondere Spielregeln bleiben einstellbar. Die Häufigkeit der Gewinnsymbole übernimmt die Automatik.'));
  const grid=node('div','field-layout');grid.style.marginTop='15px';
  const field=(label,property,index=null,min=0,max=50000000)=>{
   const item=node('label','field');item.append(node('span','',label));
@@ -787,50 +783,7 @@ function renderGameSettings(root){
   });
   item.append(input);grid.append(item);
  };
- // Percent groups are shown as percentages, never raw promille.
- // All values are still written in server-native 0..1000 integer units.
- const percentGroup=(heading,explanation,labels,initial,save)=>{
-  const group=node('section','odds-group');
-  group.append(node('h5','',heading),node('p','',explanation));
-  const rows=node('div','odds-percent-grid'),inputs=[];
-  const totalLabel=node('small','odds-sum');
-  const render=values=>{
-   inputs.forEach((el,i)=>el.value=(values[i]/10).toLocaleString('de-DE',{
-    useGrouping:false,maximumFractionDigits:1}).replace(',','.'));
-   const total=values.reduce((a,b)=>a+b,0);
-   totalLabel.textContent=total===1000?'✅ Zusammen genau 100 %':
-    '⚠️ Gesamt: '+(total/10).toLocaleString('de-DE',{maximumFractionDigits:1})+
-     ' % · Bitte auf 100 % einstellen';
-   totalLabel.dataset.valid=String(total===1000);
-  };
-  for(const [i,label] of labels.entries()){
-   const cell=node('label','odds-percent-field');
-   cell.append(node('span','',label));
-   const wrapper=node('div','odds-percent-control'),input=node('input');
-   input.type='number';input.min='0';input.max='100';input.step='0.1';
-   input.value=String((initial[i]||0)/10);input.inputMode='decimal';
-   wrapper.append(input,node('b','','%'));cell.append(wrapper);rows.append(cell);
-   inputs.push(input);
-   input.addEventListener('change',()=>{
-    const entered=Number(input.value);
-    if(!Number.isFinite(entered)||entered<0||entered>100){
-     input.value=String((initial[i]||0)/10);return;
-    }
-    const current=inputs.map(n=>Math.max(0,Math.min(1000,Math.round(Number(n.value)*10))));
-    const next=$('ed-auto-percent').checked?
-     rebalanceOdds(current,i,entered*10):current;
-    initial=[...next];save(next);render(next);invalidatePreview();updateSide();updateSide();
-   });
-  }
-  const actions=node('div','odds-group-actions'),equal=node('button','odds-equal','⚖️ Gleichmäßig aufteilen');
-  equal.type='button';equal.addEventListener('click',()=>{
-   const q=Math.floor(1000/labels.length);
-   const next=labels.map((_,i)=>q+(i<1000-q*labels.length?1:0));
-   initial=[...next];save(next);render(next);invalidatePreview();
-  });
-  actions.append(equal,totalLabel);
-  group.append(rows,actions);render(initial);root.append(group);
- };
+ // Die Verteilung der Symbole wird automatisch bestimmt.
  if(cfg.weights){
   field('🎉 Zusatzmünzen (%)','extraCoinChance',null,0,100);
   field('🏆 Maximalgewinne der Spielmechanik','maxPrizes',null,v.id==='premium_27'?6:1,10);
@@ -857,32 +810,8 @@ function renderGameSettings(root){
  if(cfg.giftFallbackCoins!==undefined)
   field('🎁 Münzen statt Freischaltung','giftFallbackCoins',null,0,50000000);
  section.append(grid);
- if(cfg.weights){
-  const keys=['none','coins','unlock'];
-  percentGroup('① Gewinnarten', 'Wie oft ist ein Los eine Niete, ein Geldtreffer oder ein freischaltbarer Hauptgewinn? '+
-   'Dies sind die Basisanteile; bei Premium bleiben vier Geldreihen garantiert.',
-   ['❄️ Niete','🪙 Geldgewinn','🎁 Hauptgewinn'],
-   keys.map(k=>cfg.weights[k]),vals=>keys.forEach((k,i)=>{cfg.weights[k]=vals[i]}));
- }
- if(Array.isArray(cfg.moneySymbolWeights)){
-  percentGroup('② Geldsymbole','Wie werden die Geldgewinne auf Münze, Schein und Koffer verteilt?',
-   ['🪙 Münze','💵 Geldschein','💼 Koffer'],cfg.moneySymbolWeights,
-   vals=>cfg.moneySymbolWeights=[...vals]);
- }
- if(Array.isArray(cfg.symbolWeights)){
-  percentGroup('② Symbolverteilung','Gewinnchance pro Symbolart. Die fünf Geschenke teilen sich den Geschenk-Anteil.',
-   ['🪙 Münze','💵 Schein','💼 Koffer','🎁 Hauptgewinn'],cfg.symbolWeights,
-   vals=>cfg.symbolWeights=[...vals]);
- }
- if(Array.isArray(cfg.giftSymbolWeights)){
-  percentGroup('③ Die fünf Hauptgewinn-Symbole',
-   'Welches Geschenk-Symbol erscheint, wenn ein Freischaltgewinn gezogen wurde?',
-   ['🎁 Geschenk','💝 Herz','🎀 Schleife','🧧 Umschlag','🛍️ Geschenktüte'],
-   cfg.giftSymbolWeights,vals=>cfg.giftSymbolWeights=[...vals]);
- }
- const footer=node('p','','✨ Automatik an: Ändere nur eine Chance; der Rest wird automatisch auf 100 % ergänzt. '+
-  'Die Geldbeträge und Gesamtbudgets stellst du übersichtlich in Schritt 1 ein. '+
-  '✖️2 hat eine zusätzliche eigene Chance und gehört nicht zur 100-%-Summe.');
+ const footer=node('p','',
+  '✨ Die Gewinnsymbole werden automatisch verteilt. Du stellst die Beträge, exakten Gewinnzahlen und Sonderregeln ein.');
  footer.style.marginTop='12px';section.append(footer);root.append(section);
 }
 function renderRules(){
@@ -897,11 +826,7 @@ function renderRules(){
  details.append(one);
  const note=node('div','mechanic-card');note.append(node('h4','','🎯 Was wird beim Druck berücksichtigt?'));
  if(classic){
-  const weights=classic.weights||{};
-  note.append(node('p','',
-   'Live-Einstellungen: Hauptkategorien Niete '+fmt((weights.none||0)/10)+' %, Geld '+fmt((weights.coins||0)/10)+
-   ' %, Freischaltung '+fmt((weights.unlock||0)/10)+' %. Zusatzmünzchance '+fmt(classic.extraCoinChance)+
-   ' %. Aktuelles Maximum: '+fmt(classic.maxPrizes)+' Gewinne. Die eingegebenen Quoten des Auflagenstudios können diese Verteilung gezielt verändern.'));
+  note.append(node('p','','Die Häufigkeit der Gewinnsymbole übernimmt die Automatik. Deine festen Gewinnzahlen und Betragsgrenzen gelten weiterhin.'));
   const amounts=classic.coinAmounts||[];
   const numbers=node('div','mechanic-numbers');
   [['🪙 Münze',amounts[0]],['💵 Schein',amounts[1]],['💼 Koffer',amounts[2]]]
@@ -1157,6 +1082,7 @@ async function load(){
   settings=scratch.scratch?.settings||null;
   for(const variant of VARIANTS){
    if(!drafts[variant.id].gameSettings)drafts[variant.id].gameSettings=defaultGameSettings(variant);
+   applyAutomaticSymbolMix(drafts[variant.id],variant);
   }
   for(const item of editions.editions||[])live[item.variantId]=item.active;
   for(const item of editions.catalog||[])catalog[item.variantId]=item;
@@ -1208,7 +1134,6 @@ for(const id of ['ed-name','ed-price','ed-print-size','ed-budget','ed-target','e
 $('quota-grid').addEventListener('input',()=>{readForm();updateSide();invalidatePreview()});
 $('ed-volatility').addEventListener('input',()=>{readForm();updateSide();invalidatePreview()});
 $('ed-symbol-next').addEventListener('click',()=>activateView('mechanic'));
-$('ed-chance-shortcut').addEventListener('click',()=>activateView('mechanic'));
 $('ed-advanced-limits').addEventListener('change',()=>{
  for(const field of $('currency-grid').querySelectorAll('[data-advanced]'))
   field.hidden=!$('ed-advanced-limits').checked;
