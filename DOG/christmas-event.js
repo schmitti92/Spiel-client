@@ -60,7 +60,7 @@ const treeDetails=[
 const eventImageRoot='weihnachtsevent-bilder/';
 const assetPath=(id,level)=>{
  if(id==='academy'&&Number.isInteger(level)&&level>=1&&level<=5)return '../xp_akademie_stufe_'+level+'.png';
- if(id==='luckhouse'&&Number.isInteger(level)&&level>=1&&level<=5)return '../glueckshaus_stufe_'+level+'.png';
+ if(id==='luckhouse'&&Number.isInteger(level)&&level>=1&&level<=5)return 'weihnachtsevent-bilder/glueckshaus_stufe_'+level+'.png';
  const stem={
   tower:'weihnachtslichter_turm_stufe_',
   workshop:'Wichtelwerkstatt_Stufe_',
