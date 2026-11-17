@@ -143,3 +143,25 @@ button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;curso
 .currency-result-row strong{color:#f4d59f;white-space:nowrap}
 .currency-result-meter{grid-column:span 2;height:8px;background:#0e1c30;border-radius:7px;overflow:hidden}.currency-result-meter i{display:block;background:linear-gradient(90deg,#70aab1,#f3c679);height:100%;border-radius:7px}
 @media(max-width:570px){.currency-grid{grid-template-columns:1fr}.currency-headline{align-items:start}.currency-medallion{min-width:52px;height:52px;font-size:25px}.currency-card{padding:12px}.currency-result-row{font-size:11px}}
+
+/* Start with the complete winning-symbol catalogue. */
+.symbol-intro{border-radius:14px;border:1px solid #a18c6a;background:
+ linear-gradient(135deg,#3b342a,#202d3a);padding:16px 18px;margin-bottom:14px}
+.symbol-intro-step{display:block;letter-spacing:.16em;color:#f3ca8b;font-weight:850;font-size:10px;margin-bottom:6px}
+.symbol-intro strong{display:block;color:#fff0ca;font:700 21px Georgia,serif}
+.symbol-intro p{font-size:12px;line-height:1.6;color:#cbd8e5;margin:6px 0 0}
+.symbol-overview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:21px}
+.symbol-overview-tile{display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:center;gap:6px;
+ border:1px solid #5f7790;border-radius:14px;padding:12px 6px;min-width:0;min-height:132px;
+ background:linear-gradient(160deg,#243d53,#15283a);color:#e8eef6;box-shadow:inset 0 1px #ffffff15;transition:transform .16s,border-color .16s}
+.symbol-overview-tile:hover,.symbol-overview-tile:focus-visible{border-color:#e3ba7d;transform:translateY(-2px);outline:none}
+.symbol-overview-tile.symbol-overview-lights{background:radial-gradient(circle at 50% 0,#8d702e94,transparent 75%),#2a302d;border-color:#b28c4b}
+.symbol-overview-tile.symbol-overview-gift{background:linear-gradient(165deg,#413341,#252d44);border-color:#986f84}
+.symbol-overview-icon{font-size:24px;white-space:nowrap;max-width:100%;line-height:1.3}
+.symbol-overview-tile strong{font-size:12px;line-height:1.2}
+.symbol-overview-range{color:#f3d9a6;font-size:12px;font-weight:750}
+.symbol-overview-tile small{font-size:10px;color:#afc3d4;line-height:1.45;overflow-wrap:anywhere}
+.currency-next{margin:16px 0 6px;width:100%;min-height:46px}
+.subtab[data-view="currency"].active{background:linear-gradient(135deg,#634924,#403322);border-color:#e1b770}
+@media(max-width:860px){.symbol-overview{grid-template-columns:repeat(3,minmax(0,1fr))}.symbol-overview-tile{min-height:116px}}
+@media(max-width:480px){.symbol-overview{grid-template-columns:repeat(2,minmax(0,1fr))}.symbol-overview-icon{font-size:23px}.symbol-intro{padding:12px}.symbol-intro strong{font-size:19px}}
