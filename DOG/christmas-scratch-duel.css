@@ -105,6 +105,29 @@
  font:900 clamp(22px,3.9vw,65px)/1 system-ui,sans-serif!important;
  text-shadow:0 2px 9px #150509,0 0 10px #ffe18b!important;
 }
+/* The selected prize glyph and an optional ✖️2 are revealed in the
+   SAME covered field as the winning ◯/✕ sign, never on a random game cell. */
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] .scratch-duel-winning-symbol .scratch-cell-symbol{
+ transform:translateX(-14%)!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] .scratch-duel-winning-symbol .scratch-duel-prize-symbol{
+ position:absolute!important;right:5%!important;top:7%!important;
+ display:grid!important;place-items:center!important;
+ font:900 clamp(10px,1.6vw,26px)/1 system-ui,sans-serif!important;
+ text-shadow:0 1px 3px #20070b,0 0 7px #f6dfad!important;
+ z-index:2!important;pointer-events:none!important;
+}
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] .scratch-duel-winning-symbol .scratch-duel-double-badge{
+ position:absolute!important;right:3%!important;bottom:3%!important;
+ display:grid!important;place-items:center!important;
+ padding:1px 2px!important;border:1px solid #ffedb9!important;
+ border-radius:5px!important;
+ background:linear-gradient(135deg,#f9e1a2,#dfad4b)!important;
+ color:#3e280c!important;
+ font:900 clamp(8px,1.12vw,17px)/1.15 system-ui,sans-serif!important;
+ box-shadow:0 0 7px #ffe3a588!important;
+ z-index:2!important;pointer-events:none!important;
+}
 .scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"] .scratch-duel-board-cell .scratch-cell-symbol{
  color:#7b2731!important;
  font:900 clamp(28px,5vw,76px)/1 Georgia,serif!important;
