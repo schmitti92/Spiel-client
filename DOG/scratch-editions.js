@@ -70,7 +70,7 @@ const baseDraft=variant=>({
 const drafts=Object.fromEntries(VARIANTS.map(v=>[v.id,baseDraft(v)]));
 const live={};
 const catalog={};
-let current=VARIANTS[0],view='plan',settings=null,preview=null,previewKey=null,busy=false;
+let current=VARIANTS[0],view='currency',settings=null,preview=null,previewKey=null,busy=false;
 let formInitialized=false;
 const labelFor=error=>({
  EDITION_STILL_ACTIVE:'Eine bestehende Auflage hat noch Restlose. Beende sie zuerst oder verkaufe sie vollständig.',
@@ -168,6 +168,7 @@ function renderCurrency(){
  for(const meta of CURRENCIES){
   const range=budgets[meta.id];
   const card=node('section','currency-card currency-'+meta.id);
+  card.id='symbol-editor-'+meta.id;
   const heading=node('div','currency-card-heading'),
    icon=node('span','currency-card-icon',meta.icon),
    title=node('div');
@@ -182,7 +183,7 @@ function renderCurrency(){
    input.addEventListener('input',()=>{
     const n=Number(input.value);
     range[prop]=Number.isFinite(n)?n:NaN;
-    updateSide();invalidatePreview();
+    updateSide();renderSymbolOverview();invalidatePreview();
    });
    field.append(input);fields.append(field);
   };
@@ -204,6 +205,30 @@ function renderCurrency(){
   card.append(badge);root.append(card);
  }
  $('currency-budget-remaining').textContent=fmt(draft.maxTotalCoins)+' 🪙 Gesamtobergrenze';
+ renderSymbolOverview();
+}
+function renderSymbolOverview(){
+ const root=$('symbol-overview');if(!root)return;
+ root.replaceChildren();
+ const ranges=drafts[current.id].symbolBudgets;
+ for(const cat of CURRENCIES){
+  const cfg=ranges[cat.id]||{};
+  const tile=node('button','symbol-overview-tile symbol-overview-'+cat.id);
+  tile.type='button';
+  tile.title='Werte für '+cat.name+' bearbeiten';
+  tile.append(node('span','symbol-overview-icon',
+    cat.id==='gift'?'🎁 💝 🎀 🧧':cat.icon),
+   node('strong','',cat.name),
+   node('span','symbol-overview-range',fmt(cfg.min)+'–'+fmt(cfg.max)+
+    (cat.id==='gift'?' pro Los':' je Treffer')),
+   node('small','','Auflage: '+fmt(cfg.minTotal)+'–'+fmt(cfg.maxTotal)+
+    (cat.id==='lights'?' ⭐':cat.id==='gift'?' 🎁':' 🪙')));
+  if(cat.id==='lights')
+   tile.append(node('small','','Lichtchance: '+fmt((cfg.chancePer1000||0)/10)+' %'));
+  tile.addEventListener('click',()=>document.getElementById('symbol-editor-'+cat.id)
+   ?.scrollIntoView({behavior:'smooth',block:'center'}));
+  root.append(tile);
+ }
 }
 function renderPreviewCurrencies(s){
  const root=$('preview-currencies');root.replaceChildren();
@@ -417,7 +442,7 @@ function renderLive(){
  root.replaceChildren();
  if(!doc){
   label.textContent='Noch keine Auflage';label.classList.remove('live');
-  root.append(node('p','live-detail','Für diese Losart ist aktuell keine eigene 500er-Auflage aktiviert. Das Spiel nutzt die normale Rubbellosziehung.'));
+  root.append(node('p','live-detail','🔒 Aktuell keine Auflage vorhanden. Neue Lose sind im Spiel gesperrt, bis du eine neue 500er-Auflage veröffentlichst.'));
  }else{
   label.textContent=doc.remaining>0?doc.remaining+' von 500 übrig':'Ausverkauft';
   label.classList.toggle('live',doc.remaining>0);
@@ -478,7 +503,7 @@ function switchVariant(id){
  $('ed-max-prizes').value=d.maxPrizesPerTicket;
  $('ed-max-unlocks').value=d.maxUnlocks;
  renderTabs();renderQuota();renderCurrency();renderRules();renderSpec();renderLive();updateSide();invalidatePreview();
- activateView('plan');
+ activateView('currency');
 }
 function showPreview(data){
  preview=data;previewKey=draftKey(drafts[current.id]);
@@ -582,6 +607,7 @@ for(const id of ['ed-name','ed-price','ed-budget','ed-target','ed-tolerance','ed
 }
 $('quota-grid').addEventListener('input',()=>{readForm();updateSide();invalidatePreview()});
 $('ed-volatility').addEventListener('input',()=>{readForm();updateSide();invalidatePreview()});
+$('ed-symbol-next').addEventListener('click',()=>activateView('plan'));
 $('ed-preview').addEventListener('click',async()=>{
  const draft=readForm();
  if(!signedIn()){showMessage('Bitte zuerst mit deinem DOG-Profil anmelden.','error');return}
