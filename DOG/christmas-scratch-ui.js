@@ -116,10 +116,14 @@ export function initChristmasScratch(){
   LOGIN_REQUIRED:'🔐 Melde dich erneut mit deinem DOG-Onlineprofil an.',
   SCRATCH_STORAGE_UNAVAILABLE:'⚠️ Die Rubbellos-Datenbank ist derzeit nicht erreichbar.',
   SCRATCH_BOARD_PRIZE_MISMATCH:'⚠️ Die Gewinnprüfung auf Render ist fehlgeschlagen. Dieses Los wurde nicht bestätigt.',
-  SERVER_UNAVAILABLE:'⚠️ Render ist momentan nicht erreichbar. Bitte erneut versuchen.'
+  SERVER_UNAVAILABLE:'⚠️ Render ist momentan nicht erreichbar. Bitte erneut versuchen.',
+  SCRATCH_GIFTS_EDITION_ACTIVE:'⚠️ Noch ist eine 500er-Auflage aktiv. Neue Auflagen sind nach dem 500. verkauften Los möglich.',
+  SCRATCH_GIFTS_EDITION_SOLD_OUT:'🎟️ Alle 500 Lose sind vergeben. Erstelle über ⚙️ Einstellungen eine neue Geschenkelinie-Auflage.',
+  SCRATCH_GIFTS_EDITION_INVALID_BUDGET:'⚠️ Das Gesamtbudget muss eine ganze Münzsumme zwischen 0 und 1.000.000.000.000 sein.'
  }[code]||'⚠️ Los konnte nicht geöffnet werden: '+String(code||'Serverfehler'));
  const hostDialog=$('scratch-host-dialog');
  const giftsDialog=$('scratch-gifts-settings-dialog');
+ let giftsEdition=null; // The globally shared finite 500-ticket series.
  const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
  const room=String(new URLSearchParams(location.search).get('room')||'').toUpperCase();
  const validRoom=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/.test(room);
@@ -370,10 +374,12 @@ export function initChristmasScratch(){
    const tier=SCRATCH_TICKET_TYPES.find(c=>c.id===option.tier);
    const lucky=status?.settings?.numberOne20;
    // Preserve the independent configured number lottery base price.
+   const variantConfig=option.id==='gifts'&&giftsEdition?.config?
+    giftsEdition.config:status?.settings?.variants?.[option.id];
    const ticketCost=option.id==='number_one_20'?(lucky?.price??tier.price):
-    option.id==='gifts'?(status?.settings?.variants?.gifts?.price??tier.price):tier.price;
+    option.id==='gifts'?(variantConfig?.price??tier.price):tier.price;
    const actualPrice=discountedPrice(ticketCost);
-   const variantConfig=status?.settings?.variants?.[option.id];
+   const onSale=option.id!=='gifts'||!giftsEdition||giftsEdition.remaining>0;
    const unlockChance=Number.isInteger(variantConfig?.weights?.unlock)?
     percent(variantConfig.weights.unlock):tier.unlockChance;
    const unlocksLeft=status?.pools?.[option.tier]?.remaining;
@@ -430,9 +436,16 @@ export function initChristmasScratch(){
    const vouchers=Number(status?.vouchers?.[option.tier]||0)+Number(status?.variantVouchers?.[option.id]||0);
    const buyBtn=el('button','scratch-buy','🎟️ Für '+num(actualPrice)+' Münzen öffnen');
    buyBtn.type='button';buyBtn.hidden=freeMode;
-   buyBtn.disabled=busy;
+   buyBtn.disabled=busy||!onSale;
    buyBtn.addEventListener('click',()=>void buy(option.tier,false,option.id));
    article.append(buyBtn);
+   if(option.id==='gifts'&&giftsEdition){
+    const chip=el('div','scratch-gifts-edition-chip',
+     '📦 Auflage: '+num(giftsEdition.remaining)+' von 500 Losen übrig · '+
+     num(giftsEdition.remainingCoins)+' von '+num(giftsEdition.maxTotalCoins)+' 🪙 Auszahlungsbudget übrig');
+    chip.dataset.state=giftsEdition.status;
+    article.append(chip);
+   }
    if(actionError?.variantId===option.id){
     const inline=el('div','scratch-card-open-error',actionError.message);
     inline.setAttribute('role','alert');article.append(inline);
@@ -449,14 +462,14 @@ export function initChristmasScratch(){
     const voucherBtn=el('button','scratch-free scratch-earned-voucher',
      '🎟️ Gesammeltes Los einlösen · '+num(vouchers)+' vorhanden');
     voucherBtn.type='button';
-    voucherBtn.disabled=busy;
+    voucherBtn.disabled=busy||!onSale;
     voucherBtn.addEventListener('click',()=>void buy(option.tier,false,option.id,true));
     article.append(voucherBtn);
    }
    if(freeMode||option.tier==='simple'){
     const free=el('button','scratch-free',freeMode?'🎁 Kostenlos öffnen':'🎁 Tagesfreilos öffnen');
     free.type='button';
-    free.disabled=busy;
+    free.disabled=busy||!onSale;
     free.addEventListener('click',()=>void buy(option.tier,true,option.id));
     article.append(free);
    }
