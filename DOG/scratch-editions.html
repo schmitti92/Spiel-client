@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#101d31">
 <title>DOG · Rubbellos-Auflagenstudio</title>
-<link rel="stylesheet" href="./scratch-editions.css?v=16">
+<link rel="stylesheet" href="./scratch-editions.css?v=17">
 </head>
 <body>
 <div class="snow-glow" aria-hidden="true"></div>
@@ -48,15 +48,16 @@
     <div class="simple-studio" aria-label="Einfache Einstellungen für 500 Rubbellose">
       <div class="simple-studio-head">
        <div><span class="eyebrow">✦ DEINE NÄCHSTE AUFLAGE ✦</span>
-        <h3>500 Lose mit wenigen Einstellungen</h3>
+        <h3 id="simple-series-title">01 · Los und Budget</h3>
         <p>Die wichtigsten Werte auswählen, Gewinne vom Server prüfen lassen und die Auflage veröffentlichen. Alles andere übernimmt die Automatik.</p></div>
        <span class="simple-print-icon" aria-hidden="true">🎟️</span>
       </div>
       <div class="simple-editor-grid">
+        <label class="simple-field"><span>🖨️ Anzahl Lose (1–500)</span><div class="simple-input"><input id="simple-print-size" type="number" min="1" max="500" step="1" inputmode="numeric" value="500"><b>🎟️</b></div><small>Standard 500; neue Auflagen dürfen auch kleiner sein.</small></label>
        <label class="simple-field"><span>🎟️ Preis pro Los</span>
         <div class="simple-input"><input id="simple-price" type="number" min="0" max="1000000" step="1" inputmode="numeric"><b>🪙</b></div>
         <small>Was ein Spieler für ein Los bezahlt.</small></label>
-       <label class="simple-field"><span>🪙 Geldbudget für 500 Lose</span>
+       <label class="simple-field"><span>🪙 Geldbudget der Auflage</span>
         <div class="simple-input"><input id="simple-budget" type="number" min="0" max="1000000000000" step="1" inputmode="numeric"><b>🪙</b></div>
         <small>Höchstens dieser Gesamtbetrag wird ausgezahlt. Die Zielsumme passt sich automatisch an.</small></label>
        <label class="simple-field" id="simple-win-field"><span id="simple-win-label">🏆 Gewinnchance</span>
@@ -69,9 +70,13 @@
         <div class="simple-input"><input id="simple-lights" type="number" min="0" max="100" step="0.1" inputmode="decimal"><b>%</b></div>
         <small>Chance, dass ein Los zusätzlich Lichter für Lichtertal bringt.</small></label>
       </div>
-      <section class="simple-prize-distribution" aria-label="Genau festlegen, wie viele Gewinne auf einzelnen Losen sind">
+      <div class="simple-editor-grid simple-editor-extras">
+         <label class="simple-field"><span>⭐ Lichtbudget</span><div class="simple-input"><input id="simple-light-budget" type="number" min="0" max="1000000000000" step="1" inputmode="numeric"><b>⭐</b></div><small>Gesamtzahl erlaubter Weihnachtslichter.</small></label>
+         <label class="simple-field"><span>🎁 Hauptpreise</span><div class="simple-input"><input id="simple-unlock-cap" type="number" min="0" max="500" step="1" inputmode="numeric"><b>🎁</b></div><small>Höchstens so viele Freischaltungen.</small></label>
+        </div>
+       <section class="simple-prize-distribution" aria-label="Genau festlegen, wie viele Gewinne auf einzelnen Losen sind">
         <div class="simple-prize-head"><div><span class="eyebrow">✦ GEWINNE PRO LOS ✦</span>
-          <h4>🏆 Wie viele Gewinne sollen auf einem Los sein?</h4>
+          <h4>02 · Exakte Gewinne pro Los</h4>
           <p>Lege bestimmte Gewinnlose ganz genau fest. <strong>Beispiel:</strong> 5 Lose mit jeweils 8 Gewinnen. Für die restlichen Lose übernimmt der Server die Verteilung.</p>
         </div></div>
         <div class="simple-prize-add">
@@ -87,7 +92,8 @@
         </div>
         <button type="button" id="simple-prize-clear" class="simple-prize-clear" hidden>↶ Alle festen Vorgaben löschen</button>
       </section>
-      <div class="simple-money-summary" aria-live="polite">
+      <section class="simple-symbol-section" aria-label="Gewinnsymbole, Preise und Chancen"><div class="simple-prize-head"><div><span class="eyebrow">✦ GEWINNE &amp; CHANCEN ✦</span><h4>03 · Gewinnsymbole und Gewinnwerte</h4><p>Lege die Beträge fest und passe die Gewichtungen bei Bedarf an.</p></div></div><div id="simple-symbol-grid" class="simple-symbol-grid"></div></section>
+       <div class="simple-money-summary" aria-live="polite">
        <div><span>🧾 Einnahmen, wenn alle 500 Lose bezahlt werden</span><strong id="simple-sales">–</strong></div>
        <div><span>🎯 Angestrebte Gewinnauszahlung</span><strong id="simple-payout">–</strong></div>
        <div><span>🎁 Hauptgewinn-Symbole</span><strong>🎁 💝 🎀 🧧 🛍️</strong></div>
@@ -96,7 +102,7 @@
       <p class="draft-autosave-note">💾 Deine Einstellungen werden für jede Losart getrennt auf diesem Gerät gespeichert.</p>
        <button type="button" id="simple-open-advanced" class="simple-advanced-link">⚙️ Mehr Einstellungen <span>(optional: Gewinnwerte, Quoten, Sonderregeln)</span></button>
     </div>
-    <div class="simple-print-heading"><div><span class="eyebrow">✦ VOR DER VERÖFFENTLICHUNG ✦</span><h3>500 Lose prüfen &amp; freigeben</h3>
+    <div class="simple-print-heading"><div><span class="eyebrow">✦ VOR DER VERÖFFENTLICHUNG ✦</span><h3 id="simple-print-title">04 · Probedruck &amp; Veröffentlichung</h3>
      <p>Die Gewinne werden erst auf dem Server berechnet und kontrolliert. Eine Auflage wird nicht automatisch veröffentlicht.</p></div></div>
    </section>
 
@@ -214,7 +220,7 @@
      <label class="field field-wide"><span>🏷️ Auflagenname</span><input id="ed-name" type="text" maxlength="70" autocomplete="off" placeholder="z. B. Winterglück · Edition 1"></label>
      <label class="field price-field"><span>🎟️ Preis pro Los (Goldmünzen)</span><input id="ed-price" type="number" min="0" max="1000000" step="1" inputmode="numeric"><small>Gilt für alle 500 Lose dieser Ausgabe – auch direkt beim Kauf im Spiel.</small></label>
      <div class="price-live-card"><span>🧮 Einnahmen bei 500 bezahlten Losen</span><strong id="ed-sales-projection">– 🪙</strong><small>Bei Gratislosen oder Gutscheinen fallen die tatsächlichen Einnahmen niedriger aus.</small></div>
-     <div class="field"><span>🎟️ Anzahl Lose</span><div class="readonly-field">500 <small>fest</small></div></div>
+     <label class="field"><span>🎟️ Anzahl Lose</span><input id="ed-print-size" type="number" min="1" max="500" step="1" inputmode="numeric"><small>Standard 500; bestehende Auflagen bleiben unangetastet.</small></label>
      <label class="field"><span>🎯 Ziel-Gesamtauszahlung für alle 500 Lose</span><input id="ed-target" type="number" min="0" max="1000000000000" step="1"><small>Der Server versucht, diese Summe mit abwechslungsreichen Gewinnen zu erreichen.</small></label>
      <label class="field"><span>🪙 Absolute Gesamtobergrenze</span><input id="ed-budget" type="number" min="0" max="1000000000000" step="1"><small>Dieser Gesamtbetrag wird niemals überschritten.</small></label>
      <label class="field"><span>📏 Erlaubte Zielabweichung (%)</span><input id="ed-tolerance" type="number" min="0" max="30" step="1"><small>Zum Beispiel ±5 %; bei 0 % nur exakt erreichbare Beträge.</small></label>
@@ -304,6 +310,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./scratch-editions.js?v=22"></script>
+<script type="module" src="./scratch-editions.js?v=23"></script>
 </body>
 </html>
