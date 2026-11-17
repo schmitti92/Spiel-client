@@ -860,6 +860,52 @@ $('ed-retire').addEventListener('click',async()=>{
  finally{setBusy(false)}
 });
 $('history-refresh').addEventListener('click',()=>void loadHistory());
+// Preserve saved drafts independently of any already published server print run.
+function replaceCurrentDraft(next){
+ drafts[current.id]=next;
+ formInitialized=false; // do not overwrite the imported draft with stale inputs
+ switchVariant(current.id);
+}
+$('ed-reset-draft').addEventListener('click',()=>{
+ if(!window.confirm('Nur den Entwurf für „'+current.name+'“ auf Standardwerte zurücksetzen? Bereits veröffentlichte Lose bleiben unverändert.'))return;
+ const fresh=baseDraft(current);
+ fresh.gameSettings=defaultGameSettings(current);
+ replaceCurrentDraft(fresh);
+ showMessage('✅ Standardwerte für '+current.name+' wiederhergestellt.','good');
+});
+$('ed-import-draft').addEventListener('click',()=>$('ed-import-file').click());
+$('ed-import-file').addEventListener('change',async()=>{
+ const input=$('ed-import-file'),file=input.files?.[0];
+ input.value='';
+ if(!file)return;
+ if(file.size>100000){showMessage('⚠️ Die Entwurfsdatei ist zu groß.','error');return}
+ try{
+  const data=JSON.parse(await file.text());
+  const config=data?.config;
+  if(data?.type!=='DOG-scratch-edition-draft'||!config||typeof config!=='object')
+   throw Error('Das ist keine gültige DOG-Auflagendatei.');
+  if(config.variantId!==current.id)
+   throw Error('Diese Datei gehört zu einer anderen Losart: '+
+    (VARIANTS.find(v=>v.id===config.variantId)?.name||config.variantId)+
+    '. Bitte zuerst diese Losart auswählen.');
+  const fresh=baseDraft(current);
+  for(const id of ['title','ticketPrice','maxTotalCoins','targetTotalCoins',
+   'targetTolerancePercent','premiumFull27Tickets','volatility','maxPerTicketCoins',
+   'maxPrizesPerTicket','maxUnlocks','quotas','doubleWin','gameSettings']){
+   if(Object.hasOwn(config,id))fresh[id]=structuredClone(config[id]);
+  }
+  const defaults=defaultSymbolBudgets(current);
+  for(const id of Object.keys(defaults))
+   if(config.symbolBudgets?.[id]&&typeof config.symbolBudgets[id]==='object')
+    defaults[id]={...defaults[id],...config.symbolBudgets[id]};
+  fresh.symbolBudgets=defaults;
+  fresh.doubleWin={...baseDraft(current).doubleWin,...(fresh.doubleWin||{})};
+  replaceCurrentDraft(fresh);
+  showMessage('✅ Entwurf für '+current.name+' geladen. Prüfe die Werte und erstelle einen neuen Probedruck.','good');
+ }catch(error){
+  showMessage('⚠️ Entwurf konnte nicht geladen werden: '+error.message,'error');
+ }
+});
 $('ed-export').addEventListener('click',()=>{
  const data={type:'DOG-scratch-edition-draft',version:1,createdAt:new Date().toISOString(),
   config:readForm(),lastPreview:preview?.summary||null};
