@@ -9,6 +9,7 @@ import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewa
 import {initChristmasStory} from './christmas-story.js?v=3';
 import {initChristmasScratch} from './christmas-scratch-ui.js?v=52';
 import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=4';
+import {sceneLayouts,verifyVillageSpriteLayout} from './christmas-village-layout.mjs?v=1';
 const $=id=>document.getElementById(id);
 // Older browser caches may pair outdated chapter markup with the new module.
 // Remove those obsolete nodes before setting up event navigation.
@@ -77,27 +78,11 @@ const assetPath=(id,level)=>{
  // Scale their *visible* artwork at each fixed village footprint, so small
  // stage-one assets do not look tiny next to larger-stage buildings.
  // Pivot points are ground contact points measured in the SVG scene.
-/* Maximum VISIBLE footprint at the largest level, in the 1200 × 670 village.
- * Back row and front row overlap only at the edges; the centre stays open.
- * Exact visible alpha is measured once per requested PNG, not the padded PNG canvas.
- * Each item's feet are pinned to a fixed spot regardless of its development level.
+/* Village geometry is a shared, stage-independent contract.
+ * CI checks every possible mixed-level pair of the 6 houses, tree and cave.
+ * Fail visibly in development if a future edit breaks the scene reservation.
  */
-const sceneLayouts=Object.freeze({
- // Ground anchors calibrated against the snow-covered terraces of Lichtertal
- // (1200×670 SVG); each building keeps the same footing at all five stages.
- // At level 5 all seven maximum alpha bounding boxes are disjoint.
- // Front row begins 3px below the middle row; the full tree has at least 8px horizontal clearance.
- tower:{cx:145,ground:389,w:239,h:280,growth:[.82,.86,.91,.96,1]},
- workshop:{cx:1058,ground:389,w:258,h:280,growth:[.78,.83,.89,.94,1]},
- // New houses share the raised midground terrace: distinct from the four corner houses.
- luckhouse:{cx:366,ground:401,w:172,h:190,growth:[.65,.74,.82,.91,1]},
- academy:{cx:844,ground:401,w:150,h:190,growth:[.65,.74,.82,.91,1]},
- bakery:{cx:303,ground:609,w:274,h:205,growth:[.74,.80,.87,.94,1]},
- inn:{cx:922,ground:609,w:288,h:205,growth:[.76,.81,.88,.94,1]},
- tree:{cx:610,ground:504,w:299,h:394,growth:[.54,.59,.65,.71,.76,.81,.86,.91,.96,1]},
- // Independent cave at the left village edge. Gradually shrinks as weakened.
- grinch:{cx:84,ground:597,w:164,h:195,growth:[1,.97,.94,.9,.85]}
-});
+if(verifyVillageSpriteLayout().length)console.error('[DOG] Village sprite reservations overlap:',verifyVillageSpriteLayout());
 /** Add a subdued contact shadow directly beneath the alpha-cropped building.
  * Its width follows the visible image as it grows; no extra saved state. */
 function positionVillageGroundShadow(id,level,renderedWidth){
