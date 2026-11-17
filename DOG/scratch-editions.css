@@ -165,3 +165,43 @@ button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;curso
 .subtab[data-view="currency"].active{background:linear-gradient(135deg,#634924,#403322);border-color:#e1b770}
 @media(max-width:860px){.symbol-overview{grid-template-columns:repeat(3,minmax(0,1fr))}.symbol-overview-tile{min-height:116px}}
 @media(max-width:480px){.symbol-overview{grid-template-columns:repeat(2,minmax(0,1fr))}.symbol-overview-icon{font-size:23px}.symbol-intro{padding:12px}.symbol-intro strong{font-size:19px}}
+
+/* Third-generation lottery studio: one understandable 100% odds workflow. */
+.double-studio{border:1px solid #d7b477;background:
+ radial-gradient(circle at 95% 5%,#a6713b77,transparent 52%),linear-gradient(138deg,#3d3027,#192a3c 68%);
+ border-radius:17px;margin:16px 0 18px;padding:19px;box-shadow:inset 0 1px #f7dda544,0 8px 28px #0003}
+.double-head{display:flex;align-items:center;gap:15px;margin-bottom:18px}
+.double-emblem{display:grid;place-items:center;flex:0 0 72px;height:72px;border-radius:18px;
+ color:#382105;background:linear-gradient(140deg,#fff0bc,#dfaa52);border:2px solid #ffdf9c;
+ font:900 25px Georgia,serif;text-shadow:0 1px #fff9;box-shadow:0 5px 13px #0005}
+.double-head h3{margin:5px 0 5px;color:#ffe4b3;font:700 24px Georgia,serif}
+.double-head p{margin:0;font-size:12px;line-height:1.6;color:#d9d4cf}
+.double-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.double-controls .field{background:#141f30b9;border:1px solid #886e4d;border-radius:12px;padding:12px}
+.double-controls .field span{color:#f3d69b}
+.double-controls .field input{background:#0e1b2b;border-color:#856c50;font-size:19px;color:#ffebba}
+.double-percent{position:relative}.double-percent input{padding-right:44px}.double-percent>span{
+ position:absolute;right:16px;top:50%;transform:translateY(-50%);color:#f4c87f;font-size:16px}
+.double-note{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+.double-note span{background:#182d39;border:1px solid #678187;border-radius:8px;padding:8px;font-size:11px;color:#f2e0b9;font-weight:750}
+.preview-double{border:1px solid #bd9b59;background:linear-gradient(120deg,#393228,#202b33);
+ border-radius:11px;padding:15px;margin:14px 0;color:#ffe0a5;line-height:1.6;font-size:13px;font-weight:700}
+.auto-percent-control{display:flex;align-items:center;gap:12px;background:#1c3939;
+ border:1px solid #588a74;border-radius:13px;margin-bottom:15px;padding:13px 15px}
+.auto-percent-control input{width:23px;height:23px;accent-color:#51af85;flex:0 0 23px}
+.auto-percent-control span{display:grid;gap:4px}.auto-percent-control strong{color:#e9ffdf;font-size:13px}
+.auto-percent-control small{color:#bfddca;font-size:12px;line-height:1.5}
+.odds-group{border:1px solid #51677e;border-radius:14px;padding:15px;margin:11px 0;background:#152941}
+.odds-group h5{font-size:17px;color:#f3d69b;margin:0 0 5px}.odds-group>p{margin:0 0 13px;font-size:12px;color:#aec9dd;line-height:1.55}
+.odds-percent-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:10px}
+.odds-percent-field{display:grid;gap:6px;font-size:12px;color:#e5eaf2;font-weight:750}
+.odds-percent-control{display:flex;align-items:center;border:1px solid #527388;border-radius:10px;background:#0b1d2e;padding-right:11px}
+.odds-percent-control:focus-within{border-color:#e6ba76}
+.odds-percent-control input{min-width:0;width:100%;border:0;outline:0;background:transparent;color:#fff0cd;font-size:20px;
+ font-weight:850;padding:11px 6px 11px 11px}.odds-percent-control b{color:#e5c489;font-size:14px}
+.odds-group-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-top:12px}
+.odds-equal{border:1px solid #6a8b9e;background:#213c51;color:#dbedf4;padding:9px 12px;border-radius:8px;font-weight:750;font-size:12px}
+.odds-equal:hover{background:#335672}
+.odds-sum{font-size:12px;color:#f6be91}.odds-sum[data-valid="true"]{color:#a6e8bd}
+@media(max-width:700px){.double-controls{grid-template-columns:1fr}.double-head{align-items:flex-start}.double-emblem{flex-basis:53px;height:53px;font-size:19px}.double-studio{padding:13px}}
+@media(max-width:420px){.odds-percent-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.auto-percent-control{align-items:flex-start}}
