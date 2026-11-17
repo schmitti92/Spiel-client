@@ -1,0 +1,59 @@
+/* DOG · Grinchhöhle am linken Dorfrand – separater Teil-2-Ort.
+   Keine Eingriffe in die sechs Weihnachtsgebäude, deren Positionen oder Boni. */
+#art-grinch{transition:opacity .2s ease}
+#grinch-stage-image{opacity:0;transition:opacity .25s ease;filter:drop-shadow(0 6px 9px #041a22d9)}
+#art-grinch.photo-ready{opacity:0}
+#art-grinch.photo-ready + #grinch-stage-image{opacity:1}
+.village-hotspots .hit-grinch{
+  left:0%;top:58%;width:13.9%;height:34.5%;z-index:2;
+  border-radius:48% 48% 20% 20%;
+}
+.village-hotspots .hotspot-grinch{
+  left:7%;top:95%;z-index:4;min-width:0;max-width:14%;
+  border:1px solid #a6d66b;background:linear-gradient(160deg,#23422b,#10231a);
+  box-shadow:0 0 12px #9ece765a,0 3px 10px #0009;
+  color:#dcf6b5;line-height:1.1;
+}
+.village-hotspots .hotspot-grinch:hover,
+.village-hotspots .hotspot-grinch:focus-visible{border-color:#e0ff9d;box-shadow:0 0 16px #b1ff6b80}
+.village-hotspots .hotspot-grinch span{white-space:normal}
+dialog.grinch-cave-dialog{
+  position:fixed;inset:0;margin:auto;width:min(850px,calc(100vw - 24px));max-height:min(91dvh,850px);
+  padding:0;overflow:auto;color:#f4f1de;border:1.5px solid #9bca70;border-radius:21px;
+  background:radial-gradient(ellipse at 0 0,#345a38,#0d2722 65%,#071b21);
+  box-shadow:0 18px 80px #000b, inset 0 1px #e1ffb84d;
+}
+dialog.grinch-cave-dialog:not([open]){display:none}
+dialog.grinch-cave-dialog::backdrop{background:#020d15db;backdrop-filter:blur(5px)}
+.grinch-cave-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:20px 22px 10px}
+.grinch-cave-eyebrow{color:#d5ee9d;font-size:11px;font-weight:900;letter-spacing:1.8px}
+.grinch-cave-top h2{font:900 clamp(25px,3vw,36px)/1.2 Georgia,serif;color:#ecf8bf;margin:7px 0 3px}
+.grinch-cave-top p{margin:0;font-size:12px;line-height:1.5;color:#cfddcc}
+.grinch-cave-close{flex:0 0 auto;min-width:40px;min-height:40px;cursor:pointer;border:1px solid #9bbd8d;
+  border-radius:12px;background:#1a3a2e;color:#fff;font-size:20px}
+.grinch-cave-close:hover,.grinch-cave-close:focus-visible{outline:2px solid #d6f6a2}
+.grinch-cave-content{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;padding:12px 22px 23px}
+.grinch-cave-art{display:grid;place-items:center;min-height:255px;border:1px solid #89aa79a3;border-radius:15px;
+  background:radial-gradient(ellipse at 50% 78%,#507c4b6b,transparent 64%),linear-gradient(150deg,#172f2c,#0b1b24)}
+.grinch-cave-art img{display:block;width:100%;height:min(43vh,330px);object-fit:contain;filter:drop-shadow(0 11px 13px #000b)}
+.grinch-cave-facts{display:flex;flex-direction:column;justify-content:center;gap:12px}
+.grinch-cave-status{display:block;padding:11px 13px;border-radius:12px;border:1px solid #b2cb8a;
+  background:#2b432c;color:#e7f4c9;font:800 12px/1.5 system-ui,sans-serif}
+.grinch-cave-facts p{margin:0;color:#e3e7d9;font:500 12px/1.6 system-ui,sans-serif}
+.grinch-cave-stage-control{padding:12px;border:1px solid #a2b88670;border-radius:12px;background:#071f1db5}
+.grinch-cave-stage-control label{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;
+  color:#e5f8bb;font:800 12px/1.4 system-ui,sans-serif}
+.grinch-cave-stage-control input{width:100%;margin:13px 0;accent-color:#b7ed72;cursor:pointer}
+.grinch-cave-stage-control small{display:block;color:#bacab4;font-size:10px;line-height:1.4}
+.grinch-cave-stage-description{color:#f0d8ad!important;font-weight:750!important}
+@media(max-width:760px){
+  .village-hotspots .hotspot-grinch{max-width:14%;width:14%;padding:3px 1px;font-size:clamp(6px,1.5vw,9px)}
+  .village-hotspots .hotspot-grinch small{display:none}
+}
+@media(max-width:570px){
+  .grinch-cave-content{grid-template-columns:1fr;gap:10px;padding:10px 13px 16px}
+  .grinch-cave-top{padding:15px 14px 6px}
+  .grinch-cave-art{min-height:155px}
+  .grinch-cave-art img{height:min(26vh,200px)}
+}
+@media(prefers-reduced-motion:reduce){#art-grinch,#grinch-stage-image{transition:none!important}}
