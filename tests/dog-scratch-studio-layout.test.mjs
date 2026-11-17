@@ -60,3 +60,31 @@ test('responsive design, safety notices and saved drafts still work',()=>{
  assert.match(html,/id="studio-global-message"/);
  assert.match(html,/id="simple-validation"/);
 });
+
+test('simple screen directly supports five tickets each with eight prize payouts',()=>{
+ for(const id of ['simple-prize-count','simple-prize-tickets','simple-prize-add',
+  'simple-prize-rows','simple-prize-fixed','simple-prize-remaining',
+  'simple-prize-bar-fill','simple-prize-clear','simple-prize-confirmed']){
+  assert.ok(ids.includes(id),id+' should be editable or visible');
+  assert.ok(js.includes(id),id+' should be connected');
+ }
+ assert.ok(point('simple-prize-count')>point('view-overview'));
+ assert.ok(point('simple-prize-count')<point('advanced-studio'));
+ assert.match(html,/5 Lose mit jeweils 8 Gewinnen/);
+ assert.match(html,/id="simple-prize-tickets"[^>]*value="5"/);
+ assert.match(js,/function updateFixedPrizes\(count,tickets\)/);
+ assert.match(js,/function addFixedPrizeRow\(\)/);
+ assert.match(js,/renderQuota\(\);\s*readForm\(\);updateSide\(\);invalidatePreview\(\)/);
+ assert.match(js,/draft\.quotas=quotas/);
+ assert.match(js,/if\(fixed>500\)/);
+ assert.match(css,/\.simple-prize-distribution/);
+ assert.match(css,/\.simple-prize-row/);
+});
+test('the allowed number of prizes per scratch card follows its genuine rules',()=>{
+ assert.match(js,/current\.id==='tic_tac_toe'\)return \[0,1\]/);
+ assert.match(js,/current\.id==='dog_jackpot_9'\)return \[0,8\]/);
+ assert.match(js,/current\.id==='premium_27'\)return \[4,5,6,7,8,9,10\]/);
+ assert.match(js,/current\.id==='number_one_20'\?21:11/);
+ assert.match(js,/if\(tickets>0&&count>draft\.maxPrizesPerTicket\)/);
+ assert.match(js,/s\.byWins\?\.\[Number\(win\)\]/);
+});
