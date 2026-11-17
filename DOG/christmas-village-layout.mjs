@@ -9,17 +9,17 @@
  */
 export const VILLAGE_SCENE_WIDTH=1200;
 export const VILLAGE_SCENE_HEIGHT=670;
-export const VILLAGE_MIN_CLEARANCE=12;
+export const VILLAGE_MIN_CLEARANCE=16;
 export const sceneLayouts=Object.freeze({
- tower:     {cx:145, ground:389,w:239,h:280,growth:[.82,.86,.91,.96,1]},
+ tower:     {cx:145, ground:389,w:237,h:280,growth:[.82,.86,.91,.96,1]},
  workshop:  {cx:1058,ground:389,w:258,h:280,growth:[.78,.83,.89,.94,1]},
  luckhouse: {cx:366, ground:401,w:172,h:190,growth:[.65,.74,.82,.91,1]},
- academy:   {cx:844, ground:401,w:144,h:190,growth:[.65,.74,.82,.91,1]},
- bakery:    {cx:303, ground:609,w:274,h:194,growth:[.74,.80,.87,.94,1]},
- inn:       {cx:922, ground:609,w:288,h:194,growth:[.76,.81,.88,.94,1]},
+ academy:   {cx:844, ground:401,w:138,h:190,growth:[.65,.74,.82,.91,1]},
+ bakery:    {cx:303, ground:609,w:274,h:191,growth:[.74,.80,.87,.94,1]},
+ inn:       {cx:922, ground:609,w:288,h:191,growth:[.76,.81,.88,.94,1]},
  tree:      {cx:610, ground:504,w:280,h:394,growth:[.54,.59,.65,.71,.76,.81,.86,.91,.96,1]},
  // The cave is strongest at stage 1 and steadily weakens towards stage 5.
- grinch:    {cx:84,  ground:597,w:140,h:195,growth:[1,.97,.94,.90,.85]}
+ grinch:    {cx:84,  ground:597,w:132,h:192,growth:[1,.97,.94,.90,.85]}
 });
 /** Bounding box guaranteed to contain a sprite's alpha-visible pixels.
  * Real sprites are scaled via min(maxWidth/alphaW, maxHeight/alphaH), and their
