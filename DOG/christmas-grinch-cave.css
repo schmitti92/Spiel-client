@@ -5,7 +5,7 @@
 #art-grinch.photo-ready{opacity:0}
 #art-grinch.photo-ready + #grinch-stage-image{opacity:1}
 .village-hotspots .hit-grinch{
-  left:0%;top:58%;width:13.9%;height:34.5%;z-index:2;
+  left:0.9%;top:61%;width:12%;height:29.5%;z-index:2;
   border-radius:48% 48% 20% 20%;
 }
 .village-hotspots .hotspot-grinch{
