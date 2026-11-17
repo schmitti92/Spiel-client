@@ -61,7 +61,7 @@ function defaultSymbolBudgets(variant){
 }
 const baseDraft=variant=>({
  variantId:variant.id,title:variant.name+' · Winteredition 1',
- maxTotalCoins:variant.budget,targetTotalCoins:Math.round(variant.budget*.55),
+ printSize:500,maxTotalCoins:variant.budget,targetTotalCoins:Math.round(variant.budget*.55),
  targetTolerancePercent:5,premiumFull27Tickets:0,volatility:70,
  ticketPrice:variant.price,maxPerTicketCoins:variant.one,
  maxPrizesPerTicket:variant.wins,
@@ -78,7 +78,7 @@ try{
   const row=saved?.[variant.id];
   if(!row||row.variantId!==variant.id||typeof row!=='object')continue;
   const fresh=baseDraft(variant);
-  for(const key of ['title','ticketPrice','maxTotalCoins','targetTotalCoins',
+  for(const key of ['title','ticketPrice','printSize','maxTotalCoins','targetTotalCoins',
    'targetTolerancePercent','premiumFull27Tickets','volatility','maxPerTicketCoins',
    'maxPrizesPerTicket','maxUnlocks','quotas','doubleWin','gameSettings'])
    if(Object.hasOwn(row,key))fresh[key]=structuredClone(row[key]);
@@ -92,6 +92,7 @@ function persistDrafts(){
 }
 const live={};
 const catalog={};
+const sizeOf=()=>Number(drafts[current.id]?.printSize??500);
 let current=VARIANTS[0],view='overview',settings=null,preview=null,previewKey=null,busy=false;
 let formInitialized=false;
 const labelFor=error=>{
@@ -160,6 +161,7 @@ function readForm(){
  }
  const number=id=>{const v=Number(value(id));return Number.isFinite(v)?v:NaN};
  drafts[current.id]={variantId:current.id,title:value('ed-name').trim(),
+  printSize:number('ed-print-size'),
   ticketPrice:number('ed-price'),maxTotalCoins:number('ed-budget'),targetTotalCoins:number('ed-target'),
   targetTolerancePercent:number('ed-tolerance'),volatility:number('ed-volatility'),
   premiumFull27Tickets:current.id==='premium_27'?number('ed-full27'):0,
@@ -233,6 +235,9 @@ function syncSimpleInputs(){
  const draft=drafts[current.id];
  $('simple-variant').value=current.id;
  $('simple-price').value=String(draft.ticketPrice);
+ $('simple-print-size').value=String(draft.printSize);
+ $('simple-light-budget').value=String(draft.symbolBudgets.lights?.maxTotal??0);
+ $('simple-unlock-cap').value=String(draft.maxUnlocks);
  $('simple-budget').value=String(draft.maxTotalCoins);
  $('simple-double').value=String((draft.doubleWin?.chancePer1000??0)/10);
  $('simple-lights').value=String((draft.symbolBudgets.lights?.chancePer1000??0)/10);
@@ -372,6 +377,28 @@ function setupSimpleEditor(){
   const draft=drafts[current.id];
   draft.quotas={};
   renderQuota();readForm();updateSide();invalidatePreview();
+ });
+ $('simple-print-size').addEventListener('change',()=>{
+  const n=Number($('simple-print-size').value);
+  if(!Number.isSafeInteger(n)||n<1||n>500){syncSimpleInputs();return}
+  const draft=drafts[current.id];
+  $('ed-print-size').value=String(n);
+  $('ed-target').value=String(Math.min(draft.targetTotalCoins,draft.maxTotalCoins,n*draft.maxPerTicketCoins));
+  if(Number($('ed-double-max').value)>n)$('ed-double-max').value=String(n);
+  if(Number($('ed-double-min').value)>n)$('ed-double-min').value=String(n);
+  if(Number($('ed-max-unlocks').value)>n)$('ed-max-unlocks').value=String(n);
+  readForm();updateSide();invalidatePreview();
+ });
+ $('simple-light-budget').addEventListener('change',()=>{
+  const n=Number($('simple-light-budget').value);
+  if(!Number.isSafeInteger(n)||n<0||n>1000000000000){syncSimpleInputs();return}
+  drafts[current.id].symbolBudgets.lights.maxTotal=n;
+  renderCurrency();updateSide();invalidatePreview();
+ });
+ $('simple-unlock-cap').addEventListener('change',()=>{
+  const n=Number($('simple-unlock-cap').value);
+  if(!Number.isSafeInteger(n)||n<0||n>500){syncSimpleInputs();return}
+  setSimpleNumber('ed-max-unlocks',n);
  });
  $('simple-price').addEventListener('change',()=>{
   const n=Number($('simple-price').value);
@@ -963,6 +990,7 @@ function switchVariant(id){
  const d=drafts[variant.id];
  $('ed-name').value=d.title;
  $('ed-budget').value=d.maxTotalCoins;
+ $('ed-print-size').value=d.printSize??500;
  $('ed-price').value=d.ticketPrice;
  $('ed-double-chance').value=(d.doubleWin?.chancePer1000??0)/10;
  $('ed-double-min').value=d.doubleWin?.minTickets??0;
@@ -1095,7 +1123,7 @@ $('quota-clear').addEventListener('click',()=>{
  $('quota-grid').querySelectorAll('input').forEach(input=>input.value='');
  readForm();updateSide();invalidatePreview();
 });
-for(const id of ['ed-name','ed-price','ed-budget','ed-target','ed-tolerance',
+for(const id of ['ed-name','ed-price','ed-print-size','ed-budget','ed-target','ed-tolerance',
  'ed-max-coins','ed-max-prizes','ed-max-unlocks','ed-double-chance','ed-double-min','ed-double-max']){
  $(id).addEventListener('input',()=>{readForm();updateSide();invalidatePreview()});
 }
@@ -1245,7 +1273,7 @@ $('ed-import-file').addEventListener('change',async()=>{
     typeof config.doubleWin!=='object'||Array.isArray(config.doubleWin)))
     throw Error('Ungültige ✖️2-Einstellungen.');
   const fresh=baseDraft(current);
-  for(const id of ['title','ticketPrice','maxTotalCoins','targetTotalCoins',
+  for(const id of ['title','ticketPrice','printSize','maxTotalCoins','targetTotalCoins',
    'targetTolerancePercent','premiumFull27Tickets','volatility','maxPerTicketCoins',
    'maxPrizesPerTicket','maxUnlocks','quotas','doubleWin','gameSettings']){
    if(Object.hasOwn(config,id))fresh[id]=structuredClone(config[id]);
