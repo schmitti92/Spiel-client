@@ -58,6 +58,16 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
     <h2 id="entry-title">Deinem Spieleabend beitreten</h2><p class="subtle">Ein Raumcode für Barikade, SKYJO Action, KreuzKunter und Business.</p>
     <div class="entry-action"><button type="button" class="btn blue" id="create-btn">＋ Neuen Raum erstellen</button><span class="subtle join-separator">oder einem Raum beitreten</span><input class="text-field" id="join-code" aria-label="Raumcode" maxlength="6" inputmode="numeric" placeholder="123" autocomplete="off" spellcheck="false"><button type="button" class="btn light" id="join-btn">Beitreten</button></div>
   </section>
+  <section id="room-recovery" class="panel hidden" role="status" aria-live="polite" aria-labelledby="room-recovery-title">
+    <div class="eyebrow">Dein bestehender Spielraum</div>
+    <h2 id="room-recovery-title">🐾 DOG-Spiellobby wird geöffnet</h2>
+    <p class="subtle">Raum <strong id="room-recovery-code">———</strong> · Dein Profil und die Spielrunde werden überprüft.</p>
+    <p id="room-recovery-feedback" class="subtle">Verbindung zum Spielserver wird hergestellt …</p>
+    <div class="row" style="margin-top:15px;gap:12px;flex-wrap:wrap">
+      <button id="room-recovery-retry" type="button" class="btn blue">↻ Erneut verbinden</button>
+      <a id="room-recovery-back" class="btn light" href="spielauswahl-online.html">← Zur Spielauswahl</a>
+    </div>
+  </section>
   <div id="room-view" class="cols hidden">
     <div class="stack">
       <section id="game-chooser" class="panel" aria-labelledby="game-title">
@@ -285,7 +295,7 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
 <script type="module" src="DOG/init-motion.js?v=1"></script><script src="DOG/avatar-picker.js?v=5"></script><script type="module" src="DOG/emoji-lobby.js?v=3"></script><script type="module" src="DOG/board-picker.js?v=12"></script>
 <script type="module" src="DOG/room-lobby.js?v=10"></script>
 <script type="module" src="DOG/room-statistics.js?v=1"></script>
-<script src="profile-config.js"></script><script src="profile-auth.js"></script><script src="hub-lobby.js?v=20261115-dog-route-fixed-v4" defer></script>
+<script src="profile-config.js"></script><script src="profile-auth.js"></script><script src="hub-lobby.js?v=20261117-dog-entry-recovery-v1" defer></script>
 <script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script><script src="site-global-controls.js?v=20261109-global-1"></script>
 <script>
 (function(){const page='../hub-lobby.html'+location.search;
