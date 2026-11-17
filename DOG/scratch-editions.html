@@ -92,7 +92,7 @@
         </div>
         <button type="button" id="simple-prize-clear" class="simple-prize-clear" hidden>↶ Alle festen Vorgaben löschen</button>
       </section>
-      <section class="simple-symbol-section" aria-label="Gewinnsymbole, Preise und Chancen"><div class="simple-prize-head"><div><span class="eyebrow">✦ GEWINNE &amp; CHANCEN ✦</span><h4>03 · Gewinnsymbole und Gewinnwerte</h4><p>Lege die Beträge fest und passe die Gewichtungen bei Bedarf an.</p></div></div><div id="simple-symbol-grid" class="simple-symbol-grid"></div></section>
+      <section class="simple-symbol-section" aria-label="Gewinnsymbole und Beträge"><div class="simple-prize-head"><div><span class="eyebrow">✦ GEWINNE &amp; BETRÄGE ✦</span><h4>03 · Gewinnsymbole und Gewinnwerte</h4><p>Stelle nur die Gewinnbeträge ein. Die Häufigkeit der Symbole übernimmt die Automatik.</p></div></div><div id="simple-symbol-grid" class="simple-symbol-grid"></div></section>
        <div class="simple-money-summary" aria-live="polite">
        <div><span>🧾 Einnahmen, wenn alle 500 Lose bezahlt werden</span><strong id="simple-sales">–</strong></div>
        <div><span>🎯 Angestrebte Gewinnauszahlung</span><strong id="simple-payout">–</strong></div>
@@ -117,7 +117,7 @@
     </div>
     <div class="overview-plan">
      <div class="overview-plan-card"><span>01 · 💰</span><strong>Gewinnsymbole</strong><p>Münze, Schein, Koffer, Weihnachtslichter, fünf Hauptgewinnsymbole und ✖️2</p></div>
-     <div class="overview-plan-card"><span>02 · 🎯</span><strong>Gewinnchancen</strong><p>Prozentwerte ändern – andere Symbole automatisch auf 100 % anpassen</p></div>
+     <div class="overview-plan-card"><span>02 · 🎯</span><strong>Gewinnchancen</strong><p>Gewinnsymbole automatisch verteilen, ohne manuelle Prozentanteile</p></div>
      <div class="overview-plan-card"><span>03 · 🎰</span><strong>Verteilung</strong><p>Automatische Losmischung oder genaue Stückzahlen für Nieten und Gewinne</p></div>
      <div class="overview-plan-card"><span>04 · 🖨️</span><strong>Probedruck</strong><p>Lospreis, Budget, Auszahlung und vollständige Vorschau prüfen – erst dann veröffentlichen</p></div>
     </div>
@@ -184,7 +184,7 @@
    <div class="subtabs" role="tablist" aria-label="Auflagen-Assistent">
     <button type="button" class="subtab active" data-view="overview" aria-selected="true"><span>Start</span><b>🏠 Übersicht</b></button>
     <button type="button" class="subtab" data-view="currency" aria-selected="false"><span>01</span><b>🪙 Gewinne &amp; ✖️2</b></button>
-    <button type="button" class="subtab" data-view="mechanic" aria-selected="false"><span>02</span><b>🎯 Chancen</b></button>
+    <button type="button" class="subtab" data-view="mechanic" aria-selected="false"><span>02</span><b>⚙️ Sonderregeln</b></button>
     <button type="button" class="subtab" data-view="quotas" aria-selected="false"><span>03</span><b>🎰 Verteilung</b></button>
     <button type="button" class="subtab" data-view="plan" aria-selected="false"><span>04</span><b>🖨️ Budget &amp; Druck</b></button>
     <button type="button" class="subtab subtab-history" data-view="history" aria-selected="false"><span>Info</span><b>🗃️ Historie</b></button>
@@ -210,8 +210,8 @@
     </section>
     <div class="currency-grid" id="currency-grid"></div>
     <div class="currency-total"><span>🪙 Alle Geldsymbole zusammen unterliegen zusätzlich deinem Münz-Gesamtbudget.</span><strong id="currency-budget-remaining">–</strong></div>
-    <div class="chance-shortcut"><div><strong>🎯 Gewinnchancen auf 100 % einstellen</strong><p>Beispiel: 20 % Nieten + 70 % Geld + 10 % Hauptgewinn. Wenn du eine Zahl änderst, verteilt die Automatik den Rest selbst.</p></div><button type="button" class="ghost" id="ed-chance-shortcut">Chancen bearbeiten</button></div>
-    <div class="wizard-footer"><button type="button" class="ghost" data-go="overview">‹ Übersicht</button><button type="button" class="currency-next primary" id="ed-symbol-next">Weiter zu Schritt 2: Gewinnchancen ›</button></div><div class="currency-explainer">🎁 Geschenk-Freischaltungen sind Stückpreise. Ihre Gesamtzahl kannst du hier und zusätzlich im Auflagenplan begrenzen. ⭐ Weihnachtslichter werden unabhängig von Goldmünzen direkt auf das gemeinsame Dorfkonto gebucht.</div>
+    <div class="chance-shortcut"><div><strong>✨ Symbolverteilung automatisch</strong><p>Keine Gewichtungen mehr: Lege nur Beträge und die Anzahl der Gewinnlose fest.</p></div></div>
+    <div class="wizard-footer"><button type="button" class="ghost" data-go="overview">‹ Übersicht</button><button type="button" class="currency-next primary" id="ed-symbol-next">Weiter zu Schritt 2: Sonderregeln ›</button></div><div class="currency-explainer">🎁 Geschenk-Freischaltungen sind Stückpreise. Ihre Gesamtzahl kannst du hier und zusätzlich im Auflagenplan begrenzen. ⭐ Weihnachtslichter werden unabhängig von Goldmünzen direkt auf das gemeinsame Dorfkonto gebucht.</div>
    </section>
    <section id="view-plan" class="inner-view" hidden>
     <div class="step-context"><span>04 / 04</span><strong>🖨️ Budget festlegen und Lose drucken</strong><p>Die tatsächlichen Gewinne werden erst durch den Probedruck überprüft. Ohne gültige Vorschau ist das Veröffentlichen nicht möglich.</p></div>
@@ -261,12 +261,12 @@
      <div id="quota-grid" class="quota-grid"></div>
      <div class="quota-footer"><span id="quota-sum">0 von 500 fest eingeplant</span><button id="quota-clear" type="button" class="ghost small">↶ Alle Vorgaben löschen</button></div>
     </details>
-    <div class="wizard-footer"><button type="button" class="ghost" data-go="mechanic">‹ Gewinnchancen</button><button type="button" class="primary" data-go="plan">Weiter zu Budget &amp; Druck ›</button></div>
+    <div class="wizard-footer"><button type="button" class="ghost" data-go="mechanic">‹ Sonderregeln</button><button type="button" class="primary" data-go="plan">Weiter zu Budget &amp; Druck ›</button></div>
    </section>
    <section id="view-mechanic" class="inner-view" hidden>
-    <div class="step-context"><span>02 / 04</span><strong>🎯 Gewinne in Prozent einstellen</strong><p>Die 100-%-Automatik verteilt die übrigen Chancen direkt für dich.</p></div>
-    <div class="view-heading"><h3>Spielregeln & Gewinnchancen</h3><p>Die Gewinnart bleibt unverändert. Bei den Prozentreglern passt das Studio auf Wunsch alle übrigen Werte so an, dass ihre Summe genau 100 % beträgt.</p></div>
-    <label class="auto-percent-control"><input type="checkbox" id="ed-auto-percent" checked><span><strong>✨ Automatisch auf 100 % ausgleichen</strong><small>Du veränderst eine Chance; die anderen werden proportional angepasst. Ohne Automatik müssen die Anteile selbst zusammen 100 % ergeben.</small></span></label>
+    <div class="step-context"><span>02 / 04</span><strong>⚙️ Besondere Spielregeln</strong><p>Alle Gewinnsymbole werden automatisch verteilt. Hier stellst du nur Sonderregeln ein.</p></div>
+    <div class="view-heading"><h3>Spielregeln ohne Gewichtungen</h3><p>Keine Prozentanteile für Münzen, Geldscheine, Koffer oder Geschenke. Die echten Spielregeln bleiben bestehen.</p></div>
+
     <div id="mechanic-content" class="mechanic-content"></div>
     <details class="external-settings"><summary>⚙️ Einstellungen außerhalb dieser Auflage</summary><p>Allgemeine Einstellungen im Weihnachtsevent gelten für zukünftige, noch nicht gedruckte Lose. Einstellungen dieser Ausgabe werden beim Druck gespeichert.</p><a class="inline-link" href="./christmas-event.html">Allgemeine Rubbellos-Einstellungen öffnen</a></details>
     <div class="wizard-footer"><button type="button" class="ghost" data-go="currency">‹ Gewinne &amp; ✖️2</button><button type="button" class="primary" data-go="quotas">Weiter zur Verteilung ›</button></div>
@@ -310,6 +310,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./scratch-editions.js?v=24"></script>
+<script type="module" src="./scratch-editions.js?v=25"></script>
 </body>
 </html>
