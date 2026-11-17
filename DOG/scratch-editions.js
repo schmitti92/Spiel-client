@@ -432,6 +432,9 @@ function renderSpec(){
  line('Maximal gleichzeitig:',fmt(rules.maxWins)+' Einzelpreise · Mindestens: '+fmt(rules.minWins||0));
  line('Rubbelstellen:',fmt(rules.scratchFields||rules.fields));
  line('Grundregel:',rules.mechanic||v.rule);
+ line('Alle fünf Hauptgewinn-Symbole:',(rules.jackpotSymbols||['🎁','💝','🎀','🧧','🛍️']).join(' · '));
+ line('Hauptgewinn:', 'Eine verifizierte Geschenkkombination löst eine freischaltbare Belohnung aus; sind keine neuen Designs verfügbar, gelten die bisherigen Ersatzpreis-Regeln.');
+ line('Weitere Gewinnsymbole:', '🪙 Goldmünze · 💵 Geldschein · 💼 Geldkoffer · ⭐ Weihnachtslichter');
  if(rules.baseMatches)line('Echte Basis-Treffer:',rules.baseMatches);
  if(rules.extras)line('Besonderheit:',rules.extras);
  if(c?.configuredMaxPrizes!==undefined)
