@@ -185,6 +185,10 @@ function renderCurrency(){
   const fields=node('div','currency-fields');
   const build=(prop,label,max)=>{
    const field=node('label','currency-field');field.append(node('span','',label));
+   if(prop==='minTotal'){
+    field.dataset.advanced='true';
+    field.hidden=!$('ed-advanced-limits').checked;
+   }
    const input=node('input');input.type='number';input.min=prop==='chancePer1000'||meta.id==='gift'?'0':prop==='min'?'1':'0';
    input.max=String(max);input.step='1';input.inputMode='numeric';input.value=String(range[prop]);
    input.dataset.category=meta.id;input.dataset.property=prop;
@@ -687,6 +691,11 @@ for(const id of ['ed-name','ed-price','ed-budget','ed-target','ed-tolerance',
 $('quota-grid').addEventListener('input',()=>{readForm();updateSide();invalidatePreview()});
 $('ed-volatility').addEventListener('input',()=>{readForm();updateSide();invalidatePreview()});
 $('ed-symbol-next').addEventListener('click',()=>activateView('plan'));
+$('ed-chance-shortcut').addEventListener('click',()=>activateView('mechanic'));
+$('ed-advanced-limits').addEventListener('change',()=>{
+ for(const field of $('currency-grid').querySelectorAll('[data-advanced]'))
+  field.hidden=!$('ed-advanced-limits').checked;
+});
 $('ed-preview').addEventListener('click',async()=>{
  const draft=readForm();
  if(!signedIn()){showMessage('Bitte zuerst mit deinem DOG-Profil anmelden.','error');return}
