@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101d31">
+<title>DOG · Rubbellos-Auflagenstudio</title>
+<link rel="stylesheet" href="./scratch-editions.css?v=1">
+</head>
+<body>
+<div class="snow-glow" aria-hidden="true"></div>
+<div class="studio">
+<header class="studio-header">
+ <a href="./christmas-event.html" class="back-link">‹ Zurück zu Lichtertal</a>
+ <div class="studio-header-top">
+  <div><span class="eyebrow">✦ DOG WEIHNACHTSLOTTERIE · RENDER EDITION ENGINE ✦</span>
+    <h1>🎟️ Das Auflagenstudio</h1>
+    <p>Sieben Losarten. Eigene Druckauflagen. Ein kontrollierter Gewinnplan für jeweils 500 Lose.</p>
+  </div>
+  <div class="header-ornament" aria-hidden="true">❄️<span>500</span>✨</div>
+ </div>
+ <div class="header-facts">
+  <span>🖨️ 500 Serienlose je Auflage</span><span>🎯 Frei verteilbare Gewinnklassen</span>
+  <span>🔐 Serverseitige, überprüfte Gewinne</span><span>📊 Live-Restbestand</span>
+ </div>
+</header>
+<section class="studio-content">
+ <div class="section-label"><span>DEINE RUBBELLOSE</span><small>Wähle eine Sorte aus, um ihre nächste Auflage zu bearbeiten.</small></div>
+ <div id="edition-tabs" class="edition-tabs" role="tablist" aria-label="Rubbellos-Varianten"></div>
+ <div class="studio-columns">
+  <main class="studio-main">
+   <section class="editor-banner">
+    <div><span class="eyebrow">✦ AKTUELLE LOSART ✦</span>
+     <h2 id="edition-title">Wähle ein Rubbellos</h2>
+     <p id="edition-subtitle">Gewinnmechanik und Auflage konfigurieren</p>
+    </div>
+    <div id="edition-availability" class="edition-availability">Lade …</div>
+   </section>
+   <div class="subtabs" role="tablist" aria-label="Werkzeuge">
+    <button type="button" class="subtab active" data-view="plan" aria-selected="true">🎛️ Auflagenplan</button>
+    <button type="button" class="subtab" data-view="quotas" aria-selected="false">🎰 Gewinnverteilung</button>
+    <button type="button" class="subtab" data-view="mechanic" aria-selected="false">📜 Gewinnregeln</button>
+    <button type="button" class="subtab" data-view="history" aria-selected="false">🗃️ Historie</button>
+   </div>
+   <section id="view-plan" class="inner-view">
+    <div class="view-heading"><div><h3>Neue 500er-Auflage konfigurieren</h3><p>Alle Grenzen gelten für die komplette Auflage. Kein Gewinn darf das festgelegte Budget überschreiten.</p></div></div>
+    <div class="field-layout">
+     <label class="field field-wide"><span>🏷️ Auflagenname</span><input id="ed-name" type="text" maxlength="70" autocomplete="off" placeholder="z. B. Winterglück · Edition 1"></label>
+     <div class="field"><span>🎟️ Anzahl Lose</span><div class="readonly-field">500 <small>fest</small></div></div>
+     <label class="field"><span>💰 Maximaler Gesamtgewinn (Münzen)</span><input id="ed-budget" type="number" min="0" max="1000000000000" step="1"></label>
+     <label class="field"><span>💎 Max. Münzgewinn pro Los</span><input id="ed-max-coins" type="number" min="0" max="1000000000" step="1"></label>
+     <label class="field"><span>🏆 Max. Einzelgewinne auf einem Los</span><input id="ed-max-prizes" type="number" min="1" max="20" step="1"></label>
+     <label class="field"><span>🎁 Max. Freischaltungen in 500 Losen</span><input id="ed-max-unlocks" type="number" min="0" max="500" step="1"></label>
+    </div>
+    <div class="info-panel"><strong>So funktioniert die Auflage</strong><p>Der Render-Server erzeugt alle 500 Lose aus den echten Spielregeln, prüft die Gewinnfelder und mischt sie. Erst nach deiner Veröffentlichung werden diese gedruckten Ergebnisse im Spiel ausgegeben. Eine Änderung der allgemeinen Gewinnwerte verändert keine bereits gedruckten Lose.</p></div>
+    <p class="fine-print">⚠️ Eine Gewinnobergrenze ist kein Gewinnziel: Der tatsächlich gedruckte Gesamtgewinn kann darunter liegen. Unerfüllbare Kombinationen werden vor Veröffentlichung abgelehnt.</p>
+   </section>
+   <section id="view-quotas" class="inner-view" hidden>
+    <div class="view-heading"><h3>Wieviele Lose gewinnen wie oft?</h3><p>Trage die <b>exakte Anzahl an Losen</b> ein. Ein leeres Feld bedeutet „vom Server frei berechnen“. Null bedeutet „diese Gewinnklasse ausschließen“.</p></div>
+    <div class="quota-heading"><strong>Gewinnklasse</strong><strong>Anzahl Lose in der Auflage</strong><strong>Hinweis</strong></div>
+    <div id="quota-grid" class="quota-grid"></div>
+    <div class="quota-footer"><span id="quota-sum">0 von 500 fest eingeplant</span><button id="quota-clear" type="button" class="ghost small">↶ Alle Vorgaben löschen</button></div>
+   </section>
+   <section id="view-mechanic" class="inner-view" hidden>
+    <div class="view-heading"><h3>Gewinnmechanik & momentane Einstellungen</h3><p>Hier siehst du, wie der Live-Server für diese Losart Gewinne erzeugt. Die Werte dieser Ausgabe werden beim Druck gespeichert.</p></div>
+    <div id="mechanic-content" class="mechanic-content"></div>
+    <a class="inline-link" href="./christmas-event.html">⚙️ Allgemeine Rubbellos-Einstellungen im Weihnachtsevent ändern</a>
+   </section>
+   <section id="view-history" class="inner-view" hidden>
+    <div class="view-heading"><h3>Frühere Auflagen</h3><p>Jede Ausgabe bleibt mit Seriennummer, Gesamtgewinn und Verkaufsstand erhalten.</p></div>
+    <button id="history-refresh" type="button" class="ghost">↻ Historie laden</button>
+    <div id="history-entries" class="history-list"><p>Noch keine Historie geladen.</p></div>
+   </section>
+   <section class="preview-section">
+    <div class="preview-heading"><div><span class="eyebrow">✦ PROBEDRUCK ✦</span><h3>Serverberechnung für 500 Lose</h3></div><span id="preview-state" class="preview-state">Noch kein Probedruck</span></div>
+    <div id="preview-metrics" class="preview-metrics">
+     <div><span>🎟️ Lose</span><strong>500</strong></div><div><span>🏆 Gewinnlose</span><strong>–</strong></div><div><span>❄️ Nieten</span><strong>–</strong></div><div><span>🪙 Gesamtauszahlung</span><strong>–</strong></div>
+    </div>
+    <div id="preview-chart" class="preview-chart"><p>Erstelle einen Probedruck, um die tatsächliche Verteilung und das Gesamtbudget zu sehen.</p></div>
+    <div id="preview-message" class="preview-message" role="status" aria-live="polite"></div>
+   </section>
+   <div class="action-bar">
+    <button id="ed-preview" type="button" class="primary">🎲 500 Lose berechnen</button>
+    <button id="ed-publish" type="button" class="gold" disabled>🚀 Auflage veröffentlichen</button>
+    <button id="ed-export" type="button" class="ghost">↓ Konfiguration sichern</button>
+   </div>
+  </main>
+  <aside class="studio-sidebar">
+   <section class="side-panel">
+    <span class="eyebrow">✦ LIVE IM SPIEL ✦</span><h3>Aktuelle Auflage</h3>
+    <div id="live-edition"><p>Verbinde dich mit deinem DOG-Profil, um den aktuellen Bestand zu sehen.</p></div>
+    <button id="ed-retire" type="button" class="danger" hidden>Auflage vorzeitig beenden</button>
+   </section>
+   <section class="side-panel">
+    <span class="eyebrow">✦ DAS GESAMTBUDGET ✦</span><h3>Deine Vorgaben</h3>
+    <div class="side-stat"><span>Losauflage</span><strong>500 Stück</strong></div>
+    <div class="side-stat"><span>Gewinnbudget</span><strong id="side-budget">–</strong></div>
+    <div class="side-stat"><span>Obergrenze je Los</span><strong id="side-max">–</strong></div>
+    <div class="side-stat"><span>Geplante Quoten</span><strong id="side-quotas">Automatisch</strong></div>
+    <p class="side-note">Der Server entscheidet über alle echten Spielausgänge. Kein Browser kann Rubbelgewinne selbst festlegen oder nachträglich erhöhen.</p>
+   </section>
+   <section class="side-panel tips">
+    <h3>🎄 Gut zu wissen</h3>
+    <p><b>Premium-Weihnachtslos:</b> Vier Geld-Dreierreihen sind garantiert. Null Gewinne sind derzeit nicht möglich.</p>
+    <p><b>Glückszahl 1:</b> Bis zu 20 gewinnende Reihen, sofern die Trefferwahrscheinlichkeit hoch genug ist.</p>
+    <p><b>Finde DOG!:</b> Bei einem Treffer gewinnen die anderen acht Felder, ohne DOG ist das Los eine Niete.</p>
+   </section>
+  </aside>
+ </div>
+</section>
+<footer>✦ Lichtertal · Auflagenstudio · DOG Christmas Scratch Engine ✦</footer>
+</div>
+<script src="../profile-config.js"></script>
+<script src="../profile-auth.js"></script>
+<script type="module" src="./scratch-editions.js?v=1"></script>
+</body>
+</html>
