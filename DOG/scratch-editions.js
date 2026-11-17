@@ -254,6 +254,107 @@ function syncSimpleInputs(){
  renderSimpleSymbols();
  updateSimpleSummary();
 }
+/** Redistribute an exact 100% across unlocked symbol odds. */
+function rebalanceLockedOdds(values,index,percentage,locks=[]){
+ const target=Math.round(percentage*10);
+ if(!Number.isInteger(target)||target<0||target>1000)return null;
+ const next=[...values],free=[];let used=target;
+ for(let i=0;i<values.length;i++){
+  if(i===index)continue;
+  if(locks[i])used+=values[i];
+  else free.push(i);
+ }
+ const remaining=1000-used;
+ if(remaining<0||(!free.length&&remaining!==0))return null;
+ next[index]=target;
+ if(!free.length)return next;
+ const weights=free.map(i=>Math.max(0,values[i]));
+ const weightSum=weights.reduce((a,b)=>a+b,0);
+ const exact=free.map((i,j)=>({i,value:remaining*(weightSum?weights[j]/weightSum:1/free.length)}));
+ let assigned=0;
+ for(const row of exact){next[row.i]=Math.floor(row.value);assigned+=next[row.i]}
+ exact.sort((a,b)=>(b.value%1)-(a.value%1));
+ for(let j=0;j<remaining-assigned;j++)next[exact[j%exact.length].i]++;
+ return next;
+}
+function renderSimpleSymbols(){
+ const root=$('simple-symbol-grid');if(!root)return;
+ root.replaceChildren();
+ const draft=drafts[current.id],cfg=draft.gameSettings||{};
+ const locks=draft.oddsLocks??{money:[false,false,false],symbols:[false,false,false,false],gift:false};
+ draft.oddsLocks=locks;
+ const classic=Array.isArray(cfg.moneySymbolWeights);
+ const weights=classic?cfg.moneySymbolWeights:cfg.symbolWeights;
+ const applyOdds=(i,percent)=>{
+  if(!Array.isArray(weights))return false;
+  const group=classic?'money':'symbols',locked=locks[group]||[];
+  const next=rebalanceLockedOdds(weights,i,percent,locked);
+  if(!next)return false;
+  if(classic)cfg.moneySymbolWeights=next;
+  else cfg.symbolWeights=next;
+  return true;
+ };
+ for(const [index,meta] of CURRENCIES.entries()){
+  const range=draft.symbolBudgets[meta.id],row=node('div','simple-symbol-row');
+  const head=node('div','simple-symbol-name');
+  head.append(node('strong','',meta.icon+' '+meta.name),
+   node('small','',meta.id==='lights'?'⭐-Chance unabhängig von anderen Gewinnarten':
+    meta.id==='gift'?'🎁 💝 🎀 🧧 🛍️ – jedes Symbol kann eine Freischaltung auslösen':
+    classic?'Anteil der Geldtreffer; vier Premium-Geldreihen sind Pflicht':'Anteil der Gewinnsymbole'));
+  row.append(head);
+  const field=(name,initial,minimum,maximum,action,step='1')=>{
+   const label=node('label','simple-symbol-field');
+   label.append(node('span','',name));
+   const input=node('input');input.type='number';input.min=String(minimum);
+   input.max=String(maximum);input.step=step;input.value=String(initial??0);
+   input.inputMode='decimal';label.append(input);
+   input.addEventListener('change',()=>{
+    const n=Number(input.value);
+    if(!Number.isFinite(n)||n<minimum||n>maximum||
+       (step==='1'&&!Number.isSafeInteger(n))){renderSimpleSymbols();return}
+    if(action(n)===false){showMessage('🔒 Die fixierten Chancen lassen keine 100-%-Verteilung zu. Bitte eine Chance entsperren.','error');renderSimpleSymbols();return}
+    renderCurrency();updateSide();invalidatePreview();
+   });
+   row.append(label);
+  };
+  if(meta.id!=='gift'){
+   field('Min.',range.min,1,50000000,n=>{range.min=n});
+   field('Max.',range.max,1,50000000,n=>{range.max=n});
+  }
+  if(meta.id==='lights'){
+   field('Chance %',(range.chancePer1000||0)/10,0,100,n=>{
+    range.chancePer1000=Math.round(n*10);$('simple-lights').value=String(n);
+   },'0.1');
+  }else if(meta.id==='gift'){
+   const giftChance=classic?cfg.weights?.unlock:cfg.symbolWeights?.[3];
+   if(giftChance!==undefined)field('Chance %',giftChance/10,0,100,n=>{
+    if(!classic)return applyOdds(3,n);
+    const want=Math.round(n*10),none=cfg.weights.none;
+    if(want>1000-none)return false;
+    cfg.weights.coins=1000-none-want;cfg.weights.unlock=want;
+   },'0.1');
+  }else if(Array.isArray(weights)){
+   field('Anteil %',(weights[index]||0)/10,0,100,n=>applyOdds(index,n),'0.1');
+  }
+  const group=classic?'money':'symbols',lockIndex=meta.id==='gift'?3:index;
+  if(meta.id==='gift'&&classic||meta.id!=='lights'&&Array.isArray(weights)){
+   const lock=node('button','simple-symbol-lock');
+   lock.type='button';
+   const isLocked=meta.id==='gift'&&classic?locks.gift:Boolean(locks[group]?.[lockIndex]);
+   lock.textContent=isLocked?'🔒 Fixiert':'🔓 Fixieren';
+   lock.title=isLocked?'Chance entsperren':'Chance bei anderen Änderungen festhalten';
+   lock.setAttribute('aria-pressed',String(Boolean(isLocked)));
+   lock.addEventListener('click',()=>{
+    if(meta.id==='gift'&&classic)locks.gift=!locks.gift;
+    else{if(!Array.isArray(locks[group]))locks[group]=[];
+     locks[group][lockIndex]=!locks[group][lockIndex]}
+    updateSide();invalidatePreview();
+   });
+   row.append(lock);
+  }
+  root.append(row);
+ }
+}
 function possibleWinCounts(){
  if(current.id==='tic_tac_toe')return [0,1];
  if(current.id==='dog_jackpot_9')return [0,8];
