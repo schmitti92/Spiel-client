@@ -1333,6 +1333,9 @@ export function initChristmasScratch(){
      light.setAttribute('title','Zusätzlicher Weihnachtslichter-Gewinn für Lichtertal');
      light.setAttribute('aria-label','Weihnachtslichter-Sternenfeld');
      field.append(light);
+     const lightValue=el('small','scratch-light-field-value','+'+num(result.totalLights));
+     lightValue.setAttribute('aria-label',num(result.totalLights)+' gewonnene Weihnachtslichter');
+     field.append(lightValue);
     }
     board.append(field);
    }
