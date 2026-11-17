@@ -117,3 +117,29 @@ button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;curso
 .spec-example small{display:block;color:#8da7c1;font-size:9px;line-height:1.5;margin-top:9px;text-align:center}
 .spec-visual-layout .spec-detail{border-top:0;margin-top:0;padding-top:2px;align-content:start}
 @media(max-width:520px){.spec-visual-layout{grid-template-columns:112px minmax(0,1fr);gap:10px}.spec-example{padding:7px}.spec-board-preview{padding:4px;gap:2px}.spec-mini-cell{font-size:10px}.spec-detail p{font-size:11px}}
+
+/* Lichtertal's four-prize symbol ledger */
+.currency-headline{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:14px 3px 19px}
+.currency-headline h3{color:#ffdf9e;font:700 clamp(21px,2.5vw,27px) Georgia,serif;margin:7px 0}
+.currency-headline p{color:#b3c7db;font-size:13px;line-height:1.65;max-width:700px;margin:0}
+.currency-medallion{font-size:39px;display:grid;place-items:center;min-width:74px;height:74px;border:2px solid #d5af68;background:radial-gradient(#7b602c,#2e3340);border-radius:22px;box-shadow:0 8px 25px #0006}
+.currency-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.currency-card{background:linear-gradient(145deg,#20364c,#132438);border:1px solid #58748b;border-radius:16px;padding:16px 14px;min-width:0}
+.currency-card.currency-lights{background:radial-gradient(circle at 95% 0,#d4a84a48,transparent 55%),linear-gradient(145deg,#4c3926,#1c293c);border-color:#d1aa64}
+.currency-card-heading{display:flex;gap:12px;align-items:center;padding-bottom:14px;border-bottom:1px solid #6071835e}
+.currency-card-icon{display:grid;place-items:center;font-size:29px;width:48px;height:48px;border-radius:12px;background:#0b1a2a;border:1px solid #5a758a}
+.currency-lights .currency-card-icon{border-color:#ebc67c;background:#584122}
+.currency-card-heading strong{display:block;color:#f5e1bd;font-size:17px}.currency-card-heading small{display:block;color:#aebfd2;font-size:11px;line-height:1.45;margin-top:3px}
+.currency-fields{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}.currency-field{display:flex;flex-direction:column;gap:5px}.currency-field span{color:#b7cbe0;font-weight:700;font-size:11px;line-height:1.4}
+.currency-field input{min-width:0;width:100%;background:#0f1d2d;color:#fae7bb;border:1px solid #56738a;border-radius:8px;padding:9px 11px;font-size:14px;font-weight:800}
+.currency-field input:focus{outline:2px solid #c99c5f;outline-offset:1px}
+.currency-card-foot{border-radius:8px;background:#111e2f;font-size:11px;line-height:1.55;color:#bdd3dc;padding:9px 10px;margin-top:12px}
+.currency-total{margin-top:15px;padding:15px;background:#233643;border:1px solid #527086;border-radius:12px;display:flex;justify-content:space-between;flex-wrap:wrap;align-items:center;gap:12px;font-size:12px;color:#c4d3e0}
+.currency-total strong{color:#ffe1a7;font-size:16px}
+.currency-explainer{margin-top:14px;padding:14px;border-radius:11px;background:#1d3041;border-left:3px solid #ddbd76;font-size:12px;color:#d0dfeb;line-height:1.7}
+.preview-currencies{margin:14px 0;padding:14px;border:1px solid #816c48;border-radius:13px;background:#262d34}
+.preview-currencies h4{margin:0 0 12px;font-size:16px;color:#ffe3ab}
+.currency-result-row{display:grid;grid-template-columns:1fr auto;gap:7px 12px;padding:9px 0;border-bottom:1px solid #52657942;font-size:12px;color:#bdcddb}
+.currency-result-row strong{color:#f4d59f;white-space:nowrap}
+.currency-result-meter{grid-column:span 2;height:8px;background:#0e1c30;border-radius:7px;overflow:hidden}.currency-result-meter i{display:block;background:linear-gradient(90deg,#70aab1,#f3c679);height:100%;border-radius:7px}
+@media(max-width:570px){.currency-grid{grid-template-columns:1fr}.currency-headline{align-items:start}.currency-medallion{min-width:52px;height:52px;font-size:25px}.currency-card{padding:12px}.currency-result-row{font-size:11px}}
