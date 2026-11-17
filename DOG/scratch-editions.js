@@ -69,14 +69,46 @@ const baseDraft=variant=>({
  doubleWin:{chancePer1000:110,minTickets:0,maxTickets:80},
  symbolBudgets:defaultSymbolBudgets(variant)
 });
+const DRAFT_STORAGE_KEY='dog-scratch-edition-drafts-v2';
 const drafts=Object.fromEntries(VARIANTS.map(v=>[v.id,baseDraft(v)]));
+// Separate, automatically saved draft for each ticket variant.
+try{
+ const saved=JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY)||'{}');
+ for(const variant of VARIANTS){
+  const row=saved?.[variant.id];
+  if(!row||row.variantId!==variant.id||typeof row!=='object')continue;
+  const fresh=baseDraft(variant);
+  for(const key of ['title','ticketPrice','maxTotalCoins','targetTotalCoins',
+   'targetTolerancePercent','premiumFull27Tickets','volatility','maxPerTicketCoins',
+   'maxPrizesPerTicket','maxUnlocks','quotas','doubleWin','gameSettings'])
+   if(Object.hasOwn(row,key))fresh[key]=structuredClone(row[key]);
+  for(const key of Object.keys(fresh.symbolBudgets))if(row.symbolBudgets?.[key])
+   fresh.symbolBudgets[key]={...fresh.symbolBudgets[key],...row.symbolBudgets[key]};
+  drafts[variant.id]=fresh;
+ }
+}catch{ /* Missing storage permissions: default drafts remain available. */ }
+function persistDrafts(){
+ try{localStorage.setItem(DRAFT_STORAGE_KEY,JSON.stringify(drafts))}catch{}
+}
 const live={};
 const catalog={};
 let current=VARIANTS[0],view='overview',settings=null,preview=null,previewKey=null,busy=false;
 let formInitialized=false;
 const labelFor=error=>{
  const code=String(error||'');
- if(code.startsWith('EDITION_DISTRIBUTION_IMPOSSIBLE_SLOT_')){
+ if(code.startsWith('EDITION_BUDGET_MIN_REQUIRED_')){
+  const match=code.match(/EDITION_BUDGET_MIN_REQUIRED_(\d+)_AVAILABLE_(\d+)/);
+  if(match)return 'Mindestens '+fmt(match[1])+' Münzen werden für die festen Gewinnzahlen benötigt. '+
+   'Vorhanden: '+fmt(match[2])+' Münzen. Erhöhe das Gesamtbudget oder senke die Mindestgewinne. '+
+   'Die fixierten Gewinnzahlen bleiben unangetastet.';
+ }
+ if(code.startsWith('EDITION_TICKET_MIN_REQUIRED_')){
+  const match=code.match(/EDITION_TICKET_MIN_REQUIRED_(\d+)_AVAILABLE_(\d+)/);
+  if(match)return 'Ein Los benötigt mindestens '+fmt(match[1])+' Münzen, erlaubt sind '+
+   fmt(match[2])+'. Erhöhe den Höchstgewinn pro Los oder senke die Mindestbeträge.';
+ }
+ if(code.startsWith('EDITION_GENERATION_EXHAUSTED_SLOT_')||
+    code.startsWith('EDITION_DISTRIBUTION_IMPOSSIBLE_SLOT_')){
   const count=code.match(/_WINS_(\d+)/)?.[1];
   const slot=code.match(/_SLOT_(\d+)/)?.[1];
   return (slot?'Bei Los '+slot+' von 500: ':'')+
@@ -86,6 +118,8 @@ const labelFor=error=>{
    'Gewinnbeträge senken oder Gesamtbudget, Symbolbudgets und Höchstgewinn je Los prüfen. '+
    'Auch ✖️2 benötigt zusätzliches Budget.';
  }
+ if(code.startsWith('EDITION_UNSUPPORTED_WIN_COUNT_'))
+  return 'Diese Anzahl kann die echte Spielmechanik des ausgewählten Loses nicht erzeugen.';
  if(code.startsWith('EDITION_QUOTA_ABOVE_MAX_'))
   return 'Die ausgewählte Anzahl an Gewinnen ist für dieses Los zu hoch.';
  return ({
@@ -107,6 +141,7 @@ const labelFor=error=>{
  EDITION_PREMIUM_HAS_NO_DUDS:'Premiumlose haben vier garantierte Geldreihen und können deshalb keine Nieten enthalten.',
  EDITION_DOG_ONLY_EIGHT_OR_ZERO:'Finde DOG! hat pro Los 0 oder 8 gewinnende Felder.',
  EDITION_DUEL_ONE_WIN_MAX:'Tic-Tac-Toe kann pro Los höchstens einen Einzelgewinn ausschütten.',
+  EDITION_MINIMUM_FOUR_PREMIUM_WINS:'Ein Premiumlos benötigt mindestens vier echte Geldgewinne.',
  EDITION_NO_AVAILABLE_UNLOCK:'Kein zu diesem Profil passender Freischaltpreis ist mehr in der Auflage vorhanden.',
  LOGIN_REQUIRED:'Bitte zuerst mit deinem DOG-Spielerprofil anmelden.'
 })[error]||String(error||'Unbekannter Fehler');};
@@ -138,7 +173,11 @@ function readForm(){
 }
 function draftKey(value){return JSON.stringify(value)}
 function invalidatePreview(){
+ persistDrafts();
  preview=null;previewKey=null;
+ const sampleButton=$('ed-inspect'),samples=$('preview-samples');
+ if(sampleButton)sampleButton.hidden=true;
+ if(samples)samples.replaceChildren();
  $('preview-state').textContent='Nach Änderungen neu berechnen';
  $('ed-publish').disabled=true;
  $('preview-chart').replaceChildren(node('p','','Die Einstellungen wurden geändert. Berechne die 500 Lose erneut.'));
@@ -943,6 +982,8 @@ function switchVariant(id){
 }
 function showPreview(data){
  preview=data;previewKey=draftKey(drafts[current.id]);
+ $('ed-inspect').hidden=!data.previewId;
+ $('preview-samples').replaceChildren();
  const s=data.summary||{};
  $('preview-state').textContent='✓ Server-Probedruck';
  const summaryTarget=$('preview-target');summaryTarget.replaceChildren();
