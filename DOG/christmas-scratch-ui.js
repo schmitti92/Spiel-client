@@ -52,7 +52,7 @@ const prizeLabel=p=>p?.type==='coins'?(p.bonus?'🎉 Zusatzgewinn · ':'')+(p.sy
 const symbolLegend=(tier,values=null)=>{
  const [coin,note,bag]=Array.isArray(values)&&values.length===3?values:
   SCRATCH_COIN_PRIZES[tier]||SCRATCH_COIN_PRIZES.simple;
- return '🪙 '+num(coin)+' · 💵 '+num(note)+' · 💼 '+num(bag)+' Münzen · 🎁 💝 🎀 🧧 (je 3 gleiche = Freischaltung)';
+ return '🪙 '+num(coin)+' · 💵 '+num(note)+' · 💼 '+num(bag)+' Münzen · 🎁 💝 🎀 🧧 (je 3 gleiche = Freischaltung) · ⭐ Weihnachtslichter';
 };
 /**
  * Premium milestone counters are purely visual. The server-issued board
@@ -885,7 +885,8 @@ export function initChristmasScratch(){
   face.setAttribute('aria-hidden','true');
   cell.append(face);
   if(stage.dataset.variant==='dog_jackpot_9'&&symbol!=='DOG'){
-   const amount={'🪙':100,'💵':300,'💼':800}[symbol];
+   const amounts=coinAmountsFor(ticket?.tier||'premium','dog_jackpot_9',ticket);
+   const amount={'🪙':amounts[0],'💵':amounts[1],'💼':amounts[2]}[symbol];
    cell.append(el('small','scratch-dog-payout',amount?num(amount):'Geschenk'));
   }
   // Premium money symbols must show their actual payout directly IN the
@@ -1316,7 +1317,18 @@ export function initChristmasScratch(){
     board.append(makeDuelTile(String(result.board.multiplier)+'×',0),
      makeDuelTile(result.board.winningSymbol,1));
    }
-   for(const [index,symbol] of cells.entries())board.append(makeField(symbol,index));
+   for(const [index,symbol] of cells.entries()){
+    const field=makeField(symbol,index);
+    if(Number.isSafeInteger(result.lightBadgeIndex)&&index===result.lightBadgeIndex&&
+       Number.isSafeInteger(result.totalLights)&&result.totalLights>0){
+     field.classList.add('scratch-has-light-award');
+     const light=el('span','scratch-light-field-star','⭐');
+     light.setAttribute('title','Zusätzlicher Weihnachtslichter-Gewinn für Lichtertal');
+     light.setAttribute('aria-label','Weihnachtslichter-Sternenfeld');
+     field.append(light);
+    }
+    board.append(field);
+   }
    try{
     if(stage.dataset.duelVersion==='8')attachDuelCovers();
     else attachUnifiedCover();
