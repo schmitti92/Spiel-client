@@ -29,6 +29,8 @@ export function initDogPlayerLevels(){
   $('dog-level-matches').textContent=format(level.totalVerifiedMatches);
   $('dog-level-last').textContent=level.totalVerifiedMatches?
    '+'+format(level.lastEarnedXp)+' EP bei der letzten Partie':'Noch keine Partie für Level-EP abgeschlossen';
+  const bonus=Number.isInteger(data.academyXpPercent)?data.academyXpPercent:0;
+  $('dog-level-last').textContent+=' · 📚 Akademie: '+(bonus?'+'+bonus+' % XP':'Grundstufe (noch kein XP-Bonus)');
   grid.replaceChildren();
   const rewards=Array.isArray(level.rewards)?level.rewards:[];
   for(let n=1;n<=10;n++){
