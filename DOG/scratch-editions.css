@@ -205,3 +205,16 @@ button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;curso
 .odds-sum{font-size:12px;color:#f6be91}.odds-sum[data-valid="true"]{color:#a6e8bd}
 @media(max-width:700px){.double-controls{grid-template-columns:1fr}.double-head{align-items:flex-start}.double-emblem{flex-basis:53px;height:53px;font-size:19px}.double-studio{padding:13px}}
 @media(max-width:420px){.odds-percent-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.auto-percent-control{align-items:flex-start}}
+
+.simple-controls-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+ padding:13px 16px;background:#1a2d41;border:1px solid #54738a;border-radius:12px;margin:0 0 13px}
+.simple-controls-row>span{display:grid;gap:4px}.simple-controls-row strong{color:#f4dbac;font-size:13px}
+.simple-controls-row small{color:#a4bfd2;font-size:11px}
+.advanced-limits-toggle{display:inline-flex;align-items:center;gap:9px;padding:9px 11px;
+ background:#203649;border:1px solid #5a7486;border-radius:9px;color:#dce8f1;font-size:11px;font-weight:750}
+.advanced-limits-toggle input{width:16px;height:16px;accent-color:#d7a866}
+.chance-shortcut{display:flex;justify-content:space-between;align-items:center;gap:14px;
+ padding:16px;margin-top:17px;border:1px solid #488f84;border-radius:12px;background:#193d3e}
+.chance-shortcut strong{color:#defbe5;font-size:14px}.chance-shortcut p{color:#b2d5d0;font-size:11px;line-height:1.6;margin:6px 0 0}
+.chance-shortcut button{white-space:nowrap;border-color:#639c8d;color:#e2ffef}
+@media(max-width:630px){.chance-shortcut{flex-wrap:wrap}.chance-shortcut button{width:100%}.simple-controls-row{align-items:flex-start}}
