@@ -192,7 +192,7 @@ function renderGameSettings(root){
   field('🏆 Maximalgewinne der Spielmechanik','maxPrizes',null,v.id==='premium_27'?6:1,10);
  }
  if(v.id==='number_one_20'){
-  field('🎟️ Lospreis','price',null,1,1000000);
+  // This edition's sale price is managed centrally in Auflagenplan.
   field('🎯 Chance auf Zahl 1 je Reihe (‰)','hitPer1000',null,0,1000);
  }
  if(v.id==='tic_tac_toe')field('🎰 Höchster Multiplikator','maxMultiplier',null,1,5);
