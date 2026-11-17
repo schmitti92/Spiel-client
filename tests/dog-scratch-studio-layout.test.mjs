@@ -5,52 +5,58 @@ import {readFileSync} from 'node:fs';
 const html=readFileSync(new URL('../DOG/scratch-editions.html',import.meta.url),'utf8');
 const js=readFileSync(new URL('../DOG/scratch-editions.js',import.meta.url),'utf8');
 const css=readFileSync(new URL('../DOG/scratch-editions.css',import.meta.url),'utf8');
-const steps=['overview','currency','mechanic','quotas','plan','history'];
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
-const viewIndex=id=>html.indexOf('id="view-'+id+'"');
+const point=id=>html.indexOf('id="'+id+'"');
 
-test('studio has unique controls and an easy six-tab workflow',()=>{
- assert.equal(new Set(ids).size,ids.length,'all studio IDs must be unique');
- for(const step of steps){
-  assert.ok(viewIndex(step)>0,step+' view must exist');
-  assert.match(html,new RegExp('data-view="'+step+'"'));
-  assert.match(js,/function activateView\(name/);
+test('simple main screen exposes exactly the five most useful editable settings',()=>{
+ assert.equal(new Set(ids).size,ids.length,'studio control IDs must stay unique');
+ const easy=['simple-price','simple-budget','simple-win-chance','simple-double','simple-lights'];
+ for(const id of easy){
+  assert.ok(ids.includes(id),id+' missing');
+  assert.ok(js.includes(id),id+' has no UI binding');
+  assert.ok(point(id)>point('view-overview')&&point(id)<point('advanced-studio'),id+' must be on main page');
  }
- assert.equal(steps.length,6);
- assert.ok(viewIndex('overview')<viewIndex('currency'));
- assert.ok(html.indexOf('data-view="currency"')<html.indexOf('data-view="mechanic"'));
- assert.ok(html.indexOf('data-view="mechanic"')<html.indexOf('data-view="quotas"'));
- assert.ok(html.indexOf('data-view="quotas"')<html.indexOf('data-view="plan"'));
+ assert.match(html,/id="simple-variant"/);
+ assert.match(html,/id="simple-open-advanced"/);
+ assert.match(js,/function setupSimpleEditor/);
+ assert.match(js,/function simpleWinRule/);
+ assert.match(css,/body:not\(\.studio-expert\) \.studio-sidebar\{display:none\}/);
 });
-test('the print check and publish button appear only within the budget/final step',()=>{
- const plan=viewIndex('plan'),quotas=viewIndex('quotas');
- for(const value of ['preview-metrics','preview-message','preview-double','ed-preview','ed-publish',
-  'ed-export','plan-checks']){
-  const index=html.indexOf('id="'+value+'"');
-  assert.ok(index>plan&&index<quotas,value+' must be in final budget step');
+test('server preview and publish are visible together below the simple controls',()=>{
+ const start=point('view-overview'),end=point('advanced-studio');
+ for(const id of ['preview-metrics','preview-message','preview-double','ed-preview','ed-publish']){
+  assert.ok(point(id)>start&&point(id)<end,id+' should live on main screen');
  }
+ assert.ok(point('ed-preview')<point('ed-publish'));
  assert.match(js,/previewKey!==draftKey/);
  assert.match(js,/api\('\/editions\/preview'/);
  assert.match(js,/api\('\/editions\/publish'/);
-});
-test('all core prize, percent, x2 and 500-ticket controls remain wired',()=>{
- for(const value of ['edition-tabs','currency-grid','symbol-overview','quota-grid',
-  'ed-double-chance','ed-double-min','ed-double-max','ed-auto-percent',
-  'ed-target','ed-budget','ed-max-coins','ed-max-prizes','ed-max-unlocks',
-  'ed-volatility','ed-tolerance','ed-full27','ed-full27-range','ed-price',
-  'ed-advanced-limits','ed-import-file','ed-import-draft','ed-reset-draft']){
-  assert.ok(ids.includes(value),value+' must remain in the page');
-  assert.ok(js.includes(value),value+' must have a JS binding');
- }
- assert.match(js,/rebalanceOdds/);
  assert.match(js,/function validateDraftLocally/);
+});
+test('full editor remains optional and all legacy prize controls are preserved',()=>{
+ const advanced=['currency','mechanic','quotas','plan','history'];
+ for(const step of advanced){
+  assert.ok(point('view-'+step)>point('advanced-studio'),step+' should be optional');
+  assert.match(html,new RegExp('data-view="'+step+'"'));
+ }
+ for(const id of ['currency-grid','symbol-overview','quota-grid','ed-double-chance',
+  'ed-double-min','ed-double-max','ed-auto-percent','ed-target','ed-budget','ed-max-coins',
+  'ed-max-prizes','ed-max-unlocks','ed-volatility','ed-tolerance','ed-full27',
+  'ed-full27-range','ed-price','ed-advanced-limits','ed-import-file','ed-import-draft',
+  'ed-reset-draft','ed-export','simple-return']){
+  assert.ok(ids.includes(id),id+' missing');
+  assert.ok(js.includes(id),id+' has no event or rendering binding');
+ }
+ assert.match(js,/function activateView\(name/);
+ assert.match(js,/rebalanceOdds/);
  assert.match(js,/function renderPlanChecks/);
 });
-test('mobile presentation and saved configurations are supported',()=>{
- assert.match(css,/\.studio-quick-stats/);
- assert.match(css,/\.wizard-footer/);
- assert.match(css,/@media\(max-width:660px\)/);
+test('responsive design, safety notices and saved drafts still work',()=>{
+ assert.match(css,/\.simple-editor-grid/);
+ assert.match(css,/@media\(max-width:650px\)/);
+ assert.match(css,/\.simple-money-summary/);
  assert.match(js,/function replaceCurrentDraft/);
  assert.match(js,/file\.text\(\)/);
  assert.match(html,/id="studio-global-message"/);
+ assert.match(html,/id="simple-validation"/);
 });
