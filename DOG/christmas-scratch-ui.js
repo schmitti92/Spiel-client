@@ -406,6 +406,13 @@ export function initChristmasScratch(){
    const details=el('div','scratch-card-brief');
    details.append(el('span','scratch-card-rule',visibleRule),
     el('span','scratch-card-chance',chanceText));
+   if(option.id==='gifts'&&variantConfig){
+    details.append(el('span','scratch-card-chance',
+     '⭐ Lichtbonus: '+percent(variantConfig.lightChancePer1000??100)+' % · '+
+     num(variantConfig.lightMin??1)+'–'+num(variantConfig.lightMax??10)+' ⭐'));
+    details.append(el('span','scratch-card-chance',
+     '✖️2-Chance: '+percent(variantConfig.doubleChancePer1000??110)+' % bei Geldgewinnen'));
+   }
    const amounts=option.id==='tic_tac_toe'?[200,450,800]:
     option.id==='number_one_20'?(lucky?.coinAmounts??[100,300,800]):
     option.id==='dog_jackpot_9'?[100,300,800]:
@@ -1185,6 +1192,8 @@ export function initChristmasScratch(){
     section.append(list);
    }else{
     section.append(el('p','scratch-current-empty',
+     Number(result?.totalLights)>0?
+     '⭐ Lichtbonus gutgeschrieben – auch ohne Münzgewinn. Bestätige das Ergebnis, um das nächste Los zu öffnen.':
      result?.giftSparksEarned?
      'Keine Münzreihe, aber ein Geschenkfunke wurde gutgeschrieben. Bestätige das Ergebnis.':
      'Diesmal keine gültige Gewinnkombination. Bestätige auch dieses Ergebnis, um das nächste Los zu öffnen.'));
