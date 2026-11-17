@@ -187,7 +187,97 @@ function syncSimpleInputs(){
  $('simple-win-label').textContent=rule.label;
  $('simple-win-explanation').textContent=rule.explanation;
  $('simple-win-chance').value=rule.shown?String(rule.value):'';
+ renderSimplePrizeCounts();
  updateSimpleSummary();
+}
+function possibleWinCounts(){
+ if(current.id==='tic_tac_toe')return [0,1];
+ if(current.id==='dog_jackpot_9')return [0,8];
+ if(current.id==='premium_27')return [4,5,6,7,8,9,10];
+ return Array.from({length:current.id==='number_one_20'?21:11},(_,i)=>i);
+}
+function renderSimplePrizeCounts(){
+ const select=$('simple-prize-count'),entries=drafts[current.id].quotas||{};
+ const valid=possibleWinCounts(),previous=Number(select.value);
+ select.replaceChildren(...valid.map(count=>{
+  const option=node('option','',count===0?'0 Gewinne · Niete':
+   count===1?'1 Gewinn':count+' Gewinne gleichzeitig');
+  option.value=String(count);return option;
+ }));
+ select.value=String(valid.includes(previous)?previous:valid.includes(8)?8:valid.at(-1));
+ const root=$('simple-prize-rows');root.replaceChildren();
+ const pairs=Object.entries(entries).filter(([,n])=>Number(n)>0)
+  .sort((a,b)=>Number(b[0])-Number(a[0]));
+ const fixed=pairs.reduce((sum,[,n])=>sum+Number(n),0);
+ for(const [countRaw,tickets] of pairs){
+  const count=Number(countRaw),row=node('div','simple-prize-row');
+  row.append(node('span','simple-prize-row-label',count===0?'❄️ Nieten':
+   '🏆 '+count+' '+(count===1?'Gewinn':'Gewinne')+' pro Los'));
+  const quantity=node('label','simple-prize-row-qty');
+  quantity.append(node('span','','Anzahl Lose'));
+  const input=node('input');input.type='number';input.min='0';input.max='500';
+  input.step='1';input.value=String(tickets);input.inputMode='numeric';
+  input.setAttribute('aria-label','Wie viele Lose haben '+count+' Gewinne?');
+  input.addEventListener('change',()=>{
+   const n=Number(input.value);
+   if(!Number.isSafeInteger(n)||n<0||n>500){
+    input.value=String(drafts[current.id].quotas[count]);return;
+   }
+   updateFixedPrizes(count,n);
+  });
+  quantity.append(input);row.append(quantity);
+  const remove=node('button','simple-prize-remove','Entfernen');
+  remove.type='button';remove.setAttribute('aria-label',
+   'Vorgabe für '+count+' Gewinne entfernen');
+  remove.addEventListener('click',()=>updateFixedPrizes(count,0));
+  row.append(remove);root.append(row);
+ }
+ if(!pairs.length)root.append(node('p','simple-prize-empty',
+  'Noch keine feste Anzahl. Alle 500 Lose werden automatisch zusammengestellt.'));
+ $('simple-prize-fixed').textContent=fmt(fixed)+' von 500 fest';
+ $('simple-prize-remaining').textContent=fmt(Math.max(0,500-fixed))+' automatisch';
+ $('simple-prize-bar-fill').style.width=Math.min(100,fixed/5)+'%';
+ $('simple-prize-clear').hidden=!pairs.length;
+ const winset=current.id==='premium_27'?'Bei Premium sind mindestens 4 Gewinne pro Los garantiert.':
+  current.id==='tic_tac_toe'?'Tic-Tac-Toe erlaubt 0 oder 1 Einzelgewinn pro Los.':
+  current.id==='dog_jackpot_9'?'Finde DOG! erlaubt entweder 0 oder genau 8 Gewinne.':
+  current.id==='number_one_20'?'Glückszahl 1 erlaubt 0 bis 20 Gewinne auf einem Los.':
+  'Diese Losart erlaubt 0 bis 10 Einzelgewinne auf einem Los.';
+ $('simple-prize-hint').textContent=winset+
+  ' Eine Vorgabe von „5 Lose × 8 Gewinne“ reserviert genau fünf solcher Lose – nicht 5 Gewinne insgesamt.';
+}
+function updateFixedPrizes(count,tickets){
+ if(!possibleWinCounts().includes(count)||!Number.isSafeInteger(tickets)||
+  tickets<0||tickets>500)return;
+ const draft=drafts[current.id],quotas={...(draft.quotas||{})};
+ if(!tickets)delete quotas[count];
+ else quotas[count]=tickets;
+ const fixed=Object.values(quotas).reduce((sum,n)=>sum+Number(n||0),0);
+ if(fixed>500){
+  $('simple-prize-hint').textContent='⚠️ Die 500 Lose sind bereits verplant. Es sind nur '+
+   fmt(Math.max(0,500-(fixed-tickets)))+' weitere Lose möglich.';
+  $('simple-prize-hint').classList.add('has-error');
+  renderSimplePrizeCounts();return;
+ }
+ $('simple-prize-hint').classList.remove('has-error');
+ draft.quotas=quotas;
+ if(tickets>0&&count>draft.maxPrizesPerTicket){
+  draft.maxPrizesPerTicket=count;
+  $('ed-max-prizes').value=String(count);
+ }
+ // Keep the advanced quota editor and the simple editor synchronized.
+ // readForm reads this advanced grid; therefore update it before readForm.
+ renderQuota();
+ readForm();updateSide();invalidatePreview();
+}
+function addFixedPrizeRow(){
+ const count=Number($('simple-prize-count').value);
+ const tickets=Number($('simple-prize-tickets').value);
+ if(!Number.isSafeInteger(tickets)||tickets<1||tickets>500){
+  $('simple-prize-hint').textContent='Bitte eine ganze Zahl zwischen 1 und 500 Losen eingeben.';
+  $('simple-prize-hint').classList.add('has-error');return;
+ }
+ updateFixedPrizes(count,tickets);
 }
 function updateSimpleSummary(){
  const draft=drafts[current.id],active=live[current.id];
@@ -218,6 +308,15 @@ function changeSimpleWin(value){
 }
 function setupSimpleEditor(){
  $('simple-variant').addEventListener('change',()=>switchVariant($('simple-variant').value));
+ $('simple-prize-add').addEventListener('click',addFixedPrizeRow);
+ $('simple-prize-tickets').addEventListener('keydown',event=>{
+  if(event.key==='Enter'){event.preventDefault();addFixedPrizeRow()}
+ });
+ $('simple-prize-clear').addEventListener('click',()=>{
+  const draft=drafts[current.id];
+  draft.quotas={};
+  renderQuota();readForm();updateSide();invalidatePreview();
+ });
  $('simple-price').addEventListener('change',()=>{
   const n=Number($('simple-price').value);
   if(Number.isSafeInteger(n)&&n>=0&&n<=1000000)setSimpleNumber('ed-price',n);
@@ -271,6 +370,10 @@ function validateDraftLocally(){
   errors.push({view:'quotas',message:'Höchstens 500 Lose können mit festen Gewinnzahlen verplant werden.'});
  if(current.id==='premium_27'&&draft.quotas[0]>0)
   errors.push({view:'quotas',message:'Beim Premiumlos sind Nieten aufgrund der garantierten Geldreihen nicht möglich.'});
+ if(Object.entries(draft.quotas).some(([win,n])=>Number(n)>0&&!possibleWinCounts().includes(Number(win))))
+  errors.push({view:'quotas',message:'Diese Losart erlaubt nicht jede gewählte Anzahl an Gewinnen.'});
+ if(Object.entries(draft.quotas).some(([win,n])=>Number(n)>0&&Number(win)>draft.maxPrizesPerTicket))
+  errors.push({view:'quotas',message:'Bitte das Maximum der Einzelgewinne je Los erhöhen.'});
  if(draft.doubleWin.minTickets>draft.doubleWin.maxTickets||
     ![draft.doubleWin.minTickets,draft.doubleWin.maxTickets,draft.doubleWin.chancePer1000]
       .every(Number.isSafeInteger)||
@@ -354,7 +457,7 @@ function updateSide(){
   'Alle 500 Lose werden intelligent anhand des Ziel-Gesamtgewinns verteilt.';
  $('premium-quantity').textContent=fmt(draft.premiumFull27Tickets)+' / 500';
  $('ed-full27-range').value=String(Math.min(100,Math.max(0,draft.premiumFull27Tickets)));
- renderDashboard();renderPlanChecks();updateSimpleSummary();
+ renderDashboard();renderPlanChecks();updateSimpleSummary();renderSimplePrizeCounts();
 }
 
 function renderCurrency(){
