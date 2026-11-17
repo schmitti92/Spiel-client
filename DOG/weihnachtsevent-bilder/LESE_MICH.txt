@@ -1,0 +1,12 @@
+GRINCHHÖHLE – 5 STUFEN (RÜCKWÄRTS)
+
+Stufe 1: Ankunft – volle Macht, prachtvolle Höhle.
+Stufe 2: Erste Schwächung – leichter Verfall.
+Stufe 3: Machtverlust – sichtbare Schäden.
+Stufe 4: Schwer beschädigt – großer Verfall.
+Stufe 5: Fast besiegt – Höhle stark zerstört.
+
+Alle 5 Dateien sind PNGs (1254 x 1254 Pixel, transparenter Hintergrund).
+Upload einzeln als PNG nach:
+schmitti92/Spiel-client, Branch main, Ordner DOG/weihnachtsevent-bilder/
+Die ZIP-Datei vorher entpacken; GitHub entpackt die ZIP nicht automatisch.
