@@ -88,3 +88,21 @@ test('the allowed number of prizes per scratch card follows its genuine rules',(
  assert.match(js,/if\(tickets>0&&count>draft\.maxPrizesPerTicket\)/);
  assert.match(js,/s\.byWins\?\.\[Number\(win\)\]/);
 });
+
+test('a saved draft remains isolated by lottery type and live edition is not modified',()=>{
+ assert.match(js,/dog-scratch-edition-drafts-v2/);
+ assert.match(js,/saved\?\.\[variant\.id\]/);
+ assert.match(js,/function persistDrafts\(\)/);
+ assert.match(js,/localStorage\.setItem\(DRAFT_STORAGE_KEY/);
+ assert.match(js,/function invalidatePreview\(\)/);
+});
+test('the real preview can inspect server-checked scratch boards without sale numbers',()=>{
+ for(const id of ['ed-inspect','preview-samples']){
+  assert.ok(ids.includes(id));
+  assert.ok(js.includes(id));
+ }
+ assert.match(js,/\/editions\/preview\/.*\/tickets/);
+ assert.match(js,/printed-ticket-board/);
+ assert.match(css,/\.printed-ticket-sample/);
+ assert.match(html,/scratch-editions\.js\?v=22/);
+});

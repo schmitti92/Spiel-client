@@ -545,3 +545,19 @@ body.studio-expert .studio-sidebar{display:flex}
 
 .simple-prize-confirmed{margin:14px 0 8px;border:1px solid #6a9b79;background:#1b4337;
  border-radius:12px;padding:13px 15px;color:#ddf5d1;font-size:13px;font-weight:750;line-height:1.6}
+
+/* Real preview samples in the existing studio – compact and mobile friendly. */
+.draft-autosave-note{font-size:.82rem;opacity:.78;margin:.8rem 0 .3rem}
+.printed-ticket-open{margin:14px 0;padding:12px 18px;border:1px solid #c5a66d;border-radius:12px;color:#f1d9a8;background:#10243d;cursor:pointer;font-weight:700}
+.printed-ticket-open[hidden]{display:none}
+.preview-samples{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,285px),1fr));gap:12px;margin-top:12px}
+.preview-samples:empty{display:none}
+.printed-ticket-note{grid-column:1/-1;color:#d8c7a8;font-size:.88rem}
+.printed-ticket-sample{min-width:0;border:1px solid #ad9059;border-radius:14px;padding:12px;background:linear-gradient(135deg,#142b47,#0b1d33);color:#f8e9ce}
+.printed-ticket-sample summary{cursor:pointer;line-height:1.5;font-weight:650}
+.printed-ticket-board{display:grid;gap:3px;margin-top:12px}
+.printed-ticket-cell{position:relative;display:grid;place-items:center;min-width:0;min-height:26px;padding:2px;border:1px solid #63809d;border-radius:5px;background:#183955;text-align:center;font-size:clamp(.7rem,1.8vw,1.1rem);word-break:break-word}
+.printed-ticket-badge{position:absolute;top:-5px;right:-4px;background:#6e4b12;border:1px solid #f5d18a;border-radius:6px;font-size:.62rem;padding:1px 2px}
+.printed-ticket-prizes{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.printed-ticket-prizes span{background:#28435e;border:1px solid #8d754e;border-radius:6px;padding:4px 6px;font-size:.78rem}
+@media(max-width:650px){.preview-samples{grid-template-columns:1fr}.printed-ticket-cell{min-height:28px;font-size:1rem}}
