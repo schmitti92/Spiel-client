@@ -77,7 +77,7 @@ let formInitialized=false;
 const labelFor=error=>{
  const code=String(error||'');
  if(code.startsWith('EDITION_DISTRIBUTION_IMPOSSIBLE_SLOT_')){
-  const count=code.match(/_WINS_(\\d+)/)?.[1];
+  const count=code.match(/_WINS_(\d+)/)?.[1];
   return 'Diese feste Vorgabe'+(count?' mit '+count+' Gewinnen pro Los':'')+
    ' lässt sich mit den bisherigen Gewinnwerten und Budgets nicht drucken. '+
    'Versuche weniger solcher Lose oder erhöhe das Gesamtbudget.';
@@ -142,6 +142,7 @@ function invalidatePreview(){
  $('preview-economy').hidden=true;
  $('preview-currencies').hidden=true;
  $('preview-double').hidden=true;
+ $('simple-prize-confirmed').hidden=true;
  $('preview-metrics').replaceChildren(...[
   ['🎟️ Lose','500'],['🏆 Gewinnlose','–'],['❄️ Nieten','–'],['🪙 Gesamtauszahlung','–']
  ].map(([name,value])=>metric(name,value)));
@@ -207,6 +208,7 @@ function possibleWinCounts(){
  return Array.from({length:current.id==='number_one_20'?21:11},(_,i)=>i);
 }
 function renderSimplePrizeCounts(){
+ $('simple-prize-hint').classList.remove('has-error');
  const select=$('simple-prize-count'),entries=drafts[current.id].quotas||{};
  const valid=possibleWinCounts(),previous=Number(select.value);
  select.replaceChildren(...valid.map(count=>{
@@ -957,6 +959,14 @@ function showPreview(data){
   track.append(progress);summaryTarget.append(track);
  }
  renderPreviewCurrencies(s);
+ const fixed=Object.entries(drafts[current.id].quotas)
+  .filter(([,quantity])=>Number(quantity)>0).sort((a,b)=>Number(b[0])-Number(a[0]));
+ const check=$('simple-prize-confirmed');
+ check.hidden=!fixed.length;
+ if(fixed.length)check.textContent='✓ Probedruck: '+
+  fixed.map(([win,quantity])=>fmt(s.byWins?.[Number(win)]??0)+
+   ' Lose mit '+win+' Gewinnen (gewünscht: '+fmt(quantity)+')').join(' · ')+
+  '. Alle festen Gewinnzahlen wurden serverseitig geprüft.';
  $('preview-double').hidden=false;
  $('preview-double').textContent='✖️2-Verteilung: '+fmt(s.doubleWinTickets||0)+
   ' von 500 Losen haben einen sichtbaren Verdopplungsbonus. Zusätzlich verteilt: '+
