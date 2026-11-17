@@ -1,0 +1,35 @@
+name: DOG Christmas village no-overlap
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/christmas-village-layout.mjs'
+      - 'DOG/christmas-event.js'
+      - 'DOG/christmas-event.html'
+      - 'DOG/christmas-grinch-cave.css'
+      - 'DOG/christmas-expansion.css'
+      - 'tests/dog-christmas-village-layout.test.mjs'
+      - '.github/workflows/dog-christmas-village-layout.yml'
+  pull_request:
+    paths:
+      - 'DOG/christmas-village-layout.mjs'
+      - 'DOG/christmas-event.js'
+      - 'DOG/christmas-event.html'
+      - 'DOG/christmas-grinch-cave.css'
+      - 'DOG/christmas-expansion.css'
+      - 'tests/dog-christmas-village-layout.test.mjs'
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+jobs:
+  no-overlap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/christmas-village-layout.mjs
+      - run: node --check DOG/christmas-event.js
+      - run: node --test tests/dog-christmas-village-layout.test.mjs
