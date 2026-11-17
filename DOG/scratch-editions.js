@@ -42,6 +42,7 @@ const baseDraft=variant=>({
 const drafts=Object.fromEntries(VARIANTS.map(v=>[v.id,baseDraft(v)]));
 const live={};
 let current=VARIANTS[0],view='plan',settings=null,preview=null,previewKey=null,busy=false;
+let formInitialized=false;
 const labelFor=error=>({
  EDITION_STILL_ACTIVE:'Eine bestehende Auflage hat noch Restlose. Beende sie zuerst oder verkaufe sie vollständig.',
  EDITION_QUOTAS_OVER_500:'Mehr als 500 Lose sind fest eingeplant.',
@@ -192,7 +193,8 @@ function activateView(name){
 }
 function switchVariant(id){
  const variant=VARIANTS.find(x=>x.id===id);if(!variant)return;
- readForm();current=variant;
+ if(formInitialized)readForm();
+ formInitialized=true;current=variant;
  $('edition-title').textContent=variant.icon+' '+variant.name;
  $('edition-subtitle').textContent=variant.rule;
  const d=drafts[variant.id];
