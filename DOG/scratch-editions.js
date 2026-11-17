@@ -109,6 +109,14 @@ const labelFor=error=>{
   if(match)return 'Ein Los benötigt mindestens '+fmt(match[1])+' Münzen, erlaubt sind '+
    fmt(match[2])+'. Erhöhe den Höchstgewinn pro Los oder senke die Mindestbeträge.';
  }
+ if(code.startsWith('EDITION_AUTO_DISTRIBUTION_EXHAUSTED_SLOT_')){
+  const slot=code.match(/_SLOT_(\d+)/)?.[1];
+  return 'Beim automatisch verteilten Los '+(slot||'?')+' von '+fmt(sizeOf())+
+   ' wurde trotz zusätzlicher Versuche keine gültige Kombination gefunden. '+
+   'Deine festen Gewinnzahlen bleiben unverändert. Prüfe die Zielauszahlung, '+
+   'Mindest- und Höchstgewinne sowie die Budgets für die einzelnen Symbole. '+
+   'Dieser Suchabbruch beweist noch nicht, dass die Auflage unmöglich ist.';
+ }
  if(code.startsWith('EDITION_GENERATION_EXHAUSTED_SLOT_')||
     code.startsWith('EDITION_DISTRIBUTION_IMPOSSIBLE_SLOT_')){
   const count=code.match(/_WINS_(\d+)/)?.[1];
@@ -278,7 +286,9 @@ function renderSimpleSymbols(){
   head.append(node('strong','',meta.icon+' '+meta.name),
    node('small','',meta.id==='lights'?'⭐-Chance unabhängig von anderen Gewinnarten':
     meta.id==='gift'?'🎁 💝 🎀 🧧 🛍️ – jedes Symbol kann eine Freischaltung auslösen':
-    classic?'Anteil der Geldtreffer; vier Premium-Geldreihen sind Pflicht':'Anteil der Gewinnsymbole'));
+    classic?(current.id==='premium_27'?
+     'Anteil der Geldtreffer; vier Premium-Geldreihen sind Pflicht':
+     'Anteil der Geldtreffer für dieses Rubbellos'):'Anteil der Gewinnsymbole'));
   row.append(head);
   const field=(name,initial,minimum,maximum,action,step='1')=>{
    const label=node('label','simple-symbol-field');
@@ -1235,7 +1245,7 @@ $('ed-preview').addEventListener('click',async()=>{
   document.querySelector('.preview-section')?.scrollIntoView({behavior:'smooth',block:'start'});
  }catch(e){
   invalidatePreview();
-  const quotaProblem=String(e.message||'').startsWith('EDITION_DISTRIBUTION_IMPOSSIBLE_SLOT_');
+  const quotaProblem=/^(EDITION_DISTRIBUTION_IMPOSSIBLE_SLOT_|EDITION_GENERATION_EXHAUSTED_SLOT_|EDITION_AUTO_DISTRIBUTION_EXHAUSTED_SLOT_)/.test(String(e.message||''));
   showMessage('⚠️ '+labelFor(e.message)+(quotaProblem?'':'. Prüfe Budget, Gewinnzahlen und Spielchancen.'),'error');
   // Explicit one-click correction: only raise a proven monetary minimum.
   // Never adjust any fixed ticket-count quota without the player's consent.
