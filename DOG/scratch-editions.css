@@ -66,3 +66,17 @@ button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;curso
  .premium-highlight h3{font-size:23px}
  .premium-highlight-controls .field input{font-size:16px}
 }
+
+.volatility-control{margin-top:19px;padding:20px;border-radius:15px;border:1px solid #6c7492;
+ background:radial-gradient(circle at 85% 0,#473b6c76,transparent 55%),linear-gradient(135deg,#1e2b46,#19283c);
+ box-shadow:inset 0 1px #a9b5d32b}
+.volatility-heading{display:flex;gap:16px;justify-content:space-between;align-items:center}
+.volatility-heading h3{font:700 20px Georgia,serif;margin:6px 0 4px;color:#f1d6ae}
+.volatility-heading p{font-size:12px;color:#aebfd3;line-height:1.65;margin:0}
+.volatility-heading strong{font:800 30px Georgia,serif;white-space:nowrap;color:#f4c57c;
+ border:1px solid #b68847;background:#4c3b2e;padding:9px;border-radius:10px}
+.volatility-track{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:11px;margin-top:20px}
+.volatility-track span{font-size:12px;color:#d7cfcc;font-weight:750}
+.volatility-track input{width:100%;accent-color:#d9aa68;cursor:pointer}
+.volatility-levels{display:flex;justify-content:space-between;gap:6px;margin-top:8px;color:#8ea6be;font-size:10px;text-align:center}
+@media(max-width:510px){.volatility-control{padding:14px}.volatility-heading{align-items:start}.volatility-heading strong{font-size:20px}.volatility-track{gap:6px}.volatility-track span{font-size:11px}.volatility-levels{font-size:9px}}
