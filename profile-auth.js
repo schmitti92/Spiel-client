@@ -320,8 +320,10 @@ function renderPanel(){
  const root=document.getElementById('online-account-panel');if(!root)return;
  const label={initializing:'⏳ Firebase lädt',unconfigured:'⚙️ Einrichtung erforderlich',loading:'⏳ Synchronisierung',onboarding:'✍️ Profil fertigstellen',online:'✅ Online verbunden',error:'⚠️ Verbindung prüfen',guest:'🔒 Nicht angemeldet'};
  const b=root.querySelector('[data-online-status]'),d=root.querySelector('[data-online-detail]');
- if(b)b.textContent=label[current.status]||'🔒 Nicht angemeldet';
- if(d)d.textContent=current.error||(current.status==='online'?`Angemeldet: ${current.user?.email||''} · Das Spielerprofil ist ausschließlich online gespeichert.`:'Für dein Online-Profil bitte anmelden oder ein neues Konto erstellen.');
+ if(b)b.textContent=current.status==='error'&&current.user?'⚠️ Angemeldet – Verbindung prüfen':label[current.status]||'🔒 Nicht angemeldet';
+ if(d)d.textContent=current.status==='error'&&current.user?
+  (current.error||'Profil vorübergehend nicht erreichbar')+' · Firebase-Anmeldung besteht weiterhin. Erneut versuchen.':
+  current.error||(current.status==='online'?`Angemeldet: ${current.user?.email||''} · Das Spielerprofil ist ausschließlich online gespeichert.`:'Für dein Online-Profil bitte anmelden oder ein neues Konto erstellen.');
  const guest=root.querySelector('[data-online-guest]'),signed=root.querySelector('[data-online-signed]');
  if(guest)guest.hidden=current.status==='online';if(signed)signed.hidden=current.status!=='online';
 }
@@ -332,7 +334,8 @@ function initUI(){
    const ready=current.status==='online'&&!!current.profile?.setupComplete;
    document.body.classList.toggle('sp-account-ready',!!ready);
    if(!ready&&current.status==='guest'&&!dlg.open)openLogin();
-   if(!ready&&current.status==='error'&&!dlg.open)renderLogin('login',current.error);
+   // A failed profile synchronization is not a Firebase sign-out.
+   if(!ready&&current.status==='error'&&!current.user&&!dlg.open)renderLogin('login',current.error);
    if(!ready&&current.status==='onboarding'&&!dlg.open)openRegistration(true);
   };
   window.addEventListener('spielonline-change',guard);guard();
@@ -343,6 +346,10 @@ function initUI(){
  }));
  renderPanel();
 }
+// Recover transient profile sync errors when connectivity or app focus returns.
+const retryIfAuthenticated=()=>{if(current.user&&current.status==='error')void refresh().catch(()=>{});};
+window.addEventListener('online',retryIfAuthenticated);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)retryIfAuthenticated();});
 window.SpielOnline={state,refresh,saveProfile,loginEmail,registerEmail,logout,resetPassword,openLogin,openRegistration,processImage:shrinkImage};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initUI);else initUI();
 (async()=>{
