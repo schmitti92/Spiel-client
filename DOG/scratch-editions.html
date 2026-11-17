@@ -36,6 +36,16 @@
     </div>
     <div id="edition-availability" class="edition-availability">Lade …</div>
    </section>
+   <section class="spec-hero" aria-label="Technischer Los-Steckbrief">
+     <div class="spec-hero-heading"><div><span class="eyebrow">✦ AKTUELLE SPIELREGELN ✦</span><h3 id="spec-hero-title">🎟️ Los-Steckbrief</h3><p id="spec-hero-description">Informationen aus dem Gewinnmotor des Render-Servers</p></div><span id="spec-live-price" class="spec-live-price">– 🪙 Standard</span></div>
+     <div id="spec-kpis" class="spec-kpis">
+      <div><span>🔲 Spielfelder</span><strong>–</strong></div>
+      <div><span>🎯 Gewinnlinien</span><strong>–</strong></div>
+      <div><span>🏆 Max. Gewinne</span><strong>–</strong></div>
+      <div><span>🪙 Normalpreis</span><strong>–</strong></div>
+     </div>
+     <div id="spec-detail" class="spec-detail"></div>
+   </section>
    <div class="subtabs" role="tablist" aria-label="Werkzeuge">
     <button type="button" class="subtab active" data-view="plan" aria-selected="true">🎛️ Auflagenplan</button>
     <button type="button" class="subtab" data-view="quotas" aria-selected="false">🎰 Gewinnverteilung</button>
@@ -46,6 +56,8 @@
     <div class="view-heading"><div><h3>Neue 500er-Auflage konfigurieren</h3><p>Alle Grenzen gelten für die komplette Auflage. Kein Gewinn darf das festgelegte Budget überschreiten.</p></div></div>
     <div class="field-layout">
      <label class="field field-wide"><span>🏷️ Auflagenname</span><input id="ed-name" type="text" maxlength="70" autocomplete="off" placeholder="z. B. Winterglück · Edition 1"></label>
+     <label class="field price-field"><span>🎟️ Preis pro Los (Goldmünzen)</span><input id="ed-price" type="number" min="0" max="1000000" step="1" inputmode="numeric"><small>Gilt für alle 500 Lose dieser Ausgabe – auch direkt beim Kauf im Spiel.</small></label>
+     <div class="price-live-card"><span>🧮 Einnahmen bei 500 bezahlten Losen</span><strong id="ed-sales-projection">– 🪙</strong><small>Bei Gratislosen oder Gutscheinen fallen die tatsächlichen Einnahmen niedriger aus.</small></div>
      <div class="field"><span>🎟️ Anzahl Lose</span><div class="readonly-field">500 <small>fest</small></div></div>
      <label class="field"><span>🎯 Ziel-Gesamtauszahlung für alle 500 Lose</span><input id="ed-target" type="number" min="0" max="1000000000000" step="1"><small>Der Server versucht, diese Summe mit abwechslungsreichen Gewinnen zu erreichen.</small></label>
      <label class="field"><span>🪙 Absolute Gesamtobergrenze</span><input id="ed-budget" type="number" min="0" max="1000000000000" step="1"><small>Dieser Gesamtbetrag wird niemals überschritten.</small></label>
@@ -95,6 +107,12 @@
      <div><span>🎟️ Lose</span><strong>500</strong></div><div><span>🏆 Gewinnlose</span><strong>–</strong></div><div><span>❄️ Nieten</span><strong>–</strong></div><div><span>🪙 Gesamtauszahlung</span><strong>–</strong></div>
     </div>
     <div id="preview-target" class="preview-target" hidden></div>
+    <div id="preview-economy" class="preview-economy" hidden>
+     <div><span>💳 Gesamteinnahmen (500 × Lospreis)</span><strong id="preview-income">–</strong></div>
+     <div><span>🪙 Gedruckte Gewinnauszahlung</span><strong id="preview-expense">–</strong></div>
+     <div><span>⚖️ Theoretische Münzbilanz</span><strong id="preview-profit">–</strong></div>
+     <div><span>📊 Ausschüttungsquote</span><strong id="preview-ratio">–</strong></div>
+    </div>
     <div id="preview-chart" class="preview-chart"><p>Erstelle einen Probedruck, um die tatsächliche Verteilung und das Gesamtbudget zu sehen.</p></div>
     <div id="preview-message" class="preview-message" role="status" aria-live="polite"></div>
    </section>
@@ -113,6 +131,8 @@
    <section class="side-panel">
     <span class="eyebrow">✦ DAS GESAMTBUDGET ✦</span><h3>Deine Vorgaben</h3>
     <div class="side-stat"><span>Losauflage</span><strong>500 Stück</strong></div>
+    <div class="side-stat"><span>Lospreis</span><strong id="side-price">–</strong></div>
+    <div class="side-stat"><span>Brutto bei 500 bezahlten Losen</span><strong id="side-sales">–</strong></div>
     <div class="side-stat"><span>Zielauszahlung</span><strong id="side-target">–</strong></div><div class="side-stat"><span>Budgetobergrenze</span><strong id="side-budget">–</strong></div>
     <div class="side-stat"><span>Obergrenze je Los</span><strong id="side-max">–</strong></div>
     <div class="side-stat"><span>Geplante Quoten</span><strong id="side-quotas">Automatisch</strong></div>
@@ -131,6 +151,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./scratch-editions.js?v=2"></script>
+<script type="module" src="./scratch-editions.js?v=3"></script>
 </body>
 </html>
