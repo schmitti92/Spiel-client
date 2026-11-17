@@ -52,7 +52,7 @@ const prizeLabel=p=>p?.type==='coins'?(p.bonus?'🎉 Zusatzgewinn · ':'')+(p.sy
 const symbolLegend=(tier,values=null)=>{
  const [coin,note,bag]=Array.isArray(values)&&values.length===3?values:
   SCRATCH_COIN_PRIZES[tier]||SCRATCH_COIN_PRIZES.simple;
- return '🪙 '+num(coin)+' · 💵 '+num(note)+' · 💼 '+num(bag)+' Münzen · 🎁 💝 🎀 🧧 🛍️ (je nach Losregel = Hauptgewinn) · ⭐ Weihnachtslichter';
+ return '🪙 '+num(coin)+' · 💵 '+num(note)+' · 💼 '+num(bag)+' Münzen · 🎁 💝 🎀 🧧 🛍️ (Hauptgewinn) · ⭐ Weihnachtslichter · ✖️2 Verdopplungsbonus';
 };
 /**
  * Premium milestone counters are purely visual. The server-issued board
@@ -426,6 +426,11 @@ export function initChristmasScratch(){
      option.id==='tic_tac_toe'?
      '◯ / ✕ · 1–5× · 🪙 200 · 💵 450 · 💼 800 · 🎁 Freischaltung':symbolLegend(option.tier,amounts)));
    article.append(el('div','scratch-light-legend','⭐ Lichtertal-Lichtfeld · Bonus für den gemeinsamen Dorfausbau'));
+   if(onSale&&Number.isSafeInteger(activeEdition?.config?.doubleWin?.chancePer1000)&&
+      activeEdition.config.doubleWin.maxTickets>0)
+    article.append(el('div','scratch-double-legend','✖️2 Bonus möglich · Zielchance '+
+     num(activeEdition.config.doubleWin.chancePer1000/10)+' % · höchstens '+
+     num(activeEdition.config.doubleWin.maxTickets)+' von 500 Losen'));
    const vouchers=Number(status?.vouchers?.[option.tier]||0)+Number(status?.variantVouchers?.[option.id]||0);
    const buyBtn=el('button','scratch-buy','🎟️ Für '+num(salePrice)+' Münzen öffnen');
    buyBtn.type='button';buyBtn.hidden=freeMode;
