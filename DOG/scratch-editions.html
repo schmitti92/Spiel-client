@@ -54,6 +54,7 @@
    <div class="subtabs" role="tablist" aria-label="Werkzeuge">
     <button type="button" class="subtab active" data-view="plan" aria-selected="true">🎛️ Auflagenplan</button>
     <button type="button" class="subtab" data-view="quotas" aria-selected="false">🎰 Gewinnverteilung</button>
+    <button type="button" class="subtab" data-view="currency" aria-selected="false">⭐ Währungen & Budgets</button>
     <button type="button" class="subtab" data-view="mechanic" aria-selected="false">📜 Gewinnregeln</button>
     <button type="button" class="subtab" data-view="history" aria-selected="false">🗃️ Historie</button>
    </div>
@@ -96,6 +97,12 @@
     <div id="quota-grid" class="quota-grid"></div>
     <div class="quota-footer"><span id="quota-sum">0 von 500 fest eingeplant</span><button id="quota-clear" type="button" class="ghost small">↶ Alle Vorgaben löschen</button></div>
    </section>
+   <section id="view-currency" class="inner-view" hidden>
+    <div class="currency-headline"><div><span class="eyebrow">✦ GEWINNWERKSTATT LICHTERTAL ✦</span><h3>⭐ Vier Gewinnwährungen – eine kontrollierte Auflage</h3><p>Stelle für jedes Symbol den kleinsten Einzelgewinn, den höchsten Einzelgewinn und den maximalen Gesamtbetrag innerhalb von 500 Losen ein. Der Server verteilt echte Beträge innerhalb dieser Grenzen.</p></div><div class="currency-medallion">⭐</div></div>
+    <div class="currency-grid" id="currency-grid"></div>
+    <div class="currency-total"><span>🪙 Alle Geldsymbole zusammen unterliegen zusätzlich deinem Münz-Gesamtbudget.</span><strong id="currency-budget-remaining">–</strong></div>
+    <div class="currency-explainer">🎁 Geschenk-Freischaltungen besitzen keinen Münzwert. Deren Höchstzahl stellst du im Auflagenplan bei „Max. Freischaltungen“ ein. ⭐ Weihnachtslichter werden unabhängig von Goldmünzen direkt in das gemeinsame Dorfkonto gebucht.</div>
+   </section>
    <section id="view-mechanic" class="inner-view" hidden>
     <div class="view-heading"><h3>Gewinnmechanik & momentane Einstellungen</h3><p>Hier siehst du, wie der Live-Server für diese Losart Gewinne erzeugt. Die Werte dieser Ausgabe werden beim Druck gespeichert.</p></div>
     <div id="mechanic-content" class="mechanic-content"></div>
@@ -112,6 +119,7 @@
      <div><span>🎟️ Lose</span><strong>500</strong></div><div><span>🏆 Gewinnlose</span><strong>–</strong></div><div><span>❄️ Nieten</span><strong>–</strong></div><div><span>🪙 Gesamtauszahlung</span><strong>–</strong></div>
     </div>
     <div id="preview-target" class="preview-target" hidden></div>
+    <div id="preview-currencies" class="preview-currencies" hidden></div>
     <div id="preview-economy" class="preview-economy" hidden>
      <div><span>💳 Gesamteinnahmen (500 × Lospreis)</span><strong id="preview-income">–</strong></div>
      <div><span>🪙 Gedruckte Gewinnauszahlung</span><strong id="preview-expense">–</strong></div>
@@ -138,7 +146,7 @@
     <div class="side-stat"><span>Losauflage</span><strong>500 Stück</strong></div>
     <div class="side-stat"><span>Lospreis</span><strong id="side-price">–</strong></div>
     <div class="side-stat"><span>Brutto bei 500 bezahlten Losen</span><strong id="side-sales">–</strong></div>
-    <div class="side-stat"><span>Zielauszahlung</span><strong id="side-target">–</strong></div><div class="side-stat"><span>Budgetobergrenze</span><strong id="side-budget">–</strong></div>
+    <div class="side-stat"><span>Zielauszahlung</span><strong id="side-target">–</strong></div><div class="side-stat"><span>Budgetobergrenze</span><strong id="side-budget">–</strong></div><div class="side-stat"><span>Weihnachtslichter insgesamt</span><strong id="side-lights">–</strong></div>
     <div class="side-stat"><span>Obergrenze je Los</span><strong id="side-max">–</strong></div>
     <div class="side-stat"><span>Geplante Quoten</span><strong id="side-quotas">Automatisch</strong></div>
     <p class="side-note">Der Server entscheidet über alle echten Spielausgänge. Kein Browser kann Rubbelgewinne selbst festlegen oder nachträglich erhöhen.</p>
@@ -156,6 +164,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./scratch-editions.js?v=4"></script>
+<script type="module" src="./scratch-editions.js?v=5"></script>
 </body>
 </html>
