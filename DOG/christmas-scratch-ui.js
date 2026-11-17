@@ -1097,7 +1097,7 @@ export function initChristmasScratch(){
   if(result?.board?.variantId==='number_one_20')panel.append(el('div','scratch-special-rule-note',
    '🔢 Jede der 20 Reihen hat zwei eigene Rubbelstellen. Links das Symbol, rechts die Zahl: Nur eine 1 gewinnt den Symbolpreis derselben Reihe. Alle Treffer werden addiert.'));
   if(result?.board?.variantId==='dog_jackpot_9')panel.append(el('div','scratch-special-rule-note scratch-dog-odds',
-   '🐾 35 % Jackpotchance · Ein DOG gewinnt alle 8 anderen Felder inklusive möglicher Freischaltungen. Ohne DOG ist das Los eine Niete.'));
+   '🐾 '+num((result?.board?.dogChancePer1000??350)/10)+' % Jackpotchance · Ein DOG gewinnt alle 8 anderen Felder inklusive möglicher Freischaltungen. Ohne DOG ist das Los eine Niete.'));
   if(result?.board?.variantId==='tic_tac_toe'&&result.board?.symbolVersion===8){
    panel.append(el('div','scratch-tictac-bonus-note',
     '◯ / ✕ · Gewinnzeichen: '+result.board.winningSymbol+' · '+result.board.multiplier+
@@ -1212,7 +1212,7 @@ export function initChristmasScratch(){
   const dogArt=$('scratch-card-art');
   dogArt.querySelector('.scratch-dog-ribbon')?.remove();
   if(stage.dataset.variant==='dog_jackpot_9'){
-   const ribbon=el('div','scratch-dog-ribbon','🐾 35 % JACKPOT-CHANCE · 9 GEHEIME FELDER');
+   const ribbon=el('div','scratch-dog-ribbon','🐾 '+num((result.board?.dogChancePer1000??350)/10)+' % JACKPOT-CHANCE · 9 GEHEIME FELDER');
    ribbon.setAttribute('aria-hidden','true');
    dogArt.append(ribbon);
   }
@@ -1224,9 +1224,9 @@ export function initChristmasScratch(){
   const payoutRule=result.board?.variantId==='number_one_20'?
     '20 Reihen × 2 separat freirubbelbare Felder. Jede Zahl 1 gewinnt das Symbol links. Die Auszahlungen dieses Loses: 🪙 '+num((result.coinAmounts||[100,300,800])[0])+' · 💵 '+num((result.coinAmounts||[100,300,800])[1])+' · 💼 '+num((result.coinAmounts||[100,300,800])[2])+' · 🎁 Freischaltung.':
    result.board?.variantId==='dog_jackpot_9'?
-    'Neun Felder: Wird DOG aufgedeckt, gehören dir die Preise aller acht übrigen Felder. 🪙 100 · 💵 300 · 💼 800 · 🎁 Freischaltung. Ohne DOG: Niete.':
+    'Neun Felder: Wird DOG aufgedeckt, gehören dir die Preise aller acht übrigen Felder. '+symbolLegend(result.tier,coinAmountsFor(result.tier,'dog_jackpot_9',result))+' · 🎁 Freischaltung. Ohne DOG: Niete.':
    result.board?.variantId==='tic_tac_toe'&&result.board?.symbolVersion===8?
-    'Zuerst 1×–5× aufrubbeln, dann ◯ oder ✕. Danach alle neun Felder öffnen. Eine Dreierlinie aus dem Gewinnsymbol gewinnt EINEN zufälligen Symbolpreis × Multiplikator; Geschenke geben höchstens eine Freischaltung, sonst 1.500 Münzen × Multiplikator.':
+    'Zuerst 1×–'+(result.board?.maxMultiplier??5)+'× aufrubbeln, dann ◯ oder ✕. Danach alle neun Felder öffnen. Eine Dreierlinie aus dem Gewinnsymbol gewinnt EINEN zufälligen Symbolpreis × Multiplikator; Geschenke geben höchstens eine Freischaltung, sonst '+num(result.board?.giftFallbackCoins??1500)+' Münzen × Multiplikator.':
    result.board?.variantId==='tic_tac_toe'?
     '🪙 200 · 💵 450 · 💼 800 Münzen je Dreierreihe · 🎁 Premium-Freischaltung. 2 Linien +250 · 3+ Linien +800 · Koffer in der Mitte +300 · Goldenes X +1.000 · 4 gleiche Ecken +400 · 9 gleiche Felder +20.000. Zwei Geschenke ergeben einen Geschenkfunken.':
    result.board?.variantId==='premium_27'&&result.board?.symbolVersion===5?
@@ -1247,9 +1247,9 @@ export function initChristmasScratch(){
    legend.textContent=legend.hidden?'':result.board?.variantId==='number_one_20'?
     '🔢 Links Gewinnsymbol aufrubbeln · rechts Zahl aufrubbeln · jede 1 gewinnt · 🪙 '+num((result.coinAmounts||[100,300,800])[0])+' · 💵 '+num((result.coinAmounts||[100,300,800])[1])+' · 💼 '+num((result.coinAmounts||[100,300,800])[2])+' · 🎁 Freischaltung':
     result.board?.variantId==='dog_jackpot_9'?
-    '🐾 DOG = alle acht Preise · 🪙 100 · 💵 300 · 💼 800 · 🎁 Freischaltung':
+    '🐾 DOG = alle acht Preise · '+symbolLegend(result.tier,coinAmountsFor(result.tier,'dog_jackpot_9',result))+' · 🎁 Freischaltung':
     result.board?.variantId==='tic_tac_toe'&&result.board?.symbolVersion===8?
-    '◯ oder ✕ · 1×–5× · 8 mögliche Linien · EIN Symbolgewinn × Multiplikator':
+    '◯ oder ✕ · 1×–'+(result.board?.maxMultiplier??5)+'× · 8 mögliche Linien · EIN Symbolgewinn × Multiplikator · '+symbolLegend(result.tier,coinAmountsFor(result.tier,'tic_tac_toe',result)):
     result.board?.variantId==='tic_tac_toe'?
     '🪙 200 · 💵 450 · 💼 800 · 🎁 Premium · 8 mögliche Gewinnlinien':
     symbolLegend(result.tier,coinAmountsFor(result.tier,result.board?.variantId,result))}
