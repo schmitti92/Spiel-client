@@ -1119,6 +1119,23 @@ $('ed-preview').addEventListener('click',async()=>{
   invalidatePreview();
   const quotaProblem=String(e.message||'').startsWith('EDITION_DISTRIBUTION_IMPOSSIBLE_SLOT_');
   showMessage('⚠️ '+labelFor(e.message)+(quotaProblem?'':'. Prüfe Budget, Gewinnzahlen und Spielchancen.'),'error');
+  // Explicit one-click correction: only raise a proven monetary minimum.
+  // Never adjust any fixed ticket-count quota without the player's consent.
+  const minimum=String(e.message).match(/^EDITION_BUDGET_MIN_REQUIRED_(\d+)_AVAILABLE_\d+$/);
+  const perTicket=String(e.message).match(/^EDITION_TICKET_MIN_REQUIRED_(\d+)_AVAILABLE_\d+$/);
+  if(minimum||perTicket){
+   const required=Number((minimum||perTicket)[1]);
+   const field=minimum?'ed-budget':'ed-max-coins';
+   const label=minimum?'Gesamtbudget':'Gewinnlimit pro Los';
+   const fix=node('button','simple-fix','🪙 '+label+' auf '+fmt(required)+' anheben');
+   fix.type='button';
+   fix.addEventListener('click',()=>{
+    setSimpleNumber(field,required);
+    syncSimpleInputs();
+    showMessage('✅ '+label+' angepasst. Deine festen Gewinnzahlen sind unverändert. Berechne die Auflage erneut.','good');
+   });
+   $('preview-message').append(fix);
+  }
  }
  finally{setBusy(false)}
 });
