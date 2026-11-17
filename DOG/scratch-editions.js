@@ -54,7 +54,8 @@ function defaultSymbolBudgets(variant){
    minTotal:0,maxTotal:Math.max(10000,Math.round(variant.budget*(i+2)/5))};
  });
  result.lights={min:1,max:10,minTotal:0,maxTotal:400,chancePer1000:200};
- result.gift={min:0,max:3,minTotal:0,maxTotal:variant.id==='premium_27'?25:0};
+ result.gift={min:0,max:3,minTotal:0,
+  maxTotal:variant.tier==='simple'?25:variant.tier==='medium'?20:25};
  return result;
 }
 const baseDraft=variant=>({
@@ -62,7 +63,8 @@ const baseDraft=variant=>({
  maxTotalCoins:variant.budget,targetTotalCoins:Math.round(variant.budget*.55),
  targetTolerancePercent:5,premiumFull27Tickets:0,volatility:70,
  ticketPrice:variant.price,maxPerTicketCoins:variant.one,
- maxPrizesPerTicket:variant.wins,maxUnlocks:variant.id==='premium_27'?25:0,quotas:{},
+ maxPrizesPerTicket:variant.wins,
+ maxUnlocks:variant.tier==='simple'?25:variant.tier==='medium'?20:25,quotas:{},
  symbolBudgets:defaultSymbolBudgets(variant)
 });
 const drafts=Object.fromEntries(VARIANTS.map(v=>[v.id,baseDraft(v)]));
