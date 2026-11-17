@@ -288,6 +288,25 @@ function defaultGameSettings(v){
   symbolWeights:[550,300,148,2],dogChancePer1000:350,giftFallbackCoins:1500};
  return null;
 }
+
+// Keep one manually edited probability exact, and distribute the remaining
+// percentage in tenths (1000 parts = 100.0%) over the other icons.
+export function rebalanceOdds(source,selected,desired){
+ const old=source.map(n=>Math.max(0,Math.round(Number(n)||0)));
+ const fixed=Math.max(0,Math.min(1000,Math.round(Number(desired)||0)));
+ if(old.length<2||selected<0||selected>=old.length)throw Error('EDITION_ODDS_INVALID');
+ const rest=1000-fixed,others=old.map((_,i)=>i).filter(i=>i!==selected);
+ const total=others.reduce((sum,i)=>sum+old[i],0);
+ const pieces=others.map(i=>({
+  i,raw:total?old[i]*rest/total:rest/others.length
+ }));
+ const next=old.map(()=>0);next[selected]=fixed;
+ for(const part of pieces)next[part.i]=Math.floor(part.raw);
+ let missing=1000-next.reduce((a,b)=>a+b,0);
+ pieces.sort((a,b)=>(b.raw-Math.floor(b.raw))-(a.raw-Math.floor(a.raw))||a.i-b.i);
+ for(let k=0;k<missing;k++)next[pieces[k%pieces.length].i]++;
+ return next;
+}
 function renderGameSettings(root){
  const v=current,draft=drafts[v.id];
  if(!draft.gameSettings)draft.gameSettings=defaultGameSettings(v);
@@ -314,10 +333,51 @@ function renderGameSettings(root){
   });
   item.append(input);grid.append(item);
  };
+ // Percent groups are shown as percentages, never raw promille.
+ // All values are still written in server-native 0..1000 integer units.
+ const percentGroup=(heading,explanation,labels,initial,save)=>{
+  const group=node('section','odds-group');
+  group.append(node('h5','',heading),node('p','',explanation));
+  const rows=node('div','odds-percent-grid'),inputs=[];
+  const totalLabel=node('small','odds-sum');
+  const render=values=>{
+   inputs.forEach((el,i)=>el.value=(values[i]/10).toLocaleString('de-DE',{
+    useGrouping:false,maximumFractionDigits:1}).replace(',','.'));
+   const total=values.reduce((a,b)=>a+b,0);
+   totalLabel.textContent=total===1000?'✅ Zusammen genau 100 %':
+    '⚠️ Gesamt: '+(total/10).toLocaleString('de-DE',{maximumFractionDigits:1})+
+     ' % · Bitte auf 100 % einstellen';
+   totalLabel.dataset.valid=String(total===1000);
+  };
+  for(const [i,label] of labels.entries()){
+   const cell=node('label','odds-percent-field');
+   cell.append(node('span','',label));
+   const wrapper=node('div','odds-percent-control'),input=node('input');
+   input.type='number';input.min='0';input.max='100';input.step='0.1';
+   input.value=String((initial[i]||0)/10);input.inputMode='decimal';
+   wrapper.append(input,node('b','','%'));cell.append(wrapper);rows.append(cell);
+   inputs.push(input);
+   input.addEventListener('change',()=>{
+    const entered=Number(input.value);
+    if(!Number.isFinite(entered)||entered<0||entered>100){
+     input.value=String((initial[i]||0)/10);return;
+    }
+    const current=inputs.map(n=>Math.max(0,Math.min(1000,Math.round(Number(n.value)*10))));
+    const next=$('ed-auto-percent').checked?
+     rebalanceOdds(current,i,entered*10):current;
+    initial=[...next];save(next);render(next);invalidatePreview();
+   });
+  }
+  const actions=node('div','odds-group-actions'),equal=node('button','odds-equal','⚖️ Gleichmäßig aufteilen');
+  equal.type='button';equal.addEventListener('click',()=>{
+   const q=Math.floor(1000/labels.length);
+   const next=labels.map((_,i)=>q+(i<1000-q*labels.length?1:0));
+   initial=[...next];save(next);render(next);invalidatePreview();
+  });
+  actions.append(equal,totalLabel);
+  group.append(rows,actions);render(initial);root.append(group);
+ };
  if(cfg.weights){
-  field('❄️ Nietenkategorie (‰)','weights','none',0,1000);
-  field('🪙 Münzkategorie (‰)','weights','coins',0,1000);
-  field('🎁 Freischaltungen (‰)','weights','unlock',0,1000);
   field('🎉 Zusatzmünzen (%)','extraCoinChance',null,0,100);
   field('🏆 Maximalgewinne der Spielmechanik','maxPrizes',null,v.id==='premium_27'?6:1,10);
  }
@@ -329,21 +389,33 @@ function renderGameSettings(root){
  if(v.id==='dog_jackpot_9')field('🐾 DOG-Trefferwahrscheinlichkeit (‰)','dogChancePer1000',null,0,1000);
  if(cfg.giftFallbackCoins!==undefined)
   field('🎁 Münzen statt Freischaltung','giftFallbackCoins',null,0,50000000);
- if(Array.isArray(cfg.coinAmounts))
-  ['🪙 Münzwert','💵 Scheinwert','💼 Kofferwert'].forEach((label,i)=>
-   field(label,'coinAmounts',i,1,50000000));
- if(Array.isArray(cfg.moneySymbolWeights))
-  ['🪙 Münze (‰)','💵 Schein (‰)','💼 Koffer (‰)'].forEach((label,i)=>
-   field(label,'moneySymbolWeights',i,0,1000));
- if(Array.isArray(cfg.symbolWeights))
-  ['🪙 Münze (‰)','💵 Schein (‰)','💼 Koffer (‰)','🎁 Geschenk (‰)'].forEach((label,i)=>
-   field(label,'symbolWeights',i,0,1000));
- if(Array.isArray(cfg.giftSymbolWeights))
-  ['🎁 Geschenk (‰)','💝 Herz (‰)','🎀 Schleife (‰)','🧧 Umschlag (‰)','🛍️ Geschenktüte (‰)']
-   .forEach((label,i)=>field(label,'giftSymbolWeights',i,0,1000));
  section.append(grid);
- const footer=node('p','','⚖️ Hauptkategorien, Geldsymbole und Geschenksymbole müssen jeweils genau 1000 ‰ ergeben. '+
-  'Die Münzwerte müssen streng aufsteigend sein. Unmögliche Ausgaben werden vom Server abgelehnt.');
+ if(cfg.weights){
+  const keys=['none','coins','unlock'];
+  percentGroup('① Gewinnarten', 'Wie oft ist ein Los eine Niete, ein Geldtreffer oder ein freischaltbarer Hauptgewinn? '+
+   'Dies sind die Basisanteile; bei Premium bleiben vier Geldreihen garantiert.',
+   ['❄️ Niete','🪙 Geldgewinn','🎁 Hauptgewinn'],
+   keys.map(k=>cfg.weights[k]),vals=>keys.forEach((k,i)=>{cfg.weights[k]=vals[i]}));
+ }
+ if(Array.isArray(cfg.moneySymbolWeights)){
+  percentGroup('② Geldsymbole','Wie werden die Geldgewinne auf Münze, Schein und Koffer verteilt?',
+   ['🪙 Münze','💵 Geldschein','💼 Koffer'],cfg.moneySymbolWeights,
+   vals=>cfg.moneySymbolWeights=[...vals]);
+ }
+ if(Array.isArray(cfg.symbolWeights)){
+  percentGroup('② Symbolverteilung','Gewinnchance pro Symbolart. Die fünf Geschenke teilen sich den Geschenk-Anteil.',
+   ['🪙 Münze','💵 Schein','💼 Koffer','🎁 Hauptgewinn'],cfg.symbolWeights,
+   vals=>cfg.symbolWeights=[...vals]);
+ }
+ if(Array.isArray(cfg.giftSymbolWeights)){
+  percentGroup('③ Die fünf Hauptgewinn-Symbole',
+   'Welches Geschenk-Symbol erscheint, wenn ein Freischaltgewinn gezogen wurde?',
+   ['🎁 Geschenk','💝 Herz','🎀 Schleife','🧧 Umschlag','🛍️ Geschenktüte'],
+   cfg.giftSymbolWeights,vals=>cfg.giftSymbolWeights=[...vals]);
+ }
+ const footer=node('p','','✨ Automatik an: Ändere nur eine Chance; der Rest wird automatisch auf 100 % ergänzt. '+
+  'Die Geldbeträge und Gesamtbudgets stellst du übersichtlich in Schritt 1 ein. '+
+  '✖️2 hat eine zusätzliche eigene Chance und gehört nicht zur 100-%-Summe.');
  footer.style.marginTop='12px';section.append(footer);root.append(section);
 }
 function renderRules(){
