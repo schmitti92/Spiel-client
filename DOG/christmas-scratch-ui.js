@@ -52,7 +52,7 @@ const prizeLabel=p=>p?.type==='coins'?(p.bonus?'🎉 Zusatzgewinn · ':'')+(p.sy
 const symbolLegend=(tier,values=null)=>{
  const [coin,note,bag]=Array.isArray(values)&&values.length===3?values:
   SCRATCH_COIN_PRIZES[tier]||SCRATCH_COIN_PRIZES.simple;
- return '🪙 '+num(coin)+' · 💵 '+num(note)+' · 💼 '+num(bag)+' Münzen · 🎁 💝 🎀 🧧 (je 3 gleiche = Freischaltung) · ⭐ Weihnachtslichter';
+ return '🪙 '+num(coin)+' · 💵 '+num(note)+' · 💼 '+num(bag)+' Münzen · 🎁 💝 🎀 🧧 🛍️ (je nach Losregel = Hauptgewinn) · ⭐ Weihnachtslichter';
 };
 /**
  * Premium milestone counters are purely visual. The server-issued board
@@ -301,7 +301,7 @@ export function initChristmasScratch(){
     ['🪙',num(amounts[0])],
     ['💵',num(amounts[1])],
     ['💼',num(amounts[2])],
-    ['🎁','Freischaltung']
+    ['🎁 💝 🎀 🧧 🛍️','Hauptgewinn: Freischaltung']
    ]){
     const entry=el('span','lotto-ticket-prize');
     entry.append(el('span','lotto-ticket-prize-icon',icon),
@@ -325,7 +325,7 @@ export function initChristmasScratch(){
     ['🪙 Münze',num(amounts[0])+' Münzen'],
     ['💵 Schein',num(amounts[1])+' Münzen'],
     ['💼 Koffer',num(amounts[2])+' Münzen'],
-    ['🎁 Geschenk','Freischaltung / '+num(giftReplacement)+' 🪙 Ersatz']
+    ['🎁 💝 🎀 🧧 🛍️','Hauptgewinn / '+num(giftReplacement)+' 🪙 Ersatz']
    ],'lotto-symbols'));
   const chanceOfAny=100*(1-Math.pow(1-hit,20));
   const bestCash=Math.max(0,...amounts.filter((_,i)=>weights[i]>0));
@@ -348,7 +348,7 @@ export function initChristmasScratch(){
     ['🪙 Münze',percent(weights[0]/10)],
     ['💵 Schein',percent(weights[1]/10)],
     ['💼 Koffer',percent(weights[2]/10)],
-    ['🎁 Geschenk',percent(weights[3]/10)]
+    ['🎁 💝 🎀 🧧 🛍️',percent(weights[3]/10)]
    ],'lotto-symbol-odds')
   );
   $('scratch-lotto-headline').textContent=
@@ -522,7 +522,7 @@ export function initChristmasScratch(){
    }
    money.append(moneyFields);block.append(money);
    // These are conditional chances within the winning category. The
-   // three money icons and the four collectible gift icons each total 100%.
+   // Three money icons and five jackpot-gift icons each total 100%.
    function symbolOddsSection(key,title,description,symbols,defaults){
     const wrap=el('div','scratch-host-odds-group');
     wrap.dataset.oddsGroup=key;
@@ -555,7 +555,7 @@ export function initChristmasScratch(){
      ['🪙 Münze','💵 Geldschein','💼 Geldkoffer'],[334,333,333]),
     symbolOddsSection('giftSymbolWeights','🎁 Geschenk-Wahrscheinlichkeiten',
      'Welches Geschenkzeichen eine gewonnene Freischaltung darstellt.',
-     ['🎁 Geschenk','💝 Herzgeschenk','🎀 Schleife','🧧 Roter Umschlag'],[250,250,250,250])
+     ['🎁 Geschenk','💝 Herzgeschenk','🎀 Schleife','🧧 Roter Umschlag','🛍️ Geschenktüte'],[200,200,200,200,200])
    );
    const summary=el('small','scratch-host-total');
    const update=()=>{
@@ -637,12 +637,12 @@ export function initChristmasScratch(){
     const values=Array.from({length:count},(_,i)=>
      parsePercent(section?.querySelector('[data-symbol-index="'+i+'"]')));
     if(values.reduce((sum,value)=>sum+value,0)!==1000)
-     throw Error('Die Wahrscheinlichkeiten bei '+(key==='moneySymbolWeights'?'🪙 💵 💼':'🎁 💝 🎀 🧧')+
+     throw Error('Die Wahrscheinlichkeiten bei '+(key==='moneySymbolWeights'?'🪙 💵 💼':'🎁 💝 🎀 🧧 🛍️')+
       ' müssen zusammen genau 100 % ergeben.');
     return values;
    };
    const moneySymbolWeights=readSymbolWeights('moneySymbolWeights',3);
-   const giftSymbolWeights=readSymbolWeights('giftSymbolWeights',4);
+   const giftSymbolWeights=readSymbolWeights('giftSymbolWeights',5);
    variants[id]={weights,extraCoinChance,maxPrizes,coinAmounts,moneySymbolWeights,giftSymbolWeights};
   }
   const special=$('scratch-host-variants').querySelector('[data-variant="number_one_20"]');
@@ -1133,7 +1133,7 @@ export function initChristmasScratch(){
   const tier=result?.tier||'simple';
   const amounts=coinAmountsFor(tier,result?.board?.variantId||null,result);
   const awarded=new Set(entries.map(p=>p?.type==='coins'?p.symbol||'🪙':p?.type==='unlock'?p.symbol||'🎁':''));
-  const giftSymbols=[3,4,5].includes(result?.board?.symbolVersion)?['🎁','💝','🎀','🧧']:['🎁'];
+  const giftSymbols=[3,4,5].includes(result?.board?.symbolVersion)?['🎁','💝','🎀','🧧','🛍️']:['🎁','💝','🎀','🧧','🛍️'];
   const wonGifts=giftSymbols.filter(symbol=>awarded.has(symbol));
   if(result?.board?.variantId==='number_one_20')panel.append(el('div','scratch-special-rule-note',
    '🔢 Jede der 20 Reihen hat zwei eigene Rubbelstellen. Links das Symbol, rechts die Zahl: Nur eine 1 gewinnt den Symbolpreis derselben Reihe. Alle Treffer werden addiert.'));
