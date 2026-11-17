@@ -41,3 +41,70 @@
 @media(prefers-reduced-motion:reduce){
   #art-luckhouse,#art-academy,#luckhouse-stage-image,#academy-stage-image{transition:none}
 }
+
+/* FULL-BUILD LAYOUT TEST — seven max-stage visible footprints are disjoint.
+   These positions match sceneLayouts in christmas-event.js, 1200×670 SVG. */
+.village-hotspots .hotspot-tower{left:12.08%;top:62.3%}
+.village-hotspots .hotspot-workshop{left:88.17%;top:62.3%}
+.village-hotspots .hotspot-luckhouse{left:30.5%;top:62.5%}
+.village-hotspots .hotspot-academy{left:70.33%;top:62.5%}
+.village-hotspots .hotspot-bakery{left:25.25%;top:95%}
+.village-hotspots .hotspot-inn{left:76.83%;top:95%}
+
+/* Align full-stage clickable areas with the resized building artwork. */
+.village-hotspots .hit-tower{left:2%;top:16%;width:20.1%;height:43%}
+.village-hotspots .hit-workshop{left:77.5%;right:auto;top:16%;width:21.5%;height:43%}
+.village-hotspots .hit-luckhouse{left:23.3%;top:31.3%;width:14.8%;height:29.6%}
+.village-hotspots .hit-academy{left:64%;top:31.3%;width:12.8%;height:29.6%}
+.village-hotspots .hit-bakery{left:13.8%;top:60.3%;width:22.8%;height:32.7%}
+.village-hotspots .hit-inn{left:64.8%;right:auto;top:60.3%;width:24%;height:32.7%}
+
+.village-max-control{
+ position:absolute;z-index:8;top:12px;left:12px;
+ display:flex;flex-direction:column;align-items:flex-start;gap:6px;
+ max-width:min(430px,calc(100% - 24px));
+ line-height:1.2;pointer-events:none;
+}
+.village-max-control #village-max-test{
+ pointer-events:auto;touch-action:manipulation;cursor:pointer;
+ border:1px solid #e8c87e;border-radius:999px;
+ padding:7px 12px;min-height:32px;max-width:100%;
+ background:#09392de8;color:#ffe9b2;
+ box-shadow:0 3px 14px #00180ed9,inset 0 1px #ffefaa40;
+ font:800 12px/1.2 system-ui,sans-serif;
+ text-shadow:0 1px 3px #00190c;
+}
+.village-max-control #village-max-test:hover,
+.village-max-control #village-max-test:focus-visible{
+ background:#23593deb;border-color:#ffedb2;outline:2px solid #eecb7e;
+ outline-offset:2px;
+}
+.village-max-control #village-max-test[aria-pressed="true"]{
+ background:#765122f2;border-color:#ffe3a3;
+}
+.village-max-note{
+ display:block;max-width:100%;padding:5px 9px;
+ border:1px solid #ffe0a19c;border-radius:7px;
+ background:#132d29ed;color:#fff3cf;
+ box-shadow:0 3px 8px #001d1abc;
+ font:700 10px/1.35 system-ui,sans-serif;
+}
+.village-max-note[hidden]{display:none!important}
+/* Never allow a long nameplate to overflow the SVG viewport. */
+.village-hotspots .building-hotspot{
+ box-sizing:border-box;min-width:0;max-width:24%;
+}
+@media(max-width:760px){
+ .village-hotspots .building-hotspot{
+  width:16%;max-width:16%;min-width:0;padding:3px 2px;
+  font-size:clamp(7px,1.3vw,9px);
+ }
+ .village-hotspots .building-hotspot small{right:-2px;top:-7px}
+ .village-max-control{top:6px;left:6px;gap:4px;max-width:calc(100% - 12px)}
+ .village-max-control #village-max-test{min-height:26px;padding:4px 7px;font-size:10px}
+ .village-max-note{font-size:8px;padding:3px 6px}
+}
+@media(max-width:480px){
+ .village-hotspots .building-hotspot{font-size:7px;line-height:1.1;padding:2px 1px}
+ .village-max-control #village-max-test{font-size:9px}
+}
