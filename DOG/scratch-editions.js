@@ -39,7 +39,7 @@ const CURRENCIES=[
  {id:'note',icon:'💵',name:'Geldschein',description:'Mittlere Geldgewinne in dieser Auflage'},
  {id:'case',icon:'💼',name:'Geldkoffer',description:'Hohe Geldgewinne und Jackpot-Preise'},
  {id:'lights',icon:'⭐',name:'Weihnachtslichter',description:'Gemeinsame Dorfwährung für die vier Gebäude'},
- {id:'gift',icon:'🎁',name:'Freischaltungen',description:'Designs, Avatare, Rahmen und Emotes – gezählt in Stück'}
+ {id:'gift',icon:'🎁',name:'5 Hauptgewinn-Symbole',description:'🎁 Geschenk · 💝 Herzgeschenk · 🎀 Schleife · 🧧 Umschlag · 🛍️ Geschenktüte'}
 ];
 function defaultSymbolBudgets(variant){
  const amounts=variant.tier==='simple'?[10,40,100]:
@@ -200,7 +200,7 @@ function renderCurrency(){
   card.append(fields);
   const badge=node('div','currency-card-foot',
    meta.id==='lights'?'⭐ Gewinner erhalten Lichter sofort auf das gemeinsame Dorfkonto.':
-   meta.id==='gift'?'🎁 Hier werden echte Freischaltungen pro Los und pro Auflage gezählt.':
+   meta.id==='gift'?'🎁 💝 🎀 🧧 🛍️: Jedes dieser fünf Symbole kann bei der jeweiligen Gewinnkombination den Hauptgewinn (Freischaltung) auslösen. Ein gemischtes Dreierpaar gilt nicht als Treffer.':
     '🪙 Diese Kategorie zählt zusätzlich zum Münzgesamtbudget.');
   card.append(badge);root.append(card);
  }
@@ -217,7 +217,7 @@ function renderSymbolOverview(){
   tile.type='button';
   tile.title='Werte für '+cat.name+' bearbeiten';
   tile.append(node('span','symbol-overview-icon',
-    cat.id==='gift'?'🎁 💝 🎀 🧧':cat.icon),
+    cat.id==='gift'?'🎁 💝 🎀 🧧 🛍️':cat.icon),
    node('strong','',cat.name),
    node('span','symbol-overview-range',fmt(cfg.min)+'–'+fmt(cfg.max)+
     (cat.id==='gift'?' pro Los':' je Treffer')),
@@ -285,6 +285,10 @@ function renderGameSettings(root){
  const v=current,draft=drafts[v.id];
  if(!draft.gameSettings)draft.gameSettings=defaultGameSettings(v);
  const cfg=draft.gameSettings;
+ if(Array.isArray(cfg?.giftSymbolWeights)&&cfg.giftSymbolWeights.length===4){
+  const scaled=cfg.giftSymbolWeights.map(weight=>Math.floor(weight*0.9));
+  cfg.giftSymbolWeights=[...scaled,1000-scaled.reduce((sum,x)=>sum+x,0)];
+ }
  if(!cfg)return;
  const section=node('div','mechanic-card');
  section.append(node('h4','','🎛️ Eigene Einstellungen für diese 500er-Auflage'),
@@ -328,7 +332,7 @@ function renderGameSettings(root){
   ['🪙 Münze (‰)','💵 Schein (‰)','💼 Koffer (‰)','🎁 Geschenk (‰)'].forEach((label,i)=>
    field(label,'symbolWeights',i,0,1000));
  if(Array.isArray(cfg.giftSymbolWeights))
-  ['🎁 Geschenk (‰)','💝 Herz (‰)','🎀 Schleife (‰)','🧧 Umschlag (‰)']
+  ['🎁 Geschenk (‰)','💝 Herz (‰)','🎀 Schleife (‰)','🧧 Umschlag (‰)','🛍️ Geschenktüte (‰)']
    .forEach((label,i)=>field(label,'giftSymbolWeights',i,0,1000));
  section.append(grid);
  const footer=node('p','','⚖️ Hauptkategorien, Geldsymbole und Geschenksymbole müssen jeweils genau 1000 ‰ ergeben. '+
