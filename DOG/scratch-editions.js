@@ -1122,6 +1122,46 @@ $('ed-preview').addEventListener('click',async()=>{
  }
  finally{setBusy(false)}
 });
+// Each sample belongs to the immutable, server-checked draft. Never reveal
+// its serial number or predict which customer receives which card.
+$('ed-inspect').addEventListener('click',async()=>{
+ if(!preview?.previewId||previewKey!==draftKey(drafts[current.id]))return;
+ const output=$('preview-samples');
+ output.replaceChildren(node('p','','🔍 Echte Gewinnfelder werden geladen …'));
+ try{
+  const result=await api('/editions/preview/'+encodeURIComponent(preview.previewId)+'/tickets');
+  if(result.previewId!==preview?.previewId)return;
+  output.replaceChildren();
+  const cols=current.id==='number_one_20'?2:current.id==='premium_27'?3:
+   current.id==='snow_collect'?4:current.id==='elf'?5:3;
+  for(const [i,ticket] of (result.tickets||[]).entries()){
+   const card=node('details','printed-ticket-sample');
+   card.append(node('summary','', '🎟️ Musterlos '+(i+1)+' · '+
+    (ticket.winnings?.length||0)+' Gewinne · '+fmt(ticket.totalCoins)+' 🪙 · '+
+    fmt(ticket.totalLights)+' ⭐'+(ticket.doubleWin?' · ✖️2':'')));
+   const grid=node('div','printed-ticket-board');
+   grid.style.gridTemplateColumns='repeat('+cols+',minmax(0,1fr))';
+   (ticket.board?.cells||[]).forEach((symbol,j)=>{
+    const cell=node('span','printed-ticket-cell',typeof symbol==='object'?
+     JSON.stringify(symbol):String(symbol));
+    if(j===ticket.lightBadgeIndex)cell.append(node('b','printed-ticket-badge','⭐'));
+    if(j===ticket.doubleBadgeIndex)cell.append(node('b','printed-ticket-badge','✖️2'));
+    grid.append(cell);
+   });
+   const prizeList=node('div','printed-ticket-prizes');
+   for(const prize of ticket.winnings||[]){
+    prizeList.append(node('span','',prize.type==='unlock'?
+     '🎁 '+(prize.prize?.name||'Freischaltung'):
+     (prize.symbol||'🪙')+' '+fmt(prize.amount)+' '+
+      (prize.type==='lights'?'Lichter':'Münzen')+(prize.x2?' (✖️2)':'')));
+   }
+   if(!prizeList.childNodes.length)prizeList.append(node('span','','❄️ Niete'));
+   card.append(grid,prizeList);output.append(card);
+  }
+  output.prepend(node('p','printed-ticket-note',
+   '8 echte Muster aus diesem Probedruck. Die Ausgabereihenfolge bleibt verborgen.'));
+ }catch(e){output.replaceChildren(node('p','preview-message error','⚠️ '+labelFor(e.message)))}
+});
 $('ed-publish').addEventListener('click',async()=>{
  const draft=readForm();
  if(!preview?.previewId||previewKey!==draftKey(draft))return;
