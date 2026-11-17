@@ -26,6 +26,7 @@
 <link rel="stylesheet" href="./christmas-village-overview.css?v=1">
 <link rel="stylesheet" href="./christmas-tree-level-path.css?v=1">
 <link rel="stylesheet" href="./christmas-buildings-magical.css?v=1">
+<link rel="stylesheet" href="./christmas-expansion.css?v=1">
 <link rel="stylesheet" href="./christmas-tree-winter-skin.css?v=2">
 <link rel="stylesheet" href="./christmas-storybook.css?v=2">
 <link rel="stylesheet" href="./christmas-storybook-graphics.css?v=1">
@@ -35,10 +36,10 @@
 <a href="../hub-lobby.html" id="event-return" class="top-action event-fixed-return" aria-label="Zurück zur Spielelobby">↩ Zurück</a>
 <div class="event-layout">
   <aside class="event-sidebar" aria-label="Weihnachtsevent-Navigation">
-    <div class="sidebar-intro"><span class="eyebrow">✦ DAS WEIHNACHTSWUNDER ✦</span><h1>Lichtertal</h1><p>Ein Dorf. Vier Gebäude. Ein großes Weihnachtslicht.</p></div>
+    <div class="sidebar-intro"><span class="eyebrow">✦ DAS WEIHNACHTSWUNDER ✦</span><h1>Lichtertal</h1><p>Ein Dorf. Sechs Gebäude. Ein großes Weihnachtslicht.</p></div>
     <nav class="event-menu" role="tablist" aria-label="Eventbereiche">
       <button type="button" id="tab-village" class="event-tab" role="tab" aria-selected="true" aria-controls="panel-village" data-tab="village"><span>🏘️</span><strong>Weihnachtsdorf</strong><small>Übersicht</small></button>
-      <button type="button" id="tab-buildings" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-buildings" data-tab="buildings" tabindex="-1"><span>🏠</span><strong>Die vier Gebäude</strong><small>5 Ausbaustufen</small></button>
+      <button type="button" id="tab-buildings" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-buildings" data-tab="buildings" tabindex="-1"><span>🏠</span><strong>Die sechs Gebäude</strong><small>5 Ausbaustufen</small></button>
       <button type="button" id="tab-tree" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-tree" data-tab="tree" tabindex="-1"><span>🎄</span><strong>Weihnachtsbaum</strong><small>10 Entwicklungsstufen</small></button>
       <button type="button" id="tab-story" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-story" data-tab="story" tabindex="-1"><span>📖</span><strong>Die Geschichte</strong><small>Kapitel 1</small></button>
       <button type="button" id="tab-scratch" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-scratch" data-tab="scratch" tabindex="-1"><span>🎟️</span><strong>Rubbellose</strong><small>Einfach · Mittel · Premium</small></button>
@@ -202,6 +203,19 @@
             <button type="button" class="building-hotspot hotspot-inn" data-open-building="inn" title="Friedensherberge ansehen">🕯️ <span>Friedensherberge</span><small data-hotspot-level="inn">1/5</small></button>
           </div>
           </div>
+          <section class="village-expansion" aria-label="Neues Stadtviertel von Lichtertal">
+            <div class="village-expansion-heading">✨ NEUES STADTVIERTEL <span>Gemeinsame Boni · 5 Ausbaustufen</span></div>
+            <div class="village-expansion-grid">
+              <button type="button" class="village-expansion-building" data-open-building="luckhouse" aria-label="Weihnachts-Glückshaus: Stufe und Bonus ansehen">
+                <span class="village-expansion-art"><img id="village-expansion-img-luckhouse" src="../glueckshaus_stufe_1.png" alt="" loading="lazy" decoding="async"><span class="village-expansion-placeholder" aria-hidden="true">🎟️</span></span>
+                <span class="village-expansion-info"><strong>Weihnachts-Glückshaus</strong><small>🎟️ Günstigere Rubbellose</small><em>Stufe <span data-hotspot-level="luckhouse">1 / 5</span></em></span>
+              </button>
+              <button type="button" class="village-expansion-building" data-open-building="academy" aria-label="XP-Wichtel-Akademie: Stufe und Bonus ansehen">
+                <span class="village-expansion-art"><img id="village-expansion-img-academy" src="../xp_akademie_stufe_1.png" alt="" loading="lazy" decoding="async"><span class="village-expansion-placeholder" aria-hidden="true">📚</span></span>
+                <span class="village-expansion-info"><strong>XP-Wichtel-Akademie</strong><small>📚 Mehr DOG-Erfahrungspunkte</small><em>Stufe <span data-hotspot-level="academy">1 / 5</span></em></span>
+              </button>
+            </div>
+          </section>
       </div>
       <dialog id="village-building-dialog" class="village-building-dialog" aria-labelledby="village-building-title" aria-describedby="village-building-description">
         <div class="village-building-modal-head">
@@ -244,7 +258,7 @@
       <div class="event-stat-grid" aria-label="Lichtertals gemeinsamer Fortschritt">
         <button type="button" class="stat-card stat-card--buildings" data-open-tab="buildings" aria-label="Gebäudestufen ansehen und Gebäude ausbauen">
           <span class="stat-card-icon" aria-hidden="true">🏘️</span>
-          <span class="stat-card-copy"><strong id="stat-building-levels">4 / 20</strong><small>Gebäudestufen zusammen</small><span class="stat-card-link">Gebäude ansehen <span aria-hidden="true">›</span></span></span>
+          <span class="stat-card-copy"><strong id="stat-building-levels">6 / 30</strong><small>Gebäudestufen zusammen</small><span class="stat-card-link">Gebäude ansehen <span aria-hidden="true">›</span></span></span>
         </button>
         <button type="button" class="stat-card stat-card--tree" data-open-tab="tree" aria-label="Weihnachtsbaum und Entwicklungsstufen ansehen">
           <span class="stat-card-icon" aria-hidden="true">🎄</span>
@@ -261,7 +275,7 @@
       </div>
     </section>
     <section class="event-panel" id="panel-buildings" role="tabpanel" aria-labelledby="tab-buildings" hidden>
-      <div class="event-heading"><div><span class="eyebrow">DORFAUSBAU</span><h2>Die vier Weihnachtsgebäude</h2><p>Vier Gebäude wachsen durch eure gemeinsam gesammelten Weihnachtslichter. Die Boni gelten während des Events automatisch für alle.</p></div><span class="soft-tag">4 × 5 Stufen</span></div>
+      <div class="event-heading"><div><span class="eyebrow">DORFAUSBAU</span><h2>Die sechs Weihnachtsgebäude</h2><p>Sechs Gebäude wachsen durch eure gemeinsam gesammelten Weihnachtslichter. Die Boni gelten während des Events automatisch für alle.</p></div><span class="soft-tag">6 × 5 Stufen</span></div>
       <section class="building-village-wallet" id="building-village-wallet" aria-label="Gemeinsames DOG-Dorfkonto">
         <div class="village-treasury-heading">
           <div class="village-treasury-title"><span class="eyebrow">✦ LICHTERTALS GEMEINSAMER DORFSCHATZ ✦</span><strong>Ein Dorf für alle angemeldeten DOG-Spieler.</strong></div>
@@ -285,7 +299,7 @@
         <div class="village-treasury-stats" aria-label="Fortschritt unseres Dorfes">
           <div class="village-treasury-stat"><span>✨ Insgesamt verdient</span><strong id="building-village-earned">–</strong></div>
           <div class="village-treasury-stat"><span>🏗️ Bereits investiert</span><strong id="building-village-spent">–</strong></div>
-          <div class="village-treasury-stat"><span>🏠 Gebäudestufen</span><strong id="building-village-counter">4 / 20</strong></div>
+          <div class="village-treasury-stat"><span>🏠 Gebäudestufen</span><strong id="building-village-counter">6 / 30</strong></div>
           <div class="village-treasury-stat"><span>🎄 Weihnachtsbaum</span><strong id="building-village-tree">Stufe 1 / 10</strong></div>
           <div class="village-treasury-stat"><span>🎁 Geschenke gesammelt</span><strong id="building-village-gifts">–</strong></div>
         </div>
@@ -297,7 +311,7 @@
         <div class="building-price-overview" id="building-price-overview" aria-label="Ausbaupreise pro Gebäude"></div>
       </details>
       <div class="building-grid" id="building-grid"></div>
-      <div class="event-footer-row building-final-note"><p>✨ Jeder Ausbau lässt euer Dorf wachsen und bringt den Weihnachtsbaum seiner nächsten Stufe näher.</p><button type="button" class="button gold" data-open-tab="village">🏘️ Weihnachtsdorf ansehen</button></div>
+      <div class="event-footer-row building-final-note"><p>✨ Alle sechs Gebäude wachsen gemeinsam. Die zehn Weihnachtsbaumstufen bleiben an die vier ursprünglichen Gebäude gebunden.</p><button type="button" class="button gold" data-open-tab="village">🏘️ Weihnachtsdorf ansehen</button></div>
     </section>
     <section class="event-panel" id="panel-tree" role="tabpanel" aria-labelledby="tab-tree" hidden>
       <div class="tree-world">
@@ -455,6 +469,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./christmas-event.js?v=83"></script>
+<script type="module" src="./christmas-event.js?v=84"></script>
 </body>
 </html>
