@@ -127,10 +127,12 @@ export function initChristmasScratch(){
  const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
  const room=String(new URLSearchParams(location.search).get('room')||'').toUpperCase();
  const validRoom=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/.test(room);
+ // The Firebase identity stays valid during a temporary Render profile sync.
  const account=()=>{
   const s=window.SpielOnline?.state?.();
-  return s?.status==='online'&&s.user?.getIdToken?s.user:null;
+  return s?.user?.getIdToken?s.user:null;
  };
+ let authUid=account()?.uid??null;
  const notice=s=>{$('scratch-status').textContent=s};
  const acknowledged=()=>{
   try{return localStorage.getItem('dog-scratch-seen:'+account()?.uid)}catch{return null}
@@ -1839,7 +1841,15 @@ export function initChristmasScratch(){
   finally{save.disabled=false;}
  });
  window.addEventListener('spielonline-change',()=>{
-  requestId++;status=null;ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();giftsDialog?.close();void load();
+  // Do not close a scratch card or the 500-ticket settings on harmless
+  // profile loading/error events. Only a real Firebase identity switch
+  // requires resetting the previous player's view.
+  const nextUid=account()?.uid??null;
+  if(nextUid===authUid)return;
+  authUid=nextUid;
+  requestId++;status=null;giftsEdition=null;ticket=null;canManageScratch=false;
+  stage.hidden=true;document.body.classList.remove('scratch-ticket-open');
+  hostDialog?.close();giftsDialog?.close();void load();
  });
  drawShop();return {load};
 }
