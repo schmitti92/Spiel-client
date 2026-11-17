@@ -1,4 +1,3 @@
-import {rebalanceOdds,rebalanceLockedOdds} from './scratch-odds.mjs?v=2';
 /**
  * DOG print-run studio – an authenticated companion screen to the existing
  * Christmas scratch shop. The browser edits only configuration, never prizes.
@@ -67,8 +66,7 @@ const baseDraft=variant=>({
  maxPrizesPerTicket:variant.wins,
  maxUnlocks:variant.tier==='simple'?25:variant.tier==='medium'?20:25,quotas:{},
  doubleWin:{chancePer1000:110,minTickets:0,maxTickets:80},
- symbolBudgets:defaultSymbolBudgets(variant),
- oddsLocks:{money:[false,false,false],symbols:[false,false,false,false],gift:false}
+ symbolBudgets:defaultSymbolBudgets(variant)
 });
 const DRAFT_STORAGE_KEY='dog-scratch-edition-drafts-v2';
 const drafts=Object.fromEntries(VARIANTS.map(v=>[v.id,baseDraft(v)]));
@@ -81,7 +79,7 @@ try{
   const fresh=baseDraft(variant);
   for(const key of ['title','ticketPrice','printSize','maxTotalCoins','targetTotalCoins',
    'targetTolerancePercent','premiumFull27Tickets','volatility','maxPerTicketCoins',
-   'maxPrizesPerTicket','maxUnlocks','quotas','doubleWin','gameSettings','oddsLocks'])
+   'maxPrizesPerTicket','maxUnlocks','quotas','doubleWin','gameSettings'])
    if(Object.hasOwn(row,key))fresh[key]=structuredClone(row[key]);
   for(const key of Object.keys(fresh.symbolBudgets))if(row.symbolBudgets?.[key])
    fresh.symbolBudgets[key]={...fresh.symbolBudgets[key],...row.symbolBudgets[key]};
@@ -181,8 +179,8 @@ function readForm(){
   quotas,doubleWin:{
    chancePer1000:Math.round(number('ed-double-chance')*10),
    minTickets:number('ed-double-min'),maxTickets:number('ed-double-max')
-  },symbolBudgets:old.symbolBudgets,gameSettings:old.gameSettings??null,
- oddsLocks:old.oddsLocks??{money:[false,false,false],symbols:[false,false,false,false],gift:false}};
+  },symbolBudgets:old.symbolBudgets,gameSettings:old.gameSettings??null};
+ applyAutomaticSymbolMix(drafts[current.id],current);
  return drafts[current.id];
 }
 function draftKey(value){return JSON.stringify(value)}
@@ -230,9 +228,9 @@ function renderDashboard(){
 function simpleWinRule(){
  const draft=drafts[current.id],cfg=draft.gameSettings;
  if(current.id==='premium_27')return {shown:false,label:'Vier Geldreihen garantiert',
-  explanation:'Bei diesem Premiumlos sind vier Geldreihen fest eingebaut. Die Hauptgewinn-Chancen können unter „Weitere Einstellungen“ geändert werden.'};
+  explanation:'Vier Geldreihen sind garantiert. Die übrigen Gewinne werden automatisch verteilt.'};
  if(current.id==='tic_tac_toe')return {shown:false,label:'Tic-Tac-Toe entscheidet',
-  explanation:'Hier entscheidet die Dreierlinie über den Gewinn. Die genaue Symbolverteilung findest du in den optionalen Einstellungen.'};
+  explanation:'Die Dreierlinie entscheidet über den Gewinn. Die Symbole verteilt der Server automatisch.'};
  if(current.id==='number_one_20')return {shown:true,label:'🔢 Zahl-1-Chance je Reihe',
   explanation:'Jede der 20 Reihen hat ihre eigene Trefferchance. 10 % bedeutet etwa 1 Treffer je 10 Reihen.',
   value:(cfg?.hitPer1000??100)/10};
@@ -262,33 +260,19 @@ function syncSimpleInputs(){
  renderSimpleSymbols();
  updateSimpleSummary();
 }
-/** Redistribute an exact 100% across unlocked symbol odds. */
+/** Only prize amounts and separate light odds remain adjustable. */
 function renderSimpleSymbols(){
  const root=$('simple-symbol-grid');if(!root)return;
- root.replaceChildren();
- const draft=drafts[current.id],cfg=draft.gameSettings||{};
- const locks=draft.oddsLocks??{money:[false,false,false],symbols:[false,false,false,false],gift:false};
- draft.oddsLocks=locks;
- const classic=Array.isArray(cfg.moneySymbolWeights);
- const weights=classic?cfg.moneySymbolWeights:cfg.symbolWeights;
- const applyOdds=(i,percent)=>{
-  if(!Array.isArray(weights))return false;
-  const group=classic?'money':'symbols',locked=locks[group]||[];
-  const next=rebalanceLockedOdds(weights,i,percent,locked);
-  if(!next)return false;
-  if(classic)cfg.moneySymbolWeights=next;
-  else cfg.symbolWeights=next;
-  return true;
- };
- for(const [index,meta] of CURRENCIES.entries()){
+ root.replaceChildren(node('p','simple-symbol-auto-info',
+  '✨ Die Häufigkeit von Münze, Geldschein, Koffer und Hauptgewinn-Symbolen übernimmt die Automatik. Du bestimmst die Beträge und festen Gewinnzahlen.'));
+ const draft=drafts[current.id];
+ for(const meta of CURRENCIES){
   const range=draft.symbolBudgets[meta.id],row=node('div','simple-symbol-row');
   const head=node('div','simple-symbol-name');
   head.append(node('strong','',meta.icon+' '+meta.name),
-   node('small','',meta.id==='lights'?'⭐-Chance unabhängig von anderen Gewinnarten':
-    meta.id==='gift'?'🎁 💝 🎀 🧧 🛍️ – jedes Symbol kann eine Freischaltung auslösen':
-    classic?(current.id==='premium_27'?
-     'Anteil der Geldtreffer; vier Premium-Geldreihen sind Pflicht':
-     'Anteil der Geldtreffer für dieses Rubbellos'):'Anteil der Gewinnsymbole'));
+   node('small','',meta.id==='lights'?'Unabhängiger Bonus für das Dorf':
+    meta.id==='gift'?'🎁 💝 🎀 🧧 🛍️ – Freischaltungen automatisch verteilt':
+    'Gewinnbetrag einstellbar · Häufigkeit automatisch'));
   row.append(head);
   const field=(name,initial,minimum,maximum,action,step='1')=>{
    const label=node('label','simple-symbol-field');
@@ -300,8 +284,7 @@ function renderSimpleSymbols(){
     const n=Number(input.value);
     if(!Number.isFinite(n)||n<minimum||n>maximum||
        (step==='1'&&!Number.isSafeInteger(n))){renderSimpleSymbols();return}
-    if(action(n)===false){showMessage('🔒 Die fixierten Chancen lassen keine 100-%-Verteilung zu. Bitte eine Chance entsperren.','error');renderSimpleSymbols();return}
-    renderCurrency();updateSide();invalidatePreview();
+    action(n);renderCurrency();updateSide();invalidatePreview();
    });
    row.append(label);
   };
@@ -313,36 +296,12 @@ function renderSimpleSymbols(){
    field('Chance %',(range.chancePer1000||0)/10,0,100,n=>{
     range.chancePer1000=Math.round(n*10);$('simple-lights').value=String(n);
    },'0.1');
-  }else if(meta.id==='gift'){
-   const giftChance=classic?cfg.weights?.unlock:cfg.symbolWeights?.[3];
-   if(giftChance!==undefined)field('Chance %',giftChance/10,0,100,n=>{
-    if(!classic)return applyOdds(3,n);
-    const want=Math.round(n*10),none=cfg.weights.none;
-    if(want>1000-none)return false;
-    cfg.weights.coins=1000-none-want;cfg.weights.unlock=want;
-   },'0.1');
-  }else if(Array.isArray(weights)){
-   field('Anteil %',(weights[index]||0)/10,0,100,n=>applyOdds(index,n),'0.1');
   }
-  const group=classic?'money':'symbols',lockIndex=meta.id==='gift'?3:index;
-  if(meta.id==='gift'&&classic||meta.id!=='lights'&&Array.isArray(weights)){
-   const lock=node('button','simple-symbol-lock');
-   lock.type='button';
-   const isLocked=meta.id==='gift'&&classic?locks.gift:Boolean(locks[group]?.[lockIndex]);
-   lock.textContent=isLocked?'🔒 Fixiert':'🔓 Fixieren';
-   lock.title=isLocked?'Chance entsperren':'Chance bei anderen Änderungen festhalten';
-   lock.setAttribute('aria-pressed',String(Boolean(isLocked)));
-   lock.addEventListener('click',()=>{
-    if(meta.id==='gift'&&classic)locks.gift=!locks.gift;
-    else{if(!Array.isArray(locks[group]))locks[group]=[];
-     locks[group][lockIndex]=!locks[group][lockIndex]}
-    updateSide();invalidatePreview();
-   });
-   row.append(lock);
-  }
+  if(meta.id==='gift')row.append(node('span','simple-symbol-automatic','✨ Automatisch'));
   root.append(row);
  }
 }
+
 function possibleWinCounts(){
  if(current.id==='tic_tac_toe')return [0,1];
  if(current.id==='dog_jackpot_9')return [0,8];
@@ -453,12 +412,8 @@ function changeSimpleWin(value){
  if(current.id==='number_one_20')cfg.hitPer1000=n;
  else if(current.id==='dog_jackpot_9')cfg.dogChancePer1000=n;
  else if(cfg.weights&&current.id!=='premium_27'){
-  const currentWeights=['none','coins','unlock'].map(id=>cfg.weights[id]??0);
-  const next=rebalanceLockedOdds(currentWeights,0,(1000-n)/10,
-   [false,false,Boolean(draft.oddsLocks?.gift)]);
-  if(!next){showMessage('🔒 Die fixierte Hauptgewinnchance lässt diese Quote nicht zu. Entsperre zuerst den Hauptgewinn.','error');syncSimpleInputs();return;}
-  ['none','coins','unlock'].forEach((id,i)=>{cfg.weights[id]=next[i]});
- }else return;
+  cfg.weights.none=1000-n;
+  applyAutomaticSymbolMix(draft,current); }else return;
  // The established server quotas remain untouched; simple mode changes
  // probabilities only. Any exact manual quotas still apply if configured.
  updateSide();invalidatePreview();
@@ -781,6 +736,29 @@ function defaultGameSettings(v){
  if(v.id==='dog_jackpot_9')return {coinAmounts:[100,300,800],
   symbolWeights:[550,300,148,2],dogChancePer1000:350,giftFallbackCoins:1500};
  return null;
+}
+
+/** Reset legacy manually weighted symbol mixes for UNPUBLISHED drafts.
+ * Keep the independent basic winning chance, but use current game defaults
+ * for symbol and gift distribution. Published editions are immutable. */
+function applyAutomaticSymbolMix(draft,variant){
+ const cfg=draft?.gameSettings,defaults=defaultGameSettings(variant);
+ if(!cfg||!defaults)return;
+ for(const key of ['moneySymbolWeights','symbolWeights','giftSymbolWeights']){
+  if(!Array.isArray(defaults[key]))continue;
+  let arr=[...defaults[key]];
+  if(key==='giftSymbolWeights'&&arr.length===4){
+   arr=arr.map(n=>Math.floor(n*.9));
+   arr.push(1000-arr.reduce((sum,n)=>sum+n,0));
+  }
+  cfg[key]=arr;
+ }
+ if(cfg.weights&&defaults.weights){
+  const none=Math.max(0,Math.min(1000,Math.round(Number(cfg.weights.none??defaults.weights.none))));
+  const total=(defaults.weights.coins||0)+(defaults.weights.unlock||0);
+  const unlock=total?Math.round((1000-none)*(defaults.weights.unlock||0)/total):0;
+  cfg.weights={...cfg.weights,none,coins:1000-none-unlock,unlock};
+ }
 }
 
 function renderGameSettings(root){
@@ -1375,7 +1353,7 @@ $('ed-import-file').addEventListener('change',async()=>{
   const fresh=baseDraft(current);
   for(const id of ['title','ticketPrice','printSize','maxTotalCoins','targetTotalCoins',
    'targetTolerancePercent','premiumFull27Tickets','volatility','maxPerTicketCoins',
-   'maxPrizesPerTicket','maxUnlocks','quotas','doubleWin','gameSettings','oddsLocks']){
+   'maxPrizesPerTicket','maxUnlocks','quotas','doubleWin','gameSettings']){
    if(Object.hasOwn(config,id))fresh[id]=structuredClone(config[id]);
   }
   const defaults=defaultSymbolBudgets(current);
