@@ -1130,14 +1130,15 @@ export function initChristmasScratch(){
    const total=Number.isSafeInteger(result?.totalCoins)&&result.totalCoins>=0?result.totalCoins:
     prizes.filter(p=>p.type==='coins').reduce((sum,p)=>sum+(Number.isSafeInteger(p.amount)?p.amount:0),0);
    const unlocks=prizes.filter(p=>p.type==='unlock').length;
-   section.append(el('h4','scratch-current-title',prizes.length?
+   const hasLight=Number(result?.totalLights)>0;
+   section.append(el('h4','scratch-current-title',prizes.length||hasLight?
     '🎉 Dein Gewinn':result?.giftSparksEarned?'🎁 Geschenkfunke gesammelt':'❄️ Dieses Los ist eine Niete'));
-   const hero=el('div','scratch-current-hero'+(prizes.length||result?.giftSparksEarned?' is-win':' is-empty'));
+   const hero=el('div','scratch-current-hero'+(prizes.length||hasLight||result?.giftSparksEarned?' is-win':' is-empty'));
    hero.append(el('small','','Gutgeschriebene Münzen'),
     el('strong','',num(total)+' 🪙'));
    hero.append(el('span','',unlocks?
     '🎁 '+unlocks+' Freischaltung'+(unlocks===1?'':'en'):
-    prizes.length?'✓ Ergebnis ermittelt':result?.giftSparksEarned?'🎁 +1 Geschenkfunke':'Kein Gewinn · 0 Münzen'));
+    prizes.length?'✓ Ergebnis ermittelt':hasLight?'⭐ Weihnachtslichter erhalten':result?.giftSparksEarned?'🎁 +1 Geschenkfunke':'Kein Gewinn · 0 Münzen'));
    section.append(hero);
    const lightTotal=Number.isSafeInteger(result?.totalLights)?result.totalLights:0;
    const lightCard=el('div','scratch-light-reward');
@@ -1509,9 +1510,12 @@ export function initChristmasScratch(){
   const meter=$('scratch-progress-meter');
   if(meter){meter.value=100;meter.setAttribute('aria-valuenow','100')}
   $('scratch-result-value').textContent=winFlag?
-   entries.length?entries.map(prizeLabel).join(' · '):'🎁 1 Geschenkfunke':'❄️ Niete · 0 Münzen';
+   entries.length?entries.map(prizeLabel).join(' · '):
+    Number(current.totalLights)>0?'⭐ '+num(current.totalLights)+' Weihnachtslichter':
+    '🎁 1 Geschenkfunke':'❄️ Niete · 0 Münzen';
   $('scratch-result-kind').textContent=
-   (winFlag?(entries.length?entries.length+' Gewinne insgesamt':'1 Geschenkfunke'):'0 Münzen')+
+   (winFlag?(entries.length?entries.length+' Gewinne insgesamt':
+    Number(current.totalLights)>0?'Weihnachtslichter gewonnen':'1 Geschenkfunke'):'0 Münzen')+
    (current.doubleWin?' · ✖️2 Bonus':
     current.rareMainMultiplier?' · 💎 Ultra-selten: Hauptgewinn ×2':
     current.multiplier===2?' · ✨ ×2-Multiplikator':'');
