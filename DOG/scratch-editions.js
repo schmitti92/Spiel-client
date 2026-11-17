@@ -20,7 +20,9 @@ const node=(tag,cls,text)=>{
  return el;
 };
 const apiBase=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-const signedIn=()=>{const s=window.SpielOnline?.state?.();return s?.status==='online'&&s.user?.getIdToken?s.user:null};
+// Firebase login remains valid even if the separate Render profile sync is
+// temporarily "loading" or "error". The server verifies every token itself.
+const signedIn=()=>{const s=window.SpielOnline?.state?.();return s?.user?.getIdToken?s.user:null};
 async function api(path='',payload){
  const user=signedIn();
  if(!user)throw Error('Bitte melde dich zuerst mit deinem DOG-Spielerprofil an.');
@@ -1074,7 +1076,9 @@ function showPreview(data){
 }
 async function load(){
  if(!signedIn()){
-  showMessage('🔐 Bitte melde dich mit deinem DOG-Profil an und öffne das Auflagenstudio erneut.','error');
+  // Auth may still be restoring the persisted Firebase session. This is not
+  // necessarily a sign-out and must never interrupt an ongoing preview.
+  if(!busy)showMessage('🔐 Firebase-Anmeldung wird geprüft. Falls nötig, melde dich mit deinem DOG-Profil an.','');
   return;
  }
  try{
@@ -1410,6 +1414,16 @@ function organizeBudgetFields(){
 }
 organizeBudgetFields();
 setupSimpleEditor();
-window.addEventListener('spielonline-change',()=>void load());
+// Avoid issuing extra /scratch and /editions requests for every transient
+// profile status update, especially while a heavy 500-ticket preview runs.
+let lastLoadedUid=null;
+window.addEventListener('spielonline-change',()=>{
+ const state=window.SpielOnline?.state?.();
+ if(state?.status==='guest'){lastLoadedUid=null;return;}
+ if(state?.status==='online'&&state.user?.uid&&state.user.uid!==lastLoadedUid){
+  lastLoadedUid=state.user.uid;
+  if(!busy)void load();
+ }
+});
 switchVariant(current.id);
 void load();
