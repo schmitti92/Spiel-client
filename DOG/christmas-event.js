@@ -4,7 +4,7 @@
  * Local building previews cannot grant Christmas prizes. Only real
  * Render-verified village stages allow durable per-user reward claims.
  */
-import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotalCost,christmasVillageTotalCost} from './christmas-building-costs.js?v=1';
+import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotalCost,christmasVillageTotalCost} from './christmas-building-costs.js?v=2';
 import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewards-ui.js?v=5';
 import {initChristmasStory} from './christmas-story.js?v=3';
 import {initChristmasScratch} from './christmas-scratch-ui.js?v=51';
@@ -16,6 +16,8 @@ $('tab-chapters')?.remove();
 $('panel-chapters')?.remove();
 const tabs=['village','buildings','tree','story','scratch','level'];
 const TREE_THRESHOLDS=[4,5,7,9,11,13,15,17,19,20];
+const TREE_BUILDING_IDS=['tower','workshop','bakery','inn'];
+const originalTreePoints=levels=>TREE_BUILDING_IDS.reduce((sum,id)=>sum+(Number.isInteger(levels?.[id])?levels[id]:1),0);
 const FIELDS=[10,12,15,18,20];
 const definitions=[
   {id:'tower',icon:'⭐',title:'Weihnachtslichter-Turm',summary:'Mehr leuchtende Geschenkfelder auf dem DOG-Brett.',
@@ -29,7 +31,13 @@ const definitions=[
     effects:['Grundwert','+10 % Lichter','+20 % Lichter','+30 % Lichter','+40 % Lichter']},
   {id:'inn',icon:'🕯️',title:'Friedensherberge',summary:'Mehr versteckte Rubbellose auf dem DOG-Brett und Lichterbonus nach Partien.',
     visuals:['Eine kleine, einfache Herberge.','Kranz an der Tür und Kerzen in den Fenstern.','Laternen am Weg und mehr Zimmer für die Dorfbewohner.','Festlicher Dachaufbau und immer hellere Fenster.','Ein großes, warm leuchtendes Haus der Freundschaft.'],
-    effects:['8 Rubbellos-Felder · Kein Rundenbonus','10 Rubbellos-Felder · +1 Licht / Partie','12 Rubbellos-Felder · +2 Lichter / Partie','14 Rubbellos-Felder · +3 Lichter / Partie','16 Rubbellos-Felder · +4 Lichter / Partie']}
+    effects:['8 Rubbellos-Felder · Kein Rundenbonus','10 Rubbellos-Felder · +1 Licht / Partie','12 Rubbellos-Felder · +2 Lichter / Partie','14 Rubbellos-Felder · +3 Lichter / Partie','16 Rubbellos-Felder · +4 Lichter / Partie']},
+  {id:'luckhouse',icon:'🎟️',title:'Weihnachts-Glückshaus',summary:'Günstigere Rubbellose für alle angemeldeten Spieler.',
+    visuals:['Kleines Lotteriehäuschen','Erste festliche Verkaufstheke','Geschmücktes Glückshaus','Großes Lotteriehaus','Prächtiges goldenes Glückshaus'],
+    effects:['Normale Lospreise','5 % Rubbellos-Rabatt','10 % Rubbellos-Rabatt','15 % Rubbellos-Rabatt','20 % Rubbellos-Rabatt']},
+  {id:'academy',icon:'📚',title:'XP-Wichtel-Akademie',summary:'Mehr Erfahrungspunkte beim Abschluss von DOG-Partien.',
+    visuals:['Kleine Lernhütte','Akademie mit neuen Flügeln','Große Akademie','Wundervolles Hochschloss','Goldener XP-Winterpalast'],
+    effects:['Normale XP','+10 % DOG-XP','+20 % DOG-XP','+30 % DOG-XP','+40 % DOG-XP']}
 ];
 const treeNames=[
   'Junger Baum','Erste Funken','Adventszauber','Erste Girlanden','Baum der Hoffnung',
@@ -51,6 +59,8 @@ const treeDetails=[
 // Preload only the requested image, not the full 30-image collection.
 const eventImageRoot='weihnachtsevent-bilder/';
 const assetPath=(id,level)=>{
+ if(id==='academy'&&Number.isInteger(level)&&level>=1&&level<=5)return '../xp_akademie_stufe_'+level+'.png';
+ if(id==='luckhouse'&&Number.isInteger(level)&&level>=1&&level<=5)return '../glueckshaus_stufe_'+level+'.png';
  const stem={
   tower:'weihnachtslichter_turm_stufe_',
   workshop:'Wichtelwerkstatt_Stufe_',
@@ -230,7 +240,7 @@ function updateCardImage(id,level){
   positionBuildingCardPhoto(img,loaded);
  });
 }
-const preview={tower:1,workshop:1,bakery:1,inn:1};
+const preview={tower:1,workshop:1,bakery:1,inn:1,luckhouse:1,academy:1};
 let villageLive=null,villageHost=false,villageEventActive=false,villageCanUpgrade=true,villageBusy=false;
 let treePrizeScreen=null;
 const storyScreen=initChristmasStory({openTab:id=>showPanel(id)});
@@ -238,7 +248,7 @@ let scratchScreen=null;
 let levelScreen=null;
 let lastPresentationKey=null;
 function treeLevel(){
-  const points=Object.values(preview).reduce((a,b)=>a+b,0);
+  const points=originalTreePoints(preview);
   return TREE_THRESHOLDS.filter(t=>points>=t).length;
 }
 function buildingCard(entry){
@@ -256,6 +266,7 @@ function buildingCard(entry){
  root.querySelector('[data-upgrade-building]').addEventListener('click',()=>void purchaseBuilding(entry.id));
  return root;
 }
+for(const id of ['luckhouse','academy']){const img=$('village-expansion-img-'+id);img?.addEventListener('error',()=>{img.hidden=true});img?.addEventListener('load',()=>{img.hidden=false});}
 const grid=$('building-grid');
 for(const item of definitions)grid.append(buildingCard(item));
 if(typeof ResizeObserver==='function'){
@@ -274,7 +285,7 @@ if(priceOverview){
  }
  const total=document.createElement('strong');
  total.className='building-price-total';
- total.textContent='Pro Gebäude: '+christmasBuildingTotalCost(CHRISTMAS_BUILDING_MAX_LEVEL)+' ⭐ · Gesamtes Dorf: '+christmasVillageTotalCost({tower:5,workshop:5,bakery:5,inn:5})+' ⭐';
+ total.textContent='Pro Gebäude: '+christmasBuildingTotalCost(CHRISTMAS_BUILDING_MAX_LEVEL)+' ⭐ · Gesamtes Dorf: '+christmasVillageTotalCost({tower:5,workshop:5,bakery:5,inn:5,luckhouse:5,academy:5})+' ⭐';
  rows.append(total);
  priceOverview.replaceChildren(rows);
 }
@@ -341,7 +352,7 @@ function centerTreeMilestone(){
  steps.scrollTo({left:Math.max(0,center),behavior:'auto'});
 }
 function refreshPreview(){
- const total=Object.values(preview).reduce((a,b)=>a+b,0),tree=treeLevel();
+ const total=Object.values(preview).reduce((a,b)=>a+b,0),treePoints=originalTreePoints(preview),tree=treeLevel();
  for(const d of definitions){
   const level=preview[d.id],card=$('preview-'+d.id).closest('.building-card');
   $('preview-'+d.id).value=String(level);
@@ -366,12 +377,14 @@ function refreshPreview(){
   if(art)art.dataset.level=String(level);
   showStageImage(d.id,level);
   updateCardImage(d.id,level);
+  const expansionImage=$('village-expansion-img-'+d.id);
+  if(expansionImage){const path=assetPath(d.id,level);if(expansionImage.dataset.source!==path){expansionImage.dataset.source=path;expansionImage.hidden=false;expansionImage.src=path;}}
   const plaque=document.querySelector('[data-hotspot-level="'+d.id+'"]');
   if(plaque)plaque.textContent=level+' / 5';
  }
  if(openedBuildingId&&buildingDialog.open)renderVillageBuildingDialog(openedBuildingId);
  const view=$('village-view');
- const presentationKey=JSON.stringify([preview.tower,preview.workshop,preview.bakery,preview.inn]);
+ const presentationKey=JSON.stringify(definitions.map(d=>preview[d.id]));
  if(lastPresentationKey!==null&&presentationKey!==lastPresentationKey&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
    view.classList.remove('is-upgrading');
    void view.offsetWidth; // restart only on an actual preview upgrade
@@ -384,11 +397,11 @@ function refreshPreview(){
  const growth=.51+((tree-1)/9)*.49;
  $('art-tree').setAttribute('transform','translate(610 504) scale('+growth.toFixed(4)+') translate(0 -565)');
  showStageImage('tree',tree);
- $('stat-building-levels').textContent=total+' / 20';
+ $('stat-building-levels').textContent=total+' / 30';
  $('stat-tree-level').textContent=tree+' / 10';
  $('village-stage-text').textContent=(tree===1?'Anfangszustand':tree===10?'Prachtvolles Weihnachtsdorf':'Baum Stufe '+tree)+(villageLive?' · Live':' · Vorschau');
  if(!villageLive){
-  $('building-village-counter').textContent=total+' / 20';
+  $('building-village-counter').textContent=total+' / 30';
   $('building-village-tree').textContent='Stufe '+tree+' / 10';
  }
  updateTreeChapter();
@@ -399,14 +412,14 @@ function refreshPreview(){
  $('tree-next-name').textContent=tree===10?'Das große Weihnachtslicht':treeNames[nextLevel-1];
  $('tree-next-gift-icon').textContent=tree===10?'🏆':nextPrize.icon;
  $('tree-next-gift').textContent=tree===10?'Alle zehn Geschenke erreichbar':nextPrize.title;
- const needed=tree===10?0:Math.max(0,TREE_THRESHOLDS[tree]-total);
+ const needed=tree===10?0:Math.max(0,TREE_THRESHOLDS[tree]-treePoints);
  // Story chapters unlock ONLY from the server-verified shared village.
  // Local preview buttons may animate the tree but never reveal future text.
  storyScreen.render({treeLevel:villageLive?tree:1,isVerified:Boolean(villageLive),remaining:villageLive?needed:0});
  $('tree-next-requirement').textContent=tree===10?'Alle vier Gebäude haben Stufe 5 erreicht.':
   'Noch '+needed+' Gebäudeausbau'+(needed===1?'':'ten')+' bis zur nächsten Stufe';
  $('tree-progress-fill').style.width=(tree*10)+'%';
- $('tree-progress-label').textContent=tree+' / 10 Stufen · '+total+' / 20 Gebäudestufen';
+ $('tree-progress-label').textContent=tree+' / 10 Stufen · '+treePoints+' / 20 Baum-Gebäudestufen';
  document.querySelector('.tree-world-meter')?.setAttribute('aria-valuenow',String(tree));
  if($('tab-tree').getAttribute('aria-selected')==='true')centerTreeMilestone();
 }
@@ -471,13 +484,17 @@ const buildingDescriptions=Object.freeze({
  tower:'Der Weihnachtslichter-Turm wacht über den Dorfplatz. Mit jedem Ausbau werden in einer DOG-Runde mehr verborgene Geschenkfelder auf dem Spielbrett verteilt.',
  workshop:'In der Wichtelwerkstatt entstehen kleine Überraschungen. Beim Einsammeln eines versteckten Geschenkfeldes kann ein zusätzliches Geschenk entstehen.',
  bakery:'Die Weihnachtsbäckerei versorgt Lichtertal mit Wärme und Gebäck. Gesammelte Geschenke bringen dem gemeinsamen Dorfkonto Weihnachtslichter; die Bäckerei erhöht diesen Ertrag.',
- inn:'Die Friedensherberge bietet den Bewohnern einen warmen Platz. Sie erhöht die versteckten Rubbellos-Felder auf dem DOG-Brett und schenkt dem Dorf Weihnachtslichter nach abgeschlossenen Partien.'
+ inn:'Die Friedensherberge bietet den Bewohnern einen warmen Platz. Sie erhöht die versteckten Rubbellos-Felder auf dem DOG-Brett und schenkt dem Dorf Weihnachtslichter nach abgeschlossenen Partien.',
+ luckhouse:'Das Weihnachts-Glückshaus reduziert die Preise für alle bezahlten Rubbellose der Dorfgemeinschaft.',
+ academy:'Die XP-Wichtel-Akademie verhilft jedem DOG-Spieler nach abgeschlossenen Online-Partien zu mehr Erfahrungspunkten.'
 });
 const bonusExplainers=Object.freeze({
  tower:'So viele Geschenkfelder werden zu Beginn einer DOG-Runde verdeckt und zufällig auf dem Brett verteilt. Trifft eine Spielfigur ein noch nicht eingesammeltes Feld, kann sie ein Geschenk erhalten.',
  workshop:'Die Prozentchance gilt für jedes tatsächlich eingesammelte Geschenkfeld im DOG-Spiel. Bei Erfolg gibt es ein zweites Geschenk und entsprechend zusätzliche Weihnachtslichter.',
  bakery:'Jedes gesammelte Geschenk ist grundsätzlich 1 Weihnachtslicht wert. Der aktuelle Prozentsatz wird zusätzlich gutgeschrieben. Die Lichter gehören dem gemeinsamen Dorfkonto.',
- inn:'Die Rubbellose liegen verborgen auf zufälligen DOG-Feldern. Der zusätzliche Lichterbonus wird einmal nach jeder serverseitig abgeschlossenen DOG-Partie dem Dorfkonto gutgeschrieben.'
+ inn:'Die Rubbellose liegen verborgen auf zufälligen DOG-Feldern. Der zusätzliche Lichterbonus wird einmal nach jeder serverseitig abgeschlossenen DOG-Partie dem Dorfkonto gutgeschrieben.',
+ luckhouse:'Der Rabatt gilt automatisch beim Kauf auf Render. Lose mit Gutscheinen und Gratislose bleiben kostenlos.',
+ academy:'Der XP-Bonus zählt nur für echte, abgeschlossene DOG-Partien. Für laufende Spiele wird die beim Spielstart erreichte Akademiestufe verwendet.'
 });
 function villageBuildingBonus(id,level){
  const bonus=villageLive?.bonus;
@@ -498,6 +515,8 @@ function villageBuildingBonus(id,level){
   const games=bonus&&Number.isInteger(bonus.innPerFinishedGame)?bonus.innPerFinishedGame:level-1;
   return fields+' versteckte Rubbellos-Felder pro Runde · '+games+' zusätzliche Lichter pro abgeschlossener Partie';
  }
+ if(id==='luckhouse')return (bonus&&Number.isInteger(bonus.luckhouseDiscountPercent)?bonus.luckhouseDiscountPercent:5*(level-1))+' % Rabatt auf bezahlte Rubbellose';
+ if(id==='academy')return '+'+(bonus&&Number.isInteger(bonus.academyXpPercent)?bonus.academyXpPercent:10*(level-1))+' % DOG-Erfahrungspunkte';
  return '';
 }
 function renderVillageBuildingDialog(id){
@@ -522,6 +541,8 @@ function renderVillageBuildingDialog(id){
    id==='tower'?FIELDS[next-1]+' Geschenkfelder':
    id==='workshop'?(5*next)+' % Zusatzchance':
    id==='bakery'?'+'+(10*(next-1))+' % Weihnachtslichter':
+   id==='luckhouse'?(5*(next-1))+' % Rubbellos-Rabatt':
+   id==='academy'?'+'+(10*(next-1))+' % DOG-XP':
    (8+2*(next-1))+' Rubbellos-Felder · +'+(next-1)+' Lichter/Partie'):
   '🏆 Maximalstufe erreicht';
  const cost=christmasUpgradeCost(level);
@@ -608,17 +629,17 @@ if($('tab-tree').getAttribute('aria-selected')==='true')void treePrizeScreen.loa
 function showLiveVillage(data){
  const v=data?.village;if(!v)return;
  const oldLevels=villageLive?.levels;
- const oldTreeLevel=oldLevels?TREE_THRESHOLDS.filter(n=>Object.values(oldLevels).reduce((a,b)=>a+b,0)>=n).length:null;
+ const oldTreeLevel=oldLevels?TREE_THRESHOLDS.filter(n=>originalTreePoints(oldLevels)>=n).length:null;
  villageLive=v;
  villageHost=data.shared===true||data.host===true;
  villageEventActive=data.enabled===true;
  villageCanUpgrade=data.canUpgrade!==false;
- for(const id of ['tower','workshop','bakery','inn'])preview[id]=v.levels[id];
+ for(const {id} of definitions)preview[id]=Number.isInteger(v.levels[id])?v.levels[id]:1;
  $('building-live-balance').textContent=lightsLabel(v.lightsTenths)+' ⭐ Weihnachtslichter';
  $('building-village-role').textContent='🟢 Gemeinsames DOG-Dorf';
  $('building-village-role').dataset.state='online';
- $('building-village-counter').textContent=Object.values(v.levels).reduce((a,b)=>a+b,0)+' / 20';
- $('building-village-tree').textContent='Stufe '+TREE_THRESHOLDS.filter(t=>Object.values(v.levels).reduce((a,b)=>a+b,0)>=t).length+' / 10';
+ $('building-village-counter').textContent=Object.values(v.levels).reduce((a,b)=>a+b,0)+' / 30';
+ $('building-village-tree').textContent='Stufe '+TREE_THRESHOLDS.filter(t=>originalTreePoints(v.levels)>=t).length+' / 10';
  $('building-village-gifts').textContent=String(v.giftsCollected);
  $('building-village-earned').textContent=lightsLabel(v.totalEarnedTenths??0)+' ⭐';
  $('building-village-spent').textContent=lightsLabel(v.totalSpentTenths??0)+' ⭐';
@@ -628,7 +649,7 @@ function showLiveVillage(data){
   :'🎄 Raumunabhängig: Jeder sammelt und kann ausbauen. Die Boni gelten für alle DOG-Partien.';
  $('building-live-notice').textContent='✅ Alle DOG-Spieler sammeln gemeinsam. Jeder kann mit dem gemeinsamen Vorrat Gebäude ausbauen.';
  refreshPreview();
- const newTreeLevel=TREE_THRESHOLDS.filter(n=>Object.values(v.levels).reduce((a,b)=>a+b,0)>=n).length;
+ const newTreeLevel=TREE_THRESHOLDS.filter(n=>originalTreePoints(v.levels)>=n).length;
  if($('tab-tree').getAttribute('aria-selected')==='true'&&
      (oldTreeLevel===null||newTreeLevel!==oldTreeLevel))void treePrizeScreen?.load();
 }
@@ -648,7 +669,7 @@ let pendingVillageRead=null;
 async function reloadVillage(){
  if(!eventUser()){
   villageLive=null;villageHost=false;
-  for(const id of ['tower','workshop','bakery','inn'])preview[id]=1;
+  for(const {id} of definitions)preview[id]=1;
   refreshPreview(); // Clear old player's unlocked chapters on logout.
   $('building-live-balance').textContent='Online-Profil anmelden';
   $('building-village-earned').textContent='–';
