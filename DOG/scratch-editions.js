@@ -65,7 +65,8 @@ function readForm(){
  const number=id=>{const v=Number(value(id));return Number.isFinite(v)?v:NaN};
  drafts[current.id]={variantId:current.id,title:value('ed-name').trim(),
   maxTotalCoins:number('ed-budget'),maxPerTicketCoins:number('ed-max-coins'),
-  maxPrizesPerTicket:number('ed-max-prizes'),maxUnlocks:number('ed-max-unlocks'),quotas};
+  maxPrizesPerTicket:number('ed-max-prizes'),maxUnlocks:number('ed-max-unlocks'),
+  quotas,gameSettings:old.gameSettings??null};
  return drafts[current.id];
 }
 function draftKey(value){return JSON.stringify(value)}
@@ -108,6 +109,71 @@ function renderQuota(){
   parent.append(line);
  }
 }
+function defaultGameSettings(v){
+ if(settings?.variants?.[v.id])return structuredClone(settings.variants[v.id]);
+ if(v.id==='number_one_20')return structuredClone(settings?.numberOne20||
+  {price:500,hitPer1000:100,giftFallbackCoins:1500,
+   coinAmounts:[100,300,800],symbolWeights:[650,280,60,10]});
+ if(v.id==='tic_tac_toe')return {coinAmounts:[200,450,800],
+  symbolWeights:[700,250,40,10],maxMultiplier:5,giftFallbackCoins:1500};
+ if(v.id==='dog_jackpot_9')return {coinAmounts:[100,300,800],
+  symbolWeights:[550,300,148,2],dogChancePer1000:350,giftFallbackCoins:1500};
+ return null;
+}
+function renderGameSettings(root){
+ const v=current,draft=drafts[v.id];
+ if(!draft.gameSettings)draft.gameSettings=defaultGameSettings(v);
+ const cfg=draft.gameSettings;
+ if(!cfg)return;
+ const section=node('div','mechanic-card');
+ section.append(node('h4','','🎛️ Eigene Einstellungen für diese 500er-Auflage'),
+  node('p','','Hier stellst du die Geldwerte, Symbolanteile und Spielregeln für diesen Druck ein. '+
+   'Chancen werden in Promille angegeben: 1000 = 100 %, 100 = 10 %. Änderungen betreffen ausschließlich die neue Auflage.'));
+ const grid=node('div','field-layout');grid.style.marginTop='15px';
+ const field=(label,property,index=null,min=0,max=50000000)=>{
+  const item=node('label','field');item.append(node('span','',label));
+  const input=node('input');input.type='number';input.min=String(min);input.max=String(max);input.step='1';
+  input.inputMode='numeric';input.value=String(index===null?cfg[property]:cfg[property]?.[index]??0);
+  input.addEventListener('input',()=>{
+   const n=Number(input.value);
+   if(index===null)cfg[property]=n;
+   else cfg[property][index]=n;
+   invalidatePreview();
+  });
+  item.append(input);grid.append(item);
+ };
+ if(cfg.weights){
+  field('❄️ Nietenkategorie (‰)','weights','none',0,1000);
+  field('🪙 Münzkategorie (‰)','weights','coins',0,1000);
+  field('🎁 Freischaltungen (‰)','weights','unlock',0,1000);
+  field('🎉 Zusatzmünzen (%)','extraCoinChance',null,0,100);
+  field('🏆 Maximalgewinne der Spielmechanik','maxPrizes',null,v.id==='premium_27'?6:1,10);
+ }
+ if(v.id==='number_one_20'){
+  field('🎟️ Lospreis','price',null,1,1000000);
+  field('🎯 Chance auf Zahl 1 je Reihe (‰)','hitPer1000',null,0,1000);
+ }
+ if(v.id==='tic_tac_toe')field('🎰 Höchster Multiplikator','maxMultiplier',null,1,5);
+ if(v.id==='dog_jackpot_9')field('🐾 DOG-Trefferwahrscheinlichkeit (‰)','dogChancePer1000',null,0,1000);
+ if(cfg.giftFallbackCoins!==undefined)
+  field('🎁 Münzen statt Freischaltung','giftFallbackCoins',null,0,50000000);
+ if(Array.isArray(cfg.coinAmounts))
+  ['🪙 Münzwert','💵 Scheinwert','💼 Kofferwert'].forEach((label,i)=>
+   field(label,'coinAmounts',i,1,50000000));
+ if(Array.isArray(cfg.moneySymbolWeights))
+  ['🪙 Münze (‰)','💵 Schein (‰)','💼 Koffer (‰)'].forEach((label,i)=>
+   field(label,'moneySymbolWeights',i,0,1000));
+ if(Array.isArray(cfg.symbolWeights))
+  ['🪙 Münze (‰)','💵 Schein (‰)','💼 Koffer (‰)','🎁 Geschenk (‰)'].forEach((label,i)=>
+   field(label,'symbolWeights',i,0,1000));
+ if(Array.isArray(cfg.giftSymbolWeights))
+  ['🎁 Geschenk (‰)','💝 Herz (‰)','🎀 Schleife (‰)','🧧 Umschlag (‰)']
+   .forEach((label,i)=>field(label,'giftSymbolWeights',i,0,1000));
+ section.append(grid);
+ const footer=node('p','','⚖️ Hauptkategorien, Geldsymbole und Geschenksymbole müssen jeweils genau 1000 ‰ ergeben. '+
+  'Die Münzwerte müssen streng aufsteigend sein. Unmögliche Ausgaben werden vom Server abgelehnt.');
+ footer.style.marginTop='12px';section.append(footer);root.append(section);
+}
 function renderRules(){
  const root=$('mechanic-content');root.replaceChildren();
  const v=current,classic=settings?.variants?.[v.id],numberSettings=settings?.numberOne20;
@@ -144,6 +210,7 @@ function renderRules(){
  caveat.append(node('h4','','🛡️ Gewinnprüfung'),
   node('p','','Jedes vorgedruckte Los wird vom vorhandenen Gewinnmotor erstellt. Das Studio darf die ausgezahlte Münzsumme nur durch Auswahl passender, tatsächlich gewinnender Spielbretter steuern – nicht durch verdeckte Zusatzbeträge. Hauptgewinne, die der Spieler bereits besitzt, werden bei der Einlösung nach Möglichkeit durch andere noch freie Freischaltungen ersetzt.'));
  root.append(caveat);
+ renderGameSettings(root);
 }
 function renderLive(){
  const doc=live[current.id];
@@ -236,6 +303,9 @@ async function load(){
  try{
   const [scratch,editions]=await Promise.all([api(''),api('/editions')]);
   settings=scratch.scratch?.settings||null;
+  for(const variant of VARIANTS){
+   if(!drafts[variant.id].gameSettings)drafts[variant.id].gameSettings=defaultGameSettings(variant);
+  }
   for(const item of editions.editions||[])live[item.variantId]=item.active;
   renderRules();renderLive();showMessage('✓ Render verbunden. Einstellungen und aktuelle Auflagen geladen.','good');
  }catch(e){showMessage('⚠️ '+labelFor(e.message)+' Falls der neue Server gerade bereitgestellt wird, versuche es später erneut.','error')}
