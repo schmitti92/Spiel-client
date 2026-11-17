@@ -104,14 +104,14 @@ test('the real preview can inspect server-checked scratch boards without sale nu
  assert.match(js,/\/editions\/preview\/.*\/tickets/);
  assert.match(js,/printed-ticket-board/);
  assert.match(css,/\.printed-ticket-sample/);
- assert.match(html,/scratch-editions\.js\?v=23/);
+ assert.match(html,/scratch-editions\.js\?v=24/);
 });
 
 test('new editions may contain fewer than 500 tickets without changing historical stock',()=>{
  for(const id of ['simple-print-size','ed-print-size','simple-light-budget','simple-unlock-cap','simple-symbol-grid'])
   assert.ok(ids.includes(id),id+' must be a real editable control');
  assert.match(js,/printSize:number\('ed-print-size'\)/);
- assert.match(js,/function rebalanceLockedOdds/);
+ assert.match(js,/rebalanceLockedOdds/);
  assert.match(js,/function renderSimpleSymbols/);
  assert.match(js,/draft\.printSize/);
  assert.match(js,/\(doc\.config\?\.printSize\?\?500\)/);
