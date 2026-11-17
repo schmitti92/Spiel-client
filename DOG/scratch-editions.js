@@ -37,7 +37,7 @@ async function api(path='',payload){
 const baseDraft=variant=>({
  variantId:variant.id,title:variant.name+' · Winteredition 1',
  maxTotalCoins:variant.budget,targetTotalCoins:Math.round(variant.budget*.55),
- targetTolerancePercent:5,premiumFull27Tickets:0,
+ targetTolerancePercent:5,premiumFull27Tickets:0,volatility:70,
  maxPerTicketCoins:variant.one,
  maxPrizesPerTicket:variant.wins,maxUnlocks:variant.id==='premium_27'?25:0,quotas:{}
 });
@@ -74,7 +74,7 @@ function readForm(){
  const number=id=>{const v=Number(value(id));return Number.isFinite(v)?v:NaN};
  drafts[current.id]={variantId:current.id,title:value('ed-name').trim(),
   maxTotalCoins:number('ed-budget'),targetTotalCoins:number('ed-target'),
-  targetTolerancePercent:number('ed-tolerance'),
+  targetTolerancePercent:number('ed-tolerance'),volatility:number('ed-volatility'),
   premiumFull27Tickets:current.id==='premium_27'?number('ed-full27'):0,
   maxPerTicketCoins:number('ed-max-coins'),
   maxPrizesPerTicket:number('ed-max-prizes'),maxUnlocks:number('ed-max-unlocks'),
@@ -103,6 +103,7 @@ function updateSide(){
  const portion=draft.maxTotalCoins>0?Math.min(100,draft.targetTotalCoins/draft.maxTotalCoins*100):0;
  $('target-progress-fill').style.width=portion.toFixed(1)+'%';
  $('target-progress-label').textContent=fmt(draft.targetTotalCoins)+' von '+fmt(draft.maxTotalCoins)+' 🪙';
+ $('volatility-value').textContent=fmt(draft.volatility)+' %';
  $('side-max').textContent=fmt(draft.maxPerTicketCoins)+' 🪙';
  const sum=nums.reduce((n,x)=>n+(Number(x)||0),0);
  $('side-quotas').textContent=sum?fmt(sum)+' von 500 fest':'Automatisch';
@@ -304,6 +305,7 @@ function switchVariant(id){
  $('ed-budget').value=d.maxTotalCoins;
  $('ed-target').value=d.targetTotalCoins;
  $('ed-tolerance').value=d.targetTolerancePercent;
+ $('ed-volatility').value=d.volatility;
  $('ed-full27').value=d.premiumFull27Tickets;
  $('premium-highlight').hidden=variant.id!=='premium_27';
  renderPremiumBoard();
@@ -403,6 +405,7 @@ for(const id of ['ed-name','ed-budget','ed-target','ed-tolerance','ed-max-coins'
  $(id).addEventListener('input',()=>{readForm();updateSide();invalidatePreview()});
 }
 $('quota-grid').addEventListener('input',()=>{readForm();updateSide();invalidatePreview()});
+$('ed-volatility').addEventListener('input',()=>{readForm();updateSide();invalidatePreview()});
 $('ed-preview').addEventListener('click',async()=>{
  const draft=readForm();
  if(!signedIn()){showMessage('Bitte zuerst mit deinem DOG-Profil anmelden.','error');return}
