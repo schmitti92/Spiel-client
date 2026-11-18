@@ -146,7 +146,12 @@ export function play(original,seat,action){
  ensureSingleLoss(s,seat,p.id);
  log(s,s.players[seat].name+' spielt '+chosen.as);
  checkComplete(s);
- if(!s.complete){nextTurn(s);maybeEffects(s);}
+ if(!s.complete){
+  nextTurn(s);maybeEffects(s);
+  // A quake can move an occupying pawn onto a starting field and invalidate
+  // the next seat's previously legal start. Recheck after environmental effects.
+  if(!s.hands[s.current].some(card=>legalMoves(s,s.current,card).length))nextTurn(s);
+ }
  s.revision++;
  return s;
 }
