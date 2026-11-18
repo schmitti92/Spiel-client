@@ -666,7 +666,7 @@ export function initChristmasScratch(){
   set('sn-light-max',cfg.lightMax??10);
   set('sn-edition-budget',snowEdition?.maxTotalCoins??
    Math.round((cfg.price??200)*500*.6));
-  $('scratch-gifts-settinsn-feedback').textContent='';
+  $('scratch-snow-settings-feedback').textContent='';
   $('sn-edition-feedback').textContent='';
   updateSnowMoneyPreview();updateSnowEditionPreview();
   snowDialog.showModal();
@@ -1959,6 +1959,66 @@ export function initChristmasScratch(){
    updateGiftsEditionPreview();drawShop();
   }catch(e){feedback.textContent='⚠️ '+scratchBuyError(e?.message||'Serverfehler');}
   finally{updateGiftsEditionPreview()}
+ });
+ $('scratch-snow-settings-open').addEventListener('click',openSnowSettings);
+ $('scratch-snow-settings-close').addEventListener('click',()=>snowDialog.close());
+ $('scratch-snow-settings-cancel').addEventListener('click',()=>snowDialog.close());
+ snowDialog?.addEventListener('click',e=>{if(e.target===snowDialog)snowDialog.close()});
+ for(const id of ['sn-none','sn-unlock'])
+  $(id).addEventListener('input',updateSnowMoneyPreview);
+ $('scratch-snow-settings-form').addEventListener('invalid',e=>{
+  const field=e.target;
+  $('scratch-snow-settings-feedback').textContent='⚠️ Bitte „'+
+   (field.closest('label')?.querySelector('span')?.textContent||'Eingabe')+'“ prüfen.';
+ },true);
+ $('scratch-snow-settings-form').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const feedback=$('scratch-snow-settings-feedback'),save=$('scratch-snow-settings-save');
+  if(save.disabled)return;
+  if(!account()){feedback.textContent='⚠️ Bitte zuerst mit deinem DOG-Profil anmelden.';return}
+  try{
+   const snow=readSnowSettings();
+   save.disabled=true;feedback.textContent='💾 Schneeflocken-Bingo-Einstellungen werden gespeichert …';
+   const response=await query('/settings/snow_collect',{snow});
+   if(!response.settings?.variants?.snow_collect)throw Error('Der Server hat die Einstellungen nicht bestätigt.');
+   if(!status)status={};
+   status.settings=response.settings;
+   snowDialog.close();drawShop();
+   notice('✅ Schneeflocken-Bingo gespeichert. Alle neuen Schneeflocken-Bingo-Lose verwenden diese Werte. Bereits geöffnete Lose bleiben unverändert.');
+  }catch(error){feedback.textContent='⚠️ '+(error.message||'Speichern fehlgeschlagen');}
+  finally{save.disabled=false}
+ });
+ // 500-ticket publisher. One click writes the form values AND the immutable
+ // run budget in one Firestore transaction. It never draws 500 tickets at once.
+ for(const id of ['sn-price','sn-edition-budget'])
+  $(id).addEventListener('input',updateSnowEditionPreview);
+ $('sn-edition-create').addEventListener('click',async()=>{
+  const feedback=$('sn-edition-feedback'),button=$('sn-edition-create');
+  if(button.disabled)return;
+  if(!account()){feedback.textContent='🔐 Bitte zuerst mit deinem DOG-Profil anmelden.';return;}
+  try{
+   const snow=readSnowSettings(),raw=$('sn-edition-budget').value.trim();
+   const maxTotalCoins=Number(raw);
+   if(!raw||!Number.isSafeInteger(maxTotalCoins)||maxTotalCoins<0||maxTotalCoins>1000000000000)
+    throw Error('Bitte ein Gesamtbudget von 0 bis 1.000.000.000.000 Münzen eingeben.');
+   if(snowEdition?.remaining>0)
+    throw Error('Es läuft bereits eine 500er-Auflage mit '+snowEdition.remaining+' Restlosen.');
+   const yes=window.confirm('Eine Auflage mit 500 Schneeflocken-Bingo-Losen erstellen?\\n'+
+    'Maximal '+num(maxTotalCoins)+' 🪙 Auszahlungen insgesamt.\\n'+
+    'Die Einstellungen und das Budget dieser Serie können später nicht mehr geändert werden.');
+   if(!yes)return;
+   button.disabled=true;
+   feedback.textContent='📦 Veröffentliche die 500er-Auflage sicher auf Render …';
+   const response=await query('/editions/snow_collect',{snow,maxTotalCoins});
+   if(!response.snowEdition||!response.settings?.variants?.snow_collect)
+    throw Error('Der Server hat die Auflage nicht bestätigt.');
+   snowEdition=response.snowEdition;
+   status.settings=response.settings;
+   feedback.textContent='✅ Auflage erstellt: 500 Lose, maximal '+num(maxTotalCoins)+
+    ' 🪙 Geldgewinne für alle Spieler zusammen.';
+   updateSnowEditionPreview();drawShop();
+  }catch(e){feedback.textContent='⚠️ '+scratchBuyError(e?.message||'Serverfehler');}
+  finally{updateSnowEditionPreview()}
  });
  $('scratch-host-settings').addEventListener('click',openSettings);
  $('scratch-host-close').addEventListener('click',()=>hostDialog.close());
