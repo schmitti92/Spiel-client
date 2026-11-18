@@ -69,6 +69,20 @@ export function premiumScratchProgress(board,revealedIndices=[]){
   premiumAwarded:wins.some(win=>win.rule==='premium-24'),
   giftRowRequired:[3,4,5].includes(board.symbolVersion)};
 }
+/**
+ * Geschenkelinie: anchor ×2 to the MIDDLE original glyph of a verified
+ * three-identical-symbol MONEY payout, never a random unrelated field.
+ * A light-only bonus stays in its own light-bonus display.
+ */
+export function giftsDoubledSymbolIndex(result){
+ const b=result?.board;
+ if(b?.variantId!=='gifts'||!Array.isArray(b.cells)||!Array.isArray(b.wins))
+  return null;
+ const source=b.wins.find(w=>w?.prize?.type==='coins'&&w.prize.x2===true&&
+  Array.isArray(w.indices)&&w.indices.length===3&&
+  w.indices.every(i=>Number.isInteger(i)&&i>=0&&i<b.cells.length&&b.cells[i]===w.symbol));
+ return Number.isInteger(source?.indices?.[1])?source.indices[1]:null;
+}
 /** Gold belongs to a real winning three-in-a-row, never to all 20/24 counted tiles. */
 export function premiumWinningRowIndices(wins=[]){
  return [...new Set(wins.filter(win=>(win.rule==='row-3'||
@@ -1468,8 +1482,23 @@ export function initChristmasScratch(){
     }
     board.append(makeDuelTile(String(result.board.multiplier)+'×',0),winningTile);
    }
+   const giftsStickerIndex=giftsDoubledSymbolIndex(result);
    for(const [index,symbol] of cells.entries()){
     const field=makeField(symbol,index);
+    if(stage.dataset.variant==='gifts'&&giftsStickerIndex===index){
+     // The small ×2 seal sits on the icon, under the normal silver coating.
+     // Its original money symbol is unchanged for the 3-of-a-kind rule.
+     const face=field.querySelector('.scratch-cell-symbol');
+     if(face){
+      face.classList.add('scratch-symbol-with-double');
+      const sticker=el('span','scratch-symbol-double-sticker','×2');
+      sticker.setAttribute('aria-hidden','true');
+      sticker.title='Dieser echte Gewinn wird verdoppelt';
+      face.append(sticker);
+      field.classList.add('scratch-has-double-award');
+      field.setAttribute('aria-label',symbol+' · Geldgewinn mal zwei');
+     }
+    }
     if(Number.isSafeInteger(result.lightBadgeIndex)&&index===result.lightBadgeIndex&&
        Number.isSafeInteger(result.totalLights)&&result.totalLights>0){
      field.classList.add('scratch-has-light-award');
@@ -1481,7 +1510,8 @@ export function initChristmasScratch(){
      lightValue.setAttribute('aria-label',num(result.totalLights)+' gewonnene Weihnachtslichter');
      field.append(lightValue);
     }
-    if(stage.dataset.duelVersion!=='8'&&Number.isSafeInteger(result.doubleBadgeIndex)&&
+    if(stage.dataset.variant!=='gifts'&&stage.dataset.duelVersion!=='8'&&
+       Number.isSafeInteger(result.doubleBadgeIndex)&&
        index===result.doubleBadgeIndex&&result.doubleWin){
      field.classList.add('scratch-has-double-award');
      const double=el('span','scratch-double-field-badge','✖️2');
