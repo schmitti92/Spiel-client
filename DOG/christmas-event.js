@@ -9,7 +9,7 @@ import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewa
 import {initChristmasStory} from './christmas-story.js?v=3';
 import {initChristmasScratch} from './christmas-scratch-ui.js?v=58';
 import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=4';
-import {sceneLayouts,verifyVillageSpriteLayout} from './christmas-village-layout.mjs?v=1';
+import {sceneLayouts,grinchSkyLayout,verifyVillageSpriteLayout} from './christmas-village-layout.mjs?v=2';
 const $=id=>document.getElementById(id);
 // Older browser caches may pair outdated chapter markup with the new module.
 // Remove those obsolete nodes before setting up event navigation.
@@ -244,6 +244,8 @@ let levelScreen=null;
 let lastPresentationKey=null;
 // Grinch stages are temporary visual previews until real Part 2 missions exist.
 let grinchVisualStage=1;
+// Local scenic view, not mission progress or a server-side upgrade.
+let villageMode=new URLSearchParams(location.search).get('grinch')==='1'?'grinch':'normal';
 const grinchDialog=$('grinch-cave-dialog');
 const grinchStageDescriptions=[
  'Ankunft: Der Grinch ist auf dem Höhepunkt seiner Macht. Die Höhle ist vollständig intakt.',
@@ -271,9 +273,42 @@ function renderGrinchCave(){
    ?'✨ Baumstufe 10 erreicht · Grinch-Missionen werden vorbereitet.'
    :'🔒 Teil 2 startet nach der echten gemeinsamen Weihnachtsbaum-Stufe 10.'
  }
- const plaque=document.querySelector('.hotspot-grinch small');
- if(plaque)plaque.textContent=(stage===1?'':'TEST ')+stage+' / 5';
- showStageImage('grinch',stage);
+ if(villageMode==='grinch')showGrinchSkyImage(stage);
+}
+/** Alpha-aware image placement in the upper backdrop behind every house.
+ * Grinch stages never enter the foreground buildings' collision grid. */
+function showGrinchSkyImage(stage){
+ const layer=$('grinch-sky-image'),fallback=$('grinch-sky-fallback');
+ if(!layer||!fallback)return;
+ const path=assetPath('grinch',stage);
+ if(layer.dataset.requested===path&&(fallback.classList.contains('photo-ready')||layer.dataset.loading==='true'))return;
+ layer.dataset.requested=path;
+ layer.dataset.loading='true';
+ fallback.classList.remove('photo-ready');
+ waitForImage(path).then(loaded=>{
+  if(layer.dataset.requested!==path)return;
+  layer.dataset.loading='false';
+  if(!loaded.ok){layer.removeAttribute('href');return;}
+  const b=loaded.bounds,slot=grinchSkyLayout,growth=slot.growth[stage-1]??1;
+  const aw=Math.max(1,b.x1-b.x0),ah=Math.max(1,b.y1-b.y0);
+  const scale=Math.min(slot.w*growth/aw,slot.h*growth/ah);
+  const x=slot.cx-(b.x0+b.x1)*.5*scale,y=slot.ground-b.y1*scale;
+  layer.setAttribute('x',x.toFixed(2));
+  layer.setAttribute('y',y.toFixed(2));
+  layer.setAttribute('width',(loaded.width*scale).toFixed(2));
+  layer.setAttribute('height',(loaded.height*scale).toFixed(2));
+  layer.setAttribute('href',path);
+  fallback.classList.add('photo-ready');
+ });
+}
+function setVillageMode(mode){
+ villageMode=mode==='grinch'?'grinch':'normal';
+ grinchVisualStage=1;
+ const url=new URL(location.href);
+ if(villageMode==='grinch')url.searchParams.set('grinch','1');
+ else url.searchParams.delete('grinch');
+ history.replaceState(null,'',url.href);
+ refreshPreview();
 }
 function treeLevel(){
   const points=originalTreePoints(preview);
@@ -381,6 +416,7 @@ function centerTreeMilestone(){
 function refreshPreview(){
  const total=Object.values(preview).reduce((a,b)=>a+b,0),treePoints=originalTreePoints(preview),tree=treeLevel();
  const sceneTree=villageMaxPreview?10:tree;
+ const visualTreeStage=villageMode==='grinch'?1:sceneTree;
  for(const d of definitions){
   const level=preview[d.id],sceneLevel=villageMaxPreview?5:level,card=$('preview-'+d.id).closest('.building-card');
   $('preview-'+d.id).value=String(level);
@@ -418,24 +454,39 @@ function refreshPreview(){
    view.classList.add('is-upgrading');
  }
  lastPresentationKey=presentationKey;
- view.dataset.tree=String(sceneTree);
- view.dataset.snow=String(sceneTree<=2?1:sceneTree<=4?2:sceneTree<=6?3:sceneTree<=8?4:5);
+ view.dataset.mode=villageMode;
+ view.dataset.tree=String(visualTreeStage);
+ view.dataset.snow=String(visualTreeStage<=2?1:visualTreeStage<=4?2:visualTreeStage<=6?3:visualTreeStage<=8?4:5);
  view.dataset.visualPreview=villageMaxPreview?'max':'live';
- // The old vector tree remains visible until a valid tree PNG is available.
- const growth=.51+((sceneTree-1)/9)*.49;
+ // Normal progress is unchanged; the Grinch view only chooses the stage-one PNG.
+ const growth=.51+((visualTreeStage-1)/9)*.49;
  $('art-tree').setAttribute('transform','translate(610 504) scale('+growth.toFixed(4)+') translate(0 -565)');
- showStageImage('tree',sceneTree);
+ showStageImage('tree',visualTreeStage);
  renderGrinchCave();
+ const grinchModeToggle=$('grinch-scene-toggle');
+ if(grinchModeToggle){
+  const active=villageMode==='grinch';
+  grinchModeToggle.textContent=active?'↩ Normales Weihnachtsdorf':'👹 Grinchhöhle ansehen';
+  grinchModeToggle.setAttribute('aria-pressed',String(active));
+  grinchModeToggle.title=active?'Normale Berglandschaft und echte Baumstufe anzeigen':'Große Grinchhöhle anstelle der Berglandschaft ansehen';
+ }
  $('stat-building-levels').textContent=total+' / 30';
  $('stat-tree-level').textContent=tree+' / 10';
- $('village-stage-text').textContent=villageMaxPreview?'🔍 Vollausbau-Simulation · keine Änderung am Fortschritt':
+ $('village-stage-text').textContent=villageMode==='grinch'
+  ?'👹 Grinch-Ansicht · Baum nur optisch auf Stufe 1'
+  :villageMaxPreview?'🔍 Vollausbau-Simulation · keine Änderung am Fortschritt':
   (tree===1?'Anfangszustand':tree===10?'Prachtvolles Weihnachtsdorf':'Baum Stufe '+tree)+(villageLive?' · Live':' · Vorschau');
  const maxTestButton=$('village-max-test'),maxTestNote=$('village-max-note');
  if(maxTestButton){
   maxTestButton.textContent=villageMaxPreview?'↩ Echte Dorfansicht':'🔍 Vollausbau testen';
   maxTestButton.setAttribute('aria-pressed',String(villageMaxPreview));
  }
- if(maxTestNote)maxTestNote.hidden=!villageMaxPreview;
+ if(maxTestNote){
+  maxTestNote.hidden=!villageMaxPreview;
+  maxTestNote.textContent=villageMode==='grinch'
+    ?'👁️ TESTANSICHT · 6 Gebäude auf Stufe 5 · Baum nur optisch auf Stufe 1'
+    :'👁️ TESTANSICHT · 6 × Stufe 5 · Baum Stufe 10 · keine Käufe';
+ }
  if(!villageLive){
   $('building-village-counter').textContent=total+' / 30';
   $('building-village-tree').textContent='Stufe '+tree+' / 10';
@@ -647,7 +698,7 @@ grinchDialog?.addEventListener('close',()=>{
 window.addEventListener('hashchange',()=>showPanel(tabs.includes(location.hash.slice(1))?location.hash.slice(1):'village',{updateHistory:false}));
 showPanel(tabs.includes(location.hash.slice(1))?location.hash.slice(1):'village',{updateHistory:false});
 // Keep the vector drawings as fallback if an uploaded image fails to render.
-for(const id of ['tower','workshop','luckhouse','academy','bakery','inn','tree','grinch']){
+for(const id of ['tower','workshop','luckhouse','academy','bakery','inn','tree']){
  $(id+'-stage-image')?.addEventListener('error',()=>{
   const fallback=$(id==='tree'?'art-tree':'art-'+id);
   fallback?.classList.remove('photo-ready');
