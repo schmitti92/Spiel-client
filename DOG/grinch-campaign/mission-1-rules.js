@@ -3,8 +3,8 @@
  * Three independent human seats, five reserve pieces each, ORIGINAL 64 track fields.
  * Never reads/writes official DOG rooms, village currency or mission progress.
  */
-import {MISSION_1} from './mission-config.js?v=3';
-export const SEATS=3,TRACK=64,GOAL=4;
+import {MISSION_1} from './mission-config.js?v=4';
+export const SEATS=3,TRACK=64,GOAL=1;
 export const COLORS=['#e65f58','#4c9bfa','#e8b84e'];
 export const LABELS=['Rot','Blau','Gelb'];
 export const START_CARDS=new Set(['1/11','13']);
@@ -20,7 +20,6 @@ function seeded(seed){let x=(seed>>>0)||1;return ()=>((x=(Math.imul(x,1664525)+1
 function shuffle(xs,rng){const list=[...xs];for(let i=list.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[list[i],list[j]]=[list[j],list[i]];}return list;}
 function deck(rng){return shuffle(TYPES.flatMap((type,i)=>Array.from({length:type==='Joker'?6:8},(_,n)=>({id:type+'-'+i+'-'+n,type}))),rng);}
 function pieceAtTrack(s,absolute,except){return s.pieces.find(p=>p.id!==except&&p.place==='track'&&pos(homeIndex(p.seat)+p.steps)===absolute);}
-function finishAvailable(s,p,newSteps){if(newSteps<TRACK||newSteps>=TRACK+GOAL)return false;const lane=newSteps-TRACK;return !s.pieces.some(o=>o.id!==p.id&&o.seat===p.seat&&o.place==='goal'&&o.steps-TRACK===lane);}
 function values(type){if(type==='1/11')return [1,11];if(type==='4')return [4,-4];if(type==='7'||type==='Joker')return [];return [Number(type)];}
 function isTurnDone(s){return s.players.every(p=>s.hands[p.seat].length===0);}
 function refill(s){if(s.draw.length<SEATS*5){s.draw=deck(seeded(s.seed+s.round*31));}s.round++;for(let i=0;i<SEATS;i++)s.hands[i]=s.draw.splice(0,5);log(s,'Neue Kartenphase '+s.round);}
@@ -46,7 +45,7 @@ function assignLosses(seed){return shuffle(LOSS_TYPES,seeded(seed+77));}
 export function newGame(seed=Math.floor(Math.random()*2147483647),names=LABELS){
  const rng=seeded(seed);
  const s={
-  version:1,mission:MISSION_1.id,seed,players:LABELS.map((name,seat)=>({seat,name:String(names[seat]||name).slice(0,25),lossType:assignLosses(seed)[seat],lost:false,moves:0})),
+  version:2,mission:MISSION_1.id,seed,players:LABELS.map((name,seat)=>({seat,name:String(names[seat]||name).slice(0,25),lossType:assignLosses(seed)[seat],lost:false,moves:0})),
   pieces:Array.from({length:15},(_,i)=>({id:'p'+i,seat:Math.floor(i/5),place:'home',steps:-1})),
   current:0,turn:0,round:0,draw:deck(rng),discard:[],hands:[[],[],[]],history:[],complete:false,revision:0,lastEvent:null,effects:[],
  };
@@ -55,7 +54,7 @@ export function newGame(seed=Math.floor(Math.random()*2147483647),names=LABELS){
  if(!s.hands[s.current].some(card=>legalMoves(s,s.current,card).length))nextTurn(s);
  return s;
 }
-export function pieceCoord(p){if(p.place==='track')return pos(homeIndex(p.seat)+p.steps);if(p.place==='goal')return p.steps-TRACK;return -1;}
+export function pieceCoord(p){return p.place==='track'?pos(homeIndex(p.seat)+p.steps):-1;}
 export function legalMoves(s,seat,card){
  if(s.complete||seat!==s.current||!card||!s.hands[seat].some(c=>c.id===card.id))return [];
  const types=card.type==='Joker'?TYPES.filter(x=>x!=='Joker'):[card.type];
@@ -71,21 +70,13 @@ export function legalMoves(s,seat,card){
      opts.push({kind:'swap',pieceId:a.id,targetId:b.id,cardId:card.id,as:type});
   }
   for(const distance of values(type)){
-   for(const p of s.pieces.filter(p=>p.seat===seat&&(p.place==='track'||p.place==='goal'))){
-    if(p.place==='goal'&&distance<0)continue;
+   for(const p of s.pieces.filter(p=>p.seat===seat&&p.place==='track')){
     const targetSteps=p.steps+distance;
-    if(targetSteps<0||targetSteps>=TRACK+GOAL)continue;
-    if(p.place==='goal'&&targetSteps<TRACK)continue;
-    if(targetSteps>=TRACK&&!finishAvailable(s,p,targetSteps))continue;
+    if(targetSteps<0)continue;
     const final=targetSteps<TRACK?pos(homeIndex(seat)+targetSteps):-1;
     const at=final>=0?pieceAtTrack(s,final,p.id):null;
     const starts=(final===homeIndex(seat));
     if(at&&at.seat===seat||at&&starts)continue;
-    // Cannot jump over own figures inside a narrow goal lane.
-    if(targetSteps>=TRACK){
-      const from=Math.max(TRACK,p.steps+1),to=targetSteps;
-      if(s.pieces.some(o=>o.id!==p.id&&o.seat===seat&&o.place==='goal'&&o.steps>=from&&o.steps<=to))continue;
-    }
     opts.push({kind:'move',pieceId:p.id,cardId:card.id,as:type,distance,targetSteps,captureId:at?.id||null});
    }
   }
@@ -120,9 +111,9 @@ function maybeEffects(s){
  }
 }
 function checkComplete(s){
- // Exactly one player piece trapped; the other four use the original goal lane.
- s.complete=s.players.every(info=>info.lost&&s.pieces.filter(p=>p.seat===info.seat&&p.place==='goal').length===4);
- if(s.complete){s.lastEvent={type:'win',message:'Alle Freunde erreichen den Aussichtspunkt. Drei Figuren bleiben vermisst.',turn:s.turn};log(s,s.lastEvent.message);}
+ // One permanent loss per player; the remaining four reach the SAME reusable portal.
+ s.complete=s.players.every(info=>info.lost&&s.pieces.filter(p=>p.seat===info.seat&&p.place==='teleported').length===4);
+ if(s.complete){s.lastEvent={type:'win',message:'Alle zwölf Figuren wurden durch die drei Portal-Ziele nach Welt 2 teleportiert. Drei Freunde bleiben verschollen.',turn:s.turn};log(s,s.lastEvent.message);}
 }
 export function play(original,seat,action){
  if(original.complete||seat!==original.current)throw Error('Nicht dein Zug.');
@@ -133,7 +124,10 @@ export function play(original,seat,action){
  if(chosen.kind==='start'){p.place='track';p.steps=0;}
  if(chosen.kind==='move'){
   if(chosen.captureId){const victim=s.pieces.find(v=>v.id===chosen.captureId);victim.place='home';victim.steps=-1;}
-  p.steps=chosen.targetSteps;p.place=p.steps>=TRACK?'goal':'track';
+  if(chosen.targetSteps>=TRACK){
+   // Entering the single portal immediately removes the figure from this board.
+   p.steps=TRACK;p.place='teleported';
+  }else{p.steps=chosen.targetSteps;p.place='track';}
  }
  if(chosen.kind==='swap'){
   const other=s.pieces.find(p=>p.id===chosen.targetId);
@@ -148,6 +142,11 @@ export function play(original,seat,action){
  s.players[seat].moves++;
  s.lastEvent=null;
  ensureSingleLoss(s,seat,p.id);
+ if(p.place==='teleported'){
+  // The portal can be reused by every other figure; no occupied goal field.
+  log(s,s.players[seat].name+' hat eine Figur durch das Portal nach Welt 2 geschickt');
+  if(!s.lastEvent)s.lastEvent={type:'teleport',seat,pieceId:p.id,message:'✨ '+s.players[seat].name+' teleportiert eine Figur nach Welt 2!',turn:s.turn};
+ }
  // Passive signposts become true story-only clue fields if a figure reaches
  // them. They never eliminate extra figures or modify ordinary card moves.
  if(!s.lastEvent&&p.place==='track'){
@@ -171,6 +170,6 @@ export function play(original,seat,action){
 export function status(s){return s.players.map(info=>({
  seat:info.seat,name:info.name,lost:info.lost,home:s.pieces.filter(p=>p.seat===info.seat&&p.place==='home').length,
  track:s.pieces.filter(p=>p.seat===info.seat&&p.place==='track').length,
- goal:s.pieces.filter(p=>p.seat===info.seat&&p.place==='goal').length
+ teleported:s.pieces.filter(p=>p.seat===info.seat&&p.place==='teleported').length
 }));}
-export function validateSaved(x){return !!x&&x.version===1&&x.mission===1&&Array.isArray(x.players)&&x.players.length===3&&Array.isArray(x.pieces)&&x.pieces.length===15&&Array.isArray(x.hands)&&x.hands.length===3&&Number.isInteger(x.current)&&x.current>=0&&x.current<3;}
+export function validateSaved(x){return !!x&&x.version===2&&x.mission===1&&Array.isArray(x.players)&&x.players.length===3&&Array.isArray(x.pieces)&&x.pieces.length===15&&Array.isArray(x.hands)&&x.hands.length===3&&Number.isInteger(x.current)&&x.current>=0&&x.current<3&&x.pieces.every(p=>['home','track','teleported','lost'].includes(p.place));}
