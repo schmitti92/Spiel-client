@@ -554,6 +554,11 @@ export function initChristmasScratch(){
    button.disabled=active;
    button.title=active?'Eine neue Auflage ist erst nach den 500 vergebenen Losen möglich.':'';
   }
+  const defaultsButton=$('scratch-gifts-settings-save');
+  if(defaultsButton){
+   defaultsButton.textContent=active?'💾 Nur Standardwerte speichern':'💾 Einstellungen speichern';
+   defaultsButton.title=active?'Ändert die aktive Auflage NICHT. Nutze dafür oben „Aktuelle Auflage bearbeiten“.':'Standardeinstellungen für künftige Lose speichern.';
+  }
   if(edit){
    edit.hidden=!active;
    edit.disabled=!active;
@@ -653,6 +658,11 @@ export function initChristmasScratch(){
   if(button){
    button.disabled=active;
    button.title=active?'Eine neue Auflage ist erst nach den 500 vergebenen Losen möglich.':'';
+  }
+  const defaultsButton=$('scratch-snow-settings-save');
+  if(defaultsButton){
+   defaultsButton.textContent=active?'💾 Nur Standardwerte speichern':'💾 Einstellungen speichern';
+   defaultsButton.title=active?'Ändert die aktive Auflage NICHT. Nutze dafür oben „Aktuelle Auflage bearbeiten“.':'Standardeinstellungen für künftige Lose speichern.';
   }
   if(edit){
    edit.hidden=!active;
