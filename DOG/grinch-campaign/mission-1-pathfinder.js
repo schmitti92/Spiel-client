@@ -6,7 +6,7 @@
  *
  * All markup is passive (pointer-events:none), so original pawn clicks work.
  */
-import {MISSION_1} from './mission-config.js';
+import {MISSION_1} from './mission-config.js?v=3';
 export const PATHFINDER_CLUES=Object.freeze(MISSION_1.trailHints.map(c=>Object.freeze({field:c.field,emoji:c.icon,title:c.title})));
 export const PATHFINDER_SEATS=Object.freeze([0,1,3]); // Rot, Blau, Gelb
 const point=p=>Number(p).toFixed(2);
