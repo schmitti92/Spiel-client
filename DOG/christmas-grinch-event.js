@@ -25,7 +25,9 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
  if(!root)return {render(){}};
  const $=id=>document.getElementById(id);
  const dialog=$('grinch-mission-dialog');
- let activeMission=0;
+ // A dialog must remain visible if its parent event panel changes tabs.
+ if(dialog&&dialog.parentElement!==document.body)document.body.append(dialog);
+
  const close=()=>{if(dialog?.open)dialog.close();};
  $('grinch-visit-cave')?.addEventListener('click',()=>openCave());
  $('grinch-back-village')?.addEventListener('click',()=>openTab('village'));
@@ -34,7 +36,6 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
    const number=Number(button.dataset.grinchDetails);
    const item=MISSIONS[number-1];
    if(!item)return;
-   activeMission=number;
    $('grinch-mission-title').textContent=number+' · '+item.name;
    $('grinch-mission-description').textContent=item.description;
    $('grinch-mission-objective').textContent=item.objective;
