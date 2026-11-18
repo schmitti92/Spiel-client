@@ -8,7 +8,7 @@ export const MISSIONS = Object.freeze([
     id:1,slug:'weg-zum-berg',title:'Der Weg zum Berg',subtitle:'Was ist mit Weihnachten geschehen?',
     playersMax:3,piecesPerPlayer:5,forcedLossesPerPlayer:1,
     goal:'Die vier verbliebenen Figuren jedes Spielers ins Ziel bringen.',
-    theme:'mountain-road',effects:{quakeEvery:12,fogEvery:7,clueEvery:9},
+    theme:'mountain-road',specialFields:[9,29,49],effects:{quakeEvery:12,fogEvery:7,clueEvery:9},
     enabled:true
   }),
   Object.freeze({id:2,title:'Der verfluchte Aufstieg',playersMax:3,piecesPerPlayer:4,forcedLossesPerPlayer:1,theme:'ice-ascent',enabled:false}),
