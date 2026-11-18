@@ -95,10 +95,11 @@ function ensureSingleLoss(s,seat,movedId){
  let p=s.pieces.find(p=>p.id===movedId&&p.seat===seat&&p.place==='track');
  if(!p)p=s.pieces.find(p=>p.seat===seat&&p.place==='track');
  if(!p)return;
+ const trackPosition=pieceCoord(p);
  p.place='lost';p.steps=-1;info.lost=true;
  const names={collapse:'Der Boden bricht ein!',abduction:'Eine Figur wird entführt!',freeze:'Ein Eisfluch schlägt zu!'};
  const msg=names[info.lossType]+' '+info.name+' verliert eine Figur.';
- s.lastEvent={type:'loss',seat,pieceId:p.id,lossType:info.lossType,message:msg,turn:s.turn};
+ s.lastEvent={type:'loss',seat,pieceId:p.id,lossType:info.lossType,position:trackPosition,message:msg,turn:s.turn};
  log(s,msg);
 }
 function maybeEffects(s){
