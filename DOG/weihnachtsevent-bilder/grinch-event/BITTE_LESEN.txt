@@ -1,0 +1,28 @@
+GRINCH-EVENT · GRAFIKPAKET FÜR DOG
+================================
+GitHub Upload-Ordner:
+https://github.com/schmitti92/Spiel-client/upload/main/DOG/weihnachtsevent-bilder/grinch-event
+
+ENTPACKEN und alle Bilddateien (PNG/JPG) im Ordner oben hochladen.
+Nicht die ZIP-Datei selbst hochladen! Benenne Dateien nicht um.
+
+Dateien und Verwendung:
+ event-banner.jpg         Breites Titelbild oben im Grinch-Reiter
+ event-hintergrund.jpg    Unscharfer ruhiger Winterhintergrund für den Reiter
+ grinch-emblem.png        Grinch-Kopf, auch für ein Menüsymbol verwendbar
+ mission-1.png           Die gestohlenen Lichter
+ mission-2.png           Verfluchte Karten
+ mission-3.png           Eiszeit-Chaos
+ mission-4.png           Portale und Fallen
+ mission-5.png           Finale in der Grinchhöhle
+ belohnung-finale.png    Weihnachtsbaum als Vorschau der Finalbelohnung
+ mission-gesperrt.png   Illustration für gesperrte Missionen
+
+Die Weboberfläche zeigt bis zum Hochladen Platzhalter/Illustrationen.
+Die PNGs können jederzeit durch gleichnamige Dateien ersetzt werden.
+Die 5 Missionen sind zunächst eine grafische Übersicht; die eigentlichen
+DOG-Bot-Mechaniken, Fortschrittsdaten und echte Belohnungen sind noch nicht implementiert.
+Der Klick auf die Grinchhöhle im Dorf führt jetzt direkt zum Event-Reiter.
+
+Dateien haben überwiegend transparente weiche Ränder. Icons ca. 520×520 px.
+Bildkomposition aus eigens für dieses DOG-Konzept erzeugten Spielgrafiken.
