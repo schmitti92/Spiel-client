@@ -44,7 +44,10 @@ export function newGame(seed=Math.floor(Math.random()*2147483647),names=LABELS){
   pieces:Array.from({length:15},(_,i)=>({id:'p'+i,seat:Math.floor(i/5),place:'home',steps:-1})),
   current:0,turn:0,round:0,draw:deck(rng),discard:[],hands:[[],[],[]],history:[],complete:false,revision:0,lastEvent:null,effects:[],
  };
- refill(s);return s;
+ refill(s);
+ // The first player may have no starting card. Skip impossible openings automatically.
+ if(!s.hands[s.current].some(card=>legalMoves(s,s.current,card).length))nextTurn(s);
+ return s;
 }
 export function pieceCoord(p){if(p.place==='track')return pos(homeIndex(p.seat)+p.steps);if(p.place==='goal')return p.steps-TRACK;return -1;}
 export function legalMoves(s,seat,card){
@@ -96,6 +99,8 @@ function ensureSingleLoss(s,seat,movedId){
  log(s,msg);
 }
 function maybeEffects(s){
+ // Story losses have priority; never hide a mandatory capture behind weather.
+ if(s.lastEvent?.type==='loss')return;
  if(s.turn>0&&s.turn%MISSION_1.effects.quakeEvery===0){
   for(const p of s.pieces.filter(p=>p.place==='track'))p.steps=Math.max(0,p.steps-1);
   s.lastEvent={type:'quake',message:'Erdbeben! Alle Figuren auf dem Weg gehen ein Feld zurück.',turn:s.turn};
