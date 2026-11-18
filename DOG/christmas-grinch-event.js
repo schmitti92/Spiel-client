@@ -4,9 +4,9 @@
  * The prerequisite shown here is based solely on the real shared village.
  */
 const MISSIONS=Object.freeze([
- {name:'Der Weg zum Berg',icon:'🏔️',
+ {name:'Pfadfinder – Der Weg zum Berg',icon:'🧭',
   description:'Die drei Freunde folgen dem grünen Leuchten. Jeder beginnt mit fünf Figuren, doch auf dem Bergpfad verschwindet von jedem eine.',
-  objective:'Vier Figuren pro Spieler sicher ins Ziel bringen. Einsturz, Eisfluch, Entführung, Nebel und Erdbeben. Eine lokale Testversion ist verfügbar.'},
+  objective:'Vier Figuren pro Spieler in die originalen DOG-Zielfelder bringen. Jedes vollständige Ziel öffnet einen Wegweiser nach Mission 2. Hinweisspuren, Einsturz, Entführung, Eisfluch, Nebel und Erdbeben. Lokaler Testmodus.'},
  {name:'Der verfluchte Aufstieg',icon:'🌫️',
   description:'Mit vier Figuren je Spieler geht der Aufstieg weiter. Die Dunkelheit wird gefährlicher.',
   objective:'Geplant: Ein weiterer unvermeidbarer Figurenverlust je Spieler.'},
