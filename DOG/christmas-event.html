@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="./christmas-buildings-magical.css?v=1">
 <link rel="stylesheet" href="./christmas-expansion.css?v=3">
 <link rel="stylesheet" href="./christmas-grinch-cave.css?v=4">
+<link rel="stylesheet" href="./christmas-grinch-event.css?v=1">
 <link rel="stylesheet" href="./christmas-tree-winter-skin.css?v=2">
 <link rel="stylesheet" href="./christmas-storybook.css?v=2">
 <link rel="stylesheet" href="./christmas-storybook-graphics.css?v=1">
@@ -43,6 +44,7 @@
       <button type="button" id="tab-buildings" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-buildings" data-tab="buildings" tabindex="-1"><span>🏠</span><strong>Die sechs Gebäude</strong><small>5 Ausbaustufen</small></button>
       <button type="button" id="tab-tree" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-tree" data-tab="tree" tabindex="-1"><span>🎄</span><strong>Weihnachtsbaum</strong><small>10 Entwicklungsstufen</small></button>
       <button type="button" id="tab-story" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-story" data-tab="story" tabindex="-1"><span>📖</span><strong>Die Geschichte</strong><small>Kapitel 1</small></button>
+      <button type="button" id="tab-grinch" class="event-tab event-tab-grinch" role="tab" aria-selected="false" aria-controls="panel-grinch" data-tab="grinch" tabindex="-1"><span>👹</span><strong>Grinch-Event</strong><small>5 Missionen · Teil 2</small></button>
       <button type="button" id="tab-scratch" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-scratch" data-tab="scratch" tabindex="-1"><span>🎟️</span><strong>Rubbellose</strong><small>Einfach · Mittel · Premium</small></button>
       <button type="button" id="tab-level" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-level" data-tab="level" tabindex="-1"><span>🏅</span><strong>Mein Spielerlevel</strong><small>10 persönliche Level</small></button>
     </nav>
@@ -241,7 +243,7 @@
           </div>
           <div class="village-hotspots" aria-label="Gebäude und Weihnachtsbaum auf dem Weihnachtsdorf">
             <button type="button" class="village-tree-hit" data-open-tab="tree" aria-label="Weihnachtsbaum öffnen – Entwicklungsstufe und Belohnungen ansehen" title="🎄 Weihnachtsbaum ansehen"></button>
-            <button type="button" class="building-image-hit hit-grinch-sky" data-open-grinch aria-label="Große Grinchhöhle öffnen und fünf Zustände ansehen" title="👹 Grinchhöhle · Fünf Zustände ansehen"></button>
+            <button type="button" class="building-image-hit hit-grinch-sky" data-open-grinch aria-label="Grinch-Event mit fünf Missionen öffnen" title="👹 Grinch-Event · Fünf Missionen öffnen"></button>
             <button type="button" class="building-image-hit hit-tower" data-open-building="tower" aria-label="Weihnachtslichter-Turm: Stufe und Bonus ansehen" title="Weihnachtslichter-Turm · Bonus ansehen"></button>
             <button type="button" class="building-image-hit hit-workshop" data-open-building="workshop" aria-label="Wichtelwerkstatt: Stufe und Bonus ansehen" title="Wichtelwerkstatt · Bonus ansehen"></button>
             <button type="button" class="building-image-hit hit-luckhouse" data-open-building="luckhouse" aria-label="Weihnachts-Glückshaus: Stufe und Rubbellos-Rabatt ansehen" title="🎟️ Weihnachts-Glückshaus · Rabatt ansehen"></button>
@@ -336,6 +338,75 @@
           <span class="stat-card-copy"><strong id="stat-village-gifts">–</strong><small>Gesammelte Geschenke</small><span class="stat-card-link">Fortschritt ansehen <span aria-hidden="true">›</span></span></span>
         </button>
       </div>
+    </section>
+    <section class="event-panel grinch-event-panel" id="panel-grinch" role="tabpanel" aria-labelledby="tab-grinch" hidden>
+      <div class="grinch-event-shell" id="grinch-event-shell">
+        <header class="grinch-event-hero">
+          <div class="grinch-event-hero-copy"><span class="grinch-event-eyebrow">✦ DOG · WEIHNACHTSEVENT · TEIL 2 ✦</span>
+            <h2>Der Fluch des<br>Weihnachtsmuffels</h2>
+            <p>Fünf Missionen. Drei Freunde. Ein gemeinsames Ziel: Rettet Lichtertal vor dem Weihnachtsmuffel!</p>
+            <div class="grinch-event-progress-top"><strong id="grinch-event-counter">0 / 5 Missionen geschafft</strong><span class="grinch-event-stars" aria-label="Fünf Missionen noch nicht abgeschlossen">☆ ☆ ☆ ☆ ☆</span></div>
+            <strong class="grinch-event-unlock" id="grinch-event-unlock" role="status">🔒 Teil 2 wird nach dem echten gemeinsamen Weihnachtsbaum-Level 10 freigeschaltet.</strong>
+          </div>
+          <div class="grinch-event-hero-image" aria-hidden="true">
+            <img src="./weihnachtsevent-bilder/grinchhoehle_stufe_1.png" alt="" loading="lazy" decoding="async">
+            <img class="grinch-event-emblem" src="./weihnachtsevent-bilder/grinch-event/grinch-emblem.png" alt="" loading="lazy" decoding="async">
+          </div>
+        </header>
+        <div class="grinch-event-toolbar">
+          <div class="grinch-event-toolbar-copy"><strong>👹 Die fünf Prüfungen des Grinch</strong><small>Jede Mission baut auf der vorherigen auf. Diese Ansicht ist bereits nutzbar; DOG-Bot und echte Missionen werden später ergänzt.</small></div>
+          <div class="grinch-event-toolbar-actions">
+            <button type="button" id="grinch-visit-cave" class="grinch-event-small-button">🏔️ Höhle ansehen</button>
+            <button type="button" id="grinch-back-village" class="grinch-event-small-button">🏘️ Zum Dorf</button>
+          </div>
+        </div>
+        <div class="grinch-event-missions" aria-label="Fünf Grinch-Missionen">
+        <article class="grinch-mission" id="grinch-mission-1" data-grinch-mission="1">
+          <div class="grinch-mission-number" aria-label="Mission 1">1</div>
+          <div class="grinch-mission-art" aria-hidden="true"><span class="grinch-mission-fallback">💡</span><img loading="lazy" decoding="async" src="./weihnachtsevent-bilder/grinch-event/mission-1.png" alt=""></div>
+          <div class="grinch-mission-copy"><h3>Die gestohlenen Lichter</h3><p>Holt die gestohlenen Weihnachtslichter zurück und bringt Lichtertal zum Leuchten.</p><small>Lichtdiebstahl · Team-Sammelauftrag</small></div>
+          <div class="grinch-mission-reward" aria-label="Vorgesehene Belohnungen"><span>Geplante Belohnung</span><b>⭐ 100 <i>·</i> 🪙 500</b><small>🏮 Laterne</small></div>
+          <div class="grinch-mission-actions"><span class="grinch-mission-state" id="grinch-mission-state-1">🔒 Gesperrt</span><button type="button" class="grinch-mission-info" data-grinch-details="1" aria-label="Mission 1: Die gestohlenen Lichter ansehen">🔍 Details</button></div>
+        </article>
+        <article class="grinch-mission" id="grinch-mission-2" data-grinch-mission="2">
+          <div class="grinch-mission-number" aria-label="Mission 2">2</div>
+          <div class="grinch-mission-art" aria-hidden="true"><span class="grinch-mission-fallback">🃏</span><img loading="lazy" decoding="async" src="./weihnachtsevent-bilder/grinch-event/mission-2.png" alt=""></div>
+          <div class="grinch-mission-copy"><h3>Verfluchte Karten</h3><p>Verwirrte Kartenwerte und magische Regeln bringen jede Runde durcheinander.</p><small>Kartenmagie · veränderte Werte</small></div>
+          <div class="grinch-mission-reward" aria-label="Vorgesehene Belohnungen"><span>Geplante Belohnung</span><b>⭐ 150 <i>·</i> 🪙 750</b><small>🃏 Kartendesign</small></div>
+          <div class="grinch-mission-actions"><span class="grinch-mission-state" id="grinch-mission-state-2">🔒 Gesperrt</span><button type="button" class="grinch-mission-info" data-grinch-details="2" aria-label="Mission 2: Verfluchte Karten ansehen">🔍 Details</button></div>
+        </article>
+        <article class="grinch-mission" id="grinch-mission-3" data-grinch-mission="3">
+          <div class="grinch-mission-number" aria-label="Mission 3">3</div>
+          <div class="grinch-mission-art" aria-hidden="true"><span class="grinch-mission-fallback">❄️</span><img loading="lazy" decoding="async" src="./weihnachtsevent-bilder/grinch-event/mission-3.png" alt=""></div>
+          <div class="grinch-mission-copy"><h3>Eiszeit-Chaos</h3><p>Gefrorene Spielfiguren und Zeitdruck verlangen besonders gutes Teamwork.</p><small>Eisfelder · Zeitdruck</small></div>
+          <div class="grinch-mission-reward" aria-label="Vorgesehene Belohnungen"><span>Geplante Belohnung</span><b>⭐ 200 <i>·</i> 🪙 1.000</b><small>❄️ Eiskristall</small></div>
+          <div class="grinch-mission-actions"><span class="grinch-mission-state" id="grinch-mission-state-3">🔒 Gesperrt</span><button type="button" class="grinch-mission-info" data-grinch-details="3" aria-label="Mission 3: Eiszeit-Chaos ansehen">🔍 Details</button></div>
+        </article>
+        <article class="grinch-mission" id="grinch-mission-4" data-grinch-mission="4">
+          <div class="grinch-mission-number" aria-label="Mission 4">4</div>
+          <div class="grinch-mission-art" aria-hidden="true"><span class="grinch-mission-fallback">🌀</span><img loading="lazy" decoding="async" src="./weihnachtsevent-bilder/grinch-event/mission-4.png" alt=""></div>
+          <div class="grinch-mission-copy"><h3>Portale und Fallen</h3><p>Findet sichere Wege durch magische Portale und blockierte Felder.</p><small>Portale · Blockaden</small></div>
+          <div class="grinch-mission-reward" aria-label="Vorgesehene Belohnungen"><span>Geplante Belohnung</span><b>⭐ 250 <i>·</i> 🪙 1.250</b><small>🌀 Portal</small></div>
+          <div class="grinch-mission-actions"><span class="grinch-mission-state" id="grinch-mission-state-4">🔒 Gesperrt</span><button type="button" class="grinch-mission-info" data-grinch-details="4" aria-label="Mission 4: Portale und Fallen ansehen">🔍 Details</button></div>
+        </article>
+        <article class="grinch-mission" id="grinch-mission-5" data-grinch-mission="5">
+          <div class="grinch-mission-number" aria-label="Mission 5">5</div>
+          <div class="grinch-mission-art" aria-hidden="true"><span class="grinch-mission-fallback">👹</span><img loading="lazy" decoding="async" src="./weihnachtsevent-bilder/grinch-event/mission-5.png" alt=""></div>
+          <div class="grinch-mission-copy"><h3>Finale in der Grinchhöhle</h3><p>Stellt euch dem Weihnachtsmuffel im letzten gemeinsamen Duell.</p><small>Finalkampf · Grinch-Bot</small></div>
+          <div class="grinch-mission-reward" aria-label="Vorgesehene Belohnungen"><span>Geplante Belohnung</span><b>⭐ 500 <i>·</i> 🪙 2.500</b><small>🎄 Festbaum</small></div>
+          <div class="grinch-mission-actions"><span class="grinch-mission-state" id="grinch-mission-state-5">🔒 Gesperrt</span><button type="button" class="grinch-mission-info" data-grinch-details="5" aria-label="Mission 5: Finale in der Grinchhöhle ansehen">🔍 Details</button></div>
+        </article>
+        </div>
+        <div class="grinch-event-footnote">🔒 <strong>Noch nicht spielbar:</strong> Die Missionen sind derzeit eine Vorschau. Weder Gewinne noch Sterne oder Abschlüsse werden vorgetäuscht oder gespeichert. Nach der echten Baumstufe 10 soll Teil 2 freigeschaltet werden.</div>
+      </div>
+      <dialog id="grinch-mission-dialog" class="grinch-mission-dialog" aria-labelledby="grinch-mission-title">
+        <header><span>✦ GRINCH-MISSION ✦</span><button type="button" id="grinch-mission-close" aria-label="Missionsdetails schließen">✕</button></header>
+        <div class="grinch-mission-dialog-content"><div class="grinch-mission-dialog-art" id="grinch-mission-detail-icon" aria-hidden="true">👹</div>
+        <div><h2 id="grinch-mission-title">Mission</h2><p id="grinch-mission-description"></p>
+        <p id="grinch-mission-objective"></p>
+        <div class="grinch-mission-dialog-warning" id="grinch-mission-lock">🔒 Die Spielmechanik wird noch entwickelt. Dies ist eine Missionsvorschau.</div>
+        <button type="button" class="grinch-event-small-button" id="grinch-mission-return">Zurück zu den fünf Missionen</button></div></div>
+      </dialog>
     </section>
     <section class="event-panel" id="panel-buildings" role="tabpanel" aria-labelledby="tab-buildings" hidden>
       <div class="event-heading"><div><span class="eyebrow">DORFAUSBAU</span><h2>Die sechs Weihnachtsgebäude</h2><p>Sechs Gebäude wachsen durch eure gemeinsam gesammelten Weihnachtslichter. Die Boni gelten während des Events automatisch für alle.</p></div><span class="soft-tag">6 × 5 Stufen</span></div>
