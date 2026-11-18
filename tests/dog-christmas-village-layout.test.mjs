@@ -8,14 +8,16 @@ test('all seven foreground structures stay separate at every mixed stage',()=>{
  assert.equal(Object.keys(sceneLayouts).length,7);
  assert.equal(VILLAGE_MIN_CLEARANCE,16);
 });
-test('the Grinch cave is a large upper backdrop, separate from the building collision grid',()=>{
+test('the Grinch cave spans the marked mountain landscape and stays behind all foreground objects',()=>{
  assert.equal(Object.hasOwn(sceneLayouts,'grinch'),false);
- assert.ok(grinchSkyLayout.w>=500);
- assert.ok(grinchSkyLayout.w>sceneLayouts.tower.w*2);
+ assert.ok(grinchSkyLayout.w>=900,'cave fills most of the 1200px-wide background');
+ assert.ok(grinchSkyLayout.h>=400,'cave is visibly taller than the previous 260px');
+ assert.equal(grinchSkyLayout.cx,610);
+ assert.equal(grinchSkyLayout.ground,435);
  assert.equal(grinchSkyLayout.growth.length,5);
- assert.equal(grinchSkyLayout.ground,270);
- const levelOneTree=villageSpriteBounds('tree',1);
- assert.ok(grinchSkyLayout.ground<levelOneTree.top,'Sky cave must end before level-one tree starts');
+ const html=readFileSync(new URL('../DOG/christmas-event.html',import.meta.url),'utf8');
+ assert.ok(html.indexOf('id="grinch-sky-scene"')<html.indexOf('id="tower-stage-image"'),'cave is rendered behind houses');
+ assert.ok(html.indexOf('id="grinch-sky-scene"')<html.indexOf('id="tree-stage-image"'),'cave is rendered behind the Christmas tree');
 });
 test('collision guard detects an intentionally invalid required clearance',()=>{
  const errors=verifyVillageSpriteLayout(50);
@@ -46,6 +48,9 @@ test('the Grinch scene only changes visual tree level and uses a separate skylin
  }
  assert.doesNotMatch(html,/id="grinch-stage-image"|hotspot-grinch"/,'old lower-left cave must be gone');
  assert.match(script,/const visualTreeStage=villageMode==='grinch'\?1:sceneTree/);
+ assert.match(script,/get\('grinch'\)==='0'\?'normal':'grinch'/,'cave opens automatically without a button press');
+ assert.match(html,/id="village-view"[^>]+data-mode="grinch"/);
+ assert.match(html,/id="grinch-sky-image"[^>]+href="weihnachtsevent-bilder\/grinchhoehle_stufe_1\.png"/);
  assert.match(script,/showStageImage\('tree',visualTreeStage\)/);
  assert.match(script,/view\.dataset\.mode=villageMode/);
  assert.match(script,/grinch-scene-toggle.*addEventListener\('click'/);
