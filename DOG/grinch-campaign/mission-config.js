@@ -8,7 +8,14 @@ export const MISSIONS = Object.freeze([
     id:1,slug:'weg-zum-berg',title:'Der Weg zum Berg',subtitle:'Was ist mit Weihnachten geschehen?',
     playersMax:3,piecesPerPlayer:5,forcedLossesPerPlayer:1,
     goal:'Die vier verbliebenen Figuren jedes Spielers ins Ziel bringen.',
-    theme:'mountain-road',specialFields:[9,29,49],effects:{quakeEvery:12,fogEvery:7,clueEvery:9},
+    theme:'mountain-road',
+    trailHints:[
+      {field:8,icon:'🔎',title:'Die ersten Spuren',message:'Im Schnee sind merkwürdige Spuren zu sehen. Sie führen in Richtung Berg.'},
+      {field:24,icon:'🌫️',title:'Der Nebelpass',message:'Zwischen den Felsen schwebt dichter Nebel. Ein leises Dröhnen liegt in der Luft.'},
+      {field:40,icon:'⚡',title:'Das grüne Leuchten',message:'Ein grüner Energiestrahl zuckt über den Bergkamm. Jemand muss hier eine gewaltige Maschine bedienen.'},
+      {field:56,icon:'❄️',title:'Der eisige Weg',message:'Im Eis steckt ein Stück Weihnachtsschmuck. Hier muss jemand vor euch entlanggekommen sein.'}
+    ],
+    effects:{quakeEvery:12,fogEvery:7,clueEvery:9},
     enabled:true
   }),
   Object.freeze({id:2,title:'Der verfluchte Aufstieg',playersMax:3,piecesPerPlayer:4,forcedLossesPerPlayer:1,theme:'ice-ascent',enabled:false}),
