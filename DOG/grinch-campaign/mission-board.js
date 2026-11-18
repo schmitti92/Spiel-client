@@ -12,6 +12,7 @@
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField} from '../board-layout.js?v=11';
 import {resolveAppearance,loadAppearance,validAssetPath} from '../appearance-registry.js?v=27';
 import {pieceCoord} from './mission-1-rules.js';
+import {pathfinderBoardMarkup} from './mission-1-pathfinder.js?v=1';
 export const CLASSIC_TRACK_LENGTH=64;
 export const MISSION_BOARD_SEATS=Object.freeze([0,1,3]); // Rot, Blau, Gelb
 const coord=p=>Number(p.x).toFixed(2)+','+Number(p.y).toFixed(2);
@@ -104,6 +105,9 @@ export function drawClassicMissionBoard(boardSvg,game,{selectedPiece=null,onPiec
     }
   }
 
+ // New mission-specific pathfinding details are appended above the unchanged
+ // classic holes and below the pawns. No original SVG coordinates move.
+ push(pathfinderBoardMarkup(game,{track:TRACK_POINTS,goals:GOAL_POINTS,colors:palette}));
  // Mission-only effects can be layered here; the underlying original track,
  // four protected starts, four goal lanes and home geometry stay untouched.
  for(const piece of game.pieces){
