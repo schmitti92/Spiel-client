@@ -63,7 +63,8 @@ function setupBoard(){
  for(let i=0;i<TRACK;i++){
   const p=points[i],seat=i/20;
   const isStart=Number.isInteger(seat);
-  const circ=tile(fields,p.x,p.y,14,isStart?'tile start':'tile',isStart?COLORS[seat]:null);
+  const warning=MISSION_1.specialFields?.includes(i);
+  const circ=tile(fields,p.x,p.y,14,isStart?'tile start':warning?'tile falling':'tile',isStart?COLORS[seat]:null);
   circ.dataset.index=i;
   if(i%5===0)ns('text',{x:p.x,y:p.y+3,class:'tile-num','text-anchor':'middle'},fields).textContent=String(i+1);
  }
@@ -192,7 +193,15 @@ function onEffect(){
  const ev=state?.lastEvent;
  if(!ev||lastSeenRevision===state.revision)return;
  lastSeenRevision=state.revision;
- if(ev.type==='quake'){
+ if(ev.type==='loss'&&Number.isInteger(ev.position)){
+  const layer=$('event-fx')||ns('g',{id:'event-fx'},$('board'));
+  const p=xy(ev.position);
+  layer.replaceChildren();
+  ns('circle',{cx:p.x,cy:p.y,r:34,fill:ev.lossType==='freeze'?'#8bddff':'#3edc8b',opacity:'.22'},layer);
+  const symbol={collapse:'🕳️',abduction:'🌪️',freeze:'🧊'}[ev.lossType]||'⚡';
+  const fx=ns('text',{x:p.x,y:p.y+16,'text-anchor':'middle','font-size':48},layer);fx.textContent=symbol;
+  clearTimeout(effectTimer);effectTimer=setTimeout(()=>layer.replaceChildren(),2800);
+ }else if(ev.type==='quake'){
   $('board-wrap').classList.add('shaking');
   clearTimeout(effectTimer);
   effectTimer=setTimeout(()=>$('board-wrap').classList.remove('shaking'),1300);
