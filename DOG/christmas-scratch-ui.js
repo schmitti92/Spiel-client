@@ -144,7 +144,8 @@ export function initChristmasScratch(){
     SCRATCH_EDITION_CHANGED:'⚠️ Die Auflage wurde gerade geändert oder ein Los verkauft. Bitte neu laden und erneut bearbeiten.',
     SCRATCH_EDITION_ONLY_CREATOR:'🔒 Nur das Profil, das die Auflage erstellt hat, darf sie bearbeiten.',
     SCRATCH_EDITION_ALREADY_COMPLETE:'🏁 Ausverkaufte Auflagen dürfen nicht nachträglich geändert werden.',
-    SCRATCH_EDITION_FIXED_PLAN_MISSING:'⚠️ Der feste Gewinnplan konnte nicht geladen werden.'
+    SCRATCH_EDITION_FIXED_PLAN_MISSING:'⚠️ Der feste Gewinnplan konnte nicht geladen werden.',
+    SCRATCH_EDITION_WALLET_LIMIT:'⚠️ Dein Münzkonto ist voll. Gib zuerst Münzen aus, damit der vollständige Gewinn gutgeschrieben werden kann.'
  }[code]||'⚠️ Los konnte nicht geöffnet werden: '+String(code||'Serverfehler'));
  const hostDialog=$('scratch-host-dialog');
  const giftsDialog=$('scratch-gifts-settings-dialog');
