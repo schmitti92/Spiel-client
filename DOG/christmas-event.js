@@ -10,12 +10,13 @@ import {initChristmasStory} from './christmas-story.js?v=3';
 import {initChristmasScratch} from './christmas-scratch-ui.js?v=62';
 import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=4';
 import {sceneLayouts,grinchSkyLayout,verifyVillageSpriteLayout} from './christmas-village-layout.mjs?v=3';
+import {initGrinchEvent} from './christmas-grinch-event.js?v=1';
 const $=id=>document.getElementById(id);
 // Older browser caches may pair outdated chapter markup with the new module.
 // Remove those obsolete nodes before setting up event navigation.
 $('tab-chapters')?.remove();
 $('panel-chapters')?.remove();
-const tabs=['village','buildings','tree','story','scratch','level'];
+const tabs=['village','buildings','tree','story','grinch','scratch','level'];
 const TREE_THRESHOLDS=[4,5,7,9,11,13,15,17,19,20];
 const TREE_BUILDING_IDS=['tower','workshop','bakery','inn'];
 const originalTreePoints=levels=>TREE_BUILDING_IDS.reduce((sum,id)=>sum+(Number.isInteger(levels?.[id])?levels[id]:1),0);
@@ -238,6 +239,7 @@ const preview={tower:1,workshop:1,bakery:1,inn:1,luckhouse:1,academy:1};
 let villageMaxPreview=false;
 let villageLive=null,villageHost=false,villageEventActive=false,villageCanUpgrade=true,villageBusy=false;
 let treePrizeScreen=null;
+let grinchView=null;
 const storyScreen=initChristmasStory({openTab:id=>showPanel(id)});
 let scratchScreen=null;
 let levelScreen=null;
@@ -547,6 +549,10 @@ function showPanel(id,{updateHistory=true}={}){
    void reloadVillage(); // Independent of DOG room membership
   });
  }
+ if(id==='grinch'){
+  grinchView?.render();
+  requestAnimationFrame(()=>void reloadVillage());
+ }
  if(id==='scratch')void scratchScreen?.load();
  if(id==='level')void levelScreen?.load();
  if(window.scrollY>0)window.scrollTo({top:0,behavior:'instant'});
@@ -678,13 +684,21 @@ buildingDialog.addEventListener('close',()=>{openedBuildingId=null;});
 document.querySelectorAll('[data-open-building]').forEach(button=>{
  button.addEventListener('click',()=>openVillageBuildingDialog(button.dataset.openBuilding));
 });
-// Cave viewing is always available; the slider never grants mission progress.
+// The giant Grinch cave opens the five-mission event page.
 $('grinch-scene-toggle')?.addEventListener('click',()=>setVillageMode(villageMode==='grinch'?'normal':'grinch'));
 document.querySelectorAll('[data-open-grinch]').forEach(button=>{
- button.addEventListener('click',()=>{
+ button.addEventListener('click',()=>showPanel('grinch'));
+});
+// Keep the cave-stage preview in a separate dialog, outside the hidden
+// #panel-village so it can open from the new Grinch event tab too.
+if(grinchDialog&&grinchDialog.parentElement!==document.body)document.body.append(grinchDialog);
+grinchView=initGrinchEvent({
+ openTab:showPanel,
+ openCave:()=>{
   renderGrinchCave();
   if(grinchDialog&&!grinchDialog.open)grinchDialog.showModal();
- });
+ },
+ verifiedTreeLevel:()=>villageLive?treeLevel():0
 });
 $('grinch-cave-close')?.addEventListener('click',()=>grinchDialog?.close());
 $('grinch-cave-stage-range')?.addEventListener('input',event=>{
@@ -763,6 +777,7 @@ function showLiveVillage(data){
   :'🎄 Raumunabhängig: Jeder sammelt und kann ausbauen. Die Boni gelten für alle DOG-Partien.';
  $('building-live-notice').textContent='✅ Alle DOG-Spieler sammeln gemeinsam. Jeder kann mit dem gemeinsamen Vorrat Gebäude ausbauen.';
  refreshPreview();
+ grinchView?.render();
  const newTreeLevel=TREE_THRESHOLDS.filter(n=>originalTreePoints(v.levels)>=n).length;
  if($('tab-tree').getAttribute('aria-selected')==='true'&&
      (oldTreeLevel===null||newTreeLevel!==oldTreeLevel))void treePrizeScreen?.load();
@@ -785,6 +800,7 @@ async function reloadVillage(){
   villageLive=null;villageHost=false;
   for(const {id} of definitions)preview[id]=1;
   refreshPreview(); // Clear old player's unlocked chapters on logout.
+  grinchView?.render();
   $('building-live-balance').textContent='Online-Profil anmelden';
   $('building-village-earned').textContent='–';
   $('building-village-spent').textContent='–';
