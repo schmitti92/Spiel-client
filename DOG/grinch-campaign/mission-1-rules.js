@@ -3,7 +3,7 @@
  * Three independent human seats, five reserve pieces each, ORIGINAL 64 track fields.
  * Never reads/writes official DOG rooms, village currency or mission progress.
  */
-import {MISSION_1} from './mission-config.js';
+import {MISSION_1} from './mission-config.js?v=3';
 export const SEATS=3,TRACK=64,GOAL=4;
 export const COLORS=['#e65f58','#4c9bfa','#e8b84e'];
 export const LABELS=['Rot','Blau','Gelb'];
