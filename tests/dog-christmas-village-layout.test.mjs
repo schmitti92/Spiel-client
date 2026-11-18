@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {sceneLayouts,grinchSkyLayout,villageSpriteBounds,villageSpriteClearance,verifyVillageSpriteLayout,VILLAGE_MIN_CLEARANCE} from '../DOG/christmas-village-layout.mjs';
 test('all seven foreground structures stay separate at every mixed stage',()=>{
  const errors=verifyVillageSpriteLayout();
@@ -34,4 +35,21 @@ test('all worst-case envelopes have at least 16px of separation',()=>{
     minimum=Math.min(minimum,villageSpriteClearance(villageSpriteBounds(ids[i],x),villageSpriteBounds(ids[j],y)));
  }
  assert.ok(minimum>=16-1e-8,'minimum reserved spacing: '+minimum.toFixed(2));
+});
+
+test('the Grinch scene only changes visual tree level and uses a separate skyline layer',()=>{
+ const html=readFileSync(new URL('../DOG/christmas-event.html',import.meta.url),'utf8');
+ const script=readFileSync(new URL('../DOG/christmas-event.js',import.meta.url),'utf8');
+ const css=readFileSync(new URL('../DOG/christmas-grinch-cave.css',import.meta.url),'utf8');
+ for(const id of ['grinch-sky-scene','grinch-sky-image','grinch-scene-toggle','grinch-cave-dialog']){
+  assert.ok(html.includes('id="'+id+'"'),id+' element exists');
+ }
+ assert.doesNotMatch(html,/id="grinch-stage-image"|hotspot-grinch"/,'old lower-left cave must be gone');
+ assert.match(script,/const visualTreeStage=villageMode==='grinch'\?1:sceneTree/);
+ assert.match(script,/showStageImage\('tree',visualTreeStage\)/);
+ assert.match(script,/view\.dataset\.mode=villageMode/);
+ assert.match(script,/grinch-scene-toggle.*addEventListener\('click'/);
+ assert.match(script,/grinchSkyLayout/);
+ assert.match(css,/\[data-mode="grinch"\] #grinch-sky-scene/);
+ assert.match(script,/stat-tree-level'\)\.textContent=tree/,'real tree status still uses the real level');
 });
