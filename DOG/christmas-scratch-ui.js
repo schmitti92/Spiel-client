@@ -133,7 +133,11 @@ export function initChristmasScratch(){
   SERVER_UNAVAILABLE:'⚠️ Render ist momentan nicht erreichbar. Bitte erneut versuchen.',
   SCRATCH_GIFTS_EDITION_ACTIVE:'⚠️ Noch ist eine 500er-Auflage aktiv. Neue Auflagen sind nach dem 500. verkauften Los möglich.',
   SCRATCH_GIFTS_EDITION_SOLD_OUT:'🎟️ Alle 500 Lose sind vergeben. Erstelle über ⚙️ Einstellungen eine neue Geschenkelinie-Auflage.',
-  SCRATCH_GIFTS_EDITION_INVALID_BUDGET:'⚠️ Das Gesamtbudget muss eine ganze Münzsumme zwischen 0 und 1.000.000.000.000 sein.'
+  SCRATCH_GIFTS_EDITION_INVALID_BUDGET:'⚠️ Das Gesamtbudget muss eine ganze Münzsumme zwischen 0 und 1.000.000.000.000 sein.',
+   SCRATCH_SNOW_SETTINGS_INVALID:'⚠️ Prüfe die Bingo-Einstellungen.',
+   SCRATCH_SNOW_EDITION_ACTIVE:'⚠️ Die aktuelle 500er-Auflage läuft noch. Eine neue ist erst nach dem 500. Los möglich.',
+   SCRATCH_SNOW_EDITION_SOLD_OUT:'❄️ Alle 500 Bingo-Lose sind vergeben. Erstelle oben rechts eine neue Auflage.',
+   SCRATCH_SNOW_EDITION_INVALID_BUDGET:'⚠️ Das maximale Gesamtbudget für die Bingo-Auflage ist ungültig.'
  }[code]||'⚠️ Los konnte nicht geöffnet werden: '+String(code||'Serverfehler'));
  const hostDialog=$('scratch-host-dialog');
  const giftsDialog=$('scratch-gifts-settings-dialog');
@@ -392,12 +396,14 @@ export function initChristmasScratch(){
    const tier=SCRATCH_TICKET_TYPES.find(c=>c.id===option.tier);
    const lucky=status?.settings?.numberOne20;
    // Preserve the independent configured number lottery base price.
-   const variantConfig=option.id==='gifts'&&giftsEdition?.config?
-    giftsEdition.config:status?.settings?.variants?.[option.id];
+   const variantConfig=option.id==='gifts'&&giftsEdition?.config?giftsEdition.config:
+    option.id==='snow_collect'&&snowEdition?.config?snowEdition.config:
+    status?.settings?.variants?.[option.id];
    const ticketCost=option.id==='number_one_20'?(lucky?.price??tier.price):
-    option.id==='gifts'?(variantConfig?.price??tier.price):tier.price;
+    ['gifts','snow_collect'].includes(option.id)?(variantConfig?.price??tier.price):tier.price;
    const actualPrice=discountedPrice(ticketCost);
-   const onSale=option.id!=='gifts'||!giftsEdition||giftsEdition.remaining>0;
+   const onSale=(option.id!=='gifts'||!giftsEdition||giftsEdition.remaining>0)&&
+    (option.id!=='snow_collect'||!snowEdition||snowEdition.remaining>0);
    const unlockChance=Number.isInteger(variantConfig?.weights?.unlock)?
     percent(variantConfig.weights.unlock):tier.unlockChance;
    const unlocksLeft=status?.pools?.[option.tier]?.remaining;
@@ -422,6 +428,13 @@ export function initChristmasScratch(){
     gear.addEventListener('click',event=>{event.stopPropagation();openGiftsSettings()});
     article.append(gear);
    }
+   if(option.id==='snow_collect'){
+    const gear=el('button','scratch-gifts-card-settings scratch-snow-card-settings','⚙️ Auflage');
+    gear.type='button';gear.title='Schneeflocken-Bingo-Auflage erstellen';
+    gear.setAttribute('aria-label','Schneeflocken-Bingo-Auflagentool öffnen');
+    gear.addEventListener('click',event=>{event.stopPropagation();openSnowSettings()});
+    article.append(gear);
+   }
    const heading=el('div','scratch-card-heading');
    heading.append(el('span','scratch-icon',option.icon));
    const names=el('div','scratch-card-names');
@@ -430,7 +443,7 @@ export function initChristmasScratch(){
    const details=el('div','scratch-card-brief');
    details.append(el('span','scratch-card-rule',visibleRule),
     el('span','scratch-card-chance',chanceText));
-   if(option.id==='gifts'&&variantConfig){
+   if(['gifts','snow_collect'].includes(option.id)&&variantConfig){
     details.append(el('span','scratch-card-chance',
      '⭐ Lichtbonus: '+percent(variantConfig.lightChancePer1000??100)+' % · '+
      num(variantConfig.lightMin??1)+'–'+num(variantConfig.lightMax??10)+' ⭐'));
@@ -440,6 +453,7 @@ export function initChristmasScratch(){
    const amounts=option.id==='tic_tac_toe'?[200,450,800]:
     option.id==='number_one_20'?(lucky?.coinAmounts??[100,300,800]):
     option.id==='dog_jackpot_9'?[100,300,800]:
+    option.id==='snow_collect'&&snowEdition?.config?.coinAmounts?snowEdition.config.coinAmounts:
     coinAmountsFor(option.tier,option.id);
    article.append(heading,details,
     el('strong','scratch-price',num(actualPrice)+' 🪙'+
@@ -457,11 +471,12 @@ export function initChristmasScratch(){
    buyBtn.disabled=busy||!onSale;
    buyBtn.addEventListener('click',()=>void buy(option.tier,false,option.id));
    article.append(buyBtn);
-   if(option.id==='gifts'&&giftsEdition){
+   const activeEdition=option.id==='gifts'?giftsEdition:option.id==='snow_collect'?snowEdition:null;
+   if(activeEdition){
     const chip=el('div','scratch-gifts-edition-chip',
-     '📦 Auflage: '+num(giftsEdition.remaining)+' von 500 Losen übrig · '+
-     num(giftsEdition.remainingCoins)+' von '+num(giftsEdition.maxTotalCoins)+' 🪙 Auszahlungsbudget übrig');
-    chip.dataset.state=giftsEdition.status;
+     '📦 Auflage: '+num(activeEdition.remaining)+' von 500 Losen übrig · '+
+     num(activeEdition.remainingCoins)+' von '+num(activeEdition.maxTotalCoins)+' 🪙 Auszahlungsbudget übrig');
+    chip.dataset.state=activeEdition.status;
     article.append(chip);
    }
    if(actionError?.variantId===option.id){
