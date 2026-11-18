@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#081c24">
+<title>DOG Grinch · Mission 1 – Der Weg zum Berg</title>
+<link rel="stylesheet" href="./mission-1.css?v=1">
+</head>
+<body>
+<header class="top">
+ <a class="back" href="../christmas-event.html">← Zum Weihnachtsdorf</a>
+ <div class="brand"><span>🎄 GRINCH-KAMPAGNE</span><h1>Mission 1 · Der Weg zum Berg</h1></div>
+ <a class="back" href="../index.html">Normales DOG</a>
+</header>
+<main class="shell">
+ <section class="intro">
+  <p class="kicker">KAPITEL 2 · DER BEGINN DES FLUCHS</p>
+  <h2>Was ist mit Weihnachten geschehen?</h2>
+  <p>Die Lichter sind erloschen. Am Berg leuchtet ein grüner Strahl. Drei Freunde machen sich auf den Weg, um den Ursprung des Fluchs zu finden. Auf der Reise verschwindet von jedem eine Spielfigur.</p>
+  <div class="notice" role="status">🧪 Eigenständige Spieltest-Version für drei Spieler an einem Gerät. Kein Online-Raum, kein offizieller Kampagnenfortschritt und keine echten Belohnungen. Das normale DOG-Spiel bleibt unverändert.</div>
+ </section>
+ <div class="layout">
+  <section class="board-card" aria-labelledby="board-heading">
+   <div class="board-head"><h2 id="board-heading">🏔️ Der verfluchte Bergpfad</h2><span id="phase">Runde 1</span></div>
+   <div id="board-wrap" class="board-wrap">
+    <svg id="board" viewBox="0 0 960 700" role="img" aria-label="DOG-Brett mit Berg, Schneepfad, drei Starthäusern und fünf Zielfeldern je Spieler">
+     <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#071c2a"/><stop offset=".65" stop-color="#25455b"/><stop offset="1" stop-color="#527184"/></linearGradient>
+      <linearGradient id="stone" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#dbe6e9"/><stop offset="1" stop-color="#698a98"/></linearGradient>
+      <linearGradient id="mountain" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#b8c9d4"/><stop offset=".55" stop-color="#667e8e"/><stop offset="1" stop-color="#2c4857"/></linearGradient>
+      <radialGradient id="portal"><stop stop-color="#b5ff66" stop-opacity=".85"/><stop offset=".5" stop-color="#4aaf61" stop-opacity=".45"/><stop offset="1" stop-color="#183f42" stop-opacity="0"/></radialGradient>
+      <filter id="shadow"><feGaussianBlur stdDeviation="7"/></filter>
+     </defs>
+     <rect width="960" height="700" rx="28" fill="url(#sky)"/>
+     <g opacity=".7" fill="#f2fbff">
+      <circle cx="52" cy="44" r="2"/><circle cx="132" cy="128" r="1.4"/><circle cx="775" cy="75" r="1.7"/><circle cx="899" cy="115" r="2.2"/><circle cx="334" cy="53" r="1"/><circle cx="598" cy="69" r="1.4"/><circle cx="823" cy="169" r="1.2"/>
+     </g>
+     <path d="M26 393L135 178L216 302L330 103L434 329L529 125L660 310L779 128L938 355V620H26Z" fill="url(#mountain)"/>
+     <path d="M265 213L330 103L388 233L338 197L322 172Z M467 228L529 125L588 220L533 192Z M725 223L779 128L834 219L788 193Z" fill="#e1eff3" opacity=".95"/>
+     <path d="M20 552Q190 457 379 534Q550 447 718 532Q873 458 942 532V698H20Z" fill="#acc7d0" opacity=".47"/>
+     <ellipse cx="480" cy="312" rx="185" ry="137" fill="#041b27" opacity=".26" filter="url(#shadow)"/>
+     <path d="M382 349L437 193L483 235L540 160L596 354Z" fill="#253d48" stroke="#658691" stroke-width="8"/>
+     <path d="M435 348Q435 271 487 252Q541 274 541 348Z" fill="#071b20" stroke="#739a85" stroke-width="5"/>
+     <ellipse cx="490" cy="263" rx="120" ry="87" fill="url(#portal)" opacity=".8"/>
+     <path d="M431 349Q488 317 543 349" stroke="#66ae78" stroke-width="6" fill="none" opacity=".7"/>
+     <text x="482" y="391" text-anchor="middle" class="cave-title">DER BERG</text>
+     <g class="village" transform="translate(51 457)">
+      <path d="M0 60L53 8L104 60Z" fill="#8d9baa" stroke="#e0e6ea" stroke-width="6"/>
+      <rect x="11" y="59" width="85" height="70" fill="#71899a"/><rect x="28" y="77" width="17" height="25" fill="#1b3542"/><rect x="64" y="77" width="17" height="25" fill="#1b3542"/>
+      <text x="55" y="157" text-anchor="middle" class="village-label">LICHTERTAL</text>
+     </g>
+     <g id="path-lines"></g><g id="path-fields"></g><g id="goal-fields"></g><g id="home-fields"></g><g id="pawns"></g>
+     <g id="fog" aria-hidden="true" pointer-events="none"><ellipse cx="460" cy="344" rx="430" ry="222" fill="#b1c9ca" opacity=".5" filter="url(#shadow)"/><ellipse cx="650" cy="420" rx="360" ry="180" fill="#a8bfbb" opacity=".28" filter="url(#shadow)"/></g>
+    </svg>
+   </div>
+   <div class="legend"><span>🕳️ Einsturz</span><span>🌪️ Entführung</span><span>🧊 Eisfluch</span><span>🌫️ Nebel</span><span>⚡ Erdbeben</span></div>
+  </section>
+  <aside class="side">
+   <section class="panel">
+    <h2>🎲 Die Reise</h2>
+    <p id="turn-label" aria-live="polite">Mission vorbereiten</p>
+    <div id="players" class="players"></div>
+    <div id="actions" class="actions"></div>
+   </section>
+   <section class="panel">
+    <h2>🃏 Handkarten</h2>
+    <p class="help">Karte wählen, dann Figur antippen. Alternativ einen vorgeschlagenen Zug auswählen.</p>
+    <div id="hand" class="hand"></div>
+    <div id="moves" class="moves"></div>
+   </section>
+   <section class="panel">
+    <h2>📜 Hinweise vom Berg</h2>
+    <div id="history" class="history" aria-live="polite"></div>
+   </section>
+   <div class="controls"><button id="restart" type="button">↻ Test neu starten</button><a href="../christmas-event.html">Zurück zum Event</a></div>
+  </aside>
+ </div>
+</main>
+<dialog id="setup">
+ <p class="kicker">GRINCH-KAMPAGNE · TESTMODUS</p>
+ <h2>Aufbruch nach Lichtertal</h2>
+ <p>Jeder der drei Spieler startet mit fünf Figuren. Ihr spielt abwechselnd an diesem Gerät. Jeder verliert während der Reise genau eine Figur; vier müssen ins Ziel.</p>
+ <div class="names">
+  <label>Spieler Rot <input id="name-0" value="Rot" maxlength="25"></label>
+  <label>Spieler Blau <input id="name-1" value="Blau" maxlength="25"></label>
+  <label>Spieler Gelb <input id="name-2" value="Gelb" maxlength="25"></label>
+ </div>
+ <button id="begin" class="start" type="button">🏔️ Mission 1 starten</button>
+ <p class="help">Lokale Testdaten – keine Anmeldung, keine Online-Funktion.</p>
+</dialog>
+<div id="event-message" role="status" aria-live="assertive"></div>
+<script type="module" src="./mission-1.js?v=1"></script>
+</body>
+</html>
