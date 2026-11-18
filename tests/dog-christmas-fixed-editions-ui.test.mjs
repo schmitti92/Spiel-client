@@ -15,6 +15,10 @@ for(const prefix of ['gs','sn'])test(prefix+' fixed-budget edition editor has li
  assert.match(html,/Exakt diese Münzsumme wird auf die Lose verteilt/g);
  assert.match(ui,new RegExp("edit.hidden=!active"));
  assert.match(ui,/budget.disabled=false/);
+ assert.match(html,new RegExp('id="'+prefix+'-edition-budget-hint"'));
+ assert.match(ui,/function updateFixedBudgetHint\(prefix,activeEdition\)/);
+ assert.match(ui,/restBudget>maximum/);
+ assert.match(ui,/restBudget%divisor!==0/);
  assert.match(ui,/async function editLatestEdition\(variant\)/);
  assert.match(ui,new RegExp("'"+prefix+"-edition-edit'\\)\\.addEventListener"));
  assert.match(styles,new RegExp('#'+prefix+'-edition-edit\\[hidden\\]'));
