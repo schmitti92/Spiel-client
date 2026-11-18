@@ -60,3 +60,17 @@ dialog::backdrop{background:#020d12cc;backdrop-filter:blur(5px)}dialog h2{margin
 .board-wrap{position:relative}
 .board-wrap.foggy:after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(ellipse at 45% 38%,#d3edeb80,transparent 70%),linear-gradient(115deg,transparent,#c0d8d870 50%,transparent);animation:mist 2.8s ease-in-out both}
 @keyframes mist{from{opacity:0;transform:translateX(-9%)}35%{opacity:.9}to{opacity:0;transform:translateX(9%)}}
+
+/* Pfadfinder-Mission 1: light, passive hints on original DOG field locations. */
+.board-svg .pf-clue circle,.board-svg .pf-exit circle{pointer-events:none}
+.board-svg .pf-exit-ready .pf-gate-halo{transform-box:fill-box;transform-origin:center;animation:pf-warmglow 2.2s ease-in-out infinite}
+@keyframes pf-warmglow{0%,100%{opacity:.18;transform:scale(.95)}50%{opacity:.65;transform:scale(1.15)}}
+.trail-progress{margin:10px 4px 2px;padding:13px 14px;border:1px solid #95bc9b75;border-radius:13px;background:linear-gradient(110deg,#0c2528d9,#20423899)}
+.trail-progress-head{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#f2e5b2;font-size:13px}
+.trail-progress-head span{font-size:11px;color:#d4e6ba;white-space:nowrap}
+.trail-progress p{margin:7px 0 9px;color:#cedfd6;font-size:11px;line-height:1.5}
+.trail-progress-players{display:flex;gap:7px;flex-wrap:wrap}
+.trail-waypoint{padding:7px 10px;border-radius:9px;color:#e0e9e3;background:#071d22;border:1px solid var(--player-color,#8ba);font-size:11px;font-weight:800;white-space:nowrap}
+.trail-waypoint.done{background:#315b34;color:#fff4ce;border-color:#f5dc83}
+.trail-progress .trail-next-mission{margin-bottom:0;color:#e9d6a6;font-weight:750}
+@media(prefers-reduced-motion:reduce){.board-svg .pf-exit-ready .pf-gate-halo{animation:none}}
