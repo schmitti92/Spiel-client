@@ -137,7 +137,9 @@ export function initChristmasScratch(){
  }[code]||'⚠️ Los konnte nicht geöffnet werden: '+String(code||'Serverfehler'));
  const hostDialog=$('scratch-host-dialog');
  const giftsDialog=$('scratch-gifts-settings-dialog');
+ const snowDialog=$('scratch-snow-settings-dialog');
  let giftsEdition=null; // The globally shared finite 500-ticket series.
+ let snowEdition=null; // Its own independent 500-ticket Bingo series.
  const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
  const room=String(new URLSearchParams(location.search).get('room')||'').toUpperCase();
  const validRoom=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/.test(room);
@@ -588,6 +590,101 @@ export function initChristmasScratch(){
    extraCoinChance:safeInt('gs-extra',0,100),
    doubleChancePer1000:percent('gs-double'),
    lightChancePer1000:percent('gs-light-chance'),lightMin,lightMax
+  };
+ }
+ function updateSnowMoneyPreview(){
+  const none=Number($('sn-none').value),unlock=Number($('sn-unlock').value);
+  const value=$('sn-money-auto');
+  const box=value?.closest('.scratch-gifts-auto');
+  const ok=Number.isFinite(none)&&Number.isFinite(unlock)&&
+   none>=0&&unlock>=0&&none+unlock<=100;
+  if(value)value.textContent=ok?(100-none-unlock).toLocaleString('de-DE',{
+   maximumFractionDigits:1})+' %':'Eingaben über 100 %';
+  box?.classList.toggle('is-invalid',!ok);
+  return ok;
+ }
+ function updateSnowEditionPreview(){
+  const price=Number($('sn-price').value||0),budget=$('sn-edition-budget');
+  const max=Number(budget?.value||0);
+  $('sn-edition-revenue').textContent=Number.isSafeInteger(price)&&price>=0?
+   num(price*500)+' 🪙':'– 🪙';
+  const display=$('sn-edition-status'),button=$('sn-edition-create');
+  const active=Boolean(snowEdition&&snowEdition.remaining>0);
+  const soldOut=Boolean(snowEdition&&snowEdition.remaining===0);
+  if(display){
+   display.dataset.state=active?'active':soldOut?'sold_out':'none';
+   display.textContent=active?
+    '🟢 Aktive Auflage: '+num(snowEdition.issued)+'/500 Lose ausgegeben · '+
+    num(snowEdition.paidCoins)+' von maximal '+num(snowEdition.maxTotalCoins)+
+    ' 🪙 ausgezahlt · '+num(snowEdition.remainingCoins)+' 🪙 Budget übrig. '+
+    'Diese Auflage behält ihre Einstellungen bis zum letzten Los.':
+    soldOut?'🏁 Alle 500 Lose der bisherigen Auflage wurden vergeben. Du kannst nun eine neue Serie erstellen.':
+    '📦 Noch keine 500er-Auflage erstellt. Bis zur ersten Veröffentlichung werden die Lose wie bisher angeboten.';
+  }
+  if(button){
+   button.disabled=active;
+   button.title=active?'Eine neue Auflage ist erst nach den 500 vergebenen Losen möglich.':'';
+  }
+  if(budget){
+   budget.disabled=active;
+   budget.setCustomValidity(!active&&(!budget.value.trim()||
+    !Number.isSafeInteger(max)||max<0||max>1000000000000)?
+    'Bitte ein ganzzahliges Gesamtbudget zwischen 0 und 1.000.000.000.000 Münzen eingeben.':'');
+  }
+ }
+ function openSnowSettings(){
+  const cfg=status?.settings?.variants?.snow_collect;
+  if(!cfg||!snowDialog){
+   showAlert('⚠️ Schneeflocken-Bingo-Einstellungen noch nicht geladen. Bitte Kontostand aktualisieren.','gifts');
+   return;
+  }
+  const set=(id,value)=>{$(id).value=String(value)};
+  set('sn-price',cfg.price??200);
+  set('sn-none',(cfg.weights?.none??200)/10);
+  set('sn-unlock',(cfg.weights?.unlock??111)/10);
+  for(let i=0;i<3;i++)set('sn-coin-'+i,cfg.coinAmounts?.[i]??[10,40,100][i]);
+  set('sn-max-prizes',Math.min(3,cfg.maxPrizes??3));
+  set('sn-extra',cfg.extraCoinChance??30);
+  set('sn-double',(cfg.doubleChancePer1000??110)/10);
+  set('sn-light-chance',(cfg.lightChancePer1000??100)/10);
+  set('sn-light-min',cfg.lightMin??1);
+  set('sn-light-max',cfg.lightMax??10);
+  set('sn-edition-budget',snowEdition?.maxTotalCoins??
+   Math.round((cfg.price??200)*500*.6));
+  $('scratch-gifts-settinsn-feedback').textContent='';
+  $('sn-edition-feedback').textContent='';
+  updateSnowMoneyPreview();updateSnowEditionPreview();
+  snowDialog.showModal();
+ }
+ function readSnowSettings(){
+  const safeInt=(id,min,max)=>{
+   const input=$(id),n=Number(input.value);
+   if(!input.value.trim()||!Number.isSafeInteger(n)||n<min||n>max)
+    throw Error('Bitte „'+(input.closest('label')?.querySelector('span')?.textContent||id)+'“ prüfen.');
+   return n;
+  };
+  const percent=(id)=>{
+   const input=$(id),n=Number(input.value);
+   if(!input.value.trim()||!Number.isFinite(n)||n<0||n>100||
+      Math.abs(n*10-Math.round(n*10))>0.000001)
+    throw Error('„'+(input.closest('label')?.querySelector('span')?.textContent||id)+
+     '“: Bitte eine Zahl von 0 bis 100 in Schritten von 0,1 % eingeben.');
+   return Math.round(n*10);
+  };
+  const nonePer1000=percent('sn-none'),unlockPer1000=percent('sn-unlock');
+  if(nonePer1000+unlockPer1000>1000)
+   throw Error('Nieten und Freischaltungen dürfen zusammen höchstens 100 % ergeben.');
+  const coinAmounts=[0,1,2].map(i=>safeInt('sn-coin-'+i,1,50000000));
+  if(!(coinAmounts[0]<coinAmounts[1]&&coinAmounts[1]<coinAmounts[2]))
+   throw Error('Die Geldwerte müssen steigen: 🪙 kleiner als 💵 und 💵 kleiner als 💼.');
+  const lightMin=safeInt('sn-light-min',1,100),lightMax=safeInt('sn-light-max',1,100);
+  if(lightMin>lightMax)throw Error('Der kleinste Lichtbonus darf nicht höher als der größte sein.');
+  return {
+   price:safeInt('sn-price',0,1000000),nonePer1000,unlockPer1000,
+   coinAmounts,maxPrizes:safeInt('sn-max-prizes',1,3),
+   extraCoinChance:safeInt('sn-extra',0,100),
+   doubleChancePer1000:percent('sn-double'),
+   lightChancePer1000:percent('sn-light-chance'),lightMin,lightMax
   };
  }
  function openSettings(){
