@@ -462,6 +462,7 @@
         </section>
         <section id="scratch-stage" class="scratch-stage" aria-labelledby="scratch-ticket-title" hidden>
           <button id="scratch-gifts-settings-open" type="button" class="scratch-gifts-settings-open" aria-label="Geschenkelinie einstellen" aria-controls="scratch-gifts-settings-dialog" aria-haspopup="dialog" hidden>⚙️ Einstellungen</button>
+          <button id="scratch-snow-settings-open" type="button" class="scratch-gifts-settings-open scratch-snow-settings-open" aria-label="Schneeflocken-Bingo-Auflage einstellen" aria-controls="scratch-snow-settings-dialog" aria-haspopup="dialog" hidden>⚙️ Auflage</button>
           <header id="scratch-lotto-header" class="scratch-lotto-header" hidden aria-label="Glückszahl-1-Lotterie">
             <span class="scratch-lotto-brand">🐾 DOG · WINTER-RUBBELLOSE 🐾</span>
             <h2>GLÜCKSZAHL 1</h2>
@@ -536,6 +537,39 @@
           <div class="scratch-gifts-settings-actions">
             <button id="scratch-gifts-settings-cancel" type="button">Abbrechen</button>
             <button id="scratch-gifts-settings-save" type="submit">💾 Geschenkelinie speichern</button>
+          </div>
+        </form>
+      </dialog>
+
+      <dialog id="scratch-snow-settings-dialog" class="scratch-gifts-settings-dialog" aria-labelledby="scratch-snow-settings-title">
+        <form id="scratch-snow-settings-form">
+          <div class="scratch-gifts-settings-head">
+            <div><span class="scratch-gifts-eyebrow">❄️ NUR SCHNEEFLOCKEN-BINGO</span><h3 id="scratch-snow-settings-title">⚙️ Schneeflocken-Bingo einstellen</h3>
+              <p>Diese Einstellungen gelten für alle Spieler, aber ausschließlich für neu geöffnete Schneeflocken-Bingo-Lose. Bereits gekaufte Lose behalten ihre ursprünglichen Gewinne.</p>
+            </div><button type="button" id="scratch-snow-settings-close" aria-label="Schließen">✕</button>
+          </div>
+          <section class="scratch-gifts-settings-section"><h4>🎟️ 1 · Lospreis</h4><p class="scratch-gifts-help">Du bestimmst, was ein regulärer Kauf kostet. Gutscheine und erlaubte Gratislose bleiben kostenlos.</p><div class="scratch-gifts-settings-grid"><label class="scratch-gifts-field"><span>Preis pro Los (🪙 Münzen)</span><input id="sn-price" type="number" min="0" max="1000000" step="1" inputmode="numeric" required><small>Beispiel: 200 Münzen.</small></label></div></section>
+          <section class="scratch-gifts-settings-section"><h4>🎯 2 · Gewinnchancen</h4><p class="scratch-gifts-help">Stelle nur die Nieten- und Hauptgewinnchance ein. Geldgewinne übernimmt die Automatik. Die echten Ergebnisse bleiben zufällig.</p><div class="scratch-gifts-settings-grid"><label class="scratch-gifts-field"><span>❄️ Nieten (%)</span><input id="sn-none" type="number" min="0" max="100" step="0.1" inputmode="decimal" required><small>20 % bedeuten langfristig ungefähr 20 Nieten bei 100 Losen.</small></label><label class="scratch-gifts-field"><span>🎁 Freischaltung (%)</span><input id="sn-unlock" type="number" min="0" max="100" step="0.1" inputmode="decimal" required><small>Chance auf einen noch nicht erhaltenen Design- oder Geschenkpreis.</small></label><div class="scratch-gifts-auto">🪙 Automatischer Geldgewinn-Anteil: <strong id="sn-money-auto">– %</strong><small>100 % minus Nieten minus Hauptgewinn-Kategorie.</small></div></div></section>
+          <section class="scratch-gifts-settings-section"><h4>💰 3 · Geldwerte der Symbole</h4><p class="scratch-gifts-help">Drei identische Symbole irgendwo auf den 16 Feldern gewinnen – eine Reihe ist nicht erforderlich. Du legst den Betrag für jedes Symbol fest. 🪙 muss kleiner als 💵 und 💵 kleiner als 💼 sein.</p><div class="scratch-gifts-settings-grid"><label class="scratch-gifts-field"><span>🪙 Geldmünze</span><input id="sn-coin-0" type="number" min="1" max="50000000" step="1" inputmode="numeric" required><small>Kleiner Einzelgewinn, z. B. 30.</small></label><label class="scratch-gifts-field"><span>💵 Geldschein</span><input id="sn-coin-1" type="number" min="1" max="50000000" step="1" inputmode="numeric" required><small>Mittlerer Einzelgewinn, z. B. 100.</small></label><label class="scratch-gifts-field"><span>💼 Geldkoffer</span><input id="sn-coin-2" type="number" min="1" max="50000000" step="1" inputmode="numeric" required><small>Größerer Einzelgewinn, z. B. 200.</small></label></div></section>
+          <section class="scratch-gifts-settings-section"><h4>✨ 4 · Gleiche Symbole & ✖️2</h4><p class="scratch-gifts-help">Drei gleiche Symbole irgendwo unter den 16 Feldern ergeben einen Gewinn – auch bei einem Hauptgewinn müssen alle drei Zeichen genau gleich sein. 🧊 ist immer eine Niete. Pro Symbolart gibt es höchstens einen Gewinn; keine unsichtbaren Zusatzgewinne.</p><div class="scratch-gifts-settings-grid"><label class="scratch-gifts-field"><span>🏆 Maximal verschiedene Dreiergruppen</span><input id="sn-max-prizes" type="number" min="1" max="3" step="1" inputmode="numeric" required><small>1 bis 3 Gewinne aus jeweils drei gleichen Zeichen. Die drei Zeichen dürfen an beliebigen Positionen liegen.</small></label><label class="scratch-gifts-field"><span>🎉 Chance auf weitere passende Dreiergruppen (%)</span><input id="sn-extra" type="number" min="0" max="100" step="1" inputmode="numeric" required><small>Weitere Gewinne entstehen nur durch drei gleiche Symbole einer zusätzlichen Symbolart. Keine versteckten Zusatzgewinne.</small></label><label class="scratch-gifts-field"><span>✖️2 · Verdoppler-Chance (%)</span><input id="sn-double" type="number" min="0" max="100" step="0.1" inputmode="decimal" required><small>Vervielfacht nur einen vorhandenen Geldgewinn. ✖️2 allein zählt nicht als weitere Gewinnreihe; Geschenke werden nicht doppelt freigeschaltet.</small></label></div></section>
+          <section class="scratch-gifts-settings-section"><h4>⭐ 5 · Weihnachtslichter</h4><p class="scratch-gifts-help">Lichter sind ein unabhängiger Bonus zum Los. Sie werden vom Server vergeben, nach dem Rubbeln angezeigt und im Dorfkonto gutgeschrieben. Mit ✖️2 verdoppelt sich auch der Lichtbonus.</p><div class="scratch-gifts-settings-grid"><label class="scratch-gifts-field"><span>⭐ Bonus-Chance (%)</span><input id="sn-light-chance" type="number" min="0" max="100" step="0.1" inputmode="decimal" required><small>10 % entspricht ungefähr einem Lichtbonus je zehn Lose.</small></label><label class="scratch-gifts-field"><span>⭐ Kleinster Lichtbonus</span><input id="sn-light-min" type="number" min="1" max="100" step="1" inputmode="numeric" required><small>Anzahl Weihnachtslichter beim kleinsten Bonustreffer.</small></label><label class="scratch-gifts-field"><span>⭐ Größter Lichtbonus</span><input id="sn-light-max" type="number" min="1" max="100" step="1" inputmode="numeric" required><small>Obergrenze vor einem möglichen ✖️2-Bonus.</small></label></div></section>
+          <section class="scratch-gifts-settings-section scratch-gifts-edition-section" aria-label="500 Lose Auflage und Gesamtbudget">
+            <h4>📦 6 · Auflage mit 500 Rubbellosen erstellen</h4>
+            <p class="scratch-gifts-help">Alle 500 Schneeflocken-Bingo-Lose teilen sich ein einziges Auszahlungsbudget. Beispiel: 60.000 🪙 bedeutet, dass insgesamt niemals mehr als 60.000 Münzen über diese 500 Lose ausgeschüttet werden – auch nicht durch ✖️2 oder zusätzliche Geldgewinne.</p>
+            <div class="scratch-gifts-settings-grid">
+              <div class="scratch-gifts-auto">🎟️ Größe der Auflage <strong>500 Lose</strong><small>Fest für diese Schneeflocken-Bingo-Auflage. Nach dem 500. Los kann eine neue Serie erstellt werden.</small></div>
+              <label class="scratch-gifts-field"><span>💰 Maximale Auszahlung für alle 500 Lose (🪙)</span><input id="sn-edition-budget" type="number" min="0" max="1000000000000" step="1" inputmode="numeric"><small>Gesamtgrenze für alle Geldgewinne. Das ist keine Auszahlungsgarantie. ⭐ Lichter und 🎁 Freischaltungen zählen nicht als Münzen.</small></label>
+              <div class="scratch-gifts-auto"><span>📈 Mögliche Einnahmen bei 500 bezahlten Losen:</span><strong id="sn-edition-revenue">– 🪙</strong><small>Ohne Gratislose, Gutscheine oder Rabatt. Dieser Betrag ist unabhängig vom maximalen Gewinnbudget.</small></div>
+            </div>
+            <div class="scratch-gifts-edition-status" id="sn-edition-status" role="status" aria-live="polite">Noch keine 500er-Auflage erstellt. Aktuelle Lose sind bis zur ersten Veröffentlichung unbegrenzt verfügbar.</div>
+            <button id="sn-edition-create" type="button" class="scratch-gifts-edition-create">📦 500er-Auflage mit diesen Einstellungen erstellen</button>
+            <p class="scratch-gifts-help">Jedes Bingo-Los wird erst beim Kauf vom Server erzeugt und auf das verbleibende Geldbudget geprüft. Ist das Geldbudget ausgeschöpft, können die verbleibenden Lose Nieten sein. Einstellungen und Budget sind nach Veröffentlichung für diese Serie fest; neue Werte gelten erst für die nächste Auflage.</p>
+            <p id="sn-edition-feedback" class="scratch-gifts-settings-feedback" role="status" aria-live="polite"></p>
+          </section>
+          <p class="scratch-gifts-settings-feedback" id="scratch-snow-settings-feedback" role="status" aria-live="polite"></p>
+          <div class="scratch-gifts-settings-actions">
+            <button id="scratch-snow-settings-cancel" type="button">Abbrechen</button>
+            <button id="scratch-snow-settings-save" type="submit">💾 Schneeflocken-Bingo speichern</button>
           </div>
         </form>
       </dialog>
