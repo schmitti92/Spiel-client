@@ -17,10 +17,17 @@ export const sceneLayouts=Object.freeze({
  academy:   {cx:844, ground:401,w:138,h:190,growth:[.65,.74,.82,.91,1]},
  bakery:    {cx:303, ground:609,w:274,h:191,growth:[.74,.80,.87,.94,1]},
  inn:       {cx:922, ground:609,w:288,h:191,growth:[.76,.81,.88,.94,1]},
- tree:      {cx:610, ground:504,w:280,h:394,growth:[.54,.59,.65,.71,.76,.81,.86,.91,.96,1]},
- // The cave is strongest at stage 1 and steadily weakens towards stage 5.
- grinch:    {cx:84,  ground:597,w:132,h:192,growth:[1,.97,.94,.90,.85]}
+ tree:      {cx:610, ground:504,w:280,h:394,growth:[.54,.59,.65,.71,.76,.81,.86,.91,.96,1]}
 });
+
+// The Grinch cave is a SCENIC BACKDROP, not an eighth physical building.
+// It replaces the mountain skyline while the tree is visually held at level 1.
+// Largest visible cave reaches y=270; the level-1 tree starts near y=291.
+// It renders behind the six buildings so no village sprite is pushed aside.
+export const grinchSkyLayout=Object.freeze({
+ cx:610,ground:270,w:550,h:260,growth:[1,.97,.94,.90,.85]
+});
+
 /** Bounding box guaranteed to contain a sprite's alpha-visible pixels.
  * Real sprites are scaled via min(maxWidth/alphaW, maxHeight/alphaH), and their
  * ground-contact / centre anchors are stable across all development levels. */
