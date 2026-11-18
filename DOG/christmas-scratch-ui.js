@@ -1948,10 +1948,51 @@ export function initChristmasScratch(){
   }catch(error){feedback.textContent='⚠️ '+(error.message||'Speichern fehlgeschlagen');}
   finally{save.disabled=false}
  });
+ // Edit only the newest ACTIVE edition. The server checks the edition ID,
+ // revision and creator inside the same transaction. Already issued tickets
+ // and archived editions stay completely immutable.
+ async function editLatestEdition(variant){
+  const gifts=variant==='gifts',key=gifts?'gs':'sn';
+  const current=gifts?giftsEdition:snowEdition;
+  const feedback=$(key+'-edition-feedback'),button=$(key+'-edition-edit');
+  if(!current||current.remaining<=0){feedback.textContent='🏁 Keine aktuelle Auflage mit Restlosen vorhanden.';return}
+  if(!account()){feedback.textContent='🔐 Bitte mit dem DOG-Onlineprofil anmelden.';return}
+  try{
+   const config=gifts?readGiftsSettings():readSnowSettings();
+   const raw=$(key+'-edition-budget').value.trim(),maxTotalCoins=Number(raw);
+   if(!raw||!Number.isSafeInteger(maxTotalCoins)||maxTotalCoins<0||maxTotalCoins>1000000000000)
+    throw Error('Bitte eine ganze Münzsumme von 0 bis 1.000.000.000.000 eingeben.');
+   if(maxTotalCoins<current.paidCoins)
+    throw Error('Das neue Gesamtbudget muss mindestens '+num(current.paidCoins)+' 🪙 sein (bereits gewonnen).');
+   const prompt='Aktuelle '+(gifts?'Geschenkelinie':'Schneeflocken-Bingo')+'-Auflage bearbeiten?\n'+
+    current.issued+' Lose sind schon vergeben und bleiben unverändert.\n'+
+    current.remaining+' Restlose bekommen zusammen '+num(maxTotalCoins-current.paidCoins)+
+    ' 🪙 in einem neuen verbindlichen Gewinnplan.\nNeues Gesamtbudget: '+num(maxTotalCoins)+' 🪙.';
+   if(!window.confirm(prompt))return;
+   button.disabled=true;
+   feedback.textContent='🔄 Render verteilt das Restbudget auf die unverkauften Lose …';
+   const response=await query('/editions/'+variant+'/edit',{
+    editionId:current.id,expectedRevision:current.revision??0,maxTotalCoins,
+    [gifts?'gifts':'snow']:config});
+   const updated=gifts?response.giftsEdition:response.snowEdition;
+   if(!updated||updated.id!==current.id||!response.settings)
+    throw Error('Der Server hat die Änderung nicht bestätigt.');
+   if(gifts)giftsEdition=updated;else snowEdition=updated;
+   if(!status)status={};
+   status.settings=response.settings;
+   feedback.textContent='✅ Auflage aktualisiert. '+num(updated.remainingCoins)+
+    ' 🪙 sind auf '+updated.remaining+' Restlose verteilt. Alte Lose und Gewinne bleiben gleich.';
+   if(gifts)updateGiftsEditionPreview();else updateSnowEditionPreview();
+   drawShop();
+  }catch(error){
+   feedback.textContent='⚠️ '+scratchBuyError(error?.message||'Serverfehler');
+  }finally{button.disabled=false}
+ }
  // 500-ticket publisher. One click writes the form values AND the immutable
  // run budget in one Firestore transaction. It never draws 500 tickets at once.
  for(const id of ['gs-price','gs-edition-budget'])
   $(id).addEventListener('input',updateGiftsEditionPreview);
+ $('gs-edition-edit').addEventListener('click',()=>void editLatestEdition('gifts'));
  $('gs-edition-create').addEventListener('click',async()=>{
   const feedback=$('gs-edition-feedback'),button=$('gs-edition-create');
   if(button.disabled)return;
@@ -2012,6 +2053,7 @@ export function initChristmasScratch(){
  // run budget in one Firestore transaction. It never draws 500 tickets at once.
  for(const id of ['sn-price','sn-edition-budget'])
   $(id).addEventListener('input',updateSnowEditionPreview);
+ $('sn-edition-edit').addEventListener('click',()=>void editLatestEdition('snow_collect'));
  $('sn-edition-create').addEventListener('click',async()=>{
   const feedback=$('sn-edition-feedback'),button=$('sn-edition-create');
   if(button.disabled)return;
