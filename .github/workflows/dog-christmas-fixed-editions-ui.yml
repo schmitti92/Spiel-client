@@ -1,0 +1,30 @@
+name: DOG Fixed Budget UI
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/christmas-event.html'
+      - 'DOG/christmas-event.js'
+      - 'DOG/christmas-scratch-ui.js'
+      - 'DOG/christmas-scratch.css'
+      - 'tests/dog-christmas-fixed-editions-ui.test.mjs'
+      - '.github/workflows/dog-christmas-fixed-editions-ui.yml'
+  pull_request:
+    paths:
+      - 'DOG/christmas-event.html'
+      - 'DOG/christmas-event.js'
+      - 'DOG/christmas-scratch-ui.js'
+      - 'DOG/christmas-scratch.css'
+      - 'tests/dog-christmas-fixed-editions-ui.test.mjs'
+  workflow_dispatch:
+jobs:
+  budget-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/christmas-scratch-ui.js
+      - run: node --check DOG/christmas-event.js
+      - run: node --test tests/dog-christmas-fixed-editions-ui.test.mjs
