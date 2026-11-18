@@ -677,6 +677,7 @@ document.querySelectorAll('[data-open-building]').forEach(button=>{
  button.addEventListener('click',()=>openVillageBuildingDialog(button.dataset.openBuilding));
 });
 // Cave viewing is always available; the slider never grants mission progress.
+$('grinch-scene-toggle')?.addEventListener('click',()=>setVillageMode(villageMode==='grinch'?'normal':'grinch'));
 document.querySelectorAll('[data-open-grinch]').forEach(button=>{
  button.addEventListener('click',()=>{
   renderGrinchCave();
@@ -692,7 +693,7 @@ grinchDialog?.addEventListener('click',event=>{
  if(event.target===grinchDialog)grinchDialog.close();
 });
 grinchDialog?.addEventListener('close',()=>{
- grinchVisualStage=1;
+ // Preserve visual preview in the huge skyline until leaving Grinch mode.
  renderGrinchCave();
 });
 window.addEventListener('hashchange',()=>showPanel(tabs.includes(location.hash.slice(1))?location.hash.slice(1):'village',{updateHistory:false}));
