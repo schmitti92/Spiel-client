@@ -52,6 +52,14 @@ Link aus der Grinch-Eventseite: Mission 1 > Details > „Mission 1 im Testmodus 
 
 Die auf 64 Original-Felder korrigierte Regel-Engine wurde mit 300 fest vorgegebenen Seeds unter simulierten, legalen Kartenaktionen getestet. Alle 300 Versuche endeten mit genau einem Verlust und vier geretteten Figuren pro Spieler. Ein Browser-End-to-End-Test sowie synchronisierte Mehrgeräte-Tests stehen noch aus.
 
+## Pfadfinder-Wegweiser (Mission 1)
+
+- Die 64 Lauffelder und die Original-Zielkoordinaten sind identisch zum Hauptspiel. Nur SVG-Dekorationen im separaten Missionsrenderer werden aufgesetzt.
+- Vier Orientierungsfelder: 8 (erste Spuren, links unten), 24 (Nebelpass, links oben), 40 (grünes Leuchten, rechts oben), 56 (Eisweg, rechts unten). Landet eine Figur darauf, erscheint ein reiner Storyhinweis, ohne Kartenregeln zu verändern.
+- Jeder der drei Spieler hat vier vorhandene Zielfelder. Sobald alle vier Ziele besetzt sind, erhält das innere Ende seiner Zielbahn einen leuchtenden Wegweiser „M2“. Rot: (380, 496.48), Blau: (263.52, 380), Gelb: (496.48, 380) im SVG-Bereich 760×760.
+- Sind alle drei Spieler durch, erscheint die Erzählung vom Bergpass zu Mission 2. **Mission 2 bleibt bis zur echten Implementierung gesperrt.**
+- `mission-1-pathfinder.js` erzeugt die passiven Feldhinweise und Bergpass-Markierungen anhand der originalen Layoutkoordinaten. Normales DOG benutzt dieses Modul nicht.
+
 ## Original-Brett erhalten
 
 - Vier geschützte Startfelder bei 0, 16, 32 und 48 und alle vier Original-Zielbahnen bleiben grafisch vorhanden.
