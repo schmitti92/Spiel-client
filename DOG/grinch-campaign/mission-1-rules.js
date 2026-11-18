@@ -27,7 +27,9 @@ function nextTurn(s){
  if(isTurnDone(s))refill(s);
  // Discard impossible hands, rather than soft-locking an active player.
  let guard=0;
- while(guard++<SEATS*3&&!s.complete){
+ // A whole deal can contain no playable starting or movement cards.
+ // Cycle through complete card phases until somebody has a legal move.
+ while(guard++<500&&!s.complete){
   const hand=s.hands[s.current];
   const can=hand.some(c=>legalMoves(s,s.current,c).length>0);
   if(can)break;
@@ -35,6 +37,7 @@ function nextTurn(s){
   s.current=(s.current+1)%SEATS;s.turn++;
   if(isTurnDone(s))refill(s);
  }
+ if(guard>=500)throw Error('Keine legalen Kartenaktionen gefunden.');
 }
 function assignLosses(seed){return shuffle(LOSS_TYPES,seeded(seed+77));}
 export function newGame(seed=Math.floor(Math.random()*2147483647),names=LABELS){
