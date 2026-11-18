@@ -107,7 +107,7 @@ function ensureSingleLoss(s,seat,movedId){
 }
 function maybeEffects(s){
  // Story losses have priority; never hide a mandatory capture behind weather.
- if(s.lastEvent?.type==='loss')return;
+ if(s.lastEvent?.type==='loss'||s.lastEvent?.type==='hint')return;
  if(s.turn>0&&s.turn%MISSION_1.effects.quakeEvery===0){
   for(const p of s.pieces.filter(p=>p.place==='track'))p.steps=Math.max(0,p.steps-1);
   s.lastEvent={type:'quake',message:'Erdbeben! Alle Figuren auf dem Weg gehen ein Feld zurück.',turn:s.turn};
@@ -148,6 +148,15 @@ export function play(original,seat,action){
  s.players[seat].moves++;
  s.lastEvent=null;
  ensureSingleLoss(s,seat,p.id);
+ // Passive signposts become true story-only clue fields if a figure reaches
+ // them. They never eliminate extra figures or modify ordinary card moves.
+ if(!s.lastEvent&&p.place==='track'){
+  const clue=MISSION_1.trailHints.find(c=>c.field===pieceCoord(p));
+  if(clue){
+   s.lastEvent={type:'hint',field:clue.field,message:clue.message,turn:s.turn};
+   log(s,'Pfadfinder-Hinweis: '+clue.title);
+  }
+ }
  log(s,s.players[seat].name+' spielt '+chosen.as);
  checkComplete(s);
  if(!s.complete){
