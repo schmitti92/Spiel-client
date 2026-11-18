@@ -1,0 +1,154 @@
+/* DOG · Der Fluch des Weihnachtsmuffels · five-mission event preview.
+ * All graphic overrides live under /DOG/weihnachtsevent-bilder/grinch-event/.
+ * Does not trigger gameplay, spend currency, or claim server progress. */
+#tab-grinch{border-color:#a65c4580;background:linear-gradient(125deg,#45272d,#262d36 70%);box-shadow:inset 0 0 0 1px #d5817240}
+#tab-grinch:hover{background:linear-gradient(120deg,#743f36,#383a37);border-color:#ffb37c}
+#tab-grinch[aria-selected="true"]{background:linear-gradient(115deg,#ac4d2c,#6c2625 58%,#312724);border-color:#ffe0a7;box-shadow:0 0 15px #ff955f76,inset 0 0 0 1px #fff7d470}
+#tab-grinch[aria-selected="true"] strong{color:#fff0cd}
+.grinch-event-panel{--ge-gold:#ffe1a3;--ge-pale:#d9e8f0;--ge-ice:#a9dff2;color:#fff7ed}
+.grinch-event-shell{position:relative;isolation:isolate;overflow:hidden;border:2px solid #d8b2768c;border-radius:22px;padding:15px;
+ background:linear-gradient(#071c33dc,#09283eea),url("./weihnachtsevent-bilder/grinch-event/event-hintergrund.jpg") center/cover;
+ box-shadow:inset 0 1px #fff9cd7a,0 15px 45px #00101b9c}
+.grinch-event-shell::after{content:"";position:absolute;pointer-events:none;inset:0;z-index:-1;
+ background-image:radial-gradient(2px 2px at 10% 20%,#fff9 35%,transparent 70%),radial-gradient(2px 2px at 87% 28%,#e2f2ffb0 35%,transparent 70%),radial-gradient(1px 1px at 40% 82%,#fff7 50%,transparent 70%);background-size:220px 190px}
+.grinch-event-hero{position:relative;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(190px,.75fr);
+ gap:15px;min-height:275px;padding:clamp(15px,3vw,34px);border:2px solid #f1c883;border-radius:19px;
+ background:linear-gradient(95deg,#092838fa 0%,#12334ae8 55%,#122c29a0 100%),url("./weihnachtsevent-bilder/grinch-event/event-banner.jpg") center/cover;
+ box-shadow:inset 0 0 0 1px #fff1cb78,0 4px 22px #040e20b0;overflow:hidden}
+.grinch-event-hero::after{content:"";position:absolute;left:22px;right:22px;bottom:0;height:4px;border-radius:12px;background:linear-gradient(90deg,transparent,#ffe0a0,transparent);pointer-events:none}
+.grinch-event-hero-copy{position:relative;z-index:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start}
+.grinch-event-eyebrow{font:900 clamp(9px,1.2vw,12px)/1.35 system-ui,sans-serif;letter-spacing:2px;color:#ccf7b4;text-shadow:0 2px 6px #020d0f}
+.grinch-event-hero h2{margin:8px 0 11px;font:900 clamp(28px,3.8vw,55px)/1.03 Georgia,serif;color:#ffe7a5;
+ text-shadow:0 2px 1px #49230c,0 4px 11px #000a;letter-spacing:-.5px}
+.grinch-event-hero p{max-width:590px;margin:0;color:#f7f0e0;font-size:clamp(12px,1.25vw,16px);line-height:1.58;text-shadow:0 1px 4px #000b}
+.grinch-event-progress-top{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:17px;
+ padding:8px 15px;border:1px solid #e3c07f;border-radius:13px;background:#031b2adb;
+ color:#fff0c9;box-shadow:inset 0 1px #fff6c841}
+.grinch-event-progress-top strong{font-size:clamp(12px,1.4vw,16px)}
+.grinch-event-stars{font-size:clamp(19px,2.2vw,28px);letter-spacing:3px;color:#ffdda7;white-space:nowrap;line-height:1}
+.grinch-event-unlock{display:block;margin-top:12px;padding:9px 12px;border:1px solid #abc5b063;border-radius:10px;
+ background:#102b2fdc;color:#cbe5d6;font:750 12px/1.45 system-ui,sans-serif}
+.grinch-event-unlock[data-state="tree-ready"]{color:#fcf0b8;border-color:#d3b16a;background:#404022bc}
+.grinch-event-hero-image{position:relative;display:flex;align-items:center;justify-content:center;min-height:190px}
+.grinch-event-hero-image>img:first-child{position:relative;width:100%;max-width:370px;max-height:258px;object-fit:contain;
+ filter:drop-shadow(0 12px 18px #000b)}
+.grinch-event-hero-image .grinch-event-emblem{position:absolute;z-index:2;top:-2%;right:-1%;width:39%;max-width:153px;height:auto;
+ filter:drop-shadow(0 5px 10px #000b)}
+.grinch-event-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin:15px 2px 13px;
+ padding:12px 16px;border:1px solid #b4cddd5e;border-radius:13px;background:#102e45d9}
+.grinch-event-toolbar-copy{flex:1 1 290px;display:flex;flex-direction:column;gap:4px}
+.grinch-event-toolbar-copy strong{font:900 clamp(17px,1.8vw,23px) Georgia,serif;color:#ffe4ae}
+.grinch-event-toolbar-copy small{max-width:800px;color:#c3d7e3;line-height:1.5;font-size:12px}
+.grinch-event-toolbar-actions{display:flex;gap:8px;flex-wrap:wrap}
+.grinch-event-small-button,.grinch-mission-info{font:850 12px system-ui,sans-serif;border:1px solid #d8ca96b0;color:#ffedcb;
+ border-radius:11px;background:linear-gradient(#315367,#183247);padding:10px 13px;min-height:39px;cursor:pointer;
+ transition:background .16s,transform .16s}
+.grinch-event-small-button:hover,.grinch-mission-info:hover{background:#416781;transform:translateY(-1px)}
+.grinch-event-missions{display:grid;gap:11px;margin:0 2px}
+.grinch-mission{position:relative;display:grid;grid-template-columns:48px 125px minmax(0,1.5fr) minmax(154px,.82fr) 130px;
+ gap:10px;align-items:center;min-height:128px;padding:11px 13px;border-radius:17px;
+ border:2px solid #bcd4f1bb;background:linear-gradient(105deg,#cae5f0f0,#b7d3e9eb 65%,#9fbbd7ee);
+ color:#132438;box-shadow:0 4px 9px #0015267e,inset 0 1px #ffffffe0}
+.grinch-mission::before{content:"";position:absolute;inset:3px;border-radius:12px;pointer-events:none;border:1px solid #fff9}
+.grinch-mission:first-child{border-color:#ffe0a0;background:linear-gradient(110deg,#fff5dc,#f5e6c4 62%,#e9d4af);
+ box-shadow:0 0 14px #f9d68996,0 6px 13px #001626b0}
+.grinch-mission-number{position:relative;z-index:1;display:grid;place-items:center;width:45px;height:58px;border-radius:12px;
+ border:3px solid #ffe7b0;background:linear-gradient(#826538,#3e3f51);color:#fff5d7;text-shadow:0 2px #0007;
+ box-shadow:inset 0 0 0 1px #ffffff50,0 4px 9px #0007;font:900 33px Georgia,serif}
+.grinch-mission:not(:first-child) .grinch-mission-number{border-color:#fff7ec;background:linear-gradient(#5b789b,#32425b)}
+.grinch-mission-art{position:relative;isolation:isolate;width:124px;height:108px;border-radius:14px;overflow:visible;
+ display:grid;place-items:center;background:radial-gradient(ellipse,#fffceca8,transparent 70%)}
+.grinch-mission-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+ filter:drop-shadow(0 3px 5px #27345c80)}
+.grinch-mission-fallback{font-size:60px;text-shadow:0 3px 11px #47607ca8}
+.grinch-mission-copy{min-width:0}
+.grinch-mission-copy h3{margin:0 0 5px;color:#1c2f49;font:900 clamp(18px,2.25vw,29px)/1.12 Georgia,serif}
+.grinch-mission-copy p{font:600 clamp(12px,1.22vw,14px)/1.45 system-ui,sans-serif;margin:0 0 5px}
+.grinch-mission-copy small{display:block;color:#41546c;font-size:11px;font-weight:750}
+.grinch-mission-reward{position:relative;min-width:0;border-left:1px solid #62768e99;padding-left:12px;
+ display:flex;flex-direction:column;gap:5px}
+.grinch-mission-reward span{font-size:10px;text-transform:uppercase;font-weight:900;color:#6c502a;letter-spacing:.5px}
+.grinch-mission-reward b{font-size:clamp(13px,1.5vw,17px);color:#293348;white-space:nowrap}
+.grinch-mission-reward i{color:#9c9887;font-style:normal}
+.grinch-mission-reward small{font-size:12px;color:#345264;font-weight:800}
+.grinch-mission-actions{position:relative;display:flex;flex-direction:column;gap:8px;align-items:stretch}
+.grinch-mission-state{display:block;text-align:center;border:1px solid #8b98a4;background:linear-gradient(#5c6e86,#39465f);
+ border-radius:30px;padding:7px 9px;color:#fff;box-shadow:inset 0 1px #eef6f866;font-size:11px;font-weight:850}
+.grinch-mission:first-child .grinch-mission-state{background:linear-gradient(#5e8b53,#294f35);border-color:#79985e}
+.grinch-mission-state[data-state="preview"]{background:linear-gradient(#9f712d,#665528);border-color:#e7c07a}
+.grinch-mission-info{border-color:#7e99ad;color:#f6fbff;background:linear-gradient(#49799a,#24506c);text-align:center}
+.grinch-event-footnote{margin:14px 1px 2px;padding:13px 15px;border:1px solid #b19e6a99;border-radius:12px;
+ background:#062034c9;color:#e5dcce;font-size:12px;line-height:1.55}
+.grinch-event-footnote strong{color:#ffdf9b}
+.grinch-mission-dialog{position:fixed;inset:0;margin:auto;width:min(720px,calc(100vw - 22px));max-height:88dvh;
+ padding:0;border:2px solid #f5ce8d;border-radius:19px;color:#fff3de;background:linear-gradient(160deg,#163c48,#102434 68%,#1c2927);
+ box-shadow:0 15px 60px #000c;overflow:auto}
+.grinch-mission-dialog:not([open]){display:none}
+.grinch-mission-dialog::backdrop{background:#010a13da;backdrop-filter:blur(4px)}
+.grinch-mission-dialog header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 20px;
+ border-bottom:1px solid #ccad7d80;background:#244b51}
+.grinch-mission-dialog header span{font:900 12px Georgia,serif;letter-spacing:2px;color:#fce3a9}
+.grinch-mission-dialog header button{border:1px solid #e6d2a0;background:#193143;border-radius:10px;min-width:39px;min-height:39px;font-size:19px}
+.grinch-mission-dialog-content{display:grid;grid-template-columns:125px minmax(0,1fr);gap:17px;align-items:start;padding:24px}
+.grinch-mission-dialog-art{display:grid;place-items:center;width:120px;height:120px;border-radius:21px;border:1px solid #bfdbbc;
+ background:radial-gradient(#455c62,#102c3b);font-size:62px}
+.grinch-mission-dialog-content h2{margin:0 0 12px;color:#ffdb9b;font:900 clamp(24px,3vw,34px) Georgia,serif}
+.grinch-mission-dialog-content p{font-size:14px;line-height:1.65}
+.grinch-mission-dialog-warning{margin:16px 0;padding:12px;border:1px solid #d5b786;background:#473f2999;border-radius:10px;
+ font-size:12px;line-height:1.5}
+@media(max-width:1250px){
+ .grinch-mission{grid-template-columns:44px 90px minmax(0,1.5fr) minmax(125px,.8fr) 103px;gap:8px;padding:10px}
+ .grinch-mission-art{width:89px;height:92px}
+ .grinch-mission-copy h3{font-size:20px}
+ .grinch-mission-actions{gap:6px}
+ .grinch-mission-info{padding:9px}
+}
+@media(max-width:900px){
+ .grinch-mission{grid-template-columns:43px 82px minmax(0,1fr) 118px;gap:8px}
+ .grinch-mission-art{width:80px;height:86px}
+ .grinch-mission-reward{grid-column:3/4;grid-row:2;padding-left:0;border:0}
+ .grinch-mission-actions{grid-column:4;grid-row:1/3}
+ .grinch-mission-copy{grid-column:3/4;grid-row:1}
+ .grinch-mission-reward b{font-size:14px}
+ .grinch-mission-number{grid-row:1/3}
+}
+@media(max-width:650px){
+ .grinch-event-shell{padding:7px;border-radius:15px}
+ .grinch-event-hero{grid-template-columns:minmax(0,1fr) 104px;min-height:0;padding:13px;gap:4px;border-radius:12px}
+ .grinch-event-eyebrow{font-size:9px;letter-spacing:.7px}
+ .grinch-event-hero h2{font-size:clamp(25px,6vw,38px);margin:8px 0}
+ .grinch-event-hero p{font-size:11px;line-height:1.4}
+ .grinch-event-hero-image{min-height:105px}
+ .grinch-event-hero-image>img:first-child{max-height:170px}
+ .grinch-event-progress-top{margin-top:12px;padding:7px;gap:6px}
+ .grinch-event-progress-top strong{font-size:11px}
+ .grinch-event-stars{font-size:17px;letter-spacing:1px}
+ .grinch-event-unlock{font-size:10px;line-height:1.45;padding:6px 7px}
+ .grinch-event-toolbar{padding:10px;gap:9px;margin:9px 0}
+ .grinch-event-toolbar-copy strong{font-size:19px}
+ .grinch-event-toolbar-copy small{font-size:11px}
+ .grinch-event-small-button{font-size:11px;padding:8px}
+ .grinch-mission{grid-template-columns:35px 62px minmax(0,1fr);min-height:130px;padding:8px;gap:7px;border-radius:12px}
+ .grinch-mission-number{width:35px;height:46px;font-size:25px;border-width:2px;grid-row:1/3}
+ .grinch-mission-art{width:62px;height:74px;grid-row:1/3}
+ .grinch-mission-fallback{font-size:38px}
+ .grinch-mission-copy{grid-column:3;grid-row:1}
+ .grinch-mission-copy h3{font-size:17px}
+ .grinch-mission-copy p{font-size:11px}
+ .grinch-mission-copy small{font-size:10px}
+ .grinch-mission-reward{grid-column:3;grid-row:2}
+ .grinch-mission-reward span{font-size:9px}
+ .grinch-mission-actions{grid-column:1/-1;grid-row:3;display:flex;flex-direction:row;justify-content:space-between;align-items:center}
+ .grinch-mission-state{flex:1;max-width:185px;font-size:10px;padding:6px}
+ .grinch-mission-info{font-size:11px;min-height:35px;padding:7px 11px}
+ .grinch-mission-dialog-content{grid-template-columns:1fr;padding:16px}
+ .grinch-mission-dialog-art{width:88px;height:88px;font-size:47px}
+}
+@media(max-width:385px){
+ .grinch-event-hero{grid-template-columns:1fr}
+ .grinch-event-hero-image{position:absolute;right:4px;top:5px;opacity:.28;width:100px;pointer-events:none}
+ .grinch-mission{grid-template-columns:33px 54px minmax(0,1fr)}
+ .grinch-mission-art{width:54px;height:70px}
+ .grinch-mission-copy h3{font-size:15px}
+}
+@media(prefers-reduced-motion:reduce){.grinch-mission-info,.grinch-event-small-button{transition:none!important}}
