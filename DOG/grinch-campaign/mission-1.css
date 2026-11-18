@@ -52,3 +52,11 @@ dialog::backdrop{background:#020d12cc;backdrop-filter:blur(5px)}dialog h2{margin
 @media(max-width:1050px){.layout{grid-template-columns:1fr}.board-card{position:static}.side{grid-template-columns:1fr 1fr}.side .panel:first-child{grid-row:span 2}}
 @media(max-width:650px){.shell{width:calc(100% - 12px);margin:8px auto}.top{padding:9px 6px;gap:5px}.back{font-size:9px;padding:6px}.brand span{font-size:8px}.brand h1{font-size:14px}.intro{padding:9px}.layout{gap:9px}.board-card{padding:5px}.board-head h2{font-size:13px}.legend{font-size:9px}.side{grid-template-columns:1fr}.card{min-width:54px}}
 @media(prefers-reduced-motion:reduce){#board-wrap.shaking{animation:none}#fog,#event-message{transition:none}}
+
+/* Mission 1 uses the canonical shared DOG SVG; NO custom board geometry. */
+.board-svg{display:block;max-width:100%;height:auto;width:100%;touch-action:manipulation}
+.board-svg .dog-pawn{cursor:pointer}
+.board-svg .dog-pawn:focus-visible{outline:none;filter:drop-shadow(0 0 8px #ffe97b)}
+.board-wrap{position:relative}
+.board-wrap.foggy:after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(ellipse at 45% 38%,#d3edeb80,transparent 70%),linear-gradient(115deg,transparent,#c0d8d870 50%,transparent);animation:mist 2.8s ease-in-out both}
+@keyframes mist{from{opacity:0;transform:translateX(-9%)}35%{opacity:.9}to{opacity:0;transform:translateX(9%)}}
