@@ -1,9 +1,11 @@
 import {MISSION_1} from './mission-config.js';
+import {drawClassicMissionBoard} from './mission-board.js?v=1';
+import {trackPoint} from '../board-layout.js?v=11';
 import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,status,pieceCoord,validateSaved} from './mission-1-rules.js';
 
 const $=id=>document.getElementById(id);
 const SVG='http://www.w3.org/2000/svg';
-const KEY='dog-grinch-m1-local-demo-v1';
+const KEY='dog-grinch-m1-classic-board-v2';
 let state=null,chosenCard=null,chosenPiece=null,pickMoves=[],lastSeenRevision=-1;
 let toastTimer=null,effectTimer=null;
 const ns=(tag,attrs={},parent=null)=>{
@@ -19,28 +21,6 @@ const text=(tag,txt,parent,className)=>{
  if(parent)parent.append(el);
  return el;
 };
-const tile=(parent,x,y,r,cls,stroke)=>{
- const circle=ns('circle',{cx:x,cy:y,r,class:cls},parent);
- if(stroke)circle.setAttribute('stroke',stroke);
- return circle;
-};
-const xy=i=>{
- const a=-Math.PI/2+i*2*Math.PI/TRACK;
- const wobble=1+.035*Math.sin(3*a);
- return {x:480+330*wobble*Math.cos(a),y:353+247*wobble*Math.sin(a)};
-};
-const goal=(seat,j)=>{
- const start=xy(seat*20);
- const factor=.76-j*.115;
- return {x:480+(start.x-480)*factor,y:353+(start.y-353)*factor};
-};
-const homes=[
- {x:480,y:32},{x:83,y:565},{x:875,y:565}
-];
-function home(seat,index){
- const origin=homes[seat],col=index%3,row=Math.floor(index/3);
- return {x:origin.x+(col-1)*36,y:origin.y+row*37};
-}
 function toast(msg,ms=3000){
  const el=$('event-message');
  el.textContent=msg;el.classList.add('visible');
@@ -52,52 +32,6 @@ function save(){
 }
 function read(){
  try{const x=JSON.parse(localStorage.getItem(KEY)||'null');return validateSaved(x)?x:null;}catch{return null;}
-}
-function setupBoard(){
- const line=$('path-lines'),fields=$('path-fields'),goals=$('goal-fields'),homeLayer=$('home-fields');
- const points=Array.from({length:TRACK},(_,i)=>xy(i));
- for(let i=0;i<TRACK;i++){
-  const a=points[i],b=points[(i+1)%TRACK];
-  ns('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:'#bbdce0','stroke-width':15,'stroke-opacity':.35,'stroke-linecap':'round'},line);
- }
- for(let i=0;i<TRACK;i++){
-  const p=points[i],seat=i/20;
-  const isStart=Number.isInteger(seat);
-  const warning=MISSION_1.specialFields?.includes(i);
-  const circ=tile(fields,p.x,p.y,14,isStart?'tile start':warning?'tile falling':'tile',isStart?COLORS[seat]:null);
-  circ.dataset.index=i;
-  if(i%5===0)ns('text',{x:p.x,y:p.y+3,class:'tile-num','text-anchor':'middle'},fields).textContent=String(i+1);
- }
- for(let seat=0;seat<SEATS;seat++){
-  const g0=goal(seat,0),g4=goal(seat,4);
-  ns('line',{x1:g0.x,y1:g0.y,x2:g4.x,y2:g4.y,stroke:COLORS[seat],'stroke-width':9,'stroke-opacity':.56,'stroke-linecap':'round'},goals);
-  for(let j=0;j<GOAL;j++){
-   const c=goal(seat,j);tile(goals,c.x,c.y,13,'goal-cell',COLORS[seat]);
-  }
-  for(let j=0;j<GOAL;j++){
-   const c=home(seat,j);tile(homeLayer,c.x,c.y,14,'home-cell',COLORS[seat]);
-  }
- }
-}
-function pawnPos(p){
- if(p.place==='track')return xy(pieceCoord(p));
- if(p.place==='goal')return goal(p.seat,pieceCoord(p));
- return home(p.seat,Number(p.id.slice(1))%5);
-}
-function drawPawns(){
- const layer=$('pawns');layer.replaceChildren();
- if(!state)return;
- for(const p of state.pieces){
-  if(p.place==='lost')continue;
-  const point=pawnPos(p);
-  const g=ns('g',{role:'button',tabindex:'0','aria-label':state.players[p.seat].name+' Figur '+(Number(p.id.slice(1))%5+1)+' – '+(p.place==='home'?'Starthaus':p.place==='goal'?'Ziel':'Weg')},layer);
-  const choose=()=>choosePawn(p.id);
-  g.addEventListener('click',choose);
-  g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose();}});
-  ns('circle',{cx:point.x,cy:point.y,r:11.3,fill:COLORS[p.seat],class:'pawn'+(chosenPiece===p.id?' selected':'')},g);
-  const t=ns('text',{x:point.x,y:point.y+5,class:'pawn-ord'},g);
-  t.textContent=String(Number(p.id.slice(1))%5+1);
- }
 }
 function describeMove(m){
  const p=state.pieces.find(p=>p.id===m.pieceId);
@@ -187,7 +121,7 @@ function render(){
  $('actions').textContent=state.complete?'🎉 Mission 1 lokal abgeschlossen (Test, keine offiziellen Belohnungen).':'Ziel: Jeder rettet vier Figuren. Eine Figur je Spieler wird vom Fluch gefangen.';
  const history=$('history');history.replaceChildren();
  for(const entry of state.history)text('p',entry,history);
- drawPawns();
+ drawClassicMissionBoard($('board'),state,{selectedPiece:chosenPiece,onPieceClick:choosePawn});
 }
 function onEffect(){
  const ev=state?.lastEvent;
@@ -195,7 +129,7 @@ function onEffect(){
  lastSeenRevision=state.revision;
  if(ev.type==='loss'&&Number.isInteger(ev.position)){
   const layer=$('event-fx')||ns('g',{id:'event-fx'},$('board'));
-  const p=xy(ev.position);
+  const p=trackPoint(ev.position);
   layer.replaceChildren();
   ns('circle',{cx:p.x,cy:p.y,r:34,fill:ev.lossType==='freeze'?'#8bddff':'#3edc8b',opacity:'.22'},layer);
   const symbol={collapse:'🕳️',abduction:'🌪️',freeze:'🧊'}[ev.lossType]||'⚡';
@@ -227,7 +161,6 @@ $('restart').addEventListener('click',()=>{
  for(let i=0;i<SEATS;i++)$('name-'+i).value=LABELS[i];
  $('setup').showModal();render();
 });
-setupBoard();
 state=read();
 if(state){render();if(state.lastEvent){lastSeenRevision=state.revision;}}
 else $('setup').showModal();
