@@ -20,12 +20,13 @@ export const sceneLayouts=Object.freeze({
  tree:      {cx:610, ground:504,w:280,h:394,growth:[.54,.59,.65,.71,.76,.81,.86,.91,.96,1]}
 });
 
-// The Grinch cave is a SCENIC BACKDROP, not an eighth physical building.
-// It replaces the mountain skyline while the tree is visually held at level 1.
-// Largest visible cave reaches y=270; the level-1 tree starts near y=291.
-// It renders behind the six buildings so no village sprite is pushed aside.
+// The Grinch cave is a HUGE BACKDROP, not an eighth physical building.
+// It fills the photographed mountain/horizon area the user highlighted,
+// stays behind the six houses and behind the (visually) level-one tree.
+// Background and foreground may overlap by design; the building collision
+// checker still guarantees minimum clearance between physical buildings.
 export const grinchSkyLayout=Object.freeze({
- cx:610,ground:270,w:550,h:260,growth:[1,.97,.94,.90,.85]
+ cx:610,ground:435,w:970,h:415,growth:[1,.97,.94,.90,.85]
 });
 
 /** Bounding box guaranteed to contain a sprite's alpha-visible pixels.
