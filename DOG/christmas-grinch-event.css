@@ -152,3 +152,19 @@
  .grinch-mission-copy h3{font-size:15px}
 }
 @media(prefers-reduced-motion:reduce){.grinch-mission-info,.grinch-event-small-button{transition:none!important}}
+
+/* Additional optional assets supplied in the Grinch graphic pack. */
+.grinch-mission-state::before{
+ content:"";display:inline-block;vertical-align:middle;margin-right:5px;
+ width:18px;height:18px;flex:0 0 auto;
+ background:url("./weihnachtsevent-bilder/grinch-event/mission-gesperrt.png") center/contain no-repeat;
+ filter:drop-shadow(0 1px 2px #0018279e)
+}
+.grinch-finale-reward-image{
+ display:block;width:64px;height:52px;object-fit:contain;
+ filter:drop-shadow(0 2px 5px #25532d62)
+}
+@media(max-width:650px){
+ .grinch-mission-state::before{width:14px;height:14px;margin-right:3px}
+ .grinch-finale-reward-image{width:47px;height:39px}
+}
