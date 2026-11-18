@@ -34,7 +34,7 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
  testLink.href='./grinch-campaign/mission-1.html';
  testLink.textContent='🏔️ Mission 1 im Testmodus spielen';
  testLink.className='grinch-event-small-button';
- testLink.style.cssText='display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin:9px 8px 9px 0;';
+ testLink.style.cssText='display:none;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin:9px 8px 9px 0;';
  testLink.hidden=true;
  $('grinch-mission-return')?.before(testLink);
 
@@ -50,6 +50,7 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
    $('grinch-mission-objective').textContent=item.objective;
    $('grinch-mission-detail-icon').textContent=item.icon;
    testLink.hidden=number!==1;
+   testLink.style.display=number===1?'inline-flex':'none';
    $('grinch-mission-lock').textContent=number===1?
     '🧪 Mission 1 kann als eigenständiger lokaler Test gespielt werden. Keine Online-Synchronisierung, keine offiziellen Siege oder Belohnungen.':
     '🔒 Missionsvorschau. Diese Mission ist noch nicht spielbar und vergibt keine Belohnungen.';
