@@ -137,7 +137,14 @@ export function initChristmasScratch(){
    SCRATCH_SNOW_SETTINGS_INVALID:'⚠️ Prüfe die Bingo-Einstellungen.',
    SCRATCH_SNOW_EDITION_ACTIVE:'⚠️ Die aktuelle 500er-Auflage läuft noch. Eine neue ist erst nach dem 500. Los möglich.',
    SCRATCH_SNOW_EDITION_SOLD_OUT:'❄️ Alle 500 Bingo-Lose sind vergeben. Erstelle oben rechts eine neue Auflage.',
-   SCRATCH_SNOW_EDITION_INVALID_BUDGET:'⚠️ Das maximale Gesamtbudget für die Bingo-Auflage ist ungültig.'
+   SCRATCH_SNOW_EDITION_INVALID_BUDGET:'⚠️ Das Gesamtbudget für die Bingo-Auflage ist ungültig.',
+    SCRATCH_EDITION_FIXED_BUDGET_UNREACHABLE:'⚠️ Mit diesen Münzwerten und Gewinnzahlen lässt sich das feste Gesamtbudget nicht exakt auf die Restlose verteilen. Bitte Betrag oder Münzwerte ändern.',
+    SCRATCH_EDITION_FIXED_BUDGET_INVALID:'⚠️ Bitte ein gültiges, ganzzahliges Gesamtbudget eingeben.',
+    SCRATCH_EDITION_FIXED_BUDGET_BELOW_PAID:'⚠️ Das neue Budget darf nicht kleiner als bereits ausgezahlte Gewinne sein.',
+    SCRATCH_EDITION_CHANGED:'⚠️ Die Auflage wurde gerade geändert oder ein Los verkauft. Bitte neu laden und erneut bearbeiten.',
+    SCRATCH_EDITION_ONLY_CREATOR:'🔒 Nur das Profil, das die Auflage erstellt hat, darf sie bearbeiten.',
+    SCRATCH_EDITION_ALREADY_COMPLETE:'🏁 Ausverkaufte Auflagen dürfen nicht nachträglich geändert werden.',
+    SCRATCH_EDITION_FIXED_PLAN_MISSING:'⚠️ Der feste Gewinnplan konnte nicht geladen werden.'
  }[code]||'⚠️ Los konnte nicht geöffnet werden: '+String(code||'Serverfehler'));
  const hostDialog=$('scratch-host-dialog');
  const giftsDialog=$('scratch-gifts-settings-dialog');
@@ -475,7 +482,8 @@ export function initChristmasScratch(){
    if(activeEdition){
     const chip=el('div','scratch-gifts-edition-chip',
      '📦 Auflage: '+num(activeEdition.remaining)+' von 500 Losen übrig · '+
-     num(activeEdition.remainingCoins)+' von '+num(activeEdition.maxTotalCoins)+' 🪙 Auszahlungsbudget übrig');
+     num(activeEdition.remainingCoins)+' von '+num(activeEdition.maxTotalCoins)+
+     (activeEdition.budgetMode==='fixed'?' 🪙 fest eingeplant':' 🪙 maximale Auszahlung'));
     chip.dataset.state=activeEdition.status;
     article.append(chip);
    }
@@ -528,16 +536,16 @@ export function initChristmasScratch(){
   const max=Number(budget?.value||0);
   $('gs-edition-revenue').textContent=Number.isSafeInteger(price)&&price>=0?
    num(price*500)+' 🪙':'– 🪙';
-  const display=$('gs-edition-status'),button=$('gs-edition-create');
+  const display=$('gs-edition-status'),button=$('gs-edition-create'),edit=$('gs-edition-edit');
   const active=Boolean(giftsEdition&&giftsEdition.remaining>0);
   const soldOut=Boolean(giftsEdition&&giftsEdition.remaining===0);
   if(display){
    display.dataset.state=active?'active':soldOut?'sold_out':'none';
    display.textContent=active?
     '🟢 Aktive Auflage: '+num(giftsEdition.issued)+'/500 Lose ausgegeben · '+
-    num(giftsEdition.paidCoins)+' von maximal '+num(giftsEdition.maxTotalCoins)+
-    ' 🪙 ausgezahlt · '+num(giftsEdition.remainingCoins)+' 🪙 Budget übrig. '+
-    'Diese Auflage behält ihre Einstellungen bis zum letzten Los.':
+    num(giftsEdition.paidCoins)+' von '+num(giftsEdition.maxTotalCoins)+
+    ' 🪙 ausgezahlt · '+num(giftsEdition.remainingCoins)+' 🪙 noch '+(giftsEdition.budgetMode==='fixed'?'fest eingeplant':'maximal möglich')+'. '+
+    'Nur noch nicht vergebene Lose können bearbeitet werden.':
     soldOut?'🏁 Alle 500 Lose der bisherigen Auflage wurden vergeben. Du kannst nun eine neue Serie erstellen.':
     '📦 Noch keine 500er-Auflage erstellt. Bis zur ersten Veröffentlichung werden die Lose wie bisher angeboten.';
   }
@@ -545,15 +553,20 @@ export function initChristmasScratch(){
    button.disabled=active;
    button.title=active?'Eine neue Auflage ist erst nach den 500 vergebenen Losen möglich.':'';
   }
+  if(edit){
+   edit.hidden=!active;
+   edit.disabled=!active;
+   edit.title=active?'Nur die unverkauften Lose dieser Auflage anpassen. Der Ersteller darf speichern.':'';
+  }
   if(budget){
-   budget.disabled=active;
-   budget.setCustomValidity(!active&&(!budget.value.trim()||
+   budget.disabled=false;
+   budget.setCustomValidity((!budget.value.trim()||
     !Number.isSafeInteger(max)||max<0||max>1000000000000)?
     'Bitte ein ganzzahliges Gesamtbudget zwischen 0 und 1.000.000.000.000 Münzen eingeben.':'');
   }
  }
  function openGiftsSettings(){
-  const cfg=status?.settings?.variants?.gifts;
+  const cfg=(giftsEdition?.remaining>0?giftsEdition.config:null)??status?.settings?.variants?.gifts;
   if(!cfg||!giftsDialog){
    showAlert('⚠️ Geschenkelinie-Einstellungen noch nicht geladen. Bitte Kontostand aktualisieren.','gifts');
    return;
@@ -623,16 +636,16 @@ export function initChristmasScratch(){
   const max=Number(budget?.value||0);
   $('sn-edition-revenue').textContent=Number.isSafeInteger(price)&&price>=0?
    num(price*500)+' 🪙':'– 🪙';
-  const display=$('sn-edition-status'),button=$('sn-edition-create');
+  const display=$('sn-edition-status'),button=$('sn-edition-create'),edit=$('sn-edition-edit');
   const active=Boolean(snowEdition&&snowEdition.remaining>0);
   const soldOut=Boolean(snowEdition&&snowEdition.remaining===0);
   if(display){
    display.dataset.state=active?'active':soldOut?'sold_out':'none';
    display.textContent=active?
     '🟢 Aktive Auflage: '+num(snowEdition.issued)+'/500 Lose ausgegeben · '+
-    num(snowEdition.paidCoins)+' von maximal '+num(snowEdition.maxTotalCoins)+
-    ' 🪙 ausgezahlt · '+num(snowEdition.remainingCoins)+' 🪙 Budget übrig. '+
-    'Diese Auflage behält ihre Einstellungen bis zum letzten Los.':
+    num(snowEdition.paidCoins)+' von '+num(snowEdition.maxTotalCoins)+
+    ' 🪙 ausgezahlt · '+num(snowEdition.remainingCoins)+' 🪙 noch '+(snowEdition.budgetMode==='fixed'?'fest eingeplant':'maximal möglich')+'. '+
+    'Nur noch nicht vergebene Lose können bearbeitet werden.':
     soldOut?'🏁 Alle 500 Lose der bisherigen Auflage wurden vergeben. Du kannst nun eine neue Serie erstellen.':
     '📦 Noch keine 500er-Auflage erstellt. Bis zur ersten Veröffentlichung werden die Lose wie bisher angeboten.';
   }
@@ -640,15 +653,20 @@ export function initChristmasScratch(){
    button.disabled=active;
    button.title=active?'Eine neue Auflage ist erst nach den 500 vergebenen Losen möglich.':'';
   }
+  if(edit){
+   edit.hidden=!active;
+   edit.disabled=!active;
+   edit.title=active?'Nur die unverkauften Lose dieser Auflage anpassen. Der Ersteller darf speichern.':'';
+  }
   if(budget){
-   budget.disabled=active;
-   budget.setCustomValidity(!active&&(!budget.value.trim()||
+   budget.disabled=false;
+   budget.setCustomValidity((!budget.value.trim()||
     !Number.isSafeInteger(max)||max<0||max>1000000000000)?
     'Bitte ein ganzzahliges Gesamtbudget zwischen 0 und 1.000.000.000.000 Münzen eingeben.':'');
   }
  }
  function openSnowSettings(){
-  const cfg=status?.settings?.variants?.snow_collect;
+  const cfg=(snowEdition?.remaining>0?snowEdition.config:null)??status?.settings?.variants?.snow_collect;
   if(!cfg||!snowDialog){
    showAlert('⚠️ Schneeflocken-Bingo-Einstellungen noch nicht geladen. Bitte Kontostand aktualisieren.','snow_collect');
    return;
@@ -1946,8 +1964,8 @@ export function initChristmasScratch(){
    if(giftsEdition?.remaining>0)
     throw Error('Es läuft bereits eine 500er-Auflage mit '+giftsEdition.remaining+' Restlosen.');
    const yes=window.confirm('Eine Auflage mit 500 Geschenkelinie-Losen erstellen?\\n'+
-    'Maximal '+num(maxTotalCoins)+' 🪙 Auszahlungen insgesamt.\\n'+
-    'Die Einstellungen und das Budget dieser Serie können später nicht mehr geändert werden.');
+    'Genau '+num(maxTotalCoins)+' 🪙 Auszahlungen insgesamt.\\n'+
+    'Noch nicht vergebene Lose kannst du später bearbeiten. Bereits gekaufte Lose bleiben unverändert.');
    if(!yes)return;
    button.disabled=true;
    feedback.textContent='📦 Veröffentliche die 500er-Auflage sicher auf Render …';
@@ -1956,7 +1974,7 @@ export function initChristmasScratch(){
     throw Error('Der Server hat die Auflage nicht bestätigt.');
    giftsEdition=response.giftsEdition;
    status.settings=response.settings;
-   feedback.textContent='✅ Auflage erstellt: 500 Lose, maximal '+num(maxTotalCoins)+
+   feedback.textContent='✅ Auflage erstellt: 500 Lose, genau '+num(maxTotalCoins)+
     ' 🪙 Geldgewinne für alle Spieler zusammen.';
    updateGiftsEditionPreview();drawShop();
   }catch(e){feedback.textContent='⚠️ '+scratchBuyError(e?.message||'Serverfehler');}
@@ -2006,8 +2024,8 @@ export function initChristmasScratch(){
    if(snowEdition?.remaining>0)
     throw Error('Es läuft bereits eine 500er-Auflage mit '+snowEdition.remaining+' Restlosen.');
    const yes=window.confirm('Eine Auflage mit 500 Schneeflocken-Bingo-Losen erstellen?\\n'+
-    'Maximal '+num(maxTotalCoins)+' 🪙 Auszahlungen insgesamt.\\n'+
-    'Die Einstellungen und das Budget dieser Serie können später nicht mehr geändert werden.');
+    'Genau '+num(maxTotalCoins)+' 🪙 Auszahlungen insgesamt.\\n'+
+    'Noch nicht vergebene Lose kannst du später bearbeiten. Bereits gekaufte Lose bleiben unverändert.');
    if(!yes)return;
    button.disabled=true;
    feedback.textContent='📦 Veröffentliche die 500er-Auflage sicher auf Render …';
@@ -2016,7 +2034,7 @@ export function initChristmasScratch(){
     throw Error('Der Server hat die Auflage nicht bestätigt.');
    snowEdition=response.snowEdition;
    status.settings=response.settings;
-   feedback.textContent='✅ Auflage erstellt: 500 Lose, maximal '+num(maxTotalCoins)+
+   feedback.textContent='✅ Auflage erstellt: 500 Lose, genau '+num(maxTotalCoins)+
     ' 🪙 Geldgewinne für alle Spieler zusammen.';
    updateSnowEditionPreview();drawShop();
   }catch(e){feedback.textContent='⚠️ '+scratchBuyError(e?.message||'Serverfehler');}
