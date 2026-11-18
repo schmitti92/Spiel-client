@@ -1505,6 +1505,7 @@ export function initChristmasScratch(){
   const conf=VARIANTS[result.board?.variantId],cells=result.board?.cells;
   stage.dataset.variant=result.board?.variantId||'legacy';
   $('scratch-gifts-settings-open').hidden=stage.dataset.variant!=='gifts';
+  $('scratch-snow-settings-open').hidden=stage.dataset.variant!=='snow_collect';
   stage.dataset.tier=result.tier||'simple';
   stage.dataset.duelVersion=String(result.board?.variantId==='tic_tac_toe'?result.board?.symbolVersion||0:0);
   // The ticket banner stays outside the scratchable 3 × 3 region.
@@ -1792,12 +1793,13 @@ export function initChristmasScratch(){
  }
  async function load(){
   const id=++requestId;
-  if(!account()){status=null;giftsEdition=null;ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();giftsDialog?.close();drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
+  if(!account()){status=null;giftsEdition=null;snowEdition=null;ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();giftsDialog?.close();snowDialog?.close();drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
   try{
    const r=await query('');
    if(id!==requestId)return;
    status={...r.scratch,discountPercent:r.discountPercent??0};
    giftsEdition=r.giftsEdition??null;
+  snowEdition=r.snowEdition??null;
    canManageScratch=r.canManageScratch===true;
    clearAlert();
    // Four distinct starter vouchers, credited once to the signed-in player.
@@ -1838,12 +1840,16 @@ export function initChristmasScratch(){
   if(!SCRATCH_SHOP_VARIANTS.some(c=>c.id===variantId&&c.tier===tier)){
    showAlert('⚠️ Diese Losvariante ist noch nicht im Spiel freigeschaltet.',variantId);drawShop();return;
   }
+  if(variantId==='snow_collect'&&snowEdition?.remaining===0){
+   showAlert(scratchBuyError('SCRATCH_SNOW_EDITION_SOLD_OUT'),variantId);drawShop();return;
+  }
   if(variantId==='gifts'&&giftsEdition?.remaining===0){
    showAlert(scratchBuyError('SCRATCH_GIFTS_EDITION_SOLD_OUT'),variantId);drawShop();return;
   }
   const chosenPrice=variantId==='number_one_20'?
    Number(status.settings?.numberOne20?.price??500):
    variantId==='gifts'?Number(giftsEdition?.config?.price??status.settings?.variants?.gifts?.price??200):
+   variantId==='snow_collect'?Number(snowEdition?.config?.price??status.settings?.variants?.snow_collect?.price??200):
    Number(SCRATCH_TICKET_TYPES.find(c=>c.id===tier)?.price||0);
   if(!free&&!voucher&&status.coins<discountedPrice(chosenPrice)){
    showAlert('⚠️ Nicht genügend Münzen für dieses Los.',variantId);drawShop();return;
@@ -1860,6 +1866,7 @@ export function initChristmasScratch(){
    if(!r.result||!r.scratch)throw Error('INVALID_SCRATCH_RESULT');
    status=r.scratch;
    if(Object.hasOwn(r,'giftsEdition'))giftsEdition=r.giftsEdition;
+   if(Object.hasOwn(r,'snowEdition'))snowEdition=r.snowEdition;
    pending=null;
    // Server has already committed the ticket; keep its receipt even if the
    // local animation fails, so it is always reopenable without a second buy.
@@ -1991,9 +1998,9 @@ export function initChristmasScratch(){
   const nextUid=account()?.uid??null;
   if(nextUid===authUid)return;
   authUid=nextUid;
-  requestId++;status=null;giftsEdition=null;ticket=null;canManageScratch=false;
+  requestId++;status=null;giftsEdition=null;snowEdition=null;ticket=null;canManageScratch=false;
   stage.hidden=true;document.body.classList.remove('scratch-ticket-open');
-  hostDialog?.close();giftsDialog?.close();void load();
+  hostDialog?.close();giftsDialog?.close();snowDialog?.close();void load();
  });
  drawShop();return {load};
 }
