@@ -20,6 +20,8 @@ for(const prefix of ['gs','sn'])test(prefix+' fixed-budget edition editor has li
  assert.match(ui,/restBudget>maximum/);
  assert.match(ui,/restBudget%divisor!==0/);
  assert.match(ui,/async function editLatestEdition\(variant\)/);
+ assert.match(ui,/Nur Standardwerte für spätere Auflagen speichern/,'template-save must not mislead users editing live editions');
+ assert.match(ui,/Verändert NICHT die laufende Auflage/);
  assert.match(ui,new RegExp("'"+prefix+"-edition-edit'\\)\\.addEventListener"));
  assert.match(styles,new RegExp('#'+prefix+'-edition-edit\\[hidden\\]'));
 });
