@@ -1735,3 +1735,24 @@ body.scratch-ticket-open > #event-return{
 .scratch-gifts-edition-chip{margin-top:6px;background:#214536;border:1px solid #b6cf8f;
  color:#f3ffe3;padding:7px 9px;border-radius:9px;font-size:12px;font-weight:800;line-height:1.4}
 .scratch-gifts-edition-chip[data-state="sold_out"]{background:#57312c;border-color:#f2b28e}
+
+/* Geschenkelinie: real ×2 is a gold sticker ON TOP of the middle original
+   money icon in a valid winning triple, not a separate ninth-field symbol.
+   The 3-of-a-kind glyph remains visible and the silver scratch layer covers
+   the sticker until the player reveals that field. */
+.scratch-stage[data-variant="gifts"] .scratch-cell-symbol.scratch-symbol-with-double{
+ position:relative;display:inline-flex;align-items:center;justify-content:center;
+ overflow:visible;isolation:isolate;
+}
+.scratch-stage[data-variant="gifts"] .scratch-symbol-double-sticker{
+ position:absolute;z-index:3;top:-.36em;right:-.66em;
+ display:inline-flex;align-items:center;justify-content:center;
+ min-width:1.9em;min-height:1.3em;padding:.12em .2em;
+ transform:rotate(13deg);border-radius:.45em;
+ border:1px solid #fff5c7;
+ background:linear-gradient(155deg,#fff6b7 0%,#ffd65a 50%,#d98828 100%);
+ box-shadow:0 0 6px #ffe889b0,0 2px 5px #43260c99;
+ color:#542607;text-shadow:0 1px #fff7cf;
+ font-size:clamp(10px,1.45vw,16px);font-weight:1000;line-height:1;
+ white-space:nowrap;user-select:none;pointer-events:none;
+}
