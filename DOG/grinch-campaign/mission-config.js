@@ -7,7 +7,8 @@ export const MISSIONS = Object.freeze([
   Object.freeze({
     id:1,slug:'weg-zum-berg',title:'Der Weg zum Berg',subtitle:'Was ist mit Weihnachten geschehen?',
     playersMax:3,piecesPerPlayer:5,forcedLossesPerPlayer:1,
-    goal:'Die vier verbliebenen Figuren jedes Spielers ins Ziel bringen.',
+    goal:'Pro Spieler genau ein Portal-Zielfeld. Jede der vier geretteten Figuren wird dort sofort nach Welt 2 teleportiert.',
+    goalType:'single-portal-per-player',teleportAtTrackSteps:64,teleportCountToComplete:4,
     theme:'mountain-road',
     trailHints:[
       {field:8,icon:'🔎',title:'Die ersten Spuren',message:'Im Schnee sind merkwürdige Spuren zu sehen. Sie führen in Richtung Berg.'},
