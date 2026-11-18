@@ -650,7 +650,7 @@ export function initChristmasScratch(){
  function openSnowSettings(){
   const cfg=status?.settings?.variants?.snow_collect;
   if(!cfg||!snowDialog){
-   showAlert('⚠️ Schneeflocken-Bingo-Einstellungen noch nicht geladen. Bitte Kontostand aktualisieren.','gifts');
+   showAlert('⚠️ Schneeflocken-Bingo-Einstellungen noch nicht geladen. Bitte Kontostand aktualisieren.','snow_collect');
    return;
   }
   const set=(id,value)=>{$(id).value=String(value)};
@@ -718,7 +718,7 @@ export function initChristmasScratch(){
     ['none',id==='premium_27'?'Kein zusätzlicher Sondergewinn (%)':'Niete (%)',settings.weights.none/10,'0.1'],
     ['coins',id==='premium_27'?'Münz-Bonuskategorie (%)':'Münzen (%)',settings.weights.coins/10,'0.1'],
     ['unlock','Freischaltung (%)',settings.weights.unlock/10,'0.1'],
-    ['extraCoinChance',id==='gifts'?'Zusätzliche echte Dreierreihen (%)':'Zusatz-Münzchance (%)',settings.extraCoinChance,'1']
+    ['extraCoinChance',id==='gifts'?'Weitere Dreierreihen (%)':id==='snow_collect'?'Weitere Dreiergruppen (%)':'Zusatz-Münzchance (%)',settings.extraCoinChance,'1']
    ]){
     const field=el('label','scratch-host-field');
     field.append(el('span','',label));
@@ -727,13 +727,15 @@ export function initChristmasScratch(){
     field.append(input);fields.append(field);
    }
    const maxField=el('label','scratch-host-field');
-   maxField.append(el('span','',id==='gifts'?'Max. gleiche Dreierlinien':'Max. gleichzeitige Gewinne'));
+   maxField.append(el('span','',id==='gifts'?'Max. gleiche Dreierlinien':id==='snow_collect'?'Max. gleiche Dreiergruppen':'Max. gleichzeitige Gewinne'));
    const select=el('select');select.dataset.key='maxPrizes';
-   for(let n=(id==='premium_27'?6:1);n<=(id==='gifts'?3:10);n++){
+   for(let n=(id==='premium_27'?6:1);n<=(['gifts','snow_collect'].includes(id)?3:10);n++){
     const option=el('option','',String(n));option.value=String(n);
     option.selected=n===settings.maxPrizes;select.append(option);
    }
    maxField.append(select);fields.append(maxField);block.append(fields);
+   if(id==='snow_collect')block.append(el('small','scratch-host-premium-minimum',
+    '❄️ Bingo: 3 identische Symbole an beliebigen Stellen ergeben EINEN Gewinn je Symbolart. Maximal 3 sichtbare Dreiergruppen; 🧊 zählt nie. Keine unsichtbaren Geldgewinne.'));
    if(id==='gifts')block.append(el('small','scratch-host-premium-minimum',
     '🎁 Geschenkelinie: Jeder Geld- und Hauptgewinn braucht eine eigene echte Dreierlinie aus exakt gleichen Zeichen. Maximal 3 sichtbare Gewinne; kein unsichtbarer Zusatzgewinn.'));
    if(id==='premium_27')block.append(el('small','scratch-host-premium-minimum',
@@ -859,7 +861,7 @@ export function initChristmasScratch(){
    const maxPrizes=Number(input('maxPrizes').value);
    if(!Number.isInteger(extraCoinChance)||extraCoinChance<0||extraCoinChance>100)
     throw Error('Die zusätzliche Münzchance muss zwischen 0 und 100 % liegen.');
-   if(!Number.isInteger(maxPrizes)||maxPrizes<(id==='premium_27'?6:1)||maxPrizes>(id==='gifts'?3:10))
+   if(!Number.isInteger(maxPrizes)||maxPrizes<(id==='premium_27'?6:1)||maxPrizes>(['gifts','snow_collect'].includes(id)?3:10))
     throw Error('Ungültige Anzahl gleichzeitiger Gewinne.');
    const coinAmounts=Array.from({length:3},(_,i)=>Number(
     block.querySelector('[data-coin-index="'+i+'"]')?.value));
