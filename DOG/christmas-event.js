@@ -245,7 +245,9 @@ let lastPresentationKey=null;
 // Grinch stages are temporary visual previews until real Part 2 missions exist.
 let grinchVisualStage=1;
 // Local scenic view, not mission progress or a server-side upgrade.
-let villageMode=new URLSearchParams(location.search).get('grinch')==='1'?'grinch':'normal';
+// Show the cave immediately when opening the Christmas village.
+ // ?grinch=0 is an explicit opt-out for people who want the original scene.
+let villageMode=new URLSearchParams(location.search).get('grinch')==='0'?'normal':'grinch';
 const grinchDialog=$('grinch-cave-dialog');
 const grinchStageDescriptions=[
  'Ankunft: Der Grinch ist auf dem Höhepunkt seiner Macht. Die Höhle ist vollständig intakt.',
@@ -305,8 +307,8 @@ function setVillageMode(mode){
  villageMode=mode==='grinch'?'grinch':'normal';
  grinchVisualStage=1;
  const url=new URL(location.href);
- if(villageMode==='grinch')url.searchParams.set('grinch','1');
- else url.searchParams.delete('grinch');
+ if(villageMode==='grinch')url.searchParams.delete('grinch');
+ else url.searchParams.set('grinch','0');
  history.replaceState(null,'',url.href);
  refreshPreview();
 }
