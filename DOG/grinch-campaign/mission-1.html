@@ -4,29 +4,30 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#081c24">
-<title>DOG Grinch · Mission 1 – Der Weg zum Berg</title>
-<link rel="stylesheet" href="./mission-1.css?v=2">
+<title>DOG Grinch · Mission 1 – Pfadfinder: Der Weg zum Berg</title>
+<link rel="stylesheet" href="./mission-1.css?v=3">
 </head>
 <body>
 <header class="top">
  <a class="back" href="../christmas-event.html">← Zum Weihnachtsdorf</a>
- <div class="brand"><span>🎄 GRINCH-KAMPAGNE</span><h1>Mission 1 · Der Weg zum Berg</h1></div>
+ <div class="brand"><span>🎄 GRINCH-KAMPAGNE</span><h1>Mission 1 · Pfadfinder</h1></div>
  <a class="back" href="../index.html">Normales DOG</a>
 </header>
 <main class="shell">
  <section class="intro">
   <p class="kicker">KAPITEL 2 · DER BEGINN DES FLUCHS</p>
-  <h2>Was ist mit Weihnachten geschehen?</h2>
-  <p>Die Lichter sind erloschen. Am Berg leuchtet ein grüner Strahl. Drei Freunde machen sich auf den Weg, um den Ursprung des Fluchs zu finden. Auf der Reise verschwindet von jedem eine Spielfigur.</p>
+  <h2>Pfadfinder – Der Weg zum Berg</h2>
+  <p>Die Lichter sind erloschen. Drei Freunde folgen geheimnisvollen Spuren zum Berg. Auf dem unveränderten DOG-Brett werden Wegweiser sichtbar – und am Ende zeigen die beleuchteten Zielbahnen den Übergang zum verfluchten Aufstieg von Mission 2. Unterwegs verschwindet von jedem eine Spielfigur.</p>
   <div class="notice" role="status">🧪 Eigenständige Spieltest-Version für drei Spieler an einem Gerät. Kein Online-Raum, kein offizieller Kampagnenfortschritt und keine echten Belohnungen. Das normale DOG-Spiel bleibt unverändert.</div>
  </section>
  <div class="layout">
   <section class="board-card" aria-labelledby="board-heading">
-   <div class="board-head"><h2 id="board-heading">🎲 Das originale DOG-Brett</h2><span id="phase">Runde 1</span></div>
+   <div class="board-head"><h2 id="board-heading">🧭 Der Pfad zum Berg</h2><span id="phase">Runde 1</span></div>
    <div id="board-wrap" class="board-wrap">
     <svg id="board" class="board-svg" viewBox="0 0 760 760" role="img" aria-label="Das originale DOG-Brett mit 64 Lauffeldern, vier Startfeldern und vier Zielbahnen"></svg>
    </div>
-   <div class="legend"><span>🕳️ Einsturz</span><span>🌪️ Entführung</span><span>🧊 Eisfluch</span><span>🌫️ Nebel</span><span>⚡ Erdbeben</span></div>
+   <div class="legend"><span>🔎 Spuren</span><span>🌫️ Nebelpass</span><span>⚡ Grünes Leuchten</span><span>❄️ Eisweg</span><span>🕳️ Einsturz</span><span>🌪️ Entführung</span><span>🧊 Eisfluch</span></div>
+   <section class="trail-progress" aria-live="polite" aria-label="Wegweiser zu Mission 2"><div class="trail-progress-head"><strong>🏔️ Der Bergpass nach Mission 2</strong><span id="trail-progress-count">0 / 3 Wege offen</span></div><p>Die bestehenden DOG-Zielfelder werden zu drei Pfadfinder-Wegweisern. Jede vollständige Zielbahn aktiviert ihren eigenen Weg zum Berg.</p><div id="trail-progress-players" class="trail-progress-players"></div><p id="trail-next-mission" class="trail-next-mission">🔒 Mission 2 – Der verfluchte Aufstieg: Noch hat niemand den Bergpass erreicht.</p></section>
   </section>
   <aside class="side">
    <section class="panel">
@@ -62,6 +63,6 @@
  <p class="help">Lokale Testdaten – keine Anmeldung, keine Online-Funktion.</p>
 </dialog>
 <div id="event-message" role="status" aria-live="assertive"></div>
-<script type="module" src="./mission-1.js?v=2"></script>
+<script type="module" src="./mission-1.js?v=3"></script>
 </body>
 </html>
