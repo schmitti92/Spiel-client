@@ -532,9 +532,47 @@ export function initChristmasScratch(){
   box?.classList.toggle('is-invalid',!ok);
   return ok;
  }
+ // A quick, truthful preview: exact feasibility is confirmed by the
+ // server-side payout planner before any edition is saved. This catches the
+ // common impossible budgets instantly without claiming every multiple works.
+ function updateFixedBudgetHint(prefix,activeEdition){
+  const target=$(prefix+'-edition-budget-hint');
+  if(!target)return;
+  const raw=$(prefix+'-edition-budget')?.value.trim()||'';
+  const targetSum=Number(raw);
+  const values=[0,1,2].map(i=>Number($(prefix+'-coin-'+i)?.value));
+  const cap=Number($(prefix+'-max-prizes')?.value);
+  const doublePercent=Number($(prefix+'-double')?.value);
+  const none=Number($(prefix+'-none')?.value);
+  const unlock=Number($(prefix+'-unlock')?.value);
+  if(!raw||!Number.isSafeInteger(targetSum)||targetSum<0||
+     values.some((v,i)=>!Number.isSafeInteger(v)||v<1||i>0&&v<=values[i-1])||
+     !Number.isInteger(cap)||cap<1||cap>3||
+     !Number.isFinite(doublePercent)||doublePercent<0||doublePercent>100){
+   target.textContent='💡 Gib einen gültigen Gesamtbetrag und drei aufsteigende Geldwerte ein.';
+   return;
+  }
+  const alreadyPaid=activeEdition?.remaining>0?activeEdition.paidCoins:0;
+  const remaining=activeEdition?.remaining>0?activeEdition.remaining:500;
+  const restBudget=targetSum-alreadyPaid;
+  const maxPerTicket=[...values].sort((a,b)=>b-a).slice(0,cap)
+   .reduce((a,b)=>a+b,0)*(doublePercent>0?2:1);
+  const maximum=remaining*maxPerTicket;
+  const gcd=(a,b)=>{while(b){const n=a%b;a=b;b=n}return a};
+  const divisor=values.reduce(gcd);
+  const moneyChance=100-none-unlock;
+  const problem=restBudget<0?'❌ Bereits '+num(alreadyPaid)+' 🪙 ausgezahlt – das neue Budget ist zu klein.':
+   restBudget>maximum?'❌ Mit '+num(remaining)+' Restlosen und diesen Symbolwerten sind höchstens '+num(maximum)+' 🪙 zusätzlich möglich.':
+   divisor>1&&restBudget%divisor!==0?'❌ Dieser Restbetrag lässt sich nicht exakt aus den gewählten Geldsymbolen zusammensetzen (Schrittweite '+num(divisor)+' 🪙).':
+   restBudget>0&&moneyChance<=0?'❌ Die Geldgewinn-Kategorie ist auf 0 % gestellt. Erhöhe sie oder setze das Budget auf 0.':null;
+  target.textContent=problem||'✅ Rechnerisch geeignet: '+num(restBudget)+
+   ' 🪙 auf '+num(remaining)+' noch unverkaufte Lose. Maximal '+num(maximum)+
+   ' 🪙 möglich. Die exakte Kombination bestätigt Render beim Speichern.';
+ }
  function updateGiftsEditionPreview(){
   const price=Number($('gs-price').value||0),budget=$('gs-edition-budget');
   const max=Number(budget?.value||0);
+  updateFixedBudgetHint('gs',giftsEdition);
   $('gs-edition-revenue').textContent=Number.isSafeInteger(price)&&price>=0?
    num(price*500)+' 🪙':'– 🪙';
   const display=$('gs-edition-status'),button=$('gs-edition-create'),edit=$('gs-edition-edit');
@@ -640,6 +678,7 @@ export function initChristmasScratch(){
  function updateSnowEditionPreview(){
   const price=Number($('sn-price').value||0),budget=$('sn-edition-budget');
   const max=Number(budget?.value||0);
+  updateFixedBudgetHint('sn',snowEdition);
   $('sn-edition-revenue').textContent=Number.isSafeInteger(price)&&price>=0?
    num(price*500)+' 🪙':'– 🪙';
   const display=$('sn-edition-status'),button=$('sn-edition-create'),edit=$('sn-edition-edit');
@@ -2001,7 +2040,7 @@ export function initChristmasScratch(){
  }
  // 500-ticket publisher. One click writes the form values AND the immutable
  // run budget in one Firestore transaction. It never draws 500 tickets at once.
- for(const id of ['gs-price','gs-edition-budget'])
+ for(const id of ['gs-price','gs-edition-budget','gs-coin-0','gs-coin-1','gs-coin-2','gs-max-prizes','gs-double','gs-none','gs-unlock'])
   $(id).addEventListener('input',updateGiftsEditionPreview);
  $('gs-edition-edit').addEventListener('click',()=>void editLatestEdition('gifts'));
  $('gs-edition-create').addEventListener('click',async()=>{
@@ -2062,7 +2101,7 @@ export function initChristmasScratch(){
  });
  // 500-ticket publisher. One click writes the form values AND the immutable
  // run budget in one Firestore transaction. It never draws 500 tickets at once.
- for(const id of ['sn-price','sn-edition-budget'])
+ for(const id of ['sn-price','sn-edition-budget','sn-coin-0','sn-coin-1','sn-coin-2','sn-max-prizes','sn-double','sn-none','sn-unlock'])
   $(id).addEventListener('input',updateSnowEditionPreview);
  $('sn-edition-edit').addEventListener('click',()=>void editLatestEdition('snow_collect'));
  $('sn-edition-create').addEventListener('click',async()=>{
