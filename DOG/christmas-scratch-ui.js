@@ -592,6 +592,13 @@ export function initChristmasScratch(){
    button.disabled=active;
    button.title=active?'Eine neue Auflage ist erst nach den 500 vergebenen Losen möglich.':'';
   }
+  // While a numbered series exists, distinguish template settings from
+  // the only button that actually revises the live edition's remaining tickets.
+  const templateSave=$('scratch-gifts-settings-save');
+  if(templateSave){
+   templateSave.textContent=active?'💾 Nur Standardwerte für spätere Auflagen speichern':'💾 Geschenkelinie speichern';
+   templateSave.title=active?'Verändert NICHT die laufende Auflage. Dafür „Aktuelle Auflage bearbeiten“ verwenden.':'Allgemeine Einstellungen für neue Lose speichern';
+  }
   const defaultsButton=$('scratch-gifts-settings-save');
   if(defaultsButton){
    defaultsButton.textContent=active?'💾 Nur Standardwerte speichern':'💾 Einstellungen speichern';
@@ -697,6 +704,13 @@ export function initChristmasScratch(){
   if(button){
    button.disabled=active;
    button.title=active?'Eine neue Auflage ist erst nach den 500 vergebenen Losen möglich.':'';
+  }
+  // While a numbered series exists, distinguish template settings from
+  // the only button that actually revises the live edition's remaining tickets.
+  const templateSave=$('scratch-snow-settings-save');
+  if(templateSave){
+   templateSave.textContent=active?'💾 Nur Standardwerte für spätere Auflagen speichern':'💾 Schneeflocken-Bingo speichern';
+   templateSave.title=active?'Verändert NICHT die laufende Auflage. Dafür „Aktuelle Auflage bearbeiten“ verwenden.':'Allgemeine Einstellungen für neue Lose speichern';
   }
   const defaultsButton=$('scratch-snow-settings-save');
   if(defaultsButton){
