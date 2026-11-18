@@ -27,7 +27,7 @@
 <link rel="stylesheet" href="./christmas-tree-level-path.css?v=1">
 <link rel="stylesheet" href="./christmas-buildings-magical.css?v=1">
 <link rel="stylesheet" href="./christmas-expansion.css?v=3">
-<link rel="stylesheet" href="./christmas-grinch-cave.css?v=1">
+<link rel="stylesheet" href="./christmas-grinch-cave.css?v=2">
 <link rel="stylesheet" href="./christmas-tree-winter-skin.css?v=2">
 <link rel="stylesheet" href="./christmas-storybook.css?v=2">
 <link rel="stylesheet" href="./christmas-storybook-graphics.css?v=1">
@@ -71,7 +71,8 @@
               <linearGradient id="roof" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#805647"/><stop offset="1" stop-color="#483640"/></linearGradient>
               <linearGradient id="facade" x1="0" x2=".8" y1="0" y2="1"><stop stop-color="#a77956"/><stop offset="1" stop-color="#4d4140"/></linearGradient>
               <linearGradient id="treefill" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#337968"/><stop offset=".55" stop-color="#135146"/><stop offset="1" stop-color="#0d3638"/></linearGradient>
-              <radialGradient id="star-glow"><stop stop-color="#fff6c7" stop-opacity=".95"/><stop offset="1" stop-color="#ffcf65" stop-opacity="0"/></radialGradient>
+              <linearGradient id="grinch-dark-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#031015" stop-opacity="1"/><stop offset=".66" stop-color="#09221f" stop-opacity="1"/><stop offset=".86" stop-color="#173b2e" stop-opacity=".95"/><stop offset="1" stop-color="#102f2a" stop-opacity="0"/></linearGradient>
+               <radialGradient id="star-glow"><stop stop-color="#fff6c7" stop-opacity=".95"/><stop offset="1" stop-color="#ffcf65" stop-opacity="0"/></radialGradient>
               <filter id="glow"><feGaussianBlur stdDeviation="7"/></filter>
                <filter id="village-contact-soft" x="-30%" y="-160%" width="160%" height="420%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="5"/></filter>
               <pattern id="snow-speckle" width="65" height="60" patternUnits="userSpaceOnUse"><circle cx="7" cy="11" r="1.4" fill="#fff" opacity=".6"/><circle cx="42" cy="34" r="1" fill="#fff" opacity=".55"/></pattern>
@@ -99,6 +100,19 @@
                    preserveAspectRatio="xMidYMid slice"
                    href="weihnachtsevent-bilder/leere_winterdorf_plaza_im_mondlicht.png"
                    aria-hidden="true" pointer-events="none" />
+            <!-- The Grinch is a large REPLACEMENT FOR THE SKYLINE, not a foreground building.
+                 This backdrop is behind every house and the Christmas tree. -->
+            <g id="grinch-sky-scene" aria-hidden="true" pointer-events="none">
+              <rect x="0" y="0" width="1200" height="455" fill="url(#grinch-dark-sky)"/>
+              <g fill="#b4eb9b" opacity=".58"><circle cx="335" cy="79" r="2"/><circle cx="895" cy="64" r="2.5"/><circle cx="504" cy="26" r="1.5"/><circle cx="761" cy="30" r="1.5"/><circle cx="1060" cy="154" r="2"/></g>
+              <g id="grinch-sky-fallback" aria-hidden="true">
+                <path d="M392 266Q390 178 439 148L477 75 516 132 583 35 644 128 699 60 748 148Q797 185 812 267Z" fill="#263f34" stroke="#122b27" stroke-width="12"/>
+                <path d="M503 267Q504 155 604 145Q708 155 708 267Z" fill="#061613" stroke="#a9d86e" stroke-width="11"/>
+                <path d="M552 205Q612 173 662 205" fill="none" stroke="#b6e889" stroke-width="10" opacity=".75"/>
+              </g>
+              <image id="grinch-sky-image" x="335" y="10" width="550" height="260"
+                     preserveAspectRatio="xMidYMid meet" aria-hidden="true" pointer-events="none"/>
+            </g>
             <!-- Subtle floor shadows are part of the background scene, not the
                  PNGs. They make all upgrade levels sit firmly on the cobblestone. -->
             <g id="village-ground-shadows" aria-hidden="true" pointer-events="none"
@@ -214,36 +228,26 @@
                  Erst nach erfolgreichem Laden die vorhandene SVG-Grafik ersetzen. -->
             <image id="tree-stage-image" x="463" y="85" width="298" height="490"
                    preserveAspectRatio="xMidYMax meet" aria-hidden="true" pointer-events="none"/>
-            <!-- Grinchhöhle: eigener Teil-2-Ort am linken Dorfrand.
-                  Stufe 1 volle Macht, Stufe 5 stark beschädigt. -->
-             <g id="art-grinch" aria-hidden="true" pointer-events="none">
-               <ellipse cx="83" cy="596" rx="72" ry="11" fill="#031615" opacity=".57"/>
-               <path d="M8 590Q5 526 25 479L45 443 61 469 79 412 109 459 131 444 158 508 160 591Z" fill="#243c30" stroke="#112b22" stroke-width="7"/>
-               <path d="M47 591Q39 533 62 503Q83 479 108 508Q124 538 118 591Z" fill="#081a15" stroke="#80b353" stroke-width="5"/>
-               <path d="M65 559Q84 514 107 554" fill="none" stroke="#95d45b" stroke-width="8" opacity=".8"/>
-             </g>
-             <image id="grinch-stage-image" x="0" y="397" width="170" height="203"
-                    preserveAspectRatio="xMidYMax meet" aria-hidden="true" pointer-events="none"/>
-             <g id="christmas-light-finale" aria-hidden="true" pointer-events="none">
+            <g id="christmas-light-finale" aria-hidden="true" pointer-events="none">
               <g fill="none" stroke="#ffe3a0" stroke-width="12" stroke-linecap="round" opacity=".9" filter="url(#glow)"><path d="M612 410Q362 355 211 343"/><path d="M612 410Q786 343 878 340"/><path d="M612 410Q396 540 291 494"/><path d="M612 410Q878 550 1048 493"/></g>
               <circle cx="612" cy="400" r="245" fill="url(#star-glow)" opacity=".25"/>
             </g><g class="snow-particles"><rect width="1200" height="670" fill="url(#snow-speckle)"/></g>
           </svg>
           <div class="view-vignette" aria-hidden="true"></div>
           <div class="village-max-control">
+            <button type="button" id="grinch-scene-toggle" aria-pressed="false" title="Große Grinchhöhle anstelle der Berglandschaft ansehen">👹 Grinchhöhle ansehen</button>
             <button type="button" id="village-max-test" aria-pressed="false" title="Alle sechs Gebäude und den Weihnachtsbaum nur optisch auf Maximalstufe zeigen">🔍 Vollausbau testen</button>
             <span id="village-max-note" class="village-max-note" role="status" hidden>👁️ TESTANSICHT · 6 × Stufe 5 · Baum Stufe 10 · keine Käufe</span>
           </div>
           <div class="village-hotspots" aria-label="Gebäude und Weihnachtsbaum auf dem Weihnachtsdorf">
             <button type="button" class="village-tree-hit" data-open-tab="tree" aria-label="Weihnachtsbaum öffnen – Entwicklungsstufe und Belohnungen ansehen" title="🎄 Weihnachtsbaum ansehen"></button>
-            <button type="button" class="building-image-hit hit-grinch" data-open-grinch aria-label="Grinchhöhle öffnen – Teil 2 und die fünf Zustände ansehen" title="👹 Grinchhöhle · Teil 2 ansehen"></button>
+            <button type="button" class="building-image-hit hit-grinch-sky" data-open-grinch aria-label="Große Grinchhöhle öffnen und fünf Zustände ansehen" title="👹 Grinchhöhle · Fünf Zustände ansehen"></button>
             <button type="button" class="building-image-hit hit-tower" data-open-building="tower" aria-label="Weihnachtslichter-Turm: Stufe und Bonus ansehen" title="Weihnachtslichter-Turm · Bonus ansehen"></button>
             <button type="button" class="building-image-hit hit-workshop" data-open-building="workshop" aria-label="Wichtelwerkstatt: Stufe und Bonus ansehen" title="Wichtelwerkstatt · Bonus ansehen"></button>
             <button type="button" class="building-image-hit hit-luckhouse" data-open-building="luckhouse" aria-label="Weihnachts-Glückshaus: Stufe und Rubbellos-Rabatt ansehen" title="🎟️ Weihnachts-Glückshaus · Rabatt ansehen"></button>
             <button type="button" class="building-image-hit hit-academy" data-open-building="academy" aria-label="XP-Wichtel-Akademie: Stufe und XP-Bonus ansehen" title="📚 XP-Wichtel-Akademie · Bonus ansehen"></button>
             <button type="button" class="building-image-hit hit-bakery" data-open-building="bakery" aria-label="Weihnachtsbäckerei: Stufe und Bonus ansehen" title="Weihnachtsbäckerei · Bonus ansehen"></button>
             <button type="button" class="building-image-hit hit-inn" data-open-building="inn" aria-label="Friedensherberge: Stufe und Bonus ansehen" title="Friedensherberge · Bonus ansehen"></button>
-            <button type="button" class="building-hotspot hotspot-grinch" data-open-grinch title="Grinchhöhle und Teil 2 ansehen">👹 <span>Grinchhöhle</span><small>1 / 5</small></button>
             <button type="button" class="building-hotspot hotspot-tower" data-open-building="tower" title="Weihnachtslichter-Turm ansehen">⭐ <span>Weihnachtslichter-Turm</span><small data-hotspot-level="tower">1/5</small></button>
             <button type="button" class="building-hotspot hotspot-workshop" data-open-building="workshop" title="Wichtelwerkstatt ansehen">🎁 <span>Wichtelwerkstatt</span><small data-hotspot-level="workshop">1/5</small></button>
             <button type="button" class="building-hotspot hotspot-luckhouse" data-open-building="luckhouse" title="Weihnachts-Glückshaus: Rubbellos-Rabatt ansehen">🎟️ <span>Weihnachts-Glückshaus</span><small data-hotspot-level="luckhouse">1/5</small></button>
@@ -257,7 +261,7 @@
         <div class="grinch-cave-top">
           <div><span class="grinch-cave-eyebrow">✦ LICHTERTAL · WEIHNACHTSEVENT TEIL 2 ✦</span>
             <h2 id="grinch-cave-title">👹 Die Grinchhöhle</h2>
-            <p>Der Weihnachtsmuffel wartet am Dorfrand auf seinen großen Auftritt.</p>
+            <p>Der Weihnachtsmuffel thront über Lichtertal – hoch über dem Dorfplatz.</p>
           </div>
           <button type="button" id="grinch-cave-close" class="grinch-cave-close" aria-label="Grinchhöhle schließen">✕</button>
         </div>
@@ -265,7 +269,7 @@
           <div class="grinch-cave-art"><img id="grinch-cave-preview-image" src="./weihnachtsevent-bilder/grinchhoehle_stufe_1.png" alt="Grinchhöhle: Stufe 1 – volle Macht" loading="lazy" decoding="async"></div>
           <div class="grinch-cave-facts">
             <strong id="grinch-cave-lock-message" class="grinch-cave-status" role="status">🔒 Teil 2 wird nach Weihnachtsbaum-Stufe 10 zugänglich.</strong>
-            <p id="grinch-cave-explanation">Die Höhle ist bereits in der Dorfansicht sichtbar. Ihre fünf Grafiken zeigen den Grinch rückwärts: von seiner Ankunft in voller Macht bis zur stark beschädigten Höhle nach seiner Niederlage.</p>
+            <p id="grinch-cave-explanation">Die große Höhle ersetzt im Grinch-Modus die obere Berglandschaft. Ihre fünf Grafiken zeigen den Grinch rückwärts: von seiner Ankunft in voller Macht bis zur stark beschädigten Höhle nach seiner Niederlage.</p>
             <div class="grinch-cave-stage-control">
               <label for="grinch-cave-stage-range">🎨 Höhle ansehen <output id="grinch-cave-stage-output" for="grinch-cave-stage-range">Stufe 1 / 5</output></label>
               <input id="grinch-cave-stage-range" type="range" min="1" max="5" step="1" value="1" aria-label="Grinchhöhle – optische Vorschau von Stufe 1 bis 5">
@@ -562,6 +566,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./christmas-event.js?v=95"></script>
+<script type="module" src="./christmas-event.js?v=96"></script>
 </body>
 </html>
