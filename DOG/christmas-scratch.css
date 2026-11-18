@@ -1756,3 +1756,30 @@ body.scratch-ticket-open > #event-return{
  font-size:clamp(10px,1.45vw,16px);font-weight:1000;line-height:1;
  white-space:nowrap;user-select:none;pointer-events:none;
 }
+
+/* Schneeflocken-Bingo has its own blue × gold settings entry and edition modal.
+   Reuses the proven mobile-safe layout of Geschenkelinie's form. */
+.scratch-snow-settings-open,.scratch-snow-card-settings{
+  border-color:#c3f0ff!important;color:#f4fcff!important;
+  background:linear-gradient(140deg,#12426b,#277cac)!important;
+  box-shadow:0 2px 10px #031626bb,0 0 12px #82c5fa77!important;
+}
+.scratch-variant-snow .scratch-card-names{padding-right:105px}
+#scratch-snow-settings-dialog{
+  border-color:#b5eaff;
+  background:linear-gradient(155deg,#122e4f,#123557 58%,#173f58);
+}
+#scratch-snow-settings-dialog .scratch-gifts-eyebrow,
+#scratch-snow-settings-dialog .scratch-gifts-settings-head h3,
+#scratch-snow-settings-dialog .scratch-gifts-settings-section h4{
+  color:#d9f4ff;
+}
+#scratch-snow-settings-dialog .scratch-gifts-settings-head{border-bottom-color:#8ad6fb88}
+#scratch-snow-settings-dialog .scratch-gifts-settings-section{
+  border-color:#79cfff66;background:#0a2849b5
+}
+#scratch-snow-settings-dialog .scratch-gifts-edition-create{
+  border-color:#dbf4ff;
+  background:linear-gradient(#daefff,#87bbef);
+  color:#103558
+}
