@@ -1,5 +1,6 @@
 import {MISSION_1} from './mission-config.js';
-import {drawClassicMissionBoard} from './mission-board.js?v=1';
+import {drawClassicMissionBoard} from './mission-board.js?v=2';
+import {pathfinderStatus} from './mission-1-pathfinder.js?v=1';
 import {trackPoint} from '../board-layout.js?v=11';
 import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,status,pieceCoord,validateSaved} from './mission-1-rules.js';
 
@@ -119,6 +120,20 @@ function render(){
   text('p','Die drei Freunde haben den Aussichtspunkt erreicht – drei Figuren bleiben verschwunden. Der nächste Abschnitt ist noch in Planung.',moves,'help');
  }
  $('actions').textContent=state.complete?'🎉 Mission 1 lokal abgeschlossen (Test, keine offiziellen Belohnungen).':'Ziel: Jeder rettet vier Figuren. Eine Figur je Spieler wird vom Fluch gefangen.';
+ // Goal lanes are still the four ordinary DOG goal fields, now also
+ // signaling the three passages leading into the next story mission.
+ const route=pathfinderStatus(state);
+ $('trail-progress-count').textContent=route.ready+' / '+route.participants+' Wege offen';
+ const waypointList=$('trail-progress-players');
+ waypointList.replaceChildren();
+ for(let seat=0;seat<SEATS;seat++){
+  const complete=route.counts[seat]===4;
+  const item=text('div',(complete?'✅ ':'🧭 ')+state.players[seat].name+': '+route.counts[seat]+'/4',waypointList,'trail-waypoint'+(complete?' done':''));
+  item.style.setProperty('--player-color',COLORS[seat]);
+ }
+ $('trail-next-mission').textContent=route.allReady?
+  '🏔️ Bergpass entdeckt! Die drei Wege führen zum verfluchten Aufstieg (Mission 2). Diese Folgemission ist noch in Entwicklung und bleibt vorerst gesperrt.':
+  '🧭 Bringt jeweils vier Figuren ins Ziel, damit alle drei Wegweiser nach Mission 2 aufleuchten.';
  const history=$('history');history.replaceChildren();
  for(const entry of state.history)text('p',entry,history);
  drawClassicMissionBoard($('board'),state,{selectedPiece:chosenPiece,onPieceClick:choosePawn});
