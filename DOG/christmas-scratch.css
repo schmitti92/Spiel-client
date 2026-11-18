@@ -1783,3 +1783,14 @@ body.scratch-ticket-open > #event-return{
   background:linear-gradient(#daefff,#87bbef);
   color:#103558
 }
+
+/* Edit button only appears while an issued 500-ticket edition still has unsold
+   tickets. The author stylesheet must respect the native hidden attribute. */
+#gs-edition-edit[hidden],#sn-edition-edit[hidden]{display:none!important}
+#gs-edition-edit:not([hidden]),#sn-edition-edit:not([hidden]){
+ margin-top:9px;background:linear-gradient(145deg,#2b573d,#17372d);
+ color:#fff0bc;border:1px solid #c6dba1;
+ box-shadow:0 4px 14px #031d1a7d;
+}
+#gs-edition-edit:not([hidden]):hover:not(:disabled),
+#sn-edition-edit:not([hidden]):hover:not(:disabled){filter:brightness(1.13)}
