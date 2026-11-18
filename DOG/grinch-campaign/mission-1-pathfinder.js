@@ -6,12 +6,8 @@
  *
  * All markup is passive (pointer-events:none), so original pawn clicks work.
  */
-export const PATHFINDER_CLUES=Object.freeze([
- Object.freeze({field:8,emoji:'🔎',title:'Die ersten Spuren'}),
- Object.freeze({field:24,emoji:'🌫️',title:'Der Nebelpass'}),
- Object.freeze({field:40,emoji:'⚡',title:'Das grüne Leuchten'}),
- Object.freeze({field:56,emoji:'❄️',title:'Der eisige Weg'})
-]);
+import {MISSION_1} from './mission-config.js';
+export const PATHFINDER_CLUES=Object.freeze(MISSION_1.trailHints.map(c=>Object.freeze({field:c.field,emoji:c.icon,title:c.title})));
 export const PATHFINDER_SEATS=Object.freeze([0,1,3]); // Rot, Blau, Gelb
 const point=p=>Number(p).toFixed(2);
 const esc=v=>String(v).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
