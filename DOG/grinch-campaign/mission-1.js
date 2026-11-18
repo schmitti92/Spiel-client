@@ -1,8 +1,8 @@
-import {MISSION_1} from './mission-config.js';
-import {drawClassicMissionBoard} from './mission-board.js?v=2';
-import {pathfinderStatus} from './mission-1-pathfinder.js?v=1';
+import {MISSION_1} from './mission-config.js?v=3';
+import {drawClassicMissionBoard} from './mission-board.js?v=3';
+import {pathfinderStatus} from './mission-1-pathfinder.js?v=2';
 import {trackPoint} from '../board-layout.js?v=11';
-import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,status,pieceCoord,validateSaved} from './mission-1-rules.js';
+import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,status,pieceCoord,validateSaved} from './mission-1-rules.js?v=3';
 
 const $=id=>document.getElementById(id);
 const SVG='http://www.w3.org/2000/svg';
