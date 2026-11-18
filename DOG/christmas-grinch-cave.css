@@ -1,22 +1,37 @@
-/* DOG · Grinchhöhle am linken Dorfrand – separater Teil-2-Ort.
-   Keine Eingriffe in die sechs Weihnachtsgebäude, deren Positionen oder Boni. */
-#art-grinch{transition:opacity .2s ease}
-#grinch-stage-image{opacity:0;transition:opacity .25s ease;filter:drop-shadow(0 6px 9px #041a22d9)}
-#art-grinch.photo-ready{opacity:0}
-#art-grinch.photo-ready + #grinch-stage-image{opacity:1}
-.village-hotspots .hit-grinch{
-  left:0.9%;top:61%;width:12%;height:29.5%;z-index:2;
-  border-radius:48% 48% 20% 20%;
+/* Grinch Event Teil 2: giant scenic cave above the same village square.
+   In normal mode Lichtertal keeps its mountains; the Grinch background only
+   replaces the skyline in preview mode, behind houses and the level-one tree. */
+#grinch-sky-scene{opacity:0;visibility:hidden;transition:opacity .3s ease;pointer-events:none}
+.village-view[data-mode="grinch"] #grinch-sky-scene{opacity:1;visibility:visible}
+#grinch-sky-fallback{opacity:1;transition:opacity .22s ease}
+#grinch-sky-image{opacity:0;transition:opacity .22s ease;filter:drop-shadow(0 8px 14px #051b16cf)}
+#grinch-sky-fallback.photo-ready{opacity:0}
+#grinch-sky-fallback.photo-ready + #grinch-sky-image{opacity:1}
+.village-hotspots .hit-grinch-sky{
+  display:none;left:34%;top:2%;width:32%;height:30%;z-index:2;
+  border-radius:45% 45% 20% 20%;
 }
-.village-hotspots .hotspot-grinch{
-  left:7%;top:95%;z-index:4;min-width:0;max-width:14%;
-  border:1px solid #a6d66b;background:linear-gradient(160deg,#23422b,#10231a);
-  box-shadow:0 0 12px #9ece765a,0 3px 10px #0009;
-  color:#dcf6b5;line-height:1.1;
+.village-view[data-mode="grinch"] .village-hotspots .hit-grinch-sky{display:block}
+.village-max-control #grinch-scene-toggle{
+  pointer-events:auto;touch-action:manipulation;cursor:pointer;
+  min-height:32px;padding:7px 12px;border:1px solid #bce48a;
+  border-radius:999px;background:#174029ed;color:#e8ffbb;
+  box-shadow:0 3px 14px #00180ed9,inset 0 1px #efffb955;
+  font:800 12px/1.2 system-ui,sans-serif;text-shadow:0 1px 3px #001c12;
 }
-.village-hotspots .hotspot-grinch:hover,
-.village-hotspots .hotspot-grinch:focus-visible{border-color:#e0ff9d;box-shadow:0 0 16px #b1ff6b80}
-.village-hotspots .hotspot-grinch span{white-space:normal}
+.village-max-control #grinch-scene-toggle:hover,
+.village-max-control #grinch-scene-toggle:focus-visible{
+  outline:2px solid #e6ffb2;outline-offset:2px;background:#2b5835;
+}
+.village-max-control #grinch-scene-toggle[aria-pressed="true"]{
+  background:#3b5124;border-color:#dfff92;
+}
+@media(max-width:760px){
+  .village-max-control #grinch-scene-toggle{min-height:26px;padding:4px 7px;font-size:10px}
+}
+@media(max-width:480px){
+  .village-max-control #grinch-scene-toggle{font-size:9px}
+}
 dialog.grinch-cave-dialog{
   position:fixed;inset:0;margin:auto;width:min(850px,calc(100vw - 24px));max-height:min(91dvh,850px);
   padding:0;overflow:auto;color:#f4f1de;border:1.5px solid #9bca70;border-radius:21px;
@@ -56,4 +71,4 @@ dialog.grinch-cave-dialog::backdrop{background:#020d15db;backdrop-filter:blur(5p
   .grinch-cave-art{min-height:155px}
   .grinch-cave-art img{height:min(26vh,200px)}
 }
-@media(prefers-reduced-motion:reduce){#art-grinch,#grinch-stage-image{transition:none!important}}
+@media(prefers-reduced-motion:reduce){#grinch-sky-scene,#grinch-sky-image,#grinch-sky-fallback{transition:none!important}}
