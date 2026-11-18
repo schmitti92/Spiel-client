@@ -1,18 +1,21 @@
 /**
  * Standalone, deterministic Grinch mission 1 trial engine.
- * Three independent human seats, five pieces each, 60 track fields.
+ * Three independent human seats, five reserve pieces each, ORIGINAL 64 track fields.
  * Never reads/writes official DOG rooms, village currency or mission progress.
  */
 import {MISSION_1} from './mission-config.js';
-export const SEATS=3,TRACK=60,GOAL=5;
-export const COLORS=['#e95355','#4e9ef2','#eac044'];
+export const SEATS=3,TRACK=64,GOAL=4;
+export const COLORS=['#e65f58','#4c9bfa','#e8b84e'];
 export const LABELS=['Rot','Blau','Gelb'];
 export const START_CARDS=new Set(['1/11','13']);
 export const TYPES=['1/11','2','3','4','5','6','7','8','9','10','12','13','Joker'];
 export const LOSS_TYPES=['collapse','abduction','freeze'];
 const clone=x=>JSON.parse(JSON.stringify(x));
 const pos=(n)=>((n%TRACK)+TRACK)%TRACK;
-const homeIndex=s=>s*20;
+// The original DOG track uses four 16-step quadrants.
+// Mission seats deliberately occupy its red, blue and yellow start indices.
+const MISSION_STARTS=[0,16,48];
+const homeIndex=s=>MISSION_STARTS[s];
 function seeded(seed){let x=(seed>>>0)||1;return ()=>((x=(Math.imul(x,1664525)+1013904223)>>>0)/4294967296);}
 function shuffle(xs,rng){const list=[...xs];for(let i=list.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[list[i],list[j]]=[list[j],list[i]];}return list;}
 function deck(rng){return shuffle(TYPES.flatMap((type,i)=>Array.from({length:type==='Joker'?6:8},(_,n)=>({id:type+'-'+i+'-'+n,type}))),rng);}
@@ -117,7 +120,7 @@ function maybeEffects(s){
  }
 }
 function checkComplete(s){
- // Exactly one player piece trapped; other four must be safe in goal.
+ // Exactly one player piece trapped; the other four use the original goal lane.
  s.complete=s.players.every(info=>info.lost&&s.pieces.filter(p=>p.seat===info.seat&&p.place==='goal').length===4);
  if(s.complete){s.lastEvent={type:'win',message:'Alle Freunde erreichen den Aussichtspunkt. Drei Figuren bleiben vermisst.',turn:s.turn};log(s,s.lastEvent.message);}
 }
