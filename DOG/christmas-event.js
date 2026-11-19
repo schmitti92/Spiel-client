@@ -528,12 +528,19 @@ const returnTarget=validReturn();
 if(returnTarget)$('event-return').href=returnTarget;
 function showPanel(id,{updateHistory=true}={}){
  if(!tabs.includes(id))return;
+ const wasActive=tabs.find(name=>$('tab-'+name)?.getAttribute('aria-selected')==='true');
  for(const name of tabs){
   const active=id===name;
   const tab=$('tab-'+name),panel=$('panel-'+name);
   tab.setAttribute('aria-selected',String(active));
   tab.tabIndex=active?0:-1;
   panel.hidden=!active;
+ }
+ // Every tab opens at the top of its own content. The left illustration and
+ // all seven navigation buttons remain stationary throughout the switch.
+ if(wasActive!==id){
+  const scroller=$('event-main');
+  if(scroller)scroller.scrollTo({top:0,left:0,behavior:'instant'});
  }
  // Full-screen scratch tickets suppress document scrolling. A tab switch must
  // restore body scrolling, otherwise the tall Grinch campaign cannot scroll.
