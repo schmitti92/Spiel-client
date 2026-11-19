@@ -580,12 +580,21 @@
               <div id="scratch-lotto-ticket-prizes" class="scratch-lotto-ticket-prizes" hidden aria-label="Gewinnsymbole und Münzwerte dieses Loses"></div>
               <div id="scratch-result-panel" class="scratch-hidden-prize" hidden aria-live="polite"><strong id="scratch-result-value"></strong><small id="scratch-result-kind"></small></div>
             </div>
+            <div id="scratch-zoom-controls" class="scratch-zoom-controls" role="group" aria-label="Rubbellos vergrößern oder verschieben">
+              <button id="scratch-zoom-out" type="button" aria-label="Los verkleinern">−</button>
+              <output id="scratch-zoom-level" aria-live="off">100 %</output>
+              <button id="scratch-zoom-in" type="button" aria-label="Los vergrößern">+</button>
+              <button id="scratch-zoom-reset" type="button" aria-label="Zoom zurücksetzen">↺</button>
+              <button id="scratch-zoom-mode" type="button" aria-pressed="false" title="Zwischen Rubbeln und Verschieben wechseln">✋ Verschieben</button>
+            </div>
             <div id="scratch-winning-lines" class="scratch-winning-lines" hidden></div>
           </div>
           <section id="scratch-inline-results" class="scratch-inline-results" aria-label="Aktuelle Rubbelgewinne" aria-live="polite" hidden></section>
           <div class="scratch-stage-actions">
             <button id="scratch-reveal-button" type="button" hidden>Älteres Los enthüllen</button>
             <button id="scratch-ticket-finish" type="button" hidden>✓ Ergebnis bestätigen</button>
+            <button id="scratch-ticket-next-same" type="button" hidden>🎟️ Gleiches Los nochmal</button>
+            <button id="scratch-ticket-choose" type="button" hidden>🎁 Anderes Los wählen</button>
             <button id="scratch-lotto-back" type="button" hidden>↶ Zurück</button>
           </div>
         </section>
