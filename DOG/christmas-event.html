@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="./christmas-scratch-glueckszahl.css?v=3">
 <link rel="stylesheet" href="./christmas-scratch-lotto.css?v=5">
 <link rel="stylesheet" href="./christmas-scratch-duel.css?v=3">
+<link rel="stylesheet" href="./christmas-scratch-tic-edition.css?v=1">
 <link rel="stylesheet" href="./christmas-scratch-dogjackpot.css?v=1">
 <link rel="stylesheet" href="./christmas-player-levels.css?v=2">
 <link rel="stylesheet" href="./christmas-building-village.css?v=4">
@@ -648,6 +649,64 @@
           </div>
         </form>
       </dialog>
+      <dialog id="scratch-tic-edition-dialog" class="scratch-gifts-settings-dialog scratch-tic-edition-dialog" aria-labelledby="scratch-tic-edition-title">
+        <form id="scratch-tic-edition-form">
+          <div class="scratch-gifts-settings-head">
+            <div><span class="scratch-gifts-eyebrow">⭕ DOG TIC-TAC-TOE · AUFLAGENSTUDIO</span>
+              <h3 id="scratch-tic-edition-title">⚙️ Tic-Tac-Toe-Auflage</h3>
+              <p>500 echte Lose mit eigenem Preis, drei Geldsymbolen, Spielmultiplikator und festem Gesamtbudget. Die bereits ausgegebenen Lose bleiben unverändert.</p>
+            </div>
+            <button type="button" id="scratch-tic-edition-close" aria-label="Auflagenstudio schließen">✕</button>
+          </div>
+          <section class="scratch-gifts-settings-section">
+            <h4>🎟️ 1 · Preis und Losanzahl</h4>
+            <p class="scratch-gifts-help">Eine Auflage umfasst genau 500 Lose. Danach kannst du eine weitere Serie veröffentlichen.</p>
+            <div class="scratch-gifts-settings-grid">
+              <div class="scratch-gifts-auto"><span>📦 Seriengröße</span><strong>500 Lose</strong><small>Jedes Los wird beim Kauf einmalig und serverseitig erzeugt.</small></div>
+              <label class="scratch-gifts-field"><span>🪙 Preis pro Los</span><input id="tic-price" type="number" min="0" max="1000000" step="1" inputmode="numeric" required><small>Standard: 500 Münzen. Ein Gutschein bleibt kostenlos.</small></label>
+              <label class="scratch-gifts-field"><span>✖️ Maximaler Multiplikator</span><select id="tic-max-multiplier" required><option value="1">1×</option><option value="2">2×</option><option value="3">3×</option><option value="4">4×</option><option value="5">5×</option></select><small>Gewinnbeträge auf dem Los werden mit 1× bis zu diesem Wert multipliziert.</small></label>
+            </div>
+          </section>
+          <section class="scratch-gifts-settings-section">
+            <h4>💰 2 · Gewinnbeträge</h4>
+            <p class="scratch-gifts-help">Eine gültige Kreis- oder Kreuz-Dreierlinie gewinnt genau einen der folgenden Beträge mal Multiplikator. Der Koffer muss am meisten auszahlen.</p>
+            <div class="scratch-gifts-settings-grid">
+              <label class="scratch-gifts-field"><span>🪙 Münze – klein</span><input id="tic-coin-0" type="number" min="1" max="50000000" step="1" inputmode="numeric" required></label>
+              <label class="scratch-gifts-field"><span>💵 Schein – mittel</span><input id="tic-coin-1" type="number" min="1" max="50000000" step="1" inputmode="numeric" required></label>
+              <label class="scratch-gifts-field"><span>💼 Koffer – groß</span><input id="tic-coin-2" type="number" min="1" max="50000000" step="1" inputmode="numeric" required></label>
+            </div>
+          </section>
+          <section class="scratch-gifts-settings-section">
+            <h4>🎯 3 · Gewinnverteilung</h4>
+            <p class="scratch-gifts-help">Die Prozentwerte sind deine Wunschverteilung. Die feste Gesamtsumme hat Vorrang: Der Server passt die tatsächlichen Geldtreffer automatisch an. Eine gewonnene Geschenk-Freischaltung wird nicht vom Münzbudget abgezogen.</p>
+            <div class="scratch-gifts-settings-grid">
+              <label class="scratch-gifts-field"><span>❄️ Gewünschte Nieten (%)</span><input id="tic-none" type="number" min="0" max="100" step="0.1" inputmode="decimal" required><small>Bei zu wenig Budget können mehr Nieten nötig sein.</small></label>
+              <label class="scratch-gifts-field"><span>🪙 Münze – Gewichtung (%)</span><input id="tic-weight-0" type="number" min="0" max="100" step="0.1" inputmode="decimal" required></label>
+              <label class="scratch-gifts-field"><span>💵 Schein – Gewichtung (%)</span><input id="tic-weight-1" type="number" min="0" max="100" step="0.1" inputmode="decimal" required></label>
+              <label class="scratch-gifts-field"><span>💼 Koffer – Gewichtung (%)</span><input id="tic-weight-2" type="number" min="0" max="100" step="0.1" inputmode="decimal" required></label>
+              <label class="scratch-gifts-field"><span>🎁 Geschenk – Gewichtung (%)</span><input id="tic-weight-3" type="number" min="0" max="100" step="0.1" inputmode="decimal" required><small>Freischaltung nur bei noch verfügbarem Gewinn. Sonst keine zusätzliche Münzauszahlung.</small></label>
+              <div class="scratch-gifts-auto" id="tic-weights-summary">🎲 Gewichte zusammen: <strong id="tic-weights-total">100 %</strong><small>Alle vier Symbole müssen zusammen genau 100 % ergeben.</small></div>
+            </div>
+          </section>
+          <section class="scratch-gifts-settings-section scratch-gifts-edition-section">
+            <h4>📦 4 · Verbindliche 500er-Auflage</h4>
+            <p class="scratch-gifts-help">Das Münzbudget wird exakt auf die 500 Lose verteilt. Jeder Geldgewinn besitzt einen sichtbaren Preis und eine echte Dreierlinie. Wenn sich der Betrag mit den Geldwerten nicht darstellen lässt, wird die Veröffentlichung abgelehnt.</p>
+            <div class="scratch-gifts-settings-grid">
+              <label class="scratch-gifts-field"><span>💰 Festes Gesamtbudget (🪙)</span><input id="tic-edition-budget" type="number" min="0" max="1000000000000" step="1" inputmode="numeric" required><small>Bei 150.000 🪙 werden genau 150.000 🪙 über alle 500 Lose zusammen geplant.</small></label>
+              <div class="scratch-gifts-auto"><span>📈 Einnahmen bei 500 bezahlten Losen</span><strong id="tic-edition-revenue">– 🪙</strong><small>Ohne Gratislose, Gutscheine oder Dorfrabatt.</small></div>
+            </div>
+            <p id="tic-edition-hint" class="scratch-gifts-help" role="status" aria-live="polite"></p>
+            <div id="tic-edition-status" class="scratch-gifts-edition-status" role="status" aria-live="polite">Noch keine begrenzte Tic-Tac-Toe-Auflage erstellt.</div>
+            <button id="tic-edition-create" type="button" class="scratch-gifts-edition-create">📦 500er-Auflage verbindlich erstellen</button>
+            <button id="tic-edition-edit" type="button" class="scratch-gifts-edition-create" hidden>✏️ Aktuelle Auflage bearbeiten</button>
+            <p class="scratch-gifts-help">Du kannst die laufende Auflage später als Ersteller bearbeiten. Dabei wird nur das Restbudget für die unverkauften Lose neu aufgeteilt. Schon ausgestellte Gewinne ändern sich niemals.</p>
+            <p id="tic-edition-feedback" class="scratch-gifts-settings-feedback" role="status" aria-live="polite"></p>
+          </section>
+          <div class="scratch-gifts-settings-actions">
+            <button id="scratch-tic-edition-cancel" type="button">Schließen</button>
+          </div>
+        </form>
+      </dialog>
     </section>
     <section class="event-panel" id="panel-level" role="tabpanel" aria-labelledby="tab-level" hidden>
       <div class="event-heading"><div><span class="eyebrow">🏅 DEIN PERSÖNLICHER FORTSCHRITT</span><h2>Spielerlevel 1–10</h2><p>Spiele DOG, sammle Erfahrungspunkte und steige Stufe für Stufe auf. Die Level gehören nur deinem Profil.</p></div><span class="soft-tag">⭐ Erfahrung</span></div>
@@ -675,6 +734,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./christmas-event.js?v=110"></script>
+<script type="module" src="./christmas-event.js?v=111"></script>
 </body>
 </html>
