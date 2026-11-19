@@ -6,7 +6,7 @@
 const MISSIONS=Object.freeze([
  {name:'Pfadfinder – Der Weg zum Berg',icon:'🧭',
   description:'Die drei Freunde folgen dem grünen Leuchten. Jeder beginnt mit fünf Figuren, doch auf dem Bergpfad verschwindet von jedem eine.',
-  objective:'Vier Figuren pro Spieler in die originalen DOG-Zielfelder bringen. Jedes vollständige Ziel öffnet einen Wegweiser nach Mission 2. Hinweisspuren, Einsturz, Entführung, Eisfluch, Nebel und Erdbeben. Lokaler Testmodus.'},
+  objective:'Mit den normalen DOG-Karten vier Figuren pro Spieler durch das eine eigene Portal-Zielfeld nach Welt 2 teleportieren. Drei Pflichtverluste, geschützte Startfelder, Erdbeben, Nebel und Pfadfinder-Hinweise. Lokaler Testmodus.'},
  {name:'Der verfluchte Aufstieg',icon:'🌫️',
   description:'Mit vier Figuren je Spieler geht der Aufstieg weiter. Die Dunkelheit wird gefährlicher.',
   objective:'Geplant: Ein weiterer unvermeidbarer Figurenverlust je Spieler.'},
