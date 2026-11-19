@@ -1,13 +1,13 @@
 import {MISSION_1} from './mission-config.js?v=4';
 import {cardVisual} from '../card-visuals.js?v=11';
-import {drawClassicMissionBoard} from './mission-board.js?v=7';
+import {drawClassicMissionBoard} from './mission-board.js?v=8';
 import {pathfinderStatus} from './mission-1-pathfinder.js?v=4';
 import {trackPoint,goalPoint} from '../board-layout.js?v=11';
-import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,status,pieceCoord,validateSaved} from './mission-1-rules.js?v=7';
+import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,status,pieceCoord,validateSaved} from './mission-1-rules.js?v=8';
 
 const $=id=>document.getElementById(id);
 const SVG='http://www.w3.org/2000/svg';
-const KEY='dog-grinch-m1-canonical-cards-v4';
+const KEY='dog-grinch-m1-start-active-v5';
 let state=null,chosenCard=null,chosenPiece=null,pickMoves=[],lastSeenRevision=-1;
 let toastTimer=null,effectTimer=null;
 const ns=(tag,attrs={},parent=null)=>{
@@ -144,7 +144,7 @@ function render(){
  }else {
   text('p','Die drei Freunde haben alle zwölf verbliebenen Figuren über ihre drei wiederverwendbaren Portale nach Welt 2 geschickt. Drei Figuren bleiben verschollen. Mission 2 ist noch nicht spielbar.',moves,'help');
  }
- $('actions').textContent=state.complete?'🎉 Mission 1 lokal abgeschlossen (Test, keine offiziellen Belohnungen).':'Ziel: Jede Person schickt vier Figuren nacheinander durch ihr einzelnes Portal. Eine Figur je Spieler bleibt im Fluch gefangen.';
+ $('actions').textContent=state.complete?'🎉 Mission 1 lokal abgeschlossen (Test, keine offiziellen Belohnungen).':'Figur 5 steht bereits auf dem Startfeld und darf sofort laufen. Ziel: Vier Figuren pro Spieler durch das jeweilige Portal schicken; eine Figur wird vom Fluch gefangen.';
  // Each player has exactly one reusable portal at the FIRST classic goal location.
  const route=pathfinderStatus(state);
  $('trail-progress-count').textContent=route.ready+' / '+route.participants+' Portale abgeschlossen';
