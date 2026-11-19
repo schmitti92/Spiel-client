@@ -62,7 +62,9 @@ export function legalMoves(s,seat,card){
  for(const type of types){
   if(START_CARDS.has(type))for(const p of s.pieces.filter(p=>p.seat===seat&&p.place==='home')){
    const occupant=pieceAtTrack(s,homeIndex(seat),p.id);
-   if(!occupant)opts.push({kind:'start',pieceId:p.id,cardId:card.id,as:type});
+   // A friendly pawn on the protected start may be sent back home
+   // when another own reserve pawn is brought out. Opponents cannot do this.
+   if(!occupant||occupant.seat===seat)opts.push({kind:'start',pieceId:p.id,cardId:card.id,as:type});
   }
   if(type==='7'){
    for(const a of s.pieces.filter(p=>p.seat===seat&&p.place==='track'))
@@ -121,7 +123,15 @@ export function play(original,seat,action){
  const chosen=valid.find(m=>m.kind===action.kind&&m.cardId===action.cardId&&m.as===action.as&&m.pieceId===action.pieceId&&m.targetId===action.targetId&&m.distance===action.distance);
  if(!chosen)throw Error('Ungültiger Zug');
  const s=clone(original),p=s.pieces.find(p=>p.id===chosen.pieceId);
- if(chosen.kind==='start'){p.place='track';p.steps=0;}
+ if(chosen.kind==='start'){
+  const previous=pieceAtTrack(s,homeIndex(seat),p.id);
+  if(previous){
+   if(previous.seat!==seat)throw Error('Gegnerisches Startfeld ist geschützt.');
+   previous.place='home';previous.steps=-1;
+   log(s,s.players[seat].name+' setzt eine eigene Figur vom Startfeld zurück ins Haus.');
+  }
+  p.place='track';p.steps=0;
+ }
  if(chosen.kind==='move'){
   if(chosen.captureId){const victim=s.pieces.find(v=>v.id===chosen.captureId);victim.place='home';victim.steps=-1;}
   if(chosen.targetSteps>=TRACK){
