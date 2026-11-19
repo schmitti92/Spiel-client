@@ -11,7 +11,7 @@
  */
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField} from '../board-layout.js?v=11';
 import {resolveAppearance,loadAppearance,validAssetPath} from '../appearance-registry.js?v=27';
-import {pieceCoord} from './mission-1-rules.js?v=7';
+import {pieceCoord} from './mission-1-rules.js?v=8';
 import {pathfinderBoardMarkup} from './mission-1-pathfinder.js?v=4';
 export const CLASSIC_TRACK_LENGTH=64;
 export const MISSION_BOARD_SEATS=Object.freeze([0,1,3]); // Rot, Blau, Gelb
@@ -103,26 +103,19 @@ export function drawClassicMissionBoard(boardSvg,game,{selectedPiece=null,onPiec
  // classic holes and below the pawns. No original SVG coordinates move.
  push(pathfinderBoardMarkup(game,{track:TRACK_POINTS,goals:GOAL_POINTS,colors:palette}));
  // Mission-specific overlays remain passive; normal DOG uses its original renderer.
- // Use the four original home holes dynamically. The fifth reserve
- // pawn stands on the colored starting tile ONLY while all five are home.
- // Once any pawn has left home, the fifth moves into the now-vacant house hole.
- // Returning/captured pawns likewise take any available house hole.
+ // All actual home pawns use original DOG home holes. Figure 5 is
+ // initially a REAL active track pawn at its owner's protected starting tile.
+ // If it is ever captured back into an already-full house, stack it visibly
+ // beside a home hole rather than pretending it is still in play.
  const homePositions=new Map();
  for(let seat=0;seat<MISSION_BOARD_SEATS.length;seat++){
   const owner=MISSION_BOARD_SEATS[seat];
   const remaining=game.pieces.filter(p=>p.seat===seat&&p.place==='home')
-    .sort((a,b)=>Number(a.id.slice(1))-Number(b.id.slice(1)));
-  const occupied=game.pieces.some(p=>p.place==='track'&&pieceCoord(p)===owner*16);
-  const fifth=remaining.find(p=>Number(p.id.slice(1))%5===4);
-  const showFifthOnStart=remaining.length===5&&!occupied&&!!fifth;
-  const normalHomed=showFifthOnStart?remaining.filter(p=>p!==fifth):remaining;
-  normalHomed.forEach((p,i)=>{
-   // In the rare case another player's real pawn occupies a protected start,
-   // show a compact fifth reserve figure by the house rather than hiding it.
+   .sort((a,b)=>Number(a.id.slice(1))-Number(b.id.slice(1)));
+  remaining.forEach((p,i)=>{
    const hole=homePoint(owner,Math.min(i,3));
    homePositions.set(p.id,i<4?hole:{x:hole.x+9,y:hole.y+9});
   });
-  if(showFifthOnStart)homePositions.set(fifth.id,trackPoint(owner*16));
  }
  for(const piece of game.pieces){
   if(piece.place==='lost'||piece.place==='teleported')continue;
@@ -149,8 +142,8 @@ export function drawClassicMissionBoard(boardSvg,game,{selectedPiece=null,onPiec
     push('<circle cx="'+p.x+'" cy="'+(p.y-7)+'" r="9.1" fill="url(#dog-pawn-'+owner+')" stroke="#ffffff" stroke-opacity=".42" stroke-width="1.4"/>');
     push('<circle cx="'+(p.x-2.8)+'" cy="'+(p.y-10.8)+'" r="2.3" fill="#fff" opacity=".68"/>');
   }
-  // Number 5 identifies the fifth pawn, whether at start or in a house hole.
-  if(piece.place==='home'&&Number(piece.id.slice(1))%5===4){
+  // The fifth figure is a real pawn from turn one; keep its identifier visible.
+  if(Number(piece.id.slice(1))%5===4){
     push('<circle cx="'+(p.x+10)+'" cy="'+(p.y-12)+'" r="10" fill="#0b2034" stroke="#fff1bb" stroke-width="1.5"/>');
     push('<text x="'+(p.x+10)+'" y="'+(p.y-8)+'" font-size="12" text-anchor="middle" font-weight="900" fill="#fff">5</text>');
   }
