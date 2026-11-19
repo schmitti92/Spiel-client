@@ -565,7 +565,7 @@ test('Tic-Tac-Toe offers its own real 500-ticket fixed-budget edition editor',()
  assert.match(js,/function submitTicEdition\(edit\)/);
  assert.match(js,/query\(edit\?'\/editions\/tic_tac_toe\/edit':'\/editions\/tic_tac_toe'/);
  assert.match(js,/ticEdition=r\.ticEdition\?\?null/);
- assert.match(js,/option\.id==='tic_tac_toe'\?ticEdition:null/);
+ assert.match(js,/option\.id==='tic_tac_toe'\?ticEdition:otherStudio\.get\(option\.id\)/);
  assert.match(js,/ticEdition\?\.remaining===0/);
  assert.match(js,/tic-edition-budget/);
  assert.match(css,/@media\(max-width:620px\)/);
@@ -586,4 +586,27 @@ test('Tic-Tac-Toe edition lets its creator choose prize category 1, 2 or 3',()=>
  assert.match(js,/getPrizeCategoryLabel\(ticEdition\.config\?\.prizeCategory\?\?2\)/);
  assert.match(js,/getPrizeCategoryLabel\(tic\.prizeCategory\)/);
  assert.match(js,/'tic-weight-0','tic-weight-1','tic-weight-2','tic-weight-3'/);
+});
+
+test('all seven DOG scratch cards expose an edition editor and category selector',()=>{
+ const html=source('../DOG/christmas-event.html');
+ const core=source('../DOG/christmas-scratch-ui.js');
+ const other=source('../DOG/christmas-other-edition-ui.js');
+ const css=source('../DOG/christmas-scratch-other-edition.css');
+ assert.match(core,/createOtherScratchStudio\(\{account,query,drawShop,showAlert,stage\}\)/);
+ assert.match(core,/if\(OTHER_EDITOR_VARIANTS\.includes\(option\.id\)\)/);
+ assert.match(core,/otherStudio\.load\(r\.otherEditions\?\?\{\}\)/);
+ assert.match(core,/otherStudio\.receive\(variantId,r\.otherEdition\)/);
+ assert.match(core,/otherStudio\.onTicket\(stage\.dataset\.variant\)/);
+ assert.match(other,/OTHER_EDITOR_VARIANTS=Object\.freeze\(\['elf','premium_27','number_one_20','dog_jackpot_9'\]\)/);
+ assert.match(other,/500ER-AUFLAGENSTUDIO/);
+ for(const text of ['oe-category','oe-budget','oe-coin-0','oe-coin-1','oe-coin-2',
+  'oe-create','oe-edit','oe-gift','oe-none','oe-dog','oe-gold','oe-double'])
+  assert.ok(other.includes(text),'The editor requires control '+text);
+ assert.match(other,/query\('\/editions\/\'+active/);
+ assert.match(css,/max-width:620px/);
+ for(const id of ['gs-prize-category','sn-prize-category','tic-prize-category'])
+  assert.ok(html.includes('id="'+id+'"'),'Missing prize category '+id);
+ assert.match(core,/prizeCategory:Number\(\$\('gs-prize-category'\)\.value\)/);
+ assert.match(core,/prizeCategory:Number\(\$\('sn-prize-category'\)\.value\)/);
 });
