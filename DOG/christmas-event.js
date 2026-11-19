@@ -10,7 +10,7 @@ import {initChristmasStory} from './christmas-story.js?v=3';
 import {initChristmasScratch} from './christmas-scratch-ui.js?v=62';
 import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=4';
 import {sceneLayouts,grinchSkyLayout,verifyVillageSpriteLayout} from './christmas-village-layout.mjs?v=3';
-import {initGrinchEvent} from './christmas-grinch-event.js?v=4';
+import {initGrinchEvent} from './christmas-grinch-event.js?v=5';
 const $=id=>document.getElementById(id);
 // Older browser caches may pair outdated chapter markup with the new module.
 // Remove those obsolete nodes before setting up event navigation.
