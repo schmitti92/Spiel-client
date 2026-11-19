@@ -433,15 +433,26 @@ export function initChristmasScratch(){
   // An older Render deployment may not yet provide a verified edition
   // ceiling. Never falsely claim that a speculative total is in stock.
   const [small,medium,large]=amounts;
-  const simpleLimit=2*(small+medium+large);
+  // Legacy 'maximum budget' series are not preprinted. Show the
+  // mathematically possible ceiling, clearly marked as theoretical, instead
+  // of the oversized and misleading "WIRD BERECHNET" placeholder.
+  const maxVisible=Math.max(1,Math.min(3,Number(edition?.config?.maxPrizes??3)));
+  const distinctMoneyMaximum=[small,medium,large].sort((a,b)=>b-a)
+   .slice(0,maxVisible).reduce((sum,value)=>sum+value,0);
+  const doubled=['gifts','snow_collect','elf'].includes(option.id)&&
+   Number(edition?.config?.doubleChancePer1000??110)>0?2:1;
   const candidate={
-   gifts:simpleLimit,snow_collect:simpleLimit,elf:simpleLimit,
-   tic_tac_toe:Math.max(large,1500)*(ticEdition?.config?.maxMultiplier??5),
+   gifts:distinctMoneyMaximum*doubled,
+   snow_collect:distinctMoneyMaximum*doubled,
+   elf:distinctMoneyMaximum*doubled,
+   tic_tac_toe:Math.max(large,Number(ticEdition?.config?.giftFallbackCoins??1500))*
+    (ticEdition?.config?.maxMultiplier??5),
    number_one_20:20*Math.max(large,lucky?.giftFallbackCoins??1500),
    premium_27:2*(small+medium+large+large)+1000,
    dog_jackpot_9:8*Math.max(large,1500)
   }[option.id];
-  return {amount:edition?null:candidate,verified:false};
+  return {amount:Number.isSafeInteger(candidate)&&candidate>=0?candidate:null,
+   verified:false};
  }
  function drawShop(){
   root.replaceChildren();
@@ -565,12 +576,12 @@ export function initChristmasScratch(){
    const soldOut=Boolean(activeEdition&&activeEdition.remaining===0);
    const headlineLabel=el('span','scratch-printed-jackpot-caption',
     soldOut?'AUFLAGE AUSVERKAUFT':
-    highest.verified?'🏆 HÖCHSTGEWINN DER RESTLOSE':'🏆 MÖGLICHER HÖCHSTGEWINN');
-   headline.append(headlineLabel,
-    el('strong','scratch-printed-jackpot-value',
-     soldOut?'0 🪙':highest.amount===null?'WIRD BERECHNET':num(highest.amount)+' 🪙'));
+    highest.verified?'🏆 HÖCHSTGEWINN':'🏆 THEORETISCHER HÖCHSTGEWINN');
+   const amountText=soldOut?'AUSVERKAUFT':
+    highest.amount===null?'NICHT ERMITTELBAR':num(highest.amount)+' 🪙';
+   headline.append(headlineLabel,el('strong','scratch-printed-jackpot-value',amountText));
    if(!highest.verified&&!soldOut)
-    headline.title='Nur die aktuelle Gewinnauflage kann einen tatsächlich erreichbaren Höchstgewinn bestätigen.';
+    headline.title='Theoretischer Wert anhand der aktuellen Gewinnbeträge und Multiplikatoren. Er ist nicht garantiert in einer laufenden Auflage enthalten.';
    else if(highest.verified)
     headline.title='Vom Render-Server aus dem unveränderlichen Gewinnplan der noch nicht ausgegebenen Lose berechnet.';
    const serial=el('div','scratch-printed-serial','LICHTERTAL · '+option.id.toUpperCase().replaceAll('_','-')+' · MUSTER');
