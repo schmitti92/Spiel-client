@@ -389,6 +389,7 @@ export function initChristmasScratch(){
   ].entries()){
    const step=el('div','lotto-step');
    step.append(el('strong','lotto-step-number',String(i+1)),el('span','lotto-step-text',description));
+   if(i===2)step.classList.add('lotto-step-red-one');
    intro.append(step);
   }
   left.append(intro,
@@ -396,7 +397,7 @@ export function initChristmasScratch(){
     ['🪙 Münze',num(amounts[0])+' Münzen'],
     ['💵 Schein',num(amounts[1])+' Münzen'],
     ['💼 Koffer',num(amounts[2])+' Münzen'],
-    ['🎁 💝 🎀 🧧 🛍️','Hauptgewinn / '+num(giftReplacement)+' 🪙 Ersatz']
+    ['🎁 Geschenke','Freischaltung · '+num(giftReplacement)+' 🪙 Ersatz']
    ],'lotto-symbols'));
   const chanceOfAny=100*(1-Math.pow(1-hit,20));
   const bestCash=Math.max(0,...amounts.filter((_,i)=>weights[i]>0));
@@ -419,7 +420,7 @@ export function initChristmasScratch(){
     ['🪙 Münze',percent(weights[0]/10)],
     ['💵 Schein',percent(weights[1]/10)],
     ['💼 Koffer',percent(weights[2]/10)],
-    ['🎁 💝 🎀 🧧 🛍️',percent(weights[3]/10)]
+    ['🎁 Geschenke',percent(weights[3]/10)]
    ],'lotto-symbol-odds')
   );
   $('scratch-lotto-headline').textContent=
