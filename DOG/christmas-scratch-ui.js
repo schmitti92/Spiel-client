@@ -2187,6 +2187,144 @@ export function initChristmasScratch(){
   }catch(e){feedback.textContent='⚠️ '+scratchBuyError(e?.message||'Serverfehler');}
   finally{updateSnowEditionPreview()}
  });
+
+ // Tic-Tac-Toe has its own fixed-budget edition, separate from all other
+ // ticket types. Never treat percentages as guarantees when a fixed budget
+ // mathematically forces a different number of money tickets.
+ function readTicEdition(){
+  const getInt=(id,min,max)=>{
+   const input=$(id),text=input?.value?.trim()??'',value=Number(text);
+   if(!text||!Number.isSafeInteger(value)||value<min||value>max)
+    throw Error('Bitte „'+(input?.closest('label')?.querySelector('span')?.textContent||id)+'“ prüfen.');
+   return value;
+  };
+  const percentField=id=>{
+   const input=$(id),text=input?.value?.trim()??'',value=Number(text);
+   if(!text||!Number.isFinite(value)||value<0||value>100||
+    Math.abs(value*10-Math.round(value*10))>0.000001)
+    throw Error('Bitte bei „'+(input?.closest('label')?.querySelector('span')?.textContent||id)+
+     '“ einen Prozentwert in 0,1-%-Schritten eingeben.');
+   return Math.round(value*10);
+  };
+  const coinAmounts=[0,1,2].map(index=>getInt('tic-coin-'+index,1,50000000));
+  if(!(coinAmounts[0]<coinAmounts[1]&&coinAmounts[1]<coinAmounts[2]))
+   throw Error('Die drei Geldwerte müssen streng steigen: 🪙 kleiner als 💵 kleiner als 💼.');
+  const symbolWeights=[0,1,2,3].map(index=>percentField('tic-weight-'+index));
+  if(symbolWeights.reduce((sum,n)=>sum+n,0)!==1000)
+   throw Error('Die vier Gewinnsymbole müssen zusammen exakt 100 % ergeben.');
+  const config={
+   price:getInt('tic-price',0,1000000),coinAmounts,symbolWeights,
+   targetNonePer1000:percentField('tic-none'),
+   maxMultiplier:getInt('tic-max-multiplier',1,5),giftFallbackCoins:0
+  };
+  const maxTotalCoins=getInt('tic-edition-budget',0,1000000000000);
+  return {tic:config,maxTotalCoins};
+ }
+ function updateTicEditionPreview(){
+  const value=id=>Number($(id)?.value||0);
+  const price=value('tic-price'),budget=value('tic-edition-budget');
+  const mult=value('tic-max-multiplier');
+  const money=Number.isSafeInteger(price)&&price>=0?price*500:NaN;
+  $('tic-edition-revenue').textContent=Number.isSafeInteger(money)?num(money)+' 🪙':'– 🪙';
+  const weights=[0,1,2,3].map(i=>value('tic-weight-'+i));
+  const total=weights.reduce((a,b)=>a+b,0);
+  const valid=weights.every(n=>Number.isFinite(n)&&n>=0&&n<=100)&&Math.abs(total-100)<.00001;
+  $('tic-weights-total').textContent=total.toLocaleString('de-DE',{maximumFractionDigits:1})+' % / 100 %';
+  $('tic-weights-summary').classList.toggle('is-invalid',!valid);
+  const active=Boolean(ticEdition&&ticEdition.remaining>0);
+  const soldOut=Boolean(ticEdition&&ticEdition.remaining===0);
+  const remain=ticEdition?.remaining??500,already=ticEdition?.paidCoins??0;
+  const maxPossible=already+remain*value('tic-coin-2')*Math.max(1,mult);
+  const hint=$('tic-edition-hint');
+  const warnings=[];
+  if(!valid)warnings.push('⚠️ Alle vier Symbolgewichte müssen genau 100 % ergeben.');
+  if(Number.isSafeInteger(budget)&&budget>maxPossible)
+   warnings.push('⚠️ Dieses Budget überschreitet die rechnerische Obergrenze von '+
+    num(maxPossible)+' 🪙 bei '+remain+' Restlosen.');
+  warnings.push('💡 Der Server plant genau das eingegebene Budget. Nicht exakt darstellbare Summen werden abgelehnt.');
+  hint.textContent=warnings.join(' ');
+  const statusBox=$('tic-edition-status');
+  statusBox.dataset.state=active?'active':soldOut?'sold_out':'none';
+  statusBox.textContent=active?
+   '🟢 Aktive Auflage: '+num(ticEdition.issued)+'/500 Lose vergeben · '+
+    num(ticEdition.paidCoins)+' von '+num(ticEdition.maxTotalCoins)+' 🪙 ausgezahlt · '+
+    num(ticEdition.remainingCoins)+' 🪙 für '+num(ticEdition.remaining)+' Restlose fest eingeplant. '+
+    'Offene Geldlose: '+num(ticEdition.moneyTicketsRemaining??0)+
+    ', Geschenke: '+num(ticEdition.giftTicketsRemaining??0)+
+    ', Nieten: '+num(ticEdition.losingTicketsRemaining??0)+'.':
+   soldOut?'🏁 Die 500 Lose sind ausverkauft. Du kannst eine neue Auflage erstellen.':
+   '📦 Noch keine begrenzte Auflage. Aktuelle Tic-Tac-Toe-Lose sind bis zur ersten Veröffentlichung unbegrenzt verfügbar.';
+  $('tic-edition-create').disabled=active;
+  $('tic-edition-create').title=active?'Zuerst die laufende 500er-Serie abschließen.':'Neue Auflage veröffentlichen';
+  $('tic-edition-edit').hidden=!active;
+  $('tic-edition-edit').disabled=!active;
+ }
+ function openTicEdition(){
+  if(!ticDialog)return;
+  if(!account()){
+   showAlert('🔐 Melde dich zuerst mit deinem DOG-Profil an.','tic_tac_toe');return;
+  }
+  const conf=ticEdition?.config??{
+   price:500,coinAmounts:[200,450,800],symbolWeights:[700,250,40,10],
+   maxMultiplier:5,targetNonePer1000:200
+  };
+  const set=(id,val)=>{$(id).value=String(val)};
+  set('tic-price',conf.price??500);
+  set('tic-max-multiplier',conf.maxMultiplier??5);
+  set('tic-none',(conf.targetNonePer1000??200)/10);
+  for(let i=0;i<3;i++)set('tic-coin-'+i,conf.coinAmounts?.[i]??[200,450,800][i]);
+  for(let i=0;i<4;i++)set('tic-weight-'+i,(conf.symbolWeights?.[i]??[700,250,40,10][i])/10);
+  set('tic-edition-budget',ticEdition?.maxTotalCoins??150000);
+  $('tic-edition-feedback').textContent='';
+  updateTicEditionPreview();
+  ticDialog.showModal();
+ }
+ async function submitTicEdition(edit){
+  const current=ticEdition,button=$(edit?'tic-edition-edit':'tic-edition-create');
+  const output=$('tic-edition-feedback');
+  if(button.disabled||!account())return;
+  try{
+   const {tic,maxTotalCoins}=readTicEdition();
+   if(edit){
+    if(!current||current.remaining<=0)throw Error('Es gibt keine aktive Auflage mehr.');
+    if(maxTotalCoins<current.paidCoins)
+     throw Error('Das Gesamtbudget darf nicht unter den '+num(current.paidCoins)+' bereits gezahlten Münzen liegen.');
+   }else if(ticEdition?.remaining>0)
+    throw Error('Es läuft bereits eine Tic-Tac-Toe-Auflage.');
+   const name=edit?'Restlose bearbeiten':'500er-Auflage verbindlich veröffentlichen';
+   const message=edit?
+    'Bereits ausgegebene '+current.issued+' Lose bleiben unverändert.\n'+
+    current.remaining+' Restlose erhalten zusammen genau '+
+    num(maxTotalCoins-current.paidCoins)+' 🪙.\nGesamtbudget: '+num(maxTotalCoins)+' 🪙.':
+    'Der Server reserviert für 500 Tic-Tac-Toe-Lose genau '+num(maxTotalCoins)+
+    ' 🪙.\nBeim Kauf wird jedes Los einmalig ausgegeben.';
+   if(!window.confirm(name+'?\n'+message))return;
+   button.disabled=true;output.textContent='🔄 Render plant die Gewinnkombinationen und prüft das Budget …';
+   const reply=await query(edit?'/editions/tic_tac_toe/edit':'/editions/tic_tac_toe',
+    edit?{tic,maxTotalCoins,editionId:current.id,expectedRevision:current.revision}: {tic,maxTotalCoins});
+   if(!reply.ticEdition||edit&&reply.ticEdition.id!==current.id)
+    throw Error('Der Server hat die Auflage noch nicht bestätigt.');
+   ticEdition=reply.ticEdition;
+   output.textContent='✅ '+(edit?'Restlose aktualisiert.':'Auflage veröffentlicht.')+
+    ' Genau '+num(ticEdition.remainingCoins)+' 🪙 sind für die verbleibenden '+
+    num(ticEdition.remaining)+' Lose reserviert.';
+   drawShop();updateTicEditionPreview();
+  }catch(error){
+   output.textContent='⚠️ '+scratchBuyError(error?.message||'SERVER_UNAVAILABLE');
+  }finally{button.disabled=false;updateTicEditionPreview()}
+ }
+ if(ticDialog){
+  $('scratch-tic-edition-close').addEventListener('click',()=>ticDialog.close());
+  $('scratch-tic-edition-cancel').addEventListener('click',()=>ticDialog.close());
+  ticDialog.addEventListener('click',e=>{if(e.target===ticDialog)ticDialog.close()});
+  $('scratch-tic-edition-form').addEventListener('submit',e=>e.preventDefault());
+  for(const id of ['tic-price','tic-max-multiplier','tic-none','tic-edition-budget',
+   'tic-coin-0','tic-coin-1','tic-coin-2',
+   'tic-weight-0','tic-weight-1','tic-weight-2','tic-weight-3'])
+   $(id).addEventListener('input',updateTicEditionPreview);
+  $('tic-edition-create').addEventListener('click',()=>void submitTicEdition(false));
+  $('tic-edition-edit').addEventListener('click',()=>void submitTicEdition(true));
+ }
  $('scratch-host-settings').addEventListener('click',openSettings);
  $('scratch-host-close').addEventListener('click',()=>hostDialog.close());
  $('scratch-host-cancel').addEventListener('click',()=>hostDialog.close());
