@@ -1,0 +1,139 @@
+/* DOG Lichtertal · universal scratch zoom & next-ticket actions
+   No changes to canvas dimensions, probabilities or purchase receipts. */
+.scratch-stage:not([hidden]) > #scratch-reveal{
+ position:relative!important;
+}
+/* Ticket picture, foil, numbers and reward artwork scale together.
+   Controls never scale and remain easy to tap at any zoom level. */
+.scratch-stage:not([hidden]) #scratch-card-art{
+ transform-origin:50% 50%!important;
+ will-change:transform;
+}
+.scratch-stage:not([hidden]) #scratch-reveal.scratch-zoomed{
+ overflow:hidden!important;
+}
+.scratch-stage:not([hidden]) #scratch-reveal.scratch-pan-mode #scratch-card-art{
+ cursor:grab!important;
+ touch-action:none!important;
+}
+.scratch-stage:not([hidden]) #scratch-reveal.scratch-pan-mode #scratch-card-art:active{
+ cursor:grabbing!important;
+}
+.scratch-stage:not([hidden]) #scratch-reveal.scratch-pan-mode #scratch-board .scratch-unified-cover,
+.scratch-stage:not([hidden]) #scratch-reveal.scratch-pan-mode #scratch-board .scratch-duel-cover{
+ cursor:grab!important;
+}
+.scratch-stage:not([hidden]) #scratch-zoom-controls{
+ position:absolute!important;
+ z-index:110!important;
+ right:6px!important;top:6px!important;left:auto!important;bottom:auto!important;
+ display:flex!important;flex-direction:row!important;align-items:center!important;
+ justify-content:flex-end!important;
+ gap:4px!important;
+ max-width:calc(100% - 12px)!important;
+ padding:4px!important;margin:0!important;
+ border:1px solid #f7d78f!important;border-radius:11px!important;
+ color:#fff4d6!important;
+ background:linear-gradient(180deg,#0b3834ee,#061c22f0)!important;
+ box-shadow:0 2px 10px #000a,inset 0 1px #fff8ba55!important;
+ pointer-events:auto!important;
+}
+.scratch-stage:not([hidden]) #scratch-zoom-controls button{
+ position:relative!important;
+ display:grid!important;place-items:center!important;
+ flex:0 0 auto!important;
+ min-width:34px!important;width:auto!important;
+ height:33px!important;min-height:33px!important;
+ padding:3px 8px!important;margin:0!important;
+ border:1px solid #d8be78!important;border-radius:8px!important;
+ color:#fff3cd!important;background:linear-gradient(#226b56,#0b3b34)!important;
+ font:850 17px/1 system-ui,sans-serif!important;
+ text-shadow:0 1px 3px #00231f!important;
+ box-shadow:inset 0 1px #e4ffc33d!important;
+ cursor:pointer!important;
+ user-select:none!important;
+ touch-action:manipulation!important;
+}
+.scratch-stage:not([hidden]) #scratch-zoom-controls button:disabled{
+ opacity:.45!important;cursor:default!important;
+}
+.scratch-stage:not([hidden]) #scratch-zoom-controls button:focus-visible{
+ outline:2px solid #fff1b1!important;outline-offset:1px!important;
+}
+.scratch-stage:not([hidden]) #scratch-zoom-controls #scratch-zoom-mode{
+ min-width:92px!important;
+ padding:4px 6px!important;
+ white-space:nowrap!important;
+ font:900 11px/1.15 system-ui,sans-serif!important;
+}
+.scratch-stage:not([hidden]) #scratch-zoom-controls #scratch-zoom-mode[aria-pressed="true"]{
+ color:#422309!important;background:linear-gradient(#ffe7a3,#d8a34d)!important;
+ border-color:#fff3c6!important;text-shadow:none!important;
+}
+.scratch-stage:not([hidden]) #scratch-zoom-level{
+ min-width:48px!important;
+ display:block!important;
+ text-align:center!important;
+ color:#fff4c4!important;
+ font:900 12px/1 Georgia,serif!important;
+ font-variant-numeric:tabular-nums!important;
+}
+.scratch-stage:not([hidden]).is-revealed > .scratch-stage-actions{
+ position:relative!important;
+ z-index:111!important;
+ display:flex!important;
+ flex-direction:row!important;
+ align-items:center!important;
+ justify-content:center!important;
+ gap:7px!important;
+}
+.scratch-stage:not([hidden]) > .scratch-stage-actions #scratch-ticket-next-same,
+.scratch-stage:not([hidden]) > .scratch-stage-actions #scratch-ticket-choose{
+ flex:1 1 auto!important;
+ min-width:0!important;
+ min-height:41px!important;
+ padding:7px 11px!important;
+ border:1.5px solid #ffe4a5!important;border-radius:10px!important;
+ font:900 clamp(11px,1.25vw,16px)/1.15 system-ui,sans-serif!important;
+ color:#fff9df!important;background:linear-gradient(180deg,#229b5c,#0b503a)!important;
+ box-shadow:inset 0 2px #e0ffc155,0 3px 7px #0009!important;
+ text-align:center!important;
+ white-space:normal!important;
+ cursor:pointer!important;
+}
+.scratch-stage:not([hidden]) > .scratch-stage-actions #scratch-ticket-next-same{
+ background:linear-gradient(180deg,#e5bd73,#9d6629)!important;
+ color:#291f14!important;text-shadow:none!important;
+}
+.scratch-stage:not([hidden]) > .scratch-stage-actions #scratch-ticket-next-same[hidden],
+.scratch-stage:not([hidden]) > .scratch-stage-actions #scratch-ticket-choose[hidden]{
+ display:none!important;
+}
+@media(max-width:750px){
+ .scratch-stage:not([hidden]) #scratch-zoom-controls{
+  top:3px!important;right:3px!important;gap:2px!important;padding:3px!important;
+ }
+ .scratch-stage:not([hidden]) #scratch-zoom-controls button{
+  min-width:28px!important;height:29px!important;min-height:29px!important;
+  padding:2px 5px!important;font-size:14px!important;
+ }
+ .scratch-stage:not([hidden]) #scratch-zoom-controls #scratch-zoom-mode{
+  min-width:74px!important;font-size:9px!important;
+ }
+ .scratch-stage:not([hidden]) #scratch-zoom-level{font-size:10px!important;min-width:40px!important}
+ .scratch-stage:not([hidden]) > .scratch-stage-actions #scratch-ticket-next-same,
+ .scratch-stage:not([hidden]) > .scratch-stage-actions #scratch-ticket-choose{
+  font-size:11px!important;min-height:36px!important;padding:5px 7px!important;
+ }
+}
+/* In the wide all-screen Glückszahl and Tic duel windows, keep the
+   confirm/next controls in the existing lower action row. */
+.scratch-stage[data-variant="number_one_20"].is-revealed > .scratch-stage-actions button,
+.scratch-stage[data-variant="tic_tac_toe"][data-duel-version="8"].is-revealed > .scratch-stage-actions button{
+ width:auto!important;max-width:none!important;
+ min-width:0!important;flex:1 1 0!important;
+ font-size:clamp(10px,1.08vw,16px)!important;
+}
+@media(prefers-reduced-motion:reduce){
+ .scratch-stage #scratch-card-art{transition:none!important}
+}
