@@ -8,7 +8,8 @@ export const SEATS=3,TRACK=64,GOAL=1;
 export const COLORS=['#e65f58','#4c9bfa','#e8b84e'];
 export const LABELS=['Rot','Blau','Gelb'];
 export const START_CARDS=new Set(['1/11','13']);
-export const TYPES=['1/11','2','3','4','5','6','7','8','9','10','12','13','Joker'];
+// Exactly the 14 card types used by the canonical DOG deck (110 cards).
+export const TYPES=['1/11','2','3','4','5','6','7','8','9','10','12','13','swap','joker'];
 export const LOSS_TYPES=['collapse','abduction','freeze'];
 const clone=x=>JSON.parse(JSON.stringify(x));
 const pos=(n)=>((n%TRACK)+TRACK)%TRACK;
@@ -18,7 +19,7 @@ const MISSION_STARTS=[0,16,48];
 const homeIndex=s=>MISSION_STARTS[s];
 function seeded(seed){let x=(seed>>>0)||1;return ()=>((x=(Math.imul(x,1664525)+1013904223)>>>0)/4294967296);}
 function shuffle(xs,rng){const list=[...xs];for(let i=list.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[list[i],list[j]]=[list[j],list[i]];}return list;}
-function deck(rng){return shuffle(TYPES.flatMap((type,i)=>Array.from({length:type==='Joker'?6:8},(_,n)=>({id:type+'-'+i+'-'+n,type}))),rng);}
+function deck(rng){let id=0;return shuffle(TYPES.flatMap(type=>Array.from({length:type==='joker'?6:8},()=>({id:++id,type}))),rng);}
 function pieceAtTrack(s,absolute,except){return s.pieces.find(p=>p.id!==except&&p.place==='track'&&pos(homeIndex(p.seat)+p.steps)===absolute);}
 function isProtectedStart(p){
  return p?.place==='track'&&pos(homeIndex(p.seat)+p.steps)===homeIndex(p.seat);
@@ -40,9 +41,22 @@ function moveQuake(s){
  return {moved,blocked,protectedCount};
 }
 
-function values(type){if(type==='1/11')return [1,11];if(type==='4')return [4,-4];if(type==='7'||type==='Joker')return [];return [Number(type)];}
+function values(type){if(type==='1/11')return [1,11];if(type==='4')return [4,-4];if(type==='7'||type==='swap'||type==='joker')return [];return /^\d+$/.test(type)?[Number(type)]:[];}
 function isTurnDone(s){return s.players.every(p=>s.hands[p.seat].length===0);}
-function refill(s){if(s.draw.length<SEATS*5){s.draw=deck(seeded(s.seed+s.round*31));}s.round++;for(let i=0;i<SEATS;i++)s.hands[i]=s.draw.splice(0,5);log(s,'Neue Kartenphase '+s.round);}
+function refill(s){
+ s.round++;
+ const dealCount=[6,5,4,3,2][(s.round-1)%5]; // canonical DOG card-phase sizes
+ s.hands=[[],[],[]];
+ for(let card=0;card<dealCount;card++)for(let seat=0;seat<SEATS;seat++){
+  if(s.draw.length===0){
+   if(!s.discard.length)throw Error('Keine Karten mehr im Ablagestapel.');
+   s.draw=shuffle(s.discard.splice(0),seeded(s.seed+s.round*7919));
+  }
+  s.hands[seat].push(s.draw.pop());
+ }
+ s.current=(s.round-1)%SEATS;
+ log(s,'Neue Kartenphase '+s.round+': '+dealCount+' Karten pro Spieler');
+}
 function log(s,message){s.history.unshift(message);s.history=s.history.slice(0,10);}
 function nextTurn(s){
  s.current=(s.current+1)%SEATS;s.turn++;
@@ -65,9 +79,9 @@ function assignLosses(seed){return shuffle(LOSS_TYPES,seeded(seed+77));}
 export function newGame(seed=Math.floor(Math.random()*2147483647),names=LABELS){
  const rng=seeded(seed);
  const s={
-  version:3,mission:MISSION_1.id,seed,players:LABELS.map((name,seat)=>({seat,name:String(names[seat]||name).slice(0,25),lossType:assignLosses(seed)[seat],lost:false,moves:0})),
+  version:4,mission:MISSION_1.id,seed,players:LABELS.map((name,seat)=>({seat,name:String(names[seat]||name).slice(0,25),lossType:assignLosses(seed)[seat],lost:false,moves:0})),
   pieces:Array.from({length:15},(_,i)=>({id:'p'+i,seat:Math.floor(i/5),place:'home',steps:-1})),
-  current:0,turn:0,round:0,draw:deck(rng),discard:[],hands:[[],[],[]],history:[],complete:false,revision:0,lastEvent:null,effects:[],
+  current:0,turn:0,round:0,draw:deck(rng),discard:[],hands:[[],[],[]],seven:null,history:[],complete:false,revision:0,lastEvent:null,effects:[],
  };
  refill(s);
  // The first player may have no starting card. Skip impossible openings automatically.
@@ -75,46 +89,106 @@ export function newGame(seed=Math.floor(Math.random()*2147483647),names=LABELS){
  return s;
 }
 export function pieceCoord(p){return p.place==='track'?pos(homeIndex(p.seat)+p.steps):-1;}
-export function legalMoves(s,seat,card){
- if(s.complete||seat!==s.current||!card||!s.hands[seat].some(c=>c.id===card.id))return [];
- const types=card.type==='Joker'?TYPES.filter(x=>x!=='Joker'):[card.type];
- const opts=[];
- for(const type of types){
-  if(START_CARDS.has(type))for(const p of s.pieces.filter(p=>p.seat===seat&&p.place==='home')){
-   const occupant=pieceAtTrack(s,homeIndex(seat),p.id);
-   // A friendly pawn on the protected start may be sent back home
-   // when another own reserve pawn is brought out. Opponents cannot do this.
-   if(!occupant||occupant.seat===seat)opts.push({kind:'start',pieceId:p.id,cardId:card.id,as:type});
+
+// Pure, mission-only adaptation of the classic DOG movement rules.
+// Special cards (split 7, independent SWAP, joker), protection and the
+// exact-hit portal are deliberately separate from the normal 4-seat engine.
+function route(s,p,distance,hitEvery=false){
+ if(!p||p.place!=='track'||!Number.isInteger(distance)||distance===0)return null;
+ const target=p.steps+distance;
+ if(target>TRACK||target < -TRACK*4)return null;
+ const captures=[];
+ for(let n=1;n<=Math.abs(distance);n++){
+  const relative=p.steps+n*Math.sign(distance);
+  if(relative>=TRACK){
+   // The mission portal accepts ONLY the exact final step.
+   if(relative===TRACK&&n===Math.abs(distance)&&distance>0)break;
+   return null;
   }
-  if(type==='7'){
-   for(const a of s.pieces.filter(p=>p.seat===seat&&p.place==='track'&&!isProtectedStart(p)))
-    for(const b of s.pieces.filter(p=>p.seat!==seat&&p.place==='track'&&!isProtectedStart(p)))
-     opts.push({kind:'swap',pieceId:a.id,targetId:b.id,cardId:card.id,as:type});
-  }
-  for(const distance of values(type)){
-   for(const p of s.pieces.filter(p=>p.seat===seat&&p.place==='track')){
-    const targetSteps=p.steps+distance;
-    if(targetSteps<0||targetSteps>TRACK)continue;
-    const final=targetSteps<TRACK?pos(homeIndex(seat)+targetSteps):-1;
-    const at=final>=0?pieceAtTrack(s,final,p.id):null;
-    const starts=(final===homeIndex(seat));
-    // A pawn standing on ITS OWN colored start square is unassailable.
-    // That also stops cards crossing it, matching the classic DOG engine.
-    if(at&&(at.seat===seat||isProtectedStart(at)||starts))continue;
-    if(distance!==0&&targetSteps<TRACK){
-      let blockedByStart=false;
-      for(let delta=distance>0?1:-1;distance>0?delta<=distance:delta>=distance;delta+=distance>0?1:-1){
-        const field=pos(homeIndex(seat)+p.steps+delta);
-        const occupant=pieceAtTrack(s,field,p.id);
-        if(occupant&&isProtectedStart(occupant)){blockedByStart=true;break;}
-      }
-      if(blockedByStart)continue;
-    }
-    opts.push({kind:'move',pieceId:p.id,cardId:card.id,as:type,distance,targetSteps,captureId:at?.id||null});
-   }
+  const at=pieceAtTrack(s,pos(homeIndex(p.seat)+relative),p.id);
+  if(at&&isProtectedStart(at))return null;
+  if(at&&(hitEvery||n===Math.abs(distance)))captures.push(at.id);
+ }
+ return {targetSteps:target,captureIds:[...new Set(captures)]};
+}
+function applyRoute(s,m){
+ const pawn=s.pieces.find(p=>p.id===m.pieceId);
+ if(!pawn||pawn.place!=='track')throw Error('Spielfigur kann nicht laufen.');
+ const routeMove=route(s,pawn,m.distance,m.kind==='seven');
+ if(!routeMove)throw Error('Ungültige Kartenbewegung.');
+ for(const id of routeMove.captureIds){
+  const victim=s.pieces.find(p=>p.id===id);
+  if(isProtectedStart(victim))throw Error('Geschütztes Startfeld.');
+  victim.place='home';victim.steps=-1;
+ }
+ pawn.steps=routeMove.targetSteps;
+ pawn.place=pawn.steps===TRACK?'teleported':'track';
+}
+function sevenCandidates(s,seat,left,cardId,as){
+ const moves=[];
+ for(const p of s.pieces.filter(p=>p.seat===seat&&p.place==='track')){
+  for(let n=1;n<=left;n++){
+   const r=route(s,p,n,true);
+   if(r)moves.push({kind:'seven',pieceId:p.id,cardId,as,distance:n,targetSteps:r.targetSteps,captureIds:r.captureIds});
   }
  }
- return opts;
+ return moves;
+}
+function canFinishSeven(s,seat,left,memo=new Set()){
+ if(left===0)return true;
+ if(left<0)return false;
+ const stateKey=left+'|'+s.pieces.map(p=>p.place==='track'?p.id+':'+p.steps:p.id+':'+p.place).join(',');
+ if(memo.has(stateKey))return false;
+ memo.add(stateKey);
+ const all=sevenCandidates(s,seat,left,null,'7').sort((a,b)=>b.distance-a.distance);
+ for(const move of all){
+  const next=clone(s);applyRoute(next,move);
+  if(canFinishSeven(next,seat,left-move.distance,memo))return true;
+ }
+ return false;
+}
+export function legalMoves(s,seat,card){
+ if(s.complete||seat!==s.current||!card||!s.hands[seat].some(c=>c.id===card.id))return [];
+ const pending=s.seven;
+ if(pending&&pending.cardId!==card.id)return [];
+ const types=pending?[pending.as]:card.type==='joker'?TYPES.filter(type=>type!=='joker'):[card.type];
+ const moves=[];
+ for(const type of types){
+  if(type==='7'){
+   const left=pending?7-pending.spent:7;
+   for(const action of sevenCandidates(s,seat,left,card.id,type)){
+    const next=clone(s);applyRoute(next,action);
+    if(canFinishSeven(next,seat,left-action.distance))moves.push(action);
+   }
+   continue;
+  }
+  if(pending)continue;
+  if(START_CARDS.has(type)){
+   for(const p of s.pieces.filter(p=>p.seat===seat&&p.place==='home')){
+    const at=pieceAtTrack(s,homeIndex(seat),p.id);
+    // Mission-only exception: launching another OWN pawn sends the previous
+    // protected start pawn back to its house, not to a lost/captured state.
+    if(!at||at.seat===seat)
+     moves.push({kind:'start',pieceId:p.id,cardId:card.id,as:type});
+   }
+  }
+  if(type==='swap'){
+   let found=false;
+   for(const a of s.pieces.filter(p=>p.seat===seat&&p.place==='track'&&!isProtectedStart(p)))
+    for(const b of s.pieces.filter(p=>p.seat!==seat&&p.place==='track'&&!isProtectedStart(p))){
+      moves.push({kind:'swap',pieceId:a.id,targetId:b.id,cardId:card.id,as:type});
+      found=true;
+    }
+   if(!found)moves.push({kind:'emptySwap',pieceId:null,cardId:card.id,as:type});
+   continue;
+  }
+  for(const distance of values(type))
+   for(const p of s.pieces.filter(p=>p.seat===seat&&p.place==='track')){
+    const r=route(s,p,distance,false);
+    if(r)moves.push({kind:'move',pieceId:p.id,cardId:card.id,as:type,distance,targetSteps:r.targetSteps,captureIds:r.captureIds});
+   }
+ }
+ return moves;
 }
 function ensureSingleLoss(s,seat,movedId){
  const info=s.players[seat];
@@ -150,59 +224,54 @@ function checkComplete(s){
 }
 export function play(original,seat,action){
  if(original.complete||seat!==original.current)throw Error('Nicht dein Zug.');
- const valid=original.hands[seat].flatMap(c=>legalMoves(original,seat,c));
+ const valid=original.hands[seat].flatMap(card=>legalMoves(original,seat,card));
  const chosen=valid.find(m=>m.kind===action.kind&&m.cardId===action.cardId&&m.as===action.as&&m.pieceId===action.pieceId&&m.targetId===action.targetId&&m.distance===action.distance);
  if(!chosen)throw Error('Ungültiger Zug');
  const s=clone(original),p=s.pieces.find(p=>p.id===chosen.pieceId);
  if(chosen.kind==='start'){
   const previous=pieceAtTrack(s,homeIndex(seat),p.id);
   if(previous){
-   if(previous.seat!==seat)throw Error('Gegnerisches Startfeld ist geschützt.');
+   if(previous.seat!==seat)throw Error('Geschütztes gegnerisches Startfeld.');
    previous.place='home';previous.steps=-1;
-   log(s,s.players[seat].name+' setzt eine eigene Figur vom Startfeld zurück ins Haus.');
+   log(s,s.players[seat].name+' setzt eine eigene Figur vom Startfeld ins Haus zurück.');
   }
   p.place='track';p.steps=0;
- }
- if(chosen.kind==='move'){
-  if(chosen.captureId){const victim=s.pieces.find(v=>v.id===chosen.captureId);victim.place='home';victim.steps=-1;}
-  if(chosen.targetSteps>=TRACK){
-   // Entering the single portal immediately removes the figure from this board.
-   p.steps=TRACK;p.place='teleported';
-  }else{p.steps=chosen.targetSteps;p.place='track';}
- }
- if(chosen.kind==='swap'){
+ }else if(chosen.kind==='move'||chosen.kind==='seven'){
+  applyRoute(s,chosen);
+ }else if(chosen.kind==='swap'){
   const other=s.pieces.find(p=>p.id===chosen.targetId);
   const firstAbs=pieceCoord(p),otherAbs=pieceCoord(other);
-  // Preserve each piece's relative progress around the common ring.
-  p.steps+=pos(otherAbs-firstAbs);
-  other.steps+=pos(firstAbs-otherAbs);
-  p.steps=p.steps%TRACK;other.steps=other.steps%TRACK;
+  if(isProtectedStart(p)||isProtectedStart(other))throw Error('Startfeld ist vor Tausch geschützt.');
+  p.steps=pos(otherAbs-homeIndex(p.seat));
+  other.steps=pos(firstAbs-homeIndex(other.seat));
  }
- const i=s.hands[seat].findIndex(c=>c.id===chosen.cardId);
- s.discard.push(s.hands[seat].splice(i,1)[0]);
  s.players[seat].moves++;
  s.lastEvent=null;
- ensureSingleLoss(s,seat,p.id);
- if(p.place==='teleported'){
-  // The portal can be reused by every other figure; no occupied goal field.
-  log(s,s.players[seat].name+' hat eine Figur durch das Portal nach Welt 2 geschickt');
+ if(chosen.kind!=='emptySwap')ensureSingleLoss(s,seat,p.id);
+ if(p?.place==='teleported'){
+  log(s,s.players[seat].name+' teleportiert eine Figur nach Welt 2');
   if(!s.lastEvent)s.lastEvent={type:'teleport',seat,pieceId:p.id,message:'✨ '+s.players[seat].name+' teleportiert eine Figur nach Welt 2!',turn:s.turn};
  }
- // Passive signposts become true story-only clue fields if a figure reaches
- // them. They never eliminate extra figures or modify ordinary card moves.
- if(!s.lastEvent&&p.place==='track'){
-  const clue=MISSION_1.trailHints.find(c=>c.field===pieceCoord(p));
-  if(clue){
-   s.lastEvent={type:'hint',field:clue.field,message:clue.message,turn:s.turn};
-   log(s,'Pfadfinder-Hinweis: '+clue.title);
-  }
+ if(!s.lastEvent&&p?.place==='track'){
+  const clue=MISSION_1.trailHints.find(h=>h.field===pieceCoord(p));
+  if(clue){s.lastEvent={type:'hint',field:clue.field,message:clue.message,turn:s.turn};log(s,'Pfadfinder-Hinweis: '+clue.title);}
  }
+ if(chosen.kind==='seven'){
+  if(!s.seven)s.seven={cardId:chosen.cardId,as:chosen.as,spent:0};
+  s.seven.spent+=chosen.distance;
+  log(s,s.players[seat].name+' teilt die 7: '+chosen.distance+' Schritte ('+s.seven.spent+'/7)');
+  if(s.seven.spent<7){
+   s.revision++;return s;
+  }
+  s.seven=null;
+ }
+ const index=s.hands[seat].findIndex(c=>c.id===chosen.cardId);
+ if(index<0)throw Error('Karte nicht vorhanden.');
+ s.discard.push(s.hands[seat].splice(index,1)[0]);
  log(s,s.players[seat].name+' spielt '+chosen.as);
  checkComplete(s);
  if(!s.complete){
   nextTurn(s);maybeEffects(s);
-  // A quake can move an occupying pawn onto a starting field and invalidate
-  // the next seat's previously legal start. Recheck after environmental effects.
   if(!s.hands[s.current].some(card=>legalMoves(s,s.current,card).length))nextTurn(s);
  }
  s.revision++;
@@ -213,4 +282,4 @@ export function status(s){return s.players.map(info=>({
  track:s.pieces.filter(p=>p.seat===info.seat&&p.place==='track').length,
  teleported:s.pieces.filter(p=>p.seat===info.seat&&p.place==='teleported').length
 }));}
-export function validateSaved(x){return !!x&&x.version===3&&x.mission===1&&Array.isArray(x.players)&&x.players.length===3&&Array.isArray(x.pieces)&&x.pieces.length===15&&Array.isArray(x.hands)&&x.hands.length===3&&Number.isInteger(x.current)&&x.current>=0&&x.current<3&&x.pieces.every(p=>['home','track','teleported','lost'].includes(p.place));}
+export function validateSaved(x){return !!x&&x.version===4&&x.mission===1&&Array.isArray(x.players)&&x.players.length===3&&Array.isArray(x.pieces)&&x.pieces.length===15&&Array.isArray(x.hands)&&x.hands.length===3&&Number.isInteger(x.current)&&x.current>=0&&x.current<3&&x.pieces.every(p=>['home','track','teleported','lost'].includes(p.place));}
