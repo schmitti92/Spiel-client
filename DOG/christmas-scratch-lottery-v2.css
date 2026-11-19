@@ -573,8 +573,8 @@
  border-radius:50%!important;
 }
 #panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-brief{
- top:134px!important;left:45%!important;right:3%!important;
- width:auto!important;height:13px!important;max-height:13px!important;min-height:0!important;
+ top:129px!important;left:45%!important;right:3%!important;
+ width:auto!important;height:10px!important;max-height:10px!important;min-height:0!important;
  padding:0 3px!important;display:block!important;margin:0!important;overflow:hidden!important;
  text-align:center!important;
 }
@@ -585,11 +585,11 @@
  white-space:nowrap!important;text-shadow:0 1px 3px #070616,0 1px 2px #000!important;
 }
 #panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-jackpot{
- top:auto!important;bottom:43px!important;left:4%!important;right:4%!important;
- width:auto!important;height:34px!important;min-height:34px!important;max-height:34px!important;
+ top:auto!important;bottom:40px!important;left:4%!important;right:4%!important;
+ width:auto!important;height:40px!important;min-height:40px!important;max-height:40px!important;
  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
- gap:1px!important;margin:0!important;padding:2px 5px!important;
- border:2px solid #ffd98f!important;border-radius:7px!important;
+ gap:1px!important;margin:0!important;padding:0 5px!important;
+ border:1.5px solid #ffd98f!important;border-radius:7px!important;
  background:linear-gradient(180deg,#bd3327,#8d1919 55%,#4c0b15)!important;
  box-shadow:inset 0 1px #fff5c68c,0 2px 4px #000a!important;
  overflow:hidden!important;
@@ -608,7 +608,7 @@
  text-shadow:0 1px 3px #3d0800,0 0 5px #efb368!important;
 }
 #panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-serial{
- bottom:34px!important;left:4%!important;width:92%!important;height:8px!important;
+ bottom:31px!important;left:4%!important;width:92%!important;height:8px!important;
  font:650 6px/1 monospace!important;color:#fff2d5e5!important;
  text-align:center!important;padding:0 49px 0 3px!important;
 }
