@@ -1,0 +1,78 @@
+/* Unified finite-edition dialog: mobile, portrait, landscape and full screen. */
+#scratch-other-edition-dialog{
+ width:min(94vw,850px);max-width:850px;max-height:min(93dvh,980px);
+ margin:auto;border:2px solid #eed093;border-radius:18px;
+ background:radial-gradient(circle at 100% 0%,#1b544b,transparent 38%),
+ linear-gradient(145deg,#48202f 0%,#173940 48%,#0e3435 100%);
+ color:#fff2d8;box-shadow:0 22px 78px #000d;
+ overflow-y:auto;overscroll-behavior:contain;
+}
+#scratch-other-edition-dialog::backdrop{background:#07151ce0;backdrop-filter:blur(5px)}
+#scratch-other-edition-dialog .scratch-gifts-settings-head{
+ position:sticky;top:0;z-index:3;padding:10px 12px;
+ background:linear-gradient(145deg,#3d1c2f,#173f3c);
+ border-bottom:1px solid #f7d08a92;
+}
+#scratch-other-edition-dialog h3,#scratch-other-edition-dialog h4,
+#scratch-other-edition-dialog .scratch-gifts-eyebrow{color:#ffe2a2}
+#scratch-other-edition-dialog .scratch-gifts-settings-section{
+ border:1px solid #ffd39055;background:#102f39d9;border-radius:12px;margin:9px 0;
+}
+#scratch-other-edition-dialog .scratch-gifts-field,
+#scratch-other-edition-dialog .scratch-gifts-auto{
+ border:1px solid #ecc5846b;background:#1b3946e8;border-radius:9px;
+}
+#scratch-other-edition-dialog input,
+#scratch-other-edition-dialog select{
+ width:100%;min-height:40px;color:#172d34;background:#f3f8f4;
+ border:1px solid #adbec0;border-radius:8px;padding:8px 10px;
+ box-sizing:border-box;font-size:16px;font-weight:750;
+}
+#scratch-other-edition-dialog #oe-create{
+ background:linear-gradient(#ffe8aa,#d6a458);color:#362514;
+ border:1px solid #fff0bd;border-radius:12px;
+}
+#scratch-other-edition-dialog #oe-edit{
+ background:linear-gradient(#346f62,#1b4f44);color:#ffe8aa;
+ border:1px solid #e6ca86;border-radius:12px;
+}
+#scratch-other-edition-dialog [hidden]{display:none!important}
+#scratch-other-edition-dialog button:disabled{opacity:.5;cursor:not-allowed}
+#scratch-other-edition-dialog #oe-close{
+ min-width:36px;min-height:36px;flex-shrink:0;
+ background:#532734;color:#ffe3b2;border:1px solid #ffdb98;
+ border-radius:9px;font-size:18px;padding:4px 10px;
+}
+#scratch-other-edition-dialog .scratch-gifts-help,
+#scratch-other-edition-dialog .scratch-gifts-field small{color:#d1e5de}
+#scratch-other-edition-dialog #oe-status{
+ padding:10px;border:1px solid #cfa76b;border-radius:8px;
+ background:#102a34;color:#ffe1a3;line-height:1.5;margin:10px 0;
+}
+#scratch-other-edition-dialog #oe-hint{font-weight:700;color:#e9cb8a}
+.scratch-tier .scratch-other-edition-gear{
+ z-index:170;position:absolute;top:7px;right:8px;
+ border:1px solid #ffdfa0;border-radius:9px;
+ padding:6px 10px;background:linear-gradient(135deg,#1e5052,#7b3d44);
+ color:#fff0cd;font-weight:850;cursor:pointer;
+}
+.scratch-tier:has(.scratch-other-edition-gear) .scratch-card-names{
+ padding-right:110px;
+}
+.scratch-stage #scratch-other-edition-open{
+ top:8px;right:8px;z-index:45;
+ border:1px solid #f9db9d;border-radius:10px;
+ background:linear-gradient(140deg,#2a5858,#82434d);
+ color:#fff4ce;
+}
+.scratch-other-edition-dialog .scratch-gifts-settings-head h3{font-size:clamp(18px,3vw,27px)}
+@media(max-width:620px){
+ #scratch-other-edition-dialog{
+  width:calc(100vw - 10px);max-width:calc(100vw - 10px);
+  max-height:calc(100dvh - 10px);border-radius:12px;
+ }
+ #scratch-other-edition-dialog .scratch-gifts-settings-grid{grid-template-columns:minmax(0,1fr)}
+ #scratch-other-edition-dialog .scratch-gifts-settings-section{padding:10px}
+ #scratch-other-edition-dialog .scratch-gifts-settings-head h3{font-size:21px}
+ .scratch-tier .scratch-other-edition-gear{font-size:11px;padding:5px 7px}
+}
