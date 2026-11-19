@@ -668,7 +668,22 @@
             </div>
           </section>
           <section class="scratch-gifts-settings-section">
-            <h4>💰 2 · Gewinnbeträge</h4>
+            <h4>🎁 2 · Gewinnkategorie auswählen</h4>
+            <p class="scratch-gifts-help">Lege fest, aus welcher Freischaltungs-Kategorie die Geschenkgewinne dieser Tic-Tac-Toe-Auflage stammen. Der Server verwendet ausschließlich diesen Gewinnpool – unabhängig vom Lospreis. Bereits gewonnene Belohnungen werden nicht erneut vergeben.</p>
+            <div class="scratch-gifts-settings-grid">
+              <label class="scratch-gifts-field"><span>🎯 Gewinnkategorie für Geschenke</span>
+                <select id="tic-prize-category" required aria-describedby="tic-prize-category-help">
+                  <option value="1">1 · Einfach – Standard-Emojis &amp; Farben</option>
+                  <option value="2">2 · Mittel – besondere Designs &amp; Profilbilder</option>
+                  <option value="3">3 · Schwer / Premium – seltene Belohnungen</option>
+                </select>
+                <small id="tic-prize-category-help">Diese Auswahl bestimmt nur die Freischaltungen bei 🎁. Geldgewinne werden weiterhin durch dein Münzbudget festgelegt. Falls ein Spieler schon alle Preise der gewählten Kategorie besitzt, wird kein Preis aus einer anderen Kategorie ausgegeben.</small>
+              </label>
+              <div class="scratch-gifts-auto"><span>🎁 Aktuelle Auswahl</span><strong id="tic-prize-category-preview">🔵 Kategorie 2 · Mittel</strong><small>Für die nächste Auflage oder – beim Bearbeiten – nur für die noch nicht verkauften Lose.</small></div>
+            </div>
+          </section>
+          <section class="scratch-gifts-settings-section">
+            <h4>💰 3 · Gewinnbeträge</h4>
             <p class="scratch-gifts-help">Eine gültige Kreis- oder Kreuz-Dreierlinie gewinnt genau einen der folgenden Beträge mal Multiplikator. Der Koffer muss am meisten auszahlen.</p>
             <div class="scratch-gifts-settings-grid">
               <label class="scratch-gifts-field"><span>🪙 Münze – klein</span><input id="tic-coin-0" type="number" min="1" max="50000000" step="1" inputmode="numeric" required></label>
@@ -677,7 +692,7 @@
             </div>
           </section>
           <section class="scratch-gifts-settings-section">
-            <h4>🎯 3 · Gewinnverteilung</h4>
+            <h4>🎯 4 · Gewinnverteilung</h4>
             <p class="scratch-gifts-help">Die Prozentwerte sind deine Wunschverteilung. Die feste Gesamtsumme hat Vorrang: Der Server passt die tatsächlichen Geldtreffer automatisch an. Eine gewonnene Geschenk-Freischaltung wird nicht vom Münzbudget abgezogen.</p>
             <div class="scratch-gifts-settings-grid">
               <label class="scratch-gifts-field"><span>❄️ Gewünschte Nieten (%)</span><input id="tic-none" type="number" min="0" max="100" step="0.1" inputmode="decimal" required><small>Bei zu wenig Budget können mehr Nieten nötig sein.</small></label>
@@ -689,7 +704,7 @@
             </div>
           </section>
           <section class="scratch-gifts-settings-section scratch-gifts-edition-section">
-            <h4>📦 4 · Verbindliche 500er-Auflage</h4>
+            <h4>📦 5 · Verbindliche 500er-Auflage</h4>
             <p class="scratch-gifts-help">Das Münzbudget wird exakt auf die 500 Lose verteilt. Jeder Geldgewinn besitzt einen sichtbaren Preis und eine echte Dreierlinie. Wenn sich der Betrag mit den Geldwerten nicht darstellen lässt, wird die Veröffentlichung abgelehnt.</p>
             <div class="scratch-gifts-settings-grid">
               <label class="scratch-gifts-field"><span>💰 Festes Gesamtbudget (🪙)</span><input id="tic-edition-budget" type="number" min="0" max="1000000000000" step="1" inputmode="numeric" required><small>Bei 150.000 🪙 werden genau 150.000 🪙 über alle 500 Lose zusammen geplant.</small></label>
