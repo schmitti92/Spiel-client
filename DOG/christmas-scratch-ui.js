@@ -196,7 +196,7 @@ export function initChristmasScratch(){
  reveal.addEventListener('wheel',e=>{
   if(!e.ctrlKey&&!e.altKey)return;
   e.preventDefault();
-  setZoom(zoomScale+(e.deltaY<0?.2:-.2));
+  setZoom(zoomScale+(e.deltaY<0 ? 0.2 : -0.2));
  },{passive:false});
 
  const villageDiscount=()=>Number.isInteger(status?.discountPercent)?Math.max(0,Math.min(20,status.discountPercent)):0;
@@ -1425,7 +1425,7 @@ export function initChristmasScratch(){
     return [(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height];
    };
    const stroke=e=>{
-    if(active!==e.pointerId)return;
+    if(active!==e.pointerId||scratchZoomBlocked(e))return;
     e.preventDefault();
     const [x,y]=point(e);
     const brush=Math.max(12,Math.min(cv.width,cv.height)*.34);
@@ -1443,12 +1443,14 @@ export function initChristmasScratch(){
     if(total&&clear/total>=.58)revealOne(i);
    };
    cv.addEventListener('pointerdown',e=>{
-    if(finished||(phase===0&&i!==0)||(phase===1&&i!==1)||(phase===2&&i!==2)||(phase===3&&i<3))return;
+    if(finished||scratchZoomBlocked(e)||(phase===0&&i!==0)||(phase===1&&i!==1)||(phase===2&&i!==2)||(phase===3&&i<3))return;
     active=e.pointerId;last=null;cv.setPointerCapture?.(e.pointerId);stroke(e);
    });
    cv.addEventListener('pointermove',stroke);
    cv.addEventListener('pointerup',e=>{
-    if(active!==e.pointerId)return;stroke(e);active=null;last=null;check();
+    if(active!==e.pointerId)return;
+    const zooming=scratchZoomBlocked(e);if(!zooming)stroke(e);
+    active=null;last=null;if(!zooming)check();
    });
    cv.addEventListener('pointercancel',()=>{active=null;last=null;check()});
    cv.addEventListener('keydown',e=>{
@@ -1571,7 +1573,7 @@ export function initChristmasScratch(){
            y:(e.clientY-r.top)*canvas.height/r.height};
   };
   const stroke=e=>{
-   if(activePointer!==e.pointerId||finished||unifiedCover!==canvas)return;
+   if(activePointer!==e.pointerId||finished||unifiedCover!==canvas||scratchZoomBlocked(e))return;
    e.preventDefault();
    const p=point(e);
    const brush=Math.max(20,Math.min(55,Math.min(boardRect.width/parseInt(board.style.getPropertyValue('--scratch-cols')||'3',10),boardRect.height/Math.ceil(cells.length/parseInt(board.style.getPropertyValue('--scratch-cols')||'3',10)))*.55));
@@ -1582,7 +1584,7 @@ export function initChristmasScratch(){
    if(++moveNumber%4===0)measureScratchCover(canvas);
   };
   canvas.addEventListener('pointerdown',e=>{
-   if(finished||activePointer!==null)return;
+   if(finished||activePointer!==null||scratchZoomBlocked(e))return;
    activePointer=e.pointerId;last=null;
    canvas.setPointerCapture?.(e.pointerId);
    stroke(e);
@@ -1859,7 +1861,10 @@ export function initChristmasScratch(){
   renderInlineResults(null);
   stage.removeAttribute('data-result');
   stage.hidden=false;document.body.classList.add('scratch-ticket-open');reveal.classList.remove('revealed');results.hidden=true;
+  resetZoom();
   $('scratch-ticket-finish').hidden=true;
+  $('scratch-ticket-next-same').hidden=true;
+  $('scratch-ticket-choose').hidden=true;
   // Always offer an explicit reveal action. Dragging the canvas still
   // automatically opens the result at 90 percent, including a losing ticket.
   $('scratch-reveal-button').hidden=false;
