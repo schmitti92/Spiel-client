@@ -254,3 +254,121 @@
  #panel-scratch .scratch-lottery-footer{grid-template-columns:1fr!important}
 }
 @media(prefers-reduced-motion:reduce){#panel-scratch .scratch-tier{animation:none!important;transition:none!important}}
+
+/* v3 · Screenshot correction 19.11.2026:
+   reserve separate, non-overlapping bands for ticket title, artwork,
+   scratch foil, prize label, printed serial and action buttons. */
+#panel-scratch #scratch-tier-grid .scratch-tier{
+ --printed-height:278px;
+ contain:layout paint;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-heading{
+ top:9px!important;left:8px!important;right:8px!important;
+ height:65px!important;overflow:visible!important;padding:0!important;
+ display:block!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-names{
+ display:flex!important;flex-direction:column!important;justify-content:flex-end!important;
+ align-items:center!important;gap:0!important;
+ padding:19px 2px 0!important;margin:0!important;
+ min-height:0!important;height:61px!important;max-height:61px!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-class{
+ position:absolute!important;left:2px!important;top:0!important;
+ max-width:55%!important;min-height:14px!important;
+ padding:2px 5px!important;border-radius:3px!important;
+ overflow:hidden!important;text-overflow:ellipsis!important;
+ white-space:nowrap!important;font:800 8px/1.1 system-ui,sans-serif!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier h3{
+ margin:0!important;padding:0 1px!important;max-height:42px!important;max-width:100%!important;
+ overflow:hidden!important;display:block!important;text-align:center!important;
+ color:#fff2be!important;font:italic 900 clamp(15px,1.26vw,21px)/1.03 Georgia,serif!important;
+ text-wrap:balance!important;word-break:normal!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-gifts-card-settings,
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-other-edition-gear{
+ top:7px!important;right:5px!important;max-width:43%!important;
+ min-height:21px!important;height:auto!important;
+ overflow:hidden!important;white-space:nowrap!important;
+ text-overflow:ellipsis!important;font-size:8px!important;line-height:1.15!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-gifts-edition-chip{
+ top:78px!important;left:4%!important;right:4%!important;
+ max-height:14px!important;min-height:14px!important;
+ text-align:left!important;
+ font:750 8px/1.15 system-ui,sans-serif!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-icon{
+ top:99px!important;left:4%!important;width:36%!important;height:68px!important;
+ max-height:68px!important;min-height:0!important;
+ padding:0!important;overflow:hidden!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-icon::after{
+ inset:0!important;background-size:contain!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-preview{
+ top:98px!important;right:4%!important;left:auto!important;
+ width:53%!important;height:77px!important;max-height:77px!important;
+ padding:3px!important;margin:0!important;
+ gap:2px!important;overflow:hidden!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="premium_27"] .scratch-printed-preview{
+ height:77px!important;max-height:77px!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-brief{
+ top:154px!important;left:4%!important;right:auto!important;
+ width:38%!important;height:23px!important;max-height:23px!important;
+ min-height:0!important;overflow:hidden!important;margin:0!important;padding:0!important;
+ display:block!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-rule{
+ display:-webkit-box!important;-webkit-box-orient:vertical!important;
+ -webkit-line-clamp:2!important;overflow:hidden!important;
+ font:750 9px/1.15 system-ui,sans-serif!important;
+ max-height:22px!important;max-width:100%!important;
+ text-shadow:0 2px 3px #081724!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-jackpot{
+ top:auto!important;bottom:51px!important;left:4%!important;right:4%!important;
+ width:auto!important;height:48px!important;min-height:0!important;max-height:48px!important;
+ padding:4px 7px!important;gap:1px!important;
+ display:flex!important;justify-content:center!important;align-items:center!important;
+ flex-direction:column!important;overflow:hidden!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-jackpot-caption{
+ display:block!important;min-width:0!important;max-width:100%!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+ text-align:center!important;font:900 9px/1.05 Georgia,serif!important;
+ letter-spacing:.15px!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-jackpot-value{
+ display:block!important;max-width:100%!important;min-width:0!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+ text-align:center!important;word-break:normal!important;overflow-wrap:normal!important;
+ font:950 clamp(18px,1.9vw,27px)/1.05 Georgia,serif!important;
+ font-variant-numeric:tabular-nums!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-serial{
+ bottom:40px!important;height:9px!important;line-height:1!important;
+ font-size:6.5px!important;pointer-events:none!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-action-row{
+ bottom:4px!important;left:4%!important;right:4%!important;
+ height:34px!important;max-height:34px!important;
+ overflow:hidden!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-action-row button{
+ min-height:34px!important;height:34px!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-open-error{
+ max-height:76px!important;overflow:auto!important;
+}
+@media(max-width:1150px){
+ #panel-scratch #scratch-tier-grid .scratch-tier h3{font-size:19px!important}
+}
+@media(max-width:620px){
+ #panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-preview{height:85px!important;max-height:85px!important}
+ #panel-scratch #scratch-tier-grid .scratch-tier .scratch-icon{height:76px!important;max-height:76px!important}
+ #panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-jackpot-value{font-size:25px!important}
+}
