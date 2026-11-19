@@ -24,7 +24,7 @@ export async function fetchDogPlayerLevel({force=false}={}){
   const result=await response.json().catch(()=>({}));
   if(!response.ok||result.ok!==true)throw Error(result.error||'LEVEL_UNAVAILABLE');
   const level=result?.level?.level;
-  if(!Number.isInteger(level)||level<1||level>10)throw Error('LEVEL_INVALID');
+  if(!Number.isInteger(level)||level<1||level>50)throw Error('LEVEL_INVALID');
   if(dogLevelIdentity()?.uid!==uid)throw Error('PROFILE_CHANGED');
   cache={uid,level,at:Date.now()};
   return level;
