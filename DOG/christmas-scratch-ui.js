@@ -617,6 +617,10 @@ export function initChristmasScratch(){
     free.addEventListener('click',()=>void buy(option.tier,true,option.id));
     article.append(free);
    }
+   const actions=el('div','scratch-card-action-row');
+   for(const button of article.querySelectorAll(':scope > .scratch-buy, :scope > .scratch-free, :scope > .scratch-reopen-ticket'))
+    actions.append(button);
+   article.append(actions);
    root.append(article);
   }
   drawScratchAnalytics();
