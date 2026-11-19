@@ -1,0 +1,54 @@
+/*
+ * DOG shared touch navigation
+ * Scope: browser pinch zoom and two-axis panning of MENUS after zooming.
+ *
+ * Keep game inputs untouched:
+ * - DOG's board and cards intentionally own their PointerEvent gestures;
+ * - the editor's draggable SVG and scratch canvases keep touch-action:none;
+ * - sliders keep their native horizontal drag behavior.
+ *
+ * Do not apply a global universal (*) touch-action override.
+ */
+html,body{
+ touch-action:auto;
+}
+/* Menu surfaces use the browser's native pinch zoom and pan in either axis. */
+:where(
+ .event-layout,.event-main,.event-panel,.event-menu,
+ .grinch-event-shell,.grinch-event-missions,.grinch-mission,
+ .studio-page,.studio-tools,.studio-columns,.choice-list,
+ .work-side,.workspace,.settings-panel,
+ .shell,.panel-heading,.menu-panel,.modal-content,
+ nav,main,aside,
+ dialog,[role="dialog"]
+){
+ touch-action:auto;
+}
+/* Touch scrolling within long menus remains smooth on phones and tablets. */
+:where(
+ .event-menu,.choice-list,.studio-tools,.work-side,
+ .moves,.history,.modal-content,dialog,[role="dialog"]
+){
+ -webkit-overflow-scrolling:touch;
+}
+/* DOG's dedicated room is a full-screen fixed overlay. It previously
+ * had overflow-x:hidden, which clipped/pinned zoomed content horizontally.
+ * The main page stays locked underneath, but the room itself can pan. */
+#dog-room-lobby:not([hidden]){
+ overflow-x:auto;
+ overflow-y:auto;
+ touch-action:auto;
+ overscroll-behavior:auto;
+ -webkit-overflow-scrolling:touch;
+}
+/* Do not create another scroll container around the five Grinch missions. */
+#panel-grinch{
+ touch-action:auto;
+}
+@media (max-width:760px){
+ #panel-grinch,.event-main,.event-panel{
+  touch-action:auto;
+ }
+}
+/* No scale(), layout hacks, listeners, or changes to element dimensions:
+ * only the browser's native visual viewport moves when zoomed. */
