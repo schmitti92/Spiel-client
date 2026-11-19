@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#081c24">
 <title>DOG Grinch · Mission 1 – Pfadfinder: Der Weg zum Berg</title>
-<link rel="stylesheet" href="./mission-1.css?v=6">
+<link rel="stylesheet" href="./mission-1.css?v=7">
 </head>
 <body>
 <header class="top">
@@ -25,6 +25,20 @@
    <div class="board-head"><h2 id="board-heading">🧭 Der Pfad zum Berg</h2><span id="phase">Runde 1</span></div>
    <div id="board-wrap" class="board-wrap">
     <svg id="board" class="board-svg" viewBox="0 0 760 760" role="img" aria-label="Das originale DOG-Brett mit 64 Lauffeldern und einem wiederverwendbaren Teleport-Zielfeld je Kampagnenspieler"></svg>
+    <!-- Weather is purely visual, never steals clicks/taps or changes DOG geometry. -->
+    <div class="mission-weather" id="mission-weather" aria-hidden="true">
+     <div class="weather-fog-veil"></div>
+     <div class="weather-fog-bank weather-fog-bank-a"></div>
+     <div class="weather-fog-bank weather-fog-bank-b"></div>
+     <div class="weather-fog-bank weather-fog-bank-c"></div>
+     <div class="weather-quake-shock"></div>
+     <div class="weather-quake-dust weather-quake-dust-a"></div>
+     <div class="weather-quake-dust weather-quake-dust-b"></div>
+     <div class="weather-event-text">
+      <strong id="weather-label"></strong>
+      <span id="weather-detail"></span>
+     </div>
+    </div>
    </div>
    <div class="legend"><span>🔎 Spuren</span><span>🌫️ Nebelpass</span><span>⚡ Grünes Leuchten</span><span>❄️ Eisweg</span><span>🕳️ Einsturz</span><span>🌪️ Entführung</span><span>🧊 Eisfluch</span></div>
    <section class="trail-progress" aria-live="polite" aria-label="Wegweiser zu Mission 2"><div class="trail-progress-head"><strong>🌀 Teleportation nach Welt 2</strong><span id="trail-progress-count">0 / 3 Portale abgeschlossen</span></div><p>Rot, Blau und Gelb haben jeweils genau ein Portal an der bisherigen ersten Zielposition. Sobald eine Figur das Portal erreicht, verschwindet sie vom Brett. Das Portal bleibt für weitere Figuren frei.</p><div id="trail-progress-players" class="trail-progress-players"></div><p id="trail-next-mission" class="trail-next-mission">🔒 Mission 2 – Der verfluchte Aufstieg: Noch wurden nicht alle Figuren teleportiert.</p></section>
