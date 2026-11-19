@@ -571,3 +571,19 @@ test('Tic-Tac-Toe offers its own real 500-ticket fixed-budget edition editor',()
  assert.match(css,/@media\(max-width:620px\)/);
  assert.match(html,/christmas-scratch-tic-edition\.css\?v=\d+/);
 });
+
+
+test('Tic-Tac-Toe edition lets its creator choose prize category 1, 2 or 3',()=>{
+ const html=source('../DOG/christmas-event.html');
+ const js=source('../DOG/christmas-scratch-ui.js');
+ assert.match(html,/id="tic-prize-category" required/);
+ assert.match(html,/<option value="1">1 · Einfach/);
+ assert.match(html,/<option value="2">2 · Mittel/);
+ assert.match(html,/<option value="3">3 · Schwer/);
+ assert.match(html,/id="tic-prize-category-preview"/);
+ assert.match(js,/prizeCategory:getInt\('tic-prize-category',1,3\)/);
+ assert.match(js,/set\('tic-prize-category',conf\.prizeCategory\?\?2\)/);
+ assert.match(js,/getPrizeCategoryLabel\(ticEdition\.config\?\.prizeCategory\?\?2\)/);
+ assert.match(js,/getPrizeCategoryLabel\(tic\.prizeCategory\)/);
+ assert.match(js,/'tic-weight-0','tic-weight-1','tic-weight-2','tic-weight-3'/);
+});
