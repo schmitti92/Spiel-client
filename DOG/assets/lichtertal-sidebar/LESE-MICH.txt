@@ -1,0 +1,19 @@
+# Lichtertal – Weihnachtsmenü (Designpaket)
+
+## Upload auf GitHub
+
+Repository: schmitti92/Spiel-client
+Branch: main
+Ordner: DOG/assets/lichtertal-sidebar/
+
+**Nur diese Datei ist zum Aktivieren der hochwertig illustrierten Sidebar notwendig:**
+- lichtertal-sidebar.webp
+
+Optional kannst du auch `lichtertal-sidebar.png`, `lichtertal-sidebar-mobile.webp` und die sieben SVG-Symbole in denselben Ordner hochladen. Die Datei `nur-vorschau-gesamtansicht.png` ist nur ein Konzeptbild und soll nicht als Seitenhintergrund benutzt werden.
+
+Die Grafik hat sieben unbeschriftete grüne Schilder. Alle sichtbaren Wörter, anklickbaren Bereiche, aktiver goldener Menüpunkt und Scroll-Funktion kommen aus dem Spielcode, NICHT aus dieser Grafik. So sind sie weiterhin live bearbeitbar.
+
+Die Seite verwendet bis zum Upload bereits `lichtertal-sidebar-fallback.svg` aus GitHub und ersetzt diese automatisch mit dem WebP, sobald du `lichtertal-sidebar.webp` hochlädst.
+
+GitHub-Upload: https://github.com/schmitti92/Spiel-client/upload/main/DOG/assets/lichtertal-sidebar
+Spiel: https://schmitti92.github.io/Spiel-client/DOG/christmas-event.html
