@@ -151,6 +151,7 @@ export function initChristmasScratch(){
    SCRATCH_TIC_EDITION_INVALID_BUDGET:'⚠️ Bitte ein gültiges festes Gesamtbudget eingeben.',
    SCRATCH_TIC_EDITION_BUDGET_UNREACHABLE:'⚠️ Das feste Budget lässt sich mit den gewählten Geldbeträgen und Multiplikatoren nicht exakt verteilen. Bitte Werte anpassen.',
    SCRATCH_TIC_EDITION_SETTINGS_INVALID:'⚠️ Prüfe Lospreis, Symbolchancen (zusammen 100 %), Nietenquote und drei steigende Geldwerte.',
+   SCRATCH_TIC_EDITION_PRIZE_CATEGORY_INVALID:'⚠️ Bitte Gewinnkategorie 1 (Einfach), 2 (Mittel) oder 3 (Schwer) wählen.',
    SCRATCH_TIC_EDITION_PAYOUT_MISMATCH:'⚠️ Der geplante Gewinn stimmt nicht mit der Auszahlung überein. Es wurde kein Los gebucht.',
    SCRATCH_TIC_EDITION_PLAN_INVALID:'⚠️ Der Tic-Tac-Toe-Gewinnplan ist nicht gültig. Weitere Käufe sind vorerst gesperrt.'
  }[code]||'⚠️ Los konnte nicht geöffnet werden: '+String(code||'Serverfehler'));
@@ -428,7 +429,7 @@ export function initChristmasScratch(){
    const unlocksLeft=status?.pools?.[option.tier]?.remaining;
    const chanceText=option.id==='number_one_20'?'🔢 '+Number((lucky?.hitPer1000??100)/10).toLocaleString('de-DE')+' % Trefferchance pro Reihe':
     option.id==='dog_jackpot_9'?'🐾 35 % Chance auf alle Preise':
-    option.id==='tic_tac_toe'?'◯ oder ✕ · 1× bis 5× · 8 Gewinnlinien':
+    option.id==='tic_tac_toe'?'◯ oder ✕ · 8 Gewinnlinien · 🎁 '+getPrizeCategoryLabel(ticEdition?.config?.prizeCategory??2):
     unlocksLeft===0?'🎁 Alle Freischaltungen gesammelt':
     '🎁 bis zu '+unlockChance+' % Freischaltung';
    const chanceWeights=variantConfig?.weights;
@@ -2217,15 +2218,22 @@ export function initChristmasScratch(){
   const config={
    price:getInt('tic-price',0,1000000),coinAmounts,symbolWeights,
    targetNonePer1000:percentField('tic-none'),
-   maxMultiplier:getInt('tic-max-multiplier',1,5),giftFallbackCoins:0
+   maxMultiplier:getInt('tic-max-multiplier',1,5),
+   prizeCategory:getInt('tic-prize-category',1,3),giftFallbackCoins:0
   };
   const maxTotalCoins=getInt('tic-edition-budget',0,1000000000000);
   return {tic:config,maxTotalCoins};
  }
+ const getPrizeCategoryLabel=id=>({
+  1:'🟤 Kategorie 1 · Einfach',2:'🔵 Kategorie 2 · Mittel',
+  3:'🟡 Kategorie 3 · Schwer / Premium'
+ }[id]||'⚠️ Gewinnkategorie wählen');
  function updateTicEditionPreview(){
   const value=id=>Number($(id)?.value||0);
   const price=value('tic-price'),budget=value('tic-edition-budget');
   const mult=value('tic-max-multiplier');
+  const categoryLabel=getPrizeCategoryLabel(value('tic-prize-category'));
+  $('tic-prize-category-preview').textContent=categoryLabel;
   const money=Number.isSafeInteger(price)&&price>=0?price*500:NaN;
   $('tic-edition-revenue').textContent=Number.isSafeInteger(money)?num(money)+' 🪙':'– 🪙';
   const weights=[0,1,2,3].map(i=>value('tic-weight-'+i));
@@ -2249,6 +2257,7 @@ export function initChristmasScratch(){
   statusBox.dataset.state=active?'active':soldOut?'sold_out':'none';
   statusBox.textContent=active?
    '🟢 Aktive Auflage: '+num(ticEdition.issued)+'/500 Lose vergeben · '+
+    getPrizeCategoryLabel(ticEdition.config?.prizeCategory??2)+' · '+
     num(ticEdition.paidCoins)+' von '+num(ticEdition.maxTotalCoins)+' 🪙 ausgezahlt · '+
     num(ticEdition.remainingCoins)+' 🪙 für '+num(ticEdition.remaining)+' Restlose fest eingeplant. '+
     'Offene Geldlose: '+num(ticEdition.moneyTicketsRemaining??0)+
@@ -2268,11 +2277,12 @@ export function initChristmasScratch(){
   }
   const conf=ticEdition?.config??{
    price:500,coinAmounts:[200,450,800],symbolWeights:[700,250,40,10],
-   maxMultiplier:5,targetNonePer1000:200
+   maxMultiplier:5,targetNonePer1000:200,prizeCategory:2
   };
   const set=(id,val)=>{$(id).value=String(val)};
   set('tic-price',conf.price??500);
   set('tic-max-multiplier',conf.maxMultiplier??5);
+  set('tic-prize-category',conf.prizeCategory??2);
   set('tic-none',(conf.targetNonePer1000??200)/10);
   for(let i=0;i<3;i++)set('tic-coin-'+i,conf.coinAmounts?.[i]??[200,450,800][i]);
   for(let i=0;i<4;i++)set('tic-weight-'+i,(conf.symbolWeights?.[i]??[700,250,40,10][i])/10);
@@ -2294,12 +2304,13 @@ export function initChristmasScratch(){
    }else if(ticEdition?.remaining>0)
     throw Error('Es läuft bereits eine Tic-Tac-Toe-Auflage.');
    const name=edit?'Restlose bearbeiten':'500er-Auflage verbindlich veröffentlichen';
+   const categoryLine='\n🎁 Freischaltungs-Gewinnpool: '+getPrizeCategoryLabel(tic.prizeCategory)+'.';
    const message=edit?
     'Bereits ausgegebene '+current.issued+' Lose bleiben unverändert.\n'+
     current.remaining+' Restlose erhalten zusammen genau '+
-    num(maxTotalCoins-current.paidCoins)+' 🪙.\nGesamtbudget: '+num(maxTotalCoins)+' 🪙.':
+    num(maxTotalCoins-current.paidCoins)+' 🪙.\nGesamtbudget: '+num(maxTotalCoins)+' 🪙.'+categoryLine:
     'Der Server reserviert für 500 Tic-Tac-Toe-Lose genau '+num(maxTotalCoins)+
-    ' 🪙.\nBeim Kauf wird jedes Los einmalig ausgegeben.';
+    ' 🪙.\nBeim Kauf wird jedes Los einmalig ausgegeben.'+categoryLine;
    if(!window.confirm(name+'?\n'+message))return;
    button.disabled=true;output.textContent='🔄 Render plant die Gewinnkombinationen und prüft das Budget …';
    const reply=await query(edit?'/editions/tic_tac_toe/edit':'/editions/tic_tac_toe',
@@ -2321,7 +2332,7 @@ export function initChristmasScratch(){
   ticDialog.addEventListener('click',e=>{if(e.target===ticDialog)ticDialog.close()});
   $('scratch-tic-edition-form').addEventListener('submit',e=>e.preventDefault());
   for(const id of ['tic-price','tic-max-multiplier','tic-none','tic-edition-budget',
-   'tic-coin-0','tic-coin-1','tic-coin-2',
+   'tic-coin-0','tic-coin-1','tic-coin-2','tic-prize-category',
    'tic-weight-0','tic-weight-1','tic-weight-2','tic-weight-3'])
    $(id).addEventListener('input',updateTicEditionPreview);
   $('tic-edition-create').addEventListener('click',()=>void submitTicEdition(false));
