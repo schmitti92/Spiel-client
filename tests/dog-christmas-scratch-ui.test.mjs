@@ -549,3 +549,25 @@ test('Tic-Tac-Toe Duell forces multiplier then sign then bottom prize then nine 
  assert.match(js,/Eine Dreierlinie aus dem Gewinnzeichen gewinnt EINEN/);
  assert.match(js,/board\.querySelectorAll\('\.scratch-duel-cover'\)/);
 });
+
+
+test('Tic-Tac-Toe offers its own real 500-ticket fixed-budget edition editor',()=>{
+ const html=source('../DOG/christmas-event.html');
+ const js=source('../DOG/christmas-scratch-ui.js');
+ const css=source('../DOG/christmas-scratch-tic-edition.css');
+ for(const id of ['scratch-tic-edition-dialog','tic-price','tic-max-multiplier',
+  'tic-coin-0','tic-coin-1','tic-coin-2','tic-none',
+  'tic-weight-0','tic-weight-1','tic-weight-2','tic-weight-3',
+  'tic-edition-budget','tic-edition-create','tic-edition-edit','tic-edition-status'])
+  assert.match(html,new RegExp('id="'+id+'"'));
+ assert.match(js,/function readTicEdition\(\)/);
+ assert.match(js,/function openTicEdition\(\)/);
+ assert.match(js,/function submitTicEdition\(edit\)/);
+ assert.match(js,/query\(edit\?'\/editions\/tic_tac_toe\/edit':'\/editions\/tic_tac_toe'/);
+ assert.match(js,/ticEdition=r\.ticEdition\?\?null/);
+ assert.match(js,/option\.id==='tic_tac_toe'\?ticEdition:null/);
+ assert.match(js,/ticEdition\?\.remaining===0/);
+ assert.match(js,/tic-edition-budget/);
+ assert.match(css,/@media\(max-width:620px\)/);
+ assert.match(html,/christmas-scratch-tic-edition\.css\?v=\d+/);
+});
