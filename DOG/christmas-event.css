@@ -128,3 +128,10 @@ button[disabled]{opacity:.55;cursor:not-allowed}[hidden]{display:none!important}
 
 /* Obsolete chapter overview is never shown, including with a stale HTML cache. */
 #tab-chapters,#panel-chapters{display:none!important}
+
+/* Native pinch-to-zoom accessibility: after zooming, the browser must be
+   allowed to pan its viewport both horizontally and vertically in menus.
+   Scratch canvases and the DOG game board retain their own gesture rules. */
+html,body,.event-layout,.event-sidebar,.event-menu,.event-main,.event-panel{
+ touch-action:auto;
+}
