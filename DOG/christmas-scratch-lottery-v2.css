@@ -31,6 +31,15 @@
  min-height:35px!important;padding:6px 9px!important;font-size:10px!important;
  background:linear-gradient(180deg,#21534a,#092520)!important
 }
+/* Beat the older uploaded-assets ticket-background declarations without
+   touching the artwork used inside the actual scratch game window. */
+#panel-scratch #scratch-tier-grid .scratch-tier{
+ background-image:var(--ticket-bg)!important;
+ background-position:center!important;
+ background-size:100% 100%!important;
+ background-repeat:no-repeat!important;
+ background-color:#14283a!important;
+}
 /* Four full-size printed cards on row one; three wider tickets below. */
 #panel-scratch .scratch-tickets{
  display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr))!important;
