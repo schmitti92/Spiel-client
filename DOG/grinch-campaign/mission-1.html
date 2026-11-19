@@ -20,6 +20,17 @@
   <p>Die Lichter sind erloschen. Drei Freunde folgen geheimnisvollen Spuren zum Berg. Ihre fünfte Figur steht direkt spielbereit auf dem Startfeld. Auf dem originalen 64-Felder-DOG-Weg führt für jeden ein einziges Portal-Zielfeld weiter nach Welt 2. Jede Figur, die dieses Feld erreicht, wird sofort teleportiert. Doch unterwegs verschwindet von jedem Spieler eine Figur durch den Fluch.</p>
   <div class="notice" role="status">🧪 Eigenständige Spieltest-Version für drei Spieler an einem Gerät. Kein Online-Raum, kein offizieller Kampagnenfortschritt und keine echten Belohnungen. Das normale DOG-Spiel bleibt unverändert.</div>
  </section>
+ <section id="grinch-online-panel" class="grinch-online-panel" hidden aria-live="polite">
+  <div class="grinch-online-heading"><span>🌐 GEMEINSAM ONLINE</span><strong id="grinch-online-code">Spielraum</strong></div>
+  <p id="grinch-online-status">Verbindung wird aufgebaut …</p>
+  <p id="grinch-online-players">Warte auf die drei angemeldeten Spieler.</p>
+  <div class="grinch-online-controls">
+   <button type="button" id="grinch-online-launch" hidden>🎄 Mission 1 für alle drei starten</button>
+   <a id="grinch-online-lobby" href="../../hub-lobby.html">Zum gemeinsamen Spielraum</a>
+   <button type="button" id="grinch-online-refresh">↻ Raum aktualisieren</button>
+  </div>
+  <p class="grinch-online-small">Die offizielle Mission benötigt drei echte Spieler und den serverbestätigten Weihnachtsbaum auf Stufe 10. Nur der Host startet. Jeder sieht seine eigenen Karten.</p>
+ </section>
  <div class="layout">
   <section class="board-card" aria-labelledby="board-heading">
    <div class="board-head"><h2 id="board-heading">🧭 Der Pfad zum Berg</h2><span id="phase">Runde 1</span></div>
@@ -77,6 +88,8 @@
  <p class="help">Lokale Testdaten – keine Anmeldung, keine Online-Funktion.</p>
 </dialog>
 <div id="event-message" role="status" aria-live="assertive"></div>
-<script type="module" src="./mission-1.js?v=13"></script>
+<script src="../../profile-config.js"></script>
+<script src="../../profile-auth.js"></script>
+<script type="module" src="./mission-1.js?v=14"></script>
 </body>
 </html>
