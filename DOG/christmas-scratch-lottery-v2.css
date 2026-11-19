@@ -1,0 +1,247 @@
+/* Lichtertal | Druckerei der Weihnachtslose v2 — visual layer only.
+   No changes to server-authorized wins, scratch masks or 500-ticket ledgers. */
+#panel-scratch{--lot-gold:#ffd78c;--lot-paper:#fffae9;--lot-outline:#f4e6ca}
+#panel-scratch .scratch-shell{
+ padding:10px!important;gap:10px!important;
+ background:
+ linear-gradient(90deg,#1d100bbc,#26180d66,#1c1010c9),
+ url("./assets/lichtertal-lottery-v2/winter-kiosk.svg") center top/cover;
+ border:2px solid #dca95c;border-radius:17px;
+ box-shadow:inset 0 2px 14px #ffe4b43b,0 8px 24px #0009
+}
+#panel-scratch .scratch-toolbar{
+ min-height:76px!important;grid-template-columns:minmax(100px,1fr) minmax(230px,1.6fr) minmax(240px,1.2fr)!important;
+ grid-template-rows:1fr!important;gap:8px!important;
+ padding:8px 11px!important;margin:0!important;
+ background:
+ linear-gradient(90deg,#1c1810d7,#4a281ab2,#23140cd9),
+ url("./assets/lichtertal-lottery-v2/winter-kiosk.svg") center/cover!important;
+ border-radius:11px!important;border:2px solid #ddbd78!important
+}
+#panel-scratch .scratch-toolbar:before{height:14px!important}
+#panel-scratch .scratch-toolbar>div:first-child{grid-column:1!important;grid-row:1!important}
+#panel-scratch .scratch-winter-brand{
+ grid-column:2!important;grid-row:1!important;min-height:68px!important;padding:5px 16px!important
+}
+#panel-scratch .scratch-winter-brand h2{font:900 clamp(28px,3.2vw,45px)/1.05 Georgia,serif!important;color:#fff4c9!important}
+#panel-scratch .scratch-winter-brand small{font-size:10px!important}
+#panel-scratch .scratch-toolbar-actions{grid-column:3!important;grid-row:1!important}
+#panel-scratch .scratch-wallet{font-size:clamp(20px,2.1vw,29px)!important}
+#panel-scratch .scratch-toolbar-actions button{
+ min-height:35px!important;padding:6px 9px!important;font-size:10px!important;
+ background:linear-gradient(180deg,#21534a,#092520)!important
+}
+/* Four full-size printed cards on row one; three wider tickets below. */
+#panel-scratch .scratch-tickets{
+ display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr))!important;
+ gap:10px!important;align-items:stretch!important;width:100%!important
+}
+#panel-scratch .scratch-tier{
+ --ticket-bg:url("./assets/lichtertal-lottery-v2/ticket-gifts.svg");
+ position:relative!important;display:block!important;grid-column:span 3!important;
+ height:278px!important;min-height:278px!important;
+ margin:0!important;padding:0!important;overflow:hidden!important;
+ border:4px solid var(--lot-paper)!important;border-radius:8px!important;
+ background:var(--ticket-bg) center/100% 100% no-repeat!important;
+ box-shadow:0 5px 13px #090b16b0,0 0 0 1px #8d582e,inset 0 0 0 2px #ffe8ae66!important;
+ isolation:isolate;color:#fffaf0!important;text-align:left!important;
+ filter:drop-shadow(0 1px 0 #fff1dd78)
+}
+#panel-scratch .scratch-tier[data-variant="gifts"]{--ticket-bg:url("./assets/lichtertal-lottery-v2/ticket-gifts.svg");order:1}
+#panel-scratch .scratch-tier[data-variant="snow_collect"]{--ticket-bg:url("./assets/lichtertal-lottery-v2/ticket-snow.svg");order:2}
+#panel-scratch .scratch-tier[data-variant="elf"]{--ticket-bg:url("./assets/lichtertal-lottery-v2/ticket-elf.svg");order:3}
+#panel-scratch .scratch-tier[data-variant="dog_jackpot_9"]{--ticket-bg:url("./assets/lichtertal-lottery-v2/ticket-dog.svg");order:4}
+#panel-scratch .scratch-tier[data-variant="number_one_20"]{--ticket-bg:url("./assets/lichtertal-lottery-v2/ticket-number.svg");order:5;grid-column:span 4!important}
+#panel-scratch .scratch-tier[data-variant="tic_tac_toe"]{--ticket-bg:url("./assets/lichtertal-lottery-v2/ticket-tictactoe.svg");order:6;grid-column:span 4!important}
+#panel-scratch .scratch-tier[data-variant="premium_27"]{--ticket-bg:url("./assets/lichtertal-lottery-v2/ticket-premium.svg");order:7;grid-column:span 4!important}
+#panel-scratch .scratch-tier:before{
+ content:"";position:absolute;z-index:1;inset:0 0 auto;height:12px!important;
+ opacity:.92;background:linear-gradient(#f7fbfbd1,#e5f5fb2d 80%,transparent)!important;
+ pointer-events:none
+}
+#panel-scratch .scratch-tier:after{
+ content:"";position:absolute;z-index:0;inset:0!important;pointer-events:none;
+ border:1px dashed #fff0c582;border-radius:4px;
+ background:linear-gradient(160deg,#ffffff1a,transparent 31%,#0000000a 72%,#fff6cf14)!important
+}
+#panel-scratch .scratch-tier>*{z-index:2}
+#panel-scratch .scratch-card-heading{
+ position:absolute!important;top:13px;left:8px;right:8px;
+ display:block!important;height:59px!important;min-height:0!important;
+ padding:0!important;margin:0!important;text-align:center!important
+}
+#panel-scratch .scratch-card-names{
+ min-height:0!important;display:flex!important;align-items:center!important;
+ flex-direction:column!important;gap:2px!important
+}
+#panel-scratch .scratch-card-class{
+ padding:2px 7px!important;border-radius:3px!important;
+ color:#fff8e6!important;background:#120f21aa!important;
+ font-size:8px!important;line-height:1.2!important;
+ max-width:calc(100% - 24px)
+}
+#panel-scratch .scratch-tier h3{
+ color:#ffe8a4!important;font:italic 900 clamp(15px,1.38vw,22px)/1.02 Georgia,serif!important;
+ text-shadow:0 2px 2px #3b0a0a,0 3px 9px #150819,0 0 4px #ffab4b80!important;
+ overflow-wrap:normal!important;word-break:normal!important;max-width:100%!important;
+ text-align:center!important
+}
+#panel-scratch .scratch-icon{
+ position:absolute!important;top:84px;left:3%;width:40%!important;height:75px!important;
+ display:grid!important;place-items:center!important;margin:0!important;
+ font-size:clamp(34px,4.3vw,62px)!important;
+ background:radial-gradient(ellipse,#ffeaa73b 0%,transparent 73%)!important
+}
+#panel-scratch .scratch-icon:after{background-size:contain!important}
+#panel-scratch .scratch-card-brief{
+ position:absolute!important;top:159px;left:4%;width:39%;
+ display:block!important;min-height:0!important;max-height:34px!important;
+ overflow:hidden!important;padding:0!important;margin:0!important
+}
+#panel-scratch .scratch-card-rule{
+ display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+ overflow:hidden;color:#fff9e5!important;font:750 10px/1.15 system-ui,sans-serif!important;
+ text-shadow:0 1px 3px #11091e,0 1px 2px #000!important;
+}
+#panel-scratch .scratch-card-chance,
+#panel-scratch .scratch-card-payouts,
+#panel-scratch .scratch-symbol-key{display:none!important}
+#panel-scratch .scratch-printed-preview{
+ position:absolute!important;top:86px;right:4%;width:52%;height:100px;
+ display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:minmax(0,1fr);
+ gap:3px!important;overflow:hidden;transform:rotate(-.4deg);
+ padding:3px!important;border:1px solid #ffe8b3a0;border-radius:6px;
+ background:#060e25a8!important;box-shadow:0 2px 7px #0008
+}
+#panel-scratch .scratch-printed-preview[data-columns="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+#panel-scratch .scratch-printed-preview[data-columns="4"]{grid-template-columns:repeat(4,minmax(0,1fr))}
+#panel-scratch .scratch-printed-preview[data-columns="5"]{grid-template-columns:repeat(5,minmax(0,1fr))}
+#panel-scratch .scratch-printed-foil{
+ display:grid;place-items:center;min-width:0;min-height:0;overflow:hidden;
+ border:1px solid #e9f3faac;border-radius:3px;
+ background:url("./assets/lichtertal-lottery-v2/scratch-foil.svg") center/cover!important;
+ box-shadow:inset 0 1px 2px #fff8,inset 0 -2px 2px #354b6080,0 1px 2px #0008;
+ color:#485463c4!important;text-shadow:0 1px #f6fafbd4;
+ font:900 clamp(9px,1vw,15px)/1 system-ui,sans-serif!important
+}
+#panel-scratch .scratch-tier[data-variant="snow_collect"] .scratch-printed-foil,
+#panel-scratch .scratch-tier[data-variant="dog_jackpot_9"] .scratch-printed-foil{border-radius:45%}
+#panel-scratch .scratch-tier[data-variant="premium_27"] .scratch-printed-preview{height:100px;gap:2px}
+#panel-scratch .scratch-tier[data-variant="premium_27"] .scratch-printed-foil{font-size:10px!important}
+#panel-scratch .scratch-printed-jackpot{
+ position:absolute!important;left:4%;right:4%;bottom:54px;height:47px;
+ display:flex!important;flex-direction:column;align-items:center;justify-content:center;
+ gap:0!important;padding:4px 7px!important;border:2px solid #f6d18a;border-radius:9px;
+ background:linear-gradient(180deg,#a52417 0%,#740d10 52%,#490f17 100%)!important;
+ box-shadow:inset 0 1px 2px #fff6b78c,0 3px 5px #150d18c9;
+ text-align:center;color:#fff2ca!important
+}
+#panel-scratch .scratch-printed-jackpot-caption{
+ display:block!important;color:#fff6cf!important;
+ font:900 clamp(8px,.76vw,11px)/1.05 Georgia,serif!important;
+ text-shadow:0 1px 2px #260b05;white-space:nowrap
+}
+#panel-scratch .scratch-printed-jackpot-value{
+ display:block!important;color:#ffe28e!important;
+ font:950 clamp(20px,2.15vw,30px)/1.04 Georgia,serif!important;
+ text-shadow:0 2px 2px #370805,0 0 5px #ffad57aa!important;
+ font-variant-numeric:tabular-nums
+}
+#panel-scratch .scratch-printed-serial{
+ position:absolute!important;left:5%;bottom:41px;width:90%;height:11px;
+ overflow:hidden;white-space:nowrap;text-align:right;padding-right:55px;
+ color:#fdf9f1bf!important;font:700 7px/1.3 monospace!important;letter-spacing:.2px;
+}
+#panel-scratch .scratch-printed-serial:after{
+ content:"";position:absolute;right:0;top:1px;width:51px;height:10px;
+ background:repeating-linear-gradient(90deg,#f1e9dd 0 1px,transparent 1px 2px,#efeddf 2px 3px,transparent 3px 5px);
+ opacity:.82
+}
+#panel-scratch .scratch-gifts-edition-chip{
+ position:absolute!important;top:71px;left:5%;right:5%;max-width:none;
+ padding:2px 5px!important;margin:0!important;min-height:0!important;max-height:15px!important;
+ overflow:hidden!important;white-space:nowrap!important;text-overflow:ellipsis!important;
+ background:#04191dc8!important;color:#ffebaf!important;
+ font:700 8px/1.05 system-ui,sans-serif!important;border-radius:3px!important
+}
+#panel-scratch .scratch-card-action-row{
+ position:absolute!important;bottom:5px;left:4%;right:4%;height:35px;
+ display:flex!important;gap:3px;align-items:stretch;min-width:0
+}
+#panel-scratch .scratch-card-action-row button{
+ position:static!important;flex:1 1 0;min-width:0!important;width:auto!important;
+ min-height:35px!important;height:35px!important;margin:0!important;
+ padding:3px 5px!important;border:1px solid #e5d29d!important;border-radius:8px!important;
+ font:850 9px/1.06 system-ui,sans-serif!important;white-space:normal!important;
+ color:#f8ffe9!important;background:linear-gradient(#229e52,#06552c)!important;
+ text-align:center!important;box-shadow:inset 0 1px #d0ffb35c,0 2px 3px #0019!important;
+}
+#panel-scratch .scratch-card-action-row button.scratch-reopen-ticket{background:linear-gradient(#405d88,#18365a)!important}
+#panel-scratch .scratch-card-action-row button.scratch-earned-voucher{background:linear-gradient(#765db2,#392059)!important}
+#panel-scratch .scratch-card-action-row button[hidden]{display:none!important}
+#panel-scratch .scratch-gifts-card-settings,
+#panel-scratch .scratch-other-edition-gear{
+ position:absolute!important;top:7px!important;right:6px!important;left:auto!important;
+ width:auto!important;max-width:42%!important;min-height:20px!important;
+ margin:0!important;padding:2px 4px!important;
+ border-radius:6px!important;background:#102a32dc!important;
+ border:1px solid #ffe6b4a3!important;color:#fff3ce!important;
+ font:800 8px/1.05 system-ui,sans-serif!important;z-index:9!important;
+ box-shadow:0 2px 4px #0007!important
+}
+#panel-scratch .scratch-card-open-error{position:absolute!important;z-index:9!important;inset:80px 10px auto;padding:5px;font-size:10px}
+#panel-scratch .scratch-analytics[hidden]{display:none!important}
+#panel-scratch .scratch-lottery-footer{
+ display:grid;grid-template-columns:2.1fr 1.6fr auto auto;gap:8px;align-items:stretch;
+ margin-top:0;padding:8px;border:1px solid #d8a763;border-radius:11px;
+ background:linear-gradient(180deg,#281811e6,#11262bcf);
+ box-shadow:inset 0 1px #ffebc04a;color:#fff1ca
+}
+#panel-scratch .scratch-lottery-footer-panel{display:flex;flex-direction:column;gap:2px;justify-content:center;min-width:0}
+#panel-scratch .scratch-lottery-footer-panel strong{color:#ffdb90;font:900 12px Georgia,serif}
+#panel-scratch .scratch-lottery-footer-panel span{color:#fff5df;font:650 10px/1.25 system-ui,sans-serif}
+#panel-scratch .scratch-lottery-help,
+#panel-scratch .scratch-stats-toggle{position:relative;align-self:stretch;min-width:0}
+#panel-scratch .scratch-lottery-help summary,
+#panel-scratch .scratch-stats-toggle{
+ display:flex;align-items:center;justify-content:center;height:100%;
+ border:1px solid #eecb88;border-radius:8px;padding:7px 11px;
+ background:linear-gradient(#185348,#102d2c);color:#ffeed0;
+ font:850 11px/1.2 system-ui,sans-serif;cursor:pointer;white-space:nowrap
+}
+#panel-scratch .scratch-lottery-help[open] summary{background:#61432c}
+#panel-scratch .scratch-lottery-help>div{
+ position:absolute;z-index:15;right:0;bottom:calc(100% + 8px);width:min(360px,90vw);
+ padding:13px;border:2px solid #e5bb72;border-radius:12px;
+ background:#102532;color:#ffefd9;box-shadow:0 8px 30px #000c;font:12px/1.5 system-ui,sans-serif
+}
+#panel-scratch .scratch-lottery-help>div p{margin:6px 0}
+#panel-scratch .scratch-lottery-help>div strong{color:#ffdf9e}
+@media(max-width:1150px){
+ #panel-scratch .scratch-tickets{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+ #panel-scratch .scratch-tier,
+ #panel-scratch .scratch-tier[data-variant="number_one_20"],
+ #panel-scratch .scratch-tier[data-variant="tic_tac_toe"],
+ #panel-scratch .scratch-tier[data-variant="premium_27"]{grid-column:span 3!important}
+ #panel-scratch .scratch-toolbar{grid-template-columns:1fr 1.5fr!important;grid-template-rows:auto auto!important}
+ #panel-scratch .scratch-winter-brand{grid-column:1/-1!important;grid-row:1!important}
+ #panel-scratch .scratch-toolbar>div:first-child{grid-column:1!important;grid-row:2!important}
+ #panel-scratch .scratch-toolbar-actions{grid-column:2!important;grid-row:2!important}
+ #panel-scratch .scratch-lottery-footer{grid-template-columns:1fr 1fr}
+}
+@media(max-width:620px){
+ #panel-scratch .scratch-shell{padding:5px!important}
+ #panel-scratch .scratch-tickets{grid-template-columns:1fr!important}
+ #panel-scratch .scratch-tier,
+ #panel-scratch .scratch-tier[data-variant="number_one_20"],
+ #panel-scratch .scratch-tier[data-variant="tic_tac_toe"],
+ #panel-scratch .scratch-tier[data-variant="premium_27"]{grid-column:1!important;height:285px!important;min-height:285px!important}
+ #panel-scratch .scratch-tier h3{font-size:20px!important}
+ #panel-scratch .scratch-printed-preview{width:54%}
+ #panel-scratch .scratch-toolbar{grid-template-columns:1fr!important;grid-template-rows:auto auto auto!important}
+ #panel-scratch .scratch-winter-brand{grid-column:1!important;grid-row:1!important}
+ #panel-scratch .scratch-toolbar>div:first-child{grid-column:1!important;grid-row:2!important;text-align:center}
+ #panel-scratch .scratch-toolbar-actions{grid-column:1!important;grid-row:3!important;justify-content:center}
+ #panel-scratch .scratch-lottery-footer{grid-template-columns:1fr!important}
+}
+@media(prefers-reduced-motion:reduce){#panel-scratch .scratch-tier{animation:none!important;transition:none!important}}
