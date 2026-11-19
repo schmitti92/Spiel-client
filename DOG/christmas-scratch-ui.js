@@ -2089,6 +2089,12 @@ export function initChristmasScratch(){
   const confirm=$('scratch-ticket-finish');
   confirm.hidden=false;
   confirm.textContent='✓ Ergebnis bestätigen';
+  const sameOption=SCRATCH_SHOP_VARIANTS.find(o=>o.id===current.board?.variantId);
+  $('scratch-ticket-next-same').hidden=!sameOption;
+  $('scratch-ticket-next-same').textContent=status?.settings?.freeEnabled===true?
+   '🎁 Gleiches Los kostenlos öffnen':'🎟️ Gleiches Los nochmal kaufen';
+  $('scratch-ticket-choose').hidden=false;
+  $('scratch-lotto-back').hidden=true;
   $('scratch-reveal-button').hidden=true;
   if(unifiedCover)unifiedCover.hidden=true;
   for(const cover of board.querySelectorAll('.scratch-duel-cover'))cover.hidden=true;
@@ -2286,15 +2292,40 @@ export function initChristmasScratch(){
   drawShop();notice('🎟️ Dein Glückszahl-Los bleibt gespeichert. Du kannst es über „Vorheriges Los anzeigen“ wieder öffnen.');
  });
  $('scratch-reveal-button').addEventListener('click',finish);
- $('scratch-ticket-finish').addEventListener('click',()=>{
-  if(!ticket||!finished)return;
-  const won=stage.dataset.result==='win';
-  acknowledge(ticket.commandId);
+ // Confirm once, independent of how the player proceeds. The server already
+ // booked winnings in the original receipt; never submit them again here.
+ function closeRevealedTicket(){
+  if(!ticket||!finished||busy)return null;
+  const oldTicket=ticket,won=stage.dataset.result==='win';
+  acknowledge(oldTicket.commandId);
   ticket=null;finished=false;stage.hidden=true;
   stage.classList.remove('is-revealed');stage.removeAttribute('data-result');
   document.body.classList.remove('scratch-ticket-open');
-  drawShop();notice(won?'✅ Gewinn bestätigt. Dein Preis ist gutgeschrieben – das nächste Los kann geöffnet werden.':
-   '✅ Ergebnis bestätigt: Niete · 0 Münzen. Du kannst das nächste Los öffnen.');
+  resetZoom();
+  $('scratch-ticket-next-same').hidden=true;
+  $('scratch-ticket-choose').hidden=true;
+  drawShop();
+  notice(won?'✅ Gewinn bestätigt und gutgeschrieben.':'✅ Niete bestätigt · 0 Münzen.');
+  return oldTicket;
+ }
+ $('scratch-ticket-finish').addEventListener('click',()=>{
+  closeRevealedTicket();
+ });
+ $('scratch-ticket-choose').addEventListener('click',()=>{
+  if(!closeRevealedTicket())return;
+  // Return to the grouped ticket shop without purchasing another ticket.
+  const scroll=$('event-main');
+  scroll?.scrollTo({top:0,left:0,behavior:'instant'});
+  root.querySelector('.scratch-category-heading')?.scrollIntoView?.({block:'nearest'});
+  notice('🎟️ Wähle jetzt dein nächstes Rubbellos aus.');
+ });
+ $('scratch-ticket-next-same').addEventListener('click',()=>{
+  if(!ticket||!finished||busy)return;
+  const option=SCRATCH_SHOP_VARIANTS.find(o=>o.id===ticket.board?.variantId);
+  if(!option)return;
+  const free=status?.settings?.freeEnabled===true;
+  if(!closeRevealedTicket())return;
+  void buy(option.tier,free,option.id);
  });
  $('scratch-refresh').addEventListener('click',()=>void load());
  $('scratch-gifts-settings-open').addEventListener('click',openGiftsSettings);
