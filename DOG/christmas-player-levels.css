@@ -1,118 +1,260 @@
-/* Lichtertal | Goldener 50-Level-Sammlerpass (nur dieser Bereich). */
-.dog-level-shell{display:flex;flex-direction:column;gap:17px;min-width:0;color:#f3e9d0}
-.dog-level-hero{position:relative;overflow:hidden;border:2px solid #deb86f;border-radius:22px;
- padding:clamp(16px,2.4vw,30px);background:radial-gradient(circle at 14% 7%,#d2ae6255,transparent 34%),
- radial-gradient(circle at 93% 89%,#438c7850,transparent 40%),
- linear-gradient(145deg,#183e37 0%,#0b2426 59%,#182c36 100%);
- box-shadow:inset 0 1px 0 #ffefa264,0 14px 35px #010e0d94,0 0 0 5px #e3c67b12}
-.dog-level-hero:after{content:'✦ ✧ ✦';position:absolute;right:22px;bottom:13px;
- font-size:22px;letter-spacing:17px;color:#edc77828;pointer-events:none}
-.dog-level-hero-head{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;
- gap:16px;flex-wrap:wrap}
-.dog-level-hero h3{font:900 clamp(26px,3vw,40px) Georgia,serif;color:#ffe3a1;margin:5px 0;
- text-shadow:0 2px 11px #573614aa}
-.dog-level-hero p{margin:0;color:#e6e9dc;line-height:1.5;font-size:13px}
-.dog-level-refresh,.dog-level-to-scratch{border:1px solid #f5d996;border-radius:12px;padding:12px 16px;
- color:#2d2619;font-weight:900;background:linear-gradient(135deg,#ffe5a0,#c69443);cursor:pointer;
- box-shadow:inset 0 1px 0 #ffffff7b,0 5px 13px #0004;white-space:normal}
-.dog-level-refresh:disabled{opacity:.55;cursor:wait}
-.dog-level-overview{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;
- gap:clamp(17px,3vw,34px);margin:23px 0 12px}
-.dog-level-medallion{flex:none;width:clamp(105px,14vw,158px);height:clamp(105px,14vw,158px);
- border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
- background:radial-gradient(circle at 30% 15%,#fffbe2 0%,#f5d58b 36%,#be8c42 75%,#765128);
- border:6px ridge #f8df9d;box-shadow:0 0 0 5px #5b421fc0,0 0 35px #ffda6a74,inset 0 2px 14px #fff6b288;
- color:#463019;position:relative}
-.dog-level-medallion:before{content:'★';position:absolute;top:-15px;color:#ffe6a6;
- text-shadow:0 0 12px #ffedaa;font-size:20px}
-.dog-level-medallion strong{font:900 clamp(45px,6.5vw,72px) Georgia,serif;line-height:1}
-.dog-level-medallion span{font-size:10px;letter-spacing:1.3px;font-weight:950;text-align:center}
-.dog-level-xp-data{min-width:0}.dog-level-xp-data>strong{display:block;color:#ffe9ad;
- font-size:clamp(22px,2.7vw,31px);margin-bottom:7px}
-.dog-level-xp-data>small{display:block;color:#e3e3ca;margin:7px 0;font-size:13px}
-.dog-level-xp-meter{width:100%;height:19px;overflow:hidden;border-radius:999px;
- border:1px solid #dbb774;background:#091e24}
-.dog-level-xp-meter::-webkit-progress-bar{background:#0a2427}
-.dog-level-xp-meter::-webkit-progress-value{background:linear-gradient(90deg,#55b1a1,#f3c35d,#fff4b7);
- border-radius:999px;box-shadow:0 0 12px #f8d078}
-.dog-level-xp-meter::-moz-progress-bar{background:linear-gradient(90deg,#55b1a1,#f3c35d,#fff4b7)}
-.dog-level-info-grid{display:flex;flex-wrap:wrap;gap:9px;margin-top:17px;font-size:12px}
-.dog-level-info-grid>div{border:1px solid #e5c8865c;border-radius:11px;padding:10px 12px;
- background:linear-gradient(110deg,#ffffff12,#ffffff06);min-width:155px}
-.dog-level-info-grid strong{color:#ffe1a2}
-.dog-level-banner{display:flex;align-items:center;gap:13px;flex-wrap:wrap;border:1px solid #bba46c8a;
- border-radius:15px;padding:13px 17px;
- background:linear-gradient(100deg,#193e35,#294d43 55%,#17312e);box-shadow:0 6px 18px #0003}
-.dog-level-banner strong{color:#ffe6a3;display:block;margin-bottom:3px;font-size:15px}
-.dog-level-banner small{color:#d6e6dc;font-size:12px}
-.dog-level-banner-copy{flex:1;min-width:190px}
-.dog-level-banner-icon{font-size:32px;filter:drop-shadow(0 0 10px #ffd58b6b)}
-.dog-level-rules{border:1px solid #9c936e77;border-radius:13px;background:#183b36c9;
- padding:12px 16px;color:#e5e7d4}
-.dog-level-rules h3{margin:0 0 7px;font:800 18px Georgia,serif;color:#ffe3a3}
-.dog-level-rules p{font-size:12px;line-height:1.6;margin:0}
-.dog-level-collection-header{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.dog-level-collection-header h3{font:900 clamp(22px,2.6vw,31px) Georgia,serif;
- color:#f6dc9d;margin:3px 0 0;text-shadow:0 2px 8px #0006}
-.dog-level-eyebrow{color:#d2bf85;font-size:10px;font-weight:950;letter-spacing:2px}
-.dog-level-range-nav{display:flex;gap:9px;width:100%;overflow-x:auto;scrollbar-width:thin;
- padding:3px 1px 8px}
-.dog-level-range{flex:1 0 105px;min-width:0;padding:11px 10px;border-radius:13px;
- border:1px solid #8c9a89;background:linear-gradient(135deg,#1b403b,#102b2e);
- color:#dbe6da;font:800 14px Georgia,serif;cursor:pointer;transition:filter .15s}
-.dog-level-range.contains-current:not(.selected){border-color:#cbb275}
-.dog-level-range.selected{color:#412c17;border-color:#ffe6a0;background:linear-gradient(120deg,#ffe5a5,#c79548);
- box-shadow:0 3px 16px #e5be695a}
-.dog-level-range:hover{filter:brightness(1.15)}
-.dog-level-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px;align-items:stretch}
-.dog-level-tile{min-width:0;display:flex;flex-direction:column;position:relative;overflow:hidden;
- padding:14px 12px;border:1px solid #728c83;border-radius:16px;
- background:linear-gradient(150deg,#214038,#0d292f 66%,#142c32);opacity:.76;
- box-shadow:0 8px 18px #0004;min-height:226px}
-.dog-level-tile:before{content:'✦';position:absolute;right:10px;top:55px;color:#ecd4971b;font-size:31px;pointer-events:none}
-.dog-level-tile.reached{opacity:1;border-color:#bfa36a;background:linear-gradient(145deg,#28483a,#14332f)}
-.dog-level-tile.claimable{border:2px solid #f5d98e;background:linear-gradient(150deg,#36523b,#173832);
- box-shadow:inset 0 0 22px #dbad3e11,0 0 18px #e1bc6260}
-.dog-level-tile.current{outline:1px solid #ffe8a6;outline-offset:-5px}
-.dog-level-tile.claimed{border-color:#91bba7}
-.dog-level-tile.milestone{background:radial-gradient(circle at 90% 5%,#e1b95e38,transparent 45%),linear-gradient(145deg,#34483e,#222c39);
- border-color:#d5b870}
-.dog-level-card-top{display:flex;justify-content:space-between;align-items:center;gap:4px}
-.dog-level-badge{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:50%;
- color:#fff0d7;background:#284544;border:1px solid #aab9a1;font-weight:950;letter-spacing:1px}
-.dog-level-tile.reached .dog-level-badge{color:#3b2816;border:2px solid #ffefb6;
- background:radial-gradient(circle at 25% 20%,#fff1b1,#d6a452)}
-.dog-level-state{color:#c8d5d0;font-size:10px;font-weight:800;text-align:right}
-.dog-level-tile.claimable .dog-level-state{color:#ffe4a1}
-.dog-level-card-title{font:900 18px Georgia,serif;color:#ffe4ae;margin:10px 0 3px}
-.dog-level-threshold{color:#c0d8cc;font-size:11px;margin:0 0 12px}
-.dog-level-milestone-label{font-size:10px;letter-spacing:1px;font-weight:950;
- color:#ffe4a1;border-top:1px solid #e7b96965;padding:7px 0}
-.dog-level-special{font-size:11px;color:#fff1bf;padding:8px;border-radius:9px;
- border:1px dashed #e4c3779e;background:#ffdfa513;margin-bottom:8px}
-.dog-level-prizes{display:flex;flex-direction:column;gap:6px;margin-top:auto}
-.dog-level-prize{display:flex;gap:7px;align-items:center;min-width:0;
- padding:8px 7px;border-radius:10px;border:1px solid #a3a79a6b;background:#071f2359}
-.dog-level-prize.medium{border-color:#86c6d5b8;background:#174c575c}
-.dog-level-prize.premium{border-color:#dabe69;background:#75552240}
-.dog-level-prize-icon{flex:none;font-size:20px}
-.dog-level-prize-content{min-width:0}
-.dog-level-prize-content strong{display:block;overflow-wrap:anywhere;font-size:11px;color:#fff0c7}
-.dog-level-prize-content small{display:block;color:#b8d3cd;font-size:10px;margin-top:3px;line-height:1.25}
-.dog-level-claim{cursor:pointer;margin-top:10px;padding:10px 8px;width:100%;border-radius:10px;
- background:linear-gradient(120deg,#ffe39a,#c68b39);color:#2d271b;
- border:1px solid #fff1b4;font-weight:950;font-size:11px;box-shadow:0 3px 12px #0005}
-.dog-level-claim:disabled{opacity:.6;cursor:wait}
-.dog-level-redeemed{margin-top:9px;text-align:center;font-size:10px;color:#b7e1c9;font-weight:800}
-.dog-level-status{font-size:13px;color:#f2dfac;min-height:20px}
-.dog-level-status[data-error=true]{color:#ffb89d}
-.dog-level-footer{font-size:12px;color:#d0ddd4;line-height:1.55}
-@media(max-width:1240px){.dog-level-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media(max-width:980px){.dog-level-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:680px){.dog-level-overview{grid-template-columns:1fr;justify-items:center;text-align:center}
- .dog-level-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
- .dog-level-hero{padding:16px}.dog-level-tile{padding:11px 9px}
- .dog-level-banner{align-items:flex-start}.dog-level-prize-content strong{font-size:10px}}
-@media(max-width:380px){.dog-level-grid{grid-template-columns:1fr}
- .dog-level-range{flex-basis:94px}.dog-level-tile{min-height:190px}}
-@media(prefers-reduced-motion:reduce){.dog-level-range{transition:none}}
+/* Lichtertal – goldenes Referenzdesign für den persönlichen Levelpass.
+   Wir verwenden vorhandene, leere Wintergrafiken als Hintergrund und behalten
+   alle Texte, Statusanzeigen und Buttons als echte DOM-Elemente. */
+#panel-level{--lp-gold:#ffd982;--lp-gold-dark:#ad7130;--lp-cream:#fff2c9;color:#fff3d2}
+#panel-level .dog-level-shell{display:flex;flex-direction:column;gap:11px;min-width:0;padding:4px 3px 15px;
+ background:linear-gradient(180deg,#061c24 0%,#062321 54%,#092a27 100%);border:1px solid #bd8f46;
+ border-radius:17px;box-shadow:0 12px 25px #0009,inset 0 0 0 2px #302819;overflow:hidden}
+#panel-level .dog-pass-heading{position:relative;min-height:148px;display:flex;align-items:center;justify-content:center;
+ padding:13px 124px 13px 20px;text-align:center;
+ background:linear-gradient(180deg,#08162a28,#03232178 80%,#001b1ce8),
+ url("./assets/lichtertal-winter-ui/01_hintergrund_winternacht.png") center 38%/cover,
+ linear-gradient(115deg,#0b2537,#1c5a63 55%,#071c34);
+ border-bottom:2px solid #caa061;isolation:isolate}
+#panel-level .dog-pass-heading:before{content:"";position:absolute;top:0;left:0;right:0;height:18px;z-index:1;
+ background:url("./assets/lichtertal-winter-ui/07_schnee_eiszapfen_oben.png") top center/100% 100% no-repeat;
+ filter:drop-shadow(0 4px 3px #07151bd5);pointer-events:none}
+#panel-level .dog-pass-heading-inner{display:flex;align-items:center;justify-content:center;gap:13px;min-width:0;max-width:980px}
+#panel-level .dog-pass-heading-copy{min-width:0}
+#panel-level .dog-pass-heading-copy h2{position:relative;margin:0 auto 8px;padding:9px 25px 12px;max-width:max-content;
+ border:3px ridge #f7d888;border-radius:32px 32px 15px 15px;background:
+ radial-gradient(ellipse at center top,#c85525 0%,#7c151b 66%,#3e0c19 100%);
+ box-shadow:0 3px 0 #3e1c10,0 7px 17px #000b,inset 0 2px 6px #ffce838b;
+ font:900 clamp(25px,3vw,48px)/1.04 Georgia,serif;color:#ffedc2;
+ white-space:nowrap;text-shadow:0 3px 2px #4f120d,0 0 14px #ffc96a9c}
+#panel-level .dog-pass-heading-copy p{margin:0;line-height:1.4;color:#fff3d8;
+ font:700 clamp(11px,1.04vw,15px)/1.45 Georgia,serif;text-shadow:0 2px 5px #000,0 0 9px #000}
+#panel-level .dog-pass-heading-cards{font-size:clamp(24px,2.7vw,39px);transform:rotate(-13deg);
+ filter:drop-shadow(0 2px 5px #000)}
+#panel-level .dog-pass-heading-cards:last-child{transform:rotate(13deg)}
+#panel-level .dog-pass-max{position:absolute;right:clamp(78px,8vw,115px);top:8px;z-index:2;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;width:103px;height:118px;
+ border-radius:38% 38% 46% 46%;border:4px ridge #ffdc8b;color:#fff6dc;
+ background:radial-gradient(circle at 38% 13%,#b34b2c,#661319 54%,#270c19 90%);
+ box-shadow:0 0 0 4px #3c260ab0,0 0 22px #ffd35f78,inset 0 0 16px #9d1a12;
+ font:900 13px/1.1 Georgia,serif;text-shadow:0 2px 2px #250607}
+#panel-level .dog-pass-max:before{content:"♛";position:absolute;top:-19px;font-size:30px;color:#ffe19b;text-shadow:0 0 8px #ffb63e}
+#panel-level .dog-pass-max strong{font:900 63px/.95 Georgia,serif;color:#ffe2a1;text-shadow:0 3px 4px #6a1b12}
+
+#panel-level .dog-pass-profile{position:relative;margin:0 10px;border:2px solid #deaf5e;border-radius:17px;
+ background:radial-gradient(circle at 12% 30%,#0d624f59,transparent 48%),
+ linear-gradient(125deg,#082f2b 5%,#031e26 53%,#071f28 100%);
+ box-shadow:inset 0 0 0 2px #c2913c26,0 7px 23px #0009}
+#panel-level .dog-pass-profile-inner{display:grid;grid-template-columns:minmax(155px,1.05fr) 105px minmax(0,3fr);
+ align-items:center;gap:14px;padding:14px 18px 12px}
+#panel-level .dog-pass-identity{display:flex;align-items:center;gap:14px;min-width:0}
+#panel-level .dog-pass-portrait{position:relative;flex:0 0 clamp(78px,8vw,113px);width:clamp(78px,8vw,113px);
+ height:clamp(78px,8vw,113px)}
+#panel-level .dog-pass-avatar{display:grid;place-items:center;overflow:hidden;width:100%;height:100%;border-radius:50%;
+ border:5px ridge #ffdc84;background:radial-gradient(circle,#3b8182,#0a3134);
+ background-repeat:no-repeat;box-shadow:0 0 0 3px #6c341a,0 0 19px #ffcc6a6e; font-size:47px}
+#panel-level .dog-pass-avatar-crown{position:absolute;top:-26px;left:29%;font-size:37px;
+ transform:rotate(-11deg);filter:drop-shadow(0 1px 4px #000b)}
+#panel-level .dog-pass-name{min-width:0}
+#panel-level .dog-pass-name strong{display:block;color:#fff1c8;font:900 clamp(18px,2vw,28px)/1.12 Georgia,serif;
+ overflow-wrap:anywhere;text-shadow:0 2px 6px #000}
+#panel-level .dog-pass-name span{display:inline-block;margin-top:8px;padding:4px 10px;border-radius:17px;
+ border:1px solid #ffd98f;background:linear-gradient(#f5ce76,#b17f36);color:#291a10;
+ font:900 12px Georgia,serif;box-shadow:0 2px 6px #0007}
+#panel-level .dog-level-medallion{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ flex:none;width:102px;height:117px;margin:auto;clip-path:polygon(50% 0,98% 18%,96% 72%,50% 100%,4% 72%,2% 18%);
+ border:0;background:linear-gradient(130deg,#fff4bc,#b68128 21%,#481324 31%,#6a1822 65%,#eabf60 88%,#fff2b5);
+ box-shadow:none;filter:drop-shadow(0 0 11px #ffba5199);color:#fff3bf}
+#panel-level .dog-level-medallion:before{content:"";position:absolute;z-index:-1;inset:6px;
+ clip-path:inherit;background:radial-gradient(ellipse at center,#9f2d23,#490d1c 73%)}
+#panel-level .dog-level-medallion>span{font:900 12px Georgia,serif;letter-spacing:0}
+#panel-level .dog-level-medallion>strong{font:900 48px/.95 Georgia,serif;color:#ffe19a;text-shadow:0 2px 6px #200608}
+#panel-level .dog-level-medallion>small{font:850 11px Georgia,serif}
+#panel-level .dog-pass-progress-area{min-width:0}
+#panel-level .dog-pass-xp-top{display:flex;justify-content:space-between;gap:9px;align-items:baseline;
+ font:800 clamp(12px,1.2vw,17px) Georgia,serif;color:#f8efdc;text-shadow:0 1px 4px #000}
+#panel-level .dog-pass-xp-top strong{white-space:nowrap;color:#fff4ca}
+#panel-level .dog-pass-xp-meter-wrap{position:relative;margin-top:9px}
+#panel-level .dog-level-xp-meter{display:block;width:100%;height:28px;
+ border:2px solid #f7d88b;border-radius:50px;overflow:hidden;
+ background:#03181a;box-shadow:0 0 0 3px #4b3115,inset 0 2px 4px #000a,0 0 11px #d7a4515e}
+#panel-level .dog-level-xp-meter::-webkit-progress-bar{background:#091f20}
+#panel-level .dog-level-xp-meter::-webkit-progress-value{border-radius:30px;background:
+ linear-gradient(180deg,#fff5b9 0%,#ffd45b 35%,#e7a82e 58%,#b77b1f 100%)}
+#panel-level .dog-level-xp-meter::-moz-progress-bar{border-radius:30px;background:
+ linear-gradient(#fff4b4,#e8a629)}
+#panel-level .dog-pass-xp-meter-wrap>span{position:absolute;inset:0;display:grid;place-items:center;
+ font:900 15px Georgia,serif;pointer-events:none;color:#33210d;text-shadow:0 1px #fff4b5}
+#panel-level .dog-pass-xp-help{font:700 10px Georgia,serif;color:#cfddd1;margin:5px 0 0}
+#panel-level .dog-level-info-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:8px;margin-top:10px}
+#panel-level .dog-pass-stat{display:grid;grid-template-columns:28px minmax(0,1fr);grid-template-rows:auto auto;
+ align-items:center;column-gap:5px;min-width:0;min-height:50px;padding:7px 7px;
+ border:1px solid #caaa6d;border-radius:10px;background:linear-gradient(#12503e91,#052722ae);
+ box-shadow:0 2px 5px #0005}
+#panel-level .dog-pass-stat>span{grid-row:1/3;font-size:25px;text-align:center;filter:drop-shadow(0 1px 2px #000)}
+#panel-level .dog-pass-stat small{font:750 clamp(8px,.7vw,11px)/1.05 Georgia,serif;color:#f5ebcd;min-width:0}
+#panel-level .dog-pass-stat strong{font:900 clamp(12px,1vw,16px) Georgia,serif;color:#ffecac;min-width:0}
+#panel-level .dog-pass-utility{position:absolute;right:7px;top:7px}
+#panel-level .dog-level-refresh{border:1px solid #b99e68;border-radius:10px;background:#062e2abf;color:#fce6b1;
+ padding:5px 8px;font:800 10px Georgia,serif;box-shadow:0 2px 6px #0007;cursor:pointer}
+#panel-level .dog-level-refresh:hover{background:#20563e}
+#panel-level .dog-level-refresh:disabled{opacity:.55;cursor:wait}
+#panel-level .dog-level-status{min-height:0;line-height:1.35;padding:0 15px;
+ margin:0;color:#e4d7b0;font:650 10px system-ui,sans-serif}
+#panel-level .dog-level-status[data-error="true"]{color:#ffbc99}
+
+#panel-level .dog-level-range-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+ gap:10px;margin:0 19px;padding:1px 0 4px;overflow-x:auto;scrollbar-width:thin}
+#panel-level .dog-level-range{display:flex;justify-content:center;align-items:center;gap:7px;min-width:110px;
+ min-height:43px;padding:7px 8px;border:2px solid #c2a66e;border-radius:16px;
+ background:linear-gradient(180deg,#184b42,#062e30 68%,#031c24);color:#ffe9bd;
+ font:900 clamp(11px,.97vw,15px) Georgia,serif;text-shadow:0 1px 3px #000;
+ box-shadow:inset 0 1px #ffffff26,0 3px 7px #0006;cursor:pointer}
+#panel-level .dog-level-range .dog-pass-range-icon{font-size:17px;filter:drop-shadow(0 1px 4px #0005)}
+#panel-level .dog-level-range.selected{border-color:#ffeba0;background:linear-gradient(#ffdb7f,#bb812b 65%,#986021);
+ color:#301a0d;text-shadow:0 1px #ffe9b1;box-shadow:0 0 0 2px #b87722,0 0 17px #ffce5cbb,inset 0 2px #fff6cb}
+#panel-level .dog-level-range:hover{filter:brightness(1.14)}
+#panel-level .dog-level-range:focus-visible,#panel-level .dog-pass-arrow:focus-visible,
+#panel-level .dog-level-claim:focus-visible{outline:3px solid white;outline-offset:3px}
+#panel-level .dog-pass-collection{display:flex;align-items:center;gap:0;margin:0 5px;min-width:0}
+#panel-level .dog-pass-arrow{flex:0 0 25px;width:25px;align-self:stretch;border:0;background:none;
+ color:#ffd573;text-shadow:0 0 9px #d79c36;font-size:24px;cursor:pointer}
+#panel-level .dog-pass-arrow:disabled{opacity:.24;cursor:default}
+#panel-level .dog-pass-cards-scroll{width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;
+ overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#d8ad60 #052328;
+ padding:4px 2px 9px;touch-action:pan-x pan-y}
+#panel-level .dog-level-grid{display:grid;grid-template-columns:repeat(10,minmax(95px,1fr));
+ gap:7px;min-width:max(100%,1000px);align-items:stretch}
+#panel-level .dog-level-tile{position:relative;display:flex;flex-direction:column;align-items:stretch;
+ min-width:0;min-height:229px;padding:7px 5px 6px;overflow:hidden;
+ border:2px solid #c99142;border-radius:13px;background:
+ linear-gradient(#24181747,#041d1fc7),url("./assets/lichtertal-winter-ui/02_karte_gesperrt.png") center/100% 100% no-repeat,
+ linear-gradient(180deg,#42302e,#0c2727 88%);
+ box-shadow:inset 0 0 5px #ffd88545,0 3px 11px #0009;opacity:1;isolation:isolate}
+#panel-level .dog-level-tile:before{content:"";position:absolute;top:0;left:0;right:0;height:18px;z-index:-1;
+ background:url("./assets/lichtertal-winter-ui/07_schnee_eiszapfen_oben.png") top/100% 100% no-repeat;pointer-events:none}
+#panel-level .dog-level-tile.reached{background:
+ linear-gradient(#1a1e1440,#092b24bb),url("./assets/lichtertal-winter-ui/04_karte_erreicht_gruen.png") center/100% 100% no-repeat,
+ linear-gradient(#194338,#06271e);border-color:#bcaa62}
+#panel-level .dog-level-tile.claimable{background:
+ linear-gradient(#27170b29,#132a20b0),url("./assets/lichtertal-winter-ui/05_karte_abholbereit.png") center/100% 100% no-repeat,
+ linear-gradient(#4e3b21,#173125);border-color:#ffe58c;box-shadow:0 0 0 2px #b58130,0 0 15px #fbd05b78}
+#panel-level .dog-level-tile.current{outline:2px solid #ffdf7b;outline-offset:-5px}
+#panel-level .dog-level-tile.milestone{border-color:#e9bd55}
+#panel-level .dog-level-card-top{display:block}
+#panel-level .dog-level-card-title{position:relative;z-index:1;margin:0 -3px 5px;padding:6px 2px;
+ text-align:center;border-radius:10px 10px 3px 3px;border:1px solid #d6a15c;
+ background:linear-gradient(180deg,#ae4220,#6e1620 60%,#4a1020);
+ font:900 clamp(12px,1vw,15px) Georgia,serif;color:#fff1c7;text-shadow:0 2px 3px #310c05;
+ box-shadow:0 3px 6px #0008,inset 0 1px #ffe8a85c}
+#panel-level .dog-level-threshold{font:700 9px Georgia,serif;text-align:center;color:#dfd4b4;margin:0 0 3px}
+#panel-level .dog-pass-art{display:flex;align-items:center;justify-content:center;gap:0;
+ min-height:74px;max-height:83px;flex:1;position:relative}
+#panel-level .dog-pass-ticket-art{max-width:71%;max-height:78px;object-fit:contain;
+ filter:drop-shadow(0 3px 3px #0009);transform:rotate(-11deg)}
+#panel-level .dog-pass-ticket-art:nth-child(2){margin-left:-27%;transform:rotate(12deg)}
+#panel-level .dog-pass-special-art{width:75px;height:78px;object-fit:contain;
+ filter:drop-shadow(0 3px 6px #0008)}
+#panel-level .dog-pass-special-emoji{font-size:50px;line-height:1.3;filter:drop-shadow(0 4px 4px #0009)}
+#panel-level .dog-pass-quantity{position:absolute;bottom:0;right:4px;
+ padding:1px 3px;font:900 12px Georgia,serif;color:#ffe491;text-shadow:0 1px 2px #000}
+#panel-level .dog-pass-reward-copy{text-align:center;display:flex;flex-direction:column;align-items:center;
+ justify-content:center;gap:3px;flex:1;min-height:38px;font:750 10px/1.16 Georgia,serif;
+ color:#fff8df;text-shadow:0 2px 3px #000;overflow-wrap:anywhere}
+#panel-level .dog-pass-reward-copy strong{font-size:10px;color:#ffefc0}
+#panel-level .dog-pass-reward-copy small{font-size:9px;color:#fce0ab}
+#panel-level .dog-level-claim,#panel-level .dog-level-redeemed,#panel-level .dog-pass-locked{
+ width:100%;margin-top:auto;display:flex;align-items:center;justify-content:center;gap:3px;
+ min-height:32px;padding:6px 2px;border-radius:9px;text-align:center;
+ font:900 10px Georgia,serif;line-height:1.05}
+#panel-level .dog-level-claim{border:2px solid #fff0a7;background:linear-gradient(#ffe390,#e5ab34 65%,#ae7020);
+ color:#36220c;cursor:pointer;box-shadow:0 0 11px #ffcc5588}
+#panel-level .dog-level-claim:disabled{opacity:.6;cursor:wait}
+#panel-level .dog-level-redeemed{color:#fff5d7;border:2px solid #9fe18b;
+ background:linear-gradient(#237746,#095832);box-shadow:0 2px 8px #0007}
+#panel-level .dog-pass-locked{border:1px solid #898b85;background:linear-gradient(#616666,#303b3c);
+ color:#f5f5f1}
+#panel-level .dog-pass-range-caption{text-align:center;font:750 10px Georgia,serif;color:#cfb783;margin:-8px 0 1px}
+#panel-level .dog-pass-bottom{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin:0 13px}
+#panel-level .dog-level-rules,#panel-level .dog-pass-goal{min-height:185px;position:relative;overflow:hidden;
+ padding:14px 17px 12px;border:2px solid #edbb60;border-radius:17px;
+ background:linear-gradient(120deg,#06312ccf,#021e26eb);
+ box-shadow:0 4px 13px #0009,inset 0 0 0 1px #fff1b03b}
+#panel-level .dog-level-rules:before,#panel-level .dog-pass-goal:before{content:"";position:absolute;top:0;left:0;right:0;height:17px;
+ pointer-events:none;background:url("./assets/lichtertal-winter-ui/07_schnee_eiszapfen_oben.png") center top/100% 100% no-repeat}
+#panel-level .dog-level-rules h3,#panel-level .dog-pass-goal h3{margin:0 0 8px;padding-bottom:7px;
+ border-bottom:1px solid #dfb972;font:900 clamp(15px,1.48vw,22px)/1.18 Georgia,serif;
+ color:#ffe7ab;text-shadow:0 2px 3px #0009}
+#panel-level .dog-pass-rule{display:grid;grid-template-columns:27px minmax(0,1fr) auto;gap:8px;
+ align-items:center;min-height:31px;border-bottom:1px solid #c9ae7147}
+#panel-level .dog-pass-rule:last-of-type{border-bottom:0}
+#panel-level .dog-pass-rule>span{font-size:21px}
+#panel-level .dog-pass-rule p{margin:0;color:#f8ead1;font:700 12px/1.15 Georgia,serif}
+#panel-level .dog-pass-rule p small{display:block;font-size:9px}
+#panel-level .dog-pass-rule>strong{font:900 12px Georgia,serif;color:#ffe087;text-align:right}
+#panel-level .dog-pass-rule-note{margin:9px 0 0;color:#d8e0d7;font:700 10px/1.2 system-ui,sans-serif}
+#panel-level .dog-pass-rule-note strong{color:#ffdaa0}
+#panel-level .dog-pass-goal{display:flex;align-items:stretch;justify-content:space-between;gap:8px}
+#panel-level .dog-pass-goal-text{flex:1;min-width:0;position:relative;z-index:1}
+#panel-level .dog-pass-goal ul{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+#panel-level .dog-pass-goal li{position:relative;padding-left:26px;font:750 11px/1.17 Georgia,serif;color:#fff0cb}
+#panel-level .dog-pass-goal li:before{content:"✓";position:absolute;left:0;top:-1px;display:grid;place-items:center;
+ width:18px;height:18px;border-radius:50%;background:linear-gradient(#4ca651,#0a632d);border:1px solid #a9e49d;
+ color:#fff3d8;font-size:11px;box-shadow:0 0 6px #70c7698a}
+#panel-level .dog-pass-chest{position:relative;flex:0 0 clamp(83px,12vw,153px);align-self:end;min-height:140px;
+ background:url("./weihnachtsevent-bilder/ui-deko/06_lichttruhe.png") center bottom/contain no-repeat;
+ filter:drop-shadow(0 0 14px #f5b7589e)}
+#panel-level .dog-pass-chest>span{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);
+ display:grid;place-items:center;border:2px solid #ffe193;border-radius:50%;width:35px;height:35px;
+ font:900 21px Georgia,serif;color:#f9d88c;background:#6d2418;box-shadow:0 2px 9px #0009}
+#panel-level .dog-level-to-scratch{margin-top:9px;padding:6px 10px;border:1px solid #efc87d;
+ border-radius:8px;background:linear-gradient(#e2b95e,#916021);
+ color:#291d11;font:900 11px Georgia,serif;cursor:pointer}
+#panel-level .dog-level-to-scratch:hover{filter:brightness(1.13)}
+@media(min-width:1550px){
+ #panel-level .dog-level-grid{min-width:max(100%,1050px)}
+ #panel-level .dog-level-tile{min-height:250px}
+ #panel-level .dog-pass-heading{min-height:166px}
+ #panel-level .dog-level-rules,#panel-level .dog-pass-goal{min-height:204px}
+}
+@media(max-width:1370px){
+ #panel-level .dog-pass-profile-inner{grid-template-columns:minmax(120px,.8fr) 86px minmax(0,3fr);gap:8px;padding:11px 12px}
+ #panel-level .dog-level-medallion{width:86px;height:100px}
+ #panel-level .dog-level-medallion>strong{font-size:40px}
+ #panel-level .dog-pass-portrait{flex-basis:78px;width:78px;height:78px}
+ #panel-level .dog-pass-avatar-crown{font-size:29px;top:-19px}
+ #panel-level .dog-pass-identity{gap:9px}
+ #panel-level .dog-pass-stat{grid-template-columns:24px minmax(0,1fr);padding:6px 5px}
+ #panel-level .dog-pass-stat>span{font-size:20px}
+}
+@media(max-width:1100px){
+ #panel-level .dog-pass-heading{padding-right:105px}
+ #panel-level .dog-pass-max{right:24px;width:78px;height:94px;font-size:10px;top:20px}
+ #panel-level .dog-pass-max strong{font-size:48px}
+ #panel-level .dog-pass-profile-inner{grid-template-columns:1fr 85px}
+ #panel-level .dog-pass-progress-area{grid-column:1/-1}
+ #panel-level .dog-level-info-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+ #panel-level .dog-level-range-nav{gap:6px;margin:0 8px}
+ #panel-level .dog-level-range{min-width:100px;padding:7px 4px}
+ #panel-level .dog-pass-bottom{gap:8px;margin:0 7px}
+ #panel-level .dog-level-rules,#panel-level .dog-pass-goal{padding:12px 10px}
+}
+@media(max-width:760px){
+ #panel-level .dog-pass-heading{min-height:135px;padding:18px 75px 12px 9px}
+ #panel-level .dog-pass-heading-copy h2{font-size:clamp(20px,5vw,32px);padding:10px}
+ #panel-level .dog-pass-heading-copy p{font-size:10px}
+ #panel-level .dog-pass-heading-cards{display:none}
+ #panel-level .dog-pass-max{right:6px;top:24px;width:66px;height:79px}
+ #panel-level .dog-pass-max strong{font-size:39px}
+ #panel-level .dog-pass-profile{margin:0 6px}
+ #panel-level .dog-pass-profile-inner{gap:8px;padding:12px 7px}
+ #panel-level .dog-level-info-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #panel-level .dog-pass-xp-top{font-size:12px}
+ #panel-level .dog-pass-bottom{grid-template-columns:1fr}
+ #panel-level .dog-level-range-nav{grid-template-columns:repeat(5,minmax(105px,1fr));overflow-x:auto}
+}
+@media(max-width:410px){
+ #panel-level .dog-pass-portrait{flex-basis:64px;width:64px;height:64px}
+ #panel-level .dog-pass-name strong{font-size:17px}
+ #panel-level .dog-pass-profile-inner{grid-template-columns:minmax(0,1fr) 73px}
+ #panel-level .dog-level-medallion{width:73px;height:86px}
+ #panel-level .dog-level-medallion>strong{font-size:34px}
+ #panel-level .dog-level-grid{min-width:max(100%,950px)}
+}
+@media(prefers-reduced-motion:reduce){#panel-level .dog-level-range{transition:none}}
