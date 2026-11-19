@@ -102,6 +102,103 @@ export function initChristmasScratch(){
  if(!root||!wallet||!stage||!board||!results||!winningLines||!reveal)
   throw Error('SCRATCH_UI_NOT_FOUND');
  let status=null,ticket=null,busy=false,pending=null,requestId=0,finished=false,canManageScratch=false;
+ // Zoom applies to the WHOLE ticket image, not the scratch grid. The scratch
+ // canvases keep their original pixel dimensions and reward calculations.
+ const zoomArt=$('scratch-card-art'),zoomIndicator=$('scratch-zoom-level');
+ const zoomModeButton=$('scratch-zoom-mode');
+ let zoomScale=1,zoomX=0,zoomY=0,zoomPanMode=false,zoomDrag=null,zoomPinch=null,zoomWasPinching=false;
+ const zoomPointers=new Map(),zoomBlockedIds=new Set();
+ const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
+ const scratchZoomBlocked=e=>zoomPanMode||zoomWasPinching||zoomBlockedIds.has(e?.pointerId);
+ const syncZoom=()=>{
+  const r=zoomArt.getBoundingClientRect();
+  const baseWidth=zoomArt.offsetWidth||r.width,baseHeight=zoomArt.offsetHeight||r.height;
+  const limitX=Math.max(0,(zoomScale-1)*baseWidth/2);
+  const limitY=Math.max(0,(zoomScale-1)*baseHeight/2);
+  zoomX=clamp(zoomX,-limitX,limitX);zoomY=clamp(zoomY,-limitY,limitY);
+  zoomArt.style.setProperty('transform',
+   zoomScale===1&&zoomX===0&&zoomY===0?'none':
+   'translate3d('+zoomX+'px,'+zoomY+'px,0) scale('+zoomScale+')','important');
+  zoomArt.dataset.zoomHold=zoomPanMode||zoomWasPinching?'1':'0';
+  zoomIndicator.value=Math.round(zoomScale*100)+' %';
+  zoomIndicator.textContent=zoomIndicator.value;
+  zoomModeButton.setAttribute('aria-pressed',String(zoomPanMode));
+  zoomModeButton.textContent=zoomPanMode?'☝️ Rubbeln':'✋ Verschieben';
+  reveal.classList.toggle('scratch-zoomed',zoomScale>1.001);
+  reveal.classList.toggle('scratch-pan-mode',zoomPanMode);
+  $('scratch-zoom-out').disabled=zoomScale<=1.001;
+  $('scratch-zoom-in').disabled=zoomScale>=3.49;
+ };
+ const setZoom=(next,{pan=true}={})=>{
+  zoomScale=clamp(next,1,3.5);
+  if(zoomScale===1){zoomX=0;zoomY=0}
+  if(pan&&zoomScale>1)zoomPanMode=true;
+  syncZoom();
+ };
+ const resetZoom=()=>{
+  zoomPointers.clear();zoomBlockedIds.clear();
+  zoomDrag=null;zoomPinch=null;zoomWasPinching=false;
+  zoomScale=1;zoomX=0;zoomY=0;zoomPanMode=false;
+  syncZoom();
+ };
+ $('scratch-zoom-in').addEventListener('click',()=>setZoom(zoomScale+.25));
+ $('scratch-zoom-out').addEventListener('click',()=>setZoom(zoomScale-.25));
+ $('scratch-zoom-reset').addEventListener('click',resetZoom);
+ zoomModeButton.addEventListener('click',()=>{zoomPanMode=!zoomPanMode;syncZoom()});
+ // Track fingers at capture time. A second finger starts a pinch even while
+ // scratching is enabled; moves involved in the pinch never erase the coating.
+ reveal.addEventListener('pointerdown',e=>{
+  if(stage.hidden||!zoomArt.contains(e.target))return;
+  zoomBlockedIds.delete(e.pointerId);
+  if(e.pointerType!=='touch'&&!zoomPanMode)return;
+  zoomPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(zoomPointers.size>=2){
+   zoomWasPinching=true;
+   for(const id of zoomPointers.keys())zoomBlockedIds.add(id);
+   const pts=[...zoomPointers.values()].slice(0,2);
+   zoomPinch={distance:Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y)||1,
+    middleX:(pts[0].x+pts[1].x)/2,middleY:(pts[0].y+pts[1].y)/2,
+    scale:zoomScale,x:zoomX,y:zoomY};
+   zoomDrag=null;
+  }else if(zoomPanMode){
+   zoomBlockedIds.add(e.pointerId);
+   zoomDrag={id:e.pointerId,clientX:e.clientX,clientY:e.clientY,x:zoomX,y:zoomY};
+   try{reveal.setPointerCapture(e.pointerId)}catch{}
+  }
+  syncZoom();
+ },true);
+ reveal.addEventListener('pointermove',e=>{
+  if(!zoomPointers.has(e.pointerId))return;
+  zoomPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(zoomPinch&&zoomPointers.size>=2){
+   const pts=[...zoomPointers.values()].slice(0,2);
+   const distance=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y)||1;
+   zoomScale=clamp(zoomPinch.scale*distance/zoomPinch.distance,1,3.5);
+   const midX=(pts[0].x+pts[1].x)/2,midY=(pts[0].y+pts[1].y)/2;
+   zoomX=zoomPinch.x+(midX-zoomPinch.middleX);
+   zoomY=zoomPinch.y+(midY-zoomPinch.middleY);
+   syncZoom();e.preventDefault();
+  }else if(zoomPanMode&&zoomDrag?.id===e.pointerId){
+   zoomX=zoomDrag.x+e.clientX-zoomDrag.clientX;
+   zoomY=zoomDrag.y+e.clientY-zoomDrag.clientY;
+   syncZoom();e.preventDefault();
+  }
+ },true);
+ const endZoomPointer=e=>{
+  zoomPointers.delete(e.pointerId);
+  if(zoomDrag?.id===e.pointerId)zoomDrag=null;
+  if(zoomPointers.size<2)zoomPinch=null;
+  if(!zoomPointers.size)zoomWasPinching=false;
+  syncZoom();
+ };
+ reveal.addEventListener('pointerup',endZoomPointer,true);
+ reveal.addEventListener('pointercancel',endZoomPointer,true);
+ reveal.addEventListener('wheel',e=>{
+  if(!e.ctrlKey&&!e.altKey)return;
+  e.preventDefault();
+  setZoom(zoomScale+(e.deltaY<0?.2:-.2));
+ },{passive:false});
+
  const villageDiscount=()=>Number.isInteger(status?.discountPercent)?Math.max(0,Math.min(20,status.discountPercent)):0;
  const discountedPrice=price=>Math.max(0,Math.ceil(price*(100-villageDiscount())/100));
  let actionError=null;
