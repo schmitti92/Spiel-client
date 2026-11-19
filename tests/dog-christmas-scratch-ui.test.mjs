@@ -603,7 +603,7 @@ test('all seven DOG scratch cards expose an edition editor and category selector
  for(const text of ['oe-category','oe-budget','oe-coin-0','oe-coin-1','oe-coin-2',
   'oe-create','oe-edit','oe-gift','oe-none','oe-dog','oe-gold','oe-double'])
   assert.ok(other.includes(text),'The editor requires control '+text);
- assert.match(other,/query\('\/editions\/\'+active/);
+ assert.ok(other.includes("query('/editions/'+active+(edit?'/edit':'')"),'Editor must call the real variant create/edit endpoint');
  assert.match(css,/max-width:620px/);
  for(const id of ['gs-prize-category','sn-prize-category','tic-prize-category'])
   assert.ok(html.includes('id="'+id+'"'),'Missing prize category '+id);
