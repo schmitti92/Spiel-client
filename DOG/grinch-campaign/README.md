@@ -1,6 +1,6 @@
 # DOG – Grinch-Kampagne (getrennt vom Hauptspiel)
 
-Stand: 18.11.2026
+Stand: 19.11.2026
 
 ## Struktur
 
@@ -22,8 +22,8 @@ Stand: 18.11.2026
 - Die übrigen vier Figuren müssen mit genau passender Kartenzahl auf das eine Portal-Zielfeld gelangen (`steps === 64`). Bei Eintritt wechselt die Figur dauerhaft in den `teleported`-Zustand und verschwindet **sofort** vom Brett. Das Portal bleibt für beliebig viele weitere Figuren wieder frei.
 - Sobald alle drei Spieler je vier Figuren teleportiert haben (12 insgesamt), ist der lokale Missionsversuch abgeschlossen; ein echter Server-Aufstieg in Mission 2 existiert noch nicht.
 - Die vier Orientierungsfelder 8/24/40/56 zeigen rein erzählerische Hinweise. Nebel und Erdbeben gelten ausschließlich für den Missionsmodus.
-- Ein neues lokales Spielstandformat (`version:3`, Key `dog-grinch-m1-single-portal-v3`) verhindert, dass ältere vierteilige-Zielbahn-Spielstände geladen werden.
-- Der lokale Pilot deckt nicht alle Sonderregeln des Hauptspiels 1:1 ab, ist noch nicht an Render gekoppelt und vergibt keine offiziellen Kampagnenbelohnungen.
+- Der neue Regelstand verwendet lokales Spielstandformat `version:4` mit Key `dog-grinch-m1-canonical-cards-v4`. Ältere lokale Testpartien bleiben unter ihren alten Speicher-Keys als Backup, werden aber nicht fortgeführt.
+- Die Missionskarten stammen aus demselben offiziellen Kartensatz wie `DOG/engine.js`: 110 Karten, 14 Kartentypen, Original-Kartenbilder über `card-visuals.js`, separate Tauschkarte, teilbare 7, Joker, vier Schritte rückwärts, Kartenphasen 6/5/4/3/2. Im Drei-Spieler-Jeder-für-sich-Modus **entfällt der 2-gegen-2-Partnerkartentausch** des klassischen Spiels; die Karteneffekte selbst bleiben erhalten. Keine Render-Anbindung und keine offiziellen Kampagnenbelohnungen.
 
 ## Unbedingt beachten
 
@@ -53,7 +53,7 @@ Die Grafik- und Ereignisebene zeigt die Felder an, die Regel-Engine entscheidet 
 
 Link aus der Grinch-Eventseite: Mission 1 > Details > „Mission 1 im Testmodus spielen“.
 
-Die aktuelle Ein-Portal-Engine wurde mit 400 verschiedenen Seeds unter simulierten legalen Kartenaktionen getestet. Alle 400 Versuche endeten mit genau einem Verlust je Spieler und jeweils vier nach Welt 2 teleportierten Figuren. Die SVG-Brettsimulation zeigt alle 64 Lauffelder und drei statt zwölf Zielpositionen. Ein Browser-End-to-End-Test sowie synchronisierte Mehrgeräte-Tests stehen noch aus.
+Die Vorgängerversion mit Einzelportal wurde in 400 Partien getestet. Der aktuelle Kartensatz-/Startschutz-/Erdbeben-Regelstand wurde danach nochmals in **225 simulierten Partien mit mehreren Spielstrategien** ohne Stillstand oder Feldüberlappung und mit korrektem Figurenabschluss getestet. Zusätzlich gezielt getestet: geschützte Startfigur nicht schlagen/überspringen/tauschen, eigenes Startfeld verdrängen ohne Figurenverlust, Erdbeben mit besetztem Startfeld (Figur davor bleibt stehen), Rückwärts-4, geteilte 7 einschließlich Schlagen auf überquerten Feldern und Pflichtverlust nur nach Abschluss einer geteilten 7, exakte Portal-Landung. Ein Browser-End-to-End-Test sowie synchronisierte Mehrgeräte-Tests stehen noch aus.
 
 
 ## Original-Brett erhalten
@@ -62,5 +62,18 @@ Die aktuelle Ein-Portal-Engine wurde mit 400 verschiedenen Seeds unter simuliert
 - Für drei Kampagnenspieler werden Rot (0), Blau (16) und Gelb (48) benutzt, die grüne Bahn bleibt optisch erhalten und unbesetzt.
 - Originale Design-Voreinstellungen und selbst platzierte Brettfelder werden übernommen.
 - Sonderfelder und Wettereffekte dürfen lediglich **Overlay-Schichten** hinzufügen; der klassische Brettrenderer, die Feldanzahl und die Standard-Lobby werden nicht geändert.
-- `mission-1-rules.js` speichert in `dog-grinch-m1-single-portal-v3`, damit frühere Teststände mit abweichender Geometrie nicht versehentlich geladen werden.
+- `mission-1-rules.js` speichert in `dog-grinch-m1-canonical-cards-v4`, damit alte Teststände mit abweichender Kartendeck- oder Zielgeometrie nicht versehentlich geladen werden.
 - Der SVG-Brettrenderer wurde in einem isolierten Smoke-Test mit 15 gezeichneten Spielfiguren geprüft.
+
+## Geschütztes Startfeld und Erdbeben (Mission 1)
+
+- Eine Figur ist **nur auf ihrem eigenen farbigen Startfeld** gegen normales Schlagen, Überqueren mit Karten und Tauschen geschützt. Eine weitere eigene Figur darf bewusst herausgesetzt werden; die bisherige Startfigur kehrt dabei ins Haus zurück.
+- Ein Erdbeben bewegt **alle beweglichen Lauffiguren um genau ein Feld zurück**, außer Figuren auf farbigen Startfeldern. Hausfiguren, teleportierte und verlorene Figuren bleiben unverändert.
+- Das Erdbeben wertet die ursprüngliche Belegung aller 64 Felder aus: Steht auf dem rückwärtigen Zielfeld bereits eine Figur, bleibt die betroffene Figur stehen, auch wenn der Vordermann sonst ebenfalls zurücklaufen könnte. Es wird weder geschlagen noch überlappt.
+- Die Pflichtfalle darf erst nach einer *vollständig* gespielten Karte aktiv werden. Eine aufgeteilte 7 zählt als **eine Karte**; die Falle wird nicht zwischen Teilbewegungen ausgelöst.
+
+## Noch offen für offizielle Freigabe
+
+- 3 unabhängige Spieler sind momentan nur lokal an einem Gerät spielbar; keine echte Online-Mehrspielerpartie.
+- Kein klassischer 2v2-Partnerkartentausch im Drei-Spieler-Modus, da in dieser Mission jeder für sich spielt.
+- Browser- und Handy-Praxistest, Render-API-Spielstand, verifizierter Missionsabschluss und Freischaltung von Mission 2 fehlen noch.
