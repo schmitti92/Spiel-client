@@ -206,3 +206,71 @@
 @media(prefers-reduced-motion:reduce){
  #panel-scratch .scratch-tier{animation:none!important;transition:none!important}
 }
+
+/* Variante B · 20.11: Real nested sections fix.
+   Previously, legacy order/column declarations moved all three headings ahead
+   of the cards, and a 950px rule enlarged a single card to full width.
+   The shop now has three independent sections, each with its own card grid. */
+#panel-scratch #scratch-tier-grid.scratch-tickets{
+ display:flex!important;
+ flex-direction:column!important;
+ align-items:stretch!important;
+ grid-template-columns:none!important;
+ gap:22px!important;
+ width:100%!important;
+}
+#panel-scratch .scratch-lottery-categories{
+ display:none!important; /* The real section headings below replace these duplicates. */
+}
+#panel-scratch #scratch-tier-grid .scratch-category-section{
+ display:block!important;
+ position:relative!important;
+ order:0!important;
+ min-width:0!important;
+ width:100%!important;
+ margin:0!important;
+ padding:0!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-category-section .scratch-category-heading{
+ display:flex!important;
+ align-items:center!important;
+ justify-content:space-between!important;
+ margin:0 0 12px!important;
+ min-height:51px!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-category-section .scratch-category-cards{
+ display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ grid-auto-flow:row!important;
+ gap:14px!important;
+ min-width:0!important;
+ align-items:start!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-category-cards > .scratch-tier[data-variant]{
+ position:relative!important;
+ grid-column:auto!important;
+ grid-row:auto!important;
+ order:0!important;
+ width:100%!important;
+ max-width:none!important;
+ min-width:0!important;
+ aspect-ratio:4 / 3!important;
+ height:auto!important;
+ min-height:0!important;
+ max-height:none!important;
+}
+/* Two columns also at tablet widths / browser zoom where the former
+   761–950px rule used to turn every ticket into an enormous full-width card. */
+@media(min-width:621px) and (max-width:950px){
+ #panel-scratch #scratch-tier-grid .scratch-category-section .scratch-category-cards{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+}
+@media(max-width:620px){
+ #panel-scratch #scratch-tier-grid .scratch-category-section .scratch-category-cards{
+  grid-template-columns:1fr!important;
+ }
+ #panel-scratch #scratch-tier-grid .scratch-category-section .scratch-category-heading{
+  flex-wrap:wrap!important;gap:4px!important;
+ }
+}
