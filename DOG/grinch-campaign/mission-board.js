@@ -110,11 +110,21 @@ export function drawClassicMissionBoard(boardSvg,game,{selectedPiece=null,onPiec
   let p;
   if(piece.place==='track')p=trackPoint(pieceCoord(piece));
   else{
-    // Five pieces fit the standard 4-hole reserve by visually stacking the
-    // fifth pawn near the first hole. NO fifth home/goal field is invented.
     const ordinal=Number(piece.id.slice(1))%5;
-    const h=homePoint(owner,ordinal%4);
-    p=ordinal===4?{x:h.x+10,y:h.y+10}:h;
+    if(ordinal===4){
+      // Mission 1 has five reserve pawns but only the ORIGINAL four house holes.
+      // Display the fifth home pawn ON its owner's actual track start field.
+      // If another active pawn already occupies that tile, hide this reserve
+      // display until the field is free; do not obscure the active pawn.
+      const startField=owner*16;
+      const occupied=game.pieces.some(other=>
+        other.id!==piece.id&&other.place==='track'&&pieceCoord(other)===startField
+      );
+      if(occupied)continue;
+      p=trackPoint(startField);
+    }else{
+      p=homePoint(owner,ordinal);
+    }
   }
   if(!p)continue;
   const c=safeColor(owner),hi=selectedPiece===piece.id;
@@ -131,7 +141,7 @@ export function drawClassicMissionBoard(boardSvg,game,{selectedPiece=null,onPiec
     push('<circle cx="'+p.x+'" cy="'+(p.y-7)+'" r="9.1" fill="url(#dog-pawn-'+owner+')" stroke="#ffffff" stroke-opacity=".42" stroke-width="1.4"/>');
     push('<circle cx="'+(p.x-2.8)+'" cy="'+(p.y-10.8)+'" r="2.3" fill="#fff" opacity=".68"/>');
   }
-  // A small 5 marker distinguishes the temporarily stacked reserve figure.
+  // Number 5 marks the extra reserve pawn displayed on the original start field.
   if(piece.place==='home'&&Number(piece.id.slice(1))%5===4){
     push('<circle cx="'+(p.x+10)+'" cy="'+(p.y-12)+'" r="10" fill="#0b2034" stroke="#fff1bb" stroke-width="1.5"/>');
     push('<text x="'+(p.x+10)+'" y="'+(p.y-8)+'" font-size="12" text-anchor="middle" font-weight="900" fill="#fff">5</text>');
