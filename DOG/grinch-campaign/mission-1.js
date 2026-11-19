@@ -3,7 +3,7 @@ import {cardVisual} from '../card-visuals.js?v=11';
 import {drawClassicMissionBoard} from './mission-board.js?v=8';
 import {pathfinderStatus} from './mission-1-pathfinder.js?v=4';
 import {trackPoint,goalPoint} from '../board-layout.js?v=11';
-import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,status,pieceCoord,validateSaved} from './mission-1-rules.js?v=8';
+import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,status,pieceCoord,validateSaved} from './mission-1-rules.js?v=9';
 
 const $=id=>document.getElementById(id);
 const SVG='http://www.w3.org/2000/svg';
@@ -170,9 +170,14 @@ function onEffect(){
   const layer=$('event-fx')||ns('g',{id:'event-fx'},$('board'));
   const p=trackPoint(ev.position);
   layer.replaceChildren();
-  ns('circle',{cx:p.x,cy:p.y,r:34,fill:ev.lossType==='freeze'?'#8bddff':'#3edc8b',opacity:'.22'},layer);
+  // The danger tile looked like an ordinary DOG square until activation.
+  // Reveal its type for a moment only AFTER a pawn has landed and disappeared.
+  const colors={collapse:'#1b2634',abduction:'#4d3362',freeze:'#b9f7ff'};
+  ns('circle',{cx:p.x,cy:p.y,r:33,fill:colors[ev.lossType]||'#214e4e',opacity:'.3',stroke:'#fff3bc','stroke-width':3},layer);
+  ns('circle',{cx:p.x,cy:p.y,r:18,fill:colors[ev.lossType]||'#173e42',stroke:'#fff3bc','stroke-width':1.8},layer);
   const symbol={collapse:'🕳️',abduction:'🌪️',freeze:'🧊'}[ev.lossType]||'⚡';
-  const fx=ns('text',{x:p.x,y:p.y+16,'text-anchor':'middle','font-size':48},layer);fx.textContent=symbol;
+  const fx=ns('text',{x:p.x,y:p.y+11,'text-anchor':'middle','font-size':28},layer);fx.textContent=symbol;
+  const reveal=ns('text',{x:p.x,y:p.y-27,'text-anchor':'middle','font-size':10,'font-weight':900,fill:'#fff2ba'},layer);reveal.textContent='FALLE!';
   clearTimeout(effectTimer);effectTimer=setTimeout(()=>layer.replaceChildren(),2800);
  }else if(ev.type==='teleport'){
   const owner=[0,1,3][ev.seat],p=goalPoint(owner,0);
