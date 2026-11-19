@@ -8,7 +8,8 @@ Stand: 19.11.2026
 - `mission-1-rules.js`: Unabhängige DOG-Variante (drei Personen, je fünf Figuren, **dieselben 64 Lauffelder, aber jeweils nur ein wiederverwendbares Portal-Zielfeld**). Keine Änderungen an `DOG/engine.js`, `DOG/app.js` oder den regulären Online-Räumen.
 - `mission-board.js`: Zeichnet dieselben 64 Original-DOG-Lauffelder mit **denselben Koordinaten und gewählten Brettdesigns**; verwendet direkt `../board-layout.js` und `../appearance-registry.js`. Die statische SVG-Brettdarstellung ist aus dem Hauptspiel isoliert übernommen; das Hauptspiel bleibt unangetastet.
 - `mission-1.html`, `mission-1.css`: Eigenständige Kampagnenoberfläche **mit originalem DOG-Brett** und optionalen missionsspezifischen visuellen Effekten.
-- `mission-1.js`: Anzeige, Interaktion, Wetter- und Storyeffekte sowie **nur lokaler** Browser-Testspielstand.
+- `mission-1.js`: Anzeige, Interaktion, Wetter- und Storyeffekte sowie lokaler Testspielstand oder Online-Darstellung des autoritativen Hub-Spiels.
+- `mission-1-online.js`: Authentifizierte Render-Aktionen, gemeinsamer Hub-WebSocket mit HTTP-Fallback und sichere Revisionsprüfung.
 
 ## Mission 1 – Pfadfinder und die Portale nach Welt 2
 
@@ -27,11 +28,9 @@ Stand: 19.11.2026
 
 ## Unbedingt beachten
 
-**Kein offizieller Multiplayer-Modus:** Der Teststand nutzt `localStorage` ausschließlich zur Fortsetzung eines lokalen Versuchs. Er ist nicht manipulationssicher, hat keine Render-API-Anbindung und darf **niemals** als offizieller Kampagnensieg, Dorfbelohnung oder Spielfigurenbestand im Account behandelt werden.
+**Lokaler Testmodus ist nicht offiziell:** Ohne `?room=CODE` nutzt die Testseite `localStorage` ausschließlich zur Fortsetzung eines lokalen Versuchs. Er ist nicht manipulationssicher, hat keine Render-API-Anbindung und darf **niemals** als offizieller Kampagnensieg, Dorfbelohnung oder Spielfigurenbestand im Account behandelt werden.
 
-Ein späterer Server-Modus benötigt ein getrenntes Namensschema, z. B.
-`dog_grinch_campaign_v1` für freigeschaltete Missionen, eingesperrte Figuren und echte Resultate sowie
-`dog_grinch_room_v1` für autorisierte Runden und transaktional bestätigte Züge. Server und Clients dürfen dabei nicht die üblichen DOG-Rundenobjekte verwenden.
+Der Online-Modus verwendet bereits `dog_grinch_campaign_v1` für verifizierte Freischaltungen und eine eigenständige `grinch`-Match-Eigenschaft im vorhandenen Hub-Raumdokument. Die normalen DOG-Rundenobjekte werden nicht überschrieben.
 
 ## Erweiterbarkeit für Mission 2–5
 
@@ -72,11 +71,22 @@ Die Vorgängerversion mit Einzelportal wurde in 400 Partien getestet. Der aktuel
 - Das Erdbeben wertet die ursprüngliche Belegung aller 64 Felder aus: Steht auf dem rückwärtigen Zielfeld bereits eine Figur, bleibt die betroffene Figur stehen, auch wenn der Vordermann sonst ebenfalls zurücklaufen könnte. Es wird weder geschlagen noch überlappt.
 - Die Pflichtfalle darf erst nach einer *vollständig* gespielten Karte aktiv werden. Eine aufgeteilte 7 zählt als **eine Karte**; die Falle wird nicht zwischen Teilbewegungen ausgelöst.
 
-## Noch offen für offizielle Freigabe
+## Online-Mission 1 · bestehender gemeinsamer Hub-Raum
 
-- 3 unabhängige Spieler sind momentan nur lokal an einem Gerät spielbar; keine echte Online-Mehrspielerpartie.
-- Kein klassischer 2v2-Partnerkartentausch im Drei-Spieler-Modus, da in dieser Mission jeder für sich spielt.
-- Browser- und Handy-Praxistest, Render-API-Spielstand, verifizierter Missionsabschluss und Freischaltung von Mission 2 fehlen noch.
+- **Kein zweiter Raum:** Der Host und seine zwei Freunde treten wie gewohnt mit ihren echten Spielerprofilen demselben HUB-Raumcode bei. Anschließend öffnen sie über das Weihnachts-Event die Mission-1-Seite mit `?room=CODE`. Alternativ zeigt die Hauptlobby das bereits laufende Grinch-Match an und leitet die Teilnehmer dorthin weiter.
+- **Start:** Nur der bestehende Hub-Host kann `POST /api/hub/rooms/:code/grinch/launch` auslösen. Genau drei echte, bereits beigetretene Teilnehmer müssen vorhanden sein, das Event aktiv und der **serverbestätigte Weihnachtsbaum auf Stufe 10**. Ein laufendes anderes Match darf nicht verdrängt werden.
+- **Autoritative Aktionen:** `POST /api/hub/rooms/:code/grinch/action` akzeptiert nur vom Server verifizierte Aktionen des gerade aktiven Mitglieds, bestehende Match-ID, exakte Spielrevision und einmalige Aktionskennung. Der Server berechnet Spielzug, Fallen, Erdbeben und Ende neu, statt ein Client-Game-JSON zu übernehmen.
+- **Datenschutz:** Die Hub-`onSnapshot`-WebSockets verteilen jeweils eine eigene Sicht auf den Raum. Nur der aktuelle Nutzer sieht seine Handkarten; Deck, Seed und künftige Fallenarten sind aus der Projektion entfernt. Änderungen werden revisionsbasiert synchronisiert; HTTP ist nur Fallback.
+- **Gemeinsamer Sieg:** Sobald die Server-Engine 12 teleportierte Figuren und exakt drei Pflichtverluste bestätigt, schreibt derselbe Firestore-Transaktionsabschluss je Spieler ein Dokument in `dog_grinch_campaign_v1` mit `completedMissions:[1]` und `highestUnlocked:2`. Eine lokale Testpartie kann diese Dokumente nicht schreiben.
+- **Freischaltanzeige:** `GET /api/hub/grinch/progress` liefert für das authentifizierte Nutzerkonto die servergespeicherte Mission 1 und den nächsten freigeschalteten Abschnitt. Die Eventseite zeigt einen bestätigten Abschluss, aber **Mission 2 bleibt bis zu ihrer eigentlichen Implementierung nicht spielbar**.
+- **Lokaler Testmodus bleibt separat**, ohne Fortschrittsübertragung. Das normale `DOG/app.js` und `DOG/engine.js` wurden nicht verändert.
+- **Unverändert aus dem Hauptspiel:** 110 DOG-Karten, getrennte Tauschkarte, teilbare 7, Joker, Rückwärts-4 und reguläre Bewegungen. Nur der 2-gegen-2-Partnerkartentausch entfällt im Drei-Personen-Jeder-für-sich-Modus.
+
+## Noch offen für vollständige Freigabe
+
+- Ein echter Drei-Geräte-Praxistest mit drei angemeldeten Profilen sowie Verbindungsabbruch-/Wiederanmeldungstest ist weiterhin notwendig.
+- Die nächsten vier Missionen sind noch nicht implementiert; der verifizierte Freischaltstatus von Mission 2 bedeutet vorerst nur Berechtigung.
+- Die automatisierten Tests überprüfen serverseitig Authentifizierung, Baumlevel-Gate, autoritative Moves, nur private Handkarten, Sieg und idempotente Fortschrittsspeicherung. Ein manueller Browser-End-to-End-Test ist damit nicht ersetzt.
 
 ## Verdeckte Fallen – Regelstand Mission 1
 
