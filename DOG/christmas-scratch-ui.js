@@ -353,24 +353,37 @@ export function initChristmasScratch(){
   left.replaceChildren();right.replaceChildren();
   if(prizeStrip){
    prizeStrip.replaceChildren();
+   // The five gift symbols are displayed individually, rather than
+   // condensed into one tiny five-emoji string. Values stay server-derived.
    for(const [icon,label] of [
     ['🪙',num(amounts[0])],
     ['💵',num(amounts[1])],
-    ['💼',num(amounts[2])],
-    ['🎁 💝 🎀 🧧 🛍️','Hauptgewinn: Freischaltung']
+    ['💼',num(amounts[2])]
    ]){
     const entry=el('span','lotto-ticket-prize');
     entry.append(el('span','lotto-ticket-prize-icon',icon),
      el('strong','lotto-ticket-prize-label',label));
     prizeStrip.append(entry);
    }
+   const gifts=el('span','lotto-ticket-prize lotto-ticket-gifts');
+   const giftIcons=el('span','lotto-ticket-gift-icons');
+   for(const symbol of ['🎁','💝','🎀','🧧','🛍️']){
+    const gift=el('span','lotto-ticket-gift-item',symbol);
+    gift.setAttribute('aria-hidden','true');
+    giftIcons.append(gift);
+   }
+   const giftLabel=el('strong','lotto-ticket-prize-label','Freischaltung');
+   gifts.setAttribute('aria-label','Geschenksymbole: Geschenk, Herzgeschenk, Schleife, roter Umschlag und Einkaufstasche. Hauptgewinn: Freischaltung.');
+   gifts.title='Geschenke: 🎁 💝 🎀 🧧 🛍️ · Hauptgewinn: Freischaltung';
+   gifts.append(giftIcons,giftLabel);
+   prizeStrip.append(gifts);
   }
   const intro=el('section','lotto-panel lotto-steps');
   intro.append(el('h3','lotto-panel-title','🐾 SPIELERKLÄRUNG'));
   for(const [i,description] of [
    'Rubbele in jeder der 20 Reihen beide Felder frei.',
    'Links erscheint ein Gewinnsymbol, rechts eine Zahl von 1 bis 10.',
-   'Ist die rechte Zahl eine 1, gewinnst du den Preis links in derselben Reihe.'
+   'Eine rote 1 rechts bedeutet Gewinn: Du erhältst den Preis links in derselben Reihe.'
   ].entries()){
    const step=el('div','lotto-step');
    step.append(el('strong','lotto-step-number',String(i+1)),el('span','lotto-step-text',description));
@@ -1353,6 +1366,12 @@ export function initChristmasScratch(){
    cell.classList.add(numberField?'scratch-number-target':'scratch-number-prize');
    applyLuckyArtGeometry(cell,index);
    const face=el('span','scratch-cell-symbol',String(symbol));
+   // Red 1 is only a visual distinction; winning rows and payouts
+   // continue to be calculated exclusively by the Render receipt.
+   if(numberField&&String(symbol)==='1'){
+    cell.classList.add('scratch-lucky-number-one');
+    face.classList.add('scratch-lucky-number-one-face');
+   }
    face.setAttribute('aria-hidden','true');cell.append(face);
    if(numberField)cell.setAttribute('aria-label','Verdeckte Zahl in Reihe '+(Math.floor(index/2)+1));
    else{
