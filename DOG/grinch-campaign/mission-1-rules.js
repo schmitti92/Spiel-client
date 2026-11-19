@@ -45,7 +45,7 @@ function assignLosses(seed){return shuffle(LOSS_TYPES,seeded(seed+77));}
 export function newGame(seed=Math.floor(Math.random()*2147483647),names=LABELS){
  const rng=seeded(seed);
  const s={
-  version:2,mission:MISSION_1.id,seed,players:LABELS.map((name,seat)=>({seat,name:String(names[seat]||name).slice(0,25),lossType:assignLosses(seed)[seat],lost:false,moves:0})),
+  version:3,mission:MISSION_1.id,seed,players:LABELS.map((name,seat)=>({seat,name:String(names[seat]||name).slice(0,25),lossType:assignLosses(seed)[seat],lost:false,moves:0})),
   pieces:Array.from({length:15},(_,i)=>({id:'p'+i,seat:Math.floor(i/5),place:'home',steps:-1})),
   current:0,turn:0,round:0,draw:deck(rng),discard:[],hands:[[],[],[]],history:[],complete:false,revision:0,lastEvent:null,effects:[],
  };
@@ -72,7 +72,7 @@ export function legalMoves(s,seat,card){
   for(const distance of values(type)){
    for(const p of s.pieces.filter(p=>p.seat===seat&&p.place==='track')){
     const targetSteps=p.steps+distance;
-    if(targetSteps<0)continue;
+    if(targetSteps<0||targetSteps>TRACK)continue;
     const final=targetSteps<TRACK?pos(homeIndex(seat)+targetSteps):-1;
     const at=final>=0?pieceAtTrack(s,final,p.id):null;
     const starts=(final===homeIndex(seat));
@@ -98,7 +98,7 @@ function ensureSingleLoss(s,seat,movedId){
 }
 function maybeEffects(s){
  // Story losses have priority; never hide a mandatory capture behind weather.
- if(s.lastEvent?.type==='loss'||s.lastEvent?.type==='hint')return;
+ if(['loss','hint','teleport'].includes(s.lastEvent?.type))return;
  if(s.turn>0&&s.turn%MISSION_1.effects.quakeEvery===0){
   for(const p of s.pieces.filter(p=>p.place==='track'))p.steps=Math.max(0,p.steps-1);
   s.lastEvent={type:'quake',message:'Erdbeben! Alle Figuren auf dem Weg gehen ein Feld zurück.',turn:s.turn};
@@ -172,4 +172,4 @@ export function status(s){return s.players.map(info=>({
  track:s.pieces.filter(p=>p.seat===info.seat&&p.place==='track').length,
  teleported:s.pieces.filter(p=>p.seat===info.seat&&p.place==='teleported').length
 }));}
-export function validateSaved(x){return !!x&&x.version===2&&x.mission===1&&Array.isArray(x.players)&&x.players.length===3&&Array.isArray(x.pieces)&&x.pieces.length===15&&Array.isArray(x.hands)&&x.hands.length===3&&Number.isInteger(x.current)&&x.current>=0&&x.current<3&&x.pieces.every(p=>['home','track','teleported','lost'].includes(p.place));}
+export function validateSaved(x){return !!x&&x.version===3&&x.mission===1&&Array.isArray(x.players)&&x.players.length===3&&Array.isArray(x.pieces)&&x.pieces.length===15&&Array.isArray(x.hands)&&x.hands.length===3&&Number.isInteger(x.current)&&x.current>=0&&x.current<3&&x.pieces.every(p=>['home','track','teleported','lost'].includes(p.place));}
