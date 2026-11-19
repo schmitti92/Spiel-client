@@ -1,0 +1,195 @@
+/* Lichtertal Rubbellose · echte hochgeladene WEBP-Lotteriegrafiken
+ * Diese Ebene ändert NUR die Übersicht. Die interaktiven, servergeprüften
+ * Spiel-Rubbelfelder im geöffneten Los werden nicht berührt.
+ * 7 Karten, gleiche Auflagen- und Preisfunktionen, kompakt 4+3.
+ */
+body:has(#panel-scratch:not([hidden])){
+ background-image:
+   linear-gradient(0deg,#04142188,#0617275d),
+   url("./assets/lichtertal-lottery-v2/08_hintergrund_lichtertal.webp")!important;
+ background-position:center,center!important;
+ background-size:cover,cover!important;
+}
+#panel-scratch .scratch-shell{
+ background-image:
+   linear-gradient(#110e0aab,#1c1111a8),
+   url("./assets/lichtertal-lottery-v2/winter-kiosk.svg")!important;
+ background-position:center top!important;
+ background-size:cover!important;
+}
+#panel-scratch .scratch-winter-brand{
+ background-image:url("./assets/lichtertal-lottery-v2/09_titelschild_rubbellose.webp")!important;
+ background-position:center!important;
+ background-size:100% 100%!important;
+ background-repeat:no-repeat!important;
+ min-height:76px!important;height:76px!important;
+ padding:0!important;
+}
+#panel-scratch .scratch-winter-brand h2,
+#panel-scratch .scratch-winter-brand small{
+ opacity:0!important;pointer-events:none!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier{
+ position:relative!important;
+ height:220px!important;min-height:220px!important;max-height:220px!important;
+ border:2px solid #fff8e7!important;border-radius:8px!important;
+ outline:1px solid #aa7c3e!important;outline-offset:-4px!important;
+ background-position:center!important;
+ background-size:100% 100%!important;
+ background-repeat:no-repeat!important;
+ box-shadow:0 5px 14px #000a,0 0 0 1px #e1ac63aa!important;
+ overflow:hidden!important;
+}
+/* Originalbild liegt vor den SVG-Reserven; falls es fehlt, bleibt ein Design sichtbar. */
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="gifts"]{
+ background-image:url("./assets/lichtertal-lottery-v2/01_geschenkelinie.webp"),var(--ticket-bg)!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="snow_collect"]{
+ background-image:url("./assets/lichtertal-lottery-v2/02_schneeflocken_bingo.webp"),var(--ticket-bg)!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="elf"]{
+ background-image:url("./assets/lichtertal-lottery-v2/03_magischer_wichtelpfad.webp"),var(--ticket-bg)!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="number_one_20"]{
+ background-image:url("./assets/lichtertal-lottery-v2/04_glueckszahl_1.webp"),var(--ticket-bg)!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="tic_tac_toe"]{
+ background-image:url("./assets/lichtertal-lottery-v2/05_dog_tic_tac_toe.webp"),var(--ticket-bg)!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="premium_27"]{
+ background-image:url("./assets/lichtertal-lottery-v2/06_premium_weihnachtslos.webp"),var(--ticket-bg)!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="dog_jackpot_9"]{
+ background-image:url("./assets/lichtertal-lottery-v2/07_finde_dog.webp"),var(--ticket-bg)!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant]{
+ background-size:100% 100%,100% 100%!important;
+ background-position:center,center!important;
+ background-repeat:no-repeat,no-repeat!important;
+}
+/* Der Künstlerdruck enthält Titel, Motiv, Rubbelsilber und Strichcode bereits.
+   Keine doppelten Titel, Symbolgitter oder fake-beschreibenden Beschriftungen! */
+#panel-scratch #scratch-tier-grid .scratch-tier::before,
+#panel-scratch #scratch-tier-grid .scratch-tier::after{
+ content:none!important;display:none!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-heading,
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-brief{
+ position:absolute!important;
+ width:1px!important;height:1px!important;
+ overflow:hidden!important;
+ clip-path:inset(50%)!important;
+ pointer-events:none!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-icon,
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-preview,
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-serial{
+ display:none!important;
+}
+/* Die Preise auf gedruckten Vorlagen sind nur Illustrationen.
+   Dieser Stempel zeigt stattdessen IMMER den echten konfigurierten Preis. */
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-cost{
+ position:absolute!important;top:3%!important;right:2%!important;
+ z-index:10!important;display:flex!important;align-items:center!important;justify-content:center!important;
+ width:26%!important;min-width:0!important;height:22px!important;
+ padding:2px 4px!important;
+ border:1px solid #fff1a8!important;border-radius:999px!important;
+ color:#fff4c8!important;background:linear-gradient(180deg,#7f251ade,#2b1422f5)!important;
+ box-shadow:inset 0 1px #fff7bd70,0 2px 6px #000a!important;
+ font:900 clamp(10px,.95vw,13px)/1 Georgia,serif!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+ text-shadow:0 1px 2px #000!important;
+}
+/* Die frei gelassene, rote Höchstgewinn-Plakette im WebP bekommt
+   ausschliesslich ihren echten dynamischen Münzbetrag. */
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-jackpot{
+ position:absolute!important;z-index:8!important;
+ top:69%!important;left:5%!important;right:auto!important;bottom:auto!important;
+ width:49%!important;height:10%!important;min-height:0!important;max-height:none!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ margin:0!important;padding:0!important;
+ border:0!important;border-radius:0!important;
+ background:transparent!important;box-shadow:none!important;
+ overflow:visible!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-jackpot-caption{
+ position:absolute!important;width:1px!important;height:1px!important;
+ overflow:hidden!important;clip-path:inset(50%)!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-jackpot-value{
+ position:static!important;display:block!important;width:100%!important;
+ max-width:100%!important;margin:0!important;padding:0!important;
+ overflow:hidden!important;white-space:nowrap!important;
+ text-overflow:ellipsis!important;
+ color:#fff5bf!important;
+ font:950 clamp(15px,1.3vw,22px)/1 Georgia,serif!important;
+ text-align:center!important;text-shadow:0 2px 4px #4b0805,0 0 8px #f5b64a!important;
+}
+/* Auflageninfo und die funktionierenden Aktionen liegen im unteren,
+   bewusst frei gelassenen Schneeband jeder gedruckten Karte. */
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-gifts-edition-chip{
+ position:absolute!important;z-index:9!important;
+ top:auto!important;bottom:30px!important;left:5%!important;right:5%!important;
+ width:auto!important;height:13px!important;min-height:13px!important;max-height:13px!important;
+ margin:0!important;padding:2px 5px!important;
+ border:1px solid #dcae6690!important;border-radius:4px!important;
+ background:#071c29de!important;color:#ffe5a7!important;
+ font:750 8px/1.05 system-ui,sans-serif!important;
+ text-align:center!important;white-space:nowrap!important;
+ overflow:hidden!important;text-overflow:ellipsis!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-action-row{
+ position:absolute!important;z-index:9!important;
+ bottom:3px!important;top:auto!important;left:5%!important;right:5%!important;
+ width:auto!important;height:24px!important;max-height:24px!important;
+ display:flex!important;align-items:stretch!important;
+ gap:4px!important;overflow:hidden!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-action-row button{
+ position:static!important;display:flex;align-items:center;justify-content:center;
+ min-width:0!important;flex:1 1 0!important;
+ height:24px!important;min-height:24px!important;max-height:24px!important;
+ padding:2px 3px!important;margin:0!important;
+ border:1px solid #fff0ac!important;border-radius:6px!important;
+ color:#f5ffe8!important;background:linear-gradient(180deg,#28aa56,#06532b)!important;
+ font:800 8px/1.1 system-ui,sans-serif!important;
+ text-shadow:0 1px 2px #01280b!important;
+ box-shadow:inset 0 1px #ffffff66,0 2px 4px #0009!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-action-row button.scratch-earned-voucher{
+ background:linear-gradient(180deg,#8060be,#38245d)!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-action-row button[hidden]{
+ display:none!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-gifts-card-settings,
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-other-edition-gear{
+ position:absolute!important;z-index:12!important;
+ top:20%!important;right:2%!important;left:auto!important;
+ max-width:37%!important;min-height:20px!important;height:auto!important;
+ padding:3px 5px!important;border-radius:6px!important;
+ border:1px solid #ffdfa8!important;
+ background:linear-gradient(180deg,#0d4241f2,#071f26f5)!important;
+ color:#fff5d9!important;
+ font:850 9px/1.05 system-ui,sans-serif!important;
+ text-shadow:0 1px #02131b!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-open-error{
+ z-index:20!important;top:45%!important;left:8%!important;right:8%!important;
+ max-height:80px!important;overflow:auto!important;
+}
+/* Das hochgeladene Los-Info-Bild als ornamentierte Rückwand,
+   mit dunkler Schicht für die LIVE-Spielhinweise und Buttons. */
+#panel-scratch .scratch-lottery-footer{
+ background-image:linear-gradient(90deg,#06232be8,#09242aef),
+  url("./assets/lichtertal-lottery-v2/10_footer_los_info.webp")!important;
+ background-position:center!important;background-size:cover!important;
+ border-color:#e6c380!important;
+}
+@media(max-width:899px){
+ #panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-cost{font-size:10px!important}
+}
+@media(max-width:490px){
+ #panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-jackpot-value{font-size:20px!important}
+ #panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-cost{font-size:12px!important}
+}
