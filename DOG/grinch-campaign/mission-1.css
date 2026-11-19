@@ -74,3 +74,11 @@ dialog::backdrop{background:#020d12cc;backdrop-filter:blur(5px)}dialog h2{margin
 .trail-waypoint.done{background:#315b34;color:#fff4ce;border-color:#f5dc83}
 .trail-progress .trail-next-mission{margin-bottom:0;color:#e9d6a6;font-weight:750}
 @media(prefers-reduced-motion:reduce){.board-svg .pf-exit-ready .pf-gate-halo{animation:none}}
+
+/* Reuse the same image assets as DOG/card-visuals.js without changing classic DOG. */
+.hand .card.has-art{position:relative;display:flex;align-items:center;justify-content:center;flex:0 0 68px;width:68px;min-width:68px;height:96px;min-height:96px;padding:0;overflow:hidden;background:linear-gradient(155deg,#fdf1cc,#a5bdbe);border:2px solid #cdb576}
+.hand .card.has-art.selected{border-color:#fff39c;box-shadow:0 0 0 3px #ffe88399,0 4px 14px #0009}
+.hand .card.has-art .card-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:6px;pointer-events:none;display:block}
+.hand .card.has-art .card-fallback{font-size:19px;color:#1e343e;font-weight:900}
+.hand .card.has-art:disabled{opacity:.46;cursor:not-allowed;filter:grayscale(.45)}
+@media(max-width:650px){.hand .card.has-art{flex-basis:58px;width:58px;min-width:58px;height:82px;min-height:82px}}
