@@ -6,7 +6,7 @@
 const MISSIONS=Object.freeze([
  {name:'Pfadfinder – Der Weg zum Berg',icon:'🧭',
   description:'Die drei Freunde folgen dem grünen Leuchten. Jeder beginnt mit fünf Figuren, doch auf dem Bergpfad verschwindet von jedem eine.',
-  objective:'Mit den normalen DOG-Karten vier Figuren pro Spieler durch das eine eigene Portal-Zielfeld nach Welt 2 teleportieren. Drei Pflichtverluste, geschützte Startfelder, Erdbeben, Nebel und Pfadfinder-Hinweise. Lokaler Testmodus.'},
+  objective:'Online: Drei angemeldete Spieler im selben Raum; die regulären DOG-Karten, drei verdeckte Fallen und je vier Figuren durch das eigene Portal. Nur verifizierte gemeinsame Siege schalten Mission 2 frei. Lokaler Testmodus bleibt verfügbar.'},
  {name:'Der verfluchte Aufstieg',icon:'🌫️',
   description:'Mit vier Figuren je Spieler geht der Aufstieg weiter. Die Dunkelheit wird gefährlicher.',
   objective:'Geplant: Ein weiterer unvermeidbarer Figurenverlust je Spieler.'},
@@ -25,6 +25,30 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
  if(!root)return {render(){}};
  const $=id=>document.getElementById(id);
  const dialog=$('grinch-mission-dialog');
+ let verifiedProgress=null,progressForUid=null,progressLoading=false,progressLastAt=0;
+ const roomCode=(new URLSearchParams(location.search).get('room')||'').toUpperCase();
+ const hasRoom=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/.test(roomCode);
+ const user=()=>{const s=window.SpielOnline?.state?.();return s?.status==='online'&&s.user?.getIdToken?s.user:null;};
+ async function loadProgress(force=false){
+  const person=user();
+  if(!person){verifiedProgress=null;progressForUid=null;render();return;}
+  if(progressLoading||(!force&&progressForUid===person.uid&&Date.now()-progressLastAt<30000))return;
+  progressLoading=true;
+  try{
+   const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/[/]+$/,'');
+   const token=await person.getIdToken();
+   const response=await fetch(api+'/api/hub/grinch/progress',{headers:{Authorization:'Bearer '+token},cache:'no-store'});
+   if(!response.ok)throw Error('Progress read failed');
+   const payload=await response.json();
+   if(payload.ok===true){
+    verifiedProgress=payload.progress;progressForUid=person.uid;progressLastAt=Date.now();
+   }
+  }catch(_e){/* Never fabricate progress or unlocks while offline. */}
+  finally{progressLoading=false;render();}
+ }
+ window.addEventListener('spielonline-change',()=>void loadProgress());
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)void loadProgress(true);});
+ void loadProgress();
  // A dialog must remain visible if its parent event panel changes tabs.
  if(dialog&&dialog.parentElement!==document.body)document.body.append(dialog);
 
@@ -37,6 +61,13 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
  testLink.style.cssText='display:none;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin:9px 8px 9px 0;';
  testLink.hidden=true;
  $('grinch-mission-return')?.before(testLink);
+ const onlineLink=document.createElement('a');
+ onlineLink.href=hasRoom?'./grinch-campaign/mission-1.html?'+new URLSearchParams({room:roomCode}).toString():'../hub-lobby.html?view=online';
+ onlineLink.textContent=hasRoom?'🌐 Mission 1 gemeinsam im Raum '+roomCode:'🌐 Gemeinsamen Spielraum öffnen';
+ onlineLink.className='grinch-event-small-button';
+ onlineLink.style.cssText='display:none;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin:9px 8px 9px 0;border-color:#8fe9c1;';
+ onlineLink.hidden=true;
+ $('grinch-mission-return')?.before(onlineLink);
 
  $('grinch-visit-cave')?.addEventListener('click',()=>openCave());
  $('grinch-back-village')?.addEventListener('click',()=>openTab('village'));
@@ -51,8 +82,13 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
    $('grinch-mission-detail-icon').textContent=item.icon;
    testLink.hidden=number!==1;
    testLink.style.display=number===1?'inline-flex':'none';
+   onlineLink.hidden=number!==1;
+   onlineLink.style.display=number===1?'inline-flex':'none';
+   const cleared=verifiedProgress?.completedMissions?.includes(1)===true;
    $('grinch-mission-lock').textContent=number===1?
-    '🧪 Mission 1 kann als eigenständiger lokaler Test gespielt werden. Keine Online-Synchronisierung, keine offiziellen Siege oder Belohnungen.':
+    '🎮 Online spielt ihr zu dritt in eurem vorhandenen Raum. Ein offizieller Start benötigt Baumstufe 10; nur ein vom Server bestätigter Sieg zählt. Der lokale Test vergibt keine Freischaltungen.':
+    number===2&&cleared?
+    '🔓 Dein Konto hat Mission 2 durch einen echten Sieg freigeschaltet. Diese Folgemission ist noch in Entwicklung und derzeit nicht spielbar.':
     '🔒 Missionsvorschau. Diese Mission ist noch nicht spielbar und vergibt keine Belohnungen.';
    if(dialog&&!dialog.open)dialog.showModal();
   });
@@ -72,17 +108,18 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
   if(banner){
    banner.dataset.state=unlocked?'tree-ready':'locked';
    banner.textContent=unlocked?
-    '🌟 Baumstufe 10 erreicht. Mission 1 hat einen lokalen Testmodus; offizielle Online-Missionen sind noch nicht freigeschaltet.':
+    '🌟 Baumstufe 10 erreicht. Mission 1 kann jetzt zu dritt im gemeinsamen Online-Raum offiziell gespielt werden.':
     '🔒 Offizieller Kampagnenstart erst nach echter Baumstufe 10. Mission 1 hat bereits einen unabhängigen lokalen Testmodus.';
   }
-  // Until backend mission completion exists, always show the truthful 0/5.
-  $('grinch-event-counter').textContent='0 / 5 Missionen geschafft';
+  const completed=new Set(verifiedProgress?.completedMissions||[]);
+  $('grinch-event-counter').textContent=completed.size+' / 5 Missionen geschafft';
   for(let i=1;i<=MISSIONS.length;i++){
    const state=$('grinch-mission-state-'+i);
    if(!state)continue;
-   const firstPreview=i===1;
-   state.dataset.state=firstPreview?'preview':'locked';
-   state.textContent=firstPreview?'🧪 Testmodus':'🔒 Gesperrt';
+   if(completed.has(i)){state.dataset.state='completed';state.textContent='✅ Geschafft';}
+   else if(i===1){state.dataset.state=unlocked?'available':'preview';state.textContent=unlocked?'🌐 Online bereit':'🧪 Testmodus';}
+   else if(i===2&&Number(verifiedProgress?.highestUnlocked||1)>=2){state.dataset.state='unlocked';state.textContent='🔓 Freigeschaltet · folgt';}
+   else{state.dataset.state='locked';state.textContent='🔒 Gesperrt';}
   }
  }
  return {render};
