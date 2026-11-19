@@ -584,9 +584,10 @@ export function initChristmasScratch(){
    article.append(buyBtn);
    if(activeEdition){
     const chip=el('div','scratch-gifts-edition-chip',
-     '📦 Auflage: '+num(activeEdition.remaining)+' von 500 Losen übrig · '+
+     '📦 '+num(activeEdition.remaining)+' / 500 Lose · '+num(activeEdition.remainingCoins)+' 🪙 Restbudget');
+    chip.title='Auflage: '+num(activeEdition.remaining)+' von 500 Losen übrig · '+
      num(activeEdition.remainingCoins)+' von '+num(activeEdition.maxTotalCoins)+
-     (activeEdition.budgetMode==='fixed'?' 🪙 fest eingeplant':' 🪙 maximale Auszahlung'));
+     (activeEdition.budgetMode==='fixed'?' Münzen fest eingeplant':' Münzen maximale Auszahlung');
     chip.dataset.state=activeEdition.status;
     article.append(chip);
    }
