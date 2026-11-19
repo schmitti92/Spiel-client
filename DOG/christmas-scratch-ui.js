@@ -1695,7 +1695,8 @@ export function initChristmasScratch(){
      prizeTile.append(doubleIcon);
     }
     board.append(prizeZone,boardHeading,rules,makeDuelTile(String(result.board.multiplier)+'×',0),winningTile,prizeTile);
-    const giftsStickerIndex=giftsDoubledSymbolIndex(result);
+   }
+   const giftsStickerIndex=giftsDoubledSymbolIndex(result);
    for(const [index,symbol] of cells.entries()){
     const field=makeField(symbol,index);
     if(stage.dataset.variant==='gifts'&&giftsStickerIndex===index){
