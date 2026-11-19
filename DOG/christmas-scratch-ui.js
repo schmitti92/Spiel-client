@@ -145,11 +145,20 @@ export function initChristmasScratch(){
     SCRATCH_EDITION_ONLY_CREATOR:'🔒 Nur das Profil, das die Auflage erstellt hat, darf sie bearbeiten.',
     SCRATCH_EDITION_ALREADY_COMPLETE:'🏁 Ausverkaufte Auflagen dürfen nicht nachträglich geändert werden.',
     SCRATCH_EDITION_FIXED_PLAN_MISSING:'⚠️ Der feste Gewinnplan konnte nicht geladen werden.',
-    SCRATCH_EDITION_WALLET_LIMIT:'⚠️ Dein Münzkonto ist voll. Gib zuerst Münzen aus, damit der vollständige Gewinn gutgeschrieben werden kann.'
+    SCRATCH_EDITION_WALLET_LIMIT:'⚠️ Dein Münzkonto ist voll. Gib zuerst Münzen aus, damit der vollständige Gewinn gutgeschrieben werden kann.',
+   SCRATCH_TIC_EDITION_ACTIVE:'⚠️ Diese Tic-Tac-Toe-Auflage läuft noch. Du kannst die Restlose bearbeiten.',
+   SCRATCH_TIC_EDITION_SOLD_OUT:'🏁 Alle 500 Tic-Tac-Toe-Lose sind vergeben. Erstelle eine neue Auflage.',
+   SCRATCH_TIC_EDITION_INVALID_BUDGET:'⚠️ Bitte ein gültiges festes Gesamtbudget eingeben.',
+   SCRATCH_TIC_EDITION_BUDGET_UNREACHABLE:'⚠️ Das feste Budget lässt sich mit den gewählten Geldbeträgen und Multiplikatoren nicht exakt verteilen. Bitte Werte anpassen.',
+   SCRATCH_TIC_EDITION_SETTINGS_INVALID:'⚠️ Prüfe Lospreis, Symbolchancen (zusammen 100 %), Nietenquote und drei steigende Geldwerte.',
+   SCRATCH_TIC_EDITION_PAYOUT_MISMATCH:'⚠️ Der geplante Gewinn stimmt nicht mit der Auszahlung überein. Es wurde kein Los gebucht.',
+   SCRATCH_TIC_EDITION_PLAN_INVALID:'⚠️ Der Tic-Tac-Toe-Gewinnplan ist nicht gültig. Weitere Käufe sind vorerst gesperrt.'
  }[code]||'⚠️ Los konnte nicht geöffnet werden: '+String(code||'Serverfehler'));
  const hostDialog=$('scratch-host-dialog');
  const giftsDialog=$('scratch-gifts-settings-dialog');
  const snowDialog=$('scratch-snow-settings-dialog');
+ let ticEdition=null;
+ const ticDialog=$('scratch-tic-edition-dialog');
  let giftsEdition=null; // The globally shared finite 500-ticket series.
  let snowEdition=null; // Its own independent 500-ticket Bingo series.
  const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
@@ -406,12 +415,14 @@ export function initChristmasScratch(){
    // Preserve the independent configured number lottery base price.
    const variantConfig=option.id==='gifts'&&giftsEdition?.config?giftsEdition.config:
     option.id==='snow_collect'&&snowEdition?.config?snowEdition.config:
+    option.id==='tic_tac_toe'&&ticEdition?.config?ticEdition.config:
     status?.settings?.variants?.[option.id];
    const ticketCost=option.id==='number_one_20'?(lucky?.price??tier.price):
-    ['gifts','snow_collect'].includes(option.id)?(variantConfig?.price??tier.price):tier.price;
+    ['gifts','snow_collect','tic_tac_toe'].includes(option.id)?(variantConfig?.price??tier.price):tier.price;
    const actualPrice=discountedPrice(ticketCost);
    const onSale=(option.id!=='gifts'||!giftsEdition||giftsEdition.remaining>0)&&
-    (option.id!=='snow_collect'||!snowEdition||snowEdition.remaining>0);
+    (option.id!=='snow_collect'||!snowEdition||snowEdition.remaining>0)&&
+    (option.id!=='tic_tac_toe'||!ticEdition||ticEdition.remaining>0);
    const unlockChance=Number.isInteger(variantConfig?.weights?.unlock)?
     percent(variantConfig.weights.unlock):tier.unlockChance;
    const unlocksLeft=status?.pools?.[option.tier]?.remaining;
@@ -436,6 +447,13 @@ export function initChristmasScratch(){
     gear.addEventListener('click',event=>{event.stopPropagation();openGiftsSettings()});
     article.append(gear);
    }
+   if(option.id==='tic_tac_toe'){
+    const gear=el('button','scratch-gifts-card-settings scratch-tic-card-settings','⚙️ Auflage');
+    gear.type='button';gear.title='Tic-Tac-Toe-Auflage erstellen oder bearbeiten';
+    gear.setAttribute('aria-label','Tic-Tac-Toe-Auflagenstudio öffnen');
+    gear.addEventListener('click',event=>{event.stopPropagation();openTicEdition()});
+    article.append(gear);
+   }
    if(option.id==='snow_collect'){
     const gear=el('button','scratch-gifts-card-settings scratch-snow-card-settings','⚙️ Auflage');
     gear.type='button';gear.title='Schneeflocken-Bingo-Auflage erstellen';
@@ -458,7 +476,7 @@ export function initChristmasScratch(){
     details.append(el('span','scratch-card-chance',
      '✖️2-Chance: '+percent(variantConfig.doubleChancePer1000??110)+' % bei Geldgewinnen'));
    }
-   const amounts=option.id==='tic_tac_toe'?[200,450,800]:
+   const amounts=option.id==='tic_tac_toe'?(ticEdition?.config?.coinAmounts??[200,450,800]):
     option.id==='number_one_20'?(lucky?.coinAmounts??[100,300,800]):
     option.id==='dog_jackpot_9'?[100,300,800]:
     option.id==='snow_collect'&&snowEdition?.config?.coinAmounts?snowEdition.config.coinAmounts:
@@ -472,14 +490,14 @@ export function initChristmasScratch(){
      '🪙 '+num(amounts[0])+' · 💵 '+num(amounts[1])+' · 💼 '+num(amounts[2])+' · 🎁 Freischaltung · jede 1 gewinnt':
      option.id==='dog_jackpot_9'?'🐾 DOG = alle 8 Preise · 🎁 Freischaltung':
      option.id==='tic_tac_toe'?
-     '◯ / ✕ · 1–5× · 🪙 200 · 💵 450 · 💼 800 · 🎁 Freischaltung':symbolLegend(option.tier,amounts)));
+     '◯ / ✕ · 1–'+(ticEdition?.config?.maxMultiplier??5)+'× · 🪙 '+num(amounts[0])+' · 💵 '+num(amounts[1])+' · 💼 '+num(amounts[2])+' · 🎁 Freischaltung':symbolLegend(option.tier,amounts)));
    const vouchers=Number(status?.vouchers?.[option.tier]||0)+Number(status?.variantVouchers?.[option.id]||0);
    const buyBtn=el('button','scratch-buy','🎟️ Für '+num(actualPrice)+' Münzen öffnen');
    buyBtn.type='button';buyBtn.hidden=freeMode;
    buyBtn.disabled=busy||!onSale;
    buyBtn.addEventListener('click',()=>void buy(option.tier,false,option.id));
    article.append(buyBtn);
-   const activeEdition=option.id==='gifts'?giftsEdition:option.id==='snow_collect'?snowEdition:null;
+   const activeEdition=option.id==='gifts'?giftsEdition:option.id==='snow_collect'?snowEdition:option.id==='tic_tac_toe'?ticEdition:null;
    if(activeEdition){
     const chip=el('div','scratch-gifts-edition-chip',
      '📦 Auflage: '+num(activeEdition.remaining)+' von 500 Losen übrig · '+
@@ -1894,13 +1912,14 @@ export function initChristmasScratch(){
  }
  async function load(){
   const id=++requestId;
-  if(!account()){status=null;giftsEdition=null;snowEdition=null;ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();giftsDialog?.close();snowDialog?.close();drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
+  if(!account()){status=null;giftsEdition=null;snowEdition=null;ticEdition=null;ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();giftsDialog?.close();snowDialog?.close();ticDialog?.close();drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
   try{
    const r=await query('');
    if(id!==requestId)return;
    status={...r.scratch,discountPercent:r.discountPercent??0};
    giftsEdition=r.giftsEdition??null;
   snowEdition=r.snowEdition??null;
+  ticEdition=r.ticEdition??null;
    canManageScratch=r.canManageScratch===true;
    clearAlert();
    // Four distinct starter vouchers, credited once to the signed-in player.
@@ -1941,6 +1960,9 @@ export function initChristmasScratch(){
   if(!SCRATCH_SHOP_VARIANTS.some(c=>c.id===variantId&&c.tier===tier)){
    showAlert('⚠️ Diese Losvariante ist noch nicht im Spiel freigeschaltet.',variantId);drawShop();return;
   }
+  if(variantId==='tic_tac_toe'&&ticEdition?.remaining===0){
+   showAlert(scratchBuyError('SCRATCH_TIC_EDITION_SOLD_OUT'),variantId);drawShop();return;
+  }
   if(variantId==='snow_collect'&&snowEdition?.remaining===0){
    showAlert(scratchBuyError('SCRATCH_SNOW_EDITION_SOLD_OUT'),variantId);drawShop();return;
   }
@@ -1951,6 +1973,7 @@ export function initChristmasScratch(){
    Number(status.settings?.numberOne20?.price??500):
    variantId==='gifts'?Number(giftsEdition?.config?.price??status.settings?.variants?.gifts?.price??200):
    variantId==='snow_collect'?Number(snowEdition?.config?.price??status.settings?.variants?.snow_collect?.price??200):
+   variantId==='tic_tac_toe'?Number(ticEdition?.config?.price??500):
    Number(SCRATCH_TICKET_TYPES.find(c=>c.id===tier)?.price||0);
   if(!free&&!voucher&&status.coins<discountedPrice(chosenPrice)){
    showAlert('⚠️ Nicht genügend Münzen für dieses Los.',variantId);drawShop();return;
@@ -1968,6 +1991,7 @@ export function initChristmasScratch(){
    status=r.scratch;
    if(Object.hasOwn(r,'giftsEdition'))giftsEdition=r.giftsEdition;
    if(Object.hasOwn(r,'snowEdition'))snowEdition=r.snowEdition;
+   if(Object.hasOwn(r,'ticEdition'))ticEdition=r.ticEdition;
    pending=null;
    // Server has already committed the ticket; keep its receipt even if the
    // local animation fails, so it is always reopenable without a second buy.
@@ -2201,9 +2225,9 @@ export function initChristmasScratch(){
   const nextUid=account()?.uid??null;
   if(nextUid===authUid)return;
   authUid=nextUid;
-  requestId++;status=null;giftsEdition=null;snowEdition=null;ticket=null;canManageScratch=false;
+  requestId++;status=null;giftsEdition=null;snowEdition=null;ticEdition=null;ticket=null;canManageScratch=false;
   stage.hidden=true;document.body.classList.remove('scratch-ticket-open');
-  hostDialog?.close();giftsDialog?.close();snowDialog?.close();void load();
+  hostDialog?.close();giftsDialog?.close();snowDialog?.close();ticDialog?.close();void load();
  });
  drawShop();return {load};
 }
