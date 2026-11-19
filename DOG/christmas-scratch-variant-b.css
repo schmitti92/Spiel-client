@@ -22,11 +22,11 @@
   height:calc(100dvh - 28px)!important;
   max-height:calc(100dvh - 28px)!important;
   min-height:0!important;min-width:0!important;
-  overflow-y:auto!important;overflow-x:hidden!important;
+  overflow-y:auto!important;overflow-x:auto!important;
   overscroll-behavior-y:contain!important;
   scrollbar-width:thin;scrollbar-color:#d8b579 #162b31;
   -webkit-overflow-scrolling:touch;
-  touch-action:pan-y pinch-zoom;
+  touch-action:pan-x pan-y pinch-zoom;
  }
  body:has(#panel-scratch:not([hidden])) .event-main::-webkit-scrollbar{width:9px}
  body:has(#panel-scratch:not([hidden])) .event-main::-webkit-scrollbar-thumb{
