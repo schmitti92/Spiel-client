@@ -87,7 +87,7 @@ test('all scratch tiers expose three configurable cash symbols and a gift unlock
 test('saving global scratch settings works outside a DOG room and provides user feedback',()=>{
  const js=source('../DOG/christmas-scratch-ui.js');
  const html=source('../DOG/christmas-event.html');
- const submit=js.split("addEventListener('submit',async e=>{")[1]?.split("window.addEventListener('spielonline-change'")[0];
+ const submit=js.split("$('scratch-host-form').addEventListener('submit',async e=>{")[1]?.split("window.addEventListener('spielonline-change'")[0];
  assert.ok(submit,'the settings form must have a submit listener');
  assert.doesNotMatch(submit,/validRoom|canManageScratch/,'room and client permission flags must not silence saves');
  assert.match(submit,/query\('\/settings',\{settings\}\)/,'send global settings without a room code');
