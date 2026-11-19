@@ -1,12 +1,12 @@
-import {MISSION_1} from './mission-config.js?v=3';
-import {drawClassicMissionBoard} from './mission-board.js?v=3';
-import {pathfinderStatus} from './mission-1-pathfinder.js?v=2';
-import {trackPoint} from '../board-layout.js?v=11';
-import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,status,pieceCoord,validateSaved} from './mission-1-rules.js?v=3';
+import {MISSION_1} from './mission-config.js?v=4';
+import {drawClassicMissionBoard} from './mission-board.js?v=4';
+import {pathfinderStatus} from './mission-1-pathfinder.js?v=4';
+import {trackPoint,goalPoint} from '../board-layout.js?v=11';
+import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,status,pieceCoord,validateSaved} from './mission-1-rules.js?v=4';
 
 const $=id=>document.getElementById(id);
 const SVG='http://www.w3.org/2000/svg';
-const KEY='dog-grinch-m1-classic-board-v2';
+const KEY='dog-grinch-m1-single-portal-v3';
 let state=null,chosenCard=null,chosenPiece=null,pickMoves=[],lastSeenRevision=-1;
 let toastTimer=null,effectTimer=null;
 const ns=(tag,attrs={},parent=null)=>{
@@ -39,7 +39,7 @@ function describeMove(m){
  const i=Number(p.id.slice(1))%5+1;
  let v='Figur '+i+': ';
  if(m.kind==='start')v+='aus dem Haus starten';
- else if(m.kind==='move')v+=(m.distance<0?'4 Felder rückwärts':m.distance+' Felder vorwärts')+(m.targetSteps>=TRACK?' ins Ziel':'');
+ else if(m.kind==='move')v+=(m.distance<0?'4 Felder rückwärts':m.distance+' Felder vorwärts')+(m.targetSteps===TRACK?' ins Portal':'');
  else if(m.kind==='swap'){
   const target=state.pieces.find(p=>p.id===m.targetId);
   v+='mit '+state.players[target.seat].name+' Figur '+(Number(target.id.slice(1))%5+1)+' tauschen';
@@ -95,7 +95,7 @@ function render(){
   const dot=text('span','',name,'color');dot.style.setProperty('--p',COLORS[p.seat]);
   text('span',p.name,name);
   if(p.seat===state.current&&!state.complete)text('span','👑 Am Zug',title);
-  text('div',p.goal+' im Ziel · '+p.track+' auf dem Weg · '+p.home+' im Haus',card,'status');
+  text('div','🌀 '+p.teleported+'/4 teleportiert · '+p.track+' auf dem Weg · '+p.home+' im Haus',card,'status');
   text('div',p.lost?'⚠️ Eine Figur ist verschwunden':'Alle fünf Figuren noch unterwegs',card,p.lost?'status loss':'status');
  }
  const hand=$('hand');hand.replaceChildren();
@@ -117,23 +117,22 @@ function render(){
    else moveButtons(visible,moves);
   }else text('p','Wähle eine Handkarte. Danach kannst du direkt auf eine eigene Figur tippen.',moves,'help');
  }else {
-  text('p','Die drei Freunde haben den Aussichtspunkt erreicht – drei Figuren bleiben verschwunden. Der nächste Abschnitt ist noch in Planung.',moves,'help');
+  text('p','Die drei Freunde haben alle zwölf verbliebenen Figuren über ihre drei wiederverwendbaren Portale nach Welt 2 geschickt. Drei Figuren bleiben verschollen. Mission 2 ist noch nicht spielbar.',moves,'help');
  }
- $('actions').textContent=state.complete?'🎉 Mission 1 lokal abgeschlossen (Test, keine offiziellen Belohnungen).':'Ziel: Jeder rettet vier Figuren. Eine Figur je Spieler wird vom Fluch gefangen.';
- // Goal lanes are still the four ordinary DOG goal fields, now also
- // signaling the three passages leading into the next story mission.
+ $('actions').textContent=state.complete?'🎉 Mission 1 lokal abgeschlossen (Test, keine offiziellen Belohnungen).':'Ziel: Jede Person schickt vier Figuren nacheinander durch ihr einzelnes Portal. Eine Figur je Spieler bleibt im Fluch gefangen.';
+ // Each player has exactly one reusable portal at the FIRST classic goal location.
  const route=pathfinderStatus(state);
- $('trail-progress-count').textContent=route.ready+' / '+route.participants+' Wege offen';
+ $('trail-progress-count').textContent=route.ready+' / '+route.participants+' Portale abgeschlossen';
  const waypointList=$('trail-progress-players');
  waypointList.replaceChildren();
  for(let seat=0;seat<SEATS;seat++){
   const complete=route.counts[seat]===4;
-  const item=text('div',(complete?'✅ ':'🧭 ')+state.players[seat].name+': '+route.counts[seat]+'/4',waypointList,'trail-waypoint'+(complete?' done':''));
+  const item=text('div',(complete?'✅ ':'🌀 ')+state.players[seat].name+': '+route.counts[seat]+'/4 teleportiert',waypointList,'trail-waypoint'+(complete?' done':''));
   item.style.setProperty('--player-color',COLORS[seat]);
  }
  $('trail-next-mission').textContent=route.allReady?
-  '🏔️ Bergpass entdeckt! Die drei Wege führen zum verfluchten Aufstieg (Mission 2). Diese Folgemission ist noch in Entwicklung und bleibt vorerst gesperrt.':
-  '🧭 Bringt jeweils vier Figuren ins Ziel, damit alle drei Wegweiser nach Mission 2 aufleuchten.';
+  '🏔️ Alle zwölf Figuren haben ihre Portale passiert. Welt 2 wartet! Diese Folgemission ist noch in Entwicklung und bleibt vorerst gesperrt.':
+  '🌀 Landet mit jeder verbleibenden Figur genau auf eurem einen Portal-Zielfeld. Die Figur verschwindet sofort, das Portal wird wieder frei.';
  const history=$('history');history.replaceChildren();
  for(const entry of state.history)text('p',entry,history);
  drawClassicMissionBoard($('board'),state,{selectedPiece:chosenPiece,onPieceClick:choosePawn});
@@ -150,6 +149,14 @@ function onEffect(){
   const symbol={collapse:'🕳️',abduction:'🌪️',freeze:'🧊'}[ev.lossType]||'⚡';
   const fx=ns('text',{x:p.x,y:p.y+16,'text-anchor':'middle','font-size':48},layer);fx.textContent=symbol;
   clearTimeout(effectTimer);effectTimer=setTimeout(()=>layer.replaceChildren(),2800);
+ }else if(ev.type==='teleport'){
+  const owner=[0,1,3][ev.seat],p=goalPoint(owner,0);
+  const layer=$('event-fx')||ns('g',{id:'event-fx'},$('board'));
+  layer.replaceChildren();
+  ns('circle',{cx:p.x,cy:p.y,r:30,fill:'#50ffd7',opacity:'.5',stroke:'#ffe9a8','stroke-width':3},layer);
+  const glyph=ns('text',{x:p.x,y:p.y+12,'text-anchor':'middle','font-size':38},layer);glyph.textContent='✨';
+  clearTimeout(effectTimer);
+  effectTimer=setTimeout(()=>layer.replaceChildren(),1300);
  }else if(ev.type==='quake'){
   $('board-wrap').classList.add('shaking');
   clearTimeout(effectTimer);
