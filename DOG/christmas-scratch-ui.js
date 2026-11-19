@@ -588,6 +588,14 @@ export function initChristmasScratch(){
    const serial=el('div','scratch-printed-serial','LICHTERTAL · '+option.id.toUpperCase().replaceAll('_','-')+' · MUSTER');
    serial.setAttribute('aria-hidden','true');
    article.append(heading,details,printedTicketPreview(option),headline,serial);
+   // Uploaded print images contain a decorative price stamp. Cover it with
+   // the live, discounted price so host edits never leave stale numbers.
+   const priceStamp=el('span','scratch-printed-cost',
+    freeMode?'🎁 GRATIS':num(actualPrice)+' 🪙');
+   priceStamp.title=freeMode?'Der Host hat kostenlose Lose aktiviert.':
+    'Aktueller Lospreis, einschließlich möglichem Dorfrabatt';
+   priceStamp.setAttribute('aria-label',priceStamp.title+' · '+priceStamp.textContent);
+   article.append(priceStamp);
    const vouchers=Number(status?.vouchers?.[option.tier]||0)+Number(status?.variantVouchers?.[option.id]||0);
    const buyBtn=el('button','scratch-buy','🎟️ Für '+num(actualPrice)+' Münzen öffnen');
    buyBtn.type='button';buyBtn.hidden=freeMode;
