@@ -610,3 +610,23 @@ test('all seven DOG scratch cards expose an edition editor and category selector
  assert.match(core,/prizeCategory:Number\(\$\('gs-prize-category'\)\.value\)/);
  assert.match(core,/prizeCategory:Number\(\$\('sn-prize-category'\)\.value\)/);
 });
+
+
+test('Premium 27 artwork fits the available landscape and portrait viewport without clipping',()=>{
+ const html=source('../DOG/christmas-event.html');
+ const css=source('../DOG/christmas-scratch-premium-fit.css');
+ assert.match(html,/christmas-scratch-premium-fit\.css\?v=1/);
+ assert.match(css,/#scratch-stage\[data-variant="premium_27"\]:not\(\[hidden\]\) > #scratch-reveal/);
+ assert.match(css,/container-type:size/);
+ assert.match(css,/width:min\(100cqw,75cqh\)!important/);
+ assert.match(css,/aspect-ratio:3 \/ 4!important/);
+ assert.match(css,/max-height:100cqh!important/);
+ assert.match(css,/max-width:100cqw!important/);
+ assert.match(css,/transform:none!important/);
+ assert.match(css,/left:10\.4%!important/);
+ assert.match(css,/top:23\.6%!important/);
+ assert.match(css,/width:53\.2%!important/);
+ assert.match(css,/height:55\.8%!important/);
+ assert.match(css,/@media \(orientation:landscape\)/);
+ assert.match(css,/@media \(orientation:portrait\)/);
+});
