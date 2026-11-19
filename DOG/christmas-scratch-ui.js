@@ -1601,7 +1601,7 @@ export function initChristmasScratch(){
   stage.classList.remove('is-revealed');
   renderInlineResults(null);
   stage.removeAttribute('data-result');
-  stage.hidden=false;reveal.classList.remove('revealed');results.hidden=true;
+  stage.hidden=false;document.body.classList.add('scratch-ticket-open');reveal.classList.remove('revealed');results.hidden=true;
   $('scratch-ticket-finish').hidden=true;
   // Always offer an explicit reveal action. Dragging the canvas still
   // automatically opens the result at 90 percent, including a losing ticket.
@@ -1632,7 +1632,7 @@ export function initChristmasScratch(){
    result.board?.variantId==='dog_jackpot_9'?
     'Neun Felder: Wird DOG aufgedeckt, gehören dir die Preise aller acht übrigen Felder. '+symbolLegend(result.tier,coinAmountsFor(result.tier,'dog_jackpot_9',result))+' · 🎁 Freischaltung. Ohne DOG: Niete.':
    result.board?.variantId==='tic_tac_toe'&&result.board?.symbolVersion===8?
-    'Zuerst 1×–'+(result.board?.maxMultiplier??5)+'× aufrubbeln, dann ◯ oder ✕ als Gewinnzeichen, danach das Gewinnsymbol ganz unten und zuletzt alle neun Spielfelder. Eine Dreierlinie aus dem Gewinnzeichen gewinnt EINEN Preis des unteren Gewinnsymbols × Multiplikator; Geschenke geben höchstens eine Freischaltung, sonst '+num(result.board?.giftFallbackCoins??1500)+' Münzen × Multiplikator.':
+    'Zuerst 1×–'+(result.board?.maxMultiplier??5)+'× aufrubbeln, dann ◯ oder ✕ als Gewinnzeichen, danach das Gewinnsymbol ganz unten und zuletzt alle neun Spielfelder. Eine Dreierlinie aus dem Gewinnzeichen gewinnt EINEN Preis des unteren Gewinnsymbols × Multiplikator; 🎁 Freischaltungen aus Kategorie '+(result.prizeCategory??2)+'. Wenn der Pool aufgebraucht ist, gibt es höchstens '+num(result.board?.giftFallbackCoins??1500)+' Ersatzmünzen × Multiplikator.':
    result.board?.variantId==='tic_tac_toe'?
     '🪙 200 · 💵 450 · 💼 800 Münzen je Dreierreihe · 🎁 Premium-Freischaltung. 2 Linien +250 · 3+ Linien +800 · Koffer in der Mitte +300 · Goldenes X +1.000 · 4 gleiche Ecken +400 · 9 gleiche Felder +20.000. Zwei Geschenke ergeben einen Geschenkfunken.':
    result.board?.variantId==='premium_27'&&result.board?.symbolVersion===5?
