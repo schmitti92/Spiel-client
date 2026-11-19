@@ -144,6 +144,13 @@
 #panel-scratch .scratch-lottery-footer-panel span{font-size:11px!important;line-height:1.4!important}
 #panel-scratch .scratch-lottery-help summary,
 #panel-scratch .scratch-stats-toggle{font-size:12px!important}
+/* Auf schmalen Tablets im Hochformat bliebe bei zwei Karten zu wenig Platz:
+   dort lieber ein grosses Los, statt wieder zu kleine Motive. */
+@media(min-width:761px) and (max-width:950px){
+ #panel-scratch #scratch-tier-grid.scratch-tickets{
+  grid-template-columns:1fr!important;
+ }
+}
 /* Kleine Displays: ein grosses Ticket je Reihe und normales Scrollen.
    So bleiben auch zugängliche Browser-Pinchgesten erhalten. */
 @media(max-width:760px){
