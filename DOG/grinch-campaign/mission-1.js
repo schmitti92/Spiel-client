@@ -1,5 +1,5 @@
 import {MISSION_1} from './mission-config.js?v=4';
-import {drawClassicMissionBoard} from './mission-board.js?v=4';
+import {drawClassicMissionBoard} from './mission-board.js?v=5';
 import {pathfinderStatus} from './mission-1-pathfinder.js?v=4';
 import {trackPoint,goalPoint} from '../board-layout.js?v=11';
 import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,status,pieceCoord,validateSaved} from './mission-1-rules.js?v=4';
