@@ -20,6 +20,26 @@ function seeded(seed){let x=(seed>>>0)||1;return ()=>((x=(Math.imul(x,1664525)+1
 function shuffle(xs,rng){const list=[...xs];for(let i=list.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[list[i],list[j]]=[list[j],list[i]];}return list;}
 function deck(rng){return shuffle(TYPES.flatMap((type,i)=>Array.from({length:type==='Joker'?6:8},(_,n)=>({id:type+'-'+i+'-'+n,type}))),rng);}
 function pieceAtTrack(s,absolute,except){return s.pieces.find(p=>p.id!==except&&p.place==='track'&&pos(homeIndex(p.seat)+p.steps)===absolute);}
+function isProtectedStart(p){
+ return p?.place==='track'&&pos(homeIndex(p.seat)+p.steps)===homeIndex(p.seat);
+}
+function moveQuake(s){
+ // Simultaneous earthquake: take a fixed snapshot before resolving any move.
+ // An occupied destination stays blocked, even if its occupant could move.
+ const track=s.pieces.filter(p=>p.place==='track');
+ const occupied=new Set(track.map(pieceCoord));
+ let moved=0,blocked=0,protectedCount=0;
+ for(const pawn of track){
+  const from=pieceCoord(pawn);
+  if(from%16===0){protectedCount++;continue;} // every colored start square is safe
+  if(pawn.steps<=0){protectedCount++;continue;} // never reverse out of the start gate
+  const to=pos(from-1);
+  if(occupied.has(to)){blocked++;continue;}
+  pawn.steps--;moved++;
+ }
+ return {moved,blocked,protectedCount};
+}
+
 function values(type){if(type==='1/11')return [1,11];if(type==='4')return [4,-4];if(type==='7'||type==='Joker')return [];return [Number(type)];}
 function isTurnDone(s){return s.players.every(p=>s.hands[p.seat].length===0);}
 function refill(s){if(s.draw.length<SEATS*5){s.draw=deck(seeded(s.seed+s.round*31));}s.round++;for(let i=0;i<SEATS;i++)s.hands[i]=s.draw.splice(0,5);log(s,'Neue Kartenphase '+s.round);}
@@ -67,8 +87,8 @@ export function legalMoves(s,seat,card){
    if(!occupant||occupant.seat===seat)opts.push({kind:'start',pieceId:p.id,cardId:card.id,as:type});
   }
   if(type==='7'){
-   for(const a of s.pieces.filter(p=>p.seat===seat&&p.place==='track'))
-    for(const b of s.pieces.filter(p=>p.seat!==seat&&p.place==='track'))
+   for(const a of s.pieces.filter(p=>p.seat===seat&&p.place==='track'&&!isProtectedStart(p)))
+    for(const b of s.pieces.filter(p=>p.seat!==seat&&p.place==='track'&&!isProtectedStart(p)))
      opts.push({kind:'swap',pieceId:a.id,targetId:b.id,cardId:card.id,as:type});
   }
   for(const distance of values(type)){
@@ -78,7 +98,18 @@ export function legalMoves(s,seat,card){
     const final=targetSteps<TRACK?pos(homeIndex(seat)+targetSteps):-1;
     const at=final>=0?pieceAtTrack(s,final,p.id):null;
     const starts=(final===homeIndex(seat));
-    if(at&&at.seat===seat||at&&starts)continue;
+    // A pawn standing on ITS OWN colored start square is unassailable.
+    // That also stops cards crossing it, matching the classic DOG engine.
+    if(at&&(at.seat===seat||isProtectedStart(at)||starts))continue;
+    if(distance!==0&&targetSteps<TRACK){
+      let blockedByStart=false;
+      for(let delta=distance>0?1:-1;distance>0?delta<=distance:delta>=distance;delta+=distance>0?1:-1){
+        const field=pos(homeIndex(seat)+p.steps+delta);
+        const occupant=pieceAtTrack(s,field,p.id);
+        if(occupant&&isProtectedStart(occupant)){blockedByStart=true;break;}
+      }
+      if(blockedByStart)continue;
+    }
     opts.push({kind:'move',pieceId:p.id,cardId:card.id,as:type,distance,targetSteps,captureId:at?.id||null});
    }
   }
@@ -102,8 +133,8 @@ function maybeEffects(s){
  // Story losses have priority; never hide a mandatory capture behind weather.
  if(['loss','hint','teleport'].includes(s.lastEvent?.type))return;
  if(s.turn>0&&s.turn%MISSION_1.effects.quakeEvery===0){
-  for(const p of s.pieces.filter(p=>p.place==='track'))p.steps=Math.max(0,p.steps-1);
-  s.lastEvent={type:'quake',message:'Erdbeben! Alle Figuren auf dem Weg gehen ein Feld zurück.',turn:s.turn};
+  const changed=moveQuake(s);
+  s.lastEvent={type:'quake',message:'Erdbeben! '+changed.moved+' Figuren gehen ein Feld zurück; '+changed.blocked+' bleiben wegen besetzter Felder stehen. Startfelder bleiben geschützt.',turn:s.turn,quake:changed};
   log(s,'Erdbeben erschüttert den Berg');
  }else if(s.turn>0&&s.turn%MISSION_1.effects.fogEvery===0){
   s.lastEvent={type:'fog',message:'Dichter Nebel zieht über den Weg.',turn:s.turn};
