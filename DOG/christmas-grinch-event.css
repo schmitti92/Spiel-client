@@ -172,9 +172,20 @@
 
 /* Scroll regression fix (Android/iOS): a decorative clipped background must
    not act as a nested scroll container. The page itself owns vertical scroll. */
-#panel-grinch{min-height:0;height:auto;overflow:visible;touch-action:pan-y pinch-zoom}
+#panel-grinch{min-height:0;height:auto;overflow:visible;touch-action:auto}
 #panel-grinch .grinch-event-shell{overflow:clip}
 #panel-grinch .grinch-event-missions{overflow:visible}
 @supports not (overflow:clip){
  #panel-grinch .grinch-event-shell{overflow:visible}
+}
+
+/* Keep native pinch zoom and two-direction panning on every mission surface.
+   A zoomed browser visual viewport must not be locked to vertical movement. */
+#panel-grinch .grinch-event-shell,
+#panel-grinch .grinch-event-hero,
+#panel-grinch .grinch-event-missions,
+#panel-grinch .grinch-mission,
+#panel-grinch .grinch-mission-dialog,
+#panel-grinch .grinch-mission-dialog-content{
+ touch-action:auto;
 }
