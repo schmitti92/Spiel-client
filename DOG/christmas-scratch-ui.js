@@ -18,14 +18,14 @@ export const SCRATCH_SHOP_VARIANTS=Object.freeze([
  Object.freeze({id:'snow_collect',tier:'simple',icon:'❄️',name:'Schneeflocken-Bingo',subtitle:'Einfach · 16 Felder',rule:'3 gleiche Gewinnzeichen irgendwo',theme:'snow'}),
  Object.freeze({id:'elf',tier:'medium',icon:'🧝',name:'Magischer Wichtelpfad',subtitle:'Mittel · 20 Felder',rule:'Geld: Pfad · Geschenke: 3 verbunden',theme:'elf'}),
  Object.freeze({id:'premium_27',tier:'premium',icon:'👑',name:'Premium-Weihnachtslos',subtitle:'Premium · 27 Felder',rule:'4 sichere Geld-Dreierreihen · 20 Symbole = 1.000 🪙 (30 %)',theme:'gold'}),
-  Object.freeze({id:'tic_tac_toe',tier:'medium',icon:'⭕',name:'DOG Tic-Tac-Toe',subtitle:'Duell · 9 Felder',rule:'Zuerst 1×–5×, dann Kreis oder Kreuz, danach 3×3-Duell',theme:'tictac'}),
+  Object.freeze({id:'tic_tac_toe',tier:'medium',icon:'⭕',name:'DOG Tic-Tac-Toe',subtitle:'Duell · 9 Felder',rule:'Multiplikator → Gewinnzeichen → Gewinnsymbol unten → 3×3-Feld',theme:'tictac'}),
   Object.freeze({id:'number_one_20',tier:'medium',icon:'🔢',name:'Glückszahl 1',subtitle:'Zahlenlos · 20 × 2',rule:'Beide Spalten rubbeln · jede 1 gewinnt links',theme:'number20'}),
   Object.freeze({id:'dog_jackpot_9',tier:'premium',icon:'🐾',name:'Finde DOG!',subtitle:'DOG-Jackpot · 9 Felder',rule:'DOG finden = alle 8 Preisfelder gewinnen',theme:'dogjackpot'})
 ]);
 const VARIANTS={
   number_one_20:['🔢 Die Glückszahl 1','20 Reihen mit zwei Rubbelspalten. Links das verdeckte Gewinnsymbol, rechts die verdeckte Zahl. Nur eine 1 gewinnt den Preis derselben Reihe.',20,2],
   dog_jackpot_9:['🐾 Finde DOG!','Neun verdeckte Felder. Ein DOG-Symbol gewinnt alle acht übrigen Preise, ohne DOG ist das Los eine Niete.',3,3],
-  tic_tac_toe:['🎯 DOG Tic-Tac-Toe','Zuerst Multiplikator (1–5×), dann Kreis oder Kreuz aufrubbeln. Eine passende Dreierlinie gewinnt einen Symbolpreis × Multiplikator.',3,3],
+  tic_tac_toe:['🎯 DOG Tic-Tac-Toe','Erst Faktor, dann ◯/✕, dann das Gewinnsymbol ganz unten und danach das 3×3-Spielfeld aufrubbeln. Eine passende Linie gewinnt das Gewinnsymbol × Multiplikator.',3,3],
  premium_27:['🎅 Premium-Weihnachts-Rubbellos','Mindestens 4 Geld-Dreierreihen sind garantiert. Je 3 gleiche Geldsymbole waagerecht gewinnen. 20 echte Symbole bringen 1.000 Zusatzmünzen; ab 24 ist eine Freischaltung möglich.',9,3],
  gifts:['🎁 Geschenkelinie','Drei gleiche Gewinnsymbole in einer Reihe, Spalte oder Diagonale',3,3],
  snow:['❄️ Schneeflocken-Bingo (älteres Los)','Vier gleiche Symbole in einer Reihe, Spalte oder Diagonale',4,4],
@@ -1072,12 +1072,13 @@ export function initChristmasScratch(){
   cell.style.setProperty('box-sizing','border-box','important');
  }
  // Pixel coordinates calibrated on the approved 1086 × 1448 DOG artwork.
- // First two fields are multiplier + winning sign, followed by nine cells.
+ // Multiplier, winning sign, separate prize at the bottom, then nine board tiles.
  // Every hitbox is independent, never an approximate 3x3 CSS grid.
  const DUEL_ART_W=1086,DUEL_ART_H=1448;
  const DUEL_HITBOXES=Object.freeze([
   [325,290,412,85], // 1x–5x multiplier
   [434,482,192,88], // winning Circle/Cross
+  [324,1242,438,72], // separate prize symbol at bottom of card
   [262,647,137,150],[414,647,137,150],[568,647,134,150],
   [262,811,137,154],[414,811,137,154],[568,811,134,154],
   [262,974,137,150],[414,974,137,150],[568,974,134,150]
@@ -1092,30 +1093,32 @@ export function initChristmasScratch(){
  }
  function makeDuelTile(value,index){
   const cell=el('div','scratch-field scratch-duel-tile '+(index===0?'scratch-duel-multiplier':
-   index===1?'scratch-duel-winning-symbol':'scratch-duel-board-cell'));
+   index===1?'scratch-duel-winning-symbol':index===2?'scratch-duel-prize-symbol':'scratch-duel-board-cell'));
   applyDuelArtGeometry(cell,index);
   cell.append(el('span','scratch-cell-symbol',value));
   cell.setAttribute('aria-label',index===0?'Multiplikator aufrubbeln':
-   index===1?'Gewinnsymbol aufrubbeln':'Spielfeld '+(index-1)+' aufrubbeln');
+   index===1?'Gewinnzeichen aufrubbeln':index===2?'Gewinnsymbol unten aufrubbeln':
+   'Spielfeld '+(index-2)+' aufrubbeln');
   return cell;
  }
  function attachDuelCovers(){
   const cells=[...board.querySelectorAll('.scratch-duel-tile')];
-  if(cells.length!==11)throw Error('TIC_DUEL_FIELDS_MISSING');
+  if(cells.length!==12)throw Error('TIC_DUEL_FIELDS_MISSING');
   let phase=0,uncovered=0;
   const canvases=[];
   const instructions=[
    '① Rubbele den Gewinnmultiplikator oben frei (1× bis 5×)',
-   '② Rubbele Kreis oder Kreuz als Gewinnsymbol frei',
-   '③ Rubbele die neun Spielfelder frei. Drei passende Zeichen in einer Linie gewinnen!'
+   '② Rubbele Kreis oder Kreuz als Gewinnzeichen frei',
+   '③ Rubbele ganz unten das Gewinnsymbol frei: Das ist dein möglicher Preis',
+   '④ Rubbele die neun Spielfelder frei. Drei passende Zeichen in einer Linie gewinnen!'
   ];
   const update=()=>{
    if(finished)return;
-   setScratchProgress(Math.round(uncovered/11*100));
-   $('scratch-progress').textContent=instructions[Math.min(phase,2)]+' · '+uncovered+'/11';
+   setScratchProgress(Math.round(uncovered/12*100));
+   $('scratch-progress').textContent=instructions[Math.min(phase,3)]+' · '+uncovered+'/12';
    for(const [i,cv] of canvases.entries()){
     const allowed=!cells[i].classList.contains('uncovered')&&
-     (phase===0?i===0:phase===1?i===1:i>=2);
+     (phase===0?i===0:phase===1?i===1:phase===2?i===2:i>=3);
     cv.style.pointerEvents=allowed?'auto':'none';
     cv.tabIndex=allowed?0:-1;
     cv.setAttribute('aria-disabled',String(!allowed));
@@ -1123,12 +1126,12 @@ export function initChristmasScratch(){
   };
   const revealOne=i=>{
    if(finished||cells[i].classList.contains('uncovered')||
-    (phase===0&&i!==0)||(phase===1&&i!==1)||(phase===2&&i<2))return;
+    (phase===0&&i!==0)||(phase===1&&i!==1)||(phase===2&&i!==2)||(phase===3&&i<3))return;
    const cv=canvases[i];cv.getContext('2d').clearRect(0,0,cv.width,cv.height);
    cv.hidden=true;cells[i].classList.add('uncovered');uncovered++;
-   if(i===0)phase=1;else if(i===1)phase=2;
+   if(i===0)phase=1;else if(i===1)phase=2;else if(i===2)phase=3;
    update();
-   if(uncovered===11)finish();
+   if(uncovered===12)finish();
   };
   for(const [i,cell] of cells.entries()){
    const rect=cell.getBoundingClientRect();
@@ -1170,7 +1173,7 @@ export function initChristmasScratch(){
     if(total&&clear/total>=.58)revealOne(i);
    };
    cv.addEventListener('pointerdown',e=>{
-    if(finished||(phase===0&&i!==0)||(phase===1&&i!==1)||(phase===2&&i<2))return;
+    if(finished||(phase===0&&i!==0)||(phase===1&&i!==1)||(phase===2&&i!==2)||(phase===3&&i<3))return;
     active=e.pointerId;last=null;cv.setPointerCapture?.(e.pointerId);stroke(e);
    });
    cv.addEventListener('pointermove',stroke);
@@ -1186,7 +1189,7 @@ export function initChristmasScratch(){
   update();
  }
  function makeField(symbol,index=0){
-  if(stage.dataset.duelVersion==='8')return makeDuelTile(symbol,index+2);
+  if(stage.dataset.duelVersion==='8')return makeDuelTile(symbol,index+3);
   const cell=el('div','scratch-field');
   if(stage.dataset.variant==='number_one_20'){
    const numberField=index%2===1;
@@ -1610,7 +1613,7 @@ export function initChristmasScratch(){
    result.board?.variantId==='dog_jackpot_9'?
     'Neun Felder: Wird DOG aufgedeckt, gehören dir die Preise aller acht übrigen Felder. '+symbolLegend(result.tier,coinAmountsFor(result.tier,'dog_jackpot_9',result))+' · 🎁 Freischaltung. Ohne DOG: Niete.':
    result.board?.variantId==='tic_tac_toe'&&result.board?.symbolVersion===8?
-    'Zuerst 1×–'+(result.board?.maxMultiplier??5)+'× aufrubbeln, dann ◯ oder ✕. Danach alle neun Felder öffnen. Eine Dreierlinie aus dem Gewinnsymbol gewinnt EINEN zufälligen Symbolpreis × Multiplikator; Geschenke geben höchstens eine Freischaltung, sonst '+num(result.board?.giftFallbackCoins??1500)+' Münzen × Multiplikator.':
+    'Zuerst 1×–'+(result.board?.maxMultiplier??5)+'× aufrubbeln, dann ◯ oder ✕ als Gewinnzeichen, danach das Gewinnsymbol ganz unten und zuletzt alle neun Spielfelder. Eine Dreierlinie aus dem Gewinnzeichen gewinnt EINEN Preis des unteren Gewinnsymbols × Multiplikator; Geschenke geben höchstens eine Freischaltung, sonst '+num(result.board?.giftFallbackCoins??1500)+' Münzen × Multiplikator.':
    result.board?.variantId==='tic_tac_toe'?
     '🪙 200 · 💵 450 · 💼 800 Münzen je Dreierreihe · 🎁 Premium-Freischaltung. 2 Linien +250 · 3+ Linien +800 · Koffer in der Mitte +300 · Goldenes X +1.000 · 4 gleiche Ecken +400 · 9 gleiche Felder +20.000. Zwei Geschenke ergeben einen Geschenkfunken.':
    result.board?.variantId==='premium_27'&&result.board?.symbolVersion===5?
@@ -1633,7 +1636,7 @@ export function initChristmasScratch(){
     result.board?.variantId==='dog_jackpot_9'?
     '🐾 DOG = alle acht Preise · '+symbolLegend(result.tier,coinAmountsFor(result.tier,'dog_jackpot_9',result))+' · 🎁 Freischaltung':
     result.board?.variantId==='tic_tac_toe'&&result.board?.symbolVersion===8?
-    '◯ oder ✕ · 1×–'+(result.board?.maxMultiplier??5)+'× · 8 mögliche Linien · EIN Symbolgewinn × Multiplikator · '+symbolLegend(result.tier,coinAmountsFor(result.tier,'tic_tac_toe',result)):
+    '◯ oder ✕ · 1×–'+(result.board?.maxMultiplier??5)+'× · Gewinnsymbol unten · 8 mögliche Linien · EIN Symbolgewinn × Multiplikator · '+symbolLegend(result.tier,coinAmountsFor(result.tier,'tic_tac_toe',result)):
     result.board?.variantId==='tic_tac_toe'?
     '🪙 200 · 💵 450 · 💼 800 · 🎁 Premium · 8 mögliche Gewinnlinien':
     symbolLegend(result.tier,coinAmountsFor(result.tier,result.board?.variantId,result))}
@@ -1661,25 +1664,38 @@ export function initChristmasScratch(){
      margin:'0',padding:'0',gap:'0',
      'grid-template-columns':'none','grid-template-rows':'none'
     }))board.style.setProperty(name,value,'important');
-    // The extra ✖️2 badge and prize symbol share the winning-sign field.
-    // Neither bonus is printed on an unrelated 3×3 circle/cross tile.
-    const winningTile=makeDuelTile(result.board.winningSymbol,1);
-    if(result.board.prizeSymbol){
-     const prizeIcon=el('span','scratch-duel-prize-symbol',result.board.prizeSymbol);
-     prizeIcon.setAttribute('title','Möglicher Gewinn bei passender Dreierlinie');
-     prizeIcon.setAttribute('aria-label','Gewinnsymbol: '+result.board.prizeSymbol);
-     winningTile.append(prizeIcon);
+    // Sign and prize are covered separately. Existing server winnings remain intact.
+    const prizeZone=el('div','scratch-duel-prize-zone');
+    prizeZone.setAttribute('aria-hidden','true');
+    prizeZone.append(el('strong','scratch-duel-prize-heading','③ DEIN GEWINNSYMBOL'));
+    const boardHeading=el('div','scratch-duel-board-heading','④ DAS SPIELFELD');
+    boardHeading.setAttribute('aria-hidden','true');
+    const rules=el('div','scratch-duel-rules-panel');
+    rules.setAttribute('aria-hidden','true');
+    rules.append(el('strong','scratch-duel-rules-heading','SO SPIELST DU!'));
+    for(const [number,title,note] of [
+     ['01','FAKTOR','1× BIS 5×'],['02','ZEICHEN','◯ ODER ✕'],
+     ['03','GEWINNSYMBOL','UNTEN FREIRUBBELN'],
+     ['04','SPIELFELD','9 FELDER'],['05','GEWINN','3 IN EINER LINIE']
+    ]){
+     const step=el('div','scratch-duel-rule-step');
+     step.append(el('b','scratch-duel-rule-number',number));
+     const detail=el('span','scratch-duel-rule-detail');
+     detail.append(el('b','',title),el('small','',note));
+     step.append(detail);rules.append(step);
     }
+    const winningTile=makeDuelTile(result.board.winningSymbol,1);
+    const prizeTile=makeDuelTile(result.board.prizeSymbol||'?',2);
+    prizeTile.title='Dieses Symbol gewinnst du bei einer passenden Dreierlinie';
     if(result.doubleWin){
-     winningTile.classList.add('scratch-has-double-award');
+     prizeTile.classList.add('scratch-has-double-award');
      const doubleIcon=el('span','scratch-duel-double-badge','✖️2');
      doubleIcon.setAttribute('title','Dieser Gewinn wird zusätzlich verdoppelt');
      doubleIcon.setAttribute('aria-label','Zusätzlicher Gewinn mal zwei');
-     winningTile.append(doubleIcon);
+     prizeTile.append(doubleIcon);
     }
-    board.append(makeDuelTile(String(result.board.multiplier)+'×',0),winningTile);
-   }
-   const giftsStickerIndex=giftsDoubledSymbolIndex(result);
+    board.append(prizeZone,boardHeading,rules,makeDuelTile(String(result.board.multiplier)+'×',0),winningTile,prizeTile);
+    const giftsStickerIndex=giftsDoubledSymbolIndex(result);
    for(const [index,symbol] of cells.entries()){
     const field=makeField(symbol,index);
     if(stage.dataset.variant==='gifts'&&giftsStickerIndex===index){
@@ -1831,7 +1847,7 @@ export function initChristmasScratch(){
    const goldIndices=stage.dataset.variant==='premium_27'?
     premiumWinningRowIndices(wins):
     [...new Set(wins.flatMap(win=>Array.isArray(win?.indices)?win.indices:[]))];
-   const duelOffset=stage.dataset.duelVersion==='8'?2:0;
+   const duelOffset=stage.dataset.duelVersion==='8'?3:0;
    for(const i of goldIndices)visibleCells[i+duelOffset]?.classList.add('scratch-winning-cell');
    if(stage.dataset.variant==='dog_jackpot_9'&&wins.length){
     const dogIndex=current.board.cells.indexOf('DOG');
