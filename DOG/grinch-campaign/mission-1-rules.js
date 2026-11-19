@@ -81,8 +81,14 @@ function assignLosses(seed){return shuffle(LOSS_TYPES,seeded(seed+77));}
 export function newGame(seed=Math.floor(Math.random()*2147483647),names=LABELS){
  const rng=seeded(seed);
  const s={
-  version:4,mission:MISSION_1.id,seed,players:LABELS.map((name,seat)=>({seat,name:String(names[seat]||name).slice(0,25),lossType:assignLosses(seed)[seat],lost:false,moves:0})),
-  pieces:Array.from({length:15},(_,i)=>({id:'p'+i,seat:Math.floor(i/5),place:'home',steps:-1})),
+  version:5,mission:MISSION_1.id,seed,players:LABELS.map((name,seat)=>({seat,name:String(names[seat]||name).slice(0,25),lossType:assignLosses(seed)[seat],lost:false,moves:0})),
+  // Figure 5 of EVERY player is genuinely in play from the opening move.
+  // Other four begin inside the original four home holes.
+  pieces:Array.from({length:15},(_,i)=>({
+   id:'p'+i,seat:Math.floor(i/5),
+   place:i%5===4?'track':'home',
+   steps:i%5===4?0:-1
+  })),
   current:0,turn:0,round:0,draw:deck(rng),discard:[],hands:[[],[],[]],seven:null,history:[],complete:false,revision:0,lastEvent:null,effects:[],
  };
  refill(s);
@@ -289,4 +295,4 @@ export function status(s){return s.players.map(info=>({
  track:s.pieces.filter(p=>p.seat===info.seat&&p.place==='track').length,
  teleported:s.pieces.filter(p=>p.seat===info.seat&&p.place==='teleported').length
 }));}
-export function validateSaved(x){return !!x&&x.version===4&&x.mission===1&&Array.isArray(x.players)&&x.players.length===3&&Array.isArray(x.pieces)&&x.pieces.length===15&&Array.isArray(x.hands)&&x.hands.length===3&&Number.isInteger(x.current)&&x.current>=0&&x.current<3&&x.pieces.every(p=>['home','track','teleported','lost'].includes(p.place));}
+export function validateSaved(x){return !!x&&x.version===5&&x.mission===1&&Array.isArray(x.players)&&x.players.length===3&&Array.isArray(x.pieces)&&x.pieces.length===15&&Array.isArray(x.hands)&&x.hands.length===3&&Number.isInteger(x.current)&&x.current>=0&&x.current<3&&x.pieces.every(p=>['home','track','teleported','lost'].includes(p.place));}
