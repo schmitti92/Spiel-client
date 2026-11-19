@@ -11,8 +11,8 @@
  */
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField} from '../board-layout.js?v=11';
 import {resolveAppearance,loadAppearance,validAssetPath} from '../appearance-registry.js?v=27';
-import {pieceCoord} from './mission-1-rules.js?v=3';
-import {pathfinderBoardMarkup} from './mission-1-pathfinder.js?v=2';
+import {pieceCoord} from './mission-1-rules.js?v=4';
+import {pathfinderBoardMarkup} from './mission-1-pathfinder.js?v=4';
 export const CLASSIC_TRACK_LENGTH=64;
 export const MISSION_BOARD_SEATS=Object.freeze([0,1,3]); // Rot, Blau, Gelb
 const coord=p=>Number(p.x).toFixed(2)+','+Number(p.y).toFixed(2);
@@ -25,7 +25,7 @@ export function drawClassicMissionBoard(boardSvg,game,{selectedPiece=null,onPiec
  const palette=look.pieces.colors;
  const safeColor=seat=>palette[seat]||palette[0];
  const board=[],push=part=>board.push(part);
-  push('<title>DOG Klassisch – 64 Lauffelder, 4 geschützte Startfelder und 4 Zielbahnen</title>');
+  push('<title>Grinch-Mission 1: Originale 64 DOG-Lauffelder und drei einzelne Portal-Zielfelder</title>');
   push('<defs>'+
     '<linearGradient id="dog-wood" x1="0" y1="0" x2="1" y2="1"><stop stop-color="'+skin.wood[0]+'"/><stop offset=".22" stop-color="'+skin.wood[1]+'"/><stop offset=".44" stop-color="'+skin.wood[2]+'"/><stop offset=".7" stop-color="'+skin.wood[3]+'"/><stop offset="1" stop-color="'+skin.wood[4]+'"/></linearGradient>'+
     '<radialGradient id="dog-blue" cx=".42" cy=".34" r=".88"><stop stop-color="'+skin.surface[0]+'"/><stop offset=".56" stop-color="'+skin.surface[1]+'"/><stop offset="1" stop-color="'+skin.surface[2]+'"/></radialGradient>'+
@@ -51,6 +51,9 @@ export function drawClassicMissionBoard(boardSvg,game,{selectedPiece=null,onPiec
     push('<image href="'+resolveImage(skin.fallbackImage)+'" x="0" y="0" width="760" height="760" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>');
   if(validAssetPath(skin.image))
     push('<image href="'+resolveImage(skin.image)+'" x="0" y="0" width="760" height="760" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>');
+  // Uploaded 1254px winter art, exclusively in this campaign renderer.
+  // Place it ABOVE the selected classic theme but BELOW all 64 live DOG fields.
+  push('<image href="./winterliches_portal_im_alpenreich.png" x="0" y="0" width="760" height="760" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>');
   push('<rect x="35" y="35" width="690" height="690" rx="25" fill="url(#dog-speckle)"/>');
   push('<rect x="41" y="41" width="678" height="678" rx="20" fill="none" stroke="'+skin.edge+'" stroke-opacity=".27" stroke-width="1.5"/>');
   // The course makes a single uninterrupted 64-step circuit. Start indices are
@@ -62,36 +65,27 @@ export function drawClassicMissionBoard(boardSvg,game,{selectedPiece=null,onPiec
   for(let seat=0;seat<4;seat++){
     const c=safeColor(seat),start=boardPoint(seat*16);
     const goal=GOAL_POINTS[seat],home=HOME_POINTS[seat];
-    const gps=goal.map(coord).join(' '),hps=home.map(coord).join(' ');
-    push('<polyline points="'+gps+'" fill="none" stroke="'+c+'" stroke-opacity=".23" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>');
+    const hps=home.map(coord).join(' ');
+    // Home positions remain exactly the same as classic DOG, including green.
     push('<polyline points="'+hps+'" fill="none" stroke="'+c+'" stroke-opacity=".15" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>');
-    push('<polyline points="'+gps+'" fill="none" stroke="'+c+'" stroke-opacity=".66" stroke-width="2.5" stroke-linecap="round"/>');
     push('<polyline points="'+hps+'" fill="none" stroke="'+c+'" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/>');
-    // Zielbahn beginnt am farbigen Startfeld, nicht am Ringfeld davor.
-    // Der Figuren-Zug muss das Startfeld auf dem Weg zum Ziel überqueren.
-    const goalEntry=boardPoint(seat*16);
-    push('<path d="M '+coord(goalEntry)+' L '+coord(goal[0])+'" stroke="'+c+'" stroke-width="2.8" stroke-dasharray="6 4" opacity=".76"/>');
     push('<path d="M '+coord(start)+' L '+coord(home[0])+'" stroke="'+c+'" stroke-width="2.1" stroke-dasharray="3 7" opacity=".62"/>');
     for(let j=0;j<4;j++){
       const p=home[j];
       push('<circle cx="'+p.x+'" cy="'+p.y+'" r="17.1" fill="#041629" stroke="'+c+'" stroke-opacity=".7" stroke-width="1.5"/>');
       push('<circle cx="'+p.x+'" cy="'+p.y+'" r="11.7" fill="#164066" opacity=".6"/>');
     }
-    // White goal holes with a prominent outline in the owner's player color.
-    // Keep the approved coordinates and hit areas unchanged.
-    for(let j=0;j<4;j++){
-      const p=goal[j];
-      push('<circle cx="'+p.x+'" cy="'+(p.y+2.1)+'" r="17.45" fill="#061423" fill-opacity=".78" pointer-events="none"/>');
-      push('<circle class="dog-goal-hole" cx="'+p.x+'" cy="'+p.y+'" r="17.1" fill="url(#dog-hole)" stroke="'+c+'" stroke-width="1.9" pointer-events="none"/>');
-      push('<circle cx="'+(p.x-4)+'" cy="'+(p.y-5)+'" r="4.4" fill="#ffffff" fill-opacity=".66" pointer-events="none"/>');
+    // In this mission ONLY the first original goal is a reusable portal.
+    // The three former inner goal holes are intentionally not drawn.
+    if(MISSION_BOARD_SEATS.includes(seat)){
+      const p=goal[0];
+      push('<path d="M '+coord(start)+' L '+coord(p)+'" stroke="'+c+'" stroke-width="2.8" stroke-dasharray="6 4" opacity=".68"/>');
+      push('<circle class="dog-goal-hole" cx="'+p.x+'" cy="'+p.y+'" r="17.1" fill="#075846" stroke="'+c+'" stroke-width="2.4" pointer-events="none"/>');
     }
-    const labelGoal=goal[2],labelHome=home[2];
-    push('<text x="'+labelGoal.x+'" y="'+(labelGoal.y+28)+'" text-anchor="middle" fill="'+c+'" font-size="10" font-weight="850" letter-spacing=".8">ZIEL</text>');
+    const labelHome=home[2];
     push('<text x="'+labelHome.x+'" y="'+(labelHome.y+28)+'" text-anchor="middle" fill="'+c+'" font-size="10" font-weight="850" letter-spacing=".8">START</text>');
   }
-  // Shared transparent DOG crest. This artwork is purely decorative and
-  // never changes the approved track/goal/home coordinates or game rules.
-  push('<image href="../Bilder/Wappen/dog-wappen.png" x="283" y="283" width="194" height="194" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>');
+  // No DOG crest for Mission 1: the uploaded center artwork is the world-2 entrance.
   // Carved white holes, exactly sixty unprotected plus four tinted starts.
   for(let i=0;i<64;i++){
     const {x,y}=boardPoint(i),start=isStartField(i),seat=i/16|0;
@@ -108,15 +102,13 @@ export function drawClassicMissionBoard(boardSvg,game,{selectedPiece=null,onPiec
  // New mission-specific pathfinding details are appended above the unchanged
  // classic holes and below the pawns. No original SVG coordinates move.
  push(pathfinderBoardMarkup(game,{track:TRACK_POINTS,goals:GOAL_POINTS,colors:palette}));
- // Mission-only effects can be layered here; the underlying original track,
- // four protected starts, four goal lanes and home geometry stay untouched.
+ // Mission-specific overlays remain passive; normal DOG uses its original renderer.
  for(const piece of game.pieces){
-  if(piece.place==='lost')continue;
+  if(piece.place==='lost'||piece.place==='teleported')continue;
   const owner=MISSION_BOARD_SEATS[piece.seat];
   if(!Number.isInteger(owner))continue;
   let p;
   if(piece.place==='track')p=trackPoint(pieceCoord(piece));
-  else if(piece.place==='goal')p=goalPoint(owner,pieceCoord(piece));
   else{
     // Five pieces fit the standard 4-hole reserve by visually stacking the
     // fifth pawn near the first hole. NO fifth home/goal field is invented.
