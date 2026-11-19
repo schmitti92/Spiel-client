@@ -531,11 +531,11 @@
 }
 /* Separate focal illustration and 3D metallic scratch grid. */
 #panel-scratch #scratch-tier-grid .scratch-tier .scratch-icon{
- top:69px!important;left:3%!important;width:39%!important;height:56px!important;
- max-height:56px!important;min-height:0!important;
+ top:64px!important;left:2%!important;width:43%!important;height:77px!important;
+ max-height:77px!important;min-height:0!important;
  padding:0!important;margin:0!important;border:0!important;
  display:grid!important;place-items:center!important;
- color:#ffe3a3!important;font:900 51px/1 system-ui,sans-serif!important;
+ color:#ffe3a3!important;font:900 61px/1 system-ui,sans-serif!important;
  filter:drop-shadow(0 3px 5px #0009)!important;
  background:radial-gradient(ellipse at center,#fff5a550,transparent 74%)!important;
 }
@@ -551,15 +551,15 @@
  filter:drop-shadow(0 2px 4px #0007)!important;
 }
 #panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-preview{
- top:68px!important;left:auto!important;right:3%!important;
- width:53%!important;height:60px!important;max-height:60px!important;
+ top:69px!important;left:auto!important;right:3%!important;
+ width:52%!important;height:64px!important;max-height:64px!important;
  padding:3px!important;margin:0!important;
  border-radius:6px!important;border:1px solid #fff6cebb!important;
  box-shadow:0 2px 5px #0612228c,inset 0 0 2px #d8f5ff!important;
  gap:2px!important;background:#0911234f!important;transform:none!important;
 }
 #panel-scratch #scratch-tier-grid .scratch-tier[data-variant="premium_27"] .scratch-printed-preview{
- height:60px!important;max-height:60px!important;gap:1px!important;
+ height:64px!important;max-height:64px!important;gap:1px!important;
 }
 #panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-foil{
  min-height:0!important;min-width:0!important;
@@ -573,7 +573,7 @@
  border-radius:50%!important;
 }
 #panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-brief{
- top:128px!important;left:4%!important;right:4%!important;
+ top:134px!important;left:45%!important;right:3%!important;
  width:auto!important;height:13px!important;max-height:13px!important;min-height:0!important;
  padding:0 3px!important;display:block!important;margin:0!important;overflow:hidden!important;
  text-align:center!important;
