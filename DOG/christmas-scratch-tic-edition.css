@@ -1,0 +1,64 @@
+/* DOG Tic-Tac-Toe 500-ticket studio. Mobile safe, never overlays gameplay. */
+#scratch-tic-edition-dialog{
+ border-color:#f6cd88;
+ background:radial-gradient(ellipse at 95% 0%,#174842 0%,transparent 45%),
+  linear-gradient(155deg,#391425,#182d35 55%,#103d37);
+ color:#fff1d6;
+}
+#scratch-tic-edition-dialog .scratch-gifts-settings-head{border-color:#e8bc7580}
+#scratch-tic-edition-dialog .scratch-gifts-eyebrow,
+#scratch-tic-edition-dialog .scratch-gifts-settings-head h3,
+#scratch-tic-edition-dialog .scratch-gifts-settings-section h4{color:#ffe3a5}
+#scratch-tic-edition-dialog .scratch-gifts-settings-section{
+ border:1px solid #f1ca814f;background:#092d33bd
+}
+#scratch-tic-edition-dialog .scratch-gifts-field{
+ border-color:#dfbe7966;background:#102d3bcf
+}
+#scratch-tic-edition-dialog .scratch-gifts-field select{
+ width:100%;min-height:42px;padding:8px 12px;border:1px solid #9db1ba;
+ border-radius:9px;color:#123139;background:#eff7fd;font-size:17px;font-weight:800;
+}
+#scratch-tic-edition-dialog .scratch-gifts-auto{
+ border-color:#d3b16a9c;background:linear-gradient(145deg,#15463f,#183643);
+}
+#scratch-tic-edition-dialog #tic-weights-summary.is-invalid{
+ border-color:#ff8b91;background:#542931;
+}
+#scratch-tic-edition-dialog #tic-edition-create{
+ background:linear-gradient(145deg,#ffedb6,#c99541);color:#2e2110
+}
+#scratch-tic-edition-dialog #tic-edition-edit:not([hidden]){
+ margin-top:9px;background:linear-gradient(145deg,#285941,#163b34);
+ color:#ffe5a7;border:1px solid #ffe1a1;
+}
+#scratch-tic-edition-dialog #tic-edition-edit[hidden]{display:none!important}
+#scratch-tic-edition-dialog #tic-edition-create:disabled,
+#scratch-tic-edition-dialog #tic-edition-edit:disabled{opacity:.55;cursor:not-allowed}
+#scratch-tic-edition-dialog #scratch-tic-edition-close{
+ flex:none;min-width:38px;min-height:38px;padding:7px 10px;
+ border:1px solid #f9d89b;border-radius:10px;
+ background:#472534;color:#ffefcd;font-size:17px;cursor:pointer;
+}
+#scratch-tic-edition-dialog #scratch-tic-edition-cancel{
+ background:#183e45;color:#ffeacf;border:1px solid #d8ba82;
+}
+#panel-scratch .scratch-variant-tictac .scratch-tic-card-settings{
+ z-index:155!important;top:8px;right:10px;
+ border-color:#ffdd95!important;
+ background:linear-gradient(135deg,#7b2835,#a8652e)!important;
+ color:#fff3cd!important;
+}
+#panel-scratch .scratch-variant-tictac .scratch-card-names{padding-right:105px}
+#panel-scratch .scratch-tier.scratch-variant-tictac .scratch-gifts-edition-chip{
+ border-color:#dcb56f;background:linear-gradient(135deg,#5b2436,#103f3b);color:#ffe9bb;
+}
+@media(max-width:620px){
+ #scratch-tic-edition-dialog{width:calc(100vw - 10px);max-height:calc(100dvh - 10px)}
+ #scratch-tic-edition-dialog .scratch-gifts-settings-head h3{font-size:22px}
+ #scratch-tic-edition-dialog .scratch-gifts-settings-grid{grid-template-columns:minmax(0,1fr)}
+ #scratch-tic-edition-dialog .scratch-gifts-settings-section{padding:9px}
+ #panel-scratch .scratch-variant-tictac .scratch-tic-card-settings{
+  top:5px;right:5px;min-height:30px;padding:5px 8px;font-size:11px;
+ }
+}
