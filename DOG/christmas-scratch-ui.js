@@ -129,9 +129,11 @@ export function initChristmasScratch(){
   $('scratch-zoom-out').disabled=zoomScale<=1.001;
   $('scratch-zoom-in').disabled=zoomScale>=3.49;
  };
- const setZoom=(next,{pan=true}={})=>{
+ const setZoom=(next,{pan=false}={})=>{
   zoomScale=clamp(next,1,3.5);
-  if(zoomScale===1){zoomX=0;zoomY=0}
+  if(zoomScale===1){zoomX=0;zoomY=0;zoomPanMode=false}
+  // Zoom buttons leave one-finger scratching enabled. Use the hand toggle
+  // for one-finger panning; two-finger pinch works in either mode.
   if(pan&&zoomScale>1)zoomPanMode=true;
   syncZoom();
  };
