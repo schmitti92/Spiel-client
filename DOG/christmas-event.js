@@ -535,6 +535,12 @@ function showPanel(id,{updateHistory=true}={}){
   tab.tabIndex=active?0:-1;
   panel.hidden=!active;
  }
+ // Full-screen scratch tickets suppress document scrolling. A tab switch must
+ // restore body scrolling, otherwise the tall Grinch campaign cannot scroll.
+ // Preserve any unfinished ticket and restore its lock only on re-entering.
+ const scratchStage=$('scratch-stage');
+ const activeTicket=id==='scratch'&&!!scratchStage&&!scratchStage.hidden;
+ document.body.classList.toggle('scratch-ticket-open',activeTicket);
  if(updateHistory&&location.hash!=='#'+id)history.replaceState(null,'','#'+id);
  if(id==='tree'){centerTreeMilestone();void treePrizeScreen?.load();}
  if(id==='story'){
