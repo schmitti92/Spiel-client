@@ -1,0 +1,25 @@
+name: DOG All Editions UI
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/christmas-other-edition-ui.js'
+      - 'DOG/christmas-scratch-other-edition.css'
+      - 'DOG/christmas-scratch-ui.js'
+      - 'DOG/christmas-event.html'
+      - 'DOG/christmas-event.js'
+      - 'tests/dog-christmas-scratch-ui.test.mjs'
+      - '.github/workflows/dog-all-editions-ui.yml'
+  workflow_dispatch:
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/christmas-other-edition-ui.js
+      - run: node --check DOG/christmas-scratch-ui.js
+      - run: node --check DOG/christmas-event.js
+      - run: node --test tests/dog-christmas-scratch-ui.test.mjs
