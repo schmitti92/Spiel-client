@@ -439,7 +439,13 @@ export function initChristmasScratch(){
     (!otherStudio.get(option.id)||otherStudio.get(option.id).remaining>0);
    const unlockChance=Number.isInteger(variantConfig?.weights?.unlock)?
     percent(variantConfig.weights.unlock):tier.unlockChance;
-   const unlocksLeft=status?.pools?.[option.tier]?.remaining;
+   const editionCategory=option.id==='gifts'?giftsEdition?.prizeCategory:
+    option.id==='snow_collect'?snowEdition?.prizeCategory:
+    option.id==='tic_tac_toe'?ticEdition?.config?.prizeCategory:
+    otherStudio.get(option.id)?.config?.prizeCategory;
+   const tierForUnlock=editionCategory===1?'simple':editionCategory===2?'medium':
+    editionCategory===3?'premium':option.tier;
+   const unlocksLeft=status?.pools?.[tierForUnlock]?.remaining;
    const chanceText=option.id==='number_one_20'?'🔢 '+Number((lucky?.hitPer1000??100)/10).toLocaleString('de-DE')+' % Trefferchance pro Reihe':
     option.id==='dog_jackpot_9'?'🐾 35 % Chance auf alle Preise':
     option.id==='tic_tac_toe'?'◯ oder ✕ · 8 Gewinnlinien · 🎁 '+getPrizeCategoryLabel(ticEdition?.config?.prizeCategory??2):
@@ -490,6 +496,10 @@ export function initChristmasScratch(){
    const details=el('div','scratch-card-brief');
    details.append(el('span','scratch-card-rule',visibleRule),
     el('span','scratch-card-chance',chanceText));
+   if([1,2,3].includes(editionCategory))
+    details.append(el('span','scratch-card-chance',
+     '🎁 Gewinnkategorie '+editionCategory+' · '+
+     (editionCategory===1?'Einfach':editionCategory===2?'Mittel':'Premium')));
    if(['gifts','snow_collect'].includes(option.id)&&variantConfig){
     details.append(el('span','scratch-card-chance',
      '⭐ Lichtbonus: '+percent(variantConfig.lightChancePer1000??100)+' % · '+
