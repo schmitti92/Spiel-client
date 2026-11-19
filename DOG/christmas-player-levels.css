@@ -1,44 +1,118 @@
-/* Personal DOG player levels – lightweight read-only progression. */
-.dog-level-shell{display:flex;flex-direction:column;gap:16px}
-.dog-level-hero{border:2px solid #d4a75d;border-radius:18px;padding:clamp(16px,2.5vw,28px);background:radial-gradient(circle at 13% 9%,#8166354d,transparent 36%),linear-gradient(140deg,#0a4034,#09262a 65%,#1a2e38);box-shadow:0 12px 30px #0007}
-.dog-level-hero-head{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}
-.dog-level-hero h3{font:900 clamp(22px,3vw,32px) Georgia,serif;color:#ffe2a0;margin:6px 0}
-.dog-level-hero p{margin:0;color:#d6e4db;line-height:1.45;font-size:13px}
-.dog-level-refresh{background:#235143;border:1px solid #dbbd84;color:#fff0c6;border-radius:10px;padding:10px 14px;font-weight:850;cursor:pointer}
-.dog-level-refresh:disabled{opacity:.55}
-.dog-level-overview{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:clamp(16px,3vw,32px);margin-top:22px}
-.dog-level-medallion{width:clamp(95px,14vw,140px);height:clamp(95px,14vw,140px);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 23%,#fff0af,#e3bb69 55%,#88622c);border:5px ridge #ffe6a1;box-shadow:0 0 28px #eec5684c,inset 0 0 8px #5d3d28;color:#3e2a1c}
-.dog-level-medallion strong{font:900 clamp(43px,6vw,66px) Georgia,serif;line-height:1}
-.dog-level-medallion span{font-size:10px;letter-spacing:1.4px;font-weight:900}
-.dog-level-xp-data{min-width:0}
-.dog-level-xp-data>strong{display:block;color:#ffe8ad;font-size:clamp(18px,2vw,24px);margin-bottom:6px}
-.dog-level-xp-data>small{display:block;color:#c3e1d7;margin:8px 0}
-.dog-level-xp-meter{width:100%;height:18px;border-radius:999px;overflow:hidden;border:1px solid #e5c081;background:#142f34}
-.dog-level-xp-meter::-webkit-progress-bar{background:#102d32}
-.dog-level-xp-meter::-webkit-progress-value{background:linear-gradient(90deg,#4bc4ac,#c9b76f,#ffe3a0);border-radius:999px}
-.dog-level-xp-meter::-moz-progress-bar{background:linear-gradient(90deg,#4bc4ac,#c9b76f,#ffe3a0);border-radius:999px}
-.dog-level-info-grid{display:flex;gap:14px;flex-wrap:wrap;margin-top:15px;color:#e8ebd1;font-size:13px}
-.dog-level-info-grid>div{background:#ffffff10;border:1px solid #b8cba257;border-radius:9px;padding:9px 13px}
-.dog-level-info-grid strong{color:#ffe3a0}
-.dog-level-rules{border:1px solid #c2a87580;border-radius:14px;background:#153a35;padding:14px 17px;color:#e1e9d9}
-.dog-level-rules h3{margin:0 0 9px;font:800 18px Georgia,serif;color:#ffdf98}
-.dog-level-rules p{font-size:13px;line-height:1.55;margin:0}
-.dog-level-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
-.dog-level-tile{position:relative;min-width:0;border:1px solid #93a7a3;border-radius:15px;padding:15px 11px;background:linear-gradient(#183a39,#0c292b);opacity:.73}
-.dog-level-tile.reached{border-color:#f2cc7e;opacity:1;background:linear-gradient(#36513c,#15392e)}
-.dog-level-tile.current{box-shadow:0 0 0 2px #f8df8c,0 0 22px #e5bd6a45}
-.dog-level-badge{display:grid;place-items:center;width:39px;height:39px;border-radius:50%;background:#334854;color:#fff0cf;border:1px solid #adb7a3;font-weight:950}
-.dog-level-tile.reached .dog-level-badge{background:#d8ad5a;color:#342316;border-color:#ffe8a7}
-.dog-level-tile-head h4{font:800 16px Georgia,serif;color:#f6e5bc;margin:10px 0 3px}
-.dog-level-tile-head small{font-size:11px;color:#bcd7d0}
-.dog-level-threshold{font-size:11px;margin:13px 0 8px;color:#cddbd7}
-.dog-level-reward{font-size:12px;padding:9px 7px;border-radius:9px;border:1px dashed #b69e6c;background:#071f2566;color:#fce0b0;min-height:45px;display:flex;align-items:center}
-.dog-level-status{font-size:13px;color:#e8d69e;min-height:20px}
-.dog-level-status[data-error=true]{color:#ffb99c}
-@media(max-width:1100px){.dog-level-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:650px){.dog-level-overview{grid-template-columns:1fr;justify-items:center;text-align:center}.dog-level-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dog-level-shell{gap:12px}}
-@media(max-width:365px){.dog-level-grid{grid-template-columns:1fr}}
-
-/* Level 1 voucher package CTA */
-.dog-level-starter-claim{width:100%;margin-top:10px;padding:10px 12px;border:1px solid #eec783;border-radius:10px;background:linear-gradient(120deg,#f4d58c,#b77c2f);color:#1c2734;font-weight:900;cursor:pointer}
-.dog-level-starter-claim:disabled{opacity:.62;cursor:wait}
+/* Lichtertal | Goldener 50-Level-Sammlerpass (nur dieser Bereich). */
+.dog-level-shell{display:flex;flex-direction:column;gap:17px;min-width:0;color:#f3e9d0}
+.dog-level-hero{position:relative;overflow:hidden;border:2px solid #deb86f;border-radius:22px;
+ padding:clamp(16px,2.4vw,30px);background:radial-gradient(circle at 14% 7%,#d2ae6255,transparent 34%),
+ radial-gradient(circle at 93% 89%,#438c7850,transparent 40%),
+ linear-gradient(145deg,#183e37 0%,#0b2426 59%,#182c36 100%);
+ box-shadow:inset 0 1px 0 #ffefa264,0 14px 35px #010e0d94,0 0 0 5px #e3c67b12}
+.dog-level-hero:after{content:'✦ ✧ ✦';position:absolute;right:22px;bottom:13px;
+ font-size:22px;letter-spacing:17px;color:#edc77828;pointer-events:none}
+.dog-level-hero-head{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;
+ gap:16px;flex-wrap:wrap}
+.dog-level-hero h3{font:900 clamp(26px,3vw,40px) Georgia,serif;color:#ffe3a1;margin:5px 0;
+ text-shadow:0 2px 11px #573614aa}
+.dog-level-hero p{margin:0;color:#e6e9dc;line-height:1.5;font-size:13px}
+.dog-level-refresh,.dog-level-to-scratch{border:1px solid #f5d996;border-radius:12px;padding:12px 16px;
+ color:#2d2619;font-weight:900;background:linear-gradient(135deg,#ffe5a0,#c69443);cursor:pointer;
+ box-shadow:inset 0 1px 0 #ffffff7b,0 5px 13px #0004;white-space:normal}
+.dog-level-refresh:disabled{opacity:.55;cursor:wait}
+.dog-level-overview{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;
+ gap:clamp(17px,3vw,34px);margin:23px 0 12px}
+.dog-level-medallion{flex:none;width:clamp(105px,14vw,158px);height:clamp(105px,14vw,158px);
+ border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ background:radial-gradient(circle at 30% 15%,#fffbe2 0%,#f5d58b 36%,#be8c42 75%,#765128);
+ border:6px ridge #f8df9d;box-shadow:0 0 0 5px #5b421fc0,0 0 35px #ffda6a74,inset 0 2px 14px #fff6b288;
+ color:#463019;position:relative}
+.dog-level-medallion:before{content:'★';position:absolute;top:-15px;color:#ffe6a6;
+ text-shadow:0 0 12px #ffedaa;font-size:20px}
+.dog-level-medallion strong{font:900 clamp(45px,6.5vw,72px) Georgia,serif;line-height:1}
+.dog-level-medallion span{font-size:10px;letter-spacing:1.3px;font-weight:950;text-align:center}
+.dog-level-xp-data{min-width:0}.dog-level-xp-data>strong{display:block;color:#ffe9ad;
+ font-size:clamp(22px,2.7vw,31px);margin-bottom:7px}
+.dog-level-xp-data>small{display:block;color:#e3e3ca;margin:7px 0;font-size:13px}
+.dog-level-xp-meter{width:100%;height:19px;overflow:hidden;border-radius:999px;
+ border:1px solid #dbb774;background:#091e24}
+.dog-level-xp-meter::-webkit-progress-bar{background:#0a2427}
+.dog-level-xp-meter::-webkit-progress-value{background:linear-gradient(90deg,#55b1a1,#f3c35d,#fff4b7);
+ border-radius:999px;box-shadow:0 0 12px #f8d078}
+.dog-level-xp-meter::-moz-progress-bar{background:linear-gradient(90deg,#55b1a1,#f3c35d,#fff4b7)}
+.dog-level-info-grid{display:flex;flex-wrap:wrap;gap:9px;margin-top:17px;font-size:12px}
+.dog-level-info-grid>div{border:1px solid #e5c8865c;border-radius:11px;padding:10px 12px;
+ background:linear-gradient(110deg,#ffffff12,#ffffff06);min-width:155px}
+.dog-level-info-grid strong{color:#ffe1a2}
+.dog-level-banner{display:flex;align-items:center;gap:13px;flex-wrap:wrap;border:1px solid #bba46c8a;
+ border-radius:15px;padding:13px 17px;
+ background:linear-gradient(100deg,#193e35,#294d43 55%,#17312e);box-shadow:0 6px 18px #0003}
+.dog-level-banner strong{color:#ffe6a3;display:block;margin-bottom:3px;font-size:15px}
+.dog-level-banner small{color:#d6e6dc;font-size:12px}
+.dog-level-banner-copy{flex:1;min-width:190px}
+.dog-level-banner-icon{font-size:32px;filter:drop-shadow(0 0 10px #ffd58b6b)}
+.dog-level-rules{border:1px solid #9c936e77;border-radius:13px;background:#183b36c9;
+ padding:12px 16px;color:#e5e7d4}
+.dog-level-rules h3{margin:0 0 7px;font:800 18px Georgia,serif;color:#ffe3a3}
+.dog-level-rules p{font-size:12px;line-height:1.6;margin:0}
+.dog-level-collection-header{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.dog-level-collection-header h3{font:900 clamp(22px,2.6vw,31px) Georgia,serif;
+ color:#f6dc9d;margin:3px 0 0;text-shadow:0 2px 8px #0006}
+.dog-level-eyebrow{color:#d2bf85;font-size:10px;font-weight:950;letter-spacing:2px}
+.dog-level-range-nav{display:flex;gap:9px;width:100%;overflow-x:auto;scrollbar-width:thin;
+ padding:3px 1px 8px}
+.dog-level-range{flex:1 0 105px;min-width:0;padding:11px 10px;border-radius:13px;
+ border:1px solid #8c9a89;background:linear-gradient(135deg,#1b403b,#102b2e);
+ color:#dbe6da;font:800 14px Georgia,serif;cursor:pointer;transition:filter .15s}
+.dog-level-range.contains-current:not(.selected){border-color:#cbb275}
+.dog-level-range.selected{color:#412c17;border-color:#ffe6a0;background:linear-gradient(120deg,#ffe5a5,#c79548);
+ box-shadow:0 3px 16px #e5be695a}
+.dog-level-range:hover{filter:brightness(1.15)}
+.dog-level-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px;align-items:stretch}
+.dog-level-tile{min-width:0;display:flex;flex-direction:column;position:relative;overflow:hidden;
+ padding:14px 12px;border:1px solid #728c83;border-radius:16px;
+ background:linear-gradient(150deg,#214038,#0d292f 66%,#142c32);opacity:.76;
+ box-shadow:0 8px 18px #0004;min-height:226px}
+.dog-level-tile:before{content:'✦';position:absolute;right:10px;top:55px;color:#ecd4971b;font-size:31px;pointer-events:none}
+.dog-level-tile.reached{opacity:1;border-color:#bfa36a;background:linear-gradient(145deg,#28483a,#14332f)}
+.dog-level-tile.claimable{border:2px solid #f5d98e;background:linear-gradient(150deg,#36523b,#173832);
+ box-shadow:inset 0 0 22px #dbad3e11,0 0 18px #e1bc6260}
+.dog-level-tile.current{outline:1px solid #ffe8a6;outline-offset:-5px}
+.dog-level-tile.claimed{border-color:#91bba7}
+.dog-level-tile.milestone{background:radial-gradient(circle at 90% 5%,#e1b95e38,transparent 45%),linear-gradient(145deg,#34483e,#222c39);
+ border-color:#d5b870}
+.dog-level-card-top{display:flex;justify-content:space-between;align-items:center;gap:4px}
+.dog-level-badge{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:50%;
+ color:#fff0d7;background:#284544;border:1px solid #aab9a1;font-weight:950;letter-spacing:1px}
+.dog-level-tile.reached .dog-level-badge{color:#3b2816;border:2px solid #ffefb6;
+ background:radial-gradient(circle at 25% 20%,#fff1b1,#d6a452)}
+.dog-level-state{color:#c8d5d0;font-size:10px;font-weight:800;text-align:right}
+.dog-level-tile.claimable .dog-level-state{color:#ffe4a1}
+.dog-level-card-title{font:900 18px Georgia,serif;color:#ffe4ae;margin:10px 0 3px}
+.dog-level-threshold{color:#c0d8cc;font-size:11px;margin:0 0 12px}
+.dog-level-milestone-label{font-size:10px;letter-spacing:1px;font-weight:950;
+ color:#ffe4a1;border-top:1px solid #e7b96965;padding:7px 0}
+.dog-level-special{font-size:11px;color:#fff1bf;padding:8px;border-radius:9px;
+ border:1px dashed #e4c3779e;background:#ffdfa513;margin-bottom:8px}
+.dog-level-prizes{display:flex;flex-direction:column;gap:6px;margin-top:auto}
+.dog-level-prize{display:flex;gap:7px;align-items:center;min-width:0;
+ padding:8px 7px;border-radius:10px;border:1px solid #a3a79a6b;background:#071f2359}
+.dog-level-prize.medium{border-color:#86c6d5b8;background:#174c575c}
+.dog-level-prize.premium{border-color:#dabe69;background:#75552240}
+.dog-level-prize-icon{flex:none;font-size:20px}
+.dog-level-prize-content{min-width:0}
+.dog-level-prize-content strong{display:block;overflow-wrap:anywhere;font-size:11px;color:#fff0c7}
+.dog-level-prize-content small{display:block;color:#b8d3cd;font-size:10px;margin-top:3px;line-height:1.25}
+.dog-level-claim{cursor:pointer;margin-top:10px;padding:10px 8px;width:100%;border-radius:10px;
+ background:linear-gradient(120deg,#ffe39a,#c68b39);color:#2d271b;
+ border:1px solid #fff1b4;font-weight:950;font-size:11px;box-shadow:0 3px 12px #0005}
+.dog-level-claim:disabled{opacity:.6;cursor:wait}
+.dog-level-redeemed{margin-top:9px;text-align:center;font-size:10px;color:#b7e1c9;font-weight:800}
+.dog-level-status{font-size:13px;color:#f2dfac;min-height:20px}
+.dog-level-status[data-error=true]{color:#ffb89d}
+.dog-level-footer{font-size:12px;color:#d0ddd4;line-height:1.55}
+@media(max-width:1240px){.dog-level-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:980px){.dog-level-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:680px){.dog-level-overview{grid-template-columns:1fr;justify-items:center;text-align:center}
+ .dog-level-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .dog-level-hero{padding:16px}.dog-level-tile{padding:11px 9px}
+ .dog-level-banner{align-items:flex-start}.dog-level-prize-content strong{font-size:10px}}
+@media(max-width:380px){.dog-level-grid{grid-template-columns:1fr}
+ .dog-level-range{flex-basis:94px}.dog-level-tile{min-height:190px}}
+@media(prefers-reduced-motion:reduce){.dog-level-range{transition:none}}
