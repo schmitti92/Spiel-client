@@ -168,3 +168,13 @@
  .grinch-mission-state::before{width:14px;height:14px;margin-right:3px}
  .grinch-finale-reward-image{width:47px;height:39px}
 }
+
+
+/* Scroll regression fix (Android/iOS): a decorative clipped background must
+   not act as a nested scroll container. The page itself owns vertical scroll. */
+#panel-grinch{min-height:0;height:auto;overflow:visible;touch-action:pan-y pinch-zoom}
+#panel-grinch .grinch-event-shell{overflow:clip}
+#panel-grinch .grinch-event-missions{overflow:visible}
+@supports not (overflow:clip){
+ #panel-grinch .grinch-event-shell{overflow:visible}
+}
