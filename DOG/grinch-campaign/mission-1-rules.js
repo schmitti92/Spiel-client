@@ -30,6 +30,7 @@ function moveQuake(s){
  const track=s.pieces.filter(p=>p.place==='track');
  const occupied=new Set(track.map(pieceCoord));
  let moved=0,blocked=0,protectedCount=0;
+ const movements=[];
  for(const pawn of track){
   const from=pieceCoord(pawn);
   if(from%16===0){protectedCount++;continue;} // every colored start square is safe
@@ -37,8 +38,9 @@ function moveQuake(s){
   const to=pos(from-1);
   if(occupied.has(to)){blocked++;continue;}
   pawn.steps--;moved++;
+  movements.push({pieceId:pawn.id,from,to});
  }
- return {moved,blocked,protectedCount};
+ return {moved,blocked,protectedCount,movements};
 }
 
 function values(type){if(type==='1/11')return [1,11];if(type==='4')return [4,-4];if(type==='7'||type==='swap'||type==='joker')return [];return /^\d+$/.test(type)?[Number(type)]:[];}
