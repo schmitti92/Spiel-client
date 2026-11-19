@@ -231,3 +231,41 @@
  .event-layout>.event-sidebar .event-tab strong{font-size:clamp(9px,.9vw,14px)!important}
  .event-layout>.event-sidebar .event-tab small{font-size:8px!important}
 }
+
+/* Uploaded seven Christmas-gold medallions replace the basic menu emoji.
+   Their labels continue to come from the real HTML buttons. */
+.event-layout>.event-sidebar .event-tab>span{
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+ background-size:contain!important;
+ min-width:0!important;min-height:0!important;
+ font-size:0!important;
+}
+.event-layout>.event-sidebar .event-tab[data-tab="village"]>span{
+ background-image:url("./assets/lichtertal-sidebar/01-weihnachtsdorf.svg")!important;
+}
+.event-layout>.event-sidebar .event-tab[data-tab="buildings"]>span{
+ background-image:url("./assets/lichtertal-sidebar/02-gebaeude.svg")!important;
+}
+.event-layout>.event-sidebar .event-tab[data-tab="tree"]>span{
+ background-image:url("./assets/lichtertal-sidebar/03-weihnachtsbaum.svg")!important;
+}
+.event-layout>.event-sidebar .event-tab[data-tab="story"]>span{
+ background-image:url("./assets/lichtertal-sidebar/04-geschichte.svg")!important;
+}
+.event-layout>.event-sidebar .event-tab[data-tab="grinch"]>span{
+ background-image:url("./assets/lichtertal-sidebar/05-grinch-event.svg")!important;
+}
+.event-layout>.event-sidebar .event-tab[data-tab="scratch"]>span{
+ background-image:url("./assets/lichtertal-sidebar/06-rubbellose.svg")!important;
+}
+.event-layout>.event-sidebar .event-tab[data-tab="level"]>span{
+ background-image:url("./assets/lichtertal-sidebar/07-spielerlevel.svg")!important;
+}
+@media(max-width:760px){
+ .event-layout>.event-sidebar .event-tab>span{
+  width:25px!important;height:25px!important;
+  flex:0 0 25px!important;
+  font-size:0!important;
+ }
+}
