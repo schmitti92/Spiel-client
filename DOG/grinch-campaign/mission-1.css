@@ -82,3 +82,12 @@ dialog::backdrop{background:#020d12cc;backdrop-filter:blur(5px)}dialog h2{margin
 .hand .card.has-art .card-fallback{font-size:19px;color:#1e343e;font-weight:900}
 .hand .card.has-art:disabled{opacity:.46;cursor:not-allowed;filter:grayscale(.45)}
 @media(max-width:650px){.hand .card.has-art{flex-basis:58px;width:58px;min-width:58px;height:82px;min-height:82px}}
+
+/* Individual safe earthquake hops; blocked/start pawns receive no animation. */
+.board-svg .dog-pawn.quake-pawn-hop{animation:grinch-quake-pawn-hop .76s cubic-bezier(.22,.65,.24,1) both}
+@keyframes grinch-quake-pawn-hop{
+  0%{transform:translate(var(--quake-dx),var(--quake-dy))}
+  46%{transform:translate(0,-12px)}
+  100%{transform:translate(0,0)}
+}
+@media(prefers-reduced-motion:reduce){.board-svg .dog-pawn.quake-pawn-hop{animation:none}}
