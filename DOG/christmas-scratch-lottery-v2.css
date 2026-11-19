@@ -372,3 +372,294 @@
  #panel-scratch #scratch-tier-grid .scratch-tier .scratch-icon{height:76px!important;max-height:76px!important}
  #panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-jackpot-value{font-size:25px!important}
 }
+
+/* v4 · Querformat wie die vom Nutzer gelieferte Rubbellos-Vorlage.
+   Eine Karte ist ein bedrucktes Los und NICHT ein verkleinertes Spielmenü.
+   Käufe, Auflagen, Quoten und Gutschriften bleiben unverändert. */
+#panel-scratch .scratch-shell{
+ gap:7px!important;padding:7px!important;
+ background-image:
+  linear-gradient(90deg,#1c0f0baa,#26180d54,#170d0abc),
+  url("./assets/lichtertal-lottery-v2/winter-kiosk.svg")!important;
+}
+#panel-scratch .scratch-toolbar{
+ min-height:72px!important;padding:5px 10px!important;
+ border-radius:10px!important;gap:6px!important;
+}
+#panel-scratch .scratch-toolbar:before{height:10px!important}
+#panel-scratch .scratch-winter-brand{
+ min-height:58px!important;padding:4px 12px!important;
+}
+#panel-scratch .scratch-winter-brand h2{
+ font-size:clamp(27px,3.3vw,41px)!important;
+}
+#panel-scratch .scratch-toolbar-actions button{
+ min-height:32px!important;font-size:10px!important;
+}
+#panel-scratch .scratch-lottery-categories{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ align-items:center;gap:8px;width:100%;padding:0 9px;
+}
+#panel-scratch .lottery-category{
+ min-height:32px;display:flex;align-items:center;justify-content:center;gap:8px;
+ border:1.5px solid #f4d49d;border-radius:9px;
+ box-shadow:inset 0 1px 2px #fff9ca73,0 3px 8px #0007;
+ color:#fff6dd;text-shadow:0 2px 3px #180a16;
+ font:900 16px/1 Georgia,serif;white-space:nowrap;
+}
+#panel-scratch .lottery-category small{
+ font:700 10px/1 system-ui,sans-serif;
+ color:#fff0c4;opacity:.9;
+}
+#panel-scratch .lottery-category-simple{
+ background:linear-gradient(180deg,#297d4b,#08442b);
+}
+#panel-scratch .lottery-category-medium{
+ background:linear-gradient(180deg,#2476b9,#10396a);
+}
+#panel-scratch .lottery-category-premium{
+ background:linear-gradient(180deg,#8c2b88,#48115b);
+}
+#panel-scratch .scratch-tickets{
+ gap:8px!important;grid-template-columns:repeat(12,minmax(0,1fr))!important;
+ align-items:stretch!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier{
+ --hue:#a72c27e0;--glimmer:#ffd67b60;
+ display:block!important;position:relative!important;
+ height:220px!important;min-height:220px!important;max-height:220px!important;
+ padding:0!important;margin:0!important;min-width:0!important;
+ border:3px solid #fff6e8!important;border-radius:7px!important;
+ outline:1px solid #cda565!important;outline-offset:-5px;
+ background-image:
+  radial-gradient(ellipse at 25% 35%,var(--glimmer),transparent 55%),
+  linear-gradient(115deg,var(--hue) 0%,transparent 86%),
+  var(--ticket-bg)!important;
+ background-size:100% 100%,100% 100%,100% 100%!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+ box-shadow:0 4px 11px #020a16c9,0 0 0 1px #906b3f,inset 0 0 10px #fff2bf23!important;
+ overflow:hidden!important;grid-column:span 3!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="gifts"]{
+ --hue:#b52822b8;--glimmer:#ffc66b8a;order:1!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="snow_collect"]{
+ --hue:#1162abbb;--glimmer:#97eeff72;order:2!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="elf"]{
+ --hue:#65238bb8;--glimmer:#ffd1f670;order:3!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="dog_jackpot_9"]{
+ --hue:#11618dba;--glimmer:#b8ecfc90;order:4!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="number_one_20"]{
+ --hue:#066b3cbf;--glimmer:#caec89a0;order:5!important;grid-column:span 4!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="tic_tac_toe"]{
+ --hue:#5820a5bd;--glimmer:#e4c0ff88;order:6!important;grid-column:span 4!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="premium_27"]{
+ --hue:#bd2619b8;--glimmer:#ffe28494;order:7!important;grid-column:span 4!important;
+}
+/* Restores festive print details even if a legacy skin set content:none. */
+#panel-scratch #scratch-tier-grid .scratch-tier::before{
+ content:""!important;position:absolute!important;z-index:1!important;
+ top:0!important;left:0!important;right:0!important;height:13px!important;
+ background:linear-gradient(180deg,#fffdfaef 0%,#fbfdffa3 35%,#ffffff00 100%)!important;
+ opacity:.76!important;pointer-events:none!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier::after{
+ content:""!important;position:absolute!important;z-index:1!important;inset:0!important;
+ background-image:
+   radial-gradient(circle at 15% 25%,#fff8cb 0 1px,transparent 2px),
+   radial-gradient(circle at 85% 50%,#fff2ab 0 1px,transparent 2px),
+   radial-gradient(circle at 46% 74%,#fff8e0 0 1.2px,transparent 2.2px),
+   linear-gradient(180deg,#ffffff10 0%,transparent 30%,#00000022 100%)!important;
+ background-size:107px 127px,154px 142px,198px 125px,100% 100%!important;
+ opacity:.83!important;pointer-events:none!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier > *{
+ position:absolute!important;z-index:2!important;
+}
+/* Upper strip — small ticket type, settings at right, gold title below. */
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-heading{
+ top:2px!important;left:7px!important;right:7px!important;
+ width:auto!important;height:46px!important;min-height:46px!important;
+ display:block!important;overflow:visible!important;margin:0!important;padding:0!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-names{
+ position:static!important;height:46px!important;max-height:46px!important;
+ padding:19px 0 0!important;margin:0!important;min-width:0!important;
+ display:block!important;text-align:center!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-class{
+ position:absolute!important;top:2px!important;left:1px!important;
+ padding:2px 5px!important;max-width:55%!important;
+ border:1px solid #fff2ba85!important;border-radius:4px!important;
+ background:#071c2ac9!important;color:#fff4d7!important;
+ font:850 8px/1.1 system-ui,sans-serif!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier h3{
+ display:block!important;position:static!important;
+ max-width:100%!important;max-height:27px!important;
+ margin:0!important;padding:0!important;
+ color:#fff5be!important;white-space:nowrap!important;overflow:hidden!important;
+ text-overflow:ellipsis!important;
+ font:italic 900 clamp(16px,1.65vw,24px)/1.12 Georgia,serif!important;
+ text-shadow:0 2px 2px #24040b,0 4px 7px #000c,0 0 7px #f3a869!important;
+ letter-spacing:-.4px!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-gifts-card-settings,
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-other-edition-gear{
+ position:absolute!important;top:4px!important;right:5px!important;
+ max-width:42%!important;min-height:18px!important;height:19px!important;
+ padding:2px 5px!important;border-radius:5px!important;
+ color:#ffedc0!important;background:linear-gradient(#203f3fdc,#112323da)!important;
+ border:1px solid #ffdf9b!important;
+ font:850 8px/1 system-ui,sans-serif!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-gifts-edition-chip{
+ top:51px!important;left:3%!important;right:3%!important;
+ width:auto!important;height:14px!important;min-height:14px!important;max-height:14px!important;
+ display:block!important;margin:0!important;padding:2px 5px!important;
+ border:1px solid #e3cd946d!important;border-radius:4px!important;
+ background:#031c26c9!important;color:#ffebc2!important;
+ font:700 8px/1 system-ui,sans-serif!important;
+ text-overflow:ellipsis!important;white-space:nowrap!important;overflow:hidden!important;
+}
+/* Separate focal illustration and 3D metallic scratch grid. */
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-icon{
+ top:69px!important;left:3%!important;width:39%!important;height:56px!important;
+ max-height:56px!important;min-height:0!important;
+ padding:0!important;margin:0!important;border:0!important;
+ display:grid!important;place-items:center!important;
+ color:#ffe3a3!important;font:900 51px/1 system-ui,sans-serif!important;
+ filter:drop-shadow(0 3px 5px #0009)!important;
+ background:radial-gradient(ellipse at center,#fff5a550,transparent 74%)!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="gifts"] .scratch-icon,
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="snow_collect"] .scratch-icon,
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="elf"] .scratch-icon,
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="premium_27"] .scratch-icon{
+ font-size:0!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-icon::after{
+ content:""!important;position:absolute!important;inset:-5px!important;
+ background-size:contain!important;background-position:center!important;background-repeat:no-repeat!important;
+ filter:drop-shadow(0 2px 4px #0007)!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-preview{
+ top:68px!important;left:auto!important;right:3%!important;
+ width:53%!important;height:60px!important;max-height:60px!important;
+ padding:3px!important;margin:0!important;
+ border-radius:6px!important;border:1px solid #fff6cebb!important;
+ box-shadow:0 2px 5px #0612228c,inset 0 0 2px #d8f5ff!important;
+ gap:2px!important;background:#0911234f!important;transform:none!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="premium_27"] .scratch-printed-preview{
+ height:60px!important;max-height:60px!important;gap:1px!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-foil{
+ min-height:0!important;min-width:0!important;
+ font:900 clamp(8px,.9vw,13px)/1 system-ui,sans-serif!important;
+ border:1px solid #f3f7f7cc!important;border-radius:3px!important;
+ background-image:url("./assets/lichtertal-lottery-v2/scratch-foil.svg")!important;
+ box-shadow:inset 0 1px 2px #fff9,inset 0 -2px 2px #354b6090!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="snow_collect"] .scratch-printed-foil,
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant="dog_jackpot_9"] .scratch-printed-foil{
+ border-radius:50%!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-brief{
+ top:128px!important;left:4%!important;right:4%!important;
+ width:auto!important;height:13px!important;max-height:13px!important;min-height:0!important;
+ padding:0 3px!important;display:block!important;margin:0!important;overflow:hidden!important;
+ text-align:center!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-rule{
+ display:block!important;color:#fff9ec!important;
+ font:800 8.7px/1.12 system-ui,sans-serif!important;
+ max-height:13px!important;overflow:hidden!important;text-overflow:ellipsis!important;
+ white-space:nowrap!important;text-shadow:0 1px 3px #070616,0 1px 2px #000!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-jackpot{
+ top:auto!important;bottom:43px!important;left:4%!important;right:4%!important;
+ width:auto!important;height:34px!important;min-height:34px!important;max-height:34px!important;
+ display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
+ gap:1px!important;margin:0!important;padding:2px 5px!important;
+ border:2px solid #ffd98f!important;border-radius:7px!important;
+ background:linear-gradient(180deg,#bd3327,#8d1919 55%,#4c0b15)!important;
+ box-shadow:inset 0 1px #fff5c68c,0 2px 4px #000a!important;
+ overflow:hidden!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-jackpot-caption{
+ display:block!important;color:#fff9dd!important;
+ font:900 8.5px/1.05 Georgia,serif!important;
+ white-space:nowrap!important;max-width:100%!important;
+ text-overflow:ellipsis!important;overflow:hidden!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-jackpot-value{
+ display:block!important;color:#ffe090!important;
+ font:950 clamp(17px,1.7vw,24px)/1 Georgia,serif!important;
+ white-space:nowrap!important;max-width:100%!important;
+ overflow:hidden!important;text-overflow:ellipsis!important;
+ text-shadow:0 1px 3px #3d0800,0 0 5px #efb368!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-serial{
+ bottom:34px!important;left:4%!important;width:92%!important;height:8px!important;
+ font:650 6px/1 monospace!important;color:#fff2d5e5!important;
+ text-align:center!important;padding:0 49px 0 3px!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-printed-serial::after{
+ width:43px!important;height:7px!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-action-row{
+ bottom:5px!important;left:4%!important;right:4%!important;
+ width:auto!important;height:27px!important;max-height:27px!important;
+ margin:0!important;overflow:hidden!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-action-row button{
+ position:static!important;height:27px!important;min-height:27px!important;
+ padding:2px 4px!important;border-radius:7px!important;
+ font:900 9px/1.1 system-ui,sans-serif!important;
+}
+#panel-scratch #scratch-tier-grid .scratch-tier .scratch-card-open-error{
+ top:70px!important;max-height:66px!important;
+}
+#panel-scratch .scratch-lottery-footer{
+ padding:5px 9px!important;gap:6px!important;min-height:44px!important;
+}
+#panel-scratch .scratch-lottery-footer-panel strong{font-size:11px!important}
+#panel-scratch .scratch-lottery-footer-panel span{font-size:9px!important}
+#panel-scratch .scratch-lottery-help summary,
+#panel-scratch .scratch-stats-toggle{font-size:10px!important;padding:5px 9px!important}
+@media(min-width:900px) and (max-width:1150px){
+ #panel-scratch .scratch-tickets{grid-template-columns:repeat(12,minmax(0,1fr))!important}
+ #panel-scratch #scratch-tier-grid .scratch-tier{grid-column:span 3!important}
+ #panel-scratch #scratch-tier-grid .scratch-tier[data-variant="number_one_20"],
+ #panel-scratch #scratch-tier-grid .scratch-tier[data-variant="tic_tac_toe"],
+ #panel-scratch #scratch-tier-grid .scratch-tier[data-variant="premium_27"]{grid-column:span 4!important}
+}
+@media(max-width:899px){
+ #panel-scratch .scratch-tickets{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+ #panel-scratch #scratch-tier-grid .scratch-tier,
+ #panel-scratch #scratch-tier-grid .scratch-tier[data-variant="number_one_20"],
+ #panel-scratch #scratch-tier-grid .scratch-tier[data-variant="tic_tac_toe"],
+ #panel-scratch #scratch-tier-grid .scratch-tier[data-variant="premium_27"]{
+  grid-column:span 3!important;height:220px!important;
+ }
+ #panel-scratch .scratch-lottery-categories{gap:4px;padding:0}
+ #panel-scratch .lottery-category{font-size:13px;gap:3px;min-height:28px}
+ #panel-scratch .lottery-category small{font-size:9px}
+}
+@media(max-width:490px){
+ #panel-scratch .scratch-tickets{grid-template-columns:1fr!important}
+ #panel-scratch #scratch-tier-grid .scratch-tier,
+ #panel-scratch #scratch-tier-grid .scratch-tier[data-variant="number_one_20"],
+ #panel-scratch #scratch-tier-grid .scratch-tier[data-variant="tic_tac_toe"],
+ #panel-scratch #scratch-tier-grid .scratch-tier[data-variant="premium_27"]{grid-column:1!important;height:220px!important}
+ #panel-scratch .lottery-category{font-size:11px}
+ #panel-scratch .lottery-category small{display:none}
+}
