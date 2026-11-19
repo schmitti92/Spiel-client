@@ -482,16 +482,24 @@ export function initChristmasScratch(){
    premium:['👑 Premium','2 Lose · große Gewinne & Jackpots']
   };
   let displayedClass='';
+  let currentCards=null;
   const sortedOptions=[...SCRATCH_SHOP_VARIANTS].sort((a,b)=>
    classOrder[a.tier]-classOrder[b.tier]);
   for(const option of sortedOptions){
    if(option.tier!==displayedClass){
     displayedClass=option.tier;
+    // Give every category its own two-column card grid. Legacy order
+    // rules can no longer move tickets away from their section heading.
+    const section=el('section','scratch-category-section');
+    section.dataset.tier=option.tier;
+    section.setAttribute('aria-label',classTitles[option.tier][0]+' · '+classTitles[option.tier][1]);
     const category=el('div','scratch-category-heading');
     category.dataset.tier=option.tier;
     category.append(el('h3','',classTitles[option.tier][0]),
      el('span','',classTitles[option.tier][1]));
-    root.append(category);
+    currentCards=el('div','scratch-category-cards');
+    section.append(category,currentCards);
+    root.append(section);
    }
    const tier=SCRATCH_TICKET_TYPES.find(c=>c.id===option.tier);
    const lucky=status?.settings?.numberOne20;
@@ -662,7 +670,7 @@ export function initChristmasScratch(){
    for(const button of article.querySelectorAll(':scope > .scratch-buy, :scope > .scratch-free, :scope > .scratch-reopen-ticket'))
     actions.append(button);
    article.append(actions);
-   root.append(article);
+   currentCards.append(article);
   }
   drawScratchAnalytics();
  }
