@@ -576,9 +576,10 @@ export function initChristmasScratch(){
    const soldOut=Boolean(activeEdition&&activeEdition.remaining===0);
    const headlineLabel=el('span','scratch-printed-jackpot-caption',
     soldOut?'AUFLAGE AUSVERKAUFT':
-    highest.verified?'🏆 HÖCHSTGEWINN':'🏆 THEORETISCHER HÖCHSTGEWINN');
+    highest.verified?'🏆 HÖCHSTGEWINN DER RESTLOSE':'🏆 MÖGLICHER HÖCHSTGEWINN');
    const amountText=soldOut?'AUSVERKAUFT':
-    highest.amount===null?'NICHT ERMITTELBAR':num(highest.amount)+' 🪙';
+    highest.amount===null?'— 🪙':num(highest.amount)+' 🪙';
+   headline.dataset.prizeStatus=soldOut?'sold-out':highest.verified?'verified':'estimated';
    headline.append(headlineLabel,el('strong','scratch-printed-jackpot-value',amountText));
    if(!highest.verified&&!soldOut)
     headline.title='Theoretischer Wert anhand der aktuellen Gewinnbeträge und Multiplikatoren. Er ist nicht garantiert in einer laufenden Auflage enthalten.';
