@@ -23,6 +23,7 @@
 <link rel="stylesheet" href="./christmas-scratch-other-edition.css?v=2">
 <link rel="stylesheet" href="./christmas-scratch-dogjackpot.css?v=1">
 <link rel="stylesheet" href="./christmas-scratch-premium-fit.css?v=1">
+<link rel="stylesheet" href="./christmas-scratch-lottery-v2.css?v=1">
 <link rel="stylesheet" href="./christmas-player-levels.css?v=2">
 <link rel="stylesheet" href="./christmas-building-village.css?v=4">
 <link rel="stylesheet" href="./christmas-buildings-showcase.css?v=2">
@@ -514,7 +515,20 @@
           <div class="scratch-toolbar-actions"><button type="button" id="scratch-host-settings" class="scratch-host-settings" aria-haspopup="dialog" aria-controls="scratch-host-dialog">⚙️ Einstellungen</button><button type="button" id="scratch-refresh">↻ Kontostand aktualisieren</button></div>
         </div>
         <div id="scratch-tier-grid" class="scratch-tickets" aria-label="Sieben Rubbellose einschließlich Zahlenlos und DOG-Jackpot"></div>
-        <section id="scratch-analytics" class="scratch-analytics" aria-labelledby="scratch-analytics-title">
+        <div class="scratch-lottery-footer" aria-label="Spielinformationen zu den Rubbellosen">
+          <div class="scratch-lottery-footer-panel"><strong>🎟️ Gewinnsymbole</strong>
+            <span>🪙 Münzen · 💵 Scheine · 💼 Koffer · ⭐ Lichter · 🎁 Freischaltung · ✖️2 Doppelgewinn</span>
+          </div>
+          <div class="scratch-lottery-footer-panel"><strong>🏆 Höchstgewinn</strong>
+            <span>Aus dem Gewinnplan der verbleibenden Lose; noch nicht geprüfte Werte sind als möglich gekennzeichnet.</span>
+          </div>
+          <details class="scratch-lottery-help"><summary>📖 Spielanleitung</summary>
+            <div><strong>So funktionieren die Lose</strong><p>Wähle eines der sieben Lose, öffne es über den grünen Button und rubbele die Felder frei. Jedes Los hat eine eigene Gewinnregel. Die silbernen Felder in dieser Übersicht sind nur gedruckte Designvorschauen und keine echten Gewinne.</p>
+            <p>Der Server bestimmt und prüft sämtliche Gewinne. Über „⚙️ Auflage“ können bestehende Ausgaben und Gewinnkategorien verwaltet werden.</p></div>
+          </details>
+          <button type="button" id="scratch-stats-toggle" class="scratch-stats-toggle" aria-controls="scratch-analytics" aria-expanded="false">📊 Meine Statistik</button>
+        </div>
+        <section id="scratch-analytics" class="scratch-analytics" aria-labelledby="scratch-analytics-title" hidden>
           <div class="scratch-analytics-heading">
             <div><span class="scratch-analytics-eyebrow">✦ DEIN PERSÖNLICHER FORTSCHRITT</span><h3 id="scratch-analytics-title">📊 Meine Rubbellos-Statistik</h3><p>Alle sieben Lose im Überblick · direkt aus deinem DOG-Spielerprofil</p></div>
             <span class="scratch-analytics-tag">🎟️ Meine Losbilanz</span>
