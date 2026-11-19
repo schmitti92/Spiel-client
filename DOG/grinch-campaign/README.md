@@ -5,22 +5,24 @@ Stand: 18.11.2026
 ## Struktur
 
 - `mission-config.js`: Eigene Definitionen für fünf Missionen. Nur Mission 1 ist als lokaler Spieltest aktiviert.
-- `mission-1-rules.js`: Unabhängige DOG-Variante (drei Personen, je fünf Figuren, **dieselben 64 Lauffelder und vier Zielfelder wie im Hauptspiel**). Keine Änderungen an `DOG/engine.js`, `DOG/app.js` oder den regulären Online-Räumen.
-- `mission-board.js`: Zeichnet dieselben 64 Original-DOG-Felder mit **denselben Koordinaten und gewählten Brettdesigns**; verwendet direkt `../board-layout.js` und `../appearance-registry.js`. Die statische SVG-Brettdarstellung ist aus dem Hauptspiel isoliert übernommen; das Hauptspiel bleibt unangetastet.
+- `mission-1-rules.js`: Unabhängige DOG-Variante (drei Personen, je fünf Figuren, **dieselben 64 Lauffelder, aber jeweils nur ein wiederverwendbares Portal-Zielfeld**). Keine Änderungen an `DOG/engine.js`, `DOG/app.js` oder den regulären Online-Räumen.
+- `mission-board.js`: Zeichnet dieselben 64 Original-DOG-Lauffelder mit **denselben Koordinaten und gewählten Brettdesigns**; verwendet direkt `../board-layout.js` und `../appearance-registry.js`. Die statische SVG-Brettdarstellung ist aus dem Hauptspiel isoliert übernommen; das Hauptspiel bleibt unangetastet.
 - `mission-1.html`, `mission-1.css`: Eigenständige Kampagnenoberfläche **mit originalem DOG-Brett** und optionalen missionsspezifischen visuellen Effekten.
 - `mission-1.js`: Anzeige, Interaktion, Wetter- und Storyeffekte sowie **nur lokaler** Browser-Testspielstand.
 
-## Mission 1 – Der Weg zum Berg
+## Mission 1 – Pfadfinder und die Portale nach Welt 2
 
-- Drei Spieler spielen abwechselnd an **einem Gerät**.
-- Fünf Spielfiguren pro Spieler am Anfang. Die fünfte Figur wird **gestapelt auf einem der vier vorhandenen Startplätze** angezeigt, statt neue Start-/Zielfelder in das Originalbrett zu bohren.
-- Einmaliger garantierter Verlust je Spieler; Zuteilung von Einsturz, Entführung und Eisfluch erfolgt zufällig.
-- Erst nach dem zweiten eigenen gültigen Zug wird ein Verlust auf einer tatsächlich aktiven Wegfigur ausgelöst; weitere Kampagnenverluste gibt es in dieser Mission nicht.
-- Die vier verbleibenden Figuren jedes Spielers müssen die **vier originalen** Zielfelder erreichen.
-- Der lokale Pilot übernimmt die gewohnten Kartenwerte, ist aber **noch keine vollständige 1:1-Portierung sämtlicher klassischer Sonderregeln, Kartenphasen und Online-Spielinteraktionen**. Normale Zugkarten im Testmodus: 1/11, 2, 3, 4 (rückwärts möglich), 5, 6, 7 als Tausch, 8, 9, 10, 12, 13 und Joker. Startkarten 1/11 und 13.
-- Erdbeben: Wegfiguren werden ein Feld zurückgesetzt; Figuren im Starthaus oder Ziel werden aus Sicherheitsgründen nicht versetzt.
-- Nebel und Hinweise dienen der Stimmung und erschweren nicht die Kartenbedienung.
-- Gefangene werden im Teststand markiert, aber nicht als echte Account-Fortschritte eingetragen.
+- Eigenständiger lokaler Hotseat-Test für drei Spieler. Das normale DOG bleibt unverändert.
+- Hintergrund: `winterliches_portal_im_alpenreich.png`, vom Benutzer in diesen Kampagnenordner hochgeladen.
+- Der `mission-board.js`-Renderer legt die *originalen 64 DOG-Lauffelder* und die normalen Startbereiche über die Winterlandschaft.
+- Mission 1 unterdrückt das DOG-Wappen in der Mitte, damit der bebilderte Welt-2-Eingang sichtbar bleibt.
+- Jedem menschlichen Spieler wird nur **das allererste Feld der bisherigen vierteiligen Zielbahn** als aktives Portal gezeigt: Rot `GOAL_POINTS[0][0]`, Blau `GOAL_POINTS[1][0]`, Gelb `GOAL_POINTS[3][0]`. Die anderen drei Zielfelder je Bahn und die grüne Zielbahn sind im Kampagnenmodus ausgeblendet.
+- Pro Spieler fünf Figuren zum Start. Eine Figur wird garantiert durch Einsturz, Entführung oder Eisfluch gefangen und verbleibt kampagnenbedingt vermisst.
+- Die übrigen vier Figuren müssen mit genau passender Kartenzahl auf das eine Portal-Zielfeld gelangen (`steps === 64`). Bei Eintritt wechselt die Figur dauerhaft in den `teleported`-Zustand und verschwindet **sofort** vom Brett. Das Portal bleibt für beliebig viele weitere Figuren wieder frei.
+- Sobald alle drei Spieler je vier Figuren teleportiert haben (12 insgesamt), ist der lokale Missionsversuch abgeschlossen; ein echter Server-Aufstieg in Mission 2 existiert noch nicht.
+- Die vier Orientierungsfelder 8/24/40/56 zeigen rein erzählerische Hinweise. Nebel und Erdbeben gelten ausschließlich für den Missionsmodus.
+- Ein neues lokales Spielstandformat (`version:3`, Key `dog-grinch-m1-single-portal-v3`) verhindert, dass ältere vierteilige-Zielbahn-Spielstände geladen werden.
+- Der lokale Pilot deckt nicht alle Sonderregeln des Hauptspiels 1:1 ab, ist noch nicht an Render gekoppelt und vergibt keine offiziellen Kampagnenbelohnungen.
 
 ## Unbedingt beachten
 
@@ -50,21 +52,14 @@ Die Grafik- und Ereignisebene zeigt die Felder an, die Regel-Engine entscheidet 
 
 Link aus der Grinch-Eventseite: Mission 1 > Details > „Mission 1 im Testmodus spielen“.
 
-Die auf 64 Original-Felder korrigierte Regel-Engine wurde mit 300 fest vorgegebenen Seeds unter simulierten, legalen Kartenaktionen getestet. Alle 300 Versuche endeten mit genau einem Verlust und vier geretteten Figuren pro Spieler. Ein Browser-End-to-End-Test sowie synchronisierte Mehrgeräte-Tests stehen noch aus.
+Die aktuelle Ein-Portal-Engine wurde mit 400 verschiedenen Seeds unter simulierten legalen Kartenaktionen getestet. Alle 400 Versuche endeten mit genau einem Verlust je Spieler und jeweils vier nach Welt 2 teleportierten Figuren. Die SVG-Brettsimulation zeigt alle 64 Lauffelder und drei statt zwölf Zielpositionen. Ein Browser-End-to-End-Test sowie synchronisierte Mehrgeräte-Tests stehen noch aus.
 
-## Pfadfinder-Wegweiser (Mission 1)
-
-- Die 64 Lauffelder und die Original-Zielkoordinaten sind identisch zum Hauptspiel. Nur SVG-Dekorationen im separaten Missionsrenderer werden aufgesetzt.
-- Vier Orientierungsfelder: 8 (erste Spuren, links unten), 24 (Nebelpass, links oben), 40 (grünes Leuchten, rechts oben), 56 (Eisweg, rechts unten). Landet eine Figur darauf, erscheint ein reiner Storyhinweis, ohne Kartenregeln zu verändern.
-- Jeder der drei Spieler hat vier vorhandene Zielfelder. Sobald alle vier Ziele besetzt sind, erhält das innere Ende seiner Zielbahn einen leuchtenden Wegweiser „M2“. Rot: (380, 496.48), Blau: (263.52, 380), Gelb: (496.48, 380) im SVG-Bereich 760×760.
-- Sind alle drei Spieler durch, erscheint die Erzählung vom Bergpass zu Mission 2. **Mission 2 bleibt bis zur echten Implementierung gesperrt.**
-- `mission-1-pathfinder.js` erzeugt die passiven Feldhinweise und Bergpass-Markierungen anhand der originalen Layoutkoordinaten. Normales DOG benutzt dieses Modul nicht.
 
 ## Original-Brett erhalten
 
-- Vier geschützte Startfelder bei 0, 16, 32 und 48 und alle vier Original-Zielbahnen bleiben grafisch vorhanden.
+- Vier geschützte Startfelder bei 0, 16, 32 und 48 bleiben exakt gleich. Nur in Mission 1 sind die drei Portalziele an den ersten Original-Zielpositionen sichtbar.
 - Für drei Kampagnenspieler werden Rot (0), Blau (16) und Gelb (48) benutzt, die grüne Bahn bleibt optisch erhalten und unbesetzt.
 - Originale Design-Voreinstellungen und selbst platzierte Brettfelder werden übernommen.
 - Sonderfelder und Wettereffekte dürfen lediglich **Overlay-Schichten** hinzufügen; der klassische Brettrenderer, die Feldanzahl und die Standard-Lobby werden nicht geändert.
-- `mission-1-rules.js` speichert in `dog-grinch-m1-classic-board-v2`, damit frühere Teststände mit abweichender Geometrie nicht versehentlich geladen werden.
+- `mission-1-rules.js` speichert in `dog-grinch-m1-single-portal-v3`, damit frühere Teststände mit abweichender Geometrie nicht versehentlich geladen werden.
 - Der SVG-Brettrenderer wurde in einem isolierten Smoke-Test mit 15 gezeichneten Spielfiguren geprüft.
