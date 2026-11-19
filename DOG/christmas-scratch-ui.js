@@ -595,6 +595,9 @@ export function initChristmasScratch(){
    priceStamp.title=freeMode?'Der Host hat kostenlose Lose aktiviert.':
     'Aktueller Lospreis, einschließlich möglichem Dorfrabatt';
    priceStamp.setAttribute('aria-label',priceStamp.title+' · '+priceStamp.textContent);
+   // During free-play the button already clearly says Kostenlos öffnen;
+   // hide the decorative top stamp to keep the printed title unobstructed.
+   priceStamp.hidden=freeMode;
    article.append(priceStamp);
    const vouchers=Number(status?.vouchers?.[option.tier]||0)+Number(status?.variantVouchers?.[option.id]||0);
    const buyBtn=el('button','scratch-buy','🎟️ Für '+num(actualPrice)+' Münzen öffnen');
