@@ -410,8 +410,52 @@ export function initChristmasScratch(){
   $('scratch-lotto-headline').textContent=
    '20 REIHEN  •  '+percent(hit*100)+' TREFFERCHANCE PRO REIHE  •  LOSPREIS '+num(price)+' 🪙';
  }
+ // A printed ticket preview never controls the actual outcome. The Render
+ // receipt and its existing scratch overlay remain the sole source of prizes.
+ function printedTicketPreview(option){
+  const layouts={
+   gifts:[3,9,'🎁'],snow_collect:[4,16,'❄'],elf:[5,20,'✦'],
+   premium_27:[3,27,'★'],tic_tac_toe:[3,9,'◯'],
+   number_one_20:[2,8,'?'],dog_jackpot_9:[3,9,'🐾']
+  };
+  const [columns,count,mark]=layouts[option.id]||[3,9,'✦'];
+  const preview=el('div','scratch-printed-preview');
+  preview.dataset.columns=String(columns);
+  preview.dataset.variant=option.id;
+  preview.setAttribute('aria-hidden','true');
+  for(let i=0;i<count;i++)preview.append(el('span','scratch-printed-foil',mark));
+  return preview;
+ }
+ function displayedTicketMaximum(option,edition,amounts,lucky){
+  const verified=edition?.maxTicketCoinsRemaining;
+  if(Number.isSafeInteger(verified)&&verified>=0)
+   return {amount:verified,verified:true};
+  // An older Render deployment may not yet provide a verified edition
+  // ceiling. Never falsely claim that a speculative total is in stock.
+  const [small,medium,large]=amounts;
+  const simpleLimit=2*(small+medium+large);
+  const candidate={
+   gifts:simpleLimit,snow_collect:simpleLimit,elf:simpleLimit,
+   tic_tac_toe:Math.max(large,1500)*(ticEdition?.config?.maxMultiplier??5),
+   number_one_20:20*Math.max(large,lucky?.giftFallbackCoins??1500),
+   premium_27:2*(small+medium+large+large)+1000,
+   dog_jackpot_9:8*Math.max(large,1500)
+  }[option.id];
+  return {amount:edition?null:candidate,verified:false};
+ }
  function drawShop(){
   root.replaceChildren();
+  const statsButton=$('scratch-stats-toggle');
+  if(statsButton&&!statsButton.dataset.connected){
+   statsButton.dataset.connected='true';
+   statsButton.addEventListener('click',()=>{
+    const analytics=$('scratch-analytics');
+    if(!analytics)return;
+    analytics.hidden=!analytics.hidden;
+    statsButton.setAttribute('aria-expanded',String(!analytics.hidden));
+    statsButton.textContent=analytics.hidden?'📊 Meine Statistik':'📊 Statistik schließen';
+   });
+  }
   wallet.textContent=status?num(status.coins)+' 🪙':'– 🪙';
   const freeMode=status?.settings?.freeEnabled===true;
   $('scratch-host-settings').hidden=false;
@@ -513,23 +557,31 @@ export function initChristmasScratch(){
     option.id==='dog_jackpot_9'?[100,300,800]:
     option.id==='snow_collect'&&snowEdition?.config?.coinAmounts?snowEdition.config.coinAmounts:
     coinAmountsFor(option.tier,option.id));
-   article.append(heading,details,
-    el('strong','scratch-price',num(actualPrice)+' 🪙'+
-     (villageDiscount()?' · ⭐ −'+villageDiscount()+' % Dorfbonus':'')),
-    el('div','scratch-card-payouts','🪙 '+num(amounts[0])+' · 💵 '+
-     num(amounts[1])+' · 💼 '+num(amounts[2])),
-    el('div','scratch-symbol-key',option.id==='number_one_20'?
-     '🪙 '+num(amounts[0])+' · 💵 '+num(amounts[1])+' · 💼 '+num(amounts[2])+' · 🎁 Freischaltung · jede 1 gewinnt':
-     option.id==='dog_jackpot_9'?'🐾 DOG = alle 8 Preise · 🎁 Freischaltung':
-     option.id==='tic_tac_toe'?
-     '◯ / ✕ · 1–'+(ticEdition?.config?.maxMultiplier??5)+'× · 🪙 '+num(amounts[0])+' · 💵 '+num(amounts[1])+' · 💼 '+num(amounts[2])+' · 🎁 Freischaltung':symbolLegend(option.tier,amounts)));
+   const activeEdition=option.id==='gifts'?giftsEdition:
+    option.id==='snow_collect'?snowEdition:
+    option.id==='tic_tac_toe'?ticEdition:otherStudio.get(option.id);
+   const highest=displayedTicketMaximum(option,activeEdition,amounts,lucky);
+   const headline=el('div','scratch-printed-jackpot');
+   const soldOut=Boolean(activeEdition&&activeEdition.remaining===0);
+   const headlineLabel=el('span','scratch-printed-jackpot-caption',
+    soldOut?'AUFLAGE AUSVERKAUFT':
+    highest.verified?'🏆 HÖCHSTGEWINN DER RESTLOSE':'🏆 MÖGLICHER HÖCHSTGEWINN');
+   headline.append(headlineLabel,
+    el('strong','scratch-printed-jackpot-value',
+     soldOut?'0 🪙':highest.amount===null?'WIRD BERECHNET':num(highest.amount)+' 🪙'));
+   if(!highest.verified&&!soldOut)
+    headline.title='Nur die aktuelle Gewinnauflage kann einen tatsächlich erreichbaren Höchstgewinn bestätigen.';
+   else if(highest.verified)
+    headline.title='Vom Render-Server aus dem unveränderlichen Gewinnplan der noch nicht ausgegebenen Lose berechnet.';
+   const serial=el('div','scratch-printed-serial','LICHTERTAL · '+option.id.toUpperCase().replaceAll('_','-')+' · MUSTER');
+   serial.setAttribute('aria-hidden','true');
+   article.append(heading,details,printedTicketPreview(option),headline,serial);
    const vouchers=Number(status?.vouchers?.[option.tier]||0)+Number(status?.variantVouchers?.[option.id]||0);
    const buyBtn=el('button','scratch-buy','🎟️ Für '+num(actualPrice)+' Münzen öffnen');
    buyBtn.type='button';buyBtn.hidden=freeMode;
    buyBtn.disabled=busy||!onSale;
    buyBtn.addEventListener('click',()=>void buy(option.tier,false,option.id));
    article.append(buyBtn);
-   const activeEdition=option.id==='gifts'?giftsEdition:option.id==='snow_collect'?snowEdition:option.id==='tic_tac_toe'?ticEdition:otherStudio.get(option.id);
    if(activeEdition){
     const chip=el('div','scratch-gifts-edition-chip',
      '📦 Auflage: '+num(activeEdition.remaining)+' von 500 Losen übrig · '+
