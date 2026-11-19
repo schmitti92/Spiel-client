@@ -150,6 +150,7 @@ export function initDogPlayerLevels(){
   }else if(claimable){
    const button=element('button','dog-level-claim','🎁 Abholen');
    button.type='button';button.disabled=claimPending;
+   button.setAttribute('aria-label',n===1?'Vier Startgutscheine abholen':'Belohnung für Level '+n+' abholen');
    button.addEventListener('click',()=>void claimReward(n));
    card.append(button);
   }else{
