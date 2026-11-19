@@ -1,12 +1,13 @@
 import {MISSION_1} from './mission-config.js?v=4';
+import {cardVisual} from '../card-visuals.js?v=11';
 import {drawClassicMissionBoard} from './mission-board.js?v=5';
 import {pathfinderStatus} from './mission-1-pathfinder.js?v=4';
 import {trackPoint,goalPoint} from '../board-layout.js?v=11';
-import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,status,pieceCoord,validateSaved} from './mission-1-rules.js?v=5';
+import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,status,pieceCoord,validateSaved} from './mission-1-rules.js?v=6';
 
 const $=id=>document.getElementById(id);
 const SVG='http://www.w3.org/2000/svg';
-const KEY='dog-grinch-m1-single-portal-v3';
+const KEY='dog-grinch-m1-canonical-cards-v4';
 let state=null,chosenCard=null,chosenPiece=null,pickMoves=[],lastSeenRevision=-1;
 let toastTimer=null,effectTimer=null;
 const ns=(tag,attrs={},parent=null)=>{
@@ -35,16 +36,19 @@ function read(){
  try{const x=JSON.parse(localStorage.getItem(KEY)||'null');return validateSaved(x)?x:null;}catch{return null;}
 }
 function describeMove(m){
+ if(m.kind==='emptySwap')return 'Tauschkarte ablegen (momentan keine Figuren zum Tauschen)';
  const p=state.pieces.find(p=>p.id===m.pieceId);
+ if(!p)return 'Karte spielen';
  const i=Number(p.id.slice(1))%5+1;
  let v='Figur '+i+': ';
  if(m.kind==='start')v+='aus dem Haus starten';
  else if(m.kind==='move')v+=(m.distance<0?'4 Felder rückwärts':m.distance+' Felder vorwärts')+(m.targetSteps===TRACK?' ins Portal':'');
+ else if(m.kind==='seven')v+='7 aufteilen – '+m.distance+' Schritt'+(m.distance===1?'':'e')+(m.targetSteps===TRACK?' ins Portal':'');
  else if(m.kind==='swap'){
   const target=state.pieces.find(p=>p.id===m.targetId);
   v+='mit '+state.players[target.seat].name+' Figur '+(Number(target.id.slice(1))%5+1)+' tauschen';
  }
- if(state.hands[state.current].find(c=>c.id===m.cardId)?.type==='Joker')v+=' · Joker als '+m.as;
+ if(state.hands[state.current].find(c=>c.id===m.cardId)?.type==='joker')v+=' · Joker als '+m.as;
  return v;
 }
 function currentMoves(){
@@ -71,7 +75,7 @@ function choosePawn(id){
 function doMove(m){
  try{
   state=play(state,state.current,m);
-  chosenCard=null;chosenPiece=null;pickMoves=[];
+  chosenCard=state.seven?.cardId??null;chosenPiece=null;pickMoves=[];
   save();render();
   onEffect();
  }catch(err){toast('Zug nicht möglich: '+err.message);}
@@ -85,7 +89,7 @@ function moveButtons(moves,parent){
 function render(){
  if(!state)return;
  $('phase').textContent='Kartenphase '+state.round+' · Zug '+(state.turn+1);
- $('turn-label').textContent=state.complete?'🏆 Mission geschafft!':state.players[state.current].name+' ist am Zug';
+ $('turn-label').textContent=state.complete?'🏆 Mission geschafft!':state.players[state.current].name+' ist am Zug'+(state.seven?' · 7 aufteilen: noch '+(7-state.seven.spent)+' Schritte':'');
  const seatList=$('players');seatList.replaceChildren();
  const stats=status(state);
  for(const p of stats){
@@ -101,11 +105,32 @@ function render(){
  const hand=$('hand');hand.replaceChildren();
  const moves=$('moves');moves.replaceChildren();
  if(!state.complete){
+  if(state.seven)chosenCard=state.seven.cardId;
   for(const c of state.hands[state.current]){
-   const b=document.createElement('button');b.className='card'+(chosenCard===c.id?' selected':'');b.type='button';
-   b.textContent=c.type;
-   text('small',c.type==='7'?'Tausch':c.type==='Joker'?'Joker':c.type==='1/11'?'1 oder 11':'Bewegung',b);
+   const b=document.createElement('button');
+   b.className='card'+(chosenCard===c.id?' selected':'')+' has-art';
+   b.type='button';
+   b.disabled=Boolean(state.seven&&state.seven.cardId!==c.id);
+   const visual=cardVisual(c.type);
+   const fallback=text('span',c.type==='swap'?'⇄':c.type==='joker'?'★':c.type,b,'card-fallback');
+   if(visual.image){
+    const img=document.createElement('img');
+    img.src='../'+visual.image.replace(/^\.\//,'');
+    img.alt='';
+    img.loading='eager';
+    img.className='card-art';
+    img.onerror=()=>{
+      if(visual.fallbackImage && !img.dataset.fallback){
+       img.dataset.fallback='1';
+       img.src='../'+visual.fallbackImage.replace(/^\.\//,'');
+      }else img.remove();
+    };
+    b.append(img);
+   }
+   b.setAttribute('aria-label','DOG-Karte '+(c.type==='swap'?'Tausch':c.type==='joker'?'Joker':c.type));
+   if(state.seven&&state.seven.cardId===c.id)b.title='7: Noch '+(7-state.seven.spent)+' Schritte';
    b.addEventListener('click',()=>{
+    if(state.seven)return;
     chosenCard=chosenCard===c.id?null:c.id;chosenPiece=null;pickMoves=[];render();
    });
    hand.append(b);
@@ -115,7 +140,7 @@ function render(){
    const visible=chosenPiece?opts.filter(m=>m.pieceId===chosenPiece):opts;
    if(!visible.length)text('p','Für diese Karte ist derzeit kein Zug möglich.',moves,'help');
    else moveButtons(visible,moves);
-  }else text('p','Wähle eine Handkarte. Danach kannst du direkt auf eine eigene Figur tippen.',moves,'help');
+  }else text('p','Wähle eine DOG-Karte. Die 7 wird auf insgesamt 7 Schritte verteilt; Tauschen und Joker funktionieren wie im Hauptspiel.',moves,'help');
  }else {
   text('p','Die drei Freunde haben alle zwölf verbliebenen Figuren über ihre drei wiederverwendbaren Portale nach Welt 2 geschickt. Drei Figuren bleiben verschollen. Mission 2 ist noch nicht spielbar.',moves,'help');
  }
