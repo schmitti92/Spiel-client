@@ -1,4 +1,5 @@
 import {MISSION_1} from './mission-config.js?v=4';
+import {createGrinchOnline} from './mission-1-online.js?v=1';
 import {cardVisual} from '../card-visuals.js?v=11';
 import {drawClassicMissionBoard} from './mission-board.js?v=8';
 import {pathfinderStatus} from './mission-1-pathfinder.js?v=4';
@@ -8,6 +9,10 @@ import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,status,pieceCoord
 const $=id=>document.getElementById(id);
 const SVG='http://www.w3.org/2000/svg';
 const KEY='dog-grinch-m1-start-active-v5';
+const roomCode=(new URLSearchParams(location.search).get('room')||'').toUpperCase();
+const onlineMode=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/.test(roomCode);
+let onlineSeat=null,onlineMatchId=null,onlineBridge=null,onlineBusy=false;
+const myTurn=()=>!onlineMode||onlineSeat===state?.current;
 let state=null,chosenCard=null,chosenPiece=null,pickMoves=[],lastSeenRevision=-1;
 let toastTimer=null,effectTimer=null;
 const ns=(tag,attrs={},parent=null)=>{
@@ -52,12 +57,12 @@ function describeMove(m){
  return v;
 }
 function currentMoves(){
- if(!state||state.complete||!chosenCard)return [];
+ if(!state||state.complete||!chosenCard||!myTurn())return [];
  const card=state.hands[state.current].find(c=>c.id===chosenCard);
  return card?legalMoves(state,state.current,card):[];
 }
 function choosePawn(id){
- if(!state||state.complete)return;
+ if(!state||state.complete||!myTurn()||onlineBusy)return;
  const p=state.pieces.find(x=>x.id===id);
  const moves=currentMoves();
  if(p.seat===state.current){
@@ -72,7 +77,16 @@ function choosePawn(id){
   else toast('Dieser Tausch ist nicht möglich.',1600);
  }
 }
-function doMove(m){
+async function doMove(m){
+ if(onlineMode){
+  if(!onlineBridge||!myTurn()||onlineBusy)return;
+  onlineBusy=true;render();
+  try{
+   const completed=await onlineBridge.action(m,state);
+   if(completed){chosenCard=null;chosenPiece=null;pickMoves=[];}
+  }finally{onlineBusy=false;render();}
+  return;
+ }
  try{
   state=play(state,state.current,m);
   chosenCard=state.seven?.cardId??null;chosenPiece=null;pickMoves=[];
@@ -104,13 +118,13 @@ function render(){
  }
  const hand=$('hand');hand.replaceChildren();
  const moves=$('moves');moves.replaceChildren();
- if(!state.complete){
+ if(!state.complete&&myTurn()){
   if(state.seven)chosenCard=state.seven.cardId;
   for(const c of state.hands[state.current]){
    const b=document.createElement('button');
    b.className='card'+(chosenCard===c.id?' selected':'')+' has-art';
    b.type='button';
-   b.disabled=Boolean(state.seven&&state.seven.cardId!==c.id);
+   b.disabled=onlineBusy||Boolean(state.seven&&state.seven.cardId!==c.id);
    const visual=cardVisual(c.type);
    const fallback=text('span',c.type==='swap'?'⇄':c.type==='joker'?'★':c.type,b,'card-fallback');
    if(visual.image){
@@ -141,8 +155,13 @@ function render(){
    if(!visible.length)text('p','Für diese Karte ist derzeit kein Zug möglich.',moves,'help');
    else moveButtons(visible,moves);
   }else text('p','Wähle eine DOG-Karte. Die 7 wird auf insgesamt 7 Schritte verteilt; Tauschen und Joker funktionieren wie im Hauptspiel.',moves,'help');
- }else {
-  text('p','Die drei Freunde haben alle zwölf verbliebenen Figuren über ihre drei wiederverwendbaren Portale nach Welt 2 geschickt. Drei Figuren bleiben verschollen. Mission 2 ist noch nicht spielbar.',moves,'help');
+ }else if(state.complete){
+  text('p',onlineMode?
+   '🏆 Gemeinsamer Online-Sieg! Alle zwölf Figuren wurden nach Welt 2 gerettet. Der Server speichert den Erfolg für die drei Teilnehmer; Mission 2 ist freigeschaltet, aber noch nicht spielbar.':
+   'Die drei Freunde haben alle zwölf verbliebenen Figuren über ihre drei wiederverwendbaren Portale nach Welt 2 geschickt. Drei Figuren bleiben verschollen. Mission 2 ist noch nicht spielbar.',moves,'help');
+ }else{
+  const player=state.players[state.current]?.name||'Spieler';
+  text('p','⏳ '+player+' ist am Zug. Deine Handkarten bleiben privat. Warte auf deinen nächsten Zug.',moves,'help');
  }
  $('actions').textContent=state.complete?'🎉 Mission 1 lokal abgeschlossen (Test, keine offiziellen Belohnungen).':'Figur 5 steht bereits auf dem Startfeld und darf sofort laufen. Ziel: Vier Figuren pro Spieler durch das jeweilige Portal schicken; eine Figur wird vom Fluch gefangen.';
  // Each player has exactly one reusable portal at the FIRST classic goal location.
@@ -227,6 +246,7 @@ function onEffect(){
  toast(ev.message,ev.type==='win'?6500:3400);
 }
 function start(){
+ if(onlineMode)return;
  clearMissionWeather();
  const names=LABELS.map((name,i)=>$('name-'+i).value.trim()||name);
  state=newGame(undefined,names);
@@ -237,12 +257,85 @@ function start(){
 }
 $('begin').addEventListener('click',start);
 $('restart').addEventListener('click',()=>{
+ if(onlineMode)return;
  if(!confirm('Lokalen Mission-1-Test wirklich neu beginnen?'))return;
  clearMissionWeather();
  localStorage.removeItem(KEY);state=null;chosenCard=null;chosenPiece=null;pickMoves=[];
  for(let i=0;i<SEATS;i++)$('name-'+i).value=LABELS[i];
  $('setup').showModal();render();
 });
-state=read();
-if(state){render();if(state.lastEvent){lastSeenRevision=state.revision;}}
-else $('setup').showModal();
+function updateOnlinePanel(room){
+ const panel=$('grinch-online-panel');
+ panel.hidden=false;
+ const players=room.players?.filter(p=>!p.testBot&&!p.bot)||[];
+ const active=room.phase==='playing'&&room.match?.game==='dog-grinch1';
+ $('grinch-online-code').textContent='Spielraum '+room.code;
+ $('grinch-online-players').textContent=players.map(p=>(p.me?'👤 ':'')+p.name).join(' · ')+' ('+players.length+'/3)';
+ const start=$('grinch-online-launch');
+ start.hidden=!room.host||(active&&!room.match.grinch?.complete);
+ start.disabled=onlineBusy||players.length!==3;
+ $('grinch-online-lobby').href='../../hub-lobby.html?'+new URLSearchParams({room:room.code}).toString();
+ if(active){
+  $('grinch-online-status').textContent=room.match.grinch?.complete?
+    (room.match.grinchCompletionRecorded?'✅ Offizieller Sieg bestätigt. Mission 2 ist gespeichert, aber noch nicht spielbar.':'🏆 Sieg erkannt – Server bestätigt den Fortschritt.'):
+    '🎲 Mission 1 läuft online · '+room.match.grinchRoster.map(p=>p.name).join(' / ');
+  return;
+ }
+ $('grinch-online-status').textContent=room.host?
+  (players.length===3?'Alle drei sind da. Du kannst Mission 1 gemeinsam starten.':'Warte auf genau drei Spieler im Raum, dann kannst du starten.'):
+  'Warte darauf, dass der Host die Mission startet. Falls du nicht zum Raum gehörst, tritt zuerst über die Lobby bei.';
+}
+function acceptOnlineRoom(room){
+ if(!room||room.code!==roomCode)return;
+ updateOnlinePanel(room);
+ const match=room.phase==='playing'&&room.match?.game==='dog-grinch1'?room.match:null;
+ if(!match){
+  state=null;onlineSeat=null;onlineMatchId=null;
+  $('board').innerHTML='';
+  $('hand').replaceChildren();$('moves').replaceChildren();
+  $('turn-label').textContent='🌐 Warte auf den Online-Missionsstart';
+  return;
+ }
+ const mission=match.grinch;
+ if(!mission)return;
+ const previous=state?.revision??null,priorMatch=onlineMatchId;
+ onlineSeat=Number.isInteger(match.grinchSeat)?match.grinchSeat:null;
+ onlineMatchId=match.id;
+ state=mission;
+ if(priorMatch!==match.id){
+  chosenCard=null;chosenPiece=null;pickMoves=[];
+  lastSeenRevision=mission.revision; // do not replay old effects on joining/reloading
+ }else if(previous!==null&&previous!==mission.revision){
+  chosenCard=mission.seven&&onlineSeat===mission.current?mission.seven.cardId:null;
+  chosenPiece=null;pickMoves=[];
+ }
+ render();
+ if(previous!==null&&priorMatch===match.id&&previous!==mission.revision)onEffect();
+}
+function onOnlineError(message){
+ $('grinch-online-panel').hidden=false;
+ $('grinch-online-status').textContent='⚠️ '+message;
+ toast(message,4400);
+}
+function onOnlineConnection(mode){
+ if(mode==='login')$('grinch-online-status').textContent='🔐 Melde dich mit deinem Online-Profil an oder kehre zum gemeinsamen Spielraum zurück.';
+ else if(mode==='reconnecting')$('grinch-online-status').textContent='🔄 Verbindung unterbrochen. Der Spielstand wird erneut geladen.';
+}
+if(onlineMode){
+ $('grinch-online-panel').hidden=false;
+ $('grinch-online-code').textContent='Spielraum '+roomCode;
+ $('grinch-online-lobby').href='../../hub-lobby.html?'+new URLSearchParams({room:roomCode}).toString();
+ $('restart').hidden=true;$('restart').style.display='none';
+ onlineBridge=createGrinchOnline({roomCode,onRoom:acceptOnlineRoom,onError:onOnlineError,onConnection:onOnlineConnection});
+ $('grinch-online-launch').addEventListener('click',async()=>{
+  if(onlineBusy)return;
+  onlineBusy=true;$('grinch-online-launch').disabled=true;
+  try{await onlineBridge.launch();}finally{onlineBusy=false;}
+ });
+ $('grinch-online-refresh').addEventListener('click',()=>void onlineBridge.refresh());
+ onlineBridge.start();
+}else{
+ state=read();
+ if(state){render();if(state.lastEvent){lastSeenRevision=state.revision;}}
+ else $('setup').showModal();
+}
