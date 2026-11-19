@@ -205,9 +205,10 @@ function ensureSingleLoss(s,seat,movedId){
  const info=s.players[seat];
  if(info.lost||info.moves<2)return;
  const p=s.pieces.find(p=>p.id===movedId&&p.seat===seat);
- if(!p||p.place!=='track'||isProtectedStart(p))return;
+ if(!p||p.place!=='track')return;
  const trackPosition=pieceCoord(p);
- if(MISSION_1.trailHints.some(h=>h.field===trackPosition))return;
+ // All four colored start squares stay safe, even if a visiting pawn lands there.
+ if(trackPosition%16===0||MISSION_1.trailHints.some(h=>h.field===trackPosition))return;
  p.place='lost';p.steps=-1;info.lost=true;
  const names={collapse:'Der Boden bricht ein!',abduction:'Eine Figur wird entführt!',freeze:'Ein Eisfluch schlägt zu!'};
  const msg=names[info.lossType]+' '+info.name+' verliert eine Figur.';
