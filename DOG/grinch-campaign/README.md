@@ -17,12 +17,12 @@ Stand: 19.11.2026
 - Der `mission-board.js`-Renderer legt die *originalen 64 DOG-Lauffelder* und die normalen Startbereiche über die Winterlandschaft.
 - Mission 1 unterdrückt das DOG-Wappen in der Mitte, damit der bebilderte Welt-2-Eingang sichtbar bleibt.
 - Jedem menschlichen Spieler wird nur **das allererste Feld der bisherigen vierteiligen Zielbahn** als aktives Portal gezeigt: Rot `GOAL_POINTS[0][0]`, Blau `GOAL_POINTS[1][0]`, Gelb `GOAL_POINTS[3][0]`. Die anderen drei Zielfelder je Bahn und die grüne Zielbahn sind im Kampagnenmodus ausgeblendet.
-- Pro Spieler fünf Figuren zum Start. Vier stehen in den normalen Hausfeldern und die fünfte wird zunächst **nur als Reserveanzeige** auf dem eigenen Startfeld dargestellt. Verlässt eine Figur das Haus, rückt die fünfte in den freien Hausplatz. Wird eine eigene aktive Figur vom Startfeld durch eine andere eigene aus dem Haus verdrängt, kehrt die erste ohne Verlust ins Haus zurück. Keine Figur wird beim Startfeldwechsel unsichtbar.
+- Zu Beginn stehen **vier Figuren im Starthaus und Figur 5 ist bereits aktiv auf dem eigenen geschützten Startfeld**. Sie darf sofort mit einer passenden Bewegungskarte laufen. Eine zusätzliche Startkarte ist nicht erforderlich. Wird später eine weitere eigene Figur herausgesetzt, kehrt die vorherige Startfigur ins Haus zurück und wird auf einem Hausfeld dargestellt.
 - Pro Spieler fünf Figuren zum Start. Eine Figur wird garantiert durch Einsturz, Entführung oder Eisfluch gefangen und verbleibt kampagnenbedingt vermisst.
 - Die übrigen vier Figuren müssen mit genau passender Kartenzahl auf das eine Portal-Zielfeld gelangen (`steps === 64`). Bei Eintritt wechselt die Figur dauerhaft in den `teleported`-Zustand und verschwindet **sofort** vom Brett. Das Portal bleibt für beliebig viele weitere Figuren wieder frei.
 - Sobald alle drei Spieler je vier Figuren teleportiert haben (12 insgesamt), ist der lokale Missionsversuch abgeschlossen; ein echter Server-Aufstieg in Mission 2 existiert noch nicht.
-- Die vier Orientierungsfelder 8/24/40/56 zeigen rein erzählerische Hinweise. Nebel und Erdbeben gelten ausschließlich für den Missionsmodus.
-- Der neue Regelstand verwendet lokales Spielstandformat `version:4` mit Key `dog-grinch-m1-canonical-cards-v4`. Ältere lokale Testpartien bleiben unter ihren alten Speicher-Keys als Backup, werden aber nicht fortgeführt.
+- Die vier Orientierungsfelder 8/24/40/56 zeigen rein erzählerische Hinweise und sind **keine Fallen**. Die Felder mit Einsturz, Entführung und Eisfluch werden **nicht vorab markiert** und sehen bis zur Auslösung aus wie normale DOG-Felder. Erst wenn eine bewegte Figur dort nach dem Abschluss einer Karte verschwindet, erscheint die Fallenart für etwa 2,8 Sekunden. Alle farbigen Startfelder und öffentliche Hinweisfelder sind von diesen Geheimfallen ausgenommen. Jede Spielerfarbe verliert maximal genau eine Figur. Nebel und Erdbeben gelten ausschließlich für den Missionsmodus.
+- Der Regelstand verwendet lokales Spielstandformat `version:5` mit Key `dog-grinch-m1-start-active-v5`. Ältere lokale Testpartien bleiben unter ihren alten Speicher-Keys als Backup, werden aber nicht fortgeführt.
 - Die Missionskarten stammen aus demselben offiziellen Kartensatz wie `DOG/engine.js`: 110 Karten, 14 Kartentypen, Original-Kartenbilder über `card-visuals.js`, separate Tauschkarte, teilbare 7, Joker, vier Schritte rückwärts, Kartenphasen 6/5/4/3/2. Im Drei-Spieler-Jeder-für-sich-Modus **entfällt der 2-gegen-2-Partnerkartentausch** des klassischen Spiels; die Karteneffekte selbst bleiben erhalten. Keine Render-Anbindung und keine offiziellen Kampagnenbelohnungen.
 
 ## Unbedingt beachten
@@ -62,7 +62,7 @@ Die Vorgängerversion mit Einzelportal wurde in 400 Partien getestet. Der aktuel
 - Für drei Kampagnenspieler werden Rot (0), Blau (16) und Gelb (48) benutzt, die grüne Bahn bleibt optisch erhalten und unbesetzt.
 - Originale Design-Voreinstellungen und selbst platzierte Brettfelder werden übernommen.
 - Sonderfelder und Wettereffekte dürfen lediglich **Overlay-Schichten** hinzufügen; der klassische Brettrenderer, die Feldanzahl und die Standard-Lobby werden nicht geändert.
-- `mission-1-rules.js` speichert in `dog-grinch-m1-canonical-cards-v4`, damit alte Teststände mit abweichender Kartendeck- oder Zielgeometrie nicht versehentlich geladen werden.
+- `mission-1-rules.js` speichert unter `dog-grinch-m1-start-active-v5`, damit ältere Teststände mit nur optisch aufgestellter fünfter Figur nicht versehentlich geladen werden.
 - Der SVG-Brettrenderer wurde in einem isolierten Smoke-Test mit 15 gezeichneten Spielfiguren geprüft.
 
 ## Geschütztes Startfeld und Erdbeben (Mission 1)
@@ -77,3 +77,12 @@ Die Vorgängerversion mit Einzelportal wurde in 400 Partien getestet. Der aktuel
 - 3 unabhängige Spieler sind momentan nur lokal an einem Gerät spielbar; keine echte Online-Mehrspielerpartie.
 - Kein klassischer 2v2-Partnerkartentausch im Drei-Spieler-Modus, da in dieser Mission jeder für sich spielt.
 - Browser- und Handy-Praxistest, Render-API-Spielstand, verifizierter Missionsabschluss und Freischaltung von Mission 2 fehlen noch.
+
+## Verdeckte Fallen – Regelstand Mission 1
+
+- Die drei garantierten Verluste sind **Überraschungsfallen**: Vor dem Auslösen kennt die Oberfläche keine sichtbare Fallenmarkierung und zeigt keinen gefährlichen Feldstandort an.
+- Eine Falle kann erst dann an der tatsächlichen Landeposition der **bewegten** Figur ausgelöst werden, nachdem der Spieler mindestens zwei vollständige Kartenaktionen hatte. Die Zielfigur muss auf einem normalen, unmarkierten Lauffeld stehen. Startfelder und Hinweisfelder sind ausgeschlossen.
+- Auf eine aktive 7 darf die Falle erst nach der kompletten Aufteilung der sieben Schritte reagieren. Auf Hausfiguren, bereits teleportierte Figuren und andere unbeteiligte Figuren greift sie nicht zu.
+- Nach dem Auslösen wird das getroffene Feld kurz durch ein Fallen-Overlay sichtbar gemacht; danach erscheint wieder das normale DOG-Feld. Keine vorgezogene Anzeige oder Vorschau auf noch nicht aktivierte Fallen.
+- Die konkrete Landeposition wird erst beim Auslösen festgelegt, nicht als feste Fallenliste vor Beginn gespeichert. Das erhält in dieser lokalen Testversion die garantierten drei Figurenverluste bei unterschiedlichen Kartenverläufen.
+- Nach dieser Änderung wurden **315 vollständige simulierte Partien** mit unterschiedlichen Spielweisen erfolgreich abgeschlossen: je drei Verluste, zwölf teleportierte Figuren, keine Überschneidung oder Falle auf einem farbigen Start- bzw. Hinweisfeld.
