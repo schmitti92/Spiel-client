@@ -67,6 +67,12 @@
  background-size:100% 100%,100% 100%!important;
  box-shadow:0 10px 25px #000b,0 0 0 1px #a47442!important;
 }
+/* Alte 4+3-Vorlagen besitzen spezifischere [data-variant]-Regeln.
+   Alle sieben Karten müssen ihrer echten DOM-Reihenfolge folgen. */
+#panel-scratch #scratch-tier-grid .scratch-tier[data-variant]{
+ order:0!important;
+ grid-column:auto!important;
+}
 #panel-scratch #scratch-tier-grid .scratch-category-heading{
  grid-column:1 / -1!important;order:0!important;
  min-width:0!important;margin:8px 0 -2px!important;
