@@ -473,9 +473,26 @@ export function initChristmasScratch(){
   $('scratch-host-settings').title='Gemeinsame Rubbellos-Einstellungen';
   $('scratch-daily-info').textContent=freeMode?'🎁 Kostenloses Rubbeln für alle aktiviert':
    status?.dailyFreeAvailable?'🎁 Heute ein einfaches Gratis-Los verfügbar':'Gratis-Los heute bereits benutzt';
-  // All four variants are visible simultaneously; no hidden two-card
-  // selector and no random result when one specific card was chosen.
-  for(const option of SCRATCH_SHOP_VARIANTS){
+  // Group all seven selectable tickets by class. This is presentation
+  // only: each ticket still uses its original option.id and server receipt.
+  const classOrder={simple:0,medium:1,premium:2};
+  const classTitles={
+   simple:['🎟️ Einfach','2 Lose · klassische Weihnachtsrubbelspiele'],
+   medium:['❄️ Mittel','3 Lose · besondere Gewinnkombinationen'],
+   premium:['👑 Premium','2 Lose · große Gewinne & Jackpots']
+  };
+  let displayedClass='';
+  const sortedOptions=[...SCRATCH_SHOP_VARIANTS].sort((a,b)=>
+   classOrder[a.tier]-classOrder[b.tier]);
+  for(const option of sortedOptions){
+   if(option.tier!==displayedClass){
+    displayedClass=option.tier;
+    const category=el('div','scratch-category-heading');
+    category.dataset.tier=option.tier;
+    category.append(el('h3','',classTitles[option.tier][0]),
+     el('span','',classTitles[option.tier][1]));
+    root.append(category);
+   }
    const tier=SCRATCH_TICKET_TYPES.find(c=>c.id===option.tier);
    const lucky=status?.settings?.numberOne20;
    // Preserve the independent configured number lottery base price.
