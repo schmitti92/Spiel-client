@@ -1,0 +1,129 @@
+/* Lichtertal · Glückszahl 1: red winning "1" + legible prize strip.
+ * Only live ticket presentation. All 20×2 hidden cells, their scratch
+ * geometry, receipt, probability, awards and host settings are untouched.
+ */
+.scratch-stage[data-variant="number_one_20"] #scratch-board
+ .scratch-field.scratch-number-target.scratch-lucky-number-one{
+ background:linear-gradient(145deg,#fff0cf 0%,#ffd7bd 50%,#f5c4ab 100%)!important;
+ border:1px solid #ff4545!important;
+ box-shadow:inset 0 0 0 1px #fff5df,0 0 8px 2px #ff3a4085!important;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-board
+ .scratch-field.scratch-number-target .scratch-cell-symbol.scratch-lucky-number-one-face{
+ display:inline-grid!important;
+ place-items:center!important;
+ color:#dc0829!important;
+ font:1000 clamp(15px,2.35vh,24px)/1 Georgia,serif!important;
+ -webkit-text-stroke:.55px #7c0016!important;
+ text-shadow:0 1px 0 #fff9df,0 0 5px #e70e3c91!important;
+ filter:drop-shadow(0 1px 1px #540010a8);
+}
+/* A single gift glyph and "0" in a narrow legend slot was illegible.
+ * Use three equal money cells and one larger gift zone with 5 individual
+ * recognizable gift symbols. Award amounts always come from the receipt. */
+.scratch-stage[data-variant="number_one_20"]
+ #scratch-lotto-ticket-prizes:not([hidden]){
+ position:absolute!important;
+ left:3%!important;right:3%!important;bottom:2.1%!important;
+ width:94%!important;height:9.2%!important;max-height:none!important;
+ z-index:5!important;
+ display:grid!important;
+ grid-template-columns:repeat(3,minmax(0,0.84fr)) minmax(0,2.45fr)!important;
+ grid-template-rows:minmax(0,1fr)!important;
+ align-items:stretch!important;gap:0!important;
+ padding:2px 5px!important;
+ border:2px solid #fff0ae!important;border-radius:12px!important;
+ background:linear-gradient(180deg,#0c6041,#064832 56%,#032b24)!important;
+ box-shadow:inset 0 1px 4px #fff5b477,0 0 10px #deac5e8c,0 3px 9px #0009!important;
+ overflow:hidden!important;
+ pointer-events:none!important;
+}
+.scratch-stage[data-variant="number_one_20"]
+ #scratch-lotto-ticket-prizes .lotto-ticket-prize{
+ display:flex!important;
+ flex-direction:column!important;
+ align-items:center!important;justify-content:center!important;
+ gap:1px!important;
+ height:100%!important;min-width:0!important;
+ padding:1px 3px!important;
+ border-right:1px solid #cba75f99!important;
+ background:transparent!important;
+ white-space:nowrap!important;
+}
+.scratch-stage[data-variant="number_one_20"]
+ #scratch-lotto-ticket-prizes .lotto-ticket-prize-icon{
+ display:block!important;
+ flex:0 0 auto!important;
+ font-size:clamp(16px,1.55vw,26px)!important;
+ line-height:1.05!important;
+}
+.scratch-stage[data-variant="number_one_20"]
+ #scratch-lotto-ticket-prizes .lotto-ticket-prize-label{
+ max-width:100%!important;
+ font:950 clamp(10px,1vw,15px)/1.1 Georgia,serif!important;
+ color:#ffe5a0!important;
+ text-align:center!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+ white-space:nowrap!important;
+}
+.scratch-stage[data-variant="number_one_20"]
+ #scratch-lotto-ticket-prizes .lotto-ticket-gifts{
+ display:flex!important;
+ flex-direction:column!important;
+ gap:2px!important;
+ border-right:0!important;
+ padding:0 3px!important;
+ overflow:hidden!important;
+}
+.scratch-stage[data-variant="number_one_20"]
+ #scratch-lotto-ticket-prizes .lotto-ticket-gift-icons{
+ display:flex!important;
+ align-items:center!important;justify-content:space-around!important;
+ gap:2px!important;
+ width:100%!important;min-width:0!important;
+ height:54%!important;line-height:1!important;
+}
+.scratch-stage[data-variant="number_one_20"]
+ #scratch-lotto-ticket-prizes .lotto-ticket-gift-item{
+ display:grid!important;
+ place-items:center!important;
+ flex:1 1 0!important;min-width:0!important;
+ max-width:30px!important;
+ height:100%!important;
+ font:900 clamp(13px,1.5vw,24px)/1!important;
+ filter:drop-shadow(0 1px 2px #021e11);
+ text-shadow:none!important;
+}
+.scratch-stage[data-variant="number_one_20"]
+ #scratch-lotto-ticket-prizes .lotto-ticket-gifts .lotto-ticket-prize-label{
+ display:block!important;
+ font-size:clamp(9px,.86vw,13px)!important;
+ line-height:1!important;
+ color:#fff0c4!important;
+}
+@media(max-width:1050px){
+ .scratch-stage[data-variant="number_one_20"]
+  #scratch-lotto-ticket-prizes:not([hidden]){
+  padding:1px 2px!important;
+  grid-template-columns:repeat(3,minmax(0,.77fr)) minmax(0,2.6fr)!important;
+ }
+ .scratch-stage[data-variant="number_one_20"]
+  #scratch-lotto-ticket-prizes .lotto-ticket-prize-icon{
+  font-size:clamp(14px,1.5vw,19px)!important;
+ }
+ .scratch-stage[data-variant="number_one_20"]
+  #scratch-lotto-ticket-prizes .lotto-ticket-gift-item{
+  font-size:clamp(12px,1.45vw,19px)!important;
+ }
+}
+@media(max-width:720px) and (orientation:portrait){
+ .scratch-stage[data-variant="number_one_20"]
+  #scratch-lotto-ticket-prizes .lotto-ticket-gift-item{
+  font-size:12px!important;
+ }
+ .scratch-stage[data-variant="number_one_20"]
+  #scratch-lotto-ticket-prizes .lotto-ticket-prize-label{
+  font-size:9px!important;
+ }
+}
