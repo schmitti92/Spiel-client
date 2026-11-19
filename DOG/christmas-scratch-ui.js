@@ -353,6 +353,7 @@ export function initChristmasScratch(){
   left.replaceChildren();right.replaceChildren();
   if(prizeStrip){
    prizeStrip.replaceChildren();
+   prizeStrip.append(el('span','lotto-ticket-prize-heading','🏆 GEWINNANZEIGE · BELOHNUNGEN'));
    // The five gift symbols are displayed individually, rather than
    // condensed into one tiny five-emoji string. Values stay server-derived.
    for(const [icon,label] of [
@@ -361,6 +362,7 @@ export function initChristmasScratch(){
     ['💼',num(amounts[2])]
    ]){
     const entry=el('span','lotto-ticket-prize');
+    entry.setAttribute('aria-label',icon+' '+label+' Münzen');
     entry.append(el('span','lotto-ticket-prize-icon',icon),
      el('strong','lotto-ticket-prize-label',label));
     prizeStrip.append(entry);
@@ -372,8 +374,8 @@ export function initChristmasScratch(){
     gift.setAttribute('aria-hidden','true');
     giftIcons.append(gift);
    }
-   const giftLabel=el('strong','lotto-ticket-prize-label','Freischaltung');
-   gifts.setAttribute('aria-label','Geschenksymbole: Geschenk, Herzgeschenk, Schleife, roter Umschlag und Einkaufstasche. Hauptgewinn: Freischaltung.');
+   const giftLabel=el('strong','lotto-ticket-prize-label','🎁 Freischaltung');
+   gifts.setAttribute('aria-label','Fünf unterschiedliche Geschenksymbole: Geschenk, Herzgeschenk, Schleife, roter Umschlag und Einkaufstasche. Freischaltung möglich.');
    gifts.title='Geschenke: 🎁 💝 🎀 🧧 🛍️ · Hauptgewinn: Freischaltung';
    gifts.append(giftIcons,giftLabel);
    prizeStrip.append(gifts);
