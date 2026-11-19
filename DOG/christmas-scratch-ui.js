@@ -1772,7 +1772,9 @@ export function initChristmasScratch(){
   drawShop();
   // The fixed ticket fills the viewport. Never scroll the underlying page
   // when it opens; on resize its artwork remains within the window.
-  document.body.classList.add('scratch-ticket-open');
+  // An asynchronous ticket reload may finish AFTER the player has switched
+  // to Grinch or another tab. Never lock the entire page from a hidden panel.
+  document.body.classList.toggle('scratch-ticket-open',!$('panel-scratch')?.hidden);
   if(result.commandId&&result.commandId===revealedReceipt())finish();
  }
  function showWinningElfPaths(wins){
