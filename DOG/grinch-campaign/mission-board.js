@@ -11,7 +11,7 @@
  */
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField} from '../board-layout.js?v=11';
 import {resolveAppearance,loadAppearance,validAssetPath} from '../appearance-registry.js?v=27';
-import {pieceCoord} from './mission-1-rules.js?v=6';
+import {pieceCoord} from './mission-1-rules.js?v=7';
 import {pathfinderBoardMarkup} from './mission-1-pathfinder.js?v=4';
 export const CLASSIC_TRACK_LENGTH=64;
 export const MISSION_BOARD_SEATS=Object.freeze([0,1,3]); // Rot, Blau, Gelb
@@ -132,8 +132,13 @@ export function drawClassicMissionBoard(boardSvg,game,{selectedPiece=null,onPiec
   if(!p)continue;
   const c=safeColor(owner),hi=selectedPiece===piece.id;
   const id=xmlEscape(piece.id),label=xmlEscape(game.players[piece.seat]?.name||'');
+  const earthquake=game.lastEvent?.type==='quake'?
+    game.lastEvent.quake?.movements?.find(m=>m.pieceId===piece.id):null;
+  const from=earthquake?trackPoint(earthquake.from):null;
+  const quakeStyle=from?
+    ' style="--quake-dx:'+(from.x-p.x).toFixed(2)+'px;--quake-dy:'+(from.y-p.y).toFixed(2)+'px"':'';
   if(hi)push('<circle cx="'+p.x+'" cy="'+p.y+'" r="27" fill="'+c+'" fill-opacity=".48" filter="url(#dog-halo)" pointer-events="none"/>');
-  push('<g class="dog-pawn '+(hi?'can-pick dog-pawn-selected':'')+'" data-piece="'+id+'" tabindex="0" role="button" aria-label="Figur '+(Number(piece.id.slice(1))%5+1)+' '+label+'">');
+  push('<g class="dog-pawn '+(hi?'can-pick dog-pawn-selected':'')+(from?' quake-pawn-hop':'')+'"'+quakeStyle+' data-piece="'+id+'" tabindex="0" role="button" aria-label="Figur '+(Number(piece.id.slice(1))%5+1)+' '+label+'">');
   if(look.pieceShape==='solid'){
     push('<circle cx="'+p.x+'" cy="'+p.y+'" r="17.3" fill="'+c+'" stroke="'+(hi?'#fffaf0':'#112536')+'" stroke-width="'+(hi?'2.4':'1.1')+'" filter="url(#dog-pawn-shadow)"/>');
     push('<circle cx="'+p.x+'" cy="'+p.y+'" r="14.7" fill="none" stroke="#ffffff" stroke-opacity=".26" stroke-width=".9" pointer-events="none"/>');
