@@ -269,3 +269,74 @@
   font-size:0!important;
  }
 }
+
+/* Screenshot-Abgleich 19.11.2026: Ein Menü-Icon ohne eigene Höhe war auf
+   Android 0px hoch (Font-Size 0 für die ersetzten Emojis). Den Icons eine
+   echte quadratische Fläche geben und beide Textzeilen mittig platzieren. */
+@media(min-width:761px){
+ .event-layout>.event-sidebar>.event-menu{
+  top:25.5%!important;
+  height:53.1%!important;
+  gap:0!important;
+ }
+ .event-layout>.event-sidebar .event-tab{
+  grid-template-columns:clamp(34px,3.5vw,48px) minmax(0,1fr) 15px!important;
+  grid-template-rows:minmax(0,1fr) auto auto minmax(0,1fr)!important;
+  padding:0 7px!important;
+  gap:0!important;
+  align-items:stretch!important;
+  justify-items:stretch!important;
+ }
+ .event-layout>.event-sidebar .event-tab>span{
+  grid-column:1!important;
+  grid-row:1/-1!important;
+  display:block!important;
+  width:clamp(32px,3.35vw,45px)!important;
+  height:clamp(32px,3.35vw,45px)!important;
+  min-width:32px!important;
+  min-height:32px!important;
+  aspect-ratio:1/1!important;
+  justify-self:center!important;
+  align-self:center!important;
+  background-size:contain!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+ }
+ .event-layout>.event-sidebar .event-tab strong{
+  grid-column:2!important;grid-row:2!important;
+  align-self:end!important;
+  justify-self:stretch!important;
+  transform:translateY(3px)!important;
+  line-height:1.07!important;
+ }
+ .event-layout>.event-sidebar .event-tab small{
+  grid-column:2!important;grid-row:3!important;
+  align-self:start!important;
+  justify-self:stretch!important;
+  transform:translateY(3px)!important;
+  line-height:1.12!important;
+ }
+ .event-layout>.event-sidebar .event-tab::after{
+  grid-column:3!important;grid-row:1/-1!important;
+  align-self:center!important;
+  justify-self:center!important;
+ }
+ .event-layout>.event-sidebar .event-tab[aria-selected="true"]{
+  border:2px solid #ffdf8e!important;
+  background:linear-gradient(100deg,#b7782088,#8e581e94,#bc812b78)!important;
+  box-shadow:0 0 17px 3px #ffbc49a3,inset 0 0 11px #ffdb78a8!important;
+ }
+}
+@media(max-width:760px){
+ .event-layout>.event-sidebar .event-tab>span{
+  display:block!important;
+  width:25px!important;height:25px!important;
+  min-width:25px!important;min-height:25px!important;
+  align-self:center!important;
+  background-size:contain!important;
+ }
+ .event-layout>.event-sidebar .event-tab strong,
+ .event-layout>.event-sidebar .event-tab small{
+  transform:none!important;
+ }
+}
