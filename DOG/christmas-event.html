@@ -24,7 +24,7 @@
 <link rel="stylesheet" href="./christmas-scratch-dogjackpot.css?v=1">
 <link rel="stylesheet" href="./christmas-scratch-premium-fit.css?v=1">
 <link rel="stylesheet" href="./christmas-scratch-lottery-v2.css?v=4">
-<link rel="stylesheet" href="./christmas-player-levels.css?v=3">
+<link rel="stylesheet" href="./christmas-player-levels.css?v=4">
 <link rel="stylesheet" href="./christmas-building-village.css?v=4">
 <link rel="stylesheet" href="./christmas-buildings-showcase.css?v=2">
 <link rel="stylesheet" href="./christmas-village-overview.css?v=1">
@@ -789,60 +789,93 @@
       </dialog>
     </section>
     <section class="event-panel" id="panel-level" role="tabpanel" aria-labelledby="tab-level" hidden>
-      <div class="event-heading"><div><span class="eyebrow">🏅 DEIN PERSÖNLICHER SAMMLERPASS</span><h2>Spielerlevel 1–50</h2>
-        <p>Spiele DOG, sammle EP und öffne 50 Stufen voller Rubbellose und besonderer Meilensteine.</p></div>
-        <span class="soft-tag">⭐ Erfahrung</span></div>
       <div class="dog-level-shell">
-        <section class="dog-level-hero" aria-labelledby="dog-level-heading">
-          <div class="dog-level-hero-head"><div><span class="eyebrow">✦ DAS GOLDENE LEVELBUCH ✦</span>
-            <h3 id="dog-level-heading">Dein Weg durch Lichtertal</h3>
-            <p>Nur abgeschlossene, vom Server bestätigte DOG-Onlinepartien zählen.</p></div>
-            <button type="button" id="dog-level-refresh" class="dog-level-refresh">↻ Level aktualisieren</button>
+        <header class="dog-pass-heading">
+          <div class="dog-pass-heading-inner">
+            <span class="dog-pass-heading-cards" aria-hidden="true">🃏</span>
+            <div class="dog-pass-heading-copy">
+              <h2 id="dog-level-heading">Mein Spielerlevel</h2>
+              <p>Spiele DOG, sammle Erfahrungspunkte (EP) und steige bis Level 50 auf.<br>
+                 Freue dich auf Rubbellose, Designs, Figuren und besondere Belohnungen!</p>
+            </div>
+            <span class="dog-pass-heading-cards" aria-hidden="true">🃏</span>
           </div>
-          <div id="dog-level-summary" hidden>
-            <div class="dog-level-overview">
-              <div class="dog-level-medallion" aria-label="Aktuelles Spielerlevel"><span>LEVEL</span>
-                <strong id="dog-level-current">1</strong><span>VON <span id="dog-level-max">50</span></span></div>
-              <div class="dog-level-xp-data"><strong id="dog-level-xp-total">0 EP</strong>
-                <small id="dog-level-next">Level 2 · noch 100 EP</small>
-                <progress id="dog-level-progress" class="dog-level-xp-meter" max="100" value="0" aria-label="Fortschritt zum nächsten Level"></progress>
-                <small id="dog-level-progress-text">0 / 100 EP zum nächsten Level</small></div>
+          <div class="dog-pass-max"><span>MAX.</span><span>LEVEL</span><strong>50</strong></div>
+        </header>
+
+        <section class="dog-pass-profile" aria-label="Dein persönlicher Level-Fortschritt">
+          <div id="dog-level-summary" class="dog-pass-profile-inner" hidden>
+            <div class="dog-pass-identity">
+              <div class="dog-pass-portrait"><span id="dog-level-avatar" class="dog-pass-avatar" role="img" aria-label="Dein Profilbild">👤</span>
+                <span class="dog-pass-avatar-crown" aria-hidden="true">👑</span></div>
+              <div class="dog-pass-name"><strong id="dog-level-player-name">Spieler</strong><span>Spielerlevel</span></div>
             </div>
-            <div class="dog-level-info-grid">
-              <div>🎮 Partien: <strong id="dog-level-matches">0</strong></div>
-              <div>🏆 Belohnungen: <strong id="dog-level-claimed">0 / 50</strong></div>
-              <div>✨ Letzte Partie: <strong id="dog-level-last">Noch kein Fortschritt</strong></div>
-              <div>📚 Akademie: <strong id="dog-level-academy">Grundstufe</strong></div>
+            <div class="dog-level-medallion" aria-label="Aktuelles Spielerlevel">
+              <span>LEVEL</span><strong id="dog-level-current">1</strong><small>VON <span id="dog-level-max">50</span></small>
             </div>
+            <div class="dog-pass-progress-area">
+              <div class="dog-pass-xp-top"><span>Erfahrungspunkte (EP)</span>
+                <strong id="dog-level-xp-total">0 EP</strong></div>
+              <div class="dog-pass-xp-meter-wrap">
+                <progress id="dog-level-progress" class="dog-level-xp-meter" max="100" value="0" aria-label="Erfahrungspunkte bis zum nächsten Level"></progress>
+                <span id="dog-level-progress-percent">0 %</span>
+              </div>
+              <p class="dog-pass-xp-help" id="dog-level-next">Level 2 · noch 100 EP</p>
+              <div class="dog-level-info-grid">
+                <div class="dog-pass-stat"><span aria-hidden="true">🎮</span><small>Gespielte Partien</small><strong id="dog-level-matches">0</strong></div>
+                <div class="dog-pass-stat"><span aria-hidden="true">🏆</span><small>Siege</small><strong id="dog-level-wins">0</strong></div>
+                <div class="dog-pass-stat"><span aria-hidden="true">⭐</span><small>Belohnungen</small><strong id="dog-level-claimed">0 / 50</strong></div>
+                <div class="dog-pass-stat dog-pass-stat-next"><span aria-hidden="true">🎁</span><small>Nächste Belohnung</small>
+                  <strong id="dog-level-coming">Level 2</strong></div>
+              </div>
+            </div>
+          </div>
+          <div class="dog-pass-utility">
+            <button type="button" id="dog-level-refresh" class="dog-level-refresh" title="Fortschritt neu laden">↻ Aktualisieren</button>
           </div>
         </section>
-        <p id="dog-level-status" class="dog-level-status" role="status" aria-live="polite">Öffne den Bereich, um dein Spielerlevel zu laden.</p>
-        <div class="dog-level-banner"><span class="dog-level-banner-icon" aria-hidden="true">🎁</span>
-          <div class="dog-level-banner-copy"><strong id="dog-level-coming">Deine nächste Belohnung wartet!</strong>
-            <small>Gesammelte Gutscheine liegen im Rubbellos-Konto und sind kostenlos einlösbar.</small></div>
-          <button type="button" id="dog-level-to-scratch" class="dog-level-to-scratch">🎟️ Zu den Rubbellosen</button>
+
+        <p id="dog-level-status" class="dog-level-status" role="status" aria-live="polite">Dein persönlicher Level-Fortschritt wird geladen.</p>
+
+        <nav id="dog-level-range-nav" class="dog-level-range-nav" aria-label="Levelbereiche 1 bis 50"></nav>
+        <section class="dog-pass-collection" aria-label="Level und Belohnungen">
+          <button type="button" id="dog-level-range-prev" class="dog-pass-arrow" aria-label="Vorherige zehn Level">❮</button>
+          <div class="dog-pass-cards-scroll" id="dog-level-cards-scroll" tabindex="0" aria-label="Levelkarten horizontal durchblättern">
+            <div id="dog-level-rewards" class="dog-level-grid" aria-label="Zehn Level mit ihren einzelnen Belohnungen"></div>
+          </div>
+          <button type="button" id="dog-level-range-next" class="dog-pass-arrow" aria-label="Nächste zehn Level">❯</button>
+        </section>
+        <p id="dog-level-range-title" class="dog-pass-range-caption">Level 1–10 von 50 · Wische horizontal für weitere Karten.</p>
+
+        <div class="dog-pass-bottom">
+          <section class="dog-level-rules" aria-labelledby="dog-level-rules-heading">
+            <h3 id="dog-level-rules-heading">⭐ So sammelst du Erfahrungspunkte (EP)</h3>
+            <div class="dog-pass-rule"><span aria-hidden="true">🎮</span><p>DOG-Partie abschließen</p><strong>+50 EP</strong></div>
+            <div class="dog-pass-rule"><span aria-hidden="true">🏆</span><p>Sieg in einer Partie</p><strong>+50 EP zusätzlich</strong></div>
+            <div class="dog-pass-rule"><span aria-hidden="true">♟️</span><p>Gegnerische Figur rauswerfen <small>(max. 5× pro Partie)</small></p><strong>+10 EP</strong></div>
+            <p class="dog-pass-rule-note">📚 Akademie: <strong id="dog-level-academy">Grundstufe</strong> ·
+              <span id="dog-level-last">Noch keine Partie abgeschlossen</span></p>
+          </section>
+          <section class="dog-pass-goal" aria-labelledby="dog-level-goal-heading">
+            <div class="dog-pass-goal-text">
+              <h3 id="dog-level-goal-heading">👑 Dein Ziel: Level 50</h3>
+              <ul>
+                <li>50 abwechslungsreiche Level</li>
+                <li>Überwiegend kleine Rubbellose</li>
+                <li>Besondere Highlights mit Mittel- und Premium-Losen</li>
+                <li>Freischaltbare Designs, Karten und 3D-Figuren</li>
+              </ul>
+              <button type="button" id="dog-level-to-scratch" class="dog-level-to-scratch">🎟️ Rubbellose öffnen</button>
+            </div>
+            <div class="dog-pass-chest" aria-hidden="true"><span>50</span></div>
+          </section>
         </div>
-        <section class="dog-level-rules"><h3>⭐ So verdienst du Erfahrungspunkte</h3>
-          <p>Abgeschlossene DOG-Partie: <strong>+50 EP</strong> · Sieg: <strong>+50 EP zusätzlich</strong> · Gegnerische Figur rauswerfen: <strong>+10 EP</strong> (maximal fünf pro Partie). Die XP-Wichtel-Akademie kann einen Bonus geben. Käufe und einzelne Spielzüge bringen keine Level-EP.</p></section>
-        <div class="dog-level-collection-header">
-          <div><span class="dog-level-eyebrow">✦ 50 STUFEN · 5 KAPITEL</span><h3 id="dog-level-range-title">Level 1–10</h3></div>
-          <span class="soft-tag">🎟️ Kleine Lose, große Freude</span>
-        </div>
-        <nav id="dog-level-range-nav" class="dog-level-range-nav" aria-label="Levelbereich auswählen"></nav>
-        <div id="dog-level-rewards" class="dog-level-grid" aria-label="Level-Belohnungen: einfache, mittlere und Premium-Rubbellose"></div>
-        <p class="dog-level-footer">🎄 Die meisten Stufen belohnen dich mit einfachen Losen. Bei ausgewählten Meilensteinen gibt es mittlere oder Premium-Lose. Designs auf Level 2, 3 und 4 bleiben erhalten. Jede Level-Belohnung kann einmal abgeholt werden.</p>
-      </div>
-    </section>
-        <p id="dog-level-status" class="dog-level-status" role="status" aria-live="polite">Öffne den Bereich, um dein Spielerlevel zu laden.</p>
-        <section class="dog-level-rules"><h3>⭐ So verdienst du Erfahrungspunkte</h3><p>Abgeschlossene DOG-Partie: <strong>+50 EP</strong> · Sieg: <strong>+50 EP zusätzlich</strong> · Gegnerische Figur rauswerfen: <strong>+10 EP</strong> (maximal fünf pro Partie). Es zählen nur die Ergebnisse abgeschlossener Onlinepartien, nicht einzelne Spielzüge oder Rubbellos-Käufe.</p></section>
-        <div id="dog-level-rewards" class="dog-level-grid" aria-label="Die zehn Level und ihre künftigen Belohnungen"></div>
-        <p class="scratch-info">🎨 Ab Level 2 wird der Brettdesigner für dein Profil freigeschaltet. Die restlichen Level-Belohnungen bestimmen wir später gemeinsam; derzeit werden keine Geld- oder Sachpreise durch das Levelsystem vergeben.</p>
       </div>
     </section>
   </main>
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./christmas-event.js?v=129"></script>
+<script type="module" src="./christmas-event.js?v=130"></script>
 </body>
 </html>
