@@ -147,6 +147,7 @@ export function initChristmasScratch(){
     SCRATCH_EDITION_ALREADY_COMPLETE:'🏁 Ausverkaufte Auflagen dürfen nicht nachträglich geändert werden.',
     SCRATCH_EDITION_FIXED_PLAN_MISSING:'⚠️ Der feste Gewinnplan konnte nicht geladen werden.',
     SCRATCH_EDITION_WALLET_LIMIT:'⚠️ Dein Münzkonto ist voll. Gib zuerst Münzen aus, damit der vollständige Gewinn gutgeschrieben werden kann.',
+     SCRATCH_EDITION_PRIZE_CATEGORY_INVALID:'⚠️ Wähle Gewinnkategorie 1, 2 oder 3.',
    SCRATCH_TIC_EDITION_ACTIVE:'⚠️ Diese Tic-Tac-Toe-Auflage läuft noch. Du kannst die Restlose bearbeiten.',
    SCRATCH_TIC_EDITION_SOLD_OUT:'🏁 Alle 500 Tic-Tac-Toe-Lose sind vergeben. Erstelle eine neue Auflage.',
    SCRATCH_TIC_EDITION_INVALID_BUDGET:'⚠️ Bitte ein gültiges festes Gesamtbudget eingeben.',
@@ -663,6 +664,7 @@ export function initChristmasScratch(){
   }
   const set=(id,value)=>{$(id).value=String(value)};
   set('gs-price',cfg.price??200);
+  set('gs-prize-category',giftsEdition?.prizeCategory??1);
   set('gs-none',(cfg.weights?.none??200)/10);
   set('gs-unlock',(cfg.weights?.unlock??111)/10);
   for(let i=0;i<3;i++)set('gs-coin-'+i,cfg.coinAmounts?.[i]??[10,40,100][i]);
@@ -776,6 +778,7 @@ export function initChristmasScratch(){
   }
   const set=(id,value)=>{$(id).value=String(value)};
   set('sn-price',cfg.price??200);
+  set('sn-prize-category',snowEdition?.prizeCategory??1);
   set('sn-none',(cfg.weights?.none??200)/10);
   set('sn-unlock',(cfg.weights?.unlock??111)/10);
   for(let i=0;i<3;i++)set('sn-coin-'+i,cfg.coinAmounts?.[i]??[10,40,100][i]);
@@ -2108,7 +2111,8 @@ export function initChristmasScratch(){
    feedback.textContent='🔄 Render verteilt das Restbudget auf die unverkauften Lose …';
    const response=await query('/editions/'+variant+'/edit',{
     editionId:current.id,expectedRevision:current.revision??0,maxTotalCoins,
-    [gifts?'gifts':'snow']:config});
+    [gifts?'gifts':'snow']:config,
+    prizeCategory:Number($(key+'-prize-category').value)});
    const updated=gifts?response.giftsEdition:response.snowEdition;
    if(!updated||updated.id!==current.id||!response.settings)
     throw Error('Der Server hat die Änderung nicht bestätigt.');
@@ -2145,7 +2149,8 @@ export function initChristmasScratch(){
    if(!yes)return;
    button.disabled=true;
    feedback.textContent='📦 Veröffentliche die 500er-Auflage sicher auf Render …';
-   const response=await query('/editions/gifts',{gifts,maxTotalCoins});
+   const response=await query('/editions/gifts',{gifts,maxTotalCoins,
+    prizeCategory:Number($('gs-prize-category').value)});
    if(!response.giftsEdition||!response.settings?.variants?.gifts)
     throw Error('Der Server hat die Auflage nicht bestätigt.');
    giftsEdition=response.giftsEdition;
@@ -2206,7 +2211,8 @@ export function initChristmasScratch(){
    if(!yes)return;
    button.disabled=true;
    feedback.textContent='📦 Veröffentliche die 500er-Auflage sicher auf Render …';
-   const response=await query('/editions/snow_collect',{snow,maxTotalCoins});
+   const response=await query('/editions/snow_collect',{snow,maxTotalCoins,
+    prizeCategory:Number($('sn-prize-category').value)});
    if(!response.snowEdition||!response.settings?.variants?.snow_collect)
     throw Error('Der Server hat die Auflage nicht bestätigt.');
    snowEdition=response.snowEdition;
