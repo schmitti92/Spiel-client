@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#081c24">
 <title>DOG Grinch · Mission 1 – Pfadfinder: Der Weg zum Berg</title>
-<link rel="stylesheet" href="./mission-1.css?v=3">
+<link rel="stylesheet" href="./mission-1.css?v=4">
 </head>
 <body>
 <header class="top">
@@ -17,17 +17,17 @@
  <section class="intro">
   <p class="kicker">KAPITEL 2 · DER BEGINN DES FLUCHS</p>
   <h2>Pfadfinder – Der Weg zum Berg</h2>
-  <p>Die Lichter sind erloschen. Drei Freunde folgen geheimnisvollen Spuren zum Berg. Auf dem unveränderten DOG-Brett werden Wegweiser sichtbar – und am Ende zeigen die beleuchteten Zielbahnen den Übergang zum verfluchten Aufstieg von Mission 2. Unterwegs verschwindet von jedem eine Spielfigur.</p>
+  <p>Die Lichter sind erloschen. Drei Freunde folgen geheimnisvollen Spuren zum Berg. Auf dem originalen 64-Felder-DOG-Weg führt für jeden ein einziges Portal-Zielfeld weiter nach Welt 2. Jede Figur, die dieses Feld erreicht, wird sofort teleportiert. Doch unterwegs verschwindet von jedem Spieler eine Figur durch den Fluch.</p>
   <div class="notice" role="status">🧪 Eigenständige Spieltest-Version für drei Spieler an einem Gerät. Kein Online-Raum, kein offizieller Kampagnenfortschritt und keine echten Belohnungen. Das normale DOG-Spiel bleibt unverändert.</div>
  </section>
  <div class="layout">
   <section class="board-card" aria-labelledby="board-heading">
    <div class="board-head"><h2 id="board-heading">🧭 Der Pfad zum Berg</h2><span id="phase">Runde 1</span></div>
    <div id="board-wrap" class="board-wrap">
-    <svg id="board" class="board-svg" viewBox="0 0 760 760" role="img" aria-label="Das originale DOG-Brett mit 64 Lauffeldern, vier Startfeldern und vier Zielbahnen"></svg>
+    <svg id="board" class="board-svg" viewBox="0 0 760 760" role="img" aria-label="Das originale DOG-Brett mit 64 Lauffeldern und einem wiederverwendbaren Teleport-Zielfeld je Kampagnenspieler"></svg>
    </div>
    <div class="legend"><span>🔎 Spuren</span><span>🌫️ Nebelpass</span><span>⚡ Grünes Leuchten</span><span>❄️ Eisweg</span><span>🕳️ Einsturz</span><span>🌪️ Entführung</span><span>🧊 Eisfluch</span></div>
-   <section class="trail-progress" aria-live="polite" aria-label="Wegweiser zu Mission 2"><div class="trail-progress-head"><strong>🏔️ Der Bergpass nach Mission 2</strong><span id="trail-progress-count">0 / 3 Wege offen</span></div><p>Die bestehenden DOG-Zielfelder werden zu drei Pfadfinder-Wegweisern. Jede vollständige Zielbahn aktiviert ihren eigenen Weg zum Berg.</p><div id="trail-progress-players" class="trail-progress-players"></div><p id="trail-next-mission" class="trail-next-mission">🔒 Mission 2 – Der verfluchte Aufstieg: Noch hat niemand den Bergpass erreicht.</p></section>
+   <section class="trail-progress" aria-live="polite" aria-label="Wegweiser zu Mission 2"><div class="trail-progress-head"><strong>🌀 Teleportation nach Welt 2</strong><span id="trail-progress-count">0 / 3 Portale abgeschlossen</span></div><p>Rot, Blau und Gelb haben jeweils genau ein Portal an der bisherigen ersten Zielposition. Sobald eine Figur das Portal erreicht, verschwindet sie vom Brett. Das Portal bleibt für weitere Figuren frei.</p><div id="trail-progress-players" class="trail-progress-players"></div><p id="trail-next-mission" class="trail-next-mission">🔒 Mission 2 – Der verfluchte Aufstieg: Noch wurden nicht alle Figuren teleportiert.</p></section>
   </section>
   <aside class="side">
    <section class="panel">
@@ -53,7 +53,7 @@
 <dialog id="setup">
  <p class="kicker">GRINCH-KAMPAGNE · TESTMODUS</p>
  <h2>Aufbruch nach Lichtertal</h2>
- <p>Jeder der drei Spieler startet mit fünf Figuren. Ihr spielt abwechselnd an diesem Gerät. Jeder verliert während der Reise genau eine Figur; vier müssen ins Ziel.</p>
+ <p>Jeder der drei Spieler startet mit fünf Figuren. Ihr spielt abwechselnd an diesem Gerät. Jeder verliert durch den Fluch eine Figur. Die vier anderen Figuren müssen jeweils exakt auf das eine Portal-Zielfeld gelangen und verschwinden dann sofort.</p>
  <div class="names">
   <label>Spieler Rot <input id="name-0" value="Rot" maxlength="25"></label>
   <label>Spieler Blau <input id="name-1" value="Blau" maxlength="25"></label>
@@ -63,6 +63,6 @@
  <p class="help">Lokale Testdaten – keine Anmeldung, keine Online-Funktion.</p>
 </dialog>
 <div id="event-message" role="status" aria-live="assertive"></div>
-<script type="module" src="./mission-1.js?v=4"></script>
+<script type="module" src="./mission-1.js?v=5"></script>
 </body>
 </html>
