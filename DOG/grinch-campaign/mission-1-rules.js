@@ -245,9 +245,14 @@ export function play(original,seat,action){
   p.steps=pos(otherAbs-homeIndex(p.seat));
   other.steps=pos(firstAbs-homeIndex(other.seat));
  }
- s.players[seat].moves++;
+ // A split 7 is ONE card action. Never trigger a mandatory loss halfway
+ // through its seven steps: that could eliminate the only movable figure
+ // and strand the rest of the card.
+ const completesSeven=chosen.kind==='seven'&&((s.seven?.spent||0)+chosen.distance===7);
+ const completesCard=chosen.kind!=='seven'||completesSeven;
+ if(completesCard)s.players[seat].moves++;
  s.lastEvent=null;
- if(chosen.kind!=='emptySwap')ensureSingleLoss(s,seat,p.id);
+ if(completesCard&&chosen.kind!=='emptySwap')ensureSingleLoss(s,seat,p.id);
  if(p?.place==='teleported'){
   log(s,s.players[seat].name+' teleportiert eine Figur nach Welt 2');
   if(!s.lastEvent)s.lastEvent={type:'teleport',seat,pieceId:p.id,message:'✨ '+s.players[seat].name+' teleportiert eine Figur nach Welt 2!',turn:s.turn};
