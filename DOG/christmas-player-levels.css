@@ -267,3 +267,8 @@
  #panel-level .dog-pass-utility{position:static;display:flex;justify-content:flex-end;margin:0 10px 8px}
  #panel-level .dog-level-refresh{font-size:11px;padding:6px 11px}
 }
+
+/* Freie Ecke für den globalen Zurück-Button auf schmalen Geräten. */
+@media(max-width:1100px){
+ #panel-level .dog-pass-max{top:49px}
+}
