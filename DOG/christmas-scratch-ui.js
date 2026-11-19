@@ -1975,7 +1975,7 @@ export function initChristmasScratch(){
    showTicket(r.result);
    clearAlert();
    notice(r.result.board?.variantId==='tic_tac_toe'&&r.result.board?.symbolVersion===8?
-    '🎯 Zuerst den Multiplikator, dann Kreis oder Kreuz und anschließend alle neun Felder einzeln freirubbeln.':
+    '🎯 Zuerst Multiplikator, dann ◯/✕, danach das Gewinnsymbol unten und zum Schluss die neun Spielfelder freirubbeln.':
     '❄️ Beginne irgendwo und rubbele in einer Bewegung über alle Felder. Bei 90 % öffnet das Los automatisch.');
   }catch(e){
    console.error('[DOG scratch] Öffnen fehlgeschlagen:',e);
