@@ -1,0 +1,150 @@
+/* Glückszahl 1 · 19.11.2026
+   Purely visual fixes: all winning 1s become RED; the center card's
+   prize indicator presents exact immutable receipt amounts and five
+   distinct gift icons. No reward logic, probabilities or scratch geometry. */
+
+/* Real receipt decides which target cells equal one. CSS NEVER marks a
+   losing number as a win, and the red face remains under silver until rubbed. */
+.scratch-stage[data-variant="number_one_20"] #scratch-board
+ .scratch-number-target.scratch-lucky-number-one,
+.scratch-stage[data-variant="number_one_20"] #scratch-board
+ .scratch-number-target.scratch-lucky-number-one.scratch-winning-cell{
+ background:linear-gradient(180deg,#f85c55 0%,#e1262e 38%,#970f19 100%)!important;
+ color:#fffce9!important;
+ border:1.5px solid #ffe7a1!important;
+ box-shadow:inset 0 1px 2px #ffecba91,inset 0 -1px 3px #51060baf,0 0 5px #ff5645c7!important;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-board
+ .scratch-number-target.scratch-lucky-number-one .scratch-cell-symbol.scratch-lucky-number-one-face{
+ color:#fffdf0!important;
+ -webkit-text-stroke:.35px #662118!important;
+ font:1000 clamp(12px,1.9vh,20px)/1 system-ui,sans-serif!important;
+ text-shadow:0 1px 2px #650609,0 0 5px #ffdfae!important;
+}
+.scratch-stage[data-variant="number_one_20"] #scratch-board
+ .scratch-number-target.scratch-lucky-number-one::after{
+ content:""!important;position:absolute!important;inset:1px!important;
+ border-radius:inherit!important;border:1px solid #ffe7c55c!important;
+ pointer-events:none!important;
+}
+/* Compact heading plus four independent, prominent prize panels.
+   The last panel deliberately has MORE WIDTH for five individually
+   drawn gift symbols, instead of stacking indistinguishable emojis. */
+.scratch-stage[data-variant="number_one_20"]
+ #scratch-lotto-ticket-prizes:not([hidden]){
+ left:2%!important;right:2%!important;
+ bottom:1.8%!important;
+ width:96%!important;height:11%!important;
+ min-width:0!important;min-height:0!important;
+ display:grid!important;
+ grid-template-columns:repeat(3,minmax(0,.91fr)) minmax(0,1.65fr)!important;
+ grid-template-rows:minmax(13px,.26fr) minmax(0,.74fr)!important;
+ column-gap:1%!important;row-gap:0!important;
+ padding:2px 1.3% 4px!important;
+ border:2px solid #ffe099!important;
+ border-radius:11px!important;
+ background:linear-gradient(180deg,#0d7650 0%,#06543f 32%,#032c25 100%)!important;
+ box-shadow:inset 0 2px 4px #fff4c84a,0 3px 8px #001c20c0!important;
+ overflow:hidden!important;
+}
+.scratch-stage[data-variant="number_one_20"]
+ .lotto-ticket-prize-heading{
+ grid-column:1/-1!important;grid-row:1!important;
+ display:block!important;min-width:0!important;
+ margin:0!important;padding:0!important;
+ align-self:center!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+ text-align:center!important;
+ color:#ffe49c!important;
+ font:900 clamp(9px,.92vw,14px)/1.05 Georgia,serif!important;
+ text-shadow:0 1px 3px #16200c,0 0 5px #d4a65b8c!important;
+ letter-spacing:.25px!important;
+}
+.scratch-stage[data-variant="number_one_20"]
+ #scratch-lotto-ticket-prizes .lotto-ticket-prize{
+ grid-row:2!important;
+ min-width:0!important;
+ width:100%!important;height:100%!important;
+ gap:4px!important;
+ padding:1px 2px!important;
+ border-right:1px solid #f3c7779c!important;
+ box-sizing:border-box!important;
+ font:900 clamp(10px,1vw,15px)/1.02 Georgia,serif!important;
+ white-space:nowrap!important;
+ overflow:hidden!important;
+ color:#fff3c7!important;
+}
+.scratch-stage[data-variant="number_one_20"]
+ #scratch-lotto-ticket-prizes .lotto-ticket-prize-icon{
+ flex:none!important;
+ font-size:clamp(17px,1.6vw,27px)!important;
+ filter:drop-shadow(0 2px 3px #001d15b0)!important;
+}
+.scratch-stage[data-variant="number_one_20"]
+ #scratch-lotto-ticket-prizes .lotto-ticket-prize-label{
+ min-width:0!important;max-width:100%!important;
+ font:950 clamp(12px,1.1vw,19px)/1.05 Georgia,serif!important;
+ color:#ffebac!important;
+ overflow:hidden!important;text-overflow:ellipsis!important;
+}
+.scratch-stage[data-variant="number_one_20"]
+ #scratch-lotto-ticket-prizes .lotto-ticket-gifts{
+ display:flex!important;flex-direction:column!important;
+ justify-content:center!important;align-items:center!important;
+ gap:1px!important;min-width:0!important;
+ border-right:0!important;padding-inline:2px!important;
+}
+.scratch-stage[data-variant="number_one_20"]
+ #scratch-lotto-ticket-prizes .lotto-ticket-gift-icons{
+ display:flex!important;flex-direction:row!important;
+ justify-content:center!important;align-items:center!important;
+ flex-wrap:nowrap!important;
+ width:100%!important;max-width:100%!important;
+ min-width:0!important;gap:2px!important;overflow:hidden!important;
+}
+.scratch-stage[data-variant="number_one_20"]
+ #scratch-lotto-ticket-prizes .lotto-ticket-gift-item{
+ display:grid!important;place-items:center!important;
+ flex:0 1 18%!important;
+ width:18%!important;max-width:30px!important;
+ min-width:0!important;aspect-ratio:1!important;
+ font-size:clamp(12px,1.25vw,21px)!important;
+ line-height:1!important;
+ border:1px solid #ffdc8a7d!important;
+ border-radius:5px!important;
+ background:radial-gradient(circle at 40% 25%,#5e7b47,#113b32 75%)!important;
+ filter:drop-shadow(0 1px 2px #0009)!important;
+ overflow:hidden!important;
+}
+.scratch-stage[data-variant="number_one_20"]
+ #scratch-lotto-ticket-prizes .lotto-ticket-gifts .lotto-ticket-prize-label{
+ font:900 clamp(9px,.86vw,14px)/1.1 Georgia,serif!important;
+ text-align:center!important;white-space:nowrap!important;
+ overflow:hidden!important;text-overflow:ellipsis!important;
+ color:#fff5d8!important;
+}
+@media(max-height:670px){
+ .scratch-stage[data-variant="number_one_20"]
+  #scratch-lotto-ticket-prizes:not([hidden]){
+  height:10.5%!important;padding:1px 1% 2px!important;
+  grid-template-rows:12px minmax(0,1fr)!important;
+ }
+ .scratch-stage[data-variant="number_one_20"]
+  #scratch-lotto-ticket-prizes .lotto-ticket-gift-item{
+  font-size:clamp(10px,1vw,16px)!important;
+ }
+}
+@media(max-width:750px){
+ .scratch-stage[data-variant="number_one_20"]
+  #scratch-lotto-ticket-prizes .lotto-ticket-prize-label{
+  font-size:clamp(9px,1.8vw,13px)!important;
+ }
+ .scratch-stage[data-variant="number_one_20"]
+  #scratch-lotto-ticket-prizes .lotto-ticket-prize-icon{
+  font-size:clamp(12px,2vw,18px)!important;
+ }
+ .scratch-stage[data-variant="number_one_20"]
+  #scratch-lotto-ticket-prizes .lotto-ticket-gift-item{
+  font-size:clamp(10px,1.7vw,15px)!important;
+ }
+}
