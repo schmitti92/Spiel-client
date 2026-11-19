@@ -258,3 +258,12 @@
  #panel-level .dog-level-grid{min-width:max(100%,950px)}
 }
 @media(prefers-reduced-motion:reduce){#panel-level .dog-level-range{transition:none}}
+
+/* Der Aktualisieren-Knopf bleibt auf schmalen Displays außerhalb der Levelplakette. */
+@media(min-width:1101px){
+ #panel-level .dog-pass-xp-top{padding-right:97px}
+}
+@media(max-width:1100px){
+ #panel-level .dog-pass-utility{position:static;display:flex;justify-content:flex-end;margin:0 10px 8px}
+ #panel-level .dog-level-refresh{font-size:11px;padding:6px 11px}
+}
