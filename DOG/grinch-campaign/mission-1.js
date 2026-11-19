@@ -162,10 +162,32 @@ function render(){
  for(const entry of state.history)text('p',entry,history);
  drawClassicMissionBoard($('board'),state,{selectedPiece:chosenPiece,onPieceClick:choosePawn});
 }
+function clearMissionWeather(){
+ clearTimeout(effectTimer);
+ effectTimer=null;
+ const wrap=$('board-wrap');
+ wrap?.classList.remove('foggy','shaking');
+}
+function showMissionWeather(kind,title,detail,ms){
+ const wrap=$('board-wrap');
+ if(!wrap)return;
+ $('weather-label').textContent=title;
+ $('weather-detail').textContent=detail;
+ // Reflow restarts the CSS animation even after back-to-back weather events.
+ void wrap.offsetWidth;
+ wrap.classList.add(kind);
+ effectTimer=setTimeout(()=>{
+  wrap.classList.remove('foggy','shaking');
+  effectTimer=null;
+ },ms);
+}
 function onEffect(){
- const ev=state?.lastEvent;
- if(!ev||lastSeenRevision===state.revision)return;
+ if(!state||lastSeenRevision===state.revision)return;
  lastSeenRevision=state.revision;
+ // A new action cancels unfinished prior weather, including visual text.
+ clearMissionWeather();
+ const ev=state.lastEvent;
+ if(!ev)return;
  if(ev.type==='loss'&&Number.isInteger(ev.position)){
   const layer=$('event-fx')||ns('g',{id:'event-fx'},$('board'));
   const p=trackPoint(ev.position);
@@ -188,17 +210,24 @@ function onEffect(){
   clearTimeout(effectTimer);
   effectTimer=setTimeout(()=>layer.replaceChildren(),1300);
  }else if(ev.type==='quake'){
-  $('board-wrap').classList.add('shaking');
-  clearTimeout(effectTimer);
-  effectTimer=setTimeout(()=>$('board-wrap').classList.remove('shaking'),1300);
+  const q=ev.quake||{};
+  const moved=Number(q.moved)||0,blocked=Number(q.blocked)||0,protectedCount=Number(q.protectedCount)||0;
+  showMissionWeather(
+   'shaking','⚡ ERDBEBEN!',
+   moved+' Figuren springen zurück · '+blocked+' blockiert · '+protectedCount+' geschützt',
+   1800
+  );
  }else if(ev.type==='fog'){
-  $('board-wrap').classList.add('foggy');
-  clearTimeout(effectTimer);
-  effectTimer=setTimeout(()=>$('board-wrap').classList.remove('foggy'),2500);
+  showMissionWeather(
+   'foggy','🌫️ DICHTER NEBEL',
+   'Der Berg verschwindet im Nebel. Die Felder bleiben spielbar.',
+   4500
+  );
  }
  toast(ev.message,ev.type==='win'?6500:3400);
 }
 function start(){
+ clearMissionWeather();
  const names=LABELS.map((name,i)=>$('name-'+i).value.trim()||name);
  state=newGame(undefined,names);
  chosenCard=null;chosenPiece=null;pickMoves=[];lastSeenRevision=-1;
@@ -209,6 +238,7 @@ function start(){
 $('begin').addEventListener('click',start);
 $('restart').addEventListener('click',()=>{
  if(!confirm('Lokalen Mission-1-Test wirklich neu beginnen?'))return;
+ clearMissionWeather();
  localStorage.removeItem(KEY);state=null;chosenCard=null;chosenPiece=null;pickMoves=[];
  for(let i=0;i<SEATS;i++)$('name-'+i).value=LABELS[i];
  $('setup').showModal();render();
