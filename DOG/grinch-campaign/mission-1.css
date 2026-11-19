@@ -246,3 +246,21 @@ dialog::backdrop{background:#020d12cc;backdrop-filter:blur(5px)}dialog h2{margin
   .board-wrap.foggy .weather-event-text,
   .board-wrap.shaking .weather-event-text{opacity:1;visibility:visible;transform:translate(-50%,0)}
 }
+
+/* Online mission controls – part of the existing main hub, not a new room. */
+.grinch-online-panel{margin:0 0 15px;border:1px solid #8be1bd;background:linear-gradient(125deg,#112d38,#19443b);border-radius:16px;padding:15px 20px;box-shadow:0 12px 30px #0005}
+.grinch-online-panel[hidden]{display:none!important}
+.grinch-online-heading{display:flex;gap:12px;align-items:center;justify-content:space-between;color:#dfffd9;font-weight:800}
+.grinch-online-heading span{letter-spacing:.16em;font-size:11px;color:#b2e1bd}
+.grinch-online-panel p{margin:8px 0;font-size:12px;line-height:1.55;color:#e4ece8}
+.grinch-online-controls{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.grinch-online-controls button,.grinch-online-controls a{
+ border:1px solid #aad6bd;border-radius:9px;background:#224d45;color:#f5fff0;
+ font:800 12px system-ui;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;
+ padding:10px 13px;min-height:40px;
+}
+.grinch-online-controls #grinch-online-launch{background:linear-gradient(115deg,#d5e9a1,#91bd87);color:#173b2a;border-color:#edf8c4}
+.grinch-online-controls #grinch-online-launch[hidden]{display:none}
+.grinch-online-controls button:disabled{opacity:.46;cursor:not-allowed}
+.grinch-online-panel .grinch-online-small{font-size:11px;opacity:.8;margin-top:10px}
+@media(max-width:650px){.grinch-online-panel{padding:12px}.grinch-online-controls a,.grinch-online-controls button{flex:1}}
