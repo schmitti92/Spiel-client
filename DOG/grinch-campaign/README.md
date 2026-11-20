@@ -40,3 +40,15 @@ Die Grafiken werden erst bei der späteren Programmierung mit der Spielmechanik 
 - Spielregel: 110 Original-DOG-Karten, nach jeder neuen Kartenphase 1 Slot,
   unabhängig 10 % Chance auf einen zweiten, maximal 2 Slots. Grafikpaket enthält
   keine Spiel-Engine und verändert nicht GitHub/Render.
+
+## Mission 2 – Der verfluchte Aufstieg (Stand 20.11.2026)
+
+- **Ausschließlich Mission 2:** Eigene `mission-2.html`, `mission-2.js`, `mission-2-rules.js`, `mission-2-effects.js`, `mission-2-board.js`, `mission-2-markers.js`, `mission-2-online.js`, `mission-2-slot-ui.js` und `mission-2.css`. Das reguläre DOG und Mission 1 haben keine neuen Grinch-Slot-Regeln bekommen.
+- **Kampagnenfortsetzung:** Pro Spieler vier Figuren, davon die vierte Figur auf dem geschützten Startfeld. Die fünfte wurde in Mission 1 bereits verloren. Im Verlauf von Mission 2 geht eine weitere Figur je Spieler durch den Story-Fluch verloren; die jeweils drei verbleibenden Figuren müssen das exakt erreichbare, wiederverwendbare Portal verlassen. Insgesamt neun Portalrettungen.
+- **40 Slot-Gemeinheiten:** Sofortige Rückschläge, temporäre Kartenwerte, Eisfelder und Spielerstreiche; ausgelöst beim Geben jeder neuen Kartenphase. 110 unveränderte DOG-Karten bilden die Basis. Der zweite Slot erscheint unabhängig mit 10 % Wahrscheinlichkeit und wählt eine kompatible andere Kategorie.
+- **Nur optische Lockpreise:** 10, 50 oder 100 kostenlose Rubbellose dürfen bei der Animation als ausdrücklich nicht gewinnbare Attrappen vorbeilaufen. In der Ziehung sind ausschließlich die 40 Gemeinheiten. Die Slotmaschine hat keine Geld-, Voucher- oder Rubbellos-Auszahlungsfunktion.
+- **Animation:** Zwei Hauptwalzen mit nacheinander einsetzenden Stopps; rechte Walze bleibt leer, bis nach dem Haupt-Stopp der Bonus ausgelöst ist. Der Bonusbanner erscheint kurz. Animationen enthalten keine eigene Spielmechanik.
+- **Offizieller Online-Start:** Bereits bestehender HUB-Raum mit exakt drei menschlichen Nutzern; Host startet via `/api/hub/rooms/:code/grinch/launch2`. Der Server verifiziert Weihnachtsbaumstufe 10 und für alle drei Konten einen echten Abschluss von Mission 1. Aktionen bleiben an Match-ID, Revision und eindeutige Aktionskennung gebunden. Nur der Server speichert einen gemeinsamen Sieg und `highestUnlocked:3`.
+- **Privatheit:** Eigene Kartenhände nur beim angemeldeten Besitzer. Deck, Seed und RNG-Zähler werden nicht an andere Spieler gesendet.
+- **Separater lokaler Test:** `mission-2.html` ohne Raumcode; kein Schreiben von offiziellen Freischaltungen oder Gewinnständen.
+- **Tests:** `serverfinal/tests/dog-grinch-mission2.test.js`, `serverfinal/tests/dog-grinch-mission2-hub.test.js`, Frontend `tests/dog-grinch-mission2-scope.test.mjs`. Browser-Praxistests mit drei verschiedenen Geräten und langfristige Balance-Simulationen bleiben zu prüfen.
