@@ -289,7 +289,7 @@ export function play(original,seat,action){
   if(!s.lastEvent)s.lastEvent={type:'teleport',seat,pieceId:p.id,message:'✨ '+s.players[seat].name+' teleportiert eine Figur nach Welt 3!',turn:s.turn};
  }
  if(!s.lastEvent&&p?.place==='track'){
-  const clue=MISSION_2.trailHints.find(h=>h.field===pieceCoord(p));
+  const clue=(MISSION_2.trailHints||[]).find(h=>h.field===pieceCoord(p));
   if(clue){s.lastEvent={type:'hint',field:clue.field,message:clue.message,turn:s.turn};log(s,'Pfadfinder-Hinweis: '+clue.title);}
  }
  if(chosen.kind==='seven'){
