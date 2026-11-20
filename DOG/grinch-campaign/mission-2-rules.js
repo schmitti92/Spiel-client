@@ -5,7 +5,7 @@
  */
 import {MISSIONS} from './mission-config.js?v=6';
 export const MISSION_2=MISSIONS[1];
-import {initializeMission2,slotForNewPhase,effectiveCardTypes,mission2Values,moveAllowedByCurse,afterMission2Card,mission2TurnAdvance,mission2TurnDirection,projectedMission2} from './mission-2-effects.js?v=2';
+import {rememberMission2Event,initializeMission2,slotForNewPhase,effectiveCardTypes,mission2Values,moveAllowedByCurse,afterMission2Card,mission2TurnAdvance,mission2TurnDirection,projectedMission2} from './mission-2-effects.js?v=2';
 import {initLossMarkers,shouldCaptureAfterLanding,validCampaignSurvivors} from './mission-loss-policy.js?v=1';
 export const SEATS=3,TRACK=64,GOAL=1;
 export const COLORS=['#e65f58','#4c9bfa','#e8b84e'];
@@ -73,6 +73,7 @@ function refill(s){
   s.current=(s.current+mission2TurnDirection(s)+SEATS)%SEATS;s.turn++;
  }
  s.lastEvent={type:'slot',round:s.round,effects,message:'🎰 Der Grinch löst '+effects.length+' Gemeinheit(en) aus!',turn:s.turn};
+ rememberMission2Event(s,s.lastEvent);
 }
 function log(s,message){s.history.unshift(message);s.history=s.history.slice(0,10);}
 function nextTurn(s){
@@ -254,6 +255,7 @@ function ensureSingleLoss(s,seat,movedId){
  // pre-trigger board markup, cards or player status.
  s.lastEvent={type:'loss',seat,pieceId:p.id,lossType:info.lossType,position:trackPosition,concealedUntilTriggered:true,message:msg,turn:s.turn};
  log(s,msg);
+ rememberMission2Event(s,s.lastEvent);
 }
 function maybeEffects(s){ /* Only the slot machine triggers Mission 2 effects. */ }
 function checkComplete(s){
