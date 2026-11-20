@@ -44,32 +44,17 @@ export function drawMission2Board(boardSvg,game,{selectedPiece=null,onPieceClick
   push('<rect x="8" y="8" width="744" height="744" rx="44" fill="url(#dog-wood)" stroke="#2c1b13" stroke-width="7"/>');
   push('<rect x="27" y="27" width="706" height="706" rx="30" fill="#051323" stroke="#ead4a4" stroke-opacity=".66" stroke-width="2"/>');
   push('<rect x="35" y="35" width="690" height="690" rx="25" fill="url(#dog-blue)"/>');
-  // Static background art has no spaces or pawns; the interactive path below
-  // always uses the editor's actual track coordinates. Fallback stays visible
-  // until the optional premium WebP image has been uploaded to the repository.
-  if(validAssetPath(skin.fallbackImage))
-    push('<image href="'+resolveImage(skin.fallbackImage)+'" x="0" y="0" width="760" height="760" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>');
-  if(validAssetPath(skin.image))
-    push('<image href="'+resolveImage(skin.image)+'" x="0" y="0" width="760" height="760" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>');
-  // Mission 2 ONLY: the user-selected winter canyon artwork is a wide
-  // panorama. A softened cover image fills the square board without ugly bars;
-  // the complete, undistorted panorama is blended in above it, preserving
-  // the purple and blue portals at the left/right edges.
-  // Both background layers stay BELOW the original 64 interactive fields.
+  // ONLY Mission 2: draw the selected winter canyon once as a true
+  // edge-to-edge square cover. The classic skin's background image must
+  // never appear underneath (it previously showed as horizontal strips).
+  // The frame, 64 track fields, 3 portals and tappable pawns stay unchanged.
   const canyonArt='./mission-2-verfluchte-winterklamm.png';
-  push('<defs>'+
-    '<filter id="m2-canyon-soft" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="7"/></filter>'+
-    '<linearGradient id="m2-canyon-fade" x1="0" y1="0" x2="0" y2="1">'+
-      '<stop offset="0" stop-color="black"/><stop offset=".16" stop-color="#777"/>'+
-      '<stop offset=".32" stop-color="white"/><stop offset=".68" stop-color="white"/>'+
-      '<stop offset=".84" stop-color="#777"/><stop offset="1" stop-color="black"/>'+
-    '</linearGradient>'+
-    '<mask id="m2-canyon-mask" maskUnits="userSpaceOnUse" x="35" y="35" width="690" height="690">'+
-      '<rect x="35" y="35" width="690" height="690" fill="url(#m2-canyon-fade)"/>'+
-    '</mask>'+
-  '</defs>');
-  push('<image href="'+canyonArt+'" x="35" y="35" width="690" height="690" preserveAspectRatio="xMidYMid slice" opacity=".82" filter="url(#m2-canyon-soft)" pointer-events="none"/>');
-  push('<image href="'+canyonArt+'" x="35" y="35" width="690" height="690" preserveAspectRatio="xMidYMid meet" mask="url(#m2-canyon-mask)" pointer-events="none"/>');
+  push('<defs><clipPath id="m2-winter-bg-clip">'+
+    '<rect x="35" y="35" width="690" height="690" rx="25"/>'+
+    '</clipPath></defs>');
+  push('<image href="'+canyonArt+'" x="35" y="35" width="690" height="690" '+
+    'preserveAspectRatio="xMidYMid slice" clip-path="url(#m2-winter-bg-clip)" pointer-events="none"/>');
+  // Subtle overlay keeps the field borders legible without hiding the art.
   push('<rect x="35" y="35" width="690" height="690" rx="25" fill="url(#dog-speckle)"/>');
   push('<rect x="41" y="41" width="678" height="678" rx="20" fill="none" stroke="'+skin.edge+'" stroke-opacity=".27" stroke-width="1.5"/>');
   // The course makes a single uninterrupted 64-step circuit. Start indices are
