@@ -24,7 +24,7 @@ function curseLabel(type,id){
  };
  return rules[id]?.[type]||null;
 }
-let state=null,chosenCard=null,chosenPiece=null,pickMoves=[],lastSeenRevision=-1,lastSlotRound=0;
+let state=null,chosenCard=null,chosenPiece=null,pickMoves=[],lastSeenRevision=-1,lastSlotRound=0,lastSeenLossEventId=0;
 wireMission2Slots();
 let toastTimer=null,effectTimer=null;
 const ns=(tag,attrs={},parent=null)=>{
@@ -220,19 +220,9 @@ function showMissionWeather(kind,title,detail,ms){
   effectTimer=null;
  },ms);
 }
-function onEffect(){
- if(!state||lastSeenRevision===state.revision)return;
- lastSeenRevision=state.revision;
- // A new action cancels unfinished prior weather, including visual text.
- clearMissionWeather();
- const ev=state.lastEvent;
- if(!ev)return;
- if(ev.type==='slot'){
-  const spin=state.m2?.spins?.find(item=>item.round===state.round);
-  if(spin&&spin.round>lastSlotRound){lastSlotRound=spin.round;void presentMission2Slot(spin);}
-  return;
- }
- if(ev.type==='loss'&&Number.isInteger(ev.position)){
+function revealLossEffect(ev){
+ if(!ev||!Number.isInteger(ev.position))return;
+
   const layer=$('event-fx')||ns('g',{id:'event-fx'},$('board'));
   const p=trackPoint(ev.position);
   layer.replaceChildren();
@@ -245,6 +235,34 @@ function onEffect(){
   const fx=ns('text',{x:p.x,y:p.y+11,'text-anchor':'middle','font-size':28},layer);fx.textContent=symbol;
   const reveal=ns('text',{x:p.x,y:p.y-27,'text-anchor':'middle','font-size':10,'font-weight':900,fill:'#fff2ba'},layer);reveal.textContent='FALLE!';
   clearTimeout(effectTimer);effectTimer=setTimeout(()=>layer.replaceChildren(),2800);
+
+}
+function onEffect(){
+ if(!state||lastSeenRevision===state.revision)return;
+ lastSeenRevision=state.revision;
+ // A new action cancels unfinished prior weather, including visual text.
+ clearMissionWeather();
+ const ev=state.lastEvent;
+ if(!ev)return;
+ if(ev.type==='slot'){
+  const latestLoss=state.m2?.eventLog?.filter(e=>e.type==='loss'&&e.eventId>lastSeenLossEventId).at(-1);
+  if(latestLoss){
+   lastSeenLossEventId=latestLoss.eventId;
+   revealLossEffect(latestLoss);
+   toast(latestLoss.message,2500);
+  }
+  const spin=state.m2?.spins?.find(item=>item.round===state.round);
+  if(spin&&spin.round>lastSlotRound){
+   lastSlotRound=spin.round;
+   if(latestLoss)setTimeout(()=>{if(state?.round>=spin.round)void presentMission2Slot(spin);},2100);
+   else void presentMission2Slot(spin);
+  }
+  return;
+ }
+ if(ev.type==='loss'&&Number.isInteger(ev.position)){
+  revealLossEffect(ev);
+  const lossEvent=state.m2?.eventLog?.filter(e=>e.type==='loss'&&e.pieceId===ev.pieceId).at(-1);
+  if(lossEvent)lastSeenLossEventId=Math.max(lastSeenLossEventId,lossEvent.eventId);
  }else if(ev.type==='teleport'){
   const owner=[0,1,3][ev.seat],p=goalPoint(owner,0);
   const layer=$('event-fx')||ns('g',{id:'event-fx'},$('board'));
@@ -275,7 +293,7 @@ function start(){
  clearMissionWeather();
  const names=LABELS.map((name,i)=>$('name-'+i).value.trim()||name);
  state=newGame(undefined,names);
- chosenCard=null;chosenPiece=null;pickMoves=[];lastSeenRevision=-1;lastSlotRound=0;
+ chosenCard=null;chosenPiece=null;pickMoves=[];lastSeenRevision=-1;lastSlotRound=0;lastSeenLossEventId=0;
  $('setup').close();
  save();render();
  toast('🎰 Der verfluchte Aufstieg beginnt!',2500);
@@ -331,6 +349,7 @@ function acceptOnlineRoom(room){
  if(priorMatch!==match.id){
   chosenCard=null;chosenPiece=null;pickMoves=[];
   lastSeenRevision=mission.revision;lastSlotRound=0;
+  lastSeenLossEventId=mission.m2?.eventLog?.filter(x=>x.type==='loss').at(-1)?.eventId||0;
  }else if(previous!==null&&previous!==mission.revision){
   chosenCard=mission.seven&&onlineSeat===mission.current?mission.seven.cardId:null;
   chosenPiece=null;pickMoves=[];
