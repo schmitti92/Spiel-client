@@ -11,6 +11,7 @@ on:
       - 'DOG/grinch-campaign/mission-2-slot-ui.js'
       - 'DOG/grinch-campaign/mission-config.js'
       - 'tests/grinch-mandatory-random-loss.test.mjs'
+      - 'tests/dog-grinch-mission2-scope.test.mjs'
       - '.github/workflows/grinch-mandatory-loss.yml'
   pull_request:
     paths:
