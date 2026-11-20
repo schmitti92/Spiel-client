@@ -32,7 +32,7 @@
 <link rel="stylesheet" href="./christmas-buildings-magical.css?v=1">
 <link rel="stylesheet" href="./christmas-expansion.css?v=3">
 <link rel="stylesheet" href="./christmas-grinch-cave.css?v=4">
-<link rel="stylesheet" href="./christmas-grinch-event.css?v=4">
+<link rel="stylesheet" href="./christmas-grinch-event.css?v=5">
 <link rel="stylesheet" href="./christmas-tree-winter-skin.css?v=2">
 <link rel="stylesheet" href="./christmas-storybook.css?v=2">
 <link rel="stylesheet" href="./christmas-storybook-graphics.css?v=1">
@@ -365,7 +365,7 @@
           </div>
         </header>
         <div class="grinch-event-toolbar">
-          <div class="grinch-event-toolbar-copy"><strong>👹 Die fünf Prüfungen des Grinch</strong><small>Mission 1 hat einen eigenständigen lokalen Testmodus. Die echte Online-Kampagne mit gemeinsamem Fortschritt wird getrennt aufgebaut.</small></div>
+          <div class="grinch-event-toolbar-copy"><strong>👹 Die fünf Prüfungen des Grinch</strong><small>Mission 1 und 2 sind jetzt direkt im lokalen Testmodus startbar. Offizielle Online-Freischaltungen und gemeinsamer Fortschritt bleiben davon getrennt.</small></div>
           <div class="grinch-event-toolbar-actions">
             <button type="button" id="grinch-visit-cave" class="grinch-event-small-button">🏔️ Höhle ansehen</button>
             <button type="button" id="grinch-back-village" class="grinch-event-small-button">🏘️ Zum Dorf</button>
@@ -384,7 +384,7 @@
           <div class="grinch-mission-art" aria-hidden="true"><span class="grinch-mission-fallback">🌫️</span><img loading="lazy" decoding="async" src="./weihnachtsevent-bilder/grinch-event/mission-2.png" alt=""></div>
           <div class="grinch-mission-copy"><h3>Der verfluchte Aufstieg</h3><p>Gemeinsam gegen 40 Grinch-Slot-Gemeinheiten. Nach jeder Kartenphase dreht die Maschine, mit 10 % Chance auf einen zweiten Angriff.</p><small>4 Figuren pro Farbe · 3 je Farbe retten · 10 % Doppel-Slot</small></div>
           <div class="grinch-mission-reward" aria-label="Vorgesehene Belohnungen"><span>Story-Ziel</span><b>3 verschwinden</b><small>Die Reise geht weiter</small></div>
-          <div class="grinch-mission-actions"><span class="grinch-mission-state" id="grinch-mission-state-2">🔒 Gesperrt</span><button type="button" class="grinch-mission-info" data-grinch-details="2" aria-label="Mission 2: Der verfluchte Aufstieg ansehen">🔍 Details</button></div>
+          <div class="grinch-mission-actions"><span class="grinch-mission-state" id="grinch-mission-state-2" data-state="test-ready">🧪 Testmodus bereit</span><a class="grinch-mission-test-start" id="grinch-mission-2-test-start" href="./grinch-campaign/mission-2.html" aria-label="Mission 2 – Der verfluchte Aufstieg im lokalen Testmodus starten">▶ Test starten</a><button type="button" class="grinch-mission-info" data-grinch-details="2" aria-label="Mission 2: Der verfluchte Aufstieg ansehen">🔍 Details</button></div>
         </article>
         <article class="grinch-mission" id="grinch-mission-3" data-grinch-mission="3">
           <div class="grinch-mission-number" aria-label="Mission 3">3</div>
@@ -408,7 +408,7 @@
           <div class="grinch-mission-actions"><span class="grinch-mission-state" id="grinch-mission-state-5">🔒 Gesperrt</span><button type="button" class="grinch-mission-info" data-grinch-details="5" aria-label="Mission 5: Finale in der Grinchhöhle ansehen">🔍 Details</button></div>
         </article>
         </div>
-        <div class="grinch-event-footnote">🧪 <strong>Lokaler Spieltest:</strong> Mission 1 lässt sich bereits unabhängig testen. Online-Räume, offizielle Kampagnensiege und Belohnungen sind noch nicht aktiv; diese Ansicht zeigt weiterhin den echten Freischaltstatus.</div>
+        <div class="grinch-event-footnote">🧪 <strong>Lokaler Spieltest:</strong> Mission 1 und Mission 2 lassen sich unabhängig von der Kampagnen-Freischaltung starten. Testpartien zählen nicht als offizielle Siege und vergeben keine Belohnungen. Online gelten weiterhin die echten Voraussetzungen.</div>
       </div>
       <dialog id="grinch-mission-dialog" class="grinch-mission-dialog" aria-labelledby="grinch-mission-title">
         <header><span>✦ GRINCH-MISSION ✦</span><button type="button" id="grinch-mission-close" aria-label="Missionsdetails schließen">✕</button></header>
@@ -876,6 +876,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./christmas-event.js?v=133"></script>
+<script type="module" src="./christmas-event.js?v=134"></script>
 </body>
 </html>
