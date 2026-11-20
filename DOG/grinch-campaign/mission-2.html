@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#081c24">
+<title>DOG Grinch · Mission 2 – Chaos-Slots: Der Weg zum Berg</title>
+<link rel="stylesheet" href="./mission-1.css?v=9">
+<link rel="stylesheet" href="./mission-2.css?v=1">
+<link rel="stylesheet" href="../touch-navigation.css?v=1">
+</head>
+<body>
+<header class="top">
+ <a class="back" href="../christmas-event.html">← Zum Weihnachtsdorf</a>
+ <div class="brand"><span>🎄 GRINCH-KAMPAGNE</span><h1>Mission 2 · Chaos-Slots</h1></div>
+ <a class="back" href="../index.html">Normales DOG</a>
+</header>
+<main class="shell">
+ <section class="intro">
+  <p class="kicker">KAPITEL 2 · GRINCHS KARTENCHAOS</p>
+  <h2>Der verfluchte Aufstieg – Grinchs Chaos-Slots</h2>
+  <p>Mission 2 spielt ausschließlich auf einem eigenen DOG-Kampagnenbrett. Drei Freunde beginnen mit je vier verbliebenen Figuren, von denen eine bereits auf dem geschützten Startfeld steht. Nach jeder Kartenphase dreht der Grinch-Slot, mit 10 % Chance auf eine zweite Gemeinheit. Ein weiterer Freund je Farbe wird gefangen. Die übrigen drei Figuren müssen durch das eigene, wiederverwendbare Portal nach Welt 3.</p>
+  <div class="notice" role="status">🧪 Eigenständige Spieltest-Version für drei Spieler an einem Gerät. Kein Online-Raum, kein offizieller Kampagnenfortschritt und keine echten Belohnungen. Das normale DOG-Spiel bleibt unverändert.</div>
+ </section>
+ <section id="grinch-online-panel" class="grinch-online-panel" hidden aria-live="polite">
+  <div class="grinch-online-heading"><span>🌐 GEMEINSAM ONLINE</span><strong id="grinch-online-code">Spielraum</strong></div>
+  <p id="grinch-online-status">Verbindung wird aufgebaut …</p>
+  <p id="grinch-online-players">Warte auf die drei angemeldeten Spieler.</p>
+  <div class="grinch-online-controls">
+   <button type="button" id="grinch-online-launch" hidden>🎄 Mission 2 für alle drei starten</button>
+   <a id="grinch-online-lobby" href="../../hub-lobby.html">Zum gemeinsamen Spielraum</a>
+   <button type="button" id="grinch-online-refresh">↻ Raum aktualisieren</button>
+  </div>
+  <p class="grinch-online-small">Die offizielle Mission benötigt drei echte Spieler, die Mission 1 alle bereits erfolgreich abgeschlossen haben, und einen Weihnachtsbaum auf Stufe 10. Nur der Host startet. Jeder sieht seine eigenen Karten.</p>
+ </section>
+ <div class="layout">
+  <section class="board-card" aria-labelledby="board-heading">
+   <div class="board-head"><h2 id="board-heading">🎰 Der verfluchte Aufstieg</h2><span id="phase">Runde 1</span></div>
+   <div id="board-wrap" class="board-wrap">
+    <svg id="board" class="board-svg" viewBox="0 0 760 760" role="img" aria-label="Das originale DOG-Brett mit 64 Lauffeldern und einem wiederverwendbaren Teleport-Zielfeld je Kampagnenspieler"></svg>
+    <!-- Weather is purely visual, never steals clicks/taps or changes DOG geometry. -->
+    <div class="mission-weather" id="mission-weather" aria-hidden="true">
+     <div class="weather-fog-veil"></div>
+     <div class="weather-fog-bank weather-fog-bank-a"></div>
+     <div class="weather-fog-bank weather-fog-bank-b"></div>
+     <div class="weather-fog-bank weather-fog-bank-c"></div>
+     <div class="weather-quake-shock"></div>
+     <div class="weather-quake-dust weather-quake-dust-a"></div>
+     <div class="weather-quake-dust weather-quake-dust-b"></div>
+     <div class="weather-event-text">
+      <strong id="weather-label"></strong>
+      <span id="weather-detail"></span>
+     </div>
+    </div>
+   </div>
+   <div class="legend"><span>🎰 Chaos-Slots</span><span>❄️ Eisfallen</span><span>💥 Rückschläge</span><span>🃏 Kartenflüche</span><span>🌀 Portal</span><span>🔒 Grinch-Siegel</span></div>
+   <section class="trail-progress" aria-live="polite" aria-label="Wegweiser zu Mission 3"><div class="trail-progress-head"><strong>🌀 Rettung nach Welt 3</strong><span id="trail-progress-count">0 / 3 Portale abgeschlossen</span></div><p>Jeder der drei Spieler muss drei Figuren durch das eigene Portal retten. Die vierte Figur wird vom Grinch gefangen. Das Portal bleibt für weitere Figuren frei.</p><div id="trail-progress-players" class="trail-progress-players"></div><p id="trail-next-mission" class="trail-next-mission">🔒 Mission 3 – Die erste Begegnung: Noch wurden nicht alle neun Figuren gerettet.</p></section>
+  </section>
+  <aside class="side">
+   <section class="panel">
+    <h2>🎰 Der verfluchte Aufstieg</h2>
+    <p id="turn-label" aria-live="polite">Mission vorbereiten</p>
+    <div id="players" class="players"></div>
+    <div id="actions" class="actions"></div>
+   </section>
+   <section class="panel">
+    <h2>🃏 DOG-Handkarten</h2>
+    <p class="help">110 Original-DOG-Karten. Kartenflüche aus dem Slot ändern nur während dieser Mission vorübergehend die gültige Kartenwirkung.</p>
+    <div id="hand" class="hand"></div>
+    <div id="moves" class="moves"></div>
+   </section>
+   <section class="panel">
+    <h2>📜 Grinchs Gemeinheiten</h2>
+    <div id="history" class="history" aria-live="polite"></div>
+   </section>
+   <div class="controls"><button id="restart" type="button">↻ Test neu starten</button><a href="../christmas-event.html">Zurück zum Event</a></div>
+  </aside>
+ </div>
+</main>
+<dialog id="setup">
+ <p class="kicker">GRINCH-KAMPAGNE · TESTMODUS</p>
+ <h2>Der verfluchte Aufstieg</h2>
+ <p>Jeder beginnt mit vier Figuren, davon eine auf dem eigenen Startfeld. Die fünfte ist bereits seit Mission 1 gefangen. Der Grinch schlägt nach jeder Kartenphase mit seiner Slotmaschine zu. Eine weitere Figur wird je Spieler entführt; die restlichen drei müssen das Portal erreichen.</p>
+ <div class="names">
+  <label>Spieler Rot <input id="name-0" value="Rot" maxlength="25"></label>
+  <label>Spieler Blau <input id="name-1" value="Blau" maxlength="25"></label>
+  <label>Spieler Gelb <input id="name-2" value="Gelb" maxlength="25"></label>
+ </div>
+ <button id="begin" class="start" type="button">🎰 Mission 2 starten</button>
+ <p class="help">Lokale Testdaten – keine Anmeldung, keine Online-Funktion.</p>
+</dialog>
+<dialog id="m2-slot-modal" class="m2-slot-modal" aria-labelledby="m2-slot-heading">
+ <div class="m2-slot-top"><span>😈 DER GRINCH SCHLÄGT ZU</span><button type="button" id="m2-slot-skip" aria-label="Animation überspringen">Überspringen</button></div>
+ <h2 id="m2-slot-heading">GRINCH CHAOS SLOTS</h2>
+ <div class="m2-slot-media">
+  <img src="./slotmaschine_haupt.png" alt="Grinch-Slotmaschine" class="m2-slot-image">
+  <div class="m2-slot-reels" id="m2-slot-reels"><div class="m2-slot-reel"></div><div class="m2-slot-reel"></div><div class="m2-slot-reel is-blank"></div></div>
+  <div class="m2-slot-label" id="m2-slot-label"></div>
+ </div>
+ <div id="m2-slot-bonus-banner" class="m2-slot-bonus-banner" hidden><img src="./doppeltes_pech_banner.png" alt="Doppeltes Pech – zweite Gemeinheit"></div>
+ <p id="m2-slot-result" aria-live="polite">Der Grinch dreht seine Walzen …</p>
+ <button type="button" id="m2-slot-continue" disabled>Weiter zum Spiel</button>
+ <p class="m2-slot-fineprint">Die 10-, 50- und 100-Gratislose sind erkennbare Grinch-Attrappen und niemals gewinnbar.</p>
+</dialog>
+<div id="event-message" role="status" aria-live="assertive"></div>
+<script src="../../profile-config.js"></script>
+<script src="../../profile-auth.js"></script>
+<script type="module" src="./mission-2.js?v=1"></script>
+</body>
+</html>
