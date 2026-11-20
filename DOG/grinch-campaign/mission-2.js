@@ -282,7 +282,7 @@ function start(){
 $('begin').addEventListener('click',start);
 $('restart').addEventListener('click',()=>{
  if(onlineMode)return;
- if(!confirm('Lokalen Mission-1-Test wirklich neu beginnen?'))return;
+ if(!confirm('Lokalen Mission-2-Test wirklich neu beginnen?'))return;
  clearMissionWeather();
  localStorage.removeItem(KEY);state=null;chosenCard=null;chosenPiece=null;pickMoves=[];
  for(let i=0;i<SEATS;i++)$('name-'+i).value=LABELS[i];
