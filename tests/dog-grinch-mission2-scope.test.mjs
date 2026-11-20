@@ -57,7 +57,12 @@ test('Mission 2 displays the uploaded winter canyon image below the real interac
  assert.doesNotMatch(board,/winterliches_portal_im_alpenreich\.png/);
  assert.ok(board.indexOf("const canyonArt=")<board.indexOf('for(let i=0;i<64;i++)'),
   'panorama must be beneath all original 64 interactive track fields');
- assert.match(board,/preserveAspectRatio="xMidYMid meet"/);
+ assert.match(board,/preserveAspectRatio="xMidYMid slice"/);
+ assert.match(board,/clipPath id="m2-winter-bg-clip"/);
+ assert.doesNotMatch(board,/validAssetPath\(skin\.fallbackImage\)/);
+ assert.doesNotMatch(board,/validAssetPath\(skin\.image\)/);
+ assert.doesNotMatch(board,/m2-canyon-fade|m2-canyon-soft|m2-canyon-mask/);
+ assert.equal((board.match(/const canyonArt=/g)||[]).length,1);
  assert.match(board,/pointer-events="none"/);
  assert.match(board,/mission2BoardMarkup\(game/);
  assert.match(board,/boardSvg\.querySelectorAll\('\[data-piece\]'\)/);
