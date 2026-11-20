@@ -79,7 +79,7 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
  // Mission 2: separate local trial and official online route.
  const mission2Local=document.createElement('a');
  mission2Local.href='./grinch-campaign/mission-2.html';
- mission2Local.textContent='🧪 Mission 2 lokal ausprobieren';
+ mission2Local.textContent='▶ Mission 2 jetzt starten (Testmodus)';
  mission2Local.className='grinch-event-small-button';
  mission2Local.style.cssText='display:none;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin:9px 8px 9px 0;border-color:#bfcf83;';
  mission2Local.hidden=true;
@@ -118,7 +118,7 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
     '🎮 Online spielt ihr zu dritt in eurem vorhandenen Raum. Ein offizieller Start benötigt Baumstufe 10; nur ein vom Server bestätigter Sieg zählt. Der lokale Test vergibt keine Freischaltungen.':
     number===2&&cleared?
     '🔓 Mission 2 ist nach Mission 1 für dein Konto freigeschaltet. Für den offiziellen Start müssen alle drei Spieler Mission 1 geschafft haben.':
-    number===2?'🔒 Offiziell erst nach dem Sieg aller drei Spieler in Mission 1. Der lokale Test ist ohne Freischaltung möglich.':'🔒 Diese spätere Mission ist noch nicht spielbar.';
+    number===2?'🧪 Mission 2 kannst du jetzt direkt im Testmodus spielen, ohne Mission 1 abzuschließen. Der offizielle Online-Start benötigt weiterhin den Sieg aller drei Spieler in Mission 1.':'🔒 Diese spätere Mission ist noch nicht spielbar.';
    if(dialog&&!dialog.open)dialog.showModal();
   });
  });
@@ -147,7 +147,11 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
    if(!state)continue;
    if(completed.has(i)){state.dataset.state='completed';state.textContent='✅ Geschafft';}
    else if(i===1){state.dataset.state=unlocked?'available':'preview';state.textContent=unlocked?'🌐 Online bereit':'🧪 Testmodus';}
-   else if(i===2&&Number(verifiedProgress?.highestUnlocked||1)>=2){state.dataset.state='unlocked';state.textContent='🔓 Online spielbar';}
+   else if(i===2){
+    const onlineEligible=Number(verifiedProgress?.highestUnlocked||1)>=2;
+    state.dataset.state=onlineEligible?'unlocked':'test-ready';
+    state.textContent=onlineEligible?'🔓 Online-Berechtigung':'🧪 Testmodus bereit';
+   }
    else{state.dataset.state='locked';state.textContent='🔒 Gesperrt';}
   }
  }
