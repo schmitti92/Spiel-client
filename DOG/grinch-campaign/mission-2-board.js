@@ -11,7 +11,7 @@
  */
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField} from '../board-layout.js?v=11';
 import {resolveAppearance,loadAppearance,validAssetPath} from '../appearance-registry.js?v=27';
-import {pieceCoord} from './mission-2-rules.js?v=3';
+import {pieceCoord} from './mission-2-rules.js?v=4';
 import {mission2BoardMarkup} from './mission-2-markers.js?v=1';
 export const CLASSIC_TRACK_LENGTH=64;
 export const MISSION_BOARD_SEATS=Object.freeze([0,1,3]); // Rot, Blau, Gelb
