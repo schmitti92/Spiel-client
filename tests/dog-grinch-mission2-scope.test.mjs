@@ -18,8 +18,8 @@ test('Mission 2 and its 40 curses exist as isolated modules, not in classic DOG'
 test('Mission 2 uses the official 110-card deck, exact three rescues, and the 10 percent second slot',()=>{
  const engine=read('../DOG/grinch-campaign/mission-2-rules.js');
  const effects=read('../DOG/grinch-campaign/mission-2-effects.js');
- assert.match(engine,/rescuedCount\(s,info\.seat\)===3/);
- assert.match(engine,/permanentLossCount\(s,info\.seat\)===2/);
+ assert.match(engine,/validCampaignSurvivors\(s\.pieces,info\.seat,2\)/);
+ assert.match(read('../DOG/grinch-campaign/mission-loss-policy.js'),/rescueTarget:3/);
  assert.match(engine,/m2LostPieceId/);
  assert.match(engine,/target===TRACK&&\(\(!s\.players\[p\.seat\]\.m2Lost/);
  assert.match(engine,/version:6,mission:MISSION_2\.id/);
