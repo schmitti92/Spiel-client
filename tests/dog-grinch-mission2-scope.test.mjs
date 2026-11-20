@@ -48,3 +48,19 @@ test('Mission 2 only exposes protected server launch, never direct unverified vi
  assert.match(online,/dog-grinch2/);
  assert.doesNotMatch(online,/\/grinch\/launch'/);
 });
+
+test('Mission 2 displays the uploaded winter canyon image below the real interactive DOG path',()=>{
+ const board=read('../DOG/grinch-campaign/mission-2-board.js');
+ const image='../DOG/grinch-campaign/mission-2-verfluchte-winterklamm.png';
+ assert.ok(exists(image),'user-uploaded mission 2 panorama exists on main');
+ assert.match(board,/const canyonArt='\.\/mission-2-verfluchte-winterklamm\.png'/);
+ assert.doesNotMatch(board,/winterliches_portal_im_alpenreich\.png/);
+ assert.ok(board.indexOf("const canyonArt=")<board.indexOf('for(let i=0;i<64;i++)'),
+  'panorama must be beneath all original 64 interactive track fields');
+ assert.match(board,/preserveAspectRatio="xMidYMid meet"/);
+ assert.match(board,/pointer-events="none"/);
+ assert.match(board,/mission2BoardMarkup\(game/);
+ assert.match(board,/boardSvg\.querySelectorAll\('\[data-piece\]'\)/);
+ const mission1=read('../DOG/grinch-campaign/mission-board.js');
+ assert.doesNotMatch(mission1,/mission-2-verfluchte-winterklamm/,'mission 1 stays untouched');
+});
