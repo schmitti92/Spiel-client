@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="de"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grinch Chaos Slots · Mission 2 – Vorschau</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#0d1b18;color:#f5f1df}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse 75% 54% at 50% 15%,#214c36 0,#0d1b18 90%);min-height:100svh}
+a{color:#e8d391}main{max-width:1100px;padding:20px 16px 70px;margin:auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+header h1{font-size:clamp(22px,3.3vw,38px);margin:7px 0 3px;color:#f0d38d}header p{margin:3px 0;color:#b8d0bd;font-size:14px}
+.tag{display:inline-block;background:#203f35;border:1px solid #467962;border-radius:999px;color:#c7e8ce;padding:6px 10px;font-size:12px}
+.layout{display:grid;grid-template-columns:minmax(0,510px) minmax(0,1fr);gap:25px;align-items:start;margin-top:15px}
+.machine-wrap{position:relative;width:min(100%,510px);margin:auto}
+.machine{display:block;width:100%;height:auto;filter:drop-shadow(0 15px 20px #020c07)}
+.reels{position:absolute;top:40.8%;left:15.7%;width:63.7%;height:22.1%;display:grid;grid-template-columns:repeat(3,1fr);gap:2.2%;pointer-events:none}
+.reel{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;min-width:0;overflow:hidden;padding:3px;text-align:center;color:#23412a;text-shadow:0 1px 0 #fff5d1;font-weight:900}
+.reel img{width:74%;max-height:68%;object-fit:contain;filter:drop-shadow(0 2px 3px #725b3840)}
+.reel .big{font-size:clamp(23px,5vw,53px);line-height:1}
+.reel .small{font-size:clamp(10px,1.7vw,17px)}
+.reel.trick{color:#a1231e}
+.readout{position:absolute;left:23%;width:48%;top:75.7%;height:6.1%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(11px,2.3vw,17px);line-height:1.15;font-weight:800;color:#ffe29b;text-shadow:0 1px 8px #020;pointer-events:none}
+.card{border:1px solid #44664d;background:#13291f;border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 9px 22px #0003}
+h2{font-size:19px;margin:0 0 10px;color:#eed390}h3{font-size:16px;color:#e9d2a5}
+p{line-height:1.5}.explain{color:#d0dfce;font-size:14px}
+.prize-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.prize{background:linear-gradient(#345a39,#1b2c24);border:2px solid #a78947;border-radius:12px;padding:10px 5px;text-align:center;position:relative}
+.prize strong{font-size:clamp(22px,3vw,35px);display:block;color:#ffda80}
+.prize span{font-size:12px;display:block}.prize small{display:block;color:#e6b3a1;margin-top:8px;font-size:10px}
+.notice{border-left:4px solid #efbb62;padding:10px 13px;background:#313023;font-size:14px;line-height:1.5;border-radius:8px}
+button{border:2px solid #d6b65a;border-radius:12px;color:#1b2b18;background:linear-gradient(#fbe5a6,#d3ae57);font-weight:900;font-size:16px;padding:13px 20px;cursor:pointer;width:100%;margin-top:10px}
+button:disabled{opacity:.6;cursor:wait}
+#event-desc{min-height:80px;color:#e2e5d8;font-size:15px}#event-name{font-size:23px;color:#f6db9d;margin:8px 0}
+#double{display:none;text-align:center}#double.show{display:block}#double img{width:100%;max-width:400px}
+#bonus{display:none;align-items:center;gap:12px}#bonus.show{display:flex}#bonus img{width:112px;max-width:30%;height:auto}
+#bonus-text{font-size:14px;color:#dcead6}#bonus-text b{display:block;color:#f6da8c;font-size:18px;margin-bottom:6px}
+.muted{font-size:12px;color:#aabbb0}
+@media(max-width:760px){.layout{grid-template-columns:1fr;gap:12px}main{padding:12px 10px 40px}.card{padding:14px}.readout{font-size:clamp(11px,3.3vw,17px)}}
+@media(prefers-reduced-motion:no-preference){.machine-wrap.spinning{animation:shake .12s linear infinite alternate}@keyframes shake{from{transform:translateX(-1px)}to{transform:translateX(1px)}}}
+</style></head><body><main>
+<header><div><span class="tag">🎄 Mission 2 · Designvorschau</span><h1>🎰 Grinch Chaos Slots</h1><p>40 Gemeinheiten · 10 % Chance auf Slot 2 · nach jeder Kartenphase</p></div><a href="../christmas-event.html">Zurück zum Weihnachts-Event</a></header>
+<div class="layout">
+ <div>
+  <div class="machine-wrap" id="machine-wrap" aria-label="Grinch-Slotmaschine mit drei Walzen">
+   <img class="machine" src="./slotmaschine_haupt.png" alt="Grün-goldene Grinch-Chaos-Slotmaschine mit drei Walzen">
+   <div class="reels" id="reels" aria-live="off"><div class="reel">🎰</div><div class="reel">❄️</div><div class="reel">😈</div></div>
+   <div class="readout" id="readout">40 GEMEINHEITEN</div>
+  </div>
+  <div class="card"><h2>🎁 Drei weitere Slotfelder</h2>
+   <div class="prize-strip">
+    <div class="prize"><strong>10</strong><span>Gratislose</span><small>Attrappe · nie gewinnbar</small></div>
+    <div class="prize"><strong>50</strong><span>Gratislose</span><small>Attrappe · nie gewinnbar</small></div>
+    <div class="prize"><strong>100</strong><span>Gratislose</span><small>Attrappe · nie gewinnbar</small></div>
+   </div>
+   <p class="muted">Diese drei Felder erscheinen nur während der Walzenanimation und als dekorative Grinch-Lockpreise. Die Ergebnisliste enthält sie nicht.</p>
+  </div>
+ </div>
+ <div>
+  <div class="card">
+   <h2>😈 Lass den Grinch drehen!</h2>
+   <p class="explain">Dies ist eine frei spielbare, rein optische Vorschau. Sie verändert keine DOG-Partie, gibt keine Lose aus und schaltet keine Mission frei.</p>
+   <button type="button" id="spin">🎰 Slot-Vorschau starten</button>
+   <div role="status" aria-live="polite"><h3 id="event-name">Bereit für Grinchs Streich</h3><p id="event-desc">Nach dem Drehen erscheint eine von 40 echten Grinch-Gemeinheiten.</p></div>
+  </div>
+  <div id="double" class="card"><img src="./doppeltes_pech_banner.png" alt="Doppeltes Pech: Zweiter Slot aktiviert"></div>
+  <div id="bonus" class="card"><img src="./slotmaschine_bonus.png" alt="Zusätzliche Bonus-Slotmaschine"><div id="bonus-text"></div></div>
+  <div class="notice"><strong>Wichtig:</strong> Die Gratislose-Felder 10, 50 und 100 sind ausdrücklich <strong>nicht gewinnbar</strong>. Sie können weder durch Slot 1 noch durch Slot 2 gezogen werden. Alle anderen Ergebnisse in dieser Vorschau sind Effekte, keine Geld- oder Losgewinne.</div>
+ </div>
+</div>
+</main>
+<script type="module">
+import {drawSlotOutcome,DECOY_FIELDS,CATEGORY_BY_ID} from './mission-2-slot-config.js';
+const $=id=>document.getElementById(id);
+const REEL_CATEGORY=['💥','🃏','❄️','🎭'];
+const random=()=>{if(globalThis.crypto?.getRandomValues){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]/4294967296;}return Math.random();};
+let effectList=[];
+try{
+ const response=await fetch('./manifest.json',{cache:'no-store'});
+ if(!response.ok)throw new Error('Manifest konnte nicht geladen werden.');
+ const json=await response.json();effectList=json.effects;
+ if(effectList.length!==40||new Set(effectList.map(e=>e.id)).size!==40)throw new Error('Erwartet: 40 verschiedene Gemeinheiten.');
+}catch(e){$('event-desc').textContent='Fehler beim Laden der Slot-Daten: '+e.message;$('spin').disabled=true}
+const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const display=(parts)=>{
+ const reels=$('reels');reels.replaceChildren();
+ for(const part of parts){
+  const el=document.createElement('div');el.className='reel'+(part.trick?' trick':'');
+  if(part.image){const im=document.createElement('img');im.src='./'+part.image.split('/').pop();im.alt='Gemeinheiten-Symbol';el.append(im);}
+  else{const a=document.createElement('div');a.className='big';a.textContent=part.big||'';el.append(a);}
+  const small=document.createElement('div');small.className='small';small.textContent=part.small||'';el.append(small);reels.append(el);
+ }
+};
+const fakeFrames=()=>[...DECOY_FIELDS.map(v=>({big:String(v.count),small:'GRATISLOSE',trick:true})),
+ ...effectList.map(e=>({big:REEL_CATEGORY[CATEGORY_BY_ID(e.id)],small:'#'+e.id}))];
+function reveal(effect){
+ const cat=CATEGORY_BY_ID(effect.id);
+ display([{big:REEL_CATEGORY[cat],small:'KATEGORIE'},{image:effect.image,small:'GEMEINHEIT'},{big:'#'+effect.id,small:'GRINCH'}]);
+ $('readout').textContent=effect.name.toUpperCase();
+}
+let busy=false;
+$('spin').addEventListener('click',async()=>{
+ if(busy||!effectList.length)return;
+ busy=true;$('spin').disabled=true;$('spin').textContent='🎰 Walzen drehen ...';
+ $('double').classList.remove('show');$('bonus').classList.remove('show');$('event-name').textContent='Die Walzen drehen ...';
+ $('event-desc').textContent='Der Grinch bereitet eine Gemeinheit vor.';
+ const outcome=drawSlotOutcome(random);
+ const frames=fakeFrames();
+ $('machine-wrap').classList.add('spinning');
+ for(let tick=0;tick<19;tick++){
+  display([frames[Math.floor(random()*frames.length)],frames[Math.floor(random()*frames.length)],frames[Math.floor(random()*frames.length)]]);
+  await delay(75+tick*4);
+ }
+ $('machine-wrap').classList.remove('spinning');
+ const first=effectList.find(e=>e.id===outcome.first);
+ reveal(first);$('event-name').textContent='#'+first.id+' · '+first.name;
+ $('event-desc').textContent='Kategorie: '+first.category.replaceAll('_',' ')+' · Im echten Spiel wird dieser Effekt erst nach serverseitiger Prüfung angewendet.';
+ if(outcome.double){
+  await delay(700);$('double').classList.add('show');
+  const second=effectList.find(e=>e.id===outcome.second);
+  const panel=$('bonus-text');panel.replaceChildren();const b=document.createElement('b');b.textContent='#'+second.id+' · '+second.name;
+  const p=document.createElement('span');p.textContent='Zweite kompatible Gemeinheit (andere Kategorie).';panel.append(b,p);
+  $('bonus').classList.add('show');
+ }
+ $('spin').disabled=false;$('spin').textContent='🎰 Erneut drehen';busy=false;
+});
+</script></body></html>
