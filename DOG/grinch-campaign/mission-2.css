@@ -50,3 +50,19 @@ body{--grinch-gold:#efd28c}
  padding:3px 5px;border-radius:6px;background:#194f28f5;border:1px solid #efd984;
  color:#fff2ce;font:900 11px/1.1 system-ui,sans-serif;box-shadow:0 2px 6px #071b13a8;
  white-space:normal;overflow-wrap:anywhere;pointer-events:none}
+
+/* Mission 2 only: real stack counts and the globally last discarded DOG card. */
+.m2-piles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0 9px}
+.m2-pile{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid #85b3a377;border-radius:12px;
+ background:linear-gradient(130deg,#153732,#091f29);color:#c6d9d0;font-size:11px;min-width:0}
+.m2-pile>span:last-child{display:flex;flex-direction:column;gap:4px;min-width:0}
+.m2-pile strong{color:#ffe2a1;font-size:12px;font-variant-numeric:tabular-nums}
+.m2-card-back,.m2-card-discard{flex:0 0 39px;display:flex;align-items:center;justify-content:center;width:39px;height:53px;
+ border:2px solid #d9bc72;border-radius:7px;color:#f8e4ab;box-shadow:0 3px 6px #0005;
+ font:900 17px Georgia,serif;text-align:center}
+.m2-card-back{background:radial-gradient(circle at 40% 40%,#41698e,#132a54 65%,#11213e)}
+.m2-card-discard{background:linear-gradient(150deg,#faf0d3,#bfd6d2);color:#26384a}
+@media(max-width:650px){.m2-piles{gap:6px;margin:8px 0}
+ .m2-pile{padding:6px;gap:7px;font-size:10px}
+ .m2-pile strong{font-size:11px}
+ .m2-card-back,.m2-card-discard{flex-basis:32px;width:32px;height:43px;font-size:15px}}
