@@ -1,0 +1,26 @@
+name: Grinch mandatory loss rules
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/grinch-campaign/mission-loss-policy.js'
+      - 'DOG/grinch-campaign/mission-1-rules.js'
+      - 'DOG/grinch-campaign/mission-2-rules.js'
+      - 'DOG/grinch-campaign/mission-config.js'
+      - 'tests/grinch-mandatory-random-loss.test.mjs'
+      - '.github/workflows/grinch-mandatory-loss.yml'
+  pull_request:
+    paths:
+      - 'DOG/grinch-campaign/**'
+      - 'tests/grinch-mandatory-random-loss.test.mjs'
+      - '.github/workflows/grinch-mandatory-loss.yml'
+  workflow_dispatch:
+jobs:
+  check-losses:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/grinch-mandatory-random-loss.test.mjs
