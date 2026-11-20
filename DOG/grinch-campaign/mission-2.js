@@ -38,7 +38,7 @@ setMission2SlotDismissHandler(async round=>{
   try{await onlineBridge.acknowledgeSlot(state,round);}
   finally{onlineBusy=false;render();}
  }else{
-  try{state=acknowledgeMission2Slot(state,state.current,round);save();render();}
+  try{state=acknowledgeMission2Slot(state,state.current,round);save();render();onEffect();}
   catch(err){toast('Slot-Bestätigung fehlgeschlagen: '+err.message,3200);}
  }
 });
