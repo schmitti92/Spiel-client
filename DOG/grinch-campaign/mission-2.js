@@ -15,6 +15,15 @@ const roomCode=(new URLSearchParams(location.search).get('room')||'').toUpperCas
 const onlineMode=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/.test(roomCode);
 let onlineSeat=null,onlineMatchId=null,onlineBridge=null,onlineBusy=false;
 const myTurn=()=>!onlineMode||onlineSeat===state?.current;
+function curseLabel(type,id){
+ const rules={
+  11:{'7':'JETZT 8'},12:{'8':'7 AUFTEILEN'},13:{'2':'JETZT 12','12':'JETZT 2'},
+  14:{'5':'JETZT 10','10':'JETZT 5'},15:{'4':'NUR −4'},
+  16:{'13':'3 / START'},17:{'1/11':'1 / START'},18:{swap:'JETZT 6'},
+  19:{joker:'KEIN 7/TAUSCH'},20:{'3':'JETZT 9','9':'JETZT 3'}
+ };
+ return rules[id]?.[type]||null;
+}
 let state=null,chosenCard=null,chosenPiece=null,pickMoves=[],lastSeenRevision=-1,lastSlotRound=0;
 wireMission2Slots();
 let toastTimer=null,effectTimer=null;
@@ -148,6 +157,8 @@ function render(){
    b.setAttribute('aria-label','DOG-Karte '+(c.type==='swap'?'Tausch':c.type==='joker'?'Joker':c.type));
    if(state.seven&&state.seven.cardId===c.id)b.title='7: Noch '+(7-state.seven.spent)+' Schritte';
    if(state.m2?.cardCurse)b.title=(b.title?b.title+' · ':'')+'Grinch-Kartenfluch #'+state.m2.cardCurse;
+   const activeCardLabel=curseLabel(c.type,state.m2?.cardCurse);
+   if(activeCardLabel){const badge=text('span',activeCardLabel,b,'m2-card-effect');b.setAttribute('aria-label',b.getAttribute('aria-label')+' · '+activeCardLabel);}
    b.addEventListener('click',()=>{
     if(state.seven)return;
     chosenCard=chosenCard===c.id?null:c.id;chosenPiece=null;pickMoves=[];render();
