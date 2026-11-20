@@ -7,9 +7,9 @@ const MISSIONS=Object.freeze([
  {name:'Pfadfinder – Der Weg zum Berg',icon:'🧭',
   description:'Die drei Freunde folgen dem grünen Leuchten. Jeder beginnt mit fünf Figuren, doch auf dem Bergpfad verschwindet von jedem eine.',
   objective:'Online: Drei angemeldete Spieler im selben Raum; die regulären DOG-Karten, drei verdeckte Fallen und je vier Figuren durch das eigene Portal. Nur verifizierte gemeinsame Siege schalten Mission 2 frei. Lokaler Testmodus bleibt verfügbar.'},
- {name:'Der verfluchte Aufstieg',icon:'🌫️',
-  description:'Mit vier Figuren je Spieler geht der Aufstieg weiter. Die Dunkelheit wird gefährlicher.',
-  objective:'Geplant: Ein weiterer unvermeidbarer Figurenverlust je Spieler.'},
+ {name:'Der verfluchte Aufstieg',icon:'🎰',
+  description:'Je vier verbliebene Figuren gehen weiter. Nach jeder Kartenphase löst der Grinch-Slot eine von 40 Gemeinheiten aus, mit 10 % Chance auf einen zweiten Effekt.',
+  objective:'Jeweils drei Figuren durch das Portal retten. Eine weitere Figur pro Farbe wird gefangen. Das normale DOG und Mission 1 bleiben unverändert.'},
  {name:'Die erste Begegnung',icon:'👹',
   description:'Die Freunde treffen den Grinch zum ersten Mal direkt auf dem Spielfeld. Er verhöhnt sie und gesteht, die Gefangenen zu haben.',
   objective:'Geplant: Erster Grinch-Bot als vierter Spieler, Start mit drei Figuren, jeweils eine weitere Figur verschwindet.'},
@@ -76,6 +76,21 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
  slotPreviewLink.style.cssText='display:none;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin:9px 8px 9px 0;border-color:#d7b46c;';
  slotPreviewLink.hidden=true;
  $('grinch-mission-return')?.before(slotPreviewLink);
+ // Mission 2: separate local trial and official online route.
+ const mission2Local=document.createElement('a');
+ mission2Local.href='./grinch-campaign/mission-2.html';
+ mission2Local.textContent='🧪 Mission 2 lokal ausprobieren';
+ mission2Local.className='grinch-event-small-button';
+ mission2Local.style.cssText='display:none;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin:9px 8px 9px 0;border-color:#bfcf83;';
+ mission2Local.hidden=true;
+ $('grinch-mission-return')?.before(mission2Local);
+ const mission2Online=document.createElement('a');
+ mission2Online.href=hasRoom?'./grinch-campaign/mission-2.html?'+new URLSearchParams({room:roomCode}).toString():'../hub-lobby.html?view=online';
+ mission2Online.textContent=hasRoom?'🌐 Mission 2 gemeinsam im Raum '+roomCode:'🌐 Gemeinsamen Spielraum öffnen';
+ mission2Online.className='grinch-event-small-button';
+ mission2Online.style.cssText='display:none;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin:9px 8px 9px 0;border-color:#8fe9c1;';
+ mission2Online.hidden=true;
+ $('grinch-mission-return')?.before(mission2Online);
 
  $('grinch-visit-cave')?.addEventListener('click',()=>openCave());
  $('grinch-back-village')?.addEventListener('click',()=>openTab('village'));
@@ -94,12 +109,16 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
    onlineLink.style.display=number===1?'inline-flex':'none';
    slotPreviewLink.hidden=number!==2;
    slotPreviewLink.style.display=number===2?'inline-flex':'none';
+   mission2Local.hidden=number!==2;
+   mission2Local.style.display=number===2?'inline-flex':'none';
+   mission2Online.hidden=number!==2;
+   mission2Online.style.display=number===2?'inline-flex':'none';
    const cleared=verifiedProgress?.completedMissions?.includes(1)===true;
    $('grinch-mission-lock').textContent=number===1?
     '🎮 Online spielt ihr zu dritt in eurem vorhandenen Raum. Ein offizieller Start benötigt Baumstufe 10; nur ein vom Server bestätigter Sieg zählt. Der lokale Test vergibt keine Freischaltungen.':
     number===2&&cleared?
-    '🔓 Dein Konto hat Mission 2 durch einen echten Sieg freigeschaltet. Diese Folgemission ist noch in Entwicklung und derzeit nicht spielbar.':
-    '🔒 Missionsvorschau. Diese Mission ist noch nicht spielbar und vergibt keine Belohnungen.';
+    '🔓 Mission 2 ist nach Mission 1 für dein Konto freigeschaltet. Für den offiziellen Start müssen alle drei Spieler Mission 1 geschafft haben.':
+    number===2?'🔒 Offiziell erst nach dem Sieg aller drei Spieler in Mission 1. Der lokale Test ist ohne Freischaltung möglich.':'🔒 Diese spätere Mission ist noch nicht spielbar.';
    if(dialog&&!dialog.open)dialog.showModal();
   });
  });
@@ -128,7 +147,7 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
    if(!state)continue;
    if(completed.has(i)){state.dataset.state='completed';state.textContent='✅ Geschafft';}
    else if(i===1){state.dataset.state=unlocked?'available':'preview';state.textContent=unlocked?'🌐 Online bereit':'🧪 Testmodus';}
-   else if(i===2&&Number(verifiedProgress?.highestUnlocked||1)>=2){state.dataset.state='unlocked';state.textContent='🔓 Freigeschaltet · folgt';}
+   else if(i===2&&Number(verifiedProgress?.highestUnlocked||1)>=2){state.dataset.state='unlocked';state.textContent='🔓 Online spielbar';}
    else{state.dataset.state='locked';state.textContent='🔒 Gesperrt';}
   }
  }
