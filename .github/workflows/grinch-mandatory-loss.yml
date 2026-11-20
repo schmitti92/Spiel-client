@@ -8,6 +8,8 @@ on:
       - 'DOG/grinch-campaign/mission-2-rules.js'
       - 'DOG/grinch-campaign/mission-2-effects.js'
       - 'DOG/grinch-campaign/mission-2.js'
+      - 'DOG/grinch-campaign/mission-2-board.js'
+      - 'DOG/grinch-campaign/mission-2-verfluchte-winterklamm.png'
       - 'DOG/grinch-campaign/mission-2-slot-ui.js'
       - 'DOG/grinch-campaign/mission-config.js'
       - 'tests/grinch-mandatory-random-loss.test.mjs'
