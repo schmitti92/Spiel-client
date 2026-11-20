@@ -23,7 +23,10 @@ function friendlyError(message){
   GRINCH_MATCH_MISMATCH:'Die Partie wurde geändert. Der aktuelle Spielstand wird geladen.',
   NOT_YOUR_TURN:'Du bist gerade nicht am Zug.',
   GRINCH_SPECTATOR:'Nur die drei Teilnehmer dürfen Mission 2 spielen.',
-  GRINCH_MISSION1_REQUIRED_FOR_ALL_PLAYERS:'Alle drei Spieler müssen Mission 1 offiziell abgeschlossen haben.'
+  GRINCH_MISSION1_REQUIRED_FOR_ALL_PLAYERS:'Alle drei Spieler müssen Mission 1 offiziell abgeschlossen haben.',
+  GRINCH_SLOT_PENDING:'Zuerst die Grinch-Slotrunde abschließen.',
+  GRINCH_SLOT_NOT_YOUR_TURN:'Nur der aktive Spieler kann den Slot für alle freigeben.',
+  GRINCH_SLOT_NOT_PENDING:'Diese Slotrunde wurde bereits bestätigt.'
  };
  return errors[message]||String(message||'Die Verbindung zum Spielraum ist fehlgeschlagen.');
 }
@@ -111,6 +114,15 @@ export function createGrinchOnline({roomCode,onRoom,onError,onConnection}){
    return result.room;
   }catch(err){notify(err.message);await refresh();return null;}
  }
+ async function acknowledgeSlot(state,round){
+  if(stopped||!state||!lastMatchId)throw Error('NOT_CONNECTED');
+  try{
+   const payload={matchId:lastMatchId,round,expectedRevision:state.revision};
+   const result=await request('/grinch/ack2','POST',payload);
+   accept(result.room);
+   return result.room;
+  }catch(err){notify(err.message);await refresh();return null;}
+ }
  function onLogin(){
   if(stopped)return;
   if(signedIn()){connect();void refresh();}
@@ -128,5 +140,5 @@ export function createGrinchOnline({roomCode,onRoom,onError,onConnection}){
   document.removeEventListener('visibilitychange',onVisible);
   clearInterval(pollTimer);pollTimer=null;stopSocket();
  }
- return {code,start,stop,refresh,launch,action};
+ return {code,start,stop,refresh,launch,action,acknowledgeSlot};
 }
