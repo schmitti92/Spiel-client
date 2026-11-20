@@ -19,7 +19,7 @@ export const MISSIONS = Object.freeze([
     effects:{quakeEvery:12,fogEvery:7,clueEvery:9},
     enabled:true
   }),
-  Object.freeze({id:2,title:'Der verfluchte Aufstieg',playersMax:3,piecesPerPlayer:4,forcedLossesPerPlayer:1,goalType:'single-portal-per-player',teleportAtTrackSteps:64,teleportCountToComplete:3,slotEffects:40,doubleSlotChance:0.10,slotAtEveryDeal:true,theme:'ice-ascent',enabled:true}),
+  Object.freeze({id:2,title:'Der verfluchte Aufstieg',playersMax:3,piecesPerPlayer:4,forcedLossesPerPlayer:1,goalType:'single-portal-per-player',teleportAtTrackSteps:64,teleportCountToComplete:3,trailHints:[],goal:'Eine versteckte Falle entfernt in Mission 2 genau eine weitere Figur je Spieler. Die übrigen drei werden nach Welt 3 gerettet.',slotEffects:40,doubleSlotChance:0.10,slotAtEveryDeal:true,theme:'ice-ascent',enabled:true}),
   Object.freeze({id:3,title:'Die erste Begegnung',playersMax:3,piecesPerPlayer:3,forcedLossesPerPlayer:1,theme:'grinch-encounter',enabled:false}),
   Object.freeze({id:4,title:'Befreiung aus der Höhle',playersMax:3,piecesPerPlayer:2,forcedLossesPerPlayer:0,theme:'prison-rescue',enabled:false}),
   Object.freeze({id:5,title:'Die letzte Schlacht',playersMax:3,piecesPerPlayer:5,forcedLossesPerPlayer:0,theme:'final-battle',enabled:false})
