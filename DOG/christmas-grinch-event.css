@@ -191,6 +191,8 @@
 }
 
 /* Mission 2: visible local trial, never mistaken for official campaign unlock. */
+#grinch-mission-2 .grinch-mission-state[data-state="test-ready"]::before{display:none}
+
 #grinch-mission-2 .grinch-mission-state[data-state="test-ready"]{
  background:linear-gradient(160deg,#376b55,#1f4a3c);border-color:#85c9ab;color:#f0fff5
 }
