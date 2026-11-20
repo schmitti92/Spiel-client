@@ -19,7 +19,7 @@
  <section class="intro">
   <p class="kicker">KAPITEL 2 · GRINCHS KARTENCHAOS</p>
   <h2>Der verfluchte Aufstieg – Grinchs Chaos-Slots</h2>
-  <p>Mission 2 spielt ausschließlich auf einem eigenen DOG-Kampagnenbrett. Drei Freunde beginnen mit je vier verbliebenen Figuren, von denen eine bereits auf dem geschützten Startfeld steht. Nach jeder Kartenphase dreht der Grinch-Slot, mit 10 % Chance auf eine zweite Gemeinheit. Ein weiterer Freund je Farbe wird gefangen. Die übrigen drei Figuren müssen durch das eigene, wiederverwendbare Portal nach Welt 3.</p>
+  <p>Mission 2 spielt ausschließlich auf einem eigenen DOG-Kampagnenbrett. Drei Freunde beginnen mit je vier verbliebenen Figuren, von denen eine bereits auf dem geschützten Startfeld steht. Nach jeder Kartenphase dreht der Grinch-Slot, mit 10 % Chance auf eine zweite Gemeinheit. Ein weiterer Freund je Farbe wird gefangen. Die übrigen drei Figuren müssen durch das eigene, wiederverwendbare Portal nach Welt 3. Wer seine drei Figuren gerettet hat, darf den beiden Mitspielern anschließend mit eigenen Karten helfen.</p>
   <div class="notice" role="status">🧪 Eigenständige Spieltest-Version für drei Spieler an einem Gerät. Kein Online-Raum, kein offizieller Kampagnenfortschritt und keine echten Belohnungen. Das normale DOG-Spiel bleibt unverändert.</div>
  </section>
  <section id="grinch-online-panel" class="grinch-online-panel" hidden aria-live="polite">
@@ -65,8 +65,12 @@
    </section>
    <section class="panel">
     <h2>🃏 DOG-Handkarten</h2>
-    <p class="help">110 Original-DOG-Karten. Kartenflüche aus dem Slot ändern nur während dieser Mission vorübergehend die gültige Kartenwirkung.</p>
-    <div id="hand" class="hand"></div>
+    <p class="help">110 Original-DOG-Karten. Deine Hand bleibt auch während fremder Züge sichtbar. Grinch-Flüche ändern Kartenwerte nur vorübergehend.</p>
+    <div class="m2-piles" role="group" aria-label="DOG-Nachziehstapel und Ablagestapel">
+     <div class="m2-pile"><span class="m2-card-back" aria-hidden="true">❄️</span><span>Nachziehstapel<strong id="m2-draw-count">– Karten</strong></span></div>
+     <div class="m2-pile"><span class="m2-card-discard" id="m2-last-card" aria-label="Zuletzt abgelegte Karte">–</span><span>Ablagestapel<strong id="m2-discard-count">– Karten</strong></span></div>
+    </div>
+    <div id="hand" class="hand" aria-label="Deine DOG-Handkarten"></div>
     <div id="moves" class="moves"></div>
    </section>
    <section class="panel">
@@ -105,6 +109,6 @@
 <div id="event-message" role="status" aria-live="assertive"></div>
 <script src="../../profile-config.js"></script>
 <script src="../../profile-auth.js"></script>
-<script type="module" src="./mission-2.js?v=9"></script>
+<script type="module" src="./mission-2.js?v=10"></script>
 </body>
 </html>
