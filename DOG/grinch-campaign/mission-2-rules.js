@@ -64,7 +64,14 @@ function refill(s){
  }
  s.current=(s.round-1)%SEATS;
  log(s,'Neue Kartenphase '+s.round+': '+dealCount+' Karten pro Spieler');
- const effects=slotForNewPhase(s);
+ const effects=slotForNewPhase(s,(seat,card)=>{
+  const previous=s.current;
+  s.current=seat;
+  try{return legalMoves(s,seat,card);}finally{s.current=previous;}
+ });
+ if(mission2TurnAdvance(s,s.current)){
+  s.current=(s.current+mission2TurnDirection(s)+SEATS)%SEATS;s.turn++;
+ }
  s.lastEvent={type:'slot',round:s.round,effects,message:'🎰 Der Grinch löst '+effects.length+' Gemeinheit(en) aus!',turn:s.turn};
 }
 function log(s,message){s.history.unshift(message);s.history=s.history.slice(0,10);}
@@ -162,21 +169,23 @@ function sevenCandidates(s,seat,left,cardId,as){
  for(const p of s.pieces.filter(p=>p.seat===seat&&p.place==='track')){
   for(let n=1;n<=left;n++){
    const r=route(s,p,n,true);
-   if(r)moves.push({kind:'seven',pieceId:p.id,cardId,as,distance:n,targetSteps:r.targetSteps,captureIds:r.captureIds});
+   const card=s.hands[seat]?.find(c=>c.id===cardId);
+   if(r&&(!card||moveAllowedByCurse(s,seat,card,p.id,as,p.steps,r.targetSteps,n)))
+    moves.push({kind:'seven',pieceId:p.id,cardId,as,distance:n,targetSteps:r.targetSteps,captureIds:r.captureIds});
   }
  }
  return moves;
 }
-function canFinishSeven(s,seat,left,memo=new Set()){
+function canFinishSeven(s,seat,left,cardId,memo=new Set()){
  if(left===0)return true;
  if(left<0)return false;
  const stateKey=left+'|'+s.pieces.map(p=>p.place==='track'?p.id+':'+p.steps:p.id+':'+p.place).join(',');
  if(memo.has(stateKey))return false;
  memo.add(stateKey);
- const all=sevenCandidates(s,seat,left,null,'7').sort((a,b)=>b.distance-a.distance);
+ const all=sevenCandidates(s,seat,left,cardId,'7').sort((a,b)=>b.distance-a.distance);
  for(const move of all){
   const next=clone(s);applyRoute(next,move);
-  if(canFinishSeven(next,seat,left-move.distance,memo))return true;
+  if(canFinishSeven(next,seat,left-move.distance,cardId,memo))return true;
  }
  return false;
 }
@@ -191,7 +200,7 @@ export function legalMoves(s,seat,card){
    const left=pending?7-pending.spent:7;
    for(const action of sevenCandidates(s,seat,left,card.id,type)){
     const next=clone(s);applyRoute(next,action);
-    if(canFinishSeven(next,seat,left-action.distance))moves.push(action);
+    if(canFinishSeven(next,seat,left-action.distance,card.id))moves.push(action);
    }
    continue;
   }
