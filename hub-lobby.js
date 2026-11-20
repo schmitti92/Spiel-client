@@ -4,11 +4,11 @@
 const el=id=>document.getElementById(id);
 const config=window.SPIELPORTAL_CONFIG||{};
 const API=String(config.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge',dog:'DOG Klassisch','dog-grinch1':'DOG · Grinch-Mission 1'};
+const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge',dog:'DOG Klassisch','dog-grinch1':'DOG · Grinch-Mission 1','dog-grinch2':'DOG · Grinch-Mission 2'};
 let code=null,room=null,operation=false,poll=null,accountUid=null,pollErrors=0;
 let playMode=new URL(location.href).searchParams.get('view')==='local'?'local':'online';
 let choosingGame=false,displayGame=null;
-const GAME_ICON={barikade:'🎲',skyjo:'🃏',kreuz:'🎯',business:'💼',partychallenge:'🏆',dog:'🐾','dog-grinch1':'🏔️'};
+const GAME_ICON={barikade:'🎲',skyjo:'🃏',kreuz:'🎯',business:'💼',partychallenge:'🏆',dog:'🐾','dog-grinch1':'🏔️','dog-grinch2':'🎰'};
 const GAME_DESCRIPTIONS={
  barikade:'Das Brettspiel mit Barikaden, Action-Regeln und optionalem Bossmodus.',
  skyjo:'Karten, Joker und spannende Runden. Der Host legt die Regeln fest.',
@@ -16,6 +16,7 @@ const GAME_DESCRIPTIONS={
  business:'Unternehmen, Aktien und Branchen – mit 10, 20 oder 30 Runden.',
  dog:'Das klassische Team-Brettspiel mit Karten, Startfeldern, Jokern und Partnern.',
  'dog-grinch1':'Drei echte Spieler, versteckte Fallen und die Portale nach Welt 2. Start erst ab Weihnachtsbaum-Stufe 10.',
+ 'dog-grinch2':'40 Grinch-Slot-Gemeinheiten, nach jeder Kartenphase, 10 % Doppel-Slot. Alle drei müssen Mission 1 geschafft haben.',
  partychallenge:'Elf Online-Minispiele in einem Raum – inklusive Preisjäger.'
 };
 function setPlayMode(next){
@@ -131,8 +132,14 @@ function enterGrinchMission1(){
  const params=new URLSearchParams({room:room.code,match:room.match.id});
  location.assign('DOG/grinch-campaign/mission-1.html?'+params.toString());
 }
-function enterCurrentMatch(){
+function enterGrinchMission2(){
+  if(room?.phase!=='playing'||room.match?.game!=='dog-grinch2'||!room.match.participating)return;
+  const params=new URLSearchParams({room:room.code,match:room.match.id});
+  location.assign('DOG/grinch-campaign/mission-2.html?'+params.toString());
+ }
+ function enterCurrentMatch(){
  if(room?.match?.game==='dog-grinch1')return enterGrinchMission1();
+  if(room?.match?.game==='dog-grinch2')return enterGrinchMission2();
  if(room?.match?.game==='barikade')return enterBarikade();
  if(room?.match?.game==='kreuz')return enterKreuz();
  if(room?.match?.game==='skyjo')return enterSkyjo();
