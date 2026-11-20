@@ -272,8 +272,8 @@ function onEffect(){
   const spin=state.m2?.spins?.find(item=>item.round===state.round);
   if(spin&&spin.round>lastSlotRound){
    lastSlotRound=spin.round;
-   if(latestLoss)setTimeout(()=>{if(state?.round>=spin.round)void presentMission2Slot(spin);},2100);
-   else void presentMission2Slot(spin);
+   if(latestLoss)setTimeout(()=>{if(state?.m2?.pendingSlotRound===spin.round)void presentMission2Slot(spin);},2100);
+   else if(state?.m2?.pendingSlotRound===spin.round)void presentMission2Slot(spin);
   }
   return;
  }
