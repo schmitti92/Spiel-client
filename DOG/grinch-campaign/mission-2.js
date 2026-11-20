@@ -126,8 +126,10 @@ function render(){
   text('span',p.name,name);
   if(p.seat===state.current&&!state.complete)text('span','👑 Am Zug',title);
   text('div','🌀 '+p.teleported+'/3 gerettet · '+p.track+' auf dem Weg · '+p.home+' im Haus',card,'status');
+  const remaining=p.teleported+p.track+p.home;
+  text('div',remaining+'/4 Figuren verbleiben in Mission 2 · '+(remaining===3?'3 für Mission 3 gesichert':'eine muss noch verschwinden'),card,'status');
   const captured=state.players[p.seat]?.m2Lost;
-  text('div',captured?'⚠️ Zweiter Freund gefangen':'Eine Figur aus Mission 1 bleibt gefangen',card,captured?'status loss':'status');
+  text('div',captured?'⚠️ Genau eine weitere Figur verschwunden':'🕳️ Versteckte Falle: eine weitere Figur wird noch verschwinden',card,captured?'status loss':'status');
  }
  const hand=$('hand');hand.replaceChildren();
  const moves=$('moves');moves.replaceChildren();
@@ -194,7 +196,7 @@ function render(){
  }
  $('trail-next-mission').textContent=route.allReady?
   '🏔️ Alle neun Figuren gerettet! Mission 3 wartet.':
-  '🌀 Je drei Figuren müssen ihr Portal genau erreichen. Eine weitere wird vom Grinch gefangen.';
+  '🕳️ Wie in Mission 1: Genau eine der vier verbliebenen Figuren verschwindet je Spieler durch eine versteckte Falle. Erst dann können alle drei übrigen Figuren in Mission 3 gerettet werden.';
  const history=$('history');history.replaceChildren();
  for(const entry of state.history)text('p',entry,history);
  drawMission2Board($('board'),state,{selectedPiece:chosenPiece,onPieceClick:choosePawn});
