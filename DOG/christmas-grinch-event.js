@@ -68,6 +68,14 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
  onlineLink.style.cssText='display:none;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin:9px 8px 9px 0;border-color:#8fe9c1;';
  onlineLink.hidden=true;
  $('grinch-mission-return')?.before(onlineLink);
+ // Mission 2 design-only preview: never grants campaign progress or rewards.
+ const slotPreviewLink=document.createElement('a');
+ slotPreviewLink.href='./grinch-campaign/mission-2-slot-preview.html';
+ slotPreviewLink.textContent='🎰 Mission 2: Grinch-Slots ansehen (Vorschau)';
+ slotPreviewLink.className='grinch-event-small-button';
+ slotPreviewLink.style.cssText='display:none;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin:9px 8px 9px 0;border-color:#d7b46c;';
+ slotPreviewLink.hidden=true;
+ $('grinch-mission-return')?.before(slotPreviewLink);
 
  $('grinch-visit-cave')?.addEventListener('click',()=>openCave());
  $('grinch-back-village')?.addEventListener('click',()=>openTab('village'));
@@ -84,6 +92,8 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
    testLink.style.display=number===1?'inline-flex':'none';
    onlineLink.hidden=number!==1;
    onlineLink.style.display=number===1?'inline-flex':'none';
+   slotPreviewLink.hidden=number!==2;
+   slotPreviewLink.style.display=number===2?'inline-flex':'none';
    const cleared=verifiedProgress?.completedMissions?.includes(1)===true;
    $('grinch-mission-lock').textContent=number===1?
     '🎮 Online spielt ihr zu dritt in eurem vorhandenen Raum. Ein offizieller Start benötigt Baumstufe 10; nur ein vom Server bestätigter Sieg zählt. Der lokale Test vergibt keine Freischaltungen.':
