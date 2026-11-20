@@ -3,10 +3,10 @@ const MISSION_2=MISSIONS[1];
 import {presentMission2Slot,wireMission2Slots} from './mission-2-slot-ui.js?v=1';
 import {createGrinchOnline} from './mission-2-online.js?v=1';
 import {cardVisual} from '../card-visuals.js?v=11';
-import {drawMission2Board} from './mission-2-board.js?v=1';
+import {drawMission2Board} from './mission-2-board.js?v=2';
 import {mission2Status} from './mission-2-markers.js?v=1';
 import {trackPoint,goalPoint} from '../board-layout.js?v=11';
-import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,status,pieceCoord,validateSaved} from './mission-2-rules.js?v=1';
+import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,status,pieceCoord,validateSaved} from './mission-2-rules.js?v=2';
 
 const $=id=>document.getElementById(id);
 const SVG='http://www.w3.org/2000/svg';
