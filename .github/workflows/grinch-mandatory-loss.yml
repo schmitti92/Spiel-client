@@ -6,6 +6,9 @@ on:
       - 'DOG/grinch-campaign/mission-loss-policy.js'
       - 'DOG/grinch-campaign/mission-1-rules.js'
       - 'DOG/grinch-campaign/mission-2-rules.js'
+      - 'DOG/grinch-campaign/mission-2-effects.js'
+      - 'DOG/grinch-campaign/mission-2.js'
+      - 'DOG/grinch-campaign/mission-2-slot-ui.js'
       - 'DOG/grinch-campaign/mission-config.js'
       - 'tests/grinch-mandatory-random-loss.test.mjs'
       - '.github/workflows/grinch-mandatory-loss.yml'
@@ -23,4 +26,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test tests/grinch-mandatory-random-loss.test.mjs
+      - run: node --check DOG/grinch-campaign/mission-2.js
+      - run: node --check DOG/grinch-campaign/mission-2-slot-ui.js
+      - run: node --test tests/grinch-mandatory-random-loss.test.mjs tests/dog-grinch-mission2-scope.test.mjs
