@@ -51,9 +51,25 @@ export function drawMission2Board(boardSvg,game,{selectedPiece=null,onPieceClick
     push('<image href="'+resolveImage(skin.fallbackImage)+'" x="0" y="0" width="760" height="760" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>');
   if(validAssetPath(skin.image))
     push('<image href="'+resolveImage(skin.image)+'" x="0" y="0" width="760" height="760" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>');
-  // Uploaded 1254px winter art, exclusively in this campaign renderer.
-  // Place it ABOVE the selected classic theme but BELOW all 64 live DOG fields.
-  push('<image href="./winterliches_portal_im_alpenreich.png" x="0" y="0" width="760" height="760" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>');
+  // Mission 2 ONLY: the user-selected winter canyon artwork is a wide
+  // panorama. A softened cover image fills the square board without ugly bars;
+  // the complete, undistorted panorama is blended in above it, preserving
+  // the purple and blue portals at the left/right edges.
+  // Both background layers stay BELOW the original 64 interactive fields.
+  const canyonArt='./mission-2-verfluchte-winterklamm.png';
+  push('<defs>'+
+    '<filter id="m2-canyon-soft" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="7"/></filter>'+
+    '<linearGradient id="m2-canyon-fade" x1="0" y1="0" x2="0" y2="1">'+
+      '<stop offset="0" stop-color="black"/><stop offset=".16" stop-color="#777"/>'+
+      '<stop offset=".32" stop-color="white"/><stop offset=".68" stop-color="white"/>'+
+      '<stop offset=".84" stop-color="#777"/><stop offset="1" stop-color="black"/>'+
+    '</linearGradient>'+
+    '<mask id="m2-canyon-mask" maskUnits="userSpaceOnUse" x="35" y="35" width="690" height="690">'+
+      '<rect x="35" y="35" width="690" height="690" fill="url(#m2-canyon-fade)"/>'+
+    '</mask>'+
+  '</defs>');
+  push('<image href="'+canyonArt+'" x="35" y="35" width="690" height="690" preserveAspectRatio="xMidYMid slice" opacity=".82" filter="url(#m2-canyon-soft)" pointer-events="none"/>');
+  push('<image href="'+canyonArt+'" x="35" y="35" width="690" height="690" preserveAspectRatio="xMidYMid meet" mask="url(#m2-canyon-mask)" pointer-events="none"/>');
   push('<rect x="35" y="35" width="690" height="690" rx="25" fill="url(#dog-speckle)"/>');
   push('<rect x="41" y="41" width="678" height="678" rx="20" fill="none" stroke="'+skin.edge+'" stroke-opacity=".27" stroke-width="1.5"/>');
   // The course makes a single uninterrupted 64-step circuit. Start indices are
