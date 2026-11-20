@@ -5,7 +5,7 @@
  */
 import {MISSIONS} from './mission-config.js?v=6';
 export const MISSION_2=MISSIONS[1];
-import {rememberMission2Event,initializeMission2,slotForNewPhase,effectiveCardTypes,mission2Values,moveAllowedByCurse,afterMission2Card,mission2TurnAdvance,mission2TurnDirection,projectedMission2} from './mission-2-effects.js?v=4';
+import {rememberMission2Event,initializeMission2,slotForNewPhase,effectiveCardTypes,mission2Values,moveAllowedByCurse,afterMission2Card,mission2TurnAdvance,mission2TurnDirection,projectedMission2} from './mission-2-effects.js?v=5';
 import {initLossMarkers,shouldCaptureAfterLanding,validCampaignSurvivors} from './mission-loss-policy.js?v=1';
 export const SEATS=3,TRACK=64,GOAL=1;
 export const COLORS=['#e65f58','#4c9bfa','#e8b84e'];
