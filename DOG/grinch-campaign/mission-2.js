@@ -361,6 +361,8 @@ function acceptOnlineRoom(room){
  const mission=match.grinch;
  if(!mission)return;
  const previous=state?.revision??null,priorMatch=onlineMatchId;
+ // Ignore out-of-order WebSocket / refresh snapshots from an older revision.
+ if(priorMatch===match.id&&previous!==null&&mission.revision<previous)return;
  onlineSeat=Number.isInteger(match.grinchSeat)?match.grinchSeat:null;
  onlineMatchId=match.id;
  state=mission;
