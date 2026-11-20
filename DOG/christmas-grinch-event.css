@@ -189,3 +189,25 @@
 #panel-grinch .grinch-mission-dialog-content{
  touch-action:auto;
 }
+
+/* Mission 2: visible local trial, never mistaken for official campaign unlock. */
+#grinch-mission-2 .grinch-mission-state[data-state="test-ready"]{
+ background:linear-gradient(160deg,#376b55,#1f4a3c);border-color:#85c9ab;color:#f0fff5
+}
+.grinch-mission-test-start{
+ display:flex;align-items:center;justify-content:center;gap:5px;
+ min-height:39px;padding:9px 10px;border-radius:11px;
+ font:900 12px/1.15 system-ui,sans-serif;text-align:center;text-decoration:none;
+ background:linear-gradient(180deg,#6ca44f,#2e6c3d);
+ border:1px solid #a6df85;color:#fffbea;
+ box-shadow:inset 0 1px #ffffff70,0 2px 5px #152b2b77;
+ transition:filter .15s,transform .15s
+}
+.grinch-mission-test-start:hover,.grinch-mission-test-start:focus-visible{
+ filter:brightness(1.15);transform:translateY(-1px)
+}
+@media(max-width:650px){
+ .grinch-mission-test-start{font-size:11px;min-height:35px;padding:7px 9px;flex:1}
+ #grinch-mission-2 .grinch-mission-actions{flex-wrap:wrap}
+ #grinch-mission-2 .grinch-mission-state{flex-basis:100%;max-width:none}
+}
