@@ -7,7 +7,21 @@ const icons=['💥','🃏','❄️','🎭'];
 const waits=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const reduced=()=>matchMedia?.('(prefers-reduced-motion: reduce)').matches===true;
 const decoys=Object.freeze([10,50,100].map(n=>({big:String(n),small:'ATTRAPPE',fake:true})));
-let catalog=[],busy=false,skip=false,queue=Promise.resolve();
+let catalog=[],busy=false,skip=false,queue=Promise.resolve(),currentRound=null,dismissed=false;
+let onDismiss=null;
+export function setMission2SlotDismissHandler(handler){
+ onDismiss=typeof handler==='function'?handler:null;
+}
+function dismissSlot(){
+ const modal=$('m2-slot-modal');
+ if(!modal?.open||busy)return;
+ modal.close();
+ if(dismissed)return;
+ dismissed=true;
+ const round=currentRound;
+ currentRound=null;
+ if(Number.isInteger(round))onDismiss?.(round);
+}
 async function getCatalog(){
  if(catalog.length)return;
  const res=await fetch('./manifest.json',{cache:'force-cache'});
@@ -68,7 +82,7 @@ async function presentOne(spin){
  const first=spin.effects[0],second=spin.double?spin.effects[1]:null;
  if(!first)return;
  if(modal.open)modal.close();
- skip=false;busy=true;
+ skip=false;busy=true;dismissed=false;currentRound=spin.round;
  $('m2-slot-continue').disabled=true;
  $('m2-slot-result').textContent='Kartenphase '+spin.round+': Der Grinch bereitet seine Gemeinheit vor …';
  $('m2-slot-label').textContent='DREHT ...';
@@ -103,10 +117,10 @@ export function presentMission2Slot(spin){
 export function wireMission2Slots(){
  const modal=$('m2-slot-modal'),continueButton=$('m2-slot-continue'),skipButton=$('m2-slot-skip');
  if(!modal)return;
- continueButton.addEventListener('click',()=>{if(busy){skip=true;return;}modal.close();});
+ continueButton.addEventListener('click',()=>{if(busy){skip=true;return;}dismissSlot();});
  skipButton.addEventListener('click',()=>{
   if(busy)skip=true;
-  else modal.close();
+  else dismissSlot();
  });
- modal.addEventListener('cancel',event=>{if(busy){event.preventDefault();skip=true;}});
+ modal.addEventListener('cancel',event=>{event.preventDefault();if(busy)skip=true;else dismissSlot();});
 }
