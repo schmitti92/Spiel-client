@@ -6,7 +6,7 @@ import {cardVisual} from '../card-visuals.js?v=11';
 import {drawMission2Board} from './mission-2-board.js?v=4';
 import {mission2Status} from './mission-2-markers.js?v=1';
 import {trackPoint,goalPoint} from '../board-layout.js?v=11';
-import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,acknowledgeMission2Slot,status,pieceCoord,validateSaved} from './mission-2-rules.js?v=7';
+import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,acknowledgeMission2Slot,status,pieceCoord,validateSaved,canAssistAllies} from './mission-2-rules.js?v=8';
 
 const $=id=>document.getElementById(id);
 const SVG='http://www.w3.org/2000/svg';
@@ -73,10 +73,10 @@ function describeMove(m){
  const p=state.pieces.find(p=>p.id===m.pieceId);
  if(!p)return 'Karte spielen';
  const i=Number(p.id.slice(1))%5+1;
- let v='Figur '+i+': ';
+ let v=(p.seat!==state.current?state.players[p.seat].name+' – ':'')+'Figur '+i+': ';
  if(m.kind==='start')v+='aus dem Haus starten';
- else if(m.kind==='move')v+=(m.distance<0?'4 Felder rückwärts':m.distance+' Felder vorwärts')+(m.targetSteps===TRACK?' ins Portal':'');
- else if(m.kind==='seven')v+='7 aufteilen – '+m.distance+' Schritt'+(m.distance===1?'':'e')+(m.targetSteps===TRACK?' ins Portal':'');
+ else if(m.kind==='move')v+=(m.distance<0?'4 Felder rückwärts':m.distance+' Felder vorwärts')+(m.viaPortal?' ins Portal':'');
+ else if(m.kind==='seven')v+='7 aufteilen – '+m.distance+' Schritt'+(m.distance===1?'':'e')+(m.viaPortal?' ins Portal':'');
  else if(m.kind==='swap'){
   const target=state.pieces.find(p=>p.id===m.targetId);
   v+='mit '+state.players[target.seat].name+' Figur '+(Number(target.id.slice(1))%5+1)+' tauschen';
@@ -91,19 +91,17 @@ function currentMoves(){
 }
 function choosePawn(id){
  if(!state||state.complete||state.m2?.pendingSlotRound||!myTurn()||onlineBusy)return;
- const p=state.pieces.find(x=>x.id===id);
  const moves=currentMoves();
- if(p.seat===state.current){
-  chosenPiece=id;
-  pickMoves=moves.filter(m=>m.pieceId===id);
-  render();
-  if(pickMoves.length===1)doMove(pickMoves[0]);
-  else if(!pickMoves.length)toast('Wähle zuerst eine passende Karte für diese Figur.',1800);
- }else if(chosenPiece){
-  const targets=moves.filter(m=>m.pieceId===chosenPiece&&m.targetId===id);
+ const targets=chosenPiece?moves.filter(m=>m.pieceId===chosenPiece&&m.targetId===id):[];
+ if(targets.length){
   if(targets.length===1)doMove(targets[0]);
-  else toast('Dieser Tausch ist nicht möglich.',1600);
+  else{pickMoves=targets;render();}
+  return;
  }
+ const sources=moves.filter(m=>m.pieceId===id);
+ if(!sources.length){toast('Wähle zuerst eine passende Karte oder eine spielbare Figur.',1800);return;}
+ chosenPiece=id;pickMoves=sources;render();
+ if(sources.length===1)doMove(sources[0]);
 }
 async function doMove(m){
  if(state?.m2?.pendingSlotRound){toast('🎰 Zuerst die Slotrunde bestätigen.',2400);return;}
@@ -148,15 +146,24 @@ function render(){
   const captured=state.players[p.seat]?.m2Lost;
   text('div',captured?'⚠️ Genau eine weitere Figur verschwunden':'🕳️ Versteckte Falle: eine weitere Figur wird noch verschwinden',card,captured?'status loss':'status');
  }
+ const drawTotal=Number.isInteger(state.drawCount)?state.drawCount:(state.draw?.length||0);
+ const discarded=Number.isInteger(state.discardCount)?state.discardCount:(state.discard?.length||0);
+ const lastCard=state.lastPlayedCard||state.discard?.at(-1)?.type||null;
+ $('m2-draw-count').textContent=drawTotal+' Karten';
+ $('m2-discard-count').textContent=discarded+' Karten';
+ $('m2-last-card').textContent=lastCard===null?'–':lastCard==='swap'?'⇄':lastCard==='joker'?'★':lastCard;
+ $('m2-last-card').title=lastCard?'Zuletzt abgelegt: '+(lastCard==='swap'?'Tauschkarte':lastCard):'Noch keine Karte abgelegt';
  const hand=$('hand');hand.replaceChildren();
  const moves=$('moves');moves.replaceChildren();
- if(!state.complete&&myTurn()){
-  if(state.seven)chosenCard=state.seven.cardId;
-  for(const c of state.hands[state.current]){
+ const viewSeat=onlineMode?onlineSeat:state.current;
+ const mayPlay=!state.complete&&myTurn();
+ if(mayPlay&&state.seven)chosenCard=state.seven.cardId;
+ if(Number.isInteger(viewSeat)&&viewSeat>=0&&viewSeat<SEATS){
+  for(const c of state.hands[viewSeat]||[]){
    const b=document.createElement('button');
    b.className='card'+(chosenCard===c.id?' selected':'')+' has-art';
    b.type='button';
-   b.disabled=onlineBusy||Boolean(state.m2?.pendingSlotRound)||Boolean(state.seven&&state.seven.cardId!==c.id);
+   b.disabled=!mayPlay||onlineBusy||Boolean(state.m2?.pendingSlotRound)||Boolean(state.seven&&state.seven.cardId!==c.id);
    const visual=cardVisual(c.type);
    const fallback=text('span',c.type==='swap'?'⇄':c.type==='joker'?'★':c.type,b,'card-fallback');
    if(visual.image){
@@ -184,24 +191,29 @@ function render(){
    });
    hand.append(b);
   }
+ }
+ if(mayPlay){
   if(state.m2?.pendingSlotRound){text('p','🎰 Die Grinch-Walzen werden gezeigt. Erst nach Bestätigung kann ein Kartenzug gespielt werden.',moves,'help');}
   else if(chosenCard){
    const opts=currentMoves();
    const visible=chosenPiece?opts.filter(m=>m.pieceId===chosenPiece):opts;
    if(!visible.length)text('p','Für diese Karte ist derzeit kein Zug möglich.',moves,'help');
    else moveButtons(visible,moves);
-  }else text('p','Wähle eine DOG-Karte. Achte auf aktive Grinch-Kartenflüche.',moves,'help');
+  }else text('p',canAssistAllies(state,state.current)?'🤝 Deine Figuren sind gerettet. Spiele deine Karten jetzt für Rot, Blau oder Gelb, sofern sie noch Figuren auf dem Brett haben.':'Wähle eine DOG-Karte. Achte auf aktive Grinch-Kartenflüche.',moves,'help');
  }else if(state.complete){
   text('p',onlineMode?
    '🏆 Neun Figuren gerettet. Mission 3 wird nach der Serverbestätigung freigeschaltet.':
    '🏆 Neun Figuren gerettet! Dies ist ein lokaler Test ohne offizielle Freischaltung.',moves,'help');
  }else{
   const player=state.players[state.current]?.name||'Spieler';
-  text('p','⏳ '+player+' ist am Zug. Deine Handkarten bleiben privat. Warte auf deinen nächsten Zug.',moves,'help');
+  text('p',Number.isInteger(viewSeat)?
+   '⏳ '+player+' ist am Zug. Deine eigenen Karten bleiben sichtbar, aber du kannst erst wieder in deinem Zug spielen.':
+   '⏳ '+player+' ist am Zug. Als Zuschauer bleiben Handkarten verborgen.',moves,'help');
  }
  $('actions').textContent=state.complete?'🎉 Mission 2 geschafft!':
   '🎰 Der Grinch-Slot dreht nach jeder Kartenphase. Je drei Figuren erreichen das Portal.';
  if(state.m2?.cardCurse){const flag=document.createElement('div');flag.className='m2-active-curse';flag.textContent='🃏 AKTIVER KARTENFLUCH #'+state.m2.cardCurse;$('actions').append(flag);}
+ if(!state.complete&&canAssistAllies(state,state.current))text('div','🤝 Alle eigenen Figuren gerettet: Du darfst jetzt mit deinen Karten deinen beiden Freunden helfen.',$('actions'),'m2-active-curse');
  // Each player has exactly one reusable portal at the FIRST classic goal location.
  const route=mission2Status(state);
  $('trail-progress-count').textContent=route.ready+' / '+route.participants+' Portale abgeschlossen';
