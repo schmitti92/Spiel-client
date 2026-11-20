@@ -1,0 +1,296 @@
+{
+  "pack": "Grinch Chaos Slots - Mission 2",
+  "version": "1.0",
+  "effectCount": 40,
+  "images": [
+    "slotmaschine_haupt.png",
+    "slotmaschine_bonus.png",
+    "slot_gemeinheit_popup.png",
+    "doppeltes_pech_banner.png",
+    "40_symbole_quellblatt.png"
+  ],
+  "doubleSlotProbability": 0.1,
+  "timing": "Start jeder Kartenphase",
+  "effects": [
+    {
+      "id": 1,
+      "name": "Großes Erdbeben",
+      "category": "bewegung",
+      "image": "icons/01_grosses_erdbeben.png",
+      "source_motif": 1
+    },
+    {
+      "id": 2,
+      "name": "Kleines Erdbeben",
+      "category": "bewegung",
+      "image": "icons/02_kleines_erdbeben.png",
+      "source_motif": 1
+    },
+    {
+      "id": 3,
+      "name": "Schneelawine",
+      "category": "bewegung",
+      "image": "icons/03_schneelawine.png",
+      "source_motif": 2
+    },
+    {
+      "id": 4,
+      "name": "Eiskalter Rückzug",
+      "category": "bewegung",
+      "image": "icons/04_eiskalter_rueckzug.png",
+      "source_motif": 3
+    },
+    {
+      "id": 5,
+      "name": "Grinchs Fußtritt",
+      "category": "bewegung",
+      "image": "icons/05_grinchs_fusstritt.png",
+      "source_motif": 3
+    },
+    {
+      "id": 6,
+      "name": "Ab nach Hause",
+      "category": "bewegung",
+      "image": "icons/06_ab_nach_hause.png",
+      "source_motif": 4
+    },
+    {
+      "id": 7,
+      "name": "Figurenwirbel",
+      "category": "bewegung",
+      "image": "icons/07_figurenwirbel.png",
+      "source_motif": 5
+    },
+    {
+      "id": 8,
+      "name": "Zeitdieb",
+      "category": "bewegung",
+      "image": "icons/08_zeitdieb.png",
+      "source_motif": 6
+    },
+    {
+      "id": 9,
+      "name": "Nachbeben",
+      "category": "bewegung",
+      "image": "icons/09_nachbeben.png",
+      "source_motif": 3
+    },
+    {
+      "id": 10,
+      "name": "Kurz vorm Ziel",
+      "category": "bewegung",
+      "image": "icons/10_kurz_vorm_ziel.png",
+      "source_motif": 38
+    },
+    {
+      "id": 11,
+      "name": "Verflixte 7",
+      "category": "kartenfluch",
+      "image": "icons/11_verflixte_7.png",
+      "source_motif": 7
+    },
+    {
+      "id": 12,
+      "name": "Verflixte 8",
+      "category": "kartenfluch",
+      "image": "icons/12_verflixte_8.png",
+      "source_motif": 8
+    },
+    {
+      "id": 13,
+      "name": "Zahlentausch",
+      "category": "kartenfluch",
+      "image": "icons/13_zahlentausch.png",
+      "source_motif": 9
+    },
+    {
+      "id": 14,
+      "name": "Doppelte Verwirrung",
+      "category": "kartenfluch",
+      "image": "icons/14_doppelte_verwirrung.png",
+      "source_motif": 10
+    },
+    {
+      "id": 15,
+      "name": "Rückwärtsfluch",
+      "category": "kartenfluch",
+      "image": "icons/15_rueckwaertsfluch.png",
+      "source_motif": 11
+    },
+    {
+      "id": 16,
+      "name": "Kaputte 13",
+      "category": "kartenfluch",
+      "image": "icons/16_kaputte_13.png",
+      "source_motif": 12
+    },
+    {
+      "id": 17,
+      "name": "Schwache Elf",
+      "category": "kartenfluch",
+      "image": "icons/17_schwache_elf.png",
+      "source_motif": 13
+    },
+    {
+      "id": 18,
+      "name": "Falscher Tausch",
+      "category": "kartenfluch",
+      "image": "icons/18_falscher_tausch.png",
+      "source_motif": 14
+    },
+    {
+      "id": 19,
+      "name": "Gefangener Joker",
+      "category": "kartenfluch",
+      "image": "icons/19_gefangener_joker.png",
+      "source_motif": 15
+    },
+    {
+      "id": 20,
+      "name": "Zahlenwahnsinn",
+      "category": "kartenfluch",
+      "image": "icons/20_zahlenwahnsinn.png",
+      "source_motif": 35
+    },
+    {
+      "id": 21,
+      "name": "Eisgefängnis",
+      "category": "eis_und_fallen",
+      "image": "icons/21_eisgefaengnis.png",
+      "source_motif": 16
+    },
+    {
+      "id": 22,
+      "name": "Doppelter Eisfluch",
+      "category": "eis_und_fallen",
+      "image": "icons/22_doppelter_eisfluch.png",
+      "source_motif": 17
+    },
+    {
+      "id": 23,
+      "name": "Frostschock",
+      "category": "eis_und_fallen",
+      "image": "icons/23_frostschock.png",
+      "source_motif": 16
+    },
+    {
+      "id": 24,
+      "name": "Schneesperre",
+      "category": "eis_und_fallen",
+      "image": "icons/24_schneesperre.png",
+      "source_motif": 18
+    },
+    {
+      "id": 25,
+      "name": "Rutschiger Boden",
+      "category": "eis_und_fallen",
+      "image": "icons/25_rutschiger_boden.png",
+      "source_motif": 19
+    },
+    {
+      "id": 26,
+      "name": "Grinch-Fallen",
+      "category": "eis_und_fallen",
+      "image": "icons/26_grinch_fallen.png",
+      "source_motif": 20
+    },
+    {
+      "id": 27,
+      "name": "Gefährliche Falle",
+      "category": "eis_und_fallen",
+      "image": "icons/27_gefaehrliche_falle.png",
+      "source_motif": 36
+    },
+    {
+      "id": 28,
+      "name": "Vereiste Portale",
+      "category": "eis_und_fallen",
+      "image": "icons/28_vereiste_portale.png",
+      "source_motif": 21
+    },
+    {
+      "id": 29,
+      "name": "Schneewand",
+      "category": "eis_und_fallen",
+      "image": "icons/29_schneewand.png",
+      "source_motif": 22
+    },
+    {
+      "id": 30,
+      "name": "Frostige Spur",
+      "category": "eis_und_fallen",
+      "image": "icons/30_frostige_spur.png",
+      "source_motif": 39
+    },
+    {
+      "id": 31,
+      "name": "Kartenklau",
+      "category": "grinch_streich",
+      "image": "icons/31_kartenklau.png",
+      "source_motif": 23
+    },
+    {
+      "id": 32,
+      "name": "Kartenverwechslung",
+      "category": "grinch_streich",
+      "image": "icons/32_kartenverwechslung.png",
+      "source_motif": 24
+    },
+    {
+      "id": 33,
+      "name": "Kartenkarussell",
+      "category": "grinch_streich",
+      "image": "icons/33_kartenkarussell.png",
+      "source_motif": 25
+    },
+    {
+      "id": 34,
+      "name": "Kartenfrost",
+      "category": "grinch_streich",
+      "image": "icons/34_kartenfrost.png",
+      "source_motif": 34
+    },
+    {
+      "id": 35,
+      "name": "Grinchs Entscheidung",
+      "category": "grinch_streich",
+      "image": "icons/35_grinchs_entscheidung.png",
+      "source_motif": 28
+    },
+    {
+      "id": 36,
+      "name": "Verkehrte Reihenfolge",
+      "category": "grinch_streich",
+      "image": "icons/36_verkehrte_reihenfolge.png",
+      "source_motif": 26
+    },
+    {
+      "id": 37,
+      "name": "Zwangspause",
+      "category": "grinch_streich",
+      "image": "icons/37_zwangspause.png",
+      "source_motif": 27
+    },
+    {
+      "id": 38,
+      "name": "Grinch steuert",
+      "category": "grinch_streich",
+      "image": "icons/38_grinch_steuert.png",
+      "source_motif": 29
+    },
+    {
+      "id": 39,
+      "name": "Kartensteuer",
+      "category": "grinch_streich",
+      "image": "icons/39_kartensteuer.png",
+      "source_motif": 33
+    },
+    {
+      "id": 40,
+      "name": "Tauschverbot",
+      "category": "grinch_streich",
+      "image": "icons/40_tauschverbot.png",
+      "source_motif": 30
+    }
+  ]
+}
