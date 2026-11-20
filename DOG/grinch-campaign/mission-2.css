@@ -1,0 +1,45 @@
+
+/* DOG Grinch Mission 2 only: no global/classic DOG selectors. */
+body{--grinch-gold:#efd28c}
+.intro{background:linear-gradient(120deg,rgba(13,39,32,.94),rgba(30,48,39,.88));border-color:#668b53}
+.board-card{border-color:#6ba36b}
+.board-wrap{box-shadow:inset 0 0 0 2px #5e9b64,0 12px 30px #08171266}
+.m2-slot-modal{position:fixed;inset:0;margin:auto;box-sizing:border-box;width:min(94vw,590px);max-height:94svh;overflow:auto;overscroll-behavior:contain;
+ background:radial-gradient(circle at 50% 25%,#2c603c 0%,#0e221a 65%,#07160f 100%);
+ border:2px solid #caac62;border-radius:19px;color:#faf3e2;padding:13px clamp(10px,3vw,22px) 17px;
+ box-shadow:0 25px 100px #000d,0 0 0 4px #1d4e32;z-index:10001}
+.m2-slot-modal::backdrop{background:#030a07d9;backdrop-filter:blur(6px)}
+.m2-slot-top{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#daf5ce;font-size:12px;letter-spacing:.07em;font-weight:900}
+.m2-slot-top button{padding:7px 11px;border-radius:8px;background:#23382e;color:#dbe7d6;border:1px solid #668668;cursor:pointer;font-size:12px}
+.m2-slot-modal h2{text-align:center;color:#f7d98c;margin:5px 0 8px;text-shadow:0 2px 9px #0b150a}
+.m2-slot-media{position:relative;width:min(100%,355px);margin:auto}
+.m2-slot-image{width:100%;height:auto;display:block;filter:drop-shadow(0 10px 20px #0009)}
+.m2-slot-reels{position:absolute;top:40.8%;left:15.7%;width:63.7%;height:22.1%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2.2%;pointer-events:none}
+.m2-slot-reel{position:relative;overflow:hidden;min-width:0;height:100%;border-radius:5px;box-shadow:inset 0 5px 10px #3b2b302c}
+.m2-slot-reel.is-blank{background:transparent;box-shadow:none}
+.m2-strip{display:flex;flex-direction:column;width:100%;will-change:transform}
+.m2-frame{height:var(--m2-reel-height,100%);flex:0 0 auto;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;text-align:center;
+ color:#214b2e;font-weight:900;text-shadow:0 1px 1px #fff9d9;line-height:1.1}
+.m2-slot-reel>.m2-frame{height:100%}
+.m2-frame img{width:92%;height:80%;object-fit:contain;filter:drop-shadow(0 1px 2px #6f522a75)}
+.m2-frame strong{font-size:clamp(22px,7vw,46px);letter-spacing:-1px}
+.m2-frame small{font-size:clamp(8px,2vw,11px);line-height:1.1;color:#35572d}
+.m2-frame.is-decoy{color:#a7392c}
+.m2-frame.is-decoy small{color:#a7392c}
+.m2-slot-reel.spinning::after{content:'';position:absolute;inset:0;pointer-events:none;
+ background:linear-gradient(#2c271b3c,transparent 20%,transparent 75%,#25271950)}
+.m2-slot-reel.stopped{animation:m2-lock .22s ease-out}
+@keyframes m2-lock{0%{filter:brightness(1.65);transform:translateY(-2px)}60%{transform:translateY(1px)}100%{filter:brightness(1)}}
+.m2-slot-label{position:absolute;left:23%;top:75.7%;width:49%;height:6.3%;display:flex;align-items:center;justify-content:center;
+ color:#f6e6ad;font-size:clamp(8px,2.5vw,12px);font-weight:900;text-align:center;pointer-events:none}
+.m2-slot-bonus-banner{position:absolute;z-index:2;left:50%;top:12%;width:min(88%,430px);transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 4px 14px #000b)}
+.m2-slot-bonus-banner img{width:100%;display:block}
+.m2-slot-modal #m2-slot-result{border:1px solid #638354;border-radius:10px;background:#162b20;padding:10px 13px;
+ color:#f7edd1;text-align:center;margin:10px 0;font-size:14px;line-height:1.45}
+.m2-slot-modal #m2-slot-continue{display:block;width:100%;background:linear-gradient(#f9e2a1,#d9ae53);border:1px solid #e0c17b;color:#15281c;
+ padding:12px;border-radius:10px;font-size:16px;font-weight:900;cursor:pointer}
+.m2-slot-modal #m2-slot-continue:disabled{opacity:.55;cursor:wait}
+.m2-slot-fineprint{font-size:11px;color:#c8dcc6;text-align:center;margin:9px 0 0}
+.m2-active-curse{font-size:13px;color:#dff8dc;background:#274a30;padding:7px 10px;border:1px solid #659763;border-radius:8px}
+@media(max-width:600px){.m2-slot-modal{max-height:96svh;padding:8px 10px}.m2-slot-media{width:min(100%,300px)}.m2-slot-modal h2{font-size:19px}}
+@media(prefers-reduced-motion:reduce){.m2-slot-reel.stopped{animation:none}}
