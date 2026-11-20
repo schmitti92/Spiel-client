@@ -158,12 +158,12 @@ async function startSpin() {
     if (bonus) {
       await delay(motionReduced() ? 100 : 730);
       $('double').classList.add('show');
+      setTimeout(()=>$('double').classList.remove('show'),2200);
       $('readout').textContent = 'DOPPELTES PECH!';
       await spinReel(2, effectIcon(bonus, 'BONUS #' + bonus.id, true), 2450, 34);
       renderBonus(bonus);
       $('readout').textContent = '2 GEMEINHEITEN!';
-      $('event-desc').textContent = 'Slot 1: ' + primary.name + '. Slot 2: ' + bonus.name +
-        '. Zwei verschiedene Grinch-Streiche. Die Vorschau vergibt keine Gewinne.';
+      $('event-desc').textContent = 'Slot 1: ' + primary.name + '. Slot 2: ' + bonus.name + '. Zwei Grinch-Gemeinheiten!';
     }
   } catch (error) {
     $('event-desc').textContent = 'Die Slot-Animation konnte nicht abgeschlossen werden: ' + error.message;
