@@ -292,5 +292,32 @@
       "image": "icons/40_tauschverbot.png",
       "source_motif": 30
     }
-  ]
+  ],
+  "nonWinningDisplayFields": [
+    {
+      "id": "decoy-free-10",
+      "label": "10 Gratislose",
+      "kind": "grinch_decoy",
+      "visibleDuringSpin": true,
+      "eligibleForDraw": false,
+      "awardsTickets": false
+    },
+    {
+      "id": "decoy-free-50",
+      "label": "50 Gratislose",
+      "kind": "grinch_decoy",
+      "visibleDuringSpin": true,
+      "eligibleForDraw": false,
+      "awardsTickets": false
+    },
+    {
+      "id": "decoy-free-100",
+      "label": "100 Gratislose",
+      "kind": "grinch_decoy",
+      "visibleDuringSpin": true,
+      "eligibleForDraw": false,
+      "awardsTickets": false
+    }
+  ],
+  "preview": "mission-2-slot-preview.html"
 }
