@@ -3,7 +3,7 @@
  * Three independent human seats, five reserve pieces each, ORIGINAL 64 track fields.
  * Never reads/writes official DOG rooms, village currency or mission progress.
  */
-import {MISSIONS} from './mission-config.js?v=5';
+import {MISSIONS} from './mission-config.js?v=6';
 export const MISSION_2=MISSIONS[1];
 import {initializeMission2,slotForNewPhase,effectiveCardTypes,mission2Values,moveAllowedByCurse,afterMission2Card,mission2TurnAdvance,mission2TurnDirection,projectedMission2} from './mission-2-effects.js?v=2';
 import {initLossMarkers,shouldCaptureAfterLanding,validCampaignSurvivors} from './mission-loss-policy.js?v=1';
