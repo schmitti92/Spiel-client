@@ -1,12 +1,12 @@
 import {MISSIONS} from './mission-config.js?v=6';
 const MISSION_2=MISSIONS[1];
-import {presentMission2Slot,wireMission2Slots} from './mission-2-slot-ui.js?v=1';
+import {presentMission2Slot,wireMission2Slots,setMission2SlotDismissHandler} from './mission-2-slot-ui.js?v=2';
 import {createGrinchOnline} from './mission-2-online.js?v=1';
 import {cardVisual} from '../card-visuals.js?v=11';
 import {drawMission2Board} from './mission-2-board.js?v=2';
 import {mission2Status} from './mission-2-markers.js?v=1';
 import {trackPoint,goalPoint} from '../board-layout.js?v=11';
-import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,status,pieceCoord,validateSaved} from './mission-2-rules.js?v=5';
+import {COLORS,LABELS,SEATS,TRACK,GOAL,newGame,legalMoves,play,acknowledgeMission2Slot,status,pieceCoord,validateSaved} from './mission-2-rules.js?v=5';
 
 const $=id=>document.getElementById(id);
 const SVG='http://www.w3.org/2000/svg';
@@ -26,6 +26,22 @@ function curseLabel(type,id){
 }
 let state=null,chosenCard=null,chosenPiece=null,pickMoves=[],lastSeenRevision=-1,lastSlotRound=0,lastSeenLossEventId=0;
 wireMission2Slots();
+setMission2SlotDismissHandler(async round=>{
+ if(!state||state.m2?.pendingSlotRound!==round)return;
+ if(!myTurn()){
+  toast('⏳ Der aktive Spieler bestätigt die Slotrunde für alle.',2600);
+  return;
+ }
+ if(onlineMode){
+  if(!onlineBridge||onlineBusy)return;
+  onlineBusy=true;render();
+  try{await onlineBridge.acknowledgeSlot(state,round);}
+  finally{onlineBusy=false;render();}
+ }else{
+  try{state=acknowledgeMission2Slot(state,state.current,round);save();render();}
+  catch(err){toast('Slot-Bestätigung fehlgeschlagen: '+err.message,3200);}
+ }
+});
 let toastTimer=null,effectTimer=null;
 const ns=(tag,attrs={},parent=null)=>{
  const el=document.createElementNS(SVG,tag);
@@ -69,12 +85,12 @@ function describeMove(m){
  return v;
 }
 function currentMoves(){
- if(!state||state.complete||!chosenCard||!myTurn())return [];
+ if(!state||state.complete||state.m2?.pendingSlotRound||!chosenCard||!myTurn())return [];
  const card=state.hands[state.current].find(c=>c.id===chosenCard);
  return card?legalMoves(state,state.current,card):[];
 }
 function choosePawn(id){
- if(!state||state.complete||!myTurn()||onlineBusy)return;
+ if(!state||state.complete||state.m2?.pendingSlotRound||!myTurn()||onlineBusy)return;
  const p=state.pieces.find(x=>x.id===id);
  const moves=currentMoves();
  if(p.seat===state.current){
@@ -90,6 +106,7 @@ function choosePawn(id){
  }
 }
 async function doMove(m){
+ if(state?.m2?.pendingSlotRound){toast('🎰 Zuerst die Slotrunde bestätigen.',2400);return;}
  if(onlineMode){
   if(!onlineBridge||!myTurn()||onlineBusy)return;
   onlineBusy=true;render();
@@ -115,7 +132,7 @@ function moveButtons(moves,parent){
 function render(){
  if(!state)return;
  $('phase').textContent='Kartenphase '+state.round+' · Zug '+(state.turn+1);
- $('turn-label').textContent=state.complete?'🏆 Mission geschafft!':state.players[state.current].name+' ist am Zug'+(state.seven?' · 7 aufteilen: noch '+(7-state.seven.spent)+' Schritte':'');
+ $('turn-label').textContent=state.complete?'🏆 Mission geschafft!':state.m2?.pendingSlotRound?'🎰 Slotrunde '+state.m2.pendingSlotRound+' – wartet auf Bestätigung':state.players[state.current].name+' ist am Zug'+(state.seven?' · 7 aufteilen: noch '+(7-state.seven.spent)+' Schritte':'');
  const seatList=$('players');seatList.replaceChildren();
  const stats=status(state);
  for(const p of stats){
@@ -139,7 +156,7 @@ function render(){
    const b=document.createElement('button');
    b.className='card'+(chosenCard===c.id?' selected':'')+' has-art';
    b.type='button';
-   b.disabled=onlineBusy||Boolean(state.seven&&state.seven.cardId!==c.id);
+   b.disabled=onlineBusy||Boolean(state.m2?.pendingSlotRound)||Boolean(state.seven&&state.seven.cardId!==c.id);
    const visual=cardVisual(c.type);
    const fallback=text('span',c.type==='swap'?'⇄':c.type==='joker'?'★':c.type,b,'card-fallback');
    if(visual.image){
@@ -167,7 +184,8 @@ function render(){
    });
    hand.append(b);
   }
-  if(chosenCard){
+  if(state.m2?.pendingSlotRound){text('p','🎰 Die Grinch-Walzen werden gezeigt. Erst nach Bestätigung kann ein Kartenzug gespielt werden.',moves,'help');}
+  else if(chosenCard){
    const opts=currentMoves();
    const visible=chosenPiece?opts.filter(m=>m.pieceId===chosenPiece):opts;
    if(!visible.length)text('p','Für diese Karte ist derzeit kein Zug möglich.',moves,'help');
@@ -355,7 +373,10 @@ function acceptOnlineRoom(room){
   chosenPiece=null;pickMoves=[];
  }
  render();
- if(priorMatch!==match.id){const spin=mission.m2?.spins?.at(-1);if(spin){lastSlotRound=spin.round;void presentMission2Slot(spin);}}
+ if(priorMatch!==match.id){
+  const spin=mission.m2?.spins?.at(-1);
+  if(spin&&mission.m2?.pendingSlotRound===spin.round){lastSlotRound=spin.round;void presentMission2Slot(spin);}
+ }
  else if(previous!==null&&priorMatch===match.id&&previous!==mission.revision)onEffect();
 }
 function onOnlineError(message){
@@ -382,6 +403,11 @@ if(onlineMode){
  onlineBridge.start();
 }else{
  state=read();
- if(state){render();if(state.lastEvent){lastSeenRevision=state.revision;lastSlotRound=state.m2?.spins?.at(-1)?.round||0;}}
+ if(state){
+  render();lastSeenRevision=state.revision;
+  const spin=state.m2?.spins?.at(-1);
+  if(spin&&state.m2?.pendingSlotRound===spin.round){lastSlotRound=spin.round;void presentMission2Slot(spin);}
+  else lastSlotRound=spin?.round||0;
+ }
  else $('setup').showModal();
 }
