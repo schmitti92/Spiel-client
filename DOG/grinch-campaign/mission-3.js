@@ -7,6 +7,20 @@ import {drawMission3Board} from './mission-3-board.js?v=1';
 import {createMission3,mission3LegalMoves,mission3Play,mission3ChooseGrinchMove,mission3SetPreviewStage,mission3NextPreviewDeal,mission3Validate,MISSION3_STAGE_NAMES,MISSION3_COLORS} from './mission-3-rules.js?v=3';
 const $=id=>document.getElementById(id),KEY='grinch-m3-local-prototype-v2';
 let game=null,chosenCard=null,chosenPiece=null,botTimer=null,busy=false,toastTimer=null;
+let myThawResearch=0;
+async function loadLocalResearch(){
+ const state=window.SpielOnline?.state?.(),user=state?.status==='online'?state.user:null;
+ if(!user?.getIdToken)return;
+ try{
+  const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\\/+$/,'');
+  const response=await fetch(base+'/api/hub/dog/research',{cache:'no-store',
+   headers:{Authorization:'Bearer '+await user.getIdToken()}});
+  const data=await response.json();
+  if(response.ok&&data?.ok&&window.SpielOnline?.state?.()?.user?.uid===user.uid){
+   myThawResearch=Math.max(0,Math.min(2,Number(data.research?.levels?.thaw)||0));render();
+  }
+ }catch{myThawResearch=0;}
+}
 function node(tag,value,parent,cls=''){
  const el=document.createElement(tag);el.textContent=value;if(cls)el.className=cls;parent.append(el);return el;
 }
@@ -71,6 +85,10 @@ function render(){
  $('m3-last').textContent=top===null?'–':top==='swap'?'⇄':top==='joker'?'★':top;
  $('m3-last').title=top?'Zuletzt gespielt: '+top:'Ablagestapel leer';
  const hand=$('m3-hand'),target=$('m3-moves');hand.replaceChildren();target.replaceChildren();
+ if(myThawResearch){
+  const used=Number.isInteger(game.researchThaws)?game.researchThaws:0;
+  node('div','🛡️ Weihnachtsschutz · '+Math.max(0,myThawResearch-used)+' Befreiung(en) übrig. Tippe eine eingefrorene Figur an – auch eine von Freunden.',target,'m3-empty');
+ }
  if(game.current===3){
   node('div','🤖 '+game.hands[3].length+' verdeckte Grinch-Handkarten',hand,'m3-empty');
   node('p','😈 Die taktische KI analysiert mögliche Angriffe und plant bis zu drei Kartenaktionen. Sie kennt nur ihre eigene Hand.',target);
@@ -113,7 +131,18 @@ function render(){
  drawMission3Board($('m3-board'),game,{selectedPiece:chosenPiece,onPieceClick:clickPawn});
 }
 function clickPawn(id){
- if(!game||game.current===3||busy)return;
+ if(!game||busy)return;
+ const frozen=game.pieces.find(p=>p.id===id&&p.place==='track'&&p.frozenTurns>0);
+ if(frozen&&myThawResearch>(game.researchThaws||0)){
+  // Mission 3 is a local non-reward prototype: the account determines the
+  // rank but all mutations remain local until the online mission exists.
+  frozen.frozenTurns=0;
+  game.researchThaws=(game.researchThaws||0)+1;
+  game.revision=(game.revision||0)+1;
+  game.history=['🛡️ Weihnachtsschutz befreit '+game.players[frozen.owner].name+' Figur '+(Number(id.slice(1))+1)+'.',...game.history].slice(0,12);
+  save();render();toast('🛡️ Eingefrorene Figur sofort befreit!');return;
+ }
+ if(game.current===3)return;
  const opts=moves();
  if(chosenPiece){
   const hits=opts.filter(x=>x.pieceId===chosenPiece&&x.targetId===id);
@@ -171,6 +200,8 @@ $('m3-start').addEventListener('click',()=>{
   toast('🎮 Mission 3 – lokaler Test gestartet.');
  }catch(e){toast(e.message);}
 });
+window.addEventListener('spielonline-change',()=>{myThawResearch=0;void loadLocalResearch()});
+void loadLocalResearch();
 game=load();
 if(game){render();if(game.current===3)bot();}
 else $('m3-setup').showModal();
