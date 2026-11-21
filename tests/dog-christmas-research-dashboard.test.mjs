@@ -120,3 +120,16 @@ test('Lichtertal event tabs have space for full titles, without clipping or shif
  assert.match(sidebar,/data-tab="research"/);
  assert.match(sidebar,/@media \(max-width:760px\)/);
 });
+
+test('sidebar text fitting adapts automatically to landscape window and fonts',()=>{
+ const fit=read('christmas-sidebar-fit.js');
+ assert.match(app,/import \{initLichtertalSidebarTextFit\} from/);
+ assert.match(app,/initLichtertalSidebarTextFit\(\)/);
+ assert.match(fit,/querySelectorAll\('\.event-tab'\)/);
+ assert.match(fit,/getBoundingClientRect\(\)\.height/);
+ assert.match(fit,/ResizeObserver/);
+ assert.match(fit,/document\.fonts\?\.ready/);
+ assert.match(fit,/removeProperty\('font-size'\)/);
+ assert.match(fit,/requestAnimationFrame\(fit\)/);
+ assert.doesNotMatch(fit,/innerHTML|replaceChildren|remove\(\)/);
+});

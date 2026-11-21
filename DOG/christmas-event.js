@@ -11,6 +11,7 @@ import {initChristmasScratch} from './christmas-scratch-ui.js?v=80';
 import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=8';
 import {initChristmasResearch} from './christmas-research-ui.js?v=8';
 import {initChristmasContentZoom} from './christmas-content-zoom.js?v=1';
+import {initLichtertalSidebarTextFit} from './christmas-sidebar-fit.js?v=1';
 import {sceneLayouts,grinchSkyLayout,verifyVillageSpriteLayout} from './christmas-village-layout.mjs?v=3';
 import {initGrinchEvent} from './christmas-grinch-event.js?v=8';
 const $=id=>document.getElementById(id);
@@ -892,3 +893,4 @@ if(landscape){
 
 // Pinch only the active content pane; the ornate eight-tab rail stays the same size.
 initChristmasContentZoom();
+initLichtertalSidebarTextFit();
