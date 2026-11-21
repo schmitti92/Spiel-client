@@ -716,11 +716,14 @@ $('board').addEventListener('click',e=>{
  GOAL_POINTS.forEach((group,seat)=>group.forEach((v,i)=>fields.push({key:'goal:'+i,p:v,seat})));
  let dest=null,best=26*26;
  for(const field of fields){const d=(field.p.x-p.x)**2+(field.p.y-p.y)**2;if(d<best){best=d;dest=field;}}
+ // Pawn IDs are stable across all colors; with an empty fourth color the
+ // pawn's ID may not equal its index in the shortened pieces array.
+ const selectedPawn=game.pieces.find(piece=>piece.id===selectedPiece);
  const matches=available.map((m,i)=>({m,i})).filter(({m})=>{
-  if(m.pieceId!==selectedPiece)return false;
+  if(m.pieceId!==selectedPiece||!selectedPawn)return false;
   if(m.type==='swap')return !!node&&m.targetId===Number(node.dataset.piece);
-  if(m.type==='start')return !node&&dest?.key==='track:'+(game.pieces[selectedPiece].owner*16);
-  return dest&&['move','seven-step'].includes(m.type)&&m.to===dest.key&&(dest.seat===undefined||dest.seat===game.pieces[selectedPiece].owner);
+  if(m.type==='start')return !node&&dest?.key==='track:'+(selectedPawn.owner*16);
+  return dest&&['move','seven-step'].includes(m.type)&&m.to===dest.key&&(dest.seat===undefined||dest.seat===selectedPawn.owner);
  });
  if(matches.length===1){onMove(matches[0].i);return;}
  if(matches.length>1){
