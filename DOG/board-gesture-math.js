@@ -35,3 +35,36 @@ export function nearestTrackPawn(pieces,point,trackPoints,maxRadius=24){
  }
  return nearest;
 }
+
+/**
+ * Convert a pointer/touch to SVG board units. Android WebViews differ:
+ * some support DOMPoint, others only the SVGPoint fallback.
+ */
+export function boardEventPoint(svg,event,Point=typeof DOMPoint==='function'?DOMPoint:null){
+ const matrix=svg?.getScreenCTM?.();
+ if(!matrix||!Number.isFinite(event?.clientX)||!Number.isFinite(event?.clientY))return null;
+ try{
+  const inverse=matrix.inverse();
+  if(Point)return new Point(event.clientX,event.clientY).matrixTransform(inverse);
+  const fallback=svg.createSVGPoint?.();
+  if(fallback){
+   fallback.x=event.clientX;fallback.y=event.clientY;
+   return fallback.matrixTransform(inverse);
+  }
+ }catch(_){return null;}
+ return null;
+}
+
+/** Closest visible track or finish field; the logical move is checked separately. */
+export function nearestBoardField(point,trackPoints,goalPoints,maxRadius=34){
+ if(!Number.isFinite(point?.x)||!Number.isFinite(point?.y)||!Array.isArray(trackPoints)||!Array.isArray(goalPoints))return null;
+ let nearest=null,best=maxRadius*maxRadius;
+ const visit=(p,key,seat)=>{
+  if(!p||!Number.isFinite(p.x)||!Number.isFinite(p.y))return;
+  const distance=(p.x-point.x)**2+(p.y-point.y)**2;
+  if(distance<best){best=distance;nearest=seat===undefined?{key,p}:{key,p,seat};}
+ };
+ trackPoints.forEach((p,i)=>visit(p,'track:'+i));
+ goalPoints.forEach((group,seat)=>group?.forEach((p,i)=>visit(p,'goal:'+i,seat)));
+ return nearest;
+}
