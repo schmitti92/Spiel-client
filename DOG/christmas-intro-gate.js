@@ -71,7 +71,7 @@ async function api(suffix='',method='GET'){
    localStorage.setItem(key,'1');
    return {ok:true,completed:true,eligible,localFallback:true};
   }
-  return {ok:true,eligible,completed:eligible&&localStorage.getItem(key)==='1',localFallback:true};
+  return {ok:true,eligible,introReady:eligible,completed:eligible&&localStorage.getItem(key)==='1',localFallback:true};
  }
  if(!response.ok||data.ok!==true)throw Error(data.error||'INTRO_SERVER_NOT_READY');
  // Transparently migrate a previously watched local video once the new
@@ -216,13 +216,12 @@ export function mountChristmasLinks(){
   try{
    const state=await api();
    if(profile()?.user?.uid!==uid)return;
-   if(state.eligible&&state.completed)
-    document.documentElement.classList.add('dog-christmas-portal-open');
-   else{
-    document.documentElement.classList.remove('dog-christmas-portal-open');
-    if(state.eligible&&!state.completed&&!introVisible&&!ceremonyOpen())
-     showChristmasIntro(()=>{shownUid=uid;});
-   }
+   // Chris keeps early event access. The cinematic is a separate milestone:
+   // show it only after a genuinely completed, verified online DOG match.
+   const portalUnlocked=state.eligible&&(state.completed||state.previewGranted);
+   document.documentElement.classList.toggle('dog-christmas-portal-open',Boolean(portalUnlocked));
+   if(state.eligible&&state.introReady&&!state.completed&&!introVisible&&!ceremonyOpen())
+    showChristmasIntro(()=>{shownUid=uid;});
   }catch(e){
    document.documentElement.classList.remove('dog-christmas-portal-open');
    console.warn('[Christmas entry] Check unavailable:',e?.message||e);
@@ -260,11 +259,12 @@ export function guardChristmasEventPage(){
    const state=await api();
    if(profile()?.user?.uid!==p.user.uid)return;
    if(!state.eligible)message.textContent='🔒 Lichtertal öffnet sich nach deiner ersten abgeschlossenen DOG-Onlinepartie.';
-   else if(!state.completed){
+   else if(state.introReady&&!state.completed){
     message.textContent='✨ Deine erste Partie ist geschafft. Das Weihnachtswunder beginnt!';
     gate.hidden=true;
     showChristmasIntro(()=>void admit());
-   }else await admit();
+   }else if(state.completed||state.previewGranted)await admit();
+   else message.textContent='🔒 Eine abgeschlossene DOG-Onlinepartie fehlt noch.';
   }catch(e){message.textContent='🔒 Die Freischaltung konnte noch nicht überprüft werden. Bitte erneut anmelden.';}
   finally{checking=false;}
  };
