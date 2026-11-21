@@ -1,0 +1,23 @@
+name: Grinch Mission 3 local preview
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/grinch-campaign/mission-3*'
+      - 'tests/dog-grinch-mission3-foundation.test.mjs'
+      - '.github/workflows/grinch-mission3-foundation.yml'
+  pull_request:
+    paths:
+      - 'DOG/grinch-campaign/mission-3*'
+      - 'tests/dog-grinch-mission3-foundation.test.mjs'
+      - '.github/workflows/grinch-mission3-foundation.yml'
+  workflow_dispatch:
+jobs:
+  mission3-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/dog-grinch-mission3-foundation.test.mjs
