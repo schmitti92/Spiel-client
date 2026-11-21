@@ -55,7 +55,16 @@ async function api(suffix='',method='GET'){
   const stats=await statsResponse.json().catch(()=>({}));
   if(!statsResponse.ok||stats.ok!==true)throw Error('INTRO_SERVER_NOT_READY');
   if(profile()?.user?.uid!==uid)throw Error('PROFILE_CHANGED');
-  const eligible=(Number(stats.stats?.played)||0)>=1;
+  const played=Number(stats.stats?.played)||0;
+  // The legacy statistics endpoint does not expose a trusted match timestamp.
+  // Take a per-profile baseline while the event is still hidden: a NEW
+  // verified completed match must advance the server counter before reveal.
+  const baselineKey='dog-christmas-reveal-baseline-v1:'+uid;
+  let baseline=Number(localStorage.getItem(baselineKey));
+  if(localStorage.getItem(baselineKey)===null||!Number.isSafeInteger(baseline)){
+   baseline=played;localStorage.setItem(baselineKey,String(baseline));
+  }
+  const eligible=played>baseline;
   const key='dog-christmas-video-seen-v1:'+uid;
   if(method==='POST'){
    if(!eligible)throw Error('DOG_CHRISTMAS_INTRO_LOCKED');
