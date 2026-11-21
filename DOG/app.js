@@ -9,7 +9,7 @@ import {createDogVisualFeedback} from './ui-animations.js?v=2';
 import {dogMoveBlockReason} from './invalid-move-reasons.js?v=2';
 import {DOG_MOVE_HINTS_KEY,readDogMoveHints,writeDogMoveHints,dogLegalTargets} from './move-hints.js?v=1';
 import {summarizeDogVictory} from './victory-summary.js?v=2';
-import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js?v=3';
+import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js?v=4';
 import {decideDogRoomUpdate} from './online-sync.js?v=15';
 import {DEFAULT_APPEARANCE,BOARD_STYLES,isBoardUnlocked,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,PIECE_SHAPES,isPieceShapeUnlocked,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,loadAppearance,saveAppearance,normalizeAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=27';
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=11';
@@ -468,6 +468,7 @@ function actionLabel(m){
   if(m.type==='emptySwap')return '↔ Tauschkarte ohne Wirkung ablegen';
   if(m.type==='seven')return '🔥 7 Schritte aufteilen';
   if(m.type==='seven-step')return figure+' · '+m.steps+' Schritt'+(m.steps===1?'':'e')+(m.to?.startsWith('goal')?' ins Ziel':'');
+  if(m.type==='seven-finish')return '✅ Verbleibende '+m.remaining+' Schritte der 7 verfallen lassen';
   if(m.type==='move')return figure+' · '+Math.abs(m.steps)+' '+(m.steps<0?'rückwärts':'vorwärts')+(m.to?.startsWith('goal')?' ins Ziel':'')+(m.captures?.length?' · '+m.captures.length+' geschlagen':'');
   return 'Karte spielen';
 }
@@ -540,13 +541,14 @@ function renderHand(){
     available=legalActions(game,seat);
     const spent=game.seven.spent,remaining=7-spent;
     actions.insertAdjacentHTML('beforeend',
-      '<div class="dog-seven-progress" role="status">🔥 <strong>'+spent+' / 7 Schritte</strong> · Noch <strong>'+remaining+'</strong> verteilen. Wähle eine Figur und ihr Zielfeld.</div>');
+      '<div class="dog-seven-progress" role="status">🔥 <strong>'+spent+' / 7 Schritte</strong> · Noch <strong>'+remaining+'</strong> verteilen. '+
+      (available.some(m=>m.type==='seven-finish')?'Die letzte Figur hat ihr Ziel erreicht: Du darfst die übrigen Schritte verfallen lassen oder sie auf deinen Partner verteilen.':'Wähle eine Figur und ihr Zielfeld. Restschritte dürfen nur beim Zieleinlauf der letzten Figur verfallen.')+'</div>');
   }
   if(online&&onlineResearch?.card_swap>0&&game.phase==='exchange'&&!onlineResearch.usedSwap&&selectedCard!==null){
     actions.insertAdjacentHTML('beforeend','<button type="button" class="move-button dog-hand-action-primary" data-research-action="research-swap">🃏 Magischer Kartentausch · ausgewählte Karte ersetzen (1×)</button>');
   }
-  const special=available.filter(m=>['exchange','seven','emptySwap'].includes(m.type));
-  actions.insertAdjacentHTML('beforeend',[...new Map(special.map(m=>[m.type,m])).values()].map(m=>'<button type="button" class="move-button dog-hand-action-primary" data-special="'+m.type+'">'+(m.type==='exchange'?'🎁 Karte weitergeben':m.type==='seven'?'🔥 7 Schritte verteilen':'🗑 Tauschkarte ablegen')+'</button>').join(''));
+  const special=available.filter(m=>['exchange','seven','seven-finish','emptySwap'].includes(m.type));
+  actions.insertAdjacentHTML('beforeend',[...new Map(special.map(m=>[m.type,m])).values()].map(m=>'<button type="button" class="move-button dog-hand-action-primary" data-special="'+m.type+'">'+(m.type==='exchange'?'🎁 Karte weitergeben':m.type==='seven'?'🔥 7 Schritte verteilen':m.type==='seven-finish'?'✅ Restliche '+m.remaining+' Schritte verfallen lassen · letzte Figur im Ziel':'🗑 Tauschkarte ablegen')+'</button>').join(''));
   if(game.phase==='play'&&legalActions(game,seat).some(m=>m.type==='discardDraw')){
     actions.insertAdjacentHTML('beforeend','<span class="dog-no-move-note" role="status">🃏 Kein Zug möglich: Wähle unter einer beliebigen Karte „Wegwerfen“. Du ziehst genau eine Ersatzkarte.</span>');
   }
