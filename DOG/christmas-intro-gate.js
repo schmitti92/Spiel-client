@@ -93,20 +93,33 @@ export function showChristmasIntro(onDone=()=>{}){
  overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');
  overlay.setAttribute('aria-label','Das Weihnachtswunder von Lichtertal');
  const card=document.createElement('div');card.className='dog-reveal-card';
- const video=document.createElement('video');video.autoplay=true;video.playsInline=true;video.muted=true;
- video.preload='auto';video.src=new URL('./assets/lichtertal-intro.mp4',import.meta.url).href;
+ const clips=[
+  './assets/945289212_1795275459989532.mp4', // first upload: the winter legend
+  './assets/222534572_1795275605354117.mp4', // arrival in Lichtertal
+  './assets/41234243_1795275705483810.mp4', // Frau Berger's warning
+  './assets/797249030_1795275757719057.mp4' // the first Christmas light
+ ];
+ const video=document.createElement('video');
+ video.autoplay=true;video.playsInline=true;video.muted=true;video.preload='auto';
+ video.poster=new URL('./assets/lichtertal-intro-poster.jpg',import.meta.url).href;
  const fallback=document.createElement('div');fallback.className='dog-reveal-fallback';fallback.hidden=true;
  fallback.innerHTML='<span aria-hidden="true">🎄</span><h2>✨ Das Weihnachtswunder von Lichtertal ✨</h2>';
  const footer=document.createElement('div');footer.className='dog-reveal-footer';
- footer.innerHTML='<p>✨ Eine Weihnachtsgeschichte voller Licht und Freundschaft beginnt.</p><div class="dog-reveal-actions"><button type="button" data-sound>🔊 Ton einschalten</button><button type="button" data-skip>Intro überspringen</button><a data-enter hidden>🎄 Weihnachtsdorf betreten</a></div><p data-status role="status"></p>';
+ footer.innerHTML='<p data-progress aria-live="polite">🎬 Introfilm · 4 Szenen · etwa 32 Sekunden</p><p>✨ Eine Weihnachtsgeschichte voller Licht und Freundschaft beginnt.</p><div class="dog-reveal-actions"><button type="button" data-sound>🔊 Mit Ton von vorn starten</button><button type="button" data-skip>Intro überspringen</button><a data-enter hidden>🎄 Weihnachtsdorf betreten</a></div><p data-status role="status"></p>';
  card.append(video,fallback,footer);overlay.append(card);document.body.append(overlay);
  const sound=footer.querySelector('[data-sound]'),skip=footer.querySelector('[data-skip]');
  const enter=footer.querySelector('[data-enter]'),status=footer.querySelector('[data-status]');
- let done=false,posting=false,fallbackTimer=null;
- const remove=()=>{overlay.remove();introVisible=false;if(fallbackTimer)clearTimeout(fallbackTimer);};
+ const progress=footer.querySelector('[data-progress]');
+ let done=false,posting=false,fallbackTimer=null,clipIndex=0,playedClips=0,playVersion=0;
+ const remove=()=>{
+  video.pause();video.removeAttribute('src');video.load();
+  overlay.remove();introVisible=false;
+  if(fallbackTimer)clearTimeout(fallbackTimer);
+ };
  const finish=async()=>{
   if(done||posting)return;
-  posting=true;skip.disabled=true;status.textContent='⭐ Deine Eventfreischaltung wird gespeichert ...';
+  posting=true;video.pause();skip.disabled=true;
+  status.textContent='⭐ Deine Eventfreischaltung wird gespeichert ...';
   try{
    const result=await api('/complete','POST');
    if(result.completed!==true)throw Error('INTRO_NOT_CONFIRMED');
@@ -114,6 +127,7 @@ export function showChristmasIntro(onDone=()=>{}){
    document.documentElement.classList.add('dog-christmas-portal-open');
    skip.hidden=true;sound.hidden=true;enter.hidden=false;
    enter.href=new URL('./christmas-event.html',import.meta.url).href;
+   progress.textContent='🎄 Das Intro ist abgeschlossen';
    status.textContent='🎁 Lichtertal ist für dich freigeschaltet!';
    enter.addEventListener('click',remove,{once:true});
   }catch(e){
@@ -122,16 +136,57 @@ export function showChristmasIntro(onDone=()=>{}){
   }finally{posting=false;}
  };
  const useFallback=()=>{
-  if(done||fallbackTimer)return;
-  video.hidden=true;fallback.hidden=false;sound.hidden=true;
+  if(done||posting||fallbackTimer)return;
+  video.pause();video.hidden=true;fallback.hidden=false;sound.hidden=true;
+  progress.textContent='🎄 Die Videos konnten nicht geladen werden';
   fallbackTimer=setTimeout(()=>void finish(),5500);
  };
- sound.addEventListener('click',()=>{video.muted=!video.muted;sound.textContent=video.muted?'🔊 Ton einschalten':'🔈 Ton ausschalten';});
+ const nextClip=()=>{
+  if(done||posting||fallbackTimer)return;
+  clipIndex++;startClip();
+ };
+ const startClip=()=>{
+  if(done||posting||fallbackTimer)return;
+  if(clipIndex>=clips.length){
+   if(playedClips>0)void finish();
+   else useFallback();
+   return;
+  }
+  const version=++playVersion;
+  progress.textContent='🎬 Introfilm · Szene '+(clipIndex+1)+' von '+clips.length;
+  video.src=new URL(clips[clipIndex],import.meta.url).href;
+  video.load();
+  const attempt=video.play();
+  if(attempt&&typeof attempt.catch==='function')attempt.catch(e=>{
+   if(done||posting||fallbackTimer||version!==playVersion)return;
+   if(e?.name==='NotAllowedError'){
+    video.muted=true;sound.textContent='▶ Film mit Ton starten';
+    progress.textContent='▶ Tippe auf „Film mit Ton starten“';
+   }else if(e?.name!=='AbortError'&&!video.error){
+    console.warn('[Christmas intro] Clip playback unavailable:',e?.message||e);
+    nextClip();
+   }
+  });
+ };
+ sound.addEventListener('click',()=>{
+  if(video.muted){
+   // Autoplay is generally muted. A real user gesture can enable sound and
+   // restart at the first clip so that no spoken German dialogue is missed.
+   video.muted=false;sound.textContent='🔈 Ton ausschalten';
+   clipIndex=0;playedClips=0;startClip();
+  }else{
+   video.muted=true;sound.textContent='🔊 Mit Ton von vorn starten';
+  }
+ });
  skip.addEventListener('click',()=>void finish());
- video.addEventListener('ended',()=>void finish(),{once:true});
- video.addEventListener('error',useFallback,{once:true});
+ video.addEventListener('ended',()=>{playedClips++;nextClip();});
+ video.addEventListener('error',()=>{
+  if(done||posting||fallbackTimer)return;
+  console.warn('[Christmas intro] Skipping unavailable clip',clipIndex+1);
+  nextClip();
+ });
  if(!video.canPlayType('video/mp4'))useFallback();
- else video.play().catch(useFallback);
+ else startClip();
  return {remove,finish};
 }
 export function mountChristmasLinks(){
