@@ -14,7 +14,9 @@ import {initChristmasContentZoom} from './christmas-content-zoom.js?v=1';
 import {initLichtertalSidebarTextFit} from './christmas-sidebar-fit.js?v=1';
 import {sceneLayouts,grinchSkyLayout,verifyVillageSpriteLayout} from './christmas-village-layout.mjs?v=3';
 import {initGrinchEvent} from './christmas-grinch-event.js?v=8';
+import {initChristmasDeveloper} from './christmas-dev-mode.js?v=1';
 const $=id=>document.getElementById(id);
+const devMode=initChristmasDeveloper();
 // Older browser caches may pair outdated chapter markup with the new module.
 // Remove those obsolete nodes before setting up event navigation.
 $('tab-chapters')?.remove();
@@ -253,7 +255,7 @@ let grinchVisualStage=1;
 // Local scenic view, not mission progress or a server-side upgrade.
 // Show the cave immediately when opening the Christmas village.
  // ?grinch=0 is an explicit opt-out for people who want the original scene.
-let villageMode=new URLSearchParams(location.search).get('grinch')==='0'?'normal':'grinch';
+let villageMode=devMode.hasGrinch()?'grinch':'normal';
 const grinchDialog=$('grinch-cave-dialog');
 const grinchStageDescriptions=[
  'Ankunft: Der Grinch ist auf dem Höhepunkt seiner Macht. Die Höhle ist vollständig intakt.',
@@ -277,7 +279,7 @@ function renderGrinchCave(){
  const status=$('grinch-cave-lock-message');
  if(status){
   const verifiedTree=villageLive?treeLevel():0;
-  status.textContent=verifiedTree>=10
+  status.textContent=devMode.isActive()?'🧪 Nur lokale Entwicklungsvorschau – keine echte Freischaltung.':verifiedTree>=10
    ?'✨ Baumstufe 10 erreicht · Grinch-Missionen werden vorbereitet.'
    :'🔒 Teil 2 startet nach der echten gemeinsamen Weihnachtsbaum-Stufe 10.'
  }
@@ -310,6 +312,7 @@ function showGrinchSkyImage(stage){
  });
 }
 function setVillageMode(mode){
+ if(!devMode.hasGrinch())return;
  villageMode=mode==='grinch'?'grinch':'normal';
  grinchVisualStage=1;
  const url=new URL(location.href);
@@ -319,6 +322,7 @@ function setVillageMode(mode){
  refreshPreview();
 }
 function treeLevel(){
+  if(devMode.isActive())return devMode.settings().tree;
   const points=originalTreePoints(preview);
   return TREE_THRESHOLDS.filter(t=>points>=t).length;
 }
@@ -333,7 +337,7 @@ function buildingCard(entry){
    +'<div class="building-upgrade-row"><div class="building-upgrade-price" data-building-upgrade-price aria-live="polite"></div>'
    +'<button type="button" class="button gold building-purchase" data-upgrade-building="'+entry.id+'" disabled>🔒 Nur im Online-Dorf</button></div>';
  const range=root.querySelector('input');
- range.addEventListener('input',()=>{if(villageLive)return;preview[entry.id]=Number(range.value);refreshPreview()});
+ range.addEventListener('input',()=>{if(devMode.isActive()){devMode.setBuilding(entry.id,Number(range.value));return;}if(villageLive)return;preview[entry.id]=Number(range.value);refreshPreview()});
  root.querySelector('[data-upgrade-building]').addEventListener('click',()=>void purchaseBuilding(entry.id));
  return root;
 }
@@ -422,23 +426,26 @@ function centerTreeMilestone(){
  steps.scrollTo({left:Math.max(0,center),behavior:'auto'});
 }
 function refreshPreview(){
- const total=Object.values(preview).reduce((a,b)=>a+b,0),treePoints=originalTreePoints(preview),tree=treeLevel();
+ const test=devMode.isActive();
+ if(test){const settings=devMode.settings();for(const d of definitions)preview[d.id]=settings.buildings[d.id];}
+ else if(villageLive){for(const d of definitions)preview[d.id]=Number(villageLive.levels?.[d.id])||1;}
+ const total=Object.values(preview).reduce((a,b)=>a+b,0),tree=treeLevel(),treePoints=test?TREE_THRESHOLDS[tree-1]:originalTreePoints(preview);
  const sceneTree=villageMaxPreview?10:tree;
  const visualTreeStage=villageMode==='grinch'?1:sceneTree;
  for(const d of definitions){
   const level=preview[d.id],sceneLevel=villageMaxPreview?5:level,card=$('preview-'+d.id).closest('.building-card');
   $('preview-'+d.id).value=String(level);
-  card.querySelector('[data-building-effect]').textContent=d.effects[level-1]+(villageLive?' · Tatsächlicher Bonus':' · Vorschau');
+  card.querySelector('[data-building-effect]').textContent=d.effects[level-1]+(test?' · 🧪 Testwert (kein Online-Bonus)':villageLive?' · Tatsächlicher Bonus':' · Vorschau');
   card.querySelector('[data-building-visual]').textContent=d.visuals[level-1];
-  card.dataset.mode=villageLive?'live':'preview';
+  card.dataset.mode=villageLive&&!test?'live':'preview';
   card.querySelector('[data-building-value]').textContent='Stufe '+level+' / '+CHRISTMAS_BUILDING_MAX_LEVEL;
   card.querySelector('[data-building-art-level]').textContent='STUFE '+level+' / '+CHRISTMAS_BUILDING_MAX_LEVEL;
-  $('preview-'+d.id).disabled=Boolean(villageLive);
+  $('preview-'+d.id).disabled=Boolean(villageLive)&&!test;
   const purchase=card.querySelector('[data-upgrade-building]');
   if(purchase){const upgradeCost=christmasUpgradeCost(level),affordable=villageLive?.lightsTenths>=upgradeCost*10;
    purchase.hidden=false;
-   purchase.disabled=!villageLive||!villageHost||!villageCanUpgrade||villageBusy||upgradeCost===null||!affordable;
-   purchase.textContent=!villageLive?'🔐 Mit Online-Profil verbinden':upgradeCost===null?'✓ Voll ausgebaut':!villageCanUpgrade?'⏳ Event derzeit pausiert':affordable?'⭐ Für '+upgradeCost+' Lichter ausbauen':'Noch '+Math.ceil((upgradeCost*10-(villageLive?.lightsTenths||0))/10)+' ⭐ sammeln';
+   purchase.disabled=test||!villageLive||!villageHost||!villageCanUpgrade||villageBusy||upgradeCost===null||!affordable;
+   purchase.textContent=test?'🧪 Testansicht · kein echter Kauf':!villageLive?'🔐 Mit Online-Profil verbinden':upgradeCost===null?'✓ Voll ausgebaut':!villageCanUpgrade?'⏳ Event derzeit pausiert':affordable?'⭐ Für '+upgradeCost+' Lichter ausbauen':'Noch '+Math.ceil((upgradeCost*10-(villageLive?.lightsTenths||0))/10)+' ⭐ sammeln';
   }
   const nextCost=christmasUpgradeCost(level);
   card.querySelector('[data-building-upgrade-price]').textContent=nextCost===null
@@ -479,11 +486,28 @@ function refreshPreview(){
   grinchModeToggle.title=active?'Normale Berglandschaft und echte Baumstufe anzeigen':'Große Grinchhöhle anstelle der Berglandschaft ansehen';
  }
  $('stat-building-levels').textContent=total+' / 30';
+ if(test){
+  const settings=devMode.settings();
+  $('building-village-counter').textContent=total+' / 30';
+  $('building-village-tree').textContent='Stufe '+tree+' / 10';
+  $('building-live-balance').textContent=settings.lights.toLocaleString('de-DE')+' ⭐ Test-Weihnachtslichter';
+  $('stat-village-lights').textContent=settings.lights.toLocaleString('de-DE')+' ⭐';
+  $('building-village-role').textContent='🧪 Persönliche Entwicklungsvorschau';
+  $('building-live-notice').textContent='Teststufen und Testguthaben sind nur auf diesem Gerät sichtbar. Es gibt keine gemeinsamen Belohnungen.';
+ }else if(villageLive){
+  const v=villageLive;
+  $('building-village-counter').textContent=Object.values(v.levels).reduce((a,b)=>a+b,0)+' / 30';
+  $('building-village-tree').textContent='Stufe '+TREE_THRESHOLDS.filter(t=>originalTreePoints(v.levels)>=t).length+' / 10';
+  $('building-live-balance').textContent=lightsLabel(v.lightsTenths)+' ⭐ Weihnachtslichter';
+  $('stat-village-lights').textContent=lightsLabel(v.lightsTenths)+' ⭐';
+  $('building-village-role').textContent='🟢 Gemeinsames DOG-Dorf';
+  $('building-live-notice').textContent='✅ Alle DOG-Spieler sammeln gemeinsam. Jeder kann mit dem gemeinsamen Vorrat Gebäude ausbauen.';
+ }
  $('stat-tree-level').textContent=tree+' / 10';
  $('village-stage-text').textContent=villageMode==='grinch'
   ?'👹 Grinch-Ansicht · Baum nur optisch auf Stufe 1'
   :villageMaxPreview?'🔍 Vollausbau-Simulation · keine Änderung am Fortschritt':
-  (tree===1?'Anfangszustand':tree===10?'Prachtvolles Weihnachtsdorf':'Baum Stufe '+tree)+(villageLive?' · Live':' · Vorschau');
+  (tree===1?'Anfangszustand':tree===10?'Prachtvolles Weihnachtsdorf':'Baum Stufe '+tree)+(test?' · 🧪 Nur Testansicht':villageLive?' · Live':' · Vorschau');
  const maxTestButton=$('village-max-test'),maxTestNote=$('village-max-note');
  if(maxTestButton){
   maxTestButton.textContent=villageMaxPreview?'↩ Echte Dorfansicht':'🔍 Vollausbau testen';
@@ -500,8 +524,8 @@ function refreshPreview(){
   $('building-village-tree').textContent='Stufe '+tree+' / 10';
  }
  updateTreeChapter();
- $('tree-world-mode').textContent=villageLive?'✦ Echter Dorffortschritt':'✦ Gestaltungs-Vorschau';
- $('tree-world-mode').dataset.mode=villageLive?'live':'preview';
+ $('tree-world-mode').textContent=test?'🧪 Lokaler Testfortschritt':villageLive?'✦ Echter Dorffortschritt':'✦ Gestaltungs-Vorschau';
+ $('tree-world-mode').dataset.mode=villageLive&&!test?'live':'preview';
  const nextLevel=Math.min(tree+1,10),nextPrize=TREE_PRIZE_PREVIEW[nextLevel-1];
  $('tree-next-stage').textContent=tree===10?'Alle Stufen gemeistert!':'Stufe '+nextLevel;
  $('tree-next-name').textContent=tree===10?'Das große Weihnachtslicht':treeNames[nextLevel-1];
@@ -510,7 +534,7 @@ function refreshPreview(){
  const needed=tree===10?0:Math.max(0,TREE_THRESHOLDS[tree]-treePoints);
  // Story chapters unlock ONLY from the server-verified shared village.
  // Local preview buttons may animate the tree but never reveal future text.
- storyScreen.render({treeLevel:villageLive?tree:1,isVerified:Boolean(villageLive),remaining:villageLive?needed:0});
+ storyScreen.render({treeLevel:villageLive||test?tree:1,isVerified:Boolean(villageLive)||test,remaining:villageLive||test?needed:0});
  $('tree-next-requirement').textContent=tree===10?'Alle vier Gebäude haben Stufe 5 erreicht.':
   'Noch '+needed+' Gebäudeausbau'+(needed===1?'':'ten')+' bis zur nächsten Stufe';
  $('tree-progress-fill').style.width=(tree*10)+'%';
@@ -532,6 +556,7 @@ const returnTarget=validReturn();
 if(returnTarget)$('event-return').href=returnTarget;
 function showPanel(id,{updateHistory=true}={}){
  if(!tabs.includes(id))return;
+ if(id==='grinch'&&!devMode.hasGrinch())id='village';
  document.body.classList.toggle('research-mode',id==='research');
  const wasActive=tabs.find(name=>$('tab-'+name)?.getAttribute('aria-selected')==='true');
  for(const name of tabs){
@@ -582,15 +607,17 @@ for(const id of tabs){
  tab.addEventListener('keydown',event=>{
   if(!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
   event.preventDefault();
-  const from=tabs.indexOf(id),next=event.key==='Home'?0:event.key==='End'?tabs.length-1:
-     (from+(event.key==='ArrowUp'||event.key==='ArrowLeft'?-1:1)+tabs.length)%tabs.length;
-  showPanel(tabs[next]);$('tab-'+tabs[next]).focus();
+  const visibleTabs=tabs.filter(name=>name!=='grinch'||devMode.hasGrinch());
+  const from=visibleTabs.indexOf(id),next=event.key==='Home'?0:event.key==='End'?visibleTabs.length-1:
+     (from+(event.key==='ArrowUp'||event.key==='ArrowLeft'?-1:1)+visibleTabs.length)%visibleTabs.length;
+  showPanel(visibleTabs[next]);$('tab-'+visibleTabs[next]).focus();
  });
 }
 document.querySelectorAll('[data-open-tab]').forEach(button=>{
  button.addEventListener('click',()=>showPanel(button.dataset.openTab));
 });
 $('village-max-test')?.addEventListener('click',()=>{
+ if(!devMode.isActive())return;
  villageMaxPreview=!villageMaxPreview;
  refreshPreview(); // Only SVG artwork, labels and decorations are simulated.
 });
@@ -722,6 +749,7 @@ grinchView=initGrinchEvent({
 $('grinch-cave-close')?.addEventListener('click',()=>grinchDialog?.close());
 $('grinch-cave-stage-range')?.addEventListener('input',event=>{
  grinchVisualStage=Math.min(5,Math.max(1,Number(event.target.value)||1));
+ if(!devMode.hasGrinch())return;
  renderGrinchCave();
 });
 grinchDialog?.addEventListener('click',event=>{
@@ -846,6 +874,7 @@ async function reloadVillage(){
  }finally{pendingVillageRead=null;if(button)button.disabled=false;}
 }
 async function purchaseBuilding(id){
+ if(devMode.isActive())return;
  if(!villageLive||!villageHost||!villageCanUpgrade||villageBusy)return;
  const level=villageLive.levels[id],cost=christmasUpgradeCost(level);
  if(cost===null||villageLive.lightsTenths<cost*10)return;
@@ -864,6 +893,13 @@ $('building-wallet-refresh').addEventListener('click',()=>void reloadVillage());
 $('story-refresh')?.addEventListener('click',async()=>{
  const button=$('story-refresh');button.disabled=true;
  try{await reloadVillage();}finally{button.disabled=false;}
+});
+window.addEventListener('dog-christmas-dev-change',()=>{
+ villageMaxPreview=false;
+ villageMode=devMode.hasGrinch()?'grinch':'normal';
+ grinchVisualStage=devMode.hasGrinch()?devMode.settings().caveStage:1;
+ if(!devMode.hasGrinch()&&$('tab-grinch')?.getAttribute('aria-selected')==='true')showPanel('village');
+ refreshPreview();
 });
 // The village is tied to an online profile, not a room or host.
 $('building-village-role').textContent='⌛ Gemeinsames DOG-Dorf lädt';
