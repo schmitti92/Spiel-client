@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {SCRATCH_TICKET_TYPES,SCRATCH_SHOP_VARIANTS,SCRATCH_COIN_PRIZES,premiumScratchProgress,premiumWinningRowIndices} from '../DOG/christmas-scratch-ui.js';
+import {SCRATCH_TICKET_TYPES,SCRATCH_SHOP_VARIANTS,SCRATCH_COIN_PRIZES,SCRATCH_TAB_READ_REUSE_MS,reuseRecentScratchView,premiumScratchProgress,premiumWinningRowIndices} from '../DOG/christmas-scratch-ui.js';
 import {DOG_COLLECTION_CATEGORIES} from '../DOG/collection-catalog.js';
 const source=path=>readFileSync(new URL(path,import.meta.url),'utf8');
 test('three scratch tickets show correct prices and unlock chances',()=>{
@@ -629,4 +629,36 @@ test('Premium 27 artwork fits the available landscape and portrait viewport with
  assert.match(css,/height:55\.8%!important/);
  assert.match(css,/@media \(orientation:landscape\)/);
  assert.match(css,/@media \(orientation:portrait\)/);
+});
+
+
+test('Firebase scratch shop read reuse is scoped to one UID and expires in 20 seconds',()=>{
+ assert.equal(SCRATCH_TAB_READ_REUSE_MS,20000);
+ const ctx={uid:'alice',loadedUid:'alice',loadedAt:100000,hasStatus:true,now:110000};
+ assert.equal(reuseRecentScratchView(ctx),true,'quick tab switch must not reload all editions');
+ assert.equal(reuseRecentScratchView({...ctx,now:119999}),true);
+ assert.equal(reuseRecentScratchView({...ctx,now:120000}),false,'stale data gets a fresh read');
+ assert.equal(reuseRecentScratchView({...ctx,force:true}),false,'manual refresh always reads');
+ assert.equal(reuseRecentScratchView({...ctx,uid:'bob'}),false,'new account may not reuse private data');
+ assert.equal(reuseRecentScratchView({...ctx,hasStatus:false}),false,'failed load cannot be cached');
+ assert.equal(reuseRecentScratchView({...ctx,now:99999}),false,'clock rollback must not freeze updates');
+ assert.equal(reuseRecentScratchView({...ctx,uid:null}),false,'logged out users never reuse data');
+});
+
+test('DOG voucher, research and village rewards invalidate scratch read reuse immediately',()=>{
+ const scratch=source('../DOG/christmas-scratch-ui.js');
+ const level=source('../DOG/christmas-player-levels-ui.js');
+ const research=source('../DOG/christmas-research-ui.js');
+ const event=source('../DOG/christmas-event.js');
+ const intro=source('../DOG/christmas-intro-gate.js');
+ assert.match(scratch,/if\(reuseRecentScratchView\(/);
+ assert.match(scratch,/pendingScratchReadUid===uid/);
+ assert.match(scratch,/scratch-refresh'\)\.addEventListener\('click',\(\)=>void load\(true\)\)/);
+ assert.match(scratch,/lastScratchReadAt=0;\s*if\(\$\('tab-scratch'\)/);
+ for(const code of [level,research,event])
+  assert.match(code,/dispatchEvent\(new Event\('dog-scratch-balance-changed'\)\)/);
+ assert.match(event,/christmas-scratch-ui\.js\?v=84/);
+ assert.match(event,/christmas-player-levels-ui\.js\?v=9/);
+ assert.match(event,/christmas-research-ui\.js\?v=10/);
+ assert.match(intro,/christmas-event\.js\?v=158/);
 });
