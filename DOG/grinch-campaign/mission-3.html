@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#09221d">
 <title>DOG · Grinch-Mission 3 – Die erste Begegnung</title>
-<link rel="stylesheet" href="./mission-3.css?v=2">
+<link rel="stylesheet" href="./mission-3.css?v=3">
 </head>
 <body>
 <header class="m3-top">
@@ -14,8 +14,8 @@
  <a class="m3-back" href="./mission-2.html">Mission 2</a>
 </header>
 <main class="m3-shell">
- <div class="m3-banner"><span>🧪 SPIELBARER PROTOTYP · ARBEITSPAKETE 1–4</span>
-  <p>Das eigenständige 4-Spieler-Grundgerüst und die DOG-Kartenverteilung sind aktiv. Die taktische KI, zufällige Flüche am Kartenphasenende und die Grinch-Gefangennahmen sind im lokalen Test aktiv. Die drei Gemeinschaftsaufgaben und die offizielle Online-Freischaltung folgen später. Diese Testseite schreibt <strong>keine offiziellen Kampagnendaten</strong>.</p></div>
+ <div class="m3-banner"><span>🧪 SPIELBARER PROTOTYP · ARBEITSPAKETE 1–5</span>
+  <p>Das eigenständige 4-Spieler-Grundgerüst und die DOG-Kartenverteilung sind aktiv. Die taktische KI, zufällige Flüche am Kartenphasenende und die Grinch-Gefangennahmen sind im lokalen Test aktiv. Die drei Gemeinschaftsaufgaben sind spielbar: Weihnachtslichter, Eisbarrieren und Runen. Die offizielle Online-Freischaltung folgt später. Diese Testseite schreibt <strong>keine offiziellen Kampagnendaten</strong>.</p></div>
  <div class="m3-layout">
   <section class="m3-board-panel" aria-label="Mission-3-Spielbrett">
    <div class="m3-panel-header"><h1>😈 Die erste Begegnung</h1><span id="m3-phase">Kartenphase 1</span></div>
@@ -27,6 +27,12 @@
    <section class="m3-card-panel">
     <div class="m3-panel-header"><h2>🎯 Aktuelle Spielstufe</h2><span id="m3-stage-active">Leicht</span></div>
     <div class="m3-stage-meter"><span id="m3-stage-label">1 · Die Weihnachtslichter</span><strong id="m3-grinch-per-turn">1 Grinch-Aktion</strong></div>
+    <div class="m3-objective-head"><strong id="m3-objective-title">✨ Drei Weihnachtslichter einsammeln</strong><span id="m3-task-count">0 / 3</span></div>
+    <div class="m3-progress-track" role="progressbar" aria-label="Fortschritt der Gemeinschaftsaufgabe" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0" id="m3-progress-track"><div id="m3-progress-fill"></div></div>
+    <p id="m3-task-instructions" class="m3-task-instructions">Landet genau auf den drei leuchtenden Feldern.</p>
+    <div id="m3-target-fields" class="m3-target-fields" aria-label="Noch offene Missionsziele"></div>
+    <div id="m3-task-timeline" class="m3-task-timeline"></div>
+    <div id="m3-complete" class="m3-complete" hidden><h2>🏆 Mission 3 geschafft!</h2><p>Alle drei Aufgaben gelöst und genau drei Figuren vom Grinch gefangen. Die übrigen sechs Figuren erreichen Mission 4.</p></div>
     <p id="m3-curse-status" class="m3-curse-status" aria-live="polite">🎲 Noch kein Grinch-Fluch ausgelöst.</p>
     <p id="m3-turn" class="m3-turn" aria-live="polite">Spiel vorbereiten</p>
     <div id="m3-players" class="m3-players"></div>
@@ -41,15 +47,9 @@
     <div id="m3-moves" class="m3-moves" aria-live="polite"></div>
    </section>
    <section class="m3-card-panel m3-testing">
-    <div class="m3-panel-header"><h2>🛠️ Entwicklungsvorschau</h2><span>Nur lokal</span></div>
-    <p>Die drei Gemeinschaftsaufgaben werden später hier eingebaut. Für die Kartentests kannst du den Aufgabenabschnitt vorwählen; die zusätzliche Grinch-Hand gilt erst bei der nächsten Verteilung.</p>
-    <label for="m3-stage-select">Aufgabenabschnitt</label>
-    <select id="m3-stage-select">
-      <option value="0">1 · Leicht – 6 Grinch-Karten</option>
-      <option value="1">2 · Mittel – 12 Grinch-Karten</option>
-      <option value="2">3 · Finale – 18 Grinch-Karten</option>
-    </select>
-    <div class="m3-preview-actions"><button id="m3-change-stage" type="button">Stufe vormerken</button><button id="m3-next-deal" type="button">Neue Karten simulieren</button></div>
+    <div class="m3-panel-header"><h2>🛠️ Karten-Teststeuerung</h2><span>Nur lokal</span></div>
+    <p>Die Aufgaben wechseln jetzt automatisch, sobald alle markierten Felder erreicht wurden. Zum Testen kannst du neue Karten verteilen. Dabei wechseln nur die noch offenen Weihnachtslichter ihren Platz; Eisbarrieren und Runen bleiben stehen.</p>
+    <button id="m3-next-deal" type="button" class="m3-test-deal">🃏 Neue Kartenphase simulieren</button>
     <button id="m3-new" type="button" class="m3-subtle">↻ Neuen lokalen Spieltest starten</button>
    </section>
    <section class="m3-card-panel"><h2>📜 Spielverlauf</h2><div id="m3-history" class="m3-history" aria-live="polite"></div></section>
@@ -68,6 +68,6 @@
 <div id="m3-toast" role="status" aria-live="polite"></div>
 <script src="../../profile-config.js"></script>
 <script src="../../profile-auth.js"></script>
-<script type="module" src="./mission-3.js?v=5"></script>
+<script type="module" src="./mission-3.js?v=6"></script>
 </body>
 </html>
