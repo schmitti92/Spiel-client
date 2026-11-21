@@ -46,8 +46,18 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
   }catch(_e){/* Never fabricate progress or unlocks while offline. */}
   finally{progressLoading=false;render();}
  }
- window.addEventListener('spielonline-change',()=>void loadProgress());
- document.addEventListener('visibilitychange',()=>{if(!document.hidden)void loadProgress(true);});
+ let progressIdentity=user()?.uid||null;
+ window.addEventListener('spielonline-change',()=>{
+  const uid=user()?.uid||null;
+  if(uid===progressIdentity)return; // Profile-status/token updates never reload progress.
+  progressIdentity=uid;progressLastAt=0;
+  if(uid)void loadProgress(true);
+  else{verifiedProgress=null;progressForUid=null;render();}
+ });
+ document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&document.getElementById('tab-grinch')?.getAttribute('aria-selected')==='true')
+   void loadProgress(); // Respect the 30-second cache on returning to the page.
+ });
  void loadProgress();
  // A dialog must remain visible if its parent event panel changes tabs.
  if(dialog&&dialog.parentElement!==document.body)document.body.append(dialog);
