@@ -106,3 +106,17 @@ test('research picture and text stay in separate rows, even with long German lab
   assert.ok(existsSync(new URL('../DOG/assets/research/bg-'+skill+'.webp',import.meta.url)),skill);
  }
 });
+
+test('Lichtertal event tabs have space for full titles, without clipping or shifted text',()=>{
+ const sidebar=read('christmas-sidebar-textfit.css');
+ assert.match(html,/christmas-sidebar-textfit\.css\?v=/);
+ assert.equal((html.match(/class="event-tab(?: event-tab-grinch)?"/g)||[]).length,8);
+ assert.match(sidebar,/grid-template-rows:repeat\(8,minmax\(0,1fr\)\)/);
+ assert.match(sidebar,/grid-template-columns:clamp\(29px,3\.1vw,40px\) minmax\(0,1fr\) 10px/);
+ assert.match(sidebar,/white-space:normal!important/);
+ assert.match(sidebar,/overflow-wrap:anywhere!important/);
+ assert.match(sidebar,/transform:none!important/);
+ assert.match(sidebar,/text-overflow:clip!important/);
+ assert.match(sidebar,/data-tab="research"/);
+ assert.match(sidebar,/@media \(max-width:760px\)/);
+});
