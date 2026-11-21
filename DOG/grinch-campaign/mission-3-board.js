@@ -62,6 +62,11 @@ export function drawMission3Board(svg,s,{selectedPiece=null,onPieceClick=()=>{}}
   push('<circle cx="'+fmt(pt.x-5)+'" cy="'+fmt(pt.y-6)+'" r="4.2" fill="#fff" opacity=".44"/>');
   const number=piece.owner===3?'G'+(Number(piece.id.slice(1))+1):Number(piece.id.slice(1))+1;
   push('<text x="'+fmt(pt.x)+'" y="'+fmt(pt.y+5)+'" font-size="'+(piece.owner===3?10:13)+'" font-weight="950" fill="'+(piece.owner===2?'#263432':'#fff')+'" text-anchor="middle" pointer-events="none">'+number+'</text>');
+  if(piece.frozenTurns>0){
+   push('<circle cx="'+fmt(pt.x)+'" cy="'+fmt(pt.y)+'" r="20.5" fill="none" stroke="#9eeaff" stroke-width="3" stroke-dasharray="5 3" pointer-events="none"/>');
+   push('<circle cx="'+fmt(pt.x+12)+'" cy="'+fmt(pt.y-13)+'" r="10" fill="#16466b" stroke="#bbf4ff" stroke-width="2" pointer-events="none"/>');
+   push('<text x="'+fmt(pt.x+12)+'" y="'+fmt(pt.y-9)+'" font-size="13" text-anchor="middle" font-weight="850" fill="#fff" pointer-events="none">'+piece.frozenTurns+'</text>');
+  }
   push('</g>');
  }
  svg.innerHTML=out.join('');
