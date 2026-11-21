@@ -105,20 +105,21 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
    $('grinch-mission-detail-icon').textContent=item.icon;
    testLink.hidden=number!==1;
    testLink.style.display=number===1?'inline-flex':'none';
-   onlineLink.hidden=number!==1;
-   onlineLink.style.display=number===1?'inline-flex':'none';
+   // Official online campaign is not released. Local development only.
+   onlineLink.hidden=true;
+   onlineLink.style.display='none';
    slotPreviewLink.hidden=number!==2;
    slotPreviewLink.style.display=number===2?'inline-flex':'none';
    mission2Local.hidden=number!==2;
    mission2Local.style.display=number===2?'inline-flex':'none';
-   mission2Online.hidden=number!==2;
-   mission2Online.style.display=number===2?'inline-flex':'none';
+   mission2Online.hidden=true;
+   mission2Online.style.display='none';
    const cleared=verifiedProgress?.completedMissions?.includes(1)===true;
    $('grinch-mission-lock').textContent=number===1?
-    '🎮 Online spielt ihr zu dritt in eurem vorhandenen Raum. Ein offizieller Start benötigt Baumstufe 10; nur ein vom Server bestätigter Sieg zählt. Der lokale Test vergibt keine Freischaltungen.':
+    '🧪 Mission 1 ist zurzeit nur als lokaler Test verfügbar. Es gibt keine offiziellen Online-Freischaltungen oder Gewinne.':
     number===2&&cleared?
-    '🔓 Mission 2 ist nach Mission 1 für dein Konto freigeschaltet. Für den offiziellen Start müssen alle drei Spieler Mission 1 geschafft haben.':
-    number===2?'🧪 Mission 2 kannst du jetzt direkt im Testmodus spielen, ohne Mission 1 abzuschließen. Der offizielle Online-Start benötigt weiterhin den Sieg aller drei Spieler in Mission 1.':'🔒 Diese spätere Mission ist noch nicht spielbar.';
+    '🧪 Mission 2 ist aktuell ausschließlich als lokaler Test verfügbar.':
+    number===2?'🧪 Mission 2 kannst du jetzt direkt lokal testen, ohne echte Freischaltung.':'🔒 Diese spätere Mission ist noch nicht spielbar.';
    if(dialog&&!dialog.open)dialog.showModal();
   });
  });
@@ -137,7 +138,7 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
   if(banner){
    banner.dataset.state=unlocked?'tree-ready':'locked';
    banner.textContent=unlocked?
-    '🌟 Baumstufe 10 erreicht. Mission 1 kann jetzt zu dritt im gemeinsamen Online-Raum offiziell gespielt werden.':
+    '🧪 Baumstufe 10 ist erreicht. Offizielle Grinch-Online-Missionen bleiben bis zur Veröffentlichung gesperrt.':
     '🔒 Offizieller Kampagnenstart erst nach echter Baumstufe 10. Mission 1 hat bereits einen unabhängigen lokalen Testmodus.';
   }
   const completed=new Set(verifiedProgress?.completedMissions||[]);
@@ -146,11 +147,11 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
    const state=$('grinch-mission-state-'+i);
    if(!state)continue;
    if(completed.has(i)){state.dataset.state='completed';state.textContent='✅ Geschafft';}
-   else if(i===1){state.dataset.state=unlocked?'available':'preview';state.textContent=unlocked?'🌐 Online bereit':'🧪 Testmodus';}
+   else if(i===1){state.dataset.state='preview';state.textContent='🧪 Nur Testmodus';}
    else if(i===2){
     const onlineEligible=Number(verifiedProgress?.highestUnlocked||1)>=2;
     state.dataset.state=onlineEligible?'unlocked':'test-ready';
-    state.textContent=onlineEligible?'🔓 Online-Berechtigung':'🧪 Testmodus bereit';
+    state.textContent='🧪 Nur Testmodus';
    }
    else{state.dataset.state='locked';state.textContent='🔒 Gesperrt';}
   }
