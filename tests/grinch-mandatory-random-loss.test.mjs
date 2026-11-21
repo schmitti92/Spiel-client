@@ -10,7 +10,10 @@ test('all Grinch missions require exactly one new capture for each color',()=>{
  assert.deepEqual([1,2,3].map(n=>GRINCH_LOSS_MISSIONS[n].rescueTarget),[4,3,2]);
  assert.deepEqual(MISSIONS.slice(0,3).map(x=>x.forcedLossesPerPlayer),[1,1,1]);
  assert.equal(MISSIONS[2].enabled,false,'mission 3 is not yet a playable engine');
- assert.equal(MISSIONS[2].teleportCountToComplete,2);
+ assert.equal(MISSIONS[2].goalType,'cooperative-three-tasks');
+ assert.equal(MISSIONS[2].noPortalFinish,true);
+ assert.deepEqual(MISSIONS[2].tasks.map(task=>task.target),[3,4,3]);
+ assert.deepEqual(MISSIONS[2].grinchHandCardsByTask,[6,12,18]);
 });
 test('each player gets different, hidden randomized capture timing in missions 1 and 2',()=>{
  for(const [mission,make] of [[1,first],[2,second]]){
