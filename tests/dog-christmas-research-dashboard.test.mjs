@@ -32,7 +32,7 @@ test('all pricing, levels, points, purchase, claim and bonuses use authenticated
  assert.match(controller,/data\.available/);
  assert.match(controller,/skill\.nextCost/);
  assert.match(controller,/data\.skills\.filter/);
- assert.match(controller,/data\.levels\?\.\[skill\.id\]/);
+ assert.match(controller,/data\?\.levels\?\.\[skill\.id\]/);
  assert.match(controller,/call\('\/upgrade',\{id:skill\.id\}\)/);
  assert.match(controller,/call\('\/claim',\{type:id,/);
  assert.match(controller,/user\(\)\?\.uid!==uid/);
