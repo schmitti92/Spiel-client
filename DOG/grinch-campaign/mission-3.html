@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#09221d">
 <title>DOG · Grinch-Mission 3 – Die erste Begegnung</title>
-<link rel="stylesheet" href="./mission-3.css?v=3">
+<link rel="stylesheet" href="./mission-3.css?v=4">
 </head>
 <body>
 <header class="m3-top">
@@ -14,14 +14,23 @@
  <a class="m3-back" href="./mission-2.html">Mission 2</a>
 </header>
 <main class="m3-shell">
- <div class="m3-banner"><span>🧪 SPIELBARER PROTOTYP · ARBEITSPAKETE 1–5</span>
-  <p>Das eigenständige 4-Spieler-Grundgerüst und die DOG-Kartenverteilung sind aktiv. Die taktische KI, zufällige Flüche am Kartenphasenende und die Grinch-Gefangennahmen sind im lokalen Test aktiv. Die drei Gemeinschaftsaufgaben sind spielbar: Weihnachtslichter, Eisbarrieren und Runen. Die offizielle Online-Freischaltung folgt später. Diese Testseite schreibt <strong>keine offiziellen Kampagnendaten</strong>.</p></div>
+ <div class="m3-banner"><span>🧪 SPIELBARER PROTOTYP · ARBEITSPAKETE 1–6</span>
+  <p>Das eigenständige 4-Spieler-Grundgerüst und die DOG-Kartenverteilung sind aktiv. Die taktische KI, zufällige Flüche am Kartenphasenende und die Grinch-Gefangennahmen sind im lokalen Test aktiv. Die drei Gemeinschaftsaufgaben sind spielbar: Weihnachtslichter, Eisbarrieren und Runen. Mit animierten Effekten, Wintergrafik und Zwei-Finger-Zoom. Die offizielle Online-Freischaltung folgt später. Diese Testseite schreibt <strong>keine offiziellen Kampagnendaten</strong>.</p></div>
  <div class="m3-layout">
   <section class="m3-board-panel" aria-label="Mission-3-Spielbrett">
    <div class="m3-panel-header"><h1>😈 Die erste Begegnung</h1><span id="m3-phase">Kartenphase 1</span></div>
-   <svg id="m3-board" viewBox="0 0 760 760" class="m3-board" role="group" aria-label="Originales DOG-Brett mit vier Teilnehmern und 14 Figuren"></svg>
+   <div id="m3-board-viewport" class="m3-board-viewport" aria-label="Vergrößerbares Grinch-Spielbrett">
+    <svg id="m3-board" viewBox="0 0 760 760" class="m3-board" role="group" aria-label="Originales DOG-Brett mit vier Teilnehmern und 14 Figuren"></svg>
+    <div id="m3-effect-banner" class="m3-effect-banner" aria-live="polite" role="status"></div>
+    <div class="m3-zoom-controls" aria-label="Spielfeld vergrößern und verkleinern">
+     <button id="m3-zoom-out" type="button" aria-label="Brett verkleinern" title="Brett verkleinern">−</button>
+     <output id="m3-zoom-level" aria-label="Aktuelle Spielfeld-Vergrößerung">100 %</output>
+     <button id="m3-zoom-in" type="button" aria-label="Brett vergrößern" title="Brett vergrößern">+</button>
+     <button id="m3-zoom-reset" type="button" aria-label="Brettansicht zurücksetzen" title="Brettansicht zurücksetzen">⟲</button>
+    </div>
+   </div>
    <div class="m3-legend"><span>🔴 Rot · 3</span><span>🔵 Blau · 3</span><span>🟡 Gelb · 3</span><span>🟢 Grinch · 5</span></div>
-   <p class="m3-hint">Alle 14 Figuren stehen bei Spielbeginn zufällig auf unterschiedlichen DOG-Lauffeldern. Es gibt in dieser Mission keinen Zieleinlauf.</p>
+   <p class="m3-hint"><span>🤏 Zwei Finger: zoomen oder verschieben · 🔍 +/−: Brettgröße · ⟲: zurücksetzen</span> Alle 14 Figuren stehen zu Beginn zufällig auf dem Laufweg. Es gibt keinen Zieleinlauf.</p>
   </section>
   <aside class="m3-side">
    <section class="m3-card-panel">
@@ -68,6 +77,6 @@
 <div id="m3-toast" role="status" aria-live="polite"></div>
 <script src="../../profile-config.js"></script>
 <script src="../../profile-auth.js"></script>
-<script type="module" src="./mission-3.js?v=6"></script>
+<script type="module" src="./mission-3.js?v=7"></script>
 </body>
 </html>
