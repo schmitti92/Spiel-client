@@ -35,8 +35,8 @@ test('Collection registers actual selectable designs without inventing past unlo
  assert.equal(look('cards').items.filter(x=>x.status==='available').length,2,'classic and Sternenportal are available');
  assert.equal(look('cards').items.filter(x=>x.status==='planned').length,3);
  assert.deepEqual(look('cards').items.map(x=>x.id),['classic','kartendesign-02','kartendesign-03','kartendesign-04','kartendesign-05']);
- assert.ok(look('cards').items.filter(x=>x.status==='planned').every(x=>x.kind==='cardEdition'&&(x.unlockId?.startsWith('christmas2026:cards:')||x.minPlayerLevel===3)));
- assert.equal(look('cards').items.find(x=>x.id==='kartendesign-05').minPlayerLevel,3);
+ assert.ok(look('cards').items.filter(x=>x.status==='planned').every(x=>x.kind==='cardEdition'&&(x.unlockId?.startsWith('christmas2026:cards:')||x.minPlayerLevel===20)));
+ assert.equal(look('cards').items.find(x=>x.id==='kartendesign-05').minPlayerLevel,20);
  assert.ok(look('cards').items.filter(x=>x.status==='planned').every(x=>x.image?.endsWith('/normiert/9.png')));
  assert.match(look('cards').items[0].image,/kartendesign-01\/normiert\/9\.png$/);
  assert.ok(look('cards').items.every(x=>x.cardEdition),'each published deck must have real card artwork');
