@@ -350,6 +350,10 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 @media(max-width:480px){.dog-move-hints-control{padding:8px;gap:7px}.dog-move-hints-copy small{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.dog-legal-target-ring{animation:none}.dog-move-hints-knob{transition:none}}
 html[data-dog-motion="off"] .dog-legal-target-ring{animation:none}
+
+/* Split-seven turn indicator: remain visible during every partial step. */
+.dog-seven-progress{display:block;flex:1 1 100%;width:100%;margin:7px 0 4px;padding:8px 10px;border-radius:10px;border:1px solid #eec46f77;background:linear-gradient(125deg,#302517dd,#142638c9);color:#ffedc4;font-size:12px;line-height:1.45}
+.dog-seven-progress strong{color:#ffe08b;font-weight:850}
 </style>
 <link rel="stylesheet" href="./ui-shell.css?v=20"><link rel="stylesheet" href="./emoji-ui.css?v=4"><link rel="stylesheet" href="./motion.css?v=3"><link rel="stylesheet" href="./premium-cockpit.css?v=2"><link rel="stylesheet" href="./victory-ceremony.css?v=1">
 
@@ -699,7 +703,7 @@ mountChristmasLinks();
 </script>
 <script type="module">
 import('./ui-shell.js?v=5').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
-import('./app.js?v=79').catch(error=>{
+import('./app.js?v=80').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
