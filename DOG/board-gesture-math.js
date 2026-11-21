@@ -24,7 +24,7 @@ export function boardGestureTarget(start,current,rect,{boardSize=760,minZoom=1,m
  * array indices: an inactive fourth colour may leave gaps in pawn IDs.
  */
 export function nearestTrackPawn(pieces,point,trackPoints,maxRadius=24){
- if(!Array.isArray(pieces)||!Array.isArray(trackPoints)||!Number.isFinite(point?.x)||!Number.isFinite(point?.y))return null;
+ if(!Array.isArray(pieces)||!Array.isArray(trackPoints)||!Number.isFinite(point?.x)||!Number.isFinite(point?.y)||!Number.isFinite(maxRadius)||maxRadius<0)return null;
  let nearest=null,distanceSquared=maxRadius*maxRadius;
  for(const piece of pieces){
   if(piece?.place!=='track'||!Number.isInteger(piece.pos))continue;
