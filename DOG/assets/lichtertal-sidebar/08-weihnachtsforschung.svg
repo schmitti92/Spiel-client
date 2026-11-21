@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-label="Weihnachtsforschung">
+<defs><radialGradient id="bg"><stop stop-color="#316c57"/><stop offset="1" stop-color="#082d26"/></radialGradient><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff6c7"/><stop offset=".52" stop-color="#e6bb61"/><stop offset="1" stop-color="#9d662d"/></linearGradient><linearGradient id="magic" x1="0" y1="1" x2="0" y2="0"><stop stop-color="#35d5c2"/><stop offset="1" stop-color="#c9fff2"/></linearGradient></defs>
+<circle cx="64" cy="64" r="59" fill="url(#bg)" stroke="url(#gold)" stroke-width="7"/>
+<circle cx="64" cy="64" r="49" stroke="#f9da86" stroke-opacity=".5" stroke-width="2"/>
+<path d="M51 29h26M57 29v30L38 94c-3 5 0 9 6 9h40c6 0 9-4 6-9L71 59V29" stroke="#ffe7ab" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M44 88l15-27h10l15 27c2 4 0 7-4 7H48c-4 0-6-3-4-7Z" fill="url(#magic)" opacity=".92"/>
+<circle cx="59" cy="78" r="4" fill="#f7ffe7"/><circle cx="71" cy="85" r="3" fill="#fff5b6"/>
+<path d="M30 35v20m-10-10h20m-17-7 14 14m0-14L23 52M95 35v17m-8-8h16m-13-6 11 11m0-11L90 49" stroke="#f7db96" stroke-width="2.6" stroke-linecap="round"/>
+<path d="M64 11l4 8 9 1-6 6 1 9-8-4-8 4 1-9-6-6 9-1z" fill="#ffe8a5"/>
+</svg>
