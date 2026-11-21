@@ -23,3 +23,17 @@ test('Grinch tactical evaluator reads only its own hand and visible track state'
  assert.doesNotMatch(body,/s\.hands\[0\]|s\.hands\[1\]|s\.hands\[2\]/);
  assert.doesNotMatch(body,/Math\.random|fetch\(|WebSocket/);
 });
+
+test('phase curse and permanent prisoners are visible, with frozen pawns marked on board',()=>{
+ const script=src('mission-3.js'),page=src('mission-3.html');
+ const board=src('mission-3-board.js'),css=src('mission-3.css');
+ assert.match(page,/id="m3-curse-status"/);
+ assert.match(script,/game\.lastCurse/);
+ assert.match(script,/p\.place==='captured'/);
+ assert.match(script,/frozenTurns>0/);
+ assert.match(board,/piece\.frozenTurns>0/);
+ assert.match(board,/stroke="#9eeaff"/);
+ assert.match(css,/\.m3-curse-status/);
+ assert.match(page,/mission-3\.js\?v=4/);
+ assert.match(page,/mission-3\.css\?v=2/);
+});
