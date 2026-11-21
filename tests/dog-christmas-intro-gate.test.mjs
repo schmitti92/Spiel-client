@@ -140,7 +140,7 @@ test('DOG lobby cannot show the Christmas film without a finished DOG victory ce
  assert.match(sourceCode,/if\(pendingAgain\)/);
  assert.doesNotMatch(room,/id="winner"/);
  assert.match(dog,/id="winner"/);
- for(const html of [room,dog,event])assert.match(html,/christmas-intro-gate\.js\?v=17/);
+ for(const html of [room,dog,event])assert.match(html,/christmas-intro-gate\.js\?v=18/);
  assert.match(sourceCode,/data-later/);
  assert.match(sourceCode,/later\.addEventListener\('click'/);
  assert.match(sourceCode,/reason==='DOG_CHRISTMAS_INTRO_LOCKED'/);
@@ -167,6 +167,6 @@ test('idle Firebase reads are rate-limited without delaying a verified DOG victo
  assert.match(event,/if\(pendingVillageRead\)return pendingVillageRead/);
  assert.match(event,/\$\('building-wallet-refresh'\)\.addEventListener\('click',\(\)=>void reloadVillage\(\)\)/);
  assert.match(event,/villageRequest\('village\/upgrade','POST'/);
- assert.match(intro,/christmas-event\.js\?v=157/);
- for(const html of [hub,dog,page])assert.match(html,/christmas-intro-gate\.js\?v=17/);
+ assert.match(intro,/christmas-event\.js\?v=158/);
+ for(const html of [hub,dog,page])assert.match(html,/christmas-intro-gate\.js\?v=18/);
 });
