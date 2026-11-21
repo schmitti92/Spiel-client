@@ -37,3 +37,25 @@ test('phase curse and permanent prisoners are visible, with frozen pawns marked 
  assert.match(page,/mission-3\.js\?v=6/);
  assert.match(page,/mission-3\.css\?v=3/);
 });
+
+
+test('three real tasks are represented by board targets and a live shared mission progress UI',()=>{
+ const js=src('mission-3.js'),html=src('mission-3.html'),board=src('mission-3-board.js');
+ const css=src('mission-3.css'),rules=src('mission-3-rules.js');
+ for(const id of ['m3-objective-title','m3-task-count','m3-progress-track','m3-progress-fill',
+  'm3-task-instructions','m3-target-fields','m3-task-timeline','m3-complete'])
+  assert.match(html,new RegExp('id="'+id+'"'));
+ assert.match(js,/mission3TaskStatus\(game\)/);
+ assert.match(js,/game\.complete/);
+ assert.match(js,/task\.remaining/);
+ assert.match(js,/task\.progress/);
+ assert.match(html,/id="m3-next-deal"/);
+ assert.doesNotMatch(html,/id="m3-change-stage"/);
+ assert.match(rules,/export function mission3TaskStatus/);
+ assert.match(rules,/MISSION3_TASK_TARGETS=Object\.freeze\(\[3,4,3\]\)/);
+ assert.match(rules,/function mission3OnLanding/);
+ assert.match(board,/m3-objective/);
+ assert.match(board,/s\.tasks\.objectives/);
+ assert.match(css,/\.m3-progress-track/);
+ assert.match(css,/\.m3-complete/);
+});
