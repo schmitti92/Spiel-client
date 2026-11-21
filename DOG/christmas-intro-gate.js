@@ -74,6 +74,23 @@ async function api(suffix='',method='GET'){
   return {ok:true,eligible,introReady:eligible,completed:eligible&&localStorage.getItem(key)==='1',localFallback:true};
  }
  if(!response.ok||data.ok!==true)throw Error(data.error||'INTRO_SERVER_NOT_READY');
+ // A new server-confirmed event baseline must override every old local
+ // cinematic receipt and developer test slider on each player's device.
+ // Run BEFORE the legacy film auto-ack migration below.
+ if(data.resetId&&method==='GET'){
+  const marker='dog-christmas-applied-reset-v1:'+uid;
+  try{
+   if(localStorage.getItem(marker)!==data.resetId){
+    for(const prefix of [
+     'dog-christmas-video-seen-v1:','dog-christmas-reveal-baseline-v1:',
+     'dog-christmas-dev-preview-v1:','dog-christmas-dev-pin-v1:'
+    ]){
+     localStorage.removeItem(prefix+uid);sessionStorage.removeItem(prefix+uid);
+    }
+    localStorage.setItem(marker,data.resetId);
+   }
+  }catch{}
+ }
  // Transparently migrate a previously watched local video once the new
  // server endpoint has become available.
  if(method==='GET'&&data.eligible&&!data.completed&&localStorage.getItem('dog-christmas-video-seen-v1:'+uid)==='1'){
@@ -298,7 +315,8 @@ export function guardChristmasEventPage(){
   if(admitted||checking)return;
   const p=profile();
   if(!p){message.textContent='🔒 Bitte anmelden und deine erste DOG-Onlinepartie abschließen.';return;}
-  if(devUnlocked(p)){await admit();return;}
+  // Check the fresh server invitation first; otherwise an old developer
+  // preview could silently skip the newly reset first-visit film.
   developer.hidden=!chris(p);
   checking=true;
   try{
