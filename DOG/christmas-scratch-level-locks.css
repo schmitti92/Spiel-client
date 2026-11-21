@@ -1,0 +1,43 @@
+/* Player-level locks stay visible without obscuring the ticket's title or price.
+   No CSS state can bypass the server's purchase transaction. */
+.scratch-tier.scratch-level-locked{
+  position:relative!important;
+  border-color:#c7a865!important;
+  box-shadow:inset 0 0 0 1px #b79b58,0 10px 22px #0007!important;
+}
+.scratch-tier.scratch-level-locked .scratch-printed-jackpot,
+.scratch-tier.scratch-level-locked .scratch-printed-serial,
+.scratch-tier.scratch-level-locked .scratch-card-brief,
+.scratch-tier.scratch-level-locked .scratch-card-heading{
+  opacity:.64;
+}
+.scratch-tier.scratch-level-locked .scratch-printed-ticket-preview,
+.scratch-tier.scratch-level-locked .scratch-print{
+  filter:grayscale(.55) brightness(.7);
+}
+.scratch-tier.scratch-level-locked .scratch-level-lock-badge{
+  width:100%;
+  box-sizing:border-box;
+  padding:10px 12px;
+  margin:0 0 12px;
+  border-radius:12px;
+  border:1px solid #ebce83;
+  background:linear-gradient(135deg,#292e35,#544020);
+  color:#fff1c9;
+  font-weight:850;
+  font-size:clamp(13px,1.2vw,17px);
+  line-height:1.35;
+  text-align:center;
+  text-wrap:balance;
+  position:relative;
+  z-index:2;
+}
+.scratch-tier.scratch-level-locked button.scratch-buy:disabled,
+.scratch-tier.scratch-level-locked button.scratch-free:disabled{
+  opacity:.43!important;
+  cursor:not-allowed!important;
+  filter:grayscale(.75);
+}
+@media(max-width:640px){
+ .scratch-tier.scratch-level-locked .scratch-level-lock-badge{padding:9px;font-size:13px}
+}
