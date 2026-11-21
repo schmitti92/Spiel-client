@@ -50,7 +50,7 @@ export function initChristmasResearch(){
   wrap.append(el('span','dr-field-label',label),el('strong','dr-field-value',value));
   return wrap;
  };
- let data=null,category='all',sort='recommended',view='grid',selectedId='card_swap';
+ let data=null,serverData=null,category='all',sort='recommended',view='grid',selectedId='card_swap';
  let working=false,pending=null,pendingUid=null,requestId=0,ticketTier='simple';
 
  const levelOf=skill=>Number(data?.levels?.[skill.id])||0;
@@ -182,6 +182,7 @@ export function initChristmasResearch(){
   return wrap;
  }
  function detailClaim(skill,now){
+  if(window.DOGChristmasDev?.isActive())return null;
   const rank=levelOf(skill);
   if(rank<1||!['free_ticket','builder'].includes(skill.id))return null;
   const readyAt=skill.id==='builder'?data.cooldowns?.builderAt:data.cooldowns?.freeTicketAt;
@@ -247,7 +248,7 @@ export function initChristmasResearch(){
    const cost=field('div','dr-research-cost','Forschungskosten',fmt(skill.nextCost)+' FP');
    action.append(cost);
    const buy=el('button','dr-upgrade-button','↑  Aufwerten');
-   buy.type='button';buy.disabled=working||!affordable(skill);
+   buy.type='button';buy.disabled=working||window.DOGChristmasDev?.isActive()||!affordable(skill);
    buy.title=!affordable(skill)?'Nicht genügend Forschungspunkte':'Nächste Forschungsstufe kaufen';
    buy.addEventListener('click',()=>void upgrade(skill));
    action.append(buy);
@@ -258,6 +259,7 @@ export function initChristmasResearch(){
   details.append(banner,body);
  }
  function render(){
+  if(serverData)data=window.DOGChristmasDev?.researchData(serverData)||serverData;
   if(!data)return;
   renderSummary();drawFilters();
   const shown=visibleSkills();
@@ -289,21 +291,23 @@ export function initChristmasResearch(){
   return response.research;
  }
  async function upgrade(skill){
+  if(window.DOGChristmasDev?.isActive())return;
   if(!data||working||!skill.enabled||maxed(skill)||!affordable(skill))return;
   const target=levelOf(skill)+1;
   if(!window.confirm(skill.name+' auf Stufe '+target+' verbessern?\nKosten: '+skill.nextCost+' Forschungspunkte.'))return;
   working=true;render();
   try{
-   data=await call('/upgrade',{id:skill.id});
+   data=await call('/upgrade',{id:skill.id});serverData=data;
    message('✓ '+skill.name+' wurde auf Stufe '+target+' verbessert.');
   }catch(error){message('⚠️ Verbesserung fehlgeschlagen: '+error.message,true);}
   finally{working=false;render();}
  }
  async function claim(id,tier){
+  if(window.DOGChristmasDev?.isActive())return;
   if(working||!data)return;
   working=true;render();
   try{
-   data=await call('/claim',{type:id,...(id==='free_ticket'?{tier}:{})});
+   data=await call('/claim',{type:id,...(id==='free_ticket'?{tier}:{})});serverData=data;
    message(id==='builder'?'⭐ Die Weihnachtslichter sind dem gemeinsamen Dorf gutgeschrieben.':'🎟️ Dein Losgutschein wurde deinem Rubbellos-Konto gutgeschrieben.');
   }catch(error){message('⚠️ Abholung fehlgeschlagen: '+error.message,true);}
   finally{working=false;render();}
@@ -311,7 +315,7 @@ export function initChristmasResearch(){
  async function load(){
   const account=user();
   if(!account){
-   requestId++;pending=null;pendingUid=null;data=null;
+   requestId++;pending=null;pendingUid=null;data=null;serverData=null;
    summary.hidden=true;cards.replaceChildren();drawFilters();renderDetail(null);
    message('🔐 Bitte melde dich mit deinem Online-Spielerprofil an, um deine Forschungen zu sehen.',true);
    return;
@@ -324,8 +328,8 @@ export function initChristmasResearch(){
    try{
     const result=await call('');
     if(requestId!==id||user()?.uid!==account.uid)return;
-    data=result;render();
-    message('✓ Forschungen synchronisiert – alle Werte stammen aus deinem Spielerkonto.');
+    serverData=result;data=result;render();
+    message(window.DOGChristmasDev?.isActive()?'🧪 Lokale Forschungsvorschau – keine echte Freischaltung.':'✓ Forschungen synchronisiert – alle Werte stammen aus deinem Spielerkonto.');
    }catch(error){if(requestId===id)message('⚠️ Forschungsdaten konnten nicht geladen werden: '+error.message,true);}
    finally{if(requestId===id){pending=null;pendingUid=null;}}
   })();
@@ -346,8 +350,11 @@ export function initChristmasResearch(){
   $('event-main')?.scrollTo({top:0,behavior:'smooth'});
  });
  $('dog-research-refresh').addEventListener('click',()=>void load());
+ window.addEventListener('dog-christmas-dev-change',()=>{
+  if(serverData){render();message(window.DOGChristmasDev?.isActive()?'🧪 Lokale Forschungsvorschau – keine echten Käufe.':'✓ Echte Forschung wiederhergestellt.');}
+ });
  window.addEventListener('spielonline-change',()=>{
-  requestId++;data=null;pending=null;pendingUid=null;
+  requestId++;data=null;serverData=null;pending=null;pendingUid=null;
   summary.hidden=true;cards.replaceChildren();
   if($('tab-research')?.getAttribute('aria-selected')==='true')void load();
  });
