@@ -1,4 +1,4 @@
-import {isVerifiedCosmeticUnlocked,isVerifiedDogPlayerLevelAtLeast} from './verified-cosmetics.js?v=2';
+import {isVerifiedCosmeticUnlocked,isVerifiedDogPlayerLevelAtLeast} from './verified-cosmetics.js?v=3';
 /**
  * DOG presentation/content registry.
  *
