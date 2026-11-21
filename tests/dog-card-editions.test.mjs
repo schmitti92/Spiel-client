@@ -48,7 +48,7 @@ test('Christmas decks cannot be equipped from forged storage or direct selection
  assert.deepEqual(Object.keys(CARD_EDITIONS),['kartendesign-01','kartendesign-02','kartendesign-03','kartendesign-04','kartendesign-05']);
  assert.equal(isCardEditionUnlocked('kartendesign-04'),true);
  assert.equal(isCardEditionUnlocked('kartendesign-05'),false);
- assert.equal(CARD_EDITIONS['kartendesign-05'].minPlayerLevel,3);
+ assert.equal(CARD_EDITIONS['kartendesign-05'].minPlayerLevel,20);
  assert.equal(isCardEditionUnlocked(CARD_EDITION),true);
  for(const id of ['kartendesign-02','kartendesign-03']){
   assert.equal(isCardEditionUnlocked(id),false,id);
