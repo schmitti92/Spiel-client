@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="./mission-1.css?v=9">
 <link rel="stylesheet" href="./mission-2.css?v=3">
 <link rel="stylesheet" href="../touch-navigation.css?v=1">
-</head>
+<style id="grinch-dev-page-gate">html:not(.dog-dev-grinch) body > :not(#dog-dev-private-gate):not(#dog-dev-launch):not(.dog-dev-dialog):not(script){visibility:hidden!important}#dog-dev-private-gate[hidden]{display:none!important}</style></head>
 <body>
 <header class="top">
  <a class="back" href="../christmas-event.html">← Zum Weihnachtsdorf</a>
@@ -109,6 +109,27 @@
 <div id="event-message" role="status" aria-live="assertive"></div>
 <script src="../../profile-config.js"></script>
 <script src="../../profile-auth.js"></script>
-<script type="module" src="./mission-2.js?v=12"></script>
+<script type="module">
+import {initChristmasDeveloper} from '../christmas-dev-mode.js?v=2';
+const dev=initChristmasDeveloper();
+const gate=document.createElement('section');gate.id='dog-dev-private-gate';
+gate.setAttribute('aria-label','Grinch Teil 2 noch nicht veröffentlicht');
+gate.style.cssText='position:fixed;inset:0;z-index:5000;display:grid;place-items:center;padding:16px;background:#081823;color:#ffe6bb;text-align:center;font:inherit';
+gate.innerHTML='<div style="max-width:420px;padding:28px;background:#142d38;border:1px solid #af9159;border-radius:18px"><h1>🔒 Grinch Teil 2</h1><p>Dieses Event ist noch nicht öffentlich freigeschaltet.</p><p>Nur der lokale Entwicklermodus kann diese Testseite öffnen.</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a href="../christmas-event.html" style="color:#ffe4a0">↩ Zum Weihnachtsdorf</a><button type="button" data-unlock style="border:1px solid #b49b69;background:#30414a;color:#fff;padding:7px 12px;border-radius:9px">⚙️ Entwickler-PIN</button></div></div>';
+document.body.append(gate);
+gate.querySelector('[data-unlock]').addEventListener('click',()=>document.getElementById('dog-dev-launch')?.click());
+let launched=false;
+function check(){
+ const allowed=dev.hasGrinch();gate.hidden=allowed;
+ const unlock=gate.querySelector('[data-unlock]');unlock.hidden=!document.getElementById('dog-dev-launch')?.classList.contains('is-visible');
+ if(!allowed||launched)return;
+ launched=true;
+ const u=new URL(location.href);if(u.searchParams.has('room')){u.searchParams.delete('room');history.replaceState(null,'',u.href);}
+ import('./mission-2.js?v=12').catch(err=>{launched=false;gate.hidden=false;console.error('[DOG Grinch test]',err);});
+}
+window.addEventListener('spielonline-change',check);
+window.addEventListener('dog-christmas-dev-change',check);
+check();
+</script>
 </body>
 </html>
