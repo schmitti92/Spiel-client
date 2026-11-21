@@ -1,11 +1,11 @@
 /**
- * Mission 3: LOCAL prototype for work packages 1–4.
+ * Mission 3: LOCAL prototype for work packages 1–5.
  * Never changes official rooms, campaign progression or real rewards.
  */
 import {cardVisual} from '../card-visuals.js?v=11';
 import {drawMission3Board} from './mission-3-board.js?v=1';
-import {createMission3,mission3LegalMoves,mission3Play,mission3ChooseGrinchMove,mission3SetPreviewStage,mission3NextPreviewDeal,mission3Validate,MISSION3_STAGE_NAMES,MISSION3_COLORS} from './mission-3-rules.js?v=3';
-const $=id=>document.getElementById(id),KEY='grinch-m3-local-prototype-v2';
+import {createMission3,mission3LegalMoves,mission3Play,mission3ChooseGrinchMove,mission3TaskStatus,mission3NextPreviewDeal,mission3Validate,MISSION3_STAGE_NAMES,MISSION3_COLORS} from './mission-3-rules.js?v=4';
+const $=id=>document.getElementById(id),KEY='grinch-m3-local-prototype-v3';
 let game=null,chosenCard=null,chosenPiece=null,botTimer=null,busy=false,toastTimer=null;
 let myThawResearch=0;
 async function loadLocalResearch(){
@@ -48,18 +48,46 @@ function label(m){
 }
 function render(){
  if(!game)return;
- const stage=game.stageAtDeal;
+ const task=mission3TaskStatus(game);
+ const stage=game.stage;
  $('m3-phase').textContent='Kartenphase '+game.phase+' · Zug '+(game.turn+1);
  $('m3-stage-active').textContent=['🟢 Leicht','🟠 Mittel','🔴 Finale'][stage];
  $('m3-stage-label').textContent=(stage+1)+' · '+MISSION3_STAGE_NAMES[stage];
- $('m3-grinch-per-turn').textContent=(stage+1)+' Grinch-Aktion'+(stage?'en':'');
- $('m3-stage-select').value=String(game.stage);
+ const activeStrength=game.stageAtDeal;
+ $('m3-grinch-per-turn').textContent=(activeStrength+1)+' Grinch-Aktion'+(activeStrength?'en':'')+
+  (activeStrength!==stage?' · bald '+(stage+1):'');
+ $('m3-objective-title').textContent=[
+  '✨ Drei Weihnachtslichter einsammeln',
+  '🧊 Vier Eisbarrieren zerstören',
+  '🔮 Drei Runen aktivieren'
+ ][stage];
+ $('m3-task-count').textContent=task.progress+' / '+task.total;
+ const bar=$('m3-progress-track');
+ bar.setAttribute('aria-valuenow',String(task.progress));
+ bar.setAttribute('aria-valuemax',String(task.total));
+ $('m3-progress-fill').style.width=(task.progress/task.total*100)+'%';
+ $('m3-task-instructions').textContent=[
+  'Landet genau auf den leuchtenden Feldern. Nicht eingesammelte Lichter wechseln ihren Platz erst bei einer neuen Kartenphase.',
+  'Landet genau auf jeder der vier Eisbarrieren. Ein Treffer reicht und die festen Eisfelder verschwinden.',
+  'Landet genau auf jeder der drei magischen Runen. Die Reihenfolge ist frei.'
+ ][stage];
+ const goals=$('m3-target-fields');goals.replaceChildren();
+ for(const target of task.remaining)node('span',task.icon+' Feld '+(target.field+1),goals);
+ if(game.complete)node('span','✅ Alle Aufgaben abgeschlossen',goals);
+ const progress=$('m3-task-timeline');progress.replaceChildren();
+ for(let i=0;i<3;i++){
+  node('span',(i<stage||game.complete?'✓ ':'')+['1 · ✨ Lichter','2 · 🧊 Eis','3 · 🔮 Runen'][i],
+   progress,(i<stage||game.complete)?'done':i===stage?'active':'');
+ }
+ $('m3-complete').hidden=!game.complete;
+ $('m3-next-deal').disabled=Boolean(game.complete);
  const curse=game.lastCurse;
  $('m3-curse-status').textContent=!curse?'🎲 Nach der letzten Handkarte jeder Kartenphase: zufälliger Grinch-Fluch.':
   curse.type==='freeze'?'❄️ Letzter Fluch: '+game.players[curse.owner].name+' Figur '+(Number(curse.pieceId.slice(1))+1)+' wurde zwei eigene Züge eingefroren.':
   curse.type==='knockback'?'💥 Letzter Fluch: '+game.players[curse.owner].name+' Figur '+(Number(curse.pieceId.slice(1))+1)+' wurde '+curse.distance+' Felder zurückgeworfen.':
   '🎲 Letzter Fluch: kein mögliches Ziel.';
- $('m3-turn').textContent=game.current===3?'😈 Grinch spielt '+game.grinchActionsLeft+' Kartenaktion(en)':
+ $('m3-turn').textContent=game.complete?'🏆 Mission gewonnen!':
+  game.current===3?'😈 Grinch spielt '+game.grinchActionsLeft+' Kartenaktion(en)':
   '👑 '+game.players[game.current].name+' ist am Zug'+(game.seven?' · 7: noch '+(7-game.seven.spent)+' Schritte':'');
  const players=$('m3-players');players.replaceChildren();
  for(const user of game.players){
@@ -78,7 +106,8 @@ function render(){
   }
   node('small','🃏 '+game.hands[user.owner].length+(user.owner===3?' verdeckte':'')+' Karten',box);
  }
- $('m3-own-cards').textContent=game.current===3?'🤖 Grinch · '+game.hands[3].length+' verdeckt':game.hands[game.current].length+' eigene Karten';
+ $('m3-own-cards').textContent=game.complete?'🏆 Mission abgeschlossen':
+  game.current===3?'🤖 Grinch · '+game.hands[3].length+' verdeckt':game.hands[game.current].length+' eigene Karten';
  $('m3-draw').textContent=game.draw.length+' Karten';
  $('m3-discard').textContent=game.discard.length+' Karten';
  const top=game.lastPlayedCard;
@@ -89,7 +118,10 @@ function render(){
   const used=Number.isInteger(game.researchThaws)?game.researchThaws:0;
   node('div','🛡️ Weihnachtsschutz · '+Math.max(0,myThawResearch-used)+' Befreiung(en) übrig. Tippe eine eingefrorene Figur an – auch eine von Freunden.',target,'m3-empty');
  }
- if(game.current===3){
+ if(game.complete){
+  node('div','🏆 Alle drei Aufgaben erfüllt. Die sechs verbliebenen Figuren schaffen es in Mission 4.',hand,'m3-empty');
+  node('p','🔒 Jede Farbe hat genau eine neue gefangene Figur. Befreiung erst am Ende von Mission 4.',target);
+ }else if(game.current===3){
   node('div','🤖 '+game.hands[3].length+' verdeckte Grinch-Handkarten',hand,'m3-empty');
   node('p','😈 Die taktische KI analysiert mögliche Angriffe und plant bis zu drei Kartenaktionen. Sie kennt nur ihre eigene Hand.',target);
  }else{
@@ -131,7 +163,7 @@ function render(){
  drawMission3Board($('m3-board'),game,{selectedPiece:chosenPiece,onPieceClick:clickPawn});
 }
 function clickPawn(id){
- if(!game||busy)return;
+ if(!game||game.complete||busy)return;
  const frozen=game.pieces.find(p=>p.id===id&&p.place==='track'&&p.frozenTurns>0);
  if(frozen&&myThawResearch>(game.researchThaws||0)){
   // Mission 3 is a local non-reward prototype: the account determines the
@@ -155,7 +187,7 @@ function clickPawn(id){
 }
 function bot(){
  clearTimeout(botTimer);
- if(!game||game.current!==3)return;
+ if(!game||game.complete||game.current!==3)return;
  busy=true;render();
  botTimer=setTimeout(()=>{
   try{
@@ -168,19 +200,14 @@ function bot(){
  },520);
 }
 function play(m){
- if(!game||busy||game.current===3)return;
+ if(!game||game.complete||busy||game.current===3)return;
  try{
   game=mission3Play(game,game.current,m);resetSelection();save();render();
   if(game.current===3)bot();
  }catch(e){toast(e.message);}
 }
-$('m3-change-stage').addEventListener('click',()=>{
- if(!game||busy)return;
- game=mission3SetPreviewStage(game,Number($('m3-stage-select').value));
- save();render();toast('Stufe gespeichert. Neue Grinch-Karten erst ab der nächsten Verteilung.');
-});
 $('m3-next-deal').addEventListener('click',()=>{
- if(!game||busy)return;
+ if(!game||game.complete||busy)return;
  try{
   game=mission3NextPreviewDeal(game);resetSelection();save();render();
   toast('Neue Kartenphase: Grinch '+game.hands[3].length+' Karten.');
