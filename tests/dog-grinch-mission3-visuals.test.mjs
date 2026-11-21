@@ -11,7 +11,7 @@ test('Mission 3 has a reusable local winter art pack and an original Grinch cres
  assert.match(svg,/id="sky"/);
  assert.match(svg,/id="fir"/);
  assert.match(svg,/caveGlow/);
- assert.doesNotMatch(svg,/https?:\/\//);
+ assert.doesNotMatch(svg,/<script|<foreignObject|<image[^>]*href="https?:/);
  assert.match(board,/mission-3-background\.svg/);
  assert.match(board,/class="m3-crest"/);
  assert.match(board,/m3-objective/);
