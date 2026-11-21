@@ -35,6 +35,9 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
 </style>
 <link rel="stylesheet" href="DOG/board-picker.css?v=4"><link rel="stylesheet" href="DOG/avatar-picker.css?v=3"><link rel="stylesheet" href="DOG/emoji-ui.css?v=3">
 <link rel="stylesheet" href="DOG/touch-navigation.css?v=1">
+<style id="dog-christmas-link-visibility">
+html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christmas-portal-open) [data-meta-album-link],html:not(.dog-christmas-portal-open) #dog-room-christmas,html:not(.dog-christmas-portal-open) #dog-christmas-event-link,html:not(.dog-christmas-portal-open) #dog-player-level-link{display:none!important}
+</style>
 </head>
 <body>
 <div class="shell">
@@ -297,7 +300,12 @@ a.dog-collection-local{display:flex;width:100%;margin:12px 0}
 <script type="module" src="DOG/init-motion.js?v=1"></script><script src="DOG/avatar-picker.js?v=5"></script><script type="module" src="DOG/emoji-lobby.js?v=3"></script><script type="module" src="DOG/board-picker.js?v=12"></script>
 <script type="module" src="DOG/room-lobby.js?v=10"></script>
 <script type="module" src="DOG/room-statistics.js?v=1"></script>
-<script src="profile-config.js"></script><script src="profile-auth.js"></script><script src="hub-lobby.js?v=20261120-grinch-m2" defer></script>
+<script src="profile-config.js"></script><script src="profile-auth.js"></script>
+<script type="module">
+import {mountChristmasLinks} from './DOG/christmas-intro-gate.js?v=3';
+mountChristmasLinks();
+</script>
+<script src="hub-lobby.js?v=20261120-grinch-m2" defer></script>
 <script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script><script src="site-global-controls.js?v=20261109-global-1"></script>
 <script>
 (function(){const page='../hub-lobby.html'+location.search;
