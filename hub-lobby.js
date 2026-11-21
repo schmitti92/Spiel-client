@@ -377,7 +377,7 @@ async function ensureSnakeOriginalBridge(){
  if(snakeOriginalBridge||snakeOriginalLoading||snakeOriginalFailed)return;
  snakeOriginalLoading=true;
  try{
-  const {mountSnakeOriginal}=await import('./snake-arena-online-bridge.js?v=37');
+  const {mountSnakeOriginal}=await import('./snake-arena-online-bridge.js?v=38');
   const ch=room?.match?.challenge;
   if(!ch||ch.order?.[ch.index]!=='snake-arena'||ch.phase!=='countdown')return;
   const target=el('challenge-original-frame');if(!target)return;
@@ -390,7 +390,7 @@ async function ensureLavaOriginalBridge(){
  if(lavaOriginalBridge||lavaOriginalLoading||lavaOriginalFailed)return;
  lavaOriginalLoading=true;
  try{
-  const {mountLavaOriginal}=await import('./lava-arena-online-bridge.js?v=13');
+  const {mountLavaOriginal}=await import('./lava-arena-online-bridge.js?v=14');
   const ch=room?.match?.challenge;
   if(!ch||ch.order?.[ch.index]!=='lava-arena'||!['countdown','results','finished'].includes(ch.phase))return;
   const target=el('challenge-original-frame');if(!target)return;
