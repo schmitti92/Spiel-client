@@ -32,7 +32,9 @@ document.querySelectorAll('[data-dog-editor]').forEach(link=>link.href='editor.h
 const apiBase=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null,onlineDogAvatars=[],onlineChristmas=null,onlineResearch=null,emojiSocketReady=false;
 let lastFallbackRoomReadAt=0;
+let socketAwaitingFirstRoomAt=0,socketHasRoom=false;
 const DOG_DISCONNECTED_READ_MS=30000; // Render WebSocket is primary.
+const DOG_FIRST_ROOM_GRACE_MS=12000; // Recover if a connected socket never receives its initial room.
 function user(){const s=window.SpielOnline?.state?.();return s?.status==='online'&&s.user?.getIdToken?s.user:null;}
 async function hubRequest(path,method='GET',payload){
  const person=user();if(!person)throw Error('Bitte melde dich mit deinem Online-Profil an.');
@@ -80,6 +82,7 @@ async function refreshOnline(){
 function startSocket(){
  if(onlineSocket||!user())return;
  const socket=new WebSocket(apiBase.replace(/^http/i,'ws')+'/hub');onlineSocket=socket;emojiSocketReady=false;
+ socketAwaitingFirstRoomAt=Date.now();socketHasRoom=false;
  socket.onopen=async()=>{
   try{const token=await user().getIdToken();if(socket.readyState===1)socket.send(JSON.stringify({type:'subscribe',code:hubCode,profileIdToken:token}));}
   catch(_){socket.close();}
@@ -88,7 +91,7 @@ function startSocket(){
  socket.onmessage=e=>{
   let data;try{data=JSON.parse(e.data)}catch(_){return;}
   if(data.type==='room'&&data.room?.code===hubCode){
-   emojiSocketReady=true;acceptRemote(data.room);
+   socketHasRoom=true;emojiSocketReady=true;acceptRemote(data.room);
   }else if(data.type==='dog_emoji'&&data.code===hubCode&&data.matchId===acceptedMatchId){
    showDogEmoji(data);
   }else if(data.type==='dog_emoji_error'){
@@ -108,17 +111,23 @@ async function initOnline(){
  $('human-count').disabled=true;
  $('human-count').closest('.controls').hidden=true;
  $('turn').textContent='Online-Spielstand wird verbunden …';
- await refreshOnline();
+ // The first authenticated WebSocket room snapshot already contains the
+ // complete private DOG projection. Do not make a duplicate Firestore-backed
+ // HTTP GET for every player opening a match.
  startSocket();
  if(!onlinePoll)onlinePoll=setInterval(()=>{
   if(document.hidden||!user())return;
   const socketReady=onlineSocket?.readyState===1;
-  // Retry the socket promptly, but avoid Firestore-backed GETs on each retry.
-  if(!socketReady&&Date.now()-lastFallbackRoomReadAt>=DOG_DISCONNECTED_READ_MS)void refreshOnline();
+  const firstRoomTimedOut=socketReady&&!socketHasRoom&&
+   Date.now()-socketAwaitingFirstRoomAt>=DOG_FIRST_ROOM_GRACE_MS;
+  // One bounded HTTP fallback if Render is disconnected or its socket never
+  // delivers the first room. Never poll Firebase while a live socket works.
+  if((!socketReady||firstRoomTimedOut)&&Date.now()-lastFallbackRoomReadAt>=DOG_DISCONNECTED_READ_MS)
+   void refreshOnline();
   if(!onlineSocket||onlineSocket.readyState>=2)startSocket();
  },8000);
- document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(onlineSocket?.readyState!==1)void refreshOnline();startSocket();}});
- window.addEventListener('spielonline-change',()=>{if(user()){if(onlineSocket?.readyState!==1)void refreshOnline();startSocket();}});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden){startSocket();}});
+ window.addEventListener('spielonline-change',()=>{if(user())startSocket();});
 }
 
 // Touch gestures change only the SVG viewBox, never game state or other UI.
