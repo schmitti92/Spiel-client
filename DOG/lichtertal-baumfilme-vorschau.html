@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lichtertal – Baumstufe 2 und 3 Filmvorschau</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:radial-gradient(ellipse at 50% 0%,#254b52,#071725 68%);color:#fff2d5;display:grid;place-items:center;padding:16px}
+main{width:min(990px,100%);background:#132d38;border:1px solid #c3a267;border-radius:18px;padding:clamp(14px,2.8vw,25px);box-shadow:0 25px 75px #000a}
+h1{font-size:clamp(21px,4vw,34px);margin:0 0 5px}p{line-height:1.45;color:#d4dedc;margin:6px 0 14px}
+video{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#030c15;border-radius:12px;border:1px solid #49626c}
+.row{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0}
+button,a{font:inherit;border:1px solid #dab96d;border-radius:10px;padding:10px 14px;background:#294c58;color:#ffebc6;text-decoration:none;cursor:pointer}
+button.primary{background:#b58c43;color:#102630;font-weight:850}
+button.active{outline:3px solid #f2cf80;outline-offset:2px}
+small{font-size:12px;color:#b2c9cf}
+#progress{font-weight:800;color:#ffe5a5}
+</style>
+</head>
+<body>
+<main>
+<h1>🎄 Lichtertal – Die nächsten Baumgeschichten</h1>
+<p>Vorschau: Pro Baumaufstieg zwei Filmszenen mit Originalton. Diese Seite verändert keine Baumstufen, Belohnungen oder Spielerprofile.</p>
+<div class="row">
+<button type="button" id="level2" class="active">⭐ Baumstufe 2 · Der erste Stern</button>
+<button type="button" id="level3">🍪 Baumstufe 3 · Der Duft der Hoffnung</button>
+</div>
+<video id="movie" controls playsinline preload="metadata"></video>
+<p id="progress" role="status">Baumstufe 2 · Szene 1 von 2 · Bereit</p>
+<div class="row">
+<button type="button" id="play" class="primary">▶ Mit Ton abspielen</button>
+<button type="button" id="mute">🔇 Ton ausschalten</button>
+<button type="button" id="restart">↺ Von vorne</button>
+<a href="christmas-event.html#tree">Zum Weihnachtsbaum im Spiel</a>
+</div>
+<small>Die Szenenreihenfolge wurde anhand der Upload-Zeitstempel bestimmt. Im eigentlichen Spiel startet der Player erst beim serverbestätigten Erreichen von Baumstufe 2 beziehungsweise 3.</small>
+</main>
+<script>
+(()=>{
+ const data={
+  2:['553349132_1795277408558110.mp4','681598781_1795277411540396.mp4'],
+  3:['901719079_1795277415902807.mp4','433654807_1795277420139339.mp4']
+ };
+ const movie=document.getElementById('movie');
+ const progress=document.getElementById('progress');
+ const play=document.getElementById('play');
+ const mute=document.getElementById('mute');
+ let level=2,clip=0;
+ const sync=()=>{play.textContent=movie.paused?'▶ Mit Ton abspielen':'⏸ Pause';mute.textContent=movie.muted?'🔊 Ton einschalten':'🔇 Ton ausschalten';};
+ function load(auto=false){
+  const filenames=data[level];
+  if(clip>=filenames.length){movie.pause();progress.textContent='✅ Beide Szenen abgeschlossen. Bitte wähle einen Film oder starte erneut.';sync();return;}
+  movie.src='assets/'+filenames[clip];
+  movie.poster='weihnachtsevent-bilder/weihnachtsbaum_stufe_'+level+'.png';
+  movie.load();
+  progress.textContent='Baumstufe '+level+' · Szene '+(clip+1)+' von 2';
+  sync();
+  if(auto)movie.play().catch(()=>{progress.textContent='▶ Tippe erneut auf „Mit Ton abspielen“.';sync();});
+ }
+ function choose(n){
+  movie.pause();level=n;clip=0;movie.muted=false;
+  document.getElementById('level2').classList.toggle('active',level===2);
+  document.getElementById('level3').classList.toggle('active',level===3);
+  load();
+ }
+ document.getElementById('level2').addEventListener('click',()=>choose(2));
+ document.getElementById('level3').addEventListener('click',()=>choose(3));
+ play.addEventListener('click',()=>{
+  if(movie.paused)movie.play().catch(()=>progress.textContent='▶ Bitte erneut auf Play drücken.');
+  else movie.pause();
+  sync();
+ });
+ mute.addEventListener('click',()=>{movie.muted=!movie.muted;sync();});
+ document.getElementById('restart').addEventListener('click',()=>choose(level));
+ movie.addEventListener('ended',()=>{clip++;load(true);});
+ movie.addEventListener('play',sync);movie.addEventListener('pause',sync);
+ movie.addEventListener('error',()=>{progress.textContent='⚠️ Das Video konnte nicht geladen werden.';});
+ choose(2);
+})();
+</script>
+</body>
+</html>
