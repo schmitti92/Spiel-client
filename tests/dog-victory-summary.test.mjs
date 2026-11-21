@@ -40,3 +40,24 @@ test('no fake victory screen for incomplete or invalid match',()=>{
  assert.equal(summarizeDogVictory({...game,winner:null}),null);
  assert.equal(summarizeDogVictory({...game,pieces:[]}),null);
 });
+
+test('three real players win individually without a phantom fourth player',()=>{
+ const players=['Chris','Vanessa','David'].map((name,seat)=>({name,seat,bot:false,inactive:false}));
+ players.push({name:'Freier Platz',seat:3,bot:false,inactive:true});
+ const pieces=Array.from({length:12},(_,id)=>({
+  id,owner:Math.floor(id/4),place:Math.floor(id/4)===2?'goal':'home',pos:Math.floor(id/4)===2?id%4:-1
+ }));
+ const game={mode:'solo3',phase:'finished',round:4,winner:2,players,pieces};
+ const original=structuredClone(game);
+ const summary=summarizeDogVictory(game);
+ assert.equal(summary.mode,'solo3');
+ assert.equal(summary.winner,2);
+ assert.deepEqual(summary.players.map(p=>p.name),['David','Chris','Vanessa']);
+ assert.deepEqual(summary.players.map(p=>p.goalCount),[4,0,0]);
+ assert.equal(summary.teams[0].capacity,4);
+ assert.equal(summary.teams[0].total,4);
+ assert.equal(summary.players.some(p=>p.bot),false);
+ assert.equal(summary.players.some(p=>p.seat===3),false);
+ assert.deepEqual(game,original);
+ assert.equal(summarizeDogVictory({...game,phase:'play'}),null);
+});
