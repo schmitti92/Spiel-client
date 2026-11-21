@@ -1,6 +1,6 @@
 # DOG Grinch – Mission 3: Grundgerüst
 
-Stand: 21.11.2026. Arbeitspakete 1 und 2 sind als lokaler Spieltest umgesetzt. Mission 3 ist weiterhin nicht für offizielle Online-Räume freigeschaltet.
+Stand: 21.11.2026. Arbeitspakete 1, 2 und 3 sind als lokaler Spieltest umgesetzt. Mission 3 ist weiterhin nicht für offizielle Online-Räume freigeschaltet.
 
 ## Neue Dateien
 
@@ -28,15 +28,15 @@ Frontend- und Backend-Regelmodule sind bytegleich. Die Testseite verwendet aussc
 
 ## Bewusst offen
 
-Paket 3: Mehrzugplanung und aggressive Grinch-KI. Der jetzige Grinch-Gegner nutzt nur einen einfachen regelkonformen Testalgorithmus.
+Paket 3 umgesetzt: Deterministische taktische Grinch-KI (tactical-beam-v1). Sie wertet Treffer, Bedrohung, Annäherung und optional die öffentlich sichtbaren Aufgabenfelder aus. Ihre begrenzte Mehrzugplanung berücksichtigt bis zu drei Kartenaktionen und schätzt Kartensequenzen voraus; die Teilbewegungen der 7 werden regelkonform weitergespielt. Sie kennt niemals die Handkarten der Menschen. Auf dem Brett werden ihre Bewegungen einzeln gezeigt. Regressionstests liegen in tests/dog-grinch-mission3-ai.test.js.
 
-Paket 4: Zufallsereignis am Kartenphasenende, Rückschlag, zwei eigene Züge Einfrieren und genau eine dauerhafte Gefangennahme je Mensch. Gefangene bleiben später bis Mission 4 gesperrt.
+Paket 4 offen: Zufallsereignis am Kartenphasenende, Rückschlag, zwei eigene Züge Einfrieren und genau eine dauerhafte Gefangennahme je Mensch. Gefangene bleiben später bis Mission 4 gesperrt.
 
-Paket 5: Drei echte Aufgaben – drei sich bei jeder neuen Kartenphase versetzende Weihnachtslichter, vier Eisbarrieren, drei frei aktivierbare Runen. Die Vorschau-Stufenauswahl wird durch regelbasierte Übergänge ersetzt.
+Paket 5 offen: Drei echte Aufgaben – drei sich bei jeder neuen Kartenphase versetzende Weihnachtslichter, vier Eisbarrieren, drei frei aktivierbare Runen. Die Vorschau-Stufenauswahl wird durch regelbasierte Übergänge ersetzt.
 
-Paket 6: Neues Grafikpaket, Animationen, Touch-Optimierung.
+Paket 6 offen: Neues Grafikpaket, Animationen, Touch-Optimierung.
 
-Paket 7: Serverseitige Grinch-KI und Online-Zugprüfung, Privatsphäre der Karten, offizielle Missionsfreischaltung nach Mission 2, Speicherung.
+Paket 7 offen: Autoritative Online-Ausführung der bereits entwickelten Grinch-KI und Online-Zugprüfung, Privatsphäre der Karten, offizielle Missionsfreischaltung nach Mission 2, Speicherung.
 
 Paket 8: Vollständige gemeinsame Praxistests und Langzeitsimulationen.
 
