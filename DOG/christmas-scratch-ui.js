@@ -613,8 +613,10 @@ export function initChristmasScratch(){
    Number.isInteger(status?.playerLevel)?status.playerLevel:1;
   wallet.textContent=developer?.isActive()?num(developer.settings().coins)+' 🪙 Testmünzen':status?num(status.coins)+' 🪙':'– 🪙';
   const freeMode=status?.settings?.freeEnabled===true;
-  $('scratch-host-settings').hidden=false;
-  $('scratch-host-settings').title='Gemeinsame Rubbellos-Einstellungen';
+  // Unlimited free-play is disabled on Render. Keep the old settings
+  // element for compatibility with the existing dialog handlers, but do not
+  // show the general host gear. Individual 500-ticket edition studios stay.
+  $('scratch-host-settings').hidden=true;
   $('scratch-daily-info').textContent=freeMode?'🎁 Kostenloses Rubbeln für alle aktiviert':
    status?.dailyFreeAvailable?'🎁 Heute ein einfaches Gratis-Los verfügbar':'Gratis-Los heute bereits benutzt';
   // Group all seven selectable tickets by class. This is presentation
