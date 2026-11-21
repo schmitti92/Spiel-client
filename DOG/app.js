@@ -56,6 +56,7 @@ function acceptRemote(room){
    onlineChristmas=room.match?.christmas?.enabled===true?room.match.christmas:null;
    onlineResearch=room.match?.dogResearch||null;
    render();
+   if(game?.phase==='finished')window.dispatchEvent(new Event('dog-match-finished'));
  }else if(game?.phase==='finished'){
    $('status').textContent='Partie beendet – du kannst in der Raum-Lobby ein neues Spiel auswählen.';
  }else{
