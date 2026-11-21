@@ -1,5 +1,6 @@
 import {MISSION_1} from './mission-config.js?v=6';
 import {createGrinchOnline} from './mission-1-online.js?v=1';
+import {createGrinchResearch} from './mission-research.js?v=1';
 import {cardVisual} from '../card-visuals.js?v=11';
 import {drawClassicMissionBoard} from './mission-board.js?v=8';
 import {pathfinderStatus} from './mission-1-pathfinder.js?v=4';
@@ -14,6 +15,10 @@ const onlineMode=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/.test(roomCode);
 let onlineSeat=null,onlineMatchId=null,onlineBridge=null,onlineBusy=false;
 const myTurn=()=>!onlineMode||onlineSeat===state?.current;
 let state=null,chosenCard=null,chosenPiece=null,pickMoves=[],lastSeenRevision=-1;
+const missionResearch=createGrinchResearch({
+ online:onlineMode,getState:()=>state,getBridge:()=>onlineBridge,
+ getBusy:()=>onlineBusy,rerender:()=>render(),showMessage:message=>toast(message)
+});
 let toastTimer=null,effectTimer=null;
 const ns=(tag,attrs={},parent=null)=>{
  const el=document.createElementNS(SVG,tag);
@@ -62,6 +67,7 @@ function currentMoves(){
  return card?legalMoves(state,state.current,card):[];
 }
 function choosePawn(id){
+ if(onlineMode&&missionResearch.canThaw(id)){missionResearch.thaw(id);return;}
  if(!state||state.complete||!myTurn()||onlineBusy)return;
  const p=state.pieces.find(x=>x.id===id);
  const moves=currentMoves();
@@ -180,6 +186,7 @@ function render(){
  const history=$('history');history.replaceChildren();
  for(const entry of state.history)text('p',entry,history);
  drawClassicMissionBoard($('board'),state,{selectedPiece:chosenPiece,onPieceClick:choosePawn});
+ missionResearch.render();
 }
 function clearMissionWeather(){
  clearTimeout(effectTimer);
@@ -302,6 +309,7 @@ function acceptOnlineRoom(room){
  onlineSeat=Number.isInteger(match.grinchSeat)?match.grinchSeat:null;
  onlineMatchId=match.id;
  state=mission;
+ missionResearch.update(room);
  if(priorMatch!==match.id){
   chosenCard=null;chosenPiece=null;pickMoves=[];
   lastSeenRevision=mission.revision; // do not replay old effects on joining/reloading
@@ -310,7 +318,7 @@ function acceptOnlineRoom(room){
   chosenPiece=null;pickMoves=[];
  }
  render();
- if(previous!==null&&priorMatch===match.id&&previous!==mission.revision)onEffect();
+ if(previous!==null&&priorMatch===match.id&&previous!==mission.revision){onEffect();missionResearch.render();}
 }
 function onOnlineError(message){
  $('grinch-online-panel').hidden=false;
