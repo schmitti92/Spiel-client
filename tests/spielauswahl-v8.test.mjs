@@ -111,3 +111,26 @@ test('Business selection and preselected guest enter its dedicated online start 
  await flush();
  assert.deepEqual(guest.navigated,[{type:'replace',url:'Business/business_start.html?room=ABC23D'}]);
 });
+
+test('DOG selection uses uploaded full-card artwork without changing play routes',()=>{
+ const art=source('DOG/game-card-art.css');
+ const progressive=source('DOG/game-card-art.js');
+ const hubHtml=source('hub-lobby.html');
+ const img=readFileSync(new URL('../DOG/assets/dog-lobby-dock.png',import.meta.url));
+ assert.ok(img.length>100000,'uploaded full-resolution DOG PNG');
+ assert.equal(img.toString('hex',0,8),'89504e470d0a1a0a','valid PNG');
+ for(const html of [local,online]){
+  assert.match(html,/src="DOG\/assets\/dog-lobby-dock\.png\?v=1"/);
+  assert.match(html,/href="DOG\/game-card-art\.css\?v=1"/);
+  assert.match(html,/src="DOG\/game-card-art\.js\?v=1"/);
+ }
+ assert.match(online,/data-select-game="dog"/);
+ assert.match(local,/href="DOG\/index\.html"/);
+ assert.match(hubHtml,/data-game="dog"/);
+ assert.match(hubHtml,/href="DOG\/game-card-art\.css\?v=1"/);
+ assert.match(art,/dog-online-card/);
+ assert.match(art,/dog-classic-card/);
+ assert.match(art,/#game-chooser \.game\[data-game="dog"\]/);
+ assert.match(art,/@media\(max-width:520px\)/);
+ assert.match(progressive,/img\.naturalWidth>100/);
+});
