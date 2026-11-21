@@ -77,6 +77,20 @@ async function api(suffix='',method='GET'){
  // Transparently migrate a previously watched local video once the new
  // server endpoint has become available.
  if(method==='GET'&&data.eligible&&!data.completed&&localStorage.getItem('dog-christmas-video-seen-v1:'+uid)==='1'){
+  // A device may still hold a pre-reset 'film watched' flag. Never let that
+  // legacy local flag re-acknowledge Chris's cleared online intro receipt.
+  if(chris(before)){
+   const resetResponse=await fetch(BASE+'/api/hub/dog/chris-christmas-reset/status',{
+    cache:'no-store',headers:{Authorization:'Bearer '+token}
+   }).catch(()=>null);
+   const reset=await resetResponse?.json().catch(()=>null);
+   if(!resetResponse?.ok||reset?.ok!==true)return data;
+   if(reset.alreadyReset){
+    localStorage.removeItem('dog-christmas-video-seen-v1:'+uid);
+    localStorage.removeItem('dog-christmas-reveal-baseline-v1:'+uid);
+    return data;
+   }
+  }
   const ack=await fetch(BASE+'/api/hub/dog/christmas-intro/complete',{
    method:'POST',cache:'no-store',headers:{Authorization:'Bearer '+token}
   });
