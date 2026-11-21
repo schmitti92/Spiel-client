@@ -88,3 +88,21 @@ test('Lichtertal polish renders legible picture-first cards and a prominent righ
  assert.match(html,/dr-status-footer/);
  assert.match(html,/christmas-content-zoom\.css/);
 });
+
+test('research picture and text stay in separate rows, even with long German labels or zoom',()=>{
+ const css=read('christmas-research-readability.css');
+ assert.match(html,/christmas-research-readability\.css\?v=/);
+ assert.match(css,/grid-template-rows:160px minmax\(126px,auto\)/);
+ assert.match(css,/height:auto!important;min-height:286px/);
+ assert.match(css,/background-image:var\(--dr-property-scene\)/);
+ assert.match(css,/brightness\(1\.28\)/);
+ assert.match(css,/white-space:normal!important;overflow:visible!important/);
+ assert.match(css,/overflow-wrap:anywhere!important/);
+ assert.match(css,/\.dr-card-level\{/);
+ assert.match(css,/\.dr-detail-heading h3\{/);
+ assert.match(css,/\.dr-detail-panel\[data-research-art\]/);
+ assert.match(css,/@media\(max-width:560px\)/);
+ for(const skill of ['card_swap','thaw','xp','win_xp','discount','coin_bonus','pity','free_ticket','spot_ticket','spot_light','lights_bonus','builder']){
+  assert.ok(existsSync(new URL('../DOG/assets/research/bg-'+skill+'.webp',import.meta.url)),skill);
+ }
+});

@@ -1,0 +1,282 @@
+/* Weihnachtsforschung · Lichtertal: sichtbare Bilder + zoombeste Texte.
+   Intent: Picture-first cards with a distinct copy panel; no cropping or
+   overflow of headings/levels at browser text enlargement or content zoom.
+   Loaded last, and scoped only to #panel-research.
+   The original left eight-tab Lichtertal panel is deliberately untouched. */
+#panel-research,
+#panel-research .dr-workspace,
+#panel-research .dr-gallery,
+#panel-research .dr-detail-panel,
+#panel-research .dr-detail-body,
+#panel-research .dog-research-card,
+#panel-research .dr-card-content{
+ min-width:0!important;
+}
+#panel-research .dr-gallery-content{min-width:0!important;overflow-x:hidden!important}
+#panel-research .dog-research-grid{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ align-items:stretch!important;gap:11px!important;
+}
+#panel-research .dog-research-grid.is-list{grid-template-columns:minmax(0,1fr)!important}
+#panel-research .dog-research-card[data-research-art]{
+ /* A fixed 236px height silently clipped titles/descriptions on zoom. */
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr)!important;
+ grid-template-rows:160px minmax(126px,auto)!important;
+ align-items:stretch!important;align-content:start!important;
+ justify-content:stretch!important;
+ height:auto!important;min-height:286px!important;max-height:none!important;
+ padding:0!important;margin:0!important;
+ border:2px solid #d3b06b!important;border-radius:17px!important;
+ background:#082c23!important;
+ overflow:hidden!important;
+ isolation:isolate;
+}
+#panel-research .dog-research-card[data-research-art]::after{
+ content:""!important;
+ display:block!important;
+ position:absolute!important;top:0!important;left:0!important;right:0!important;
+ width:100%!important;height:160px!important;
+ background-image:var(--dr-property-scene)!important;
+ background-repeat:no-repeat!important;
+ background-size:cover!important;
+ background-position:center 39%!important;
+ /* The uploaded illustrations are already gorgeous: no dark mask. */
+ -webkit-mask-image:none!important;mask-image:none!important;
+ opacity:1!important;
+ filter:brightness(1.28) saturate(1.16) contrast(1.06)!important;
+ z-index:0!important;pointer-events:none!important;
+}
+#panel-research .dog-research-card[data-research-art]::before{
+ content:""!important;position:absolute!important;z-index:1!important;
+ top:114px!important;left:0!important;right:0!important;
+ width:100%!important;height:47px!important;
+ background:linear-gradient(180deg,transparent,#09271f91)!important;
+ pointer-events:none!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-art{
+ /* The little icon had been sitting over the actual illustrated subject. */
+ display:none!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-content{
+ position:relative!important;z-index:2!important;
+ grid-column:1!important;grid-row:2!important;
+ width:100%!important;min-width:0!important;max-width:100%!important;
+ height:auto!important;min-height:126px!important;
+ margin:0!important;padding:12px 13px 13px!important;
+ display:flex!important;flex-direction:column!important;
+ align-items:stretch!important;justify-content:flex-start!important;
+ background:linear-gradient(155deg,#133d2e,#092b23 63%,#09231e)!important;
+ border-top:1px solid #e3bc725c!important;
+ box-shadow:0 -4px 18px #031d1780!important;
+ overflow:visible!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-head{
+ display:block!important;min-width:0!important;max-width:100%!important;
+ margin:0!important;padding:0!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-title{
+ display:block!important;width:100%!important;max-width:100%!important;
+ min-width:0!important;margin:0!important;padding:0!important;
+ color:#fff1c9!important;
+ font:900 clamp(14px,1vw + 1px,17px)/1.23 Georgia,serif!important;
+ white-space:normal!important;overflow:visible!important;
+ overflow-wrap:anywhere!important;word-break:normal!important;
+ hyphens:auto;text-wrap:pretty;
+ text-shadow:0 2px 3px #02170ecc!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-level{
+ position:absolute!important;top:11px!important;right:11px!important;left:auto!important;
+ z-index:4!important;
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ max-width:calc(100% - 22px)!important;min-width:0!important;
+ margin:0!important;padding:4px 8px!important;
+ color:#ffebba!important;background:#092d23eb!important;
+ border:1px solid #f2d69b!important;border-radius:99px!important;
+ box-shadow:0 2px 7px #000a!important;
+ font:800 11px/1.12 system-ui,sans-serif!important;
+ white-space:normal!important;overflow-wrap:anywhere!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-description{
+ display:block!important;
+ margin:6px 0 8px!important;padding:0!important;
+ min-height:0!important;max-height:none!important;
+ color:#f2e7d4!important;font:500 12px/1.4 system-ui,sans-serif!important;
+ white-space:normal!important;overflow:visible!important;
+ overflow-wrap:anywhere!important;word-break:normal!important;hyphens:auto;
+ -webkit-line-clamp:unset!important;line-clamp:unset!important;
+ text-shadow:none!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-bottom{
+ display:flex!important;flex-wrap:wrap!important;
+ align-items:center!important;justify-content:space-between!important;
+ gap:6px!important;margin-top:auto!important;
+ min-width:0!important;padding-top:4px!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-progress{
+ flex:1 1 80px!important;min-width:55px!important;max-width:100%!important;
+ height:10px!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-bonus{
+ flex:0 1 auto!important;max-width:100%!important;
+ color:#c8ffb1!important;font:800 11px/1.25 system-ui,sans-serif!important;
+ white-space:normal!important;overflow-wrap:anywhere!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-selected{
+ top:40px!important;right:11px!important;z-index:5!important;
+}
+#panel-research .dog-research-card[data-research-art].is-selected{
+ border-color:#ffdfa0!important;
+ box-shadow:0 0 0 2px #48efab,0 0 15px #39d69f65!important;
+}
+#panel-research .dog-research-card[data-research-art].is-selected::after{
+ filter:brightness(1.32) saturate(1.2) contrast(1.05)!important;
+}
+#panel-research .dog-research-card[data-research-art]:focus-visible{
+ outline:3px solid #fff0bd!important;outline-offset:2px!important;
+}
+
+/* The selected skill receives a much clearer, full-width illustrated scene,
+   not just a tiny blurred icon in the corner. */
+#panel-research .dr-detail-panel[data-research-art]{
+ overflow:hidden!important;min-width:0!important;
+}
+#panel-research .dr-detail-artwork[data-research-art]{
+ position:relative!important;
+ width:100%!important;min-width:0!important;
+ height:clamp(135px,27dvh,220px)!important;min-height:0!important;
+ padding:0!important;margin:0!important;
+ border:0!important;border-bottom:2px solid #dfbd77!important;
+ border-radius:0!important;
+ background-image:var(--dr-property-scene)!important;
+ background-size:cover!important;background-position:center 38%!important;
+ background-repeat:no-repeat!important;
+ box-shadow:inset 0 -8px 15px #071a1444!important;
+ overflow:hidden!important;
+}
+/* Keep image independent from text so it can be luminous without reducing
+   contrast inside the cost / upgrade blocks. */
+#panel-research .dr-detail-artwork[data-research-art]::before{
+ content:"";position:absolute;inset:0;
+ background:linear-gradient(180deg,#09292009 0%,transparent 77%,#061b1570 100%);
+ z-index:1;pointer-events:none;
+}
+#panel-research .dr-detail-artwork[data-research-art]::after{
+ display:none!important;
+}
+#panel-research .dr-detail-artwork[data-research-art] .dr-detail-skill-image,
+#panel-research .dr-detail-artwork[data-research-art] .dr-detail-giant-icon{
+ display:none!important;
+}
+#panel-research .dr-detail-artwork[data-research-art] .dr-detail-rank{
+ z-index:3!important;bottom:10px!important;right:11px!important;
+ white-space:normal!important;max-width:calc(100% - 22px)!important;
+ overflow-wrap:anywhere!important;
+}
+#panel-research .dr-detail-body,
+#panel-research .dr-detail-heading,
+#panel-research .dr-detail-block,
+#panel-research .dr-detail-effects,
+#panel-research .dr-detail-actions,
+#panel-research .dr-detail-claim{
+ min-width:0!important;max-width:100%!important;
+}
+#panel-research .dr-detail-heading h3{
+ display:block!important;width:100%!important;min-width:0!important;
+ margin:0!important;
+ font:900 clamp(17px,1.35vw + 2px,24px)/1.22 Georgia,serif!important;
+ white-space:normal!important;overflow:visible!important;
+ overflow-wrap:anywhere!important;word-break:normal!important;
+ hyphens:auto;text-wrap:balance;
+}
+#panel-research .dr-detail-heading .dr-detail-type,
+#panel-research .dr-detail-label,
+#panel-research .dr-detail-value{
+ max-width:100%!important;min-width:0!important;
+ white-space:normal!important;overflow-wrap:anywhere!important;
+ word-break:normal!important;
+}
+#panel-research .dr-detail-effects{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+#panel-research .dr-detail-effects .dr-detail-block{
+ min-width:0!important;max-width:100%!important;overflow-wrap:anywhere!important;
+}
+#panel-research .dr-detail-actions{
+ flex-wrap:wrap!important;
+}
+#panel-research .dr-research-cost{
+ min-width:95px!important;max-width:100%!important;
+}
+#panel-research .dr-upgrade-button,
+#panel-research .dr-claim-button{
+ white-space:normal!important;overflow-wrap:anywhere!important;
+ min-width:108px!important;max-width:100%!important;
+}
+#panel-research .dr-detail-panel .dr-detail-body{
+ overflow-wrap:anywhere!important;
+}
+
+/* At narrower physical widths or high page/text zoom, never crowd two card
+   columns when either card would be too narrow for two lines of copy. */
+@media(min-width:850px){
+ #panel-research .dog-research-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+ #panel-research .dr-detail-panel[data-research-art]{
+  position:sticky!important;
+ }
+}
+@media(min-width:850px) and (max-width:1200px){
+ #panel-research .dr-workspace{
+  grid-template-columns:minmax(0,1.25fr) minmax(270px,1fr)!important;
+ }
+ #panel-research .dog-research-grid{
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+}
+@media(max-width:849px){
+ #panel-research .dog-research-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+ #panel-research .dr-detail-panel[data-research-art]{
+  position:relative!important;top:auto!important;
+  overflow:visible!important;
+ }
+ #panel-research .dr-gallery-content{
+  max-height:50dvh!important;
+ }
+}
+@media(max-width:560px){
+ #panel-research .dog-research-grid{
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+ #panel-research .dr-detail-effects{
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+ #panel-research .dog-research-card[data-research-art]{
+  grid-template-rows:150px minmax(126px,auto)!important;
+  min-height:276px!important;
+ }
+ #panel-research .dog-research-card[data-research-art]::after{
+  height:150px!important;
+ }
+ #panel-research .dog-research-card[data-research-art]::before{top:105px!important}
+ #panel-research .dr-detail-artwork[data-research-art]{
+  height:clamp(135px,24dvh,195px)!important;
+ }
+}
+@media(min-width:850px) and (max-height:750px){
+ #panel-research .dr-detail-artwork[data-research-art]{
+  height:clamp(92px,20dvh,155px)!important;
+ }
+ #panel-research .dr-detail-panel.has-claim .dr-detail-artwork[data-research-art]{
+  height:95px!important;
+ }
+}
+@media(min-width:850px) and (max-height:620px){
+ /* Better allow a controlled detail scroll than clip any text or payment. */
+ #panel-research .dr-detail-panel[data-research-art]{
+  overflow-y:auto!important;overflow-x:hidden!important;
+ }
+}
