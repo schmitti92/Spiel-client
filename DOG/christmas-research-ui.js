@@ -207,6 +207,7 @@ export function initChristmasResearch(){
  }
  function renderDetail(skill){
   details.replaceChildren();
+  details.classList.remove('has-claim');
   if(skill)details.dataset.researchArt=skill.id;
   else delete details.dataset.researchArt;
   if(!skill){
@@ -228,10 +229,12 @@ export function initChristmasResearch(){
   heading.append(el('h3','',skill.name),el('span','dr-detail-type','✦ '+groupFor(skill)));
   body.append(heading);
   body.append(detailRow('ⓘ Beschreibung',skill.description,'dr-detail-description'));
-  body.append(detailRow('▥ Aktueller Effekt',valueAt(skill,rank)));
-  if(!isMax)body.append(detailRow('➤ Nächste Stufe: '+(rank+1)+' / '+skill.maxLevel,
+  const effects=el('div','dr-detail-effects');
+  effects.append(detailRow('▥ Aktueller Effekt',valueAt(skill,rank)));
+  if(!isMax)effects.append(detailRow('➤ Nächste Stufe: '+(rank+1)+' / '+skill.maxLevel,
    valueAt(skill,rank+1),'dr-next-effect'));
-  else body.append(detailRow('✓ Vollständig erforscht','Maximale Stufe erreicht','dr-next-effect'));
+  else effects.append(detailRow('✓ Vollständig erforscht','Maximale Stufe erreicht','dr-next-effect'));
+  body.append(effects);
   if(skill.id==='pity'&&rank>0)
    body.append(detailRow('🍀 Trostengel-Fortschritt',
     fmt(data.pityNiets)+' / '+(10-rank)+' bezahlte Nieten bis zum nächsten einfachen Los'));
@@ -251,6 +254,7 @@ export function initChristmasResearch(){
   }
   body.append(action);
   const claimUI=detailClaim(skill,now);if(claimUI)body.append(claimUI);
+  details.classList.toggle('has-claim',Boolean(claimUI));
   details.append(banner,body);
  }
  function render(){

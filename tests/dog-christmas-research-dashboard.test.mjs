@@ -71,3 +71,20 @@ test('all twelve uploaded background visuals are wired to the correct research c
  assert.match(art,/ui-panel-ornaments\.webp/);
  assert.match(art,/ui-buttons-variations\.webp/);
 });
+
+test('Lichtertal polish renders legible picture-first cards and a prominent right-side scene',()=>{
+ const polish=read('christmas-research-polish.css');
+ assert.match(html,/christmas-research-polish\.css\?v=/);
+ assert.match(polish,/dog-research-card\[data-research-art\]/);
+ assert.match(polish,/brightness\(1\.15\)/);
+ assert.match(polish,/mask-image:none!important/);
+ assert.match(polish,/dr-detail-artwork\[data-research-art\]/);
+ assert.match(polish,/position:relative!important/);
+ assert.match(polish,/dr-detail-effects/);
+ assert.match(polish,/dr-detail-panel\.has-claim/);
+ assert.match(controller,/const effects=el\('div','dr-detail-effects'\)/);
+ assert.match(controller,/details\.classList\.toggle\('has-claim',Boolean\(claimUI\)\)/);
+ assert.match(html,/<details class="dog-research-note">/);
+ assert.match(html,/dr-status-footer/);
+ assert.match(html,/christmas-content-zoom\.css/);
+});
