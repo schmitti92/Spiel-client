@@ -50,6 +50,23 @@ test('DOG online selecting a seven keeps the hand visible through split moves',(
  assert.equal(change.hideHand,true);
  assert.equal(change.clearSelection,true);
 });
+test('DOG online clears old pawn after 1 of 7 moves, keeps hand visible for remaining 6',()=>{
+ const first=mkGame(21,'seven',[{id:12,type:'7'},{id:24,type:'4'}]);
+ first.seven={cardId:12,spent:0};
+ const afterOne=mkGame(22,'seven',[{id:12,type:'7'},{id:24,type:'4'}]);
+ afterOne.seven={cardId:12,spent:1};
+ const update=decide(previous(50,first),room(51,afterOne));
+ assert.equal(update.accept,true);
+ assert.equal(update.hideHand,false,'do not hide the visible hand mid-seven');
+ assert.equal(update.clearSelection,true,'the first pawn must be deselected before choosing the next');
+ const duplicate=decide(previous(51,afterOne),room(52,{...afterOne}));
+ assert.equal(duplicate.clearSelection,false,'ordinary presence updates keep the current selection');
+ const afterSix=mkGame(23,'play',[{id:24,type:'4'}]);
+ const completed=decide(previous(52,afterOne),room(53,afterSix));
+ assert.equal(completed.clearSelection,true);
+ assert.equal(completed.hideHand,true,'end of seven discards the card and may change the hand');
+});
+
 test('DOG online rerolls and new rounds safely conceal a newly dealt hand',()=>{
  const old=mkGame(4,'exchange',[{id:7,type:'4'}]);
  const newCards=mkGame(5,'exchange',[{id:54,type:'5'}]);
