@@ -536,6 +536,35 @@ $('dog-victory-show').addEventListener('click',openVictoryCeremony);
 $('dog-victory-close').addEventListener('click',closeVictoryCeremony);
 $('dog-victory-new').addEventListener('click',()=>{closeVictoryCeremony();$('new-game').click();});
 
+// Non-blocking turn announcement. Only the visible active seat changes it.
+let lastAnnouncedTurn=null,turnAnnouncementTimer=null;
+function showTurnAnnouncement(seat){
+  const playing=game.phase==='play'||game.phase==='seven';
+  const banner=document.getElementById('dog-turn-announcement');
+  if(!playing||!Number.isInteger(seat)||!game.players?.[seat]){
+    lastAnnouncedTurn=null;
+    if(banner)banner.classList.remove('is-visible');
+    if(turnAnnouncementTimer){clearTimeout(turnAnnouncementTimer);turnAnnouncementTimer=null;}
+    return;
+  }
+  const key=(online?(acceptedMatchId||matchHint||hubCode):'local')+'|'+game.round+'|'+seat;
+  if(key===lastAnnouncedTurn)return;
+  lastAnnouncedTurn=key;
+  const target=banner||document.createElement('div');
+  if(!banner){
+    target.id='dog-turn-announcement';
+    target.className='dog-turn-announcement';
+    target.setAttribute('aria-hidden','true'); // The persistent ribbon already announces the turn.
+    document.body.appendChild(target);
+  }
+  target.textContent='🎲 '+game.players[seat].name+' ist dran!';
+  target.style.setProperty('--dog-turn-color',displayColors()[seat]||'#e7bf77');
+  target.classList.remove('is-visible');
+  void target.offsetWidth;
+  target.classList.add('is-visible');
+  if(turnAnnouncementTimer)clearTimeout(turnAnnouncementTimer);
+  turnAnnouncementTimer=setTimeout(()=>{target.classList.remove('is-visible');turnAnnouncementTimer=null;},2600);
+}
 function render(){
   if(!game)return;
   renderCardPiles();
@@ -547,7 +576,8 @@ function render(){
   const teamDisplay=document.getElementById('dog-mode-teams'),soloDisplay=document.getElementById('dog-mode-solo3');
   if(teamDisplay)teamDisplay.hidden=soloThree;
   if(soloDisplay)soloDisplay.hidden=!soloThree;
-  $('turn').textContent=game.phase==='finished'?(game.mode==='solo3'?'🏆 '+game.players[game.winner].name+' gewinnt!':'🏆 Team '+(game.winner===0?'Rot / Grün':'Blau / Gelb')+' gewinnt!'):game.phase==='exchange'?'Karten werden getauscht':active>=0?game.players[active].name+' ist dran':'Bots spielen';
+  $('turn').textContent=game.phase==='finished'?(game.mode==='solo3'?'🏆 '+game.players[game.winner].name+' gewinnt!':'🏆 Team '+(game.winner===0?'Rot / Grün':'Blau / Gelb')+' gewinnt!'):game.phase==='exchange'?'🎁 Karten werden getauscht':active>=0?'🎲 '+game.players[active].name+' ist dran!':'Bots spielen';
+  showTurnAnnouncement(active);
   // This is view-only. Write the live labels only on actual changes, so
   // duplicate room updates neither retrigger motion nor repeat ARIA messages.
   const royalRound=$('dog-premium-round'),royalPhase=$('dog-premium-phase'),royalNow=$('dog-premium-now');
