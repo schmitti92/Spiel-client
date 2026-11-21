@@ -143,7 +143,8 @@ export function initChristmasResearch(){
  function renderCard(skill){
   const level=levelOf(skill),isSelected=selectedId===skill.id,isMax=level>=skill.maxLevel;
   const btn=el('button','dog-research-card'+(isSelected?' is-selected':'')+(isMax?' is-max':'')+(!skill.enabled?' is-preview':''));
-  btn.type='button';btn.dataset.skillId=skill.id;btn.setAttribute('aria-pressed',String(isSelected));
+  btn.type='button';btn.dataset.skillId=skill.id;btn.dataset.researchArt=skill.id;
+  btn.setAttribute('aria-pressed',String(isSelected));
   btn.setAttribute('aria-label',skill.name+', Stufe '+level+' von '+skill.maxLevel+', Details anzeigen');
   const picture=el('div','dr-card-art');
   picture.append(el('span','dr-card-art-icon',skill.icon),researchArt(skill));
@@ -206,6 +207,8 @@ export function initChristmasResearch(){
  }
  function renderDetail(skill){
   details.replaceChildren();
+  if(skill)details.dataset.researchArt=skill.id;
+  else delete details.dataset.researchArt;
   if(!skill){
    const empty=el('div','dr-detail-placeholder');
    empty.append(el('span','','❄'),el('h3','','Forschung auswählen'),
@@ -214,6 +217,7 @@ export function initChristmasResearch(){
   }
   const rank=levelOf(skill),isMax=maxed(skill),now=Date.now();
   const banner=el('div','dr-detail-artwork');
+  banner.dataset.researchArt=skill.id;
   const visual=el('div','dr-detail-artwork-visual');
   const largeArt=researchArt(skill);
   largeArt.classList.add('dr-detail-skill-image');

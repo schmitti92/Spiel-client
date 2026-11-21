@@ -56,3 +56,18 @@ test('cards keep all active selection, sorting, artwork and reward pickup contro
  assert.match(controller,/\.webp/);
  assert.ok(existsSync(new URL('../DOG/assets/research/lantern-illustration.svg',import.meta.url)));
 });
+
+test('all twelve uploaded background visuals are wired to the correct research cards and detail pane',()=>{
+ const art=read('christmas-research-artpack.css');
+ const ids=["card_swap","thaw","xp","win_xp","discount","coin_bonus","pity","free_ticket","spot_ticket","spot_light","lights_bonus","builder"];
+ assert.equal(ids.length,12);
+ for(const id of ids){
+  assert.match(art,new RegExp('data-research-art="'+id+'"'));
+  assert.match(art,new RegExp('bg-'+id+'\\.webp'));
+  assert.ok(existsSync(new URL('../DOG/assets/research/bg-'+id+'.webp',import.meta.url)),id);
+ }
+ assert.match(controller,/btn\.dataset\.researchArt=skill\.id/);
+ assert.match(controller,/details\.dataset\.researchArt=skill\.id/);
+ assert.match(art,/ui-panel-ornaments\.webp/);
+ assert.match(art,/ui-buttons-variations\.webp/);
+});

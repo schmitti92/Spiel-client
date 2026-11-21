@@ -1,0 +1,211 @@
+/* Weihnachtsforschung | Lichtertal Grafikpaket 2026.
+   Uploaded artwork appears in every research property. The legacy research
+   icons remain as accessible fallback; effects and purchases remain server-owned.
+   This sheet intentionally does not touch the eight-tab sidebar. */
+#panel-research [data-research-art="card_swap"]{--dr-property-scene:url("./assets/research/bg-card_swap.webp")}
+#panel-research [data-research-art="thaw"]{--dr-property-scene:url("./assets/research/bg-thaw.webp")}
+#panel-research [data-research-art="xp"]{--dr-property-scene:url("./assets/research/bg-xp.webp")}
+#panel-research [data-research-art="win_xp"]{--dr-property-scene:url("./assets/research/bg-win_xp.webp")}
+#panel-research [data-research-art="discount"]{--dr-property-scene:url("./assets/research/bg-discount.webp")}
+#panel-research [data-research-art="coin_bonus"]{--dr-property-scene:url("./assets/research/bg-coin_bonus.webp")}
+#panel-research [data-research-art="pity"]{--dr-property-scene:url("./assets/research/bg-pity.webp")}
+#panel-research [data-research-art="free_ticket"]{--dr-property-scene:url("./assets/research/bg-free_ticket.webp")}
+#panel-research [data-research-art="spot_ticket"]{--dr-property-scene:url("./assets/research/bg-spot_ticket.webp")}
+#panel-research [data-research-art="spot_light"]{--dr-property-scene:url("./assets/research/bg-spot_light.webp")}
+#panel-research [data-research-art="lights_bonus"]{--dr-property-scene:url("./assets/research/bg-lights_bonus.webp")}
+#panel-research [data-research-art="builder"]{--dr-property-scene:url("./assets/research/bg-builder.webp")}
+
+/* Artwork card: the picture sits ABOVE the readable content. Only the upper
+   painted portion is shown; the printed name near the bottom of each uploaded
+   poster is deliberately cropped rather than duplicated behind live HTML text. */
+#panel-research .dog-research-card[data-research-art]{
+ display:flex!important;flex-direction:column!important;
+ justify-content:flex-end!important;align-items:stretch!important;
+ min-height:218px!important;padding:0!important;overflow:hidden!important;
+ isolation:isolate;
+ background:linear-gradient(160deg,#1e5039,#082a23 66%,#071d1b)!important;
+ border:2px solid #d1a65d!important;
+}
+#panel-research .dog-research-card[data-research-art]::after{
+ content:"";position:absolute;top:0;left:0;right:0;height:77%;
+ background-image:linear-gradient(180deg,#08261804 0%,#08271d08 46%,#09271d2b 68%,#061e19c9 100%),var(--dr-property-scene);
+ background-repeat:no-repeat;background-size:cover,cover;
+ background-position:center,center 23%;
+ opacity:.97;pointer-events:none;z-index:0;
+ -webkit-mask-image:linear-gradient(#000 0%,#000 65%,transparent 100%);
+ mask-image:linear-gradient(#000 0%,#000 65%,transparent 100%);
+}
+#panel-research .dog-research-card[data-research-art]::before{
+ z-index:1;background:linear-gradient(180deg,#fff9bb10,transparent 45%,#050d0c17)!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-art{
+ position:absolute!important;top:9px;left:9px;z-index:3;
+ width:55px!important;height:60px!important;
+ border:1px solid #e0b964a3!important;border-radius:12px!important;
+ background:linear-gradient(150deg,#10281fba,#1b4a36b8)!important;
+ box-shadow:0 3px 10px #0009,0 0 16px #f3c26630!important;
+ backdrop-filter:blur(3px);
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-art-icon{
+ font-size:34px!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-skill-image{
+ padding:2px;object-fit:contain!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-content{
+ position:relative;z-index:2;flex:none!important;width:100%;min-width:0;
+ padding:99px 10px 9px!important;
+ background:linear-gradient(180deg,transparent 0%,#09281f9e 20%,#051c19f5 53%,#071f19 100%);
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-head{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ gap:6px!important;min-width:0!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-title{
+ color:#fff0c9!important;font:900 clamp(13px,1.1vw,18px)/1.13 Georgia,serif!important;
+ text-shadow:0 2px 4px #000e!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-level{
+ position:relative!important;z-index:2;
+ background:linear-gradient(160deg,#0d2f25,#041b16)!important;
+ border:1px solid #f3d58d!important;
+ border-radius:99px!important;padding:3px 7px!important;
+ box-shadow:0 2px 5px #000a,inset 0 1px #ffe7a72a!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-description{
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+ line-clamp:2;overflow:hidden!important;
+ line-height:1.3!important;min-height:2.6em;
+ color:#f3e8d4!important;text-shadow:0 1px 3px #000d;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-bottom{
+ align-items:center!important;gap:6px!important;padding-top:4px;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-progress{
+ border-color:#e4bc70!important;box-shadow:0 1px 6px #000a!important;
+}
+#panel-research .dog-research-card[data-research-art]:hover{
+ border-color:#ffe49f!important;
+ box-shadow:inset 0 0 0 1px #fff0b45b,0 0 20px #c7ae6370!important;
+}
+#panel-research .dog-research-card[data-research-art].is-selected{
+ border-color:#ffe8a4!important;
+ box-shadow:0 0 0 1px #42e49c,0 0 23px #5af79b8a,inset 0 0 12px #bde5972d!important;
+}
+#panel-research .dog-research-card[data-research-art].is-selected::after{
+ opacity:1;filter:saturate(1.18);
+}
+
+/* Right pane: the same artwork accompanies the selected research. Keep the
+   compact, pinned block and its full description, level and action visible. */
+#panel-research .dr-detail-panel[data-research-art]{
+ position:sticky!important;
+ isolation:isolate;
+}
+#panel-research .dr-detail-panel[data-research-art]::before{
+ content:"";position:absolute;inset:0;
+ background-image:linear-gradient(180deg,#05251ee8,#051f1bf6 36%,#051f1bfa),var(--dr-property-scene);
+ background-size:cover,cover;background-position:center,center 32%;
+ opacity:.36;z-index:-1;pointer-events:none;
+}
+#panel-research .dr-detail-artwork[data-research-art]{
+ position:absolute!important;overflow:hidden!important;
+ border:1px solid #edca81!important;border-radius:12px!important;
+ background-image:linear-gradient(180deg,#081d172a,#081d178a),var(--dr-property-scene)!important;
+ background-size:cover,160% auto!important;
+ background-position:center,center 26%!important;
+ background-repeat:no-repeat!important;
+ box-shadow:inset 0 0 0 1px #f9dc7a8e,0 2px 12px #0007!important;
+}
+#panel-research .dr-detail-artwork[data-research-art] .dr-detail-skill-image{
+ position:relative!important;z-index:1;
+ width:48%!important;height:55%!important;max-height:76px!important;
+ object-fit:contain!important;filter:drop-shadow(0 4px 7px #000e)!important;
+}
+#panel-research .dr-detail-artwork[data-research-art] .dr-detail-rank{
+ z-index:3!important;
+ background:linear-gradient(145deg,#0f3d2b,#07251c)!important;
+}
+#panel-research .dr-detail-panel[data-research-art] .dr-detail-body{
+ position:relative;z-index:1;
+}
+#panel-research .dr-detail-panel[data-research-art] .dr-detail-heading h3{
+ text-shadow:0 2px 5px #000c!important;
+}
+
+/* Ornament texture taken from the uploaded UI sprite. Crop just the snowy
+   top plaque (no repeat of other atlas items); controls remain real HTML. */
+#panel-research .dr-gallery{position:relative}
+#panel-research .dr-gallery::after{
+ content:"";position:absolute;top:-2px;left:48%;width:130px;height:22px;
+ background:url("./assets/research/ui-panel-ornaments.webp") no-repeat;
+ background-size:255px 255px;background-position:0 0;
+ opacity:.5;pointer-events:none;z-index:0;
+}
+#panel-research .dr-gallery-header{position:relative;z-index:1}
+
+/* The other uploaded button atlases inform gold/emerald button states,
+   while native HTML labels and click areas remain readable and accessible. */
+#panel-research .dr-upgrade-button,
+#panel-research .dr-claim-button{
+ position:relative;overflow:hidden!important;
+ border:2px solid #e5c884!important;
+ background:linear-gradient(180deg,#19b86a,#05693d)!important;
+ box-shadow:inset 0 2px #eaffbc8a,0 3px 0 #034125,0 0 12px #63efa46b!important;
+ text-shadow:0 1px 2px #023821;
+}
+#panel-research .dr-upgrade-button::before,
+#panel-research .dr-claim-button::before{
+ content:"";position:absolute;inset:0;
+ background-image:url("./assets/research/ui-buttons-variations.webp");
+ background-size:500% auto;background-position:28% 58%;
+ opacity:.13;mix-blend-mode:screen;pointer-events:none;
+}
+#panel-research .dr-research-cost,
+#panel-research .dr-field-value{
+ text-shadow:0 1px 3px #0009;
+}
+#panel-research .dr-sort-label select{
+ border:1px solid #efc980!important;color:#fff2cf!important;
+ box-shadow:inset 0 1px #fff9d445,0 2px 7px #0007!important;
+}
+#panel-research .dr-view-options button{
+ border-radius:9px!important;border:1px solid #e6bc6a!important;
+ box-shadow:inset 0 1px #ffe9a94d,0 2px 6px #0008!important;
+}
+#panel-research .dr-view-options button.is-active{
+ box-shadow:inset 0 1px #d9ffe1b8,0 0 12px #52ff9e9e!important;
+}
+#panel-research .dr-card-selected{
+ border:2px solid #ffe5a2!important;
+ box-shadow:0 0 8px #33ed98a8,inset 0 1px #fff3ab66!important;
+}
+/* Crop decorative scroll-bar texture from long-button atlas, preserving
+   fully functional native card gallery scroll behavior. */
+#panel-research .dr-gallery-content::-webkit-scrollbar{width:9px}
+#panel-research .dr-gallery-content::-webkit-scrollbar-track{
+ background:#09251e;border-left:1px solid #d0ab69;
+}
+#panel-research .dr-gallery-content::-webkit-scrollbar-thumb{
+ background:linear-gradient(#e7cb78,#ae7a34 20%,#0d8653 75%,#d1ab54);
+ border:1px solid #e6c37f;border-radius:9px;
+}
+@media(max-width:620px){
+ #panel-research .dog-research-card[data-research-art]{
+  min-height:198px!important;
+ }
+ #panel-research .dog-research-card[data-research-art] .dr-card-content{
+  padding-top:88px!important;
+ }
+ #panel-research .dr-detail-panel[data-research-art]::before{opacity:.20}
+ #panel-research .dr-detail-artwork[data-research-art]{
+  position:relative!important;min-height:140px!important;
+  width:100%!important;height:140px!important;
+ }
+ #panel-research .dr-detail-artwork[data-research-art] .dr-detail-skill-image{
+  width:90px!important;height:85px!important;max-height:85px!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ #panel-research .dog-research-card[data-research-art]::after{transition:none!important}
+}
