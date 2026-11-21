@@ -6,7 +6,7 @@ test('Mission 3 is an isolated local test page, not an official campaign launche
  const html=src('mission-3.html');
  assert.match(html,/SPIELBARER PROTOTYP/);
  assert.match(html,/keine offiziellen Kampagnendaten/);
- assert.match(html,/mission-3\.js\?v=1/);
+ assert.match(html,/mission-3\\.js\\?v=2/);
  assert.match(html,/id="m3-board"/);
  assert.doesNotMatch(html,/\/api\/hub\/|awardCoins|grantReward/);
 });
@@ -24,7 +24,7 @@ test('controller offers real cards, play interactions and local 6-12-18 preview'
  for(const name of ['m3-draw','m3-discard','m3-last','m3-hand','m3-moves','m3-players','m3-change-stage','m3-next-deal']){
   assert.match(html,new RegExp('id="'+name+'"'));
  }
- for(const name of ['mission3Play','mission3LegalMoves','mission3AutoGrinch','mission3NextPreviewDeal'])
+ for(const name of ['mission3Play','mission3LegalMoves','mission3ChooseGrinchMove','mission3NextPreviewDeal'])
   assert.match(js,new RegExp(name));
  assert.match(css,/\.m3-hand/);
  assert.match(css,/@media\(max-width:680px\)/);
