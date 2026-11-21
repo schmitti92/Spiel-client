@@ -86,6 +86,18 @@
 
 **Rechenbeispiel:** Bei zehn erneuten Seitenbesuchen innerhalb von sechs Stunden entfallen im Normalfall zehn Import-POSTs und damit bis zu zwanzig bisherige Transaktions-Reads eines Profils; der aktuelle globale Dorfstand wird weiterhin bei jedem notwendigen Dorf-GET gelesen. Bei der ersten Prüfung ohne Altbestand sinken die Reads von zwei auf eins. Das sind **technisch vermiedene Leseaufrufe**, keine belegten abgerechneten Firebase-Einsparungen.
 
+### Paket 3c – Rubbellos-Einstellungen, Grinch-Fortschritt und Emoji-Rechte (21.11.2026)
+
+- [x] **Rubbellos-Einstellungen:** Beim Speichern einer alten/unvollständigen Einstellungsmaske werden die bisherigen Werte nur noch **ein einziges Mal** aus dem globalen Firestore-Dokument gelesen. Vorher konnten vier unabhängige Sicherheits-Fallbacks jeweils `ref.get()` auslösen. Vollständig ausgefüllte Einstellungen brauchen weiterhin **null** vorgeschaltete Reads.
+- [x] Gesonderte Sicherheit für `coinAmounts`, Symbolwahrscheinlichkeiten, Glückszahl 1, Geschenkelinie und Schneeflocken-Bingo bleibt erhalten; die eigentliche Einstellungen-Speicherung ist unverändert. Isolierter Integrationstest `tests/firebase-scratch-settings-single-read-offline.test.js` zählt bei alten Formularen einen Read und einen Write, bei vollständigen Formularen null Reads und einen Write, bei fehlerhaften Formdaten null Writes. GitHub Actions: **erfolgreich**.
+- [x] **Grinch-Fortschritt:** Gleichzeitige autorisierte `GET /api/hub/grinch/progress` teilen die *gerade laufenden* Firestore-GETs für persönliche Missionen und globalen Weihnachtsbaum, ohne persistente TTL oder fremde Nutzer-Zuordnungen.
+- [x] **DOG-Emoji-Freischaltungen:** Gleichzeitig gestartete Prüfungen der persönlichen Rubbellos-/Baum-Berechtigungen verwenden dieselbe Singleflight-Leseverwaltung; die bisherige persönliche Socket-Gültigkeitsprüfung bleibt bestehen. Keine Änderungen an Auszahlungen.
+- [x] **DOG-/Kniffel-Statistik und Raum-Geschenkansichten:** Parallel identische Raum-GETs und persönliche Dokument-GETs werden während ihrer Ausführung zusammengefasst; abgeschlossene Leseergebnisse werden nicht länger als Autorisierung verwendet. Für die DOG-Statistik gilt zusätzlich eine **30-Sekunden-Anzeigewiederverwendung nur bei gleichem Raum und gleichem Profil**, manuelles Aktualisieren liest stets neu. Isolierte API-/Browser-Tests für parallele Nutzer, Zugriffsrechte und Frische erfolgreich.
+- [x] **No-op Raumaktionen:** Erfolglose oder identische, serverseitig geprüfte Aktionen und unveränderte Rejoins löschen nicht mehr unnötig den Render-Lesecache. Bei tatsächlicher Änderung oder einer neueren Revision auf einem zweiten Render-Server wird er weiterhin invalidiert. Fake-Firestore-Regression bestätigt.
+- [ ] Tatsächliche abgerechnete Firestore-Reads/Writes unter reproduzierbarer Last bei Firebase messen.
+
+**Einsparung:** Beim Rubbellos-Einstellungsspeichern sind durch Code und Offline-Tests **bis zu drei vermiedene GETs pro Save** nachgewiesen. Bei den anderen Optimierungen hängt die Einsparung von gleichzeitig stattfindenden Anfragen, Reiterwechseln und unveränderten Aktionen ab. Dies sind noch keine Produktion-Billingwerte.
+
 ### Paket 4 – SKYJO / Business / Barikade
 - [ ] Bereits vorhandene Hintergrund-Checkpoint-Queues und RAM-Caches auf Quota-/Stale-Revision-/Crash-Sicherheit prüfen.
 - [ ] Überflüssige Revisionsänderungen bei unverändertem Spielzustand verhindern, aber notwendige Checkpoints beibehalten.
