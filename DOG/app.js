@@ -452,12 +452,6 @@ function renderHand(){
   if(online&&onlineResearch?.card_swap>0&&game.phase==='exchange'&&!onlineResearch.usedSwap&&selectedCard!==null){
     actions.insertAdjacentHTML('beforeend','<button type="button" class="move-button dog-hand-action-primary" data-research-action="research-swap">🃏 Magischer Kartentausch · ausgewählte Karte ersetzen (1×)</button>');
   }
-  if(online&&onlineResearch?.future_sight>onlineResearch.peeksUsed){
-    actions.insertAdjacentHTML('beforeend','<button type="button" class="move-button dog-hand-action-primary" data-research-action="research-peek">🔮 Oberste Nachziehkarte ansehen ('+(onlineResearch.future_sight-onlineResearch.peeksUsed)+' übrig)</button>');
-  }
-  if(online&&onlineResearch?.peekedCard){
-    actions.insertAdjacentHTML('beforeend','<p class="dog-no-move-note">🔮 Dein letzter Einblick: '+escape(onlineResearch.peekedCard)+'</p>');
-  }
   const special=available.filter(m=>['exchange','seven','emptySwap'].includes(m.type));
   actions.insertAdjacentHTML('beforeend',[...new Map(special.map(m=>[m.type,m])).values()].map(m=>'<button type="button" class="move-button dog-hand-action-primary" data-special="'+m.type+'">'+(m.type==='exchange'?'🎁 Karte weitergeben':m.type==='seven'?'🔥 7 Schritte verteilen':'🗑 Tauschkarte ablegen')+'</button>').join(''));
   // The rules engine automatically discards the complete hand when no legal
