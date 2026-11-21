@@ -1,0 +1,22 @@
+name: Firebase DOG WebSocket read guard
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/app.js'
+      - 'tests/firebase-dog-socket-read-guard.test.mjs'
+      - '.github/workflows/firebase-dog-socket-read-guard.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  websocket-read-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/app.js
+      - run: node --test tests/firebase-dog-socket-read-guard.test.mjs tests/dog-online-sync.test.mjs
