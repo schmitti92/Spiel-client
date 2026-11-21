@@ -641,3 +641,9 @@
  #panel-story .storybook-spread--textonly .storybook-page-heading{margin-bottom:3px}
  #panel-story .storybook-spread--textonly .storybook-page-subtitle{margin-bottom:4px;padding-bottom:3px}
 }
+
+/* Prevent content-box padding from pushing a page beyond the book edge. */
+#panel-story .storybook-spread--textonly,
+#panel-story .storybook-spread--textonly .storybook-paper{
+ box-sizing:border-box;
+}
