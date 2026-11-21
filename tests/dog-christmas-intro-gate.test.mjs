@@ -1,0 +1,44 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const source=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
+test('all DOG Christmas entrypoints are hidden until server-verified reveal',()=>{
+ const intro=source('DOG/christmas-intro-gate.js');
+ const hub=source('hub-lobby.html');
+ const dog=source('DOG/index.html');
+ const event=source('DOG/christmas-event.html');
+ assert.match(intro,/\/api\/hub\/dog\/christmas-intro/);
+ assert.match(intro,/state\.eligible&&state\.completed/);
+ assert.match(intro,/state\.eligible&&!state\.completed/);
+ assert.match(intro,/\/api\/hub\/dog\/stats/);
+ assert.match(intro,/dog-christmas-portal-open/);
+ assert.match(intro,/dog-christmas-video-seen-v1/);
+ assert.match(hub,/html:not\(\.dog-christmas-portal-open\)/);
+ assert.match(dog,/html:not\(\.dog-christmas-portal-open\)/);
+ assert.match(hub,/mountChristmasLinks\(\)/);
+ assert.match(dog,/mountChristmasLinks\(\)/);
+ assert.match(event,/guardChristmasEventPage\(\)/);
+ assert.doesNotMatch(event,/<script type="module" src="\.\/christmas-event\.js/);
+});
+test('intro video is original, published, playable and skippable',()=>{
+ const intro=source('DOG/christmas-intro-gate.js');
+ const video=readFileSync(new URL('../DOG/assets/lichtertal-intro.mp4',import.meta.url));
+ const poster=readFileSync(new URL('../DOG/assets/lichtertal-intro-poster.jpg',import.meta.url));
+ assert.ok(video.length>100000);
+ assert.equal(video.toString('latin1',4,8),'ftyp');
+ assert.equal(poster[0],0xff);
+ assert.match(intro,/new URL\('\.\/assets\/lichtertal-intro\.mp4'/);
+ assert.match(intro,/data-skip/);
+ assert.match(intro,/data-sound/);
+ assert.match(intro,/video\.addEventListener\('ended'/);
+ assert.match(intro,/\/complete','POST'/);
+ assert.match(intro,/role','dialog'/);
+});
+test('online DOG completion triggers a verified unlock refresh',()=>{
+ const app=source('DOG/app.js');
+ assert.match(app,/game\?\.phase==='finished'\)window\.dispatchEvent\(new Event\('dog-match-finished'\)\)/);
+ const gate=source('DOG/christmas-intro-gate.js');
+ assert.match(gate,/window\.addEventListener\('dog-match-finished'/);
+ assert.match(gate,/devUnlocked\(p\)/);
+ assert.match(gate,/pin!=='123'/);
+});
