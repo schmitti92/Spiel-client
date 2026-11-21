@@ -14,7 +14,7 @@ test('Mission 3 frontend board uses the shared DOG layout and green fourth seat'
  const board=src('mission-3-board.js');
  const engine=src('mission-3-rules.js');
  assert.match(board,/trackPoint,homePoint,TRACK_POINTS/);
- assert.match(board,/mission3Start/);
+ assert.match(board,/MISSION3_STARTS/);
  assert.match(board,/onPieceClick/);
  assert.match(engine,/MISSION3_STARTS=Object\.freeze\(\[0,16,48,32\]\)/);
  assert.match(engine,/MISSION3_GRINCH=3/);
