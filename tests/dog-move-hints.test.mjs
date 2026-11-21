@@ -96,6 +96,16 @@ test('split seven hints legal partial destinations with no fabricated distances'
  assert.ok(hint.every(h=>h.pos>8&&h.pos<=13));
 });
 
+test('Joker played as seven keeps showing legal split destinations after joker choice closes',()=>{
+ const s=state('joker');
+ pawn(s,0,'track',8);
+ s.phase='seven';s.seven={cardId:999,spent:1};
+ const legal=legalActions(s,0);
+ assert.ok(legal.some(a=>a.type==='seven-step'));
+ assert.ok(dogLegalTargets(s,legal,{seat:0,cardId:999,pieceId:0}).length>0);
+ assert.ok(dogLegalTargets(s,legal,{seat:0,cardId:999,pieceId:0,jokerAs:'7'}).length>0);
+});
+
 test('a replacement card in the rescue phase marks only the exit square',()=>{
  const s=state('13');
  s.phase='rescue';s.rescue={cardId:999};
