@@ -6,6 +6,7 @@
  */
 import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotalCost,christmasVillageTotalCost} from './christmas-building-costs.js?v=2';
 import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewards-ui.js?v=5';
+import {initChristmasTreeFilms} from './christmas-tree-films.js?v=1';
 import {initChristmasStory} from './christmas-story.js?v=6';
 import {initChristmasScratch} from './christmas-scratch-ui.js?v=83';
 import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=8';
@@ -808,6 +809,10 @@ treePrizeScreen=initChristmasTreeRewards({
  request:villageRequest,roomValid:true,loggedIn:()=>Boolean(eventUser())
 });
 if($('tab-tree').getAttribute('aria-selected')==='true')void treePrizeScreen.load();
+const treeFilms=initChristmasTreeFilms({
+ getUserId:()=>eventUser()?.uid||null,
+ isPreview:()=>devMode.isActive()
+});
 function showLiveVillage(data){
  const v=data?.village;if(!v)return;
  const oldLevels=villageLive?.levels;
@@ -835,6 +840,8 @@ function showLiveVillage(data){
  const newTreeLevel=TREE_THRESHOLDS.filter(n=>originalTreePoints(v.levels)>=n).length;
  if($('tab-tree').getAttribute('aria-selected')==='true'&&
      (oldTreeLevel===null||newTreeLevel!==oldTreeLevel))void treePrizeScreen?.load();
+ // Only real, server-confirmed shared tree stages can launch the videos.
+ treeFilms.sync(newTreeLevel);
 }
 let importedVillageUserId=null, pendingVillageImport=null;
 async function ensureVillageImport(){
@@ -852,6 +859,7 @@ let pendingVillageRead=null;
 async function reloadVillage(){
  if(!eventUser()){
   villageLive=null;villageHost=false;
+  treeFilms.sync(0);
   for(const {id} of definitions)preview[id]=1;
   refreshPreview(); // Clear old player's unlocked chapters on logout.
   grinchView?.render();
@@ -870,7 +878,11 @@ async function reloadVillage(){
   await ensureVillageImport(); // One-time legacy-host import per signed-in profile.
   return villageRequest('village');
  })();
- try{showLiveVillage(await pendingVillageRead);}
+ try{
+  const expectedUid=eventUser()?.uid;
+  const data=await pendingVillageRead;
+  if(expectedUid&&eventUser()?.uid===expectedUid)showLiveVillage(data);
+ }
  catch(e){
   $('building-village-role').textContent='⚠️ Server nicht erreichbar';
   $('building-village-role').dataset.state='preview';
@@ -905,6 +917,7 @@ window.addEventListener('dog-christmas-dev-change',()=>{
  if(lastDevGrinch!==devMode.hasGrinch())villageMode=devMode.hasGrinch()?'grinch':'normal';
  lastDevGrinch=devMode.hasGrinch();
  grinchVisualStage=devMode.hasGrinch()?devMode.settings().caveStage:1;
+ treeFilms.sync(!devMode.isActive()&&villageLive?TREE_THRESHOLDS.filter(n=>originalTreePoints(villageLive.levels)>=n).length:0);
  if(!devMode.hasGrinch()&&$('tab-grinch')?.getAttribute('aria-selected')==='true')showPanel('village');
  refreshPreview();
 });
@@ -916,6 +929,11 @@ window.addEventListener('spielonline-change',()=>{
  if($('tab-tree').getAttribute('aria-selected')==='true')void treePrizeScreen?.load();
 });
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)void reloadVillage();});
+// Notice upgrades made by other players while this event page remains open.
+// A 30-second interval avoids excessive synchronization traffic.
+setInterval(()=>{
+ if(!document.hidden&&eventUser()&&!devMode.isActive()&&!villageBusy&&!treeFilms.isOpen())void reloadVillage();
+},30000);
 
 refreshPreview();
 // Load the high-resolution landscape separately: never block gameplay UI.
