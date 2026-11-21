@@ -582,7 +582,8 @@ export function initChristmasScratch(){
     statsButton.textContent=analytics.hidden?'📊 Meine Statistik':'📊 Statistik schließen';
    });
   }
-  wallet.textContent=status?num(status.coins)+' 🪙':'– 🪙';
+  const developer=window.DOGChristmasDev;
+  wallet.textContent=developer?.isActive()?num(developer.settings().coins)+' 🪙 Testmünzen':status?num(status.coins)+' 🪙':'– 🪙';
   const freeMode=status?.settings?.freeEnabled===true;
   $('scratch-host-settings').hidden=false;
   $('scratch-host-settings').title='Gemeinsame Rubbellos-Einstellungen';
@@ -2675,6 +2676,7 @@ export function initChristmasScratch(){
   }catch(error){feedback.textContent='⚠️ '+(error.message||'Speichern fehlgeschlagen');}
   finally{save.disabled=false;}
  });
+ window.addEventListener('dog-christmas-dev-change',()=>drawShop());
  window.addEventListener('spielonline-change',()=>{
   // Do not close a scratch card or the 500-ticket settings on harmless
   // profile loading/error events. Only a real Firebase identity switch
