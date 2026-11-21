@@ -1,0 +1,27 @@
+name: Firebase DOG village import guard (offline)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/christmas-event.js'
+      - 'DOG/christmas-village-import-guard.mjs'
+      - 'tests/firebase-village-import-guard.test.mjs'
+      - '.github/workflows/firebase-village-import-guard.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  village-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Christmas event and import guard syntax
+        run: |
+          node --check DOG/christmas-event.js
+          node --check DOG/christmas-village-import-guard.mjs
+      - name: Test legacy import reuse does not cache balances or leak users
+        run: node --test tests/firebase-village-import-guard.test.mjs
