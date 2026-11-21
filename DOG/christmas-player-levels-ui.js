@@ -124,7 +124,7 @@ export function initDogPlayerLevels(){
  }
  function renderCard(n,entry,level,flags){
   const reward=entry?.reward;
-  const reached=n<=level.level,claimed=Boolean(flags[n]),claimable=reached&&!claimed;
+  const reached=n<=level.level,claimed=Boolean(flags[n]),claimable=reached&&!claimed&&!window.DOGChristmasDev?.isActive();
   const card=element('article','dog-level-tile'+(reached?' reached':'')+
    (claimed?' claimed':'')+(claimable?' claimable':'')+
    (n===level.level?' current':'')+(n%10===0?' milestone':''));
@@ -159,6 +159,7 @@ export function initDogPlayerLevels(){
   return card;
  }
  function render(data){
+  data=window.DOGChristmasDev?.levelData(data)||data;
   const level=data?.level;
   if(!level||!Number.isInteger(level.level))throw Error('DOG_LEVEL_DATA_INVALID');
   const max=Number.isInteger(level.maxLevel)&&level.maxLevel>0?level.maxLevel:50;
@@ -208,6 +209,7 @@ export function initDogPlayerLevels(){
   scroller.scrollLeft=0;
  }
  async function claimReward(n){
+  if(window.DOGChristmasDev?.isActive())return;
   if(claimPending||!user()||!levelData||n>levelData.level.level)return;
   const current=user(),uid=current.uid;
   claimPending=true;render(levelData);
@@ -256,7 +258,7 @@ export function initDogPlayerLevels(){
    levelData=result;
    render(result);
    $('dog-level-summary').hidden=false;
-   message('🎄 Alle Level, EP und Rubbellos-Gutscheine sind mit deinem persönlichen Profil verknüpft.');
+   message(window.DOGChristmasDev?.isActive()?'🧪 Lokaler Level-Teststand – Belohnungen sind nicht echt.':'🎄 Alle Level, EP und Rubbellos-Gutscheine sind mit deinem persönlichen Profil verknüpft.');
   })();
   try{await pending;}
   catch(error){
@@ -271,6 +273,9 @@ export function initDogPlayerLevels(){
  next.addEventListener('click',()=>changeRange(selectedRange+1));
  $('dog-level-to-scratch')?.addEventListener('click',()=>$('tab-scratch')?.click());
  $('dog-level-to-research')?.addEventListener('click',()=>$('tab-research')?.click());
+ window.addEventListener('dog-christmas-dev-change',()=>{
+  if(levelData){render(levelData);message(window.DOGChristmasDev?.isActive()?'🧪 Spielerlevel-Testvorschau – keine echten Gutscheine.':'✓ Echtes Spielerlevel wiederhergestellt.');}
+ });
  window.addEventListener('spielonline-change',()=>{
   const previous=levelData;
   requestId++;levelData=null;selectedRange=0;
