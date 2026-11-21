@@ -43,6 +43,7 @@ export function initChristmasTreeFilms({getUserId,isPreview}){
   '.dog-tree-film-actions button[data-play]{background:#c7a060;color:#122633;font-weight:800}',
   '.tree-step-film-replay{display:block;margin:6px;width:calc(100% - 12px);font-size:12px;padding:7px;min-height:35px}',
   '.tree-step-film-replay:disabled{opacity:.45;cursor:default}',
+  '.tree-step-film-replay[hidden]{display:none!important}',
   '@media(max-width:560px){.dog-tree-film-dialog header,.dog-tree-film-footer{padding:12px}.dog-tree-film-actions button{flex:1 1 43%}}'
  ].join('\n');
  document.head.append(style);
