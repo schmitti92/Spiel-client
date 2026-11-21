@@ -10,6 +10,7 @@ test('four named scratch cards visibly lock at exact verified player levels',()=
  for(const name of ['Schneeflocken-Bingo','DOG Tic-Tac-Toe','Magischer Wichtelpfad','Finde DOG!'])
   assert.ok(shop.includes(name),'named ticket missing: '+name);
  assert.match(shop,/status\?\.playerLevel/);
+ assert.match(shop,/playerLevel:r\.playerLevel,variantUnlockLevels:r\.variantUnlockLevels/);
  assert.match(shop,/status\?\.variantUnlockLevels/);
  assert.match(shop,/scratch-level-lock-badge/);
  assert.match(shop,/scratch-level-locked/);
@@ -24,7 +25,7 @@ test('new shop lock stylesheet is loaded and old UI cache is invalidated',()=>{
  const js=source('DOG/christmas-event.js');
  const style=source('DOG/christmas-scratch-level-locks.css');
  assert.match(html,/christmas-scratch-level-locks\.css\?v=1/);
- assert.match(js,/christmas-scratch-ui\.js\?v=81/);
+ assert.match(js,/christmas-scratch-ui\.js\?v=82/);
  assert.match(style,/\.scratch-tier\.scratch-level-locked/);
  assert.match(style,/\.scratch-level-lock-badge/);
 });
