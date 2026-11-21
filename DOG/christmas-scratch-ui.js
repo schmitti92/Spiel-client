@@ -117,6 +117,11 @@ export function initChristmasScratch(){
  if(!root||!wallet||!stage||!board||!results||!winningLines||!reveal)
   throw Error('SCRATCH_UI_NOT_FOUND');
  let status=null,ticket=null,busy=false,pending=null,requestId=0,finished=false,canManageScratch=false;
+ // A scratch GET reads many private and global Firestore documents.
+ // Reopening the tab should reuse a recent, per-account screen snapshot.
+ // Manual refresh and all rewards/purchases remain server-verified.
+ const SCRATCH_TAB_READ_REUSE_MS=20000;
+ let lastScratchReadAt=0,lastScratchReadUid=null,pendingScratchReadUid=null;
  // Zoom applies to the WHOLE ticket image, not the scratch grid. The scratch
  // canvases keep their original pixel dimensions and reward calculations.
  const zoomArt=$('scratch-card-art'),zoomIndicator=$('scratch-zoom-level');
@@ -2217,12 +2222,19 @@ export function initChristmasScratch(){
   notice(winFlag?'🎉 Gewinne und Geschenkfunken sind bereits sicher auf deinem Profil gutgeschrieben.':
    '❄️ Niete – auf dieser Karte gibt es keine gültige Gewinnkombination.');
  }
- async function load(){
+ async function load(force=false){
+  const current=account(),uid=current?.uid||null;
+  if(current&&!force&&status&&lastScratchReadUid===uid&&
+     Date.now()-lastScratchReadAt<SCRATCH_TAB_READ_REUSE_MS)return;
+  if(current&&!force&&pendingScratchReadUid===uid)return;
   const id=++requestId;
-  if(!account()){status=null;giftsEdition=null;snowEdition=null;ticEdition=null;otherStudio.reset();ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();giftsDialog?.close();snowDialog?.close();ticDialog?.close();drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
+  if(!current){
+   lastScratchReadAt=0;lastScratchReadUid=null;pendingScratchReadUid=null;status=null;giftsEdition=null;snowEdition=null;ticEdition=null;otherStudio.reset();ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();giftsDialog?.close();snowDialog?.close();ticDialog?.close();drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
+  pendingScratchReadUid=uid;
   try{
    const r=await query('');
    if(id!==requestId)return;
+   lastScratchReadAt=Date.now();lastScratchReadUid=uid;
    status={...r.scratch,discountPercent:r.discountPercent??0,
     playerLevel:r.playerLevel,variantUnlockLevels:r.variantUnlockLevels};
    giftsEdition=r.giftsEdition??null;
@@ -2256,7 +2268,8 @@ export function initChristmasScratch(){
    drawShop();
    notice(ticket?'❄️ Dein letztes Los wurde wiederhergestellt.':
     '🎄 Wische ohne Absetzen über das gesamte Spielfeld. Bei 90 % wird automatisch aufgedeckt.');
-  }catch(e){if(id!==requestId)return;status=null;canManageScratch=false;showAlert(scratchBuyError(e?.message));drawShop()}
+  }catch(e){if(id!==requestId)return;lastScratchReadAt=0;status=null;canManageScratch=false;showAlert(scratchBuyError(e?.message));drawShop()}
+  finally{if(id===requestId)pendingScratchReadUid=null;}
  }
  async function buy(tier,free,variantId,voucher=false){
   if(window.DOGChristmasDev?.isActive()){showAlert('🧪 Im Entwicklermodus sind echte Loskäufe gesperrt. Wechsle für echte Lose zur normalen Ansicht.',variantId);return;}
@@ -2371,7 +2384,7 @@ export function initChristmasScratch(){
   if(!closeRevealedTicket())return;
   void buy(option.tier,free,option.id);
  });
- $('scratch-refresh').addEventListener('click',()=>void load());
+ $('scratch-refresh').addEventListener('click',()=>void load(true));
  $('scratch-gifts-settings-open').addEventListener('click',openGiftsSettings);
  $('scratch-gifts-settings-close').addEventListener('click',()=>giftsDialog.close());
  $('scratch-gifts-settings-cancel').addEventListener('click',()=>giftsDialog.close());
@@ -2717,6 +2730,12 @@ export function initChristmasScratch(){
   finally{save.disabled=false;}
  });
  window.addEventListener('dog-christmas-dev-change',()=>drawShop());
+ window.addEventListener('dog-scratch-balance-changed',()=>{
+  // Level vouchers, research tickets and village upgrades can change prices
+  // or balances without passing through this shop's own purchase endpoint.
+  lastScratchReadAt=0;
+  if($('tab-scratch')?.getAttribute('aria-selected')==='true')void load(true);
+ });
  window.addEventListener('spielonline-change',()=>{
   // Do not close a scratch card or the 500-ticket settings on harmless
   // profile loading/error events. Only a real Firebase identity switch
@@ -2724,6 +2743,7 @@ export function initChristmasScratch(){
   const nextUid=account()?.uid??null;
   if(nextUid===authUid)return;
   authUid=nextUid;
+  lastScratchReadAt=0;lastScratchReadUid=null;pendingScratchReadUid=null;
   requestId++;status=null;giftsEdition=null;snowEdition=null;ticEdition=null;otherStudio.reset();ticket=null;canManageScratch=false;
   stage.hidden=true;document.body.classList.remove('scratch-ticket-open');
   hostDialog?.close();giftsDialog?.close();snowDialog?.close();ticDialog?.close();void load();
