@@ -24,12 +24,12 @@ export function dogLegalTargets(game,actions,{seat,cardId,pieceId,jokerAs=null}=
  if(game.phase==='seven'&&game.seven?.cardId!==cardId)return [];
  const card=hand.find(c=>c.id===cardId);
  // Do not leak every Joker interpretation until the owner explicitly chose it.
- if(card.type==='joker'&&!jokerAs)return [];
+ if(game.phase!=='seven'&&card.type==='joker'&&!jokerAs)return [];
  const result=new Map();
  for(const action of actions){
   if(action.pieceId!==pieceId)continue;
   if(game.phase!=='seven'&&action.cardId!==cardId)continue;
-  if(jokerAs&&action.as!==jokerAs)continue;
+  if(game.phase!=='seven'&&jokerAs&&action.as!==jokerAs)continue;
   if(action.type==='swap'){
    const target=game.pieces.find(p=>p.id===action.targetId);
    if(!target||target.place!=='track')continue;
