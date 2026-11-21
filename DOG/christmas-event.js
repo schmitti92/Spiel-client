@@ -12,6 +12,7 @@ import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=8';
 import {initChristmasResearch} from './christmas-research-ui.js?v=9';
 import {initChristmasContentZoom} from './christmas-content-zoom.js?v=1';
 import {initLichtertalSidebarTextFit} from './christmas-sidebar-fit.js?v=1';
+import {initChristmasPlayerStatistics} from './christmas-player-statistics-ui.js?v=1';
 import {sceneLayouts,grinchSkyLayout,verifyVillageSpriteLayout} from './christmas-village-layout.mjs?v=3';
 import {initGrinchEvent} from './christmas-grinch-event.js?v=8';
 import {initChristmasDeveloper} from './christmas-dev-mode.js?v=1';
@@ -21,7 +22,7 @@ const devMode=initChristmasDeveloper();
 // Remove those obsolete nodes before setting up event navigation.
 $('tab-chapters')?.remove();
 $('panel-chapters')?.remove();
-const tabs=['village','buildings','tree','story','grinch','scratch','level','research'];
+const tabs=['village','buildings','tree','story','grinch','scratch','level','research','statistics'];
 const TREE_THRESHOLDS=[4,5,7,9,11,13,15,17,19,20];
 const TREE_BUILDING_IDS=['tower','workshop','bakery','inn'];
 const originalTreePoints=levels=>TREE_BUILDING_IDS.reduce((sum,id)=>sum+(Number.isInteger(levels?.[id])?levels[id]:1),0);
@@ -249,6 +250,7 @@ const storyScreen=initChristmasStory({openTab:id=>showPanel(id)});
 let scratchScreen=null;
 let levelScreen=null;
 let researchScreen=null;
+let statisticsScreen=null;
 let lastPresentationKey=null;
 // Grinch stages are temporary visual previews until real Part 2 missions exist.
 let grinchVisualStage=1;
@@ -599,6 +601,7 @@ function showPanel(id,{updateHistory=true}={}){
  if(id==='scratch')void scratchScreen?.load();
  if(id==='level')void levelScreen?.load();
  if(id==='research')void researchScreen?.load();
+ if(id==='statistics')void statisticsScreen?.load();
  if(window.scrollY>0)window.scrollTo({top:0,behavior:'instant'});
 }
 for(const id of tabs){
@@ -796,7 +799,9 @@ async function villageRequest(endpoint='',method='GET',body=null){
 scratchScreen=initChristmasScratch();
 levelScreen=initDogPlayerLevels();
 researchScreen=initChristmasResearch();
+statisticsScreen=initChristmasPlayerStatistics();
 if($('tab-research').getAttribute('aria-selected')==='true')void researchScreen.load();
+if($('tab-statistics').getAttribute('aria-selected')==='true')void statisticsScreen.load();
 if($('tab-level').getAttribute('aria-selected')==='true')void levelScreen.load();
 if($('tab-scratch').getAttribute('aria-selected')==='true')void scratchScreen.load();
 treePrizeScreen=initChristmasTreeRewards({

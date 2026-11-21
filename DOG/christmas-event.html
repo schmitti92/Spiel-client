@@ -56,6 +56,7 @@
 <link rel="stylesheet" href="./christmas-research-bonus-clarity.css?v=1">
 <link rel="stylesheet" href="./christmas-sidebar-repaired.css?v=1">
 <link rel="stylesheet" href="./christmas-research-background.css?v=1">
+<link rel="stylesheet" href="./christmas-sidebar-nine-statistics.css?v=1">
 <style id="dog-grinch-private-visibility">html:not(.dog-dev-grinch) #tab-grinch,html:not(.dog-dev-grinch) #panel-grinch,html:not(.dog-dev-grinch) [data-open-grinch],html:not(.dog-dev-grinch) [data-research-open-tab="grinch"],html:not(.dog-dev-grinch) #grinch-sky-scene,html:not(.dog-dev-grinch) #grinch-scene-toggle{display:none!important}html:not(.dog-dev-active) #village-max-test{display:none!important}</style>
 </head>
 <body>
@@ -73,6 +74,7 @@
       <button type="button" id="tab-scratch" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-scratch" data-tab="scratch" tabindex="-1"><span>🎟️</span><div class="event-tab-copy"><strong>Rubbellose</strong><small>Einfach · Mittel · Premium</small></div></button>
       <button type="button" id="tab-level" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-level" data-tab="level" tabindex="-1"><span>🏅</span><div class="event-tab-copy"><strong>Mein Spielerlevel</strong><small>50 persönliche Level</small></div></button>
       <button type="button" id="tab-research" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-research" data-tab="research" tabindex="-1"><span>🔬</span><div class="event-tab-copy"><strong>Weihnachtsforschung</strong><small>Fähigkeiten & Verbesserungen</small></div></button>
+      <button type="button" id="tab-statistics" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-statistics" data-tab="statistics" tabindex="-1"><span aria-hidden="true">🏆</span><div class="event-tab-copy"><strong>Spielerstatistik</strong><small>Siege · Lose · Belohnungen</small></div></button>
     </nav>
     <div class="sidebar-bottom">
       <span class="draft-pill">✦ Aufbau in Entwicklung</span>
@@ -888,6 +890,54 @@
         </div>
       </div>
     </section>
+    <section class="event-panel" id="panel-statistics" role="tabpanel" aria-labelledby="tab-statistics" hidden>
+      <div class="cs-stat-shell" id="christmas-player-statistics">
+        <header class="cs-stat-head">
+          <div>
+            <span class="cs-stat-kicker">✦ DAS WEIHNACHTSWUNDER VON LICHTERTAL</span>
+            <h2>🏆 Spielerstatistik</h2>
+            <p>Vergleiche die bestätigten Ergebnisse deiner Mitspieler: DOG-Partien, Rubbellose und gesammelte Belohnungen.</p>
+          </div>
+          <div class="cs-stat-room-panel">
+            <label for="christmas-stat-room-code">Raumcode</label>
+            <input id="christmas-stat-room-code" maxlength="6" inputmode="text" autocomplete="off" aria-label="Raumcode eingeben" placeholder="z. B. 123">
+            <button id="christmas-stat-connect" type="button">Raum anzeigen</button>
+            <button id="christmas-stat-refresh" type="button">↻ Aktualisieren</button>
+          </div>
+        </header>
+        <p class="cs-stat-status" id="christmas-stat-status" role="status" aria-live="polite">Spielerstatistik wird vorbereitet …</p>
+        <div class="cs-stat-content" id="christmas-stat-content" hidden>
+          <div class="cs-stat-toolbar">
+            <strong class="cs-stat-room-label" id="christmas-stat-room-label">Raum</strong>
+            <label for="christmas-stat-sort">Rangliste sortieren nach
+              <select id="christmas-stat-sort">
+                <option value="wins">DOG-Siegen</option>
+                <option value="quote">Siegesquote</option>
+                <option value="scratch">Gewinnlosen</option>
+                <option value="rewards">Belohnungen</option>
+                <option value="coins">Gewonnenen Münzen</option>
+              </select>
+            </label>
+          </div>
+          <div id="christmas-stat-kpis" class="cs-stat-kpis" aria-label="Gemeinsame Kennzahlen"></div>
+          <div id="christmas-stat-podium" class="cs-stat-podium" aria-label="Top 3 nach der gewählten Sortierung"></div>
+          <section class="cs-stat-section">
+            <h3>🏆 DOG – Partien und Siege</h3>
+            <div id="christmas-stat-dog-table"></div>
+          </section>
+          <section class="cs-stat-section">
+            <h3>🎟️ Rubbellose – Gewinnübersicht</h3>
+            <div id="christmas-stat-scratch-table"></div>
+          </section>
+          <section class="cs-stat-section">
+            <h3>🎁 Belohnungen – Freischaltungen und Abholungen</h3>
+            <div id="christmas-stat-reward-table"></div>
+          </section>
+          <p class="cs-stat-history-note" id="christmas-stat-history-note"></p>
+          <p class="cs-stat-history-note">DOG-Siege werden nur für abgeschlossene, bestätigte Online-Partien gezählt. Angezeigt werden ausschließlich die Mitglieder des gewählten Raums. „+“ bedeutet, dass die Zahl wegen älterer, nicht vollständig erfasster Lose ein Mindestwert ist.</p>
+        </div>
+      </div>
+    </section>
     <section class="event-panel" id="panel-research" role="tabpanel" aria-labelledby="tab-research" hidden>
       <div class="dog-research-shell" id="dog-research-shell">
         <header class="dr-topbar">
@@ -981,6 +1031,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./christmas-event.js?v=144"></script>
+<script type="module" src="./christmas-event.js?v=145"></script>
 </body>
 </html>

@@ -21,7 +21,7 @@ test('research removes the large hero and active-bonuses banner without losing t
 test('reference gold frame and original eight-tab Lichtertal navigation are retained',()=>{
  assert.match(html,/class="event-sidebar"/);
  assert.match(html,/class="event-menu"/);
- assert.equal((html.match(/class="event-tab(?: event-tab-grinch)?"/g)||[]).length,8);
+ assert.equal((html.match(/class="event-tab(?: event-tab-grinch)?"/g)||[]).length,9);
  assert.match(royal,/dr-detail-panel/);
  assert.match(app,/classList\.toggle\('research-mode',id==='research'\)/);
  assert.match(zoom,/\.event-layout > \.event-sidebar/);
@@ -110,7 +110,7 @@ test('research picture and text stay in separate rows, even with long German lab
 test('Lichtertal event tabs have space for full titles, without clipping or shifted text',()=>{
  const sidebar=read('christmas-sidebar-textfit.css');
  assert.match(html,/christmas-sidebar-textfit\.css\?v=/);
- assert.equal((html.match(/class="event-tab(?: event-tab-grinch)?"/g)||[]).length,8);
+ assert.equal((html.match(/class="event-tab(?: event-tab-grinch)?"/g)||[]).length,9);
  assert.match(sidebar,/grid-template-rows:repeat\(8,minmax\(0,1fr\)\)/);
  assert.match(sidebar,/grid-template-columns:clamp\(29px,3\.1vw,40px\) minmax\(0,1fr\) 10px/);
  assert.match(sidebar,/white-space:normal!important/);
@@ -147,7 +147,7 @@ test('the four uploaded Christmas reference sheets decorate research without fak
  assert.match(skin,/\.dr-detail-artwork\[data-research-art\]/);
  assert.match(skin,/\.dr-upgrade-button/);
  assert.match(skin,/\.event-tab\[data-tab="research"\]/);
- assert.equal((html.match(/class="event-tab(?: event-tab-grinch)?"/g)||[]).length,8);
+ assert.equal((html.match(/class="event-tab(?: event-tab-grinch)?"/g)||[]).length,9);
  assert.match(read('christmas-sidebar-fit.js'),/Math.max\(9\.5,a-\.4\)/);
  assert.match(controller,/getIdToken\(\)/);
  assert.match(controller,/call\('\/upgrade',\{id:skill\.id\}\)/);
@@ -168,7 +168,7 @@ test('every research shows a real current and next advantage in card and detail'
  assert.match(clarity,/dr-card-bonus-compare/);
  assert.match(clarity,/dr-detail-effects \.dr-next-effect/);
  assert.match(clarity,/dr-detail-gain-value/);
- assert.equal((html.match(/class="event-tab(?: event-tab-grinch)?"/g)||[]).length,8);
+ assert.equal((html.match(/class="event-tab(?: event-tab-grinch)?"/g)||[]).length,9);
  assert.match(controller,/getIdToken\(\)/);
  assert.match(controller,/call\('\/upgrade',\{id:skill\.id\}\)/);
 });
@@ -176,7 +176,7 @@ test('every research shows a real current and next advantage in card and detail'
 test('sidebar icons use complete svg files and all eight labels stay in their own centered slots',()=>{
  const css=read('christmas-sidebar-repaired.css');
  assert.match(html,/christmas-sidebar-repaired\.css\?v=1/);
- assert.equal((html.match(/class="event-tab-copy"/g)||[]).length,8);
+ assert.equal((html.match(/class="event-tab-copy"/g)||[]).length,9);
  assert.match(css,/grid-template-rows:repeat\(8,minmax\(0,1fr\)\)/);
  assert.match(css,/\.event-tab>\.event-tab-copy/);
  assert.match(css,/justify-content:center!important/);
@@ -202,4 +202,27 @@ test('uploaded background appears only in research and preserves readable real b
  assert.match(controller,/data\.available/);
  assert.match(controller,/getIdToken\(\)/);
  assert.match(controller,/call\('\/upgrade',\{id:skill\.id\}\)/);
+});
+
+test('ninth Spielerstatistik tab is wired to live authenticated room results',()=>{
+ const skin=read('christmas-sidebar-nine-statistics.css');
+ const js=read('christmas-player-statistics-ui.js');
+ assert.equal((html.match(/class="event-tab(?: event-tab-grinch)?"/g)||[]).length,9);
+ assert.equal((html.match(/class="event-tab-copy"/g)||[]).length,9);
+ assert.match(html,/id="tab-statistics"/);
+ assert.match(html,/id="panel-statistics"/);
+ assert.match(html,/christmas-sidebar-nine-statistics\.css\?v=1/);
+ for(const id of ['christmas-stat-room-code','christmas-stat-kpis','christmas-stat-dog-table',
+ 'christmas-stat-scratch-table','christmas-stat-reward-table','christmas-stat-sort'])
+  assert.match(html,new RegExp('id="'+id+'"'));
+ assert.match(skin,/grid-template-rows:repeat\(9,minmax\(0,1fr\)\)/);
+ assert.match(skin,/\.event-tab\[data-tab="statistics"\]/);
+ assert.match(skin,/dr-gallery-content \.dog-research-grid/);
+ assert.match(skin,/\.dog-research-card\[data-research-art\]::before\{display:none!important\}/);
+ assert.match(app,/initChristmasPlayerStatistics\(\)/);
+ assert.match(app,/statisticsScreen\?\.load\(\)/);
+ assert.match(js,/\/api\/hub\/rooms\//);
+ assert.match(js,/\/dog\/player-statistics/);
+ assert.match(js,/getIdToken\(\)/);
+ assert.doesNotMatch(js,/localStorage|sessionStorage/);
 });
