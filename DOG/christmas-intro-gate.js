@@ -5,7 +5,7 @@
 const BASE=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const css=[
 'html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christmas-portal-open) [data-meta-album-link],html:not(.dog-christmas-portal-open) #dog-room-christmas,html:not(.dog-christmas-portal-open) #dog-christmas-event-link,html:not(.dog-christmas-portal-open) #dog-player-level-link{display:none!important}',
-'html:not(.dog-christmas-page-ready) body > :not(script):not(style):not(#dog-christmas-entry-gate):not(.dog-reveal-overlay){visibility:hidden!important}',
+'html.dog-christmas-entry-page:not(.dog-christmas-page-ready) body > :not(script):not(style):not(#dog-christmas-entry-gate):not(.dog-reveal-overlay){visibility:hidden!important}',
 '.dog-reveal-overlay{position:fixed;inset:0;z-index:2147483600;display:grid;place-items:center;padding:16px;background:#07141ff5;color:#fff2d1;font:inherit}',
 '.dog-reveal-overlay[hidden]{display:none!important}.dog-reveal-card{width:min(960px,100%);max-height:96dvh;overflow:auto;border:1.5px solid #c3a46b;border-radius:21px;background:#09202c;box-shadow:0 25px 85px #000b;text-align:center}',
 '.dog-reveal-card video{width:100%;aspect-ratio:16/9;object-fit:contain;background:#051623;display:block}',
