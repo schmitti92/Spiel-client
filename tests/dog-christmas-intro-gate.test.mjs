@@ -61,7 +61,7 @@ test('first-match intro waits for victory ceremony dismissal',()=>{
  assert.match(intro,/const afterVictory=\(\)=>Boolean\(victoryDialog&&matchFinishedOnThisPage&&ceremonyDismissed&&!ceremonyOpen\(\)\)/);
  assert.match(intro,/victoryDialog\?\.addEventListener\('close'/);
  assert.match(intro,/if\(matchFinishedOnThisPage\)ceremonyDismissed=true/);
- assert.match(intro,/state\.introReady&&!state\.completed&&!introVisible&&!ceremonyOpen\(\)/);
+ assert.match(intro,/state\.introReady&&!state\.completed&&!introVisible&&!introDeferred&&afterVictory\(\)/);
 });
 test('online DOG completion triggers a verified unlock refresh',()=>{
  const app=source('DOG/app.js');
