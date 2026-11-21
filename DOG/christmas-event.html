@@ -44,6 +44,7 @@
 <link rel="stylesheet" href="./christmas-scratch-glueckszahl-final.css?v=1">
 <link rel="stylesheet" href="./christmas-scratch-lucky-one-visuals.css?v=1">
 <link rel="stylesheet" href="./christmas-scratch-zoom-next.css?v=1">
+<link rel="stylesheet" href="./christmas-research-glass.css?v=1">
 </head>
 <body>
 <div class="snow-sky" aria-hidden="true"></div>
@@ -877,41 +878,110 @@
     </section>
     <section class="event-panel" id="panel-research" role="tabpanel" aria-labelledby="tab-research" hidden>
       <div class="dog-research-shell" id="dog-research-shell">
-        <header class="dog-research-hero">
-          <div>
-            <span class="dog-research-kicker">✦ DAS GEHEIME WICHTELLABOR ✦</span>
-            <h2>🔬 Weihnachtsforschung</h2>
-            <p>Verdiene Forschungspunkte mit deinem Spielerlevel und entdecke einzigartige
-               Verbesserungen für DOG, die Rubbellose und das Weihnachtsdorf.
-               Ab Level 2 bekommst du Punkte; jedes 5. Level ist besonders wertvoll.</p>
-          </div>
-          <span class="dog-research-hero-symbol" aria-hidden="true">🧪</span>
+        <header class="dr-topbar">
+          <div class="dr-brand"><strong>D<span class="dr-paw">✿</span>G</strong><small>❄ WEIHNACHTEN ❄</small></div>
+          <nav class="dr-topnav" aria-label="Weihnachtsevent-Navigation">
+            <button type="button" data-research-open-tab="village"><span aria-hidden="true">⌂</span> Übersicht</button>
+            <button type="button" data-research-open-tab="grinch"><span aria-hidden="true">📜</span> Missionen</button>
+            <button type="button" class="is-current" aria-current="page"><span aria-hidden="true">⚗</span> Forschung</button>
+            <button type="button" data-research-open-tab="scratch"><span aria-hidden="true">🎟</span> Rubbellose</button>
+            <button type="button" data-research-open-tab="level"><span aria-hidden="true">🏅</span> Spielerlevel</button>
+            <button type="button" data-research-open-tab="buildings"><span aria-hidden="true">🏘</span> Weihnachtsdorf</button>
+          </nav>
+          <a class="dr-exit" href="../hub-lobby.html" aria-label="Zur Spielelobby zurückkehren" title="Zur Spielelobby">↩</a>
         </header>
-        <section class="dog-research-summary" id="dog-research-summary" hidden aria-label="Deine Forschungswerte">
-          <div class="dog-research-stat"><span>✨ Verfügbare FP</span><strong id="dog-research-points">0</strong></div>
-          <div class="dog-research-stat"><span>⭐ Verdiente FP</span><strong id="dog-research-earned">0</strong></div>
-          <div class="dog-research-stat"><span>🔬 Eingesetzte FP</span><strong id="dog-research-spent">0</strong></div>
-          <div class="dog-research-stat"><span>🏅 Spielerlevel</span><strong id="dog-research-player-level">1</strong></div>
-        </section>
-        <p class="dog-research-status" id="dog-research-status" role="status" aria-live="polite">Deine Forschungen werden geladen …</p>
-        <div class="dog-research-toolbar">
-          <h3>✦ Dein Forschungsbaum</h3>
-          <button type="button" class="dog-research-refresh" id="dog-research-refresh">↻ Aktualisieren</button>
+
+        <div class="dr-hero">
+          <span class="dr-hero-flask" aria-hidden="true">⚗</span>
+          <div class="dr-hero-copy">
+            <p class="dr-eyebrow">❄ Das Weihnachtswunder von Lichtertal</p>
+            <h2>Weihnachtsforschung</h2>
+            <p>Erforsche mächtige Weihnachtsfähigkeiten, schalte dauerhafte Boni frei und mache dein DOG-Abenteuer in der Weihnachtszeit noch erfolgreicher!</p>
+          </div>
+          <span class="dr-hero-snowflake" aria-hidden="true">❄</span>
         </div>
-        <p>Entdeckte Fähigkeiten: <strong id="dog-research-unlocked">0 / 21</strong></p>
-        <nav id="dog-research-filters" class="dog-research-filters" aria-label="Forschungskategorien"></nav>
-        <section id="dog-research-cards" class="dog-research-grid" aria-label="Forschungen und Verbesserungen"></section>
-        <p class="dog-research-note">Forschungen gehören dauerhaft deinem angemeldeten Spielerkonto.
-          Forschungspunkte werden für alle bereits erreichten Level rückwirkend berechnet.
-          Aktivierte Forschungen lassen sich mit FP verbessern; noch nicht spielwirksam
-          angeschlossene Fähigkeiten sind sichtbar, aber nicht kaufbar.
-          Lose und Weihnachtslichter aus zeitgesteuerten Forschungen musst du selbst abholen.</p>
+
+        <section class="dog-research-summary dr-summary" id="dog-research-summary" hidden aria-label="Deine persönlichen Forschungspunkte und Boni">
+          <div class="dr-wallet dr-glass">
+            <span class="dr-wallet-emblem" aria-hidden="true">⚛</span>
+            <div class="dr-wallet-info">
+              <span>Forschungspunkte</span>
+              <strong id="dog-research-points">0</strong>
+            </div>
+            <button class="dr-wallet-info-button" type="button" data-research-open-tab="level" title="Forschungspunkte durch Spielerlevel erhalten" aria-label="Wie erhalte ich Forschungspunkte?">ⓘ</button>
+          </div>
+          <div class="dr-bonuses dr-glass">
+            <span class="dr-bonuses-crown" aria-hidden="true">♛</span>
+            <div class="dr-bonuses-title"><strong>Aktive Boni <span id="dog-research-active-count">(0)</span></strong><small>Deine erforschten Vorteile</small></div>
+            <div class="dr-bonuses-list" id="dog-research-active-bonuses" aria-live="polite">
+              <span class="dr-muted">Noch keine Forschungen aktiviert</span>
+            </div>
+          </div>
+        </section>
+
+        <p class="dog-research-status" id="dog-research-status" role="status" aria-live="polite">🔬 Deine Forschungen werden geladen …</p>
+
+        <div class="dr-workspace">
+          <aside class="dr-category-panel dr-glass" aria-labelledby="dr-category-title">
+            <h3 id="dr-category-title"><span aria-hidden="true">▤</span> Forschungskategorien</h3>
+            <nav id="dog-research-filters" class="dog-research-filters" aria-label="Forschung nach Kategorie filtern"></nav>
+            <div class="dr-category-scene" aria-hidden="true">
+              <span class="dr-scene-star">✧</span>
+              <span class="dr-scene-lantern">🏮</span>
+              <span class="dr-scene-gifts">🎁 ❄️</span>
+            </div>
+          </aside>
+
+          <section class="dr-gallery dr-glass" aria-labelledby="dr-gallery-title">
+            <div class="dr-gallery-header">
+              <h3 id="dr-gallery-title"><span aria-hidden="true">▦</span> Forschungen <span id="dog-research-found-count">(0)</span></h3>
+              <div class="dr-gallery-controls">
+                <label class="dr-sort-label" for="dog-research-sort">
+                  <span class="dr-visually-hidden">Sortierung</span>
+                  <select id="dog-research-sort">
+                    <option value="recommended">Sortieren: Empfehlung</option>
+                    <option value="name">Sortieren: Name</option>
+                    <option value="progress">Sortieren: Fortschritt</option>
+                    <option value="cost">Sortieren: Wenig FP zuerst</option>
+                  </select>
+                </label>
+                <div class="dr-view-options" role="group" aria-label="Darstellung wählen">
+                  <button type="button" id="dog-research-grid-toggle" class="is-active" aria-label="Kartenansicht" aria-pressed="true" title="Kartenansicht">▦</button>
+                  <button type="button" id="dog-research-list-toggle" aria-label="Listenansicht" aria-pressed="false" title="Listenansicht">☷</button>
+                </div>
+              </div>
+            </div>
+            <div class="dr-gallery-content">
+              <div class="dog-research-grid" id="dog-research-cards" aria-label="Forschungen zur Auswahl"></div>
+            </div>
+            <div class="dr-gallery-footer">
+              <span>✦ Freigeschaltet: <strong id="dog-research-unlocked">0 / 21</strong></span>
+              <span>Jedes 5. Level gibt zusätzliche Forschungspunkte</span>
+            </div>
+          </section>
+
+          <aside class="dr-detail-panel dr-glass" id="dog-research-detail" aria-label="Ausgewählte Forschung">
+            <div class="dr-detail-placeholder">
+              <span aria-hidden="true">❄</span>
+              <h3>Forschung auswählen</h3>
+              <p>Tippe auf eine Forschung, um ihre Wirkung, die nächste Stufe und die Kosten zu sehen.</p>
+            </div>
+          </aside>
+        </div>
+
+        <footer class="dr-status-footer">
+          <span>🏅 Spielerlevel <strong id="dog-research-player-level">1</strong></span>
+          <span>✨ Insgesamt verdient: <strong id="dog-research-earned">0</strong> FP</span>
+          <span>🔬 Investiert: <strong id="dog-research-spent">0</strong> FP</span>
+          <button type="button" id="dog-research-refresh">↻ Aktualisieren</button>
+        </footer>
+        <p class="dog-research-note">Alle Ausbaustufen und Forschungspunkte werden mit deinem Online-Profil gespeichert. Bei Losfabrik und Weihnachtsbaumeister müssen die Belohnungen aktiv abgeholt werden.</p>
       </div>
     </section>
   </main>
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./christmas-event.js?v=135"></script>
+<script type="module" src="./christmas-event.js?v=136"></script>
 </body>
 </html>
