@@ -348,6 +348,7 @@ export function initChristmasResearch(){
   working=true;render();
   try{
    data=await call('/claim',{type:id,...(id==='free_ticket'?{tier}:{})});serverData=data;
+   window.dispatchEvent(new Event('dog-scratch-balance-changed'));
    message(id==='builder'?'⭐ Die Weihnachtslichter sind dem gemeinsamen Dorf gutgeschrieben.':'🎟️ Dein Losgutschein wurde deinem Rubbellos-Konto gutgeschrieben.');
   }catch(error){message('⚠️ Abholung fehlgeschlagen: '+error.message,true);}
   finally{working=false;render();}
