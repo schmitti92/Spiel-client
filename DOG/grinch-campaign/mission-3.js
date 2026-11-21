@@ -3,11 +3,26 @@
  * Never changes official rooms, campaign progression or real rewards.
  */
 import {cardVisual} from '../card-visuals.js?v=11';
-import {drawMission3Board} from './mission-3-board.js?v=2';
+import {drawMission3Board} from './mission-3-board.js?v=3';
+import {createMission3BoardTouch} from './mission-3-touch.js?v=1';
+import {mission3VisualEvents,showMission3VisualEffects} from './mission-3-effects.js?v=1';
 import {createMission3,mission3LegalMoves,mission3Play,mission3ChooseGrinchMove,mission3TaskStatus,mission3NextPreviewDeal,mission3Validate,MISSION3_STAGE_NAMES,MISSION3_COLORS} from './mission-3-rules.js?v=4';
 const $=id=>document.getElementById(id),KEY='grinch-m3-local-prototype-v3';
 let game=null,chosenCard=null,chosenPiece=null,botTimer=null,busy=false,toastTimer=null;
 let myThawResearch=0;
+const boardTouch=createMission3BoardTouch({
+ viewport:$('m3-board-viewport'),board:$('m3-board'),
+ zoomIn:$('m3-zoom-in'),zoomOut:$('m3-zoom-out'),
+ reset:$('m3-zoom-reset'),level:$('m3-zoom-level')
+});
+function showEvents(before){
+ if(!before||!game)return;
+ const events=mission3VisualEvents(before,game);
+ if(events.length)showMission3VisualEffects({
+  viewport:$('m3-board-viewport'),board:$('m3-board'),
+  banner:$('m3-effect-banner'),events
+ });
+}
 async function loadLocalResearch(){
  const state=window.SpielOnline?.state?.(),user=state?.status==='online'?state.user:null;
  if(!user?.getIdToken)return;
@@ -172,7 +187,10 @@ function clickPawn(id){
   game.researchThaws=(game.researchThaws||0)+1;
   game.revision=(game.revision||0)+1;
   game.history=['🛡️ Weihnachtsschutz befreit '+game.players[frozen.owner].name+' Figur '+(Number(id.slice(1))+1)+'.',...game.history].slice(0,12);
-  save();render();toast('🛡️ Eingefrorene Figur sofort befreit!');return;
+  save();render();
+  showMission3VisualEffects({viewport:$('m3-board-viewport'),board:$('m3-board'),banner:$('m3-effect-banner'),
+   events:[{type:'thaw',field:frozen.pos,pieceId:id,message:'🛡️ Weihnachtsschutz befreit eine eingefrorene Figur!'}]});
+  toast('🛡️ Eingefrorene Figur sofort befreit!');return;
  }
  if(game.current===3)return;
  const opts=moves();
@@ -193,8 +211,9 @@ function bot(){
   try{
    const selected=mission3ChooseGrinchMove(game);
    if(!selected)throw Error('Keine gültige Grinch-Kartenaktion');
+   const before=game;
    game=mission3Play(game,3,selected);resetSelection();save();
-   busy=false;render();
+   busy=false;render();showEvents(before);
    if(game.current===3)bot();
   }catch(e){busy=false;toast('Grinch-Testzug: '+e.message);render();}
  },520);
@@ -202,14 +221,16 @@ function bot(){
 function play(m){
  if(!game||game.complete||busy||game.current===3)return;
  try{
-  game=mission3Play(game,game.current,m);resetSelection();save();render();
+  const before=game;
+  game=mission3Play(game,game.current,m);resetSelection();save();render();showEvents(before);
   if(game.current===3)bot();
  }catch(e){toast(e.message);}
 }
 $('m3-next-deal').addEventListener('click',()=>{
  if(!game||game.complete||busy)return;
  try{
-  game=mission3NextPreviewDeal(game);resetSelection();save();render();
+  const before=game;
+  game=mission3NextPreviewDeal(game);resetSelection();save();render();showEvents(before);
   toast('Neue Kartenphase: Grinch '+game.hands[3].length+' Karten.');
  }catch(e){toast(e.message);}
 });
@@ -217,12 +238,14 @@ $('m3-new').addEventListener('click',()=>{
  if(busy||!confirm('Neuen lokalen Spieltest beginnen?'))return;
  clearTimeout(botTimer);try{localStorage.removeItem(KEY);}catch{}
  game=null;chosenCard=null;chosenPiece=null;
+ boardTouch.reset();
  $('m3-setup').showModal();
 });
 $('m3-start').addEventListener('click',()=>{
  const names=[0,1,2].map(i=>$('m3-name-'+i).value.trim()||['Rot','Blau','Gelb'][i]);
  try{
   game=createMission3(undefined,names);resetSelection();save();
+  boardTouch.reset();
   $('m3-setup').close();render();if(game.current===3)bot();
   toast('🎮 Mission 3 – lokaler Test gestartet.');
  }catch(e){toast(e.message);}
