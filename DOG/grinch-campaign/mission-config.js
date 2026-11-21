@@ -1,7 +1,7 @@
 /**
  * DOG Grinch campaign – independent mission definitions.
  * Nothing in this folder imports or mutates the classic DOG game state.
- * Missions 1 and 2 are playable; mission 3 currently defines its future loss contract.
+ * Missions 1 and 2 are playable; mission 3 has a local foundation, with official play still disabled.
  */
 export const MISSIONS = Object.freeze([
   Object.freeze({
@@ -20,7 +20,19 @@ export const MISSIONS = Object.freeze([
     enabled:true
   }),
   Object.freeze({id:2,title:'Der verfluchte Aufstieg',playersMax:3,piecesPerPlayer:4,forcedLossesPerPlayer:1,goalType:'single-portal-per-player',teleportAtTrackSteps:64,teleportCountToComplete:3,trailHints:[],goal:'Eine versteckte Falle entfernt in Mission 2 genau eine weitere Figur je Spieler. Die übrigen drei werden nach Welt 3 gerettet.',slotEffects:40,doubleSlotChance:0.10,slotAtEveryDeal:true,theme:'ice-ascent',enabled:true}),
-  Object.freeze({id:3,title:'Die erste Begegnung',playersMax:3,piecesPerPlayer:3,forcedLossesPerPlayer:1,goalType:'single-portal-per-player',teleportAtTrackSteps:64,teleportCountToComplete:2,hiddenLossPolicy:'random-one-per-player',hiddenLossTriggerWindow:[2,7],goal:'Eine weitere zufällig ausgelöste Falle entfernt eine Figur je Spieler. Nur die übrigen zwei Figuren erreichen Mission 4.',theme:'grinch-encounter',enabled:false}),
+  Object.freeze({
+    id:3,title:'Die erste Begegnung',playersMax:3,piecesPerPlayer:3,grinchPieces:5,
+    forcedLossesPerPlayer:1,goalType:'cooperative-three-tasks',noPortalFinish:true,
+    tasks:[
+      {id:'lights',title:'Die flüchtenden Weihnachtslichter',difficulty:'easy',target:3,relocateEveryDeal:true},
+      {id:'ice',title:'Der Eisbrecher',difficulty:'medium',target:4},
+      {id:'runes',title:'Die magische Versiegelung',difficulty:'final',target:3}
+    ],
+    humanHandCards:6,grinchHandCardsByTask:[6,12,18],grinchActionsByTask:[1,2,3],
+    lossPolicy:'exactly-one-captive-per-human-by-task-end',
+    goal:'Drei Aufgaben gemeinsam lösen und je eine Figur verlieren. Keine Zielfelder; die jeweils zwei verbliebenen Figuren gehen in Mission 4.',
+    theme:'grinch-encounter',enabled:false
+  }),
   Object.freeze({id:4,title:'Befreiung aus der Höhle',playersMax:3,piecesPerPlayer:2,forcedLossesPerPlayer:0,theme:'prison-rescue',enabled:false}),
   Object.freeze({id:5,title:'Die letzte Schlacht',playersMax:3,piecesPerPlayer:5,forcedLossesPerPlayer:0,theme:'final-battle',enabled:false})
 ]);
