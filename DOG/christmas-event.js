@@ -17,6 +17,7 @@ import {initChristmasPlayerStatistics} from './christmas-player-statistics-ui.js
 import {sceneLayouts,grinchSkyLayout,verifyVillageSpriteLayout} from './christmas-village-layout.mjs?v=3';
 import {initGrinchEvent} from './christmas-grinch-event.js?v=8';
 import {initChristmasDeveloper} from './christmas-dev-mode.js?v=1';
+import {isRecentVillageLegacyCheck,villageLegacyImportMarkerKey} from './christmas-village-import-guard.mjs?v=1';
 const $=id=>document.getElementById(id);
 const devMode=initChristmasDeveloper();
 // Older browser caches may pair outdated chapter markup with the new module.
@@ -851,17 +852,30 @@ function showLiveVillage(data){
  // Only real, server-confirmed shared tree stages can launch the videos.
  treeFilms.sync(newTreeLevel);
 }
-let importedVillageUserId=null, pendingVillageImport=null;
+// This is a migration check, NOT a cache for lights, XP, unlocks or buildings.
+// A confirmed check may be reused for six hours; a failed check never is.
+let importedVillageUserId=null,pendingVillageImport=null;
+const checkedVillageImportAt=new Map();
 async function ensureVillageImport(){
  const person=eventUser();
  if(!person)return;
- if(importedVillageUserId===person.uid&&pendingVillageImport)return pendingVillageImport;
- importedVillageUserId=person.uid;
- pendingVillageImport=villageRequest('village/import','POST',{}).catch(e=>{
-  if(importedVillageUserId===person.uid){importedVillageUserId=null;pendingVillageImport=null;}
-  throw e;
+ const uid=person.uid,key=villageLegacyImportMarkerKey(villageApi,uid);
+ if(importedVillageUserId===uid&&pendingVillageImport)return pendingVillageImport;
+ let persistedAt=0;
+ try{persistedAt=Number(localStorage.getItem(key))||0;}catch{}
+ if(isRecentVillageLegacyCheck(Math.max(checkedVillageImportAt.get(key)||0,persistedAt)))return;
+ importedVillageUserId=uid;
+ const work=villageRequest('village/import','POST',{metadataOnly:true}).then(()=>{
+  const checkedAt=Date.now();
+  checkedVillageImportAt.set(key,checkedAt);
+  try{localStorage.setItem(key,String(checkedAt));}catch{}
+ }).finally(()=>{
+  if(importedVillageUserId===uid&&pendingVillageImport===work){
+   pendingVillageImport=null;importedVillageUserId=null;
+  }
  });
- return pendingVillageImport;
+ pendingVillageImport=work;
+ return work;
 }
 let pendingVillageRead=null,lastVillageReadAt=0,lastVillageReadUid=null;
 async function reloadVillage({minimumAgeMs=0}={}){
