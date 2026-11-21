@@ -1,0 +1,90 @@
+/* Lichtertal sidebar: authoritative, clip-free menu for all 8 event pages.
+   Preserve the original carved artwork and real tab handlers. */
+@media(min-width:761px){
+ .event-layout>.event-sidebar>.event-menu{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:repeat(8,minmax(0,1fr))!important;
+  top:25.5%!important;height:53.1%!important;gap:0!important;
+  overflow:hidden!important;
+ }
+ .event-layout>.event-sidebar .event-tab{
+  display:grid!important;box-sizing:border-box!important;
+  grid-template-columns:clamp(29px,3vw,40px) minmax(0,1fr) 11px!important;
+  grid-template-rows:minmax(0,1fr)!important;column-gap:5px!important;row-gap:0!important;
+  justify-items:stretch!important;align-items:center!important;align-content:center!important;
+  min-width:0!important;min-height:0!important;width:100%!important;height:100%!important;
+  margin:0!important;padding:0 6px!important;overflow:hidden!important;
+  border-radius:999px!important;transform:none!important;
+ }
+ .event-layout>.event-sidebar .event-tab>span{
+  grid-column:1!important;grid-row:1!important;
+  display:block!important;justify-self:center!important;align-self:center!important;
+  width:min(39px,calc((100dvh - 20px)*.048))!important;
+  height:min(39px,calc((100dvh - 20px)*.048))!important;
+  min-width:0!important;min-height:0!important;aspect-ratio:1!important;
+  background-size:contain!important;background-position:center!important;
+  background-repeat:no-repeat!important;font-size:0!important;
+  transform:none!important;
+ }
+ .event-layout>.event-sidebar .event-tab>.event-tab-copy{
+  grid-column:2!important;grid-row:1!important;
+  display:flex!important;flex-direction:column!important;justify-content:center!important;
+  align-items:stretch!important;gap:2px!important;
+  width:100%!important;min-width:0!important;height:100%!important;
+  min-height:0!important;max-height:100%!important;
+  overflow:hidden!important;text-align:left!important;
+ }
+ .event-layout>.event-sidebar .event-tab .event-tab-copy strong,
+ .event-layout>.event-sidebar .event-tab .event-tab-copy small{
+  display:block!important;position:static!important;
+  grid-row:auto!important;grid-column:auto!important;
+  align-self:auto!important;justify-self:auto!important;flex:none!important;
+  margin:0!important;padding:0!important;
+  width:100%!important;min-width:0!important;max-width:100%!important;
+  text-align:left!important;transform:none!important;
+  white-space:normal!important;overflow:visible!important;
+  text-overflow:clip!important;overflow-wrap:anywhere!important;
+  word-break:normal!important;hyphens:auto!important;letter-spacing:0!important;
+ }
+ .event-layout>.event-sidebar .event-tab .event-tab-copy strong{
+  font:900 clamp(11px,.97vw,15px)/1.12 Georgia,serif!important;
+  color:#fff4d4!important;text-shadow:0 1px 3px #061710!important;
+ }
+ .event-layout>.event-sidebar .event-tab .event-tab-copy small{
+  font:750 clamp(8px,.69vw,10.5px)/1.12 system-ui,sans-serif!important;
+  color:#eae9d9!important;text-shadow:0 1px 2px #061710!important;
+ }
+ .event-layout>.event-sidebar .event-tab::after{
+  grid-column:3!important;grid-row:1!important;
+  align-self:center!important;justify-self:center!important;
+  font-size:clamp(14px,1.4vw,20px)!important;
+  margin:0!important;transform:none!important;
+ }
+ .event-layout>.event-sidebar .event-tab[data-tab="village"]>span{background-image:url("./assets/lichtertal-sidebar/01-weihnachtsdorf.svg")!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="buildings"]>span{background-image:url("./assets/lichtertal-sidebar/02-gebaeude.svg")!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="tree"]>span{background-image:url("./assets/lichtertal-sidebar/03-weihnachtsbaum.svg")!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="story"]>span{background-image:url("./assets/lichtertal-sidebar/04-geschichte.svg")!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="grinch"]>span{background-image:url("./assets/lichtertal-sidebar/05-grinch-event.svg")!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="scratch"]>span{background-image:url("./assets/lichtertal-sidebar/06-rubbellose.svg")!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="level"]>span{background-image:url("./assets/lichtertal-sidebar/07-spielerlevel.svg")!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="research"]>span{background-image:url("./assets/lichtertal-sidebar/08-weihnachtsforschung.svg")!important}
+}
+@media(min-width:761px) and (max-height:660px){
+ .event-layout>.event-sidebar .event-tab>.event-tab-copy{gap:1px!important}
+ .event-layout>.event-sidebar .event-tab .event-tab-copy strong{font-size:clamp(9.5px,.82vw,12px)!important}
+ .event-layout>.event-sidebar .event-tab .event-tab-copy small{font-size:clamp(7.5px,.6vw,9px)!important}
+}
+@media(max-width:760px){
+ .event-layout>.event-sidebar .event-tab>.event-tab-copy{
+  display:flex!important;flex-direction:column!important;align-items:center!important;
+  justify-content:center!important;gap:2px!important;flex:none!important;
+  min-width:0!important;width:100%!important;overflow:hidden!important;
+ }
+ .event-layout>.event-sidebar .event-tab .event-tab-copy strong{
+  display:block!important;width:100%!important;min-width:0!important;
+  font:800 9.5px/1.12 system-ui,sans-serif!important;
+  text-align:center!important;white-space:normal!important;overflow:visible!important;
+  text-overflow:clip!important;overflow-wrap:anywhere!important;transform:none!important;
+ }
+ .event-layout>.event-sidebar .event-tab .event-tab-copy small{display:none!important}
+}

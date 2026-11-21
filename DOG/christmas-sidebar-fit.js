@@ -13,9 +13,10 @@ export function initLichtertalSidebarTextFit(){
   pending=false;
   const narrow=window.matchMedia('(max-width:760px)').matches;
   for(const button of buttons){
+   const copy=button.querySelector('.event-tab-copy');
    const title=button.querySelector('strong');
    const sub=button.querySelector('small');
-   if(!title||!sub)continue;
+   if(!copy||!title||!sub)continue;
    title.style.removeProperty('font-size');
    sub.style.removeProperty('font-size');
    if(narrow)continue; // mobile uses its native horizontal tab strip.
@@ -28,10 +29,10 @@ export function initLichtertalSidebarTextFit(){
    for(let count=0;count<18;count++){
     const titleHeight=title.getBoundingClientRect().height;
     const subHeight=sub.getBoundingClientRect().height;
-    const fitsHeight=titleHeight+subHeight+4<=height-4;
+    const fitsHeight=titleHeight+subHeight+4<=height-7&&copy.scrollHeight<=copy.clientHeight+1;
     const fitsWidth=title.scrollWidth<=title.clientWidth+1&&sub.scrollWidth<=sub.clientWidth+1;
     if(fitsHeight&&fitsWidth)break;
-    const nextA=Math.max(12,a-.4),nextB=Math.max(9,b-.25);
+    const nextA=Math.max(9.5,a-.4),nextB=Math.max(7.5,b-.25);
     if(nextA===a&&nextB===b)break;
     a=nextA;b=nextB;
     title.style.setProperty('font-size',a+'px','important');

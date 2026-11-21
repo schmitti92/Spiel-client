@@ -148,7 +148,7 @@ test('the four uploaded Christmas reference sheets decorate research without fak
  assert.match(skin,/\.dr-upgrade-button/);
  assert.match(skin,/\.event-tab\[data-tab="research"\]/);
  assert.equal((html.match(/class="event-tab(?: event-tab-grinch)?"/g)||[]).length,8);
- assert.match(read('christmas-sidebar-fit.js'),/Math.max\(12,a-\.4\)/);
+ assert.match(read('christmas-sidebar-fit.js'),/Math.max\(9\.5,a-\.4\)/);
  assert.match(controller,/getIdToken\(\)/);
  assert.match(controller,/call\('\/upgrade',\{id:skill\.id\}\)/);
 });
@@ -171,4 +171,18 @@ test('every research shows a real current and next advantage in card and detail'
  assert.equal((html.match(/class="event-tab(?: event-tab-grinch)?"/g)||[]).length,8);
  assert.match(controller,/getIdToken\(\)/);
  assert.match(controller,/call\('\/upgrade',\{id:skill\.id\}\)/);
+});
+
+test('sidebar icons use complete svg files and all eight labels stay in their own centered slots',()=>{
+ const css=read('christmas-sidebar-repaired.css');
+ assert.match(html,/christmas-sidebar-repaired\.css\?v=1/);
+ assert.equal((html.match(/class="event-tab-copy"/g)||[]).length,8);
+ assert.match(css,/grid-template-rows:repeat\(8,minmax\(0,1fr\)\)/);
+ assert.match(css,/\.event-tab>\.event-tab-copy/);
+ assert.match(css,/justify-content:center!important/);
+ for(const key of ['village','buildings','tree','story','grinch','scratch','level','research'])
+  assert.match(css,new RegExp('data-tab="'+key+'"'));
+ assert.match(css,/08-weihnachtsforschung\.svg/);
+ assert.doesNotMatch(read('christmas-research-reference-v2.css'),/420% 310%/);
+ assert.match(read('christmas-sidebar-fit.js'),/copy\.scrollHeight<=copy\.clientHeight/);
 });

@@ -54,6 +54,7 @@
 <link rel="stylesheet" href="./christmas-sidebar-textfit.css?v=1">
 <link rel="stylesheet" href="./christmas-research-reference-v2.css?v=1">
 <link rel="stylesheet" href="./christmas-research-bonus-clarity.css?v=1">
+<link rel="stylesheet" href="./christmas-sidebar-repaired.css?v=1">
 <style id="dog-grinch-private-visibility">html:not(.dog-dev-grinch) #tab-grinch,html:not(.dog-dev-grinch) #panel-grinch,html:not(.dog-dev-grinch) [data-open-grinch],html:not(.dog-dev-grinch) [data-research-open-tab="grinch"],html:not(.dog-dev-grinch) #grinch-sky-scene,html:not(.dog-dev-grinch) #grinch-scene-toggle{display:none!important}html:not(.dog-dev-active) #village-max-test{display:none!important}</style>
 </head>
 <body>
@@ -63,14 +64,14 @@
   <aside class="event-sidebar" aria-label="Weihnachtsevent-Navigation">
     <div class="sidebar-intro"><span class="eyebrow">✦ DAS WEIHNACHTSWUNDER ✦</span><h1>Lichtertal</h1><p>Ein Dorf. Sechs Gebäude. Ein großes Weihnachtslicht.</p></div>
     <nav class="event-menu" role="tablist" aria-label="Eventbereiche">
-      <button type="button" id="tab-village" class="event-tab" role="tab" aria-selected="true" aria-controls="panel-village" data-tab="village"><span>🏘️</span><strong>Weihnachtsdorf</strong><small>Übersicht</small></button>
-      <button type="button" id="tab-buildings" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-buildings" data-tab="buildings" tabindex="-1"><span>🏠</span><strong>Die sechs Gebäude</strong><small>5 Ausbaustufen</small></button>
-      <button type="button" id="tab-tree" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-tree" data-tab="tree" tabindex="-1"><span>🎄</span><strong>Weihnachtsbaum</strong><small>10 Entwicklungsstufen</small></button>
-      <button type="button" id="tab-story" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-story" data-tab="story" tabindex="-1"><span>📖</span><strong>Die Geschichte</strong><small>Kapitel 1</small></button>
-      <button type="button" id="tab-grinch" class="event-tab event-tab-grinch" role="tab" aria-selected="false" aria-controls="panel-grinch" data-tab="grinch" tabindex="-1"><span>👹</span><strong>Grinch-Event</strong><small>5 Missionen · Teil 2</small></button>
-      <button type="button" id="tab-scratch" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-scratch" data-tab="scratch" tabindex="-1"><span>🎟️</span><strong>Rubbellose</strong><small>Einfach · Mittel · Premium</small></button>
-      <button type="button" id="tab-level" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-level" data-tab="level" tabindex="-1"><span>🏅</span><strong>Mein Spielerlevel</strong><small>50 persönliche Level</small></button>
-      <button type="button" id="tab-research" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-research" data-tab="research" tabindex="-1"><span>🔬</span><strong>Weihnachtsforschung</strong><small>Fähigkeiten & Verbesserungen</small></button>
+      <button type="button" id="tab-village" class="event-tab" role="tab" aria-selected="true" aria-controls="panel-village" data-tab="village"><span>🏘️</span><div class="event-tab-copy"><strong>Weihnachtsdorf</strong><small>Übersicht</small></div></button>
+      <button type="button" id="tab-buildings" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-buildings" data-tab="buildings" tabindex="-1"><span>🏠</span><div class="event-tab-copy"><strong>Die sechs Gebäude</strong><small>5 Ausbaustufen</small></div></button>
+      <button type="button" id="tab-tree" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-tree" data-tab="tree" tabindex="-1"><span>🎄</span><div class="event-tab-copy"><strong>Weihnachtsbaum</strong><small>10 Entwicklungsstufen</small></div></button>
+      <button type="button" id="tab-story" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-story" data-tab="story" tabindex="-1"><span>📖</span><div class="event-tab-copy"><strong>Die Geschichte</strong><small>Kapitel 1</small></div></button>
+      <button type="button" id="tab-grinch" class="event-tab event-tab-grinch" role="tab" aria-selected="false" aria-controls="panel-grinch" data-tab="grinch" tabindex="-1"><span>👹</span><div class="event-tab-copy"><strong>Grinch-Event</strong><small>5 Missionen · Teil 2</small></div></button>
+      <button type="button" id="tab-scratch" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-scratch" data-tab="scratch" tabindex="-1"><span>🎟️</span><div class="event-tab-copy"><strong>Rubbellose</strong><small>Einfach · Mittel · Premium</small></div></button>
+      <button type="button" id="tab-level" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-level" data-tab="level" tabindex="-1"><span>🏅</span><div class="event-tab-copy"><strong>Mein Spielerlevel</strong><small>50 persönliche Level</small></div></button>
+      <button type="button" id="tab-research" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-research" data-tab="research" tabindex="-1"><span>🔬</span><div class="event-tab-copy"><strong>Weihnachtsforschung</strong><small>Fähigkeiten & Verbesserungen</small></div></button>
     </nav>
     <div class="sidebar-bottom">
       <span class="draft-pill">✦ Aufbau in Entwicklung</span>
