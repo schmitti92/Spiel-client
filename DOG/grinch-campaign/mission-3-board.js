@@ -1,7 +1,7 @@
 /**
  * Mission 3 local prototype board.
  * Uses the original DOG board coordinates without changing the shared board.
- * Overlay is intentionally SVG/CSS only until the mission art pack is approved.
+ * Uses standalone editable SVG artwork; DOM overlays remain interactive.
  */
 import {trackPoint,homePoint,TRACK_POINTS} from '../board-layout.js?v=11';
 import {MISSION3_COLORS,MISSION3_STARTS} from './mission-3-rules.js?v=4';
@@ -17,6 +17,7 @@ export function drawMission3Board(svg,s,{selectedPiece=null,onPieceClick=()=>{}}
  '<filter id="m3-glow"><feGaussianBlur stdDeviation="7"/></filter></defs>');
  push('<rect x="5" y="5" width="750" height="750" rx="34" fill="#182d28" stroke="#b69b59" stroke-width="10"/>');
  push('<rect x="20" y="20" width="720" height="720" rx="28" fill="url(#m3-ground)" stroke="#6d8464" stroke-width="3"/>');
+ push('<image x="18" y="18" width="724" height="724" href="./mission-3-background.svg" preserveAspectRatio="xMidYMid slice" pointer-events="none" aria-hidden="true"/>');
  for(let n=0;n<60;n++){
   const x=50+(n*149)%660,y=50+(n*107)%660,r=1+(n%3)*.7;
   push('<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="#b6ecca" opacity="'+(.14+(n%4)*.06)+'" pointer-events="none"/>');
@@ -61,12 +62,25 @@ export function drawMission3Board(svg,s,{selectedPiece=null,onPieceClick=()=>{}}
    push('<circle cx="'+fmt(p.x)+'" cy="'+fmt(p.y)+'" r="17.3" fill="#072733" stroke="'+MISSION3_COLORS[owner]+'" stroke-width="2.1" stroke-opacity=".8"/>');
   }
  }
- push('<circle cx="380" cy="380" r="124" fill="#043322" opacity=".36" stroke="#74a26a" stroke-width="3" stroke-opacity=".65"/>');
- push('<circle cx="380" cy="380" r="98" fill="none" stroke="#a0daae" stroke-opacity=".14" stroke-width="4" stroke-dasharray="8 15"/>');
- push('<text x="380" y="348" text-anchor="middle" font-size="17" font-weight="950" fill="#fff0bb" letter-spacing="2.8">MISSION 3</text>');
- push('<text x="380" y="383" text-anchor="middle" font-size="32" font-weight="900" fill="#b0f2a0">GRINCH</text>');
- push('<text x="380" y="412" text-anchor="middle" font-size="14" font-weight="800" fill="#d5e7df">DIE ERSTE BEGEGNUNG</text>');
- push('<text x="380" y="440" text-anchor="middle" font-size="13" fill="#eee1aa">🃏 110 DOG-KARTEN</text>');
+ // Original Grinch sigil: illustrated locally rather than an external icon.
+ push('<g class="m3-crest" pointer-events="none" aria-hidden="true">');
+ push('<circle cx="380" cy="380" r="127" fill="#061719" fill-opacity=".92" stroke="#cbaa68" stroke-width="5"/>');
+ push('<circle cx="380" cy="380" r="115" fill="none" stroke="#7cbf8c" stroke-width="1.7" stroke-dasharray="4 10" stroke-opacity=".5"/>');
+ push('<circle cx="380" cy="380" r="104" fill="#153c35" stroke="#386d60" stroke-width="2"/>');
+ push('<path d="M321 393L304 341L320 354L338 317L342 344Q380 302 420 341L436 313L442 348L459 337L447 392L422 418L416 445Q384 475 346 447L341 421Z" fill="#7ec64a" stroke="#133f2a" stroke-width="5"/>');
+ push('<path d="M323 350Q348 330 373 356L370 375Q350 362 327 369ZM390 353Q419 330 440 350L435 371Q414 363 391 375Z" fill="#244b31" opacity=".85"/>');
+ push('<path d="M330 363Q350 349 371 371Q352 375 333 373ZM393 371Q415 348 435 363L432 373Q413 378 393 371Z" fill="#f7e7a4"/>');
+ push('<ellipse cx="355" cy="368" rx="6" ry="7" fill="#a22527"/><ellipse cx="412" cy="368" rx="6" ry="7" fill="#a22527"/>');
+ push('<path d="M373 388Q383 375 395 389Q388 398 378 396Z" fill="#2a542f"/>');
+ push('<path d="M349 412Q383 435 421 404Q397 449 358 435Z" fill="#143122"/>');
+ push('<path d="M359 419Q386 431 407 416" stroke="#fdf4c8" stroke-width="3.5" stroke-linecap="round" fill="none"/>');
+ push('<path d="M321 333Q337 278 392 290L440 323L426 339Q367 316 321 345Z" fill="#a22a2e" stroke="#d58272" stroke-width="3"/>');
+ push('<path d="M311 345Q375 316 449 345" fill="none" stroke="#fff2d7" stroke-width="17" stroke-linecap="round"/>');
+ push('<circle cx="443" cy="324" r="15" fill="#faf2dd"/>');
+ push('<path d="M292 466Q379 482 467 466" fill="none" stroke="#bb9e60" stroke-width="2" stroke-opacity=".6"/>');
+ push('<text x="380" y="488" text-anchor="middle" font-size="19" font-weight="900" fill="#fff1c7" letter-spacing="3">GRINCH</text>');
+ push('<text x="380" y="505" text-anchor="middle" font-size="11" font-weight="800" fill="#c1e2c6" letter-spacing="2">DIE ERSTE BEGEGNUNG</text>');
+ push('</g>');
  const homeSlots=[0,0,0];
  for(const piece of s.pieces){
   if(piece.place==='captured'||piece.place==='lost')continue;
@@ -83,6 +97,8 @@ export function drawMission3Board(svg,s,{selectedPiece=null,onPieceClick=()=>{}}
   if(selected)push('<circle cx="'+fmt(pt.x)+'" cy="'+fmt(pt.y)+'" r="26.5" fill="'+c+'" opacity=".5" filter="url(#m3-glow)" pointer-events="none"/>');
   push('<circle cx="'+fmt(pt.x)+'" cy="'+fmt(pt.y)+'" r="17.3" fill="'+c+'" stroke="'+(selected?'#ffffff':'#071b25')+'" stroke-width="'+(selected?'4':'2.6')+'" filter="url(#m3-shadow)"/>');
   push('<circle cx="'+fmt(pt.x-5)+'" cy="'+fmt(pt.y-6)+'" r="4.2" fill="#fff" opacity=".44"/>');
+  // Invisible expanded target: fingers can select pawns without changing sizes.
+  push('<circle cx="'+fmt(pt.x)+'" cy="'+fmt(pt.y)+'" r="25" fill="transparent" class="m3-pawn-hit"/>');
   const number=piece.owner===3?'G'+(Number(piece.id.slice(1))+1):Number(piece.id.slice(1))+1;
   push('<text x="'+fmt(pt.x)+'" y="'+fmt(pt.y+5)+'" font-size="'+(piece.owner===3?10:13)+'" font-weight="950" fill="'+(piece.owner===2?'#263432':'#fff')+'" text-anchor="middle" pointer-events="none">'+number+'</text>');
   if(piece.frozenTurns>0){
