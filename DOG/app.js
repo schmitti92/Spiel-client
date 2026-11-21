@@ -543,6 +543,10 @@ function render(){
   $('round').textContent=String(game.round);
   $('phase').textContent=game.phase==='exchange'?'Geheimer Kartentausch':game.phase==='seven'?'7 verteilen':game.phase==='finished'?'Spielende':'Kartenrunde';
   const active=activeSeat();
+  const soloThree=game.mode==='solo3';
+  const teamDisplay=document.getElementById('dog-mode-teams'),soloDisplay=document.getElementById('dog-mode-solo3');
+  if(teamDisplay)teamDisplay.hidden=soloThree;
+  if(soloDisplay)soloDisplay.hidden=!soloThree;
   $('turn').textContent=game.phase==='finished'?(game.mode==='solo3'?'🏆 '+game.players[game.winner].name+' gewinnt!':'🏆 Team '+(game.winner===0?'Rot / Grün':'Blau / Gelb')+' gewinnt!'):game.phase==='exchange'?'Karten werden getauscht':active>=0?game.players[active].name+' ist dran':'Bots spielen';
   // This is view-only. Write the live labels only on actual changes, so
   // duplicate room updates neither retrigger motion nor repeat ARIA messages.
@@ -568,7 +572,7 @@ function render(){
     ' · 🎄 '+(onlineChristmas.roundGiftCollected||0)+'/'+(onlineChristmas.giftFieldCount||0)+' Lichtfelder gesammelt' +
     ' · 🎟️ '+(onlineChristmas.roundScratchCollected||0)+'/'+(onlineChristmas.scratchFieldCount??8)+' Rubbellos-Felder gesammelt' +
     ' · '+(onlineChristmas.earnedTenths/10).toLocaleString('de-DE')+' ⭐ gesammelt'+myScratch:
-    ' · Klassischer DOG-Modus'):
+    ' · '+(soloThree?'Drei Spieler ohne Bot':'Klassischer DOG-Modus')):
     'Klassische Regeln • Teams Rot/Grün und Blau/Gelb • Spielstand wird lokal gesichert';
   updateVictoryCeremony();
   visualFeedback.sync({game,matchKey:online?(acceptedMatchId||matchHint||'online'):'local',seat:online?onlineSeat:currentHuman(),handVisible:revealed,activeSeat:active});
