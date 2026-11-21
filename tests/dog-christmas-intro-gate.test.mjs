@@ -140,7 +140,7 @@ test('DOG lobby cannot show the Christmas film without a finished DOG victory ce
  assert.match(sourceCode,/if\(pendingAgain\)/);
  assert.doesNotMatch(room,/id="winner"/);
  assert.match(dog,/id="winner"/);
- for(const html of [room,dog,event])assert.match(html,/christmas-intro-gate\.js\?v=15/);
+ for(const html of [room,dog,event])assert.match(html,/christmas-intro-gate\.js\?v=17/);
  assert.match(sourceCode,/data-later/);
  assert.match(sourceCode,/later\.addEventListener\('click'/);
  assert.match(sourceCode,/reason==='DOG_CHRISTMAS_INTRO_LOCKED'/);
