@@ -6,7 +6,7 @@ import {boardGestureTarget,nearestTrackPawn,nearestBoardField,boardEventPoint} f
 import {snapshotPieces,planPieceMotions,createPieceAnimator} from './piece-animations.js?v=3';
 import {loadMotionMode,saveMotionMode,applyMotionMode} from './motion-settings.js?v=1';
 import {createDogVisualFeedback} from './ui-animations.js?v=2';
-import {dogMoveBlockReason} from './invalid-move-reasons.js?v=1';
+import {dogMoveBlockReason} from './invalid-move-reasons.js?v=2';
 import {DOG_MOVE_HINTS_KEY,readDogMoveHints,writeDogMoveHints,dogLegalTargets} from './move-hints.js?v=1';
 import {summarizeDogVictory} from './victory-summary.js?v=2';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js?v=2';
