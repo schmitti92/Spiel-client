@@ -402,16 +402,19 @@ html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christm
 </div>
 <svg id="board" class="board-svg" viewBox="0 0 760 760" role="img" aria-label="Spielbrett mit vier Farbrouten, Start- und Zielbahnen"></svg>
      <div class="teams">
-       <span class="team-chip"><span class="dot" data-appearance-seat="0" style="background:#e65f58"></span><span class="dot" data-appearance-seat="2" style="background:#5ac68d"></span>Team Rot / Grün</span>
-       <span style="color:#8b9ead">gegen</span>
-       <span class="team-chip"><span class="dot" data-appearance-seat="1" style="background:#4c9bfa"></span><span class="dot" data-appearance-seat="3" style="background:#e8b84e"></span>Team Blau / Gelb</span>
+       <span id="dog-mode-teams" style="display:contents">
+         <span class="team-chip"><span class="dot" data-appearance-seat="0" style="background:#e65f58"></span><span class="dot" data-appearance-seat="2" style="background:#5ac68d"></span>Team Rot / Grün</span>
+         <span style="color:#8b9ead">gegen</span>
+         <span class="team-chip"><span class="dot" data-appearance-seat="1" style="background:#4c9bfa"></span><span class="dot" data-appearance-seat="3" style="background:#e8b84e"></span>Team Blau / Gelb</span>
+       </span>
+       <span id="dog-mode-solo3" class="team-chip" hidden>👥 3 echte Spieler · Jeder gegen jeden · Kein Bot</span>
        <a href="editor.html" data-dog-editor class="board-editor-link">✎ Brett bearbeiten</a>
      </div>
    </section>
    <aside class="right dog-modules" aria-label="DOG-Spielsteuerung">
      <!-- Module A: Spielstatus; live fields are the same as before. -->
      <section class="panel dog-status-panel" aria-label="Spieler und aktueller Zugstatus">
-       <div class="dog-premium-section-head"><span class="dog-section-ordinal">01</span><span>Spieler &amp; Teams</span><span class="dog-section-decoration" aria-hidden="true">◆</span></div>
+       <div class="dog-premium-section-head"><span class="dog-section-ordinal">01</span><span>Spieler &amp; Spielstand</span><span class="dog-section-decoration" aria-hidden="true">◆</span></div>
        <!-- Game engine continues to update this hidden round counter. -->
        <span id="round" hidden style="display:none">1</span>
        <div class="turn" id="turn" hidden aria-live="polite">Karten werden ausgeteilt</div>
@@ -660,7 +663,7 @@ mountChristmasLinks();
 </script>
 <script type="module">
 import('./ui-shell.js?v=5').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
-import('./app.js?v=72').catch(error=>{
+import('./app.js?v=73').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
