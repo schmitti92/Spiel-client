@@ -1,6 +1,6 @@
 # DOG Grinch – Mission 3: Grundgerüst
 
-Stand: 21.11.2026. Arbeitspakete 1, 2, 3, 4 und 5 sind als lokaler Spieltest umgesetzt. Mission 3 ist weiterhin nicht für offizielle Online-Räume freigeschaltet.
+Stand: 21.11.2026. Arbeitspakete 1, 2, 3, 4, 5 und 6 sind als lokaler Spieltest umgesetzt. Mission 3 ist weiterhin nicht für offizielle Online-Räume freigeschaltet.
 
 ## Neue Dateien
 
@@ -43,7 +43,16 @@ Alle Zielfelder werden pro Partie deterministisch und einheitlich erzeugt, ohne 
 
 Die lokale Testseite zeigt Aufgaben-Markierungen als SVG auf dem originalen DOG-Brett, die 0/3–0/4–0/3 Fortschrittsanzeigen und den abgeschlossenen Missionsstatus. Die manuelle Stufenauswahl wurde entfernt; für Testzwecke bleibt die gesonderte vorgezogene Kartenverteilung vorhanden. Eigenständige Backend-Regressionstests: tests/dog-grinch-mission3-objectives.test.js.
 
-Paket 6 noch offen: Neues Grafikpaket, Animationen, Touch-Optimierung.
+Paket 6 umgesetzt – Vektorgrafik, VFX und Touch:
+- `mission-3-background.svg` ist ein eigenständiges, weiterbearbeitbares winterliches Grafikelement (verschneite Tannen, Höhleneingang, Mond und Berge). Keine externen Bilddienste oder fremde Grafiken.
+- `mission-3-board.js` zeichnet ein neues Grinch-Wappen direkt als SVG in der Brettmitte, animierte Zielmarkierungen für Lichter/Eis/Runen und größere unsichtbare Trefferflächen für Spielfiguren. Die 64 originären DOG-Spielfelder bleiben unverändert.
+- `mission-3-effects.js` erkennt und zeigt tatsächliche Spielereignisse: Bewegungen, Treffer, Rückwurf, Frost, Auftauen, Gefangennahme, Aufgabenwechsel und Sieg – rein visuell ohne Spielzustandsänderung.
+- `mission-3-touch.js` bietet auf dem Spielfeld einen Zwei-Finger-Zoom bis 340 %, Verschieben des vergrößerten Bretts, feste +/−/Reset-Schaltflächen und Ctrl/Maustasten-Zoom für Desktop. Nur das Brett wird verschoben; Karten und übrige Seite bleiben am Platz.
+- `mission-3.css` erhält ein neues Winterdesign mit Bildschirmgrößen-Anpassungen und `prefers-reduced-motion` für reduzierte Animationen.
+- Die optionale Forschungsfähigkeit Weihnachtsschutz zum Auftauen bleibt unverändert und hat nun einen visuellen Effekt. Die Regeln der Mission werden nicht durch Grafik-Code verändert.
+- Zusätzliche Frontend-Regressionstests: `tests/dog-grinch-mission3-visuals.test.mjs` für Artwork, Touch-Mathematik, VFX, Forschungsfähigkeit, fehlende externe Abhängigkeiten und JavaScript-Syntax.
+
+Die lokale Grafikversion ist eine funktionierende Vektorumsetzung für den Spieltest. Gezielte visuelle Handtests auf mehreren Geräten und das offizielle Online-Spiel fehlen weiterhin.
 
 Paket 7 noch offen: Autoritative Online-Ausführung der bereits entwickelten Grinch-KI und Online-Zugprüfung, Privatsphäre der Karten, offizielle Missionsfreischaltung nach Mission 2, Speicherung.
 
