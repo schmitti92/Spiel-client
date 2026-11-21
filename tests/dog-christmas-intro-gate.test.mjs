@@ -115,12 +115,14 @@ test('DOG welcome video opens on entry to the actual room lobby, not each refres
  assert.match(lobby,/welcomeFilm\.close\(\)/);
  assert.match(movie,/if\(playing\|\|!roomCode\|\|root\.hidden\)return/);
  assert.match(movie,/sessionStorage\.setItem\(key,'1'\)/);
+ assert.match(movie,/if\(open\(\)\)markShown\(key\)/);
+ assert.match(movie,/dog-room-welcome-video-v2/);
  assert.match(movie,/video\.autoplay=false/);
  assert.match(movie,/video\.muted=false/);
  assert.match(movie,/data-play/);
  assert.match(movie,/data-dismiss/);
  assert.match(movie,/Lobbyfilm ansehen/);
- assert.match(hub,/DOG\/room-lobby\.js\?v=11/);
+ assert.match(hub,/DOG\/room-lobby\.js\?v=12/);
 });
 
 test('DOG lobby cannot show the Christmas film without a finished DOG victory ceremony',()=>{
