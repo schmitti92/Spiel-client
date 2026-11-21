@@ -4,7 +4,7 @@
  * Overlay is intentionally SVG/CSS only until the mission art pack is approved.
  */
 import {trackPoint,homePoint,TRACK_POINTS} from '../board-layout.js?v=11';
-import {MISSION3_COLORS,MISSION3_STARTS} from './mission-3-rules.js?v=3';
+import {MISSION3_COLORS,MISSION3_STARTS} from './mission-3-rules.js?v=4';
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=x=>Number(x).toFixed(1);
 export function drawMission3Board(svg,s,{selectedPiece=null,onPieceClick=()=>{}}={}){
@@ -30,6 +30,29 @@ export function drawMission3Board(svg,s,{selectedPiece=null,onPieceClick=()=>{}}
   push('<circle cx="'+fmt(p.x)+'" cy="'+fmt(p.y+2)+'" r="18.4" fill="#000" opacity=".5"/>');
   push('<circle cx="'+fmt(p.x)+'" cy="'+fmt(p.y)+'" r="16.7" fill="'+(isStart?color:'url(#m3-stone)')+'" stroke="'+(isStart?'#f9eca5':'#34646e')+'" stroke-width="'+(isStart?'3':'1.4')+'"/>');
   if(isStart)push('<path d="M '+(p.x-5)+' '+(p.y-6)+' L '+(p.x+6)+' '+p.y+' L '+(p.x-5)+' '+(p.y+6)+' Z" fill="#fff9de" opacity=".65"/>');
+ }
+ // Mission 3 cooperative targets: non-interactive overlays above track holes.
+ // All positions originate from the authoritative mission state.
+ if(s.tasks?.objectives&&s.tasks?.stage===s.stage){
+  const kinds=[
+   {name:'m3-light',edge:'#ffdc64',fill:'#986b17',mark:'✦'},
+   {name:'m3-ice',edge:'#91e7ff',fill:'#286b89',mark:'❄'},
+   {name:'m3-rune',edge:'#dfa8ff',fill:'#75368d',mark:'✧'}
+  ],kind=kinds[s.stage]||kinds[0];
+  const objectives=s.tasks.objectives.filter(o=>!o.collected);
+  for(const [n,item] of objectives.entries()){
+   const p=trackPoint(item.field);
+   if(!p)continue;
+   const cx=fmt(p.x),cy=fmt(p.y);
+   push('<g class="m3-objective '+kind.name+'" pointer-events="none" aria-hidden="true">');
+   push('<circle cx="'+cx+'" cy="'+cy+'" r="26" fill="'+kind.edge+'" opacity=".28" filter="url(#m3-glow)"/>');
+   push('<circle cx="'+cx+'" cy="'+cy+'" r="18" fill="'+kind.fill+'" stroke="'+kind.edge+'" stroke-width="3.5"/>');
+   push('<circle cx="'+cx+'" cy="'+cy+'" r="13" fill="#0c1830" fill-opacity=".5"/>');
+   push('<text x="'+cx+'" y="'+fmt(p.y+6)+'" text-anchor="middle" font-weight="950" font-size="22" fill="'+kind.edge+'">'+kind.mark+'</text>');
+   push('<circle cx="'+fmt(p.x+15)+'" cy="'+fmt(p.y-16)+'" r="8" fill="#101c29" stroke="'+kind.edge+'" stroke-width="1.7"/>');
+   push('<text x="'+fmt(p.x+15)+'" y="'+fmt(p.y-12)+'" text-anchor="middle" font-weight="900" font-size="11" fill="#fff">'+(s.tasks.progress[s.stage]+n+1)+'</text>');
+   push('</g>');
+  }
  }
  for(let owner=0;owner<3;owner++){
   for(let slot=0;slot<4;slot++){
