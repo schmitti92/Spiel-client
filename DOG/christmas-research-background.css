@@ -1,0 +1,86 @@
+/*
+ * DOG | Lichtertal research-specific scenic background
+ * Asset: DOG/assets/research/research-background-lichtertal.webp
+ * A readable dark-emerald scrim preserves contrast for the live account
+ * balances, research art, bonuses, and real upgrade/claim controls.
+ * Affects only the research panel, not the carved eight-tab navigation,
+ * Christmas village, tree, story, Grinch or scratch screens.
+ */
+
+/* Atmospheric full-page stage inside the RIGHT research pane. */
+body.research-mode #panel-research{
+ background-color:#082a22!important;
+ background-image:
+  linear-gradient(100deg,rgba(2,22,17,.56) 0%,rgba(3,30,24,.32) 44%,rgba(2,23,21,.64) 100%),
+  url("./assets/research/research-background-lichtertal.webp")!important;
+ background-position:center center,center 44%!important;
+ background-size:cover,cover!important;
+ background-repeat:no-repeat,no-repeat!important;
+ border-radius:18px;
+}
+
+/* The shell was previously solid dark green and hid the entire image. */
+body.research-mode #panel-research .dog-research-shell{
+ background:
+  linear-gradient(180deg,rgba(3,25,19,.50) 0%,rgba(3,27,22,.26) 38%,rgba(3,26,20,.60) 100%)!important;
+ background-color:transparent!important;
+ border-radius:18px!important;
+ min-height:100%!important;
+}
+
+/* Panels retain high contrast even over bright aurora, lanterns and snow. */
+body.research-mode #panel-research .dr-gallery{
+ background:
+  linear-gradient(155deg,rgba(8,49,35,.95),rgba(4,31,25,.96) 76%,rgba(7,42,30,.96))!important;
+ border:2px solid #d5ad70!important;
+ box-shadow:0 6px 25px #0009,inset 0 1px #f7dcaa42!important;
+ backdrop-filter:blur(3px);
+}
+body.research-mode #panel-research .dr-detail-panel{
+ background:
+  linear-gradient(175deg,rgba(8,49,36,.95),rgba(5,28,23,.97) 77%,rgba(4,27,22,.98))!important;
+ border:2px solid #d5ad70!important;
+ box-shadow:0 6px 25px #0009,inset 0 1px #f7dcaa35!important;
+ backdrop-filter:blur(3px);
+}
+body.research-mode #panel-research .dr-wallet,
+body.research-mode #panel-research .dr-status-footer{
+ background:linear-gradient(115deg,rgba(8,52,37,.96),rgba(6,39,32,.97))!important;
+ box-shadow:0 4px 12px #0006,inset 0 1px #d5be8653!important;
+}
+body.research-mode #panel-research .dog-research-status{
+ background:rgba(4,32,24,.91)!important;
+ border:1px solid #a59d6b9f!important;
+ color:#ebf5d9!important;
+}
+body.research-mode #panel-research .dog-research-status[data-error="true"]{
+ background:rgba(79,28,23,.94)!important;
+ border-color:#f4a181!important;
+ color:#ffefcf!important;
+}
+body.research-mode #panel-research .dr-detail-panel[data-research-art]::before{
+ /* A single unobtrusive tint over the chosen ability background. */
+ opacity:.12!important;
+}
+body.research-mode #panel-research .dr-card-content,
+body.research-mode #panel-research .dr-card-benefit{
+ text-shadow:none!important;
+}
+
+/* A quieter crop on narrow tablets, with the landscape still visible between
+   the cards. The pinned left navigation is intentionally never selected. */
+@media(max-width:849px){
+ body.research-mode #panel-research{
+  background-position:center center,52% center!important;
+ }
+ body.research-mode #panel-research .dog-research-shell{
+  background:linear-gradient(180deg,rgba(3,23,20,.56),rgba(3,24,21,.44))!important;
+ }
+}
+@media(prefers-reduced-transparency:reduce){
+ body.research-mode #panel-research .dr-gallery,
+ body.research-mode #panel-research .dr-detail-panel{
+  backdrop-filter:none!important;
+  background:#092e24!important;
+ }
+}

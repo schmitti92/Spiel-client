@@ -186,3 +186,20 @@ test('sidebar icons use complete svg files and all eight labels stay in their ow
  assert.doesNotMatch(read('christmas-research-reference-v2.css'),/420% 310%/);
  assert.match(read('christmas-sidebar-fit.js'),/copy\.scrollHeight<=copy\.clientHeight/);
 });
+
+test('uploaded background appears only in research and preserves readable real bonuses',()=>{
+ const css=read('christmas-research-background.css');
+ const p=new URL('../DOG/assets/research/research-background-lichtertal.webp',import.meta.url);
+ assert.ok(existsSync(p));
+ assert.match(html,/christmas-research-background\.css\?v=1/);
+ assert.match(css,/body\.research-mode #panel-research/);
+ assert.match(css,/research-background-lichtertal\.webp/);
+ assert.match(css,/linear-gradient/);
+ assert.match(css,/\.dog-research-shell/);
+ assert.match(css,/\.dr-gallery/);
+ assert.match(css,/\.dr-detail-panel/);
+ assert.doesNotMatch(css,/\.event-sidebar/);
+ assert.match(controller,/data\.available/);
+ assert.match(controller,/getIdToken\(\)/);
+ assert.match(controller,/call\('\/upgrade',\{id:skill\.id\}\)/);
+});
