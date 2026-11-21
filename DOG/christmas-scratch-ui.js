@@ -2198,7 +2198,7 @@ export function initChristmasScratch(){
    canManageScratch=r.canManageScratch===true;
    clearAlert();
    // Four distinct starter vouchers, credited once to the signed-in player.
-   if(status&&!status.levelOneStarterClaimed){
+   if(status&&!status.levelOneStarterClaimed&&!window.DOGChristmasDev?.isActive()){
     try{
      const profile=account(),token=await profile.getIdToken();
      const reply=await fetch(base+'/api/hub/dog/level/rewards/claim',{
@@ -2225,6 +2225,7 @@ export function initChristmasScratch(){
   }catch(e){if(id!==requestId)return;status=null;canManageScratch=false;showAlert(scratchBuyError(e?.message));drawShop()}
  }
  async function buy(tier,free,variantId,voucher=false){
+  if(window.DOGChristmasDev?.isActive()){showAlert('🧪 Im Entwicklermodus sind echte Loskäufe gesperrt. Wechsle für echte Lose zur normalen Ansicht.',variantId);return;}
   if(!account()){showAlert('🔐 Bitte melde dich zuerst mit deinem DOG-Onlineprofil an.',variantId);drawShop();return;}
   if(busy){alertMessage.textContent='⏳ Ein Los wird bereits auf Render geöffnet.';alertToast.hidden=false;return;}
   if(!status){showAlert('🔄 Dein Rubbellos-Konto ist noch nicht geladen. Bitte „Kontostand aktualisieren“ auswählen.',variantId);drawShop();return;}
