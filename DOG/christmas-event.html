@@ -25,6 +25,7 @@
 <link rel="stylesheet" href="./christmas-scratch-premium-fit.css?v=1">
 <link rel="stylesheet" href="./christmas-scratch-lottery-v2.css?v=4">
 <link rel="stylesheet" href="./christmas-player-levels.css?v=6">
+<link rel="stylesheet" href="./christmas-research.css?v=1">
 <link rel="stylesheet" href="./christmas-building-village.css?v=4">
 <link rel="stylesheet" href="./christmas-buildings-showcase.css?v=2">
 <link rel="stylesheet" href="./christmas-village-overview.css?v=1">
@@ -58,6 +59,7 @@
       <button type="button" id="tab-grinch" class="event-tab event-tab-grinch" role="tab" aria-selected="false" aria-controls="panel-grinch" data-tab="grinch" tabindex="-1"><span>👹</span><strong>Grinch-Event</strong><small>5 Missionen · Teil 2</small></button>
       <button type="button" id="tab-scratch" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-scratch" data-tab="scratch" tabindex="-1"><span>🎟️</span><strong>Rubbellose</strong><small>Einfach · Mittel · Premium</small></button>
       <button type="button" id="tab-level" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-level" data-tab="level" tabindex="-1"><span>🏅</span><strong>Mein Spielerlevel</strong><small>50 persönliche Level</small></button>
+      <button type="button" id="tab-research" class="event-tab" role="tab" aria-selected="false" aria-controls="panel-research" data-tab="research" tabindex="-1"><span>🔬</span><strong>Weihnachtsforschung</strong><small>Fähigkeiten & Verbesserungen</small></button>
     </nav>
     <div class="sidebar-bottom">
       <span class="draft-pill">✦ Aufbau in Entwicklung</span>
@@ -872,10 +874,43 @@
         </div>
       </div>
     </section>
+    <section class="event-panel" id="panel-research" role="tabpanel" aria-labelledby="tab-research" hidden>
+      <div class="dog-research-shell" id="dog-research-shell">
+        <header class="dog-research-hero">
+          <div>
+            <span class="dog-research-kicker">✦ DAS GEHEIME WICHTELLABOR ✦</span>
+            <h2>🔬 Weihnachtsforschung</h2>
+            <p>Verdiene Forschungspunkte mit deinem Spielerlevel und entdecke einzigartige
+               Verbesserungen für DOG, die Rubbellose und das Weihnachtsdorf.
+               Ab Level 2 bekommst du Punkte; jedes 5. Level ist besonders wertvoll.</p>
+          </div>
+          <span class="dog-research-hero-symbol" aria-hidden="true">🧪</span>
+        </header>
+        <section class="dog-research-summary" id="dog-research-summary" hidden aria-label="Deine Forschungswerte">
+          <div class="dog-research-stat"><span>✨ Verfügbare FP</span><strong id="dog-research-points">0</strong></div>
+          <div class="dog-research-stat"><span>⭐ Verdiente FP</span><strong id="dog-research-earned">0</strong></div>
+          <div class="dog-research-stat"><span>🔬 Eingesetzte FP</span><strong id="dog-research-spent">0</strong></div>
+          <div class="dog-research-stat"><span>🏅 Spielerlevel</span><strong id="dog-research-player-level">1</strong></div>
+        </section>
+        <p class="dog-research-status" id="dog-research-status" role="status" aria-live="polite">Deine Forschungen werden geladen …</p>
+        <div class="dog-research-toolbar">
+          <h3>✦ Dein Forschungsbaum</h3>
+          <button type="button" class="dog-research-refresh" id="dog-research-refresh">↻ Aktualisieren</button>
+        </div>
+        <p>Entdeckte Fähigkeiten: <strong id="dog-research-unlocked">0 / 21</strong></p>
+        <nav id="dog-research-filters" class="dog-research-filters" aria-label="Forschungskategorien"></nav>
+        <section id="dog-research-cards" class="dog-research-grid" aria-label="Forschungen und Verbesserungen"></section>
+        <p class="dog-research-note">Forschungen gehören dauerhaft deinem angemeldeten Spielerkonto.
+          Forschungspunkte werden für alle bereits erreichten Level rückwirkend berechnet.
+          Aktivierte Forschungen lassen sich mit FP verbessern; noch nicht spielwirksam
+          angeschlossene Fähigkeiten sind sichtbar, aber nicht kaufbar.
+          Lose und Weihnachtslichter aus zeitgesteuerten Forschungen musst du selbst abholen.</p>
+      </div>
+    </section>
   </main>
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./christmas-event.js?v=134"></script>
+<script type="module" src="./christmas-event.js?v=135"></script>
 </body>
 </html>
