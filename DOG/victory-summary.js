@@ -3,9 +3,24 @@ export const DOG_VICTORY_TEAM_NAMES=Object.freeze(['Rot / Grün','Blau / Gelb'])
 export const DOG_VICTORY_SEATS=Object.freeze([Object.freeze([0,2]),Object.freeze([1,3])]);
 
 export function summarizeDogVictory(game){
- if(!game||game.phase!=='finished'||![0,1].includes(game.winner)||
+ if(!game||game.phase!=='finished'||!Number.isInteger(game.winner)||
    !Array.isArray(game.players)||game.players.length!==4||
-   !Array.isArray(game.pieces)||game.pieces.length!==16)return null;
+   !Array.isArray(game.pieces))return null;
+ if(game.mode==='solo3'){
+  const active=game.players.filter(p=>!p.inactive);
+  if(active.length!==3||game.pieces.length!==12||
+     !active.some(p=>p.seat===game.winner))return null;
+  const ranked=[...active].sort((a,b)=>(a.seat===game.winner?-1:b.seat===game.winner?1:0));
+  const players=ranked.map(p=>({
+   seat:p.seat,name:String(p.name||'Spieler '+(p.seat+1)),bot:false,
+   goalCount:game.pieces.filter(piece=>piece.owner===p.seat&&piece.place==='goal').length,
+   winning:p.seat===game.winner
+  }));
+  return {winner:game.winner,mode:'solo3',teams:players.map(p=>({
+   id:p.seat,name:p.name,winning:p.winning,total:p.goalCount,capacity:4
+  })),players};
+ }
+ if(![0,1].includes(game.winner)||game.pieces.length!==16)return null;
 
  const goalCounts=Array.from({length:4},(_,seat)=>game.pieces.filter(p=>
    p.owner===seat&&p.place==='goal').length);
