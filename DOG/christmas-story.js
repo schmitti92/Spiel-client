@@ -10,23 +10,8 @@ export function unlockedStoryChapters(stage,verified){
   return Math.min(10,Math.max(1,Number.isInteger(stage)?stage:1));
 }
 
-// Curated real group photos from the existing Deal or No Deal ice-block gallery.
-// Existing originals stay untouched. The book loads only the currently visible photo.
-// The narrative is fictional; these photos are personal memories accompanying it.
-const villageScene='./weihnachtsevent-bilder/leere_winterdorf_plaza_im_mondlicht.png';
-const galleryRoot='../DealOrNoDeal/Weihnachtsevent2/Weihnachtsbilder/';
-const galleryPages=[
- ['IMG-20261108-WA0016.jpg','IMG-20261108-WA0011.jpg','IMG-20261108-WA0015.jpg','IMG-20261108-WA0012.jpg','IMG-20261108-WA0018.jpg','IMG-20261108-WA0023.jpg'],
- ['IMG-20261108-WA0011.jpg','IMG-20261108-WA0006.jpg','IMG-20261108-WA0030.jpg','IMG-20261108-WA0023.jpg','IMG-20261108-WA0018.jpg','IMG-20261108-WA0015.jpg'],
- ['IMG-20261108-WA0023.jpg','IMG-20261108-WA0006.jpg','IMG-20261108-WA0011.jpg','IMG-20261108-WA0018.jpg','IMG-20261108-WA0030.jpg','IMG-20261108-WA0016.jpg'],
- ['IMG-20261108-WA0015.jpg','IMG-20261108-WA0012.jpg','IMG-20261108-WA0018.jpg','IMG-20261108-WA0011.jpg','IMG-20261108-WA0030.jpg','IMG-20261108-WA0023.jpg'],
- ['IMG-20261108-WA0012.jpg','IMG-20261108-WA0016.jpg','IMG-20261108-WA0035.jpg','IMG-20261108-WA0011.jpg','IMG-20261108-WA0015.jpg','IMG-20261108-WA0018.jpg'],
- ['IMG-20261108-WA0018.jpg','IMG-20261108-WA0011.jpg','IMG-20261108-WA0030.jpg','IMG-20261108-WA0006.jpg','IMG-20261108-WA0016.jpg','IMG-20261108-WA0012.jpg'],
- ['IMG-20261108-WA0006.jpg','IMG-20261108-WA0023.jpg','IMG-20261108-WA0015.jpg','IMG-20261108-WA0018.jpg','IMG-20261108-WA0030.jpg','IMG-20261108-WA0011.jpg'],
- ['IMG-20261108-WA0016.jpg','IMG-20261108-WA0011.jpg','IMG-20261108-WA0012.jpg','IMG-20261108-WA0035.jpg','IMG-20261108-WA0015.jpg','IMG-20261108-WA0018.jpg'],
- ['IMG-20261108-WA0016.jpg','IMG-20261108-WA0015.jpg','IMG-20261108-WA0030.jpg','IMG-20261108-WA0012.jpg','IMG-20261108-WA0011.jpg','IMG-20261108-WA0018.jpg'],
- ['IMG-20261108-WA0016.jpg','IMG-20261108-WA0023.jpg','IMG-20261108-WA0018.jpg','IMG-20261108-WA0007.jpg','IMG-20261108-WA0015.jpg','IMG-20261108-WA0011.jpg']
-];
+// The storybook is text-only. Existing personal photos remain in the gallery,
+// but no photos are requested or rendered by the story reader.
 
 function node(tag,className,txt){
  const n=document.createElement(tag);
@@ -40,7 +25,13 @@ export function initChristmasStory({openTab}){
   banner=$('story-upgrade-banner'), action=$('story-next-action'),
   badge=$('story-book-unlocked'), mini=$('tab-story')?.querySelector('small');
  if(!nav||!reader||!action||!banner)throw Error('STORY_READER_MISSING');
+
  let stage=1,verified=false,chapter=1,page=1,needed=0,hasVerification=false;
+ const narrowLayout=window.matchMedia('(max-width: 650px)');
+ const visiblePages=()=>{
+  const first=narrowLayout.matches?page:(2*Math.floor((page-1)/2)+1);
+  return {first,last:Math.min(6,first+(narrowLayout.matches?0:1))};
+ };
  const choose=(target,begin=1)=>{
   if(target<1||target>stage)return;
   chapter=target;
@@ -48,14 +39,34 @@ export function initChristmasStory({openTab}){
   draw();
  };
  const go=(step)=>{
-  if(step===1&&page===6&&chapter<stage){choose(chapter+1);return;}
-  if(step===-1&&page===1&&chapter>1){choose(chapter-1,6);return;}
-  page=Math.max(1,Math.min(6,page+step));
+  const {first,last}=visiblePages();
+  const destination=step>0?last+1:first-1;
+  if(destination>6){if(chapter<stage)choose(chapter+1,1);return;}
+  if(destination<1){if(chapter>1)choose(chapter-1,narrowLayout.matches?6:5);return;}
+  page=destination;
   draw();
+ };
+ const makePage=(item,number,side)=>{
+  const [heading,body]=item.pages[number-1];
+  const paper=node('section','storybook-paper storybook-paper--'+side);
+  paper.setAttribute('aria-label','Seite '+number+' von 6: '+heading);
+  const edition=node('div','storybook-page-kicker','KAPITEL '+String(chapter).padStart(2,'0')+' · '+item.tree.toUpperCase());
+  const title=node('h3','storybook-page-heading',side==='left'?item.title:heading);
+  const subtitle=node('div','storybook-page-subtitle','SEITE '+number+' VON 6 · '+(side==='left'?heading:'Fortsetzung'));
+  const story=node('div','storybook-page-text',body);
+  story.setAttribute('tabindex','0');
+  story.setAttribute('aria-label','Geschichtentext, Seite '+number+' von 6');
+  const theme=node('div','storybook-page-thought');
+  if(side==='left')theme.append(node('span','storybook-small-star','✧'),node('span','',item.theme));
+  else theme.textContent='✧ '+item.theme;
+  const footer=node('div','storybook-page-footer');
+  footer.append(node('span','',item.icon+' '+item.title),node('strong','',String((chapter-1)*6+number)));
+  paper.append(edition,title,subtitle,story,theme,footer);
+  return paper;
  };
  const draw=()=>{
   const current=CHRISTMAS_STORY_CHAPTERS[chapter-1];
-  const [heading,body]=current.pages[page-1];
+  const {first,last}=visiblePages();
   if(badge)badge.textContent=stage+' / 10 Kapitel · '+(stage*6)+' / '+CHRISTMAS_STORY_TOTAL_PAGES+' Seiten frei';
   if(mini)mini.textContent=stage+' / 10 Kapitel';
   nav.replaceChildren();
@@ -74,58 +85,39 @@ export function initChristmasStory({openTab}){
    nav.append(btn);
   }
 
-  const frame=node('div','storybook-spread');
-  const illustration=node('figure','storybook-illustration');
-  const image=node('img','storybook-scene');
-  image.loading='lazy';image.decoding='async';
-  image.src=galleryRoot+galleryPages[chapter-1][page-1];
-  image.alt='Foto aus der Eisblock-Galerie als Begleitung zur Geschichte: '+current.title;
-  image.addEventListener('error',()=>{
-   if(!image.src.endsWith('leere_winterdorf_plaza_im_mondlicht.png'))image.src=villageScene;
-  },{once:true});
-  const figcaption=node('figcaption','storybook-picture-caption','✦ GEMEINSAME ERINNERUNGEN ✦');
-  illustration.append(image,figcaption);
-  const paper=node('div','storybook-paper');
-  const edition=node('div','storybook-page-kicker','KAPITEL '+String(chapter).padStart(2,'0')+' · '+current.tree.toUpperCase());
-  const title=node('h3','storybook-page-heading',current.title);
-  const subtitle=node('div','storybook-page-subtitle','Seite '+page+' von 6 · '+heading);
-  const text=node('p','storybook-page-text',body);
-  const theme=node('div','storybook-page-thought');
-  theme.append(node('span','storybook-small-star','✧'),node('span','',current.theme));
-  const footer=node('div','storybook-page-footer');
-  footer.append(node('span','',current.icon+' '+current.title),node('strong','',''+((chapter-1)*6+page)));
-  paper.append(edition,title,subtitle,text,theme,footer);
-
-  frame.append(illustration,paper);
+  const frame=node('div','storybook-spread storybook-spread--textonly');
+  frame.append(makePage(current,first,'left'));
+  if(last>first)frame.append(makePage(current,last,'right'));
   const toolbar=node('div','storybook-turnbar');
   const prev=node('button','storybook-turn storybook-turn--prev','‹ Vorherige Seite');
   prev.type='button';
-  prev.disabled=chapter===1&&page===1;
+  prev.disabled=chapter===1&&first===1;
+  prev.setAttribute('aria-label','Vorherige Buchseite'+(narrowLayout.matches?'':'n'));
   prev.addEventListener('click',()=>go(-1));
   const locator=node('div','storybook-pagination');
-  const count=node('span','storybook-page-count','Seite '+page+' von 6');
+  const count=node('span','storybook-page-count',
+   first===last?'Seite '+first+' von 6':'Seiten '+first+'–'+last+' von 6');
   count.setAttribute('role','status');count.setAttribute('aria-live','polite');
   const dots=node('div','storybook-page-dots');
   for(let i=1;i<=6;i++){
-   const dot=node('button','storybook-page-dot'+(page===i?' is-selected':''));
+   const active=i>=first&&i<=last;
+   const dot=node('button','storybook-page-dot'+(active?' is-selected':''));
    dot.type='button';
    dot.setAttribute('aria-label','Seite '+i+' lesen');
-   if(page===i)dot.setAttribute('aria-current','page');
+   if(active)dot.setAttribute('aria-current','page');
    dot.addEventListener('click',()=>choose(chapter,i));
    dots.append(dot);
   }
   locator.append(count,dots);
   const next=node('button','storybook-turn storybook-turn--next',
-     page===6&&chapter<stage?'Nächstes Kapitel ›':'Nächste Seite ›');
+   last===6&&chapter<stage?'Nächstes Kapitel ›':'Nächste Seite ›');
   next.type='button';
-  next.disabled=page===6&&chapter===stage;
+  next.disabled=last===6&&chapter===stage;
+  next.setAttribute('aria-label',last===6&&chapter<stage?'Nächstes Kapitel':'Nächste Buchseite');
   next.addEventListener('click',()=>go(1));
   toolbar.append(prev,locator,next);
-
   reader.replaceChildren(frame,toolbar);
-  reader.setAttribute('aria-label','Kapitel '+chapter+' von 10, Seite '+page+' von 6: '+heading);
-
-  // This last action is informational navigation, never a client-side upgrade.
+  reader.setAttribute('aria-label','Kapitel '+chapter+' von 10, '+(first===last?'Seite '+first:'Seiten '+first+' bis '+last)+' von 6');
   action.hidden=false;
   action.textContent=stage<10?'🏘️ Zum Dorfausbau':'🎄 Zum Weihnachtsbaum';
   action.onclick=()=>openTab(stage<10?'buildings':'tree');
@@ -149,13 +141,15 @@ export function initChristmasStory({openTab}){
   if(stage!==previous||!isVerified)page=Math.min(6,page);
   draw();
  };
- // Left/right arrow on the focused book (not browser-wide, not in other tabs).
+ // Only the focused book responds to keyboard arrows; inside the story, arrow keys keep their scroll behavior.
  reader.addEventListener('keydown',event=>{
-  if(event.target.closest('button,input,textarea,select'))return;
-  if(event.key==='ArrowRight'&&!(page===6&&chapter===stage)){event.preventDefault();go(1);}
-  if(event.key==='ArrowLeft'&&!(page===1&&chapter===1)){event.preventDefault();go(-1);}
+  if(event.target!==reader)return;
+  if(event.key==='ArrowRight'){event.preventDefault();go(1);}
+  if(event.key==='ArrowLeft'){event.preventDefault();go(-1);}
  });
- // Swipe horizontally on the book to change pages; vertical reading scroll remains natural.
+ // Keep both page counts and positions accurate when rotating a tablet or phone.
+ if(narrowLayout.addEventListener)narrowLayout.addEventListener('change',draw);
+ // Swiping in the open book turns pages. Vertical dragging still scrolls the text.
  let touchX=null,touchY=null;
  reader.addEventListener('touchstart',event=>{
   if(event.touches.length!==1||!event.target.closest('.storybook-spread'))return;
@@ -167,8 +161,8 @@ export function initChristmasStory({openTab}){
   const dy=event.changedTouches[0].clientY-touchY;
   touchX=null;touchY=null;
   if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.5){
-   if(dx<0&&!(page===6&&chapter===stage))go(1);
-   if(dx>0&&!(page===1&&chapter===1))go(-1);
+   if(dx<0)go(1);
+   if(dx>0)go(-1);
   }
  },{passive:true});
  render();
