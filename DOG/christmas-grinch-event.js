@@ -62,7 +62,10 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
   if(!document.hidden&&document.getElementById('tab-grinch')?.getAttribute('aria-selected')==='true')
    void loadProgress(); // Respect the 30-second cache on returning to the page.
  });
- void loadProgress();
+ // Don't read hidden campaign progress whenever a player opens Lichtertal.
+ // Fetch on first Grinch tab visit, verified account change or manual refresh.
+ if(document.getElementById('tab-grinch')?.getAttribute('aria-selected')==='true')
+  void loadProgress();
  // A dialog must remain visible if its parent event panel changes tabs.
  if(dialog&&dialog.parentElement!==document.body)document.body.append(dialog);
 
@@ -170,5 +173,5 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
    else{state.dataset.state='locked';state.textContent='🔒 Gesperrt';}
   }
  }
- return {render};
+ return {render,loadProgress};
 }
