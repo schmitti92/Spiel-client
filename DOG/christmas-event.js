@@ -8,7 +8,7 @@ import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotal
 import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewards-ui.js?v=5';
 import {initChristmasTreeFilms} from './christmas-tree-films.js?v=2';
 import {initChristmasStory} from './christmas-story.js?v=7';
-import {initChristmasScratch} from './christmas-scratch-ui.js?v=84';
+import {initChristmasScratch} from './christmas-scratch-ui.js?v=85';
 import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=10';
 import {initChristmasResearch} from './christmas-research-ui.js?v=11';
 import {initChristmasContentZoom} from './christmas-content-zoom.js?v=1';
