@@ -96,3 +96,24 @@ test('tree level 2 and 3 use the four newly uploaded chapter videos in order',()
  assert.match(player,/tree-step-film-replay/);
  assert.doesNotMatch(player,/village\/upgrade|tree-rewards\/claim/);
 });
+
+test('DOG welcome video opens on entry to the actual room lobby, not each refresh',()=>{
+ const movie=source('DOG/room-lobby-video.js');
+ const lobby=source('DOG/room-lobby.js');
+ const hub=source('hub-lobby.html');
+ const mp4=readFileSync(new URL('../DOG/assets/42667997_1795277919445597.mp4',import.meta.url));
+ assert.ok(mp4.length>100000);
+ assert.equal(mp4.toString('latin1',4,8),'ftyp');
+ assert.match(lobby,/const state=summarizeDogRoomLobby\(snapshot,busy\)/);
+ assert.match(lobby,/if\(!wasOpen\)/);
+ assert.match(lobby,/welcomeFilm\.arrive\(state\.code,\{playing:state\.playing\}\)/);
+ assert.match(lobby,/welcomeFilm\.close\(\)/);
+ assert.match(movie,/if\(playing\|\|!roomCode\|\|root\.hidden\)return/);
+ assert.match(movie,/sessionStorage\.setItem\(key,'1'\)/);
+ assert.match(movie,/video\.autoplay=false/);
+ assert.match(movie,/video\.muted=false/);
+ assert.match(movie,/data-play/);
+ assert.match(movie,/data-dismiss/);
+ assert.match(movie,/Lobbyfilm ansehen/);
+ assert.match(hub,/DOG\/room-lobby\.js\?v=11/);
+});
