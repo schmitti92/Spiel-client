@@ -24,7 +24,9 @@ async function request(user,path,method='GET',body=null){
  return payload;
 }
 export function initChrisChristmasRestart(){
- const parent=document.querySelector('.sidebar-bottom');
+ // Reuse Chris's existing Entwickler-Einstellungen dialog, not the tightly
+ // sized nine-tab sidebar. The backend still requires his verified account.
+ const parent=document.querySelector('.dog-dev-dialog .dog-dev-fields');
  if(!parent)return;
  const box=document.createElement('section');
  box.id='dog-chris-personal-restart';
