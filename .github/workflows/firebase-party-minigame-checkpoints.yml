@@ -1,0 +1,30 @@
+name: Firebase Party Minigame Write Checkpoints (offline)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'snake-arena-online-bridge.js'
+      - 'lava-arena-online-bridge.js'
+      - 'hub-lobby.js'
+      - 'hub-lobby.html'
+      - 'tests/firebase-party-minigame-write-cadence.test.mjs'
+      - '.github/workflows/firebase-party-minigame-checkpoints.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  checkpoint-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate browser modules
+        run: |
+          node --check snake-arena-online-bridge.js
+          node --check lava-arena-online-bridge.js
+          node --check hub-lobby.js
+      - name: Test checkpoints and immediate Snake finish without Firebase
+        run: node --test tests/firebase-party-minigame-write-cadence.test.mjs
