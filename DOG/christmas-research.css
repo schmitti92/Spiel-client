@@ -1,0 +1,48 @@
+/* Lichtertal: persönlicher Forschungsbaum */
+#panel-research{--rg:#f6d58f}
+.dog-research-shell{max-width:1400px;margin:auto;padding:clamp(12px,2vw,30px);color:#f6ebd4}
+.dog-research-hero{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:26px;border:2px solid #c39a55;border-radius:22px;background:radial-gradient(circle at 85% 10%,#ac81485e,transparent 45%),linear-gradient(125deg,#0c4835,#072b23);box-shadow:0 12px 34px #0007,inset 0 0 0 5px #163e2c}
+.dog-research-kicker{font-size:.78rem;letter-spacing:.15em;color:#f4d48b;font-weight:900}
+.dog-research-hero h2{font:700 clamp(2rem,4vw,3.4rem)/1.12 Georgia,serif;color:#ffe0a2;margin:8px 0}
+.dog-research-hero p{max-width:660px;line-height:1.5;color:#e2e8d7;margin:0}
+.dog-research-hero-symbol{flex:none;display:grid;place-items:center;width:100px;height:100px;border:3px solid #efca83;border-radius:50%;background:#19503c;font-size:3.1rem;box-shadow:0 0 25px #e8ca6977}
+.dog-research-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}
+.dog-research-stat{text-align:center;border:1px solid #ba934f;border-radius:14px;padding:14px 8px;background:linear-gradient(140deg,#194b37,#0a2922)}
+.dog-research-stat span{display:block;color:#d6e3ce;font-size:.78rem;font-weight:700}
+.dog-research-stat strong{display:block;color:#ffe29b;font-size:clamp(1.5rem,3vw,2.2rem);font-weight:900}
+.dog-research-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:22px 0 12px;flex-wrap:wrap}
+.dog-research-toolbar h3{font:700 clamp(1.25rem,2.4vw,2rem) Georgia,serif;color:#f9da98;margin:0}
+.dog-research-refresh{border:1px solid #cca25f;background:#204937;color:#ffe7b8;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}
+.dog-research-filters{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 18px}
+.dog-research-filter{border:1px solid #a98b58;background:#163c2f;color:#fce6b8;border-radius:99px;padding:9px 13px;font-weight:750;cursor:pointer}
+.dog-research-filter.is-active{color:#153628;background:#f3d28c;border-color:#ffe9b1}
+.dog-research-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.dog-research-card{min-width:0;display:flex;flex-direction:column;gap:10px;padding:17px;border:1.5px solid #c09a5b;border-radius:17px;background:linear-gradient(155deg,#174736,#092d24);box-shadow:0 8px 22px #0006}
+.dog-research-card--preview{border-color:#678075;filter:saturate(.65)}
+.dog-research-card--full{border-color:#ffe3a5;box-shadow:0 0 16px #f7d7895e}
+.dog-research-card-top{display:flex;align-items:center;gap:12px}
+.dog-research-icon{flex:none;display:grid;place-items:center;width:53px;height:53px;border:2px solid #c2a268;border-radius:14px;background:#092c24;font-size:1.75rem}
+.dog-research-card-info{flex:1;min-width:0}
+.dog-research-card-info h3{font:700 clamp(1rem,2vw,1.4rem) Georgia,serif;color:#ffe0a4;margin:0}
+.dog-research-group{font-size:.73rem;color:#dacba5}
+.dog-research-rank{white-space:nowrap;color:#fadd92;border:1px solid #b99a59;border-radius:99px;padding:4px 9px;font-weight:900;font-size:.8rem}
+.dog-research-desc{color:#efeee2;font-size:.94rem;line-height:1.45;min-height:2.6em;margin:0}
+.dog-research-effect{color:#d7e9c8;margin:0;font-weight:750;font-size:.85rem}
+.dog-research-dots{display:flex;gap:4px}
+.dog-research-dots span{flex:1;min-width:8px;height:9px;border:1px solid #6c8378;border-radius:99px;background:#224133}
+.dog-research-dots span.is-owned{background:linear-gradient(#ffe6a7,#dda849);border-color:#f6d28a;box-shadow:0 0 7px #e4bf76}
+.dog-research-perk{background:#1a4a35;border-radius:9px;padding:8px;font-size:.81rem;color:#eef9e0;margin:0}
+.dog-research-card-bottom{margin-top:auto;padding-top:6px}
+.dog-research-upgrade,.dog-research-claim{width:100%;min-height:43px;border:1px solid #ffe5b2;border-radius:11px;background:linear-gradient(#ffe4aa,#c69b50);color:#183629;font-weight:900;padding:10px;cursor:pointer}
+.dog-research-upgrade:disabled,.dog-research-claim:disabled{opacity:.48;filter:grayscale(.7);cursor:not-allowed}
+.dog-research-max,.dog-research-wait{display:block;text-align:center;border-radius:9px;padding:10px;font-size:.82rem;font-weight:800}
+.dog-research-max{background:#285e41;color:#d9ffd6}
+.dog-research-wait{background:#304239;color:#d2dacd}
+.dog-research-claim-row{display:flex;gap:8px}
+.dog-research-tier{min-width:0;flex:1;border-radius:9px;padding:7px;background:#eef1db;color:#193d30}
+.dog-research-claim-row .dog-research-claim{flex:1;width:auto}
+.dog-research-status,.dog-research-note{margin:14px 0;border:1px solid #6b8a71;border-radius:12px;background:#143c2f;color:#e9f5dc;padding:12px 16px;line-height:1.5}
+.dog-research-status[data-error=true]{border-color:#ffa97f;color:#ffe7c5}
+.dog-research-note{font-size:.84rem;color:#e7e4c9}
+@media(max-width:950px){.dog-research-grid{grid-template-columns:1fr}.dog-research-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.dog-research-hero-symbol{width:68px;height:68px;font-size:2.1rem}}
+@media(max-width:530px){.dog-research-hero{padding:17px}.dog-research-hero-symbol{display:none}.dog-research-card{padding:12px}.dog-research-claim-row{flex-wrap:wrap}}
