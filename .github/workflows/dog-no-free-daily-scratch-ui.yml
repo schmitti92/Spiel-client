@@ -1,0 +1,20 @@
+name: DOG no daily free scratch buttons
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/christmas-scratch-ui.js'
+      - 'DOG/christmas-event.html'
+      - 'tests/dog-no-free-daily-scratch.test.mjs'
+      - '.github/workflows/dog-no-free-daily-scratch-ui.yml'
+  workflow_dispatch:
+jobs:
+  check-free-ticket-visibility:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/christmas-scratch-ui.js
+      - run: node --test tests/dog-no-free-daily-scratch.test.mjs
