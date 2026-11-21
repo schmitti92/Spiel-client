@@ -1,0 +1,101 @@
+/* DOG game-selection artwork; keeps the original click targets and routing. */
+/* Gallery: use the same full-image card approach as the other games. */
+.game-grid>.game.dog-online-card,
+.game-grid>.game.dog-classic-card{
+  position:relative;
+  width:100%;
+  min-width:0;
+  min-height:0!important;
+  aspect-ratio:696/320!important;
+  display:block!important;
+  padding:0!important;
+  overflow:hidden;
+  isolation:isolate;
+  border:2px solid #dfb866!important;
+  border-radius:23px!important;
+  background:#0c2334!important;
+  box-shadow:0 11px 27px #05121d83,0 0 0 1px #ffffff24!important;
+  transition:transform .24s ease,box-shadow .24s ease;
+}
+.game-grid>.game.dog-online-card:hover,
+.game-grid>.game.dog-classic-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 16px 32px #03121ca0,0 0 0 2px #f2d58a!important;
+}
+.game-grid>.game.dog-online-card:focus-within,
+.game-grid>.game.dog-classic-card:focus-within{
+  outline:3px solid #fff0bd;
+  outline-offset:3px;
+}
+/* Keep the regular hero text as a fallback until the actual PNG has loaded. */
+.game-grid>.game.dog-online-card>.dog-card-art,
+.game-grid>.game.dog-classic-card>.dog-card-art{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+  object-position:center;
+  z-index:1;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s ease,transform .3s ease;
+}
+.game-grid>.game.dog-art-ready>.dog-card-art{opacity:1}
+.game-grid>.game.dog-art-ready:hover>.dog-card-art{transform:scale(1.018)}
+.game-grid>.game.dog-online-card.dog-art-ready .dog-hero,
+.game-grid>.game.dog-classic-card.dog-art-ready .dog-title,
+.game-grid>.game.dog-classic-card.dog-art-ready .dog-sub,
+.game-grid>.game.dog-classic-card.dog-art-ready .dog-cta{display:none!important}
+.game-grid>.game.dog-online-card .actions,
+.game-grid>.game.dog-online-card .image-card-button{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  z-index:5!important;
+  background:transparent!important;
+  border:0!important;box-shadow:none!important;
+}
+.game-grid>.game.dog-classic-card .local-game-link{z-index:5!important}
+/* Fallback text remains readable if the image cannot be fetched. */
+.game-grid>.game.dog-online-card:not(.dog-art-ready) .dog-hero{
+  position:absolute;inset:0;z-index:2;
+  display:flex;justify-content:center;align-items:center;flex-direction:column;
+  pointer-events:none;
+}
+.game-grid>.game.dog-classic-card:not(.dog-art-ready) .dog-title,
+.game-grid>.game.dog-classic-card:not(.dog-art-ready) .dog-sub,
+.game-grid>.game.dog-classic-card:not(.dog-art-ready) .dog-cta{
+  position:relative;z-index:2;pointer-events:none;
+}
+@media(max-width:760px){
+ .game-grid>.game.dog-online-card,.game-grid>.game.dog-classic-card{
+   border-radius:14px!important;aspect-ratio:696/400!important;
+ }
+}
+@media(max-width:520px){
+ .game-grid>.game.dog-online-card,.game-grid>.game.dog-classic-card{
+   aspect-ratio:696/320!important;
+ }
+}
+/* Compact room game chooser: reuse the same asset with a text-safe bottom fade. */
+#game-chooser .game[data-game="dog"]{
+  background-image:
+    linear-gradient(0deg,rgba(3,16,30,.92) 0%,rgba(3,18,33,.55) 37%,rgba(7,27,43,.06) 100%),
+    url("assets/dog-lobby-dock.png?v=1")!important;
+  background-position:center!important;
+  background-size:cover!important;
+  border-color:#e2b96b!important;
+}
+#game-chooser .game[data-game="dog"] b,
+#game-chooser .game[data-game="dog"] small{
+  text-shadow:0 2px 5px #000,0 0 12px #001c2b;
+  color:#fff5d8;
+}
+/* Selected-game preview uses the DOG art while retaining its navigation. */
+#game-stage-hero[data-game="dog"] .game-stage-cover{
+  --cover:url("assets/dog-lobby-dock.png?v=1");
+}
+@media(prefers-reduced-motion:reduce){
+ .game-grid>.game.dog-online-card,.game-grid>.game.dog-classic-card,
+ .game-grid>.game.dog-online-card>.dog-card-art,.game-grid>.game.dog-classic-card>.dog-card-art{transition:none!important}
+}
