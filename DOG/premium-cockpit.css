@@ -441,3 +441,20 @@ dialog::backdrop{background:rgba(0,8,20,.78);backdrop-filter:blur(3px)}
 :root[data-dog-motion="off"] .dog-premium-live.dog-royal-turn-change{
  animation:none!important
 }
+
+/* Turn notice: visible at each player change, without intercepting piece clicks. */
+.dog-turn-announcement{
+ position:fixed;z-index:1050;pointer-events:none;user-select:none;
+ top:clamp(68px,11vh,112px);left:50%;width:max-content;max-width:calc(100vw - 28px);
+ transform:translate(-50%,-12px) scale(.97);opacity:0;
+ padding:11px 23px;border-radius:16px;
+ border:2px solid var(--dog-turn-color,#efcd8c);
+ color:#fff9e9;text-align:center;font-size:clamp(18px,2.4vw,29px);
+ font-weight:950;line-height:1.25;letter-spacing:.015em;overflow-wrap:anywhere;
+ background:linear-gradient(135deg,rgba(6,24,43,.97),rgba(15,49,70,.97));
+ box-shadow:0 10px 42px rgba(0,8,22,.72),0 0 22px var(--dog-turn-color,#efcd8c);
+ transition:opacity .22s ease,transform .22s ease;
+}
+.dog-turn-announcement.is-visible{opacity:1;transform:translate(-50%,0) scale(1)}
+@media(prefers-reduced-motion:reduce){.dog-turn-announcement{transition:none!important}}
+:root[data-dog-motion="off"] .dog-turn-announcement{transition:none!important}
