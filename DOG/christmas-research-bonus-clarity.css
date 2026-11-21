@@ -1,0 +1,184 @@
+/* Lichtertal Forschung: klare aktuelle und nächste Boni.
+   Live HTML values are taken from the research API, never drawn as image text.
+   Original eight tab buttons and the research purchase / claim actions remain.
+ */
+
+/* Restore complete SVG medallions: the composite sprite on the left was cropped
+   into mismatched fragments by the previous CSS. */
+@media(min-width:761px){
+ .event-layout>.event-sidebar .event-tab>span{
+  background-size:contain!important;background-position:center!important;
+  background-repeat:no-repeat!important;
+ }
+ .event-layout>.event-sidebar .event-tab[data-tab="village"]>span{background-image:url("./assets/lichtertal-sidebar/01-weihnachtsdorf.svg")!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="buildings"]>span{background-image:url("./assets/lichtertal-sidebar/02-gebaeude.svg")!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="tree"]>span{background-image:url("./assets/lichtertal-sidebar/03-weihnachtsbaum.svg")!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="story"]>span{background-image:url("./assets/lichtertal-sidebar/04-geschichte.svg")!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="grinch"]>span{background-image:url("./assets/lichtertal-sidebar/05-grinch-event.svg")!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="scratch"]>span{background-image:url("./assets/lichtertal-sidebar/06-rubbellose.svg")!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="level"]>span{background-image:url("./assets/lichtertal-sidebar/07-spielerlevel.svg")!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="research"]>span{background-image:url("./assets/lichtertal-sidebar/08-weihnachtsforschung.svg")!important}
+}
+
+/* Cards: two labelled bonus cells replace the cryptic one-line status. */
+#panel-research .dog-research-card[data-research-art]{
+ grid-template-rows:clamp(118px,14dvh,144px) minmax(160px,auto)!important;
+ height:auto!important;min-height:310px!important;max-height:none!important;
+}
+#panel-research .dog-research-card[data-research-art]::after{
+ height:clamp(118px,14dvh,144px)!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-content{
+ min-height:160px!important;height:auto!important;padding:9px 10px 11px!important;
+ display:flex!important;flex-direction:column!important;overflow:visible!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-title{
+ font-size:clamp(13px,.95vw,17px)!important;line-height:1.15!important;
+ white-space:normal!important;overflow-wrap:anywhere!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-description{
+ display:-webkit-box!important;-webkit-box-orient:vertical!important;
+ -webkit-line-clamp:2!important;line-clamp:2!important;
+ max-height:2.78em!important;min-height:0!important;overflow:hidden!important;
+ font-size:11px!important;line-height:1.35!important;
+ margin:4px 0 7px!important;
+}
+#panel-research .dr-card-bonus-compare{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:6px!important;align-items:stretch!important;min-width:0!important;
+ margin:0 0 7px!important;padding:0!important;
+}
+#panel-research .dr-card-benefit{
+ display:flex!important;flex-direction:column!important;gap:4px!important;
+ min-width:0!important;min-height:57px!important;
+ padding:7px 8px!important;border-radius:9px!important;
+ border:1px solid #a68e57!important;
+ background:linear-gradient(160deg,#0e3328,#08261f)!important;
+ box-shadow:inset 0 1px #fff9c225!important;
+ text-align:left!important;
+}
+#panel-research .dr-card-benefit-now{border-color:#ad9c71!important}
+#panel-research .dr-card-benefit-next{
+ border-color:#d2b86f!important;
+ background:linear-gradient(155deg,#18492f,#0b3427)!important;
+}
+#panel-research .dr-card-benefit-label{
+ color:#dfc18f!important;font:900 9px/1.16 system-ui,sans-serif!important;
+ letter-spacing:.4px!important;white-space:normal!important;
+ overflow-wrap:anywhere!important;
+}
+#panel-research .dr-card-benefit-value{
+ color:#f1e9d5!important;font:850 clamp(11px,.81vw,13px)/1.22 system-ui,sans-serif!important;
+ white-space:normal!important;overflow-wrap:anywhere!important;
+ word-break:normal!important;
+}
+#panel-research .dr-card-benefit-next .dr-card-benefit-value{
+ color:#bbffae!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-bottom{
+ min-width:0!important;gap:6px!important;margin-top:auto!important;
+}
+#panel-research .dr-card-next-cost{
+ flex:none!important;font:850 11px/1.1 system-ui,sans-serif!important;
+ color:#f9d693!important;white-space:nowrap!important;
+}
+#panel-research .dog-research-card[data-research-art].is-selected{
+ box-shadow:0 0 0 1px #ffe3aa,0 0 20px #66db8a97!important;
+}
+
+/* Selected research: current and next bonuses become the central visual. */
+#panel-research .dr-detail-effects{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:9px!important;min-width:0!important;margin:8px 0 9px!important;
+}
+#panel-research .dr-detail-effects .dr-detail-block{
+ display:flex!important;flex-direction:column!important;
+ justify-content:space-between!important;
+ gap:7px!important;min-width:0!important;min-height:98px!important;
+ padding:11px!important;margin:0!important;border-radius:13px!important;
+ box-shadow:inset 0 1px #ffeab32d,0 3px 7px #0005!important;
+}
+#panel-research .dr-detail-effects .dr-current-effect{
+ border:1.5px solid #abbead!important;
+ background:linear-gradient(135deg,#173d30,#082f25)!important;
+}
+#panel-research .dr-detail-effects .dr-next-effect{
+ border:1.5px solid #e7c26e!important;
+ background:linear-gradient(155deg,#23603a,#12472e 60%,#0c3224)!important;
+ box-shadow:inset 0 1px #fff8ab40,0 0 10px #cbb27432!important;
+}
+#panel-research .dr-detail-effects .dr-detail-label{
+ margin:0!important;color:#f2d7a2!important;
+ font:900 clamp(10px,.84vw,12px)/1.2 system-ui,sans-serif!important;
+ letter-spacing:.35px!important;overflow-wrap:anywhere!important;
+}
+#panel-research .dr-detail-effects .dr-detail-value{
+ display:block!important;padding:0!important;margin:0!important;
+ border:0!important;background:none!important;box-shadow:none!important;
+ font:900 clamp(15px,1.13vw,19px)/1.22 system-ui,sans-serif!important;
+ color:#fff0d2!important;overflow-wrap:anywhere!important;
+ white-space:normal!important;
+}
+#panel-research .dr-detail-effects .dr-next-effect .dr-detail-value{
+ color:#baffb0!important;text-shadow:0 0 9px #91fbab30!important;
+}
+#panel-research .dr-detail-gain{
+ display:flex!important;align-items:center!important;flex-wrap:wrap!important;
+ gap:6px 9px!important;min-width:0!important;
+ margin:0 0 8px!important;padding:9px 11px!important;
+ border:1px solid #a6ca84!important;border-radius:12px!important;
+ background:linear-gradient(115deg,#1d4b32,#16563a 50%,#123a2b)!important;
+ box-shadow:inset 0 1px #fff6ba35!important;
+}
+#panel-research .dr-detail-gain-symbol{
+ color:#f7d078!important;font-size:17px!important;line-height:1!important;
+}
+#panel-research .dr-detail-gain-label{
+ color:#ffe5aa!important;font:900 10px/1.2 system-ui,sans-serif!important;
+ letter-spacing:.5px!important;
+}
+#panel-research .dr-detail-gain-value{
+ color:#b8ff9f!important;
+ font:900 clamp(12px,1vw,15px)/1.25 system-ui,sans-serif!important;
+ overflow-wrap:anywhere!important;min-width:0!important;
+}
+#panel-research .dr-detail-actions{padding-top:9px!important}
+#panel-research .dr-detail-description{margin-bottom:6px!important}
+#panel-research .dr-detail-description .dr-detail-value{
+ color:#f6e9d6!important;font-size:12px!important;line-height:1.34!important;
+}
+
+/* Keep the upgrade and claim buttons reachable on shorter tablet landscapes. */
+@media(min-width:850px) and (max-height:750px){
+ #panel-research .dr-detail-artwork[data-research-art]{
+  height:clamp(95px,17dvh,138px)!important;
+ }
+ #panel-research .dr-detail-effects{gap:6px!important;margin:4px 0 6px!important}
+ #panel-research .dr-detail-effects .dr-detail-block{
+  min-height:75px!important;padding:8px!important;gap:4px!important;
+ }
+ #panel-research .dr-detail-effects .dr-detail-value{font-size:14px!important}
+ #panel-research .dr-detail-gain{padding:6px 8px!important;margin-bottom:5px!important}
+ #panel-research .dr-detail-body{padding:9px 10px!important}
+ #panel-research .dr-detail-heading{margin-bottom:5px!important}
+ #panel-research .dr-detail-description{margin-bottom:4px!important}
+ #panel-research .dog-research-card[data-research-art]{
+  grid-template-rows:112px minmax(160px,auto)!important;
+ }
+ #panel-research .dog-research-card[data-research-art]::after{height:112px!important}
+}
+@media(min-width:850px) and (max-height:630px){
+ #panel-research .dr-detail-panel[data-research-art]{
+  overflow-y:auto!important;overflow-x:hidden!important;
+ }
+}
+@media(max-width:849px){
+ #panel-research .dog-research-card[data-research-art]{
+  grid-template-rows:120px minmax(160px,auto)!important;
+ }
+ #panel-research .dog-research-card[data-research-art]::after{height:120px!important}
+}
+@media(max-width:560px){
+ #panel-research .dr-card-bonus-compare{grid-template-columns:1fr!important}
+ #panel-research .dr-detail-effects{grid-template-columns:1fr!important}
+}
