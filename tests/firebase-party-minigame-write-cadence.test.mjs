@@ -45,9 +45,9 @@ function fakeBrowser(){
 
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 
-test('Snake: checkpoints are >=600ms apart, final result is immediate, no real Firebase calls',async()=>{
+test('Snake: checkpoints are >=2400ms apart, final result is immediate, no real Firebase calls',async()=>{
  const module=await loadSourceModule('snake-arena-online-bridge.js');
- assert.equal(module.SNAKE_STATE_CHECKPOINT_MS,600);
+ assert.equal(module.SNAKE_STATE_CHECKPOINT_MS,2400);
  assert.equal(module.SNAKE_TIMEOUT_PROBE_MS,3000);
  const browser=fakeBrowser();
  try{
@@ -69,7 +69,7 @@ test('Snake: checkpoints are >=600ms apart, final result is immediate, no real F
   assert.equal(saved.length,1);
   browser.advance(80);state(20);await flush();
   assert.equal(calls.filter(c=>c.path.endsWith('/challenge-snake-state')).length,1);
-  browser.advance(510);browser.tick();await flush();
+  browser.advance(2310);browser.tick();await flush();
   assert.equal(calls.filter(c=>c.path.endsWith('/challenge-snake-state')).length,1);
   browser.advance(20);browser.tick();await flush();
   saved=calls.filter(c=>c.path.endsWith('/challenge-snake-state'));
@@ -86,9 +86,9 @@ test('Snake: checkpoints are >=600ms apart, final result is immediate, no real F
  }finally{browser.restore();}
 });
 
-test('Lava: movement is checkpointed at 350ms, idle ticks at >=1800ms',async()=>{
+test('Lava: movement is checkpointed at 1500ms, idle ticks at >=1800ms',async()=>{
  const module=await loadSourceModule('lava-arena-online-bridge.js');
- assert.equal(module.LAVA_STATE_CHECKPOINT_MS,350);
+ assert.equal(module.LAVA_STATE_CHECKPOINT_MS,1500);
  assert.equal(module.LAVA_IDLE_TICK_MS,1800);
  const browser=fakeBrowser();
  try{
@@ -109,11 +109,11 @@ test('Lava: movement is checkpointed at 350ms, idle ticks at >=1800ms',async()=>
   await state(1,100);await flush();
   browser.advance(90);await state(2,103);await flush();
   assert.equal(calls.filter(c=>c.path.endsWith('/challenge-lava-state')).length,1);
-  browser.advance(270);await state(3,105);await flush();
+  browser.advance(1420);await state(3,105);await flush();
   const writes=calls.filter(c=>c.path.endsWith('/challenge-lava-state'));
   assert.equal(writes.length,2);
-  assert.ok(writes[1].time-writes[0].time>=350);
-  browser.advance(700);browser.tick();await flush();
+  assert.ok(writes[1].time-writes[0].time>=1500);
+  browser.advance(100);browser.tick();await flush();
   assert.equal(calls.filter(c=>c.path.endsWith('/challenge-lava-tick')).length,1);
   browser.advance(900);browser.tick();await flush();
   const ticks=calls.filter(c=>c.path.endsWith('/challenge-lava-tick'));
