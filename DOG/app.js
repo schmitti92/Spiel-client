@@ -2,7 +2,7 @@ import {refreshVerifiedCosmetics} from './verified-cosmetics.js?v=2';
 import {CARD_EDITIONS,CARD_EDITION,isCardEditionUnlocked,loadCardEdition,saveCardEdition,cardBackBackground,cardMarkup,cardVisual} from './card-visuals.js?v=12';
 import {enableHandTouchGestures} from './hand-gestures.js?v=2';
 import {mountDogEmojiGame,showDogEmoji,showDogEmojiError} from './emoji-game.js?v=4';
-import {boardGestureTarget} from './board-gesture-math.js?v=1';
+import {boardGestureTarget,nearestTrackPawn} from './board-gesture-math.js?v=2';
 import {snapshotPieces,planPieceMotions,createPieceAnimator} from './piece-animations.js?v=3';
 import {loadMotionMode,saveMotionMode,applyMotionMode} from './motion-settings.js?v=1';
 import {createDogVisualFeedback} from './ui-animations.js?v=2';
@@ -147,15 +147,20 @@ function gestureState(){
 function beginGesture(){gestureSnapshot=gestureState();}
 boardSvg.addEventListener('pointerdown',event=>{
  if(event.pointerType==='mouse')return;
- boardPointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
- if(boardPointers.size>=2){gestureMoved=true;suppressBoardClickUntil=performance.now()+450;}
+ boardPointers.set(event.pointerId,{x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY});
+ if(boardPointers.size>=2){
+  gestureMoved=true;suppressBoardClickUntil=performance.now()+450;
+  // Capture only a genuine two-finger gesture, never an ordinary pawn tap.
+  for(const id of boardPointers.keys()){
+   try{boardSvg.setPointerCapture(id);}catch(_){}
+  }
+ }
  beginGesture();
- try{boardSvg.setPointerCapture(event.pointerId);}catch(_){}
 });
 boardSvg.addEventListener('pointermove',event=>{
  if(!boardPointers.has(event.pointerId))return;
  const old=boardPointers.get(event.pointerId);
- boardPointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+ boardPointers.set(event.pointerId,{...old,x:event.clientX,y:event.clientY});
  if(!gestureSnapshot)return;
  const points=[...boardPointers.values()];
  const mid={x:points.reduce((v,p)=>v+p.x,0)/points.length,y:points.reduce((v,p)=>v+p.y,0)/points.length};
@@ -168,7 +173,10 @@ boardSvg.addEventListener('pointermove',event=>{
   gestureMoved=true;suppressBoardClickUntil=performance.now()+450;
  }else if(boardZoom>1&&points.length===1){
   const delta=Math.hypot(event.clientX-old.x,event.clientY-old.y);
-  if(delta>2){
+  const total=Math.hypot(event.clientX-old.startX,event.clientY-old.startY);
+  if(total>6&&delta>0){
+   // Pan after movement threshold so a single tap still clicks its pawn.
+   try{if(!boardSvg.hasPointerCapture(event.pointerId))boardSvg.setPointerCapture(event.pointerId);}catch(_){}
    const scale=boardPixelScale();
    boardCenter.x-=(event.clientX-old.x)/scale;boardCenter.y-=(event.clientY-old.y)/scale;
    applyBoardView();gestureMoved=true;suppressBoardClickUntil=performance.now()+450;
@@ -722,9 +730,37 @@ $('moves').addEventListener('click',e=>{const research=e.target.closest('[data-r
 $('board').addEventListener('click',e=>{
  if(performance.now()<suppressBoardClickUntil)return;
  if(pieceAnimator.isActive()){$('status').textContent='🐾 Die Figuren bewegen sich noch. Danach kannst du ziehen.';return;}
- if(!revealed||currentHuman()<0||onlineBusy)return;
- const node=e.target.closest('[data-piece]');
- if(node&&selectedPiece===null){if(!available.some(m=>m.pieceId===Number(node.dataset.piece))){visualFeedback.invalid();return;}selectedPiece=Number(node.dataset.piece);drawBoard();$('move-help').textContent='Wähle das Zielfeld selbst.';return;}
+ const seat=currentHuman();
+ if(!revealed||seat<0||onlineBusy)return;
+ const selectedCardObject=game.hands?.[seat]?.find(card=>card.id===selectedCard);
+ const swapCardSelected=game.phase==='play'&&(selectedCardObject?.type==='swap'||(selectedCardObject?.type==='joker'&&jokerAs==='swap'));
+ let node=e.target.closest('[data-piece]');
+ // A swap target should remain tappable even when a finger lands just outside
+ // its SVG artwork; look up by stable piece id, including three-player games.
+ if(!node&&selectedPiece!==null&&swapCardSelected){
+  const matrix=boardSvg.getScreenCTM();
+  if(matrix){
+   const point=new DOMPoint(e.clientX,e.clientY).matrixTransform(matrix.inverse());
+   const nearbyId=nearestTrackPawn(game.pieces,point,TRACK_POINTS,24);
+   if(nearbyId!==null)node=boardSvg.querySelector('[data-piece="'+nearbyId+'"]');
+  }
+ }
+ if(node&&selectedPiece===null){
+  const id=Number(node.dataset.piece);
+  if(!available.some(m=>m.pieceId===id)){
+   if(swapCardSelected){
+    const piece=game.pieces.find(p=>p.id===id);
+    $('move-help').textContent=piece?.place!=='track'?'🔄 Tauschen geht nur mit Figuren auf der Laufbahn.':piece.pos===piece.owner*16?'🛡️ Diese Figur steht geschützt auf ihrem eigenen Startfeld.':'🔄 Wähle zuerst eine eigene, ungeschützte Figur auf der Laufbahn.';
+   }else if(selectedCard===null){
+    $('move-help').textContent='🃏 Wähle zuerst eine Handkarte aus.';
+   }
+   visualFeedback.invalid();
+   return;
+  }
+  selectedPiece=id;drawBoard();
+  $('move-help').textContent=swapCardSelected?'🔄 Jetzt die zweite Figur auf der Laufbahn antippen (kein geschütztes Startfeld).':'Wähle das Zielfeld selbst.';
+  return;
+ }
  if(node&&Number(node.dataset.piece)===selectedPiece){selectedPiece=null;drawBoard();$('move-help').textContent='Figur abgewählt.';return;}
  // A target pawn must be resolved before allowing a different source pawn.
  // Otherwise clicking an opponent (or another selectable pawn) can silently
@@ -738,8 +774,15 @@ $('board').addEventListener('click',e=>{
    return;
   }
  }
- if(node&&available.some(m=>m.pieceId===Number(node.dataset.piece))&&Number(node.dataset.piece)!==selectedPiece){selectedPiece=Number(node.dataset.piece);drawBoard();$('move-help').textContent='Andere Figur gewählt. Jetzt Zielfeld antippen.';return;}
+ if(node&&available.some(m=>m.pieceId===Number(node.dataset.piece))&&Number(node.dataset.piece)!==selectedPiece){selectedPiece=Number(node.dataset.piece);drawBoard();$('move-help').textContent=swapCardSelected?'🔄 Andere eigene Figur gewählt. Jetzt Tauschziel antippen.':'Andere Figur gewählt. Jetzt Zielfeld antippen.';return;}
  if(selectedPiece===null)return;
+ if(swapCardSelected){
+  const target=game.pieces.find(p=>p.id===Number(node?.dataset.piece));
+  $('move-help').textContent=!node?'🔄 Tippe direkt auf die zweite Figur auf der Laufbahn.':target?.place!=='track'?'🔄 Figuren im Haus oder im Ziel können nicht getauscht werden.':target.pos===target.owner*16?'🛡️ Figur auf eigenem Startfeld ist geschützt und kann nicht getauscht werden.':'🔄 Dieser Tausch ist nicht erlaubt. Wähle eine andere Figur.';
+  visualFeedback.invalid();
+  // Keep the source pawn selected so the player can retry the second click.
+  return;
+ }
  const matrix=$('board').getScreenCTM();if(!matrix)return;
  const p=new DOMPoint(e.clientX,e.clientY).matrixTransform(matrix.inverse());
  const fields=TRACK_POINTS.map((v,i)=>({key:'track:'+i,p:v}));
