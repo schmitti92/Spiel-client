@@ -355,6 +355,11 @@ export function initChristmasResearch(){
    const tab=$('tab-'+button.dataset.researchOpenTab);if(tab)tab.click();
   });
  }
+ const exit=root.querySelector('.dr-exit');
+ if(exit&&$('event-return'))exit.href=$('event-return').href;
+ root.querySelector('.dr-topnav .is-current')?.addEventListener('click',()=>{
+  $('event-main')?.scrollTo({top:0,behavior:'smooth'});
+ });
  $('dog-research-refresh').addEventListener('click',()=>void load());
  window.addEventListener('spielonline-change',()=>{
   requestId++;data=null;pending=null;pendingUid=null;
