@@ -40,11 +40,15 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
    const response=await fetch(api+'/api/hub/grinch/progress',{headers:{Authorization:'Bearer '+token},cache:'no-store'});
    if(!response.ok)throw Error('Progress read failed');
    const payload=await response.json();
-   if(payload.ok===true){
+   if(payload.ok===true&&user()?.uid===person.uid){
     verifiedProgress=payload.progress;progressForUid=person.uid;progressLastAt=Date.now();
    }
   }catch(_e){/* Never fabricate progress or unlocks while offline. */}
-  finally{progressLoading=false;render();}
+  finally{
+   progressLoading=false;render();
+   const newest=user();
+   if(newest?.uid&&newest.uid!==person.uid)void loadProgress(true);
+  }
  }
  let progressIdentity=user()?.uid||null;
  window.addEventListener('spielonline-change',()=>{
