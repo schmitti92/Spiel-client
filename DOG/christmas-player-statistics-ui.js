@@ -3,6 +3,16 @@
  * Only verified room participants receive totals, directly from Render.
  * Not a global leaderboard: no public profile listing, no guessed prizes.
  */
+// Room comparisons are expensive (up to 1 room + 3 documents per player).
+// Keep only a short, personal DISPLAY snapshot for rapid tab switches.
+// Manual refresh and every first read after account/room changes stay live.
+export const PLAYER_STATISTICS_TAB_REUSE_MS=30000;
+export function reuseRecentPlayerStatistics({uid,roomCode,loadedUid,loadedRoomCode,loadedAt,hasData,force=false,now=Date.now()}){
+ const age=now-loadedAt;
+ return Boolean(uid)&&Boolean(roomCode)&&!force&&Boolean(hasData)&&
+  uid===loadedUid&&roomCode===loadedRoomCode&&
+  Number.isFinite(age)&&age>=0&&age<PLAYER_STATISTICS_TAB_REUSE_MS;
+}
 export function initChristmasPlayerStatistics(){
  const $=id=>document.getElementById(id);
  const root=$('christmas-player-statistics');
@@ -21,6 +31,8 @@ export function initChristmasPlayerStatistics(){
  const fmt=value=>new Intl.NumberFormat('de-DE').format(Number(value)||0);
  let code=String(initialCode).toUpperCase();
  let data=null,loading=null,requestId=0;
+ let lastLoadedAt=0,lastLoadedUid=null,lastLoadedCode=null;
+ let activeUid=user()?.uid||null;
  codeInput.value=validCode(code)?code:'';
  function user(){
   const state=window.SpielOnline?.state?.();
@@ -140,6 +152,9 @@ export function initChristmasPlayerStatistics(){
    data=null;view.hidden=true;
    setStatus('Bitte melde dich zuerst mit deinem Online-Spielerprofil an.',true);return;
   }
+  if(reuseRecentPlayerStatistics({uid:account.uid,roomCode:code,
+     loadedUid:lastLoadedUid,loadedRoomCode:lastLoadedCode,
+     loadedAt:lastLoadedAt,hasData:Boolean(data),force}))return;
   if(loading&&!force)return loading;
   const id=++requestId;
   setStatus('Spielerstatistik wird vom Server geladen …');
@@ -153,10 +168,11 @@ export function initChristmasPlayerStatistics(){
     const payload=await reply.json().catch(()=>({}));
     if(!reply.ok||payload.ok!==true)throw Error(payload.error||('HTTP_'+reply.status));
     if(id!==requestId||user()?.uid!==account.uid)return;
-    data=payload;render();
+    data=payload;lastLoadedAt=Date.now();lastLoadedUid=account.uid;lastLoadedCode=code;
+    render();
    }catch(err){
     if(id!==requestId)return;
-    data=null;view.hidden=true;
+    data=null;lastLoadedAt=0;lastLoadedUid=null;lastLoadedCode=null;view.hidden=true;
     const text=String(err?.message||'UNAVAILABLE');
     if(replyErrorIsAccess(text))setStatus('Dieser Raum ist nicht zugänglich. Du musst selbst Mitglied des Raums sein.',true);
     else if(text==='ROOM_NOT_FOUND')
@@ -180,15 +196,22 @@ export function initChristmasPlayerStatistics(){
    setStatus('Ungültiger Raumcode: 3 Ziffern oder 6 zulässige Zeichen verwenden.',true);
    return;
   }
-  code=next;data=null;void load(true);
+  code=next;data=null;lastLoadedAt=0;lastLoadedUid=null;lastLoadedCode=null;
+  void load(true);
  }
  connect.addEventListener('click',submitRoom);
  codeInput.addEventListener('keydown',e=>{if(e.key==='Enter')submitRoom();});
  refresh.addEventListener('click',()=>void load(true));
  sort.addEventListener('change',render);
  window.addEventListener('spielonline-change',()=>{
-  requestId++;data=null;view.hidden=true;
-  if(document.getElementById('tab-statistics')?.getAttribute('aria-selected')==='true')
+  const nextUid=user()?.uid||null;
+  // Auth state updates that retain the SAME verified account do not
+  // invalidate a recent comparison or force up to 19 Firestore reads.
+  if(nextUid===activeUid)return;
+  activeUid=nextUid;
+  requestId++;loading=null;data=null;lastLoadedAt=0;lastLoadedUid=null;lastLoadedCode=null;
+  view.hidden=true;
+  if(nextUid&&document.getElementById('tab-statistics')?.getAttribute('aria-selected')==='true')
    void load(true);
  });
  if(!validCode(code))setStatus('Gib deinen Raumcode ein, um die Spieler miteinander zu vergleichen.');
