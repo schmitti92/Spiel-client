@@ -1,0 +1,31 @@
+name: DOG Chris Christmas reset UI
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/christmas-chris-reset.js'
+      - 'DOG/christmas-event.js'
+      - 'DOG/christmas-intro-gate.js'
+      - 'DOG/christmas-event.html'
+      - '.github/workflows/dog-chris-reset-ui.yml'
+  pull_request:
+    paths:
+      - 'DOG/christmas-chris-reset.js'
+      - 'DOG/christmas-event.js'
+      - 'DOG/christmas-intro-gate.js'
+      - 'DOG/christmas-event.html'
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+jobs:
+  check-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/christmas-chris-reset.js
+      - run: node --check DOG/christmas-event.js
+      - run: node --check DOG/christmas-intro-gate.js
