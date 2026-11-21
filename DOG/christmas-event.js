@@ -642,7 +642,7 @@ const bonusExplainers=Object.freeze({
  academy:'Der XP-Bonus zählt nur für echte, abgeschlossene DOG-Partien. Für laufende Spiele wird die beim Spielstart erreichte Akademiestufe verwendet.'
 });
 function villageBuildingBonus(id,level){
- const bonus=villageLive?.bonus;
+ const bonus=devMode.isActive()?null:villageLive?.bonus;
  if(id==='tower'){
   const value=bonus&&Number.isInteger(bonus.towerFields)?bonus.towerFields:FIELDS[level-1];
   return value+' versteckte Geschenkfelder pro Runde';
@@ -667,12 +667,12 @@ function villageBuildingBonus(id,level){
 function renderVillageBuildingDialog(id){
  const definition=definitions.find(d=>d.id===id);
  if(!definition)return;
- const confirmed=Boolean(villageLive?.levels&&Number.isInteger(villageLive.levels[id]));
- const level=confirmed?villageLive.levels[id]:preview[id];
+ const confirmed=!devMode.isActive()&&Boolean(villageLive?.levels&&Number.isInteger(villageLive.levels[id]));
+ const level=devMode.isActive()?preview[id]:confirmed?villageLive.levels[id]:preview[id];
  $('village-building-title').textContent=definition.title;
  $('village-building-icon').textContent=definition.icon;
  $('village-building-description').textContent=buildingDescriptions[id];
- $('village-building-mode').textContent=villageMaxPreview?
+ $('village-building-mode').textContent=devMode.isActive()?'🧪 Lokale Teststufe · kein Online-Bonus':villageMaxPreview?
   '🔍 Auf der Dorfkarte nur simuliert · tatsächliche Stufe: '+level+' / 5':
   !confirmed?'👁️ Vorschau · Gemeinsamer Online-Fortschritt noch nicht bestätigt':
   villageEventActive?'🟢 Gemeinsamer Bonus aktiv':'⏸️ Event beendet · Bonus derzeit nicht aktiv';
@@ -894,9 +894,11 @@ $('story-refresh')?.addEventListener('click',async()=>{
  const button=$('story-refresh');button.disabled=true;
  try{await reloadVillage();}finally{button.disabled=false;}
 });
+let lastDevGrinch=devMode.hasGrinch();
 window.addEventListener('dog-christmas-dev-change',()=>{
  villageMaxPreview=false;
- villageMode=devMode.hasGrinch()?'grinch':'normal';
+ if(lastDevGrinch!==devMode.hasGrinch())villageMode=devMode.hasGrinch()?'grinch':'normal';
+ lastDevGrinch=devMode.hasGrinch();
  grinchVisualStage=devMode.hasGrinch()?devMode.settings().caveStage:1;
  if(!devMode.hasGrinch()&&$('tab-grinch')?.getAttribute('aria-selected')==='true')showPanel('village');
  refreshPreview();
