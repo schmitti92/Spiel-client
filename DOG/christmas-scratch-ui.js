@@ -252,6 +252,7 @@ export function initChristmasScratch(){
   SCRATCH_FREE_ONLY_SIMPLE:'⚠️ Der Render-Server hat den kostenlosen Modus nicht übernommen. Bitte die gemeinsamen Rubbellos-Einstellungen neu laden.',
   SCRATCH_NOT_ENOUGH_COINS:'⚠️ Nicht genügend Münzen für dieses Los.',
   SCRATCH_DAILY_ALREADY_USED:'⚠️ Das tägliche Gratislos wurde bereits eingelöst.',
+  SCRATCH_FREE_DISABLED:'🎟️ Kostenlose Lose sind ausgeschaltet. Kaufe mit Münzen oder nutze einen erspielten Gutschein.',
   SCRATCH_NO_VOUCHER:'⚠️ Kein passender Rubbellos-Gutschein mehr vorhanden.',
   LOGIN_REQUIRED:'🔐 Melde dich erneut mit deinem DOG-Onlineprofil an.',
   SCRATCH_STORAGE_UNAVAILABLE:'⚠️ Die Rubbellos-Datenbank ist derzeit nicht erreichbar.',
@@ -612,13 +613,10 @@ export function initChristmasScratch(){
   const shopPlayerLevel=developer?.isActive()?developer.settings().playerLevel:
    Number.isInteger(status?.playerLevel)?status.playerLevel:1;
   wallet.textContent=developer?.isActive()?num(developer.settings().coins)+' 🪙 Testmünzen':status?num(status.coins)+' 🪙':'– 🪙';
-  const freeMode=status?.settings?.freeEnabled===true;
-  // Unlimited free-play is disabled on Render. Keep the old settings
-  // element for compatibility with the existing dialog handlers, but do not
-  // show the general host gear. Individual 500-ticket edition studios stay.
+  const freeMode=false; // Free-mode and daily free tickets are disabled.
+  // Keep the legacy gear for dialog handlers; hide it in the normal shop.
   $('scratch-host-settings').hidden=true;
-  $('scratch-daily-info').textContent=freeMode?'🎁 Kostenloses Rubbeln für alle aktiviert':
-   status?.dailyFreeAvailable?'🎁 Heute ein einfaches Gratis-Los verfügbar':'Gratis-Los heute bereits benutzt';
+  $('scratch-daily-info').textContent='🎟️ Lose mit Münzen kaufen oder erspielte Gutscheine einlösen';
   // Group all seven selectable tickets by class. This is presentation
   // only: each ticket still uses its original option.id and server receipt.
   const classOrder={simple:0,medium:1,premium:2};
@@ -819,13 +817,7 @@ export function initChristmasScratch(){
     voucherBtn.addEventListener('click',()=>void buy(option.tier,false,option.id,true));
     article.append(voucherBtn);
    }
-   if(freeMode||option.tier==='simple'){
-    const free=el('button','scratch-free',freeMode?'🎁 Kostenlos öffnen':'🎁 Tagesfreilos öffnen');
-    free.type='button';
-    free.disabled=busy||!onSale||levelLocked;
-    free.addEventListener('click',()=>void buy(option.tier,true,option.id));
-    article.append(free);
-   }
+   // Daily free buttons removed; earned vouchers stay available.
    const actions=el('div','scratch-card-action-row');
    for(const button of article.querySelectorAll(':scope > .scratch-buy, :scope > .scratch-free, :scope > .scratch-reopen-ticket'))
     actions.append(button);
@@ -2279,6 +2271,7 @@ export function initChristmasScratch(){
   finally{if(id===requestId)pendingScratchReadUid=null;}
  }
  async function buy(tier,free,variantId,voucher=false){
+  if(free){showAlert('🎟️ Kostenlose Lose sind abgeschaltet. Nutze Münzen oder einen erspielten Gutschein.',variantId);return;}
   if(window.DOGChristmasDev?.isActive()){showAlert('🧪 Im Entwicklermodus sind echte Loskäufe gesperrt. Wechsle für echte Lose zur normalen Ansicht.',variantId);return;}
   if(!account()){showAlert('🔐 Bitte melde dich zuerst mit deinem DOG-Onlineprofil an.',variantId);drawShop();return;}
   if(busy){alertMessage.textContent='⏳ Ein Los wird bereits auf Render geöffnet.';alertToast.hidden=false;return;}
@@ -2387,9 +2380,8 @@ export function initChristmasScratch(){
   if(!ticket||!finished||busy)return;
   const option=SCRATCH_SHOP_VARIANTS.find(o=>o.id===ticket.board?.variantId);
   if(!option)return;
-  const free=status?.settings?.freeEnabled===true;
   if(!closeRevealedTicket())return;
-  void buy(option.tier,free,option.id);
+  void buy(option.tier,false,option.id);
  });
  $('scratch-refresh').addEventListener('click',()=>void load(true));
  $('scratch-gifts-settings-open').addEventListener('click',openGiftsSettings);
