@@ -68,8 +68,10 @@
 **Einschränkung:** Die 83 % sind ein Vergleich der *automatischen HTTP-Aufrufe* (30 zu 180 Sekunden), nicht verifizierte abgerechnete Firestore-Dokumentreads. Manuelle Aktionen, Anmeldung und andere UI-Abfragen sind nicht in diesem Wert enthalten. Gemeinsame Ausbauten durch andere Spieler können im offenen Dorf bis zum nächsten Sicherheitsabgleich verzögert sichtbar werden; Server-Transaktionen bleiben maßgeblich.
 
 ### Paket 3 – DOG und Weihnachts-Event
-- [ ] Wiederholte identische Profil-/Level-/Forschungs-/Scratch-GETs inventarisieren und sichere Singleflight-Caches mit Authentifizierung pro Benutzer hinzufügen.
-- [ ] Keine Duplikat-Abfragen nur durch Tabwechsel, gleiche UI-Updates oder nachgeladene Registerkarten.
+- [x] **Rubbellos-Reiter:** Für dasselbe angemeldete Profil einen erst vor maximal 20 Sekunden abgerufenen Shopstand wiederverwenden. Dies spart bei schnellen Tabwechseln den serverseitigen GET mit mindestens neun Firestore-Dokumentreads plus den Variantenauflagen.
+- [x] **Sofortige Invalidierung:** Nach Level-Gutschein-Abholung, Forschungsticket oder Dorf-Ausbau muss der Scratch-Reiter frisch vom Server lesen. Manueller Aktualisieren-Button umgeht den Puffer; andere Profile können nie den alten Stand übernehmen. Käufe und Gewinne bleiben serverseitig transaktional.
+- [x] Pure Offline-Regression für Nutzerwechsel, Cache-Ablauf, erzwungene Aktualisierung und ungültige Uhrzeiten; CI für DOG Weihnachts-Rubbellose prüfen.
+- [ ] Andere identische Profil-/Level-/Forschungs-GETs über längere Besuche inventarisieren und sichere Singleflight-Caches mit Authentifizierung pro Benutzer hinzufügen.
 - [ ] Spielzug, 7er-Zug, Tausch, Kartenwechsel, Eventfelder, Baum-Level und Gewinne unabhängig voneinander testen.
 - [ ] Private Handkarten nie in globale Render-Caches oder über fremde Sockets geben.
 - [ ] Gewinne nur bei serverbestätigtem Ereignis und mit eindeutigen Idempotenz-IDs speichern.
@@ -79,6 +81,17 @@
 - [ ] Überflüssige Revisionsänderungen bei unverändertem Spielzustand verhindern, aber notwendige Checkpoints beibehalten.
 - [ ] Heartbeats nicht als Persistenz zählen; WebSocket-Reconnect und aktives Rejoin testen.
 - [ ] Test mit 1, 3 und 4 Spielern; vorher/nachher Reads/Writes und Lade-/Eingabezeiten notieren.
+
+### Paket 4b – KreuzKunter und schnelle Party-Minispiele (21.11.2026)
+
+- [x] **KreuzKunter-Hub und klassische Räume:** Online-/Offline-Anwesenheit nur über WebSocket verteilen, ohne Firestore-Schreibvorgang oder Änderung der dauerhaften Revision. Nur echte Spielaktionen, neue Teilnehmer/Profilbesitz, Hostwechsel und Ergebnisquittung speichern.
+- [x] Offline-Regression gegen die **echte KreuzKunter-Engine** (`tests/kreuz-hub.test.js`) zählt Firestore-Write-Aufrufe, prüft Reconnect/Disconnect, Würfelzug und Wiederherstellung nach simuliertem Neustart. GitHub Actions `Firebase KreuzKunter Presence Writes (offline)`: erfolgreich.
+- [x] **Snake:** Zwischenstands-Checkpoint frühestens alle 600 ms statt 80 ms, Zeitprüfungen alle 3 s statt 800 ms. Keine unnötigen Raum-Writes bei unverändertem Spielstand; Endstand sofort.
+- [x] **Lava:** Bewegungs-Checkpoint frühestens alle 350 ms statt 90 ms, Sicherheitsprüfung frühestens alle 1800 ms statt 750 ms; bei völlig inaktivem Feld ohne Gefahren/Bots wird ein Schreibvorgang ausgelassen.
+- [x] Isolierte Client- und Server-Tests für die Bewegungstaktung und No-op-Transaktionen sind grün.
+- [ ] Reale Firebase-Reads/Writes in der Firebase-Konsole bei denselben Spielerzahlen und Aktionen vor/nach dem Umbau vergleichen.
+
+**Hinweis:** Alle genannten Takte betreffen HTTP-Statusmeldungen und die gezielt verhinderten Writes, nicht die Spielframerate. Tatsächliche Firebase-Abrechnung und Effekte anderer Spielmodule sind noch nicht gemessen.
 
 ### Paket 5 – Deal or No Deal und SKYJO-Slot-Belohnungen
 - [ ] Doppeltes Laden von Raumstatus, Deal-Spielstand, Avatar und Geldbeutel durch mehrere Spieler zusammenführen.
