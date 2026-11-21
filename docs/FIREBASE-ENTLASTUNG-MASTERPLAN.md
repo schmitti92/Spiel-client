@@ -76,6 +76,16 @@
 - [ ] Private Handkarten nie in globale Render-Caches oder über fremde Sockets geben.
 - [ ] Gewinne nur bei serverbestätigtem Ereignis und mit eindeutigen Idempotenz-IDs speichern.
 
+### Paket 3b – Einmalige Weihnachtsdorf-Migration (21.11.2026)
+
+- [x] Das Event prüft die mögliche Übernahme älterer, personenbezogener DOG-Dorfstände jetzt **höchstens einmal in sechs Stunden je verifiziertem Nutzer und API-Umgebung**, statt bei jedem neuen Seitenbesuch oder Reload. Nur eine **erfolgreiche** Serverprüfung erhält einen Prüfzeitstempel im Browser; Fehler werden nicht als erledigt gespeichert. Bei deaktiviertem localStorage bleibt ein sitzungsinterner Zeitstempel.
+- [x] Die neuen Clients rufen `POST /api/hub/christmas-village/import` mit `metadataOnly:true` auf und holen das aktuelle gemeinsame Dorfguthaben weiterhin **immer** separat über `GET /api/hub/christmas-village`. **Guthaben, Gebäudestufen und Gewinne werden nie aus dem lokalen Prüfstempel abgeleitet.**
+- [x] Der Server liest im `metadataOnly`-Modus bei fehlendem oder bereits vollständig migriertem Altbestand nur das persönliche Legacy-Dokument (**ein statt zwei Firestore-Dokumentreads pro Importprüfung**). Existiert übertragbarer Altbestand, bleiben beide Reads und die atomaren Updates erhalten. Ältere Clients ohne `metadataOnly` erhalten weiterhin unverändert die komplette Dorfdaten-Antwort.
+- [x] Serverseitige Offline-Integrationstests prüfen Authentifizierung, realen Firestore-Lesezähler, den echten Merge von Weihnachtslichtern, den Schutz vor Doppelbuchungen und die Rückwärtskompatibilität. Separater Client-Test prüft Nutzertrennung, API-Trennung, Sechs-Stunden-Ablauf und weiterhin frische Dorfdaten. Beide gezielten CI-Reihen grün.
+- [ ] Firebase-Konsole vor/nach einem identischen Spiel- und Browser-Szenario auswerten.
+
+**Rechenbeispiel:** Bei zehn erneuten Seitenbesuchen innerhalb von sechs Stunden entfallen im Normalfall zehn Import-POSTs und damit bis zu zwanzig bisherige Transaktions-Reads eines Profils; der aktuelle globale Dorfstand wird weiterhin bei jedem notwendigen Dorf-GET gelesen. Bei der ersten Prüfung ohne Altbestand sinken die Reads von zwei auf eins. Das sind **technisch vermiedene Leseaufrufe**, keine belegten abgerechneten Firebase-Einsparungen.
+
 ### Paket 4 – SKYJO / Business / Barikade
 - [ ] Bereits vorhandene Hintergrund-Checkpoint-Queues und RAM-Caches auf Quota-/Stale-Revision-/Crash-Sicherheit prüfen.
 - [ ] Überflüssige Revisionsänderungen bei unverändertem Spielzustand verhindern, aber notwendige Checkpoints beibehalten.
