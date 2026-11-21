@@ -79,9 +79,40 @@ export function initChristmasStory({openTab}){
    const text=words.slice(from,to).join('').trim();
    left.story.textContent=text;
    if(right)right.story.textContent=text;
-   return left.story.scrollHeight<=left.story.clientHeight-10&&
-    (!right||right.story.scrollHeight<=right.story.clientHeight-10);
+   // scrollHeight already includes the element's clientHeight even when the
+   // content fits perfectly. Subtracting 10px made this condition *always*
+   // fail and fragmented every 100-word scene into ~15 tiny book leaves.
+   return left.story.scrollHeight<=left.story.clientHeight+1&&
+    (!right||right.story.scrollHeight<=right.story.clientHeight+1);
   };
+  // A real open book has TWO facing pages. When the authored scene has two
+  // paragraphs, put one on each leaf if both fit; never split a sentence
+  // between facing leaves merely to satisfy an artificial word-count limit.
+  // A small number of scenes have one paragraph; divide those at the sentence
+  // ending closest to the midpoint, provided both leaves fit.
+  const fitsBody=(leftText,rightText)=>{
+   left.story.textContent=leftText;
+   if(right)right.story.textContent=rightText;
+   return left.story.scrollHeight<=left.story.clientHeight+1&&
+    (!right||right.story.scrollHeight<=right.story.clientHeight+1);
+  };
+  const paragraphs=body.split(/\n\s*\n/).map(part=>part.trim()).filter(Boolean);
+  let facing=paragraphs.length===2?paragraphs:null;
+  if(!facing&&paragraphs.length===1){
+   const sentenceEnds=Array.from(body.matchAll(/[.!?…][”"'»)]*(?=\s|$)/g),
+    match=>match.index+match[0].length);
+   const splitAt=sentenceEnds.filter(end=>end>=body.length*.28&&end<=body.length*.72)
+    .sort((a,b)=>Math.abs(a-body.length/2)-Math.abs(b-body.length/2))[0];
+   if(splitAt)facing=[body.slice(0,splitAt).trim(),body.slice(splitAt).trim()];
+  }
+  if(measurable&&facing&&facing.length===2&&facing.every(Boolean)&&
+     fitsBody(facing[0],facing[1])){
+   measure.remove();
+   if(cached.size>48)cached.clear();
+   cached.set(key,facing);
+   return facing;
+  }
+
   const chunks=[];
   let cursor=0,safety=0;
   while(cursor<words.length&&safety++<150){
