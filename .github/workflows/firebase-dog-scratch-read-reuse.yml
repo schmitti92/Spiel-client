@@ -1,0 +1,33 @@
+name: Firebase DOG Scratch Read Reuse (offline)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/christmas-scratch-ui.js'
+      - 'DOG/christmas-research-ui.js'
+      - 'DOG/christmas-player-levels-ui.js'
+      - 'DOG/christmas-event.js'
+      - 'DOG/christmas-intro-gate.js'
+      - 'DOG/christmas-event.html'
+      - 'tests/dog-christmas-scratch-ui.test.mjs'
+      - '.github/workflows/firebase-dog-scratch-read-reuse.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scratch-read-reuse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate modules
+        run: |
+          node --check DOG/christmas-scratch-ui.js
+          node --check DOG/christmas-event.js
+          node --check DOG/christmas-research-ui.js
+          node --check DOG/christmas-player-levels-ui.js
+      - name: Verify read reuse, account isolation, manual refresh and voucher invalidation
+        run: node --test --test-name-pattern="Firebase scratch shop read reuse|DOG voucher, research and village" tests/dog-christmas-scratch-ui.test.mjs
