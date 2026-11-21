@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#071a2a">
 <meta name="description" content="DOG Weihnachtsevent – Das Weihnachtswunder von Lichtertal, Kapitel 1.">
 <title>DOG Weihnachten · Das Weihnachtswunder von Lichtertal</title>
+<script>document.documentElement.classList.add('dog-christmas-entry-page');</script>
+<style>html.dog-christmas-entry-page:not(.dog-christmas-page-ready) body > :not(script):not(style):not(#dog-christmas-entry-gate):not(.dog-reveal-overlay){visibility:hidden!important}</style>
 <link rel="stylesheet" href="./christmas-event.css?v=6">
 <link rel="stylesheet" href="./christmas-event-royal.css?v=12">
 <link rel="stylesheet" href="./christmas-tree-rewards.css?v=2">
@@ -1031,6 +1033,9 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./christmas-event.js?v=145"></script>
+<script type="module">
+import {guardChristmasEventPage} from './christmas-intro-gate.js?v=3';
+guardChristmasEventPage();
+</script>
 </body>
 </html>
