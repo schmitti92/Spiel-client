@@ -43,12 +43,17 @@
 **Backend-Commits (21.11.):** `fe8523ae5e23c96e8a3ae6ca0f25ff784755aaa7` (Backend), `c5310252941117d288ef2df3c6e22769cf80fdc5` (Tests).  
 **Abnahme:** erfolgreiche Online-Lobby, autorisierte Spieler/sichtbare Aktualisierung, korrekte Sieger-/Auszahlungsübergänge, keine zusätzlichen Firestore-Writes; Reads-Vergleich in Firebase ablesen.
 
-### Paket 2 – Leerlaufdetektor und Firebase-Messung (als Nächstes)
-- [ ] Pro Endpoint und Spielart Zähler für tatsächliche `get`-, `tx.get`-, `set`-, `tx.set`- und Listener-Ereignisse ergänzen, ohne zusätzliche Firestore-Zugriffe und ohne Tokens/Benutzer-IDs in Logs.
+### Paket 2 – Leerlaufdetektor und Firebase-Messung (in Arbeit)
+- [x] In sieben DOG-/Weihnachts-GET-Endpunkten 22 direkte dokumentbezogene Read-Callsites auf gemeinsam genutzte **nur laufende** Firestore-GETs umgestellt: `scratch`, `dog/stats`, `dog/christmas-intro`, `dog/research`, `dog/level`, `christmas-village`, `christmas-tree-rewards`. Kein TTL, keine Änderungen an Transaktionen oder Belohnungen.
+- [x] Auf `GET /api/hub/health` den separaten Render-RAM-Zähler `dogMetaInFlightReads` ergänzt (`documentReads`, `sharedReads`, `errors`, `ttlMs: 0`); das sind Anwendungsaufruf- und Cache-Zähler, **keine Firebase-Abrechnungswerte**.
+- [x] Isolierte Fake-Firestore-Tests für gemeinsame gleichzeitige Reads, Identitätstrennung und frische Werte hinzugefügt; GitHub Actions `Firebase DOG shared reads (offline)` erfolgreich (21.11.2026).
+- [ ] Pro Endpoint und Spielart Zähler für **alle** tatsächlichen `get`-, `tx.get`-, `set`-, `tx.set`- und Listener-Ereignisse ergänzen, ohne zusätzliche Firestore-Zugriffe und ohne Tokens/Benutzer-IDs in Logs.
 - [ ] 5 Minuten Ruhe ohne Nutzeraktionen messen: Startseite, Lobby, DOG, SKYJO, Deal, Weihnachtsdorf/100 Tore getrennt.
 - [ ] Anzahl aktiver Browser, Render-Instanzen, WebSockets und Firestore-Watcher notieren; gegenüber Firebase-Konsole `spiel-barik` vergleichen.
 - [ ] Null-Aktions-Writes suchen und nach Modul/Callsite entfernen; **keine** berechtigte Schreiboperation entfernen.
 - [ ] Sicherheits-Alarme setzen, wenn Leerlauf-Write-Anzahl unerwartet steigt.
+
+**Paket-2-Zwischenstand (21.11.2026):** Backend-Änderung `d0173f37770905f1ee1b55989097ed74481c8c5b`, eigenständiger Regressionstest `88fa4c591e46ede1e5c65b4d5129b5d58dc43635`. Die neue Optimierung betrifft 22 **Code-Stellen**, nicht eine garantierte Einsparung von 22 Firestore-Reads je Aufruf. Tatsächliche Einsparung entsteht nur bei zeitlich überlappenden Anforderungen derselben Dokumentpfade; reale Produktion-Zähler müssen weiterhin gemessen werden.
 
 ### Paket 3 – DOG und Weihnachts-Event
 - [ ] Wiederholte identische Profil-/Level-/Forschungs-/Scratch-GETs inventarisieren und sichere Singleflight-Caches mit Authentifizierung pro Benutzer hinzufügen.
