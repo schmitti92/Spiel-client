@@ -53,6 +53,7 @@
 <link rel="stylesheet" href="./christmas-research-readability.css?v=1">
 <link rel="stylesheet" href="./christmas-sidebar-textfit.css?v=1">
 <link rel="stylesheet" href="./christmas-research-reference-v2.css?v=1">
+<style id="dog-grinch-private-visibility">html:not(.dog-dev-grinch) #tab-grinch,html:not(.dog-dev-grinch) #panel-grinch,html:not(.dog-dev-grinch) [data-open-grinch],html:not(.dog-dev-grinch) [data-research-open-tab="grinch"],html:not(.dog-dev-grinch) #grinch-sky-scene,html:not(.dog-dev-grinch) #grinch-scene-toggle{display:none!important}html:not(.dog-dev-active) #village-max-test{display:none!important}</style>
 </head>
 <body>
 <div class="snow-sky" aria-hidden="true"></div>
@@ -79,7 +80,7 @@
     <section class="event-panel" id="panel-village" role="tabpanel" aria-labelledby="tab-village">
       <div class="village-shell">
         <div class="village-topline"><span>🏘️ <strong>Unser Weihnachtsdorf</strong></span><span id="village-stage-text">Anfangszustand · Vorschau</span></div>
-        <div class="village-view" id="village-view" data-snow="1" data-tree="1" data-mode="grinch">
+        <div class="village-view" id="village-view" data-snow="1" data-tree="1" data-mode="normal">
           <svg viewBox="0 0 1200 670" role="img" aria-labelledby="village-title village-desc" preserveAspectRatio="xMidYMid meet">
             <title id="village-title">Illustration des Weihnachtsdorfes Lichtertal</title>
             <desc id="village-desc">Sechs ausbaubare Gebäude – Weihnachtslichter-Turm, Wichtelwerkstatt, Weihnachts-Glückshaus, XP-Wichtel-Akademie, Weihnachtsbäckerei und Friedensherberge – umgeben den Weihnachtsbaum mit zehn Entwicklungsstufen. Jedes Gebäude kann direkt in der Landschaft ausgewählt werden.</desc>
@@ -259,7 +260,7 @@
           </svg>
           <div class="view-vignette" aria-hidden="true"></div>
           <div class="village-max-control">
-            <button type="button" id="grinch-scene-toggle" aria-pressed="true" title="Zur normalen Weihnachtsdorf-Landschaft zurückwechseln">↩ Normales Weihnachtsdorf</button>
+            <button type="button" id="grinch-scene-toggle" aria-pressed="false" title="Grinchhöhle nur in der Entwicklungsvorschau anzeigen">👹 Grinchhöhle ansehen</button>
             <button type="button" id="village-max-test" aria-pressed="false" title="Alle sechs Gebäude und den Weihnachtsbaum nur optisch auf Maximalstufe zeigen">🔍 Vollausbau testen</button>
             <span id="village-max-note" class="village-max-note" role="status" hidden>👁️ TESTANSICHT · 6 × Stufe 5 · Baum Stufe 10 · keine Käufe</span>
           </div>
@@ -977,6 +978,6 @@
 </div>
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
-<script type="module" src="./christmas-event.js?v=142"></script>
+<script type="module" src="./christmas-event.js?v=143"></script>
 </body>
 </html>
