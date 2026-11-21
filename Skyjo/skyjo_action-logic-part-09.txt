@@ -101,13 +101,16 @@ function generateCloudRoom(){const input=$('#cloudRoom'),rc=randomCloudRoom();if
 function toggleCloudFields(){const sel=$('#cloudMode'),box=$('#cloudBox'),local=$('#localBox'),ai=$('#aiBox');if(!sel)return;const mode=sel.value||'local',on=mode==='cloud';skyjoLocalVariant=mode==='ai'?'ai':'local';if(box)box.style.display=on?'block':'none';if(local)local.style.display=mode==='local'?'block':'none';if(ai)ai.style.display=mode==='ai'?'block':'none';cloud.enabled=on;if(on){const inp=$('#cloudRoom');if(inp&&!inp.value)inp.value=cloud.room||randomCloudRoom()}else{cloud.doc=null;cloud.room=''}document.querySelectorAll('.mode-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode===mode));cloudConfigSave();if(mode==='local')setTimeout(updateNames,0)}
 function selectSetupMode(mode){const sel=$('#cloudMode');if(!sel||!['local','ai','cloud'].includes(mode))return;sel.value=mode;toggleCloudFields()}
 function cloudPollDelay(){
- if(document.hidden)return 6000;
+ // Firebase emergency savings: no fast 650ms polling of old SKYJO tabs.
+ // Actual game actions still push to Render immediately; other clients see
+ // their turn at the next 4-5.5s read-only reconciliation.
+ if(document.hidden)return 30000;
  const errors=Math.min(3,Number(cloud.pollErrors||0));
- let base=1100;
- if(state?.phase==='gameOver')base=1800;
- else if(state&&(state.phase==='betweenRounds'||state.phase==='initialReveal'))base=700;
- else if(state&&cloud.enabled&&!isMyActorDevice())base=650;
- return Math.min(10000,base*Math.pow(2,errors))
+ let base=4000;
+ if(state?.phase==='gameOver')base=20000;
+ else if(state&&(state.phase==='betweenRounds'||state.phase==='initialReveal'))base=6000;
+ else if(state&&cloud.enabled&&!isMyActorDevice())base=5500;
+ return Math.min(60000,base*Math.pow(2,errors))
 }
 function startCloudPolling(){
  if(cloud.pollTimer)clearTimeout(cloud.pollTimer);cloud.pollTimer=null;
@@ -115,7 +118,9 @@ function startCloudPolling(){
  const tick=async()=>{
    if(!cloud.enabled||!cloud.room)return;
    /* Während einer sichtbaren Kartenbewegung keinen neuen DOM-Zustand hineinrendern. */
-   if(!cloud.inFlight&&!cloud.pending&&!cloud.pollBusy&&!motionBusy&&!motionQueueBusy){
+   // A background tab never reads the game state. Visibility restore calls
+   // startCloudPolling() for an immediate fresh snapshot.
+   if(!document.hidden&&!cloud.inFlight&&!cloud.pending&&!cloud.pollBusy&&!motionBusy&&!motionQueueBusy){
      const pollRoom=cloud.room,pollEpoch=Number(cloud.roomEpoch||0);
      cloud.pollBusy=true;
      try{
