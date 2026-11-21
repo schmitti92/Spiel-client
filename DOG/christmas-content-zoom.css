@@ -1,0 +1,69 @@
+/* DOG Weihnachtsevent: zoom only the content pane, never the ornate navigation.
+ * The browser's page-wide pinch zoom cannot pin any DOM element. Instead
+ * two-finger gestures inside event-main use a self-contained panel zoom.
+ */
+body:not(.scratch-ticket-open) .event-layout > .event-main{
+ touch-action:pan-x pan-y!important;
+ overscroll-behavior:contain;
+}
+@media(min-width:761px){
+ body:not(.scratch-ticket-open) .event-layout{
+  height:100dvh!important;max-height:100dvh!important;min-height:0!important;
+  overflow:hidden!important;
+ }
+ body:not(.scratch-ticket-open) .event-layout > .event-sidebar{
+  position:sticky!important;top:0!important;
+  height:calc(100dvh - 20px)!important;max-height:calc(100dvh - 20px)!important;
+  min-height:0!important;overflow:hidden!important;
+  transform:none!important;zoom:1!important;
+ }
+ body:not(.scratch-ticket-open) .event-layout > .event-main{
+  height:calc(100dvh - 20px)!important;max-height:calc(100dvh - 20px)!important;
+  min-height:0!important;overflow-x:auto!important;overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch;
+ }
+}
+/* For narrow phones the existing horizontal tab bar remains at the top. */
+@media(max-width:760px){
+ body:not(.scratch-ticket-open){overflow:hidden!important;height:100dvh!important}
+ body:not(.scratch-ticket-open) .event-layout{
+  display:flex!important;flex-direction:column!important;
+  height:100dvh!important;max-height:100dvh!important;
+  min-height:0!important;overflow:hidden!important;
+ }
+ body:not(.scratch-ticket-open) .event-layout > .event-sidebar{
+  flex:0 0 72px!important;height:72px!important;max-height:72px!important;
+  position:relative!important;top:0!important;overflow:hidden!important;
+  transform:none!important;zoom:1!important;
+ }
+ body:not(.scratch-ticket-open) .event-layout > .event-main{
+  flex:1 1 auto!important;min-height:0!important;height:auto!important;
+  max-height:none!important;overflow-x:auto!important;overflow-y:auto!important;
+  position:relative!important;
+ }
+}
+.event-content-zoom-controls{
+ position:sticky;z-index:65;top:9px;left:100%;
+ width:max-content;max-width:calc(100% - 12px);
+ margin:8px 11px -49px auto;
+ display:flex;align-items:center;gap:4px;padding:4px 6px;
+ border:1px solid #e0b66a;border-radius:12px;
+ background:#082b23f2;color:#ffebbd;
+ box-shadow:0 3px 13px #0009,inset 0 1px #fff3bc3c;
+ backdrop-filter:blur(5px);
+ direction:ltr;
+}
+.event-content-zoom-controls button{
+ min-width:29px;min-height:30px;padding:2px 7px;
+ border:1px solid #9b7d44;border-radius:8px;background:#14533b;
+ color:#ffedbe;font-size:20px;font-weight:900;line-height:1;
+}
+.event-content-zoom-controls button:disabled{opacity:.4;cursor:default}
+.event-content-zoom-controls button:not(:disabled):active{background:#227e55}
+.event-content-zoom-level{font:800 12px/1.1 system-ui,sans-serif;min-width:47px;text-align:center}
+body.scratch-ticket-open .event-content-zoom-controls{display:none!important}
+.event-panel.event-content-is-zoomed{transform-origin:top left}
+@media(max-width:760px){
+ .event-content-zoom-controls{top:6px;margin:5px 7px -46px auto;gap:3px;padding:3px 5px}
+ .event-content-zoom-controls button{min-width:27px;min-height:28px}
+}
