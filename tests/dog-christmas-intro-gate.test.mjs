@@ -168,5 +168,5 @@ test('idle Firebase reads are rate-limited without delaying a verified DOG victo
  assert.match(event,/\$\('building-wallet-refresh'\)\.addEventListener\('click',\(\)=>void reloadVillage\(\)\)/);
  assert.match(event,/villageRequest\('village\/upgrade','POST'/);
  assert.match(intro,/christmas-event\.js\?v=\d+/);
- for(const html of [hub,dog,page])assert.match(html,/christmas-intro-gate\.js\?v=20/);
+ for(const html of [hub,dog,page])assert.match(html,/christmas-intro-gate\.js\?v=\d+/);
 });
