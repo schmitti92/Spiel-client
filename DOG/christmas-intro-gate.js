@@ -94,10 +94,10 @@ export function showChristmasIntro(onDone=()=>{}){
  overlay.setAttribute('aria-label','Das Weihnachtswunder von Lichtertal');
  const card=document.createElement('div');card.className='dog-reveal-card';
  const clips=[
-  './assets/945289212_1795275459989532.mp4', // first upload: the winter legend
-  './assets/222534572_1795275605354117.mp4', // arrival in Lichtertal
-  './assets/41234243_1795275705483810.mp4', // Frau Berger's warning
-  './assets/797249030_1795275757719057.mp4' // the first Christmas light
+  './assets/281209346_1795276244245420.mp4', // the winter legend (new recording)
+  './assets/905698533_1795276252169292.mp4', // arrival in Lichtertal (new recording)
+  './assets/1072510991_1795276258065893.mp4', // Frau Berger's warning (new recording)
+  './assets/658840420_1795276265000111.mp4' // the first Christmas light (new recording)
  ];
  const video=document.createElement('video');
  video.autoplay=true;video.playsInline=true;video.muted=true;video.preload='auto';
@@ -105,7 +105,7 @@ export function showChristmasIntro(onDone=()=>{}){
  const fallback=document.createElement('div');fallback.className='dog-reveal-fallback';fallback.hidden=true;
  fallback.innerHTML='<span aria-hidden="true">🎄</span><h2>✨ Das Weihnachtswunder von Lichtertal ✨</h2>';
  const footer=document.createElement('div');footer.className='dog-reveal-footer';
- footer.innerHTML='<p data-progress aria-live="polite">🎬 Introfilm · 4 Szenen · etwa 32 Sekunden</p><p>✨ Eine Weihnachtsgeschichte voller Licht und Freundschaft beginnt.</p><div class="dog-reveal-actions"><button type="button" data-sound>🔊 Mit Ton von vorn starten</button><button type="button" data-skip>Intro überspringen</button><a data-enter hidden>🎄 Weihnachtsdorf betreten</a></div><p data-status role="status"></p>';
+ footer.innerHTML='<p data-progress aria-live="polite">🎬 Introfilm · 4 Szenen · etwa 60 Sekunden</p><p>✨ Eine Weihnachtsgeschichte voller Licht und Freundschaft beginnt.</p><div class="dog-reveal-actions"><button type="button" data-sound>🔊 Mit Ton von vorn starten</button><button type="button" data-skip>Intro überspringen</button><a data-enter hidden>🎄 Weihnachtsdorf betreten</a></div><p data-status role="status"></p>';
  card.append(video,fallback,footer);overlay.append(card);document.body.append(overlay);
  const sound=footer.querySelector('[data-sound]'),skip=footer.querySelector('[data-skip]');
  const enter=footer.querySelector('[data-enter]'),status=footer.querySelector('[data-status]');
