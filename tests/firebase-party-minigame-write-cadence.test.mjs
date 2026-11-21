@@ -125,9 +125,9 @@ test('Lava: movement is checkpointed at 1500ms, idle ticks at >=1800ms',async()=
 
 test('production hub imports cache-busted bridges and keeps WebSocket handling intact',()=>{
  const hub=moduleSource('hub-lobby.js'),page=moduleSource('hub-lobby.html');
- assert.match(hub,/snake-arena-online-bridge\.js\?v=38/);
- assert.match(hub,/lava-arena-online-bridge\.js\?v=14/);
- assert.match(page,/hub-lobby\.js\?v=20261121-firebase-checkpoints/);
+ assert.match(hub,/snake-arena-online-bridge\.js\?v=39/);
+ assert.match(hub,/lava-arena-online-bridge\.js\?v=15/);
+ assert.match(page,/hub-lobby\.js\?v=20261121-firebase-writes-hotfix/);
  assert.match(hub,/startWatch\(\)/);
  assert.match(hub,/acceptRoom/);
 });
