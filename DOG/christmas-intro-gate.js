@@ -100,17 +100,17 @@ export function showChristmasIntro(onDone=()=>{}){
   './assets/658840420_1795276265000111.mp4' // the first Christmas light (new recording)
  ];
  const video=document.createElement('video');
- video.autoplay=true;video.playsInline=true;video.muted=true;video.preload='auto';
+ video.autoplay=false;video.controls=true;video.playsInline=true;video.muted=false;video.preload='metadata';
  video.poster=new URL('./assets/lichtertal-intro-poster.jpg',import.meta.url).href;
  const fallback=document.createElement('div');fallback.className='dog-reveal-fallback';fallback.hidden=true;
  fallback.innerHTML='<span aria-hidden="true">🎄</span><h2>✨ Das Weihnachtswunder von Lichtertal ✨</h2>';
  const footer=document.createElement('div');footer.className='dog-reveal-footer';
- footer.innerHTML='<p data-progress aria-live="polite">🎬 Introfilm · 4 Szenen · etwa 60 Sekunden</p><p>✨ Eine Weihnachtsgeschichte voller Licht und Freundschaft beginnt.</p><div class="dog-reveal-actions"><button type="button" data-sound>🔊 Mit Ton von vorn starten</button><button type="button" data-skip>Intro überspringen</button><a data-enter hidden>🎄 Weihnachtsdorf betreten</a></div><p data-status role="status"></p>';
+ footer.innerHTML='<p data-progress aria-live="polite">🎬 Introfilm · 4 Szenen · etwa 60 Sekunden</p><p>🎧 Starte den Film selbst, damit du alle deutschen Dialoge mit Ton hören kannst.</p><div class="dog-reveal-actions"><button type="button" data-play>▶ Mit Ton abspielen</button><button type="button" data-sound>🔇 Ton ausschalten</button><button type="button" data-skip>Intro überspringen</button><a data-enter hidden>🎄 Weihnachtsdorf betreten</a></div><p data-status role="status"></p>';
  card.append(video,fallback,footer);overlay.append(card);document.body.append(overlay);
- const sound=footer.querySelector('[data-sound]'),skip=footer.querySelector('[data-skip]');
+ const play=footer.querySelector('[data-play]'),sound=footer.querySelector('[data-sound]'),skip=footer.querySelector('[data-skip]');
  const enter=footer.querySelector('[data-enter]'),status=footer.querySelector('[data-status]');
  const progress=footer.querySelector('[data-progress]');
- let done=false,posting=false,fallbackTimer=null,clipIndex=0,playedClips=0,playVersion=0;
+ let done=false,posting=false,fallbackTimer=null,clipIndex=0,playedClips=0;
  const remove=()=>{
   video.pause();video.removeAttribute('src');video.load();
   overlay.remove();introVisible=false;
@@ -125,7 +125,7 @@ export function showChristmasIntro(onDone=()=>{}){
    if(result.completed!==true)throw Error('INTRO_NOT_CONFIRMED');
    done=true;onDone();
    document.documentElement.classList.add('dog-christmas-portal-open');
-   skip.hidden=true;sound.hidden=true;enter.hidden=false;
+   skip.hidden=true;play.hidden=true;sound.hidden=true;enter.hidden=false;
    enter.href=new URL('./christmas-event.html',import.meta.url).href;
    progress.textContent='🎄 Das Intro ist abgeschlossen';
    status.textContent='🎁 Lichtertal ist für dich freigeschaltet!';
@@ -137,60 +137,74 @@ export function showChristmasIntro(onDone=()=>{}){
  };
  const useFallback=()=>{
   if(done||posting||fallbackTimer)return;
-  video.pause();video.hidden=true;fallback.hidden=false;sound.hidden=true;
+  video.pause();video.hidden=true;fallback.hidden=false;play.hidden=true;sound.hidden=true;
   progress.textContent='🎄 Die Videos konnten nicht geladen werden';
   fallbackTimer=setTimeout(()=>void finish(),5500);
  };
- const nextClip=()=>{
-  if(done||posting||fallbackTimer)return;
-  clipIndex++;startClip();
+ const syncControls=()=>{
+  play.textContent=video.paused?'▶ Mit Ton abspielen':'⏸ Pause';
+  sound.textContent=video.muted?'🔊 Ton einschalten':'🔇 Ton ausschalten';
  };
- const startClip=()=>{
+ const playCurrent=()=>{
+  if(done||posting||fallbackTimer)return;
+  const attempt=video.play();
+  if(attempt&&typeof attempt.catch==='function')attempt.catch(e=>{
+   if(done||posting||fallbackTimer)return;
+   if(e?.name==='NotAllowedError'){
+    status.textContent='▶ Bitte drücke erneut auf „Mit Ton abspielen“.';
+   }else if(e?.name!=='AbortError'){
+    status.textContent='⚠️ Wiedergabe nicht möglich. Bitte erneut abspielen oder Intro überspringen.';
+    console.warn('[Christmas intro] Playback unavailable:',e?.message||e);
+   }
+   syncControls();
+  });
+ };
+ const startClip=(autoContinue=false)=>{
   if(done||posting||fallbackTimer)return;
   if(clipIndex>=clips.length){
    if(playedClips>0)void finish();
    else useFallback();
    return;
   }
-  const version=++playVersion;
   progress.textContent='🎬 Introfilm · Szene '+(clipIndex+1)+' von '+clips.length;
   video.src=new URL(clips[clipIndex],import.meta.url).href;
   video.load();
-  const attempt=video.play();
-  if(attempt&&typeof attempt.catch==='function')attempt.catch(e=>{
-   if(done||posting||fallbackTimer||version!==playVersion)return;
-   if(e?.name==='NotAllowedError'){
-    video.muted=true;sound.textContent='▶ Film mit Ton starten';
-    progress.textContent='▶ Tippe auf „Film mit Ton starten“';
-   }else if(e?.name!=='AbortError'&&!video.error){
-    console.warn('[Christmas intro] Clip playback unavailable:',e?.message||e);
-    nextClip();
-   }
-  });
+  syncControls();
+  if(autoContinue)playCurrent();
  };
- sound.addEventListener('click',()=>{
-  if(video.muted){
-   // Autoplay is generally muted. A real user gesture can enable sound and
-   // restart at the first clip so that no spoken German dialogue is missed.
-   video.muted=false;sound.textContent='🔈 Ton ausschalten';
-   clipIndex=0;playedClips=0;startClip();
-  }else{
-   video.muted=true;sound.textContent='🔊 Mit Ton von vorn starten';
-  }
+ play.addEventListener('click',()=>{
+  if(video.paused)playCurrent();
+  else video.pause();
+  syncControls();
  });
+ sound.addEventListener('click',()=>{
+  video.muted=!video.muted;
+  syncControls();
+ });
+ video.addEventListener('play',syncControls);
+ video.addEventListener('pause',syncControls);
  skip.addEventListener('click',()=>void finish());
- video.addEventListener('ended',()=>{playedClips++;nextClip();});
+ video.addEventListener('ended',()=>{
+  playedClips++;
+  clipIndex++;
+  startClip(true);
+ });
  video.addEventListener('error',()=>{
   if(done||posting||fallbackTimer)return;
   console.warn('[Christmas intro] Skipping unavailable clip',clipIndex+1);
-  nextClip();
+  clipIndex++;
+  startClip(true);
  });
  if(!video.canPlayType('video/mp4'))useFallback();
- else startClip();
+ else startClip(false); // No autoplay: the viewer presses Play to enable audio.
  return {remove,finish};
 }
 export function mountChristmasLinks(){
  let pending=false,shownUid=null;
+ // The first-match film must never cover the DOG winner ceremony.
+ // Users may close the native dialog with the button or Escape.
+ const victoryDialog=document.getElementById('winner');
+ const ceremonyOpen=()=>!!victoryDialog?.open;
  async function refresh(){
   const p=profile();
   if(!p){
@@ -206,7 +220,7 @@ export function mountChristmasLinks(){
     document.documentElement.classList.add('dog-christmas-portal-open');
    else{
     document.documentElement.classList.remove('dog-christmas-portal-open');
-    if(state.eligible&&!state.completed&&!introVisible)
+    if(state.eligible&&!state.completed&&!introVisible&&!ceremonyOpen())
      showChristmasIntro(()=>{shownUid=uid;});
    }
   }catch(e){
@@ -216,6 +230,8 @@ export function mountChristmasLinks(){
  }
  window.addEventListener('spielonline-change',()=>void refresh());
  window.addEventListener('dog-match-finished',()=>void refresh());
+ // Recheck immediately after the victory ceremony is dismissed.
+ victoryDialog?.addEventListener('close',()=>void refresh());
  window.addEventListener('focus',()=>void refresh());
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refresh();});
  void refresh();setTimeout(()=>void refresh(),1700);
