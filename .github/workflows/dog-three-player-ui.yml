@@ -1,0 +1,37 @@
+name: DOG Three-Person UI
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/app.js'
+      - 'DOG/index.html'
+      - 'DOG/victory-summary.js'
+      - 'DOG/online-sync.js'
+      - 'tests/dog-victory-summary.test.mjs'
+      - 'tests/dog-victory-screen.test.mjs'
+      - 'tests/dog-online-sync.test.mjs'
+      - '.github/workflows/dog-three-player-ui.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  ui-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate DOG game UI syntax
+        run: node --check DOG/app.js
+      - name: Verify no-bot, 3-player board and private hands
+        run: node --test tests/dog-victory-summary.test.mjs tests/dog-victory-screen.test.mjs tests/dog-online-sync.test.mjs
+      - name: Check three-player game mode labels
+        run: |
+          grep -q 'dog-mode-solo3' DOG/index.html
+          grep -q "game.mode==='solo3'" DOG/app.js
+          grep -q "soloThree" DOG/app.js
