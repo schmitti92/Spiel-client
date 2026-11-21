@@ -207,7 +207,7 @@ export function showChristmasIntro(onDone=()=>{},onLater=()=>{}){
  return {remove,finish};
 }
 export function mountChristmasLinks(){
- let pending=false,shownUid=null;
+ let pending=false,pendingAgain=false,shownUid=null,activeUid=null;
  // The film belongs to the actual DOG game AFTER its winner ceremony.
  // This module also runs in the shared hub, which has no ceremony at all.
  // Never launch a Christmas film there just because an old profile is eligible.
@@ -218,11 +218,15 @@ export function mountChristmasLinks(){
  async function refresh(){
   const p=profile();
   if(!p){
-   shownUid=null;document.documentElement.classList.remove('dog-christmas-portal-open');return;
+   shownUid=null;activeUid=null;matchFinishedOnThisPage=false;ceremonyDismissed=false;introDeferred=false;
+   document.documentElement.classList.remove('dog-christmas-portal-open');return;
   }
-  if(pending)return;
+  if(pending){pendingAgain=true;return;}
   pending=true;
   const uid=p.user.uid;
+  if(activeUid!==uid){
+   activeUid=uid;matchFinishedOnThisPage=false;ceremonyDismissed=false;introDeferred=false;
+  }
   try{
    const state=await api();
    if(profile()?.user?.uid!==uid)return;
@@ -235,7 +239,10 @@ export function mountChristmasLinks(){
   }catch(e){
    document.documentElement.classList.remove('dog-christmas-portal-open');
    console.warn('[Christmas entry] Check unavailable:',e?.message||e);
-  }finally{pending=false;}
+  }finally{
+   pending=false;
+   if(pendingAgain){pendingAgain=false;queueMicrotask(()=>void refresh());}
+  }
  }
  window.addEventListener('spielonline-change',()=>void refresh());
  window.addEventListener('dog-match-finished',()=>{
