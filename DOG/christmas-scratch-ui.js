@@ -27,6 +27,17 @@ export const SCRATCH_SHOP_VARIANTS=Object.freeze([
   Object.freeze({id:'number_one_20',tier:'medium',icon:'🔢',name:'Glückszahl 1',subtitle:'Zahlenlos · 20 × 2',rule:'Beide Spalten rubbeln · jede 1 gewinnt links',theme:'number20'}),
   Object.freeze({id:'dog_jackpot_9',tier:'premium',icon:'🐾',name:'Finde DOG!',subtitle:'DOG-Jackpot · 9 Felder',rule:'DOG finden = alle 8 Preisfelder gewinnen',theme:'dogjackpot'})
 ]);
+/** Use the Render-provided requirements; purchase validation stays server-side. */
+export function scratchRequiredPlayerLevel(variantId,unlockLevels={}){
+ const verified=Number(unlockLevels?.[variantId]);
+ return Number.isInteger(verified)&&verified>=1?verified:(SCRATCH_LEVEL_UNLOCKS[variantId]||1);
+}
+/** Return only visible ticket options; locked ones are not rendered in the shop. */
+export function visibleScratchShopVariants(playerLevel,unlockLevels={}){
+ const level=Number.isInteger(playerLevel)&&playerLevel>=1?playerLevel:1;
+ return SCRATCH_SHOP_VARIANTS.filter(option=>
+  level>=scratchRequiredPlayerLevel(option.id,unlockLevels));
+}
 const VARIANTS={
   number_one_20:['🔢 Die Glückszahl 1','20 Reihen mit zwei Rubbelspalten. Links das verdeckte Gewinnsymbol, rechts die verdeckte Zahl. Nur eine 1 gewinnt den Preis derselben Reihe.',20,2],
   dog_jackpot_9:['🐾 Finde DOG!','Neun verdeckte Felder. Ein DOG-Symbol gewinnt alle acht übrigen Preise, ohne DOG ist das Los eine Niete.',3,3],
@@ -600,14 +611,15 @@ export function initChristmasScratch(){
   // only: each ticket still uses its original option.id and server receipt.
   const classOrder={simple:0,medium:1,premium:2};
   const classTitles={
-   simple:['🎟️ Einfach','2 Lose · klassische Weihnachtsrubbelspiele'],
-   medium:['❄️ Mittel','3 Lose · besondere Gewinnkombinationen'],
-   premium:['👑 Premium','2 Lose · große Gewinne & Jackpots']
+   simple:['🎟️ Einfach','klassische Weihnachtsrubbelspiele'],
+   medium:['❄️ Mittel','besondere Gewinnkombinationen'],
+   premium:['👑 Premium','große Gewinne & Jackpots']
   };
   let displayedClass='';
   let currentCards=null;
-  const sortedOptions=[...SCRATCH_SHOP_VARIANTS].sort((a,b)=>
-   classOrder[a.tier]-classOrder[b.tier]);
+  // Filter before constructing categories: no locked cards or empty headings.
+  const sortedOptions=visibleScratchShopVariants(shopPlayerLevel,status?.variantUnlockLevels)
+   .sort((a,b)=>classOrder[a.tier]-classOrder[b.tier]);
   for(const option of sortedOptions){
    if(option.tier!==displayedClass){
     displayedClass=option.tier;
@@ -615,11 +627,14 @@ export function initChristmasScratch(){
     // rules can no longer move tickets away from their section heading.
     const section=el('section','scratch-category-section');
     section.dataset.tier=option.tier;
-    section.setAttribute('aria-label',classTitles[option.tier][0]+' · '+classTitles[option.tier][1]);
+    const visibleCount=sortedOptions.filter(item=>item.tier===option.tier).length;
+    const categoryDescription=visibleCount+' '+(visibleCount===1?'Los':'Lose')+
+     ' · '+classTitles[option.tier][1];
+    section.setAttribute('aria-label',classTitles[option.tier][0]+' · '+categoryDescription);
     const category=el('div','scratch-category-heading');
     category.dataset.tier=option.tier;
     category.append(el('h3','',classTitles[option.tier][0]),
-     el('span','',classTitles[option.tier][1]));
+     el('span','',categoryDescription));
     currentCards=el('div','scratch-category-cards');
     section.append(category,currentCards);
     root.append(section);
@@ -661,7 +676,7 @@ export function initChristmasScratch(){
    const visibleRule=option.id==='premium_27'?
     '4 sichere Geld-Dreierreihen · '+premiumMilestoneChance.toLocaleString('de-DE')+
     ' % Chance auf +1.000 🪙':option.rule;
-   const minPlayerLevel=Number(status?.variantUnlockLevels?.[option.id]||SCRATCH_LEVEL_UNLOCKS[option.id]||1);
+   const minPlayerLevel=scratchRequiredPlayerLevel(option.id,status?.variantUnlockLevels);
    const levelLocked=shopPlayerLevel<minPlayerLevel;
    const article=el('article','scratch-tier '+option.tier+' scratch-variant-'+option.theme+
     (levelLocked?' scratch-level-locked':''));
@@ -2255,7 +2270,7 @@ export function initChristmasScratch(){
   if(!SCRATCH_SHOP_VARIANTS.some(c=>c.id===variantId&&c.tier===tier)){
    showAlert('⚠️ Diese Losvariante ist noch nicht im Spiel freigeschaltet.',variantId);drawShop();return;
   }
-  const requiredLevel=Number(status?.variantUnlockLevels?.[variantId]||SCRATCH_LEVEL_UNLOCKS[variantId]||1);
+  const requiredLevel=scratchRequiredPlayerLevel(variantId,status?.variantUnlockLevels);
   const playerLevel=Number.isInteger(status?.playerLevel)?status.playerLevel:1;
   if(playerLevel<requiredLevel){
    showAlert('🔒 '+SCRATCH_SHOP_VARIANTS.find(c=>c.id===variantId)?.name+
