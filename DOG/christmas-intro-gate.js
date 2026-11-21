@@ -86,7 +86,7 @@ async function api(suffix='',method='GET'){
  return data;
 }
 let introVisible=false;
-export function showChristmasIntro(onDone=()=>{}){
+export function showChristmasIntro(onDone=()=>{},onLater=()=>{}){
  if(introVisible)return;
  introVisible=true;
  const overlay=document.createElement('div');overlay.className='dog-reveal-overlay';
@@ -105,9 +105,10 @@ export function showChristmasIntro(onDone=()=>{}){
  const fallback=document.createElement('div');fallback.className='dog-reveal-fallback';fallback.hidden=true;
  fallback.innerHTML='<span aria-hidden="true">🎄</span><h2>✨ Das Weihnachtswunder von Lichtertal ✨</h2>';
  const footer=document.createElement('div');footer.className='dog-reveal-footer';
- footer.innerHTML='<p data-progress aria-live="polite">🎬 Introfilm · 4 Szenen · etwa 60 Sekunden</p><p>🎧 Starte den Film selbst, damit du alle deutschen Dialoge mit Ton hören kannst.</p><div class="dog-reveal-actions"><button type="button" data-play>▶ Mit Ton abspielen</button><button type="button" data-sound>🔇 Ton ausschalten</button><button type="button" data-skip>Intro überspringen</button><a data-enter hidden>🎄 Weihnachtsdorf betreten</a></div><p data-status role="status"></p>';
+ footer.innerHTML='<p data-progress aria-live="polite">🎬 Introfilm · 4 Szenen · etwa 60 Sekunden</p><p>🎧 Starte den Film selbst, damit du alle deutschen Dialoge mit Ton hören kannst.</p><div class="dog-reveal-actions"><button type="button" data-play>▶ Mit Ton abspielen</button><button type="button" data-sound>🔇 Ton ausschalten</button><button type="button" data-skip>Intro überspringen</button><button type="button" data-later>Später ansehen</button><a data-enter hidden>🎄 Weihnachtsdorf betreten</a></div><p data-status role="status"></p>';
  card.append(video,fallback,footer);overlay.append(card);document.body.append(overlay);
  const play=footer.querySelector('[data-play]'),sound=footer.querySelector('[data-sound]'),skip=footer.querySelector('[data-skip]');
+ const later=footer.querySelector('[data-later]');
  const enter=footer.querySelector('[data-enter]'),status=footer.querySelector('[data-status]');
  const progress=footer.querySelector('[data-progress]');
  let done=false,posting=false,fallbackTimer=null,clipIndex=0,playedClips=0;
@@ -125,14 +126,19 @@ export function showChristmasIntro(onDone=()=>{}){
    if(result.completed!==true)throw Error('INTRO_NOT_CONFIRMED');
    done=true;onDone();
    document.documentElement.classList.add('dog-christmas-portal-open');
-   skip.hidden=true;play.hidden=true;sound.hidden=true;enter.hidden=false;
+   skip.hidden=true;play.hidden=true;sound.hidden=true;later.hidden=true;enter.hidden=false;
    enter.href=new URL('./christmas-event.html',import.meta.url).href;
    progress.textContent='🎄 Das Intro ist abgeschlossen';
    status.textContent='🎁 Lichtertal ist für dich freigeschaltet!';
    enter.addEventListener('click',remove,{once:true});
   }catch(e){
-   skip.disabled=false;skip.textContent='↻ Freischaltung erneut versuchen';
-   status.textContent='⚠️ Server nicht erreichbar. Bitte Freischaltung erneut versuchen.';
+   skip.disabled=false;skip.textContent='↻ Freischaltung erneut prüfen';
+   later.hidden=false;
+   const reason=String(e?.message||'');
+   status.textContent=reason==='DOG_CHRISTMAS_INTRO_LOCKED'?
+    '⚠️ Der Server hat noch keine berechtigte abgeschlossene DOG-Onlinepartie bestätigt. Das Video kannst du später erneut ansehen.':
+    '⚠️ Die Freischaltung konnte nicht bestätigt werden. Du kannst es später erneut versuchen oder zur Lobby zurückkehren.';
+   console.warn('[Christmas intro] Confirmation failed:',reason);
   }finally{posting=false;}
  };
  const useFallback=()=>{
@@ -184,6 +190,7 @@ export function showChristmasIntro(onDone=()=>{}){
  video.addEventListener('play',syncControls);
  video.addEventListener('pause',syncControls);
  skip.addEventListener('click',()=>void finish());
+ later.addEventListener('click',()=>{remove();onLater();});
  video.addEventListener('ended',()=>{
   playedClips++;
   clipIndex++;
@@ -201,10 +208,13 @@ export function showChristmasIntro(onDone=()=>{}){
 }
 export function mountChristmasLinks(){
  let pending=false,shownUid=null;
- // The first-match film must never cover the DOG winner ceremony.
- // Users may close the native dialog with the button or Escape.
+ // The film belongs to the actual DOG game AFTER its winner ceremony.
+ // This module also runs in the shared hub, which has no ceremony at all.
+ // Never launch a Christmas film there just because an old profile is eligible.
  const victoryDialog=document.getElementById('winner');
+ let matchFinishedOnThisPage=false,ceremonyDismissed=false,introDeferred=false;
  const ceremonyOpen=()=>!!victoryDialog?.open;
+ const afterVictory=()=>Boolean(victoryDialog&&matchFinishedOnThisPage&&ceremonyDismissed&&!ceremonyOpen());
  async function refresh(){
   const p=profile();
   if(!p){
@@ -220,17 +230,23 @@ export function mountChristmasLinks(){
    // show it only after a genuinely completed, verified online DOG match.
    const portalUnlocked=state.eligible&&(state.completed||state.previewGranted);
    document.documentElement.classList.toggle('dog-christmas-portal-open',Boolean(portalUnlocked));
-   if(state.eligible&&state.introReady&&!state.completed&&!introVisible&&!ceremonyOpen())
-    showChristmasIntro(()=>{shownUid=uid;});
+   if(state.eligible&&state.introReady&&!state.completed&&!introVisible&&!introDeferred&&afterVictory())
+    showChristmasIntro(()=>{shownUid=uid;},()=>{introDeferred=true;});
   }catch(e){
    document.documentElement.classList.remove('dog-christmas-portal-open');
    console.warn('[Christmas entry] Check unavailable:',e?.message||e);
   }finally{pending=false;}
  }
  window.addEventListener('spielonline-change',()=>void refresh());
- window.addEventListener('dog-match-finished',()=>void refresh());
- // Recheck immediately after the victory ceremony is dismissed.
- victoryDialog?.addEventListener('close',()=>void refresh());
+ window.addEventListener('dog-match-finished',()=>{
+  if(victoryDialog)matchFinishedOnThisPage=true;
+  void refresh();
+ });
+ // Only the actual closing of the finished-match ceremony may reveal the film.
+ victoryDialog?.addEventListener('close',()=>{
+  if(matchFinishedOnThisPage)ceremonyDismissed=true;
+  void refresh();
+ });
  window.addEventListener('focus',()=>void refresh());
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refresh();});
  void refresh();setTimeout(()=>void refresh(),1700);
@@ -262,7 +278,10 @@ export function guardChristmasEventPage(){
    else if(state.introReady&&!state.completed){
     message.textContent='✨ Deine erste Partie ist geschafft. Das Weihnachtswunder beginnt!';
     gate.hidden=true;
-    showChristmasIntro(()=>void admit());
+    showChristmasIntro(()=>void admit(),()=>{
+     gate.hidden=false;
+     message.textContent='✨ Dein Intro wartet auf dich. Du kannst es später erneut ansehen.';
+    });
    }else if(state.completed||state.previewGranted)await admit();
    else message.textContent='🔒 Eine abgeschlossene DOG-Onlinepartie fehlt noch.';
   }catch(e){message.textContent='🔒 Die Freischaltung konnte noch nicht überprüft werden. Bitte erneut anmelden.';}
