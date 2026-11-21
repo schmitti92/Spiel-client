@@ -34,8 +34,8 @@ test('phase curse and permanent prisoners are visible, with frozen pawns marked 
  assert.match(board,/piece\.frozenTurns>0/);
  assert.match(board,/stroke="#9eeaff"/);
  assert.match(css,/\.m3-curse-status/);
- assert.match(page,/mission-3\.js\?v=6/);
- assert.match(page,/mission-3\.css\?v=3/);
+ assert.match(page,/mission-3\.js\?v=7/);
+ assert.match(page,/mission-3\.css\?v=4/);
 });
 
 
