@@ -31,6 +31,8 @@ if(online){
 document.querySelectorAll('[data-dog-editor]').forEach(link=>link.href='editor.html?return='+encodeURIComponent(editorBack)+'&v=10');
 const apiBase=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null,onlineDogAvatars=[],onlineChristmas=null,onlineResearch=null,emojiSocketReady=false;
+let lastFallbackRoomReadAt=0;
+const DOG_DISCONNECTED_READ_MS=30000; // Render WebSocket is primary.
 function user(){const s=window.SpielOnline?.state?.();return s?.status==='online'&&s.user?.getIdToken?s.user:null;}
 async function hubRequest(path,method='GET',payload){
  const person=user();if(!person)throw Error('Bitte melde dich mit deinem Online-Profil an.');
@@ -67,6 +69,7 @@ function acceptRemote(room){
 }
 async function refreshOnline(){
  if(refreshInFlight)return refreshInFlight;
+ lastFallbackRoomReadAt=Date.now();
  refreshInFlight=(async()=>{
    try{const room=await hubRequest('');acceptRemote(room);}
    catch(e){$('status').textContent='⚠️ Online: '+e.message;}
@@ -107,9 +110,15 @@ async function initOnline(){
  $('turn').textContent='Online-Spielstand wird verbunden …';
  await refreshOnline();
  startSocket();
- if(!onlinePoll)onlinePoll=setInterval(()=>{if(!onlineSocket||onlineSocket.readyState!==1)void refreshOnline();if(!onlineSocket||onlineSocket.readyState>=2)startSocket();},8000);
- document.addEventListener('visibilitychange',()=>{if(!document.hidden){void refreshOnline();startSocket();}});
- window.addEventListener('spielonline-change',()=>{if(user()){void refreshOnline();startSocket();}});
+ if(!onlinePoll)onlinePoll=setInterval(()=>{
+  if(document.hidden||!user())return;
+  const socketReady=onlineSocket?.readyState===1;
+  // Retry the socket promptly, but avoid Firestore-backed GETs on each retry.
+  if(!socketReady&&Date.now()-lastFallbackRoomReadAt>=DOG_DISCONNECTED_READ_MS)void refreshOnline();
+  if(!onlineSocket||onlineSocket.readyState>=2)startSocket();
+ },8000);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(onlineSocket?.readyState!==1)void refreshOnline();startSocket();}});
+ window.addEventListener('spielonline-change',()=>{if(user()){if(onlineSocket?.readyState!==1)void refreshOnline();startSocket();}});
 }
 
 // Touch gestures change only the SVG viewBox, never game state or other UI.
