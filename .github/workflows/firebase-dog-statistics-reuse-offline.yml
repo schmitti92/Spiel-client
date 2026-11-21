@@ -1,0 +1,27 @@
+name: Firebase DOG statistics tab reuse (offline)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/christmas-player-statistics-ui.js'
+      - 'DOG/christmas-event.js'
+      - 'tests/firebase-dog-player-statistics-reuse.test.mjs'
+      - '.github/workflows/firebase-dog-statistics-reuse-offline.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stats-reuse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate modules
+        run: |
+          node --check DOG/christmas-player-statistics-ui.js
+          node --check DOG/christmas-event.js
+      - name: Test player- and room-scoped statistics reuse
+        run: node --test tests/firebase-dog-player-statistics-reuse.test.mjs
