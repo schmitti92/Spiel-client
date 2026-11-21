@@ -32,7 +32,7 @@ export const CARD_EDITIONS=Object.freeze({
  'kartendesign-05':Object.freeze({
   label:'🎅 Sankt Nikolaus · Rot & Gold',
   base:'./assets/karten/kartendesign-05/normiert/',
-  width:700,height:980,extension:'png',minPlayerLevel:3,
+  width:700,height:980,extension:'png',minPlayerLevel:20,
   fallbackBase:'./assets/karten/kartendesign-05/vektoren/',fallbackExtension:'svg'
  })
 });
