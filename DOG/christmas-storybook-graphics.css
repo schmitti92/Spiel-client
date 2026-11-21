@@ -277,3 +277,157 @@
  #panel-story .storybook-turn{transition:none}
  #panel-story .storybook-turn:hover:not(:disabled){transform:none}
 }
+
+/* Text-only Lichtertal edition: all page space belongs to the narrative.
+   The open-book asset remains a decorative frame; no private gallery photos. */
+#panel-story .storybook-spread--textonly{
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ align-items:stretch;
+ gap:0;
+ min-width:0;
+ height:min(68dvh,680px);
+ min-height:455px;
+}
+#panel-story .storybook-spread--textonly .storybook-paper{
+ min-width:0;
+ min-height:0;
+ display:flex;
+ flex-direction:column;
+ overflow:hidden;
+ border:0;
+ color:#302219;
+ background:linear-gradient(115deg,rgba(255,248,229,.22),rgba(255,244,216,.10));
+ box-shadow:none;
+ padding:clamp(18px,1.8vw,29px) clamp(16px,1.9vw,32px) clamp(14px,1.45vw,23px);
+}
+#panel-story .storybook-spread--textonly .storybook-paper--left{
+ padding-right:clamp(18px,2.2vw,39px);
+ background:linear-gradient(90deg,rgba(255,247,221,.19),rgba(245,220,180,.12));
+}
+#panel-story .storybook-spread--textonly .storybook-paper--right{
+ padding-left:clamp(19px,2.4vw,43px);
+ background:linear-gradient(90deg,rgba(245,216,176,.11),rgba(255,246,216,.19));
+}
+#panel-story .storybook-spread--textonly .storybook-paper::before{display:none}
+#panel-story .storybook-spread--textonly .storybook-page-kicker{
+ flex:none;
+ margin:0 0 5px;
+ font:800 clamp(10px,.8vw,12px)/1.25 Georgia,serif;
+ color:#815528;
+ letter-spacing:.075em;
+}
+#panel-story .storybook-spread--textonly .storybook-page-heading{
+ flex:none;
+ padding:0;
+ margin:0 0 8px;
+ font:900 clamp(18px,1.53vw,25px)/1.17 Georgia,"Times New Roman",serif;
+ color:#39251b;
+ text-wrap:balance;
+}
+#panel-story .storybook-spread--textonly .storybook-page-subtitle{
+ flex:none;
+ display:block;
+ margin:0 0 9px;
+ padding:0 0 7px;
+ text-align:left;
+ font:750 clamp(10px,.82vw,12px)/1.3 Georgia,serif;
+ color:#865c33;
+ border-bottom:1px solid #b2895b83;
+}
+#panel-story .story-reading .storybook-spread--textonly .storybook-page-text{
+ flex:1 1 auto;
+ min-height:0;
+ margin:0;
+ padding:0 clamp(2px,.45vw,8px) 6px 0;
+ overflow-x:hidden;
+ overflow-y:auto;
+ overscroll-behavior:contain;
+ scrollbar-width:thin;
+ scrollbar-gutter:stable;
+ scrollbar-color:#ae885c transparent;
+ color:#33251b;
+ font:500 clamp(14px,1.05vw,17px)/1.55 Georgia,"Times New Roman",serif;
+ white-space:pre-line;
+ overflow-wrap:break-word;
+ hyphens:auto;
+ text-align:left;
+}
+#panel-story .storybook-spread--textonly .storybook-page-thought{
+ flex:none;
+ min-height:0;
+ margin:6px 0 4px;
+ padding:5px 0;
+ font:italic 700 clamp(10px,.76vw,12px)/1.2 Georgia,serif;
+ border-top:1px solid #c69c6b75;
+ color:#795232;
+}
+#panel-story .storybook-spread--textonly .storybook-page-footer{
+ flex:none;
+ min-height:0;
+ padding:5px 0 0;
+ font:700 10px/1.22 Georgia,serif;
+ border-top:1px solid #c69c6b56;
+}
+#panel-story .storybook-spread--textonly .storybook-page-footer strong{
+ font-size:14px;
+}
+#panel-story .storybook-page-dot.is-selected[aria-current="page"]{
+ outline:1px solid #fff1c2;
+ outline-offset:2px;
+}
+@media(max-width:1200px) and (min-width:781px){
+ #panel-story .storybook-spread--textonly{
+  height:min(70dvh,650px);
+  min-height:420px;
+ }
+ #panel-story .storybook-spread--textonly .storybook-paper{
+  padding:16px 15px 13px;
+ }
+ #panel-story .storybook-spread--textonly .storybook-paper--left{padding-right:22px}
+ #panel-story .storybook-spread--textonly .storybook-paper--right{padding-left:24px}
+ #panel-story .storybook-spread--textonly .storybook-page-heading{font-size:clamp(17px,1.65vw,22px)}
+ #panel-story .story-reading .storybook-spread--textonly .storybook-page-text{font-size:clamp(13px,1.25vw,15px);line-height:1.48}
+}
+@media(max-width:780px){
+ #panel-story .storybook-spread--textonly{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  min-height:410px;
+  height:min(75dvh,690px);
+  padding:clamp(14px,2.5vw,26px);
+  background:
+    linear-gradient(180deg,rgba(255,239,203,.10),rgba(87,53,26,.13)),
+    url("./weihnachtsevent-bilder/geschichtenbuch-grafiken/05_Pergament_Seite.png") center/100% 100% no-repeat;
+ }
+ #panel-story .storybook-spread--textonly::after{display:none}
+ #panel-story .storybook-spread--textonly .storybook-paper,
+ #panel-story .storybook-spread--textonly .storybook-paper--left{
+  border:0;
+  border-radius:7px;
+  min-height:0;
+  height:100%;
+  background:linear-gradient(180deg,rgba(255,245,222,.48),rgba(253,232,193,.58));
+  padding:clamp(15px,3vw,27px);
+  box-shadow:none;
+ }
+ #panel-story .storybook-spread--textonly .storybook-page-heading{
+  font-size:clamp(20px,3.9vw,26px);
+ }
+ #panel-story .story-reading .storybook-spread--textonly .storybook-page-text{
+  font-size:clamp(15px,2.35vw,17px);
+  line-height:1.55;
+ }
+ #panel-story .storybook-spread--textonly .storybook-page-thought{font-size:11px}
+}
+@media(max-width:420px){
+ #panel-story .storybook-spread--textonly{padding:12px 9px}
+ #panel-story .storybook-spread--textonly .storybook-paper{padding:13px}
+ #panel-story .storybook-spread--textonly .storybook-page-heading{font-size:20px}
+ #panel-story .storybook-spread--textonly .storybook-page-footer span{max-width:82%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
+@media(max-height:630px) and (min-width:781px){
+ #panel-story .storybook-spread--textonly{height:73dvh;min-height:340px}
+ #panel-story .storybook-spread--textonly .storybook-paper{padding-top:12px;padding-bottom:10px}
+ #panel-story .storybook-spread--textonly .storybook-page-heading{font-size:18px;margin-bottom:5px}
+ #panel-story .storybook-spread--textonly .storybook-page-subtitle{margin-bottom:5px}
+}

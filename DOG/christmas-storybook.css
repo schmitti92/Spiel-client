@@ -287,6 +287,7 @@ body:has(#panel-story:not([hidden])) .event-tab[aria-selected="true"]{
  font:500 clamp(13px,1.09vw,17px)/1.52 Georgia,"Times New Roman",serif;
  hyphens:auto;overflow-wrap:break-word;
  text-wrap:pretty;
+ white-space:pre-line;
 }
 #panel-story .storybook-page-thought{
  flex:none;
