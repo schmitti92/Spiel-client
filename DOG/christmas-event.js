@@ -9,8 +9,8 @@ import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewa
 import {initChristmasTreeFilms} from './christmas-tree-films.js?v=2';
 import {initChristmasStory} from './christmas-story.js?v=7';
 import {initChristmasScratch} from './christmas-scratch-ui.js?v=84';
-import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=9';
-import {initChristmasResearch} from './christmas-research-ui.js?v=10';
+import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=10';
+import {initChristmasResearch} from './christmas-research-ui.js?v=11';
 import {initChristmasContentZoom} from './christmas-content-zoom.js?v=1';
 import {initLichtertalSidebarTextFit} from './christmas-sidebar-fit.js?v=1';
 import {initChristmasPlayerStatistics} from './christmas-player-statistics-ui.js?v=3';
@@ -950,7 +950,12 @@ window.addEventListener('dog-christmas-dev-change',()=>{
 // The village is tied to an online profile, not a room or host.
 $('building-village-role').textContent='⌛ Gemeinsames DOG-Dorf lädt';
 void reloadVillage();
+let villageAuthUid=eventUser()?.uid||null;
 window.addEventListener('spielonline-change',()=>{
+ const nextUid=eventUser()?.uid||null;
+ if(nextUid===villageAuthUid)return; // Same identity: no Firestore read on token/profile updates.
+ villageAuthUid=nextUid;
+ lastVillageReadAt=0;
  void reloadVillage();
  if($('tab-tree').getAttribute('aria-selected')==='true')void treePrizeScreen?.load();
 });
