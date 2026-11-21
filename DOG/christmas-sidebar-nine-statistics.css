@@ -100,6 +100,11 @@
   color:#ffedbe!important;
  }
  .event-layout>.event-sidebar .event-tab[data-tab="statistics"]{order:9}
+ /* Hidden Grinch preview leaves only eight visible tabs in normal mode. */
+ html:not(.dog-dev-grinch) .event-layout>.event-sidebar>.event-menu{
+  grid-template-rows:repeat(8,minmax(0,1fr))!important;
+ }
+
  .event-layout>.event-sidebar .event-tab[data-tab="village"]{order:1}
  .event-layout>.event-sidebar .event-tab[data-tab="buildings"]{order:2}
  .event-layout>.event-sidebar .event-tab[data-tab="tree"]{order:3}
