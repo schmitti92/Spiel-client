@@ -1,0 +1,34 @@
+name: DOG opt-in move hints
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/app.js'
+      - 'DOG/index.html'
+      - 'DOG/engine.js'
+      - 'DOG/move-hints.js'
+      - 'tests/dog-move-hints.test.mjs'
+      - '.github/workflows/dog-move-hints.yml'
+  pull_request:
+    paths:
+      - 'DOG/app.js'
+      - 'DOG/index.html'
+      - 'DOG/engine.js'
+      - 'DOG/move-hints.js'
+      - 'tests/dog-move-hints.test.mjs'
+      - '.github/workflows/dog-move-hints.yml'
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+jobs:
+  opt-in-move-hints:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/move-hints.js
+      - run: node --check DOG/app.js
+      - run: node --test tests/dog-move-hints.test.mjs
