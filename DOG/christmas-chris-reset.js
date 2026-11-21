@@ -88,12 +88,14 @@ export function initChrisChristmasRestart(){
   const approved=window.confirm(
    'WIRKLICH CHRIS ZURÜCKSETZEN?\n\n'+
    'DOG-Partien, Spielerlevel/XP, persönliche Weihnachtsforschung, Rubbellose, Münzen, Gewinne, Baum-Belohnungen, Grinch-Fortschritt und Intro-Quittung von Chris beginnen wieder von vorn.\n\n'+
-   'Vanessa, David, das gemeinsame Dorf, ihre Gewinne und andere Spiele bleiben unverändert. Der Vorgang kann nur über eine Administrator-Sicherung rückgängig gemacht werden.'
+   'Vanessa, David, das gemeinsame Dorf, ihre Gewinne und andere Spiele bleiben unverändert. Du bestätigst, dass deine DOG-Partie abgeschlossen ist; veraltete Raum-Markierungen dürfen ignoriert werden. Der Vorgang kann nur über eine Administrator-Sicherung rückgängig gemacht werden.'
   );
   if(!approved)return;
   pending=true;button.disabled=true;status.textContent='Sichere und setze Chris-Daten auf Render zurück …';
   try{
-   const result=await request(user,'','POST',{confirmation:KEY});
+   const result=await request(user,'','POST',{
+    confirmation:KEY,completedMatchesConfirmed:true
+   });
    if(account()?.uid!==uid)throw Error('PROFIL_GEWECHSELT');
    if(!result.resetCompleted)throw Error('RESET_NICHT_BESTÄTIGT');
    // Also clear the local sliders and old film flags after a manual reset.
