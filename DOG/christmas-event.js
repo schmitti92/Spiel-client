@@ -600,6 +600,7 @@ function showPanel(id,{updateHistory=true}={}){
  }
  if(id==='grinch'){
   grinchView?.render();
+  void grinchView?.loadProgress?.();
   requestAnimationFrame(()=>void reloadVillage({minimumAgeMs:VILLAGE_TAB_FRESH_MS}));
  }
  if(id==='village'&&wasActive!==id)requestAnimationFrame(()=>void reloadVillage({minimumAgeMs:VILLAGE_TAB_FRESH_MS}));
@@ -789,7 +790,8 @@ const villageCode=String(new URLSearchParams(location.search).get('room')||'').t
 const villageRoomValid=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/.test(villageCode);
 const villageApi=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const lightsLabel=value=>new Intl.NumberFormat('de-DE',{maximumFractionDigits:1}).format(value/10);
-const VILLAGE_POLL_MS=180000; // Formerly one automatic GET every 30 seconds.
+// No background Firestore polling while the Christmas event is left open.
+// User actions, tab changes, visibility return and manual refresh still work.
 const VILLAGE_TAB_FRESH_MS=60000;
 const VILLAGE_VISIBLE_FRESH_MS=60000;
 const VILLAGE_VISIBLE_TABS=new Set(['village','buildings','tree','story','grinch']);
@@ -964,13 +966,9 @@ window.addEventListener('spielonline-change',()=>{
 document.addEventListener('visibilitychange',()=>{
  if(!document.hidden&&visibleVillageTab())void reloadVillage({minimumAgeMs:VILLAGE_VISIBLE_FRESH_MS});
 });
-// A rare safety check for upgrades made by other players. Local purchases
-// and manual refresh remain immediate; other tabs never poll the village.
-setInterval(()=>{
- if(!document.hidden&&visibleVillageTab()&&eventUser()&&!devMode.isActive()&&
-    !villageBusy&&!treeFilms.isOpen())void reloadVillage({minimumAgeMs:VILLAGE_POLL_MS});
-},60000);
-
+// Deliberately no interval-based village GETs: Render/Firestore should be
+// silent when players simply leave this tab open. A different player's
+// building upgrade becomes visible on revisit or manual refresh.
 refreshPreview();
 // Load the high-resolution landscape separately: never block gameplay UI.
 // Its <svg:image> renders only once the same-origin PNG is confirmed available.
