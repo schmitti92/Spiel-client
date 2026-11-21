@@ -4,7 +4,7 @@
  */
 import {cardVisual} from '../card-visuals.js?v=11';
 import {drawMission3Board} from './mission-3-board.js?v=3';
-import {createMission3BoardTouch} from './mission-3-touch.js?v=1';
+import {createMission3BoardTouch} from './mission-3-touch.js?v=2';
 import {mission3VisualEvents,showMission3VisualEffects} from './mission-3-effects.js?v=1';
 import {createMission3,mission3LegalMoves,mission3Play,mission3ChooseGrinchMove,mission3TaskStatus,mission3NextPreviewDeal,mission3Validate,MISSION3_STAGE_NAMES,MISSION3_COLORS} from './mission-3-rules.js?v=4';
 const $=id=>document.getElementById(id),KEY='grinch-m3-local-prototype-v3';
