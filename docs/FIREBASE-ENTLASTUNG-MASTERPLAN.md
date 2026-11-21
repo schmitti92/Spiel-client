@@ -98,6 +98,20 @@
 
 **Einsparung:** Beim Rubbellos-Einstellungsspeichern sind durch Code und Offline-Tests **bis zu drei vermiedene GETs pro Save** nachgewiesen. Bei den anderen Optimierungen hängt die Einsparung von gleichzeitig stattfindenden Anfragen, Reiterwechseln und unveränderten Aktionen ab. Dies sind noch keine Produktion-Billingwerte.
 
+### Paket 3d – 3.000 DOG-Schreibvorgänge in 10 Minuten: Hauptverursacher prüfen (21.11.2026)
+
+**Beobachtung:** Nutzer meldete **3.000 Firestore-Writes in 10 Minuten** während DOG. Der Wert entspricht 5 Writes/Sekunde im Durchschnitt. Noch fehlt die Aufteilung nach Firestore-Sammlungen; die Zahl ist daher **nicht** einzelnen DOG-Teilfunktionen bewiesen zugeordnet.
+
+- [x] **Normalen DOG-Ablauf auditiert:** Client sendet Spielzüge über `POST /api/hub/rooms/:code/dog/action`. WebSocket-Pings und das Fallback-GET im DOG-Spiel lösen keinen Spielstand-Write aus. Ein regulärer bestätigter DOG-Zug persistiert den Raum **einmal**; nur bei tatsächlichen Weihnachtslichtern, Rubbellos-Gutscheinen oder Spielende folgen zusätzliche, weiterhin transaktional gesicherte Dokumentänderungen.
+- [x] **Unveränderte DOG-Bereitschaft:** Doppelte `POST /ready`-Aufrufe mit gleichem Bereitschaftsstatus erzeugen keine neue Raumrevision und keinen Firestore-Write. Die letzte echte Ready-Bestätigung startet weiterhin automatisch die Partie.
+- [x] **Doppelte DOG-Lobby-Auswahl und wirkungslose DOG-Aktionen:** Der Server vergleicht den echten autoritativen Raumzustand **vor und nach** dem geprüften Callback. Nur wenn wirklich kein Feld und kein zusätzliches Transaktionsdokument geändert wurden, unterbleibt die zusätzliche Raum-Speicherung. Normale Kartenwechsel, Gewinner, Belohnungen, Hostwechsel und Zugfolgen bleiben durable.
+- [x] **Live-Schreibdiagnostik:** `GET /api/hub/health` liefert `dogWrites10m` (Zahl der DOG-Transaktionen und Firestore-Schreiboperationen nach Sammlung, z. B. `spielesammlung_hub_v1`, `dog_christmas_villages_v1` oder `dog_christmas_scratch_v1`) und `hubMutationCache.dogAutoNoops`. Zähler werden ausschließlich in Render-RAM aktualisiert, enthalten keine Spieler-IDs/Geheimnisse und erzeugen **null weitere Firebase-Reads/Writes**. Nur erfolgreich beendete Transaktionen zählen – Retries werden nicht doppelt gezählt.
+- [x] Regressionstests für tatsächliche Lobby-Doppelaktionen, Benutzeranmeldung, Sicherheitsvalidierung, Rollback-Prüfung und Transaktionszählung: `tests/firebase-dog-write-diagnostics-offline.test.js`, Workflow `Firebase DOG writes 10-minute diagnostics (offline)`.
+- [ ] Nach einer **vergleichbaren aktiven DOG-Partie** die `dogWrites10m.byCollection`-Aufteilung prüfen. Diese zeigt, ob room, village, scratch wallet, Grinch oder andere Endpunkte zuerst saniert werden müssen. Firestore-Konsole mit demselben Zehn-Minuten-Fenster vergleichen; der RAM-Zähler deckt nicht automatisch eigenständige Endpunkte anderer Backend-Module oder externe Clients ab.
+- [ ] Weitere Belohnungs-Bündelung (z. B. 10er-Losvorrat) **erst nach** Bestimmung des tatsächlichen Hauptverursachers und mit Crash-Recovery, idempotenten Gewinnbelegen sowie einer finalen Datenbankbuchung implementieren. Nicht die einzige durable Kopie im flüchtigen Render-RAM halten.
+
+**Wichtig:** Ein verifizierter DOG-Zug muss weiterhin dauerhaft persistiert werden. Ohne einen anderen zuverlässigen dauerhaften Speicher wäre eine reine Render-RAM-Ablage verlustanfällig. Keine behauptete absolute Prozentersparnis vor dem Nachtest.
+
 ### Paket 4 – SKYJO / Business / Barikade
 - [ ] Bereits vorhandene Hintergrund-Checkpoint-Queues und RAM-Caches auf Quota-/Stale-Revision-/Crash-Sicherheit prüfen.
 - [ ] Überflüssige Revisionsänderungen bei unverändertem Spielzustand verhindern, aber notwendige Checkpoints beibehalten.
