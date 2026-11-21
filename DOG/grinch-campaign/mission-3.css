@@ -93,3 +93,115 @@ dialog small{color:#b6cec3;font-size:10px}
 .m3-objective circle:nth-child(2){animation:m3-shimmer 2.7s ease-in-out infinite}
 @keyframes m3-shimmer{0%,100%{stroke-opacity:.82;stroke-width:3}50%{stroke-opacity:1;stroke-width:5}}
 @media(prefers-reduced-motion:reduce){.m3-objective circle:nth-child(2){animation:none}}
+
+
+/* Package 6 · Grinch's Enchanted Winter - only Mission 3 is affected */
+:root{--m3-gold:#f5d991;--m3-ice:#a6eafa;--m3-forest:#123b34}
+body{background:
+ radial-gradient(ellipse at 48% -18%,#35736b8f 0%,transparent 48%),
+ radial-gradient(circle at 94% 58%,#193c39b3 0%,transparent 42%),
+ linear-gradient(155deg,#081719,#0b242b 48%,#06161b)}
+.m3-top{background:linear-gradient(95deg,#061a1cfc,#17362ff0 50%,#081c24fa);
+ box-shadow:0 4px 28px #051614ae;position:relative;z-index:2}
+.m3-brand strong{text-shadow:0 0 18px #f4d59333}
+.m3-banner{background:linear-gradient(110deg,#264a40,#122e30 64%,#203a33);
+ border-color:#e2c58270;box-shadow:inset 0 1px #a9d6b01f,0 12px 28px #00151326}
+.m3-board-panel{background:linear-gradient(148deg,#274a40,#102e30 48%,#0b252d);
+ border:1px solid #d1b5766e;box-shadow:0 15px 37px #0007,inset 0 1px #e8cf8e28}
+.m3-card-panel{background:linear-gradient(148deg,#1a3835,#0b222b);
+ box-shadow:0 8px 25px #0003,inset 0 1px #8bba9e14}
+.m3-board-viewport{position:relative;overflow:hidden;isolation:isolate;
+ width:100%;aspect-ratio:1/1;border-radius:17px;
+ border:3px solid #baa36a;
+ background:radial-gradient(circle at 50% 35%,#21655a,#091c23 78%);
+ box-shadow:inset 0 0 0 3px #09302c,0 8px 26px #0009;
+ touch-action:none;overscroll-behavior:contain;user-select:none;-webkit-user-select:none}
+.m3-board-viewport::after{content:"";pointer-events:none;position:absolute;inset:5px;
+ border:1px solid #f2dca255;border-radius:11px;
+ box-shadow:inset 0 0 35px #001e2f22;z-index:1}
+.m3-board{width:100%;height:100%;display:block;
+ border:0;border-radius:0;overflow:visible;box-shadow:none;
+ transform-origin:50% 50%;will-change:transform;
+ touch-action:none}
+.m3-pawn{outline:none}
+.m3-pawn:focus-visible circle:nth-child(2){stroke:#fff2b3;stroke-width:4px}
+.m3-pawn-hit{cursor:pointer}
+.m3-grinch{filter:drop-shadow(0 0 6px #9af151a6)}
+.m3-grinch circle:not(.m3-pawn-hit){transition:filter .16s ease}
+.m3-crest{filter:drop-shadow(0 7px 17px #06181fe6)}
+.m3-objective{transform-box:fill-box;transform-origin:center center}
+.m3-objective.m3-light{animation:m3-light-hover 2.7s ease-in-out infinite;
+ filter:drop-shadow(0 0 7px #ffdf7aa8)}
+.m3-objective.m3-ice{animation:m3-ice-glint 3.3s ease-in-out infinite;
+ filter:drop-shadow(0 0 8px #8de7f4a5)}
+.m3-objective.m3-rune{animation:m3-rune-glow 2.9s ease-in-out infinite;
+ filter:drop-shadow(0 0 9px #e4aaffcf)}
+@keyframes m3-light-hover{0%,100%{opacity:.84}50%{opacity:1;filter:drop-shadow(0 0 13px #ffdf72)}}
+@keyframes m3-ice-glint{0%,100%{opacity:1}50%{opacity:.67}}
+@keyframes m3-rune-glow{0%,100%{opacity:.8}50%{opacity:1;filter:drop-shadow(0 0 14px #d7a9ff)}}
+.m3-zoom-controls{position:absolute;bottom:11px;right:11px;z-index:4;display:flex;
+ align-items:center;gap:4px;padding:5px;border-radius:13px;
+ border:1px solid #f1dba19e;background:#061a25e8;box-shadow:0 5px 18px #0009;
+ backdrop-filter:blur(8px);touch-action:manipulation}
+.m3-zoom-controls button{border:1px solid #bda76d91;color:#fff0c6;
+ background:#1c413df2;min-width:39px;min-height:39px;border-radius:9px;
+ font-size:22px;font-weight:800;line-height:1;touch-action:manipulation}
+.m3-zoom-controls button:disabled{opacity:.43;cursor:default}
+.m3-zoom-controls button:enabled:active{background:#4b754b}
+.m3-zoom-controls output{display:inline-block;min-width:51px;text-align:center;
+ font-size:12px;font-weight:900;color:#f9e7b8;font-variant-numeric:tabular-nums}
+.m3-board-viewport.m3-is-zoomed{cursor:grab}
+.m3-board-viewport.m3-is-zoomed:active{cursor:grabbing}
+.m3-effect-banner{position:absolute;z-index:4;pointer-events:none;top:14px;
+ left:50%;transform:translateX(-50%) translateY(-12px);opacity:0;
+ max-width:calc(100% - 24px);min-width:min(330px,70%);padding:10px 17px;
+ text-align:center;background:#071e28ed;color:#fff4c9;
+ border:1px solid #f6d88e;border-radius:13px;
+ box-shadow:0 7px 25px #000b,0 0 20px #d6e9a91a;
+ font-weight:900;font-size:clamp(11px,1.5vw,16px);line-height:1.35}
+.m3-effect-banner.m3-vfx-visible{animation:m3-banner-in .32s ease-out both}
+.m3-effect-banner[data-effect="freeze"]{border-color:#a7e9ff;color:#dffaff}
+.m3-effect-banner[data-effect="capture"]{border-color:#aef28f;color:#e5ffd3}
+.m3-effect-banner[data-effect="win"]{border-color:#ffe599;background:#244c32ed;color:#fff8d5}
+@keyframes m3-banner-in{from{opacity:0;transform:translateX(-50%) translateY(-14px)}
+ to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.m3-vfx{pointer-events:none;transform-box:fill-box;transform-origin:center}
+.m3-vfx-ring{fill:none;stroke:#f5e19c;stroke-width:5;opacity:.98;
+ transform-box:fill-box;transform-origin:center;animation:m3-impact-ring .95s ease-out both}
+.m3-vfx-freeze .m3-vfx-ring{stroke:#a1eafb}
+.m3-vfx-knockback .m3-vfx-ring,.m3-vfx-hit .m3-vfx-ring{stroke:#ffb86e}
+.m3-vfx-capture .m3-vfx-ring{stroke:#c9fa7c}
+.m3-vfx-objective .m3-vfx-ring{stroke:#ffdf87}
+.m3-vfx-stage .m3-vfx-ring,.m3-vfx-win .m3-vfx-ring{stroke:#f5e4ae}
+.m3-vfx-label{font-weight:900;font-size:22px;paint-order:stroke;stroke:#18322d;
+ stroke-width:2;fill:#ffefb2;animation:m3-impact-label .93s ease-out both}
+@keyframes m3-impact-ring{from{opacity:1;transform:scale(.45)}to{opacity:0;transform:scale(2.6)}}
+@keyframes m3-impact-label{from{opacity:0;transform:translateY(8px)}
+ 25%{opacity:1}to{opacity:0;transform:translateY(-20px)}}
+.m3-legend{padding:8px 0;border-bottom:1px solid #bdcd9955;gap:6px 17px}
+.m3-legend span{white-space:nowrap}
+.m3-hint span{font-weight:800;color:#ffe6a9;display:block;margin-bottom:4px}
+.m3-player.active{background:linear-gradient(110deg,#365247,#172a2d);
+ box-shadow:inset 0 0 0 1px #f8d68f66,0 0 16px #e6cb6840}
+.m3-hand .m3-card{transition:transform .16s ease,box-shadow .16s ease}
+.m3-hand .m3-card:not(:disabled):active{transform:translateY(-7px) scale(1.04)}
+.m3-moves button{min-height:44px}
+.m3-objective-head strong{color:#ffe8aa}
+.m3-progress-track{height:13px}
+@media(max-width:680px){
+ .m3-board-viewport{border-width:2px;border-radius:11px}
+ .m3-zoom-controls{bottom:7px;right:7px;padding:4px;gap:3px;border-radius:10px}
+ .m3-zoom-controls button{min-width:34px;min-height:35px;font-size:20px}
+ .m3-zoom-controls output{min-width:43px;font-size:10px}
+ .m3-effect-banner{top:7px;padding:8px 10px;max-width:calc(100% - 15px);font-size:11px}
+ .m3-hint{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+ .m3-objective,.m3-objective.m3-light,.m3-objective.m3-ice,.m3-objective.m3-rune,
+ .m3-vfx-ring,.m3-vfx-label,.m3-effect-banner.m3-vfx-visible{
+  animation:none!important;transition:none!important
+ }
+ .m3-effect-banner.m3-vfx-visible{opacity:1;transform:translateX(-50%)}
+ .m3-vfx-ring,.m3-vfx-label{display:none}
+ .m3-board{will-change:auto}
+}
