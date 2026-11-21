@@ -86,8 +86,35 @@ export function initChristmasResearch(){
    case 'free_ticket':return 'Alle '+Math.max(6,24-2*(level-1))+' Std.';
    case 'pity':return 'Nach '+(10-level)+' Nieten';
    case 'builder':return '+'+level+' ⭐ / 2 Std.';
-   default:return 'Stufe '+level+' / '+skill.maxLevel;
+   case 'card_swap':return '1 Kartentausch';
+   case 'thaw':return level+' Befreiung'+(level===1?'':'en');
+   case 'spot_ticket':return '1 geheimes Losfeld';
+   case 'spot_light':return '1 geheimes Lichtfeld';
+   default:return valueAt(skill,level);
   }
+ }
+ function nextGain(skill,level){
+  if(level>=skill.maxLevel)return 'Maximaler Vorteil erreicht';
+  switch(skill.id){
+   case 'xp':return '+10 % mehr DOG-XP';
+   case 'win_xp':return '+30 % mehr Sieger-XP';
+   case 'discount':return '+2 Prozentpunkte Rabatt';
+   case 'coin_bonus':return '+2 Prozentpunkte Münzbonus';
+   case 'lights_bonus':return '+5 Prozentpunkte Weihnachtslichter';
+   case 'pity':return '1 Niete weniger bis zum Gratislos';
+   case 'free_ticket':return '2 Stunden kürzere Wartezeit';
+   case 'builder':return '+1 Licht je Abholung';
+   case 'thaw':return '+1 Befreiung pro Mission';
+   case 'card_swap':return '1 Kartentausch pro Partie freischalten';
+   case 'spot_ticket':return '1 geheimes Losfeld freischalten';
+   case 'spot_light':return '1 geheimes Lichtfeld freischalten';
+   default:return valueAt(skill,level+1);
+  }
+ }
+ function bonusTile(label,value,cls){
+  const box=el('div','dr-card-benefit '+cls);
+  box.append(el('span','dr-card-benefit-label',label),el('strong','dr-card-benefit-value',value));
+  return box;
  }
  function groupFor(skill){
   if(grinchIds.has(skill.id))return 'Grinch-Missionen';
@@ -145,7 +172,7 @@ export function initChristmasResearch(){
   const btn=el('button','dog-research-card'+(isSelected?' is-selected':'')+(isMax?' is-max':'')+(!skill.enabled?' is-preview':''));
   btn.type='button';btn.dataset.skillId=skill.id;btn.dataset.researchArt=skill.id;
   btn.setAttribute('aria-pressed',String(isSelected));
-  btn.setAttribute('aria-label',skill.name+', Stufe '+level+' von '+skill.maxLevel+', Details anzeigen');
+  btn.setAttribute('aria-label',skill.name+', Stufe '+level+' von '+skill.maxLevel+'. Aktuell: '+shortValue(skill,level)+'. '+(isMax?'Maximale Stufe erreicht.':'Nächste Stufe: '+shortValue(skill,level+1))+'. Details anzeigen');
   const picture=el('div','dr-card-art');
   picture.append(el('span','dr-card-art-icon',skill.icon),researchArt(skill));
   const content=el('div','dr-card-content');
@@ -153,10 +180,16 @@ export function initChristmasResearch(){
   header.append(el('strong','dr-card-title',skill.name),
    el('span','dr-card-level','Stufe '+level+' / '+skill.maxLevel));
   const desc=el('p','dr-card-description',skill.description);
+  const comparison=el('div','dr-card-bonus-compare');
+  comparison.append(
+   bonusTile('JETZT · Stufe '+level,shortValue(skill,level),'dr-card-benefit-now'),
+   bonusTile(isMax?'STATUS':'NÄCHSTE · Stufe '+(level+1),
+    isMax?'✓ Maximale Stufe':shortValue(skill,level+1),'dr-card-benefit-next')
+  );
   const footer=el('div','dr-card-bottom');
   footer.append(progressBar(level,skill.maxLevel),
-   el('strong','dr-card-bonus',isMax?'✓ MAX':shortValue(skill,level)));
-  content.append(header,desc,footer);
+   el('strong','dr-card-next-cost',isMax?'✓ MAX':Number.isInteger(skill.nextCost)?fmt(skill.nextCost)+' FP':'Kosten offen'));
+  content.append(header,desc,comparison,footer);
   if(isSelected)btn.append(el('span','dr-card-selected','✓'));
   btn.append(picture,content);
   btn.addEventListener('click',()=>{
@@ -231,11 +264,18 @@ export function initChristmasResearch(){
   body.append(heading);
   body.append(detailRow('ⓘ Beschreibung',skill.description,'dr-detail-description'));
   const effects=el('div','dr-detail-effects');
-  effects.append(detailRow('▥ Aktueller Effekt',valueAt(skill,rank)));
-  if(!isMax)effects.append(detailRow('➤ Nächste Stufe: '+(rank+1)+' / '+skill.maxLevel,
+  effects.append(detailRow('◉ AKTUELL · STUFE '+rank,valueAt(skill,rank),'dr-current-effect'));
+  if(!isMax)effects.append(detailRow('➜ NACH AUFWERTUNG · STUFE '+(rank+1),
    valueAt(skill,rank+1),'dr-next-effect'));
-  else effects.append(detailRow('✓ Vollständig erforscht','Maximale Stufe erreicht','dr-next-effect'));
+  else effects.append(detailRow('✓ VOLLSTÄNDIG ERFORSCHT','Maximaler Vorteil erreicht','dr-next-effect'));
   body.append(effects);
+  if(!isMax){
+   const gain=el('div','dr-detail-gain');
+   gain.append(el('span','dr-detail-gain-symbol','✦'),
+    el('span','dr-detail-gain-label','DEINE VERBESSERUNG'),
+    el('strong','dr-detail-gain-value',nextGain(skill,rank)));
+   body.append(gain);
+  }
   if(skill.id==='pity'&&rank>0)
    body.append(detailRow('🍀 Trostengel-Fortschritt',
     fmt(data.pityNiets)+' / '+(10-rank)+' bezahlte Nieten bis zum nächsten einfachen Los'));
