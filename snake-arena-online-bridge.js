@@ -1,3 +1,7 @@
+// Local Snake frames remain at full speed. Firestore room state only needs
+// periodic validated score checkpoints; finish reports still go out immediately.
+export const SNAKE_STATE_CHECKPOINT_MS=600;
+export const SNAKE_TIMEOUT_PROBE_MS=3000;
 export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError}){
  const frame=document.createElement('iframe');
  frame.src='./minispiele/snake-arena-online-adapter-v29.html?v=36&session='+Date.now();
@@ -11,24 +15,27 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
   const mine=room.players.find(p=>p.me||p.isMe||p.uid===room.myUid)?.seat,localSeat=seats.indexOf(mine);if(localSeat<0)return;
   if(!configured){seq=Math.max(seq,...(Array.isArray(ch.snake?.players)?ch.snake.players:Object.values(ch.snake?.players||{})).filter(p=>p.seat===mine).map(p=>p.seq||0),0);frame.contentWindow.postMessage({type:'snake-arena:configure',challengeId:ch.id,startAt:ch.startAt,serverOffset:offset,initialSeq:seq,localSeat,seats:seats.map(seat=>({seat,name:room.players.find(p=>p.seat===seat)?.name||'Spieler'}))},location.origin);return;}
   if(ch.snake||ch.phase!=='countdown'){const players=ch.snake?.players||[];const alive=players.filter(p=>p.alive);const eliminated=players.filter(p=>!p.alive);frame.contentWindow.postMessage({type:'snake-arena:snapshot',challengeId:ch.id,phase:ch.phase,players,winningTarget:alive.length===1&&alive[0].seat===mine&&eliminated.length?(Number.isFinite(ch.snake?.winningTarget)?ch.snake.winningTarget:Math.max(...eliminated.map(p=>p.score))):null,standings:ch.results?.find(r=>r.game==='snake-arena'&&r.index===ch.index)?.standings},location.origin);}
-  if(ch.phase==='countdown'&&Date.now()-lastPoll>800&&!pollPending){pollPending=true;lastPoll=Date.now();const id=ch.id;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-snake-timeout','POST',{challengeId:id}).then(r=>{if(alive&&current()?.ch.id===id&&r?.room)acceptRoom(r.room)}).catch(e=>{if(alive)onError(e)}).finally(()=>{pollPending=false});}
+  if(ch.phase==='countdown'&&Date.now()-lastPoll>SNAKE_TIMEOUT_PROBE_MS&&!pollPending){pollPending=true;lastPoll=Date.now();const id=ch.id;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-snake-timeout','POST',{challengeId:id}).then(r=>{if(alive&&current()?.ch.id===id&&r?.room)acceptRoom(r.room)}).catch(e=>{if(alive)onError(e)}).finally(()=>{pollPending=false});}
  }
  async function send(){
   if(!alive||pending||!queued)return;
   const c=current();if(!c||c.ch.phase!=='countdown')return;
+  // Skip frequent routine packets but never withhold a finished player's result.
+  if(!queued.finished&&lastSent&&Date.now()-lastSent<SNAKE_STATE_CHECKPOINT_MS)return;
   const m=queued;queued=null;pending=true;lastSent=Date.now();
   try{const r=await request('/rooms/'+encodeURIComponent(c.room.code)+'/challenge-snake-state','POST',{challengeId:c.ch.id,seq:m.seq,score:m.score,survived:m.survived,finished:m.finished});if(alive&&current()?.ch.id===c.ch.id&&r?.room)acceptRoom(r.room)}
-  catch(e){if(alive){if(!queued||queued.seq<m.seq)queued={...m,finished:m.finished||!!queued?.finished};if(e?.status===409||e?.status===403){queued=null;}else onError(e);}}finally{pending=false;if(queued&&alive)setTimeout(send,queued.finished?0:80);}
+  catch(e){if(alive){if(!queued||queued.seq<m.seq)queued={...m,finished:m.finished||!!queued?.finished};if(e?.status===409||e?.status===403){queued=null;}else onError(e);}}finally{pending=false;if(queued&&alive)setTimeout(send,queued.finished?0:
+   Math.max(80,SNAKE_STATE_CHECKPOINT_MS-(Date.now()-lastSent)));}
  }
  function onMessage(e){
   if(!alive||e.origin!==location.origin||e.source!==frame.contentWindow)return;const m=e.data,c=current();if(!c||m?.challengeId!==c.ch.id)return;
   if(m.type==='snake-arena:configured'){configured=true;sync();return;}
   if(m.type!=='snake-arena:state'||c.ch.phase!=='countdown')return;
   if(!Number.isSafeInteger(m.score)||!Number.isSafeInteger(m.survived)||typeof m.finished!=='boolean')return;
-  const previous=queued;queued={...m,seq:++seq,finished:m.finished||!!previous?.finished};if(!pending&&(m.finished||Date.now()-lastSent>=80))send();
+  const previous=queued;queued={...m,seq:++seq,finished:m.finished||!!previous?.finished};if(!pending&&(m.finished||Date.now()-lastSent>=SNAKE_STATE_CHECKPOINT_MS))send();
  }
  window.addEventListener('message',onMessage);
  frame.addEventListener('load',()=>{ready=true;configured=false;sync()});
- const timer=setInterval(()=>{const r=getRoom();if(Number.isFinite(r?.serverNow))offset=r.serverNow-Date.now();sync();if(queued&&!pending&&Date.now()-lastSent>=350)send();},80);
+ const timer=setInterval(()=>{const r=getRoom();if(Number.isFinite(r?.serverNow))offset=r.serverNow-Date.now();sync();if(queued&&!pending&&(queued.finished||Date.now()-lastSent>=SNAKE_STATE_CHECKPOINT_MS))send();},80);
  return {sync,destroy(){alive=false;clearInterval(timer);window.removeEventListener('message',onMessage);frame.remove()}};
 }
