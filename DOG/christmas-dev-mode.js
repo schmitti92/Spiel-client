@@ -190,8 +190,12 @@ export function initChristmasDeveloper(){
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncAccount();});
  window.addEventListener('spielonline-change',syncAccount);
  syncAccount();
- return Object.freeze({
+ const api=Object.freeze({
   isActive,hasGrinch,settings:read,
+  setBuilding(id,level){
+   if(!isActive()||!BUILDINGS.some(item=>item[0]===id))return;
+   save({...state,buildings:{...state.buildings,[id]:clamp(level,1,5)}});
+  },
   researchData(real){
    if(!isActive()||!real?.skills)return real;
    const skills=real.skills.map(s=>({
@@ -217,4 +221,6 @@ export function initChristmasDeveloper(){
     researchXpPercent:state.research.xp*10,researchWinXpPercent:state.research.win_xp*30};
   }
  });
+ window.DOGChristmasDev=api;
+ return api;
 }
