@@ -152,3 +152,23 @@ test('the four uploaded Christmas reference sheets decorate research without fak
  assert.match(controller,/getIdToken\(\)/);
  assert.match(controller,/call\('\/upgrade',\{id:skill\.id\}\)/);
 });
+
+test('every research shows a real current and next advantage in card and detail',()=>{
+ const clarity=read('christmas-research-bonus-clarity.css');
+ assert.match(html,/christmas-research-bonus-clarity\.css\?v=1/);
+ assert.match(controller,/function bonusTile\(label,value,cls\)/);
+ assert.match(controller,/function nextGain\(skill,level\)/);
+ assert.match(controller,/bonusTile\('JETZT · Stufe '/);
+ assert.match(controller,/bonusTile\(isMax\?'STATUS':'NÄCHSTE · Stufe '/);
+ assert.match(controller,/shortValue\(skill,level\+1\)/);
+ assert.match(controller,/dr-detail-gain-value/);
+ assert.match(controller,/dr-current-effect/);
+ assert.match(controller,/dr-next-effect/);
+ assert.match(controller,/skill\.nextCost/);
+ assert.match(clarity,/dr-card-bonus-compare/);
+ assert.match(clarity,/dr-detail-effects \.dr-next-effect/);
+ assert.match(clarity,/dr-detail-gain-value/);
+ assert.equal((html.match(/class="event-tab(?: event-tab-grinch)?"/g)||[]).length,8);
+ assert.match(controller,/getIdToken\(\)/);
+ assert.match(controller,/call\('\/upgrade',\{id:skill\.id\}\)/);
+});
