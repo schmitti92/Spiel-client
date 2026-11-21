@@ -12,7 +12,7 @@ async function loadLocalResearch(){
  const state=window.SpielOnline?.state?.(),user=state?.status==='online'?state.user:null;
  if(!user?.getIdToken)return;
  try{
-  const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\\/+$/,'');
+  const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
   const response=await fetch(base+'/api/hub/dog/research',{cache:'no-store',
    headers:{Authorization:'Bearer '+await user.getIdToken()}});
   const data=await response.json();
