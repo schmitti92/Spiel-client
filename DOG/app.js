@@ -2,7 +2,7 @@ import {refreshVerifiedCosmetics} from './verified-cosmetics.js?v=2';
 import {CARD_EDITIONS,CARD_EDITION,isCardEditionUnlocked,loadCardEdition,saveCardEdition,cardBackBackground,cardMarkup,cardVisual} from './card-visuals.js?v=12';
 import {enableHandTouchGestures} from './hand-gestures.js?v=2';
 import {mountDogEmojiGame,showDogEmoji,showDogEmojiError} from './emoji-game.js?v=4';
-import {boardGestureTarget,nearestTrackPawn} from './board-gesture-math.js?v=2';
+import {boardGestureTarget,nearestTrackPawn,nearestBoardField,boardEventPoint} from './board-gesture-math.js?v=3';
 import {snapshotPieces,planPieceMotions,createPieceAnimator} from './piece-animations.js?v=3';
 import {loadMotionMode,saveMotionMode,applyMotionMode} from './motion-settings.js?v=1';
 import {createDogVisualFeedback} from './ui-animations.js?v=2';
@@ -735,14 +735,15 @@ $('board').addEventListener('click',e=>{
  const selectedCardObject=game.hands?.[seat]?.find(card=>card.id===selectedCard);
  const swapCardSelected=game.phase==='play'&&(selectedCardObject?.type==='swap'||(selectedCardObject?.type==='joker'&&jokerAs==='swap'));
  let node=e.target.closest('[data-piece]');
- // A swap target should remain tappable even when a finger lands just outside
- // its SVG artwork; look up by stable piece id, including three-player games.
- if(!node&&selectedPiece!==null&&swapCardSelected){
-  const matrix=boardSvg.getScreenCTM();
-  if(matrix){
-   const point=new DOMPoint(e.clientX,e.clientY).matrixTransform(matrix.inverse());
-   const nearbyId=nearestTrackPawn(game.pieces,point,TRACK_POINTS,24);
-   if(nearbyId!==null)node=boardSvg.querySelector('[data-piece="'+nearbyId+'"]');
+ let tapPoint;
+ const getTapPoint=()=>tapPoint===undefined?(tapPoint=boardEventPoint(boardSvg,e)):tapPoint;
+ // Give all colours the same generous hit area on touchscreens. Keep pawn
+ // identity stable even when an unoccupied fourth seat leaves gaps in IDs.
+ // When a swap source is selected, allow selecting a slightly missed target.
+ if(!node&&selectedCard!==null&&(selectedPiece===null||swapCardSelected)){
+  const nearbyId=nearestTrackPawn(game.pieces,getTapPoint(),TRACK_POINTS,34);
+  if(nearbyId!==null&&(selectedPiece!==null||available.some(m=>m.pieceId===nearbyId))){
+   node=boardSvg.querySelector('[data-piece="'+nearbyId+'"]');
   }
  }
  if(node&&selectedPiece===null){
@@ -783,12 +784,9 @@ $('board').addEventListener('click',e=>{
   // Keep the source pawn selected so the player can retry the second click.
   return;
  }
- const matrix=$('board').getScreenCTM();if(!matrix)return;
- const p=new DOMPoint(e.clientX,e.clientY).matrixTransform(matrix.inverse());
- const fields=TRACK_POINTS.map((v,i)=>({key:'track:'+i,p:v}));
- GOAL_POINTS.forEach((group,seat)=>group.forEach((v,i)=>fields.push({key:'goal:'+i,p:v,seat})));
- let dest=null,best=26*26;
- for(const field of fields){const d=(field.p.x-p.x)**2+(field.p.y-p.y)**2;if(d<best){best=d;dest=field;}}
+ const p=getTapPoint();
+ if(!p){$('move-help').textContent='Das Spielfeld konnte die Berührung nicht erkennen. Bitte erneut tippen.';return;}
+ const dest=nearestBoardField(p,TRACK_POINTS,GOAL_POINTS,34);
  // Pawn IDs are stable across all colors; with an empty fourth color the
  // pawn's ID may not equal its index in the shortened pieces array.
  const selectedPawn=game.pieces.find(piece=>piece.id===selectedPiece);
@@ -803,7 +801,8 @@ $('board').addEventListener('click',e=>{
   chooseDogMove(matches,'Mehrere erlaubte Wege führen auf dieses Feld. Wähle die Variante.');
   return;
  }
- selectedPiece=null;drawBoard();visualFeedback.invalid();$('move-help').textContent='Zug nicht erlaubt. Bitte selbst erneut rechnen.';
+ visualFeedback.invalid();
+ $('move-help').textContent=selectedCardObject?.type==='12'&&dest?.key.startsWith('goal:')?'⛳ Eine 12 muss genau auf dem gewählten Zielfeld enden. Prüfe die 12 Schritte oder tippe genauer.':'Zug auf dieses Feld nicht erlaubt. Figur bleibt ausgewählt – bitte Zielfeld erneut antippen.';
 });
 // Test controls are deliberately restricted to local games; never send altered cards online.
 const testPanel=$('dog-card-test'),testSelect=$('dog-test-card');
