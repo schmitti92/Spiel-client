@@ -2,6 +2,7 @@ import {MISSIONS} from './mission-config.js?v=6';
 const MISSION_2=MISSIONS[1];
 import {presentMission2Slot,wireMission2Slots,setMission2SlotDismissHandler} from './mission-2-slot-ui.js?v=2';
 import {createGrinchOnline} from './mission-2-online.js?v=2';
+import {createGrinchResearch} from './mission-research.js?v=1';
 import {cardVisual} from '../card-visuals.js?v=11';
 import {drawMission2Board} from './mission-2-board.js?v=4';
 import {mission2Status} from './mission-2-markers.js?v=1';
@@ -25,6 +26,10 @@ function curseLabel(type,id){
  return rules[id]?.[type]||null;
 }
 let state=null,chosenCard=null,chosenPiece=null,pickMoves=[],lastSeenRevision=-1,lastSlotRound=0,lastSeenLossEventId=0;
+const missionResearch=createGrinchResearch({
+ online:onlineMode,getState:()=>state,getBridge:()=>onlineBridge,
+ getBusy:()=>onlineBusy,rerender:()=>render(),showMessage:message=>toast(message)
+});
 wireMission2Slots();
 setMission2SlotDismissHandler(async round=>{
  if(!state||state.m2?.pendingSlotRound!==round)return;
@@ -90,6 +95,7 @@ function currentMoves(){
  return card?legalMoves(state,state.current,card):[];
 }
 function choosePawn(id){
+ if(onlineMode&&missionResearch.canThaw(id)){missionResearch.thaw(id);return;}
  if(!state||state.complete||state.m2?.pendingSlotRound||!myTurn()||onlineBusy)return;
  const moves=currentMoves();
  const targets=chosenPiece?moves.filter(m=>m.pieceId===chosenPiece&&m.targetId===id):[];
@@ -230,6 +236,7 @@ function render(){
  const history=$('history');history.replaceChildren();
  for(const entry of state.history)text('p',entry,history);
  drawMission2Board($('board'),state,{selectedPiece:chosenPiece,onPieceClick:choosePawn});
+ missionResearch.render();
 }
 function clearMissionWeather(){
  clearTimeout(effectTimer);
@@ -378,6 +385,7 @@ function acceptOnlineRoom(room){
  onlineSeat=Number.isInteger(match.grinchSeat)?match.grinchSeat:null;
  onlineMatchId=match.id;
  state=mission;
+ missionResearch.update(room);
  if(priorMatch!==match.id){
   chosenCard=null;chosenPiece=null;pickMoves=[];
   lastSeenRevision=mission.revision;lastSlotRound=0;
@@ -391,7 +399,7 @@ function acceptOnlineRoom(room){
   const spin=mission.m2?.spins?.at(-1);
   if(spin&&mission.m2?.pendingSlotRound===spin.round){lastSlotRound=spin.round;void presentMission2Slot(spin);}
  }
- else if(previous!==null&&priorMatch===match.id&&previous!==mission.revision)onEffect();
+ else if(previous!==null&&priorMatch===match.id&&previous!==mission.revision){onEffect();missionResearch.render();}
 }
 function onOnlineError(message){
  $('grinch-online-panel').hidden=false;
