@@ -27,7 +27,7 @@ export function initChristmasStory({openTab}){
  if(!nav||!reader||!action||!banner)throw Error('STORY_READER_MISSING');
 
  let stage=1,verified=false,chapter=1,page=1,needed=0,hasVerification=false;
- const narrowLayout=window.matchMedia('(max-width: 650px)');
+ const narrowLayout=window.matchMedia('(max-width: 780px)');
  const visiblePages=()=>{
   const first=narrowLayout.matches?page:(2*Math.floor((page-1)/2)+1);
   return {first,last:Math.min(6,first+(narrowLayout.matches?0:1))};
