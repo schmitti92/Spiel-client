@@ -208,6 +208,8 @@ export function showChristmasIntro(onDone=()=>{},onLater=()=>{}){
 }
 export function mountChristmasLinks(){
  let pending=false,pendingAgain=false,shownUid=null,activeUid=null;
+ let lastEligibilityReadAt=0,lastEligibilityUid=null;
+ const ELIGIBILITY_FOCUS_MIN_MS=20000; // Focus/visibility should not double-read.
  // The film belongs to the actual DOG game AFTER its winner ceremony.
  // This module also runs in the shared hub, which has no ceremony at all.
  // Never launch a Christmas film there just because an old profile is eligible.
@@ -215,21 +217,25 @@ export function mountChristmasLinks(){
  let matchFinishedOnThisPage=false,ceremonyDismissed=false,introDeferred=false;
  const ceremonyOpen=()=>!!victoryDialog?.open;
  const afterVictory=()=>Boolean(victoryDialog&&matchFinishedOnThisPage&&ceremonyDismissed&&!ceremonyOpen());
- async function refresh(){
+ async function refresh({force=false}={}){
   const p=profile();
   if(!p){
    shownUid=null;activeUid=null;matchFinishedOnThisPage=false;ceremonyDismissed=false;introDeferred=false;
+   lastEligibilityReadAt=0;lastEligibilityUid=null;
    document.documentElement.classList.remove('dog-christmas-portal-open');return;
   }
-  if(pending){pendingAgain=true;return;}
-  pending=true;
   const uid=p.user.uid;
+  if(!force&&lastEligibilityUid===uid&&Date.now()-lastEligibilityReadAt<ELIGIBILITY_FOCUS_MIN_MS)return;
+  if(pending){if(force)pendingAgain=true;return;}
+  pending=true;
   if(activeUid!==uid){
    activeUid=uid;matchFinishedOnThisPage=false;ceremonyDismissed=false;introDeferred=false;
   }
   try{
    const state=await api();
    if(profile()?.user?.uid!==uid)return;
+   lastEligibilityReadAt=Date.now();
+   lastEligibilityUid=uid;
    // Chris keeps early event access. The cinematic is a separate milestone:
    // show it only after a genuinely completed, verified online DOG match.
    const portalUnlocked=state.eligible&&(state.completed||state.previewGranted);
@@ -241,22 +247,25 @@ export function mountChristmasLinks(){
    console.warn('[Christmas entry] Check unavailable:',e?.message||e);
   }finally{
    pending=false;
-   if(pendingAgain){pendingAgain=false;queueMicrotask(()=>void refresh());}
+   if(pendingAgain){pendingAgain=false;queueMicrotask(()=>void refresh({force:true}));}
   }
  }
  window.addEventListener('spielonline-change',()=>void refresh());
  window.addEventListener('dog-match-finished',()=>{
   if(victoryDialog)matchFinishedOnThisPage=true;
-  void refresh();
+  void refresh({force:true});
  });
  // Only the actual closing of the finished-match ceremony may reveal the film.
  victoryDialog?.addEventListener('close',()=>{
   if(matchFinishedOnThisPage)ceremonyDismissed=true;
-  void refresh();
+  void refresh({force:true});
  });
  window.addEventListener('focus',()=>void refresh());
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refresh();});
- void refresh();setTimeout(()=>void refresh(),1700);
+ const initiallyAuthenticated=Boolean(profile());
+ void refresh();
+ // Only retry the startup probe when no online profile was ready at first.
+ if(!initiallyAuthenticated)setTimeout(()=>void refresh(),1700);
  return refresh;
 }
 export function guardChristmasEventPage(){
@@ -269,7 +278,7 @@ export function guardChristmasEventPage(){
   if(admitted)return;
   admitted=true;gate.remove();
   document.documentElement.classList.add('dog-christmas-page-ready','dog-christmas-portal-open');
-  await import('./christmas-event.js?v=156');
+  await import('./christmas-event.js?v=157');
  };
  const check=async()=>{
   if(admitted||checking)return;
