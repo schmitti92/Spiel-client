@@ -40,6 +40,12 @@ export function dogMoveBlockReason(game,{seat,cardId=null,jokerAs=null,stage='ca
  if(game.phase==='rescue'&&cardId!==game.rescue?.cardId)
   return 'Nach dem Nachziehen darf nur die gezogene Startkarte zum Heraussetzen gespielt werden.';
  if(stage==='source'){
+   if(game.phase==='seven'){
+     if(!source)return 'Wähle eine Figur für die restlichen Schritte der 7 aus.';
+     if(source.owner!==owner)return 'Die restlichen Schritte der 7 dürfen nur mit eigenen Figuren verteilt werden.';
+     if(source.place==='home')return 'Eine Figur im Starthaus kann mit der 7 nicht laufen.';
+     return 'Mit dieser Figur lassen sich die restlichen Schritte der 7 nicht vollständig und regelgerecht verteilen.';
+   }
    if(!type)return 'Wähle zuerst eine Handkarte aus.';
    if(!source)return 'Tippe zuerst eine Figur auf dem Spielfeld an.';
    if(source.owner!==owner)return swap?
@@ -74,6 +80,7 @@ export function dogMoveBlockReason(game,{seat,cardId=null,jokerAs=null,stage='ca
  }
  if(stage==='destination'){
    if(!source)return 'Wähle zuerst eine Figur aus.';
+   if(game.phase==='seven')return 'Die 7 muss vollständig auf erlaubte Wege verteilt werden. Geschützte Startfelder und besetzte Zielfelder blockieren den Weg.';
    if(swap)return 'Beim Tauschen wählst du eine zweite Figur auf der Laufbahn, kein freies Feld.';
    if(source.place==='home'){
      if(!canStart)return 'Diese Karte kann keine Figur aus dem Starthaus heraussetzen.';
@@ -113,7 +120,7 @@ export function dogMoveBlockReason(game,{seat,cardId=null,jokerAs=null,stage='ca
      return type==='12'?
        'Die 12 ist keine Startkarte. Um aus dem Starthaus zu kommen, benötigst du 1/11, 13 oder Joker.':
        'Alle deine Figuren sind noch im Haus. Du brauchst 1/11, 13 oder Joker zum Heraussetzen.';
-   if(canStart&&startIsBlocked(game,owner)&&own.some(p=>p.place==='home')&&!onTrack)
+   if(canStart&&startIsBlocked(game,owner)&&own.some(p=>p.place==='home'))
      return 'Dein eigenes Startfeld ist geschützt besetzt. Eine weitere Figur kann dort nicht herausgesetzt werden.';
    if(type==='7')return 'Die 7 ist nicht spielbar, wenn sich alle sieben Schritte nicht vollständig verteilen lassen.';
    return 'Für diese Karte gibt es gerade keinen erlaubten Zug. Du kannst sie bei fehlenden Zügen abwerfen und eine Ersatzkarte ziehen.';
