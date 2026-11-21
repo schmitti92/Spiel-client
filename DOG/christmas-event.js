@@ -8,7 +8,7 @@ import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotal
 import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewards-ui.js?v=5';
 import {initChristmasTreeFilms} from './christmas-tree-films.js?v=2';
 import {initChristmasStory} from './christmas-story.js?v=7';
-import {initChristmasScratch} from './christmas-scratch-ui.js?v=83';
+import {initChristmasScratch} from './christmas-scratch-ui.js?v=84';
 import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=8';
 import {initChristmasResearch} from './christmas-research-ui.js?v=9';
 import {initChristmasContentZoom} from './christmas-content-zoom.js?v=1';
@@ -912,6 +912,7 @@ async function purchaseBuilding(id){
    building:id,expectedLevel:level,roomCode:villageRoomValid?villageCode:null,commandId:'dog-village-'+crypto.randomUUID()
   });
   showLiveVillage({village:result.village,shared:true,enabled:villageEventActive,canUpgrade:villageCanUpgrade});
+  window.dispatchEvent(new Event('dog-scratch-balance-changed'));
   $('building-event-mode').textContent='✅ '+definitions.find(entry=>entry.id===id).title+' wurde auf Stufe '+(level+1)+' ausgebaut. '+cost+' Lichter abgebucht.';
  }catch(err){$('building-event-mode').textContent='⚠️ Ausbau nicht möglich: '+err.message;await reloadVillage();}
  finally{villageBusy=false;refreshPreview();}
