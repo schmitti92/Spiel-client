@@ -184,7 +184,11 @@ export function initDogPlayerLevels(){
   $('dog-level-coming').textContent=nextReward?'Level '+nextReward.level:
    'Alle abgeholt!';
   const bonus=Number.isInteger(data.academyXpPercent)?data.academyXpPercent:0;
-  $('dog-level-academy').textContent=bonus?'+'+bonus+' % XP':'Grundstufe';
+  const researchBonus=Number.isInteger(data.researchXpPercent)?data.researchXpPercent:0;
+  const researchWin=Number.isInteger(data.researchWinXpPercent)?data.researchWinXpPercent:0;
+  $('dog-level-academy').textContent=[bonus?'Akademie +'+bonus+' %':null,
+    researchBonus?'Wichtelwissen +'+researchBonus+' %':null,
+    researchWin?'Siegerakademie +'+researchWin+' % Sieger-XP':null].filter(Boolean).join(' · ')||'Grundstufe';
   $('dog-level-last').textContent=level.totalVerifiedMatches?
    'Letzte Partie: +'+format(level.lastEarnedXp)+' EP':'Noch keine DOG-Partie abgeschlossen';
   renderRanges(max,level.level);
@@ -266,6 +270,7 @@ export function initDogPlayerLevels(){
  prev.addEventListener('click',()=>changeRange(selectedRange-1));
  next.addEventListener('click',()=>changeRange(selectedRange+1));
  $('dog-level-to-scratch')?.addEventListener('click',()=>$('tab-scratch')?.click());
+ $('dog-level-to-research')?.addEventListener('click',()=>$('tab-research')?.click());
  window.addEventListener('spielonline-change',()=>{
   const previous=levelData;
   requestId++;levelData=null;selectedRange=0;
