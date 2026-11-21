@@ -161,7 +161,7 @@ export function initChristmasResearch(){
   btn.addEventListener('click',()=>{
    selectedId=skill.id;
    render();
-   if(window.matchMedia('(max-width: 1120px)').matches)
+   if(window.matchMedia('(max-width: 849px)').matches)
     details.scrollIntoView({behavior:'smooth',block:'start'});
   });
   return btn;
@@ -172,28 +172,8 @@ export function initChristmasResearch(){
   $('dog-research-earned').textContent=fmt(data.earned);
   $('dog-research-spent').textContent=fmt(data.spent);
   $('dog-research-player-level').textContent=String(data.level);
-  const active=data.skills.filter(skill=>levelOf(skill)>0);
-  $('dog-research-unlocked').textContent=active.length+' / '+data.skills.length;
-  $('dog-research-active-count').textContent='('+active.length+')';
-  const host=$('dog-research-active-bonuses');
-  host.replaceChildren();
-  if(!active.length){host.append(el('span','dr-muted','Noch keine Boni – entdecke deine erste Forschung.'));return;}
-  const priorities=['xp','win_xp','discount','coin_bonus','lights_bonus','free_ticket','builder'];
-  const ordered=[...active].sort((a,b)=>{
-   const ia=priorities.indexOf(a.id),ib=priorities.indexOf(b.id);
-   return (ia<0?100:ia)-(ib<0?100:ib);
-  });
-  for(const skill of ordered.slice(0,4)){
-   const chip=el('button','dr-bonus-chip');
-   chip.type='button';chip.title=skill.name;
-   chip.append(el('span','',skill.icon),el('strong','',shortValue(skill,levelOf(skill))),el('small','',skill.name));
-   chip.addEventListener('click',()=>{
-    category='all';selectedId=skill.id;render();
-    if(window.matchMedia('(max-width:1120px)').matches)details.scrollIntoView({behavior:'smooth',block:'start'});
-   });
-   host.append(chip);
-  }
-  if(active.length>4)host.append(el('span','dr-bonus-extra','+'+(active.length-4)+' weitere'));
+  const unlocked=data.skills.filter(skill=>levelOf(skill)>0).length;
+  $('dog-research-unlocked').textContent=unlocked+' / '+data.skills.length;
  }
  function detailRow(title,text,style=''){
   const wrap=el('section','dr-detail-block'+(style?' '+style:''));

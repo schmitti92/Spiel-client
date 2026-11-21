@@ -1,0 +1,163 @@
+/* DOG Lichtertal: compact research studio, original ornate left rail untouched.
+   The gallery scrolls independently. The RIGHT detail is always fully visible
+   at default zoom and remains pinned while research cards are browsed. */
+#panel-research .dr-hero,
+#panel-research .dr-bonuses{display:none!important}
+#panel-research .dog-research-shell{min-height:0!important;padding-top:4px!important}
+#panel-research .dr-summary{
+ display:grid!important;grid-template-columns:minmax(200px,265px)!important;
+ margin:0 0 7px!important;gap:0!important;
+}
+#panel-research .dr-wallet{
+ min-height:57px!important;padding:7px 12px!important;gap:10px!important;
+}
+#panel-research .dr-wallet-emblem{font-size:28px!important}
+#panel-research .dr-wallet-info span{font-size:11px!important}
+#panel-research .dr-wallet-info strong{font-size:23px!important;line-height:1.05}
+#panel-research .dog-research-status{
+ margin:0 0 7px!important;padding:5px 9px!important;font-size:11px!important;
+}
+#panel-research .dr-status-footer{
+ margin-top:5px!important;padding:5px 9px!important;gap:10px!important;
+}
+#panel-research .dog-research-note{
+ margin-top:5px!important;padding:6px 10px!important;font-size:10px!important;
+}
+@media(min-width:850px){
+ #panel-research .dr-workspace{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.55fr) minmax(282px,.92fr)!important;
+  gap:9px!important;align-items:stretch!important;
+  height:calc(100dvh - 139px)!important;min-height:420px!important;
+ }
+ #panel-research .dr-gallery{
+  grid-column:1!important;height:100%!important;min-height:0!important;
+  max-height:100%!important;display:flex!important;flex-direction:column!important;
+  overflow:hidden!important;padding:9px!important;
+ }
+ #panel-research .dr-gallery-header{flex:none!important;margin-bottom:5px!important;padding:2px 3px 7px!important}
+ #panel-research .dr-gallery-content{
+  min-height:0!important;flex:1 1 0!important;
+  overflow-x:hidden!important;overflow-y:auto!important;
+  max-height:none!important;padding:5px 2px!important;
+  scrollbar-width:thin;overscroll-behavior-y:contain;
+ }
+ #panel-research .dr-gallery-footer{flex:none!important;padding:5px 3px!important}
+ #panel-research .dr-detail-panel{
+  grid-column:2!important;align-self:stretch!important;
+  position:sticky!important;top:4px!important;z-index:4!important;
+  height:100%!important;min-height:0!important;max-height:100%!important;
+  display:flex!important;flex-direction:column!important;overflow:hidden!important;
+  isolation:isolate;
+ }
+ /* Put the illustration beside the title, instead of spending 230px vertically. */
+ #panel-research .dr-detail-artwork{
+  position:absolute!important;top:7px!important;left:7px!important;
+  width:clamp(92px,10vw,129px)!important;height:116px!important;
+  min-height:0!important;border:0!important;border-radius:11px!important;
+  overflow:visible!important;z-index:1!important;
+ }
+ #panel-research .dr-detail-artwork::after{display:none!important}
+ #panel-research .dr-detail-artwork-visual{
+  width:100%!important;height:100%!important;min-height:0!important;
+ }
+ #panel-research .dr-detail-skill-image{
+  width:100%!important;height:100%!important;max-height:116px!important;
+  object-fit:contain!important;
+ }
+ #panel-research .dr-detail-giant-icon{font-size:64px!important}
+ #panel-research .dr-detail-rank{
+  position:absolute!important;top:auto!important;right:auto!important;
+  left:3px!important;bottom:-2px!important;
+  font-size:10px!important;padding:2px 7px!important;white-space:nowrap;
+ }
+ #panel-research .dr-detail-body{
+  flex:1 1 auto!important;min-height:0!important;
+  display:flex!important;flex-direction:column!important;
+  padding:8px 11px 10px!important;
+ }
+ #panel-research .dr-detail-heading{
+  flex:none!important;min-height:117px!important;
+  margin:0 0 3px!important;padding:8px 0 8px clamp(105px,11vw,143px)!important;
+  display:flex!important;flex-direction:column!important;justify-content:center!important;
+  gap:5px!important;
+ }
+ #panel-research .dr-detail-heading h3{
+  font-size:clamp(17px,1.6vw,24px)!important;
+  line-height:1.1!important;overflow-wrap:anywhere;
+ }
+ #panel-research .dr-detail-type{font-size:11px!important}
+ #panel-research .dr-detail-block{
+  flex:none!important;padding:6px 0!important;margin:0!important;
+ }
+ #panel-research .dr-detail-label{
+  margin:0 0 3px!important;font-size:13px!important;line-height:1.2!important;
+ }
+ #panel-research .dr-detail-value{
+  font-size:12px!important;line-height:1.26!important;
+  margin:0!important;
+ }
+ #panel-research .dr-detail-actions{
+  flex:none!important;margin-top:auto!important;padding:7px 0 0!important;
+  gap:6px!important;align-items:stretch!important;
+ }
+ #panel-research .dr-research-cost{
+  padding:6px 8px!important;min-width:0!important;
+ }
+ #panel-research .dr-field-label{font-size:10px!important}
+ #panel-research .dr-field-value{font-size:15px!important}
+ #panel-research .dr-upgrade-button,#panel-research .dr-claim-button{
+  min-height:37px!important;font-size:14px!important;
+  padding:5px 8px!important;
+ }
+ #panel-research .dr-max-reached{padding:8px!important;font-size:12px!important}
+ #panel-research .dr-detail-claim{
+  flex:none!important;margin-top:7px!important;padding:7px!important;
+ }
+ #panel-research .dr-detail-claim h4{margin:0 0 4px!important;font-size:12px!important}
+ #panel-research .dr-detail-claim p{
+  margin:0 0 5px!important;font-size:11px!important;line-height:1.2!important;
+ }
+ #panel-research .dr-ticket-select{
+  padding:5px!important;min-height:29px!important;margin-bottom:5px!important;
+  font-size:12px!important;
+ }
+}
+@media(min-width:850px) and (max-height:740px){
+ #panel-research .dr-workspace{min-height:0!important;height:calc(100dvh - 131px)!important}
+ #panel-research .dr-detail-artwork{height:86px!important;width:96px!important}
+ #panel-research .dr-detail-skill-image{max-height:86px!important}
+ #panel-research .dr-detail-heading{min-height:88px!important;padding-left:106px!important}
+ #panel-research .dr-detail-heading h3{font-size:17px!important}
+ #panel-research .dr-detail-block{padding:4px 0!important}
+ #panel-research .dr-detail-label{font-size:11px!important;margin-bottom:1px!important}
+ #panel-research .dr-detail-value{font-size:11px!important;line-height:1.16!important}
+ #panel-research .dr-detail-claim{margin-top:4px!important;padding:5px!important}
+ #panel-research .dr-upgrade-button,#panel-research .dr-claim-button{min-height:32px!important;font-size:12px!important}
+ #panel-research .dr-detail-actions{padding-top:5px!important}
+}
+@media(max-width:849px){
+ #panel-research .dr-summary{grid-template-columns:1fr!important}
+ #panel-research .dr-workspace{
+  display:flex!important;flex-direction:column!important;gap:8px!important;
+  height:auto!important;min-height:0!important;
+ }
+ /* On narrow phones detail comes first; research choices scroll underneath. */
+ #panel-research .dr-detail-panel{
+  order:0!important;position:relative!important;top:auto!important;
+  display:block!important;min-height:0!important;max-height:none!important;
+  height:auto!important;overflow:visible!important;
+ }
+ #panel-research .dr-gallery{
+  order:1!important;min-height:0!important;height:auto!important;overflow:hidden!important;
+ }
+ #panel-research .dr-gallery-content{
+  max-height:38dvh!important;min-height:170px!important;
+  overflow-y:auto!important;overflow-x:hidden!important;
+ }
+ #panel-research .dr-detail-artwork{min-height:140px!important}
+ #panel-research .dr-detail-artwork-visual{min-height:140px!important;height:140px!important}
+ #panel-research .dr-detail-body{padding:10px 13px!important}
+ #panel-research .dr-detail-block{padding:7px 0!important}
+ #panel-research .dr-detail-actions{padding:8px 0 4px!important}
+}
