@@ -146,3 +146,27 @@ test('DOG lobby cannot show the Christmas film without a finished DOG victory ce
  assert.match(sourceCode,/reason==='DOG_CHRISTMAS_INTRO_LOCKED'/);
  assert.doesNotMatch(sourceCode,/Server nicht erreichbar\. Bitte Freischaltung erneut versuchen/);
 });
+
+
+test('idle Firebase reads are rate-limited without delaying a verified DOG victory',()=>{
+ const intro=source('DOG/christmas-intro-gate.js');
+ const event=source('DOG/christmas-event.js');
+ const hub=source('hub-lobby.html'),dog=source('DOG/index.html'),page=source('DOG/christmas-event.html');
+ assert.match(intro,/ELIGIBILITY_FOCUS_MIN_MS=20000/);
+ assert.match(intro,/!force&&lastEligibilityUid===uid&&Date\.now\(\)-lastEligibilityReadAt<ELIGIBILITY_FOCUS_MIN_MS/);
+ assert.match(intro,/if\(pending\)\{if\(force\|\|uid!==activeUid\)pendingAgain=true;return;\}/);
+ assert.match(intro,/if\(victoryDialog\)matchFinishedOnThisPage=true;\s*void refresh\(\{force:true\}\)/);
+ assert.match(intro,/if\(matchFinishedOnThisPage\)ceremonyDismissed=true;\s*void refresh\(\{force:true\}\)/);
+ assert.match(intro,/if\(!initiallyAuthenticated\)setTimeout\(\(\)=>void refresh\(\),1700\)/);
+ assert.match(intro,/if\(!initiallyAuthenticated\)setTimeout\(\(\)=>void check\(\),1700\)/);
+ assert.match(event,/const VILLAGE_POLL_MS=180000/);
+ assert.match(event,/const VILLAGE_TAB_FRESH_MS=60000/);
+ assert.match(event,/const VILLAGE_VISIBLE_FRESH_MS=60000/);
+ assert.match(event,/visibleVillageTab\(\).*minimumAgeMs:VILLAGE_POLL_MS/);
+ assert.match(event,/if\(minimumAgeMs>0&&villageLive&&lastVillageReadUid===person\.uid/);
+ assert.match(event,/if\(pendingVillageRead\)return pendingVillageRead/);
+ assert.match(event,/\$\('building-wallet-refresh'\)\.addEventListener\('click',\(\)=>void reloadVillage\(\)\)/);
+ assert.match(event,/villageRequest\('village\/upgrade','POST'/);
+ assert.match(intro,/christmas-event\.js\?v=157/);
+ for(const html of [hub,dog,page])assert.match(html,/christmas-intro-gate\.js\?v=17/);
+});
