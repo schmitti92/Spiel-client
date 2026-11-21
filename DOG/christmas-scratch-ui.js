@@ -3,6 +3,10 @@
  * The signed-in Render service creates a card with immutable win combinations.
  */
 import {createOtherScratchStudio,OTHER_EDITOR_VARIANTS} from './christmas-other-edition-ui.js?v=1';
+/** Display mirrors Render's verified level gates; purchasing is checked again on the server. */
+export const SCRATCH_LEVEL_UNLOCKS=Object.freeze({
+ snow_collect:3,tic_tac_toe:6,elf:7,dog_jackpot_9:8
+});
 export const SCRATCH_TICKET_TYPES=Object.freeze([
  {id:'simple',icon:'🟤',label:'Einfach',price:200,coinMax:100,unlockChance:'11,1',rewards:'47 klassische Emojis · 16 Blockfarben',odds:'20 % Nieten · 68,9 % Münzen · 11,1 % Freischaltungen'},
  {id:'medium',icon:'🔵',label:'Mittel',price:500,coinMax:800,unlockChance:'3',rewards:'5 Profilbilder · 4 Weihnachts-Emojis · Rahmen · Aktivsymbol · Spielbrett',odds:'20 % Nieten · 77 % Münzen · 3 % Freischaltungen'},
@@ -222,6 +226,7 @@ export function initChristmasScratch(){
  const clearAlert=()=>{actionError=null;alertToast.hidden=true};
  const scratchBuyError=code=>({
   SCRATCH_INVALID_VARIANT:'⚠️ Dieses Los ist auf Render noch nicht freigeschaltet. Die Backend-Version muss aktualisiert werden.',
+  SCRATCH_PLAYER_LEVEL_LOCKED:'🔒 Dieses Rubbellos wird erst ab dem benötigten Spielerlevel freigeschaltet.',
   SCRATCH_INVALID_TIER:'⚠️ Der Server kennt die Preisklasse dieses Loses noch nicht.',
   SCRATCH_FREE_ONLY_SIMPLE:'⚠️ Der Render-Server hat den kostenlosen Modus nicht übernommen. Bitte die gemeinsamen Rubbellos-Einstellungen neu laden.',
   SCRATCH_NOT_ENOUGH_COINS:'⚠️ Nicht genügend Münzen für dieses Los.',
@@ -583,6 +588,8 @@ export function initChristmasScratch(){
    });
   }
   const developer=window.DOGChristmasDev;
+  const shopPlayerLevel=developer?.isActive()?developer.settings().playerLevel:
+   Number.isInteger(status?.playerLevel)?status.playerLevel:1;
   wallet.textContent=developer?.isActive()?num(developer.settings().coins)+' 🪙 Testmünzen':status?num(status.coins)+' 🪙':'– 🪙';
   const freeMode=status?.settings?.freeEnabled===true;
   $('scratch-host-settings').hidden=false;
@@ -654,8 +661,18 @@ export function initChristmasScratch(){
    const visibleRule=option.id==='premium_27'?
     '4 sichere Geld-Dreierreihen · '+premiumMilestoneChance.toLocaleString('de-DE')+
     ' % Chance auf +1.000 🪙':option.rule;
-   const article=el('article','scratch-tier '+option.tier+' scratch-variant-'+option.theme);
+   const minPlayerLevel=Number(status?.variantUnlockLevels?.[option.id]||SCRATCH_LEVEL_UNLOCKS[option.id]||1);
+   const levelLocked=shopPlayerLevel<minPlayerLevel;
+   const article=el('article','scratch-tier '+option.tier+' scratch-variant-'+option.theme+
+    (levelLocked?' scratch-level-locked':''));
    article.dataset.variant=option.id;
+   article.dataset.minPlayerLevel=String(minPlayerLevel);
+   article.dataset.levelLocked=String(levelLocked);
+   if(levelLocked){
+    const badge=el('div','scratch-level-lock-badge',
+     '🔒 Freischaltung ab Spielerlevel '+minPlayerLevel+' · Dein Level: '+shopPlayerLevel);
+    badge.setAttribute('role','note');article.append(badge);
+   }
    if(option.id==='gifts'){
     const gear=el('button','scratch-gifts-card-settings','⚙️ Einstellungen');
     gear.type='button';gear.title='Nur die Geschenkelinie einstellen';
@@ -743,7 +760,7 @@ export function initChristmasScratch(){
    const vouchers=Number(status?.vouchers?.[option.tier]||0)+Number(status?.variantVouchers?.[option.id]||0);
    const buyBtn=el('button','scratch-buy','🎟️ Für '+num(actualPrice)+' Münzen öffnen');
    buyBtn.type='button';buyBtn.hidden=freeMode;
-   buyBtn.disabled=busy||!onSale;
+   buyBtn.disabled=busy||!onSale||levelLocked;
    buyBtn.addEventListener('click',()=>void buy(option.tier,false,option.id));
    article.append(buyBtn);
    if(activeEdition){
@@ -771,14 +788,14 @@ export function initChristmasScratch(){
     const voucherBtn=el('button','scratch-free scratch-earned-voucher',
      '🎟️ Gesammeltes Los einlösen · '+num(vouchers)+' vorhanden');
     voucherBtn.type='button';
-    voucherBtn.disabled=busy||!onSale;
+    voucherBtn.disabled=busy||!onSale||levelLocked;
     voucherBtn.addEventListener('click',()=>void buy(option.tier,false,option.id,true));
     article.append(voucherBtn);
    }
    if(freeMode||option.tier==='simple'){
     const free=el('button','scratch-free',freeMode?'🎁 Kostenlos öffnen':'🎁 Tagesfreilos öffnen');
     free.type='button';
-    free.disabled=busy||!onSale;
+    free.disabled=busy||!onSale||levelLocked;
     free.addEventListener('click',()=>void buy(option.tier,true,option.id));
     article.append(free);
    }
@@ -2236,6 +2253,13 @@ export function initChristmasScratch(){
   }
   if(!SCRATCH_SHOP_VARIANTS.some(c=>c.id===variantId&&c.tier===tier)){
    showAlert('⚠️ Diese Losvariante ist noch nicht im Spiel freigeschaltet.',variantId);drawShop();return;
+  }
+  const requiredLevel=Number(status?.variantUnlockLevels?.[variantId]||SCRATCH_LEVEL_UNLOCKS[variantId]||1);
+  const playerLevel=Number.isInteger(status?.playerLevel)?status.playerLevel:1;
+  if(playerLevel<requiredLevel){
+   showAlert('🔒 '+SCRATCH_SHOP_VARIANTS.find(c=>c.id===variantId)?.name+
+    ' ist erst ab Spielerlevel '+requiredLevel+' erhältlich. Aktuell: Level '+playerLevel+'.',variantId);
+   drawShop();return;
   }
   if(otherStudio.get(variantId)?.remaining===0){
    showAlert('🏁 Alle 500 Lose dieser Auflage sind verkauft. Erstelle über ⚙️ Auflage eine neue Serie.',variantId);
