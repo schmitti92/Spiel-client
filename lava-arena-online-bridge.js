@@ -1,6 +1,6 @@
 // The original iframe runs movement and effects locally at full frame rate.
 // Only authoritative movement checkpoints are sent to the persistent room.
-export const LAVA_STATE_CHECKPOINT_MS=350;
+export const LAVA_STATE_CHECKPOINT_MS=1500;
 export const LAVA_IDLE_TICK_MS=1800;
 export function mountLavaOriginal({container,getRoom,request,acceptRoom,onError}){
  const frame=document.createElement('iframe');
