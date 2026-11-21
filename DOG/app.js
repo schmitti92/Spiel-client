@@ -6,7 +6,7 @@ import {boardGestureTarget} from './board-gesture-math.js?v=1';
 import {snapshotPieces,planPieceMotions,createPieceAnimator} from './piece-animations.js?v=3';
 import {loadMotionMode,saveMotionMode,applyMotionMode} from './motion-settings.js?v=1';
 import {createDogVisualFeedback} from './ui-animations.js?v=2';
-import {summarizeDogVictory} from './victory-summary.js?v=1';
+import {summarizeDogVictory} from './victory-summary.js?v=2';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
 import {DEFAULT_APPEARANCE,BOARD_STYLES,isBoardUnlocked,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,PIECE_SHAPES,isPieceShapeUnlocked,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,loadAppearance,saveAppearance,normalizeAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=27';
@@ -409,7 +409,7 @@ function dogActiveEmblem(seat){
  return DOG_ACTIVE_EMBLEMS[id]||DOG_ACTIVE_EMBLEMS.crown;
 }
 function renderPlayers(){
-  const seats=game.players.map(p=>{
+  const seats=game.players.filter(p=>!p.inactive).map(p=>{
     const own=game.pieces.filter(x=>x.owner===p.seat),goal=own.filter(x=>x.place==='goal').length,turn=activeSeat()===p.seat&&game.phase!=='finished';
     const hand=Array.isArray(game.hands[p.seat])?game.hands[p.seat].length:(game.hands[p.seat]?.count||0),exchange=game.phase==='exchange'&&game.exchanges[p.seat]!==null&&game.exchanges[p.seat]!==false;
     const avatarId=online?onlineDogAvatars[p.seat]:window.DogAvatars?.localAvatar?.(p.seat);
@@ -433,7 +433,7 @@ function renderHand(){
   if(seat<0){title.textContent=online&&onlineSeat!==null?'🃏 Deine Handkarten':'🤖 Bots spielen';button.hidden=true;setHandMarkup(online&&onlineSeat!==null&&Array.isArray(game.hands[onlineSeat])?game.hands[onlineSeat].map(c=>cardMarkup(c.type,{tag:'div'})).join(''):'');available=[];return;}
   if(lastTurn!==seat){revealed=online||humans===1;selectedCard=null;selectedPiece=null;jokerAs=null;lastTurn=seat;}
   button.hidden=online||humans===1;button.textContent=revealed?'🙈 Hand verdecken':'🃏 Karten ansehen';
-  title.textContent=game.phase==='exchange'?'🔐 '+game.players[seat].name+': Karte an Partner geben':game.phase==='seven'?'🔥 Die 7 verteilen – noch '+(7-game.seven.spent)+' Schritte':'🎯 '+game.players[seat].name+' ist am Zug';
+  title.textContent=game.phase==='exchange'?'🔐 '+game.players[seat].name+': Karte '+(game.mode==='solo3'?'an nächsten Spieler':'an Partner')+' geben':game.phase==='seven'?'🔥 Die 7 verteilen – noch '+(7-game.seven.spent)+' Schritte':'🎯 '+game.players[seat].name+' ist am Zug';
   if(!revealed){const symbol=escape(currentLook().cards.emblem);
     setHandMarkup('<div class="hand-veil"><div class="dog-card-backs" aria-hidden="true"><span class="dog-card-back">'+symbol+'</span><span class="dog-card-back">'+symbol+'</span><span class="dog-card-back">'+symbol+'</span></div><span>Deine Karten sind verdeckt. Tippe auf „Karten ansehen“.</span></div>');return;}
   if(game.phase==='seven'){
@@ -460,7 +460,7 @@ function renderHand(){
   if(game.phase==='play' && !legalActions(game,seat).length){
     actions.insertAdjacentHTML('beforeend','<span class="dog-no-move-note" role="status">🗑 Kein Zug möglich – deine Karten werden automatisch abgelegt.</span>');
   }
-  $('move-help').textContent=jokerAs!==null?'Joker als '+(jokerAs==='swap'?'Tauschkarte':jokerAs)+' gewählt. Figur und Ziel selbst antippen.':game.phase==='exchange'?'Wähle die Karte für deinen Partner.':game.phase==='seven'?'Figur und Zielfeld selbst wählen. Noch '+(7-game.seven.spent)+' Schritte.':selectedCard===null?'Wähle eine Karte.':'Figur und Zielfeld selbst antippen – ohne Zugvorschläge.';
+  $('move-help').textContent=jokerAs!==null?'Joker als '+(jokerAs==='swap'?'Tauschkarte':jokerAs)+' gewählt. Figur und Ziel selbst antippen.':game.phase==='exchange'?(game.mode==='solo3'?'Wähle eine Karte, die verdeckt an den nächsten Spieler geht.':'Wähle die Karte für deinen Partner.'):game.phase==='seven'?'Figur und Zielfeld selbst wählen. Noch '+(7-game.seven.spent)+' Schritte.':selectedCard===null?'Wähle eine Karte.':'Figur und Zielfeld selbst antippen – ohne Zugvorschläge.';
 }
 function renderCardPiles(){
  $('dog-deck-art').style.backgroundImage=cardBackBackground();
@@ -508,13 +508,13 @@ function updateVictoryCeremony(){
  const summary=JSON.stringify([key,result.teams,result.players,appearance.pieces]);
  if(victorySummaryKey!==summary){
   victorySummaryKey=summary;
-  $('winner-title').textContent='Team '+result.teams[0].name+' gewinnt!';
-  $('winner-subtitle').textContent='Alle acht Figuren des Siegerteams sind im Ziel. Gemeinsam geschafft!';
+  $('winner-title').textContent=result.mode==='solo3'?result.players[0].name+' gewinnt!':'Team '+result.teams[0].name+' gewinnt!';
+  $('winner-subtitle').textContent=result.mode==='solo3'?'Alle vier eigenen Figuren sind im Ziel!':'Alle acht Figuren des Siegerteams sind im Ziel. Gemeinsam geschafft!';
   $('dog-victory-teams').innerHTML=result.teams.map((team,index)=>
     '<div class="dog-victory-team '+(team.winning?'is-winner':'')+'">'+
-      '<span class="dog-victory-team-place">'+(team.winning?'✦ SIEGERTEAM':'GEGNERTEAM')+'</span>'+
+      '<span class="dog-victory-team-place">'+(team.winning?(result.mode==='solo3'?'✦ SIEGER':'✦ SIEGERTEAM'):(result.mode==='solo3'?'MITSPIELER':'GEGNERTEAM'))+'</span>'+
       '<strong>'+team.name+'</strong>'+
-      '<span class="dog-victory-team-score">'+team.total+'<small> / 8 Figuren</small></span>'+
+      '<span class="dog-victory-team-score">'+team.total+'<small> / '+(team.capacity||8)+' Figuren</small></span>'+
     '</div>').join('');
   const colors=displayColors();
   $('dog-victory-players').innerHTML=result.players.map(player=>
@@ -543,7 +543,7 @@ function render(){
   $('round').textContent=String(game.round);
   $('phase').textContent=game.phase==='exchange'?'Geheimer Kartentausch':game.phase==='seven'?'7 verteilen':game.phase==='finished'?'Spielende':'Kartenrunde';
   const active=activeSeat();
-  $('turn').textContent=game.phase==='finished'?'🏆 Team '+(game.winner===0?'Rot / Grün':'Blau / Gelb')+' gewinnt!':game.phase==='exchange'?'Karten werden getauscht':active>=0?game.players[active].name+' ist dran':'Bots spielen';
+  $('turn').textContent=game.phase==='finished'?(game.mode==='solo3'?'🏆 '+game.players[game.winner].name+' gewinnt!':'🏆 Team '+(game.winner===0?'Rot / Grün':'Blau / Gelb')+' gewinnt!'):game.phase==='exchange'?'Karten werden getauscht':active>=0?game.players[active].name+' ist dran':'Bots spielen';
   // This is view-only. Write the live labels only on actual changes, so
   // duplicate room updates neither retrigger motion nor repeat ARIA messages.
   const royalRound=$('dog-premium-round'),royalPhase=$('dog-premium-phase'),royalNow=$('dog-premium-now');
