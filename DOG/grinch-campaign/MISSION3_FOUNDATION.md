@@ -1,6 +1,6 @@
 # DOG Grinch – Mission 3: Grundgerüst
 
-Stand: 21.11.2026. Arbeitspakete 1, 2 und 3 sind als lokaler Spieltest umgesetzt. Mission 3 ist weiterhin nicht für offizielle Online-Räume freigeschaltet.
+Stand: 21.11.2026. Arbeitspakete 1, 2, 3 und 4 sind als lokaler Spieltest umgesetzt. Mission 3 ist weiterhin nicht für offizielle Online-Räume freigeschaltet.
 
 ## Neue Dateien
 
@@ -26,17 +26,19 @@ Frontend- und Backend-Regelmodule sind bytegleich. Die Testseite verwendet aussc
 - Kartenerhaltung, geschützte Felder, Schutz verdeckter fremder Handkarten in der vorgesehenen Serveransicht.
 - Mobile Testoberfläche mit DOG-Brett, Handkarten und Kartenstapeln, Grinch-Automatik zum Entwickeln und Stufenvorschau.
 
-## Bewusst offen
+## Weitere Umsetzung und offener Umfang
 
 Paket 3 umgesetzt: Deterministische taktische Grinch-KI (tactical-beam-v1). Sie wertet Treffer, Bedrohung, Annäherung und optional die öffentlich sichtbaren Aufgabenfelder aus. Ihre begrenzte Mehrzugplanung berücksichtigt bis zu drei Kartenaktionen und schätzt Kartensequenzen voraus; die Teilbewegungen der 7 werden regelkonform weitergespielt. Sie kennt niemals die Handkarten der Menschen. Auf dem Brett werden ihre Bewegungen einzeln gezeigt. Regressionstests liegen in tests/dog-grinch-mission3-ai.test.js.
 
-Paket 4 offen: Zufallsereignis am Kartenphasenende, Rückschlag, zwei eigene Züge Einfrieren und genau eine dauerhafte Gefangennahme je Mensch. Gefangene bleiben später bis Mission 4 gesperrt.
+Paket 4 umgesetzt und getestet: Bei Ende der vollständigen Handkartenphase wird deterministisch aus dem Seed und dem Spielstand entweder ein Rückwurf um 2–6 freie DOG-Felder oder eine zweizügige Einfrierung bestimmt. Gesperrte Figuren sind nicht beweglich und tauen erst nach zwei tatsächlichen eigenen Kartenzügen auf; bei vollständig blockierten Spielern wird pro Zug nur eine Karte abgelegt. Treffer auf das eigene freie Startfeld und auf ein eigenes besetztes Startfeld werden unterschiedlich behandelt; fremde Figuren auf dem Startfeld werden ohne Doppelbelegung abgewickelt. Pro Aufgabenabschnitt darf höchstens eine andere Farbe eine Figur dauerhaft verlieren (Überraschungsereignis, zurzeit vorläufig 28 % nach einer Kartenphase). Der spätere Aufgabenabschluss muss über mission3GuaranteeStageCapture einen fehlenden Gefangenen erzwingen. Jede menschliche Farbe kann nur einen neuen Gefangenen erhalten; alle werden bis Mission 4 gesperrt. Geheime Fangreihenfolge wird aus dem clientseitigen Sichtmodell entfernt. Die UI zeigt Eis-Symbole, verbleibende Eiszüge, den letzten Fluch und die Gefangenenzahl. Eigene Regressionstests: serverfinal/tests/dog-grinch-mission3-attacks.test.js.
 
-Paket 5 offen: Drei echte Aufgaben – drei sich bei jeder neuen Kartenphase versetzende Weihnachtslichter, vier Eisbarrieren, drei frei aktivierbare Runen. Die Vorschau-Stufenauswahl wird durch regelbasierte Übergänge ersetzt.
+Die zufällige frühe Entführungswahrscheinlichkeit (momentan 28 %) und die Rückwurfweite (2–6) sind vorläufige Balancingwerte und können vor dem offiziellen Online-Start angepasst werden.
 
-Paket 6 offen: Neues Grafikpaket, Animationen, Touch-Optimierung.
+Paket 5 noch offen: Drei echte Aufgaben – drei sich bei jeder neuen Kartenphase versetzende Weihnachtslichter, vier Eisbarrieren, drei frei aktivierbare Runen. Die Vorschau-Stufenauswahl wird durch regelbasierte Übergänge ersetzt.
 
-Paket 7 offen: Autoritative Online-Ausführung der bereits entwickelten Grinch-KI und Online-Zugprüfung, Privatsphäre der Karten, offizielle Missionsfreischaltung nach Mission 2, Speicherung.
+Paket 6 noch offen: Neues Grafikpaket, Animationen, Touch-Optimierung.
+
+Paket 7 noch offen: Autoritative Online-Ausführung der bereits entwickelten Grinch-KI und Online-Zugprüfung, Privatsphäre der Karten, offizielle Missionsfreischaltung nach Mission 2, Speicherung.
 
 Paket 8: Vollständige gemeinsame Praxistests und Langzeitsimulationen.
 
