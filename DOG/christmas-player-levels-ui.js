@@ -226,6 +226,7 @@ export function initDogPlayerLevels(){
     throw Error(result.error||'DOG_LEVEL_REWARD_FAILED');
    if(user()?.uid!==uid)return;
    levelData={...levelData,levelRewardClaims:{...result.levelRewardClaims}};
+   window.dispatchEvent(new Event('dog-scratch-balance-changed'));
    message('🎉 Level '+n+': Deine Gutscheine wurden im Rubbellos-Konto gutgeschrieben.');
   }catch(error){
    message('⚠️ Belohnung konnte nicht abgeholt werden: '+(error.message||'Verbindung prüfen'),true);
