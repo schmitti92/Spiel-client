@@ -408,3 +408,15 @@ body.research-mode #event-return.event-fixed-return{display:none!important}
 @media(prefers-reduced-motion:reduce){
  #panel-research *,#panel-research *::before,#panel-research *::after{transition:none!important;scroll-behavior:auto!important}
 }
+
+/* Selected Weihnachtsbaumeister uses the winter lantern illustration;
+   its own skill symbol remains clearly identified on top of the artwork. */
+#panel-research .dr-detail-artwork-visual{position:relative}
+#panel-research .dr-detail-artwork-badge{
+ position:absolute;left:14px;bottom:14px;
+ width:49px;height:49px;display:grid;place-items:center;
+ border:2px solid #e9fbea;border-radius:50%;font-size:28px;
+ background:linear-gradient(145deg,#084d52e9,#0b344ae9);
+ box-shadow:0 0 13px #72fff2aa,0 2px 6px #061d36d6;
+ filter:drop-shadow(0 3px 3px #021b2d);
+}
