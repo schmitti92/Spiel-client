@@ -162,7 +162,7 @@ test('idle Firebase reads are rate-limited without delaying a verified DOG victo
  assert.match(event,/const VILLAGE_POLL_MS=180000/);
  assert.match(event,/const VILLAGE_TAB_FRESH_MS=60000/);
  assert.match(event,/const VILLAGE_VISIBLE_FRESH_MS=60000/);
- assert.match(event,/visibleVillageTab\(\).*minimumAgeMs:VILLAGE_POLL_MS/);
+ assert.match(event,/visibleVillageTab\(\)[\s\S]*?minimumAgeMs:VILLAGE_POLL_MS/);
  assert.match(event,/if\(minimumAgeMs>0&&villageLive&&lastVillageReadUid===person\.uid/);
  assert.match(event,/if\(pendingVillageRead\)return pendingVillageRead/);
  assert.match(event,/\$\('building-wallet-refresh'\)\.addEventListener\('click',\(\)=>void reloadVillage\(\)\)/);
