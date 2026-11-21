@@ -43,9 +43,17 @@ export function decideDogRoomUpdate(previous,room,{hubCode,matchHint=null}={}){
     ||seat!==previous?.onlineSeat
     ||ownHandIds(previous?.game,seat)!==ownHandIds(match.dog,seat);
   const phaseChanged=sameMatch&&previous?.game?.phase!==match.dog.phase;
+  // The phase stays 'seven' when a player spends just 1 of the 7 points.
+  // Clear the previous pawn selection but DON'T hide the player's hand:
+  // they must immediately pick another pawn for the remaining six points.
+  const sevenStepAdvanced=sameMatch&&previous?.game?.phase==='seven'&&
+    match.dog.phase==='seven'&&
+    Number.isInteger(previous.game.seven?.spent)&&
+    Number.isInteger(match.dog.seven?.spent)&&
+    match.dog.seven.spent>previous.game.seven.spent;
   const hideHand=spectator||handChanged||match.dog.phase==='finished'
     ||(phaseChanged&&match.dog.phase==='exchange');
-  const clearSelection=handChanged||phaseChanged;
+  const clearSelection=handChanged||phaseChanged||sevenStepAdvanced;
   return {
     accept:true,kind:'dog',roomRevision:room.revision,
     matchId:match.id,game:match.dog,seat,
