@@ -311,3 +311,7 @@ body.research-mode #event-return.event-fixed-return{display:inline-flex!importan
 @media(prefers-reduced-motion:reduce){
  #panel-research .dog-research-card{transition:none!important}
 }
+
+/* Hide fallback glyphs only when the corresponding uploaded image really loads. */
+#panel-research .dr-card-art.has-art .dr-card-art-icon,
+#panel-research .dr-detail-artwork-visual.has-art .dr-detail-giant-icon{opacity:0}

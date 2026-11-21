@@ -41,7 +41,8 @@ export function initChristmasResearch(){
   img.loading='lazy';
   img.decoding='async';
   img.src='./assets/research/'+encodeURIComponent(skill.id)+'.webp';
-  img.addEventListener('error',()=>img.remove(),{once:true});
+  img.addEventListener('load',()=>img.parentElement?.classList.add('has-art'),{once:true});
+  img.addEventListener('error',()=>{img.parentElement?.classList.remove('has-art');img.remove();},{once:true});
   return img;
  };
  const field=(tag,cls,label,value)=>{
