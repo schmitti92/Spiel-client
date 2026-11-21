@@ -335,6 +335,21 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 .dog-rule-toast[hidden]{display:none!important}.dog-rule-toast-symbol{font-size:26px;line-height:1.1}.dog-rule-toast-text{min-width:0;display:flex;flex-direction:column;gap:3px}.dog-rule-toast strong{color:#ffdfa3;font-size:14px}.dog-rule-toast span{font-size:12px;overflow-wrap:anywhere}
 .dog-rule-toast-enter{animation:dog-rule-toast-pop .22s ease-out both}@keyframes dog-rule-toast-pop{from{opacity:0;transform:translate(-50%,-12px) scale(.97)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.dog-rule-toast-enter{animation:none}}
+
+/* Compact lever on the right-hand card block. Accessible switch semantics. */
+.dog-move-hints-control{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 9px;padding:9px 11px;border-radius:12px;background:#0b2435a8;border:1px solid #a1bfce49}
+.dog-move-hints-copy{min-width:0;display:flex;flex-direction:column;gap:3px}.dog-move-hints-copy strong{font-size:12px;color:#ffe8b2}.dog-move-hints-copy small{font-size:10.5px;color:#bdd0da;line-height:1.35}
+.dog-move-hints-toggle{flex:none;display:flex;align-items:center;gap:7px;cursor:pointer;padding:6px 7px;background:#172d40;border:1px solid #859ba8;border-radius:24px;color:#d7e3ee;font-size:10px;font-weight:900;touch-action:manipulation;min-height:37px}
+.dog-move-hints-toggle:focus-visible{outline:3px solid #f8d383;outline-offset:3px}.dog-move-hints-rail{display:inline-flex;align-items:center;width:45px;height:24px;padding:3px;background:#6c7280;border:1px solid #b5c1cb;border-radius:24px;box-shadow:inset 0 2px 4px #0009;transition:background .18s}
+.dog-move-hints-knob{width:17px;height:17px;border-radius:50%;background:linear-gradient(145deg,#fff9e4,#d9d9d1);box-shadow:0 2px 4px #0006;transition:transform .18s}.dog-move-hints-toggle.is-on .dog-move-hints-rail{background:#197755;border-color:#7de5a4}
+.dog-move-hints-toggle.is-on .dog-move-hints-knob{transform:translateX(20px)}.dog-move-hints-toggle.is-on .dog-move-hints-state{color:#b8ffd2}
+.dog-legal-target{pointer-events:none}.dog-legal-target-glow{fill:#facc45;fill-opacity:.22;stroke:#ffeb94;stroke-opacity:.24;stroke-width:3}
+.dog-legal-target-ring{fill:#1e7b60;fill-opacity:.16;stroke:#ffdc54;stroke-width:4.5;filter:drop-shadow(0 0 5px #fbd24d);animation:dog-target-pulse 1.35s ease-in-out infinite}
+.dog-legal-target-core{fill:#fff4b0;stroke:#24452d;stroke-width:1.1;filter:drop-shadow(0 0 5px #ffe781)}
+@keyframes dog-target-pulse{0%,100%{stroke-opacity:1;stroke-width:4.5}50%{stroke-opacity:.55;stroke-width:2.8}}
+@media(max-width:480px){.dog-move-hints-control{padding:8px;gap:7px}.dog-move-hints-copy small{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.dog-legal-target-ring{animation:none}.dog-move-hints-knob{transition:none}}
+html[data-dog-motion="off"] .dog-legal-target-ring{animation:none}
 </style>
 <link rel="stylesheet" href="./ui-shell.css?v=20"><link rel="stylesheet" href="./emoji-ui.css?v=4"><link rel="stylesheet" href="./motion.css?v=3"><link rel="stylesheet" href="./premium-cockpit.css?v=2"><link rel="stylesheet" href="./victory-ceremony.css?v=1">
 
@@ -459,6 +474,16 @@ html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christm
            </div>
          </div>
          <button id="show-hand" class="reveal" type="button">🃏 Karten ansehen</button>
+       </div>
+       <div class="dog-move-hints-control" aria-label="Optionale Zug-Hilfe">
+         <div class="dog-move-hints-copy">
+           <strong>🎯 Zug-Hilfe</strong>
+           <small id="dog-move-hints-description">Keine Zugmarkierungen auf dem Spielfeld.</small>
+         </div>
+         <button id="dog-move-hints-toggle" class="dog-move-hints-toggle" type="button" role="switch" aria-checked="false" aria-label="Zug-Hilfe ein- oder ausschalten" title="Hebel umlegen: erlaubte Zielfelder markieren">
+           <span class="dog-move-hints-rail" aria-hidden="true"><span class="dog-move-hints-knob"></span></span>
+           <span id="dog-move-hints-state" class="dog-move-hints-state" aria-hidden="true">AUS</span>
+         </button>
        </div>
        <div class="hand" id="hand" aria-label="Handkarten: mit zwei Fingern zoomen und verschieben" title="Mit zwei Fingern Karten vergrößern, verkleinern und schieben"></div>
        <div class="move-help" id="move-help">Wähle eine Karte und berechne deinen Zug selbst.</div>
@@ -674,7 +699,7 @@ mountChristmasLinks();
 </script>
 <script type="module">
 import('./ui-shell.js?v=5').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
-import('./app.js?v=78').catch(error=>{
+import('./app.js?v=79').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
