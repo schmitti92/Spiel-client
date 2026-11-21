@@ -6,6 +6,7 @@ import {boardGestureTarget,nearestTrackPawn,nearestBoardField,boardEventPoint} f
 import {snapshotPieces,planPieceMotions,createPieceAnimator} from './piece-animations.js?v=3';
 import {loadMotionMode,saveMotionMode,applyMotionMode} from './motion-settings.js?v=1';
 import {createDogVisualFeedback} from './ui-animations.js?v=2';
+import {dogMoveBlockReason} from './invalid-move-reasons.js?v=1';
 import {summarizeDogVictory} from './victory-summary.js?v=2';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js?v=2';
 import {decideDogRoomUpdate} from './online-sync.js?v=14';
@@ -628,12 +629,33 @@ function render(){
   visualFeedback.sync({game,matchKey:online?(acceptedMatchId||matchHint||'online'):'local',seat:online?onlineSeat:currentHuman(),handVisible:revealed,activeSeat:active});
   $('selected-info').textContent=selectedCard?'Karte ausgewählt: '+cardsLabel(game.hands[currentHuman()]?.find(c=>c.id===selectedCard)?.type||''):'';
 }
+// Explanations are visual only; no server action, room update or Firebase write.
+let dogRuleToastTimer=null;
+function showDogRuleReason(message){
+ if(!message)return;
+ visualFeedback.invalid();
+ $('move-help').textContent=message;
+ const popup=$('dog-rule-toast');
+ if(!popup)return;
+ $('dog-rule-toast-reason').textContent=message;
+ popup.hidden=false;
+ popup.classList.remove('dog-rule-toast-enter');
+ void popup.offsetWidth;
+ popup.classList.add('dog-rule-toast-enter');
+ if(dogRuleToastTimer)clearTimeout(dogRuleToastTimer);
+ dogRuleToastTimer=setTimeout(()=>{popup.hidden=true;dogRuleToastTimer=null;},4700);
+}
 function onCard(id){
   const seat=currentHuman();if(seat<0||!revealed||onlineBusy)return;
   if(game.phase==='rescue'&&id!==game.rescue?.cardId)return;
   selectedCard=selectedCard===id&&game.phase!=='rescue'?null:id;selectedPiece=null;jokerAs=null;
   if(selectedCard!==null&&['play','rescue'].includes(game.phase)&&game.hands[seat].some(c=>c.id===selectedCard&&c.type==='joker'))openJokerDialog(seat);
   render();
+  if(selectedCard!==null&&game.phase==='play'){
+   const plays=legalActions(game,seat).filter(m=>m.cardId===selectedCard);
+   if(!plays.some(m=>['start','move','swap','seven'].includes(m.type)))
+     showDogRuleReason(dogMoveBlockReason(game,{seat,cardId:selectedCard,stage:'card'}));
+  }
 }
 function onResearchAction(type){
   if(!online||onlineBusy||!game||!onlineResearch)return;
@@ -773,13 +795,7 @@ $('board').addEventListener('click',e=>{
  if(node&&selectedPiece===null){
   const id=Number(node.dataset.piece);
   if(!available.some(m=>m.pieceId===id)){
-   if(swapCardSelected){
-    const piece=game.pieces.find(p=>p.id===id);
-    $('move-help').textContent=piece?.place!=='track'?'🔄 Tauschen geht nur mit Figuren auf der Laufbahn.':piece.pos===piece.owner*16?'🛡️ Diese Figur steht geschützt auf ihrem eigenen Startfeld.':'🔄 Wähle zuerst eine eigene, ungeschützte Figur auf der Laufbahn.';
-   }else if(selectedCard===null){
-    $('move-help').textContent='🃏 Wähle zuerst eine Handkarte aus.';
-   }
-   visualFeedback.invalid();
+   showDogRuleReason(dogMoveBlockReason(game,{seat,cardId:selectedCard,jokerAs,stage:'source',sourceId:id}));
    return;
   }
   selectedPiece=id;drawBoard();
@@ -800,16 +816,20 @@ $('board').addEventListener('click',e=>{
   }
  }
  if(node&&available.some(m=>m.pieceId===Number(node.dataset.piece))&&Number(node.dataset.piece)!==selectedPiece){selectedPiece=Number(node.dataset.piece);drawBoard();$('move-help').textContent=swapCardSelected?'🔄 Andere eigene Figur gewählt. Jetzt Tauschziel antippen.':'Andere Figur gewählt. Jetzt Zielfeld antippen.';return;}
- if(selectedPiece===null)return;
+ if(selectedPiece===null){
+  if(selectedCard!==null)showDogRuleReason('Tippe zuerst eine eigene Figur auf dem Spielfeld an.');
+  return;
+ }
  if(swapCardSelected){
-  const target=game.pieces.find(p=>p.id===Number(node?.dataset.piece));
-  $('move-help').textContent=!node?'🔄 Tippe direkt auf die zweite Figur auf der Laufbahn.':target?.place!=='track'?'🔄 Figuren im Haus oder im Ziel können nicht getauscht werden.':target.pos===target.owner*16?'🛡️ Figur auf eigenem Startfeld ist geschützt und kann nicht getauscht werden.':'🔄 Dieser Tausch ist nicht erlaubt. Wähle eine andere Figur.';
-  visualFeedback.invalid();
+  showDogRuleReason(dogMoveBlockReason(game,{
+   seat,cardId:selectedCard,jokerAs,stage:'target',
+   sourceId:selectedPiece,targetId:node?Number(node.dataset.piece):null
+  }));
   // Keep the source pawn selected so the player can retry the second click.
   return;
  }
  const p=getTapPoint();
- if(!p){$('move-help').textContent='Das Spielfeld konnte die Berührung nicht erkennen. Bitte erneut tippen.';return;}
+ if(!p){showDogRuleReason('Das Spielfeld konnte die Berührung nicht erkennen. Bitte erneut tippen.');return;}
  const dest=nearestBoardField(p,TRACK_POINTS,GOAL_POINTS,34);
  // Pawn IDs are stable across all colors; with an empty fourth color the
  // pawn's ID may not equal its index in the shortened pieces array.
@@ -825,8 +845,10 @@ $('board').addEventListener('click',e=>{
   chooseDogMove(matches,'Mehrere erlaubte Wege führen auf dieses Feld. Wähle die Variante.');
   return;
  }
- visualFeedback.invalid();
- $('move-help').textContent=selectedCardObject?.type==='12'&&dest?.key.startsWith('goal:')?'⛳ Eine 12 muss genau auf dem gewählten Zielfeld enden. Prüfe die 12 Schritte oder tippe genauer.':'Zug auf dieses Feld nicht erlaubt. Figur bleibt ausgewählt – bitte Zielfeld erneut antippen.';
+ showDogRuleReason(dogMoveBlockReason(game,{
+  seat,cardId:selectedCard,jokerAs,stage:'destination',
+  sourceId:selectedPiece,destination:dest?.key||null
+ }));
 });
 // Test controls are deliberately restricted to local games; never send altered cards online.
 const testPanel=$('dog-card-test'),testSelect=$('dog-test-card');
