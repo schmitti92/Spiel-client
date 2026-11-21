@@ -2208,7 +2208,8 @@ export function initChristmasScratch(){
   try{
    const r=await query('');
    if(id!==requestId)return;
-   status={...r.scratch,discountPercent:r.discountPercent??0};
+   status={...r.scratch,discountPercent:r.discountPercent??0,
+    playerLevel:r.playerLevel,variantUnlockLevels:r.variantUnlockLevels};
    giftsEdition=r.giftsEdition??null;
   snowEdition=r.snowEdition??null;
   ticEdition=r.ticEdition??null;
