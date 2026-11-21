@@ -3,7 +3,7 @@
  * Ten real village-tree chapters × six book pages. No extra database calls,
  * no client unlocks, and no display of future story pages before unlock.
  */
-import {CHRISTMAS_STORY_CHAPTERS, CHRISTMAS_STORY_TOTAL_PAGES} from './christmas-storybook-data.js?v=2';
+import {CHRISTMAS_STORY_CHAPTERS, CHRISTMAS_STORY_TOTAL_PAGES} from './christmas-storybook-data.js?v=3';
 export {CHRISTMAS_STORY_CHAPTERS};
 export function unlockedStoryChapters(stage,verified){
   if(!verified)return 1;
