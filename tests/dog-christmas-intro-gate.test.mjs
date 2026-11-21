@@ -66,3 +66,33 @@ test('online DOG completion triggers a verified unlock refresh',()=>{
  assert.match(gate,/devUnlocked\(p\)/);
  assert.match(gate,/pin!=='123'/);
 });
+
+test('tree level 2 and 3 use the four newly uploaded chapter videos in order',()=>{
+ const player=source('DOG/christmas-tree-films.js');
+ const event=source('DOG/christmas-event.js');
+ const files=[
+  '553349132_1795277408558110.mp4',
+  '681598781_1795277411540396.mp4',
+  '901719079_1795277415902807.mp4',
+  '433654807_1795277420139339.mp4'
+ ];
+ const positions=files.map(filename=>player.indexOf(filename));
+ assert.ok(positions.every((position,i)=>position>0&&(i===0||position>positions[i-1])));
+ for(const filename of files){
+  const bytes=readFileSync(new URL('../DOG/assets/'+filename,import.meta.url));
+  assert.ok(bytes.length>100000,'video uploaded: '+filename);
+  assert.equal(bytes.toString('latin1',4,8),'ftyp','MP4 header: '+filename);
+ }
+ assert.match(event,/import \{initChristmasTreeFilms\} from '\.\/christmas-tree-films\.js/);
+ assert.match(event,/treeFilms\.sync\(newTreeLevel\)/);
+ assert.match(event,/showLiveVillage\(\{village:result\.village/);
+ assert.match(player,/getUserId/);
+ assert.match(player,/isPreview/);
+ assert.match(player,/localStorage\.setItem\(key,'done'\)/);
+ assert.match(player,/video\.autoplay=false/);
+ assert.match(player,/video\.muted=false/);
+ assert.match(player,/loadClip\(false\)/);
+ assert.match(player,/video\.addEventListener\('ended'/);
+ assert.match(player,/tree-step-film-replay/);
+ assert.doesNotMatch(player,/village\/upgrade|tree-rewards\/claim/);
+});
