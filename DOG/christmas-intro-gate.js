@@ -317,7 +317,9 @@ export function guardChristmasEventPage(){
   if(!p){message.textContent='🔒 Bitte anmelden und deine erste DOG-Onlinepartie abschließen.';return;}
   // Check the fresh server invitation first; otherwise an old developer
   // preview could silently skip the newly reset first-visit film.
-  developer.hidden=!chris(p);
+  // A prior dev unlock may show the PIN panel but cannot bypass the server.
+  const developerPreviewActive=devUnlocked(p);
+  developer.hidden=!chris(p)&&!developerPreviewActive;
   checking=true;
   try{
    const state=await api();
