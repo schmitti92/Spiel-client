@@ -92,9 +92,16 @@ export function initChristmasStory({openTab}){
   // ending closest to the midpoint, provided both leaves fit.
   const fitsBody=(leftText,rightText)=>{
    left.story.textContent=leftText;
-   if(right)right.story.textContent=rightText;
-   return left.story.scrollHeight<=left.story.clientHeight+1&&
-    (!right||right.story.scrollHeight<=right.story.clientHeight+1);
+   const firstFits=left.story.scrollHeight<=left.story.clientHeight+1;
+   if(!firstFits)return false;
+   if(right){
+    right.story.textContent=rightText;
+    return right.story.scrollHeight<=right.story.clientHeight+1;
+   }
+   // Mobile displays one leaf at a time, so measure both paragraphs against
+   // the SAME available paper height instead of skipping the second leaf.
+   left.story.textContent=rightText;
+   return left.story.scrollHeight<=left.story.clientHeight+1;
   };
   const paragraphs=body.split(/\n\s*\n/).map(part=>part.trim()).filter(Boolean);
   let facing=paragraphs.length===2?paragraphs:null;
