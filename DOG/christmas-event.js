@@ -9,7 +9,7 @@ import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewa
 import {initChristmasStory} from './christmas-story.js?v=3';
 import {initChristmasScratch} from './christmas-scratch-ui.js?v=80';
 import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=8';
-import {initChristmasResearch} from './christmas-research-ui.js?v=1';
+import {initChristmasResearch} from './christmas-research-ui.js?v=2';
 import {sceneLayouts,grinchSkyLayout,verifyVillageSpriteLayout} from './christmas-village-layout.mjs?v=3';
 import {initGrinchEvent} from './christmas-grinch-event.js?v=8';
 const $=id=>document.getElementById(id);
@@ -530,6 +530,7 @@ const returnTarget=validReturn();
 if(returnTarget)$('event-return').href=returnTarget;
 function showPanel(id,{updateHistory=true}={}){
  if(!tabs.includes(id))return;
+ document.body.classList.toggle('research-mode',id==='research');
  const wasActive=tabs.find(name=>$('tab-'+name)?.getAttribute('aria-selected')==='true');
  for(const name of tabs){
   const active=id===name;
