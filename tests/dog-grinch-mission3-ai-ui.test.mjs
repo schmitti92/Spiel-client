@@ -10,7 +10,7 @@ test('Grinch tactical AI is active on the local preview and actions render separ
  assert.match(script,/if\(game\.current===3\)bot\(\)/);
  assert.match(script,/520\)/);
  assert.doesNotMatch(script,/game=mission3AutoGrinch\(game\)/);
- assert.match(page,/Die taktische Grinch-KI und die DOG-Kartenmechanik sind aktiv/);
+ assert.match(page,/Die taktische KI, zufällige Flüche am Kartenphasenende/);
 });
 test('Grinch tactical evaluator reads only its own hand and visible track state',()=>{
  const rule=src('mission-3-rules.js');
