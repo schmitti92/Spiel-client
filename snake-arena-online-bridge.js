@@ -1,6 +1,6 @@
 // Local Snake frames remain at full speed. Firestore room state only needs
 // periodic validated score checkpoints; finish reports still go out immediately.
-export const SNAKE_STATE_CHECKPOINT_MS=600;
+export const SNAKE_STATE_CHECKPOINT_MS=2400;
 export const SNAKE_TIMEOUT_PROBE_MS=3000;
 export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError}){
  const frame=document.createElement('iframe');
