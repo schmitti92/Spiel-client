@@ -53,6 +53,7 @@ function render(){
    pieces.filter(p=>p.place==='home').length+' im Haus',box);
   node('small','🃏 '+game.hands[user.owner].length+(user.owner===3?' verdeckte':'')+' Karten',box);
  }
+ $('m3-own-cards').textContent=game.current===3?'🤖 Grinch · '+game.hands[3].length+' verdeckt':game.hands[game.current].length+' eigene Karten';
  $('m3-draw').textContent=game.draw.length+' Karten';
  $('m3-discard').textContent=game.discard.length+' Karten';
  const top=game.lastPlayedCard;
