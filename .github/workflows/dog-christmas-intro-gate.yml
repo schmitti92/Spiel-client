@@ -1,0 +1,24 @@
+name: DOG Christmas First Match Intro UI
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/christmas-intro-gate.js'
+      - 'DOG/assets/lichtertal-intro.mp4'
+      - 'DOG/assets/lichtertal-intro-poster.jpg'
+      - 'DOG/index.html'
+      - 'DOG/app.js'
+      - 'DOG/christmas-event.html'
+      - 'hub-lobby.html'
+      - 'tests/dog-christmas-intro-gate.test.mjs'
+      - '.github/workflows/dog-christmas-intro-gate.yml'
+  workflow_dispatch:
+jobs:
+  verified-intro:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/dog-christmas-intro-gate.test.mjs
