@@ -9,7 +9,7 @@ test('all DOG Christmas entrypoints are hidden until server-verified reveal',()=
  const event=source('DOG/christmas-event.html');
  assert.match(intro,/\/api\/hub\/dog\/christmas-intro/);
  assert.match(intro,/const portalUnlocked=state\.eligible&&\(state\.completed\|\|state\.previewGranted\)/);
- assert.match(intro,/state\.eligible&&state\.introReady&&!state\.completed&&!introVisible&&!ceremonyOpen\(\)/);
+ assert.match(intro,/state\.eligible&&state\.introReady&&!state\.completed&&!introVisible&&!introDeferred&&afterVictory\(\)/);
  assert.match(intro,/else if\(state\.introReady&&!state\.completed\)/);
  assert.match(intro,/else if\(state\.completed\|\|state\.previewGranted\)await admit\(\)/);
  assert.match(intro,/\/api\/hub\/dog\/stats/);
@@ -58,8 +58,9 @@ test('first-match intro waits for victory ceremony dismissal',()=>{
  const app=source('DOG/app.js');
  assert.match(app,/openVictoryCeremony\(\)/);
  assert.match(intro,/const victoryDialog=document\.getElementById\('winner'\)/);
- assert.match(intro,/!ceremonyOpen\(\)/);
+ assert.match(intro,/const afterVictory=\(\)=>Boolean\(victoryDialog&&matchFinishedOnThisPage&&ceremonyDismissed&&!ceremonyOpen\(\)\)/);
  assert.match(intro,/victoryDialog\?\.addEventListener\('close'/);
+ assert.match(intro,/if\(matchFinishedOnThisPage\)ceremonyDismissed=true/);
  assert.match(intro,/state\.introReady&&!state\.completed&&!introVisible&&!ceremonyOpen\(\)/);
 });
 test('online DOG completion triggers a verified unlock refresh',()=>{
@@ -120,4 +121,24 @@ test('DOG welcome video opens on entry to the actual room lobby, not each refres
  assert.match(movie,/data-dismiss/);
  assert.match(movie,/Lobbyfilm ansehen/);
  assert.match(hub,/DOG\/room-lobby\.js\?v=11/);
+});
+
+test('DOG lobby cannot show the Christmas film without a finished DOG victory ceremony',()=>{
+ const sourceCode=source('DOG/christmas-intro-gate.js');
+ const room=source('hub-lobby.html');
+ const dog=source('DOG/index.html');
+ const event=source('DOG/christmas-event.html');
+ assert.match(sourceCode,/const victoryDialog=document\.getElementById\('winner'\)/);
+ assert.match(sourceCode,/const afterVictory=\(\)=>Boolean\(victoryDialog&&matchFinishedOnThisPage&&ceremonyDismissed&&!ceremonyOpen\(\)\)/);
+ assert.match(sourceCode,/window\.addEventListener\('dog-match-finished'/);
+ assert.match(sourceCode,/if\(victoryDialog\)matchFinishedOnThisPage=true/);
+ assert.match(sourceCode,/if\(matchFinishedOnThisPage\)ceremonyDismissed=true/);
+ assert.match(sourceCode,/!introDeferred&&afterVictory\(\)/);
+ assert.doesNotMatch(room,/id="winner"/);
+ assert.match(dog,/id="winner"/);
+ for(const html of [room,dog,event])assert.match(html,/christmas-intro-gate\.js\?v=14/);
+ assert.match(sourceCode,/data-later/);
+ assert.match(sourceCode,/later\.addEventListener\('click'/);
+ assert.match(sourceCode,/reason==='DOG_CHRISTMAS_INTRO_LOCKED'/);
+ assert.doesNotMatch(sourceCode,/Server nicht erreichbar\. Bitte Freischaltung erneut versuchen/);
 });
