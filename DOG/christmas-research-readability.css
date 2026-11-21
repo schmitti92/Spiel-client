@@ -59,7 +59,7 @@
  display:none!important;
 }
 #panel-research .dog-research-card[data-research-art] .dr-card-content{
- position:relative!important;z-index:2!important;
+ position:static!important;z-index:2!important;
  grid-column:1!important;grid-row:2!important;
  width:100%!important;min-width:0!important;max-width:100%!important;
  height:auto!important;min-height:126px!important;
