@@ -4,7 +4,7 @@
  */
 import {cardVisual} from '../card-visuals.js?v=11';
 import {drawMission3Board} from './mission-3-board.js?v=1';
-import {createMission3,mission3LegalMoves,mission3Play,mission3AutoGrinch,mission3SetPreviewStage,mission3NextPreviewDeal,mission3Validate,MISSION3_STAGE_NAMES,MISSION3_COLORS} from './mission-3-rules.js?v=1';
+import {createMission3,mission3LegalMoves,mission3Play,mission3ChooseGrinchMove,mission3PlanGrinchTurn,mission3SetPreviewStage,mission3NextPreviewDeal,mission3Validate,MISSION3_STAGE_NAMES,MISSION3_COLORS} from './mission-3-rules.js?v=2';
 const $=id=>document.getElementById(id),KEY='grinch-m3-local-prototype-v1';
 let game=null,chosenCard=null,chosenPiece=null,botTimer=null,busy=false,toastTimer=null;
 function node(tag,value,parent,cls=''){
@@ -61,7 +61,7 @@ function render(){
  const hand=$('m3-hand'),target=$('m3-moves');hand.replaceChildren();target.replaceChildren();
  if(game.current===3){
   node('div','🤖 '+game.hands[3].length+' verdeckte Grinch-Handkarten',hand,'m3-empty');
-  node('p','Der Grinch spielt mit seinen eigenen DOG-Karten. Die taktische Mehrzug-KI folgt im nächsten Arbeitspaket.',target);
+  node('p','😈 Die taktische KI analysiert mögliche Angriffe und plant bis zu drei Kartenaktionen. Sie kennt nur ihre eigene Hand.',target);
  }else{
   if(game.seven)chosenCard=game.seven.cardId;
   for(const c of game.hands[game.current]){
@@ -118,11 +118,13 @@ function bot(){
  busy=true;render();
  botTimer=setTimeout(()=>{
   try{
-   game=mission3AutoGrinch(game);resetSelection();save();
+   const selected=mission3ChooseGrinchMove(game);
+   if(!selected)throw Error('Keine gültige Grinch-Kartenaktion');
+   game=mission3Play(game,3,selected);resetSelection();save();
    busy=false;render();
    if(game.current===3)bot();
   }catch(e){busy=false;toast('Grinch-Testzug: '+e.message);render();}
- },650);
+ },520);
 }
 function play(m){
  if(!game||busy||game.current===3)return;
