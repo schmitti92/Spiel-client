@@ -1,0 +1,28 @@
+name: DOG Lichtertal navigation and player statistics
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/christmas-event.html'
+      - 'DOG/christmas-event.js'
+      - 'DOG/christmas-player-statistics-ui.js'
+      - 'DOG/christmas-sidebar-nine-statistics.css'
+      - 'DOG/christmas-sidebar-repaired.css'
+      - 'DOG/christmas-research-ui.js'
+      - 'tests/dog-christmas-research-dashboard.test.mjs'
+      - '.github/workflows/dog-christmas-player-statistics.yml'
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify nine tabs, research artwork, live statistic wiring
+        run: node --test tests/dog-christmas-research-dashboard.test.mjs
