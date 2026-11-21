@@ -586,19 +586,20 @@ function showPanel(id,{updateHistory=true}={}){
  if(id==='story'){
   storyScreen.openLatest();
   // Avoid reading the uninitialized village API on initial #story navigation.
-  requestAnimationFrame(()=>void reloadVillage());
+  requestAnimationFrame(()=>void reloadVillage({minimumAgeMs:VILLAGE_TAB_FRESH_MS}));
  }
  if(id==='buildings'){
   // The initial tab can open before villageCode is initialized below.
   requestAnimationFrame(()=>{
    refreshBuildingPhotoLayouts();
-   void reloadVillage(); // Independent of DOG room membership
+   void reloadVillage({minimumAgeMs:VILLAGE_TAB_FRESH_MS}); // Independent of DOG room membership
   });
  }
  if(id==='grinch'){
   grinchView?.render();
-  requestAnimationFrame(()=>void reloadVillage());
+  requestAnimationFrame(()=>void reloadVillage({minimumAgeMs:VILLAGE_TAB_FRESH_MS}));
  }
+ if(id==='village'&&wasActive!==id)requestAnimationFrame(()=>void reloadVillage({minimumAgeMs:VILLAGE_TAB_FRESH_MS}));
  if(id==='scratch')void scratchScreen?.load();
  if(id==='level')void levelScreen?.load();
  if(id==='research')void researchScreen?.load();
@@ -785,6 +786,11 @@ const villageCode=String(new URLSearchParams(location.search).get('room')||'').t
 const villageRoomValid=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/.test(villageCode);
 const villageApi=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const lightsLabel=value=>new Intl.NumberFormat('de-DE',{maximumFractionDigits:1}).format(value/10);
+const VILLAGE_POLL_MS=180000; // Formerly one automatic GET every 30 seconds.
+const VILLAGE_TAB_FRESH_MS=60000;
+const VILLAGE_VISIBLE_FRESH_MS=60000;
+const VILLAGE_VISIBLE_TABS=new Set(['village','buildings','tree','story','grinch']);
+const visibleVillageTab=()=>VILLAGE_VISIBLE_TABS.has(tabs.find(name=>$('tab-'+name)?.getAttribute('aria-selected')==='true'));
 function eventUser(){const state=window.SpielOnline?.state?.();return state?.status==='online'&&state.user?.getIdToken?state.user:null;}
 async function villageRequest(endpoint='',method='GET',body=null){
  const person=eventUser();if(!person)throw Error('Bitte mit dem Online-Profil anmelden.');
@@ -818,6 +824,8 @@ function showLiveVillage(data){
  const oldLevels=villageLive?.levels;
  const oldTreeLevel=oldLevels?TREE_THRESHOLDS.filter(n=>originalTreePoints(oldLevels)>=n).length:null;
  villageLive=v;
+ lastVillageReadAt=Date.now();
+ lastVillageReadUid=eventUser()?.uid||null;
  villageHost=data.shared===true||data.host===true;
  villageEventActive=data.enabled===true;
  villageCanUpgrade=data.canUpgrade!==false;
@@ -855,9 +863,10 @@ async function ensureVillageImport(){
  });
  return pendingVillageImport;
 }
-let pendingVillageRead=null;
-async function reloadVillage(){
- if(!eventUser()){
+let pendingVillageRead=null,lastVillageReadAt=0,lastVillageReadUid=null;
+async function reloadVillage({minimumAgeMs=0}={}){
+ const person=eventUser();
+ if(!person){
   villageLive=null;villageHost=false;
   treeFilms.sync(0);
   for(const {id} of definitions)preview[id]=1;
@@ -871,6 +880,8 @@ async function reloadVillage(){
   $('building-event-mode').textContent='🔐 Mit deinem Online-Spielerprofil anmelden – ein Raumcode ist nicht erforderlich.';
   return;
  }
+ if(minimumAgeMs>0&&villageLive&&lastVillageReadUid===person.uid&&
+    Date.now()-lastVillageReadAt<minimumAgeMs)return; // No redundant GET on quick return.
  if(pendingVillageRead)return pendingVillageRead; // Coalesce simultaneous open-tab + startup GETs.
  const button=$('building-wallet-refresh');
  if(button)button.disabled=true;
@@ -928,12 +939,15 @@ window.addEventListener('spielonline-change',()=>{
  void reloadVillage();
  if($('tab-tree').getAttribute('aria-selected')==='true')void treePrizeScreen?.load();
 });
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)void reloadVillage();});
-// Notice upgrades made by other players while this event page remains open.
-// A 30-second interval avoids excessive synchronization traffic.
+document.addEventListener('visibilitychange',()=>{
+ if(!document.hidden&&visibleVillageTab())void reloadVillage({minimumAgeMs:VILLAGE_VISIBLE_FRESH_MS});
+});
+// A rare safety check for upgrades made by other players. Local purchases
+// and manual refresh remain immediate; other tabs never poll the village.
 setInterval(()=>{
- if(!document.hidden&&eventUser()&&!devMode.isActive()&&!villageBusy&&!treeFilms.isOpen())void reloadVillage();
-},30000);
+ if(!document.hidden&&visibleVillageTab()&&eventUser()&&!devMode.isActive()&&
+    !villageBusy&&!treeFilms.isOpen())void reloadVillage({minimumAgeMs:VILLAGE_POLL_MS});
+},60000);
 
 refreshPreview();
 // Load the high-resolution landscape separately: never block gameplay UI.
