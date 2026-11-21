@@ -32,9 +32,10 @@ document.querySelectorAll('[data-dog-editor]').forEach(link=>link.href='editor.h
 const apiBase=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null,onlineDogAvatars=[],onlineChristmas=null,onlineResearch=null,emojiSocketReady=false;
 let lastFallbackRoomReadAt=0;
-let socketAwaitingFirstRoomAt=0,socketHasRoom=false;
+let socketAwaitingFirstRoomAt=0,socketHasRoom=false,socketLastHealthyAt=0;
 const DOG_DISCONNECTED_READ_MS=30000; // Render WebSocket is primary.
 const DOG_FIRST_ROOM_GRACE_MS=12000; // Recover if a connected socket never receives its initial room.
+const DOG_SOCKET_CONNECT_MS=15000,DOG_SOCKET_STALE_MS=95000; // Reconnect hung sockets without polling Firebase.
 function user(){const s=window.SpielOnline?.state?.();return s?.status==='online'&&s.user?.getIdToken?s.user:null;}
 async function hubRequest(path,method='GET',payload){
  const person=user();if(!person)throw Error('Bitte melde dich mit deinem Online-Profil an.');
@@ -43,7 +44,10 @@ async function hubRequest(path,method='GET',payload){
  let body;
  try{body=await response.json();}
  catch{throw Error('Render liefert keine gültigen Spieldaten (HTTP '+response.status+'). Bitte Verbindung prüfen.');}
- if(!response.ok||!body?.ok)throw Error(body?.error||'Server antwortet mit HTTP '+response.status);
+ if(!response.ok||!body?.ok){
+  const error=Error(body?.error||'Server antwortet mit HTTP '+response.status);
+  error.status=response.status;throw error;
+ }
  return body.room;
 }
 function acceptRemote(room){
@@ -82,24 +86,49 @@ async function refreshOnline(){
 function startSocket(){
  if(onlineSocket||!user())return;
  const socket=new WebSocket(apiBase.replace(/^http/i,'ws')+'/hub');onlineSocket=socket;emojiSocketReady=false;
- socketAwaitingFirstRoomAt=Date.now();socketHasRoom=false;
+ socketAwaitingFirstRoomAt=Date.now();socketHasRoom=false;socketLastHealthyAt=0;
+ const connectTimer=setTimeout(()=>{
+  if(onlineSocket===socket&&socket.readyState===0)socket.close();
+ },DOG_SOCKET_CONNECT_MS);
  socket.onopen=async()=>{
+  clearTimeout(connectTimer);
+  socketLastHealthyAt=Date.now();
   try{const token=await user().getIdToken();if(socket.readyState===1)socket.send(JSON.stringify({type:'subscribe',code:hubCode,profileIdToken:token}));}
-  catch(_){socket.close();}
-  onlineHeartbeat=setInterval(()=>{if(socket.readyState===1)socket.send(JSON.stringify({type:'ping'}));},30000);
+  catch(_){socket.close();return;}
+  onlineHeartbeat=setInterval(()=>{
+   if(socket.readyState!==1)return;
+   if(Date.now()-socketLastHealthyAt>DOG_SOCKET_STALE_MS){socket.close();return;}
+   socket.send(JSON.stringify({type:'ping'}));
+  },30000);
  };
  socket.onmessage=e=>{
   let data;try{data=JSON.parse(e.data)}catch(_){return;}
+  if(data.type==='pong'){socketLastHealthyAt=Date.now();return;}
   if(data.type==='room'&&data.room?.code===hubCode){
-   socketHasRoom=true;emojiSocketReady=true;acceptRemote(data.room);
+   socketLastHealthyAt=Date.now();socketHasRoom=true;emojiSocketReady=true;acceptRemote(data.room);
   }else if(data.type==='dog_emoji'&&data.code===hubCode&&data.matchId===acceptedMatchId){
    showDogEmoji(data);
   }else if(data.type==='dog_emoji_error'){
    showDogEmojiError(data.reason);
   }
  };
- socket.onclose=()=>{emojiSocketReady=false;if(onlineHeartbeat){clearInterval(onlineHeartbeat);onlineHeartbeat=null;}if(onlineSocket===socket)onlineSocket=null;};
+ socket.onclose=()=>{
+  clearTimeout(connectTimer);emojiSocketReady=false;
+  if(onlineHeartbeat){clearInterval(onlineHeartbeat);onlineHeartbeat=null;}
+  if(onlineSocket===socket)onlineSocket=null;
+ };
  socket.onerror=()=>{};
+}
+// Invalid legal-move attempts do not change the server board, so rereading
+// Firestore after every rejection is redundant. A stale revision, failed
+// connection or server failure still forces an authoritative recovery.
+function reconcileRejectedDogAction(error){
+ const status=Number(error?.status)||0;
+ const reason=String(error?.message||'');
+ if(onlineSocket?.readyState!==1||!socketHasRoom||
+    status===0||status>=500||status===401||status===404||
+    reason==='DOG_STALE_REVISION'||reason==='DOG_MATCH_MISMATCH')
+   void refreshOnline();
 }
 async function initOnline(){
  // stayMatch tells the shared lobby to display the current room without
@@ -756,7 +785,7 @@ function onResearchAction(type){
     matchId:acceptedMatchId||matchHint||'',expectedRevision:game.revision,
     actionId:crypto.randomUUID(),action
   }).then(room=>{selectedCard=null;acceptRemote(room);})
-    .catch(e=>{$('status').textContent='⚠️ '+e.message;void refreshOnline();})
+    .catch(e=>{$('status').textContent='⚠️ '+e.message;reconcileRejectedDogAction(e);})
     .finally(()=>{onlineBusy=false;visualFeedback.pending(false);});
 }
 function onMove(i){
@@ -767,7 +796,7 @@ function onMove(i){
     onlineBusy=true;visualFeedback.pending(true);$('status').textContent='Zug wird vom Server geprüft …';
     hubRequest('/dog/action','POST',{matchId:acceptedMatchId||matchHint||'',expectedRevision:game.revision,actionId:crypto.randomUUID(),action:move})
       .then(room=>{acceptRemote(room);})
-      .catch(e=>{visualFeedback.invalid();$('status').textContent='⚠️ '+e.message;void refreshOnline();})
+      .catch(e=>{visualFeedback.invalid();$('status').textContent='⚠️ '+e.message;reconcileRejectedDogAction(e);})
       .finally(()=>{onlineBusy=false;visualFeedback.pending(false);});
     return;
   }
