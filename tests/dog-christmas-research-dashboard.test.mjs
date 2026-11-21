@@ -226,3 +226,11 @@ test('ninth Spielerstatistik tab is wired to live authenticated room results',()
  assert.match(js,/getIdToken\(\)/);
  assert.doesNotMatch(js,/localStorage|sessionStorage/);
 });
+
+test('statistics identifies unpublished endpoint without declaring room deleted',()=>{
+ const js=read('christmas-player-statistics-ui.js');
+ assert.match(js,/HTTP_404/);
+ assert.match(js,/ROOM_NOT_FOUND/);
+ assert.match(js,/getIdToken\(\)/);
+ assert.doesNotMatch(js,/localStorage/);
+});

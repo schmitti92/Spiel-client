@@ -151,7 +151,7 @@ export function initChristmasPlayerStatistics(){
     const reply=await fetch(base+'/api/hub/rooms/'+encodeURIComponent(code)+'/dog/player-statistics',{
      headers:{Authorization:'Bearer '+token},cache:'no-store'});
     const payload=await reply.json().catch(()=>({}));
-    if(!reply.ok||payload.ok!==true)throw Error(payload.error||'SERVER_UNAVAILABLE');
+    if(!reply.ok||payload.ok!==true)throw Error(payload.error||('HTTP_'+reply.status));
     if(id!==requestId||user()?.uid!==account.uid)return;
     data=payload;render();
    }catch(err){
@@ -159,8 +159,12 @@ export function initChristmasPlayerStatistics(){
     data=null;view.hidden=true;
     const text=String(err?.message||'UNAVAILABLE');
     if(replyErrorIsAccess(text))setStatus('Dieser Raum ist nicht zugänglich. Du musst selbst Mitglied des Raums sein.',true);
-    else if(/404|NOT_FOUND|SERVER_UNAVAILABLE/.test(text))
-     setStatus('Die Statistik ist noch nicht auf dem Server verfügbar oder der Raum existiert nicht.',true);
+    else if(text==='ROOM_NOT_FOUND')
+     setStatus('Raum '+code+' ist nicht mehr verfügbar. Bitte prüfe, ob er noch in der Spiellobby besteht.',true);
+    else if(text==='HTTP_404')
+     setStatus('Die Statistik ist auf Render noch nicht veröffentlicht. Ob Raum '+code+' existiert, wurde dadurch nicht geprüft. Bitte den Server-Deploy prüfen und danach aktualisieren.',true);
+    else if(/503|502|504|SERVER_UNAVAILABLE/.test(text))
+     setStatus('Der Spielserver ist vorübergehend nicht erreichbar. Bitte den Render-Status prüfen.',true);
     else setStatus('Statistik konnte nicht geladen werden: '+text,true);
    }finally{
     if(id===requestId){connect.disabled=false;refresh.disabled=false;loading=null;}
