@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#09221d">
+<title>DOG · Grinch-Mission 3 – Die erste Begegnung</title>
+<link rel="stylesheet" href="./mission-3.css?v=1">
+</head>
+<body>
+<header class="m3-top">
+ <a class="m3-back" href="../christmas-event.html">← Weihnachtsdorf</a>
+ <div class="m3-brand"><small>🎄 DOG GRINCH-KAMPAGNE · ENTWICKLUNG</small><strong>Mission 3 – Die erste Begegnung</strong></div>
+ <a class="m3-back" href="./mission-2.html">Mission 2</a>
+</header>
+<main class="m3-shell">
+ <div class="m3-banner"><span>🧪 SPIELBARER PROTOTYP · ARBEITSPAKET 1 + 2</span>
+  <p>Das eigenständige 4-Spieler-Grundgerüst und die DOG-Kartenverteilung sind aktiv. Die intelligente Grinch-KI, die drei Gemeinschaftsaufgaben, Angriffs-Spezialeffekte und die offizielle Online-Freischaltung folgen später. Diese Testseite schreibt <strong>keine offiziellen Kampagnendaten</strong>.</p></div>
+ <div class="m3-layout">
+  <section class="m3-board-panel" aria-label="Mission-3-Spielbrett">
+   <div class="m3-panel-header"><h1>😈 Die erste Begegnung</h1><span id="m3-phase">Kartenphase 1</span></div>
+   <svg id="m3-board" viewBox="0 0 760 760" class="m3-board" role="group" aria-label="Originales DOG-Brett mit vier Teilnehmern und 14 Figuren"></svg>
+   <div class="m3-legend"><span>🔴 Rot · 3</span><span>🔵 Blau · 3</span><span>🟡 Gelb · 3</span><span>🟢 Grinch · 5</span></div>
+   <p class="m3-hint">Alle 14 Figuren stehen bei Spielbeginn zufällig auf unterschiedlichen DOG-Lauffeldern. Es gibt in dieser Mission keinen Zieleinlauf.</p>
+  </section>
+  <aside class="m3-side">
+   <section class="m3-card-panel">
+    <div class="m3-panel-header"><h2>🎯 Aktuelle Spielstufe</h2><span id="m3-stage-active">Leicht</span></div>
+    <div class="m3-stage-meter"><span id="m3-stage-label">1 · Die Weihnachtslichter</span><strong id="m3-grinch-per-turn">1 Grinch-Aktion</strong></div>
+    <p id="m3-turn" class="m3-turn" aria-live="polite">Spiel vorbereiten</p>
+    <div id="m3-players" class="m3-players"></div>
+   </section>
+   <section class="m3-card-panel">
+    <div class="m3-panel-header"><h2>🃏 Deine DOG-Handkarten</h2><span id="m3-own-cards">6 Karten</span></div>
+    <div class="m3-stacks">
+     <div><span class="m3-card-back">❄</span><small>Nachziehstapel<strong id="m3-draw">–</strong></small></div>
+     <div><span class="m3-card-back m3-discard" id="m3-last">–</span><small>Ablagestapel<strong id="m3-discard">–</strong></small></div>
+    </div>
+    <div id="m3-hand" class="m3-hand"></div>
+    <div id="m3-moves" class="m3-moves" aria-live="polite"></div>
+   </section>
+   <section class="m3-card-panel m3-testing">
+    <div class="m3-panel-header"><h2>🛠️ Entwicklungsvorschau</h2><span>Nur lokal</span></div>
+    <p>Die drei Gemeinschaftsaufgaben werden später hier eingebaut. Für die Kartentests kannst du den Aufgabenabschnitt vorwählen; die zusätzliche Grinch-Hand gilt erst bei der nächsten Verteilung.</p>
+    <label for="m3-stage-select">Aufgabenabschnitt</label>
+    <select id="m3-stage-select">
+      <option value="0">1 · Leicht – 6 Grinch-Karten</option>
+      <option value="1">2 · Mittel – 12 Grinch-Karten</option>
+      <option value="2">3 · Finale – 18 Grinch-Karten</option>
+    </select>
+    <div class="m3-preview-actions"><button id="m3-change-stage" type="button">Stufe vormerken</button><button id="m3-next-deal" type="button">Neue Karten simulieren</button></div>
+    <button id="m3-new" type="button" class="m3-subtle">↻ Neuen lokalen Spieltest starten</button>
+   </section>
+   <section class="m3-card-panel"><h2>📜 Spielverlauf</h2><div id="m3-history" class="m3-history" aria-live="polite"></div></section>
+  </aside>
+ </div>
+</main>
+<dialog id="m3-setup"><div class="m3-dialog-title">🎄 Mission 3 · Spieltest</div>
+ <h2>Die erste Begegnung</h2>
+ <p>Neun menschliche Spielfiguren und fünf Grinch-Figuren werden auf 14 zufällige Lauffelder verteilt. Alle Menschen starten mit sechs DOG-Karten.</p>
+ <label>🔴 Spieler Rot <input id="m3-name-0" maxlength="25" value="Rot"></label>
+ <label>🔵 Spieler Blau <input id="m3-name-1" maxlength="25" value="Blau"></label>
+ <label>🟡 Spieler Gelb <input id="m3-name-2" maxlength="25" value="Gelb"></label>
+ <button id="m3-start" type="button">🎮 Lokalen Spieltest starten</button>
+ <small>Keine Verbindung zu offiziellen Spielerleveln, Belohnungen oder Freischaltungen.</small>
+</dialog>
+<div id="m3-toast" role="status" aria-live="polite"></div>
+<script type="module" src="./mission-3.js?v=1"></script>
+</body>
+</html>
