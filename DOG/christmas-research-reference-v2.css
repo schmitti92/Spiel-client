@@ -1,0 +1,346 @@
+/*
+ * DOG · Weihnachtsforschung · Lichtertal Referenzdesign v2
+ * Uses the FOUR uploaded sprite sheets. CSS crops specific decorative
+ * portions; it never paints baked-in placeholder amounts over live values.
+ * This file is loaded last. Only sidebar typography/icon visuals are global;
+ * all other changes are scoped to #panel-research.
+ */
+
+/* Eight original tab buttons: more readable labels, same carved slots. */
+@media(min-width:761px){
+ .event-layout>.event-sidebar .event-tab{
+  grid-template-columns:clamp(33px,3.1vw,43px) minmax(0,1fr) 11px!important;
+  padding:0 6px!important;
+  column-gap:4px!important;
+  align-items:center!important;
+  overflow:hidden!important;
+ }
+ .event-layout>.event-sidebar .event-tab strong{
+  font:900 clamp(12px,1vw,15.5px)/1.12 Georgia,serif!important;
+  letter-spacing:0!important;
+  white-space:normal!important;overflow:visible!important;
+  text-overflow:clip!important;overflow-wrap:normal!important;
+  hyphens:auto!important;
+  transform:none!important;
+ }
+ .event-layout>.event-sidebar .event-tab small{
+  font:760 clamp(9px,.70vw,10.5px)/1.12 system-ui,sans-serif!important;
+  margin-top:2px!important;
+  white-space:normal!important;overflow:visible!important;
+  text-overflow:clip!important;overflow-wrap:normal!important;
+  hyphens:auto!important;
+  transform:none!important;
+ }
+ .event-layout>.event-sidebar .event-tab[data-tab="research"] strong{
+  font-size:clamp(12px,.93vw,14.2px)!important;
+ }
+ .event-layout>.event-sidebar .event-tab>span{
+  width:clamp(32px,3.1vw,43px)!important;
+  height:clamp(32px,3.1vw,43px)!important;
+  min-width:0!important;min-height:0!important;
+  background-image:url("./assets/research/research-ui-navigationsicons.webp")!important;
+  background-size:420% 310%!important;
+  background-repeat:no-repeat!important;
+  border-radius:50%;
+ }
+ .event-layout>.event-sidebar .event-tab[data-tab="village"]>span{background-position:3% 3%!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="buildings"]>span{background-position:35% 3%!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="tree"]>span{background-position:66% 3%!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="story"]>span{background-position:98% 3%!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="grinch"]>span{background-position:3% 52%!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="scratch"]>span{background-position:35% 52%!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="level"]>span{background-position:66% 52%!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="research"]>span{background-position:98% 52%!important}
+}
+@media(min-width:761px) and (max-height:660px){
+ .event-layout>.event-sidebar .event-tab strong{font-size:12px!important;line-height:1.04!important}
+ .event-layout>.event-sidebar .event-tab small{font-size:9px!important;line-height:1.04!important}
+ .event-layout>.event-sidebar .event-tab[data-tab="research"] strong{font-size:12px!important}
+}
+
+/* Unified gold/emerald architecture and a more breathable workspace. */
+#panel-research .dog-research-shell{
+ background:radial-gradient(ellipse at 73% 0%,#194d3873,transparent 55%),
+            linear-gradient(130deg,#082a22,#052219 68%,#073022)!important;
+}
+#panel-research .dr-workspace{gap:12px!important}
+#panel-research .dr-gallery,
+#panel-research .dr-detail-panel{
+ border:2px solid #cda25d!important;
+ border-radius:18px!important;
+ background:linear-gradient(165deg,#0a3829,#06251e 85%)!important;
+ box-shadow:inset 0 0 0 1px #fee3a038,0 4px 16px #0008!important;
+}
+#panel-research .dr-gallery{padding:11px 12px 9px!important}
+#panel-research .dr-gallery-header{
+ margin-bottom:5px!important;
+ padding:2px 3px 12px!important;
+ border-bottom:1px solid #d9b66d77!important;
+}
+#panel-research .dr-gallery-header h3{color:#ffe4a9!important;white-space:normal!important}
+#panel-research .dr-gallery-header h3>span:last-child{color:#e6c786!important}
+#panel-research .dr-sort-label select{
+ border-color:#e5bb69!important;border-radius:24px!important;
+ background:linear-gradient(110deg,#0c3627,#124a34)!important;
+ box-shadow:inset 0 1px #fee7a63a,0 2px 7px #0007!important;
+ font-weight:800!important;
+}
+#panel-research .dr-gallery-content{
+ padding:5px 4px 10px!important;
+ scrollbar-color:#caa463 #092b20!important;
+}
+#panel-research .dog-research-grid{
+ gap:12px!important;align-items:stretch!important;
+}
+
+/* Card photographs remain crisp. The decorative header is a cropped
+ * TOP STRIP of the uploaded kartenrahmen atlas (not the opaque card body). */
+#panel-research .dog-research-card[data-research-art]{
+ display:grid!important;
+ grid-template-rows:clamp(130px,16dvh,154px) minmax(114px,auto)!important;
+ min-height:264px!important;
+ height:auto!important;max-height:none!important;
+ border:2px solid #ddb66b!important;border-radius:16px!important;
+ box-shadow:inset 0 1px #f9dfad77,0 5px 15px #0009!important;
+ transition:border-color .15s,box-shadow .15s,transform .15s;
+}
+#panel-research .dog-research-card[data-research-art]::after{
+ height:clamp(130px,16dvh,154px)!important;
+ background-image:var(--dr-property-scene)!important;
+ background-position:center 34%!important;
+ background-size:cover!important;
+ filter:brightness(1.17) saturate(1.13)!important;
+ opacity:1!important;
+ -webkit-mask-image:none!important;mask-image:none!important;
+}
+#panel-research .dog-research-card[data-research-art]::before{
+ content:""!important;
+ display:block!important;position:absolute!important;
+ top:-2px!important;left:-2px!important;right:-2px!important;
+ bottom:auto!important;
+ width:calc(100% + 4px)!important;height:31px!important;
+ z-index:4!important;pointer-events:none!important;
+ background-image:url("./assets/research/research-ui-kartenrahmen.webp")!important;
+ background-size:420% 1710%!important;
+ background-position:3% 0.2%!important;
+ background-repeat:no-repeat!important;
+ opacity:.96!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-content{
+ position:static!important;
+ grid-column:1!important;grid-row:2!important;
+ min-width:0!important;min-height:114px!important;
+ height:auto!important;padding:9px 12px 10px!important;
+ background:linear-gradient(#0b3528,#082920 72%,#06241c)!important;
+ border-top:1px solid #d8ab5c!important;
+ box-shadow:0 -4px 14px #011b1580!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-title{
+ color:#ffebbc!important;
+ font:900 clamp(14px,1.03vw,18px)/1.14 Georgia,serif!important;
+ overflow-wrap:anywhere!important;white-space:normal!important;
+ text-shadow:0 2px 3px #0009!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-description{
+ color:#efe7d7!important;
+ font:540 clamp(11.5px,.83vw,13px)/1.3 system-ui,sans-serif!important;
+ white-space:normal!important;overflow:visible!important;
+ overflow-wrap:anywhere!important;margin:5px 0 7px!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-level{
+ top:10px!important;right:10px!important;
+ padding:4px 9px!important;
+ background:#08271fe9!important;border:1px solid #f5d488!important;
+ font:800 11px/1.1 system-ui,sans-serif!important;
+ box-shadow:0 3px 9px #000b!important;
+}
+#panel-research .dog-research-card[data-research-art].is-selected{
+ border-color:#ffdf9c!important;
+ box-shadow:0 0 0 1px #f8eeae,0 0 15px #8ced88bc!important;
+}
+#panel-research .dog-research-card[data-research-art].is-selected::after{
+ filter:brightness(1.23) saturate(1.2)!important;
+}
+#panel-research .dr-card-selected{
+ border:1px solid #f6da99!important;
+ box-shadow:0 0 10px #40ff96a9!important;
+}
+#panel-research .dog-research-card[data-research-art] .dr-card-bonus{
+ color:#bdffb5!important;
+}
+
+/* Fixed right-side detail: large selected picture and real HTML values. */
+#panel-research .dr-detail-panel[data-research-art]{
+ position:sticky!important;top:4px!important;
+ min-width:0!important;min-height:0!important;
+ overflow:hidden!important;
+}
+#panel-research .dr-detail-artwork[data-research-art]{
+ flex:none!important;width:100%!important;
+ height:clamp(138px,25dvh,205px)!important;
+ border-bottom:2px solid #d5b76a!important;
+ background-image:var(--dr-property-scene)!important;
+ background-position:center 37%!important;
+ background-size:cover!important;
+}
+#panel-research .dr-detail-artwork[data-research-art]::after{
+ display:block!important;
+ content:""!important;
+ top:-2px!important;left:0!important;right:0!important;
+ bottom:auto!important;
+ width:100%!important;height:42px!important;
+ transform:none!important;
+ border:0!important;border-radius:0!important;
+ background:url("./assets/research/research-ui-goldornamente.webp") no-repeat 0% 0%!important;
+ background-size:207% 1200%!important;
+ box-shadow:none!important;
+ opacity:.93!important;pointer-events:none!important;
+}
+#panel-research .dr-detail-artwork .dr-detail-rank{
+ z-index:5!important;background:#08291fe9!important;
+ border:1px solid #f3cf87!important;
+}
+#panel-research .dr-detail-heading h3{
+ color:#ffefc4!important;font-size:clamp(19px,1.6vw,25px)!important;
+ overflow-wrap:anywhere!important;
+}
+#panel-research .dr-detail-heading{
+ border-color:#d7ba7c77!important;
+}
+#panel-research .dr-detail-description .dr-detail-label,
+#panel-research .dr-detail-effects .dr-detail-label{
+ color:#f1cf87!important;
+}
+#panel-research .dr-detail-description .dr-detail-value{
+ color:#f5e7d0!important;
+}
+#panel-research .dr-detail-effects{
+ display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:8px!important;
+}
+#panel-research .dr-detail-effects .dr-detail-block{
+ background:linear-gradient(130deg,#154a32,#0c3327)!important;
+ border:1px solid #c7a260!important;
+ border-radius:12px!important;
+}
+#panel-research .dr-detail-effects .dr-detail-value{
+ color:#c0ffba!important;
+}
+
+/* Decorative forest/lantern at the otherwise empty bottom of the fixed
+ * detail. The pane's real purchase and claim controls stay clickable. */
+#panel-research .dr-detail-panel[data-research-art]::after{
+ content:"";position:absolute;z-index:0;
+ pointer-events:none!important;
+ left:7px;right:7px;bottom:72px;height:clamp(50px,12dvh,115px);
+ background-image:url("./assets/research/research-ui-goldornamente.webp");
+ background-repeat:no-repeat;
+ background-size:207% 845%;
+ background-position:0% 30%;
+ opacity:.34;
+ -webkit-mask-image:linear-gradient(transparent 0%,#000 75%,#000 100%);
+ mask-image:linear-gradient(transparent 0%,#000 75%,#000 100%);
+}
+#panel-research .dr-detail-body{z-index:2!important}
+#panel-research .dr-detail-actions{
+ z-index:3!important;position:relative!important;
+ border-color:#d5ac667e!important;
+}
+#panel-research .dr-research-cost{
+ background:linear-gradient(120deg,#12422e,#08281f)!important;
+ border:1px solid #d4ab6c!important;
+ border-radius:12px!important;
+}
+#panel-research .dr-upgrade-button,
+#panel-research .dr-claim-button{
+ background-image:linear-gradient(180deg,#00a95322,#00552833),
+                  url("./assets/research/research-ui-goldornamente.webp")!important;
+ background-size:100% 100%,223% 654%!important;
+ background-position:center,5% 69.6%!important;
+ background-repeat:no-repeat!important;
+ border:1.5px solid #ffd98c!important;
+ border-radius:13px!important;
+ color:#fff6ca!important;text-shadow:0 2px 3px #03291dbb!important;
+ font:900 clamp(14px,1.2vw,18px)/1.16 Georgia,serif!important;
+ box-shadow:inset 0 1px #fff4c69a,0 0 13px #4dea9a80!important;
+}
+#panel-research .dr-upgrade-button:disabled,
+#panel-research .dr-claim-button:disabled{
+ filter:grayscale(.30)!important;
+ opacity:.54!important;
+}
+#panel-research .dr-upgrade-button::before,
+#panel-research .dr-claim-button::before{display:none!important}
+
+/* Grid/list buttons are cropped from the uploaded REAL button and icon atlases
+ * and remain the existing accessible, clickable HTML buttons. */
+#panel-research .dr-view-options{gap:5px!important}
+#panel-research .dr-view-options button{
+ width:35px!important;height:35px!important;
+ padding:0!important;border:0!important;
+ color:transparent!important;text-shadow:none!important;font-size:0!important;
+ background-repeat:no-repeat!important;
+ border-radius:10px!important;
+}
+#panel-research #dog-research-grid-toggle{
+ background-image:url("./assets/research/research-ui-buttons.webp")!important;
+ background-size:810% 540%!important;
+ background-position:79.9% 89%!important;
+}
+#panel-research #dog-research-list-toggle{
+ background-image:url("./assets/research/research-ui-navigationsicons.webp")!important;
+ background-size:790% 550%!important;
+ background-position:62% 89%!important;
+}
+#panel-research .dr-view-options button.is-active{
+ box-shadow:0 0 0 1px #cef9bb,0 0 12px #60ff8eaa!important;
+}
+#panel-research .dr-gallery-footer{
+ color:#e6e1cf!important;
+ border-top:1px solid #d8ae6a9c!important;
+ padding:9px 5px 5px!important;
+}
+#panel-research .dr-gallery-footer strong{color:#ffebae!important}
+#panel-research .dr-wallet,
+#panel-research .dr-status-footer{
+ border-color:#d0af6c!important;
+}
+#panel-research .dr-wallet-info strong{color:#ffdfa0!important}
+@media(min-width:850px){
+ #panel-research .dr-workspace{
+  grid-template-columns:minmax(0,1.55fr) minmax(290px,.95fr)!important;
+  height:calc(100dvh - 144px)!important;
+ }
+ #panel-research .dr-gallery,#panel-research .dr-detail-panel{
+  height:100%!important;min-height:0!important;
+ }
+}
+@media(min-width:850px) and (max-height:745px){
+ #panel-research .dog-research-card[data-research-art]{
+  grid-template-rows:124px minmax(112px,auto)!important;
+ }
+ #panel-research .dog-research-card[data-research-art]::after{height:124px!important}
+ #panel-research .dog-research-card[data-research-art]{min-height:239px!important}
+ #panel-research .dr-detail-artwork[data-research-art]{height:clamp(103px,20dvh,155px)!important}
+ #panel-research .dr-detail-panel.has-claim .dr-detail-artwork{height:90px!important}
+}
+@media(max-width:849px){
+ #panel-research .dr-workspace{height:auto!important}
+ #panel-research .dr-detail-panel[data-research-art]{
+  position:relative!important;max-height:none!important;height:auto!important;
+ }
+ #panel-research .dog-research-card[data-research-art]{
+  grid-template-rows:135px minmax(116px,auto)!important;
+ }
+ #panel-research .dog-research-card[data-research-art]::after{height:135px!important}
+ #panel-research .dr-detail-panel[data-research-art]::after{display:none!important}
+}
+@media(max-width:560px){
+ #panel-research .dr-gallery{padding:8px!important}
+ #panel-research .dog-research-grid{grid-template-columns:minmax(0,1fr)!important}
+ #panel-research .dr-detail-effects{grid-template-columns:minmax(0,1fr)!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #panel-research .dog-research-card[data-research-art]{transition:none!important}
+}

@@ -31,7 +31,7 @@ export function initLichtertalSidebarTextFit(){
     const fitsHeight=titleHeight+subHeight+4<=height-4;
     const fitsWidth=title.scrollWidth<=title.clientWidth+1&&sub.scrollWidth<=sub.clientWidth+1;
     if(fitsHeight&&fitsWidth)break;
-    const nextA=Math.max(9,a-.4),nextB=Math.max(7,b-.25);
+    const nextA=Math.max(12,a-.4),nextB=Math.max(9,b-.25);
     if(nextA===a&&nextB===b)break;
     a=nextA;b=nextB;
     title.style.setProperty('font-size',a+'px','important');

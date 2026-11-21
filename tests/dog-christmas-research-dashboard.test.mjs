@@ -133,3 +133,22 @@ test('sidebar text fitting adapts automatically to landscape window and fonts',(
  assert.match(fit,/requestAnimationFrame\(fit\)/);
  assert.doesNotMatch(fit,/innerHTML|replaceChildren|remove\(\)/);
 });
+
+test('the four uploaded Christmas reference sheets decorate research without faking account values',()=>{
+ const skin=read('christmas-research-reference-v2.css');
+ assert.match(html,/christmas-research-reference-v2\.css\?v=1/);
+ for(const file of ['research-ui-buttons.webp','research-ui-goldornamente.webp',
+     'research-ui-kartenrahmen.webp','research-ui-navigationsicons.webp']){
+  assert.ok(existsSync(new URL('../DOG/assets/research/'+file,import.meta.url)),file);
+  assert.ok(skin.includes(file),file);
+ }
+ assert.match(skin,/\.dog-research-card\[data-research-art\]/);
+ assert.match(skin,/background-image:var\(--dr-property-scene\)/);
+ assert.match(skin,/\.dr-detail-artwork\[data-research-art\]/);
+ assert.match(skin,/\.dr-upgrade-button/);
+ assert.match(skin,/\.event-tab\[data-tab="research"\]/);
+ assert.equal((html.match(/class="event-tab(?: event-tab-grinch)?"/g)||[]).length,8);
+ assert.match(read('christmas-sidebar-fit.js'),/Math.max\(12,a-\.4\)/);
+ assert.match(controller,/getIdToken\(\)/);
+ assert.match(controller,/call\('\/upgrade',\{id:skill\.id\}\)/);
+});
