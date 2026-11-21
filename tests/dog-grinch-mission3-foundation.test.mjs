@@ -6,7 +6,7 @@ test('Mission 3 is an isolated local test page, not an official campaign launche
  const html=src('mission-3.html');
  assert.match(html,/SPIELBARER PROTOTYP/);
  assert.match(html,/keine offiziellen Kampagnendaten/);
- assert.match(html,/mission-3\.js\?v=2/);
+ assert.match(html,/mission-3\.js\?v=3/);
  assert.match(html,/id="m3-board"/);
  assert.doesNotMatch(html,/\/api\/hub\/|awardCoins|grantReward/);
 });
