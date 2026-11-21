@@ -55,6 +55,18 @@
 
 **Paket-2-Zwischenstand (21.11.2026):** Backend-Änderung `d0173f37770905f1ee1b55989097ed74481c8c5b`, eigenständiger Regressionstest `88fa4c591e46ede1e5c65b4d5129b5d58dc43635`. Die neue Optimierung betrifft 22 **Code-Stellen**, nicht eine garantierte Einsparung von 22 Firestore-Reads je Aufruf. Tatsächliche Einsparung entsteht nur bei zeitlich überlappenden Anforderungen derselben Dokumentpfade; reale Produktion-Zähler müssen weiterhin gemessen werden.
 
+### Paket 2b – DOG-Leerlauf und Freischaltungsabfragen (21.11.2026, umgesetzt)
+
+- [x] Weihnachtsdorf: periodischer Sicherheitsabgleich der gemeinsamen Dorfansicht von 30 auf frühestens 180 Sekunden reduziert (**theoretisch bis zu 83 % weniger automatische HTTP-GETs** bei dauerhaft sichtbarer Dorfansicht).
+- [x] Hintergrundtabs und Event-Reiter ohne Dorfübersicht (Rubbellose, Level, Forschung, Statistik) führen keine regelmäßigen Dorf-GETs aus.
+- [x] Schnelle Reiterwechsel und erneutes Sichtbarwerden fragen das Dorf nur dann neu ab, wenn der letzte erfolgreiche Stand älter als 60 Sekunden ist. **Manueller Refresh, Kauf und Fehler-Wiederherstellung bleiben sofort**.
+- [x] Freischaltungsprüfung: Fokus + Sichtbarwerden innerhalb von 20 Sekunden teilen die bereits bestätigte Berechtigung; nach DOG-Partie und Siegerehrung wird unabhängig von dieser Frist unverzüglich beim Server geprüft.
+- [x] Unnötige zweite Startprüfung nach 1,7 Sekunden unterdrückt, sobald Firebase Auth beim ersten Aufruf bereits angemeldet war. Nutzerwechsel während einer laufenden Prüfung löst eine neue Prüfung aus.
+- [x] Script-Cache-Versionen erhöht und gezielte Regressionstests in `tests/dog-christmas-intro-gate.test.mjs` ergänzt.
+- [ ] Reale Firebase-Zähler nach 5 Minuten Leerlauf und bei 3 parallelen Browsern vergleichen.
+
+**Einschränkung:** Die 83 % sind ein Vergleich der *automatischen HTTP-Aufrufe* (30 zu 180 Sekunden), nicht verifizierte abgerechnete Firestore-Dokumentreads. Manuelle Aktionen, Anmeldung und andere UI-Abfragen sind nicht in diesem Wert enthalten. Gemeinsame Ausbauten durch andere Spieler können im offenen Dorf bis zum nächsten Sicherheitsabgleich verzögert sichtbar werden; Server-Transaktionen bleiben maßgeblich.
+
 ### Paket 3 – DOG und Weihnachts-Event
 - [ ] Wiederholte identische Profil-/Level-/Forschungs-/Scratch-GETs inventarisieren und sichere Singleflight-Caches mit Authentifizierung pro Benutzer hinzufügen.
 - [ ] Keine Duplikat-Abfragen nur durch Tabwechsel, gleiche UI-Updates oder nachgeladene Registerkarten.
