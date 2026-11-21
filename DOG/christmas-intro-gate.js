@@ -226,7 +226,7 @@ export function mountChristmasLinks(){
   }
   const uid=p.user.uid;
   if(!force&&lastEligibilityUid===uid&&Date.now()-lastEligibilityReadAt<ELIGIBILITY_FOCUS_MIN_MS)return;
-  if(pending){if(force)pendingAgain=true;return;}
+  if(pending){if(force||uid!==activeUid)pendingAgain=true;return;}
   pending=true;
   if(activeUid!==uid){
    activeUid=uid;matchFinishedOnThisPage=false;ceremonyDismissed=false;introDeferred=false;
@@ -314,5 +314,8 @@ export function guardChristmasEventPage(){
   void admit();
  });
  window.addEventListener('spielonline-change',()=>void check());
- void check();setTimeout(()=>void check(),1700);
+ const initiallyAuthenticated=Boolean(profile());
+ void check();
+ // Startup retry only when Firebase Auth was not ready at first render.
+ if(!initiallyAuthenticated)setTimeout(()=>void check(),1700);
 }
