@@ -65,3 +65,8 @@ dialog small{color:#b6cec3;font-size:10px}
 @media(max-width:1050px){.m3-layout{grid-template-columns:1fr}.m3-board-panel{position:static}.m3-side{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.m3-top{padding:9px 7px}.m3-back{font-size:9px;padding:6px}.m3-brand small{font-size:8px}.m3-brand strong{font-size:14px}.m3-shell{width:calc(100% - 12px);margin:7px auto}.m3-banner{padding:9px}.m3-layout{gap:9px}.m3-board-panel,.m3-card-panel{padding:9px}.m3-side{grid-template-columns:1fr}.m3-panel-header h1{font-size:15px}.m3-panel-header h2{font-size:15px}.m3-hand .m3-card{width:57px;min-width:57px;height:82px}}
 @media(prefers-reduced-motion:reduce){.m3-pawn,#m3-toast{transition:none}}
+
+/* Mission 3 · package 4: phase curses, frozen pawns and captives */
+.m3-curse-status{margin:10px 0 5px;background:#112f3b;border:1px solid #a7c8d980;border-radius:10px;padding:10px 12px;color:#d5f0f7;font-size:12px;line-height:1.45;font-weight:800}
+.m3-player small.m3-captures{color:#f1ce99}
+.m3-frozen-pawn{filter:drop-shadow(0 0 4px #7beaff)}
