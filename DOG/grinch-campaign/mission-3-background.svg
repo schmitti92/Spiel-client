@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 760 760" width="760" height="760" role="img" aria-label="Winterliche Grinch-Höhle über verschneiten Bergen und Tannenwäldern">
+ <defs>
+  <radialGradient id="sky" cx=".53" cy=".1" r=".93"><stop stop-color="#1b5a64"/><stop offset=".44" stop-color="#10343e"/><stop offset=".82" stop-color="#081d2b"/><stop offset="1" stop-color="#091b21"/></radialGradient>
+  <radialGradient id="moon"><stop stop-color="#fffbd3"/><stop offset=".33" stop-color="#e5f3b9"/><stop offset=".65" stop-color="#78cdb1" stop-opacity=".42"/><stop offset="1" stop-color="#8aecd8" stop-opacity="0"/></radialGradient>
+  <linearGradient id="snow" x1=".1" y1=".1" x2=".9" y2="1"><stop stop-color="#e1f9ef"/><stop offset=".5" stop-color="#93c4be"/><stop offset="1" stop-color="#345767"/></linearGradient>
+  <linearGradient id="rock" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#486b6b"/><stop offset=".43" stop-color="#193c46"/><stop offset="1" stop-color="#0b2432"/></linearGradient>
+  <radialGradient id="caveGlow"><stop stop-color="#75d45e" stop-opacity=".78"/><stop offset=".45" stop-color="#388354" stop-opacity=".36"/><stop offset="1" stop-color="#103b34" stop-opacity="0"/></radialGradient>
+  <linearGradient id="forest" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#245c4e"/><stop offset="1" stop-color="#0d2e36"/></linearGradient>
+  <filter id="soft"><feGaussianBlur stdDeviation="15"/></filter>
+  <symbol id="fir" viewBox="0 0 48 92">
+   <path d="M22 60H27V92H22Z" fill="#382a2e"/>
+   <path d="M24 0L7 36H14L0 61H12L0 78H48L36 61H48L34 36H41Z" fill="url(#forest)" stroke="#6dab87" stroke-opacity=".24" stroke-width="1"/>
+   <path d="M24 0L9 33L15 30L24 14L30 30L39 33ZM15 43L7 58L18 54L24 47L30 54L42 58L33 42L24 48ZM13 69L6 76H42L35 68L25 72Z" fill="#bee2d1" opacity=".65"/>
+  </symbol>
+  <pattern id="glitter" patternUnits="userSpaceOnUse" width="47" height="53"><circle cx="10" cy="14" r="1.1" fill="#fff6c2" opacity=".53"/><circle cx="38" cy="39" r=".8" fill="#a6eac5" opacity=".7"/></pattern>
+  <clipPath id="boardClip"><rect x="18" y="18" width="724" height="724" rx="27"/></clipPath>
+ </defs>
+ <g clip-path="url(#boardClip)">
+  <rect x="18" y="18" width="724" height="724" fill="url(#sky)"/>
+  <path d="M17 187Q220 115 377 158T744 116L742 19H18Z" fill="#328e86" opacity=".075"/>
+  <circle cx="603" cy="136" r="126" fill="url(#moon)"/>
+  <circle cx="603" cy="136" r="34" fill="#f8f3be" opacity=".89"/>
+  <circle cx="595" cy="129" r="28" fill="#fffde1" opacity=".36"/>
+  <path d="M18 338L109 234L156 284L230 173L312 307L400 206L488 298L544 203L621 306L683 228L741 286V568H18Z" fill="url(#rock)" stroke="#87b9a7" stroke-opacity=".2" stroke-width="2"/>
+  <path d="M181 229L230 173L276 252L251 246L236 218L221 228L203 243ZM361 254L400 206L447 258L419 248L404 229L385 242ZM502 252L544 203L596 274L562 252L549 230L531 240Z" fill="url(#snow)" opacity=".72"/>
+  <path d="M17 403L93 354L185 387L237 331L324 388L427 339L536 386L611 318L742 389V620H17Z" fill="#163b40" opacity=".94"/>
+  <path d="M17 458L114 424L203 449L315 410L406 455L532 421L637 457L742 414V682H17Z" fill="#0a3236" opacity=".7"/>
+  <path d="M16 570Q151 510 234 541T410 531T740 535V754H16Z" fill="#bed7ca" opacity=".16"/>
+  <path d="M16 656Q132 589 265 634T489 623T740 601V753H16Z" fill="#f3f6df" opacity=".2"/>
+  <path d="M16 715Q188 665 333 711T741 688V754H16Z" fill="#f5fff4" opacity=".36"/>
+  <use xlink:href="#fir" x="52" y="398" width="90" height="172"/>
+  <use xlink:href="#fir" x="116" y="431" width="75" height="144"/>
+  <use xlink:href="#fir" x="183" y="459" width="69" height="132"/>
+  <use xlink:href="#fir" x="548" y="433" width="74" height="143"/>
+  <use xlink:href="#fir" x="628" y="385" width="98" height="190"/>
+  <use xlink:href="#fir" x="481" y="455" width="70" height="132"/>
+  <use xlink:href="#fir" x="23" y="548" width="92" height="178"/>
+  <use xlink:href="#fir" x="120" y="597" width="67" height="129"/>
+  <use xlink:href="#fir" x="598" y="578" width="80" height="153"/>
+  <use xlink:href="#fir" x="682" y="508" width="67" height="129"/>
+  <path d="M273 389Q291 321 337 303Q398 258 459 304Q499 335 504 405Q484 467 399 469Q304 463 273 389Z" fill="#020f1c" opacity=".7"/>
+  <ellipse cx="394" cy="378" rx="89" ry="111" fill="url(#caveGlow)" opacity=".69"/>
+  <path d="M310 400Q325 326 379 315Q456 303 476 383" fill="none" stroke="#64b76b" stroke-opacity=".36" stroke-width="6"/>
+  <path d="M20 20H741V740H20Z" fill="url(#glitter)" opacity=".63"/>
+  <g fill="#ffeed6" opacity=".7">
+   <circle cx="103" cy="145" r="2"/><circle cx="167" cy="89" r="2"/><circle cx="310" cy="107" r="1.6"/><circle cx="438" cy="94" r="2.2"/><circle cx="703" cy="158" r="1.8"/><circle cx="698" cy="72" r="2.1"/><circle cx="59" cy="298" r="2"/>
+  </g>
+  <g fill="none" stroke="#c5f5e1" stroke-linecap="round" opacity=".22">
+   <path d="M111 301l6 15m-11-4 17-7"/><path d="M627 256l-6 16m-5-10 17 6"/><path d="M81 637l5 14m-10-3 19-8"/>
+  </g>
+  <rect x="17" y="17" width="726" height="726" rx="28" fill="none" stroke="#b6d7a4" stroke-opacity=".27" stroke-width="3"/>
+ </g>
+</svg>
