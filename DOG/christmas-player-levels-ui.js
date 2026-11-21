@@ -32,6 +32,9 @@ export function initDogPlayerLevels(){
  };
  const rangeIcons=['⭐','🎁','🎟️','🎄','👑'];
  let pending=null,requestId=0,levelData=null,claimPending=false,selectedRange=0;
+ // Auth status events are not changes in XP or rewards.
+ const LEVEL_VIEW_CACHE_MS=45000;
+ let accountUid=user()?.uid||null,loadedUid=null,loadedAt=0;
  let announcement='';
  function message(content,error=false){
   announcement=content;status.textContent=content;status.dataset.error=String(error);
@@ -226,6 +229,7 @@ export function initDogPlayerLevels(){
     throw Error(result.error||'DOG_LEVEL_REWARD_FAILED');
    if(user()?.uid!==uid)return;
    levelData={...levelData,levelRewardClaims:{...result.levelRewardClaims}};
+    loadedUid=uid;loadedAt=Date.now();
    window.dispatchEvent(new Event('dog-scratch-balance-changed'));
    message('🎉 Level '+n+': Deine Gutscheine wurden im Rubbellos-Konto gutgeschrieben.');
   }catch(error){
@@ -235,9 +239,11 @@ export function initDogPlayerLevels(){
    if(user()?.uid===uid&&levelData)render(levelData);
   }
  }
- async function load(){
+ async function load(force=false){
   if(pending)return pending;
-  const current=user(),id=++requestId;
+  const current=user();
+  if(!force&&current&&levelData&&loadedUid===current.uid&&Date.now()-loadedAt<LEVEL_VIEW_CACHE_MS){updateAvatar();return;}
+  const id=++requestId;
   if(!current){
    $('dog-level-summary').hidden=true;
    grid.replaceChildren();nav.replaceChildren();
@@ -256,7 +262,7 @@ export function initDogPlayerLevels(){
    const result=await response.json().catch(()=>({}));
    if(!response.ok||result.ok!==true)throw Error(result.error||'DOG_LEVEL_SERVER_ERROR');
    if(requestId!==id||user()?.uid!==current.uid)return;
-   levelData=result;
+   levelData=result;loadedUid=current.uid;loadedAt=Date.now();
    render(result);
    $('dog-level-summary').hidden=false;
    message(window.DOGChristmasDev?.isActive()?'🧪 Lokaler Level-Teststand – Belohnungen sind nicht echt.':'🎄 Alle Level, EP und Rubbellos-Gutscheine sind mit deinem persönlichen Profil verknüpft.');
@@ -269,7 +275,7 @@ export function initDogPlayerLevels(){
    }
   }finally{pending=null;refresh.disabled=false;}
  }
- refresh.addEventListener('click',()=>void load());
+ refresh.addEventListener('click',()=>void load(true));
  prev.addEventListener('click',()=>changeRange(selectedRange-1));
  next.addEventListener('click',()=>changeRange(selectedRange+1));
  $('dog-level-to-scratch')?.addEventListener('click',()=>$('tab-scratch')?.click());
@@ -278,6 +284,9 @@ export function initDogPlayerLevels(){
   if(levelData){render(levelData);message(window.DOGChristmasDev?.isActive()?'🧪 Spielerlevel-Testvorschau – keine echten Gutscheine.':'✓ Echtes Spielerlevel wiederhergestellt.');}
  });
  window.addEventListener('spielonline-change',()=>{
+  const nextUid=user()?.uid||null;
+  if(nextUid===accountUid){if(levelData)updateAvatar();return;}
+  accountUid=nextUid;loadedUid=null;loadedAt=0;
   const previous=levelData;
   requestId++;levelData=null;selectedRange=0;
   $('dog-level-summary').hidden=true;
