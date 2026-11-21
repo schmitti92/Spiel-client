@@ -8,8 +8,10 @@ test('all DOG Christmas entrypoints are hidden until server-verified reveal',()=
  const dog=source('DOG/index.html');
  const event=source('DOG/christmas-event.html');
  assert.match(intro,/\/api\/hub\/dog\/christmas-intro/);
- assert.match(intro,/state\.eligible&&state\.completed/);
- assert.match(intro,/state\.eligible&&!state\.completed/);
+ assert.match(intro,/const portalUnlocked=state\.eligible&&\(state\.completed\|\|state\.previewGranted\)/);
+ assert.match(intro,/state\.eligible&&state\.introReady&&!state\.completed&&!introVisible&&!ceremonyOpen\(\)/);
+ assert.match(intro,/else if\(state\.introReady&&!state\.completed\)/);
+ assert.match(intro,/else if\(state\.completed\|\|state\.previewGranted\)await admit\(\)/);
  assert.match(intro,/\/api\/hub\/dog\/stats/);
  assert.match(intro,/dog-christmas-portal-open/);
  assert.match(intro,/dog-christmas-video-seen-v1/);
@@ -49,6 +51,7 @@ test('four Lichtertal clips are published, playable and only start after Play',(
  assert.match(intro,/video\.addEventListener\('ended'/);
  assert.match(intro,/\/complete','POST'/);
  assert.match(intro,/role','dialog'/);
+ assert.match(intro,/const portalUnlocked=state\.eligible&&\(state\.completed\|\|state\.previewGranted\)/);
 });
 test('first-match intro waits for victory ceremony dismissal',()=>{
  const intro=source('DOG/christmas-intro-gate.js');
@@ -57,6 +60,7 @@ test('first-match intro waits for victory ceremony dismissal',()=>{
  assert.match(intro,/const victoryDialog=document\.getElementById\('winner'\)/);
  assert.match(intro,/!ceremonyOpen\(\)/);
  assert.match(intro,/victoryDialog\?\.addEventListener\('close'/);
+ assert.match(intro,/state\.introReady&&!state\.completed&&!introVisible&&!ceremonyOpen\(\)/);
 });
 test('online DOG completion triggers a verified unlock refresh',()=>{
  const app=source('DOG/app.js');
