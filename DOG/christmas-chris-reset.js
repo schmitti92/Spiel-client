@@ -5,6 +5,23 @@
  */
 const KEY='CHRIS_WEIHNACHT_NEUSTART';
 const BASE=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
+function clearChrisLocalPreviewOnce(uid){
+ const marker='dog-chris-personal-restart-local-cleanup-v1:'+uid;
+ try{
+  if(localStorage.getItem(marker)==='1')return false;
+  // The verified server reset does not change device-only developer sliders.
+  // Clear them once so Chris really sees the fresh, non-preview event state.
+  for(const prefix of [
+   'dog-christmas-video-seen-v1:','dog-christmas-reveal-baseline-v1:',
+   'dog-christmas-dev-preview-v1:','dog-christmas-dev-pin-v1:'
+  ]){
+   localStorage.removeItem(prefix+uid);
+   sessionStorage.removeItem(prefix+uid);
+  }
+  localStorage.setItem(marker,'1');
+  return true;
+ }catch{return false;}
+}
 const account=()=>{
  const state=window.SpielOnline?.state?.();
  return state?.status==='online'&&state.user?.uid&&state.user.getIdToken&&
@@ -51,6 +68,10 @@ export function initChrisChristmasRestart(){
    const data=await request(user,'/status');
    if(account()?.uid!==uid)return;
    resetDone=Boolean(data.alreadyReset);
+   if(resetDone&&clearChrisLocalPreviewOnce(uid)){
+    window.location.reload();
+    return;
+   }
    button.hidden=resetDone;
    status.textContent=resetDone?
     '✅ Der einmalige persönliche Weihnachts-Neustart wurde bereits ausgeführt.':
@@ -75,14 +96,8 @@ export function initChrisChristmasRestart(){
    const result=await request(user,'','POST',{confirmation:KEY});
    if(account()?.uid!==uid)throw Error('PROFIL_GEWECHSELT');
    if(!result.resetCompleted)throw Error('RESET_NICHT_BESTÄTIGT');
-   // Local previews and film flags are cosmetic but would otherwise display
-   // old progress after authoritative Firestore data is reset.
-   for(const prefix of [
-    'dog-christmas-video-seen-v1:','dog-christmas-reveal-baseline-v1:',
-    'dog-christmas-dev-preview-v1:','dog-christmas-dev-pin-v1:'
-   ]){
-    try{localStorage.removeItem(prefix+uid);sessionStorage.removeItem(prefix+uid);}catch{}
-   }
+   // Also clear the local sliders and old film flags after a manual reset.
+   clearChrisLocalPreviewOnce(uid);
    resetDone=true;button.hidden=true;
    status.textContent='✅ Chris beginnt wieder von vorn. '+result.cleared+' gespeicherte Bereiche archiviert und zurückgesetzt. Aktualisiere die Eventseite.';
    // Refresh every on-page personal cache and reward panel after the server
