@@ -3,6 +3,12 @@
  * The signed-in Render service creates a card with immutable win combinations.
  */
 import {createOtherScratchStudio,OTHER_EDITOR_VARIANTS} from './christmas-other-edition-ui.js?v=1';
+export const SCRATCH_TAB_READ_REUSE_MS=20000;
+export function reuseRecentScratchView({uid,loadedUid,loadedAt,hasStatus,force=false,now=Date.now()}){
+ const age=now-loadedAt;
+ return Boolean(uid)&&!force&&Boolean(hasStatus)&&uid===loadedUid&&
+  Number.isFinite(age)&&age>=0&&age<SCRATCH_TAB_READ_REUSE_MS;
+}
 /** Display mirrors Render's verified level gates; purchasing is checked again on the server. */
 export const SCRATCH_LEVEL_UNLOCKS=Object.freeze({
  snow_collect:3,tic_tac_toe:6,elf:7,dog_jackpot_9:8
@@ -120,7 +126,6 @@ export function initChristmasScratch(){
  // A scratch GET reads many private and global Firestore documents.
  // Reopening the tab should reuse a recent, per-account screen snapshot.
  // Manual refresh and all rewards/purchases remain server-verified.
- const SCRATCH_TAB_READ_REUSE_MS=20000;
  let lastScratchReadAt=0,lastScratchReadUid=null,pendingScratchReadUid=null;
  // Zoom applies to the WHOLE ticket image, not the scratch grid. The scratch
  // canvases keep their original pixel dimensions and reward calculations.
@@ -2224,8 +2229,8 @@ export function initChristmasScratch(){
  }
  async function load(force=false){
   const current=account(),uid=current?.uid||null;
-  if(current&&!force&&status&&lastScratchReadUid===uid&&
-     Date.now()-lastScratchReadAt<SCRATCH_TAB_READ_REUSE_MS)return;
+  if(reuseRecentScratchView({uid,loadedUid:lastScratchReadUid,loadedAt:lastScratchReadAt,
+     hasStatus:Boolean(status),force,now:Date.now()}))return;
   if(current&&!force&&pendingScratchReadUid===uid)return;
   const id=++requestId;
   if(!current){
