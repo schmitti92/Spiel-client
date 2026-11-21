@@ -4,7 +4,7 @@
  * Overlay is intentionally SVG/CSS only until the mission art pack is approved.
  */
 import {trackPoint,homePoint,TRACK_POINTS} from '../board-layout.js?v=11';
-import {MISSION3_COLORS,MISSION3_STARTS} from './mission-3-rules.js?v=1';
+import {MISSION3_COLORS,MISSION3_STARTS} from './mission-3-rules.js?v=2';
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=x=>Number(x).toFixed(1);
 export function drawMission3Board(svg,s,{selectedPiece=null,onPieceClick=()=>{}}={}){
