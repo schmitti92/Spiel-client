@@ -17,7 +17,7 @@ import {initChristmasPlayerStatistics} from './christmas-player-statistics-ui.js
 import {sceneLayouts,grinchSkyLayout,verifyVillageSpriteLayout} from './christmas-village-layout.mjs?v=3';
 import {initGrinchEvent} from './christmas-grinch-event.js?v=9';
 import {initChristmasDeveloper} from './christmas-dev-mode.js?v=1';
-import {initChrisChristmasRestart} from './christmas-chris-reset.js?v=2';
+import {initChrisChristmasRestart} from './christmas-chris-reset.js?v=3';
 import {isRecentVillageLegacyCheck,villageLegacyImportMarkerKey} from './christmas-village-import-guard.mjs?v=1';
 const $=id=>document.getElementById(id);
 const devMode=initChristmasDeveloper();
