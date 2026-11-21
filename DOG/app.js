@@ -28,7 +28,7 @@ if(online){
 }
 document.querySelectorAll('[data-dog-editor]').forEach(link=>link.href='editor.html?return='+encodeURIComponent(editorBack)+'&v=10');
 const apiBase=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null,onlineDogAvatars=[],onlineChristmas=null,emojiSocketReady=false;
+let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null,onlineDogAvatars=[],onlineChristmas=null,onlineResearch=null,emojiSocketReady=false;
 function user(){const s=window.SpielOnline?.state?.();return s?.status==='online'&&s.user?.getIdToken?s.user:null;}
 async function hubRequest(path,method='GET',payload){
  const person=user();if(!person)throw Error('Bitte melde dich mit deinem Online-Profil an.');
@@ -54,6 +54,7 @@ function acceptRemote(room){
    game=decision.game;onlineSeat=decision.seat;acceptedMatchId=decision.matchId;
    onlineDogAvatars=Array.isArray(room.match?.dogAvatars)?room.match.dogAvatars:[];
    onlineChristmas=room.match?.christmas?.enabled===true?room.match.christmas:null;
+   onlineResearch=room.match?.dogResearch||null;
    render();
  }else if(game?.phase==='finished'){
    $('status').textContent='Partie beendet – du kannst in der Raum-Lobby ein neues Spiel auswählen.';
@@ -448,6 +449,15 @@ function renderHand(){
     }
   }
   if(game.phase==='seven')available=legalActions(game,seat);
+  if(online&&onlineResearch?.card_swap>0&&game.phase==='exchange'&&!onlineResearch.usedSwap&&selectedCard!==null){
+    actions.insertAdjacentHTML('beforeend','<button type="button" class="move-button dog-hand-action-primary" data-research-action="research-swap">🃏 Magischer Kartentausch · ausgewählte Karte ersetzen (1×)</button>');
+  }
+  if(online&&onlineResearch?.future_sight>onlineResearch.peeksUsed){
+    actions.insertAdjacentHTML('beforeend','<button type="button" class="move-button dog-hand-action-primary" data-research-action="research-peek">🔮 Oberste Nachziehkarte ansehen ('+(onlineResearch.future_sight-onlineResearch.peeksUsed)+' übrig)</button>');
+  }
+  if(online&&onlineResearch?.peekedCard){
+    actions.insertAdjacentHTML('beforeend','<p class="dog-no-move-note">🔮 Dein letzter Einblick: '+escape(onlineResearch.peekedCard)+'</p>');
+  }
   const special=available.filter(m=>['exchange','seven','emptySwap'].includes(m.type));
   actions.insertAdjacentHTML('beforeend',[...new Map(special.map(m=>[m.type,m])).values()].map(m=>'<button type="button" class="move-button dog-hand-action-primary" data-special="'+m.type+'">'+(m.type==='exchange'?'🎁 Karte weitergeben':m.type==='seven'?'🔥 7 Schritte verteilen':'🗑 Tauschkarte ablegen')+'</button>').join(''));
   // The rules engine automatically discards the complete hand when no legal
@@ -575,6 +585,21 @@ function onCard(id){
   if(selectedCard!==null&&game.phase==='play'&&game.hands[seat].some(c=>c.id===selectedCard&&c.type==='joker'))openJokerDialog(seat);
   render();
 }
+function onResearchAction(type){
+  if(!online||onlineBusy||!game||!onlineResearch)return;
+  const action=type==='research-swap'?{type,cardId:selectedCard}:{type};
+  if(type==='research-swap'&&(!Number.isInteger(selectedCard)||game.phase!=='exchange'))return;
+  const seat=currentHuman();
+  if(seat<0)return;
+  onlineBusy=true;visualFeedback.pending(true);
+  $('status').textContent=type==='research-swap'?'🃏 Magischer Kartentausch wird ausgeführt …':'🔮 Deine nächste Karte wird untersucht …';
+  hubRequest('/dog/action','POST',{
+    matchId:acceptedMatchId||matchHint||'',expectedRevision:game.revision,
+    actionId:crypto.randomUUID(),action
+  }).then(room=>{selectedCard=null;acceptRemote(room);})
+    .catch(e=>{$('status').textContent='⚠️ '+e.message;void refreshOnline();})
+    .finally(()=>{onlineBusy=false;visualFeedback.pending(false);});
+}
 function onMove(i){
   const seat=currentHuman();if(seat<0||!revealed)return;
   const move=available[i];if(!move)return;
@@ -664,7 +689,7 @@ function chooseDogMove(choices,description){
 $('dog-move-choice-cancel').addEventListener('click',()=>moveChoiceDialog.close());
 enableHandTouchGestures($('hand'),{status:$('dog-hand-zoom-status')});
 $('hand').addEventListener('click',e=>{const btn=e.target.closest('[data-card]');if(btn)onCard(Number(btn.dataset.card));});
-$('moves').addEventListener('click',e=>{const btn=e.target.closest('[data-special]');if(!btn)return;const index=available.findIndex(m=>m.type===btn.dataset.special&&(jokerAs===null||m.as===jokerAs));if(index>=0)onMove(index);});
+$('moves').addEventListener('click',e=>{const research=e.target.closest('[data-research-action]');if(research){onResearchAction(research.dataset.researchAction);return;}const btn=e.target.closest('[data-special]');if(!btn)return;const index=available.findIndex(m=>m.type===btn.dataset.special&&(jokerAs===null||m.as===jokerAs));if(index>=0)onMove(index);});
 $('board').addEventListener('click',e=>{
  if(performance.now()<suppressBoardClickUntil)return;
  if(pieceAnimator.isActive()){$('status').textContent='🐾 Die Figuren bewegen sich noch. Danach kannst du ziehen.';return;}
