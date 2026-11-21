@@ -1,0 +1,24 @@
+name: DOG Christmas Level-Gated Shop UI
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/card-visuals.js'
+      - 'DOG/app.js'
+      - 'DOG/index.html'
+      - 'DOG/christmas-scratch-ui.js'
+      - 'DOG/christmas-scratch-level-locks.css'
+      - 'DOG/christmas-event.js'
+      - 'DOG/christmas-event.html'
+      - 'tests/dog-christmas-level-gates.test.mjs'
+      - '.github/workflows/dog-christmas-level-gates.yml'
+  workflow_dispatch:
+jobs:
+  ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/dog-christmas-level-gates.test.mjs
