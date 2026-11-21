@@ -34,9 +34,11 @@ const stayInMatchId=new URL(location.href).searchParams.get('stayMatch');
 // An explicit return from the DOG game must display the new DOG waiting room,
 // even when the browser lacked the match ID. Never auto-launch it again.
 const returnToDogLobby=new URL(location.href).searchParams.get('dogLobby')==='1';
-let launchedMatchId=null,hubSocket=null,retrySocket=null,streamReady=false,streamLast=0,hubHeartbeat=null,pollInFlight=false,lastRoomPollAt=0;
+let launchedMatchId=null,hubSocket=null,retrySocket=null,streamReady=false,streamLast=0,streamAliveAt=0,hubHeartbeat=null,pollInFlight=false,lastRoomPollAt=0;
+const HUB_IDLE_AUDIT_MS=300000; // One read-only cross-instance audit per 5 minutes on a healthy stream.
+const HUB_DISCONNECTED_FALLBACK_MS=30000; // Faster HTTP recovery if socket heartbeats fail.
 function stopWatch(){
- streamReady=false;
+ streamReady=false;streamAliveAt=0;
  if(hubHeartbeat){clearInterval(hubHeartbeat);hubHeartbeat=null;}
  if(retrySocket){clearTimeout(retrySocket);retrySocket=null;}
  if(hubSocket){const old=hubSocket;hubSocket=null;try{old.onclose=null;old.close();}catch(_e){}}
@@ -62,13 +64,17 @@ function startWatch(){
  };
  socket.onmessage=event=>{
   let data;try{data=JSON.parse(event.data);}catch(_e){return;}
-  if(data?.type==='pong')lastPong=Date.now();
-  if(hubSocket===socket&&code===subscribedCode&&data?.type==='room'&&data.room?.code===subscribedCode){lastPong=Date.now();streamReady=true;streamLast=Date.now();acceptRoom(data.room);}
+  if(data?.type==='pong'){lastPong=Date.now();streamAliveAt=lastPong;}
+  if(hubSocket===socket&&code===subscribedCode&&data?.type==='room'&&data.room?.code===subscribedCode){
+   lastPong=Date.now();streamAliveAt=lastPong;
+   if(!streamReady)lastRoomPollAt=lastPong;
+   streamReady=true;streamLast=lastPong;acceptRoom(data.room);
+  }
  };
  socket.onclose=()=>{
   clearTimeout(connectTimeout);
   if(hubSocket!==socket)return;
-  hubSocket=null;streamReady=false;
+  hubSocket=null;streamReady=false;streamAliveAt=0;
   if(hubHeartbeat){clearInterval(hubHeartbeat);hubHeartbeat=null;}
   if(code&&room&&activeProfile()&&code===subscribedCode)retrySocket=setTimeout(()=>{retrySocket=null;if(code===subscribedCode)startWatch();},4500);
  };
@@ -76,18 +82,24 @@ function startWatch(){
 }
 async function refreshRoomAfterReconnect(){
  if(!code||!room||!activeProfile()||pollInFlight||operation)return;
- const requestedCode=code;pollInFlight=true;
+ const requestedCode=code;pollInFlight=true;lastRoomPollAt=Date.now();
  try{const result=await request('/rooms/'+encodeURIComponent(requestedCode));if(code!==requestedCode)return;pollErrors=0;acceptRoom(result.room);}
  catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){leaveView();showError(e);}else if(++pollErrors===3)showError(e);}
  finally{pollInFlight=false;}
 }
-// A room snapshot received very recently from Render's authenticated WS stream
-// is already the freshest lobby view. Avoid a duplicate Firestore-backed GET on
-// short visibility changes; stale or disconnected streams still reconcile via HTTP.
+// A successfully authenticated room watch stays current through Firestore
+// change events; regular Render pong frames prove socket liveness between room
+// changes. A stale heartbeat still triggers an HTTP recheck on foreground.
 function hasRecentHubStream(now=Date.now()){
- return streamReady&&hubSocket?.readyState===1&&streamLast>0&&now-streamLast>=0&&now-streamLast<15000;
+ const latest=Math.max(streamLast,streamAliveAt);
+ return streamReady&&hubSocket?.readyState===1&&streamLast>0&&
+   latest>0&&now-latest>=0&&now-latest<75000;
 }
-window.addEventListener('online',()=>{if(!code||!room)return;if(!hubSocket||hubSocket.readyState>1){stopWatch();startWatch();}void refreshRoomAfterReconnect();});
+window.addEventListener('online',()=>{
+ if(!code||!room)return;
+ if(!hubSocket||hubSocket.readyState>1){stopWatch();startWatch();}
+ if(!hasRecentHubStream())void refreshRoomAfterReconnect();
+});
 document.addEventListener('visibilitychange',()=>{
  if(document.hidden||!code||!room)return;
  if(!hubSocket||hubSocket.readyState>1){stopWatch();startWatch();}
@@ -195,11 +207,13 @@ function acceptRoom(next){
 function activateRoom(result){if(!result?.code)return;cancelPendingRecovery();setRoomCode(result.code);acceptRoom(result);}
 
 function pollStop(){if(poll){clearInterval(poll);poll=null;}stopWatch();}
-function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code||operation||pollInFlight||!activeProfile()||document.hidden)return;
- // Keep a periodic authoritative Firestore-backed HTTP reconciliation even while WS is open.
- // A live socket can miss Firestore notifications without being disconnected.
- if(streamReady && hubSocket?.readyState===1 && (Date.now()-streamLast<45000 || Date.now()-lastRoomPollAt<90000))return;
- const requestedCode=code;pollInFlight=true;lastRoomPollAt=Date.now();
+function pollStart(){pollStop();lastRoomPollAt=Date.now();startWatch();poll=setInterval(async()=>{if(!code||operation||pollInFlight||!activeProfile()||document.hidden)return;
+ // WebSocket+Firestore watch is the primary source. Healthy pong frames
+ // replace redundant 90-second Firebase GETs; retain a slow safety audit.
+ const now=Date.now();
+ const minAge=hasRecentHubStream(now)?HUB_IDLE_AUDIT_MS:HUB_DISCONNECTED_FALLBACK_MS;
+ if(now-lastRoomPollAt<minAge)return;
+ const requestedCode=code;pollInFlight=true;lastRoomPollAt=now;
  try{const result=await request('/rooms/'+requestedCode);if(code!==requestedCode)return;pollErrors=0;acceptRoom(result.room);}catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){leaveView();showError(e);}else if(++pollErrors===3)showError(e);}finally{pollInFlight=false;}
  },12000);}
 function leaveView(){cancelPendingRecovery();pollStop();room=null;choosingGame=false;displayGame=null;setRoomCode(null);render();}
