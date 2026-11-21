@@ -231,7 +231,7 @@ function isHumanExchange(){
 function currentHuman(){
   if(game.phase==='exchange')return isHumanExchange();
   if(online)return game.current===onlineSeat&&game.phase!=='finished'?onlineSeat:-1;
-  if(game.phase==='play'||game.phase==='seven')return game.players[game.current].bot?-1:game.current;
+  if(['play','seven','rescue'].includes(game.phase))return game.players[game.current].bot?-1:game.current;
   return -1;
 }
 function activeSeat(){
@@ -440,8 +440,9 @@ function renderHand(){
   if(game.phase==='finished'){title.textContent='🏆 Partie beendet';button.hidden=true;setHandMarkup('');return;}
   if(seat<0){title.textContent=online&&onlineSeat!==null?'🃏 Deine Handkarten':'🤖 Bots spielen';button.hidden=true;setHandMarkup(online&&onlineSeat!==null&&Array.isArray(game.hands[onlineSeat])?game.hands[onlineSeat].map(c=>cardMarkup(c.type,{tag:'div'})).join(''):'');available=[];return;}
   if(lastTurn!==seat){revealed=online||humans===1;selectedCard=null;selectedPiece=null;jokerAs=null;lastTurn=seat;}
+  if(game.phase==='rescue')selectedCard=game.rescue?.cardId??null;
   button.hidden=online||humans===1;button.textContent=revealed?'🙈 Hand verdecken':'🃏 Karten ansehen';
-  title.textContent=game.phase==='exchange'?'🔐 '+game.players[seat].name+': Karte '+(game.mode==='solo3'?'an nächsten Spieler':'an Partner')+' geben':game.phase==='seven'?'🔥 Die 7 verteilen – noch '+(7-game.seven.spent)+' Schritte':'🎯 '+game.players[seat].name+' ist am Zug';
+  title.textContent=game.phase==='exchange'?'🔐 '+game.players[seat].name+': Karte '+(game.mode==='solo3'?'an nächsten Spieler':'an Partner')+' geben':game.phase==='seven'?'🔥 Die 7 verteilen – noch '+(7-game.seven.spent)+' Schritte':game.phase==='rescue'?'🚀 '+game.players[seat].name+': Mit Ersatzkarte herausgehen':'🎯 '+game.players[seat].name+' ist am Zug';
   if(!revealed){const symbol=escape(currentLook().cards.emblem);
     setHandMarkup('<div class="hand-veil"><div class="dog-card-backs" aria-hidden="true"><span class="dog-card-back">'+symbol+'</span><span class="dog-card-back">'+symbol+'</span><span class="dog-card-back">'+symbol+'</span></div><span>Deine Karten sind verdeckt. Tippe auf „Karten ansehen“.</span></div>');return;}
   if(game.phase==='seven'){
@@ -451,7 +452,17 @@ function renderHand(){
   }else{
     const cards=game.hands[seat];
     const exchange=game.phase==='exchange';
-    setHandMarkup(cards.map(c=>cardMarkup(c.type,{selected:selectedCard===c.id,attrs:'type="button" data-card="'+c.id+'"',footer:exchange?'WEITERGEBEN':null})).join(''));
+    const blocked=game.phase==='play'&&legalActions(game,seat).some(m=>m.type==='discardDraw');
+    setHandMarkup(cards.map(c=>{
+      const rescue=game.phase==='rescue',fresh=rescue&&c.id===game.rescue?.cardId;
+      const card=cardMarkup(c.type,{
+        selected:selectedCard===c.id,
+        attrs:'type="button" data-card="'+c.id+'"'+(rescue&&!fresh?' disabled aria-label="Diese Handkarte muss warten"':''),
+        footer:exchange?'WEITERGEBEN':fresh?'ERSATZKARTE · START':null
+      });
+      return blocked?'<span class="dog-card-stack">'+card+
+        '<button type="button" class="dog-discard-draw" data-discard-card="'+c.id+'">🗑 Wegwerfen</button></span>':card;
+    }).join(''));
     available=exchange?[]:selectedCard!==null?legalActions(game,seat).filter(m=>m.cardId===selectedCard&&(jokerAs===null||m.as===jokerAs)):[];
     if(exchange&&selectedCard!==null){
       available=[{type:'exchange',cardId:selectedCard}];
@@ -463,12 +474,13 @@ function renderHand(){
   }
   const special=available.filter(m=>['exchange','seven','emptySwap'].includes(m.type));
   actions.insertAdjacentHTML('beforeend',[...new Map(special.map(m=>[m.type,m])).values()].map(m=>'<button type="button" class="move-button dog-hand-action-primary" data-special="'+m.type+'">'+(m.type==='exchange'?'🎁 Karte weitergeben':m.type==='seven'?'🔥 7 Schritte verteilen':'🗑 Tauschkarte ablegen')+'</button>').join(''));
-  // The rules engine automatically discards the complete hand when no legal
-  // action exists. Do not offer a manual discard while a legal move is possible.
-  if(game.phase==='play' && !legalActions(game,seat).length){
-    actions.insertAdjacentHTML('beforeend','<span class="dog-no-move-note" role="status">🗑 Kein Zug möglich – deine Karten werden automatisch abgelegt.</span>');
+  if(game.phase==='play'&&legalActions(game,seat).some(m=>m.type==='discardDraw')){
+    actions.insertAdjacentHTML('beforeend','<span class="dog-no-move-note" role="status">🃏 Kein Zug möglich: Wähle unter einer beliebigen Karte „Wegwerfen“. Du ziehst genau eine Ersatzkarte.</span>');
   }
-  $('move-help').textContent=jokerAs!==null?'Joker als '+(jokerAs==='swap'?'Tauschkarte':jokerAs)+' gewählt. Figur und Ziel selbst antippen.':game.phase==='exchange'?(game.mode==='solo3'?'Wähle eine Karte, die verdeckt an den nächsten Spieler geht.':'Wähle die Karte für deinen Partner.'):game.phase==='seven'?'Figur und Zielfeld selbst wählen. Noch '+(7-game.seven.spent)+' Schritte.':selectedCard===null?'Wähle eine Karte.':'Figur und Zielfeld selbst antippen – ohne Zugvorschläge.';
+  if(game.phase==='rescue'){
+    actions.insertAdjacentHTML('beforeend','<span class="dog-no-move-note" role="status">🚀 Du hast eine Startkarte gezogen! Tippe deine Figur im Haus und danach das Startfeld an. Nur Heraussetzen ist erlaubt.</span>');
+  }
+  $('move-help').textContent=game.phase==='rescue'?'🚀 Ersatzkarte: Figur aus dem Haus auf das eigene Startfeld setzen.':game.phase==='play'&&legalActions(game,seat).some(m=>m.type==='discardDraw')?'Kein Zug möglich: Drücke bei einer Karte auf 🗑 Wegwerfen.':jokerAs!==null?'Joker als '+(jokerAs==='swap'?'Tauschkarte':jokerAs)+' gewählt. Figur und Ziel selbst antippen.':game.phase==='exchange'?(game.mode==='solo3'?'Wähle eine Karte, die verdeckt an den nächsten Spieler geht.':'Wähle die Karte für deinen Partner.'):game.phase==='seven'?'Figur und Zielfeld selbst wählen. Noch '+(7-game.seven.spent)+' Schritte.':selectedCard===null?'Wähle eine Karte.':'Figur und Zielfeld selbst antippen – ohne Zugvorschläge.';
 }
 function renderCardPiles(){
  $('dog-deck-art').style.backgroundImage=cardBackBackground();
@@ -578,7 +590,7 @@ function render(){
   renderCardPiles();
   if(!online)$('human-count').value=String(humans);
   $('round').textContent=String(game.round);
-  $('phase').textContent=game.phase==='exchange'?'Geheimer Kartentausch':game.phase==='seven'?'7 verteilen':game.phase==='finished'?'Spielende':'Kartenrunde';
+  $('phase').textContent=game.phase==='exchange'?'Geheimer Kartentausch':game.phase==='seven'?'7 verteilen':game.phase==='rescue'?'Ersatzkarte heraussetzen':game.phase==='finished'?'Spielende':'Kartenrunde';
   const active=activeSeat();
   const soloThree=game.mode==='solo3';
   const teamDisplay=document.getElementById('dog-mode-teams'),soloDisplay=document.getElementById('dog-mode-solo3');
@@ -617,9 +629,10 @@ function render(){
   $('selected-info').textContent=selectedCard?'Karte ausgewählt: '+cardsLabel(game.hands[currentHuman()]?.find(c=>c.id===selectedCard)?.type||''):'';
 }
 function onCard(id){
-  const seat=currentHuman();if(seat<0||!revealed)return;
-  selectedCard=selectedCard===id?null:id;selectedPiece=null;jokerAs=null;
-  if(selectedCard!==null&&game.phase==='play'&&game.hands[seat].some(c=>c.id===selectedCard&&c.type==='joker'))openJokerDialog(seat);
+  const seat=currentHuman();if(seat<0||!revealed||onlineBusy)return;
+  if(game.phase==='rescue'&&id!==game.rescue?.cardId)return;
+  selectedCard=selectedCard===id&&game.phase!=='rescue'?null:id;selectedPiece=null;jokerAs=null;
+  if(selectedCard!==null&&['play','rescue'].includes(game.phase)&&game.hands[seat].some(c=>c.id===selectedCard&&c.type==='joker'))openJokerDialog(seat);
   render();
 }
 function onResearchAction(type){
@@ -665,7 +678,7 @@ function scheduleAI(){
     }
     render();
   }
-  if((game.phase==='play'||game.phase==='seven')&&game.players[game.current].bot){
+  if(['play','seven','rescue'].includes(game.phase)&&game.players[game.current].bot){
     aiTimer=setTimeout(()=>{
       aiTimer=null;
       try{
@@ -680,7 +693,7 @@ function scheduleAI(){
 const jokerDialog=$('dog-joker-dialog');
 function openJokerDialog(seat){
  const card=game.hands[seat]?.find(c=>c.id===selectedCard);
- if(card?.type!=='joker'||game.phase!=='play')return;
+ if(card?.type!=='joker'||!['play','rescue'].includes(game.phase))return;
  const actions=legalActions(game,seat).filter(m=>m.cardId===card.id);
  const choices=CARD_TYPES.filter(type=>type!=='joker');
  $('dog-joker-grid').innerHTML=choices.map(type=>{
@@ -725,7 +738,18 @@ function chooseDogMove(choices,description){
 }
 $('dog-move-choice-cancel').addEventListener('click',()=>moveChoiceDialog.close());
 enableHandTouchGestures($('hand'),{status:$('dog-hand-zoom-status')});
-$('hand').addEventListener('click',e=>{const btn=e.target.closest('[data-card]');if(btn)onCard(Number(btn.dataset.card));});
+$('hand').addEventListener('click',e=>{
+ const discard=e.target.closest('[data-discard-card]');
+ if(discard){
+   const seat=currentHuman(),cardId=Number(discard.dataset.discardCard);
+   if(seat<0||!revealed||onlineBusy||game.phase!=='play')return;
+   const move=legalActions(game,seat).find(m=>m.type==='discardDraw'&&m.cardId===cardId);
+   if(!move)return;
+   selectedCard=cardId;available=[move];onMove(0);
+   return;
+ }
+ const btn=e.target.closest('[data-card]');if(btn&&!btn.disabled)onCard(Number(btn.dataset.card));
+});
 $('moves').addEventListener('click',e=>{const research=e.target.closest('[data-research-action]');if(research){onResearchAction(research.dataset.researchAction);return;}const btn=e.target.closest('[data-special]');if(!btn)return;const index=available.findIndex(m=>m.type===btn.dataset.special&&(jokerAs===null||m.as===jokerAs));if(index>=0)onMove(index);});
 $('board').addEventListener('click',e=>{
  if(performance.now()<suppressBoardClickUntil)return;
