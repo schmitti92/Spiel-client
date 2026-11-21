@@ -11,7 +11,7 @@ export function clampMission3View(view,width,height){
  const scale=limit(finite(view?.scale)||1,MISSION3_MIN_ZOOM,MISSION3_MAX_ZOOM);
  const maxX=Math.max(0,(scale-1)*Math.max(0,finite(width))/2);
  const maxY=Math.max(0,(scale-1)*Math.max(0,finite(height))/2);
- return {scale,x:limit(finite(view?.x),-maxX,maxX),y:limit(finite(view?.y),-maxY,maxY)};
+ return {scale,x:maxX===0?0:limit(finite(view?.x),-maxX,maxX),y:maxY===0?0:limit(finite(view?.y),-maxY,maxY)};
 }
 /** Zoom around a focus point (local viewport pixels, origin top-left). */
 export function zoomMission3At(view,targetScale,anchor,width,height){
