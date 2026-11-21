@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "directory": "DOG/assets/research/",
+  "format": "webp",
+  "skills": [
+    {
+      "id": "card_swap",
+      "file": "card_swap.webp"
+    },
+    {
+      "id": "thaw",
+      "file": "thaw.webp"
+    },
+    {
+      "id": "xp",
+      "file": "xp.webp"
+    },
+    {
+      "id": "win_xp",
+      "file": "win_xp.webp"
+    },
+    {
+      "id": "discount",
+      "file": "discount.webp"
+    },
+    {
+      "id": "coin_bonus",
+      "file": "coin_bonus.webp"
+    },
+    {
+      "id": "pity",
+      "file": "pity.webp"
+    },
+    {
+      "id": "free_ticket",
+      "file": "free_ticket.webp"
+    },
+    {
+      "id": "spot_ticket",
+      "file": "spot_ticket.webp"
+    },
+    {
+      "id": "spot_light",
+      "file": "spot_light.webp"
+    },
+    {
+      "id": "lights_bonus",
+      "file": "lights_bonus.webp"
+    },
+    {
+      "id": "builder",
+      "file": "builder.webp"
+    }
+  ]
+}
