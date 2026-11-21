@@ -52,6 +52,9 @@ export function initChristmasResearch(){
  };
  let data=null,serverData=null,category='all',sort='recommended',view='grid',selectedId='card_swap';
  let working=false,pending=null,pendingUid=null,requestId=0,ticketTier='simple';
+ // Prevent repeated Firestore reads on harmless login/profile events.
+ const RESEARCH_VIEW_CACHE_MS=45000;
+ let accountUid=user()?.uid||null,loadedUid=null,loadedAt=0;
 
  const levelOf=skill=>Number(data?.levels?.[skill.id])||0;
  const maxed=skill=>levelOf(skill)>=skill.maxLevel;
@@ -337,7 +340,7 @@ export function initChristmasResearch(){
   if(!window.confirm(skill.name+' auf Stufe '+target+' verbessern?\nKosten: '+skill.nextCost+' Forschungspunkte.'))return;
   working=true;render();
   try{
-   data=await call('/upgrade',{id:skill.id});serverData=data;
+   data=await call('/upgrade',{id:skill.id});serverData=data;loadedUid=user()?.uid||null;loadedAt=Date.now();
    message('✓ '+skill.name+' wurde auf Stufe '+target+' verbessert.');
   }catch(error){message('⚠️ Verbesserung fehlgeschlagen: '+error.message,true);}
   finally{working=false;render();}
@@ -347,21 +350,22 @@ export function initChristmasResearch(){
   if(working||!data)return;
   working=true;render();
   try{
-   data=await call('/claim',{type:id,...(id==='free_ticket'?{tier}:{})});serverData=data;
+   data=await call('/claim',{type:id,...(id==='free_ticket'?{tier}:{})});serverData=data;loadedUid=user()?.uid||null;loadedAt=Date.now();
    window.dispatchEvent(new Event('dog-scratch-balance-changed'));
    message(id==='builder'?'⭐ Die Weihnachtslichter sind dem gemeinsamen Dorf gutgeschrieben.':'🎟️ Dein Losgutschein wurde deinem Rubbellos-Konto gutgeschrieben.');
   }catch(error){message('⚠️ Abholung fehlgeschlagen: '+error.message,true);}
   finally{working=false;render();}
  }
- async function load(){
+ async function load(force=false){
   const account=user();
   if(!account){
-   requestId++;pending=null;pendingUid=null;data=null;serverData=null;
+   requestId++;pending=null;pendingUid=null;data=null;serverData=null;loadedUid=null;loadedAt=0;
    summary.hidden=true;cards.replaceChildren();drawFilters();renderDetail(null);
    message('🔐 Bitte melde dich mit deinem Online-Spielerprofil an, um deine Forschungen zu sehen.',true);
    return;
   }
-  if(pending&&pendingUid===account.uid)return pending;
+  if(!force&&serverData&&loadedUid===account.uid&&Date.now()-loadedAt<RESEARCH_VIEW_CACHE_MS)return;
+   if(pending&&pendingUid===account.uid)return pending;
   const id=++requestId;
   pendingUid=account.uid;
   message('🔬 Deine persönlichen Forschungen werden geladen …');
@@ -369,9 +373,9 @@ export function initChristmasResearch(){
    try{
     const result=await call('');
     if(requestId!==id||user()?.uid!==account.uid)return;
-    serverData=result;data=result;render();
+    serverData=result;data=result;loadedUid=account.uid;loadedAt=Date.now();render();
     message(window.DOGChristmasDev?.isActive()?'🧪 Lokale Forschungsvorschau – keine echte Freischaltung.':'✓ Forschungen synchronisiert – alle Werte stammen aus deinem Spielerkonto.');
-   }catch(error){if(requestId===id)message('⚠️ Forschungsdaten konnten nicht geladen werden: '+error.message,true);}
+   }catch(error){if(requestId===id){loadedAt=0;message('⚠️ Forschungsdaten konnten nicht geladen werden: '+error.message,true);}}
    finally{if(requestId===id){pending=null;pendingUid=null;}}
   })();
   pending=promise;return promise;
@@ -390,11 +394,14 @@ export function initChristmasResearch(){
  root.querySelector('.dr-topnav .is-current')?.addEventListener('click',()=>{
   $('event-main')?.scrollTo({top:0,behavior:'smooth'});
  });
- $('dog-research-refresh').addEventListener('click',()=>void load());
+ $('dog-research-refresh').addEventListener('click',()=>void load(true));
  window.addEventListener('dog-christmas-dev-change',()=>{
   if(serverData){render();message(window.DOGChristmasDev?.isActive()?'🧪 Lokale Forschungsvorschau – keine echten Käufe.':'✓ Echte Forschung wiederhergestellt.');}
  });
  window.addEventListener('spielonline-change',()=>{
+   const nextUid=user()?.uid||null;
+   if(nextUid===accountUid)return;
+   accountUid=nextUid;loadedUid=null;loadedAt=0;
   requestId++;data=null;serverData=null;pending=null;pendingUid=null;
   summary.hidden=true;cards.replaceChildren();
   if($('tab-research')?.getAttribute('aria-selected')==='true')void load();
