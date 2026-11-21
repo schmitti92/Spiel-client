@@ -649,7 +649,10 @@ function onCard(id){
   const seat=currentHuman();if(seat<0||!revealed||onlineBusy)return;
   if(game.phase==='rescue'&&id!==game.rescue?.cardId)return;
   selectedCard=selectedCard===id&&game.phase!=='rescue'?null:id;selectedPiece=null;jokerAs=null;
-  if(selectedCard!==null&&['play','rescue'].includes(game.phase)&&game.hands[seat].some(c=>c.id===selectedCard&&c.type==='joker'))openJokerDialog(seat);
+  if(selectedCard!==null&&['play','rescue'].includes(game.phase)&&
+     game.hands[seat].some(c=>c.id===selectedCard&&c.type==='joker')&&
+     legalActions(game,seat).some(m=>m.cardId===selectedCard&&['start','move','swap','seven'].includes(m.type)))
+    openJokerDialog(seat);
   render();
   if(selectedCard!==null&&game.phase==='play'){
    const plays=legalActions(game,seat).filter(m=>m.cardId===selectedCard);
