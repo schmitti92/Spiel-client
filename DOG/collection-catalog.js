@@ -60,7 +60,7 @@ const BASE_COLLECTION_CATEGORIES=[
    minPlayerLevel:entry.minPlayerLevel||0,
    unlockId:entry.unlockId,image:entry.base+'9.'+(entry.extension||'png'),
    fallbackImage:entry.fallbackBase?entry.fallbackBase+'9.'+(entry.fallbackExtension||'svg'):null,
-   description:id==='kartendesign-05'?'🎅 Nikolaus Deluxe – besondere Level-3-Belohnung ab 250 EP. Mit 14 festlichen Kartenmotiven und eigener Rückseite; keine Änderung der Spielregeln.':id==='kartendesign-04'?'Zusätzliche Edition aus transparentem Astralglas. Mit allen Kartenmotiven und eigener Rückseite. Direkt auswählbar; Spielregeln bleiben unverändert.':'🎄 Weihnachtsedition mit allen 14 Kartenarten und eigener Rückseite. Noch gesperrt – später als Eventbelohnung freischaltbar. Nur das Aussehen der Karten ändert sich.',
+   description:id==='kartendesign-05'?'🎅 Nikolaus Deluxe – besondere Freischaltung ab Spielerlevel 20. Mit 14 festlichen Kartenmotiven und eigener Rückseite; keine Änderung der Spielregeln.':id==='kartendesign-04'?'Zusätzliche Edition aus transparentem Astralglas. Mit allen Kartenmotiven und eigener Rückseite. Direkt auswählbar; Spielregeln bleiben unverändert.':'🎄 Weihnachtsedition mit allen 14 Kartenarten und eigener Rückseite. Noch gesperrt – später als Eventbelohnung freischaltbar. Nur das Aussehen der Karten ändert sich.',
    icon:id==='kartendesign-02'?'❄️':id==='kartendesign-04'?'✨':id==='kartendesign-05'?'🎅':'🎄',artTone:'gold'
   }))
  ]},
