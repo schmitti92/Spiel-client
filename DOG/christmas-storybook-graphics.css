@@ -431,3 +431,219 @@
  #panel-story .storybook-spread--textonly .storybook-page-heading{font-size:18px;margin-bottom:5px}
  #panel-story .storybook-spread--textonly .storybook-page-subtitle{margin-bottom:5px}
 }
+
+
+/* Lichtertal readable-book repair (2026-11-21).
+   Safe parchment margins + real page flow. The vintage illustrated book is
+   only a frame; no text is ever allowed behind its ornamental borders. */
+#panel-story .storybook-spread--textonly{
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:0;
+ height:min(72dvh,680px);
+ min-height:420px;
+ padding:clamp(20px,2.15vw,32px) clamp(24px,2.8vw,46px) clamp(37px,4vw,57px);
+ overflow:hidden;
+}
+#panel-story .storybook-spread--measure{
+ position:absolute !important;
+ z-index:-1;
+ top:0;left:0;
+ width:100%;
+ visibility:hidden;
+ pointer-events:none;
+ animation:none;
+}
+#panel-story .storybook-spread--textonly .storybook-paper,
+#panel-story .storybook-spread--textonly .storybook-paper--left,
+#panel-story .storybook-spread--textonly .storybook-paper--right{
+ display:flex;
+ flex-direction:column;
+ min-width:0;
+ min-height:0;
+ height:100%;
+ overflow:hidden;
+ margin:0;
+ padding:clamp(30px,3vw,46px) clamp(15px,1.75vw,28px) clamp(13px,1.45vw,22px);
+ background:linear-gradient(180deg,rgba(255,249,230,.72),rgba(255,240,211,.69));
+ border-radius:6px;
+ box-shadow:inset 0 0 0 1px rgba(164,111,55,.13);
+}
+#panel-story .storybook-spread--textonly .storybook-paper--left{
+ padding-right:clamp(25px,3vw,44px);
+}
+#panel-story .storybook-spread--textonly .storybook-paper--right{
+ padding-left:clamp(25px,3vw,44px);
+}
+#panel-story .storybook-spread--textonly .storybook-paper::before,
+#panel-story .storybook-spread--textonly .storybook-paper::after{
+ display:none;
+}
+#panel-story .storybook-spread--textonly .storybook-page-kicker{
+ flex:none;
+ margin:0 0 5px;
+ padding:0;
+ color:#714826;
+ font:800 clamp(10px,.77vw,12px)/1.25 Georgia,serif;
+ letter-spacing:.05em;
+}
+#panel-story .storybook-spread--textonly .storybook-page-heading{
+ flex:none;
+ margin:0 0 6px;
+ padding:0;
+ font:900 clamp(16px,1.36vw,22px)/1.16 Georgia,"Times New Roman",serif;
+ color:#352318;
+ text-shadow:none;
+}
+#panel-story .storybook-spread--textonly .storybook-page-subtitle{
+ flex:none;
+ display:block;
+ margin:0 0 9px;
+ padding:0 0 7px;
+ border-bottom:1px solid #b68c5b7a;
+ color:#78522f;
+ font:700 clamp(10px,.75vw,11px)/1.25 Georgia,serif;
+ text-align:left;
+ letter-spacing:.02em;
+}
+#panel-story .story-reading .storybook-spread--textonly .storybook-page-text{
+ flex:1 1 0;
+ min-height:0;
+ overflow-x:hidden;
+ overflow-y:auto; /* accessibility fallback if device font size changes */
+ overscroll-behavior:contain;
+ scrollbar-width:thin;
+ scrollbar-color:#b08857 transparent;
+ padding:0 3px 3px 0;
+ margin:0;
+ color:#302119;
+ font:500 clamp(14px,1.02vw,16px)/1.46 Georgia,"Times New Roman",serif;
+ white-space:pre-line;
+ text-align:left;
+ hyphens:auto;
+ overflow-wrap:break-word;
+ text-wrap:pretty;
+}
+#panel-story .storybook-spread--textonly .storybook-page-thought{
+ flex:none;
+ margin:5px 0 2px;
+ padding:5px 0 3px;
+ color:#805b36;
+ font:italic 700 10px/1.25 Georgia,serif;
+}
+#panel-story .storybook-spread--textonly .storybook-page-thought::before{
+ display:none;
+}
+#panel-story .storybook-spread--textonly .storybook-page-footer{
+ flex:none;
+ min-height:0;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:10px;
+ margin:0;
+ padding:5px 0 0;
+ border-top:1px solid #b68c5b56;
+ color:#725234;
+ font:700 10px/1.2 Georgia,serif;
+}
+#panel-story .storybook-spread--textonly .storybook-page-footer span{
+ overflow:hidden;
+ text-overflow:ellipsis;
+ white-space:nowrap;
+}
+#panel-story .storybook-spread--textonly .storybook-page-footer strong{
+ flex:none;
+ font-size:11px;
+}
+#panel-story .storybook-page-count{
+ font-size:clamp(11px,.9vw,13px);
+ line-height:1.15;
+}
+@media(max-width:1200px) and (min-width:781px){
+ #panel-story .storybook-spread--textonly{
+  height:min(73dvh,670px);
+  min-height:405px;
+  padding:22px 26px 39px;
+ }
+ #panel-story .storybook-spread--textonly .storybook-paper,
+ #panel-story .storybook-spread--textonly .storybook-paper--left,
+ #panel-story .storybook-spread--textonly .storybook-paper--right{
+  padding-top:36px;
+  padding-bottom:15px;
+ }
+ #panel-story .storybook-spread--textonly .storybook-paper--left{
+  padding-left:14px;
+  padding-right:24px;
+ }
+ #panel-story .storybook-spread--textonly .storybook-paper--right{
+  padding-left:25px;
+  padding-right:14px;
+ }
+ #panel-story .story-reading .storybook-spread--textonly .storybook-page-text{
+  font-size:clamp(13px,1.1vw,15px);
+  line-height:1.45;
+ }
+ #panel-story .storybook-spread--textonly .storybook-page-heading{
+  font-size:clamp(16px,1.5vw,20px);
+ }
+}
+@media(max-width:780px){
+ #panel-story .storybook-spread--textonly{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  height:min(75dvh,690px);
+  min-height:400px;
+  padding:clamp(15px,3vw,26px);
+  background:
+   linear-gradient(180deg,rgba(255,240,210,.17),rgba(84,51,27,.15)),
+   url("./weihnachtsevent-bilder/geschichtenbuch-grafiken/05_Pergament_Seite.png") center/100% 100% no-repeat;
+ }
+ #panel-story .storybook-spread--textonly::after{display:none}
+ #panel-story .storybook-spread--textonly .storybook-paper,
+ #panel-story .storybook-spread--textonly .storybook-paper--left{
+  height:100%;
+  padding:clamp(20px,3vw,30px);
+  background:linear-gradient(180deg,rgba(255,249,231,.85),rgba(255,239,210,.82));
+  box-shadow:none;
+ }
+ #panel-story .storybook-spread--textonly .storybook-page-heading{
+  font-size:clamp(18px,3.6vw,24px);
+ }
+ #panel-story .story-reading .storybook-spread--textonly .storybook-page-text{
+  font-size:clamp(15px,2.35vw,17px);
+  line-height:1.53;
+ }
+}
+@media(max-width:420px){
+ #panel-story .storybook-spread--textonly{
+  padding:12px;
+  min-height:360px;
+ }
+ #panel-story .storybook-spread--textonly .storybook-paper,
+ #panel-story .storybook-spread--textonly .storybook-paper--left{
+  padding:15px 14px;
+ }
+ #panel-story .storybook-spread--textonly .storybook-page-heading{font-size:19px}
+}
+@media(max-height:620px) and (min-width:781px){
+ #panel-story .storybook-spread--textonly{
+  height:72dvh;
+  min-height:330px;
+  padding-top:15px;
+  padding-bottom:25px;
+ }
+ #panel-story .storybook-spread--textonly .storybook-paper,
+ #panel-story .storybook-spread--textonly .storybook-paper--left,
+ #panel-story .storybook-spread--textonly .storybook-paper--right{
+  padding-top:17px;
+  padding-bottom:8px;
+ }
+ #panel-story .storybook-spread--textonly .storybook-page-heading{margin-bottom:3px}
+ #panel-story .storybook-spread--textonly .storybook-page-subtitle{margin-bottom:4px;padding-bottom:3px}
+}
+
+/* Prevent content-box padding from pushing a page beyond the book edge. */
+#panel-story .storybook-spread--textonly,
+#panel-story .storybook-spread--textonly .storybook-paper{
+ box-sizing:border-box;
+}
