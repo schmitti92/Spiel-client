@@ -17,3 +17,21 @@ export function boardGestureTarget(start,current,rect,{boardSize=760,minZoom=1,m
   }
  };
 }
+
+/**
+ * Finds the track pawn under a slightly imprecise board tap.
+ * Only used after a source pawn was selected for a swap. Never returns
+ * array indices: an inactive fourth colour may leave gaps in pawn IDs.
+ */
+export function nearestTrackPawn(pieces,point,trackPoints,maxRadius=24){
+ if(!Array.isArray(pieces)||!Array.isArray(trackPoints)||!Number.isFinite(point?.x)||!Number.isFinite(point?.y))return null;
+ let nearest=null,distanceSquared=maxRadius*maxRadius;
+ for(const piece of pieces){
+  if(piece?.place!=='track'||!Number.isInteger(piece.pos))continue;
+  const p=trackPoints[piece.pos];
+  if(!p||!Number.isFinite(p.x)||!Number.isFinite(p.y))continue;
+  const d=(p.x-point.x)**2+(p.y-point.y)**2;
+  if(d<=distanceSquared){nearest=piece.id;distanceSquared=d;}
+ }
+ return nearest;
+}
