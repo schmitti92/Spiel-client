@@ -43,8 +43,13 @@ export function dogMoveBlockReason(game,{seat,cardId=null,jokerAs=null,stage='ca
    if(game.phase==='seven'){
      if(!source)return 'Wähle eine Figur für die restlichen Schritte der 7 aus.';
      if(source.owner!==owner)return 'Die restlichen Schritte der 7 dürfen nur mit eigenen Figuren verteilt werden.';
-     if(source.place==='home')return 'Eine Figur im Starthaus kann mit der 7 nicht laufen.';
-     return 'Mit dieser Figur lassen sich die restlichen Schritte der 7 nicht vollständig und regelgerecht verteilen.';
+     if(source.place==='home')return 'Die 7 kann keine Figur aus dem Starthaus heraussetzen. Nur Figuren, die bereits auf der Laufbahn oder in der Zielbahn stehen, dürfen damit laufen.';
+     if(source.place==='goal'){
+       if(source.pos===3)return 'Diese Figur steht bereits auf dem letzten Zielfeld und kann nicht weiterlaufen.';
+       if(game.pieces.some(p=>p.id!==source.id&&p.owner===source.owner&&p.place==='goal'&&p.pos===source.pos+1))
+         return 'Das nächste Zielfeld ist besetzt. Im Ziel dürfen Figuren nicht übersprungen oder geschlagen werden – auch nicht mit der 7.';
+     }
+     return 'Mit dieser Figur lassen sich die übrigen Schritte der 7 nicht vollständig aufteilen. Alle sieben Schritte müssen insgesamt ausführbar sein.';
    }
    if(!type)return 'Wähle zuerst eine Handkarte aus.';
    if(!source)return 'Tippe zuerst eine Figur auf dem Spielfeld an.';
@@ -80,7 +85,17 @@ export function dogMoveBlockReason(game,{seat,cardId=null,jokerAs=null,stage='ca
  }
  if(stage==='destination'){
    if(!source)return 'Wähle zuerst eine Figur aus.';
-   if(game.phase==='seven')return 'Die 7 muss vollständig auf erlaubte Wege verteilt werden. Geschützte Startfelder und besetzte Zielfelder blockieren den Weg.';
+   if(game.phase==='seven'){
+     if(source.place==='goal'){
+       if(destination?.startsWith('track:'))return 'Eine Figur in der Zielbahn darf nicht zurück auf die Laufbahn.';
+       if(destination?.startsWith('goal:')){
+         const position=Number(destination.slice(5));
+         if(game.pieces.some(p=>p.id!==source.id&&p.owner===source.owner&&p.place==='goal'&&p.pos===position))
+           return 'Das Zielfeld ist bereits von einer Figur belegt. Im Ziel darfst du sie auch mit einer 7 nicht überspringen.';
+       }
+     }
+     return 'Dieser Teilzug der 7 ist nicht erlaubt: Der Weg muss frei sein und alle sieben Schritte müssen insgesamt aufgeteilt werden können.';
+   }
    if(swap)return 'Beim Tauschen wählst du eine zweite Figur auf der Laufbahn, kein freies Feld.';
    if(source.place==='home'){
      if(!canStart)return 'Diese Karte kann keine Figur aus dem Starthaus heraussetzen.';
