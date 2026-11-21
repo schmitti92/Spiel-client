@@ -68,7 +68,7 @@ export function createDogRoomWelcomeFilm({root}){
  const seenInMemory=new Set();
  const viewedKey=roomCode=>{
   const uid=window.SpielOnline?.state?.()?.user?.uid||'visitor';
-  return 'dog-room-welcome-video-v1:'+uid+':'+roomCode;
+  return 'dog-room-welcome-video-v2:'+uid+':'+roomCode;
  };
  const wasShown=key=>{
   if(seenInMemory.has(key))return true;
@@ -89,9 +89,9 @@ export function createDogRoomWelcomeFilm({root}){
   if(dialog.open)dialog.close();
  };
  const open=()=>{
-  if(dialog.open||root.hidden||!document.body.classList.contains('dog-room-open'))return;
+  if(dialog.open||root.hidden||!document.body.classList.contains('dog-room-open'))return false;
   // A post-match Christmas intro has priority if it is already visible.
-  if(document.querySelector('.dog-reveal-overlay:not([hidden])'))return;
+  if(document.querySelector('.dog-reveal-overlay:not([hidden])'))return false;
   video.src=videoUrl;
   video.autoplay=false;
   video.muted=false;
@@ -100,15 +100,15 @@ export function createDogRoomWelcomeFilm({root}){
   status.textContent='▶ Starte das Video selbst, damit du den Originalton hören kannst.';
   dismiss.textContent='Zur Spiellobby';
   updateButtons();
-  try{dialog.showModal();}
-  catch(error){console.warn('[DOG welcome film] Modal unavailable:',error?.message||error);}
+  try{dialog.showModal();return true;}
+  catch(error){console.warn('[DOG welcome film] Modal unavailable:',error?.message||error);return false;}
  };
  const arrive=(roomCode,{playing=false}={})=>{
   if(playing||!roomCode||root.hidden)return;
   const key=viewedKey(roomCode);
   if(wasShown(key))return;
-  markShown(key); // Mark opening, not every room refresh or DOM rerender.
-  open();
+  // Mark only when the modal is really displayed, never when another film blocks it.
+  if(open())markShown(key);
  };
  play.addEventListener('click',()=>{
   if(!dialog.open)return;
