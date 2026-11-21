@@ -4,10 +4,12 @@
  */
 import {renderDogRoomBoard} from './room-board-preview.js?v=3';
 import {summarizeDogRoomLobby} from './room-lobby-state.js?v=1';
+import {createDogRoomWelcomeFilm} from './room-lobby-video.js?v=1';
 import {guardDesignerLink} from './designer-level-access.js?v=2';
 
 const $=id=>document.getElementById(id);
 const root=$('dog-room-lobby');
+const welcomeFilm=createDogRoomWelcomeFilm({root});
 const COLORS=['#ff7770','#5ec6ff','#80dda6','#ffd56c'];
 const COLOR_NAMES=['Rot','Blau','Grün','Gelb'];
 const COLOR_KEYS=['red','blue','green','yellow'];
@@ -146,12 +148,16 @@ function update(snapshot,busy=false){
  const shell=document.querySelector('.shell');
  if(shell){shell.inert=active;if(active)shell.setAttribute('aria-hidden','true');else shell.removeAttribute('aria-hidden');}
  if(!active){
+  welcomeFilm.close();
   current=null;roomSignature='';previewVisible=false;wasOpen=false;
   if($('dog-room-rules').open)$('dog-room-rules').close();
   return;
  }
  current=snapshot;
- if(!wasOpen){wasOpen=true;feedback('');}
+ if(!wasOpen){
+  wasOpen=true;feedback('');
+  welcomeFilm.arrive(state.code,{playing:state.playing});
+ }
  const roomCode=state.code;
  setText('dog-room-code',roomCode);
  $('dog-room-back').href='spielauswahl-online.html?'+new URLSearchParams({room:roomCode,stay:'1'}).toString();
