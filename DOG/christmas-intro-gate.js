@@ -269,7 +269,7 @@ export function guardChristmasEventPage(){
   if(admitted)return;
   admitted=true;gate.remove();
   document.documentElement.classList.add('dog-christmas-page-ready','dog-christmas-portal-open');
-  await import('./christmas-event.js?v=155');
+  await import('./christmas-event.js?v=156');
  };
  const check=async()=>{
   if(admitted||checking)return;
