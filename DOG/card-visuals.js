@@ -1,4 +1,4 @@
-import {isVerifiedCosmeticUnlocked,isVerifiedDogPlayerLevelAtLeast} from './verified-cosmetics.js?v=2';
+import {isVerifiedCosmeticUnlocked,isVerifiedDogPlayerLevelAtLeast,isVerifiedNikolausCardConfigured} from './verified-cosmetics.js?v=3';
 /** DOG card visuals only. Add future editions here without changing rules, card IDs or online state. */
 export const CARD_EDITION='kartendesign-01';
 export const CARD_EDITION_STORAGE_KEY='dog:card-edition:v1';
@@ -41,7 +41,8 @@ export const CARD_EDITIONS=Object.freeze({
 export const isCardEditionUnlocked=id=>{
  const entry=CARD_EDITIONS[id];
  return Boolean(entry&&(!entry.unlockId||isVerifiedCosmeticUnlocked(entry.unlockId))&&
-  (!entry.minPlayerLevel||isVerifiedDogPlayerLevelAtLeast(entry.minPlayerLevel)));
+  (!entry.minPlayerLevel||isVerifiedDogPlayerLevelAtLeast(entry.minPlayerLevel))&&
+  (id!=='kartendesign-05'||isVerifiedNikolausCardConfigured()));
 };
 
 export const CARD_FILE_NAMES=Object.freeze({
