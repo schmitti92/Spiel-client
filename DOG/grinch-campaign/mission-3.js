@@ -1,11 +1,11 @@
 /**
- * Mission 3: LOCAL prototype for work packages 1+2.
+ * Mission 3: LOCAL prototype for work packages 1–4.
  * Never changes official rooms, campaign progression or real rewards.
  */
 import {cardVisual} from '../card-visuals.js?v=11';
 import {drawMission3Board} from './mission-3-board.js?v=1';
-import {createMission3,mission3LegalMoves,mission3Play,mission3ChooseGrinchMove,mission3SetPreviewStage,mission3NextPreviewDeal,mission3Validate,MISSION3_STAGE_NAMES,MISSION3_COLORS} from './mission-3-rules.js?v=2';
-const $=id=>document.getElementById(id),KEY='grinch-m3-local-prototype-v1';
+import {createMission3,mission3LegalMoves,mission3Play,mission3ChooseGrinchMove,mission3SetPreviewStage,mission3NextPreviewDeal,mission3Validate,MISSION3_STAGE_NAMES,MISSION3_COLORS} from './mission-3-rules.js?v=3';
+const $=id=>document.getElementById(id),KEY='grinch-m3-local-prototype-v2';
 let game=null,chosenCard=null,chosenPiece=null,botTimer=null,busy=false,toastTimer=null;
 function node(tag,value,parent,cls=''){
  const el=document.createElement(tag);el.textContent=value;if(cls)el.className=cls;parent.append(el);return el;
@@ -40,6 +40,11 @@ function render(){
  $('m3-stage-label').textContent=(stage+1)+' · '+MISSION3_STAGE_NAMES[stage];
  $('m3-grinch-per-turn').textContent=(stage+1)+' Grinch-Aktion'+(stage?'en':'');
  $('m3-stage-select').value=String(game.stage);
+ const curse=game.lastCurse;
+ $('m3-curse-status').textContent=!curse?'🎲 Nach der letzten Handkarte jeder Kartenphase: zufälliger Grinch-Fluch.':
+  curse.type==='freeze'?'❄️ Letzter Fluch: '+game.players[curse.owner].name+' Figur '+(Number(curse.pieceId.slice(1))+1)+' wurde zwei eigene Züge eingefroren.':
+  curse.type==='knockback'?'💥 Letzter Fluch: '+game.players[curse.owner].name+' Figur '+(Number(curse.pieceId.slice(1))+1)+' wurde '+curse.distance+' Felder zurückgeworfen.':
+  '🎲 Letzter Fluch: kein mögliches Ziel.';
  $('m3-turn').textContent=game.current===3?'😈 Grinch spielt '+game.grinchActionsLeft+' Kartenaktion(en)':
   '👑 '+game.players[game.current].name+' ist am Zug'+(game.seven?' · 7: noch '+(7-game.seven.spent)+' Schritte':'');
  const players=$('m3-players');players.replaceChildren();
@@ -51,6 +56,12 @@ function render(){
   node('span',user.name,tag);if(user.owner===game.current)node('span','👑',head);
   node('small',pieces.filter(p=>p.place==='track').length+'/'+pieces.length+' auf dem Brett · '+
    pieces.filter(p=>p.place==='home').length+' im Haus',box);
+  if(user.owner<3){
+   const prisoners=pieces.filter(p=>p.place==='captured').length;
+   const frozen=pieces.filter(p=>p.frozenTurns>0).length;
+   if(prisoners||frozen)node('small',(prisoners?'🔒 '+prisoners+' gefangen':'')+
+    (prisoners&&frozen?' · ':'')+(frozen?'❄️ '+frozen+' eingefroren':''),box,'m3-captures');
+  }
   node('small','🃏 '+game.hands[user.owner].length+(user.owner===3?' verdeckte':'')+' Karten',box);
  }
  $('m3-own-cards').textContent=game.current===3?'🤖 Grinch · '+game.hands[3].length+' verdeckt':game.hands[game.current].length+' eigene Karten';
