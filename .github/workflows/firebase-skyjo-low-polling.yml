@@ -1,0 +1,19 @@
+name: Firebase Skyjo background polling cut
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Skyjo/skyjo_action-logic-part-09.txt'
+      - 'Skyjo/skyjo_action-manifest.json'
+      - 'tests/firebase-skyjo-low-polling.test.mjs'
+      - '.github/workflows/firebase-skyjo-low-polling.yml'
+  workflow_dispatch:
+jobs:
+  skyjo-poll-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/firebase-skyjo-low-polling.test.mjs
