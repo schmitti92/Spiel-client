@@ -45,7 +45,35 @@ async function api(suffix='',method='GET'){
   method,cache:'no-store',headers:{Authorization:'Bearer '+token}
  });
  const data=await response.json().catch(()=>({}));
+ if(response.status===404){
+  // Compatibility while Render is still deploying the new per-profile
+  // intro endpoint: entitlement STILL comes from verified server statistics.
+  // Only the "video already watched" receipt is temporarily browser-local.
+  const statsResponse=await fetch(BASE+'/api/hub/dog/stats',{
+   cache:'no-store',headers:{Authorization:'Bearer '+token}
+  });
+  const stats=await statsResponse.json().catch(()=>({}));
+  if(!statsResponse.ok||stats.ok!==true)throw Error('INTRO_SERVER_NOT_READY');
+  if(profile()?.user?.uid!==uid)throw Error('PROFILE_CHANGED');
+  const eligible=(Number(stats.stats?.played)||0)>=1;
+  const key='dog-christmas-video-seen-v1:'+uid;
+  if(method==='POST'){
+   if(!eligible)throw Error('DOG_CHRISTMAS_INTRO_LOCKED');
+   localStorage.setItem(key,'1');
+   return {ok:true,completed:true,eligible,localFallback:true};
+  }
+  return {ok:true,eligible,completed:eligible&&localStorage.getItem(key)==='1',localFallback:true};
+ }
  if(!response.ok||data.ok!==true)throw Error(data.error||'INTRO_SERVER_NOT_READY');
+ // Transparently migrate a previously watched local video once the new
+ // server endpoint has become available.
+ if(method==='GET'&&data.eligible&&!data.completed&&localStorage.getItem('dog-christmas-video-seen-v1:'+uid)==='1'){
+  const ack=await fetch(BASE+'/api/hub/dog/christmas-intro/complete',{
+   method:'POST',cache:'no-store',headers:{Authorization:'Bearer '+token}
+  });
+  const stored=await ack.json().catch(()=>({}));
+  if(ack.ok&&stored.completed===true)return {...data,completed:true};
+ }
  return data;
 }
 let introVisible=false;
