@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lichtertal – Filmvorschau</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:radial-gradient(ellipse at 50% 0%,#294655,#07131e 70%);color:#f9eed6;display:grid;place-items:center;padding:18px}
+main{width:min(1050px,100%);padding:clamp(14px,3vw,28px);border:1px solid #a98c62;border-radius:20px;background:#132838;box-shadow:0 25px 75px #000a}
+h1{font-size:clamp(22px,4vw,38px);margin:0 0 4px}p{color:#d4d5ce;line-height:1.5}
+video{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#050b10;border-radius:12px;border:1px solid #4c6871}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px}
+button,a{font:inherit;padding:12px 15px;border-radius:10px;border:1px solid #d4ba7b;background:#315464;color:#fff0c8;cursor:pointer;text-decoration:none}
+button.primary{background:#b59252;color:#101e26;font-weight:800}
+button:disabled{opacity:.5;cursor:default}#state{font-weight:700;color:#fff2be;min-height:1.5em}
+small{color:#b6c4c8;display:block;margin-top:12px}
+</style>
+</head>
+<body>
+<main>
+<h1>🎄 Das Weihnachtswunder von Lichtertal</h1>
+<p>Vorschau der vier hochgeladenen Intro-Clips · insgesamt ungefähr 32 Sekunden</p>
+<video id="film" controls playsinline preload="metadata" poster="assets/lichtertal-intro-poster.jpg" aria-label="Lichtertal-Introfilm"></video>
+<p id="state" role="status">Bereit: vier Szenen in der Reihenfolge ihrer Upload-Zeitstempel.</p>
+<div class="controls">
+<button class="primary" type="button" id="start">▶ Alle vier mit Ton abspielen</button>
+<button type="button" id="mute">🔇 Stumm abspielen</button>
+<button type="button" id="next">⏭ Nächste Szene</button>
+<button type="button" id="restart">↺ Von vorne</button>
+<a href="christmas-event.html">Zum Weihnachtsdorf</a>
+</div>
+<small>Diese Seite zeigt ausschließlich die Filme. Sie schaltet keine Spielinhalte frei und verändert keine Spielerstatistik. Die Szenenreihenfolge wurde anhand der Dateinamen geschätzt.</small>
+</main>
+<script>
+(()=>{
+ const scenes=[
+  {file:'945289212_1795275459989532.mp4',name:'Die alte Sage'},
+  {file:'222534572_1795275605354117.mp4',name:'Die Ankunft'},
+  {file:'41234243_1795275705483810.mp4',name:'Frau Bergers Warnung'},
+  {file:'797249030_1795275757719057.mp4',name:'Das erste Licht'}
+ ];
+ const video=document.getElementById('film'),state=document.getElementById('state');
+ let index=0,started=false,withSound=true;
+ function playScene(i){
+  if(i>=scenes.length){video.pause();state.textContent='✅ Alle vier Videos wurden abgespielt.';return;}
+  index=i;started=true;
+  const scene=scenes[i];
+  state.textContent='🎬 Szene '+(i+1)+'/4 – '+scene.name;
+  video.src='assets/'+scene.file;video.muted=!withSound;video.load();
+  video.play().catch(e=>{state.textContent='▶ Szene '+(i+1)+': Wiedergabe durch Browser verhindert. Bitte auf das Video tippen. ('+e.name+')';});
+ }
+ document.getElementById('start').addEventListener('click',()=>{withSound=true;playScene(0);});
+ document.getElementById('mute').addEventListener('click',()=>{withSound=false;playScene(0);});
+ document.getElementById('next').addEventListener('click',()=>{playScene(started?index+1:0);});
+ document.getElementById('restart').addEventListener('click',()=>{playScene(0);});
+ video.addEventListener('ended',()=>playScene(index+1));
+ video.addEventListener('error',()=>{state.textContent='⚠️ Dieser Clip konnte nicht geladen werden. Mit „Nächste Szene“ fortfahren.';});
+})();
+</script>
+</body>
+</html>
