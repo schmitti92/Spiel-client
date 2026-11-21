@@ -354,6 +354,9 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 .playing-card.dog-designed[data-card-edition="kartendesign-05"].picked{filter:drop-shadow(0 0 5px #f9d389)}
 </style>
 <link rel="stylesheet" href="./touch-navigation.css?v=1">
+<style id="dog-christmas-link-visibility">
+html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christmas-portal-open) [data-meta-album-link],html:not(.dog-christmas-portal-open) #dog-room-christmas,html:not(.dog-christmas-portal-open) #dog-christmas-event-link,html:not(.dog-christmas-portal-open) #dog-player-level-link{display:none!important}
+</style>
 </head>
 <body>
 <!-- One floating menu replaces the large heading/nav and frees board height. -->
@@ -650,6 +653,10 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
   if(link)link.href=destination;
  }
 })();
+</script>
+<script type="module">
+import {mountChristmasLinks} from './christmas-intro-gate.js?v=3';
+mountChristmasLinks();
 </script>
 <script type="module">
 import('./ui-shell.js?v=5').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
