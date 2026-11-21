@@ -67,3 +67,35 @@ body.scratch-ticket-open .event-content-zoom-controls{display:none!important}
  .event-content-zoom-controls{top:6px;margin:5px 7px -46px auto;gap:3px;padding:3px 5px}
  .event-content-zoom-controls button{min-width:27px;min-height:28px}
 }
+
+/* Research Gold edition previously reset main overflow and height: the
+   content-only zoom wins these rules for every research viewport too. */
+@media(min-width:761px){
+ body.research-mode:not(.scratch-ticket-open) .event-layout{
+  height:100dvh!important;max-height:100dvh!important;min-height:0!important;
+  overflow:hidden!important;
+ }
+ body.research-mode:not(.scratch-ticket-open) .event-layout>.event-sidebar{
+  height:calc(100dvh - 20px)!important;min-height:0!important;
+  max-height:calc(100dvh - 20px)!important;overflow:hidden!important;
+ }
+ body.research-mode:not(.scratch-ticket-open) .event-layout>.event-main{
+  height:calc(100dvh - 20px)!important;min-height:0!important;
+  max-height:calc(100dvh - 20px)!important;
+  overflow-x:auto!important;overflow-y:auto!important;
+ }
+}
+@media(max-width:760px){
+ body.research-mode:not(.scratch-ticket-open) .event-layout{
+  display:flex!important;height:100dvh!important;min-height:0!important;
+  max-height:100dvh!important;overflow:hidden!important;
+ }
+ body.research-mode:not(.scratch-ticket-open) .event-layout>.event-sidebar{
+  flex:0 0 72px!important;height:72px!important;min-height:72px!important;
+  max-height:72px!important;overflow:hidden!important;
+ }
+ body.research-mode:not(.scratch-ticket-open) .event-layout>.event-main{
+  flex:1 1 auto!important;min-height:0!important;height:auto!important;
+  max-height:none!important;overflow-x:auto!important;overflow-y:auto!important;
+ }
+}
