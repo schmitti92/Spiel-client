@@ -3351,30 +3351,11 @@ if(actionEffectsState){
     }
   }
 
-  // Auto-resume only while the authoritative server snapshot is paused.
-  // The server still decides whether resuming is permitted.
-  let autoResumeTimer = null;
-  function stopAutoResume(){
-    if(autoResumeTimer !== null){ clearInterval(autoResumeTimer); autoResumeTimer = null; }
-  }
-  function syncAutoResume(){
-    const eligible = netMode === "host" && !!roomCode &&
-      !!ws && ws.readyState === WebSocket.OPEN &&
-      !!state && state.started && state.paused === true &&
-      !state.finished && state.phase !== "game_over";
-    if(!eligible){ stopAutoResume(); return; }
-    if(autoResumeTimer !== null) return;
-    const attempt = () => {
-      if(netMode !== "host" || !ws || ws.readyState !== WebSocket.OPEN ||
-         !state || !state.paused || state.finished || state.phase === "game_over"){
-        stopAutoResume(); return;
-      }
-      wsSend({type:"resume", ts:Date.now()});
-    };
-    // Wait for the server's join/snapshot handshake before the first request.
-    autoResumeTimer = setInterval(attempt, 2000);
-  }
-
+  // Reconnection never automatically resumes a paused game. The host must
+  // use the existing explicit "Fortsetzen" button. This also removes a
+  // 2-second loop of WebSocket resume commands and Firestore room saves.
+  function stopAutoResume(){}
+  function syncAutoResume(){}
   function scheduleReconnect(){
     if(reconnectTimer) return;
     reconnectAttempt++;
