@@ -1,0 +1,41 @@
+name: Generate Lichtertal Christmas Intro Video
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/assets/build_lichtertal_intro.py'
+      - '.github/workflows/generate-lichtertal-intro.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  render-video:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install rendering dependency
+        run: python -m pip install --disable-pip-version-check Pillow
+      - name: Generate 13-second video with original chimes
+        run: python DOG/assets/build_lichtertal_intro.py
+      - name: Validate MP4 and poster
+        run: |
+          test -s DOG/assets/lichtertal-intro.mp4
+          test -s DOG/assets/lichtertal-intro-poster.jpg
+          ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 DOG/assets/lichtertal-intro.mp4
+      - name: Publish generated assets to GitHub Pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add DOG/assets/lichtertal-intro.mp4 DOG/assets/lichtertal-intro-poster.jpg
+          if git diff --cached --quiet; then
+            echo "Intro assets are already up to date."
+          else
+            git commit -m "assets(christmas): publish cinematic Lichtertal intro"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
