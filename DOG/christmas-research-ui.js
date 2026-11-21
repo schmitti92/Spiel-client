@@ -32,12 +32,24 @@ export function initChristmasResearch(){
   return value;
  };
  const fmt=n=>new Intl.NumberFormat('de-DE').format(Number(n)||0);
+ // Optional high-quality images from the uploadable DOG research graphic pack.
+ // The emoji remains a working fallback until each image is uploaded to GitHub.
+ const researchArt=skill=>{
+  const img=document.createElement('img');
+  img.className='dr-skill-image';
+  img.alt='';
+  img.loading='lazy';
+  img.decoding='async';
+  img.src='./assets/research/'+encodeURIComponent(skill.id)+'.webp';
+  img.addEventListener('error',()=>img.remove(),{once:true});
+  return img;
+ };
  const field=(tag,cls,label,value)=>{
   const wrap=el(tag,cls);
   wrap.append(el('span','dr-field-label',label),el('strong','dr-field-value',value));
   return wrap;
  };
- let data=null,category='all',sort='recommended',view='grid',selectedId='builder';
+ let data=null,category='all',sort='recommended',view='grid',selectedId='card_swap';
  let working=false,pending=null,pendingUid=null,requestId=0,ticketTier='simple';
 
  const levelOf=skill=>Number(data?.levels?.[skill.id])||0;
@@ -133,7 +145,7 @@ export function initChristmasResearch(){
   btn.type='button';btn.dataset.skillId=skill.id;btn.setAttribute('aria-pressed',String(isSelected));
   btn.setAttribute('aria-label',skill.name+', Stufe '+level+' von '+skill.maxLevel+', Details anzeigen');
   const picture=el('div','dr-card-art');
-  picture.append(el('span','dr-card-art-icon',skill.icon));
+  picture.append(el('span','dr-card-art-icon',skill.icon),researchArt(skill));
   const content=el('div','dr-card-content');
   const header=el('div','dr-card-head');
   header.append(el('strong','dr-card-title',skill.name),
@@ -222,14 +234,9 @@ export function initChristmasResearch(){
   const rank=levelOf(skill),isMax=maxed(skill),now=Date.now();
   const banner=el('div','dr-detail-artwork');
   const visual=el('div','dr-detail-artwork-visual');
-  if(skill.id==='builder'){
-   const pic=el('img','dr-lantern-picture');
-   pic.src='./assets/research/lantern-illustration.svg';
-   pic.alt='Winterliche Laterne zwischen Schneezweigen';
-   visual.append(pic,el('span','dr-detail-artwork-badge',skill.icon));
-  }else{
-   visual.append(el('span','dr-detail-giant-icon',skill.icon));
-  }
+  const largeArt=researchArt(skill);
+  largeArt.classList.add('dr-detail-skill-image');
+  visual.append(el('span','dr-detail-giant-icon',skill.icon),largeArt);
   banner.append(visual,el('span','dr-detail-rank','Stufe '+rank+' / '+skill.maxLevel));
   const body=el('div','dr-detail-body');
   const heading=el('div','dr-detail-heading');
