@@ -11,8 +11,8 @@ export function initChristmasResearch(){
  const status=$('dog-research-status'),summary=$('dog-research-summary');
  const cards=$('dog-research-cards'),details=$('dog-research-detail');
  const filters=$('dog-research-filters'),sortSelect=$('dog-research-sort');
- const groupLabels={game:'Spiel & Grinch',xp:'Spielerlevel & Erfahrung',scratch:'Lose & Belohnungen',village:'Weihnachtsdorf'};
- const grinchIds=new Set(['thaw','fog_lantern','grinch_compass','mission_xp','advent']);
+ const groupLabels={game:'Spiel & Karten',xp:'Spielerlevel & Erfahrung',scratch:'Lose & Belohnungen',village:'Weihnachtsdorf'};
+ const grinchIds=new Set(['thaw']);
  const categories=[
   {id:'all',icon:'✦',name:'Alle Forschungen'},
   {id:'game',icon:'🃏',name:'Spiel & Karten'},
@@ -37,7 +37,7 @@ export function initChristmasResearch(){
   wrap.append(el('span','dr-field-label',label),el('strong','dr-field-value',value));
   return wrap;
  };
- let data=null,category='all',sort='recommended',view='grid',selectedId='fog_lantern';
+ let data=null,category='all',sort='recommended',view='grid',selectedId='builder';
  let working=false,pending=null,pendingUid=null,requestId=0,ticketTier='simple';
 
  const levelOf=skill=>Number(data?.levels?.[skill.id])||0;
@@ -49,25 +49,16 @@ export function initChristmasResearch(){
   switch(skill.id){
    case 'xp':return '+'+(level*10)+' % DOG-XP';
    case 'win_xp':return '+'+(level*30)+' % Sieger-XP';
-   case 'daily_xp':return '+'+(level*10)+' XP (erste Partie/Tag)';
-   case 'effort':return '+'+(level*10)+' XP (dritte Partie/Tag)';
-   case 'mission_xp':return '+'+(level*5)+' % Missions-XP';
    case 'discount':return (level*2)+' % persönlicher Losrabatt';
    case 'coin_bonus':return '+'+(level*2)+' % Münzbonus';
    case 'pity':return '1 einfaches Los nach '+(10-level)+' Nieten';
    case 'free_ticket':return '1 Gratislos alle '+Math.max(6,24-2*(level-1))+' Stunden';
    case 'lights_bonus':return '+'+(level*5)+' % Weihnachtslichter';
    case 'builder':return level+' ⭐ alle 2 Stunden';
-   case 'gift_magnet':return '+'+(level*2)+' % Zusatzgeschenk-Chance';
-   case 'elf_luck':return '+'+level+' % Losgutschein-Chance';
    case 'card_swap':return '1 Kartentausch pro Partie';
    case 'spot_ticket':return '1 privat sichtbares Losfeld';
    case 'spot_light':return '1 privat sichtbares Lichtfeld';
-   case 'future_sight':return level+' private Karteneinblicke';
    case 'thaw':return level+' Befreiung'+(level===1?'':'en')+' pro Mission';
-   case 'fog_lantern':return level+' Nebelhilfe'+(level===1?'':'n')+' pro Mission';
-   case 'grinch_compass':return level+' geheime Hinweise';
-   case 'advent':return level+' Gratislos'+(level===1?'':'e')+' pro erstmaligem Missionsabschluss';
    default:return skill.steps;
   }
  }
@@ -82,8 +73,6 @@ export function initChristmasResearch(){
    case 'free_ticket':return 'Alle '+Math.max(6,24-2*(level-1))+' Std.';
    case 'pity':return 'Nach '+(10-level)+' Nieten';
    case 'builder':return '+'+level+' ⭐ / 2 Std.';
-   case 'daily_xp':case 'effort':return '+'+(level*10)+' XP';
-   case 'mission_xp':return '+'+(level*5)+' % XP';
    default:return 'Stufe '+level+' / '+skill.maxLevel;
   }
  }
@@ -233,11 +222,11 @@ export function initChristmasResearch(){
   const rank=levelOf(skill),isMax=maxed(skill),now=Date.now();
   const banner=el('div','dr-detail-artwork');
   const visual=el('div','dr-detail-artwork-visual');
-  if(skill.id==='fog_lantern'){
+  if(skill.id==='builder'){
    const pic=el('img','dr-lantern-picture');
    pic.src='./assets/research/lantern-illustration.svg';
    pic.alt='Winterliche Laterne zwischen Schneezweigen';
-   visual.append(pic);
+   visual.append(pic,el('span','dr-detail-artwork-badge',skill.icon));
   }else{
    visual.append(el('span','dr-detail-giant-icon',skill.icon));
   }
