@@ -18,8 +18,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install rendering dependency
-        run: python -m pip install --disable-pip-version-check Pillow
+      - name: Install FFmpeg and image rendering dependency
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          python -m pip install --disable-pip-version-check Pillow
       - name: Generate 13-second video with original chimes
         run: python DOG/assets/build_lichtertal_intro.py
       - name: Validate MP4 and poster
