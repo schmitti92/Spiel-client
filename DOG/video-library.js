@@ -4,7 +4,7 @@
 import {DOG_VIDEO_CATALOG,getDogFilm} from './video-library-catalog.js?v=1';
 import {markDogVideoSeen} from './video-library-watched.js?v=1';
 
-const BASE=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
+const BASE=String(globalThis.window?.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const $=id=>document.getElementById(id);
 const verifiedUser=()=>{
  const s=window.SpielOnline?.state?.();
