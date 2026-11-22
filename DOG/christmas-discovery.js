@@ -77,7 +77,8 @@ export function describeDogChristmasDiscovery(event,players){
     name+' hat ein Weihnachtslicht-Feld entdeckt!'};
  }
  if(event.type==='gold')
-  return {name,kind:'gold',icon:'🪙',title:'Gold gewonnen!',
+  return {name,kind:'gold',amount:event.amount,icon:'🪙',
+   title:event.amount===2000?'🎉 Gold-Jackpot!':'Gold gewonnen!',
    message:name+' hat '+(amount(event.amount)||'Gold')+
     (amount(event.amount)!==null?' Goldmünzen':'')+' gewonnen! Das Gold wurde dem Spielerkonto gutgeschrieben.'};
  if(event.type==='scratch'){
@@ -93,7 +94,7 @@ export function describeDogChristmasDiscovery(event,players){
 /** Only a local, acknowledgement-required UI. Nothing writes to Firebase or
  * to the room, and confirming does not grant or claim a reward.
  */
-export function createDogChristmasDiscoveryPopup(doc=document){
+export function createDogChristmasDiscoveryPopup(doc=document,{onReveal=null,onDismiss=null}={}){
  const popup=doc.getElementById('dog-christmas-find-popup');
  const icon=doc.getElementById('dog-christmas-find-icon');
  const heading=doc.getElementById('dog-christmas-find-title');
@@ -106,17 +107,20 @@ export function createDogChristmasDiscoveryPopup(doc=document){
   const event=queue.shift();
   active=true;
   popup.dataset.kind=event.kind;
+  popup.classList?.toggle?.('dog-gold-2000',event.kind==='gold'&&event.amount===2000);
   if(icon)icon.textContent=event.icon;
   if(heading)heading.textContent=event.title;
   if(winner)winner.textContent='🏆 '+event.name;
   if(message)message.textContent=event.message;
   popup.hidden=false;
   if(typeof popup.showModal==='function'&&!popup.open)popup.showModal();
+  onReveal?.(event);
   confirm?.focus?.();
  }
  function dismiss(){
   if(!active)return;
   active=false;
+  onDismiss?.();
   if(popup?.open&&typeof popup.close==='function')popup.close();
   if(popup)popup.hidden=true;
   next();
@@ -134,8 +138,90 @@ export function createDogChristmasDiscoveryPopup(doc=document){
   },
   reset(){
    queue=[];active=false;
+   onDismiss?.();
    if(popup?.open&&typeof popup.close==='function')popup.close();
    if(popup)popup.hidden=true;
   }
  };
+}
+
+/**
+ * One screen-wide celebratory burst for a NEW, verified 2,000-gold discovery.
+ * Canvas is inside the prize's modal top-layer dialog so it can cover the
+ * viewport without clipping to the board. No game state or network changes.
+ */
+export function createDogGoldConfetti(doc=document){
+ const win=doc.defaultView;
+ const popup=doc.getElementById('dog-christmas-find-popup');
+ let canvas=null,frame=null;
+ function stop(){
+  if(frame!==null){win?.cancelAnimationFrame?.(frame);frame=null;}
+  canvas?.remove?.();canvas=null;
+ }
+ function fire(){
+  stop();
+  if(!win||!popup||!doc.createElement||!win.requestAnimationFrame||
+     win.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches||
+     doc.documentElement?.dataset?.dogMotion==='off')return;
+  const layer=doc.createElement('canvas');
+  layer.className='dog-gold-confetti-canvas';
+  layer.setAttribute('aria-hidden','true');
+  const ctx=layer.getContext?.('2d');
+  if(!ctx)return;
+  const width=Math.max(320,win.innerWidth||doc.documentElement?.clientWidth||320);
+  const height=Math.max(320,win.innerHeight||doc.documentElement?.clientHeight||600);
+  const ratio=Math.min(2,Math.max(1,win.devicePixelRatio||1));
+  layer.width=Math.round(width*ratio);layer.height=Math.round(height*ratio);
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+  popup.appendChild(layer);canvas=layer;
+  const palette=['#f9d75c','#ffedb4','#f3a0bd','#71d5f2','#b4f69c','#ba9bff','#ffffff'];
+  const pieces=[];
+  // Two fan-shaped confetti cannons erupt from the lower corners.
+  for(let i=0;i<85;i++){
+   const side=i%2===0?1:-1;
+   pieces.push({burst:true,x:side===1?width*.07:width*.93,y:height-35,
+    vx:side*(width*(.09+Math.random()*.41)),vy:-height*(.52+Math.random()*.48),
+    gravity:height*(.34+Math.random()*.12),delay:Math.random()*.25,
+    size:4+Math.random()*6,angle:Math.random()*6.28,spin:3+Math.random()*8,
+    color:palette[i%palette.length]});
+  }
+  // Continuous glittering rain across the full screen, not just the popup.
+  for(let i=0;i<160;i++)pieces.push({
+   burst:false,x:Math.random()*width,y:-height*(.1+Math.random()*.75),
+   speed:height*(.33+Math.random()*.3),drift:18+Math.random()*55,
+   delay:Math.random()*1.8,size:3+Math.random()*6,
+   angle:Math.random()*6.28,spin:2+Math.random()*6,
+   color:palette[i%palette.length]
+  });
+  const start=win.performance?.now?.()??Date.now();
+  function paint(now){
+   if(!canvas||doc.hidden){stop();return;}
+   const elapsed=Math.max(0,(now-start)/1000);
+   if(elapsed>=5.5){stop();return;}
+   ctx.clearRect(0,0,width,height);
+   ctx.globalAlpha=Math.min(1,Math.max(0,(5.5-elapsed)/.7));
+   for(const p of pieces){
+    const t=elapsed-p.delay;
+    if(t<0)continue;
+    const x=p.burst?p.x+p.vx*t:p.x+Math.sin(t*2.2+p.angle)*p.drift;
+    const y=p.burst?p.y+p.vy*t+.5*p.gravity*t*t:p.y+p.speed*t;
+    if(x<-15||x>width+15||y<-20||y>height+25)continue;
+    ctx.save();ctx.translate(x,y);
+    ctx.rotate(p.angle+p.spin*t);
+    ctx.fillStyle=p.color;
+    ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*.64);
+    ctx.restore();
+   }
+   ctx.globalAlpha=1;
+   if(elapsed<1.4){
+    ctx.textAlign='center';
+    ctx.font=Math.max(35,Math.min(64,width*.065))+'px system-ui, sans-serif';
+    ctx.fillText('🎉',width*.06,height-18);
+    ctx.fillText('🎉',width*.94,height-18);
+   }
+   frame=win.requestAnimationFrame(paint);
+  }
+  frame=win.requestAnimationFrame(paint);
+ }
+ return {fire,stop};
 }
