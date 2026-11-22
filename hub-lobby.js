@@ -35,7 +35,7 @@ const stayInMatchId=new URL(location.href).searchParams.get('stayMatch');
 // even when the browser lacked the match ID. Never auto-launch it again.
 const returnToDogLobby=new URL(location.href).searchParams.get('dogLobby')==='1';
 let launchedMatchId=null,hubSocket=null,retrySocket=null,streamReady=false,streamLast=0,streamAliveAt=0,hubHeartbeat=null,pollInFlight=false,lastRoomPollAt=0;
-const HUB_IDLE_AUDIT_MS=300000; // One read-only cross-instance audit per 5 minutes on a healthy stream.
+// A healthy authenticated Render room stream needs no periodic Firestore audit.
 const HUB_DISCONNECTED_FALLBACK_MS=30000; // Faster HTTP recovery if socket heartbeats fail.
 function stopWatch(){
  streamReady=false;streamAliveAt=0;
@@ -208,11 +208,11 @@ function activateRoom(result){if(!result?.code)return;cancelPendingRecovery();se
 
 function pollStop(){if(poll){clearInterval(poll);poll=null;}stopWatch();}
 function pollStart(){pollStop();lastRoomPollAt=Date.now();startWatch();poll=setInterval(async()=>{if(!code||operation||pollInFlight||!activeProfile()||document.hidden)return;
- // WebSocket+Firestore watch is the primary source. Healthy pong frames
- // replace redundant 90-second Firebase GETs; retain a slow safety audit.
+ // A healthy authenticated WebSocket stays up-to-date through room pushes.
+ // Poll Firestore only when disconnected/stale, never on an idle timer.
  const now=Date.now();
- const minAge=hasRecentHubStream(now)?HUB_IDLE_AUDIT_MS:HUB_DISCONNECTED_FALLBACK_MS;
- if(now-lastRoomPollAt<minAge)return;
+ if(hasRecentHubStream(now))return;
+ if(now-lastRoomPollAt<HUB_DISCONNECTED_FALLBACK_MS)return;
  const requestedCode=code;pollInFlight=true;lastRoomPollAt=now;
  try{const result=await request('/rooms/'+requestedCode);if(code!==requestedCode)return;pollErrors=0;acceptRoom(result.room);}catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){leaveView();showError(e);}else if(++pollErrors===3)showError(e);}finally{pollInFlight=false;}
  },12000);}
