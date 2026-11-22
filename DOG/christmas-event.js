@@ -12,6 +12,7 @@ import {initChristmasStory} from './christmas-story.js?v=7';
 import {initChristmasScratch} from './christmas-scratch-ui.js?v=88';
 import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=10';
 import {initChristmasResearch} from './christmas-research-ui.js?v=11';
+import {initChristmasTabBadges} from './christmas-tab-badges.js?v=1';
 import {initChristmasContentZoom} from './christmas-content-zoom.js?v=1';
 import {initLichtertalSidebarTextFit} from './christmas-sidebar-fit.js?v=1';
 import {initChristmasPlayerStatistics} from './christmas-player-statistics-ui.js?v=3';
@@ -256,6 +257,7 @@ let scratchScreen=null;
 let levelScreen=null;
 let researchScreen=null;
 let statisticsScreen=null;
+let tabBadges=null;
 let lastPresentationKey=null;
 // Grinch stages are temporary visual previews until real Part 2 missions exist.
 let grinchVisualStage=1;
@@ -813,6 +815,13 @@ scratchScreen=initChristmasScratch();
 levelScreen=initDogPlayerLevels();
 researchScreen=initChristmasResearch();
 statisticsScreen=initChristmasPlayerStatistics();
+tabBadges=initChristmasTabBadges({
+ getUser:()=>eventUser(),getPreview:()=>devMode.isActive(),base:villageApi
+});
+// On opening Lichtertal, read exactly one compact personal status. All
+// subsequent reward/upgrade actions update these numbers from their existing
+// server-confirmed responses instead of periodically polling Firebase.
+void tabBadges.load();
 if($('tab-research').getAttribute('aria-selected')==='true')void researchScreen.load();
 if($('tab-statistics').getAttribute('aria-selected')==='true')void statisticsScreen.load();
 if($('tab-level').getAttribute('aria-selected')==='true')void levelScreen.load();
@@ -839,6 +848,7 @@ function showLiveVillage(data,{deferTreeFilms=false}={}){
  villageHost=data.shared===true||data.host===true;
  villageEventActive=data.enabled===true;
  villageCanUpgrade=data.canUpgrade!==false;
+ tabBadges?.setVillage(v,{allowed:villageHost&&villageCanUpgrade&&villageEventActive});
  for(const {id} of definitions)preview[id]=Number.isInteger(v.levels[id])?v.levels[id]:1;
  $('building-live-balance').textContent=lightsLabel(v.lightsTenths)+' ⭐ Weihnachtslichter';
  $('building-village-role').textContent='🟢 Gemeinsames DOG-Dorf';
@@ -892,6 +902,7 @@ async function reloadVillage({minimumAgeMs=0}={}){
  const person=eventUser();
  if(!person){
   villageLive=null;villageHost=false;
+  tabBadges?.setVillage(null);
   treeFilms.sync(0);
   for(const {id} of definitions)preview[id]=1;
   refreshPreview(); // Clear old player's unlocked chapters on logout.
@@ -919,6 +930,7 @@ async function reloadVillage({minimumAgeMs=0}={}){
   if(expectedUid&&eventUser()?.uid===expectedUid)showLiveVillage(data);
  }
  catch(e){
+  tabBadges?.setVillage(null);
   $('building-village-role').textContent='⚠️ Server nicht erreichbar';
   $('building-village-role').dataset.state='preview';
   $('building-event-mode').textContent='⚠️ Dorfguthaben nicht abrufbar: '+e.message;
@@ -972,6 +984,7 @@ window.addEventListener('spielonline-change',()=>{
  if(nextUid===villageAuthUid)return; // Same identity: no Firestore read on token/profile updates.
  villageAuthUid=nextUid;
  lastVillageReadAt=0;
+ void tabBadges?.load({force:true});
  void reloadVillage();
  if($('tab-tree').getAttribute('aria-selected')==='true')void treePrizeScreen?.load();
 });
