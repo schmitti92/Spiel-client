@@ -1,0 +1,36 @@
+name: DOG victory next round
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/app.js'
+      - 'DOG/index.html'
+      - 'DOG/room-lobby-state.js'
+      - 'DOG/room-lobby.js'
+      - 'hub-lobby.js'
+      - 'hub-lobby.html'
+      - 'tests/dog-victory-screen.test.mjs'
+      - 'tests/dog-room-lobby.test.mjs'
+      - '.github/workflows/dog-victory-next-round.yml'
+  pull_request:
+    paths:
+      - 'DOG/app.js'
+      - 'DOG/index.html'
+      - 'DOG/room-lobby-state.js'
+      - 'DOG/room-lobby.js'
+      - 'hub-lobby.js'
+      - 'hub-lobby.html'
+      - 'tests/dog-victory-screen.test.mjs'
+      - 'tests/dog-room-lobby.test.mjs'
+      - '.github/workflows/dog-victory-next-round.yml'
+  workflow_dispatch:
+jobs:
+  victory-next-round:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/app.js && node --check DOG/room-lobby-state.js && node --check DOG/room-lobby.js && node --check hub-lobby.js
+      - run: node --test tests/dog-victory-screen.test.mjs tests/dog-room-lobby.test.mjs tests/dog-first-four-wins.test.mjs
