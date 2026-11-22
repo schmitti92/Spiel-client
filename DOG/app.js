@@ -10,7 +10,8 @@ import {dogMoveBlockReason} from './invalid-move-reasons.js?v=2';
 import {dogBoardActionMatchesDestination} from './board-action-targets.js?v=1';
 import {DOG_MOVE_HINTS_KEY,readDogMoveHints,writeDogMoveHints,dogLegalTargets} from './move-hints.js?v=1';
 import {summarizeDogVictory} from './victory-summary.js?v=3';
-import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction,completedDogSeat} from './engine.js?v=6';
+import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,completedDogSeat} from './engine.js?v=6';
+import {DOG_BOT_DIFFICULTIES,readDogBotDifficulties,saveDogBotDifficulty,dogBotDifficultyForSeat,chooseDogBotAction} from './bot-difficulty.js?v=1';
 import {decideDogRoomUpdate} from './online-sync.js?v=15';
 import {createDogSocketActionDispatcher} from './socket-actions.js?v=1';
 import {initDogFirstLightFilm} from './christmas-first-light-film.js?v=2';
@@ -385,6 +386,8 @@ const names=['Rot','Blau','Grün','Gelb'];
 let game,selectedCard=null,selectedPiece=null,jokerAs=null,available=[],revealed=online,aiTimer=null,lastTurn=null,humans=1;
 let lastBotActorSeat=null; // Local pacing only: no server writes or network events.
 let appearance=loadAppearance();
+let botDifficulties=readDogBotDifficulties(window.localStorage);
+let lastBotDifficultyUiKey=null;
 // Optional training aid; starts OFF and stays only in this browser.
 let moveHintsOn=readDogMoveHints(window.localStorage);
 function updateDogHintLever(){
@@ -424,6 +427,57 @@ $('dog-bot-animation-toggle')?.addEventListener('click',()=>{
  }
 });
 updateDogBotAnimationSwitch();
+// Magie bot difficulty is local. Render owns online AI decisions;
+// one observer's local preferences must never change the shared match.
+const difficultyNames={easy:'Leicht',medium:'Mittel',expert:'Experte'};
+function botDifficultySelect(id,value,label){
+ const select=document.createElement('select');
+ select.id=id;
+ select.setAttribute('aria-label',label);
+ for(const level of DOG_BOT_DIFFICULTIES){
+  const option=document.createElement('option');
+  option.value=level;option.textContent=difficultyNames[level];select.appendChild(option);
+ }
+ select.value=value;
+ return select;
+}
+function renderDogBotDifficulties(){
+ const root=$('dog-bot-difficulty-players');
+ const preset=$('dog-bot-difficulty-default');
+ const note=$('dog-bot-difficulty-description');
+ if(!root||!preset)return;
+ preset.value=dogBotDifficultyForSeat(botDifficulties,'default');
+ const bots=Array.isArray(game?.players)?game.players.filter(p=>p.bot&&!p.inactive):[];
+ const signature=JSON.stringify({online,bots:bots.map(p=>[p.seat,p.name,dogBotDifficultyForSeat(botDifficulties,p.seat)])});
+ if(lastBotDifficultyUiKey===signature)return;
+ lastBotDifficultyUiKey=signature;
+ root.replaceChildren();
+ for(const bot of bots){
+  const row=document.createElement('div');row.className='dog-bot-difficulty-row';
+  const label=document.createElement('label');
+  const id='dog-bot-difficulty-seat-'+bot.seat;
+  label.htmlFor=id;label.textContent=bot.name||'Bot '+(bot.seat+1);
+  const select=botDifficultySelect(id,dogBotDifficultyForSeat(botDifficulties,bot.seat),
+    'Schwierigkeitsgrad von '+label.textContent);
+  select.disabled=online;
+  select.addEventListener('change',()=>{
+   botDifficulties=saveDogBotDifficulty(bot.seat,select.value,window.localStorage);
+   lastBotDifficultyUiKey=null;
+   renderDogBotDifficulties();
+  });
+  row.append(label,select);root.appendChild(row);
+ }
+ if(note)note.textContent=online?
+  'Online-Bots werden vom Render-Server gesteuert. Diese Auswahl ist für lokale Partien vorbereitet.':
+  bots.length?
+  'Jeder Bot kann eine andere Stärke haben. Änderungen gelten ab seinem nächsten Zug.':
+  'Keine Bots in dieser Partie. Der Standard gilt für künftige lokale Bots.';
+}
+$('dog-bot-difficulty-default')?.addEventListener('change',event=>{
+ botDifficulties=saveDogBotDifficulty('default',event.target.value,window.localStorage);
+ lastBotDifficultyUiKey=null;
+ renderDogBotDifficulties();
+});
 const currentLook=()=>resolveAppearance(appearance);
 const displayColors=()=>currentLook().pieces.colors;
 const cardsLabel=t=>t==='swap'?'⇄':t==='joker'?'★':t==='1/11'?'1/11':t;
@@ -989,7 +1043,7 @@ function render(){
   $('history').innerHTML=game.history.map(t=>'<div>'+escape(t)+'</div>').join('');
   renderPlayers();
   available=[];
-  renderHand();drawBoard();
+  renderHand();drawBoard();renderDogBotDifficulties();
   const latestEvent=onlineChristmas?.activity?.at(-1);
   const myScratch=latestEvent?.type==='scratch'&&latestEvent.seat===onlineSeat?
    ' · 🎟️ '+({simple:'Einfaches',medium:'Mittleres',premium:'Premium-'}[latestEvent.tier]||'')+
@@ -1081,7 +1135,7 @@ function scheduleAI(){
   if(!game||game.phase==='finished')return;
   if(game.phase==='exchange'){
     for(let i=0;i<4;i++)if(game.players[i].bot && game.exchanges[i]===null){
-      const move=botAction(game,i);if(move){game=exchangeCard(game,i,move.cardId);save();}
+      const move=chooseDogBotAction(game,i,dogBotDifficultyForSeat(botDifficulties,i));if(move){game=exchangeCard(game,i,move.cardId);save();}
     }
     render();
   }
@@ -1090,7 +1144,7 @@ function scheduleAI(){
       aiTimer=null;
       try{
         const actor=game.current;
-        const move=botAction(game,actor);
+        const move=chooseDogBotAction(game,actor,dogBotDifficultyForSeat(botDifficulties,actor));
         if(move)game=takeAction(game,actor,move);
         else throw Error('Bot findet keinen erlaubten Zug');
         lastBotActorSeat=actor;
