@@ -16,7 +16,7 @@ export const SCRATCH_LEVEL_UNLOCKS=Object.freeze({
 export const SCRATCH_TICKET_TYPES=Object.freeze([
  {id:'simple',icon:'🟤',label:'Einfach',price:200,coinMax:100,unlockChance:'11,1',rewards:'47 klassische Emojis · 16 Blockfarben',odds:'20 % Nieten · 68,9 % Münzen · 11,1 % Freischaltungen'},
  {id:'medium',icon:'🔵',label:'Mittel',price:500,coinMax:800,unlockChance:'3',rewards:'5 Profilbilder · 4 Weihnachts-Emojis · Rahmen · Aktivsymbol · Spielbrett',odds:'20 % Nieten · 77 % Münzen · 3 % Freischaltungen'},
- {id:'premium',icon:'🟡',label:'Premium',price:1000,coinMax:2000,unlockChance:'4',rewards:'10 Profilbilder · 4 Weihnachts-Emojis · 2 Rahmen · 2 Aktivsymbole · 2 Hintergründe · Spielbrett',odds:'4 Geld-Dreierreihen garantiert · 30 % Chance auf +1.000 Münzen · 4 % Freischaltungen'}
+ {id:'premium',icon:'🟡',label:'Premium',price:1000,coinMax:2000,unlockChance:'4',rewards:'10 Profilbilder · 4 Weihnachts-Emojis · 2 Rahmen · 2 Aktivsymbole · 2 Hintergründe · Spielbrett',odds:'2 Geld-Dreierreihen garantiert · 30 % Chance auf +1.000 Münzen · 4 % Freischaltungen'}
 ]);
 export const SCRATCH_COIN_PRIZES=Object.freeze({
  simple:Object.freeze([10,40,100]),
@@ -28,7 +28,7 @@ export const SCRATCH_SHOP_VARIANTS=Object.freeze([
  Object.freeze({id:'gifts',tier:'simple',icon:'🎁',name:'Geschenkelinie',subtitle:'Einfach · 9 Felder',rule:'3 gleiche Gewinnzeichen in einer Linie',theme:'gift'}),
  Object.freeze({id:'snow_collect',tier:'simple',icon:'❄️',name:'Schneeflocken-Bingo',subtitle:'Einfach · 16 Felder',rule:'3 gleiche Gewinnzeichen irgendwo',theme:'snow'}),
  Object.freeze({id:'elf',tier:'medium',icon:'🧝',name:'Magischer Wichtelpfad',subtitle:'Mittel · 20 Felder',rule:'Geld: Pfad · Geschenke: 3 verbunden',theme:'elf'}),
- Object.freeze({id:'premium_27',tier:'premium',icon:'👑',name:'Premium-Weihnachtslos',subtitle:'Premium · 27 Felder',rule:'4 sichere Geld-Dreierreihen · 20 Symbole = 1.000 🪙 (30 %)',theme:'gold'}),
+ Object.freeze({id:'premium_27',tier:'premium',icon:'👑',name:'Premium-Weihnachtslos',subtitle:'Premium · 27 Felder',rule:'2 sichere Geld-Dreierreihen · 20 Symbole = 1.000 🪙 (30 %)',theme:'gold'}),
   Object.freeze({id:'tic_tac_toe',tier:'medium',icon:'⭕',name:'DOG Tic-Tac-Toe',subtitle:'Duell · 9 Felder',rule:'Multiplikator → Gewinnzeichen → Gewinnsymbol unten → 3×3-Feld',theme:'tictac'}),
   Object.freeze({id:'number_one_20',tier:'medium',icon:'🔢',name:'Glückszahl 1',subtitle:'Zahlenlos · 20 × 2',rule:'Beide Spalten rubbeln · jede 1 gewinnt links',theme:'number20'}),
   Object.freeze({id:'dog_jackpot_9',tier:'premium',icon:'🐾',name:'Finde DOG!',subtitle:'DOG-Jackpot · 9 Felder',rule:'DOG finden = alle 8 Preisfelder gewinnen',theme:'dogjackpot'})
@@ -48,7 +48,7 @@ const VARIANTS={
   number_one_20:['🔢 Die Glückszahl 1','20 Reihen mit zwei Rubbelspalten. Links das verdeckte Gewinnsymbol, rechts die verdeckte Zahl. Nur eine 1 gewinnt den Preis derselben Reihe.',20,2],
   dog_jackpot_9:['🐾 Finde DOG!','Neun verdeckte Felder. Ein DOG-Symbol gewinnt alle acht übrigen Preise, ohne DOG ist das Los eine Niete.',3,3],
   tic_tac_toe:['🎯 DOG Tic-Tac-Toe','Erst Faktor, dann ◯/✕, dann das Gewinnsymbol ganz unten und danach das 3×3-Spielfeld aufrubbeln. Eine passende Linie gewinnt das Gewinnsymbol × Multiplikator.',3,3],
- premium_27:['🎅 Premium-Weihnachts-Rubbellos','Mindestens 4 Geld-Dreierreihen sind garantiert. Je 3 gleiche Geldsymbole waagerecht gewinnen. 20 echte Symbole bringen 1.000 Zusatzmünzen; ab 24 ist eine Freischaltung möglich.',9,3],
+ premium_27:['🎅 Premium-Weihnachts-Rubbellos','Mindestens 2 Geld-Dreierreihen sind garantiert. Je 3 gleiche Geldsymbole waagerecht gewinnen. 20 echte Symbole bringen 1.000 Zusatzmünzen; ab 24 ist eine Freischaltung möglich.',9,3],
  gifts:['🎁 Geschenkelinie','Drei gleiche Gewinnsymbole in einer Reihe, Spalte oder Diagonale',3,3],
  snow:['❄️ Schneeflocken-Bingo (älteres Los)','Vier gleiche Symbole in einer Reihe, Spalte oder Diagonale',4,4],
  snow_collect:['❄️ Schneeflocken-Bingo','Drei gleiche Gewinnsymbole irgendwo auf dem Los zählen als Gewinn – unabhängig von der Position. 🧊 bedeutet Niete und zählt nicht.',4,4],
@@ -590,7 +590,7 @@ export function initChristmasScratch(){
    tic_tac_toe:Math.max(large,Number(ticEdition?.config?.giftFallbackCoins??1500))*
     (ticEdition?.config?.maxMultiplier??5),
    number_one_20:20*Math.max(large,lucky?.giftFallbackCoins??1500),
-   premium_27:2*(small+medium+large+large)+1000,
+   premium_27:4*large+1000,
    dog_jackpot_9:8*Math.max(large,1500)
   }[option.id];
   return {amount:Number.isSafeInteger(candidate)&&candidate>=0?candidate:null,
@@ -684,7 +684,7 @@ export function initChristmasScratch(){
     Number.isInteger(chanceWeights.unlock)?
     (chanceWeights.unlock+Math.min(chanceWeights.coins,Math.max(0,300-chanceWeights.unlock)))/10:30;
    const visibleRule=option.id==='premium_27'?
-    '4 sichere Geld-Dreierreihen · '+premiumMilestoneChance.toLocaleString('de-DE')+
+    '2 sichere Geld-Dreierreihen · '+premiumMilestoneChance.toLocaleString('de-DE')+
     ' % Chance auf +1.000 🪙':option.rule;
    const minPlayerLevel=scratchRequiredPlayerLevel(option.id,status?.variantUnlockLevels);
    const levelLocked=shopPlayerLevel<minPlayerLevel;
@@ -1130,7 +1130,7 @@ export function initChristmasScratch(){
    if(id==='gifts')block.append(el('small','scratch-host-premium-minimum',
     '🎁 Geschenkelinie: Jeder Geld- und Hauptgewinn braucht eine eigene echte Dreierlinie aus exakt gleichen Zeichen. Maximal 3 sichtbare Gewinne; kein unsichtbarer Zusatzgewinn.'));
    if(id==='premium_27')block.append(el('small','scratch-host-premium-minimum',
-    '🎟️ Premium: Vier Geldreihen sind immer garantiert. Mindestens sechs Gewinnplätze für Geldreihen, 1.000er-Bonus und eine mögliche Freischaltung. Die Nieten-Kategorie bedeutet hier nur: kein zusätzlicher Sondergewinn.'));
+    '🎟️ Premium: Zwei echte Geld-Dreierreihen sind immer garantiert. Weitere Gewinne können durch den 1.000er-Bonus, Freischaltungen und zusätzliche Münzgewinne entstehen. Die Nieten-Kategorie bedeutet hier nur: kein zusätzlicher Sondergewinn.'));
    // Each money icon has a different coin payout, separately set for
    // Geschenkelinie, Schneeflocken-Bingo, Wichtelpfad and Premium.
    const money=el('div','scratch-host-money');
@@ -1178,7 +1178,7 @@ export function initChristmasScratch(){
    }
    block.append(
     symbolOddsSection('moneySymbolWeights','🎲 Geldsymbol-Wahrscheinlichkeiten',
-     id==='premium_27'?'Premium: 🪙 💵 💼 erscheinen jeweils mindestens einmal garantiert. Diese Gewichtung entscheidet nur über die vierte Geld-Dreierreihe und zusätzliche Geldgewinne.':'Wie oft welches Geldsymbol erscheint, wenn ein Geldgewinn gezogen wurde.',
+     id==='premium_27'?'Premium: Genau zwei Geld-Dreierreihen sind garantiert. Diese Gewichtung bestimmt ihre beiden Geldsymbole und mögliche Zusatzgewinne.':'Wie oft welches Geldsymbol erscheint, wenn ein Geldgewinn gezogen wurde.',
      ['🪙 Münze','💵 Geldschein','💼 Geldkoffer'],[334,333,333]),
     symbolOddsSection('giftSymbolWeights','🎁 Geschenk-Wahrscheinlichkeiten',
      'Welches Geschenkzeichen eine gewonnene Freischaltung darstellt.',
@@ -1937,7 +1937,9 @@ export function initChristmasScratch(){
     'Zuerst 1×–'+(result.board?.maxMultiplier??5)+'× aufrubbeln, dann ◯ oder ✕ als Gewinnzeichen, danach das Gewinnsymbol ganz unten und zuletzt alle neun Spielfelder. Eine Dreierlinie aus dem Gewinnzeichen gewinnt EINEN Preis des unteren Gewinnsymbols × Multiplikator; 🎁 Freischaltungen aus Kategorie '+(result.prizeCategory??2)+'. Wenn der Pool aufgebraucht ist, gibt es höchstens '+num(result.board?.giftFallbackCoins??1500)+' Ersatzmünzen × Multiplikator.':
    result.board?.variantId==='tic_tac_toe'?
     '🪙 200 · 💵 450 · 💼 800 Münzen je Dreierreihe · 🎁 Premium-Freischaltung. 2 Linien +250 · 3+ Linien +800 · Koffer in der Mitte +300 · Goldenes X +1.000 · 4 gleiche Ecken +400 · 9 gleiche Felder +20.000. Zwei Geschenke ergeben einen Geschenkfunken.':
-   result.board?.variantId==='premium_27'&&result.board?.symbolVersion===5?
+   result.board?.variantId==='premium_27'&&result.board?.symbolVersion===6?
+     'Zwei echte Geld-Dreierreihen sind auf jedem neuen Premiumlos garantiert. Jede Dreierreihe gewinnt ihren Geldbetrag. Bei 20 echten Symbolen gibt es zusätzliche 1.000 Münzen; ab 24 kann eine Freischaltung dazukommen. 🧊 zählt nicht.':
+    result.board?.variantId==='premium_27'&&result.board?.symbolVersion===5?
     'Vier echte Geld-Dreierreihen sind auf jedem Premiumlos garantiert: 🪙 💵 💼. Jede Dreierreihe gewinnt ihren Geldbetrag. Bei 20 echten Symbolen gibt es zusätzliche 1.000 Münzen; ab 24 kann eine Freischaltung dazukommen. 🧊 zählt nicht.':
    result.board?.variantId==='premium_27'&&result.board?.symbolVersion===4?
    'Drei gleiche Geldsymbole 🪙 💵 💼 in einer waagerechten Reihe gewinnen. Bei 20 echten Symbolfeldern gibt es feste 1.000 Münzen. Ab 24 Symbolfeldern zusätzlich eine Freischaltung mit 3 gleichen Geschenken. 🧊 zählt nicht.':
