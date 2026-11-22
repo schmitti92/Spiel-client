@@ -73,7 +73,7 @@ test('A healthy authenticated hub socket makes no idle room GET; offline fallbac
  assert.ok(start>=0&&end>start);
  const fragment=source.slice(start,end);
  let tick=null,now=1000000,healthy=true,requests=0,rendered=0;
- const context={code:'ABC23D',room:{code:'ABC23D'},operation:false,
+ const context={HUB_DISCONNECTED_FALLBACK_MS:30000,code:'ABC23D',room:{code:'ABC23D'},operation:false,
   pollInFlight:false,lastRoomPollAt:0,document:{hidden:false},pollErrors:0,
   activeProfile:()=>true,hasRecentHubStream:()=>healthy,Date:{now:()=>now},
   pollStop:()=>{},startWatch:()=>{},setInterval:fn=>{tick=fn;return 7},
