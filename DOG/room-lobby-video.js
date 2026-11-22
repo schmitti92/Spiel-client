@@ -8,7 +8,7 @@
  * One automatic showing per room/profile/browser tab session. The welcome
  * film can always be reopened with the "Lobbyfilm ansehen" button.
  */
-import {markDogVideoSeen} from './video-library-watched.js?v=1';
+import {markDogVideoSeen} from './video-library-watched.js?v=2';
 export function createDogRoomWelcomeFilm({root}){
  const videoUrl=new URL('./assets/42667997_1795277919445597.mp4',import.meta.url).href;
  const css=document.createElement('style');
