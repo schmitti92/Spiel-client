@@ -1,0 +1,26 @@
+/* Compact live event dashboard below the right-side Extras buttons. */
+#dog-event-overview[hidden]{display:none!important}
+#dog-event-overview{display:grid;gap:9px;min-width:0;color:#f1e9d9}
+.dog-event-round{font-size:12px;color:#ffe3a4;font-weight:900;border-bottom:1px solid #dfba7b55;padding-bottom:7px}
+.dog-event-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.dog-event-summary-card{min-width:0;display:flex;flex-direction:column;gap:6px;padding:8px;border:1px solid #c7ae7a66;border-radius:10px;background:#071e31b3}
+.dog-event-summary-title{display:flex;flex-direction:column;gap:2px;font-size:10px;line-height:1.25}
+.dog-event-summary-title>span{color:#e8eff6;font-weight:750;overflow-wrap:anywhere}
+.dog-event-summary-title>strong{font-size:18px;color:#ffdda2;font-variant-numeric:tabular-nums}
+.dog-event-summary-card small{font-size:10px;line-height:1.3;color:#b8d2de}
+.dog-event-progress-track{height:5px;border-radius:9px;overflow:hidden;background:#4560789c}
+.dog-event-progress-fill{height:100%;display:block;border-radius:9px;background:linear-gradient(90deg,#f7c566,#fff0af)}
+.dog-event-findings-heading{font-size:12px;color:#ffe3a4;font-weight:900}
+.dog-event-table-scroll{min-width:0;max-height:min(30dvh,230px);overflow:auto;border:1px solid #ffffff30;border-radius:10px;scrollbar-width:thin}
+.dog-event-table{border-collapse:collapse;width:100%;font-size:11px;color:#f1e7d8}
+.dog-event-table th{position:sticky;top:0;background:#13364e;color:#ffdfa0;text-align:left;white-space:nowrap;font-size:10px;z-index:1}
+.dog-event-table td,.dog-event-table th{padding:7px 6px;border-bottom:1px solid #a0bcce24}
+.dog-event-table td:nth-child(2){font-weight:750}
+.dog-event-table td:nth-child(3){white-space:nowrap}
+.dog-event-table tr:last-child td{border-bottom:0}
+.dog-event-table tbody tr:nth-child(even){background:#ffffff09}
+.dog-event-empty,.dog-event-legacy,.dog-event-footnote{margin:0;font-size:10px;line-height:1.45;color:#bfd2db}
+.dog-event-legacy{padding:7px 8px;border-radius:8px;border:1px solid #d9b2737a;color:#ffe6bc}
+.dog-event-footnote{opacity:.86}
+@media(max-width:430px){.dog-event-summary{grid-template-columns:repeat(3,minmax(0,1fr))}.dog-event-summary-card{padding:6px}.dog-event-summary-title>strong{font-size:15px}.dog-event-table td,.dog-event-table th{padding:6px 4px;font-size:10px}}
+@media(prefers-reduced-motion:reduce){.dog-event-progress-fill{transition:none}}
