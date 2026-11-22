@@ -94,3 +94,14 @@ test('an entire legal seven may be continued by a bot without sacrificing rule c
  assert.ok(legalActions(game,1).some(a=>JSON.stringify(a)===JSON.stringify(step)));
  assert.ok(['seven-step','seven-finish'].includes(step.type));
 });
+
+test('a default level applies to unconfigured bots while overrides stay independent',()=>{
+ const cache=new Map();
+ const storage={getItem:key=>cache.get(key)||null,setItem:(key,val)=>cache.set(key,val)};
+ let preferences=saveDogBotDifficulty('default','expert',storage);
+ assert.equal(dogBotDifficultyForSeat(preferences,1),'expert');
+ preferences=saveDogBotDifficulty(1,'easy',storage);
+ assert.equal(dogBotDifficultyForSeat(preferences,1),'easy');
+ assert.equal(dogBotDifficultyForSeat(preferences,2),'expert');
+ assert.equal(readDogBotDifficulties(storage).default,'expert');
+});
