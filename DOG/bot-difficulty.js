@@ -168,7 +168,7 @@ function enemyThreat(game,pawn,ctx){
   if(enemy.inactive||friendly(game,seat,enemy.seat))continue;
   const count=handCounts[enemy.seat];
   if(!count)continue;
-  let matching=remaining.joker||0;
+  const threateningTypes=new Set(['joker']);
   for(const other of game.pieces){
    if(other.owner!==enemy.seat||other.place!=='track')continue;
    const distance=mod(pawn.pos-other.pos);
@@ -176,13 +176,15 @@ function enemyThreat(game,pawn,ctx){
    for(const [type,steps] of Object.entries(KNOWN_FORWARD)){
     if(type==='joker'||type==='swap')continue;
     if(steps.some(n=>n>0&&n===distance||n<0&&-n===backward))
-     matching+=remaining[type]||0;
+     threateningTypes.add(type);
    }
   }
+  // The same card is counted ONCE even if two different pawns could use it.
+  let matching=[...threateningTypes].reduce((total,type)=>total+(remaining[type]||0),0);
   // An opponent can spawn on its own coloured start square and displace a
   // foreign pawn if it still has a figure in reserve.
   if(pawn.pos===enemy.seat*16&&game.pieces.some(p=>p.owner===enemy.seat&&p.place==='home'))
-   matching+=(remaining['13']||0)+(remaining['1/11']||0);
+   for(const type of ['13','1/11'])if(!threateningTypes.has(type))matching+=remaining[type]||0;
   // A swap can also remove a valuable advancing piece from its position.
   if(game.pieces.some(p=>p.owner===enemy.seat&&p.place==='track'))
    matching+=(remaining.swap||0)*.17;
