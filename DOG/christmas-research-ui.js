@@ -337,6 +337,19 @@ export function initChristmasResearch(){
   const response=await reply.json().catch(()=>({}));
   if(!reply.ok||response.ok!==true)throw Error(response.error||'RESEARCH_SERVER_ERROR');
   if(user()?.uid!==uid)throw Error('Das Spielerprofil hat gewechselt.');
+  // The claim response includes the server's just-committed wallet or
+  // village balance. Update menu badges immediately; another GET would risk
+  // an older cached snapshot and waste Firebase reads.
+  if(endpoint==='/claim'&&body?.type==='free_ticket'&&
+     Number.isSafeInteger(response.scratchVoucherCount))
+   window.dispatchEvent(new CustomEvent('dog-christmas-badges-update',{
+    detail:{scratch:response.scratchVoucherCount}
+   }));
+  if(endpoint==='/claim'&&body?.type==='builder'&&
+     Number.isSafeInteger(response.villageLightsTenths))
+   window.dispatchEvent(new CustomEvent('dog-christmas-village-balance-changed',{
+    detail:{lightsTenths:response.villageLightsTenths}
+   }));
   return response.research;
  }
  async function upgrade(skill){
@@ -359,8 +372,6 @@ export function initChristmasResearch(){
   try{
    data=await call('/claim',{type:id,...(id==='free_ticket'?{tier}:{})});serverData=data;loadedUid=user()?.uid||null;loadedAt=Date.now();
    reportResearchBadge();
-   if(id==='free_ticket')window.dispatchEvent(new Event('dog-christmas-badges-refresh'));
-   if(id==='builder')window.dispatchEvent(new Event('dog-christmas-village-balance-changed'));
    window.dispatchEvent(new Event('dog-scratch-balance-changed'));
    message(id==='builder'?'⭐ Die Weihnachtslichter sind dem gemeinsamen Dorf gutgeschrieben.':'🎟️ Dein Losgutschein wurde deinem Rubbellos-Konto gutgeschrieben.');
   }catch(error){message('⚠️ Abholung fehlgeschlagen: '+error.message,true);}
