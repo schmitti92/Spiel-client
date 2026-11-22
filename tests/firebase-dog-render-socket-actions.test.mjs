@@ -24,7 +24,8 @@ function harness({socketEnabled=true,socketReady=true}={}){
   socketSupportsDogActions:socketEnabled,
   dogSocketActions:dispatcher,
   acceptedMatchId:'verified-match-id',matchHint:'ignore',
-  game:{revision:42},crypto:{randomUUID:()=> 'dog-action-unique-000001'},
+  game:{revision:42},user:()=>({uid:'alice'}),socketAuthenticatedUid:'alice',
+  crypto:{randomUUID:()=> 'dog-action-unique-000001'},
   hubRequest:async(path,method,payload)=>{
    http.push({path,method,payload});
    return {code:'123',match:{id:payload.matchId,dog:{revision:43}}};
@@ -145,7 +146,7 @@ test('Reply from a stale socket cannot satisfy a move pending on a different aut
 test('Move and research actions share one safe dispatcher; socket room subscription remains primary',()=>{
  assert.match(source,/sendOnlineDogAction\(move\)/);
  assert.match(source,/sendOnlineDogAction\(action\)/);
- assert.match(source,/if\(socket\?\.readyState===1&&socketHasRoom&&socketSupportsDogActions\)/);
+ assert.match(source,/if\(socket\?\.readyState===1&&socketHasRoom&&socketSupportsDogActions&&\s*socketAuthenticatedUid===user\(\)\?\.uid\)/);
  assert.match(source,/data\.type==='dog_capabilities'/);
  assert.match(source,/dogSocketActions\.receive\(data,socket\)/);
  assert.match(source,/dogSocketActions\.disconnected\(socket\)/);
