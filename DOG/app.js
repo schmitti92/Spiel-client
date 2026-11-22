@@ -36,7 +36,7 @@ let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHea
 const dogSocketActions=createDogSocketActionDispatcher();
 let lastFallbackRoomReadAt=0;
 let lastAnnouncedFinishedMatchId=null; // One Christmas eligibility refresh per completed DOG match.
-let socketAwaitingFirstRoomAt=0,socketHasRoom=false,socketLastHealthyAt=0;
+let socketAwaitingFirstRoomAt=0,socketHasRoom=false,socketLastHealthyAt=0,socketAuthenticatedUid=null;
 const DOG_DISCONNECTED_READ_MS=30000; // Render WebSocket is primary.
 const DOG_FIRST_ROOM_GRACE_MS=12000; // Recover if a connected socket never receives its initial room.
 const DOG_SOCKET_CONNECT_MS=15000,DOG_SOCKET_STALE_MS=95000; // Reconnect hung sockets without polling Firebase.
@@ -65,7 +65,8 @@ async function sendOnlineDogAction(action){
   actionId:crypto.randomUUID(),action
  };
  const socket=onlineSocket;
- if(socket?.readyState===1&&socketHasRoom&&socketSupportsDogActions){
+ if(socket?.readyState===1&&socketHasRoom&&socketSupportsDogActions&&
+    socketAuthenticatedUid===user()?.uid){
   try{return await dogSocketActions.request(socket,payload);}
   catch(e){
    if(!e?.dogSocketTransport)throw e; // Real DOG rule error: no extra GET.
@@ -127,8 +128,18 @@ function startSocket(){
  socket.onopen=async()=>{
   clearTimeout(connectTimer);
   socketLastHealthyAt=Date.now();
-  try{const token=await user().getIdToken();if(socket.readyState===1)socket.send(JSON.stringify({type:'subscribe',code:hubCode,profileIdToken:token}));}
-  catch(_){socket.close();return;}
+  const person=user(),expectedUid=person?.uid;
+  if(!expectedUid){socket.close();return;}
+  try{
+   const token=await person.getIdToken();
+   // A profile may change while Firebase is issuing the token. Never
+   // subscribe a stale player or expose their private hand to a new login.
+   if(user()?.uid!==expectedUid){socket.close();return;}
+   socketAuthenticatedUid=expectedUid;
+   if(socket.readyState===1)socket.send(JSON.stringify({
+    type:'subscribe',code:hubCode,profileIdToken:token
+   }));
+  }catch(_){socket.close();return;}
   onlineHeartbeat=setInterval(()=>{
    if(socket.readyState!==1)return;
    if(Date.now()-socketLastHealthyAt>DOG_SOCKET_STALE_MS){socket.close();return;}
@@ -136,6 +147,7 @@ function startSocket(){
   },30000);
  };
  socket.onmessage=e=>{
+  if(socketAuthenticatedUid!==user()?.uid){socket.close();return;}
   let data;try{data=JSON.parse(e.data)}catch(_){return;}
   if(data.type==='dog_capabilities'){
    // Older Render deployments send no capability packet; keep immediate HTTP
@@ -157,7 +169,7 @@ function startSocket(){
   clearTimeout(connectTimer);emojiSocketReady=false;
   dogSocketActions.disconnected(socket);socketSupportsDogActions=false;
   if(onlineHeartbeat){clearInterval(onlineHeartbeat);onlineHeartbeat=null;}
-  if(onlineSocket===socket)onlineSocket=null;
+  if(onlineSocket===socket){onlineSocket=null;socketAuthenticatedUid=null;}
  };
  socket.onerror=()=>{};
 }
@@ -198,7 +210,10 @@ async function initOnline(){
   if(!onlineSocket||onlineSocket.readyState>=2)startSocket();
  },8000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){startSocket();}});
- window.addEventListener('spielonline-change',()=>{if(user())startSocket();});
+ window.addEventListener('spielonline-change',()=>{
+  if(socketAuthenticatedUid&&socketAuthenticatedUid!==user()?.uid)onlineSocket?.close();
+  if(user())startSocket();
+ });
 }
 
 // Touch gestures change only the SVG viewBox, never game state or other UI.
