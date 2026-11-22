@@ -77,7 +77,7 @@ jobs:
         with:
           node-version: '22'
       - run: node --check DOG/app.js
-      - run: node --check DOG/christmas-discovery.js && node --test tests/dog-christmas-discovery.test.mjs
+      - run: node --check DOG/christmas-discovery.js && node --test tests/dog-christmas-discovery.test.mjs tests/dog-christmas-gold.test.mjs
       - run: node --check DOG/room-board-preview.js
       - run: node --check DOG/room-lobby.js
       - run: node --check DOG/room-lobby-state.js
