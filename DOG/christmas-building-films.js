@@ -111,7 +111,7 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
  }
  function showUpgrade(id,fromLevel,toLevel){
   const film=christmasBuildingFilmForUpgrade(id,fromLevel,toLevel);
-  if(!film||active||dialog.open)return false;
+  if(!film||!Array.isArray(film.clips)||film.clips.length===0||active||dialog.open)return false;
   const name=id==='workshop'?'Wichtelwerkstatt':'Weihnachtsbäckerei';
   dialog.querySelector('[data-film-heading]').textContent=(id==='workshop'?'🧸':'🍪')+' '+name.toUpperCase()+' · STUFE '+toLevel;
   dialog.querySelector('[data-film-title]').textContent=film.title;
@@ -145,7 +145,7 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
   if(clipIndex<clips().length)loadClip(true);
   else{
    finished=true;
-   status.textContent='✨ Beide Szenen abgeschlossen! Du kannst die Geschichte erneut ansehen oder zum Dorf zurückkehren.';
+   status.textContent='✨ '+(clips().length===1?'Die Geschichte ist':'Alle '+clips().length+' Szenen sind')+' abgeschlossen! Du kannst den Film erneut ansehen oder zum Dorf zurückkehren.';
    syncPlayButton();
   }
  });
