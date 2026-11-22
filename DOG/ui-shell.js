@@ -53,6 +53,7 @@ const extraGrid=$('dog-extra-buttons');
 const extension=$('dog-extension-panel');
 const extensionTitle=$('dog-extension-title');
 const emojiBody=$('dog-emoji-panel-root');
+const magicBody=$('dog-magic-panel-root');
 const eventBody=$('dog-event-overview');
 const placeholder=$('dog-extension-placeholder');
 let activeExtension=null;
@@ -71,13 +72,14 @@ function setExtension(id){
  }
  if(extensionTitle)extensionTitle.textContent=activeExtension?(dogFeatureById(activeExtension).icon+' '+dogFeatureById(activeExtension).title):'';
  if(emojiBody)emojiBody.hidden=activeExtension!=='emojis';
+ if(magicBody)magicBody.hidden=activeExtension!=='magic';
  if(eventBody){
   eventBody.hidden=activeExtension!=='events';
   if(activeExtension==='events')renderDogEventOverview(eventBody,lastEventSnapshot?.christmas,lastEventSnapshot?.players);
  }
  if(placeholder){
-  placeholder.hidden=!activeExtension||activeExtension==='emojis'||activeExtension==='events';
-  placeholder.textContent=activeExtension&&!['emojis','events'].includes(activeExtension)?dogFeatureById(activeExtension).description:'';
+  placeholder.hidden=!activeExtension||['magic','emojis','events'].includes(activeExtension);
+  placeholder.textContent=activeExtension&&!['magic','emojis','events'].includes(activeExtension)?dogFeatureById(activeExtension).description:'';
  }
  extraGrid?.querySelectorAll('[data-dog-extra]').forEach(button=>{
   const isCurrent=button.dataset.dogExtra===activeExtension;
