@@ -16,6 +16,7 @@ on:
       - 'tests/dog-green-moves.test.mjs'
       - 'tests/dog-piece-animations.test.mjs'
       - 'tests/dog-motion-settings.test.mjs'
+      - 'tests/dog-bot-difficulty.test.mjs'
       - 'tests/dog-ui-animations.test.mjs'
       - 'tests/dog-premium-cockpit.test.mjs'
       - 'tests/dog-victory-summary.test.mjs'
@@ -52,6 +53,7 @@ on:
       - 'tests/dog-board-gestures.test.mjs'
       - 'tests/dog-piece-animations.test.mjs'
       - 'tests/dog-motion-settings.test.mjs'
+      - 'tests/dog-bot-difficulty.test.mjs'
       - 'tests/dog-ui-animations.test.mjs'
       - 'tests/dog-premium-cockpit.test.mjs'
       - 'tests/dog-victory-summary.test.mjs'
@@ -86,6 +88,7 @@ jobs:
       - run: node --check DOG/room-lobby-state.js
       - run: node --check DOG/piece-animations.js
       - run: node --check DOG/motion-settings.js
+      - run: node --check DOG/bot-difficulty.js && node --test tests/dog-bot-difficulty.test.mjs
       - run: node --check DOG/ui-animations.js
       - run: node --check DOG/victory-summary.js && node --test tests/dog-first-four-wins.test.mjs
       - run: node --check DOG/card-visuals.js
