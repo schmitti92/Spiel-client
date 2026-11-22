@@ -16,7 +16,7 @@ export function summarizeDogVictory(game){
    goalCount:game.pieces.filter(piece=>piece.owner===p.seat&&piece.place==='goal').length,
    winning:p.seat===game.winner
   }));
-  return {winner:game.winner,mode:'solo3',teams:players.map(p=>({
+  return {winner:game.winner,winningSeat:game.winner,mode:'solo3',teams:players.map(p=>({
    id:p.seat,name:p.name,winning:p.winning,total:p.goalCount,capacity:4
   })),players};
  }
@@ -24,6 +24,12 @@ export function summarizeDogVictory(game){
 
  const goalCounts=Array.from({length:4},(_,seat)=>game.pieces.filter(p=>
    p.owner===seat&&p.place==='goal').length);
+ // The actual first finisher (4/4) is recorded separately from the
+ // winning team; this also handles snapshots from before winnerSeat existed.
+ const winningSeat=Number.isInteger(game.winnerSeat)&&
+  game.winnerSeat>=0&&game.winnerSeat<4&&
+  game.winnerSeat%2===game.winner&&goalCounts[game.winnerSeat]===4?
+    game.winnerSeat:DOG_VICTORY_SEATS[game.winner].find(seat=>goalCounts[seat]===4)??null;
  const teams=[0,1].map(team=>({
    id:team,name:DOG_VICTORY_TEAM_NAMES[team],winning:team===game.winner,
    total:DOG_VICTORY_SEATS[team].reduce((sum,seat)=>sum+goalCounts[seat],0)
@@ -35,5 +41,5 @@ export function summarizeDogVictory(game){
    return {seat,name:String(player?.name||'Spieler '+(seat+1)),bot:!!player?.bot,
      goalCount:goalCounts[seat],winning:DOG_VICTORY_SEATS[game.winner].includes(seat)};
  });
- return {winner:game.winner,teams:[teams[game.winner],teams[1-game.winner]],players};
+ return {winner:game.winner,winningSeat,teams:[teams[game.winner],teams[1-game.winner]],players};
 }
