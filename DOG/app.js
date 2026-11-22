@@ -8,7 +8,7 @@ import {loadMotionMode,saveMotionMode,applyMotionMode} from './motion-settings.j
 import {createDogVisualFeedback} from './ui-animations.js?v=2';
 import {dogMoveBlockReason} from './invalid-move-reasons.js?v=2';
 import {DOG_MOVE_HINTS_KEY,readDogMoveHints,writeDogMoveHints,dogLegalTargets} from './move-hints.js?v=1';
-import {summarizeDogVictory} from './victory-summary.js?v=2';
+import {summarizeDogVictory} from './victory-summary.js?v=3';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction,completedDogSeat} from './engine.js?v=5';
 import {decideDogRoomUpdate} from './online-sync.js?v=15';
 import {createDogSocketActionDispatcher} from './socket-actions.js?v=1';
@@ -767,7 +767,7 @@ function updateVictoryCeremony(){
   return;
  }
  const victor=result.winner;
- const key=(online?(acceptedMatchId||matchHint||hubCode):'local')+'|'+game.round+'|'+victor;
+ const key=(online?(acceptedMatchId||matchHint||hubCode):'local')+'|'+game.round+'|'+victor+'|'+result.winningSeat;
  const summary=JSON.stringify([key,result.teams,result.players,appearance.pieces]);
  if(victorySummaryKey!==summary){
   victorySummaryKey=summary;
