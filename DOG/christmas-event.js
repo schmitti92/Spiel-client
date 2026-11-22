@@ -7,7 +7,7 @@
 import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotalCost,christmasVillageTotalCost} from './christmas-building-costs.js?v=2';
 import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewards-ui.js?v=5';
 import {initChristmasTreeFilms} from './christmas-tree-films.js?v=2';
-import {initChristmasBuildingFilms} from './christmas-building-films.js?v=1';
+import {initChristmasBuildingFilms} from './christmas-building-films.js?v=2';
 import {initChristmasStory} from './christmas-story.js?v=7';
 import {initChristmasScratch} from './christmas-scratch-ui.js?v=86';
 import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=10';
@@ -938,8 +938,9 @@ async function purchaseBuilding(id){
   // Film is triggered ONLY by the successful, server-confirmed 2 -> 3 purchase.
   // Rendering/refreshing or developer preview cannot launch it.
   const upgradedLevel=Number(result.village?.levels?.[id]);
-  const playBuildingFilm=id==='bakery'&&level===2&&upgradedLevel===3&&result.unchanged!==true;
-  const filmOpened=playBuildingFilm&&buildingFilms.showUpgrade(id,level,upgradedLevel);
+  // Only successful 2→3 building upgrades with a registered film launch a story.
+  // Render remains authoritative and repeated reads/previews never replay films.
+  const filmOpened=upgradedLevel===level+1&&result.unchanged!==true&&buildingFilms.showUpgrade(id,level,upgradedLevel);
   showLiveVillage({village:result.village,shared:true,enabled:villageEventActive,canUpgrade:villageCanUpgrade},{deferTreeFilms:filmOpened});
   window.dispatchEvent(new Event('dog-scratch-balance-changed'));
   $('building-event-mode').textContent='✅ '+definitions.find(entry=>entry.id===id).title+' wurde auf Stufe '+(level+1)+' ausgebaut. '+cost+' Lichter abgebucht.';
