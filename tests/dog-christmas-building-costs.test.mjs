@@ -57,7 +57,14 @@ test('DOG event visibly quotes costs but still does not impersonate live purchas
  assert.match(script,/data-building-upgrade-price/);
  assert.doesNotMatch(html,/id="panel-gifts"|id="tab-gifts"/,'obsolete gifts information tab stays removed');
  assert.match(script,/villageRequest\('village\/upgrade','POST'/);
- assert.doesNotMatch(script,/firebase\.firestore|localStorage\.setItem/);
+ assert.doesNotMatch(script,/firebase\.firestore/,
+  'only Render may credit shared village accounts or DOG prizes');
+ // The one legitimate localStorage write remembers ONLY when a previously
+ // successful server-side legacy import check ran; it is not a light,
+ // upgrade, entitlement or ticket balance.
+ assert.match(script,/villageLegacyImportMarkerKey\(villageApi,uid\)/);
+ assert.match(script,/localStorage\.setItem\(key,String\(checkedAt\)\)/);
+ assert.doesNotMatch(script,/localStorage\.setItem\([^\n]*(?:lights|vouchers|prizes|xp)/i);
 });
 
 test('six clickable buildings share the same SVG landscape without a separate district',()=>{
