@@ -160,10 +160,12 @@ test('idle Firebase reads are rate-limited without delaying a verified DOG victo
  assert.match(intro,/if\(matchFinishedOnThisPage\)ceremonyDismissed=true;\s*void refresh\(\{force:true\}\)/);
  assert.match(intro,/if\(!initiallyAuthenticated\)setTimeout\(\(\)=>void refresh\(\),1700\)/);
  assert.match(intro,/if\(!initiallyAuthenticated\)setTimeout\(\(\)=>void check\(\),1700\)/);
- assert.match(event,/const VILLAGE_POLL_MS=180000/);
+ assert.doesNotMatch(event,/const VILLAGE_POLL_MS=/,
+  'leaving the DOG event open must not schedule background Firebase reads');
+ assert.match(event,/Deliberately no interval-based village GETs/);
  assert.match(event,/const VILLAGE_TAB_FRESH_MS=60000/);
  assert.match(event,/const VILLAGE_VISIBLE_FRESH_MS=60000/);
- assert.match(event,/visibleVillageTab\(\)[\s\S]*?minimumAgeMs:VILLAGE_POLL_MS/);
+ assert.match(event,/if\(!document.hidden&&visibleVillageTab\(\)\)void reloadVillage\(\{minimumAgeMs:VILLAGE_VISIBLE_FRESH_MS\}\)/);
  assert.match(event,/if\(minimumAgeMs>0&&villageLive&&lastVillageReadUid===person\.uid/);
  assert.match(event,/if\(pendingVillageRead\)return pendingVillageRead/);
  assert.match(event,/\$\('building-wallet-refresh'\)\.addEventListener\('click',\(\)=>void reloadVillage\(\)\)/);
