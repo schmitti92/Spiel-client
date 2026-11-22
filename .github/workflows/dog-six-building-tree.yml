@@ -1,0 +1,32 @@
+name: DOG six-building Christmas tree progression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/christmas-building-costs.js'
+      - 'DOG/christmas-tree-progression.js'
+      - 'DOG/christmas-event.js'
+      - 'DOG/christmas-event.html'
+      - 'DOG/christmas-intro-gate.js'
+      - 'tests/dog-christmas-tree-six-buildings.test.mjs'
+      - '.github/workflows/dog-six-building-tree.yml'
+  pull_request:
+    paths:
+      - 'DOG/christmas-building-costs.js'
+      - 'DOG/christmas-tree-progression.js'
+      - 'DOG/christmas-event.js'
+      - 'DOG/christmas-event.html'
+      - 'DOG/christmas-intro-gate.js'
+      - 'tests/dog-christmas-tree-six-buildings.test.mjs'
+      - '.github/workflows/dog-six-building-tree.yml'
+  workflow_dispatch:
+jobs:
+  six-building-tree:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/christmas-tree-progression.js && node --check DOG/christmas-event.js
+      - run: node --test tests/dog-christmas-tree-six-buildings.test.mjs tests/dog-christmas-building-costs.test.mjs tests/dog-christmas-live-ui.test.mjs
