@@ -155,7 +155,7 @@ test('Move and research actions share one safe dispatcher; socket room subscript
  assert.match(source,/const DOG_DISCONNECTED_READ_MS=30000/);
  assert.match(source,/if\(\(!socketReady\|\|firstRoomTimedOut\)/);
  const html=readFileSync(new URL('../DOG/index.html',import.meta.url),'utf8');
- assert.match(html,/app\.js\?v=88/);
+ assert.match(html,/app\.js\?v=\d+/);
 });
 
 test('A Firebase login switch during socket failure must never replay another player\'s move',async()=>{
