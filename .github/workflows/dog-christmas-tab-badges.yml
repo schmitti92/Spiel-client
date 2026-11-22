@@ -1,0 +1,38 @@
+name: DOG Christmas actionable tab badges
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/christmas-tab-badges.js'
+      - 'DOG/christmas-tab-badges.css'
+      - 'DOG/christmas-event.js'
+      - 'DOG/christmas-event.html'
+      - 'DOG/christmas-intro-gate.js'
+      - 'DOG/christmas-research-ui.js'
+      - 'DOG/christmas-scratch-ui.js'
+      - 'DOG/christmas-player-levels-ui.js'
+      - 'tests/dog-christmas-tab-badges.test.mjs'
+      - '.github/workflows/dog-christmas-tab-badges.yml'
+  pull_request:
+    paths:
+      - 'DOG/christmas-tab-badges.js'
+      - 'DOG/christmas-tab-badges.css'
+      - 'DOG/christmas-event.js'
+      - 'DOG/christmas-event.html'
+      - 'DOG/christmas-intro-gate.js'
+      - 'DOG/christmas-research-ui.js'
+      - 'DOG/christmas-scratch-ui.js'
+      - 'DOG/christmas-player-levels-ui.js'
+      - 'tests/dog-christmas-tab-badges.test.mjs'
+      - '.github/workflows/dog-christmas-tab-badges.yml'
+  workflow_dispatch:
+jobs:
+  actionable-counters:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/christmas-tab-badges.js && node --check DOG/christmas-event.js && node --check DOG/christmas-research-ui.js && node --check DOG/christmas-scratch-ui.js && node --check DOG/christmas-player-levels-ui.js
+      - run: node --test tests/dog-christmas-tab-badges.test.mjs tests/dog-christmas-building-costs.test.mjs tests/dog-christmas-live-ui.test.mjs
