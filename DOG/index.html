@@ -389,7 +389,7 @@ html[data-dog-motion="off"] .dog-legal-target-ring{animation:none}
 .playing-card.dog-designed[data-card-edition="kartendesign-05"].picked{filter:drop-shadow(0 0 5px #f9d389)}
 </style>
 <link rel="stylesheet" href="./touch-navigation.css?v=1">
-<link rel="stylesheet" href="./christmas-discovery.css?v=3">
+<link rel="stylesheet" href="./christmas-discovery.css?v=4">
 <link rel="stylesheet" href="./christmas-event-overview.css?v=1">
 <link rel="stylesheet" href="./video-library.css?v=1">
 <style id="dog-christmas-link-visibility">
@@ -649,6 +649,7 @@ html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christm
   <button id="dog-extra-close" type="button">Schließen</button>
 </dialog>
 <dialog id="dog-christmas-find-popup" class="dog-christmas-find-popup" aria-labelledby="dog-christmas-find-title" aria-describedby="dog-christmas-find-message" hidden>
+ <div class="dog-christmas-find-card">
  <div class="dog-christmas-find-content">
   <span class="dog-christmas-find-icon" id="dog-christmas-find-icon" aria-hidden="true">⭐</span>
   <div class="dog-christmas-find-copy">
@@ -659,6 +660,7 @@ html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christm
   </div>
  </div>
  <button class="dog-christmas-find-confirm" id="dog-christmas-find-confirm" type="button">✓ Bestätigen</button>
+ </div>
 </dialog>
 <div id="dog-rule-toast" class="dog-rule-toast" role="status" aria-live="polite" aria-atomic="true" hidden>
  <div class="dog-rule-toast-symbol" aria-hidden="true">⚠️</div>
@@ -781,7 +783,7 @@ mountChristmasLinks();
 </script>
 <script type="module">
 import('./ui-shell.js?v=9').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
-import('./app.js?v=102').catch(error=>{
+import('./app.js?v=103').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
