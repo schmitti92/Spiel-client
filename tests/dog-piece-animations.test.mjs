@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {snapshotPieces,pointForPiece,planPieceMotions,createPieceAnimator,shouldAnimatePieceUpdate,opponentMoveNotice} from '../DOG/piece-animations.js';
+import {snapshotPieces,pointForPiece,planPieceMotions,createPieceAnimator,shouldAnimatePieceUpdate,opponentMoveNotice,isDogBotMove} from '../DOG/piece-animations.js';
 
 const board = {
   track: Array.from({length:64}, (_,i)=>({x:i*10,y:i%2*20})),
@@ -114,4 +114,14 @@ test('public opponent and bot move notices never reveal private hands',()=>{
  assert.equal(opponentMoveNotice(game,motions,{online:true,ownSeat:1}),null);
  assert.deepEqual(opponentMoveNotice(game,motions,{online:true,ownSeat:0}),{seat:1,text:'🤖 Computer Blau spielt 13'});
  assert.equal(opponentMoveNotice({...game,history:['Runde 2: neue Karten']},motions,{online:true,ownSeat:0}),null);
+});
+
+test('bot animations classify the actor, not a captured pawn owner',()=>{
+ const motions=[{id:0,owner:0,kind:'capture',points:[board.track[4],board.home[0][0]]}];
+ const game={players:[{seat:0,name:'Chris',bot:false},{seat:1,name:'Bot Blau',bot:true}],
+  history:['Bot Blau spielt eine 5']};
+ assert.equal(isDogBotMove(game,motions),true,'captured human pawn was sent home by bot');
+ assert.equal(isDogBotMove({...game,history:['Chris spielt eine 5']},motions),false);
+ assert.equal(isDogBotMove({...game,history:['Karten werden getauscht']},motions),false);
+ assert.equal(isDogBotMove(game,[]),false);
 });
