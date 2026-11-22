@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - 'DOG/verified-cosmetics.js'
+      - 'DOG/christmas-intro-gate.js'
+      - 'tests/firebase-dog-eligibility-refresh-budget.test.mjs'
       - 'DOG/card-visuals.js'
       - 'DOG/app.js'
       - 'tests/firebase-dog-cosmetics-low-read.test.mjs'
@@ -22,4 +24,4 @@ jobs:
           node-version: '22'
       - run: node --check DOG/verified-cosmetics.js
       - run: node --check DOG/card-visuals.js
-      - run: node --test tests/firebase-dog-cosmetics-low-read.test.mjs tests/dog-card-editions.test.mjs
+      - run: node --test tests/firebase-dog-cosmetics-low-read.test.mjs tests/firebase-dog-eligibility-refresh-budget.test.mjs tests/dog-card-editions.test.mjs
