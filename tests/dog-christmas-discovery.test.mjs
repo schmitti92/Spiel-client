@@ -41,7 +41,7 @@ test('each dialog shows the correct named player and the server-confirmed reward
  const scratch=describeDogChristmasDiscovery({type:'scratch',seat:1,tier:'medium'},players);
  const double=describeDogChristmasDiscovery({type:'scratch',seat:0,tier:'double'},players);
  assert.match(light.message,/Chris.*2,5 Weihnachtslichter/);
- assert.match(gold.message,/Vanessa.*2\\.000 Goldmünzen/);
+ assert.match(gold.message,/Vanessa.*2\.000 Goldmünzen/);
  assert.match(scratch.message,/Vanessa.*mittleres Rubbellos/);
  assert.match(double.message,/Chris.*Doppellos/);
  assert.equal(describeDogChristmasDiscovery({type:'gold',seat:2,amount:500},players),null);
@@ -79,13 +79,13 @@ test('popup waits for explicit confirmation and queues separate room rewards',()
 });
 
 test('popup only reports server-provided rewards; never requests or writes game state',()=>{
- assert.doesNotMatch(script,/fetch\\(|getIdToken|firebase|sendOnlineDogAction|setTimeout/);
+ assert.doesNotMatch(script,/fetch\(|getIdToken|firebase|sendOnlineDogAction|setTimeout/);
  assert.match(script,/Weihnachtslichter|Rubbellos|Goldmünzen/);
  const html=readFileSync(new URL('../DOG/index.html',import.meta.url),'utf8');
  const app=readFileSync(new URL('../DOG/app.js',import.meta.url),'utf8');
  assert.match(html,/<dialog id="dog-christmas-find-popup"/);
  assert.match(html,/id="dog-christmas-find-confirm"[^>]*>✓ Bestätigen/);
- assert.match(app,/newDogChristmasDiscoveries\\(previousChristmas,onlineChristmas,game\\?\\.players\\)/);
+ assert.match(app,/newDogChristmasDiscoveries\(previousChristmas,onlineChristmas,game\?\.players\)/);
 });
 
 test('old verified activity shows previously collected fields even without the new stored arrays',()=>{
