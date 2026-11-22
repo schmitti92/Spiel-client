@@ -4,6 +4,7 @@
  * its authoritative match.christmas.giftCount. No reads, writes or polling.
  * The watched marker is scoped to the signed-in profile on this device.
  */
+import {markDogVideoSeen} from './video-library-watched.js?v=1';
 const SEEN_PREFIX='dog-first-light-film-seen-v1:';
 const VIDEO='./assets/Lichtertal_Der_erste_Funke_120_Sekunden.mp4';
 
@@ -126,6 +127,7 @@ export function initDogFirstLightFilm({currentUid=()=>null}={}){
  video.addEventListener('play',syncPlay);
  video.addEventListener('pause',syncPlay);
  video.addEventListener('ended',()=>{
+  if(activeUid)void markDogVideoSeen('first-light');
   status.textContent='🎄 Der erste Funke ist erwacht! Jetzt könnt ihr gemeinsam weitere Weihnachtslichter sammeln.';
   syncPlay();
  });
