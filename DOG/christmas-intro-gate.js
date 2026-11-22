@@ -240,7 +240,7 @@ export function showChristmasIntro(onDone=()=>{},onLater=()=>{}){
 export function mountChristmasLinks(){
  let pending=false,pendingAgain=false,shownUid=null,activeUid=null;
  let lastEligibilityReadAt=0,lastEligibilityUid=null;
- const ELIGIBILITY_FOCUS_MIN_MS=20000; // Focus/visibility should not double-read.
+ const ELIGIBILITY_FOCUS_MIN_MS=120000; // Focus/visibility reuse eligibility; actual match completion forces an immediate check.
  // The film belongs to the actual DOG game AFTER its winner ceremony.
  // This module also runs in the shared hub, which has no ceremony at all.
  // Never launch a Christmas film there just because an old profile is eligible.
