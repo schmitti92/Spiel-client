@@ -345,7 +345,7 @@ export function initChristmasScratch(){
  const STATS_VARIANT_LABELS=Object.freeze([
   ...VARIANT_LABELS,
   ['tic_tac_toe','🎯 DOG Tic-Tac-Toe','Spezial · 500 🪙'],
-  ['number_one_20','🔢 Glückszahl 1','Zahlenlos · 500 🪙'],
+  ['number_one_20','🔢 Glückszahl 1','Zahlenlos · 20 × 2 Felder'],
   ['dog_jackpot_9','🐾 Finde DOG!','Jackpot · 1.000 🪙']
  ]);
  const variantTiers=Object.freeze({simple:['gifts','snow_collect'],medium:['elf'],premium:['premium_27']});
