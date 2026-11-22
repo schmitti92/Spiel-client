@@ -167,3 +167,30 @@ dialog[open]::backdrop{animation:dog-backdrop-enter calc(.2s * var(--dog-motion-
 @media(prefers-reduced-motion:reduce){
  *,*::before,*::after{animation:none!important;transition-duration:0s!important;scroll-behavior:auto!important}
 }
+
+/* Public move-history notice shown during animated opponent/bot moves.
+   Kept outside the SVG so zooming and board hit targets remain untouched. */
+.board-card{position:relative}
+.dog-opponent-move-notice{
+ position:absolute;z-index:9;top:12px;left:12px;
+ max-width:min(68%,420px);padding:8px 12px;
+ border:1px solid var(--dog-opponent-color,#f4dca5);
+ border-left:4px solid var(--dog-opponent-color,#f4dca5);
+ border-radius:12px;background:rgba(10,27,41,.92);
+ color:#fff8e7;font-size:clamp(11px,1.65vw,14px);
+ font-weight:750;line-height:1.35;
+ box-shadow:0 5px 20px #0008;
+ pointer-events:none;opacity:0;visibility:hidden;
+ transform:translateY(-5px);
+ transition:opacity .22s ease,transform .22s ease,visibility .22s;
+}
+.dog-opponent-move-notice.is-visible{
+ opacity:1;visibility:visible;transform:translateY(0);
+}
+@media(max-width:500px){
+ .dog-opponent-move-notice{top:8px;left:8px;max-width:64%;padding:6px 9px;font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+ .dog-opponent-move-notice{transition:none;transform:none}
+}
+[data-dog-motion="off"] .dog-opponent-move-notice{transition:none;transform:none}
