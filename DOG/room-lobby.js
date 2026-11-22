@@ -3,7 +3,7 @@
  * remains the sole owner of authenticated HTTP/WS requests and game start.
  */
 import {renderDogRoomBoard} from './room-board-preview.js?v=3';
-import {summarizeDogRoomLobby} from './room-lobby-state.js?v=1';
+import {summarizeDogRoomLobby} from './room-lobby-state.js?v=2';
 import {createDogRoomWelcomeFilm} from './room-lobby-video.js?v=2';
 import {guardDesignerLink} from './designer-level-access.js?v=3';
 
