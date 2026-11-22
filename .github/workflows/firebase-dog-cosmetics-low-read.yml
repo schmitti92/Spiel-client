@@ -1,10 +1,21 @@
 name: Firebase DOG cosmetics low-read UI
 on:
+  pull_request:
+    paths:
+      - 'DOG/verified-cosmetics.js'
+      - 'DOG/christmas-intro-gate.js'
+      - 'DOG/index.html'
+      - 'tests/firebase-dog-eligibility-refresh-budget.test.mjs'
+      - 'DOG/card-visuals.js'
+      - 'DOG/app.js'
+      - 'tests/firebase-dog-cosmetics-low-read.test.mjs'
+      - '.github/workflows/firebase-dog-cosmetics-low-read.yml'
   push:
     branches: [main]
     paths:
       - 'DOG/verified-cosmetics.js'
       - 'DOG/christmas-intro-gate.js'
+      - 'DOG/index.html'
       - 'tests/firebase-dog-eligibility-refresh-budget.test.mjs'
       - 'DOG/card-visuals.js'
       - 'DOG/app.js'
