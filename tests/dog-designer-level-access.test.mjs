@@ -66,10 +66,10 @@ test('direct studio checks level first, only then loads editing script',()=>{
  const room=read('DOG/room-lobby.js');
  const hub=read('hub-lobby.html');
  assert.match(html,/data-designer-access="pending"/);
- assert.match(html,/design-studio-entry\.js\?v=1/);
+ assert.match(html,/design-studio-entry\.js\?v=3/);
  assert.doesNotMatch(html,/<script type="module" src="\.\/design-studio\.js/);
  assert.match(entry,/if\(level<DESIGNER_MIN_LEVEL\)/);
- assert.match(entry,/await import\('\.\/design-studio\.js\?v=12'\)/);
+ assert.match(entry,/await import\('\.\/design-studio\.js\?v=13'\)/);
  assert.match(css,/body:not\(\[data-designer-access="allowed"\]\) \.studio-page/);
  assert.match(room,/designerGate\.updateTarget/);
  assert.match(hub,/id="dog-room-designer"[^>]*data-level-locked="true"/);
