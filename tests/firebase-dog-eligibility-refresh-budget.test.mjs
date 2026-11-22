@@ -122,3 +122,9 @@ test('The winner film is never shown on hub pages without the real winner dialog
  assert.equal(h.shown(),0);
  assert.equal(h.calls(),2,'server may check unlock but must not create unverified victory UI');
 });
+
+test('DOG game HTML loads the optimized winner eligibility script instead of an old cached version',()=>{
+ const html=readFileSync(new URL('../DOG/index.html',import.meta.url),'utf8');
+ assert.match(html,/christmas-intro-gate\.js\?v=20261122-single-win-check/);
+ assert.doesNotMatch(html,/christmas-intro-gate\.js\?v=23/);
+});
