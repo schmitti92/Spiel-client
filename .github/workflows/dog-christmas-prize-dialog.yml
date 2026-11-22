@@ -1,0 +1,30 @@
+name: DOG Christmas prize confirmation popup
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/christmas-discovery.js'
+      - 'DOG/christmas-discovery.css'
+      - 'DOG/app.js'
+      - 'DOG/index.html'
+      - 'tests/dog-christmas-discovery.test.mjs'
+      - '.github/workflows/dog-christmas-prize-dialog.yml'
+  pull_request:
+    paths:
+      - 'DOG/christmas-discovery.js'
+      - 'DOG/christmas-discovery.css'
+      - 'DOG/app.js'
+      - 'DOG/index.html'
+      - 'tests/dog-christmas-discovery.test.mjs'
+      - '.github/workflows/dog-christmas-prize-dialog.yml'
+  workflow_dispatch:
+jobs:
+  prize-dialog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/christmas-discovery.js && node --check DOG/app.js
+      - run: node --test tests/dog-christmas-discovery.test.mjs tests/dog-christmas-gold.test.mjs
