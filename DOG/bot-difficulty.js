@@ -133,12 +133,12 @@ function expertScore(game,seat,action){
  * - A probability model estimates captures by unknown enemy cards, swaps and
  *   starts using remaining deck frequencies. It does NOT predict the future
  *   or grant the bot information no player can see.
- * - The 110 ms thinking budget preserves responsive board animations.
+ * - A 145 ms bounded search with tactical move diversity preserves responsive animations.
  */
-const EXPERT_THINK_MS=110;
-const EXPERT_MAX_NODES=56;
-const EXPERT_ROOT_WIDTH=12;
-const EXPERT_BRANCH_WIDTH=4;
+const EXPERT_THINK_MS=145;
+const EXPERT_MAX_NODES=112;
+const EXPERT_ROOT_WIDTH=16;
+const EXPERT_BRANCH_WIDTH=5;
 const DECK_TOTAL=Object.freeze(Object.fromEntries(CARD_TYPES.map(t=>[t,t==='joker'?6:8])));
 const KNOWN_FORWARD=Object.freeze({'1/11':[1,11],'2':[2],'3':[3],'4':[4,-4],'5':[5],
  '6':[6],'7':[1,2,3,4,5,6,7],'8':[8],'9':[9],'10':[10],'12':[12],'13':[13],
@@ -168,9 +168,14 @@ function enemyThreat(game,pawn,ctx){
   if(enemy.inactive||friendly(game,seat,enemy.seat))continue;
   const count=handCounts[enemy.seat];
   if(!count)continue;
-  const threateningTypes=new Set(['joker']);
-  for(const other of game.pieces){
-   if(other.owner!==enemy.seat||other.place!=='track')continue;
+  const attackers=game.pieces.filter(p=>p.owner===enemy.seat&&p.place==='track');
+  const canSpawn=game.pieces.some(p=>p.owner===enemy.seat&&p.place==='home')&&
+    pawn.pos===enemy.seat*16;
+  // With no enemy pawn out and no spawn on this field, there is no
+  // immediate capture threat; a joker cannot attack out of thin air.
+  if(!attackers.length&&!canSpawn)continue;
+  const threateningTypes=new Set(attackers.length?['joker']:[]);
+  for(const other of attackers){
    const distance=mod(pawn.pos-other.pos);
    const backward=mod(other.pos-pawn.pos);
    for(const [type,steps] of Object.entries(KNOWN_FORWARD)){
@@ -183,14 +188,36 @@ function enemyThreat(game,pawn,ctx){
   let matching=[...threateningTypes].reduce((total,type)=>total+(remaining[type]||0),0);
   // An opponent can spawn on its own coloured start square and displace a
   // foreign pawn if it still has a figure in reserve.
-  if(pawn.pos===enemy.seat*16&&game.pieces.some(p=>p.owner===enemy.seat&&p.place==='home'))
+  if(canSpawn)
    for(const type of ['13','1/11'])if(!threateningTypes.has(type))matching+=remaining[type]||0;
   // A swap can also remove a valuable advancing piece from its position.
-  if(game.pieces.some(p=>p.owner===enemy.seat&&p.place==='track'))
+  if(attackers.some(p=>p.pos!==enemy.seat*16))
    matching+=(remaining.swap||0)*.17;
   combined*=1-chanceHasCard(Math.min(.95,matching/total),count);
  }
  return Math.max(0,Math.min(1,1-combined));
+}
+// A player with 3/4 goals can win on their next card. Estimate this
+// separately: a final pawn entering the goal is far more dangerous than an
+// ordinary capture. Goal slot 0 must be free for that last pawn to enter.
+function immediateEnemyWinProbability(game,enemy,ctx){
+ const pieces=game.pieces.filter(p=>p.owner===enemy.seat);
+ if(pieces.filter(p=>p.place==='goal').length!==3||
+    pieces.some(p=>p.place==='goal'&&p.pos===0))return 0;
+ const last=pieces.find(p=>p.place!=='goal');
+ if(!last||last.place!=='track')return 0;
+ const start=enemy.seat*16;
+ const distance=mod(start-last.pos);
+ const steps=distance===0?(last.goalReady?1:Infinity):distance+1;
+ if(steps>13)return 0;
+ const relevant=new Set(['joker']);
+ for(const [type,values] of Object.entries(KNOWN_FORWARD)){
+  if(type==='joker'||type==='swap')continue;
+  if(values.some(n=>n===steps))relevant.add(type);
+ }
+ const count=ctx.handCounts[enemy.seat]||0;
+ const matching=[...relevant].reduce((sum,type)=>sum+(ctx.remaining[type]||0),0);
+ return chanceHasCard(matching/ctx.total,count);
 }
 function pawnValue(p){
  if(p.place==='home')return 0;
@@ -217,15 +244,18 @@ function expertBoardValue(game,ctx){
   const mult=mine?1:allied?.16:-.57;
   for(const piece of pieces){
    score+=pawnValue(piece)*mult;
-   if(mine&&piece.place==='track'){
+   if((mine||allied)&&piece.place==='track'){
     const likelihood=enemyThreat(game,piece,ctx);
     const value=65+progress(piece.owner,piece.pos)*1.35;
-    score-=likelihood*value*.68;
+    score-=likelihood*value*(mine?.79:.24);
    }
   }
   score+=mult*(goals*goals*9);
   // A rival with three pawns finished is an urgent strategic threat.
-  if(!mine&&!allied&&goals===3)score-=78;
+  if(!mine&&!allied&&goals===3){
+   score-=78;
+   score-=immediateEnemyWinProbability(game,player,ctx)*850;
+  }
  }
  return score;
 }
@@ -246,6 +276,55 @@ function dedupeAndRank(game,seat,actions){
  }
  result.sort((a,b)=>b.quick-a.quick);
  return result;
+}
+// Discarding is an irreversible loss of a known hand card, with an unknown
+// replacement. Save the rare flexible cards for the next round whenever a
+// hand is completely blocked (the engine permits discarding ANY card).
+function discardCost(type){
+ return ({swap:0,'2':12,'3':15,'12':18,'8':19,'9':22,'10':23,
+   '5':27,'6':30,'4':47,'7':92,'1/11':112,'13':118,joker:160})[type]??30;
+}
+function bestDiscardAction(game,seat,actions){
+ return [...actions].sort((a,b)=>
+   discardCost(cardAt(game,seat,a.cardId)?.type)-
+   discardCost(cardAt(game,seat,b.cardId)?.type))[0];
+}
+// Preserve tactical diversity: a seven split of 1+6 is not equivalent to
+// 6+1, and a joker-goal or capture should not disappear behind 15 superficially
+// similar long moves.
+function variedCandidates(game,seat,ranked,limit){
+ if(ranked.length<=limit)return ranked;
+ const selected=[],keys=new Set();
+ function add(entry){
+  if(selected.length>=limit)return;
+  const action=entry.action;
+  const key=actionSignature(game,seat,action);
+  if(keys.has(key))return;
+  keys.add(key);selected.push(entry);
+ }
+ const byCard=new Set(),byPiece=new Set(),bySteps=new Set();
+ for(const entry of ranked){
+  const {action}=entry;
+  const card=cardAt(game,seat,action.cardId);
+  const key=card?.type||action.type;
+  if(!byCard.has(key)){
+   byCard.add(key);add(entry);
+  }
+ }
+ for(const entry of ranked){
+  const action=entry.action;
+  const key=action.type==='seven-step'?action.steps:null;
+  if(key!==null&&!bySteps.has(key)){bySteps.add(key);add(entry);}
+ }
+ for(const entry of ranked){
+  const id=entry.action.pieceId;
+  if(id!==undefined&&!byPiece.has(id)){byPiece.add(id);add(entry);}
+ }
+ for(const entry of ranked)
+  if(entry.action.to?.startsWith('goal:')||(entry.action.captures||[]).length)
+   add(entry);
+ for(const entry of ranked)add(entry);
+ return selected;
 }
 function actionBonus(game,seat,action){
  const card=cardAt(game,seat,action.cardId);
@@ -302,13 +381,14 @@ function bestContinuation(state,ctx,depth,sevenSteps=0){
   return baseline;
  const nextState={...state,current:seat};
  const moves=dedupeAndRank(nextState,seat,legalActions(nextState,seat));
- const width=inSeven?Math.min(5,moves.length):Math.min(EXPERT_BRANCH_WIDTH,moves.length);
+ const options=variedCandidates(nextState,seat,moves,
+   inSeven?Math.min(9,moves.length):Math.min(EXPERT_BRANCH_WIDTH,moves.length));
  let best=baseline;
  // A seven must be fully allocated. Its partial-state score is only a
  // fallback in the (rare) case where the thinking budget runs out.
  if(inSeven)best=-Infinity;
- for(let i=0;i<width&&!exhausted(ctx);i++){
-  const move=moves[i].action;
+ for(let i=0;i<options.length&&!exhausted(ctx);i++){
+  const move=options[i].action;
   const next=simulateAction(nextState,seat,move);
   ctx.nodes++;
   if(!next)continue;
@@ -333,17 +413,9 @@ function expertPlannedAction(game,seat,actions){
  let best=ranked[0].action;
  let bestScore=-Infinity;
  const base=expertBoardValue(root,ctx);
- const shortlist=ranked.slice(0,EXPERT_ROOT_WIDTH);
- // Reserve at least one slot for each materially different card, so a
- // high-value two-card combination is not buried by equivalent moves.
- for(const candidate of ranked){
-  if(shortlist.length>=18)break;
-  if(!shortlist.some(e=>cardAt(game,seat,e.action.cardId)?.type===
-     cardAt(game,seat,candidate.action.cardId)?.type))
-   shortlist.push(candidate);
- }
+ const shortlist=variedCandidates(game,seat,ranked,EXPERT_ROOT_WIDTH);
  const handLength=Array.isArray(game.hands?.[seat])?game.hands[seat].length:0;
- const depth=handLength>3?2:1;
+ const depth=handLength>=4?2:handLength>=2?1:0;
  for(const {action,quick} of shortlist){
   if(exhausted(ctx)&&bestScore!==-Infinity)break;
   const next=simulateAction(root,seat,action);
@@ -382,6 +454,8 @@ export function chooseDogBotAction(game,seat=game?.current,difficulty=DEFAULT,rn
    Math.floor((Number.isFinite(roll)?roll:0)*actions.length)))];
  }
  if(actions.length===1)return actions[0];
+ if(actions.every(action=>action.type==='discardDraw'))
+  return bestDiscardAction(game,seat,actions);
  if(game.phase==='exchange'){
   // Exchanges need team-aware card reservation but no speculative opponent
   // turns (a sealed exchange would never let us observe their private hand).
