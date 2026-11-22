@@ -3,7 +3,7 @@
  * Never use developer preview, village picture or locally selected tree level.
  * Viewing state is local per authenticated profile, not a reward entitlement.
  */
-import {markDogVideoSeen} from './video-library-watched.js?v=1';
+import {markDogVideoSeen} from './video-library-watched.js?v=2';
 export const CHRISTMAS_TREE_FILMS=Object.freeze({
   2:Object.freeze({
     title:'Der erste Stern',
