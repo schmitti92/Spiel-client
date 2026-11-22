@@ -53,7 +53,7 @@ test('easy picks random legal moves; medium preserves existing strategy; no rule
 test('expert prefers a direct game-winning goal entry over another lap',()=>{
  const game=fixture(['2','8']);
  pawn(game,4,'track',15);
- pawn(game,5,'goal',0);pawn(game,6,'goal',1);pawn(game,7,'goal',2);
+ pawn(game,5,'goal',1);pawn(game,6,'goal',2);pawn(game,7,'goal',3);
  const snapshot=structuredClone(game);
  const move=chooseDogBotAction(game,1,'expert');
  assert.equal(move?.cardId,900);
