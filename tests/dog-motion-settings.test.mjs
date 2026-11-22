@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
- DOG_MOTION_MODES,normalizeMotionMode,loadMotionMode,saveMotionMode,motionFactor,applyMotionMode
+ DOG_MOTION_MODES,normalizeMotionMode,loadMotionMode,saveMotionMode,motionFactor,applyMotionMode,DOG_BOT_MOTION_KEY,readDogBotMotion,writeDogBotMotion
 } from '../DOG/motion-settings.js';
 
 test('motion speed uses stable local preferences',()=>{
@@ -29,4 +29,17 @@ test('broken storage is handled and DOM switch is view-only',()=>{
  const root={dataset:{}};
  applyMotionMode('off',root);
  assert.equal(root.dataset.dogMotion,'off');
+});
+
+test('bot animations have a separate device-local on/off switch, on by default',()=>{
+ const cache=new Map();
+ const storage={getItem:k=>cache.get(k)||null,setItem:(k,v)=>cache.set(k,v)};
+ assert.equal(readDogBotMotion(storage),true);
+ assert.equal(writeDogBotMotion(false,storage),false);
+ assert.equal(cache.get(DOG_BOT_MOTION_KEY),'0');
+ assert.equal(readDogBotMotion(storage),false);
+ assert.equal(writeDogBotMotion(true,storage),true);
+ assert.equal(readDogBotMotion(storage),true);
+ assert.equal(readDogBotMotion({getItem(){throw Error('no storage')}}),true);
+ assert.equal(writeDogBotMotion(false,{setItem(){throw Error('no storage')}}),false);
 });
