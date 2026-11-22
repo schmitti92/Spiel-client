@@ -1,4 +1,5 @@
 import {DOG_UI_FEATURES,dogFeatureById} from './ui-features.js?v=1';
+import {renderDogEventOverview} from './christmas-event-overview.js?v=1';
 
 /** Cosmetic cockpit shell: never writes DOG game state or online messages. */
 const $=id=>document.getElementById(id);
@@ -50,8 +51,14 @@ const extraGrid=$('dog-extra-buttons');
 const extension=$('dog-extension-panel');
 const extensionTitle=$('dog-extension-title');
 const emojiBody=$('dog-emoji-panel-root');
+const eventBody=$('dog-event-overview');
 const placeholder=$('dog-extension-placeholder');
 let activeExtension=null;
+let lastEventSnapshot=window.DOGEventOverviewSnapshot||null;
+window.addEventListener('dog-christmas-snapshot',event=>{
+ lastEventSnapshot=event.detail||null;
+ if(activeExtension==='events')renderDogEventOverview(eventBody,lastEventSnapshot?.christmas,lastEventSnapshot?.players);
+});
 // Only one extension can be open at a time. Never unmount the active game.
 function setExtension(id){
  const feature=dogFeatureById(id);
@@ -62,9 +69,13 @@ function setExtension(id){
  }
  if(extensionTitle)extensionTitle.textContent=activeExtension?(dogFeatureById(activeExtension).icon+' '+dogFeatureById(activeExtension).title):'';
  if(emojiBody)emojiBody.hidden=activeExtension!=='emojis';
+ if(eventBody){
+  eventBody.hidden=activeExtension!=='events';
+  if(activeExtension==='events')renderDogEventOverview(eventBody,lastEventSnapshot?.christmas,lastEventSnapshot?.players);
+ }
  if(placeholder){
-  placeholder.hidden=!activeExtension||activeExtension==='emojis';
-  placeholder.textContent=activeExtension&&activeExtension!=='emojis'?dogFeatureById(activeExtension).description:'';
+  placeholder.hidden=!activeExtension||activeExtension==='emojis'||activeExtension==='events';
+  placeholder.textContent=activeExtension&&!['emojis','events'].includes(activeExtension)?dogFeatureById(activeExtension).description:'';
  }
  extraGrid?.querySelectorAll('[data-dog-extra]').forEach(button=>{
   const isCurrent=button.dataset.dogExtra===activeExtension;
@@ -89,7 +100,7 @@ if(extraGrid){
   button.type='button';
   button.className='dog-extra-button';
   button.dataset.dogExtra=feature.id;
-  button.setAttribute('aria-label',feature.id==='events'?'DOG-Weihnachtsevent öffnen':feature.id==='emojis'?'Emoji-Leiste öffnen oder schließen':feature.title+'-Bereich öffnen oder schließen');
+  button.setAttribute('aria-label',feature.id==='events'?'Aktuellen DOG-Eventfortschritt öffnen oder schließen':feature.id==='emojis'?'Emoji-Leiste öffnen oder schließen':feature.title+'-Bereich öffnen oder schließen');
   button.setAttribute('aria-controls','dog-extension-panel');
   button.setAttribute('aria-expanded','false');
   button.setAttribute('aria-pressed','false');
@@ -105,11 +116,8 @@ if(extraGrid){
  extraGrid.addEventListener('click',event=>{
   const button=event.target.closest('[data-dog-extra]');
   if(!button)return;
-   if(button.dataset.dogExtra==='events'){
-    // Keep the room code in the return URL, but never modify the DOG game state.
-    location.assign(christmasUrl.href);
-    return;
-   }
+   // Events show the current finders below this button; the full village
+   // remains reachable from the three-line menu above.
    setExtension(button.dataset.dogExtra);
  });
 }
