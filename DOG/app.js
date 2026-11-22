@@ -14,7 +14,7 @@ import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,b
 import {decideDogRoomUpdate} from './online-sync.js?v=15';
 import {createDogSocketActionDispatcher} from './socket-actions.js?v=1';
 import {initDogFirstLightFilm} from './christmas-first-light-film.js?v=2';
-import {dogChristmasFoundMarkers,newDogChristmasDiscoveries,createDogChristmasDiscoveryPopup} from './christmas-discovery.js?v=4';
+import {dogChristmasFoundMarkers,newDogChristmasDiscoveries,createDogChristmasDiscoveryPopup,createDogGoldConfetti} from './christmas-discovery.js?v=5';
 import {DEFAULT_APPEARANCE,BOARD_STYLES,isBoardUnlocked,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,PIECE_SHAPES,isPieceShapeUnlocked,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,loadAppearance,saveAppearance,normalizeAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=28';
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=11';
 
@@ -51,7 +51,11 @@ function currentAccountUid(){
  return window.SpielOnline?.state?.()?.user?.uid||null;
 }
 const firstLightFilm=online?initDogFirstLightFilm({currentUid:()=>user()?.uid}):null;
-const christmasDiscoveryPopup=createDogChristmasDiscoveryPopup(document);
+const goldConfetti=createDogGoldConfetti(document);
+const christmasDiscoveryPopup=createDogChristmasDiscoveryPopup(document,{
+ onReveal:prize=>{if(prize.kind==='gold'&&prize.amount===2000)goldConfetti.fire();},
+ onDismiss:()=>goldConfetti.stop()
+});
 async function hubRequest(path,method='GET',payload){
  const person=user();if(!person)throw Error('Bitte melde dich mit deinem Online-Profil an.');
  const token=await person.getIdToken();
