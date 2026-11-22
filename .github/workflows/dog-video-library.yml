@@ -41,4 +41,4 @@ jobs:
         with:
           node-version: '22'
       - run: node --check DOG/ui-shell.js && node --check DOG/video-library.js && node --check DOG/video-library-watched.js && node --check DOG/christmas-tree-films.js && node --check DOG/christmas-building-films.js
-      - run: node --test tests/dog-video-library.test.mjs tests/dog-ui-shell.test.mjs tests/dog-tree-films.test.mjs tests/dog-building-films.test.mjs
+      - run: node --test tests/dog-video-library.test.mjs tests/dog-ui-shell.test.mjs tests/dog-christmas-discovery.test.mjs
