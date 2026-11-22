@@ -105,3 +105,57 @@ test('a default level applies to unconfigured bots while overrides stay independ
  assert.equal(dogBotDifficultyForSeat(preferences,2),'expert');
  assert.equal(readDogBotDifficulties(storage).default,'expert');
 });
+
+test('expert plans backward four as a shortcut towards its own finish',()=>{
+ const game=fixture(['4','4','1/11']);
+ pawn(game,4,'track',16);
+ const saved=structuredClone(game);
+ const move=chooseDogBotAction(game,1,'expert');
+ assert.equal(move?.steps,-4,'going back four from start can save almost a whole lap');
+ assert.equal(move?.to,'track:12');
+ assert.deepEqual(game,saved,'planning does not mutate the live match');
+});
+
+test('expert can calculate a split-seven finishing sequence and win immediately',()=>{
+ let game=fixture(['7','5']);
+ pawn(game,4,'track',15);
+ pawn(game,5,'goal',1);pawn(game,6,'goal',2);pawn(game,7,'goal',3);
+ const opening=chooseDogBotAction(game,1,'expert');
+ assert.equal(opening?.type,'seven');
+ game=takeAction(game,1,opening,()=>.42);
+ const step=chooseDogBotAction(game,1,'expert');
+ assert.equal(step?.type,'seven-step');
+ assert.equal(step?.steps,2);
+ assert.equal(step?.viaGoal,true);
+ game=takeAction(game,1,step,()=>.42);
+ assert.equal(game.phase,'finished');
+ assert.equal(game.winnerSeat,1);
+});
+
+test('expert cannot peek at hidden opponent hands or the shuffled deck',()=>{
+ const state=fixture(['4','3','5']);
+ pawn(state,4,'track',20);
+ pawn(state,0,'track',23);
+ pawn(state,8,'track',39);
+ state.hands[0]=[{id:2,type:'joker'},{id:3,type:'13'}];
+ state.hands[2]=[{id:4,type:'7'}];
+ state.hands[3]=[{id:5,type:'12'}];
+ const revised=structuredClone(state);
+ revised.hands[0]=[{id:555,type:'2'},{id:556,type:'swap'}];
+ revised.hands[2]=[{id:557,type:'joker'}];
+ revised.hands[3]=[{id:558,type:'13'}];
+ revised.deck.reverse();
+ const first=chooseDogBotAction(state,1,'expert');
+ const second=chooseDogBotAction(revised,1,'expert');
+ assert.deepEqual(second,first,'different unseen cards cannot change expert decisions');
+});
+
+test('expert stays responsive with joker, split seven and several pawns in play',()=>{
+ const game=fixture(['7','joker','3','4','5']);
+ pawn(game,4,'track',28);pawn(game,5,'track',53);
+ pawn(game,6,'track',10);pawn(game,7,'goal',2);
+ const before=Date.now();
+ const move=chooseDogBotAction(game,1,'expert');
+ assert.ok(Date.now()-before<2500,'bounded lookahead must not hang the board');
+ assert.ok(legalActions(game,1).some(a=>JSON.stringify(a)===JSON.stringify(move)));
+});
