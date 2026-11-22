@@ -1300,12 +1300,86 @@ function scheduleRecoveryRetry(){
  const delay=Math.min(30000,2000*2**recoveryAttempts++);
  recoveryRetryTimer=setTimeout(()=>{recoveryRetryTimer=null;void recoverPendingRoom();},delay);
 }
+// The hub room WebSocket already validates the Firebase ID token and room
+// membership and returns the same independently filtered member view as GET.
+// For a DOG->waiting-room navigation, prefer this initial snapshot instead
+// of buying a separate Firestore-backed HTTP room GET. A failed/slow socket
+// falls back to the existing authenticated GET path, never to local state.
+const HUB_RECOVERY_SOCKET_GRACE_MS=6000;
+async function recoverRoomOverAuthenticatedSocket(requestedCode,expectedUid){
+ if(typeof WebSocket!=='function'||!expectedUid)return null;
+ return new Promise(resolve=>{
+  let settled=false,socket=null;
+  const finish=next=>{
+   if(settled)return;
+   settled=true;clearTimeout(timeout);
+   if(socket){
+    socket.onopen=null;socket.onmessage=null;
+    socket.onerror=null;socket.onclose=null;
+    try{socket.close()}catch(_e){}
+   }
+   resolve(next);
+  };
+  const timeout=setTimeout(()=>finish(null),HUB_RECOVERY_SOCKET_GRACE_MS);
+  try{socket=new WebSocket(API.replace(/^http/i,'ws')+'/hub');}
+  catch(_e){finish(null);return;}
+  socket.onopen=async()=>{
+   try{
+    const profile=activeProfile();
+    if(settled||!profile||profile.user.uid!==expectedUid){
+     finish(null);return;
+    }
+    const token=await profile.user.getIdToken();
+    // A delayed token must never attach a changed user's identity to an old
+    // subscription. This path never accepts a room without server validation.
+    if(settled||socket.readyState!==1||
+       activeProfile()?.user?.uid!==expectedUid||
+       pendingRoomRecovery!==requestedCode||room||code){
+      finish(null);return;
+    }
+    socket.send(JSON.stringify({
+      type:'subscribe',code:requestedCode,profileIdToken:token
+    }));
+   }catch(_e){finish(null);}
+  };
+  socket.onmessage=event=>{
+   let message;
+   try{message=JSON.parse(event.data);}catch(_e){return;}
+   if(message?.type==='room'&&message.room?.code===requestedCode)
+    finish(message.room);
+   else if(message?.type==='error')finish(null);
+  };
+  socket.onerror=()=>finish(null);
+  socket.onclose=()=>finish(null);
+ });
+}
 async function recoverPendingRoom(){
  if(!pendingRoomRecovery||room||code||!activeProfile()||recoveryInFlight)return;
- const requestedCode=pendingRoomRecovery;recoveryInFlight=true;
- try{const {room:r}=await request('/rooms/'+encodeURIComponent(requestedCode));if(pendingRoomRecovery!==requestedCode||room||code||r?.code!==requestedCode)return;pendingRoomRecovery=null;clearRecoveryRetry();activateRoom(r);pollStart();}
+ const requestedCode=pendingRoomRecovery,recoveryUid=activeProfile()?.user?.uid;
+ recoveryInFlight=true;
+ try{
+  // Fast path: one already-authenticated Render WebSocket snapshot.
+  // The normal persistent room socket takes over after activateRoom().
+  let restored=await recoverRoomOverAuthenticatedSocket(requestedCode,recoveryUid);
+  if(!restored){
+   // Robust fallback for unsupported, slow or disconnected WebSockets.
+   const response=await request('/rooms/'+encodeURIComponent(requestedCode));
+   restored=response.room;
+  }
+  if(pendingRoomRecovery!==requestedCode||room||code||
+     activeProfile()?.user?.uid!==recoveryUid||
+     restored?.code!==requestedCode)return;
+  pendingRoomRecovery=null;clearRecoveryRetry();activateRoom(restored);pollStart();
+ }
  catch(e){if(pendingRoomRecovery!==requestedCode||room||code)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){pendingRoomRecovery=null;clearRecoveryRetry();render();el('join-code').value=requestedCode;notice('Raum nicht zugänglich. Prüfe den Raumcode oder tritt erneut bei.',true);}else{notice('Raum '+requestedCode+' vorübergehend nicht erreichbar. Automatischer Wiederverbindungsversuch …',true);scheduleRecoveryRetry();}}
- finally{recoveryInFlight=false;}
+ finally{
+  recoveryInFlight=false;
+  // If identity changed during the asynchronous socket/HTTP operation,
+  // an earlier profile-change event could have seen recoveryInFlight=true.
+  // Try again with the new verified user instead of accepting stale cards.
+  if(pendingRoomRecovery&&!room&&!code&&activeProfile()?.user?.uid!==recoveryUid&&activeProfile())
+   scheduleRecoveryRetry();
+ }
 }
 window.addEventListener('spielonline-change',()=>{
  const uid=activeProfile()?.user?.uid||null;
