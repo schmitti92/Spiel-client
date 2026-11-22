@@ -38,49 +38,104 @@ export function dogChristmasFoundMarkers(christmas){
   ...(mark.kind==='gold'&&goldValues.has(mark.field)?{amount:goldValues.get(mark.field)}:{})
  })).sort((a,b)=>a.field-b.field||(a.kind==='gift'?-1:1));
 }
-/** The first snapshot establishes the baseline; replayed WebSocket/HTTP
- * snapshots and reconnects never celebrate an already-known discovery.
+/** The first snapshot is only the baseline: never celebrate historical rewards
+ * after loading a page, joining or reconnecting. Each accepted subsequent
+ * Render snapshot may contain multiple confirmed rewards from one transaction.
+ * Show every HUMAN player's gain to every person viewing the same game.
  */
-export function newDogChristmasDiscoveries(previous,current,seat){
- if(!previous?.enabled||!current?.enabled||!Number.isInteger(seat))return [];
+export function newDogChristmasDiscoveries(previous,current,players){
+ if(!previous?.enabled||!current?.enabled||!Array.isArray(players))return [];
  const last=Number.isSafeInteger(previous.eventSerial)?previous.eventSerial:0;
  const now=Number.isSafeInteger(current.eventSerial)?current.eventSerial:0;
  if(now<=last)return [];
- return (Array.isArray(current.activity)?current.activity:[]).filter(event=>
-  Number.isSafeInteger(event?.id)&&event.id>last&&event.id<=now&&
-  event.seat===seat&&eligibleField(event.field)&&
-  (event.type==='gift'||event.type==='scratch'||event.type==='gold')
- ).sort((a,b)=>a.id-b.id);
+ const seen=new Set();
+ return (Array.isArray(current.activity)?current.activity:[]).filter(event=>{
+  if(!Number.isSafeInteger(event?.id)||event.id<=last||event.id>now||
+     seen.has(event.id)||!eligibleField(event.field)||
+     !['gift','scratch','gold'].includes(event.type)||
+     !Number.isInteger(event.seat))return false;
+  const winner=players.find(p=>p?.seat===event.seat);
+  if(!winner||winner.bot===true||winner.inactive===true)return false;
+  seen.add(event.id);
+  return true;
+ }).sort((a,b)=>a.id-b.id);
 }
+
+/** Pure text for an already server-confirmed finding. Never invent a win. */
+export function describeDogChristmasDiscovery(event,players){
+ if(!event||!Array.isArray(players))return null;
+ const winner=players.find(p=>p?.seat===event.seat&&p.bot!==true&&p.inactive!==true);
+ if(!winner)return null;
+ const name=String(winner.name||'Spieler '+(event.seat+1)).slice(0,60);
+ const amount=n=>Number.isSafeInteger(n)&&n>=0?n.toLocaleString('de-DE'):null;
+ const tiers={simple:'ein einfaches Rubbellos',medium:'ein mittleres Rubbellos',premium:'ein Premium-Rubbellos',double:'ein Doppellos'};
+ if(event.type==='gift'){
+  const earned=Number.isSafeInteger(event.earnedTenths)&&event.earnedTenths>=0?
+   (event.earnedTenths/10).toLocaleString('de-DE'):null;
+  return {name,kind:'gift',icon:'⭐',title:'Weihnachtslichter gewonnen!',
+   message:earned!==null?name+' hat '+earned+' Weihnachtslichter für Lichtertal gewonnen!':
+    name+' hat ein Weihnachtslicht-Feld entdeckt!'};
+ }
+ if(event.type==='gold')
+  return {name,kind:'gold',icon:'🪙',title:'Gold gewonnen!',
+   message:name+' hat '+(amount(event.amount)||'Gold')+
+    (amount(event.amount)!==null?' Goldmünzen':'')+' gewonnen! Das Gold wurde dem Spielerkonto gutgeschrieben.'};
+ if(event.type==='scratch'){
+  const tier=tiers[event.tier]||'ein Rubbellos';
+  const count=Number.isSafeInteger(event.count)&&event.count>1&&event.count<20?event.count:1;
+  return {name,kind:'scratch',icon:'🎟️',title:'Rubbellos gewonnen!',
+   message:name+' hat '+(count>1?count+' Rubbellose':tier)+
+    ' gewonnen! '+(count>1?'Die Lose wurden':'Das Los wurde')+' dem Spielerkonto gutgeschrieben.'};
+ }
+ return null;
+}
+
+/** Only a local, acknowledgement-required UI. Nothing writes to Firebase or
+ * to the room, and confirming does not grant or claim a reward.
+ */
 export function createDogChristmasDiscoveryPopup(doc=document){
  const popup=doc.getElementById('dog-christmas-find-popup');
  const icon=doc.getElementById('dog-christmas-find-icon');
+ const heading=doc.getElementById('dog-christmas-find-title');
+ const winner=doc.getElementById('dog-christmas-find-winner');
  const message=doc.getElementById('dog-christmas-find-message');
- const close=doc.getElementById('dog-christmas-find-close');
- let queue=[],timer=null;
+ const confirm=doc.getElementById('dog-christmas-find-confirm');
+ let queue=[],active=false;
+ function next(){
+  if(active||!popup||!queue.length)return;
+  const event=queue.shift();
+  active=true;
+  popup.dataset.kind=event.kind;
+  if(icon)icon.textContent=event.icon;
+  if(heading)heading.textContent=event.title;
+  if(winner)winner.textContent='🏆 '+event.name;
+  if(message)message.textContent=event.message;
+  popup.hidden=false;
+  if(typeof popup.showModal==='function'&&!popup.open)popup.showModal();
+  confirm?.focus?.();
+ }
  function dismiss(){
-  if(timer!==null){clearTimeout(timer);timer=null;}
+  if(!active)return;
+  active=false;
+  if(popup?.open&&typeof popup.close==='function')popup.close();
   if(popup)popup.hidden=true;
   next();
  }
- function next(){
-  if(!popup||!popup.hidden||!queue.length)return;
-  const event=queue.shift();
-  const gift=event.type==='gift',gold=event.type==='gold';
-  popup.dataset.kind=gift?'gift':gold?'gold':'scratch';
-  icon.textContent=gift?'⭐':gold?'🪙':'🎟️';
-  const tiers={simple:'Ein einfaches Rubbellos',medium:'Ein mittleres Rubbellos',premium:'Ein Premium-Rubbellos'};
-  message.textContent=gift?
-   'Du hast ein Lichtfeld gefunden! '+(Number.isInteger(event.earnedTenths)?(event.earnedTenths/10).toLocaleString('de-DE')+' Weihnachtslichter für Lichtertal gesammelt.':'Ein Weihnachtslicht für Lichtertal entdeckt!'):
-   gold?'Du hast '+(Number.isInteger(event.amount)?event.amount.toLocaleString('de-DE'):'einige')+
-    ' Goldmünzen entdeckt! Sie wurden deinem Rubbellos-Guthaben gutgeschrieben.':
-   'Du hast ein Rubbellos-Feld gefunden! '+(tiers[event.tier]||'Ein Rubbellos')+' wartet im Weihnachtsevent auf dich.';
-  popup.hidden=false;
-  timer=setTimeout(dismiss,5200);
- }
- close?.addEventListener('click',dismiss);
+ confirm?.addEventListener('click',dismiss);
+ // A stray Escape key must not acknowledge someone else's prize.
+ popup?.addEventListener('cancel',event=>event.preventDefault());
  return {
-  show(events){if(!Array.isArray(events)||!events.length)return;queue.push(...events.slice(-5));next();},
-  reset(){queue=[];if(timer!==null)clearTimeout(timer);timer=null;if(popup)popup.hidden=true;}
+  show(events,players){
+   if(!Array.isArray(events)||!events.length)return;
+   const incoming=events.map(event=>describeDogChristmasDiscovery(event,players)).filter(Boolean);
+   if(!incoming.length)return;
+   queue.push(...incoming);
+   next();
+  },
+  reset(){
+   queue=[];active=false;
+   if(popup?.open&&typeof popup.close==='function')popup.close();
+   if(popup)popup.hidden=true;
+  }
  };
 }
