@@ -32,7 +32,7 @@ test('result is derived without modifying match or exposing private hands',()=>{
  const result=summarizeDogVictory(game);
  assert.deepEqual(game,original);
  assert.equal(JSON.stringify(result).includes('joker'),false);
- assert.deepEqual(Object.keys(result).sort(),['players','teams','winner']);
+ assert.deepEqual(Object.keys(result).sort(),['players','teams','winner','winningSeat']);
 });
 test('no fake victory screen for incomplete or invalid match',()=>{
  const game=fixture();
@@ -60,4 +60,17 @@ test('three real players win individually without a phantom fourth player',()=>{
  assert.equal(summary.players.some(p=>p.seat===3),false);
  assert.deepEqual(game,original);
  assert.equal(summarizeDogVictory({...game,phase:'play'}),null);
+});
+
+test('first individual finisher is credited when teammate is still at home',()=>{
+ const game=fixture(0);
+ for(const pawn of game.pieces.filter(p=>p.owner===2)){pawn.place='home';pawn.pos=-1;}
+ game.winnerSeat=0;
+ game.players[0].name='Chris';
+ const result=summarizeDogVictory(game);
+ assert.equal(result.winningSeat,0);
+ assert.equal(result.players.find(p=>p.seat===result.winningSeat).name,'Chris');
+ assert.equal(result.teams[0].total,4);
+ assert.equal(result.teams[0].winning,true);
+ assert.equal(result.teams[0].capacity,undefined);
 });
