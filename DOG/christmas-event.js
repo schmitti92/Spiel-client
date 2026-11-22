@@ -7,6 +7,7 @@
 import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotalCost,christmasVillageTotalCost} from './christmas-building-costs.js?v=2';
 import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewards-ui.js?v=5';
 import {initChristmasTreeFilms} from './christmas-tree-films.js?v=2';
+import {initChristmasBuildingFilms} from './christmas-building-films.js?v=1';
 import {initChristmasStory} from './christmas-story.js?v=7';
 import {initChristmasScratch} from './christmas-scratch-ui.js?v=86';
 import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=10';
@@ -824,7 +825,11 @@ const treeFilms=initChristmasTreeFilms({
  getUserId:()=>eventUser()?.uid||null,
  isPreview:()=>devMode.isActive()
 });
-function showLiveVillage(data){
+const buildingFilms=initChristmasBuildingFilms({
+ // Play deferred tree-stage stories only after the building video is closed.
+ onClose:()=>treeFilms.sync(!devMode.isActive()&&villageLive?treeLevel():0)
+});
+function showLiveVillage(data,{deferTreeFilms=false}={}){
  const v=data?.village;if(!v)return;
  const oldLevels=villageLive?.levels;
  const oldTreeLevel=oldLevels?TREE_THRESHOLDS.filter(n=>originalTreePoints(oldLevels)>=n).length:null;
@@ -854,7 +859,8 @@ function showLiveVillage(data){
  if($('tab-tree').getAttribute('aria-selected')==='true'&&
      (oldTreeLevel===null||newTreeLevel!==oldTreeLevel))void treePrizeScreen?.load();
  // Only real, server-confirmed shared tree stages can launch the videos.
- treeFilms.sync(newTreeLevel);
+ // A just-purchased bakery film takes priority if both milestones are reached.
+ if(!deferTreeFilms)treeFilms.sync(newTreeLevel);
 }
 // This is a migration check, NOT a cache for lights, XP, unlocks or buildings.
 // A confirmed check may be reused for six hours; a failed check never is.
@@ -929,7 +935,12 @@ async function purchaseBuilding(id){
   const result=await villageRequest('village/upgrade','POST',{
    building:id,expectedLevel:level,roomCode:villageRoomValid?villageCode:null,commandId:'dog-village-'+crypto.randomUUID()
   });
-  showLiveVillage({village:result.village,shared:true,enabled:villageEventActive,canUpgrade:villageCanUpgrade});
+  // Film is triggered ONLY by the successful, server-confirmed 2 -> 3 purchase.
+  // Rendering/refreshing or developer preview cannot launch it.
+  const upgradedLevel=Number(result.village?.levels?.[id]);
+  const playBuildingFilm=id==='bakery'&&level===2&&upgradedLevel===3&&result.unchanged!==true;
+  const filmOpened=playBuildingFilm&&buildingFilms.showUpgrade(id,level,upgradedLevel);
+  showLiveVillage({village:result.village,shared:true,enabled:villageEventActive,canUpgrade:villageCanUpgrade},{deferTreeFilms:filmOpened});
   window.dispatchEvent(new Event('dog-scratch-balance-changed'));
   $('building-event-mode').textContent='✅ '+definitions.find(entry=>entry.id===id).title+' wurde auf Stufe '+(level+1)+' ausgebaut. '+cost+' Lichter abgebucht.';
  }catch(err){$('building-event-mode').textContent='⚠️ Ausbau nicht möglich: '+err.message;await reloadVillage();}
