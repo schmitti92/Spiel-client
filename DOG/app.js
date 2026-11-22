@@ -41,6 +41,12 @@ const DOG_DISCONNECTED_READ_MS=30000; // Render WebSocket is primary.
 const DOG_FIRST_ROOM_GRACE_MS=12000; // Recover if a connected socket never receives its initial room.
 const DOG_SOCKET_CONNECT_MS=15000,DOG_SOCKET_STALE_MS=95000; // Reconnect hung sockets without polling Firebase.
 function user(){const s=window.SpielOnline?.state?.();return s?.status==='online'&&s.user?.getIdToken?s.user:null;}
+function currentAccountUid(){
+ // A harmless profile-data refresh can temporarily set status='error'
+ // while Firebase still holds the SAME authenticated account.
+ // Keep its established socket; only a real UID switch or logout revokes it.
+ return window.SpielOnline?.state?.()?.user?.uid||null;
+}
 const firstLightFilm=online?initDogFirstLightFilm({currentUid:()=>user()?.uid}):null;
 async function hubRequest(path,method='GET',payload){
  const person=user();if(!person)throw Error('Bitte melde dich mit deinem Online-Profil an.');
@@ -138,7 +144,7 @@ function startSocket(){
    const token=await person.getIdToken();
    // A profile may change while Firebase is issuing the token. Never
    // subscribe a stale player or expose their private hand to a new login.
-   if(user()?.uid!==expectedUid){socket.close();return;}
+   if(currentAccountUid()!==expectedUid){socket.close();return;}
    socketAuthenticatedUid=expectedUid;
    if(socket.readyState===1)socket.send(JSON.stringify({
     type:'subscribe',code:hubCode,profileIdToken:token
@@ -151,7 +157,7 @@ function startSocket(){
   },30000);
  };
  socket.onmessage=e=>{
-  if(socketAuthenticatedUid!==user()?.uid){socket.close();return;}
+  if(socketAuthenticatedUid!==currentAccountUid()){socket.close();return;}
   let data;try{data=JSON.parse(e.data)}catch(_){return;}
   if(data.type==='dog_capabilities'){
    // Older Render deployments send no capability packet; keep immediate HTTP
@@ -215,7 +221,7 @@ async function initOnline(){
  },8000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){startSocket();}});
  window.addEventListener('spielonline-change',()=>{
-  if(socketAuthenticatedUid&&socketAuthenticatedUid!==user()?.uid)onlineSocket?.close();
+  if(socketAuthenticatedUid&&socketAuthenticatedUid!==currentAccountUid())onlineSocket?.close();
   if(user())startSocket();
  });
 }

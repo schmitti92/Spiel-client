@@ -10,7 +10,7 @@ assert.ok(begin>=0&&end>begin);
 const socketCode=code.slice(begin,end);
 
 function rig(){
- let now=100000,reads=0;
+ let now=100000,reads=0,received=0,currentUid='alice',profileOnline=true;
  const sockets=[],heartbeats=[];
  class Socket{
   readyState=0;
@@ -25,16 +25,19 @@ function rig(){
   dogSocketActions:{receive:()=>false,disconnected:()=>{}},
   DOG_SOCKET_CONNECT_MS:15000,DOG_SOCKET_STALE_MS:95000,
   apiBase:'https://render.invalid',hubCode:'123',acceptedMatchId:'match1',
-  user:()=>({uid:'alice',getIdToken:async()=> 'test-token'}),
+  user:()=>profileOnline?{uid:currentUid,getIdToken:async()=> 'test-token'}:null,
+  currentAccountUid:()=>currentUid,
   Date:{now:()=>now},WebSocket:Socket,
   setTimeout:fn=>fn,clearTimeout:()=>{},
   setInterval:(fn,ms)=>{heartbeats.push({fn,ms});return fn},
   clearInterval:()=>{},
-  acceptRemote:()=>{},showDogEmoji:()=>{},showDogEmojiError:()=>{},
+  acceptRemote:()=>{received++},showDogEmoji:()=>{},showDogEmojiError:()=>{},
   refreshOnline:()=>{reads++;return Promise.resolve()}
  };
  vm.runInNewContext(socketCode,ctx,{filename:'DOG/app-socket.js'});
- return {ctx,sockets,heartbeats,reads:()=>reads,now:n=>{now=n}};
+ return {ctx,sockets,heartbeats,reads:()=>reads,received:()=>received,
+  now:n=>{now=n},switchAccount:uid=>{currentUid=uid},
+  setOnline:flag=>{profileOnline=flag}};
 }
 
 test('joining DOG over WebSocket performs zero duplicate HTTP document reads',async()=>{
@@ -83,4 +86,33 @@ test('successful socket startup does not issue initial HTTP GET and fallback rem
  assert.match(code,/const DOG_DISCONNECTED_READ_MS=30000/);
  assert.match(code,/const DOG_FIRST_ROOM_GRACE_MS=12000/);
  assert.match(code,/if\(\(!socketReady\|\|firstRoomTimedOut\)\&\&Date\.now\(\)-lastFallbackRoomReadAt>=DOG_DISCONNECTED_READ_MS\)/);
+});
+
+test('Transient profile-data error with same Firebase UID does not close DOG socket or reread Firestore',async()=>{
+ const h=rig();h.ctx.startSocket();
+ const socket=h.sockets[0];socket.readyState=1;await socket.onopen();
+ socket.onmessage({data:JSON.stringify({type:'room',room:{code:'123'}})});
+ assert.equal(h.received(),1);
+ h.setOnline(false); // SpielOnline temporarily reports non-online, but keeps same user.uid
+ assert.equal(h.ctx.user(),null);
+ socket.onmessage({data:JSON.stringify({type:'pong'})});
+ socket.onmessage({data:JSON.stringify({type:'room',room:{code:'123',revision:2}})});
+ assert.equal(socket.readyState,1,'same UID should not lose live WebSocket on harmless profile error');
+ assert.equal(h.received(),2);
+ assert.equal(h.reads(),0,'no new Firestore GET during temporary profile warning');
+});
+
+test('Real Firebase UID switch closes the previous player socket before accepting their private hand',async()=>{
+ const h=rig();h.ctx.startSocket();
+ const socket=h.sockets[0];socket.readyState=1;await socket.onopen();
+ socket.onmessage({data:JSON.stringify({type:'room',room:{code:'123'}})});
+ assert.equal(h.received(),1);
+ h.switchAccount('bob');
+ socket.onmessage({data:JSON.stringify({type:'room',room:{
+  code:'123',match:{dog:{hands:['private-alice']}}
+ }})});
+ assert.equal(socket.readyState,3,'old authenticated player session revoked on new account');
+ assert.equal(h.received(),1,'old private cards are not displayed to the new profile');
+ assert.equal(h.ctx.onlineSocket,null);
+ assert.equal(h.reads(),0);
 });
