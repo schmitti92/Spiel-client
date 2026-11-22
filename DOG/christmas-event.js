@@ -4,7 +4,7 @@
  * Local building previews cannot grant Christmas prizes. Only real
  * Render-verified village stages allow durable per-user reward claims.
  */
-import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotalCost,christmasVillageTotalCost} from './christmas-building-costs.js?v=2';
+import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotalCost,christmasVillageTotalCost} from './christmas-building-costs.js?v=3';
 import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewards-ui.js?v=5';
 import {initChristmasTreeFilms} from './christmas-tree-films.js?v=2';
 import {initChristmasBuildingFilms} from './christmas-building-films.js?v=6';
