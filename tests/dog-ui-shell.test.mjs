@@ -82,3 +82,18 @@ test('Magie shows move hints and bot-animation switches, not a placeholder',()=>
  assert.match(html,/dog-magic-panel-root"[^>]*hidden/);
  assert.match(html,/role="switch" aria-checked="true" aria-label="Bot-Animationen/);
 });
+
+test('Magie contains individual bot levels without changing online rules',()=>{
+ const ids=[...html.matchAll(/id="([^"]+)"/g)].map(x=>x[1]);
+ for(const id of ['dog-bot-difficulty-heading','dog-bot-difficulty-default',
+  'dog-bot-difficulty-players','dog-bot-difficulty-description'])
+   assert.equal(ids.filter(x=>x===id).length,1,id);
+ for(const [value,name] of [['easy','Leicht'],['medium','Mittel'],['expert','Experte']])
+   assert.ok(html.includes('<option value="'+value+'">'+name+'</option>')||
+             (value==='medium'&&html.includes('<option value="medium" selected>Mittel</option>')));
+ const app=readFileSync(resolve(root,'app.js'),'utf8');
+ assert.ok(app.includes('chooseDogBotAction(game,actor,dogBotDifficultyForSeat(botDifficulties,actor))'));
+ assert.ok(app.includes('chooseDogBotAction(game,i,dogBotDifficultyForSeat(botDifficulties,i))'));
+ assert.ok(app.includes('select.disabled=online'));
+ assert.ok(app.includes('saveDogBotDifficulty(bot.seat,select.value,window.localStorage)'));
+});
