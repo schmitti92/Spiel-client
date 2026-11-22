@@ -4,7 +4,7 @@ import {enableHandTouchGestures} from './hand-gestures.js?v=2';
 import {mountDogEmojiGame,showDogEmoji,showDogEmojiError} from './emoji-game.js?v=4';
 import {boardGestureTarget,nearestTrackPawn,nearestBoardField,boardEventPoint} from './board-gesture-math.js?v=3';
 import {snapshotPieces,planPieceMotions,createPieceAnimator,shouldAnimatePieceUpdate,opponentMoveNotice,isDogBotMove} from './piece-animations.js?v=5';
-import {loadMotionMode,saveMotionMode,applyMotionMode,readDogBotMotion,writeDogBotMotion} from './motion-settings.js?v=2';
+import {loadMotionMode,saveMotionMode,applyMotionMode,readDogBotMotion,writeDogBotMotion,dogBotActionDelay} from './motion-settings.js?v=3';
 import {createDogVisualFeedback} from './ui-animations.js?v=2';
 import {dogMoveBlockReason} from './invalid-move-reasons.js?v=2';
 import {dogBoardActionMatchesDestination} from './board-action-targets.js?v=1';
@@ -379,6 +379,7 @@ boardSvg.addEventListener('wheel',event=>{
 },{passive:false});
 const names=['Rot','Blau','Grün','Gelb'];
 let game,selectedCard=null,selectedPiece=null,jokerAs=null,available=[],revealed=online,aiTimer=null,lastTurn=null,humans=1;
+let lastBotActorSeat=null; // Local pacing only: no server writes or network events.
 let appearance=loadAppearance();
 // Optional training aid; starts OFF and stays only in this browser.
 let moveHintsOn=readDogMoveHints(window.localStorage);
@@ -433,6 +434,7 @@ function save(){if(online)return;try{localStorage.setItem(KEY,JSON.stringify(gam
 function newGame(){
   if(online)return;
   if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
+  lastBotActorSeat=null;
   humans=Number($('human-count').value)||1;
   game=createGame({names:['Du','Spieler Blau','Spieler Grün','Spieler Gelb'],bots:[0,1,2,3].map(i=>i>=humans)});
   revealed=true;selectedCard=null;selectedPiece=null;jokerAs=null;lastTurn=null;
@@ -1055,6 +1057,7 @@ function onMove(i){
     return;
   }
   try{
+    lastBotActorSeat=null; // A human turn breaks the bot-to-bot handoff chain.
     if(game.phase==='exchange')game=exchangeCard(game,seat,move.cardId);
     else game=takeAction(game,seat,move);
     // A divided seven is still the SAME player's turn. Keep their hand
@@ -1082,12 +1085,17 @@ function scheduleAI(){
     aiTimer=setTimeout(()=>{
       aiTimer=null;
       try{
-        const move=botAction(game,game.current);
-        if(move)game=takeAction(game,game.current,move);
+        const actor=game.current;
+        const move=botAction(game,actor);
+        if(move)game=takeAction(game,actor,move);
         else throw Error('Bot findet keinen erlaubten Zug');
+        lastBotActorSeat=actor;
         save();render();scheduleAI();
       }catch(e){$('status').textContent='⚠️ Botfehler: '+e.message;}
-    },Math.max(320,lastMotionDuration+240));
+    },dogBotActionDelay({
+      previousBotSeat:lastBotActorSeat,nextBotSeat:game.current,
+      animationDuration:lastMotionDuration
+    }));
   }
 }
 const jokerDialog=$('dog-joker-dialog');
