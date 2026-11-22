@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const script=readFileSync(new URL('../DOG/christmas-discovery.js',import.meta.url),'utf8');
-const {dogChristmasFoundMarkers,newDogChristmasDiscoveries,describeDogChristmasDiscovery,createDogChristmasDiscoveryPopup}=await import('data:text/javascript,'+encodeURIComponent(script));
+const {dogChristmasFoundMarkers,newDogChristmasDiscoveries,describeDogChristmasDiscovery,createDogChristmasDiscoveryPopup,createDogGoldConfetti}=await import('data:text/javascript,'+encodeURIComponent(script));
 test('only verified found positions are marked; hidden field positions remain secret',()=>{
  const snap={enabled:true,foundGiftFields:[3,3,0,12,90],foundScratchFields:[12,15,16],giftFields:[21],scratchFields:[22]};
  assert.deepEqual(dogChristmasFoundMarkers(snap),[
@@ -106,4 +106,58 @@ test('collected markers are drawn above pawns, not hidden behind them',()=>{
  assert.ok(pawnStart>=0&&permanentLayer>pawnStart&&svgCommit>permanentLayer);
  assert.match(app.slice(permanentLayer,svgCommit),/pointer-events="none"/);
  assert.match(app.slice(permanentLayer,svgCommit),/pawnFields\.has\(field\)/);
+});
+
+test('only a newly revealed 2,000-gold prize starts the jackpot cannon',()=>{
+ const classes=new Set();
+ const popup={hidden:true,open:false,dataset:{},classList:{
+  toggle:(name,enabled)=>enabled?classes.add(name):classes.delete(name)
+ },showModal(){this.open=true;},close(){this.open=false;},addEventListener(){}};
+ const confirm={addEventListener(_type,fn){this.click=fn;},focus(){}};
+ const elements={'dog-christmas-find-popup':popup,'dog-christmas-find-confirm':confirm};
+ const seen=[],closed=[];
+ const ui=createDogChristmasDiscoveryPopup({getElementById:id=>elements[id]||null},{
+  onReveal:prize=>{if(prize.kind==='gold'&&prize.amount===2000)seen.push(prize.amount);},
+  onDismiss:()=>closed.push(true)
+ });
+ const players=[{name:'Vanessa',seat:1,bot:false}];
+ ui.show([{id:9,type:'gold',field:5,seat:1,amount:500},
+          {id:10,type:'gold',field:9,seat:1,amount:2000}],players);
+ assert.deepEqual(seen,[],'500 gold has no confetti');
+ assert.equal(classes.has('dog-gold-2000'),false);
+ confirm.click();
+ assert.deepEqual(seen,[2000],'2000 gold starts when its own dialog opens');
+ assert.equal(classes.has('dog-gold-2000'),true);
+ confirm.click();
+ assert.equal(popup.open,false);
+ assert.equal(closed.length,2);
+});
+
+test('confetti canvas is screen-wide, disposable and respects reduced motion',()=>{
+ const children=[],frames=[];
+ const ctx={setTransform(){},clearRect(){},save(){},translate(){},rotate(){},
+  fillRect(){},restore(){},fillText(){},set globalAlpha(_v){},set fillStyle(_v){},
+  set textAlign(_v){},set font(_v){}};
+ const popup={appendChild(node){children.push(node);}};
+ const doc={documentElement:{dataset:{}},hidden:false,
+  getElementById:id=>id==='dog-christmas-find-popup'?popup:null,
+  createElement(type){
+   assert.equal(type,'canvas');
+   return {setAttribute(){},getContext:()=>ctx,remove(){this.removed=true;},removed:false};
+  },
+  defaultView:{innerWidth:1200,innerHeight:700,devicePixelRatio:1,
+   performance:{now:()=>10},requestAnimationFrame:fn=>{frames.push(fn);return frames.length;},
+   cancelAnimationFrame(){},matchMedia:()=>({matches:false})}
+ };
+ const confetti=createDogGoldConfetti(doc);
+ confetti.fire();
+ assert.equal(children.length,1);
+ assert.equal(children[0].width,1200);
+ assert.equal(children[0].height,700);
+ frames.shift()(110);
+ confetti.stop();
+ assert.equal(children[0].removed,true);
+ doc.documentElement.dataset.dogMotion='off';
+ confetti.fire();
+ assert.equal(children.length,1,'motion-off does not create a new canvas');
 });
