@@ -31,3 +31,23 @@ test('popup is only client presentation and does not request or write game state
  assert.doesNotMatch(script,/fetch\(|getIdToken|firebase|sendOnlineDogAction/);
  assert.match(script,/Herzlichen Glückwunsch|Weihnachtslicht|Rubbellos-Feld/);
 });
+
+test('old verified activity shows previously collected fields even without the new stored arrays',()=>{
+ const snap={enabled:true,activity:[
+  {type:'gift',field:9,seat:0},{type:'scratch',field:11,seat:1},
+  {type:'inn',earnedTenths:20},{type:'gift',field:16,seat:1},
+  {type:'scratch',field:11,seat:1}
+ ]};
+ assert.deepEqual(dogChristmasFoundMarkers(snap),[
+  {field:9,kind:'gift',both:false},{field:11,kind:'scratch',both:false}
+ ]);
+});
+test('collected markers are drawn above pawns, not hidden behind them',()=>{
+ const app=readFileSync(new URL('../DOG/app.js',import.meta.url),'utf8');
+ const pawnStart=app.indexOf('  for(const piece of game.pieces){',app.indexOf('function drawBoard()'));
+ const permanentLayer=app.indexOf('    const byField=new Map();',pawnStart);
+ const svgCommit=app.indexOf("  boardSvg.innerHTML=board.join('');",pawnStart);
+ assert.ok(pawnStart>=0&&permanentLayer>pawnStart&&svgCommit>permanentLayer);
+ assert.match(app.slice(permanentLayer,svgCommit),/pointer-events="none"/);
+ assert.match(app.slice(permanentLayer,svgCommit),/pawnFields\.has\(field\)/);
+});
