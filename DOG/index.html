@@ -381,6 +381,7 @@ html[data-dog-motion="off"] .dog-legal-target-ring{animation:none}
 </style>
 <link rel="stylesheet" href="./touch-navigation.css?v=1">
 <link rel="stylesheet" href="./christmas-discovery.css?v=3">
+<link rel="stylesheet" href="./christmas-event-overview.css?v=1">
 <style id="dog-christmas-link-visibility">
 html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christmas-portal-open) [data-meta-album-link],html:not(.dog-christmas-portal-open) #dog-room-christmas,html:not(.dog-christmas-portal-open) #dog-christmas-event-link,html:not(.dog-christmas-portal-open) #dog-player-level-link{display:none!important}
 </style>
@@ -514,6 +515,7 @@ html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christm
        </div>
        <div id="dog-extension-content" class="dog-extension-content">
          <div id="dog-emoji-panel-root" class="dog-emoji-panel-root" hidden></div>
+         <div id="dog-event-overview" class="dog-event-overview" aria-label="Aktueller DOG-Eventfortschritt" hidden></div>
          <p id="dog-extension-placeholder" class="dog-extension-placeholder" hidden></p>
        </div>
      </section>
@@ -715,8 +717,8 @@ import {mountChristmasLinks} from './christmas-intro-gate.js?v=20261122-single-w
 mountChristmasLinks();
 </script>
 <script type="module">
-import('./ui-shell.js?v=5').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
-import('./app.js?v=97').catch(error=>{
+import('./ui-shell.js?v=6').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
+import('./app.js?v=98').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
