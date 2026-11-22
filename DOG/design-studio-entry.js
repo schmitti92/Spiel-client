@@ -1,5 +1,5 @@
 /* The studio is not initialized until Render verifies level >= 2. */
-import {fetchDogPlayerLevel,dogLevelIdentity,DESIGNER_MIN_LEVEL} from './designer-level-access.js?v=2';
+import {fetchDogPlayerLevel,dogLevelIdentity,DESIGNER_MIN_LEVEL} from './designer-level-access.js?v=3';
 import {refreshVerifiedCosmetics} from './verified-cosmetics.js?v=1';
 const $=id=>document.getElementById(id);
 const state=()=>window.SpielOnline?.state?.()||{};
