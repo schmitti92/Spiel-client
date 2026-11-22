@@ -34,7 +34,7 @@ if(online){
 }
 document.querySelectorAll('[data-dog-editor]').forEach(link=>link.href='editor.html?return='+encodeURIComponent(editorBack)+'&v=10');
 const apiBase=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null,onlineDogAvatars=[],onlineChristmas=null,onlineResearch=null,emojiSocketReady=false, socketSupportsDogActions=false;
+let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlineRoomHost=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null,onlineDogAvatars=[],onlineChristmas=null,onlineResearch=null,emojiSocketReady=false, socketSupportsDogActions=false;
 const dogSocketActions=createDogSocketActionDispatcher();
 let lastFallbackRoomReadAt=0;
 let lastAnnouncedFinishedMatchId=null; // One Christmas eligibility refresh per completed DOG match.
@@ -122,6 +122,7 @@ function acceptRemote(room){
    if(decision.hideHand)revealed=decision.seat!==null;
    if(decision.clearSelection){selectedCard=null;selectedPiece=null;jokerAs=null;$('dog-joker-dialog').close();}
    game=decision.game;onlineSeat=decision.seat;acceptedMatchId=decision.matchId;
+   onlineRoomHost=room.host===true;
    onlineDogAvatars=Array.isArray(room.match?.dogAvatars)?room.match.dogAvatars:[];
    onlineChristmas=room.match?.christmas?.enabled===true?room.match.christmas:null;
    onlineResearch=room.match?.dogResearch||null;
@@ -799,7 +800,8 @@ function updateVictoryCeremony(){
       '<span class="dog-victory-player-name">'+escape(player.name)+(player.bot?' <small>BOT</small>':'')+'</span>'+
       '<span class="dog-victory-player-score">'+player.goalCount+' <small>/ 4</small></span>'+
     '</div>').join('');
-  $('dog-victory-new').hidden=online;
+  $('dog-victory-new').hidden=online&&!onlineRoomHost;
+  $('dog-victory-new').textContent=online?'↻ Neue DOG-Runde vorbereiten':'↻ Neue Partie';
   $('dog-victory-lobby').href=$('back-link').href;
  }
  victoryDialog.hidden=false;
@@ -810,7 +812,22 @@ function updateVictoryCeremony(){
 }
 $('dog-victory-show').addEventListener('click',openVictoryCeremony);
 $('dog-victory-close').addEventListener('click',closeVictoryCeremony);
-$('dog-victory-new').addEventListener('click',()=>{closeVictoryCeremony();$('new-game').click();});
+$('dog-victory-new').addEventListener('click',async()=>{
+ if(!online){closeVictoryCeremony();$('new-game').click();return;}
+ if(!onlineRoomHost||!acceptedMatchId||game?.phase!=='finished'||onlineBusy)return;
+ const button=$('dog-victory-new');
+ onlineBusy=true;button.disabled=true;button.textContent='↻ Runde wird vorbereitet …';
+ try{
+  // One authorized room transition: keep the same code, preserve colour
+  // choices and let everyone explicitly ready up for the next DOG game.
+  await hubRequest('/dog/rematch','POST',{matchId:acceptedMatchId});
+  location.assign($('back-link').href);
+ }catch(error){
+  $('winner-subtitle').textContent='⚠️ Neue Runde konnte nicht vorbereitet werden: '+error.message;
+ }finally{
+  onlineBusy=false;button.disabled=false;button.textContent='↻ Neue DOG-Runde vorbereiten';
+ }
+});
 
 // Non-blocking turn announcement. Only the visible active seat changes it.
 let lastAnnouncedTurn=null,turnAnnouncementTimer=null;
