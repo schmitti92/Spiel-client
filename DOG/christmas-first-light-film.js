@@ -9,7 +9,7 @@ const VIDEO='./assets/Lichtertal_Der_erste_Funke_120_Sekunden.mp4';
 
 export function shouldShowFirstLightFilm({uid,seat,matchId,phase,christmas,previousGiftCount=null}={}){
  if(!uid||!matchId||!Number.isInteger(seat)||seat<0||seat>3||
-    phase==='finished'||christmas?.enabled!==true)return false;
+    (phase==='finished'&&previousGiftCount!==0)||christmas?.enabled!==true)return false;
  const count=christmas.giftCount;
  if(!Number.isSafeInteger(count)||count<1)return false;
  // On a live 0 -> 1 transition, show to everyone in the match.
