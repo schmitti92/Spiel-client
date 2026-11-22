@@ -8,6 +8,7 @@
  * One automatic showing per room/profile/browser tab session. The welcome
  * film can always be reopened with the "Lobbyfilm ansehen" button.
  */
+import {markDogVideoSeen} from './video-library-watched.js?v=1';
 export function createDogRoomWelcomeFilm({root}){
  const videoUrl=new URL('./assets/42667997_1795277919445597.mp4',import.meta.url).href;
  const css=document.createElement('style');
@@ -136,6 +137,7 @@ export function createDogRoomWelcomeFilm({root}){
  video.addEventListener('play',updateButtons);
  video.addEventListener('pause',updateButtons);
  video.addEventListener('ended',()=>{
+  void markDogVideoSeen('welcome');
   status.textContent='✅ Dein DOG-Lobbyfilm ist zu Ende. Viel Spaß beim Spielen!';
   dismiss.textContent='🐾 Jetzt zur Spiellobby';
   updateButtons();
