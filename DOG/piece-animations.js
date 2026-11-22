@@ -88,6 +88,33 @@ export function planPieceMotions(beforePieces, afterPieces, board) {
   }
   return motions;
 }
+/**
+ * Room updates may combine several non-board revisions (exchange, research,
+ * rewards or a burst of bot moves). A single skipped revision must not make
+ * the next visible opponent move teleport. Ignore very old reconnect snapshots.
+ * This is purely a visual decision; the server game is never replayed.
+ */
+export function shouldAnimatePieceUpdate({sameMatch,previousRevision,currentRevision,previousPieces,currentPieces}={}) {
+  if(!sameMatch || !Number.isSafeInteger(previousRevision) ||
+     !Number.isSafeInteger(currentRevision) ||
+     currentRevision<=previousRevision || currentRevision-previousRevision>12 ||
+     !Array.isArray(previousPieces) || !Array.isArray(currentPieces) ||
+     previousPieces.length!==currentPieces.length)return false;
+  const previous=new Map(previousPieces.map(piece=>[piece.id,piece]));
+  return currentPieces.some(piece=>!sameSpot(previous.get(piece.id),piece));
+}
+
+/** Show only public move-history text; never expose an opponent's cards. */
+export function opponentMoveNotice(game,motions,{online=false,ownSeat=null}={}) {
+  if(!Array.isArray(motions)||!motions.length)return null;
+  const line=game?.history?.[0];
+  if(typeof line!=='string')return null;
+  const actor=game?.players?.find(p=>!p.inactive&&typeof p.name==='string'&&
+    line.startsWith(p.name+' '));
+  if(!actor || (!online&&!actor.bot) || (online&&actor.seat===ownSeat))return null;
+  return {seat:actor.seat,text:(actor.bot?'🤖 ':'🎲 ')+line};
+}
+
 export function createPieceAnimator(svg) {
   let frame = 0;
   let active = [];
