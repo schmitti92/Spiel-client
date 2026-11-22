@@ -64,12 +64,32 @@ test('Network reconnection keeps HTTP verification and disconnected WS restores 
  assert.equal(h.ops.http,3,'no room means no request');
 });
 
-test('A healthy hub socket uses 5-minute idle audits and keeps a 30-second broken-stream fallback',()=>{
- assert.match(source,/const HUB_IDLE_AUDIT_MS=300000/);
+test('A healthy authenticated hub socket makes no idle room GET; offline fallback stays bounded',async()=>{
+ assert.doesNotMatch(source,/HUB_IDLE_AUDIT_MS/);
  assert.match(source,/const HUB_DISCONNECTED_FALLBACK_MS=30000/);
- assert.match(source,/const minAge=hasRecentHubStream\(now\)\?HUB_IDLE_AUDIT_MS:HUB_DISCONNECTED_FALLBACK_MS/);
- assert.match(source,/function pollStart\(\)/);
- assert.match(source,/poll=setInterval\(async\(\)=>\{/);
- assert.match(source,/\},12000\);\}/);
+ assert.match(source,/if\(hasRecentHubStream\(now\)\)return/);
+ const start=source.indexOf('function pollStart(){');
+ const end=source.indexOf('function leaveView(){',start);
+ assert.ok(start>=0&&end>start);
+ const fragment=source.slice(start,end);
+ let tick=null,now=1000000,healthy=true,requests=0,rendered=0;
+ const context={HUB_DISCONNECTED_FALLBACK_MS:30000,code:'ABC23D',room:{code:'ABC23D'},operation:false,
+  pollInFlight:false,lastRoomPollAt:0,document:{hidden:false},pollErrors:0,
+  activeProfile:()=>true,hasRecentHubStream:()=>healthy,Date:{now:()=>now},
+  pollStop:()=>{},startWatch:()=>{},setInterval:fn=>{tick=fn;return 7},
+  request:async()=>{requests++;return {room:{code:'ABC23D'}}},
+  acceptRoom:()=>{rendered++},showError:()=>{},leaveView:()=>{throw Error('unexpected leave')} };
+ vm.runInNewContext(fragment,context);
+ context.pollStart();
+ for(let n=0;n<120;n++){now+=12_000;await tick();}
+ assert.equal(requests,0,'healthy authenticated stream: no 5-minute or other periodic Firestore HTTP audit');
+ healthy=false;
+ await tick();
+ assert.equal(requests,1,'first disconnection may reconcile immediately after long healthy interval');
+ now+=12_000;await tick();
+ assert.equal(requests,1,'broken stream fallback must wait at least 30 seconds');
+ now+=18_000;await tick();
+ assert.equal(requests,2,'broken connection still reconciles after 30 seconds');
+ assert.equal(rendered,2);
  assert.match(source,/window\.addEventListener\('online',.*?refreshRoomAfterReconnect\(\)/s);
 });

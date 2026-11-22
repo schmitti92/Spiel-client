@@ -1,5 +1,10 @@
 name: Firebase hub read regression (offline)
 on:
+  pull_request:
+    paths:
+      - 'hub-lobby.js'
+      - 'tests/hub-foreground-reconcile-offline.test.mjs'
+      - '.github/workflows/firebase-hub-read-check.yml'
   push:
     branches: [main]
     paths:
