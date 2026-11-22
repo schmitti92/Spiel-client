@@ -3,6 +3,7 @@
  * Never use developer preview, village picture or locally selected tree level.
  * Viewing state is local per authenticated profile, not a reward entitlement.
  */
+import {markDogVideoSeen} from './video-library-watched.js?v=1';
 export const CHRISTMAS_TREE_FILMS=Object.freeze({
   2:Object.freeze({
     title:'Der erste Stern',
@@ -102,7 +103,10 @@ export function initChristmasTreeFilms({getUserId,isPreview}){
   const chapter=CHRISTMAS_TREE_FILMS[active.level];
   if(clipIndex>=chapter.clips.length){
    finished=true;video.pause();
-   if(!failed&&!active.replay)markSeen(active.uid,active.level);
+   if(!failed){
+    if(!active.replay)markSeen(active.uid,active.level);
+    void markDogVideoSeen('tree-'+active.level);
+   }
    status.textContent=failed?'⚠️ Nicht alle Videos konnten geladen werden. Du kannst sie später erneut ansehen.':'✨ Geschichte abgeschlossen! Zurück zum Weihnachtsdorf.';
    syncControls();return;
   }
