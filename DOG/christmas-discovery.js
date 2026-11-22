@@ -45,10 +45,10 @@ export function createDogChristmasDiscoveryPopup(doc=document){
   const gift=event.type==='gift';
   popup.dataset.kind=gift?'gift':'scratch';
   icon.textContent=gift?'⭐':'🎟️';
-  const tiers={simple:'ein einfaches',medium:'ein mittleres',premium:'ein Premium-'};
+  const tiers={simple:'Ein einfaches Rubbellos',medium:'Ein mittleres Rubbellos',premium:'Ein Premium-Rubbellos'};
   message.textContent=gift?
    'Du hast ein Lichtfeld gefunden! '+(Number.isInteger(event.earnedTenths)?(event.earnedTenths/10).toLocaleString('de-DE')+' Weihnachtslichter für Lichtertal gesammelt.':'Ein Weihnachtslicht für Lichtertal entdeckt!'):
-   'Du hast ein Rubbellos-Feld gefunden! '+(tiers[event.tier]||'Ein')+' Rubbellos wartet im Weihnachtsevent auf dich.';
+   'Du hast ein Rubbellos-Feld gefunden! '+(tiers[event.tier]||'Ein Rubbellos')+' wartet im Weihnachtsevent auf dich.';
   popup.hidden=false;
   timer=setTimeout(dismiss,5200);
  }
