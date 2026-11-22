@@ -665,7 +665,7 @@ html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christm
   <h2>🐾 So funktioniert DOG</h2>
   <p>Rot und Grün spielen gemeinsam gegen Blau und Gelb. Alle beginnen mit vier Figuren zu Hause. Zum Starten benötigt man eine <b>1/11</b>, <b>13</b> oder einen Joker. Die Figuren ziehen über die Außenbahn in ihre vier Zielfelder.</p>
   <p>Jede Kartenrunde hat <b>6, 5, 4, 3 oder 2 Karten</b>. Vor dem Spielen tauschen die Partner jeweils eine verdeckte Karte. Mit der <b>4</b> darfst du vor- oder rückwärts gehen, mit der <b>7</b> verteilst du sieben Schritte und schlägst alle überholten Figuren. Mit der <b>Tauschkarte</b> tauschst du ungeschützte Figuren. Ein Joker ersetzt jede andere Karte.</p>
-  <p>Eigene Startfelder sind geschützt. Im Ziel kann niemand übersprungen werden. Wenn alle vier Figuren einer Farbe angekommen sind, spielt die Person für ihren Partner weiter. Gewonnen hat das Team mit allen acht Figuren im Ziel.</p>
+  <p>Eigene Startfelder sind geschützt. Im Ziel kann niemand übersprungen werden. Sobald ein Spieler alle vier eigenen Figuren im Ziel hat, ist die normale DOG-Partie sofort beendet und die Siegesehrung erscheint. Grinch-Missionen haben eigene Regeln.</p>
   <p>DOG funktioniert lokal mit Bots oder mehreren Menschen an einem Gerät sowie online in gemeinsamen Spielräumen.</p>
   <button class="rule-close" id="rules-close">Verstanden</button>
 </dialog>
@@ -712,7 +712,7 @@ mountChristmasLinks();
 </script>
 <script type="module">
 import('./ui-shell.js?v=5').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
-import('./app.js?v=90').catch(error=>{
+import('./app.js?v=91').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
