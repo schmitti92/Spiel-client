@@ -2,11 +2,11 @@
  * Replays and ordinary DOG turns never write. A failed/offline request is
  * ignored; it must never block the film or award any game prize.
  */
-const BASE=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
+const BASE=String(globalThis.window?.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const pending=new Set();
 const allowed=new Set(['welcome','intro','first-light','tree-2','tree-3',
  'building-bakery','building-workshop','building-inn','building-tower','building-luckhouse']);
-const current=()=>window.SpielOnline?.state?.();
+const current=()=>globalThis.window?.SpielOnline?.state?.();
 const recordKey=(uid,id)=>'dog-videothek-watched-synced-v1:'+uid+':'+id;
 
 export async function markDogVideoSeen(id){
