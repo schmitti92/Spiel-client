@@ -31,3 +31,11 @@ test('gold value and coin icon are drawn above pawns without adding any reads',(
  assert.doesNotMatch(source,/fetch\(|getIdToken|firebase/);
  assert.match(source,/Goldmünzen/);
 });
+
+test('three reward symbols at one visited position get distinct positions, even over pawns',()=>{
+ const app=readFileSync(new URL('../DOG/app.js',import.meta.url),'utf8');
+ assert.match(app,/found\.length===3/);
+ assert.match(app,/occupied\?\[\[-15,-17\],\[0,-22\],\[15,-17\]\]/);
+ assert.match(app,/\[\[-12,-11\],\[12,-11\],\[0,13\]\]/);
+ assert.match(app,/mark\.amount\.toLocaleString\('de-DE'\)/);
+});
