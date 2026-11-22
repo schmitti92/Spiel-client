@@ -10,8 +10,10 @@ export function dogChristmasFoundMarkers(christmas){
  const known=[
   ['gift',christmas.foundGiftFields],
   ['scratch',christmas.foundScratchFields],
+  ['gold',(Array.isArray(christmas.foundGoldFields)?christmas.foundGoldFields:[]).map(e=>e?.field)],
   ['gift',legacy.filter(e=>e?.type==='gift').map(e=>e.field)],
-  ['scratch',legacy.filter(e=>e?.type==='scratch').map(e=>e.field)]
+  ['scratch',legacy.filter(e=>e?.type==='scratch').map(e=>e.field)],
+  ['gold',legacy.filter(e=>e?.type==='gold').map(e=>e.field)]
  ];
  for(const [kind,fields] of known){
   if(!Array.isArray(fields))continue;
@@ -22,7 +24,19 @@ export function dogChristmasFoundMarkers(christmas){
  }
  const counts=new Map();
  for(const mark of marks)counts.set(mark.field,(counts.get(mark.field)||0)+1);
- return marks.map(mark=>({...mark,both:counts.get(mark.field)>1})).sort((a,b)=>a.field-b.field||(a.kind==='gift'?-1:1));
+ const goldValues=new Map();
+ for(const entry of Array.isArray(christmas.foundGoldFields)?christmas.foundGoldFields:[])
+  if(eligibleField(entry?.field)&&[1,500,1000,2000].includes(entry?.amount))
+   goldValues.set(entry.field,entry.amount);
+ for(const entry of legacy){
+  if(entry?.type==='gold'&&eligibleField(entry.field)&&
+    [1,500,1000,2000].includes(entry.amount)&&!goldValues.has(entry.field))
+   goldValues.set(entry.field,entry.amount);
+ }
+ return marks.map(mark=>({
+  ...mark,both:counts.get(mark.field)>1,
+  ...(mark.kind==='gold'&&goldValues.has(mark.field)?{amount:goldValues.get(mark.field)}:{})
+ })).sort((a,b)=>a.field-b.field||(a.kind==='gift'?-1:1));
 }
 /** The first snapshot establishes the baseline; replayed WebSocket/HTTP
  * snapshots and reconnects never celebrate an already-known discovery.
@@ -35,7 +49,7 @@ export function newDogChristmasDiscoveries(previous,current,seat){
  return (Array.isArray(current.activity)?current.activity:[]).filter(event=>
   Number.isSafeInteger(event?.id)&&event.id>last&&event.id<=now&&
   event.seat===seat&&eligibleField(event.field)&&
-  (event.type==='gift'||event.type==='scratch')
+  (event.type==='gift'||event.type==='scratch'||event.type==='gold')
  ).sort((a,b)=>a.id-b.id);
 }
 export function createDogChristmasDiscoveryPopup(doc=document){
@@ -52,12 +66,14 @@ export function createDogChristmasDiscoveryPopup(doc=document){
  function next(){
   if(!popup||!popup.hidden||!queue.length)return;
   const event=queue.shift();
-  const gift=event.type==='gift';
-  popup.dataset.kind=gift?'gift':'scratch';
-  icon.textContent=gift?'⭐':'🎟️';
+  const gift=event.type==='gift',gold=event.type==='gold';
+  popup.dataset.kind=gift?'gift':gold?'gold':'scratch';
+  icon.textContent=gift?'⭐':gold?'🪙':'🎟️';
   const tiers={simple:'Ein einfaches Rubbellos',medium:'Ein mittleres Rubbellos',premium:'Ein Premium-Rubbellos'};
   message.textContent=gift?
    'Du hast ein Lichtfeld gefunden! '+(Number.isInteger(event.earnedTenths)?(event.earnedTenths/10).toLocaleString('de-DE')+' Weihnachtslichter für Lichtertal gesammelt.':'Ein Weihnachtslicht für Lichtertal entdeckt!'):
+   gold?'Du hast '+(Number.isInteger(event.amount)?event.amount.toLocaleString('de-DE'):'einige')+
+    ' Goldmünzen entdeckt! Sie wurden deinem Rubbellos-Guthaben gutgeschrieben.':
    'Du hast ein Rubbellos-Feld gefunden! '+(tiers[event.tier]||'Ein Rubbellos')+' wartet im Weihnachtsevent auf dich.';
   popup.hidden=false;
   timer=setTimeout(dismiss,5200);
