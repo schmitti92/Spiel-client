@@ -137,3 +137,9 @@ test('Normal persistent stream, membership checks and 30-second disconnected fal
  assert.match(snippet,/if\(!restored\)\{/);
  assert.doesNotMatch(snippet,/request\('\/rooms','POST'/);
 });
+
+test('DOG waiting-room HTML loads the new websocket-first recovery asset version',()=>{
+ const html=readFileSync(new URL('../hub-lobby.html',import.meta.url),'utf8');
+ assert.match(html,/hub-lobby\.js\?v=20261122-dog-socket-first/);
+ assert.doesNotMatch(html,/hub-lobby\.js\?v=20261121-firebase-writes-hotfix/);
+});
