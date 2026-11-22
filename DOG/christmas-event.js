@@ -9,9 +9,9 @@ import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewa
 import {initChristmasTreeFilms} from './christmas-tree-films.js?v=3';
 import {initChristmasBuildingFilms} from './christmas-building-films.js?v=7';
 import {initChristmasStory} from './christmas-story.js?v=7';
-import {initChristmasScratch} from './christmas-scratch-ui.js?v=88';
-import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=10';
-import {initChristmasResearch} from './christmas-research-ui.js?v=11';
+import {initChristmasScratch} from './christmas-scratch-ui.js?v=89';
+import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=11';
+import {initChristmasResearch} from './christmas-research-ui.js?v=12';
 import {initChristmasTabBadges} from './christmas-tab-badges.js?v=1';
 import {initChristmasContentZoom} from './christmas-content-zoom.js?v=1';
 import {initLichtertalSidebarTextFit} from './christmas-sidebar-fit.js?v=1';
