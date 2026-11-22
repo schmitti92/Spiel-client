@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {snapshotPieces,pointForPiece,planPieceMotions,createPieceAnimator} from '../DOG/piece-animations.js';
+import {snapshotPieces,pointForPiece,planPieceMotions,createPieceAnimator,shouldAnimatePieceUpdate,opponentMoveNotice} from '../DOG/piece-animations.js';
 
 const board = {
   track: Array.from({length:64}, (_,i)=>({x:i*10,y:i%2*20})),
@@ -89,4 +89,29 @@ test('animated tokens render at their previous positions before first animation 
  }finally{
   for(const [key,value] of Object.entries(saved)){if(value===undefined)delete globalThis[key];else globalThis[key]=value;}
  }
+});
+
+test('opponent animation survives skipped non-board game revisions',()=>{
+ const before=[piece(0,0,'track',3),piece(4,1,'home',-1)];
+ const after=[piece(0,0,'track',3),piece(4,1,'track',16)];
+ const base={sameMatch:true,previousRevision:12,currentRevision:15,previousPieces:before,currentPieces:after};
+ assert.equal(shouldAnimatePieceUpdate(base),true);
+ assert.equal(planPieceMotions(before,after,board)[0].kind,'launch');
+ assert.equal(shouldAnimatePieceUpdate({...base,currentRevision:12}),false);
+ assert.equal(shouldAnimatePieceUpdate({...base,currentRevision:25}),false);
+ assert.equal(shouldAnimatePieceUpdate({...base,sameMatch:false}),false);
+ assert.equal(shouldAnimatePieceUpdate({...base,currentPieces:before}),false);
+ assert.equal(shouldAnimatePieceUpdate({...base,previousPieces:before.slice(0,1)}),false);
+});
+
+test('public opponent and bot move notices never reveal private hands',()=>{
+ const motions=[{id:4,owner:1,kind:'step',points:[board.track[4],board.track[5]]}];
+ const game={players:[{seat:0,name:'Du',bot:false},{seat:1,name:'Computer Blau',bot:true}],
+  hands:[[ {id:1,type:'joker'} ],[{id:7,type:'13'}]],
+  history:['Computer Blau spielt 13']};
+ assert.deepEqual(opponentMoveNotice(game,motions,{online:false}),{seat:1,text:'🤖 Computer Blau spielt 13'});
+ assert.equal(opponentMoveNotice(game,[],{online:false}),null);
+ assert.equal(opponentMoveNotice(game,motions,{online:true,ownSeat:1}),null);
+ assert.deepEqual(opponentMoveNotice(game,motions,{online:true,ownSeat:0}),{seat:1,text:'🤖 Computer Blau spielt 13'});
+ assert.equal(opponentMoveNotice({...game,history:['Runde 2: neue Karten']},motions,{online:true,ownSeat:0}),null);
 });
