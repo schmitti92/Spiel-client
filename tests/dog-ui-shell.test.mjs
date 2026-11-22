@@ -67,3 +67,18 @@ test('future modules are registered and explicitly inactive until implemented',(
  assert.match(shell,/newGame\.hidden=true/);
  assert.doesNotMatch(shell,/fetch\(|writeBatch|updateDoc|setDoc|\.emit\(/);
 });
+
+test('Magie shows move hints and bot-animation switches, not a placeholder',()=>{
+ const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
+ for(const id of ['dog-magic-panel-root','dog-move-hints-toggle','dog-move-hints-description',
+ 'dog-bot-animation-toggle','dog-bot-animation-description'])
+   assert.equal(ids.filter(x=>x===id).length,1,id);
+ const hand=html.indexOf('class="panel dog-hand-module"');
+ const extras=html.indexOf('class="panel dog-extras-panel"');
+ const magic=html.indexOf('id="dog-magic-panel-root"');
+ const switchIndex=html.indexOf('id="dog-move-hints-toggle"');
+ assert.ok(hand>0&&extras>hand&&magic>extras&&switchIndex>magic);
+ assert.match(shell,/magicBody\.hidden=activeExtension!=='magic'/);
+ assert.match(html,/dog-magic-panel-root"[^>]*hidden/);
+ assert.match(html,/role="switch" aria-checked="true" aria-label="Bot-Animationen/);
+});
