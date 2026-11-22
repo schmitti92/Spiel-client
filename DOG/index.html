@@ -360,6 +360,22 @@ html[data-dog-motion="off"] .dog-legal-target-ring{animation:none}
 .dog-magic-panel-footnote{color:#b7cfdf;font-size:10px}
 @media(max-width:480px){.dog-magic-panel-root{gap:5px}}
 
+/* Three local bot difficulties, optionally one setting per computer opponent. */
+.dog-bot-difficulty-control{display:flex;flex-direction:column;gap:8px;padding:10px 11px;
+ background:#0b2435bd;border:1px solid #a1bfce49;border-radius:12px}
+.dog-bot-difficulty-control>strong{color:#ffe8b2;font-size:12px}
+.dog-bot-difficulty-default,.dog-bot-difficulty-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.dog-bot-difficulty-default>span,.dog-bot-difficulty-row>label{font-size:11px;color:#e0eaf1;min-width:0}
+.dog-bot-difficulty-control select{min-height:36px;max-width:52%;min-width:118px;padding:6px 9px;
+ border:1px solid #ad996f99;border-radius:9px;background:#172d40;color:#ffe8b2;
+ font-size:12px;font-weight:750;cursor:pointer;touch-action:manipulation}
+.dog-bot-difficulty-control select:disabled{opacity:.5;cursor:not-allowed}
+.dog-bot-difficulty-players{display:flex;flex-direction:column;gap:7px}
+.dog-bot-difficulty-players:empty{display:none}
+.dog-bot-difficulty-row{padding-top:7px;border-top:1px solid #c0d1dd28}
+.dog-bot-difficulty-description{font-size:10px;color:#b7cfdf;line-height:1.45}
+@media(max-width:480px){.dog-bot-difficulty-control{padding:8px}.dog-bot-difficulty-control select{min-width:105px}}
+
 /* Split-seven turn indicator: remain visible during every partial step. */
 .dog-seven-progress{display:block;flex:1 1 100%;width:100%;margin:7px 0 4px;padding:8px 10px;border-radius:10px;border:1px solid #eec46f77;background:linear-gradient(125deg,#302517dd,#142638c9);color:#ffedc4;font-size:12px;line-height:1.45}
 .dog-seven-progress strong{color:#ffe08b;font-weight:850}
@@ -537,7 +553,20 @@ html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christm
                 <span id="dog-bot-animation-state" class="dog-move-hints-state" aria-hidden="true">AN</span>
               </button>
             </div>
-            <p class="dog-magic-panel-footnote">Die Einstellungen gelten nur für dieses Gerät. Das Spiel und die anderen Spieler werden nicht beeinflusst.</p>
+            <section class="dog-bot-difficulty-control" aria-labelledby="dog-bot-difficulty-heading">
+              <strong id="dog-bot-difficulty-heading">🧠 Bot-Schwierigkeit</strong>
+              <label class="dog-bot-difficulty-default" for="dog-bot-difficulty-default">
+                <span>Standard für lokale Bots</span>
+                <select id="dog-bot-difficulty-default" aria-label="Standard-Schwierigkeitsgrad für lokale Bots">
+                  <option value="easy">Leicht</option>
+                  <option value="medium" selected>Mittel</option>
+                  <option value="expert">Experte</option>
+                </select>
+              </label>
+              <div id="dog-bot-difficulty-players" class="dog-bot-difficulty-players" aria-label="Schwierigkeitsgrad einzelner Bots"></div>
+              <small id="dog-bot-difficulty-description" class="dog-bot-difficulty-description">Du kannst jeden Computergegner einzeln einstellen.</small>
+            </section>
+            <p class="dog-magic-panel-footnote">Zughilfe und Animationen gelten nur auf deinem Gerät. Die Bot-Stärke beeinflusst lokale Partien; Online-Bots werden weiterhin von Render gesteuert.</p>
           </div>
          <div id="dog-emoji-panel-root" class="dog-emoji-panel-root" hidden></div>
          <div id="dog-event-overview" class="dog-event-overview" aria-label="Aktueller DOG-Eventfortschritt" hidden></div>
@@ -783,7 +812,7 @@ mountChristmasLinks();
 </script>
 <script type="module">
 import('./ui-shell.js?v=9').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
-import('./app.js?v=103').catch(error=>{
+import('./app.js?v=104').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
