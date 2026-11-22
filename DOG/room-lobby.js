@@ -171,16 +171,17 @@ function update(snapshot,busy=false){
  const me=state.me;
  const ready=state.readyCount;
  const spectatorCount=state.spectatorCount;
- const playing=state.playing;
+ const playing=state.playing,finished=state.finished;
  const total=state.activeCount;
  paintProfile(me);
- renderRoster(players,busy,playing);
+ renderRoster(players,busy,playing||finished);
  setText('dog-room-count',total+' Spieler im Raum');
- setText('dog-room-ready-count',playing?'Partie läuft':'Bereit '+ready+'/'+total);
+ setText('dog-room-ready-count',finished?'🏆 Runde beendet':playing?'Partie läuft':'Bereit '+ready+'/'+total);
  const percent=state.readyPercent;
  $('dog-room-progress-fill').style.width=percent+'%';
  $('dog-room-progress').setAttribute('aria-valuenow',String(percent));
- const note=playing?'Die Partie ist gestartet. Du kannst jederzeit ins Spiel zurückkehren.'
+ const note=finished?'Die Partie ist beendet. Der Host kann jetzt eine neue DOG-Runde im selben Raum vorbereiten.'
+  :playing?'Die Partie ist gestartet. Du kannst jederzeit ins Spiel zurückkehren.'
   :!me?.participating?'Du schaust zu. Der Host kann dir einen Spielplatz zuweisen.'
   :total===1?'DOG ergänzt freie Plätze automatisch mit Computergegnern.'
   :ready===total?'Alle bereit. Die Partie wird jetzt vom Server gestartet.'
@@ -188,7 +189,15 @@ function update(snapshot,busy=false){
  setText('dog-room-readiness-note',note+(spectatorCount?' · '+spectatorCount+' Zuschauer':''));
  const join=$('dog-room-join'),readyButton=$('dog-room-ready'),start=$('dog-room-start');
  const canPlay=!!me?.participating;
- if(playing){
+ if(finished){
+  join.textContent=snapshot.match?.participating?'🏆 Siegerehrung ansehen':'Zuschauer';
+  join.disabled=!state.joinEnabled;
+  readyButton.hidden=true;
+  start.hidden=!state.hostStartVisible;
+  start.textContent='↻ Neue Runde vorbereiten';
+  start.disabled=!state.hostStartEnabled;
+  start.title=state.hostStartHint;
+ }else if(playing){
   join.textContent=snapshot.match?.participating?'▶ Zur laufenden Partie':'Zuschauer';
   join.disabled=!state.joinEnabled;
   readyButton.hidden=true;
