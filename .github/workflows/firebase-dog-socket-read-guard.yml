@@ -1,9 +1,20 @@
 name: Firebase DOG WebSocket read guard
 on:
+  pull_request:
+    paths:
+      - 'DOG/app.js'
+      - 'DOG/socket-actions.js'
+      - 'DOG/index.html'
+      - 'tests/firebase-dog-socket-read-guard.test.mjs'
+      - 'tests/firebase-dog-render-socket-actions.test.mjs'
+      - '.github/workflows/firebase-dog-socket-read-guard.yml'
   push:
     branches: [main]
     paths:
       - 'DOG/app.js'
+      - 'DOG/socket-actions.js'
+      - 'DOG/index.html'
+      - 'tests/firebase-dog-render-socket-actions.test.mjs'
       - 'tests/firebase-dog-socket-read-guard.test.mjs'
       - '.github/workflows/firebase-dog-socket-read-guard.yml'
   workflow_dispatch:
@@ -18,5 +29,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --check DOG/app.js
-      - run: node --test tests/firebase-dog-socket-read-guard.test.mjs tests/dog-online-sync.test.mjs
+      - run: node --check DOG/app.js && node --check DOG/socket-actions.js
+      - run: node --test tests/firebase-dog-socket-read-guard.test.mjs tests/dog-online-sync.test.mjs tests/firebase-dog-render-socket-actions.test.mjs

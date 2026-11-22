@@ -11,6 +11,7 @@ import {DOG_MOVE_HINTS_KEY,readDogMoveHints,writeDogMoveHints,dogLegalTargets} f
 import {summarizeDogVictory} from './victory-summary.js?v=2';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js?v=4';
 import {decideDogRoomUpdate} from './online-sync.js?v=15';
+import {createDogSocketActionDispatcher} from './socket-actions.js?v=1';
 import {initDogFirstLightFilm} from './christmas-first-light-film.js?v=1';
 import {DEFAULT_APPEARANCE,BOARD_STYLES,isBoardUnlocked,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,PIECE_SHAPES,isPieceShapeUnlocked,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,loadAppearance,saveAppearance,normalizeAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=28';
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=11';
@@ -31,10 +32,11 @@ if(online){
 }
 document.querySelectorAll('[data-dog-editor]').forEach(link=>link.href='editor.html?return='+encodeURIComponent(editorBack)+'&v=10');
 const apiBase=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null,onlineDogAvatars=[],onlineChristmas=null,onlineResearch=null,emojiSocketReady=false;
+let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null,onlineDogAvatars=[],onlineChristmas=null,onlineResearch=null,emojiSocketReady=false, socketSupportsDogActions=false;
+const dogSocketActions=createDogSocketActionDispatcher();
 let lastFallbackRoomReadAt=0;
 let lastAnnouncedFinishedMatchId=null; // One Christmas eligibility refresh per completed DOG match.
-let socketAwaitingFirstRoomAt=0,socketHasRoom=false,socketLastHealthyAt=0;
+let socketAwaitingFirstRoomAt=0,socketHasRoom=false,socketLastHealthyAt=0,socketAuthenticatedUid=null;
 const DOG_DISCONNECTED_READ_MS=30000; // Render WebSocket is primary.
 const DOG_FIRST_ROOM_GRACE_MS=12000; // Recover if a connected socket never receives its initial room.
 const DOG_SOCKET_CONNECT_MS=15000,DOG_SOCKET_STALE_MS=95000; // Reconnect hung sockets without polling Firebase.
@@ -52,6 +54,29 @@ async function hubRequest(path,method='GET',payload){
   error.status=response.status;throw error;
  }
  return body.room;
+}
+// Fast path: an authenticated Render socket already knows the player's room
+// and identity. If its confirmation is lost, replay the SAME actionId over
+// HTTP. Firestore CAS/transactions still validate and persist every move.
+async function sendOnlineDogAction(action){
+ const actorUid=user()?.uid;
+ const payload={
+  matchId:acceptedMatchId||matchHint||'',
+  expectedRevision:game.revision,
+  actionId:crypto.randomUUID(),action
+ };
+ const socket=onlineSocket;
+ if(socket?.readyState===1&&socketHasRoom&&socketSupportsDogActions&&
+    socketAuthenticatedUid===user()?.uid){
+  try{return await dogSocketActions.request(socket,payload);}
+  catch(e){
+   if(!e?.dogSocketTransport)throw e; // Real DOG rule error: no extra GET.
+  }
+ }
+ // Logout/profile switching during a lost ACK must never replay the
+ // previous user's action using a different authenticated HTTP identity.
+ if(!actorUid||user()?.uid!==actorUid)throw Error('PROFILE_CHANGED');
+ return hubRequest('/dog/action','POST',payload);
 }
 function acceptRemote(room){
  const decision=decideDogRoomUpdate(
@@ -99,7 +124,7 @@ async function refreshOnline(){
 
 function startSocket(){
  if(onlineSocket||!user())return;
- const socket=new WebSocket(apiBase.replace(/^http/i,'ws')+'/hub');onlineSocket=socket;emojiSocketReady=false;
+ const socket=new WebSocket(apiBase.replace(/^http/i,'ws')+'/hub');onlineSocket=socket;emojiSocketReady=false;socketSupportsDogActions=false;
  socketAwaitingFirstRoomAt=Date.now();socketHasRoom=false;socketLastHealthyAt=0;
  const connectTimer=setTimeout(()=>{
   if(onlineSocket===socket&&socket.readyState===0)socket.close();
@@ -107,8 +132,18 @@ function startSocket(){
  socket.onopen=async()=>{
   clearTimeout(connectTimer);
   socketLastHealthyAt=Date.now();
-  try{const token=await user().getIdToken();if(socket.readyState===1)socket.send(JSON.stringify({type:'subscribe',code:hubCode,profileIdToken:token}));}
-  catch(_){socket.close();return;}
+  const person=user(),expectedUid=person?.uid;
+  if(!expectedUid){socket.close();return;}
+  try{
+   const token=await person.getIdToken();
+   // A profile may change while Firebase is issuing the token. Never
+   // subscribe a stale player or expose their private hand to a new login.
+   if(user()?.uid!==expectedUid){socket.close();return;}
+   socketAuthenticatedUid=expectedUid;
+   if(socket.readyState===1)socket.send(JSON.stringify({
+    type:'subscribe',code:hubCode,profileIdToken:token
+   }));
+  }catch(_){socket.close();return;}
   onlineHeartbeat=setInterval(()=>{
    if(socket.readyState!==1)return;
    if(Date.now()-socketLastHealthyAt>DOG_SOCKET_STALE_MS){socket.close();return;}
@@ -116,7 +151,15 @@ function startSocket(){
   },30000);
  };
  socket.onmessage=e=>{
+  if(socketAuthenticatedUid!==user()?.uid){socket.close();return;}
   let data;try{data=JSON.parse(e.data)}catch(_){return;}
+  if(data.type==='dog_capabilities'){
+   // Older Render deployments send no capability packet; keep immediate HTTP
+   // moves on those instances, with ZERO 12-second feature-discovery delay.
+   socketSupportsDogActions=data.actions===true;
+   return;
+  }
+  if(dogSocketActions.receive(data,socket))return;
   if(data.type==='pong'){socketLastHealthyAt=Date.now();return;}
   if(data.type==='room'&&data.room?.code===hubCode){
    socketLastHealthyAt=Date.now();socketHasRoom=true;emojiSocketReady=true;acceptRemote(data.room);
@@ -128,8 +171,9 @@ function startSocket(){
  };
  socket.onclose=()=>{
   clearTimeout(connectTimer);emojiSocketReady=false;
+  dogSocketActions.disconnected(socket);socketSupportsDogActions=false;
   if(onlineHeartbeat){clearInterval(onlineHeartbeat);onlineHeartbeat=null;}
-  if(onlineSocket===socket)onlineSocket=null;
+  if(onlineSocket===socket){onlineSocket=null;socketAuthenticatedUid=null;}
  };
  socket.onerror=()=>{};
 }
@@ -170,7 +214,10 @@ async function initOnline(){
   if(!onlineSocket||onlineSocket.readyState>=2)startSocket();
  },8000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){startSocket();}});
- window.addEventListener('spielonline-change',()=>{if(user())startSocket();});
+ window.addEventListener('spielonline-change',()=>{
+  if(socketAuthenticatedUid&&socketAuthenticatedUid!==user()?.uid)onlineSocket?.close();
+  if(user())startSocket();
+ });
 }
 
 // Touch gestures change only the SVG viewBox, never game state or other UI.
@@ -795,10 +842,7 @@ function onResearchAction(type){
   if(seat<0)return;
   onlineBusy=true;visualFeedback.pending(true);
   $('status').textContent=type==='research-swap'?'🃏 Magischer Kartentausch wird ausgeführt …':'🔮 Deine nächste Karte wird untersucht …';
-  hubRequest('/dog/action','POST',{
-    matchId:acceptedMatchId||matchHint||'',expectedRevision:game.revision,
-    actionId:crypto.randomUUID(),action
-  }).then(room=>{selectedCard=null;acceptRemote(room);})
+  sendOnlineDogAction(action).then(room=>{selectedCard=null;acceptRemote(room);})
     .catch(e=>{$('status').textContent='⚠️ '+e.message;reconcileRejectedDogAction(e);})
     .finally(()=>{onlineBusy=false;visualFeedback.pending(false);});
 }
@@ -808,7 +852,7 @@ function onMove(i){
   if(online){
     if(onlineBusy)return;
     onlineBusy=true;visualFeedback.pending(true);$('status').textContent='Zug wird vom Server geprüft …';
-    hubRequest('/dog/action','POST',{matchId:acceptedMatchId||matchHint||'',expectedRevision:game.revision,actionId:crypto.randomUUID(),action:move})
+    sendOnlineDogAction(move)
       .then(room=>{acceptRemote(room);})
       .catch(e=>{visualFeedback.invalid();$('status').textContent='⚠️ '+e.message;reconcileRejectedDogAction(e);})
       .finally(()=>{onlineBusy=false;visualFeedback.pending(false);});

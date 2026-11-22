@@ -21,9 +21,11 @@ function rig(){
  const ctx={
   onlineSocket:null,onlineHeartbeat:null,emojiSocketReady:false,
   socketAwaitingFirstRoomAt:0,socketHasRoom:false,socketLastHealthyAt:0,
+  socketAuthenticatedUid:null,socketSupportsDogActions:false,
+  dogSocketActions:{receive:()=>false,disconnected:()=>{}},
   DOG_SOCKET_CONNECT_MS:15000,DOG_SOCKET_STALE_MS:95000,
   apiBase:'https://render.invalid',hubCode:'123',acceptedMatchId:'match1',
-  user:()=>({getIdToken:async()=> 'test-token'}),
+  user:()=>({uid:'alice',getIdToken:async()=> 'test-token'}),
   Date:{now:()=>now},WebSocket:Socket,
   setTimeout:fn=>fn,clearTimeout:()=>{},
   setInterval:(fn,ms)=>{heartbeats.push({fn,ms});return fn},
