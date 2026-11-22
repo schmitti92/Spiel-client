@@ -51,7 +51,7 @@ test('bots, invalid fields and duplicate server records are ignored',()=>{
  const altered={...snapshot,roundFinds:[
   ...snapshot.roundFinds,
   {id:7,type:'gift',field:11,seat:2,earnedTenths:30},
-  {id:7,type:'gold',field:12,seat:0,amount:500},
+  {id:2,type:'scratch',field:30,seat:1,tier:'medium'},
   {id:8,type:'gift',field:16,seat:0,earnedTenths:30},
   {id:9,type:'scratch',field:64,seat:1,tier:'simple'}
  ]};
