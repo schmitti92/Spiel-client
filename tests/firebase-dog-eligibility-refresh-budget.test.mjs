@@ -110,7 +110,11 @@ test('In-flight pre-victory entitlement must not authorize film or create an ext
  assert.equal(h.calls(),1,'closing while verification pending does not start a duplicate GET');
  assert.equal(h.shown(),0,'pre-victory status cannot reveal the film');
  h.releaseInitial({eligible:false,completed:false,introReady:false});
+ // The queued forced refresh runs in a later microtask after the old
+ // Promise resolves; wait for this complete async chain, not only for the
+ // first observed network call.
  await h.tick();
+ await new Promise(resolve=>setImmediate(resolve));
  assert.equal(h.calls(),2,'original pre-victory read triggers one post-victory forced follow-up');
  assert.equal(h.shown(),1,'only the post-victory server result authorizes the intro');
 });
