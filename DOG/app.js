@@ -3,7 +3,7 @@ import {CARD_EDITIONS,CARD_EDITION,isCardEditionUnlocked,loadCardEdition,saveCar
 import {enableHandTouchGestures} from './hand-gestures.js?v=2';
 import {mountDogEmojiGame,showDogEmoji,showDogEmojiError} from './emoji-game.js?v=4';
 import {boardGestureTarget,nearestTrackPawn,nearestBoardField,boardEventPoint} from './board-gesture-math.js?v=3';
-import {snapshotPieces,planPieceMotions,createPieceAnimator} from './piece-animations.js?v=3';
+import {snapshotPieces,planPieceMotions,createPieceAnimator,shouldAnimatePieceUpdate,opponentMoveNotice} from './piece-animations.js?v=4';
 import {loadMotionMode,saveMotionMode,applyMotionMode} from './motion-settings.js?v=1';
 import {createDogVisualFeedback} from './ui-animations.js?v=2';
 import {dogMoveBlockReason} from './invalid-move-reasons.js?v=2';
@@ -270,6 +270,32 @@ const pieceAnimator=createPieceAnimator(boardSvg);
 const visualFeedback=createDogVisualFeedback(document);
 applyMotionMode(loadMotionMode());
 let lastBoardKey=null,lastBoardSnapshot=null,lastBoardRevision=null,lastBoardMatch=null,lastMotionDuration=0;
+let postponedBoardRedraw=null,opponentMoveNoticeTimer=null;
+// Only public history and the already-received room state are used for this
+// visual overlay. No extra Render command or Firebase listener is needed.
+function showOpponentMove(motions){
+ const notice=opponentMoveNotice(game,motions,{online,ownSeat:onlineSeat});
+ if(!notice)return;
+ let node=$('dog-opponent-move-notice');
+ if(!node){
+  node=document.createElement('div');
+  node.id='dog-opponent-move-notice';
+  node.className='dog-opponent-move-notice';
+  node.setAttribute('role','status');
+  node.setAttribute('aria-live','polite');
+  boardSvg.parentElement.appendChild(node);
+ }
+ node.textContent=notice.text;
+ node.style.setProperty('--dog-opponent-color',displayColors()[notice.seat]||'#f2cf8e');
+ node.classList.remove('is-visible');
+ void node.offsetWidth;
+ node.classList.add('is-visible');
+ if(opponentMoveNoticeTimer)clearTimeout(opponentMoveNoticeTimer);
+ opponentMoveNoticeTimer=setTimeout(()=>{
+  node.classList.remove('is-visible');
+  opponentMoveNoticeTimer=null;
+ },Math.max(1800,Math.min(2800,lastMotionDuration+650)));
+}
 function applyBoardView(){
  const size=BOARD_SIZE/boardZoom,half=size/2;
  boardCenter.x=Math.max(half,Math.min(BOARD_SIZE-half,boardCenter.x));
@@ -388,6 +414,9 @@ function newGame(){
   game=createGame({names:['Du','Spieler Blau','Spieler Grün','Spieler Gelb'],bots:[0,1,2,3].map(i=>i>=humans)});
   revealed=true;selectedCard=null;selectedPiece=null;jokerAs=null;lastTurn=null;
   pieceAnimator.cancel();visualFeedback.reset();lastBoardKey=null;lastBoardSnapshot=null;lastBoardRevision=null;lastBoardMatch=null;lastMotionDuration=0;
+  if(postponedBoardRedraw){clearTimeout(postponedBoardRedraw);postponedBoardRedraw=null;}
+  if(opponentMoveNoticeTimer){clearTimeout(opponentMoveNoticeTimer);opponentMoveNoticeTimer=null;}
+  $('dog-opponent-move-notice')?.remove();
   save();render();scheduleAI();
 }
 function isHumanExchange(){
@@ -460,9 +489,38 @@ function drawBoard(){
     onlineChristmas?.visibleGiftFields,onlineChristmas?.visibleScratchFields,
     onlineChristmas?.foundGiftFields,onlineChristmas?.foundScratchFields,onlineChristmas?.foundGoldFields,
     onlineChristmas?.activity]);
-  if(boardKey===lastBoardKey && boardSvg.childElementCount){lastMotionDuration=0;syncDogMoveHints();return;}
-  const canAnimate=!!lastBoardSnapshot && lastBoardMatch===matchIdentity &&
-    Number.isInteger(game.revision) && game.revision===lastBoardRevision+1;
+  if(boardKey===lastBoardKey && boardSvg.childElementCount){
+    // Room revisions can advance without moving a pawn (exchange, research,
+    // rewards). Preserve that revision so the next real move is animatable.
+    if(lastBoardMatch===matchIdentity && Number.isSafeInteger(game.revision) &&
+       Number.isSafeInteger(lastBoardRevision) && game.revision>lastBoardRevision)
+      lastBoardRevision=game.revision;
+    if(!pieceAnimator.isActive())lastMotionDuration=0;
+    syncDogMoveHints();
+    return;
+  }
+  const samePieces=!!lastBoardSnapshot &&
+    JSON.stringify(snapshot)===JSON.stringify(lastBoardSnapshot);
+  // Christmas rewards and socket metadata may update WHILE a pawn is moving.
+  // Defer purely cosmetic board rebuilds until the animation has ended, so
+  // rendering a scratch/gold marker cannot teleport the opponent's pawn.
+  if(samePieces && lastBoardMatch===matchIdentity && pieceAnimator.isActive()){
+    if(Number.isSafeInteger(game.revision) && game.revision>lastBoardRevision)
+      lastBoardRevision=game.revision;
+    if(!postponedBoardRedraw){
+      postponedBoardRedraw=setTimeout(()=>{
+        postponedBoardRedraw=null;drawBoard();
+      },Math.max(120,lastMotionDuration+45));
+    }
+    syncDogMoveHints();
+    return;
+  }
+  if(postponedBoardRedraw){clearTimeout(postponedBoardRedraw);postponedBoardRedraw=null;}
+  const canAnimate=shouldAnimatePieceUpdate({
+    sameMatch:!!lastBoardSnapshot && lastBoardMatch===matchIdentity,
+    previousRevision:lastBoardRevision,currentRevision:game.revision,
+    previousPieces:lastBoardSnapshot,currentPieces:snapshot
+  });
   const motions=canAnimate?planPieceMotions(lastBoardSnapshot,snapshot,{
     track:TRACK_POINTS,goal:GOAL_POINTS,home:HOME_POINTS
   }):[];
@@ -645,6 +703,7 @@ function drawBoard(){
   }
   boardSvg.innerHTML=board.join('');
   lastMotionDuration=pieceAnimator.play(motions,palette);
+  showOpponentMove(motions);
   syncDogMoveHints();
 }
 
@@ -813,7 +872,11 @@ function updateVictoryCeremony(){
  victoryDialog.hidden=false;
  if(victoryShownKey!==key){
   victoryShownKey=key;
-  openVictoryCeremony();
+  if(lastMotionDuration>0&&!document.hidden){
+   setTimeout(()=>{
+    if(victoryShownKey===key&&game?.phase==='finished')openVictoryCeremony();
+   },Math.min(1900,lastMotionDuration+120));
+  }else openVictoryCeremony();
  }
 }
 $('dog-victory-show').addEventListener('click',openVictoryCeremony);
