@@ -24,3 +24,15 @@ export function applyMotionMode(mode,root=typeof document!=='undefined'?document
  if(root)root.dataset.dogMotion=choice;
  return choice;
 }
+
+/** Bot visuals can be disabled independently of overall animation speed.
+ * On by default; never sent to the room or Firebase. */
+export const DOG_BOT_MOTION_KEY='dog:bot-motion:v1';
+export function readDogBotMotion(storage=typeof localStorage==='undefined'?null:localStorage){
+ try{return storage?.getItem(DOG_BOT_MOTION_KEY)!=='0';}catch{return true;}
+}
+export function writeDogBotMotion(enabled,storage=typeof localStorage==='undefined'?null:localStorage){
+ const value=!!enabled;
+ try{storage?.setItem(DOG_BOT_MOTION_KEY,value?'1':'0');}catch(_){}
+ return value;
+}
