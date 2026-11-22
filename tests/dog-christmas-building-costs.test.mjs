@@ -5,15 +5,15 @@ import {CHRISTMAS_BUILDING_IDS,CHRISTMAS_BUILDING_MIN_LEVEL,CHRISTMAS_BUILDING_M
  CHRISTMAS_BASE_UPGRADE_COST,christmasUpgradeCost,christmasBuildingTotalCost,
  christmasVillageTotalCost,christmasUpgradeQuote} from '../DOG/christmas-building-costs.js';
 
-test('every Christmas building uses the same doubled upgrade costs',()=>{
+test('every Christmas building triples each consecutive upgrade price',()=>{
  assert.deepEqual(CHRISTMAS_BUILDING_IDS,['tower','workshop','bakery','inn','luckhouse','academy']);
  assert.equal(CHRISTMAS_BUILDING_MIN_LEVEL,1);
  assert.equal(CHRISTMAS_BUILDING_MAX_LEVEL,5);
  assert.equal(CHRISTMAS_BASE_UPGRADE_COST,15);
- assert.deepEqual([1,2,3,4].map(christmasUpgradeCost),[15,30,60,120]);
- assert.deepEqual([1,2,3,4,5].map(christmasBuildingTotalCost),[0,15,45,105,225]);
- assert.equal(christmasVillageTotalCost({tower:5,workshop:5,bakery:5,inn:5,luckhouse:5,academy:5}),1350);
- assert.equal(christmasVillageTotalCost({tower:2,workshop:3,bakery:4,inn:1,luckhouse:1,academy:1}),165);
+ assert.deepEqual([1,2,3,4].map(christmasUpgradeCost),[15,45,135,405]);
+ assert.deepEqual([1,2,3,4,5].map(christmasBuildingTotalCost),[0,15,60,195,600]);
+ assert.equal(christmasVillageTotalCost({tower:5,workshop:5,bakery:5,inn:5,luckhouse:5,academy:5}),3600);
+ assert.equal(christmasVillageTotalCost({tower:2,workshop:3,bakery:4,inn:1,luckhouse:1,academy:1}),270);
 });
 
 test('no upgrades past maximum level or invalid numeric inputs',()=>{
@@ -29,11 +29,11 @@ test('no upgrades past maximum level or invalid numeric inputs',()=>{
 });
 
 test('quote only reports affordability; it never spends or grants lights',()=>{
- assert.deepEqual(christmasUpgradeQuote(2,29),{
-  fromLevel:2,toLevel:3,cost:30,affordable:false,remainingLights:29
+ assert.deepEqual(christmasUpgradeQuote(2,44),{
+  fromLevel:2,toLevel:3,cost:45,affordable:false,remainingLights:44
  });
- assert.deepEqual(christmasUpgradeQuote(2,30),{
-  fromLevel:2,toLevel:3,cost:30,affordable:true,remainingLights:0
+ assert.deepEqual(christmasUpgradeQuote(2,45),{
+  fromLevel:2,toLevel:3,cost:45,affordable:true,remainingLights:0
  });
  assert.equal(christmasUpgradeQuote(5,1000),null);
  assert.equal(christmasUpgradeQuote(1,-1),null);
