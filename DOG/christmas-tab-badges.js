@@ -92,7 +92,8 @@ export function initChristmasTabBadges({
   if(!force&&personal&&readUid===id)return personal;
   if(pending&&pending.uid===id)return pending.promise;
   const request=++serial;
-  const promise=(async()=>{
+  let work=null;
+  work=(async()=>{
    try{
     const token=await user.getIdToken();
     if(uid()!==id||request!==serial)return null;
@@ -114,11 +115,11 @@ export function initChristmasTabBadges({
     }
     return null;
    }finally{
-    if(pending?.promise===promise)pending=null;
+    if(pending?.promise===work)pending=null;
    }
   })();
-  pending={uid:id,promise};
-  return promise;
+  pending={uid:id,promise:work};
+  return work;
  }
  function setVillage(next,{allowed=false}={}){
   village=next||null;villageAllowed=allowed===true;
