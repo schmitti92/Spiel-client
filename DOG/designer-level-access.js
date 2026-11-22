@@ -14,7 +14,9 @@ export async function fetchDogPlayerLevel({force=false}={}){
  if(!player)throw Error('LOGIN_REQUIRED');
  const uid=player.uid;
  if(!force&&cache?.uid===uid&&Date.now()-cache.at<60000)return cache.level;
- if(!force&&pending?.uid===uid)return pending.promise;
+ // A forced refresh must bypass the *stale cache*, not duplicate an
+ // already running authenticated request for the same verified player.
+ if(pending?.uid===uid)return pending.promise;
  const task=(async()=>{
   const token=await player.getIdToken();
   const response=await fetch(API+'/api/hub/dog/level',{
@@ -75,7 +77,12 @@ export function guardDesignerLink(link,{target,lockedText,unlockedText,onStatus}
  }
  function updateTarget(url){targetHref=url;if(link.dataset.levelLocked==='false')link.href=url;}
  window.addEventListener('spielonline-change',()=>void refresh());
- window.addEventListener('pageshow',()=>void refresh({force:true}));
+ // pageshow fires on normal first load too. The initial refresh() below
+ // already verifies unlocks; only an actual back/forward-cache restoration
+ // needs a forced fresh request after the page may have been suspended.
+ window.addEventListener('pageshow',event=>{
+  if(event?.persisted)void refresh({force:true});
+ });
  void refresh();
  return {refresh,updateTarget};
 }

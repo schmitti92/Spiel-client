@@ -66,11 +66,52 @@ test('direct studio checks level first, only then loads editing script',()=>{
  const room=read('DOG/room-lobby.js');
  const hub=read('hub-lobby.html');
  assert.match(html,/data-designer-access="pending"/);
- assert.match(html,/design-studio-entry\.js\?v=1/);
+ assert.match(html,/design-studio-entry\.js\?v=3/);
  assert.doesNotMatch(html,/<script type="module" src="\.\/design-studio\.js/);
  assert.match(entry,/if\(level<DESIGNER_MIN_LEVEL\)/);
- assert.match(entry,/await import\('\.\/design-studio\.js\?v=12'\)/);
+ assert.match(entry,/await import\('\.\/design-studio\.js\?v=13'\)/);
  assert.match(css,/body:not\(\[data-designer-access="allowed"\]\) \.studio-page/);
  assert.match(room,/designerGate\.updateTarget/);
  assert.match(hub,/id="dog-room-designer"[^>]*data-level-locked="true"/);
+});
+
+test('initial pageshow does not buy a second DOG level request; BFCache restore still verifies again',async()=>{
+ const h=harness();
+ h.level(1);
+ const gate=h.api.guardDesignerLink(h.link,{target:'DOG/design-studio.html'});
+ // Initial guard refresh and the browser's ordinary pageshow can overlap.
+ h.callbacks.pageshow[0]({persisted:false});
+ await gate.refresh();
+ assert.equal(h.calls(),1,'normal page load must use only one verified HTTP level check');
+ assert.equal(h.link.dataset.levelLocked,'true');
+
+ h.level(2);
+ h.callbacks.pageshow[0]({persisted:true});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(h.calls(),2,'BFCache restore must force a fresh server check');
+ assert.equal(h.link.dataset.levelLocked,'false','level gained on another page unlocks the designer');
+
+ h.level(1);
+ h.callbacks.pageshow[0]({persisted:true});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(h.calls(),3);
+ assert.equal(h.link.dataset.levelLocked,'true','returning after level loss must re-lock');
+});
+
+test('concurrent forced designer XP checks share the same in-flight authenticated GET',async()=>{
+ const h=harness();
+ h.level(2);
+ const [a,b,c]=await Promise.all([
+  h.api.fetchDogPlayerLevel({force:true}),
+  h.api.fetchDogPlayerLevel({force:true}),
+  h.api.fetchDogPlayerLevel()
+ ]);
+ assert.deepEqual([a,b,c],[2,2,2]);
+ assert.equal(h.calls(),1,
+  'force must bypass old cache but never bypass the same-user pending request');
+ assert.equal(await h.api.fetchDogPlayerLevel(),2);
+ assert.equal(h.calls(),1,'fresh minute cache is reused');
+ const later=await h.api.fetchDogPlayerLevel({force:true});
+ assert.equal(later,2);
+ assert.equal(h.calls(),2,'an explicit later force does execute a fresh check');
 });
