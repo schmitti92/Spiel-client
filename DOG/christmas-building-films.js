@@ -10,8 +10,20 @@ export const CHRISTMAS_BUILDING_FILMS=Object.freeze({
    fromLevel:2,
    title:'Das Geheimnis der Weihnachtsbäckerei',
    subtitle:'Johannas Legende vom Winterlicht',
-   src:'./assets/1795338590869.mp4',
+   clips:Object.freeze(['./assets/1795338590869.mp4']),
    poster:'./weihnachtsevent-bilder/weihnachtsbaeckerei_stufe_3.png'
+  })
+ }),
+ workshop:Object.freeze({
+  3:Object.freeze({
+   fromLevel:2,
+   title:'Das Geheimnis der Wichtelwerkstatt',
+   subtitle:'Pips Entdeckung und die Legende des Winterlichts',
+   clips:Object.freeze([
+    './assets/szene1_mit_untertiteln.mp4',
+    './assets/szene2_mit_untertiteln.mp4'
+   ]),
+   poster:'./weihnachtsevent-bilder/Wichtelwerkstatt_Stufe_3.png'
   })
  })
 });
@@ -43,9 +55,9 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
  dialog.className='dog-building-film-dialog';
  dialog.setAttribute('aria-label','Lichtertal – Film zum Gebäudeausbau');
  dialog.innerHTML=[
-  '<header><div><span>🍪 WEIHNACHTSBÄCKEREI · STUFE 3</span><h2 data-film-title></h2><p data-film-subtitle></p></div>',
+  '<header><div><span data-film-heading>🏠 GEBÄUDEAUSBAU · STUFE 3</span><h2 data-film-title></h2><p data-film-subtitle></p></div>',
   '<button type="button" data-film-close aria-label="Filmfenster schließen">✕</button></header>',
-  '<video controls playsinline preload="metadata" aria-label="Geschichtsfilm zum Ausbau der Weihnachtsbäckerei"></video>',
+  '<video controls playsinline preload="metadata" aria-label="Geschichtsfilm zum Ausbau des Weihnachtsgebäudes"></video>',
   '<div class="dog-building-film-footer"><p data-film-status role="status">🎬 Dein neuer Geschichtsfilm ist bereit.</p>',
   '<div class="dog-building-film-actions">',
   '<button type="button" data-film-play>▶ Mit Ton abspielen</button>',
@@ -57,13 +69,29 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
  const video=dialog.querySelector('video');
  const status=dialog.querySelector('[data-film-status]');
  const play=dialog.querySelector('[data-film-play]');
- let active=false;
+ let active=null,clipIndex=0,finished=false,failed=false;
+ const clips=()=>active?.film.clips||[];
  function syncPlayButton(){
-  play.textContent=video.ended?'↺ Noch einmal':video.paused?'▶ Mit Ton abspielen':'⏸ Pause';
+  play.textContent=finished?'↺ Von vorne':video.paused?'▶ Mit Ton abspielen':'⏸ Pause';
+ }
+ function loadClip(continuePlaying=false){
+  if(!active)return;
+  const paths=clips();
+  if(clipIndex>=paths.length){
+   finished=true;video.pause();
+   status.textContent=failed?'⚠️ Nicht alle Szenen konnten geladen werden. Der Ausbau bleibt erhalten.':'✨ Die Geschichte ist abgeschlossen. Du kannst sie erneut ansehen.';
+   syncPlayButton();return;
+  }
+  video.src=new URL(paths[clipIndex],import.meta.url).href;
+  video.poster=new URL(active.film.poster,import.meta.url).href;
+  video.load();
+  status.textContent='🎬 '+active.name+' · Szene '+(clipIndex+1)+' von '+paths.length+' · mit Ton';
+  syncPlayButton();
+  if(continuePlaying)tryPlay();
  }
  function tryPlay(){
   if(!active)return;
-  if(video.ended)video.currentTime=0;
+  if(finished){clipIndex=0;finished=false;failed=false;loadClip(false);}
   const attempt=video.play();
   if(attempt?.catch)attempt.catch(error=>{
    if(!active||error?.name==='AbortError')return;
@@ -73,7 +101,7 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
  }
  function closeFilm(){
   if(!active)return;
-  active=false;
+  active=null;clipIndex=0;finished=false;failed=false;
   video.pause();
   video.removeAttribute('src');
   video.removeAttribute('poster');
@@ -84,16 +112,14 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
  function showUpgrade(id,fromLevel,toLevel){
   const film=christmasBuildingFilmForUpgrade(id,fromLevel,toLevel);
   if(!film||active||dialog.open)return false;
+  const name=id==='workshop'?'Wichtelwerkstatt':'Weihnachtsbäckerei';
+  dialog.querySelector('[data-film-heading]').textContent=(id==='workshop'?'🧸':'🍪')+' '+name.toUpperCase()+' · STUFE '+toLevel;
   dialog.querySelector('[data-film-title]').textContent=film.title;
-  dialog.querySelector('[data-film-subtitle]').textContent=film.subtitle+' · Ausbau '+fromLevel+' → '+toLevel;
-  video.src=new URL(film.src,import.meta.url).href;
-  video.poster=new URL(film.poster,import.meta.url).href;
+  dialog.querySelector('[data-film-subtitle]').textContent=film.subtitle+' · Ausbau '+fromLevel+' → '+toLevel+' · '+film.clips.length+' '+(film.clips.length===1?'Szene':'Szenen');
   video.muted=false;
-  video.load();
-  status.textContent='✨ Die Weihnachtsbäckerei hat Stufe 3 erreicht! Der Film startet, sobald dein Browser Ton zulässt.';
-  try{dialog.showModal();}catch{video.removeAttribute('src');video.load();return false;}
-  active=true;
-  syncPlayButton();
+  try{dialog.showModal();}catch{return false;}
+  active={id,film,name};clipIndex=0;finished=false;failed=false;
+  loadClip(false);
   tryPlay();
   return true;
  }
@@ -105,7 +131,7 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
  });
  dialog.querySelector('[data-film-restart]').addEventListener('click',()=>{
   if(!active)return;
-  video.currentTime=0;
+  clipIndex=0;finished=false;failed=false;loadClip(false);
   tryPlay();
  });
  dialog.querySelector('[data-film-skip]').addEventListener('click',closeFilm);
@@ -114,11 +140,26 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
  video.addEventListener('play',syncPlayButton);
  video.addEventListener('pause',syncPlayButton);
  video.addEventListener('ended',()=>{
-  status.textContent='✨ Die Geschichte ist zu Ende. Du kannst sie erneut ansehen oder zum Weihnachtsdorf zurückkehren.';
-  syncPlayButton();
+  if(!active||finished)return;
+  clipIndex++;
+  if(clipIndex<clips().length)loadClip(true);
+  else{
+   finished=true;
+   status.textContent='✨ Beide Szenen abgeschlossen! Du kannst die Geschichte erneut ansehen oder zum Dorf zurückkehren.';
+   syncPlayButton();
+  }
  });
  video.addEventListener('error',()=>{
-  if(active)status.textContent='⚠️ Das Video konnte nicht geladen werden. Der Gebäudeausbau bleibt trotzdem erhalten.';
+  if(!active||finished)return;
+  failed=true;
+  if(clipIndex+1<clips().length){
+   clipIndex++;loadClip(false);
+   status.textContent='⚠️ Vorherige Szene nicht verfügbar. Nächste Szene mit Play starten.';
+  }else{
+   finished=true;
+   status.textContent='⚠️ Video konnte nicht geladen werden. Dein Gebäudeausbau bleibt erhalten.';
+   syncPlayButton();
+  }
  });
  return {showUpgrade,isOpen:()=>dialog.open};
 }
