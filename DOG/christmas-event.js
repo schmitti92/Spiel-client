@@ -963,7 +963,18 @@ $('building-wallet-refresh').disabled=false;
 $('building-wallet-refresh').addEventListener('click',()=>void reloadVillage());
 // A claimed builder research reward changes village lights on Render; reuse
 // the usual village read once so the building badge reflects that balance.
-window.addEventListener('dog-christmas-village-balance-changed',()=>void reloadVillage());
+window.addEventListener('dog-christmas-village-balance-changed',event=>{
+ const balance=event.detail?.lightsTenths;
+ if(!villageLive||!Number.isSafeInteger(balance)||balance<0){
+  void reloadVillage();
+  return;
+ }
+ villageLive={...villageLive,lightsTenths:balance};
+ $('building-live-balance').textContent=lightsLabel(balance)+' ⭐ Weihnachtslichter';
+ $('stat-village-lights').textContent=lightsLabel(balance)+' ⭐';
+ tabBadges?.setVillage(villageLive,{allowed:villageHost&&villageCanUpgrade&&villageEventActive});
+ refreshPreview();
+});
 $('story-refresh')?.addEventListener('click',async()=>{
  const button=$('story-refresh');button.disabled=true;
  try{await reloadVillage();}finally{button.disabled=false;}
