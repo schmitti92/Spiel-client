@@ -9,7 +9,7 @@ import {createDogVisualFeedback} from './ui-animations.js?v=2';
 import {dogMoveBlockReason} from './invalid-move-reasons.js?v=2';
 import {DOG_MOVE_HINTS_KEY,readDogMoveHints,writeDogMoveHints,dogLegalTargets} from './move-hints.js?v=1';
 import {summarizeDogVictory} from './victory-summary.js?v=2';
-import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js?v=4';
+import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction,completedDogSeat} from './engine.js?v=5';
 import {decideDogRoomUpdate} from './online-sync.js?v=15';
 import {createDogSocketActionDispatcher} from './socket-actions.js?v=1';
 import {initDogFirstLightFilm} from './christmas-first-light-film.js?v=1';
@@ -37,6 +37,7 @@ let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHea
 const dogSocketActions=createDogSocketActionDispatcher();
 let lastFallbackRoomReadAt=0;
 let lastAnnouncedFinishedMatchId=null; // One Christmas eligibility refresh per completed DOG match.
+let lastLegacyVictoryAttempt=null; // Only one repair request per old DOG revision.
 let socketAwaitingFirstRoomAt=0,socketHasRoom=false,socketLastHealthyAt=0,socketAuthenticatedUid=null;
 const DOG_DISCONNECTED_READ_MS=30000; // Render WebSocket is primary.
 const DOG_FIRST_ROOM_GRACE_MS=12000; // Recover if a connected socket never receives its initial room.
@@ -86,6 +87,25 @@ async function sendOnlineDogAction(action){
  if(!actorUid||user()?.uid!==actorUid)throw Error('PROFILE_CHANGED');
  return hubRequest('/dog/action','POST',payload);
 }
+function autoFinishLegacyDogMatch(){
+  // Old rooms that already reached 4/4 must be settled on Render. Never
+  // fabricate a victory client-side or send this for Grinch missions.
+  if(!online||!game||game.phase==='finished'||!Number.isInteger(onlineSeat)||!acceptedMatchId)return;
+  const winner=completedDogSeat(game);
+  if(winner===null)return;
+  const primary=game.players[winner]?.bot?
+    game.players.find(p=>!p.inactive&&!p.bot)?.seat:winner;
+  if(onlineSeat!==primary)return; // Avoid competing repair requests.
+  const attempt=acceptedMatchId+'|'+game.revision;
+  if(lastLegacyVictoryAttempt===attempt)return;
+  lastLegacyVictoryAttempt=attempt;
+  // One ordinary authenticated Render DOG command; no new Firebase watcher.
+  sendOnlineDogAction({type:'finalize-completed'})
+    .then(room=>acceptRemote(room))
+    .catch(error=>{
+      $('status').textContent='🏆 Ziel erreicht. Der Server bestätigt die Siegesehrung: '+error.message;
+    });
+}
 function acceptRemote(room){
  const decision=decideDogRoomUpdate(
    {roomRevision,game,onlineSeat,matchId:acceptedMatchId},
@@ -105,6 +125,7 @@ function acceptRemote(room){
    onlineChristmas=room.match?.christmas?.enabled===true?room.match.christmas:null;
    onlineResearch=room.match?.dogResearch||null;
    render();
+   autoFinishLegacyDogMatch();
    if(!previousChristmas)christmasDiscoveryPopup.reset();
    christmasDiscoveryPopup.show(newDogChristmasDiscoveries(previousChristmas,onlineChristmas,onlineSeat));
    // The accepted Render room snapshot is authoritative. No additional
@@ -750,8 +771,9 @@ function updateVictoryCeremony(){
  const summary=JSON.stringify([key,result.teams,result.players,appearance.pieces]);
  if(victorySummaryKey!==summary){
   victorySummaryKey=summary;
-  $('winner-title').textContent=result.mode==='solo3'?result.players[0].name+' gewinnt!':'Team '+result.teams[0].name+' gewinnt!';
-  $('winner-subtitle').textContent=result.mode==='solo3'?'Alle vier eigenen Figuren sind im Ziel!':'Alle acht Figuren des Siegerteams sind im Ziel. Gemeinsam geschafft!';
+  const champion=result.players.find(player=>player.seat===result.winningSeat);
+  $('winner-title').textContent=champion?champion.name+' gewinnt!':result.mode==='solo3'?result.players[0].name+' gewinnt!':'Team '+result.teams[0].name+' gewinnt!';
+  $('winner-subtitle').textContent=champion?'Alle vier Figuren von '+champion.name+' sind im Ziel – die Partie ist beendet!':result.mode==='solo3'?'Alle vier eigenen Figuren sind im Ziel!':'Die Siegermannschaft steht fest!';
   $('dog-victory-teams').innerHTML=result.teams.map((team,index)=>
     '<div class="dog-victory-team '+(team.winning?'is-winner':'')+'">'+
       '<span class="dog-victory-team-place">'+(team.winning?(result.mode==='solo3'?'✦ SIEGER':'✦ SIEGERTEAM'):(result.mode==='solo3'?'MITSPIELER':'GEGNERTEAM'))+'</span>'+
@@ -818,7 +840,7 @@ function render(){
   const teamDisplay=document.getElementById('dog-mode-teams'),soloDisplay=document.getElementById('dog-mode-solo3');
   if(teamDisplay)teamDisplay.hidden=soloThree;
   if(soloDisplay)soloDisplay.hidden=!soloThree;
-  $('turn').textContent=game.phase==='finished'?(game.mode==='solo3'?'🏆 '+game.players[game.winner].name+' gewinnt!':'🏆 Team '+(game.winner===0?'Rot / Grün':'Blau / Gelb')+' gewinnt!'):game.phase==='exchange'?'🎁 Karten werden getauscht':active>=0?'🎲 '+game.players[active].name+' ist dran!':'Bots spielen';
+  $('turn').textContent=game.phase==='finished'?(Number.isInteger(game.winnerSeat)?'🏆 '+game.players[game.winnerSeat]?.name+' gewinnt!':game.mode==='solo3'?'🏆 '+game.players[game.winner].name+' gewinnt!':'🏆 Team '+(game.winner===0?'Rot / Grün':'Blau / Gelb')+' gewinnt!'):game.phase==='exchange'?'🎁 Karten werden getauscht':active>=0?'🎲 '+game.players[active].name+' ist dran!':'Bots spielen';
   showTurnAnnouncement(active);
   // This is view-only. Write the live labels only on actual changes, so
   // duplicate room updates neither retrigger motion nor repeat ARIA messages.
