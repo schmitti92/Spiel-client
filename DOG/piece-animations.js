@@ -104,6 +104,19 @@ export function shouldAnimatePieceUpdate({sameMatch,previousRevision,currentRevi
   return currentPieces.some(piece=>!sameSpot(previous.get(piece.id),piece));
 }
 
+/**
+ * Identify who actually performed the last board action by the public history.
+ * A capture can move a human pawn back home on a BOT turn, so classifying
+ * animations by the moved pawn's owner would suppress the wrong moves.
+ */
+export function isDogBotMove(game,motions){
+ if(!Array.isArray(motions)||!motions.length)return false;
+ const line=game?.history?.[0];
+ if(typeof line!=='string')return false;
+ return !!game?.players?.some(player=>player?.bot===true&&!player.inactive&&
+   typeof player.name==='string'&&line.startsWith(player.name+' '));
+}
+
 /** Show only public move-history text; never expose an opponent's cards. */
 export function opponentMoveNotice(game,motions,{online=false,ownSeat=null}={}) {
   if(!Array.isArray(motions)||!motions.length)return null;
