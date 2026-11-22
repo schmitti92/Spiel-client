@@ -61,6 +61,7 @@ export function initChristmasTabBadges({
  }
  let personal=null,village=null,villageAllowed=false,readUid=null,pending=null,serial=0;
  const uid=()=>getUser()?.uid||null;
+ let authUid=uid();
  function paint(){
   const disabled=Boolean(getPreview()),account=uid();
   const values={
@@ -134,9 +135,12 @@ export function initChristmasTabBadges({
  });
  target.addEventListener('dog-christmas-badges-refresh',()=>{void load({force:true});});
  target.addEventListener('spielonline-change',()=>{
-  if(uid()===readUid)return;
-  clearProfile();
-  if(uid())void load();
+  const next=uid();
+  // Profile state may emit several harmless updates while the same user is
+  // logging in. Do not cancel an in-flight request and create extra reads.
+  if(next===authUid)return;
+  authUid=next;clearProfile();
+  if(next)void load();
  });
  target.addEventListener('dog-christmas-dev-change',paint);
  return {load,setVillage,clearProfile,getCounts:paint};
