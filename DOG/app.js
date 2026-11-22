@@ -11,6 +11,7 @@ import {DOG_MOVE_HINTS_KEY,readDogMoveHints,writeDogMoveHints,dogLegalTargets} f
 import {summarizeDogVictory} from './victory-summary.js?v=2';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction} from './engine.js?v=4';
 import {decideDogRoomUpdate} from './online-sync.js?v=15';
+import {initDogFirstLightFilm} from './christmas-first-light-film.js?v=1';
 import {DEFAULT_APPEARANCE,BOARD_STYLES,isBoardUnlocked,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,PIECE_SHAPES,isPieceShapeUnlocked,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,loadAppearance,saveAppearance,normalizeAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=28';
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=11';
 
@@ -38,6 +39,7 @@ const DOG_DISCONNECTED_READ_MS=30000; // Render WebSocket is primary.
 const DOG_FIRST_ROOM_GRACE_MS=12000; // Recover if a connected socket never receives its initial room.
 const DOG_SOCKET_CONNECT_MS=15000,DOG_SOCKET_STALE_MS=95000; // Reconnect hung sockets without polling Firebase.
 function user(){const s=window.SpielOnline?.state?.();return s?.status==='online'&&s.user?.getIdToken?s.user:null;}
+const firstLightFilm=online?initDogFirstLightFilm({currentUid:()=>user()?.uid}):null;
 async function hubRequest(path,method='GET',payload){
  const person=user();if(!person)throw Error('Bitte melde dich mit deinem Online-Profil an.');
  const token=await person.getIdToken();
@@ -59,6 +61,8 @@ function acceptRemote(room){
  if(!decision.accept)return;
  roomRevision=decision.roomRevision;
  if(decision.kind==='dog'){
+   const previousGiftCount=acceptedMatchId===decision.matchId&&onlineChristmas?.enabled===true&&
+     Number.isSafeInteger(onlineChristmas.giftCount)?onlineChristmas.giftCount:null;
    if((decision.clearSelection||game?.revision!==decision.game?.revision)&&$('dog-move-choice-dialog')?.open)$('dog-move-choice-dialog').close();
    if(decision.hideHand)revealed=decision.seat!==null;
    if(decision.clearSelection){selectedCard=null;selectedPiece=null;jokerAs=null;$('dog-joker-dialog').close();}
@@ -67,6 +71,12 @@ function acceptRemote(room){
    onlineChristmas=room.match?.christmas?.enabled===true?room.match.christmas:null;
    onlineResearch=room.match?.dogResearch||null;
    render();
+   // The accepted Render room snapshot is authoritative. No additional
+   // village, Firebase or HTTP request is made for this one-time film.
+   firstLightFilm?.observe({
+     uid:user()?.uid,seat:onlineSeat,matchId:acceptedMatchId,
+     phase:game?.phase,christmas:onlineChristmas,previousGiftCount
+   });
    if(game?.phase==='finished'&&lastAnnouncedFinishedMatchId!==acceptedMatchId){
      lastAnnouncedFinishedMatchId=acceptedMatchId;
      window.dispatchEvent(new Event('dog-match-finished'));
