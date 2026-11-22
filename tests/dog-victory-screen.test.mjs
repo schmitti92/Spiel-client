@@ -24,3 +24,11 @@ test('victory styling supports small screens and reduced motion',()=>{
  assert.match(css,/:root\[data-dog-motion="off"\]/);
  assert.equal((css.match(/\{/g)||[]).length,(css.match(/\}/g)||[]).length);
 });
+
+test('online winner can prepare next DOG round only as verified room host',()=>{
+ assert.match(app,/onlineRoomHost=room\.host===true/);
+ assert.match(app,/\$\('dog-victory-new'\)\.hidden=online&&!onlineRoomHost/);
+ assert.match(app,/await hubRequest\('\/dog\/rematch','POST',\{matchId:acceptedMatchId\}\)/);
+ assert.match(app,/location\.assign\(\$\('back-link'\)\.href\)/);
+ assert.match(app,/if\(!onlineRoomHost\|\|!acceptedMatchId\|\|game\?\.phase!=='finished'\|\|onlineBusy\)return/);
+});
