@@ -13,15 +13,18 @@ test('only actually found gold amounts become visible, with correct field and va
  ]);
  assert.ok(!JSON.stringify(dogChristmasFoundMarkers(event)).includes('2000'));
 });
-test('new verified personal gold find celebrates once, never on first load or opponent snapshots',()=>{
+test('new verified gold finds celebrate ALL human winners once, never on first load',()=>{
  const previous={enabled:true,eventSerial:14};
- const current={enabled:true,eventSerial:16,activity:[
+ const current={enabled:true,eventSerial:17,activity:[
   {id:15,type:'gold',field:19,seat:1,amount:2000},
-  {id:16,type:'gold',field:23,seat:0,amount:1}
+  {id:16,type:'gold',field:23,seat:0,amount:1},
+  {id:17,type:'gold',field:27,seat:2,amount:500}
  ]};
- assert.deepEqual(newDogChristmasDiscoveries(previous,current,1).map(x=>x.amount),[2000]);
- assert.deepEqual(newDogChristmasDiscoveries(current,current,1),[]);
- assert.deepEqual(newDogChristmasDiscoveries(null,current,1),[]);
+ const players=[{seat:0,name:'Chris',bot:false},{seat:1,name:'Vanessa',bot:false},
+  {seat:2,name:'Bot',bot:true}];
+ assert.deepEqual(newDogChristmasDiscoveries(previous,current,players).map(x=>x.amount),[2000,1]);
+ assert.deepEqual(newDogChristmasDiscoveries(current,current,players),[]);
+ assert.deepEqual(newDogChristmasDiscoveries(null,current,players),[]);
 });
 test('gold value and coin icon are drawn above pawns without adding any reads',()=>{
  const app=readFileSync(new URL('../DOG/app.js',import.meta.url),'utf8');
