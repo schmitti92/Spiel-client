@@ -32,6 +32,7 @@ on:
       - 'tests/dog-christmas-building-costs.test.mjs'
       - 'tests/dog-christmas-live-ui.test.mjs'
       - 'tests/dog-christmas-discovery.test.mjs'
+      - 'tests/dog-christmas-gold.test.mjs'
       - '.github/workflows/dog-board-check.yml'
   pull_request:
     paths:
