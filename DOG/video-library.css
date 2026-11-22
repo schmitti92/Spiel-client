@@ -1,0 +1,40 @@
+/* 🎬 DOG Videothek: full-screen-friendly archive over the game board. */
+.dog-videothek{position:fixed;inset:0;margin:auto;width:min(1080px,calc(100vw - 20px));max-width:1080px;max-height:min(94dvh,930px);overflow:hidden;padding:0;border:1px solid #e6c078;border-radius:19px;background:linear-gradient(150deg,#102c41,#071927);color:#fff0d4;box-shadow:0 28px 110px #000d;z-index:2147483620}
+.dog-videothek::backdrop{background:#010c1de0;backdrop-filter:blur(7px)}
+.dog-videothek[open]{display:flex;flex-direction:column}
+.dog-videothek-header{flex:none;padding:17px 22px;border-bottom:1px solid #d5b57e66;display:flex;justify-content:space-between;align-items:start;gap:12px;background:linear-gradient(110deg,#223e52,#173b3f)}
+.dog-videothek-header small{font-size:10px;letter-spacing:1.4px;color:#e4c384;font-weight:850}
+.dog-videothek-header h2{margin:4px 0 4px;font-size:clamp(21px,3vw,30px);color:#ffe2a1}
+.dog-videothek-header p{margin:0;font-size:12px;line-height:1.35;color:#c4d9df}
+#dog-video-library-close{flex:none;width:41px;height:41px;display:grid;place-items:center;border:1px solid #d9b874b3;border-radius:11px;background:#122c3c;color:#ffeac1;font-size:19px;font-weight:800}
+.dog-videothek-inside{flex:1;min-height:0;overflow-y:auto;padding:16px 19px 20px;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#d6a65e transparent}
+.dog-videothek-controls{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #e4cc9650}
+#dog-video-library-total{color:#ffdb92;font-size:12px;font-weight:850}
+.dog-videothek-controls label{font-size:11px;color:#cbdde3;display:flex;gap:8px;align-items:center}
+.dog-videothek-controls select{max-width:min(200px,75vw);padding:7px;border-radius:9px;border:1px solid #ba9862;background:#16364b;color:#fff1d5;font-size:12px}
+#dog-video-library-retry{border:1px solid #bfa274;border-radius:9px;background:#173a4c;color:#ffe5b4;padding:8px 12px;font-size:11px;font-weight:800}
+.dog-videothek-notice{font-size:13px;color:#ffdfa8;background:#1b3846;padding:12px;border:1px solid #e1bd805c;border-radius:10px}
+.dog-videothek-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.dog-videothek-tile{display:flex;flex-direction:column;min-height:192px;text-align:left;border:1px solid #af9d7d80;border-radius:13px;overflow:hidden;background:linear-gradient(155deg,#25465a,#0b2434);color:#f4e8d2;transition:border-color .15s,transform .15s}
+.dog-videothek-tile:hover,.dog-videothek-tile:focus-visible{border-color:#ffe4a0;transform:translateY(-2px)}
+.dog-videothek-art{height:112px;display:grid;place-items:center;overflow:hidden;background:radial-gradient(ellipse,#356074,#0a1a2a);font-size:55px}
+.dog-videothek-art img{display:block;width:100%;height:100%;object-fit:cover}
+.dog-videothek-tile-info{display:flex;flex-direction:column;gap:5px;padding:11px 12px;flex:1;min-width:0}
+.dog-videothek-tile-info small{font-size:10px;color:#ffe0a4;font-weight:800}
+.dog-videothek-tile-info strong{font-size:14px;line-height:1.25;overflow-wrap:anywhere}
+.dog-videothek-tile-info span{font-size:11px;line-height:1.3;color:#b9d7df;margin-top:auto}
+.dog-videothek-footnote{font-size:11px;color:#b6cbd4;line-height:1.45;margin:15px 0 0}
+.dog-videothek-empty{font-size:13px;color:#d9e4e9}
+.dog-videothek [hidden]{display:none!important}
+.dog-videothek-viewer{display:flex;flex-direction:column;align-items:stretch;gap:8px}
+#dog-video-library-back{align-self:flex-start;padding:8px 14px;background:#214154;border:1px solid #c4ab79;border-radius:9px;color:#ffe3ad;font-size:12px;font-weight:850}
+.dog-videothek-viewer h3{font-size:clamp(17px,3vw,25px);color:#ffe1a0;margin:5px 0 0}
+#dog-video-library-film-description{font-size:12px;color:#c1d5df;margin:0 0 7px}
+#dog-video-library-player{display:block;width:100%;max-height:min(52dvh,550px);aspect-ratio:16/9;object-fit:contain;background:#030d17;border:1px solid #c5ad7b9c;border-radius:10px}
+#dog-video-library-progress{min-height:24px;color:#e1d0a7;font-size:12px;margin:3px 0}
+.dog-videothek-player-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.dog-videothek-player-actions button{min-height:42px;padding:9px 13px;background:#23495a;color:#ffecd1;border:1px solid #d1b47d;border-radius:10px;font-size:12px;font-weight:850}
+#dog-video-library-play{background:#f0d18d;color:#14283b}
+.dog-videothek-player-actions button:disabled{opacity:.4;cursor:not-allowed}
+@media(max-width:600px){.dog-videothek{width:calc(100vw - 10px);max-height:97dvh;border-radius:12px}.dog-videothek-header{padding:12px 13px}.dog-videothek-inside{padding:12px}.dog-videothek-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.dog-videothek-tile{min-height:165px}.dog-videothek-art{height:75px}.dog-videothek-tile-info{padding:8px}.dog-videothek-tile-info strong{font-size:12px}.dog-videothek-tile-info span{font-size:10px}.dog-videothek-player-actions button{flex:1 1 29%;padding:9px 5px}#dog-video-library-player{max-height:47dvh}}
+@media(prefers-reduced-motion:reduce){.dog-videothek-tile{transition:none}}
