@@ -382,6 +382,7 @@ html[data-dog-motion="off"] .dog-legal-target-ring{animation:none}
 <link rel="stylesheet" href="./touch-navigation.css?v=1">
 <link rel="stylesheet" href="./christmas-discovery.css?v=3">
 <link rel="stylesheet" href="./christmas-event-overview.css?v=1">
+<link rel="stylesheet" href="./video-library.css?v=1">
 <style id="dog-christmas-link-visibility">
 html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christmas-portal-open) [data-meta-album-link],html:not(.dog-christmas-portal-open) #dog-room-christmas,html:not(.dog-christmas-portal-open) #dog-christmas-event-link,html:not(.dog-christmas-portal-open) #dog-player-level-link{display:none!important}
 </style>
@@ -400,6 +401,7 @@ html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christm
     <button class="top-btn" id="board-choice-button" type="button">🎨 Brett wählen</button>
     <button class="top-btn" id="appearance-button" type="button">⚙ Einstellungen</button>
     <button class="top-btn" id="rules-button" type="button">❔ Regeln</button>
+    <button class="top-btn" id="dog-video-library-open" type="button" aria-haspopup="dialog" aria-controls="dog-video-library">🎬 Videothek</button>
      <a class="top-btn" id="dog-christmas-event-link" href="christmas-event.html?v=20261115-chapter-cleanup&return=index.html">🎄 Weihnachtsevent</a>
     <a class="top-btn" id="dog-player-level-link" href="christmas-event.html?v=20261115-chapter-cleanup&return=index.html#level">🏅 Mein Spielerlevel</a>
     <a class="top-btn" id="back-link" href="../hub-lobby.html?view=local">👥 Zur Lobby</a>
@@ -580,6 +582,44 @@ html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christm
     </div>
   </div>
 </dialog>
+<!-- Watch-on-demand DOG archive. Playback is client-side; its unlock list is
+     verified by Render only when the user opens the Videothek. -->
+<dialog id="dog-video-library" class="dog-videothek" aria-labelledby="dog-video-library-title">
+ <header class="dog-videothek-header">
+  <div><small>🐾 DOG ROYAL · FILMARCHIV</small>
+   <h2 id="dog-video-library-title">🎬 Meine Videothek</h2>
+   <p>Freigeschaltete Filme aus eurem DOG-Abenteuer jederzeit erneut ansehen.</p>
+  </div>
+  <button id="dog-video-library-close" type="button" aria-label="Videothek schließen">✕</button>
+ </header>
+ <div class="dog-videothek-inside">
+  <div id="dog-video-library-gallery">
+   <div class="dog-videothek-controls">
+    <span id="dog-video-library-total" aria-live="polite">Filmfreischaltungen prüfen</span>
+    <label>Bereich <select id="dog-video-library-filter" aria-label="Filme nach Kategorie filtern">
+     <option>Alle</option><option>DOG</option><option>Weihnachtsgeschichte</option>
+     <option>Weihnachtsbaum</option><option>Gebäudegeschichten</option>
+    </select></label>
+    <button id="dog-video-library-retry" type="button">⟳ Aktualisieren</button>
+   </div>
+   <p id="dog-video-library-loading" class="dog-videothek-notice" role="status" hidden></p>
+   <div id="dog-video-library-cards" class="dog-videothek-cards"></div>
+   <p class="dog-videothek-footnote">🔒 Geheime Filme werden erst nach dem bestätigten Freischalten angezeigt. Frühere Ansichten vor der Videothek können noch ohne „Angesehen“-Markierung sein.</p>
+  </div>
+  <section id="dog-video-library-viewer" class="dog-videothek-viewer" aria-label="Filmwiedergabe" hidden>
+   <button id="dog-video-library-back" type="button">‹ Alle Filme</button>
+   <h3 id="dog-video-library-film-heading"></h3>
+   <p id="dog-video-library-film-description"></p>
+   <video id="dog-video-library-player" controls playsinline preload="metadata" aria-label="DOG-Film mit Ton"></video>
+   <p id="dog-video-library-progress" role="status"></p>
+   <div class="dog-videothek-player-actions">
+    <button id="dog-video-library-play" type="button">▶ Abspielen</button>
+    <button id="dog-video-library-sound" type="button">🔇 Ton ausschalten</button>
+    <button id="dog-video-library-next" type="button">Nächste Szene ›</button>
+   </div>
+  </section>
+ </div>
+</dialog>
 <dialog id="dog-extra-dialog" class="dog-extra-dialog" aria-labelledby="dog-extra-title">
   <h2 id="dog-extra-title">⚡ DOG Erweiterung</h2>
   <p id="dog-extra-description">Dieser Bereich wird in einem späteren DOG-Update ergänzt.</p>
@@ -717,7 +757,7 @@ import {mountChristmasLinks} from './christmas-intro-gate.js?v=20261122-single-w
 mountChristmasLinks();
 </script>
 <script type="module">
-import('./ui-shell.js?v=6').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
+import('./ui-shell.js?v=7').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
 import('./app.js?v=98').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
