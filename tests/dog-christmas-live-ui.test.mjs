@@ -20,7 +20,12 @@ test('Lichtertal shows an authenticated shared wallet and real server-side upgra
  assert.match(event,/if\(villageLive\)return;/);
  assert.match(event,/\$\('preview-'\+d\.id\)\.disabled=Boolean\(villageLive\)/);
  assert.match(event,/villageLive=v/);
- assert.doesNotMatch(event,/localStorage\.setItem|firebase\.firestore|runTransaction/);
+ assert.doesNotMatch(event,/firebase\.firestore|runTransaction/,
+  'all village credits remain fully server-authoritative');
+ // Only the timestamp of a successful, server-verified legacy import
+ // check is stored locally. Never use localStorage for prize balances.
+ assert.match(event,/villageLegacyImportMarkerKey\(villageApi,uid\)/);
+ assert.match(event,/localStorage\.setItem\(key,String\(checkedAt\)\)/);
 });
 test('Christmas bonuses are automatic and cannot be toggled by the host or any player',()=>{
  assert.doesNotMatch(page,/building-event-mode-toggle|Weihnachtsmodus aktivieren|Weihnachtsmodus ausschalten/);
@@ -39,7 +44,11 @@ test('online DOG keeps all hidden gift and scratch positions secret and preserve
  assert.match(game,/onlineChristmas\.roundScratchCollected/);
  assert.doesNotMatch(game,/for\(const field of onlineChristmas\.giftFields/);
  assert.doesNotMatch(game,/claimed=new Set\(onlineChristmas\.claimedFields/);
- assert.match(game,/Hidden Christmas gifts and scratch spots intentionally have NO SVG/);
+ // Only Render-sanctioned, already revealed markers may be drawn.
+ // Secret giftFields/scratchFields or the draw deck must stay server-side.
+ assert.match(game,/onlineChristmas\.visibleGiftFields\.map\(field/);
+ assert.match(game,/onlineChristmas\.visibleScratchFields\.map\(field/);
+ assert.match(game,/dog-christmas-reveal-marker/);
  assert.match(game,/room:hubCode,return:editorBack/);
  assert.match(lobby,/id="dog-room-christmas"/);
  assert.match(room,/dog-room-christmas/);

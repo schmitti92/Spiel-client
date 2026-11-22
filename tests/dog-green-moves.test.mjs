@@ -97,7 +97,8 @@ test('seven split explains why reserve pawns cannot move and the entire seven is
  const s=stateWithCard('7',2);
  s.phase='seven';s.seven={cardId:999,spent:2};
  assert.match(dogMoveBlockReason(s,{seat:2,cardId:999,stage:'source',sourceId:8}),/Starthaus/);
- assert.match(dogMoveBlockReason(s,{seat:2,cardId:999,stage:'destination',sourceId:8,destination:'track:32'}),/vollständig/);
+ assert.match(dogMoveBlockReason(s,{seat:2,cardId:999,stage:'destination',sourceId:8,destination:'track:32'}),/vollständig|insgesamt/,
+  'the seven must be fully played; text may describe it as insgesamt');
 });
 
 test('three-human rule explanations use active seat color and never the missing fourth seat',()=>{

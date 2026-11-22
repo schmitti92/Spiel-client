@@ -44,12 +44,27 @@ test('DOG event visibly quotes costs but still does not impersonate live purchas
  const html=readFileSync(new URL('../DOG/christmas-event.html',import.meta.url),'utf8');
  const script=readFileSync(new URL('../DOG/christmas-event.js',import.meta.url),'utf8');
  assert.match(html,/id="building-price-overview"/);
- assert.ok(html.includes('src="./christmas-event.js?v='));
+ // The Christmas bundle is intentionally loaded only after server-verified
+ // entitlement; eagerly loading it bypasses the current security gate.
+ const gate=readFileSync(new URL('../DOG/christmas-intro-gate.js',import.meta.url),'utf8');
+ assert.match(html,/guardChristmasEventPage\(\)/,
+  'page must launch through the authenticated Christmas eligibility gate');
+ assert.match(gate,/await import\('\.\/christmas-event\.js\?v=\d+'\)/,
+  'real event script is loaded only after the verified gate admits the player');
+ assert.doesNotMatch(html,/src="\.\/christmas-event\.js\?v=/,
+  'do not reintroduce an unconditional Christmas script load');
  assert.match(script,/christmasUpgradeCost\(level\)/);
  assert.match(script,/data-building-upgrade-price/);
  assert.doesNotMatch(html,/id="panel-gifts"|id="tab-gifts"/,'obsolete gifts information tab stays removed');
  assert.match(script,/villageRequest\('village\/upgrade','POST'/);
- assert.doesNotMatch(script,/firebase\.firestore|localStorage\.setItem/);
+ assert.doesNotMatch(script,/firebase\.firestore/,
+  'only Render may credit shared village accounts or DOG prizes');
+ // The one legitimate localStorage write remembers ONLY when a previously
+ // successful server-side legacy import check ran; it is not a light,
+ // upgrade, entitlement or ticket balance.
+ assert.match(script,/villageLegacyImportMarkerKey\(villageApi,uid\)/);
+ assert.match(script,/localStorage\.setItem\(key,String\(checkedAt\)\)/);
+ assert.doesNotMatch(script,/localStorage\.setItem\([^\n]*(?:lights|vouchers|prizes|xp)/i);
 });
 
 test('six clickable buildings share the same SVG landscape without a separate district',()=>{
