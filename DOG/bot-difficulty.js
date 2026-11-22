@@ -22,20 +22,20 @@ export function readDogBotDifficulties(storage=typeof localStorage==='undefined'
   const value=JSON.parse(storage?.getItem(DOG_BOT_DIFFICULTY_KEY)||'{}');
   if(!value||typeof value!=='object'||Array.isArray(value))return {};
   const result={};
-  for(const seat of slots)
+  for(const seat of [...slots,'default'])
    if(DOG_BOT_DIFFICULTIES.includes(value[seat]))result[seat]=value[seat];
   return result;
  }catch{return {};}
 }
 export function saveDogBotDifficulty(seat,level,storage=typeof localStorage==='undefined'?null:localStorage){
  const result=readDogBotDifficulties(storage);
- if(!Number.isInteger(seat)||seat<0||seat>3)return result;
+ if(seat!=='default'&&(!Number.isInteger(seat)||seat<0||seat>3))return result;
  result[seat]=normalizeDogBotDifficulty(level);
  try{storage?.setItem(DOG_BOT_DIFFICULTY_KEY,JSON.stringify(result));}catch(_){}
  return result;
 }
 export function dogBotDifficultyForSeat(settings,seat){
- return normalizeDogBotDifficulty(settings?.[seat]);
+ return normalizeDogBotDifficulty(settings?.[seat]??settings?.default);
 }
 
 function cardAt(game,seat,cardId){
