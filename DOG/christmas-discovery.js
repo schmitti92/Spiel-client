@@ -3,7 +3,17 @@ const eligibleField=field=>Number.isInteger(field)&&field>=0&&field<64&&field%16
 export function dogChristmasFoundMarkers(christmas){
  if(!christmas?.enabled)return [];
  const seen=new Set(),marks=[];
- for(const [kind,fields] of [['gift',christmas.foundGiftFields],['scratch',christmas.foundScratchFields]]){
+ // Older server snapshots may contain verified discoveries only in the
+ // bounded activity log. Render's durable field list takes precedence once
+ // deployed, but recorded legacy events are also safe to display immediately.
+ const legacy=Array.isArray(christmas.activity)?christmas.activity:[];
+ const known=[
+  ['gift',christmas.foundGiftFields],
+  ['scratch',christmas.foundScratchFields],
+  ['gift',legacy.filter(e=>e?.type==='gift').map(e=>e.field)],
+  ['scratch',legacy.filter(e=>e?.type==='scratch').map(e=>e.field)]
+ ];
+ for(const [kind,fields] of known){
   if(!Array.isArray(fields))continue;
   for(const field of fields){
    if(!eligibleField(field)||seen.has(kind+':'+field))continue;
