@@ -126,6 +126,12 @@ function acceptRemote(room){
    onlineDogAvatars=Array.isArray(room.match?.dogAvatars)?room.match.dogAvatars:[];
    onlineChristmas=room.match?.christmas?.enabled===true?room.match.christmas:null;
    onlineResearch=room.match?.dogResearch||null;
+   // Same already-authorized Render snapshot as the board. The sidebar
+   // table does not poll Firebase or make a second HTTP request.
+   window.DOGEventOverviewSnapshot={christmas:onlineChristmas,players:game?.players||[]};
+   window.dispatchEvent(new CustomEvent('dog-christmas-snapshot',{
+    detail:window.DOGEventOverviewSnapshot
+   }));
    render();
    autoFinishLegacyDogMatch();
    if(!previousChristmas)christmasDiscoveryPopup.reset();
