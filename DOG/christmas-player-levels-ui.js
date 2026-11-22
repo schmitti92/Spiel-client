@@ -211,6 +211,21 @@ export function initDogPlayerLevels(){
   render(levelData);
   scroller.scrollLeft=0;
  }
+ function reportLevelTabBadge(scratch=null){
+  const current=user();
+  if(!current||!levelData||window.DOGChristmasDev?.isActive())return;
+  const level=levelData.level,claims=levelData.levelRewardClaims||{};
+  const eligible=(Array.isArray(level?.rewards)?level.rewards:[]).filter(reward=>
+   reward?.configured===true&&reward.level<=level.level&&!claims[reward.level]).length;
+  const detail={level:eligible};
+  if(scratch){
+   detail.scratch=[
+    ...Object.values(scratch.vouchers||{}),
+    ...Object.values(scratch.variantVouchers||{})
+   ].reduce((sum,n)=>sum+(Number.isSafeInteger(n)&&n>0?n:0),0);
+  }
+  window.dispatchEvent(new CustomEvent('dog-christmas-badges-update',{detail}));
+ }
  async function claimReward(n){
   if(window.DOGChristmasDev?.isActive())return;
   if(claimPending||!user()||!levelData||n>levelData.level.level)return;
@@ -229,7 +244,8 @@ export function initDogPlayerLevels(){
     throw Error(result.error||'DOG_LEVEL_REWARD_FAILED');
    if(user()?.uid!==uid)return;
    levelData={...levelData,levelRewardClaims:{...result.levelRewardClaims}};
-    loadedUid=uid;loadedAt=Date.now();
+   loadedUid=uid;loadedAt=Date.now();
+   reportLevelTabBadge(result.scratch);
    window.dispatchEvent(new Event('dog-scratch-balance-changed'));
    message('🎉 Level '+n+': Deine Gutscheine wurden im Rubbellos-Konto gutgeschrieben.');
   }catch(error){
@@ -264,6 +280,7 @@ export function initDogPlayerLevels(){
    if(requestId!==id||user()?.uid!==current.uid)return;
    levelData=result;loadedUid=current.uid;loadedAt=Date.now();
    render(result);
+   reportLevelTabBadge();
    $('dog-level-summary').hidden=false;
    message(window.DOGChristmasDev?.isActive()?'🧪 Lokaler Level-Teststand – Belohnungen sind nicht echt.':'🎄 Alle Level, EP und Rubbellos-Gutscheine sind mit deinem persönlichen Profil verknüpft.');
   })();
