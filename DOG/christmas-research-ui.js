@@ -55,6 +55,12 @@ export function initChristmasResearch(){
  // Prevent repeated Firestore reads on harmless login/profile events.
  const RESEARCH_VIEW_CACHE_MS=45000;
  let accountUid=user()?.uid||null,loadedUid=null,loadedAt=0;
+ const reportResearchBadge=()=>{
+  if(serverData&&user()&&!window.DOGChristmasDev?.isActive())
+   window.dispatchEvent(new CustomEvent('dog-christmas-badges-update',{
+    detail:{research:Math.max(0,Number(serverData.available)||0)}
+   }));
+ };
 
  const levelOf=skill=>Number(data?.levels?.[skill.id])||0;
  const maxed=skill=>levelOf(skill)>=skill.maxLevel;
@@ -341,6 +347,7 @@ export function initChristmasResearch(){
   working=true;render();
   try{
    data=await call('/upgrade',{id:skill.id});serverData=data;loadedUid=user()?.uid||null;loadedAt=Date.now();
+   reportResearchBadge();
    message('✓ '+skill.name+' wurde auf Stufe '+target+' verbessert.');
   }catch(error){message('⚠️ Verbesserung fehlgeschlagen: '+error.message,true);}
   finally{working=false;render();}
@@ -351,6 +358,9 @@ export function initChristmasResearch(){
   working=true;render();
   try{
    data=await call('/claim',{type:id,...(id==='free_ticket'?{tier}:{})});serverData=data;loadedUid=user()?.uid||null;loadedAt=Date.now();
+   reportResearchBadge();
+   if(id==='free_ticket')window.dispatchEvent(new Event('dog-christmas-badges-refresh'));
+   if(id==='builder')window.dispatchEvent(new Event('dog-christmas-village-balance-changed'));
    window.dispatchEvent(new Event('dog-scratch-balance-changed'));
    message(id==='builder'?'⭐ Die Weihnachtslichter sind dem gemeinsamen Dorf gutgeschrieben.':'🎟️ Dein Losgutschein wurde deinem Rubbellos-Konto gutgeschrieben.');
   }catch(error){message('⚠️ Abholung fehlgeschlagen: '+error.message,true);}
@@ -374,6 +384,7 @@ export function initChristmasResearch(){
     const result=await call('');
     if(requestId!==id||user()?.uid!==account.uid)return;
     serverData=result;data=result;loadedUid=account.uid;loadedAt=Date.now();render();
+    reportResearchBadge();
     message(window.DOGChristmasDev?.isActive()?'🧪 Lokale Forschungsvorschau – keine echte Freischaltung.':'✓ Forschungen synchronisiert – alle Werte stammen aus deinem Spielerkonto.');
    }catch(error){if(requestId===id){loadedAt=0;message('⚠️ Forschungsdaten konnten nicht geladen werden: '+error.message,true);}}
    finally{if(requestId===id){pending=null;pendingUid=null;}}
