@@ -8,6 +8,7 @@ on:
       - 'DOG/app.js'
       - 'DOG/index.html'
       - 'tests/dog-christmas-discovery.test.mjs'
+      - 'tests/dog-christmas-gold.test.mjs'
       - '.github/workflows/dog-christmas-prize-dialog.yml'
   pull_request:
     paths:
@@ -16,6 +17,7 @@ on:
       - 'DOG/app.js'
       - 'DOG/index.html'
       - 'tests/dog-christmas-discovery.test.mjs'
+      - 'tests/dog-christmas-gold.test.mjs'
       - '.github/workflows/dog-christmas-prize-dialog.yml'
   workflow_dispatch:
 jobs:
