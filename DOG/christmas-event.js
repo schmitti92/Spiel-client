@@ -4,7 +4,8 @@
  * Local building previews cannot grant Christmas prizes. Only real
  * Render-verified village stages allow durable per-user reward claims.
  */
-import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotalCost,christmasVillageTotalCost} from './christmas-building-costs.js?v=3';
+import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotalCost,christmasVillageTotalCost} from './christmas-building-costs.js?v=4';
+import {CHRISTMAS_TREE_THRESHOLDS as TREE_THRESHOLDS,christmasTreeBuildingPoints as originalTreePoints,christmasTreeLevelFromLevels,CHRISTMAS_TREE_BASE_POINTS,CHRISTMAS_TREE_MAX_UPGRADES} from './christmas-tree-progression.js?v=1';
 import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewards-ui.js?v=5';
 import {initChristmasTreeFilms} from './christmas-tree-films.js?v=3';
 import {initChristmasBuildingFilms} from './christmas-building-films.js?v=7';
@@ -29,9 +30,6 @@ initChrisChristmasRestart();
 $('tab-chapters')?.remove();
 $('panel-chapters')?.remove();
 const tabs=['village','buildings','tree','story','grinch','scratch','level','research','statistics'];
-const TREE_THRESHOLDS=[4,5,7,9,11,13,15,17,19,20];
-const TREE_BUILDING_IDS=['tower','workshop','bakery','inn'];
-const originalTreePoints=levels=>TREE_BUILDING_IDS.reduce((sum,id)=>sum+(Number.isInteger(levels?.[id])?levels[id]:1),0);
 const FIELDS=[10,12,15,18,20];
 const definitions=[
   {id:'tower',icon:'⭐',title:'Weihnachtslichter-Turm',summary:'Mehr leuchtende Geschenkfelder auf dem DOG-Brett.',
@@ -67,7 +65,7 @@ const treeDetails=[
  'Aus einem Funken wurden Hunderte Lichter. Weil alle zusammenhalfen, leuchtete sogar das kleinste Haus am Dorfrand.',
  'Der Glanz wanderte vom Baum durch alle Gassen. Kinder brachten ihre Weihnachtswünsche, und jeder durfte einen Stern aufhängen.',
  'Über dem Baum erschien ein strahlender Stern. Alle spürten: Ein letztes gemeinsames Wunder wartete noch auf das Dorf.',
- 'Als die vier Häuser im Lichterglanz erstrahlten, leuchtete der Baum bis zu den Bergen. Lichtertal hatte gelernt: Das größte Wunder ist Zusammenhalt.'
+ 'Als alle sechs Gebäude im Lichterglanz erstrahlten, leuchtete der Baum bis zu den Bergen. Lichtertal hatte gelernt: Das größte Wunder ist Zusammenhalt.'
 ];
 // All image filenames are checked against GitHub's actual event image folder.
 // Preload only the requested image, not the full 30-image collection.
@@ -506,7 +504,7 @@ function refreshPreview(){
  }else if(villageLive){
   const v=villageLive;
   $('building-village-counter').textContent=Object.values(v.levels).reduce((a,b)=>a+b,0)+' / 30';
-  $('building-village-tree').textContent='Stufe '+TREE_THRESHOLDS.filter(t=>originalTreePoints(v.levels)>=t).length+' / 10';
+  $('building-village-tree').textContent='Stufe '+christmasTreeLevelFromLevels(v.levels)+' / 10';
   $('building-live-balance').textContent=lightsLabel(v.lightsTenths)+' ⭐ Weihnachtslichter';
   $('stat-village-lights').textContent=lightsLabel(v.lightsTenths)+' ⭐';
   $('building-village-role').textContent='🟢 Gemeinsames DOG-Dorf';
@@ -544,10 +542,10 @@ function refreshPreview(){
  // Story chapters unlock ONLY from the server-verified shared village.
  // Local preview buttons may animate the tree but never reveal future text.
  storyScreen.render({treeLevel:villageLive||test?tree:1,isVerified:Boolean(villageLive)||test,remaining:villageLive||test?needed:0});
- $('tree-next-requirement').textContent=tree===10?'Alle vier Gebäude haben Stufe 5 erreicht.':
+ $('tree-next-requirement').textContent=tree===10?'Alle sechs Gebäude haben Stufe 5 erreicht.':
   'Noch '+needed+' Gebäudeausbau'+(needed===1?'':'ten')+' bis zur nächsten Stufe';
  $('tree-progress-fill').style.width=(tree*10)+'%';
- $('tree-progress-label').textContent=tree+' / 10 Stufen · '+treePoints+' / 20 Baum-Gebäudestufen';
+ $('tree-progress-label').textContent=tree+' / 10 Stufen · '+Math.max(0,treePoints-CHRISTMAS_TREE_BASE_POINTS)+' / '+CHRISTMAS_TREE_MAX_UPGRADES+' Gebäudeausbauten';
  document.querySelector('.tree-world-meter')?.setAttribute('aria-valuenow',String(tree));
  if($('tab-tree').getAttribute('aria-selected')==='true')centerTreeMilestone();
 }
@@ -841,7 +839,7 @@ const buildingFilms=initChristmasBuildingFilms({
 function showLiveVillage(data,{deferTreeFilms=false}={}){
  const v=data?.village;if(!v)return;
  const oldLevels=villageLive?.levels;
- const oldTreeLevel=oldLevels?TREE_THRESHOLDS.filter(n=>originalTreePoints(oldLevels)>=n).length:null;
+ const oldTreeLevel=oldLevels?christmasTreeLevelFromLevels(oldLevels):null;
  villageLive=v;
  lastVillageReadAt=Date.now();
  lastVillageReadUid=eventUser()?.uid||null;
@@ -854,7 +852,7 @@ function showLiveVillage(data,{deferTreeFilms=false}={}){
  $('building-village-role').textContent='🟢 Gemeinsames DOG-Dorf';
  $('building-village-role').dataset.state='online';
  $('building-village-counter').textContent=Object.values(v.levels).reduce((a,b)=>a+b,0)+' / 30';
- $('building-village-tree').textContent='Stufe '+TREE_THRESHOLDS.filter(t=>originalTreePoints(v.levels)>=t).length+' / 10';
+ $('building-village-tree').textContent='Stufe '+christmasTreeLevelFromLevels(v.levels)+' / 10';
  $('building-village-gifts').textContent=String(v.giftsCollected);
  $('building-village-earned').textContent=lightsLabel(v.totalEarnedTenths??0)+' ⭐';
  $('building-village-spent').textContent=lightsLabel(v.totalSpentTenths??0)+' ⭐';
@@ -865,7 +863,7 @@ function showLiveVillage(data,{deferTreeFilms=false}={}){
  $('building-live-notice').textContent='✅ Alle DOG-Spieler sammeln gemeinsam. Jeder kann mit dem gemeinsamen Vorrat Gebäude ausbauen.';
  refreshPreview();
  grinchView?.render();
- const newTreeLevel=TREE_THRESHOLDS.filter(n=>originalTreePoints(v.levels)>=n).length;
+ const newTreeLevel=christmasTreeLevelFromLevels(v.levels);
  if($('tab-tree').getAttribute('aria-selected')==='true'&&
      (oldTreeLevel===null||newTreeLevel!==oldTreeLevel))void treePrizeScreen?.load();
  // Only real, server-confirmed shared tree stages can launch the videos.
@@ -985,7 +983,7 @@ window.addEventListener('dog-christmas-dev-change',()=>{
  if(lastDevGrinch!==devMode.hasGrinch())villageMode=devMode.hasGrinch()?'grinch':'normal';
  lastDevGrinch=devMode.hasGrinch();
  grinchVisualStage=devMode.hasGrinch()?devMode.settings().caveStage:1;
- treeFilms.sync(!devMode.isActive()&&villageLive?TREE_THRESHOLDS.filter(n=>originalTreePoints(villageLive.levels)>=n).length:0);
+ treeFilms.sync(!devMode.isActive()&&villageLive?christmasTreeLevelFromLevels(villageLive.levels):0);
  if(!devMode.hasGrinch()&&$('tab-grinch')?.getAttribute('aria-selected')==='true')showPanel('village');
  refreshPreview();
 });
