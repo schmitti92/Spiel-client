@@ -13,6 +13,7 @@ import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,b
 import {decideDogRoomUpdate} from './online-sync.js?v=15';
 import {createDogSocketActionDispatcher} from './socket-actions.js?v=1';
 import {initDogFirstLightFilm} from './christmas-first-light-film.js?v=1';
+import {dogChristmasFoundMarkers,newDogChristmasDiscoveries,createDogChristmasDiscoveryPopup} from './christmas-discovery.js?v=1';
 import {DEFAULT_APPEARANCE,BOARD_STYLES,isBoardUnlocked,BOARD_FRAMES,SIDEBAR_BACKGROUNDS,HUD_TONES,HUD_OPACITY_BLOCKS,normalizeHudOpacity,hudOpacityColor,PIECE_STYLES,PIECE_SHAPES,isPieceShapeUnlocked,CARD_STYLES,PUBLISHED_CARD_STYLE_IDS,loadAppearance,saveAppearance,normalizeAppearance,resolveAppearance,validAssetPath,assetBackground} from './appearance-registry.js?v=28';
 import {trackPoint,goalPoint,homePoint,TRACK_POINTS,GOAL_POINTS,HOME_POINTS,isStartField,BOARD_LAYOUT_ID} from './board-layout.js?v=11';
 
@@ -48,6 +49,7 @@ function currentAccountUid(){
  return window.SpielOnline?.state?.()?.user?.uid||null;
 }
 const firstLightFilm=online?initDogFirstLightFilm({currentUid:()=>user()?.uid}):null;
+const christmasDiscoveryPopup=createDogChristmasDiscoveryPopup(document);
 async function hubRequest(path,method='GET',payload){
  const person=user();if(!person)throw Error('Bitte melde dich mit deinem Online-Profil an.');
  const token=await person.getIdToken();
@@ -92,8 +94,9 @@ function acceptRemote(room){
  if(!decision.accept)return;
  roomRevision=decision.roomRevision;
  if(decision.kind==='dog'){
-   const previousGiftCount=acceptedMatchId===decision.matchId&&onlineChristmas?.enabled===true&&
-     Number.isSafeInteger(onlineChristmas.giftCount)?onlineChristmas.giftCount:null;
+   const previousChristmas=acceptedMatchId===decision.matchId?onlineChristmas:null;
+   const previousGiftCount=previousChristmas?.enabled===true&&
+     Number.isSafeInteger(previousChristmas.giftCount)?previousChristmas.giftCount:null;
    if((decision.clearSelection||game?.revision!==decision.game?.revision)&&$('dog-move-choice-dialog')?.open)$('dog-move-choice-dialog').close();
    if(decision.hideHand)revealed=decision.seat!==null;
    if(decision.clearSelection){selectedCard=null;selectedPiece=null;jokerAs=null;$('dog-joker-dialog').close();}
@@ -102,6 +105,8 @@ function acceptRemote(room){
    onlineChristmas=room.match?.christmas?.enabled===true?room.match.christmas:null;
    onlineResearch=room.match?.dogResearch||null;
    render();
+   if(!previousChristmas)christmasDiscoveryPopup.reset();
+   christmasDiscoveryPopup.show(newDogChristmasDiscoveries(previousChristmas,onlineChristmas,onlineSeat));
    // The accepted Render room snapshot is authoritative. No additional
    // village, Firebase or HTTP request is made for this one-time film.
    firstLightFilm?.observe({
@@ -423,7 +428,8 @@ function drawBoard(){
   // ongoing pawn animation by replacing the entire SVG with identical content.
   const boardKey=JSON.stringify([snapshot,appearance,selectedPiece,game.players?.map(p=>p.name),
     onlineChristmas?.round,onlineChristmas?.roundGiftCollected,onlineChristmas?.roundScratchCollected,
-    onlineChristmas?.visibleGiftFields,onlineChristmas?.visibleScratchFields]);
+    onlineChristmas?.visibleGiftFields,onlineChristmas?.visibleScratchFields,
+    onlineChristmas?.foundGiftFields,onlineChristmas?.foundScratchFields]);
   if(boardKey===lastBoardKey && boardSvg.childElementCount){lastMotionDuration=0;syncDogMoveHints();return;}
   const canAnimate=!!lastBoardSnapshot && lastBoardMatch===matchIdentity &&
     Number.isInteger(game.revision) && game.revision===lastBoardRevision+1;
@@ -516,9 +522,25 @@ function drawBoard(){
       push('<path d="M '+(x-4)+' '+(y-7)+' L '+(x+5)+' '+y+' L '+(x-4)+' '+(y+7)+' Z" fill="#ffffff" opacity=".88"/>');
     }
   }
-  // 🎄 Temporary Christmas test view: server-provided unclaimed fields.
-  // The markers are decorative; all rewards are verified on Render.
+  // A collected field stays visible for this entire match, across new card
+  // deals and reconnects. Only server-confirmed discoveries are included;
+  // secret, uncollected fields remain hidden unless research reveals a hint.
   if(onlineChristmas?.enabled){
+    for(const {field,kind,both} of dogChristmasFoundMarkers(onlineChristmas)){
+      const point=boardPoint(field);
+      const dx=both?(kind==='gift'?-7.3:7.3):0;
+      const x=point.x+dx,y=point.y,r=both?9:13;
+      const isGift=kind==='gift';
+      const emoji=isGift?'⭐':'🎟️';
+      const checkX=x+r*.58,checkY=y+r*.63;
+      push('<g class="dog-christmas-found-marker" data-kind="'+kind+'" pointer-events="none" aria-hidden="true">'+
+        '<circle class="dog-found-halo" cx="'+x+'" cy="'+y+'" r="'+r+'"/>'+
+        '<text class="dog-found-icon" x="'+x+'" y="'+(y+1)+'" font-size="'+(both?12:17)+'">'+emoji+'</text>'+
+        '<circle cx="'+checkX+'" cy="'+checkY+'" r="4.7" fill="#205941" stroke="#f1ffd9" stroke-width="1"/>'+
+        '<text x="'+checkX+'" y="'+(checkY+2.3)+'" text-anchor="middle" font-size="7.4" font-weight="900" fill="#fff">✓</text>'+
+      '</g>');
+    }
+    // Research hints are personal, decorative, and cannot intercept input.
     const marks=[
       ...(Array.isArray(onlineChristmas.visibleGiftFields)?
         onlineChristmas.visibleGiftFields.map(field=>({field,icon:'⭐',color:'#725409',ring:'#ffe69d'})):[]),
