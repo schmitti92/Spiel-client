@@ -36,3 +36,17 @@ export function writeDogBotMotion(enabled,storage=typeof localStorage==='undefin
  try{storage?.setItem(DOG_BOT_MOTION_KEY,value?'1':'0');}catch(_){}
  return value;
 }
+
+/**
+ * Pace local computer turns only; never slow a human action or mutate the game.
+ * A new BOT must wait until the previous BOT's piece animation is finished,
+ * PLUS one full second. Consecutive actions of a split seven belong to the
+ * same bot's turn and keep the usual short gap between individual steps.
+ */
+export const DOG_BOT_HANDOFF_PAUSE_MS=1000;
+export function dogBotActionDelay({previousBotSeat=null,nextBotSeat=null,animationDuration=0}={}){
+ const motion=Number.isFinite(animationDuration)?Math.max(0,animationDuration):0;
+ const handoff=Number.isInteger(previousBotSeat)&&Number.isInteger(nextBotSeat)
+   &&previousBotSeat!==nextBotSeat;
+ return Math.max(320,motion+(handoff?DOG_BOT_HANDOFF_PAUSE_MS:240));
+}
