@@ -66,7 +66,7 @@ test('direct studio checks level first, only then loads editing script',()=>{
  const room=read('DOG/room-lobby.js');
  const hub=read('hub-lobby.html');
  assert.match(html,/data-designer-access="pending"/);
- assert.match(html,/design-studio-entry\.js\?v=3/);
+ assert.match(html,/design-studio-entry\.js\?v=4/);
  assert.doesNotMatch(html,/<script type="module" src="\.\/design-studio\.js/);
  assert.match(entry,/if\(level<DESIGNER_MIN_LEVEL\)/);
  assert.match(entry,/await import\('\.\/design-studio\.js\?v=13'\)/);
@@ -114,4 +114,17 @@ test('concurrent forced designer XP checks share the same in-flight authenticate
  const later=await h.api.fetchDogPlayerLevel({force:true});
  assert.equal(later,2);
  assert.equal(h.calls(),2,'an explicit later force does execute a fresh check');
+});
+
+test('DOG lobby and editor both load the new designer-level module URL, avoiding old browser cache',()=>{
+ const room=read('DOG/room-lobby.js');
+ const hub=read('hub-lobby.html');
+ const entry=read('DOG/design-studio-entry.js');
+ const html=read('DOG/design-studio.html');
+ assert.match(room,/designer-level-access\.js\?v=3/);
+ assert.match(entry,/designer-level-access\.js\?v=3/);
+ assert.match(hub,/DOG\/room-lobby\.js\?v=13/);
+ assert.match(html,/design-studio-entry\.js\?v=4/);
+ assert.doesNotMatch(room,/designer-level-access\.js\?v=2/);
+ assert.doesNotMatch(entry,/designer-level-access\.js\?v=2/);
 });
