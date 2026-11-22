@@ -1042,6 +1042,7 @@ function render(){
  if(!inside||playMode!=='online'){window.DOGRoomLobby?.update(null,operation);return;}
  if(displayGame!==room.game){choosingGame=false;displayGame=room.game;}
  if(room.phase==='playing')choosingGame=false;
+ const dogFinished=room.phase==='playing'&&room.match?.game==='dog'&&room.match?.status?.phase==='finished';
  const showStage=!!room.game&&!choosingGame;
  el('game-chooser').classList.toggle('hidden',showStage);
  el('game-stage-hero').classList.toggle('hidden',!showStage);
@@ -1061,12 +1062,12 @@ function render(){
     ?'👑 Du bist Host. Nur du kannst Spiel, Regeln und Teilnehmerplätze ändern. Jede Änderung setzt die Bereitmeldungen zurück.'
     :'🔒 Der Host legt Regeln und Teilnehmer fest. Du kannst dich selbst bereit melden, sobald du einen Spielplatz hast.';
  }
- if(room.phase==='playing'&&room.match?.participating&&room.match.id!==stayInMatchId&&room.match.id!==launchedMatchId&&!(returnToDogLobby&&room.game==='dog')){
+ if(room.phase==='playing'&&room.match?.participating&&room.match.id!==stayInMatchId&&room.match.id!==launchedMatchId&&!dogFinished&&!(returnToDogLobby&&room.game==='dog')){
    const matchId=room.match.id;
    try{enterCurrentMatch();launchedMatchId=matchId;}catch(e){showError(e);}
  }
  el('room-code').textContent=room.code;
- el('select-help').textContent=room.phase==='playing'?'Die Partie läuft. Alle bleiben im gemeinsamen Raum.':room.host?'Du bist Host: Wähle ein Spiel für deine Gruppe.':'Der Host wählt das nächste Spiel. Du kannst dich anschließend bereit melden.';
+ el('select-help').textContent=dogFinished?'🏆 DOG-Runde beendet. Der Host kann eine neue Runde vorbereiten.':room.phase==='playing'?'Die Partie läuft. Alle bleiben im gemeinsamen Raum.':room.host?'Du bist Host: Wähle ein Spiel für deine Gruppe.':'Der Host wählt das nächste Spiel. Du kannst dich anschließend bereit melden.';
  const player=room.players.find(p=>p.me);
  const barikade=room.game==='barikade'&&!!room.settings;
  const skyjo=room.game==='skyjo'&&!!room.settings;
@@ -1135,23 +1136,23 @@ function render(){
   btn.setAttribute('aria-pressed',String(btn.dataset.game===room.game));
  });
  el('ready-help').textContent=room.game?`${GAME[room.game]||room.game} ist ausgewählt. Nur die ausgewählten Mitspieler melden sich bereit; Zuschauer bleiben im Raum.`:'Der Host wählt zuerst ein Spiel.';
- el('ready-btn').textContent=room.phase==='playing'?'Zur laufenden Partie':player?.ready?'Bereitmeldung zurücknehmen':'Ich bin bereit';
+ el('ready-btn').textContent=dogFinished?'🏆 Siegerehrung ansehen':room.phase==='playing'?'Zur laufenden Partie':player?.ready?'Bereitmeldung zurücknehmen':'Ich bin bereit';
  el('ready-btn').disabled=!room.game||!player?.participating||operation||(room.game==='skyjo'&&room.phase!=='playing'&&room.players.filter(p=>p.participating).length!==3);
  el('ready-btn').classList.toggle('is-ready',!!player?.ready);
  const playing=room.players.filter(p=>p.participating);
  const readyCount=playing.filter(p=>p.ready).length;
  const percent=playing.length?Math.round(readyCount/playing.length*100):0;
- el('ready-counter').textContent=room.phase==='playing'?'Partie läuft':room.game==='skyjo'&&playing.length!==3?'🌲 SKYJO Wald benötigt genau 3 Spieler ('+playing.length+'/3)':playing.length<2&&room.game!=='dog'?'Mindestens 2 Spieler benötigt':room.allReady?'Alle bereit!':'Warten auf Bereitmeldungen';
+ el('ready-counter').textContent=dogFinished?'🏆 Runde beendet':room.phase==='playing'?'Partie läuft':room.game==='skyjo'&&playing.length!==3?'🌲 SKYJO Wald benötigt genau 3 Spieler ('+playing.length+'/3)':playing.length<2&&room.game!=='dog'?'Mindestens 2 Spieler benötigt':room.allReady?'Alle bereit!':'Warten auf Bereitmeldungen';
  el('ready-fraction').textContent=readyCount+' / '+playing.length;
  el('ready-progress-fill').style.width=percent+'%';
  el('ready-progressbar').setAttribute('aria-valuenow',String(percent));
- el('ready-title').textContent=room.phase==='playing'?'🎮 Eure Partie läuft':'Bereit für '+(GAME[room.game]||'die Partie')+'?';
+ el('ready-title').textContent=dogFinished?'🏆 DOG-Partie beendet':room.phase==='playing'?'🎮 Eure Partie läuft':'Bereit für '+(GAME[room.game]||'die Partie')+'?';
  el('ready-status').textContent=`${readyCount} von ${playing.length} Mitspielern bereit · ${room.players.length-playing.length} Zuschauer${room.allReady?' · Alle bereit!':''}`;
  el('start-btn').classList.toggle('hidden',!room.host||(room.phase!=='playing'&&!(room.game==='partychallenge'&&room.phase==='preparing'))||(room.game==='partychallenge'&&room.phase==='playing'));
- el('cancel-match-btn').classList.toggle('hidden',!room.host||room.phase!=='playing');
+ el('cancel-match-btn').classList.toggle('hidden',!room.host||room.phase!=='playing'||dogFinished);
  el('cancel-match-btn').disabled=operation||!room.host||room.phase!=='playing';
  el('start-btn').disabled=operation||!room.host||(room.phase==='preparing'&&!room.allReady);
- el('start-btn').textContent=room.game==='partychallenge'&&room.phase==='preparing'?'🏆 Challenge starten (3–2–1–0)':room.phase==='playing'?'Beendete Partie abschließen':room.canLaunch?'Startet automatisch bei allen Bereitmeldungen':'Spielanbindung folgt';
+ el('start-btn').textContent=dogFinished?'↻ Neue DOG-Runde vorbereiten':room.game==='partychallenge'&&room.phase==='preparing'?'🏆 Challenge starten (3–2–1–0)':room.phase==='playing'?'Beendete Partie abschließen':room.canLaunch?'Startet automatisch bei allen Bereitmeldungen':'Spielanbindung folgt';
  el('start-btn').title=room.game==='partychallenge'?'Der Host startet ausdrücklich. Der Server bestimmt die Startzeit.':room.phase==='playing'?'Nur nach beendetem Spiel möglich; der Server prüft den Sieger.':room.canLaunch?'Alle gewählten Mitspieler melden sich bereit.':'Dieses Spiel wird später angeschlossen.';
  // Keep the original start button and its event handlers; only relocate it in Party Challenge.
  const launchSlot=el('challenge-host-launch');
@@ -1169,7 +1170,7 @@ function render(){
   }
  }
  el('leave-btn').disabled=room.phase==='playing'||operation;
- el('integration-note').textContent=room.phase==='playing'
+ el('integration-note').textContent=dogFinished?'🏆 Sieger steht fest. Nächste DOG-Runde im gleichen Raum vorbereiten; alle melden sich erneut bereit.' :room.phase==='playing'
   ?'Die Partie läuft. Nach dem bestätigten Spielende kehren alle automatisch in diesen Raum zurück.'
   :room.phase==='lobby'&&room.lastCompleted?.id
    ?(room.lastCompleted.status==='aborted'?'⏹ Partie ohne Wertung beendet: ':'🎉 Letzte Partie abgeschlossen: ')+(GAME[room.lastCompleted.game]||room.lastCompleted.game)+'. Ihr seid weiterhin im selben Raum – der Host kann das nächste Spiel auswählen.'
@@ -1204,6 +1205,13 @@ window.addEventListener('dog-room-lobby-action',event=>{
  }
  if(!['ready','join','start'].includes(kind))return;
  if(room.phase==='playing'){
+  if(kind==='start'&&room.host&&room.match?.status?.phase==='finished'){
+   void command(async()=>{
+    const {room:r}=await request('/rooms/'+code+'/dog/rematch','POST',{matchId:room.match.id});
+    launchedMatchId=null;activateRoom(r);
+   });
+   return;
+  }
   if(kind==='join')enterDog();
   return;
  }
@@ -1274,6 +1282,13 @@ el('start-btn').addEventListener('click',()=>command(async()=>{
   const {room:r}=await request('/rooms/'+code+'/start','POST');activateRoom(r);notice('Challenge gestartet: gemeinsamer Countdown läuft.');return;
  }
  if(room?.phase!=='playing'||room.game==='partychallenge')return;
+ if(room.game==='dog'){
+  if(room.match?.status?.phase!=='finished')throw Error('MATCH_NOT_FINISHED');
+  const {room:r}=await request('/rooms/'+code+'/dog/rematch','POST',{matchId:room.match.id});
+  launchedMatchId=null;activateRoom(r);
+  notice('🏆 Alte Runde abgeschlossen. Alle können sich für DOG erneut bereit melden.');
+  return;
+ }
  const {room:r}=await request('/rooms/'+code+'/finish','POST');
  activateRoom(r);notice('Partie abgeschlossen. Ihr könnt das nächste Spiel auswählen.');
 }));
