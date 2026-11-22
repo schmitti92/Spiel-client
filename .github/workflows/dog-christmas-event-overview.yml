@@ -1,0 +1,34 @@
+name: DOG live Christmas event overview
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/christmas-event-overview.js'
+      - 'DOG/christmas-event-overview.css'
+      - 'DOG/ui-shell.js'
+      - 'DOG/ui-features.js'
+      - 'DOG/app.js'
+      - 'DOG/index.html'
+      - 'tests/dog-event-overview.test.mjs'
+      - '.github/workflows/dog-christmas-event-overview.yml'
+  pull_request:
+    paths:
+      - 'DOG/christmas-event-overview.js'
+      - 'DOG/christmas-event-overview.css'
+      - 'DOG/ui-shell.js'
+      - 'DOG/ui-features.js'
+      - 'DOG/app.js'
+      - 'DOG/index.html'
+      - 'tests/dog-event-overview.test.mjs'
+      - '.github/workflows/dog-christmas-event-overview.yml'
+  workflow_dispatch:
+jobs:
+  event-overview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/christmas-event-overview.js && node --check DOG/ui-shell.js && node --check DOG/app.js
+      - run: node --test tests/dog-event-overview.test.mjs tests/dog-christmas-discovery.test.mjs
