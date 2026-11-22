@@ -32,6 +32,7 @@ document.querySelectorAll('[data-dog-editor]').forEach(link=>link.href='editor.h
 const apiBase=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null,onlineDogAvatars=[],onlineChristmas=null,onlineResearch=null,emojiSocketReady=false;
 let lastFallbackRoomReadAt=0;
+let lastAnnouncedFinishedMatchId=null; // One Christmas eligibility refresh per completed DOG match.
 let socketAwaitingFirstRoomAt=0,socketHasRoom=false,socketLastHealthyAt=0;
 const DOG_DISCONNECTED_READ_MS=30000; // Render WebSocket is primary.
 const DOG_FIRST_ROOM_GRACE_MS=12000; // Recover if a connected socket never receives its initial room.
@@ -66,7 +67,10 @@ function acceptRemote(room){
    onlineChristmas=room.match?.christmas?.enabled===true?room.match.christmas:null;
    onlineResearch=room.match?.dogResearch||null;
    render();
-   if(game?.phase==='finished')window.dispatchEvent(new Event('dog-match-finished'));
+   if(game?.phase==='finished'&&lastAnnouncedFinishedMatchId!==acceptedMatchId){
+     lastAnnouncedFinishedMatchId=acceptedMatchId;
+     window.dispatchEvent(new Event('dog-match-finished'));
+   }
  }else if(game?.phase==='finished'){
    $('status').textContent='Partie beendet – du kannst in der Raum-Lobby ein neues Spiel auswählen.';
  }else{
