@@ -603,25 +603,30 @@ function drawBoard(){
     const pawnFields=new Set(game.pieces.filter(p=>p.place==='track').map(p=>p.pos));
     for(const [field,found] of byField){
       const point=boardPoint(field),x=point.x,y=point.y;
-      const occupied=pawnFields.has(field),double=found.length>1;
+      const occupied=pawnFields.has(field),multiple=found.length>1;
       const firstKind=found[0].kind;
-      const rim=double?'#f6e4bb':firstKind==='gift'?'#ffe082':
+      const rim=multiple?'#f6e4bb':firstKind==='gift'?'#ffe082':
         firstKind==='gold'?'#ffd462':'#9edfff';
       push('<g class="dog-christmas-found-marker" data-field="'+field+'" pointer-events="none" aria-hidden="true">'+
         '<circle cx="'+x+'" cy="'+y+'" r="19.5" fill="none" stroke="'+rim+'" stroke-width="3" stroke-dasharray="5 2"/>'+
         '<circle cx="'+x+'" cy="'+y+'" r="22" fill="none" stroke="'+rim+'" stroke-width="1.3" stroke-opacity=".8"/>');
       for(const [index,mark] of found.entries()){
         const kind=mark.kind;
-        const posX=occupied?x+(double?(index===0?-12:12):14):
-          x+(double?(index===0?-9:9):0);
-        const posY=occupied?y-16:y;
+        // Up to three distinct reward categories can share one track field
+        // after separate card deals. Keep every badge distinct, even if a
+        // pawn occupies the field. These badges never intercept pointer input.
+        const position=found.length===3?
+          (occupied?[[-15,-17],[0,-22],[15,-17]]:[[-12,-11],[12,-11],[0,13]])[index]:
+          found.length===2? (occupied?[[-12,-17],[12,-17]]:[[-9,0],[9,0]])[index]:
+          (occupied?[14,-16]:[0,0]);
+        const posX=x+position[0],posY=y+position[1];
         const icon=kind==='gift'?'⭐':kind==='gold'?'🪙':'🎟️';
         const stroke=kind==='gift'?'#f6d77b':kind==='gold'?'#ffd462':'#a3ddff';
-        const radius=double||occupied?9.3:13.2;
+        const radius=multiple||occupied?9.3:13.2;
         const showGold=kind==='gold'&&Number.isInteger(mark.amount);
         push('<circle cx="'+posX+'" cy="'+posY+'" r="'+radius+'" fill="#102c3c" stroke="'+stroke+'" stroke-width="1.9"/>'+
-          '<text x="'+posX+'" y="'+(posY+(showGold?1:4))+'" font-size="'+(double||occupied?10:16)+'" text-anchor="middle">'+icon+'</text>'+
-          (showGold?'<text x="'+posX+'" y="'+(posY+radius*.78)+'" font-size="'+(double||occupied?5.7:7.3)+'" font-weight="900" text-anchor="middle" fill="#fff3ba">'+mark.amount+'</text>':''));
+          '<text x="'+posX+'" y="'+(posY+(showGold?1:4))+'" font-size="'+(multiple||occupied?10:16)+'" text-anchor="middle">'+icon+'</text>'+
+          (showGold?'<text x="'+posX+'" y="'+(posY+radius*.78)+'" font-size="'+(multiple||occupied?5.7:7.3)+'" font-weight="900" text-anchor="middle" fill="#fff3ba">'+mark.amount.toLocaleString('de-DE')+'</text>':''));
       }
       if(!occupied){
         push('<circle cx="'+(x+12)+'" cy="'+(y+12)+'" r="5.4" fill="#24734f" stroke="#ebffdf" stroke-width="1.2"/>'+
