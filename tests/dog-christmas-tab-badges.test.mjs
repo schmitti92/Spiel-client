@@ -101,7 +101,9 @@ test('one authenticated GET populates personal counters; local updates need no n
   assert.deepEqual(ui.getCounts(),{buildings:1,scratch:3,research:1,level:2});
   assert.equal(calls.length,1,'local updates and tab rendering never re-read');
   await ui.load();
-  assert.equal(calls.length,1,'existing profile status reused');
+  target.fire('spielonline-change');
+  await Promise.resolve();
+  assert.equal(calls.length,1,'same-profile auth refresh cannot restart the badge GET');
  }finally{globalThis.fetch=original}
 });
 test('switching players clears old personal rewards immediately',async()=>{
@@ -122,6 +124,13 @@ test('switching players clears old personal rewards immediately',async()=>{
   await ui.load();
   assert.equal(ui.getCounts().research,0);
  }finally{globalThis.fetch=original}
+});
+test('a synchronously failing auth token does not crash the event menu',async()=>{
+ const {doc,target}=fakeSidebar();
+ const ui=initChristmasTabBadges({doc,target,base:'https://dog.invalid',
+  getUser:()=>({uid:'alice',getIdToken(){throw Error('TOKEN_NOT_READY')}})});
+ assert.equal(await ui.load(),null);
+ assert.equal(ui.getCounts().scratch,0);
 });
 test('Lichtertal menu remains navigable; no background Firebase reads or badges in Grinch tab',()=>{
  const html=read('christmas-event.html'),event=read('christmas-event.js');
