@@ -159,3 +159,40 @@ test('expert stays responsive with joker, split seven and several pawns in play'
  assert.ok(Date.now()-before<2500,'bounded lookahead must not hang the board');
  assert.ok(legalActions(game,1).some(a=>JSON.stringify(a)===JSON.stringify(move)));
 });
+
+test('expert keeps valuable split-seven cards when a completely blocked hand must discard',()=>{
+ const game=fixture(['7','12','swap']);
+ const actions=legalActions(game,1);
+ assert.equal(actions.length,3);
+ assert.ok(actions.every(action=>action.type==='discardDraw'));
+ const choice=chooseDogBotAction(game,1,'expert');
+ assert.equal(game.hands[1].find(card=>card.id===choice.cardId)?.type,'swap',
+  'discard an unusable swap before wasting a flexible seven');
+ assert.ok(actions.some(action=>JSON.stringify(action)===JSON.stringify(choice)));
+});
+
+test('expert prioritizes stopping an opponent at 3/4 goals with an immediate winning threat',()=>{
+ const game=fixture(['2','3']);
+ pawn(game,4,'track',15); // blue can enter its goal with a 2
+ pawn(game,5,'track',60); // blue can capture red fourth pawn with a 3
+ pawn(game,0,'track',63);
+ pawn(game,1,'goal',1);pawn(game,2,'goal',2);pawn(game,3,'goal',3);
+ game.hands[0]=[{id:801,type:'4'},{id:802,type:'9'},{id:803,type:'11'}];
+ const before=structuredClone(game);
+ const move=chooseDogBotAction(game,1,'expert');
+ assert.equal(move?.type,'move');
+ assert.equal(move?.steps,3);
+ assert.deepEqual(move?.captures,[0],'deny red an imminent fourth goal');
+ assert.deepEqual(game,before,'assessing opponents must never change their hand');
+});
+
+test('expert evaluates with a strict time bound even in complex tactical positions',()=>{
+ const game=fixture(['7','joker','13','swap','4','5']);
+ pawn(game,4,'track',19);pawn(game,5,'track',28);
+ pawn(game,6,'track',49);pawn(game,7,'goal',2);
+ pawn(game,0,'track',22);pawn(game,8,'track',37);
+ const start=Date.now();
+ const result=chooseDogBotAction(game,1,'expert');
+ assert.ok(Date.now()-start<2500);
+ assert.ok(legalActions(game,1).some(action=>JSON.stringify(action)===JSON.stringify(result)));
+});
