@@ -30,6 +30,7 @@ on:
       - 'tests/dog-christmas-rewards.test.mjs'
       - 'tests/dog-christmas-building-costs.test.mjs'
       - 'tests/dog-christmas-live-ui.test.mjs'
+      - 'tests/dog-christmas-discovery.test.mjs'
       - '.github/workflows/dog-board-check.yml'
   pull_request:
     paths:
@@ -74,6 +75,7 @@ jobs:
         with:
           node-version: '22'
       - run: node --check DOG/app.js
+      - run: node --check DOG/christmas-discovery.js && node --test tests/dog-christmas-discovery.test.mjs
       - run: node --check DOG/room-board-preview.js
       - run: node --check DOG/room-lobby.js
       - run: node --check DOG/room-lobby-state.js
