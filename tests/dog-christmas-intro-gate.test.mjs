@@ -65,7 +65,8 @@ test('first-match intro waits for victory ceremony dismissal',()=>{
 });
 test('online DOG completion triggers a verified unlock refresh',()=>{
  const app=source('DOG/app.js');
- assert.match(app,/game\?\.phase==='finished'\)window\.dispatchEvent\(new Event\('dog-match-finished'\)\)/);
+ assert.match(app,/game\?\.phase==='finished'&&lastAnnouncedFinishedMatchId!==acceptedMatchId/);
+ assert.match(app,/lastAnnouncedFinishedMatchId=acceptedMatchId;\s*window\.dispatchEvent\(new Event\('dog-match-finished'\)\)/);
  const gate=source('DOG/christmas-intro-gate.js');
  assert.match(gate,/window\.addEventListener\('dog-match-finished'/);
  assert.match(gate,/devUnlocked\(p\)/);
@@ -152,7 +153,7 @@ test('idle Firebase reads are rate-limited without delaying a verified DOG victo
  const intro=source('DOG/christmas-intro-gate.js');
  const event=source('DOG/christmas-event.js');
  const hub=source('hub-lobby.html'),dog=source('DOG/index.html'),page=source('DOG/christmas-event.html');
- assert.match(intro,/ELIGIBILITY_FOCUS_MIN_MS=20000/);
+ assert.match(intro,/ELIGIBILITY_FOCUS_MIN_MS=120000/);
  assert.match(intro,/!force&&lastEligibilityUid===uid&&Date\.now\(\)-lastEligibilityReadAt<ELIGIBILITY_FOCUS_MIN_MS/);
  assert.match(intro,/if\(pending\)\{if\(force\|\|uid!==activeUid\)pendingAgain=true;return;\}/);
  assert.match(intro,/if\(victoryDialog\)matchFinishedOnThisPage=true;\s*void refresh\(\{force:true\}\)/);
