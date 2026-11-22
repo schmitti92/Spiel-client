@@ -351,6 +351,15 @@ dialog{color:#edf4f8;background:#102a3b;border:1px solid #d2b37377;border-radius
 @media(prefers-reduced-motion:reduce){.dog-legal-target-ring{animation:none}.dog-move-hints-knob{transition:none}}
 html[data-dog-motion="off"] .dog-legal-target-ring{animation:none}
 
+
+/* The switches now live under Magie in the right-hand extras section. */
+#dog-magic-panel-root[hidden]{display:none!important}
+.dog-magic-panel-root{display:flex;flex-direction:column;gap:7px;padding:6px 2px}
+.dog-magic-panel-root .dog-move-hints-control{margin:0;width:100%}
+.dog-magic-panel-intro,.dog-magic-panel-footnote{margin:0 5px;color:#e7d7b3;font-size:11px;line-height:1.4}
+.dog-magic-panel-footnote{color:#b7cfdf;font-size:10px}
+@media(max-width:480px){.dog-magic-panel-root{gap:5px}}
+
 /* Split-seven turn indicator: remain visible during every partial step. */
 .dog-seven-progress{display:block;flex:1 1 100%;width:100%;margin:7px 0 4px;padding:8px 10px;border-radius:10px;border:1px solid #eec46f77;background:linear-gradient(125deg,#302517dd,#142638c9);color:#ffedc4;font-size:12px;line-height:1.45}
 .dog-seven-progress strong{color:#ffe08b;font-weight:850}
@@ -483,16 +492,6 @@ html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christm
          </div>
          <button id="show-hand" class="reveal" type="button">🃏 Karten ansehen</button>
        </div>
-       <div class="dog-move-hints-control" aria-label="Optionale Zug-Hilfe">
-         <div class="dog-move-hints-copy">
-           <strong>🎯 Zug-Hilfe</strong>
-           <small id="dog-move-hints-description">Keine Zugmarkierungen auf dem Spielfeld.</small>
-         </div>
-         <button id="dog-move-hints-toggle" class="dog-move-hints-toggle" type="button" role="switch" aria-checked="false" aria-label="Zug-Hilfe ein- oder ausschalten" title="Hebel umlegen: erlaubte Zielfelder markieren">
-           <span class="dog-move-hints-rail" aria-hidden="true"><span class="dog-move-hints-knob"></span></span>
-           <span id="dog-move-hints-state" class="dog-move-hints-state" aria-hidden="true">AUS</span>
-         </button>
-       </div>
        <div class="hand" id="hand" aria-label="Handkarten: mit zwei Fingern zoomen und verschieben" title="Mit zwei Fingern Karten vergrößern, verkleinern und schieben"></div>
        <div class="move-help" id="move-help">Wähle eine Karte und berechne deinen Zug selbst.</div>
        <div class="moves" id="moves"></div>
@@ -516,6 +515,30 @@ html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christm
          <button id="dog-extension-close" type="button" aria-label="Erweiterungsbereich schließen" title="Schließen">×</button>
        </div>
        <div id="dog-extension-content" class="dog-extension-content">
+         <div id="dog-magic-panel-root" class="dog-magic-panel-root" aria-label="Magie – Spielhilfen und Animationen" hidden>
+            <p class="dog-magic-panel-intro">🪄 Passe die Spielhilfen und Bot-Bewegungen für dein Gerät an.</p>
+            <div class="dog-move-hints-control" aria-label="Optionale Zug-Hilfe">
+                     <div class="dog-move-hints-copy">
+                       <strong>🎯 Zug-Hilfe</strong>
+                       <small id="dog-move-hints-description">Keine Zugmarkierungen auf dem Spielfeld.</small>
+                     </div>
+                     <button id="dog-move-hints-toggle" class="dog-move-hints-toggle" type="button" role="switch" aria-checked="false" aria-label="Zug-Hilfe ein- oder ausschalten" title="Hebel umlegen: erlaubte Zielfelder markieren">
+                       <span class="dog-move-hints-rail" aria-hidden="true"><span class="dog-move-hints-knob"></span></span>
+                       <span id="dog-move-hints-state" class="dog-move-hints-state" aria-hidden="true">AUS</span>
+                     </button>
+                   </div>
+            <div class="dog-move-hints-control" aria-label="Animationen der Computergegner">
+              <div class="dog-move-hints-copy">
+                <strong>🤖 Bot-Animationen</strong>
+                <small id="dog-bot-animation-description">Bot-Spielzüge werden Schritt für Schritt animiert.</small>
+              </div>
+              <button id="dog-bot-animation-toggle" class="dog-move-hints-toggle" type="button" role="switch" aria-checked="true" aria-label="Bot-Animationen ein- oder ausschalten" title="Bewegungen von Computergegnern ein- oder ausschalten">
+                <span class="dog-move-hints-rail" aria-hidden="true"><span class="dog-move-hints-knob"></span></span>
+                <span id="dog-bot-animation-state" class="dog-move-hints-state" aria-hidden="true">AN</span>
+              </button>
+            </div>
+            <p class="dog-magic-panel-footnote">Die Einstellungen gelten nur für dieses Gerät. Das Spiel und die anderen Spieler werden nicht beeinflusst.</p>
+          </div>
          <div id="dog-emoji-panel-root" class="dog-emoji-panel-root" hidden></div>
          <div id="dog-event-overview" class="dog-event-overview" aria-label="Aktueller DOG-Eventfortschritt" hidden></div>
          <p id="dog-extension-placeholder" class="dog-extension-placeholder" hidden></p>
@@ -757,8 +780,8 @@ import {mountChristmasLinks} from './christmas-intro-gate.js?v=20261122-videothe
 mountChristmasLinks();
 </script>
 <script type="module">
-import('./ui-shell.js?v=8').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
-import('./app.js?v=100').catch(error=>{
+import('./ui-shell.js?v=9').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
+import('./app.js?v=101').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
