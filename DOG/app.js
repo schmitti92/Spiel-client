@@ -450,7 +450,7 @@ function drawBoard(){
   const boardKey=JSON.stringify([snapshot,appearance,selectedPiece,game.players?.map(p=>p.name),
     onlineChristmas?.round,onlineChristmas?.roundGiftCollected,onlineChristmas?.roundScratchCollected,
     onlineChristmas?.visibleGiftFields,onlineChristmas?.visibleScratchFields,
-    onlineChristmas?.foundGiftFields,onlineChristmas?.foundScratchFields,
+    onlineChristmas?.foundGiftFields,onlineChristmas?.foundScratchFields,onlineChristmas?.foundGoldFields,
     onlineChristmas?.activity]);
   if(boardKey===lastBoardKey && boardSvg.childElementCount){lastMotionDuration=0;syncDogMoveHints();return;}
   const canAnimate=!!lastBoardSnapshot && lastBoardMatch===matchIdentity &&
@@ -598,24 +598,30 @@ function drawBoard(){
     const byField=new Map();
     for(const mark of dogChristmasFoundMarkers(onlineChristmas)){
       if(!byField.has(mark.field))byField.set(mark.field,[]);
-      byField.get(mark.field).push(mark.kind);
+      byField.get(mark.field).push(mark);
     }
     const pawnFields=new Set(game.pieces.filter(p=>p.place==='track').map(p=>p.pos));
-    for(const [field,kinds] of byField){
+    for(const [field,found] of byField){
       const point=boardPoint(field),x=point.x,y=point.y;
-      const occupied=pawnFields.has(field),double=kinds.length>1;
-      const rim=double?'#f6e4bb':kinds[0]==='gift'?'#ffe082':'#9edfff';
+      const occupied=pawnFields.has(field),double=found.length>1;
+      const firstKind=found[0].kind;
+      const rim=double?'#f6e4bb':firstKind==='gift'?'#ffe082':
+        firstKind==='gold'?'#ffd462':'#9edfff';
       push('<g class="dog-christmas-found-marker" data-field="'+field+'" pointer-events="none" aria-hidden="true">'+
         '<circle cx="'+x+'" cy="'+y+'" r="19.5" fill="none" stroke="'+rim+'" stroke-width="3" stroke-dasharray="5 2"/>'+
         '<circle cx="'+x+'" cy="'+y+'" r="22" fill="none" stroke="'+rim+'" stroke-width="1.3" stroke-opacity=".8"/>');
-      for(const [index,kind] of kinds.entries()){
+      for(const [index,mark] of found.entries()){
+        const kind=mark.kind;
         const posX=occupied?x+(double?(index===0?-12:12):14):
           x+(double?(index===0?-9:9):0);
         const posY=occupied?y-16:y;
-        const icon=kind==='gift'?'⭐':'🎟️',stroke=kind==='gift'?'#f6d77b':'#a3ddff';
+        const icon=kind==='gift'?'⭐':kind==='gold'?'🪙':'🎟️';
+        const stroke=kind==='gift'?'#f6d77b':kind==='gold'?'#ffd462':'#a3ddff';
         const radius=double||occupied?9.3:13.2;
+        const showGold=kind==='gold'&&Number.isInteger(mark.amount);
         push('<circle cx="'+posX+'" cy="'+posY+'" r="'+radius+'" fill="#102c3c" stroke="'+stroke+'" stroke-width="1.9"/>'+
-          '<text x="'+posX+'" y="'+(posY+4)+'" font-size="'+(double||occupied?11:16)+'" text-anchor="middle">'+icon+'</text>');
+          '<text x="'+posX+'" y="'+(posY+(showGold?1:4))+'" font-size="'+(double||occupied?10:16)+'" text-anchor="middle">'+icon+'</text>'+
+          (showGold?'<text x="'+posX+'" y="'+(posY+radius*.78)+'" font-size="'+(double||occupied?5.7:7.3)+'" font-weight="900" text-anchor="middle" fill="#fff3ba">'+mark.amount+'</text>':''));
       }
       if(!occupied){
         push('<circle cx="'+(x+12)+'" cy="'+(y+12)+'" r="5.4" fill="#24734f" stroke="#ebffdf" stroke-width="1.2"/>'+
