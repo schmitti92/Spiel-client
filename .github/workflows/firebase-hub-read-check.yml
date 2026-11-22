@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'hub-lobby.js'
+      - 'hub-lobby.html'
       - 'tests/hub-foreground-reconcile-offline.test.mjs'
       - 'tests/hub-socket-first-recovery.test.mjs'
       - '.github/workflows/firebase-hub-read-check.yml'
@@ -11,6 +12,7 @@ on:
     paths:
       - 'hub-game-bridge.js'
       - 'hub-lobby.js'
+      - 'hub-lobby.html'
       - 'tests/hub-game-bridge-reads.test.mjs'
       - 'tests/hub-foreground-reconcile-offline.test.mjs'
       - 'tests/hub-socket-first-recovery.test.mjs'
