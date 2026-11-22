@@ -59,6 +59,7 @@ async function hubRequest(path,method='GET',payload){
 // and identity. If its confirmation is lost, replay the SAME actionId over
 // HTTP. Firestore CAS/transactions still validate and persist every move.
 async function sendOnlineDogAction(action){
+ const actorUid=user()?.uid;
  const payload={
   matchId:acceptedMatchId||matchHint||'',
   expectedRevision:game.revision,
@@ -72,6 +73,9 @@ async function sendOnlineDogAction(action){
    if(!e?.dogSocketTransport)throw e; // Real DOG rule error: no extra GET.
   }
  }
+ // Logout/profile switching during a lost ACK must never replay the
+ // previous user's action using a different authenticated HTTP identity.
+ if(!actorUid||user()?.uid!==actorUid)throw Error('PROFILE_CHANGED');
  return hubRequest('/dog/action','POST',payload);
 }
 function acceptRemote(room){
