@@ -6,29 +6,29 @@
  */
 export const CHRISTMAS_BUILDING_FILMS=Object.freeze({
  bakery:Object.freeze({
-  3:Object.freeze({
-   fromLevel:2,
+  5:Object.freeze({
+   fromLevel:4,
    title:'Das Geheimnis der Weihnachtsbäckerei',
    subtitle:'Johannas Legende vom Winterlicht',
    clips:Object.freeze(['./assets/1795338590869.mp4']),
-   poster:'./weihnachtsevent-bilder/weihnachtsbaeckerei_stufe_3.png'
+   poster:'./weihnachtsevent-bilder/weihnachtsbaeckerei_stufe_5.png'
   })
  }),
  workshop:Object.freeze({
-  3:Object.freeze({
-   fromLevel:2,
+  5:Object.freeze({
+   fromLevel:4,
    title:'Das Geheimnis der Wichtelwerkstatt',
    subtitle:'Pips Entdeckung und die Legende des Winterlichts',
    clips:Object.freeze([
     './assets/szene1_mit_untertiteln.mp4',
     './assets/szene2_mit_untertiteln.mp4'
    ]),
-   poster:'./weihnachtsevent-bilder/Wichtelwerkstatt_Stufe_3.png'
+   poster:'./weihnachtsevent-bilder/Wichtelwerkstatt_Stufe_5.png'
   })
  }),
  inn:Object.freeze({
-  3:Object.freeze({
-   fromLevel:2,
+  5:Object.freeze({
+   fromLevel:4,
    title:'Das vergessene Versprechen',
    subtitle:'Das Geheimnis der Friedensherberge',
    clips:Object.freeze([
@@ -37,12 +37,12 @@ export const CHRISTMAS_BUILDING_FILMS=Object.freeze({
     './assets/szene3_untertitel.mp4',
     './assets/szene4_untertitel.mp4'
    ]),
-   poster:'./weihnachtsevent-bilder/Herberge_Stufe_3.png'
+   poster:'./weihnachtsevent-bilder/Herberge_Stufe_5.png'
   })
  }),
  tower:Object.freeze({
-  3:Object.freeze({
-   fromLevel:2,
+  5:Object.freeze({
+   fromLevel:4,
    title:'Das Geheimnis des Weihnachtslichter-Turms',
    subtitle:'Die Glocke erwacht und zeigt den Weg zum Frostgrat',
    clips:Object.freeze([
@@ -51,12 +51,12 @@ export const CHRISTMAS_BUILDING_FILMS=Object.freeze({
     './assets/film4_szene3.mp4',
     './assets/film4_szene4.mp4'
    ]),
-   poster:'./weihnachtsevent-bilder/weihnachtslichter_turm_stufe_3.png'
+   poster:'./weihnachtsevent-bilder/weihnachtslichter_turm_stufe_5.png'
   })
  }),
  luckhouse:Object.freeze({
-  3:Object.freeze({
-   fromLevel:2,
+  5:Object.freeze({
+   fromLevel:4,
    title:'Das Los der verlorenen Wahrheit',
    subtitle:'Das Geheimnis des Weihnachts-Glückshauses',
    clips:Object.freeze([
@@ -65,7 +65,7 @@ export const CHRISTMAS_BUILDING_FILMS=Object.freeze({
     './assets/film5_szene3.mp4',
     './assets/film5_szene4.mp4'
    ]),
-   poster:'./weihnachtsevent-bilder/glueckshaus_stufe_3.png'
+   poster:'./weihnachtsevent-bilder/glueckshaus_stufe_5.png'
   })
  })
 });
@@ -97,7 +97,7 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
  dialog.className='dog-building-film-dialog';
  dialog.setAttribute('aria-label','Lichtertal – Film zum Gebäudeausbau');
  dialog.innerHTML=[
-  '<header><div><span data-film-heading>🏠 GEBÄUDEAUSBAU · STUFE 3</span><h2 data-film-title></h2><p data-film-subtitle></p></div>',
+  '<header><div><span data-film-heading>🏠 GEBÄUDEAUSBAU · STUFE 5</span><h2 data-film-title></h2><p data-film-subtitle></p></div>',
   '<button type="button" data-film-close aria-label="Filmfenster schließen">✕</button></header>',
   '<video controls playsinline preload="metadata" aria-label="Geschichtsfilm zum Ausbau des Weihnachtsgebäudes"></video>',
   '<div class="dog-building-film-footer"><p data-film-status role="status">🎬 Dein neuer Geschichtsfilm ist bereit.</p>',
