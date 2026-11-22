@@ -17,7 +17,7 @@ export function summarizeDogRoomLobby(room,busy=false){
   activeCount:active.length,
   spectatorCount,readyCount,readyPercent,
   playing,finished,me,
-  joinEnabled:!busy&&(playing?!!room.match?.participating:!!me?.participating&&!me?.ready),
+  joinEnabled:!busy&&(room.phase==='playing'?!!room.match?.participating:!!me?.participating&&!me?.ready),
   readyEnabled:!busy&&room.phase==='preparing'&&!!me?.participating,
   hostStartVisible:!!room.host&&!playing,
   hostStartEnabled:!busy&&!!room.host&&!!me?.participating&&
