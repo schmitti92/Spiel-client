@@ -68,6 +68,26 @@ test('a running match allows authorized participants to return, not spectators',
  room.match.participating=false;
  assert.equal(summarizeDogRoomLobby(room).joinEnabled,false);
 });
+test('finished online DOG match is not still shown as playing and host can prepare another round',()=>{
+ const room=makeRoom();
+ room.phase='playing';
+ room.match={participating:true,id:'abc',status:{phase:'finished'}};
+ const host=summarizeDogRoomLobby(room);
+ assert.equal(host.finished,true);
+ assert.equal(host.playing,false);
+ assert.equal(host.readyEnabled,false);
+ assert.equal(host.joinEnabled,true,'winner ceremony remains accessible');
+ assert.equal(host.hostStartVisible,true);
+ assert.equal(host.hostStartEnabled,true);
+ const spectator={...room,host:false,players:room.players.map(p=>({...p,me:p.uid==='b',host:false}))};
+ const player=summarizeDogRoomLobby(spectator);
+ assert.equal(player.finished,true);
+ assert.equal(player.hostStartVisible,false);
+ assert.equal(player.hostStartEnabled,false);
+ assert.match(moduleSrc,/Runde beendet/);
+ assert.match(moduleSrc,/Neue Runde vorbereiten/);
+ assert.match(hub,/\/dog\/rematch/);
+});
 test('the screenshot layout is a distinct DOG-only layer, never a main-lobby redesign',()=>{
  const ids=[...template.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
  assert.equal(new Set(ids).size,ids.length,'no duplicate HTML IDs');
