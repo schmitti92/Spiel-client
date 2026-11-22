@@ -53,6 +53,20 @@ export const CHRISTMAS_BUILDING_FILMS=Object.freeze({
    ]),
    poster:'./weihnachtsevent-bilder/weihnachtslichter_turm_stufe_3.png'
   })
+ }),
+ luckhouse:Object.freeze({
+  3:Object.freeze({
+   fromLevel:2,
+   title:'Das Los der verlorenen Wahrheit',
+   subtitle:'Das Geheimnis des Weihnachts-Glückshauses',
+   clips:Object.freeze([
+    './assets/film5_szene1.mp4',
+    './assets/film5_szene2.mp4',
+    './assets/film5_szene3.mp4',
+    './assets/film5_szene4.mp4'
+   ]),
+   poster:'./weihnachtsevent-bilder/glueckshaus_stufe_3.png'
+  })
  })
 });
 export function christmasBuildingFilmForUpgrade(id,fromLevel,toLevel){
@@ -140,8 +154,8 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
  function showUpgrade(id,fromLevel,toLevel){
   const film=christmasBuildingFilmForUpgrade(id,fromLevel,toLevel);
   if(!film||!Array.isArray(film.clips)||film.clips.length===0||active||dialog.open)return false;
-  const buildingNames={bakery:'Weihnachtsbäckerei',workshop:'Wichtelwerkstatt',inn:'Friedensherberge',tower:'Weihnachtslichter-Turm'};
-  const buildingIcons={bakery:'🍪',workshop:'🧸',inn:'🕯️',tower:'🔔'};
+  const buildingNames={bakery:'Weihnachtsbäckerei',workshop:'Wichtelwerkstatt',inn:'Friedensherberge',tower:'Weihnachtslichter-Turm',luckhouse:'Weihnachts-Glückshaus'};
+  const buildingIcons={bakery:'🍪',workshop:'🧸',inn:'🕯️',tower:'🔔',luckhouse:'🎟️'};
   const name=buildingNames[id]||'Weihnachtsgebäude';
   dialog.querySelector('[data-film-heading]').textContent=(buildingIcons[id]||'🏠')+' '+name.toUpperCase()+' · STUFE '+toLevel;
   dialog.querySelector('[data-film-title]').textContent=film.title;
