@@ -429,7 +429,8 @@ function drawBoard(){
   const boardKey=JSON.stringify([snapshot,appearance,selectedPiece,game.players?.map(p=>p.name),
     onlineChristmas?.round,onlineChristmas?.roundGiftCollected,onlineChristmas?.roundScratchCollected,
     onlineChristmas?.visibleGiftFields,onlineChristmas?.visibleScratchFields,
-    onlineChristmas?.foundGiftFields,onlineChristmas?.foundScratchFields]);
+    onlineChristmas?.foundGiftFields,onlineChristmas?.foundScratchFields,
+    onlineChristmas?.activity]);
   if(boardKey===lastBoardKey && boardSvg.childElementCount){lastMotionDuration=0;syncDogMoveHints();return;}
   const canAnimate=!!lastBoardSnapshot && lastBoardMatch===matchIdentity &&
     Number.isInteger(game.revision) && game.revision===lastBoardRevision+1;
@@ -526,20 +527,6 @@ function drawBoard(){
   // deals and reconnects. Only server-confirmed discoveries are included;
   // secret, uncollected fields remain hidden unless research reveals a hint.
   if(onlineChristmas?.enabled){
-    for(const {field,kind,both} of dogChristmasFoundMarkers(onlineChristmas)){
-      const point=boardPoint(field);
-      const dx=both?(kind==='gift'?-7.3:7.3):0;
-      const x=point.x+dx,y=point.y,r=both?9:13;
-      const isGift=kind==='gift';
-      const emoji=isGift?'⭐':'🎟️';
-      const checkX=x+r*.58,checkY=y+r*.63;
-      push('<g class="dog-christmas-found-marker" data-kind="'+kind+'" pointer-events="none" aria-hidden="true">'+
-        '<circle class="dog-found-halo" cx="'+x+'" cy="'+y+'" r="'+r+'"/>'+
-        '<text class="dog-found-icon" x="'+x+'" y="'+(y+1)+'" font-size="'+(both?12:17)+'">'+emoji+'</text>'+
-        '<circle cx="'+checkX+'" cy="'+checkY+'" r="4.7" fill="#205941" stroke="#f1ffd9" stroke-width="1"/>'+
-        '<text x="'+checkX+'" y="'+(checkY+2.3)+'" text-anchor="middle" font-size="7.4" font-weight="900" fill="#fff">✓</text>'+
-      '</g>');
-    }
     // Research hints are personal, decorative, and cannot intercept input.
     const marks=[
       ...(Array.isArray(onlineChristmas.visibleGiftFields)?
@@ -582,6 +569,39 @@ function drawBoard(){
     // Preserve a generous transparent touch target for mobile/desktop.
     push('<circle cx="'+p.x+'" cy="'+p.y+'" r="18.3" fill="transparent"/>');
     push('</g>');
+  }
+
+  // Collected spaces must remain visible EVEN while a pawn occupies the
+  // same square. Draw the discovery layer AFTER all pawns; it never takes input.
+  if(onlineChristmas?.enabled){
+    const byField=new Map();
+    for(const mark of dogChristmasFoundMarkers(onlineChristmas)){
+      if(!byField.has(mark.field))byField.set(mark.field,[]);
+      byField.get(mark.field).push(mark.kind);
+    }
+    const pawnFields=new Set(game.pieces.filter(p=>p.place==='track').map(p=>p.pos));
+    for(const [field,kinds] of byField){
+      const point=boardPoint(field),x=point.x,y=point.y;
+      const occupied=pawnFields.has(field),double=kinds.length>1;
+      const rim=double?'#f6e4bb':kinds[0]==='gift'?'#ffe082':'#9edfff';
+      push('<g class="dog-christmas-found-marker" data-field="'+field+'" pointer-events="none" aria-hidden="true">'+
+        '<circle cx="'+x+'" cy="'+y+'" r="19.5" fill="none" stroke="'+rim+'" stroke-width="3" stroke-dasharray="5 2"/>'+
+        '<circle cx="'+x+'" cy="'+y+'" r="22" fill="none" stroke="'+rim+'" stroke-width="1.3" stroke-opacity=".8"/>');
+      for(const [index,kind] of kinds.entries()){
+        const posX=occupied?x+(double?(index===0?-12:12):14):
+          x+(double?(index===0?-9:9):0);
+        const posY=occupied?y-16:y;
+        const icon=kind==='gift'?'⭐':'🎟️',stroke=kind==='gift'?'#f6d77b':'#a3ddff';
+        const radius=double||occupied?9.3:13.2;
+        push('<circle cx="'+posX+'" cy="'+posY+'" r="'+radius+'" fill="#102c3c" stroke="'+stroke+'" stroke-width="1.9"/>'+
+          '<text x="'+posX+'" y="'+(posY+4)+'" font-size="'+(double||occupied?11:16)+'" text-anchor="middle">'+icon+'</text>');
+      }
+      if(!occupied){
+        push('<circle cx="'+(x+12)+'" cy="'+(y+12)+'" r="5.4" fill="#24734f" stroke="#ebffdf" stroke-width="1.2"/>'+
+          '<text x="'+(x+12)+'" y="'+(y+15)+'" text-anchor="middle" font-size="9" fill="#fff" font-weight="900">✓</text>');
+      }
+      push('</g>');
+    }
   }
   boardSvg.innerHTML=board.join('');
   lastMotionDuration=pieceAnimator.play(motions,palette);
