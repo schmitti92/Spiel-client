@@ -1,0 +1,26 @@
+name: Firebase DOG designer level single-read guard
+on:
+  pull_request:
+    paths:
+      - 'DOG/designer-level-access.js'
+      - 'tests/dog-designer-level-access.test.mjs'
+      - '.github/workflows/firebase-dog-designer-level-single-read.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/designer-level-access.js'
+      - 'tests/dog-designer-level-access.test.mjs'
+      - '.github/workflows/firebase-dog-designer-level-single-read.yml'
+permissions:
+  contents: read
+jobs:
+  designer-level-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/designer-level-access.js
+      - run: node --test tests/dog-designer-level-access.test.mjs
