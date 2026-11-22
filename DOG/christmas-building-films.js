@@ -25,6 +25,20 @@ export const CHRISTMAS_BUILDING_FILMS=Object.freeze({
    ]),
    poster:'./weihnachtsevent-bilder/Wichtelwerkstatt_Stufe_3.png'
   })
+ }),
+ inn:Object.freeze({
+  3:Object.freeze({
+   fromLevel:2,
+   title:'Das vergessene Versprechen',
+   subtitle:'Das Geheimnis der Friedensherberge',
+   clips:Object.freeze([
+    './assets/szene1_untertitel.mp4',
+    './assets/szene2_untertitel.mp4',
+    './assets/szene3_untertitel.mp4',
+    './assets/szene4_untertitel.mp4'
+   ]),
+   poster:'./weihnachtsevent-bilder/Herberge_Stufe_3.png'
+  })
  })
 });
 export function christmasBuildingFilmForUpgrade(id,fromLevel,toLevel){
@@ -112,8 +126,10 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
  function showUpgrade(id,fromLevel,toLevel){
   const film=christmasBuildingFilmForUpgrade(id,fromLevel,toLevel);
   if(!film||!Array.isArray(film.clips)||film.clips.length===0||active||dialog.open)return false;
-  const name=id==='workshop'?'Wichtelwerkstatt':'Weihnachtsbäckerei';
-  dialog.querySelector('[data-film-heading]').textContent=(id==='workshop'?'🧸':'🍪')+' '+name.toUpperCase()+' · STUFE '+toLevel;
+  const buildingNames={bakery:'Weihnachtsbäckerei',workshop:'Wichtelwerkstatt',inn:'Friedensherberge'};
+  const buildingIcons={bakery:'🍪',workshop:'🧸',inn:'🕯️'};
+  const name=buildingNames[id]||'Weihnachtsgebäude';
+  dialog.querySelector('[data-film-heading]').textContent=(buildingIcons[id]||'🏠')+' '+name.toUpperCase()+' · STUFE '+toLevel;
   dialog.querySelector('[data-film-title]').textContent=film.title;
   dialog.querySelector('[data-film-subtitle]').textContent=film.subtitle+' · Ausbau '+fromLevel+' → '+toLevel+' · '+film.clips.length+' '+(film.clips.length===1?'Szene':'Szenen');
   video.muted=false;
