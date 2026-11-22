@@ -7,6 +7,7 @@ import {snapshotPieces,planPieceMotions,createPieceAnimator} from './piece-anima
 import {loadMotionMode,saveMotionMode,applyMotionMode} from './motion-settings.js?v=1';
 import {createDogVisualFeedback} from './ui-animations.js?v=2';
 import {dogMoveBlockReason} from './invalid-move-reasons.js?v=2';
+import {dogBoardActionMatchesDestination} from './board-action-targets.js?v=1';
 import {DOG_MOVE_HINTS_KEY,readDogMoveHints,writeDogMoveHints,dogLegalTargets} from './move-hints.js?v=1';
 import {summarizeDogVictory} from './victory-summary.js?v=3';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,botAction,completedDogSeat} from './engine.js?v=6';
@@ -1097,12 +1098,11 @@ $('board').addEventListener('click',e=>{
  // Pawn IDs are stable across all colors; with an empty fourth color the
  // pawn's ID may not equal its index in the shortened pieces array.
  const selectedPawn=game.pieces.find(piece=>piece.id===selectedPiece);
- const matches=available.map((m,i)=>({m,i})).filter(({m})=>{
-  if(m.pieceId!==selectedPiece||!selectedPawn)return false;
-  if(m.type==='swap')return !!node&&m.targetId===Number(node.dataset.piece);
-  if(m.type==='start')return !node&&dest?.key==='track:'+(selectedPawn.owner*16);
-  return dest&&['move','seven-step'].includes(m.type)&&m.to===dest.key&&(dest.seat===undefined||dest.seat===selectedPawn.owner);
- });
+ // Treat the pawn under the finger as an occupied FIELD, including when
+ // a 13/1/11 spawns onto a foreign-colour pawn and captures it.
+ const tappedPawnId=node?Number(node.dataset.piece):null;
+ const matches=available.map((m,i)=>({m,i})).filter(({m})=>
+  dogBoardActionMatchesDestination(m,selectedPawn,dest,tappedPawnId));
  if(matches.length===1){onMove(matches[0].i);return;}
  if(matches.length>1){
   chooseDogMove(matches,'Mehrere erlaubte Wege führen auf dieses Feld. Wähle die Variante.');
