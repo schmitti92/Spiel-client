@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const script=readFileSync(new URL('../DOG/christmas-discovery.js',import.meta.url),'utf8');
-const {dogChristmasFoundMarkers,newDogChristmasDiscoveries}=await import('data:text/javascript,'+encodeURIComponent(script));
+const {dogChristmasFoundMarkers,newDogChristmasDiscoveries,describeDogChristmasDiscovery,createDogChristmasDiscoveryPopup}=await import('data:text/javascript,'+encodeURIComponent(script));
 test('only verified found positions are marked; hidden field positions remain secret',()=>{
  const snap={enabled:true,foundGiftFields:[3,3,0,12,90],foundScratchFields:[12,15,16],giftFields:[21],scratchFields:[22]};
  assert.deepEqual(dogChristmasFoundMarkers(snap),[
@@ -13,23 +13,79 @@ test('only verified found positions are marked; hidden field positions remain se
  ]);
  assert.deepEqual(dogChristmasFoundMarkers(null),[]);
 });
-test('only newer, personally collected discoveries produce congratulations',()=>{
+test('only NEW Render-confirmed human discoveries notify everybody in the room',()=>{
+ const players=[{seat:0,name:'Chris',bot:false},{seat:1,name:'Vanessa',bot:false},
+  {seat:2,name:'DOG-Bot',bot:true},{seat:3,name:'David',bot:false}];
  const previous={enabled:true,eventSerial:8};
- const next={enabled:true,eventSerial:11,activity:[
+ const next={enabled:true,eventSerial:12,activity:[
   {id:8,type:'gift',field:5,seat:0},
   {id:9,type:'gift',field:9,seat:1,earnedTenths:10},
   {id:10,type:'scratch',field:13,seat:1,tier:'premium'},
-  {id:11,type:'scratch',field:25,seat:2}
+  {id:11,type:'scratch',field:25,seat:2},
+  {id:12,type:'gold',field:29,seat:3,amount:500}
  ]};
- assert.deepEqual(newDogChristmasDiscoveries(previous,next,1).map(e=>e.id),[9,10]);
- assert.deepEqual(newDogChristmasDiscoveries(next,next,1),[]);
- assert.deepEqual(newDogChristmasDiscoveries(null,next,1),[]);
- assert.deepEqual(newDogChristmasDiscoveries(previous,next,0),[]);
- assert.deepEqual(newDogChristmasDiscoveries(previous,{...next,eventSerial:7},1),[]);
+ assert.deepEqual(newDogChristmasDiscoveries(previous,next,players).map(e=>e.id),[9,10,12]);
+ assert.deepEqual(newDogChristmasDiscoveries(next,next,players),[]);
+ assert.deepEqual(newDogChristmasDiscoveries(null,next,players),[],'joining never replays old prizes');
+ assert.deepEqual(newDogChristmasDiscoveries(previous,{...next,eventSerial:7},players),[]);
+ assert.deepEqual(newDogChristmasDiscoveries(previous,next,null),[]);
+ // The same snapshot has one event ID per claim; never repeat duplicates.
+ const duplicates={...next,activity:[...next.activity,next.activity[1]]};
+ assert.deepEqual(newDogChristmasDiscoveries(previous,duplicates,players).map(e=>e.id),[9,10,12]);
 });
-test('popup is only client presentation and does not request or write game state',()=>{
- assert.doesNotMatch(script,/fetch\(|getIdToken|firebase|sendOnlineDogAction/);
- assert.match(script,/Herzlichen Glückwunsch|Weihnachtslicht|Rubbellos-Feld/);
+
+test('each dialog shows the correct named player and the server-confirmed reward',()=>{
+ const players=[{seat:0,name:'Chris',bot:false},{seat:1,name:'Vanessa',bot:false}];
+ const light=describeDogChristmasDiscovery({type:'gift',seat:0,earnedTenths:25},players);
+ const gold=describeDogChristmasDiscovery({type:'gold',seat:1,amount:2000},players);
+ const scratch=describeDogChristmasDiscovery({type:'scratch',seat:1,tier:'medium'},players);
+ const double=describeDogChristmasDiscovery({type:'scratch',seat:0,tier:'double'},players);
+ assert.match(light.message,/Chris.*2,5 Weihnachtslichter/);
+ assert.match(gold.message,/Vanessa.*2\\.000 Goldmünzen/);
+ assert.match(scratch.message,/Vanessa.*mittleres Rubbellos/);
+ assert.match(double.message,/Chris.*Doppellos/);
+ assert.equal(describeDogChristmasDiscovery({type:'gold',seat:2,amount:500},players),null);
+});
+
+test('popup waits for explicit confirmation and queues separate room rewards',()=>{
+ const listeners={};
+ const popup={hidden:true,open:false,dataset:{},
+  showModal(){this.open=true;},close(){this.open=false;},
+  addEventListener(name,fn){listeners[name]=fn;}};
+ const confirm={addEventListener(name,fn){this.click=fn;},focus(){this.focused=true;}};
+ const elements={'dog-christmas-find-popup':popup,'dog-christmas-find-icon':{textContent:''},
+  'dog-christmas-find-title':{textContent:''},'dog-christmas-find-winner':{textContent:''},
+  'dog-christmas-find-message':{textContent:''},'dog-christmas-find-confirm':confirm};
+ const document={getElementById:id=>elements[id]||null};
+ const ui=createDogChristmasDiscoveryPopup(document);
+ const players=[{seat:0,name:'Chris',bot:false},{seat:1,name:'Vanessa',bot:false}];
+ ui.show([{type:'gift',seat:0,earnedTenths:10},{type:'scratch',seat:1,tier:'premium'}],players);
+ assert.equal(popup.open,true);
+ assert.equal(elements['dog-christmas-find-winner'].textContent,'🏆 Chris');
+ assert.equal(elements['dog-christmas-find-message'].textContent.includes('1 Weihnachtslichter'),true);
+ assert.equal(confirm.focused,true);
+ listeners.cancel({preventDefault(){this.cancelled=true;}});
+ // Only confirming the active prize proceeds to the next one.
+ confirm.click();
+ assert.equal(popup.open,true);
+ assert.equal(elements['dog-christmas-find-winner'].textContent,'🏆 Vanessa');
+ confirm.click();
+ assert.equal(popup.open,false);
+ assert.equal(popup.hidden,true);
+ ui.show([{type:'gold',seat:0,amount:1}],players);
+ ui.reset();
+ assert.equal(popup.open,false);
+ assert.equal(popup.hidden,true);
+});
+
+test('popup only reports server-provided rewards; never requests or writes game state',()=>{
+ assert.doesNotMatch(script,/fetch\\(|getIdToken|firebase|sendOnlineDogAction|setTimeout/);
+ assert.match(script,/Weihnachtslichter|Rubbellos|Goldmünzen/);
+ const html=readFileSync(new URL('../DOG/index.html',import.meta.url),'utf8');
+ const app=readFileSync(new URL('../DOG/app.js',import.meta.url),'utf8');
+ assert.match(html,/<dialog id="dog-christmas-find-popup"/);
+ assert.match(html,/id="dog-christmas-find-confirm"[^>]*>✓ Bestätigen/);
+ assert.match(app,/newDogChristmasDiscoveries\\(previousChristmas,onlineChristmas,game\\?\\.players\\)/);
 });
 
 test('old verified activity shows previously collected fields even without the new stored arrays',()=>{
