@@ -3,8 +3,8 @@ import {CARD_EDITIONS,CARD_EDITION,isCardEditionUnlocked,loadCardEdition,saveCar
 import {enableHandTouchGestures} from './hand-gestures.js?v=2';
 import {mountDogEmojiGame,showDogEmoji,showDogEmojiError} from './emoji-game.js?v=4';
 import {boardGestureTarget,nearestTrackPawn,nearestBoardField,boardEventPoint} from './board-gesture-math.js?v=3';
-import {snapshotPieces,planPieceMotions,createPieceAnimator,shouldAnimatePieceUpdate,opponentMoveNotice} from './piece-animations.js?v=4';
-import {loadMotionMode,saveMotionMode,applyMotionMode} from './motion-settings.js?v=1';
+import {snapshotPieces,planPieceMotions,createPieceAnimator,shouldAnimatePieceUpdate,opponentMoveNotice,isDogBotMove} from './piece-animations.js?v=5';
+import {loadMotionMode,saveMotionMode,applyMotionMode,readDogBotMotion,writeDogBotMotion} from './motion-settings.js?v=2';
 import {createDogVisualFeedback} from './ui-animations.js?v=2';
 import {dogMoveBlockReason} from './invalid-move-reasons.js?v=2';
 import {dogBoardActionMatchesDestination} from './board-action-targets.js?v=1';
@@ -270,6 +270,7 @@ const pieceAnimator=createPieceAnimator(boardSvg);
 const visualFeedback=createDogVisualFeedback(document);
 applyMotionMode(loadMotionMode());
 let lastBoardKey=null,lastBoardSnapshot=null,lastBoardRevision=null,lastBoardMatch=null,lastMotionDuration=0;
+let botAnimationsOn=readDogBotMotion(window.localStorage),lastAnimatedMoveBot=false;
 let postponedBoardRedraw=null,opponentMoveNoticeTimer=null;
 // Only public history and the already-received room state are used for this
 // visual overlay. No extra Render command or Firebase listener is needed.
@@ -396,6 +397,28 @@ $('dog-move-hints-toggle')?.addEventListener('click',()=>{
  syncDogMoveHints();
 });
 updateDogHintLever();
+// Both switches live under Extras > Magie. They change only local rendering.
+function updateDogBotAnimationSwitch(){
+ const button=$('dog-bot-animation-toggle');
+ if(!button)return;
+ button.setAttribute('aria-checked',String(botAnimationsOn));
+ button.classList.toggle('is-on',botAnimationsOn);
+ $('dog-bot-animation-state').textContent=botAnimationsOn?'AN':'AUS';
+ const description=$('dog-bot-animation-description');
+ if(description)description.textContent=botAnimationsOn?
+   'Bot-Spielzüge werden Schritt für Schritt animiert.':
+   'Bot-Figuren springen ohne Bewegung direkt zum Zielfeld.';
+}
+$('dog-bot-animation-toggle')?.addEventListener('click',()=>{
+ botAnimationsOn=writeDogBotMotion(!botAnimationsOn,window.localStorage);
+ updateDogBotAnimationSwitch();
+ if(!botAnimationsOn&&lastAnimatedMoveBot){
+  pieceAnimator.cancel();lastMotionDuration=0;lastAnimatedMoveBot=false;
+  const notice=$('dog-opponent-move-notice');
+  if(notice)notice.classList.remove('is-visible');
+ }
+});
+updateDogBotAnimationSwitch();
 const currentLook=()=>resolveAppearance(appearance);
 const displayColors=()=>currentLook().pieces.colors;
 const cardsLabel=t=>t==='swap'?'⇄':t==='joker'?'★':t==='1/11'?'1/11':t;
@@ -413,7 +436,7 @@ function newGame(){
   humans=Number($('human-count').value)||1;
   game=createGame({names:['Du','Spieler Blau','Spieler Grün','Spieler Gelb'],bots:[0,1,2,3].map(i=>i>=humans)});
   revealed=true;selectedCard=null;selectedPiece=null;jokerAs=null;lastTurn=null;
-  pieceAnimator.cancel();visualFeedback.reset();lastBoardKey=null;lastBoardSnapshot=null;lastBoardRevision=null;lastBoardMatch=null;lastMotionDuration=0;
+  pieceAnimator.cancel();visualFeedback.reset();lastBoardKey=null;lastBoardSnapshot=null;lastBoardRevision=null;lastBoardMatch=null;lastMotionDuration=0;lastAnimatedMoveBot=false;
   if(postponedBoardRedraw){clearTimeout(postponedBoardRedraw);postponedBoardRedraw=null;}
   if(opponentMoveNoticeTimer){clearTimeout(opponentMoveNoticeTimer);opponentMoveNoticeTimer=null;}
   $('dog-opponent-move-notice')?.remove();
@@ -702,8 +725,13 @@ function drawBoard(){
     }
   }
   boardSvg.innerHTML=board.join('');
-  lastMotionDuration=pieceAnimator.play(motions,palette);
-  showOpponentMove(motions);
+  // The local bot switch is independent of the global motion setting.
+  // Real players' moves still animate even if they capture a bot pawn.
+  const movedByBot=isDogBotMove(game,motions);
+  const visibleMotions=movedByBot&&!botAnimationsOn?[]:motions;
+  lastMotionDuration=pieceAnimator.play(visibleMotions,palette);
+  lastAnimatedMoveBot=movedByBot&&lastMotionDuration>0;
+  showOpponentMove(visibleMotions);
   syncDogMoveHints();
 }
 
