@@ -596,7 +596,18 @@ export function initChristmasScratch(){
   return {amount:Number.isSafeInteger(candidate)&&candidate>=0?candidate:null,
    verified:false};
  }
+ let lastReportedVoucherBadge=null,lastReportedVoucherUid=null;
+ function reportScratchVoucherBadge(){
+  const current=account();
+  if(!current||!status||window.DOGChristmasDev?.isActive())return;
+  const values=[...Object.values(status.vouchers||{}),...Object.values(status.variantVouchers||{})];
+  const amount=values.reduce((sum,n)=>sum+(Number.isSafeInteger(n)&&n>0?n:0),0);
+  if(lastReportedVoucherUid===current.uid&&lastReportedVoucherBadge===amount)return;
+  lastReportedVoucherBadge=amount;lastReportedVoucherUid=current.uid;
+  window.dispatchEvent(new CustomEvent('dog-christmas-badges-update',{detail:{scratch:amount}}));
+ }
  function drawShop(){
+  reportScratchVoucherBadge();
   root.replaceChildren();
   const statsButton=$('scratch-stats-toggle');
   if(statsButton&&!statsButton.dataset.connected){
