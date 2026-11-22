@@ -26,6 +26,7 @@ on:
       - 'tests/dog-board-backdrops.test.mjs'
       - 'tests/dog-ui-shell.test.mjs'
       - 'tests/dog-official-rules.test.mjs'
+      - 'tests/dog-startfield-color-protection.test.mjs'
       - 'tests/dog-online-sync.test.mjs'
       - 'tests/dog-collection.test.mjs'
       - 'tests/dog-christmas-rewards.test.mjs'
@@ -61,6 +62,7 @@ on:
       - 'tests/dog-board-backdrops.test.mjs'
       - 'tests/dog-ui-shell.test.mjs'
       - 'tests/dog-official-rules.test.mjs'
+      - 'tests/dog-startfield-color-protection.test.mjs'
       - 'tests/dog-online-sync.test.mjs'
       - 'tests/dog-collection.test.mjs'
   workflow_dispatch:
@@ -112,4 +114,4 @@ jobs:
       - run: node --test tests/dog-hand-gestures.test.mjs
       - run: node --test tests/dog-board-gestures.test.mjs tests/dog-green-moves.test.mjs
       - run: node --test tests/dog-piece-animations.test.mjs tests/dog-motion-settings.test.mjs tests/dog-ui-animations.test.mjs
-      - run: node --test tests/dog-board-layout.test.mjs tests/dog-board-builder.test.mjs tests/dog-board-editor-ui.test.mjs tests/dog-board-assistants.test.mjs tests/dog-board-group-move.test.mjs tests/dog-appearance.test.mjs tests/dog-official-rules.test.mjs tests/dog-online-sync.test.mjs
+      - run: node --test tests/dog-board-layout.test.mjs tests/dog-board-builder.test.mjs tests/dog-board-editor-ui.test.mjs tests/dog-board-assistants.test.mjs tests/dog-board-group-move.test.mjs tests/dog-appearance.test.mjs tests/dog-official-rules.test.mjs tests/dog-startfield-color-protection.test.mjs tests/dog-online-sync.test.mjs
