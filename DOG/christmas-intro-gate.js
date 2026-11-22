@@ -240,6 +240,10 @@ export function showChristmasIntro(onDone=()=>{},onLater=()=>{}){
 export function mountChristmasLinks(){
  let pending=false,pendingAgain=false,shownUid=null,activeUid=null;
  let lastEligibilityReadAt=0,lastEligibilityUid=null;
+ // The victory status must originate from a fetch STARTED after the
+ // confirmed match-finished signal. A pre-victory in-flight GET is never
+ // valid evidence for showing the introductory Christmas film.
+ let victoryGeneration=0,verifiedVictory=null;
  const ELIGIBILITY_FOCUS_MIN_MS=120000; // Focus/visibility reuse eligibility; actual match completion forces an immediate check.
  // The film belongs to the actual DOG game AFTER its winner ceremony.
  // This module also runs in the shared hub, which has no ceremony at all.
@@ -248,10 +252,16 @@ export function mountChristmasLinks(){
  let matchFinishedOnThisPage=false,ceremonyDismissed=false,introDeferred=false;
  const ceremonyOpen=()=>!!victoryDialog?.open;
  const afterVictory=()=>Boolean(victoryDialog&&matchFinishedOnThisPage&&ceremonyDismissed&&!ceremonyOpen());
+ const showVerifiedIntro=(state,uid)=>{
+  if(state?.eligible&&state.introReady&&!state.completed&&
+     !introVisible&&!introDeferred&&afterVictory())
+   showChristmasIntro(()=>{shownUid=uid;},()=>{introDeferred=true;});
+ };
  async function refresh({force=false}={}){
   const p=profile();
   if(!p){
    shownUid=null;activeUid=null;matchFinishedOnThisPage=false;ceremonyDismissed=false;introDeferred=false;
+   verifiedVictory=null;
    lastEligibilityReadAt=0;lastEligibilityUid=null;
    document.documentElement.classList.remove('dog-christmas-portal-open');return;
   }
@@ -261,18 +271,21 @@ export function mountChristmasLinks(){
   pending=true;
   if(activeUid!==uid){
    activeUid=uid;matchFinishedOnThisPage=false;ceremonyDismissed=false;introDeferred=false;
+   verifiedVictory=null;
   }
+  const queriedVictoryGeneration=victoryGeneration;
   try{
    const state=await api();
    if(profile()?.user?.uid!==uid)return;
    lastEligibilityReadAt=Date.now();
    lastEligibilityUid=uid;
+   if(matchFinishedOnThisPage&&queriedVictoryGeneration===victoryGeneration)
+    verifiedVictory={uid,state,at:lastEligibilityReadAt};
    // Chris keeps early event access. The cinematic is a separate milestone:
    // show it only after a genuinely completed, verified online DOG match.
    const portalUnlocked=state.eligible&&(state.completed||state.previewGranted);
    document.documentElement.classList.toggle('dog-christmas-portal-open',Boolean(portalUnlocked));
-   if(state.eligible&&state.introReady&&!state.completed&&!introVisible&&!introDeferred&&afterVictory())
-    showChristmasIntro(()=>{shownUid=uid;},()=>{introDeferred=true;});
+   showVerifiedIntro(state,uid);
   }catch(e){
    document.documentElement.classList.remove('dog-christmas-portal-open');
    console.warn('[Christmas entry] Check unavailable:',e?.message||e);
@@ -283,12 +296,28 @@ export function mountChristmasLinks(){
  }
  window.addEventListener('spielonline-change',()=>void refresh());
  window.addEventListener('dog-match-finished',()=>{
-  if(victoryDialog)matchFinishedOnThisPage=true;
+  if(victoryDialog){
+   matchFinishedOnThisPage=true;
+   victoryGeneration++;
+   verifiedVictory=null;
+  }
   void refresh({force:true});
  });
  // Only the actual closing of the finished-match ceremony may reveal the film.
  victoryDialog?.addEventListener('close',()=>{
   if(matchFinishedOnThisPage)ceremonyDismissed=true;
+  const uid=profile()?.user?.uid;
+  // If the server already verified the just-ended match, closing the
+  // ceremony only changes LOCAL presentation and needs no second
+  // Firestore-backed eligibility request. Older evidence is never used.
+  if(verifiedVictory?.uid===uid&&uid&&
+     Date.now()-verifiedVictory.at>=0&&Date.now()-verifiedVictory.at<60000){
+   showVerifiedIntro(verifiedVictory.state,uid);
+   return;
+  }
+  // A verification already in flight will offer the film on completion.
+  // In-flight pre-victory checks schedule an immediate forced follow-up.
+  if(pending)return;
   void refresh({force:true});
  });
  window.addEventListener('focus',()=>void refresh());
