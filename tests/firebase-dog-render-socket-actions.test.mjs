@@ -11,6 +11,7 @@ assert.ok(begin>0&&end>begin,'the real DOG client must contain the socket/HTTP s
 
 function harness({socketEnabled=true,socketReady=true}={}){
  const http=[],sent=[],timers=[];
+ let currentUid='alice';
  const socket={readyState:socketReady?1:3,
   send(raw){sent.push(JSON.parse(raw))}};
  const dispatcher=createDogSocketActionDispatcher({
@@ -24,7 +25,7 @@ function harness({socketEnabled=true,socketReady=true}={}){
   socketSupportsDogActions:socketEnabled,
   dogSocketActions:dispatcher,
   acceptedMatchId:'verified-match-id',matchHint:'ignore',
-  game:{revision:42},user:()=>({uid:'alice'}),socketAuthenticatedUid:'alice',
+  game:{revision:42},user:()=>({uid:currentUid}),socketAuthenticatedUid:'alice',
   crypto:{randomUUID:()=> 'dog-action-unique-000001'},
   hubRequest:async(path,method,payload)=>{
    http.push({path,method,payload});
@@ -34,6 +35,7 @@ function harness({socketEnabled=true,socketReady=true}={}){
  vm.runInNewContext(source.slice(begin,end)+
   '\nthis.sendOnlineDogAction=sendOnlineDogAction;',ctx);
  return {ctx,socket,sent,http,timers,dispatcher,
+  setUid:uid=>{currentUid=uid},
   send:action=>ctx.sendOnlineDogAction(action)};
 }
 
@@ -154,4 +156,14 @@ test('Move and research actions share one safe dispatcher; socket room subscript
  assert.match(source,/if\(\(!socketReady\|\|firstRoomTimedOut\)/);
  const html=readFileSync(new URL('../DOG/index.html',import.meta.url),'utf8');
  assert.match(html,/app\.js\?v=87/);
+});
+
+test('A Firebase login switch during socket failure must never replay another player\'s move',async()=>{
+ const h=harness();
+ const pending=h.send({type:'move',pieceId:1});
+ h.setUid('bob');
+ h.dispatcher.disconnected(h.socket);
+ await assert.rejects(pending,/PROFILE_CHANGED/);
+ assert.equal(h.http.length,0,
+  'no action from Alice may be retried with Bob\'s bearer token');
 });
