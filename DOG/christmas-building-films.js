@@ -4,6 +4,7 @@
  * confirms the exact transition. Previews and server refreshes never trigger it.
  * Videos are static GitHub Pages assets: no Firebase access is needed.
  */
+import {markDogVideoSeen} from './video-library-watched.js?v=1';
 export const CHRISTMAS_BUILDING_FILMS=Object.freeze({
  bakery:Object.freeze({
   5:Object.freeze({
@@ -189,6 +190,7 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
   if(clipIndex<clips().length)loadClip(true);
   else{
    finished=true;
+   if(!failed)void markDogVideoSeen('building-'+active.id);
    status.textContent='✨ '+(clips().length===1?'Die Geschichte ist':'Alle '+clips().length+' Szenen sind')+' abgeschlossen! Du kannst den Film erneut ansehen oder zum Dorf zurückkehren.';
    syncPlayButton();
   }
