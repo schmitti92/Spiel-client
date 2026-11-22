@@ -1,6 +1,6 @@
 import {DOG_UI_FEATURES,dogFeatureById} from './ui-features.js?v=2';
 import {renderDogEventOverview} from './christmas-event-overview.js?v=1';
-import {initDogVideoLibrary} from './video-library.js?v=1';
+import {initDogVideoLibrary} from './video-library.js?v=2';
 
 /** Cosmetic cockpit shell: never writes DOG game state or online messages. */
 const $=id=>document.getElementById(id);
