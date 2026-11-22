@@ -4,11 +4,17 @@ on:
     branches: [main]
     paths:
       - 'DOG/engine.js'
+      - 'DOG/app.js'
+      - 'DOG/board-action-targets.js'
+      - 'tests/dog-occupied-start-click.test.mjs'
       - 'tests/dog-startfield-color-protection.test.mjs'
       - '.github/workflows/dog-startfield-protection.yml'
   pull_request:
     paths:
       - 'DOG/engine.js'
+      - 'DOG/app.js'
+      - 'DOG/board-action-targets.js'
+      - 'tests/dog-occupied-start-click.test.mjs'
       - 'tests/dog-startfield-color-protection.test.mjs'
       - '.github/workflows/dog-startfield-protection.yml'
   workflow_dispatch:
@@ -20,5 +26,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --check DOG/engine.js
-      - run: node --test tests/dog-startfield-color-protection.test.mjs tests/dog-official-rules.test.mjs
+      - run: node --check DOG/engine.js && node --check DOG/app.js && node --check DOG/board-action-targets.js
+      - run: node --test tests/dog-startfield-color-protection.test.mjs tests/dog-occupied-start-click.test.mjs tests/dog-official-rules.test.mjs
