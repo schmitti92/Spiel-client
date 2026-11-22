@@ -44,7 +44,15 @@ test('DOG event visibly quotes costs but still does not impersonate live purchas
  const html=readFileSync(new URL('../DOG/christmas-event.html',import.meta.url),'utf8');
  const script=readFileSync(new URL('../DOG/christmas-event.js',import.meta.url),'utf8');
  assert.match(html,/id="building-price-overview"/);
- assert.ok(html.includes('src="./christmas-event.js?v='));
+ // The Christmas bundle is intentionally loaded only after server-verified
+ // entitlement; eagerly loading it bypasses the current security gate.
+ const gate=readFileSync(new URL('../DOG/christmas-intro-gate.js',import.meta.url),'utf8');
+ assert.match(html,/guardChristmasEventPage\(\)/,
+  'page must launch through the authenticated Christmas eligibility gate');
+ assert.match(gate,/await import\('\.\/christmas-event\.js\?v=\d+'\)/,
+  'real event script is loaded only after the verified gate admits the player');
+ assert.doesNotMatch(html,/src="\.\/christmas-event\.js\?v=/,
+  'do not reintroduce an unconditional Christmas script load');
  assert.match(script,/christmasUpgradeCost\(level\)/);
  assert.match(script,/data-building-upgrade-price/);
  assert.doesNotMatch(html,/id="panel-gifts"|id="tab-gifts"/,'obsolete gifts information tab stays removed');
