@@ -9,7 +9,7 @@ import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewa
 import {initChristmasTreeFilms} from './christmas-tree-films.js?v=2';
 import {initChristmasBuildingFilms} from './christmas-building-films.js?v=6';
 import {initChristmasStory} from './christmas-story.js?v=7';
-import {initChristmasScratch} from './christmas-scratch-ui.js?v=86';
+import {initChristmasScratch} from './christmas-scratch-ui.js?v=87';
 import {initDogPlayerLevels} from './christmas-player-levels-ui.js?v=10';
 import {initChristmasResearch} from './christmas-research-ui.js?v=11';
 import {initChristmasContentZoom} from './christmas-content-zoom.js?v=1';
