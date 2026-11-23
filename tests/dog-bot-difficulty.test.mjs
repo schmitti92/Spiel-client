@@ -216,3 +216,17 @@ test('Magie menu sends only host-owned online difficulty changes to Render',()=>
  assert.match(app,/hubRequest\('\/dog\/bot-difficulty','POST'/);
  assert.match(app,/if\(!online\|\|!onlineRoomHost\|\|!acceptedMatchId\)return/);
 });
+
+test('DOG easy and expert bots continue a playable seven rather than cancelling forever',()=>{
+ let game=fixture(['7']);pawn(game,4,'track',20);
+ const first=legalActions(game,1).find(action=>action.type==='seven');
+ assert.ok(first);
+ game=takeAction(game,1,first);
+ assert.equal(game.phase,'seven');
+ assert.ok(legalActions(game,1).some(action=>action.type==='seven-cancel'));
+ for(const level of ['easy','medium','expert']){
+  const result=chooseDogBotAction(game,1,level,()=>.999);
+  assert.notEqual(result?.type,'seven-cancel',level+' must finish legal seven moves');
+  assert.ok(['seven-step','seven-finish'].includes(result?.type));
+ }
+});
