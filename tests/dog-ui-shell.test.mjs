@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {resolve,dirname} from 'node:path';
 import {DOG_UI_FEATURES,dogFeatureById} from '../DOG/ui-features.js';
+import {dogExchangePrompt} from '../DOG/exchange-prompt.js';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..','DOG');
 const html=readFileSync(resolve(root,'index.html'),'utf8');
@@ -96,4 +97,52 @@ test('Magie contains individual bot levels without changing online rules',()=>{
  assert.ok(app.includes('chooseDogBotAction(game,i,dogBotDifficultyForSeat(botDifficulties,i))'));
  assert.ok(app.includes('select.disabled=online'));
  assert.ok(app.includes('saveDogBotDifficulty(bot.seat,select.value,window.localStorage)'));
+});
+
+test('DOG card handoff window appears over board without intercepting card or board touches',()=>{
+ const board=html.indexOf('id="board" class="board-svg"');
+ const dialog=html.indexOf('id="dog-exchange-prompt"');
+ const teams=html.indexOf('class="teams"');
+ assert.ok(board>=0&&dialog>board&&teams>dialog,'overlay must be inside board section after SVG');
+ for(const id of ['dog-exchange-prompt','dog-exchange-prompt-title','dog-exchange-prompt-target','dog-exchange-prompt-guidance'])
+  assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1,id);
+ assert.match(html,/<section id="dog-exchange-prompt"[^>]*role="status"[^>]*hidden>/);
+ assert.match(html,/exchange-prompt\.css\?v=1/);
+ assert.match(html,/app\.js\?v=117/);
+ const promptCss=readFileSync(resolve(root,'exchange-prompt.css'),'utf8');
+ const app=readFileSync(resolve(root,'app.js'),'utf8');
+ assert.match(promptCss,/\.dog-exchange-prompt\s*\{/);
+ assert.match(promptCss,/pointer-events:none/,'notice must never block card or board touches');
+ assert.match(promptCss,/prefers-reduced-motion/);
+ assert.match(app,/renderHand\(\);drawBoard\(\);syncDogExchangePrompt\(\)/);
+ assert.match(app,/if\(!info\)\{panel.hidden=true;return;\}/);
+ assert.match(app,/Tippe zuerst auf „Karten ansehen“/);
+});
+
+test('exchange notice shows correct recipient in solo and teams, then disappears after exchange',()=>{
+ const game={
+  mode:'solo3',phase:'exchange',
+  players:['Chris','Vanessa','David','Alex'].map((name,seat)=>({seat,name,inactive:seat===2,bot:false})),
+  hands:[[{id:8,type:'5'}],[{id:9,type:'7'}],[],[{id:12,type:'10'}]],
+  exchanges:[null,null,true,null]
+ };
+ const solo=dogExchangePrompt(game,1);
+ assert.equal(solo?.recipientSeat,3,'inactive player must be skipped clockwise');
+ assert.equal(solo?.recipientName,'Alex');
+ assert.equal(solo?.title,'Gib eine Karte an den nächsten Spieler');
+ const chosen=dogExchangePrompt(game,0,8);
+ assert.equal(chosen?.selected,true);
+ assert.match(chosen.guidance,/Karte weitergeben/);
+ assert.equal(dogExchangePrompt(game,0,800)?.selected,false);
+ game.exchanges[0]={id:8,type:'5'};
+ assert.equal(dogExchangePrompt(game,0),null,'already exchanged hand no longer gets prompt');
+ game.exchanges[0]=false;
+ assert.ok(dogExchangePrompt(game,0),'online private exchange state uses false');
+ game.mode='teams4';game.players[2].inactive=false;
+ assert.equal(dogExchangePrompt(game,0)?.recipientSeat,2);
+ assert.equal(dogExchangePrompt(game,0)?.title,'Gib eine Karte an deinen Partner');
+ game.phase='play';
+ assert.equal(dogExchangePrompt(game,0),null);
+ game.phase='exchange';game.players[0].bot=true;
+ assert.equal(dogExchangePrompt(game,0),null,'bots never receive UI instructions');
 });
