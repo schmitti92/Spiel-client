@@ -2,7 +2,7 @@
  * Christmas reveals after a finished, server-verified DOG online match.
  * Only the server can confirm the intro and the portal unlock.
  */
-import {markDogVideoSeen} from './video-library-watched.js?v=2';
+import {markDogVideoSeen} from './video-library-watched.js?v=3';
 const BASE=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const css=[
 'html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christmas-portal-open) [data-meta-album-link],html:not(.dog-christmas-portal-open) #dog-room-christmas,html:not(.dog-christmas-portal-open) #dog-christmas-event-link,html:not(.dog-christmas-portal-open) #dog-player-level-link{display:none!important}',
@@ -340,7 +340,7 @@ export function guardChristmasEventPage(){
   if(admitted)return;
   admitted=true;gate.remove();
   document.documentElement.classList.add('dog-christmas-page-ready','dog-christmas-portal-open');
-  await import('./christmas-event.js?v=187');
+  await import('./christmas-event.js?v=188');
  };
  const check=async()=>{
   if(admitted||checking)return;
