@@ -341,7 +341,8 @@ export function initChristmasScratch(){
   if(!r.ok||data.ok!==true)throw Error(data.error||'SERVER_UNAVAILABLE');
   return data;
  }
- const otherStudio=createOtherScratchStudio({account,query,drawShop,showAlert,stage});
+ const otherStudio=createOtherScratchStudio({account,query,drawShop,showAlert,stage,
+  canManage:()=>canManageScratch});
  // Each special ticket has a separate editor AND a creator-checked
  // latest-edition section. These buttons do not poll Firestore.
  const editionManagers={};
@@ -2476,7 +2477,7 @@ export function initChristmasScratch(){
   void buy(option.tier,false,option.id);
  });
  $('scratch-refresh').addEventListener('click',()=>void load(true));
- $('scratch-gifts-settings-open').addEventListener('click',openGiftsSettings);
+ $('scratch-gifts-settings-open').addEventListener('click',()=>openScratchEditionSettings('gifts'));
  $('scratch-gifts-settings-close').addEventListener('click',()=>giftsDialog.close());
  $('scratch-gifts-settings-cancel').addEventListener('click',()=>giftsDialog.close());
  giftsDialog?.addEventListener('click',e=>{if(e.target===giftsDialog)giftsDialog.close()});
@@ -2579,7 +2580,7 @@ export function initChristmasScratch(){
   }catch(e){feedback.textContent='⚠️ '+scratchBuyError(e?.message||'Serverfehler');}
   finally{updateGiftsEditionPreview()}
  });
- $('scratch-snow-settings-open').addEventListener('click',openSnowSettings);
+ $('scratch-snow-settings-open').addEventListener('click',()=>openScratchEditionSettings('snow_collect'));
  $('scratch-snow-settings-close').addEventListener('click',()=>snowDialog.close());
  $('scratch-snow-settings-cancel').addEventListener('click',()=>snowDialog.close());
  snowDialog?.addEventListener('click',e=>{if(e.target===snowDialog)snowDialog.close()});
