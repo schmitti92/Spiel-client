@@ -13,7 +13,7 @@ const META=Object.freeze({
 });
 const labels={1:'🟤 Kategorie 1 · Einfach',2:'🔵 Kategorie 2 · Mittel',3:'🟡 Kategorie 3 · Premium'};
 const number=n=>Number(n||0).toLocaleString('de-DE');
-export function createOtherScratchStudio({account,query,drawShop,showAlert,stage}){
+export function createOtherScratchStudio({account,query,drawShop,showAlert,stage,canManage=()=>false}){
  let editions={},active='elf',busy=false;
  const editionManagers={};
  const dialog=document.createElement('dialog');
@@ -193,6 +193,7 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
  const open=variant=>{
   if(!META[variant])return;
   if(!account()){showAlert('🔐 Bitte zuerst im DOG-Profil anmelden.',variant);return}
+  if(!canManage()){showAlert('🔒 Nur freigeschaltete Rubbellos-Administratoren dürfen Auflagen verwalten.',variant);return}
   active=variant;showFields();
   fillCurrentValues(variant);
   $('oe-feedback').textContent='';
