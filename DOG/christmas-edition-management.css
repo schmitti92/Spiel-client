@@ -145,3 +145,20 @@
 .scratch-management-identity>button:hover{filter:brightness(1.15)}
 .scratch-management-identity small{color:#efe7d1;line-height:1.4}
 .scratch-management-identity p{margin:0;line-height:1.5;font-weight:650}
+
+/* Administration is a developer-tool, NEVER part of the normal scratch shop.
+ * The existing developer mode toggles html.dog-dev-active. Reinforce the
+ * render-time hidden state so even stale JS cannot show normal-player gear.
+ * This is visibility ONLY; Render independently authorizes all mutations. */
+html:not(.dog-dev-active) #scratch-management-hub,
+html:not(.dog-dev-active) #scratch-gifts-settings-open,
+html:not(.dog-dev-active) #scratch-snow-settings-open,
+html:not(.dog-dev-active) #scratch-other-edition-open,
+html:not(.dog-dev-active) #scratch-tic-edition-open,
+html:not(.dog-dev-active) .scratch-gifts-card-settings,
+html:not(.dog-dev-active) .scratch-other-edition-gear,
+html:not(.dog-dev-active) .scratch-tic-card-settings,
+html:not(.dog-dev-active) .scratch-snow-card-settings{
+ display:none!important;
+}
+#scratch-management-hub[hidden]{display:none!important}
