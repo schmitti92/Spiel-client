@@ -119,3 +119,8 @@
  border-color:#ffc5ae;color:white;font-size:clamp(13px,2.4vw,16px);
  box-shadow:0 4px 14px #0005;
 }
+
+#scratch-other-edition-dialog #oe-premium-feedback{
+ margin:2px 0 0;color:#ffedd2;line-height:1.5;font-weight:650;
+}
+#scratch-other-edition-dialog #oe-premium-feedback:empty{display:none}
