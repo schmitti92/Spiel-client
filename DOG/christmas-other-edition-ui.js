@@ -83,6 +83,7 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
      <div id="oe-status" class="scratch-gifts-edition-status" role="status" aria-live="polite"></div>
      <button id="oe-create" type="button" class="scratch-gifts-edition-create">📦 500er-Auflage verbindlich erstellen</button>
      <button id="oe-edit" type="button" class="scratch-gifts-edition-create" hidden>✏️ Aktuelle Restlose bearbeiten</button>
+     <button id="oe-retire-premium" type="button" class="scratch-other-edition-retire" hidden>🗑️ Aktuelle Premium-Auflage beenden</button>
      <p class="scratch-gifts-help">Bereits gekaufte Lose und die dazugehörigen Gewinnbeträge sind unveränderlich. Nur das Erstellerprofil darf die noch nicht verkauften Lose bearbeiten.</p>
      <p id="oe-feedback" class="scratch-gifts-settings-feedback" role="status" aria-live="polite"></p>
    </section>
@@ -155,6 +156,8 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
   $('oe-create').disabled=ongoing||busy;
   $('oe-edit').hidden=!ongoing;
   $('oe-edit').disabled=!ongoing||busy;
+  $('oe-retire-premium').hidden=active!=='premium_27'||!ongoing;
+  $('oe-retire-premium').disabled=busy||!ongoing;
   let hint='💡 Der feste Münzbetrag hat Vorrang vor den gewünschten Quoten. ';
   const [a,b,c]=[0,1,2].map(i=>Number($('oe-coin-'+i).value||0));
   if(active==='premium_27'){
@@ -238,6 +241,39 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
  $('oe-form').addEventListener('submit',event=>event.preventDefault());
  for(const input of dialog.querySelectorAll('input, select'))
   input.addEventListener('input',update);
+ async function retirePremiumEdition(){
+  if(busy||active!=='premium_27')return;
+  const previous=editions.premium_27;
+  if(!previous||previous.remaining<=0)return;
+  const warning='Aktuelle Premium-Auflage wirklich beenden?\n\n'+
+   previous.issued+' bereits ausgegebene Lose bleiben samt Gewinnen erhalten.\n'+
+   previous.remaining+' unverkaufte Lose werden aus dem Verkauf genommen.\n'+
+   'Danach kannst du sofort eine NEUE 500er-Premium-Auflage erstellen.\n\n'+
+   'Dieser Vorgang kann nicht rückgängig gemacht werden.';
+  if(!window.confirm(warning))return;
+  busy=true;update();
+  $('oe-feedback').textContent='🔄 Premium-Auflage wird sicher archiviert …';
+  try{
+   const result=await query('/editions/premium_27/retire',{
+    editionId:previous.id,expectedRevision:previous.revision,
+    confirmation:'RETIRE_PREMIUM_27'
+   });
+   if(result.otherEdition!==null||result.retiredEdition?.id!==previous.id)
+    throw Error('Die Serverbestätigung ist unvollständig. Bitte den Status neu laden.');
+   editions.premium_27=null;
+   $('oe-feedback').textContent='✅ Alte Premium-Auflage archiviert. Du kannst jetzt eine neue Auflage erstellen.';
+   drawShop();
+  }catch(error){
+   const code=String(error?.message||'SERVER_UNAVAILABLE');
+   $('oe-feedback').textContent='⚠️ '+({
+    SCRATCH_EDITION_ONLY_CREATOR:'Nur das Profil, das diese Premium-Auflage erstellt hat, darf sie beenden.',
+    SCRATCH_EDITION_CHANGED:'Die Auflage wurde inzwischen geändert oder ein Los verkauft. Bitte den Shop neu laden.',
+    SCRATCH_EDITION_CONFIRMATION_REQUIRED:'Die Sicherheitsbestätigung fehlt.',
+    SCRATCH_EDITION_ARCHIVE_CONFLICT:'Die Auflage ist bereits archiviert. Bitte den Shop aktualisieren.'
+   }[code]||code);
+  }finally{busy=false;update()}
+ }
+ $('oe-retire-premium').addEventListener('click',()=>void retirePremiumEdition());
  $('oe-create').addEventListener('click',()=>void submit(false));
  $('oe-edit').addEventListener('click',()=>void submit(true));
  cardGear.addEventListener('click',()=>open(stage.dataset.variant));
