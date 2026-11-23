@@ -2,7 +2,8 @@
  * DOG Lichtertal scratch tickets. No write occurs while a field is scratched.
  * The signed-in Render service creates a card with immutable win combinations.
  */
-import {createOtherScratchStudio,OTHER_EDITOR_VARIANTS} from './christmas-other-edition-ui.js?v=4';
+import {createOtherScratchStudio,OTHER_EDITOR_VARIANTS} from './christmas-other-edition-ui.js?v=5';
+import {mountScratchEditionManager} from './christmas-edition-management-ui.js?v=1';
 // Reopening the ticket shop within 45 seconds reuses this authenticated UID's
 // view. All purchases and reward changes still invalidate or force-refresh it.
 // This avoids repeating up to 13 cold Firestore document reads on tab hopping.
@@ -341,6 +342,21 @@ export function initChristmasScratch(){
   return data;
  }
  const otherStudio=createOtherScratchStudio({account,query,drawShop,showAlert,stage});
+ // Each special ticket has a separate editor AND a creator-checked
+ // latest-edition section. These buttons do not poll Firestore.
+ const editionManagers={};
+ for(const [variant,dialog,getEdition,setEdition,onPreview] of [
+  ['gifts',giftsDialog,()=>giftsEdition,edition=>{giftsEdition=edition},()=>updateGiftsEditionPreview()],
+  ['snow_collect',snowDialog,()=>snowEdition,edition=>{snowEdition=edition},()=>updateSnowEditionPreview()],
+  ['tic_tac_toe',ticDialog,()=>ticEdition,edition=>{ticEdition=edition},()=>updateTicEditionPreview()]
+ ]){
+  if(!dialog)continue;
+  editionManagers[variant]=mountScratchEditionManager({
+   dialog,variant,query,getEdition,
+   onEdition:edition=>{setEdition(edition);onPreview();drawShop()},
+   onRetired:()=>{setEdition(null);onPreview();drawShop()}
+  });
+ }
  const VARIANT_LABELS=Object.freeze([
   ['gifts','🎁 Geschenkelinie','Einfach · 200 🪙'],
   ['snow_collect','❄️ Schneeflocken-Bingo','Einfach · 200 🪙'],
@@ -962,7 +978,7 @@ export function initChristmasScratch(){
   $('scratch-gifts-settings-feedback').textContent='';
   $('gs-edition-feedback').textContent='';
   updateGiftsMoneyPreview();updateGiftsEditionPreview();
-  giftsDialog.showModal();
+  editionManagers.gifts?.refresh();giftsDialog.showModal();
  }
  function readGiftsSettings(){
   const safeInt=(id,min,max)=>{
@@ -1076,7 +1092,7 @@ export function initChristmasScratch(){
   $('scratch-snow-settings-feedback').textContent='';
   $('sn-edition-feedback').textContent='';
   updateSnowMoneyPreview();updateSnowEditionPreview();
-  snowDialog.showModal();
+  editionManagers.snow_collect?.refresh();snowDialog.showModal();
  }
  function readSnowSettings(){
   const safeInt=(id,min,max)=>{
@@ -2271,6 +2287,7 @@ export function initChristmasScratch(){
   snowEdition=r.snowEdition??null;
   ticEdition=r.ticEdition??null;
   otherStudio.load(r.otherEditions??{});
+  for(const manager of Object.values(editionManagers))manager.refresh();
    canManageScratch=r.canManageScratch===true;
    clearAlert();
    // Four distinct starter vouchers, credited once to the signed-in player.
@@ -2680,7 +2697,7 @@ export function initChristmasScratch(){
   set('tic-edition-budget',ticEdition?.maxTotalCoins??150000);
   $('tic-edition-feedback').textContent='';
   updateTicEditionPreview();
-  ticDialog.showModal();
+  editionManagers.tic_tac_toe?.refresh();ticDialog.showModal();
  }
  async function submitTicEdition(edit){
   const current=ticEdition,button=$(edit?'tic-edition-edit':'tic-edition-create');
