@@ -166,7 +166,7 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
  dialog.className='dog-building-film-dialog';
  dialog.setAttribute('aria-label','Lichtertal – Film zum Gebäudeausbau');
  dialog.innerHTML=[
-  '<header><div><span data-film-heading>🏠 GEBÄUDEAUSBAU · STUFE 5</span><h2 data-film-title></h2><p data-film-subtitle></p></div>',
+  '<header><div><span data-film-heading>🏠 GEBÄUDEAUSBAU</span><h2 data-film-title></h2><p data-film-subtitle></p></div>',
   '<button type="button" data-film-close aria-label="Filmfenster schließen">✕</button></header>',
   '<video controls playsinline preload="none" aria-label="Geschichtsfilm zum Ausbau des Weihnachtsgebäudes"></video>',
   '<div class="dog-building-film-footer"><p data-film-status role="status">🎬 Dein neuer Geschichtsfilm ist bereit.</p>',
@@ -223,8 +223,8 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
  function showUpgrade(id,fromLevel,toLevel){
   const film=christmasBuildingFilmForUpgrade(id,fromLevel,toLevel);
   if(!film||!Array.isArray(film.clips)||film.clips.length===0||active||dialog.open)return false;
-  const buildingNames={bakery:'Weihnachtsbäckerei',workshop:'Wichtelwerkstatt',inn:'Friedensherberge',tower:'Weihnachtslichter-Turm',luckhouse:'Weihnachts-Glückshaus'};
-  const buildingIcons={bakery:'🍪',workshop:'🧸',inn:'🕯️',tower:'🔔',luckhouse:'🎟️'};
+  const buildingNames={bakery:'Weihnachtsbäckerei',workshop:'Wichtelwerkstatt',inn:'Friedensherberge',tower:'Weihnachtslichter-Turm',luckhouse:'Weihnachts-Glückshaus',academy:'XP-Wichtel-Akademie'};
+  const buildingIcons={bakery:'🍪',workshop:'🧸',inn:'🕯️',tower:'🔔',luckhouse:'🎟️',academy:'📚'};
   const name=buildingNames[id]||'Weihnachtsgebäude';
   dialog.querySelector('[data-film-heading]').textContent=(buildingIcons[id]||'🏠')+' '+name.toUpperCase()+' · STUFE '+toLevel;
   dialog.querySelector('[data-film-title]').textContent=film.title;
