@@ -108,7 +108,7 @@ test('DOG card handoff window appears over board without intercepting card or bo
   assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1,id);
  assert.match(html,/<section id="dog-exchange-prompt"[^>]*role="status"[^>]*hidden>/);
  assert.match(html,/exchange-prompt\.css\?v=1/);
- assert.match(html,/app\.js\?v=117/);
+ assert.match(html,/app\.js\?v=118/);
  const promptCss=readFileSync(resolve(root,'exchange-prompt.css'),'utf8');
  const app=readFileSync(resolve(root,'app.js'),'utf8');
  assert.match(promptCss,/\.dog-exchange-prompt\s*\{/);
