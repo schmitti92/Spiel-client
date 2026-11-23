@@ -979,8 +979,13 @@ function renderHand(){
         attrs:'type="button" data-card="'+c.id+'"'+(rescue&&!fresh?' disabled aria-label="Diese Handkarte muss warten"':''),
         footer:exchange?'WEITERGEBEN':fresh?'ERSATZKARTE · START':null
       });
-      return blocked?'<span class="dog-card-stack">'+card+
-        '<button type="button" class="dog-discard-draw" data-discard-card="'+c.id+'">🗑 Wegwerfen</button></span>':card;
+      // Card art is kept visible; a permanent value badge and named action
+      // make it unambiguous which card the player will discard.
+      const discardValue=c.type==='swap'?'Tausch':c.type==='joker'?'Joker':cardsLabel(c.type);
+      return blocked?'<span class="dog-card-stack">'+
+        '<span class="dog-discard-value" aria-hidden="true">'+escape(discardValue)+'</span>'+card+
+        '<button type="button" class="dog-discard-draw" data-discard-card="'+c.id+
+        '" aria-label="'+escape(discardValue)+' wegwerfen">🗑 '+escape(discardValue)+' wegwerfen</button></span>':card;
     }).join(''));
     available=exchange?[]:selectedCard!==null?legalActions(game,seat).filter(m=>m.cardId===selectedCard&&(jokerAs===null||m.as===jokerAs)):[];
     if(exchange&&selectedCard!==null){
