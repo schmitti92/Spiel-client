@@ -31,6 +31,7 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
      <strong>👑 Aktuelle Premium-Auflage</strong>
      <p id="oe-premium-status">Auflage prüfen, beenden oder anschließend neu erstellen.</p>
      <button id="oe-retire-premium" type="button" class="scratch-other-edition-retire">🗑️ Aktuelle Premium-Auflage prüfen / beenden</button>
+     <p id="oe-premium-feedback" role="status" aria-live="polite"></p>
    </section>
    <section class="scratch-gifts-settings-section">
      <h4>🎟️ 1 · Los und Gewinnkategorie</h4>
@@ -203,6 +204,7 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
    variant==='dog_jackpot_9'?400000:100000;
   set('oe-budget',editions[active]?.maxTotalCoins??suggested);
   $('oe-feedback').textContent='';
+  $('oe-premium-feedback').textContent='';
   update();dialog.showModal();
  };
  async function submit(edit){
@@ -252,10 +254,14 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
  $('oe-form').addEventListener('submit',event=>event.preventDefault());
  for(const input of dialog.querySelectorAll('input, select'))
   input.addEventListener('input',update);
+ function premiumFeedback(message){
+  $('oe-feedback').textContent=message;
+  $('oe-premium-feedback').textContent=message;
+ }
  async function retirePremiumEdition(){
   if(busy||active!=='premium_27')return;
   busy=true;update();
-  $('oe-feedback').textContent='🔎 Aktuelle Premium-Auflage wird direkt am Server geprüft …';
+  premiumFeedback('🔎 Aktuelle Premium-Auflage wird direkt am Server geprüft …');
   try{
    // Exactly one current-edition document read. Do not trust missing or
    // stale edition metadata from an earlier shop snapshot.
@@ -263,15 +269,15 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
    const previous=checked.otherEdition;
    editions.premium_27=previous??null;
    if(!previous){
-    $('oe-feedback').textContent='ℹ️ Es ist keine aktive Premium-Auflage gespeichert. Du kannst direkt eine neue 500er-Auflage erstellen.';
+    premiumFeedback('ℹ️ Es ist keine aktive Premium-Auflage gespeichert. Du kannst direkt eine neue 500er-Auflage erstellen.');
     return;
    }
    if(previous.remaining<=0){
-    $('oe-feedback').textContent='ℹ️ Diese Premium-Auflage ist ausverkauft. Du kannst direkt eine neue 500er-Auflage erstellen.';
+    premiumFeedback('ℹ️ Diese Premium-Auflage ist ausverkauft. Du kannst direkt eine neue 500er-Auflage erstellen.');
     return;
    }
    if(checked.canRetire!==true){
-    $('oe-feedback').textContent='🔒 Nur das Profil, das diese Premium-Auflage erstellt hat, darf sie beenden. Melde dich gegebenenfalls mit dem Erstellerprofil an.';
+    premiumFeedback('🔒 Nur das Profil, das diese Premium-Auflage erstellt hat, darf sie beenden. Melde dich gegebenenfalls mit dem Erstellerprofil an.');
     return;
    }
    const warning='Aktuelle Premium-Auflage wirklich beenden?\n\n'+
@@ -280,10 +286,10 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
     'Danach kannst du sofort eine NEUE 500er-Premium-Auflage erstellen.\n\n'+
     'Dieser Vorgang kann nicht rückgängig gemacht werden.';
    if(!window.confirm(warning)){
-    $('oe-feedback').textContent='Die aktuelle Premium-Auflage bleibt unverändert.';
+    premiumFeedback('Die aktuelle Premium-Auflage bleibt unverändert.');
     return;
    }
-   $('oe-feedback').textContent='🔄 Premium-Auflage wird sicher archiviert …';
+   premiumFeedback('🔄 Premium-Auflage wird sicher archiviert …');
    const result=await query('/editions/premium_27/retire',{
     editionId:previous.id,expectedRevision:previous.revision,
     confirmation:'RETIRE_PREMIUM_27'
@@ -291,16 +297,16 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
    if(result.otherEdition!==null||result.retiredEdition?.id!==previous.id)
     throw Error('Die Serverbestätigung ist unvollständig. Bitte den Status neu laden.');
    editions.premium_27=null;
-   $('oe-feedback').textContent='✅ Alte Premium-Auflage archiviert. Du kannst jetzt eine neue Auflage erstellen.';
+   premiumFeedback('✅ Alte Premium-Auflage archiviert. Du kannst jetzt eine neue Auflage erstellen.');
    drawShop();
   }catch(error){
    const code=String(error?.message||'SERVER_UNAVAILABLE');
-   $('oe-feedback').textContent='⚠️ '+({
+   premiumFeedback('⚠️ '+({
     SCRATCH_EDITION_ONLY_CREATOR:'Nur das Profil, das diese Premium-Auflage erstellt hat, darf sie beenden.',
     SCRATCH_EDITION_CHANGED:'Die Auflage wurde inzwischen geändert oder ein Los verkauft. Bitte erneut prüfen.',
     SCRATCH_EDITION_CONFIRMATION_REQUIRED:'Die Sicherheitsbestätigung fehlt.',
     SCRATCH_EDITION_ARCHIVE_CONFLICT:'Die Auflage ist bereits archiviert. Bitte den Shop aktualisieren.'
-   }[code]||code);
+   }[code]||code));
   }finally{busy=false;update()}
  }
  $('oe-retire-premium').addEventListener('click',()=>void retirePremiumEdition());
