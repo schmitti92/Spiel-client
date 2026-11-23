@@ -128,6 +128,7 @@ export function initChristmasScratch(){
  if(!root||!wallet||!stage||!board||!results||!winningLines||!reveal)
   throw Error('SCRATCH_UI_NOT_FOUND');
  let status=null,ticket=null,busy=false,pending=null,requestId=0,finished=false,canManageScratch=false;
+ let canManageAllScratchEditions=false;
  // Local developer preview only controls visibility. The server-verified
  // admin/developer UID determines whether real shared editions may change.
  const isDevActive=()=>window.DOGChristmasDev?.isActive()===true;
@@ -706,7 +707,8 @@ export function initChristmasScratch(){
   const rights=$('scratch-management-access');
   if(rights)rights.textContent=!account()?'🔐 Bitte mit einem DOG-Onlineprofil anmelden.':
    !status?'🔄 Konto und Berechtigungen werden geladen.':
-   canManageScratch?'✅ Entwicklerrechte am Server bestätigt. Du kannst die Auflagen aller 7 Lose verwalten, auch ältere Serien.':
+   canManageAllScratchEditions?'✅ Vollständige Entwicklerrechte bestätigt: alle Auflagen aller 7 Lose verwalten.':
+   canManageScratch?'✅ Rubbellos-Admin bestätigt: eigene Auflagen verwalten. Für fremde Auflagen sind Entwicklerrechte erforderlich.':
    '🔒 Lokaler Entwicklermodus allein vergibt keine Serverrechte. Die echte DOG-Konto-ID muss auf Render unter DOG_DEVELOPER_UIDS oder DOG_SCRATCH_ADMIN_UIDS hinterlegt sein.';
   const freeMode=false; // Free-mode and daily free tickets are disabled.
   // Keep the legacy gear for dialog handlers; hide it in the normal shop.
@@ -2352,7 +2354,7 @@ export function initChristmasScratch(){
   const id=++requestId;
   if(!current){
    jackpotCeremony.dismiss();
-   lastScratchReadAt=0;lastScratchReadUid=null;pendingScratchReadUid=null;status=null;giftsEdition=null;snowEdition=null;ticEdition=null;otherStudio.reset();ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();giftsDialog?.close();snowDialog?.close();ticDialog?.close();drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
+   lastScratchReadAt=0;lastScratchReadUid=null;pendingScratchReadUid=null;status=null;giftsEdition=null;snowEdition=null;ticEdition=null;otherStudio.reset();ticket=null;canManageScratch=false;canManageAllScratchEditions=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();giftsDialog?.close();snowDialog?.close();ticDialog?.close();drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
   pendingScratchReadUid=uid;
   try{
    const r=await query('');
@@ -2366,6 +2368,7 @@ export function initChristmasScratch(){
   otherStudio.load(r.otherEditions??{});
   for(const manager of Object.values(editionManagers))manager.refresh();
    canManageScratch=r.canManageScratch===true;
+   canManageAllScratchEditions=r.canManageAllScratchEditions===true;
    clearAlert();
    // Four distinct starter vouchers, credited once to the signed-in player.
    if(status&&!status.levelOneStarterClaimed&&!window.DOGChristmasDev?.isActive()){
@@ -2392,7 +2395,7 @@ export function initChristmasScratch(){
    drawShop();
    notice(ticket?'❄️ Dein letztes Los wurde wiederhergestellt.':
     '🎄 Wische ohne Absetzen über das gesamte Spielfeld. Bei 90 % wird automatisch aufgedeckt.');
-  }catch(e){if(id!==requestId)return;lastScratchReadAt=0;status=null;canManageScratch=false;showAlert(scratchBuyError(e?.message));drawShop()}
+  }catch(e){if(id!==requestId)return;lastScratchReadAt=0;status=null;canManageScratch=false;canManageAllScratchEditions=false;showAlert(scratchBuyError(e?.message));drawShop()}
   finally{if(id===requestId)pendingScratchReadUid=null;}
  }
  async function buy(tier,free,variantId,voucher=false){
@@ -2885,7 +2888,7 @@ export function initChristmasScratch(){
   if(nextUid===authUid)return;
   authUid=nextUid;
   lastScratchReadAt=0;lastScratchReadUid=null;pendingScratchReadUid=null;
-  requestId++;status=null;giftsEdition=null;snowEdition=null;ticEdition=null;otherStudio.reset();ticket=null;canManageScratch=false;
+  requestId++;status=null;giftsEdition=null;snowEdition=null;ticEdition=null;otherStudio.reset();ticket=null;canManageScratch=false;canManageAllScratchEditions=false;
   stage.hidden=true;document.body.classList.remove('scratch-ticket-open');
   hostDialog?.close();giftsDialog?.close();snowDialog?.close();ticDialog?.close();void load();
  });
