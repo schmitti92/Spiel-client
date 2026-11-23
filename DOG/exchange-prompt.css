@@ -1,0 +1,36 @@
+/* DOG hand-off announcement: visual-only, never blocks board or hand gestures. */
+.dog-exchange-prompt{
+ position:absolute;z-index:7;left:50%;top:45%;transform:translate(-50%,-50%);
+ width:min(480px,calc(100% - 30px));max-height:calc(100% - 26px);
+ padding:clamp(15px,2.7vw,26px);border:2px solid #f5d28d;border-radius:22px;
+ background:linear-gradient(147deg,rgba(27,55,71,.97),rgba(8,26,43,.985) 62%,rgba(31,47,61,.98));
+ box-shadow:0 0 0 6px #edc67f24,0 20px 65px #000c,inset 0 1px #fff7cd5c;
+ backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+ display:grid;justify-items:center;text-align:center;gap:clamp(6px,1vw,12px);
+ color:#fff6de;pointer-events:none;overflow:hidden;
+ animation:dogExchangeAppear .38s cubic-bezier(.2,.7,.25,1) both;
+}
+.dog-exchange-prompt::before{
+ content:"";position:absolute;inset:-45% -60%;z-index:-1;pointer-events:none;
+ background:radial-gradient(ellipse at 52% 32%,#fbd68a20 0,transparent 54%);
+}
+.dog-exchange-prompt[hidden]{display:none!important}
+.dog-exchange-prompt-kicker{font-size:clamp(10px,1vw,12px);letter-spacing:.24em;color:#eecb87;font-weight:850;text-transform:uppercase}
+.dog-exchange-prompt-art{width:clamp(43px,6vw,70px);height:clamp(43px,6vw,70px);border-radius:19px;
+ display:grid;place-items:center;font-size:clamp(29px,4vw,45px);line-height:1;
+ background:linear-gradient(140deg,#f0cd87,#a97638);border:1px solid #fff2ccaa;
+ box-shadow:0 5px 18px #0007,0 0 24px #e9b75b36;transform:rotate(-7deg);
+}
+.dog-exchange-prompt-title{margin:0;max-width:420px;font-size:clamp(18px,2.5vw,29px);font-weight:900;line-height:1.18;letter-spacing:-.02em;text-wrap:balance;text-shadow:0 2px 9px #0008}
+.dog-exchange-prompt-target{font-size:clamp(12px,1.45vw,16px);color:#fbd799;font-weight:850}
+.dog-exchange-prompt-guidance{margin:0;color:#dae5e8;font-size:clamp(11px,1.25vw,14px);line-height:1.4}
+.dog-exchange-prompt[data-card-selected="true"]{border-color:#fbe9ae;box-shadow:0 0 0 6px #edc67f24,0 20px 65px #000c,0 0 27px #d8ad5988}
+@keyframes dogExchangeAppear{from{opacity:0;transform:translate(-50%,-45%) scale(.93)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@media(max-width:680px){
+ .dog-exchange-prompt{top:45%;width:min(340px,calc(100% - 20px));padding:13px;border-radius:15px;gap:5px;border-width:1px}
+ .dog-exchange-prompt-art{width:38px;height:38px;font-size:27px;border-radius:12px}
+ .dog-exchange-prompt-title{font-size:clamp(15px,4.2vw,22px)}
+ .dog-exchange-prompt-target{font-size:12px}
+ .dog-exchange-prompt-guidance{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){.dog-exchange-prompt{animation:none}}
