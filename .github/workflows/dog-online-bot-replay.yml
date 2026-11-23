@@ -1,0 +1,27 @@
+name: DOG online bot replay
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/online-bot-replay.js'
+      - 'DOG/app.js'
+      - 'DOG/index.html'
+      - 'tests/dog-online-bot-replay.test.mjs'
+      - 'tests/dog-bot-difficulty.test.mjs'
+      - '.github/workflows/dog-online-bot-replay.yml'
+  pull_request:
+    paths:
+      - 'DOG/online-bot-replay.js'
+      - 'DOG/app.js'
+      - 'tests/dog-online-bot-replay.test.mjs'
+  workflow_dispatch:
+jobs:
+  bot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/app.js && node --check DOG/online-bot-replay.js
+      - run: node --test tests/dog-online-bot-replay.test.mjs tests/dog-bot-difficulty.test.mjs

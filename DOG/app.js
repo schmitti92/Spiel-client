@@ -14,6 +14,7 @@ import {dogCosmeticDefinition,equippedDogCosmetic,DOG_COSMETIC_EQUIPMENT_KEY} fr
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,completedDogSeat} from './engine.js?v=7';
 import {DOG_BOT_DIFFICULTIES,readDogBotDifficulties,saveDogBotDifficulty,dogBotDifficultyForSeat,chooseDogBotAction} from './bot-difficulty.js?v=4';
 import {decideDogRoomUpdate} from './online-sync.js?v=15';
+import {planDogBotReplay} from './online-bot-replay.js?v=1';
 import {createDogSocketActionDispatcher} from './socket-actions.js?v=1';
 import {initDogFirstLightFilm} from './christmas-first-light-film.js?v=2';
 import {dogChristmasFoundMarkers,newDogChristmasDiscoveries,createDogChristmasDiscoveryPopup,createDogGoldConfetti} from './christmas-discovery.js?v=5';
@@ -114,6 +115,7 @@ function autoFinishLegacyDogMatch(){
     });
 }
 function acceptRemote(room){
+ const previousGame=game,previousMatchId=acceptedMatchId;
  const decision=decideDogRoomUpdate(
    {roomRevision,game,onlineSeat,matchId:acceptedMatchId},
    room,{hubCode,matchHint}
@@ -134,6 +136,14 @@ function acceptRemote(room){
    onlineDogCosmetics=Array.isArray(room.match?.dogCosmetics)?room.match.dogCosmetics:[];
    onlineChristmas=room.match?.christmas?.enabled===true?room.match.christmas:null;
    onlineResearch=room.match?.dogResearch||null;
+   const sameReplay=onlineReplayFrame&&onlineReplayTargetRevision===decision.game.revision&&
+     onlineReplayMatchId===decision.matchId;
+   if(!sameReplay){
+     const steps=botAnimationsOn&&!document.hidden&&previousMatchId===decision.matchId?
+       planDogBotReplay(previousGame,decision.game,room.match?.dogReplay):[];
+     if(steps.length)startOnlineBotReplay(previousGame,decision.matchId,decision.game.revision,steps);
+     else stopOnlineBotReplay();
+   }
    // Same already-authorized Render snapshot as the board. The sidebar
    // table does not poll Firebase or make a second HTTP request.
    window.DOGEventOverviewSnapshot={christmas:onlineChristmas,players:game?.players||[]};
@@ -278,6 +288,35 @@ const pieceAnimator=createPieceAnimator(boardSvg);
 const visualFeedback=createDogVisualFeedback(document);
 applyMotionMode(loadMotionMode());
 let lastBoardKey=null,lastBoardSnapshot=null,lastBoardRevision=null,lastBoardMatch=null,lastMotionDuration=0;
+// Browser-only replay of one authoritative Render room update. The server
+// saves no extra frames, and the client never sends animation steps as moves.
+let onlineReplayFrame=null,onlineReplayTimer=null,onlineReplayMatchId=null,onlineReplayTargetRevision=null;
+function stopOnlineBotReplay(){
+ if(onlineReplayTimer!==null){clearTimeout(onlineReplayTimer);onlineReplayTimer=null;}
+ onlineReplayFrame=null;onlineReplayMatchId=null;onlineReplayTargetRevision=null;
+}
+function startOnlineBotReplay(previousGame,matchId,revision,frames){
+ stopOnlineBotReplay();
+ onlineReplayFrame={revision:previousGame.revision,pieces:previousGame.pieces,seat:null,bot:false};
+ onlineReplayMatchId=matchId;onlineReplayTargetRevision=revision;
+ let index=0;
+ const next=()=>{
+  onlineReplayTimer=null;
+  if(document.hidden||acceptedMatchId!==matchId||game?.revision!==revision||!botAnimationsOn){
+   stopOnlineBotReplay();render();return;
+  }
+  if(index>=frames.length){stopOnlineBotReplay();render();return;}
+  const frame=frames[index++];
+  onlineReplayFrame=frame;
+  drawBoard();
+  // Each next bot waits for the previous pawn motion and then one second.
+  const upcoming=frames[index];
+  const betweenBots=frame.bot&&upcoming?.bot&&frame.seat!==upcoming.seat;
+  onlineReplayTimer=setTimeout(next,Math.max(160,lastMotionDuration)+(betweenBots?1000:240));
+ };
+ onlineReplayTimer=setTimeout(next,140);
+}
+
 let botAnimationsOn=readDogBotMotion(window.localStorage),lastAnimatedMoveBot=false;
 let postponedBoardRedraw=null,opponentMoveNoticeTimer=null;
 // Only public history and the already-received room state are used for this
@@ -423,6 +462,7 @@ function updateDogBotAnimationSwitch(){
 $('dog-bot-animation-toggle')?.addEventListener('click',()=>{
  botAnimationsOn=writeDogBotMotion(!botAnimationsOn,window.localStorage);
  updateDogBotAnimationSwitch();
+ if(!botAnimationsOn&&onlineReplayFrame){stopOnlineBotReplay();render();}
  if(!botAnimationsOn&&lastAnimatedMoveBot){
   pieceAnimator.cancel();lastMotionDuration=0;lastAnimatedMoveBot=false;
   const notice=$('dog-opponent-move-notice');
@@ -430,8 +470,8 @@ $('dog-bot-animation-toggle')?.addEventListener('click',()=>{
  }
 });
 updateDogBotAnimationSwitch();
-// Magie bot difficulty is local. Render owns online AI decisions;
-// one observer's local preferences must never change the shared match.
+// Local AI uses local preferences. Online difficulty is authenticated and
+// owned by Render; spectators cannot silently change the shared match.
 const difficultyNames={easy:'Leicht',medium:'Mittel',expert:'Experte'};
 function botDifficultySelect(id,value,label){
  const select=document.createElement('select');
@@ -545,6 +585,7 @@ function isHumanExchange(){
   return game.players.findIndex(p=>!p.bot&&game.exchanges[p.seat]===null);
 }
 function currentHuman(){
+  if(onlineReplayFrame)return -1;
   if(game.phase==='exchange')return isHumanExchange();
   if(online)return game.current===onlineSeat&&game.phase!=='finished'?onlineSeat:-1;
   if(['play','seven','rescue'].includes(game.phase))return game.players[game.current].bot?-1:game.current;
@@ -565,6 +606,7 @@ function piecePoint(piece){
 // Each marker is visual-only and cannot intercept taps, drag or pinch gestures.
 let moveHintsLayerKey=null;
 function syncDogMoveHints(){
+ if(onlineReplayFrame){boardSvg.querySelector('#dog-legal-targets')?.remove();return;}
  const old=boardSvg.querySelector('#dog-legal-targets');
  const seat=game&&moveHintsOn&&revealed?currentHuman():-1;
  const active=seat>=0&&selectedPiece!==null&&['play','rescue','seven'].includes(game.phase);
@@ -600,11 +642,16 @@ function syncDogMoveHints(){
 }
 function drawBoard(){
   if(!game)return;
-  const snapshot=snapshotPieces(game.pieces);
+  const visualGame=onlineReplayFrame?{
+    ...game,pieces:onlineReplayFrame.pieces,revision:onlineReplayFrame.revision,
+    history:onlineReplayFrame.seat===null?visualGame.history:
+      [(visualGame.players[onlineReplayFrame.seat]?.name||'Spieler')+' zieht',...visualGame.history]
+  }:game;
+  const snapshot=snapshotPieces(visualGame.pieces);
   const matchIdentity=online?(acceptedMatchId||matchHint||'online'):'local';
   // Repeated room/presence updates and card UI changes must not interrupt an
   // ongoing pawn animation by replacing the entire SVG with identical content.
-  const boardKey=JSON.stringify([snapshot,appearance,selectedPiece,game.players?.map(p=>p.name),
+  const boardKey=JSON.stringify([snapshot,appearance,selectedPiece,visualGame.players?.map(p=>p.name),
     onlineChristmas?.round,onlineChristmas?.roundGiftCollected,onlineChristmas?.roundScratchCollected,
     onlineChristmas?.visibleGiftFields,onlineChristmas?.visibleScratchFields,
     onlineChristmas?.foundGiftFields,onlineChristmas?.foundScratchFields,onlineChristmas?.foundGoldFields,
@@ -612,9 +659,9 @@ function drawBoard(){
   if(boardKey===lastBoardKey && boardSvg.childElementCount){
     // Room revisions can advance without moving a pawn (exchange, research,
     // rewards). Preserve that revision so the next real move is animatable.
-    if(lastBoardMatch===matchIdentity && Number.isSafeInteger(game.revision) &&
-       Number.isSafeInteger(lastBoardRevision) && game.revision>lastBoardRevision)
-      lastBoardRevision=game.revision;
+    if(lastBoardMatch===matchIdentity && Number.isSafeInteger(visualGame.revision) &&
+       Number.isSafeInteger(lastBoardRevision) && visualGame.revision>lastBoardRevision)
+      lastBoardRevision=visualGame.revision;
     if(!pieceAnimator.isActive())lastMotionDuration=0;
     syncDogMoveHints();
     return;
@@ -625,8 +672,8 @@ function drawBoard(){
   // Defer purely cosmetic board rebuilds until the animation has ended, so
   // rendering a scratch/gold marker cannot teleport the opponent's pawn.
   if(samePieces && lastBoardMatch===matchIdentity && pieceAnimator.isActive()){
-    if(Number.isSafeInteger(game.revision) && game.revision>lastBoardRevision)
-      lastBoardRevision=game.revision;
+    if(Number.isSafeInteger(visualGame.revision) && visualGame.revision>lastBoardRevision)
+      lastBoardRevision=visualGame.revision;
     if(!postponedBoardRedraw){
       postponedBoardRedraw=setTimeout(()=>{
         postponedBoardRedraw=null;drawBoard();
@@ -638,14 +685,14 @@ function drawBoard(){
   if(postponedBoardRedraw){clearTimeout(postponedBoardRedraw);postponedBoardRedraw=null;}
   const canAnimate=shouldAnimatePieceUpdate({
     sameMatch:!!lastBoardSnapshot && lastBoardMatch===matchIdentity,
-    previousRevision:lastBoardRevision,currentRevision:game.revision,
+    previousRevision:lastBoardRevision,currentRevision:visualGame.revision,
     previousPieces:lastBoardSnapshot,currentPieces:snapshot
   });
   const motions=canAnimate?planPieceMotions(lastBoardSnapshot,snapshot,{
     track:TRACK_POINTS,goal:GOAL_POINTS,home:HOME_POINTS
   }):[];
   lastBoardKey=boardKey;lastBoardSnapshot=snapshot;
-  lastBoardRevision=game.revision;lastBoardMatch=matchIdentity;
+  lastBoardRevision=visualGame.revision;lastBoardMatch=matchIdentity;
   const board=[];
   const push=part=>board.push(part);
   const look=currentLook(),skin=look.board;
@@ -756,11 +803,11 @@ function drawBoard(){
   // rendered over the pawns when the player enables the local right-side lever.
   // Full-field, solid-color DOG counters. The board holes have radii
   // 17.1–17.3 SVG units; each piece fills its reserve, track or goal field.
-  for(const piece of game.pieces){
+  for(const piece of visualGame.pieces){
     const p=piecePoint(piece),color=safeColor(piece.owner),hi=selectedPiece===piece.id;
     if(!p)continue;
     if(hi)push('<circle class="dog-move-halo" cx="'+p.x+'" cy="'+p.y+'" r="28" fill="'+color+'" fill-opacity=".5" filter="url(#dog-halo)" pointer-events="none"/>');
-    push('<g data-piece="'+piece.id+'" class="dog-pawn '+(hi?'can-pick dog-pawn-selected':'')+'" aria-label="Figur '+(piece.id%4+1)+' '+(game.players[piece.owner]?.name||'')+'">');
+    push('<g data-piece="'+piece.id+'" class="dog-pawn '+(hi?'can-pick dog-pawn-selected':'')+'" aria-label="Figur '+(piece.id%4+1)+' '+(visualGame.players[piece.owner]?.name||'')+'">');
     if(look.pieceShape==='solid'){
       // New option: opaque color disc covers the underlying white field.
       push('<circle cx="'+p.x+'" cy="'+p.y+'" r="17.3" fill="'+color+'" stroke="'+(hi?'#fffaf0':'#112536')+'" stroke-width="'+(hi?'2.4':'1.1')+'" filter="url(#dog-pawn-shadow)"/>');
@@ -786,7 +833,7 @@ function drawBoard(){
       if(!byField.has(mark.field))byField.set(mark.field,[]);
       byField.get(mark.field).push(mark);
     }
-    const pawnFields=new Set(game.pieces.filter(p=>p.place==='track').map(p=>p.pos));
+    const pawnFields=new Set(visualGame.pieces.filter(p=>p.place==='track').map(p=>p.pos));
     for(const [field,found] of byField){
       const point=boardPoint(field),x=point.x,y=point.y;
       const occupied=pawnFields.has(field),multiple=found.length>1;
@@ -824,7 +871,7 @@ function drawBoard(){
   boardSvg.innerHTML=board.join('');
   // The local bot switch is independent of the global motion setting.
   // Real players' moves still animate even if they capture a bot pawn.
-  const movedByBot=isDogBotMove(game,motions);
+  const movedByBot=isDogBotMove(visualGame,motions);
   const visibleMotions=movedByBot&&!botAnimationsOn?[]:motions;
   lastMotionDuration=pieceAnimator.play(visibleMotions,palette);
   lastAnimatedMoveBot=movedByBot&&lastMotionDuration>0;
@@ -1111,7 +1158,7 @@ function render(){
     ' · '+(onlineChristmas.earnedTenths/10).toLocaleString('de-DE')+' ⭐ gesammelt'+myScratch:
     ' · '+(soloMode?(game.mode==='solo2'?'Zwei Spieler ohne Bot':'Drei Teilnehmer gegeneinander'):'Klassischer DOG-Modus')):
     (soloMode?'Jeder gegen jeden':'Teams Rot/Grün gegen Blau/Gelb')+' • Spielstand wird lokal gesichert';
-  updateVictoryCeremony();
+  if(!onlineReplayFrame)updateVictoryCeremony();
   visualFeedback.sync({game,matchKey:online?(acceptedMatchId||matchHint||'online'):'local',seat:online?onlineSeat:currentHuman(),handVisible:revealed,activeSeat:active});
   $('selected-info').textContent=selectedCard?'Karte ausgewählt: '+cardsLabel(game.hands[currentHuman()]?.find(c=>c.id===selectedCard)?.type||''):'';
 }
