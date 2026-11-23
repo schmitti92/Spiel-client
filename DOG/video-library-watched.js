@@ -4,7 +4,9 @@
  */
 const BASE=String(globalThis.window?.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const pending=new Set();
-const allowed=new Set(['welcome','intro','first-light','tree-2','tree-3',
+const allowed=new Set(['welcome','intro','first-light','tree-2','tree-3','tree-4',
+ 'building-bakery-3','building-workshop-3','building-inn-3',
+ 'building-tower-3','building-luckhouse-3','building-academy-3',
  'building-bakery','building-workshop','building-inn','building-tower','building-luckhouse']);
 const current=()=>globalThis.window?.SpielOnline?.state?.();
 const recordKey=(uid,id)=>'dog-videothek-watched-synced-v1:'+uid+':'+id;
