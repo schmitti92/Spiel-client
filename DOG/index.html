@@ -409,7 +409,7 @@ html[data-dog-motion="off"] .dog-legal-target-ring{animation:none}
 <link rel="stylesheet" href="./christmas-event-overview.css?v=1">
 <link rel="stylesheet" href="./video-library.css?v=1">
 <link rel="stylesheet" href="./replacement-draw-animation.css?v=1">
-<link rel="stylesheet" href="./exchange-prompt.css?v=1">
+<link rel="stylesheet" href="./exchange-prompt.css?v=2">
 <style id="dog-christmas-link-visibility">
 html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christmas-portal-open) [data-meta-album-link],html:not(.dog-christmas-portal-open) #dog-room-christmas,html:not(.dog-christmas-portal-open) #dog-christmas-event-link,html:not(.dog-christmas-portal-open) #dog-player-level-link{display:none!important}
 </style>
@@ -459,6 +459,7 @@ html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christm
 </div>
 <svg id="board" class="board-svg" viewBox="0 0 760 760" role="img" aria-label="Spielbrett mit vier Farbrouten, Start- und Zielbahnen"></svg>
       <section id="dog-exchange-prompt" class="dog-exchange-prompt" role="status" aria-live="polite" aria-atomic="true" aria-labelledby="dog-exchange-prompt-title" hidden>
+        <button id="dog-exchange-prompt-close" class="dog-exchange-prompt-close" type="button" aria-label="Hinweis schließen" title="Hinweis schließen">×</button>
         <span class="dog-exchange-prompt-kicker">✦ Geheimer Kartentausch ✦</span>
         <span class="dog-exchange-prompt-art" aria-hidden="true">🃏</span>
         <h2 id="dog-exchange-prompt-title" class="dog-exchange-prompt-title">Gib eine Karte an den nächsten Spieler</h2>
@@ -829,7 +830,7 @@ mountChristmasLinks();
 </script>
 <script type="module">
 import('./ui-shell.js?v=14').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
-import('./app.js?v=120').catch(error=>{
+import('./app.js?v=121').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
