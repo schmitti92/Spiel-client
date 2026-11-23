@@ -54,7 +54,7 @@ export function initChristmasTreeFilms({getUserId,isPreview}){
  dialog.innerHTML=[
   '<header><div><span data-stage>🎄 BAUMSTUFE</span><h2 data-title></h2><p data-subtitle></p></div>',
   '<button type="button" data-close aria-label="Schließen" style="background:#284855;color:#fff0d2;border:1px solid #bfa46f;border-radius:10px;padding:9px 12px">✕</button></header>',
-  '<video playsinline controls preload="metadata" aria-label="Geschichtsfilm zu dieser Baumstufe"></video>',
+  '<video playsinline controls preload="none" aria-label="Geschichtsfilm zu dieser Baumstufe"></video>',
   '<div class="dog-tree-film-footer">',
   '<p data-status role="status">▶ Drücke auf Play, um den Film mit Ton zu starten.</p>',
   '<div class="dog-tree-film-actions">',

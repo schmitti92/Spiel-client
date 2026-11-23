@@ -100,7 +100,7 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
  dialog.innerHTML=[
   '<header><div><span data-film-heading>🏠 GEBÄUDEAUSBAU · STUFE 5</span><h2 data-film-title></h2><p data-film-subtitle></p></div>',
   '<button type="button" data-film-close aria-label="Filmfenster schließen">✕</button></header>',
-  '<video controls playsinline preload="metadata" aria-label="Geschichtsfilm zum Ausbau des Weihnachtsgebäudes"></video>',
+  '<video controls playsinline preload="none" aria-label="Geschichtsfilm zum Ausbau des Weihnachtsgebäudes"></video>',
   '<div class="dog-building-film-footer"><p data-film-status role="status">🎬 Dein neuer Geschichtsfilm ist bereit.</p>',
   '<div class="dog-building-film-actions">',
   '<button type="button" data-film-play>▶ Mit Ton abspielen</button>',

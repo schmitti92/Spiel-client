@@ -60,13 +60,25 @@ export function saveCardEdition(id,storage=typeof localStorage==='undefined'?nul
  try{storage?.setItem(CARD_EDITION_STORAGE_KEY,selected);}catch{}
  return selected;
 }
+// A lightweight SVG version of Nikolaus already ships in the repository.
+ // On metered / deliberately data-saving connections avoid large 1.5 MB PNG
+ // card faces without changing the user's chosen edition or its entitlement.
+export function preferCompactDogCardImages(connection=
+  typeof navigator==='undefined'?null:navigator.connection){
+ return connection?.saveData===true||['slow-2g','2g'].includes(connection?.effectiveType);
+}
+function editionArtwork(item,compact=preferCompactDogCardImages()){
+ return compact&&item.fallbackBase?
+  {base:item.fallbackBase,extension:item.fallbackExtension||'svg',fallbackBase:null}:
+  item;
+}
 export function cardBackImage(edition=loadCardEdition()){
- const item=CARD_EDITIONS[isCardEditionUnlocked(edition)?edition:CARD_EDITION];
+ const item=editionArtwork(CARD_EDITIONS[isCardEditionUnlocked(edition)?edition:CARD_EDITION]);
  return item.base+'rueckseite.'+(item.extension||'png');
 }
 /** CSS image layers: uploaded premium PNG on top, original SVG beneath as fallback. */
 export function cardBackBackground(edition=loadCardEdition()){
- const item=CARD_EDITIONS[isCardEditionUnlocked(edition)?edition:CARD_EDITION];
+ const item=editionArtwork(CARD_EDITIONS[isCardEditionUnlocked(edition)?edition:CARD_EDITION]);
  const main='url("'+item.base+'rueckseite.'+(item.extension||'png')+'")';
  return item.fallbackBase?main+', url("'+item.fallbackBase+'rueckseite.'+(item.fallbackExtension||'svg')+'")':main;
 }
@@ -93,7 +105,7 @@ export function cardVisual(type,edition=loadCardEdition()){
  const item=CARD_VISUALS[type]||{kind:'number',symbol:'🐾',caption:'KARTE'};
  const selected=isCardEditionUnlocked(edition)?edition:CARD_EDITION;
  const file=CARD_FILE_NAMES[type];
- const entry=CARD_EDITIONS[selected];
+ const entry=editionArtwork(CARD_EDITIONS[selected]);
  return {...item,edition:selected,
   image:file?entry.base+file+'.'+(entry.extension||'png'):null,
   fallbackImage:file&&entry.fallbackBase?entry.fallbackBase+file+'.'+(entry.fallbackExtension||'svg'):null};
@@ -103,7 +115,7 @@ export function cardMarkup(type,{tag='button',selected=false,extraClass='',attrs
  const value=type==='swap'?'⇄':type==='joker'?'★':type;
  const safe=x=>String(x).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
  const fallback=c.fallbackImage?' data-fallback="'+safe(c.fallbackImage)+'"':'';
- const art=c.image?'<img class="dog-card-art" src="'+safe(c.image)+'"'+fallback+' alt="" loading="eager" onload="this.parentNode.classList.add(&quot;has-dog-art&quot;)" onerror="if(this.dataset.fallback){const path=this.dataset.fallback;delete this.dataset.fallback;this.src=path;}else this.remove()">':'';
+ const art=c.image?'<img class="dog-card-art" src="'+safe(c.image)+'"'+fallback+' alt="" loading="eager" decoding="async" onload="this.parentNode.classList.add(&quot;has-dog-art&quot;)" onerror="if(this.dataset.fallback){const path=this.dataset.fallback;delete this.dataset.fallback;this.src=path;}else this.remove()">':'';
  const inner=art+'<span class="dog-card-top"><span>'+safe(value)+'</span><span>✦</span></span><span class="dog-card-main"><span class="dog-card-value">'+safe(value)+'</span><span class="dog-card-symbol">'+safe(c.symbol)+'</span></span><span class="dog-card-footer">'+safe(footer||c.caption)+'</span>';
  return '<'+tag+' class="playing-card dog-designed '+(selected?'picked ':'')+safe(extraClass)+'" data-card-kind="'+safe(c.kind)+'" data-card-edition="'+safe(c.edition)+'" '+attrs+'>'+inner+'</'+tag+'>';
 }

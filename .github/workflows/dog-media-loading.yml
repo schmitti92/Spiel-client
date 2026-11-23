@@ -1,0 +1,28 @@
+name: DOG media loading policy
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/card-visuals.js'
+      - 'DOG/room-lobby-video.js'
+      - 'DOG/christmas-first-light-film.js'
+      - 'DOG/christmas-tree-films.js'
+      - 'DOG/christmas-building-films.js'
+      - 'DOG/christmas-intro-gate.js'
+      - 'DOG/index.html'
+      - 'DOG/video-library.js'
+      - 'tests/dog-media-loading.test.mjs'
+      - '.github/workflows/dog-media-loading.yml'
+  pull_request:
+    paths: ['DOG/card-visuals.js','DOG/christmas-first-light-film.js','tests/dog-media-loading.test.mjs']
+  workflow_dispatch:
+jobs:
+  media:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/card-visuals.js && node --check DOG/video-library.js && node --check DOG/christmas-intro-gate.js
+      - run: node --test tests/dog-media-loading.test.mjs

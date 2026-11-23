@@ -42,7 +42,7 @@ export function createDogRoomWelcomeFilm({root}){
   '<h2 id="dog-room-welcome-film-title">Willkommen in der Spiellobby!</h2>',
   '<p>Dein DOG-Film zum Start der gemeinsamen Spielrunde.</p>',
   '</div><button type="button" data-close aria-label="Intro schließen">✕</button></header>',
-  '<video playsinline controls preload="metadata" aria-label="DOG-Lobby-Begrüßungsvideo"></video>',
+  '<video playsinline controls preload="none" aria-label="DOG-Lobby-Begrüßungsvideo"></video>',
   '<div class="dog-room-welcome-footer">',
   '<p data-status role="status">▶ Starte das Video selbst, damit du den Originalton hören kannst.</p>',
   '<div class="dog-room-welcome-actions">',

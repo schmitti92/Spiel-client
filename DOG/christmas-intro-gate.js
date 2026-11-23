@@ -132,7 +132,7 @@ export function showChristmasIntro(onDone=()=>{},onLater=()=>{}){
   './assets/658840420_1795276265000111.mp4' // the first Christmas light (new recording)
  ];
  const video=document.createElement('video');
- video.autoplay=false;video.controls=true;video.playsInline=true;video.muted=false;video.preload='metadata';
+ video.autoplay=false;video.controls=true;video.playsInline=true;video.muted=false;video.preload='none';
  video.poster=new URL('./assets/lichtertal-intro-poster.jpg',import.meta.url).href;
  const fallback=document.createElement('div');fallback.className='dog-reveal-fallback';fallback.hidden=true;
  fallback.innerHTML='<span aria-hidden="true">🎄</span><h2>✨ Das Weihnachtswunder von Lichtertal ✨</h2>';

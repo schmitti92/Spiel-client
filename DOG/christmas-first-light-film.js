@@ -42,7 +42,7 @@ export function initDogFirstLightFilm({currentUid=()=>null}={}){
  dialog.innerHTML=[
   '<header><div><p>⭐ DAS ERSTE WEIHNACHTSLICHT IST GEFUNDEN!</p><h2>Das Weihnachtswunder von Lichtertal</h2><p>Der erste Funke · Einführungsfilm (2 Minuten)</p></div>',
   '<button type="button" data-first-light-close aria-label="Film schließen">✕</button></header>',
-  '<video controls playsinline preload="metadata" aria-label="Der erste Funke – Film mit deutscher Erzählung"></video>',
+  '<video controls playsinline preload="none" aria-label="Der erste Funke – Film mit deutscher Erzählung"></video>',
   '<div class="dog-first-light-footer"><p data-first-light-status role="status">✨ Ein Licht hat Lichtertal erreicht. Entdecke, wie ihr das Weihnachtsdorf gemeinsam retten könnt!</p>',
   '<div class="dog-first-light-actions"><button type="button" data-first-light-play>▶ Mit Ton abspielen</button>',
   '<button type="button" data-first-light-restart>↺ Noch einmal</button>',

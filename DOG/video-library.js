@@ -80,7 +80,7 @@ export function initDogVideoLibrary(){
    tile.setAttribute('aria-label',f.title+' ansehen');
    const image=document.createElement('div');image.className='dog-videothek-art';
    if(f.poster){
-    const picture=document.createElement('img');picture.loading='lazy';
+    const picture=document.createElement('img');picture.loading='lazy';picture.decoding='async';
     picture.alt='';picture.src=clipUrl(f.poster);image.append(picture);
    }else image.textContent=f.icon;
    const info=document.createElement('div');info.className='dog-videothek-tile-info';

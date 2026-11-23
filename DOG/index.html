@@ -670,7 +670,7 @@ html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christm
    <button id="dog-video-library-back" type="button">‹ Alle Filme</button>
    <h3 id="dog-video-library-film-heading"></h3>
    <p id="dog-video-library-film-description"></p>
-   <video id="dog-video-library-player" controls playsinline preload="metadata" aria-label="DOG-Film mit Ton"></video>
+   <video id="dog-video-library-player" controls playsinline preload="none" aria-label="DOG-Film mit Ton"></video>
    <p id="dog-video-library-progress" role="status"></p>
    <div class="dog-videothek-player-actions">
     <button id="dog-video-library-play" type="button">▶ Abspielen</button>
@@ -820,7 +820,7 @@ mountChristmasLinks();
 </script>
 <script type="module">
 import('./ui-shell.js?v=9').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
-import('./app.js?v=112').catch(error=>{
+import('./app.js?v=113').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
