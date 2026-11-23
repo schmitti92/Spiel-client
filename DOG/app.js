@@ -583,6 +583,7 @@ function newGame(){
   const seats=[0,1,2,3];
   game=createGame({names:['Du','Spieler Blau','Spieler Grün','Spieler Gelb'],
     bots:seats.map(i=>i>=humans&&i<activeCount),inactiveSeats:seats.filter(i=>i>=activeCount)});
+  dismissedDogExchangePromptKey=null;
   revealed=true;selectedCard=null;selectedPiece=null;jokerAs=null;lastTurn=null;
   pieceAnimator.cancel();visualFeedback.reset();lastBoardKey=null;lastBoardSnapshot=null;lastBoardRevision=null;lastBoardMatch=null;lastMotionDuration=0;lastAnimatedMoveBot=false;
   if(postponedBoardRedraw){clearTimeout(postponedBoardRedraw);postponedBoardRedraw=null;}
@@ -1105,14 +1106,32 @@ $('dog-victory-new').addEventListener('click',async()=>{
  }
 });
 
+// Dismissing this notice changes only the local UI, never the DOG exchange.
+let dismissedDogExchangePromptKey=null;
+const dogExchangePromptKey=seat=>(online?(acceptedMatchId||matchHint||hubCode):'local')+'|'+game.round+'|'+seat;
+$('dog-exchange-prompt-close')?.addEventListener('click',()=>{
+  const seat=currentHuman();
+  if(!game||game.phase!=='exchange'||seat<0)return;
+  dismissedDogExchangePromptKey=dogExchangePromptKey(seat);
+  $('dog-exchange-prompt').hidden=true;
+});
 // Show a prominent, read-only notice directly above the board ONLY while
 // this human must hand off a card. Never prompt an already-finished player,
 // a bot, a spectator or someone waiting for opponents to exchange.
 function syncDogExchangePrompt(){
   const panel=$('dog-exchange-prompt');
   if(!panel)return;
-  const info=dogExchangePrompt(game,currentHuman(),selectedCard);
-  if(!info){panel.hidden=true;return;}
+  const seat=currentHuman();
+  const info=dogExchangePrompt(game,seat,selectedCard);
+  if(!info){
+    panel.hidden=true;
+    if(game.phase!=='exchange')dismissedDogExchangePromptKey=null;
+    return;
+  }
+  if(dismissedDogExchangePromptKey===dogExchangePromptKey(seat)){
+    panel.hidden=true;
+    return;
+  }
   const title=$('dog-exchange-prompt-title');
   const recipient=$('dog-exchange-prompt-target');
   const guidance=$('dog-exchange-prompt-guidance');
