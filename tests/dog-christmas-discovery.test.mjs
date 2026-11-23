@@ -100,7 +100,7 @@ test('old verified activity shows previously collected fields even without the n
 });
 test('collected markers are drawn above pawns, not hidden behind them',()=>{
  const app=readFileSync(new URL('../DOG/app.js',import.meta.url),'utf8');
- const pawnStart=app.indexOf('  for(const piece of game.pieces){',app.indexOf('function drawBoard()'));
+ const pawnStart=app.indexOf('  for(const piece of visualGame.pieces){',app.indexOf('function drawBoard()'));
  const permanentLayer=app.indexOf('    const byField=new Map();',pawnStart);
  const svgCommit=app.indexOf("  boardSvg.innerHTML=board.join('');",pawnStart);
  assert.ok(pawnStart>=0&&permanentLayer>pawnStart&&svgCommit>permanentLayer);
