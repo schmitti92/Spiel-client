@@ -340,7 +340,25 @@ export function guardChristmasEventPage(){
   if(admitted)return;
   admitted=true;gate.remove();
   document.documentElement.classList.add('dog-christmas-page-ready','dog-christmas-portal-open');
-  await import('./christmas-event.js?v=190');
+  try{
+   await import('./christmas-event.js?v=190');
+  }catch(error){
+   // An invalid module must not leave a visible but unusable village.
+   console.error('[DOG] Weihnachtsevent-Module konnten nicht geladen werden:',error);
+   admitted=false;
+   document.documentElement.classList.remove('dog-christmas-page-ready','dog-christmas-portal-open');
+   gate.hidden=false;
+   document.body.append(gate);
+   message.textContent='⚠️ Das Weihnachtsdorf konnte nicht vollständig geladen werden. Bitte die Seite neu laden. Dein Gebäudefortschritt bleibt auf dem Server gespeichert.';
+   if(!gate.querySelector('[data-event-reload]')){
+    const retry=document.createElement('button');
+    retry.type='button';
+    retry.dataset.eventReload='true';
+    retry.textContent='🔄 Weihnachtsdorf neu laden';
+    retry.addEventListener('click',()=>location.reload());
+    message.after(retry);
+   }
+  }
  };
  const check=async()=>{
   if(admitted||checking)return;
