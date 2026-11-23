@@ -1,0 +1,10 @@
+/* Owned Christmas nameplate and active-turn equipment. Display-only. */
+.seat .seat-name.dog-nameframe{display:inline-flex;align-items:center;gap:4px;width:max-content;max-width:100%;padding:2px 7px;border:1.5px solid var(--nameframe-edge,#ecc682);border-radius:7px;background:var(--nameframe-bg,linear-gradient(125deg,#6e2731,#c88c42));color:var(--nameframe-ink,#fff8dc);box-shadow:0 1px 6px #0008,inset 0 1px #fff5;text-shadow:0 1px 2px #000a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seat .dog-nameframe-icon{font-size:.9em;flex:none}
+.seat .seat-name.dog-nameframe-sternengold{--nameframe-edge:#ffdb78;--nameframe-bg:linear-gradient(130deg,#8c1e37,#c68c32 52%,#6d1834)}
+.seat .seat-name.dog-nameframe-frostkristall{--nameframe-edge:#dcfaff;--nameframe-bg:linear-gradient(130deg,#365c93,#91c6da 50%,#274d7b)}
+.seat .seat-name.dog-nameframe-tannenzauber{--nameframe-edge:#b4f09f;--nameframe-bg:linear-gradient(130deg,#124a2b,#237447 50%,#992b2b)}
+.seat .seat-name.dog-nameframe-lebkuchen{--nameframe-edge:#f3d8a4;--nameframe-bg:linear-gradient(130deg,#794320,#b36a33 52%,#54321d)}
+.seat .seat-name.dog-nameframe-polarlicht{--nameframe-edge:#acf7ef;--nameframe-bg:linear-gradient(130deg,#52317e,#14777e 53%,#592977)}
+.seat .dog-active-emblem.dog-earned-active-icon{filter:drop-shadow(0 0 6px #ffda8b)}
+@media(max-width:680px){.seat .seat-name.dog-nameframe{padding:1px 4px;gap:2px}}
