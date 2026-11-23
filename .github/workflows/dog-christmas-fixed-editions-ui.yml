@@ -6,6 +6,9 @@ on:
       - 'DOG/christmas-event.html'
       - 'DOG/christmas-event.js'
       - 'DOG/christmas-scratch-ui.js'
+      - 'DOG/christmas-other-edition-ui.js'
+      - 'DOG/christmas-scratch-other-edition.css'
+      - 'tests/dog-premium-edition-retirement-ui.test.mjs'
       - 'DOG/christmas-scratch.css'
       - 'tests/dog-christmas-fixed-editions-ui.test.mjs'
       - '.github/workflows/dog-christmas-fixed-editions-ui.yml'
@@ -14,6 +17,9 @@ on:
       - 'DOG/christmas-event.html'
       - 'DOG/christmas-event.js'
       - 'DOG/christmas-scratch-ui.js'
+      - 'DOG/christmas-other-edition-ui.js'
+      - 'DOG/christmas-scratch-other-edition.css'
+      - 'tests/dog-premium-edition-retirement-ui.test.mjs'
       - 'DOG/christmas-scratch.css'
       - 'tests/dog-christmas-fixed-editions-ui.test.mjs'
   workflow_dispatch:
@@ -26,5 +32,6 @@ jobs:
         with:
           node-version: '22'
       - run: node --check DOG/christmas-scratch-ui.js
+      - run: node --check DOG/christmas-other-edition-ui.js && node --test tests/dog-premium-edition-retirement-ui.test.mjs
       - run: node --check DOG/christmas-event.js
       - run: node --test tests/dog-christmas-fixed-editions-ui.test.mjs
