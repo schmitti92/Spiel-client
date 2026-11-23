@@ -115,6 +115,7 @@ export function premiumWinningRowIndices(wins=[]){
    win.indices[1]===win.indices[0]+1&&win.indices[2]===win.indices[1]+1)
   .flatMap(win=>win.indices))];
 }
+import {createScratchJackpotCeremony} from './scratch-jackpot-ceremony.js?v=1';
 export function initChristmasScratch(){
  const $=id=>document.getElementById(id);
  const root=$('scratch-tier-grid'),wallet=$('scratch-wallet'),stage=$('scratch-stage'),
@@ -123,6 +124,7 @@ export function initChristmasScratch(){
  if(!root||!wallet||!stage||!board||!results||!winningLines||!reveal)
   throw Error('SCRATCH_UI_NOT_FOUND');
  let status=null,ticket=null,busy=false,pending=null,requestId=0,finished=false,canManageScratch=false;
+ const jackpotCeremony=createScratchJackpotCeremony({onAccept:()=>closeRevealedTicket()});
  // A scratch GET reads many private and global Firestore documents.
  // Reopening the tab should reuse a recent, per-account screen snapshot.
  // Manual refresh and all rewards/purchases remain server-verified.
@@ -2233,6 +2235,18 @@ export function initChristmasScratch(){
   results.hidden=true;
   notice(winFlag?'🎉 Gewinne und Geschenkfunken sind bereits sicher auf deinem Profil gutgeschrieben.':
    '❄️ Niete – auf dieser Karte gibt es keine gültige Gewinnkombination.');
+  // Only real, server-issued major rewards receive a celebration. Payouts
+  // happened at purchase time; accepting here only acknowledges the receipt.
+  try{
+   if(jackpotCeremony.show(current)){
+    $('scratch-ticket-finish').hidden=true;
+    $('scratch-ticket-next-same').hidden=true;
+    $('scratch-ticket-choose').hidden=true;
+   }
+  }catch(error){
+   console.warn('[DOG scratch] Hauptgewinn-Animation nicht verfügbar:',error);
+   jackpotCeremony.dismiss();
+  }
  }
  async function load(force=false){
   const current=account(),uid=current?.uid||null;
@@ -2241,6 +2255,7 @@ export function initChristmasScratch(){
   if(current&&!force&&pendingScratchReadUid===uid)return;
   const id=++requestId;
   if(!current){
+   jackpotCeremony.dismiss();
    lastScratchReadAt=0;lastScratchReadUid=null;pendingScratchReadUid=null;status=null;giftsEdition=null;snowEdition=null;ticEdition=null;otherStudio.reset();ticket=null;canManageScratch=false;stage.hidden=true;document.body.classList.remove('scratch-ticket-open');hostDialog?.close();giftsDialog?.close();snowDialog?.close();ticDialog?.close();drawShop();notice('🔐 Bitte mit dem DOG-Onlineprofil anmelden.');return}
   pendingScratchReadUid=uid;
   try{
@@ -2366,6 +2381,7 @@ export function initChristmasScratch(){
  // booked winnings in the original receipt; never submit them again here.
  function closeRevealedTicket(){
   if(!ticket||!finished||busy)return null;
+  jackpotCeremony.dismiss();
   const oldTicket=ticket,won=stage.dataset.result==='win';
   acknowledge(oldTicket.commandId);
   ticket=null;finished=false;stage.hidden=true;
