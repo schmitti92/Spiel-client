@@ -6,14 +6,18 @@ import {filteredDogVideoLibrary} from '../DOG/video-library.js';
 
 const read=path=>readFileSync(new URL('../DOG/'+path,import.meta.url),'utf8');
 const ids=new Set(DOG_VIDEO_IDS);
-test('Videothek has all 10 existing story/lobby films and their actual multi-part clips',()=>{
- assert.equal(DOG_VIDEO_CATALOG.length,10);
- assert.equal(ids.size,10);
+test('Videothek includes 17 current story/lobby films, including all six stage-3 building movies',()=>{
+ assert.equal(DOG_VIDEO_CATALOG.length,17);
+ assert.equal(ids.size,17);
  assert.deepEqual(DOG_VIDEO_CATALOG.filter(f=>f.id.startsWith('building-')).map(f=>f.id),[
+  'building-bakery-3','building-workshop-3','building-inn-3','building-tower-3',
+  'building-luckhouse-3','building-academy-3',
   'building-bakery','building-workshop','building-inn','building-tower','building-luckhouse']);
  assert.equal(getDogFilm('intro').clips.length,4);
  assert.equal(getDogFilm('tree-2').clips.length,2);
  assert.equal(getDogFilm('tree-3').clips.length,2);
+ assert.equal(getDogFilm('tree-4').clips.length,3);
+ for(const building of ['bakery','workshop','inn','tower','luckhouse','academy'])assert.equal(getDogFilm('building-'+building+'-3').clips.length,3);
  assert.equal(getDogFilm('building-workshop').clips.length,2);
  assert.equal(getDogFilm('building-inn').clips.length,4);
  assert.equal(getDogFilm('building-tower').clips.length,4);
