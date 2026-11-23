@@ -11,10 +11,11 @@ import {dogBoardActionMatchesDestination} from './board-action-targets.js?v=1';
 import {DOG_MOVE_HINTS_KEY,readDogMoveHints,writeDogMoveHints,dogLegalTargets} from './move-hints.js?v=1';
 import {summarizeDogVictory} from './victory-summary.js?v=4';
 import {dogCosmeticDefinition,equippedDogCosmetic,DOG_COSMETIC_EQUIPMENT_KEY} from './cosmetic-equipment.js?v=1';
-import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,completedDogSeat} from './engine.js?v=7';
+import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,completedDogSeat} from './engine.js?v=8';
 import {DOG_BOT_DIFFICULTIES,readDogBotDifficulties,saveDogBotDifficulty,dogBotDifficultyForSeat,chooseDogBotAction} from './bot-difficulty.js?v=4';
 import {decideDogRoomUpdate} from './online-sync.js?v=15';
 import {planDogBotReplay} from './online-bot-replay.js?v=1';
+import {newReplacementDraws,createReplacementDrawAnimator} from './replacement-draw-animation.js?v=1';
 import {createDogSocketActionDispatcher} from './socket-actions.js?v=1';
 import {initDogFirstLightFilm} from './christmas-first-light-film.js?v=3';
 import {dogChristmasFoundMarkers,newDogChristmasDiscoveries,createDogChristmasDiscoveryPopup,createDogGoldConfetti} from './christmas-discovery.js?v=5';
@@ -151,6 +152,11 @@ function acceptRemote(room){
     detail:window.DOGEventOverviewSnapshot
    }));
    render();
+   // Every player receives the same small public reveal in their existing
+   // Render room projection; never read Firestore or expose the drawn card ID.
+   if(previousMatchId===decision.matchId)
+     replacementDrawAnimator.show(newReplacementDraws(previousGame,game),game.players);
+   else replacementDrawAnimator.reset();
    autoFinishLegacyDogMatch();
    if(!previousChristmas)christmasDiscoveryPopup.reset();
    christmasDiscoveryPopup.show(newDogChristmasDiscoveries(previousChristmas,onlineChristmas,game?.players),game?.players);
@@ -165,8 +171,10 @@ function acceptRemote(room){
      window.dispatchEvent(new Event('dog-match-finished'));
    }
  }else if(game?.phase==='finished'){
+   replacementDrawAnimator.reset();
    $('status').textContent='Partie beendet – du kannst in der Raum-Lobby ein neues Spiel auswählen.';
  }else{
+   replacementDrawAnimator.reset();
    $('status').textContent='Das DOG-Spiel ist noch nicht gestartet oder wurde bereits beendet. Kehre zur Raum-Lobby zurück.';
  }
 }
@@ -286,6 +294,7 @@ let gestureSnapshot=null;
 const boardSvg=$('board');
 const pieceAnimator=createPieceAnimator(boardSvg);
 const visualFeedback=createDogVisualFeedback(document);
+const replacementDrawAnimator=createReplacementDrawAnimator(document,{cardMarkup});
 applyMotionMode(loadMotionMode());
 let lastBoardKey=null,lastBoardSnapshot=null,lastBoardRevision=null,lastBoardMatch=null,lastMotionDuration=0;
 // Browser-only replay of one authoritative Render room update. The server
@@ -566,6 +575,7 @@ function newGame(){
   if(online)return;
   if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
   lastBotActorSeat=null;
+  replacementDrawAnimator.reset();
   humans=Number($('human-count').value)||1;
   if(humans===2)localBotCount=Number($('local-bot-count').value);
   const activeCount=humans===1?4:humans===2?Math.min(4,humans+localBotCount):humans;
@@ -1231,6 +1241,7 @@ function onMove(i){
   }
   try{
     lastBotActorSeat=null; // A human turn breaks the bot-to-bot handoff chain.
+    const beforeMove=game;
     if(game.phase==='exchange')game=exchangeCard(game,seat,move.cardId);
     else game=takeAction(game,seat,move);
     // A divided seven is still the SAME player's turn. Keep their hand
@@ -1241,7 +1252,9 @@ function onMove(i){
     selectedPiece=null;jokerAs=null;
     revealed=continueSeven||humans===1;
     lastTurn=continueSeven?seat:null;
-    available=[];save();render();scheduleAI();
+    available=[];save();render();
+    replacementDrawAnimator.show(newReplacementDraws(beforeMove,game),game.players);
+    scheduleAI();
   }catch(e){visualFeedback.invalid();$('status').textContent='⚠️ '+e.message;}
 }
 function scheduleAI(){
@@ -1257,13 +1270,17 @@ function scheduleAI(){
   if(['play','seven','rescue'].includes(game.phase)&&game.players[game.current].bot){
     aiTimer=setTimeout(()=>{
       aiTimer=null;
+      if(replacementDrawAnimator.isActive()){scheduleAI();return;}
       try{
+        const beforeBotMove=game;
         const actor=game.current;
         const move=chooseDogBotAction(game,actor,dogBotDifficultyForSeat(botDifficulties,actor));
         if(move)game=takeAction(game,actor,move);
         else throw Error('Bot findet keinen erlaubten Zug');
         lastBotActorSeat=actor;
-        save();render();scheduleAI();
+        save();render();
+        replacementDrawAnimator.show(newReplacementDraws(beforeBotMove,game),game.players);
+        scheduleAI();
       }catch(e){$('status').textContent='⚠️ Botfehler: '+e.message;}
     },dogBotActionDelay({
       previousBotSeat:lastBotActorSeat,nextBotSeat:game.current,
