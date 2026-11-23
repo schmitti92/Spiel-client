@@ -12,6 +12,7 @@ import {DOG_MOVE_HINTS_KEY,readDogMoveHints,writeDogMoveHints,dogLegalTargets} f
 import {summarizeDogVictory} from './victory-summary.js?v=4';
 import {dogCosmeticDefinition,equippedDogCosmetic,DOG_COSMETIC_EQUIPMENT_KEY} from './cosmetic-equipment.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,completedDogSeat} from './engine.js?v=9';
+import {dogExchangePrompt} from './exchange-prompt.js?v=1';
 import {DOG_BOT_DIFFICULTIES,readDogBotDifficulties,saveDogBotDifficulty,dogBotDifficultyForSeat,chooseDogBotAction} from './bot-difficulty.js?v=4';
 import {decideDogRoomUpdate} from './online-sync.js?v=15';
 import {planDogBotReplay} from './online-bot-replay.js?v=1';
@@ -1099,6 +1100,24 @@ $('dog-victory-new').addEventListener('click',async()=>{
  }
 });
 
+// Show a prominent, read-only notice directly above the board ONLY while
+// this human must hand off a card. Never prompt an already-finished player,
+// a bot, a spectator or someone waiting for opponents to exchange.
+function syncDogExchangePrompt(){
+  const panel=$('dog-exchange-prompt');
+  if(!panel)return;
+  const info=dogExchangePrompt(game,currentHuman(),selectedCard);
+  if(!info){panel.hidden=true;return;}
+  const title=$('dog-exchange-prompt-title');
+  const recipient=$('dog-exchange-prompt-target');
+  const guidance=$('dog-exchange-prompt-guidance');
+  const receiver='🎁 Empfänger: '+info.recipientName;
+  if(title.textContent!==info.title)title.textContent=info.title;
+  if(recipient.textContent!==receiver)recipient.textContent=receiver;
+  if(guidance.textContent!==info.guidance)guidance.textContent=info.guidance;
+  panel.dataset.cardSelected=String(info.selected);
+  panel.hidden=false;
+}
 // Non-blocking turn announcement. Only the visible active seat changes it.
 let lastAnnouncedTurn=null,turnAnnouncementTimer=null;
 function showTurnAnnouncement(seat){
@@ -1163,7 +1182,7 @@ function render(){
   $('history').innerHTML=game.history.map(t=>'<div>'+escape(t)+'</div>').join('');
   renderPlayers();
   available=[];
-  renderHand();drawBoard();renderDogBotDifficulties();
+  renderHand();drawBoard();syncDogExchangePrompt();renderDogBotDifficulties();
   const latestEvent=onlineChristmas?.activity?.at(-1);
   const myScratch=latestEvent?.type==='scratch'&&latestEvent.seat===onlineSeat?
    ' · 🎟️ '+({simple:'Einfaches',medium:'Mittleres',premium:'Premium-'}[latestEvent.tier]||'')+
