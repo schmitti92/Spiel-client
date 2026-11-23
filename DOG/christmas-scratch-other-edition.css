@@ -97,3 +97,25 @@
 }
 .scratch-other-edition-retire:disabled{cursor:wait;opacity:.55}
 .scratch-other-edition-retire[hidden]{display:none!important}
+
+/* Premium actions stay at the TOP of the editor, not buried below settings. */
+#scratch-other-edition-dialog .scratch-other-edition-manage{
+ display:flex;flex-direction:column;gap:7px;
+ padding:12px 14px;margin:10px 0;
+ background:linear-gradient(115deg,#452a36,#2d3d45);
+ border:2px solid #ffe0a4;border-radius:13px;
+ box-shadow:inset 0 0 19px #fff3b00e,0 5px 22px #0005;
+}
+#scratch-other-edition-dialog .scratch-other-edition-manage[hidden]{display:none!important}
+#scratch-other-edition-dialog .scratch-other-edition-manage strong{
+ font-size:clamp(16px,2.6vw,21px);color:#ffde99;
+}
+#scratch-other-edition-dialog .scratch-other-edition-manage p{
+ margin:0;color:#f8e7cb;font-size:14px;line-height:1.4;
+}
+#scratch-other-edition-dialog .scratch-other-edition-manage .scratch-other-edition-retire{
+ margin:5px 0 0;padding:13px 16px;
+ background:linear-gradient(135deg,#a83d34,#6a2423);
+ border-color:#ffc5ae;color:white;font-size:clamp(13px,2.4vw,16px);
+ box-shadow:0 4px 14px #0005;
+}
