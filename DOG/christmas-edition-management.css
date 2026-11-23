@@ -84,3 +84,49 @@
 @media(max-width:480px){
  .scratch-edition-management-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* Always-findable entry to the seven individual edition editors. */
+.scratch-management-hub{
+ margin:10px 0 16px;border:1px solid #d6b577;
+ border-radius:13px;background:linear-gradient(125deg,#182f3b,#263c42);
+ color:#f9e8c6;overflow:hidden;
+}
+.scratch-management-hub>summary{
+ display:flex;justify-content:space-between;align-items:center;gap:12px;
+ list-style:none;cursor:pointer;
+ min-height:52px;padding:12px 16px;
+ color:#ffe3a6;font-size:clamp(15px,2.3vw,19px);font-weight:850;
+}
+.scratch-management-hub>summary::-webkit-details-marker{display:none}
+.scratch-management-hub>summary::after{content:'⌄';font-size:22px;margin-left:auto}
+.scratch-management-hub[open]>summary::after{content:'⌃'}
+.scratch-management-hub summary small{
+ font-size:12px;font-weight:600;color:#d6e5df;
+}
+.scratch-management-hub-body{
+ padding:12px 16px 15px;border-top:1px solid #efd59b65;
+}
+.scratch-management-hub-body>p{
+ margin:6px 0 12px;font-size:13px;line-height:1.5;
+ color:#e4e5da;
+}
+.scratch-management-hub-grid{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:9px;
+}
+.scratch-management-hub-grid button{
+ min-height:45px;border:1px solid #e6ce9c;border-radius:10px;
+ padding:9px 12px;font:inherit;font-weight:770;
+ color:#fff0cb;background:linear-gradient(130deg,#275a56,#324659);
+ cursor:pointer;text-align:left;
+}
+.scratch-management-hub-grid button:hover{
+ background:linear-gradient(130deg,#367f70,#475e7c);
+}
+@media(max-width:540px){
+ .scratch-management-hub>summary{
+  flex-direction:column;align-items:flex-start;padding:10px 12px;
+ }
+ .scratch-management-hub>summary::after{position:absolute;right:18px}
+ .scratch-management-hub-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .scratch-management-hub-grid button{font-size:12px}
+}
