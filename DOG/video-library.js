@@ -1,7 +1,7 @@
 /** In-game DOG Videothek. Opens only on request, reads one verified Render
  * archive snapshot, never polls Firebase and never grants game rewards.
  */
-import {DOG_VIDEO_CATALOG,getDogFilm} from './video-library-catalog.js?v=2';
+import {DOG_VIDEO_CATALOG,getDogFilm} from './video-library-catalog.js?v=3';
 import {markDogVideoSeen} from './video-library-watched.js?v=2';
 
 const BASE=String(globalThis.window?.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
@@ -15,7 +15,7 @@ const plural=n=>n===1?'Szene':'Szenen';
 const localWatched=(uid,id)=>{
  try{
   if(id==='first-light')return localStorage.getItem('dog-first-light-film-seen-v1:'+uid)==='1';
-  if(id==='tree-2'||id==='tree-3')return localStorage.getItem('dog-christmas-tree-film-v1:'+uid+':'+id.slice(-1))==='done';
+  if(/^tree-[234]$/.test(id))return localStorage.getItem('dog-christmas-tree-film-v1:'+uid+':'+id.slice(-1))==='done';
   return localStorage.getItem('dog-videothek-watched-synced-v1:'+uid+':'+id)==='1';
  }catch{return false;}
 };
