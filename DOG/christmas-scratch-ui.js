@@ -128,6 +128,10 @@ export function initChristmasScratch(){
  if(!root||!wallet||!stage||!board||!results||!winningLines||!reveal)
   throw Error('SCRATCH_UI_NOT_FOUND');
  let status=null,ticket=null,busy=false,pending=null,requestId=0,finished=false,canManageScratch=false;
+ // Local developer preview only controls visibility. The server-verified
+ // admin/developer UID determines whether real shared editions may change.
+ const isDevActive=()=>window.DOGChristmasDev?.isActive()===true;
+ const canEditEditions=()=>isDevActive()&&canManageScratch;
  const jackpotCeremony=createScratchJackpotCeremony({onAccept:()=>closeRevealedTicket()});
  // A scratch GET reads many private and global Firestore documents.
  // Reopening the tab should reuse a recent, per-account screen snapshot.
@@ -342,7 +346,7 @@ export function initChristmasScratch(){
   return data;
  }
  const otherStudio=createOtherScratchStudio({account,query,drawShop,showAlert,stage,
-  canManage:()=>canManageScratch});
+  canManage:()=>canEditEditions()});
  // Each special ticket has a separate editor AND a creator-checked
  // latest-edition section. These buttons do not poll Firestore.
  const editionManagers={};
@@ -362,6 +366,9 @@ export function initChristmasScratch(){
  // Central administration stays visible even when a ticket is locked
  // by a player's level. Only server-authorized scratch admins can use it.
  function openScratchEditionSettings(variant){
+  if(!isDevActive()){
+   showAlert('🔒 Die Auflagenverwaltung ist nur im aktiven DOG-Entwicklermodus sichtbar.',variant);return;
+  }
   if(!account()){
    showAlert('🔐 Bitte zuerst mit deinem DOG-Onlineprofil anmelden.',variant);return;
   }
@@ -369,7 +376,7 @@ export function initChristmasScratch(){
    showAlert('🔄 Rubbellos-Konto und Adminrechte noch nicht geladen. Bitte den Kontostand aktualisieren.',variant);return;
   }
   if(!canManageScratch){
-   showAlert('🔒 Keine Administratorrechte für die Rubbellos-Auflagen. Das Profil muss auf Render in DOG_SCRATCH_ADMIN_UIDS freigeschaltet sein.',variant);
+   showAlert('🔒 Entwickler-Vorschau aktiv, aber keine bestätigten Serverrechte. Das Profil muss auf Render unter DOG_DEVELOPER_UIDS oder DOG_SCRATCH_ADMIN_UIDS freigeschaltet sein.',variant);
    return;
   }
   if(variant==='gifts')openGiftsSettings();
@@ -689,13 +696,18 @@ export function initChristmasScratch(){
   const shopPlayerLevel=developer?.isActive()?developer.settings().playerLevel:
    Number.isInteger(status?.playerLevel)?status.playerLevel:1;
   wallet.textContent=developer?.isActive()?num(developer.settings().coins)+' 🪙 Testmünzen':status?num(status.coins)+' 🪙':'– 🪙';
+  const hub=$('scratch-management-hub');
+  if(hub){
+   hub.hidden=!isDevActive();
+   if(!isDevActive())hub.open=false;
+  }
   const identity=$('scratch-management-identity');
-  if(identity)identity.hidden=!account()?.uid;
+  if(identity)identity.hidden=!isDevActive()||!account()?.uid;
   const rights=$('scratch-management-access');
   if(rights)rights.textContent=!account()?'🔐 Bitte mit einem DOG-Onlineprofil anmelden.':
    !status?'🔄 Konto und Berechtigungen werden geladen.':
-   canManageScratch?'✅ Administratorrechte bestätigt. Du kannst jede Losart unabhängig konfigurieren.':
-   '🔒 Dieses DOG-Profil hat keine Auflagen-Administratorrechte. Bitte die UID in DOG_SCRATCH_ADMIN_UIDS auf Render freischalten.';
+   canManageScratch?'✅ Entwicklerrechte am Server bestätigt. Du kannst die Auflagen aller 7 Lose verwalten, auch ältere Serien.':
+   '🔒 Lokaler Entwicklermodus allein vergibt keine Serverrechte. Die echte DOG-Konto-ID muss auf Render unter DOG_DEVELOPER_UIDS oder DOG_SCRATCH_ADMIN_UIDS hinterlegt sein.';
   const freeMode=false; // Free-mode and daily free tickets are disabled.
   // Keep the legacy gear for dialog handlers; hide it in the normal shop.
   $('scratch-host-settings').hidden=true;
@@ -781,28 +793,28 @@ export function initChristmasScratch(){
      '🔒 Freischaltung ab Spielerlevel '+minPlayerLevel+' · Dein Level: '+shopPlayerLevel);
     badge.setAttribute('role','note');article.append(badge);
    }
-   if(option.id==='gifts'){
+   if(isDevActive()&&(option.id==='gifts')){
     const gear=el('button','scratch-gifts-card-settings','⚙️ Einstellungen');
     gear.type='button';gear.title='Nur die Geschenkelinie einstellen';
     gear.setAttribute('aria-label','Geschenkelinie-Einstellungen öffnen');
     gear.addEventListener('click',event=>{event.stopPropagation();openScratchEditionSettings('gifts')});
     article.append(gear);
    }
-   if(OTHER_EDITOR_VARIANTS.includes(option.id)){
+   if(isDevActive()&&(OTHER_EDITOR_VARIANTS.includes(option.id))){
     const gear=el('button','scratch-other-edition-gear','⚙️ Auflage');
     gear.type='button';gear.title='Auflage erstellen oder Restlose bearbeiten';
     gear.setAttribute('aria-label','Auflagenstudio für '+option.name+' öffnen');
     gear.addEventListener('click',event=>{event.stopPropagation();openScratchEditionSettings(option.id)});
     article.append(gear);
    }
-   if(option.id==='tic_tac_toe'){
+   if(isDevActive()&&(option.id==='tic_tac_toe')){
     const gear=el('button','scratch-gifts-card-settings scratch-tic-card-settings','⚙️ Auflage');
     gear.type='button';gear.title='Tic-Tac-Toe-Auflage erstellen oder bearbeiten';
     gear.setAttribute('aria-label','Tic-Tac-Toe-Auflagenstudio öffnen');
     gear.addEventListener('click',event=>{event.stopPropagation();openScratchEditionSettings('tic_tac_toe')});
     article.append(gear);
    }
-   if(option.id==='snow_collect'){
+   if(isDevActive()&&(option.id==='snow_collect')){
     const gear=el('button','scratch-gifts-card-settings scratch-snow-card-settings','⚙️ Auflage');
     gear.type='button';gear.title='Schneeflocken-Bingo-Auflage erstellen';
     gear.setAttribute('aria-label','Schneeflocken-Bingo-Auflagentool öffnen');
@@ -2009,8 +2021,8 @@ export function initChristmasScratch(){
   const conf=VARIANTS[result.board?.variantId],cells=result.board?.cells;
   stage.dataset.variant=result.board?.variantId||'legacy';
   otherStudio.onTicket(stage.dataset.variant);
-  $('scratch-gifts-settings-open').hidden=stage.dataset.variant!=='gifts';
-  $('scratch-snow-settings-open').hidden=stage.dataset.variant!=='snow_collect';
+  $('scratch-gifts-settings-open').hidden=!isDevActive()||stage.dataset.variant!=='gifts';
+  $('scratch-snow-settings-open').hidden=!isDevActive()||stage.dataset.variant!=='snow_collect';
   stage.dataset.tier=result.tier||'simple';
   stage.dataset.duelVersion=String(result.board?.variantId==='tic_tac_toe'?result.board?.symbolVersion||0:0);
   // The ticket banner stays outside the scratchable 3 × 3 region.
@@ -2847,7 +2859,18 @@ export function initChristmasScratch(){
   }catch(error){feedback.textContent='⚠️ '+(error.message||'Speichern fehlgeschlagen');}
   finally{save.disabled=false;}
  });
- window.addEventListener('dog-christmas-dev-change',()=>drawShop());
+ window.addEventListener('dog-christmas-dev-change',()=>{
+  if(!isDevActive()){
+   hostDialog?.close();giftsDialog?.close();snowDialog?.close();ticDialog?.close();
+   otherStudio.close?.();
+  }
+  // The current scratch ticket may remain open, but its editor buttons
+  // must disappear immediately when developer mode is switched off.
+  otherStudio.onTicket(isDevActive()?stage.dataset.variant:null);
+  $('scratch-gifts-settings-open').hidden=!isDevActive()||stage.dataset.variant!=='gifts';
+  $('scratch-snow-settings-open').hidden=!isDevActive()||stage.dataset.variant!=='snow_collect';
+  drawShop();
+ });
  window.addEventListener('dog-scratch-balance-changed',()=>{
   // Level vouchers, research tickets and village upgrades can change prices
   // or balances without passing through this shop's own purchase endpoint.
