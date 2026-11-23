@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {EDITION_SETTINGS_FIELDS,SCRATCH_EDITION_IDS,editionStatusLine}
+import {EDITION_SETTINGS_FIELDS,SCRATCH_EDITION_IDS,editionStatusLine,editionAggregateStats}
  from '../DOG/christmas-edition-management-ui.js';
 
 const read=path=>readFileSync(new URL(path,import.meta.url),'utf8');
@@ -53,4 +53,38 @@ test('DOG: ending an edition fetches live state and archives only a confirmed ow
  assert.match(helper,/expectedRevision:edition\.revision/);
  assert.match(helper,/confirmation:'RETIRE_'\+variant\.toUpperCase\(\)/);
  assert.match(helper,/onRetired\?\.\(\)/);
+});
+
+test('DOG: manager displays only verified remaining prize counts without exposing ticket order',()=>{
+ const metrics=editionAggregateStats({
+  issued:25,remaining:475,config:{price:600},
+  paidCoins:10000,maxTotalCoins:120000,
+  payingTicketsRemaining:132,nonPayingTicketsRemaining:343,
+  giftTicketsRemaining:12,maxTicketCoinsRemaining:1500
+ });
+ assert.deepEqual(metrics,{
+  remaining:475,paying:132,nonPaying:343,gift:12,maximum:1500,payoutShare:40
+ });
+ assert.equal(editionAggregateStats(null),null);
+ const noPlan=editionAggregateStats({issued:9,config:{price:300},
+  maxTotalCoins:25000,payingTicketsRemaining:null});
+ assert.equal(noPlan.paying,null);
+ assert.equal(noPlan.nonPaying,null);
+ assert.match(helper,/scratch-edition-management-progress/);
+ assert.match(helper,/scratch-edition-management-stats/);
+ assert.match(helper,/Ohne Geldgewinn/);
+ assert.match(helper,/Höchster Geldgewinn/);
+ assert.match(css,/\.scratch-edition-management-stats/);
+});
+
+test('DOG: draft settings are not changed by a status refresh; user explicitly loads saved run',()=>{
+ assert.match(helper,/load\.addEventListener\('click'/);
+ assert.match(helper,/onLoadCurrent\(getEdition\(\)\)/);
+ assert.match(studio,/onLoadCurrent:\(\)=>fillCurrentValues\(variant\)/);
+ assert.match(scratch,/onLoadCurrent,?/);
+ assert.match(scratch,/function fillGiftsSettings\(preferEdition=false\)/);
+ assert.match(scratch,/function fillSnowSettings\(preferEdition=false\)/);
+ assert.match(scratch,/function fillTicEditionValues\(\)/);
+ assert.match(scratch,/\(preferEdition\?giftsEdition\?\.config/);
+ assert.match(scratch,/\(preferEdition\?snowEdition\?\.config/);
 });
