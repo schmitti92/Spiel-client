@@ -50,7 +50,7 @@ test('event, archive and entry page request current compatible film modules',()=
  assert.match(event,/import \{initChristmasTreeFilms\} from '\.\/christmas-tree-films\.js\?v=6'/);
  assert.match(event,/import \{initChristmasBuildingFilms\} from '\.\/christmas-building-films\.js\?v=10'/);
  assert.match(gate,/import\('\.\/christmas-event\.js\?v=190'\)/);
- assert.match(page,/christmas-intro-gate\.js\?v=52/);
+ assert.match(page,/christmas-intro-gate\.js\?v=53/);
  assert.match(catalog,/christmas-tree-films\.js\?v=6/);
  assert.match(tree,/status\.textContent='🎬 Baumstufe '/);
  assert.match(tree,/chapter\.clips\.length\+\(autoContinue\?/);
