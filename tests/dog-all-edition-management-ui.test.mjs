@@ -110,3 +110,15 @@ test('DOG: all in-ticket editor shortcuts are subject to the verified admin flag
  assert.match(scratch,/scratch-gifts-settings-open'\)\.addEventListener\('click',\(\)=>openScratchEditionSettings\('gifts'\)\)/);
  assert.match(scratch,/scratch-snow-settings-open'\)\.addEventListener\('click',\(\)=>openScratchEditionSettings\('snow_collect'\)\)/);
 });
+
+test('DOG Chris: authenticated UID can be copied for Render administrator registration',()=>{
+ assert.match(html,/id="scratch-management-identity"/);
+ assert.match(html,/id="scratch-management-copy-uid"/);
+ assert.match(html,/id="scratch-management-copy-feedback"/);
+ assert.match(html,/DOG_SCRATCH_ADMIN_UIDS/);
+ assert.match(scratch,/scratch-management-copy-uid'\)\?\.addEventListener\('click',async\(\)=>/);
+ assert.match(scratch,/const uid=account\(\)\?\.uid/);
+ assert.match(scratch,/navigator\.clipboard\.writeText\(uid\)/);
+ assert.match(scratch,/identity\.hidden=!account\(\)\?\.uid/);
+ assert.match(css,/\.scratch-management-identity\[hidden\]\{display:none!important\}/);
+});
