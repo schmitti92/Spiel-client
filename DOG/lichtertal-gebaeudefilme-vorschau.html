@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lichtertal – Filmvorschau Gebäude Stufe 2 → 3</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(140deg,#061923,#113840);color:#fff1d5;min-height:100vh}
+main{max-width:940px;padding:20px;margin:0 auto}
+h1{font-size:clamp(23px,4vw,36px);margin:0 0 8px}
+p{line-height:1.5}
+.note{border:1px solid #8da4a0;border-radius:12px;padding:12px 14px;background:#183b42}
+.selector{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:9px;margin:18px 0}
+button{cursor:pointer;min-height:46px;border-radius:10px;border:1px solid #baab85;padding:10px 12px;background:#234b55;color:#fff1d5;font:inherit}
+.selector button{text-align:left}
+button.active,button[data-action="play"]{background:#f3cd87;color:#0c2730;font-weight:750}
+video{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;border-radius:12px;border:1px solid #9c815a;background:#050c13}
+.status{min-height:24px}
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin:12px 0}
+.actions button{flex:1 1 160px}
+footer{margin:16px 0;font-size:13px;opacity:.85}
+a{color:#ffe1a1}
+</style>
+</head>
+<body>
+<main>
+<h1>🎄 Lichtertal · Gebäude-Kurzfilme</h1>
+<p>Filmvorschau für den Aufstieg <b>Level 2 → 3</b>. Jedes der sechs Gebäude hat drei Szenen. Der Spieler öffnet erst mit Tippen auf Play; danach laufen die Clips nacheinander.</p>
+<p class="note">🔍 Diese Vorschau verändert keine Spielstände und benötigt weder Firebase noch Render. Die Reihenfolge von Weihnachtsbäckerei und Friedensherberge wurde anhand der Bilder kontrolliert. Die anderen vier Gruppen sind anhand der Dateizeitstempel vorläufig zugeordnet.</p>
+<div class="selector" id="selector"></div>
+<h2 id="heading"></h2>
+<video controls playsinline preload="metadata" aria-label="Gebäudegeschichte"></video>
+<p class="status" id="status" aria-live="polite"></p>
+<div class="actions">
+<button type="button" data-action="prev">◀ Vorherige Szene</button>
+<button type="button" data-action="play">▶ Abspielen / Pause</button>
+<button type="button" data-action="next">Nächste Szene ▶</button>
+<button type="button" data-action="restart">↺ Von Anfang</button>
+</div>
+<footer>Die offiziellen Gebäudefilme werden nur nach einem bestätigten Ausbau gestartet. <a href="christmas-event.html">Zum Weihnachtsevent</a></footer>
+</main>
+<script>
+const FILMS={"bakery":{"title":"🍪 Weihnachtsbäckerei","files":["642404080_1795450992109546.mp4","760851797_1795450996912422.mp4","302011898_1795451000795035.mp4"],"visuallyChecked":true},"workshop":{"title":"🎁 Wichtelwerkstatt","files":["1034360486_1795451236569195.mp4","1026932259_1795451240621580.mp4","339483223_1795451245686794.mp4"],"visuallyChecked":false},"inn":{"title":"🕯️ Friedensherberge","files":["117094114_1795450950512189.mp4","707135559_1795450956663425.mp4","301317141_1795450960876917.mp4"],"visuallyChecked":true},"tower":{"title":"🔔 Weihnachtslichter-Turm","files":["939721879_1795451249432580.mp4","440304677_1795451252819988.mp4","737530102_1795451256803016.mp4"],"visuallyChecked":false},"luckhouse":{"title":"🎟️ Weihnachts-Glückshaus","files":["938798621_1795451261419687.mp4","923830731_1795451266432144.mp4","145770258_1795451270507824.mp4"],"visuallyChecked":false},"academy":{"title":"📚 XP-Wichtel-Akademie","files":["331513856_1795451273472473.mp4","717111883_1795451276883098.mp4","1026736309_1795451280319043.mp4"],"visuallyChecked":false}};
+const $=id=>document.getElementById(id);
+const player=document.querySelector('video'),status=$('status');
+const params=new URL(location.href).searchParams;
+let current=FILMS[params.get('building')]?params.get('building'):'bakery',index=0;
+const names=Object.keys(FILMS);
+function paint(){
+ const film=FILMS[current];
+ $('heading').textContent=film.title;
+ status.textContent='🎬 Szene '+(index+1)+' von '+film.files.length+' · '+(film.visuallyChecked?'Bilder geprüft':'Zeitlich zugeordnet – bitte kontrollieren');
+ player.pause();
+ player.src='assets/'+film.files[index];
+ player.load();
+ for(const button of $('selector').querySelectorAll('button')){
+  button.classList.toggle('active',button.dataset.building===current);
+  button.setAttribute('aria-pressed',String(button.dataset.building===current));
+ }
+}
+function advance(delta,auto=false){
+ const count=FILMS[current].files.length;
+ if(index+delta<0||index+delta>=count){
+  if(auto){status.textContent='✅ Alle drei Szenen abgeschlossen.';return;}
+  index=delta>0?0:count-1;
+ }else index+=delta;
+ paint();
+ if(auto)player.play().catch(()=>{status.textContent+=' · Zum Fortsetzen Play drücken.';});
+}
+for(const id of names){
+ const button=document.createElement('button');
+ button.type='button';button.dataset.building=id;
+ button.textContent=FILMS[id].title;
+ button.addEventListener('click',()=>{current=id;index=0;paint();});
+ $('selector').append(button);
+}
+document.querySelector('[data-action="prev"]').addEventListener('click',()=>advance(-1));
+document.querySelector('[data-action="next"]').addEventListener('click',()=>advance(1));
+document.querySelector('[data-action="restart"]').addEventListener('click',()=>{index=0;paint();player.play().catch(()=>{});});
+document.querySelector('[data-action="play"]').addEventListener('click',()=>player.paused?player.play():player.pause());
+player.addEventListener('ended',()=>advance(1,true));
+player.addEventListener('error',()=>{status.textContent='⚠️ Datei nicht ladbar. Prüfe Dateinamen und Veröffentlichung.';});
+paint();
+</script>
+</body>
+</html>
