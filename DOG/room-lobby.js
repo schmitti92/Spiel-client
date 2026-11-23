@@ -187,6 +187,17 @@ function update(snapshot,busy=false){
   :ready===total?'Alle bereit. Die Partie wird jetzt vom Server gestartet.'
   :'Warte auf die Bereitschaft aller aktiven Mitspieler.';
  setText('dog-room-readiness-note',note+(spectatorCount?' · '+spectatorCount+' Zuschauer':''));
+ const botPanel=$('dog-room-bot-settings'),botSelect=$('dog-room-bot-count');
+ const twoHumans=total===2&&snapshot.phase==='preparing';
+ botPanel.hidden=!twoHumans;
+ if(twoHumans){
+  const count=[0,1,2].includes(snapshot.settings?.botCount)?snapshot.settings.botCount:2;
+  botSelect.value=String(count);
+  botSelect.disabled=busy||!snapshot.host;
+  setText('dog-room-bot-note',snapshot.host?
+   '👑 Du bestimmst die Bot-Anzahl. Bei einer Änderung müssen alle erneut bereit sein.':
+   '👑 Der Host wählt die Bot-Anzahl für eure Partie.');
+ }
  const join=$('dog-room-join'),readyButton=$('dog-room-ready'),start=$('dog-room-start');
  const canPlay=!!me?.participating;
  if(finished){
@@ -218,6 +229,13 @@ function update(snapshot,busy=false){
  }
  if(busy)feedback('Aktion wird vom Server bestätigt …');
 }
+$('dog-room-bot-count').addEventListener('change',event=>{
+ if(!current||current.phase!=='preparing'||!current.host||
+    current.players.filter(p=>p.participating).length!==2)return;
+ const botCount=Number(event.target.value);
+ if(![0,1,2].includes(botCount))return;
+ send('bots',{botCount});
+});
 $('dog-room-roster').addEventListener('click',event=>{
  const button=event.target.closest('button[data-dog-color-choice]');
  if(!button||button.disabled||!['preparing','playing'].includes(current?.phase))return;

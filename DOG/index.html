@@ -462,7 +462,7 @@ html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christm
          <span style="color:#8b9ead">gegen</span>
          <span class="team-chip"><span class="dot" data-appearance-seat="1" style="background:#4c9bfa"></span><span class="dot" data-appearance-seat="3" style="background:#e8b84e"></span>Team Blau / Gelb</span>
        </span>
-       <span id="dog-mode-solo3" class="team-chip" hidden>👥 3 echte Spieler · Jeder gegen jeden · Kein Bot</span>
+       <span id="dog-mode-solo3" class="team-chip" hidden>👥 Jeder gegen jeden</span>
        <a href="editor.html" data-dog-editor class="board-editor-link">✎ Brett bearbeiten</a>
      </div>
    </section>
@@ -587,9 +587,17 @@ html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christm
              <label for="human-count">Spieler am Gerät</label>
              <select id="human-count">
                <option value="1">1 Mensch + 3 Bots</option>
-               <option value="2">2 Menschen + 2 Bots</option>
-               <option value="3">3 Menschen + 1 Bot</option>
+               <option value="2">2 Menschen – Bot-Anzahl wählen</option>
+               <option value="3">3 Menschen – ohne Bot</option>
                <option value="4">4 Menschen (lokal)</option>
+             </select>
+           </div>
+           <div class="controls" id="local-bot-count-setting" hidden>
+             <label for="local-bot-count">Bots bei 2 Menschen</label>
+             <select id="local-bot-count" aria-label="Anzahl Computergegner bei zwei Spielern">
+               <option value="0">0 Bots · Duell</option>
+               <option value="1">1 Bot · Jeder gegen jeden</option>
+               <option value="2" selected>2 Bots · Teamspiel</option>
              </select>
            </div>
            <div id="dog-card-test" class="controls" hidden style="margin-top:9px;padding:9px;border:1px dashed #c9a65a80;border-radius:10px">
@@ -812,7 +820,7 @@ mountChristmasLinks();
 </script>
 <script type="module">
 import('./ui-shell.js?v=9').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
-import('./app.js?v=107').catch(error=>{
+import('./app.js?v=108').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';

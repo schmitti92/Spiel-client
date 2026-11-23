@@ -234,6 +234,15 @@ html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christm
       <section class="dog-room-panel dog-room-players-panel" aria-labelledby="dog-room-players-title">
         <h2 id="dog-room-players-title"><span aria-hidden="true">👥</span> Mitspieler</h2>
         <div id="dog-room-roster" class="dog-room-roster" aria-label="Vier DOG-Spielplätze"></div>
+        <div id="dog-room-bot-settings" class="dog-room-bot-settings" hidden>
+          <label for="dog-room-bot-count">🤖 Computergegner bei 2 Spielern</label>
+          <select id="dog-room-bot-count" aria-label="Anzahl Bots bei zwei echten DOG-Spielern">
+            <option value="0">0 Bots · Duell zu zweit</option>
+            <option value="1">1 Bot · Drei gegeneinander</option>
+            <option value="2">2 Bots · Klassisches Teamspiel</option>
+          </select>
+          <small id="dog-room-bot-note">Der Host wählt die Anzahl. Nur echte Spieler müssen bereit sein.</small>
+        </div>
         <div class="dog-room-readiness" aria-live="polite">
           <div class="dog-room-readiness-copy">
             <span id="dog-room-count">0 Spieler im Raum</span>
@@ -297,16 +306,16 @@ html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christm
 <link rel="stylesheet" href="DOG/room-lobby.css?v=2">
 <link rel="stylesheet" href="DOG/room-statistics.css?v=1">
 <link rel="stylesheet" href="DOG/room-lobby-art.css?v=1">
-<link rel="stylesheet" href="DOG/room-lobby-reference.css?v=2">
+<link rel="stylesheet" href="DOG/room-lobby-reference.css?v=3">
 <script type="module" src="DOG/init-motion.js?v=1"></script><script src="DOG/avatar-picker.js?v=5"></script><script type="module" src="DOG/emoji-lobby.js?v=3"></script><script type="module" src="DOG/board-picker.js?v=12"></script>
-<script type="module" src="DOG/room-lobby.js?v=15"></script>
+<script type="module" src="DOG/room-lobby.js?v=16"></script>
 <script type="module" src="DOG/room-statistics.js?v=1"></script>
 <script src="profile-config.js"></script><script src="profile-auth.js"></script>
 <script type="module">
 import {mountChristmasLinks} from './DOG/christmas-intro-gate.js?v=24';
 mountChristmasLinks();
 </script>
-<script src="hub-lobby.js?v=20261122-dog-victory-rematch" defer></script>
+<script src="hub-lobby.js?v=20261123-dog-bot-choice" defer></script>
 <script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script><script src="site-global-controls.js?v=20261109-global-1"></script>
 <script>
 (function(){const page='../hub-lobby.html'+location.search;

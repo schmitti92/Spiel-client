@@ -1191,6 +1191,15 @@ window.addEventListener('dog-room-lobby-action',event=>{
   void command(async()=>{const {room:r}=await request('/rooms/'+code);activateRoom(r);notice('Raum aktualisiert.');});
   return;
  }
+ if(kind==='bots'){
+  const botCount=event.detail?.botCount;
+  if(!room.host||room.phase!=='preparing'||!Number.isInteger(botCount)||botCount<0||botCount>2)return;
+  void command(async()=>{
+   const {room:r}=await request('/rooms/'+code+'/dog/bots','POST',{botCount});
+   activateRoom(r);
+  });
+  return;
+ }
  if(kind==='color'){
   if(!['preparing','playing'].includes(room.phase)||room.game!=='dog')return;
   const me=room.players.find(p=>p.me&&p.participating);
