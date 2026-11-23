@@ -46,5 +46,5 @@ test('the board replays the server frames without requesting new Render or Fireb
  assert.match(app,/planDogBotReplay\(previousGame,decision\.game,room\.match\?\.dogReplay\)/);
  assert.match(app,/onlineReplayFrame/);
  assert.match(app,/const visualGame=onlineReplayFrame/);
- assert.match(app,/lastMotionDuration\+\(betweenBots\?1000:240\)/);
+ assert.match(app,/lastMotionDuration\)\+\(betweenBots\?1000:240\)/);
 });

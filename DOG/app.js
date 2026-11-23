@@ -644,8 +644,8 @@ function drawBoard(){
   if(!game)return;
   const visualGame=onlineReplayFrame?{
     ...game,pieces:onlineReplayFrame.pieces,revision:onlineReplayFrame.revision,
-    history:onlineReplayFrame.seat===null?visualGame.history:
-      [(visualGame.players[onlineReplayFrame.seat]?.name||'Spieler')+' zieht',...visualGame.history]
+    history:onlineReplayFrame.seat===null?game.history:
+      [(game.players[onlineReplayFrame.seat]?.name||'Spieler')+' zieht',...game.history]
   }:game;
   const snapshot=snapshotPieces(visualGame.pieces);
   const matchIdentity=online?(acceptedMatchId||matchHint||'online'):'local';
