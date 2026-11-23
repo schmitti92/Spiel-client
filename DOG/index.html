@@ -815,12 +815,12 @@ html:not(.dog-christmas-portal-open) [data-dog-event-link],html:not(.dog-christm
 })();
 </script>
 <script type="module">
-import {mountChristmasLinks} from './christmas-intro-gate.js?v=20261122-videothek';
+import {mountChristmasLinks} from './christmas-intro-gate.js?v=20261123-buildings3';
 mountChristmasLinks();
 </script>
 <script type="module">
-import('./ui-shell.js?v=11').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
-import('./app.js?v=114').catch(error=>{
+import('./ui-shell.js?v=12').catch(error=>console.warn('DOG Zusatzmodule nicht geladen:',error));
+import('./app.js?v=115').catch(error=>{
  const message=error instanceof Error?error.message:String(error);
  const turn=document.getElementById('turn');
  if(turn)turn.textContent='⚠️ DOG konnte nicht starten';
