@@ -3,7 +3,7 @@
  * finite edition controls: Elf, Premium 27, Number One and DOG Jackpot.
  * The signed Render receipt/edition ledger is always the only source of truth.
  */
-import {mountScratchEditionManager} from './christmas-edition-management-ui.js?v=2';
+import {mountScratchEditionManager} from './christmas-edition-management-ui.js?v=3';
 export const OTHER_EDITOR_VARIANTS=Object.freeze(['elf','premium_27','number_one_20','dog_jackpot_9']);
 const META=Object.freeze({
  elf:{title:'🧝 Magischer Wichtelpfad',rule:'Geld gewinnt nur über einen durchgehenden Pfad von links nach rechts. Geschenke benötigen 3 verbundene gleiche Symbole.',price:500,amounts:[100,300,800],category:2,none:200,gift:30,winMax:3,double:110,gold:300,dog:350},
