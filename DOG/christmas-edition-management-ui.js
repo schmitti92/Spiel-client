@@ -29,7 +29,23 @@ export const editionStatusLine=edition=>{
   ' Restlose · '+fmt(paid)+' / '+fmt(budget)+' 🪙 ausgeschüttet · '+
   fmt(Math.max(0,budget-paid))+' 🪙 Gewinnreserve · Start: '+date;
 };
-export function mountScratchEditionManager({dialog,variant,getEdition,query,onEdition,onRetired}){
+export const editionAggregateStats=edition=>{
+ if(!edition)return null;
+ const remaining=Math.max(0,Number(edition.remaining??500-Number(edition.issued??0)));
+ const paying=edition.payingTicketsRemaining??edition.moneyTicketsRemaining;
+ const nonPaying=edition.nonPayingTicketsRemaining??(
+  Number.isInteger(paying)?remaining-paying:null);
+ const gift=edition.giftTicketsRemaining;
+ const maximum=edition.maxTicketCoinsRemaining;
+ const price=Number(edition.config?.price);
+ const budget=Number(edition.maxTotalCoins);
+ const payoutShare=Number.isFinite(price)&&price>0&&Number.isFinite(budget)?
+  Math.round(budget/(500*price)*1000)/10:null;
+ return {remaining,paying,nonPaying,gift,maximum,payoutShare};
+};
+export function mountScratchEditionManager({
+ dialog,variant,getEdition,query,onEdition,onRetired,onLoadCurrent
+}){
  if(!SCRATCH_EDITION_IDS.includes(variant)||!dialog||
   typeof getEdition!=='function'||typeof query!=='function')throw Error('INVALID_EDITION_MANAGER');
  const section=document.createElement('section');
@@ -40,6 +56,12 @@ export function mountScratchEditionManager({dialog,variant,getEdition,query,onEd
  const status=document.createElement('p');
  status.className='scratch-edition-management-status';
  status.setAttribute('role','status');
+ const progress=document.createElement('progress');
+ progress.className='scratch-edition-management-progress';
+ progress.max=500;progress.value=0;
+ progress.setAttribute('aria-label','Bereits vergebene Lose von 500');
+ const details=document.createElement('div');
+ details.className='scratch-edition-management-stats';
  const actions=document.createElement('div');
  actions.className='scratch-edition-management-actions';
  const refresh=document.createElement('button');
@@ -63,20 +85,48 @@ export function mountScratchEditionManager({dialog,variant,getEdition,query,onEd
  const budgetNote=document.createElement('small');
  budgetNote.textContent='Berechnung für 500 Lose. Rabatte und Gutscheine sind nicht eingerechnet; der Server prüft, ob die Gewinnkombinationen machbar sind.';
  budgetPanel.append(ratioLabel,applyBudget,budgetNote);
+ const load=document.createElement('button');
+ load.type='button';load.textContent='✏️ Aktuelle Einstellungen übernehmen';
+ load.className='scratch-edition-management-check';
  const feedback=document.createElement('p');
  feedback.className='scratch-edition-management-feedback';
  feedback.setAttribute('role','status');
  feedback.setAttribute('aria-live','polite');
- actions.append(refresh,retire);
- section.append(heading,status,actions,budgetPanel,feedback);
+ actions.append(refresh,retire,load);
+ section.append(heading,status,progress,details,actions,budgetPanel,feedback);
  const headingNode=dialog.querySelector('header,.scratch-gifts-settings-head');
  if(headingNode?.nextSibling)headingNode.parentNode.insertBefore(section,headingNode.nextSibling);
  else dialog.querySelector('form')?.prepend(section);
  let busy=false;
  function render(){
-  status.textContent=editionStatusLine(getEdition());
+  const edition=getEdition();
+  status.textContent=editionStatusLine(edition);
+  progress.value=Math.max(0,Math.min(500,Number(edition?.issued||0)));
+  progress.hidden=!edition;
+  details.replaceChildren();
+  const stats=editionAggregateStats(edition);
+  if(stats){
+   const info=[
+    ['💰 Geldlose offen',stats.paying],
+    ['❄️ Ohne Geldgewinn',stats.nonPaying],
+    ['🎁 Geschenklose offen',stats.gift],
+    ['🏆 Höchster Geldgewinn',stats.maximum===null||stats.maximum===undefined?
+      null:Number(stats.maximum).toLocaleString('de-DE')+' 🪙'],
+    ['📊 Budget / Listenpreisumsatz',stats.payoutShare===null?
+      null:stats.payoutShare.toLocaleString('de-DE')+' %']
+   ];
+   for(const [label,value] of info){
+    if(value===null||value===undefined)continue;
+    const cell=document.createElement('div');
+    const caption=document.createElement('small');caption.textContent=label;
+    const number=document.createElement('strong');number.textContent=String(value);
+    cell.append(caption,number);details.append(cell);
+   }
+  }
   refresh.disabled=busy;retire.disabled=busy;
-  retire.textContent=getEdition()?.remaining>0?'🗑️ Aktuelle Auflage beenden':'🔎 Aktuelle Auflage prüfen / beenden';
+  load.disabled=busy||!edition||typeof onLoadCurrent!=='function';
+  load.hidden=typeof onLoadCurrent!=='function';
+  retire.textContent=edition?.remaining>0?'🗑️ Aktuelle Auflage beenden':'🔎 Aktuelle Auflage prüfen / beenden';
  }
  const notice=message=>{feedback.textContent=message};
  applyBudget.addEventListener('click',()=>{
@@ -96,6 +146,13 @@ export function mountScratchEditionManager({dialog,variant,getEdition,query,onEd
   budgetInput.dispatchEvent(new Event('input',{bubbles:true}));
   notice('✅ Gewinnbudget: '+planned.toLocaleString('de-DE')+
    ' 🪙 für 500 Lose eingetragen. Prüfe anschließend die Gewinnwerte und erstelle/bearbeite die Auflage.');
+ });
+ load.addEventListener('click',()=>{
+  if(busy||!getEdition()||typeof onLoadCurrent!=='function')return;
+  try{
+   onLoadCurrent(getEdition());
+   notice('✅ Die gespeicherten Werte der aktuellen Auflage wurden ins Formular übernommen. Änderungen gelten erst nach „Restlose bearbeiten“.');
+  }catch(e){notice('⚠️ '+String(e.message||e))}
  });
  async function check(){
   const reply=await query('/editions/'+variant+'/status');
