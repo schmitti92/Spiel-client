@@ -171,11 +171,9 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
   }
   $('oe-hint').textContent=hint;
  };
- const open=variant=>{
+ const fillCurrentValues=variant=>{
   if(!META[variant])return;
-  if(!account()){showAlert('🔐 Bitte zuerst im DOG-Profil anmelden.',variant);return}
-  active=variant;showFields();
-  const c=configFor(active);
+  const c=configFor(variant);
   $('oe-title').textContent=META[variant].title+' · Auflage';
   $('oe-rule').textContent=META[variant].rule;
   set('oe-price',c.price);
@@ -190,6 +188,13 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
   const suggested=variant==='premium_27'?2200000:
    variant==='dog_jackpot_9'?400000:100000;
   set('oe-budget',editions[active]?.maxTotalCoins??suggested);
+  update();
+ };
+ const open=variant=>{
+  if(!META[variant])return;
+  if(!account()){showAlert('🔐 Bitte zuerst im DOG-Profil anmelden.',variant);return}
+  active=variant;showFields();
+  fillCurrentValues(variant);
   $('oe-feedback').textContent='';
   for(const variant of OTHER_EDITOR_VARIANTS){
    editionManagers[variant].root.hidden=variant!==active;
@@ -249,7 +254,8 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
   editionManagers[variant]=mountScratchEditionManager({
    dialog,variant,query,getEdition:()=>editions[variant]??null,
    onEdition:edition=>{editions[variant]=edition;update();drawShop()},
-   onRetired:()=>{editions[variant]=null;update();drawShop()}
+   onRetired:()=>{editions[variant]=null;update();drawShop()},
+   onLoadCurrent:()=>fillCurrentValues(variant)
   });
   editionManagers[variant].root.hidden=variant!==active;
  }
