@@ -27,6 +27,11 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
        <p id="oe-rule"></p></div>
      <button type="button" id="oe-close" aria-label="Schließen">✕</button>
    </header>
+   <section id="oe-premium-manage" class="scratch-other-edition-manage" hidden aria-label="Premium-Auflage verwalten">
+     <strong>👑 Aktuelle Premium-Auflage</strong>
+     <p id="oe-premium-status">Auflage prüfen, beenden oder anschließend neu erstellen.</p>
+     <button id="oe-retire-premium" type="button" class="scratch-other-edition-retire">🗑️ Aktuelle Premium-Auflage prüfen / beenden</button>
+   </section>
    <section class="scratch-gifts-settings-section">
      <h4>🎟️ 1 · Los und Gewinnkategorie</h4>
      <div class="scratch-gifts-settings-grid">
@@ -83,7 +88,6 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
      <div id="oe-status" class="scratch-gifts-edition-status" role="status" aria-live="polite"></div>
      <button id="oe-create" type="button" class="scratch-gifts-edition-create">📦 500er-Auflage verbindlich erstellen</button>
      <button id="oe-edit" type="button" class="scratch-gifts-edition-create" hidden>✏️ Aktuelle Restlose bearbeiten</button>
-     <button id="oe-retire-premium" type="button" class="scratch-other-edition-retire" hidden>🗑️ Aktuelle Premium-Auflage beenden</button>
      <p class="scratch-gifts-help">Bereits gekaufte Lose und die dazugehörigen Gewinnbeträge sind unveränderlich. Nur das Erstellerprofil darf die noch nicht verkauften Lose bearbeiten.</p>
      <p id="oe-feedback" class="scratch-gifts-settings-feedback" role="status" aria-live="polite"></p>
    </section>
@@ -156,8 +160,15 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
   $('oe-create').disabled=ongoing||busy;
   $('oe-edit').hidden=!ongoing;
   $('oe-edit').disabled=!ongoing||busy;
-  $('oe-retire-premium').hidden=active!=='premium_27'||!ongoing;
-  $('oe-retire-premium').disabled=busy||!ongoing;
+  // Never hide the Premium management entry merely because cached server
+  // metadata is absent. One explicit click checks the live edition directly.
+  $('oe-premium-manage').hidden=active!=='premium_27';
+  $('oe-retire-premium').disabled=busy;
+  $('oe-retire-premium').textContent=ongoing?'🗑️ Aktuelle Premium-Auflage beenden':'🔎 Premium-Auflage prüfen / beenden';
+  $('oe-premium-status').textContent=ongoing?
+    'Aktiv: '+edition.issued+' von 500 Losen ausgegeben · '+edition.remaining+' noch verfügbar.':
+    edition?.remaining===0?'Diese Auflage ist ausverkauft. Du kannst bereits eine neue erstellen.':
+    'Keine Auflage aus dem letzten Shopabruf erkannt. Hier den aktuellen Serverstand prüfen.';
   let hint='💡 Der feste Münzbetrag hat Vorrang vor den gewünschten Quoten. ';
   const [a,b,c]=[0,1,2].map(i=>Number($('oe-coin-'+i).value||0));
   if(active==='premium_27'){
@@ -243,17 +254,36 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
   input.addEventListener('input',update);
  async function retirePremiumEdition(){
   if(busy||active!=='premium_27')return;
-  const previous=editions.premium_27;
-  if(!previous||previous.remaining<=0)return;
-  const warning='Aktuelle Premium-Auflage wirklich beenden?\n\n'+
-   previous.issued+' bereits ausgegebene Lose bleiben samt Gewinnen erhalten.\n'+
-   previous.remaining+' unverkaufte Lose werden aus dem Verkauf genommen.\n'+
-   'Danach kannst du sofort eine NEUE 500er-Premium-Auflage erstellen.\n\n'+
-   'Dieser Vorgang kann nicht rückgängig gemacht werden.';
-  if(!window.confirm(warning))return;
   busy=true;update();
-  $('oe-feedback').textContent='🔄 Premium-Auflage wird sicher archiviert …';
+  $('oe-feedback').textContent='🔎 Aktuelle Premium-Auflage wird direkt am Server geprüft …';
   try{
+   // Exactly one current-edition document read. Do not trust missing or
+   // stale edition metadata from an earlier shop snapshot.
+   const checked=await query('/editions/premium_27/status');
+   const previous=checked.otherEdition;
+   editions.premium_27=previous??null;
+   if(!previous){
+    $('oe-feedback').textContent='ℹ️ Es ist keine aktive Premium-Auflage gespeichert. Du kannst direkt eine neue 500er-Auflage erstellen.';
+    return;
+   }
+   if(previous.remaining<=0){
+    $('oe-feedback').textContent='ℹ️ Diese Premium-Auflage ist ausverkauft. Du kannst direkt eine neue 500er-Auflage erstellen.';
+    return;
+   }
+   if(checked.canRetire!==true){
+    $('oe-feedback').textContent='🔒 Nur das Profil, das diese Premium-Auflage erstellt hat, darf sie beenden. Melde dich gegebenenfalls mit dem Erstellerprofil an.';
+    return;
+   }
+   const warning='Aktuelle Premium-Auflage wirklich beenden?\n\n'+
+    previous.issued+' bereits ausgegebene Lose bleiben samt Gewinnen erhalten.\n'+
+    previous.remaining+' unverkaufte Lose werden aus dem Verkauf genommen.\n'+
+    'Danach kannst du sofort eine NEUE 500er-Premium-Auflage erstellen.\n\n'+
+    'Dieser Vorgang kann nicht rückgängig gemacht werden.';
+   if(!window.confirm(warning)){
+    $('oe-feedback').textContent='Die aktuelle Premium-Auflage bleibt unverändert.';
+    return;
+   }
+   $('oe-feedback').textContent='🔄 Premium-Auflage wird sicher archiviert …';
    const result=await query('/editions/premium_27/retire',{
     editionId:previous.id,expectedRevision:previous.revision,
     confirmation:'RETIRE_PREMIUM_27'
@@ -267,7 +297,7 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
    const code=String(error?.message||'SERVER_UNAVAILABLE');
    $('oe-feedback').textContent='⚠️ '+({
     SCRATCH_EDITION_ONLY_CREATOR:'Nur das Profil, das diese Premium-Auflage erstellt hat, darf sie beenden.',
-    SCRATCH_EDITION_CHANGED:'Die Auflage wurde inzwischen geändert oder ein Los verkauft. Bitte den Shop neu laden.',
+    SCRATCH_EDITION_CHANGED:'Die Auflage wurde inzwischen geändert oder ein Los verkauft. Bitte erneut prüfen.',
     SCRATCH_EDITION_CONFIRMATION_REQUIRED:'Die Sicherheitsbestätigung fehlt.',
     SCRATCH_EDITION_ARCHIVE_CONFLICT:'Die Auflage ist bereits archiviert. Bitte den Shop aktualisieren.'
    }[code]||code);
