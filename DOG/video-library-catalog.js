@@ -1,7 +1,7 @@
 /** Movie inventory is derived from the actual original DOG film catalogs.
  * Adding a new film to this library cannot bypass the server's allowlist.
  */
-import {CHRISTMAS_TREE_FILMS} from './christmas-tree-films.js?v=3';
+import {CHRISTMAS_TREE_FILMS} from './christmas-tree-films.js?v=4';
 import {CHRISTMAS_BUILDING_FILMS} from './christmas-building-films.js?v=7';
 
 const film=(id,category,icon,title,description,clips,poster=null)=>
@@ -22,7 +22,7 @@ export const DOG_VIDEO_CATALOG=Object.freeze([
  film('first-light','Weihnachtsgeschichte','✨','Der erste Funke',
   'Der erste gemeinsame Weihnachtslicht-Fund in Lichtertal.',
   ['./assets/Lichtertal_Der_erste_Funke_120_Sekunden.mp4'],'./assets/lichtertal-intro-poster.jpg'),
- ...[2,3].map(level=>film('tree-'+level,'Weihnachtsbaum','🌲',
+ ...[2,3,4].map(level=>film('tree-'+level,'Weihnachtsbaum','🌲',
   CHRISTMAS_TREE_FILMS[level].title,'Baumstufe '+level+' · '+CHRISTMAS_TREE_FILMS[level].subtitle,
   CHRISTMAS_TREE_FILMS[level].clips,
   './weihnachtsevent-bilder/weihnachtsbaum_stufe_'+level+'.png')),
