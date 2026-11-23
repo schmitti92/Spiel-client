@@ -881,8 +881,9 @@ function renderHand(){
   if(online&&onlineResearch?.card_swap>0&&game.phase==='exchange'&&!onlineResearch.usedSwap&&selectedCard!==null){
     actions.insertAdjacentHTML('beforeend','<button type="button" class="move-button dog-hand-action-primary" data-research-action="research-swap">🃏 Magischer Kartentausch · ausgewählte Karte ersetzen (1×)</button>');
   }
-  const special=available.filter(m=>['exchange','seven','seven-finish','emptySwap'].includes(m.type));
-  actions.insertAdjacentHTML('beforeend',[...new Map(special.map(m=>[m.type,m])).values()].map(m=>'<button type="button" class="move-button dog-hand-action-primary" data-special="'+m.type+'">'+(m.type==='exchange'?'🎁 Karte weitergeben':m.type==='seven'?'🔥 7 Schritte verteilen':m.type==='seven-finish'?'✅ Restliche '+m.remaining+' Schritte verfallen lassen · letzte Figur im Ziel':'🗑 Tauschkarte ablegen')+'</button>').join(''));
+  // A playable 7 goes directly into its split phase on card selection.
+  const special=available.filter(m=>['exchange','seven-finish','emptySwap'].includes(m.type));
+  actions.insertAdjacentHTML('beforeend',[...new Map(special.map(m=>[m.type,m])).values()].map(m=>'<button type="button" class="move-button dog-hand-action-primary" data-special="'+m.type+'">'+(m.type==='exchange'?'🎁 Karte weitergeben':m.type==='seven-finish'?'✅ Restliche '+m.remaining+' Schritte verfallen lassen · letzte Figur im Ziel':'🗑 Tauschkarte ablegen')+'</button>').join(''));
   if(game.phase==='play'&&legalActions(game,seat).some(m=>m.type==='discardDraw')){
     actions.insertAdjacentHTML('beforeend','<span class="dog-no-move-note" role="status">🃏 Kein Zug möglich: Wähle unter einer beliebigen Karte „Wegwerfen“. Du ziehst genau eine Ersatzkarte.</span>');
   }
@@ -1074,6 +1075,16 @@ function showDogRuleReason(message){
  if(dogRuleToastTimer)clearTimeout(dogRuleToastTimer);
  dogRuleToastTimer=setTimeout(()=>{popup.hidden=true;dogRuleToastTimer=null;},4700);
 }
+// Reuse the engine's authorized seven action in local and online modes.
+function startSelectedSeven(seat){
+  if(game.phase!=='play'||selectedCard===null||seat<0)return false;
+  const card=game.hands[seat]?.find(c=>c.id===selectedCard);
+  if(card?.type!=='7'&&!(card?.type==='joker'&&jokerAs==='7'))return false;
+  const index=available.findIndex(m=>m.type==='seven'&&m.cardId===selectedCard&&m.as==='7');
+  if(index<0)return false;
+  onMove(index);
+  return true;
+}
 function onCard(id){
   const seat=currentHuman();if(seat<0||!revealed||onlineBusy)return;
   if(game.phase==='seven')return; // Finish dividing this card before touching another.
@@ -1084,6 +1095,7 @@ function onCard(id){
      legalActions(game,seat).some(m=>m.cardId===selectedCard&&['start','move','swap','seven'].includes(m.type)))
     openJokerDialog(seat);
   render();
+  if(startSelectedSeven(seat))return;
   if(selectedCard!==null&&game.phase==='play'){
    const plays=legalActions(game,seat).filter(m=>m.cardId===selectedCard);
    if(!plays.some(m=>['start','move','swap','seven'].includes(m.type)))
@@ -1173,6 +1185,7 @@ $('dog-joker-grid').addEventListener('click',event=>{
  const button=event.target.closest('[data-joker-as]');
  if(!button||button.disabled)return;
  jokerAs=button.dataset.jokerAs;selectedPiece=null;jokerDialog.close();render();
+ startSelectedSeven(currentHuman());
 });
 $('dog-joker-close').addEventListener('click',()=>{jokerDialog.close();selectedCard=null;jokerAs=null;selectedPiece=null;render();});
 jokerDialog.addEventListener('cancel',()=>{selectedCard=null;jokerAs=null;selectedPiece=null;render();});
@@ -1308,9 +1321,9 @@ if(!online){
   const first=game.pieces.filter(p=>p.owner===0);
   for(const [i,pos] of [2,8].entries()){first[i].place='track';first[i].pos=pos;}
   const card=game.hands[0][0];card.type='7';
-  selectedCard=card.id;selectedPiece=null;revealed=true;lastTurn=0;available=[];
+  selectedCard=null;selectedPiece=null;revealed=true;lastTurn=0;available=[];
   save();render();
-  $('status').textContent='🧪 Zwei rote Figuren stehen auf der Strecke. Tippe „7 beginnen“ und verteile z. B. 3 + 4 Felder auf beide Figuren.';
+  $('status').textContent='🧪 Zwei rote Figuren stehen auf der Strecke. Tippe die 7er-Karte an und verteile z. B. 3 + 4 Felder auf beide Figuren.';
  });
  $('dog-give-test-card').addEventListener('click',()=>{
   if(!game||game.phase==='finished'||game.phase==='seven'){ $('status').textContent='🧪 Testkarte erst außerhalb einer laufenden 7 oder nach einem Neustart einsetzen.';return;}
