@@ -121,7 +121,7 @@ export function initChristmasTreeFilms({getUserId,isPreview}){
   }
   video.src=new URL(chapter.clips[clipIndex],import.meta.url).href;
   video.load();
-  status.textContent='🎬 Baumstufe '+active.level+' · Szene '+(clipIndex+1)+' von '+chapter.clips.length+'+(autoContinue?'':' · Play drücken, Ton ist eingeschaltet.');
+  status.textContent='🎬 Baumstufe '+active.level+' · Szene '+(clipIndex+1)+' von '+chapter.clips.length+(autoContinue?'':' · Play drücken, Ton ist eingeschaltet.');
   syncControls();
   if(autoContinue)beginPlayback();
  }
