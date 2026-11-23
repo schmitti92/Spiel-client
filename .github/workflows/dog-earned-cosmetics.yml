@@ -1,0 +1,30 @@
+name: DOG earned Christmas cosmetics
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/cosmetic-equipment.js'
+      - 'DOG/avatar-picker.js'
+      - 'DOG/app.js'
+      - 'DOG/room-lobby.js'
+      - 'DOG/collection.js'
+      - 'DOG/verified-cosmetics.js'
+      - 'tests/dog-earned-cosmetics.test.mjs'
+      - '.github/workflows/dog-earned-cosmetics.yml'
+  pull_request:
+    paths:
+      - 'DOG/cosmetic-equipment.js'
+      - 'DOG/room-lobby.js'
+      - 'DOG/collection.js'
+      - 'tests/dog-earned-cosmetics.test.mjs'
+  workflow_dispatch:
+jobs:
+  verified-equipment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/cosmetic-equipment.js && node --check DOG/avatar-picker.js && node --check DOG/app.js && node --check DOG/room-lobby.js && node --check DOG/collection.js
+      - run: node --test tests/dog-earned-cosmetics.test.mjs
