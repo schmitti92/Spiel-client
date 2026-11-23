@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - 'DOG/christmas-edition-management-ui.js'
+      - 'DOG/christmas-dev-mode.js'
+      - 'DOG/christmas-intro-gate.js'
       - 'DOG/christmas-edition-management.css'
       - 'DOG/christmas-other-edition-ui.js'
       - 'DOG/christmas-scratch-ui.js'
@@ -15,6 +17,8 @@ on:
   pull_request:
     paths:
       - 'DOG/christmas-edition-management-ui.js'
+      - 'DOG/christmas-dev-mode.js'
+      - 'DOG/christmas-intro-gate.js'
       - 'DOG/christmas-edition-management.css'
       - 'DOG/christmas-other-edition-ui.js'
       - 'DOG/christmas-scratch-ui.js'
