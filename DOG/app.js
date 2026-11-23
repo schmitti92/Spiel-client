@@ -1033,8 +1033,8 @@ function render(){
   const active=activeSeat();
   const soloMode=(game.mode==='solo3'||game.mode==='solo2');
   const teamDisplay=document.getElementById('dog-mode-teams'),soloDisplay=document.getElementById('dog-mode-solo3');
-  if(teamDisplay)teamDisplay.hidden=soloMode;
-  if(soloDisplay){soloDisplay.hidden=!soloMode;
+  if(teamDisplay){teamDisplay.hidden=soloMode;teamDisplay.style.display=soloMode?'none':'contents';}
+  if(soloDisplay){soloDisplay.hidden=!soloMode;soloDisplay.style.display=soloMode?'':'none';
    soloDisplay.textContent=game.mode==='solo2'?'👥 Zwei Spieler · Duell ohne Bot':
     '👥 Drei Teilnehmer · Jeder gegen jeden'+(game.players.some(p=>p.bot)?' · 1 Bot':'');
   }

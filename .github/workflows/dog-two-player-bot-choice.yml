@@ -1,0 +1,32 @@
+name: DOG two-player bot choice
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/engine.js'
+      - 'DOG/app.js'
+      - 'DOG/index.html'
+      - 'DOG/victory-summary.js'
+      - 'DOG/room-lobby.js'
+      - 'DOG/room-lobby-reference.css'
+      - 'hub-lobby.js'
+      - 'hub-lobby.html'
+      - 'tests/dog-two-player-bot-choice.test.mjs'
+      - '.github/workflows/dog-two-player-bot-choice.yml'
+  pull_request:
+    paths:
+      - 'DOG/engine.js'
+      - 'DOG/app.js'
+      - 'DOG/victory-summary.js'
+      - 'tests/dog-two-player-bot-choice.test.mjs'
+  workflow_dispatch:
+jobs:
+  bot-choice:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/app.js && node --check DOG/engine.js && node --check DOG/victory-summary.js && node --check DOG/room-lobby.js && node --check hub-lobby.js
+      - run: node --test tests/dog-two-player-bot-choice.test.mjs tests/dog-victory-screen.test.mjs tests/dog-official-rules.test.mjs
