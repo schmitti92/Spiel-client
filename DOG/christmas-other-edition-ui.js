@@ -267,6 +267,9 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
     ({...res,[variant]:data?.[variant]??null}),{})},
   receive:(variant,edition)=>{if(META[variant])editions[variant]=edition},
   reset:()=>{editions={};if(dialog.open)dialog.close();cardGear.hidden=true},
-  onTicket:variant=>{cardGear.hidden=!META[variant]}
+  close:()=>{if(dialog.open)dialog.close()},
+  onTicket:variant=>{
+   cardGear.hidden=!META[variant]||window.DOGChristmasDev?.isActive()!==true;
+  }
  };
 }
