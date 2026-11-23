@@ -1,8 +1,8 @@
 /** Movie inventory is derived from the actual original DOG film catalogs.
  * Adding a new film to this library cannot bypass the server's allowlist.
  */
-import {CHRISTMAS_TREE_FILMS} from './christmas-tree-films.js?v=4';
-import {CHRISTMAS_BUILDING_FILMS} from './christmas-building-films.js?v=8';
+import {CHRISTMAS_TREE_FILMS} from './christmas-tree-films.js?v=5';
+import {CHRISTMAS_BUILDING_FILMS} from './christmas-building-films.js?v=9';
 
 const film=(id,category,icon,title,description,clips,poster=null)=>
  Object.freeze({id,category,icon,title,description,
