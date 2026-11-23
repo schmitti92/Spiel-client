@@ -2,7 +2,7 @@
  * Adding a new film to this library cannot bypass the server's allowlist.
  */
 import {CHRISTMAS_TREE_FILMS} from './christmas-tree-films.js?v=4';
-import {CHRISTMAS_BUILDING_FILMS} from './christmas-building-films.js?v=7';
+import {CHRISTMAS_BUILDING_FILMS} from './christmas-building-films.js?v=8';
 
 const film=(id,category,icon,title,description,clips,poster=null)=>
  Object.freeze({id,category,icon,title,description,
@@ -26,6 +26,13 @@ export const DOG_VIDEO_CATALOG=Object.freeze([
   CHRISTMAS_TREE_FILMS[level].title,'Baumstufe '+level+' · '+CHRISTMAS_TREE_FILMS[level].subtitle,
   CHRISTMAS_TREE_FILMS[level].clips,
   './weihnachtsevent-bilder/weihnachtsbaum_stufe_'+level+'.png')),
+ ...[['bakery','🍪','Weihnachtsbäckerei'],['workshop','🎁','Wichtelwerkstatt'],
+  ['inn','🕯️','Friedensherberge'],['tower','🔔','Weihnachtslichter-Turm'],
+  ['luckhouse','🎟️','Weihnachts-Glückshaus'],['academy','📚','XP-Wichtel-Akademie']].map(([id,icon,title])=>
+  film('building-'+id+'-3','Gebäudegeschichten',icon,
+   CHRISTMAS_BUILDING_FILMS[id][3].title,
+   title+' · Stufe 3 · '+CHRISTMAS_BUILDING_FILMS[id][3].subtitle,
+   CHRISTMAS_BUILDING_FILMS[id][3].clips,CHRISTMAS_BUILDING_FILMS[id][3].poster)),
  ...[['bakery','🍪','Weihnachtsbäckerei'],['workshop','🎁','Wichtelwerkstatt'],
   ['inn','🕯️','Friedensherberge'],['tower','🔔','Weihnachtslichter-Turm'],
   ['luckhouse','🎟️','Weihnachts-Glückshaus']].map(([id,icon,title])=>
