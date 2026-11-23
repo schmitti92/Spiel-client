@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {createGame,legalActions,takeAction} from '../DOG/engine.js';
 import {
  DOG_BOT_DIFFICULTY_KEY,DOG_BOT_DIFFICULTIES,normalizeDogBotDifficulty,
@@ -208,7 +209,7 @@ test('three-way and duel bot strategies never treat an unrelated seat as a teamm
  }
 });
 test('Magie menu sends only host-owned online difficulty changes to Render',()=>{
- const {readFileSync}=await import('node:fs');
+
  const app=readFileSync(new URL('../DOG/app.js',import.meta.url),'utf8');
  assert.match(app,/onlineBotDifficulties=room\.match\?\.dogBotDifficulties/);
  assert.match(app,/if\(online\)\{void setOnlineDogBotDifficulty\(bot\.seat,select\.value\)/);
