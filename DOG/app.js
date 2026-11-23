@@ -10,6 +10,7 @@ import {dogMoveBlockReason} from './invalid-move-reasons.js?v=2';
 import {dogBoardActionMatchesDestination} from './board-action-targets.js?v=1';
 import {DOG_MOVE_HINTS_KEY,readDogMoveHints,writeDogMoveHints,dogLegalTargets} from './move-hints.js?v=1';
 import {summarizeDogVictory} from './victory-summary.js?v=4';
+import {dogCosmeticDefinition,equippedDogCosmetic,DOG_COSMETIC_EQUIPMENT_KEY} from './cosmetic-equipment.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,completedDogSeat} from './engine.js?v=7';
 import {DOG_BOT_DIFFICULTIES,readDogBotDifficulties,saveDogBotDifficulty,dogBotDifficultyForSeat,chooseDogBotAction} from './bot-difficulty.js?v=3';
 import {decideDogRoomUpdate} from './online-sync.js?v=15';
@@ -35,7 +36,7 @@ if(online){
 }
 document.querySelectorAll('[data-dog-editor]').forEach(link=>link.href='editor.html?return='+encodeURIComponent(editorBack)+'&v=10');
 const apiBase=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlineRoomHost=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null,onlineDogAvatars=[],onlineChristmas=null,onlineResearch=null,emojiSocketReady=false, socketSupportsDogActions=false;
+let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlineRoomHost=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null,onlineDogAvatars=[],onlineDogCosmetics=[],onlineChristmas=null,onlineResearch=null,emojiSocketReady=false, socketSupportsDogActions=false;
 const dogSocketActions=createDogSocketActionDispatcher();
 let lastFallbackRoomReadAt=0;
 let lastAnnouncedFinishedMatchId=null; // One Christmas eligibility refresh per completed DOG match.
@@ -129,6 +130,7 @@ function acceptRemote(room){
    game=decision.game;onlineSeat=decision.seat;acceptedMatchId=decision.matchId;
    onlineRoomHost=room.host===true;
    onlineDogAvatars=Array.isArray(room.match?.dogAvatars)?room.match.dogAvatars:[];
+   onlineDogCosmetics=Array.isArray(room.match?.dogCosmetics)?room.match.dogCosmetics:[];
    onlineChristmas=room.match?.christmas?.enabled===true?room.match.christmas:null;
    onlineResearch=room.match?.dogResearch||null;
    // Same already-authorized Render snapshot as the board. The sidebar
@@ -478,6 +480,13 @@ $('dog-bot-difficulty-default')?.addEventListener('change',event=>{
  lastBotDifficultyUiKey=null;
  renderDogBotDifficulties();
 });
+// Cosmetic display changes never mutate a game or call a multiplayer API.
+window.addEventListener('dog-cosmetics-verified',()=>{if(game&&!online)renderPlayers();});
+window.addEventListener('dog-christmas-avatars-ready',()=>{if(game)renderPlayers();});
+window.addEventListener('dog-equipment-changed',()=>{if(game&&!online)renderPlayers();});
+window.addEventListener('storage',event=>{
+ if(event.key===DOG_COSMETIC_EQUIPMENT_KEY&&game&&!online)renderPlayers();
+});
 const currentLook=()=>resolveAppearance(appearance);
 const displayColors=()=>currentLook().pieces.colors;
 const cardsLabel=t=>t==='swap'?'⇄':t==='joker'?'★':t==='1/11'?'1/11':t;
@@ -817,7 +826,14 @@ const DOG_ACTIVE_EMBLEMS=Object.freeze({
  crown:'👑',dragon:'🐉',phoenix:'🔥',diamond:'💎',lion:'🦁',
  star:'🌟',knight:'🛡️',moon:'🌙',trophy:'🏆',wolf:'🐺',wings:'🪽'
 });
+function dogEquippedItem(kind,seat){
+ const unlockId=online?onlineDogCosmetics[seat]?.[kind]??null:
+  equippedDogCosmetic(kind,{local:true,seat});
+ return dogCosmeticDefinition(kind,unlockId);
+}
 function dogActiveEmblem(seat){
+ const owned=dogEquippedItem('activeIcon',seat);
+ if(owned)return owned.icon;
  const id=window.DOG_ACTIVE_EMBLEM_BY_SEAT?.[seat]||'crown';
  return DOG_ACTIVE_EMBLEMS[id]||DOG_ACTIVE_EMBLEMS.crown;
 }
@@ -828,8 +844,13 @@ function renderPlayers(){
     const avatarId=online?onlineDogAvatars[p.seat]:window.DogAvatars?.localAvatar?.(p.seat);
     const portrait=p.bot?'<span class="dog-seat-avatar is-bot" aria-label="Computergegner">🤖</span>':'<span class="dog-seat-avatar" role="img" aria-label="Profilbild von '+escape(p.name)+'" style="'+(window.DogAvatars?.css?.(avatarId)||'')+'"></span>';
     const detail=exchange?'✓ Karte getauscht':hand+' Karten';
-    const activeEmblem=turn?'<span class="dog-active-emblem" aria-label="Aktiver Spieler">'+dogActiveEmblem(p.seat)+'</span>':'';
-    return '<div class="seat '+(turn?'on':'')+'" style="--seat:'+displayColors()[p.seat]+'">'+activeEmblem+portrait+'<span class="dog-seat-info"><span class="seat-name">'+escape(p.name)+'</span><span class="seat-extra'+(exchange?' is-done':'')+'">'+detail+'</span></span><b class="dog-seat-score">'+goal+'/4</b></div>';
+    const activeEmblem=turn?'<span class="dog-active-emblem'+(dogEquippedItem('activeIcon',p.seat)?' dog-earned-active-icon':'')+'" aria-label="Aktiver Spieler">'+dogActiveEmblem(p.seat)+'</span>':'';
+    const frame=dogEquippedItem('nameFrame',p.seat);
+    const framedName=frame?
+      '<span class="seat-name dog-nameframe dog-nameframe-'+escape(frame.frameTheme)+'">'+
+       '<span class="dog-nameframe-icon" aria-hidden="true">'+escape(frame.frameIcon)+'</span>'+escape(p.name)+'</span>':
+      '<span class="seat-name">'+escape(p.name)+'</span>';
+    return '<div class="seat '+(turn?'on':'')+'" style="--seat:'+displayColors()[p.seat]+'">'+activeEmblem+portrait+'<span class="dog-seat-info">'+framedName+'<span class="seat-extra'+(exchange?' is-done':'')+'">'+detail+'</span></span><b class="dog-seat-score">'+goal+'/4</b></div>';
   }).join('');
   const host=$('players');
   if(host._dogMarkup!==seats){host.innerHTML=seats;host._dogMarkup=seats;}
