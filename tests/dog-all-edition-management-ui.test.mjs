@@ -119,6 +119,6 @@ test('DOG Chris: authenticated UID can be copied for Render administrator regist
  assert.match(scratch,/scratch-management-copy-uid'\)\?\.addEventListener\('click',async\(\)=>/);
  assert.match(scratch,/const uid=account\(\)\?\.uid/);
  assert.match(scratch,/navigator\.clipboard\.writeText\(uid\)/);
- assert.match(scratch,/identity\.hidden=!account\(\)\?\.uid/);
+ assert.match(scratch,/identity\.hidden=!isDevActive\(\)\|\|!account\(\)\?\.uid/);
  assert.match(css,/\.scratch-management-identity\[hidden\]\{display:none!important\}/);
 });
