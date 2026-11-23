@@ -70,7 +70,7 @@ test('the online host controls the selector via the Render API; local player can
  assert.match(room,/send\('bots',\{botCount\}\)/);
  assert.match(hub,/request\('\/rooms\/'\+code\+'\/dog\/bots','POST',\{botCount\}\)/);
  assert.match(gameHTML,/id="local-bot-count"/);
- assert.match(app,/localBotCount=humans===2\?Number\(\$\('local-bot-count'\)\.value\)/);
+ assert.match(app,/if\(humans===2\)localBotCount=Number\(\$\('local-bot-count'\)\.value\)/);
  assert.match(app,/inactiveSeats:seats.filter\(i=>i>=activeCount\)/);
  assert.match(app,/g\.pieces\.length===4\*g\.players\.filter\(p=>!p\.inactive\)\.length/);
 });
