@@ -15,6 +15,18 @@
  background:radial-gradient(ellipse at 52% 32%,#fbd68a20 0,transparent 54%);
 }
 .dog-exchange-prompt[hidden]{display:none!important}
+.dog-exchange-prompt-close{
+ position:absolute;top:9px;right:10px;z-index:2;
+ display:grid;place-items:center;width:36px;height:36px;min-width:36px;
+ padding:0;border:1px solid #f5d28d88;border-radius:50%;
+ background:rgba(8,26,43,.83);color:#fff6de;font-size:27px;line-height:1;
+ cursor:pointer;pointer-events:auto;touch-action:manipulation;
+}
+.dog-exchange-prompt-close:hover,.dog-exchange-prompt-close:focus-visible{
+ background:rgba(90,71,39,.95);border-color:#fbe9ae;
+ outline:2px solid #fbe9ae;outline-offset:2px;
+}
+@media(max-width:680px){.dog-exchange-prompt-close{top:6px;right:7px;width:32px;height:32px;min-width:32px;font-size:24px}}
 .dog-exchange-prompt-kicker{font-size:clamp(10px,1vw,12px);letter-spacing:.24em;color:#eecb87;font-weight:850;text-transform:uppercase}
 .dog-exchange-prompt-art{width:clamp(43px,6vw,70px);height:clamp(43px,6vw,70px);border-radius:19px;
  display:grid;place-items:center;font-size:clamp(29px,4vw,45px);line-height:1;
