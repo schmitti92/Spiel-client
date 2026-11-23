@@ -172,6 +172,8 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
   '<div class="dog-building-film-footer"><p data-film-status role="status">🎬 Dein neuer Geschichtsfilm ist bereit.</p>',
   '<div class="dog-building-film-actions">',
   '<button type="button" data-film-play>▶ Mit Ton abspielen</button>',
+  '<button type="button" data-film-prev>◀ Vorherige Szene</button>',
+  '<button type="button" data-film-next>Nächste Szene ▶</button>',
   '<button type="button" data-film-restart>↺ Von vorne</button>',
   '<button type="button" data-film-skip>Zurück zum Dorf</button>',
   '</div></div>'
@@ -180,10 +182,15 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
  const video=dialog.querySelector('video');
  const status=dialog.querySelector('[data-film-status]');
  const play=dialog.querySelector('[data-film-play]');
+ const previous=dialog.querySelector('[data-film-prev]');
+ const next=dialog.querySelector('[data-film-next]');
  let active=null,clipIndex=0,finished=false,failed=false;
+ const completedClips=new Set();
  const clips=()=>active?.film.clips||[];
  function syncPlayButton(){
   play.textContent=finished?'↺ Von vorne':video.paused?'▶ Mit Ton abspielen':'⏸ Pause';
+  previous.disabled=!active||clipIndex<=0;
+  next.disabled=!active||finished||clipIndex>=clips().length-1;
  }
  function loadClip(continuePlaying=false){
   if(!active)return;
@@ -212,7 +219,7 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
  }
  function closeFilm(){
   if(!active)return;
-  active=null;clipIndex=0;finished=false;failed=false;
+  active=null;clipIndex=0;finished=false;failed=false;completedClips.clear();
   video.pause();
   video.removeAttribute('src');
   video.removeAttribute('poster');
@@ -231,9 +238,11 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
   dialog.querySelector('[data-film-subtitle]').textContent=film.subtitle+' · Ausbau '+fromLevel+' → '+toLevel+' · '+film.clips.length+' '+(film.clips.length===1?'Szene':'Szenen');
   video.muted=false;
   try{dialog.showModal();}catch{return false;}
-  active={id,film,name,toLevel};clipIndex=0;finished=false;failed=false;
+  active={id,film,name,toLevel};clipIndex=0;finished=false;failed=false;completedClips.clear();
   loadClip(false);
-  tryPlay();
+  // Match the stage-3 preview: the user starts the first scene with Play.
+  // Keep the existing stage-5 film start behavior unchanged.
+  if(toLevel===5)tryPlay();
   return true;
  }
  play.addEventListener('click',()=>{
@@ -242,9 +251,18 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
   else video.pause();
   syncPlayButton();
  });
+ previous.addEventListener('click',()=>{
+  if(!active||clipIndex<=0)return;
+  clipIndex--;finished=false;video.pause();loadClip(false);
+ });
+ next.addEventListener('click',()=>{
+  if(!active||clipIndex>=clips().length-1||finished)return;
+  clipIndex++;video.pause();loadClip(false);
+  // Manually skipped scenes are not recorded as fully watched.
+ });
  dialog.querySelector('[data-film-restart]').addEventListener('click',()=>{
   if(!active)return;
-  clipIndex=0;finished=false;failed=false;loadClip(false);
+  clipIndex=0;finished=false;failed=false;completedClips.clear();loadClip(false);
   tryPlay();
  });
  dialog.querySelector('[data-film-skip]').addEventListener('click',closeFilm);
@@ -254,12 +272,16 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
  video.addEventListener('pause',syncPlayButton);
  video.addEventListener('ended',()=>{
   if(!active||finished)return;
+  completedClips.add(clipIndex);
   clipIndex++;
   if(clipIndex<clips().length)loadClip(true);
   else{
    finished=true;
-   if(!failed)void markDogVideoSeen(active.toLevel===3?'building-'+active.id+'-3':'building-'+active.id);
-   status.textContent='✨ '+(clips().length===1?'Die Geschichte ist':'Alle '+clips().length+' Szenen sind')+' abgeschlossen! Du kannst den Film erneut ansehen oder zum Dorf zurückkehren.';
+   const allWatched=!failed&&completedClips.size===clips().length;
+   if(allWatched)void markDogVideoSeen(active.toLevel===3?'building-'+active.id+'-3':'building-'+active.id);
+   status.textContent=allWatched
+    ?'✨ Alle Szenen vollständig angesehen! Du kannst sie erneut starten oder zum Dorf zurückkehren.'
+    :'🎬 Filmfolge beendet. Für den „angesehen“-Status bitte alle Szenen abspielen; der Gebäudeausbau bleibt erhalten.';
    syncPlayButton();
   }
  });
