@@ -32,11 +32,11 @@ export const editionStatusLine=edition=>{
 export const editionAggregateStats=edition=>{
  if(!edition)return null;
  const remaining=Math.max(0,Number(edition.remaining??500-Number(edition.issued??0)));
- const paying=edition.payingTicketsRemaining??edition.moneyTicketsRemaining;
+ const paying=edition.payingTicketsRemaining??edition.moneyTicketsRemaining??null;
  const nonPaying=edition.nonPayingTicketsRemaining??(
   Number.isInteger(paying)?remaining-paying:null);
- const gift=edition.giftTicketsRemaining;
- const maximum=edition.maxTicketCoinsRemaining;
+ const gift=edition.giftTicketsRemaining??null;
+ const maximum=edition.maxTicketCoinsRemaining??null;
  const price=Number(edition.config?.price);
  const budget=Number(edition.maxTotalCoins);
  const payoutShare=Number.isFinite(price)&&price>0&&Number.isFinite(budget)?
@@ -109,7 +109,7 @@ export function mountScratchEditionManager({
    const info=[
     ['💰 Geldlose offen',stats.paying],
     ['❄️ Ohne Geldgewinn',stats.nonPaying],
-    ['🎁 Geschenklose offen',stats.gift],
+    ['🎁 Geplante Geschenkfelder',stats.gift],
     ['🏆 Höchster Geldgewinn',stats.maximum===null||stats.maximum===undefined?
       null:Number(stats.maximum).toLocaleString('de-DE')+' 🪙'],
     ['📊 Budget / Listenpreisumsatz',stats.payoutShare===null?
