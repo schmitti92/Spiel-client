@@ -484,7 +484,7 @@ const cardsLabel=t=>t==='swap'?'⇄':t==='joker'?'★':t==='1/11'?'1/11':t;
 function recover(){
   try{
     const g=JSON.parse(localStorage.getItem(KEY));
-    if(g?.schemaVersion===1&&g.ruleset==='classic-dog'&&Array.isArray(g.pieces)&&g.players?.length===4&&g.pieces.length===4*g.players.filter(p=>!p.inactive).length&&Array.isArray(g.hands)&&g.hands.length===4){game=g;humans=g.players.filter(x=>!x.bot&&!x.inactive).length;localBotCount=g.players.filter(x=>x.bot&&!x.inactive).length;return true;}
+    if(g?.schemaVersion===1&&g.ruleset==='classic-dog'&&Array.isArray(g.pieces)&&g.players?.length===4&&g.pieces.length===4*g.players.filter(p=>!p.inactive).length&&Array.isArray(g.hands)&&g.hands.length===4){game=g;humans=g.players.filter(x=>!x.bot&&!x.inactive).length;localBotCount=humans===2?g.players.filter(x=>x.bot&&!x.inactive).length:2;return true;}
   }catch(_){}
   return false;
 }
@@ -494,8 +494,8 @@ function newGame(){
   if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
   lastBotActorSeat=null;
   humans=Number($('human-count').value)||1;
-  localBotCount=humans===2?Number($('local-bot-count').value):humans===1?3:0;
-  const activeCount=Math.min(4,humans+localBotCount);
+  if(humans===2)localBotCount=Number($('local-bot-count').value);
+  const activeCount=humans===1?4:humans===2?Math.min(4,humans+localBotCount):humans;
   const seats=[0,1,2,3];
   game=createGame({names:['Du','Spieler Blau','Spieler Grün','Spieler Gelb'],
     bots:seats.map(i=>i>=humans&&i<activeCount),inactiveSeats:seats.filter(i=>i>=activeCount)});
