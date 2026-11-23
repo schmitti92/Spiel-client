@@ -11,9 +11,9 @@ import {dogBoardActionMatchesDestination} from './board-action-targets.js?v=1';
 import {DOG_MOVE_HINTS_KEY,readDogMoveHints,writeDogMoveHints,dogLegalTargets} from './move-hints.js?v=1';
 import {summarizeDogVictory} from './victory-summary.js?v=4';
 import {dogCosmeticDefinition,equippedDogCosmetic,DOG_COSMETIC_EQUIPMENT_KEY} from './cosmetic-equipment.js?v=1';
-import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,completedDogSeat} from './engine.js?v=9';
+import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,completedDogSeat} from './engine.js?v=10';
 import {dogExchangePrompt} from './exchange-prompt.js?v=2';
-import {DOG_BOT_DIFFICULTIES,readDogBotDifficulties,saveDogBotDifficulty,dogBotDifficultyForSeat,chooseDogBotAction} from './bot-difficulty.js?v=4';
+import {DOG_BOT_DIFFICULTIES,readDogBotDifficulties,saveDogBotDifficulty,dogBotDifficultyForSeat,chooseDogBotAction} from './bot-difficulty.js?v=5';
 import {decideDogRoomUpdate} from './online-sync.js?v=15';
 import {planDogBotReplay} from './online-bot-replay.js?v=1';
 import {newReplacementDraws,createReplacementDrawAnimator} from './replacement-draw-animation.js?v=1';
@@ -953,6 +953,8 @@ function renderHand(){
   title.textContent=game.phase==='exchange'?'🔐 '+game.players[seat].name+': Karte '+((game.mode==='solo3'||game.mode==='solo2')?'an nächsten Spieler':'an Partner')+' geben':game.phase==='seven'?'🔥 Die 7 verteilen – noch '+(7-game.seven.spent)+' Schritte':game.phase==='rescue'?'🚀 '+game.players[seat].name+': Mit Ersatzkarte herausgehen':'🎯 '+game.players[seat].name+' ist am Zug';
   if(!revealed){const symbol=escape(currentLook().cards.emblem);
     setHandMarkup('<div class="hand-veil"><div class="dog-card-backs" aria-hidden="true"><span class="dog-card-back">'+symbol+'</span><span class="dog-card-back">'+symbol+'</span><span class="dog-card-back">'+symbol+'</span></div><span>Deine Karten sind verdeckt. Tippe auf „Karten ansehen“.</span></div>');return;}
+  const noMoveAction=game.phase==='play'?
+    legalActions(game,seat).find(m=>m.type==='discard'||m.type==='discardDraw'):null;
   if(game.phase==='seven'){
     // The played seven stays selected throughout all partial movements.
     selectedCard=game.seven.cardId;
@@ -968,7 +970,7 @@ function renderHand(){
   }else{
     const cards=game.hands[seat];
     const exchange=game.phase==='exchange';
-    const blocked=game.phase==='play'&&legalActions(game,seat).some(m=>m.type==='discardDraw');
+    const blocked=!!noMoveAction;
     setHandMarkup(cards.map(c=>{
       const rescue=game.phase==='rescue',fresh=rescue&&c.id===game.rescue?.cardId;
       const card=cardMarkup(c.type,{
@@ -997,13 +999,16 @@ function renderHand(){
   // A playable 7 goes directly into its split phase on card selection.
   const special=available.filter(m=>['exchange','seven-finish','seven-cancel','emptySwap'].includes(m.type));
   actions.insertAdjacentHTML('beforeend',[...new Map(special.map(m=>[m.type,m])).values()].map(m=>'<button type="button" class="move-button dog-hand-action-primary" data-special="'+m.type+'">'+(m.type==='exchange'?'🎁 Karte weitergeben':m.type==='seven-cancel'?'↩ 7 abwählen':m.type==='seven-finish'?'✅ Restliche '+m.remaining+' Schritte verfallen lassen · letzte Figur im Ziel':'🗑 Tauschkarte ablegen')+'</button>').join(''));
-  if(game.phase==='play'&&legalActions(game,seat).some(m=>m.type==='discardDraw')){
-    actions.insertAdjacentHTML('beforeend','<span class="dog-no-move-note" role="status">🃏 Kein Zug möglich: Wähle unter einer beliebigen Karte „Wegwerfen“. Du ziehst genau eine Ersatzkarte.</span>');
+  if(noMoveAction){
+    actions.insertAdjacentHTML('beforeend','<span class="dog-no-move-note" role="status">'+
+      (noMoveAction.type==='discardDraw'?
+       '🏠 Alle vier Figuren im Häuschen: Wirf eine Karte weg und ziehe genau eine Ersatzkarte zum möglichen Heraussetzen.':
+       '⛔ Blockiert: Wirf eine Karte weg. Du ziehst KEINE Ersatzkarte; danach ist der nächste Spieler dran.')+'</span>');
   }
   if(game.phase==='rescue'){
     actions.insertAdjacentHTML('beforeend','<span class="dog-no-move-note" role="status">🚀 Du hast eine Startkarte gezogen! Tippe deine Figur im Haus und danach das Startfeld an. Nur Heraussetzen ist erlaubt.</span>');
   }
-  $('move-help').textContent=game.phase==='rescue'?'🚀 Ersatzkarte: Figur aus dem Haus auf das eigene Startfeld setzen.':game.phase==='play'&&legalActions(game,seat).some(m=>m.type==='discardDraw')?'Kein Zug möglich: Drücke bei einer Karte auf 🗑 Wegwerfen.':jokerAs!==null?'Joker als '+(jokerAs==='swap'?'Tauschkarte':jokerAs)+' gewählt. Figur und Ziel selbst antippen.':game.phase==='exchange'?((game.mode==='solo3'||game.mode==='solo2')?'Wähle eine Karte, die verdeckt an den nächsten Spieler geht.':'Wähle die Karte für deinen Partner.'):game.phase==='seven'?'🔥 7er-Karte: '+game.seven.spent+' von 7 Schritten. '+(game.seven.spent===0?'Tippe erneut auf die 7 oder auf „7 abwählen“.':'Wähle eine Figur und ein erlaubtes Zielfeld.'):selectedCard===null?'Wähle eine Karte.':'Figur und Zielfeld selbst antippen – ohne Zugvorschläge.';
+  $('move-help').textContent=game.phase==='rescue'?'🚀 Ersatzkarte: Figur aus dem Haus auf das eigene Startfeld setzen.':noMoveAction?(noMoveAction.type==='discardDraw'?'Alle Figuren im Häuschen: Wegwerfen und eine mögliche Startkarte ziehen.':'Blockiert: Eine Karte wegwerfen, keine neue ziehen, Zug beenden.'):jokerAs!==null?'Joker als '+(jokerAs==='swap'?'Tauschkarte':jokerAs)+' gewählt. Figur und Ziel selbst antippen.':game.phase==='exchange'?((game.mode==='solo3'||game.mode==='solo2')?'Wähle eine Karte, die verdeckt an den nächsten Spieler geht.':'Wähle die Karte für deinen Partner.'):game.phase==='seven'?'🔥 7er-Karte: '+game.seven.spent+' von 7 Schritten. '+(game.seven.spent===0?'Tippe erneut auf die 7 oder auf „7 abwählen“.':'Wähle eine Figur und ein erlaubtes Zielfeld.'):selectedCard===null?'Wähle eine Karte.':'Figur und Zielfeld selbst antippen – ohne Zugvorschläge.';
 }
 function renderCardPiles(){
  $('dog-deck-art').style.backgroundImage=cardBackBackground();
@@ -1377,7 +1382,7 @@ $('hand').addEventListener('click',e=>{
  if(discard){
    const seat=currentHuman(),cardId=Number(discard.dataset.discardCard);
    if(seat<0||!revealed||onlineBusy||game.phase!=='play')return;
-   const move=legalActions(game,seat).find(m=>m.type==='discardDraw'&&m.cardId===cardId);
+   const move=legalActions(game,seat).find(m=>['discard','discardDraw'].includes(m.type)&&m.cardId===cardId);
    if(!move)return;
    selectedCard=cardId;available=[move];onMove(0);
    return;
