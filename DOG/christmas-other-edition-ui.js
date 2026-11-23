@@ -85,7 +85,7 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
      <div id="oe-status" class="scratch-gifts-edition-status" role="status" aria-live="polite"></div>
      <button id="oe-create" type="button" class="scratch-gifts-edition-create">📦 500er-Auflage verbindlich erstellen</button>
      <button id="oe-edit" type="button" class="scratch-gifts-edition-create" hidden>✏️ Aktuelle Restlose bearbeiten</button>
-     <p class="scratch-gifts-help">Bereits gekaufte Lose und die dazugehörigen Gewinnbeträge sind unveränderlich. Nur das Erstellerprofil darf die noch nicht verkauften Lose bearbeiten.</p>
+     <p class="scratch-gifts-help">Bereits gekaufte Lose und die dazugehörigen Gewinnbeträge sind unveränderlich. Nur das Erstellerprofil oder ein serverseitig freigeschalteter Entwickler darf die noch nicht verkauften Lose bearbeiten.</p>
      <p id="oe-feedback" class="scratch-gifts-settings-feedback" role="status" aria-live="polite"></p>
    </section>
    <div class="scratch-gifts-settings-actions"><button id="oe-cancel" type="button">Schließen</button></div>
