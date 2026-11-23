@@ -29,11 +29,11 @@ test('DOG Premium: creator authorization, confirmation and sale protection still
 });
 
 test('DOG Premium: latest module versions and all-ticket management are loaded',()=>{
- assert.match(scratch,/christmas-other-edition-ui\.js\?v=8/);
+ assert.match(scratch,/christmas-other-edition-ui\.js\?v=9/);
  assert.match(scratch,/christmas-edition-management-ui\.js\?v=3/);
  assert.match(studio,/christmas-edition-management-ui\.js\?v=3/);
- assert.match(event,/christmas-scratch-ui\.js\?v=99/);
- assert.match(gate,/christmas-event\.js\?v=197/);
- assert.match(html,/christmas-intro-gate\.js\?v=60/);
- assert.match(html,/christmas-edition-management\.css\?v=4/);
+ assert.match(event,/christmas-scratch-ui\.js\?v=100/);
+ assert.match(gate,/christmas-event\.js\?v=198/);
+ assert.match(html,/christmas-intro-gate\.js\?v=61/);
+ assert.match(html,/christmas-edition-management\.css\?v=5/);
 });
