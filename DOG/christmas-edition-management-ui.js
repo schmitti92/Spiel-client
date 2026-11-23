@@ -125,6 +125,8 @@ export function mountScratchEditionManager({
   }
   refresh.disabled=busy;retire.disabled=busy;
   load.disabled=busy||!edition||typeof onLoadCurrent!=='function';
+  load.textContent=edition?.remaining===0?'📋 Letzte Einstellungen für neue Auflage übernehmen':
+   '✏️ Gespeicherte Einstellungen übernehmen';
   load.hidden=typeof onLoadCurrent!=='function';
   retire.textContent=edition?.remaining>0?'🗑️ Aktuelle Auflage beenden':'🔎 Aktuelle Auflage prüfen / beenden';
  }
@@ -169,8 +171,11 @@ export function mountScratchEditionManager({
   busy=true;render();notice('🔄 Prüfe die letzte Auflage am Server …');
   try{
    const {edition,canRetire}=await check();
-   notice(edition?editionStatusLine(edition)+(canRetire?' · Du darfst diese Auflage verwalten.':' · Nur der Ersteller darf sie beenden.'):
-    '✅ Keine laufende Auflage. Du kannst eine neue 500er-Serie erstellen.');
+   notice(!edition?'✅ Keine laufende Auflage. Du kannst eine neue 500er-Serie erstellen.':
+    edition.remaining===0?'🏁 Die letzte Auflage ist ausverkauft. Du kannst ihre Einstellungen übernehmen und eine neue erstellen.':
+    editionStatusLine(edition)+(canRetire?
+     ' · Du darfst diese laufende Auflage bearbeiten oder beenden.':
+     ' · Nur das Erstellerkonto darf diese laufende Auflage bearbeiten oder beenden.'));
   }catch(e){notice('⚠️ '+String(e.message||e))}
   finally{busy=false;render()}
  }
