@@ -485,7 +485,6 @@ dialog::backdrop{background:rgba(0,8,20,.78);backdrop-filter:blur(3px)}
  flex:0 0 auto;
  width:100%!important;
  min-width:0;
- max-width:100%;
 }
 .dog-hand-module .hand .dog-discard-value{
  position:absolute;
