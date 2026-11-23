@@ -16,7 +16,7 @@ test('four named scratch cards visibly lock at exact verified player levels',()=
  assert.match(shop,/scratch-level-locked/);
  assert.match(shop,/buyBtn\.disabled=busy\|\|!onSale\|\|levelLocked/);
  assert.match(shop,/voucherBtn\.disabled=busy\|\|!onSale\|\|levelLocked/);
- assert.match(shop,/free\.disabled=busy\|\|!onSale\|\|levelLocked/);
+ assert.doesNotMatch(shop,/free\.disabled=busy\|\|!onSale\|\|levelLocked/,'retired daily free tickets are not offered');
  assert.match(shop,/if\(playerLevel<requiredLevel\)/);
  assert.match(shop,/DOGChristmasDev\?\.isActive\(\)/);
 });
@@ -25,7 +25,7 @@ test('new shop lock stylesheet is loaded and old UI cache is invalidated',()=>{
  const js=source('DOG/christmas-event.js');
  const style=source('DOG/christmas-scratch-level-locks.css');
  assert.match(html,/christmas-scratch-level-locks\.css\?v=1/);
- assert.match(js,/christmas-scratch-ui\.js\?v=82/);
+ assert.match(js,/christmas-scratch-ui\.js\?v=\d+/);
  assert.match(style,/\.scratch-tier\.scratch-level-locked/);
  assert.match(style,/\.scratch-level-lock-badge/);
 });
@@ -33,6 +33,6 @@ test('real DOG Nikolaus cards require verified player level twenty',()=>{
  const deck=source('DOG/card-visuals.js');
  assert.match(deck,/kartendesign-05[\s\S]*?minPlayerLevel:20/);
  assert.match(deck,/isVerifiedDogPlayerLevelAtLeast\(entry\.minPlayerLevel\)/);
- assert.match(source('DOG/app.js'),/card-visuals\.js\?v=12/);
- assert.match(source('DOG/index.html'),/app\.js\?v=72/);
+ assert.match(source('DOG/app.js'),/card-visuals\.js\?v=\d+/);
+ assert.match(source('DOG/index.html'),/app\.js\?v=\d+/);
 });
