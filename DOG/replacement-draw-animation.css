@@ -1,0 +1,45 @@
+/* Visual-only replacement draw ceremony. Uses the player's selected DOG card art. */
+.dog-replacement-reveal{
+ position:fixed;inset:0;z-index:10020;pointer-events:none;
+ display:flex;flex-direction:column;justify-content:center;align-items:center;
+ gap:clamp(12px,3vh,24px);padding:16px 10px;
+ background:radial-gradient(ellipse at center,rgba(12,32,55,.88),rgba(3,10,21,.68) 58%,rgba(3,10,21,.3));
+ text-align:center;color:#ffedd0;text-shadow:0 2px 8px #0013;
+}
+.dog-replacement-heading{
+ max-width:min(95vw,550px);border:1px solid #e8c87c9c;
+ border-radius:15px;padding:11px 18px;
+ background:linear-gradient(145deg,rgba(15,36,53,.96),rgba(25,52,71,.91));
+ box-shadow:0 12px 38px #0008;
+ font-weight:900;font-size:clamp(16px,3.2vw,25px);
+}
+.dog-replacement-card{flex:none;filter:drop-shadow(0 16px 28px #000c);will-change:transform,opacity}
+.dog-replacement-card>.playing-card.dog-designed{
+ box-sizing:border-box;flex:none;
+ width:clamp(110px,25vmin,190px);height:auto;aspect-ratio:5/7;
+ min-width:0;max-width:none;padding:0;transform:none!important;cursor:default;
+ border:3px solid #ffde8c!important;
+ box-shadow:0 0 0 3px #fff5c451,0 0 38px #ffd36b66,0 16px 36px #000c;
+}
+.dog-replacement-card>.playing-card.dog-designed .dog-card-art{object-fit:contain}
+.dog-replacement-result{
+ max-width:min(95vw,530px);font-weight:850;font-size:clamp(14px,2.5vw,20px);
+ border-radius:13px;padding:11px 16px;background:#071a2fe8;
+ border:1px solid #bbd0de73;box-shadow:0 9px 30px #0008;
+ opacity:0;transform:translateY(9px);transition:opacity .25s,transform .25s;
+}
+.dog-replacement-reveal.is-revealed .dog-replacement-result{
+ opacity:1;transform:translateY(0);
+}
+.dog-replacement-reveal.is-discarding .dog-replacement-result{
+ border-color:#f3ae7990;color:#ffe2c0;
+}
+@media (max-height:520px){
+ .dog-replacement-reveal{gap:6px;padding:6px}
+ .dog-replacement-heading{padding:6px 10px;font-size:15px}
+ .dog-replacement-card>.playing-card.dog-designed{width:min(20vmin,115px)}
+ .dog-replacement-result{padding:6px 10px;font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){
+ .dog-replacement-result{transition:none}
+}
