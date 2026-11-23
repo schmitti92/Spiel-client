@@ -13,6 +13,8 @@ const html=read('../DOG/christmas-event.html');
 test('DOG Premium: top of editor ALWAYS shows archive action, even without cached active edition',()=>{
  assert.match(ui,/id="oe-premium-manage"/);
  assert.match(ui,/id="oe-retire-premium"/);
+ assert.match(ui,/id="oe-premium-feedback"/);
+ assert.match(ui,/premiumFeedback\(message\)/);
  assert.ok(ui.indexOf('id="oe-retire-premium"') < ui.indexOf('id="oe-create"'),
   'archive action must be visible before the long settings form');
  assert.match(ui,/\$\('oe-premium-manage'\)\.hidden=active!=='premium_27'/);
@@ -34,10 +36,10 @@ test('DOG Premium: action fetches live edition and creator authorization before 
 });
 
 test('DOG Premium: live control uses fresh modules and cannot retire other scratch variants',()=>{
- assert.match(shop,/christmas-other-edition-ui\.js\?v=3/);
- assert.match(event,/christmas-scratch-ui\.js\?v=93/);
- assert.match(gate,/christmas-event\.js\?v=191/);
- assert.match(html,/christmas-intro-gate\.js\?v=54/);
- assert.match(html,/christmas-scratch-other-edition\.css\?v=4/);
+ assert.match(shop,/christmas-other-edition-ui\.js\?v=4/);
+ assert.match(event,/christmas-scratch-ui\.js\?v=94/);
+ assert.match(gate,/christmas-event\.js\?v=192/);
+ assert.match(html,/christmas-intro-gate\.js\?v=55/);
+ assert.match(html,/christmas-scratch-other-edition\.css\?v=5/);
  assert.doesNotMatch(ui,/query\('\/editions\/'\+active\+'\/retire'/);
 });
