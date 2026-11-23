@@ -122,3 +122,26 @@ test('DOG Chris: authenticated UID can be copied for Render administrator regist
  assert.match(scratch,/identity\.hidden=!isDevActive\(\)\|\|!account\(\)\?\.uid/);
  assert.match(css,/\.scratch-management-identity\[hidden\]\{display:none!important\}/);
 });
+
+test('DOG: all seven edition editors only appear in active local developer mode',()=>{
+ assert.match(scratch,/const isDevActive=\(\)=>window\.DOGChristmasDev\?\.isActive\(\)===true/);
+ assert.match(scratch,/const canEditEditions=\(\)=>isDevActive\(\)&&canManageScratch/);
+ assert.match(scratch,/hub\.hidden=!isDevActive\(\)/);
+ assert.match(scratch,/if\(!isDevActive\(\)\)hub\.open=false/);
+ assert.match(scratch,/if\(!isDevActive\(\)\)\{/);
+ assert.match(scratch,/otherStudio\.close\?\.\(\)/);
+ assert.match(scratch,/if\(isDevActive\(\)&&\(option\.id==='gifts'\)\)/);
+ assert.match(scratch,/if\(isDevActive\(\)&&\(option\.id==='snow_collect'\)\)/);
+ assert.match(scratch,/if\(isDevActive\(\)&&\(option\.id==='tic_tac_toe'\)\)/);
+ assert.match(scratch,/if\(isDevActive\(\)&&\(OTHER_EDITOR_VARIANTS\.includes\(option\.id\)\)\)/);
+ assert.match(studio,/cardGear\.hidden=!META\[variant\]\|\|window\.DOGChristmasDev\?\.isActive\(\)!==true/);
+ assert.match(css,/html:not\(\.dog-dev-active\) #scratch-management-hub/);
+ assert.match(css,/#scratch-management-hub\[hidden\]\{display:none!important\}/);
+});
+
+test('DOG: server-verified full developer role is shown distinctly from creator-only admin',()=>{
+ assert.match(scratch,/canManageAllScratchEditions=r\.canManageAllScratchEditions===true/);
+ assert.match(scratch,/canManageAllScratchEditions\?'✅ Vollständige Entwicklerrechte bestätigt/);
+ assert.match(scratch,/canManageScratch\?'✅ Rubbellos-Admin bestätigt/);
+ assert.match(scratch,/canManageAllScratchEditions=false;stage\.hidden=true/);
+});
