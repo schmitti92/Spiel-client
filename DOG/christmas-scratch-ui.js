@@ -346,8 +346,8 @@ export function initChristmasScratch(){
  // latest-edition section. These buttons do not poll Firestore.
  const editionManagers={};
  for(const [variant,dialog,getEdition,setEdition,onPreview,onLoadCurrent] of [
-  ['gifts',giftsDialog,()=>giftsEdition,edition=>{giftsEdition=edition},()=>updateGiftsEditionPreview(),()=>fillGiftsSettings()],
-  ['snow_collect',snowDialog,()=>snowEdition,edition=>{snowEdition=edition},()=>updateSnowEditionPreview(),()=>fillSnowSettings()],
+  ['gifts',giftsDialog,()=>giftsEdition,edition=>{giftsEdition=edition},()=>updateGiftsEditionPreview(),()=>fillGiftsSettings(true)],
+  ['snow_collect',snowDialog,()=>snowEdition,edition=>{snowEdition=edition},()=>updateSnowEditionPreview(),()=>fillSnowSettings(true)],
   ['tic_tac_toe',ticDialog,()=>ticEdition,edition=>{ticEdition=edition},()=>updateTicEditionPreview(),()=>fillTicEditionValues()]
  ]){
   if(!dialog)continue;
@@ -956,8 +956,10 @@ export function initChristmasScratch(){
     'Bitte ein ganzzahliges Gesamtbudget zwischen 0 und 1.000.000.000.000 Münzen eingeben.':'');
   }
  }
- function fillGiftsSettings(){
-  const cfg=(giftsEdition?.remaining>0?giftsEdition.config:null)??status?.settings?.variants?.gifts;
+ function fillGiftsSettings(preferEdition=false){
+  const cfg=(preferEdition?giftsEdition?.config:
+   (giftsEdition?.remaining>0?giftsEdition.config:null))??
+   status?.settings?.variants?.gifts;
   if(!cfg||!giftsDialog){
    showAlert('⚠️ Geschenkelinie-Einstellungen noch nicht geladen. Bitte Kontostand aktualisieren.','gifts');
    return false;
@@ -1075,8 +1077,10 @@ export function initChristmasScratch(){
     'Bitte ein ganzzahliges Gesamtbudget zwischen 0 und 1.000.000.000.000 Münzen eingeben.':'');
   }
  }
- function fillSnowSettings(){
-  const cfg=(snowEdition?.remaining>0?snowEdition.config:null)??status?.settings?.variants?.snow_collect;
+ function fillSnowSettings(preferEdition=false){
+  const cfg=(preferEdition?snowEdition?.config:
+   (snowEdition?.remaining>0?snowEdition.config:null))??
+   status?.settings?.variants?.snow_collect;
   if(!cfg||!snowDialog){
    showAlert('⚠️ Schneeflocken-Bingo-Einstellungen noch nicht geladen. Bitte Kontostand aktualisieren.','snow_collect');
    return false;
