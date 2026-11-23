@@ -3,7 +3,10 @@
  * The signed-in Render service creates a card with immutable win combinations.
  */
 import {createOtherScratchStudio,OTHER_EDITOR_VARIANTS} from './christmas-other-edition-ui.js?v=1';
-export const SCRATCH_TAB_READ_REUSE_MS=20000;
+// Reopening the ticket shop within 45 seconds reuses this authenticated UID's
+// view. All purchases and reward changes still invalidate or force-refresh it.
+// This avoids repeating up to 13 cold Firestore document reads on tab hopping.
+export const SCRATCH_TAB_READ_REUSE_MS=45000;
 export function reuseRecentScratchView({uid,loadedUid,loadedAt,hasStatus,force=false,now=Date.now()}){
  const age=now-loadedAt;
  return Boolean(uid)&&!force&&Boolean(hasStatus)&&uid===loadedUid&&

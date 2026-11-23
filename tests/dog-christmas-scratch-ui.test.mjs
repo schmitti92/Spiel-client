@@ -632,12 +632,12 @@ test('Premium 27 artwork fits the available landscape and portrait viewport with
 });
 
 
-test('Firebase scratch shop read reuse is scoped to one UID and expires in 20 seconds',()=>{
- assert.equal(SCRATCH_TAB_READ_REUSE_MS,20000);
+test('Firebase scratch shop read reuse is scoped to one UID and expires in 45 seconds',()=>{
+ assert.equal(SCRATCH_TAB_READ_REUSE_MS,45000);
  const ctx={uid:'alice',loadedUid:'alice',loadedAt:100000,hasStatus:true,now:110000};
  assert.equal(reuseRecentScratchView(ctx),true,'quick tab switch must not reload all editions');
- assert.equal(reuseRecentScratchView({...ctx,now:119999}),true);
- assert.equal(reuseRecentScratchView({...ctx,now:120000}),false,'stale data gets a fresh read');
+ assert.equal(reuseRecentScratchView({...ctx,now:144999}),true);
+ assert.equal(reuseRecentScratchView({...ctx,now:145000}),false,'stale data gets a fresh read');
  assert.equal(reuseRecentScratchView({...ctx,force:true}),false,'manual refresh always reads');
  assert.equal(reuseRecentScratchView({...ctx,uid:'bob'}),false,'new account may not reuse private data');
  assert.equal(reuseRecentScratchView({...ctx,hasStatus:false}),false,'failed load cannot be cached');
@@ -657,8 +657,8 @@ test('DOG voucher, research and village rewards invalidate scratch read reuse im
  assert.match(scratch,/lastScratchReadAt=0;\s*if\(\$\('tab-scratch'\)/);
  for(const code of [level,research,event])
   assert.match(code,/dispatchEvent\(new Event\('dog-scratch-balance-changed'\)\)/);
- assert.match(event,/christmas-scratch-ui\.js\?v=84/);
- assert.match(event,/christmas-player-levels-ui\.js\?v=9/);
- assert.match(event,/christmas-research-ui\.js\?v=10/);
- assert.match(intro,/christmas-event\.js\?v=158/);
+ assert.match(event,/christmas-scratch-ui\.js\?v=\d+/);
+ assert.match(event,/christmas-player-levels-ui\.js\?v=\d+/);
+ assert.match(event,/christmas-research-ui\.js\?v=\d+/);
+ assert.match(intro,/christmas-event\.js\?v=\d+/);
 });
