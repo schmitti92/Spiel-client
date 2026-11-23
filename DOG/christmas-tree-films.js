@@ -20,11 +20,20 @@ export const CHRISTMAS_TREE_FILMS=Object.freeze({
       './assets/901719079_1795277415902807.mp4',
       './assets/433654807_1795277420139339.mp4'
     ])
+  }),
+  4:Object.freeze({
+    title:'Der leere Stuhl',
+    subtitle:'Ein geheimnisvoller Gast und die Spur einer alten Geschichte',
+    clips:Object.freeze([
+      './assets/117094114_1795447171200199.mp4',
+      './assets/707135559_1795447174358822.mp4',
+      './assets/301317141_1795447178947888.mp4'
+    ])
   })
 });
 export function eligibleChristmasTreeFilms(level,completed=[]){
  if(!Number.isInteger(level))return [];
- return [2,3].filter(n=>n<=level&&!completed.includes(n));
+ return [2,3,4].filter(n=>n<=level&&!completed.includes(n));
 }
 export function initChristmasTreeFilms({getUserId,isPreview}){
  const style=document.createElement('style');
@@ -62,7 +71,7 @@ export function initChristmasTreeFilms({getUserId,isPreview}){
   '<button type="button" data-mute>🔇 Ton ausschalten</button>',
   '<button type="button" data-restart>↺ Von vorne</button>',
   '<button type="button" data-skip>Film überspringen</button>',
-  '</div><p style="font-size:12px;color:#b7cbd1">Zwei Szenen à 15 Sekunden. Deine Baumstufe und Belohnungen bleiben unverändert.</p></div>'
+  '</div><p style="font-size:12px;color:#b7cbd1">Szenen zu Baumstufe 2 und 3: je 2 × 15 Sekunden. Baumstufe 4: 3 × 10 Sekunden. Belohnungen bleiben unverändert.</p></div>'
  ].join('');
  document.body.append(dialog);
  const video=dialog.querySelector('video'),status=dialog.querySelector('[data-status]');
@@ -112,7 +121,7 @@ export function initChristmasTreeFilms({getUserId,isPreview}){
   }
   video.src=new URL(chapter.clips[clipIndex],import.meta.url).href;
   video.load();
-  status.textContent='🎬 Baumstufe '+active.level+' · Szene '+(clipIndex+1)+' von 2'+(autoContinue?'':' · Play drücken, Ton ist eingeschaltet.');
+  status.textContent='🎬 Baumstufe '+active.level+' · Szene '+(clipIndex+1)+' von '+chapter.clips.length+'+(autoContinue?'':' · Play drücken, Ton ist eingeschaltet.');
   syncControls();
   if(autoContinue)beginPlayback();
  }
@@ -146,7 +155,7 @@ export function initChristmasTreeFilms({getUserId,isPreview}){
   }
  }
  const timeline=document.getElementById('tree-steps');
- for(const level of [2,3]){
+ for(const level of [2,3,4]){
   const item=timeline?.querySelector('[data-tree-step="'+level+'"]');
   if(!item)continue;
   const button=document.createElement('button');
@@ -175,7 +184,7 @@ export function initChristmasTreeFilms({getUserId,isPreview}){
    pending.length=0;userId=uid;
   }
   verifiedLevel=Number.isInteger(level)?Math.max(0,Math.min(level,10)):0;
-  const completed=[2,3].filter(n=>isSeen(uid,n));
+  const completed=[2,3,4].filter(n=>isSeen(uid,n));
   for(const candidate of eligibleChristmasTreeFilms(verifiedLevel,completed)){
    if(!pending.includes(candidate)&&active?.level!==candidate)pending.push(candidate);
   }
@@ -194,8 +203,13 @@ export function initChristmasTreeFilms({getUserId,isPreview}){
   if(!active||finished)return;
   failed=true;
   console.warn('[Lichtertal Film] Missing stage clip',active.level,clipIndex+1);
-  if(clipIndex===0){clipIndex=1;loadClip(false);status.textContent='⚠️ Szene 1 konnte nicht geladen werden. Szene 2 kann mit Play gestartet werden.';}
-  else{finished=true;status.textContent='⚠️ Szene 2 konnte nicht geladen werden. Bitte später erneut versuchen.';syncControls();}
+  const failedScene=clipIndex+1;
+  if(failedScene<CHRISTMAS_TREE_FILMS[active.level].clips.length){
+   clipIndex++;loadClip(false);
+   status.textContent='⚠️ Szene '+failedScene+' konnte nicht geladen werden. Szene '+(clipIndex+1)+' kann mit Play gestartet werden.';
+  }else{
+   finished=true;status.textContent='⚠️ Szene '+failedScene+' konnte nicht geladen werden. Bitte später erneut versuchen.';syncControls();
+  }
  });
  return {sync,isOpen:()=>dialog.open,show:level=>openFilm(level,true)};
 }
