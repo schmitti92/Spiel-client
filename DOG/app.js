@@ -1,5 +1,5 @@
 import {refreshVerifiedCosmetics} from './verified-cosmetics.js?v=3';
-import {CARD_EDITIONS,CARD_EDITION,isCardEditionUnlocked,loadCardEdition,saveCardEdition,cardBackBackground,cardMarkup,cardVisual} from './card-visuals.js?v=13';
+import {CARD_EDITIONS,CARD_EDITION,isCardEditionUnlocked,loadCardEdition,saveCardEdition,cardBackBackground,cardMarkup,cardVisual} from './card-visuals.js?v=14';
 import {enableHandTouchGestures} from './hand-gestures.js?v=2';
 import {mountDogEmojiGame,showDogEmoji,showDogEmojiError} from './emoji-game.js?v=4';
 import {boardGestureTarget,nearestTrackPawn,nearestBoardField,boardEventPoint} from './board-gesture-math.js?v=3';
