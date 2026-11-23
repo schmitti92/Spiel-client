@@ -84,3 +84,16 @@
  border-radius:9px;border:1px solid #ddc38a;
  background:#eff7f4;color:#183d36;font-size:16px;font-weight:800;
 }
+
+/* Only the Premium edition creator may retire the current unsold run. */
+.scratch-other-edition-retire{
+ display:block;width:100%;margin-top:9px;padding:11px 14px;
+ border:1px solid #d88976;border-radius:12px;
+ background:rgba(115,33,28,.27);color:#ffdfd5;
+ font:inherit;font-size:13px;font-weight:800;cursor:pointer;
+}
+.scratch-other-edition-retire:hover:not(:disabled){
+ background:rgba(156,46,37,.4);border-color:#ffae95;
+}
+.scratch-other-edition-retire:disabled{cursor:wait;opacity:.55}
+.scratch-other-edition-retire[hidden]{display:none!important}
