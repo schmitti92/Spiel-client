@@ -11,6 +11,13 @@ export const SCRATCH_EDITION_TITLES=Object.freeze({
  tic_tac_toe:'⭕ DOG Tic-Tac-Toe',number_one_20:'🔢 Glückszahl 1',
  dog_jackpot_9:'🐾 Finde DOG!'
 });
+export const EDITION_SETTINGS_FIELDS=Object.freeze({
+ gifts:['gs-price','gs-edition-budget'],
+ snow_collect:['sn-price','sn-edition-budget'],
+ elf:['oe-price','oe-budget'],premium_27:['oe-price','oe-budget'],
+ number_one_20:['oe-price','oe-budget'],dog_jackpot_9:['oe-price','oe-budget'],
+ tic_tac_toe:['tic-price','tic-edition-budget']
+});
 export const editionStatusLine=edition=>{
  if(!edition)return 'Noch keine aktive Auflage erkannt. Mit „Stand prüfen“ den aktuellen Serverstand abrufen.';
  const sold=Number(edition.issued??0),left=Math.max(0,500-sold);
@@ -39,12 +46,29 @@ export function mountScratchEditionManager({dialog,variant,getEdition,query,onEd
  refresh.type='button';refresh.textContent='🔄 Auflage prüfen';refresh.className='scratch-edition-management-check';
  const retire=document.createElement('button');
  retire.type='button';retire.textContent='🗑️ Letzte Auflage beenden';retire.className='scratch-edition-management-retire';
+ // An additional real production control: set an edition's fixed payout
+ // budget as a chosen percentage of gross full-price sales. The edition
+ // creator can still adjust the exact amount in the form before publishing.
+ const budgetPanel=document.createElement('div');
+ budgetPanel.className='scratch-edition-management-budget';
+ const ratioLabel=document.createElement('label');
+ ratioLabel.textContent='🎯 Gewünschte Auszahlungsquote (% vom Listenpreisumsatz)';
+ const ratio=document.createElement('input');
+ ratio.type='number';ratio.min='0';ratio.max='500';ratio.step='0.1';ratio.value='80';
+ ratio.setAttribute('aria-label','Gewünschte Auszahlungsquote in Prozent');
+ ratioLabel.append(ratio);
+ const applyBudget=document.createElement('button');
+ applyBudget.type='button';applyBudget.className='scratch-edition-management-check';
+ applyBudget.textContent='💰 Gewinnbudget aus Quote übernehmen';
+ const budgetNote=document.createElement('small');
+ budgetNote.textContent='Berechnung für 500 Lose. Rabatte und Gutscheine sind nicht eingerechnet; der Server prüft, ob die Gewinnkombinationen machbar sind.';
+ budgetPanel.append(ratioLabel,applyBudget,budgetNote);
  const feedback=document.createElement('p');
  feedback.className='scratch-edition-management-feedback';
  feedback.setAttribute('role','status');
  feedback.setAttribute('aria-live','polite');
  actions.append(refresh,retire);
- section.append(heading,status,actions,feedback);
+ section.append(heading,status,actions,budgetPanel,feedback);
  const headingNode=dialog.querySelector('header,.scratch-gifts-settings-head');
  if(headingNode?.nextSibling)headingNode.parentNode.insertBefore(section,headingNode.nextSibling);
  else dialog.querySelector('form')?.prepend(section);
@@ -55,6 +79,24 @@ export function mountScratchEditionManager({dialog,variant,getEdition,query,onEd
   retire.textContent=getEdition()?.remaining>0?'🗑️ Aktuelle Auflage beenden':'🔎 Aktuelle Auflage prüfen / beenden';
  }
  const notice=message=>{feedback.textContent=message};
+ applyBudget.addEventListener('click',()=>{
+  const [priceId,budgetId]=EDITION_SETTINGS_FIELDS[variant]||[];
+  const price=Number(dialog.querySelector('#'+priceId)?.value);
+  const budgetInput=dialog.querySelector('#'+budgetId);
+  const percent=Number(ratio.value);
+  if(!Number.isSafeInteger(price)||price<0||price>1000000||
+   !Number.isFinite(percent)||percent<0||percent>500||!budgetInput){
+   notice('⚠️ Bitte einen gültigen Lospreis und eine Auszahlungsquote von 0 bis 500 % eingeben.');return;
+  }
+  const planned=Math.round(500*price*percent/100);
+  if(!Number.isSafeInteger(planned)||planned<Number(getEdition()?.paidCoins||0)){
+   notice('⚠️ Das Budget darf nicht kleiner sein als die bereits ausgezahlten Gewinne.');return;
+  }
+  budgetInput.value=String(planned);
+  budgetInput.dispatchEvent(new Event('input',{bubbles:true}));
+  notice('✅ Gewinnbudget: '+planned.toLocaleString('de-DE')+
+   ' 🪙 für 500 Lose eingetragen. Prüfe anschließend die Gewinnwerte und erstelle/bearbeite die Auflage.');
+ });
  async function check(){
   const reply=await query('/editions/'+variant+'/status');
   const name=variant==='gifts'?'giftsEdition':
