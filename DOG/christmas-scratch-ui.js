@@ -358,6 +358,29 @@ export function initChristmasScratch(){
    onLoadCurrent
   });
  }
+ // Central administration stays visible even when a ticket is locked
+ // by a player's level. Only server-authorized scratch admins can use it.
+ function openScratchEditionSettings(variant){
+  if(!account()){
+   showAlert('🔐 Bitte zuerst mit deinem DOG-Onlineprofil anmelden.',variant);return;
+  }
+  if(!status){
+   showAlert('🔄 Rubbellos-Konto und Adminrechte noch nicht geladen. Bitte den Kontostand aktualisieren.',variant);return;
+  }
+  if(!canManageScratch){
+   showAlert('🔒 Keine Administratorrechte für die Rubbellos-Auflagen. Das Profil muss auf Render in DOG_SCRATCH_ADMIN_UIDS freigeschaltet sein.',variant);
+   return;
+  }
+  if(variant==='gifts')openGiftsSettings();
+  else if(variant==='snow_collect')openSnowSettings();
+  else if(variant==='tic_tac_toe')openTicEdition();
+  else if(OTHER_EDITOR_VARIANTS.includes(variant))otherStudio.open(variant);
+ }
+ $('scratch-management-hub')?.addEventListener('click',event=>{
+  const button=event.target.closest?.('button[data-scratch-manage]');
+  if(!button)return;
+  openScratchEditionSettings(button.dataset.scratchManage);
+ });
  const VARIANT_LABELS=Object.freeze([
   ['gifts','🎁 Geschenkelinie','Einfach · 200 🪙'],
   ['snow_collect','❄️ Schneeflocken-Bingo','Einfach · 200 🪙'],
@@ -646,6 +669,11 @@ export function initChristmasScratch(){
   const shopPlayerLevel=developer?.isActive()?developer.settings().playerLevel:
    Number.isInteger(status?.playerLevel)?status.playerLevel:1;
   wallet.textContent=developer?.isActive()?num(developer.settings().coins)+' 🪙 Testmünzen':status?num(status.coins)+' 🪙':'– 🪙';
+  const rights=$('scratch-management-access');
+  if(rights)rights.textContent=!account()?'🔐 Bitte mit einem DOG-Onlineprofil anmelden.':
+   !status?'🔄 Konto und Berechtigungen werden geladen.':
+   canManageScratch?'✅ Administratorrechte bestätigt. Du kannst jede Losart unabhängig konfigurieren.':
+   '🔒 Dieses DOG-Profil hat keine Auflagen-Administratorrechte. Bitte die UID in DOG_SCRATCH_ADMIN_UIDS auf Render freischalten.';
   const freeMode=false; // Free-mode and daily free tickets are disabled.
   // Keep the legacy gear for dialog handlers; hide it in the normal shop.
   $('scratch-host-settings').hidden=true;
@@ -735,28 +763,28 @@ export function initChristmasScratch(){
     const gear=el('button','scratch-gifts-card-settings','⚙️ Einstellungen');
     gear.type='button';gear.title='Nur die Geschenkelinie einstellen';
     gear.setAttribute('aria-label','Geschenkelinie-Einstellungen öffnen');
-    gear.addEventListener('click',event=>{event.stopPropagation();openGiftsSettings()});
+    gear.addEventListener('click',event=>{event.stopPropagation();openScratchEditionSettings('gifts')});
     article.append(gear);
    }
    if(OTHER_EDITOR_VARIANTS.includes(option.id)){
     const gear=el('button','scratch-other-edition-gear','⚙️ Auflage');
     gear.type='button';gear.title='Auflage erstellen oder Restlose bearbeiten';
     gear.setAttribute('aria-label','Auflagenstudio für '+option.name+' öffnen');
-    gear.addEventListener('click',event=>{event.stopPropagation();otherStudio.open(option.id)});
+    gear.addEventListener('click',event=>{event.stopPropagation();openScratchEditionSettings(option.id)});
     article.append(gear);
    }
    if(option.id==='tic_tac_toe'){
     const gear=el('button','scratch-gifts-card-settings scratch-tic-card-settings','⚙️ Auflage');
     gear.type='button';gear.title='Tic-Tac-Toe-Auflage erstellen oder bearbeiten';
     gear.setAttribute('aria-label','Tic-Tac-Toe-Auflagenstudio öffnen');
-    gear.addEventListener('click',event=>{event.stopPropagation();openTicEdition()});
+    gear.addEventListener('click',event=>{event.stopPropagation();openScratchEditionSettings('tic_tac_toe')});
     article.append(gear);
    }
    if(option.id==='snow_collect'){
     const gear=el('button','scratch-gifts-card-settings scratch-snow-card-settings','⚙️ Auflage');
     gear.type='button';gear.title='Schneeflocken-Bingo-Auflage erstellen';
     gear.setAttribute('aria-label','Schneeflocken-Bingo-Auflagentool öffnen');
-    gear.addEventListener('click',event=>{event.stopPropagation();openSnowSettings()});
+    gear.addEventListener('click',event=>{event.stopPropagation();openScratchEditionSettings('snow_collect')});
     article.append(gear);
    }
    const heading=el('div','scratch-card-heading');
