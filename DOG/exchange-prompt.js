@@ -7,7 +7,7 @@ export function dogExchangePrompt(game,seat,selectedCard=null){
  const players=game.players,hands=game.hands,exchanges=game.exchanges;
  if(!Array.isArray(players)||!Array.isArray(hands)||!Array.isArray(exchanges))return null;
  const player=players[seat],hand=hands[seat];
- if(!player||player.inactive||!Array.isArray(hand)||hand.length===0)return null;
+ if(!player||player.inactive||player.bot||!Array.isArray(hand)||hand.length===0)return null;
  // Online's private snapshot uses false, while local games use null.
  if(exchanges[seat]!==null&&exchanges[seat]!==false)return null;
  const solo=game.mode==='solo2'||game.mode==='solo3';
