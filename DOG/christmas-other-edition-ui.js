@@ -3,10 +3,11 @@
  * finite edition controls: Elf, Premium 27, Number One and DOG Jackpot.
  * The signed Render receipt/edition ledger is always the only source of truth.
  */
+import {mountScratchEditionManager} from './christmas-edition-management-ui.js?v=1';
 export const OTHER_EDITOR_VARIANTS=Object.freeze(['elf','premium_27','number_one_20','dog_jackpot_9']);
 const META=Object.freeze({
  elf:{title:'🧝 Magischer Wichtelpfad',rule:'Geld gewinnt nur über einen durchgehenden Pfad von links nach rechts. Geschenke benötigen 3 verbundene gleiche Symbole.',price:500,amounts:[100,300,800],category:2,none:200,gift:30,winMax:3,double:110,gold:300,dog:350},
- premium_27:{title:'👑 Premium-Weihnachtslos',rule:'Vier passende Geldreihen (je eine von allen drei Geldsymbolen und eine weitere) sind garantiert. 20 Felder schenken 1.000 Münzen; bei 24 kann ein Geschenk folgen.',price:1000,amounts:[200,800,2000],category:3,none:0,gift:40,winMax:3,double:0,gold:300,dog:350},
+ premium_27:{title:'👑 Premium-Weihnachtslos',rule:'Zwei echte Geld-Dreierreihen sind garantiert. 20 Felder schenken 1.000 Münzen; bei 24 kann ein Geschenk folgen.',price:1000,amounts:[200,800,2000],category:3,none:0,gift:40,winMax:3,double:0,gold:300,dog:350},
  number_one_20:{title:'🔢 Glückszahl 1',rule:'20 Reihen. Nur echte Zahlen mit der 1 gewinnen das Geldsymbol der gleichen Reihe. Für Auflagen sind bis zu drei Geldtreffer plus ein Geschenk pro Los vorgesehen.',price:500,amounts:[100,300,800],category:2,none:200,gift:30,winMax:3,double:0,gold:300,dog:350},
  dog_jackpot_9:{title:'🐾 Finde DOG!',rule:'Nur ein echtes DOG im 3×3-Feld gewinnt alle acht übrigen Preise. Ohne DOG = Niete. Münzgewinne werden exakt vorgeplant.',price:1000,amounts:[100,300,800],category:3,none:650,gift:40,winMax:3,double:0,gold:300,dog:350}
 });
@@ -14,6 +15,7 @@ const labels={1:'🟤 Kategorie 1 · Einfach',2:'🔵 Kategorie 2 · Mittel',3:'
 const number=n=>Number(n||0).toLocaleString('de-DE');
 export function createOtherScratchStudio({account,query,drawShop,showAlert,stage}){
  let editions={},active='elf',busy=false;
+ const editionManagers={};
  const dialog=document.createElement('dialog');
  dialog.id='scratch-other-edition-dialog';
  dialog.className='scratch-gifts-settings-dialog scratch-tic-edition-dialog scratch-other-edition-dialog';
@@ -27,12 +29,6 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
        <p id="oe-rule"></p></div>
      <button type="button" id="oe-close" aria-label="Schließen">✕</button>
    </header>
-   <section id="oe-premium-manage" class="scratch-other-edition-manage" hidden aria-label="Premium-Auflage verwalten">
-     <strong>👑 Aktuelle Premium-Auflage</strong>
-     <p id="oe-premium-status">Auflage prüfen, beenden oder anschließend neu erstellen.</p>
-     <button id="oe-retire-premium" type="button" class="scratch-other-edition-retire">🗑️ Aktuelle Premium-Auflage prüfen / beenden</button>
-     <p id="oe-premium-feedback" role="status" aria-live="polite"></p>
-   </section>
    <section class="scratch-gifts-settings-section">
      <h4>🎟️ 1 · Los und Gewinnkategorie</h4>
      <div class="scratch-gifts-settings-grid">
@@ -161,20 +157,11 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
   $('oe-create').disabled=ongoing||busy;
   $('oe-edit').hidden=!ongoing;
   $('oe-edit').disabled=!ongoing||busy;
-  // Never hide the Premium management entry merely because cached server
-  // metadata is absent. One explicit click checks the live edition directly.
-  $('oe-premium-manage').hidden=active!=='premium_27';
-  $('oe-retire-premium').disabled=busy;
-  $('oe-retire-premium').textContent=ongoing?'🗑️ Aktuelle Premium-Auflage beenden':'🔎 Premium-Auflage prüfen / beenden';
-  $('oe-premium-status').textContent=ongoing?
-    'Aktiv: '+edition.issued+' von 500 Losen ausgegeben · '+edition.remaining+' noch verfügbar.':
-    edition?.remaining===0?'Diese Auflage ist ausverkauft. Du kannst bereits eine neue erstellen.':
-    'Keine Auflage aus dem letzten Shopabruf erkannt. Hier den aktuellen Serverstand prüfen.';
   let hint='💡 Der feste Münzbetrag hat Vorrang vor den gewünschten Quoten. ';
   const [a,b,c]=[0,1,2].map(i=>Number($('oe-coin-'+i).value||0));
   if(active==='premium_27'){
-   const min=500*(a+b+c+a);
-   hint+='Vier Geldreihen sind garantiert. Bei 500 Losen ist das minimale Geldbudget '+
+   const min=500*2*a;
+   hint+='Zwei bezahlte Geld-Dreierreihen pro Premium-Los sind garantiert. Bei 500 Losen beträgt das minimale Geldbudget '+
     number(min)+' 🪙 (ohne 20er-Bonus).';
    if(budget<min)hint+=' ⚠️ Das eingetragene Budget liegt darunter.';
   }else if(active==='dog_jackpot_9'){
@@ -204,8 +191,10 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
    variant==='dog_jackpot_9'?400000:100000;
   set('oe-budget',editions[active]?.maxTotalCoins??suggested);
   $('oe-feedback').textContent='';
-  $('oe-premium-feedback').textContent='';
-  update();dialog.showModal();
+  for(const variant of OTHER_EDITOR_VARIANTS){
+   editionManagers[variant].root.hidden=variant!==active;
+  }
+  update();editionManagers[active].refresh();dialog.showModal();
  };
  async function submit(edit){
   const current=editions[active],button=$(edit?'oe-edit':'oe-create');
@@ -254,64 +243,16 @@ export function createOtherScratchStudio({account,query,drawShop,showAlert,stage
  $('oe-form').addEventListener('submit',event=>event.preventDefault());
  for(const input of dialog.querySelectorAll('input, select'))
   input.addEventListener('input',update);
- function premiumFeedback(message){
-  $('oe-feedback').textContent=message;
-  $('oe-premium-feedback').textContent=message;
- }
- async function retirePremiumEdition(){
-  if(busy||active!=='premium_27')return;
-  busy=true;update();
-  premiumFeedback('🔎 Aktuelle Premium-Auflage wird direkt am Server geprüft …');
-  try{
-   // Exactly one current-edition document read. Do not trust missing or
-   // stale edition metadata from an earlier shop snapshot.
-   const checked=await query('/editions/premium_27/status');
-   const previous=checked.otherEdition;
-   editions.premium_27=previous??null;
-   if(!previous){
-    premiumFeedback('ℹ️ Es ist keine aktive Premium-Auflage gespeichert. Du kannst direkt eine neue 500er-Auflage erstellen.');
-    return;
-   }
-   if(previous.remaining<=0){
-    premiumFeedback('ℹ️ Diese Premium-Auflage ist ausverkauft. Du kannst direkt eine neue 500er-Auflage erstellen.');
-    return;
-   }
-   if(checked.canRetire!==true){
-    premiumFeedback('🔒 Nur das Profil, das diese Premium-Auflage erstellt hat, darf sie beenden. Melde dich gegebenenfalls mit dem Erstellerprofil an.');
-    return;
-   }
-   const warning='Aktuelle Premium-Auflage wirklich beenden?\n\n'+
-    previous.issued+' bereits ausgegebene Lose bleiben samt Gewinnen erhalten.\n'+
-    previous.remaining+' unverkaufte Lose werden aus dem Verkauf genommen.\n'+
-    'Danach kannst du sofort eine NEUE 500er-Premium-Auflage erstellen.\n\n'+
-    'Dieser Vorgang kann nicht rückgängig gemacht werden.';
-   if(!window.confirm(warning)){
-    premiumFeedback('Die aktuelle Premium-Auflage bleibt unverändert.');
-    return;
-   }
-   premiumFeedback('🔄 Premium-Auflage wird sicher archiviert …');
-   const result=await query('/editions/premium_27/retire',{
-    editionId:previous.id,expectedRevision:previous.revision,
-    confirmation:'RETIRE_PREMIUM_27'
-   });
-   if(result.otherEdition!==null||result.retiredEdition?.id!==previous.id)
-    throw Error('Die Serverbestätigung ist unvollständig. Bitte den Status neu laden.');
-   editions.premium_27=null;
-   premiumFeedback('✅ Alte Premium-Auflage archiviert. Du kannst jetzt eine neue Auflage erstellen.');
-   drawShop();
-  }catch(error){
-   const code=String(error?.message||'SERVER_UNAVAILABLE');
-   premiumFeedback('⚠️ '+({
-    SCRATCH_EDITION_ONLY_CREATOR:'Nur das Profil, das diese Premium-Auflage erstellt hat, darf sie beenden.',
-    SCRATCH_EDITION_CHANGED:'Die Auflage wurde inzwischen geändert oder ein Los verkauft. Bitte erneut prüfen.',
-    SCRATCH_EDITION_CONFIRMATION_REQUIRED:'Die Sicherheitsbestätigung fehlt.',
-    SCRATCH_EDITION_ARCHIVE_CONFLICT:'Die Auflage ist bereits archiviert. Bitte den Shop aktualisieren.'
-   }[code]||code));
-  }finally{busy=false;update()}
- }
- $('oe-retire-premium').addEventListener('click',()=>void retirePremiumEdition());
  $('oe-create').addEventListener('click',()=>void submit(false));
  $('oe-edit').addEventListener('click',()=>void submit(true));
+ for(const variant of OTHER_EDITOR_VARIANTS){
+  editionManagers[variant]=mountScratchEditionManager({
+   dialog,variant,query,getEdition:()=>editions[variant]??null,
+   onEdition:edition=>{editions[variant]=edition;update();drawShop()},
+   onRetired:()=>{editions[variant]=null;update();drawShop()}
+  });
+  editionManagers[variant].root.hidden=variant!==active;
+ }
  cardGear.addEventListener('click',()=>open(stage.dataset.variant));
  return {
   open,get:variant=>editions[variant]??null,
