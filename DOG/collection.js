@@ -4,7 +4,8 @@ import {DOG_COLLECTION_CATEGORIES,dogCollectionCategory} from './collection-cata
 import {loadAppearance,saveAppearance} from './appearance-registry.js?v=25';
 import {loadEmojiSlots,saveEmojiSlots,emojiById} from './dog-emojis.js?v=3';
 import {isChristmasRewardLocked} from './christmas-reward-locks.js?v=4';
-import {isVerifiedCosmeticUnlocked,isVerifiedDogPlayerLevelAtLeast,refreshVerifiedCosmetics} from './verified-cosmetics.js?v=2';
+import {isVerifiedCosmeticUnlocked,isVerifiedDogPlayerLevelAtLeast,refreshVerifiedCosmetics} from './verified-cosmetics.js?v=3';
+import {equippedDogCosmetic,saveEquippedDogCosmetic} from './cosmetic-equipment.js?v=1';
 import {CARD_EDITION,loadCardEdition,saveCardEdition,isCardEditionUnlocked} from './card-visuals.js?v=11';
 // The collection never grants event rewards. Cosmetic choices persist locally;
 // only an explicit avatar update in an active room uses the existing DOG API.
@@ -33,8 +34,8 @@ const available=item=>Boolean(item&&(
 // Secret Rubbellos/Event prizes are shown only after server-verified collection.
 // Never expose unrewarded artwork, names or details as gallery previews.
 const visibleCollectionItem=item=>Boolean(item&&(!item.unlockId||available(item)));
-const canEquip=item=>available(item)&&['appearance','cardEdition','avatar','emoji','default'].includes(item.kind)&&
- !(item.kind==='avatar'&&item.avatar>15);
+const canEquip=item=>available(item)&&
+ ['appearance','cardEdition','avatar','emoji','default','nameFrame','activeIcon'].includes(item.kind);
 const statsFor=group=>{
  const items=group.items.filter(visibleCollectionItem);
  return {total:items.length,available:items.filter(available).length,
@@ -42,7 +43,11 @@ const statsFor=group=>{
 };
 function equipped(item){
  if(!available(item))return false;
- if(item.kind==='default')return true;
+ if(item.kind==='default')return item.id==='frame-current'?
+   equippedDogCosmetic('nameFrame',{local,seat})===null:
+   equippedDogCosmetic('activeIcon',{local,seat})===null;
+ if(item.kind==='nameFrame')return equippedDogCosmetic('nameFrame',{local,seat})===item.unlockId;
+ if(item.kind==='activeIcon')return equippedDogCosmetic('activeIcon',{local,seat})===item.unlockId;
  if(item.kind==='avatar')return item.avatar===avatar();
  if(item.kind==='emoji')return loadEmojiSlots().includes(item.id);
  if(item.kind==='appearance')return loadAppearance()[item.field]===(item.value??item.id) && (item.field!=='cards'||loadCardEdition()===CARD_EDITION);
@@ -162,7 +167,10 @@ function drawGrid(){
 function slotsPreview(){const row=el('div','detail-emoji-slots');for(const id of loadEmojiSlots())row.append(el('span','detail-emoji-slot',emojiById(id)?.emoji||'＋'));return row;}
 async function equipAvatar(item,button){
  const ap=window.DogAvatars;if(!ap){notify('Profilbilder konnten nicht geladen werden.');return;}
- button.disabled=true;if(local)ap.setLocal(seat,item.avatar);else ap.setOnline(item.avatar);
+ button.disabled=true;
+ const prior=local?ap.localAvatar(seat):ap.onlineAvatar();
+ const applied=local?ap.setLocal(seat,item.avatar):ap.setOnline(item.avatar);
+ if(!applied){notify('Belohnung noch nicht bestätigt – Profilbilder werden geladen.');draw();return;}
  const code=back.searchParams.get('room')||'',user=window.SpielOnline?.state?.()?.user;
  if(!local&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(code)&&user?.getIdToken){
   try{
@@ -173,13 +181,39 @@ async function equipAvatar(item,button){
    const data=await response.json();
    if(!response.ok||data.ok!==true)throw Error(data.error||'Synchronisierung fehlgeschlagen');
    notify('✓ Profilbild für den DOG-Raum übernommen.');
-  }catch(err){notify('Lokal gespeichert; Synchronisierung im Raum: '+(err.message||'nicht möglich'));}
+  }catch(err){
+   ap.setOnline(prior);
+   notify('Online-Profilbild nicht übernommen: '+(err.message||'nicht möglich'));
+  }
  }else notify('✓ Profilbild auf diesem Gerät gespeichert.');
  draw();
+}
+async function syncRoomEquipment(kind,unlockId){
+ const code=back.searchParams.get('room')||'',user=window.SpielOnline?.state?.()?.user;
+ if(local||!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(code)||!user?.getIdToken)return;
+ try{
+  const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
+  const response=await fetch(base+'/api/hub/rooms/'+encodeURIComponent(code)+'/dog/cosmetic',{
+   method:'POST',headers:{Authorization:'Bearer '+await user.getIdToken(),'Content-Type':'application/json'},
+   body:JSON.stringify({kind,unlockId})
+  });
+  const data=await response.json();
+  if(!response.ok||data.ok!==true)throw Error(data.error||'Synchronisierung fehlgeschlagen');
+  notify('✓ Auch im DOG-Raum übernommen.');
+ }catch(error){notify('Lokal ausgewählt · Online: '+error.message);}
 }
 function equip(item,button){
  if(!canEquip(item))return;
  if(item.kind==='avatar'){void equipAvatar(item,button);return;}
+ if(['nameFrame','activeIcon','default'].includes(item.kind)){
+  const kind=item.kind==='default'?(item.id==='frame-current'?'nameFrame':'activeIcon'):item.kind;
+  const unlockId=item.kind==='default'?null:item.unlockId;
+  if(!saveEquippedDogCosmetic(kind,unlockId,{local,seat})){
+   notify('Nur tatsächlich gewonnene Belohnungen sind auswählbar.');return;
+  }
+  notify('✓ '+item.name+' ausgerüstet!');
+  draw();void syncRoomEquipment(kind,unlockId);return;
+ }
  if(item.kind==='emoji'){
   const slots=loadEmojiSlots(),previous=slots.indexOf(item.id);
   if(previous!==-1&&previous!==slot)slots[previous]=slots[slot]||null;
@@ -211,8 +245,8 @@ function drawDetails(){
  root.append(detailArt,el('h3','detail-title',item.name),el('div','detail-rule'),
    el('div','detail-state'+(locked?' is-locked':''),locked?'🔒 Noch nicht gewonnen':active?'✓ Aktiv / vorhanden':item.unlockId?'✅ In deiner Sammlung':'✓ Verfügbar'),
    el('p','detail-description',item.unlockId?'🎁 Gesammelt und für dein Spielerprofil freigeschaltet.':item.description||'DOG-Design'));
- if(item.kind==='nameFrame')root.append(el('small','nameframe-preview-note',locked?'🎄 Noch nicht freigeschaltet.':'✅ Gesammelt! Das Ausrüsten als Namensrahmen folgt.'));
- if(item.kind==='activeIcon')root.append(el('small','activeicon-preview-note',locked?'🎄 Noch nicht freigeschaltet.':'✅ Gesammelt! Das Ausrüsten als Aktivsymbol folgt.'));
+ if(item.kind==='nameFrame')root.append(el('small','nameframe-preview-note',locked?'🎄 Noch nicht freigeschaltet.':'✅ Im Spielstatus als Namensrahmen auswählbar.'));
+ if(item.kind==='activeIcon')root.append(el('small','activeicon-preview-note',locked?'🎄 Noch nicht freigeschaltet.':'✅ Ersetzt die goldene Krone beim eigenen Spielzug.'));
  if(item.kind==='cardEdition')root.append(el('small','detail-fine',locked?(item.minPlayerLevel?'🔒 Freischaltung ab Spielerlevel '+item.minPlayerLevel+'.':'🎄 Erst als Eventgewinn erhältlich.'):'✅ Kartensatz freigeschaltet: 14 Motive und Rückseite.'));
  if(item.kind==='avatar'&&local&&!locked){
   const label=el('label','detail-picker','Spielerplatz'),select=el('select');
@@ -231,7 +265,7 @@ function drawDetails(){
   item.kind==='emoji'?'Emoji-Schnelltasten werden lokal nach Spielerprofil gespeichert.':
   item.kind==='avatar'?'Das Profilbild wird lokal und im aktiven DOG-Raum nach Möglichkeit synchronisiert.':
   item.kind==='default'?'Dieser Standardinhalt ist ohne Freischaltung vorhanden.':
-  !canEquip(item)?'🎁 Gesammelt. Die Ausrüstungsfunktion für diesen Inhalt wird später ergänzt.':
+  !canEquip(item)?'🎁 Dieser Inhalt ist noch nicht ausrüstbar.':
   'Die Auswahl ist rein optisch und wird ohne zusätzliche Firestore-Schreibvorgänge gespeichert.'));
 }
 function draw(){
