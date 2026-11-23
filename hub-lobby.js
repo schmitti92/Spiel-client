@@ -1191,6 +1191,26 @@ window.addEventListener('dog-room-lobby-action',event=>{
   void command(async()=>{const {room:r}=await request('/rooms/'+code);activateRoom(r);notice('Raum aktualisiert.');});
   return;
  }
+ if(kind==='cosmetic'){
+  const cosmeticKind=event.detail?.kind,unlockId=event.detail?.unlockId??null;
+  if(!['preparing','playing'].includes(room.phase)||
+   !['nameFrame','activeIcon'].includes(cosmeticKind)||
+   (unlockId!==null&&(typeof unlockId!=='string'||!/^christmas2026:(?:nameframe|activeicon):0[1-5]$/.test(unlockId))))return;
+  void command(async()=>{
+   const {room:r}=await request('/rooms/'+code+'/dog/cosmetic','POST',{kind:cosmeticKind,unlockId});
+   activateRoom(r);
+  });
+  return;
+ }
+ if(kind==='avatar'){
+  const avatar=event.detail?.avatar;
+  if(!['preparing','playing'].includes(room.phase)||!Number.isInteger(avatar)||avatar<0||avatar>35)return;
+  void command(async()=>{
+   const {room:r}=await request('/rooms/'+code+'/dog/avatar','POST',{avatar});
+   activateRoom(r);
+  });
+  return;
+ }
  if(kind==='bots'){
   const botCount=event.detail?.botCount;
   if(!room.host||room.phase!=='preparing'||!Number.isInteger(botCount)||botCount<0||botCount>2)return;

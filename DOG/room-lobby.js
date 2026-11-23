@@ -6,6 +6,7 @@ import {renderDogRoomBoard} from './room-board-preview.js?v=3';
 import {summarizeDogRoomLobby} from './room-lobby-state.js?v=2';
 import {createDogRoomWelcomeFilm} from './room-lobby-video.js?v=3';
 import {guardDesignerLink} from './designer-level-access.js?v=3';
+import {readPreferredDogCosmetic} from './cosmetic-equipment.js?v=1';
 
 const $=id=>document.getElementById(id);
 const root=$('dog-room-lobby');
@@ -14,6 +15,7 @@ const COLORS=['#ff7770','#5ec6ff','#80dda6','#ffd56c'];
 const COLOR_NAMES=['Rot','Blau','Grün','Gelb'];
 const COLOR_KEYS=['red','blue','green','yellow'];
 let current=null,roomSignature='',previewVisible=false,wasOpen=false;
+let lastSyncKey='',lastSyncAt=0,lastRoomBusy=false;
 const designerGate=guardDesignerLink($('dog-room-designer'),{
  lockedText:'🔒 Brettdesigner · Level 2',unlockedText:'🎨 Brettdesigner',
  onStatus:({allowed,level,error})=>{
@@ -140,8 +142,35 @@ function roomLink(path,roomCode){
  const returnPath='../hub-lobby.html?'+new URLSearchParams({room:roomCode,stage:'1'}).toString();
  return path+'?return='+encodeURIComponent(returnPath);
 }
+// Restore only explicitly chosen, server-verified rewards. A new device with
+// no preference must never overwrite another device's equipment.
+function syncEquipment(snapshot,busy=false){
+ if(busy||!snapshot||!['preparing','playing'].includes(snapshot.phase))return;
+ const me=snapshot.players?.find(p=>p.me);
+ if(!me||!me.participating)return;
+ const choices=[
+  ['nameFrame','dogNameFrame'],
+  ['activeIcon','dogActiveIcon']
+ ];
+ for(const [kind,field] of choices){
+  const desired=readPreferredDogCosmetic(kind,{uid:me.uid});
+  if(desired===undefined||(me[field]||null)===desired)continue;
+  const key=snapshot.code+':'+me.uid+':'+kind+':'+desired;
+  if(key===lastSyncKey&&Date.now()-lastSyncAt<20000)return;
+  lastSyncKey=key;lastSyncAt=Date.now();send('cosmetic',{kind,unlockId:desired});return;
+ }
+ // A portrait selected before joining a room should also appear online.
+ const avatar=window.DogAvatars?.preferredOnlineAvatar?.();
+ if(Number.isInteger(avatar)&&me.dogAvatar!==avatar){
+  const key=snapshot.code+':'+me.uid+':avatar:'+avatar;
+  if(key===lastSyncKey&&Date.now()-lastSyncAt<20000)return;
+  lastSyncKey=key;lastSyncAt=Date.now();send('avatar',{avatar});return;
+ }
+ lastSyncKey='';
+}
 function update(snapshot,busy=false){
  const state=summarizeDogRoomLobby(snapshot,busy);
+ lastRoomBusy=busy;
  const active=!!state;
  root.hidden=!active;
  document.body.classList.toggle('dog-room-open',active);
@@ -149,7 +178,7 @@ function update(snapshot,busy=false){
  if(shell){shell.inert=active;if(active)shell.setAttribute('aria-hidden','true');else shell.removeAttribute('aria-hidden');}
  if(!active){
   welcomeFilm.close();
-  current=null;roomSignature='';previewVisible=false;wasOpen=false;
+  current=null;roomSignature='';previewVisible=false;wasOpen=false;lastSyncKey='';
   if($('dog-room-rules').open)$('dog-room-rules').close();
   return;
  }
@@ -228,6 +257,7 @@ function update(snapshot,busy=false){
   start.title=state.hostStartHint;
  }
  if(busy)feedback('Aktion wird vom Server bestätigt …');
+ if(!busy)syncEquipment(snapshot,false);
 }
 $('dog-room-bot-count').addEventListener('change',event=>{
  if(!current||current.phase!=='preparing'||!current.host||
@@ -276,6 +306,9 @@ const rules=$('dog-room-rules');
 $('dog-room-rules-open').addEventListener('click',()=>{if(!rules.open)rules.showModal();});
 $('dog-room-rules-close').addEventListener('click',()=>rules.close());
 window.addEventListener('pageshow',()=>{if(!root.hidden){renderDogRoomBoard($('dog-room-board-preview'));}});
+window.addEventListener('dog-cosmetics-verified',()=>{if(current&&!root.hidden)syncEquipment(current,lastRoomBusy);});
+window.addEventListener('dog-christmas-avatars-ready',()=>{if(current&&!root.hidden)syncEquipment(current,lastRoomBusy);});
+window.addEventListener('dog-equipment-changed',()=>{if(current&&!root.hidden)syncEquipment(current,lastRoomBusy);});
 window.addEventListener('storage',e=>{
  if(e.key==='dog:appearance:v1'&&!root.hidden)renderDogRoomBoard($('dog-room-board-preview'));
 });

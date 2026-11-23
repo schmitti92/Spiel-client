@@ -141,7 +141,11 @@
   window.addEventListener('dog-cosmetics-verified',draw);
   draw();
  }
- window.DogAvatars={localAvatar,onlineAvatar,setLocal,setOnline,css,isSelectable:selectable};
+ function preferredOnlineAvatar(){
+  const value=preferences().online?.[uid()];
+  return selectable(value)?value:undefined;
+ }
+ window.DogAvatars={localAvatar,onlineAvatar,setLocal,setOnline,css,isSelectable:selectable,preferredOnlineAvatar};
  function init(){document.querySelectorAll('[data-dog-avatar-picker]').forEach(mount);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
  // Both catalog and verified ownership are loaded only once as ES modules.
