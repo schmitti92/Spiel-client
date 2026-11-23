@@ -2,7 +2,7 @@
  * DOG Lichtertal scratch tickets. No write occurs while a field is scratched.
  * The signed-in Render service creates a card with immutable win combinations.
  */
-import {createOtherScratchStudio,OTHER_EDITOR_VARIANTS} from './christmas-other-edition-ui.js?v=5';
+import {createOtherScratchStudio,OTHER_EDITOR_VARIANTS} from './christmas-other-edition-ui.js?v=6';
 import {mountScratchEditionManager} from './christmas-edition-management-ui.js?v=2';
 // Reopening the ticket shop within 45 seconds reuses this authenticated UID's
 // view. All purchases and reward changes still invalidate or force-refresh it.
