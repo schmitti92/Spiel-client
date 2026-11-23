@@ -88,3 +88,18 @@ test('DOG: draft settings are not changed by a status refresh; user explicitly l
  assert.match(scratch,/\(preferEdition\?giftsEdition\?\.config/);
  assert.match(scratch,/\(preferEdition\?snowEdition\?\.config/);
 });
+
+test('DOG: all seven edition settings have a dedicated visible selector independent of purchase level',()=>{
+ const names=['gifts','snow_collect','elf','premium_27','tic_tac_toe','number_one_20','dog_jackpot_9'];
+ assert.match(html,/id="scratch-management-hub"/);
+ assert.match(html,/id="scratch-management-access"/);
+ for(const id of names)
+  assert.match(html,new RegExp('data-scratch-manage="'+id+'"'));
+ const buttons=html.match(/data-scratch-manage="/g)||[];
+ assert.equal(buttons.length,7);
+ assert.match(scratch,/function openScratchEditionSettings\(variant\)/);
+ assert.match(scratch,/openScratchEditionSettings\(button\.dataset\.scratchManage\)/);
+ assert.match(scratch,/if\(!canManageScratch\)/);
+ assert.match(scratch,/DOG_SCRATCH_ADMIN_UIDS/);
+ assert.match(css,/\.scratch-management-hub-grid/);
+});
