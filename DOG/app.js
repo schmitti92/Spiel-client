@@ -12,7 +12,7 @@ import {DOG_MOVE_HINTS_KEY,readDogMoveHints,writeDogMoveHints,dogLegalTargets} f
 import {summarizeDogVictory} from './victory-summary.js?v=4';
 import {dogCosmeticDefinition,equippedDogCosmetic,DOG_COSMETIC_EQUIPMENT_KEY} from './cosmetic-equipment.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,completedDogSeat} from './engine.js?v=7';
-import {DOG_BOT_DIFFICULTIES,readDogBotDifficulties,saveDogBotDifficulty,dogBotDifficultyForSeat,chooseDogBotAction} from './bot-difficulty.js?v=3';
+import {DOG_BOT_DIFFICULTIES,readDogBotDifficulties,saveDogBotDifficulty,dogBotDifficultyForSeat,chooseDogBotAction} from './bot-difficulty.js?v=4';
 import {decideDogRoomUpdate} from './online-sync.js?v=15';
 import {createDogSocketActionDispatcher} from './socket-actions.js?v=1';
 import {initDogFirstLightFilm} from './christmas-first-light-film.js?v=2';
@@ -36,7 +36,7 @@ if(online){
 }
 document.querySelectorAll('[data-dog-editor]').forEach(link=>link.href='editor.html?return='+encodeURIComponent(editorBack)+'&v=10');
 const apiBase=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlineRoomHost=false,onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null,onlineDogAvatars=[],onlineDogCosmetics=[],onlineChristmas=null,onlineResearch=null,emojiSocketReady=false, socketSupportsDogActions=false;
+let onlineSeat=null,onlineSocket=null,onlineBusy=false,onlineRoomHost=false,onlineBotDifficulties={default:'medium'},onlinePoll=null,onlineHeartbeat=null,roomRevision=null,acceptedMatchId=null,refreshInFlight=null,onlineDogAvatars=[],onlineDogCosmetics=[],onlineChristmas=null,onlineResearch=null,emojiSocketReady=false, socketSupportsDogActions=false;
 const dogSocketActions=createDogSocketActionDispatcher();
 let lastFallbackRoomReadAt=0;
 let lastAnnouncedFinishedMatchId=null; // One Christmas eligibility refresh per completed DOG match.
@@ -129,6 +129,7 @@ function acceptRemote(room){
    if(decision.clearSelection){selectedCard=null;selectedPiece=null;jokerAs=null;$('dog-joker-dialog').close();}
    game=decision.game;onlineSeat=decision.seat;acceptedMatchId=decision.matchId;
    onlineRoomHost=room.host===true;
+   onlineBotDifficulties=room.match?.dogBotDifficulties||{default:'medium'};
    onlineDogAvatars=Array.isArray(room.match?.dogAvatars)?room.match.dogAvatars:[];
    onlineDogCosmetics=Array.isArray(room.match?.dogCosmetics)?room.match.dogCosmetics:[];
    onlineChristmas=room.match?.christmas?.enabled===true?room.match.christmas:null;
@@ -448,9 +449,11 @@ function renderDogBotDifficulties(){
  const preset=$('dog-bot-difficulty-default');
  const note=$('dog-bot-difficulty-description');
  if(!root||!preset)return;
- preset.value=dogBotDifficultyForSeat(botDifficulties,'default');
+ const currentSettings=online?onlineBotDifficulties:botDifficulties;
+ preset.value=dogBotDifficultyForSeat(currentSettings,'default');
+ preset.disabled=online&&!onlineRoomHost;
  const bots=Array.isArray(game?.players)?game.players.filter(p=>p.bot&&!p.inactive):[];
- const signature=JSON.stringify({online,bots:bots.map(p=>[p.seat,p.name,dogBotDifficultyForSeat(botDifficulties,p.seat)])});
+ const signature=JSON.stringify({online,host:onlineRoomHost,settings:currentSettings,bots:bots.map(p=>[p.seat,p.name,dogBotDifficultyForSeat(currentSettings,p.seat)])});
  if(lastBotDifficultyUiKey===signature)return;
  lastBotDifficultyUiKey=signature;
  root.replaceChildren();
@@ -459,10 +462,11 @@ function renderDogBotDifficulties(){
   const label=document.createElement('label');
   const id='dog-bot-difficulty-seat-'+bot.seat;
   label.htmlFor=id;label.textContent=bot.name||'Bot '+(bot.seat+1);
-  const select=botDifficultySelect(id,dogBotDifficultyForSeat(botDifficulties,bot.seat),
+  const select=botDifficultySelect(id,dogBotDifficultyForSeat(currentSettings,bot.seat),
     'Schwierigkeitsgrad von '+label.textContent);
-  select.disabled=online;
+  select.disabled=online&&!onlineRoomHost;
   select.addEventListener('change',()=>{
+   if(online){void setOnlineDogBotDifficulty(bot.seat,select.value);return;}
    botDifficulties=saveDogBotDifficulty(bot.seat,select.value,window.localStorage);
    lastBotDifficultyUiKey=null;
    renderDogBotDifficulties();
@@ -470,12 +474,32 @@ function renderDogBotDifficulties(){
   row.append(label,select);root.appendChild(row);
  }
  if(note)note.textContent=online?
-  'Online-Bots werden vom Render-Server gesteuert. Diese Auswahl ist für lokale Partien vorbereitet.':
+  (onlineRoomHost?'👑 Die Stärke wird auf Render gespeichert und gilt für alle ab dem nächsten Botzug.':
+   '🔒 Nur der Host darf die Online-Bot-Schwierigkeit ändern. Render steuert die Züge.'):
   bots.length?
   'Jeder Bot kann eine andere Stärke haben. Änderungen gelten ab seinem nächsten Zug.':
   'Keine Bots in dieser Partie. Der Standard gilt für künftige lokale Bots.';
 }
+async function setOnlineDogBotDifficulty(seat,difficulty){
+ if(!online||!onlineRoomHost||!acceptedMatchId)return;
+ const root=$('dog-bot-difficulty-players');
+ const preset=$('dog-bot-difficulty-default');
+ if(root)root.querySelectorAll('select').forEach(select=>select.disabled=true);
+ if(preset)preset.disabled=true;
+ try{
+  const response=await hubRequest('/dog/bot-difficulty','POST',{
+   matchId:acceptedMatchId,seat,difficulty
+  });
+  acceptRemote(response);
+ }catch(error){
+  $('status').textContent='🤖 Bot-Schwierigkeit konnte nicht gespeichert werden: '+error.message;
+ }finally{
+  lastBotDifficultyUiKey=null;
+  renderDogBotDifficulties();
+ }
+}
 $('dog-bot-difficulty-default')?.addEventListener('change',event=>{
+ if(online){void setOnlineDogBotDifficulty('default',event.target.value);return;}
  botDifficulties=saveDogBotDifficulty('default',event.target.value,window.localStorage);
  lastBotDifficultyUiKey=null;
  renderDogBotDifficulties();

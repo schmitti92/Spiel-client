@@ -196,3 +196,22 @@ test('expert evaluates with a strict time bound even in complex tactical positio
  assert.ok(Date.now()-start<2500);
  assert.ok(legalActions(game,1).some(action=>JSON.stringify(action)===JSON.stringify(result)));
 });
+
+test('three-way and duel bot strategies never treat an unrelated seat as a teammate',()=>{
+ for(const mode of ['solo3','solo2']){
+  const game=createGame({rng:()=>.3,bots:[false,true,false,false],
+    inactiveSeats:mode==='solo2'?[2,3]:[3]});
+  assert.equal(game.mode,mode);
+  game.phase='exchange';game.hands[1]=[{id:900,type:'13'},{id:901,type:'3'}];
+  const chosen=chooseDogBotAction(game,1,'expert');
+  assert.ok(legalActions(game,1).some(a=>JSON.stringify(a)===JSON.stringify(chosen)));
+ }
+});
+test('Magie menu sends only host-owned online difficulty changes to Render',()=>{
+ const {readFileSync}=await import('node:fs');
+ const app=readFileSync(new URL('../DOG/app.js',import.meta.url),'utf8');
+ assert.match(app,/onlineBotDifficulties=room\.match\?\.dogBotDifficulties/);
+ assert.match(app,/if\(online\)\{void setOnlineDogBotDifficulty\(bot\.seat,select\.value\)/);
+ assert.match(app,/hubRequest\('\/dog\/bot-difficulty','POST'/);
+ assert.match(app,/if\(!online\|\|!onlineRoomHost\|\|!acceptedMatchId\)return/);
+});

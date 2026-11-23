@@ -42,7 +42,7 @@ function cardAt(game,seat,cardId){
  return game.hands?.[seat]?.find(card=>card.id===cardId)||null;
 }
 function friendly(game,seat,owner){
- return owner===seat||(game.mode!=='solo3'&&owner%2===seat%2);
+ return owner===seat||(game.mode==='teams4'&&owner%2===seat%2);
 }
 function progress(owner,position){
  return mod(position-owner*16);
@@ -51,7 +51,7 @@ function expertScore(game,seat,action){
  const own=game.pieces.filter(p=>p.owner===seat);
  const card=cardAt(game,seat,action.cardId);
  const holdingStart=own.some(p=>p.place==='home');
- const teammate=game.mode==='solo3'?null:(seat+2)%4;
+ const teammate=game.mode!=='teams4'?null:(seat+2)%4;
  const partnerOut=teammate!==null&&
    game.pieces.some(p=>p.owner===teammate&&p.place==='track');
  if(action.type==='exchange'){
