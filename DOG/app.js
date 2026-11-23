@@ -12,7 +12,7 @@ import {DOG_MOVE_HINTS_KEY,readDogMoveHints,writeDogMoveHints,dogLegalTargets} f
 import {summarizeDogVictory} from './victory-summary.js?v=4';
 import {dogCosmeticDefinition,equippedDogCosmetic,DOG_COSMETIC_EQUIPMENT_KEY} from './cosmetic-equipment.js?v=1';
 import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,completedDogSeat} from './engine.js?v=9';
-import {dogExchangePrompt} from './exchange-prompt.js?v=1';
+import {dogExchangePrompt} from './exchange-prompt.js?v=2';
 import {DOG_BOT_DIFFICULTIES,readDogBotDifficulties,saveDogBotDifficulty,dogBotDifficultyForSeat,chooseDogBotAction} from './bot-difficulty.js?v=4';
 import {decideDogRoomUpdate} from './online-sync.js?v=15';
 import {planDogBotReplay} from './online-bot-replay.js?v=1';
