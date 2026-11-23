@@ -4,7 +4,7 @@
  * confirms the exact transition. Previews and server refreshes never trigger it.
  * Videos are static GitHub Pages assets: no Firebase access is needed.
  */
-import {markDogVideoSeen} from './video-library-watched.js?v=2';
+import {markDogVideoSeen} from './video-library-watched.js?v=3';
 export const CHRISTMAS_BUILDING_FILMS=Object.freeze({
  bakery:Object.freeze({
   3:Object.freeze({
