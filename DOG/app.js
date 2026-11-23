@@ -963,7 +963,7 @@ function renderHand(){
       selected:c.id===game.seven.cardId,
       footer:c.id===game.seven.cardId?(canDeselect?'ANTIPPEN ZUM ABWÄHLEN':'Noch '+(7-game.seven.spent)+' Schritte'):null
     })).join(''));
-    if(!online){const cancel=document.createElement('button');cancel.className='secondary move-button';cancel.textContent='↶ Sieben zurücknehmen';cancel.addEventListener('click',()=>{game=cancelSeven(game,seat);selectedCard=null;selectedPiece=null;save();render();});actions.appendChild(cancel);}
+    if(!online&&game.seven.spent>0){const cancel=document.createElement('button');cancel.className='secondary move-button';cancel.textContent='↶ Sieben zurücknehmen';cancel.addEventListener('click',()=>{game=cancelSeven(game,seat);selectedCard=null;selectedPiece=null;save();render();});actions.appendChild(cancel);}
   }else{
     const cards=game.hands[seat];
     const exchange=game.phase==='exchange';
