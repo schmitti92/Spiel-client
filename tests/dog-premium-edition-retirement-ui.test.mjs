@@ -32,8 +32,8 @@ test('DOG Premium: latest module versions and all-ticket management are loaded',
  assert.match(scratch,/christmas-other-edition-ui\.js\?v=7/);
  assert.match(scratch,/christmas-edition-management-ui\.js\?v=3/);
  assert.match(studio,/christmas-edition-management-ui\.js\?v=3/);
- assert.match(event,/christmas-scratch-ui\.js\?v=96/);
- assert.match(gate,/christmas-event\.js\?v=194/);
- assert.match(html,/christmas-intro-gate\.js\?v=57/);
- assert.match(html,/christmas-edition-management\.css\?v=2/);
+ assert.match(event,/christmas-scratch-ui\.js\?v=97/);
+ assert.match(gate,/christmas-event\.js\?v=195/);
+ assert.match(html,/christmas-intro-gate\.js\?v=58/);
+ assert.match(html,/christmas-edition-management\.css\?v=3/);
 });
