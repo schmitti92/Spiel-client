@@ -345,16 +345,17 @@ export function initChristmasScratch(){
  // Each special ticket has a separate editor AND a creator-checked
  // latest-edition section. These buttons do not poll Firestore.
  const editionManagers={};
- for(const [variant,dialog,getEdition,setEdition,onPreview] of [
-  ['gifts',giftsDialog,()=>giftsEdition,edition=>{giftsEdition=edition},()=>updateGiftsEditionPreview()],
-  ['snow_collect',snowDialog,()=>snowEdition,edition=>{snowEdition=edition},()=>updateSnowEditionPreview()],
-  ['tic_tac_toe',ticDialog,()=>ticEdition,edition=>{ticEdition=edition},()=>updateTicEditionPreview()]
+ for(const [variant,dialog,getEdition,setEdition,onPreview,onLoadCurrent] of [
+  ['gifts',giftsDialog,()=>giftsEdition,edition=>{giftsEdition=edition},()=>updateGiftsEditionPreview(),()=>fillGiftsSettings()],
+  ['snow_collect',snowDialog,()=>snowEdition,edition=>{snowEdition=edition},()=>updateSnowEditionPreview(),()=>fillSnowSettings()],
+  ['tic_tac_toe',ticDialog,()=>ticEdition,edition=>{ticEdition=edition},()=>updateTicEditionPreview(),()=>fillTicEditionValues()]
  ]){
   if(!dialog)continue;
   editionManagers[variant]=mountScratchEditionManager({
    dialog,variant,query,getEdition,
    onEdition:edition=>{setEdition(edition);onPreview();drawShop()},
-   onRetired:()=>{setEdition(null);onPreview();drawShop()}
+   onRetired:()=>{setEdition(null);onPreview();drawShop()},
+   onLoadCurrent
   });
  }
  const VARIANT_LABELS=Object.freeze([
@@ -955,11 +956,11 @@ export function initChristmasScratch(){
     'Bitte ein ganzzahliges Gesamtbudget zwischen 0 und 1.000.000.000.000 Münzen eingeben.':'');
   }
  }
- function openGiftsSettings(){
+ function fillGiftsSettings(){
   const cfg=(giftsEdition?.remaining>0?giftsEdition.config:null)??status?.settings?.variants?.gifts;
   if(!cfg||!giftsDialog){
    showAlert('⚠️ Geschenkelinie-Einstellungen noch nicht geladen. Bitte Kontostand aktualisieren.','gifts');
-   return;
+   return false;
   }
   const set=(id,value)=>{$(id).value=String(value)};
   set('gs-price',cfg.price??200);
@@ -978,7 +979,12 @@ export function initChristmasScratch(){
   $('scratch-gifts-settings-feedback').textContent='';
   $('gs-edition-feedback').textContent='';
   updateGiftsMoneyPreview();updateGiftsEditionPreview();
-  editionManagers.gifts?.refresh();giftsDialog.showModal();
+  return true;
+ }
+ function openGiftsSettings(){
+  if(fillGiftsSettings()){
+   editionManagers.gifts?.refresh();giftsDialog.showModal();
+  }
  }
  function readGiftsSettings(){
   const safeInt=(id,min,max)=>{
@@ -1069,11 +1075,11 @@ export function initChristmasScratch(){
     'Bitte ein ganzzahliges Gesamtbudget zwischen 0 und 1.000.000.000.000 Münzen eingeben.':'');
   }
  }
- function openSnowSettings(){
+ function fillSnowSettings(){
   const cfg=(snowEdition?.remaining>0?snowEdition.config:null)??status?.settings?.variants?.snow_collect;
   if(!cfg||!snowDialog){
    showAlert('⚠️ Schneeflocken-Bingo-Einstellungen noch nicht geladen. Bitte Kontostand aktualisieren.','snow_collect');
-   return;
+   return false;
   }
   const set=(id,value)=>{$(id).value=String(value)};
   set('sn-price',cfg.price??200);
@@ -1092,7 +1098,12 @@ export function initChristmasScratch(){
   $('scratch-snow-settings-feedback').textContent='';
   $('sn-edition-feedback').textContent='';
   updateSnowMoneyPreview();updateSnowEditionPreview();
-  editionManagers.snow_collect?.refresh();snowDialog.showModal();
+  return true;
+ }
+ function openSnowSettings(){
+  if(fillSnowSettings()){
+   editionManagers.snow_collect?.refresh();snowDialog.showModal();
+  }
  }
  function readSnowSettings(){
   const safeInt=(id,min,max)=>{
@@ -2678,10 +2689,10 @@ export function initChristmasScratch(){
   $('tic-edition-edit').hidden=!active;
   $('tic-edition-edit').disabled=!active;
  }
- function openTicEdition(){
-  if(!ticDialog)return;
+ function fillTicEditionValues(){
+  if(!ticDialog)return false;
   if(!account()){
-   showAlert('🔐 Melde dich zuerst mit deinem DOG-Profil an.','tic_tac_toe');return;
+   showAlert('🔐 Melde dich zuerst mit deinem DOG-Profil an.','tic_tac_toe');return false;
   }
   const conf=ticEdition?.config??{
    price:500,coinAmounts:[200,450,800],symbolWeights:[700,250,40,10],
@@ -2697,7 +2708,12 @@ export function initChristmasScratch(){
   set('tic-edition-budget',ticEdition?.maxTotalCoins??150000);
   $('tic-edition-feedback').textContent='';
   updateTicEditionPreview();
-  editionManagers.tic_tac_toe?.refresh();ticDialog.showModal();
+  return true;
+ }
+ function openTicEdition(){
+  if(fillTicEditionValues()){
+   editionManagers.tic_tac_toe?.refresh();ticDialog.showModal();
+  }
  }
  async function submitTicEdition(edit){
   const current=ticEdition,button=$(edit?'tic-edition-edit':'tic-edition-create');
