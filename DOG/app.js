@@ -1114,7 +1114,8 @@ function syncDogExchangePrompt(){
   const receiver='🎁 Empfänger: '+info.recipientName;
   if(title.textContent!==info.title)title.textContent=info.title;
   if(recipient.textContent!==receiver)recipient.textContent=receiver;
-  if(guidance.textContent!==info.guidance)guidance.textContent=info.guidance;
+  const instructions=!revealed?'Tippe zuerst auf „Karten ansehen“ und wähle danach eine Karte.':info.guidance;
+  if(guidance.textContent!==instructions)guidance.textContent=instructions;
   panel.dataset.cardSelected=String(info.selected);
   panel.hidden=false;
 }
