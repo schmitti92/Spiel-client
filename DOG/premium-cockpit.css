@@ -458,3 +458,71 @@ dialog::backdrop{background:rgba(0,8,20,.78);backdrop-filter:blur(3px)}
 .dog-turn-announcement.is-visible{opacity:1;transform:translate(-50%,0) scale(1)}
 @media(prefers-reduced-motion:reduce){.dog-turn-announcement{transition:none!important}}
 :root[data-dog-motion="off"] .dog-turn-announcement{transition:none!important}
+
+
+/* Forced discard: the earlier 78px wrapper made each card's percentage-based
+   hand size resolve against the wrapper rather than the whole hand, reducing
+   artwork to a few pixels on tablets. Give each wrapper its own full card width.
+   The value is also visible regardless of the chosen PNG/SVG card artwork. */
+.dog-hand-module .hand:has(.dog-card-stack){
+ max-height:min(44dvh,320px)!important;
+ min-height:155px;
+ align-items:flex-start;
+ overflow-x:auto!important;
+ overflow-y:auto!important;
+}
+.dog-hand-module .hand .dog-card-stack{
+ --dog-discard-card-width:clamp(76px,20vw,118px);
+ position:relative;
+ display:flex;
+ flex:0 0 var(--dog-discard-card-width);
+ width:var(--dog-discard-card-width);
+ align-items:stretch;
+ gap:5px;
+}
+.dog-hand-module .hand .dog-card-stack .playing-card.dog-designed{
+ --dog-hand-card-base:100%;
+ flex:0 0 auto;
+ width:100%!important;
+ min-width:0;
+ max-width:100%;
+}
+.dog-hand-module .hand .dog-discard-value{
+ position:absolute;
+ top:6px;left:6px;z-index:15;
+ min-width:28px;max-width:calc(100% - 12px);
+ padding:3px 6px;border:1px solid #fff1b1;
+ border-radius:7px;
+ background:#142b3a;
+ color:#fff5b8;
+ font-size:clamp(12px,1.5vw,17px);
+ font-weight:950;line-height:1.15;
+ text-align:center;
+ box-shadow:0 2px 7px #000a;
+ pointer-events:none;
+}
+.dog-hand-module .hand .dog-card-stack .dog-discard-draw{
+ min-height:38px;
+ padding:5px 3px;
+ font-size:11px;
+ line-height:1.2;
+ white-space:normal;
+ overflow-wrap:anywhere;
+}
+@media(min-width:900px) and (orientation:landscape) and (max-height:1100px){
+ .dog-hand-module .hand .dog-card-stack{
+  --dog-discard-card-width:min(110px,17dvh,calc((100% - 35px)/6));
+ }
+ .dog-hand-module .hand:has(.dog-card-stack){
+  min-height:0;
+  max-height:min(42dvh,295px)!important;
+ }
+}
+@media(min-width:900px) and (orientation:landscape) and (max-height:650px){
+ .dog-hand-module .hand .dog-card-stack{
+  --dog-discard-card-width:min(102px,17dvh,calc((100% - 25px)/6));
+ }
+ .dog-hand-module .hand:has(.dog-card-stack){
+  max-height:44dvh!important;
+ }
+}
