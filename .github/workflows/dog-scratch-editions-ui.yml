@@ -1,44 +1,52 @@
-name: DOG Scratch Auflagenstudio UI
+name: DOG Rubbellos-Auflagenstudio UI
 on:
   push:
+    branches: [main]
     paths:
-      - 'DOG/scratch-editions.html'
-      - 'DOG/scratch-editions.js'
-      - 'DOG/scratch-odds.mjs'
-      - 'tests/dog-scratch-odds.test.mjs'
-      - 'tests/dog-scratch-studio-layout.test.mjs'
-      - 'DOG/scratch-editions.css'
+      - 'DOG/christmas-edition-management-ui.js'
+      - 'DOG/christmas-edition-management.css'
+      - 'DOG/christmas-other-edition-ui.js'
+      - 'DOG/christmas-scratch-ui.js'
       - 'DOG/christmas-event.html'
+      - 'DOG/christmas-event.js'
+      - 'tests/dog-all-edition-management-ui.test.mjs'
+      - 'tests/dog-premium-edition-retirement-ui.test.mjs'
       - '.github/workflows/dog-scratch-editions-ui.yml'
   pull_request:
     paths:
-      - 'DOG/scratch-editions.html'
-      - 'DOG/scratch-editions.js'
-      - 'DOG/scratch-odds.mjs'
-      - 'tests/dog-scratch-odds.test.mjs'
-      - 'tests/dog-scratch-studio-layout.test.mjs'
-      - 'DOG/scratch-editions.css'
+      - 'DOG/christmas-edition-management-ui.js'
+      - 'DOG/christmas-edition-management.css'
+      - 'DOG/christmas-other-edition-ui.js'
+      - 'DOG/christmas-scratch-ui.js'
       - 'DOG/christmas-event.html'
+      - 'DOG/christmas-event.js'
+      - 'tests/dog-all-edition-management-ui.test.mjs'
+      - 'tests/dog-premium-edition-retirement-ui.test.mjs'
       - '.github/workflows/dog-scratch-editions-ui.yml'
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 jobs:
-  ui-check:
+  seven-ticket-studio:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Syntax validation
+      - name: Verify real published edition modules
         run: |
-          node --check DOG/scratch-editions.js
-          node --check DOG/scratch-odds.mjs
-      - name: Verify automatically balanced 100 percent chance settings
-        run: node --test tests/dog-scratch-odds.test.mjs tests/dog-scratch-studio-layout.test.mjs
-      - name: Verify link and assets
+          node --check DOG/christmas-edition-management-ui.js
+          node --check DOG/christmas-other-edition-ui.js
+          node --check DOG/christmas-scratch-ui.js
+          node --check DOG/christmas-event.js
+      - name: Test seven independent editions, creator security and UI
+        run: node --test tests/dog-all-edition-management-ui.test.mjs tests/dog-premium-edition-retirement-ui.test.mjs
+      - name: Verify actual visible in-event administration and stylesheet
         run: |
-          test -f DOG/scratch-editions.html
-          test -f DOG/scratch-editions.css
-          grep -q 'scratch-editions.html' DOG/christmas-event.html
-          grep -q 'scratch-editions.js' DOG/scratch-editions.html
-          grep -q 'scratch-editions.css' DOG/scratch-editions.html
+          test -f DOG/christmas-edition-management-ui.js
+          test -f DOG/christmas-edition-management.css
+          grep -q 'scratch-management-hub' DOG/christmas-event.html
+          grep -q 'christmas-edition-management.css' DOG/christmas-event.html
