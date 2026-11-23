@@ -2,7 +2,7 @@
  * archive snapshot, never polls Firebase and never grants game rewards.
  */
 import {DOG_VIDEO_CATALOG,getDogFilm} from './video-library-catalog.js?v=4';
-import {markDogVideoSeen} from './video-library-watched.js?v=2';
+import {markDogVideoSeen} from './video-library-watched.js?v=3';
 
 const BASE=String(globalThis.window?.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const $=id=>document.getElementById(id);
