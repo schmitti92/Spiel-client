@@ -377,6 +377,25 @@ export function initChristmasScratch(){
   else if(variant==='tic_tac_toe')openTicEdition();
   else if(OTHER_EDITOR_VARIANTS.includes(variant))otherStudio.open(variant);
  }
+ // The UID comes from the signed-in Firebase identity, not a display
+ // name. Copy only after a direct user click. Never log or transmit it to
+ // another endpoint; the server still verifies its own administrator list.
+ $('scratch-management-copy-uid')?.addEventListener('click',async()=>{
+  const uid=account()?.uid;
+  const feedback=$('scratch-management-copy-feedback');
+  if(typeof uid!=='string'||!uid){
+   if(feedback)feedback.textContent='🔐 Kein DOG-Onlineprofil angemeldet.';
+   return;
+  }
+  try{
+   if(!navigator.clipboard?.writeText)throw Error('CLIPBOARD_UNAVAILABLE');
+   await navigator.clipboard.writeText(uid);
+   if(feedback)feedback.textContent='✅ Konto-ID kopiert. Hinterlege sie im richtigen Render-Service unter DOG_SCRATCH_ADMIN_UIDS, ohne bestehende Administratoren zu entfernen.';
+  }catch{
+   window.prompt('DOG-Konto-ID zum Kopieren (nur für deine Render-Einstellungen):',uid);
+   if(feedback)feedback.textContent='ℹ️ Die Konto-ID wurde zum manuellen Kopieren angezeigt.';
+  }
+ });
  $('scratch-management-hub')?.addEventListener('click',event=>{
   const button=event.target.closest?.('button[data-scratch-manage]');
   if(!button)return;
@@ -670,6 +689,8 @@ export function initChristmasScratch(){
   const shopPlayerLevel=developer?.isActive()?developer.settings().playerLevel:
    Number.isInteger(status?.playerLevel)?status.playerLevel:1;
   wallet.textContent=developer?.isActive()?num(developer.settings().coins)+' 🪙 Testmünzen':status?num(status.coins)+' 🪙':'– 🪙';
+  const identity=$('scratch-management-identity');
+  if(identity)identity.hidden=!account()?.uid;
   const rights=$('scratch-management-access');
   if(rights)rights.textContent=!account()?'🔐 Bitte mit einem DOG-Onlineprofil anmelden.':
    !status?'🔄 Konto und Berechtigungen werden geladen.':
