@@ -341,7 +341,7 @@ export function guardChristmasEventPage(){
   admitted=true;gate.remove();
   document.documentElement.classList.add('dog-christmas-page-ready','dog-christmas-portal-open');
   try{
-   await import('./christmas-event.js?v=191');
+   await import('./christmas-event.js?v=192');
   }catch(error){
    // An invalid module must not leave a visible but unusable village.
    console.error('[DOG] Weihnachtsevent-Module konnten nicht geladen werden:',error);
