@@ -103,3 +103,10 @@ test('DOG: all seven edition settings have a dedicated visible selector independ
  assert.match(scratch,/DOG_SCRATCH_ADMIN_UIDS/);
  assert.match(css,/\.scratch-management-hub-grid/);
 });
+
+test('DOG: all in-ticket editor shortcuts are subject to the verified admin flag',()=>{
+ assert.match(scratch,/canManage:\(\)=>canManageScratch/);
+ assert.match(studio,/if\(!canManage\(\)\)/);
+ assert.match(scratch,/scratch-gifts-settings-open'\)\.addEventListener\('click',\(\)=>openScratchEditionSettings\('gifts'\)\)/);
+ assert.match(scratch,/scratch-snow-settings-open'\)\.addEventListener\('click',\(\)=>openScratchEditionSettings\('snow_collect'\)\)/);
+});
