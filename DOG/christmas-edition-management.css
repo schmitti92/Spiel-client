@@ -130,3 +130,18 @@
  .scratch-management-hub-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
  .scratch-management-hub-grid button{font-size:12px}
 }
+
+.scratch-management-identity{
+ display:flex;flex-direction:column;align-items:flex-start;gap:7px;
+ padding:10px 12px;margin:0 0 12px;
+ background:#162f35aa;border:1px solid #c5aa7960;border-radius:10px;
+}
+.scratch-management-identity[hidden]{display:none!important}
+.scratch-management-identity>button{
+ border:1px solid #c7d9c7;border-radius:9px;padding:9px 14px;
+ background:#356059;color:#fff0c7;font:inherit;font-weight:750;
+ cursor:pointer;
+}
+.scratch-management-identity>button:hover{filter:brightness(1.15)}
+.scratch-management-identity small{color:#efe7d1;line-height:1.4}
+.scratch-management-identity p{margin:0;line-height:1.5;font-weight:650}
