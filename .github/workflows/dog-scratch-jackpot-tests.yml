@@ -1,0 +1,28 @@
+name: DOG Christmas scratch jackpot ceremony
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'DOG/scratch-jackpot-ceremony.js'
+      - 'DOG/scratch-jackpot-ceremony.css'
+      - 'DOG/christmas-scratch-ui.js'
+      - 'DOG/christmas-event.html'
+      - 'DOG/christmas-event.js'
+      - 'tests/dog-scratch-jackpot.test.mjs'
+      - '.github/workflows/dog-scratch-jackpot-tests.yml'
+  pull_request:
+    paths:
+      - 'DOG/scratch-jackpot-ceremony.js'
+      - 'DOG/christmas-scratch-ui.js'
+      - 'tests/dog-scratch-jackpot.test.mjs'
+  workflow_dispatch:
+jobs:
+  jackpot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check DOG/scratch-jackpot-ceremony.js && node --check DOG/christmas-scratch-ui.js
+      - run: node --test tests/dog-scratch-jackpot.test.mjs
