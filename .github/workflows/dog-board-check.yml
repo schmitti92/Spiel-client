@@ -27,6 +27,7 @@ on:
       - 'tests/dog-board-backdrops.test.mjs'
       - 'tests/dog-ui-shell.test.mjs'
       - 'tests/dog-official-rules.test.mjs'
+      - 'tests/dog-replacement-draw-animation.test.mjs'
       - 'tests/dog-startfield-color-protection.test.mjs'
       - 'tests/dog-online-sync.test.mjs'
       - 'tests/dog-collection.test.mjs'
@@ -64,6 +65,7 @@ on:
       - 'tests/dog-board-backdrops.test.mjs'
       - 'tests/dog-ui-shell.test.mjs'
       - 'tests/dog-official-rules.test.mjs'
+      - 'tests/dog-replacement-draw-animation.test.mjs'
       - 'tests/dog-startfield-color-protection.test.mjs'
       - 'tests/dog-online-sync.test.mjs'
       - 'tests/dog-collection.test.mjs'
@@ -82,6 +84,7 @@ jobs:
         with:
           node-version: '22'
       - run: node --check DOG/app.js
+      - run: node --check DOG/replacement-draw-animation.js && node --test tests/dog-replacement-draw-animation.test.mjs
       - run: node --check DOG/christmas-discovery.js && node --test tests/dog-christmas-discovery.test.mjs tests/dog-christmas-gold.test.mjs
       - run: node --check DOG/room-board-preview.js
       - run: node --check DOG/room-lobby.js
