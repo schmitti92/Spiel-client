@@ -945,10 +945,10 @@ async function purchaseBuilding(id){
   const result=await villageRequest('village/upgrade','POST',{
    building:id,expectedLevel:level,roomCode:villageRoomValid?villageCode:null,commandId:'dog-village-'+crypto.randomUUID()
   });
-  // Film is triggered ONLY by the successful, server-confirmed 2 -> 3 purchase.
+  // Building story films start only after server-confirmed 2→3 or 4→5 upgrades.
   // Rendering/refreshing or developer preview cannot launch it.
   const upgradedLevel=Number(result.village?.levels?.[id]);
-  // Only successful 2→3 building upgrades with a registered film launch a story.
+  // A story plays only when that exact building/upgrade has a registered film.
   // Render remains authoritative and repeated reads/previews never replay films.
   const filmOpened=upgradedLevel===level+1&&result.unchanged!==true&&buildingFilms.showUpgrade(id,level,upgradedLevel);
   showLiveVillage({village:result.village,shared:true,enabled:villageEventActive,canUpgrade:villageCanUpgrade},{deferTreeFilms:filmOpened});
