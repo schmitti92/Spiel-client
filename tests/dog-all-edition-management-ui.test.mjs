@@ -42,7 +42,7 @@ test('DOG: all ticket editors offer a payout ratio that sets the real fixed edit
  assert.match(helper,/budgetInput\.dispatchEvent\(new Event\('input'/);
  assert.match(helper,/planned<Number\(getEdition\(\)\?\.paidCoins\|\|0\)/);
  assert.match(css,/\.scratch-edition-management/);
- assert.match(html,/christmas-edition-management\.css\?v=4/);
+ assert.match(html,/christmas-edition-management\.css\?v=5/);
 });
 
 test('DOG: ending an edition fetches live state and archives only a confirmed owner series',()=>{
