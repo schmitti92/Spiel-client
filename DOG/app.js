@@ -11,7 +11,7 @@ import {dogBoardActionMatchesDestination} from './board-action-targets.js?v=1';
 import {DOG_MOVE_HINTS_KEY,readDogMoveHints,writeDogMoveHints,dogLegalTargets} from './move-hints.js?v=1';
 import {summarizeDogVictory} from './victory-summary.js?v=4';
 import {dogCosmeticDefinition,equippedDogCosmetic,DOG_COSMETIC_EQUIPMENT_KEY} from './cosmetic-equipment.js?v=1';
-import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,completedDogSeat} from './engine.js?v=8';
+import {CARD_TYPES,createGame,exchangeCard,legalActions,takeAction,cancelSeven,completedDogSeat} from './engine.js?v=9';
 import {DOG_BOT_DIFFICULTIES,readDogBotDifficulties,saveDogBotDifficulty,dogBotDifficultyForSeat,chooseDogBotAction} from './bot-difficulty.js?v=4';
 import {decideDogRoomUpdate} from './online-sync.js?v=15';
 import {planDogBotReplay} from './online-bot-replay.js?v=1';
@@ -956,7 +956,13 @@ function renderHand(){
     // The played seven stays selected throughout all partial movements.
     selectedCard=game.seven.cardId;
     available=legalActions(game,seat);
-    setHandMarkup(game.hands[seat].map(c=>cardMarkup(c.type,{tag:'div',selected:c.id===game.seven.cardId,footer:c.id===game.seven.cardId?'Noch '+(7-game.seven.spent)+' Schritte':null})).join(''));
+    const canDeselect=game.seven.spent===0;
+    setHandMarkup(game.hands[seat].map(c=>cardMarkup(c.type,{
+      tag:canDeselect&&c.id===game.seven.cardId?'button':'div',
+      attrs:canDeselect&&c.id===game.seven.cardId?'type="button" data-card="'+c.id+'" aria-label="7 abwählen"':'',
+      selected:c.id===game.seven.cardId,
+      footer:c.id===game.seven.cardId?(canDeselect?'ANTIPPEN ZUM ABWÄHLEN':'Noch '+(7-game.seven.spent)+' Schritte'):null
+    })).join(''));
     if(!online){const cancel=document.createElement('button');cancel.className='secondary move-button';cancel.textContent='↶ Sieben zurücknehmen';cancel.addEventListener('click',()=>{game=cancelSeven(game,seat);selectedCard=null;selectedPiece=null;save();render();});actions.appendChild(cancel);}
   }else{
     const cards=game.hands[seat];
@@ -988,15 +994,15 @@ function renderHand(){
     actions.insertAdjacentHTML('beforeend','<button type="button" class="move-button dog-hand-action-primary" data-research-action="research-swap">🃏 Magischer Kartentausch · ausgewählte Karte ersetzen (1×)</button>');
   }
   // A playable 7 goes directly into its split phase on card selection.
-  const special=available.filter(m=>['exchange','seven-finish','emptySwap'].includes(m.type));
-  actions.insertAdjacentHTML('beforeend',[...new Map(special.map(m=>[m.type,m])).values()].map(m=>'<button type="button" class="move-button dog-hand-action-primary" data-special="'+m.type+'">'+(m.type==='exchange'?'🎁 Karte weitergeben':m.type==='seven-finish'?'✅ Restliche '+m.remaining+' Schritte verfallen lassen · letzte Figur im Ziel':'🗑 Tauschkarte ablegen')+'</button>').join(''));
+  const special=available.filter(m=>['exchange','seven-finish','seven-cancel','emptySwap'].includes(m.type));
+  actions.insertAdjacentHTML('beforeend',[...new Map(special.map(m=>[m.type,m])).values()].map(m=>'<button type="button" class="move-button dog-hand-action-primary" data-special="'+m.type+'">'+(m.type==='exchange'?'🎁 Karte weitergeben':m.type==='seven-cancel'?'↩ 7 abwählen':m.type==='seven-finish'?'✅ Restliche '+m.remaining+' Schritte verfallen lassen · letzte Figur im Ziel':'🗑 Tauschkarte ablegen')+'</button>').join(''));
   if(game.phase==='play'&&legalActions(game,seat).some(m=>m.type==='discardDraw')){
     actions.insertAdjacentHTML('beforeend','<span class="dog-no-move-note" role="status">🃏 Kein Zug möglich: Wähle unter einer beliebigen Karte „Wegwerfen“. Du ziehst genau eine Ersatzkarte.</span>');
   }
   if(game.phase==='rescue'){
     actions.insertAdjacentHTML('beforeend','<span class="dog-no-move-note" role="status">🚀 Du hast eine Startkarte gezogen! Tippe deine Figur im Haus und danach das Startfeld an. Nur Heraussetzen ist erlaubt.</span>');
   }
-  $('move-help').textContent=game.phase==='rescue'?'🚀 Ersatzkarte: Figur aus dem Haus auf das eigene Startfeld setzen.':game.phase==='play'&&legalActions(game,seat).some(m=>m.type==='discardDraw')?'Kein Zug möglich: Drücke bei einer Karte auf 🗑 Wegwerfen.':jokerAs!==null?'Joker als '+(jokerAs==='swap'?'Tauschkarte':jokerAs)+' gewählt. Figur und Ziel selbst antippen.':game.phase==='exchange'?((game.mode==='solo3'||game.mode==='solo2')?'Wähle eine Karte, die verdeckt an den nächsten Spieler geht.':'Wähle die Karte für deinen Partner.'):game.phase==='seven'?'🔥 7er-Karte: '+game.seven.spent+' von 7 Schritten ausgeführt, noch '+(7-game.seven.spent)+'. Wähle eine Figur und ein erlaubtes Zielfeld.':selectedCard===null?'Wähle eine Karte.':'Figur und Zielfeld selbst antippen – ohne Zugvorschläge.';
+  $('move-help').textContent=game.phase==='rescue'?'🚀 Ersatzkarte: Figur aus dem Haus auf das eigene Startfeld setzen.':game.phase==='play'&&legalActions(game,seat).some(m=>m.type==='discardDraw')?'Kein Zug möglich: Drücke bei einer Karte auf 🗑 Wegwerfen.':jokerAs!==null?'Joker als '+(jokerAs==='swap'?'Tauschkarte':jokerAs)+' gewählt. Figur und Ziel selbst antippen.':game.phase==='exchange'?((game.mode==='solo3'||game.mode==='solo2')?'Wähle eine Karte, die verdeckt an den nächsten Spieler geht.':'Wähle die Karte für deinen Partner.'):game.phase==='seven'?'🔥 7er-Karte: '+game.seven.spent+' von 7 Schritten. '+(game.seven.spent===0?'Tippe erneut auf die 7 oder auf „7 abwählen“.':'Wähle eine Figur und ein erlaubtes Zielfeld.'):selectedCard===null?'Wähle eine Karte.':'Figur und Zielfeld selbst antippen – ohne Zugvorschläge.';
 }
 function renderCardPiles(){
  $('dog-deck-art').style.backgroundImage=cardBackBackground();
@@ -1200,7 +1206,15 @@ function startSelectedSeven(seat){
 }
 function onCard(id){
   const seat=currentHuman();if(seat<0||!revealed||onlineBusy)return;
-  if(game.phase==='seven')return; // Finish dividing this card before touching another.
+  if(game.phase==='seven'){
+    // The active seven can be tapped again to deselect it while no partial
+    // move has been performed. Online uses the same server-validated action.
+    if(game.seven?.spent===0&&id===game.seven.cardId){
+      const index=available.findIndex(m=>m.type==='seven-cancel'&&m.cardId===id);
+      if(index>=0)onMove(index);
+    }
+    return;
+  }
   if(game.phase==='rescue'&&id!==game.rescue?.cardId)return;
   selectedCard=selectedCard===id&&game.phase!=='rescue'?null:id;selectedPiece=null;jokerAs=null;
   if(selectedCard!==null&&['play','rescue'].includes(game.phase)&&
@@ -1248,10 +1262,11 @@ function onMove(i){
     // visible on shared-device games and let them select the next figure.
     const continueSeven=game.phase==='seven'&&game.current===seat&&
       Number.isInteger(game.seven?.spent)&&game.seven.spent<7;
+    const deselectedSeven=move.type==='seven-cancel'&&game.phase==='play'&&game.current===seat;
     selectedCard=continueSeven?game.seven.cardId:null;
     selectedPiece=null;jokerAs=null;
-    revealed=continueSeven||humans===1;
-    lastTurn=continueSeven?seat:null;
+    revealed=continueSeven||deselectedSeven||humans===1;
+    lastTurn=continueSeven||deselectedSeven?seat:null;
     available=[];save();render();
     replacementDrawAnimator.show(newReplacementDraws(beforeMove,game),game.players);
     scheduleAI();
