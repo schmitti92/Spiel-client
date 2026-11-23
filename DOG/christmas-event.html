@@ -547,6 +547,11 @@
           <summary>⚙️ Auflagenverwaltung · alle 7 Rubbellose <small>Verwalten, bearbeiten und neue Serien planen</small></summary>
           <div class="scratch-management-hub-body">
             <p id="scratch-management-access" role="status" aria-live="polite">🔄 Administrationsrechte werden geprüft …</p>
+            <div class="scratch-management-identity" id="scratch-management-identity" hidden>
+              <button type="button" id="scratch-management-copy-uid">🔑 Meine DOG-Konto-ID kopieren</button>
+              <small>Diese ID identifiziert dein angemeldetes DOG-Profil. Für die Administratorfreigabe muss sie auf Render in <code>DOG_SCRATCH_ADMIN_UIDS</code> hinterlegt sein; der Anzeigename „Chris“ genügt nicht.</small>
+              <p id="scratch-management-copy-feedback" role="status" aria-live="polite"></p>
+            </div>
             <div class="scratch-management-hub-grid" role="group" aria-label="Einstellungen pro Rubbellos">
               <button type="button" data-scratch-manage="gifts">🎁 Geschenkelinie</button>
               <button type="button" data-scratch-manage="snow_collect">❄️ Schneeflocken-Bingo</button>
