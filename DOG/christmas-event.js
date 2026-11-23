@@ -7,7 +7,7 @@
 import {CHRISTMAS_BUILDING_MAX_LEVEL,christmasUpgradeCost,christmasBuildingTotalCost,christmasVillageTotalCost} from './christmas-building-costs.js?v=4';
 import {CHRISTMAS_TREE_THRESHOLDS as TREE_THRESHOLDS,christmasTreeBuildingPoints as originalTreePoints,christmasTreeLevelFromLevels,CHRISTMAS_TREE_BASE_POINTS,CHRISTMAS_TREE_MAX_UPGRADES} from './christmas-tree-progression.js?v=1';
 import {initChristmasTreeRewards,TREE_PRIZE_PREVIEW} from './christmas-tree-rewards-ui.js?v=5';
-import {initChristmasTreeFilms} from './christmas-tree-films.js?v=3';
+import {initChristmasTreeFilms} from './christmas-tree-films.js?v=4';
 import {initChristmasBuildingFilms} from './christmas-building-films.js?v=7';
 import {initChristmasStory} from './christmas-story.js?v=7';
 import {initChristmasScratch} from './christmas-scratch-ui.js?v=91';
