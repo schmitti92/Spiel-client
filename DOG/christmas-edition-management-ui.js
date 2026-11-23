@@ -175,18 +175,18 @@ export function mountScratchEditionManager({
     edition.remaining===0?'🏁 Die letzte Auflage ist ausverkauft. Du kannst ihre Einstellungen übernehmen und eine neue erstellen.':
     editionStatusLine(edition)+(canRetire?
      ' · Du darfst diese laufende Auflage bearbeiten oder beenden.':
-     ' · Nur das Erstellerkonto darf diese laufende Auflage bearbeiten oder beenden.'));
+     ' · Nur der Ersteller oder ein serverseitig freigeschalteter Entwickler darf diese laufende Auflage ändern.'));
   }catch(e){notice('⚠️ '+String(e.message||e))}
   finally{busy=false;render()}
  }
  async function doRetire(){
   if(busy)return;
-  busy=true;render();notice('🔄 Prüfe Auflage und Erstellerberechtigung …');
+  busy=true;render();notice('🔄 Prüfe Auflage und Entwicklerberechtigung …');
   try{
    const {edition,canRetire}=await check();
    if(!edition){notice('✅ Keine aktive Auflage vorhanden. Du kannst eine neue erstellen.');return}
    if(edition.remaining<=0){notice('✅ Diese Auflage ist schon ausverkauft. Du kannst eine neue erstellen.');return}
-   if(!canRetire){notice('🔒 Nur das Konto, das diese Auflage erstellt hat, darf sie beenden.');return}
+   if(!canRetire){notice('🔒 Nur der Ersteller oder ein serverseitig freigeschalteter Entwickler darf diese Auflage beenden.');return}
    const msg=SCRATCH_EDITION_TITLES[variant]+'\n\nDiese Auflage wirklich beenden?\n'+
     edition.issued+' bereits ausgegebene Lose und ihre Gewinne bleiben erhalten.\n'+
     edition.remaining+' unverkaufte Lose werden archiviert und nicht mehr verkauft.\n'+
@@ -203,7 +203,7 @@ export function mountScratchEditionManager({
    notice('✅ Auflage archiviert. Du kannst jetzt eine neue Serie mit deinen Einstellungen erstellen.');
   }catch(e){notice('⚠️ '+({
    SCRATCH_EDITION_CHANGED:'Die Auflage hat sich geändert. Bitte erneut prüfen.',
-   SCRATCH_EDITION_ONLY_CREATOR:'Nur das Erstellerkonto darf diese Auflage beenden.',
+   SCRATCH_EDITION_ONLY_CREATOR:'Nur der Ersteller oder ein serverseitig freigeschalteter Entwickler darf diese Auflage beenden.',
    SCRATCH_EDITION_ARCHIVE_CONFLICT:'Diese Auflage ist bereits archiviert.',
    SCRATCH_EDITION_ALREADY_COMPLETE:'Die Auflage ist ausverkauft; eine neue kann direkt erstellt werden.'
   }[e.message]||String(e.message||e)))}
