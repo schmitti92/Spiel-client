@@ -7,6 +7,17 @@
 import {markDogVideoSeen} from './video-library-watched.js?v=2';
 export const CHRISTMAS_BUILDING_FILMS=Object.freeze({
  bakery:Object.freeze({
+  3:Object.freeze({
+   fromLevel:2,
+   title:"Das alte Rezeptbuch",
+   subtitle:"Der Duft des Winterlichts und die verborgene Botschaft",
+   clips:Object.freeze([
+    './assets/642404080_1795450992109546.mp4',
+    './assets/760851797_1795450996912422.mp4',
+    './assets/302011898_1795451000795035.mp4'
+   ]),
+   poster:'./weihnachtsevent-bilder/weihnachtsbaeckerei_stufe_3.png'
+  }),
   5:Object.freeze({
    fromLevel:4,
    title:'Das Geheimnis der Weihnachtsbäckerei',
@@ -16,6 +27,17 @@ export const CHRISTMAS_BUILDING_FILMS=Object.freeze({
   })
  }),
  workshop:Object.freeze({
+  3:Object.freeze({
+   fromLevel:2,
+   title:"Pips rätselhafter Holzstern",
+   subtitle:"Ein geheimnisvolles Zeichen in der Wichtelwerkstatt",
+   clips:Object.freeze([
+    './assets/1034360486_1795451236569195.mp4',
+    './assets/1026932259_1795451240621580.mp4',
+    './assets/339483223_1795451245686794.mp4'
+   ]),
+   poster:'./weihnachtsevent-bilder/Wichtelwerkstatt_Stufe_3.png'
+  }),
   5:Object.freeze({
    fromLevel:4,
    title:'Das Geheimnis der Wichtelwerkstatt',
@@ -28,6 +50,17 @@ export const CHRISTMAS_BUILDING_FILMS=Object.freeze({
   })
  }),
  inn:Object.freeze({
+  3:Object.freeze({
+   fromLevel:2,
+   title:"Der leere Platz",
+   subtitle:"Frau Bergers Schweigen und das verborgene Zeichen",
+   clips:Object.freeze([
+    './assets/117094114_1795450950512189.mp4',
+    './assets/707135559_1795450956663425.mp4',
+    './assets/301317141_1795450960876917.mp4'
+   ]),
+   poster:'./weihnachtsevent-bilder/Herberge_Stufe_3.png'
+  }),
   5:Object.freeze({
    fromLevel:4,
    title:'Das vergessene Versprechen',
@@ -42,6 +75,17 @@ export const CHRISTMAS_BUILDING_FILMS=Object.freeze({
   })
  }),
  tower:Object.freeze({
+  3:Object.freeze({
+   fromLevel:2,
+   title:"Die schweigende Glocke",
+   subtitle:"Das erste blaue Leuchten des Weihnachtslichter-Turms",
+   clips:Object.freeze([
+    './assets/939721879_1795451249432580.mp4',
+    './assets/440304677_1795451252819988.mp4',
+    './assets/737530102_1795451256803016.mp4'
+   ]),
+   poster:'./weihnachtsevent-bilder/weihnachtslichter_turm_stufe_3.png'
+  }),
   5:Object.freeze({
    fromLevel:4,
    title:'Das Geheimnis des Weihnachtslichter-Turms',
@@ -56,6 +100,17 @@ export const CHRISTMAS_BUILDING_FILMS=Object.freeze({
   })
  }),
  luckhouse:Object.freeze({
+  3:Object.freeze({
+   fromLevel:2,
+   title:"Das uralte Los",
+   subtitle:"Eine geheimnisvolle Warnung im Weihnachts-Glückshaus",
+   clips:Object.freeze([
+    './assets/938798621_1795451261419687.mp4',
+    './assets/923830731_1795451266432144.mp4',
+    './assets/145770258_1795451270507824.mp4'
+   ]),
+   poster:'./weihnachtsevent-bilder/glueckshaus_stufe_3.png'
+  }),
   5:Object.freeze({
    fromLevel:4,
    title:'Das Los der verlorenen Wahrheit',
@@ -67,6 +122,19 @@ export const CHRISTMAS_BUILDING_FILMS=Object.freeze({
     './assets/film5_szene4.mp4'
    ]),
    poster:'./weihnachtsevent-bilder/glueckshaus_stufe_5.png'
+  })
+ }),
+ academy:Object.freeze({
+  3:Object.freeze({
+   fromLevel:2,
+   title:"Die vergessene Chronik",
+   subtitle:"Die fehlende Seite und der erste Hinweis auf Frostgrat",
+   clips:Object.freeze([
+    './assets/331513856_1795451273472473.mp4',
+    './assets/717111883_1795451276883098.mp4',
+    './assets/1026736309_1795451280319043.mp4'
+   ]),
+   poster:'../xp_akademie_stufe_3.png'
   })
  })
 });
@@ -163,7 +231,7 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
   dialog.querySelector('[data-film-subtitle]').textContent=film.subtitle+' · Ausbau '+fromLevel+' → '+toLevel+' · '+film.clips.length+' '+(film.clips.length===1?'Szene':'Szenen');
   video.muted=false;
   try{dialog.showModal();}catch{return false;}
-  active={id,film,name};clipIndex=0;finished=false;failed=false;
+  active={id,film,name,toLevel};clipIndex=0;finished=false;failed=false;
   loadClip(false);
   tryPlay();
   return true;
@@ -190,7 +258,7 @@ export function initChristmasBuildingFilms({onClose=()=>{}}={}){
   if(clipIndex<clips().length)loadClip(true);
   else{
    finished=true;
-   if(!failed)void markDogVideoSeen('building-'+active.id);
+   if(!failed)void markDogVideoSeen(active.toLevel===3?'building-'+active.id+'-3':'building-'+active.id);
    status.textContent='✨ '+(clips().length===1?'Die Geschichte ist':'Alle '+clips().length+' Szenen sind')+' abgeschlossen! Du kannst den Film erneut ansehen oder zum Dorf zurückkehren.';
    syncPlayButton();
   }
