@@ -79,8 +79,10 @@ export function template(count=160,bossCount=3){
  return normalize(s);
 }
 
-export const FEATURE_TYPES=Object.freeze({teleportIn:'🌀 Teleporter-Eingang',teleportOut:'🌀 Teleporter-Ziel',teleportSwitch:'🔮 Teleporter-Schalter',door:'🚪 Verschlossene Tür',key:'🔑 Schlüssel',checkpoint:'🚩 Kontrollpunkt',safe:'🛡️ Schutzfeld',gift:'🎁 Geschenkfeld',trap:'⚠️ Fallenfeld',spawn:'👾 Gegnerportal'});
-export const LINKED_TYPES=['teleportIn','teleportOut','teleportSwitch','door','key'];
+export const FEATURE_TYPES=Object.freeze({teleportIn:'🌀 Teleporter-Eingang',teleportOut:'🌀 Teleporter-Ziel',teleportSwitch:'🔮 Teleporter-Schalter',door:'🚪 Verschlossene Tür',key:'🔑 Schlüssel',checkpoint:'🚩 Kontrollpunkt',safe:'🛡️ Schutzfeld',gift:'🎁 Geschenkfeld',trap:'⚠️ Fallenfeld',spawn:'👾 Gegnerportal',lever:'🎚️ Hebel'});
+export const LINKED_TYPES=['teleportIn','teleportOut','teleportSwitch','door','key','lever'];
+export const LEVER_MODES=Object.freeze({held:'Solange besetzt',toggle:'An / Aus bei Betreten',permanent:'Dauerhaft nach Betreten',timed:'Für mehrere Zugrunden'});
+export const LEVER_EFFECTS=Object.freeze({custom:'Später festlegen',door:'Tür offen halten',teleport:'Teleporter aktivieren',spawn:'Gegnernachschub stoppen',safe:'Gruppenschutz',fog:'Nächstes Gebiet enthüllen'});
 export function defaultAreas(count){return Array.from({length:4},(_,i)=>({name:['Der Wald','Das Eisland','Das Spielzeugdorf','Der Grinch-Berg'][i],end:Math.ceil((i+1)*count/4),fogRect:null,polygon:null}));}
 function normalizeAreas(areas,count){
  if(!Array.isArray(areas)||areas.length!==4)throw Error('Genau vier Gebiete erforderlich');
@@ -101,18 +103,25 @@ function normalizeFeatures(features,track){
   const group=LINKED_TYPES.includes(f.type)?String(f.group??'1').trim():'';
   if(LINKED_TYPES.includes(f.type)&&!/^[-a-zA-Z0-9_]{1,16}$/.test(group))throw Error('Verknüpfungs-ID: 1–16 Buchstaben, Zahlen, Bindestrich oder Unterstrich');
   if(occupied.has(f.trackIndex))throw Error('Nur ein Spezialmarker pro Lauffeld');occupied.add(f.trackIndex);
-  return {type:f.type,trackIndex:f.trackIndex,group};
+  const entry={type:f.type,trackIndex:f.trackIndex,group};
+  if(f.type==='lever'){
+   const mode=f.mode??'held',effect=f.effect??'custom',rounds=f.rounds??2;
+   if(!Object.hasOwn(LEVER_MODES,mode)||!Object.hasOwn(LEVER_EFFECTS,effect)||!validInt(rounds,1,20))throw Error('Ungültige Hebeleinstellung.');
+   entry.mode=mode;entry.effect=effect;if(mode==='timed')entry.rounds=rounds;
+  }
+  return entry;
  });
 }
 export function setAreas(s,areas){return normalize({...s,areas});}
 export function areaOf(s,index){if(!validInt(index,0,s.track.length-1)||!s.track[index])return -1;const manual=s.areaOverrides?.[index];return validInt(manual,0,3)?manual:-1;}
 export function visibleArea(s,index,unlocked=1){const a=areaOf(s,index);return a<0||a<unlocked;}
-export function setFeature(s,index,type,group='1'){return normalize({...s,features:[...s.features.filter(f=>f.trackIndex!==index),...(type?[{type,trackIndex:index,group}]:[])]});}
+export function setFeature(s,index,type,group='1',settings={}){return normalize({...s,features:[...s.features.filter(f=>f.trackIndex!==index),...(type?[{type,trackIndex:index,group,...(type==='lever'?{mode:settings.mode,effect:settings.effect,rounds:settings.rounds}:{})}]:[])]});}
 export function featureIssues(s){
  const issues=[],doorGroups=new Map(),teleGroups=new Map();
  for(const f of s.features){const map=['door','key'].includes(f.type)?doorGroups:['teleportIn','teleportOut','teleportSwitch'].includes(f.type)?teleGroups:null;if(map){if(!map.has(f.group))map.set(f.group,[]);map.get(f.group).push(f);}}
- for(const [id,fs] of doorGroups){const doors=fs.filter(f=>f.type==='door'),keys=fs.filter(f=>f.type==='key');if(!doors.length||keys.length!==1)issues.push('Türgruppe '+id+': mindestens eine Tür und genau ein Schlüssel nötig.');else if(keys[0].trackIndex>=Math.min(...doors.map(f=>f.trackIndex)))issues.push('Schlüssel '+id+' muss vor der ersten zugehörigen Tür liegen.');}
+ for(const [id,fs] of doorGroups){const doors=fs.filter(f=>f.type==='door'),keys=fs.filter(f=>f.type==='key');const lever=s.features.some(f=>f.type==='lever'&&f.effect==='door'&&f.group===id&&doors.length&&f.trackIndex<Math.min(...doors.map(d=>d.trackIndex)));if(!doors.length||keys.length>1||(!keys.length&&!lever))issues.push('Türgruppe '+id+': Tür und ein Schlüssel oder erreichbarer Hebel nötig.');else if(keys.length&&keys[0].trackIndex>=Math.min(...doors.map(f=>f.trackIndex)))issues.push('Schlüssel '+id+' muss vor der ersten zugehörigen Tür liegen.');}
  for(const [id,fs] of teleGroups){const count=t=>fs.filter(f=>f.type===t).length;if(count('teleportIn')!==1||count('teleportOut')!==1||count('teleportSwitch')>1)issues.push('Teleporter '+id+': genau ein Eingang, ein Ziel, optional ein Schalter.');else{const sw=fs.find(f=>f.type==='teleportSwitch'),out=fs.find(f=>f.type==='teleportOut');if(sw&&sw.trackIndex>out.trackIndex)issues.push('Teleporter '+id+': Schalter darf nicht hinter dem Ziel liegen.');}}
+ for(const f of s.features.filter(f=>f.type==='lever')){if(f.effect==='door'&&!doorGroups.get(f.group)?.some(d=>d.type==='door'))issues.push('Hebel auf Feld '+(f.trackIndex+1)+': passende Tür fehlt.');if(f.effect==='teleport'&&!teleGroups.get(f.group)?.some(d=>d.type==='teleportIn'))issues.push('Hebel auf Feld '+(f.trackIndex+1)+': passender Teleporter fehlt.');}
  return issues;
 }
 

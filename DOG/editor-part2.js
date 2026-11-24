@@ -1,4 +1,4 @@
-import {blank,normalize,resize,setField,getField,refs,key,status,template,COLORS,FEATURE_TYPES,LINKED_TYPES,defaultAreas,setAreas,areaOf,visibleArea,setFeature,setPolygon,pointInPolygon,setAreaOverride,assignAreaRange} from './editor-part2-model.mjs?v=4';
+import {blank,normalize,resize,setField,getField,refs,key,status,template,COLORS,FEATURE_TYPES,LINKED_TYPES,defaultAreas,setAreas,areaOf,visibleArea,setFeature,setPolygon,pointInPolygon,setAreaOverride,assignAreaRange,LEVER_MODES,LEVER_EFFECTS} from './editor-part2-model.mjs?v=5';
 const $=id=>document.getElementById(id),board=$('part2-board'),NS='http://www.w3.org/2000/svg',KEY='dog-grinch-board-editor-part2-v1';
 let s=blank(),sel={kind:'track',index:0},tool='place',undo=[],redo=[],photo=null,scale=1,origin={x:0,y:0},gesture=null,pointers=new Map();
 try{const raw=localStorage.getItem(KEY);if(raw)s=normalize(JSON.parse(raw));}catch{}
@@ -61,7 +61,7 @@ function draw(){
  }
  for(const f of s.features){if(!trackVisible(f.trackIndex))continue;const p=s.track[f.trackIndex];if(!p)continue;
   const g=element('g',{'data-field':key({kind:'track',index:f.trackIndex})});element('circle',{cx:p.x,cy:p.y-17,r:11,fill:'#10283b',stroke:'#eac482','stroke-width':1.5},g);
-  const t=element('text',{x:p.x,y:p.y-13,'text-anchor':'middle','font-size':13,'pointer-events':'none'},g);t.textContent=FEATURE_TYPES[f.type].split(' ')[0];const title=element('title',{},g);title.textContent=FEATURE_TYPES[f.type]+(f.group?' '+f.group:'');
+  const t=element('text',{x:p.x,y:p.y-13,'text-anchor':'middle','font-size':13,'pointer-events':'none'},g);t.textContent=FEATURE_TYPES[f.type].split(' ')[0];const title=element('title',{},g);title.textContent=FEATURE_TYPES[f.type]+(f.group?' '+f.group:'')+(f.type==='lever'?' · '+LEVER_EFFECTS[f.effect]+' · '+LEVER_MODES[f.mode]:'');
  }
  drawOutline();clampView();
 }
@@ -70,7 +70,7 @@ function adventureRender(){
  const issuesZones=status(s).zoneIssues;$('area-check').textContent=issuesZones.length?issuesZones.join(' • '):s.areas.every(a=>a.polygon)?'✓ Vier Gebietsflächen gezeichnet · keine automatische Feldzuordnung':'Gebietsflächen unabhängig vom Laufweg zeichnen.';$('area-check').classList.toggle('invalid',Boolean(issuesZones.length));
  $('zone-name').value=s.areas[zone].name;$('manual-area').value=sel.kind==='track'&&s.areaOverrides[sel.index]!==undefined?String(s.areaOverrides[sel.index]):'auto';updateZoneControls();
  const list=$('feature-list');list.replaceChildren();
- for(const f of [...s.features].sort((a,b)=>a.trackIndex-b.trackIndex)){const row=document.createElement('div');row.className='feature-row';const b=document.createElement('button');b.textContent='Feld '+(f.trackIndex+1)+' · '+FEATURE_TYPES[f.type]+(f.group?' · '+f.group:'');b.onclick=()=>{ $('fog-preview').value=4;select({kind:'track',index:f.trackIndex});};row.append(b);const del=document.createElement('button');del.textContent='×';del.setAttribute('aria-label','Spezialfeld löschen');del.onclick=()=>change(()=>setFeature(s,f.trackIndex,null));row.append(del);list.append(row);}
+ for(const f of [...s.features].sort((a,b)=>a.trackIndex-b.trackIndex)){const row=document.createElement('div');row.className='feature-row';const b=document.createElement('button');b.textContent='Feld '+(f.trackIndex+1)+' · '+FEATURE_TYPES[f.type]+(f.group?' · '+f.group:'')+(f.type==='lever'?' · '+LEVER_EFFECTS[f.effect]+' · '+LEVER_MODES[f.mode]:'');b.onclick=()=>{ $('fog-preview').value=4;$('feature-type').value=f.type;$('feature-group').value=f.group||'1';if(f.type==='lever'){$('lever-mode').value=f.mode;$('lever-effect').value=f.effect;$('lever-rounds').value=f.rounds??2;}featureGroup();select({kind:'track',index:f.trackIndex});};row.append(b);const del=document.createElement('button');del.textContent='×';del.setAttribute('aria-label','Spezialfeld löschen');del.onclick=()=>change(()=>setFeature(s,f.trackIndex,null));row.append(del);list.append(row);}
  const issues=status(s).adventureIssues;$('feature-check').textContent=issues.length?issues.join(' • '):'✓ Verknüpfungen vollständig';
  $('feature-check').classList.toggle('invalid',Boolean(issues.length));
 }
@@ -117,7 +117,7 @@ board.addEventListener('pointerup',e=>{
  if(tool==='pan')return;
  if(preview()<4){message('Zum Bearbeiten bitte alle Gebiete sichtbar machen.',true);return;}
  if(tool==='fog'){board.querySelector('#zone-trace')?.remove();if(!drawing){drawing=true;outline=[];}if(g.trace?.length){for(const v of g.trace)addOutline(v);const last=outline.at(-1);if(!last||Math.hypot(p.x-last.x,p.y-last.y)>=3)addOutline(p);}else if(!drag){if(outline.length>=3&&Math.hypot(p.x-outline[0].x,p.y-outline[0].y)<12/scale){closeOutline();return;}addOutline(p);}updateZoneControls();drawOutline();return;}
- if(tool==='feature'){if(!drag&&hit?.kind==='track'){select(hit);change(()=>setFeature(s,hit.index,$('feature-type').value,$('feature-group').value));}else message('Bitte ein vorhandenes Lauffeld antippen.',true);return;}
+ if(tool==='feature'){if(!drag&&hit?.kind==='track'){select(hit);change(()=>setFeature(s,hit.index,$('feature-type').value,$('feature-group').value,{mode:$('lever-mode').value,effect:$('lever-effect').value,rounds:Number($('lever-rounds').value)}));}else message('Bitte ein vorhandenes Lauffeld antippen.',true);return;}
  if(tool==='erase'){if(hit){select(hit);change(()=>setField(s,sel,null));}return;}
  if(tool==='move'){if(hit){select(hit);if(drag)change(()=>setField(s,sel,adjusted(p,sel,false)));}return;}
  if(drag)return;
@@ -150,8 +150,12 @@ function download(ready){if(ready&&!status(s).complete)return;const u=URL.create
 $('export-draft').onclick=()=>download(false);$('export-ready').onclick=()=>download(true);
 $('import').onchange=async()=>{try{const f=$('import').files[0];if(f){const n=normalize(JSON.parse(await f.text()));if(confirm('Teil-2-Entwurf durch Import ersetzen?')){commit(n);select({kind:'track',index:0});message('Teil-2-Layout importiert.');}}}catch(e){message(e.message,true);}finally{$('import').value='';}};
 for(const [type,name] of Object.entries(FEATURE_TYPES)){const o=document.createElement('option');o.value=type;o.textContent=name;$('feature-type').append(o);const b=document.createElement('button');b.type='button';b.dataset.featureChoice=type;const icon=document.createElement('span');icon.textContent=name.split(' ')[0];b.append(icon,document.createTextNode(name.slice(name.indexOf(' ')+1)));b.onclick=()=>{if(!discardOutline())return;$('feature-type').value=type;featureGroup();$('place-feature').click();};$('feature-picker').append(b);}
-function featureGroup(){$('group-wrap').hidden=!LINKED_TYPES.includes($('feature-type').value);document.querySelectorAll('[data-feature-choice]').forEach(b=>{const active=b.dataset.featureChoice===$('feature-type').value;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});}
-$('feature-type').onchange=featureGroup;featureGroup();
+for(const [id,values] of [['lever-mode',LEVER_MODES],['lever-effect',LEVER_EFFECTS]])for(const [value,name] of Object.entries(values)){const opt=document.createElement('option');opt.value=value;opt.textContent=name;$(id).append(opt);}
+function featureGroup(){const lever=$('feature-type').value==='lever',effect=$('lever-effect').value,mode=$('lever-mode').value;
+ $('lever-settings').hidden=!lever;$('lever-rounds-wrap').hidden=mode!=='timed';$('group-wrap').hidden=lever?!['door','teleport'].includes(effect):!LINKED_TYPES.includes($('feature-type').value);
+ $('lever-hint').textContent={held:'Effekt bleibt aktiv, solange mindestens eine menschliche Figur auf dem Hebel steht.',toggle:'Jedes neue Betreten schaltet den Effekt an oder aus.',permanent:'Einmal betreten, dauerhaft aktiv.',timed:'Beim Betreten startet die gewählte Anzahl vollständiger Zugrunden.'}[mode];
+document.querySelectorAll('[data-feature-choice]').forEach(b=>{const active=b.dataset.featureChoice===$('feature-type').value;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});}
+$('feature-type').onchange=featureGroup;$('lever-mode').onchange=featureGroup;$('lever-effect').onchange=featureGroup;featureGroup();
 $('fog-preview').onchange=()=>{if(drawing&&outline.length){$('fog-preview').value=4;message('Bitte zuerst die Fläche schließen.');}draw();};$('area-colors').onchange=draw;
 for(let i=0;i<4;i++){const b=document.createElement('button');b.type='button';b.dataset.zone=i;b.style.setProperty('--zone',zoneColors[i]);b.onclick=()=>{if(discardOutline()){zone=i;render();}};$('zone-tabs').append(b);}
 $('open-zones').onclick=openZones;$('zone-start').onclick=()=>{if(discardOutline()){drawing=true;updateZoneControls();drawOutline();}};$('zone-back').onclick=()=>{outline.pop();updateZoneControls();drawOutline();};$('zone-close').onclick=closeOutline;
