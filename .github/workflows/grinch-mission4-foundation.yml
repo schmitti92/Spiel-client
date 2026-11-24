@@ -1,0 +1,12 @@
+name: DOG Grinch mission 4 foundation
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/dog-grinch-mission4-foundation.test.mjs
+      - run: node --check DOG/grinch-campaign/mission-4.js
