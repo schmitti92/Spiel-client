@@ -12,7 +12,7 @@ const MISSIONS=Object.freeze([
   objective:'Jeweils drei Figuren durch das Portal retten. Eine weitere Figur pro Farbe wird gefangen. Das normale DOG und Mission 1 bleiben unverändert.'},
  {name:'Die erste Begegnung',icon:'👹',
   description:'Die Freunde treffen den Grinch zum ersten Mal direkt auf dem Spielfeld. Er verhöhnt sie und gesteht, die Gefangenen zu haben.',
-  objective:'Geplant: Erster Grinch-Bot als vierter Spieler, Start mit drei Figuren, jeweils eine weitere Figur verschwindet.'},
+  objective:'Sammelt gemeinsam drei Weihnachtslichter, zerstört vier Eisbarrieren und aktiviert drei Runen. Eine Figur je Farbe wird entführt.'},
  {name:'Befreiung in der Höhle',icon:'🔓',
   description:'Nur noch zwei Figuren je Spieler sind frei. Sie dringen in die Höhle ein und befreien alle neun Gefangenen.',
   objective:'Geplant: Alle vermissten Figuren befreien. Mission 5 startet wieder mit fünf Figuren pro Spieler.'},
@@ -25,13 +25,13 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
  if(!root)return {render(){}};
  const $=id=>document.getElementById(id);
  const dialog=$('grinch-mission-dialog');
- let verifiedProgress=null,progressForUid=null,progressLoading=false,progressLastAt=0;
+ let mission3OnlineAllowed=false,verifiedProgress=null,progressForUid=null,progressLoading=false,progressLastAt=0;
  const roomCode=(new URLSearchParams(location.search).get('room')||'').toUpperCase();
  const hasRoom=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/.test(roomCode);
  const user=()=>{const s=window.SpielOnline?.state?.();return s?.status==='online'&&s.user?.getIdToken?s.user:null;};
  async function loadProgress(force=false){
   const person=user();
-  if(!person){verifiedProgress=null;progressForUid=null;render();return;}
+  if(!person){mission3OnlineAllowed=false;verifiedProgress=null;progressForUid=null;render();return;}
   if(progressLoading||(!force&&progressForUid===person.uid&&Date.now()-progressLastAt<30000))return;
   progressLoading=true;
   try{
@@ -41,7 +41,7 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
    if(!response.ok)throw Error('Progress read failed');
    const payload=await response.json();
    if(payload.ok===true&&user()?.uid===person.uid){
-    verifiedProgress=payload.progress;progressForUid=person.uid;progressLastAt=Date.now();
+    mission3OnlineAllowed=payload.canStartMission3===true;verifiedProgress=payload.progress;progressForUid=person.uid;progressLastAt=Date.now();
    }
   }catch(_e){/* Never fabricate progress or unlocks while offline. */}
   finally{
@@ -56,7 +56,7 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
   if(uid===progressIdentity)return; // Profile-status/token updates never reload progress.
   progressIdentity=uid;progressLastAt=0;
   if(uid)void loadProgress(true);
-  else{verifiedProgress=null;progressForUid=null;render();}
+  else{mission3OnlineAllowed=false;verifiedProgress=null;progressForUid=null;render();}
  });
  document.addEventListener('visibilitychange',()=>{
   if(!document.hidden&&document.getElementById('tab-grinch')?.getAttribute('aria-selected')==='true')
@@ -109,6 +109,14 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
  mission2Online.hidden=true;
  $('grinch-mission-return')?.before(mission2Online);
 
+ const mission3Local=mission2Local.cloneNode(false);
+ mission3Local.href='./grinch-campaign/mission-3.html';mission3Local.textContent='▶ Mission 3 lokal testen';
+ $('grinch-mission-return')?.before(mission3Local);
+ const mission3Online=mission2Online.cloneNode(false);
+ mission3Online.href=hasRoom?'./grinch-campaign/mission-3.html?'+new URLSearchParams({room:roomCode}):'../hub-lobby.html?view=online';
+ mission3Online.textContent=hasRoom?'🌐 Mission 3 gemeinsam im Raum '+roomCode:'🌐 Gemeinsamen Spielraum öffnen';
+ $('grinch-mission-return')?.before(mission3Online);
+
  $('grinch-visit-cave')?.addEventListener('click',()=>openCave());
  $('grinch-back-village')?.addEventListener('click',()=>openTab('village'));
  root.querySelectorAll('[data-grinch-details]').forEach(button=>{
@@ -131,12 +139,14 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
    mission2Local.style.display=number===2?'inline-flex':'none';
    mission2Online.hidden=true;
    mission2Online.style.display='none';
+   mission3Local.hidden=number!==3;mission3Local.style.display=number===3?'inline-flex':'none';
+   mission3Online.hidden=number!==3||!mission3OnlineAllowed;mission3Online.style.display=mission3Online.hidden?'none':'inline-flex';
    const cleared=verifiedProgress?.completedMissions?.includes(1)===true;
    $('grinch-mission-lock').textContent=number===1?
     '🧪 Mission 1 ist zurzeit nur als lokaler Test verfügbar. Es gibt keine offiziellen Online-Freischaltungen oder Gewinne.':
     number===2&&cleared?
     '🧪 Mission 2 ist aktuell ausschließlich als lokaler Test verfügbar.':
-    number===2?'🧪 Mission 2 kannst du jetzt direkt lokal testen, ohne echte Freischaltung.':'🔒 Diese spätere Mission ist noch nicht spielbar.';
+    number===2?'🧪 Mission 2 kannst du jetzt direkt lokal testen, ohne echte Freischaltung.':number===3?(mission3OnlineAllowed?'🌐 Online bereit – alle drei müssen Mission 2 beendet haben.':'🧪 Mission 3 lokal spielbar; der Online-Start bleibt gesperrt.'):'🔒 Diese spätere Mission ist noch nicht spielbar.';
    if(dialog&&!dialog.open)dialog.showModal();
   });
  });
@@ -170,6 +180,7 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
     state.dataset.state=onlineEligible?'unlocked':'test-ready';
     state.textContent='🧪 Nur Testmodus';
    }
+   else if(i===3){state.dataset.state=mission3OnlineAllowed?'unlocked':'test-ready';state.textContent=mission3OnlineAllowed?'🌐 Online bereit':'🧪 Testmodus';}
    else{state.dataset.state='locked';state.textContent='🔒 Gesperrt';}
   }
  }

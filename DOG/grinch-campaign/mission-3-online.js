@@ -90,6 +90,7 @@ export function createGrinchOnline({roomCode,onRoom,onError,onConnection}){
    }catch{ws.close();}
   };
   ws.onmessage=e=>{
+   if(ws!==socket||stopped)return;
    let data;try{data=JSON.parse(e.data);}catch{return;}
    lastReceived=Date.now();
    if(data?.type==='room'&&data.room?.code===code)accept(data.room);
@@ -111,7 +112,7 @@ export function createGrinchOnline({roomCode,onRoom,onError,onConnection}){
  async function action(move,state){
   if(stopped||!move||!state||!lastMatchId)throw Error('NOT_CONNECTED');
   try{
-   const payload={matchId:lastMatchId,expectedRevision:state.revision,
+   const payload={matchId:state.matchId||lastMatchId,expectedRevision:state.revision,
     actionId:typeof crypto?.randomUUID==='function'?crypto.randomUUID():'g3_'+Date.now()+'_'+Math.floor(Math.random()*1e6),
     action:move};
    const result=await request('/grinch/action3','POST',payload);

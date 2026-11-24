@@ -2,7 +2,7 @@
  * Mission 3: LOCAL prototype for work packages 1–5.
  * Never changes official rooms, campaign progression or real rewards.
  */
-import {createGrinchOnline} from './mission-3-online.js?v=1';
+import {createGrinchOnline} from './mission-3-online.js?v=2';
 import {cardVisual} from '../card-visuals.js?v=11';
 import {drawMission3Board} from './mission-3-board.js?v=3';
 import {createMission3BoardTouch} from './mission-3-touch.js?v=2';

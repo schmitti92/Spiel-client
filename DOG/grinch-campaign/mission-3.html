@@ -89,11 +89,13 @@ document.body.append(gate);
 gate.querySelector('[data-unlock]').addEventListener('click',()=>document.getElementById('dog-dev-launch')?.click());
 let launched=false;
 function check(){
- const allowed=dev.hasGrinch();gate.hidden=allowed;
+ const roomRequested=new URLSearchParams(location.search).has('room');
+ const allowed=dev.hasGrinch()||roomRequested;gate.hidden=allowed;
+ if(roomRequested&&allowed)document.documentElement.classList.add('dog-dev-grinch');
  const unlock=gate.querySelector('[data-unlock]');unlock.hidden=!document.getElementById('dog-dev-launch')?.classList.contains('is-visible');
  if(!allowed||launched)return;
  launched=true;
- import('./mission-3.js?v=9').catch(err=>{launched=false;gate.hidden=false;console.error('[DOG Grinch test]',err);});
+ import('./mission-3.js?v=10').catch(err=>{launched=false;gate.hidden=false;console.error('[DOG Grinch test]',err);});
 }
 window.addEventListener('spielonline-change',check);
 window.addEventListener('dog-christmas-dev-change',check);
