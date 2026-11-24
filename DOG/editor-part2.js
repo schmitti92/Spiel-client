@@ -3,7 +3,7 @@ const $=id=>document.getElementById(id),board=$('part2-board'),NS='http://www.w3
 let s=blank(),sel={kind:'track',index:0},tool='place',undo=[],redo=[],photo=null,scale=1,origin={x:0,y:0},gesture=null,pointers=new Map();
 try{const raw=localStorage.getItem(KEY);if(raw)s=normalize(JSON.parse(raw));}catch{}
 const message=(v,error=false)=>{$('feedback').textContent=v;$('feedback').classList.toggle('error',error);};
-function save(){try{localStorage.setItem(KEY,JSON.stringify(s));return true;}catch{message('Lokaler Speicher nicht verfügbar. Bitte JSON exportieren.',true);return false;}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(s));$('save-state').textContent='● Lokal gespeichert';return true;}catch{$('save-state').textContent='Nicht gespeichert';message('Lokaler Speicher nicht verfügbar. Bitte JSON exportieren.',true);return false;}}
 function commit(n){undo.push(s);if(undo.length>100)undo.shift();redo=[];s=n;save();render();}
 function change(fn){try{commit(fn());message('Entwurf aktualisiert.');return true;}catch(e){message(e.message,true);return false;}}
 function element(tag,attrs,parent=board){const e=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,String(v)));parent.append(e);return e;}
@@ -24,7 +24,7 @@ function updateZoneControls(){
  document.querySelectorAll('[data-zone]').forEach(b=>{const i=Number(b.dataset.zone);b.classList.toggle('active',i===zone);b.setAttribute('aria-pressed',String(i===zone));b.textContent=(s.areas[i].polygon?'✓ ':'')+'Gebiet '+(i+1);});
 }
 function discardOutline(){if(drawing&&outline.length&&!confirm('Unfertigen Umriss verwerfen?'))return false;drawing=false;outline=[];return true;}
-function openZones(){$('fog-preview').value=4;$('area-colors').checked=true;tool='fog';render();$('zone-tools').scrollIntoView({block:'nearest'});}
+function openZones(){showPanel('areas');$('fog-preview').value=4;$('area-colors').checked=true;tool='fog';render();}
 function closeOutline(){if(!drawing||outline.length<3)return;try{const n=setPolygon(s,zone,outline);drawing=false;outline=[];commit(n);message('Gebiet '+(zone+1)+' gespeichert.');}catch(e){$('zone-status').textContent=e.message;message(e.message,true);}}
 
 const preview=()=>Number($('fog-preview').value);
@@ -81,7 +81,7 @@ function render(){
  document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===tool));
  const p=getField(s,sel);$('selected').textContent=label(sel)+(p?' · gesetzt':' · noch frei');$('coord-x').value=p?.x??'';$('coord-y').value=p?.y??'';
  const st=status(s);$('stats').textContent='Laufweg '+st.track+'/'+s.track.length+' · Start '+st.starts+'/6 · Schlag '+st.strike+'/1 · Boss '+st.bosses+'/'+s.bosses.length;
- adventureRender();$('export-ready').disabled=!st.complete;$('undo').disabled=!undo.length;$('redo').disabled=!redo.length;draw();
+ adventureRender();$('feature-count').textContent='('+s.features.length+')';$('mode-label').textContent=tool==='feature'?FEATURE_TYPES[$('feature-type').value]+' · Feld antippen':tool==='fog'?'Gebiet '+(zone+1)+' zeichnen':tool==='move'?'Feld verschieben':tool==='erase'?'Feld löschen':tool==='pan'?'Ansicht bewegen':label(sel)+' · setzen';$('export-ready').disabled=!st.complete;$('undo').disabled=!undo.length;$('redo').disabled=!redo.length;draw();
 }
 function select(r){sel={...r};render();}
 function next(){if(!$('auto-next').checked)return;
@@ -123,8 +123,8 @@ board.addEventListener('pointerup',e=>{
 });
 board.addEventListener('pointercancel',()=>{pointers.clear();gesture=null;board.querySelector('#zone-trace')?.remove();});
 board.addEventListener('wheel',e=>{if(!e.ctrlKey&&!e.metaKey)return;e.preventDefault();zoom(scale*(e.deltaY<0?1.2:1/1.2),world(e.clientX,e.clientY));},{passive:false});
-document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>{const kind=b.dataset.kind;const list=refs(s).filter(r=>r.kind===kind);select(list.find(r=>!getField(s,r))||list[0]);});
-document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{if(b.dataset.tool==='fog'){openZones();return;}if(!discardOutline())return;tool=b.dataset.tool;render();});
+document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>{if(!discardOutline())return;tool='place';$('fog-preview').value=4;const kind=b.dataset.kind;const list=refs(s).filter(r=>r.kind===kind);select(list.find(r=>!getField(s,r))||list[0]);});
+document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{if(b.dataset.tool==='fog'){openZones();return;}if(!discardOutline())return;tool=b.dataset.tool;if(tool==='place')showPanel('fields');$('fog-preview').value=4;render();});
 $('field-index').onchange=()=>select({...sel,index:Number($('field-index').value)});$('field-color').onchange=()=>select({...sel,color:$('field-color').value,index:0});
 $('apply-counts').onclick=()=>{const t=Number($('track-count').value),b=Number($('boss-count').value);if((t<s.track.length||b<s.bosses.length)&&!confirm('Überzählige Felder entfernen?'))return;if(t!==s.track.length&&!confirm('Bei neuer Laufweg-Länge werden alte Feldgrenzen neu verteilt. Gezeichnete Gebiete bleiben erhalten. Fortfahren?'))return;change(()=>resize(s,t,b));};
 $('add-boss').onclick=()=>{if(change(()=>resize(s,s.track.length,s.bosses.length+1)))select({kind:'boss',index:s.bosses.length-1});};
@@ -141,8 +141,8 @@ $('remove-photo').onclick=()=>{if(photo)URL.revokeObjectURL(photo);photo=null;$(
 function download(ready){if(ready&&!status(s).complete)return;const u=URL.createObjectURL(new Blob([JSON.stringify(s,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download=ready?'dog-grinch-teil2-brett.json':'dog-grinch-teil2-entwurf.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
 $('export-draft').onclick=()=>download(false);$('export-ready').onclick=()=>download(true);
 $('import').onchange=async()=>{try{const f=$('import').files[0];if(f){const n=normalize(JSON.parse(await f.text()));if(confirm('Teil-2-Entwurf durch Import ersetzen?')){commit(n);select({kind:'track',index:0});message('Teil-2-Layout importiert.');}}}catch(e){message(e.message,true);}finally{$('import').value='';}};
-for(const [type,name] of Object.entries(FEATURE_TYPES)){const o=document.createElement('option');o.value=type;o.textContent=name;$('feature-type').append(o);}
-function featureGroup(){$('group-wrap').hidden=!LINKED_TYPES.includes($('feature-type').value);}
+for(const [type,name] of Object.entries(FEATURE_TYPES)){const o=document.createElement('option');o.value=type;o.textContent=name;$('feature-type').append(o);const b=document.createElement('button');b.type='button';b.dataset.featureChoice=type;const icon=document.createElement('span');icon.textContent=name.split(' ')[0];b.append(icon,document.createTextNode(name.slice(name.indexOf(' ')+1)));b.onclick=()=>{if(!discardOutline())return;$('feature-type').value=type;featureGroup();$('place-feature').click();};$('feature-picker').append(b);}
+function featureGroup(){$('group-wrap').hidden=!LINKED_TYPES.includes($('feature-type').value);document.querySelectorAll('[data-feature-choice]').forEach(b=>{const active=b.dataset.featureChoice===$('feature-type').value;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});}
 $('feature-type').onchange=featureGroup;featureGroup();
 $('fog-preview').onchange=()=>{if(drawing&&outline.length){$('fog-preview').value=4;message('Bitte zuerst die Fläche schließen.');}draw();};$('area-colors').onchange=draw;
 for(let i=0;i<4;i++){const b=document.createElement('button');b.type='button';b.dataset.zone=i;b.style.setProperty('--zone',zoneColors[i]);b.onclick=()=>{if(discardOutline()){zone=i;render();}};$('zone-tabs').append(b);}
@@ -153,4 +153,13 @@ $('save-zone-name').onclick=()=>change(()=>setAreas(s,s.areas.map((a,i)=>i===zon
 $('save-manual-area').onclick=()=>{if(sel.kind!=='track'){message('Zuerst ein Lauffeld auswählen.',true);return;}change(()=>setAreaOverride(s,sel.index,$('manual-area').value==='auto'?null:Number($('manual-area').value)));};
 $('place-feature').onclick=()=>{if(!discardOutline())return;$('fog-preview').value=4;tool='feature';render();message('Jetzt ein Lauffeld für den Spezialmarker antippen.');};
 $('remove-feature').onclick=()=>{if(sel.kind!=='track'){message('Zuerst das Lauffeld auswählen.',true);return;}change(()=>setFeature(s,sel.index,null));};
-render();
+const panelTitles={fields:'Felder setzen',special:'Spezialfelder',areas:'Vier Gebiete',settings:'Einstellungen',project:'Datei & Export'};
+let currentPanel='fields';
+function showPanel(name){if(!Object.hasOwn(panelTitles,name))return;currentPanel=name;$('inspector').hidden=false;document.querySelector('.layout').classList.remove('inspector-closed');$('toggle-inspector').setAttribute('aria-expanded','true');$('panel-title').textContent=panelTitles[name];document.querySelectorAll('[data-page]').forEach(p=>p.hidden=p.dataset.page!==name);document.querySelectorAll('[data-panel]').forEach(b=>{b.classList.toggle('active',b.dataset.panel===name);b.setAttribute('aria-pressed',String(b.dataset.panel===name));});}
+function hidePanel(){$('inspector').hidden=true;document.querySelector('.layout').classList.add('inspector-closed');$('toggle-inspector').setAttribute('aria-expanded','false');document.querySelectorAll('[data-panel]').forEach(b=>{b.classList.remove('active');b.setAttribute('aria-pressed','false');});}
+document.querySelectorAll('[data-panel]').forEach(b=>b.onclick=()=>{const name=b.dataset.panel;if(name==='areas'){if(!discardOutline())return;openZones();}else{if(name==='fields'||name==='special'){if(!discardOutline())return;tool=name==='fields'?'place':'feature';$('fog-preview').value=4;}showPanel(name);render();}});
+$('toggle-inspector').onclick=()=> $('inspector').hidden?showPanel(currentPanel):hidePanel();$('close-inspector').onclick=hidePanel;
+$('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else message('Vollbild wird von diesem Browser nicht unterstützt.');}catch{message('Vollbild konnte nicht geöffnet werden.');}};
+function fitBoard(){const wrap=board.parentElement,side=Math.max(1,Math.min(wrap.clientWidth-10,wrap.clientHeight-10));board.style.width=side+'px';board.style.height=side+'px';}
+if(typeof ResizeObserver==='function')new ResizeObserver(fitBoard).observe(board.parentElement);else window.addEventListener('resize',fitBoard);
+showPanel('fields');render();fitBoard();
