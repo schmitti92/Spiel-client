@@ -59,3 +59,7 @@ Paket 7 noch offen: Autoritative Online-Ausführung der bereits entwickelten Gri
 Paket 8: Vollständige gemeinsame Praxistests und Langzeitsimulationen.
 
 Die offizielle Mission-3-Einstellung bleibt disabled, bis sämtliche Pakete funktionsfähig und abgesichert sind. Mission 1, Mission 2, reguläres DOG und Mission 4 werden nicht verändert.
+
+## Paket 7 – Online-Anbindung (24.11.2026)
+
+Die gemeinsame Hub-Anbindung ist im Quellcode umgesetzt: `launch3`, `action3`, authentifizierte Raumansichten, private Karten, serverseitige KI inklusive Animationsframes, atomare Missionsfortschrittsspeicherung und Weihnachtsschutz gemäß dem Forschungsrang beim Start. Die Seite akzeptiert `?room=…`; ohne Raum bleibt sie eine separate lokale Vorschau. Offizielle Online-Ausführung erfordert beide serverseitigen Release-Flags `DOG_GRINCH_PART2_ONLINE_ENABLED=1` und `DOG_GRINCH_MISSION3_ONLINE_ENABLED=1`. Die Flags werden nicht durch diese Codeänderung aktiviert. CI, echte Drei-Geräte-Tests, WebSocket-Wiederverbindung, Balance und Render-Deployment-Verifikation bleiben Voraussetzung für Veröffentlichung.

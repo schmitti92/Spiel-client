@@ -95,7 +95,7 @@ function check(){
  const unlock=gate.querySelector('[data-unlock]');unlock.hidden=!document.getElementById('dog-dev-launch')?.classList.contains('is-visible');
  if(!allowed||launched)return;
  launched=true;
- import('./mission-3.js?v=10').catch(err=>{launched=false;gate.hidden=false;console.error('[DOG Grinch test]',err);});
+ import('./mission-3.js?v=11').catch(err=>{launched=false;gate.hidden=false;console.error('[DOG Grinch test]',err);});
 }
 window.addEventListener('spielonline-change',check);
 window.addEventListener('dog-christmas-dev-change',check);

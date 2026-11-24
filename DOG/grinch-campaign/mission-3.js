@@ -188,6 +188,7 @@ function render(){
 function clickPawn(id){
  if(!game||game.complete||busy||!canPlay())return;
  const frozen=game.pieces.find(p=>p.id===id&&p.place==='track'&&p.frozenTurns>0);
+ if(onlineMode&&frozen&&myThawResearch>(game.researchThaws||0)){void play({type:'research-thaw',pieceId:id});return;}
  if(!onlineMode&&frozen&&myThawResearch>(game.researchThaws||0)){
   // Mission 3 is a local non-reward prototype: the account determines the
   // rank but all mutations remain local until the online mission exists.
@@ -262,7 +263,7 @@ $('m3-start').addEventListener('click',()=>{
  }catch(e){toast(e.message);}
 });
 async function receiveRoom(room){
- if(!room){epoch++;game=null;mySeat=null;onlineRoom=null;queuedRoom=null;animating=false;busy=false;
+ if(!room){epoch++;game=null;myThawResearch=0;mySeat=null;onlineRoom=null;queuedRoom=null;animating=false;busy=false;
   $('m3-hand').replaceChildren();$('m3-board').replaceChildren();$('m3-online-launch').hidden=true;return;}
  if(animating){if(!queuedRoom||room.revision>=queuedRoom.revision)queuedRoom=room;return;}
  onlineRoom=room;
@@ -293,7 +294,7 @@ async function receiveRoom(room){
    animating=false;
   }
  }
- game=next;busy=false;resetSelection();render();if(before&&before.matchId===m.id)showEvents(before);
+ game=next;myThawResearch=next.thawRank||0;busy=false;resetSelection();render();if(before&&before.matchId===m.id)showEvents(before);
  if(queuedRoom){const pending=queuedRoom;queuedRoom=null;void receiveRoom(pending);}
 }
 if(onlineMode){
