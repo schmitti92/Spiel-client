@@ -4,7 +4,7 @@ const validPoint=p=>p!==null&&typeof p==='object'&&Number.isFinite(p.x)&&Number.
 const point=p=>({x:Math.round(p.x*100)/100,y:Math.round(p.y*100)/100});
 export function blank(count=160,bosses=1){
  if(!validInt(count,1,MAX_TRACK)||!validInt(bosses,1,MAX_BOSSES))throw Error('Ungültige Feldanzahl');
- return {schema:'dog-grinch-board-v1',part:2,size:SIZE,track:Array(count).fill(null),starts:Object.fromEntries(COLORS.map(c=>[c,[null,null]])),strike:null,bosses:Array(bosses).fill(null),areas:defaultAreas(count),features:[],areaOverrides:{},sideFields:[],wall:null};
+ return {schema:'dog-grinch-board-v1',part:2,size:SIZE,track:Array(count).fill(null),starts:Object.fromEntries(COLORS.map(c=>[c,[null,null]])),strike:null,bosses:Array(bosses).fill(null),areas:defaultAreas(count),features:[],areaOverrides:{},sideFields:[],wall:null,prison:null};
 }
 export function normalize(raw){
  if(!raw||raw.schema!=='dog-grinch-board-v1'||raw.part!==2||raw.size!==SIZE||!Array.isArray(raw.track)||!Array.isArray(raw.bosses))throw Error('Kein Teil-2-Brett');
@@ -22,6 +22,7 @@ export function normalize(raw){
  s.features=normalizeFeatures(raw.features??[],s.track);
  s.sideFields=normalizeSideFields(raw.sideFields??[],s.track);
  s.wall=normalizeWall(raw.wall??null);
+ s.prison=normalizePrison(raw.prison??null);
  s.areaOverrides={};for(const [k,v] of Object.entries(raw.areaOverrides??{})){if(!validInt(Number(k),0,s.track.length-1)||!s.track[Number(k)]||!validInt(v,0,3))throw Error('Ungültige Gebietszuordnung');s.areaOverrides[k]=v;}
  const issues=conflicts(s);if(issues.length)throw Error(issues[0]);
  return s;
@@ -189,3 +190,15 @@ export function normalizeWall(raw){
  return {kind:'cave-entrance',defenseOrigin:true,points};
 }
 export function setWall(s,points){return normalize({...s,wall:points===null?null:{kind:'cave-entrance',points}});}
+
+/** Independent prison decoration and captive animation coordinates. */
+export function normalizePrison(raw){
+ if(raw===null)return null;
+ if(!raw||raw.kind!=='captive-prison'||!raw.position||!Number.isFinite(raw.position.x)||!Number.isFinite(raw.position.y)||!validInt(raw.size,80,200))throw Error('Ungültiges Gefängnis.');
+ const size=raw.size,position=point(raw.position),half=size/2;
+ if(position.x-half<0||position.y-half<0||position.x+half>SIZE||position.y+half>SIZE)throw Error('Das Gefängnis muss vollständig auf dem Brett liegen.');
+ const cells=COLORS.flatMap((color,row)=>Array.from({length:3},(_,col)=>({id:color+'-'+(col+1),color,position:point({x:position.x+(col-1)*size*.25,y:position.y+(row-1)*size*.22+size*.045})})));
+ return {kind:'captive-prison',position,size,cells};
+}
+export function setPrison(s,position,size=120){return normalize({...s,prison:position===null?null:{kind:'captive-prison',position,size}});}
+export function setBossPost(s,index,position){if(position!==null&&!validPoint(position))throw Error('Boss-Wachposten braucht eine freie Position neben dem Laufweg.');return setField(s,{kind:'boss',index},position);}

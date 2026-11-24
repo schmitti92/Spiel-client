@@ -1,4 +1,4 @@
-import {blank,normalize,resize,setField,getField,refs,key,status,template,COLORS,FEATURE_TYPES,LINKED_TYPES,defaultAreas,setAreas,areaOf,visibleArea,setFeature,setPolygon,pointInPolygon,setAreaOverride,assignAreaRange,LEVER_MODES,LEVER_EFFECTS,addSideLever,updateSideLever,LEVER_OWNERS,setWall} from './editor-part2-model.mjs?v=9';
+import {blank,normalize,resize,setField,getField,refs,key,status,template,COLORS,FEATURE_TYPES,LINKED_TYPES,defaultAreas,setAreas,areaOf,visibleArea,setFeature,setPolygon,pointInPolygon,setAreaOverride,assignAreaRange,LEVER_MODES,LEVER_EFFECTS,addSideLever,updateSideLever,LEVER_OWNERS,setWall,setPrison,setBossPost} from './editor-part2-model.mjs?v=10';
 const $=id=>document.getElementById(id),board=$('part2-board'),NS='http://www.w3.org/2000/svg',KEY='dog-grinch-board-editor-part2-v1';
 let s=blank(),sel={kind:'track',index:0},tool='place',undo=[],redo=[],photo=null,scale=1,origin={x:0,y:0},gesture=null,pointers=new Map();
 try{const raw=localStorage.getItem(KEY);if(raw)s=normalize(JSON.parse(raw));}catch{}
@@ -10,7 +10,7 @@ function element(tag,attrs,parent=board){const e=document.createElementNS(NS,tag
 function clampView(){const side=1000/scale;origin.x=Math.max(0,Math.min(1000-side,origin.x));origin.y=Math.max(0,Math.min(1000-side,origin.y));board.setAttribute('viewBox',[origin.x,origin.y,side,side].join(' '));$('zoom-level').textContent=Math.round(scale*100)+' %';}
 function zoom(next,center={x:origin.x+500/scale,y:origin.y+500/scale}){const old=scale;scale=Math.min(5,Math.max(1,next));origin={x:center.x-(center.x-origin.x)*old/scale,y:center.y-(center.y-origin.y)*old/scale};clampView();}
 function world(x,y){const p=board.createSVGPoint();p.x=x;p.y=y;return p.matrixTransform(board.getScreenCTM().inverse());}
-const label=r=>r.kind==='side'?'Hebel H'+r.index:r.kind==='track'?'Lauffeld '+(r.index+1):r.kind==='start'?({red:'Rot',blue:'Blau',green:'Grün'}[r.color])+' · Start '+(r.index+1):r.kind==='strike'?'Gemeinsames Schlagfeld':'Bossfeld '+(r.index+1);
+const label=r=>r.kind==='side'?'Hebel H'+r.index:r.kind==='track'?'Lauffeld '+(r.index+1):r.kind==='start'?({red:'Rot',blue:'Blau',green:'Grün'}[r.color])+' · Start '+(r.index+1):r.kind==='strike'?'Gemeinsames Schlagfeld':'Boss-Wachposten B'+(r.index+1);
 const areaColors=['#d5f3db','#c9e7fa','#f7e0b3','#e2d3fa'],zoneColors=['#5fc987','#5fa9ee','#eea44b','#bd83eb'];
 let zone=0,outline=[],drawing=false;
 const points=p=>p.map(v=>v.x+','+v.y).join(' ');
@@ -57,6 +57,16 @@ function draw(){
  const gap=Number($('spacing').value);
  if($('show-grid').checked)for(let i=0;i<=1000;i+=gap){element('path',{d:'M'+i+' 0V1000 M0 '+i+'H1000',stroke:'#a1bcc8','stroke-opacity':.13,'pointer-events':'none'});}
  if(s.wall){const g=element('g',{'pointer-events':'none','aria-label':'Höhleneingang – Verteidigung'});const title=element('title',{},g);title.textContent='Höhleneingang · Ursprung seiner Verteidigungsangriffe';element('polyline',{points:points(s.wall.points),fill:'none',stroke:'#171d25','stroke-width':23,'stroke-linecap':'round','stroke-linejoin':'round'},g);element('polyline',{points:points(s.wall.points),fill:'none',stroke:'#838994','stroke-width':16,'stroke-linecap':'round','stroke-linejoin':'round'},g);element('polyline',{points:points(s.wall.points),fill:'none',stroke:'#c3d6c0','stroke-width':3,'stroke-dasharray':'10 7','stroke-linejoin':'round'},g);}
+ if(s.prison){
+  const q=s.prison,{x,y}=q.position,z=q.size,half=z/2;
+  const g=element('g',{'pointer-events':'none','aria-label':'Gefängnis mit neun Gefangenen'});const title=element('title',{},g);title.textContent='Gefängnis · 9 Gefangene';
+  element('rect',{x:x-half,y:y-half,width:z,height:z,rx:6,fill:'#16202a',stroke:tool==='prison'?'#ffe1a0':'#89939c','stroke-width':3},g);
+  element('rect',{x:x-half+5,y:y-half+5,width:z-10,height:z-10,rx:3,fill:'none',stroke:'#586772','stroke-width':2},g);
+  const caption=element('text',{x,y:y-half+z*.16,'text-anchor':'middle',fill:'#e6d3ab','font-size':z*.095,'font-weight':800},g);caption.textContent='GEFÄNGNIS';
+  for(const c of q.cells){const p=c.position;element('circle',{cx:p.x,cy:p.y,r:z*.075,fill:{red:'#dd514d',blue:'#438ce9',green:'#3ba367'}[c.color],stroke:'#eef4ff','stroke-width':1.2},g);}
+  for(let i=1;i<8;i++){const bx=x-half+i*z/8;element('line',{x1:bx,x2:bx,y1:y-half+z*.24,y2:y+half-6,stroke:'#a1aeb8','stroke-opacity':.7,'stroke-width':Math.max(1.5,z*.018)},g);}
+  const lock=element('text',{x,y:y+half-4,'text-anchor':'middle','font-size':z*.13},g);lock.textContent='🔒';
+ }
  if(preview()<4)fog();
  if($('area-colors').checked)for(const [i,a] of s.areas.entries()){if(i>=preview())continue;const q=a.fogRect;if(a.polygon){element('polygon',{points:points(a.polygon),fill:zoneColors[i],'fill-opacity':.17,stroke:zoneColors[i],'stroke-width':tool==='fog'&&zone===i?4:2,'pointer-events':'none'});const c=a.polygon.reduce((v,p)=>({x:v.x+p.x/a.polygon.length,y:v.y+p.y/a.polygon.length}),{x:0,y:0});const t=element('text',{x:c.x,y:c.y,'text-anchor':'middle',fill:zoneColors[i],'font-size':18,'font-weight':900,'pointer-events':'none'});t.textContent='Gebiet '+(i+1);}else if(q)element('rect',{x:q.x,y:q.y,width:q.w,height:q.h,rx:8,fill:'none',stroke:areaColors[i],'stroke-width':3,'stroke-dasharray':'9 7','pointer-events':'none'});}
  if($('show-path').checked)for(let i=1;i<s.track.length;i++){const a=s.track[i-1],b=s.track[i];if(a&&b&&(preview()===4||trackVisible(i-1)&&trackVisible(i)))element('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:'#9bbac9','stroke-width':3,'pointer-events':'none'});}
@@ -82,7 +92,7 @@ function draw(){
 function adventureRender(){
  const root=$('area-rows');root.replaceChildren();s.areas.forEach((a,i)=>{const row=document.createElement('div');row.className='zone-summary';const dot=document.createElement('i');dot.style.background=zoneColors[i];row.append(dot);const t=document.createElement('span');t.textContent=(i+1)+' · '+a.name;row.append(t);const c=document.createElement('small');c.textContent=s.track.filter((p,j)=>p&&areaOf(s,j)===i).length+' Felder'+(a.polygon?' ✓':'');row.append(c);root.append(row);});
  const issuesZones=status(s).zoneIssues;$('area-check').textContent=issuesZones.length?issuesZones.join(' • '):s.areas.every(a=>a.polygon)?'✓ Vier Gebietsflächen gezeichnet · keine automatische Feldzuordnung':'Gebietsflächen unabhängig vom Laufweg zeichnen.';$('area-check').classList.toggle('invalid',Boolean(issuesZones.length));
- $('zone-name').value=s.areas[zone].name;$('manual-area').value=sel.kind==='track'&&s.areaOverrides[sel.index]!==undefined?String(s.areaOverrides[sel.index]):'auto';updateZoneControls();updateWallControls();
+ $('zone-name').value=s.areas[zone].name;$('manual-area').value=sel.kind==='track'&&s.areaOverrides[sel.index]!==undefined?String(s.areaOverrides[sel.index]):'auto';updateZoneControls();updateWallControls();updatePrisonControls();
  const list=$('feature-list');list.replaceChildren();
  for(const f of [...s.features].sort((a,b)=>a.trackIndex-b.trackIndex)){const row=document.createElement('div');row.className='feature-row';const b=document.createElement('button');b.textContent='Feld '+(f.trackIndex+1)+' · '+FEATURE_TYPES[f.type]+(f.group?' · '+f.group:'')+(f.type==='lever'?' · '+LEVER_EFFECTS[f.effect]+' · '+LEVER_MODES[f.mode]+' · '+LEVER_OWNERS[f.owner]:'');b.onclick=()=>{ $('fog-preview').value=4;$('feature-type').value=f.type;$('feature-group').value=f.group||'1';if(f.type==='lever'){$('lever-placement').value='track';$('lever-mode').value=f.mode;$('lever-effect').value=f.effect;$('lever-owner').value=f.owner;$('lever-rounds').value=f.rounds??2;}featureGroup();select({kind:'track',index:f.trackIndex});};row.append(b);const del=document.createElement('button');del.textContent='×';del.setAttribute('aria-label','Spezialfeld löschen');del.onclick=()=>change(()=>setFeature(s,f.trackIndex,null));row.append(del);list.append(row);}
  for(const f of s.sideFields){const row=document.createElement('div');row.className='feature-row';const b=document.createElement('button');b.textContent='H'+f.id+' · Hebel · '+LEVER_OWNERS[f.owner]+' · '+(f.anchor===null?'ohne Anschluss':'Feld '+(f.anchor+1));b.onclick=()=>selectSide(f.id);row.append(b);const del=document.createElement('button');del.textContent='×';del.setAttribute('aria-label','Hebel H'+f.id+' löschen');del.onclick=()=>{if(sel.kind==='side'&&sel.index===f.id)sel={kind:'track',index:0};change(()=>setField(s,{kind:'side',index:f.id},null));};row.append(del);list.append(row);}
@@ -93,14 +103,14 @@ function adventureRender(){
 function render(){
  const count=sel.kind==='track'?s.track.length:sel.kind==='start'?2:sel.kind==='boss'?s.bosses.length:1;
  if(sel.kind==='side'&&!s.sideFields.some(f=>f.id===sel.index))sel={kind:'track',index:0};if(sel.kind!=='side')sel.index=Math.min(sel.index||0,count-1);if(sel.kind==='start'&&!sel.color)sel.color='red';
- $('track-count').value=s.track.length;$('boss-count').value=s.bosses.length;
+ $('track-count').value=s.track.length;$('boss-count').value=s.bosses.length;$('boss-post-tools').hidden=sel.kind!=='boss';
  $('field-index').replaceChildren(...Array.from({length:count},(_,i)=>{const o=document.createElement('option');o.value=i;o.textContent=(i+1)+(getField(s,{...sel,index:i})?' ✓':'');return o;}));$('field-index').value=sel.index;
  if(sel.kind==='side'){const o=document.createElement('option');o.value=sel.index;o.textContent='H'+sel.index;$('field-index').replaceChildren(o);$('field-index').value=sel.index;}$('field-index').disabled=sel.kind==='strike'||sel.kind==='side';$('color-wrap').hidden=sel.kind!=='start';$('field-color').value=sel.color||'red';
  document.querySelectorAll('[data-kind]').forEach(b=>b.classList.toggle('active',b.dataset.kind===sel.kind));
  document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===tool));
  const p=getField(s,sel);$('selected').textContent=label(sel)+(p?' · gesetzt':' · noch frei');$('coord-x').value=p?.x??'';$('coord-y').value=p?.y??'';
  const st=status(s);$('stats').textContent='Laufweg '+st.track+'/'+s.track.length+' · Start '+st.starts+'/6 · Schlag '+st.strike+'/1 · Boss '+st.bosses+'/'+s.bosses.length;
- adventureRender();$('feature-count').textContent='('+(s.features.length+s.sideFields.length)+')';$('mode-label').textContent=tool==='feature'?isSideMode()?reconnectId!==null?'Neuen Anschluss wählen':sideAnchor===null?'Hebel · Anschluss wählen':'Hebel · freie Position wählen':FEATURE_TYPES[$('feature-type').value]+' · Feld antippen':tool==='wall'?'Höhleneingang zeichnen':tool==='fog'?'Gebiet '+(zone+1)+' zeichnen':tool==='move'?'Feld verschieben':tool==='erase'?'Feld löschen':tool==='pan'?'Ansicht bewegen':label(sel)+' · setzen';$('export-ready').disabled=!st.complete;$('undo').disabled=!undo.length;$('redo').disabled=!redo.length;draw();
+ adventureRender();$('feature-count').textContent='('+(s.features.length+s.sideFields.length)+')';$('mode-label').textContent=tool==='feature'?isSideMode()?reconnectId!==null?'Neuen Anschluss wählen':sideAnchor===null?'Hebel · Anschluss wählen':'Hebel · freie Position wählen':FEATURE_TYPES[$('feature-type').value]+' · Feld antippen':tool==='prison'?'Gefängnis platzieren':tool==='wall'?'Höhleneingang zeichnen':tool==='fog'?'Gebiet '+(zone+1)+' zeichnen':tool==='move'?'Feld verschieben':tool==='erase'?'Feld löschen':tool==='pan'?'Ansicht bewegen':label(sel)+' · setzen';$('export-ready').disabled=!st.complete;$('undo').disabled=!undo.length;$('redo').disabled=!redo.length;draw();
 }
 function select(r){sel={...r};render();}
 function next(){if(sel.kind==='side'||!$('auto-next').checked)return;
@@ -113,7 +123,7 @@ function adjusted(p,ref,equal=true){let x=p.x,y=p.y;const gap=Number($('spacing'
  else if($('snap').checked){x=Math.round(x/gap)*gap;y=Math.round(y/gap)*gap;}
  return {x,y};
 }
-function put(p,exact=false){if(sel.kind==='side'&&!exact){message('Zum Verschieben des Hebels das Werkzeug Schieben verwenden.');return;}if(change(()=>setField(s,sel,exact?p:adjusted(p,sel))))next();}
+function put(p,exact=false){if(sel.kind==='side'&&!exact){message('Zum Verschieben des Hebels das Werkzeug Schieben verwenden.');return;}if(change(()=>sel.kind==='boss'?setBossPost(s,sel.index,exact?p:adjusted(p,sel,false)):setField(s,sel,exact?p:adjusted(p,sel))))next();}
 function refFrom(node){const k=node?.closest('[data-field]')?.dataset.field;return k?refs(s).find(r=>key(r)===k):null;}
 board.addEventListener('pointerdown',e=>{
  e.preventDefault();board.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -132,6 +142,7 @@ board.addEventListener('pointerup',e=>{
  const p=world(e.clientX,e.clientY),drag=Math.hypot(e.clientX-g.x,e.clientY-g.y)>5,hit=g.ref;
  if(tool==='pan')return;
  if(preview()<4){message('Zum Bearbeiten bitte alle Gebiete sichtbar machen.',true);return;}
+ if(tool==='prison'){if(!drag){const size=Number($('prison-size').value);if(change(()=>setPrison(s,p,size)))message('Gefängnis gespeichert. Erneut tippen zum Verschieben.');}return;}
  if(tool==='wall'){board.querySelector('#zone-trace')?.remove();drawing=true;if(g.trace?.length){for(const v of g.trace)addOutline(v);addOutline(p);}else if(!drag)addOutline(p);updateWallControls();drawOutline();return;}
  if(tool==='fog'){board.querySelector('#zone-trace')?.remove();if(!drawing){drawing=true;outline=[];}if(g.trace?.length){for(const v of g.trace)addOutline(v);const last=outline.at(-1);if(!last||Math.hypot(p.x-last.x,p.y-last.y)>=3)addOutline(p);}else if(!drag){if(outline.length>=3&&Math.hypot(p.x-outline[0].x,p.y-outline[0].y)<12/scale){closeOutline();return;}addOutline(p);}updateZoneControls();drawOutline();return;}
  if(tool==='feature'){
@@ -149,7 +160,7 @@ board.addEventListener('pointerup',e=>{
  if(tool==='erase'){if(hit){select(hit);change(()=>setField(s,hit,null));}return;}
  if(tool==='move'){if(hit){select(hit);if(drag)change(()=>setField(s,sel,adjusted(p,sel,false)));}return;}
  if(drag)return;
- if(sel.kind==='boss'&&hit?.kind==='track'){if(change(()=>setField(s,sel,{trackIndex:hit.index})))next();return;}
+ if(sel.kind==='boss'&&hit?.kind==='track'){message('Boss-Wachposten bitte neben dem Laufweg auf eine freie Stelle setzen.',true);return;}
  if(hit){select(hit);return;}put(p);
 });
 board.addEventListener('pointercancel',()=>{pointers.clear();gesture=null;board.querySelector('#zone-trace')?.remove();});
@@ -158,14 +169,14 @@ document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>{if(!discardOu
 document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{if(b.dataset.tool==='fog'){openZones();return;}if(!discardOutline())return;sideAnchor=null;reconnectId=null;tool=b.dataset.tool;if(tool==='place')showPanel('fields');$('fog-preview').value=4;render();});
 $('field-index').onchange=()=>select({...sel,index:Number($('field-index').value)});$('field-color').onchange=()=>select({...sel,color:$('field-color').value,index:0});
 $('apply-counts').onclick=()=>{const t=Number($('track-count').value),b=Number($('boss-count').value);if((t<s.track.length||b<s.bosses.length)&&!confirm('Überzählige Felder entfernen?'))return;if(t!==s.track.length&&!confirm('Bei neuer Laufweg-Länge werden alte Feldgrenzen neu verteilt. Gezeichnete Gebiete bleiben erhalten. Fortfahren?'))return;change(()=>resize(s,t,b));};
-$('add-boss').onclick=()=>{if(change(()=>resize(s,s.track.length,s.bosses.length+1)))select({kind:'boss',index:s.bosses.length-1});};
+$('add-boss').onclick=$('boss-post-add').onclick=()=>{if(!discardOutline())return;tool='place';$('fog-preview').value=4;if(change(()=>resize(s,s.track.length,s.bosses.length+1)))select({kind:'boss',index:s.bosses.length-1});};
 document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>{const [x,y]=b.dataset.dir.split(',').map(Number),prev=sel.kind==='track'&&sel.index>0?s.track[sel.index-1]:null,p=prev||getField(s,sel);if(!p){message('Zuerst ein Ausgangsfeld setzen.',true);return;}const gap=Number($('spacing').value),d=Math.hypot(x,y);put({x:p.x+x*gap/d,y:p.y+y*gap/d},true);});
 $('coords').onclick=()=>{if($('coord-x').value===''||$('coord-y').value===''){message('Bitte X und Y eingeben.',true);return;}put({x:Number($('coord-x').value),y:Number($('coord-y').value)},true);};
 for(const id of ['spacing','show-grid','show-path','show-numbers','opacity'])$(id).addEventListener('input',draw);
 $('zoom-in').onclick=()=>zoom(scale*1.25);$('zoom-out').onclick=()=>zoom(scale/1.25);$('zoom-reset').onclick=()=>{scale=1;origin={x:0,y:0};clampView();};
 $('undo').onclick=()=>{sideAnchor=null;reconnectId=null;if(undo.length){redo.push(s);s=undo.pop();save();render();}};$('redo').onclick=()=>{sideAnchor=null;reconnectId=null;if(redo.length){undo.push(s);s=redo.pop();save();render();}};
 function clearBoard(){
- if(!confirm('Ganzes Teil-2-Brett löschen? Alle Lauffelder, Startplätze, Bossfelder, Gebiete, Höhleneingang und Spezialfelder werden entfernt. Du kannst dies über Rückgängig wiederherstellen.'))return;
+ if(!confirm('Ganzes Teil-2-Brett löschen? Alle Lauffelder, Startplätze, Bossfelder, Gebiete, Höhleneingang, Gefängnis und Spezialfelder werden entfernt. Du kannst dies über Rückgängig wiederherstellen.'))return;
  drawing=false;outline=[];sideAnchor=null;reconnectId=null;zone=0;tool='place';sel={kind:'track',index:0};$('fog-preview').value=4;scale=1;origin={x:0,y:0};
  if(change(()=>blank(s.track.length,s.bosses.length))){showPanel('fields');render();message('Brett vollständig geleert. Rückgängig stellt deinen Entwurf wieder her.');}
 }
@@ -200,11 +211,22 @@ $('assign-area-range').onclick=()=>{const first=Number($('area-from').value)-1,l
 $('place-feature').onclick=()=>{if(!discardOutline())return;sideAnchor=null;reconnectId=null;$('fog-preview').value=4;tool='feature';render();message(isSideMode()?'Zuerst Anschlussfeld am Hauptweg antippen.':'Jetzt ein Lauffeld für den Spezialmarker antippen.');};
 $('side-update').onclick=()=>{if(sel.kind==='side')change(()=>updateSideLever(s,sel.index,leverSettings()));};$('side-reconnect').onclick=()=>{if(sel.kind!=='side')return;sideAnchor=null;reconnectId=sel.index;tool='feature';$('fog-preview').value=4;render();message('Neues Anschlussfeld am Hauptweg antippen.');};
 $('remove-feature').onclick=()=>{if(sel.kind==='side'){const id=sel.index;sel={kind:'track',index:0};change(()=>setField(s,{kind:'side',index:id},null));return;}if(sel.kind!=='track'){message('Zuerst das Lauffeld auswählen.',true);return;}change(()=>setFeature(s,sel.index,null));};
-const panelTitles={wall:'Höhleneingang zeichnen',fields:'Felder setzen',special:'Spezialfelder',areas:'Vier Gebiete',settings:'Einstellungen',project:'Datei & Export'};
+const panelTitles={prison:'Gefängnis',wall:'Höhleneingang zeichnen',fields:'Felder setzen',special:'Spezialfelder',areas:'Vier Gebiete',settings:'Einstellungen',project:'Datei & Export'};
 let currentPanel='fields';
 function showPanel(name){if(!Object.hasOwn(panelTitles,name))return;currentPanel=name;$('inspector').hidden=false;document.querySelector('.layout').classList.remove('inspector-closed');$('toggle-inspector').setAttribute('aria-expanded','true');$('panel-title').textContent=panelTitles[name];document.querySelectorAll('[data-page]').forEach(p=>p.hidden=p.dataset.page!==name);document.querySelectorAll('[data-panel]').forEach(b=>{b.classList.toggle('active',b.dataset.panel===name);b.setAttribute('aria-pressed',String(b.dataset.panel===name));});}
 function hidePanel(){$('inspector').hidden=true;document.querySelector('.layout').classList.add('inspector-closed');$('toggle-inspector').setAttribute('aria-expanded','false');document.querySelectorAll('[data-panel]').forEach(b=>{b.classList.remove('active');b.setAttribute('aria-pressed','false');});}
-document.querySelectorAll('[data-panel]').forEach(b=>b.onclick=()=>{const name=b.dataset.panel;if(name==='wall'){openWall();}else if(name==='areas'){if(!discardOutline())return;openZones();}else{if(name==='fields'||name==='special'){if(!discardOutline())return;tool=name==='fields'?'place':'feature';$('fog-preview').value=4;}showPanel(name);render();}});
+document.querySelectorAll('[data-panel]').forEach(b=>b.onclick=()=>{const name=b.dataset.panel;if(name==='prison'){openPrison();}else if(name==='wall'){openWall();}else if(name==='areas'){if(!discardOutline())return;openZones();}else{if(name==='fields'||name==='special'){if(!discardOutline())return;tool=name==='fields'?'place':'feature';$('fog-preview').value=4;}showPanel(name);render();}});
+function updatePrisonControls(){
+ $('prison-place').textContent=s.prison?'Gefängnis verschieben':'Gefängnis platzieren';
+ $('prison-clear').disabled=!s.prison;
+ $('prison-status').textContent=s.prison?'✓ Gefängnis gespeichert · 9 Gefangene':'Noch kein Gefängnis gesetzt.';
+ if(s.prison)$('prison-size').value=s.prison.size;
+}
+function openPrison(){if(!discardOutline())return;sideAnchor=null;reconnectId=null;tool='prison';$('fog-preview').value=4;showPanel('prison');render();message('Position des Gefängnisses auf dem Brett antippen.');}
+$('prison-place').onclick=openPrison;
+$('prison-size').onchange=()=>{if(s.prison){const size=Number($('prison-size').value);if(!change(()=>setPrison(s,s.prison.position,size)))updatePrisonControls();}};
+$('prison-clear').onclick=()=>{if(confirm('Gefängnis löschen?'))change(()=>setPrison(s,null));};
+$('prison-exit').onclick=()=>{tool='place';showPanel('fields');render();};
 $('wall-start').onclick=openWall;$('wall-back').onclick=()=>{outline.pop();updateWallControls();drawOutline();};$('wall-save').onclick=saveWall;$('wall-clear').onclick=()=>{if(confirm('Gespeicherten Höhleneingang löschen?')){drawing=false;outline=[];change(()=>setWall(s,null));}};$('wall-exit').onclick=()=>{if(discardOutline()){tool='place';render();}};
 $('toggle-inspector').onclick=()=> $('inspector').hidden?showPanel(currentPanel):hidePanel();$('close-inspector').onclick=hidePanel;
 $('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else message('Vollbild wird von diesem Browser nicht unterstützt.');}catch{message('Vollbild konnte nicht geöffnet werden.');}};
