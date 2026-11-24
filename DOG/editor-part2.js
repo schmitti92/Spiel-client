@@ -160,6 +160,6 @@ function hidePanel(){$('inspector').hidden=true;document.querySelector('.layout'
 document.querySelectorAll('[data-panel]').forEach(b=>b.onclick=()=>{const name=b.dataset.panel;if(name==='areas'){if(!discardOutline())return;openZones();}else{if(name==='fields'||name==='special'){if(!discardOutline())return;tool=name==='fields'?'place':'feature';$('fog-preview').value=4;}showPanel(name);render();}});
 $('toggle-inspector').onclick=()=> $('inspector').hidden?showPanel(currentPanel):hidePanel();$('close-inspector').onclick=hidePanel;
 $('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else message('Vollbild wird von diesem Browser nicht unterstützt.');}catch{message('Vollbild konnte nicht geöffnet werden.');}};
-function fitBoard(){const wrap=board.parentElement,side=Math.max(1,Math.min(wrap.clientWidth-10,wrap.clientHeight-10));board.style.width=side+'px';board.style.height=side+'px';}
+function fitBoard(){const wrap=board.parentElement,side=Math.max(1,Math.floor(Math.min(wrap.clientWidth-10,wrap.clientHeight-10)));if(board.style.width!==side+'px'){board.style.width=side+'px';board.style.height=side+'px';}}
 if(typeof ResizeObserver==='function')new ResizeObserver(fitBoard).observe(board.parentElement);else window.addEventListener('resize',fitBoard);
 showPanel('fields');render();fitBoard();
