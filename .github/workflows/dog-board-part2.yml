@@ -1,0 +1,15 @@
+name: DOG Grinch board builder part 2
+on:
+  push:
+    branches: [main]
+    paths: ['DOG/editor-part2*', 'DOG/editor.html', 'tests/dog-board-part2.test.mjs', '.github/workflows/dog-board-part2.yml']
+  workflow_dispatch:
+jobs:
+  editor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/dog-board-part2.test.mjs tests/dog-board-builder.test.mjs tests/dog-board-editor-ui.test.mjs
