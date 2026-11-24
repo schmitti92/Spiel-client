@@ -133,7 +133,12 @@ $('coords').onclick=()=>{if($('coord-x').value===''||$('coord-y').value===''){me
 for(const id of ['spacing','show-grid','show-path','show-numbers','opacity'])$(id).addEventListener('input',draw);
 $('zoom-in').onclick=()=>zoom(scale*1.25);$('zoom-out').onclick=()=>zoom(scale/1.25);$('zoom-reset').onclick=()=>{scale=1;origin={x:0,y:0};clampView();};
 $('undo').onclick=()=>{if(undo.length){redo.push(s);s=undo.pop();save();render();}};$('redo').onclick=()=>{if(redo.length){undo.push(s);s=redo.pop();save();render();}};
-$('blank').onclick=()=>{if(confirm('Teil-2-Entwurf leeren?')){if(change(()=>blank(s.track.length,s.bosses.length)))select({kind:'track',index:0});}};
+function clearBoard(){
+ if(!confirm('Ganzes Teil-2-Brett löschen? Alle Lauffelder, Startplätze, Bossfelder, Gebiete und Spezialfelder werden entfernt. Du kannst dies über Rückgängig wiederherstellen.'))return;
+ drawing=false;outline=[];zone=0;tool='place';sel={kind:'track',index:0};$('fog-preview').value=4;scale=1;origin={x:0,y:0};
+ if(change(()=>blank(s.track.length,s.bosses.length))){showPanel('fields');render();message('Brett vollständig geleert. Rückgängig stellt deinen Entwurf wieder her.');}
+}
+$('blank').onclick=clearBoard;$('clear-board').onclick=clearBoard;
 $('template').onclick=()=>{if(confirm('Aktuellen Teil-2-Entwurf durch Schlangenweg ersetzen?'))change(()=>template(s.track.length,s.bosses.length));};
 $('save').onclick=()=>{if(save())message('Teil-2-Entwurf lokal gesichert.');};
 $('photo').onchange=()=>{const f=$('photo').files[0];if(!f)return;if(photo)URL.revokeObjectURL(photo);photo=URL.createObjectURL(f);draw();};
@@ -160,6 +165,13 @@ function hidePanel(){$('inspector').hidden=true;document.querySelector('.layout'
 document.querySelectorAll('[data-panel]').forEach(b=>b.onclick=()=>{const name=b.dataset.panel;if(name==='areas'){if(!discardOutline())return;openZones();}else{if(name==='fields'||name==='special'){if(!discardOutline())return;tool=name==='fields'?'place':'feature';$('fog-preview').value=4;}showPanel(name);render();}});
 $('toggle-inspector').onclick=()=> $('inspector').hidden?showPanel(currentPanel):hidePanel();$('close-inspector').onclick=hidePanel;
 $('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else message('Vollbild wird von diesem Browser nicht unterstützt.');}catch{message('Vollbild konnte nicht geöffnet werden.');}};
-function fitBoard(){const wrap=board.parentElement,side=Math.max(1,Math.floor(Math.min(wrap.clientWidth-10,wrap.clientHeight-10)));if(board.style.width!==side+'px'){board.style.width=side+'px';board.style.height=side+'px';}}
-if(typeof ResizeObserver==='function')new ResizeObserver(fitBoard).observe(board.parentElement);else window.addEventListener('resize',fitBoard);
+function fitBoard(){
+ const wrap=board.parentElement,stage=wrap.parentElement,zoneTools=$('zone-tools');
+ const availableHeight=stage.clientHeight-(zoneTools.hidden?0:zoneTools.offsetHeight);
+ // Only move controls into a side gutter when the complete square still fits.
+ stage.classList.toggle('gutter-dock',stage.clientWidth>=availableHeight+114&&availableHeight>180);
+ const side=Math.max(1,Math.floor(Math.min(wrap.clientWidth,wrap.clientHeight)));
+ if(board.style.width!==side+'px'){board.style.width=side+'px';board.style.height=side+'px';}
+}
+if(typeof ResizeObserver==='function'){const observer=new ResizeObserver(fitBoard);observer.observe(board.parentElement);observer.observe(board.parentElement.parentElement);observer.observe($('zone-tools'));}else window.addEventListener('resize',fitBoard);
 showPanel('fields');render();fitBoard();

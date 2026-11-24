@@ -4,3 +4,36 @@
 @media(max-height:540px) and (orientation:landscape){header.studio-header{min-height:40px;padding:4px 8px}.studio{padding:4px;gap:3px}.statusbar{min-height:20px}.rail-button{min-height:36px}.rail-button span{font-size:15px}.rail-divider{margin:0}.stage-top,.stage-bottom{padding:3px 6px}.inspector-head{padding:5px 8px}}
 
 @media(min-width:600px) and (max-width:950px) and (orientation:portrait){.rail-button{min-height:48px;font-size:11px}.rail-button span{font-size:21px}.inspector{max-height:28dvh}.inspector-head h2{font-size:15px}.inspector-body{padding:10px}.feature-picker button{min-height:49px;font-size:11px}.kind-grid button{font-size:12px}.header-actions span{display:inline!important}.statusbar #stats{font-size:12px}.zone-tools .zone-actions button{min-height:35px}}
+
+/* Compact canvas: tools use the spare landscape gutter rather than two full-width bars. */
+header.studio-header{min-height:40px;padding:4px 8px;gap:8px;flex-wrap:wrap}
+.brand-icon{font-size:21px}.builder-tabs{padding:2px}.builder-tabs a{padding:5px 8px}
+.header-actions button,.header-actions .btn{min-height:28px;padding:4px 8px}
+.studio{padding:3px;gap:0}.layout,.layout.inspector-closed{gap:4px}
+.statusbar{flex:1;min-width:0;min-height:0;padding:0;gap:4px;justify-content:center}
+.statusbar #stats{font-size:11px;white-space:normal}.statusbar #save-state{font-size:9px}
+.stage{border-radius:7px}.board-wrap{padding:0;min-height:0;background:#0d202e}
+.board-dock{flex:none;display:flex;align-items:center;gap:5px;min-width:0;min-height:34px;padding:3px 5px;border-top:1px solid var(--border);background:#142331}
+.board-dock .stage-top,.board-dock .stage-bottom{background:transparent;padding:0;gap:5px;min-width:0}
+.board-dock .stage-top>div:first-child{display:none}.board-dock .stage-top strong{display:none}
+.board-dock .stage-top{flex:none}.board-dock .stage-bottom{flex:none}
+.board-dock .stage-actions button,.board-dock .zoom-controls button{min-height:28px;padding:3px 7px}
+.board-dock .feedback{flex:1;min-width:0;min-height:0;max-height:32px;overflow:auto;padding:0 4px;border:0;background:transparent;font-size:10px}
+.board-dock .preview-select select{max-width:128px}
+.stage.gutter-dock{display:grid;grid-template-columns:minmax(0,1fr) 112px;grid-template-rows:minmax(0,1fr) auto;gap:0}
+.stage.gutter-dock .board-wrap{grid-column:1;grid-row:1;min-height:0}
+.stage.gutter-dock .zone-tools{grid-column:1/-1;grid-row:2}
+.stage.gutter-dock .board-dock{grid-column:2;grid-row:1;min-height:0;flex-direction:column;align-items:stretch;justify-content:flex-start;border-top:0;border-left:1px solid var(--border);padding:6px 5px;gap:10px;overflow:auto}
+.stage.gutter-dock .stage-top,.stage.gutter-dock .stage-bottom{flex-direction:column;align-items:stretch;gap:8px}
+.stage.gutter-dock .stage-top>div:first-child{display:block;text-align:center}
+.stage.gutter-dock #mode-label{display:block;font-size:11px;line-height:1.35;margin:0;overflow-wrap:anywhere}
+.stage.gutter-dock .stage-actions,.stage.gutter-dock .zoom-controls{justify-content:center;gap:3px}
+.stage.gutter-dock .stage-actions button,.stage.gutter-dock .zoom-controls button{padding:3px 5px;min-width:25px}
+.stage.gutter-dock .preview-select{flex-direction:column;align-items:stretch;text-align:center}
+.stage.gutter-dock .preview-select select{width:100%;font-size:10px}
+.stage.gutter-dock .feedback{flex:0 1 auto;max-height:none;overflow-wrap:anywhere}
+.rail-button.danger,button.danger{color:#ffb5b1;border-color:#85515a;background:#412b37}
+.rail-button.danger:hover,button.danger:hover{background:#623641;border-color:#ed9292}
+.rail-button.danger{white-space:normal;font-size:9px;line-height:1.2}
+@media(max-width:1100px){header.studio-header .statusbar{order:3;flex-basis:100%;justify-content:space-between;padding:0 3px;min-height:15px}}
+@media(max-width:950px) and (orientation:portrait){header.studio-header .statusbar{padding:0;min-height:15px}.studio{padding:2px}.layout,.layout.inspector-closed{gap:3px}.board-dock{flex-wrap:wrap;gap:3px;padding:2px 4px}.board-dock .feedback{flex:1 1 100%;max-height:24px}.board-dock .stage-bottom{margin-left:auto}.board-dock .stage-actions button,.board-dock .zoom-controls button{padding:3px 6px}.board-dock .preview-select select{max-width:105px}.rail-button.danger{min-width:55px}}
