@@ -4,7 +4,7 @@ const validPoint=p=>p!==null&&typeof p==='object'&&Number.isFinite(p.x)&&Number.
 const point=p=>({x:Math.round(p.x*100)/100,y:Math.round(p.y*100)/100});
 export function blank(count=160,bosses=1){
  if(!validInt(count,1,MAX_TRACK)||!validInt(bosses,1,MAX_BOSSES))throw Error('Ungültige Feldanzahl');
- return {schema:'dog-grinch-board-v1',part:2,size:SIZE,track:Array(count).fill(null),starts:Object.fromEntries(COLORS.map(c=>[c,[null,null]])),strike:null,bosses:Array(bosses).fill(null),areas:defaultAreas(count),features:[],areaOverrides:{},sideFields:[]};
+ return {schema:'dog-grinch-board-v1',part:2,size:SIZE,track:Array(count).fill(null),starts:Object.fromEntries(COLORS.map(c=>[c,[null,null]])),strike:null,bosses:Array(bosses).fill(null),areas:defaultAreas(count),features:[],areaOverrides:{},sideFields:[],wall:null};
 }
 export function normalize(raw){
  if(!raw||raw.schema!=='dog-grinch-board-v1'||raw.part!==2||raw.size!==SIZE||!Array.isArray(raw.track)||!Array.isArray(raw.bosses))throw Error('Kein Teil-2-Brett');
@@ -21,6 +21,7 @@ export function normalize(raw){
  s.areas=normalizeAreas(raw.areas??defaultAreas(s.track.length),s.track.length);
  s.features=normalizeFeatures(raw.features??[],s.track);
  s.sideFields=normalizeSideFields(raw.sideFields??[],s.track);
+ s.wall=normalizeWall(raw.wall??null);
  s.areaOverrides={};for(const [k,v] of Object.entries(raw.areaOverrides??{})){if(!validInt(Number(k),0,s.track.length-1)||!s.track[Number(k)]||!validInt(v,0,3))throw Error('Ungültige Gebietszuordnung');s.areaOverrides[k]=v;}
  const issues=conflicts(s);if(issues.length)throw Error(issues[0]);
  return s;
@@ -178,3 +179,13 @@ export function updateSideLever(s,id,settings){
  const patch={};for(const k of ['anchor','group','mode','effect','rounds','owner'])if(Object.hasOwn(settings,k))patch[k]=settings[k];
  return normalize({...s,sideFields:s.sideFields.map(f=>f.id===id?{...f,...patch}:f)});
 }
+
+/** Decorative open polyline and future ranged-attack animation origin. No game rules. */
+export function normalizeWall(raw){
+ if(raw===null)return null;
+ if(!raw||raw.kind!=='attack-origin'||!Array.isArray(raw.points)||raw.points.length<2||raw.points.length>240)throw Error('Die Mauer braucht 2 bis 240 Punkte.');
+ const points=raw.points.map(p=>{if(!p||!Number.isFinite(p.x)||!Number.isFinite(p.y)||p.x<0||p.x>SIZE||p.y<0||p.y>SIZE)throw Error('Mauerpunkt außerhalb des Bretts.');return point(p);});
+ for(let i=1;i<points.length;i++)if(Math.hypot(points[i].x-points[i-1].x,points[i].y-points[i-1].y)<1)throw Error('Mauerpunkte liegen zu dicht zusammen.');
+ return {kind:'attack-origin',points};
+}
+export function setWall(s,points){return normalize({...s,wall:points===null?null:{kind:'attack-origin',points}});}
