@@ -105,8 +105,8 @@ function normalizeFeatures(features,track){
  });
 }
 export function setAreas(s,areas){return normalize({...s,areas});}
-export function areaOf(s,index){if(!validInt(index,0,s.track.length-1))return -1;const manual=s.areaOverrides?.[index];if(Number.isInteger(manual))return manual;const matches=polygonMatches(s,s.track[index]);if(matches.length)return matches.at(-1);if(s.areas.every(a=>a.polygon)&&s.track[index])return -1;return s.areas.findIndex(a=>index<a.end);}
-export function visibleArea(s,index,unlocked=1){const a=areaOf(s,index);return a>=0&&a<unlocked;}
+export function areaOf(s,index){if(!validInt(index,0,s.track.length-1)||!s.track[index])return -1;const manual=s.areaOverrides?.[index];return validInt(manual,0,3)?manual:-1;}
+export function visibleArea(s,index,unlocked=1){const a=areaOf(s,index);return a<0||a<unlocked;}
 export function setFeature(s,index,type,group='1'){return normalize({...s,features:[...s.features.filter(f=>f.trackIndex!==index),...(type?[{type,trackIndex:index,group}]:[])]});}
 export function featureIssues(s){
  const issues=[],doorGroups=new Map(),teleGroups=new Map();
@@ -127,11 +127,14 @@ export function normalizePolygon(raw){
  if(Math.abs(sum)<200)throw Error('Fläche zu klein.');return pts;
 }
 export function pointInPolygon(p,poly){if(!p||!poly)return 0;let inside=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[j],b=poly[i];if(onSegment(a,b,p))return 1;if((a.y>p.y)!==(b.y>p.y)&&p.x<(b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x)inside=!inside;}return inside?2:0;}
-function polygonMatches(s,p){const hits=s.areas.map((a,i)=>({i,v:pointInPolygon(p,a.polygon)})),inside=hits.filter(h=>h.v===2);return (inside.length?inside:hits.filter(h=>h.v===1)).map(h=>h.i);}
 export function setPolygon(s,i,polygon){if(!validInt(i,0,3))throw Error('Gebiet wählen.');return setAreas(s,s.areas.map((a,j)=>i===j?{...a,polygon,fogRect:null}:a));}
 export function setAreaOverride(s,index,area){if(!s.track[index])throw Error('Zuerst ein Lauffeld auswählen.');const areaOverrides={...s.areaOverrides};if(area===null)delete areaOverrides[index];else areaOverrides[index]=area;return normalize({...s,areaOverrides});}
-export function areaIssues(s){if(!s.areas.some(a=>a.polygon))return [];const issues=[],missing=[],overlap=[],order=[];let prev=-1;
- if(s.areas.some(a=>!a.polygon))issues.push('Zeichne alle vier Gebiete.');
- s.track.forEach((p,i)=>{if(!p)return;const hits=polygonMatches(s,p);if(s.areaOverrides[i]===undefined){if(!hits.length)missing.push(i+1);if(hits.filter(j=>pointInPolygon(p,s.areas[j].polygon)===2).length>1)overlap.push(i+1);}const a=areaOf(s,i);if(a>=0){if(a<prev)order.push(i+1);prev=a;}});
- const short=a=>a.slice(0,8).join(', ')+(a.length>8?' …':'');if(missing.length)issues.push('Außerhalb: Feld '+short(missing));if(overlap.length)issues.push('Überlappung: Feld '+short(overlap));if(order.length)issues.push('Gebietsreihenfolge prüfen: Feld '+short(order));if(s.track[0]&&areaOf(s,0)!==0)issues.push('Start muss in Gebiet 1 liegen.');if(s.track.at(-1)&&areaOf(s,s.track.length-1)!==3)issues.push('Höhle muss in Gebiet 4 liegen.');if(s.areas.every(a=>a.polygon)&&s.track.every(Boolean))for(let i=0;i<4;i++)if(!s.track.some((_,j)=>areaOf(s,j)===i))issues.push('Gebiet '+(i+1)+' braucht ein Lauffeld.');return issues;
+// Drawing a region is independent of assigning track fields. Unassigned fields are valid.
+export function areaIssues(s){return s.areas.some(a=>a.polygon)&&s.areas.some(a=>!a.polygon)?['Noch nicht alle vier Gebietsflächen gezeichnet.']:[];}
+export function assignAreaRange(s,first,last,area){
+ if(!validInt(first,0,s.track.length-1)||!validInt(last,first,s.track.length-1)||(area!==null&&!validInt(area,0,3)))throw Error('Gültigen Feldbereich und ein Gebiet wählen.');
+ const areaOverrides={...s.areaOverrides};let count=0;
+ for(let i=first;i<=last;i++){if(!s.track[i])continue;count++;if(area===null)delete areaOverrides[i];else areaOverrides[i]=area;}
+ if(!count)throw Error('In diesem Bereich sind noch keine Lauffelder gesetzt.');
+ return normalize({...s,areaOverrides});
 }
