@@ -4,7 +4,7 @@ const validPoint=p=>p!==null&&typeof p==='object'&&Number.isFinite(p.x)&&Number.
 const point=p=>({x:Math.round(p.x*100)/100,y:Math.round(p.y*100)/100});
 export function blank(count=160,bosses=1){
  if(!validInt(count,1,MAX_TRACK)||!validInt(bosses,1,MAX_BOSSES))throw Error('Ungültige Feldanzahl');
- return {schema:'dog-grinch-board-v1',part:2,size:SIZE,track:Array(count).fill(null),starts:Object.fromEntries(COLORS.map(c=>[c,[null,null]])),strike:null,bosses:Array(bosses).fill(null),areas:defaultAreas(count),features:[],areaOverrides:{}};
+ return {schema:'dog-grinch-board-v1',part:2,size:SIZE,track:Array(count).fill(null),starts:Object.fromEntries(COLORS.map(c=>[c,[null,null]])),strike:null,bosses:Array(bosses).fill(null),areas:defaultAreas(count),features:[],areaOverrides:{},sideFields:[]};
 }
 export function normalize(raw){
  if(!raw||raw.schema!=='dog-grinch-board-v1'||raw.part!==2||raw.size!==SIZE||!Array.isArray(raw.track)||!Array.isArray(raw.bosses))throw Error('Kein Teil-2-Brett');
@@ -20,19 +20,21 @@ export function normalize(raw){
  });
  s.areas=normalizeAreas(raw.areas??defaultAreas(s.track.length),s.track.length);
  s.features=normalizeFeatures(raw.features??[],s.track);
+ s.sideFields=normalizeSideFields(raw.sideFields??[],s.track);
  s.areaOverrides={};for(const [k,v] of Object.entries(raw.areaOverrides??{})){if(!validInt(Number(k),0,s.track.length-1)||!s.track[Number(k)]||!validInt(v,0,3))throw Error('Ungültige Gebietszuordnung');s.areaOverrides[k]=v;}
  const issues=conflicts(s);if(issues.length)throw Error(issues[0]);
  return s;
 }
 export function getField(s,ref){
  if(ref.kind==='track')return s.track[ref.index]??null;
+ if(ref.kind==='side')return s.sideFields.find(f=>f.id===ref.index)?.position??null;
  if(ref.kind==='start')return s.starts[ref.color]?.[ref.index]??null;
  if(ref.kind==='strike')return s.strike;
  if(ref.kind==='boss'){const b=s.bosses[ref.index];return b&&Object.hasOwn(b,'trackIndex')?s.track[b.trackIndex]:b??null;}
  return null;
 }
 export function refs(s){
- return [...s.track.map((_,index)=>({kind:'track',index})),...COLORS.flatMap(color=>[0,1].map(index=>({kind:'start',color,index}))),{kind:'strike'},...s.bosses.map((_,index)=>({kind:'boss',index}))];
+ return [...s.track.map((_,index)=>({kind:'track',index})),...COLORS.flatMap(color=>[0,1].map(index=>({kind:'start',color,index}))),{kind:'strike'},...s.bosses.map((_,index)=>({kind:'boss',index})),...s.sideFields.map(f=>({kind:'side',index:f.id}))];
 }
 export const key=r=>r.kind+':'+(r.color??'')+':'+(r.index??0);
 export function conflicts(s){
@@ -45,9 +47,10 @@ export function conflicts(s){
 }
 export function setField(s,r,p){
  const n=structuredClone(s);
+ if(r.kind==='side'){const f=n.sideFields.find(f=>f.id===r.index);if(!f)throw Error('Seitenfeld fehlt.');if(p===null)n.sideFields=n.sideFields.filter(f=>f.id!==r.index);else f.position=p;return normalize(n);}
  const v=p===null?null:r.kind==='boss'&&p.trackIndex!==undefined?{trackIndex:p.trackIndex}:point(p);
  if(r.kind==='track'&&validInt(r.index,0,n.track.length-1)){
-  n.track[r.index]=v;if(v===null){n.bosses=n.bosses.map(b=>b?.trackIndex===r.index?null:b);n.features=n.features.filter(f=>f.trackIndex!==r.index);delete n.areaOverrides[r.index];}
+  n.track[r.index]=v;if(v===null){n.bosses=n.bosses.map(b=>b?.trackIndex===r.index?null:b);n.features=n.features.filter(f=>f.trackIndex!==r.index);delete n.areaOverrides[r.index];n.sideFields=n.sideFields.map(f=>f.anchor===r.index?{...f,anchor:null}:f);}
  }else if(r.kind==='start'&&COLORS.includes(r.color)&&validInt(r.index,0,1))n.starts[r.color][r.index]=v;
  else if(r.kind==='strike')n.strike=v;
  else if(r.kind==='boss'&&validInt(r.index,0,n.bosses.length-1))n.bosses[r.index]=v;
@@ -57,7 +60,7 @@ export function setField(s,r,p){
 export function resize(s,count,bossCount){
  if(!validInt(count,1,MAX_TRACK)||!validInt(bossCount,1,MAX_BOSSES))throw Error('Ungültige Feldanzahl');
  const n=structuredClone(s);n.track=Array.from({length:count},(_,i)=>s.track[i]??null);
- if(count!==s.track.length){n.areas=defaultAreas(count).map((a,i)=>({...s.areas[i],end:a.end}));n.features=n.features.filter(f=>f.trackIndex<count);n.areaOverrides=Object.fromEntries(Object.entries(n.areaOverrides).filter(([i])=>Number(i)<count));}
+ if(count!==s.track.length){n.areas=defaultAreas(count).map((a,i)=>({...s.areas[i],end:a.end}));n.features=n.features.filter(f=>f.trackIndex<count);n.sideFields=n.sideFields.map(f=>f.anchor!==null&&f.anchor>=count?{...f,anchor:null}:f);n.areaOverrides=Object.fromEntries(Object.entries(n.areaOverrides).filter(([i])=>Number(i)<count));}
  n.bosses=Array.from({length:bossCount},(_,i)=>{const b=s.bosses[i];return b?.trackIndex>=count?null:b??null;});
  return normalize(n);
 }
@@ -118,10 +121,12 @@ export function visibleArea(s,index,unlocked=1){const a=areaOf(s,index);return a
 export function setFeature(s,index,type,group='1',settings={}){return normalize({...s,features:[...s.features.filter(f=>f.trackIndex!==index),...(type?[{type,trackIndex:index,group,...(type==='lever'?{mode:settings.mode,effect:settings.effect,rounds:settings.rounds}:{})}]:[])]});}
 export function featureIssues(s){
  const issues=[],doorGroups=new Map(),teleGroups=new Map();
+ const levers=[...s.features.filter(f=>f.type==='lever'),...s.sideFields.map(f=>({...f,trackIndex:f.anchor}))];
+ for(const f of s.sideFields)if(f.anchor===null)issues.push('Hebel H'+f.id+': Verbindung zum Hauptweg fehlt.');
  for(const f of s.features){const map=['door','key'].includes(f.type)?doorGroups:['teleportIn','teleportOut','teleportSwitch'].includes(f.type)?teleGroups:null;if(map){if(!map.has(f.group))map.set(f.group,[]);map.get(f.group).push(f);}}
- for(const [id,fs] of doorGroups){const doors=fs.filter(f=>f.type==='door'),keys=fs.filter(f=>f.type==='key');const lever=s.features.some(f=>f.type==='lever'&&f.effect==='door'&&f.group===id&&doors.length&&f.trackIndex<Math.min(...doors.map(d=>d.trackIndex)));if(!doors.length||keys.length>1||(!keys.length&&!lever))issues.push('Türgruppe '+id+': Tür und ein Schlüssel oder erreichbarer Hebel nötig.');else if(keys.length&&keys[0].trackIndex>=Math.min(...doors.map(f=>f.trackIndex)))issues.push('Schlüssel '+id+' muss vor der ersten zugehörigen Tür liegen.');}
+ for(const [id,fs] of doorGroups){const doors=fs.filter(f=>f.type==='door'),keys=fs.filter(f=>f.type==='key');const lever=levers.some(f=>f.trackIndex!==null&&f.effect==='door'&&f.group===id&&doors.length&&f.trackIndex<Math.min(...doors.map(d=>d.trackIndex)));if(!doors.length||keys.length>1||(!keys.length&&!lever))issues.push('Türgruppe '+id+': Tür und ein Schlüssel oder erreichbarer Hebel nötig.');else if(keys.length&&keys[0].trackIndex>=Math.min(...doors.map(f=>f.trackIndex)))issues.push('Schlüssel '+id+' muss vor der ersten zugehörigen Tür liegen.');}
  for(const [id,fs] of teleGroups){const count=t=>fs.filter(f=>f.type===t).length;if(count('teleportIn')!==1||count('teleportOut')!==1||count('teleportSwitch')>1)issues.push('Teleporter '+id+': genau ein Eingang, ein Ziel, optional ein Schalter.');else{const sw=fs.find(f=>f.type==='teleportSwitch'),out=fs.find(f=>f.type==='teleportOut');if(sw&&sw.trackIndex>out.trackIndex)issues.push('Teleporter '+id+': Schalter darf nicht hinter dem Ziel liegen.');}}
- for(const f of s.features.filter(f=>f.type==='lever')){if(f.effect==='door'&&!doorGroups.get(f.group)?.some(d=>d.type==='door'))issues.push('Hebel auf Feld '+(f.trackIndex+1)+': passende Tür fehlt.');if(f.effect==='teleport'&&!teleGroups.get(f.group)?.some(d=>d.type==='teleportIn'))issues.push('Hebel auf Feld '+(f.trackIndex+1)+': passender Teleporter fehlt.');}
+ for(const f of levers){if(f.effect==='door'&&!doorGroups.get(f.group)?.some(d=>d.type==='door'))issues.push('Hebel '+(f.id?'H'+f.id:'auf Feld '+(f.trackIndex+1))+': passende Tür fehlt.');if(f.effect==='teleport'&&!teleGroups.get(f.group)?.some(d=>d.type==='teleportIn'))issues.push('Hebel '+(f.id?'H'+f.id:'auf Feld '+(f.trackIndex+1))+': passender Teleporter fehlt.');}
  return issues;
 }
 
@@ -146,4 +151,27 @@ export function assignAreaRange(s,first,last,area){
  for(let i=first;i<=last;i++){if(!s.track[i])continue;count++;if(area===null)delete areaOverrides[i];else areaOverrides[i]=area;}
  if(!count)throw Error('In diesem Bereich sind noch keine Lauffelder gesetzt.');
  return normalize({...s,areaOverrides});
+}
+
+function normalizeSideFields(raw,track){
+ if(!Array.isArray(raw)||raw.length>150)throw Error('Maximal 150 Seitenfelder.');
+ const ids=new Set();
+ return raw.map(f=>{
+  if(!f||f.type!=='lever'||!validInt(f.id,1,1000000)||ids.has(f.id)||!validPoint(f.position))throw Error('Ungültiges Hebel-Seitenfeld.');
+  ids.add(f.id);
+  if(f.anchor!==null&&(!validInt(f.anchor,0,track.length-1)||!track[f.anchor]))throw Error('Seitenfeld braucht ein vorhandenes Anschlussfeld.');
+  const group=String(f.group??'1').trim(),mode=f.mode??'held',effect=f.effect??'custom',rounds=f.rounds??2;
+  if(!/^[-a-zA-Z0-9_]{1,16}$/.test(group)||!Object.hasOwn(LEVER_MODES,mode)||!Object.hasOwn(LEVER_EFFECTS,effect)||!validInt(rounds,1,20))throw Error('Ungültige Hebeleinstellung.');
+  return {id:f.id,type:'lever',position:point(f.position),anchor:f.anchor,group,mode,effect,...(mode==='timed'?{rounds}:{})};
+ });
+}
+export function addSideLever(s,position,anchor,settings={}){
+ if(!validInt(anchor,0,s.track.length-1)||!s.track[anchor])throw Error('Zuerst Anschlussfeld am Hauptweg wählen.');
+ const id=Math.max(0,...s.sideFields.map(f=>f.id))+1;
+ return normalize({...s,sideFields:[...s.sideFields,{id,type:'lever',position,anchor,group:settings.group,mode:settings.mode,effect:settings.effect,rounds:settings.rounds}]});
+}
+export function updateSideLever(s,id,settings){
+ if(!s.sideFields.some(f=>f.id===id))throw Error('Hebel fehlt.');
+ const patch={};for(const k of ['anchor','group','mode','effect','rounds'])if(Object.hasOwn(settings,k))patch[k]=settings[k];
+ return normalize({...s,sideFields:s.sideFields.map(f=>f.id===id?{...f,...patch}:f)});
 }
