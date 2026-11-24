@@ -4,7 +4,7 @@ const validPoint=p=>p!==null&&typeof p==='object'&&Number.isFinite(p.x)&&Number.
 const point=p=>({x:Math.round(p.x*100)/100,y:Math.round(p.y*100)/100});
 export function blank(count=160,bosses=1){
  if(!validInt(count,1,MAX_TRACK)||!validInt(bosses,1,MAX_BOSSES))throw Error('Ungültige Feldanzahl');
- return {schema:'dog-grinch-board-v1',part:2,size:SIZE,track:Array(count).fill(null),starts:Object.fromEntries(COLORS.map(c=>[c,[null,null]])),strike:null,bosses:Array(bosses).fill(null),areas:defaultAreas(count),features:[],areaOverrides:{},sideFields:[],wall:null,prison:null,enemies:[]};
+ return {schema:'dog-grinch-board-v1',part:2,size:SIZE,track:Array(count).fill(null),starts:Object.fromEntries(COLORS.map(c=>[c,[null,null]])),strike:null,bosses:Array(bosses).fill(null),areas:defaultAreas(count),features:[],areaOverrides:{},sideFields:[],wall:null,prison:null,enemies:[],spawnPoints:[]};
 }
 export function normalize(raw){
  if(!raw||raw.schema!=='dog-grinch-board-v1'||raw.part!==2||raw.size!==SIZE||!Array.isArray(raw.track)||!Array.isArray(raw.bosses))throw Error('Kein Teil-2-Brett');
@@ -24,11 +24,13 @@ export function normalize(raw){
  s.wall=normalizeWall(raw.wall??null);
  s.prison=normalizePrison(raw.prison??null);
  const enemies=raw.enemies??[];if(!Array.isArray(enemies)||enemies.length>150)throw Error('Maximal 150 Feindfelder.');s.enemies=enemies.map(clean);
+ const spawnPoints=raw.spawnPoints??[];if(!Array.isArray(spawnPoints)||spawnPoints.length>50)throw Error('Maximal 50 Gegnerportale.');s.spawnPoints=spawnPoints.map(clean);
  s.areaOverrides={};for(const [k,v] of Object.entries(raw.areaOverrides??{})){if(!validInt(Number(k),0,s.track.length-1)||!s.track[Number(k)]||!validInt(v,0,3))throw Error('Ungültige Gebietszuordnung');s.areaOverrides[k]=v;}
  const issues=conflicts(s);if(issues.length)throw Error(issues[0]);
  return s;
 }
 export function getField(s,ref){
+ if(ref.kind==='spawn')return s.spawnPoints[ref.index]??null;
  if(ref.kind==='enemy')return s.enemies[ref.index]??null;
  if(ref.kind==='track')return s.track[ref.index]??null;
  if(ref.kind==='side')return s.sideFields.find(f=>f.id===ref.index)?.position??null;
@@ -38,7 +40,7 @@ export function getField(s,ref){
  return null;
 }
 export function refs(s){
- return [...s.track.map((_,index)=>({kind:'track',index})),...COLORS.flatMap(color=>[0,1].map(index=>({kind:'start',color,index}))),{kind:'strike'},...s.bosses.map((_,index)=>({kind:'boss',index})),...s.sideFields.map(f=>({kind:'side',index:f.id})),...Array.from({length:Math.min(150,s.enemies.length+1)},(_,index)=>({kind:'enemy',index}))];
+ return [...s.track.map((_,index)=>({kind:'track',index})),...COLORS.flatMap(color=>[0,1].map(index=>({kind:'start',color,index}))),{kind:'strike'},...s.bosses.map((_,index)=>({kind:'boss',index})),...s.sideFields.map(f=>({kind:'side',index:f.id})),...Array.from({length:Math.min(150,s.enemies.length+1)},(_,index)=>({kind:'enemy',index})),...Array.from({length:Math.min(50,s.spawnPoints.length+1)},(_,index)=>({kind:'spawn',index}))];
 }
 export const key=r=>r.kind+':'+(r.color??'')+':'+(r.index??0);
 export function conflicts(s){
@@ -51,6 +53,7 @@ export function conflicts(s){
 }
 export function setField(s,r,p){
  const n=structuredClone(s);
+ if(r.kind==='spawn'){if(!validInt(r.index,0,Math.min(49,n.spawnPoints.length))||(p!==null&&!validPoint(p)))throw Error('Ungültige Portalposition.');if(r.index===n.spawnPoints.length&&p===null)return normalize(n);n.spawnPoints[r.index]=p===null?null:point(p);return normalize(n);}
  if(r.kind==='enemy'){if(!validInt(r.index,0,Math.min(149,n.enemies.length))||(p!==null&&!validPoint(p)))throw Error('Ungültige Feindposition.');if(r.index===n.enemies.length&&p===null)return normalize(n);n.enemies[r.index]=p===null?null:point(p);return normalize(n);}
  if(r.kind==='side'){const f=n.sideFields.find(f=>f.id===r.index);if(!f)throw Error('Seitenfeld fehlt.');if(p===null)n.sideFields=n.sideFields.filter(f=>f.id!==r.index);else f.position=p;return normalize(n);}
  const v=p===null?null:r.kind==='boss'&&p.trackIndex!==undefined?{trackIndex:p.trackIndex}:point(p);
@@ -87,7 +90,7 @@ export function template(count=160,bossCount=3){
  return normalize(s);
 }
 
-export const FEATURE_TYPES=Object.freeze({teleportIn:'🌀 Teleporter-Eingang',teleportOut:'🌀 Teleporter-Ziel',teleportSwitch:'🔮 Teleporter-Schalter',door:'🚪 Verschlossene Tür',key:'🔑 Schlüssel',checkpoint:'🚩 Kontrollpunkt',safe:'🛡️ Schutzfeld',gift:'🎁 Geschenkfeld',trap:'⚠️ Fallenfeld',spawn:'👾 Gegnerportal',lever:'🎚️ Hebel'});
+export const FEATURE_TYPES=Object.freeze({teleportIn:'🌀 Teleporter-Eingang',teleportOut:'🌀 Teleporter-Ziel',teleportSwitch:'🔮 Teleporter-Schalter',door:'🚪 Verschlossene Tür',key:'🔑 Schlüssel',checkpoint:'🚩 Kontrollpunkt',safe:'🛡️ Schutzfeld',gift:'🎁 Geschenkfeld',trap:'⚠️ Fallenfeld',spawn:'👾 Gegnerportal auf Laufweg',lever:'🎚️ Hebel'});
 export const LINKED_TYPES=['teleportIn','teleportOut','teleportSwitch','door','key','lever'];
 export const LEVER_OWNERS=Object.freeze({all:'Alle Spieler',red:'🔴 Nur Rot',blue:'🔵 Nur Blau',green:'🟢 Nur Grün'});
 function normalizeLeverOwner(owner){const value=owner??'all';if(!Object.hasOwn(LEVER_OWNERS,value))throw Error('Ungültige Hebelfarbe.');return value;}
