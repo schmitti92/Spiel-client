@@ -1,4 +1,4 @@
-import {blank,normalize,resize,setField,getField,refs,key,status,template,COLORS} from './editor-part2-model.mjs?v=1';
+import {blank,normalize,resize,setField,getField,refs,key,status,template,COLORS,FEATURE_TYPES,LINKED_TYPES,defaultAreas,setAreas,areaOf,visibleArea,setFeature} from './editor-part2-model.mjs?v=2';
 const $=id=>document.getElementById(id),board=$('part2-board'),NS='http://www.w3.org/2000/svg',KEY='dog-grinch-board-editor-part2-v1';
 let s=blank(),sel={kind:'track',index:0},tool='place',undo=[],redo=[],photo=null,scale=1,origin={x:0,y:0},gesture=null,pointers=new Map();
 try{const raw=localStorage.getItem(KEY);if(raw)s=normalize(JSON.parse(raw));}catch{}
@@ -11,23 +11,52 @@ function clampView(){const side=1000/scale;origin.x=Math.max(0,Math.min(1000-sid
 function zoom(next,center={x:origin.x+500/scale,y:origin.y+500/scale}){const old=scale;scale=Math.min(5,Math.max(1,next));origin={x:center.x-(center.x-origin.x)*old/scale,y:center.y-(center.y-origin.y)*old/scale};clampView();}
 function world(x,y){const p=board.createSVGPoint();p.x=x;p.y=y;return p.matrixTransform(board.getScreenCTM().inverse());}
 const label=r=>r.kind==='track'?'Lauffeld '+(r.index+1):r.kind==='start'?({red:'Rot',blue:'Blau',green:'Grün'}[r.color])+' · Start '+(r.index+1):r.kind==='strike'?'Gemeinsames Schlagfeld':'Bossfeld '+(r.index+1);
+const areaColors=['#d5f3db','#c9e7fa','#f7e0b3','#e2d3fa'];
+const preview=()=>Number($('fog-preview').value);
+function visible(r){if(r.kind==='track')return visibleArea(s,r.index,preview());if(r.kind==='boss'){const b=s.bosses[r.index];return b?.trackIndex!==undefined?visibleArea(s,b.trackIndex,preview()):preview()===4||!s.areas.slice(preview()).some(a=>{const q=a.fogRect,p=getField(s,r);return q&&p&&p.x>=q.x&&p.x<=q.x+q.w&&p.y>=q.y&&p.y<=q.y+q.h;});}return true;}
+function fog(){
+ const defs=element('defs'),grad=element('radialGradient',{id:'fog-cloud'},defs);element('stop',{offset:'0%','stop-color':'#b0c3cf','stop-opacity':1},grad);element('stop',{offset:'65%','stop-color':'#8298ab','stop-opacity':1},grad);element('stop',{offset:'100%','stop-color':'#4b6478','stop-opacity':.95},grad);
+ for(let a=preview();a<4;a++){const region=s.areas[a],start=a?s.areas[a-1].end:0,pts=s.track.slice(start,region.end),q=region.fogRect;
+  if(q)element('rect',{x:q.x,y:q.y,width:q.w,height:q.h,rx:12,fill:'#62798b','pointer-events':'none'});
+  for(let i=0;i<pts.length;i++){const p=pts[i];if(!p)continue;if(i&&pts[i-1])element('line',{x1:pts[i-1].x,y1:pts[i-1].y,x2:p.x,y2:p.y,stroke:'#839bad','stroke-width':66,'stroke-linecap':'round','pointer-events':'none'});element('circle',{cx:p.x,cy:p.y,r:39,fill:'url(#fog-cloud)','pointer-events':'none'});}
+  const present=pts.filter(Boolean),p=q?{x:q.x+q.w/2,y:q.y+q.h/2}:present[Math.floor(present.length/2)];if(p){const t=element('text',{x:p.x,y:p.y,'text-anchor':'middle','font-size':17,'font-weight':800,fill:'#f0f7ff','pointer-events':'none'});t.textContent='🔒 Gebiet '+(a+1);}
+ }
+}
 function draw(){
  board.replaceChildren();element('rect',{width:1000,height:1000,fill:'#102f45'});
  if(photo)element('image',{href:photo,width:1000,height:1000,preserveAspectRatio:'xMidYMid meet',opacity:Number($('opacity').value)/100});
  const gap=Number($('spacing').value);
  if($('show-grid').checked)for(let i=0;i<=1000;i+=gap){element('path',{d:'M'+i+' 0V1000 M0 '+i+'H1000',stroke:'#a1bcc8','stroke-opacity':.13,'pointer-events':'none'});}
- if($('show-path').checked)for(let i=1;i<s.track.length;i++){const a=s.track[i-1],b=s.track[i];if(a&&b)element('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:'#9bbac9','stroke-width':3,'pointer-events':'none'});}
+ if(preview()<4)fog();
+ if(preview()===4)for(const [i,a] of s.areas.entries()){const q=a.fogRect;if(q)element('rect',{x:q.x,y:q.y,width:q.w,height:q.h,rx:8,fill:'none',stroke:areaColors[i],'stroke-width':3,'stroke-dasharray':'9 7','pointer-events':'none'});}
+ if($('show-path').checked)for(let i=1;i<s.track.length;i++){const a=s.track[i-1],b=s.track[i];if(a&&b&&visibleArea(s,i-1,preview())&&visibleArea(s,i,preview()))element('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:'#9bbac9','stroke-width':3,'pointer-events':'none'});}
  const list=refs(s);
- for(const r of list){const p=getField(s,r);if(!p)continue;
+ for(const r of list){const p=getField(s,r);if(!p||!visible(r))continue;
   const attached=r.kind==='boss'&&s.bosses[r.index]?.trackIndex!==undefined;
   const g=element('g',{'data-field':key(r)});const title=element('title',{},g);title.textContent=label(r);
-  const fill=r.kind==='start'?{red:'#dd514d',blue:'#438ce9',green:'#3ba367'}[r.color]:r.kind==='strike'?'#e49a3c':r.kind==='boss'?'#7e43a9':r.index===s.track.length-1?'#b5e5ac':'#eaf1f5';
+  const fill=r.kind==='start'?{red:'#dd514d',blue:'#438ce9',green:'#3ba367'}[r.color]:r.kind==='strike'?'#e49a3c':r.kind==='boss'?'#7e43a9':r.index===s.track.length-1?'#b5e5ac':$('area-colors').checked?areaColors[areaOf(s,r.index)]:'#eaf1f5';
   if(attached){element('circle',{cx:p.x,cy:p.y,r:18,fill:'none',stroke:key(r)===key(sel)?'#ffe1a0':'#df9aff','stroke-width':4,'pointer-events':'stroke'},g);}
   else element('circle',{cx:p.x,cy:p.y,r:13,fill,stroke:key(r)===key(sel)?'#ffe1a0':'#45647c','stroke-width':key(r)===key(sel)?4:1.5},g);
   const t=element('text',{x:p.x,y:p.y+(attached?-19:4),'text-anchor':'middle','font-size':attached?12:10,'font-weight':800,fill:attached?'#ffdbff':r.kind==='track'?'#173244':'#fff','pointer-events':'none'},g);
   t.textContent=r.kind==='boss'?'B'+(r.index+1):r.kind==='strike'?'S':r.kind==='start'?r.index+1:$('show-numbers').checked?r.index+1:r.index===s.track.length-1?'Z':'';
  }
+ for(const f of s.features){if(!visibleArea(s,f.trackIndex,preview()))continue;const p=s.track[f.trackIndex];if(!p)continue;
+  const g=element('g',{'data-field':key({kind:'track',index:f.trackIndex})});element('circle',{cx:p.x,cy:p.y-17,r:11,fill:'#10283b',stroke:'#eac482','stroke-width':1.5},g);
+  const t=element('text',{x:p.x,y:p.y-13,'text-anchor':'middle','font-size':13,'pointer-events':'none'},g);t.textContent=FEATURE_TYPES[f.type].split(' ')[0];const title=element('title',{},g);title.textContent=FEATURE_TYPES[f.type]+(f.group?' '+f.group:'');
+ }
  clampView();
+}
+function adventureRender(){
+ const root=$('area-rows');root.replaceChildren();
+ s.areas.forEach((a,i)=>{const row=document.createElement('div');row.className='area-row';
+  const label=document.createElement('span');label.textContent=(i+1)+' · '+(i===0?'☀️':'🌫️');label.style.color=areaColors[i];row.append(label);
+  const name=document.createElement('input');name.type='text';name.value=a.name;name.maxLength=60;name.setAttribute('aria-label','Name Gebiet '+(i+1));name.dataset.areaName=i;row.append(name);
+  const end=document.createElement('input');end.type='number';end.min=1;end.max=s.track.length;end.value=a.end;end.disabled=i===3;end.setAttribute('aria-label','Endfeld Gebiet '+(i+1));end.dataset.areaEnd=i;row.append(end);root.append(row);
+ });
+ const list=$('feature-list');list.replaceChildren();
+ for(const f of [...s.features].sort((a,b)=>a.trackIndex-b.trackIndex)){const row=document.createElement('div');row.className='feature-row';const b=document.createElement('button');b.textContent='Feld '+(f.trackIndex+1)+' · '+FEATURE_TYPES[f.type]+(f.group?' · '+f.group:'');b.onclick=()=>{ $('fog-preview').value=4;select({kind:'track',index:f.trackIndex});};row.append(b);const del=document.createElement('button');del.textContent='×';del.setAttribute('aria-label','Spezialfeld löschen');del.onclick=()=>change(()=>setFeature(s,f.trackIndex,null));row.append(del);list.append(row);}
+ const issues=status(s).adventureIssues;$('feature-check').textContent=issues.length?issues.join(' • '):'✓ Verknüpfungen vollständig';
+ $('feature-check').classList.toggle('invalid',Boolean(issues.length));
 }
 function render(){
  const count=sel.kind==='track'?s.track.length:sel.kind==='start'?2:sel.kind==='boss'?s.bosses.length:1;
@@ -39,7 +68,7 @@ function render(){
  document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===tool));
  const p=getField(s,sel);$('selected').textContent=label(sel)+(p?' · gesetzt':' · noch frei');$('coord-x').value=p?.x??'';$('coord-y').value=p?.y??'';
  const st=status(s);$('stats').textContent='Laufweg '+st.track+'/'+s.track.length+' · Start '+st.starts+'/6 · Schlag '+st.strike+'/1 · Boss '+st.bosses+'/'+s.bosses.length;
- $('export-ready').disabled=!st.complete;$('undo').disabled=!undo.length;$('redo').disabled=!redo.length;draw();
+ adventureRender();$('export-ready').disabled=!st.complete;$('undo').disabled=!undo.length;$('redo').disabled=!redo.length;draw();
 }
 function select(r){sel={...r};render();}
 function next(){if(!$('auto-next').checked)return;
@@ -63,12 +92,19 @@ board.addEventListener('pointerdown',e=>{
 board.addEventListener('pointermove',e=>{
  if(!pointers.has(e.pointerId)||!gesture)return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
  if(gesture.pinch&&pointers.size===2){const [a,b]=[...pointers.values()];scale=Math.min(5,Math.max(1,gesture.scale*Math.hypot(a.x-b.x,a.y-b.y)/Math.max(1,gesture.d)));const rect=board.getBoundingClientRect();origin={x:gesture.center.x-((a.x+b.x)/2-rect.left)*1000/(rect.width*scale),y:gesture.center.y-((a.y+b.y)/2-rect.top)*1000/(rect.height*scale)};clampView();return;}
+ if(tool==='fog'&&!gesture.pinch){board.querySelector('#fog-drag')?.remove();const p=world(e.clientX,e.clientY);element('rect',{id:'fog-drag',x:Math.min(gesture.p.x,p.x),y:Math.min(gesture.p.y,p.y),width:Math.abs(gesture.p.x-p.x),height:Math.abs(gesture.p.y-p.y),fill:'#b6cbdc','fill-opacity':.4,stroke:'#ffe1a0','stroke-width':3,'pointer-events':'none'});}
  if(tool==='pan'&&!gesture.pinch){const rect=board.getBoundingClientRect();origin={x:gesture.origin.x-(e.clientX-gesture.x)*1000/(rect.width*scale),y:gesture.origin.y-(e.clientY-gesture.y)*1000/(rect.height*scale)};clampView();}
 });
 board.addEventListener('pointerup',e=>{
- pointers.delete(e.pointerId);const g=gesture;if(!g||g.pinch){if(!pointers.size)gesture=null;return;}gesture=null;
+ pointers.delete(e.pointerId);const g=gesture;if(!g||g.pinch){if(!pointers.size)gesture=null;return;}gesture=null;board.querySelector('#fog-drag')?.remove();
  const p=world(e.clientX,e.clientY),drag=Math.hypot(e.clientX-g.x,e.clientY-g.y)>5,hit=g.ref;
  if(tool==='pan')return;
+ if(preview()<4){message('Zum Bearbeiten bitte alle Gebiete sichtbar machen.',true);return;}
+ if(tool==='fog'){
+  const i=Number($('fog-area').value),x=Math.max(0,Math.min(g.p.x,p.x)),y=Math.max(0,Math.min(g.p.y,p.y)),w=Math.min(1000,Math.max(g.p.x,p.x))-x,h=Math.min(1000,Math.max(g.p.y,p.y))-y;
+  if(drag)change(()=>setAreas(s,s.areas.map((a,j)=>j===i?{...a,fogRect:{x,y,w,h}}:a)));return;
+ }
+ if(tool==='feature'){if(!drag&&hit?.kind==='track'){select(hit);change(()=>setFeature(s,hit.index,$('feature-type').value,$('feature-group').value));}else message('Bitte ein vorhandenes Lauffeld antippen.',true);return;}
  if(tool==='erase'){if(hit){select(hit);change(()=>setField(s,sel,null));}return;}
  if(tool==='move'){if(hit){select(hit);if(drag)change(()=>setField(s,sel,adjusted(p,sel,false)));}return;}
  if(drag)return;
@@ -80,7 +116,7 @@ board.addEventListener('wheel',e=>{if(!e.ctrlKey&&!e.metaKey)return;e.preventDef
 document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>{const kind=b.dataset.kind;const list=refs(s).filter(r=>r.kind===kind);select(list.find(r=>!getField(s,r))||list[0]);});
 document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{tool=b.dataset.tool;render();});
 $('field-index').onchange=()=>select({...sel,index:Number($('field-index').value)});$('field-color').onchange=()=>select({...sel,color:$('field-color').value,index:0});
-$('apply-counts').onclick=()=>{const t=Number($('track-count').value),b=Number($('boss-count').value);if((t<s.track.length||b<s.bosses.length)&&!confirm('Überzählige Felder entfernen?'))return;change(()=>resize(s,t,b));};
+$('apply-counts').onclick=()=>{const t=Number($('track-count').value),b=Number($('boss-count').value);if((t<s.track.length||b<s.bosses.length)&&!confirm('Überzählige Felder entfernen?'))return;if(t!==s.track.length&&!confirm('Bei neuer Laufweg-Länge werden die vier Gebietsgrenzen gleichmäßig neu verteilt. Fortfahren?'))return;change(()=>resize(s,t,b));};
 $('add-boss').onclick=()=>{if(change(()=>resize(s,s.track.length,s.bosses.length+1)))select({kind:'boss',index:s.bosses.length-1});};
 document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>{const [x,y]=b.dataset.dir.split(',').map(Number),prev=sel.kind==='track'&&sel.index>0?s.track[sel.index-1]:null,p=prev||getField(s,sel);if(!p){message('Zuerst ein Ausgangsfeld setzen.',true);return;}const gap=Number($('spacing').value),d=Math.hypot(x,y);put({x:p.x+x*gap/d,y:p.y+y*gap/d},true);});
 $('coords').onclick=()=>{if($('coord-x').value===''||$('coord-y').value===''){message('Bitte X und Y eingeben.',true);return;}put({x:Number($('coord-x').value),y:Number($('coord-y').value)},true);};
@@ -95,4 +131,14 @@ $('remove-photo').onclick=()=>{if(photo)URL.revokeObjectURL(photo);photo=null;$(
 function download(ready){if(ready&&!status(s).complete)return;const u=URL.createObjectURL(new Blob([JSON.stringify(s,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download=ready?'dog-grinch-teil2-brett.json':'dog-grinch-teil2-entwurf.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
 $('export-draft').onclick=()=>download(false);$('export-ready').onclick=()=>download(true);
 $('import').onchange=async()=>{try{const f=$('import').files[0];if(f){const n=normalize(JSON.parse(await f.text()));if(confirm('Teil-2-Entwurf durch Import ersetzen?')){commit(n);select({kind:'track',index:0});message('Teil-2-Layout importiert.');}}}catch(e){message(e.message,true);}finally{$('import').value='';}};
+for(const [type,name] of Object.entries(FEATURE_TYPES)){const o=document.createElement('option');o.value=type;o.textContent=name;$('feature-type').append(o);}
+function featureGroup(){$('group-wrap').hidden=!LINKED_TYPES.includes($('feature-type').value);}
+$('feature-type').onchange=featureGroup;featureGroup();
+$('fog-preview').onchange=draw;$('area-colors').onchange=draw;
+$('save-areas').onclick=()=>change(()=>setAreas(s,s.areas.map((a,i)=>({...a,name:document.querySelector('[data-area-name="'+i+'"]').value,end:Number(document.querySelector('[data-area-end="'+i+'"]').value)}))));
+$('auto-areas').onclick=()=>change(()=>setAreas(s,defaultAreas(s.track.length).map((a,i)=>({...s.areas[i],end:a.end}))));
+$('draw-fog').onclick=()=>{$('fog-preview').value=4;tool='fog';render();message('Rechteck für das gewählte Nebelgebiet auf dem Brett ziehen.');};
+$('reset-fog').onclick=()=>change(()=>setAreas(s,s.areas.map((a,i)=>i===Number($('fog-area').value)?{...a,fogRect:null}:a)));
+$('place-feature').onclick=()=>{$('fog-preview').value=4;tool='feature';render();message('Jetzt ein Lauffeld für den Spezialmarker antippen.');};
+$('remove-feature').onclick=()=>{if(sel.kind!=='track'){message('Zuerst das Lauffeld auswählen.',true);return;}change(()=>setFeature(s,sel.index,null));};
 render();
