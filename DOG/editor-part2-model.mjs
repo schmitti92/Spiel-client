@@ -84,6 +84,9 @@ export function template(count=160,bossCount=3){
 
 export const FEATURE_TYPES=Object.freeze({teleportIn:'🌀 Teleporter-Eingang',teleportOut:'🌀 Teleporter-Ziel',teleportSwitch:'🔮 Teleporter-Schalter',door:'🚪 Verschlossene Tür',key:'🔑 Schlüssel',checkpoint:'🚩 Kontrollpunkt',safe:'🛡️ Schutzfeld',gift:'🎁 Geschenkfeld',trap:'⚠️ Fallenfeld',spawn:'👾 Gegnerportal',lever:'🎚️ Hebel'});
 export const LINKED_TYPES=['teleportIn','teleportOut','teleportSwitch','door','key','lever'];
+export const LEVER_OWNERS=Object.freeze({all:'Alle Spieler',red:'🔴 Nur Rot',blue:'🔵 Nur Blau',green:'🟢 Nur Grün'});
+function normalizeLeverOwner(owner){const value=owner??'all';if(!Object.hasOwn(LEVER_OWNERS,value))throw Error('Ungültige Hebelfarbe.');return value;}
+export function canUseLever(lever,color){return COLORS.includes(color)&&(normalizeLeverOwner(lever.owner)==='all'||lever.owner===color);}
 export const LEVER_MODES=Object.freeze({held:'Solange besetzt',toggle:'An / Aus bei Betreten',permanent:'Dauerhaft nach Betreten',timed:'Für mehrere Zugrunden'});
 export const LEVER_EFFECTS=Object.freeze({custom:'Später festlegen',door:'Tür offen halten',teleport:'Teleporter aktivieren',spawn:'Gegnernachschub stoppen',safe:'Gruppenschutz',fog:'Nächstes Gebiet enthüllen'});
 export function defaultAreas(count){return Array.from({length:4},(_,i)=>({name:['Der Wald','Das Eisland','Das Spielzeugdorf','Der Grinch-Berg'][i],end:Math.ceil((i+1)*count/4),fogRect:null,polygon:null}));}
@@ -110,7 +113,7 @@ function normalizeFeatures(features,track){
   if(f.type==='lever'){
    const mode=f.mode??'held',effect=f.effect??'custom',rounds=f.rounds??2;
    if(!Object.hasOwn(LEVER_MODES,mode)||!Object.hasOwn(LEVER_EFFECTS,effect)||!validInt(rounds,1,20))throw Error('Ungültige Hebeleinstellung.');
-   entry.mode=mode;entry.effect=effect;if(mode==='timed')entry.rounds=rounds;
+   entry.mode=mode;entry.effect=effect;entry.owner=normalizeLeverOwner(f.owner);if(mode==='timed')entry.rounds=rounds;
   }
   return entry;
  });
@@ -118,7 +121,7 @@ function normalizeFeatures(features,track){
 export function setAreas(s,areas){return normalize({...s,areas});}
 export function areaOf(s,index){if(!validInt(index,0,s.track.length-1)||!s.track[index])return -1;const manual=s.areaOverrides?.[index];return validInt(manual,0,3)?manual:-1;}
 export function visibleArea(s,index,unlocked=1){const a=areaOf(s,index);return a<0||a<unlocked;}
-export function setFeature(s,index,type,group='1',settings={}){return normalize({...s,features:[...s.features.filter(f=>f.trackIndex!==index),...(type?[{type,trackIndex:index,group,...(type==='lever'?{mode:settings.mode,effect:settings.effect,rounds:settings.rounds}:{})}]:[])]});}
+export function setFeature(s,index,type,group='1',settings={}){return normalize({...s,features:[...s.features.filter(f=>f.trackIndex!==index),...(type?[{type,trackIndex:index,group,...(type==='lever'?{mode:settings.mode,effect:settings.effect,rounds:settings.rounds,owner:settings.owner}:{})}]:[])]});}
 export function featureIssues(s){
  const issues=[],doorGroups=new Map(),teleGroups=new Map();
  const levers=[...s.features.filter(f=>f.type==='lever'),...s.sideFields.map(f=>({...f,trackIndex:f.anchor}))];
@@ -162,16 +165,16 @@ function normalizeSideFields(raw,track){
   if(f.anchor!==null&&(!validInt(f.anchor,0,track.length-1)||!track[f.anchor]))throw Error('Seitenfeld braucht ein vorhandenes Anschlussfeld.');
   const group=String(f.group??'1').trim(),mode=f.mode??'held',effect=f.effect??'custom',rounds=f.rounds??2;
   if(!/^[-a-zA-Z0-9_]{1,16}$/.test(group)||!Object.hasOwn(LEVER_MODES,mode)||!Object.hasOwn(LEVER_EFFECTS,effect)||!validInt(rounds,1,20))throw Error('Ungültige Hebeleinstellung.');
-  return {id:f.id,type:'lever',position:point(f.position),anchor:f.anchor,group,mode,effect,...(mode==='timed'?{rounds}:{})};
+  return {id:f.id,type:'lever',position:point(f.position),anchor:f.anchor,group,mode,effect,owner:normalizeLeverOwner(f.owner),...(mode==='timed'?{rounds}:{})};
  });
 }
 export function addSideLever(s,position,anchor,settings={}){
  if(!validInt(anchor,0,s.track.length-1)||!s.track[anchor])throw Error('Zuerst Anschlussfeld am Hauptweg wählen.');
  const id=Math.max(0,...s.sideFields.map(f=>f.id))+1;
- return normalize({...s,sideFields:[...s.sideFields,{id,type:'lever',position,anchor,group:settings.group,mode:settings.mode,effect:settings.effect,rounds:settings.rounds}]});
+ return normalize({...s,sideFields:[...s.sideFields,{id,type:'lever',position,anchor,group:settings.group,mode:settings.mode,effect:settings.effect,rounds:settings.rounds,owner:settings.owner}]});
 }
 export function updateSideLever(s,id,settings){
  if(!s.sideFields.some(f=>f.id===id))throw Error('Hebel fehlt.');
- const patch={};for(const k of ['anchor','group','mode','effect','rounds'])if(Object.hasOwn(settings,k))patch[k]=settings[k];
+ const patch={};for(const k of ['anchor','group','mode','effect','rounds','owner'])if(Object.hasOwn(settings,k))patch[k]=settings[k];
  return normalize({...s,sideFields:s.sideFields.map(f=>f.id===id?{...f,...patch}:f)});
 }
