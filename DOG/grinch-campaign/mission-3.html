@@ -14,8 +14,9 @@
  <a class="m3-back" href="./mission-2.html">Mission 2</a>
 </header>
 <main class="m3-shell">
- <div class="m3-banner"><span>🧪 SPIELBARER PROTOTYP · ARBEITSPAKETE 1–6</span>
+ <div id="m3-local-banner" class="m3-banner"><span>🧪 SPIELBARER PROTOTYP · ARBEITSPAKETE 1–6</span>
   <p>Das eigenständige 4-Spieler-Grundgerüst und die DOG-Kartenverteilung sind aktiv. Die taktische KI, zufällige Flüche am Kartenphasenende und die Grinch-Gefangennahmen sind im lokalen Test aktiv. Die drei Gemeinschaftsaufgaben sind spielbar: Weihnachtslichter, Eisbarrieren und Runen. Mit animierten Effekten, Wintergrafik und Zwei-Finger-Zoom. Die offizielle Online-Freischaltung folgt später. Diese Testseite schreibt <strong>keine offiziellen Kampagnendaten</strong>.</p></div>
+ <section id="m3-online-panel" class="m3-banner" hidden><strong id="m3-connection">Online-Raum verbinden …</strong><p>Der Host startet die gemeinsame Mission. Alle drei Spieler müssen Mission 2 abgeschlossen haben. Online-Freischaltung ist serverseitig gesperrt, bis die Tests abgeschlossen sind.</p><button id="m3-online-launch" type="button" hidden>Mission 3 gemeinsam starten</button> <button id="m3-online-refresh" type="button">Verbindung prüfen</button></section>
  <div class="m3-layout">
   <section class="m3-board-panel" aria-label="Mission-3-Spielbrett">
    <div class="m3-panel-header"><h1>😈 Die erste Begegnung</h1><span id="m3-phase">Kartenphase 1</span></div>
@@ -92,8 +93,7 @@ function check(){
  const unlock=gate.querySelector('[data-unlock]');unlock.hidden=!document.getElementById('dog-dev-launch')?.classList.contains('is-visible');
  if(!allowed||launched)return;
  launched=true;
- const u=new URL(location.href);if(u.searchParams.has('room')){u.searchParams.delete('room');history.replaceState(null,'',u.href);}
- import('./mission-3.js?v=8').catch(err=>{launched=false;gate.hidden=false;console.error('[DOG Grinch test]',err);});
+ import('./mission-3.js?v=9').catch(err=>{launched=false;gate.hidden=false;console.error('[DOG Grinch test]',err);});
 }
 window.addEventListener('spielonline-change',check);
 window.addEventListener('dog-christmas-dev-change',check);

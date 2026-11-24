@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'DOG/grinch-campaign/mission-3*'
+      - 'tests/dog-grinch-mission3-online.test.mjs'
       - 'tests/dog-grinch-mission3-foundation.test.mjs'
       - 'tests/dog-grinch-mission3-ai-ui.test.mjs'
       - 'tests/dog-grinch-mission3-visuals.test.mjs'
@@ -11,6 +12,7 @@ on:
   pull_request:
     paths:
       - 'DOG/grinch-campaign/mission-3*'
+      - 'tests/dog-grinch-mission3-online.test.mjs'
       - 'tests/dog-grinch-mission3-foundation.test.mjs'
       - 'tests/dog-grinch-mission3-ai-ui.test.mjs'
       - 'tests/dog-grinch-mission3-visuals.test.mjs'
@@ -24,4 +26,4 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test tests/dog-grinch-mission3-foundation.test.mjs tests/dog-grinch-mission3-ai-ui.test.mjs tests/dog-grinch-mission3-visuals.test.mjs
+      - run: node --test tests/dog-grinch-mission3-foundation.test.mjs tests/dog-grinch-mission3-ai-ui.test.mjs tests/dog-grinch-mission3-visuals.test.mjs tests/dog-grinch-mission3-online.test.mjs

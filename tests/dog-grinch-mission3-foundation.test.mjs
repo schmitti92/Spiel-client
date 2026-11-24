@@ -2,11 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const src=file=>readFileSync(new URL('../DOG/grinch-campaign/'+file,import.meta.url),'utf8');
-test('Mission 3 is an isolated local test page, not an official campaign launcher',()=>{
+test('Mission 3 preserves the local test page and offers gated online mode',()=>{
  const html=src('mission-3.html');
  assert.match(html,/SPIELBARER PROTOTYP/);
  assert.match(html,/keine offiziellen Kampagnendaten/);
- assert.match(html,/mission-3\.js\?v=8/);
+ assert.match(html,/mission-3\.js\?v=9/);
  assert.match(html,/id="m3-board"/);
  assert.doesNotMatch(html,/\/api\/hub\/|awardCoins|grantReward/);
 });

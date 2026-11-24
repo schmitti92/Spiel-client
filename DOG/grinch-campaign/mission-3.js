@@ -2,6 +2,7 @@
  * Mission 3: LOCAL prototype for work packages 1–5.
  * Never changes official rooms, campaign progression or real rewards.
  */
+import {createGrinchOnline} from './mission-3-online.js?v=1';
 import {cardVisual} from '../card-visuals.js?v=11';
 import {drawMission3Board} from './mission-3-board.js?v=3';
 import {createMission3BoardTouch} from './mission-3-touch.js?v=2';
@@ -10,6 +11,12 @@ import {createMission3,mission3LegalMoves,mission3Play,mission3ChooseGrinchMove,
 const $=id=>document.getElementById(id),KEY='grinch-m3-local-prototype-v3';
 let game=null,chosenCard=null,chosenPiece=null,botTimer=null,busy=false,toastTimer=null;
 let myThawResearch=0;
+const roomCode=new URLSearchParams(location.search).get('room');
+const onlineMode=Boolean(roomCode);
+let transport=null,mySeat=null,onlineRoom=null,animating=false,queuedRoom=null,epoch=0;
+const ownSeat=()=>onlineMode?mySeat:game?.current;
+const canPlay=()=>!onlineMode||mySeat===game?.current;
+const handCount=seat=>game.handCounts?.[seat]??game.hands[seat].length;
 const boardTouch=createMission3BoardTouch({
  viewport:$('m3-board-viewport'),board:$('m3-board'),
  zoomIn:$('m3-zoom-in'),zoomOut:$('m3-zoom-out'),
@@ -43,11 +50,11 @@ function toast(msg){
  const el=$('m3-toast');el.textContent=msg;el.classList.add('visible');
  clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('visible'),2500);
 }
-function save(){try{localStorage.setItem(KEY,JSON.stringify(game));}catch{toast('Speichern lokal nicht möglich.');}}
+function save(){if(onlineMode)return;try{localStorage.setItem(KEY,JSON.stringify(game));}catch{toast('Speichern lokal nicht möglich.');}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||'null');return mission3Validate(s)?s:null;}catch{return null;}}
-function resetSelection(){chosenCard=game?.seven?.cardId||null;chosenPiece=null;}
+function resetSelection(){chosenCard=canPlay()?game?.seven?.cardId||null:null;chosenPiece=null;}
 function moves(){
- return game&&game.current!==3&&chosenCard
+ return game&&canPlay()&&game.current!==3&&chosenCard
   ?mission3LegalMoves(game).filter(m=>m.cardId===chosenCard):[];
 }
 function label(m){
@@ -119,12 +126,12 @@ function render(){
    if(prisoners||frozen)node('small',(prisoners?'🔒 '+prisoners+' gefangen':'')+
     (prisoners&&frozen?' · ':'')+(frozen?'❄️ '+frozen+' eingefroren':''),box,'m3-captures');
   }
-  node('small','🃏 '+game.hands[user.owner].length+(user.owner===3?' verdeckte':'')+' Karten',box);
+  node('small','🃏 '+handCount(user.owner)+(user.owner===3?' verdeckte':'')+' Karten',box);
  }
  $('m3-own-cards').textContent=game.complete?'🏆 Mission abgeschlossen':
-  game.current===3?'🤖 Grinch · '+game.hands[3].length+' verdeckt':game.hands[game.current].length+' eigene Karten';
- $('m3-draw').textContent=game.draw.length+' Karten';
- $('m3-discard').textContent=game.discard.length+' Karten';
+  ownSeat()===3?'🤖 Grinch · '+handCount(3)+' verdeckt':handCount(ownSeat())+' eigene Karten';
+ $('m3-draw').textContent=(game.drawCount??game.draw.length)+' Karten';
+ $('m3-discard').textContent=(game.discardCount??game.discard.length)+' Karten';
  const top=game.lastPlayedCard;
  $('m3-last').textContent=top===null?'–':top==='swap'?'⇄':top==='joker'?'★':top;
  $('m3-last').title=top?'Zuletzt gespielt: '+top:'Ablagestapel leer';
@@ -136,15 +143,15 @@ function render(){
  if(game.complete){
   node('div','🏆 Alle drei Aufgaben erfüllt. Die sechs verbliebenen Figuren schaffen es in Mission 4.',hand,'m3-empty');
   node('p','🔒 Jede Farbe hat genau eine neue gefangene Figur. Befreiung erst am Ende von Mission 4.',target);
- }else if(game.current===3){
+ }else if(game.current===3&&!onlineMode){
   node('div','🤖 '+game.hands[3].length+' verdeckte Grinch-Handkarten',hand,'m3-empty');
   node('p','😈 Die taktische KI analysiert mögliche Angriffe und plant bis zu drei Kartenaktionen. Sie kennt nur ihre eigene Hand.',target);
  }else{
-  if(game.seven)chosenCard=game.seven.cardId;
-  for(const c of game.hands[game.current]){
+  if(game.seven&&canPlay())chosenCard=game.seven.cardId;
+  for(const c of game.hands[ownSeat()]){
    const btn=document.createElement('button');btn.type='button';
    btn.className='m3-card'+(chosenCard===c.id?' selected':'');
-   btn.disabled=busy||(Boolean(game.seven)&&game.seven.cardId!==c.id);
+   btn.disabled=busy||!canPlay()||(Boolean(game.seven)&&game.seven.cardId!==c.id);
    btn.setAttribute('aria-label','DOG-Karte '+c.type);
    node('span',c.type==='swap'?'⇄':c.type==='joker'?'★':c.type,btn);
    const asset=cardVisual(c.type);
@@ -162,8 +169,9 @@ function render(){
    });
    hand.append(btn);
   }
-  if(!game.hands[game.current].length)node('div','Keine Karten auf der Hand',hand,'m3-empty');
-  if(!chosenCard)node('p','Wähle zuerst eine Handkarte. Dann kannst du eine eigene Figur antippen oder den Zug direkt auswählen.',target);
+  if(!game.hands[ownSeat()].length)node('div','Keine Karten auf der Hand',hand,'m3-empty');
+  if(!canPlay())node('p','Warte auf den Zug von '+game.players[game.current].name+'. Deine Handkarten bleiben sichtbar.',target);
+  else if(!chosenCard)node('p','Wähle zuerst eine Handkarte. Dann kannst du eine eigene Figur antippen oder den Zug direkt auswählen.',target);
   else{
    const all=moves(),available=chosenPiece?all.filter(m=>m.pieceId===chosenPiece):all;
    if(!available.length)node('p','Mit dieser Karte ist derzeit kein Zug möglich.',target);
@@ -178,9 +186,9 @@ function render(){
  drawMission3Board($('m3-board'),game,{selectedPiece:chosenPiece,onPieceClick:clickPawn});
 }
 function clickPawn(id){
- if(!game||game.complete||busy)return;
+ if(!game||game.complete||busy||!canPlay())return;
  const frozen=game.pieces.find(p=>p.id===id&&p.place==='track'&&p.frozenTurns>0);
- if(frozen&&myThawResearch>(game.researchThaws||0)){
+ if(!onlineMode&&frozen&&myThawResearch>(game.researchThaws||0)){
   // Mission 3 is a local non-reward prototype: the account determines the
   // rank but all mutations remain local until the online mission exists.
   frozen.frozenTurns=0;
@@ -204,6 +212,7 @@ function clickPawn(id){
  if(available.length===1)play(available[0]);
 }
 function bot(){
+ if(onlineMode)return;
  clearTimeout(botTimer);
  if(!game||game.complete||game.current!==3)return;
  busy=true;render();
@@ -218,8 +227,9 @@ function bot(){
   }catch(e){busy=false;toast('Grinch-Testzug: '+e.message);render();}
  },520);
 }
-function play(m){
- if(!game||game.complete||busy||game.current===3)return;
+async function play(m){
+ if(!game||game.complete||busy||game.current===3||!canPlay())return;
+ if(onlineMode){busy=true;render();try{await transport.action(m,game);}catch(e){toast(e.message);}finally{if(!animating){busy=false;render();}}return;}
  try{
   const before=game;
   game=mission3Play(game,game.current,m);resetSelection();save();render();showEvents(before);
@@ -227,7 +237,7 @@ function play(m){
  }catch(e){toast(e.message);}
 }
 $('m3-next-deal').addEventListener('click',()=>{
- if(!game||game.complete||busy)return;
+ if(onlineMode||!game||game.complete||busy)return;
  try{
   const before=game;
   game=mission3NextPreviewDeal(game);resetSelection();save();render();showEvents(before);
@@ -235,13 +245,14 @@ $('m3-next-deal').addEventListener('click',()=>{
  }catch(e){toast(e.message);}
 });
 $('m3-new').addEventListener('click',()=>{
- if(busy||!confirm('Neuen lokalen Spieltest beginnen?'))return;
+ if(onlineMode||busy||!confirm('Neuen lokalen Spieltest beginnen?'))return;
  clearTimeout(botTimer);try{localStorage.removeItem(KEY);}catch{}
  game=null;chosenCard=null;chosenPiece=null;
  boardTouch.reset();
  $('m3-setup').showModal();
 });
 $('m3-start').addEventListener('click',()=>{
+ if(onlineMode)return;
  const names=[0,1,2].map(i=>$('m3-name-'+i).value.trim()||['Rot','Blau','Gelb'][i]);
  try{
   game=createMission3(undefined,names);resetSelection();save();
@@ -250,8 +261,56 @@ $('m3-start').addEventListener('click',()=>{
   toast('🎮 Mission 3 – lokaler Test gestartet.');
  }catch(e){toast(e.message);}
 });
-window.addEventListener('spielonline-change',()=>{myThawResearch=0;void loadLocalResearch()});
-void loadLocalResearch();
-game=load();
-if(game){render();if(game.current===3)bot();}
-else $('m3-setup').showModal();
+async function receiveRoom(room){
+ if(!room){epoch++;game=null;mySeat=null;onlineRoom=null;queuedRoom=null;animating=false;busy=false;
+  $('m3-hand').replaceChildren();$('m3-board').replaceChildren();$('m3-online-launch').hidden=true;return;}
+ if(animating){if(!queuedRoom||room.revision>=queuedRoom.revision)queuedRoom=room;return;}
+ onlineRoom=room;
+ const m=room.match;
+ const playable=m?.game==='dog-grinch3'&&Number.isInteger(m.grinchSeat)&&m.grinch;
+ $('m3-online-launch').hidden=Boolean(playable)||!room.host;
+ if(!playable){game=null;mySeat=null;$('m3-hand').replaceChildren();$('m3-board').replaceChildren();$('m3-turn').textContent='Warte auf Mission 3 im gemeinsamen Raum.';return;}
+ if(game&&game.matchId===m.id&&game.revision>=m.grinch.revision)return;
+ const next={...m.grinch,matchId:m.id};
+ mySeat=m.grinchSeat;
+ const before=game;
+ if(before&&before.matchId===m.id){
+  const frames=(m.grinchFrames||[]).filter(f=>f.revision>before.revision&&f.revision<=next.revision);
+  if(frames.length>1){
+   const generation=epoch;animating=true;busy=true;render();
+   let previous=before;
+   for(const frame of frames){
+    if(generation!==epoch)return;
+    const snapshot={...next,...frame,tasks:next.tasks};
+    drawMission3Board($('m3-board'),snapshot,{});
+    const events=mission3VisualEvents(previous,snapshot);
+    if(events.length)showMission3VisualEffects({viewport:$('m3-board-viewport'),board:$('m3-board'),banner:$('m3-effect-banner'),events});
+    $('m3-turn').textContent=frame.actor===3?'😈 Grinch zieht …':'Spielzug wird angezeigt …';
+    previous=snapshot;
+    await new Promise(resolve=>setTimeout(resolve,520));
+   }
+   if(generation!==epoch)return;
+   animating=false;
+  }
+ }
+ game=next;busy=false;resetSelection();render();if(before&&before.matchId===m.id)showEvents(before);
+ if(queuedRoom){const pending=queuedRoom;queuedRoom=null;void receiveRoom(pending);}
+}
+if(onlineMode){
+ document.querySelector('.m3-testing').hidden=true;
+ $('m3-online-panel').hidden=false;
+ $('m3-local-banner').hidden=true;
+ $('m3-online-launch').addEventListener('click',()=>transport?.launch());
+ $('m3-online-refresh').addEventListener('click',()=>transport?.refresh());
+ try{
+  transport=createGrinchOnline({roomCode,onRoom:room=>void receiveRoom(room),onError:toast,
+   onConnection:status=>{$('m3-connection').textContent='Raum '+roomCode+' · '+status;}});
+  transport.start();window.addEventListener('pagehide',()=>transport.stop(),{once:true});
+ }catch(e){toast(e.message);}
+}else{
+ window.addEventListener('spielonline-change',()=>{myThawResearch=0;void loadLocalResearch()});
+ void loadLocalResearch();
+ game=load();
+ if(game){render();if(game.current===3)bot();}
+ else $('m3-setup').showModal();
+}

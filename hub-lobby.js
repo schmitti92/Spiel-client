@@ -4,11 +4,11 @@
 const el=id=>document.getElementById(id);
 const config=window.SPIELPORTAL_CONFIG||{};
 const API=String(config.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge',dog:'DOG Klassisch','dog-grinch1':'DOG · Grinch-Mission 1','dog-grinch2':'DOG · Grinch-Mission 2'};
+const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge',dog:'DOG Klassisch','dog-grinch1':'DOG · Grinch-Mission 1','dog-grinch2':'DOG · Grinch-Mission 2','dog-grinch3':'DOG · Grinch-Mission 3'};
 let code=null,room=null,operation=false,poll=null,accountUid=null,pollErrors=0;
 let playMode=new URL(location.href).searchParams.get('view')==='local'?'local':'online';
 let choosingGame=false,displayGame=null;
-const GAME_ICON={barikade:'🎲',skyjo:'🃏',kreuz:'🎯',business:'💼',partychallenge:'🏆',dog:'🐾','dog-grinch1':'🏔️','dog-grinch2':'🎰'};
+const GAME_ICON={barikade:'🎲',skyjo:'🃏',kreuz:'🎯',business:'💼',partychallenge:'🏆',dog:'🐾','dog-grinch1':'🏔️','dog-grinch2':'🎰','dog-grinch3':'👹'};
 const GAME_DESCRIPTIONS={
  barikade:'Das Brettspiel mit Barikaden, Action-Regeln und optionalem Bossmodus.',
  skyjo:'Karten, Joker und spannende Runden. Der Host legt die Regeln fest.',
@@ -149,7 +149,12 @@ function enterGrinchMission2(){
   const params=new URLSearchParams({room:room.code,match:room.match.id});
   location.assign('DOG/grinch-campaign/mission-2.html?'+params.toString());
  }
+ function enterGrinchMission3(){
+  if(room?.phase!=='playing'||room.match?.game!=='dog-grinch3'||!room.match.participating)return;
+  location.assign('DOG/grinch-campaign/mission-3.html?'+new URLSearchParams({room:room.code,match:room.match.id}));
+ }
  function enterCurrentMatch(){
+  if(room?.match?.game==='dog-grinch3')return enterGrinchMission3();
  if(room?.match?.game==='dog-grinch1')return enterGrinchMission1();
   if(room?.match?.game==='dog-grinch2')return enterGrinchMission2();
  if(room?.match?.game==='barikade')return enterBarikade();
