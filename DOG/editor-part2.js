@@ -1,4 +1,4 @@
-import {blank,normalize,resize,setField,getField,refs,key,status,template,COLORS,FEATURE_TYPES,LINKED_TYPES,defaultAreas,setAreas,areaOf,visibleArea,setFeature,setPolygon,pointInPolygon,setAreaOverride,assignAreaRange,LEVER_MODES,LEVER_EFFECTS,addSideLever,updateSideLever,LEVER_OWNERS,setWall} from './editor-part2-model.mjs?v=8';
+import {blank,normalize,resize,setField,getField,refs,key,status,template,COLORS,FEATURE_TYPES,LINKED_TYPES,defaultAreas,setAreas,areaOf,visibleArea,setFeature,setPolygon,pointInPolygon,setAreaOverride,assignAreaRange,LEVER_MODES,LEVER_EFFECTS,addSideLever,updateSideLever,LEVER_OWNERS,setWall} from './editor-part2-model.mjs?v=9';
 const $=id=>document.getElementById(id),board=$('part2-board'),NS='http://www.w3.org/2000/svg',KEY='dog-grinch-board-editor-part2-v1';
 let s=blank(),sel={kind:'track',index:0},tool='place',undo=[],redo=[],photo=null,scale=1,origin={x:0,y:0},gesture=null,pointers=new Map();
 try{const raw=localStorage.getItem(KEY);if(raw)s=normalize(JSON.parse(raw));}catch{}
@@ -26,14 +26,14 @@ function updateZoneControls(){
 function discardOutline(){if(drawing&&outline.length&&!confirm('Unfertigen Umriss verwerfen?'))return false;drawing=false;outline=[];return true;}
 function openZones(){sideAnchor=null;reconnectId=null;showPanel('areas');$('fog-preview').value=4;$('area-colors').checked=true;tool='fog';render();}
 function updateWallControls(){
- $('wall-start').textContent=drawing&&tool==='wall'?'Neu beginnen':s.wall?'Mauer neu zeichnen':'Mauer zeichnen';
+ $('wall-start').textContent=drawing&&tool==='wall'?'Neu beginnen':s.wall?'Höhleneingang neu zeichnen':'Höhleneingang zeichnen';
  $('wall-back').disabled=tool!=='wall'||!outline.length;
  $('wall-save').disabled=tool!=='wall'||outline.length<2;
  $('wall-clear').disabled=!s.wall;
- $('wall-hint').textContent=tool==='wall'&&outline.length?outline.length+' Punkte · Mauer speichern, wenn du fertig bist.':s.wall?'Mauer gespeichert. Du kannst sie neu zeichnen.':'Tippe Eckpunkte an oder zeichne mit dem Finger.';
+ $('wall-hint').textContent=tool==='wall'&&outline.length?outline.length+' Punkte · Höhleneingang speichern, wenn du fertig bist.':s.wall?'Höhleneingang gespeichert. Du kannst ihn neu zeichnen.':'Tippe Eckpunkte an oder zeichne mit dem Finger.';
 }
-function openWall(){if(!discardOutline())return;sideAnchor=null;reconnectId=null;tool='wall';drawing=true;$('fog-preview').value=4;showPanel('wall');render();message('Mauerlinie auf das Brett zeichnen. Anschließend Mauer speichern.');}
-function saveWall(){if(tool!=='wall'||outline.length<2)return;try{const n=setWall(s,outline);drawing=false;outline=[];tool='place';commit(n);message('Mauer als Animationsursprung gespeichert.');}catch(e){message(e.message,true);}}
+function openWall(){if(!discardOutline())return;sideAnchor=null;reconnectId=null;tool='wall';drawing=true;$('fog-preview').value=4;showPanel('wall');render();message('Höhleneingang auf das Brett zeichnen. Anschließend Höhleneingang speichern.');}
+function saveWall(){if(tool!=='wall'||outline.length<2)return;try{const n=setWall(s,outline);drawing=false;outline=[];tool='place';commit(n);message('Höhleneingang mit Verteidigungsursprung gespeichert.');}catch(e){message(e.message,true);}}
 function closeOutline(){if(!drawing||outline.length<3)return;try{const n=setPolygon(s,zone,outline);drawing=false;outline=[];commit(n);message('Gebiet '+(zone+1)+' gespeichert.');}catch(e){$('zone-status').textContent=e.message;message(e.message,true);}}
 
 const preview=()=>Number($('fog-preview').value);
@@ -56,7 +56,7 @@ function draw(){
  if(photo)element('image',{href:photo,width:1000,height:1000,preserveAspectRatio:'xMidYMid meet',opacity:Number($('opacity').value)/100});
  const gap=Number($('spacing').value);
  if($('show-grid').checked)for(let i=0;i<=1000;i+=gap){element('path',{d:'M'+i+' 0V1000 M0 '+i+'H1000',stroke:'#a1bcc8','stroke-opacity':.13,'pointer-events':'none'});}
- if(s.wall){const g=element('g',{'pointer-events':'none','aria-label':'Mauer – Ursprung der Fernangriffe'});const title=element('title',{},g);title.textContent='Mauer · Ausgangspunkt späterer Fernangriffe';element('polyline',{points:points(s.wall.points),fill:'none',stroke:'#372c2a','stroke-width':19,'stroke-linecap':'round','stroke-linejoin':'round'},g);element('polyline',{points:points(s.wall.points),fill:'none',stroke:'#b18b72','stroke-width':14,'stroke-linecap':'round','stroke-linejoin':'round'},g);element('polyline',{points:points(s.wall.points),fill:'none',stroke:'#e7c8ac','stroke-width':3,'stroke-dasharray':'10 7','stroke-linejoin':'round'},g);}
+ if(s.wall){const g=element('g',{'pointer-events':'none','aria-label':'Höhleneingang – Verteidigung'});const title=element('title',{},g);title.textContent='Höhleneingang · Ursprung seiner Verteidigungsangriffe';element('polyline',{points:points(s.wall.points),fill:'none',stroke:'#171d25','stroke-width':23,'stroke-linecap':'round','stroke-linejoin':'round'},g);element('polyline',{points:points(s.wall.points),fill:'none',stroke:'#838994','stroke-width':16,'stroke-linecap':'round','stroke-linejoin':'round'},g);element('polyline',{points:points(s.wall.points),fill:'none',stroke:'#c3d6c0','stroke-width':3,'stroke-dasharray':'10 7','stroke-linejoin':'round'},g);}
  if(preview()<4)fog();
  if($('area-colors').checked)for(const [i,a] of s.areas.entries()){if(i>=preview())continue;const q=a.fogRect;if(a.polygon){element('polygon',{points:points(a.polygon),fill:zoneColors[i],'fill-opacity':.17,stroke:zoneColors[i],'stroke-width':tool==='fog'&&zone===i?4:2,'pointer-events':'none'});const c=a.polygon.reduce((v,p)=>({x:v.x+p.x/a.polygon.length,y:v.y+p.y/a.polygon.length}),{x:0,y:0});const t=element('text',{x:c.x,y:c.y,'text-anchor':'middle',fill:zoneColors[i],'font-size':18,'font-weight':900,'pointer-events':'none'});t.textContent='Gebiet '+(i+1);}else if(q)element('rect',{x:q.x,y:q.y,width:q.w,height:q.h,rx:8,fill:'none',stroke:areaColors[i],'stroke-width':3,'stroke-dasharray':'9 7','pointer-events':'none'});}
  if($('show-path').checked)for(let i=1;i<s.track.length;i++){const a=s.track[i-1],b=s.track[i];if(a&&b&&(preview()===4||trackVisible(i-1)&&trackVisible(i)))element('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:'#9bbac9','stroke-width':3,'pointer-events':'none'});}
@@ -100,7 +100,7 @@ function render(){
  document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===tool));
  const p=getField(s,sel);$('selected').textContent=label(sel)+(p?' · gesetzt':' · noch frei');$('coord-x').value=p?.x??'';$('coord-y').value=p?.y??'';
  const st=status(s);$('stats').textContent='Laufweg '+st.track+'/'+s.track.length+' · Start '+st.starts+'/6 · Schlag '+st.strike+'/1 · Boss '+st.bosses+'/'+s.bosses.length;
- adventureRender();$('feature-count').textContent='('+(s.features.length+s.sideFields.length)+')';$('mode-label').textContent=tool==='feature'?isSideMode()?reconnectId!==null?'Neuen Anschluss wählen':sideAnchor===null?'Hebel · Anschluss wählen':'Hebel · freie Position wählen':FEATURE_TYPES[$('feature-type').value]+' · Feld antippen':tool==='wall'?'Mauer zeichnen':tool==='fog'?'Gebiet '+(zone+1)+' zeichnen':tool==='move'?'Feld verschieben':tool==='erase'?'Feld löschen':tool==='pan'?'Ansicht bewegen':label(sel)+' · setzen';$('export-ready').disabled=!st.complete;$('undo').disabled=!undo.length;$('redo').disabled=!redo.length;draw();
+ adventureRender();$('feature-count').textContent='('+(s.features.length+s.sideFields.length)+')';$('mode-label').textContent=tool==='feature'?isSideMode()?reconnectId!==null?'Neuen Anschluss wählen':sideAnchor===null?'Hebel · Anschluss wählen':'Hebel · freie Position wählen':FEATURE_TYPES[$('feature-type').value]+' · Feld antippen':tool==='wall'?'Höhleneingang zeichnen':tool==='fog'?'Gebiet '+(zone+1)+' zeichnen':tool==='move'?'Feld verschieben':tool==='erase'?'Feld löschen':tool==='pan'?'Ansicht bewegen':label(sel)+' · setzen';$('export-ready').disabled=!st.complete;$('undo').disabled=!undo.length;$('redo').disabled=!redo.length;draw();
 }
 function select(r){sel={...r};render();}
 function next(){if(sel.kind==='side'||!$('auto-next').checked)return;
@@ -165,7 +165,7 @@ for(const id of ['spacing','show-grid','show-path','show-numbers','opacity'])$(i
 $('zoom-in').onclick=()=>zoom(scale*1.25);$('zoom-out').onclick=()=>zoom(scale/1.25);$('zoom-reset').onclick=()=>{scale=1;origin={x:0,y:0};clampView();};
 $('undo').onclick=()=>{sideAnchor=null;reconnectId=null;if(undo.length){redo.push(s);s=undo.pop();save();render();}};$('redo').onclick=()=>{sideAnchor=null;reconnectId=null;if(redo.length){undo.push(s);s=redo.pop();save();render();}};
 function clearBoard(){
- if(!confirm('Ganzes Teil-2-Brett löschen? Alle Lauffelder, Startplätze, Bossfelder, Gebiete, Mauern und Spezialfelder werden entfernt. Du kannst dies über Rückgängig wiederherstellen.'))return;
+ if(!confirm('Ganzes Teil-2-Brett löschen? Alle Lauffelder, Startplätze, Bossfelder, Gebiete, Höhleneingang und Spezialfelder werden entfernt. Du kannst dies über Rückgängig wiederherstellen.'))return;
  drawing=false;outline=[];sideAnchor=null;reconnectId=null;zone=0;tool='place';sel={kind:'track',index:0};$('fog-preview').value=4;scale=1;origin={x:0,y:0};
  if(change(()=>blank(s.track.length,s.bosses.length))){showPanel('fields');render();message('Brett vollständig geleert. Rückgängig stellt deinen Entwurf wieder her.');}
 }
@@ -189,7 +189,7 @@ function featureGroup(){const lever=$('feature-type').value==='lever',effect=$('
  $('lever-hint').textContent={held:'Effekt bleibt aktiv, solange mindestens eine menschliche Figur auf dem Hebel steht.',toggle:'Jedes neue Betreten schaltet den Effekt an oder aus.',permanent:'Einmal betreten, dauerhaft aktiv.',timed:'Beim Betreten startet die gewählte Anzahl vollständiger Zugrunden.'}[mode];
 document.querySelectorAll('[data-feature-choice]').forEach(b=>{const active=b.dataset.featureChoice===$('feature-type').value;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});}
 $('lever-placement').onchange=()=>{sideAnchor=null;reconnectId=null;featureGroup();$('place-feature').click();};$('feature-type').onchange=featureGroup;$('lever-mode').onchange=featureGroup;$('lever-effect').onchange=featureGroup;featureGroup();
-$('fog-preview').onchange=()=>{if(drawing&&outline.length){$('fog-preview').value=4;message(tool==='wall'?'Bitte zuerst die Mauer speichern.':'Bitte zuerst die Fläche schließen.');}draw();};$('area-colors').onchange=draw;
+$('fog-preview').onchange=()=>{if(drawing&&outline.length){$('fog-preview').value=4;message(tool==='wall'?'Bitte zuerst den Höhleneingang speichern.':'Bitte zuerst die Fläche schließen.');}draw();};$('area-colors').onchange=draw;
 for(let i=0;i<4;i++){const b=document.createElement('button');b.type='button';b.dataset.zone=i;b.style.setProperty('--zone',zoneColors[i]);b.onclick=()=>{if(discardOutline()){zone=i;render();}};$('zone-tabs').append(b);}
 $('open-zones').onclick=openZones;$('zone-start').onclick=()=>{if(discardOutline()){drawing=true;updateZoneControls();drawOutline();}};$('zone-back').onclick=()=>{outline.pop();updateZoneControls();drawOutline();};$('zone-close').onclick=closeOutline;
 $('zone-clear').onclick=()=>{if(confirm('Gebietsfläche '+(zone+1)+' löschen?')){drawing=false;outline=[];change(()=>setPolygon(s,zone,null));}};
@@ -200,12 +200,12 @@ $('assign-area-range').onclick=()=>{const first=Number($('area-from').value)-1,l
 $('place-feature').onclick=()=>{if(!discardOutline())return;sideAnchor=null;reconnectId=null;$('fog-preview').value=4;tool='feature';render();message(isSideMode()?'Zuerst Anschlussfeld am Hauptweg antippen.':'Jetzt ein Lauffeld für den Spezialmarker antippen.');};
 $('side-update').onclick=()=>{if(sel.kind==='side')change(()=>updateSideLever(s,sel.index,leverSettings()));};$('side-reconnect').onclick=()=>{if(sel.kind!=='side')return;sideAnchor=null;reconnectId=sel.index;tool='feature';$('fog-preview').value=4;render();message('Neues Anschlussfeld am Hauptweg antippen.');};
 $('remove-feature').onclick=()=>{if(sel.kind==='side'){const id=sel.index;sel={kind:'track',index:0};change(()=>setField(s,{kind:'side',index:id},null));return;}if(sel.kind!=='track'){message('Zuerst das Lauffeld auswählen.',true);return;}change(()=>setFeature(s,sel.index,null));};
-const panelTitles={wall:'Mauer zeichnen',fields:'Felder setzen',special:'Spezialfelder',areas:'Vier Gebiete',settings:'Einstellungen',project:'Datei & Export'};
+const panelTitles={wall:'Höhleneingang zeichnen',fields:'Felder setzen',special:'Spezialfelder',areas:'Vier Gebiete',settings:'Einstellungen',project:'Datei & Export'};
 let currentPanel='fields';
 function showPanel(name){if(!Object.hasOwn(panelTitles,name))return;currentPanel=name;$('inspector').hidden=false;document.querySelector('.layout').classList.remove('inspector-closed');$('toggle-inspector').setAttribute('aria-expanded','true');$('panel-title').textContent=panelTitles[name];document.querySelectorAll('[data-page]').forEach(p=>p.hidden=p.dataset.page!==name);document.querySelectorAll('[data-panel]').forEach(b=>{b.classList.toggle('active',b.dataset.panel===name);b.setAttribute('aria-pressed',String(b.dataset.panel===name));});}
 function hidePanel(){$('inspector').hidden=true;document.querySelector('.layout').classList.add('inspector-closed');$('toggle-inspector').setAttribute('aria-expanded','false');document.querySelectorAll('[data-panel]').forEach(b=>{b.classList.remove('active');b.setAttribute('aria-pressed','false');});}
 document.querySelectorAll('[data-panel]').forEach(b=>b.onclick=()=>{const name=b.dataset.panel;if(name==='wall'){openWall();}else if(name==='areas'){if(!discardOutline())return;openZones();}else{if(name==='fields'||name==='special'){if(!discardOutline())return;tool=name==='fields'?'place':'feature';$('fog-preview').value=4;}showPanel(name);render();}});
-$('wall-start').onclick=openWall;$('wall-back').onclick=()=>{outline.pop();updateWallControls();drawOutline();};$('wall-save').onclick=saveWall;$('wall-clear').onclick=()=>{if(confirm('Gespeicherte Mauer löschen?')){drawing=false;outline=[];change(()=>setWall(s,null));}};$('wall-exit').onclick=()=>{if(discardOutline()){tool='place';render();}};
+$('wall-start').onclick=openWall;$('wall-back').onclick=()=>{outline.pop();updateWallControls();drawOutline();};$('wall-save').onclick=saveWall;$('wall-clear').onclick=()=>{if(confirm('Gespeicherten Höhleneingang löschen?')){drawing=false;outline=[];change(()=>setWall(s,null));}};$('wall-exit').onclick=()=>{if(discardOutline()){tool='place';render();}};
 $('toggle-inspector').onclick=()=> $('inspector').hidden?showPanel(currentPanel):hidePanel();$('close-inspector').onclick=hidePanel;
 $('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else message('Vollbild wird von diesem Browser nicht unterstützt.');}catch{message('Vollbild konnte nicht geöffnet werden.');}};
 function fitBoard(){

@@ -180,12 +180,12 @@ export function updateSideLever(s,id,settings){
  return normalize({...s,sideFields:s.sideFields.map(f=>f.id===id?{...f,...patch}:f)});
 }
 
-/** Decorative open polyline and future ranged-attack animation origin. No game rules. */
+/** Open cave entrance contour, defended by the future ranged-attack animation origin. No game rules. */
 export function normalizeWall(raw){
  if(raw===null)return null;
- if(!raw||raw.kind!=='attack-origin'||!Array.isArray(raw.points)||raw.points.length<2||raw.points.length>240)throw Error('Die Mauer braucht 2 bis 240 Punkte.');
- const points=raw.points.map(p=>{if(!p||!Number.isFinite(p.x)||!Number.isFinite(p.y)||p.x<0||p.x>SIZE||p.y<0||p.y>SIZE)throw Error('Mauerpunkt außerhalb des Bretts.');return point(p);});
- for(let i=1;i<points.length;i++)if(Math.hypot(points[i].x-points[i-1].x,points[i].y-points[i-1].y)<1)throw Error('Mauerpunkte liegen zu dicht zusammen.');
- return {kind:'attack-origin',points};
+ if(!raw||!['attack-origin','cave-entrance'].includes(raw.kind)||!Array.isArray(raw.points)||raw.points.length<2||raw.points.length>240)throw Error('Der Höhleneingang braucht 2 bis 240 Punkte.');
+ const points=raw.points.map(p=>{if(!p||!Number.isFinite(p.x)||!Number.isFinite(p.y)||p.x<0||p.x>SIZE||p.y<0||p.y>SIZE)throw Error('Eingangspunkt außerhalb des Bretts.');return point(p);});
+ for(let i=1;i<points.length;i++)if(Math.hypot(points[i].x-points[i-1].x,points[i].y-points[i-1].y)<1)throw Error('Eingangspunkte liegen zu dicht zusammen.');
+ return {kind:'cave-entrance',defenseOrigin:true,points};
 }
-export function setWall(s,points){return normalize({...s,wall:points===null?null:{kind:'attack-origin',points}});}
+export function setWall(s,points){return normalize({...s,wall:points===null?null:{kind:'cave-entrance',points}});}
