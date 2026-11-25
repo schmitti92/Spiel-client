@@ -19,6 +19,16 @@ export function compileBoard(raw){
  return {source:b,sections,fields,missing,ready:missing.length===0&&!!b.strike,notes:[...(missing.length?['Offene Lauffelder: '+missing.join(', ')]:[]),...(!b.strike?['Gemeinsames Schlagfeld noch nicht gesetzt.']:[]),'Hebelwirkungen, Spawn-Zuordnung und Kampfregeln noch offen.']};
 }
 export function createInspection(board){
- return {section:1,revealAll:true,selected:null,pieces:COLORS.flatMap(color=>board.source.starts[color].map((position,i)=>({id:color+'-'+(i+1),color,position}))),captives:board.source.prison.cells.map(c=>({...c})),mode:'layout-only'};
+ return {section:1,revealAll:false,selected:null,pieces:COLORS.flatMap(color=>board.source.starts[color].map((position,i)=>({id:color+'-'+(i+1),color,position}))),captives:board.source.prison.cells.map(c=>({...c})),mode:'local-mission-test'};
 }
 export function visibleField(board,state,f){return !!f.position&&(state.revealAll||f.section<=state.section);}
+
+/** Shared mission progression; preview is visual only, never grants access. */
+export function sectionOpen(state,id){return Number.isInteger(id)&&id>=1&&id<=3&&id<=state.section;}
+export function fieldAccessible(board,section,number){const f=board.fields[number-1];return Number.isInteger(number)&&!!f?.position&&Number.isInteger(section)&&section>=1&&section<=3&&f.section<=section;}
+export function unlockSection(state,id,{test=false}={}){
+ if(!Number.isInteger(id)||id<1||id>3)throw Error('Ungültiges Gebiet.');
+ if(!test&&id>state.section+1)throw Error('Gebiete müssen der Reihe nach geöffnet werden.');
+ return {...state,section:Math.max(state.section,id)};
+}
+export function testPlaceAllowed(board,state,field){return field===null||fieldAccessible(board,state.section,field);}

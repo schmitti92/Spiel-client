@@ -8,5 +8,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test tests/dog-grinch-mission4-foundation.test.mjs tests/dog-grinch-mission4-cards.test.mjs tests/dog-grinch-mission4-movement.test.mjs
+      - run: node --test tests/dog-grinch-mission4-foundation.test.mjs tests/dog-grinch-mission4-cards.test.mjs tests/dog-grinch-mission4-movement.test.mjs tests/dog-grinch-mission4-sections.test.mjs
       - run: node --check DOG/grinch-campaign/mission-4.js
