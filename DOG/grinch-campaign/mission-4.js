@@ -7,7 +7,7 @@ import {createCards,testDeal,testChooseCard,placeTestPiece,TYPES,SEATS,passCard}
 import {legalMoves,applyMove,cancelSplit} from './mission-4-movement.mjs?v=5';
 import {portalEnemies,spawnPortalEnemy,portalTick,closePortalCards,PORTAL_CAP} from './mission-4-portal1.mjs?v=2';
 import {recordCheckpoints,isProtected,enemyHit} from './mission-4-protection.mjs?v=1';
-import {chooseBotMove,botExchange,activateBotLevers} from './mission-4-bots.mjs?v=2';
+import {chooseBotMove,botExchange,activateBotLevers} from './mission-4-bots.mjs?v=3';
 import {cardMarkup,cardVisual,cardBackImage} from '../card-visuals.js?v=14';
 const $=id=>document.getElementById(id),svg=$('board'),NS='http://www.w3.org/2000/svg';
 const palette={red:'#e95252',blue:'#429be8',green:'#43b66b'},zones=['#3f9673','#4b9bc8','#ad855e'];
