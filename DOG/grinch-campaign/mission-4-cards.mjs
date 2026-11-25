@@ -12,7 +12,7 @@ function log(s,message){s.history.unshift(message);s.history.length=Math.min(18,
 function drawOne(s){if(!s.draw.length){check(s.discard.length,'Keine Karten verfügbar.');s.draw=shuffle(s.discard.splice(0),s);}return s.draw.pop();}
 function deal(s){
  check(s.hands.every(h=>h.length===0),'Vor der neuen Kartenphase müssen alle Hände leer sein.');
- s.phase++;s.round=1;s.current=s.starter;s.stage='exchange';s.exchanges=[null,null,null];const count=dogCardsPerRound(s.phase);
+ s.phase++;s.round=1;s.current=s.starter;s.seven=null;s.rescue=null;s.stage='exchange';s.exchanges=[null,null,null];const count=dogCardsPerRound(s.phase);
  for(let i=0;i<count;i++)for(let j=0;j<3;j++)s.hands[(s.starter+j)%3].push(drawOne(s));
  log(s,'Kartenphase '+s.phase+' – jeweils '+count+' Karten; Karte weitergeben.');
 }
@@ -33,13 +33,20 @@ export function passCard(s,id){
  return n;
 }
 // Explicitly a test-only discard, never considered a validated movement.
-export function testDiscard(s,id){
+export function testDiscard(s,id){return completeCard(s,id,'Testablage');}
+export function completeCard(s,id,description='spielt'){
  check(s.stage==='play','Zuerst muss jeder eine Karte weitergeben.');const n=clone(s),hand=n.hands[n.current],i=hand.findIndex(c=>c.id===id);
  check(i>=0,'Diese Karte gehört nicht dem aktiven Spieler.');
- const card=hand.splice(i,1)[0];n.discard.push(card);n.last=card;n.turn++;log(n,SEATS[n.current]+' · Testablage '+card.type);
+ const card=hand.splice(i,1)[0];n.discard.push(card);n.last=card;n.seven=null;n.rescue=null;n.turn++;log(n,SEATS[n.current]+' · '+description+' '+card.type);
  if(n.hands.every(h=>!h.length)){n.starter=(n.starter+1)%3;deal(n);}
  else{let next=(n.current+1)%3;while(!n.hands[next].length)next=(next+1)%3;if(next===n.starter)n.round++;n.current=next;}
  return n;
+}
+// Exactly one replacement draw, only requested by the mission's legal-action layer.
+export function replacementCard(s,id,canExit){
+ check(s.stage==='play'&&!s.seven&&!s.rescue,'Ersatzkarte nicht erlaubt.');const n=clone(s),hand=n.hands[n.current],i=hand.findIndex(c=>c.id===id);check(i>=0,'Karte fehlt.');const discarded=hand.splice(i,1)[0];n.discard.push(discarded);n.last=discarded;const drawn=drawOne(n);hand.push(drawn);n.lastDraw={type:drawn.type,canExit:Boolean(canExit(drawn))};
+ if(n.lastDraw.canExit){n.rescue={cardId:drawn.id};log(n,SEATS[n.current]+' · Ersatz-Startkarte '+drawn.type);return n;}
+ return completeCard(n,drawn.id,'Ersatzkarte abgelegt');
 }
 export function testDeal(s){const n=clone(s);for(const h of n.hands)n.discard.push(...h.splice(0));n.discard.push(...n.exchanges.filter(Boolean));n.exchanges=[null,null,null];n.starter=(n.starter+1)%3;deal(n);return n;}
 // Replace one actual card with an existing card in draw/discard. Never create extra cards.

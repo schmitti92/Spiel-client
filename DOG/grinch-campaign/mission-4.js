@@ -1,6 +1,7 @@
 import {compileBoard,createInspection,visibleField,COLOR_NAMES} from './mission-4-board.mjs?v=1';
 import {createTouchViewport} from './mission-4-touch.mjs?v=1';
-import {createCards,testDiscard,testDeal,testChooseCard,placeTestPiece,TYPES,SEATS,passCard} from './mission-4-cards.mjs?v=2';
+import {createCards,testDiscard,testDeal,testChooseCard,placeTestPiece,TYPES,SEATS,passCard} from './mission-4-cards.mjs?v=3';
+import {legalMoves,applyMove,cancelSplit} from './mission-4-movement.mjs?v=1';
 import {cardMarkup,cardVisual,cardBackImage} from '../card-visuals.js?v=14';
 const $=id=>document.getElementById(id),svg=$('board'),NS='http://www.w3.org/2000/svg';
 const palette={red:'#e95252',blue:'#429be8',green:'#43b66b'},zones=['#3f9673','#4b9bc8','#ad855e'];
@@ -12,7 +13,10 @@ function circle(p,r,fill,stroke,label,detail){const g=el('g',{'data-detail':deta
 async function init(){
  const response=await fetch('./mission-4-layout.json');if(!response.ok)throw Error('Brett konnte nicht geladen werden.');
  const b=compileBoard(await response.json()),s=createInspection(b),raw=b.source;
- let cards=createCards(),selected=null,picking=false,revealed=true;
+ let cards=createCards(),selected=null,picking=false,revealed=true,chosenPiece=null,jokerAs='',animation=null,drawMessage='';
+ const clearChoice=()=>{selected=cards.seven?.cardId??cards.rescue?.cardId??null;chosenPiece=null;jokerAs='';};
+ const options=()=>legalMoves(b,s.pieces,cards);
+ const chosenMoves=()=>options().filter(m=>m.cardId===selected&&(!jokerAs||m.as===jokerAs||!m.as));
  const asset=path=>new URL(path,new URL('../',location.href)).href;
  const makeEl=(tag,cls,content)=>{const e=document.createElement(tag);e.className=cls;if(content!==undefined)e.textContent=content;return e;};
  const cardName=t=>t==='swap'?'Tausch':t==='joker'?'Joker':t;
@@ -23,7 +27,7 @@ async function init(){
  $('test-field').replaceChildren(...b.fields.filter(f=>f.position).map(f=>option(f.number,'Feld '+f.number)));
  $('test-type').replaceChildren(...TYPES.map(t=>option(t,cardName(t))));
  function renderCards(){
-  const seat=cards.current,hand=cards.hands[seat];if(!hand.some(c=>c.id===selected))selected=null;
+  const seat=cards.current,hand=cards.hands[seat];if(cards.seven||cards.rescue)selected=cards.seven?.cardId??cards.rescue.cardId;else if(!hand.some(c=>c.id===selected))selected=null;
   const exchanging=cards.stage==='exchange';
   $('phase').textContent='Kartenphase '+cards.phase+' · '+(exchanging?'Kartenweitergabe':'Runde '+cards.round);
   $('turn').textContent='👑 '+COLOR_NAMES[SEATS[seat]]+(exchanging?' gibt eine Karte weiter':' ist dran');
@@ -35,25 +39,37 @@ async function init(){
   const handEl=$('hand');handEl.dataset.cardCount=String(hand.length);handEl.replaceChildren();
   $('hand-title').textContent=exchanging?COLOR_NAMES[SEATS[seat]]+': Karte weitergeben':COLOR_NAMES[SEATS[seat]]+' ist am Zug';
   $('show-hand').textContent=revealed?'🙈 Hand verdecken':'🃏 Karten ansehen';
-  if(revealed){for(const card of hand){const template=document.createElement('template');template.innerHTML=cardMarkup(card.type,{selected:card.id===selected,attrs:'type="button" aria-label="'+cardName(card.type)+'" aria-pressed="'+String(card.id===selected)+'"'});const btn=template.content.firstElementChild;const img=btn.querySelector('img');if(img){img.setAttribute('src',asset(img.getAttribute('src')));if(img.dataset.fallback)img.dataset.fallback=asset(img.dataset.fallback);}btn.onclick=()=>{selected=selected===card.id?null:card.id;renderCards();};handEl.append(btn);}}
+  if(revealed){for(const card of hand){const template=document.createElement('template');template.innerHTML=cardMarkup(card.type,{selected:card.id===selected,attrs:'type="button" aria-label="'+cardName(card.type)+'" aria-pressed="'+String(card.id===selected)+'"'});const btn=template.content.firstElementChild;const img=btn.querySelector('img');if(img){img.setAttribute('src',asset(img.getAttribute('src')));if(img.dataset.fallback)img.dataset.fallback=asset(img.dataset.fallback);}btn.disabled=!!((cards.seven||cards.rescue)&&card.id!==selected);btn.onclick=()=>{if(cards.seven||cards.rescue)return;selected=selected===card.id?null:card.id;chosenPiece=null;jokerAs='';drawMessage='';renderCards();draw();};handEl.append(btn);}}
   else {const veil=makeEl('div','hand-veil');const backs=makeEl('div','dog-card-backs');for(let i=0;i<Math.min(3,hand.length);i++){const back=makeEl('span','dog-card-back');back.style.backgroundImage='url("'+asset(cardBackImage())+'")';backs.append(back);}veil.append(backs,makeEl('span','','Deine Karten sind verdeckt. Tippe auf „Karten ansehen“.'));handEl.append(veil);}
-  $('test-discard').textContent=exchanging?'Karte an '+COLOR_NAMES[SEATS[(seat+1)%3]]+' weitergeben':'🧪 Ausgewählte Karte testweise ablegen';
-  $('test-discard').disabled=selected===null||!revealed;
-  $('move-help').textContent=exchanging?'Wähle eine Karte für den nächsten Spieler.':'Wähle eine Karte für den lokalen Test.';
-  $('card-note').textContent=exchanging?'Alle drei Karten werden erst nach der letzten Auswahl verteilt.':'Nur Testablage: Die reguläre Figurenbewegung folgt.';
+  const all=options(),moves=chosenMoves(),picked=hand.find(c=>c.id===selected);
+  const jokerTypes=picked?.type==='joker'&&!cards.seven?[...new Set(all.filter(m=>m.cardId===selected&&m.as).map(m=>m.as))]:[];
+  $('joker-label').hidden=!jokerTypes.length||!revealed;
+  $('joker-as').replaceChildren(option('','Bitte wählen'),...jokerTypes.map(t=>option(t,cardName(t))));$('joker-as').value=jokerAs;
+  $('cancel-seven').hidden=!cards.seven;$('cancel-seven').textContent=cards.seven?.spent?'↶ Sieben zurücknehmen':'✕ Sieben abwählen';
+  const direct=moves.find(m=>['discard','discardDraw','emptySwap','seven'].includes(m.type)&&(!jokerTypes.length||jokerAs||!m.as));
+  $('test-discard').hidden=!exchanging&&!direct;
+  $('test-discard').textContent=exchanging?'Karte an '+COLOR_NAMES[SEATS[(seat+1)%3]]+' weitergeben':direct?.type==='discardDraw'?'Karte abwerfen & Ersatz ziehen':direct?.type==='discard'?'Karte abwerfen':direct?.type==='seven'?'7 aufteilen':'Tauschkarte ablegen';
+  $('test-discard').disabled=selected===null||!revealed||(!exchanging&&!direct);
+  const hint=cards.seven?'Sieben: noch '+(7-cards.seven.spent)+' Schritte.':cards.rescue?'Ersatz-Startkarte: Figur heraussetzen.':exchanging?'Eine Karte weitergeben.':!selected?'Wähle eine Handkarte.':jokerTypes.length&&!jokerAs?'Wähle den Jokerwert.':!moves.length?'Diese Karte hat keinen erlaubten Zug.':!chosenPiece?'Tippe eine eigene Figur an.':'Tippe das Zielfeld oder die Tauschfigur an.';
+  $('move-help').textContent=hint;$('card-note').textContent=drawMessage||hint;
+  const moveHost=$('move-options');moveHost.replaceChildren();
+  if(revealed&&!exchanging&&(!jokerTypes.length||jokerAs||cards.seven))for(const m of moves.filter(m=>m.pieceId&&(!chosenPiece||m.pieceId===chosenPiece))){const p=s.pieces.find(p=>p.id===m.pieceId),btn=makeEl('button','m4-move-option',COLOR_NAMES[p.color]+' '+p.id.split('-').at(-1)+' · '+(m.type==='start'?'Herausgehen':m.type==='swap'?'Tauschen mit '+COLOR_NAMES[s.pieces.find(q=>q.id===m.targetId).color]:'Feld '+m.to+' ('+m.steps+')'));btn.type='button';btn.onclick=()=>play(m);moveHost.append(btn);}
   const old=$('test-slot').value;$('test-slot').replaceChildren(...hand.map((c,i)=>option(i,(i+1)+': '+cardName(c.type))));if(hand[Number(old)]&&old!=='')$('test-slot').value=old;
   $('history').replaceChildren(...cards.history.map(t=>{const p=document.createElement('p');p.textContent=t.replace(/^red ·/,'Rot ·').replace(/^blue ·/,'Blau ·').replace(/^green ·/,'Grün ·');return p;}));
  }
- function place(field){s.pieces=placeTestPiece(b,s.pieces,$('test-piece').value,field);picking=false;$('pick-field').setAttribute('aria-pressed','false');status(field===null?'Figur am Start.':'Figur auf Feld '+field+' gesetzt (Test).');draw();}
+ function place(field){if(cards.seven||cards.rescue)throw Error('Erst den aktuellen Sonderzug beenden.');s.pieces=placeTestPiece(b,s.pieces,$('test-piece').value,field);picking=false;$('pick-field').setAttribute('aria-pressed','false');status(field===null?'Figur am Start.':'Figur auf Feld '+field+' gesetzt (Test).');clearChoice();renderCards();draw();}
  $('place-piece').onclick=()=>attempt(()=>place(Number($('test-field').value)));
  $('return-piece').onclick=()=>attempt(()=>place(null));
  $('pick-field').onclick=()=>{picking=!picking;$('pick-field').setAttribute('aria-pressed',String(picking));status(picking?'Tippe ein sichtbares Lauffeld an.':'Brettauswahl beendet.');};
- $('choose-card').onclick=()=>attempt(()=>{cards=testChooseCard(cards,cards.current,Number($('test-slot').value),$('test-type').value);selected=null;renderCards();status('Testkarte eingesetzt. Der Stapel enthält weiterhin genau 110 Karten.');});
- $('show-hand').onclick=()=>{revealed=!revealed;selected=null;renderCards();};
- $('test-discard').onclick=()=>attempt(()=>{const exchange=cards.stage==='exchange';cards=exchange?passCard(cards,selected):testDiscard(cards,selected);selected=null;renderCards();status(exchange?'Karte weitergegeben.':'Karte testweise abgelegt – keine Figurenbewegung.');});
- $('new-deal').onclick=()=>attempt(()=>{cards=testDeal(cards);selected=null;renderCards();status('Neue Kartenphase verteilt (Test).');});
+ $('choose-card').onclick=()=>attempt(()=>{if(cards.seven||cards.rescue)throw Error('Erst den Sonderzug beenden.');cards=testChooseCard(cards,cards.current,Number($('test-slot').value),$('test-type').value);clearChoice();renderCards();draw();status('Testkarte eingesetzt. Der Stapel enthält weiterhin genau 110 Karten.');});
+ $('show-hand').onclick=()=>{revealed=!revealed;if(!cards.seven&&!cards.rescue)clearChoice();renderCards();draw();};
+ $('joker-as').onchange=()=>{jokerAs=$('joker-as').value;chosenPiece=null;renderCards();draw();};$('move-hints').onchange=draw;
+ $('cancel-seven').onclick=()=>attempt(()=>{const n=cancelSplit(s.pieces,cards);cards=n.cards;s.pieces=n.pieces;clearChoice();renderCards();draw();});
+ function play(m){attempt(()=>{const old=s.pieces.find(p=>p.id===m.pieceId);const n=applyMove(b,s.pieces,cards,m);cards=n.cards;s.pieces=n.pieces;animation=old&&m.path?.length?{id:old.id,from:old.position,path:m.path.map(f=>b.fields[f-1].position)}:null;drawMessage=n.event.draw?'Ersatzkarte: '+cardName(n.event.draw.type)+(n.event.draw.canExit?' – herausgehen!':' – automatisch abgelegt.'):'';clearChoice();if(cards.seven){selected=cards.seven.cardId;jokerAs='7';}renderCards();draw();});}
+ $('test-discard').onclick=()=>attempt(()=>{if(cards.stage==='exchange'){cards=passCard(cards,selected);clearChoice();renderCards();draw();return;}const m=chosenMoves().find(m=>['discard','discardDraw','emptySwap','seven'].includes(m.type));if(m)play(m);});
+ $('new-deal').onclick=()=>attempt(()=>{if(cards.seven){const n=cancelSplit(s.pieces,cards);cards=n.cards;s.pieces=n.pieces;}cards=testDeal(cards);clearChoice();drawMessage='';renderCards();draw();status('Neue Kartenphase verteilt (Test).');});
  $('unlock-section').onclick=()=>{s.section=Number($('test-section').value);s.revealAll=false;$('all').checked=false;draw();status('Abschnitt '+s.section+' testweise geöffnet.');};
- $('reset-test').onclick=()=>{if(!confirm('Lokalen Karten- und Brett-Test neu beginnen?'))return;Object.assign(s,createInspection(b));cards=createCards();selected=null;picking=false;revealed=true;$('pick-field').setAttribute('aria-pressed','false');$('all').checked=true;renderCards();draw();status('Test zurückgesetzt.');};
+ $('reset-test').onclick=()=>{if(!confirm('Lokalen Karten- und Brett-Test neu beginnen?'))return;Object.assign(s,createInspection(b));cards=createCards();clearChoice();drawMessage='';picking=false;revealed=true;$('pick-field').setAttribute('aria-pressed','false');$('all').checked=true;renderCards();draw();status('Test zurückgesetzt.');};
  $('track-count').textContent=b.fields.length-b.missing.length+'/'+b.fields.length;
  $('free').textContent=s.pieces.length;$('captives').textContent=s.captives.length;
  for(const note of b.notes){const p=document.createElement('p');p.textContent=note;$('notes').append(p);}
@@ -63,16 +79,16 @@ async function init(){
   svg.replaceChildren();el('rect',{x:0,y:0,width:1000,height:1000,fill:'#142b38'});
   for(const z of b.sections){el('polygon',{points:pts(z.polygon),fill:zones[z.id-1],'fill-opacity':(s.revealAll||z.id<=s.section)?0.19:0.04,stroke:zones[z.id-1],'stroke-width':2,'stroke-opacity':.65});}
   for(let i=1;i<b.fields.length;i++){const a=b.fields[i-1],f=b.fields[i];if(visibleField(b,s,a)&&visibleField(b,s,f))el('line',{x1:a.position.x,y1:a.position.y,x2:f.position.x,y2:f.position.y,stroke:'#b4c7cf','stroke-width':3});}
-  for(const f of b.fields){if(!visibleField(b,s,f))continue;const p=f.position,mark=f.feature;const g=circle(p,13,mark?.type==='safe'?'#255987':'#eaf0ef',zones[f.section-1],mark?symbols[mark.type]||'•':'','Feld '+f.number+' · '+b.sections[f.section-1].name+(mark?' · '+mark.type:''));g.setAttribute('data-track-number',f.number);if(!mark)txt(p,String(f.number),10,'#18303d',g);else txt({x:p.x,y:p.y+22},String(f.number),10,'#e5f0f5',g);}
+  for(const f of b.fields){if(!visibleField(b,s,f))continue;const p=f.position,mark=f.feature;const g=circle(p,13,mark?.type==='safe'?'#255987':'#eaf0ef',zones[f.section-1],mark?symbols[mark.type]||'•':'','Feld '+f.number+' · '+b.sections[f.section-1].name+(mark?' · '+mark.type:''));g.setAttribute('data-track-number',f.number);if($('move-hints').checked&&revealed&&chosenMoves().some(m=>m.to===f.number&&(!chosenPiece||m.pieceId===chosenPiece))){el('circle',{cx:p.x,cy:p.y,r:17,fill:'none',stroke:'#ffe385','stroke-width':3,'pointer-events':'none'},g);}if(!mark)txt(p,String(f.number),10,'#18303d',g);else txt({x:p.x,y:p.y+22},String(f.number),10,'#e5f0f5',g);}
   for(const f of raw.sideFields){const anchor=b.fields[f.anchor];if(!anchor||!visibleField(b,s,anchor))continue;const p=f.position,a=anchor.position;el('line',{x1:a.x,y1:a.y,x2:p.x,y2:p.y,stroke:'#d5aa65','stroke-dasharray':'5 4','stroke-width':2});circle(p,13,palette[f.owner]||'#8f7040','#efc577','🎚','Hebel H'+f.id+' · '+(COLOR_NAMES[f.owner]||'Alle')+' · Anschluss '+(f.anchor+1));txt({x:p.x,y:p.y+22},'H'+f.id,10);}
   if(s.revealAll||s.section>=2){el('polyline',{points:pts(raw.wall.points),fill:'none',stroke:'#8893a2','stroke-width':12,'stroke-linecap':'round','stroke-linejoin':'round','data-detail':'Höhleneingang · Verteidigungsursprung'});(raw.enemies||[]).forEach((p,i)=>{if(p)circle(p,13,'#753c45','#f6b1a1','👾','Fernkämpfer F'+(i+1));});}
   (raw.spawnPoints||[]).forEach((p,i)=>{if(p&&(s.revealAll||(i===0?s.section>=1:s.section>=3)))circle(p,13,'#264259','#7ee2e0','🌀','Gegnerportal P'+(i+1));});
   if(s.revealAll||s.section>=3){raw.bosses.forEach((p,i)=>{if(p){const q=p.trackIndex===undefined?p:raw.track[p.trackIndex];if(q)circle(q,14,'#7446a0','#e2b6f3','👑','Boss B'+(i+1));}});const q=raw.prison,z=q.size;el('rect',{x:q.position.x-z/2,y:q.position.y-z/2,width:z,height:z,rx:7,fill:'#18252e',stroke:'#9eacb5','stroke-width':3,'data-detail':'Gefängnis · neun Gefangene'});for(const c of s.captives)circle(c.position,z*.075,palette[c.color],'#e9f0f5','',COLOR_NAMES[c.color]+' · gefangen');for(let i=1;i<8;i++){const x=q.position.x-z/2+i*z/8;el('line',{x1:x,x2:x,y1:q.position.y-z/2+12,y2:q.position.y+z/2-5,stroke:'#a1adb5','stroke-width':2,'pointer-events':'none'});}}
-  for(const p of s.pieces){if(p.field&&!visibleField(b,s,b.fields[p.field-1]))continue;const g=circle(p.position,14,palette[p.color],'#eaf4fa','●',COLOR_NAMES[p.color]+' · freie Figur '+p.id.split('-')[1]);g.setAttribute('data-piece',p.id);if(p.field)g.setAttribute('data-track-number',p.field);}
+  for(const p of s.pieces){if(p.field&&!visibleField(b,s,b.fields[p.field-1]))continue;const g=circle(p.position,14,palette[p.color],'#eaf4fa','●',COLOR_NAMES[p.color]+' · freie Figur '+p.id.split('-')[1]);g.setAttribute('data-piece',p.id);if(chosenPiece===p.id)el('circle',{cx:p.position.x,cy:p.position.y,r:18,fill:'none',stroke:'#ffe385','stroke-width':3,'pointer-events':'none'},g);if(animation?.id===p.id&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){const route=[animation.from,...animation.path].map(q=>(q.x-p.position.x)+','+(q.y-p.position.y));el('animateMotion',{path:'M'+route.join(' L'),dur:Math.min(1.1,.18+animation.path.length*.07)+'s',fill:'remove'},g);}if(p.field)g.setAttribute('data-track-number',p.field);}
   if(raw.strike)circle(raw.strike,14,'#e49a3c','#ffe1a0','S','Gemeinsames Schlagfeld');
-  zoneButtons.forEach((btn,i)=>btn.setAttribute('aria-pressed',String(!s.revealAll&&s.section===i+1)));
+  animation=null;zoneButtons.forEach((btn,i)=>btn.setAttribute('aria-pressed',String(!s.revealAll&&s.section===i+1)));
  }
- const select=e=>{const g=e.target.closest('[data-detail]');const d=g?.getAttribute('data-detail');if(d)$('selection').textContent=d;if(picking&&g?.hasAttribute('data-track-number')){const field=Number(g.getAttribute('data-track-number'));$('test-field').value=field;attempt(()=>place(field));return;}if(g?.hasAttribute('data-piece'))$('test-piece').value=g.getAttribute('data-piece');};svg.addEventListener('click',select);svg.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select(e);}});draw();renderCards();
+ const select=e=>{const g=e.target.closest('[data-detail]');const d=g?.getAttribute('data-detail');if(d)$('selection').textContent=d;if(picking&&g?.hasAttribute('data-track-number')){const field=Number(g.getAttribute('data-track-number'));$('test-field').value=field;attempt(()=>place(field));return;}if(!revealed||cards.stage!=='play'||!selected)return;const id=g?.getAttribute('data-piece'),f=Number(g?.getAttribute('data-track-number'));const moves=chosenMoves();const joker=cards.hands[cards.current].find(c=>c.id===selected)?.type==='joker';if(joker&&!jokerAs&&!cards.seven)return;if(id&&chosenPiece){const swap=moves.find(m=>m.type==='swap'&&m.pieceId===chosenPiece&&m.targetId===id);if(swap){play(swap);return;}}if(id&&s.pieces.find(p=>p.id===id)?.color===SEATS[cards.current]){chosenPiece=chosenPiece===id?null:id;const start=moves.find(m=>m.type==='start'&&m.pieceId===chosenPiece);if(start){play(start);return;}renderCards();draw();return;}if(chosenPiece&&f){const m=moves.find(m=>m.pieceId===chosenPiece&&m.to===f&&m.type!=='swap');if(m)play(m);}};svg.addEventListener('click',select);svg.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select(e);}});draw();renderCards();
  createTouchViewport(svg,$('zoom-out'),$('zoom-in'),$('zoom-reset'));
 }
 init().catch(e=>{$('notes').textContent='Fehler: '+e.message;console.error(e);});

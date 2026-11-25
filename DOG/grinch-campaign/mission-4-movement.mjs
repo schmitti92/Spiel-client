@@ -1,0 +1,67 @@
+// Linear Mission 4 board adapter; card semantics shared with classic DOG.
+import {dogCardSteps,dogStartCard,dogCardChoices} from '../engine.js';
+import {SEATS,completeCard,replacementCard,placeTestPiece} from './mission-4-cards.mjs?v=3';
+const copy=x=>JSON.parse(JSON.stringify(x));
+const check=(ok,msg)=>{if(!ok)throw Error(msg);};
+const at=(pieces,field,except)=>pieces.find(p=>p.id!==except&&p.field===field);
+const own=(pieces,cards)=>pieces.filter(p=>p.color===SEATS[cards.current]);
+const fieldExists=(board,n)=>Number.isInteger(n)&&n>=1&&!!board.fields[n-1]?.position;
+function sendHome(board,pieces,id){return placeTestPiece(board,pieces,id,null);}
+function relocate(board,pieces,id,to){return placeTestPiece(board,pieces,id,to);}
+function path(board,pieces,p,steps,seven=false){
+ if(!p?.field||!Number.isInteger(steps)||!steps)return null;
+ const route=[],captures=[];
+ for(let i=1;i<=Math.abs(steps);i++){
+  const f=p.field+Math.sign(steps)*i;if(!fieldExists(board,f))return null;
+  const victim=at(pieces,f,p.id);if(victim&&(seven||i===Math.abs(steps)))captures.push(victim.id);
+  route.push(f);
+ }
+ return {pieceId:p.id,to:route.at(-1),steps,path:route,captures:[...new Set(captures)]};
+}
+function applyRoute(board,pieces,m){let n=pieces;for(const id of m.captures||[])n=sendHome(board,n,id);return relocate(board,n,m.pieceId,m.to);}
+function sevenCandidates(board,pieces,cards,left){const out=[];for(const p of own(pieces,cards))for(let n=1;n<=left;n++){const m=path(board,pieces,p,n,true);if(m)out.push({...m,type:'seven-step',cardId:cards.seven?.cardId,as:'7'});}return out;}
+function canSeven(board,pieces,cards,left,memo=new Map()){
+ if(left===0)return true;
+ const key=left+'|'+pieces.map(p=>p.id+':'+(p.field||0)).join(',');
+ if(memo.has(key))return memo.get(key);
+ for(const m of sevenCandidates(board,pieces,cards,left))if(canSeven(board,applyRoute(board,pieces,m),cards,left-m.steps,memo)){memo.set(key,true);return true;}
+ memo.set(key,false);return false;
+}
+function sevenMoves(board,pieces,cards,left){const memo=new Map();return sevenCandidates(board,pieces,cards,left).filter(m=>canSeven(board,applyRoute(board,pieces,m),cards,left-m.steps,memo));}
+function starts(board,pieces,cards,card,as){
+ if(!dogStartCard(as)||!fieldExists(board,1)||at(pieces,1))return [];
+ return own(pieces,cards).filter(p=>!p.field).map(p=>({type:'start',cardId:card.id,as,pieceId:p.id,to:1,path:[1],captures:[]}));
+}
+function candidates(board,pieces,cards,card,as){
+ const out=starts(board,pieces,cards,card,as);
+ if(as==='7'){
+  if(canSeven(board,pieces,cards,7))out.push({type:'seven',cardId:card.id,as});
+ }else if(as==='swap'){
+  for(const p of own(pieces,cards).filter(p=>p.field))for(const other of pieces.filter(q=>q.color!==p.color&&q.field))out.push({type:'swap',cardId:card.id,as,pieceId:p.id,targetId:other.id,to:other.field});
+  if(!out.length)out.push({type:'emptySwap',cardId:card.id,as});
+ }else for(const p of own(pieces,cards))for(const steps of dogCardSteps(as)){const m=path(board,pieces,p,steps);if(m)out.push({...m,type:'move',cardId:card.id,as});}
+ return out;
+}
+export function houseRescueAllowed(board,pieces,cards){return fieldExists(board,1)&&own(pieces,cards).length===2&&own(pieces,cards).every(p=>!p.field)&&!at(pieces,1);}
+export function legalMoves(board,pieces,cards){
+ if(cards.stage!=='play')return [];
+ if(cards.seven)return sevenMoves(board,pieces,cards,7-cards.seven.spent);
+ const hand=cards.hands[cards.current];
+ if(cards.rescue){const c=hand.find(c=>c.id===cards.rescue.cardId);return c?dogCardChoices(c.type).flatMap(as=>starts(board,pieces,cards,c,as)):[];}
+ const all=hand.flatMap(c=>dogCardChoices(c.type).flatMap(as=>candidates(board,pieces,cards,c,as)));
+ if(all.some(m=>m.type!=='emptySwap'))return all;
+ return hand.map(c=>({type:houseRescueAllowed(board,pieces,cards)?'discardDraw':'discard',cardId:c.id}));
+}
+export function applyMove(board,pieces,cards,action){
+ const match=legalMoves(board,pieces,cards).find(m=>['type','cardId','as','pieceId','targetId','steps','to'].every(k=>m[k]===action[k]));
+ check(match,'Dieser Zug ist nicht erlaubt.');
+ let n=copy(cards),p=pieces;const m=match;
+ if(m.type==='seven'){n.seven={cardId:m.cardId,spent:0,snapshot:copy(pieces)};return {cards:n,pieces:p,event:m};}
+ if(m.type==='seven-step'){p=applyRoute(board,p,m);n.seven.spent+=m.steps;if(n.seven.spent===7)n=completeCard(n,m.cardId,'spielt die geteilte');return {cards:n,pieces:p,event:m};}
+ if(m.type==='discardDraw'){n=replacementCard(n,m.cardId,c=>dogCardChoices(c.type).some(as=>starts(board,p,n,c,as).length));return {cards:n,pieces:p,event:{...m,draw:n.lastDraw}};}
+ if(m.type==='start'||m.type==='move')p=applyRoute(board,p,m);
+ if(m.type==='swap'){const a=p.find(q=>q.id===m.pieceId),b=p.find(q=>q.id===m.targetId);p=p.map(q=>q.id===a.id?{...q,field:b.field,position:{...b.position}}:q.id===b.id?{...q,field:a.field,position:{...a.position}}:q);}
+ n=completeCard(n,m.cardId,m.type==='discard'?'ist blockiert, wirft ab':m.type==='emptySwap'?'legt Tausch ohne Ziel ab':'spielt'+(m.as==='7'?' die':''));
+ return {cards:n,pieces:p,event:m};
+}
+export function cancelSplit(pieces,cards){check(cards.seven,'Keine Sieben aktiv.');const n=copy(cards),p=n.seven.snapshot;n.seven=null;return {cards:n,pieces:p};}

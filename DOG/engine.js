@@ -5,6 +5,10 @@ export const CARD_TYPES = Object.freeze(['1/11','2','3','4','5','6','7','8','9',
 export const COLORS = Object.freeze(['#e65f58','#4c9bfa','#5ac68d','#e8b84e']);
 const stepsByCard = { '1/11':[1,11], '2':[2], '3':[3], '4':[4,-4], '5':[5], '6':[6], '7':[7], '8':[8], '9':[9], '10':[10], '12':[12], '13':[13] };
 const startCards = new Set(['1/11','13']);
+// Shared card semantics for linear campaign variants; classic rules unchanged.
+export const dogCardSteps=type=>[...(stepsByCard[type]||[])];
+export const dogStartCard=type=>startCards.has(type);
+export const dogCardChoices=type=>type==='joker'?CARD_TYPES.filter(t=>t!=='joker'):[type];
 const clone = value => JSON.parse(JSON.stringify(value));
 const mod = n => ((n%64)+64)%64;
 const opponentTeam = owner => owner%2;
