@@ -2521,7 +2521,8 @@
     {
       "type": "door",
       "trackIndex": 126,
-      "group": "1"
+      "group": "1",
+      "checkpoint": true
     },
     {
       "type": "safe",

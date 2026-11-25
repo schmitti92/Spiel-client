@@ -23,3 +23,6 @@ H1–H3 öffnen Feld 40 und Gebiet 2. H4–H10 lösen einmalig einen Gegenangrif
 
 ## Brettrevision 2 (Nutzerexport)
 Nur sideFields geändert. H1–H3 unverändert; H4–H9 sechs farbneutrale Hebel, alle mit Anker 125. H10 entfernt. Gemeinsamer Gegenangriff nach vollständiger Aktivierung bleibt unverändert; sechs Schusszuordnungen nach horizontaler Lage, jeder Hebel genau einem stationären Gegner. Die genaue individuelle Auslöseregel und Seitenfeldbewegung sind noch nicht festgelegt. Türen 40/127, 156 belegte Lauffelder, alle anderen Elemente unverändert.
+
+## Checkpoint an der Höhlentür
+Feld 127 ist zusätzlich Kontrollpunkt (door.checkpoint=true). Checkpoint-Index 39,72,97,127; Tür und Gebietsgrenze bleiben erhalten. Brettdesigner erhält die Kombination beim Import/Export und beim Hinzufügen eines Kontrollpunkts auf eine Tür. Rücksetz-/Wiederbelebungsregeln folgen in Arbeitspaket 8.

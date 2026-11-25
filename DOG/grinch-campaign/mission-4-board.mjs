@@ -10,13 +10,13 @@ export function compileBoard(raw){
  if(doors.length!==2||doors[0]>=doors[1]||!b.areas.slice(0,3).every(a=>Array.isArray(a.polygon)&&a.polygon.length>=3))throw Error('Drei gezeichnete Abschnitte und zwei Türen erforderlich.');
  const ends=[doors[0],doors[1],b.track.length-1];
  const sections=ends.map((end,i)=>({id:i+1,name:SECTION_NAMES[i],from:i===0?0:ends[i-1]+1,to:end,polygon:b.areas[i].polygon}));
- const fields=b.track.map((position,index)=>({index,number:index+1,position,section:sections.find(s=>index<=s.to).id,feature:b.features.find(f=>f.trackIndex===index)||null}));
+ const fields=b.track.map((position,index)=>{const feature=b.features.find(f=>f.trackIndex===index)||null;return {index,number:index+1,position,section:sections.find(s=>index<=s.to).id,feature,checkpoint:feature?.type==='checkpoint'||feature?.checkpoint===true};});
  if(fields.some(f=>f.position!==null&&!validPoint(f.position)))throw Error('Ungültige Feldposition.');
  if(!COLORS.every(c=>b.starts[c]?.length===2&&b.starts[c].every(validPoint)))throw Error('Sechs Startplätze erforderlich.');
  if(!b.prison||b.prison.cells?.length!==9||!b.prison.cells.every(c=>validPoint(c.position))||!COLORS.every(c=>b.prison.cells.filter(p=>p.color===c).length===3))throw Error('Neun Gefangene erforderlich.');
  if(!b.wall?.points?.length||!b.wall.points.every(validPoint))throw Error('Höhleneingang fehlt.');
  const missing=fields.filter(f=>!f.position).map(f=>f.number);
- return {source:b,sections,fields,missing,ready:missing.length===0&&!!b.strike,notes:[...(missing.length?['Offene Lauffelder: '+missing.join(', ')]:[]),...(!b.strike?['Gemeinsames Schlagfeld noch nicht gesetzt.']:[]),'Hebelstationen aktiv; Spawn-Zuordnung, Fernbeschuss und Kampfregeln noch offen.']};
+ return {source:b,sections,fields,checkpoints:fields.filter(f=>f.checkpoint).map(f=>f.number),missing,ready:missing.length===0&&!!b.strike,notes:[...(missing.length?['Offene Lauffelder: '+missing.join(', ')]:[]),...(!b.strike?['Gemeinsames Schlagfeld noch nicht gesetzt.']:[]),'Hebelstationen aktiv; Spawn-Zuordnung, Fernbeschuss und Kampfregeln noch offen.']};
 }
 export function createInspection(board){
  return {section:1,revealAll:false,selected:null,leverActive:[],counterattack:null,defeatedArchers:[],pieces:COLORS.flatMap(color=>board.source.starts[color].map((position,i)=>({id:color+'-'+(i+1),color,position}))),captives:board.source.prison.cells.map(c=>({...c})),mode:'local-mission-test'};

@@ -118,6 +118,7 @@ function normalizeFeatures(features,track){
   if(LINKED_TYPES.includes(f.type)&&!/^[-a-zA-Z0-9_]{1,16}$/.test(group))throw Error('Verknüpfungs-ID: 1–16 Buchstaben, Zahlen, Bindestrich oder Unterstrich');
   if(occupied.has(f.trackIndex))throw Error('Nur ein Spezialmarker pro Lauffeld');occupied.add(f.trackIndex);
   const entry={type:f.type,trackIndex:f.trackIndex,group};
+  if(f.type==='door'&&f.checkpoint===true)entry.checkpoint=true;
   if(f.type==='lever'){
    const mode=f.mode??'held',effect=f.effect??'custom',rounds=f.rounds??2;
    if(!Object.hasOwn(LEVER_MODES,mode)||!Object.hasOwn(LEVER_EFFECTS,effect)||!validInt(rounds,1,20))throw Error('Ungültige Hebeleinstellung.');
@@ -129,7 +130,7 @@ function normalizeFeatures(features,track){
 export function setAreas(s,areas){return normalize({...s,areas});}
 export function areaOf(s,index){if(!validInt(index,0,s.track.length-1)||!s.track[index])return -1;const manual=s.areaOverrides?.[index];return validInt(manual,0,3)?manual:-1;}
 export function visibleArea(s,index,unlocked=1){const a=areaOf(s,index);return a<0||a<unlocked;}
-export function setFeature(s,index,type,group='1',settings={}){return normalize({...s,features:[...s.features.filter(f=>f.trackIndex!==index),...(type?[{type,trackIndex:index,group,...(type==='lever'?{mode:settings.mode,effect:settings.effect,rounds:settings.rounds,owner:settings.owner}:{})}]:[])]});}
+export function setFeature(s,index,type,group='1',settings={}){const old=s.features.find(f=>f.trackIndex===index);if(type==='checkpoint'&&old?.type==='door')return normalize({...s,features:s.features.map(f=>f===old?{...f,checkpoint:true}:f)});return normalize({...s,features:[...s.features.filter(f=>f.trackIndex!==index),...(type?[{type,trackIndex:index,group,...(type==='door'&&(old?.type==='checkpoint'||old?.checkpoint===true)?{checkpoint:true}:{}),...(type==='lever'?{mode:settings.mode,effect:settings.effect,rounds:settings.rounds,owner:settings.owner}:{})}]:[])]});}
 export function featureIssues(s){
  const issues=[],doorGroups=new Map(),teleGroups=new Map();
  const levers=[...s.features.filter(f=>f.type==='lever'),...s.sideFields.map(f=>({...f,trackIndex:f.anchor}))];
