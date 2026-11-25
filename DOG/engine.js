@@ -11,6 +11,7 @@ const opponentTeam = owner => owner%2;
 const activeSeats=s=>s.players.filter(p=>!p.inactive).map(p=>p.seat);
 const soloMode=s=>s.mode==='solo3'||s.mode==='solo2';
 const nextSeat=(s,seat)=>{for(let n=1;n<=4;n++){const next=(seat+n)%4;if(!s.players[next].inactive)return next;}throw Error('NO_ACTIVE_SEAT');};
+export const dogCardsPerRound=round=>[6,5,4,3,2][(round-1)%5];
 export function makeDeck(){
   const cards=[];let id=0;
   for(const type of CARD_TYPES) for(let n=0;n<(type==='joker'?6:8);n++)cards.push({id:++id,type});
@@ -121,7 +122,7 @@ export function createGame(options={}){
 function history(s,text){s.history.unshift(text);s.history.length=Math.min(s.history.length,12);}
 function deal(s,rng){
   s.round++;
-  const count=[6,5,4,3,2][(s.round-1)%5];
+  const count=dogCardsPerRound(s.round);
   const seats=activeSeats(s);
   // The initial starter was randomized at game creation; later card rounds rotate.
   if(s.round>1)s.starter=nextSeat(s,s.starter);

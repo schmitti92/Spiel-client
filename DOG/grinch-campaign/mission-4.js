@@ -1,6 +1,7 @@
 import {compileBoard,createInspection,visibleField,COLOR_NAMES} from './mission-4-board.mjs?v=1';
 import {createTouchViewport} from './mission-4-touch.mjs?v=1';
-import {createCards,testDiscard,testDeal,testChooseCard,placeTestPiece,TYPES,SEATS} from './mission-4-cards.mjs?v=1';
+import {createCards,testDiscard,testDeal,testChooseCard,placeTestPiece,TYPES,SEATS,passCard} from './mission-4-cards.mjs?v=2';
+import {cardMarkup,cardVisual,cardBackImage} from '../card-visuals.js?v=14';
 const $=id=>document.getElementById(id),svg=$('board'),NS='http://www.w3.org/2000/svg';
 const palette={red:'#e95252',blue:'#429be8',green:'#43b66b'},zones=['#3f9673','#4b9bc8','#ad855e'];
 const symbols={safe:'🛡',checkpoint:'🚩',door:'🚪',spawn:'🌀',key:'🔑',gift:'🎁',trap:'⚠',teleportIn:'🌀',teleportOut:'🌀',lever:'🎚'};
@@ -11,7 +12,9 @@ function circle(p,r,fill,stroke,label,detail){const g=el('g',{'data-detail':deta
 async function init(){
  const response=await fetch('./mission-4-layout.json');if(!response.ok)throw Error('Brett konnte nicht geladen werden.');
  const b=compileBoard(await response.json()),s=createInspection(b),raw=b.source;
- let cards=createCards(),selected=null,picking=false;
+ let cards=createCards(),selected=null,picking=false,revealed=true;
+ const asset=path=>new URL(path,new URL('../',location.href)).href;
+ const makeEl=(tag,cls,content)=>{const e=document.createElement(tag);e.className=cls;if(content!==undefined)e.textContent=content;return e;};
  const cardName=t=>t==='swap'?'Tausch':t==='joker'?'Joker':t;
  const option=(value,label)=>{const o=document.createElement('option');o.value=value;o.textContent=label;return o;};
  const status=message=>{$('test-status').textContent=message;};
@@ -21,12 +24,23 @@ async function init(){
  $('test-type').replaceChildren(...TYPES.map(t=>option(t,cardName(t))));
  function renderCards(){
   const seat=cards.current,hand=cards.hands[seat];if(!hand.some(c=>c.id===selected))selected=null;
-  $('phase').textContent='Phase '+cards.phase+' · Runde '+cards.round;
-  $('turn').textContent='👑 '+COLOR_NAMES[SEATS[seat]]+' ist dran';
-  $('draw-count').textContent=cards.draw.length;$('discard-count').textContent=cards.discard.length;$('last-card').textContent=cards.last?cardName(cards.last.type):'–';
-  $('players').replaceChildren(...SEATS.map((color,i)=>{const p=document.createElement('div');p.className='player'+(i===seat?' active':'');p.style.setProperty('--player-color',palette[color]);const name=document.createElement('strong');name.textContent=(i===seat?'👑 ':'')+COLOR_NAMES[color];const n=document.createElement('small');n.textContent=cards.hands[i].length+' Karten · 2 Figuren';p.append(name,n);return p;}));
-  const handEl=$('hand');handEl.replaceChildren();for(const card of hand){const btn=document.createElement('button');btn.type='button';btn.className='dog-test-card';btn.textContent=cardName(card.type);btn.setAttribute('aria-pressed',String(card.id===selected));btn.onclick=()=>{selected=selected===card.id?null:card.id;renderCards();};handEl.append(btn);}
-  $('test-discard').disabled=selected===null;
+  const exchanging=cards.stage==='exchange';
+  $('phase').textContent='Kartenphase '+cards.phase+' · '+(exchanging?'Kartenweitergabe':'Runde '+cards.round);
+  $('turn').textContent='👑 '+COLOR_NAMES[SEATS[seat]]+(exchanging?' gibt eine Karte weiter':' ist dran');
+  $('dog-deck-count').textContent=cards.draw.length+' Karten';$('dog-discard-count').textContent=cards.discard.length+' Karten';
+  $('dog-deck-art').style.backgroundImage='url("'+asset(cardBackImage())+'")';
+  const pile=$('dog-discard-art'),last=cards.last,visual=last?cardVisual(last.type):null;
+  pile.classList.toggle('has-card',!!visual?.image);pile.style.backgroundImage=visual?.image?'url("'+asset(visual.image)+'")':'';pile.textContent=visual?.image?'':last?cardName(last.type):'—';pile.title=last?'Zuletzt abgelegt: '+cardName(last.type):'Noch keine Karte abgelegt';
+  $('players').replaceChildren(...SEATS.map((color,i)=>{const p=makeEl('div','seat'+(i===seat?' on':''));p.style.setProperty('--seat',palette[color]);if(i===seat)p.append(makeEl('span','dog-active-emblem','👑'));const avatar=makeEl('span','dog-seat-avatar','●');avatar.setAttribute('aria-label',COLOR_NAMES[color]);avatar.style.color=palette[color];const info=makeEl('span','dog-seat-info');info.append(makeEl('span','seat-name',COLOR_NAMES[color]),makeEl('span','seat-extra'+(cards.exchanges[i]?' is-done':''),cards.exchanges[i]?'✓ Karte weitergegeben':cards.hands[i].length+' Karten'));p.append(avatar,info,makeEl('b','dog-seat-score','2/2'));return p;}));
+  const handEl=$('hand');handEl.dataset.cardCount=String(hand.length);handEl.replaceChildren();
+  $('hand-title').textContent=exchanging?COLOR_NAMES[SEATS[seat]]+': Karte weitergeben':COLOR_NAMES[SEATS[seat]]+' ist am Zug';
+  $('show-hand').textContent=revealed?'🙈 Hand verdecken':'🃏 Karten ansehen';
+  if(revealed){for(const card of hand){const template=document.createElement('template');template.innerHTML=cardMarkup(card.type,{selected:card.id===selected,attrs:'type="button" aria-label="'+cardName(card.type)+'" aria-pressed="'+String(card.id===selected)+'"'});const btn=template.content.firstElementChild;const img=btn.querySelector('img');if(img){img.setAttribute('src',asset(img.getAttribute('src')));if(img.dataset.fallback)img.dataset.fallback=asset(img.dataset.fallback);}btn.onclick=()=>{selected=selected===card.id?null:card.id;renderCards();};handEl.append(btn);}}
+  else {const veil=makeEl('div','hand-veil');const backs=makeEl('div','dog-card-backs');for(let i=0;i<Math.min(3,hand.length);i++){const back=makeEl('span','dog-card-back');back.style.backgroundImage='url("'+asset(cardBackImage())+'")';backs.append(back);}veil.append(backs,makeEl('span','','Deine Karten sind verdeckt. Tippe auf „Karten ansehen“.'));handEl.append(veil);}
+  $('test-discard').textContent=exchanging?'Karte an '+COLOR_NAMES[SEATS[(seat+1)%3]]+' weitergeben':'🧪 Ausgewählte Karte testweise ablegen';
+  $('test-discard').disabled=selected===null||!revealed;
+  $('move-help').textContent=exchanging?'Wähle eine Karte für den nächsten Spieler.':'Wähle eine Karte für den lokalen Test.';
+  $('card-note').textContent=exchanging?'Alle drei Karten werden erst nach der letzten Auswahl verteilt.':'Nur Testablage: Die reguläre Figurenbewegung folgt.';
   const old=$('test-slot').value;$('test-slot').replaceChildren(...hand.map((c,i)=>option(i,(i+1)+': '+cardName(c.type))));if(hand[Number(old)]&&old!=='')$('test-slot').value=old;
   $('history').replaceChildren(...cards.history.map(t=>{const p=document.createElement('p');p.textContent=t.replace(/^red ·/,'Rot ·').replace(/^blue ·/,'Blau ·').replace(/^green ·/,'Grün ·');return p;}));
  }
@@ -35,10 +49,11 @@ async function init(){
  $('return-piece').onclick=()=>attempt(()=>place(null));
  $('pick-field').onclick=()=>{picking=!picking;$('pick-field').setAttribute('aria-pressed',String(picking));status(picking?'Tippe ein sichtbares Lauffeld an.':'Brettauswahl beendet.');};
  $('choose-card').onclick=()=>attempt(()=>{cards=testChooseCard(cards,cards.current,Number($('test-slot').value),$('test-type').value);selected=null;renderCards();status('Testkarte eingesetzt. Der Stapel enthält weiterhin genau 110 Karten.');});
- $('test-discard').onclick=()=>attempt(()=>{cards=testDiscard(cards,selected);selected=null;renderCards();status('Karte testweise abgelegt – keine Figurenbewegung.');});
+ $('show-hand').onclick=()=>{revealed=!revealed;selected=null;renderCards();};
+ $('test-discard').onclick=()=>attempt(()=>{const exchange=cards.stage==='exchange';cards=exchange?passCard(cards,selected):testDiscard(cards,selected);selected=null;renderCards();status(exchange?'Karte weitergegeben.':'Karte testweise abgelegt – keine Figurenbewegung.');});
  $('new-deal').onclick=()=>attempt(()=>{cards=testDeal(cards);selected=null;renderCards();status('Neue Kartenphase verteilt (Test).');});
  $('unlock-section').onclick=()=>{s.section=Number($('test-section').value);s.revealAll=false;$('all').checked=false;draw();status('Abschnitt '+s.section+' testweise geöffnet.');};
- $('reset-test').onclick=()=>{if(!confirm('Lokalen Karten- und Brett-Test neu beginnen?'))return;Object.assign(s,createInspection(b));cards=createCards();selected=null;picking=false;$('pick-field').setAttribute('aria-pressed','false');$('all').checked=true;renderCards();draw();status('Test zurückgesetzt.');};
+ $('reset-test').onclick=()=>{if(!confirm('Lokalen Karten- und Brett-Test neu beginnen?'))return;Object.assign(s,createInspection(b));cards=createCards();selected=null;picking=false;revealed=true;$('pick-field').setAttribute('aria-pressed','false');$('all').checked=true;renderCards();draw();status('Test zurückgesetzt.');};
  $('track-count').textContent=b.fields.length-b.missing.length+'/'+b.fields.length;
  $('free').textContent=s.pieces.length;$('captives').textContent=s.captives.length;
  for(const note of b.notes){const p=document.createElement('p');p.textContent=note;$('notes').append(p);}
