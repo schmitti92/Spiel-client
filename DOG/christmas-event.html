@@ -388,7 +388,7 @@
           </div>
         </header>
         <div class="grinch-event-toolbar">
-          <div class="grinch-event-toolbar-copy"><strong>👹 Die fünf Prüfungen des Grinch</strong><small>Mission 1 und 2 sind jetzt direkt im lokalen Testmodus startbar. Offizielle Online-Freischaltungen und gemeinsamer Fortschritt bleiben davon getrennt.</small></div>
+          <div class="grinch-event-toolbar-copy"><strong>👹 Die fünf Prüfungen des Grinch</strong><small>Missionen 1–4 sind direkt im lokalen Testmodus verfügbar (Mission 4: Brettvorschau). Offizielle Online-Freischaltungen und gemeinsamer Fortschritt bleiben davon getrennt.</small></div>
           <div class="grinch-event-toolbar-actions">
             <button type="button" id="grinch-visit-cave" class="grinch-event-small-button">🏔️ Höhle ansehen</button>
             <button type="button" id="grinch-back-village" class="grinch-event-small-button">🏘️ Zum Dorf</button>
@@ -421,7 +421,7 @@
           <div class="grinch-mission-art" aria-hidden="true"><span class="grinch-mission-fallback">🔓</span><img loading="lazy" decoding="async" src="./weihnachtsevent-bilder/grinch-event/mission-4.png" alt=""></div>
           <div class="grinch-mission-copy"><h3>Die große Befreiung</h3><p>Mit ihren letzten zwei Figuren dringen die Freunde in die Höhle ein und befreien alle Gefangenen.</p><small>2 Figuren · 9 Gefangene befreien</small></div>
           <div class="grinch-mission-reward" aria-label="Vorgesehene Belohnungen"><span>Story-Ziel</span><b>9 befreit</b><small>Alle Freunde zurück</small></div>
-          <div class="grinch-mission-actions"><span class="grinch-mission-state" id="grinch-mission-state-4">🔒 Gesperrt</span><button type="button" class="grinch-mission-info" data-grinch-details="4" aria-label="Mission 4: Die große Befreiung ansehen">🔍 Details</button></div>
+          <div class="grinch-mission-actions"><span class="grinch-mission-state" id="grinch-mission-state-4" data-state="test-ready">🧪 Brett-Test bereit</span><a class="grinch-mission-test-start" id="grinch-mission-4-test-start" href="./grinch-campaign/mission-4.html" aria-label="Mission 4 – Originalbrett im lokalen Test öffnen">▶ Test starten</a><button type="button" class="grinch-mission-info" data-grinch-details="4" aria-label="Mission 4: Die große Befreiung ansehen">🔍 Details</button></div>
         </article>
         <article class="grinch-mission" id="grinch-mission-5" data-grinch-mission="5">
           <div class="grinch-mission-number" aria-label="Mission 5">5</div>
@@ -431,7 +431,7 @@
           <div class="grinch-mission-actions"><span class="grinch-mission-state" id="grinch-mission-state-5">🔒 Gesperrt</span><button type="button" class="grinch-mission-info" data-grinch-details="5" aria-label="Mission 5: Finale in der Grinchhöhle ansehen">🔍 Details</button></div>
         </article>
         </div>
-        <div class="grinch-event-footnote">🧪 <strong>Lokaler Spieltest:</strong> Mission 1 und Mission 2 lassen sich unabhängig von der Kampagnen-Freischaltung starten. Testpartien zählen nicht als offizielle Siege und vergeben keine Belohnungen. Online gelten weiterhin die echten Voraussetzungen.</div>
+        <div class="grinch-event-footnote">🧪 <strong>Lokaler Spieltest:</strong> Missionen 1–4 lassen sich unabhängig von der Kampagnen-Freischaltung öffnen (Mission 4: Brett-Test). Testpartien zählen nicht als offizielle Siege und vergeben keine Belohnungen. Online gelten weiterhin die echten Voraussetzungen.</div>
       </div>
       <dialog id="grinch-mission-dialog" class="grinch-mission-dialog" aria-labelledby="grinch-mission-title">
         <header><span>✦ GRINCH-MISSION ✦</span><button type="button" id="grinch-mission-close" aria-label="Missionsdetails schließen">✕</button></header>
@@ -1059,7 +1059,7 @@
 <script src="../profile-config.js"></script>
 <script src="../profile-auth.js"></script>
 <script type="module">
-import {guardChristmasEventPage} from './christmas-intro-gate.js?v=61';
+import {guardChristmasEventPage} from './christmas-intro-gate.js?v=62';
 guardChristmasEventPage();
 </script>
 </body>

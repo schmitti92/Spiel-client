@@ -15,7 +15,7 @@ const MISSIONS=Object.freeze([
   objective:'Sammelt gemeinsam drei Weihnachtslichter, zerstört vier Eisbarrieren und aktiviert drei Runen. Eine Figur je Farbe wird entführt.'},
  {name:'Befreiung in der Höhle',icon:'🔓',
   description:'Nur noch zwei Figuren je Spieler sind frei. Sie dringen in die Höhle ein und befreien alle neun Gefangenen.',
-  objective:'Geplant: Alle vermissten Figuren befreien. Mission 5 startet wieder mit fünf Figuren pro Spieler.'},
+  objective:'Alle neun Gefangenen befreien. Mission 5 startet wieder mit fünf Figuren pro Spieler. Das Originalbrett kann bereits unabhängig vom Kampagnenfortschritt getestet werden.'},
  {name:'Die letzte Schlacht',icon:'⚔️',
   description:'Mit allen fünfzehn eigenen Figuren treten die Freunde gegen die Grinch-Armee und ihren Anführer an.',
   objective:'Geplant: Sämtliche Soldaten und den Grinch schlagen, um den Weihnachtsvernichter zu zerstören.'}
@@ -116,6 +116,11 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
  mission3Online.href=hasRoom?'./grinch-campaign/mission-3.html?'+new URLSearchParams({room:roomCode}):'../hub-lobby.html?view=online';
  mission3Online.textContent=hasRoom?'🌐 Mission 3 gemeinsam im Raum '+roomCode:'🌐 Gemeinsamen Spielraum öffnen';
  $('grinch-mission-return')?.before(mission3Online);
+ // Mission 4: unconditional local board test. No room, account, tree or prior victory needed.
+ const mission4Local=mission2Local.cloneNode(false);
+ mission4Local.href='./grinch-campaign/mission-4.html';mission4Local.textContent='▶ Mission 4 · Brett testen';
+ mission4Local.hidden=true;mission4Local.style.display='none';
+ $('grinch-mission-return')?.before(mission4Local);
 
  $('grinch-visit-cave')?.addEventListener('click',()=>openCave());
  $('grinch-back-village')?.addEventListener('click',()=>openTab('village'));
@@ -141,12 +146,13 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
    mission2Online.style.display='none';
    mission3Local.hidden=number!==3;mission3Local.style.display=number===3?'inline-flex':'none';
    mission3Online.hidden=number!==3||!mission3OnlineAllowed;mission3Online.style.display=mission3Online.hidden?'none':'inline-flex';
+   mission4Local.hidden=number!==4;mission4Local.style.display=number===4?'inline-flex':'none';
    const cleared=verifiedProgress?.completedMissions?.includes(1)===true;
    $('grinch-mission-lock').textContent=number===1?
     '🧪 Mission 1 ist zurzeit nur als lokaler Test verfügbar. Es gibt keine offiziellen Online-Freischaltungen oder Gewinne.':
     number===2&&cleared?
     '🧪 Mission 2 ist aktuell ausschließlich als lokaler Test verfügbar.':
-    number===2?'🧪 Mission 2 kannst du jetzt direkt lokal testen, ohne echte Freischaltung.':number===3?(mission3OnlineAllowed?'🌐 Online bereit – alle drei müssen Mission 2 beendet haben.':'🧪 Mission 3 lokal spielbar; der Online-Start bleibt gesperrt.'):'🔒 Diese spätere Mission ist noch nicht spielbar.';
+    number===2?'🧪 Mission 2 kannst du jetzt direkt lokal testen, ohne echte Freischaltung.':number===3?(mission3OnlineAllowed?'🌐 Online bereit – alle drei müssen Mission 2 beendet haben.':'🧪 Mission 3 lokal spielbar; der Online-Start bleibt gesperrt.'):number===4?'🧪 Das Originalbrett ist ohne vorherige Siege oder Baumstufe 10 im lokalen Test zugänglich. Die Spielregeln werden schrittweise ergänzt.':'🔒 Diese spätere Mission ist noch nicht spielbar.';
    if(dialog&&!dialog.open)dialog.showModal();
   });
  });
@@ -166,7 +172,7 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
    banner.dataset.state=unlocked?'tree-ready':'locked';
    banner.textContent=unlocked?
     '🧪 Baumstufe 10 ist erreicht. Offizielle Grinch-Online-Missionen bleiben bis zur Veröffentlichung gesperrt.':
-    '🔒 Offizieller Kampagnenstart erst nach echter Baumstufe 10. Mission 1 hat bereits einen unabhängigen lokalen Testmodus.';
+    '🔒 Offizieller Kampagnenstart erst nach echter Baumstufe 10. Missionen 1–4 können unabhängig davon lokal getestet werden.';
   }
   const completed=new Set(verifiedProgress?.completedMissions||[]);
   $('grinch-event-counter').textContent=completed.size+' / 5 Missionen geschafft';
@@ -181,6 +187,7 @@ export function initGrinchEvent({openTab,openCave,verifiedTreeLevel}){
     state.textContent='🧪 Nur Testmodus';
    }
    else if(i===3){state.dataset.state=mission3OnlineAllowed?'unlocked':'test-ready';state.textContent=mission3OnlineAllowed?'🌐 Online bereit':'🧪 Testmodus';}
+   else if(i===4){state.dataset.state='test-ready';state.textContent='🧪 Brett-Test bereit';}
    else{state.dataset.state='locked';state.textContent='🔒 Gesperrt';}
   }
  }
