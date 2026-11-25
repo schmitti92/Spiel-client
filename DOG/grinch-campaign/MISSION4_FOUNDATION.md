@@ -5,3 +5,6 @@ Nächste Pakete: 1) Brett abschließen, Farben und Abschnittsgrenzen bestätigen
 
 ## Lokaler Testzugang
 Mission 4 hat einen direkten Teststart im bestehenden Grinch-Menü und im Missionsdialog. Die unabhängige Vorschauseite ist ohne Anmeldung, vorherige Siege und Baumstufe 10 zugänglich. Die bestehende Entwicklermodus-Sichtbarkeit des Grinch-Menüs und alle offiziellen Online-Freischaltungen bleiben unverändert.
+
+## Arbeitspaket 3 – Karten und lokale Teststeuerung
+110 Karten wie Mission 3 (8 je normaler Typ, 6 Joker), 3 × 6 Handkarten, zufälliger Startspieler und zyklisch Rot/Blau/Grün; bei jeder neuen Phase wechselt der Startspieler. Sechs Karten pro Phase sind vorläufig. Karten werden ausschließlich im ausdrücklich beschrifteten Testablage-Modus verbraucht, noch nicht als regulärer Spielzug. Nach 18 Ablagen neue Phase; Ablagestapel wird bei Bedarf wieder eingemischt. Entwicklertests: Figur auf vorhandene freie Lauffelder setzen/zum Start, Karte aus vorhandenem Stapel austauschen, Gebiet testweise sichtbar machen, neue Phase und Reset. Kein Speichern offizieller Daten; Hebel, Spawn, Beschuss, Boss und Befreiung sind sichtbar vorbereitet, aber bis zu ihren eigenen Paketen deaktiviert.
