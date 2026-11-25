@@ -16,10 +16,10 @@ export function compileBoard(raw){
  if(!b.prison||b.prison.cells?.length!==9||!b.prison.cells.every(c=>validPoint(c.position))||!COLORS.every(c=>b.prison.cells.filter(p=>p.color===c).length===3))throw Error('Neun Gefangene erforderlich.');
  if(!b.wall?.points?.length||!b.wall.points.every(validPoint))throw Error('Höhleneingang fehlt.');
  const missing=fields.filter(f=>!f.position).map(f=>f.number);
- return {source:b,sections,fields,missing,ready:missing.length===0&&!!b.strike,notes:[...(missing.length?['Offene Lauffelder: '+missing.join(', ')]:[]),...(!b.strike?['Gemeinsames Schlagfeld noch nicht gesetzt.']:[]),'Hebelwirkungen, Spawn-Zuordnung und Kampfregeln noch offen.']};
+ return {source:b,sections,fields,missing,ready:missing.length===0&&!!b.strike,notes:[...(missing.length?['Offene Lauffelder: '+missing.join(', ')]:[]),...(!b.strike?['Gemeinsames Schlagfeld noch nicht gesetzt.']:[]),'Hebelstationen aktiv; Spawn-Zuordnung, Fernbeschuss und Kampfregeln noch offen.']};
 }
 export function createInspection(board){
- return {section:1,revealAll:false,selected:null,pieces:COLORS.flatMap(color=>board.source.starts[color].map((position,i)=>({id:color+'-'+(i+1),color,position}))),captives:board.source.prison.cells.map(c=>({...c})),mode:'local-mission-test'};
+ return {section:1,revealAll:false,selected:null,leverActive:[],counterattack:null,defeatedArchers:[],pieces:COLORS.flatMap(color=>board.source.starts[color].map((position,i)=>({id:color+'-'+(i+1),color,position}))),captives:board.source.prison.cells.map(c=>({...c})),mode:'local-mission-test'};
 }
 export function visibleField(board,state,f){return !!f.position&&(state.revealAll||f.section<=state.section);}
 
