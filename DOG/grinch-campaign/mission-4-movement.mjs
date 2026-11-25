@@ -1,6 +1,7 @@
 // Linear Mission 4 board adapter; card semantics shared with classic DOG.
 import {dogCardSteps,dogStartCard,dogCardChoices} from '../engine.js';
-import {fieldAccessible} from './mission-4-board.mjs?v=2';
+import {fieldAccessible} from './mission-4-board.mjs?v=5';
+import {recordCheckpoints,respawnCaptured} from './mission-4-protection.mjs?v=1';
 import {SEATS,completeCard,replacementCard,placeTestPiece} from './mission-4-cards.mjs?v=3';
 const copy=x=>JSON.parse(JSON.stringify(x));
 const check=(ok,msg)=>{if(!ok)throw Error(msg);};
@@ -19,11 +20,11 @@ function path(board,pieces,p,steps,seven=false){
  }
  return {pieceId:p.id,to:route.at(-1),steps,path:route,captures:[...new Set(captures)]};
 }
-function applyRoute(board,pieces,m){let n=pieces;for(const id of m.captures||[])n=sendHome(board,n,id);return relocate(board,n,m.pieceId,m.to);}
+function applyRoute(board,pieces,m){let n=pieces;for(const id of m.captures||[])n=sendHome(board,n,id);n=relocate(board,n,m.pieceId,m.to);n=recordCheckpoints(board,n,m.pieceId,m.path||[m.to]);for(const id of m.captures||[])n=respawnCaptured(board,n,id,board.unlockedSection??1);return n;}
 function sevenCandidates(board,pieces,cards,left){const out=[];for(const p of own(pieces,cards))for(let n=1;n<=left;n++){const m=path(board,pieces,p,n,true);if(m)out.push({...m,type:'seven-step',cardId:cards.seven?.cardId,as:'7'});}return out;}
 function canSeven(board,pieces,cards,left,memo=new Map()){
  if(left===0)return true;
- const key=left+'|'+pieces.map(p=>p.id+':'+(p.field||0)).join(',');
+ const key=left+'|'+pieces.map(p=>p.id+':'+(p.field||0)+':'+(p.reachedCheckpoints||[]).join('.')).join(',');
  if(memo.has(key))return memo.get(key);
  for(const m of sevenCandidates(board,pieces,cards,left))if(canSeven(board,applyRoute(board,pieces,m),cards,left-m.steps,memo)){memo.set(key,true);return true;}
  memo.set(key,false);return false;
@@ -55,6 +56,7 @@ export function legalMoves(board,pieces,cards,unlockedSection=1){
  return hand.map(c=>({type:houseRescueAllowed(board,pieces,cards)?'discardDraw':'discard',cardId:c.id}));
 }
 export function applyMove(board,pieces,cards,action,unlockedSection=1){
+ board={...board,unlockedSection};
  const match=legalMoves(board,pieces,cards,unlockedSection).find(m=>['type','cardId','as','pieceId','targetId','steps','to'].every(k=>m[k]===action[k]));
  check(match,'Dieser Zug ist nicht erlaubt.');
  let n=copy(cards),p=pieces;const m=match;
@@ -62,7 +64,7 @@ export function applyMove(board,pieces,cards,action,unlockedSection=1){
  if(m.type==='seven-step'){p=applyRoute(board,p,m);n.seven.spent+=m.steps;if(n.seven.spent===7)n=completeCard(n,m.cardId,'spielt die geteilte');return {cards:n,pieces:p,event:m};}
  if(m.type==='discardDraw'){n=replacementCard(n,m.cardId,c=>dogCardChoices(c.type).some(as=>starts(board,p,n,c,as).length));return {cards:n,pieces:p,event:{...m,draw:n.lastDraw}};}
  if(m.type==='start'||m.type==='move')p=applyRoute(board,p,m);
- if(m.type==='swap'){const a=p.find(q=>q.id===m.pieceId),b=p.find(q=>q.id===m.targetId);p=p.map(q=>q.id===a.id?{...q,field:b.field,position:{...b.position}}:q.id===b.id?{...q,field:a.field,position:{...a.position}}:q);}
+ if(m.type==='swap'){const a=p.find(q=>q.id===m.pieceId),b=p.find(q=>q.id===m.targetId);p=p.map(q=>q.id===a.id?{...q,field:b.field,position:{...b.position}}:q.id===b.id?{...q,field:a.field,position:{...a.position}}:q);p=recordCheckpoints(board,p,a.id,[b.field]);p=recordCheckpoints(board,p,b.id,[a.field]);}
  n=completeCard(n,m.cardId,m.type==='discard'?'ist blockiert, wirft ab':m.type==='emptySwap'?'legt Tausch ohne Ziel ab':'spielt'+(m.as==='7'?' die':''));
  return {cards:n,pieces:p,event:m};
 }

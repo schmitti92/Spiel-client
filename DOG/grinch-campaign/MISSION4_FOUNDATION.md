@@ -26,3 +26,6 @@ Nur sideFields geändert. H1–H3 unverändert; H4–H9 sechs farbneutrale Hebel
 
 ## Checkpoint an der Höhlentür
 Feld 127 ist zusätzlich Kontrollpunkt (door.checkpoint=true). Checkpoint-Index 39,72,97,127; Tür und Gebietsgrenze bleiben erhalten. Brettdesigner erhält die Kombination beim Import/Export und beim Hinzufügen eines Kontrollpunkts auf eine Tür. Rücksetz-/Wiederbelebungsregeln folgen in Arbeitspaket 8.
+
+## Arbeitspaket 8 – Schutzfelder und persönliche Checkpoints
+36 blaue Schutzfelder blockieren vorläufig gegnerische Treffer (auch für späteren Fernbeschuss), nicht normale DOG-Kartentreffer. Jede Figur speichert einzeln die betretenen/überquerten Checkpoints 39,72,97,127; Tausch auf Checkpoint zählt. Treffer durch DOG oder Gegner setzen die Figur auf ihren höchsten erreichten freien Checkpoint zurück, bei Belegung auf einen früheren erreichten freien Checkpoint, sonst auf ihren eigenen Startplatz. Keine zusätzlichen Karten oder Belohnungen. Die Sieben-Rücknahme stellt die Checkpoint-Historie wieder her. Testplatzierung auf einem Checkpoint registriert nur diesen; Gegnertreffer-Simulation nutzt dieselbe Funktion wie späterer Kampf. Diese genauen Sonderregeln sind vorläufige Testentscheidungen. Keine Gegnerbewegung oder echter Fernbeschuss implementiert. Hauptspiel unverändert.
