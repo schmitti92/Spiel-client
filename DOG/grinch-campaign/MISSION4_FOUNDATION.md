@@ -44,3 +44,6 @@ Umschaltbare, rein visuelle SVG-Landschaft nach dem Bildkonzept: Wald mit versch
 
 ## Missionsregel: frei aus dem Haus laufen
 Mission 4 benötigt keine spezielle Startkarte. Jede positive DOG-Laufzahl zählt ab dem Haus (Feld 0) vollständig: 4 → Feld 4, 12 → Feld 12, 13 → Feld 13; 1/11 erlaubt beide Werte. Geteilte Sieben kann auch aus dem Haus starten, Joker übernimmt den gewählten Wert. Reine Tauschkarte benötigt ein gültiges Tauschziel auf dem Weg. Normale Treffer-/Wegregeln gelten, Rückwärtslaufen aus dem Haus ist nicht möglich. Keine Sonder-Ersatzkarte nur wegen Startkartenmangel. Klassisches DOG bleibt unverändert.
+
+## Gegnerdarstellung, Schritt 1
+Portalgegner G1 usw. als rot-goldene Spielzeugsoldaten (kein Boss-Symbol), Portal 1 mit eigenem Wirbel, Status/Countdown dauerhaft in Spielansicht. Bosslegende erst Gebiet 3, Fernkämpferlegende ab Gebiet 2. Bossposition bleibt unverändert im dritten Gebiet. Sieben-Gebietstest an neue freie Startregel angepasst (Teilzüge dürfen gesperrtes Gebiet nicht betreten).
