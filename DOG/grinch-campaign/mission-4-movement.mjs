@@ -1,8 +1,8 @@
 // Linear Mission 4 board adapter; card semantics shared with classic DOG.
 import {dogCardSteps,dogStartCard,dogCardChoices} from '../engine.js';
-import {fieldAccessible} from './mission-4-board.mjs?v=5';
+import {fieldAccessible} from './mission-4-board.mjs?v=6';
 import {recordCheckpoints,respawnCaptured} from './mission-4-protection.mjs?v=1';
-import {SEATS,completeCard,replacementCard,placeTestPiece} from './mission-4-cards.mjs?v=3';
+import {SEATS,completeCard,replacementCard,placeTestPiece} from './mission-4-cards.mjs?v=4';
 const copy=x=>JSON.parse(JSON.stringify(x));
 const check=(ok,msg)=>{if(!ok)throw Error(msg);};
 const at=(pieces,field,except)=>pieces.find(p=>p.id!==except&&p.field===field);
@@ -20,7 +20,7 @@ function path(board,pieces,p,steps,seven=false){
  }
  return {pieceId:p.id,to:route.at(-1),steps,path:route,captures:[...new Set(captures)]};
 }
-function applyRoute(board,pieces,m){let n=pieces;for(const id of m.captures||[])n=sendHome(board,n,id);n=relocate(board,n,m.pieceId,m.to);n=recordCheckpoints(board,n,m.pieceId,m.path||[m.to]);for(const id of m.captures||[])n=respawnCaptured(board,n,id,board.unlockedSection??1);return n;}
+function applyRoute(board,pieces,m){const hits=m.captures||[];let n=pieces.filter(p=>!(p.color==='enemy'&&hits.includes(p.id)));for(const id of hits)if(n.some(p=>p.id===id))n=sendHome(board,n,id);n=relocate(board,n,m.pieceId,m.to);n=recordCheckpoints(board,n,m.pieceId,m.path||[m.to]);for(const id of hits)if(n.some(p=>p.id===id))n=respawnCaptured(board,n,id,board.unlockedSection??1);return n;}
 function sevenCandidates(board,pieces,cards,left){const out=[];for(const p of own(pieces,cards))for(let n=1;n<=left;n++){const m=path(board,pieces,p,n,true);if(m)out.push({...m,type:'seven-step',cardId:cards.seven?.cardId,as:'7'});}return out;}
 function canSeven(board,pieces,cards,left,memo=new Map()){
  if(left===0)return true;
@@ -39,7 +39,7 @@ function candidates(board,pieces,cards,card,as){
  if(as==='7'){
   if(canSeven(board,pieces,cards,7))out.push({type:'seven',cardId:card.id,as});
  }else if(as==='swap'){
-  for(const p of own(pieces,cards).filter(p=>fieldExists(board,p.field)))for(const other of pieces.filter(q=>q.color!==p.color&&fieldExists(board,q.field)))out.push({type:'swap',cardId:card.id,as,pieceId:p.id,targetId:other.id,to:other.field});
+  for(const p of own(pieces,cards).filter(p=>fieldExists(board,p.field)))for(const other of pieces.filter(q=>q.color!==p.color&&fieldExists(board,q.field)&&(q.color!=='enemy'||p.field<board.sections[0].to+1)))out.push({type:'swap',cardId:card.id,as,pieceId:p.id,targetId:other.id,to:other.field});
   if(!out.length)out.push({type:'emptySwap',cardId:card.id,as});
  }else for(const p of own(pieces,cards))for(const steps of dogCardSteps(as)){const m=path(board,pieces,p,steps);if(m)out.push({...m,type:'move',cardId:card.id,as});}
  return out;

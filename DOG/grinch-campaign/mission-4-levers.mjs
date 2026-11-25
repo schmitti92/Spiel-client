@@ -6,7 +6,7 @@ export function leverStatus(board,state,id){
  if(!lever)return {allowed:false,reason:'Unbekannter Hebel.'};
  if(!sectionOpen(state,station.section))return {allowed:false,reason:'Gebiet noch gesperrt.',lever,station};
  if(state.leverActive.includes(id))return {allowed:false,reason:'Hebel bereits aktiviert.',lever,station};
- const pawn=state.pieces.find(p=>p.field===lever.anchor+1&&(lever.owner==='all'||p.color===lever.owner));
+ const pawn=state.pieces.find(p=>p.color!=='enemy'&&p.field===lever.anchor+1&&(lever.owner==='all'||p.color===lever.owner));
  return {allowed:!!pawn,reason:pawn?'Hebel bereit.':'Passende Figur auf Feld '+(lever.anchor+1)+' benötigt.',pawn,lever,station};
 }
 export function activateLever(board,state,id,{test=false}={}){
@@ -16,6 +16,7 @@ export function activateLever(board,state,id,{test=false}={}){
  const n={...state,leverActive:[...state.leverActive,id]};
  if(!v.station.levers.every(f=>n.leverActive.includes(f.id)))return n;
  const opened=unlockSection(n,v.station.section+1);
+ if(v.station.section===1){const count=opened.pieces.filter(p=>p.color==='enemy').length;opened.pieces=opened.pieces.filter(p=>p.color!=='enemy');opened.portal1={...opened.portal1,closed:true,lastAction:'Portal geschlossen · '+count+' Gegner vernichtet.'};}
  if(v.station.section===2&&!opened.counterattack){
   const targets=(board.source.enemies||[]).map((position,i)=>position?{id:i+1,position}:null).filter(Boolean);
   opened.defeatedArchers=targets.map(t=>t.id);

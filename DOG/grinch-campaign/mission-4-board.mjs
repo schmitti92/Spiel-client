@@ -19,7 +19,7 @@ export function compileBoard(raw){
  return {source:b,sections,fields,checkpoints:fields.filter(f=>f.checkpoint).map(f=>f.number),safeFields:fields.filter(f=>f.safe).map(f=>f.number),missing,ready:missing.length===0&&!!b.strike,notes:[...(missing.length?['Offene Lauffelder: '+missing.join(', ')]:[]),...(!b.strike?['Gemeinsames Schlagfeld noch nicht gesetzt.']:[]),'Hebelstationen aktiv; Spawn-Zuordnung, Fernbeschuss und Kampfregeln noch offen.']};
 }
 export function createInspection(board){
- return {section:1,revealAll:false,selected:null,leverActive:[],counterattack:null,defeatedArchers:[],pieces:COLORS.flatMap(color=>board.source.starts[color].map((position,i)=>({id:color+'-'+(i+1),color,position,reachedCheckpoints:[]}))),captives:board.source.prison.cells.map(c=>({...c})),mode:'local-mission-test'};
+ return {section:1,revealAll:false,selected:null,leverActive:[],counterattack:null,defeatedArchers:[],portal1:{closed:false,nextId:1,lastTurn:0,lastAction:'Noch kein Gegner erschienen.'},pieces:COLORS.flatMap(color=>board.source.starts[color].map((position,i)=>({id:color+'-'+(i+1),color,position,reachedCheckpoints:[]}))),captives:board.source.prison.cells.map(c=>({...c})),mode:'local-mission-test'};
 }
 export function visibleField(board,state,f){return !!f.position&&(state.revealAll||f.section<=state.section);}
 

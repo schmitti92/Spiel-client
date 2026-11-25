@@ -20,11 +20,11 @@ export function createCards(seed=Date.now()){
  const s={version:1,mode:'local-card-test',rng:Number(seed)>>>0,phase:0,round:1,turn:0,starter:0,current:0,hands:[[],[],[]],draw:[],discard:[],last:null,history:[]};
  s.draw=shuffle(canonical(),s);s.starter=Math.floor(random(s)*3);deal(s);return s;
 }
-export function cardTotal(s){return s.draw.length+s.discard.length+s.hands.reduce((sum,h)=>sum+h.length,0)+s.exchanges.filter(Boolean).length;}
+export function cardTotal(s){return s.draw.length+s.discard.length+s.hands.reduce((sum,h)=>sum+h.length,0)+s.exchanges.filter(Boolean).length+(s.enemyHand||[]).length;}
 export function validateCards(s){
  if(!s||s.mode!=='local-card-test'||s.version!==1||!Number.isInteger(s.current)||s.current<0||s.current>2||!Number.isInteger(s.starter)||s.starter<0||s.starter>2||!Array.isArray(s.hands)||s.hands.length!==3||!s.hands.every(Array.isArray)||!Array.isArray(s.draw)||!Array.isArray(s.discard))return false;
  if(!['exchange','play'].includes(s.stage)||!Array.isArray(s.exchanges)||s.exchanges.length!==3)return false;
- const cards=[...s.draw,...s.discard,...s.hands.flat(),...s.exchanges.filter(Boolean)],expected=canonical();
+ const cards=[...s.draw,...s.discard,...s.hands.flat(),...s.exchanges.filter(Boolean),...(s.enemyHand||[])],expected=canonical();
  return cards.length===110&&new Set(cards.map(c=>c.id)).size===110&&cards.every(c=>expected[c.id-1]?.type===c.type)&&s.hands.every(h=>h.length<=dogCardsPerRound(s.phase))&&s.hands[s.current].length>0&&Number.isInteger(s.phase)&&s.phase>=1;
 }
 export function passCard(s,id){
@@ -67,3 +67,8 @@ export function placeTestPiece(board,pieces,id,field){
  check(!pieces.some(p=>p.id!==id&&p.position.x===pos.x&&p.position.y===pos.y),'Das Feld ist schon durch eine Figur besetzt.');
  return pieces.map(p=>p.id===id?{...p,position:{...pos},field}:p);
 }
+
+// Additional AI hand uses the same 110 DOG cards.
+export function fillEnemyHand(s,count){const n=clone(s);n.enemyHand??=[];while(n.enemyHand.length<count)n.enemyHand.push(drawOne(n));return n;}
+export function useEnemyCard(s,id){const n=clone(s),i=(n.enemyHand||[]).findIndex(c=>c.id===id);check(i>=0,'Gegnerkarte fehlt.');const card=n.enemyHand.splice(i,1)[0];n.discard.push(card);n.last=card;log(n,'Portal 1 · '+card.type);return n;}
+export function closeEnemyHand(s){const n=clone(s);n.discard.push(...(n.enemyHand||[]));n.enemyHand=[];return n;}
