@@ -23,3 +23,40 @@ export function portalSummary(state,turn,cap=8){
  const enemies=state.pieces.filter(p=>p.color==='enemy');
  return {count:enemies.length,remaining:state.portal1.closed?null:3-(turn%3),closed:state.portal1.closed,full:enemies.length>=cap,enemies:enemies.map(p=>({id:p.id,field:p.field}))};
 }
+
+// Motion plans are explicit and independent of rendering. No game mutations.
+export function combatVisuals(board,before,after,visual=null){
+ const motions=[],bursts=[];const spawnPoint=board.source.spawnPoints[0],move=visual?.action;
+ const previous=new Map(before.map(p=>[p.id,p]));const next=new Map(after.map(p=>[p.id,p]));
+ for(const p of before)if(p.color==='enemy'&&!next.has(p.id))bursts.push({kind:'defeat',position:p.position,id:p.id});
+ for(const p of after){const old=previous.get(p.id);
+  if(p.color==='enemy'){
+   const fresh=!old;if(fresh)bursts.push({kind:'spawn',position:spawnPoint,id:p.id});
+   if(move?.id===p.id){const start=board.fields[move.from-1].position;const route=move.path.length?move.path.map(f=>board.fields[f-1].position):[p.position];motions.push({id:p.id,points:[...(fresh?[spawnPoint]:[]),start,...route],kind:'enemy'});}
+   else if(fresh)motions.push({id:p.id,points:[spawnPoint,p.position],kind:'enemy'});
+   else if(old.field!==p.field)motions.push({id:p.id,points:[old.position,p.position],kind:'enemy'});
+  }else if(old&&move&&(move.hits.includes(p.id)||move.targetId===p.id)){
+   if(move.hits.includes(p.id))bursts.push({kind:'hit',position:old.position,id:p.id});
+   if(old.field!==p.field)motions.push({id:p.id,points:[old.position,p.position],kind:'return'});
+  }
+ }
+ return {motions,bursts};
+}
+export const motionSeconds=motion=>Math.max(.38,Math.min(3.2,(motion.points.length-1)*.24));
+export function drawCombatBurst(el,txt,svg,burst,delay=0){
+ const p=burst.position,g=el('g',{'pointer-events':'none','aria-hidden':'true',opacity:0},svg),color=burst.kind==='spawn'?'#ffc183':burst.kind==='hit'?'#ff695e':'#ffdb9e';
+ const ring=el('circle',{cx:p.x,cy:p.y,r:12,fill:'none',stroke:color,'stroke-width':4},g);
+ el('animate',{attributeName:'r',values:'9;32;46',dur:'.65s',begin:delay+'s',fill:'freeze'},ring);
+ el('animate',{attributeName:'opacity',values:'0;1;1;0',keyTimes:'0;.12;.45;1',dur:'.75s',begin:delay+'s',fill:'freeze'},g);
+ for(let i=0;i<8;i++){const a=i*Math.PI/4;el('line',{x1:p.x+Math.cos(a)*18,y1:p.y+Math.sin(a)*18,x2:p.x+Math.cos(a)*33,y2:p.y+Math.sin(a)*33,stroke:color,'stroke-width':3,'stroke-linecap':'round'},g);}
+ txt({x:p.x,y:p.y-35},burst.kind==='spawn'?'NEU':burst.kind==='hit'?'TREFFER':'BESIEGT',12,color,g);
+}
+export function animateCombatMotion(el,g,p,motion,delay=0){
+ const points=motion.points,seconds=motionSeconds(motion),path='M'+points.map(q=>(q.x-p.x)+','+(q.y-p.y)).join(' L');
+ // Explicit key points equalize time per field despite unequal field spacing.
+ const lengths=[0];for(let i=1;i<points.length;i++)lengths.push(lengths.at(-1)+Math.hypot(points[i].x-points[i-1].x,points[i].y-points[i-1].y));
+ const total=lengths.at(-1);if(!total)return;
+ el('animateMotion',{path,dur:seconds+'s',begin:delay+'s',fill:'freeze',calcMode:'linear',keyPoints:lengths.map(n=>n/total).join(';'),keyTimes:lengths.map((_,i)=>i/(lengths.length-1)).join(';')},g);
+ // Hold at previous location until the scheduled motion begins.
+ if(delay>0)el('animateTransform',{attributeName:'transform',type:'translate',from:(points[0].x-p.x)+' '+(points[0].y-p.y),to:(points[0].x-p.x)+' '+(points[0].y-p.y),begin:'0s',dur:delay+'s',fill:'remove'},g);
+}

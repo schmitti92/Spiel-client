@@ -45,15 +45,15 @@ export function applyEnemyMove(board,pieces,m,section){
 }
 export function portalTick(board,state,cards,previousPhase=cards.phase){
  if(state.portal1.closed||cards.turn===0||cards.turn%3!==0||cards.turn<=state.portal1.lastTurn)return {state,cards};
- let n=spawnPortalEnemy(board,state),c=cards,spawned=n!==state;
+ let n=spawnPortalEnemy(board,state),c=cards,spawned=n!==state;const before=state.pieces;let action=null;
  n={...n,portal1:{...n.portal1,lastTurn:cards.turn}};
  if(!portalEnemies(n.pieces).length)return {state:n,cards:c};
  if(!(c.enemyHand||[]).length)c=fillEnemyHand(c,dogCardsPerRound(previousPhase));
  const m=enemyMoves(board,n.pieces,c.enemyHand)[0];
- if(m){const from=n.pieces.find(p=>p.id===m.id).field;n={...n,pieces:applyEnemyMove(board,n.pieces,m,n.section),portal1:{...n.portal1,lastAction:'Gegner '+m.id.split('-')[1]+' spielt '+m.as+': '+from+' → '+m.to+(m.hits.length?' · '+m.hits.length+' Treffer':'')}};c=useEnemyCard(c,m.cardId);}
+ if(m){const from=n.pieces.find(p=>p.id===m.id).field;action={...m,from};n={...n,pieces:applyEnemyMove(board,n.pieces,m,n.section),portal1:{...n.portal1,lastAction:'Gegner '+m.id.split('-')[1]+' spielt '+m.as+': '+from+' → '+m.to+(m.hits.length?' · '+m.hits.length+' Treffer':'')}};c=useEnemyCard(c,m.cardId);}
  else {c=useEnemyCard(c,c.enemyHand[0].id);n.portal1.lastAction='Gegner kann nicht ziehen und wirft eine Karte ab.';}
  // If entry was occupied by an enemy that just moved away, try once more.
  if(!spawned){const message=n.portal1.lastAction;const retry=spawnPortalEnemy(board,n);if(retry!==n)n={...retry,portal1:{...retry.portal1,lastAction:message+' · Neuer Gegner erscheint.'}};}
- return {state:n,cards:c};
+ return {state:n,cards:c,visual:{action,spawned:n.pieces.filter(p=>p.color==='enemy'&&!before.some(q=>q.id===p.id)).map(p=>p.id)}};
 }
 export function closePortalCards(state,cards){return state.portal1.closed&&(cards.enemyHand||[]).length?closeEnemyHand(cards):cards;}

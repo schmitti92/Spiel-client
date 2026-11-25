@@ -47,3 +47,6 @@ Mission 4 benötigt keine spezielle Startkarte. Jede positive DOG-Laufzahl zähl
 
 ## Gegnerdarstellung, Schritt 1
 Portalgegner G1 usw. als rot-goldene Spielzeugsoldaten (kein Boss-Symbol), Portal 1 mit eigenem Wirbel, Status/Countdown dauerhaft in Spielansicht. Bosslegende erst Gebiet 3, Fernkämpferlegende ab Gebiet 2. Bossposition bleibt unverändert im dritten Gebiet. Sieben-Gebietstest an neue freie Startregel angepasst (Teilzüge dürfen gesperrtes Gebiet nicht betreten).
+
+## Gegneranimationen, Schritt 2
+Portalaktion liefert echte Zugroute an eine rein visuelle Planung. Spawn aus P1, Feld-für-Feld-Bewegung mit ca. 240 ms pro Feld, Treffer- und Besiegt-Effekte, Checkpoint-Rückkehr animiert. Bot-Zeitgeber und manuelle Kartenaktionen berücksichtigen die Effektdauer; Test-Cockpit kann die Animation abbrechen. Bewegungsreduktion respektiert. Kein Sound, keine zusätzlichen Gegnerregeln oder Serverzugriffe.
