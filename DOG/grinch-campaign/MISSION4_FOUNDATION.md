@@ -20,3 +20,6 @@ Startzustand Abschnitt 1 geöffnet, 2/3 verdeckt. Freigaben sind kumulativ und b
 
 ## Arbeitspakete 6/7 – erste Hebel-/Türlogik
 H1–H3 öffnen Feld 40 und Gebiet 2. H4–H10 lösen einmalig einen Gegenangriff aus, schalten die sechs stationären Fernkämpfer aus und öffnen Feld 127/Gebiet 3. Vorläufig kumulative Aktivierung durch Antippen mit passender Figur auf Anschlussfeld, keine zusätzliche Karte und keine gleichzeitige Besetzung. Sieben Hebel mit nur sechs Figuren. Noch keine Seitenfeldbewegung. Test umgeht Figurenbedingung, nicht Gebietssperre. Gegenangriff speichert Ursprungspunkte und Ziele; provisorische Animation. Keine Wirkung auf Boss oder Spawngegner, kein echter gegnerischer Beschuss bis Paket 11.
+
+## Brettrevision 2 (Nutzerexport)
+Nur sideFields geändert. H1–H3 unverändert; H4–H9 sechs farbneutrale Hebel, alle mit Anker 125. H10 entfernt. Gemeinsamer Gegenangriff nach vollständiger Aktivierung bleibt unverändert; sechs Schusszuordnungen nach horizontaler Lage, jeder Hebel genau einem stationären Gegner. Die genaue individuelle Auslöseregel und Seitenfeldbewegung sind noch nicht festgelegt. Türen 40/127, 156 belegte Lauffelder, alle anderen Elemente unverändert.

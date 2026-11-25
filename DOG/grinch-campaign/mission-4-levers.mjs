@@ -19,7 +19,12 @@ export function activateLever(board,state,id,{test=false}={}){
  if(v.station.section===2&&!opened.counterattack){
   const targets=(board.source.enemies||[]).map((position,i)=>position?{id:i+1,position}:null).filter(Boolean);
   opened.defeatedArchers=targets.map(t=>t.id);
-  opened.counterattack={type:'lever-counterattack',station:2,leverIds:v.station.levers.map(f=>f.id),origins:v.station.levers.map(f=>f.position),targets};
+  // The six new lever positions line up with the six ranged enemies.
+  // Match in horizontal order, preserving enemy IDs; no invented editor coordinates.
+  const orderedLevers=[...v.station.levers].sort((a,b)=>a.position.x-b.position.x||a.position.y-b.position.y||a.id-b.id);
+  const orderedTargets=[...targets].sort((a,b)=>a.position.x-b.position.x||a.position.y-b.position.y||a.id-b.id);
+  const shots=orderedTargets.map((target,i)=>({targetId:target.id,leverId:orderedLevers[i%orderedLevers.length].id,origin:orderedLevers[i%orderedLevers.length].position}));
+  opened.counterattack={type:'lever-counterattack',station:2,leverIds:v.station.levers.map(f=>f.id),origins:v.station.levers.map(f=>f.position),targets,shots};
  }
  return opened;
 }
