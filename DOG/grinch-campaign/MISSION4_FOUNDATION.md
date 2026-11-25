@@ -38,3 +38,6 @@ Standard Rot, Auswahl Blau/Grün oder alle manuell. Zwei kooperative KI-Sitze nu
 
 ## Test-Cockpit
 Standardansicht Spielen, separater gut erreichbarer Testbereich mit fünf Themenreitern Figuren, Karten, Gebiete & Hebel, Gegner & Treffer, Diagnose. Beim Öffnen wird der KI-Timer angehalten; beim Zurückwechseln wird der bestehende Spielstand fortgesetzt. Kartenersatz bezieht sich auf den aktiven Sitz, auch wenn dessen KI pausiert ist. Normale Karten-/Brettzüge im Testbereich gesperrt, Testplatzierung bleibt möglich; während offener Sonderzüge bleiben die bestehenden Sperren bestehen. Reset bleibt ausdrücklich möglich. Keine Änderung an Spielregeln/Serverdaten.
+
+## Vorläufiges Winterdesign
+Umschaltbare, rein visuelle SVG-Landschaft nach dem Bildkonzept: Wald mit verschneiten Tannen, Eisland mit Kristallen, Spielzeugdorf mit Häusern. Deterministische Dekoration bleibt von Lauffeldern, Hebeln, Figuren, Gefängnis und Portalen entfernt; an die tatsächlichen Gebietspolygone geclippt, unter den interaktiven Feldern. Gesperrte Gebiete bleiben verdeckt. Die generierte Konzeptgrafik wird wegen ihrer abweichenden Feldnummern nicht als Brett eingebrannt. Design-Schalter stellt jederzeit die bisherige Ansicht wieder her. Keine Spielregel- oder Geometrieänderung.
