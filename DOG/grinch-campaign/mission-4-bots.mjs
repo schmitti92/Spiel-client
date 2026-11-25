@@ -1,5 +1,5 @@
 // Cooperative local test bots: all decisions use the same legal move generator.
-import {legalMoves,applyMove} from './mission-4-movement.mjs?v=4';
+import {legalMoves,applyMove} from './mission-4-movement.mjs?v=5';
 import {SEATS} from './mission-4-cards.mjs?v=4';
 import {stations,leverStatus,activateLever} from './mission-4-levers.mjs?v=3';
 export function botExchange(cards){
@@ -23,7 +23,7 @@ function score(board,state,cards,m){
   return choices.length?Math.max(...choices.map(x=>score(board,state,n.cards,x)))-0.25:-1000;
  }
  if(!p)return -1000;
- let s=m.type==='start'?45:(m.to-(p.field||0))*2;
+ let s=(m.to-(p.field||0))*2+(p.field?0:15);
  const targets=stations(board).filter(st=>st.section<=state.section).flatMap(st=>st.levers).filter(f=>!state.leverActive.includes(f.id)&&(f.owner==='all'||f.owner===color)).map(f=>f.anchor+1);
  if(targets.length&&m.to){
   const distance=f=>Math.min(...targets.map(t=>Math.abs(t-f)));

@@ -41,3 +41,6 @@ Standardansicht Spielen, separater gut erreichbarer Testbereich mit fünf Themen
 
 ## Vorläufiges Winterdesign
 Umschaltbare, rein visuelle SVG-Landschaft nach dem Bildkonzept: Wald mit verschneiten Tannen, Eisland mit Kristallen, Spielzeugdorf mit Häusern. Deterministische Dekoration bleibt von Lauffeldern, Hebeln, Figuren, Gefängnis und Portalen entfernt; an die tatsächlichen Gebietspolygone geclippt, unter den interaktiven Feldern. Gesperrte Gebiete bleiben verdeckt. Die generierte Konzeptgrafik wird wegen ihrer abweichenden Feldnummern nicht als Brett eingebrannt. Design-Schalter stellt jederzeit die bisherige Ansicht wieder her. Keine Spielregel- oder Geometrieänderung.
+
+## Missionsregel: frei aus dem Haus laufen
+Mission 4 benötigt keine spezielle Startkarte. Jede positive DOG-Laufzahl zählt ab dem Haus (Feld 0) vollständig: 4 → Feld 4, 12 → Feld 12, 13 → Feld 13; 1/11 erlaubt beide Werte. Geteilte Sieben kann auch aus dem Haus starten, Joker übernimmt den gewählten Wert. Reine Tauschkarte benötigt ein gültiges Tauschziel auf dem Weg. Normale Treffer-/Wegregeln gelten, Rückwärtslaufen aus dem Haus ist nicht möglich. Keine Sonder-Ersatzkarte nur wegen Startkartenmangel. Klassisches DOG bleibt unverändert.

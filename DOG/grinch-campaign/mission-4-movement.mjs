@@ -1,5 +1,5 @@
 // Linear Mission 4 board adapter; card semantics shared with classic DOG.
-import {dogCardSteps,dogStartCard,dogCardChoices} from '../engine.js';
+import {dogCardSteps,dogCardChoices} from '../engine.js';
 import {fieldAccessible} from './mission-4-board.mjs?v=6';
 import {recordCheckpoints,respawnCaptured} from './mission-4-protection.mjs?v=1';
 import {SEATS,completeCard,replacementCard,placeTestPiece} from './mission-4-cards.mjs?v=4';
@@ -11,10 +11,11 @@ const fieldExists=(board,n)=>fieldAccessible(board,board.unlockedSection??1,n);
 function sendHome(board,pieces,id){return placeTestPiece(board,pieces,id,null);}
 function relocate(board,pieces,id,to){return placeTestPiece(board,pieces,id,to);}
 function path(board,pieces,p,steps,seven=false){
- if(!p?.field||!fieldExists(board,p.field)||!Number.isInteger(steps)||!steps)return null;
+ if(!p||!Number.isInteger(steps)||!steps||(p.field?!fieldExists(board,p.field):steps<0))return null;
+ const origin=p.field||0;
  const route=[],captures=[];
  for(let i=1;i<=Math.abs(steps);i++){
-  const f=p.field+Math.sign(steps)*i;if(!fieldExists(board,f))return null;
+  const f=origin+Math.sign(steps)*i;if(!fieldExists(board,f))return null;
   const victim=at(pieces,f,p.id);if(victim&&(seven||i===Math.abs(steps)))captures.push(victim.id);
   route.push(f);
  }
@@ -31,8 +32,8 @@ function canSeven(board,pieces,cards,left,memo=new Map()){
 }
 function sevenMoves(board,pieces,cards,left){const memo=new Map();return sevenCandidates(board,pieces,cards,left).filter(m=>canSeven(board,applyRoute(board,pieces,m),cards,left-m.steps,memo));}
 function starts(board,pieces,cards,card,as){
- if(!dogStartCard(as)||!fieldExists(board,1)||at(pieces,1))return [];
- return own(pieces,cards).filter(p=>!p.field).map(p=>({type:'start',cardId:card.id,as,pieceId:p.id,to:1,path:[1],captures:[]}));
+ if(as==='7')return [];
+ return own(pieces,cards).filter(p=>!p.field).flatMap(p=>dogCardSteps(as).filter(n=>n>0).map(n=>path(board,pieces,p,n)).filter(Boolean).map(m=>({...m,type:'start',cardId:card.id,as})));
 }
 function candidates(board,pieces,cards,card,as){
  const out=starts(board,pieces,cards,card,as);
@@ -41,10 +42,10 @@ function candidates(board,pieces,cards,card,as){
  }else if(as==='swap'){
   for(const p of own(pieces,cards).filter(p=>fieldExists(board,p.field)))for(const other of pieces.filter(q=>q.color!==p.color&&fieldExists(board,q.field)&&(q.color!=='enemy'||p.field<board.sections[0].to+1)))out.push({type:'swap',cardId:card.id,as,pieceId:p.id,targetId:other.id,to:other.field});
   if(!out.length)out.push({type:'emptySwap',cardId:card.id,as});
- }else for(const p of own(pieces,cards))for(const steps of dogCardSteps(as)){const m=path(board,pieces,p,steps);if(m)out.push({...m,type:'move',cardId:card.id,as});}
+ }else for(const p of own(pieces,cards).filter(p=>p.field))for(const steps of dogCardSteps(as)){const m=path(board,pieces,p,steps);if(m)out.push({...m,type:'move',cardId:card.id,as});}
  return out;
 }
-export function houseRescueAllowed(board,pieces,cards){return fieldExists(board,1)&&own(pieces,cards).length===2&&own(pieces,cards).every(p=>!p.field)&&!at(pieces,1);}
+export function houseRescueAllowed(board,pieces,cards){return false;}
 export function legalMoves(board,pieces,cards,unlockedSection=1){
  board={...board,unlockedSection};
  if(cards.stage!=='play')return [];
